@@ -1,0 +1,132 @@
+<title>Crimson Halo Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0d0c11; --panel: #15141b; --panel2: #1c1b24; --line: #2a2833;
+    --text: #e9e7f0; --muted: #908da0; --red: #ff4150; --red-d: #8a0b25; --cyan: #7fe6ff;
+  }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; overflow: hidden; }
+  .app { display: grid; grid-template-columns: 1fr 272px; height: 100%; }
+  .stage { position: relative; display: flex; align-items: center; justify-content: center; background: #0a090d; min-height: 0; min-width: 0; }
+  #screen { image-rendering: pixelated; image-rendering: crisp-edges; display: block; outline: none; background: #000; }
+  .tag { position: absolute; left: 12px; bottom: 10px; font: 10px "Silkscreen", monospace; color: var(--muted); letter-spacing: 0.06em; pointer-events: none; }
+  aside { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 16px; }
+  h1 { font: 14px "Silkscreen", monospace; margin: 0; letter-spacing: 0.04em; }
+  h1 span { color: var(--red); }
+  .sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  section { display: flex; flex-direction: column; gap: 8px; }
+  h2 { font: 10px "Silkscreen", monospace; color: var(--muted); letter-spacing: 0.1em; margin: 0; text-transform: uppercase; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  button, select { font: inherit; font-size: 12px; color: var(--text); background: var(--panel2); border: 1px solid var(--line); border-radius: 0; padding: 6px 8px; cursor: pointer; text-align: left; }
+  button:hover, select:hover { border-color: #4a4757; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 1px solid var(--red); outline-offset: 1px; }
+  button.hot { border-color: var(--red-d); box-shadow: inset 2px 0 0 var(--red); }
+  label.row { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--text); font-size: 12px; }
+  label.row select { width: 150px; }
+  input[type=range] { width: 100%; accent-color: var(--red); }
+  input[type=checkbox] { accent-color: var(--red); }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 11.5px; color: var(--muted); }
+  .keys b { color: var(--text); font-weight: 500; white-space: nowrap; }
+  .note { font-size: 11px; color: var(--muted); }
+  .pad { display: none; }
+  .hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .hint span { font: 11px "Silkscreen", monospace; letter-spacing: 0.08em; color: var(--text); background: rgba(13,12,17,0.82); border: 1px solid var(--red-d); padding: 10px 14px; }
+  .hint[hidden] { display: none; }
+  @media (max-width: 860px) {
+    body { overflow: auto; }
+    .app { grid-template-columns: 1fr; grid-template-rows: auto auto; height: auto; }
+    .stage { height: calc(56.25vw + 24px); max-height: 70vh; }
+    aside { border-left: 0; border-top: 1px solid var(--line); }
+  }
+  @media (pointer: coarse) and (max-width: 860px) { .stage { height: calc(56.25vw + 140px); } }
+  @media (pointer: coarse) {
+    .pad { display: block; position: absolute; inset: 0; pointer-events: none; }
+    .pad div { position: absolute; bottom: 14px; display: flex; gap: 10px; pointer-events: auto; }
+    .pad .l { left: 14px; } .pad .r { right: 14px; flex-wrap: wrap; width: 176px; justify-content: flex-end; }
+    .pad button { width: 52px; height: 52px; border-radius: 50%; text-align: center; font: 10px "Silkscreen", monospace; background: rgba(28,27,36,0.7); touch-action: none; }
+    .pad button.on { background: rgba(255,65,80,0.5); }
+  }
+  @media (prefers-reduced-motion: reduce) { .tag { display: none; } }
+</style>
+
+<div class="app">
+  <div class="stage">
+    <canvas id="screen" tabindex="0" aria-label="Playable character preview"></canvas>
+    <div class="tag">native pixels · integer scaled · 60 fps sim</div>
+    <div class="hint" id="hint"><span>CLICK THE STAGE, THEN PLAY · J ATTACK · SPACE JUMP · SHIFT DODGE</span></div>
+    <div class="pad" aria-hidden="true">
+      <div class="l"><button data-act="left">&lt;</button><button data-act="right">&gt;</button></div>
+      <div class="r"><button data-act="burst">Q</button><button data-act="skill">E</button><button data-act="parry">F</button><button data-act="dodge">DGE</button><button data-act="jump">JMP</button><button data-act="attack">ATK</button></div>
+    </div>
+  </div>
+  <aside>
+    <div>
+      <h1>CRIMSON <span>HALO</span> LAB</h1>
+      <div class="sub">character-01 · procedural sprite rig, first playable pass</div>
+    </div>
+    <section>
+      <h2>Show a move</h2>
+      <div class="grid">
+        <button data-demo="combo">4-hit string</button>
+        <button data-demo="charge">Charged lunge</button>
+        <button data-demo="air">Air + plunge</button>
+        <button data-demo="skill" class="hot">Red Line (E)</button>
+        <button data-demo="burst" class="hot">Halo (Q)</button>
+        <button data-demo="dodge">Dodge → sprint</button>
+        <button data-demo="parry">Parry</button>
+        <button data-demo="run">Run + turn</button>
+        <button data-demo="walk">Walk</button>
+        <button data-demo="flourish">Idle flourish</button>
+        <button data-demo="hurt">Take a hit</button>
+        <button data-demo="knock">Knockdown</button>
+      </div>
+      <div class="note">Stand near a sentinel's line of fire and tap Parry or Dodge just before a shot lands for PARRY or PERFECT.</div>
+    </section>
+    <section>
+      <h2>Time</h2>
+      <label class="row">Speed <span id="tsv">1.00×</span></label>
+      <input id="ts" type="range" min="0.05" max="1" step="0.05" value="1" aria-label="Simulation speed">
+      <div class="grid"><button id="pause">Pause</button><button id="step">Step frame</button></div>
+    </section>
+    <section>
+      <h2>Look</h2>
+      <label class="row" for="costume">Costume
+        <select id="costume"><option value="split">Death over angel</option><option value="ref">Reference colours</option><option value="mono">All dark</option></select></label>
+      <label class="row" for="view">Camera
+        <select id="view"><option value="close">Close 640×360</option><option value="wide">Wide 960×540</option></select></label>
+      <label class="row"><span>Rim light from effects</span><input id="rim" type="checkbox" checked></label>
+      <label class="row"><span>Hitboxes (H)</span><input id="boxes" type="checkbox"></label>
+    </section>
+    <section>
+      <h2>Range</h2>
+      <label class="row" for="turret">Sentinels
+        <select id="turret"><option value="aimed">Aimed shots</option><option value="burst">3-round burst</option><option value="spread">5-way spread</option><option value="orb">Heavy orb</option><option value="cycle">Cycle patterns</option><option value="off">Hold fire</option></select></label>
+      <label class="row"><span>Training (refill, short cooldowns)</span><input id="training" type="checkbox" checked></label>
+      <label class="row"><span>Walk by default</span><input id="walk" type="checkbox"></label>
+      <label class="row"><span>Sound</span><input id="sound" type="checkbox" checked></label>
+      <div class="grid"><button data-hp="1">HP 100%</button><button data-hp="0.25">HP 25% (hurt idle)</button></div>
+      <button id="respawn">Back to start</button>
+    </section>
+    <section>
+      <h2>Controls</h2>
+      <div class="keys">
+        <b>A / D</b><span>move · C toggles walk</span>
+        <b>Space</b><span>jump · S+Space drops through</span>
+        <b>J / click</b><span>attack · hold to charge</span>
+        <b>S + J (air)</b><span>plunge</span>
+        <b>Shift / RMB</b><span>dodge (no direction: backstep)</span>
+        <b>F</b><span>parry · first 10 frames deflect</span>
+        <b>E</b><span>Red Line</span>
+        <b>Q</b><span>Halo</span>
+        <b>P / .</b><span>pause · step one frame</span>
+      </div>
+    </section>
+  </aside>
+</div>
+<script>
+/*SCRIPTS*/
+</script>

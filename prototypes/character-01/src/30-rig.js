@@ -189,11 +189,14 @@ function solveRig(p, ground, J = {}) {
   let tbx = J.sbx + bax * armLen * p.br, tby = J.sby + bay * armLen * p.br;
   J.bdx = Math.cos(p.bd); J.bdy = Math.sin(p.bd); J.bl = p.bl;
   const bl = p.bl;
-  if (p.gr === 2) {
+  if (p.gr === 2 || p.gr === 3) {
+    // far hand is the main grip; gr 3 brings the near hand onto the handle below it
     ik2(J.sbx, J.sby, tbx, tby, RIG.upper, RIG.fore, -p.be, tmp);
     J.ebx = tmp[0]; J.eby = tmp[1]; J.wbx = tmp[2]; J.wby = tmp[3];
     J.gx = J.wbx + J.bdx * 2 * K; J.gy = J.wby + J.bdy * 2 * K;
-    ik2(J.sfx, J.sfy, tfx, tfy, RIG.upper, RIG.fore, -p.fe, tmp);
+    let nfx = tfx, nfy = tfy;
+    if (p.gr === 3) { nfx = J.gx - J.bdx * 8 * K * bl; nfy = J.gy - J.bdy * 8 * K * bl; }
+    ik2(J.sfx, J.sfy, nfx, nfy, RIG.upper, RIG.fore, -p.fe, tmp);
     J.efx = tmp[0]; J.efy = tmp[1]; J.wfx = tmp[2]; J.wfy = tmp[3];
   } else {
     ik2(J.sfx, J.sfy, tfx, tfy, RIG.upper, RIG.fore, -p.fe, tmp);
@@ -322,7 +325,11 @@ class Heroine {
     this.blink = 0; this.blinkT = 2;
   }
   simulate(J, rootX, rootY, dir, dt, env) {
-    if (dt <= 0) return;
+    if (!(dt > 0)) return;
+    if (!Number.isFinite(env.wind)) env.wind = 0;
+    if (!Number.isFinite(env.lift || 0)) env.lift = 0;
+    // self-heal: a single bad value must never stick in the simulation
+    if (!Number.isFinite(this.chest.x + this.chest.y + this.hem[0].y + this.hair[0].x[1] + this.tails[0].y[1])) this.resetPhysics();
     const W = (x, y) => [rootX + x * dir, rootY + y];
     const dtPrev = this.dtPrev; this.dtPrev = dt;
     const pel = W(J.px, J.py);
@@ -897,7 +904,7 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
     buf.ellipse(k[0], k[1], 1.2 * K, 1.2 * K, 0, M.red.l, G.bow);
   }
   // ---- near arm, then its shoulder cap
-  const frontFist = p.gr === 0 || p.gr === 1 ? 1 : p.hf;
+  const frontFist = p.gr === 0 || p.gr === 1 || p.gr === 3 ? 1 : p.hf;
   drawArm(J.sfx + ox, J.sfy + oy, J.efx + ox, J.efy + oy, J.wfx + ox, J.wfy + oy, G.armF, frontFist, 0);
   if (yaw < 0.5) {
     buf.litR = 3;
@@ -909,7 +916,7 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
     if (p.gr !== 2) drawHand(J.wfx + ox, J.wfy + oy, J.bdx, J.bdy, 1, G.handF, 0);
     if (p.gr === 1) drawHand(J.wbx + ox, J.wby + oy, J.bdx, J.bdy, 1, G.handF, 0);
   }
-  if (p.gr === 2 && p.bz === 1) drawHand(J.wbx + ox, J.wby + oy, J.bdx, J.bdy, 1, G.handF, 0);
+  if ((p.gr === 2 || p.gr === 3) && p.bz === 1) drawHand(J.wbx + ox, J.wby + oy, J.bdx, J.bdy, 1, G.handF, 0);
 
   // ---- form lighting from the height fields (key light: top-right-front)
   const lit = (o) => Object.assign({ up: 0.09, dn: 0.1, dn2: 0.36 }, o);
