@@ -1,0 +1,8 @@
+{
+  "name": "model-lab",
+  "private": true,
+  "description": "Analysis only: render reference models/motions to sprite-scale pixels and extract key poses, arcs and easing.",
+  "dependencies": {
+    "three": "^0.160.0"
+  }
+}

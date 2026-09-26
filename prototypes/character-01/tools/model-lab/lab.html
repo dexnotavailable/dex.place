@@ -1,0 +1,141 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>model-lab</title>
+<style>body{margin:0;background:#222;color:#ddd;font:12px monospace}canvas{image-rendering:pixelated}</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+// Analysis only. Loads a reference model + motion, plays it at a fixed 60 fps, and records
+// (1) projected 2D joint tracks for timing/easing/arc analysis and (2) a sprite-scale toon
+// render (no AA) to study placement at our pixel size. Nothing here ships.
+import * as THREE from 'three';
+import { MMDLoader } from 'three/addons/loaders/MMDLoader.js';
+import { MMDAnimationHelper } from 'three/addons/animation/MMDAnimationHelper.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const q = new URLSearchParams(location.search);
+const MODEL = q.get('model'), MOTION = q.get('motion');
+const FPS = +(q.get('fps') || 60), H = +(q.get('h') || 118), YAW = (+(q.get('yaw') || 90)) * Math.PI / 180;
+const F0 = +(q.get('from') || 0), FN = +(q.get('frames') || 90), EVERY = +(q.get('every') || 3);
+
+// joint name patterns: MMD (Japanese), Mixamo, generic
+const JOINTS = {
+  hips: [/^センター$/, /^下半身$/, /mixamorig:?Hips$/i, /^hips$/i],
+  chest: [/^上半身2?$/, /mixamorig:?Spine2$/i, /^chest$/i, /^spine2?$/i],
+  neck: [/^首$/, /mixamorig:?Neck$/i, /^neck$/i],
+  head: [/^頭$/, /mixamorig:?Head$/i, /^head$/i],
+  shR: [/^右腕$/, /mixamorig:?RightArm$/i, /^upperarm_?r$/i],
+  elR: [/^右ひじ$/, /mixamorig:?RightForeArm$/i, /^lowerarm_?r$/i],
+  hdR: [/^右手首$/, /mixamorig:?RightHand$/i, /^hand_?r$/i],
+  shL: [/^左腕$/, /mixamorig:?LeftArm$/i, /^upperarm_?l$/i],
+  elL: [/^左ひじ$/, /mixamorig:?LeftForeArm$/i, /^lowerarm_?l$/i],
+  hdL: [/^左手首$/, /mixamorig:?LeftHand$/i, /^hand_?l$/i],
+  hpR: [/^右足$/, /mixamorig:?RightUpLeg$/i, /^thigh_?r$/i],
+  knR: [/^右ひざ$/, /mixamorig:?RightLeg$/i, /^calf_?r$/i],
+  ftR: [/^右足首$/, /mixamorig:?RightFoot$/i, /^foot_?r$/i],
+  hpL: [/^左足$/, /mixamorig:?LeftUpLeg$/i, /^thigh_?l$/i],
+  knL: [/^左ひざ$/, /mixamorig:?LeftLeg$/i, /^calf_?l$/i],
+  ftL: [/^左足首$/, /mixamorig:?LeftFoot$/i, /^foot_?l$/i],
+  weapon: [/武器|剣|sword|weapon|blade/i],
+};
+
+const scene = new THREE.Scene();
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(1, 2, 1.5); scene.add(key);
+
+function toonify(root) {
+  const g = new Uint8Array([90, 170, 255]);
+  const ramp = new THREE.DataTexture(g, 3, 1, THREE.RedFormat); ramp.minFilter = ramp.magFilter = THREE.NearestFilter; ramp.needsUpdate = true;
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    const out = mats.map((m) => new THREE.MeshToonMaterial({ color: m.color ? m.color.clone() : 0xffffff, map: m.map || null, gradientMap: ramp, transparent: !!m.transparent, alphaTest: 0.5, side: THREE.DoubleSide }));
+    o.material = Array.isArray(o.material) ? out : out[0];
+  });
+}
+
+// synthetic figure so the pipeline can be validated without any reference files
+function synthetic() {
+  const bones = []; const mk = (name, parent, x, y) => { const b = new THREE.Bone(); b.name = name; b.position.set(x, y, 0); if (parent) parent.add(b); bones.push(b); return b; };
+  const hips = mk('hips', null, 0, 9); const chest = mk('chest', hips, 0, 3); const neck = mk('neck', chest, 0, 2.5); const head = mk('head', neck, 0, 1);
+  const shR = mk('upperarm_r', chest, 0, 2); const elR = mk('lowerarm_r', shR, 2.8, 0); const hdR = mk('hand_r', elR, 2.6, 0); const wpn = mk('weapon', hdR, 7, 0);
+  const shL = mk('upperarm_l', chest, 0, 2); const elL = mk('lowerarm_l', shL, 2.8, 0); mk('hand_l', elL, 2.6, 0);
+  const hpR = mk('thigh_r', hips, 0.6, 0); const knR = mk('calf_r', hpR, 0, -4.4); mk('foot_r', knR, 0, -4.4);
+  const hpL = mk('thigh_l', hips, -0.6, 0); const knL = mk('calf_l', hpL, 0, -4.4); mk('foot_l', knL, 0, -4.4);
+  const geo = new THREE.BoxGeometry(1, 1, 1); const mesh = new THREE.Group();
+  const skel = new THREE.Skeleton(bones); mesh.add(hips);
+  // visible limbs: small boxes on each bone
+  for (const b of bones) { const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: b.name === 'weapon' ? 0xff3344 : 0xdddddd })); m.scale.set(0.9, 0.9, 0.9); b.add(m); }
+  // a greatsword-ish swing clip: wind-up (ease-out), hold, strike (fast), follow-through, recover
+  const t = [0, 0.1, 0.16, 0.2, 0.3, 0.45, 0.7];
+  const ang = [-0.3, -2.4, -2.5, 0.6, 1.0, 1.1, -0.3];
+  const qv = []; for (const a of ang) { const qq = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), a); qv.push(qq.x, qq.y, qq.z, qq.w); }
+  const clip = new THREE.AnimationClip('swing', 0.7, [new THREE.QuaternionKeyframeTrack('upperarm_r.quaternion', t, qv)]);
+  return { root: mesh, clip, bones };
+}
+
+async function load() {
+  if (!MODEL) return synthetic();
+  const ext = MODEL.split('.').pop().toLowerCase();
+  if (ext === 'pmx' || ext === 'pmd') {
+    const loader = new MMDLoader();
+    return await new Promise((res, rej) => {
+      const done = (mesh, clip) => res({ root: mesh, clip, mmd: true });
+      if (MOTION) loader.loadWithAnimation(MODEL, MOTION, (m) => done(m.mesh, m.animation), null, rej);
+      else loader.load(MODEL, (m) => done(m, null), null, rej);
+    });
+  }
+  if (ext === 'fbx') {
+    const obj = await new FBXLoader().loadAsync(MODEL);
+    let clip = obj.animations[0] || null;
+    if (MOTION) { const a = await new FBXLoader().loadAsync(MOTION); clip = a.animations[0]; }
+    return { root: obj, clip };
+  }
+  const g = await new GLTFLoader().loadAsync(MODEL);
+  return { root: g.scene, clip: g.animations[0] || null };
+}
+
+(async () => {
+  try {
+    const R = await load();
+    const root = R.root; scene.add(root); toonify(root);
+    root.rotation.y = YAW; // yaw 90: model facing +Z turned to face screen-right
+    // bones by role
+    const all = []; root.traverse((o) => { if (o.isBone || o.type === 'Bone') all.push(o); });
+    const pick = {}; for (const [k, pats] of Object.entries(JOINTS)) { for (const p of pats) { const b = all.find((o) => p.test(o.name)); if (b) { pick[k] = b; break; } } }
+    // animation driver
+    let step;
+    if (R.mmd && R.clip) {
+      const helper = new MMDAnimationHelper({ afterglow: 0 }); helper.add(root, { animation: R.clip, physics: false });
+      step = (dt) => helper.update(dt);
+    } else if (R.clip) {
+      const mixer = new THREE.AnimationMixer(root); mixer.clipAction(R.clip).play(); step = (dt) => mixer.update(dt);
+    } else step = () => {};
+    // frame the figure: bounds at the first frame
+    step(0); root.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(root), size = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
+    const tall = size.y, px = H / tall; // world units -> sprite pixels (figure height = H)
+    const W = Math.ceil(H * 2.2), HH = Math.ceil(H * 1.5);
+    const cam = new THREE.OrthographicCamera(-W / 2 / px, W / 2 / px, HH / 2 / px, -HH / 2 / px, -1000, 1000);
+    cam.position.set(ctr.x, box.min.y + HH / 2 / px - 0.1 * tall, ctr.z + 100); cam.lookAt(ctr.x, box.min.y + HH / 2 / px - 0.1 * tall, ctr.z);
+    const ren = new THREE.WebGLRenderer({ antialias: false, alpha: true, preserveDrawingBuffer: true }); ren.setPixelRatio(1); ren.setSize(W, HH);
+    document.body.appendChild(ren.domElement);
+    const v = new THREE.Vector3();
+    const tracks = {}; for (const k of Object.keys(pick)) tracks[k] = [];
+    const frames = [];
+    for (let i = 0; i < F0; i++) step(1 / FPS);
+    for (let i = 0; i < FN; i++) {
+      root.updateMatrixWorld(true);
+      for (const [k, b] of Object.entries(pick)) {
+        b.getWorldPosition(v); v.project(cam);
+        // screen px, y down, origin top-left of the sprite canvas
+        tracks[k].push([+((v.x + 1) / 2 * W).toFixed(2), +((1 - v.y) / 2 * HH).toFixed(2)]);
+      }
+      if (i % EVERY === 0) { ren.render(scene, cam); frames.push(ren.domElement.toDataURL('image/png')); }
+      step(1 / FPS);
+    }
+    window.__out = { fps: FPS, h: H, w: W, hh: HH, every: EVERY, from: F0, bones: Object.fromEntries(Object.entries(pick).map(([k, b]) => [k, b.name])), tracks, frames };
+    document.title = 'OK';
+  } catch (e) { document.title = 'ERR ' + (e && e.message || e); }
+})();
+</script></body></html>
