@@ -422,6 +422,7 @@ class Player {
       wind: -this.vx * 0.8 - 14 + Math.sin(this.game.time * 0.7) * 10,
       lift: this.vy < 0 ? 400 : this.vy > 200 ? -900 : 0,
       groundY: (x) => groundTop(x),
+      skirt: { grounded: this.grounded, vx: this.vx, vy: this.vy, phase: this.phase, state: s },
     });
     this.bladeHits(f);
   }

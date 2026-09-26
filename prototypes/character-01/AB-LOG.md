@@ -47,3 +47,21 @@
 
 ## r15: one bold sheen per hair clump (no dashes), red lining at tattered tips -> B
 - Static art now at game-sprite ref level (demons / pink katana); next gains come from motion.
+
+## F1: face contour + eyes (shorter tapered chin, bigger softer irises, nose) -> B
+
+## C1: hourglass pass (narrower waist, fuller bust and hips) -> B (subtle)
+
+## F2: face becomes authored pixel frames, not rig -> B
+- At ~19x22 px, spline contours can't place a chin, eyes and mouth precisely, so the face is a
+  hand-pixelled sprite (V-chin, cool sclera, 5px iris dark-to-bright, lash flick) with
+  expression frames (open / focus / closed / pain, smirk / open mouth).
+- Features are composited after lighting, masked to visible skin, so shadows and bangs can't muddy them.
+- Fix: sprite pixels shared a layer id with the bangs, so the bangs' cast shadow skipped the face.
+
+## S1: skirt becomes authored frames, not springs -> B
+- Rule going forward: rig for limbs and anything that must track the ground/IK; frames for
+  cloth, face and FX, where an animator's drawing beats a simulation.
+- Frames: rest, rise (hugs), apex (floats), fallA/fallB (flip up, bell, crimson lining band,
+  flutter every 5 ticks), land0-2 (squash, rebound, settle), run0-3 (contact/passing sway,
+  scaled by speed), dashA/B, flare0-2 (turns and spins). Held at least 2 ticks (on twos).

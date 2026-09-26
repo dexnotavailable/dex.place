@@ -300,7 +300,7 @@ const M = {
 };
 const C = {
   white: palAdd('#ffffff'),
-  eyeWhite: palAdd('#fbf7f7'),
+  eyeWhite: palAdd('#eae6f2'),
   iris: palAdd('#e3122e'),
   irisLt: palAdd('#ff6475'),
   irisDk: palAdd('#7c0617'),
@@ -936,12 +936,12 @@ const FIG = {
   torsoL: {
     b: [-9.5, -6.5, -2, 3.5, 8.5, 12.5, 16, 20, 24, 28, 31, 33.5, 35.2],
     side: [-7.5, -10.8, -11.4, -8.8, -6.4, -5.8, -6.4, -7.2, -7.9, -7.8, -6.8, -4.8, -3.2],
-    q: [-8.4, -10.2, -10.6, -9.0, -6.9, -6.2, -6.5, -7.6, -8.4, -9.2, -10.2, -8.2, -2.2],
+    q: [-8.6, -10.8, -11.4, -9.2, -6.6, -5.6, -6.2, -7.6, -8.4, -9.2, -10.2, -8.2, -2.2],
   },
   torsoR: {
     b: [35.2, 33.5, 31, 28, 25.6, 23.2, 21, 18.8, 16.5, 12.5, 8, 3, -2, -6.5, -9.5],
     side: [3.2, 4.8, 6.6, 8.0, 9.8, 11.7, 12.3, 11.0, 7.4, 5.8, 6.6, 7.4, 7.6, 7.3, 5.0],
-    q: [3.9, 6.3, 7.6, 8.6, 10.1, 11.5, 11.5, 9.8, 6.9, 5.6, 6.4, 8.1, 8.8, 7.7, 5.0],
+    q: [3.9, 6.3, 7.6, 8.8, 10.7, 12.3, 12.4, 10.4, 6.8, 5.0, 6.2, 8.4, 9.6, 8.2, 5.0],
   },
   shoulderF: { side: [-1.2, 30.2], q: [-8.4, 30.4] }, // near arm
   shoulderB: { side: [1.6, 30.8], q: [5.8, 30.8] }, // far arm
@@ -958,21 +958,21 @@ const FIG = {
   armBack: [['F', 1.0, -3.1, 0], ['F', 0.86, -2.2], ['F', 0.74, -1.7], ['F', 0.45, -1.9], ['F', 0.12, -2.2], ['J', 0, -2.1], ['U', 0.82, -2.1], ['U', 0.45, -2.8], ['U', 0.16, -3.5], ['U', -0.14, -2.4]],
   armW: [[3.0, 3.2, 2.6, 2.3, 2.2], [3.1, 2.9, 2.6, 2.4, 2.3]],
   foreW: [[2.4, 2.4, 2.1, 2.3, 3.3], [2.4, 2.3, 2.1, 2.1, 3.1]],
-  face: [[-6.6, -3.8], [-5.6, -8.2], [0.4, -9.8], [4.9, -7.6], [6.4, -3.8], [6.6, -0.8], [7.0, 1.2], [6.5, 2.8], [5.6, 4.9], [4.1, 7.0], [2.4, 8.6, 0], [0.4, 8.3], [-2.2, 6.8], [-4.6, 4.6], [-6.3, 1.8], [-6.9, -1.0]],
+  face: [[-6.6, -3.8], [-5.6, -8.2], [0.4, -9.8], [4.9, -7.6], [6.4, -3.8], [6.7, -1.0], [7.0, 0.8], [6.5, 2.2], [5.6, 4.0], [4.2, 5.8], [2.8, 7.0, 0], [1.0, 6.6], [-1.8, 5.4], [-4.4, 3.4], [-6.2, 1.0], [-6.9, -1.0]],
   bangs: [[-7.4, -4.4], [-7.6, -9.0], [-3.8, -12.6], [1.8, -12.8], [6.0, -9.8], [7.3, -5.6], [7.4, -3.8, 0], [6.3, -4.4, 0], [5.3, -3.7, 0], [4.3, -4.6, 0], [3.1, -3.8, 0], [1.9, -4.8, 0], [0.7, -4.0, 0], [-0.6, -4.9, 0], [-1.9, -4.2, 0], [-3.2, -5.0, 0], [-4.6, -4.3, 0], [-5.8, -5.4]],
   // skirt (pelvis frame): hips upper points, then hem springs
   skirtTop: {
     side: [[7.6, 5.8], [-8.8, 5.8], [-11.4, 1.2], [-13.3, -3.8]],
-    q: [[7.2, 5.6], [-8.6, 5.6], [-11.6, 0.6], [-14.2, -4.6]],
+    q: [[6.6, 5.6], [-8.0, 5.6], [-12.4, 0.4], [-14.8, -4.6]],
   },
-  skirtFront: { side: [[11.4, -4.0], [8.9, 2.0]], q: [[13.8, -4.6], [10.4, 0.6]] },
+  skirtFront: { side: [[11.4, -4.0], [8.9, 2.0]], q: [[14.4, -4.6], [11.0, 0.4]] },
   hem: {
     side: [[-15.0, -10.6], [-11.2, -13.2], [-5.8, -14.6], [0.2, -15.0], [5.8, -14.6], [10.8, -13.0], [14.4, -10.4]],
     q: [[-16.2, -11.0], [-11.8, -13.6], [-6.0, -14.9], [0.0, -15.3], [5.9, -14.9], [11.2, -13.4], [15.6, -11.0]],
   },
   corset: {
     side: [[7.0, 15.0], [6.1, 11.5], [6.9, 6.5], [7.6, 4.8], [-8.9, 4.8], [-6.5, 8.5], [-5.9, 13], [-6.6, 16.5], [-1, 17.6], [3.4, 16.4]],
-    q: [[7.2, 16.6], [5.4, 11.0], [6.6, 6.5], [7.9, 4.6], [-9.6, 4.6], [-7.2, 8.0], [-6.0, 12.0], [-6.9, 16.8], [-1.4, 17.8], [3.6, 16.0]],
+    q: [[7.2, 16.6], [4.9, 11.0], [6.6, 6.5], [7.9, 4.6], [-9.6, 4.6], [-7.0, 8.0], [-5.5, 12.0], [-6.9, 16.8], [-1.4, 17.8], [3.6, 16.0]],
   },
   capeB: {
     side: [[-3.6, 40.5], [-8.6, 37.4], [-13.2, 31.5], [-14.6, 24], [-14.4, 17], [-12.4, 12.4], [-8, 11.4], [-3, 12.6], [1, 20], [2, 30], [1.2, 38.5]],
@@ -1007,7 +1007,7 @@ function solveRig(p, ground, J = {}) {
   J.ntx = nx + ux * RIG.neck; J.nty = ny + uy * RIG.neck;
   J.ha = p.sp + p.hd;
   const [hux, huy] = upV(J.ha), [hfx, hfy] = fwdV(J.ha);
-  J.hx = J.ntx + (hux * 7.6 + hfx * 0.5) * K * HK; J.hy = J.nty + (huy * 7.6 + hfy * 0.5) * K * HK;
+  J.hx = J.ntx + (hux * 6.6 + hfx * 0.5) * K * HK; J.hy = J.nty + (huy * 6.6 + hfy * 0.5) * K * HK;
   const sF = ylPt(FIG.shoulderF.side, FIG.shoulderF.q, yaw), sB = ylPt(FIG.shoulderB.side, FIG.shoulderB.q, yaw);
   [J.sfx, J.sfy] = torsoPt(J, sF[0], sF[1]);
   [J.sbx, J.sby] = torsoPt(J, sB[0], sB[1]);
@@ -1158,14 +1158,46 @@ function leftEdgeAt(yaw, b) {
   return yl(T.side[T.b.length - 1], T.q[T.b.length - 1], yaw);
 }
 
+// Skirt frames: the hem is animated like hand-drawn cloth, not simulated. Each frame is an
+// offset per hem point [forward, up] in pelvis units (back -> front); frames are held on
+// twos/threes and chosen by what the body is doing. Rig drives limbs; frames drive cloth.
+const SKIRT = {
+  rest: [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+  rise: [[1.2, -1.2], [0.6, -1.6], [0, -1.6], [0, -1.6], [0, -1.6], [-0.6, -1.6], [-1.2, -1.2]],
+  apex: [[-3.4, 3.0], [-2.2, 2.6], [-0.8, 2.0], [0, 1.8], [0.8, 2.0], [2.2, 2.6], [3.4, 3.0]],
+  fallA: [[-6.0, 6.4], [-4.2, 6.0], [-1.6, 5.0], [0, 4.6], [1.6, 5.0], [4.2, 5.8], [6.0, 6.2]],
+  fallB: [[-6.4, 5.8], [-3.8, 6.6], [-1.4, 4.6], [0, 5.2], [1.8, 4.6], [4.4, 6.4], [6.4, 5.6]],
+  land0: [[-2.2, -2.2], [-1.2, -2.6], [0, -2.6], [0, -2.6], [0, -2.6], [1.2, -2.6], [2.2, -2.2]],
+  land1: [[-1.6, 2.2], [-1.0, 2.6], [0, 2.0], [0, 1.8], [0, 2.0], [1.0, 2.6], [1.6, 2.2]],
+  land2: [[-0.6, -0.8], [-0.3, -0.8], [0, -0.6], [0, -0.6], [0, -0.6], [0.3, -0.8], [0.6, -0.8]],
+  // run cycle, 4 drawings: contact / passing / contact / passing
+  run0: [[-3.0, 2.6], [-2.0, 1.6], [-1.0, 0.6], [-0.5, 0], [0.2, 0.6], [1.2, 1.8], [1.8, 2.8]],
+  run1: [[-3.6, 3.2], [-2.6, 2.4], [-1.6, 1.2], [-1.0, 0.4], [-0.8, 0], [-0.4, -0.4], [0, 0]],
+  run2: [[-4.2, 3.8], [-3.2, 2.8], [-1.6, 1.2], [-1.0, 0], [-0.6, -0.4], [0, 0], [0.2, 0.6]],
+  run3: [[-3.2, 2.2], [-2.6, 2.8], [-2.0, 1.8], [-1.0, 0.6], [-0.4, 0.2], [0.2, 0.6], [0.6, 1.2]],
+  dashA: [[-5.2, 4.2], [-4.0, 3.2], [-2.6, 2.0], [-1.6, 1.0], [-1.0, 0.6], [-0.6, 0.6], [0, 1.2]],
+  dashB: [[-5.0, 3.4], [-4.2, 3.8], [-2.4, 2.6], [-1.8, 1.4], [-1.0, 0.4], [-0.4, 1.0], [0, 0.8]],
+  // turn / spin: swings the old way, bells out, swings through
+  flare0: [[-5.2, 3.0], [-4.0, 2.6], [-3.0, 1.6], [-2.0, 1.0], [-1.0, 1.0], [0, 1.6], [1.0, 2.2]],
+  flare1: [[-4.2, 4.6], [-2.6, 3.2], [-1.0, 2.0], [0, 1.6], [1.0, 2.0], [2.6, 3.2], [4.2, 4.6]],
+  flare2: [[-1.0, 1.0], [0, 0.6], [0.6, 0], [1.0, 0], [1.6, 0.6], [2.2, 1.2], [2.6, 1.6]],
+};
+const SKIRT_SEQ = {
+  land: [['land0', 4], ['land1', 4], ['land2', 4]],
+  turn: [['flare0', 3], ['flare1', 4], ['flare2', 4]],
+};
+
 class Heroine {
   constructor() {
     this.hair = HAIR.map((h, i) => new Chain(h.len, SEG_HAIR, { stiff: [0.46, 0.04], damp: 0.93, grav: 760, drag: 1.1, rest: Math.PI / 2 + 0.12 + i * 0.02, curl: h.wave }));
-    this.tails = TAILS.map((t, i) => new Chain(t.len, SEG_TAIL, { stiff: [0.4, 0.03], damp: 0.94, grav: 640, drag: 1.6, rest: Math.PI / 2 + t.rest, curl: (i % 2 ? -0.1 : 0.1) }));
+    this.tails = TAILS.map((t, i) => new Chain(t.len, SEG_TAIL, { stiff: [0.3, 0.02], damp: 0.95, grav: 640, drag: 2.1, rest: Math.PI / 2 + t.rest, curl: (i % 2 ? -0.1 : 0.1) }));
     this.ribbon = [0, 1].map((i) => new Chain(4, 3.2 * K, { stiff: [0.25, 0.1], damp: 0.9, grav: 600, drag: 1.8, rest: Math.PI / 2 + 0.55 + i * 0.35 }));
     this.front = [0, 1].map((i) => new Chain(6 + i, 6.0 * K, { stiff: [0.55, 0.06], damp: 0.92, grav: 760, drag: 1.2, rest: Math.PI / 2 - 0.16 - i * 0.06, curl: -0.08 }));
     this.tie = new Chain(4, 3.3 * K, { stiff: [0.35, 0.2], damp: 0.88, grav: 800, drag: 0.8, rest: Math.PI / 2 - 0.05 });
-    this.hem = FIG.hem.side.map(() => new Spring2(240, 15, 9 * K));
+    this.hem = FIG.hem.side.map(() => new Spring2(170, 8.5, 10 * K));
+    this.hemLine = FIG.hem.side.map(() => 0); // lining shown under a lifted hem, px
+    this.sk = { frame: 'rest', hold: 0, seq: null, si: 0, st: 0, wasGround: true, airT: 0, dir: 1, yaw: null, tick: 0 };
+    this.skForce = null;
     this.chest = new Spring2(300, 10, 1.9 * K);
     this.prevPel = null; this.prevVel = [0, 0];
     this.prevChest = null; this.prevChestVel = [0, 0];
@@ -1189,13 +1221,7 @@ class Heroine {
     }
     this.prevPel = pel; this.prevVel = [vx, vy];
     const fvx = vx * dir, fax = clamp(ax * dir, -6000, 6000), fay = clamp(ay, -6000, 6000);
-    for (let i = 0; i < this.hem.length; i++) {
-      const s = this.hem[i];
-      const side = (i / (this.hem.length - 1)) * 2 - 1;
-      const tx = clamp(-fvx * 0.012, -5, 5) * K * (0.6 + 0.4 * Math.abs(side));
-      const ty = clamp(-Math.abs(fvx) * 0.004 - Math.max(0, vy) * 0.005, -3.2, 0) * K;
-      s.step(fax * 0.0022, fay * 0.0016, tx, ty, dt);
-    }
+    this.skirtFrames(J, dir, dt, env.skirt);
     const [cx, cy] = torsoPt(J, 9, 21);
     const cw = W(cx, cy);
     let cax = 0, cay = 0;
@@ -1260,6 +1286,40 @@ class Heroine {
     if (this.blinkT <= 0) { this.blink = 0.12; this.blinkT = rand(2.2, 4.8); }
     if (this.blink > 0) this.blink -= dt;
   }
+  skirtFrames(J, dir, dt, e) {
+    const k = this.sk, f = dt * 60;
+    k.tick += f;
+    const yawV = k.yaw === null ? 0 : (J.yaw - k.yaw) / dt;
+    k.yaw = J.yaw;
+    let name = 'rest', amp = 1;
+    if (this.skForce) name = this.skForce;
+    else if (e) {
+      const speed = Math.abs(e.vx);
+      if (e.grounded && !k.wasGround && k.airT > 8) { k.seq = SKIRT_SEQ.land; k.si = 0; k.st = 0; }
+      if (dir !== k.dir && (speed > 60 || !e.grounded || e.state === 'attack')) { k.seq = SKIRT_SEQ.turn; k.si = 0; k.st = 0; }
+      else if (Math.abs(yawV) > 7 && !k.seq) { k.seq = SKIRT_SEQ.turn; k.si = 0; k.st = 0; }
+      k.dir = dir; k.wasGround = e.grounded; k.airT = e.grounded ? 0 : k.airT + f;
+      if (k.seq) {
+        k.st += f;
+        while (k.seq && k.st >= k.seq[k.si][1]) { k.st -= k.seq[k.si][1]; if (++k.si >= k.seq.length) k.seq = null; }
+      }
+      if (k.seq) name = k.seq[k.si][0];
+      else if (!e.grounded) name = e.vy < -140 ? 'rise' : e.vy < 110 ? 'apex' : (Math.floor(k.tick / 5) % 2 ? 'fallB' : 'fallA');
+      else if (e.state === 'move' && speed > 40) {
+        name = 'run' + (Math.floor((((e.phase % 1) + 1) % 1) * 4) % 4);
+        amp = clamp(speed / 260, 0.4, 1.15);
+      } else if (speed > 170) name = Math.floor(k.tick / 3) % 2 ? 'dashB' : 'dashA';
+    }
+    // held drawings: a new frame shows for at least two ticks
+    if (name !== k.frame && k.hold > 0 && !k.seq) name = k.frame;
+    if (name !== k.frame) { k.frame = name; k.hold = 2; k.amp = amp; } else { k.hold -= f; if (!k.seq) k.amp = amp; }
+    const fr = SKIRT[k.frame] || SKIRT.rest, am = k.amp || 1;
+    for (let i = 0; i < this.hem.length; i++) {
+      const h = this.hem[i];
+      h.x = fr[i][0] * am * K; h.y = fr[i][1] * am * K; h.vx = h.vy = 0;
+      this.hemLine[i] = clamp((fr[i][1] * am - 1.4) * 0.9, 0, 4.2) * K;
+    }
+  }
   resetPhysics() {
     for (const c of [...this.hair, ...this.tails, ...this.ribbon, ...this.front, this.tie]) c.init = false;
     this.prevPel = null; this.prevChest = null;
@@ -1293,7 +1353,51 @@ function contourPts(list, bones) {
 // ---------------------------------------------------------------------------
 const G = { tails: 1, capeB: 2, halo: 3, hair: 4, armB: 5, bladeB: 6, legB: 7, shoeB: 8, legF: 9, shoeF: 10, torso: 11, collar: 12, corset: 13, skirt: 14, tie: 15, capelet: 16, armB2: 17, neck: 18, face: 19, hairF: 20, bow: 21, armF: 22, cap: 23, blade: 24, handF: 25, capFar: 26, hairFront: 27 };
 
+// Face frames, 3/4 facing right. Pixel-authored: at this size a rig can't place
+// eyes/mouth well enough, so these are drawn like sprite frames and swapped by expression.
+const FACE = {
+  skin: [
+    '...22222222222222..',
+    '..2222222222222222.',
+    '.222222222222222222',
+    '3222222222222222222',
+    '3222222222222222221',
+    '3222222222222222221',
+    '3222222222222222221',
+    '3222222222222222221',
+    '3222222222222222221',
+    '3222222222222222221',
+    '3222222222222222221',
+    '3322222222222222221',
+    '3322222222222222221',
+    '3322222222222222211',
+    '3322222222222222211',
+    '.3bbb222222222bb21.',
+    '..332222222222221..',
+    '...3322222222221...',
+    '.....33222222221...',
+    '.......332222221...',
+    '.........332221....',
+    '...........322.....',
+  ],
+  near: {
+    open:   ['L.LLLLL.', '.LLDDDLL', 'LeDPPWDe', '.eIPPPIe', '..IIiII.', '...kkk..', '........'],
+    focus:  ['........', 'L.LLLLL.', '.LLDDDLL', 'LeDPPWIe', '..IIiII.', '...kkk..', '........'],
+    closed: ['........', '........', '........', '........', 'L.....LL', '.LLLLLL.', '........'],
+    pain:   ['........', '.L......', '..LL....', '....LL..', '..LL....', '.L......', '........'],
+  },
+  far: {
+    open:   ['.LLL.L', 'LLDDLL', 'eDPWL.', 'eIPIe.', '.IiI..', '.kk...', '......'],
+    focus:  ['......', '.LLL.L', 'LLDDLL', 'eDPWL.', '.IiI..', '.kk...', '......'],
+    closed: ['......', '......', '......', '......', 'LL..LL', '.LLLL.', '......'],
+    pain:   ['......', '....L.', '..LL..', 'LL....', '..LL..', '....L.', '......'],
+  },
+  mouth: { smirk: ['....', '...k', '.mm.', '..l.'], open: ['....', '.mm.', '.nn.', '..l.'] },
+  nose: ['.l', 's.'],
+};
+
 function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
+  let faceDecal = null;
   const p = J.pose, yaw = J.yaw;
   const T = (a, b, sh) => { const q = torsoPt(J, a, b); const r = [q[0] + ox, q[1] + oy]; if (sh === 0) r.push(0); return r; };
   const Pp = (a, b, sh) => { const q = pelvisPt(J, a, b); const r = [q[0] + ox, q[1] + oy]; if (sh === 0) r.push(0); return r; };
@@ -1550,7 +1654,7 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
   if (yaw > 0.4) {
     const k = (yaw - 0.4) / 0.6;
     const c1 = T(1.4 + ex * 0.8, 21.2 + ey * 0.8), c2 = T(8.0 + ex * 0.8, 21.1 + ey * 0.8);
-    buf.addBump(c1[0], c1[1], 5.6 * K, 4.8 * K, J.sp, 5.5 * k, G.torso);
+    buf.addBump(c1[0], c1[1], 5.8 * K, 5.0 * K, J.sp, 6.8 * k, G.torso);
     buf.addBump(c2[0], c2[1], 4.4 * K, 4.4 * K, J.sp, 4.5 * k, G.torso);
   }
   // sailor collar tips
@@ -1596,6 +1700,12 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
       }
     }
     pts.push(...ylTable(FIG.skirtFront, yaw).map(([a, b]) => Pp(a, b)));
+    // flipped-up hem: the crimson lining shows as a band under the edge
+    if (hero.hemLine.some((d) => d > 0.4)) {
+      const top = hemPts.map((q) => [q[0], q[1]]);
+      const bot = hemPts.map((q, i) => { const d = hero.hemLine[i]; const u = Pp(0, 0), v = Pp(0, -1); return [q[0] + (v[0] - u[0]) * d / K, q[1] + (v[1] - u[1]) * d / K]; });
+      buf.poly(spline([...top, ...bot.reverse()], true, 3), (x, y) => (buf.curD < 1.1 ? M.red.b : M.red.d), G.skirt);
+    }
     buf.litR = 7;
     buf.poly(spline(pts, true, 3), (x, y) => {
       const [a, b] = pelvisAB(x, y);
@@ -1654,7 +1764,7 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
   // ---- neck + head
   {
     const n0 = [J.nx + ox, J.ny + oy];
-    const n1 = Hd(-0.8, 6.0);
+    const n1 = Hd(-0.6, 4.8);
     buf.capsule(n0[0], n0[1] + K, 2.5 * K, n1[0], n1[1], 2.3 * K, (t, s) => (s < -0.35 ? M.skin.s : M.skin.b), G.neck);
     {
       const ca = [lerp(n0[0], n1[0], 0.3), lerp(n0[1], n1[1], 0.3)], cb = [lerp(n0[0], n1[0], 0.46), lerp(n0[1], n1[1], 0.46)];
@@ -1672,56 +1782,25 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
       if (st < 0.22) return M.hair.s;
       return M.hair.b;
     }, G.hairF);
-    buf.litR = 5;
-    buf.poly(spline(FIG.face.map(([x, y, sh]) => { const q = Hd(x, y); if (sh === 0) q.push(0); return q; }), true, 4), (x, y) => {
-      const [lx, ly] = headXY(x, y);
-      if (lx < -4.4 && ly > -3.6) return M.skin.s; // near cheek turns away from the light
-      if (lx < -2.2 && ly > 4.2) return M.skin.s;
-      if (lx > 5.2 && ly > 3.2) return M.skin.s;
-      if (buf.curD < 1.6 && lx > 3.5 && ly < 3 && ly > -3) return M.skin.l; // lit far cheek
-      return M.skin.b;
-    }, G.face);
-    buf.litR = 0;
-    const EYES = {
-      near: {
-        open: ['LLL....', '.LLLLL.', '.LDDDWL', '..IPPIe', '..IPPi.', '..iiwi.', '..kkkk.'],
-        focus: ['.......', 'LLL....', '.LLLLLL', '.LDPPWe', '..IPPi.', '..iiii.', '...ll..'],
-        closed: ['.......', '.......', '.......', 'L.....L', '.LLLLL.', '.......', '.......'],
-        pain: ['.......', 'L......', '.LL....', '...LL..', '.LL....', 'L......', '.......'],
-      },
-      far: {
-        open: ['...LL', 'LLLL.', 'eDWD.', 'ePPI.', '.PPi.', '.iwi.', '.kkk.'],
-        focus: ['.....', '...LL', 'LLLL.', 'ePWD.', '.PPi.', '.iii.', '..l..'],
-        closed: ['.....', '.....', '.....', 'L...L', '.LLL.', '.....', '.....'],
-        pain: ['.....', '....L', '..LL.', 'LL...', '..LL.', '....L', '.....'],
-      },
-    };
-    const MAP = { L: C.lash, D: C.irisDk, I: C.iris, i: C.irisLt, P: C.pupil, W: C.white, w: C.eyeWhite, e: C.eyeWhite, l: M.skin.line, k: M.skin.d };
+    // face: authored pixel frames, not rig. Skin sprite now, features after lighting.
+    const fa = Hd(0, 0), fx0 = Math.round(fa[0]) - 9, fy0 = Math.round(fa[1]) - 12;
+    const FS = { 1: M.skin.l, 2: M.skin.b, 3: M.skin.s, 4: M.skin.d, b: C.blush };
+    FACE.skin.forEach((row, r) => { for (let c = 0; c < row.length; c++) if (row[c] !== '.') buf.put(fx0 + c, fy0 + r, FS[row[c]], G.face); });
+    buf.bump();
     const expr = p.fc === 3 ? 'pain' : hero.blink > 0 || p.fc === 2 ? 'closed' : p.fc === 1 || p.fc === 4 ? 'focus' : 'open';
-    const stamp = (lx, ly, rows) => {
-      const q = Hd(lx, ly);
-      const x0 = Math.round(q[0]), y0 = Math.round(q[1]);
-      for (let r = 0; r < rows.length; r++) for (let c = 0; c < rows[r].length; c++) {
-        const ch = rows[r][c];
-        if (ch !== '.') buf.pset(x0 + c, y0 + r, MAP[ch], G.face);
-      }
+    const mouth = p.fc === 3 || p.fc === 4 ? 'open' : 'smirk';
+    faceDecal = () => {
+      const MAP = { L: C.lash, D: C.irisDk, I: C.iris, i: C.irisLt, P: C.pupil, W: C.white, e: C.eyeWhite, k: M.skin.d, s: M.skin.s, m: C.mouth, n: C.mouthIn, l: M.skin.l };
+      const put = (x0, y0, rows) => rows.forEach((row, r) => { for (let c = 0; c < row.length; c++) {
+        const ch = row[c]; if (ch === '.') continue;
+        const x = x0 + c, y = y0 + r; if (x < 0 || y < 0 || x >= buf.w || y >= buf.h) continue;
+        if (buf.grp[y * buf.w + x] === G.face && buf.col[y * buf.w + x]) buf.col[y * buf.w + x] = MAP[ch];
+      } });
+      put(fx0 + 1, fy0 + 8, FACE.near[expr]);
+      put(fx0 + 12, fy0 + 8, FACE.far[expr]);
+      put(fx0 + 11, fy0 + 16, FACE.mouth[mouth]);
+      put(fx0 + 16, fy0 + 13, FACE.nose);
     };
-    stamp(-5.3, -2.6, EYES.near[expr]);
-    stamp(1.7, -2.5, EYES.far[expr]);
-    const mq = Hd(2.9, 5.4);
-    const mx = Math.round(mq[0]), my = Math.round(mq[1]);
-    if (p.fc === 3 || p.fc === 4) {
-      buf.pset(mx - 1, my, C.mouth, G.face); buf.pset(mx, my, C.mouth, G.face);
-      buf.pset(mx - 1, my + 1, C.mouthIn, G.face); buf.pset(mx, my + 1, C.mouthIn, G.face);
-    } else {
-      // a small, knowing smirk
-      buf.pset(mx - 1, my, C.mouth, G.face); buf.pset(mx, my, C.mouth, G.face);
-      buf.pset(mx + 1, my - 1, C.mouth, G.face);
-      buf.pset(mx, my + 1, M.skin.l, G.face);
-    }
-    const nq = Hd(6.4, 1.6); buf.pset(nq[0] - 1, nq[1], M.skin.s, G.face);
-    const bq = Hd(-3.6, 2.9); for (let i = 0; i < 3; i++) buf.pset(bq[0] + i, bq[1], C.blush, G.face);
-    const bq2 = Hd(3.8, 2.9); buf.pset(bq2[0], bq2[1], C.blush, G.face); buf.pset(bq2[0] + 1, bq2[1], C.blush, G.face);
     buf.litR = 3.5;
     buf.poly(spline(FIG.bangs.map(([x, y, sh]) => { const q = Hd(x, y); if (sh === 0) q.push(0); return q; }), true, 3), (x, y) => {
       const [lx, ly] = headXY(x, y);
@@ -1774,14 +1853,13 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
   cfg[G.torso] = lit({ shine: 0.975, pow: 30 });
   cfg[G.corset] = lit({ shine: 0.95, pow: 30 });
   cfg[G.skirt] = lit({ dn2: 0.55 });
-  cfg[G.face] = lit({ up: 0.16, dn: 0.2, dn2: 0.62, str: 0.45 });
   cfg[G.hair] = lit({ up: 0.16, dn: 0.12, dn2: 0.45, str: 0.8 });
   cfg[G.hairFront] = lit({ shine: 0.9, pow: 18 });
   cfg[G.hairF] = lit({ up: 0.45, dn: 0.1, dn2: 0.4, str: 0.7 });
   for (const g of [G.tails, G.capeB, G.capelet, G.cap, G.capFar]) cfg[g] = lit({});
   for (const g of [G.shoeF, G.shoeB]) cfg[g] = lit({ shine: 0.85, pow: 14 });
   buf.light(cfg, LIGHT_DIR);
-  buf.despeckle([G.skirt, G.hair, G.hairFront, G.hairF, G.torso, G.corset, G.legF, G.legB, G.armF, G.armB, G.armB2, G.tails, G.capelet, G.capeB, G.face]);
+  buf.despeckle([G.skirt, G.hair, G.hairFront, G.hairF, G.torso, G.corset, G.legF, G.legB, G.armF, G.armB, G.armB2, G.tails, G.capelet, G.capeB]);
 
   // ---- cast shadows (anime cel shadows that follow the real shapes)
   buf.castShadow([G.skirt, G.corset], [G.legF, G.legB], Math.round(3 * K));
@@ -1789,6 +1867,7 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
   buf.castShadow([G.face, G.hairF], [G.neck], Math.round(3 * K));
   buf.castShadow([G.capelet, G.cap, G.collar, G.capFar], [G.torso, G.armF, G.armB2], Math.round(1.8 * K));
   buf.castShadow([G.corset], [G.torso], Math.round(1 * K), 0, 1);
+  if (faceDecal) faceDecal();
 }
 
 // ---- 40-anim.js
@@ -2997,6 +3076,7 @@ class Player {
       wind: -this.vx * 0.8 - 14 + Math.sin(this.game.time * 0.7) * 10,
       lift: this.vy < 0 ? 400 : this.vy > 200 ? -900 : 0,
       groundY: (x) => groundTop(x),
+      skirt: { grounded: this.grounded, vx: this.vx, vy: this.vy, phase: this.phase, state: s },
     });
     this.bladeHits(f);
   }

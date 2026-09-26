@@ -67,7 +67,7 @@ const M = {
 };
 const C = {
   white: palAdd('#ffffff'),
-  eyeWhite: palAdd('#fbf7f7'),
+  eyeWhite: palAdd('#eae6f2'),
   iris: palAdd('#e3122e'),
   irisLt: palAdd('#ff6475'),
   irisDk: palAdd('#7c0617'),
