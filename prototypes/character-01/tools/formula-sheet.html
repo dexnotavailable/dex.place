@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#d9d8e0}canvas{image-rendering:pixelated;display:block}</style></head><body>
+<canvas id="c"></canvas>
+<script src="../src/00-core.js"></script>
+<script src="../src/10-raster.js"></script>
+<script src="../src/25-shape.js"></script>
+<script src="../src/30-rig.js"></script>
+<script>
+window.onerror=(m,s,l,c,e)=>{document.title='ERR '+m+' @'+l;};
+const q=new URLSearchParams(location.search);
+const S=+(q.get('s')||4), cw=+(q.get('w')||150), ch=+(q.get('h')||220), cy0=+(q.get('y')||208), cxo=+(q.get('x')||-4);
+const P = window.P = {
+  idle: mkPose({ rx:-2, hp:0.16, sp:-0.09, hd:0.14, fx:7, ft:0.45, bx:-3, fa:1.9, fr:0.98, bd:2.78, gp:11, ba:1.75, br:0.62, be:1, hb:1 }),
+  stance: mkPose({ ry:-58, sp:0.3, hd:-0.05, fx:15, bx:-15, bt:0.5, gr:1, g2:1, fa:0.95, fr:0.62, ba:0.95, br:0.7, bd:0.32, fc:1 }),
+  over: mkPose({ ry:-58, sp:0.35, fx:18, fy:0, bx:-18, bt:0.4, fa:-1.9, fr:0.95, bd:-2.4, fe:-1, fc:4 }),
+};
+const list = (q.get('list')||'ref:idle:rig,ref:idle:silhouette,ref:idle:values,ref:idle:full').split(',').map(t=>t.split(':'));
+const cv=document.getElementById('c'); cv.width=cw*S*list.length; cv.height=ch*S; const cx=cv.getContext('2d'); cx.imageSmoothingEnabled=false;
+cx.fillStyle='#dcdbe3'; cx.fillRect(0,0,cv.width,cv.height);
+list.forEach(([cos,pn,mode],k)=>{
+  COSTUME=COSTUMES[cos];
+  const buf=new PixBuf(540,420); const hero=new Heroine();
+  const J=solveRig(P[pn], null);
+  for(let i=0;i<300;i++){ hero.simulate(J, 0, 0, 1, 1/60, {wind:-14}); }
+  buf.reset();
+  if (mode==='rig') LMK_DEBUG=[];
+  drawHeroine(buf,J,hero,270,330,0,0,1,{});
+  buf.finish([], {mode: mode==='rig' ? 'values' : mode});
+  const sx0 = 270-cw/2+cxo, sy0 = 330-cy0;
+  if (mode==='rig') cx.globalAlpha=0.25;
+  cx.drawImage(buf.canvas, sx0, sy0, cw, ch, k*cw*S, 0, cw*S, ch*S);
+  cx.globalAlpha=1;
+  if (mode==='rig') {
+    const X=(x)=>k*cw*S+(x-sx0)*S, Y=(y)=>(y-sy0)*S;
+    cx.lineWidth=2; cx.strokeStyle='#2c6bd6';
+    for (const d of LMK_DEBUG) if (d.bone) { cx.beginPath(); cx.moveTo(X(d.bone[0]),Y(d.bone[1])); cx.lineTo(X(d.bone[2]),Y(d.bone[3])); cx.stroke(); }
+    for (const d of LMK_DEBUG) if (d.p) { cx.fillStyle=d.j?'#e0a100':'#d4152f'; cx.beginPath(); cx.arc(X(d.p[0]),Y(d.p[1]),4,0,7); cx.fill(); }
+    LMK_DEBUG=null;
+  }
+});
+document.title='OK';
+</script></body></html>
