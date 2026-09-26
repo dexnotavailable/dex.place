@@ -42,3 +42,8 @@
 ## r12: eye lower lid + second catchlight, lit far cheek, lip highlight -> B
 
 ## r13: hair cap/bangs strands radiating from the crown, clumped angel ring -> B (helmet read gone)
+
+## r14: costume -> split (dark top, white knee socks) + lifted dark blouse; literal 'death above, angel below'. Variants stay toggleable.
+
+## r15: one bold sheen per hair clump (no dashes), red lining at tattered tips -> B
+- Static art now at game-sprite ref level (demons / pink katana); next gains come from motion.

@@ -8,7 +8,7 @@ window.onerror=(m,s,l)=>{document.title='ERR '+m+' @'+s+':'+l;};
 (async()=>{
   for(const f of files){ await new Promise((res)=>{const s=document.createElement('script'); s.src=src+'/'+f; s.onload=res; s.onerror=res; document.body.appendChild(s);}); }
   await new Promise((res)=>{const s=document.createElement('script'); s.src='poses.js'; s.onload=res; document.body.appendChild(s);});
-  const pose=q.get('pose')||'idle', cos=q.get('costume')||'ref', mode=q.get('mode')||'full';
+  const pose=q.get('pose')||'idle', cos=q.get('costume')||'split', mode=q.get('mode')||'full';
   if (typeof COSTUMES!=='undefined' && COSTUMES[cos]) COSTUME=COSTUMES[cos];
   const buf=new PixBuf(540,420); const hero=new Heroine(); hero.blinkT=1e9;
   const J=solveRig(POSES[pose], null);

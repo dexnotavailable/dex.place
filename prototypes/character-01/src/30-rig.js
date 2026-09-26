@@ -418,7 +418,7 @@ const COSTUMES = {
   split: { name: 'Death over angel', top: 'blouseDk', legs: 'sockW', halo: true },
   mono: { name: 'All dark', top: 'blouseDk', legs: 'sock', halo: true },
 };
-let COSTUME = COSTUMES.ref;
+let COSTUME = COSTUMES.split;
 
 let LMK_DEBUG = null; // set to [] to collect landmark points for the formula overlay
 function contourPts(list, bones) {
@@ -468,7 +468,12 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
     for (let i = 0; i < out.length; i++) { const f = (i % chn.n) / chn.n; if (f > 0.4 && i % 3 === 1) out[i] = [out[i][0], out[i][1], 0]; }
     const m = TAILS[t].m;
     buf.litR = 2.6;
-    buf.poly(spline(out, true, 3), m === 'lining' ? M.lining.s : m === 'cloakS' ? M.cloak.s : M.cloak.b, G.tails);
+    const tipY = sp[sp.length - 1][1], topY = sp[0][1];
+    buf.poly(spline(out, true, 3), (x, y) => {
+      const f = (y - topY) / ((tipY - topY) || 1);
+      if (f > 0.72) return m === 'lining' ? M.lining.b : M.lining.s; // torn edge shows the red lining
+      return m === 'lining' ? M.lining.s : m === 'cloakS' ? M.cloak.s : M.cloak.b;
+    }, G.tails);
     buf.litR = 0;
   }
   // ---- back cape
@@ -507,12 +512,13 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
     buf.poly(spline(ribbonOutline(sp, ws, 'point'), true, 3), tn === 's' ? M.hair.s : tn === 'd' ? M.hair.d : M.hair.b, G.hair);
     buf.litR = 0;
   }
-  for (const [si, i0, i1, off, c1, c2] of [[1, 1, 7, -2.2, M.hair.l, M.hair.h], [2, 2, 8, -1.6, M.hair.l, M.hair.l], [3, 1, 6, -1.8, M.hair.l, M.hair.h], [2, 1, 7, 2.2, M.hair.d, M.hair.d]]) {
+  // one clean sheen per clump, strongest near the crown, fading down the length
+  for (const [si, i0, i1, off] of [[1, 1, 4, -2.0], [3, 1, 3, -1.6]]) {
     const chn = hero.hair[si];
     const sp = [];
     for (let i = i0; i <= Math.min(i1, chn.n - 1); i++) { const q = toB(chn.x[i], chn.y[i]); sp.push([q[0] + off, q[1]]); }
     const pl = spline(sp, false, 3);
-    for (let i = 0; i + 3 < pl.length; i += 2) if ((i >> 1) % 5 !== 3) buf.line(pl[i], pl[i + 1], pl[i + 2], pl[i + 3], i < 8 ? c2 : c1, G.hair);
+    for (let i = 0; i + 3 < pl.length; i += 2) buf.line(pl[i], pl[i + 1], pl[i + 2], pl[i + 3], i < pl.length * 0.35 ? M.hair.h : M.hair.l, G.hair);
   }
 
   const drawHand = (wx, wy, ux, uy, mode, g, dim) => {
@@ -914,7 +920,7 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
   cfg[G.corset] = lit({ shine: 0.95, pow: 30 });
   cfg[G.skirt] = lit({ dn2: 0.55 });
   cfg[G.face] = lit({ up: 0.16, dn: 0.2, dn2: 0.62, str: 0.45 });
-  cfg[G.hair] = lit({ shine: 0.9, pow: 18 });
+  cfg[G.hair] = lit({ up: 0.16, dn: 0.12, dn2: 0.45, str: 0.8 });
   cfg[G.hairFront] = lit({ shine: 0.9, pow: 18 });
   cfg[G.hairF] = lit({ up: 0.45, dn: 0.1, dn2: 0.4, str: 0.7 });
   for (const g of [G.tails, G.capeB, G.capelet, G.cap, G.capFar]) cfg[g] = lit({});

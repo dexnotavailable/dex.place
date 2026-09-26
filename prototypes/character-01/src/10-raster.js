@@ -60,7 +60,7 @@ const M = {
   sock: material({ line: '#06060b', d: '#101019', s: '#191a28', b: '#25263a', l: '#3b3d57', h: '#5d6085' }),
   shoe: material({ line: '#040406', s: '#0b0b11', b: '#16161f', l: '#34354a', h: '#6a6c88' }),
   red: material({ line: '#2a0210', lite: '#6e0a22', d: '#4c0619', s: '#8a0b25', b: '#d0132e', l: '#ff4150', h: '#ffa08f' }),
-  blouseDk: material({ line: '#07070d', d: '#121320', s: '#1c1d2c', b: '#2b2d41', l: '#3f4259', h: '#5a5e7a' }),
+  blouseDk: material({ line: '#08080f', d: '#171828', s: '#23253a', b: '#34374f', l: '#4d5272', h: '#727aa0' }),
   sockW: material({ line: '#373952', lite: '#7c7f9c', d: '#8c8fa8', s: '#bcbfd3', b: '#e5e6f0', l: '#f5f6fb', h: '#ffffff' }),
   sleeve: material({ line: '#08080f', d: '#13131e', s: '#1e1f2d', b: '#2b2d40', l: '#44475f', h: '#646888' }),
   metal: material({ line: '#060509', s: '#15141a', b: '#2a2933', l: '#4a4858', h: '#8d8aa0' }),
