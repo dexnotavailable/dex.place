@@ -526,9 +526,10 @@ const G = { tails: 1, capeB: 2, halo: 3, hair: 4, armB: 5, bladeB: 6, legB: 7, s
 // eyes/mouth well enough, so these are drawn like sprite frames and swapped by expression.
 const FACE = {
   skin: [
-    '...2222222222222.',
-    '..22222222222222.',
-    '.2222222222222222',
+    '...22222222222...',
+    '..2222222222222..',
+    '.222222222222222.',
+    '32222222222222222',
     '32222222222222222',
     '32222222222222222',
     '32222222222222222',
@@ -540,33 +541,33 @@ const FACE = {
     '32222222222222222',
     '32222222222222222',
     '.3222222222222222',
-    '.3222222222222222',
-    '..322222222222222',
-    '...32222222222222',
-    '.....3222222222..',
-    '......322222222..',
-    '........3222222..',
-    '..........2222...',
-    '..........322....',
+    '.322222222222222.',
+    '..32222222222222.',
+    '...332222222222..',
+    '....3322222222...',
+    '.....33222222....',
+    '......332222.....',
+    '.......3322......',
   ],
-  // eyes start one row under the bangs so the lash line reads on skin, not on hair
+  // eyes as pixel-anime refs draw them at this size: 3 rows, wider than tall, a thick lash bar
+  // running past the outer corner, dark iris top, bright bottom, one highlight, a soft lower lid
   near: {
-    open:   ['L.....', 'LLLLLL', 'eDWPDe', 'eIPPIe', '.IiiI.', 'k.....'],
-    focus:  ['......', 'L.....', 'LLLLLL', 'eIWPIe', '.IiiI.', 'k.....'],
-    closed: ['......', '......', '......', 'L....L', '.LLLL.', '......'],
-    pain:   ['......', 'LL....', '..LL..', '....LL', '..LL..', 'LL....'],
+    open:   ['LLLLLL.', '.LDDPWD', '.eIPPIe', '..IiiI.', '...kk..'],
+    focus:  ['.......', 'LLLLLL.', '.LDIWIe', '..IiiI.', '...kk..'],
+    closed: ['.......', '.......', 'L.....L', '.LLLLL.', '.......'],
+    pain:   ['LL.....', '..LL...', 'LL.....', '.......', '.......'],
   },
   far: {
-    open:   ['...L', 'LLLL', 'eDWD', 'eIPI', '.Ii.', '...k'],
-    focus:  ['....', '...L', 'LLLL', 'eIWI', '.Ii.', '...k'],
-    closed: ['....', '....', '....', 'L..L', '.LL.', '....'],
-    pain:   ['....', '..LL', '.L..', 'L...', '.L..', '..LL'],
+    open:   ['.LLLLL', 'DDPWL.', 'eIPIe.', '.Ii...', '..k...'],
+    focus:  ['......', '.LLLLL', 'DIWIe.', '.Ii...', '..k...'],
+    closed: ['......', '......', 'L...L.', '.LLL..'],
+    pain:   ['...LL.', '.LL...', '...LL.', '......'],
   },
-  blush: ['bb.......bb'],
-  mouth: { smirk: ['kmm'], open: ['kmm', '.nn'] },
+  blush: ['.bbb.....bb'],
+  mouth: { smirk: ['mm'], open: ['mm', 'nn'] },
   nose: ['s'],
 };
-const FACE_AT = { near: [2, 8], far: [12, 8], blush: [3, 14], mouth: [10, 17], nose: [15, 14] };
+const FACE_AT = { near: [0, 9], far: [11, 9], blush: [1, 14], mouth: [8, 18], nose: [11, 15] };
 const FACE_W = 17, FACE_CX = 9, FACE_CY = 12;
 // feature stamps stay upright (pixel-exact); only their anchors follow the head
 function faceFrame(expr, mouth) {
@@ -967,7 +968,7 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
     const h0 = Hd(0, 0), h1 = Hd(10, 0), tilt = Math.atan2(h1[1] - h0[1], h1[0] - h0[0]);
     const rot = Math.abs(tilt) < 0.24 ? 0 : clamp(tilt, -0.6, 0.6), cr = Math.cos(rot), sr = Math.sin(rot);
     const cx0 = Math.round(h0[0]), cy0 = Math.round(h0[1]);
-    const FS = { 1: M.skin.l, 2: M.skin.b, 3: M.skin.s, 4: M.skin.d };
+    const FS = { 1: M.face.l, 2: M.face.b, 3: M.face.s, 4: M.face.d };
     for (let y = cy0 - 18; y <= cy0 + 18; y++) for (let x = cx0 - 18; x <= cx0 + 18; x++) {
       const dx = x - cx0, dy = y - cy0;
       const c = Math.round(dx * cr + dy * sr) + FACE_CX, r = Math.round(-dx * sr + dy * cr) + FACE_CY;
@@ -984,7 +985,7 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
       rows.forEach((row, r) => { for (let c = 0; c < row.length; c++) if (row[c] !== '.') feats.push(x0 + c, y0 + r, row[c]); });
     }
     faceDecal = () => {
-      const MAP = { b: C.blush, L: C.lash, D: C.irisDk, I: C.iris, i: C.irisLt, P: C.pupil, W: C.white, e: C.eyeWhite, k: M.skin.d, s: M.skin.s, m: C.mouth, n: C.mouthIn, l: M.skin.l };
+      const MAP = { b: C.blush, L: C.lash, D: C.irisDk, I: C.iris, i: C.irisLt, P: C.pupil, W: C.white, e: C.eyeWhite, k: M.face.d, s: M.face.s, m: C.lip, n: C.mouthIn, l: M.face.l };
       for (let i = 0; i < feats.length; i += 3) {
         if (feats[i] < 0 || feats[i + 1] < 0 || feats[i] >= buf.w || feats[i + 1] >= buf.h) continue;
         const j = feats[i + 1] * buf.w + feats[i];

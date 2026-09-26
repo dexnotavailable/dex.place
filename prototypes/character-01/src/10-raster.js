@@ -52,6 +52,8 @@ function tone(m, v) {
 
 const M = {
   skin: material({ line: '#5a2130', lite: '#ad5a63', d: '#c9735f', s: '#eda28a', b: '#fbd9c6', l: '#ffecdf', h: '#fff9f4' }),
+  // face: paler, pinker skin with a soft rose contour (pixel anime faces never get the dark body line)
+  face: material({ line: '#b8687a', lite: '#e7a9a6', d: '#e3a096', s: '#f5c6ba', b: '#fde7de', l: '#fff4ee', h: '#fffaf7' }),
   hair: material({ line: '#06060f', d: '#0b0d1b', s: '#141830', b: '#1f2543', l: '#353f6c', h: '#6d7cb8' }),
   cloak: material({ line: '#0b0508', d: '#120a0e', s: '#1b1016', b: '#291a21', l: '#3e2831', h: '#5a3b47' }),
   lining: material({ line: '#16030b', s: '#330a15', b: '#521222', l: '#7a1d31' }),
@@ -76,12 +78,13 @@ const C = {
   mouth: palAdd('#9c3c4e'),
   mouthIn: palAdd('#5a1426'),
   blush: palAdd('#f7b3ad'),
+  lip: palAdd('#c9677a'),
   glowRed: palAdd('#ff4a5c'),
   glowCore: palAdd('#fff0f2'),
 };
 PAL.line[C.eyeWhite] = M.skin.line; PAL.line[C.iris] = M.skin.line; PAL.line[C.lash] = C.lash;
 for (const k of ['glowRed', 'glowCore']) { PAL.noOut[C[k]] = 1; PAL.ink[C[k]] = 0; }
-for (const k of ['eyeWhite', 'iris', 'irisLt', 'irisDk', 'pupil', 'lash', 'mouth', 'mouthIn', 'blush', 'white']) PAL.ink[C[k]] = 0;
+for (const k of ['eyeWhite', 'iris', 'irisLt', 'irisDk', 'pupil', 'lash', 'mouth', 'mouthIn', 'blush', 'lip', 'white']) PAL.ink[C[k]] = 0;
 
 // ---------------------------------------------------------------------------
 // PixBuf: scanline rasterizer that writes palette indices with no

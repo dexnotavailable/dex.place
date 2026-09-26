@@ -104,3 +104,13 @@ held longer -> recover/cancel; each end pose is the next wind-up; arcs alternate
   the strike's first frame. Result: all 5 hits of the string land.
 - Sentinel hovers at chest height (was knee height, under every horizontal cut).
 - One impact frame per 24 ticks (slam + heavy hit were double-flashing).
+
+## F4: face vs pixel-anime refs (user refs 6-9, native grids recovered: pitch 11.6/16/6/3) -> C2
+- Measured a clean 3/4 anime face (Yuki, dexcode assets, mirrored) for placement: chin and mouth at
+  ~50% of face width (ours pointed at ~70%, the main 'wonky' read), near eye from the cheek edge,
+  far eye touching the far contour, mouth ~2/3 of the way from eyes to chin.
+- From the pixel refs at our scale: no dark outline on the face (soft rose contour), two pale pink
+  skin tones, eyes wider than tall with a lash bar past the outer corner, 3-row iris dark->bright
+  with one highlight, tiny dusky-pink mouth, solid blush under the eyes, a skin row between bangs
+  and lashes.
+- New M.face material (paler/pinker than body skin, line #b8687a) and C.lip.
