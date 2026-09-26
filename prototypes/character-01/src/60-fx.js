@@ -68,8 +68,8 @@ class FX {
     this.cracks.push({ lines: [mk(1), mk(-1), mk(0.6), mk(-0.6)], life: 0.9, max: 0.9 });
   }
   // anime impact frame: two ticks of negative + radial lines, then lines over the real image
-  impactFrame(x, y) { this.impactF = { x, y, t: 0, seed: Math.random() * 1000 }; }
-  realTick() { if (this.impactF && ++this.impactF.t > 6) this.impactF = null; }
+  impactFrame(x, y) { if (this.impactCd > 0) return; this.impactF = { x, y, t: 0, seed: Math.random() * 1000 }; this.impactCd = 24; }
+  realTick() { if (this.impactCd > 0) this.impactCd--; if (this.impactF && ++this.impactF.t > 6) this.impactF = null; }
   arc(x, y, r, a0, a1, w, life = 0.16, col = 'red') { this.arcs.push({ x, y, r, a0, a1, w, life, max: life, col }); }
   num(x, y, v, crit) { this.nums.push({ x: x + rand(-8, 8), y, v: Math.round(v), crit, life: 0.9, max: 0.9, vy: -130 }); }
   word(x, y, text, col) { this.words.push({ x, y, text, col, life: 0.8, max: 0.8 }); }

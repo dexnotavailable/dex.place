@@ -197,7 +197,7 @@ function drawWorld(ctx, camX, camY, vw, vh) {
 const PATTERNS = ['aimed', 'burst', 'spread', 'orb'];
 class Sentinel {
   constructor(x, y, phase) {
-    this.x = x; this.baseY = y; this.y = y - 40; this.phase = phase || 0;
+    this.x = x; this.baseY = y; this.y = y - 66; this.phase = phase || 0;
     this.maxHp = 2400; this.hp = this.maxHp; this.dead = 0; this.flash = 0; this.stagger = 0; this.shakeT = 0;
     this.cool = 1.6 + (phase || 0); this.charge = 0; this.aim = Math.PI; this.shots = 0; this.pat = 0;
     this.r = 15;
@@ -207,7 +207,7 @@ class Sentinel {
   update(dt, game) {
     const pl = game.player;
     this.phase += dt;
-    this.y = this.baseY - 40 + Math.sin(this.phase * 1.6) * 3;
+    this.y = this.baseY - 66 + Math.sin(this.phase * 1.6) * 3;
     if (this.flash > 0) this.flash -= dt;
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.dead > 0) {

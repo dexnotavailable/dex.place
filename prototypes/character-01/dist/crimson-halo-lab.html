@@ -1187,6 +1187,23 @@ const SKIRT_SEQ = {
   turn: [['flare0', 3], ['flare1', 4], ['flare2', 4]],
 };
 
+// Keep the blade out of the floor: pivot it at the grip so the tip stops at floorY - margin
+// (floorY in the same local space as J). Slams pass margin 0 so the tip lands exactly on it.
+function clampBlade(J, floorY, margin) {
+  const Lt = J.tpy - J.gy, len = Math.hypot(J.tpx - J.gx, J.tpy - J.gy);
+  if (!(len > 1) || J.gy + Lt <= floorY - margin) return false;
+  const sn = clamp((floorY - margin - J.gy) / len, -1, 1);
+  const a = J.bdx >= 0 ? Math.asin(sn) : Math.PI - Math.asin(sn);
+  const bl = J.bl ?? 1, k = len;
+  J.bdx = Math.cos(a); J.bdy = Math.sin(a);
+  const pmD = Math.hypot(J.pmx - J.gx, J.pmy - J.gy), rgD = RIG.ring * bl, bbD = RIG.bladeBase * bl;
+  J.pmx = J.gx - J.bdx * pmD; J.pmy = J.gy - J.bdy * pmD;
+  J.rgx = J.pmx + J.bdx * rgD; J.rgy = J.pmy + J.bdy * rgD;
+  J.bbx = J.pmx + J.bdx * bbD; J.bby = J.pmy + J.bdy * bbD;
+  J.tpx = J.gx + J.bdx * k; J.tpy = J.gy + J.bdy * k;
+  return true;
+}
+
 class Heroine {
   constructor() {
     this.hair = HAIR.map((h, i) => new Chain(h.len, SEG_HAIR, { stiff: [0.46, 0.04], damp: 0.93, grav: 760, drag: 1.1, rest: Math.PI / 2 + 0.12 + i * 0.02, curl: h.wave }));
@@ -1357,44 +1374,52 @@ const G = { tails: 1, capeB: 2, halo: 3, hair: 4, armB: 5, bladeB: 6, legB: 7, s
 // eyes/mouth well enough, so these are drawn like sprite frames and swapped by expression.
 const FACE = {
   skin: [
-    '...22222222222222..',
-    '..2222222222222222.',
-    '.222222222222222222',
-    '3222222222222222222',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3322222222222222221',
-    '3322222222222222221',
-    '3322222222222222211',
-    '3322222222222222211',
-    '.3bbb222222222bb21.',
-    '..332222222222221..',
-    '...3322222222221...',
-    '.....33222222221...',
-    '.......332222221...',
-    '.........332221....',
-    '...........322.....',
+    '...2222222222222.',
+    '..22222222222222.',
+    '.2222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '.3222222222222222',
+    '.3222222222222222',
+    '..322222222222222',
+    '...32222222222222',
+    '.....3222222222..',
+    '......322222222..',
+    '........3222222..',
+    '..........2222...',
+    '..........322....',
   ],
+  // eyes start one row under the bangs so the lash line reads on skin, not on hair
   near: {
-    open:   ['L.LLLLL.', '.LLDDDLL', 'LeDPPWDe', '.eIPPPIe', '..IIiII.', '...kkk..', '........'],
-    focus:  ['........', 'L.LLLLL.', '.LLDDDLL', 'LeDPPWIe', '..IIiII.', '...kkk..', '........'],
-    closed: ['........', '........', '........', '........', 'L.....LL', '.LLLLLL.', '........'],
-    pain:   ['........', '.L......', '..LL....', '....LL..', '..LL....', '.L......', '........'],
+    open:   ['L.....', 'LLLLLL', 'eDWPDe', 'eIPPIe', '.IiiI.', 'k.....'],
+    focus:  ['......', 'L.....', 'LLLLLL', 'eIWPIe', '.IiiI.', 'k.....'],
+    closed: ['......', '......', '......', 'L....L', '.LLLL.', '......'],
+    pain:   ['......', 'LL....', '..LL..', '....LL', '..LL..', 'LL....'],
   },
   far: {
-    open:   ['.LLL.L', 'LLDDLL', 'eDPWL.', 'eIPIe.', '.IiI..', '.kk...', '......'],
-    focus:  ['......', '.LLL.L', 'LLDDLL', 'eDPWL.', '.IiI..', '.kk...', '......'],
-    closed: ['......', '......', '......', '......', 'LL..LL', '.LLLL.', '......'],
-    pain:   ['......', '....L.', '..LL..', 'LL....', '..LL..', '....L.', '......'],
+    open:   ['...L', 'LLLL', 'eDWD', 'eIPI', '.Ii.', '...k'],
+    focus:  ['....', '...L', 'LLLL', 'eIWI', '.Ii.', '...k'],
+    closed: ['....', '....', '....', 'L..L', '.LL.', '....'],
+    pain:   ['....', '..LL', '.L..', 'L...', '.L..', '..LL'],
   },
-  mouth: { smirk: ['....', '...k', '.mm.', '..l.'], open: ['....', '.mm.', '.nn.', '..l.'] },
-  nose: ['.l', 's.'],
+  blush: ['bb.......bb'],
+  mouth: { smirk: ['kmm'], open: ['kmm', '.nn'] },
+  nose: ['s'],
 };
+const FACE_AT = { near: [2, 8], far: [12, 8], blush: [3, 14], mouth: [10, 17], nose: [15, 14] };
+const FACE_W = 17, FACE_CX = 9, FACE_CY = 12;
+// feature stamps stay upright (pixel-exact); only their anchors follow the head
+function faceFrame(expr, mouth) {
+  return [[FACE.near[expr], FACE_AT.near], [FACE.far[expr], FACE_AT.far], [FACE.blush, FACE_AT.blush], [FACE.mouth[mouth], FACE_AT.mouth], [FACE.nose, FACE_AT.nose]];
+}
 
 function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
   let faceDecal = null;
@@ -1783,23 +1808,36 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
       return M.hair.b;
     }, G.hairF);
     // face: authored pixel frames, not rig. Skin sprite now, features after lighting.
-    const fa = Hd(0, 0), fx0 = Math.round(fa[0]) - 9, fy0 = Math.round(fa[1]) - 12;
-    const FS = { 1: M.skin.l, 2: M.skin.b, 3: M.skin.s, 4: M.skin.d, b: C.blush };
-    FACE.skin.forEach((row, r) => { for (let c = 0; c < row.length; c++) if (row[c] !== '.') buf.put(fx0 + c, fy0 + r, FS[row[c]], G.face); });
-    buf.bump();
     const expr = p.fc === 3 ? 'pain' : hero.blink > 0 || p.fc === 2 ? 'closed' : p.fc === 1 || p.fc === 4 ? 'focus' : 'open';
     const mouth = p.fc === 3 || p.fc === 4 ? 'open' : 'smirk';
+    const stamps = faceFrame(expr, mouth);
+    // the skin shape turns with the head (nearest pixel) once the tilt is visible; level-ish stays exact
+    const h0 = Hd(0, 0), h1 = Hd(10, 0), tilt = Math.atan2(h1[1] - h0[1], h1[0] - h0[0]);
+    const rot = Math.abs(tilt) < 0.24 ? 0 : clamp(tilt, -0.6, 0.6), cr = Math.cos(rot), sr = Math.sin(rot);
+    const cx0 = Math.round(h0[0]), cy0 = Math.round(h0[1]);
+    const FS = { 1: M.skin.l, 2: M.skin.b, 3: M.skin.s, 4: M.skin.d };
+    for (let y = cy0 - 18; y <= cy0 + 18; y++) for (let x = cx0 - 18; x <= cx0 + 18; x++) {
+      const dx = x - cx0, dy = y - cy0;
+      const c = Math.round(dx * cr + dy * sr) + FACE_CX, r = Math.round(-dx * sr + dy * cr) + FACE_CY;
+      if (r < 0 || r >= FACE.skin.length || c < 0 || c >= FACE_W) continue;
+      const ch = FACE.skin[r][c];
+      if (ch === '.' || x < 0 || y < 0 || x >= buf.w || y >= buf.h) continue;
+      buf.put(x, y, FS[ch], G.face);
+    }
+    buf.bump();
+    const feats = [];
+    for (const [rows, [ax, ay]] of stamps) {
+      const u = ax - FACE_CX, v = ay - FACE_CY;
+      const x0 = cx0 + Math.round(u * cr - v * sr), y0 = cy0 + Math.round(u * sr + v * cr);
+      rows.forEach((row, r) => { for (let c = 0; c < row.length; c++) if (row[c] !== '.') feats.push(x0 + c, y0 + r, row[c]); });
+    }
     faceDecal = () => {
-      const MAP = { L: C.lash, D: C.irisDk, I: C.iris, i: C.irisLt, P: C.pupil, W: C.white, e: C.eyeWhite, k: M.skin.d, s: M.skin.s, m: C.mouth, n: C.mouthIn, l: M.skin.l };
-      const put = (x0, y0, rows) => rows.forEach((row, r) => { for (let c = 0; c < row.length; c++) {
-        const ch = row[c]; if (ch === '.') continue;
-        const x = x0 + c, y = y0 + r; if (x < 0 || y < 0 || x >= buf.w || y >= buf.h) continue;
-        if (buf.grp[y * buf.w + x] === G.face && buf.col[y * buf.w + x]) buf.col[y * buf.w + x] = MAP[ch];
-      } });
-      put(fx0 + 1, fy0 + 8, FACE.near[expr]);
-      put(fx0 + 12, fy0 + 8, FACE.far[expr]);
-      put(fx0 + 11, fy0 + 16, FACE.mouth[mouth]);
-      put(fx0 + 16, fy0 + 13, FACE.nose);
+      const MAP = { b: C.blush, L: C.lash, D: C.irisDk, I: C.iris, i: C.irisLt, P: C.pupil, W: C.white, e: C.eyeWhite, k: M.skin.d, s: M.skin.s, m: C.mouth, n: C.mouthIn, l: M.skin.l };
+      for (let i = 0; i < feats.length; i += 3) {
+        if (feats[i] < 0 || feats[i + 1] < 0 || feats[i] >= buf.w || feats[i + 1] >= buf.h) continue;
+        const j = feats[i + 1] * buf.w + feats[i];
+        if (buf.grp[j] === G.face && buf.col[j]) buf.col[j] = MAP[feats[i + 2]];
+      }
     };
     buf.litR = 3.5;
     buf.poly(spline(FIG.bangs.map(([x, y, sh]) => { const q = Hd(x, y); if (sh === 0) q.push(0); return q; }), true, 3), (x, y) => {
@@ -1892,21 +1930,23 @@ P.land = mkPose({ yaw: 0.55, ry: -54, sp: 0.34, hd: -0.1, fx: -10, bx: 11, bt: 0
 
 // light string -------------------------------------------------------------
 P.a1w = mkPose({ yaw: 0.85, rx: -2, ry: -64, hp: 0.02, sp: -0.1, hd: 0.05, fx: -12, bx: 10, bt: 0.2, fa: 0.9, fr: 0.7, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: -2.25, br: 0.78, be: 1, bd: -2.55, gp: 12, fc: 1 });
-P.a1s = mkPose({ yaw: 0.5, rx: 6, ry: -60, hp: 0.05, sp: 0.32, hd: -0.08, fx: -15, bx: 20, bt: 0.4, fa: 1.9, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.5, br: 1.0, be: 1, bd: 0.72, gp: 12, fc: 4 });
-P.a1f = mkPose({ yaw: 0.5, rx: 8, ry: -59, hp: 0.05, sp: 0.38, hd: -0.05, fx: -15, bx: 20, bt: 0.4, fa: 2.0, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 1.25, br: 0.88, be: 1, bd: 1.85, gp: 12, fc: 1 });
+P.a1s = mkPose({ yaw: 0.5, rx: 6, ry: -58, hp: 0.05, sp: 0.4, hd: -0.08, fx: -15, bx: 20, bt: 0.4, fa: 1.9, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.5, br: 1.0, be: 1, bd: 0.3, gp: 12, fc: 4 });
+P.a1f = mkPose({ yaw: 0.35, rx: 8, ry: -56, hp: 0.05, sp: 0.48, hd: -0.02, fx: -15, bx: 20, bt: 0.4, fa: 2.0, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.95, br: 0.88, be: 1, bd: 0.38, gp: 12, fc: 1 });
 
-P.a2w = mkPose({ yaw: 0.6, rx: 4, ry: -58, hp: 0.05, sp: 0.36, hd: -0.05, fx: -14, bx: 18, bt: 0.4, fa: 2.1, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: 1.95, br: 0.92, be: 1, bd: 2.75, gp: 12, fc: 1 });
-P.a2s = mkPose({ yaw: 0.55, rx: 8, ry: -66, hp: -0.04, sp: -0.02, hd: -0.18, fx: -10, bx: 20, bt: 0.6, fa: 2.3, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: -1.05, br: 0.96, be: -1, bd: -1.0, gp: 12, fc: 4 });
-P.a2f = mkPose({ yaw: 0.6, rx: 9, ry: -67, hp: -0.04, sp: -0.12, hd: -0.2, fx: -10, bx: 20, bt: 0.6, fa: 2.3, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 0, ba: -1.75, br: 0.92, be: -1, bd: -1.95, gp: 12, fc: 1 });
+P.a2w = mkPose({ yaw: 0.3, rx: 4, ry: -52, hp: 0.05, sp: 0.52, hd: -0.05, fx: -14, bx: 18, bt: 0.4, fa: 2.1, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: 1.05, br: 0.92, be: 1, bd: 0.3, gp: 12, fc: 1 });
+P.a2s = mkPose({ yaw: 0.55, rx: 8, ry: -66, hp: -0.04, sp: -0.02, hd: -0.18, fx: -10, bx: 20, bt: 0.6, fa: 2.3, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: -1.05, br: 0.96, be: -1, bd: -1.2, gp: 12, fc: 4 });
+P.a2f = mkPose({ yaw: 0.6, rx: 9, ry: -67, hp: -0.04, sp: -0.12, hd: -0.2, fx: -10, bx: 20, bt: 0.6, fa: 2.3, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 0, ba: -1.75, br: 0.92, be: -1, bd: -2.15, gp: 12, fc: 1 });
 
-P.a3w = mkPose({ yaw: 0.9, rx: 2, ry: -62, hp: 0.06, sp: 0.1, hd: 0.1, fx: -12, bx: 12, bt: 0.3, fa: 0.6, fr: 0.7, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: 2.9, br: 0.95, be: 1, bd: 3.1, gp: 12, fc: 1 });
-P.a3s1 = mkPose({ yaw: 0.3, rx: 8, ry: -61, hp: 0.04, sp: 0.24, hd: -0.05, fx: -14, bx: 18, bt: 0.4, fa: 2.4, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.08, br: 1.0, be: 1, bd: 0.04, gp: 12, fc: 4 });
+P.a3w = mkPose({ yaw: 0.9, rx: 2, ry: -62, hp: 0.06, sp: 0.1, hd: 0.1, fx: -12, bx: 12, bt: 0.3, fa: 0.6, fr: 0.7, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: -3.0, br: 0.95, be: 1, bd: -3.2, gp: 12, fc: 1 });
+P.a3t = mkPose({ yaw: 0.12, rx: 4, ry: -62, hp: 0.04, sp: 0.16, hd: 0, fx: -13, bx: 16, bt: 0.4, fa: 1.6, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: -1.0, br: 0.9, be: 1, bd: -1.25, bl: 0.4, gp: 12, fc: 4 });
+P.a3s1 = mkPose({ yaw: 0.3, rx: 8, ry: -56, hp: 0.04, sp: 0.24, hd: -0.05, fx: -14, bx: 18, bt: 0.4, fa: 2.4, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.08, br: 1.0, be: 1, bd: 0.04, gp: 12, fc: 4 });
 P.a3m = mkPose({ yaw: 0.15, rx: 9, ry: -62, hp: 0.04, sp: 0.2, hd: -0.05, fx: -12, bx: 16, bt: 0.4, fa: 2.2, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: -1.4, br: 0.7, be: -1, bd: -1.6, bl: 0.35, gp: 12, fc: 1 });
-P.a3s2 = mkPose({ yaw: 0.35, rx: 12, ry: -60, hp: 0.04, sp: 0.3, hd: -0.05, fx: -14, bx: 20, bt: 0.4, fa: 2.4, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.3, br: 1.0, be: 1, bd: 0.28, bl: 1, gp: 12, fc: 4 });
+P.a3s2 = mkPose({ yaw: 0.35, rx: 12, ry: -56, hp: 0.04, sp: 0.3, hd: -0.05, fx: -14, bx: 20, bt: 0.4, fa: 2.4, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.3, br: 1.0, be: 1, bd: 0.28, bl: 1, gp: 12, fc: 4 });
 
 P.a4w = mkPose({ yaw: 0.8, rx: 0, ry: -74, hp: -0.04, sp: -0.16, hd: -0.2, fx: -8, fy: -2, bx: 10, by: -4, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: -1, ba: -1.62, br: 0.92, be: -1, bd: -2.2, gp: 12, fc: 1 });
-P.a4s = mkPose({ yaw: 0.5, rx: 10, ry: -50, hp: 0.08, sp: 0.58, hd: -0.2, fx: -18, bx: 24, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: 1, ba: 0.62, br: 1.0, be: 1, bd: 0.92, gp: 12, fc: 4 });
-P.a4h = mkPose({ yaw: 0.5, rx: 10, ry: -49, hp: 0.08, sp: 0.62, hd: -0.26, fx: -18, bx: 24, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: 1, ba: 0.7, br: 1.0, be: 1, bd: 0.98, gp: 12, fc: 1 });
+P.a4w2 = mkPose({ yaw: 0.85, rx: -1, ry: -79, hp: -0.06, sp: -0.24, hd: -0.26, fx: -7, fy: -3, bx: 9, by: -5, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: -1, ba: -1.72, br: 0.95, be: -1, bd: -2.4, gp: 12, fc: 4 });
+P.a4s = mkPose({ yaw: 0.5, rx: 10, ry: -50, hp: 0.08, sp: 0.58, hd: -0.2, fx: -18, bx: 24, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: 1, ba: 0.62, br: 1.0, be: 1, bd: 0.46, gp: 12, fc: 4 });
+P.a4h = mkPose({ yaw: 0.5, rx: 10, ry: -49, hp: 0.08, sp: 0.62, hd: -0.26, fx: -18, bx: 24, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: 1, ba: 0.7, br: 1.0, be: 1, bd: 0.48, gp: 12, fc: 1 });
 
 // charge (the reference crouch) and the lunge it releases into
 P.charge = mkPose({ yaw: 0.45, rx: 2, ry: -41, hp: 0.1, sp: 0.72, hd: -0.5, fx: 17, bx: -19, bt: 0.85, fa: 1.22, fr: 1.0, fe: 1, hf: 0, gr: 2, g2: 0, bz: 0, ba: -2.45, br: 0.82, be: 1, bd: -2.78, gp: 12, fc: 1 });
@@ -1926,8 +1966,8 @@ P.guard = mkPose({ yaw: 0.65, rx: -1, ry: -63, hp: 0.02, sp: 0.06, hd: -0.05, fx
 P.deflect = mkPose({ yaw: 0.55, rx: 5, ry: -61, hp: 0.04, sp: 0.2, hd: -0.05, fx: -14, bx: 18, bt: 0.4, gr: 3, g2: 1, bz: 1, fe: 1, ba: 0.4, br: 0.9, be: 1, bd: 0.55, gp: 12, fc: 4 });
 
 // taking hits
-P.flinch = mkPose({ yaw: 0.75, rx: -5, ry: -64, hp: -0.1, sp: -0.3, hd: -0.32, fx: -8, bx: 12, bt: 0.3, fa: 2.2, fr: 0.8, fe: 1, gr: 2, bz: 0, ba: 2.3, br: 0.9, be: 1, bd: 2.9, gp: 11, fc: 3 });
-P.airHit = mkPose({ yaw: 0.7, rx: -6, ry: -64, hp: -0.2, sp: -0.6, hd: -0.3, fx: 10, fy: -10, ft: 0.6, bx: 4, by: -18, bt: 0.8, fa: 2.6, fr: 0.9, gr: 2, bz: 0, ba: -2.6, br: 0.9, be: 1, bd: -2.9, gp: 11, fc: 3 });
+P.flinch = mkPose({ yaw: 0.75, rx: -5, ry: -64, hp: -0.1, sp: -0.3, hd: 0.04, fx: -8, bx: 12, bt: 0.3, fa: 2.2, fr: 0.8, fe: 1, gr: 2, bz: 0, ba: 2.3, br: 0.9, be: 1, bd: 2.9, gp: 11, fc: 3 });
+P.airHit = mkPose({ yaw: 0.7, rx: -6, ry: -64, hp: -0.2, sp: -0.6, hd: 0.18, fx: 10, fy: -10, ft: 0.6, bx: 4, by: -18, bt: 0.8, fa: 2.6, fr: 0.9, gr: 2, bz: 0, ba: -2.6, br: 0.9, be: 1, bd: -2.9, gp: 11, fc: 3 });
 P.down = mkPose({ yaw: 0.6, rx: -14, ry: -9, hp: -1.25, sp: -1.45, hd: 0.2, fx: 30, fy: 0, ft: -0.2, bx: 22, by: -6, bt: 0.2, kb: 1, fa: 2.4, fr: 0.9, fe: 1, gr: 2, bz: 0, ba: 1.6, br: 0.9, be: 1, bd: 0.2, gp: 11, fc: 2 });
 P.kneel = mkPose({ yaw: 0.6, rx: -2, ry: -40, hp: 0.1, sp: 0.5, hd: -0.3, fx: 14, bx: -16, by: 0, bt: 1.2, fa: 1.3, fr: 0.95, fe: 1, hf: 0, gr: 2, bz: 0, ba: 1.8, br: 0.9, be: 1, bd: 2.4, gp: 11, fc: 1 });
 
@@ -1949,14 +1989,14 @@ const K_ = (t, p, e = 'inOutSine') => ({ t, p, e });
 
 // Move table. hit: [from, to, {dmg, kb, stop, shake, kind}], move: [[f0, f1, px]]
 const ANIM = {
-  atk1: { len: 30, cancel: 13, next: 'atk2', keys: [K_(0, P.ready), K_(5, P.a1w, 'inQuad'), K_(9, P.a1s, 'outExpo'), K_(17, P.a1f, 'outCubic'), K_(30, P.ready, 'inOutSine')],
-    hit: [[6, 10, { dmg: 118, kb: 70, stop: 4, shake: 2 }]], move: [[4, 9, 22]], swing: 5 },
-  atk2: { len: 28, cancel: 13, next: 'atk3', keys: [K_(0, P.a1f), K_(5, P.a2w, 'inQuad'), K_(9, P.a2s, 'outExpo'), K_(16, P.a2f, 'outCubic'), K_(28, P.ready, 'inOutSine')],
-    hit: [[6, 10, { dmg: 132, kb: 60, stop: 4, shake: 2, lift: 160 }]], move: [[4, 9, 16]], swing: 5 },
-  atk3: { len: 34, cancel: 20, next: 'atk4', keys: [K_(0, P.a2f), K_(5, P.a3w, 'inBack'), K_(9, P.a3s1, 'outExpo'), K_(13, P.a3m, 'lin'), K_(17, P.a3s2, 'outExpo'), K_(34, P.ready, 'inOutSine')],
-    hit: [[7, 10, { dmg: 86, kb: 40, stop: 3, shake: 1 }], [15, 18, { dmg: 104, kb: 90, stop: 5, shake: 2 }]], move: [[4, 9, 14], [13, 17, 14]], swing: 5, swing2: 13 },
-  atk4: { len: 46, cancel: 30, next: null, keys: [K_(0, P.a3s2), K_(9, P.a4w, 'outCubic'), K_(13, P.a4s, 'inExpo'), K_(22, P.a4h, 'lin'), K_(46, P.ready, 'inOutSine')],
-    hit: [[11, 15, { dmg: 320, kb: 260, stop: 10, shake: 7, heavy: true }]], move: [[6, 13, 30]], swing: 10, impact: 13 },
+  atk1: { len: 32, cancel: 17, next: 'atk2', keys: [K_(0, P.ready), K_(5, P.a1w, 'outCubic'), K_(7, P.a1w, 'lin'), K_(10, P.a1s, 'outExpo'), K_(12, P.a1s, 'lin'), K_(19, P.a1f, 'outCubic'), K_(24, P.a1f, 'lin'), K_(32, P.ready, 'inOutSine')],
+    hit: [[6, 11, { dmg: 118, kb: 70, stop: 4, shake: 2 }]], move: [[6, 11, 22]], swing: 7 },
+  atk2: { len: 30, cancel: 16, next: 'atk3', keys: [K_(0, P.a1f), K_(4, P.a2w, 'outCubic'), K_(6, P.a2w, 'lin'), K_(9, P.a2s, 'outExpo'), K_(11, P.a2s, 'lin'), K_(17, P.a2f, 'outCubic'), K_(22, P.a2f, 'lin'), K_(30, P.ready, 'inOutSine')],
+    hit: [[5, 10, { dmg: 132, kb: 60, stop: 4, shake: 2, lift: 160 }]], move: [[5, 10, 16]], swing: 6 },
+  atk3: { len: 36, cancel: 24, next: 'atk4', keys: [K_(0, P.a2f), K_(5, P.a3w, 'outCubic'), K_(7, P.a3w, 'lin'), K_(9, P.a3t, 'inQuad'), K_(11, P.a3s1, 'outExpo'), K_(14, P.a3m, 'inOutSine'), K_(17, P.a3s2, 'outExpo'), K_(20, P.a3s2, 'lin'), K_(36, P.ready, 'inOutSine')],
+    hit: [[7, 12, { dmg: 86, kb: 40, stop: 3, shake: 1 }], [13, 18, { dmg: 104, kb: 90, stop: 5, shake: 2 }]], move: [[5, 11, 14], [14, 18, 14]], swing: 7, swing2: 14 },
+  atk4: { len: 48, cancel: 34, next: null, keys: [K_(0, P.a3s2), K_(10, P.a4w, 'outCubic'), K_(16, P.a4w2, 'inOutSine'), K_(19, P.a4s, 'inExpo'), K_(30, P.a4h, 'lin'), K_(48, P.ready, 'inOutSine')],
+    hit: [[15, 21, { dmg: 320, kb: 260, stop: 10, shake: 7, heavy: true }]], move: [[8, 18, 30]], swing: 15, impact: 19 },
   lunge: { len: 34, cancel: 22, keys: [K_(0, P.charge), K_(3, P.lunge, 'outExpo'), K_(14, P.lunge, 'lin'), K_(20, P.lungeF, 'outCubic'), K_(34, P.ready, 'inOutSine')],
     hit: [[2, 13, { dmg: 460, kb: 300, stop: 8, shake: 6, heavy: true, pierce: true }]], move: [[1, 12, 150]], swing: 1 },
   airAtk: { len: 22, cancel: 14, keys: [K_(0, P.fall), K_(4, P.airW, 'inQuad'), K_(8, P.airS, 'outExpo'), K_(22, P.fall, 'inOutSine')],
@@ -2277,7 +2317,7 @@ function drawWorld(ctx, camX, camY, vw, vh) {
 const PATTERNS = ['aimed', 'burst', 'spread', 'orb'];
 class Sentinel {
   constructor(x, y, phase) {
-    this.x = x; this.baseY = y; this.y = y - 40; this.phase = phase || 0;
+    this.x = x; this.baseY = y; this.y = y - 66; this.phase = phase || 0;
     this.maxHp = 2400; this.hp = this.maxHp; this.dead = 0; this.flash = 0; this.stagger = 0; this.shakeT = 0;
     this.cool = 1.6 + (phase || 0); this.charge = 0; this.aim = Math.PI; this.shots = 0; this.pat = 0;
     this.r = 15;
@@ -2287,7 +2327,7 @@ class Sentinel {
   update(dt, game) {
     const pl = game.player;
     this.phase += dt;
-    this.y = this.baseY - 40 + Math.sin(this.phase * 1.6) * 3;
+    this.y = this.baseY - 66 + Math.sin(this.phase * 1.6) * 3;
     if (this.flash > 0) this.flash -= dt;
     if (this.shakeT > 0) this.shakeT -= dt;
     if (this.dead > 0) {
@@ -2444,8 +2484,8 @@ class FX {
     this.cracks.push({ lines: [mk(1), mk(-1), mk(0.6), mk(-0.6)], life: 0.9, max: 0.9 });
   }
   // anime impact frame: two ticks of negative + radial lines, then lines over the real image
-  impactFrame(x, y) { this.impactF = { x, y, t: 0, seed: Math.random() * 1000 }; }
-  realTick() { if (this.impactF && ++this.impactF.t > 6) this.impactF = null; }
+  impactFrame(x, y) { if (this.impactCd > 0) return; this.impactF = { x, y, t: 0, seed: Math.random() * 1000 }; this.impactCd = 24; }
+  realTick() { if (this.impactCd > 0) this.impactCd--; if (this.impactF && ++this.impactF.t > 6) this.impactF = null; }
   arc(x, y, r, a0, a1, w, life = 0.16, col = 'red') { this.arcs.push({ x, y, r, a0, a1, w, life, max: life, col }); }
   num(x, y, v, crit) { this.nums.push({ x: x + rand(-8, 8), y, v: Math.round(v), crit, life: 0.9, max: 0.9, vy: -130 }); }
   word(x, y, text, col) { this.words.push({ x, y, text, col, life: 0.8, max: 0.8 }); }
@@ -2992,6 +3032,9 @@ class Player {
       const d = target - (this.moveAcc || 0);
       this.moveAcc = target;
       const pass = this.anim.name === 'skill' || this.anim.name === 'lunge' || this.anim.name === 'counter';
+      // spacing: a greatsword hits best at arm + blade length, so stop stepping in once a target
+      // is inside the sweet spot instead of walking into the hilt
+      if (!pass && d > 0 && this.game.sentinels.some((s) => s.dead <= 0 && (s.x - this.x) * this.dir > 0 && (s.x - this.x) * this.dir < 78 && Math.abs(s.y - (this.y - 60)) < 90)) continue;
       this.moveX(d * this.dir, !pass);
       if (k >= 1) this.moveAcc = 0;
     }
@@ -3223,6 +3266,9 @@ class Player {
     // skid lean when reversing at speed
     const gnd = (fx) => groundTop(this.x + fx * this.dir) - this.y;
     this.J = solveRig(pose, this.grounded ? gnd : null, this.J);
+    // the blade never sinks into the floor; slams stop with the tip on it
+    const slam = this.anim.name === 'atk4' || this.anim.name === 'plungeLand' || this.state === 'burst';
+    clampBlade(this.J, groundTop(this.x + this.J.tpx * this.dir) - this.y, slam ? 0 : 5);
     this.hero.simulate(this.J, this.x, this.y, this.dir, dt, {
       wind: -this.vx * 0.8 - 14 + Math.sin(this.game.time * 0.7) * 10,
       lift: this.vy < 0 ? 400 : this.vy > 200 ? -900 : 0,
@@ -3250,7 +3296,7 @@ class Player {
   }
   bladeWorld() {
     const J = this.J, d = this.dir;
-    return { base: [this.x + J.bbx * d, this.y + J.bby], tip: [this.x + J.tpx * d, this.y + J.tpy] };
+    return { base: [this.x + J.bbx * d, this.y + J.bby], tip: [this.x + J.tpx * d, this.y + J.tpy], grip: [this.x + J.gx * d, this.y + J.gy] };
   }
   bladeHits() {
     const g = this.game, a = this.anim.anim;
@@ -3273,7 +3319,8 @@ class Player {
       const pb = this.prevBlade || bw;
       for (let k = 0; k <= 3; k++) {
         const t = k / 3;
-        segs.push([lerp(pb.base[0], bw.base[0], t), lerp(pb.base[1], bw.base[1], t), lerp(pb.tip[0], bw.tip[0], t), lerp(pb.tip[1], bw.tip[1], t)]);
+        const pg = pb.grip || pb.base, bg = bw.grip || bw.base; // hits count from the hands out
+        segs.push([lerp(pg[0], bg[0], t), lerp(pg[1], bg[1], t), lerp(pb.tip[0], bw.tip[0], t), lerp(pb.tip[1], bw.tip[1], t)]);
       }
       const near = (px, py, r) => {
         for (const [x0, y0, x1, y1] of segs) {
@@ -3659,7 +3706,7 @@ class Game {
   // ---------------------------------------------------------------- demos
   playDemo(name) {
     const S = {
-      combo: [[0, 'attack', 3], [16, 'attack', 3], [32, 'attack', 3], [56, 'attack', 3]],
+      combo: [[0, 'attack', 3], [14, 'attack', 3], [28, 'attack', 3], [42, 'attack', 3], [54, 'attack', 3], [64, 'attack', 3]],
       charge: [[0, 'attack', 70]],
       air: [[0, 'jump', 10], [16, 'attack', 3], [34, 'attack', 3], [58, 'down', 30], [60, 'attack', 3]],
       skill: [[0, 'skill', 3]],

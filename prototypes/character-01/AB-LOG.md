@@ -77,3 +77,30 @@
   radial lines, then red lines over the real image (skipped under reduced motion).
 - Ground cracks on the finisher slam and plunge landing.
 - Old blade trail made opaque (no pink alpha wash), clipped at the floor, tapered by position.
+
+## Protocol change (from here on)
+Every A/B sheet carries a REF row: the user's references cropped at their native pixel grid and
+zoomed by the same factor as ours. Motion rounds put A and B strips of the same frames together.
+
+## F3: face B vs A vs refs -> B
+- A read as mangled: 7-row heavy-lidded eyes sitting on the bangs, pink under-eye smear, blocky
+  jaw shadow, and the upright sprite shearing off a head thrown back ~60 deg in hit poses.
+- B: 5-row eyes one row under the bangs (lash on skin, like the refs), face 2px narrower so hair
+  frames it, 1px jaw shade, thin 3px mouth, blush under the eyes. Skin shape turns with the head
+  past ~14 deg (clamped at 34), feature stamps stay upright at rotated anchors. Hit poses keep the
+  head within ~25 deg of the spine instead of snapping back.
+
+## M1: attack sequence rebuilt from research -> B
+Rules used: wind-up -> 2-3f strike + smear -> held contact (hitstop) -> overshoot follow-through
+held longer -> recover/cancel; each end pose is the next wind-up; arcs alternate
+(cleave down, rising, horizontal x2, overhead slam); only the finisher meets the ground.
+- The blade (~120px from grip) went into the floor on 4 of 6 low keys (tips +8..+59px) and the
+  spin lerped straight through 'blade down'. Re-angled keys; spin gets a foreshortened transit key.
+- Floor guard: blade pivots at the grip so the tip stops 5px above the floor; slams stop on it.
+- Timing: light wind-up 5f + 2f hold, strike 3f, contact hold 2f, follow-through 7f + 5f hold.
+  Slam: 10f rise, 6f hang, 3f drop, 11f hold.
+- Spacing: forward root motion stops once a target is inside blade reach (she was walking into
+  her own hilt, so A only ever landed hit 1). Hits count from the hands out; hit windows open on
+  the strike's first frame. Result: all 5 hits of the string land.
+- Sentinel hovers at chest height (was knee height, under every horizontal cut).
+- One impact frame per 24 ticks (slam + heavy hit were double-flashing).

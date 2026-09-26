@@ -19,21 +19,23 @@ P.land = mkPose({ yaw: 0.55, ry: -54, sp: 0.34, hd: -0.1, fx: -10, bx: 11, bt: 0
 
 // light string -------------------------------------------------------------
 P.a1w = mkPose({ yaw: 0.85, rx: -2, ry: -64, hp: 0.02, sp: -0.1, hd: 0.05, fx: -12, bx: 10, bt: 0.2, fa: 0.9, fr: 0.7, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: -2.25, br: 0.78, be: 1, bd: -2.55, gp: 12, fc: 1 });
-P.a1s = mkPose({ yaw: 0.5, rx: 6, ry: -60, hp: 0.05, sp: 0.32, hd: -0.08, fx: -15, bx: 20, bt: 0.4, fa: 1.9, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.5, br: 1.0, be: 1, bd: 0.72, gp: 12, fc: 4 });
-P.a1f = mkPose({ yaw: 0.5, rx: 8, ry: -59, hp: 0.05, sp: 0.38, hd: -0.05, fx: -15, bx: 20, bt: 0.4, fa: 2.0, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 1.25, br: 0.88, be: 1, bd: 1.85, gp: 12, fc: 1 });
+P.a1s = mkPose({ yaw: 0.5, rx: 6, ry: -58, hp: 0.05, sp: 0.4, hd: -0.08, fx: -15, bx: 20, bt: 0.4, fa: 1.9, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.5, br: 1.0, be: 1, bd: 0.3, gp: 12, fc: 4 });
+P.a1f = mkPose({ yaw: 0.35, rx: 8, ry: -56, hp: 0.05, sp: 0.48, hd: -0.02, fx: -15, bx: 20, bt: 0.4, fa: 2.0, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.95, br: 0.88, be: 1, bd: 0.38, gp: 12, fc: 1 });
 
-P.a2w = mkPose({ yaw: 0.6, rx: 4, ry: -58, hp: 0.05, sp: 0.36, hd: -0.05, fx: -14, bx: 18, bt: 0.4, fa: 2.1, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: 1.95, br: 0.92, be: 1, bd: 2.75, gp: 12, fc: 1 });
-P.a2s = mkPose({ yaw: 0.55, rx: 8, ry: -66, hp: -0.04, sp: -0.02, hd: -0.18, fx: -10, bx: 20, bt: 0.6, fa: 2.3, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: -1.05, br: 0.96, be: -1, bd: -1.0, gp: 12, fc: 4 });
-P.a2f = mkPose({ yaw: 0.6, rx: 9, ry: -67, hp: -0.04, sp: -0.12, hd: -0.2, fx: -10, bx: 20, bt: 0.6, fa: 2.3, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 0, ba: -1.75, br: 0.92, be: -1, bd: -1.95, gp: 12, fc: 1 });
+P.a2w = mkPose({ yaw: 0.3, rx: 4, ry: -52, hp: 0.05, sp: 0.52, hd: -0.05, fx: -14, bx: 18, bt: 0.4, fa: 2.1, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: 1.05, br: 0.92, be: 1, bd: 0.3, gp: 12, fc: 1 });
+P.a2s = mkPose({ yaw: 0.55, rx: 8, ry: -66, hp: -0.04, sp: -0.02, hd: -0.18, fx: -10, bx: 20, bt: 0.6, fa: 2.3, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: -1.05, br: 0.96, be: -1, bd: -1.2, gp: 12, fc: 4 });
+P.a2f = mkPose({ yaw: 0.6, rx: 9, ry: -67, hp: -0.04, sp: -0.12, hd: -0.2, fx: -10, bx: 20, bt: 0.6, fa: 2.3, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 0, ba: -1.75, br: 0.92, be: -1, bd: -2.15, gp: 12, fc: 1 });
 
-P.a3w = mkPose({ yaw: 0.9, rx: 2, ry: -62, hp: 0.06, sp: 0.1, hd: 0.1, fx: -12, bx: 12, bt: 0.3, fa: 0.6, fr: 0.7, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: 2.9, br: 0.95, be: 1, bd: 3.1, gp: 12, fc: 1 });
-P.a3s1 = mkPose({ yaw: 0.3, rx: 8, ry: -61, hp: 0.04, sp: 0.24, hd: -0.05, fx: -14, bx: 18, bt: 0.4, fa: 2.4, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.08, br: 1.0, be: 1, bd: 0.04, gp: 12, fc: 4 });
+P.a3w = mkPose({ yaw: 0.9, rx: 2, ry: -62, hp: 0.06, sp: 0.1, hd: 0.1, fx: -12, bx: 12, bt: 0.3, fa: 0.6, fr: 0.7, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: -3.0, br: 0.95, be: 1, bd: -3.2, gp: 12, fc: 1 });
+P.a3t = mkPose({ yaw: 0.12, rx: 4, ry: -62, hp: 0.04, sp: 0.16, hd: 0, fx: -13, bx: 16, bt: 0.4, fa: 1.6, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: -1.0, br: 0.9, be: 1, bd: -1.25, bl: 0.4, gp: 12, fc: 4 });
+P.a3s1 = mkPose({ yaw: 0.3, rx: 8, ry: -56, hp: 0.04, sp: 0.24, hd: -0.05, fx: -14, bx: 18, bt: 0.4, fa: 2.4, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.08, br: 1.0, be: 1, bd: 0.04, gp: 12, fc: 4 });
 P.a3m = mkPose({ yaw: 0.15, rx: 9, ry: -62, hp: 0.04, sp: 0.2, hd: -0.05, fx: -12, bx: 16, bt: 0.4, fa: 2.2, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 0, bz: 0, ba: -1.4, br: 0.7, be: -1, bd: -1.6, bl: 0.35, gp: 12, fc: 1 });
-P.a3s2 = mkPose({ yaw: 0.35, rx: 12, ry: -60, hp: 0.04, sp: 0.3, hd: -0.05, fx: -14, bx: 20, bt: 0.4, fa: 2.4, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.3, br: 1.0, be: 1, bd: 0.28, bl: 1, gp: 12, fc: 4 });
+P.a3s2 = mkPose({ yaw: 0.35, rx: 12, ry: -56, hp: 0.04, sp: 0.3, hd: -0.05, fx: -14, bx: 20, bt: 0.4, fa: 2.4, fr: 0.8, fe: 1, hf: 1, gr: 2, g2: 1, bz: 1, ba: 0.3, br: 1.0, be: 1, bd: 0.28, bl: 1, gp: 12, fc: 4 });
 
 P.a4w = mkPose({ yaw: 0.8, rx: 0, ry: -74, hp: -0.04, sp: -0.16, hd: -0.2, fx: -8, fy: -2, bx: 10, by: -4, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: -1, ba: -1.62, br: 0.92, be: -1, bd: -2.2, gp: 12, fc: 1 });
-P.a4s = mkPose({ yaw: 0.5, rx: 10, ry: -50, hp: 0.08, sp: 0.58, hd: -0.2, fx: -18, bx: 24, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: 1, ba: 0.62, br: 1.0, be: 1, bd: 0.92, gp: 12, fc: 4 });
-P.a4h = mkPose({ yaw: 0.5, rx: 10, ry: -49, hp: 0.08, sp: 0.62, hd: -0.26, fx: -18, bx: 24, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: 1, ba: 0.7, br: 1.0, be: 1, bd: 0.98, gp: 12, fc: 1 });
+P.a4w2 = mkPose({ yaw: 0.85, rx: -1, ry: -79, hp: -0.06, sp: -0.24, hd: -0.26, fx: -7, fy: -3, bx: 9, by: -5, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: -1, ba: -1.72, br: 0.95, be: -1, bd: -2.4, gp: 12, fc: 4 });
+P.a4s = mkPose({ yaw: 0.5, rx: 10, ry: -50, hp: 0.08, sp: 0.58, hd: -0.2, fx: -18, bx: 24, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: 1, ba: 0.62, br: 1.0, be: 1, bd: 0.46, gp: 12, fc: 4 });
+P.a4h = mkPose({ yaw: 0.5, rx: 10, ry: -49, hp: 0.08, sp: 0.62, hd: -0.26, fx: -18, bx: 24, bt: 0.6, gr: 3, g2: 1, bz: 1, fe: 1, ba: 0.7, br: 1.0, be: 1, bd: 0.48, gp: 12, fc: 1 });
 
 // charge (the reference crouch) and the lunge it releases into
 P.charge = mkPose({ yaw: 0.45, rx: 2, ry: -41, hp: 0.1, sp: 0.72, hd: -0.5, fx: 17, bx: -19, bt: 0.85, fa: 1.22, fr: 1.0, fe: 1, hf: 0, gr: 2, g2: 0, bz: 0, ba: -2.45, br: 0.82, be: 1, bd: -2.78, gp: 12, fc: 1 });
@@ -53,8 +55,8 @@ P.guard = mkPose({ yaw: 0.65, rx: -1, ry: -63, hp: 0.02, sp: 0.06, hd: -0.05, fx
 P.deflect = mkPose({ yaw: 0.55, rx: 5, ry: -61, hp: 0.04, sp: 0.2, hd: -0.05, fx: -14, bx: 18, bt: 0.4, gr: 3, g2: 1, bz: 1, fe: 1, ba: 0.4, br: 0.9, be: 1, bd: 0.55, gp: 12, fc: 4 });
 
 // taking hits
-P.flinch = mkPose({ yaw: 0.75, rx: -5, ry: -64, hp: -0.1, sp: -0.3, hd: -0.32, fx: -8, bx: 12, bt: 0.3, fa: 2.2, fr: 0.8, fe: 1, gr: 2, bz: 0, ba: 2.3, br: 0.9, be: 1, bd: 2.9, gp: 11, fc: 3 });
-P.airHit = mkPose({ yaw: 0.7, rx: -6, ry: -64, hp: -0.2, sp: -0.6, hd: -0.3, fx: 10, fy: -10, ft: 0.6, bx: 4, by: -18, bt: 0.8, fa: 2.6, fr: 0.9, gr: 2, bz: 0, ba: -2.6, br: 0.9, be: 1, bd: -2.9, gp: 11, fc: 3 });
+P.flinch = mkPose({ yaw: 0.75, rx: -5, ry: -64, hp: -0.1, sp: -0.3, hd: 0.04, fx: -8, bx: 12, bt: 0.3, fa: 2.2, fr: 0.8, fe: 1, gr: 2, bz: 0, ba: 2.3, br: 0.9, be: 1, bd: 2.9, gp: 11, fc: 3 });
+P.airHit = mkPose({ yaw: 0.7, rx: -6, ry: -64, hp: -0.2, sp: -0.6, hd: 0.18, fx: 10, fy: -10, ft: 0.6, bx: 4, by: -18, bt: 0.8, fa: 2.6, fr: 0.9, gr: 2, bz: 0, ba: -2.6, br: 0.9, be: 1, bd: -2.9, gp: 11, fc: 3 });
 P.down = mkPose({ yaw: 0.6, rx: -14, ry: -9, hp: -1.25, sp: -1.45, hd: 0.2, fx: 30, fy: 0, ft: -0.2, bx: 22, by: -6, bt: 0.2, kb: 1, fa: 2.4, fr: 0.9, fe: 1, gr: 2, bz: 0, ba: 1.6, br: 0.9, be: 1, bd: 0.2, gp: 11, fc: 2 });
 P.kneel = mkPose({ yaw: 0.6, rx: -2, ry: -40, hp: 0.1, sp: 0.5, hd: -0.3, fx: 14, bx: -16, by: 0, bt: 1.2, fa: 1.3, fr: 0.95, fe: 1, hf: 0, gr: 2, bz: 0, ba: 1.8, br: 0.9, be: 1, bd: 2.4, gp: 11, fc: 1 });
 
@@ -76,14 +78,14 @@ const K_ = (t, p, e = 'inOutSine') => ({ t, p, e });
 
 // Move table. hit: [from, to, {dmg, kb, stop, shake, kind}], move: [[f0, f1, px]]
 const ANIM = {
-  atk1: { len: 30, cancel: 13, next: 'atk2', keys: [K_(0, P.ready), K_(5, P.a1w, 'inQuad'), K_(9, P.a1s, 'outExpo'), K_(17, P.a1f, 'outCubic'), K_(30, P.ready, 'inOutSine')],
-    hit: [[6, 10, { dmg: 118, kb: 70, stop: 4, shake: 2 }]], move: [[4, 9, 22]], swing: 5 },
-  atk2: { len: 28, cancel: 13, next: 'atk3', keys: [K_(0, P.a1f), K_(5, P.a2w, 'inQuad'), K_(9, P.a2s, 'outExpo'), K_(16, P.a2f, 'outCubic'), K_(28, P.ready, 'inOutSine')],
-    hit: [[6, 10, { dmg: 132, kb: 60, stop: 4, shake: 2, lift: 160 }]], move: [[4, 9, 16]], swing: 5 },
-  atk3: { len: 34, cancel: 20, next: 'atk4', keys: [K_(0, P.a2f), K_(5, P.a3w, 'inBack'), K_(9, P.a3s1, 'outExpo'), K_(13, P.a3m, 'lin'), K_(17, P.a3s2, 'outExpo'), K_(34, P.ready, 'inOutSine')],
-    hit: [[7, 10, { dmg: 86, kb: 40, stop: 3, shake: 1 }], [15, 18, { dmg: 104, kb: 90, stop: 5, shake: 2 }]], move: [[4, 9, 14], [13, 17, 14]], swing: 5, swing2: 13 },
-  atk4: { len: 46, cancel: 30, next: null, keys: [K_(0, P.a3s2), K_(9, P.a4w, 'outCubic'), K_(13, P.a4s, 'inExpo'), K_(22, P.a4h, 'lin'), K_(46, P.ready, 'inOutSine')],
-    hit: [[11, 15, { dmg: 320, kb: 260, stop: 10, shake: 7, heavy: true }]], move: [[6, 13, 30]], swing: 10, impact: 13 },
+  atk1: { len: 32, cancel: 17, next: 'atk2', keys: [K_(0, P.ready), K_(5, P.a1w, 'outCubic'), K_(7, P.a1w, 'lin'), K_(10, P.a1s, 'outExpo'), K_(12, P.a1s, 'lin'), K_(19, P.a1f, 'outCubic'), K_(24, P.a1f, 'lin'), K_(32, P.ready, 'inOutSine')],
+    hit: [[6, 11, { dmg: 118, kb: 70, stop: 4, shake: 2 }]], move: [[6, 11, 22]], swing: 7 },
+  atk2: { len: 30, cancel: 16, next: 'atk3', keys: [K_(0, P.a1f), K_(4, P.a2w, 'outCubic'), K_(6, P.a2w, 'lin'), K_(9, P.a2s, 'outExpo'), K_(11, P.a2s, 'lin'), K_(17, P.a2f, 'outCubic'), K_(22, P.a2f, 'lin'), K_(30, P.ready, 'inOutSine')],
+    hit: [[5, 10, { dmg: 132, kb: 60, stop: 4, shake: 2, lift: 160 }]], move: [[5, 10, 16]], swing: 6 },
+  atk3: { len: 36, cancel: 24, next: 'atk4', keys: [K_(0, P.a2f), K_(5, P.a3w, 'outCubic'), K_(7, P.a3w, 'lin'), K_(9, P.a3t, 'inQuad'), K_(11, P.a3s1, 'outExpo'), K_(14, P.a3m, 'inOutSine'), K_(17, P.a3s2, 'outExpo'), K_(20, P.a3s2, 'lin'), K_(36, P.ready, 'inOutSine')],
+    hit: [[7, 12, { dmg: 86, kb: 40, stop: 3, shake: 1 }], [13, 18, { dmg: 104, kb: 90, stop: 5, shake: 2 }]], move: [[5, 11, 14], [14, 18, 14]], swing: 7, swing2: 14 },
+  atk4: { len: 48, cancel: 34, next: null, keys: [K_(0, P.a3s2), K_(10, P.a4w, 'outCubic'), K_(16, P.a4w2, 'inOutSine'), K_(19, P.a4s, 'inExpo'), K_(30, P.a4h, 'lin'), K_(48, P.ready, 'inOutSine')],
+    hit: [[15, 21, { dmg: 320, kb: 260, stop: 10, shake: 7, heavy: true }]], move: [[8, 18, 30]], swing: 15, impact: 19 },
   lunge: { len: 34, cancel: 22, keys: [K_(0, P.charge), K_(3, P.lunge, 'outExpo'), K_(14, P.lunge, 'lin'), K_(20, P.lungeF, 'outCubic'), K_(34, P.ready, 'inOutSine')],
     hit: [[2, 13, { dmg: 460, kb: 300, stop: 8, shake: 6, heavy: true, pierce: true }]], move: [[1, 12, 150]], swing: 1 },
   airAtk: { len: 22, cancel: 14, keys: [K_(0, P.fall), K_(4, P.airW, 'inQuad'), K_(8, P.airS, 'outExpo'), K_(22, P.fall, 'inOutSine')],

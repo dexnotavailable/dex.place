@@ -255,7 +255,7 @@ class Game {
   // ---------------------------------------------------------------- demos
   playDemo(name) {
     const S = {
-      combo: [[0, 'attack', 3], [16, 'attack', 3], [32, 'attack', 3], [56, 'attack', 3]],
+      combo: [[0, 'attack', 3], [14, 'attack', 3], [28, 'attack', 3], [42, 'attack', 3], [54, 'attack', 3], [64, 'attack', 3]],
       charge: [[0, 'attack', 70]],
       air: [[0, 'jump', 10], [16, 'attack', 3], [34, 'attack', 3], [58, 'down', 30], [60, 'attack', 3]],
       skill: [[0, 'skill', 3]],

@@ -193,6 +193,9 @@ class Player {
       const d = target - (this.moveAcc || 0);
       this.moveAcc = target;
       const pass = this.anim.name === 'skill' || this.anim.name === 'lunge' || this.anim.name === 'counter';
+      // spacing: a greatsword hits best at arm + blade length, so stop stepping in once a target
+      // is inside the sweet spot instead of walking into the hilt
+      if (!pass && d > 0 && this.game.sentinels.some((s) => s.dead <= 0 && (s.x - this.x) * this.dir > 0 && (s.x - this.x) * this.dir < 78 && Math.abs(s.y - (this.y - 60)) < 90)) continue;
       this.moveX(d * this.dir, !pass);
       if (k >= 1) this.moveAcc = 0;
     }
@@ -424,6 +427,9 @@ class Player {
     // skid lean when reversing at speed
     const gnd = (fx) => groundTop(this.x + fx * this.dir) - this.y;
     this.J = solveRig(pose, this.grounded ? gnd : null, this.J);
+    // the blade never sinks into the floor; slams stop with the tip on it
+    const slam = this.anim.name === 'atk4' || this.anim.name === 'plungeLand' || this.state === 'burst';
+    clampBlade(this.J, groundTop(this.x + this.J.tpx * this.dir) - this.y, slam ? 0 : 5);
     this.hero.simulate(this.J, this.x, this.y, this.dir, dt, {
       wind: -this.vx * 0.8 - 14 + Math.sin(this.game.time * 0.7) * 10,
       lift: this.vy < 0 ? 400 : this.vy > 200 ? -900 : 0,
@@ -451,7 +457,7 @@ class Player {
   }
   bladeWorld() {
     const J = this.J, d = this.dir;
-    return { base: [this.x + J.bbx * d, this.y + J.bby], tip: [this.x + J.tpx * d, this.y + J.tpy] };
+    return { base: [this.x + J.bbx * d, this.y + J.bby], tip: [this.x + J.tpx * d, this.y + J.tpy], grip: [this.x + J.gx * d, this.y + J.gy] };
   }
   bladeHits() {
     const g = this.game, a = this.anim.anim;
@@ -474,7 +480,8 @@ class Player {
       const pb = this.prevBlade || bw;
       for (let k = 0; k <= 3; k++) {
         const t = k / 3;
-        segs.push([lerp(pb.base[0], bw.base[0], t), lerp(pb.base[1], bw.base[1], t), lerp(pb.tip[0], bw.tip[0], t), lerp(pb.tip[1], bw.tip[1], t)]);
+        const pg = pb.grip || pb.base, bg = bw.grip || bw.base; // hits count from the hands out
+        segs.push([lerp(pg[0], bg[0], t), lerp(pg[1], bg[1], t), lerp(pb.tip[0], bw.tip[0], t), lerp(pb.tip[1], bw.tip[1], t)]);
       }
       const near = (px, py, r) => {
         for (const [x0, y0, x1, y1] of segs) {

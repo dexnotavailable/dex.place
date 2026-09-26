@@ -339,6 +339,23 @@ const SKIRT_SEQ = {
   turn: [['flare0', 3], ['flare1', 4], ['flare2', 4]],
 };
 
+// Keep the blade out of the floor: pivot it at the grip so the tip stops at floorY - margin
+// (floorY in the same local space as J). Slams pass margin 0 so the tip lands exactly on it.
+function clampBlade(J, floorY, margin) {
+  const Lt = J.tpy - J.gy, len = Math.hypot(J.tpx - J.gx, J.tpy - J.gy);
+  if (!(len > 1) || J.gy + Lt <= floorY - margin) return false;
+  const sn = clamp((floorY - margin - J.gy) / len, -1, 1);
+  const a = J.bdx >= 0 ? Math.asin(sn) : Math.PI - Math.asin(sn);
+  const bl = J.bl ?? 1, k = len;
+  J.bdx = Math.cos(a); J.bdy = Math.sin(a);
+  const pmD = Math.hypot(J.pmx - J.gx, J.pmy - J.gy), rgD = RIG.ring * bl, bbD = RIG.bladeBase * bl;
+  J.pmx = J.gx - J.bdx * pmD; J.pmy = J.gy - J.bdy * pmD;
+  J.rgx = J.pmx + J.bdx * rgD; J.rgy = J.pmy + J.bdy * rgD;
+  J.bbx = J.pmx + J.bdx * bbD; J.bby = J.pmy + J.bdy * bbD;
+  J.tpx = J.gx + J.bdx * k; J.tpy = J.gy + J.bdy * k;
+  return true;
+}
+
 class Heroine {
   constructor() {
     this.hair = HAIR.map((h, i) => new Chain(h.len, SEG_HAIR, { stiff: [0.46, 0.04], damp: 0.93, grav: 760, drag: 1.1, rest: Math.PI / 2 + 0.12 + i * 0.02, curl: h.wave }));
@@ -509,44 +526,52 @@ const G = { tails: 1, capeB: 2, halo: 3, hair: 4, armB: 5, bladeB: 6, legB: 7, s
 // eyes/mouth well enough, so these are drawn like sprite frames and swapped by expression.
 const FACE = {
   skin: [
-    '...22222222222222..',
-    '..2222222222222222.',
-    '.222222222222222222',
-    '3222222222222222222',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3222222222222222221',
-    '3322222222222222221',
-    '3322222222222222221',
-    '3322222222222222211',
-    '3322222222222222211',
-    '.3bbb222222222bb21.',
-    '..332222222222221..',
-    '...3322222222221...',
-    '.....33222222221...',
-    '.......332222221...',
-    '.........332221....',
-    '...........322.....',
+    '...2222222222222.',
+    '..22222222222222.',
+    '.2222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '32222222222222222',
+    '.3222222222222222',
+    '.3222222222222222',
+    '..322222222222222',
+    '...32222222222222',
+    '.....3222222222..',
+    '......322222222..',
+    '........3222222..',
+    '..........2222...',
+    '..........322....',
   ],
+  // eyes start one row under the bangs so the lash line reads on skin, not on hair
   near: {
-    open:   ['L.LLLLL.', '.LLDDDLL', 'LeDPPWDe', '.eIPPPIe', '..IIiII.', '...kkk..', '........'],
-    focus:  ['........', 'L.LLLLL.', '.LLDDDLL', 'LeDPPWIe', '..IIiII.', '...kkk..', '........'],
-    closed: ['........', '........', '........', '........', 'L.....LL', '.LLLLLL.', '........'],
-    pain:   ['........', '.L......', '..LL....', '....LL..', '..LL....', '.L......', '........'],
+    open:   ['L.....', 'LLLLLL', 'eDWPDe', 'eIPPIe', '.IiiI.', 'k.....'],
+    focus:  ['......', 'L.....', 'LLLLLL', 'eIWPIe', '.IiiI.', 'k.....'],
+    closed: ['......', '......', '......', 'L....L', '.LLLL.', '......'],
+    pain:   ['......', 'LL....', '..LL..', '....LL', '..LL..', 'LL....'],
   },
   far: {
-    open:   ['.LLL.L', 'LLDDLL', 'eDPWL.', 'eIPIe.', '.IiI..', '.kk...', '......'],
-    focus:  ['......', '.LLL.L', 'LLDDLL', 'eDPWL.', '.IiI..', '.kk...', '......'],
-    closed: ['......', '......', '......', '......', 'LL..LL', '.LLLL.', '......'],
-    pain:   ['......', '....L.', '..LL..', 'LL....', '..LL..', '....L.', '......'],
+    open:   ['...L', 'LLLL', 'eDWD', 'eIPI', '.Ii.', '...k'],
+    focus:  ['....', '...L', 'LLLL', 'eIWI', '.Ii.', '...k'],
+    closed: ['....', '....', '....', 'L..L', '.LL.', '....'],
+    pain:   ['....', '..LL', '.L..', 'L...', '.L..', '..LL'],
   },
-  mouth: { smirk: ['....', '...k', '.mm.', '..l.'], open: ['....', '.mm.', '.nn.', '..l.'] },
-  nose: ['.l', 's.'],
+  blush: ['bb.......bb'],
+  mouth: { smirk: ['kmm'], open: ['kmm', '.nn'] },
+  nose: ['s'],
 };
+const FACE_AT = { near: [2, 8], far: [12, 8], blush: [3, 14], mouth: [10, 17], nose: [15, 14] };
+const FACE_W = 17, FACE_CX = 9, FACE_CY = 12;
+// feature stamps stay upright (pixel-exact); only their anchors follow the head
+function faceFrame(expr, mouth) {
+  return [[FACE.near[expr], FACE_AT.near], [FACE.far[expr], FACE_AT.far], [FACE.blush, FACE_AT.blush], [FACE.mouth[mouth], FACE_AT.mouth], [FACE.nose, FACE_AT.nose]];
+}
 
 function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
   let faceDecal = null;
@@ -935,23 +960,36 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
       return M.hair.b;
     }, G.hairF);
     // face: authored pixel frames, not rig. Skin sprite now, features after lighting.
-    const fa = Hd(0, 0), fx0 = Math.round(fa[0]) - 9, fy0 = Math.round(fa[1]) - 12;
-    const FS = { 1: M.skin.l, 2: M.skin.b, 3: M.skin.s, 4: M.skin.d, b: C.blush };
-    FACE.skin.forEach((row, r) => { for (let c = 0; c < row.length; c++) if (row[c] !== '.') buf.put(fx0 + c, fy0 + r, FS[row[c]], G.face); });
-    buf.bump();
     const expr = p.fc === 3 ? 'pain' : hero.blink > 0 || p.fc === 2 ? 'closed' : p.fc === 1 || p.fc === 4 ? 'focus' : 'open';
     const mouth = p.fc === 3 || p.fc === 4 ? 'open' : 'smirk';
+    const stamps = faceFrame(expr, mouth);
+    // the skin shape turns with the head (nearest pixel) once the tilt is visible; level-ish stays exact
+    const h0 = Hd(0, 0), h1 = Hd(10, 0), tilt = Math.atan2(h1[1] - h0[1], h1[0] - h0[0]);
+    const rot = Math.abs(tilt) < 0.24 ? 0 : clamp(tilt, -0.6, 0.6), cr = Math.cos(rot), sr = Math.sin(rot);
+    const cx0 = Math.round(h0[0]), cy0 = Math.round(h0[1]);
+    const FS = { 1: M.skin.l, 2: M.skin.b, 3: M.skin.s, 4: M.skin.d };
+    for (let y = cy0 - 18; y <= cy0 + 18; y++) for (let x = cx0 - 18; x <= cx0 + 18; x++) {
+      const dx = x - cx0, dy = y - cy0;
+      const c = Math.round(dx * cr + dy * sr) + FACE_CX, r = Math.round(-dx * sr + dy * cr) + FACE_CY;
+      if (r < 0 || r >= FACE.skin.length || c < 0 || c >= FACE_W) continue;
+      const ch = FACE.skin[r][c];
+      if (ch === '.' || x < 0 || y < 0 || x >= buf.w || y >= buf.h) continue;
+      buf.put(x, y, FS[ch], G.face);
+    }
+    buf.bump();
+    const feats = [];
+    for (const [rows, [ax, ay]] of stamps) {
+      const u = ax - FACE_CX, v = ay - FACE_CY;
+      const x0 = cx0 + Math.round(u * cr - v * sr), y0 = cy0 + Math.round(u * sr + v * cr);
+      rows.forEach((row, r) => { for (let c = 0; c < row.length; c++) if (row[c] !== '.') feats.push(x0 + c, y0 + r, row[c]); });
+    }
     faceDecal = () => {
-      const MAP = { L: C.lash, D: C.irisDk, I: C.iris, i: C.irisLt, P: C.pupil, W: C.white, e: C.eyeWhite, k: M.skin.d, s: M.skin.s, m: C.mouth, n: C.mouthIn, l: M.skin.l };
-      const put = (x0, y0, rows) => rows.forEach((row, r) => { for (let c = 0; c < row.length; c++) {
-        const ch = row[c]; if (ch === '.') continue;
-        const x = x0 + c, y = y0 + r; if (x < 0 || y < 0 || x >= buf.w || y >= buf.h) continue;
-        if (buf.grp[y * buf.w + x] === G.face && buf.col[y * buf.w + x]) buf.col[y * buf.w + x] = MAP[ch];
-      } });
-      put(fx0 + 1, fy0 + 8, FACE.near[expr]);
-      put(fx0 + 12, fy0 + 8, FACE.far[expr]);
-      put(fx0 + 11, fy0 + 16, FACE.mouth[mouth]);
-      put(fx0 + 16, fy0 + 13, FACE.nose);
+      const MAP = { b: C.blush, L: C.lash, D: C.irisDk, I: C.iris, i: C.irisLt, P: C.pupil, W: C.white, e: C.eyeWhite, k: M.skin.d, s: M.skin.s, m: C.mouth, n: C.mouthIn, l: M.skin.l };
+      for (let i = 0; i < feats.length; i += 3) {
+        if (feats[i] < 0 || feats[i + 1] < 0 || feats[i] >= buf.w || feats[i + 1] >= buf.h) continue;
+        const j = feats[i + 1] * buf.w + feats[i];
+        if (buf.grp[j] === G.face && buf.col[j]) buf.col[j] = MAP[feats[i + 2]];
+      }
     };
     buf.litR = 3.5;
     buf.poly(spline(FIG.bangs.map(([x, y, sh]) => { const q = Hd(x, y); if (sh === 0) q.push(0); return q; }), true, 3), (x, y) => {
