@@ -52,6 +52,7 @@ class Game {
     if (!s.hit(v, this)) return;
     this.fx.num(x, y - 18, v, crit);
     this.fx.impact(x, y, rand(0, TAU), heavy || crit);
+    if (heavy) { this.fx.impactFrame(x, y); this.hitstop = Math.max(this.hitstop, 5); }
     AUDIO.play(heavy || crit ? 'hitHeavy' : 'hit');
   }
   spawnAfterimage(col, life, alpha) {
@@ -78,6 +79,7 @@ class Game {
   step(dt) {
     this.runDemo();
     Input.tick();
+    this.fx.realTick();
     this.time += dt;
     if (this.shakeT > 0) { this.shakeT -= dt; if (this.shakeT <= 0) this.shakeA = 0; }
     if (this.hitstop > 0) { this.hitstop--; this.fx.update(dt * 0.15); return; }

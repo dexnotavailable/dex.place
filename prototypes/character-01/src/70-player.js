@@ -33,6 +33,7 @@ class Player {
   // ------------------------------------------------------------------ helpers
   enter(state, anim, blend = 4) {
     this.state = state; this.st = 0; this.hitIndex = -1; this.hitSet.clear(); this.moveAcc = 0;
+    this._smears = new Set(); this._glinted = false; this._path = [];
     if (anim !== undefined) this.anim.play(anim, blend);
   }
   inputDir() { return (Input.isDown('right') ? 1 : 0) - (Input.isDown('left') ? 1 : 0); }
@@ -158,6 +159,9 @@ class Player {
       this._impacted = true;
       const tip = this.bladeWorld().tip;
       this.game.fx.shock(tip[0], groundTop(tip[0]), true);
+      this.game.fx.crack(tip[0], groundTop(tip[0]));
+      this.game.fx.impactFrame(tip[0], groundTop(tip[0]) - 10);
+      this.game.hitstop = Math.max(this.game.hitstop, 4);
       this.game.shake(6, 0.3);
       AUDIO.play('hitHeavy');
     }
@@ -233,6 +237,8 @@ class Player {
       this.enter('attack', 'plungeLand', 1);
       const g = this.game;
       g.fx.shock(this.x + this.dir * 20, this.y, true);
+      g.fx.crack(this.x + this.dir * 20, this.y);
+      g.fx.impactFrame(this.x + this.dir * 20, this.y - 20);
       g.shake(7, 0.3); g.hitstop = 7;
       AUDIO.play('hitHeavy');
       for (const s of g.sentinels) if (s.dead <= 0 && Math.abs(s.x - this.x) < 90 && Math.abs(s.baseY - this.y) < 60) g.damage(s, 380, s.x, s.y, true);
@@ -426,6 +432,23 @@ class Player {
     });
     this.bladeHits(f);
   }
+  // authored smear per swing: tilt/flatten per attack so each reads as its own drawing
+  spawnSmear(name, hi, info, bw) {
+    const d = this.dir, g = this.game;
+    if (info.pierce) {
+      g.fx.smear({ thrust: true, x: this.x - d * 40, y: bw.tip[1], dir: d, len: Math.abs(bw.tip[0] - this.x) + 90, heavy: info.heavy });
+      return;
+    }
+    // path smear: the last few frames of the real blade sweep, frozen and restyled as drawings
+    const P = (this._path || []).slice(-30);
+    if (P.length < 3) return;
+    const TH = { atk1: 0.44, atk2: 0.4, atk3: 0.36, atk4: 0.56, airAtk: 0.42 };
+    // smooth the hilt side hard (hand jitter makes stairs), the tip side lightly
+    const avg = (i, k, r) => { let n = 0, v = 0; for (let j = Math.max(0, i - r); j <= Math.min(P.length - 1, i + r); j++) { v += P[j][k]; n++; } return v / n; };
+    const path = P.map((q, i) => ({ bx: avg(i, 'bx', 4), by: avg(i, 'by', 4), tx: avg(i, 'tx', 1), ty: avg(i, 'ty', 1) }));
+    g.fx.smear({ path, th: TH[name] || 0.45, heavy: info.heavy });
+    this._path = this._path.slice(-2);
+  }
   bladeWorld() {
     const J = this.J, d = this.dir;
     return { base: [this.x + J.bbx * d, this.y + J.bby], tip: [this.x + J.tpx * d, this.y + J.tpy] };
@@ -435,8 +458,16 @@ class Player {
     const bw = this.bladeWorld();
     const swinging = this.state === 'attack' && a && a.hit && a.hit.some(([f0, f1]) => this.st >= f0 - 3 && this.st <= f1 + 2);
     if (swinging || this.state === 'burst' && this.st > 52 && this.st < 62) g.fx.pushTrail(bw.base[0], bw.base[1], bw.tip[0], bw.tip[1]);
+    g.fx.floorY = this.grounded ? groundTop(this.x) : undefined;
     if (!a || !a.hit || this.state !== 'attack') { this.prevBlade = bw; return; }
+    const pb0 = this.prevBlade || bw;
+    if (a.hit.some(([f0, f1]) => this.st >= f0 - 5 && this.st <= f1)) g.fx.pushTrail(bw.base[0], bw.base[1], bw.tip[0], bw.tip[1], this._path);
+    if (a.hit[0][2].heavy && !this._glinted && this.st >= a.hit[0][0] - 5) { this._glinted = true; g.fx.glint(bw.tip[0], bw.tip[1], true); }
     a.hit.forEach(([f0, f1, info], hi) => {
+      if (this._smears && !this._smears.has(hi) && this.st >= f0 + (info.pierce ? 0 : 2)) {
+        this._smears.add(hi);
+        this.spawnSmear(this.anim.name, hi, info, bw, pb0);
+      }
       if (this.st < f0 || this.st > f1) return;
       if (this.hitIndex !== hi) { this.hitIndex = hi; this.hitSet.clear(); }
       const segs = [];
@@ -467,7 +498,7 @@ class Player {
           g.hitstop = Math.max(g.hitstop, info.stop);
           g.shake(info.shake, 0.12 + info.shake * 0.02);
           const ang = Math.atan2(bw.tip[1] - pb.tip[1], bw.tip[0] - pb.tip[0]);
-          g.fx.arc(c[0], c[1], 26 + (info.heavy ? 14 : 0), ang - 1.3, ang + 1.3, info.heavy ? 9 : 6, 0.14);
+          g.fx.mark(c[0], c[1], ang, info.heavy);
         }
       }
       // cut bullets out of the air

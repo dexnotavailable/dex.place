@@ -2402,6 +2402,8 @@ class FX {
     this.trail = []; this.trailOn = false; this.trailCol = 0;
     this.flashA = 0; this.flashC = '#ffffff';
     this.lights = [];
+    this.smears = []; this.marks = []; this.glints = []; this.cracks = []; this.impactF = null;
+    this.reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
   // ---- emitters
   sparks(x, y, ang, n, col = [255, 220, 200], spd = 260, spread = 0.9) {
@@ -2439,6 +2441,19 @@ class FX {
     this.sparks(x, y, -Math.PI / 2, 30, [160, 240, 255], 420, Math.PI);
     for (let i = 0; i < 14; i++) this.parts.push({ kind: 'shard', x, y, vx: rand(-260, 260), vy: rand(-380, -60), life: rand(0.5, 1.1), max: 1.1, col: [110, 108, 124], drag: 0.6, grav: 900, size: randi(2, 4) });
   }
+  // ---- frame-authored effects: each is a short sequence of held drawings, not a tween
+  // slash smear around a pivot on a tilted ellipse (sq flattens, rot tilts, s = swing sense)
+  smear(o) { this.smears.push(Object.assign({ age: 0, hold: o.heavy ? 3 : 2, ember: false }, o)); }
+  // crossed hit mark at the contact point
+  mark(x, y, ang, heavy) { this.marks.push({ x, y, ang, heavy, age: 0, hold: heavy ? 3 : 2 }); }
+  glint(x, y, big) { this.glints.push({ x, y, big, age: 0 }); }
+  crack(x, y) {
+    const mk = (d) => { const pts = [[x, y]]; let px = x, py = y; for (let i = 0; i < 6; i++) { px += d * rand(10, 22); py = y + rand(-2, 2); pts.push([px, py]); } return pts; };
+    this.cracks.push({ lines: [mk(1), mk(-1), mk(0.6), mk(-0.6)], life: 0.9, max: 0.9 });
+  }
+  // anime impact frame: two ticks of negative + radial lines, then lines over the real image
+  impactFrame(x, y) { this.impactF = { x, y, t: 0, seed: Math.random() * 1000 }; }
+  realTick() { if (this.impactF && ++this.impactF.t > 6) this.impactF = null; }
   arc(x, y, r, a0, a1, w, life = 0.16, col = 'red') { this.arcs.push({ x, y, r, a0, a1, w, life, max: life, col }); }
   num(x, y, v, crit) { this.nums.push({ x: x + rand(-8, 8), y, v: Math.round(v), crit, life: 0.9, max: 0.9, vy: -130 }); }
   word(x, y, text, col) { this.words.push({ x, y, text, col, life: 0.8, max: 0.8 }); }
@@ -2447,23 +2462,23 @@ class FX {
   cutLine(x0, y0, x1, y1, delay, onDetonate) { this.lines.push({ x0, y0, x1, y1, t: 0, delay, life: delay + 0.35, onDetonate, fired: false }); }
 
   // blade trail: push the blade segment each simulation step while swinging
-  pushTrail(bx, by, tx, ty) {
-    const last = this.trail[this.trail.length - 1];
+  pushTrail(bx, by, tx, ty, arr = this.trail) {
+    const last = arr[arr.length - 1];
     if (last) {
       // subdivide long sweeps so arcs stay round
       const d = Math.hypot(tx - last.tx, ty - last.ty);
-      const n = Math.min(6, Math.floor(d / 14));
+      const n = arr === this.trail ? Math.min(6, Math.floor(d / 14)) : Math.min(14, Math.floor(d / 6));
       for (let i = 1; i <= n; i++) {
         const k = i / (n + 1);
         // rotate around the base: interpolate angle and length
         const a0 = Math.atan2(last.ty - last.by, last.tx - last.bx), a1 = Math.atan2(ty - by, tx - bx);
         const L0 = Math.hypot(last.tx - last.bx, last.ty - last.by), L1 = Math.hypot(tx - bx, ty - by);
         const a = angLerp(a0, a1, k), L = lerp(L0, L1, k), cx = lerp(last.bx, bx, k), cy = lerp(last.by, by, k);
-        this.trail.push({ bx: cx, by: cy, tx: cx + Math.cos(a) * L, ty: cy + Math.sin(a) * L, age: 0 });
+        arr.push({ bx: cx, by: cy, tx: cx + Math.cos(a) * L, ty: cy + Math.sin(a) * L, age: 0 });
       }
     }
-    this.trail.push({ bx, by, tx, ty, age: 0 });
-    if (this.trail.length > 40) this.trail.splice(0, this.trail.length - 40);
+    arr.push({ bx, by, tx, ty, age: 0 });
+    if (arr === this.trail && arr.length > 40) arr.splice(0, arr.length - 40);
   }
 
   update(dt) {
@@ -2471,6 +2486,17 @@ class FX {
     step(this.parts, (p) => {
       if (p.vx !== undefined) { p.vx *= Math.exp(-p.drag * dt); p.vy = p.vy * Math.exp(-p.drag * dt) + p.grav * dt; p.x += p.vx * dt; p.y += p.vy * dt; }
     });
+    for (const o of this.smears) o.age += dt;
+    this.smears = this.smears.filter((o) => {
+      const f = Math.floor(o.age * 60 / o.hold);
+      if (f >= 3 && !o.ember) { o.ember = true; for (let i = 0; i < (o.heavy ? 10 : 5); i++) { const q = o.thrust ? [o.x + o.dir * o.len * rand(0.4, 1), o.y + rand(-4, 4)] : this.smearPt(o, rand(0.5, 1), rand(0.7, 1.1)); this.parts.push({ kind: 'ember', x: q[0], y: q[1], vx: rand(-50, 50), vy: rand(-90, -10), life: rand(0.3, 0.7), max: 0.7, col: [255, 80, 100], drag: 2, grav: -30 }); } }
+      return f < 4;
+    });
+    for (const o of this.marks) o.age += dt;
+    this.marks = this.marks.filter((o) => o.age * 60 / o.hold < 3);
+    for (const o of this.glints) o.age += dt;
+    this.glints = this.glints.filter((o) => o.age < (o.big ? 0.2 : 0.14));
+    step(this.cracks);
     step(this.arcs); step(this.rings, (r) => { r.r += r.vr * dt; r.vr *= Math.exp(-6 * dt); });
     step(this.nums, (n) => { n.y += n.vy * dt; n.vy *= Math.exp(-5 * dt); });
     step(this.after); step(this.words, (w) => { w.y -= 24 * dt; });
@@ -2489,6 +2515,7 @@ class FX {
     const L = this.lights; L.length = 0;
     for (const b of game.bullets) L.push({ x: b.x, y: b.y, r: b.kind === 'orb' ? 90 : 60, i: b.owner === 'enemy' ? 1.0 : 1.1, c: b.owner === 'enemy' ? [130, 235, 255] : [255, 80, 100] });
     if (this.trail.length > 2) { const s = this.trail[this.trail.length - 1]; L.push({ x: (s.bx + s.tx) / 2, y: (s.by + s.ty) / 2, r: 120, i: 1.1, c: [255, 70, 90] }); }
+    for (const o of this.smears) { const q = o.thrust ? [o.x + o.dir * o.len * 0.7, o.y] : this.smearPt(o, 0.8, 1); L.push({ x: q[0], y: q[1], r: o.heavy ? 170 : 130, i: 1.3 * Math.max(0, 1 - o.age * 60 / (o.hold * 4)), c: [255, 70, 90] }); }
     for (const a of this.arcs) L.push({ x: a.x + Math.cos((a.a0 + a.a1) / 2) * a.r, y: a.y + Math.sin((a.a0 + a.a1) / 2) * a.r, r: 110, i: 1.2 * (a.life / a.max), c: [255, 90, 110] });
     for (const r of this.rings) L.push({ x: r.x, y: r.y, r: 90 + r.r, i: 0.9 * (r.life / r.max), c: r.col });
     for (const s of game.sentinels) if (s.dead <= 0 && s.charge > 0.2) L.push({ x: s.x, y: s.y, r: 150, i: 0.6 * s.charge, c: [130, 235, 255] });
@@ -2496,6 +2523,96 @@ class FX {
     return L;
   }
 
+  // point on a path smear: s along the swing (0 oldest, 1 newest), u along the blade (1 = tip)
+  smearPt(o, sAlong, u) {
+    const P = o.path, f = clamp(sAlong, 0, 1) * (P.length - 1), i = Math.min(P.length - 2, Math.floor(f)), k = f - i;
+    const A = P[i], B = P[i + 1];
+    const bx = lerp(A.bx, B.bx, k), by = lerp(A.by, B.by, k), tx = lerp(A.tx, B.tx, k), ty = lerp(A.ty, B.ty, k);
+    return [bx + (tx - bx) * u, by + (ty - by) * u];
+  }
+  drawSmears(ctx, X, Y) {
+    // one crescent band between radius rOut and rOut - w(u), u from u0 to 1 (1 = leading edge)
+    // crescent band: outer edge past the tip (the slash reads bigger than the blade), inner edge
+    // eats toward the hilt by a width profile that peaks just behind the leading edge
+    const band = (o, s0, s1, off, wk, col) => {
+      const N = Math.max(8, o.path.length * 2), W = o.th;
+      const prof = (t) => Math.pow(t, 0.65) * Math.pow(Math.max(0, 1 - t), 0.2) * 1.25;
+      const out = (t) => 1.1 + 0.08 * prof(t) - off * W;
+      ctx.fillStyle = col; ctx.beginPath();
+      for (let i = 0; i <= N; i++) { const t = lerp(s0, s1, i / N), q = this.smearPt(o, t, out(t)); ctx.lineTo(X(q[0]), Y(q[1])); }
+      for (let i = N; i >= 0; i--) { const t = lerp(s0, s1, i / N), q = this.smearPt(o, t, out(t) - W * wk * prof(t)); ctx.lineTo(X(q[0]), Y(q[1])); }
+      ctx.fill();
+    };
+    const spear = (o, x0k, halfW, col) => {
+      const L = o.len, N = 12;
+      ctx.fillStyle = col; ctx.beginPath();
+      for (let i = 0; i <= N; i++) { const t = i / N, hw = halfW * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.7)), 0.8); ctx.lineTo(X(o.x + o.dir * lerp(L * x0k, L, t)), Y(o.y - hw)); }
+      for (let i = N; i >= 0; i--) { const t = i / N, hw = halfW * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.7)), 0.8); ctx.lineTo(X(o.x + o.dir * lerp(L * x0k, L, t)), Y(o.y + hw)); }
+      ctx.fill();
+    };
+    for (const o of this.smears) {
+      const f = Math.floor(o.age * 60 / o.hold);
+      if (o.thrust) {
+        if (f === 0) { spear(o, 0, 9, '#b80d2a'); spear(o, 0.15, 5.5, '#ff3c52'); spear(o, 0.35, 2, '#ffffff'); }
+        else if (f === 1) { spear(o, 0.3, 6, '#d4163a'); spear(o, 0.45, 2, '#ff8796'); }
+        else if (f === 2) { spear(Object.assign({}, o, { y: o.y - 5 }), 0.5, 1.2, '#ff5064'); spear(Object.assign({}, o, { y: o.y + 4 }), 0.6, 1, '#d4163a'); }
+        else spear(o, 0.75, 0.8, '#ff8796');
+        continue;
+      }
+      if (f === 0) {
+        if (o.heavy) band(o, 0.05, 1, -0.12, 0.12, '#ffffff');
+        band(o, 0, 1, 0, 1, '#b80d2a');
+        band(o, 0.08, 1, 0, 0.62, '#ff3c52');
+        band(o, 0.3, 1, 0, 0.26, '#fff3f5');
+      } else if (f === 1) {
+        band(o, 0.25, 1, 0.05, 0.8, '#d4163a');
+        band(o, 0.35, 1, 0.05, 0.36, '#ff8796');
+        band(o, 0.55, 1, 0.05, 0.12, '#ffffff');
+      } else if (f === 2) {
+        band(o, 0.42, 1, 0.0, 0.14, '#ff5064');
+        band(o, 0.52, 0.97, 0.34, 0.12, '#ff3c52');
+        band(o, 0.62, 0.95, 0.66, 0.1, '#d4163a');
+      } else {
+        band(o, 0.66, 1, 0.1, 0.07, '#ff8796');
+      }
+    }
+  }
+  drawMarks(ctx, X, Y) {
+    const dia = (x, y, a, L, w, col) => {
+      const c = Math.cos(a), s = Math.sin(a), nx = -s, ny = c;
+      ctx.fillStyle = col; ctx.beginPath();
+      ctx.moveTo(X(x + c * L), Y(y + s * L)); ctx.lineTo(X(x + nx * w), Y(y + ny * w));
+      ctx.lineTo(X(x - c * L), Y(y - s * L)); ctx.lineTo(X(x - nx * w), Y(y - ny * w)); ctx.fill();
+    };
+    for (const m of this.marks) {
+      const f = Math.floor(m.age * 60 / m.hold), big = m.heavy ? 1.5 : 1;
+      const L = [34, 42, 48][f] * big, w = [4.5, 2.6, 1][f] * big;
+      const a2 = m.ang + 1.15;
+      dia(m.x, m.y, m.ang, L, w + 1.5, f < 2 ? '#e0163c' : '#ff5064');
+      dia(m.x, m.y, a2, L * 0.62, (w + 1.5) * 0.8, f < 2 ? '#e0163c' : '#ff5064');
+      if (f < 2) { dia(m.x, m.y, m.ang, L * 0.92, w * 0.55, '#ffffff'); dia(m.x, m.y, a2, L * 0.56, w * 0.45, '#ffffff'); }
+    }
+    for (const g of this.glints) {
+      const t = g.age / (g.big ? 0.2 : 0.14), k = t < 0.3 ? t / 0.3 : 1 - (t - 0.3) / 0.7;
+      const L = (g.big ? 30 : 18) * k, w = 2.2 * k;
+      dia(g.x, g.y, 0, L, w, '#ffffff'); dia(g.x, g.y, Math.PI / 2, L * 0.55, w, '#ffffff');
+      dia(g.x, g.y, Math.PI / 4, L * 0.25, w * 0.7, '#ffd0d6'); dia(g.x, g.y, -Math.PI / 4, L * 0.25, w * 0.7, '#ffd0d6');
+    }
+  }
+  drawCracks(ctx, X, Y) {
+    for (const c of this.cracks) {
+      const k = c.life / c.max;
+      for (const ln of c.lines) {
+        const n = Math.max(2, Math.ceil(ln.length * Math.min(1, (1 - k) * 8)));
+        ctx.strokeStyle = `rgba(20,12,18,${Math.min(1, k * 2)})`; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i < n; i++) ctx.lineTo(Math.round(X(ln[i][0])), Math.round(Y(ln[i][1])));
+        ctx.stroke();
+        ctx.strokeStyle = `rgba(255,60,80,${k})`; ctx.lineWidth = 1; ctx.beginPath();
+        for (let i = 0; i < n; i++) ctx.lineTo(Math.round(X(ln[i][0])), Math.round(Y(ln[i][1])) - 1);
+        ctx.stroke();
+      }
+    }
+  }
   // ---- drawing (world space, native canvas)
   drawBack(ctx, cx, cy) {
     // afterimages behind the heroine
@@ -2522,15 +2639,26 @@ class FX {
       ctx.fillStyle = col; ctx.beginPath();
       ctx.moveTo(X(a0x), Y(a0y)); ctx.lineTo(X(a1x), Y(a1y)); ctx.lineTo(X(b1x), Y(b1y)); ctx.lineTo(X(b0x), Y(b0y)); ctx.fill();
     };
+    // opaque crescent that thins as it ages (no alpha wash); never below the floor
+    ctx.save();
+    if (this.floorY !== undefined) { ctx.beginPath(); ctx.rect(0, 0, 4096, Y(this.floorY) + 1); ctx.clip(); }
     for (let i = 1; i < T.length; i++) {
       const a = T[i - 1], b = T[i];
-      const k = 1 - b.age / 0.09;
-      if (k <= 0) continue;
-      const u0 = lerp(0.72, 0.45, k); // the crescent thickens toward the newest edge
-      seg(a, b, u0, 1.0, `rgba(214,16,44,${0.78 * k})`);
-      seg(a, b, lerp(0.95, 0.8, k), 1.0, `rgba(255,96,112,${0.9 * k})`);
-      if (k > 0.6) seg(a, b, 0.93, 1.0, `rgba(255,246,248,${(k - 0.6) / 0.4})`);
+      if (b.age > 0.09) continue;
+      // taper by position along the sweep (ages arrive in batches, which would make stairs)
+      const pos = i / (T.length - 1), kn = 1 - T[T.length - 1].age / 0.09, k = Math.pow(pos, 0.9) * kn;
+      seg(a, b, lerp(0.98, 0.6, k), 1.04, '#c8102e');
+      seg(a, b, lerp(1.0, 0.8, k), 1.04, '#ff4a5e');
+      if (k > 0.55) seg(a, b, 0.94, 1.04, '#fff3f5');
     }
+    ctx.restore();
+    this._cx = cx; this._cy = cy;
+    this.drawCracks(ctx, X, Y);
+    ctx.save();
+    if (this.floorY !== undefined) { ctx.beginPath(); ctx.rect(0, 0, 4096, Y(this.floorY) + 1); ctx.clip(); }
+    this.drawSmears(ctx, X, Y);
+    ctx.restore();
+    this.drawMarks(ctx, X, Y);
     ctx.globalCompositeOperation = 'lighter';
     // stylised slash crescents
     for (const s of this.arcs) {
@@ -2655,7 +2783,24 @@ class FX {
     }
   }
   drawScreen(ctx, vw, vh) {
-    if (this.flashA > 0) { ctx.globalAlpha = Math.min(1, this.flashA); ctx.fillStyle = this.flashC; ctx.fillRect(0, 0, vw, vh); ctx.globalAlpha = 1; }
+    const I = this.impactF;
+    if (this.flashA > 0 && !(I && I.t <= 2)) { ctx.globalAlpha = Math.min(1, this.flashA); ctx.fillStyle = this.flashC; ctx.fillRect(0, 0, vw, vh); ctx.globalAlpha = 1; }
+    if (I) {
+      const x = I.x - (this._cx || 0), y = I.y - (this._cy || 0);
+      if (I.t <= 2 && !this.reduced) {
+        ctx.save(); ctx.globalCompositeOperation = 'difference'; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, vw, vh); ctx.restore();
+      }
+      let sd = I.seed + (I.t >> 1) * 97;
+      const rnd = () => { sd = (sd * 9301 + 49297) % 233280; return sd / 233280; };
+      ctx.fillStyle = I.t <= 2 ? '#ffffff' : '#ff3b50';
+      const R = Math.hypot(vw, vh);
+      for (let i = 0; i < 34; i++) {
+        const a = rnd() * TAU, r0 = 46 + rnd() * 70, w = 1 + rnd() * 3.5;
+        const c = Math.cos(a), s = Math.sin(a);
+        ctx.beginPath(); ctx.moveTo(x + c * r0, y + s * r0);
+        ctx.lineTo(x + c * R - s * w * 3, y + s * R + c * w * 3); ctx.lineTo(x + c * R + s * w * 3, y + s * R - c * w * 3); ctx.fill();
+      }
+    }
   }
 }
 
@@ -2695,6 +2840,7 @@ class Player {
   // ------------------------------------------------------------------ helpers
   enter(state, anim, blend = 4) {
     this.state = state; this.st = 0; this.hitIndex = -1; this.hitSet.clear(); this.moveAcc = 0;
+    this._smears = new Set(); this._glinted = false; this._path = [];
     if (anim !== undefined) this.anim.play(anim, blend);
   }
   inputDir() { return (Input.isDown('right') ? 1 : 0) - (Input.isDown('left') ? 1 : 0); }
@@ -2820,6 +2966,9 @@ class Player {
       this._impacted = true;
       const tip = this.bladeWorld().tip;
       this.game.fx.shock(tip[0], groundTop(tip[0]), true);
+      this.game.fx.crack(tip[0], groundTop(tip[0]));
+      this.game.fx.impactFrame(tip[0], groundTop(tip[0]) - 10);
+      this.game.hitstop = Math.max(this.game.hitstop, 4);
       this.game.shake(6, 0.3);
       AUDIO.play('hitHeavy');
     }
@@ -2895,6 +3044,8 @@ class Player {
       this.enter('attack', 'plungeLand', 1);
       const g = this.game;
       g.fx.shock(this.x + this.dir * 20, this.y, true);
+      g.fx.crack(this.x + this.dir * 20, this.y);
+      g.fx.impactFrame(this.x + this.dir * 20, this.y - 20);
       g.shake(7, 0.3); g.hitstop = 7;
       AUDIO.play('hitHeavy');
       for (const s of g.sentinels) if (s.dead <= 0 && Math.abs(s.x - this.x) < 90 && Math.abs(s.baseY - this.y) < 60) g.damage(s, 380, s.x, s.y, true);
@@ -3088,6 +3239,23 @@ class Player {
     });
     this.bladeHits(f);
   }
+  // authored smear per swing: tilt/flatten per attack so each reads as its own drawing
+  spawnSmear(name, hi, info, bw) {
+    const d = this.dir, g = this.game;
+    if (info.pierce) {
+      g.fx.smear({ thrust: true, x: this.x - d * 40, y: bw.tip[1], dir: d, len: Math.abs(bw.tip[0] - this.x) + 90, heavy: info.heavy });
+      return;
+    }
+    // path smear: the last few frames of the real blade sweep, frozen and restyled as drawings
+    const P = (this._path || []).slice(-30);
+    if (P.length < 3) return;
+    const TH = { atk1: 0.44, atk2: 0.4, atk3: 0.36, atk4: 0.56, airAtk: 0.42 };
+    // smooth the hilt side hard (hand jitter makes stairs), the tip side lightly
+    const avg = (i, k, r) => { let n = 0, v = 0; for (let j = Math.max(0, i - r); j <= Math.min(P.length - 1, i + r); j++) { v += P[j][k]; n++; } return v / n; };
+    const path = P.map((q, i) => ({ bx: avg(i, 'bx', 4), by: avg(i, 'by', 4), tx: avg(i, 'tx', 1), ty: avg(i, 'ty', 1) }));
+    g.fx.smear({ path, th: TH[name] || 0.45, heavy: info.heavy });
+    this._path = this._path.slice(-2);
+  }
   bladeWorld() {
     const J = this.J, d = this.dir;
     return { base: [this.x + J.bbx * d, this.y + J.bby], tip: [this.x + J.tpx * d, this.y + J.tpy] };
@@ -3097,8 +3265,16 @@ class Player {
     const bw = this.bladeWorld();
     const swinging = this.state === 'attack' && a && a.hit && a.hit.some(([f0, f1]) => this.st >= f0 - 3 && this.st <= f1 + 2);
     if (swinging || this.state === 'burst' && this.st > 52 && this.st < 62) g.fx.pushTrail(bw.base[0], bw.base[1], bw.tip[0], bw.tip[1]);
+    g.fx.floorY = this.grounded ? groundTop(this.x) : undefined;
     if (!a || !a.hit || this.state !== 'attack') { this.prevBlade = bw; return; }
+    const pb0 = this.prevBlade || bw;
+    if (a.hit.some(([f0, f1]) => this.st >= f0 - 5 && this.st <= f1)) g.fx.pushTrail(bw.base[0], bw.base[1], bw.tip[0], bw.tip[1], this._path);
+    if (a.hit[0][2].heavy && !this._glinted && this.st >= a.hit[0][0] - 5) { this._glinted = true; g.fx.glint(bw.tip[0], bw.tip[1], true); }
     a.hit.forEach(([f0, f1, info], hi) => {
+      if (this._smears && !this._smears.has(hi) && this.st >= f0 + (info.pierce ? 0 : 2)) {
+        this._smears.add(hi);
+        this.spawnSmear(this.anim.name, hi, info, bw, pb0);
+      }
       if (this.st < f0 || this.st > f1) return;
       if (this.hitIndex !== hi) { this.hitIndex = hi; this.hitSet.clear(); }
       const segs = [];
@@ -3129,7 +3305,7 @@ class Player {
           g.hitstop = Math.max(g.hitstop, info.stop);
           g.shake(info.shake, 0.12 + info.shake * 0.02);
           const ang = Math.atan2(bw.tip[1] - pb.tip[1], bw.tip[0] - pb.tip[0]);
-          g.fx.arc(c[0], c[1], 26 + (info.heavy ? 14 : 0), ang - 1.3, ang + 1.3, info.heavy ? 9 : 6, 0.14);
+          g.fx.mark(c[0], c[1], ang, info.heavy);
         }
       }
       // cut bullets out of the air
@@ -3288,6 +3464,7 @@ class Game {
     if (!s.hit(v, this)) return;
     this.fx.num(x, y - 18, v, crit);
     this.fx.impact(x, y, rand(0, TAU), heavy || crit);
+    if (heavy) { this.fx.impactFrame(x, y); this.hitstop = Math.max(this.hitstop, 5); }
     AUDIO.play(heavy || crit ? 'hitHeavy' : 'hit');
   }
   spawnAfterimage(col, life, alpha) {
@@ -3314,6 +3491,7 @@ class Game {
   step(dt) {
     this.runDemo();
     Input.tick();
+    this.fx.realTick();
     this.time += dt;
     if (this.shakeT > 0) { this.shakeT -= dt; if (this.shakeT <= 0) this.shakeA = 0; }
     if (this.hitstop > 0) { this.hitstop--; this.fx.update(dt * 0.15); return; }

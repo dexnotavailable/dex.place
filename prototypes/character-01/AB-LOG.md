@@ -65,3 +65,15 @@
 - Frames: rest, rise (hugs), apex (floats), fallA/fallB (flip up, bell, crimson lining band,
   flutter every 5 ticks), land0-2 (squash, rebound, settle), run0-3 (contact/passing sway,
   scaled by speed), dashA/B, flare0-2 (turns and spins). Held at least 2 ticks (on twos).
+
+## A1: attack FX as authored frames -> B
+- Slash smear: the real blade sweep of the last ~5 frames, smoothed and frozen, then shown as
+  4 held drawings (thick crescent with white core, thinner, splits into 3 slivers, 1px wisp +
+  embers), held on twos (threes for heavies) and frozen through hitstop. Outer edge overshoots
+  the tip so the slash reads bigger than the blade.
+- Thrusts (charged lunge, counter) get a spear streak instead of a crescent.
+- Contact: crossed X hit mark (3 drawings) replaces the round arc.
+- Heavy wind-up glint at the tip; heavy hits and slams fire a 2-tick negative impact frame with
+  radial lines, then red lines over the real image (skipped under reduced motion).
+- Ground cracks on the finisher slam and plunge landing.
+- Old blade trail made opaque (no pink alpha wash), clipped at the floor, tapered by position.
