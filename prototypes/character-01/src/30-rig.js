@@ -1,30 +1,31 @@
 // ---------------------------------------------------------------------------
 // Rig: skeleton, IK, secondary motion and the character's drawing.
-// Authoring units are "base" pixels (128px tall figure); K scales everything
-// to native pixels. Facing space: +x forward, +y down, origin at the ground
-// point under the pelvis. Proportions follow gacha adult body types
-// (~7.3 heads, legs ~52% of height, narrow waist, long shins).
+// Authoring units are base pixels; K scales to native pixels (1.0 = the
+// reference sprites' density). Facing space: +x forward, +y down, origin at
+// the ground point under the pelvis.
+// yaw turns the body between side profile (0) and a fighting-game 3/4 view
+// (1): every contour has a table for both and is blended by yaw.
 // ---------------------------------------------------------------------------
-const K = 1.2;
-const HK = 1.3; // head scale: pixel art needs a bigger head than the body math suggests
+const K = 1.0;
+const HK = 1.35; // head scale: pixel art needs a bigger head than the body math suggests
 const RIG = {
   thigh: 33 * K, shin: 31 * K, ankle: 4 * K,
-  spine: 34, neck: 3.6 * K,
+  spine: 34, neck: 3.4 * K,
   upper: 18.5 * K, fore: 16.5 * K,
   handle: 22 * K, ring: 24.5 * K, bladeBase: 27 * K, blade: 104 * K,
 };
-const POSE_KEYS = ['rx', 'ry', 'hp', 'sp', 'hd', 'fx', 'fy', 'ft', 'bx', 'by', 'bt', 'fa', 'fr', 'ba', 'br', 'bd', 'bl', 'gp'];
-const POSE_DISC = ['fe', 'be', 'bz', 'gr', 'g2', 'fc', 'hf', 'hb'];
+const POSE_KEYS = ['rx', 'ry', 'hp', 'sp', 'hd', 'fx', 'fy', 'ft', 'bx', 'by', 'bt', 'fa', 'fr', 'ba', 'br', 'bd', 'bl', 'gp', 'yaw'];
+const POSE_DISC = ['fe', 'be', 'bz', 'gr', 'g2', 'fc', 'hf', 'hb', 'kf', 'kb'];
 const POSE0 = {
   rx: 0, ry: -68.6, hp: 0, sp: 0, hd: 0,
   fx: 6, fy: 0, ft: 0, bx: -6, by: 0, bt: 0,
   fa: 1.5, fr: 0.97, ba: 1.62, br: 0.97,
-  bd: 2.62, bl: 1, gp: 11,
-  fe: 1, be: 1, bz: 1, gr: 0, g2: 0, fc: 0, hf: 0, hb: 0,
+  bd: 2.62, bl: 1, gp: 11, yaw: 0.85,
+  fe: 1, be: 1, bz: 1, gr: 0, g2: 0, fc: 0, hf: 0, hb: 0, kf: 1, kb: 1,
 };
 // fe/be: elbow bend direction; bz: blade in front(1)/behind(0) the body;
 // gr: 0 front hand, 1 two-handed, 2 back hand; g2: back arm drawn in front;
-// fc: face 0 calm, 1 focused, 2 closed, 3 pain; hf/hb: hand open(0)/fist(1).
+// fc: face 0 calm, 1 focused, 2 closed, 3 pain, 4 shout; hf/hb: hand open(0)/fist(1).
 function mkPose(o) { return Object.assign({}, POSE0, o); }
 function lerpPose(out, a, b, t) {
   for (const k of POSE_KEYS) out[k] = a[k] + (b[k] - a[k]) * t;
@@ -35,6 +36,8 @@ function copyPose(out, a) { for (const k of POSE_KEYS) out[k] = a[k]; for (const
 
 const fwdV = (a) => [Math.cos(a), Math.sin(a)];
 const upV = (a) => [Math.sin(a), -Math.cos(a)];
+const yl = (s, q, y) => s + (q - s) * y; // yaw blend
+const ylPt = (s, q, y) => { const r = [s[0] + (q[0] - s[0]) * y, s[1] + (q[1] - s[1]) * y]; if (s[2] === 0 || q[2] === 0) r.push(0); return r; };
 
 function ik2(ax, ay, tx, ty, l1, l2, bend, out) {
   const dx = tx - ax, dy = ty - ay;
@@ -48,7 +51,7 @@ function ik2(ax, ay, tx, ty, l1, l2, bend, out) {
   return out;
 }
 
-// torso point: a = forward, b = up from pelvis (base units). Bends at the waist.
+// torso point: a = across (+ forward/far side), b = up from pelvis (base units). Bends at the waist.
 function torsoPt(J, a, b) {
   a *= K;
   if (b <= 6) {
@@ -71,18 +74,85 @@ function headPt(J, x, y) {
   const c = Math.cos(J.ha), s = Math.sin(J.ha);
   return [J.hx + c * x - s * y, J.hy + s * x + c * y];
 }
-// facing-space point -> spine frame (a,b) in base units
 function toSpine(J, fx, fy) {
   const c = Math.cos(J.sp), s = Math.sin(J.sp);
   const dx = fx - J.px, dy = fy - J.py;
   return [(dx * c + dy * s) / K, (dx * s - dy * c) / K];
 }
 
+// ---------------------------------------------------------------------------
+// The figure. Numbers here ARE her shape. Two views per table: side / 3q.
+// ---------------------------------------------------------------------------
+const FIG = {
+  // torso: left contour bottom->top, right contour top->bottom (spine frame a,b)
+  torsoL: {
+    b: [-9.5, -6.5, -2, 3.5, 8.5, 12.5, 16, 20, 24, 28, 31, 33.5, 35.2],
+    side: [-7.5, -10.8, -11.4, -8.8, -6.4, -5.8, -6.4, -7.2, -7.9, -7.8, -6.8, -4.8, -3.2],
+    q: [-8.4, -10.2, -10.6, -9.0, -6.9, -6.2, -6.5, -7.6, -8.4, -9.2, -10.2, -8.2, -2.2],
+  },
+  torsoR: {
+    b: [35.2, 33.5, 31, 28, 25.6, 23.2, 21, 18.8, 16.5, 12.5, 8, 3, -2, -6.5, -9.5],
+    side: [3.2, 4.8, 6.6, 8.0, 9.8, 11.7, 12.3, 11.0, 7.4, 5.8, 6.6, 7.4, 7.6, 7.3, 5.0],
+    q: [3.9, 6.3, 7.6, 8.6, 10.1, 11.5, 11.5, 9.8, 6.9, 5.6, 6.4, 8.1, 8.8, 7.7, 5.0],
+  },
+  shoulderF: { side: [-1.2, 30.2], q: [-8.4, 30.4] }, // near arm
+  shoulderB: { side: [1.6, 30.8], q: [5.8, 30.8] }, // far arm
+  hipF: { side: [1.4, -1.2], q: [-4.8, -1.0] }, // near leg
+  hipB: { side: [-1.6, -0.4], q: [4.4, -0.6] }, // far leg
+  neck: { side: 0, q: 0.9 },
+  legFront: [['T', -0.14, 3.0], ['T', 0.0, 6.0], ['T', 0.2, 6.9], ['T', 0.5, 6.2], ['T', 0.8, 5.0], ['J', 0, 4.1], ['S', 0.14, 3.6], ['S', 0.5, 3.0], ['S', 0.84, 2.3], ['S', 1.0, 2.1], ['S', 1.08, 0]],
+  legBack: [['S', 1.0, -2.1], ['S', 0.86, -2.4], ['S', 0.58, -3.4], ['S', 0.3, -5.0], ['S', 0.1, -4.3], ['J', 0, -3.7], ['T', 0.8, -4.8], ['T', 0.5, -6.3], ['T', 0.2, -7.8], ['T', 0.0, -8.4], ['T', -0.14, -5.0]],
+  thighW: [[6.0, 6.8, 6.1, 5.1, 4.1], [8.4, 7.5, 6.3, 5.0, 3.8]],
+  shinW: [[3.8, 3.4, 3.0, 2.6, 2.1], [4.3, 5.0, 3.7, 2.7, 2.1]],
+  sockTop: 1.2, // >1: knee socks; the top then sits at sockShin along the shin
+  sockShin: 0.2,
+  armFront: [['U', -0.12, 3.0], ['U', 0.14, 3.6], ['U', 0.4, 2.8], ['U', 0.68, 2.2], ['U', 0.9, 1.9], ['J', 0, 1.8], ['F', 0.2, 2.3], ['F', 0.5, 1.9], ['F', 0.74, 1.8], ['F', 0.86, 2.4], ['F', 1.0, 3.3, 0]],
+  armBack: [['F', 1.0, -3.1, 0], ['F', 0.86, -2.2], ['F', 0.74, -1.7], ['F', 0.45, -1.9], ['F', 0.12, -2.2], ['J', 0, -2.1], ['U', 0.82, -2.1], ['U', 0.45, -2.8], ['U', 0.16, -3.5], ['U', -0.14, -2.4]],
+  armW: [[3.0, 3.2, 2.6, 2.3, 2.2], [3.1, 2.9, 2.6, 2.4, 2.3]],
+  foreW: [[2.4, 2.4, 2.1, 2.3, 3.3], [2.4, 2.3, 2.1, 2.1, 3.1]],
+  face: [[-6.6, -3.8], [-5.6, -8.2], [0.4, -9.8], [4.9, -7.6], [6.4, -3.8], [6.6, -0.8], [7.0, 1.2], [6.5, 2.8], [5.6, 4.9], [4.1, 7.0], [2.4, 8.6, 0], [0.4, 8.3], [-2.2, 6.8], [-4.6, 4.6], [-6.3, 1.8], [-6.9, -1.0]],
+  bangs: [[-7.4, -4.4], [-7.6, -9.0], [-3.8, -12.6], [1.8, -12.8], [6.0, -9.8], [7.3, -5.6], [7.4, -3.8, 0], [6.3, -4.4, 0], [5.3, -3.7, 0], [4.3, -4.6, 0], [3.1, -3.8, 0], [1.9, -4.8, 0], [0.7, -4.0, 0], [-0.6, -4.9, 0], [-1.9, -4.2, 0], [-3.2, -5.0, 0], [-4.6, -4.3, 0], [-5.8, -5.4]],
+  // skirt (pelvis frame): hips upper points, then hem springs
+  skirtTop: {
+    side: [[7.6, 5.8], [-8.8, 5.8], [-11.4, 1.2], [-13.3, -3.8]],
+    q: [[7.2, 5.6], [-8.6, 5.6], [-11.6, 0.6], [-14.2, -4.6]],
+  },
+  skirtFront: { side: [[11.4, -4.0], [8.9, 2.0]], q: [[13.8, -4.6], [10.4, 0.6]] },
+  hem: {
+    side: [[-15.0, -10.6], [-11.2, -13.2], [-5.8, -14.6], [0.2, -15.0], [5.8, -14.6], [10.8, -13.0], [14.4, -10.4]],
+    q: [[-16.2, -11.0], [-11.8, -13.6], [-6.0, -14.9], [0.0, -15.3], [5.9, -14.9], [11.2, -13.4], [15.6, -11.0]],
+  },
+  corset: {
+    side: [[7.0, 15.0], [6.1, 11.5], [6.9, 6.5], [7.6, 4.8], [-8.9, 4.8], [-6.5, 8.5], [-5.9, 13], [-6.6, 16.5], [-1, 17.6], [3.4, 16.4]],
+    q: [[7.2, 16.6], [5.4, 11.0], [6.6, 6.5], [7.9, 4.6], [-9.6, 4.6], [-7.2, 8.0], [-6.0, 12.0], [-6.9, 16.8], [-1.4, 17.8], [3.6, 16.0]],
+  },
+  capeB: {
+    side: [[-3.6, 40.5], [-8.6, 37.4], [-13.2, 31.5], [-14.6, 24], [-14.4, 17], [-12.4, 12.4], [-8, 11.4], [-3, 12.6], [1, 20], [2, 30], [1.2, 38.5]],
+    q: [[-2.0, 40.5], [-8.8, 37.8], [-12.2, 33], [-12.6, 28], [-11.8, 24.5], [-10.6, 22.5], [-9.6, 22], [-8.4, 23], [-7.6, 26], [-5.0, 32], [-1.2, 38.5]],
+  },
+  capelet: {
+    side: [[4.6, 40.8], [5.4, 36.8], [4.6, 34.4], [1.6, 31.2], [-0.8, 27.4], [-1.8, 24.6, 0], [-3.2, 26.2, 0], [-4.6, 23.2, 0], [-6.0, 25.6, 0], [-7.8, 22.6, 0], [-9.2, 25.0, 0], [-11.0, 23.2, 0], [-12.4, 25.4, 0], [-13.9, 23.8, 0], [-13.8, 28.8], [-12.4, 33.8], [-8.4, 37.8], [-3.6, 41.6]],
+    q: [[1.8, 41.0], [2.2, 37.2], [1.2, 34.4], [-0.6, 31.0], [-2.0, 27.6], [-2.8, 24.8, 0], [-4.0, 26.6, 0], [-5.4, 23.6, 0], [-6.8, 25.8, 0], [-8.4, 22.8, 0], [-9.8, 25.2, 0], [-11.4, 23.4, 0], [-12.8, 25.6, 0], [-13.6, 24.2, 0], [-13.4, 28.8], [-12.4, 33.6], [-8.8, 38.0], [-3.6, 41.4]],
+  },
+  capFar: [[3.6, 40.4], [6.4, 38.2], [8.7, 34.4], [9.9, 30.6], [9.1, 28.4, 0], [7.9, 29.8, 0], [6.8, 28.2, 0], [5.6, 31.2], [4.2, 34.6]],
+  shoulderCap: {
+    side: [[-5.8, 35.6], [0.8, 35.4], [2.0, 31.8], [0.2, 29.0, 0], [-1.8, 27.6, 0], [-3.6, 29.0, 0], [-5.6, 27.8, 0], [-7.4, 31.0]],
+    q: [[-12.2, 35.2], [-4.8, 35.6], [-3.8, 31.8], [-5.4, 28.4, 0], [-7.4, 27.2, 0], [-9.2, 28.8, 0], [-11.4, 27.4, 0], [-13.2, 31.2]],
+  },
+  tie: { side: [5.2, 31.4], q: [2.7, 32.0] },
+  tieAnchor: { side: [6.6, 29.6], q: [2.9, 30.4] },
+  clasp: { side: [4.3, 34.9], q: [1.6, 35.4] },
+};
+const ylTable = (t, y) => t.side.map((s, i) => ylPt(s, t.q[i], y));
+const LIGHT_DIR = (() => { const v = [0.5, -0.55, 0.67], l = Math.hypot(...v); return v.map((x) => x / l); })();
+
 // Solve joints. ground(fxFacing) -> ground height offset for feet, or null in air.
 function solveRig(p, ground, J = {}) {
   J.pose = p;
+  const yaw = clamp(p.yaw ?? 0.85, 0, 1);
+  J.yaw = yaw;
   J.px = p.rx * K; J.py = p.ry * K; J.hp = p.hp; J.sp = p.sp;
-  const [nx, ny] = torsoPt(J, 0, RIG.spine);
+  const [nx, ny] = torsoPt(J, yl(FIG.neck.side, FIG.neck.q, yaw), RIG.spine);
   J.nx = nx; J.ny = ny;
   const na = p.sp + p.hd * 0.5;
   const [ux, uy] = upV(na);
@@ -90,12 +160,14 @@ function solveRig(p, ground, J = {}) {
   J.ha = p.sp + p.hd;
   const [hux, huy] = upV(J.ha), [hfx, hfy] = fwdV(J.ha);
   J.hx = J.ntx + (hux * 7.6 + hfx * 0.5) * K * HK; J.hy = J.nty + (huy * 7.6 + hfy * 0.5) * K * HK;
-  [J.sfx, J.sfy] = torsoPt(J, -1.2, 30.2);
-  [J.sbx, J.sby] = torsoPt(J, 1.6, 30.8);
-  [J.hfx, J.hfy] = pelvisPt(J, 1.4, -1.2);
-  [J.hbx, J.hby] = pelvisPt(J, -1.6, -0.4);
+  const sF = ylPt(FIG.shoulderF.side, FIG.shoulderF.q, yaw), sB = ylPt(FIG.shoulderB.side, FIG.shoulderB.q, yaw);
+  [J.sfx, J.sfy] = torsoPt(J, sF[0], sF[1]);
+  [J.sbx, J.sby] = torsoPt(J, sB[0], sB[1]);
+  const hF = ylPt(FIG.hipF.side, FIG.hipF.q, yaw), hB = ylPt(FIG.hipB.side, FIG.hipB.q, yaw);
+  [J.hfx, J.hfy] = pelvisPt(J, hF[0], hF[1]);
+  [J.hbx, J.hby] = pelvisPt(J, hB[0], hB[1]);
   const tmp = [0, 0, 0, 0];
-  const foot = (fx, fy, ft, hipx, hipy, key) => {
+  const foot = (fx, fy, ft, hipx, hipy, key, kb) => {
     fx *= K; fy *= K;
     let ax = fx, ay = fy - RIG.ankle;
     let g = 0;
@@ -103,12 +175,12 @@ function solveRig(p, ground, J = {}) {
     const planted = fy > -1;
     if (planted && ft > 0) ay -= Math.sin(ft) * 8 * K; // heel lift pivots on the toe
     if (planted && ft < 0) ay -= Math.sin(-ft) * 3 * K; // toe lift pivots on the heel
-    ik2(hipx, hipy, ax, ay, RIG.thigh, RIG.shin, 1, tmp);
+    ik2(hipx, hipy, ax, ay, RIG.thigh, RIG.shin, kb, tmp);
     J[key + 'kx'] = tmp[0]; J[key + 'ky'] = tmp[1]; J[key + 'ax'] = tmp[2]; J[key + 'ay'] = tmp[3];
     J[key + 'g'] = g;
   };
-  foot(p.fx, p.fy, p.ft, J.hfx, J.hfy, 'F');
-  foot(p.bx, p.by, p.bt, J.hbx, J.hby, 'B');
+  foot(p.fx, p.fy, p.ft, J.hfx, J.hfy, 'F', p.kf ?? 1);
+  foot(p.bx, p.by, p.bt, J.hbx, J.hby, 'B', p.kb ?? 1);
   J.Fft = p.ft; J.Bft = p.bt;
   const armLen = RIG.upper + RIG.fore;
   const [fax, fay] = fwdV(p.fa);
@@ -126,7 +198,6 @@ function solveRig(p, ground, J = {}) {
   } else {
     ik2(J.sfx, J.sfy, tfx, tfy, RIG.upper, RIG.fore, -p.fe, tmp);
     J.efx = tmp[0]; J.efy = tmp[1]; J.wfx = tmp[2]; J.wfy = tmp[3];
-    // the fist sits a little past the wrist along the forearm
     J.gx = J.wfx + (J.wfx - J.efx) / RIG.fore * 2.2 * K; J.gy = J.wfy + (J.wfy - J.efy) / RIG.fore * 2.2 * K;
     if (p.gr === 1) { tbx = J.gx - J.bdx * 7.5 * K * bl; tby = J.gy - J.bdy * 7.5 * K * bl; }
     ik2(J.sbx, J.sby, tbx, tby, RIG.upper, RIG.fore, -p.be, tmp);
@@ -207,33 +278,43 @@ class Spring2 {
   }
 }
 
-// skirt hem rest points (pelvis frame, base units: a forward, b up)
-const HEM = [[-15.0, -10.6], [-11.2, -13.2], [-5.8, -14.6], [0.2, -15.0], [5.8, -14.6], [10.8, -13.0], [14.4, -10.4]];
 // hair roots (head-local), node counts, widths
 const HAIR = [
-  { at: [-3.4, -8.8], len: 7, w0: 7, wm: 8.5, tone: 's' },
-  { at: [-6.6, -5.0], len: 9, w0: 7.5, wm: 9.5, tone: 'b' },
-  { at: [-7.6, -0.6], len: 10, w0: 7.5, wm: 9, tone: 's' },
-  { at: [-6.6, 3.4], len: 9, w0: 7, wm: 8, tone: 'b' },
-  { at: [-4.4, 5.6], len: 8, w0: 6, wm: 7, tone: 'd' },
-  { at: [-2.2, 6.4], len: 5, w0: 4.5, wm: 5.5, tone: 'b' },
+  { at: [-3.4, -8.8], len: 6, w0: 7, wm: 9.5, tone: 's', wave: 0.12 },
+  { at: [-6.6, -5.0], len: 10, w0: 8, wm: 10.5, tone: 'b', wave: -0.16 },
+  { at: [-7.6, -0.6], len: 11, w0: 8, wm: 10, tone: 's', wave: 0.14 },
+  { at: [-6.6, 3.4], len: 9, w0: 7, wm: 9, tone: 'b', wave: -0.12 },
+  { at: [-4.4, 5.6], len: 7, w0: 6, wm: 7.5, tone: 'd', wave: 0.1 },
 ];
 // cloak tails hang from the back cape (torso frame)
 const TAILS = [
-  { at: [-13.6, 24], len: 8, w0: 10, m: 'cloak' },
-  { at: [-14.0, 18], len: 11, w0: 10.5, m: 'cloakS' },
-  { at: [-12.4, 13], len: 9, w0: 9.5, m: 'cloak' },
-  { at: [-8.6, 11.6], len: 10, w0: 8.5, m: 'lining' },
+  { at: [-9.6, 7.0], len: 8, w0: 11, m: 'cloakS', rest: 0.3 },
+  { at: [-6.0, 6.0], len: 9, w0: 11, m: 'lining', rest: 0.12 },
+  { at: [-1.0, 5.6], len: 8, w0: 11, m: 'cloak', rest: 0.0 },
+  { at: [4.0, 5.8], len: 7, w0: 10, m: 'cloakS', rest: -0.12 },
+  { at: [8.2, 6.6], len: 6, w0: 9, m: 'lining', rest: -0.26 },
 ];
 const SEG_HAIR = 7.8 * K, SEG_TAIL = 7.0 * K;
 
+// left body contour at height b (spine frame), for hair/cape collision
+function leftEdgeAt(yaw, b) {
+  const T = FIG.torsoL;
+  if (b <= T.b[0]) return yl(T.side[0], T.q[0], yaw) - Math.max(0, T.b[0] - b) * 0.2;
+  for (let i = 1; i < T.b.length; i++) if (T.b[i] >= b) {
+    const f = (b - T.b[i - 1]) / (T.b[i] - T.b[i - 1]);
+    return lerp(yl(T.side[i - 1], T.q[i - 1], yaw), yl(T.side[i], T.q[i], yaw), f);
+  }
+  return yl(T.side[T.b.length - 1], T.q[T.b.length - 1], yaw);
+}
+
 class Heroine {
   constructor() {
-    this.hair = HAIR.map((h, i) => new Chain(h.len, SEG_HAIR * (i === 5 ? 0.85 : 1), { stiff: [0.44, 0.03], damp: 0.93, grav: 760, drag: 1.1, rest: Math.PI / 2 + 0.05, curl: 0.1 }));
-    this.tails = TAILS.map((t, i) => new Chain(t.len, SEG_TAIL, { stiff: [0.36, 0.02], damp: 0.94, grav: 640, drag: 1.6, rest: Math.PI / 2 + 0.3 - i * 0.12, curl: 0.12 }));
+    this.hair = HAIR.map((h, i) => new Chain(h.len, SEG_HAIR, { stiff: [0.46, 0.04], damp: 0.93, grav: 760, drag: 1.1, rest: Math.PI / 2 + 0.12 + i * 0.02, curl: h.wave }));
+    this.tails = TAILS.map((t, i) => new Chain(t.len, SEG_TAIL, { stiff: [0.4, 0.03], damp: 0.94, grav: 640, drag: 1.6, rest: Math.PI / 2 + t.rest, curl: (i % 2 ? -0.1 : 0.1) }));
     this.ribbon = [0, 1].map((i) => new Chain(4, 3.2 * K, { stiff: [0.25, 0.1], damp: 0.9, grav: 600, drag: 1.8, rest: Math.PI / 2 + 0.55 + i * 0.35 }));
+    this.front = [0, 1].map((i) => new Chain(6 + i, 6.0 * K, { stiff: [0.55, 0.06], damp: 0.92, grav: 760, drag: 1.2, rest: Math.PI / 2 - 0.16 - i * 0.06, curl: -0.08 }));
     this.tie = new Chain(4, 3.3 * K, { stiff: [0.35, 0.2], damp: 0.88, grav: 800, drag: 0.8, rest: Math.PI / 2 - 0.05 });
-    this.hem = HEM.map(() => new Spring2(240, 15, 9 * K));
+    this.hem = FIG.hem.side.map(() => new Spring2(240, 15, 9 * K));
     this.chest = new Spring2(300, 10, 1.9 * K);
     this.prevPel = null; this.prevVel = [0, 0];
     this.prevChest = null; this.prevChestVel = [0, 0];
@@ -273,13 +354,12 @@ class Heroine {
     this.chest.step(clamp(cax * dir, -8000, 8000) * 0.0011, clamp(cay, -8000, 8000) * 0.0016, 0, 0, dt);
 
     const groundAt = env.groundY || (() => 1e9);
-    // back plane of the body in spine-frame base units (hair & cloak stay behind it)
-    const backEdge = (b) => (b > 30 ? -6.5 : b > 20 ? lerp(-8.6, -6.5, (b - 20) / 10) : b > 12 ? lerp(-7.4, -8.6, (b - 12) / 8) : b > 3 ? lerp(-9.6, -7.4, (b - 3) / 9) : b > -6 ? lerp(-12.8, -9.6, (b + 6) / 9) : lerp(-15, -12.8, clamp((b + 16) / 10, 0, 1)));
     const c = Math.cos(J.sp), s = Math.sin(J.sp);
+    const yaw = J.yaw;
     const mkCollide = (margin, soft) => (X, Y, i) => {
       const [a, b] = toSpine(J, (X[i] - rootX) * dir, Y[i] - rootY);
       if (b > -18 && b < 42) {
-        const lim = backEdge(b) - margin;
+        const lim = leftEdgeAt(yaw, b) - margin;
         if (a > lim) {
           const push = (lim - a) * soft * K;
           X[i] += c * push * dir; Y[i] += s * push;
@@ -289,7 +369,7 @@ class Heroine {
       if (Y[i] > gy) Y[i] = gy;
     };
     const hairEnv = { wind: env.wind * 0.8, lift: env.lift || 0, collide: mkCollide(1.2, 0.35) };
-    const tailEnv = { wind: env.wind, lift: env.lift || 0, collide: mkCollide(2.2, 0.3) };
+    const tailEnv = { wind: env.wind, lift: env.lift || 0, collide: (X, Y, i) => { const gy = groundAt(X[i]) - 1; if (Y[i] > gy) Y[i] = gy; } };
     for (let i = 0; i < HAIR.length; i++) {
       const [hx, hy] = headPt(J, HAIR[i].at[0], HAIR[i].at[1]);
       const w = W(hx, hy);
@@ -300,15 +380,22 @@ class Heroine {
       const w = W(tx, ty);
       this.tails[i].step(w[0], w[1], J.sp * 0.6, dir, dt, dtPrev, tailEnv);
     }
+    for (let i = 0; i < this.front.length; i++) {
+      const [fx0, fy0] = headPt(J, [-6.2, -4.8][i], [3.2, 5.6][i]);
+      const fw = W(fx0, fy0);
+      this.front[i].step(fw[0], fw[1], J.ha * 0.4, dir, dt, dtPrev, { wind: env.wind * 0.6, lift: env.lift || 0 });
+    }
     const [kx, ky] = headPt(J, -6.4, -5.6);
     const kw = W(kx, ky);
     for (const r of this.ribbon) r.step(kw[0], kw[1], J.ha * 0.3, dir, dt, dtPrev, { wind: env.wind * 1.2, lift: env.lift || 0 });
-    const [tx0, ty0] = torsoPt(J, 6.6 + this.chest.x / K, 29.6);
+    const ta = ylPt(FIG.tieAnchor.side, FIG.tieAnchor.q, yaw);
+    const [tx0, ty0] = torsoPt(J, ta[0] + (this.chest.x / K) * (1 - yaw), ta[1]);
     const tw = W(tx0, ty0);
     const ch = this.chest;
     this.tie.step(tw[0], tw[1], J.sp, dir, dt, dtPrev, {
       wind: env.wind * 0.5,
       collide: (X, Y, i) => {
+        if (yaw > 0.5) return; // in 3/4 the tie lies down the centre of the chest
         const [a, b] = toSpine(J, (X[i] - rootX) * dir, Y[i] - rootY);
         const front = b > 25 ? lerp(9.8, 6.6, (b - 25) / 5) : b > 19.5 ? 12.2 + ch.x / K : b > 16 ? lerp(7.4, 12.2, (b - 16) / 3.5) : 6.2;
         if (a < front + 0.9) { const push = (front + 0.9 - a) * K; X[i] += c * push * dir; Y[i] += s * push; }
@@ -319,7 +406,7 @@ class Heroine {
     if (this.blink > 0) this.blink -= dt;
   }
   resetPhysics() {
-    for (const c of [...this.hair, ...this.tails, ...this.ribbon, this.tie]) c.init = false;
+    for (const c of [...this.hair, ...this.tails, ...this.ribbon, ...this.front, this.tie]) c.init = false;
     this.prevPel = null; this.prevChest = null;
     for (const h of this.hem) { h.x = h.y = h.vx = h.vy = 0; }
   }
@@ -333,29 +420,6 @@ const COSTUMES = {
 };
 let COSTUME = COSTUMES.ref;
 
-// ---------------------------------------------------------------------------
-// The figure. Every mass is ONE contour through landmarks (see 25-shape.js).
-// Entries: [bone, t along bone, offset across in base units (+ = front), sharp?]
-// 'J' = the joint between the two bones, offset along their bisector.
-// These tables are the formula: change a number, the silhouette follows.
-// ---------------------------------------------------------------------------
-const FIG = {
-  legFront: [['T', -0.14, 3.0], ['T', 0.0, 6.0], ['T', 0.2, 6.9], ['T', 0.5, 6.2], ['T', 0.8, 5.0], ['J', 0, 4.1], ['S', 0.14, 3.6], ['S', 0.5, 3.0], ['S', 0.84, 2.3], ['S', 1.0, 2.1], ['S', 1.08, 0]],
-  legBack: [['S', 1.0, -2.1], ['S', 0.86, -2.4], ['S', 0.58, -3.4], ['S', 0.3, -5.0], ['S', 0.1, -4.3], ['J', 0, -3.7], ['T', 0.8, -4.8], ['T', 0.5, -6.3], ['T', 0.2, -7.8], ['T', 0.0, -8.4], ['T', -0.14, -5.0]],
-  thighW: [[6.0, 6.8, 6.1, 5.1, 4.1], [8.4, 7.5, 6.3, 5.0, 3.8]],
-  shinW: [[3.8, 3.4, 3.0, 2.6, 2.1], [4.3, 5.0, 3.7, 2.7, 2.1]],
-  sockTop: 0.74,
-  armFront: [['U', -0.1, 2.9], ['U', 0.2, 3.2], ['U', 0.55, 2.6], ['U', 0.86, 2.3], ['J', 0, 2.2], ['F', 0.24, 2.5], ['F', 0.55, 2.1], ['F', 0.78, 2.3], ['F', 1.0, 3.3, 0]],
-  armBack: [['F', 1.0, -3.1, 0], ['F', 0.78, -2.1], ['F', 0.45, -2.1], ['F', 0.12, -2.4], ['J', 0, -2.4], ['U', 0.8, -2.4], ['U', 0.45, -2.8], ['U', 0.12, -3.1], ['U', -0.14, -1.8]],
-  armW: [[3.0, 3.2, 2.6, 2.3, 2.2], [3.1, 2.9, 2.6, 2.4, 2.3]],
-  foreW: [[2.4, 2.4, 2.1, 2.3, 3.3], [2.4, 2.3, 2.1, 2.1, 3.1]],
-  // torso in the spine frame: [a forward, b up]
-  torsoFront: [[7.2, -5], [7.4, 1.5], [6.8, 6.5], [5.8, 11.5], [6.5, 15.2], [8.7, 17.2], [11.2, 19.0], [12.3, 21.2], [11.7, 23.4], [9.8, 25.6], [8.0, 28.0], [6.5, 30.9], [4.4, 33.2], [3.2, 34.4]],
-  torsoBack: [[-3.2, 34.4], [-6.0, 32.4], [-7.6, 28.5], [-7.8, 23], [-7.0, 18], [-5.7, 13], [-6.4, 8.5], [-8.8, 3.4], [-11.4, -2.4], [-11.2, -7.4], [-8, -10.5], [0, -11]],
-  // face in head space (x forward, y down), chin is the sharp point
-  face: [[-4.4, -3.6], [-3.6, -8.0], [1.0, -9.6], [4.9, -7.2], [6.0, -3.6], [6.1, -0.8], [6.6, 1.3], [6.1, 2.8], [5.4, 4.8], [4.0, 7.0], [2.5, 8.7, 0], [0.9, 8.4], [-1.2, 7.0], [-3.0, 5.0], [-4.4, 2.4], [-4.8, -0.4]],
-  bangs: [[-5.4, -4.2], [-6.0, -8.8], [-3.2, -12.2], [1.8, -12.6], [5.9, -9.4], [7.0, -5.0], [7.1, -2.8, 0], [6.1, -3.3, 0], [5.2, -2.6, 0], [4.3, -3.6, 0], [3.2, -2.8, 0], [2.1, -3.8, 0], [1.0, -3.0, 0], [-0.1, -3.9, 0], [-1.3, -3.4, 0], [-2.7, -5.2]],
-};
 let LMK_DEBUG = null; // set to [] to collect landmark points for the formula overlay
 function contourPts(list, bones) {
   const out = [];
@@ -372,13 +436,14 @@ function contourPts(list, bones) {
 // ---------------------------------------------------------------------------
 // Drawing. Rendered facing right into a PixBuf; the blit flips.
 // ---------------------------------------------------------------------------
-const G = { tails: 1, capeB: 2, halo: 3, hair: 4, armB: 5, bladeB: 6, legB: 7, shoeB: 8, legF: 9, shoeF: 10, torso: 11, collar: 12, corset: 13, skirt: 14, tie: 15, capelet: 16, armB2: 17, neck: 18, face: 19, hairF: 20, bow: 21, armF: 22, cap: 23, blade: 24, handF: 25 };
+const G = { tails: 1, capeB: 2, halo: 3, hair: 4, armB: 5, bladeB: 6, legB: 7, shoeB: 8, legF: 9, shoeF: 10, torso: 11, collar: 12, corset: 13, skirt: 14, tie: 15, capelet: 16, armB2: 17, neck: 18, face: 19, hairF: 20, bow: 21, armF: 22, cap: 23, blade: 24, handF: 25, capFar: 26, hairFront: 27 };
 
 function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
-  const p = J.pose;
-  const T = (a, b) => { const q = torsoPt(J, a, b); return [q[0] + ox, q[1] + oy]; };
-  const Pp = (a, b) => { const q = pelvisPt(J, a, b); return [q[0] + ox, q[1] + oy]; };
+  const p = J.pose, yaw = J.yaw;
+  const T = (a, b, sh) => { const q = torsoPt(J, a, b); const r = [q[0] + ox, q[1] + oy]; if (sh === 0) r.push(0); return r; };
+  const Pp = (a, b, sh) => { const q = pelvisPt(J, a, b); const r = [q[0] + ox, q[1] + oy]; if (sh === 0) r.push(0); return r; };
   const Hd = (x, y) => { const q = headPt(J, x, y); return [q[0] + ox, q[1] + oy]; };
+  const Tt = (tbl) => ylTable(tbl, yaw).map(([a, b, sh]) => T(a, b, sh));
   const toB = (wx, wy) => [(wx - rootX) * dir + ox, wy - rootY + oy];
   const cS = Math.cos(J.sp), sS = Math.sin(J.sp);
   const spineAB = (x, y) => { const dx = x + 0.5 - (J.px + ox), dy = y + 0.5 - (J.py + oy); return [(dx * cS + dy * sS) / K, (dx * sS - dy * cS) / K]; };
@@ -396,30 +461,36 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
     for (let i = 0; i < chn.n; i++) {
       sp.push(toB(chn.x[i], chn.y[i]));
       const f = i / (chn.n - 1);
-      let w = f < 0.5 ? lerp(TAILS[t].w0, TAILS[t].w0 * 0.82, f / 0.5) : f < 0.8 ? lerp(TAILS[t].w0 * 0.82, TAILS[t].w0 * 0.42, (f - 0.5) / 0.3) : lerp(TAILS[t].w0 * 0.42, 0.3, (f - 0.8) / 0.2);
+      const w = f < 0.55 ? lerp(TAILS[t].w0, TAILS[t].w0 * 1.15, f / 0.55) : lerp(TAILS[t].w0 * 1.15, 0.4, Math.pow((f - 0.55) / 0.45, 0.8));
       ws.push(w * K);
     }
     const out = ribbonOutline(sp, ws, 'point');
-    // notch the edges to read as torn cloth
-    for (let i = 0; i < out.length; i++) { const f = (i % chn.n) / chn.n; if (f > 0.4 && i % 3 === 1) { out[i] = [out[i][0], out[i][1], 0]; } }
+    for (let i = 0; i < out.length; i++) { const f = (i % chn.n) / chn.n; if (f > 0.4 && i % 3 === 1) out[i] = [out[i][0], out[i][1], 0]; }
     const m = TAILS[t].m;
-    const col = m === 'lining' ? M.lining.s : m === 'cloakS' ? M.cloak.s : M.cloak.b;
-    buf.poly(spline(out, true, 3), col, G.tails);
+    buf.litR = 2.6;
+    buf.poly(spline(out, true, 3), m === 'lining' ? M.lining.s : m === 'cloakS' ? M.cloak.s : M.cloak.b, G.tails);
+    buf.litR = 0;
   }
   // ---- back cape
-  buf.poly(spline([T(-3.6, 40.5), T(-8.6, 37.4), T(-13.2, 31.5), T(-14.6, 24), T(-14.4, 17), T(-12.4, 12.4), T(-8, 11.4), T(-3, 12.6), T(1, 20), T(2, 30), T(1.2, 38.5)], true, 3), (x, y) => {
-    const [a] = spineAB(x, y);
-    return a < -11.5 ? M.cloak.b : M.cloak.s;
-  }, G.capeB);
+  buf.litR = 3;
+  buf.poly(spline(Tt(FIG.capeB), true, 3), M.cloak.s, G.capeB);
+  buf.litR = 0;
   // ---- halo
   if (COSTUME.halo) {
-    const hq = Hd(-3.4, -14.0);
+    // a clean 1px ring floating above the crown
+    const hq = Hd(-2.2, -15.2);
     const t = (opts.time || 0) * 1.3;
-    buf.ellipse(hq[0], hq[1] + Math.sin(t) * 0.8, 9.6 * K, 3.0 * K, J.ha - 0.3, (u, v) => {
-      const d = Math.hypot(u, v);
-      if (d < 0.8) return 0;
-      return v < -0.3 ? M.red.l : M.red.s;
-    }, G.halo);
+    const rx = 10.5 * K, ry = 2.8 * K, rot = J.ha * 0.6 - 0.12, cy = hq[1] + Math.sin(t) * 0.8;
+    const cs = Math.cos(rot), sn = Math.sin(rot);
+    let lastX = null, lastY = null;
+    for (let i = 0; i <= 96; i++) {
+      const a = (i / 96) * TAU, ex_ = Math.cos(a) * rx, ey_ = Math.sin(a) * ry;
+      const x = Math.round(hq[0] + ex_ * cs - ey_ * sn), y = Math.round(cy + ex_ * sn + ey_ * cs);
+      if (x === lastX && y === lastY) continue;
+      buf.pset(x, y, Math.sin(a) < 0 ? M.red.s : M.red.l, G.halo);
+      lastX = x; lastY = y;
+    }
+    buf.bump();
   }
   // ---- long hair: smooth strands that merge into one mass
   for (let s = 0; s < HAIR.length; s++) {
@@ -428,24 +499,25 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
     for (let i = 0; i < chn.n; i++) {
       sp.push(toB(chn.x[i], chn.y[i]));
       const f = i / (chn.n - 1);
-      const w = f < 0.22 ? lerp(HAIR[s].w0, HAIR[s].wm, f / 0.22) : f < 0.62 ? HAIR[s].wm : HAIR[s].wm * Math.pow(1 - (f - 0.62) / 0.38, 0.9);
-      ws.push(Math.max(0.5, w * K * 1.12));
+      const w = f < 0.25 ? lerp(HAIR[s].w0, HAIR[s].wm, f / 0.25) : f < 0.5 ? HAIR[s].wm : HAIR[s].wm * Math.pow(1 - (f - 0.5) / 0.5, 1.15);
+      ws.push(Math.max(0.4, w * K * 1.1));
     }
     const tn = HAIR[s].tone;
+    buf.litR = 3.2;
     buf.poly(spline(ribbonOutline(sp, ws, 'point'), true, 3), tn === 's' ? M.hair.s : tn === 'd' ? M.hair.d : M.hair.b, G.hair);
+    buf.litR = 0;
   }
-  // strand lines: a dark parting and a sheen along the outer strands
-  for (const [si, i0, i1, off, c1, c2] of [[1, 1, 6, -1.4, M.hair.l, M.hair.h], [3, 1, 5, -1.1, M.hair.l, M.hair.l], [2, 2, 7, 1.6, M.hair.d, M.hair.d]]) {
+  for (const [si, i0, i1, off, c1, c2] of [[1, 1, 7, -2.2, M.hair.l, M.hair.h], [2, 2, 8, -1.6, M.hair.l, M.hair.l], [3, 1, 6, -1.8, M.hair.l, M.hair.h], [2, 1, 7, 2.2, M.hair.d, M.hair.d]]) {
     const chn = hero.hair[si];
     const sp = [];
     for (let i = i0; i <= Math.min(i1, chn.n - 1); i++) { const q = toB(chn.x[i], chn.y[i]); sp.push([q[0] + off, q[1]]); }
     const pl = spline(sp, false, 3);
-    for (let i = 0; i + 3 < pl.length; i += 2) buf.line(pl[i], pl[i + 1], pl[i + 2], pl[i + 3], i < 6 ? c2 : c1, G.hair);
+    for (let i = 0; i + 3 < pl.length; i += 2) if ((i >> 1) % 5 !== 3) buf.line(pl[i], pl[i + 1], pl[i + 2], pl[i + 3], i < 8 ? c2 : c1, G.hair);
   }
 
   const drawHand = (wx, wy, ux, uy, mode, g, dim) => {
     const ang = Math.atan2(uy, ux);
-    const H = (x, y) => lmkFrame(wx, wy, ang, x, y);
+    const H = (x, y, sh) => { const q = lmkFrame(wx, wy, ang, x, y); if (sh === 0) q.push(0); return q; };
     const pts = mode === 1
       ? [H(-0.6, -2.3), H(1.8, -2.7), H(3.9, -1.9), H(4.6, 0.1), H(3.8, 2.2), H(1.2, 2.6), H(-0.7, 2.0)]
       : [H(-0.5, -2.0), H(2.0, -2.4), H(4.6, -1.7), H(6.3, -0.9), H(6.6, 0.1, 0), H(5.1, 0.7), H(3.4, 1.8), H(1.0, 2.3), H(-0.5, 1.8)];
@@ -453,7 +525,7 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
       const rx = (x + 0.5 - wx) / K, ry = (y + 0.5 - wy) / K;
       const ly = -Math.sin(ang) * rx + Math.cos(ang) * ry;
       const lx = Math.cos(ang) * rx + Math.sin(ang) * ry;
-      if (mode === 1 && lx > 3.0 && lx < 3.8) return M.skin.s; // knuckles
+      if (mode === 1 && lx > 3.0 && lx < 3.8) return M.skin.s;
       return ly > 0.9 || dim > 0.3 ? M.skin.s : M.skin.b;
     }, g);
   };
@@ -461,19 +533,20 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
   const drawArm = (sx, sy, exx, eyy, wx, wy, g, handMode, dim) => {
     const U = bone(sx, sy, exx, eyy), F = bone(exx, eyy, wx, wy);
     const pts = contourPts([...FIG.armFront, ...FIG.armBack], { U, F, J1: U, J2: F });
+    buf.litR = 3.2;
     buf.poly(spline(pts, true, 4), (x, y) => {
       const rx = x + 0.5 - U.ax, ry = y + 0.5 - U.ay;
       const tu = (rx * U.ux + ry * U.uy) / U.L;
-      if (tu < 0.98) {
-        const [, s] = boneShadeCoords(U, x, y, FIG.armW[0], FIG.armW[1]);
-        return tone(M.sleeve, s * 0.7 + 0.18 - dim);
-      }
+      if (tu < 0.98) return dim > 0.3 ? M.sleeve.s : M.sleeve.b;
       const [t, s] = boneShadeCoords(F, x, y, FIG.foreW[0], FIG.foreW[1]);
-      if (t > 0.93) return M.red.b; // cuff trim
-      if (t > 0.8) return s > 0.3 ? M.sleeve.l : M.sleeve.b;
-      if (t < 0.08 && s < 0) return M.sleeve.d; // elbow crease
-      return tone(M.sleeve, s * 0.7 + 0.18 - dim);
+      if (t > 0.93) return M.red.b;
+      if (t > 0.8) return M.sleeve.l;
+      if (t < 0.08 && s < 0) return M.sleeve.s;
+      // soft folds bunching above the cuff and at the elbow
+      if ((Math.abs(t - 0.66 + s * 0.06) < 0.035 || Math.abs(t - 0.18 - s * 0.05) < 0.035) && buf.curD > 1.2) return M.sleeve.s;
+      return dim > 0.3 ? M.sleeve.s : M.sleeve.b;
     }, g);
+    buf.litR = 0;
     drawHand(wx + F.ux * 0.6 * K, wy + F.uy * 0.6 * K, F.ux, F.uy, handMode, g, dim);
   };
 
@@ -527,45 +600,59 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
     const dim = back ? 0.42 : 0;
     const Tb = bone(hip[0], hip[1], knee[0], knee[1]), Sb = bone(knee[0], knee[1], ankle[0], ankle[1]);
     const pts = contourPts([...FIG.legFront, ...FIG.legBack], { T: Tb, S: Sb, J1: Tb, J2: Sb });
+    const Kn0 = lmkJoint(Tb, Sb, 1.2);
     const st = FIG.sockTop;
+    buf.litR = 6.5;
+    const skinB = back ? M.skin.s : M.skin.b, sockB = back ? SM.s : SM.b;
+    const segD = (b, x, y) => {
+      const rx = x + 0.5 - b.ax, ry = y + 0.5 - b.ay;
+      const t = clamp((rx * b.ux + ry * b.uy) / b.L, 0, 1);
+      return Math.hypot(rx - b.ux * b.L * t, ry - b.uy * b.L * t);
+    };
     buf.poly(spline(pts, true, 4), (x, y) => {
       const rx = x + 0.5 - Tb.ax, ry = y + 0.5 - Tb.ay;
       const tr = (rx * Tb.ux + ry * Tb.uy) / Tb.L;
-      if (tr < 1.0) {
+      if (tr < 1.0 && segD(Tb, x, y) <= segD(Sb, x, y) + 0.5) {
         const [t, s] = boneShadeCoords(Tb, x, y, FIG.thighW[0], FIG.thighW[1]);
-        const band = st + 0.035 * s * s; // the band wraps the thigh
-        if (t < band - 0.005) return tone(M.skin, s * 0.5 + 0.2 - dim - (t > band - 0.07 ? 0.1 : 0));
-        if (t < band + 0.045) return s > 0.25 ? M.red.l : M.red.b;
-        return tone(SM, s * 0.62 + 0.1 - dim);
+        if (st > 1) return skinB;
+        const band = st + 0.035 * s * s;
+        if (t < band - 0.005) return skinB;
+        if (t < band + 0.045) return M.red.b;
+        return sockB;
       }
-      const [t, s] = boneShadeCoords(Sb, x, y, FIG.shinW[0], FIG.shinW[1]);
-      if (t < 0.14 && s > 0.35 && !back) return SM.l; // kneecap highlight
-      return tone(SM, s * 0.62 + 0.1 - dim);
+      if (st > 1) {
+        const [t, s] = boneShadeCoords(Sb, x, y, FIG.shinW[0], FIG.shinW[1]);
+        const band = FIG.sockShin + 0.04 * s * s;
+        if (t < band - 0.01) return skinB;
+        if (t < band + 0.05) return M.red.b;
+      }
+      return sockB;
     }, g);
-    // garter ring on the near thigh
+    buf.litR = 0;
+    buf.addBump(Kn0[0], Kn0[1], 3.6 * K, 3.0 * K, 0, 2.2, g);
     if (!back) {
-      const a0 = lmk(Tb, 0.5, 6.35), a1 = lmk(Tb, 0.535, 6.3), b1 = lmk(Tb, 0.535, -6.45), b0 = lmk(Tb, 0.5, -6.5);
+      const a0 = lmk(Tb, 0.42, 6.5), a1 = lmk(Tb, 0.455, 6.45), b1 = lmk(Tb, 0.455, -6.9), b0 = lmk(Tb, 0.42, -7.0);
       buf.poly([...a0, ...a1, ...b1, ...b0], (x, y) => {
         const [, s] = boneShadeCoords(Tb, x, y, FIG.thighW[0], FIG.thighW[1]);
         return s > 0.3 ? M.red.l : s < -0.4 ? M.red.s : M.red.b;
       }, g);
     }
-    // loafer: its own outline so it reads against the sock
     const c = Math.cos(ft), s = Math.sin(ft);
     const A = ankle;
     const F = (x, y, sh) => { const q = [A[0] + (c * x - s * y) * K, A[1] + (s * x + c * y) * K]; if (sh === 0) q.push(0); return q; };
     const shoe = [F(-2.5, -1.3), F(1.6, -1.6), F(3.9, -0.4), F(6.8, 1.0), F(8.0, 2.3), F(7.6, 3.3, 0), F(-0.6, 3.4), F(-1.2, 4.0, 0), F(-3.0, 4.0, 0), F(-3.3, 0.6)];
+    buf.litR = 2.2;
     buf.poly(spline(shoe, true, 3), (x, y) => {
       const rx = (x + 0.5 - A[0]) / K, ry = (y + 0.5 - A[1]) / K;
       const fx = c * rx + s * ry, fy = -s * rx + c * ry;
       if (fy > 3.0) return M.shoe.s;
-      if (fx > 3 && fx < 6.8 && fy < 1.3 && fy > -0.2 && !back) return M.shoe.h;
-      if (fy < 0.2) return back ? M.shoe.b : M.shoe.l;
+      if (!back && fx > 3.2 && fx < 6.4 && fy > -0.2 && fy < 1.2) return M.shoe.l; // toe cap shine
       return M.shoe.b;
     }, gShoe);
+    buf.litR = 0;
   };
 
-  // ---- back arm (behind body) and a blade held behind
+  // ---- far arm (behind body) and a blade held behind
   const armBehind = p.g2 !== 1;
   if (armBehind) drawArm(J.sbx + ox, J.sby + oy, J.ebx + ox, J.eby + oy, J.wbx + ox, J.wby + oy, G.armB, p.gr === 2 ? 1 : p.hb, 0.45);
   if (p.bz === 0) drawBlade(G.bladeB);
@@ -574,34 +661,58 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
   drawLeg([J.hbx + ox, J.hby + oy], [J.Bkx + ox, J.Bky + oy], [J.Bax + ox, J.Bay + oy], J.Bft, G.legB, G.shoeB, true);
   drawLeg([J.hfx + ox, J.hfy + oy], [J.Fkx + ox, J.Fky + oy], [J.Fax + ox, J.Fay + oy], J.Fft, G.legF, G.shoeF, false);
 
-  // ---- torso
-  const front = FIG.torsoFront.map(([a, b], i) => (b > 16 && b < 26 ? [a + ex * (1 - Math.abs(b - 21) / 5), b + ey * (1 - Math.abs(b - 21) / 5)] : [a, b]));
-  const frontAt = (b) => {
-    for (let i = 1; i < front.length; i++) if (front[i][1] >= b) { const [a0, b0] = front[i - 1], [a1, b1] = front[i]; return lerp(a0, a1, (b - b0) / (b1 - b0 || 1)); }
-    return 3;
+  // ---- torso: contour blended between profile and 3/4
+  const TL = FIG.torsoL, TR = FIG.torsoR;
+  const left = TL.b.map((b, i) => [yl(TL.side[i], TL.q[i], yaw), b]);
+  const right = TR.b.map((b, i) => {
+    const a = yl(TR.side[i], TR.q[i], yaw);
+    const w = b > 16 && b < 26 ? 1 - Math.abs(b - 21) / 5 : 0;
+    return [a + ex * w, b + ey * w];
+  });
+  const at = (pts, b) => {
+    for (let i = 1; i < pts.length; i++) {
+      const [a0, b0] = pts[i - 1], [a1, b1] = pts[i];
+      if ((b0 - b) * (b1 - b) <= 0) return lerp(a0, a1, (b - b0) / ((b1 - b0) || 1));
+    }
+    return pts[0][0];
   };
-  buf.poly(spline([...front, ...FIG.torsoBack].map(([a, b]) => T(a, b)), true, 4), (x, y) => {
+  buf.litR = 8;
+  buf.poly(spline([...left, ...right, [yl(0, -1.5, yaw), -11]].map(([a, b]) => T(a, b)), true, 4), (x, y) => {
     const [a, b] = spineAB(x, y);
-    if (a < -4.4) return TM.s;
-    if (b > 15 && b < 18.2 && a > 3.4) return TM.s; // under-bust shade
-    if (b > 17.5 && b < 30 && frontAt(b) - a < 1.4) return TM.l; // lit front edge
-    if (b > 19.6 && b < 23.2 && a > 8.8 && a < 10.8) return TM.l;
-    if (b > 21 && b < 22.4 && a > 9.8 && a < 10.9) return TM.h;
-    if (a > -1.2 && a < -0.2 && b > 18 && b < 29) return TM.s; // side fold
+    if (yaw > 0.5) {
+      const cl = 4.4 - (b - 18.5) * 0.12; // cleavage line
+      if (b > 18.8 && b < 25.2 && Math.abs(a - cl) < 0.5) return TM.s;
+    }
     return TM.b;
   }, G.torso);
+  buf.litR = 0;
+  if (yaw > 0.4) {
+    const k = (yaw - 0.4) / 0.6;
+    const c1 = T(1.4 + ex * 0.8, 21.2 + ey * 0.8), c2 = T(8.0 + ex * 0.8, 21.1 + ey * 0.8);
+    buf.addBump(c1[0], c1[1], 5.6 * K, 4.8 * K, J.sp, 5.5 * k, G.torso);
+    buf.addBump(c2[0], c2[1], 4.4 * K, 4.4 * K, J.sp, 4.5 * k, G.torso);
+  }
   // sailor collar tips
-  buf.poly(spline([T(1.6, 34.6), T(5.8, 33.6), T(7.4, 30.2, 0), T(4.6, 30.8), T(2.2, 32.2)].map((q, i) => (i === 2 ? [...q, 0] : q)), true, 3), M.shirt.l, G.collar);
+  if (yaw > 0.5) {
+    for (const tip of [[[-1.2, 34.8], [1.8, 34.0], [1.2, 30.6, 0], [0.0, 31.6], [-1.2, 33.2]], [[3.4, 34.4], [6.0, 33.8], [5.8, 30.4, 0], [4.4, 31.4], [3.4, 32.8]]]) {
+      buf.poly(spline(tip.map(([a, b, sh]) => T(a, b, sh)), true, 3), M.shirt.l, G.collar);
+    }
+  } else {
+    buf.poly(spline([T(1.6, 34.6), T(5.8, 33.6), T(7.4, 30.2, 0), T(4.6, 30.8), T(2.2, 32.2)], true, 3), M.shirt.l, G.collar);
+  }
   // corset
-  buf.poly(spline([T(7.0, 15.0), T(6.1, 11.5), T(6.9, 6.5), T(7.6, 4.8), T(-8.9, 4.8), T(-6.5, 8.5), T(-5.9, 13), T(-6.6, 16.5), T(-1, 17.6), T(3.4, 16.4)], true, 3), (x, y) => {
+  buf.litR = 4.5;
+  buf.poly(spline(Tt(FIG.corset), true, 3), (x, y) => {
     const [a, b] = spineAB(x, y);
-    if (a > 3.4 && ((Math.round(b * 1.2) + Math.round(a)) % 3 === 0)) return M.red.s; // lacing
-    if (a < -4.6) return M.skirt.d;
-    return b > 13.6 ? M.skirt.l : M.skirt.b;
+    const mid = yl(4.2, 2.6, yaw);
+    if (a > mid - 0.8 && a < mid + 1.6 && ((Math.round(b * 1.2) + Math.round(a)) % 3 === 0)) return M.red.s; // lacing
+    return M.skirt.b;
   }, G.corset);
+  buf.litR = 0;
   // ---- skirt: smooth hips, pleated hem
   {
-    const hemPts = HEM.map(([a, b], i) => Pp(a + hero.hem[i].x / K, b + hero.hem[i].y / K));
+    const hemRest = ylTable(FIG.hem, yaw);
+    const hemPts = hemRest.map(([a, b], i) => Pp(a + hero.hem[i].x / K, b + hero.hem[i].y / K));
     const thighs = [[J.hfx, J.hfy, J.Fkx, J.Fky], [J.hbx, J.hby, J.Bkx, J.Bky]];
     for (const q of hemPts) {
       for (const [ax, ay, kx, ky] of thighs) {
@@ -613,7 +724,7 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
         if (d < r && t > 0.05) { const k = (r - d) / (d || 1); q[0] += exx * k; q[1] += eyy * k; }
       }
     }
-    const pts = [Pp(7.6, 5.8), Pp(-8.8, 5.8), Pp(-11.4, 1.2), Pp(-13.3, -3.8)];
+    const pts = ylTable(FIG.skirtTop, yaw).map(([a, b]) => Pp(a, b));
     for (let i = 0; i < hemPts.length; i++) {
       pts.push([...hemPts[i], 0]);
       if (i < hemPts.length - 1) {
@@ -623,44 +734,61 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
         pts.push([mx + (dy / L) * 1.4 * K, my - (dx / L) * 1.4 * K, 0]);
       }
     }
-    pts.push(Pp(11.4, -4.0), Pp(8.9, 2.0));
+    pts.push(...ylTable(FIG.skirtFront, yaw).map(([a, b]) => Pp(a, b)));
+    buf.litR = 7;
     buf.poly(spline(pts, true, 3), (x, y) => {
       const [a, b] = pelvisAB(x, y);
-      if (b > 4.2) return M.skirt.s; // waistband
+      if (b > 4.2) return M.skirt.s;
       const tb = clamp((5 - b) / 20, 0, 1);
-      const half = lerp(8.4, 14.2, tb);
+      const half = lerp(8.4, 14.6, tb);
       const u = (a + half) / (2 * half);
-      const pleat = Math.floor(u * 7 + 0.4 * (1 - tb));
-      if (b < -12.0 - Math.abs(a) * 0.08 && b > -13.4 - Math.abs(a) * 0.08) return M.red.s; // hem stripe
+      const pleat = Math.floor(u * 8 + 0.4 * (1 - tb));
+      if (buf.curD < 2.2 && b < -8.5) return buf.curD < 1.1 ? M.red.s : M.red.b; // hem trim along the real edge
       if (u < 0.14) return M.skirt.d;
-      const fu = u * 7 + 0.4 * (1 - tb) - pleat;
-      if (pleat % 2 === 0 && fu < 0.28 && tb > 0.2) return M.skirt.l;
+      const fu = u * 8 + 0.4 * (1 - tb) - pleat;
+      if (pleat % 2 === 0 && fu < 0.3 && tb > 0.2) return M.skirt.l;
       return pleat % 2 ? M.skirt.s : M.skirt.b;
     }, G.skirt);
+    buf.litR = 0;
   }
   // ---- sailor tie
   {
     const t = hero.tie;
-    const sp = [T(5.2, 31.4)], ws = [2.2 * K];
+    const k0v = ylPt(FIG.tie.side, FIG.tie.q, yaw);
+    const sp = [T(k0v[0], k0v[1])], ws = [2.2 * K];
     for (let i = 0; i < t.n; i++) { sp.push(toB(t.x[i], t.y[i])); ws.push(lerp(3.0, 2.2, i / (t.n - 1)) * K); }
     buf.poly(spline(ribbonOutline(sp, ws, 'flat'), true, 3), (x, y) => ((x + y) % 5 === 0 ? M.red.s : M.red.b), G.tie);
-    const k0 = sp[0];
-    buf.ellipse(k0[0] + 0.5, k0[1] - 0.3, 2.3 * K, 1.6 * K, J.sp, M.red.l, G.tie);
+    buf.ellipse(sp[0][0] + 0.5, sp[0][1] - 0.3, 2.3 * K, 1.6 * K, J.sp, M.red.l, G.tie);
   }
-  // ---- capelet + high collar, tattered hem
+  // ---- capelet (near side) + far shoulder cap + collar
+  buf.litR = 3.5;
+  if (yaw > 0.3) buf.poly(spline(FIG.capFar.map(([a, b, sh]) => T(a, b, sh)), true, 3), M.cloak.b, G.capFar);
+  buf.poly(spline(Tt(FIG.capelet), true, 3), (x, y) => {
+    const [a, b] = spineAB(x, y);
+    if (b > 35.6) return a > 1 ? M.cloak.b : M.cloak.l;
+    const edge = yl(-0.2, -1.8, yaw) - (32 - b) * 0.45;
+    if (a > edge && b < 34) return M.lining.b;
+    return M.cloak.b;
+  }, G.capelet);
+  buf.litR = 0;
   {
-    const P = [T(4.6, 40.8), T(5.4, 36.8), T(4.6, 34.4), T(1.6, 31.2), T(-0.8, 27.4), [...T(-1.8, 24.6), 0], [...T(-3.2, 26.2), 0], [...T(-4.6, 23.2), 0], [...T(-6.0, 25.6), 0], [...T(-7.8, 22.6), 0], [...T(-9.2, 25.0), 0], [...T(-11.0, 23.2), 0], [...T(-12.4, 25.4), 0], [...T(-13.9, 23.8), 0], T(-13.8, 28.8), T(-12.4, 33.8), T(-8.4, 37.8), T(-3.6, 41.6)];
-    buf.poly(spline(P, true, 3), (x, y) => {
-      const [a, b] = spineAB(x, y);
-      if (b > 35.6) return a > 2 ? M.cloak.b : M.cloak.l; // collar
-      if (a > -0.2 - (32 - b) * 0.45 && b < 34) return M.lining.b; // lining at the opening
-      if (a < -11) return M.cloak.s;
-      return b < 27.2 ? M.cloak.s : M.cloak.b;
-    }, G.capelet);
-    const cc = T(4.3, 34.9);
+    const cq = ylPt(FIG.clasp.side, FIG.clasp.q, yaw), cc = T(cq[0], cq[1]);
     buf.ellipse(cc[0], cc[1], 2.0 * K, 2.0 * K, 0, (u, v) => (Math.hypot(u, v) < 0.45 ? 0 : v < 0 ? M.red.l : M.red.b), G.capelet);
   }
   if (!armBehind) drawArm(J.sbx + ox, J.sby + oy, J.ebx + ox, J.eby + oy, J.wbx + ox, J.wby + oy, G.armB2, 1, 0.2);
+  // ---- front locks falling over the near shoulder
+  for (let s = 0; s < hero.front.length; s++) {
+    const chn = hero.front[s];
+    const sp = [], ws = [];
+    for (let i = 0; i < chn.n; i++) {
+      sp.push(toB(chn.x[i], chn.y[i]));
+      const f = i / (chn.n - 1);
+      ws.push(Math.max(0.5, (f < 0.5 ? lerp(5.4, 6.4, f / 0.5) : 6.4 * Math.pow(1 - (f - 0.5) / 0.5, 1.1)) * K));
+    }
+    buf.litR = 2.6;
+    buf.poly(spline(ribbonOutline(sp, ws, 'point'), true, 3), s ? M.hair.s : M.hair.b, G.hairFront);
+    buf.litR = 0;
+  }
 
   // ---- neck + head
   {
@@ -673,28 +801,41 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
       buf.pset(ca[0] + 2.4 * K, (ca[1] + cb[1]) / 2 + 1, M.red.l, G.neck);
     }
     const hc = Hd(-1.6, -2.6);
-    buf.ellipse(hc[0], hc[1], 8.7 * K * HK, 10.2 * K * HK, J.ha, (u, v) => (u < -0.5 && v > -0.3 && v < 0.5 ? M.hair.b : M.hair.s), G.hairF);
+    const capPts = [];
+    for (let i = 0; i < 20; i++) { const a = (i / 20) * TAU; capPts.push(Hd(-1.6 + Math.cos(a) * 8.7, -2.6 + Math.sin(a) * 10.2)); }
+    buf.litR = 5;
+    buf.poly(spline(capPts, true, 2), (x, y) => {
+      const [lx, ly] = headXY(x, y);
+      const ang = Math.atan2(ly + 11, lx + 1.5); // strands radiate from the crown
+      const st = (ang * 9 + 50) % 1;
+      if (st < 0.22) return M.hair.s;
+      return M.hair.b;
+    }, G.hairF);
+    buf.litR = 5;
     buf.poly(spline(FIG.face.map(([x, y, sh]) => { const q = Hd(x, y); if (sh === 0) q.push(0); return q; }), true, 4), (x, y) => {
       const [lx, ly] = headXY(x, y);
-      if (lx < -2.6 && ly > 1.6) return M.skin.s; // jaw side plane
-      if (lx > 4.8 && ly > 3.6) return M.skin.s; // under the far cheek
+      if (lx < -4.4 && ly > -3.6) return M.skin.s; // near cheek turns away from the light
+      if (lx < -2.2 && ly > 4.2) return M.skin.s;
+      if (lx > 5.2 && ly > 3.2) return M.skin.s;
+      if (buf.curD < 1.6 && lx > 3.5 && ly < 3 && ly > -3) return M.skin.l; // lit far cheek
       return M.skin.b;
     }, G.face);
+    buf.litR = 0;
     const EYES = {
       near: {
-        open: ['..LLL.', 'LLLLLL', 'LDDDWe', '.IPPIe', '.IPPI.', '.iiiI.', '..ll..'],
-        focus: ['......', '......', 'LLLLLL', 'LDPPWe', '.IPPI.', '.iiiI.', '..ll..'],
-        closed: ['......', '......', '......', 'L....L', '.LLLL.', '......', '......'],
-        pain: ['......', 'L.....', '.LL...', '...LL.', '.LL...', 'L.....', '......'],
+        open: ['LLL....', '.LLLLL.', '.LDDDWL', '..IPPIe', '..IPPi.', '..iiwi.', '..kkkk.'],
+        focus: ['.......', 'LLL....', '.LLLLLL', '.LDPPWe', '..IPPi.', '..iiii.', '...ll..'],
+        closed: ['.......', '.......', '.......', 'L.....L', '.LLLLL.', '.......', '.......'],
+        pain: ['.......', 'L......', '.LL....', '...LL..', '.LL....', 'L......', '.......'],
       },
       far: {
-        open: ['.LL.', 'LLLL', 'eDWL', '.PI.', '.PI.', '.ii.', '..l.'],
-        focus: ['....', '....', 'LLLL', 'ePWL', '.PI.', '.ii.', '..l.'],
-        closed: ['....', '....', '....', 'L..L', '.LL.', '....', '....'],
-        pain: ['....', '...L', '.LL.', 'L...', '.LL.', '...L', '....'],
+        open: ['...LL', 'LLLL.', 'eDWD.', 'ePPI.', '.PPi.', '.iwi.', '.kkk.'],
+        focus: ['.....', '...LL', 'LLLL.', 'ePWD.', '.PPi.', '.iii.', '..l..'],
+        closed: ['.....', '.....', '.....', 'L...L', '.LLL.', '.....', '.....'],
+        pain: ['.....', '....L', '..LL.', 'LL...', '..LL.', '....L', '.....'],
       },
     };
-    const MAP = { L: C.lash, D: C.irisDk, I: C.iris, i: C.irisLt, P: C.pupil, W: C.white, e: C.eyeWhite, l: M.skin.line };
+    const MAP = { L: C.lash, D: C.irisDk, I: C.iris, i: C.irisLt, P: C.pupil, W: C.white, w: C.eyeWhite, e: C.eyeWhite, l: M.skin.line, k: M.skin.d };
     const expr = p.fc === 3 ? 'pain' : hero.blink > 0 || p.fc === 2 ? 'closed' : p.fc === 1 || p.fc === 4 ? 'focus' : 'open';
     const stamp = (lx, ly, rows) => {
       const q = Hd(lx, ly);
@@ -704,33 +845,41 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
         if (ch !== '.') buf.pset(x0 + c, y0 + r, MAP[ch], G.face);
       }
     };
-    stamp(-3.2, -3.6, EYES.near[expr]);
-    stamp(2.2, -3.5, EYES.far[expr]);
-    const mq = Hd(3.4, 5.0);
+    stamp(-5.3, -2.6, EYES.near[expr]);
+    stamp(1.7, -2.5, EYES.far[expr]);
+    const mq = Hd(2.9, 5.4);
     const mx = Math.round(mq[0]), my = Math.round(mq[1]);
     if (p.fc === 3 || p.fc === 4) {
       buf.pset(mx - 1, my, C.mouth, G.face); buf.pset(mx, my, C.mouth, G.face);
       buf.pset(mx - 1, my + 1, C.mouthIn, G.face); buf.pset(mx, my + 1, C.mouthIn, G.face);
     } else {
-      buf.pset(mx, my, C.mouth, G.face);
-      buf.pset(mx - 1, my, p.fc === 1 ? C.mouth : M.skin.s, G.face);
+      // a small, knowing smirk
+      buf.pset(mx - 1, my, C.mouth, G.face); buf.pset(mx, my, C.mouth, G.face);
+      buf.pset(mx + 1, my - 1, C.mouth, G.face);
+      buf.pset(mx, my + 1, M.skin.l, G.face);
     }
-    const nq = Hd(6.0, 1.3); buf.pset(nq[0], nq[1], M.skin.s, G.face);
-    const bq = Hd(-1.6, 2.6); for (let i = 0; i < 3; i++) buf.pset(bq[0] + i, bq[1], C.blush, G.face);
-    const bq2 = Hd(3.9, 2.7); buf.pset(bq2[0], bq2[1], C.blush, G.face); buf.pset(bq2[0] + 1, bq2[1], C.blush, G.face);
+    const nq = Hd(6.4, 1.6); buf.pset(nq[0] - 1, nq[1], M.skin.s, G.face);
+    const bq = Hd(-3.6, 2.9); for (let i = 0; i < 3; i++) buf.pset(bq[0] + i, bq[1], C.blush, G.face);
+    const bq2 = Hd(3.8, 2.9); buf.pset(bq2[0], bq2[1], C.blush, G.face); buf.pset(bq2[0] + 1, bq2[1], C.blush, G.face);
+    buf.litR = 3.5;
     buf.poly(spline(FIG.bangs.map(([x, y, sh]) => { const q = Hd(x, y); if (sh === 0) q.push(0); return q; }), true, 3), (x, y) => {
       const [lx, ly] = headXY(x, y);
-      if (ly > -9.4 && ly < -8.0 && lx > -4.2 && lx < 3.9) return M.hair.l; // angel ring
-      if (ly > -8.0 && ly < -7.2 && lx > -2.2 && lx < 1.8) return M.hair.h;
-      if (ly > -4.6) return M.hair.s;
+      // strands fan from the crown toward the blunt cut
+      const ang = Math.atan2(ly + 13, lx + 0.5);
+      const st = (ang * 10 + 50) % 1;
+      const ring = ly > -9.8 && ly < -7.9 && lx > -5.4 && lx < 4.8;
+      if (ring) return st < 0.3 ? M.hair.b : (st < 0.7 && lx > -3 && lx < 2 ? M.hair.h : M.hair.l); // clumped angel ring
+      if (st < 0.2 && ly > -7.9) return M.hair.d; // parting between strands
+      if (st > 0.2 && st < 0.36 && ly > -7.4 && ly < -5.2) return M.hair.l; // lower sheen
       return M.hair.b;
     }, G.hairF);
+    buf.litR = 0;
     const lock = (x0, y0, x1, y1, w0, w1) => {
       const pts = ribbonOutline([Hd(x0, y0), Hd((x0 + x1) / 2 - 0.2, (y0 + y1) / 2), Hd(x1, y1)], [w0 * 2 * K * HK, w0 * 1.9 * K * HK, w1 * 2 * K * HK], 'flat');
       buf.poly(spline(pts, true, 3), M.hair.b, G.hairF);
     };
-    lock(-3.8, -5.2, -3.4, 8.2, 1.4, 1.3); // near hime lock, cut at the jaw
-    lock(6.0, -3.9, 6.0, 5.0, 0.5, 0.45); // far lock
+    lock(-6.9, -5.4, -6.4, 8.8, 1.3, 1.25);
+    lock(7.0, -4.2, 6.9, 5.8, 0.45, 0.4);
     for (const r of hero.ribbon) {
       const sp = [];
       for (let i = 0; i < r.n; i++) sp.push(toB(r.x[i], r.y[i]));
@@ -741,15 +890,14 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
     buf.ellipse(l2[0], l2[1], 2.3 * K, 1.3 * K, J.ha + 0.6, M.red.s, G.bow);
     buf.ellipse(k[0], k[1], 1.2 * K, 1.2 * K, 0, M.red.l, G.bow);
   }
-  // ---- front arm, then the capelet's near shoulder over its root
+  // ---- near arm, then its shoulder cap
   const frontFist = p.gr === 0 || p.gr === 1 ? 1 : p.hf;
   drawArm(J.sfx + ox, J.sfy + oy, J.efx + ox, J.efy + oy, J.wfx + ox, J.wfy + oy, G.armF, frontFist, 0);
-  buf.poly(spline([T(-5.8, 35.6), T(0.8, 35.4), T(2.0, 31.8), [...T(0.2, 29.0), 0], [...T(-1.8, 27.6), 0], [...T(-3.6, 29.0), 0], [...T(-5.6, 27.8), 0], T(-7.4, 31.0)], true, 3), (x, y) => {
-    const [a, b] = spineAB(x, y);
-    if (b < 28.4) return M.cloak.s;
-    if (a > 0.2 && b > 30) return M.cloak.l;
-    return M.cloak.b;
-  }, G.cap);
+  if (yaw < 0.5) {
+    buf.litR = 3;
+    buf.poly(spline(Tt(FIG.shoulderCap), true, 3), M.cloak.b, G.cap);
+    buf.litR = 0;
+  }
   if (p.bz === 1) {
     drawBlade(G.blade);
     if (p.gr !== 2) drawHand(J.wfx + ox, J.wfy + oy, J.bdx, J.bdy, 1, G.handF, 0);
@@ -757,10 +905,27 @@ function drawHeroine(buf, J, hero, ox, oy, rootX, rootY, dir, opts = {}) {
   }
   if (p.gr === 2 && p.bz === 1) drawHand(J.wbx + ox, J.wby + oy, J.bdx, J.bdy, 1, G.handF, 0);
 
+  // ---- form lighting from the height fields (key light: top-right-front)
+  const lit = (o) => Object.assign({ up: 0.09, dn: 0.1, dn2: 0.36 }, o);
+  const cfg = {};
+  for (const g of [G.legF, G.legB]) cfg[g] = lit({ shine: 0.955, pow: 40 });
+  for (const g of [G.armF, G.armB, G.armB2]) cfg[g] = lit({});
+  cfg[G.torso] = lit({ shine: 0.975, pow: 30 });
+  cfg[G.corset] = lit({ shine: 0.95, pow: 30 });
+  cfg[G.skirt] = lit({ dn2: 0.55 });
+  cfg[G.face] = lit({ up: 0.16, dn: 0.2, dn2: 0.62, str: 0.45 });
+  cfg[G.hair] = lit({ shine: 0.9, pow: 18 });
+  cfg[G.hairFront] = lit({ shine: 0.9, pow: 18 });
+  cfg[G.hairF] = lit({ up: 0.45, dn: 0.1, dn2: 0.4, str: 0.7 });
+  for (const g of [G.tails, G.capeB, G.capelet, G.cap, G.capFar]) cfg[g] = lit({});
+  for (const g of [G.shoeF, G.shoeB]) cfg[g] = lit({ shine: 0.85, pow: 14 });
+  buf.light(cfg, LIGHT_DIR);
+  buf.despeckle([G.skirt, G.hair, G.hairFront, G.hairF, G.torso, G.corset, G.legF, G.legB, G.armF, G.armB, G.armB2, G.tails, G.capelet, G.capeB, G.face]);
+
   // ---- cast shadows (anime cel shadows that follow the real shapes)
   buf.castShadow([G.skirt, G.corset], [G.legF, G.legB], Math.round(3 * K));
   buf.castShadow([G.hairF], [G.face], Math.round(2.2 * K));
   buf.castShadow([G.face, G.hairF], [G.neck], Math.round(3 * K));
-  buf.castShadow([G.capelet, G.cap, G.collar], [G.torso, G.armF, G.armB2], Math.round(1.8 * K));
+  buf.castShadow([G.capelet, G.cap, G.collar, G.capFar], [G.torso, G.armF, G.armB2], Math.round(1.8 * K));
   buf.castShadow([G.corset], [G.torso], Math.round(1 * K), 0, 1);
 }

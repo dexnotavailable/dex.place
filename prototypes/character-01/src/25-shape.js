@@ -22,7 +22,7 @@ function lmkJoint(b1, b2, off, miter = true) {
   let nx = b1.nx + b2.nx, ny = b1.ny + b2.ny;
   const L = Math.hypot(nx, ny) || 1e-6;
   nx /= L; ny /= L;
-  const c = Math.max(0.55, nx * b1.nx + ny * b1.ny); // cos of half-bend
+  const c = Math.max(0.78, nx * b1.nx + ny * b1.ny); // cos of half-bend (clamped: no spikes)
   const k = miter ? 1 / c : 1;
   return [b1.bx + nx * off * K * k, b1.by + ny * off * K * k];
 }

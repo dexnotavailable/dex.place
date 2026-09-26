@@ -9,6 +9,8 @@ const PAL = {
   line: new Uint8Array(256), // outline/ink index for each colour
   lite: new Uint8Array(256), // softer outline used on the lit (front/top) side
   dark: new Uint8Array(256), // next darker tone of the same material (cast shadows)
+  mat: new Uint8Array(256), // material id of each colour (0 = none)
+  lvl: new Uint8Array(256), // tone level 0..4 (d,s,b,l,h) within its material
   ink: new Uint8Array(256), // 1 = draw inner lines against parts behind
   noOut: new Uint8Array(256), // 1 = no outer outline (glows, fx)
 };
@@ -22,6 +24,7 @@ function palAdd(hex) {
   return i;
 }
 // material: tones from dark to light plus an ink colour
+const MATS = [null]; // material id -> [d,s,b,l,h] palette indices
 function material(spec) {
   const m = {};
   const ln = palAdd(spec.line);
@@ -30,6 +33,9 @@ function material(spec) {
   PAL.line[ln] = ln;
   m.d = m.d || m.s; m.l = m.l || m.b; m.h = m.h || m.l;
   PAL.dark[m.h] = m.l; PAL.dark[m.l] = m.b; PAL.dark[m.b] = m.s; PAL.dark[m.s] = m.d; PAL.dark[m.d] = m.d;
+  m.id = MATS.length;
+  MATS.push([m.d, m.s, m.b, m.l, m.h]);
+  [m.d, m.s, m.b, m.l, m.h].forEach((ix, lv) => { if (!PAL.mat[ix]) { PAL.mat[ix] = m.id; PAL.lvl[ix] = lv; } });
   const lite = spec.lite ? palAdd(spec.lite) : ln;
   for (const k of ['d', 's', 'b', 'l', 'h']) if (m[k]) PAL.lite[m[k]] = lite;
   PAL.lite[ln] = lite;
@@ -45,18 +51,18 @@ function tone(m, v) {
 }
 
 const M = {
-  skin: material({ line: '#5e2433', lite: '#b0616a', d: '#c98577', s: '#eeb3a1', b: '#fde6da', l: '#fff3ec', h: '#ffffff' }),
+  skin: material({ line: '#5a2130', lite: '#ad5a63', d: '#c9735f', s: '#eda28a', b: '#fbd9c6', l: '#ffecdf', h: '#fff9f4' }),
   hair: material({ line: '#06060f', d: '#0b0d1b', s: '#141830', b: '#1f2543', l: '#353f6c', h: '#6d7cb8' }),
   cloak: material({ line: '#0b0508', d: '#120a0e', s: '#1b1016', b: '#291a21', l: '#3e2831', h: '#5a3b47' }),
   lining: material({ line: '#16030b', s: '#330a15', b: '#521222', l: '#7a1d31' }),
   shirt: material({ line: '#2c2d45', lite: '#6e7090', d: '#7d809b', s: '#b7bad0', b: '#e9eaf3', l: '#f7f8fc', h: '#ffffff' }),
   skirt: material({ line: '#0c0c16', d: '#1d1f2e', s: '#2b2e42', b: '#3c4059', l: '#555a79', h: '#747a9c' }),
-  sock: material({ line: '#050508', d: '#0a0a10', s: '#12121b', b: '#1c1c29', l: '#2e2f44', h: '#4a4c68' }),
+  sock: material({ line: '#06060b', d: '#101019', s: '#191a28', b: '#25263a', l: '#3b3d57', h: '#5d6085' }),
   shoe: material({ line: '#040406', s: '#0b0b11', b: '#16161f', l: '#34354a', h: '#6a6c88' }),
   red: material({ line: '#2a0210', lite: '#6e0a22', d: '#4c0619', s: '#8a0b25', b: '#d0132e', l: '#ff4150', h: '#ffa08f' }),
   blouseDk: material({ line: '#07070d', d: '#121320', s: '#1c1d2c', b: '#2b2d41', l: '#3f4259', h: '#5a5e7a' }),
   sockW: material({ line: '#373952', lite: '#7c7f9c', d: '#8c8fa8', s: '#bcbfd3', b: '#e5e6f0', l: '#f5f6fb', h: '#ffffff' }),
-  sleeve: material({ line: '#06060c', d: '#0c0c14', s: '#15151f', b: '#20212f', l: '#333548', h: '#4c4f68' }),
+  sleeve: material({ line: '#08080f', d: '#13131e', s: '#1e1f2d', b: '#2b2d40', l: '#44475f', h: '#646888' }),
   metal: material({ line: '#060509', s: '#15141a', b: '#2a2933', l: '#4a4858', h: '#8d8aa0' }),
 };
 const C = {
@@ -90,6 +96,8 @@ class PixBuf {
     this.lay = new Uint16Array(n);
     this.out = new Uint8Array(n);
     this.edge = new Uint8Array(n);
+    this.hgt = new Float32Array(n);
+    this.litR = 0;
     this.canvas = document.createElement('canvas');
     this.canvas.width = w; this.canvas.height = h;
     this.ctx = this.canvas.getContext('2d');
@@ -111,6 +119,7 @@ class PixBuf {
       this.grp.fill(0, o + this.bx0, o + this.bx1 + 1);
       this.lay.fill(0, o + this.bx0, o + this.bx1 + 1);
       this.u32.fill(0, o + this.bx0, o + this.bx1 + 1);
+      this.hgt.fill(0, o + this.bx0, o + this.bx1 + 1);
     }
     this.minX = this.w; this.minY = this.h; this.maxX = -1; this.maxY = -1;
     this.layer = 1;
@@ -127,6 +136,8 @@ class PixBuf {
     this.put(x, y, c, g);
   }
   // non-zero winding polygon fill; P = [x0,y0,x1,y1,...]; c = index | fn(x,y)
+  // With litR > 0 the polygon also writes a height field from the distance to
+  // its own outline, which the lighting pass turns into rounded form shading.
   poly(P, c, g) {
     const n = P.length >> 1;
     if (n < 3) return;
@@ -134,6 +145,9 @@ class PixBuf {
     for (let i = 1; i < P.length; i += 2) { const y = P[i]; if (y < minY) minY = y; if (y > maxY) maxY = y; }
     const y0 = Math.max(0, Math.ceil(minY - 0.5)), y1 = Math.min(this.h - 1, Math.floor(maxY - 0.5));
     const xs = this.xs, ws = this.ws, fn = typeof c === 'function';
+    const spans = this.spans || (this.spans = []);
+    spans.length = 0;
+    let sx0 = 1e9, sx1 = -1e9;
     for (let y = y0; y <= y1; y++) {
       const sy = y + 0.5;
       let k = 0;
@@ -158,13 +172,56 @@ class PixBuf {
         if (wind === 0) continue;
         const xa = Math.max(0, Math.ceil(xs[a] - 0.5));
         const xb = Math.min(this.w - 1, Math.ceil(xs[a + 1] - 0.5) - 1);
-        for (let x = xa; x <= xb; x++) {
-          const ci = fn ? c(x, y) : c;
-          if (ci) this.put(x, y, ci, g);
+        if (xb < xa) continue;
+        spans.push(y, xa, xb);
+        if (xa < sx0) sx0 = xa; if (xb > sx1) sx1 = xb;
+      }
+    }
+    const R = this.litR;
+    let dist = null, bw = 0, bx = 0, by = y0;
+    if (R > 0 && spans.length) {
+      bx = sx0 - 1; by = y0 - 1; bw = sx1 - sx0 + 3; const bh = y1 - y0 + 3;
+      dist = this.distField(spans, bx, by, bw, bh);
+    }
+    for (let s = 0; s < spans.length; s += 3) {
+      const y = spans[s];
+      for (let x = spans[s + 1]; x <= spans[s + 2]; x++) {
+        // shaders can read curD: this pixel's distance to the part's own outline
+        const dd = dist ? dist[(y - by) * bw + (x - bx)] : 99;
+        this.curD = dd;
+        const ci = fn ? c(x, y) : c;
+        if (!ci) continue;
+        this.put(x, y, ci, g);
+        if (dist) {
+          const t = Math.min(dd / R, 1);
+          this.hgt[y * this.w + x] = R * Math.sqrt(1 - (1 - t) * (1 - t));
         }
       }
     }
     this.layer++;
+  }
+  // chamfer distance (to the outside of the span mask), local box
+  distField(spans, bx, by, bw, bh) {
+    const N = bw * bh;
+    if (!this.dScratch || this.dScratch.length < N) this.dScratch = new Float32Array(N * 2);
+    const d = this.dScratch;
+    d.fill(0, 0, N);
+    for (let s = 0; s < spans.length; s += 3) {
+      const o = (spans[s] - by) * bw - bx;
+      for (let x = spans[s + 1]; x <= spans[s + 2]; x++) d[o + x] = 1e6;
+    }
+    const D2 = 1.4142;
+    for (let y = 1; y < bh - 1; y++) for (let x = 1; x < bw - 1; x++) {
+      const k = y * bw + x; let v = d[k]; if (!v) continue;
+      v = Math.min(v, d[k - 1] + 1, d[k - bw] + 1, d[k - bw - 1] + D2, d[k - bw + 1] + D2);
+      d[k] = v;
+    }
+    for (let y = bh - 2; y >= 1; y--) for (let x = bw - 2; x >= 1; x--) {
+      const k = y * bw + x; let v = d[k]; if (!v) continue;
+      v = Math.min(v, d[k + 1] + 1, d[k + bw] + 1, d[k + bw + 1] + D2, d[k + bw - 1] + D2);
+      d[k] = v;
+    }
+    return d;
   }
   // tapered capsule; c = index | fn(t, s, x, y) with t along axis, s in [-1,1] across
   capsule(ax, ay, ra, bx, by, rb, c, g) {
@@ -230,6 +287,77 @@ class PixBuf {
     this.layer++;
   }
   bump() { this.layer++; }
+  // ---- form lighting --------------------------------------------------------
+  // Each lit group gets a height field from its own silhouette (distance to
+  // its edge, treating parts drawn in front of it as continuing surface),
+  // plus explicit bumps. Normals from that height are lit by one key light
+  // and the result shifts each pixel along its material's 5-tone ramp.
+  addBump(cx, cy, rx, ry, rot, amp, g) {
+    if (!this.bumpMap) this.bumpMap = new Float32Array(this.w * this.h);
+    const R = Math.max(rx, ry) + 1, cs = Math.cos(rot), sn = Math.sin(rot);
+    for (let y = Math.max(0, Math.floor(cy - R)); y <= Math.min(this.h - 1, Math.ceil(cy + R)); y++)
+      for (let x = Math.max(0, Math.floor(cx - R)); x <= Math.min(this.w - 1, Math.ceil(cx + R)); x++) {
+        const i = y * this.w + x;
+        if (this.grp[i] !== g) continue;
+        const px = x + 0.5 - cx, py = y + 0.5 - cy;
+        const u = (px * cs + py * sn) / rx, v = (-px * sn + py * cs) / ry;
+        const d = u * u + v * v;
+        if (d < 1) { this.bumpMap[i] += amp * Math.sqrt(1 - d); this.bumpTouched = true; }
+      }
+  }
+  light(cfg, L) {
+    const { w, col, grp, hgt } = this;
+    const x0 = Math.max(1, this.minX), x1 = Math.min(w - 2, this.maxX), y0 = Math.max(1, this.minY), y1 = Math.min(this.h - 2, this.maxY);
+    const bm = this.bumpTouched ? this.bumpMap : null;
+    const H = (i) => hgt[i] + (bm ? bm[i] : 0);
+    const lx = L[0], ly = L[1], lz = L[2];
+    let hx = lx, hy = ly, hz = lz + 1; const hl = Math.hypot(hx, hy, hz); hx /= hl; hy /= hl; hz /= hl;
+    const out = this.lightOut || (this.lightOut = []);
+    out.length = 0;
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const i = y * w + x, g = grp[i], c = cfg[g];
+      if (!c) continue;
+      const ci = col[i], m = PAL.mat[ci];
+      if (!m || !PAL.ink[ci]) continue;
+      const h0 = H(i);
+      const hr = grp[i + 1] === g ? H(i + 1) : h0, hlft = grp[i - 1] === g ? H(i - 1) : h0;
+      const hd = grp[i + w] === g ? H(i + w) : h0, hu = grp[i - w] === g ? H(i - w) : h0;
+      const str = c.str ?? 1;
+      let nx = -(hr - hlft) * 0.5 * str, ny = -(hd - hu) * 0.5 * str, nz = 1;
+      const nl = Math.hypot(nx, ny, nz); nx /= nl; ny /= nl; nz /= nl;
+      const dl = nx * lx + ny * ly + nz * lz - lz;
+      let shift = 0;
+      if (dl > c.up) shift = 1; else if (dl < -c.dn2) shift = -2; else if (dl < -c.dn) shift = -1;
+      if (c.shine) {
+        const sp = Math.pow(Math.max(0, nx * hx + ny * hy + nz * hz), c.pow || 24);
+        if (sp > c.shine) shift = Math.max(shift, c.shineTo || 2);
+      }
+      // bounce light: a shadowed edge that faces away from the key gets lifted
+      if (shift < 0 && c.bounce !== false && hgt[i] < 1.4 && nx * lx + ny * ly < -0.25) shift += 1;
+      if (shift) out.push(i, clamp(PAL.lvl[ci] + shift, 0, 4), m);
+    }
+    for (let k = 0; k < out.length; k += 3) col[out[k]] = MATS[out[k + 2]][out[k + 1]];
+    if (bm) { bm.fill(0); this.bumpTouched = false; }
+  }
+  // Cluster cleanup: an interior pixel whose 4 neighbours (same group) all
+  // agree on another colour of the same material takes that colour. Pixel
+  // artists call these orphans; removing them gives clean clusters.
+  despeckle(groups) {
+    const { w, col, grp } = this;
+    const gm = new Uint8Array(64); for (const g of groups) gm[g] = 1;
+    const x0 = Math.max(1, this.minX), x1 = Math.min(w - 2, this.maxX), y0 = Math.max(1, this.minY), y1 = Math.min(this.h - 2, this.maxY);
+    const fix = [];
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const i = y * w + x, g = grp[i], c = col[i];
+      if (!c || !gm[g] || !PAL.ink[c]) continue;
+      const a = col[i - 1], b = col[i + 1], u = col[i - w], d = col[i + w];
+      if (grp[i - 1] !== g || grp[i + 1] !== g || grp[i - w] !== g || grp[i + w] !== g) continue;
+      // horizontal or vertical pair agreeing on a different colour of the same material
+      if (a === b && a !== c && PAL.mat[a] === PAL.mat[c] && (u === a || d === a || u === d)) fix.push(i, a);
+      else if (u === d && u !== c && PAL.mat[u] === PAL.mat[c] && (a === u || b === u)) fix.push(i, u);
+    }
+    for (let k = 0; k < fix.length; k += 2) col[fix[k]] = fix[k + 1];
+  }
   // Cast shadow: pixels of `to` groups get one tone darker when a pixel of a
   // `from` group sits within n pixels in direction (dx,dy). Used for the
   // skirt on the thighs, bangs on the face, capelet on the blouse, etc.
