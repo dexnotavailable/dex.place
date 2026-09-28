@@ -1,0 +1,56 @@
+[
+  {
+    "id": "archive.file.controls.01",
+    "projectId": "dex-place",
+    "slug": "shell-and-system-controls",
+    "headingId": "global-control-registry",
+    "versionId": "1.0",
+    "title": "Controls",
+    "url": "/documentation/dex-place/shell-and-system-controls?version=1.0#global-control-registry"
+  },
+  {
+    "id": "archive.file.movement.01",
+    "projectId": "dex-place",
+    "slug": "world-and-gameplay",
+    "headingId": "5-player-movement-and-controls",
+    "versionId": "1.0",
+    "title": "Movement",
+    "url": "/documentation/dex-place/world-and-gameplay?version=1.0#5-player-movement-and-controls"
+  },
+  {
+    "id": "archive.file.downloads.01",
+    "projectId": "dex-place",
+    "slug": "sections-and-controls",
+    "headingId": "3-downloads-place-content-and-transfer",
+    "versionId": "1.0",
+    "title": "Downloads",
+    "url": "/documentation/dex-place/sections-and-controls?version=1.0#3-downloads-place-content-and-transfer"
+  },
+  {
+    "id": "archive.file.illustrations.01",
+    "projectId": "dex-place",
+    "slug": "sections-and-controls",
+    "headingId": "5-illustrations-exhibit-hall-and-full-artwork-viewer",
+    "versionId": "1.0",
+    "title": "Illustrations",
+    "url": "/documentation/dex-place/sections-and-controls?version=1.0#5-illustrations-exhibit-hall-and-full-artwork-viewer"
+  },
+  {
+    "id": "archive.file.donate.01",
+    "projectId": "dex-place",
+    "slug": "donation",
+    "headingId": "amount-behavior",
+    "versionId": "1.0",
+    "title": "Donate",
+    "url": "/documentation/dex-place/donation?version=1.0#amount-behavior"
+  },
+  {
+    "id": "archive.file.accessibility.01",
+    "projectId": "dex-place",
+    "slug": "mobile-accessibility",
+    "headingId": "5-assist-settings",
+    "versionId": "1.0",
+    "title": "Accessibility",
+    "url": "/documentation/dex-place/mobile-accessibility?version=1.0#5-assist-settings"
+  }
+]

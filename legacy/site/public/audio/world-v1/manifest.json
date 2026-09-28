@@ -1,0 +1,797 @@
+{
+  "version": 1,
+  "createdAt": "2026-09-06T08:42:31Z",
+  "status": "candidate-listening-pending",
+  "providerCredits": 0,
+  "newModelDownloads": 0,
+  "music": [
+    {
+      "id": "arrival",
+      "durationSeconds": 48,
+      "sampleRate": 48000,
+      "channels": 2,
+      "peakDbFS": -9.591,
+      "rmsDbFS": -24.128,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "opus": {
+          "url": "/audio/world-v1/arrival.opus",
+          "bytes": 624324,
+          "sha256": "aeb5a825f0cbeacac8a8690c051bed425ccd2131966241ab3c1faec9eff7fc46"
+        },
+        "m4a": {
+          "url": "/audio/world-v1/arrival.m4a",
+          "bytes": 788636,
+          "sha256": "48203197c4dece6ef41deb94c609b2a1e5e82896e9bbcdc202818f6c269eafdc"
+        }
+      },
+      "listeningStatus": "pending",
+      "nativeSourceSha256": "5e109933a1849520f57ef9b57c88b59dd21bbc458b6ae846a57dddb90fdbcae1",
+      "loopStartSeconds": 0,
+      "loopEndSeconds": 48,
+      "edit": {
+        "sourceRangeSeconds": [
+          6,
+          54
+        ],
+        "wrappedTailSeconds": [
+          54,
+          55.5
+        ],
+        "overlapSeconds": 1.5
+      },
+      "requestedBpm": 80,
+      "requestedKey": "D minor",
+      "timingHarmonyAssessment": "Unproven; requested prompt values are not measured musical facts",
+      "transitionMode": "quiet-gap",
+      "provenance": "Local ACE-Step v1 3.5B with original task-authored motif baked offline",
+      "measuredFinalLufs": -20.99,
+      "measuredFinalTruePeakDbTP": -9.59
+    },
+    {
+      "id": "archive",
+      "durationSeconds": 48,
+      "sampleRate": 48000,
+      "channels": 2,
+      "peakDbFS": -8.468,
+      "rmsDbFS": -23.731,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "opus": {
+          "url": "/audio/world-v1/archive.opus",
+          "bytes": 668958,
+          "sha256": "a61d09e5437f97c0f6cd5ce35d45daca2694f05c03cb88d802bb31675d8d710c"
+        },
+        "m4a": {
+          "url": "/audio/world-v1/archive.m4a",
+          "bytes": 782984,
+          "sha256": "18e5dd4ff64ad6edd0fb29351d90c71726c42236d114d409e1ed165afb4865f9"
+        }
+      },
+      "listeningStatus": "pending",
+      "nativeSourceSha256": "9182b9ac8d847ba550896ee4223374f4fbdfecdf09b19802dfd9c551a2b03102",
+      "loopStartSeconds": 0,
+      "loopEndSeconds": 48,
+      "edit": {
+        "sourceRangeSeconds": [
+          6,
+          54
+        ],
+        "wrappedTailSeconds": [
+          54,
+          55.5
+        ],
+        "overlapSeconds": 1.5
+      },
+      "requestedBpm": 80,
+      "requestedKey": "D minor",
+      "timingHarmonyAssessment": "Unproven; requested prompt values are not measured musical facts",
+      "transitionMode": "quiet-gap",
+      "provenance": "Local ACE-Step v1 3.5B with original task-authored motif baked offline",
+      "measuredFinalLufs": -21.01,
+      "measuredFinalTruePeakDbTP": -8.46
+    },
+    {
+      "id": "gallery",
+      "durationSeconds": 48,
+      "sampleRate": 48000,
+      "channels": 2,
+      "peakDbFS": -3.248,
+      "rmsDbFS": -19.783,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "opus": {
+          "url": "/audio/world-v1/gallery.opus",
+          "bytes": 723915,
+          "sha256": "df9f1efc4cd52928b05a38a1b8af222120153a82ae8fab4606f44816f255d22d"
+        },
+        "m4a": {
+          "url": "/audio/world-v1/gallery.m4a",
+          "bytes": 778814,
+          "sha256": "611cda287913df30672b874f7fd83aec68f2d04c1d96f49c3565571c2a5cafe2"
+        }
+      },
+      "listeningStatus": "pending",
+      "nativeSourceSha256": "08a41b06741e6aeb97f2b4e03400628baf1d01aa32bfdbe9d7838ff7f44bc53a",
+      "loopStartSeconds": 0,
+      "loopEndSeconds": 48,
+      "edit": {
+        "sourceRangeSeconds": [
+          6,
+          54
+        ],
+        "wrappedTailSeconds": [
+          54,
+          55.5
+        ],
+        "overlapSeconds": 1.5
+      },
+      "requestedBpm": 80,
+      "requestedKey": "D minor",
+      "timingHarmonyAssessment": "Unproven; requested prompt values are not measured musical facts",
+      "transitionMode": "quiet-gap",
+      "provenance": "Local ACE-Step v1 3.5B with original task-authored motif baked offline",
+      "measuredFinalLufs": -21,
+      "measuredFinalTruePeakDbTP": -3.25
+    },
+    {
+      "id": "support",
+      "durationSeconds": 83.77,
+      "sampleRate": 48000,
+      "channels": 2,
+      "frameCount": 4020960,
+      "loopStartSeconds": 0,
+      "loopEndSeconds": 83.77,
+      "loopStartFrame": 0,
+      "loopEndFrame": 4020960,
+      "peakDbFS": -10.65695328875804,
+      "rmsDbFS": -24.18721799340338,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "opus": {
+          "url": "/audio/world-v1/suno-theme-b-v1/support.opus",
+          "bytes": 1152333,
+          "sha256": "b0f5d425b80eb4af4d37dc11bfa6fd4c95192be24ce264b709a7ba4d30d02f1c"
+        },
+        "m4a": {
+          "url": "/audio/world-v1/suno-theme-b-v1/support.m4a",
+          "bytes": 1322589,
+          "sha256": "2df21d1caffb73d43ee40a96ccba65b35b6a0d58ae86fd16e3f7bed0660fa9b4"
+        }
+      },
+      "listeningStatus": "approved",
+      "productionStatus": "user-selected S001-B; complete arrangement with quiet entry and reviewed level treatment",
+      "provenance": "Original theme authored for dex.place; selected Suno arrangement, official permitted paid download; production originals retained privately.",
+      "attributions": [
+        {
+          "url": "/audio/world-v1/suno-theme-b-v1/ATTRIBUTION.md",
+          "bytes": 764,
+          "sha256": "3b03e115de0787397a7344b68f6beff94bd742141ee109b8008a52c33de9ddcd"
+        }
+      ],
+      "transitionMode": "complete-cue loop with intentional 2.65-second quiet entry; shared-key offset preservation",
+      "measuredFinalLufs": -21.3,
+      "measuredFinalTruePeakDbTP": -10.65
+    },
+    {
+      "id": "boss",
+      "durationSeconds": 48,
+      "sampleRate": 48000,
+      "channels": 2,
+      "peakDbFS": -7.493,
+      "rmsDbFS": -22.66,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "opus": {
+          "url": "/audio/world-v1/boss.opus",
+          "bytes": 616988,
+          "sha256": "0a7fe2573a0c2a873a9a3b1c86aebd7d2ca07f28b40fd2246b9127af8a711a7f"
+        },
+        "m4a": {
+          "url": "/audio/world-v1/boss.m4a",
+          "bytes": 781306,
+          "sha256": "d5604062c1e875f04dc3212e89516664bd4854d7cc49adb2afcd4abd28a60612"
+        }
+      },
+      "listeningStatus": "pending",
+      "nativeSourceSha256": "57c9f85ac7ee84a26e6bee9e8ebff78e59df5111bba41ffc6f96a644d3a59056",
+      "loopStartSeconds": 0,
+      "loopEndSeconds": 48,
+      "edit": {
+        "sourceRangeSeconds": [
+          6,
+          54
+        ],
+        "wrappedTailSeconds": [
+          54,
+          55.5
+        ],
+        "overlapSeconds": 1.5
+      },
+      "requestedBpm": 80,
+      "requestedKey": "D minor",
+      "timingHarmonyAssessment": "Unproven; requested prompt values are not measured musical facts",
+      "transitionMode": "quiet-gap",
+      "provenance": "Local ACE-Step v1 3.5B with original task-authored motif baked offline",
+      "measuredFinalLufs": -20,
+      "measuredFinalTruePeakDbTP": -7.48
+    },
+    {
+      "id": "arena-chamber",
+      "durationSeconds": 68.57145833333334,
+      "sampleRate": 48000,
+      "channels": 2,
+      "frameCount": 3291430,
+      "loopStartFrame": 0,
+      "loopEndFrame": 3291430,
+      "transitionMode": "fade-through-quiet",
+      "files": {
+        "opus": {
+          "url": "/audio/v2/arena-chamber-v1.opus",
+          "bytes": 979690,
+          "sha256": "76964ba21133620145a744182f512ca4e60b0944211843158e9268f7a709b0c5"
+        },
+        "m4a": {
+          "url": "/audio/v2/arena-chamber-v1.m4a",
+          "bytes": 1256907,
+          "sha256": "e1dd879ceed841df3f6d1388849e2532bed14066f061b6b789aca924093a9bad"
+        }
+      },
+      "listeningStatus": "pending",
+      "productionStatus": "locally-rendered-original-arrangement",
+      "provenance": "Original dex.place 16-bar A-D-E-F motif and harmony, arranged for restrained strings and cello. FluidSynth 2.6.0 with GeneralUser GS 2.0.3; no external song or new provider generation.",
+      "attributions": [
+        {
+          "name": "GeneralUser GS 2.0.3",
+          "creator": "S. Christian Collins",
+          "url": "https://www.schristiancollins.com/generaluser.php",
+          "license": "GeneralUser GS License v2: recordings permitted; soundfont is not distributed."
+        }
+      ]
+    }
+  ],
+  "ambience": [
+    {
+      "id": "exterior",
+      "durationSeconds": 12,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -21.705,
+      "rmsDbFS": -35,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "opus": {
+          "url": "/audio/world-v1/exterior.opus",
+          "bytes": 68888,
+          "sha256": "3df7279dd1a93bc2e60a2e487673a28ed8547dee2627a787bdfb887715afd816"
+        },
+        "m4a": {
+          "url": "/audio/world-v1/exterior.m4a",
+          "bytes": 99678,
+          "sha256": "f351bc854ec9156563bc73fafe43ddfd54c9810288ac978f8973cccd32bcb6b4"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "loopStartSeconds": 0,
+      "loopEndSeconds": 12,
+      "provenance": "Original deterministic filtered-noise and low-hum synthesis, seed 9062031; no external samples",
+      "texture": "quiet exterior air and water-like broadband wash",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "interior",
+      "durationSeconds": 12,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -22.44,
+      "rmsDbFS": -35,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "opus": {
+          "url": "/audio/world-v1/interior.opus",
+          "bytes": 66226,
+          "sha256": "f0e429b8282c64b46f88a279c6d06053e3b024e291f512d1512b2ec490367470"
+        },
+        "m4a": {
+          "url": "/audio/world-v1/interior.m4a",
+          "bytes": 99695,
+          "sha256": "fb884963395003f9af17e93715a448d82010fee2e44c99588282301dc7113033"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "loopStartSeconds": 0,
+      "loopEndSeconds": 12,
+      "provenance": "Original deterministic filtered-noise and low-hum synthesis, seed 9062031; no external samples",
+      "texture": "enclosed ventilation and electrical hum",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    }
+  ],
+  "effects": [
+    {
+      "id": "step-concrete-1",
+      "durationSeconds": 0.10475,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -22.0631,
+      "rmsDbFS": -43.3667,
+      "loopSeamDeltaDbFS": null,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/recorded-steps-v1/step-concrete-1.wav",
+          "bytes": 10100,
+          "sha256": "3701d8e37bdafb32196ae1e4efc8214478e23a098b3e731cd74da2e952580285"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "trial": "recorded-steps-v1",
+      "provenance": "CC0 sourced foley; private candidate selected for an integrated quiet comparison, not artistically approved",
+      "sourceAttribution": {
+        "creator": "Kenney",
+        "title": "Impact Sounds",
+        "page": "https://kenney.nl/assets/impact-sounds",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "sourceFile": "footstep_concrete_001.ogg",
+        "sourceRangeSeconds": [
+          0,
+          0.10475
+        ],
+        "sourceRepresentation": "Original pack OGG"
+      },
+      "processing": {
+        "mono": "Native mono, or arithmetic average of stereo channels",
+        "fixedMaterialGainDb": -21,
+        "perHitNormalization": false,
+        "edgeFadeSeconds": 0,
+        "runtimeGainAdditional": 1
+      },
+      "auditionRole": "quiet concrete foot contact",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "step-concrete-2",
+      "durationSeconds": 0.10760416666666667,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -22.1036,
+      "rmsDbFS": -42.6608,
+      "loopSeamDeltaDbFS": null,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/recorded-steps-v1/step-concrete-2.wav",
+          "bytes": 10374,
+          "sha256": "09005fca16db735f7c19aafe401c85ea09b2236187291e9fd89dda3d7adb6136"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "trial": "recorded-steps-v1",
+      "provenance": "CC0 sourced foley; private candidate selected for an integrated quiet comparison, not artistically approved",
+      "sourceAttribution": {
+        "creator": "Kenney",
+        "title": "Impact Sounds",
+        "page": "https://kenney.nl/assets/impact-sounds",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "sourceFile": "footstep_concrete_003.ogg",
+        "sourceRangeSeconds": [
+          0,
+          0.10760416666666667
+        ],
+        "sourceRepresentation": "Original pack OGG"
+      },
+      "processing": {
+        "mono": "Native mono, or arithmetic average of stereo channels",
+        "fixedMaterialGainDb": -21,
+        "perHitNormalization": false,
+        "edgeFadeSeconds": 0,
+        "runtimeGainAdditional": 1
+      },
+      "auditionRole": "quiet concrete foot contact",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "step-metal-1",
+      "durationSeconds": 0.36,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -22.427,
+      "rmsDbFS": -42.8931,
+      "loopSeamDeltaDbFS": null,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/recorded-steps-v1/step-metal-1.wav",
+          "bytes": 34604,
+          "sha256": "00a07e1594d2fb1b481a271ceb1703f2221b42febabffefdd841d3001d1d41ea"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "trial": "recorded-steps-v1",
+      "provenance": "CC0 sourced foley; private candidate selected for an integrated quiet comparison, not artistically approved",
+      "sourceAttribution": {
+        "creator": "SoftDistortionFX",
+        "title": "Metal Footsteps",
+        "page": "https://freesound.org/people/SoftDistortionFX/sounds/398937/",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "sourceFile": "softdistortionfx-metal-grate-preview.mp3",
+        "sourceRangeSeconds": [
+          6.14,
+          6.5
+        ],
+        "sourceRepresentation": "Public HQ MP3 preview of recorded metal-grate footsteps; not original FLAC"
+      },
+      "processing": {
+        "mono": "Native mono, or arithmetic average of stereo channels",
+        "fixedMaterialGainDb": -9,
+        "perHitNormalization": false,
+        "edgeFadeSeconds": 0.005,
+        "runtimeGainAdditional": 1
+      },
+      "auditionRole": "quiet metal foot contact",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "step-metal-2",
+      "durationSeconds": 0.36,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -22.3955,
+      "rmsDbFS": -42.197,
+      "loopSeamDeltaDbFS": null,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/recorded-steps-v1/step-metal-2.wav",
+          "bytes": 34604,
+          "sha256": "9c65abe8958ff600ffd8594931c691d0c49587f72cc44d75982598fc33ea1bf8"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "trial": "recorded-steps-v1",
+      "provenance": "CC0 sourced foley; private candidate selected for an integrated quiet comparison, not artistically approved",
+      "sourceAttribution": {
+        "creator": "SoftDistortionFX",
+        "title": "Metal Footsteps",
+        "page": "https://freesound.org/people/SoftDistortionFX/sounds/398937/",
+        "license": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "sourceFile": "softdistortionfx-metal-grate-preview.mp3",
+        "sourceRangeSeconds": [
+          12.42,
+          12.78
+        ],
+        "sourceRepresentation": "Public HQ MP3 preview of recorded metal-grate footsteps; not original FLAC"
+      },
+      "processing": {
+        "mono": "Native mono, or arithmetic average of stereo channels",
+        "fixedMaterialGainDb": -9,
+        "perHitNormalization": false,
+        "edgeFadeSeconds": 0.005,
+        "runtimeGainAdditional": 1
+      },
+      "auditionRole": "quiet metal foot contact",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "slash-1",
+      "durationSeconds": 0.32,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -13.825,
+      "rmsDbFS": -29,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/slash-1.wav",
+          "bytes": 30764,
+          "sha256": "b7174f2c574c42ddcf307a618166aa72e5cec662f726203f65d7473203981e1d"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "slash",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "slash-2",
+      "durationSeconds": 0.35,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -13.539,
+      "rmsDbFS": -30,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/slash-2.wav",
+          "bytes": 33644,
+          "sha256": "e74c8c4f95d45a3844d5464c7b5328b761a43fef41834c110be1b061be7f8234"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "slash",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "hit-metal",
+      "durationSeconds": 0.4,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -7.122,
+      "rmsDbFS": -28,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/hit-metal.wav",
+          "bytes": 38444,
+          "sha256": "195bf42fa5e015080f08e5d7cfce72806661180090662ff411d037b6d0ce6543"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "metal",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "cable-cut",
+      "durationSeconds": 0.3,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -12.585,
+      "rmsDbFS": -29,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/cable-cut.wav",
+          "bytes": 28844,
+          "sha256": "ac2282876e85c8a5a5cfb4984b8b30b315f18538353cf3e7e7c0ee0ebbce24b0"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "cable",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "paper-open",
+      "durationSeconds": 0.45,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -14.704,
+      "rmsDbFS": -32,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/paper-open.wav",
+          "bytes": 43244,
+          "sha256": "d78eb5ad7f7f917aea1343c8734c292c0a4cbb22b56101aa11adf96f2374c715"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "paper",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "paper-cut",
+      "durationSeconds": 0.35,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -15.162,
+      "rmsDbFS": -31,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/paper-cut.wav",
+          "bytes": 33644,
+          "sha256": "2a2db2e1296d6b27683e1439f15b9bf11c7488416e00676666c0eacbd64f2600"
+        }
+      },
+      "listeningStatus": "pending",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "paper"
+    },
+    {
+      "id": "lift-start",
+      "durationSeconds": 0.55,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -12.02,
+      "rmsDbFS": -31,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/lift-start.wav",
+          "bytes": 52844,
+          "sha256": "1e10325fb3b09006600e43089ddc7a3d9072b4a64f0cb92b365f02856e3b36fe"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "lift",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "lift-dock",
+      "durationSeconds": 0.4,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -13.656,
+      "rmsDbFS": -30,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/lift-dock.wav",
+          "bytes": 38444,
+          "sha256": "0f2b0f3960730d51c0f55fb8af71964c632ea5854f61f86558c81e83cba8f902"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "lift",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "telegraph",
+      "durationSeconds": 0.75,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -17.545,
+      "rmsDbFS": -30,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/telegraph.wav",
+          "bytes": 72044,
+          "sha256": "a60788c6f1aba5a539e1768b9d125f944057500616ccf8208d31c62a33fb642e"
+        }
+      },
+      "listeningStatus": "pending",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "telegraph"
+    },
+    {
+      "id": "landing",
+      "durationSeconds": 0.32,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -12.308,
+      "rmsDbFS": -30,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/landing.wav",
+          "bytes": 30764,
+          "sha256": "b0b733917578fb93baa1ba9ea878ec69a5e9fd656eb26690df81af39f9bd6df7"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "body",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "hurt",
+      "durationSeconds": 0.28,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -11.736,
+      "rmsDbFS": -29,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/hurt.wav",
+          "bytes": 26924,
+          "sha256": "317a80f0a8021fcf6ba3d132a051398f24c4b9ae85fec6af228ec78f0f5ec045"
+        }
+      },
+      "listeningStatus": "pending",
+      "provenance": "Original offline physical-texture synthesis; no external samples",
+      "auditionRole": "body"
+    },
+    {
+      "id": "confirm",
+      "durationSeconds": 0.7,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -31.889,
+      "rmsDbFS": -37.335,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/confirm.wav",
+          "bytes": 67244,
+          "sha256": "057ff8baa2c95a9f1cdf47c041fd1953d5dbf0ff7063391fdadacece96c0959f"
+        }
+      },
+      "listeningStatus": "reviewed",
+      "provenance": "Derived from retained original soft motif instrument; no stock UI beep",
+      "auditionRole": "quiet acknowledgement",
+      "listeningReviewScope": "Integrated device playtest including sound reported working by Dex on 2026-09-08; no separate per-file rating or measured physical-device version claimed."
+    },
+    {
+      "id": "victory",
+      "durationSeconds": 1.8,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -23.63,
+      "rmsDbFS": -33.848,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/victory.wav",
+          "bytes": 172844,
+          "sha256": "0ec3017a15e3935d1b8d3e2b8e9e50cdc31872c8de17ee34604b12b0f01c9206"
+        }
+      },
+      "listeningStatus": "pending",
+      "provenance": "Derived from retained original soft motif instrument; no stock UI beep",
+      "auditionRole": "victory"
+    },
+    {
+      "id": "defeat",
+      "durationSeconds": 1.1,
+      "sampleRate": 48000,
+      "channels": 1,
+      "peakDbFS": -32.718,
+      "rmsDbFS": -39.159,
+      "loopSeamDeltaDbFS": -240,
+      "files": {
+        "wav": {
+          "url": "/audio/world-v1/defeat.wav",
+          "bytes": 105644,
+          "sha256": "309812cbea80b7f185f9e4d02c67118800d0a7c0953db934cc0bab676081c1de"
+        }
+      },
+      "listeningStatus": "pending",
+      "provenance": "Derived from retained original soft motif instrument; no stock UI beep",
+      "auditionRole": "defeat"
+    }
+  ],
+  "decodeSeamTreatment": "Audio manager uses a 128-sample cosine blend in place at loop start after decoder/resampler output; no extra audio buffer.",
+  "footstepTrial": {
+    "id": "recorded-steps-v1",
+    "status": "comparison-unapproved",
+    "effects": [
+      "step-concrete-1",
+      "step-concrete-2",
+      "step-metal-1",
+      "step-metal-2"
+    ],
+    "attributionUrl": "/audio/world-v1/recorded-steps-v1/ATTRIBUTION.md",
+    "replaces": "Previously rejected synthetic footsteps; retained privately for rollback"
+  },
+  "activeRuntime": {
+    "schemaVersion": 1,
+    "id": "suno-b-inhabited-v2",
+    "music": [
+      "arena-chamber",
+      "support"
+    ],
+    "ambience": [
+      "exterior",
+      "interior"
+    ],
+    "effects": [
+      "cable-cut",
+      "confirm",
+      "defeat",
+      "hit-metal",
+      "hurt",
+      "landing",
+      "lift-dock",
+      "lift-start",
+      "paper-open",
+      "slash-1",
+      "slash-2",
+      "step-concrete-1",
+      "step-concrete-2",
+      "step-metal-1",
+      "step-metal-2",
+      "telegraph",
+      "victory"
+    ],
+    "guard": {
+      "effectContractSha256": "ee214fb68c047679d2de4cd567693dab74e7bb687ac94a3a975b1a90495cf736"
+    }
+  }
+}

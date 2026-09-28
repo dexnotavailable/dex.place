@@ -1,0 +1,15 @@
+{
+  "version": "registry-art-c7a87b2dca86e1",
+  "assetsVerified": 70,
+  "roomsPixelReconstructed": 12,
+  "encodedBytes": 47839316,
+  "decodedRGBABytesIfAllLoaded": 225356036,
+  "treeFootLogical": 657.0670171974522,
+  "treeFootSource": 687,
+  "junctionColumnDepth": 46,
+  "missingExpectedKeys": [],
+  "sameInputsReproduceVersion": true,
+  "latestBrowserReview": "root/worker fresh captures pending; previous355actual captures inspected",
+  "foliageReview": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\final-summary.json",
+  "localOnly": true
+}

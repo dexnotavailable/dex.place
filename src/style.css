@@ -1,0 +1,168 @@
+/*
+ * Daniel, by Daniel Midgley. Free for any use; shared here unmodified with
+ * its notice (public/fonts/Daniel-license.txt, CC BY-ND 3.0). Do not subset,
+ * convert or otherwise ship a modified copy. Reserved for the "dex" mark.
+ */
+@font-face {
+  font-family: "Daniel";
+  src: url("/fonts/Daniel-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #0c0c0d;
+  --text: #e6ece2;
+  --muted: #9ba097;
+  --rule: #1d1f1e;
+  --underline: #60645f;
+  --focus: #ff6b78;
+  --tap: 2.75rem;
+
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 100%;
+  line-height: 1.5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  background: var(--bg);
+  color: var(--text);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  padding:
+    max(4rem, env(safe-area-inset-top))
+    max(1.5rem, env(safe-area-inset-right))
+    max(7rem, env(safe-area-inset-bottom))
+    max(1.5rem, env(safe-area-inset-left));
+}
+
+main {
+  width: 100%;
+  max-width: 28rem;
+}
+
+::selection {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.mark {
+  margin: 0 0 3.5rem;
+  padding-top: 0.28em;
+  font-family: "Daniel", system-ui, sans-serif;
+  font-size: 4rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+section + section {
+  margin-top: 3rem;
+}
+
+h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-height: var(--tap);
+  border-top: 1px solid var(--rule);
+}
+
+.row:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+a {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--underline);
+  text-underline-offset: 0.25em;
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.name {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding-block: 0.5rem;
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 1rem;
+  margin-left: auto;
+  font-size: 0.875rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sum {
+  display: inline-flex;
+  align-items: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+}
+
+@media (max-width: 40rem) {
+  body {
+    padding-top: max(3rem, env(safe-area-inset-top));
+    padding-bottom: max(6rem, env(safe-area-inset-bottom));
+  }
+
+  .mark {
+    margin-bottom: 2.75rem;
+    font-size: 2.875rem;
+  }
+
+  .row {
+    gap: 1rem;
+  }
+}

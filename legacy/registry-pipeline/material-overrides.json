@@ -1,0 +1,35 @@
+{
+  "tree": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\tree-native-v3.png",
+    "sha256": "f19905ab72a8e7d91646ca1b0f308fdb2b3b6687fa8beaa5136342264af373fe",
+    "size": [
+      1384,
+      942
+    ],
+    "sourceBounds": [
+      96,
+      38,
+      1480,
+      980
+    ],
+    "bodySourceBounds": [
+      98,
+      40,
+      1478,
+      978
+    ],
+    "pivot": [
+      692.0,
+      940
+    ],
+    "bodyBounds": {
+      "x": 2,
+      "y": 2,
+      "width": 1380,
+      "height": 938
+    },
+    "source": "props/tree-keyed-v1.png",
+    "operation": "Native bbox plus2px; local foliage key-island recovery; root footprint pivot retained",
+    "baseProcessedSha256": "43d42358b9e6b33c572730834edde06561cae83356109f89c09443565ffff1cc"
+  }
+}

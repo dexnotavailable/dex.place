@@ -1,0 +1,264 @@
+{
+  "status": "review-complete-specific-corrections-required",
+  "rooms": [
+    {
+      "id": "arrival",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\arrival-structure-alpha-v3.png",
+      "sourceSha256": "f57d30569d23cf0d05108e3c0fb64ff638feef6424942c31878b6952e11131d4",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.5902436327026629,
+      "partialAlphaFraction": 0.012993913631533184,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\arrival-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\arrival-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "rest",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\rest-structure-alpha-v1.png",
+      "sourceSha256": "7af7b8c168d088ce9f8eb44e804695da019613e835a14f03dbb9fdc7cef38a42",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.37051784978822283,
+      "partialAlphaFraction": 0.0,
+      "magentaDominantVisiblePixels": 4537,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\rest-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\rest-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "registry",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\registry-structure-alpha-v1.png",
+      "sourceSha256": "959accad4e77efedb70101b75aff6b3d5995c9d8fd3dc20cd7c4f901f9e86a95",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.13038785980505316,
+      "partialAlphaFraction": 0.007401395237683621,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\registry-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\registry-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "junction",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\junction-structure-alpha-v1.png",
+      "sourceSha256": "b982e78e464064b150f13881c90d03021e5281894c0d36855839584dd3943e84",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.13906487550147711,
+      "partialAlphaFraction": 0.009447981125647662,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\junction-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\junction-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "vestibule",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\vestibule-structure-alpha-v1.png",
+      "sourceSha256": "6033ff4e6651db2ec881a302d2a35cfda0ff8902e752c30482eb64cc32c3a4a3",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.14248305528578475,
+      "partialAlphaFraction": 0.004193594313287808,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\vestibule-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\vestibule-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "arena",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\arena-structure-alpha-v1.png",
+      "sourceSha256": "ac051394f8ab86a32da88003eff579ea5252db0dc3475bb37ba60b720c49d69d",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.09384549674834367,
+      "partialAlphaFraction": 0.0018336646853342419,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\arena-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\arena-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "archive",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\archive-structure-alpha-v1.png",
+      "sourceSha256": "f0b0f130642a8cba46d34536fe2975ccbff5b75b31626908b4dc9c500222f82c",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.038650600755584255,
+      "partialAlphaFraction": 0.0017237083627821366,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\archive-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\archive-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "low-passage",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\low-passage-structure-alpha-v1.png",
+      "sourceSha256": "8b3df237b0b1326d5a532c0225e1e6c05921e2d6a5416539673424431a4b1953",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.021850164489573852,
+      "partialAlphaFraction": 0.003964147882991219,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\low-passage-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\low-passage-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "pool",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\pool-structure-alpha-v1.png",
+      "sourceSha256": "045b398a033640490eef57c15b39e98f1421bf5f634ceb5f9b1c000b096ac34b",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.4817339031570812,
+      "partialAlphaFraction": 0.01050623128200174,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\pool-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\pool-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "sky-walk",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\sky-walk-structure-alpha-v1.png",
+      "sourceSha256": "07b1c454d3ae3a7c393750d36667cb0f06c71b7865946fa7ebe8532f9b3659ee",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.7839154874433694,
+      "partialAlphaFraction": 0.009711749182636816,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\sky-walk-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\sky-walk-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "exhibit",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\exhibit-structure-alpha-v1.png",
+      "sourceSha256": "e5442aff433be5a909ba4be3abca80fc0e9f8ce80c96ee9d1b998f8782365f95",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.2968935114329152,
+      "partialAlphaFraction": 0.008915360326233418,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\exhibit-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\exhibit-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    },
+    {
+      "id": "courtyard",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\courtyard-structure-alpha-v1.png",
+      "sourceSha256": "da6a32e63ee36ef1a6b4fe5aa136b147a557f6cca534659bdb4ac4411da190f6",
+      "size": [
+        1672,
+        941
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentFraction": 0.5489884018325206,
+      "partialAlphaFraction": 0.012143499992372972,
+      "magentaDominantVisiblePixels": 0,
+      "greenDominantVisiblePixels": 0,
+      "colorCountsAre": "possible spill flags only; natural hue can satisfy a threshold",
+      "darkComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\courtyard-dark.png",
+      "lightComposite": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\material-alpha-01\\courtyard-light.png",
+      "sourceUnchangedAtReviewEnd": true
+    }
+  ],
+  "findings": [
+    "Rest v1 visible magenta edge spill",
+    "Opaque interior partial-alpha damage: especially low-passage floor and arrival right pillar; registry lintel/floor also affected",
+    "No fully transparent break in sampled intended-solid footline strips",
+    "No recognisable residual actors/reflections in inspected structure composites",
+    "Cloud v3 mid/v1 far clean alpha in inspected frames; lamp is deliberately black-additive"
+  ]
+}

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.vite/
+logs/
+*.log
+.env*
+
+# Local A/B review sheets; may hold third-party reference images. Never commit.
+review/

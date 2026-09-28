@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>dex.place pixel-scale trial</title>
+<link rel="icon" href="data:,">
+<style>
+  *{box-sizing:border-box}body{margin:0;background:#0b1116;color:#e9e1d4;font:15px/1.5 system-ui,sans-serif;padding:24px}main{max-width:1180px;margin:auto}h1{font-size:25px;margin:0 0 4px}p{color:#a4b6b5;max-width:90ch}fieldset{border:1px solid #314249;padding:14px;display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}label{display:flex;align-items:center;gap:8px}button,select{background:#1b2b33;color:#f0e6d6;border:1px solid #52646a;border-radius:4px;padding:8px;font:inherit}button:focus-visible,select:focus-visible{outline:2px solid #ed826a;outline-offset:3px}.viewport{overflow:auto;border:1px solid #314249;background:#161f24}canvas{display:block;image-rendering:pixelated}#detail{font:14px/1.6 monospace;color:#b5c9c5;white-space:pre-line}.proof{width:100%;height:auto;margin:12px 0}a{color:#eea184}footer{border-top:1px solid #314249;padding-top:18px;margin-top:24px}
+</style>
+<main>
+<h1>dex.place / pixel-scale trial</h1>
+<p>Six separate derivatives, assembled around the unchanged CC0 hero. B is the current static comparison pick. This is an art-production proof; it does not claim integrated game acceptance.</p>
+<fieldset><legend>Compare at camera scale</legend>
+<label>Approach<select id="approach"><option value="a">A — coarse v2 platform + v2 terminal</option><option value="b" selected>B — detailed platform 1px + v2 terminal</option><option value="c">C — detailed platform and terminal 1px</option><option value="d">D — detailed platform and terminal 2px</option></select></label>
+<label>CSS px per world px<select id="scale"><option value="0.75">0.75× (wide framing)</option><option value="1" selected>1× (native world grid)</option><option value="2">2× (edge inspection)</option></select></label>
+<button id="motion" type="button" aria-pressed="false">Start camera motion</button>
+<button id="hero" type="button" aria-pressed="false">Animate hero</button>
+</fieldset>
+<div class="viewport"><canvas id="scene" width="900" height="440" aria-label="Selected platform, terminal and original CC0 traveler at their intended world sizes"></canvas></div>
+<p id="detail" role="status"></p>
+<img class="proof" src="comparison-actual-size.png" alt="Four static approaches at the same intended asset sizes">
+<img class="proof" src="alpha-proof.png" alt="Exported transparent derivatives tested against magenta and cyan backgrounds">
+<footer><a href="trial-manifest.json">Exact source, crop, dimensions, processing and hashes</a><p>Camera scale and texture grid are separate. Use integer world coordinates and a common camera transform, then inspect the actual render at target viewport and device pixel ratio. A large object needs more authored pixels across it to preserve the terminal's visible pixel pitch.</p></footer>
+</main>
+<script>
+const variants={a:['platform-direct-v2','terminal-direct-v2'],b:['platform-detailed-v1-pitch1','terminal-direct-v2'],c:['platform-detailed-v1-pitch1','terminal-detailed-v1-pitch1'],d:['platform-detailed-v1-pitch2','terminal-detailed-v1-pitch2']};
+const choices={a:'Coarse platform clusters ≈ 4.3 world px; terminal clusters ≈ 0.83 world px. Resampling alone cannot create missing platform detail.',b:'Static pick: platform grid 1 world px + v2 terminal near 1 world px. Red status point stays readable and the hero remains unchanged.',c:'Both detailed sources on a 1 world px grid. The terminal loses the simple readable status light and looks weathered; compare the physical context.',d:'Both detailed sources on a 2 world px grid. Edges and the terminal screen become visibly coarse beside the native hero.'};
+const canvas=document.querySelector('#scene'),ctx=canvas.getContext('2d'),select=document.querySelector('#approach'),scale=document.querySelector('#scale'),detail=document.querySelector('#detail');
+let manifest,assets={},cameraMotion=false,heroMotion=false;
+function load(url){return new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=url})}
+async function boot(){manifest=await(await fetch('trial-manifest.json')).json();await Promise.all(manifest.variants.map(async entry=>assets[entry.id]=await load(entry.id+'.png')));assets.hero=await load('../../hero/idle.png');requestAnimationFrame(draw)}
+function draw(time){const zoom=Number(scale.value),key=select.value;canvas.style.width=(900*zoom)+'px';canvas.style.height=(440*zoom)+'px';ctx.imageSmoothingEnabled=false;ctx.fillStyle='#161f24';ctx.fillRect(0,0,900,440);ctx.strokeStyle='#30414a';ctx.beginPath();ctx.moveTo(60,270);ctx.lineTo(840,270);ctx.stroke();const cameraX=cameraMotion?Math.round(Math.sin(time/1700)*64):0;ctx.save();ctx.translate(-cameraX,0);const[platform,terminal]=variants[key];for(const[id,x,y]of[[platform,210,266],[terminal,575,174]]){const entry=manifest.variants.find(v=>v.id===id),[w,h]=entry.intendedWorldRenderSize;ctx.drawImage(assets[id],x,y,w,h)}const frame=heroMotion?Math.floor(time/125)%8:0;ctx.drawImage(assets.hero,frame*200,0,200,200,360-100,270-122,200,200);ctx.restore();detail.textContent=choices[key]+'\nPlatform 480 world px wide · terminal 96 world px tall · native hero 52 world px tall · CSS scale '+zoom+' · devicePixelRatio '+devicePixelRatio+'\nCamera motion uses integer world positions; fractional CSS scale still needs visual judgment on the real device.';requestAnimationFrame(draw)}
+for(const[id,update]of[['motion',v=>cameraMotion=v],['hero',v=>heroMotion=v]])document.getElementById(id).onclick=event=>{const button=event.currentTarget,next=button.getAttribute('aria-pressed')!=='true';button.setAttribute('aria-pressed',String(next));update(next);button.textContent=id==='motion'?(next?'Stop camera motion':'Start camera motion'):(next?'Pause hero':'Animate hero')};
+boot().catch(error=>detail.textContent='Trial could not load: '+error.message);
+</script>
+</html>

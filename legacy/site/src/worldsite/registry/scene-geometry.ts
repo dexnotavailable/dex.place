@@ -1,0 +1,41 @@
+import geometry from './geometry.json';
+import type {RoomId} from './contracts';
+import type {Room,Prop,Surface} from './rooms';
+const sx=1600/1672,sy=900/941;
+const source=(id:RoomId)=>geometry.find(r=>r.id===id)!;
+const anchor=(room:RoomId,id:string)=>source(room).anchors.find(a=>a.id===id)!;
+const xy=(room:RoomId,id:string)=>{const p=anchor(room,id).point;return{x:p[0]*sx,y:p[1]*sy}};
+function setPortal(room:Room,id:string,point:string,target?:RoomId,entry?:string){const p=room.portals.find(p=>p.id===id)!;const a=anchor(room.id,point),b=a.bounds;Object.assign(p,xy(room.id,point),{automatic:undefined,width:b?(b[2]-b[0])*sx:88,height:b?(b[3]-b[1])*sy:152});if(target)p.target=target;if(entry)p.entry=entry;return p}
+function setProp(room:Room,id:string,point:string){const p=room.props.find(p=>p.id===id)!,a=anchor(room.id,point),b=a.bounds;Object.assign(p,xy(room.id,point),{width:b?(b[2]-b[0])*sx:p.width,height:b?(b[3]-b[1])*sy:p.height,interactY:room.floor});return p}
+function entry(room:Room,id:string,doorId:string,side:1|-1=1,y=room.floor){const p=room.portals.find(p=>p.id===doorId)!;room.entries[id]={x:Math.max(30,Math.min(room.width-30,p.x+side*55)),y,facing:side}}
+function stairs(id:string,points:number[][],oneway=true):Surface[]{const out:Surface[]=[];for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],count=Math.max(1,Math.ceil(Math.abs(b[1]-a[1])*sy/8));for(let k=0;k<count;k++){const f=k/count,g=(k+1)/count,x1=(a[0]+(b[0]-a[0])*f)*sx,x2=(a[0]+(b[0]-a[0])*g)*sx,y=(a[1]+(b[1]-a[1])*f)*sy;out.push({id:id+':'+i+':'+k,x:Math.min(x1,x2)-1,y,width:Math.abs(x2-x1)+2,height:12,oneway,stair:true})}}return out}
+/** Annotated 1672×941 scene geometry projected to the logical 1600×900 view.
+ * Reference figures are removed; no per-room player scale is inferred from them.
+ * Tread guides are provisional physical contacts awaiting actual scene review. */
+export function applySceneGeometry(rooms:Record<RoomId,Room>){
+ for(const room of Object.values(rooms)){const floor=source(room.id).floor*sy;room.floor=floor;room.height=1050;for(const p of room.portals)p.y=floor;for(const p of room.props){p.y=floor;p.interactY=floor}for(const p of Object.values(room.entries))p.y=floor;room.solids=[{id:'ground',x:0,y:floor,width:room.width,height:1050-floor}];}
+ const rest=rooms.rest;setProp(rest,'bench','bench');rest.entries.left={x:510,y:rest.floor,facing:-1};rest.solids[0].x=135;rest.solids[0].width=1465;
+ const r=rooms.registry;setProp(r,'accountant','counter');const donor=setProp(r,'support','donation-box');r.props.find(p=>p.id==='supporters')!.x=donor.x+65;setPortal(r,'courtyard','courtyard-door');r.portals.find(p=>p.id==='archive-return')!.x=1450;r.npc=xy('registry','accountant');entry(r,'courtyard','courtyard',-1);entry(r,'archive','archive-return',-1);r.portals.find(p=>p.id==='court')!.entry='registry';
+ const j=rooms.junction;setPortal(j,'registry','registry-side-door');setPortal(j,'dispatch','right-door');setPortal(j,'archive','archive-lower-door');setPortal(j,'upper','upper-route');entry(j,'registry','registry');entry(j,'dispatch','dispatch',-1);entry(j,'archive','archive',-1,862*sy);entry(j,'upper','upper',-1,211*sy);j.entries.left=j.entries.registry;j.entries.right=j.entries.dispatch;
+ const map=setProp(j,'map','map-hanging-sheet');map.y=j.floor-118;map.height=105;map.width=120;map.cordFixed={x:map.x,y:map.y-30};map.cutPoint={x:map.x,y:map.y-5};map.interactY=map.cutPoint.y+35;
+ j.descent={x:356*sx,y:j.floor};j.ascent={x:1270*sx,y:j.floor};j.solids=[{id:'main',x:0,y:j.floor,width:1600,height:13,oneway:true},{id:'upper',x:85*sx,y:211*sy,width:581*sx,height:14,oneway:true,stair:true},{id:'lower',x:40*sx,y:862*sy,width:160*sx,height:20,oneway:true},...stairs('up',[[1270,630],[1185,576],[1060,487],[932,402],[801,317],[668,223],[657,211]]),...stairs('down',[[356,641],[305,704],[253,769],[203,827],[169,861]])];
+ const v=rooms.vestibule;setPortal(v,'court','return-door');entry(v,'left','court');setProp(v,'collection','right-product-selector');setProp(v,'support','left-service-box');v.props.find(p=>p.id==='supporters')!.x=v.props.find(p=>p.id==='support')!.x+65;v.entries.arena={x:v.props.find(p=>p.id==='collection')!.x,y:v.floor,facing:-1};
+ const arena=rooms.arena;arena.entries.left={...xy('arena','player-start'),facing:1};arena.bossX=xy('arena','warden-foot').x;
+ const a=rooms.archive;setPortal(a,'court','left-door');setPortal(a,'registry','right-door');entry(a,'left','court',1,638*sy);entry(a,'return','registry',-1,638*sy);setProp(a,'records','reading-desk');a.solids=[{id:'ground',x:275*sx,y:a.floor,width:(1440-275)*sx,height:1000},...stairs('left-stair',[[65,638],[211,638],[226,650],[240,667],[252,682],[261,699],[273,715]],false),...stairs('right-stair',[[1441,715],[1457,701],[1473,683],[1484,668],[1496,651],[1505,638],[1617,638]],false)];
+ const low=rooms['low-passage'];setPortal(low,'court','right-exit');setPortal(low,'reflecting-room','left-door','pool','left');entry(low,'right','court',-1);entry(low,'left','reflecting-room');low.solids.push({id:'first-block',x:501*sx,y:600*sy,width:210*sx,height:63*sy},{id:'second-block',x:891*sx,y:580*sy,width:213*sx,height:83*sy},{id:'ceiling',x:70*sx,y:0,width:1530*sx,height:369*sy});low.sentry={x:380,left:290,right:455};
+ const pool=rooms.pool;setPortal(pool,'passage','left-door','low-passage','left');setPortal(pool,'sky','right-passage');entry(pool,'left','passage');entry(pool,'right','sky',-1);setProp(pool,'bench','bench');
+ const sky=rooms['sky-walk'];setPortal(sky,'pool','left-return','pool','right');setPortal(sky,'exhibit','right-exit');entry(sky,'left','pool');entry(sky,'right','exhibit',-1);sky.bridge={x:725*sx,y:sky.floor,length:(1074-725)*sx,post:{x:633*sx,y:sky.floor},fixed:{x:633*sx,y:634*sy}};sky.solids=[{id:'left',x:0,y:sky.floor,width:718*sx,height:1000},{id:'right',x:1082*sx,y:sky.floor,width:(1672-1082)*sx,height:1000}];const rope=sky.props.find(p=>p.kind==='bridge')!;Object.assign(rope,xy('sky-walk','cut-cable-target'),{cutPoint:xy('sky-walk','cut-cable-target'),interactY:sky.floor,width:14,height:165});
+ const e=rooms.exhibit;e.width=1600;e.solids[0].width=1600;setPortal(e,'sky','left-door');setPortal(e,'courtyard','right-exit');entry(e,'left','sky');entry(e,'right','courtyard',-1);e.props.find(p=>p.kind==='catalogue')!.x=1370;const donation=setProp(e,'support','donation-box');e.props.find(p=>p.kind==='donors')!.x=donation.x+65;
+ const c=rooms.courtyard;setPortal(c,'exhibit','left-exhibit-entry');setPortal(c,'registry','return-door');entry(c,'left','exhibit');entry(c,'return','registry',-1);setProp(c,'latch','maintenance-latch');setProp(c,'bench','bench');
+ // Normal furniture scale is judged against the common52px traveller, not the
+ // inconsistent generated reference figures. Keep source anchors and aspect.
+ const heights:Partial<Record<Prop['kind'],number>>={rest:40,npc:28,donate:42,donors:30,docs:40,consignment:50,catalogue:45};
+ for(const room of Object.values(rooms))for(const p of room.props){const h=heights[p.kind];if(h&&p.height>0){p.width*=h/p.height;p.height=h;}}
+ // Final accountant sheet uses a native foot pivot; reference614 was the
+ // lowest visible upper-body pixel behind the old counter, not its footline.
+ if(r.npc)r.npc.y=r.props.find(p=>p.kind==='npc')!.y;
+}
+// Four portrait works occupy the four portrait bays; original catalogue order
+// and metadata remain unchanged. Wide works retain their full aspect in other bays.
+export const EXHIBIT_ORDER=['inshot-20260708-060051952','shot-18-2','shot-23','inshot-20260708-055457338','inshot-20260620-071233415','inshot-20260826-123444237','kaizen','inshot-20260721-200821729','towaki'];
+export function exhibitProps(ids:string[],assets:Record<string,unknown>,floor:number):Prop[]{return EXHIBIT_ORDER.filter(id=>ids.includes(id)).map((id,i)=>{const a=anchor('exhibit','exhibit-frame-'+(i+1)),b=a.bounds!,opening=a.aperture!;return{id:'art:'+id,itemId:id,kind:'art',x:(b[0]+b[2])/2*sx,y:b[3]*sy,width:(b[2]-b[0])*sx,height:(b[3]-b[1])*sy,asset:assets['exhibit-frame-'+(i+1)]?'exhibit-frame-'+(i+1):'exhibit-frame',interactY:floor,aperture:{x:opening[0]*sx,y:opening[1]*sy,width:(opening[2]-opening[0])*sx,height:(opening[3]-opening[1])*sy}}})}

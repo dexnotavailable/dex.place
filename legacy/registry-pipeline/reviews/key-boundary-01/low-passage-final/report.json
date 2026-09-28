@@ -1,0 +1,73 @@
+{
+  "status": "converted-invariants-pass-visual-review-required",
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\low-passage-structure-keyed-v1.png",
+  "sourceSha256": "bb54b10d8ab61fb823078d5f6120eeedb8edc70e6385066d1278c40b424f99b2",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\key-boundary-01\\low-passage-final\\alpha.png",
+  "toolSha256": "c68cbed11a406d1515a235b2cc16944412d8696a0d72a5ee05364d6d7aefa546",
+  "outputSha256": "c312dd33d8fcf08029ba9a9509eae6f7b20aecf8061a84ccac93fa6a2f8350da",
+  "size": [
+    1672,
+    941
+  ],
+  "settings": {
+    "keyRgb": [
+      255,
+      0,
+      255
+    ],
+    "keyTolerance": 32,
+    "minDominance": 220,
+    "edgeBandPx": 3,
+    "cleanDominance": 35,
+    "actualKeyMedianRgb": [
+      233.0,
+      1.0,
+      240.0
+    ],
+    "protectRects": [
+      [
+        0,
+        648,
+        1672,
+        941
+      ]
+    ]
+  },
+  "trueBackgroundPixels": 33627,
+  "edgeBandPixels": 4796,
+  "edgeCandidates": 2342,
+  "edgeCandidatesWithoutCleanNeighbour": 0,
+  "edgeRgbChangedPixels": 2322,
+  "outsideBandInteriorPixels": 1534929,
+  "outsideBandInteriorUnchanged": true,
+  "protectedUnchangedAndOpaque": true,
+  "protectedNearKeyPixelsKept": 0,
+  "remainingPurpleInteriorPixels": 1280,
+  "remainingPurpleInteriorPolicy": "Preserved. Legitimate purple and painted key reflections cannot be distinguished by hue alone; retouch undesired reflections separately.",
+  "sourceUnchanged": true,
+  "roiReports": [
+    {
+      "rectXYXY": [
+        148,
+        648,
+        270,
+        671
+      ],
+      "rgbUnchanged": true,
+      "allOpaque": true,
+      "alphaMin": 255
+    },
+    {
+      "rectXYXY": [
+        400,
+        400,
+        1400,
+        550
+      ],
+      "rgbUnchanged": true,
+      "allOpaque": true,
+      "alphaMin": 255
+    }
+  ],
+  "limits": "Near-key false positives remain possible; inspect masks. No cloud processing, global desaturation, interior softening, or runtime publication."
+}

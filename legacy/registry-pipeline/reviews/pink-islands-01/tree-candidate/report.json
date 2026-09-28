@@ -1,0 +1,53 @@
+{
+  "status": "converted-invariants-pass-visual-review-required",
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\tree-keyed-v1.png",
+  "sourceSha256": "e928bae3d0be71a7bc253f5f0a5d76beac5be1326abc43c47126073642915848",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\tree-candidate\\alpha.png",
+  "toolSha256": "f9e3c52ca163989dd2f920d075b8f4da7164041e19280291f6e271d0880c8266",
+  "outputSha256": "6861aac8f0f02270ee4cdec4bd56c452053d3a038e603ff5eeb68e6c2e070ea4",
+  "size": [
+    1536,
+    1024
+  ],
+  "settings": {
+    "keyRgb": [
+      255,
+      0,
+      255
+    ],
+    "keyTolerance": 32,
+    "minDominance": 220,
+    "edgeBandPx": 3,
+    "cleanDominance": 35,
+    "actualKeyMedianRgb": [
+      248.0,
+      3.0,
+      249.0
+    ],
+    "protectRects": [],
+    "explicitSpillRois": [
+      [
+        0,
+        0,
+        1536,
+        1024
+      ]
+    ]
+  },
+  "trueBackgroundPixels": 936769,
+  "edgeBandPixels": 76775,
+  "edgeCandidates": 37611,
+  "edgeCandidatesWithoutCleanNeighbour": 2,
+  "edgeRgbChangedPixels": 37530,
+  "outsideBandInteriorPixels": 559320,
+  "outsideBandInteriorUnchanged": false,
+  "outsideDeclaredCorrectionRegionUnchanged": true,
+  "explicitSpillIslandPixels": 3548,
+  "protectedUnchangedAndOpaque": true,
+  "protectedNearKeyPixelsKept": 0,
+  "remainingPurpleInteriorPixels": 2111,
+  "remainingPurpleInteriorPolicy": "Unselected interiors preserved. Legitimate purple and painted key reflections cannot be distinguished by hue alone; explicit foliage ROIs need reference inspection and floor reflections need separate retouch.",
+  "sourceUnchanged": true,
+  "roiReports": [],
+  "limits": "Near-key false positives remain possible; inspect masks. No cloud processing, global desaturation, interior softening, or runtime publication."
+}

@@ -1,0 +1,2086 @@
+{
+  "schemaVersion": 1,
+  "revision": "cast-v2-intake-20260908-c",
+  "coordinateContract": "Sheet frames retain native pixels; footX/Y are cell-space pivots, body is relative to that pivot, frame windows are zero-based/end-exclusive. No animation window authorizes damage without gameplay contact.",
+  "actors": [
+    {
+      "id": "boss.wizard2",
+      "role": "boss",
+      "creator": "LuizMelo",
+      "license": "CC0-1.0",
+      "sourcePage": "https://luizmelo.itch.io/evil-wizard-2",
+      "sourceArchiveSha256": "438ee456bf4f6fde3cff1bd80a0356174756c46788911703f4ad7096c120029a",
+      "scale": 1,
+      "footX": 125,
+      "footY": 167,
+      "body": {
+        "x": -18,
+        "y": -55,
+        "width": 36,
+        "height": 55
+      },
+      "bodyCoordinateSpace": "relative to foot/pivot in world pixels at scale1",
+      "facingDefault": "right",
+      "clips": {
+        "idle": {
+          "url": "/world/cast-v2/wizard2/idle.png",
+          "frameWidth": 250,
+          "frameHeight": 250,
+          "frames": 8,
+          "durationsMs": [
+            120,
+            120,
+            120,
+            120,
+            120,
+            120,
+            120,
+            120
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              108,
+              72,
+              165,
+              167
+            ],
+            [
+              108,
+              67,
+              164,
+              167
+            ],
+            [
+              108,
+              64,
+              164,
+              167
+            ],
+            [
+              108,
+              64,
+              164,
+              167
+            ],
+            [
+              108,
+              67,
+              165,
+              167
+            ],
+            [
+              108,
+              63,
+              163,
+              167
+            ],
+            [
+              108,
+              70,
+              162,
+              167
+            ],
+            [
+              108,
+              70,
+              164,
+              167
+            ]
+          ],
+          "sha256": "7f4e11902aeee4138621a1b2bd4f88709e1a3cf4239e221226e5f20a6eccc872",
+          "bytes": 10208,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "walk": {
+          "url": "/world/cast-v2/wizard2/walk.png",
+          "frameWidth": 250,
+          "frameHeight": 250,
+          "frames": 8,
+          "durationsMs": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              94,
+              106,
+              159,
+              167
+            ],
+            [
+              92,
+              105,
+              159,
+              167
+            ],
+            [
+              92,
+              102,
+              159,
+              167
+            ],
+            [
+              89,
+              99,
+              159,
+              167
+            ],
+            [
+              92,
+              106,
+              159,
+              167
+            ],
+            [
+              93,
+              100,
+              159,
+              167
+            ],
+            [
+              94,
+              102,
+              159,
+              167
+            ],
+            [
+              96,
+              100,
+              159,
+              164
+            ]
+          ],
+          "sha256": "7406381507b527dd6c930e3f43bdf6930520066a6c4a449e150da78638ac63a2",
+          "bytes": 10623,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "attack": {
+          "url": "/world/cast-v2/wizard2/attack.png",
+          "frameWidth": 250,
+          "frameHeight": 250,
+          "frames": 8,
+          "durationsMs": [
+            150,
+            150,
+            150,
+            120,
+            90,
+            90,
+            90,
+            140
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              109,
+              58,
+              181,
+              167
+            ],
+            [
+              84,
+              60,
+              156,
+              167
+            ],
+            [
+              81,
+              53,
+              156,
+              167
+            ],
+            [
+              82,
+              45,
+              157,
+              167
+            ],
+            [
+              83,
+              39,
+              243,
+              168
+            ],
+            [
+              88,
+              35,
+              236,
+              174
+            ],
+            [
+              92,
+              31,
+              233,
+              180
+            ],
+            [
+              109,
+              81,
+              175,
+              168
+            ]
+          ],
+          "sha256": "79fd38e6104877786e797e17bfafa578cfd60b553d03abef3e8ecfd2fc78ecec",
+          "bytes": 17311,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "attack2": {
+          "url": "/world/cast-v2/wizard2/attack2.png",
+          "frameWidth": 250,
+          "frameHeight": 250,
+          "frames": 8,
+          "durationsMs": [
+            150,
+            150,
+            120,
+            90,
+            90,
+            90,
+            110,
+            140
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              74,
+              107,
+              132,
+              167
+            ],
+            [
+              78,
+              98,
+              133,
+              167
+            ],
+            [
+              84,
+              91,
+              136,
+              167
+            ],
+            [
+              109,
+              88,
+              229,
+              167
+            ],
+            [
+              109,
+              52,
+              236,
+              167
+            ],
+            [
+              109,
+              47,
+              236,
+              167
+            ],
+            [
+              109,
+              26,
+              236,
+              167
+            ],
+            [
+              109,
+              47,
+              188,
+              167
+            ]
+          ],
+          "sha256": "fba330fe3777e798c3bb9f0a980999c7cd425369912f61cb83e5a7d4cf67f0e4",
+          "bytes": 16720,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "hurt": {
+          "url": "/world/cast-v2/wizard2/hurt.png",
+          "frameWidth": 250,
+          "frameHeight": 250,
+          "frames": 3,
+          "durationsMs": [
+            90,
+            90,
+            90
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              106,
+              80,
+              151,
+              167
+            ],
+            [
+              108,
+              81,
+              142,
+              167
+            ],
+            [
+              108,
+              87,
+              143,
+              167
+            ]
+          ],
+          "sha256": "222efd0919591a84e5ff6692c41b24a8ded77e8d5528969c384a559c902b3b7e",
+          "bytes": 5189,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "death": {
+          "url": "/world/cast-v2/wizard2/death.png",
+          "frameWidth": 250,
+          "frameHeight": 250,
+          "frames": 7,
+          "durationsMs": [
+            140,
+            140,
+            140,
+            140,
+            140,
+            140,
+            140
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              108,
+              84,
+              153,
+              167
+            ],
+            [
+              108,
+              74,
+              160,
+              167
+            ],
+            [
+              108,
+              72,
+              174,
+              167
+            ],
+            [
+              108,
+              64,
+              204,
+              167
+            ],
+            [
+              108,
+              57,
+              213,
+              167
+            ],
+            [
+              108,
+              45,
+              204,
+              167
+            ],
+            [
+              108,
+              154,
+              213,
+              167
+            ]
+          ],
+          "sha256": "6822972678531f06f17a0dbe2c7c68346e467d68067f3bf392f864a773c105f6",
+          "bytes": 11671,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "jump": {
+          "url": "/world/cast-v2/wizard2/jump.png",
+          "frameWidth": 250,
+          "frameHeight": 250,
+          "frames": 2,
+          "durationsMs": [
+            100,
+            100
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              91,
+              86,
+              160,
+              167
+            ],
+            [
+              82,
+              87,
+              160,
+              167
+            ]
+          ],
+          "sha256": "e4d921825ceab9e9b49a401f114bf4f332dcad3ecd8a2ccd047733fb6994aca5",
+          "bytes": 3892,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "fall": {
+          "url": "/world/cast-v2/wizard2/fall.png",
+          "frameWidth": 250,
+          "frameHeight": 250,
+          "frames": 2,
+          "durationsMs": [
+            100,
+            100
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              107,
+              81,
+              172,
+              167
+            ],
+            [
+              107,
+              74,
+              171,
+              167
+            ]
+          ],
+          "sha256": "453645723d16521e7616dbc8f680f6aced4bfd3781c4e35792201e4f43da16e0",
+          "bytes": 4019,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        }
+      },
+      "attackWindows": {
+        "attack": {
+          "startFrame": 4,
+          "endFrameExclusive": 7,
+          "startMs": 570,
+          "endMs": 840,
+          "review": "pose-derived candidate: descending dark arc reaches forward on frames4\u20136; gameplay hit volumes still require real contact proof"
+        },
+        "attack2": {
+          "startFrame": 3,
+          "endFrameExclusive": 6,
+          "startMs": 420,
+          "endMs": 690,
+          "review": "pose-derived candidate: forward/upward arc on frames3\u20135"
+        }
+      },
+      "review": {
+        "nativeAccepted": true,
+        "sceneAccepted": false,
+        "nativeReview": "All clips/counts/alpha extents inspected in source contact sheet; original PNG bytes unchanged. Pivot/body are intake guides, not collision acceptance."
+      }
+    },
+    {
+      "id": "mob.rat",
+      "role": "ground-mob",
+      "creator": "LuizMelo",
+      "license": "CC0-1.0",
+      "sourcePage": "https://luizmelo.itch.io/monsters-creatures-fantasy-2",
+      "sourceArchiveSha256": "781c7e1003dd179ba56c72c0099fbda301f4571c99552e0a916332f3d33e4b7e",
+      "scale": 1,
+      "footX": 35,
+      "footY": 45,
+      "body": {
+        "x": -17,
+        "y": -18,
+        "width": 34,
+        "height": 18
+      },
+      "bodyCoordinateSpace": "relative to foot/pivot in world pixels at scale1",
+      "facingDefault": "right",
+      "clips": {
+        "idle": {
+          "url": "/world/cast-v2/rat/idle.png",
+          "frameWidth": 70,
+          "frameHeight": 70,
+          "frames": 10,
+          "durationsMs": [
+            120,
+            120,
+            120,
+            120,
+            120,
+            120,
+            120,
+            120,
+            120,
+            120
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              15,
+              25,
+              55,
+              45
+            ],
+            [
+              15,
+              26,
+              55,
+              45
+            ],
+            [
+              15,
+              27,
+              55,
+              45
+            ],
+            [
+              15,
+              27,
+              55,
+              45
+            ],
+            [
+              15,
+              27,
+              55,
+              45
+            ],
+            [
+              15,
+              27,
+              55,
+              45
+            ],
+            [
+              15,
+              27,
+              55,
+              45
+            ],
+            [
+              15,
+              27,
+              55,
+              45
+            ],
+            [
+              15,
+              26,
+              55,
+              45
+            ],
+            [
+              15,
+              25,
+              55,
+              45
+            ]
+          ],
+          "sha256": "7df1cd5c9ea6e51f21d2fe07830d6a725f63a67dd4e9e08ed55e465fab4dda40",
+          "bytes": 1539,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "walk": {
+          "url": "/world/cast-v2/rat/walk.png",
+          "frameWidth": 70,
+          "frameHeight": 70,
+          "frames": 8,
+          "durationsMs": [
+            80,
+            80,
+            80,
+            80,
+            80,
+            80,
+            80,
+            80
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              3,
+              25,
+              55,
+              45
+            ],
+            [
+              4,
+              26,
+              60,
+              45
+            ],
+            [
+              6,
+              26,
+              62,
+              45
+            ],
+            [
+              7,
+              27,
+              50,
+              45
+            ],
+            [
+              5,
+              25,
+              55,
+              45
+            ],
+            [
+              6,
+              26,
+              60,
+              45
+            ],
+            [
+              7,
+              31,
+              56,
+              45
+            ],
+            [
+              5,
+              28,
+              50,
+              45
+            ]
+          ],
+          "sha256": "17113107fcb33ce9b2602b32057a602d791c974098d577d4b70ef5922889a2ab",
+          "bytes": 2371,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "attack": {
+          "url": "/world/cast-v2/rat/attack.png",
+          "frameWidth": 70,
+          "frameHeight": 70,
+          "frames": 12,
+          "durationsMs": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            70,
+            70,
+            70,
+            100,
+            100
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              15,
+              25,
+              51,
+              45
+            ],
+            [
+              15,
+              25,
+              49,
+              45
+            ],
+            [
+              15,
+              23,
+              48,
+              45
+            ],
+            [
+              15,
+              23,
+              48,
+              45
+            ],
+            [
+              15,
+              23,
+              48,
+              45
+            ],
+            [
+              15,
+              23,
+              48,
+              45
+            ],
+            [
+              15,
+              23,
+              48,
+              45
+            ],
+            [
+              15,
+              29,
+              61,
+              45
+            ],
+            [
+              15,
+              29,
+              60,
+              45
+            ],
+            [
+              15,
+              29,
+              60,
+              45
+            ],
+            [
+              15,
+              28,
+              59,
+              45
+            ],
+            [
+              15,
+              27,
+              56,
+              45
+            ]
+          ],
+          "sha256": "b4ec9525152e67068131cbe03940c273bc94d9ef9fd8db50cf5e155252036e9a",
+          "bytes": 2612,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "hurt": {
+          "url": "/world/cast-v2/rat/hurt.png",
+          "frameWidth": 70,
+          "frameHeight": 70,
+          "frames": 3,
+          "durationsMs": [
+            90,
+            90,
+            90
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              15,
+              25,
+              49,
+              45
+            ],
+            [
+              15,
+              25,
+              52,
+              45
+            ],
+            [
+              15,
+              25,
+              55,
+              45
+            ]
+          ],
+          "sha256": "c598febac809d056550f5eb9ca2d1eacb201e5aa20fd141f3afc6490b4eac337",
+          "bytes": 1062,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "death": {
+          "url": "/world/cast-v2/rat/death.png",
+          "frameWidth": 70,
+          "frameHeight": 70,
+          "frames": 6,
+          "durationsMs": [
+            120,
+            120,
+            120,
+            120,
+            120,
+            120
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              15,
+              25,
+              55,
+              45
+            ],
+            [
+              15,
+              26,
+              55,
+              45
+            ],
+            [
+              15,
+              27,
+              55,
+              45
+            ],
+            [
+              15,
+              32,
+              55,
+              45
+            ],
+            [
+              15,
+              34,
+              57,
+              45
+            ],
+            [
+              15,
+              33,
+              56,
+              45
+            ]
+          ],
+          "sha256": "7990864790fb3d58f1d4396d9ac7dd0e3855ede8b17d133f1e027ae09a9085c4",
+          "bytes": 1359,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        }
+      },
+      "attackWindows": {
+        "attack": {
+          "startFrame": 7,
+          "endFrameExclusive": 10,
+          "startMs": 700,
+          "endMs": 910,
+          "review": "pose-derived candidate: body/head thrust after compressed anticipation; not yet collision-tested"
+        }
+      },
+      "review": {
+        "nativeAccepted": true,
+        "sceneAccepted": false,
+        "nativeReview": "All clips/counts/alpha extents inspected in source contact sheet; original PNG bytes unchanged. Pivot/body are intake guides, not collision acceptance."
+      }
+    },
+    {
+      "id": "mob.bat",
+      "role": "flying-mob",
+      "creator": "LuizMelo",
+      "license": "CC0-1.0",
+      "sourcePage": "https://luizmelo.itch.io/monsters-creatures-fantasy-2",
+      "sourceArchiveSha256": "781c7e1003dd179ba56c72c0099fbda301f4571c99552e0a916332f3d33e4b7e",
+      "scale": 1,
+      "footX": 49,
+      "footY": 62,
+      "body": {
+        "x": -10,
+        "y": -15,
+        "width": 20,
+        "height": 18
+      },
+      "bodyCoordinateSpace": "relative to foot/pivot in world pixels at scale1",
+      "facingDefault": "right",
+      "clips": {
+        "idle": {
+          "url": "/world/cast-v2/bat/idle.png",
+          "frameWidth": 87,
+          "frameHeight": 87,
+          "frames": 11,
+          "durationsMs": [
+            90,
+            90,
+            90,
+            90,
+            90,
+            90,
+            90,
+            90,
+            90,
+            90,
+            90
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              20,
+              29,
+              74,
+              62
+            ],
+            [
+              19,
+              32,
+              75,
+              61
+            ],
+            [
+              21,
+              47,
+              77,
+              62
+            ],
+            [
+              33,
+              47,
+              77,
+              71
+            ],
+            [
+              31,
+              47,
+              77,
+              67
+            ],
+            [
+              25,
+              45,
+              79,
+              63
+            ],
+            [
+              20,
+              42,
+              79,
+              60
+            ],
+            [
+              15,
+              37,
+              81,
+              60
+            ],
+            [
+              14,
+              30,
+              81,
+              61
+            ],
+            [
+              19,
+              21,
+              68,
+              62
+            ],
+            [
+              24,
+              16,
+              68,
+              62
+            ]
+          ],
+          "sha256": "339a5acd82eff2dc765483dc2f75d7913247b68bed35257f43596dc3a26c7e5b",
+          "bytes": 3362,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "walk": {
+          "url": "/world/cast-v2/bat/walk.png",
+          "frameWidth": 87,
+          "frameHeight": 87,
+          "frames": 11,
+          "durationsMs": [
+            90,
+            90,
+            90,
+            90,
+            90,
+            90,
+            90,
+            90,
+            90,
+            90,
+            90
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              20,
+              29,
+              74,
+              62
+            ],
+            [
+              19,
+              32,
+              75,
+              61
+            ],
+            [
+              21,
+              47,
+              77,
+              62
+            ],
+            [
+              33,
+              47,
+              77,
+              71
+            ],
+            [
+              31,
+              47,
+              77,
+              67
+            ],
+            [
+              25,
+              45,
+              79,
+              63
+            ],
+            [
+              20,
+              42,
+              79,
+              60
+            ],
+            [
+              15,
+              37,
+              81,
+              60
+            ],
+            [
+              14,
+              30,
+              81,
+              61
+            ],
+            [
+              19,
+              21,
+              68,
+              62
+            ],
+            [
+              24,
+              16,
+              68,
+              62
+            ]
+          ],
+          "sha256": "339a5acd82eff2dc765483dc2f75d7913247b68bed35257f43596dc3a26c7e5b",
+          "bytes": 3362,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "attack": {
+          "url": "/world/cast-v2/bat/attack.png",
+          "frameWidth": 87,
+          "frameHeight": 87,
+          "frames": 11,
+          "durationsMs": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            90,
+            75,
+            75,
+            110
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              22,
+              19,
+              70,
+              62
+            ],
+            [
+              23,
+              27,
+              73,
+              63
+            ],
+            [
+              22,
+              43,
+              76,
+              64
+            ],
+            [
+              34,
+              35,
+              62,
+              65
+            ],
+            [
+              34,
+              34,
+              60,
+              65
+            ],
+            [
+              34,
+              34,
+              60,
+              65
+            ],
+            [
+              35,
+              35,
+              60,
+              64
+            ],
+            [
+              33,
+              35,
+              64,
+              63
+            ],
+            [
+              33,
+              31,
+              86,
+              67
+            ],
+            [
+              32,
+              27,
+              78,
+              67
+            ],
+            [
+              25,
+              24,
+              69,
+              62
+            ]
+          ],
+          "sha256": "3679999a79f26b9de02c5f9a3cbd46f9aaba8b86c4ab7b10baa7eb88dbe93e6a",
+          "bytes": 3822,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "hurt": {
+          "url": "/world/cast-v2/bat/hurt.png",
+          "frameWidth": 87,
+          "frameHeight": 87,
+          "frames": 3,
+          "durationsMs": [
+            100,
+            100,
+            100
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              22,
+              42,
+              75,
+              64
+            ],
+            [
+              23,
+              27,
+              73,
+              63
+            ],
+            [
+              22,
+              19,
+              70,
+              62
+            ]
+          ],
+          "sha256": "2f27932c4b665be5aae49e94660b90b89b7139f61475a0079a6c42599b69c51d",
+          "bytes": 1333,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "death": {
+          "url": "/world/cast-v2/bat/death.png",
+          "frameWidth": 87,
+          "frameHeight": 87,
+          "frames": 4,
+          "durationsMs": [
+            130,
+            130,
+            130,
+            130
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              44,
+              17,
+              57,
+              55
+            ],
+            [
+              36,
+              27,
+              67,
+              55
+            ],
+            [
+              28,
+              46,
+              73,
+              55
+            ],
+            [
+              18,
+              43,
+              82,
+              55
+            ]
+          ],
+          "sha256": "9b2a774d37ca5540cdfa16b810974e4938d7dbb90be969d3be5d3c9c1567167c",
+          "bytes": 873,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "fall": {
+          "url": "/world/cast-v2/bat/fall.png",
+          "frameWidth": 87,
+          "frameHeight": 87,
+          "frames": 5,
+          "durationsMs": [
+            90,
+            90,
+            90,
+            90,
+            90
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              44,
+              26,
+              56,
+              72
+            ],
+            [
+              43,
+              28,
+              54,
+              72
+            ],
+            [
+              43,
+              32,
+              56,
+              72
+            ],
+            [
+              45,
+              32,
+              53,
+              72
+            ],
+            [
+              43,
+              30,
+              55,
+              72
+            ]
+          ],
+          "sha256": "2c49914e84ba4d0f688853f772e4ed2d23e2ce4766e83d60effcbdca52fd4b1a",
+          "bytes": 998,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "fallStart": {
+          "url": "/world/cast-v2/bat/fallStart.png",
+          "frameWidth": 87,
+          "frameHeight": 87,
+          "frames": 3,
+          "durationsMs": [
+            100,
+            100,
+            100
+          ],
+          "loop": false,
+          "holdLast": true,
+          "alphaBoundsByFrame": [
+            [
+              25,
+              29,
+              69,
+              68
+            ],
+            [
+              38,
+              28,
+              63,
+              71
+            ],
+            [
+              42,
+              28,
+              57,
+              73
+            ]
+          ],
+          "sha256": "80a577de738e270d5018136353402f0430768515396cf58c4f4a3396ca2ccda7",
+          "bytes": 1339,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        }
+      },
+      "attackWindows": {
+        "attack": {
+          "startFrame": 8,
+          "endFrameExclusive": 10,
+          "startMs": 790,
+          "endMs": 940,
+          "review": "visible white swipe arcs on frames8\u20139; flight hurtbox must not include all wing pixels"
+        }
+      },
+      "review": {
+        "nativeAccepted": true,
+        "sceneAccepted": false,
+        "nativeReview": "All clips/counts/alpha extents inspected in source contact sheet; original PNG bytes unchanged. Pivot/body are intake guides, not collision acceptance.",
+        "pivotWarning": "Flight uses62px foot reference; falling bottom72; all death frames ground at55. Apply clipPivots or equivalent death-position correction to avoid a floating corpse."
+      },
+      "clipPivots": {
+        "idle": {
+          "x": 49,
+          "y": 62
+        },
+        "walk": {
+          "x": 49,
+          "y": 62
+        },
+        "attack": {
+          "x": 49,
+          "y": 62
+        },
+        "hurt": {
+          "x": 49,
+          "y": 62
+        },
+        "fallStart": {
+          "x": 49,
+          "y": 72
+        },
+        "fall": {
+          "x": 49,
+          "y": 72
+        },
+        "death": {
+          "x": 49,
+          "y": 55
+        }
+      }
+    },
+    {
+      "id": "npc.townsfolk1",
+      "role": "resident",
+      "creator": "Ansimuz",
+      "license": "CC0-1.0",
+      "sourcePage": "https://ansimuz.itch.io/gothicvania-town",
+      "sourceArchiveSha256": "e2499e1c95b5d3e0912eb5818ce15bf840c110a50f8d325722ca60ad8e71a317",
+      "scale": 1,
+      "footX": 19,
+      "footY": 52,
+      "body": {
+        "x": -10,
+        "y": -45,
+        "width": 20,
+        "height": 45
+      },
+      "bodyCoordinateSpace": "relative to foot/pivot in world pixels at scale1",
+      "facingDefault": "right",
+      "clips": {
+        "idle": {
+          "url": "/world/cast-v2/townsfolk1/idle.png",
+          "frameWidth": 39,
+          "frameHeight": 52,
+          "frames": 4,
+          "durationsMs": [
+            180,
+            180,
+            180,
+            180
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              12,
+              7,
+              27,
+              52
+            ],
+            [
+              13,
+              8,
+              27,
+              52
+            ],
+            [
+              12,
+              10,
+              28,
+              52
+            ],
+            [
+              13,
+              8,
+              27,
+              52
+            ]
+          ],
+          "sha256": "19489bb3b1024040c30999d26a14d5189b916659b1656062d915889801c71012",
+          "bytes": 1394,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "walk": {
+          "url": "/world/cast-v2/townsfolk1/walk.png",
+          "frameWidth": 39,
+          "frameHeight": 52,
+          "frames": 6,
+          "durationsMs": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              7,
+              7,
+              33,
+              52
+            ],
+            [
+              12,
+              8,
+              28,
+              52
+            ],
+            [
+              12,
+              9,
+              28,
+              52
+            ],
+            [
+              8,
+              7,
+              33,
+              52
+            ],
+            [
+              12,
+              8,
+              29,
+              52
+            ],
+            [
+              12,
+              9,
+              28,
+              51
+            ]
+          ],
+          "sha256": "e8b01b4ed1774cc24e94742f0423511f5ee20542e6696b2309649753a2204595",
+          "bytes": 2376,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        }
+      },
+      "attackWindows": {},
+      "review": {
+        "nativeAccepted": true,
+        "sceneAccepted": false,
+        "nativeReview": "All clips/counts/alpha extents inspected in source contact sheet; original PNG bytes unchanged. Pivot/body are intake guides, not collision acceptance."
+      },
+      "sourceName": "hat-man"
+    },
+    {
+      "id": "npc.townsfolk2",
+      "role": "resident",
+      "creator": "Ansimuz",
+      "license": "CC0-1.0",
+      "sourcePage": "https://ansimuz.itch.io/gothicvania-town",
+      "sourceArchiveSha256": "e2499e1c95b5d3e0912eb5818ce15bf840c110a50f8d325722ca60ad8e71a317",
+      "scale": 1,
+      "footX": 18,
+      "footY": 46,
+      "body": {
+        "x": -10,
+        "y": -39,
+        "width": 20,
+        "height": 39
+      },
+      "bodyCoordinateSpace": "relative to foot/pivot in world pixels at scale1",
+      "facingDefault": "right",
+      "clips": {
+        "idle": {
+          "url": "/world/cast-v2/townsfolk2/idle.png",
+          "frameWidth": 37,
+          "frameHeight": 46,
+          "frames": 7,
+          "durationsMs": [
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              8,
+              6,
+              27,
+              46
+            ],
+            [
+              9,
+              6,
+              28,
+              46
+            ],
+            [
+              10,
+              6,
+              29,
+              46
+            ],
+            [
+              11,
+              6,
+              29,
+              46
+            ],
+            [
+              11,
+              6,
+              29,
+              46
+            ],
+            [
+              9,
+              6,
+              27,
+              46
+            ],
+            [
+              6,
+              6,
+              24,
+              46
+            ]
+          ],
+          "sha256": "9854643533ae7a8e0d8e4a713ae8da2c092e2d3cd57bb74406636fb4fc6a7276",
+          "bytes": 1819,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "walk": {
+          "url": "/world/cast-v2/townsfolk2/walk.png",
+          "frameWidth": 37,
+          "frameHeight": 46,
+          "frames": 6,
+          "durationsMs": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              6,
+              7,
+              28,
+              46
+            ],
+            [
+              8,
+              6,
+              27,
+              46
+            ],
+            [
+              11,
+              5,
+              28,
+              46
+            ],
+            [
+              6,
+              7,
+              26,
+              46
+            ],
+            [
+              8,
+              6,
+              27,
+              46
+            ],
+            [
+              11,
+              5,
+              28,
+              46
+            ]
+          ],
+          "sha256": "d1b3b4b441fdc42b8741af98f76d15ffcc5fb52c451d4b65dd567f22f69fde38",
+          "bytes": 1593,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        }
+      },
+      "attackWindows": {},
+      "review": {
+        "nativeAccepted": true,
+        "sceneAccepted": false,
+        "nativeReview": "All clips/counts/alpha extents inspected in source contact sheet; original PNG bytes unchanged. Pivot/body are intake guides, not collision acceptance."
+      },
+      "sourceName": "woman"
+    },
+    {
+      "id": "npc.townsfolk3",
+      "role": "resident",
+      "creator": "Ansimuz",
+      "license": "CC0-1.0",
+      "sourcePage": "https://ansimuz.itch.io/gothicvania-town",
+      "sourceArchiveSha256": "e2499e1c95b5d3e0912eb5818ce15bf840c110a50f8d325722ca60ad8e71a317",
+      "scale": 1,
+      "footX": 20,
+      "footY": 47,
+      "body": {
+        "x": -10,
+        "y": -40,
+        "width": 20,
+        "height": 40
+      },
+      "bodyCoordinateSpace": "relative to foot/pivot in world pixels at scale1",
+      "facingDefault": "right",
+      "clips": {
+        "idle": {
+          "url": "/world/cast-v2/townsfolk3/idle.png",
+          "frameWidth": 40,
+          "frameHeight": 47,
+          "frames": 5,
+          "durationsMs": [
+            180,
+            180,
+            180,
+            180,
+            180
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              7,
+              5,
+              30,
+              47
+            ],
+            [
+              6,
+              3,
+              34,
+              47
+            ],
+            [
+              6,
+              5,
+              31,
+              47
+            ],
+            [
+              6,
+              5,
+              31,
+              47
+            ],
+            [
+              6,
+              5,
+              31,
+              47
+            ]
+          ],
+          "sha256": "4c665bcb23ffeaad527964bfeededc27069d68b0e4b6f570ae33a96e65bf5b54",
+          "bytes": 1830,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "walk": {
+          "url": "/world/cast-v2/townsfolk3/walk.png",
+          "frameWidth": 40,
+          "frameHeight": 47,
+          "frames": 6,
+          "durationsMs": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              7,
+              5,
+              34,
+              47
+            ],
+            [
+              13,
+              6,
+              31,
+              47
+            ],
+            [
+              13,
+              4,
+              28,
+              47
+            ],
+            [
+              8,
+              5,
+              35,
+              47
+            ],
+            [
+              11,
+              6,
+              31,
+              46
+            ],
+            [
+              11,
+              4,
+              30,
+              46
+            ]
+          ],
+          "sha256": "dbd89021f7f6e0e0e0dea06a81a6a1008e5ffad989b0de3d2f4857949d70477c",
+          "bytes": 2426,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        }
+      },
+      "attackWindows": {},
+      "review": {
+        "nativeAccepted": true,
+        "sceneAccepted": false,
+        "nativeReview": "All clips/counts/alpha extents inspected in source contact sheet; original PNG bytes unchanged. Pivot/body are intake guides, not collision acceptance."
+      },
+      "sourceName": "bearded"
+    },
+    {
+      "id": "npc.townsfolk4",
+      "role": "resident",
+      "creator": "Ansimuz",
+      "license": "CC0-1.0",
+      "sourcePage": "https://ansimuz.itch.io/gothicvania-town",
+      "sourceArchiveSha256": "e2499e1c95b5d3e0912eb5818ce15bf840c110a50f8d325722ca60ad8e71a317",
+      "scale": 1,
+      "footX": 17,
+      "footY": 42,
+      "body": {
+        "x": -10,
+        "y": -35,
+        "width": 20,
+        "height": 35
+      },
+      "bodyCoordinateSpace": "relative to foot/pivot in world pixels at scale1",
+      "facingDefault": "right",
+      "clips": {
+        "idle": {
+          "url": "/world/cast-v2/townsfolk4/idle.png",
+          "frameWidth": 34,
+          "frameHeight": 42,
+          "frames": 8,
+          "durationsMs": [
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180,
+            180
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              6,
+              5,
+              29,
+              42
+            ],
+            [
+              9,
+              11,
+              32,
+              42
+            ],
+            [
+              10,
+              12,
+              33,
+              42
+            ],
+            [
+              10,
+              11,
+              31,
+              42
+            ],
+            [
+              10,
+              8,
+              31,
+              42
+            ],
+            [
+              10,
+              3,
+              31,
+              42
+            ],
+            [
+              7,
+              0,
+              31,
+              42
+            ],
+            [
+              4,
+              0,
+              31,
+              42
+            ]
+          ],
+          "sha256": "3550c412a39146fa4658d6e2b60cbe9a7979f676b36006a1967a1267d8b6a121",
+          "bytes": 3254,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        },
+        "walk": {
+          "url": "/world/cast-v2/townsfolk4/walk.png",
+          "frameWidth": 34,
+          "frameHeight": 42,
+          "frames": 12,
+          "durationsMs": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true,
+          "holdLast": false,
+          "alphaBoundsByFrame": [
+            [
+              6,
+              5,
+              30,
+              42
+            ],
+            [
+              6,
+              4,
+              29,
+              42
+            ],
+            [
+              6,
+              3,
+              29,
+              42
+            ],
+            [
+              6,
+              4,
+              29,
+              42
+            ],
+            [
+              6,
+              5,
+              28,
+              42
+            ],
+            [
+              5,
+              7,
+              29,
+              42
+            ],
+            [
+              6,
+              5,
+              30,
+              42
+            ],
+            [
+              6,
+              4,
+              29,
+              42
+            ],
+            [
+              6,
+              3,
+              29,
+              41
+            ],
+            [
+              6,
+              4,
+              29,
+              42
+            ],
+            [
+              6,
+              5,
+              28,
+              42
+            ],
+            [
+              5,
+              7,
+              29,
+              42
+            ]
+          ],
+          "sha256": "7e9aa4627e3f42d305895c04da39969ba4993d0137d93f381876a00ce97b7857",
+          "bytes": 3175,
+          "timingSource": "authored intake starting timings; scene tuning pending"
+        }
+      },
+      "attackWindows": {},
+      "review": {
+        "nativeAccepted": true,
+        "sceneAccepted": false,
+        "nativeReview": "All clips/counts/alpha extents inspected in source contact sheet; original PNG bytes unchanged. Pivot/body are intake guides, not collision acceptance."
+      },
+      "sourceName": "oldman"
+    }
+  ],
+  "credits": [
+    {
+      "creator": "LuizMelo",
+      "license": "CC0-1.0",
+      "url": "https://luizmelo.itch.io/"
+    },
+    {
+      "creator": "Ansimuz",
+      "license": "CC0-1.0",
+      "url": "https://ansimuz.itch.io/gothicvania-town"
+    }
+  ],
+  "props": [
+    {
+      "id": "hearth.small-fire",
+      "url": "/world/cast-v2/small-fire.png",
+      "creator": "Stealthix",
+      "sourcePage": "https://stealthix.itch.io/animated-fires",
+      "license": "CC0-1.0",
+      "frameWidth": 10,
+      "frameHeight": 26,
+      "columns": 10,
+      "rows": 6,
+      "frames": 60,
+      "durationsMs": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ],
+      "loop": true,
+      "footX": 5,
+      "footY": 26,
+      "scale": 1,
+      "sha256": "e69fc9aecb2e5bd6d6bb1920b92448bb74c1d1351faece7ba17d2ebf07a3794a",
+      "bytes": 4979,
+      "review": "All60 native frames inspected; original10-column sheet unchanged.12.5fps is authored starting timing; needs real hearth/lighting/mount review."
+    }
+  ]
+}

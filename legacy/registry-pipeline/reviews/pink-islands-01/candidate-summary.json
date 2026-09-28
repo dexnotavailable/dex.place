@@ -1,0 +1,65 @@
+[
+  {
+    "room": "rest",
+    "remainingStrongPink": 0,
+    "selectedSpillPixels": 309,
+    "nonTargetPixelsUnchanged": true,
+    "sourceUnchanged": true
+  },
+  {
+    "room": "registry",
+    "remainingStrongPink": 2,
+    "selectedSpillPixels": 406,
+    "nonTargetPixelsUnchanged": true,
+    "sourceUnchanged": true
+  },
+  {
+    "room": "junction",
+    "remainingStrongPink": 32,
+    "selectedSpillPixels": 815,
+    "nonTargetPixelsUnchanged": true,
+    "sourceUnchanged": true
+  },
+  {
+    "room": "vestibule",
+    "remainingStrongPink": 0,
+    "selectedSpillPixels": 25,
+    "nonTargetPixelsUnchanged": true,
+    "sourceUnchanged": true
+  },
+  {
+    "room": "archive",
+    "remainingStrongPink": 0,
+    "selectedSpillPixels": 229,
+    "nonTargetPixelsUnchanged": true,
+    "sourceUnchanged": true
+  },
+  {
+    "room": "pool",
+    "remainingStrongPink": 991,
+    "selectedSpillPixels": 836,
+    "nonTargetPixelsUnchanged": true,
+    "sourceUnchanged": true
+  },
+  {
+    "room": "sky-walk",
+    "remainingStrongPink": 4646,
+    "selectedSpillPixels": 574,
+    "nonTargetPixelsUnchanged": true,
+    "sourceUnchanged": true
+  },
+  {
+    "room": "exhibit",
+    "remainingStrongPink": 3,
+    "selectedSpillPixels": 1076,
+    "nonTargetPixelsUnchanged": true,
+    "sourceUnchanged": true
+  },
+  {
+    "room": "courtyard",
+    "remainingStrongPink": 45,
+    "selectedSpillPixels": 565,
+    "nonTargetPixelsUnchanged": true,
+    "sourceUnchanged": true
+  }
+]

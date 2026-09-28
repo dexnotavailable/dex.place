@@ -1,0 +1,10 @@
+.world-annotations{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+.world-exhibits{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.world-exhibit{position:absolute;display:flex;align-items:center;justify-content:center;pointer-events:auto;background:#adb4ab;text-decoration:none;border:0;padding:0;isolation:isolate}
+.world-exhibit img{display:block;width:100%;height:100%;object-fit:contain;image-rendering:auto;filter:none;opacity:1;mix-blend-mode:normal;pointer-events:none}
+.world-exhibit:hover{background:#adb4ab}
+.world-exhibit:focus-visible{outline:2px solid #f2dcad;outline-offset:3px}
+.exhibit-error{padding:6px;color:#23343a;text-align:center;font-size:.75rem;line-height:1.4}
+.target-hint{position:absolute;display:flex;align-items:center;gap:9px;padding:7px 10px;border:1px solid #718d90;background:#203a42;color:#f0f2e8;box-shadow:0 2px 0 #102a31;font-size:.8125rem;line-height:1.4;pointer-events:none;overflow-wrap:anywhere}
+.target-hint kbd{flex:none;border:1px solid #809797;background:#263e46;padding:1px 4px;font:inherit;font-size:.75rem;white-space:nowrap}
+@media(pointer:coarse){.target-hint{font-size:.8125rem}}

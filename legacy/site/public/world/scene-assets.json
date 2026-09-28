@@ -1,0 +1,3835 @@
+{
+  "schemaVersion": 3,
+  "composition": "waterfront-rooms-repair-v1",
+  "assets": [
+    {
+      "id": "causeway",
+      "url": "/world/assets/FG01-continuous-v4.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 72
+      },
+      "repeatFrame": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 72
+      },
+      "collisionTop": 0
+    },
+    {
+      "id": "terminal",
+      "url": "/world/assets/P02-flat-v3.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 23,
+        "height": 96
+      },
+      "parts": {
+        "screen": {
+          "x": 6,
+          "y": 15,
+          "width": 11,
+          "height": 13
+        },
+        "indicator": {
+          "x": 10,
+          "y": 31,
+          "width": 2,
+          "height": 1
+        }
+      }
+    },
+    {
+      "id": "FG02",
+      "url": "/world/assets/library-v1/FG02-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 163,
+        "height": 70
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 162,
+            "y": 0
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 81,
+          "y": 70
+        },
+        "originMeaning": "integer bottom-center"
+      }
+    },
+    {
+      "id": "FG03",
+      "url": "/world/assets/library-v1/FG03-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 67,
+        "height": 224
+      },
+      "parts": {
+        "shaftRepeat": {
+          "x": 9,
+          "y": 6,
+          "width": 48,
+          "height": 194
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 33,
+          "y": 224
+        },
+        "originMeaning": "integer bottom-center"
+      }
+    },
+    {
+      "id": "FG04",
+      "url": "/world/assets/library-v1/FG04-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 128,
+        "height": 28
+      },
+      "parts": {},
+      "attachments": {
+        "origin": {
+          "x": 64,
+          "y": 28
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "leftShoe": {
+          "x": 5,
+          "y": 28
+        },
+        "rightShoe": {
+          "x": 123,
+          "y": 28
+        }
+      }
+    },
+    {
+      "id": "FG05",
+      "url": "/world/assets/library-v1/FG05-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 400,
+        "height": 47
+      },
+      "parts": {},
+      "attachments": {
+        "origin": {
+          "x": 200,
+          "y": 47
+        },
+        "originMeaning": "integer bottom-center",
+        "leftHanger": {
+          "x": 100,
+          "y": 4
+        },
+        "rightHanger": {
+          "x": 300,
+          "y": 4
+        }
+      }
+    },
+    {
+      "id": "FG06",
+      "url": "/world/assets/library-v1/FG06-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 560,
+        "height": 168
+      },
+      "parts": {
+        "openUnderArch": true
+      },
+      "attachments": {
+        "origin": {
+          "x": 280,
+          "y": 168
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "leftSupport": {
+          "x": 0,
+          "y": 168
+        },
+        "rightSupport": {
+          "x": 560,
+          "y": 168
+        }
+      }
+    },
+    {
+      "id": "FG07",
+      "url": "/world/assets/library-v1/FG07-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 144,
+        "height": 47
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 2,
+            "endX": 126,
+            "y": 1
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 72,
+          "y": 47
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "FG08",
+      "url": "/world/assets/library-v1/FG08-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 106,
+        "height": 640
+      },
+      "parts": {
+        "panelRepeat": {
+          "x": 2,
+          "y": 4,
+          "width": 102,
+          "height": 632
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 53,
+          "y": 640
+        },
+        "originMeaning": "integer bottom-center"
+      }
+    },
+    {
+      "id": "FG09",
+      "url": "/world/assets/library-v1/FG09-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 43
+      },
+      "parts": {},
+      "attachments": {
+        "origin": {
+          "x": 128,
+          "y": 43
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "FG10",
+      "url": "/world/assets/library-v1/FG10-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 128,
+        "height": 71
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 20,
+            "y": 58
+          },
+          {
+            "startX": 21,
+            "endX": 47,
+            "y": 44
+          },
+          {
+            "startX": 47,
+            "endX": 73,
+            "y": 30
+          },
+          {
+            "startX": 74,
+            "endX": 100,
+            "y": 15
+          },
+          {
+            "startX": 101,
+            "endX": 127,
+            "y": 0
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 64,
+          "y": 71
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P01",
+      "url": "/world/assets/library-v1/P01-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 96,
+        "height": 20
+      },
+      "parts": {
+        "seatTopSpans": [
+          {
+            "startX": 1,
+            "endX": 95,
+            "y": 0
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 48,
+          "y": 20
+        },
+        "originMeaning": "integer bottom-center",
+        "leftFoot": {
+          "x": 15,
+          "y": 20
+        },
+        "rightFoot": {
+          "x": 81,
+          "y": 20
+        }
+      }
+    },
+    {
+      "id": "P03",
+      "url": "/world/assets/library-v1/P03-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 13,
+        "height": 27
+      },
+      "parts": {
+        "glassCrop": {
+          "x": 1,
+          "y": 4,
+          "width": 11,
+          "height": 13
+        },
+        "terminalGlass": {
+          "url": "/world/assets/library-v1/P03-glass-11x13-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 11,
+            "height": 13
+          },
+          "target": "P02 flat-v3 screen aperture11x13"
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 6,
+          "y": 27
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P04",
+      "url": "/world/assets/library-v1/P04-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 27,
+        "height": 112
+      },
+      "parts": {
+        "lensPlacement": {
+          "assetId": "P05",
+          "rect": {
+            "x": 8,
+            "y": 8,
+            "width": 12,
+            "height": 12
+          }
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 13,
+          "y": 112
+        },
+        "originMeaning": "integer bottom-center",
+        "lensCenter": {
+          "x": 14,
+          "y": 14
+        }
+      }
+    },
+    {
+      "id": "P05",
+      "url": "/world/assets/library-v1/P05-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 12,
+        "height": 12
+      },
+      "parts": {
+        "emissionMask": {
+          "url": "/world/assets/library-v1/P05-emission-mask-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 12
+          },
+          "purpose": "tint/opacity state independently above static housing; not a separate inventory role"
+        },
+        "emissionBounds": {
+          "x": 1,
+          "y": 1,
+          "width": 10,
+          "height": 10
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 6,
+          "y": 12
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P06",
+      "url": "/world/assets/library-v1/P06-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 23,
+        "height": 176
+      },
+      "parts": {
+        "fixedUpper": {
+          "x": 0,
+          "y": 0,
+          "width": 23,
+          "height": 146
+        },
+        "releasedLower": {
+          "x": 0,
+          "y": 146,
+          "width": 23,
+          "height": 30
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 11,
+          "y": 176
+        },
+        "originMeaning": "integer bottom-center",
+        "topMount": {
+          "x": 11,
+          "y": 0
+        },
+        "lowerEyelet": {
+          "x": 11,
+          "y": 166
+        },
+        "cutPoint": {
+          "x": 11,
+          "y": 146
+        }
+      }
+    },
+    {
+      "id": "P07",
+      "url": "/world/assets/library-v1/P07-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 21
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 255,
+            "y": 0
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 128,
+          "y": 21
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "hinge": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "P08",
+      "url": "/world/assets/library-v1/P08-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 48
+      },
+      "parts": {},
+      "attachments": {
+        "origin": {
+          "x": 16,
+          "y": 48
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "pivot": {
+          "x": 13,
+          "y": 31
+        }
+      }
+    },
+    {
+      "id": "P09",
+      "url": "/world/assets/library-v1/P09-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 192,
+        "height": 23
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 191,
+            "y": 0
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 96,
+          "y": 23
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P10",
+      "url": "/world/assets/library-v1/P10-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 21,
+        "height": 320
+      },
+      "parts": {
+        "repeatGuide": {
+          "x": 8,
+          "y": 14,
+          "width": 4,
+          "height": 292
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 10,
+          "y": 320
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "railCenterX": 10
+      }
+    },
+    {
+      "id": "P11",
+      "url": "/world/assets/library-v1/P11-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 28,
+        "height": 9
+      },
+      "parts": {
+        "emissionMask": {
+          "url": "/world/assets/library-v1/P11-emission-mask-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 28,
+            "height": 9
+          },
+          "purpose": "tint/opacity state independently above static housing; not a separate inventory role"
+        },
+        "emissionBounds": {
+          "x": 6,
+          "y": 2,
+          "width": 16,
+          "height": 5
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 14,
+          "y": 9
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P12",
+      "url": "/world/assets/library-v1/P12-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 20
+      },
+      "parts": {
+        "labelSafeArea": {
+          "x": 4,
+          "y": 5,
+          "width": 24,
+          "height": 11
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 16,
+          "y": 20
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P13",
+      "url": "/world/assets/library-v1/P13-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 78,
+        "height": 112
+      },
+      "parts": {
+        "requiredBacking": {
+          "kind": "separate-flat-rectangle",
+          "color": "#22313f",
+          "rect": {
+            "x": 5,
+            "y": 6,
+            "width": 68,
+            "height": 100
+          },
+          "depth": "behind housing, in front of background",
+          "reason": "Raw shelf recesses contain low-alpha holes; do not repaint raw or flatten backing into source."
+        },
+        "folderSlots": [
+          {
+            "x": 8,
+            "y": 8,
+            "width": 62,
+            "height": 25
+          },
+          {
+            "x": 8,
+            "y": 42,
+            "width": 62,
+            "height": 25
+          },
+          {
+            "x": 8,
+            "y": 76,
+            "width": 62,
+            "height": 25
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 39,
+          "y": 112
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P14",
+      "url": "/world/assets/library-v1/P14-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 110,
+        "height": 176
+      },
+      "parts": {
+        "aperture": {
+          "x": 9,
+          "y": 9,
+          "width": 92,
+          "height": 153
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 55,
+          "y": 176
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P15",
+      "url": "/world/assets/library-v1/P15-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 49,
+        "height": 56
+      },
+      "parts": {
+        "plaque": {
+          "x": 16,
+          "y": 15,
+          "width": 16,
+          "height": 10
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 24,
+          "y": 56
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P16",
+      "url": "/world/assets/library-v1/P16-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 185,
+        "height": 15
+      },
+      "parts": {
+        "clothBearing": {
+          "x": 12,
+          "y": 5,
+          "width": 160,
+          "height": 5
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 92,
+          "y": 15
+        },
+        "originMeaning": "integer bottom-center",
+        "clothLeft": {
+          "x": 12,
+          "y": 12
+        },
+        "clothRight": {
+          "x": 172,
+          "y": 12
+        }
+      }
+    },
+    {
+      "id": "P17",
+      "url": "/world/assets/library-v1/P17-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 160,
+        "height": 214
+      },
+      "parts": {
+        "labelSafeArea": {
+          "x": 16,
+          "y": 15,
+          "width": 128,
+          "height": 184
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 80,
+          "y": 214
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomWeightY": 214
+      }
+    },
+    {
+      "id": "P18",
+      "url": "/world/assets/library-v1/P18-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 160,
+        "height": 7
+      },
+      "parts": {},
+      "attachments": {
+        "origin": {
+          "x": 80,
+          "y": 7
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "clothBottom": {
+          "x": 80,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "P19",
+      "url": "/world/assets/library-v1/P19-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 130,
+        "height": 160
+      },
+      "parts": {
+        "emissionMask": {
+          "url": "/world/assets/library-v1/P19-emission-mask-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 130,
+            "height": 160
+          },
+          "purpose": "tint/opacity state independently above static housing; not a separate inventory role"
+        },
+        "emissionBounds": {
+          "x": 50,
+          "y": 45,
+          "width": 30,
+          "height": 40
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 65,
+          "y": 160
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "core": {
+          "x": 65,
+          "y": 65
+        },
+        "leftArmSocket": {
+          "x": 7,
+          "y": 61
+        },
+        "rightArmSocket": {
+          "x": 123,
+          "y": 61
+        }
+      }
+    },
+    {
+      "id": "P20",
+      "url": "/world/assets/library-v1/P20-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 220,
+        "height": 34
+      },
+      "parts": {
+        "cuttingEdgeHint": [
+          {
+            "x": 79,
+            "y": 33
+          },
+          {
+            "x": 167,
+            "y": 28
+          },
+          {
+            "x": 219,
+            "y": 12
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 110,
+          "y": 34
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "pivot": {
+          "x": 15,
+          "y": 16
+        },
+        "tip": {
+          "x": 219,
+          "y": 12
+        }
+      }
+    },
+    {
+      "id": "M01",
+      "url": "/world/assets/depth-library-v1/M01-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 960,
+        "height": 137
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 480,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 480,
+          "y": 137
+        }
+      }
+    },
+    {
+      "id": "M02",
+      "url": "/world/assets/depth-library-v1/M02-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 360,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 360,
+          "y": 345
+        }
+      }
+    },
+    {
+      "id": "M03",
+      "url": "/world/assets/depth-library-v1/M03-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 320
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 400,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 400,
+          "y": 320
+        }
+      }
+    },
+    {
+      "id": "M04",
+      "url": "/world/assets/depth-library-v1/M04-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 213,
+        "height": 640
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 106,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 106,
+          "y": 640
+        }
+      }
+    },
+    {
+      "id": "M05",
+      "url": "/world/assets/depth-library-v1/M05-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 103
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 512,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 512,
+          "y": 103
+        }
+      }
+    },
+    {
+      "id": "M06",
+      "url": "/world/assets/depth-library-v1/M06-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 444
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 360,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 360,
+          "y": 444
+        }
+      }
+    },
+    {
+      "id": "M07",
+      "url": "/world/assets/depth-library-v1/M07-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 640,
+        "height": 253
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 320,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 320,
+          "y": 253
+        }
+      }
+    },
+    {
+      "id": "M08",
+      "url": "/world/assets/depth-library-v1/M08-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 76
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 240,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 240,
+          "y": 76
+        }
+      }
+    },
+    {
+      "id": "M09",
+      "url": "/world/assets/depth-library-v1/M09-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 640,
+        "height": 275
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 320,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 320,
+          "y": 275
+        }
+      }
+    },
+    {
+      "id": "B01",
+      "url": "/world/assets/depth-library-v1/B01-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720
+      }
+    },
+    {
+      "id": "B02",
+      "url": "/world/assets/depth-library-v1/B02-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 281
+      }
+    },
+    {
+      "id": "B03",
+      "url": "/world/assets/depth-library-v1/B03-tone4-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 919,
+        "height": 1700
+      }
+    },
+    {
+      "id": "B04",
+      "url": "/world/assets/depth-library-v1/B04-shell-depth-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1200,
+        "height": 718
+      }
+    },
+    {
+      "id": "B05",
+      "url": "/world/assets/depth-library-v1/B05-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1400,
+        "height": 329
+      }
+    },
+    {
+      "id": "B06",
+      "url": "/world/assets/depth-library-v1/B06-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1400,
+        "height": 241
+      }
+    },
+    {
+      "id": "B07",
+      "url": "/world/assets/depth-library-v1/B07-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 512
+      }
+    },
+    {
+      "id": "B08",
+      "url": "/world/assets/depth-library-v1/B08-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 120
+      }
+    },
+    {
+      "id": "B09",
+      "url": "/world/assets/depth-library-v1/B09-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 448
+      }
+    },
+    {
+      "id": "B10",
+      "url": "/world/assets/depth-library-v1/B10-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 192
+      }
+    },
+    {
+      "id": "M10",
+      "url": "/world/assets/depth-library-v1/M10-tone4-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 729
+      }
+    },
+    {
+      "id": "P21",
+      "url": "/world/assets/library-v1/P21-bridge-mast-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 164
+      },
+      "attachments": {
+        "origin": {
+          "x": 54,
+          "y": 164
+        },
+        "originMeaning": "mast foot meets hinge-floor at y0; mast x=-54",
+        "fixedEye": {
+          "x": 30,
+          "y": 34
+        }
+      },
+      "parts": {
+        "fixedMast": true
+      }
+    }
+  ],
+  "placements": [
+    {
+      "id": "arrival.spire",
+      "assetId": "B03",
+      "x": 1420,
+      "y": -820,
+      "width": 919,
+      "height": 1700,
+      "depth": -87,
+      "roomId": "arrival",
+      "alpha": 0.88,
+      "scrollFactor": 0.83,
+      "tint": 10795719,
+      "portraitOffset": {
+        "x": -280,
+        "y": 0
+      }
+    },
+    {
+      "id": "arrival.haze",
+      "assetId": "B02",
+      "x": 650,
+      "y": 525,
+      "width": 1280,
+      "height": 281,
+      "depth": -83,
+      "roomId": "arrival",
+      "alpha": 0.28,
+      "scrollFactor": 0.94,
+      "motion": "haze"
+    },
+    {
+      "id": "arrival.horizon",
+      "assetId": "B06",
+      "x": 500,
+      "y": 554,
+      "width": 1400,
+      "height": 241,
+      "depth": -90,
+      "roomId": "arrival",
+      "alpha": 0.48,
+      "scrollFactor": 0.86
+    },
+    {
+      "id": "arrival.pilings",
+      "assetId": "M09",
+      "x": 1060,
+      "y": 790,
+      "width": 640,
+      "height": 275,
+      "depth": -26,
+      "roomId": "arrival",
+      "alpha": 0.7,
+      "scrollFactor": 0.98
+    },
+    {
+      "id": "arrival.controls-mount",
+      "assetId": "P01",
+      "x": 1700,
+      "y": 940,
+      "width": 96,
+      "height": 20,
+      "depth": 7,
+      "roomId": "arrival",
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "threshold.entry-column",
+      "assetId": "FG08",
+      "x": 2500,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "arrival-dispatch",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "threshold.entry-attached-beam",
+      "assetId": "FG05",
+      "x": 2500,
+      "y": 300,
+      "width": 400,
+      "height": 47,
+      "depth": 17,
+      "roomId": "arrival-dispatch",
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "threshold.beam-support",
+      "assetId": "FG08",
+      "x": 2794,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 3,
+      "roomId": "arrival-dispatch",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "threshold.exit-column",
+      "assetId": "FG08",
+      "x": 3294,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "arrival-dispatch",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "threshold.movement-mount",
+      "assetId": "P01",
+      "x": 2602,
+      "y": 940,
+      "width": 96,
+      "height": 20,
+      "depth": 7,
+      "roomId": "arrival-dispatch",
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "dispatch.west-column",
+      "assetId": "FG08",
+      "x": 3400,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch.east-column",
+      "assetId": "FG08",
+      "x": 5194,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch.downloads-mount",
+      "assetId": "P01",
+      "x": 4540,
+      "y": 940,
+      "width": 96,
+      "height": 20,
+      "depth": 7,
+      "roomId": "dispatch",
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "arrival.left.upper.-960",
+      "assetId": "FG08",
+      "x": 650,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "arrival",
+      "tint": 7636361
+    },
+    {
+      "id": "arrival.left.upper.-320",
+      "assetId": "FG08",
+      "x": 650,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "arrival",
+      "tint": 7636361
+    },
+    {
+      "id": "arrival.left.base",
+      "assetId": "FG08",
+      "x": 650,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "arrival",
+      "tint": 7636361
+    },
+    {
+      "id": "threshold.entry.upper.-960",
+      "assetId": "FG08",
+      "x": 2500,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "arrival-dispatch",
+      "tint": 7636361
+    },
+    {
+      "id": "threshold.entry.upper.-320",
+      "assetId": "FG08",
+      "x": 2500,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "arrival-dispatch",
+      "tint": 7636361
+    },
+    {
+      "id": "threshold.exit.upper.-960",
+      "assetId": "FG08",
+      "x": 3294,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "arrival-dispatch",
+      "tint": 7636361
+    },
+    {
+      "id": "threshold.exit.upper.-320",
+      "assetId": "FG08",
+      "x": 3294,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "arrival-dispatch",
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch.left.upper.-960",
+      "assetId": "FG08",
+      "x": 3400,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch",
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch.left.upper.-320",
+      "assetId": "FG08",
+      "x": 3400,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch",
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch.right.upper.-960",
+      "assetId": "FG08",
+      "x": 5194,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch",
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch.right.upper.-320",
+      "assetId": "FG08",
+      "x": 5194,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch",
+      "tint": 7636361
+    },
+    {
+      "id": "arrival.pier.980",
+      "assetId": "FG03",
+      "x": 980,
+      "y": 1027,
+      "width": 67,
+      "height": 224,
+      "depth": 3,
+      "roomId": "arrival",
+      "tint": 6914954
+    },
+    {
+      "id": "arrival.pier.1780",
+      "assetId": "FG03",
+      "x": 1780,
+      "y": 1027,
+      "width": 67,
+      "height": 224,
+      "depth": 3,
+      "roomId": "arrival",
+      "tint": 6914954
+    },
+    {
+      "id": "arrival.pier.2420",
+      "assetId": "FG03",
+      "x": 2420,
+      "y": 1027,
+      "width": 67,
+      "height": 224,
+      "depth": 3,
+      "roomId": "arrival",
+      "tint": 6914954
+    },
+    {
+      "id": "dispatch.wall.3400.-75",
+      "assetId": "M02",
+      "x": 3400,
+      "y": -75,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch",
+      "alpha": 0.28,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch.wall.3400.270",
+      "assetId": "M02",
+      "x": 3400,
+      "y": 270,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch",
+      "alpha": 0.28,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch.wall.3400.615",
+      "assetId": "M02",
+      "x": 3400,
+      "y": 615,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch",
+      "alpha": 0.28,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch.wall.4120.-75",
+      "assetId": "M02",
+      "x": 4120,
+      "y": -75,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch",
+      "alpha": 0.28,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch.wall.4120.270",
+      "assetId": "M02",
+      "x": 4120,
+      "y": 270,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch",
+      "alpha": 0.28,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch.wall.4120.615",
+      "assetId": "M02",
+      "x": 4120,
+      "y": 615,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch",
+      "alpha": 0.28,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch.wall.4840.-75",
+      "assetId": "M02",
+      "x": 4840,
+      "y": -75,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch",
+      "alpha": 0.28,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 460,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch.wall.4840.270",
+      "assetId": "M02",
+      "x": 4840,
+      "y": 270,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch",
+      "alpha": 0.28,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 460,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch.wall.4840.615",
+      "assetId": "M02",
+      "x": 4840,
+      "y": 615,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch",
+      "alpha": 0.28,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 460,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch.gantry.3400",
+      "assetId": "M01",
+      "x": 3400,
+      "y": 320,
+      "width": 960,
+      "height": 137,
+      "depth": -20,
+      "roomId": "dispatch",
+      "alpha": 0.48,
+      "tint": 8295836,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 960,
+        "height": 137
+      }
+    },
+    {
+      "id": "dispatch.gantry.4360",
+      "assetId": "M01",
+      "x": 4360,
+      "y": 320,
+      "width": 960,
+      "height": 137,
+      "depth": -20,
+      "roomId": "dispatch",
+      "alpha": 0.48,
+      "tint": 8295836,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 940,
+        "height": 137
+      }
+    },
+    {
+      "id": "dispatch-archive.wall.5300.85",
+      "assetId": "M02",
+      "x": 5300,
+      "y": 85,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch-archive",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch-archive.wall.6020.85",
+      "assetId": "M02",
+      "x": 6020,
+      "y": 85,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch-archive",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 180,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch-archive.wall.5300.430",
+      "assetId": "M02",
+      "x": 5300,
+      "y": 430,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch-archive",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch-archive.wall.6020.430",
+      "assetId": "M02",
+      "x": 6020,
+      "y": 430,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch-archive",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 180,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch-archive.wall.5300.775",
+      "assetId": "M02",
+      "x": 5300,
+      "y": 775,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch-archive",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch-archive.wall.6020.775",
+      "assetId": "M02",
+      "x": 6020,
+      "y": 775,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "dispatch-archive",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 180,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive.wall.6200.85",
+      "assetId": "M02",
+      "x": 6200,
+      "y": 85,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive.wall.6920.85",
+      "assetId": "M02",
+      "x": 6920,
+      "y": 85,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive.wall.7640.85",
+      "assetId": "M02",
+      "x": 7640,
+      "y": 85,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 460,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive.wall.6200.430",
+      "assetId": "M02",
+      "x": 6200,
+      "y": 430,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive.wall.6920.430",
+      "assetId": "M02",
+      "x": 6920,
+      "y": 430,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive.wall.7640.430",
+      "assetId": "M02",
+      "x": 7640,
+      "y": 430,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 460,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive.wall.6200.775",
+      "assetId": "M02",
+      "x": 6200,
+      "y": 775,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive.wall.6920.775",
+      "assetId": "M02",
+      "x": 6920,
+      "y": 775,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive.wall.7640.775",
+      "assetId": "M02",
+      "x": 7640,
+      "y": 775,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 460,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive-gallery.wall.8100.85",
+      "assetId": "M02",
+      "x": 8100,
+      "y": 85,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive-gallery",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive-gallery.wall.8820.85",
+      "assetId": "M02",
+      "x": 8820,
+      "y": 85,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive-gallery",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 180,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive-gallery.wall.8100.430",
+      "assetId": "M02",
+      "x": 8100,
+      "y": 430,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive-gallery",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive-gallery.wall.8820.430",
+      "assetId": "M02",
+      "x": 8820,
+      "y": 430,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive-gallery",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 180,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive-gallery.wall.8100.775",
+      "assetId": "M02",
+      "x": 8100,
+      "y": 775,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive-gallery",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "archive-gallery.wall.8820.775",
+      "assetId": "M02",
+      "x": 8820,
+      "y": 775,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "archive-gallery",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 180,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery.wall.9000.-203",
+      "assetId": "M02",
+      "x": 9000,
+      "y": -203,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery.wall.9720.-203",
+      "assetId": "M02",
+      "x": 9720,
+      "y": -203,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery.wall.10440.-203",
+      "assetId": "M02",
+      "x": 10440,
+      "y": -203,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 460,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery.wall.9000.142",
+      "assetId": "M02",
+      "x": 9000,
+      "y": 142,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery.wall.9720.142",
+      "assetId": "M02",
+      "x": 9720,
+      "y": 142,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery.wall.10440.142",
+      "assetId": "M02",
+      "x": 10440,
+      "y": 142,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 460,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery.wall.9000.487",
+      "assetId": "M02",
+      "x": 9000,
+      "y": 487,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery.wall.9720.487",
+      "assetId": "M02",
+      "x": 9720,
+      "y": 487,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery.wall.10440.487",
+      "assetId": "M02",
+      "x": 10440,
+      "y": 487,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 460,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery-support.wall.10900.-75",
+      "assetId": "M02",
+      "x": 10900,
+      "y": -75,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery-support",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery-support.wall.11620.-75",
+      "assetId": "M02",
+      "x": 11620,
+      "y": -75,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery-support",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 180,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery-support.wall.10900.270",
+      "assetId": "M02",
+      "x": 10900,
+      "y": 270,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery-support",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery-support.wall.11620.270",
+      "assetId": "M02",
+      "x": 11620,
+      "y": 270,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery-support",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 180,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery-support.wall.10900.615",
+      "assetId": "M02",
+      "x": 10900,
+      "y": 615,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery-support",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "gallery-support.wall.11620.615",
+      "assetId": "M02",
+      "x": 11620,
+      "y": 615,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "gallery-support",
+      "alpha": 0.12,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 180,
+        "height": 345
+      }
+    },
+    {
+      "id": "dispatch-archive.left.-960",
+      "assetId": "FG08",
+      "x": 5300,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch-archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch-archive.left.-320",
+      "assetId": "FG08",
+      "x": 5300,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch-archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch-archive.left.320",
+      "assetId": "FG08",
+      "x": 5300,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch-archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch-archive.right.-800",
+      "assetId": "FG08",
+      "x": 6094,
+      "y": -800,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch-archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch-archive.right.-160",
+      "assetId": "FG08",
+      "x": 6094,
+      "y": -160,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch-archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "dispatch-archive.right.480",
+      "assetId": "FG08",
+      "x": 6094,
+      "y": 480,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "dispatch-archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive.left.-800",
+      "assetId": "FG08",
+      "x": 6200,
+      "y": -800,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive.left.-160",
+      "assetId": "FG08",
+      "x": 6200,
+      "y": -160,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive.left.480",
+      "assetId": "FG08",
+      "x": 6200,
+      "y": 480,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive.right.-800",
+      "assetId": "FG08",
+      "x": 7994,
+      "y": -800,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive.right.-160",
+      "assetId": "FG08",
+      "x": 7994,
+      "y": -160,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive.right.480",
+      "assetId": "FG08",
+      "x": 7994,
+      "y": 480,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive-gallery.left.-800",
+      "assetId": "FG08",
+      "x": 8100,
+      "y": -800,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive-gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive-gallery.left.-160",
+      "assetId": "FG08",
+      "x": 8100,
+      "y": -160,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive-gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive-gallery.left.480",
+      "assetId": "FG08",
+      "x": 8100,
+      "y": 480,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive-gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive-gallery.right.-1088",
+      "assetId": "FG08",
+      "x": 8894,
+      "y": -1088,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive-gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive-gallery.right.-448",
+      "assetId": "FG08",
+      "x": 8894,
+      "y": -448,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive-gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive-gallery.right.192",
+      "assetId": "FG08",
+      "x": 8894,
+      "y": 192,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "archive-gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery.left.-1088",
+      "assetId": "FG08",
+      "x": 9000,
+      "y": -1088,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery.left.-448",
+      "assetId": "FG08",
+      "x": 9000,
+      "y": -448,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery.left.192",
+      "assetId": "FG08",
+      "x": 9000,
+      "y": 192,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery.right.-1088",
+      "assetId": "FG08",
+      "x": 10794,
+      "y": -1088,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery.right.-448",
+      "assetId": "FG08",
+      "x": 10794,
+      "y": -448,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery.right.192",
+      "assetId": "FG08",
+      "x": 10794,
+      "y": 192,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery-support.left.-1088",
+      "assetId": "FG08",
+      "x": 10900,
+      "y": -1088,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery-support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery-support.left.-448",
+      "assetId": "FG08",
+      "x": 10900,
+      "y": -448,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery-support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery-support.left.192",
+      "assetId": "FG08",
+      "x": 10900,
+      "y": 192,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery-support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery-support.right.-960",
+      "assetId": "FG08",
+      "x": 11694,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery-support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery-support.right.-320",
+      "assetId": "FG08",
+      "x": 11694,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery-support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "gallery-support.right.320",
+      "assetId": "FG08",
+      "x": 11694,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "gallery-support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.left.-960",
+      "assetId": "FG08",
+      "x": 11800,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.left.-320",
+      "assetId": "FG08",
+      "x": 11800,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.left.320",
+      "assetId": "FG08",
+      "x": 11800,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.right.-960",
+      "assetId": "FG08",
+      "x": 13794,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.right.-320",
+      "assetId": "FG08",
+      "x": 13794,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.right.320",
+      "assetId": "FG08",
+      "x": 13794,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "archive.light-well",
+      "assetId": "M04",
+      "x": 7350,
+      "y": 480,
+      "width": 213,
+      "height": 640,
+      "depth": -18,
+      "roomId": "archive",
+      "alpha": 0.65,
+      "scrollFactor": 1,
+      "tint": 9020322
+    },
+    {
+      "id": "archive.shelf.left",
+      "assetId": "P13",
+      "x": 6970,
+      "y": 1008,
+      "width": 78,
+      "height": 112,
+      "depth": 8,
+      "roomId": "archive",
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "archive.shelf.right",
+      "assetId": "P13",
+      "x": 7126,
+      "y": 1008,
+      "width": 78,
+      "height": 112,
+      "depth": 8,
+      "roomId": "archive",
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "shaft.accessibility-mount",
+      "assetId": "P01",
+      "x": 8332,
+      "y": 1100,
+      "width": 96,
+      "height": 20,
+      "depth": 7,
+      "roomId": "archive-gallery",
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "gallery.roof.9000",
+      "assetId": "M05",
+      "x": 9000,
+      "y": 176,
+      "width": 1024,
+      "height": 103,
+      "depth": -20,
+      "roomId": "gallery",
+      "alpha": 0.72,
+      "scrollFactor": 1,
+      "tint": 8624544,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 103
+      }
+    },
+    {
+      "id": "gallery.roof.10024",
+      "assetId": "M05",
+      "x": 10024,
+      "y": 176,
+      "width": 1024,
+      "height": 103,
+      "depth": -20,
+      "roomId": "gallery",
+      "alpha": 0.72,
+      "scrollFactor": 1,
+      "tint": 8624544,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 876,
+        "height": 103
+      }
+    },
+    {
+      "id": "gallery.recess.9200",
+      "assetId": "M03",
+      "x": 9200,
+      "y": 512,
+      "width": 800,
+      "height": 320,
+      "depth": -22,
+      "roomId": "gallery",
+      "alpha": 0.4,
+      "scrollFactor": 1,
+      "tint": 8624544
+    },
+    {
+      "id": "gallery.recess.10000",
+      "assetId": "M03",
+      "x": 10000,
+      "y": 512,
+      "width": 800,
+      "height": 320,
+      "depth": -22,
+      "roomId": "gallery",
+      "alpha": 0.4,
+      "scrollFactor": 1,
+      "tint": 8624544
+    },
+    {
+      "id": "gallery.file-mount",
+      "assetId": "P01",
+      "x": 10252,
+      "y": 812,
+      "width": 96,
+      "height": 20,
+      "depth": 7,
+      "roomId": "gallery",
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "support.wall.left.11800.-75",
+      "assetId": "M02",
+      "x": 11800,
+      "y": -75,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 345
+      }
+    },
+    {
+      "id": "support.wall.left.11800.270",
+      "assetId": "M02",
+      "x": 11800,
+      "y": 270,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 345
+      }
+    },
+    {
+      "id": "support.wall.left.11800.615",
+      "assetId": "M02",
+      "x": 11800,
+      "y": 615,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 345
+      }
+    },
+    {
+      "id": "support.wall.right.13600.-75",
+      "assetId": "M02",
+      "x": 13600,
+      "y": -75,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 345
+      }
+    },
+    {
+      "id": "support.wall.right.13600.270",
+      "assetId": "M02",
+      "x": 13600,
+      "y": 270,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 345
+      }
+    },
+    {
+      "id": "support.wall.right.13600.615",
+      "assetId": "M02",
+      "x": 13600,
+      "y": 615,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 345
+      }
+    },
+    {
+      "id": "support.wall.top.12280.-75",
+      "assetId": "M02",
+      "x": 12280,
+      "y": -75,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      }
+    },
+    {
+      "id": "support.wall.top.13000.-75",
+      "assetId": "M02",
+      "x": 13000,
+      "y": -75,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 600,
+        "height": 345
+      }
+    },
+    {
+      "id": "support.wall.top.12280.270",
+      "assetId": "M02",
+      "x": 12280,
+      "y": 270,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 50
+      }
+    },
+    {
+      "id": "support.wall.top.13000.270",
+      "assetId": "M02",
+      "x": 13000,
+      "y": 270,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 600,
+        "height": 50
+      }
+    },
+    {
+      "id": "support.wall.sill.12280.888",
+      "assetId": "M02",
+      "x": 12280,
+      "y": 888,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 72
+      }
+    },
+    {
+      "id": "support.wall.sill.13000.888",
+      "assetId": "M02",
+      "x": 13000,
+      "y": 888,
+      "width": 720,
+      "height": 345,
+      "depth": -25,
+      "roomId": "support",
+      "alpha": 0.18,
+      "scrollFactor": 1,
+      "tint": 8691109,
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 600,
+        "height": 72
+      }
+    },
+    {
+      "id": "support.window.left.-960",
+      "assetId": "FG08",
+      "x": 12174,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.window.left.-320",
+      "assetId": "FG08",
+      "x": 12174,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.window.left.320",
+      "assetId": "FG08",
+      "x": 12174,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.window.right.-960",
+      "assetId": "FG08",
+      "x": 13600,
+      "y": -960,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.window.right.-320",
+      "assetId": "FG08",
+      "x": 13600,
+      "y": -320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.window.right.320",
+      "assetId": "FG08",
+      "x": 13600,
+      "y": 320,
+      "width": 106,
+      "height": 640,
+      "depth": 18,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7636361
+    },
+    {
+      "id": "support.far-rib",
+      "assetId": "M10",
+      "x": 12400,
+      "y": 180,
+      "width": 1100,
+      "height": 729,
+      "depth": -83,
+      "roomId": "support",
+      "alpha": 0.66,
+      "scrollFactor": 0.98,
+      "tint": 9544878
+    },
+    {
+      "id": "support.far-cliff",
+      "assetId": "B09",
+      "x": 12300,
+      "y": 420,
+      "width": 1280,
+      "height": 448,
+      "depth": -87,
+      "roomId": "support",
+      "alpha": 0.45,
+      "scrollFactor": 0.98,
+      "tint": 9742513
+    },
+    {
+      "id": "support.window-haze",
+      "assetId": "B02",
+      "x": 12300,
+      "y": 430,
+      "width": 1280,
+      "height": 281,
+      "depth": -81,
+      "roomId": "support",
+      "alpha": 0.2,
+      "scrollFactor": 0.99,
+      "motion": "haze"
+    },
+    {
+      "id": "support.file-mount",
+      "assetId": "P01",
+      "x": 12952,
+      "y": 940,
+      "width": 96,
+      "height": 20,
+      "depth": 7,
+      "roomId": "support",
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "archive.stack.6560.0.0",
+      "assetId": "P13",
+      "x": 6560,
+      "y": 784,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.0.1",
+      "assetId": "P13",
+      "x": 6560,
+      "y": 896,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.0.2",
+      "assetId": "P13",
+      "x": 6560,
+      "y": 1008,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.1.0",
+      "assetId": "P13",
+      "x": 6642,
+      "y": 784,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.1.1",
+      "assetId": "P13",
+      "x": 6642,
+      "y": 896,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.1.2",
+      "assetId": "P13",
+      "x": 6642,
+      "y": 1008,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.2.0",
+      "assetId": "P13",
+      "x": 6724,
+      "y": 784,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.2.1",
+      "assetId": "P13",
+      "x": 6724,
+      "y": 896,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.2.2",
+      "assetId": "P13",
+      "x": 6724,
+      "y": 1008,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.3.0",
+      "assetId": "P13",
+      "x": 6806,
+      "y": 784,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.3.1",
+      "assetId": "P13",
+      "x": 6806,
+      "y": 896,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.6560.3.2",
+      "assetId": "P13",
+      "x": 6806,
+      "y": 1008,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.0.0",
+      "assetId": "P13",
+      "x": 7660,
+      "y": 784,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.0.1",
+      "assetId": "P13",
+      "x": 7660,
+      "y": 896,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.0.2",
+      "assetId": "P13",
+      "x": 7660,
+      "y": 1008,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.1.0",
+      "assetId": "P13",
+      "x": 7742,
+      "y": 784,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.1.1",
+      "assetId": "P13",
+      "x": 7742,
+      "y": 896,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.1.2",
+      "assetId": "P13",
+      "x": 7742,
+      "y": 1008,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.2.0",
+      "assetId": "P13",
+      "x": 7824,
+      "y": 784,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.2.1",
+      "assetId": "P13",
+      "x": 7824,
+      "y": 896,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.2.2",
+      "assetId": "P13",
+      "x": 7824,
+      "y": 1008,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.3.0",
+      "assetId": "P13",
+      "x": 7906,
+      "y": 784,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.3.1",
+      "assetId": "P13",
+      "x": 7906,
+      "y": 896,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    },
+    {
+      "id": "archive.stack.7660.3.2",
+      "assetId": "P13",
+      "x": 7906,
+      "y": 1008,
+      "width": 78,
+      "height": 112,
+      "depth": -10,
+      "roomId": "archive",
+      "tint": 8623253,
+      "alpha": 0.7
+    }
+  ],
+  "rooms": [
+    {
+      "id": "arrival",
+      "label": "Arrival",
+      "x": 400,
+      "width": 2100,
+      "floorY": 960,
+      "kind": "arrival",
+      "topY": -160,
+      "waterY": 760,
+      "music": "calm"
+    },
+    {
+      "id": "arrival-dispatch",
+      "label": "Dispatch passage",
+      "x": 2500,
+      "width": 900,
+      "floorY": 960,
+      "kind": "threshold",
+      "topY": 520,
+      "music": "silent"
+    },
+    {
+      "id": "dispatch",
+      "label": "Dispatch",
+      "x": 3400,
+      "width": 1900,
+      "floorY": 960,
+      "kind": "dispatch",
+      "topY": 280,
+      "music": "silent"
+    },
+    {
+      "id": "dispatch-archive",
+      "label": "Archive descent",
+      "x": 5300,
+      "width": 900,
+      "floorY": 1120,
+      "kind": "threshold",
+      "topY": 480,
+      "music": "silent"
+    },
+    {
+      "id": "archive",
+      "label": "Archive",
+      "x": 6200,
+      "width": 1900,
+      "floorY": 1120,
+      "kind": "archive",
+      "topY": 480,
+      "music": "silent"
+    },
+    {
+      "id": "archive-gallery",
+      "label": "Exhibition lift shaft",
+      "x": 8100,
+      "width": 900,
+      "floorY": 1120,
+      "kind": "threshold",
+      "topY": 250,
+      "music": "silent"
+    },
+    {
+      "id": "gallery",
+      "label": "Exhibition",
+      "x": 9000,
+      "width": 1900,
+      "floorY": 832,
+      "kind": "gallery",
+      "topY": 80,
+      "music": "calm"
+    },
+    {
+      "id": "gallery-support",
+      "label": "Support descent",
+      "x": 10900,
+      "width": 900,
+      "floorY": 960,
+      "kind": "threshold",
+      "topY": 400,
+      "music": "silent"
+    },
+    {
+      "id": "support",
+      "label": "Support",
+      "x": 11800,
+      "width": 2100,
+      "floorY": 960,
+      "kind": "support",
+      "topY": 250,
+      "waterY": 700,
+      "music": "calm",
+      "windows": [
+        {
+          "x": 12280,
+          "y": 320,
+          "width": 1320,
+          "height": 568
+        }
+      ]
+    }
+  ],
+  "labels": [
+    {
+      "id": "sign.dispatch-entry",
+      "text": "Downloads",
+      "x": 3500,
+      "y": 825,
+      "roomId": "dispatch"
+    },
+    {
+      "id": "sign.archive-entry",
+      "text": "Documentation",
+      "x": 6380,
+      "y": 1000,
+      "roomId": "archive"
+    },
+    {
+      "id": "sign.gallery-entry",
+      "text": "Illustrations",
+      "x": 9160,
+      "y": 712,
+      "roomId": "gallery"
+    },
+    {
+      "id": "sign.support-entry",
+      "text": "Donate",
+      "x": 11960,
+      "y": 840,
+      "roomId": "support"
+    }
+  ]
+}

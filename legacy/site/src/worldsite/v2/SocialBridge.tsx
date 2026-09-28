@@ -1,0 +1,30 @@
+import {forwardRef,useEffect,useImperativeHandle,useRef,useState,type ComponentType} from 'react';
+import {Users,Mic,MicOff,X} from 'lucide-react';
+import {SocialController} from '../social/controller';
+import {SocialPanel} from '../social/components';
+import type {VoiceController} from '../social/voice';
+import type {SocialEligibility,SocialSnapshot,VoiceSnapshot} from '../social/types';
+import type {WorldGhost,WorldPose} from '../game/contracts';
+
+export interface SocialBridgeHandle {updatePose:(pose:WorldPose)=>void;isHudOpen:()=>boolean;closeHud:()=>void}
+interface Props {active:boolean;visible:boolean;covered:boolean;coarse:boolean;onGhosts:(ghosts:WorldGhost[])=>void;onVoiceActivity:(active:boolean)=>void;releaseGameInput:()=>void;onHudChange:(open:boolean)=>void;returnGameFocus:()=>void}
+export const SocialBridge=forwardRef<SocialBridgeHandle,Props>(function SocialBridge(props,ref){
+ const [social,setSocial]=useState<SocialController|null>(null),[state,setState]=useState<SocialSnapshot|null>(null);
+ const [voice,setVoice]=useState<VoiceController|null>(null),[voiceState,setVoiceState]=useState<VoiceSnapshot|null>(null),[voiceLoading,setVoiceLoading]=useState(false);
+ const [VoiceControls,setVoiceControls]=useState<ComponentType<{controller:VoiceController}>|null>(null),loadingVoice=useRef(false);
+ const [hud,setHud]=useState<'nearby'|'voice'|null>(null),[error,setError]=useState('');
+ const controller=useRef<SocialController|null>(null),voiceRef=useRef<VoiceController|null>(null),pose=useRef<WorldPose|null>(null),hudRef=useRef(hud),propsRef=useRef(props),alive=useRef(true);
+ hudRef.current=hud;propsRef.current=props;
+ const eligibility=():SocialEligibility=>({worldActive:propsRef.current.active,focused:propsRef.current.active,fullContent:propsRef.current.covered||!propsRef.current.visible,hudOpen:!!hudRef.current});
+ const close=()=>{voiceRef.current?.release();hudRef.current=null;setHud(null);propsRef.current.onHudChange(false);controller.current?.setEligibility(eligibility());if(propsRef.current.active&&propsRef.current.visible&&!propsRef.current.covered)propsRef.current.returnGameFocus()};
+ useImperativeHandle(ref,()=>({updatePose:next=>{pose.current=next;controller.current?.setWorld(next,eligibility())},isHudOpen:()=>!!hudRef.current,closeHud:close}),[]);
+ useEffect(()=>{alive.current=true;const instance=new SocialController(snapshot=>{setState(snapshot);propsRef.current.onGhosts(snapshot.peers)});controller.current=instance;setSocial(instance);if(pose.current)instance.setWorld(pose.current,eligibility());return()=>{alive.current=false;voiceRef.current?.destroy();instance.destroy();propsRef.current.onGhosts([]);propsRef.current.onVoiceActivity(false);controller.current=null}},[]);
+ useEffect(()=>{controller.current?.setEligibility(eligibility());if(!props.active||props.covered||!props.visible){voiceRef.current?.release();props.onVoiceActivity(false);if(hud)close()}},[props.active,props.covered,props.visible,hud]);
+ const open=(kind:'nearby'|'voice')=>{voiceRef.current?.release();props.releaseGameInput();hudRef.current=kind;setHud(kind);props.onHudChange(true);controller.current?.setEligibility(eligibility());if(kind==='voice')void loadVoice()};
+ const loadVoice=async()=>{if(voiceRef.current||loadingVoice.current||!controller.current)return;const owner=controller.current;loadingVoice.current=true;setVoiceLoading(true);setError('');try{const [{VoiceController:Controller},{VoicePanel}]=await Promise.all([import('../social/voice'),import('../social/VoicePanel')]);if(!alive.current||controller.current!==owner)return;const instance=new Controller(owner,snapshot=>{setVoiceState(snapshot);propsRef.current.onVoiceActivity(snapshot.speakingIds.length>0&&!snapshot.muted&&snapshot.volume>0&&!!controller.current?.eligible())});voiceRef.current=instance;setVoiceControls(()=>VoicePanel);setVoice(instance);setVoiceState(instance.snapshot())}catch{if(alive.current)setError('Voice controls could not load. Reload the page to try again.')}finally{loadingVoice.current=false;if(alive.current)setVoiceLoading(false)}};
+ return <div className={'v2-social '+(!props.visible?'is-hidden':'')}>
+  <div className="v2-social-tools"><button aria-label="Nearby visitors" aria-expanded={hud==='nearby'} onClick={()=>hud==='nearby'?close():open('nearby')}><Users size={16}/>{state?.enabled&&<span>{state.peers.length}</span>}</button><button aria-label="Voice controls" aria-expanded={hud==='voice'} onClick={()=>hud==='voice'?close():open('voice')}>{voiceState?.state==='talking'?<Mic size={16}/>:<MicOff size={16}/>}</button></div>
+  {hud&&social&&<div className="v2-social-popover" role="region" aria-label={hud==='voice'?'Voice controls':'Nearby visitors'} onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){event.preventDefault();close()}}} onPointerDown={event=>event.stopPropagation()}><button className="v2-popover-close" aria-label={hud==='voice'?'Close voice controls':'Close nearby controls'} onClick={close}><X size={16}/></button>{hud==='nearby'?<SocialPanel controller={social} onVoice={()=>open('voice')}/>:voice&&VoiceControls?<VoiceControls controller={voice}/>:<div><h2>Voice</h2><p role="status">{error||'Loading voice controls…'}</p>{error&&<>{pose.current?.roomId==='arena'&&<p>This fight will restart after reloading.</p>}<button disabled={voiceLoading} onClick={()=>window.location.reload()}>Reload page</button></>}</div>}</div>}
+  {props.coarse&&props.active&&props.visible&&!props.covered&&!hud&&voice&&voiceState&&!['off','joining','error','permission'].includes(voiceState.state)&&<button className={'v2-talk-pad '+(voiceState.state==='talking'?'talking':'')} aria-label="Hold to talk" aria-pressed={voiceState.state==='talking'} onPointerDown={event=>{event.preventDefault();event.stopPropagation();event.currentTarget.setPointerCapture(event.pointerId);void voice.press(true)}} onPointerUp={()=>voice.release()} onPointerCancel={()=>voice.release()} onLostPointerCapture={()=>voice.release()}><Mic size={19}/></button>}
+ </div>;
+});

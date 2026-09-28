@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "id": "suno-b-inhabited-v2",
+  "music": [
+    "arena-chamber",
+    "support"
+  ],
+  "ambience": [
+    "exterior",
+    "interior"
+  ],
+  "effects": [
+    "cable-cut",
+    "confirm",
+    "defeat",
+    "hit-metal",
+    "hurt",
+    "landing",
+    "lift-dock",
+    "lift-start",
+    "paper-open",
+    "slash-1",
+    "slash-2",
+    "step-concrete-1",
+    "step-concrete-2",
+    "step-metal-1",
+    "step-metal-2",
+    "telegraph",
+    "victory"
+  ],
+  "files": {
+    "arena-chamber": {
+      "opus": "/audio/v2/arena-chamber-v1.opus",
+      "m4a": "/audio/v2/arena-chamber-v1.m4a"
+    },
+    "support": {
+      "opus": "/audio/world-v1/suno-theme-b-v1/support.opus",
+      "m4a": "/audio/world-v1/suno-theme-b-v1/support.m4a"
+    },
+    "exterior": {
+      "opus": "/audio/world-v1/exterior.opus",
+      "m4a": "/audio/world-v1/exterior.m4a"
+    },
+    "interior": {
+      "opus": "/audio/world-v1/interior.opus",
+      "m4a": "/audio/world-v1/interior.m4a"
+    },
+    "cable-cut": {
+      "wav": "/audio/world-v1/cable-cut.wav"
+    },
+    "confirm": {
+      "wav": "/audio/world-v1/confirm.wav"
+    },
+    "defeat": {
+      "wav": "/audio/world-v1/defeat.wav"
+    },
+    "hit-metal": {
+      "wav": "/audio/world-v1/hit-metal.wav"
+    },
+    "hurt": {
+      "wav": "/audio/world-v1/hurt.wav"
+    },
+    "landing": {
+      "wav": "/audio/world-v1/landing.wav"
+    },
+    "lift-dock": {
+      "wav": "/audio/world-v1/lift-dock.wav"
+    },
+    "lift-start": {
+      "wav": "/audio/world-v1/lift-start.wav"
+    },
+    "paper-open": {
+      "wav": "/audio/world-v1/paper-open.wav"
+    },
+    "slash-1": {
+      "wav": "/audio/world-v1/slash-1.wav"
+    },
+    "slash-2": {
+      "wav": "/audio/world-v1/slash-2.wav"
+    },
+    "step-concrete-1": {
+      "wav": "/audio/world-v1/recorded-steps-v1/step-concrete-1.wav"
+    },
+    "step-concrete-2": {
+      "wav": "/audio/world-v1/recorded-steps-v1/step-concrete-2.wav"
+    },
+    "step-metal-1": {
+      "wav": "/audio/world-v1/recorded-steps-v1/step-metal-1.wav"
+    },
+    "step-metal-2": {
+      "wav": "/audio/world-v1/recorded-steps-v1/step-metal-2.wav"
+    },
+    "telegraph": {
+      "wav": "/audio/world-v1/telegraph.wav"
+    },
+    "victory": {
+      "wav": "/audio/world-v1/victory.wav"
+    }
+  },
+  "buffers": {
+    "arena-chamber": {
+      "sampleRate": 48000,
+      "channels": 2,
+      "frameCount": 3291430,
+      "loopStartFrame": 0,
+      "loopEndFrame": 3291430
+    },
+    "support": {
+      "sampleRate": 48000,
+      "channels": 2,
+      "frameCount": 4020960,
+      "loopStartFrame": 0,
+      "loopEndFrame": 4020960
+    },
+    "exterior": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 576000,
+      "loopStartFrame": 0,
+      "loopEndFrame": 576000
+    },
+    "interior": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 576000,
+      "loopStartFrame": 0,
+      "loopEndFrame": 576000
+    },
+    "cable-cut": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 14400
+    },
+    "confirm": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 33600
+    },
+    "defeat": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 52800
+    },
+    "hit-metal": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 19200
+    },
+    "hurt": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 13440
+    },
+    "landing": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 15360
+    },
+    "lift-dock": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 19200
+    },
+    "lift-start": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 26400
+    },
+    "paper-open": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 21600
+    },
+    "slash-1": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 15360
+    },
+    "slash-2": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 16800
+    },
+    "step-concrete-1": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 5028
+    },
+    "step-concrete-2": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 5165
+    },
+    "step-metal-1": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 17280
+    },
+    "step-metal-2": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 17280
+    },
+    "telegraph": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 36000
+    },
+    "victory": {
+      "sampleRate": 48000,
+      "channels": 1,
+      "frameCount": 86400
+    }
+  }
+}

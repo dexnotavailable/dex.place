@@ -1,0 +1,38 @@
+[
+  {
+    "id": "archive.file.copy-and-input-contract",
+    "projectId": "dex-place",
+    "slug": "copy-and-input-contract",
+    "headingId": "visitor-copy-and-required-inputs",
+    "versionId": "1.1",
+    "title": "Visitor copy and required inputs",
+    "url": "/documentation/dex-place/copy-and-input-contract?version=1.1#visitor-copy-and-required-inputs"
+  },
+  {
+    "id": "archive.file.world-and-gameplay",
+    "projectId": "dex-place",
+    "slug": "world-and-gameplay",
+    "headingId": "world-and-gameplay-specification",
+    "versionId": "1.1",
+    "title": "World and gameplay specification",
+    "url": "/documentation/dex-place/world-and-gameplay?version=1.1#world-and-gameplay-specification"
+  },
+  {
+    "id": "archive.file.art-direction-and-audio",
+    "projectId": "dex-place",
+    "slug": "art-direction-and-audio",
+    "headingId": "art-direction-brand-and-audio",
+    "versionId": "1.1",
+    "title": "Art direction, brand, and audio",
+    "url": "/documentation/dex-place/art-direction-and-audio?version=1.1#art-direction-brand-and-audio"
+  },
+  {
+    "id": "archive.file.audio-composition-and-budget",
+    "projectId": "dex-place",
+    "slug": "audio-composition-and-budget",
+    "headingId": "audio-composition-loops-delivery-and-credit-budget",
+    "versionId": "1.1",
+    "title": "Audio composition, loops, delivery and credit budget",
+    "url": "/documentation/dex-place/audio-composition-and-budget?version=1.1#audio-composition-loops-delivery-and-credit-budget"
+  }
+]

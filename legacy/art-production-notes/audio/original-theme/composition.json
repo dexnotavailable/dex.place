@@ -1,0 +1,531 @@
+{
+  "status": "composed-awaiting-instrument-render-and-listening",
+  "bpm": 56,
+  "tempoMicroseconds": 1071429,
+  "meter": "4/4",
+  "key": "D minor",
+  "bars": 16,
+  "cycleBeats": 64,
+  "cycleSeconds": 68.571456,
+  "melody": [
+    {
+      "bar": 1,
+      "beat": 0.5,
+      "note": "A4",
+      "durationBeats": 0.5,
+      "velocity": 53,
+      "tie": null
+    },
+    {
+      "bar": 1,
+      "beat": 1.0,
+      "note": "D5",
+      "durationBeats": 1,
+      "velocity": 63,
+      "tie": null
+    },
+    {
+      "bar": 1,
+      "beat": 2.0,
+      "note": "E5",
+      "durationBeats": 0.5,
+      "velocity": 57,
+      "tie": null
+    },
+    {
+      "bar": 1,
+      "beat": 2.5,
+      "note": "F5",
+      "durationBeats": 1.5,
+      "velocity": 65,
+      "tie": "start"
+    },
+    {
+      "bar": 2,
+      "beat": 0,
+      "note": "F5",
+      "durationBeats": 1.5,
+      "velocity": 65,
+      "tie": "stop"
+    },
+    {
+      "bar": 2,
+      "beat": 2.0,
+      "note": "E5",
+      "durationBeats": 0.5,
+      "velocity": 55,
+      "tie": null
+    },
+    {
+      "bar": 2,
+      "beat": 2.5,
+      "note": "D5",
+      "durationBeats": 1.5,
+      "velocity": 59,
+      "tie": null
+    },
+    {
+      "bar": 3,
+      "beat": 0,
+      "note": "C5",
+      "durationBeats": 1.5,
+      "velocity": 57,
+      "tie": null
+    },
+    {
+      "bar": 3,
+      "beat": 1.5,
+      "note": "A4",
+      "durationBeats": 0.5,
+      "velocity": 51,
+      "tie": null
+    },
+    {
+      "bar": 3,
+      "beat": 2.0,
+      "note": "G4",
+      "durationBeats": 1,
+      "velocity": 48,
+      "tie": null
+    },
+    {
+      "bar": 3,
+      "beat": 3.0,
+      "note": "A4",
+      "durationBeats": 1,
+      "velocity": 53,
+      "tie": null
+    },
+    {
+      "bar": 4,
+      "beat": 0,
+      "note": "G4",
+      "durationBeats": 1,
+      "velocity": 48,
+      "tie": null
+    },
+    {
+      "bar": 4,
+      "beat": 1,
+      "note": "E4",
+      "durationBeats": 2.5,
+      "velocity": 45,
+      "tie": null
+    },
+    {
+      "bar": 5,
+      "beat": 0.5,
+      "note": "A4",
+      "durationBeats": 0.5,
+      "velocity": 54,
+      "tie": null
+    },
+    {
+      "bar": 5,
+      "beat": 1.0,
+      "note": "D5",
+      "durationBeats": 1,
+      "velocity": 64,
+      "tie": null
+    },
+    {
+      "bar": 5,
+      "beat": 2.0,
+      "note": "E5",
+      "durationBeats": 0.5,
+      "velocity": 58,
+      "tie": null
+    },
+    {
+      "bar": 5,
+      "beat": 2.5,
+      "note": "F5",
+      "durationBeats": 1.5,
+      "velocity": 66,
+      "tie": null
+    },
+    {
+      "bar": 6,
+      "beat": 0,
+      "note": "G5",
+      "durationBeats": 2,
+      "velocity": 67,
+      "tie": null
+    },
+    {
+      "bar": 6,
+      "beat": 2,
+      "note": "F5",
+      "durationBeats": 1,
+      "velocity": 58,
+      "tie": null
+    },
+    {
+      "bar": 6,
+      "beat": 3,
+      "note": "D5",
+      "durationBeats": 1,
+      "velocity": 55,
+      "tie": null
+    },
+    {
+      "bar": 7,
+      "beat": 0,
+      "note": "C5",
+      "durationBeats": 1.5,
+      "velocity": 56,
+      "tie": null
+    },
+    {
+      "bar": 7,
+      "beat": 1.5,
+      "note": "D5",
+      "durationBeats": 0.5,
+      "velocity": 59,
+      "tie": null
+    },
+    {
+      "bar": 7,
+      "beat": 2.0,
+      "note": "A4",
+      "durationBeats": 2,
+      "velocity": 50,
+      "tie": null
+    },
+    {
+      "bar": 8,
+      "beat": 0,
+      "note": "G4",
+      "durationBeats": 1,
+      "velocity": 48,
+      "tie": null
+    },
+    {
+      "bar": 8,
+      "beat": 1,
+      "note": "E4",
+      "durationBeats": 1,
+      "velocity": 46,
+      "tie": null
+    },
+    {
+      "bar": 8,
+      "beat": 2,
+      "note": "C#5",
+      "durationBeats": 1,
+      "velocity": 53,
+      "tie": null
+    },
+    {
+      "bar": 9,
+      "beat": 0,
+      "note": "F5",
+      "durationBeats": 2,
+      "velocity": 64,
+      "tie": null
+    },
+    {
+      "bar": 9,
+      "beat": 2,
+      "note": "D5",
+      "durationBeats": 1,
+      "velocity": 56,
+      "tie": null
+    },
+    {
+      "bar": 9,
+      "beat": 3,
+      "note": "C5",
+      "durationBeats": 1,
+      "velocity": 52,
+      "tie": null
+    },
+    {
+      "bar": 10,
+      "beat": 0,
+      "note": "D5",
+      "durationBeats": 1,
+      "velocity": 57,
+      "tie": null
+    },
+    {
+      "bar": 10,
+      "beat": 1,
+      "note": "G5",
+      "durationBeats": 1.5,
+      "velocity": 67,
+      "tie": null
+    },
+    {
+      "bar": 10,
+      "beat": 2.5,
+      "note": "F5",
+      "durationBeats": 0.5,
+      "velocity": 60,
+      "tie": null
+    },
+    {
+      "bar": 10,
+      "beat": 3.0,
+      "note": "E5",
+      "durationBeats": 1,
+      "velocity": 57,
+      "tie": null
+    },
+    {
+      "bar": 11,
+      "beat": 0,
+      "note": "A5",
+      "durationBeats": 2,
+      "velocity": 69,
+      "tie": null
+    },
+    {
+      "bar": 11,
+      "beat": 2,
+      "note": "G5",
+      "durationBeats": 1,
+      "velocity": 61,
+      "tie": null
+    },
+    {
+      "bar": 11,
+      "beat": 3,
+      "note": "F5",
+      "durationBeats": 1,
+      "velocity": 58,
+      "tie": null
+    },
+    {
+      "bar": 12,
+      "beat": 0,
+      "note": "E5",
+      "durationBeats": 2.5,
+      "velocity": 55,
+      "tie": null
+    },
+    {
+      "bar": 12,
+      "beat": 2.5,
+      "note": "C#5",
+      "durationBeats": 1,
+      "velocity": 51,
+      "tie": null
+    },
+    {
+      "bar": 13,
+      "beat": 0.5,
+      "note": "A4",
+      "durationBeats": 0.5,
+      "velocity": 51,
+      "tie": null
+    },
+    {
+      "bar": 13,
+      "beat": 1.0,
+      "note": "D5",
+      "durationBeats": 1,
+      "velocity": 61,
+      "tie": null
+    },
+    {
+      "bar": 13,
+      "beat": 2.0,
+      "note": "E5",
+      "durationBeats": 0.5,
+      "velocity": 54,
+      "tie": null
+    },
+    {
+      "bar": 13,
+      "beat": 2.5,
+      "note": "F5",
+      "durationBeats": 1.5,
+      "velocity": 63,
+      "tie": null
+    },
+    {
+      "bar": 14,
+      "beat": 0,
+      "note": "E5",
+      "durationBeats": 1,
+      "velocity": 53,
+      "tie": null
+    },
+    {
+      "bar": 14,
+      "beat": 1,
+      "note": "D5",
+      "durationBeats": 2,
+      "velocity": 56,
+      "tie": null
+    },
+    {
+      "bar": 14,
+      "beat": 3,
+      "note": "C5",
+      "durationBeats": 1,
+      "velocity": 50,
+      "tie": null
+    },
+    {
+      "bar": 15,
+      "beat": 0,
+      "note": "A4",
+      "durationBeats": 1,
+      "velocity": 50,
+      "tie": null
+    },
+    {
+      "bar": 15,
+      "beat": 1,
+      "note": "G4",
+      "durationBeats": 1,
+      "velocity": 47,
+      "tie": null
+    },
+    {
+      "bar": 15,
+      "beat": 2,
+      "note": "E4",
+      "durationBeats": 1,
+      "velocity": 44,
+      "tie": null
+    },
+    {
+      "bar": 15,
+      "beat": 3,
+      "note": "A4",
+      "durationBeats": 1,
+      "velocity": 48,
+      "tie": null
+    },
+    {
+      "bar": 16,
+      "beat": 0,
+      "note": "D5",
+      "durationBeats": 3.5,
+      "velocity": 55,
+      "tie": null
+    }
+  ],
+  "harmony": [
+    [
+      [
+        "Dm(add9)",
+        4
+      ]
+    ],
+    [
+      [
+        "Bbmaj7",
+        4
+      ]
+    ],
+    [
+      [
+        "Fmaj9/A",
+        4
+      ]
+    ],
+    [
+      [
+        "Cadd9",
+        4
+      ]
+    ],
+    [
+      [
+        "Dm9",
+        4
+      ]
+    ],
+    [
+      [
+        "Gm9",
+        4
+      ]
+    ],
+    [
+      [
+        "Bbmaj7",
+        4
+      ]
+    ],
+    [
+      [
+        "A7sus",
+        2
+      ],
+      [
+        "A7",
+        2
+      ]
+    ],
+    [
+      [
+        "Bbmaj9",
+        4
+      ]
+    ],
+    [
+      [
+        "Gm9",
+        4
+      ]
+    ],
+    [
+      [
+        "Dm/F",
+        4
+      ]
+    ],
+    [
+      [
+        "A7/E",
+        4
+      ]
+    ],
+    [
+      [
+        "Dm(add9)",
+        4
+      ]
+    ],
+    [
+      [
+        "Bbmaj7",
+        4
+      ]
+    ],
+    [
+      [
+        "Gm9",
+        2
+      ],
+      [
+        "A7sus",
+        2
+      ]
+    ],
+    [
+      [
+        "Dm(add9)",
+        4
+      ]
+    ]
+  ],
+  "recurringGesture": [
+    "A4",
+    "D5",
+    "E5",
+    "F5"
+  ],
+  "instrumentProgramsZeroBased": {
+    "melodyPiano": 0,
+    "harmonyPiano": 0,
+    "sustainedStrings": 49
+  },
+  "creditsSpent": 0,
+  "authorship": "Explicit original note, harmony, voicing and arrangement data in compose_theme.py; no generative source audio."
+}

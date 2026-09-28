@@ -1,0 +1,72 @@
+{
+  "status": "converted-invariants-pass-visual-review-required",
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\junction-structure-keyed-v1.png",
+  "sourceSha256": "c62a4dfa48f6be44b5ffae27f7f5ddfb50c8133c8c2c522355b395794e1f02b2",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\junction-candidate\\alpha.png",
+  "toolSha256": "f9e3c52ca163989dd2f920d075b8f4da7164041e19280291f6e271d0880c8266",
+  "outputSha256": "af840e6fe17d13435eaee664f66b70e957d68082847c3fd6fd9df81b6307de32",
+  "size": [
+    1672,
+    941
+  ],
+  "settings": {
+    "keyRgb": [
+      255,
+      0,
+      255
+    ],
+    "keyTolerance": 32,
+    "minDominance": 220,
+    "edgeBandPx": 3,
+    "cleanDominance": 35,
+    "actualKeyMedianRgb": [
+      249.0,
+      1.0,
+      252.0
+    ],
+    "protectRects": [
+      [
+        0,
+        635,
+        1672,
+        690
+      ]
+    ],
+    "explicitSpillRois": [
+      [
+        0,
+        0,
+        400,
+        635
+      ],
+      [
+        520,
+        0,
+        710,
+        330
+      ],
+      [
+        1180,
+        0,
+        1672,
+        635
+      ]
+    ]
+  },
+  "trueBackgroundPixels": 213949,
+  "edgeBandPixels": 24547,
+  "edgeCandidates": 13957,
+  "edgeCandidatesWithoutCleanNeighbour": 0,
+  "edgeRgbChangedPixels": 13750,
+  "outsideBandInteriorPixels": 1334856,
+  "outsideBandInteriorUnchanged": false,
+  "outsideDeclaredCorrectionRegionUnchanged": true,
+  "explicitSpillIslandPixels": 815,
+  "protectedUnchangedAndOpaque": true,
+  "protectedNearKeyPixelsKept": 10,
+  "remainingPurpleInteriorPixels": 747,
+  "remainingPurpleInteriorPolicy": "Unselected interiors preserved. Legitimate purple and painted key reflections cannot be distinguished by hue alone; explicit foliage ROIs need reference inspection and floor reflections need separate retouch.",
+  "sourceUnchanged": true,
+  "roiReports": [],
+  "limits": "Near-key false positives remain possible; inspect masks. No cloud processing, global desaturation, interior softening, or runtime publication."
+}

@@ -1,0 +1,473 @@
+[
+  {
+    "id": "cloud-mid",
+    "frames": [
+      {
+        "index": 0,
+        "bounds": [
+          19,
+          175,
+          493,
+          367
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.0047607421875,
+        "greenDominantPixels": 0,
+        "centroid": [
+          246.7313201669194,
+          286.21680297978287
+        ]
+      },
+      {
+        "index": 1,
+        "bounds": [
+          22,
+          171,
+          497,
+          367
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.00492095947265625,
+        "greenDominantPixels": 0,
+        "centroid": [
+          253.6934699718761,
+          285.95544016562053
+        ]
+      },
+      {
+        "index": 2,
+        "bounds": [
+          25,
+          167,
+          499,
+          367
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.005023956298828125,
+        "greenDominantPixels": 0,
+        "centroid": [
+          256.0929295561003,
+          283.78180457046676
+        ]
+      },
+      {
+        "index": 3,
+        "bounds": [
+          18,
+          175,
+          493,
+          362
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.00424957275390625,
+        "greenDominantPixels": 0,
+        "centroid": [
+          246.5814886735893,
+          282.7693132025384
+        ]
+      },
+      {
+        "index": 4,
+        "bounds": [
+          23,
+          174,
+          497,
+          362
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.0044097900390625,
+        "greenDominantPixels": 0,
+        "centroid": [
+          253.54037163806763,
+          281.8189967171465
+        ]
+      },
+      {
+        "index": 5,
+        "bounds": [
+          24,
+          174,
+          499,
+          362
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.004669189453125,
+        "greenDominantPixels": 0,
+        "centroid": [
+          253.73687390855517,
+          282.2231269355834
+        ]
+      }
+    ],
+    "loopSeam": {
+      "from": 5,
+      "to": 0,
+      "visiblePixelChangeFraction": 0.22661972045898438,
+      "meanPremultipliedRgbaDelta": 0.029391949996352196
+    },
+    "transitions": [
+      {
+        "from": 0,
+        "to": 1,
+        "visiblePixelChangeFraction": 0.2230377197265625,
+        "meanPremultipliedRgbaDelta": 0.025472577661275864
+      },
+      {
+        "from": 1,
+        "to": 2,
+        "visiblePixelChangeFraction": 0.2188720703125,
+        "meanPremultipliedRgbaDelta": 0.017173338681459427
+      },
+      {
+        "from": 2,
+        "to": 3,
+        "visiblePixelChangeFraction": 0.23082351684570312,
+        "meanPremultipliedRgbaDelta": 0.03416977822780609
+      },
+      {
+        "from": 3,
+        "to": 4,
+        "visiblePixelChangeFraction": 0.22073745727539062,
+        "meanPremultipliedRgbaDelta": 0.023066554218530655
+      },
+      {
+        "from": 4,
+        "to": 5,
+        "visiblePixelChangeFraction": 0.21432876586914062,
+        "meanPremultipliedRgbaDelta": 0.014416548423469067
+      }
+    ]
+  },
+  {
+    "id": "cloud-far",
+    "frames": [
+      {
+        "index": 0,
+        "bounds": [
+          32,
+          246,
+          488,
+          315
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.008514404296875,
+        "greenDominantPixels": 0,
+        "centroid": [
+          257.28253423421256,
+          284.47150377839813
+        ]
+      },
+      {
+        "index": 1,
+        "bounds": [
+          31,
+          247,
+          488,
+          315
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.0083770751953125,
+        "greenDominantPixels": 0,
+        "centroid": [
+          253.91359719716286,
+          285.16652193196256
+        ]
+      },
+      {
+        "index": 2,
+        "bounds": [
+          30,
+          247,
+          487,
+          315
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.00867462158203125,
+        "greenDominantPixels": 0,
+        "centroid": [
+          253.38091007912155,
+          285.26564245154594
+        ]
+      },
+      {
+        "index": 3,
+        "bounds": [
+          31,
+          246,
+          488,
+          315
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.008419036865234375,
+        "greenDominantPixels": 0,
+        "centroid": [
+          254.43524069254417,
+          284.41779463369716
+        ]
+      },
+      {
+        "index": 4,
+        "bounds": [
+          31,
+          246,
+          487,
+          315
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.008392333984375,
+        "greenDominantPixels": 0,
+        "centroid": [
+          254.35137560365567,
+          284.36553908965203
+        ]
+      },
+      {
+        "index": 5,
+        "bounds": [
+          31,
+          246,
+          487,
+          315
+        ],
+        "alphaRange": [
+          0,
+          255
+        ],
+        "partialFraction": 0.00836181640625,
+        "greenDominantPixels": 0,
+        "centroid": [
+          256.0552546362486,
+          283.79191746626947
+        ]
+      }
+    ],
+    "loopSeam": {
+      "from": 5,
+      "to": 0,
+      "visiblePixelChangeFraction": 0.057643890380859375,
+      "meanPremultipliedRgbaDelta": 0.005289910361170769
+    },
+    "transitions": [
+      {
+        "from": 0,
+        "to": 1,
+        "visiblePixelChangeFraction": 0.05849456787109375,
+        "meanPremultipliedRgbaDelta": 0.00726672587916255
+      },
+      {
+        "from": 1,
+        "to": 2,
+        "visiblePixelChangeFraction": 0.056194305419921875,
+        "meanPremultipliedRgbaDelta": 0.003674614941701293
+      },
+      {
+        "from": 2,
+        "to": 3,
+        "visiblePixelChangeFraction": 0.058605194091796875,
+        "meanPremultipliedRgbaDelta": 0.0068988981656730175
+      },
+      {
+        "from": 3,
+        "to": 4,
+        "visiblePixelChangeFraction": 0.056003570556640625,
+        "meanPremultipliedRgbaDelta": 0.0038096748758107424
+      },
+      {
+        "from": 4,
+        "to": 5,
+        "visiblePixelChangeFraction": 0.057460784912109375,
+        "meanPremultipliedRgbaDelta": 0.005759769584983587
+      }
+    ]
+  },
+  {
+    "id": "lamp-emission",
+    "frames": [
+      {
+        "index": 0,
+        "bounds": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "alphaRange": [
+          255,
+          255
+        ],
+        "partialFraction": 0.0,
+        "greenDominantPixels": 0,
+        "centroid": [
+          255.5,
+          255.5
+        ]
+      },
+      {
+        "index": 1,
+        "bounds": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "alphaRange": [
+          255,
+          255
+        ],
+        "partialFraction": 0.0,
+        "greenDominantPixels": 0,
+        "centroid": [
+          255.5,
+          255.5
+        ]
+      },
+      {
+        "index": 2,
+        "bounds": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "alphaRange": [
+          255,
+          255
+        ],
+        "partialFraction": 0.0,
+        "greenDominantPixels": 0,
+        "centroid": [
+          255.5,
+          255.5
+        ]
+      },
+      {
+        "index": 3,
+        "bounds": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "alphaRange": [
+          255,
+          255
+        ],
+        "partialFraction": 0.0,
+        "greenDominantPixels": 0,
+        "centroid": [
+          255.5,
+          255.5
+        ]
+      },
+      {
+        "index": 4,
+        "bounds": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "alphaRange": [
+          255,
+          255
+        ],
+        "partialFraction": 0.0,
+        "greenDominantPixels": 0,
+        "centroid": [
+          255.5,
+          255.5
+        ]
+      },
+      {
+        "index": 5,
+        "bounds": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "alphaRange": [
+          255,
+          255
+        ],
+        "partialFraction": 0.0,
+        "greenDominantPixels": 0,
+        "centroid": [
+          255.5,
+          255.5
+        ]
+      }
+    ],
+    "loopSeam": {
+      "from": 5,
+      "to": 0,
+      "visiblePixelChangeFraction": 0.19380569458007812,
+      "meanPremultipliedRgbaDelta": 0.002524607814848423
+    },
+    "transitions": [
+      {
+        "from": 0,
+        "to": 1,
+        "visiblePixelChangeFraction": 0.21317291259765625,
+        "meanPremultipliedRgbaDelta": 0.004679612349718809
+      },
+      {
+        "from": 1,
+        "to": 2,
+        "visiblePixelChangeFraction": 0.20876312255859375,
+        "meanPremultipliedRgbaDelta": 0.004146422725170851
+      },
+      {
+        "from": 2,
+        "to": 3,
+        "visiblePixelChangeFraction": 0.21189117431640625,
+        "meanPremultipliedRgbaDelta": 0.0048742895014584064
+      },
+      {
+        "from": 3,
+        "to": 4,
+        "visiblePixelChangeFraction": 0.23036956787109375,
+        "meanPremultipliedRgbaDelta": 0.006461480166763067
+      },
+      {
+        "from": 4,
+        "to": 5,
+        "visiblePixelChangeFraction": 0.21950912475585938,
+        "meanPremultipliedRgbaDelta": 0.004383936058729887
+      }
+    ]
+  }
+]

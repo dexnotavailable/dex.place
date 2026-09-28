@@ -1,0 +1,720 @@
+{
+  "schemaVersion": 1,
+  "status": "draft-ready-for-root-scene-composition",
+  "runtimeAccepted": false,
+  "assets": [
+    {
+      "id": "B01",
+      "name": "pale sky field",
+      "role": "background",
+      "alphaPolicy": "forced255 for explicitly opaque edge-to-edge field; no crop",
+      "variants": [
+        {
+          "variant": "depth",
+          "url": "/world/assets/depth-library-v1/B01-depth-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720
+          },
+          "logicalSize": {
+            "width": 1280,
+            "height": 720
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "f8702e1feda1692e905bdab79eb887cc8682e5f248947227b2ecb00319faf342",
+          "alphaRange": [
+            255,
+            255
+          ],
+          "distinctAlphaValues": 1,
+          "lumaRange": [
+            181.1078,
+            198.81899999999996
+          ]
+        }
+      ],
+      "preferredInitialVariant": "depth",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Opaque field; repeat/edge seams must be tested in the assembled scene."
+      ],
+      "suggestedParallaxRange": [
+        0,
+        0.2
+      ],
+      "url": "/world/assets/depth-library-v1/B01-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720
+      },
+      "logicalSize": {
+        "width": 1280,
+        "height": 720
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest"
+    },
+    {
+      "id": "B02",
+      "name": "distant haze layer",
+      "role": "background",
+      "alphaPolicy": "clear source alpha<8 contamination; keep all remaining graded alpha; RGB0 wherever alpha0",
+      "variants": [
+        {
+          "variant": "depth",
+          "url": "/world/assets/depth-library-v1/B02-depth-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 281
+          },
+          "logicalSize": {
+            "width": 1280,
+            "height": 281
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "e95d93cc24fd3a45db78089cc9b6b30e2c3f27f34d31016fef5a17ebbf6fe95f",
+          "alphaRange": [
+            0,
+            94
+          ],
+          "distinctAlphaValues": 95,
+          "lumaRange": [
+            191.7456,
+            206.53419999999997
+          ]
+        }
+      ],
+      "preferredInitialVariant": "depth",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Intentional graded transparency is preserved; do not run hard prop-alpha cleanup on this output. Alpha reduction is already baked, so start composition alpha at1."
+      ],
+      "suggestedParallaxRange": [
+        0,
+        0.2
+      ],
+      "url": "/world/assets/depth-library-v1/B02-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 281
+      },
+      "logicalSize": {
+        "width": 1280,
+        "height": 281
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest"
+    },
+    {
+      "id": "B03",
+      "name": "colossal distant spire",
+      "role": "background",
+      "alphaPolicy": "structural alpha>=128; exterior-connected fringe removed; holes preserved",
+      "variants": [
+        {
+          "variant": "tone4",
+          "url": "/world/assets/depth-library-v1/B03-tone4-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 919,
+            "height": 1700
+          },
+          "logicalSize": {
+            "width": 919,
+            "height": 1700
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "148c0d8eda0b8abf310b9c6fdacbb5852e28fcbbfd197d8db4a8f057307667a2",
+          "alphaRange": [
+            0,
+            255
+          ],
+          "distinctAlphaValues": 2,
+          "lumaRange": [
+            147.827,
+            174.5972
+          ]
+        },
+        {
+          "variant": "silhouette",
+          "url": "/world/assets/depth-library-v1/B03-silhouette-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 919,
+            "height": 1700
+          },
+          "logicalSize": {
+            "width": 919,
+            "height": 1700
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "92a1955fc3f56ac14ca3c32ba049d946c16f334a089c387394877e0405c4fba5",
+          "alphaRange": [
+            0,
+            255
+          ],
+          "distinctAlphaValues": 2,
+          "lumaRange": [
+            159.8952,
+            159.8952
+          ]
+        }
+      ],
+      "preferredInitialVariant": "silhouette",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Original source has baked volume/top-face cues. Compare tone4 with a single flat silhouette; source RGB is not accepted as-is. Both keep the same cleaned original silhouette/openings.",
+        "The central dark slit remains an opaque recess; the real small side arch remains transparent. Natural aspect yields about920x1700, never650x1700 stretch."
+      ],
+      "suggestedParallaxRange": [
+        0,
+        0.2
+      ],
+      "url": "/world/assets/depth-library-v1/B03-silhouette-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 919,
+        "height": 1700
+      },
+      "logicalSize": {
+        "width": 919,
+        "height": 1700
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest",
+      "projectionReview": {
+        "silhouette": "Preferred comparison candidate: interior volume cues removed while retaining original outline and actual openings. Root scene review required.",
+        "tone4": "Comparison only: inherited top/side-volume cues remain visible despite subdued palette. Not approved as-is."
+      }
+    },
+    {
+      "id": "B04",
+      "name": "far open curved arch",
+      "role": "background",
+      "alphaPolicy": "structural alpha>=128; exterior-connected fringe removed; holes preserved",
+      "variants": [
+        {
+          "variant": "depth",
+          "url": "/world/assets/depth-library-v1/B04-depth-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1200,
+            "height": 540
+          },
+          "logicalSize": {
+            "width": 1200,
+            "height": 540
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "f7f3f895a648f8957b87de2225b64c97afd239c7d53d39678bc15c46af571a17",
+          "alphaRange": [
+            0,
+            255
+          ],
+          "distinctAlphaValues": 2,
+          "lumaRange": [
+            162.7548,
+            170.68259999999998
+          ]
+        }
+      ],
+      "preferredInitialVariant": "depth",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Structural cutout with lower contrast than foreground; openings/gaps are retained.",
+        "Actual source is an open arch band, not a filled shell; use this real silhouette role."
+      ],
+      "suggestedParallaxRange": [
+        0,
+        0.2
+      ],
+      "url": "/world/assets/depth-library-v1/B04-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1200,
+        "height": 540
+      },
+      "logicalSize": {
+        "width": 1200,
+        "height": 540
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest"
+    },
+    {
+      "id": "B05",
+      "name": "far colonnade",
+      "role": "background",
+      "alphaPolicy": "structural alpha>=128; exterior-connected fringe removed; holes preserved",
+      "variants": [
+        {
+          "variant": "depth",
+          "url": "/world/assets/depth-library-v1/B05-depth-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1400,
+            "height": 329
+          },
+          "logicalSize": {
+            "width": 1400,
+            "height": 329
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "86e3f88f13d00100fcc839ed9aac92c4adaeb44aa8a6fc3797ee4b8ed13527fa",
+          "alphaRange": [
+            0,
+            255
+          ],
+          "distinctAlphaValues": 2,
+          "lumaRange": [
+            164.39780000000002,
+            174.3256
+          ]
+        }
+      ],
+      "preferredInitialVariant": "depth",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Structural cutout with lower contrast than foreground; openings/gaps are retained."
+      ],
+      "suggestedParallaxRange": [
+        0,
+        0.2
+      ],
+      "url": "/world/assets/depth-library-v1/B05-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1400,
+        "height": 329
+      },
+      "logicalSize": {
+        "width": 1400,
+        "height": 329
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest"
+    },
+    {
+      "id": "B06",
+      "name": "distant skyline",
+      "role": "background",
+      "alphaPolicy": "structural alpha>=128; exterior-connected fringe removed; holes preserved",
+      "variants": [
+        {
+          "variant": "depth",
+          "url": "/world/assets/depth-library-v1/B06-depth-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1400,
+            "height": 241
+          },
+          "logicalSize": {
+            "width": 1400,
+            "height": 241
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "9170c53f864adb303166095ad9c553b60e1766cb7a14f90aa68b38c0f60229f0",
+          "alphaRange": [
+            0,
+            255
+          ],
+          "distinctAlphaValues": 2,
+          "lumaRange": [
+            179.32559999999998,
+            179.32559999999998
+          ]
+        }
+      ],
+      "preferredInitialVariant": "depth",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Structural cutout with lower contrast than foreground; openings/gaps are retained."
+      ],
+      "suggestedParallaxRange": [
+        0,
+        0.2
+      ],
+      "url": "/world/assets/depth-library-v1/B06-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1400,
+        "height": 241
+      },
+      "logicalSize": {
+        "width": 1400,
+        "height": 241
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest"
+    },
+    {
+      "id": "B07",
+      "name": "still water field",
+      "role": "background",
+      "alphaPolicy": "forced255 for explicitly opaque edge-to-edge field; no crop",
+      "variants": [
+        {
+          "variant": "depth",
+          "url": "/world/assets/depth-library-v1/B07-depth-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 512
+          },
+          "logicalSize": {
+            "width": 1280,
+            "height": 512
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "db63a70200276651005963c9f6b34965623ae3610ae94245ab82a906429092ae",
+          "alphaRange": [
+            255,
+            255
+          ],
+          "distinctAlphaValues": 1,
+          "lumaRange": [
+            127.42019999999998,
+            140.20759999999999
+          ]
+        }
+      ],
+      "preferredInitialVariant": "depth",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Opaque field; repeat/edge seams must be tested in the assembled scene."
+      ],
+      "suggestedParallaxRange": [
+        0,
+        0.2
+      ],
+      "url": "/world/assets/depth-library-v1/B07-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 512
+      },
+      "logicalSize": {
+        "width": 1280,
+        "height": 512
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest"
+    },
+    {
+      "id": "B08",
+      "name": "reflection band",
+      "role": "background",
+      "alphaPolicy": "clear source alpha<8 contamination; keep all remaining graded alpha; RGB0 wherever alpha0",
+      "variants": [
+        {
+          "variant": "depth",
+          "url": "/world/assets/depth-library-v1/B08-depth-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 120
+          },
+          "logicalSize": {
+            "width": 1280,
+            "height": 120
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "d62b1d0b2254e3a07c272650266077b7a2ab053e686731bd93813015e91b9c48",
+          "alphaRange": [
+            0,
+            153
+          ],
+          "distinctAlphaValues": 154,
+          "lumaRange": [
+            166.1222,
+            187.4792
+          ]
+        }
+      ],
+      "preferredInitialVariant": "depth",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Intentional graded transparency is preserved; do not run hard prop-alpha cleanup on this output. Alpha reduction is already baked, so start composition alpha at1."
+      ],
+      "suggestedParallaxRange": [
+        0,
+        0.2
+      ],
+      "url": "/world/assets/depth-library-v1/B08-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 120
+      },
+      "logicalSize": {
+        "width": 1280,
+        "height": 120
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest"
+    },
+    {
+      "id": "B09",
+      "name": "far cliff mass",
+      "role": "background",
+      "alphaPolicy": "structural alpha>=128; exterior-connected fringe removed; holes preserved",
+      "variants": [
+        {
+          "variant": "depth",
+          "url": "/world/assets/depth-library-v1/B09-depth-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 448
+          },
+          "logicalSize": {
+            "width": 1280,
+            "height": 448
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "07ee25ec59cf7c6b997f2963324101ef74b4f9555106a70646a3c640d5cd4090",
+          "alphaRange": [
+            0,
+            255
+          ],
+          "distinctAlphaValues": 2,
+          "lumaRange": [
+            158.1892,
+            177.97259999999997
+          ]
+        }
+      ],
+      "preferredInitialVariant": "depth",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Structural cutout with lower contrast than foreground; openings/gaps are retained."
+      ],
+      "suggestedParallaxRange": [
+        0,
+        0.2
+      ],
+      "url": "/world/assets/depth-library-v1/B09-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 448
+      },
+      "logicalSize": {
+        "width": 1280,
+        "height": 448
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest"
+    },
+    {
+      "id": "B10",
+      "name": "high cloud bank",
+      "role": "background",
+      "alphaPolicy": "clear source alpha<8 contamination; keep all remaining graded alpha; RGB0 wherever alpha0",
+      "variants": [
+        {
+          "variant": "depth",
+          "url": "/world/assets/depth-library-v1/B10-depth-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 192
+          },
+          "logicalSize": {
+            "width": 1280,
+            "height": 192
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "57d48d2a176bcdea982d6c834dd9318e7762a0e4af6d13b9480a48c88048558a",
+          "alphaRange": [
+            0,
+            164
+          ],
+          "distinctAlphaValues": 165,
+          "lumaRange": [
+            188.3216,
+            207.8912
+          ]
+        }
+      ],
+      "preferredInitialVariant": "depth",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Intentional graded transparency is preserved; do not run hard prop-alpha cleanup on this output. Alpha reduction is already baked, so start composition alpha at1."
+      ],
+      "suggestedParallaxRange": [
+        0,
+        0.2
+      ],
+      "url": "/world/assets/depth-library-v1/B10-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 192
+      },
+      "logicalSize": {
+        "width": 1280,
+        "height": 192
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest"
+    },
+    {
+      "id": "M10",
+      "name": "monumental curved rib",
+      "role": "middle",
+      "alphaPolicy": "structural alpha>=128; exterior-connected fringe removed; holes preserved",
+      "variants": [
+        {
+          "variant": "tone4",
+          "url": "/world/assets/depth-library-v1/M10-tone4-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1100,
+            "height": 729
+          },
+          "logicalSize": {
+            "width": 1100,
+            "height": 729
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "9bbf195690cde7e5465870d957f063a579deeb2c2538d2ac4b49978e941504b5",
+          "alphaRange": [
+            0,
+            255
+          ],
+          "distinctAlphaValues": 2,
+          "lumaRange": [
+            121.83619999999998,
+            175.46599999999998
+          ]
+        },
+        {
+          "variant": "silhouette",
+          "url": "/world/assets/depth-library-v1/M10-silhouette-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 1100,
+            "height": 729
+          },
+          "logicalSize": {
+            "width": 1100,
+            "height": 729
+          },
+          "worldScale": 1,
+          "pixelPitch": 1,
+          "filter": "nearest",
+          "sha256": "0aff614e894ac60198838de3093b5afd9faa16420f13272dcb3bf50eff32a659",
+          "alphaRange": [
+            0,
+            255
+          ],
+          "distinctAlphaValues": 2,
+          "lumaRange": [
+            159.2574,
+            159.2574
+          ]
+        }
+      ],
+      "preferredInitialVariant": "silhouette",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeAccepted": false,
+      "compositionNotes": [
+        "Original source has baked volume/top-face cues. Compare tone4 with a single flat silhouette; source RGB is not accepted as-is. Both keep the same cleaned original silhouette/openings."
+      ],
+      "suggestedParallaxRange": [
+        0.3,
+        0.55
+      ],
+      "url": "/world/assets/depth-library-v1/M10-silhouette-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 729
+      },
+      "logicalSize": {
+        "width": 1100,
+        "height": 729
+      },
+      "worldScale": 1,
+      "pixelPitch": 1,
+      "filter": "nearest",
+      "projectionReview": {
+        "silhouette": "Preferred comparison candidate: interior volume cues removed while retaining original outline and actual openings. Root scene review required.",
+        "tone4": "Comparison only: inherited top/side-volume cues remain visible despite subdued palette. Not approved as-is."
+      }
+    }
+  ]
+}

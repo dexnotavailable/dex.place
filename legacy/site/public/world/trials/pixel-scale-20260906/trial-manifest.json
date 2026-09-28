@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-06",
+  "authorization": "User explicitly requested testing high-detail sources followed by deterministic post-pixelation, and an assembled test scene.",
+  "scope": "Nondestructive extraction, grid comparison and scene proof. No image generation, app/game mutation or runtime acceptance.",
+  "sources": {
+    "platform-v1": {
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-97783092-3724-4121-91e6-c01d19f75053.png",
+      "sourceSha256": "7e1e0c6d2dfc8ba421a6549a23b71960b0aee4da391e89fc06bd5a6091ea541f",
+      "sourceSize": [
+        2172,
+        724
+      ],
+      "sourceMode": "RGBA",
+      "rawObjectBounds": [
+        56,
+        223,
+        2116,
+        497
+      ],
+      "cleanSize": [
+        2060,
+        274
+      ],
+      "extraction": "Existing alpha >=240 hardened to255; lower-alpha external glow removed.",
+      "cleanAlphaValues": [
+        0,
+        255
+      ],
+      "preservedRawCopy": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\raw\\platform-v1.png",
+      "sourcePixelPitch": "Not a guaranteed authoring grid. Generator returned raster with approximate clusters."
+    },
+    "terminal-v1": {
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-2a3ee92d-cfa2-46ea-b6cd-bbe7440047cb.png",
+      "sourceSha256": "af32f8621149a76cd9b972cc306e9ddc82cd58d5e00fbcd0713a07e0efc9cdec",
+      "sourceSize": [
+        1024,
+        1536
+      ],
+      "sourceMode": "RGBA",
+      "rawObjectBounds": [
+        330,
+        92,
+        694,
+        1443
+      ],
+      "cleanSize": [
+        364,
+        1351
+      ],
+      "extraction": "Existing alpha >=240 hardened to255; lower-alpha external glow removed.",
+      "cleanAlphaValues": [
+        0,
+        255
+      ],
+      "preservedRawCopy": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\raw\\terminal-v1.png",
+      "sourcePixelPitch": "Not a guaranteed authoring grid. Generator returned raster with approximate clusters."
+    },
+    "terminal-v2": {
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-72554e94-5ca6-47a4-b685-67443a7d1110.png",
+      "sourceSha256": "2965ae481328c6734e9fe0f2f1a4bafee7e348d9012cc53e5a8119f0369f0ff6",
+      "sourceSize": [
+        887,
+        1774
+      ],
+      "sourceMode": "RGB",
+      "rawObjectBounds": [
+        230,
+        90,
+        649,
+        1711
+      ],
+      "cleanSize": [
+        419,
+        1621
+      ],
+      "extraction": "Boundary-connected light-neutral pixels (minRGB>=225, spread<=20) removed; internal whites preserved.",
+      "cleanAlphaValues": [
+        0,
+        255
+      ],
+      "preservedRawCopy": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\raw\\terminal-v2.png",
+      "sourcePixelPitch": "Not a guaranteed authoring grid. Generator returned raster with approximate clusters."
+    },
+    "platform-v2": {
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-1d09b7cd-17bd-4ccb-b60a-e0cc02a3af04.png",
+      "sourceSha256": "c233ce477f36b786c059b12bdac2d556b22dc645dbb3e4b0ba8876eed899bcab",
+      "sourceSize": [
+        1774,
+        887
+      ],
+      "sourceMode": "RGB",
+      "rawObjectBounds": [
+        110,
+        286,
+        1665,
+        632
+      ],
+      "cleanSize": [
+        1555,
+        346
+      ],
+      "extraction": "Boundary-connected light-neutral pixels (minRGB>=225, spread<=20) removed; internal whites preserved.",
+      "cleanAlphaValues": [
+        0,
+        255
+      ],
+      "preservedRawCopy": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\raw\\platform-v2.png",
+      "sourcePixelPitch": "Not a guaranteed authoring grid. Generator returned raster with approximate clusters."
+    }
+  },
+  "variants": [
+    {
+      "id": "platform-direct-v2",
+      "sourceId": "platform-v2",
+      "method": "Nearest sampling of already coarse generated raster; no detail can be recovered.",
+      "file": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\exports\\platform-direct-v2.png",
+      "publicTrialUrl": "/world/trials/pixel-scale-20260906/platform-direct-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 107
+      },
+      "logicalSize": [
+        480,
+        107
+      ],
+      "intendedWorldRenderSize": [
+        480,
+        107
+      ],
+      "rasterSamplePitchWorldPx": [
+        1.0,
+        1.0
+      ],
+      "approxAuthoredClusterPitchWorldPx": 4.321543408360129,
+      "authoredClusterPitchStatus": "v2 estimate from observed~14rawpx steps; v1 derivative grid exact but texture clusters may be larger.",
+      "filter": "NEAREST / imageSmoothingEnabled=false / CSS image-rendering:pixelated",
+      "alphaValues": [
+        0,
+        255
+      ],
+      "status": "comparison-only; not runtime accepted",
+      "sha256": "548d23a38b34bf88d066da1904fddce4ffbc5be7d2fcb68d623f27f68a77aeee"
+    },
+    {
+      "id": "platform-detailed-v1-pitch1",
+      "sourceId": "platform-v1",
+      "method": "Detailed source BOX-downsampled once to logical grid, binary alpha128,32-color median-cut without dithering.",
+      "file": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\exports\\platform-detailed-v1-pitch1.png",
+      "publicTrialUrl": "/world/trials/pixel-scale-20260906/platform-detailed-v1-pitch1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 64
+      },
+      "logicalSize": [
+        480,
+        64
+      ],
+      "intendedWorldRenderSize": [
+        480,
+        64
+      ],
+      "rasterSamplePitchWorldPx": [
+        1.0,
+        1.0
+      ],
+      "approxAuthoredClusterPitchWorldPx": 1,
+      "authoredClusterPitchStatus": "v2 estimate from observed~14rawpx steps; v1 derivative grid exact but texture clusters may be larger.",
+      "filter": "NEAREST / imageSmoothingEnabled=false / CSS image-rendering:pixelated",
+      "alphaValues": [
+        0,
+        255
+      ],
+      "status": "comparison-only; not runtime accepted",
+      "sha256": "07519add551f8dbbb97a029cc73ff1e59f8498d49fee5590af35472b5798de56"
+    },
+    {
+      "id": "platform-detailed-v1-pitch2",
+      "sourceId": "platform-v1",
+      "method": "Detailed source BOX-downsampled once to logical grid, binary alpha128,32-color median-cut without dithering.",
+      "file": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\exports\\platform-detailed-v1-pitch2.png",
+      "publicTrialUrl": "/world/trials/pixel-scale-20260906/platform-detailed-v1-pitch2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 32
+      },
+      "logicalSize": [
+        240,
+        32
+      ],
+      "intendedWorldRenderSize": [
+        480,
+        64
+      ],
+      "rasterSamplePitchWorldPx": [
+        2.0,
+        2.0
+      ],
+      "approxAuthoredClusterPitchWorldPx": 2,
+      "authoredClusterPitchStatus": "v2 estimate from observed~14rawpx steps; v1 derivative grid exact but texture clusters may be larger.",
+      "filter": "NEAREST / imageSmoothingEnabled=false / CSS image-rendering:pixelated",
+      "alphaValues": [
+        0,
+        255
+      ],
+      "status": "comparison-only; not runtime accepted",
+      "sha256": "26abd6fbfe56dfafb068be97e8e339d6a7359c6c483e7c578888d39ccbd14752"
+    },
+    {
+      "id": "terminal-direct-v2",
+      "sourceId": "terminal-v2",
+      "method": "Nearest sampling of already coarse generated raster; no detail can be recovered.",
+      "file": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\exports\\terminal-direct-v2.png",
+      "publicTrialUrl": "/world/trials/pixel-scale-20260906/terminal-direct-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 25,
+        "height": 96
+      },
+      "logicalSize": [
+        25,
+        96
+      ],
+      "intendedWorldRenderSize": [
+        25,
+        96
+      ],
+      "rasterSamplePitchWorldPx": [
+        1.0,
+        1.0
+      ],
+      "approxAuthoredClusterPitchWorldPx": 0.8291178285009253,
+      "authoredClusterPitchStatus": "v2 estimate from observed~14rawpx steps; v1 derivative grid exact but texture clusters may be larger.",
+      "filter": "NEAREST / imageSmoothingEnabled=false / CSS image-rendering:pixelated",
+      "alphaValues": [
+        0,
+        255
+      ],
+      "status": "comparison-only; not runtime accepted",
+      "sha256": "161a87b23083ef353c53f84b13fa3aba7342872d20e372b548466479733431f7"
+    },
+    {
+      "id": "terminal-detailed-v1-pitch1",
+      "sourceId": "terminal-v1",
+      "method": "Detailed source BOX-downsampled once to logical grid, binary alpha128,32-color median-cut without dithering.",
+      "file": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\exports\\terminal-detailed-v1-pitch1.png",
+      "publicTrialUrl": "/world/trials/pixel-scale-20260906/terminal-detailed-v1-pitch1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 26,
+        "height": 96
+      },
+      "logicalSize": [
+        26,
+        96
+      ],
+      "intendedWorldRenderSize": [
+        26,
+        96
+      ],
+      "rasterSamplePitchWorldPx": [
+        1.0,
+        1.0
+      ],
+      "approxAuthoredClusterPitchWorldPx": 1,
+      "authoredClusterPitchStatus": "v2 estimate from observed~14rawpx steps; v1 derivative grid exact but texture clusters may be larger.",
+      "filter": "NEAREST / imageSmoothingEnabled=false / CSS image-rendering:pixelated",
+      "alphaValues": [
+        0,
+        255
+      ],
+      "status": "comparison-only; not runtime accepted",
+      "sha256": "4a3fb8a208f4630e5e216fb4dfb029563f473b32942438e520a5540caea21583"
+    },
+    {
+      "id": "terminal-detailed-v1-pitch2",
+      "sourceId": "terminal-v1",
+      "method": "Detailed source BOX-downsampled once to logical grid, binary alpha128,32-color median-cut without dithering.",
+      "file": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\exports\\terminal-detailed-v1-pitch2.png",
+      "publicTrialUrl": "/world/trials/pixel-scale-20260906/terminal-detailed-v1-pitch2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 13,
+        "height": 48
+      },
+      "logicalSize": [
+        13,
+        48
+      ],
+      "intendedWorldRenderSize": [
+        26,
+        96
+      ],
+      "rasterSamplePitchWorldPx": [
+        2.0,
+        2.0
+      ],
+      "approxAuthoredClusterPitchWorldPx": 2,
+      "authoredClusterPitchStatus": "v2 estimate from observed~14rawpx steps; v1 derivative grid exact but texture clusters may be larger.",
+      "filter": "NEAREST / imageSmoothingEnabled=false / CSS image-rendering:pixelated",
+      "alphaValues": [
+        0,
+        255
+      ],
+      "status": "comparison-only; not runtime accepted",
+      "sha256": "4cc22a3adb77d862cd0d09c0a65a948dd6e6a0c255f519b8ea7649bbece048e5"
+    }
+  ],
+  "character": {
+    "path": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\hero\\idle.png",
+    "sha256": "dc4e2a722ea36e6e0e2dc8658b0260b92df8da18fbbc5d19034f7476cb234cc1",
+    "frame": [
+      0,
+      0,
+      200,
+      200
+    ],
+    "footPivot": [
+      100,
+      122
+    ],
+    "visibleHeight": 52,
+    "unchanged": true
+  },
+  "proof": {
+    "actualSize": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\proof\\comparison-actual-size.png",
+    "alpha": "D:\\Dex\\Projects\\dex-place-art-production\\source\\trials\\pixel-scale-20260906\\proof\\alpha-proof.png"
+  },
+  "recommendation": {
+    "selectedComparison": "B",
+    "platform": "platform-detailed-v1-pitch1",
+    "terminal": "terminal-direct-v2",
+    "reason": "At480wide/96tall the1px platform restores detail proportion with the native52px hero and simple v2 terminal. The v2 platform shows~4.3px blocks; both2px detailed variants lose silhouette precision and terminal status-light readability.",
+    "alphaVerdict": "Inspected exported derivatives on dark, magenta and light-cyan fields. No remaining checkerboard or external glow halo visible at trial scale.",
+    "limits": "Only source cleanup and static assembled sizes inspected. Actual camera movement, noninteger CSS scaling, device DPR, region placement, seam tiling and independent status-light animation still require runtime review.",
+    "scaleRule": "Rebuild once from preserved source at a chosen logical size when intended world dimensions change. Never repeatedly resize an existing derivative or stretch a480px module to a larger span."
+  }
+}

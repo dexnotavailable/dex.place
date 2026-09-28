@@ -1,0 +1,32 @@
+{
+  "room": "courtyard",
+  "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\courtyard\\alpha.png",
+  "sourceSha256": "a0dfe90bdc4d90657e9884d53ccd893c2a165bcd56dbd334fc2d5e90967d5a5f",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\courtyard-foliage-final\\alpha.png",
+  "outputSha256": "172f7f4482eb95ccecdb43403c4643161f946e8ba8ccc05d91df4bb7e4bd1421",
+  "selectedPixels": 565,
+  "changedPixels": 565,
+  "otherRGBAUnchanged": true,
+  "beforeStrongPink": 569,
+  "afterStrongPink": 4,
+  "remainingBounds": [
+    635,
+    612,
+    1136,
+    678
+  ],
+  "regions": [
+    [
+      0,
+      0,
+      240,
+      941
+    ],
+    [
+      1280,
+      250,
+      1672,
+      941
+    ]
+  ]
+}

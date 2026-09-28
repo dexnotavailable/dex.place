@@ -1,0 +1,121 @@
+[
+  {
+    "room": "arrival",
+    "roi": "right-column",
+    "bounds": [
+      1540,
+      540,
+      1588,
+      730
+    ],
+    "alphaRange": [
+      165,
+      255
+    ],
+    "zeroAlphaCount": 0,
+    "partialAlphaCount": 2840,
+    "pixels": 9120
+  },
+  {
+    "room": "arrival",
+    "roi": "floor",
+    "bounds": [
+      200,
+      744,
+      1500,
+      804
+    ],
+    "alphaRange": [
+      155,
+      255
+    ],
+    "zeroAlphaCount": 0,
+    "partialAlphaCount": 6637,
+    "pixels": 78000
+  },
+  {
+    "room": "registry",
+    "roi": "upper-left-lintel",
+    "bounds": [
+      115,
+      35,
+      365,
+      67
+    ],
+    "alphaRange": [
+      169,
+      255
+    ],
+    "zeroAlphaCount": 0,
+    "partialAlphaCount": 645,
+    "pixels": 8000
+  },
+  {
+    "room": "registry",
+    "roi": "floor",
+    "bounds": [
+      100,
+      680,
+      1500,
+      735
+    ],
+    "alphaRange": [
+      141,
+      255
+    ],
+    "zeroAlphaCount": 0,
+    "partialAlphaCount": 2782,
+    "pixels": 77000
+  },
+  {
+    "room": "low-passage",
+    "roi": "doorway-floor",
+    "bounds": [
+      148,
+      648,
+      270,
+      671
+    ],
+    "alphaRange": [
+      128,
+      255
+    ],
+    "zeroAlphaCount": 0,
+    "partialAlphaCount": 2554,
+    "pixels": 2806
+  },
+  {
+    "room": "rest",
+    "roi": "top-vine",
+    "bounds": [
+      180,
+      0,
+      680,
+      180
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "zeroAlphaCount": 8672,
+    "partialAlphaCount": 0,
+    "pixels": 90000
+  },
+  {
+    "room": "rest",
+    "roi": "rail",
+    "bounds": [
+      530,
+      644,
+      1569,
+      695
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "zeroAlphaCount": 40831,
+    "partialAlphaCount": 0,
+    "pixels": 52989
+  }
+]

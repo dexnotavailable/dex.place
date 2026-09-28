@@ -1,0 +1,32 @@
+{
+  "room": "sky-walk",
+  "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\sky-walk\\alpha.png",
+  "sourceSha256": "a5790f6c313a756bbfd7235ea8d466c573274a635f60208bbea0c1dfa8b6820f",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\sky-walk-foliage-final\\alpha.png",
+  "outputSha256": "5a9db172b2c7464fa8b27b5fc50ad005655593e9a6db27d985dec0ee809261fe",
+  "selectedPixels": 576,
+  "changedPixels": 573,
+  "otherRGBAUnchanged": true,
+  "beforeStrongPink": 578,
+  "afterStrongPink": 5,
+  "remainingBounds": [
+    581,
+    0,
+    1672,
+    741
+  ],
+  "regions": [
+    [
+      0,
+      0,
+      250,
+      941
+    ],
+    [
+      1460,
+      0,
+      1672,
+      941
+    ]
+  ]
+}

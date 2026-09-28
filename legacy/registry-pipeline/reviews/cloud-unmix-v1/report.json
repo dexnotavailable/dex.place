@@ -1,0 +1,42 @@
+{
+  "cloud-far": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-far-green-v1.png",
+    "sourceSha256": "8fa154e73a3fcb8f19fac33621dd1a907cfc852a1eadf643b4a96a2914ce6a32",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-far-unmixed-v1.png",
+    "sha256": "463274c40456afaa571831e3662a9198e286871209a44ebb3de5408949ad1d96",
+    "key": [
+      3.0,
+      249.0,
+      4.0
+    ],
+    "backgroundPixels": 1465981,
+    "boundaryPixels": 41335,
+    "convertedBoundaryPixels": 33176,
+    "noCleanNeighbour": 541,
+    "opaqueInteriorPixels": 65548,
+    "opaqueInteriorByteIdentical": true,
+    "maxForegroundSampleDistance": 30.4138126373291,
+    "method": "3px boundary-only known-green-matte unmix, nearest clean cloud estimate, no interior changes",
+    "limits": "Unknown original alpha is estimated. Distinct isolated wisps may use a nearby clean colour; review actual warm/dark composites."
+  },
+  "cloud-mid": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-mid-green-v3.png",
+    "sourceSha256": "d3eefa463ab887291efdbea9424bc596afc25c7acffcc0a78550182d671108f5",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-mid-unmixed-v1.png",
+    "sha256": "fdec22edb136a7d68660346e6e865e185be677c4812a6e22fca2773e0da4a6e7",
+    "key": [
+      4.0,
+      249.0,
+      2.0
+    ],
+    "backgroundPixels": 1219677,
+    "boundaryPixels": 37605,
+    "convertedBoundaryPixels": 24430,
+    "noCleanNeighbour": 4,
+    "opaqueInteriorPixels": 315582,
+    "opaqueInteriorByteIdentical": true,
+    "maxForegroundSampleDistance": 21.095022201538086,
+    "method": "3px boundary-only known-green-matte unmix, nearest clean cloud estimate, no interior changes",
+    "limits": "Unknown original alpha is estimated. Distinct isolated wisps may use a nearby clean colour; review actual warm/dark composites."
+  }
+}

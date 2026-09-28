@@ -1,0 +1,2215 @@
+{
+  "schemaVersion": 1,
+  "status": "visual-geometry-estimates-for-integration; not collision truth or asset acceptance",
+  "scope": "12 complete room reference images inspected individually; two output records only; no image/runtime modifications",
+  "sourceDimensionsObserved": [
+    1672,
+    941
+  ],
+  "methods": [
+    "Direct inspection of every full source image",
+    "PNG dimensions and SHA256 read from source files",
+    "Coordinates are hand-estimated from visible pixels; no automated segmentation claimed"
+  ],
+  "globalFindings": [
+    {
+      "id": "G1",
+      "severity": "must-resolve",
+      "note": "Reference traveller body heights range72..144px across identical canvases. Keep one native52px world actor scale, and select common room-to-world mapping/camera treatment deliberately. Values below do not authorise per-room hero stretching."
+    },
+    {
+      "id": "G2",
+      "severity": "must-resolve",
+      "note": "Most rooms depict a glossy floor with depth. Illustrated feet lie between rear boundary and front slab edge; use the annotated footline as first contact guide, then inspect true runtime contacts."
+    },
+    {
+      "id": "G3",
+      "severity": "must-resolve",
+      "note": "All painted characters and their shadows/reflections must leave the decomposed base before adding actors. Preserve removed underlying floor/rail/wall."
+    },
+    {
+      "id": "G4",
+      "severity": "must-resolve",
+      "note": "A shared ring/cloud world requires master assets with room-specific camera/occlusion coordinates. Repeated independently painted rings in window openings cannot give coherent parallax."
+    },
+    {
+      "id": "G5",
+      "severity": "review",
+      "note": "Clear glassy anime-illustration clusters still need native-pixel scene review. Do not apply one mosaic/filter or blindly quantize every source to force numerical agreement."
+    },
+    {
+      "id": "G6",
+      "severity": "review",
+      "note": "Keep safe scenery-first arrival free of service furniture. Later density and brighter local services are deliberate contrasts."
+    }
+  ],
+  "rooms": [
+    {
+      "id": "arrival",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\arrival\\reference.png",
+      "sourceSha256": "55b68936a6933054175fb25007787cac8701487934d9278cb0c5773f0c969f6d",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 751,
+        "rearFloorBoundaryY": 739,
+        "frontSlabEdgeY": 806,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          819,
+          665,
+          845,
+          752
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          797,
+          665,
+          854,
+          752
+        ],
+        "bodyHeightEstimatePx": 87,
+        "native52ToReferenceBodyScale": 1.673,
+        "referenceToNative52Scale": 0.5977,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "spawn",
+          "pointXY": [
+            832,
+            751
+          ]
+        },
+        {
+          "id": "trail-right",
+          "pointXY": [
+            1230,
+            762
+          ],
+          "boundsEstimateXYXY": [
+            1008,
+            754,
+            1637,
+            768
+          ],
+          "role": "quiet floor guidance"
+        },
+        {
+          "id": "left-structural-edge",
+          "pointXY": [
+            156,
+            739
+          ]
+        },
+        {
+          "id": "right-structural-edge",
+          "pointXY": [
+            1535,
+            739
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "flat-walk-guide",
+          "xRange": [
+            0,
+            1672
+          ],
+          "y": 751
+        }
+      ],
+      "issues": [
+        {
+          "severity": "required-decomposition",
+          "note": "Remove generated traveller and its reflection/shadow together; restore underlying rail/floor. Keep the far ring, distant architecture, clouds and reflective foreground separately."
+        },
+        {
+          "severity": "composition",
+          "note": "Initial view is scenery-first and centrally staged. Do not insert service props here. Preserve subdued trail contrast and safe floor in both directions."
+        }
+      ]
+    },
+    {
+      "id": "rest",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\rest\\reference.png",
+      "sourceSha256": "8c1d26d83340c608126c2516a4421745c114ec3ac2030fa6a98d22687dde4a87",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 706,
+        "rearFloorBoundaryY": 695,
+        "frontSlabEdgeY": 754,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          978,
+          605,
+          1007,
+          706
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          950,
+          605,
+          1019,
+          706
+        ],
+        "bodyHeightEstimatePx": 101,
+        "native52ToReferenceBodyScale": 1.942,
+        "referenceToNative52Scale": 0.5149,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "bench",
+          "pointXY": [
+            332,
+            689
+          ],
+          "boundsEstimateXYXY": [
+            222,
+            594,
+            440,
+            690
+          ],
+          "role": "rest seat"
+        },
+        {
+          "id": "bench-seat",
+          "pointXY": [
+            332,
+            644
+          ]
+        },
+        {
+          "id": "wall-lantern",
+          "pointXY": [
+            210,
+            396
+          ],
+          "boundsEstimateXYXY": [
+            193,
+            354,
+            226,
+            434
+          ]
+        },
+        {
+          "id": "right-entry",
+          "pointXY": [
+            1610,
+            706
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "flat-walk-guide",
+          "xRange": [
+            142,
+            1672
+          ],
+          "y": 706
+        }
+      ],
+      "issues": [
+        {
+          "severity": "registration",
+          "note": "Bench feet stop near689 while illustrated traveller feet stop706. Place bench slightly behind the walk lane; do not use the front slab edge754 as ground."
+        },
+        {
+          "severity": "decomposition",
+          "note": "Separate vines and planted enclosure only where needed for subtle motion; preserve left closure as a real end/rest destination."
+        }
+      ]
+    },
+    {
+      "id": "registry",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\registry\\reference.png",
+      "sourceSha256": "43bd64356ccf40d3184dd6786c3ccf264661e745288a339fdf2c2afbc383a296",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 692,
+        "rearFloorBoundaryY": 676,
+        "frontSlabEdgeY": 738,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          607,
+          548,
+          647,
+          692
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          571,
+          548,
+          661,
+          692
+        ],
+        "bodyHeightEstimatePx": 144,
+        "native52ToReferenceBodyScale": 2.769,
+        "referenceToNative52Scale": 0.3611,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "counter",
+          "pointXY": [
+            830,
+            680
+          ],
+          "boundsEstimateXYXY": [
+            666,
+            609,
+            991,
+            682
+          ],
+          "role": "account service anchor"
+        },
+        {
+          "id": "counter-top",
+          "pointXY": [
+            832,
+            613
+          ]
+        },
+        {
+          "id": "accountant",
+          "pointXY": [
+            860,
+            614
+          ],
+          "boundsEstimateXYXY": [
+            832,
+            554,
+            893,
+            616
+          ],
+          "role": "seated behind counter"
+        },
+        {
+          "id": "desk-lamp",
+          "pointXY": [
+            954,
+            614
+          ],
+          "boundsEstimateXYXY": [
+            930,
+            544,
+            981,
+            618
+          ]
+        },
+        {
+          "id": "donation-box",
+          "pointXY": [
+            1033,
+            679
+          ],
+          "boundsEstimateXYXY": [
+            998,
+            574,
+            1068,
+            681
+          ]
+        },
+        {
+          "id": "courtyard-door",
+          "pointXY": [
+            1312,
+            675
+          ],
+          "boundsEstimateXYXY": [
+            1217,
+            402,
+            1390,
+            678
+          ]
+        },
+        {
+          "id": "courtyard-aperture",
+          "pointXY": [
+            1308,
+            550
+          ],
+          "boundsEstimateXYXY": [
+            1264,
+            431,
+            1361,
+            669
+          ]
+        },
+        {
+          "id": "door-leaf-hinge",
+          "pointXY": [
+            1361,
+            551
+          ]
+        },
+        {
+          "id": "door-status",
+          "pointXY": [
+            1305,
+            376
+          ],
+          "boundsEstimateXYXY": [
+            1288,
+            359,
+            1321,
+            394
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "flat-walk-guide",
+          "xRange": [
+            0,
+            1672
+          ],
+          "y": 692
+        }
+      ],
+      "issues": [
+        {
+          "severity": "scale",
+          "note": "Generated traveller is about144px tall, nearly twice the sky-walk traveller. Preserve global native hero pixel pitch; deliberately reconcile room camera/prop scale instead of stretching the hero."
+        },
+        {
+          "severity": "required-decomposition",
+          "note": "Counter, seated accountant, lamp/emission, donation box, door frame, moving leaf and sky visible through door require separate layers. Remove baked traveller and reflections. Leave a clean wall/floor behind the accountant for the later move."
+        },
+        {
+          "severity": "story",
+          "note": "Door currently reveals sky as required; reconnect its portal view/state, not just the opaque leaf. Ordinary doorway is unusually tall relative to native52px hero if reference pixels are copied1:1."
+        }
+      ]
+    },
+    {
+      "id": "junction",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\junction\\reference.png",
+      "sourceSha256": "d12cef0a8aeed6960a52eacee1cbc2dbc82dc5d1b6c4a48a3e3cf7fbd50f256d",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 645,
+        "rearFloorBoundaryY": 635,
+        "frontSlabEdgeY": 657,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          686,
+          555,
+          714,
+          646
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          659,
+          555,
+          724,
+          646
+        ],
+        "bodyHeightEstimatePx": 91,
+        "native52ToReferenceBodyScale": 1.75,
+        "referenceToNative52Scale": 0.5714,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "registry-side-door",
+          "pointXY": [
+            171,
+            635
+          ],
+          "boundsEstimateXYXY": [
+            106,
+            477,
+            238,
+            637
+          ]
+        },
+        {
+          "id": "archive-lower-door",
+          "pointXY": [
+            163,
+            858
+          ],
+          "boundsEstimateXYXY": [
+            104,
+            728,
+            217,
+            862
+          ]
+        },
+        {
+          "id": "right-door",
+          "pointXY": [
+            1587,
+            636
+          ],
+          "boundsEstimateXYXY": [
+            1562,
+            452,
+            1614,
+            640
+          ]
+        },
+        {
+          "id": "upper-route",
+          "pointXY": [
+            598,
+            211
+          ],
+          "boundsEstimateXYXY": [
+            536,
+            67,
+            684,
+            213
+          ]
+        },
+        {
+          "id": "bench",
+          "pointXY": [
+            582,
+            636
+          ],
+          "boundsEstimateXYXY": [
+            536,
+            596,
+            623,
+            637
+          ]
+        },
+        {
+          "id": "donation-box",
+          "pointXY": [
+            878,
+            635
+          ],
+          "boundsEstimateXYXY": [
+            858,
+            550,
+            900,
+            637
+          ]
+        },
+        {
+          "id": "map-hanging-sheet",
+          "pointXY": [
+            799,
+            499
+          ],
+          "boundsEstimateXYXY": [
+            750,
+            444,
+            845,
+            552
+          ]
+        },
+        {
+          "id": "map-fastening",
+          "pointXY": [
+            799,
+            406
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "main-walk-guide",
+          "xRange": [
+            0,
+            1672
+          ],
+          "y": 645,
+          "note": "Foreground central column occludes this lane; lower-left stairs form a deliberate branch."
+        },
+        {
+          "type": "ascending-stair-guide",
+          "polylineXY": [
+            [
+              1270,
+              630
+            ],
+            [
+              1185,
+              576
+            ],
+            [
+              1060,
+              487
+            ],
+            [
+              932,
+              402
+            ],
+            [
+              801,
+              317
+            ],
+            [
+              668,
+              223
+            ],
+            [
+              657,
+              211
+            ]
+          ],
+          "note": "Approximate tread trajectory only; trace visible horizontal tread pixels for final step/slope contacts."
+        },
+        {
+          "type": "upper-landing",
+          "xRange": [
+            85,
+            666
+          ],
+          "y": 211
+        },
+        {
+          "type": "descending-stair-guide",
+          "polylineXY": [
+            [
+              356,
+              641
+            ],
+            [
+              305,
+              704
+            ],
+            [
+              253,
+              769
+            ],
+            [
+              203,
+              827
+            ],
+            [
+              169,
+              861
+            ]
+          ]
+        },
+        {
+          "type": "lower-landing",
+          "xRange": [
+            40,
+            171
+          ],
+          "y": 862
+        }
+      ],
+      "issues": [
+        {
+          "severity": "required-decomposition",
+          "note": "Central column x402..531 crosses main/upper paths. It is an occluder, not a full-height collision wall. Extract front columns and railings to preserve movement behind them."
+        },
+        {
+          "severity": "functional-clarity",
+          "note": "Two left rooms both depict bookcases/counters. Bind each to a real route or simplify the unused interior; do not create duplicate unconfigured archive/service areas."
+        },
+        {
+          "severity": "functional-clarity",
+          "note": "Blank hanging sheet is too prominent to remain unexplained. If it is the map, provide a reachable cut/contact sequence plus clean wall behind its release; otherwise remove that interaction affordance."
+        },
+        {
+          "severity": "collision",
+          "note": "Do not approximate both stair flights as stacks of arbitrary height blocks. Match slope/treads, upper landing and underside occlusion; verify both directions and jump landings."
+        }
+      ]
+    },
+    {
+      "id": "vestibule",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\vestibule\\reference.png",
+      "sourceSha256": "22391ad192f3b7f84c8a449933d779198e76e398fc030bb74641ac76be073f85",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 702,
+        "rearFloorBoundaryY": 684,
+        "frontSlabEdgeY": 719,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          679,
+          584,
+          711,
+          703
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          648,
+          583,
+          728,
+          703
+        ],
+        "bodyHeightEstimatePx": 119,
+        "native52ToReferenceBodyScale": 2.288,
+        "referenceToNative52Scale": 0.437,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "return-door",
+          "pointXY": [
+            139,
+            685
+          ],
+          "boundsEstimateXYXY": [
+            92,
+            420,
+            188,
+            688
+          ]
+        },
+        {
+          "id": "bench",
+          "pointXY": [
+            460,
+            687
+          ],
+          "boundsEstimateXYXY": [
+            389,
+            626,
+            532,
+            688
+          ]
+        },
+        {
+          "id": "left-service-box",
+          "pointXY": [
+            570,
+            685
+          ],
+          "boundsEstimateXYXY": [
+            541,
+            585,
+            598,
+            688
+          ]
+        },
+        {
+          "id": "right-product-selector",
+          "pointXY": [
+            1067,
+            685
+          ],
+          "boundsEstimateXYXY": [
+            1030,
+            582,
+            1096,
+            688
+          ]
+        },
+        {
+          "id": "arena-door",
+          "pointXY": [
+            1306,
+            685
+          ],
+          "boundsEstimateXYXY": [
+            1110,
+            353,
+            1504,
+            688
+          ]
+        },
+        {
+          "id": "arena-door-aperture",
+          "pointXY": [
+            1306,
+            551
+          ],
+          "boundsEstimateXYXY": [
+            1187,
+            423,
+            1432,
+            683
+          ]
+        },
+        {
+          "id": "arena-door-split",
+          "pointXY": [
+            1305,
+            558
+          ]
+        },
+        {
+          "id": "hanging-sheet",
+          "pointXY": [
+            594,
+            517
+          ],
+          "boundsEstimateXYXY": [
+            551,
+            466,
+            637,
+            568
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "flat-walk-guide",
+          "xRange": [
+            0,
+            1672
+          ],
+          "y": 702
+        }
+      ],
+      "issues": [
+        {
+          "severity": "functional-clarity",
+          "note": "Two similar lecterns plus a blank banner compete. Assign one product selector at the arena door and one deliberate donation/rest function, or remove the duplicate. Do not show three unrelated blank menu props."
+        },
+        {
+          "severity": "required-decomposition",
+          "note": "Extract double leaves/frame/split seal and clean interior behind door. Arena opening/collision should follow the visible opening, with safe player position outside sweep."
+        }
+      ]
+    },
+    {
+      "id": "arena",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\arena\\reference.png",
+      "sourceSha256": "a19bd982f61fc7eadc97aa24eff28067845ed2af0c538e68ccc5a92660c8c2f8",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 757,
+        "rearFloorBoundaryY": 725,
+        "frontSlabEdgeY": 819,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          384,
+          644,
+          420,
+          758
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          357,
+          643,
+          443,
+          758
+        ],
+        "bodyHeightEstimatePx": 114,
+        "native52ToReferenceBodyScale": 2.192,
+        "referenceToNative52Scale": 0.4561,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "player-start",
+          "pointXY": [
+            401,
+            757
+          ]
+        },
+        {
+          "id": "warden-foot",
+          "pointXY": [
+            1262,
+            758
+          ]
+        },
+        {
+          "id": "warden-body",
+          "pointXY": [
+            1261,
+            649
+          ],
+          "boundsEstimateXYXY": [
+            1215,
+            540,
+            1306,
+            759
+          ]
+        },
+        {
+          "id": "warden-sword",
+          "pointXY": [
+            1169,
+            706
+          ],
+          "boundsEstimateXYXY": [
+            1103,
+            654,
+            1240,
+            757
+          ]
+        },
+        {
+          "id": "return-door",
+          "pointXY": [
+            167,
+            725
+          ],
+          "boundsEstimateXYXY": [
+            72,
+            489,
+            269,
+            728
+          ]
+        },
+        {
+          "id": "return-aperture",
+          "pointXY": [
+            165,
+            634
+          ],
+          "boundsEstimateXYXY": [
+            94,
+            545,
+            234,
+            725
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "flat-combat-walk-guide",
+          "xRange": [
+            275,
+            1515
+          ],
+          "y": 757,
+          "note": "Suggested clear fight lane; confirm attack reach, door return and camera framing in runtime."
+        }
+      ],
+      "issues": [
+        {
+          "severity": "required-decomposition",
+          "note": "Remove both painted fighters and their reflections/shadows before placing animated actors. Warden height about219px vs traveller114px; select an intentional boss scale."
+        },
+        {
+          "severity": "contact",
+          "note": "Large glossy floor runs from725to819 while both actors touch near757. A collider at819 would sink them62px; a collider at725 would make them float32px relative to reference."
+        },
+        {
+          "severity": "readability",
+          "note": "Keep banner/lamps behind combat, with much quieter light motion than attack telegraphs. Boss sword silhouette must remain readable against floor reflections."
+        }
+      ]
+    },
+    {
+      "id": "archive",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\archive\\reference.png",
+      "sourceSha256": "3914a4e52b185a5e0973adebf63c4764b1254638c4053d739c6b5998cdda6d01",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 722,
+        "rearFloorBoundaryY": 713,
+        "frontSlabEdgeY": 741,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          641,
+          592,
+          675,
+          722
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          606,
+          591,
+          691,
+          722
+        ],
+        "bodyHeightEstimatePx": 130,
+        "native52ToReferenceBodyScale": 2.5,
+        "referenceToNative52Scale": 0.4,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "left-door",
+          "pointXY": [
+            142,
+            637
+          ],
+          "boundsEstimateXYXY": [
+            64,
+            403,
+            219,
+            639
+          ]
+        },
+        {
+          "id": "left-aperture",
+          "pointXY": [
+            142,
+            533
+          ],
+          "boundsEstimateXYXY": [
+            87,
+            430,
+            199,
+            638
+          ]
+        },
+        {
+          "id": "right-door",
+          "pointXY": [
+            1552,
+            638
+          ],
+          "boundsEstimateXYXY": [
+            1486,
+            406,
+            1615,
+            640
+          ]
+        },
+        {
+          "id": "right-aperture",
+          "pointXY": [
+            1553,
+            534
+          ],
+          "boundsEstimateXYXY": [
+            1504,
+            434,
+            1595,
+            638
+          ]
+        },
+        {
+          "id": "donation-box",
+          "pointXY": [
+            249,
+            651
+          ],
+          "boundsEstimateXYXY": [
+            225,
+            568,
+            276,
+            656
+          ]
+        },
+        {
+          "id": "reading-desk",
+          "pointXY": [
+            838,
+            716
+          ],
+          "boundsEstimateXYXY": [
+            750,
+            651,
+            925,
+            717
+          ]
+        },
+        {
+          "id": "desk-lamp",
+          "pointXY": [
+            813,
+            659
+          ],
+          "boundsEstimateXYXY": [
+            794,
+            606,
+            834,
+            659
+          ]
+        },
+        {
+          "id": "chair",
+          "pointXY": [
+            943,
+            716
+          ],
+          "boundsEstimateXYXY": [
+            920,
+            642,
+            969,
+            717
+          ]
+        },
+        {
+          "id": "book-trolley",
+          "pointXY": [
+            1278,
+            714
+          ],
+          "boundsEstimateXYXY": [
+            1228,
+            631,
+            1325,
+            715
+          ]
+        },
+        {
+          "id": "shelves",
+          "pointXY": [
+            871,
+            713
+          ],
+          "boundsEstimateXYXY": [
+            355,
+            509,
+            1370,
+            715
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "main-walk-guide",
+          "xRange": [
+            275,
+            1440
+          ],
+          "y": 722
+        },
+        {
+          "type": "left-stair-guide",
+          "polylineXY": [
+            [
+              65,
+              638
+            ],
+            [
+              211,
+              638
+            ],
+            [
+              226,
+              650
+            ],
+            [
+              240,
+              667
+            ],
+            [
+              252,
+              682
+            ],
+            [
+              261,
+              699
+            ],
+            [
+              273,
+              715
+            ]
+          ]
+        },
+        {
+          "type": "right-stair-guide",
+          "polylineXY": [
+            [
+              1441,
+              715
+            ],
+            [
+              1457,
+              701
+            ],
+            [
+              1473,
+              683
+            ],
+            [
+              1484,
+              668
+            ],
+            [
+              1496,
+              651
+            ],
+            [
+              1505,
+              638
+            ],
+            [
+              1617,
+              638
+            ]
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "severity": "collision",
+          "note": "Both doors stand above short stair flights. Bind entry/return floor at door threshold637/638, then descend to722; do not teleport at main floor while inside raised door art."
+        },
+        {
+          "severity": "layering",
+          "note": "Desk/chair/shelves are behind the playable lane unless intentionally made solid. Extract lamp and reading target separately; the entire shelf wall should not become a row of popups."
+        },
+        {
+          "severity": "scale",
+          "note": "Generated traveller is130px tall; this room shares the larger-character issue of registry, despite identical source canvas size."
+        }
+      ]
+    },
+    {
+      "id": "low-passage",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\low-passage\\reference.png",
+      "sourceSha256": "3b82361d4d120634d615831abd091401b11683371400338fee02eb055b345170",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 663,
+        "rearFloorBoundaryY": 647,
+        "frontSlabEdgeY": 676,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          1227,
+          555,
+          1267,
+          664
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          1208,
+          555,
+          1291,
+          664
+        ],
+        "bodyHeightEstimatePx": 109,
+        "native52ToReferenceBodyScale": 2.096,
+        "referenceToNative52Scale": 0.4771,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "left-door",
+          "pointXY": [
+            210,
+            647
+          ],
+          "boundsEstimateXYXY": [
+            122,
+            416,
+            307,
+            648
+          ]
+        },
+        {
+          "id": "left-aperture",
+          "pointXY": [
+            210,
+            571
+          ],
+          "boundsEstimateXYXY": [
+            150,
+            496,
+            273,
+            647
+          ]
+        },
+        {
+          "id": "blue-status",
+          "pointXY": [
+            210,
+            469
+          ]
+        },
+        {
+          "id": "first-block",
+          "pointXY": [
+            606,
+            599
+          ],
+          "boundsEstimateXYXY": [
+            496,
+            597,
+            714,
+            652
+          ]
+        },
+        {
+          "id": "second-block",
+          "pointXY": [
+            998,
+            579
+          ],
+          "boundsEstimateXYXY": [
+            887,
+            576,
+            1109,
+            653
+          ]
+        },
+        {
+          "id": "right-exit",
+          "pointXY": [
+            1518,
+            663
+          ],
+          "boundsEstimateXYXY": [
+            1480,
+            365,
+            1596,
+            648
+          ]
+        },
+        {
+          "id": "left-strip-light",
+          "pointXY": [
+            561,
+            383
+          ],
+          "boundsEstimateXYXY": [
+            510,
+            368,
+            619,
+            394
+          ]
+        },
+        {
+          "id": "right-strip-light",
+          "pointXY": [
+            1190,
+            383
+          ],
+          "boundsEstimateXYXY": [
+            1140,
+            369,
+            1242,
+            394
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "floor-guide",
+          "xRange": [
+            0,
+            1672
+          ],
+          "y": 663
+        },
+        {
+          "type": "platform-top-guide",
+          "xRange": [
+            501,
+            711
+          ],
+          "y": 600
+        },
+        {
+          "type": "platform-top-guide",
+          "xRange": [
+            891,
+            1104
+          ],
+          "y": 580
+        },
+        {
+          "type": "ceiling-clearance-guide",
+          "xRange": [
+            70,
+            1600
+          ],
+          "y": 369
+        }
+      ],
+      "issues": [
+        {
+          "severity": "collision",
+          "note": "Two raised blocks are the only clear platforming shapes. Decide solid versus one-way tops explicitly; retain full ground below so this remains safe practice rather than an invisible pit."
+        },
+        {
+          "severity": "readability",
+          "note": "This scene supplies useful compressed vertical contrast, though room clearance\u2248294px is still about2.7reference traveller heights. Do not shrink it further merely to match its name."
+        },
+        {
+          "severity": "required-decomposition",
+          "note": "Keep red wall stripe continuous behind removable blocks/character; separate status disc and light emission from static fixture."
+        }
+      ]
+    },
+    {
+      "id": "pool",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\pool\\reference.png",
+      "sourceSha256": "9b58a745f03dcb1a0f4a283af4f0a1f31a5113a49715f726b2d008066938e7c6",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 748,
+        "rearFloorBoundaryY": 739,
+        "frontSlabEdgeY": 770,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          505,
+          672,
+          534,
+          749
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          484,
+          672,
+          537,
+          749
+        ],
+        "bodyHeightEstimatePx": 77,
+        "native52ToReferenceBodyScale": 1.481,
+        "referenceToNative52Scale": 0.6753,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "left-door",
+          "pointXY": [
+            66,
+            738
+          ],
+          "boundsEstimateXYXY": [
+            26,
+            617,
+            106,
+            741
+          ]
+        },
+        {
+          "id": "bench",
+          "pointXY": [
+            1358,
+            747
+          ],
+          "boundsEstimateXYXY": [
+            1304,
+            704,
+            1410,
+            749
+          ]
+        },
+        {
+          "id": "blue-box",
+          "pointXY": [
+            1482,
+            740
+          ],
+          "boundsEstimateXYXY": [
+            1464,
+            690,
+            1500,
+            742
+          ]
+        },
+        {
+          "id": "right-passage",
+          "pointXY": [
+            1593,
+            742
+          ],
+          "boundsEstimateXYXY": [
+            1549,
+            505,
+            1638,
+            743
+          ]
+        },
+        {
+          "id": "waterline-background",
+          "pointXY": [
+            823,
+            540
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "flat-walk-guide",
+          "xRange": [
+            0,
+            1672
+          ],
+          "y": 748
+        }
+      ],
+      "issues": [
+        {
+          "severity": "spatial-readability",
+          "note": "Water reads as an enormous distant lake/ocean, not a clearly bounded indoor pool. Accept this as a displaced pool opening onto impossible water or add an intentional basin lip during composition review; do not add an invisible swim/pit mechanic."
+        },
+        {
+          "severity": "required-decomposition",
+          "note": "Extract water/reflections from foreground floor, so cloud and water motion remain separate from the walkable strip."
+        },
+        {
+          "severity": "functional-clarity",
+          "note": "Blue box beside bench needs a defined function or should be a clearly passive fixture. Do not bind it to an unrelated service merely because it exists."
+        }
+      ]
+    },
+    {
+      "id": "sky-walk",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\sky-walk\\reference.png",
+      "sourceSha256": "93410afff6d95dbc8ebd1fb69fe7c70e368067959e4a2ea6f266e4daca79bb3d",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 669,
+        "rearFloorBoundaryY": 660,
+        "frontSlabEdgeY": 679,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          459,
+          598,
+          487,
+          670
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          446,
+          598,
+          493,
+          670
+        ],
+        "bodyHeightEstimatePx": 72,
+        "native52ToReferenceBodyScale": 1.385,
+        "referenceToNative52Scale": 0.7222,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "left-bridge-hinge",
+          "pointXY": [
+            725,
+            676
+          ]
+        },
+        {
+          "id": "right-receiver",
+          "pointXY": [
+            1074,
+            676
+          ]
+        },
+        {
+          "id": "raised-deck-tip",
+          "pointXY": [
+            725,
+            477
+          ],
+          "boundsEstimateXYXY": [
+            711,
+            474,
+            745,
+            674
+          ]
+        },
+        {
+          "id": "cut-cable-left-anchor",
+          "pointXY": [
+            633,
+            634
+          ]
+        },
+        {
+          "id": "cut-cable-upper-anchor",
+          "pointXY": [
+            718,
+            491
+          ]
+        },
+        {
+          "id": "cut-cable-target",
+          "pointXY": [
+            674,
+            578
+          ]
+        },
+        {
+          "id": "courtyard-glimpse",
+          "pointXY": [
+            1648,
+            252
+          ]
+        },
+        {
+          "id": "left-return",
+          "pointXY": [
+            160,
+            669
+          ]
+        },
+        {
+          "id": "right-exit",
+          "pointXY": [
+            1575,
+            669
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "left-flat-walk-guide",
+          "xRange": [
+            0,
+            718
+          ],
+          "y": 669
+        },
+        {
+          "type": "right-flat-walk-guide",
+          "xRange": [
+            1082,
+            1672
+          ],
+          "y": 669
+        },
+        {
+          "type": "bridge-gap-guide",
+          "xRange": [
+            725,
+            1074
+          ],
+          "y": 669,
+          "gapEstimatePx": 349
+        },
+        {
+          "type": "lowered-deck-required-guide",
+          "polylineXY": [
+            [
+              725,
+              669
+            ],
+            [
+              1074,
+              669
+            ]
+          ],
+          "note": "Current raised deck is only\u2248200px long; cannot rotate into this349px span."
+        }
+      ],
+      "issues": [
+        {
+          "severity": "must-fix",
+          "note": "Raised deck hinge-to-tip\u2248199px vs gap\u2248349px. It will stop\u2248150px short if rotated. Generate/extract a349px+contact-overlap deck, or a specifically authored two-leaf/folding mechanism; do not stretch the deck at runtime or turn on a collider across empty sky."
+        },
+        {
+          "severity": "must-fix",
+          "note": "Correct cable attachment/cut/release states alongside deck length. The receiver at right must read as a receiver, not a second unused hinge."
+        },
+        {
+          "severity": "scale",
+          "note": "Traveller body\u224872px is the smallest reference. Large leap range could bypass a349px gap unless designed geometry and bridge requirement are reconciled; inspect actual double-jump/dash range."
+        },
+        {
+          "severity": "composition",
+          "note": "Very dense cloud/city detail is acceptable as a later panorama, but retain a quieter silhouette corridor around the moving deck and player."
+        }
+      ]
+    },
+    {
+      "id": "exhibit",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\exhibit\\reference.png",
+      "sourceSha256": "2ef6b93ff215bce6443a062f9e2f06b58dd6fb32162b4865c03a60fe37ab9d73",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 703,
+        "rearFloorBoundaryY": 688,
+        "frontSlabEdgeY": 728,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          402,
+          599,
+          442,
+          703
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          386,
+          598,
+          446,
+          703
+        ],
+        "bodyHeightEstimatePx": 104,
+        "native52ToReferenceBodyScale": 2.0,
+        "referenceToNative52Scale": 0.5,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "left-door",
+          "pointXY": [
+            112,
+            686
+          ],
+          "boundsEstimateXYXY": [
+            73,
+            400,
+            160,
+            689
+          ]
+        },
+        {
+          "id": "right-exit",
+          "pointXY": [
+            1575,
+            687
+          ],
+          "boundsEstimateXYXY": [
+            1484,
+            376,
+            1671,
+            687
+          ]
+        },
+        {
+          "id": "bench",
+          "pointXY": [
+            843,
+            699
+          ],
+          "boundsEstimateXYXY": [
+            745,
+            652,
+            943,
+            700
+          ]
+        },
+        {
+          "id": "donation-box",
+          "pointXY": [
+            212,
+            691
+          ],
+          "boundsEstimateXYXY": [
+            184,
+            615,
+            235,
+            692
+          ]
+        },
+        {
+          "id": "exhibit-frame-1",
+          "pointXY": [
+            370,
+            543
+          ],
+          "boundsEstimateXYXY": [
+            340,
+            492,
+            400,
+            595
+          ],
+          "role": "individual artwork inspection",
+          "apertureEstimateXYXY": [
+            351,
+            503,
+            389,
+            584
+          ],
+          "apertureAspectEstimate": 0.469,
+          "interactionGroundAnchorXY": [
+            370,
+            703
+          ]
+        },
+        {
+          "id": "exhibit-frame-2",
+          "pointXY": [
+            457,
+            546
+          ],
+          "boundsEstimateXYXY": [
+            427,
+            512,
+            487,
+            580
+          ],
+          "role": "individual artwork inspection",
+          "apertureEstimateXYXY": [
+            439,
+            524,
+            475,
+            568
+          ],
+          "apertureAspectEstimate": 0.818,
+          "interactionGroundAnchorXY": [
+            457,
+            703
+          ]
+        },
+        {
+          "id": "exhibit-frame-3",
+          "pointXY": [
+            572,
+            549
+          ],
+          "boundsEstimateXYXY": [
+            520,
+            509,
+            624,
+            589
+          ],
+          "role": "individual artwork inspection",
+          "apertureEstimateXYXY": [
+            535,
+            523,
+            609,
+            575
+          ],
+          "apertureAspectEstimate": 1.423,
+          "interactionGroundAnchorXY": [
+            572,
+            703
+          ]
+        },
+        {
+          "id": "exhibit-frame-4",
+          "pointXY": [
+            688,
+            541
+          ],
+          "boundsEstimateXYXY": [
+            654,
+            486,
+            723,
+            596
+          ],
+          "role": "individual artwork inspection",
+          "apertureEstimateXYXY": [
+            668,
+            501,
+            710,
+            582
+          ],
+          "apertureAspectEstimate": 0.519,
+          "interactionGroundAnchorXY": [
+            688,
+            703
+          ]
+        },
+        {
+          "id": "exhibit-frame-5",
+          "pointXY": [
+            796,
+            544
+          ],
+          "boundsEstimateXYXY": [
+            763,
+            508,
+            829,
+            580
+          ],
+          "role": "individual artwork inspection",
+          "apertureEstimateXYXY": [
+            777,
+            521,
+            816,
+            568
+          ],
+          "apertureAspectEstimate": 0.83,
+          "interactionGroundAnchorXY": [
+            796,
+            703
+          ]
+        },
+        {
+          "id": "exhibit-frame-6",
+          "pointXY": [
+            944,
+            546
+          ],
+          "boundsEstimateXYXY": [
+            875,
+            502,
+            1014,
+            591
+          ],
+          "role": "individual artwork inspection",
+          "apertureEstimateXYXY": [
+            892,
+            517,
+            997,
+            575
+          ],
+          "apertureAspectEstimate": 1.81,
+          "interactionGroundAnchorXY": [
+            944,
+            703
+          ]
+        },
+        {
+          "id": "exhibit-frame-7",
+          "pointXY": [
+            1090,
+            543
+          ],
+          "boundsEstimateXYXY": [
+            1055,
+            491,
+            1126,
+            596
+          ],
+          "role": "individual artwork inspection",
+          "apertureEstimateXYXY": [
+            1069,
+            505,
+            1113,
+            582
+          ],
+          "apertureAspectEstimate": 0.571,
+          "interactionGroundAnchorXY": [
+            1090,
+            703
+          ]
+        },
+        {
+          "id": "exhibit-frame-8",
+          "pointXY": [
+            1196,
+            548
+          ],
+          "boundsEstimateXYXY": [
+            1161,
+            513,
+            1232,
+            583
+          ],
+          "role": "individual artwork inspection",
+          "apertureEstimateXYXY": [
+            1175,
+            526,
+            1219,
+            570
+          ],
+          "apertureAspectEstimate": 1.0,
+          "interactionGroundAnchorXY": [
+            1196,
+            703
+          ]
+        },
+        {
+          "id": "exhibit-frame-9",
+          "pointXY": [
+            1296,
+            540
+          ],
+          "boundsEstimateXYXY": [
+            1264,
+            485,
+            1329,
+            596
+          ],
+          "role": "individual artwork inspection",
+          "apertureEstimateXYXY": [
+            1279,
+            500,
+            1315,
+            582
+          ],
+          "apertureAspectEstimate": 0.439,
+          "interactionGroundAnchorXY": [
+            1296,
+            703
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "flat-walk-guide",
+          "xRange": [
+            0,
+            1672
+          ],
+          "y": 703
+        }
+      ],
+      "issues": [
+        {
+          "severity": "must-fix",
+          "note": "Nine frame apertures have sharply different aspect ratios. Use aspect-fit real illustration placement/backing per aperture; do not stretch/crop artwork to fill generated openings. Enlarge/rebuild individual frames if readability requires it."
+        },
+        {
+          "severity": "required-decomposition",
+          "note": "Extract each frame/trim and backing or make clean apertures. Remove generated traveller and its floor reflection. Dynamic lights must not grade/pixelate the real DOM artwork."
+        },
+        {
+          "severity": "continuity",
+          "note": "Ring painted separately in top panorama, three windows and underside opening repeats mismatched curvature/scale. Use one continuous master background behind real architectural apertures rather than those independently baked fragments."
+        },
+        {
+          "severity": "interaction",
+          "note": "At only\u224838\u2013105px-wide apertures, real works remain previews. E must select one nearby frame with a distinct full inspector; bench is behind the walk lane."
+        }
+      ]
+    },
+    {
+      "id": "courtyard",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\courtyard\\reference.png",
+      "sourceSha256": "41f3b73b0a67701102d1467884e8ace860939d4c50935222607a6c5d75df67a9",
+      "sourceSizeObserved": [
+        1672,
+        941
+      ],
+      "annotationStatus": "manual visual estimates; runtime confirmation required",
+      "coordinateSystem": "source PNG pixels, origin top-left, x right, y down, XYXY rectangles end-exclusive",
+      "estimatedTolerancePx": {
+        "floorAndLargeEdges": 6,
+        "smallPropsAndBodyBounds": 10
+      },
+      "floor": {
+        "playerFootLineY": 692,
+        "rearFloorBoundaryY": 681,
+        "frontSlabEdgeY": 716,
+        "note": "Use player foot line as initial contact guide. Front slab edge is not the illustrated walking plane."
+      },
+      "traveller": {
+        "bodyBoundsEstimateXYXY": [
+          669,
+          579,
+          704,
+          693
+        ],
+        "silhouetteBoundsEstimateXYXY": [
+          640,
+          578,
+          717,
+          693
+        ],
+        "bodyHeightEstimatePx": 114,
+        "native52ToReferenceBodyScale": 2.192,
+        "referenceToNative52Scale": 0.4561,
+        "note": "Scale ratios are diagnostic only; do not resize each room or its native hero independently to fit the generated traveller."
+      },
+      "anchors": [
+        {
+          "id": "left-exhibit-entry",
+          "pointXY": [
+            63,
+            684
+          ],
+          "boundsEstimateXYXY": [
+            38,
+            442,
+            93,
+            687
+          ]
+        },
+        {
+          "id": "bench",
+          "pointXY": [
+            534,
+            690
+          ],
+          "boundsEstimateXYXY": [
+            417,
+            630,
+            654,
+            691
+          ]
+        },
+        {
+          "id": "bench-seat",
+          "pointXY": [
+            534,
+            655
+          ]
+        },
+        {
+          "id": "tree-trunk",
+          "pointXY": [
+            536,
+            639
+          ],
+          "boundsEstimateXYXY": [
+            479,
+            472,
+            591,
+            643
+          ]
+        },
+        {
+          "id": "tree-canopy",
+          "pointXY": [
+            552,
+            424
+          ],
+          "boundsEstimateXYXY": [
+            225,
+            239,
+            886,
+            640
+          ]
+        },
+        {
+          "id": "return-door",
+          "pointXY": [
+            1487,
+            682
+          ],
+          "boundsEstimateXYXY": [
+            1428,
+            479,
+            1548,
+            686
+          ]
+        },
+        {
+          "id": "return-aperture",
+          "pointXY": [
+            1487,
+            589
+          ],
+          "boundsEstimateXYXY": [
+            1444,
+            495,
+            1532,
+            682
+          ]
+        },
+        {
+          "id": "maintenance-latch",
+          "pointXY": [
+            1513,
+            591
+          ],
+          "boundsEstimateXYXY": [
+            1502,
+            581,
+            1523,
+            604
+          ]
+        },
+        {
+          "id": "door-status",
+          "pointXY": [
+            1487,
+            457
+          ],
+          "boundsEstimateXYXY": [
+            1473,
+            447,
+            1502,
+            474
+          ]
+        }
+      ],
+      "surfaceGuides": [
+        {
+          "type": "flat-walk-guide",
+          "xRange": [
+            0,
+            1672
+          ],
+          "y": 692
+        }
+      ],
+      "issues": [
+        {
+          "severity": "story",
+          "note": "Return door and latch are visible and can support reconnection. The blue leaf must have locked, latch-release, opening, connected and closing states; the red square alone is insufficient feedback."
+        },
+        {
+          "severity": "required-decomposition",
+          "note": "Separate tree/canopy/bench, empty floor, door frame/leaf/latch, and NPC destination. Accountant/cup/chair acting is not present in the source. Do not reuse the painted traveller as the accountant."
+        },
+        {
+          "severity": "continuity",
+          "note": "Keep bench/tree/red rail as recognisable shared courtyard landmark when glimpsed from sky-walk/registry. Use the same derived asset group rather than regenerating a different tree."
+        }
+      ]
+    }
+  ]
+}

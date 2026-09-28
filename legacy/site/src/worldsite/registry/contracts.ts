@@ -1,0 +1,15 @@
+import type {AudioEffect} from './audio';
+export const ROOM_IDS=['arrival','rest','registry','junction','vestibule','arena','archive','low-passage','pool','sky-walk','exhibit','courtyard'] as const;
+export type RoomId=typeof ROOM_IDS[number];
+export type InputAction='left'|'right'|'jump'|'dash'|'slash'|'interact';
+export interface ArtAsset {src:string;width:number;height:number;frameWidth?:number;frameHeight?:number;frames?:number;columns?:number;frameMs?:number|number[];loop?:boolean;pivot?:[number,number];bodyBounds?:{x:number;y:number;width:number;height:number};anchors?:Record<string,[number,number]>;facing?:'left'|'right';attackWindupFrames?:number}
+export interface Layer {asset:string;role:'sky'|'landmark'|'cloud'|'water'|'wall'|'floor'|'foreground'|'light';x:number;y:number;width:number;height:number;depth:number;parallax?:number;alpha?:number;phase?:number;drift?:number;blend?:'normal'|'screen'|'add'}
+export interface ArtCatalogue {version:string;assets:Record<string,ArtAsset>;rooms:Partial<Record<RoomId,{reference?:string;layers:Layer[]}>>}
+export interface HeroClip {url:string;frameWidth:number;frameHeight:number;frames:number;durations?:number[];durationsMs?:number[];loop?:boolean}
+export interface HeroManifest {clips:Record<string,HeroClip>;footX:number;footY:number;bodyBounds:{x:number;y:number;width:number;height:number};scale?:number;actions:{slash:{activeWindowMs:[number,number];totalDurationMs:number};dash:{frame:number;durationMs:number}}}
+export interface Progress {version:'registry-1';checkpoint:RoomId;rooms:RoomId[];cuts:string[];courtyard:boolean;acknowledged:boolean;art:string[];wins:number}
+export interface Settings {sound:boolean;master:number;music:number;effects:number;reduced:boolean;assistance:boolean;touchSize:'normal'|'large'}
+export type Panel={kind:'pause'|'controls'|'settings'|'reset'|'map'|'accountant'|'sky-door'|'rest'|'latch'|'donate'|'donors'|'consignment'|'product'|'catalogue'|'art'|'docs';id?:string};
+export type Command={type:'input';action:InputAction;down:boolean}|{type:'pointer';x:number;y:number}|{type:'active';value:boolean}|{type:'settings';settings:Settings}|{type:'close'}|{type:'challenge'}|{type:'leave-encounter'}|{type:'cancel-passage'}|{type:'retry'}|{type:'restart'}|{type:'latch'}|{type:'rest'}|{type:'acknowledge'}|{type:'inspect-art';id:string}|{type:'mark-art-seen';id:string};
+export type GameEvent={type:'ready'}|{type:'load';room:RoomId;loaded:number;total:number}|{type:'error';message:string;room?:RoomId}|{type:'room';room:RoomId}|{type:'panel';panel:Panel}|{type:'progress';progress:Progress}|{type:'effect';id:AudioEffect;eventId:string}|{type:'hud';health:number;maximum:number;letterbox?:number;boss?:{health:number;maximum:number;phase:string};prompt?:{id:string;label:string;action:'E'|'Slash';x:number;y:number}}|{type:'black';value:boolean}|{type:'projection';arts:{id:string;x:number;y:number;width:number;height:number}[]};
+export interface GameHandle {command(command:Command):void;destroy():void;snapshot():unknown}

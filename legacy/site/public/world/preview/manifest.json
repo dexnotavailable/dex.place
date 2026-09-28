@@ -1,0 +1,760 @@
+{
+  "version": 2,
+  "captureRevision": "v11-inhabited-room-frames",
+  "mapWidth": 50000,
+  "cameraBounds": {
+    "left": 0,
+    "right": 2800
+  },
+  "sceneSha256": "f06fe0153bc69701c2a7177e132423e9a1b39d8741627c2ebf5560cd157fcb87",
+  "mapSha256": "717f80fcd3e3253deeef24c2561c048f6806504ef84d502fe9defacd1d59d329",
+  "roomsSha256": "1bdf96252dbd8c8b60b21a0d7dd4b234c479316d9e6b6a11edabab7325dc42f7",
+  "rendererSha256": "659ad742bb525d7cc0c2940f282a8fdda28e9c7ef5ca6589508d393acab95a40",
+  "entries": {
+    "home": {
+      "compact": {
+        "url": "/world/preview/home-compact-v11.webp",
+        "roomId": "arrival",
+        "worldRect": {
+          "x": 680.7692307692308,
+          "y": 538,
+          "width": 1298.4615384615383,
+          "height": 600
+        },
+        "anchor": {
+          "x": 1200,
+          "y": 1000
+        },
+        "cameraBounds": {
+          "left": 0,
+          "right": 2800
+        },
+        "width": 844,
+        "height": 390,
+        "sha256": "2c2567af76300c0d89deb4303c036f517479c344a9811613c15195a6eb385b13"
+      },
+      "portrait": {
+        "url": "/world/preview/home-portrait-v11.webp",
+        "roomId": "arrival",
+        "worldRect": {
+          "x": 1034.0616113744077,
+          "y": 307,
+          "width": 415.8767772511848,
+          "height": 900
+        },
+        "anchor": {
+          "x": 1200,
+          "y": 1000
+        },
+        "cameraBounds": {
+          "left": 0,
+          "right": 2800
+        },
+        "width": 390,
+        "height": 844,
+        "sha256": "07d2a9020bd2c9b28ed12df31ad56efa22a15efb7b2fc61b819cb25490e98b3c"
+      },
+      "tablet": {
+        "url": "/world/preview/home-tablet-v11.webp",
+        "roomId": "arrival",
+        "worldRect": {
+          "x": 930.5,
+          "y": 307,
+          "width": 675,
+          "height": 900
+        },
+        "anchor": {
+          "x": 1200,
+          "y": 1000
+        },
+        "cameraBounds": {
+          "left": 0,
+          "right": 2800
+        },
+        "width": 640,
+        "height": 853,
+        "sha256": "1185544a0ebc8ea3884a14c4cefaf3d4381986f0a0de80f727f1297675ec20b8"
+      },
+      "landscape": {
+        "url": "/world/preview/home-landscape-v11.webp",
+        "roomId": "arrival",
+        "worldRect": {
+          "x": 656,
+          "y": 215,
+          "width": 1360,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 1200,
+          "y": 1000
+        },
+        "cameraBounds": {
+          "left": 0,
+          "right": 2800
+        },
+        "width": 960,
+        "height": 720,
+        "sha256": "32d27454d2b22aece980e52d58a04806b7f137fad3a8793d9209a52e4f273e6a"
+      },
+      "desktop": {
+        "url": "/world/preview/home-desktop-v11.webp",
+        "roomId": "arrival",
+        "worldRect": {
+          "x": 547,
+          "y": 215,
+          "width": 1632,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 1200,
+          "y": 1000
+        },
+        "cameraBounds": {
+          "left": 0,
+          "right": 2800
+        },
+        "width": 1280,
+        "height": 800,
+        "sha256": "317ef12aa589127c92f379dc246b3f81aa8f23276687dbf040886093fe0adca5"
+      },
+      "wide": {
+        "url": "/world/preview/home-wide-v11.webp",
+        "roomId": "arrival",
+        "worldRect": {
+          "x": 474.33333333333337,
+          "y": 215,
+          "width": 1813.3333333333333,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 1200,
+          "y": 1000
+        },
+        "cameraBounds": {
+          "left": 0,
+          "right": 2800
+        },
+        "width": 1280,
+        "height": 720,
+        "sha256": "725749338b2a28968ba9e8eebd0eaae7689b94b80685e5767d88e9a69890c14f"
+      },
+      "ultrawide": {
+        "url": "/world/preview/home-ultrawide-v11.webp",
+        "roomId": "arrival",
+        "worldRect": {
+          "x": 225.66666666666674,
+          "y": 215.00000000000006,
+          "width": 2436.6666666666665,
+          "height": 1019.9999999999999
+        },
+        "anchor": {
+          "x": 1200,
+          "y": 1000
+        },
+        "cameraBounds": {
+          "left": 0,
+          "right": 2800
+        },
+        "width": 1600,
+        "height": 670,
+        "sha256": "407facdc27b0cef33289cdae3fa1db6dc9d8f7dc0cf1562e3fd2bd39f98f9b05"
+      }
+    },
+    "downloads": {
+      "compact": {
+        "url": "/world/preview/downloads-compact-v11.webp",
+        "roomId": "dispatch",
+        "worldRect": {
+          "x": 7999.7692307692305,
+          "y": 578,
+          "width": 1298.4615384615383,
+          "height": 600
+        },
+        "anchor": {
+          "x": 8340,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 8000,
+          "right": 11200
+        },
+        "width": 844,
+        "height": 390,
+        "sha256": "5083875ed6d2e330cff54684f45bd30e52bbeb5ddd7eaaa8dd6e804c5d7010da"
+      },
+      "portrait": {
+        "url": "/world/preview/downloads-portrait-v11.webp",
+        "roomId": "dispatch",
+        "worldRect": {
+          "x": 8174.061611374407,
+          "y": 347,
+          "width": 415.8767772511848,
+          "height": 900
+        },
+        "anchor": {
+          "x": 8340,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 8000,
+          "right": 11200
+        },
+        "width": 390,
+        "height": 844,
+        "sha256": "bc7188a350e73354f8cd6e400e04384fba3ce8bb91defea897dcd3c08462d988"
+      },
+      "tablet": {
+        "url": "/world/preview/downloads-tablet-v11.webp",
+        "roomId": "dispatch",
+        "worldRect": {
+          "x": 8070.5,
+          "y": 347,
+          "width": 675,
+          "height": 900
+        },
+        "anchor": {
+          "x": 8340,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 8000,
+          "right": 11200
+        },
+        "width": 640,
+        "height": 853,
+        "sha256": "95ffd92fdaf25092ecd9ae3667d0bb42cc55e84e683b45980941c6f4ec0df5d0"
+      },
+      "landscape": {
+        "url": "/world/preview/downloads-landscape-v11.webp",
+        "roomId": "dispatch",
+        "worldRect": {
+          "x": 8000,
+          "y": 255,
+          "width": 1360,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 8340,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 8000,
+          "right": 11200
+        },
+        "width": 960,
+        "height": 720,
+        "sha256": "f791075da2a8da65e1bc6af5c5f00668165c21269a1f79dd450b7704e6933eb5"
+      },
+      "desktop": {
+        "url": "/world/preview/downloads-desktop-v11.webp",
+        "roomId": "dispatch",
+        "worldRect": {
+          "x": 8000,
+          "y": 255,
+          "width": 1632,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 8340,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 8000,
+          "right": 11200
+        },
+        "width": 1280,
+        "height": 800,
+        "sha256": "f2bf38e01ed4b39683f86ab41ec9dfd6a878d3e2f5419d77a28e55fc8bfa3735"
+      },
+      "wide": {
+        "url": "/world/preview/downloads-wide-v11.webp",
+        "roomId": "dispatch",
+        "worldRect": {
+          "x": 8000.333333333333,
+          "y": 255,
+          "width": 1813.3333333333333,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 8340,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 8000,
+          "right": 11200
+        },
+        "width": 1280,
+        "height": 720,
+        "sha256": "4343ac8ba66f70017a800731ccac7e927467bfe5e16771bd61dec813d4f4b284"
+      },
+      "ultrawide": {
+        "url": "/world/preview/downloads-ultrawide-v11.webp",
+        "roomId": "dispatch",
+        "worldRect": {
+          "x": 7999.666666666667,
+          "y": 255.00000000000006,
+          "width": 2436.6666666666665,
+          "height": 1019.9999999999999
+        },
+        "anchor": {
+          "x": 8340,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 8000,
+          "right": 11200
+        },
+        "width": 1600,
+        "height": 670,
+        "sha256": "ee1c995ef965e0f87a123f3dcea76fb635070599a00281f63e987231796a99b5"
+      }
+    },
+    "donate": {
+      "compact": {
+        "url": "/world/preview/donate-compact-v11.webp",
+        "roomId": "treasury",
+        "worldRect": {
+          "x": 19999.76923076923,
+          "y": 618,
+          "width": 1298.4615384615383,
+          "height": 600
+        },
+        "anchor": {
+          "x": 20350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 20000,
+          "right": 23400
+        },
+        "width": 844,
+        "height": 390,
+        "sha256": "23059ece787cdbdd590995b515b0c315eb7d783df4d90e2ee517255a3e4864d9"
+      },
+      "portrait": {
+        "url": "/world/preview/donate-portrait-v11.webp",
+        "roomId": "treasury",
+        "worldRect": {
+          "x": 20184.061611374407,
+          "y": 387,
+          "width": 415.8767772511848,
+          "height": 900
+        },
+        "anchor": {
+          "x": 20350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 20000,
+          "right": 23400
+        },
+        "width": 390,
+        "height": 844,
+        "sha256": "b80cd9432c7ee7291c044d1580fe3aba46f8c694a6ee001a4ba8dbdc08ade167"
+      },
+      "tablet": {
+        "url": "/world/preview/donate-tablet-v11.webp",
+        "roomId": "treasury",
+        "worldRect": {
+          "x": 20080.5,
+          "y": 387,
+          "width": 675,
+          "height": 900
+        },
+        "anchor": {
+          "x": 20350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 20000,
+          "right": 23400
+        },
+        "width": 640,
+        "height": 853,
+        "sha256": "3e3c564a3ee2a79ea996c0f7ed0500c927cd46639857ee8e1e21ee49729846b0"
+      },
+      "landscape": {
+        "url": "/world/preview/donate-landscape-v11.webp",
+        "roomId": "treasury",
+        "worldRect": {
+          "x": 20000,
+          "y": 295,
+          "width": 1360,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 20350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 20000,
+          "right": 23400
+        },
+        "width": 960,
+        "height": 720,
+        "sha256": "8f8cf784d5d68e2f6f1f15527dc6df00d86bcf145e0787ba5822455835427c45"
+      },
+      "desktop": {
+        "url": "/world/preview/donate-desktop-v11.webp",
+        "roomId": "treasury",
+        "worldRect": {
+          "x": 20000,
+          "y": 295,
+          "width": 1632,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 20350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 20000,
+          "right": 23400
+        },
+        "width": 1280,
+        "height": 800,
+        "sha256": "6a9126f3ae17b6d82b89be94af859225a278d84a6359fdef32ed77aeb2d91d80"
+      },
+      "wide": {
+        "url": "/world/preview/donate-wide-v11.webp",
+        "roomId": "treasury",
+        "worldRect": {
+          "x": 20000.333333333332,
+          "y": 295,
+          "width": 1813.3333333333333,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 20350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 20000,
+          "right": 23400
+        },
+        "width": 1280,
+        "height": 720,
+        "sha256": "9f2b0e63f320b225c715a82f3ecd83dbcabf9b8593dac13e40ad03b24a83f107"
+      },
+      "ultrawide": {
+        "url": "/world/preview/donate-ultrawide-v11.webp",
+        "roomId": "treasury",
+        "worldRect": {
+          "x": 19999.666666666668,
+          "y": 295.00000000000006,
+          "width": 2436.6666666666665,
+          "height": 1019.9999999999999
+        },
+        "anchor": {
+          "x": 20350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 20000,
+          "right": 23400
+        },
+        "width": 1600,
+        "height": 670,
+        "sha256": "84cc466d10d4a5cc55f6d859c6efe9760e7c4afdfe2eace25b756aa4df5ccfd7"
+      }
+    },
+    "illustrations": {
+      "compact": {
+        "url": "/world/preview/illustrations-compact-v11.webp",
+        "roomId": "gallery",
+        "worldRect": {
+          "x": 33999.769230769234,
+          "y": 578,
+          "width": 1298.4615384615383,
+          "height": 600
+        },
+        "anchor": {
+          "x": 34350,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 34000,
+          "right": 39200
+        },
+        "width": 844,
+        "height": 390,
+        "sha256": "98074cc43823683916cf456a6c47318b88d6fe53f50e640379a879b85abda896"
+      },
+      "portrait": {
+        "url": "/world/preview/illustrations-portrait-v11.webp",
+        "roomId": "gallery",
+        "worldRect": {
+          "x": 34184.06161137441,
+          "y": 347,
+          "width": 415.8767772511848,
+          "height": 900
+        },
+        "anchor": {
+          "x": 34350,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 34000,
+          "right": 39200
+        },
+        "width": 390,
+        "height": 844,
+        "sha256": "33a508753c0f437ea4adf38abda63611bccbcfe8e568e3dbbc258fb031769036"
+      },
+      "tablet": {
+        "url": "/world/preview/illustrations-tablet-v11.webp",
+        "roomId": "gallery",
+        "worldRect": {
+          "x": 34080.5,
+          "y": 347,
+          "width": 675,
+          "height": 900
+        },
+        "anchor": {
+          "x": 34350,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 34000,
+          "right": 39200
+        },
+        "width": 640,
+        "height": 853,
+        "sha256": "1198a269064e7bd79f29a36b8cece014854b1fc017e232ec9f66dc109427f576"
+      },
+      "landscape": {
+        "url": "/world/preview/illustrations-landscape-v11.webp",
+        "roomId": "gallery",
+        "worldRect": {
+          "x": 34000,
+          "y": 255,
+          "width": 1360,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 34350,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 34000,
+          "right": 39200
+        },
+        "width": 960,
+        "height": 720,
+        "sha256": "fab39070f3612c566a723c89add98a57b9697fa16e27ef2d2195a7d3714a7368"
+      },
+      "desktop": {
+        "url": "/world/preview/illustrations-desktop-v11.webp",
+        "roomId": "gallery",
+        "worldRect": {
+          "x": 34000,
+          "y": 255,
+          "width": 1632,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 34350,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 34000,
+          "right": 39200
+        },
+        "width": 1280,
+        "height": 800,
+        "sha256": "4e4b12a4dbfb73a8be30eac4f409eab33d0fc31becdb81dfba2a5a2f69830c77"
+      },
+      "wide": {
+        "url": "/world/preview/illustrations-wide-v11.webp",
+        "roomId": "gallery",
+        "worldRect": {
+          "x": 34000.333333333336,
+          "y": 255,
+          "width": 1813.3333333333333,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 34350,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 34000,
+          "right": 39200
+        },
+        "width": 1280,
+        "height": 720,
+        "sha256": "e5fac9fa6a35d8dd80bbcfafac7c968c11c97229b5c50584c50540c74f38b4b6"
+      },
+      "ultrawide": {
+        "url": "/world/preview/illustrations-ultrawide-v11.webp",
+        "roomId": "gallery",
+        "worldRect": {
+          "x": 33999.666666666664,
+          "y": 255.00000000000006,
+          "width": 2436.6666666666665,
+          "height": 1019.9999999999999
+        },
+        "anchor": {
+          "x": 34350,
+          "y": 1040
+        },
+        "cameraBounds": {
+          "left": 34000,
+          "right": 39200
+        },
+        "width": 1600,
+        "height": 670,
+        "sha256": "6f66f31c478233841152d859e5739696d436d518cdbd3b2e9eec52957026e7a7"
+      }
+    },
+    "documentation": {
+      "compact": {
+        "url": "/world/preview/documentation-compact-v11.webp",
+        "roomId": "archive",
+        "worldRect": {
+          "x": 39999.769230769234,
+          "y": 618,
+          "width": 1298.4615384615383,
+          "height": 600
+        },
+        "anchor": {
+          "x": 40350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 40000,
+          "right": 43800
+        },
+        "width": 844,
+        "height": 390,
+        "sha256": "eaa5ada0f16b5d661ce4304ff4fce7245e4ff88071081c4932ebd6d98fb13cc7"
+      },
+      "portrait": {
+        "url": "/world/preview/documentation-portrait-v11.webp",
+        "roomId": "archive",
+        "worldRect": {
+          "x": 40184.06161137441,
+          "y": 387,
+          "width": 415.8767772511848,
+          "height": 900
+        },
+        "anchor": {
+          "x": 40350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 40000,
+          "right": 43800
+        },
+        "width": 390,
+        "height": 844,
+        "sha256": "175d32700a6a8790893fb4f0122460f01c9b107d10bac6033c1489f3a8f34a78"
+      },
+      "tablet": {
+        "url": "/world/preview/documentation-tablet-v11.webp",
+        "roomId": "archive",
+        "worldRect": {
+          "x": 40080.5,
+          "y": 387,
+          "width": 675,
+          "height": 900
+        },
+        "anchor": {
+          "x": 40350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 40000,
+          "right": 43800
+        },
+        "width": 640,
+        "height": 853,
+        "sha256": "a13ace6b6a6e7bb51bfaff530e28e357941dc4824a8aa2b164d9fe52703e00b2"
+      },
+      "landscape": {
+        "url": "/world/preview/documentation-landscape-v11.webp",
+        "roomId": "archive",
+        "worldRect": {
+          "x": 40000,
+          "y": 295,
+          "width": 1360,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 40350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 40000,
+          "right": 43800
+        },
+        "width": 960,
+        "height": 720,
+        "sha256": "537a43212431f947d9c477f633a67dca0e537b8e6b42b39ff87f1fb8669ab1aa"
+      },
+      "desktop": {
+        "url": "/world/preview/documentation-desktop-v11.webp",
+        "roomId": "archive",
+        "worldRect": {
+          "x": 40000,
+          "y": 295,
+          "width": 1632,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 40350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 40000,
+          "right": 43800
+        },
+        "width": 1280,
+        "height": 800,
+        "sha256": "55cebaa2052a086849f1910e456b2ea5564495e9cbcd026707c5f45440ed35cf"
+      },
+      "wide": {
+        "url": "/world/preview/documentation-wide-v11.webp",
+        "roomId": "archive",
+        "worldRect": {
+          "x": 40000.333333333336,
+          "y": 295,
+          "width": 1813.3333333333333,
+          "height": 1020
+        },
+        "anchor": {
+          "x": 40350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 40000,
+          "right": 43800
+        },
+        "width": 1280,
+        "height": 720,
+        "sha256": "50526557c0480f9e6c978def0863f76edddf34b91303cfe02a80462061ef2cbe"
+      },
+      "ultrawide": {
+        "url": "/world/preview/documentation-ultrawide-v11.webp",
+        "roomId": "archive",
+        "worldRect": {
+          "x": 39999.666666666664,
+          "y": 295.00000000000006,
+          "width": 2436.6666666666665,
+          "height": 1019.9999999999999
+        },
+        "anchor": {
+          "x": 40350,
+          "y": 1080
+        },
+        "cameraBounds": {
+          "left": 40000,
+          "right": 43800
+        },
+        "width": 1600,
+        "height": 670,
+        "sha256": "30b2a0279fdb605887c9d252c1607924a4f1b153ad8a5ec2e7c010582a94335e"
+      }
+    }
+  }
+}

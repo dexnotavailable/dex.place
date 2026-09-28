@@ -1,0 +1,42 @@
+{
+  "cloud-far": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-far-green-v1.png",
+    "sourceSha256": "8fa154e73a3fcb8f19fac33621dd1a907cfc852a1eadf643b4a96a2914ce6a32",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-far-unmixed-v5.png",
+    "sha256": "49a41619a1ae5aad82e84b3da744ca32da03ddeceef40503e92198df93598a0b",
+    "key": [
+      3.0,
+      249.0,
+      4.0
+    ],
+    "backgroundPixels": 1481225,
+    "boundaryPixels": 36378,
+    "convertedBoundaryPixels": 27078,
+    "noCleanNeighbour": 0,
+    "opaqueInteriorPixels": 55261,
+    "opaqueInteriorByteIdentical": true,
+    "maxForegroundSampleDistance": 30.08321762084961,
+    "method": "3px boundary unmix plus green-dominant matte remnants within12px of key; nearby clean cloud estimate selected by matte-fit and distance; all other interiors unchanged",
+    "limits": "Unknown original alpha is estimated. Distinct isolated wisps may use a nearby clean colour; review actual warm/dark composites."
+  },
+  "cloud-mid": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-mid-green-v3.png",
+    "sourceSha256": "d3eefa463ab887291efdbea9424bc596afc25c7acffcc0a78550182d671108f5",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-mid-unmixed-v5.png",
+    "sha256": "e1ff193bbfa37a8f38afc0a4cec1a01069a51a203b5a88158a66b20f4caf3639",
+    "key": [
+      4.0,
+      249.0,
+      2.0
+    ],
+    "backgroundPixels": 1228256,
+    "boundaryPixels": 37249,
+    "convertedBoundaryPixels": 20584,
+    "noCleanNeighbour": 0,
+    "opaqueInteriorPixels": 307359,
+    "opaqueInteriorByteIdentical": true,
+    "maxForegroundSampleDistance": 19.79899024963379,
+    "method": "3px boundary unmix plus green-dominant matte remnants within12px of key; nearby clean cloud estimate selected by matte-fit and distance; all other interiors unchanged",
+    "limits": "Unknown original alpha is estimated. Distinct isolated wisps may use a nearby clean colour; review actual warm/dark composites."
+  }
+}

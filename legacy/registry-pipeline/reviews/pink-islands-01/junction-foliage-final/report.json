@@ -1,0 +1,33 @@
+{
+  "room": "junction",
+  "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\junction\\alpha.png",
+  "sourceSha256": "cfc9c35db8184b04bf643b0d8eee44af75bac6de19005df94b95fc36cfc8c389",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\junction-foliage-final\\alpha.png",
+  "outputSha256": "5964d98783ecbb5489dcf032de121c483d8f45987a79b6f4835d85a0a2fad342",
+  "selectedPixels": 815,
+  "changedPixels": 815,
+  "otherRGBAUnchanged": true,
+  "beforeStrongPink": 815,
+  "afterStrongPink": 0,
+  "remainingBounds": null,
+  "regions": [
+    [
+      0,
+      0,
+      400,
+      635
+    ],
+    [
+      520,
+      0,
+      710,
+      330
+    ],
+    [
+      1180,
+      0,
+      1672,
+      635
+    ]
+  ]
+}

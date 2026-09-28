@@ -1,0 +1,37 @@
+{
+  "name": "dex-place-world",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "serve:production": "node scripts/serve-production.mjs"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "dompurify": "^3.2.6",
+    "livekit-client": "2.22.1",
+    "livekit-server-sdk": "2.18.0",
+    "lucide-react": "0.487.0",
+    "marked": "^15.0.12",
+    "phaser": "3.90.0",
+    "qrcode": "^1.5.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@esbuild/win32-x64": "0.25.12",
+    "@playwright/test": "^1.62.1",
+    "@rollup/rollup-win32-x64-msvc": "4.62.2",
+    "@types/node": "^22.15.0",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.6",
+    "@vitejs/plugin-react": "4.7.0",
+    "typescript": "^5.8.3",
+    "vite": "6.3.5"
+  }
+}

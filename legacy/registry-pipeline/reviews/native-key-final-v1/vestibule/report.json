@@ -1,0 +1,43 @@
+{
+  "status": "converted-invariants-pass-visual-review-required",
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\vestibule-structure-keyed-v1.png",
+  "sourceSha256": "865151b8cc8d26d03303bfd518a04881056a5a82a7c9650c104eabaf3ae0f8c4",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\vestibule\\alpha.png",
+  "toolSha256": "c68cbed11a406d1515a235b2cc16944412d8696a0d72a5ee05364d6d7aefa546",
+  "outputSha256": "10e079775d4f4280dbd2a6a179acf83ddc50326530c09a31dba1c2267cee3593",
+  "size": [
+    1672,
+    941
+  ],
+  "settings": {
+    "keyRgb": [
+      255,
+      0,
+      255
+    ],
+    "keyTolerance": 32,
+    "minDominance": 220,
+    "edgeBandPx": 3,
+    "cleanDominance": 35,
+    "actualKeyMedianRgb": [
+      241.0,
+      1.0,
+      252.0
+    ],
+    "protectRects": []
+  },
+  "trueBackgroundPixels": 222077,
+  "edgeBandPixels": 15438,
+  "edgeCandidates": 7761,
+  "edgeCandidatesWithoutCleanNeighbour": 0,
+  "edgeRgbChangedPixels": 7654,
+  "outsideBandInteriorPixels": 1335837,
+  "outsideBandInteriorUnchanged": true,
+  "protectedUnchangedAndOpaque": true,
+  "protectedNearKeyPixelsKept": 0,
+  "remainingPurpleInteriorPixels": 51,
+  "remainingPurpleInteriorPolicy": "Preserved. Legitimate purple and painted key reflections cannot be distinguished by hue alone; retouch undesired reflections separately.",
+  "sourceUnchanged": true,
+  "roiReports": [],
+  "limits": "Near-key false positives remain possible; inspect masks. No cloud processing, global desaturation, interior softening, or runtime publication."
+}

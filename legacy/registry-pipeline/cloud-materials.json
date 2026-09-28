@@ -1,0 +1,34 @@
+{
+  "cloud-far": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-far-unmixed-v5.png",
+    "sha256": "49a41619a1ae5aad82e84b3da744ca32da03ddeceef40503e92198df93598a0b",
+    "width": 1536,
+    "height": 1024,
+    "frameWidth": 512,
+    "frameHeight": 512,
+    "frames": 6,
+    "columns": 3,
+    "frameMs": 1300,
+    "loop": true,
+    "pivot": [
+      256,
+      280
+    ]
+  },
+  "cloud-mid": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-mid-unmixed-v5.png",
+    "sha256": "e1ff193bbfa37a8f38afc0a4cec1a01069a51a203b5a88158a66b20f4caf3639",
+    "width": 1536,
+    "height": 1024,
+    "frameWidth": 512,
+    "frameHeight": 512,
+    "frames": 6,
+    "columns": 3,
+    "frameMs": 1300,
+    "loop": true,
+    "pivot": [
+      256,
+      280
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "status": "converted-invariants-pass-visual-review-required",
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\bench-keyed-v1.png",
+  "sourceSha256": "c01cedee6af8e5c5b362ea1303cdc052f75ba30159f3061e9cf88bff577999a9",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\bench\\alpha.png",
+  "toolSha256": "c68cbed11a406d1515a235b2cc16944412d8696a0d72a5ee05364d6d7aefa546",
+  "outputSha256": "9594896656c87dac7016d82f26e2fe0c5f4e2e5af4f2a751ce6cd41f27b5a0cf",
+  "size": [
+    1978,
+    795
+  ],
+  "settings": {
+    "keyRgb": [
+      255,
+      0,
+      255
+    ],
+    "keyTolerance": 32,
+    "minDominance": 220,
+    "edgeBandPx": 3,
+    "cleanDominance": 35,
+    "actualKeyMedianRgb": [
+      251.0,
+      4.0,
+      250.0
+    ],
+    "protectRects": []
+  },
+  "trueBackgroundPixels": 1381334,
+  "edgeBandPixels": 20317,
+  "edgeCandidates": 9977,
+  "edgeCandidatesWithoutCleanNeighbour": 2,
+  "edgeRgbChangedPixels": 9971,
+  "outsideBandInteriorPixels": 170859,
+  "outsideBandInteriorUnchanged": true,
+  "protectedUnchangedAndOpaque": true,
+  "protectedNearKeyPixelsKept": 0,
+  "remainingPurpleInteriorPixels": 1782,
+  "remainingPurpleInteriorPolicy": "Preserved. Legitimate purple and painted key reflections cannot be distinguished by hue alone; retouch undesired reflections separately.",
+  "sourceUnchanged": true,
+  "roiReports": [],
+  "limits": "Near-key false positives remain possible; inspect masks. No cloud processing, global desaturation, interior softening, or runtime publication."
+}

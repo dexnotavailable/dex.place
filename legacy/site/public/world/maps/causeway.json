@@ -1,0 +1,4136 @@
+{
+  "compressionlevel": -1,
+  "height": 144,
+  "infinite": false,
+  "layers": [
+    {
+      "draworder": "topdown",
+      "id": 1,
+      "name": "collision",
+      "objects": [
+        {
+          "height": 48,
+          "id": 1,
+          "name": "floor.arrival",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "plannedOnly",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 2300,
+          "x": 400,
+          "y": 960
+        },
+        {
+          "height": 56,
+          "id": 2,
+          "name": "threshold.arrival-dispatch.stair.up.0",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 2700,
+          "y": 952
+        },
+        {
+          "height": 64,
+          "id": 3,
+          "name": "threshold.arrival-dispatch.stair.up.1",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 2724,
+          "y": 944
+        },
+        {
+          "height": 72,
+          "id": 4,
+          "name": "threshold.arrival-dispatch.stair.up.2",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 2748,
+          "y": 936
+        },
+        {
+          "height": 80,
+          "id": 5,
+          "name": "threshold.arrival-dispatch.stair.up.3",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 2772,
+          "y": 928
+        },
+        {
+          "height": 48,
+          "id": 6,
+          "name": "threshold.arrival-dispatch.landing",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "plannedOnly",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 144,
+          "x": 2796,
+          "y": 928
+        },
+        {
+          "height": 72,
+          "id": 7,
+          "name": "threshold.arrival-dispatch.stair.down.0",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 2940,
+          "y": 936
+        },
+        {
+          "height": 64,
+          "id": 8,
+          "name": "threshold.arrival-dispatch.stair.down.1",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 2964,
+          "y": 944
+        },
+        {
+          "height": 56,
+          "id": 9,
+          "name": "threshold.arrival-dispatch.stair.down.2",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 2988,
+          "y": 952
+        },
+        {
+          "height": 48,
+          "id": 10,
+          "name": "threshold.arrival-dispatch.stair.down.3",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 3012,
+          "y": 960
+        },
+        {
+          "height": 48,
+          "id": 11,
+          "name": "floor.dispatch-approach",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "plannedOnly",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 1884,
+          "x": 3036,
+          "y": 960
+        },
+        {
+          "height": 48,
+          "id": 22,
+          "name": "archive.descent.approach",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 120,
+          "x": 5300,
+          "y": 960
+        },
+        {
+          "height": 200,
+          "id": 23,
+          "name": "archive.descent.stair.0",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5420,
+          "y": 968
+        },
+        {
+          "height": 192,
+          "id": 24,
+          "name": "archive.descent.stair.1",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5444,
+          "y": 976
+        },
+        {
+          "height": 184,
+          "id": 25,
+          "name": "archive.descent.stair.2",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5468,
+          "y": 984
+        },
+        {
+          "height": 176,
+          "id": 26,
+          "name": "archive.descent.stair.3",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5492,
+          "y": 992
+        },
+        {
+          "height": 168,
+          "id": 27,
+          "name": "archive.descent.stair.4",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5516,
+          "y": 1000
+        },
+        {
+          "height": 160,
+          "id": 28,
+          "name": "archive.descent.stair.5",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5540,
+          "y": 1008
+        },
+        {
+          "height": 152,
+          "id": 29,
+          "name": "archive.descent.stair.6",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5564,
+          "y": 1016
+        },
+        {
+          "height": 144,
+          "id": 30,
+          "name": "archive.descent.stair.7",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5588,
+          "y": 1024
+        },
+        {
+          "height": 136,
+          "id": 31,
+          "name": "archive.descent.stair.8",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5612,
+          "y": 1032
+        },
+        {
+          "height": 128,
+          "id": 32,
+          "name": "archive.descent.stair.9",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5636,
+          "y": 1040
+        },
+        {
+          "height": 120,
+          "id": 33,
+          "name": "archive.descent.stair.10",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5660,
+          "y": 1048
+        },
+        {
+          "height": 112,
+          "id": 34,
+          "name": "archive.descent.stair.11",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5684,
+          "y": 1056
+        },
+        {
+          "height": 104,
+          "id": 35,
+          "name": "archive.descent.stair.12",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5708,
+          "y": 1064
+        },
+        {
+          "height": 96,
+          "id": 36,
+          "name": "archive.descent.stair.13",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5732,
+          "y": 1072
+        },
+        {
+          "height": 88,
+          "id": 37,
+          "name": "archive.descent.stair.14",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5756,
+          "y": 1080
+        },
+        {
+          "height": 80,
+          "id": 38,
+          "name": "archive.descent.stair.15",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5780,
+          "y": 1088
+        },
+        {
+          "height": 72,
+          "id": 39,
+          "name": "archive.descent.stair.16",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5804,
+          "y": 1096
+        },
+        {
+          "height": 64,
+          "id": 40,
+          "name": "archive.descent.stair.17",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5828,
+          "y": 1104
+        },
+        {
+          "height": 56,
+          "id": 41,
+          "name": "archive.descent.stair.18",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5852,
+          "y": 1112
+        },
+        {
+          "height": 48,
+          "id": 42,
+          "name": "archive.descent.stair.19",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 5876,
+          "y": 1120
+        },
+        {
+          "height": 48,
+          "id": 43,
+          "name": "archive.descent.landing",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 300,
+          "x": 5900,
+          "y": 1120
+        },
+        {
+          "height": 48,
+          "id": 44,
+          "name": "floor.archive",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 1900,
+          "x": 6200,
+          "y": 1120
+        },
+        {
+          "height": 48,
+          "id": 45,
+          "name": "lift.lower.bank",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 404,
+          "x": 8100,
+          "y": 1120
+        },
+        {
+          "height": 48,
+          "id": 46,
+          "name": "lift.upper.bank",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 304,
+          "x": 8696,
+          "y": 832
+        },
+        {
+          "height": 48,
+          "id": 47,
+          "name": "floor.gallery",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 1900,
+          "x": 9000,
+          "y": 832
+        },
+        {
+          "height": 48,
+          "id": 48,
+          "name": "support.descent.approach",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 240,
+          "x": 10900,
+          "y": 832
+        },
+        {
+          "height": 168,
+          "id": 49,
+          "name": "support.descent.stair.0",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11140,
+          "y": 840
+        },
+        {
+          "height": 160,
+          "id": 50,
+          "name": "support.descent.stair.1",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11164,
+          "y": 848
+        },
+        {
+          "height": 152,
+          "id": 51,
+          "name": "support.descent.stair.2",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11188,
+          "y": 856
+        },
+        {
+          "height": 144,
+          "id": 52,
+          "name": "support.descent.stair.3",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11212,
+          "y": 864
+        },
+        {
+          "height": 136,
+          "id": 53,
+          "name": "support.descent.stair.4",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11236,
+          "y": 872
+        },
+        {
+          "height": 128,
+          "id": 54,
+          "name": "support.descent.stair.5",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11260,
+          "y": 880
+        },
+        {
+          "height": 120,
+          "id": 55,
+          "name": "support.descent.stair.6",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11284,
+          "y": 888
+        },
+        {
+          "height": 112,
+          "id": 56,
+          "name": "support.descent.stair.7",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11308,
+          "y": 896
+        },
+        {
+          "height": 104,
+          "id": 57,
+          "name": "support.descent.stair.8",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11332,
+          "y": 904
+        },
+        {
+          "height": 96,
+          "id": 58,
+          "name": "support.descent.stair.9",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11356,
+          "y": 912
+        },
+        {
+          "height": 88,
+          "id": 59,
+          "name": "support.descent.stair.10",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11380,
+          "y": 920
+        },
+        {
+          "height": 80,
+          "id": 60,
+          "name": "support.descent.stair.11",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11404,
+          "y": 928
+        },
+        {
+          "height": 72,
+          "id": 61,
+          "name": "support.descent.stair.12",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11428,
+          "y": 936
+        },
+        {
+          "height": 64,
+          "id": 62,
+          "name": "support.descent.stair.13",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11452,
+          "y": 944
+        },
+        {
+          "height": 56,
+          "id": 63,
+          "name": "support.descent.stair.14",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11476,
+          "y": 952
+        },
+        {
+          "height": 48,
+          "id": 64,
+          "name": "support.descent.stair.15",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 24,
+          "x": 11500,
+          "y": 960
+        },
+        {
+          "height": 48,
+          "id": 65,
+          "name": "support.descent.landing",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 276,
+          "x": 11524,
+          "y": 960
+        },
+        {
+          "height": 48,
+          "id": 66,
+          "name": "floor.support",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "support"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 2100,
+          "x": 11800,
+          "y": 960
+        },
+        {
+          "height": 48,
+          "id": 131,
+          "name": "dispatch.bridge.right-bank",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "plannedOnly",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ],
+          "rotation": 0,
+          "type": "solid",
+          "visible": true,
+          "width": 188,
+          "x": 5112,
+          "y": 960
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 2,
+      "name": "objects",
+      "objects": [
+        {
+          "height": 28,
+          "id": 67,
+          "name": "arrival.home.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            }
+          ],
+          "rotation": 0,
+          "type": "home",
+          "visible": true,
+          "width": 22,
+          "x": 1560,
+          "y": 960
+        },
+        {
+          "height": 80,
+          "id": 68,
+          "name": "arrival.wayfinding-banner.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            },
+            {
+              "name": "mechanism",
+              "type": "string",
+              "value": "latched"
+            }
+          ],
+          "rotation": 0,
+          "type": "banner",
+          "visible": true,
+          "width": 46,
+          "x": 2250,
+          "y": 960
+        },
+        {
+          "height": 48,
+          "id": 69,
+          "name": "arrival.terminal.downloads.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "downloads"
+            }
+          ],
+          "rotation": 0,
+          "type": "terminal",
+          "visible": true,
+          "width": 38,
+          "x": 4460,
+          "y": 960
+        },
+        {
+          "height": 15,
+          "id": 70,
+          "name": "archive.file.controls.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "archive.file.controls.01"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "Controls"
+            }
+          ],
+          "rotation": 0,
+          "type": "file",
+          "visible": true,
+          "width": 18,
+          "x": 1748,
+          "y": 940
+        },
+        {
+          "height": 15,
+          "id": 71,
+          "name": "archive.file.movement.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "archive.file.movement.01"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "Movement"
+            }
+          ],
+          "rotation": 0,
+          "type": "file",
+          "visible": true,
+          "width": 18,
+          "x": 2650,
+          "y": 940
+        },
+        {
+          "height": 15,
+          "id": 72,
+          "name": "archive.file.downloads.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "archive.file.downloads.01"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "Downloads"
+            }
+          ],
+          "rotation": 0,
+          "type": "file",
+          "visible": true,
+          "width": 18,
+          "x": 4588,
+          "y": 940
+        },
+        {
+          "id": 73,
+          "name": "dispatch.lowering-bridge.01",
+          "type": "bridge",
+          "x": 4920,
+          "y": 960,
+          "width": 192,
+          "height": 8,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "stableId",
+              "type": "string",
+              "value": "dispatch.lowering-bridge.01"
+            },
+            {
+              "name": "mechanism",
+              "type": "string",
+              "value": "hinged"
+            },
+            {
+              "name": "openY",
+              "type": "int",
+              "value": 960
+            }
+          ]
+        },
+        {
+          "id": 74,
+          "name": "dispatch.bridge-cable.01",
+          "type": "cable",
+          "x": 4959,
+          "y": 897,
+          "width": 8,
+          "height": 8,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "stableId",
+              "type": "string",
+              "value": "dispatch.bridge-cable.01"
+            },
+            {
+              "name": "target",
+              "type": "string",
+              "value": "dispatch.lowering-bridge.01"
+            },
+            {
+              "name": "mechanism",
+              "type": "string",
+              "value": "hinged"
+            }
+          ]
+        },
+        {
+          "height": 48,
+          "id": 75,
+          "name": "archive.index.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            }
+          ],
+          "rotation": 0,
+          "type": "terminal",
+          "visible": true,
+          "width": 38,
+          "x": 7260,
+          "y": 1120
+        },
+        {
+          "height": 78,
+          "id": 76,
+          "name": "gallery.bay.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            }
+          ],
+          "rotation": 0,
+          "type": "gallery",
+          "visible": true,
+          "width": 66,
+          "x": 10060,
+          "y": 832
+        },
+        {
+          "height": 78,
+          "id": 77,
+          "name": "gallery.bay.02",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "kaizen"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            }
+          ],
+          "rotation": 0,
+          "type": "gallery",
+          "visible": true,
+          "width": 66,
+          "x": 10480,
+          "y": 832
+        },
+        {
+          "height": 40,
+          "id": 78,
+          "name": "support.plinth.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "support"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "donate"
+            }
+          ],
+          "rotation": 0,
+          "type": "donate",
+          "visible": true,
+          "width": 38,
+          "x": 12860,
+          "y": 960
+        },
+        {
+          "height": 30,
+          "id": 79,
+          "name": "support.landing.lower.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            },
+            {
+              "name": "stop",
+              "type": "string",
+              "value": "lower"
+            },
+            {
+              "name": "target",
+              "type": "string",
+              "value": "support.lift.01"
+            }
+          ],
+          "rotation": 0,
+          "type": "landing",
+          "visible": true,
+          "width": 14,
+          "x": 8450,
+          "y": 1120
+        },
+        {
+          "height": 30,
+          "id": 80,
+          "name": "support.landing.upper.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            },
+            {
+              "name": "stop",
+              "type": "string",
+              "value": "upper"
+            },
+            {
+              "name": "target",
+              "type": "string",
+              "value": "support.lift.01"
+            }
+          ],
+          "rotation": 0,
+          "type": "landing",
+          "visible": true,
+          "width": 14,
+          "x": 8750,
+          "y": 832
+        },
+        {
+          "height": 12,
+          "id": 81,
+          "name": "support.lift.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "lower",
+              "type": "string",
+              "value": "lift.stop.lower"
+            },
+            {
+              "name": "mechanism",
+              "type": "string",
+              "value": "rail"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            },
+            {
+              "name": "upper",
+              "type": "string",
+              "value": "lift.stop.upper"
+            }
+          ],
+          "rotation": 0,
+          "type": "lift",
+          "visible": true,
+          "width": 192,
+          "x": 8600,
+          "y": 1120
+        },
+        {
+          "height": 15,
+          "id": 82,
+          "name": "archive.file.illustrations.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "archive.file.illustrations.01"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "Illustrations"
+            }
+          ],
+          "rotation": 0,
+          "type": "file",
+          "visible": true,
+          "width": 18,
+          "x": 10300,
+          "y": 812
+        },
+        {
+          "height": 15,
+          "id": 83,
+          "name": "archive.file.donate.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "archive.file.donate.01"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "support"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "Donate"
+            }
+          ],
+          "rotation": 0,
+          "type": "file",
+          "visible": true,
+          "width": 18,
+          "x": 13000,
+          "y": 940
+        },
+        {
+          "height": 15,
+          "id": 84,
+          "name": "archive.file.accessibility.01",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "archive.file.accessibility.01"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "Accessibility"
+            }
+          ],
+          "rotation": 0,
+          "type": "file",
+          "visible": true,
+          "width": 18,
+          "x": 8380,
+          "y": 1100
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 3,
+      "name": "anchors_and_paths",
+      "objects": [
+        {
+          "height": 0,
+          "id": 85,
+          "name": "anchor.home",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            }
+          ],
+          "rotation": 0,
+          "type": "anchor",
+          "visible": true,
+          "width": 0,
+          "x": 1500,
+          "y": 960
+        },
+        {
+          "height": 0,
+          "id": 86,
+          "name": "anchor.downloads",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            }
+          ],
+          "rotation": 0,
+          "type": "anchor",
+          "visible": true,
+          "width": 0,
+          "x": 4400,
+          "y": 960
+        },
+        {
+          "height": 0,
+          "id": 87,
+          "name": "anchor.arena",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            }
+          ],
+          "rotation": 0,
+          "type": "anchor",
+          "visible": true,
+          "width": 0,
+          "x": 1500,
+          "y": 960
+        },
+        {
+          "height": 0,
+          "id": 88,
+          "name": "anchor.documentation",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            }
+          ],
+          "rotation": 0,
+          "type": "anchor",
+          "visible": true,
+          "width": 0,
+          "x": 7200,
+          "y": 1120
+        },
+        {
+          "height": 0,
+          "id": 89,
+          "name": "anchor.illustrations",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            }
+          ],
+          "rotation": 0,
+          "type": "anchor",
+          "visible": true,
+          "width": 0,
+          "x": 10000,
+          "y": 832
+        },
+        {
+          "height": 0,
+          "id": 90,
+          "name": "anchor.donate",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "support"
+            }
+          ],
+          "rotation": 0,
+          "type": "anchor",
+          "visible": true,
+          "width": 0,
+          "x": 12800,
+          "y": 960
+        },
+        {
+          "height": 0,
+          "id": 91,
+          "name": "lift.stop.lower",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            }
+          ],
+          "rotation": 0,
+          "type": "stop",
+          "visible": true,
+          "width": 0,
+          "x": 8600,
+          "y": 1120
+        },
+        {
+          "height": 0,
+          "id": 92,
+          "name": "lift.stop.upper",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            }
+          ],
+          "rotation": 0,
+          "type": "stop",
+          "visible": true,
+          "width": 0,
+          "x": 8600,
+          "y": 832
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 4,
+      "name": "camera_bounds",
+      "objects": [
+        {
+          "height": 1600,
+          "id": 93,
+          "name": "region.arrival",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "cameraMaxX",
+              "type": "float",
+              "value": 2500
+            },
+            {
+              "name": "cameraMinX",
+              "type": "float",
+              "value": 400
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Arrival"
+            },
+            {
+              "name": "plannedOnly",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 2100,
+          "x": 400,
+          "y": -160
+        },
+        {
+          "height": 1600,
+          "id": 94,
+          "name": "region.arrival-dispatch",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "cameraMaxX",
+              "type": "float",
+              "value": 3400
+            },
+            {
+              "name": "cameraMinX",
+              "type": "float",
+              "value": 2500
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Dispatch passage"
+            },
+            {
+              "name": "plannedOnly",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 900,
+          "x": 2500,
+          "y": -160
+        },
+        {
+          "height": 1600,
+          "id": 95,
+          "name": "region.dispatch",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "cameraMaxX",
+              "type": "float",
+              "value": 5300
+            },
+            {
+              "name": "cameraMinX",
+              "type": "float",
+              "value": 3400
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Dispatch"
+            },
+            {
+              "name": "plannedOnly",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 1900,
+          "x": 3400,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 96,
+          "name": "region.dispatch-archive",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "cameraMaxX",
+              "type": "float",
+              "value": 6200
+            },
+            {
+              "name": "cameraMinX",
+              "type": "float",
+              "value": 5300
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Archive descent"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 900,
+          "x": 5300,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 97,
+          "name": "region.archive",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "cameraMaxX",
+              "type": "float",
+              "value": 8100
+            },
+            {
+              "name": "cameraMinX",
+              "type": "float",
+              "value": 6200
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Archive"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 1900,
+          "x": 6200,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 98,
+          "name": "region.archive-gallery",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "cameraMaxX",
+              "type": "float",
+              "value": 9000
+            },
+            {
+              "name": "cameraMinX",
+              "type": "float",
+              "value": 8100
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Exhibition lift shaft"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 900,
+          "x": 8100,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 99,
+          "name": "region.gallery",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "cameraMaxX",
+              "type": "float",
+              "value": 10900
+            },
+            {
+              "name": "cameraMinX",
+              "type": "float",
+              "value": 9000
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Exhibition"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 1900,
+          "x": 9000,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 100,
+          "name": "region.gallery-support",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "cameraMaxX",
+              "type": "float",
+              "value": 11800
+            },
+            {
+              "name": "cameraMinX",
+              "type": "float",
+              "value": 10900
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Support descent"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 900,
+          "x": 10900,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 101,
+          "name": "region.support",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "cameraMaxX",
+              "type": "float",
+              "value": 13900
+            },
+            {
+              "name": "cameraMinX",
+              "type": "float",
+              "value": 11800
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Support"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "support"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 2100,
+          "x": 11800,
+          "y": -160
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 5,
+      "name": "distance",
+      "objects": [],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 6,
+      "name": "back_tiles",
+      "objects": [],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 7,
+      "name": "front_tiles",
+      "objects": [
+        {
+          "height": 640,
+          "id": 102,
+          "name": "frame.arrival-west",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 450,
+          "y": 320
+        },
+        {
+          "height": 640,
+          "id": 103,
+          "name": "frame.gate-west",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 2500,
+          "y": 320
+        },
+        {
+          "height": 640,
+          "id": 104,
+          "name": "frame.gate-east",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 3294,
+          "y": 320
+        },
+        {
+          "height": 640,
+          "id": 105,
+          "name": "frame.dispatch-west",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 3500,
+          "y": 320
+        },
+        {
+          "height": 640,
+          "id": 106,
+          "name": "frame.dispatch-east",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 4980,
+          "y": 320
+        },
+        {
+          "height": 1920,
+          "id": 107,
+          "name": "frame.dispatch-archive.left",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 5300,
+          "y": -960
+        },
+        {
+          "height": 1920,
+          "id": 108,
+          "name": "frame.dispatch-archive.right",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 6094,
+          "y": -800
+        },
+        {
+          "height": 1920,
+          "id": 109,
+          "name": "frame.archive.left",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 6200,
+          "y": -800
+        },
+        {
+          "height": 1920,
+          "id": 110,
+          "name": "frame.archive.right",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 7994,
+          "y": -800
+        },
+        {
+          "height": 1920,
+          "id": 111,
+          "name": "frame.archive-gallery.left",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 8100,
+          "y": -800
+        },
+        {
+          "height": 1920,
+          "id": 112,
+          "name": "frame.archive-gallery.right",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 8894,
+          "y": -1088
+        },
+        {
+          "height": 1920,
+          "id": 113,
+          "name": "frame.gallery.left",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 9000,
+          "y": -1088
+        },
+        {
+          "height": 1920,
+          "id": 114,
+          "name": "frame.gallery.right",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 10794,
+          "y": -1088
+        },
+        {
+          "height": 1920,
+          "id": 115,
+          "name": "frame.gallery-support.left",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 10900,
+          "y": -1088
+        },
+        {
+          "height": 1920,
+          "id": 116,
+          "name": "frame.gallery-support.right",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 11694,
+          "y": -960
+        },
+        {
+          "height": 1920,
+          "id": 117,
+          "name": "frame.support.left",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "support"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 11800,
+          "y": -960
+        },
+        {
+          "height": 1920,
+          "id": 118,
+          "name": "frame.support.right",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "support"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 13794,
+          "y": -960
+        },
+        {
+          "height": 1920,
+          "id": 119,
+          "name": "frame.support.window.left",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "support"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 12174,
+          "y": -960
+        },
+        {
+          "height": 1920,
+          "id": 120,
+          "name": "frame.support.window.right",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "occludesTravel",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "support"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "none"
+            }
+          ],
+          "rotation": 0,
+          "type": "framing",
+          "visible": true,
+          "width": 106,
+          "x": 13600,
+          "y": -960
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 8,
+      "name": "audio_bounds",
+      "objects": [
+        {
+          "height": 1600,
+          "id": 121,
+          "name": "audio.arrival",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "music",
+              "type": "string",
+              "value": "calm"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 2100,
+          "x": 400,
+          "y": -160
+        },
+        {
+          "height": 1600,
+          "id": 122,
+          "name": "audio.arrival-dispatch",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "music",
+              "type": "string",
+              "value": "silent"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival-dispatch"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 900,
+          "x": 2500,
+          "y": -160
+        },
+        {
+          "height": 1600,
+          "id": 123,
+          "name": "audio.dispatch",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "music",
+              "type": "string",
+              "value": "calm"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 1900,
+          "x": 3400,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 124,
+          "name": "audio.dispatch-archive",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "music",
+              "type": "string",
+              "value": "silent"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch-archive"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 900,
+          "x": 5300,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 125,
+          "name": "audio.archive",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "music",
+              "type": "string",
+              "value": "silent"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 1900,
+          "x": 6200,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 126,
+          "name": "audio.archive-gallery",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "music",
+              "type": "string",
+              "value": "silent"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive-gallery"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 900,
+          "x": 8100,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 127,
+          "name": "audio.gallery",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "music",
+              "type": "string",
+              "value": "calm"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 1900,
+          "x": 9000,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 128,
+          "name": "audio.gallery-support",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "music",
+              "type": "string",
+              "value": "silent"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery-support"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 900,
+          "x": 10900,
+          "y": -160
+        },
+        {
+          "height": 1700,
+          "id": 129,
+          "name": "audio.support",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "music",
+              "type": "string",
+              "value": "calm"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "support"
+            }
+          ],
+          "rotation": 0,
+          "type": "region",
+          "visible": true,
+          "width": 2100,
+          "x": 11800,
+          "y": -160
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 9,
+      "name": "reset_zones",
+      "objects": [
+        {
+          "height": 1120,
+          "id": 130,
+          "name": "reset.lift.shaft",
+          "opacity": 1,
+          "properties": [
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "anchor.documentation"
+            }
+          ],
+          "rotation": 0,
+          "type": "reset",
+          "visible": true,
+          "width": 192,
+          "x": 8504,
+          "y": 1184
+        },
+        {
+          "id": 132,
+          "name": "reset.dispatch.bridge",
+          "type": "reset",
+          "x": 4920,
+          "y": 1024,
+          "width": 192,
+          "height": 1280,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "anchor.downloads"
+            }
+          ]
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "nextlayerid": 10,
+  "nextobjectid": 133,
+  "orientation": "orthogonal",
+  "properties": [
+    {
+      "name": "authoringNotes",
+      "type": "string",
+      "value": "Private connected five-room route. First x<5300 inherited unchanged from two-room-map; root merges the separate mechanism variant. Normal route has solid8/24 stairs and one192px rail lift. No arena geometry; required arena anchor remains safe Arrival alias. Visual review pending."
+    },
+    {
+      "name": "revision",
+      "type": "string",
+      "value": "five-rooms-private-full-route-v1"
+    },
+    {
+      "name": "walkMaxX",
+      "type": "float",
+      "value": 13884
+    },
+    {
+      "name": "walkMinX",
+      "type": "float",
+      "value": 416
+    },
+    {
+      "name": "cameraMinX",
+      "type": "int",
+      "value": 400
+    },
+    {
+      "name": "cameraMaxX",
+      "type": "int",
+      "value": 13900
+    }
+  ],
+  "renderorder": "right-down",
+  "tiledversion": "1.12.2",
+  "tileheight": 16,
+  "tilesets": [],
+  "tilewidth": 16,
+  "type": "map",
+  "version": "1.10",
+  "width": 900
+}

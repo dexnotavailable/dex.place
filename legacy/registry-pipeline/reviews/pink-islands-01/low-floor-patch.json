@@ -1,0 +1,23 @@
+{
+  "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\low-passage-structure-keyed-v1.png",
+  "baseSha256": "bb54b10d8ab61fb823078d5f6120eeedb8edc70e6385066d1278c40b424f99b2",
+  "generatedRetouch": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\low-passage-floor-retouch-keyed-v2.png",
+  "retouchSha256": "b36624733fba8af6fb2d4ffef59adfe5f24cac92cf93388d00742fe78a4f0d85",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\low-passage-floor-patched-keyed-v2.png",
+  "rectanglesXYXY": [
+    [
+      146,
+      646,
+      271,
+      671
+    ],
+    [
+      1495,
+      645,
+      1550,
+      671
+    ]
+  ],
+  "outsideRectanglesRGBUnchanged": true,
+  "originalsUnmodified": true
+}

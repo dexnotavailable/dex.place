@@ -1,0 +1,10 @@
+.control-preview { margin: 1rem 0 0; padding: 14px; border: 1px solid var(--line); background: #dce4d5; border-radius: 3px; }
+.control-preview figcaption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; font-size: .75rem; color: #425b50; margin-bottom: 12px; }
+.control-preview-layout { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.control-preview-layout.mirrored { flex-direction: row-reverse; }
+.control-preview-group { display: flex; gap: 5px; }
+.control-preview-group.actions { display: grid; grid-template-columns: repeat(2, auto); }
+.control-preview-key { display: grid; align-content: center; justify-items: center; border: 1px solid #8aa298; color: #f0f3e7; background: #354e45; width: var(--preview-key); height: var(--preview-key); font-size: .625rem; border-radius: 7px; }
+.control-preview-key small { color: inherit; font-size: inherit; }
+.control-preview-key svg { width: 16px; height: 16px; }
+.toggle-row:has(input:disabled) { opacity: .65; cursor: default; }

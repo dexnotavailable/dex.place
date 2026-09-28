@@ -1,0 +1,90 @@
+{
+  "status": "converted-invariants-pass-visual-review-required",
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\exhibit-structure-keyed-v1.png",
+  "sourceSha256": "8d2235dfae268d7c10a86e8f646f24b4a763b3af54f6f7dc3cddaa5f5e4d3191",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\exhibit-candidate\\alpha.png",
+  "toolSha256": "12e5e29eda68bd1a2b04fda3c110f6d0a3a351f481d6060829e11ef185b875bf",
+  "outputSha256": "fb652b9ac484393234eb7b36ffcdbfb24002a4811cd6d84c1a166bd80a39da5b",
+  "size": [
+    1672,
+    941
+  ],
+  "settings": {
+    "keyRgb": [
+      255,
+      0,
+      255
+    ],
+    "keyTolerance": 32,
+    "minDominance": 220,
+    "edgeBandPx": 3,
+    "cleanDominance": 35,
+    "actualKeyMedianRgb": [
+      244.0,
+      3.0,
+      250.0
+    ],
+    "protectRects": [
+      [
+        0,
+        688,
+        1672,
+        780
+      ]
+    ],
+    "explicitSpillRois": [
+      [
+        0,
+        0,
+        470,
+        688
+      ],
+      [
+        1370,
+        0,
+        1672,
+        688
+      ],
+      [
+        90,
+        810,
+        230,
+        941
+      ],
+      [
+        1150,
+        815,
+        1440,
+        941
+      ]
+    ]
+  },
+  "trueBackgroundPixels": 460876,
+  "edgeBandPixels": 30386,
+  "edgeCandidates": 16210,
+  "edgeCandidatesWithoutCleanNeighbour": 1,
+  "edgeRgbChangedPixels": 15725,
+  "outsideBandInteriorPixels": 1082090,
+  "outsideBandInteriorUnchanged": false,
+  "outsideDeclaredCorrectionRegionUnchanged": true,
+  "explicitSpillIslandPixels": 1076,
+  "protectedUnchangedAndOpaque": true,
+  "protectedNearKeyPixelsKept": 0,
+  "remainingPurpleInteriorPixels": 1767,
+  "remainingPurpleInteriorPolicy": "Preserved. Legitimate purple and painted key reflections cannot be distinguished by hue alone; retouch undesired reflections separately.",
+  "sourceUnchanged": true,
+  "roiReports": [
+    {
+      "rectXYXY": [
+        300,
+        400,
+        1300,
+        600
+      ],
+      "rgbUnchanged": true,
+      "allOpaque": true,
+      "alphaMin": 255
+    }
+  ],
+  "limits": "Near-key false positives remain possible; inspect masks. No cloud processing, global desaturation, interior softening, or runtime publication."
+}

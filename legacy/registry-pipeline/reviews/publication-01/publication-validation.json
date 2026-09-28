@@ -1,0 +1,42 @@
+{
+  "version": "registry-art-e225f9070e8304",
+  "assetsVerified": 68,
+  "roomCropsPixelReconstruction": [
+    "arrival",
+    "rest",
+    "registry",
+    "junction",
+    "vestibule",
+    "arena",
+    "archive",
+    "low-passage",
+    "pool",
+    "sky-walk",
+    "exhibit",
+    "courtyard"
+  ],
+  "encodedBytes": 46303061,
+  "decodedRGBABytesIfAllLoaded": 220845520,
+  "missingExpectedKeys": [],
+  "viewedActualBrowserCaptureVersion": [
+    "registry-art-35564464b5004b"
+  ],
+  "actualBrowserViewed": [
+    "rest",
+    "registry",
+    "junction"
+  ],
+  "latestStaticLayerViewed": [
+    "arrival",
+    "exhibit",
+    "low-passage",
+    "pool"
+  ],
+  "originalSourcesChangedByPublisher": false,
+  "notProven": [
+    "latest whole-route gameplay",
+    "latest mobile/GPU lifecycle",
+    "retouch of residual painted key spill",
+    "final taste acceptance"
+  ]
+}

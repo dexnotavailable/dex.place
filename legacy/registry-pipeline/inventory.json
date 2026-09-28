@@ -1,0 +1,873 @@
+{
+  "version": "registry-production-1",
+  "assets": {
+    "map": {
+      "id": "map",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-0eab257f-f0b7-426b-b075-38ef14e26cf9.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\anchor\\whole-map-v1.png",
+      "role": "reference",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 2694108,
+      "sha256": "fab5f317ca1cfd6887b945e82b601850d73b04beeee4fd3afade7102ae5762bf",
+      "status": "generated-reference-review"
+    },
+    "rest": {
+      "id": "rest",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-6558d233-6d76-4366-a478-fb51cb2a1a09.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\rest\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2173604,
+      "sha256": "8c1d26d83340c608126c2516a4421745c114ec3ac2030fa6a98d22687dde4a87",
+      "status": "generated-reference-review"
+    },
+    "registry": {
+      "id": "registry",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-e864bbce-1d83-427a-aebb-935df2c4f2e4.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\registry\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2238782,
+      "sha256": "43bd64356ccf40d3184dd6786c3ccf264661e745288a339fdf2c2afbc383a296",
+      "status": "generated-reference-review"
+    },
+    "arrival": {
+      "id": "arrival",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\planning-20260913\\map-exploration\\arrival-central-v2.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\arrival\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1808314,
+      "sha256": "55b68936a6933054175fb25007787cac8701487934d9278cb0c5773f0c969f6d",
+      "status": "generated-reference-review"
+    },
+    "junction": {
+      "id": "junction",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-e1c4176c-a54c-40f0-89b8-6d2ccdc06b57.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\junction\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2456029,
+      "sha256": "d12cef0a8aeed6960a52eacee1cbc2dbc82dc5d1b6c4a48a3e3cf7fbd50f256d",
+      "status": "generated-reference-review"
+    },
+    "vestibule": {
+      "id": "vestibule",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-2b986c57-0852-4cd0-a874-bbe6de65b957.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\vestibule\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2216958,
+      "sha256": "22391ad192f3b7f84c8a449933d779198e76e398fc030bb74641ac76be073f85",
+      "status": "generated-reference-review"
+    },
+    "arena": {
+      "id": "arena",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-0251ab01-adc4-44ca-bbaf-915bb1a63d47.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\arena\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2200698,
+      "sha256": "a19bd982f61fc7eadc97aa24eff28067845ed2af0c538e68ccc5a92660c8c2f8",
+      "status": "generated-reference-review"
+    },
+    "archive": {
+      "id": "archive",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-990b94de-d768-4134-89e1-085bd320ebf6.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\archive\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2237192,
+      "sha256": "3914a4e52b185a5e0973adebf63c4764b1254638c4053d739c6b5998cdda6d01",
+      "status": "generated-reference-review"
+    },
+    "low-passage": {
+      "id": "low-passage",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-416a0c15-2e50-4c9d-801f-e1282c5ba6c3.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\low-passage\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1847489,
+      "sha256": "3b82361d4d120634d615831abd091401b11683371400338fee02eb055b345170",
+      "status": "generated-reference-review"
+    },
+    "pool": {
+      "id": "pool",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-eb993f7c-7b72-4bab-8377-9e8f60d95c91.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\pool\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2349204,
+      "sha256": "9b58a745f03dcb1a0f4a283af4f0a1f31a5113a49715f726b2d008066938e7c6",
+      "status": "generated-reference-review"
+    },
+    "sky-walk": {
+      "id": "sky-walk",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-33700189-9c14-41a7-b551-c693f6721fb2.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\sky-walk\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2529766,
+      "sha256": "93410afff6d95dbc8ebd1fb69fe7c70e368067959e4a2ea6f266e4daca79bb3d",
+      "status": "generated-reference-review"
+    },
+    "exhibit": {
+      "id": "exhibit",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-cf9ba09d-0b88-47a8-8aa6-49d02d129d86.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\exhibit\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2409630,
+      "sha256": "2ef6b93ff215bce6443a062f9e2f06b58dd6fb32162b4865c03a60fe37ab9d73",
+      "status": "generated-reference-review"
+    },
+    "courtyard": {
+      "id": "courtyard",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-40090e6b-d333-4329-b742-bb943f9dd036.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\rooms\\courtyard\\reference.png",
+      "role": "reference",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2645003,
+      "sha256": "41f3b73b0a67701102d1467884e8ace860939d4c50935222607a6c5d75df67a9",
+      "status": "generated-reference-review"
+    },
+    "arrival-structure": {
+      "id": "arrival-structure",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-9e3a7c4b-ac23-425a-92ad-3ca4b4a51b05.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\arrival-structure-v1.png",
+      "role": "structure-layer",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1896198,
+      "sha256": "768e1d63ca9782245e969879f59c90f9798b763dbe56f769456979b59de2422b",
+      "status": "generated-reference-review"
+    },
+    "arrival-structure-keyed": {
+      "id": "arrival-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-b704c572-5394-4d52-a384-60717329fb60.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\arrival-structure-keyed-v2.png",
+      "role": "keyed-layer",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1376342,
+      "sha256": "256aedc14467713f5f1f8bf73261aad91a15a5d6037edc166fea49fd6ec681d5",
+      "status": "generated-reference-review"
+    },
+    "cloud-mid-sheet-keyed": {
+      "id": "cloud-mid-sheet-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-50bc4dd8-2be7-4375-bd5e-6ed1ebde2cf5.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-mid-keyed-v1.png",
+      "role": "keyed-animation-sheet",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1412964,
+      "sha256": "afcdd512a5d0f924a6d34ef128fc0d184eecd3cb92bf6b1af951b7b46cec7ebf",
+      "status": "generated-reference-review"
+    },
+    "shared-sky": {
+      "id": "shared-sky",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-8064b86c-e953-4d24-b1e1-a8a769fcb37e.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\shared-sky-v1.png",
+      "role": "opaque-far-background",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1227208,
+      "sha256": "63afbb17e99b5f1b78ed44f04958774cf2ebb4b4beb616d24d769a6e7fb336d8",
+      "status": "generated-reference-review"
+    },
+    "shared-ring-keyed": {
+      "id": "shared-ring-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-c665e333-f729-4427-b33d-be221d9cefb5.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\shared-ring-keyed-v1.png",
+      "role": "keyed-landmark",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1234246,
+      "sha256": "7d877e2d696d856b1d2f4bc6f8327126fd1ee91eb9fcb0ad1d59969a92280314",
+      "status": "generated-reference-review"
+    },
+    "rest-structure-keyed": {
+      "id": "rest-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-dd025017-d20e-4c61-822b-1220f6e56a25.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\rest-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1809406,
+      "sha256": "83d4376289d38900751db16e66a92d7d7fa61d4d162d5f86a95e72e50a03a81d",
+      "status": "generated-reference-review"
+    },
+    "cloud-mid-green": {
+      "id": "cloud-mid-green",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-bbbfa2d4-1e19-4b52-bef0-71100883ef28.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-mid-green-v3.png",
+      "role": "keyed-animation-sheet",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1411428,
+      "sha256": "d3eefa463ab887291efdbea9424bc596afc25c7acffcc0a78550182d671108f5",
+      "status": "generated-reference-review"
+    },
+    "lamp-emission-sheet": {
+      "id": "lamp-emission-sheet",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-8759a965-61e5-4e06-93e0-b88ea84e2488.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\lamp-emission-v1.png",
+      "role": "additive-light-sheet",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 637575,
+      "sha256": "56f508c7e3362cc7209bd99a7cc5ae515057f498e0af44a46681709edd73f960",
+      "status": "generated-reference-review"
+    },
+    "registry-structure-keyed": {
+      "id": "registry-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-66050cb4-e228-42aa-b5e6-22079713d1dc.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\registry-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1905459,
+      "sha256": "3f6ad92754653b1bd970a96be7b7000b3780812728e54c36673b596f2f09ec5c",
+      "status": "generated-reference-review"
+    },
+    "cloud-far-keyed": {
+      "id": "cloud-far-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-c184ecdc-3162-473d-b79f-525447f1b67b.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-far-green-v1.png",
+      "role": "keyed-animation-sheet",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1327494,
+      "sha256": "8fa154e73a3fcb8f19fac33621dd1a907cfc852a1eadf643b4a96a2914ce6a32",
+      "status": "generated-reference-review"
+    },
+    "junction-structure-keyed": {
+      "id": "junction-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-ca3ce42f-1b34-4424-bc95-f0306b3e4f8c.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\junction-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2166453,
+      "sha256": "c62a4dfa48f6be44b5ffae27f7f5ddfb50c8133c8c2c522355b395794e1f02b2",
+      "status": "generated-reference-review"
+    },
+    "vestibule-structure-keyed": {
+      "id": "vestibule-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-0f35aada-d3d5-4e83-affb-91faac1bf771.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\vestibule-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2055109,
+      "sha256": "865151b8cc8d26d03303bfd518a04881056a5a82a7c9650c104eabaf3ae0f8c4",
+      "status": "generated-reference-review"
+    },
+    "arena-structure-keyed": {
+      "id": "arena-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-76f9187f-a7d2-4f59-a1a8-0b53bd1f893f.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\arena-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2078008,
+      "sha256": "c323ede5e5ab027f3a35398bf91458f9510a63f41efa98129214d85b12e640af",
+      "status": "generated-reference-review"
+    },
+    "archive-structure-keyed": {
+      "id": "archive-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-024926e9-1c6f-4fe5-94f0-e388da919292.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\archive-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 2098467,
+      "sha256": "f1154157446ae063c5e49dbde72c7f6f1175f521d3306f58a93cb9e39a185fe5",
+      "status": "generated-reference-review"
+    },
+    "low-passage-structure-keyed": {
+      "id": "low-passage-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-bbabc575-5562-4a61-8034-227d349bccda.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\low-passage-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1762915,
+      "sha256": "bb54b10d8ab61fb823078d5f6120eeedb8edc70e6385066d1278c40b424f99b2",
+      "status": "generated-reference-review"
+    },
+    "pool-structure-keyed": {
+      "id": "pool-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-3860843f-f7b4-4bda-9357-5c8a65b653d0.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\pool-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1745867,
+      "sha256": "9f313c47a40d60a587ec32c3ec4be968d95d00e0107579af44b7c51137402034",
+      "status": "generated-reference-review"
+    },
+    "sky-walk-structure-keyed": {
+      "id": "sky-walk-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-e1e1d127-4876-49e0-8e14-f1b2177c7a79.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\sky-walk-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1510242,
+      "sha256": "b303f71afe91e41d053ae7acae882c222bcfad02ea0cac05b036200c17c62274",
+      "status": "generated-reference-review"
+    },
+    "exhibit-structure-keyed": {
+      "id": "exhibit-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-024524e9-b6ac-439c-b7bf-8833826a21da.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\exhibit-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1938075,
+      "sha256": "8d2235dfae268d7c10a86e8f646f24b4a763b3af54f6f7dc3cddaa5f5e4d3191",
+      "status": "generated-reference-review"
+    },
+    "courtyard-structure-keyed": {
+      "id": "courtyard-structure-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-53e2c60a-cbeb-4412-998a-eef866ce0c7e.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\courtyard-structure-keyed-v1.png",
+      "role": "keyed-structure",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1816213,
+      "sha256": "8c07f2938bd42e395ba43ce75367e31c042bc5119f55ada9851c331e4f985064",
+      "status": "generated-reference-review"
+    },
+    "bench-keyed": {
+      "id": "bench-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-d7aae5e6-03c3-4cc9-9441-b5261784c2eb.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\bench-keyed-v1.png",
+      "role": "keyed-prop",
+      "size": [
+        1978,
+        795
+      ],
+      "mode": "RGB",
+      "bytes": 949515,
+      "sha256": "c01cedee6af8e5c5b362ea1303cdc052f75ba30159f3061e9cf88bff577999a9",
+      "status": "generated-reference-review"
+    },
+    "registry-desk-keyed": {
+      "id": "registry-desk-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-e7b085ae-37b6-4060-9dec-02855fc1ccc0.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\registry-desk-keyed-v1.png",
+      "role": "keyed-prop",
+      "size": [
+        2056,
+        765
+      ],
+      "mode": "RGB",
+      "bytes": 973773,
+      "sha256": "2cd32fdebf6e86d1aae2233acab2f90262d038e071b6f0ee207bdf962ab3a760",
+      "status": "generated-reference-review"
+    },
+    "donor-box-keyed": {
+      "id": "donor-box-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-47d0e053-ba95-42c9-b14f-4d6e5a22b72d.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\donor-box-keyed-v1.png",
+      "role": "keyed-prop",
+      "size": [
+        1298,
+        1212
+      ],
+      "mode": "RGB",
+      "bytes": 1053806,
+      "sha256": "56a64aa61140c6615d47a4671170114671fb33b8e545b4727c72b42039b5fff4",
+      "status": "generated-reference-review"
+    },
+    "paper-terminal-keyed": {
+      "id": "paper-terminal-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-13924f08-807f-4aa6-aac6-f5a345377a03.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\paper-terminal-keyed-v1.png",
+      "role": "keyed-prop",
+      "size": [
+        1312,
+        1199
+      ],
+      "mode": "RGBA",
+      "bytes": 272535,
+      "sha256": "859e61b80dc1118452ec7cdd5138c933229e254c3521dc2334ad9d2343344d05",
+      "status": "generated-reference-review"
+    },
+    "door-frame-keyed": {
+      "id": "door-frame-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-076aec72-a4fd-43ce-b6dd-40b2e347af4b.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\door-frame-keyed-v1.png",
+      "role": "keyed-prop",
+      "size": [
+        1381,
+        1139
+      ],
+      "mode": "RGB",
+      "bytes": 1024020,
+      "sha256": "2bd00cd12fc5863bffb32fa88de9aaafe75a37cce1d920aa7ce2b247a83c75e0",
+      "status": "generated-reference-review"
+    },
+    "door-leaf-keyed": {
+      "id": "door-leaf-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-439808c0-7e5d-4c84-a06b-8f855dd032bc.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\door-leaf-keyed-v1.png",
+      "role": "keyed-prop",
+      "size": [
+        926,
+        1699
+      ],
+      "mode": "RGB",
+      "bytes": 1019340,
+      "sha256": "1478ee4c42a923ad892c10b7162acb3fb172833fd078f8ecfa7ffa9325890af9",
+      "status": "generated-reference-review"
+    },
+    "door-assembled-keyed": {
+      "id": "door-assembled-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-98339962-d6e1-44c8-b8eb-b16f0ea3e42f.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\door-assembled-keyed-v2.png",
+      "role": "matched-door-parts-source",
+      "size": [
+        1381,
+        1139
+      ],
+      "mode": "RGB",
+      "bytes": 1165170,
+      "sha256": "af8b84d94e23ed5b3a74cde70640f4986ef0cee8d36d59a4ce8b7f54190a2eee",
+      "status": "generated-reference-review"
+    },
+    "lamp-fixture-keyed": {
+      "id": "lamp-fixture-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-fb452f52-08f7-4b58-8f84-9a4ef60cd95f.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\lamp-fixture-keyed-v1.png",
+      "role": "keyed-prop",
+      "size": [
+        1145,
+        1374
+      ],
+      "mode": "RGB",
+      "bytes": 962022,
+      "sha256": "996c4ac9bb91996f78df5f6a84963b58280114714eef7a0b5ea69376005c98ac",
+      "status": "generated-reference-review"
+    },
+    "exhibit-frames-keyed": {
+      "id": "exhibit-frames-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-e89081d7-2a8c-4d17-bea2-7a0b4556e4d3.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\exhibit-frames-keyed-v1.png",
+      "role": "related-frame-extraction",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 998953,
+      "sha256": "f5cbcf378bc9a134bcccc7a883765732d1468b08ca06677d1d05f3457fa0e18c",
+      "status": "generated-reference-review"
+    },
+    "tree-keyed": {
+      "id": "tree-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-4991ccd5-bb4b-44d0-8b61-6db8fb011d69.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\tree-keyed-v1.png",
+      "role": "keyed-scenery-prop",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 2030067,
+      "sha256": "e928bae3d0be71a7bc253f5f0a5d76beac5be1326abc43c47126073642915848",
+      "status": "generated-reference-review"
+    },
+    "courtyard-latch-keyed": {
+      "id": "courtyard-latch-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-a1e51b46-7511-47e6-9025-89612e5002d3.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\courtyard-latch-keyed-v1.png",
+      "role": "keyed-mechanism",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1218920,
+      "sha256": "d7068f659b2bfc01e6dc80898645cd611cbf4f5622d030d831662fb997bada99",
+      "status": "generated-reference-review"
+    },
+    "accountant-idle-keyed": {
+      "id": "accountant-idle-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-d502850a-ace2-448c-9bd2-6d34ef5de5b1.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\accountant-idle-green-v1.png",
+      "role": "keyed-character-sheet",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1445248,
+      "sha256": "bf1d6fef71ad7d2aabfb595931449aa1ddb80448b1562aa3c5814557ee219201",
+      "status": "generated-reference-review"
+    },
+    "accountant-acknowledge-keyed": {
+      "id": "accountant-acknowledge-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-a0790b28-3d5b-4b3f-928f-f5767a2306d5.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\accountant-acknowledge-green-v1.png",
+      "role": "keyed-character-sheet",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1449873,
+      "sha256": "334596b0803ad26715f24b1b5fb0afea4e6902ab397b8aa01b57166c0585543b",
+      "status": "generated-reference-review"
+    },
+    "accountant-rest-keyed": {
+      "id": "accountant-rest-keyed",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-be1a47c8-f9ef-4106-bcbc-5f5d0cd3cfa9.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\accountant-rest-green-v1.png",
+      "role": "keyed-character-sheet",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1461214,
+      "sha256": "5bc0fd56322c83ae01d16aaf32f3da30ae9b3b36b87637dded76e45504fc3ece",
+      "status": "generated-reference-review"
+    },
+    "latch-components-v2": {
+      "id": "latch-components-v2",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-8a1211d2-dd18-4105-84fc-b9ff357cc1c9.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\latch-components-keyed-v2.png",
+      "role": "mechanism-components",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1259403,
+      "sha256": "e751b185dade07ec3af90947674893409d2293d6815a64b42b2cb5f68fca4266",
+      "status": "generated-reference-review"
+    },
+    "bridge-deck-v1": {
+      "id": "bridge-deck-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-194e7d8c-b280-44a9-9aca-62f3125e7735.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\bridge-deck-keyed-v1.png",
+      "role": "moving-bridge-deck",
+      "size": [
+        2172,
+        724
+      ],
+      "mode": "RGB",
+      "bytes": 1088733,
+      "sha256": "13aea59f09138140e17abb43dd314b062a0474010371076d22dc1f6c17270495",
+      "status": "generated-reference-review"
+    },
+    "bridge-rig-v1": {
+      "id": "bridge-rig-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-51489d42-a71b-4250-b5a9-2d45ea8fb936.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\bridge-rig-keyed-v1.png",
+      "role": "fixed-post-and-rope-components",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1009824,
+      "sha256": "8d230529a9a0bfb5c9b40e20f954e2597fac7d7c7d2bd7fb4f50f24c93375275",
+      "status": "generated-reference-review"
+    },
+    "map-banner-v1": {
+      "id": "map-banner-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-cdb41fa1-af00-4165-bde2-887991c592d7.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\map-banner-green-v1.png",
+      "role": "fixed-top-unroll-animation",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1534822,
+      "sha256": "328ce02cb258d793f3d4f80df5cdb6e1f124b775b6257e11da6847815ca7ba14",
+      "status": "generated-reference-review"
+    },
+    "warden-idle-v1": {
+      "id": "warden-idle-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-2c24cffc-394e-4295-8ce1-eb726627bdcb.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-idle-green-v1.png",
+      "role": "warden-idle-animation",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1621440,
+      "sha256": "f4ae8fb5eef034e90ed68004bf1a5905642849f3eb8cfe3b5a1d45194a7b1ee7",
+      "status": "generated-reference-review"
+    },
+    "warden-attack-v1": {
+      "id": "warden-attack-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-916cdbf9-37b1-40cf-a2d7-8e5ce14325ce.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-attack-green-v1.png",
+      "role": "warden-strike-animation",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1616726,
+      "sha256": "786fec9356905ca9c8e68554096fdac90a76f148e93660227478ee01e9c347fb",
+      "status": "generated-reference-review"
+    },
+    "warden-recover-v1": {
+      "id": "warden-recover-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-8fd26d76-b628-462a-a85a-494ee3f6d9fd.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-recover-green-v1.png",
+      "role": "warden-recovery-animation",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1616478,
+      "sha256": "d2e256e9a253e3f7e9eaa6e88f882a1dde13ac75e11b370611d2a9d54f7e0a27",
+      "status": "generated-reference-review"
+    },
+    "warden-hit-v1": {
+      "id": "warden-hit-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-5b018a6f-c3f3-4b28-b46c-db453fc1b2eb.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-hit-green-v1.png",
+      "role": "warden-hit-animation",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1647831,
+      "sha256": "5938dc1ac19856b9c480b97e73fd43261d5b62bd111713655147a37af55f4fbd",
+      "status": "generated-reference-review"
+    },
+    "warden-death-v1": {
+      "id": "warden-death-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-054c2621-b4ee-495f-aa45-fd59a6730906.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-death-green-v1.png",
+      "role": "warden-collapse-animation",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1525391,
+      "sha256": "72da65df924e1f781bb0cfc420b6fc0f67926089be9794b8486cf654ab4c80f0",
+      "status": "generated-reference-review"
+    },
+    "arrival-extension-v1": {
+      "id": "arrival-extension-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-379c5e2e-b053-458f-96f7-b234ee29090e.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\arrival-extension-keyed-v1.png",
+      "role": "structural-side-continuation",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1313538,
+      "sha256": "25cbea64b3b44ab83d5ffd593a512b4c6b132b6cfa88b053e737f4d587f9579c",
+      "status": "generated-reference-review"
+    },
+    "pool-water-v1": {
+      "id": "pool-water-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-66e6afce-401e-46f1-a9dc-143b94300a98.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\pool-water-v1.png",
+      "role": "opaque-water-animation",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1701642,
+      "sha256": "2defeaedec97982804e319a0734b4db209aa57cc83ff658334ef55cdd5eae12b",
+      "status": "generated-reference-review"
+    },
+    "folio-material-v1": {
+      "id": "folio-material-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-d8b839fe-38be-47a5-b8ad-ad99e7c776ed.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\folio-material-v1.png",
+      "role": "nine-slice-panel-material",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGB",
+      "bytes": 2665051,
+      "sha256": "93f85b909f0d99379f6520ee513c92c770bf4ac6ef9352b0091bc4843147c1e8",
+      "status": "generated-reference-review"
+    },
+    "service-light-v1": {
+      "id": "service-light-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-bc032941-2149-4712-a58f-ceef6a78e047.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\service-light-keyed-v1.png",
+      "role": "static-fluorescent-fixture",
+      "size": [
+        1374,
+        1145
+      ],
+      "mode": "RGB",
+      "bytes": 960095,
+      "sha256": "f300b901f962c605e95b45d075f17ae85f852fd85b54fb27835054e98f8dcff3",
+      "status": "generated-reference-review"
+    },
+    "pool-water-wide-v2": {
+      "id": "pool-water-wide-v2",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-c73eace6-b19b-4db8-afef-0ead8c51d402.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\pool-water-wide-v2.png",
+      "role": "four-wide-water-frames",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGB",
+      "bytes": 1317939,
+      "sha256": "b19e2341a8eba8a761882400c6ee14f523fa38d4777b98ff260ccbdeeb924c66",
+      "status": "generated-reference-review"
+    },
+    "low-floor-retouch-v2": {
+      "id": "low-floor-retouch-v2",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-396f8419-d66f-4e9a-b97f-5d3283889534.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\low-passage-floor-retouch-keyed-v2.png",
+      "role": "targeted-floor-reflection-correction",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 1686559,
+      "sha256": "b36624733fba8af6fb2d4ffef59adfe5f24cac92cf93388d00742fe78a4f0d85",
+      "status": "generated-reference-review"
+    },
+    "door-recess-v1": {
+      "id": "door-recess-v1",
+      "source": "C:\\Users\\sanic\\.codex\\generated_images\\01a07479-4f4a-7031-8a51-34c5576ab262\\exec-8ecdd8c0-c827-4aa3-806d-bc21ab9d76fe.png",
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\door-recess-v1.png",
+      "role": "fixed-stone-door-surround",
+      "size": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "bytes": 2143336,
+      "sha256": "fa382223f86dc841eda5092c979f17490cda50fdbae285150719ee64ea12664b",
+      "status": "generated-reference-review"
+    }
+  }
+}

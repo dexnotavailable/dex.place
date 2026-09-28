@@ -1,0 +1,617 @@
+{
+  "schemaVersion": 1,
+  "id": "luizmelo.martial-hero",
+  "revision": "2026-09-06-native-1",
+  "name": "Martial Hero",
+  "creator": "LuizMelo",
+  "license": "CC0-1.0",
+  "sourceUrl": "https://luizmelo.itch.io/martial-hero",
+  "credit": "Martial Hero \u2014 LuizMelo, CC0.",
+  "frameWidth": 200,
+  "frameHeight": 200,
+  "facing": "right",
+  "pivot": {
+    "x": 100,
+    "y": 122
+  },
+  "origin": {
+    "x": 0.5,
+    "y": 0.61
+  },
+  "footBaseline": 122,
+  "bodyBounds": {
+    "x": 88,
+    "y": 76,
+    "width": 22,
+    "height": 46
+  },
+  "bodyBoundsStatus": "Runtime collision guide from inspected native art; not alpha bounds. Verify contacts in browser.",
+  "idleVisibleHeight": 52,
+  "clips": {
+    "idle": {
+      "url": "/world/hero/idle.png",
+      "width": 1600,
+      "height": 200,
+      "frameWidth": 200,
+      "frameHeight": 200,
+      "frames": 8,
+      "frameCount": 8,
+      "durationsMs": [
+        125,
+        125,
+        125,
+        125,
+        125,
+        125,
+        125,
+        125
+      ],
+      "loop": true,
+      "holdLast": false,
+      "alphaBoundsByFrame": [
+        [
+          76,
+          70,
+          113,
+          122
+        ],
+        [
+          76,
+          71,
+          113,
+          122
+        ],
+        [
+          76,
+          72,
+          113,
+          122
+        ],
+        [
+          76,
+          72,
+          113,
+          122
+        ],
+        [
+          76,
+          73,
+          113,
+          122
+        ],
+        [
+          76,
+          72,
+          113,
+          122
+        ],
+        [
+          76,
+          71,
+          113,
+          122
+        ],
+        [
+          76,
+          70,
+          113,
+          122
+        ]
+      ],
+      "sha256": "dc4e2a722ea36e6e0e2dc8658b0260b92df8da18fbbc5d19034f7476cb234cc1",
+      "frameIndices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "durations": [
+        125,
+        125,
+        125,
+        125,
+        125,
+        125,
+        125,
+        125
+      ]
+    },
+    "run": {
+      "url": "/world/hero/run.png",
+      "width": 1600,
+      "height": 200,
+      "frameWidth": 200,
+      "frameHeight": 200,
+      "frames": 8,
+      "frameCount": 8,
+      "durationsMs": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ],
+      "loop": true,
+      "holdLast": false,
+      "alphaBoundsByFrame": [
+        [
+          72,
+          74,
+          118,
+          121
+        ],
+        [
+          72,
+          75,
+          118,
+          122
+        ],
+        [
+          72,
+          75,
+          118,
+          122
+        ],
+        [
+          72,
+          74,
+          118,
+          122
+        ],
+        [
+          72,
+          74,
+          118,
+          122
+        ],
+        [
+          72,
+          75,
+          118,
+          122
+        ],
+        [
+          72,
+          74,
+          118,
+          122
+        ],
+        [
+          72,
+          74,
+          118,
+          122
+        ]
+      ],
+      "sha256": "53e3087278e316bf0104050c728854b7a392220bb51a675020869a3c86263290",
+      "frameIndices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "durations": [
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80,
+        80
+      ]
+    },
+    "jump": {
+      "url": "/world/hero/jump.png",
+      "width": 400,
+      "height": 200,
+      "frameWidth": 200,
+      "frameHeight": 200,
+      "frames": 2,
+      "frameCount": 2,
+      "durationsMs": [
+        80,
+        80
+      ],
+      "loop": false,
+      "holdLast": true,
+      "alphaBoundsByFrame": [
+        [
+          76,
+          69,
+          114,
+          122
+        ],
+        [
+          76,
+          69,
+          114,
+          122
+        ]
+      ],
+      "sha256": "57fea6537831c3ef1edb4c770d7121bbd494ebe89ff693dbbec78b74157d46da",
+      "frameIndices": [
+        0,
+        1
+      ],
+      "durations": [
+        80,
+        80
+      ]
+    },
+    "fall": {
+      "url": "/world/hero/fall.png",
+      "width": 400,
+      "height": 200,
+      "frameWidth": 200,
+      "frameHeight": 200,
+      "frames": 2,
+      "frameCount": 2,
+      "durationsMs": [
+        80,
+        80
+      ],
+      "loop": false,
+      "holdLast": true,
+      "alphaBoundsByFrame": [
+        [
+          69,
+          69,
+          117,
+          122
+        ],
+        [
+          69,
+          66,
+          117,
+          122
+        ]
+      ],
+      "sha256": "2fa791a2fd712daa2ac07477922c09cf258895610190ea2124bdeb08dec10fb5",
+      "frameIndices": [
+        0,
+        1
+      ],
+      "durations": [
+        80,
+        80
+      ]
+    },
+    "attack1": {
+      "url": "/world/hero/attack1.png",
+      "width": 1200,
+      "height": 200,
+      "frameWidth": 200,
+      "frameHeight": 200,
+      "frames": 6,
+      "frameCount": 6,
+      "durationsMs": [
+        25,
+        25,
+        25,
+        25,
+        40,
+        40
+      ],
+      "loop": false,
+      "holdLast": false,
+      "alphaBoundsByFrame": [
+        [
+          71,
+          69,
+          112,
+          122
+        ],
+        [
+          69,
+          69,
+          112,
+          122
+        ],
+        [
+          71,
+          69,
+          112,
+          122
+        ],
+        [
+          73,
+          69,
+          114,
+          122
+        ],
+        [
+          82,
+          53,
+          189,
+          122
+        ],
+        [
+          82,
+          53,
+          189,
+          122
+        ]
+      ],
+      "sha256": "e51f15d319b206b1567a5c0837419d64121275fb9622c17f978a7d668e46f671",
+      "frameIndices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "durations": [
+        25,
+        25,
+        25,
+        25,
+        40,
+        40
+      ]
+    },
+    "attack2": {
+      "url": "/world/hero/attack2.png",
+      "width": 1200,
+      "height": 200,
+      "frameWidth": 200,
+      "frameHeight": 200,
+      "frames": 6,
+      "frameCount": 6,
+      "durationsMs": [
+        25,
+        25,
+        25,
+        25,
+        40,
+        40
+      ],
+      "loop": false,
+      "holdLast": false,
+      "alphaBoundsByFrame": [
+        [
+          84,
+          59,
+          132,
+          122
+        ],
+        [
+          82,
+          59,
+          130,
+          122
+        ],
+        [
+          84,
+          59,
+          132,
+          122
+        ],
+        [
+          86,
+          59,
+          134,
+          122
+        ],
+        [
+          85,
+          69,
+          194,
+          122
+        ],
+        [
+          85,
+          75,
+          190,
+          122
+        ]
+      ],
+      "sha256": "c6ca70024e6898a660e58fa08c411437f1750334cbfb8bb3627fa19d362a5f30",
+      "frameIndices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "durations": [
+        25,
+        25,
+        25,
+        25,
+        40,
+        40
+      ]
+    },
+    "hit": {
+      "url": "/world/hero/hit.png",
+      "width": 800,
+      "height": 200,
+      "frameWidth": 200,
+      "frameHeight": 200,
+      "frames": 4,
+      "frameCount": 4,
+      "durationsMs": [
+        50,
+        50,
+        50,
+        50
+      ],
+      "loop": false,
+      "holdLast": false,
+      "alphaBoundsByFrame": [
+        [
+          76,
+          70,
+          113,
+          122
+        ],
+        [
+          66,
+          68,
+          114,
+          122
+        ],
+        [
+          70,
+          69,
+          112,
+          122
+        ],
+        [
+          70,
+          69,
+          112,
+          122
+        ]
+      ],
+      "sha256": "e3871287f48bde14ecdb56ccd0d21400d61efa0bdec0e489e0e7ecdab8577ba0",
+      "frameIndices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "durations": [
+        50,
+        50,
+        50,
+        50
+      ]
+    },
+    "death": {
+      "url": "/world/hero/death.png",
+      "width": 1200,
+      "height": 200,
+      "frameWidth": 200,
+      "frameHeight": 200,
+      "frames": 6,
+      "frameCount": 6,
+      "durationsMs": [
+        60,
+        60,
+        60,
+        60,
+        60,
+        60
+      ],
+      "loop": false,
+      "holdLast": true,
+      "alphaBoundsByFrame": [
+        [
+          70,
+          69,
+          112,
+          122
+        ],
+        [
+          70,
+          72,
+          113,
+          122
+        ],
+        [
+          69,
+          74,
+          115,
+          122
+        ],
+        [
+          69,
+          77,
+          117,
+          122
+        ],
+        [
+          69,
+          81,
+          120,
+          122
+        ],
+        [
+          69,
+          78,
+          117,
+          122
+        ]
+      ],
+      "sha256": "88b47b160e1734ac7db1d0d6c22f292257877eff08b22a9486d7ce830f6b8840",
+      "frameIndices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "durations": [
+        60,
+        60,
+        60,
+        60,
+        60,
+        60
+      ]
+    }
+  },
+  "actions": {
+    "slash": {
+      "clip": "attack1",
+      "anticipationMs": 100,
+      "activeWindowMs": [
+        100,
+        180
+      ],
+      "recoveryMs": 180,
+      "recoveryClip": "idle",
+      "totalDurationMs": 360,
+      "events": [
+        {
+          "atMs": 100,
+          "name": "slash-active-start"
+        },
+        {
+          "atMs": 180,
+          "name": "slash-active-end"
+        }
+      ]
+    },
+    "dash": {
+      "clip": "run",
+      "frame": 2,
+      "durationMs": 160
+    },
+    "land": {
+      "clip": "idle",
+      "frame": 0,
+      "maxDurationMs": 60,
+      "inputCancels": true
+    },
+    "interact": {
+      "clip": "idle"
+    }
+  },
+  "notes": [
+    "Original sheet bytes unchanged; no repainting or generated frames.",
+    "Archive contains two jump and two fall frames despite source page advertising four.",
+    "Attack arc exists on zero-based frames4 and5. Explicit180ms idle recovery keeps100\u2013180ms action interval aligned with visible strike.",
+    "World hit geometry remains physics-owned; white slash pixels do not enlarge player body."
+  ],
+  "footX": 100,
+  "footY": 122,
+  "bodyHeight": 52,
+  "scale": 1
+}

@@ -1,0 +1,195 @@
+{
+  "version": "1.0",
+  "processing": "aspect-preserving Lanczos downscale; lossless WebP; original RGB/RGBA and ICC retained; no crop or recolor",
+  "items": [
+    {
+      "id": "shot-18-2",
+      "sourceSha256": "ae9a35ba02f328e8451707e28802a4df1bfaec3f1cd3806c702f10d325b4caa2",
+      "sourceWidth": 3840,
+      "sourceHeight": 2160,
+      "display": {
+        "src": "/content/illustrations/shot-18-2-display.webp",
+        "width": 2048,
+        "height": 1152,
+        "sha256": "7bd0cd69e7633fabb6b31c1b34ff80b62dd144d0006fec70a18848de957eb494",
+        "bytes": 811914
+      },
+      "thumbnail": {
+        "src": "/content/illustrations/shot-18-2-thumbnail.webp",
+        "width": 512,
+        "height": 288,
+        "sha256": "2c28347e87d04e854ce57bdfbb87c4788c67375d5573156d8ca8c8b052499f38",
+        "bytes": 80414
+      },
+      "publicationStatus": "public"
+    },
+    {
+      "id": "shot-23",
+      "sourceSha256": "52ef82830b846a7701479ab3c53ee939348062f6774ad3ab49ab4a8d4f8720bc",
+      "sourceWidth": 3840,
+      "sourceHeight": 2160,
+      "display": {
+        "src": "/content/illustrations/shot-23-display.webp",
+        "width": 2048,
+        "height": 1152,
+        "sha256": "a39e491aadae49f1457a0ae2e559068e02b9cff1692220f9ca5232e2903c71af",
+        "bytes": 1038752
+      },
+      "thumbnail": {
+        "src": "/content/illustrations/shot-23-thumbnail.webp",
+        "width": 512,
+        "height": 288,
+        "sha256": "199e39849e99d2865fbdeb0b92ee2b623c1734f66d7883d32cc154b9474447f0",
+        "bytes": 112854
+      },
+      "publicationStatus": "public"
+    },
+    {
+      "id": "inshot-20260620-071233415",
+      "sourceSha256": "cb6b79dfb8df4edc8d3e987342f768ec1729b0d319b78887fd85bbf2f5e285b0",
+      "sourceWidth": 4096,
+      "sourceHeight": 2304,
+      "display": {
+        "src": "/content/illustrations/inshot-20260620-071233415-display.webp",
+        "width": 2048,
+        "height": 1152,
+        "sha256": "665c4d82c994ad8274f95892db66ea51937d69fc1b318b09e6295ef3606b0a5f",
+        "bytes": 1658810
+      },
+      "thumbnail": {
+        "src": "/content/illustrations/inshot-20260620-071233415-thumbnail.webp",
+        "width": 512,
+        "height": 288,
+        "sha256": "f8f1d86dd3b604ff550655401a1b3064a00d8db278e1e461db4994783d645d08",
+        "bytes": 176290
+      },
+      "publicationStatus": "public"
+    },
+    {
+      "id": "inshot-20260826-123444237",
+      "sourceSha256": "771b9206b8dbef2d6e14d297450b724e28c4495423ed35809afa63674e305d68",
+      "sourceWidth": 4096,
+      "sourceHeight": 2304,
+      "display": {
+        "src": "/content/illustrations/inshot-20260826-123444237-display.webp",
+        "width": 2048,
+        "height": 1152,
+        "sha256": "db2b8976cddb21f221abac425a95b05cbb0e89c8278a3dcc6bf0eb5551cd12b1",
+        "bytes": 661912
+      },
+      "thumbnail": {
+        "src": "/content/illustrations/inshot-20260826-123444237-thumbnail.webp",
+        "width": 512,
+        "height": 288,
+        "sha256": "72a7d0f7d72cbb2b3a4ac642e6c44153ad69e71928a97a860cd014362570ac2b",
+        "bytes": 100842
+      },
+      "publicationStatus": "public"
+    },
+    {
+      "id": "inshot-20260721-200821729",
+      "sourceSha256": "e1ff44ca2998034b963047de9395c4a5ac6246b02f0ad93db2510c628b66af38",
+      "sourceWidth": 4096,
+      "sourceHeight": 2304,
+      "display": {
+        "src": "/content/illustrations/inshot-20260721-200821729-display.webp",
+        "width": 2048,
+        "height": 1152,
+        "sha256": "e169173ba3725b652f1b988f4bf0a613f9b04c45c107ad7a5c81d7df2b1826d8",
+        "bytes": 1819154
+      },
+      "thumbnail": {
+        "src": "/content/illustrations/inshot-20260721-200821729-thumbnail.webp",
+        "width": 512,
+        "height": 288,
+        "sha256": "571b35626d8e185eda298b58eb9caa80a9944b64aed2fa0bc6c775c8d58ada30",
+        "bytes": 194776
+      },
+      "publicationStatus": "public"
+    },
+    {
+      "id": "inshot-20260708-060051952",
+      "sourceSha256": "47847d035f11f323c30ccb717307f4d40313be99023337009428a51dffbed897",
+      "sourceWidth": 2733,
+      "sourceHeight": 4096,
+      "display": {
+        "src": "/content/illustrations/inshot-20260708-060051952-display.webp",
+        "width": 1366,
+        "height": 2048,
+        "sha256": "1d34852b4f08f5c43c02a99ea10dd63da47ad21ae29bad6d8be43c9c2bdae020",
+        "bytes": 441316
+      },
+      "thumbnail": {
+        "src": "/content/illustrations/inshot-20260708-060051952-thumbnail.webp",
+        "width": 342,
+        "height": 512,
+        "sha256": "9dd054b9405b27e245daea62125ad69281cf17cc380b1e5234f7e2c90f28f836",
+        "bytes": 72024
+      },
+      "publicationStatus": "public"
+    },
+    {
+      "id": "inshot-20260708-055457338",
+      "sourceSha256": "7905879a5031ef2f8f6298bebd6834e4285983b0562a5beec970aea54bb116fe",
+      "sourceWidth": 2302,
+      "sourceHeight": 4096,
+      "display": {
+        "src": "/content/illustrations/inshot-20260708-055457338-display.webp",
+        "width": 1151,
+        "height": 2048,
+        "sha256": "93aad828f8ce57e861c8f5c03cdcee37a2205112102d9274acdbc203a299e978",
+        "bytes": 353782
+      },
+      "thumbnail": {
+        "src": "/content/illustrations/inshot-20260708-055457338-thumbnail.webp",
+        "width": 288,
+        "height": 512,
+        "sha256": "82703ecf24a34e42198bdb7a5d1249e81886855145031b52b0ba3797e01e5404",
+        "bytes": 50518
+      },
+      "publicationStatus": "public"
+    },
+    {
+      "id": "kaizen",
+      "sourceSha256": "37e1abecda7aefb94e745bdbc5a88fae673c1b93830755960ccf0c4a5e99ffa1",
+      "sourceWidth": 2160,
+      "sourceHeight": 3840,
+      "display": {
+        "src": "/content/illustrations/kaizen-display.webp",
+        "width": 1152,
+        "height": 2048,
+        "sha256": "6f0e13d9aa1cf6edc637dd7d24d8b9b142ec5fc1024be992165fa4de81fb7472",
+        "bytes": 393676
+      },
+      "thumbnail": {
+        "src": "/content/illustrations/kaizen-thumbnail.webp",
+        "width": 288,
+        "height": 512,
+        "sha256": "54d900dce43fc39c0c067a60c3e390b4f0755b64a8552fe233e1a156132704eb",
+        "bytes": 55238
+      },
+      "publicationStatus": "public"
+    },
+    {
+      "id": "towaki",
+      "sourceSha256": "346bfdba427e7b77a277aa30f4b19ba45d0bb4d179c5b891b69a274f8bfb4db9",
+      "sourceWidth": 2160,
+      "sourceHeight": 3840,
+      "display": {
+        "src": "/content/illustrations/towaki-display.webp",
+        "width": 1152,
+        "height": 2048,
+        "sha256": "d9c59898219c0c8b2fa51042cd2ac31d24d51097998e8e93343907a082941ce1",
+        "bytes": 942120
+      },
+      "thumbnail": {
+        "src": "/content/illustrations/towaki-thumbnail.webp",
+        "width": 288,
+        "height": 512,
+        "sha256": "0bf824c1936e11d4f008cf3e8e659e8d1ad21451c7af285ff36974cc4a6a7da1",
+        "bytes": 130962
+      },
+      "publicationStatus": "public"
+    }
+  ]
+}

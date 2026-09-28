@@ -1,0 +1,43 @@
+{
+  "status": "converted-invariants-pass-visual-review-required",
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\bridge-deck-keyed-v1.png",
+  "sourceSha256": "13aea59f09138140e17abb43dd314b062a0474010371076d22dc1f6c17270495",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\mechanism-key-deck-v1\\alpha.png",
+  "toolSha256": "c68cbed11a406d1515a235b2cc16944412d8696a0d72a5ee05364d6d7aefa546",
+  "outputSha256": "584354b4280fcdc29e2b09901dae96de19a8d093be803ef2650b826dcf20ada9",
+  "size": [
+    2172,
+    724
+  ],
+  "settings": {
+    "keyRgb": [
+      255,
+      0,
+      255
+    ],
+    "keyTolerance": 32,
+    "minDominance": 220,
+    "edgeBandPx": 3,
+    "cleanDominance": 35,
+    "actualKeyMedianRgb": [
+      250.0,
+      4.0,
+      250.0
+    ],
+    "protectRects": []
+  },
+  "trueBackgroundPixels": 1349528,
+  "edgeBandPixels": 13289,
+  "edgeCandidates": 5531,
+  "edgeCandidatesWithoutCleanNeighbour": 2,
+  "edgeRgbChangedPixels": 5512,
+  "outsideBandInteriorPixels": 209711,
+  "outsideBandInteriorUnchanged": true,
+  "protectedUnchangedAndOpaque": true,
+  "protectedNearKeyPixelsKept": 0,
+  "remainingPurpleInteriorPixels": 0,
+  "remainingPurpleInteriorPolicy": "Preserved. Legitimate purple and painted key reflections cannot be distinguished by hue alone; retouch undesired reflections separately.",
+  "sourceUnchanged": true,
+  "roiReports": [],
+  "limits": "Near-key false positives remain possible; inspect masks. No cloud processing, global desaturation, interior softening, or runtime publication."
+}

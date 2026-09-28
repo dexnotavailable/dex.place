@@ -1,0 +1,1403 @@
+{
+  "schemaVersion": 1,
+  "units": "logical world pixels",
+  "countRule": "One ID is one asset role; masks/crops/animation parts do not add roles.",
+  "assets": [
+    {
+      "id": "FG02",
+      "name": "causeway end cap",
+      "sourceRevision": "flat-v2",
+      "url": "/world/assets/library-v1/FG02-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 163,
+        "height": 70
+      },
+      "logicalSize": {
+        "width": 163,
+        "height": 70
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; inspect with actual camera"
+      },
+      "filter": "nearest",
+      "role": "foreground",
+      "depthRole": "near framing/support",
+      "attachments": {
+        "origin": {
+          "x": 81,
+          "y": 70
+        },
+        "originMeaning": "integer bottom-center"
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 162,
+            "y": 0
+          }
+        ]
+      },
+      "assemblyNotes": [
+        "Natural163x70 candidate matches overall FG01 height. Its pale cap-face thickness is about22px versus roughly18px on FG01; align top/cap transition deliberately, never squeeze the image to96x70."
+      ],
+      "verdict": "ready-for-assembly",
+      "runtimeVerdict": "pending actual composed scene",
+      "sha256": "7da354376f7e6478a10e03b5f74203e59ba2e6ebb1ae24b5f6d7c5f1cd60facb"
+    },
+    {
+      "id": "FG03",
+      "name": "pier base",
+      "sourceRevision": "flat-v2",
+      "url": "/world/assets/library-v1/FG03-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 67,
+        "height": 224
+      },
+      "logicalSize": {
+        "width": 67,
+        "height": 224
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; inspect with actual camera"
+      },
+      "filter": "nearest",
+      "role": "foreground",
+      "depthRole": "near framing/support",
+      "attachments": {
+        "origin": {
+          "x": 33,
+          "y": 224
+        },
+        "originMeaning": "integer bottom-center"
+      },
+      "parts": {
+        "shaftRepeat": {
+          "x": 9,
+          "y": 6,
+          "width": 48,
+          "height": 194
+        }
+      },
+      "assemblyNotes": [
+        "Natural narrow pier at224px height; repeat a shaft segment for tall support instead of stretching pixel pitch."
+      ],
+      "verdict": "ready-for-assembly",
+      "runtimeVerdict": "pending actual composed scene",
+      "sha256": "8c702643cdaf52a65e8437231aa47a01b08d9a0dc69bd828fa8aa260adaba7f6"
+    },
+    {
+      "id": "FG04",
+      "name": "short railing",
+      "url": "/world/assets/library-v1/FG04-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 128,
+        "height": 28
+      },
+      "logicalSize": {
+        "width": 128,
+        "height": 28
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "foreground",
+      "depthRole": "near framing, behind player unless intentionally occluding empty foreground",
+      "attachments": {
+        "origin": {
+          "x": 64,
+          "y": 28
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "leftShoe": {
+          "x": 5,
+          "y": 28
+        },
+        "rightShoe": {
+          "x": 123,
+          "y": 28
+        }
+      },
+      "parts": {},
+      "assemblyNotes": [],
+      "verdict": "ready-for-assembly",
+      "sha256": "cfa4d6174e2fb4e837a951cb7978e501d45ab8319db0a41c7f1a14364945548d",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "FG05",
+      "name": "suspended girder",
+      "sourceRevision": "flat-v2",
+      "url": "/world/assets/library-v1/FG05-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 400,
+        "height": 47
+      },
+      "logicalSize": {
+        "width": 400,
+        "height": 47
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; inspect with actual camera"
+      },
+      "filter": "nearest",
+      "role": "foreground",
+      "depthRole": "near framing/support",
+      "attachments": {
+        "origin": {
+          "x": 200,
+          "y": 47
+        },
+        "originMeaning": "integer bottom-center",
+        "leftHanger": {
+          "x": 100,
+          "y": 4
+        },
+        "rightHanger": {
+          "x": 300,
+          "y": 4
+        }
+      },
+      "parts": {},
+      "assemblyNotes": [
+        "Flat end plates replace the previous top/side-bearing sleeves."
+      ],
+      "verdict": "ready-for-assembly",
+      "runtimeVerdict": "pending actual composed scene",
+      "sha256": "477c20a228cf7f0c4711ef08137e24e64981a7e8b97bd990f5b685205f07a60d"
+    },
+    {
+      "id": "FG06",
+      "name": "near arch crown",
+      "url": "/world/assets/library-v1/FG06-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 560,
+        "height": 168
+      },
+      "logicalSize": {
+        "width": 560,
+        "height": 168
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "foreground",
+      "depthRole": "near framing, behind player unless intentionally occluding empty foreground",
+      "attachments": {
+        "origin": {
+          "x": 280,
+          "y": 168
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "leftSupport": {
+          "x": 0,
+          "y": 168
+        },
+        "rightSupport": {
+          "x": 560,
+          "y": 168
+        }
+      },
+      "parts": {
+        "openUnderArch": true
+      },
+      "assemblyNotes": [],
+      "verdict": "ready-for-assembly",
+      "sha256": "704cad619da55435b712ec4208e37b26576a04297d17f7b4bad16ca9858e16f0",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "FG07",
+      "name": "broken ledge edge",
+      "url": "/world/assets/library-v1/FG07-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 144,
+        "height": 47
+      },
+      "logicalSize": {
+        "width": 144,
+        "height": 47
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "foreground",
+      "depthRole": "near framing, behind player unless intentionally occluding empty foreground",
+      "attachments": {
+        "origin": {
+          "x": 72,
+          "y": 47
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 2,
+            "endX": 126,
+            "y": 1
+          }
+        ]
+      },
+      "assemblyNotes": [
+        "Collision suggestions are image-local; root must align them with the actual map and test contacts. Do not stretch the sprite to its collider.",
+        "Exposed rebar beyond x126 is decorative, not a walkable cap."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "48c4d682713ec2d33e69405083dd114f2354751ccc3b42489aaf06c61bd71a9a",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "FG08",
+      "name": "near pillar edge",
+      "sourceRevision": "flat-v2",
+      "url": "/world/assets/library-v1/FG08-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 106,
+        "height": 640
+      },
+      "logicalSize": {
+        "width": 106,
+        "height": 640
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; inspect with actual camera"
+      },
+      "filter": "nearest",
+      "role": "foreground",
+      "depthRole": "near framing/support",
+      "attachments": {
+        "origin": {
+          "x": 53,
+          "y": 640
+        },
+        "originMeaning": "integer bottom-center"
+      },
+      "parts": {
+        "panelRepeat": {
+          "x": 2,
+          "y": 4,
+          "width": 102,
+          "height": 632
+        }
+      },
+      "assemblyNotes": [
+        "One front face. Use cropping or repeat panels for larger near masses; do not horizontally stretch."
+      ],
+      "verdict": "ready-for-assembly",
+      "runtimeVerdict": "pending actual composed scene",
+      "sha256": "6ea1199e22666f2df61b3cd629249379bbfb4524b038bd6225f711184d4674f3"
+    },
+    {
+      "id": "FG09",
+      "name": "low rubble bank",
+      "url": "/world/assets/library-v1/FG09-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 43
+      },
+      "logicalSize": {
+        "width": 256,
+        "height": 43
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "foreground",
+      "depthRole": "near framing, behind player unless intentionally occluding empty foreground",
+      "attachments": {
+        "origin": {
+          "x": 128,
+          "y": 43
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {},
+      "assemblyNotes": [
+        "Decorative rubble only; keep outside player and telegraph lanes."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "9f2c582020aa3ed12c622f77189463666bed5eddb4d1e8809b8792fd308f1c83",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "FG10",
+      "name": "stair module",
+      "url": "/world/assets/library-v1/FG10-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 128,
+        "height": 71
+      },
+      "logicalSize": {
+        "width": 128,
+        "height": 71
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "foreground",
+      "depthRole": "near framing, behind player unless intentionally occluding empty foreground",
+      "attachments": {
+        "origin": {
+          "x": 64,
+          "y": 71
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 20,
+            "y": 58
+          },
+          {
+            "startX": 21,
+            "endX": 47,
+            "y": 44
+          },
+          {
+            "startX": 47,
+            "endX": 73,
+            "y": 30
+          },
+          {
+            "startX": 74,
+            "endX": 100,
+            "y": 15
+          },
+          {
+            "startX": 101,
+            "endX": 127,
+            "y": 0
+          }
+        ]
+      },
+      "assemblyNotes": [
+        "Collision suggestions are image-local; root must align them with the actual map and test contacts. Do not stretch the sprite to its collider.",
+        "Whole staircase is a native module; do not replace each existing stair bar with this whole image. Use cap spans/rises or crop a compatible step.",
+        "Native risers are14-15px; existing map stairs use8px risers. Match actual collision to cap spans or retain as decoration; arbitrary fitting would break feet/steps."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "a16c6a99ce12420aacb40c19bf2940e115129cc6247875740e005a62e0299be2",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P01",
+      "name": "bench",
+      "sourceRevision": "flat-v2",
+      "url": "/world/assets/library-v1/P01-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 96,
+        "height": 20
+      },
+      "logicalSize": {
+        "width": 96,
+        "height": 20
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; inspect with actual camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "independent play-plane object",
+      "attachments": {
+        "origin": {
+          "x": 48,
+          "y": 20
+        },
+        "originMeaning": "integer bottom-center",
+        "leftFoot": {
+          "x": 15,
+          "y": 20
+        },
+        "rightFoot": {
+          "x": 81,
+          "y": 20
+        }
+      },
+      "parts": {
+        "seatTopSpans": [
+          {
+            "startX": 1,
+            "endX": 95,
+            "y": 0
+          }
+        ]
+      },
+      "assemblyNotes": [
+        "96px width yields a natural20px seat height beside52px hero; no72x25 distortion."
+      ],
+      "verdict": "ready-for-assembly",
+      "runtimeVerdict": "pending actual composed scene",
+      "sha256": "f4c6f895e201dd0754202f5f38124fb1a65d2c6ea3d30dbba90b32278d1dcb75"
+    },
+    {
+      "id": "P03",
+      "name": "terminal screen insert",
+      "url": "/world/assets/library-v1/P03-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 13,
+        "height": 27
+      },
+      "logicalSize": {
+        "width": 13,
+        "height": 27
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 6,
+          "y": 27
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {
+        "glassCrop": {
+          "x": 1,
+          "y": 4,
+          "width": 11,
+          "height": 13
+        },
+        "terminalGlass": {
+          "url": "/world/assets/library-v1/P03-glass-11x13-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 11,
+            "height": 13
+          },
+          "target": "P02 flat-v3 screen aperture11x13"
+        }
+      },
+      "assemblyNotes": [
+        "Full bezel preserves source aspect. Use the registered glass crop inside current P02; do not squeeze the full tall bezel into its shorter screen."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "f51c23b8a288007c0703e39b5cb33e1b00a31c4b53d8a6e14cfc1bebfe52a8cf",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P04",
+      "name": "signal post",
+      "sourceRevision": "flat-v2",
+      "url": "/world/assets/library-v1/P04-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 27,
+        "height": 112
+      },
+      "logicalSize": {
+        "width": 27,
+        "height": 112
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; inspect with actual camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "independent play-plane object",
+      "attachments": {
+        "origin": {
+          "x": 13,
+          "y": 112
+        },
+        "originMeaning": "integer bottom-center",
+        "lensCenter": {
+          "x": 14,
+          "y": 14
+        }
+      },
+      "parts": {
+        "lensPlacement": {
+          "assetId": "P05",
+          "rect": {
+            "x": 8,
+            "y": 8,
+            "width": 12,
+            "height": 12
+          }
+        }
+      },
+      "assemblyNotes": [
+        "Separate12px lens sits centered in the frontal dark socket; verify state alignment in actual renderer."
+      ],
+      "verdict": "ready-for-assembly",
+      "runtimeVerdict": "pending actual composed scene",
+      "sha256": "96e167460a9bba7ef3c66001b7de21ac5c2a9cafca79f4d743ebc71f01c6c332"
+    },
+    {
+      "id": "P05",
+      "name": "signal lens",
+      "url": "/world/assets/library-v1/P05-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 12,
+        "height": 12
+      },
+      "logicalSize": {
+        "width": 12,
+        "height": 12
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 6,
+          "y": 12
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {
+        "emissionMask": {
+          "url": "/world/assets/library-v1/P05-emission-mask-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 12
+          },
+          "purpose": "tint/opacity state independently above static housing; not a separate inventory role"
+        },
+        "emissionBounds": {
+          "x": 1,
+          "y": 1,
+          "width": 10,
+          "height": 10
+        }
+      },
+      "assemblyNotes": [],
+      "verdict": "ready-for-assembly",
+      "sha256": "ada174cc1f64951f5f37db549a0d8e641966230da58c6cf8cef0bbfac5c2c846",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P06",
+      "name": "cable assembly",
+      "sourceRevision": "flat-v2",
+      "url": "/world/assets/library-v1/P06-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 23,
+        "height": 176
+      },
+      "logicalSize": {
+        "width": 23,
+        "height": 176
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; inspect with actual camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "independent play-plane object",
+      "attachments": {
+        "origin": {
+          "x": 11,
+          "y": 176
+        },
+        "originMeaning": "integer bottom-center",
+        "topMount": {
+          "x": 11,
+          "y": 0
+        },
+        "lowerEyelet": {
+          "x": 11,
+          "y": 166
+        },
+        "cutPoint": {
+          "x": 11,
+          "y": 146
+        }
+      },
+      "parts": {
+        "fixedUpper": {
+          "x": 0,
+          "y": 0,
+          "width": 23,
+          "height": 146
+        },
+        "releasedLower": {
+          "x": 0,
+          "y": 146,
+          "width": 23,
+          "height": 30
+        }
+      },
+      "assemblyNotes": [
+        "Use independent native crops at cutY; do not repaint/rescale the fixed upper part during cut animation."
+      ],
+      "verdict": "ready-for-assembly",
+      "runtimeVerdict": "pending actual composed scene",
+      "sha256": "1ed0fb3ea7c0743303c48f471d37d295b8f756ed3cdfc519eed6d6cbe389c325"
+    },
+    {
+      "id": "P07",
+      "name": "bridge deck",
+      "url": "/world/assets/library-v1/P07-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 21
+      },
+      "logicalSize": {
+        "width": 256,
+        "height": 21
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 128,
+          "y": 21
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "hinge": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 255,
+            "y": 0
+          }
+        ]
+      },
+      "assemblyNotes": [
+        "Collision suggestions are image-local; root must align them with the actual map and test contacts. Do not stretch the sprite to its collider.",
+        "Native width256; crop a shorter deck span if current collision width is smaller, or deliberately update map geometry."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "da55844ad26596906ba062ab831c5dfbdf8c9591287db32185d7ac6efe7da550",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P08",
+      "name": "bridge hinge bracket",
+      "url": "/world/assets/library-v1/P08-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 48
+      },
+      "logicalSize": {
+        "width": 32,
+        "height": 48
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 16,
+          "y": 48
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "pivot": {
+          "x": 13,
+          "y": 31
+        }
+      },
+      "parts": {},
+      "assemblyNotes": [
+        "Bearing-center pivot is a visual estimate pending motion registration."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "9248369a15025b8e58c4dc969b75d22dc4026bfdf3fd7c069a71b2d39682e96f",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P09",
+      "name": "lift platform",
+      "url": "/world/assets/library-v1/P09-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 192,
+        "height": 23
+      },
+      "logicalSize": {
+        "width": 192,
+        "height": 23
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 96,
+          "y": 23
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 191,
+            "y": 0
+          }
+        ]
+      },
+      "assemblyNotes": [
+        "Collision suggestions are image-local; root must align them with the actual map and test contacts. Do not stretch the sprite to its collider.",
+        "Native width192; existing96px lift collider needs a native crop or explicit geometry update, never a2x pixel stretch."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "7022d77b935fda3372fe6d193d06b39722edfc656d276ed853397b8bdb5d07ae",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P10",
+      "name": "lift rail",
+      "url": "/world/assets/library-v1/P10-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 21,
+        "height": 320
+      },
+      "logicalSize": {
+        "width": 21,
+        "height": 320
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 10,
+          "y": 320
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "railCenterX": 10
+      },
+      "parts": {
+        "repeatGuide": {
+          "x": 8,
+          "y": 14,
+          "width": 4,
+          "height": 292
+        }
+      },
+      "assemblyNotes": [],
+      "verdict": "ready-for-assembly",
+      "sha256": "ff9872948829e5c7541edc17934c350a1d381eda50dbed9d7650cdba08faedfd",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P11",
+      "name": "lift dock indicator",
+      "url": "/world/assets/library-v1/P11-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 28,
+        "height": 9
+      },
+      "logicalSize": {
+        "width": 28,
+        "height": 9
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 14,
+          "y": 9
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {
+        "emissionMask": {
+          "url": "/world/assets/library-v1/P11-emission-mask-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 28,
+            "height": 9
+          },
+          "purpose": "tint/opacity state independently above static housing; not a separate inventory role"
+        },
+        "emissionBounds": {
+          "x": 6,
+          "y": 2,
+          "width": 16,
+          "height": 5
+        }
+      },
+      "assemblyNotes": [],
+      "verdict": "ready-for-assembly",
+      "sha256": "cd42cc7b8c7bd054cf3e5a550a8adcc88b2c41f34281952ecdddcb4ed166d82e",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P12",
+      "name": "archive folder",
+      "url": "/world/assets/library-v1/P12-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 20
+      },
+      "logicalSize": {
+        "width": 32,
+        "height": 20
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 16,
+          "y": 20
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {
+        "labelSafeArea": {
+          "x": 4,
+          "y": 5,
+          "width": 24,
+          "height": 11
+        }
+      },
+      "assemblyNotes": [
+        "Real document titles and links remain DOM/content-owned."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "dab732265e011db55c5ca7e4dd9ba36962b5125b1d04870a6d8e2eef4e08c0e8",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P13",
+      "name": "archive shelf module",
+      "url": "/world/assets/library-v1/P13-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 78,
+        "height": 112
+      },
+      "logicalSize": {
+        "width": 78,
+        "height": 112
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 39,
+          "y": 112
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {
+        "requiredBacking": {
+          "kind": "separate-flat-rectangle",
+          "color": "#22313f",
+          "rect": {
+            "x": 5,
+            "y": 6,
+            "width": 68,
+            "height": 100
+          },
+          "depth": "behind housing, in front of background",
+          "reason": "Raw shelf recesses contain low-alpha holes; do not repaint raw or flatten backing into source."
+        },
+        "folderSlots": [
+          {
+            "x": 8,
+            "y": 8,
+            "width": 62,
+            "height": 25
+          },
+          {
+            "x": 8,
+            "y": 42,
+            "width": 62,
+            "height": 25
+          },
+          {
+            "x": 8,
+            "y": 76,
+            "width": 62,
+            "height": 25
+          }
+        ]
+      },
+      "assemblyNotes": [
+        "Requires the registered dark backing part before visual acceptance; transparent recess defects are deliberately not filled in this image."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "31ed0665db2dda1b526ba325537c89acde63558950a740cc53b1e4509e762b45",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P14",
+      "name": "gallery bay frame",
+      "url": "/world/assets/library-v1/P14-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 110,
+        "height": 176
+      },
+      "logicalSize": {
+        "width": 110,
+        "height": 176
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 55,
+          "y": 176
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {
+        "aperture": {
+          "x": 9,
+          "y": 9,
+          "width": 92,
+          "height": 153
+        }
+      },
+      "assemblyNotes": [
+        "Aperture stays transparent. Display-only illustrations, if used, remain separate contained artwork."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "6e84f0616a497bb5a2cd1d491b06ea3ff059334e5ff7086bc8257a35cfdb96c1",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P15",
+      "name": "donation plinth",
+      "url": "/world/assets/library-v1/P15-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 49,
+        "height": 56
+      },
+      "logicalSize": {
+        "width": 49,
+        "height": 56
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 24,
+          "y": 56
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      },
+      "parts": {
+        "plaque": {
+          "x": 16,
+          "y": 15,
+          "width": 16,
+          "height": 10
+        }
+      },
+      "assemblyNotes": [
+        "No payment facts or QR are baked into this art."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "31ac0c6ac347232cd153d47fbf62b36f1707052b924d9d18534a9a4cf11c3014",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P16",
+      "name": "banner roller",
+      "sourceRevision": "flat-v2",
+      "url": "/world/assets/library-v1/P16-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 185,
+        "height": 15
+      },
+      "logicalSize": {
+        "width": 185,
+        "height": 15
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; inspect with actual camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "independent play-plane object",
+      "attachments": {
+        "origin": {
+          "x": 92,
+          "y": 15
+        },
+        "originMeaning": "integer bottom-center",
+        "clothLeft": {
+          "x": 12,
+          "y": 12
+        },
+        "clothRight": {
+          "x": 172,
+          "y": 12
+        }
+      },
+      "parts": {
+        "clothBearing": {
+          "x": 12,
+          "y": 5,
+          "width": 160,
+          "height": 5
+        }
+      },
+      "assemblyNotes": [
+        "The cloth-bearing span is160px, matching P17/P18; total hardware width is185px, not160px. Reveal cloth below roller and move weight independently."
+      ],
+      "verdict": "ready-for-assembly",
+      "runtimeVerdict": "pending actual composed scene",
+      "sha256": "385660208abcc12c22a087e476c5c45c374c2d6bcc9bd086ed484369241b3a24"
+    },
+    {
+      "id": "P17",
+      "name": "unlettered banner cloth",
+      "url": "/world/assets/library-v1/P17-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 160,
+        "height": 214
+      },
+      "logicalSize": {
+        "width": 160,
+        "height": 214
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 80,
+          "y": 214
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomWeightY": 214
+      },
+      "parts": {
+        "labelSafeArea": {
+          "x": 16,
+          "y": 15,
+          "width": 128,
+          "height": 184
+        }
+      },
+      "assemblyNotes": [
+        "Requires roller with160px cloth-bearing span; current rejected roller is too narrow. Crop-reveal cloth and move weight independently."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "98b6d67d8c8f4b17d2054a8899a7adc66ff9aad4ce719049ddf1b78eacc715a9",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P18",
+      "name": "banner bottom weight",
+      "url": "/world/assets/library-v1/P18-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 160,
+        "height": 7
+      },
+      "logicalSize": {
+        "width": 160,
+        "height": 7
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 80,
+          "y": 7
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "clothBottom": {
+          "x": 80,
+          "y": 0
+        }
+      },
+      "parts": {},
+      "assemblyNotes": [],
+      "verdict": "ready-for-assembly",
+      "sha256": "66ab6ff64ddc07e051fcbd92bc6faccf25912aae2334f8b2cc00686990b00eac",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P19",
+      "name": "sentinel body shell",
+      "url": "/world/assets/library-v1/P19-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 130,
+        "height": 160
+      },
+      "logicalSize": {
+        "width": 130,
+        "height": 160
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 65,
+          "y": 160
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "core": {
+          "x": 65,
+          "y": 65
+        },
+        "leftArmSocket": {
+          "x": 7,
+          "y": 61
+        },
+        "rightArmSocket": {
+          "x": 123,
+          "y": 61
+        }
+      },
+      "parts": {
+        "emissionMask": {
+          "url": "/world/assets/library-v1/P19-emission-mask-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 130,
+            "height": 160
+          },
+          "purpose": "tint/opacity state independently above static housing; not a separate inventory role"
+        },
+        "emissionBounds": {
+          "x": 50,
+          "y": 45,
+          "width": 30,
+          "height": 40
+        }
+      },
+      "assemblyNotes": [
+        "Core/socket points are visual registrations for animation review, not automatic hitboxes."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "545d632859845cfa414c904189a5e417307f3c8ae35ee1c72624951c149b376e",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    },
+    {
+      "id": "P20",
+      "name": "sentinel blade arm",
+      "url": "/world/assets/library-v1/P20-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 220,
+        "height": 34
+      },
+      "logicalSize": {
+        "width": 220,
+        "height": 34
+      },
+      "worldScale": 1,
+      "pixelPitch": {
+        "worldPixelsPerLogicalPixel": 1,
+        "sourceClusterSize": "variable; visually inspect with current camera"
+      },
+      "filter": "nearest",
+      "role": "prop",
+      "depthRole": "play-plane independently composited object",
+      "attachments": {
+        "origin": {
+          "x": 110,
+          "y": 34
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "pivot": {
+          "x": 15,
+          "y": 16
+        },
+        "tip": {
+          "x": 219,
+          "y": 12
+        }
+      },
+      "parts": {
+        "cuttingEdgeHint": [
+          {
+            "x": 79,
+            "y": 33
+          },
+          {
+            "x": 167,
+            "y": 28
+          },
+          {
+            "x": 219,
+            "y": 12
+          }
+        ]
+      },
+      "assemblyNotes": [
+        "Art contour is not attack geometry; root must time the independent arm and its visible telegraph/contact."
+      ],
+      "verdict": "ready-for-assembly",
+      "sha256": "2ff52bf4d52d63521cfe0fe81efb223dcd0ff7dfb554c673b03f5ba0f33800cc",
+      "runtimeVerdict": "pending actual composed scene and motion"
+    }
+  ]
+}

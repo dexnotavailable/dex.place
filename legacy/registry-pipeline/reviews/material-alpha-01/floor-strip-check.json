@@ -1,0 +1,171 @@
+[
+  {
+    "room": "arrival",
+    "rect": [
+      0,
+      751,
+      1672,
+      757
+    ],
+    "alphaMin": 172,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 78,
+    "pixelCount": 10032
+  },
+  {
+    "room": "rest",
+    "rect": [
+      0,
+      706,
+      1672,
+      712
+    ],
+    "alphaMin": 255,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 0,
+    "pixelCount": 10032
+  },
+  {
+    "room": "registry",
+    "rect": [
+      0,
+      692,
+      1672,
+      698
+    ],
+    "alphaMin": 141,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 577,
+    "pixelCount": 10032
+  },
+  {
+    "room": "junction",
+    "rect": [
+      0,
+      645,
+      1672,
+      651
+    ],
+    "alphaMin": 159,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 428,
+    "pixelCount": 10032
+  },
+  {
+    "room": "vestibule",
+    "rect": [
+      0,
+      702,
+      1672,
+      708
+    ],
+    "alphaMin": 255,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 0,
+    "pixelCount": 10032
+  },
+  {
+    "room": "arena",
+    "rect": [
+      0,
+      757,
+      1672,
+      763
+    ],
+    "alphaMin": 255,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 0,
+    "pixelCount": 10032
+  },
+  {
+    "room": "archive",
+    "rect": [
+      0,
+      722,
+      1672,
+      728
+    ],
+    "alphaMin": 255,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 0,
+    "pixelCount": 10032
+  },
+  {
+    "room": "low-passage",
+    "rect": [
+      0,
+      663,
+      1672,
+      669
+    ],
+    "alphaMin": 49,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 1003,
+    "pixelCount": 10032
+  },
+  {
+    "room": "pool",
+    "rect": [
+      0,
+      748,
+      1672,
+      754
+    ],
+    "alphaMin": 135,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 150,
+    "pixelCount": 10032
+  },
+  {
+    "room": "sky-walk",
+    "rect": [
+      0,
+      669,
+      718,
+      675
+    ],
+    "alphaMin": 255,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 0,
+    "pixelCount": 4308
+  },
+  {
+    "room": "sky-walk",
+    "rect": [
+      1082,
+      669,
+      1672,
+      675
+    ],
+    "alphaMin": 255,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 0,
+    "pixelCount": 3540
+  },
+  {
+    "room": "exhibit",
+    "rect": [
+      0,
+      703,
+      1672,
+      709
+    ],
+    "alphaMin": 152,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 75,
+    "pixelCount": 10032
+  },
+  {
+    "room": "courtyard",
+    "rect": [
+      0,
+      692,
+      1672,
+      698
+    ],
+    "alphaMin": 255,
+    "alphaZeroPixels": 0,
+    "partialAlphaPixels": 0,
+    "pixelCount": 10032
+  }
+]

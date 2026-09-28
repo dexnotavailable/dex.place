@@ -1,0 +1,2555 @@
+{
+  "version": "registry-art-c7a87b2dca86e1",
+  "assets": {
+    "shared-sky": {
+      "src": "/world/registry/art/shared-sky-63afbb17e99b.png",
+      "width": 1672,
+      "height": 941,
+      "sourceSha256": "63afbb17e99b5f1b78ed44f04958774cf2ebb4b4beb616d24d769a6e7fb336d8"
+    },
+    "shared-ring": {
+      "src": "/world/registry/art/shared-ring-56cd98de7582.png",
+      "width": 1672,
+      "height": 941,
+      "sourceSha256": "56cd98de75827082f02c2a48037cad9a4b3328237536d046f31135851204e213"
+    },
+    "folio-material": {
+      "src": "/world/registry/art/folio-material-v1.png",
+      "width": 1254,
+      "height": 1254,
+      "sourceSha256": "93f85b909f0d99379f6520ee513c92c770bf4ac6ef9352b0091bc4843147c1e8"
+    },
+    "cloud-mid": {
+      "src": "/world/registry/art/cloud-mid-e1ff193bbfa3.png",
+      "width": 1536,
+      "height": 1024,
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": 1300,
+      "loop": true,
+      "pivot": [
+        256,
+        280
+      ],
+      "sourceSha256": "e1ff193bbfa37a8f38afc0a4cec1a01069a51a203b5a88158a66b20f4caf3639"
+    },
+    "cloud-far": {
+      "src": "/world/registry/art/cloud-far-49a41619a1ae.png",
+      "width": 1536,
+      "height": 1024,
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": 1300,
+      "loop": true,
+      "pivot": [
+        256,
+        280
+      ],
+      "sourceSha256": "49a41619a1ae5aad82e84b3da744ca32da03ddeceef40503e92198df93598a0b"
+    },
+    "lamp-emission": {
+      "src": "/world/registry/art/lamp-emission-56f508c7e336.png",
+      "width": 1536,
+      "height": 1024,
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": 1100,
+      "loop": true,
+      "pivot": [
+        256,
+        256
+      ],
+      "sourceSha256": "56f508c7e3362cc7209bd99a7cc5ae515057f498e0af44a46681709edd73f960"
+    },
+    "water-shimmer": {
+      "src": "/world/registry/art/water-shimmer-b19e2341a8eb.png",
+      "width": 1536,
+      "height": 1024,
+      "frameWidth": 1536,
+      "frameHeight": 256,
+      "frames": 4,
+      "columns": 1,
+      "frameMs": 1800,
+      "loop": true,
+      "pivot": [
+        768,
+        128
+      ],
+      "sourceSha256": "b19e2341a8eba8a761882400c6ee14f523fa38d4777b98ff260ccbdeeb924c66"
+    },
+    "accountant-idle": {
+      "src": "/world/registry/art/accountant-idle-a7953f5369cf.png",
+      "width": 1536,
+      "height": 1024,
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": [
+        450,
+        350,
+        300,
+        300,
+        400,
+        500
+      ],
+      "loop": true,
+      "pivot": [
+        256,
+        489
+      ],
+      "bodyBounds": {
+        "x": 149,
+        "y": 77,
+        "width": 315,
+        "height": 415
+      },
+      "anchors": {
+        "handPlane": [
+          256,
+          309
+        ]
+      },
+      "sourceSha256": "a7953f5369cf63be97be4a2341fc8d66aeb2880572c027d20fc9e3f21c6167e0"
+    },
+    "accountant-acknowledge": {
+      "src": "/world/registry/art/accountant-acknowledge-e417e8071628.png",
+      "width": 1536,
+      "height": 1024,
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": [
+        180,
+        180,
+        240,
+        650,
+        240,
+        300
+      ],
+      "loop": false,
+      "pivot": [
+        256,
+        489
+      ],
+      "bodyBounds": {
+        "x": 149,
+        "y": 77,
+        "width": 315,
+        "height": 415
+      },
+      "anchors": {
+        "handPlane": [
+          256,
+          309
+        ]
+      },
+      "sourceSha256": "e417e807162810bfe8dff6601b78076a04eed5c830874b662565dbe30607e4be"
+    },
+    "accountant-rest": {
+      "src": "/world/registry/art/accountant-rest-2f171aaf4404.png",
+      "width": 1536,
+      "height": 1024,
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": [
+        200,
+        450,
+        600,
+        900,
+        500,
+        1700
+      ],
+      "loop": false,
+      "pivot": [
+        256,
+        489
+      ],
+      "bodyBounds": {
+        "x": 149,
+        "y": 77,
+        "width": 315,
+        "height": 415
+      },
+      "anchors": {
+        "handPlane": [
+          256,
+          309
+        ]
+      },
+      "sourceSha256": "2f171aaf4404c97d92530a9d7e7c1cf1c0528244e4eb19bea6ae2566644080de"
+    },
+    "bench": {
+      "src": "/world/registry/art/bench-67545185bd5d.png",
+      "width": 939,
+      "height": 374,
+      "pivot": [
+        469.5,
+        372
+      ],
+      "bodyBounds": {
+        "x": 2,
+        "y": 2,
+        "width": 935,
+        "height": 370
+      },
+      "sourceSha256": "67545185bd5d91e67ceb4ce72ef20816f168818b2ba05865a01138e7e11f7ca3"
+    },
+    "registry-desk": {
+      "src": "/world/registry/art/registry-desk-f7795f6e4929.png",
+      "width": 1290,
+      "height": 302,
+      "pivot": [
+        645.0,
+        300
+      ],
+      "bodyBounds": {
+        "x": 2,
+        "y": 2,
+        "width": 1286,
+        "height": 298
+      },
+      "sourceSha256": "f7795f6e49292a9885261b579bd0512bae31d23c05c88ee202a8918d88a137a0"
+    },
+    "donor-box": {
+      "src": "/world/registry/art/donor-box-d41d924a4e13.png",
+      "width": 376,
+      "height": 653,
+      "pivot": [
+        188.0,
+        651
+      ],
+      "bodyBounds": {
+        "x": 2,
+        "y": 2,
+        "width": 372,
+        "height": 649
+      },
+      "sourceSha256": "d41d924a4e13f4212b81c4b5313f8dacd1c880ae1cadc077ca7a422b74b3f9eb"
+    },
+    "paper-terminal": {
+      "src": "/world/registry/art/paper-terminal-6b9dbbf331e5.png",
+      "width": 368,
+      "height": 623,
+      "pivot": [
+        184.0,
+        621
+      ],
+      "bodyBounds": {
+        "x": 2,
+        "y": 2,
+        "width": 364,
+        "height": 619
+      },
+      "sourceSha256": "6b9dbbf331e5c13e85c1832582f6ac4a74e078a21228edbf1ee0c5edb9d4009d"
+    },
+    "door-frame": {
+      "src": "/world/registry/art/door-frame-a3b9d9aefee2.png",
+      "width": 701,
+      "height": 992,
+      "pivot": [
+        350.5,
+        990
+      ],
+      "bodyBounds": {
+        "x": 2,
+        "y": 2,
+        "width": 697,
+        "height": 988
+      },
+      "anchors": {
+        "apertureTopLeft": [
+          115,
+          97
+        ],
+        "apertureBottomRight": [
+          585,
+          958
+        ],
+        "apertureTL": [
+          115,
+          97
+        ],
+        "apertureBR": [
+          585,
+          958
+        ]
+      },
+      "sourceSha256": "a3b9d9aefee246e8fe724f85261c06a1cab54759598754f3d38ef534ba3548ef"
+    },
+    "lamp-fixture": {
+      "src": "/world/registry/art/lamp-fixture-c617186cd5b4.png",
+      "width": 309,
+      "height": 796,
+      "pivot": [
+        154.5,
+        794
+      ],
+      "bodyBounds": {
+        "x": 2,
+        "y": 2,
+        "width": 305,
+        "height": 792
+      },
+      "sourceSha256": "c617186cd5b49058b36064e668dd801f0f68f23810b6cdcf3da5cf2f70393999"
+    },
+    "tree": {
+      "src": "/world/registry/art/tree-f19905ab72a8.png",
+      "width": 1384,
+      "height": 942,
+      "pivot": [
+        692.0,
+        940
+      ],
+      "bodyBounds": {
+        "x": 2,
+        "y": 2,
+        "width": 1380,
+        "height": 938
+      },
+      "sourceSha256": "f19905ab72a8e7d91646ca1b0f308fdb2b3b6687fa8beaa5136342264af373fe"
+    },
+    "door-leaf": {
+      "src": "/world/registry/art/door-leaf-08e72f733f3f.png",
+      "width": 470,
+      "height": 864,
+      "pivot": [
+        235,
+        864
+      ],
+      "sourceSha256": "08e72f733f3fe33c51dc1aefa06df7e321f22aef354b0ed49239790ce7abb0c0"
+    },
+    "exhibit-frame-1": {
+      "src": "/world/registry/art/exhibit-frame-1-b427bd0ee03c.png",
+      "width": 106,
+      "height": 165,
+      "pivot": [
+        53.0,
+        165
+      ],
+      "sourceSha256": "b427bd0ee03cf2cb7bf30ae6a73b8546933d55644a3df3c114e0a5c95719464c"
+    },
+    "exhibit-frame-2": {
+      "src": "/world/registry/art/exhibit-frame-2-e082da413e2e.png",
+      "width": 105,
+      "height": 114,
+      "pivot": [
+        52.5,
+        114
+      ],
+      "sourceSha256": "e082da413e2ec6c6d2d470876d3ca15d51654bf048454c0f6599b586ab923b83"
+    },
+    "exhibit-frame-3": {
+      "src": "/world/registry/art/exhibit-frame-3-b6ab99b31c6e.png",
+      "width": 173,
+      "height": 123,
+      "pivot": [
+        86.5,
+        123
+      ],
+      "sourceSha256": "b6ab99b31c6e47d7f56951bbfa7330ad0e33700e29bcfd66bae85175cf6d9c5a"
+    },
+    "exhibit-frame-4": {
+      "src": "/world/registry/art/exhibit-frame-4-a73827f61c46.png",
+      "width": 117,
+      "height": 182,
+      "pivot": [
+        58.5,
+        182
+      ],
+      "sourceSha256": "a73827f61c4691e75e28b0179c117a0b4475ebe40378420b9ba82f4459f6adb3"
+    },
+    "exhibit-frame-5": {
+      "src": "/world/registry/art/exhibit-frame-5-7799b6b58ef9.png",
+      "width": 114,
+      "height": 119,
+      "pivot": [
+        57.0,
+        119
+      ],
+      "sourceSha256": "7799b6b58ef96a815ccd2efcc9f6c8a773fd10fd451a2ecd77e83a3c21129d20"
+    },
+    "exhibit-frame-6": {
+      "src": "/world/registry/art/exhibit-frame-6-fb878839f160.png",
+      "width": 232,
+      "height": 147,
+      "pivot": [
+        116.0,
+        147
+      ],
+      "sourceSha256": "fb878839f1607ef1b913f6bbffd614b2df2d85ab2ac03ddc684262adff1b5d31"
+    },
+    "exhibit-frame-7": {
+      "src": "/world/registry/art/exhibit-frame-7-4de4330a1b32.png",
+      "width": 118,
+      "height": 175,
+      "pivot": [
+        59.0,
+        175
+      ],
+      "sourceSha256": "4de4330a1b320fccec7e3bfa1bb464463ffe17b8313549ef5af925e46d38d5e6"
+    },
+    "exhibit-frame-8": {
+      "src": "/world/registry/art/exhibit-frame-8-9a8de7c2d421.png",
+      "width": 125,
+      "height": 114,
+      "pivot": [
+        62.5,
+        114
+      ],
+      "sourceSha256": "9a8de7c2d4219462c96dcd66d7794f813d323e4f53b150ff610175591b255ba1"
+    },
+    "exhibit-frame-9": {
+      "src": "/world/registry/art/exhibit-frame-9-356e6262db6c.png",
+      "width": 115,
+      "height": 187,
+      "pivot": [
+        57.5,
+        187
+      ],
+      "sourceSha256": "356e6262db6c6e7074034a91101d8b5e84b0560886dce5c85c7b5819f4f921a0"
+    },
+    "courtyard-latch-base": {
+      "src": "/world/registry/art/courtyard-latch-base-26cebc51ee9f.png",
+      "width": 224,
+      "height": 480,
+      "pivot": [
+        112,
+        244
+      ],
+      "anchors": {},
+      "sourceSha256": "26cebc51ee9f5e092d28a70dff5c8e0dd9f270f208a6f028606dd2fac64560c9"
+    },
+    "courtyard-latch": {
+      "src": "/world/registry/art/courtyard-latch-ddb628d33a71.png",
+      "width": 587,
+      "height": 155,
+      "pivot": [
+        77,
+        75
+      ],
+      "anchors": {},
+      "sourceSha256": "ddb628d33a710e38780ae26efa469b03d64ff8c476e19a8be55e4e720b31c819"
+    },
+    "bridge": {
+      "src": "/world/registry/art/bridge-04db087055e9.png",
+      "width": 2049,
+      "height": 116,
+      "pivot": [
+        46,
+        52
+      ],
+      "anchors": {
+        "end": [
+          2009,
+          52
+        ],
+        "rope": [
+          2009,
+          52
+        ]
+      },
+      "sourceSha256": "04db087055e979d4ca6355d878078506846a68a4eb47ce7ed15582a9666b6aa7"
+    },
+    "bridge-post": {
+      "src": "/world/registry/art/bridge-post-d7cfeda22bf1.png",
+      "width": 153,
+      "height": 332,
+      "pivot": [
+        77,
+        330
+      ],
+      "anchors": {
+        "rope": [
+          77,
+          25
+        ]
+      },
+      "sourceSha256": "d7cfeda22bf10c05b818dd9e21248387ae59089fbae9f78230399cfd4a4ba0a5"
+    },
+    "bridge-rope": {
+      "src": "/world/registry/art/bridge-rope-e42038a4f36e.png",
+      "width": 51,
+      "height": 883,
+      "pivot": [
+        25,
+        29
+      ],
+      "anchors": {
+        "start": [
+          25,
+          29
+        ],
+        "end": [
+          25,
+          852
+        ]
+      },
+      "sourceSha256": "e42038a4f36e2aec54a631b8d1c2248ab3b54e86b8f7fcb790e5efeb844ee1bd"
+    },
+    "service-light": {
+      "src": "/world/registry/art/service-light-2f848d1ca687.png",
+      "width": 1168,
+      "height": 173,
+      "pivot": [
+        585,
+        117
+      ],
+      "anchors": {},
+      "sourceSha256": "2f848d1ca6876e015f8fc0fbcf54212a305e7844feadcc0c0cd6bcec263a3fd9"
+    },
+    "service-emission": {
+      "src": "/world/registry/art/service-emission-66a47c9d5498.png",
+      "width": 1536,
+      "height": 1024,
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": 1100,
+      "loop": true,
+      "pivot": [
+        256,
+        256
+      ],
+      "sourceSha256": "66a47c9d54987684136d073213ca18c5c73333b845c1d71cc4b72bd591d6a2f3"
+    },
+    "door-recess": {
+      "src": "/world/registry/art/door-recess-d5e60747bcea.png",
+      "width": 760,
+      "height": 1324,
+      "pivot": [
+        380.0,
+        1324
+      ],
+      "sourceSha256": "d5e60747bcea67421eb9c7db167351923f64f3d37371cce3a253029de48591cf"
+    },
+    "warden-idle": {
+      "src": "/world/registry/art/warden-idle-45174177de98.png",
+      "width": 1920,
+      "height": 1280,
+      "frameWidth": 640,
+      "frameHeight": 640,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": [
+        240,
+        240,
+        240,
+        240,
+        240,
+        240
+      ],
+      "loop": true,
+      "pivot": [
+        384,
+        560
+      ],
+      "bodyBounds": {
+        "x": 306,
+        "y": 144,
+        "width": 168,
+        "height": 416
+      },
+      "sourceSha256": "45174177de9808346d76433b1284d6d428a62d6bc25749f8c4b04bb1f27d8a6b"
+    },
+    "warden-attack": {
+      "src": "/world/registry/art/warden-attack-6b682c331663.png",
+      "width": 1920,
+      "height": 1280,
+      "frameWidth": 640,
+      "frameHeight": 640,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": [
+        400,
+        450,
+        65,
+        85,
+        100,
+        150
+      ],
+      "loop": false,
+      "pivot": [
+        384,
+        560
+      ],
+      "bodyBounds": {
+        "x": 306,
+        "y": 144,
+        "width": 168,
+        "height": 416
+      },
+      "sourceSha256": "6b682c3316631ea2c85f273191c9ed3b707b45bb2eb830a3f1312aed05647d92"
+    },
+    "warden-recover": {
+      "src": "/world/registry/art/warden-recover-6cba1f010506.png",
+      "width": 1920,
+      "height": 1280,
+      "frameWidth": 640,
+      "frameHeight": 640,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": [
+        180,
+        180,
+        220,
+        220,
+        240,
+        260
+      ],
+      "loop": false,
+      "pivot": [
+        384,
+        560
+      ],
+      "bodyBounds": {
+        "x": 306,
+        "y": 144,
+        "width": 168,
+        "height": 416
+      },
+      "sourceSha256": "6cba1f01050632c736142453ba5749350bfc063fa544b066141e39cb05068664"
+    },
+    "warden-hit": {
+      "src": "/world/registry/art/warden-hit-4e72f96f3ae1.png",
+      "width": 1920,
+      "height": 1280,
+      "frameWidth": 640,
+      "frameHeight": 640,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": [
+        45,
+        45,
+        45,
+        45,
+        50,
+        50
+      ],
+      "loop": false,
+      "pivot": [
+        384,
+        560
+      ],
+      "bodyBounds": {
+        "x": 306,
+        "y": 144,
+        "width": 168,
+        "height": 416
+      },
+      "sourceSha256": "4e72f96f3ae173f4abc2b27b57a4174bcb26ebfcf539095e38468356950915e5"
+    },
+    "warden-death": {
+      "src": "/world/registry/art/warden-death-b3f5aac8329e.png",
+      "width": 1920,
+      "height": 1280,
+      "frameWidth": 640,
+      "frameHeight": 640,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": [
+        160,
+        180,
+        200,
+        230,
+        300,
+        400
+      ],
+      "loop": false,
+      "pivot": [
+        384,
+        560
+      ],
+      "bodyBounds": {
+        "x": 306,
+        "y": 144,
+        "width": 168,
+        "height": 416
+      },
+      "sourceSha256": "b3f5aac8329e9b422353e3c68613d566413216b6e7fb31215bcd00d439652e1b"
+    },
+    "map-banner": {
+      "src": "/world/registry/art/map-banner-1e9a4d757eb7.png",
+      "width": 1536,
+      "height": 1024,
+      "frameWidth": 512,
+      "frameHeight": 512,
+      "frames": 6,
+      "columns": 3,
+      "frameMs": [
+        80,
+        70,
+        80,
+        90,
+        120,
+        160
+      ],
+      "loop": false,
+      "pivot": [
+        256,
+        88
+      ],
+      "anchors": {
+        "bottom": [
+          256,
+          387
+        ],
+        "rolledTie": [
+          256,
+          113
+        ],
+        "unrolledTie": [
+          256,
+          387
+        ]
+      },
+      "sourceSha256": "1e9a4d757eb7848b5518abc2c10f613d1107bc125fd022f59dc0117ee782561f"
+    },
+    "arrival-wall": {
+      "src": "/world/registry/art/arrival-wall-66fbbb627022.png",
+      "width": 1672,
+      "height": 742,
+      "sourceSha256": "66fbbb627022e2ddbff502da05dfb290572a9cb8490226f72a780d5c50ab7312"
+    },
+    "arrival-floor": {
+      "src": "/world/registry/art/arrival-floor-0b88d5ca459e.png",
+      "width": 1672,
+      "height": 199,
+      "sourceSha256": "0b88d5ca459e4fc8929a1fc8e419cffdf24860cadd031755c060881db1b0c13c"
+    },
+    "rest-wall": {
+      "src": "/world/registry/art/rest-wall-a375745a2717.png",
+      "width": 1672,
+      "height": 695,
+      "sourceSha256": "a375745a2717eacf5038f43d32ad779d3f5774ec2b078826d690e889c9d4b7c6"
+    },
+    "rest-floor": {
+      "src": "/world/registry/art/rest-floor-929fc0142484.png",
+      "width": 1672,
+      "height": 246,
+      "sourceSha256": "929fc01424847273ed5e4f93d60db20418cbff95942f40dfc39c0704f83fda5f"
+    },
+    "registry-wall": {
+      "src": "/world/registry/art/registry-wall-a6bc8dbdb6ca.png",
+      "width": 1672,
+      "height": 676,
+      "sourceSha256": "a6bc8dbdb6cafa01956e456572b9cf1fdbc06cd084c59a727cf36eea9a539bf8"
+    },
+    "registry-floor": {
+      "src": "/world/registry/art/registry-floor-551726c0bd2e.png",
+      "width": 1672,
+      "height": 265,
+      "sourceSha256": "551726c0bd2e927612c0461e252093c7e87ab8ea2b4d29e54340813e61c80db2"
+    },
+    "junction-wall": {
+      "src": "/world/registry/art/junction-wall-4a04d2b16c3b.png",
+      "width": 1672,
+      "height": 635,
+      "sourceSha256": "4a04d2b16c3b0c9265c050b9c425cd15973c18fbc11787421b1123d0f75edcb2"
+    },
+    "junction-floor": {
+      "src": "/world/registry/art/junction-floor-bcd73c131d01.png",
+      "width": 1672,
+      "height": 306,
+      "sourceSha256": "bcd73c131d01ae5c2d012e19e221204cb391759b965345b7d4e59a950e80ebd3"
+    },
+    "junction-column": {
+      "src": "/world/registry/art/junction-column-47980bb0a445.png",
+      "width": 129,
+      "height": 941,
+      "sourceSha256": "47980bb0a44584041df33ad793fe5a287b8a92abe244215d7677764402446110"
+    },
+    "vestibule-wall": {
+      "src": "/world/registry/art/vestibule-wall-b45ef55da7e4.png",
+      "width": 1672,
+      "height": 684,
+      "sourceSha256": "b45ef55da7e454b3bfee79e290960a7a6870e0e091ead80b285797049e20e465"
+    },
+    "vestibule-floor": {
+      "src": "/world/registry/art/vestibule-floor-8efb94928c09.png",
+      "width": 1672,
+      "height": 257,
+      "sourceSha256": "8efb94928c09b69d1a9287b1df05668aad09e1e20b5784b242705a84abb6cd0c"
+    },
+    "arena-wall": {
+      "src": "/world/registry/art/arena-wall-eba27a6e169b.png",
+      "width": 1672,
+      "height": 725,
+      "sourceSha256": "eba27a6e169b0a67c1d4933159fe00a6316a61b9c14bf8faa7d5ef1074c98fd3"
+    },
+    "arena-floor": {
+      "src": "/world/registry/art/arena-floor-3ba51be27186.png",
+      "width": 1672,
+      "height": 216,
+      "sourceSha256": "3ba51be271865d0aeba7d0e5f0bb501bdc09db594ed0168b492aaa2efeec22f5"
+    },
+    "archive-wall": {
+      "src": "/world/registry/art/archive-wall-00822674d050.png",
+      "width": 1672,
+      "height": 713,
+      "sourceSha256": "00822674d0508166f4782b99edb6f988b01d128f99bf9efef006db63031a92b2"
+    },
+    "archive-floor": {
+      "src": "/world/registry/art/archive-floor-c2b45312a1bf.png",
+      "width": 1672,
+      "height": 228,
+      "sourceSha256": "c2b45312a1bf9382fb129084b1721751575e695338c84fc0bc20a3ad25a326fb"
+    },
+    "low-passage-wall": {
+      "src": "/world/registry/art/low-passage-wall-53f29d2eb14a.png",
+      "width": 1672,
+      "height": 647,
+      "sourceSha256": "53f29d2eb14a43894ba66b9e2f9bcd088dd93801ba74e1124f7efd3e48d981c1"
+    },
+    "low-passage-floor": {
+      "src": "/world/registry/art/low-passage-floor-9087bca107eb.png",
+      "width": 1672,
+      "height": 294,
+      "sourceSha256": "9087bca107eb923a6c0279efc2a947d6c7047343211ae1294c6e9bb339ec9d6e"
+    },
+    "pool-wall": {
+      "src": "/world/registry/art/pool-wall-0936c00fdb96.png",
+      "width": 1672,
+      "height": 739,
+      "sourceSha256": "0936c00fdb9668e17ae2263a1feb425d1556931b157e1afb87f3609b272a1a21"
+    },
+    "pool-floor": {
+      "src": "/world/registry/art/pool-floor-32811d1a8284.png",
+      "width": 1672,
+      "height": 202,
+      "sourceSha256": "32811d1a828456e97232a2310ff25a231f72285bfd711fd23710762d2b6c34e1"
+    },
+    "sky-walk-wall": {
+      "src": "/world/registry/art/sky-walk-wall-5a15b1f5248a.png",
+      "width": 1672,
+      "height": 660,
+      "sourceSha256": "5a15b1f5248acc96a69f518e72d106345d49d3c7249ead41a32389e68d4f8647"
+    },
+    "sky-walk-floor": {
+      "src": "/world/registry/art/sky-walk-floor-cb11a5a65e9f.png",
+      "width": 1672,
+      "height": 281,
+      "sourceSha256": "cb11a5a65e9f4b315b17b343ae3030a8acb8031e411968957ce9d99a9fde14f4"
+    },
+    "exhibit-wall": {
+      "src": "/world/registry/art/exhibit-wall-37f5f8d156dc.png",
+      "width": 1672,
+      "height": 688,
+      "sourceSha256": "37f5f8d156dc4175fc6e3cd49ba0f4594efe96c0ab15bf0c10174c859fe3a6b7"
+    },
+    "exhibit-floor": {
+      "src": "/world/registry/art/exhibit-floor-1431b5a347bf.png",
+      "width": 1672,
+      "height": 253,
+      "sourceSha256": "1431b5a347bf8dceef68f40559c8cbc7216ed4687616ce5d2d1d1f641daa5302"
+    },
+    "courtyard-wall": {
+      "src": "/world/registry/art/courtyard-wall-ec7995222a75.png",
+      "width": 1672,
+      "height": 681,
+      "sourceSha256": "ec7995222a75d556aa2687b7d00d81cf1507808a4454aeedca3d37e2f4b837df"
+    },
+    "courtyard-floor": {
+      "src": "/world/registry/art/courtyard-floor-5c17188905d5.png",
+      "width": 1672,
+      "height": 260,
+      "sourceSha256": "5c17188905d59d1d4860df8ffc9397f24d37da2a9ad395c3da8c16d02423fc13"
+    },
+    "left-arrival-extension-top": {
+      "src": "/world/registry/art/left-arrival-extension-top-1acd8d591cdf.png",
+      "width": 627,
+      "height": 61,
+      "sourceSha256": "1acd8d591cdfa9a7431ecf42aa48a77ceddd9699b973346bbefd55ccf4f013f6"
+    },
+    "left-arrival-extension-floor": {
+      "src": "/world/registry/art/left-arrival-extension-floor-5c43cdf2d8de.png",
+      "width": 627,
+      "height": 251,
+      "sourceSha256": "5c43cdf2d8deb5bc0e3801ec27983bf95b45cc8661b75a45cd9cdbcd8836c1a2"
+    },
+    "right-arrival-extension-top": {
+      "src": "/world/registry/art/right-arrival-extension-top-b277f56929d3.png",
+      "width": 627,
+      "height": 61,
+      "sourceSha256": "b277f56929d337cce5347e9687a6180fe3ef234aeab1f46c074a523ec9f652ad"
+    },
+    "right-arrival-extension-floor": {
+      "src": "/world/registry/art/right-arrival-extension-floor-6b716efe1fb3.png",
+      "width": 627,
+      "height": 251,
+      "sourceSha256": "6b716efe1fb3d45b55cccc00016501b59455f84c8d13eab145d84d9c3075b03c"
+    }
+  },
+  "rooms": {
+    "arrival": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": -180,
+          "y": 90,
+          "width": 1020,
+          "height": 1020,
+          "depth": -90,
+          "parallax": 0.035,
+          "alpha": 0.78,
+          "phase": 1.4,
+          "drift": 0.16
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 700,
+          "y": -5,
+          "width": 1080,
+          "height": 1080,
+          "depth": -89,
+          "parallax": 0.04,
+          "alpha": 0.72,
+          "phase": 3.6,
+          "drift": 0.2
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": 0,
+          "y": 0,
+          "width": 1664,
+          "height": 936.0,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "cloud-mid",
+          "role": "cloud",
+          "x": 1000,
+          "y": 20,
+          "width": 800,
+          "height": 800,
+          "depth": -70,
+          "parallax": 0.11,
+          "alpha": 0.92,
+          "phase": 1.8,
+          "drift": 0.35
+        },
+        {
+          "asset": "cloud-mid",
+          "role": "cloud",
+          "x": -340,
+          "y": 175,
+          "width": 1030,
+          "height": 1030,
+          "depth": -65,
+          "parallax": 0.13,
+          "alpha": 0.88,
+          "phase": 4.1,
+          "drift": 0.48
+        },
+        {
+          "asset": "left-arrival-extension-top",
+          "role": "wall",
+          "x": -600,
+          "y": 0,
+          "width": 600,
+          "height": 58.3422,
+          "depth": -32
+        },
+        {
+          "asset": "right-arrival-extension-top",
+          "role": "wall",
+          "x": 1600,
+          "y": 0,
+          "width": 600,
+          "height": 58.3422,
+          "depth": -32
+        },
+        {
+          "asset": "arrival-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 709.6706,
+          "depth": -30
+        },
+        {
+          "asset": "left-arrival-extension-floor",
+          "role": "floor",
+          "x": -600,
+          "y": 680.9777,
+          "width": 600,
+          "height": 240.0638,
+          "depth": -22
+        },
+        {
+          "asset": "right-arrival-extension-floor",
+          "role": "floor",
+          "x": 1600,
+          "y": 680.9777,
+          "width": 600,
+          "height": 240.0638,
+          "depth": -22
+        },
+        {
+          "asset": "arrival-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 709.6706,
+          "width": 1600,
+          "height": 190.3294,
+          "depth": -20
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 600,
+        "footline": 718.2784272051009,
+        "wallFloorSplitSourceY": 742,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "rest": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": -180,
+          "y": 90,
+          "width": 1020,
+          "height": 1020,
+          "depth": -90,
+          "parallax": 0.035,
+          "alpha": 0.78,
+          "phase": 1.4,
+          "drift": 0.16
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 700,
+          "y": -5,
+          "width": 1080,
+          "height": 1080,
+          "depth": -89,
+          "parallax": 0.04,
+          "alpha": 0.72,
+          "phase": 3.6,
+          "drift": 0.2
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": 110,
+          "y": -30,
+          "width": 1664,
+          "height": 936.0,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "cloud-mid",
+          "role": "cloud",
+          "x": 850,
+          "y": 90,
+          "width": 940,
+          "height": 940,
+          "depth": -65,
+          "parallax": 0.12,
+          "alpha": 0.85,
+          "phase": 2.2,
+          "drift": 0.38
+        },
+        {
+          "asset": "rest-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 664.7184,
+          "depth": -30
+        },
+        {
+          "asset": "rest-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 664.7184,
+          "width": 1600,
+          "height": 235.2816,
+          "depth": -20
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 191.6404,
+          "y": 354.746,
+          "width": 18.6332,
+          "height": 48,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 160.1569,
+          "y": 337.946,
+          "width": 81.6,
+          "height": 81.6,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.0
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 675.2391073326248,
+        "wallFloorSplitSourceY": 695,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "registry": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": -180,
+          "y": 90,
+          "width": 1020,
+          "height": 1020,
+          "depth": -90,
+          "parallax": 0.035,
+          "alpha": 0.78,
+          "phase": 1.4,
+          "drift": 0.16
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 700,
+          "y": -5,
+          "width": 1080,
+          "height": 1080,
+          "depth": -89,
+          "parallax": 0.04,
+          "alpha": 0.72,
+          "phase": 3.6,
+          "drift": 0.2
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": -580,
+          "y": -20,
+          "width": 2244,
+          "height": 1262.25,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "cloud-mid",
+          "role": "cloud",
+          "x": -330,
+          "y": 185,
+          "width": 1000,
+          "height": 1000,
+          "depth": -65,
+          "parallax": 0.12,
+          "alpha": 0.85,
+          "phase": 2.2,
+          "drift": 0.38
+        },
+        {
+          "asset": "registry-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 646.5462,
+          "depth": -30
+        },
+        {
+          "asset": "registry-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 646.5462,
+          "width": 1600,
+          "height": 253.4538,
+          "depth": -20
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 547.8289,
+          "y": 415.1318,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1137.3025,
+          "y": 427.5654,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1353.5705,
+          "y": 427.5654,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 520.2809,
+          "y": 400.4318,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.0
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1109.7545,
+          "y": 412.8654,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.73
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1326.0225,
+          "y": 412.8654,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 1.46
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 661.8490967056323,
+        "wallFloorSplitSourceY": 676,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "junction": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": -180,
+          "y": 90,
+          "width": 1020,
+          "height": 1020,
+          "depth": -90,
+          "parallax": 0.035,
+          "alpha": 0.78,
+          "phase": 1.4,
+          "drift": 0.16
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 700,
+          "y": -5,
+          "width": 1080,
+          "height": 1080,
+          "depth": -89,
+          "parallax": 0.04,
+          "alpha": 0.72,
+          "phase": 3.6,
+          "drift": 0.2
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": -80,
+          "y": 0,
+          "width": 1744,
+          "height": 981.0,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "cloud-mid",
+          "role": "cloud",
+          "x": 940,
+          "y": 90,
+          "width": 930,
+          "height": 930,
+          "depth": -65,
+          "parallax": 0.12,
+          "alpha": 0.85,
+          "phase": 2.2,
+          "drift": 0.38
+        },
+        {
+          "asset": "junction-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 607.3326,
+          "depth": -30
+        },
+        {
+          "asset": "junction-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 607.3326,
+          "width": 1600,
+          "height": 292.6674,
+          "depth": -20
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 721.9915,
+          "y": 151.1573,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1063.6183,
+          "y": 385.4825,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1477.0155,
+          "y": 473.474,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 694.4435,
+          "y": 136.4573,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.0
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1036.0703,
+          "y": 370.7825,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.73
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1449.4675,
+          "y": 458.774,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 1.46
+        },
+        {
+          "asset": "junction-column",
+          "role": "foreground",
+          "x": 384.689,
+          "y": 0,
+          "width": 123.445,
+          "height": 900,
+          "depth": 46
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 616.8969181721573,
+        "wallFloorSplitSourceY": 635,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "vestibule": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 120,
+          "y": -380,
+          "width": 1100,
+          "height": 1100,
+          "depth": -85,
+          "parallax": 0.04,
+          "alpha": 0.5,
+          "phase": 1,
+          "drift": 0.18
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": -130,
+          "y": -150,
+          "width": 1794,
+          "height": 1009.125,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "vestibule-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 654.1977,
+          "depth": -30
+        },
+        {
+          "asset": "vestibule-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 654.1977,
+          "width": 1600,
+          "height": 245.8023,
+          "depth": -20
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 215.7714,
+          "y": 472.5175,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 920.0777,
+          "y": 405.5675,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 188.2234,
+          "y": 457.8175,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.0
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 892.5297,
+          "y": 390.8675,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.73
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 671.413390010627,
+        "wallFloorSplitSourceY": 684,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "arena": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 120,
+          "y": -380,
+          "width": 1100,
+          "height": 1100,
+          "depth": -85,
+          "parallax": 0.04,
+          "alpha": 0.5,
+          "phase": 1,
+          "drift": 0.18
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": -130,
+          "y": -135,
+          "width": 1794,
+          "height": 1009.125,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "arena-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 693.4113,
+          "depth": -30
+        },
+        {
+          "asset": "arena-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 693.4113,
+          "width": 1600,
+          "height": 206.5887,
+          "depth": -20
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 292.1188,
+          "y": 496.2976,
+          "width": 18.6332,
+          "height": 48,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 551.449,
+          "y": 466.6482,
+          "width": 18.6332,
+          "height": 48,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1031.8317,
+          "y": 466.6482,
+          "width": 18.6332,
+          "height": 48,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1290.2049,
+          "y": 496.2976,
+          "width": 18.6332,
+          "height": 48,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 260.6354,
+          "y": 479.4976,
+          "width": 81.6,
+          "height": 81.6,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.0
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 519.9656,
+          "y": 449.8482,
+          "width": 81.6,
+          "height": 81.6,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.73
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1000.3483,
+          "y": 449.8482,
+          "width": 81.6,
+          "height": 81.6,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 1.46
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1258.7215,
+          "y": 479.4976,
+          "width": 81.6,
+          "height": 81.6,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 2.19
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 724.0170031880978,
+        "wallFloorSplitSourceY": 725,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "archive": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 120,
+          "y": -380,
+          "width": 1100,
+          "height": 1100,
+          "depth": -85,
+          "parallax": 0.04,
+          "alpha": 0.5,
+          "phase": 1,
+          "drift": 0.18
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": -240,
+          "y": -100,
+          "width": 1904,
+          "height": 1071.0,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "archive-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 681.9341,
+          "depth": -30
+        },
+        {
+          "asset": "archive-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 681.9341,
+          "width": 1600,
+          "height": 218.0659,
+          "depth": -20
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 232.9963,
+          "y": 413.2189,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1383.2355,
+          "y": 418.9575,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 205.4483,
+          "y": 398.5189,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.0
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1355.6876,
+          "y": 404.2575,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.73
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 690.5419766206164,
+        "wallFloorSplitSourceY": 713,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "low-passage": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 120,
+          "y": -380,
+          "width": 1100,
+          "height": 1100,
+          "depth": -85,
+          "parallax": 0.04,
+          "alpha": 0.5,
+          "phase": 1,
+          "drift": 0.18
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": -120,
+          "y": -140,
+          "width": 1784,
+          "height": 1003.5,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "low-passage-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 618.8098,
+          "depth": -30
+        },
+        {
+          "asset": "low-passage-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 618.8098,
+          "width": 1600,
+          "height": 281.1902,
+          "depth": -20
+        },
+        {
+          "asset": "service-light",
+          "role": "foreground",
+          "x": 483.756,
+          "y": 355.2967,
+          "width": 110,
+          "height": 16.2928,
+          "depth": 10
+        },
+        {
+          "asset": "service-light",
+          "role": "foreground",
+          "x": 1078.9713,
+          "y": 355.2967,
+          "width": 110,
+          "height": 16.2928,
+          "depth": 10
+        },
+        {
+          "asset": "service-emission",
+          "role": "light",
+          "x": 388.756,
+          "y": 213.4431,
+          "width": 300,
+          "height": 300,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.16,
+          "phase": 0.0
+        },
+        {
+          "asset": "service-emission",
+          "role": "light",
+          "x": 983.9713,
+          "y": 213.4431,
+          "width": 300,
+          "height": 300,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.16,
+          "phase": 0.83
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 634.1126461211477,
+        "wallFloorSplitSourceY": 647,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "pool": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": -180,
+          "y": 90,
+          "width": 1020,
+          "height": 1020,
+          "depth": -90,
+          "parallax": 0.035,
+          "alpha": 0.78,
+          "phase": 1.4,
+          "drift": 0.16
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 700,
+          "y": -5,
+          "width": 1080,
+          "height": 1080,
+          "depth": -89,
+          "parallax": 0.04,
+          "alpha": 0.72,
+          "phase": 3.6,
+          "drift": 0.2
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": -90,
+          "y": -10,
+          "width": 1754,
+          "height": 986.625,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "cloud-mid",
+          "role": "cloud",
+          "x": 900,
+          "y": 5,
+          "width": 870,
+          "height": 870,
+          "depth": -65,
+          "parallax": 0.12,
+          "alpha": 0.85,
+          "phase": 2.2,
+          "drift": 0.38
+        },
+        {
+          "asset": "water-shimmer",
+          "role": "water",
+          "x": 0,
+          "y": 516.4718,
+          "width": 1600,
+          "height": 192.2423,
+          "depth": -50,
+          "blend": "normal",
+          "phase": 0
+        },
+        {
+          "asset": "pool-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 706.8013,
+          "depth": -30
+        },
+        {
+          "asset": "pool-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 706.8013,
+          "width": 1600,
+          "height": 193.1987,
+          "depth": -20
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 54.0489,
+          "y": 549.9883,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 26.501,
+          "y": 535.2883,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.0
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 715.4091392136025,
+        "wallFloorSplitSourceY": 739,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "sky-walk": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": -180,
+          "y": 90,
+          "width": 1020,
+          "height": 1020,
+          "depth": -90,
+          "parallax": 0.035,
+          "alpha": 0.78,
+          "phase": 1.4,
+          "drift": 0.16
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 700,
+          "y": -5,
+          "width": 1080,
+          "height": 1080,
+          "depth": -89,
+          "parallax": 0.04,
+          "alpha": 0.72,
+          "phase": 3.6,
+          "drift": 0.2
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": -180,
+          "y": -95,
+          "width": 1844,
+          "height": 1037.25,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "cloud-mid",
+          "role": "cloud",
+          "x": 800,
+          "y": 150,
+          "width": 1110,
+          "height": 1110,
+          "depth": -65,
+          "parallax": 0.12,
+          "alpha": 0.85,
+          "phase": 2.2,
+          "drift": 0.38
+        },
+        {
+          "asset": "sky-walk-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 631.2434,
+          "depth": -30
+        },
+        {
+          "asset": "sky-walk-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 631.2434,
+          "width": 1600,
+          "height": 268.7566,
+          "depth": -20
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 16.7284,
+          "y": 495.4718,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1566.0107,
+          "y": 505.9926,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": -10.8196,
+          "y": 480.7718,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.0
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1538.4627,
+          "y": 491.2926,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.73
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 639.8512221041445,
+        "wallFloorSplitSourceY": 660,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "exhibit": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": -180,
+          "y": 90,
+          "width": 1020,
+          "height": 1020,
+          "depth": -90,
+          "parallax": 0.035,
+          "alpha": 0.78,
+          "phase": 1.4,
+          "drift": 0.16
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 700,
+          "y": -5,
+          "width": 1080,
+          "height": 1080,
+          "depth": -89,
+          "parallax": 0.04,
+          "alpha": 0.72,
+          "phase": 3.6,
+          "drift": 0.2
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": -300,
+          "y": -155,
+          "width": 1964,
+          "height": 1104.75,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "cloud-mid",
+          "role": "cloud",
+          "x": 960,
+          "y": -20,
+          "width": 1050,
+          "height": 1050,
+          "depth": -65,
+          "parallax": 0.12,
+          "alpha": 0.85,
+          "phase": 2.2,
+          "drift": 0.38
+        },
+        {
+          "asset": "exhibit-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 658.0234,
+          "depth": -30
+        },
+        {
+          "asset": "exhibit-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 658.0234,
+          "width": 1600,
+          "height": 241.9766,
+          "depth": -20
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 214.8145,
+          "y": 454.3454,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1366.0107,
+          "y": 453.3889,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 187.2665,
+          "y": 439.6454,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.0
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1338.4627,
+          "y": 438.6889,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.73
+        },
+        {
+          "asset": "bench",
+          "role": "foreground",
+          "x": 756.4847,
+          "y": 628.5441,
+          "width": 100.4278,
+          "height": 40,
+          "depth": 15
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 672.3698193411265,
+        "wallFloorSplitSourceY": 688,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    },
+    "courtyard": {
+      "layers": [
+        {
+          "asset": "shared-sky",
+          "role": "sky",
+          "x": -32,
+          "y": -18,
+          "width": 1664,
+          "height": 936,
+          "depth": -100,
+          "parallax": 0.02
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": -180,
+          "y": 90,
+          "width": 1020,
+          "height": 1020,
+          "depth": -90,
+          "parallax": 0.035,
+          "alpha": 0.78,
+          "phase": 1.4,
+          "drift": 0.16
+        },
+        {
+          "asset": "cloud-far",
+          "role": "cloud",
+          "x": 700,
+          "y": -5,
+          "width": 1080,
+          "height": 1080,
+          "depth": -89,
+          "parallax": 0.04,
+          "alpha": 0.72,
+          "phase": 3.6,
+          "drift": 0.2
+        },
+        {
+          "asset": "shared-ring",
+          "role": "landmark",
+          "x": -330,
+          "y": -150,
+          "width": 1994,
+          "height": 1121.625,
+          "depth": -80,
+          "parallax": 0.07,
+          "alpha": 0.86
+        },
+        {
+          "asset": "cloud-mid",
+          "role": "cloud",
+          "x": 900,
+          "y": 5,
+          "width": 1000,
+          "height": 1000,
+          "depth": -65,
+          "parallax": 0.12,
+          "alpha": 0.85,
+          "phase": 2.2,
+          "drift": 0.38
+        },
+        {
+          "asset": "courtyard-wall",
+          "role": "wall",
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 651.3284,
+          "depth": -30
+        },
+        {
+          "asset": "courtyard-floor",
+          "role": "floor",
+          "x": 0,
+          "y": 651.3284,
+          "width": 1600,
+          "height": 248.6716,
+          "depth": -20
+        },
+        {
+          "asset": "tree",
+          "role": "foreground",
+          "x": 195.4004,
+          "y": 225.7561,
+          "width": 635.0364,
+          "height": 432.2286,
+          "depth": 5
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 140.1733,
+          "y": 433.3039,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1338.2595,
+          "y": 497.3847,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-fixture",
+          "role": "foreground",
+          "x": 1507.6375,
+          "y": 497.3847,
+          "width": 16.304,
+          "height": 42,
+          "depth": 10
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 112.6254,
+          "y": 418.6039,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.0
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1310.7115,
+          "y": 482.6847,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 0.73
+        },
+        {
+          "asset": "lamp-emission",
+          "role": "light",
+          "x": 1480.0895,
+          "y": 482.6847,
+          "width": 71.4,
+          "height": 71.4,
+          "depth": 12,
+          "blend": "add",
+          "alpha": 0.32,
+          "phase": 1.46
+        }
+      ],
+      "referenceGeometry": {
+        "sourceSize": [
+          1672,
+          941
+        ],
+        "logicalSize": [
+          1600,
+          900
+        ],
+        "referenceLeft": 0,
+        "footline": 661.8490967056323,
+        "wallFloorSplitSourceY": 681,
+        "note": "Layer coordinates relative to reference camera; runtime applies referenceLeft once."
+      }
+    }
+  }
+}

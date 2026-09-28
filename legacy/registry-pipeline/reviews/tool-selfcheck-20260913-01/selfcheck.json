@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "checks": [
+    "RGBA crops preserve partial alpha and RGB under alpha0",
+    "GIF timing rounding explicit",
+    "hard-alpha rejects soft source without repair",
+    "existing output rejected",
+    "outside-owner output rejected without creation",
+    "opaque checker candidate flagged",
+    "unused opaque cell rejected",
+    "source bytes unchanged"
+  ],
+  "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\tool-selfcheck-20260913-01\\soft-valid\\report.json"
+}

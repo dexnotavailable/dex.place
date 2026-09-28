@@ -1,0 +1,184 @@
+{
+  "warden-idle": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\warden-idle-registered-v1.png",
+    "sha256": "45174177de9808346d76433b1284d6d428a62d6bc25749f8c4b04bb1f27d8a6b",
+    "width": 1920,
+    "height": 1280,
+    "frameWidth": 640,
+    "frameHeight": 640,
+    "frames": 6,
+    "columns": 3,
+    "frameMs": [
+      240,
+      240,
+      240,
+      240,
+      240,
+      240
+    ],
+    "loop": true,
+    "pivot": [
+      384,
+      560
+    ],
+    "bodyBounds": {
+      "x": 306,
+      "y": 144,
+      "width": 168,
+      "height": 416
+    }
+  },
+  "warden-attack": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\warden-attack-registered-v1.png",
+    "sha256": "6b682c3316631ea2c85f273191c9ed3b707b45bb2eb830a3f1312aed05647d92",
+    "width": 1920,
+    "height": 1280,
+    "frameWidth": 640,
+    "frameHeight": 640,
+    "frames": 6,
+    "columns": 3,
+    "frameMs": [
+      400,
+      450,
+      65,
+      85,
+      100,
+      150
+    ],
+    "loop": false,
+    "pivot": [
+      384,
+      560
+    ],
+    "bodyBounds": {
+      "x": 306,
+      "y": 144,
+      "width": 168,
+      "height": 416
+    }
+  },
+  "warden-recover": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\warden-recover-registered-v1.png",
+    "sha256": "6cba1f01050632c736142453ba5749350bfc063fa544b066141e39cb05068664",
+    "width": 1920,
+    "height": 1280,
+    "frameWidth": 640,
+    "frameHeight": 640,
+    "frames": 6,
+    "columns": 3,
+    "frameMs": [
+      180,
+      180,
+      220,
+      220,
+      240,
+      260
+    ],
+    "loop": false,
+    "pivot": [
+      384,
+      560
+    ],
+    "bodyBounds": {
+      "x": 306,
+      "y": 144,
+      "width": 168,
+      "height": 416
+    }
+  },
+  "warden-hit": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\warden-hit-registered-v1.png",
+    "sha256": "4e72f96f3ae173f4abc2b27b57a4174bcb26ebfcf539095e38468356950915e5",
+    "width": 1920,
+    "height": 1280,
+    "frameWidth": 640,
+    "frameHeight": 640,
+    "frames": 6,
+    "columns": 3,
+    "frameMs": [
+      45,
+      45,
+      45,
+      45,
+      50,
+      50
+    ],
+    "loop": false,
+    "pivot": [
+      384,
+      560
+    ],
+    "bodyBounds": {
+      "x": 306,
+      "y": 144,
+      "width": 168,
+      "height": 416
+    }
+  },
+  "warden-death": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\warden-death-registered-v1.png",
+    "sha256": "b3f5aac8329e9b422353e3c68613d566413216b6e7fb31215bcd00d439652e1b",
+    "width": 1920,
+    "height": 1280,
+    "frameWidth": 640,
+    "frameHeight": 640,
+    "frames": 6,
+    "columns": 3,
+    "frameMs": [
+      160,
+      180,
+      200,
+      230,
+      300,
+      400
+    ],
+    "loop": false,
+    "pivot": [
+      384,
+      560
+    ],
+    "bodyBounds": {
+      "x": 306,
+      "y": 144,
+      "width": 168,
+      "height": 416
+    }
+  },
+  "map-banner": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\map-banner-registered-v1.png",
+    "sha256": "1e9a4d757eb7848b5518abc2c10f613d1107bc125fd022f59dc0117ee782561f",
+    "width": 1536,
+    "height": 1024,
+    "frameWidth": 512,
+    "frameHeight": 512,
+    "frames": 6,
+    "columns": 3,
+    "frameMs": [
+      80,
+      70,
+      80,
+      90,
+      120,
+      160
+    ],
+    "loop": false,
+    "pivot": [
+      256,
+      88
+    ],
+    "anchors": {
+      "bottom": [
+        256,
+        387
+      ],
+      "rolledTie": [
+        256,
+        113
+      ],
+      "unrolledTie": [
+        256,
+        387
+      ]
+    }
+  }
+}

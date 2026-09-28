@@ -1,0 +1,120 @@
+{
+  "status": "native-assembly-bindings-locally-verified",
+  "checks": [
+    {
+      "name": "native cable cut and bridge lower keep existing state contract",
+      "pass": true,
+      "evidence": {
+        "cable": {
+          "id": "arrival.cable.01",
+          "kind": "cable",
+          "state": "cut",
+          "x": 1344,
+          "y": 615,
+          "occupied": false,
+          "targetY": 615
+        },
+        "bridge": {
+          "id": "arrival.bridge.01",
+          "kind": "bridge",
+          "state": "open",
+          "x": 1240,
+          "y": 604,
+          "occupied": false,
+          "targetY": 604
+        }
+      }
+    },
+    {
+      "name": "native banner crop reaches open with semantic DOM unchanged",
+      "pass": true,
+      "evidence": {
+        "open": true,
+        "amount": 1,
+        "anchor": {
+          "x": 481,
+          "y": 643
+        }
+      }
+    },
+    {
+      "name": "banner furls to rolled phase",
+      "pass": true,
+      "evidence": {
+        "open": false,
+        "amount": 0,
+        "anchor": {
+          "x": 482,
+          "y": 643
+        }
+      }
+    },
+    {
+      "name": "native lift visuals follow carried paused platform",
+      "pass": true,
+      "evidence": {
+        "playerY": 622.400000000001,
+        "deckY": 622.400000000001,
+        "pausedY": 622.400000000001
+      }
+    },
+    {
+      "name": "lift docks with player on native deck cap",
+      "pass": true,
+      "evidence": {
+        "x": 3156.5166666666632,
+        "y": 360,
+        "vx": 0,
+        "vy": 0,
+        "grounded": true,
+        "support": "support.lift.01",
+        "clip": "idle",
+        "frame": 7,
+        "attack": -1,
+        "facing": -1,
+        "screen": {
+          "x": 637,
+          "y": 721
+        }
+      }
+    },
+    {
+      "name": "no runtime page exceptions",
+      "pass": true,
+      "evidence": []
+    },
+    {
+      "name": "terminal frame-sampled panel_active returning intact",
+      "pass": true,
+      "proof": "terminal-phase-verification.json",
+      "observed": [
+        "panel_active",
+        "returning",
+        "intact"
+      ]
+    }
+  ],
+  "source": {
+    "assemblies.ts": {
+      "path": "D:\\Dex\\Projects\\dex-place-world\\site\\src\\worldsite\\game\\assemblies.ts",
+      "sha256": "5cdc02ede9500b76edfc09725da61cd535f538765dcf125041994267da388621"
+    },
+    "assemblyArt.ts": {
+      "path": "D:\\Dex\\Projects\\dex-place-world\\site\\src\\worldsite\\game\\assemblyArt.ts",
+      "sha256": "3e48a7b796fd477ccfc5c12df5ac4bbd283b178599f837ce27cbf291867066cb"
+    }
+  },
+  "canvasFrames": 23,
+  "terminalSampledStates": [
+    "panel_active",
+    "returning",
+    "intact"
+  ],
+  "preservedInitialMiss": "verification.json retains the first terminal screenshot assertion; the frame-sampled follow-up supersedes that one observation.",
+  "readme": "D:\\Dex\\Projects\\dex-place-art-production\\provenance\\assembly-art-20260906\\README.md",
+  "limits": [
+    "Whole-scene composition and loading posters remain root-owned.",
+    "Frozen slash presentation over open banner was reported to WorldScene owner.",
+    "Local headless Brave evidence only; no physical-mobile or public completion claim."
+  ]
+}

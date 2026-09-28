@@ -1,0 +1,25 @@
+{
+  "renderSource": "finish_audio.py: bell/phrase",
+  "sampleRate": 48000,
+  "attackSeconds": 0.018,
+  "decaySeconds": 1.12,
+  "partials": [
+    1,
+    0.18,
+    0.055
+  ],
+  "upperPartialDecaysSeconds": [
+    0.45,
+    0.2
+  ],
+  "normalizedNoteRmsDbFS": -31,
+  "delaysSeconds": [
+    0.13,
+    0.227,
+    0.389,
+    0.617,
+    0.991
+  ],
+  "sourceRights": "Original offline note/instrument synthesis; no samples or third-party melody",
+  "listeningStatus": "pending"
+}

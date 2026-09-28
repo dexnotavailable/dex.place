@@ -1,0 +1,43 @@
+{
+  "status": "converted-invariants-pass-visual-review-required",
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\bridge-rig-keyed-v1.png",
+  "sourceSha256": "8d230529a9a0bfb5c9b40e20f954e2597fac7d7c7d2bd7fb4f50f24c93375275",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\mechanism-key-rig-v1\\alpha.png",
+  "toolSha256": "c68cbed11a406d1515a235b2cc16944412d8696a0d72a5ee05364d6d7aefa546",
+  "outputSha256": "3f240ab4d07fc917bf84cc6aa34d7ae0d29a749feb67af5c81119f394e03ce36",
+  "size": [
+    1672,
+    941
+  ],
+  "settings": {
+    "keyRgb": [
+      255,
+      0,
+      255
+    ],
+    "keyTolerance": 32,
+    "minDominance": 220,
+    "edgeBandPx": 3,
+    "cleanDominance": 35,
+    "actualKeyMedianRgb": [
+      251.0,
+      4.0,
+      250.0
+    ],
+    "protectRects": []
+  },
+  "trueBackgroundPixels": 1526896,
+  "edgeBandPixels": 9604,
+  "edgeCandidates": 3699,
+  "edgeCandidatesWithoutCleanNeighbour": 2,
+  "edgeRgbChangedPixels": 3683,
+  "outsideBandInteriorPixels": 36852,
+  "outsideBandInteriorUnchanged": true,
+  "protectedUnchangedAndOpaque": true,
+  "protectedNearKeyPixelsKept": 0,
+  "remainingPurpleInteriorPixels": 4,
+  "remainingPurpleInteriorPolicy": "Preserved. Legitimate purple and painted key reflections cannot be distinguished by hue alone; retouch undesired reflections separately.",
+  "sourceUnchanged": true,
+  "roiReports": [],
+  "limits": "Near-key false positives remain possible; inspect masks. No cloud processing, global desaturation, interior softening, or runtime publication."
+}

@@ -1,0 +1,244 @@
+{
+  "wideWidth": 1280,
+  "portraitWidth": 750,
+  "totalTenBytes": 1732554,
+  "homeWideBytes": 297148,
+  "homePortraitBytes": 223612,
+  "wide250KbTargetMet": false,
+  "requiresRootInspectionBeforeIntegration": true,
+  "runtimeModified": false,
+  "files": [
+    {
+      "section": "home",
+      "profile": "wide",
+      "width": 1280,
+      "height": 512,
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\prototypes\\fog-light-v1\\posters-v9\\resolution-trial-v1\\home-wide-1280.webp",
+      "bytes": 297148,
+      "sha256": "15d3209e1dc834bbf03ed2f641b8d96727680e578befcc57a5f86fbc418f3155",
+      "selectedUrl": "/world/preview/home-wide-v9.webp",
+      "worldRect": {
+        "x": 480.0,
+        "y": 175.00000000000006,
+        "width": 2550.0,
+        "height": 1019.9999999999999
+      },
+      "anchor": {
+        "x": 1500,
+        "y": 960
+      },
+      "resample": "NEAREST only",
+      "encoding": "lossless WebP method6",
+      "sourcePng": "D:\\Dex\\Projects\\dex-place-art-production\\source\\exports\\world-posters-20260907-v9\\home-wide.png"
+    },
+    {
+      "section": "home",
+      "profile": "portrait",
+      "width": 750,
+      "height": 1002,
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\prototypes\\fog-light-v1\\posters-v9\\resolution-trial-v1\\home-portrait-750.webp",
+      "bytes": 223612,
+      "sha256": "a09b7e31271a00fb9ad833a032cb6453f497df291fd6f6a113a4501d7c7b711f",
+      "selectedUrl": "/world/preview/home-portrait-v9.webp",
+      "worldRect": {
+        "x": 1230.1736526946108,
+        "y": 267.0,
+        "width": 673.6526946107784,
+        "height": 900.0
+      },
+      "anchor": {
+        "x": 1500,
+        "y": 960
+      },
+      "resample": "NEAREST only",
+      "encoding": "lossless WebP method6",
+      "sourcePng": "D:\\Dex\\Projects\\dex-place-art-production\\source\\exports\\world-posters-20260907-v9\\home-portrait.png"
+    },
+    {
+      "section": "downloads",
+      "profile": "wide",
+      "width": 1280,
+      "height": 512,
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\prototypes\\fog-light-v1\\posters-v9\\resolution-trial-v1\\downloads-wide-1280.webp",
+      "bytes": 156662,
+      "sha256": "acccc2527adb53fe442164ee20350a1b0cab7837d4d925849d85cc5db030d9dd",
+      "selectedUrl": "/world/preview/downloads-wide-v9.webp",
+      "worldRect": {
+        "x": 3380.0,
+        "y": 175.00000000000006,
+        "width": 2550.0,
+        "height": 1019.9999999999999
+      },
+      "anchor": {
+        "x": 4400,
+        "y": 960
+      },
+      "resample": "NEAREST only",
+      "encoding": "lossless WebP method6",
+      "sourcePng": "D:\\Dex\\Projects\\dex-place-art-production\\source\\exports\\world-posters-20260907-v9\\downloads-wide.png"
+    },
+    {
+      "section": "downloads",
+      "profile": "portrait",
+      "width": 750,
+      "height": 1002,
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\prototypes\\fog-light-v1\\posters-v9\\resolution-trial-v1\\downloads-portrait-750.webp",
+      "bytes": 100910,
+      "sha256": "6da688a45aef7603ca887fad4cec071e20d65f086ef2096a7321849a7018dc33",
+      "selectedUrl": "/world/preview/downloads-portrait-v9.webp",
+      "worldRect": {
+        "x": 4130.173652694611,
+        "y": 267.0,
+        "width": 673.6526946107784,
+        "height": 900.0
+      },
+      "anchor": {
+        "x": 4400,
+        "y": 960
+      },
+      "resample": "NEAREST only",
+      "encoding": "lossless WebP method6",
+      "sourcePng": "D:\\Dex\\Projects\\dex-place-art-production\\source\\exports\\world-posters-20260907-v9\\downloads-portrait.png"
+    },
+    {
+      "section": "documentation",
+      "profile": "wide",
+      "width": 1280,
+      "height": 512,
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\prototypes\\fog-light-v1\\posters-v9\\resolution-trial-v1\\documentation-wide-1280.webp",
+      "bytes": 167452,
+      "sha256": "8b8d7ed59dba1911d77aea7661f41056e5cb0591d734627e68e3ffff23d8dd28",
+      "selectedUrl": "/world/preview/documentation-wide-v9.webp",
+      "worldRect": {
+        "x": 6180.0,
+        "y": 335.00000000000006,
+        "width": 2550.0,
+        "height": 1019.9999999999999
+      },
+      "anchor": {
+        "x": 7200,
+        "y": 1120
+      },
+      "resample": "NEAREST only",
+      "encoding": "lossless WebP method6",
+      "sourcePng": "D:\\Dex\\Projects\\dex-place-art-production\\source\\exports\\world-posters-20260907-v9\\documentation-wide.png"
+    },
+    {
+      "section": "documentation",
+      "profile": "portrait",
+      "width": 750,
+      "height": 1002,
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\prototypes\\fog-light-v1\\posters-v9\\resolution-trial-v1\\documentation-portrait-750.webp",
+      "bytes": 87764,
+      "sha256": "a749fc44d789c6a7501bbfd41e641c953fa68c7a8f85a090b24e7d028017a1f3",
+      "selectedUrl": "/world/preview/documentation-portrait-v9.webp",
+      "worldRect": {
+        "x": 6930.173652694611,
+        "y": 427.0,
+        "width": 673.6526946107784,
+        "height": 900.0
+      },
+      "anchor": {
+        "x": 7200,
+        "y": 1120
+      },
+      "resample": "NEAREST only",
+      "encoding": "lossless WebP method6",
+      "sourcePng": "D:\\Dex\\Projects\\dex-place-art-production\\source\\exports\\world-posters-20260907-v9\\documentation-portrait.png"
+    },
+    {
+      "section": "illustrations",
+      "profile": "wide",
+      "width": 1280,
+      "height": 512,
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\prototypes\\fog-light-v1\\posters-v9\\resolution-trial-v1\\illustrations-wide-1280.webp",
+      "bytes": 158214,
+      "sha256": "52bc49e1f8b03251572c03d06f6ce3af3982acc6dbb057a4019986130ac0482b",
+      "selectedUrl": "/world/preview/illustrations-wide-v9.webp",
+      "worldRect": {
+        "x": 8980.0,
+        "y": 47.00000000000006,
+        "width": 2550.0,
+        "height": 1019.9999999999999
+      },
+      "anchor": {
+        "x": 10000,
+        "y": 832
+      },
+      "resample": "NEAREST only",
+      "encoding": "lossless WebP method6",
+      "sourcePng": "D:\\Dex\\Projects\\dex-place-art-production\\source\\exports\\world-posters-20260907-v9\\illustrations-wide.png"
+    },
+    {
+      "section": "illustrations",
+      "profile": "portrait",
+      "width": 750,
+      "height": 1002,
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\prototypes\\fog-light-v1\\posters-v9\\resolution-trial-v1\\illustrations-portrait-750.webp",
+      "bytes": 92030,
+      "sha256": "a893c5ebbfa3ce45f1dd21b6f7470c0fa201dac5f2fce2dc71a819fcfe37c673",
+      "selectedUrl": "/world/preview/illustrations-portrait-v9.webp",
+      "worldRect": {
+        "x": 9730.173652694612,
+        "y": 139.0,
+        "width": 673.6526946107784,
+        "height": 900.0
+      },
+      "anchor": {
+        "x": 10000,
+        "y": 832
+      },
+      "resample": "NEAREST only",
+      "encoding": "lossless WebP method6",
+      "sourcePng": "D:\\Dex\\Projects\\dex-place-art-production\\source\\exports\\world-posters-20260907-v9\\illustrations-portrait.png"
+    },
+    {
+      "section": "donate",
+      "profile": "wide",
+      "width": 1280,
+      "height": 512,
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\prototypes\\fog-light-v1\\posters-v9\\resolution-trial-v1\\donate-wide-1280.webp",
+      "bytes": 237202,
+      "sha256": "af92a046dac43cdf62f85801cb16adcd88e6c5524b0ce2cddeb8cfc4c1e0472d",
+      "selectedUrl": "/world/preview/donate-wide-v9.webp",
+      "worldRect": {
+        "x": 11350.0,
+        "y": 175.00000000000006,
+        "width": 2550.0,
+        "height": 1019.9999999999999
+      },
+      "anchor": {
+        "x": 12800,
+        "y": 960
+      },
+      "resample": "NEAREST only",
+      "encoding": "lossless WebP method6",
+      "sourcePng": "D:\\Dex\\Projects\\dex-place-art-production\\source\\exports\\world-posters-20260907-v9\\donate-wide.png"
+    },
+    {
+      "section": "donate",
+      "profile": "portrait",
+      "width": 750,
+      "height": 1002,
+      "path": "D:\\Dex\\Projects\\dex-place-art-production\\prototypes\\fog-light-v1\\posters-v9\\resolution-trial-v1\\donate-portrait-750.webp",
+      "bytes": 211560,
+      "sha256": "77d19bc0ec100f3ba8950a00cfc4e3c5af1d9d902bf36524ceae0c15db89909d",
+      "selectedUrl": "/world/preview/donate-portrait-v9.webp",
+      "worldRect": {
+        "x": 12530.173652694612,
+        "y": 267.0,
+        "width": 673.6526946107784,
+        "height": 900.0
+      },
+      "anchor": {
+        "x": 12800,
+        "y": 960
+      },
+      "resample": "NEAREST only",
+      "encoding": "lossless WebP method6",
+      "sourcePng": "D:\\Dex\\Projects\\dex-place-art-production\\source\\exports\\world-posters-20260907-v9\\donate-portrait.png"
+    }
+  ],
+  "displayGeometryPreserved": true,
+  "existingScreenshotsCompared": 20
+}

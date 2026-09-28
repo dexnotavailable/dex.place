@@ -1,0 +1,42 @@
+{
+  "cloud-far": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-far-green-v1.png",
+    "sourceSha256": "8fa154e73a3fcb8f19fac33621dd1a907cfc852a1eadf643b4a96a2914ce6a32",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-far-unmixed-v2.png",
+    "sha256": "4d0f5d6c480812bb0db966a4ce58e27614801cf3e08c01fb91a8e9f942a3a3f0",
+    "key": [
+      3.0,
+      249.0,
+      4.0
+    ],
+    "backgroundPixels": 1481225,
+    "boundaryPixels": 35904,
+    "convertedBoundaryPixels": 26501,
+    "noCleanNeighbour": 0,
+    "opaqueInteriorPixels": 55735,
+    "opaqueInteriorByteIdentical": true,
+    "maxForegroundSampleDistance": 31.11269760131836,
+    "method": "3px boundary-only known-green-matte unmix, nearest clean cloud estimate, no interior changes",
+    "limits": "Unknown original alpha is estimated. Distinct isolated wisps may use a nearby clean colour; review actual warm/dark composites."
+  },
+  "cloud-mid": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-mid-green-v3.png",
+    "sourceSha256": "d3eefa463ab887291efdbea9424bc596afc25c7acffcc0a78550182d671108f5",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-mid-unmixed-v2.png",
+    "sha256": "298fbc5ffb4868a1a783fc66655d6d6444725632493e30a433e42b751c9e0def",
+    "key": [
+      4.0,
+      249.0,
+      2.0
+    ],
+    "backgroundPixels": 1228256,
+    "boundaryPixels": 37205,
+    "convertedBoundaryPixels": 20209,
+    "noCleanNeighbour": 0,
+    "opaqueInteriorPixels": 307403,
+    "opaqueInteriorByteIdentical": true,
+    "maxForegroundSampleDistance": 20.808652877807617,
+    "method": "3px boundary-only known-green-matte unmix, nearest clean cloud estimate, no interior changes",
+    "limits": "Unknown original alpha is estimated. Distinct isolated wisps may use a nearby clean colour; review actual warm/dark composites."
+  }
+}

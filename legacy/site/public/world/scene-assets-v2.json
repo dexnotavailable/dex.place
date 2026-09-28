@@ -1,0 +1,3016 @@
+{
+  "revision": "inhabited-composition-v2-material-pass2",
+  "assets": [
+    {
+      "id": "causeway",
+      "url": "/world/assets/FG01-continuous-v4.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 72
+      },
+      "repeatFrame": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 72
+      },
+      "collisionTop": 0
+    },
+    {
+      "id": "terminal",
+      "url": "/world/assets/P02-flat-v3.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 23,
+        "height": 96
+      },
+      "parts": {
+        "screen": {
+          "x": 6,
+          "y": 15,
+          "width": 11,
+          "height": 13
+        },
+        "indicator": {
+          "x": 10,
+          "y": 31,
+          "width": 2,
+          "height": 1
+        }
+      }
+    },
+    {
+      "id": "FG02",
+      "url": "/world/assets/library-v1/FG02-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 163,
+        "height": 70
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 162,
+            "y": 0
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 81,
+          "y": 70
+        },
+        "originMeaning": "integer bottom-center"
+      }
+    },
+    {
+      "id": "FG03",
+      "url": "/world/assets/library-v1/FG03-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 67,
+        "height": 224
+      },
+      "parts": {
+        "shaftRepeat": {
+          "x": 9,
+          "y": 6,
+          "width": 48,
+          "height": 194
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 33,
+          "y": 224
+        },
+        "originMeaning": "integer bottom-center"
+      }
+    },
+    {
+      "id": "FG04",
+      "url": "/world/assets/library-v1/FG04-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 128,
+        "height": 28
+      },
+      "parts": {},
+      "attachments": {
+        "origin": {
+          "x": 64,
+          "y": 28
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "leftShoe": {
+          "x": 5,
+          "y": 28
+        },
+        "rightShoe": {
+          "x": 123,
+          "y": 28
+        }
+      }
+    },
+    {
+      "id": "FG05",
+      "url": "/world/assets/library-v1/FG05-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 400,
+        "height": 47
+      },
+      "parts": {},
+      "attachments": {
+        "origin": {
+          "x": 200,
+          "y": 47
+        },
+        "originMeaning": "integer bottom-center",
+        "leftHanger": {
+          "x": 100,
+          "y": 4
+        },
+        "rightHanger": {
+          "x": 300,
+          "y": 4
+        }
+      }
+    },
+    {
+      "id": "FG06",
+      "url": "/world/assets/library-v1/FG06-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 560,
+        "height": 168
+      },
+      "parts": {
+        "openUnderArch": true
+      },
+      "attachments": {
+        "origin": {
+          "x": 280,
+          "y": 168
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "leftSupport": {
+          "x": 0,
+          "y": 168
+        },
+        "rightSupport": {
+          "x": 560,
+          "y": 168
+        }
+      }
+    },
+    {
+      "id": "FG07",
+      "url": "/world/assets/library-v1/FG07-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 144,
+        "height": 47
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 2,
+            "endX": 126,
+            "y": 1
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 72,
+          "y": 47
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "FG08",
+      "url": "/world/assets/library-v1/FG08-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 106,
+        "height": 640
+      },
+      "parts": {
+        "panelRepeat": {
+          "x": 2,
+          "y": 4,
+          "width": 102,
+          "height": 632
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 53,
+          "y": 640
+        },
+        "originMeaning": "integer bottom-center"
+      }
+    },
+    {
+      "id": "FG09",
+      "url": "/world/assets/library-v1/FG09-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 43
+      },
+      "parts": {},
+      "attachments": {
+        "origin": {
+          "x": 128,
+          "y": 43
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "FG10",
+      "url": "/world/assets/library-v1/FG10-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 128,
+        "height": 71
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 20,
+            "y": 58
+          },
+          {
+            "startX": 21,
+            "endX": 47,
+            "y": 44
+          },
+          {
+            "startX": 47,
+            "endX": 73,
+            "y": 30
+          },
+          {
+            "startX": 74,
+            "endX": 100,
+            "y": 15
+          },
+          {
+            "startX": 101,
+            "endX": 127,
+            "y": 0
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 64,
+          "y": 71
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P01",
+      "url": "/world/assets/library-v1/P01-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 96,
+        "height": 20
+      },
+      "parts": {
+        "seatTopSpans": [
+          {
+            "startX": 1,
+            "endX": 95,
+            "y": 0
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 48,
+          "y": 20
+        },
+        "originMeaning": "integer bottom-center",
+        "leftFoot": {
+          "x": 15,
+          "y": 20
+        },
+        "rightFoot": {
+          "x": 81,
+          "y": 20
+        }
+      }
+    },
+    {
+      "id": "P03",
+      "url": "/world/assets/library-v1/P03-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 13,
+        "height": 27
+      },
+      "parts": {
+        "glassCrop": {
+          "x": 1,
+          "y": 4,
+          "width": 11,
+          "height": 13
+        },
+        "terminalGlass": {
+          "url": "/world/assets/library-v1/P03-glass-11x13-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 11,
+            "height": 13
+          },
+          "target": "P02 flat-v3 screen aperture11x13"
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 6,
+          "y": 27
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P04",
+      "url": "/world/assets/library-v1/P04-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 27,
+        "height": 112
+      },
+      "parts": {
+        "lensPlacement": {
+          "assetId": "P05",
+          "rect": {
+            "x": 8,
+            "y": 8,
+            "width": 12,
+            "height": 12
+          }
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 13,
+          "y": 112
+        },
+        "originMeaning": "integer bottom-center",
+        "lensCenter": {
+          "x": 14,
+          "y": 14
+        }
+      }
+    },
+    {
+      "id": "P05",
+      "url": "/world/assets/library-v1/P05-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 12,
+        "height": 12
+      },
+      "parts": {
+        "emissionMask": {
+          "url": "/world/assets/library-v1/P05-emission-mask-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 12
+          },
+          "purpose": "tint/opacity state independently above static housing; not a separate inventory role"
+        },
+        "emissionBounds": {
+          "x": 1,
+          "y": 1,
+          "width": 10,
+          "height": 10
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 6,
+          "y": 12
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P06",
+      "url": "/world/assets/library-v1/P06-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 23,
+        "height": 176
+      },
+      "parts": {
+        "fixedUpper": {
+          "x": 0,
+          "y": 0,
+          "width": 23,
+          "height": 146
+        },
+        "releasedLower": {
+          "x": 0,
+          "y": 146,
+          "width": 23,
+          "height": 30
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 11,
+          "y": 176
+        },
+        "originMeaning": "integer bottom-center",
+        "topMount": {
+          "x": 11,
+          "y": 0
+        },
+        "lowerEyelet": {
+          "x": 11,
+          "y": 166
+        },
+        "cutPoint": {
+          "x": 11,
+          "y": 146
+        }
+      }
+    },
+    {
+      "id": "P07",
+      "url": "/world/assets/library-v1/P07-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 21
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 255,
+            "y": 0
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 128,
+          "y": 21
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "hinge": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "P08",
+      "url": "/world/assets/library-v1/P08-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 48
+      },
+      "parts": {},
+      "attachments": {
+        "origin": {
+          "x": 16,
+          "y": 48
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "pivot": {
+          "x": 13,
+          "y": 31
+        }
+      }
+    },
+    {
+      "id": "P09",
+      "url": "/world/assets/library-v1/P09-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 192,
+        "height": 23
+      },
+      "parts": {
+        "walkableCapSpans": [
+          {
+            "startX": 1,
+            "endX": 191,
+            "y": 0
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 96,
+          "y": 23
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P10",
+      "url": "/world/assets/library-v1/P10-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 21,
+        "height": 320
+      },
+      "parts": {
+        "repeatGuide": {
+          "x": 8,
+          "y": 14,
+          "width": 4,
+          "height": 292
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 10,
+          "y": 320
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "railCenterX": 10
+      }
+    },
+    {
+      "id": "P11",
+      "url": "/world/assets/library-v1/P11-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 28,
+        "height": 9
+      },
+      "parts": {
+        "emissionMask": {
+          "url": "/world/assets/library-v1/P11-emission-mask-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 28,
+            "height": 9
+          },
+          "purpose": "tint/opacity state independently above static housing; not a separate inventory role"
+        },
+        "emissionBounds": {
+          "x": 6,
+          "y": 2,
+          "width": 16,
+          "height": 5
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 14,
+          "y": 9
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P12",
+      "url": "/world/assets/library-v1/P12-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 32,
+        "height": 20
+      },
+      "parts": {
+        "labelSafeArea": {
+          "x": 4,
+          "y": 5,
+          "width": 24,
+          "height": 11
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 16,
+          "y": 20
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P13",
+      "url": "/world/assets/library-v1/P13-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 78,
+        "height": 112
+      },
+      "parts": {
+        "requiredBacking": {
+          "kind": "separate-flat-rectangle",
+          "color": "#22313f",
+          "rect": {
+            "x": 5,
+            "y": 6,
+            "width": 68,
+            "height": 100
+          },
+          "depth": "behind housing, in front of background",
+          "reason": "Raw shelf recesses contain low-alpha holes; do not repaint raw or flatten backing into source."
+        },
+        "folderSlots": [
+          {
+            "x": 8,
+            "y": 8,
+            "width": 62,
+            "height": 25
+          },
+          {
+            "x": 8,
+            "y": 42,
+            "width": 62,
+            "height": 25
+          },
+          {
+            "x": 8,
+            "y": 76,
+            "width": 62,
+            "height": 25
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 39,
+          "y": 112
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P14",
+      "url": "/world/assets/library-v1/P14-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 110,
+        "height": 176
+      },
+      "parts": {
+        "aperture": {
+          "x": 9,
+          "y": 9,
+          "width": 92,
+          "height": 153
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 55,
+          "y": 176
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P15",
+      "url": "/world/assets/library-v1/P15-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 49,
+        "height": 56
+      },
+      "parts": {
+        "plaque": {
+          "x": 16,
+          "y": 15,
+          "width": 16,
+          "height": 10
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 24,
+          "y": 56
+        },
+        "originMeaning": "bottom-center at integer pixel boundary"
+      }
+    },
+    {
+      "id": "P16",
+      "url": "/world/assets/library-v1/P16-native-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 185,
+        "height": 15
+      },
+      "parts": {
+        "clothBearing": {
+          "x": 12,
+          "y": 5,
+          "width": 160,
+          "height": 5
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 92,
+          "y": 15
+        },
+        "originMeaning": "integer bottom-center",
+        "clothLeft": {
+          "x": 12,
+          "y": 12
+        },
+        "clothRight": {
+          "x": 172,
+          "y": 12
+        }
+      }
+    },
+    {
+      "id": "P17",
+      "url": "/world/assets/library-v1/P17-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 160,
+        "height": 214
+      },
+      "parts": {
+        "labelSafeArea": {
+          "x": 16,
+          "y": 15,
+          "width": 128,
+          "height": 184
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 80,
+          "y": 214
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomWeightY": 214
+      }
+    },
+    {
+      "id": "P18",
+      "url": "/world/assets/library-v1/P18-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 160,
+        "height": 7
+      },
+      "parts": {},
+      "attachments": {
+        "origin": {
+          "x": 80,
+          "y": 7
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "clothBottom": {
+          "x": 80,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "P19",
+      "url": "/world/assets/library-v1/P19-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 130,
+        "height": 160
+      },
+      "parts": {
+        "emissionMask": {
+          "url": "/world/assets/library-v1/P19-emission-mask-v1.png",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "width": 130,
+            "height": 160
+          },
+          "purpose": "tint/opacity state independently above static housing; not a separate inventory role"
+        },
+        "emissionBounds": {
+          "x": 50,
+          "y": 45,
+          "width": 30,
+          "height": 40
+        }
+      },
+      "attachments": {
+        "origin": {
+          "x": 65,
+          "y": 160
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "core": {
+          "x": 65,
+          "y": 65
+        },
+        "leftArmSocket": {
+          "x": 7,
+          "y": 61
+        },
+        "rightArmSocket": {
+          "x": 123,
+          "y": 61
+        }
+      }
+    },
+    {
+      "id": "P20",
+      "url": "/world/assets/library-v1/P20-native-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 220,
+        "height": 34
+      },
+      "parts": {
+        "cuttingEdgeHint": [
+          {
+            "x": 79,
+            "y": 33
+          },
+          {
+            "x": 167,
+            "y": 28
+          },
+          {
+            "x": 219,
+            "y": 12
+          }
+        ]
+      },
+      "attachments": {
+        "origin": {
+          "x": 110,
+          "y": 34
+        },
+        "originMeaning": "bottom-center at integer pixel boundary",
+        "pivot": {
+          "x": 15,
+          "y": 16
+        },
+        "tip": {
+          "x": 219,
+          "y": 12
+        }
+      }
+    },
+    {
+      "id": "M01",
+      "url": "/world/assets/depth-library-v1/M01-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 960,
+        "height": 137
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 480,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 480,
+          "y": 137
+        }
+      }
+    },
+    {
+      "id": "M02",
+      "url": "/world/assets/depth-library-v1/M02-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 360,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 360,
+          "y": 345
+        }
+      }
+    },
+    {
+      "id": "M03",
+      "url": "/world/assets/depth-library-v1/M03-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 320
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 400,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 400,
+          "y": 320
+        }
+      }
+    },
+    {
+      "id": "M04",
+      "url": "/world/assets/depth-library-v1/M04-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 213,
+        "height": 640
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 106,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 106,
+          "y": 640
+        }
+      }
+    },
+    {
+      "id": "M05",
+      "url": "/world/assets/depth-library-v1/M05-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 103
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 512,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 512,
+          "y": 103
+        }
+      }
+    },
+    {
+      "id": "M06",
+      "url": "/world/assets/depth-library-v1/M06-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 444
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 360,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 360,
+          "y": 444
+        }
+      }
+    },
+    {
+      "id": "M07",
+      "url": "/world/assets/depth-library-v1/M07-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 640,
+        "height": 253
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 320,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 320,
+          "y": 253
+        }
+      }
+    },
+    {
+      "id": "M08",
+      "url": "/world/assets/depth-library-v1/M08-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 76
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 240,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 240,
+          "y": 76
+        }
+      }
+    },
+    {
+      "id": "M09",
+      "url": "/world/assets/depth-library-v1/M09-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 640,
+        "height": 275
+      },
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 320,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 320,
+          "y": 275
+        }
+      }
+    },
+    {
+      "id": "B01",
+      "url": "/world/assets/depth-library-v1/B01-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720
+      }
+    },
+    {
+      "id": "B02",
+      "url": "/world/assets/depth-library-v1/B02-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 281
+      }
+    },
+    {
+      "id": "B03",
+      "url": "/world/assets/depth-library-v1/B03-tone4-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 919,
+        "height": 1700
+      }
+    },
+    {
+      "id": "B04",
+      "url": "/world/assets/depth-library-v1/B04-shell-depth-v2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1200,
+        "height": 718
+      }
+    },
+    {
+      "id": "B05",
+      "url": "/world/assets/depth-library-v1/B05-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1400,
+        "height": 329
+      }
+    },
+    {
+      "id": "B06",
+      "url": "/world/assets/depth-library-v1/B06-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1400,
+        "height": 241
+      }
+    },
+    {
+      "id": "B07",
+      "url": "/world/assets/depth-library-v1/B07-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 512
+      }
+    },
+    {
+      "id": "B08",
+      "url": "/world/assets/depth-library-v1/B08-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 120
+      }
+    },
+    {
+      "id": "B09",
+      "url": "/world/assets/depth-library-v1/B09-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 448
+      }
+    },
+    {
+      "id": "B10",
+      "url": "/world/assets/depth-library-v1/B10-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 192
+      }
+    },
+    {
+      "id": "M10",
+      "url": "/world/assets/depth-library-v1/M10-tone4-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 729
+      }
+    },
+    {
+      "id": "P21",
+      "url": "/world/assets/library-v1/P21-bridge-mast-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 164
+      },
+      "attachments": {
+        "origin": {
+          "x": 54,
+          "y": 164
+        },
+        "originMeaning": "mast foot meets hinge-floor at y0; mast x=-54",
+        "fixedEye": {
+          "x": 30,
+          "y": 34
+        }
+      },
+      "parts": {
+        "fixedMast": true
+      }
+    },
+    {
+      "id": "V2-P01",
+      "url": "/world/assets/v2/counter-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 160,
+        "height": 27
+      }
+    },
+    {
+      "id": "V2-P02",
+      "url": "/world/assets/v2/archive-frame-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 192,
+        "height": 275
+      }
+    },
+    {
+      "id": "V2-P03",
+      "url": "/world/assets/v2/archive-leaf-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 104,
+        "height": 309
+      }
+    },
+    {
+      "id": "V2-P04",
+      "url": "/world/assets/v2/fireplace-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 153
+      }
+    },
+    {
+      "id": "V2-M11",
+      "url": "/world/assets/v2/caretaker-wall-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 512
+      }
+    },
+    {
+      "id": "V2-FG11",
+      "url": "/world/assets/v2/timber-canopy-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 600,
+        "height": 70
+      }
+    },
+    {
+      "id": "V2-P05",
+      "url": "/world/assets/v2/archive-bookcase-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 180,
+        "height": 338
+      }
+    },
+    {
+      "id": "V2-B11",
+      "url": "/world/assets/v2/hollow-stone-tone2.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 960,
+        "height": 972
+      }
+    },
+    {
+      "id": "V2-FIRE",
+      "url": "/world/cast-v2/small-fire.png",
+      "sprite": {
+        "frameWidth": 10,
+        "frameHeight": 26,
+        "frames": 60,
+        "frameMs": 80
+      }
+    }
+  ],
+  "placements": [
+    {
+      "id": "arrival.B06.000",
+      "assetId": "B06",
+      "roomId": "arrival",
+      "x": -100,
+      "y": 360,
+      "width": 2100,
+      "height": 361,
+      "depth": -94,
+      "alpha": 0.58,
+      "scrollFactor": 0.1,
+      "tint": 10267568
+    },
+    {
+      "id": "arrival.B08.001",
+      "assetId": "B08",
+      "roomId": "arrival",
+      "x": -150,
+      "y": 1155,
+      "width": 3100,
+      "height": 320,
+      "depth": -71,
+      "alpha": 0.14,
+      "scrollFactor": 0.7,
+      "tint": 6522257
+    },
+    {
+      "id": "arrival.B04.002",
+      "assetId": "B04",
+      "roomId": "arrival",
+      "x": 400,
+      "y": -20,
+      "width": 1800,
+      "height": 1077,
+      "depth": -86,
+      "alpha": 1,
+      "scrollFactor": 0.22,
+      "tint": 10794940
+    },
+    {
+      "id": "arrival.B03.003",
+      "assetId": "B03",
+      "roomId": "arrival",
+      "x": 1700,
+      "y": -1020,
+      "width": 1020,
+      "height": 1885,
+      "depth": -89,
+      "alpha": 1,
+      "scrollFactor": 0.16,
+      "tint": 11911877
+    },
+    {
+      "id": "arrival.M03.004",
+      "assetId": "M03",
+      "roomId": "arrival",
+      "x": -130,
+      "y": 580,
+      "width": 1040,
+      "height": 416,
+      "depth": -51,
+      "alpha": 0.48,
+      "scrollFactor": 0.73,
+      "tint": 5795709
+    },
+    {
+      "id": "arrival.FG08.005",
+      "assetId": "FG08",
+      "roomId": "arrival",
+      "x": 2520,
+      "y": 230,
+      "width": 115,
+      "height": 695,
+      "depth": 10,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 5401460
+    },
+    {
+      "id": "arrival.P01.006",
+      "assetId": "P01",
+      "roomId": "arrival",
+      "x": 500,
+      "y": 976,
+      "width": 148,
+      "height": 24,
+      "depth": 7,
+      "alpha": 0.94,
+      "scrollFactor": 1
+    },
+    {
+      "id": "junction.B06.007",
+      "assetId": "B06",
+      "roomId": "junction",
+      "x": 3900,
+      "y": 480,
+      "width": 2100,
+      "height": 361,
+      "depth": -94,
+      "alpha": 0.58,
+      "scrollFactor": 0.1,
+      "tint": 10267568
+    },
+    {
+      "id": "junction.B08.008",
+      "assetId": "B08",
+      "roomId": "junction",
+      "x": 3850,
+      "y": 1275,
+      "width": 3500,
+      "height": 320,
+      "depth": -71,
+      "alpha": 0.14,
+      "scrollFactor": 0.7,
+      "tint": 6522257
+    },
+    {
+      "id": "junction.M10.009",
+      "assetId": "M10",
+      "roomId": "junction",
+      "x": 4450,
+      "y": 170,
+      "width": 1450,
+      "height": 961,
+      "depth": -70,
+      "alpha": 0.48,
+      "scrollFactor": 0.53,
+      "tint": 8626084
+    },
+    {
+      "id": "junction.B03.010",
+      "assetId": "B03",
+      "roomId": "junction",
+      "x": 6040,
+      "y": -940,
+      "width": 1100,
+      "height": 2035,
+      "depth": -85,
+      "alpha": 0.48,
+      "scrollFactor": 0.22,
+      "tint": 10400952
+    },
+    {
+      "id": "junction.M02.011",
+      "assetId": "M02",
+      "roomId": "junction",
+      "x": 5050,
+      "y": 715,
+      "width": 920,
+      "height": 441,
+      "depth": -46,
+      "alpha": 0.5,
+      "scrollFactor": 0.86,
+      "tint": 6059904
+    },
+    {
+      "id": "junction.FG03.012",
+      "assetId": "FG03",
+      "roomId": "junction",
+      "x": 5490,
+      "y": 1185,
+      "width": 100,
+      "height": 335,
+      "depth": 3,
+      "alpha": 0.9,
+      "scrollFactor": 1
+    },
+    {
+      "id": "junction.FG08.013",
+      "assetId": "FG08",
+      "roomId": "junction",
+      "x": 4500,
+      "y": 395,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "junction.FG08.014",
+      "assetId": "FG08",
+      "roomId": "junction",
+      "x": 6550,
+      "y": 395,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "dispatch.B09.015",
+      "assetId": "B09",
+      "roomId": "dispatch",
+      "x": 7940,
+      "y": 120,
+      "width": 3320,
+      "height": 860,
+      "depth": -85,
+      "alpha": 0.16,
+      "scrollFactor": 0.3,
+      "tint": 4282464
+    },
+    {
+      "id": "dispatch.M10.016",
+      "assetId": "M10",
+      "roomId": "dispatch",
+      "x": 8800.0,
+      "y": 0,
+      "width": 1600,
+      "height": 1060,
+      "depth": -38,
+      "alpha": 0.55,
+      "scrollFactor": 0.68,
+      "tint": 9215131
+    },
+    {
+      "id": "dispatch.B04.017",
+      "assetId": "B04",
+      "roomId": "dispatch",
+      "x": 7750,
+      "y": 120,
+      "width": 1600,
+      "height": 957,
+      "depth": -77,
+      "alpha": 0.22,
+      "scrollFactor": 0.4,
+      "tint": 7112077
+    },
+    {
+      "id": "dispatch.M03.018",
+      "assetId": "M03",
+      "roomId": "dispatch",
+      "x": 10220,
+      "y": 570,
+      "width": 1060,
+      "height": 424,
+      "depth": -36,
+      "alpha": 0.28,
+      "scrollFactor": 0.86,
+      "tint": 7374731
+    },
+    {
+      "id": "dispatch.FG08.019",
+      "assetId": "FG08",
+      "roomId": "dispatch",
+      "x": 8500,
+      "y": 315,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "dispatch.FG08.020",
+      "assetId": "FG08",
+      "roomId": "dispatch",
+      "x": 10550,
+      "y": 315,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "arena.B09.021",
+      "assetId": "B09",
+      "roomId": "arena",
+      "x": 11940,
+      "y": 160,
+      "width": 3320,
+      "height": 860,
+      "depth": -85,
+      "alpha": 0.16,
+      "scrollFactor": 0.3,
+      "tint": 4282464
+    },
+    {
+      "id": "arena.M10.022",
+      "assetId": "M10",
+      "roomId": "arena",
+      "x": 12800.0,
+      "y": 40,
+      "width": 1600,
+      "height": 1060,
+      "depth": -38,
+      "alpha": 0.55,
+      "scrollFactor": 0.68,
+      "tint": 9215131
+    },
+    {
+      "id": "arena.B04.023",
+      "assetId": "B04",
+      "roomId": "arena",
+      "x": 11750,
+      "y": 160,
+      "width": 1600,
+      "height": 957,
+      "depth": -77,
+      "alpha": 0.22,
+      "scrollFactor": 0.4,
+      "tint": 7112077
+    },
+    {
+      "id": "arena.M03.024",
+      "assetId": "M03",
+      "roomId": "arena",
+      "x": 14220,
+      "y": 610,
+      "width": 1060,
+      "height": 424,
+      "depth": -36,
+      "alpha": 0.28,
+      "scrollFactor": 0.86,
+      "tint": 7374731
+    },
+    {
+      "id": "arena.FG08.025",
+      "assetId": "FG08",
+      "roomId": "arena",
+      "x": 12500,
+      "y": 355,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "arena.FG08.026",
+      "assetId": "FG08",
+      "roomId": "arena",
+      "x": 14550,
+      "y": 355,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "hearth.B09.027",
+      "assetId": "B09",
+      "roomId": "hearth",
+      "x": 15940,
+      "y": 120,
+      "width": 2920,
+      "height": 860,
+      "depth": -85,
+      "alpha": 0.16,
+      "scrollFactor": 0.3,
+      "tint": 4282464
+    },
+    {
+      "id": "hearth.V2-M11.028",
+      "assetId": "V2-M11",
+      "roomId": "hearth",
+      "x": 16000,
+      "y": 528,
+      "width": 1024,
+      "height": 512,
+      "depth": -40,
+      "alpha": 0.88,
+      "scrollFactor": 1
+    },
+    {
+      "id": "hearth.V2-M11.029",
+      "assetId": "V2-M11",
+      "roomId": "hearth",
+      "x": 17024,
+      "y": 528,
+      "width": 1024,
+      "height": 512,
+      "depth": -40,
+      "alpha": 0.88,
+      "scrollFactor": 1,
+      "flipX": true
+    },
+    {
+      "id": "hearth.V2-M11.030",
+      "assetId": "V2-M11",
+      "roomId": "hearth",
+      "x": 18048,
+      "y": 528,
+      "width": 1024,
+      "height": 512,
+      "depth": -40,
+      "alpha": 0.88,
+      "scrollFactor": 1
+    },
+    {
+      "id": "hearth.V2-FG11.031",
+      "assetId": "V2-FG11",
+      "roomId": "hearth",
+      "x": 16300,
+      "y": 670,
+      "width": 800,
+      "height": 93,
+      "depth": 10,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 12368039
+    },
+    {
+      "id": "hearth.V2-FG11.032",
+      "assetId": "V2-FG11",
+      "roomId": "hearth",
+      "x": 17100,
+      "y": 670,
+      "width": 800,
+      "height": 93,
+      "depth": 10,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 12368039
+    },
+    {
+      "id": "hearth.V2-FG11.033",
+      "assetId": "V2-FG11",
+      "roomId": "hearth",
+      "x": 17900,
+      "y": 670,
+      "width": 800,
+      "height": 93,
+      "depth": 10,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 12368039
+    },
+    {
+      "id": "hearth.V2-P04.034",
+      "assetId": "V2-P04",
+      "roomId": "hearth",
+      "x": 16950,
+      "y": 887,
+      "width": 240,
+      "height": 153,
+      "depth": 8,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "hearth.V2-FIRE.035",
+      "assetId": "V2-FIRE",
+      "roomId": "hearth",
+      "x": 17060,
+      "y": 956,
+      "width": 20,
+      "height": 52,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "hearth.V2-P04.036",
+      "assetId": "V2-P04",
+      "roomId": "hearth",
+      "x": 16950,
+      "y": 887,
+      "width": 240,
+      "height": 153,
+      "depth": 10,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "crop": {
+        "x": 0,
+        "y": 118,
+        "width": 240,
+        "height": 35
+      }
+    },
+    {
+      "id": "hearth.V2-P01.037",
+      "assetId": "V2-P01",
+      "roomId": "hearth",
+      "x": 17370,
+      "y": 1013,
+      "width": 160,
+      "height": 27,
+      "depth": 19,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "hearth.P01.038",
+      "assetId": "P01",
+      "roomId": "hearth",
+      "x": 16650.0,
+      "y": 1016,
+      "width": 148,
+      "height": 24,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 11837561
+    },
+    {
+      "id": "hearth.V2-P05.039",
+      "assetId": "V2-P05",
+      "roomId": "hearth",
+      "x": 17630,
+      "y": 871,
+      "width": 90,
+      "height": 169,
+      "depth": -25,
+      "alpha": 0.8,
+      "scrollFactor": 1
+    },
+    {
+      "id": "hearth.M04.040",
+      "assetId": "M04",
+      "roomId": "hearth",
+      "x": 17900,
+      "y": 710,
+      "width": 70,
+      "height": 211,
+      "depth": -33,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 11446666
+    },
+    {
+      "id": "hearth.B04.041",
+      "assetId": "B04",
+      "roomId": "hearth",
+      "x": 17600,
+      "y": 500,
+      "width": 700,
+      "height": 420,
+      "depth": -75,
+      "alpha": 0.55,
+      "scrollFactor": 0.5,
+      "tint": 8167335
+    },
+    {
+      "id": "hearth.FG08.042",
+      "assetId": "FG08",
+      "roomId": "hearth",
+      "x": 16500,
+      "y": 315,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "hearth.FG08.043",
+      "assetId": "FG08",
+      "roomId": "hearth",
+      "x": 18150,
+      "y": 315,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "treasury.B09.044",
+      "assetId": "B09",
+      "roomId": "treasury",
+      "x": 19940,
+      "y": 160,
+      "width": 3520,
+      "height": 860,
+      "depth": -85,
+      "alpha": 0.16,
+      "scrollFactor": 0.3,
+      "tint": 4282464
+    },
+    {
+      "id": "treasury.M10.045",
+      "assetId": "M10",
+      "roomId": "treasury",
+      "x": 21050.0,
+      "y": 238,
+      "width": 1300,
+      "height": 862,
+      "depth": -38,
+      "alpha": 0.65,
+      "scrollFactor": 0.7,
+      "tint": 11052676
+    },
+    {
+      "id": "treasury.M05.046",
+      "assetId": "M05",
+      "roomId": "treasury",
+      "x": 19800,
+      "y": 180,
+      "width": 1900,
+      "height": 193,
+      "depth": -31,
+      "alpha": 0.7,
+      "scrollFactor": 1,
+      "tint": 9018257
+    },
+    {
+      "id": "treasury.M05.047",
+      "assetId": "M05",
+      "roomId": "treasury",
+      "x": 21700,
+      "y": 180,
+      "width": 1900,
+      "height": 193,
+      "depth": -31,
+      "alpha": 0.7,
+      "scrollFactor": 1,
+      "tint": 9018257
+    },
+    {
+      "id": "treasury.FG08.048",
+      "assetId": "FG08",
+      "roomId": "treasury",
+      "x": 20500,
+      "y": 355,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "treasury.FG08.049",
+      "assetId": "FG08",
+      "roomId": "treasury",
+      "x": 22750,
+      "y": 355,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "lookout.B06.050",
+      "assetId": "B06",
+      "roomId": "lookout",
+      "x": 23900,
+      "y": 360,
+      "width": 2100,
+      "height": 361,
+      "depth": -94,
+      "alpha": 0.58,
+      "scrollFactor": 0.1,
+      "tint": 10267568
+    },
+    {
+      "id": "lookout.B08.051",
+      "assetId": "B08",
+      "roomId": "lookout",
+      "x": 23850,
+      "y": 1155,
+      "width": 3900,
+      "height": 320,
+      "depth": -71,
+      "alpha": 0.14,
+      "scrollFactor": 0.7,
+      "tint": 6522257
+    },
+    {
+      "id": "lookout.V2-B11.052",
+      "assetId": "V2-B11",
+      "roomId": "lookout",
+      "x": 24900,
+      "y": -420,
+      "width": 1740,
+      "height": 1762,
+      "depth": -85,
+      "alpha": 1,
+      "scrollFactor": 0.2
+    },
+    {
+      "id": "lookout.B03.053",
+      "assetId": "B03",
+      "roomId": "lookout",
+      "x": 26850,
+      "y": -630,
+      "width": 900,
+      "height": 1665,
+      "depth": -89,
+      "alpha": 0.46,
+      "scrollFactor": 0.12,
+      "tint": 10401208
+    },
+    {
+      "id": "lookout.P01.054",
+      "assetId": "P01",
+      "roomId": "lookout",
+      "x": 24820,
+      "y": 976,
+      "width": 148,
+      "height": 24,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "lookout.M07.055",
+      "assetId": "M07",
+      "roomId": "lookout",
+      "x": 26350,
+      "y": 665,
+      "width": 850,
+      "height": 336,
+      "depth": -54,
+      "alpha": 1,
+      "scrollFactor": 0.82,
+      "tint": 7374482
+    },
+    {
+      "id": "reservoir.B06.056",
+      "assetId": "B06",
+      "roomId": "reservoir",
+      "x": 27900,
+      "y": 500,
+      "width": 2100,
+      "height": 361,
+      "depth": -94,
+      "alpha": 0.58,
+      "scrollFactor": 0.1,
+      "tint": 10267568
+    },
+    {
+      "id": "reservoir.B05.057",
+      "assetId": "B05",
+      "roomId": "reservoir",
+      "x": 28900,
+      "y": 710,
+      "width": 1800,
+      "height": 423,
+      "depth": -91,
+      "alpha": 0.32,
+      "scrollFactor": 0.2,
+      "tint": 11056823
+    },
+    {
+      "id": "reservoir.B08.058",
+      "assetId": "B08",
+      "roomId": "reservoir",
+      "x": 27850,
+      "y": 1295,
+      "width": 5100,
+      "height": 320,
+      "depth": -71,
+      "alpha": 0.14,
+      "scrollFactor": 0.7,
+      "tint": 6522257
+    },
+    {
+      "id": "reservoir.B04.059",
+      "assetId": "B04",
+      "roomId": "reservoir",
+      "x": 28250,
+      "y": -660,
+      "width": 3000,
+      "height": 1795,
+      "depth": -84,
+      "alpha": 0.7,
+      "scrollFactor": 0.28,
+      "tint": 8691111
+    },
+    {
+      "id": "reservoir.M10.060",
+      "assetId": "M10",
+      "roomId": "reservoir",
+      "x": 30680,
+      "y": -360,
+      "width": 1950,
+      "height": 1293,
+      "depth": -60,
+      "alpha": 0.65,
+      "scrollFactor": 0.61,
+      "tint": 6258316
+    },
+    {
+      "id": "reservoir.M06.061",
+      "assetId": "M06",
+      "roomId": "reservoir",
+      "x": 29000,
+      "y": 440,
+      "width": 600,
+      "height": 629,
+      "depth": -48,
+      "alpha": 0.42,
+      "scrollFactor": 0.84,
+      "tint": 6979976
+    },
+    {
+      "id": "reservoir.FG08.062",
+      "assetId": "FG08",
+      "roomId": "reservoir",
+      "x": 32380,
+      "y": -20,
+      "width": 186,
+      "height": 1120,
+      "depth": 10,
+      "alpha": 0.9,
+      "scrollFactor": 1,
+      "tint": 5401203
+    },
+    {
+      "id": "gallery.B09.063",
+      "assetId": "B09",
+      "roomId": "gallery",
+      "x": 33940,
+      "y": 120,
+      "width": 5320,
+      "height": 860,
+      "depth": -85,
+      "alpha": 0.16,
+      "scrollFactor": 0.3,
+      "tint": 4282464
+    },
+    {
+      "id": "gallery.M10.064",
+      "assetId": "M10",
+      "roomId": "gallery",
+      "x": 35590.0,
+      "y": 46,
+      "width": 1500,
+      "height": 994,
+      "depth": -38,
+      "alpha": 0.38,
+      "scrollFactor": 0.5,
+      "tint": 10333607
+    },
+    {
+      "id": "gallery.M05.065",
+      "assetId": "M05",
+      "roomId": "gallery",
+      "x": 33840,
+      "y": 240,
+      "width": 1280,
+      "height": 130,
+      "depth": -30,
+      "alpha": 0.75,
+      "scrollFactor": 1,
+      "tint": 11254193
+    },
+    {
+      "id": "gallery.M05.066",
+      "assetId": "M05",
+      "roomId": "gallery",
+      "x": 35120,
+      "y": 240,
+      "width": 1280,
+      "height": 130,
+      "depth": -30,
+      "alpha": 0.75,
+      "scrollFactor": 1,
+      "tint": 11254193
+    },
+    {
+      "id": "gallery.M05.067",
+      "assetId": "M05",
+      "roomId": "gallery",
+      "x": 36400,
+      "y": 240,
+      "width": 1280,
+      "height": 130,
+      "depth": -30,
+      "alpha": 0.75,
+      "scrollFactor": 1,
+      "tint": 11254193
+    },
+    {
+      "id": "gallery.M05.068",
+      "assetId": "M05",
+      "roomId": "gallery",
+      "x": 37680,
+      "y": 240,
+      "width": 1280,
+      "height": 130,
+      "depth": -30,
+      "alpha": 0.75,
+      "scrollFactor": 1,
+      "tint": 11254193
+    },
+    {
+      "id": "gallery.M05.069",
+      "assetId": "M05",
+      "roomId": "gallery",
+      "x": 38960,
+      "y": 240,
+      "width": 1280,
+      "height": 130,
+      "depth": -30,
+      "alpha": 0.75,
+      "scrollFactor": 1,
+      "tint": 11254193
+    },
+    {
+      "id": "gallery.M04.070",
+      "assetId": "M04",
+      "roomId": "gallery",
+      "x": 34150,
+      "y": 294,
+      "width": 70,
+      "height": 211,
+      "depth": -33,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 12963771
+    },
+    {
+      "id": "gallery.M04.071",
+      "assetId": "M04",
+      "roomId": "gallery",
+      "x": 35200,
+      "y": 294,
+      "width": 70,
+      "height": 211,
+      "depth": -33,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 12963771
+    },
+    {
+      "id": "gallery.M04.072",
+      "assetId": "M04",
+      "roomId": "gallery",
+      "x": 36200,
+      "y": 294,
+      "width": 70,
+      "height": 211,
+      "depth": -33,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 12963771
+    },
+    {
+      "id": "gallery.M04.073",
+      "assetId": "M04",
+      "roomId": "gallery",
+      "x": 37300,
+      "y": 294,
+      "width": 70,
+      "height": 211,
+      "depth": -33,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 12963771
+    },
+    {
+      "id": "gallery.M04.074",
+      "assetId": "M04",
+      "roomId": "gallery",
+      "x": 38300,
+      "y": 294,
+      "width": 70,
+      "height": 211,
+      "depth": -33,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 12963771
+    },
+    {
+      "id": "gallery.M04.075",
+      "assetId": "M04",
+      "roomId": "gallery",
+      "x": 39000,
+      "y": 294,
+      "width": 70,
+      "height": 211,
+      "depth": -33,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 12963771
+    },
+    {
+      "id": "gallery.FG08.076",
+      "assetId": "FG08",
+      "roomId": "gallery",
+      "x": 34500,
+      "y": 315,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "gallery.FG08.077",
+      "assetId": "FG08",
+      "roomId": "gallery",
+      "x": 38930,
+      "y": 315,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "archive.B09.078",
+      "assetId": "B09",
+      "roomId": "archive",
+      "x": 39940,
+      "y": 160,
+      "width": 3920,
+      "height": 860,
+      "depth": -85,
+      "alpha": 0.16,
+      "scrollFactor": 0.3,
+      "tint": 4282464
+    },
+    {
+      "id": "archive.M04.079",
+      "assetId": "M04",
+      "roomId": "archive",
+      "x": 40850,
+      "y": 290,
+      "width": 160,
+      "height": 483,
+      "depth": -38,
+      "alpha": 0.48,
+      "scrollFactor": 0.9,
+      "tint": 8426391
+    },
+    {
+      "id": "archive.M04.080",
+      "assetId": "M04",
+      "roomId": "archive",
+      "x": 42380,
+      "y": 290,
+      "width": 160,
+      "height": 483,
+      "depth": -38,
+      "alpha": 0.48,
+      "scrollFactor": 0.9,
+      "tint": 8426391
+    },
+    {
+      "id": "archive.V2-P05.081",
+      "assetId": "V2-P05",
+      "roomId": "archive",
+      "x": 40260,
+      "y": 742,
+      "width": 180,
+      "height": 338,
+      "depth": -25,
+      "alpha": 0.72,
+      "scrollFactor": 1,
+      "tint": 10398371
+    },
+    {
+      "id": "archive.V2-P05.082",
+      "assetId": "V2-P05",
+      "roomId": "archive",
+      "x": 40490,
+      "y": 742,
+      "width": 180,
+      "height": 338,
+      "depth": -25,
+      "alpha": 0.72,
+      "scrollFactor": 1,
+      "tint": 10398371,
+      "flipX": true
+    },
+    {
+      "id": "archive.V2-P05.083",
+      "assetId": "V2-P05",
+      "roomId": "archive",
+      "x": 41050,
+      "y": 742,
+      "width": 180,
+      "height": 338,
+      "depth": -25,
+      "alpha": 0.72,
+      "scrollFactor": 1,
+      "tint": 10398371
+    },
+    {
+      "id": "archive.V2-P05.084",
+      "assetId": "V2-P05",
+      "roomId": "archive",
+      "x": 41720,
+      "y": 742,
+      "width": 180,
+      "height": 338,
+      "depth": -25,
+      "alpha": 0.72,
+      "scrollFactor": 1,
+      "tint": 10398371
+    },
+    {
+      "id": "archive.V2-P05.085",
+      "assetId": "V2-P05",
+      "roomId": "archive",
+      "x": 41950,
+      "y": 742,
+      "width": 180,
+      "height": 338,
+      "depth": -25,
+      "alpha": 0.72,
+      "scrollFactor": 1,
+      "tint": 10398371,
+      "flipX": true
+    },
+    {
+      "id": "archive.V2-P05.086",
+      "assetId": "V2-P05",
+      "roomId": "archive",
+      "x": 42700,
+      "y": 742,
+      "width": 180,
+      "height": 338,
+      "depth": -25,
+      "alpha": 0.72,
+      "scrollFactor": 1,
+      "tint": 10398371
+    },
+    {
+      "id": "archive.V2-P05.087",
+      "assetId": "V2-P05",
+      "roomId": "archive",
+      "x": 42930,
+      "y": 742,
+      "width": 180,
+      "height": 338,
+      "depth": -25,
+      "alpha": 0.72,
+      "scrollFactor": 1,
+      "tint": 10398371,
+      "flipX": true
+    },
+    {
+      "id": "archive.M02.088",
+      "assetId": "M02",
+      "roomId": "archive",
+      "x": 41140.0,
+      "y": 520,
+      "width": 1250,
+      "height": 599,
+      "depth": -37,
+      "alpha": 0.55,
+      "scrollFactor": 0.8,
+      "tint": 7045512
+    },
+    {
+      "id": "archive.FG08.089",
+      "assetId": "FG08",
+      "roomId": "archive",
+      "x": 40500,
+      "y": 355,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "archive.FG08.090",
+      "assetId": "FG08",
+      "roomId": "archive",
+      "x": 43150,
+      "y": 355,
+      "width": 120,
+      "height": 725,
+      "depth": 9,
+      "alpha": 1,
+      "scrollFactor": 1,
+      "tint": 7241337
+    },
+    {
+      "id": "return-shaft.B09.091",
+      "assetId": "B09",
+      "roomId": "return-shaft",
+      "x": 44940,
+      "y": 580,
+      "width": 2920,
+      "height": 860,
+      "depth": -85,
+      "alpha": 0.16,
+      "scrollFactor": 0.3,
+      "tint": 4282464
+    },
+    {
+      "id": "return-shaft.M04.092",
+      "assetId": "M04",
+      "roomId": "return-shaft",
+      "x": 46316.0,
+      "y": 40,
+      "width": 330,
+      "height": 1460,
+      "depth": -38,
+      "alpha": 0.54,
+      "scrollFactor": 1,
+      "tint": 7374987
+    },
+    {
+      "id": "arrival.V2-P02.093",
+      "assetId": "V2-P02",
+      "roomId": "arrival",
+      "x": 2465.0,
+      "y": 757,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "junction.V2-P02.094",
+      "assetId": "V2-P02",
+      "roomId": "junction",
+      "x": 4135.0,
+      "y": 877,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "junction.V2-P02.095",
+      "assetId": "V2-P02",
+      "roomId": "junction",
+      "x": 6815.0,
+      "y": 877,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "dispatch.V2-P02.096",
+      "assetId": "V2-P02",
+      "roomId": "dispatch",
+      "x": 8165.0,
+      "y": 797,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "junction.V2-P02.097",
+      "assetId": "V2-P02",
+      "roomId": "junction",
+      "x": 4785.0,
+      "y": 877,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "hearth.V2-P02.098",
+      "assetId": "V2-P02",
+      "roomId": "hearth",
+      "x": 16195.0,
+      "y": 797,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "hearth.V2-P02.099",
+      "assetId": "V2-P02",
+      "roomId": "hearth",
+      "x": 18395.0,
+      "y": 797,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "treasury.V2-P02.100",
+      "assetId": "V2-P02",
+      "roomId": "treasury",
+      "x": 20175.0,
+      "y": 837,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "junction.V2-P02.101",
+      "assetId": "V2-P02",
+      "roomId": "junction",
+      "x": 5105.0,
+      "y": 877,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "archive.V2-P02.102",
+      "assetId": "V2-P02",
+      "roomId": "archive",
+      "x": 40175.0,
+      "y": 837,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "archive.V2-P02.103",
+      "assetId": "V2-P02",
+      "roomId": "archive",
+      "x": 43335.0,
+      "y": 837,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "treasury.V2-P02.104",
+      "assetId": "V2-P02",
+      "roomId": "treasury",
+      "x": 20795.0,
+      "y": 837,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "junction.V2-P02.105",
+      "assetId": "V2-P02",
+      "roomId": "junction",
+      "x": 5805.0,
+      "y": 717,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "lookout.V2-P02.106",
+      "assetId": "V2-P02",
+      "roomId": "lookout",
+      "x": 24175.0,
+      "y": 757,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "lookout.V2-P02.107",
+      "assetId": "V2-P02",
+      "roomId": "lookout",
+      "x": 27195.0,
+      "y": 757,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "reservoir.V2-P02.108",
+      "assetId": "V2-P02",
+      "roomId": "reservoir",
+      "x": 28175.0,
+      "y": 897,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "reservoir.V2-P02.109",
+      "assetId": "V2-P02",
+      "roomId": "reservoir",
+      "x": 32395.0,
+      "y": 897,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "gallery.V2-P02.110",
+      "assetId": "V2-P02",
+      "roomId": "gallery",
+      "x": 34175.0,
+      "y": 797,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "gallery.V2-P02.111",
+      "assetId": "V2-P02",
+      "roomId": "gallery",
+      "x": 38665.0,
+      "y": 797,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "return-shaft.V2-P02.112",
+      "assetId": "V2-P02",
+      "roomId": "return-shaft",
+      "x": 47335.0,
+      "y": 797,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "treasury.V2-P02.113",
+      "assetId": "V2-P02",
+      "roomId": "treasury",
+      "x": 22985.0,
+      "y": 837,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "return-shaft.V2-P02.114",
+      "assetId": "V2-P02",
+      "roomId": "return-shaft",
+      "x": 45175.0,
+      "y": 1257,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    },
+    {
+      "id": "arena.V2-P02.115",
+      "assetId": "V2-P02",
+      "roomId": "arena",
+      "x": 12155.0,
+      "y": 837,
+      "width": 170,
+      "height": 243,
+      "depth": 7,
+      "alpha": 1,
+      "scrollFactor": 1
+    }
+  ],
+  "rooms": [
+    {
+      "id": "arrival",
+      "label": "arrival",
+      "x": 0,
+      "width": 2800,
+      "floorY": 1000,
+      "topY": 150,
+      "kind": "arrival",
+      "music": "calm",
+      "waterY": 1085
+    },
+    {
+      "id": "junction",
+      "label": "junction",
+      "x": 4000,
+      "width": 3200,
+      "floorY": 1120,
+      "topY": 270,
+      "kind": "arrival",
+      "music": "calm",
+      "waterY": 1205
+    },
+    {
+      "id": "dispatch",
+      "label": "dispatch",
+      "x": 8000,
+      "width": 3200,
+      "floorY": 1040,
+      "topY": 190,
+      "kind": "dispatch",
+      "music": "silent",
+      "waterY": 1490
+    },
+    {
+      "id": "arena",
+      "label": "arena",
+      "x": 12000,
+      "width": 3200,
+      "floorY": 1080,
+      "topY": 230,
+      "kind": "dispatch",
+      "music": "arena",
+      "waterY": 1530
+    },
+    {
+      "id": "hearth",
+      "label": "hearth",
+      "x": 16000,
+      "width": 2800,
+      "floorY": 1040,
+      "topY": 670,
+      "kind": "support",
+      "music": "calm",
+      "waterY": 1490,
+      "windows": [
+        {
+          "x": 17912,
+          "y": 716,
+          "width": 45,
+          "height": 200
+        }
+      ],
+      "lights": [
+        {
+          "id": "hearth-fire",
+          "x": 17070,
+          "y": 992,
+          "radiusX": 380,
+          "radiusY": 230,
+          "color": 16762756,
+          "strength": 0.9,
+          "flicker": true
+        }
+      ]
+    },
+    {
+      "id": "treasury",
+      "label": "treasury",
+      "x": 20000,
+      "width": 3400,
+      "floorY": 1080,
+      "topY": 230,
+      "kind": "support",
+      "music": "calm",
+      "waterY": 1530
+    },
+    {
+      "id": "lookout",
+      "label": "lookout",
+      "x": 24000,
+      "width": 3600,
+      "floorY": 1000,
+      "topY": 150,
+      "kind": "arrival",
+      "music": "calm",
+      "waterY": 1085
+    },
+    {
+      "id": "reservoir",
+      "label": "reservoir",
+      "x": 28000,
+      "width": 4800,
+      "floorY": 1140,
+      "topY": 290,
+      "kind": "arrival",
+      "music": "calm",
+      "waterY": 1225
+    },
+    {
+      "id": "gallery",
+      "label": "gallery",
+      "x": 34000,
+      "width": 5200,
+      "floorY": 1040,
+      "topY": 190,
+      "kind": "gallery",
+      "music": "silent",
+      "waterY": 1490,
+      "windows": [
+        {
+          "x": 34162,
+          "y": 300,
+          "width": 45,
+          "height": 200
+        },
+        {
+          "x": 35212,
+          "y": 300,
+          "width": 45,
+          "height": 200
+        },
+        {
+          "x": 36212,
+          "y": 300,
+          "width": 45,
+          "height": 200
+        },
+        {
+          "x": 37312,
+          "y": 300,
+          "width": 45,
+          "height": 200
+        },
+        {
+          "x": 38312,
+          "y": 300,
+          "width": 45,
+          "height": 200
+        },
+        {
+          "x": 39012,
+          "y": 300,
+          "width": 45,
+          "height": 200
+        }
+      ]
+    },
+    {
+      "id": "archive",
+      "label": "archive",
+      "x": 40000,
+      "width": 3800,
+      "floorY": 1080,
+      "topY": 230,
+      "kind": "archive",
+      "music": "silent",
+      "waterY": 1530
+    },
+    {
+      "id": "return-shaft",
+      "label": "return-shaft",
+      "x": 45000,
+      "width": 2800,
+      "floorY": 1500,
+      "topY": 650,
+      "kind": "threshold",
+      "music": "silent",
+      "waterY": 1950
+    }
+  ],
+  "labels": []
+}

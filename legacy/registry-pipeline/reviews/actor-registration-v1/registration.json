@@ -1,0 +1,873 @@
+{
+  "warden-idle": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-idle-green-v1.png",
+    "sourceSha256": "f4ae8fb5eef034e90ed68004bf1a5905642849f3eb8cfe3b5a1d45194a7b1ee7",
+    "alpha": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-idle-alpha-v1.png",
+    "allVisibleSourcePixelsRetainedOnce": true,
+    "visiblePixelCount": 274675,
+    "scaleChanges": false,
+    "frames": [
+      {
+        "frame": 0,
+        "sourceRect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "sourceGroundAnchor": [
+          347,
+          462
+        ],
+        "translation": [
+          37,
+          98
+        ],
+        "outputBounds": [
+          91,
+          141,
+          465,
+          560
+        ],
+        "retainedAlphaPixels": 45391
+      },
+      {
+        "frame": 1,
+        "sourceRect": [
+          512,
+          0,
+          1024,
+          512
+        ],
+        "sourceGroundAnchor": [
+          317,
+          462
+        ],
+        "translation": [
+          67,
+          98
+        ],
+        "outputBounds": [
+          89,
+          141,
+          465,
+          560
+        ],
+        "retainedAlphaPixels": 45512
+      },
+      {
+        "frame": 2,
+        "sourceRect": [
+          1024,
+          0,
+          1536,
+          512
+        ],
+        "sourceGroundAnchor": [
+          304,
+          462
+        ],
+        "translation": [
+          80,
+          98
+        ],
+        "outputBounds": [
+          81,
+          141,
+          466,
+          560
+        ],
+        "retainedAlphaPixels": 45846
+      },
+      {
+        "frame": 3,
+        "sourceRect": [
+          0,
+          512,
+          512,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          347,
+          462
+        ],
+        "translation": [
+          37,
+          98
+        ],
+        "outputBounds": [
+          87,
+          141,
+          465,
+          560
+        ],
+        "retainedAlphaPixels": 45561
+      },
+      {
+        "frame": 4,
+        "sourceRect": [
+          512,
+          512,
+          1024,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          317,
+          462
+        ],
+        "translation": [
+          67,
+          98
+        ],
+        "outputBounds": [
+          84,
+          141,
+          469,
+          560
+        ],
+        "retainedAlphaPixels": 46435
+      },
+      {
+        "frame": 5,
+        "sourceRect": [
+          1024,
+          512,
+          1536,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          304,
+          462
+        ],
+        "translation": [
+          80,
+          98
+        ],
+        "outputBounds": [
+          81,
+          141,
+          466,
+          560
+        ],
+        "retainedAlphaPixels": 45930
+      }
+    ],
+    "nominalBodyHeight": 416,
+    "measuredIdleAlphaHeight": 419,
+    "bodyBoundsMeaning": "Fixed nominal standing-body scale; never the current crouch or corpse bounds."
+  },
+  "warden-attack": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-attack-green-v1.png",
+    "sourceSha256": "786fec9356905ca9c8e68554096fdac90a76f148e93660227478ee01e9c347fb",
+    "alpha": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-attack-alpha-v1.png",
+    "allVisibleSourcePixelsRetainedOnce": true,
+    "visiblePixelCount": 248465,
+    "scaleChanges": false,
+    "frames": [
+      {
+        "frame": 0,
+        "sourceRect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "sourceGroundAnchor": [
+          331,
+          485
+        ],
+        "translation": [
+          53,
+          75
+        ],
+        "outputBounds": [
+          217,
+          85,
+          494,
+          561
+        ],
+        "retainedAlphaPixels": 41250
+      },
+      {
+        "frame": 1,
+        "sourceRect": [
+          512,
+          0,
+          1024,
+          512
+        ],
+        "sourceGroundAnchor": [
+          291,
+          485
+        ],
+        "translation": [
+          93,
+          75
+        ],
+        "outputBounds": [
+          274,
+          77,
+          501,
+          561
+        ],
+        "retainedAlphaPixels": 40261
+      },
+      {
+        "frame": 2,
+        "sourceRect": [
+          1024,
+          0,
+          1536,
+          512
+        ],
+        "sourceGroundAnchor": [
+          304,
+          485
+        ],
+        "translation": [
+          80,
+          75
+        ],
+        "outputBounds": [
+          116,
+          230,
+          508,
+          561
+        ],
+        "retainedAlphaPixels": 41308
+      },
+      {
+        "frame": 3,
+        "sourceRect": [
+          0,
+          512,
+          512,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          380,
+          445
+        ],
+        "translation": [
+          4,
+          115
+        ],
+        "outputBounds": [
+          30,
+          242,
+          501,
+          560
+        ],
+        "retainedAlphaPixels": 42396
+      },
+      {
+        "frame": 4,
+        "sourceRect": [
+          512,
+          512,
+          1024,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          349,
+          445
+        ],
+        "translation": [
+          35,
+          115
+        ],
+        "outputBounds": [
+          59,
+          251,
+          497,
+          560
+        ],
+        "retainedAlphaPixels": 41846
+      },
+      {
+        "frame": 5,
+        "sourceRect": [
+          1024,
+          512,
+          1536,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          368,
+          445
+        ],
+        "translation": [
+          16,
+          115
+        ],
+        "outputBounds": [
+          63,
+          249,
+          494,
+          560
+        ],
+        "retainedAlphaPixels": 41404
+      }
+    ],
+    "nominalBodyHeight": 416,
+    "measuredIdleAlphaHeight": 419,
+    "bodyBoundsMeaning": "Fixed nominal standing-body scale; never the current crouch or corpse bounds."
+  },
+  "warden-recover": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-recover-green-v1.png",
+    "sourceSha256": "d2e256e9a253e3f7e9eaa6e88f882a1dde13ac75e11b370611d2a9d54f7e0a27",
+    "alpha": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-recover-alpha-v1.png",
+    "allVisibleSourcePixelsRetainedOnce": true,
+    "visiblePixelCount": 260942,
+    "scaleChanges": false,
+    "frames": [
+      {
+        "frame": 0,
+        "sourceRect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "sourceGroundAnchor": [
+          352,
+          439
+        ],
+        "translation": [
+          32,
+          121
+        ],
+        "outputBounds": [
+          72,
+          257,
+          489,
+          560
+        ],
+        "retainedAlphaPixels": 42532
+      },
+      {
+        "frame": 1,
+        "sourceRect": [
+          512,
+          0,
+          1024,
+          512
+        ],
+        "sourceGroundAnchor": [
+          337,
+          439
+        ],
+        "translation": [
+          47,
+          121
+        ],
+        "outputBounds": [
+          72,
+          264,
+          491,
+          560
+        ],
+        "retainedAlphaPixels": 42039
+      },
+      {
+        "frame": 2,
+        "sourceRect": [
+          1024,
+          0,
+          1536,
+          512
+        ],
+        "sourceGroundAnchor": [
+          335,
+          439
+        ],
+        "translation": [
+          49,
+          121
+        ],
+        "outputBounds": [
+          78,
+          225,
+          481,
+          560
+        ],
+        "retainedAlphaPixels": 42199
+      },
+      {
+        "frame": 3,
+        "sourceRect": [
+          0,
+          512,
+          512,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          347,
+          442
+        ],
+        "translation": [
+          37,
+          118
+        ],
+        "outputBounds": [
+          86,
+          182,
+          486,
+          560
+        ],
+        "retainedAlphaPixels": 44153
+      },
+      {
+        "frame": 4,
+        "sourceRect": [
+          512,
+          512,
+          1024,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          310,
+          445
+        ],
+        "translation": [
+          74,
+          115
+        ],
+        "outputBounds": [
+          109,
+          159,
+          466,
+          560
+        ],
+        "retainedAlphaPixels": 45160
+      },
+      {
+        "frame": 5,
+        "sourceRect": [
+          1024,
+          512,
+          1536,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          309,
+          445
+        ],
+        "translation": [
+          75,
+          115
+        ],
+        "outputBounds": [
+          100,
+          159,
+          464,
+          560
+        ],
+        "retainedAlphaPixels": 44859
+      }
+    ],
+    "nominalBodyHeight": 416,
+    "measuredIdleAlphaHeight": 419,
+    "bodyBoundsMeaning": "Fixed nominal standing-body scale; never the current crouch or corpse bounds."
+  },
+  "warden-hit": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-hit-green-v1.png",
+    "sourceSha256": "5938dc1ac19856b9c480b97e73fd43261d5b62bd111713655147a37af55f4fbd",
+    "alpha": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-hit-alpha-v1.png",
+    "allVisibleSourcePixelsRetainedOnce": true,
+    "visiblePixelCount": 277766,
+    "scaleChanges": false,
+    "frames": [
+      {
+        "frame": 0,
+        "sourceRect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "sourceGroundAnchor": [
+          348,
+          463
+        ],
+        "translation": [
+          36,
+          97
+        ],
+        "outputBounds": [
+          87,
+          143,
+          475,
+          560
+        ],
+        "retainedAlphaPixels": 46784
+      },
+      {
+        "frame": 1,
+        "sourceRect": [
+          512,
+          0,
+          1000,
+          512
+        ],
+        "sourceGroundAnchor": [
+          311,
+          463
+        ],
+        "translation": [
+          73,
+          97
+        ],
+        "outputBounds": [
+          83,
+          157,
+          469,
+          560
+        ],
+        "retainedAlphaPixels": 47276
+      },
+      {
+        "frame": 2,
+        "sourceRect": [
+          1000,
+          0,
+          1536,
+          512
+        ],
+        "sourceGroundAnchor": [
+          298,
+          463
+        ],
+        "translation": [
+          62,
+          97
+        ],
+        "outputBounds": [
+          69,
+          143,
+          458,
+          560
+        ],
+        "retainedAlphaPixels": 47825
+      },
+      {
+        "frame": 3,
+        "sourceRect": [
+          0,
+          512,
+          512,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          345,
+          462
+        ],
+        "translation": [
+          39,
+          98
+        ],
+        "outputBounds": [
+          86,
+          142,
+          461,
+          560
+        ],
+        "retainedAlphaPixels": 47186
+      },
+      {
+        "frame": 4,
+        "sourceRect": [
+          512,
+          512,
+          1024,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          312,
+          462
+        ],
+        "translation": [
+          72,
+          98
+        ],
+        "outputBounds": [
+          82,
+          154,
+          466,
+          560
+        ],
+        "retainedAlphaPixels": 46346
+      },
+      {
+        "frame": 5,
+        "sourceRect": [
+          1024,
+          512,
+          1536,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          303,
+          462
+        ],
+        "translation": [
+          81,
+          98
+        ],
+        "outputBounds": [
+          131,
+          159,
+          465,
+          560
+        ],
+        "retainedAlphaPixels": 42349
+      }
+    ],
+    "nominalBodyHeight": 416,
+    "measuredIdleAlphaHeight": 419,
+    "bodyBoundsMeaning": "Fixed nominal standing-body scale; never the current crouch or corpse bounds."
+  },
+  "warden-death": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-death-green-v1.png",
+    "sourceSha256": "72da65df924e1f781bb0cfc420b6fc0f67926089be9794b8486cf654ab4c80f0",
+    "alpha": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\warden-death-alpha-v1.png",
+    "allVisibleSourcePixelsRetainedOnce": true,
+    "visiblePixelCount": 210786,
+    "scaleChanges": false,
+    "frames": [
+      {
+        "frame": 0,
+        "sourceRect": [
+          0,
+          0,
+          512,
+          512
+        ],
+        "sourceGroundAnchor": [
+          341,
+          467
+        ],
+        "translation": [
+          43,
+          93
+        ],
+        "outputBounds": [
+          102,
+          200,
+          464,
+          560
+        ],
+        "retainedAlphaPixels": 45421
+      },
+      {
+        "frame": 1,
+        "sourceRect": [
+          512,
+          0,
+          1000,
+          512
+        ],
+        "sourceGroundAnchor": [
+          307,
+          466
+        ],
+        "translation": [
+          77,
+          94
+        ],
+        "outputBounds": [
+          95,
+          260,
+          492,
+          561
+        ],
+        "retainedAlphaPixels": 42671
+      },
+      {
+        "frame": 2,
+        "sourceRect": [
+          1000,
+          0,
+          1536,
+          512
+        ],
+        "sourceGroundAnchor": [
+          334,
+          466
+        ],
+        "translation": [
+          26,
+          94
+        ],
+        "outputBounds": [
+          33,
+          318,
+          494,
+          561
+        ],
+        "retainedAlphaPixels": 36930
+      },
+      {
+        "frame": 3,
+        "sourceRect": [
+          0,
+          512,
+          512,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          350,
+          378
+        ],
+        "translation": [
+          34,
+          182
+        ],
+        "outputBounds": [
+          54,
+          405,
+          514,
+          567
+        ],
+        "retainedAlphaPixels": 32459
+      },
+      {
+        "frame": 4,
+        "sourceRect": [
+          512,
+          512,
+          1024,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          342,
+          382
+        ],
+        "translation": [
+          42,
+          178
+        ],
+        "outputBounds": [
+          48,
+          455,
+          522,
+          568
+        ],
+        "retainedAlphaPixels": 26657
+      },
+      {
+        "frame": 5,
+        "sourceRect": [
+          1024,
+          512,
+          1536,
+          1024
+        ],
+        "sourceGroundAnchor": [
+          342,
+          382
+        ],
+        "translation": [
+          42,
+          178
+        ],
+        "outputBounds": [
+          48,
+          456,
+          522,
+          568
+        ],
+        "retainedAlphaPixels": 26648
+      }
+    ],
+    "nominalBodyHeight": 416,
+    "measuredIdleAlphaHeight": 419,
+    "bodyBoundsMeaning": "Fixed nominal standing-body scale; never the current crouch or corpse bounds."
+  },
+  "map-banner": {
+    "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\map-banner-green-v1.png",
+    "sourceSha256": "328ce02cb258d793f3d4f80df5cdb6e1f124b775b6257e11da6847815ca7ba14",
+    "frames": [
+      {
+        "frame": 0,
+        "translation": [
+          0,
+          0
+        ],
+        "outputBounds": [
+          89,
+          70,
+          422,
+          131
+        ]
+      },
+      {
+        "frame": 1,
+        "translation": [
+          0,
+          0
+        ],
+        "outputBounds": [
+          89,
+          70,
+          422,
+          178
+        ]
+      },
+      {
+        "frame": 2,
+        "translation": [
+          0,
+          0
+        ],
+        "outputBounds": [
+          89,
+          70,
+          422,
+          265
+        ]
+      },
+      {
+        "frame": 3,
+        "translation": [
+          0,
+          1
+        ],
+        "outputBounds": [
+          89,
+          70,
+          422,
+          340
+        ]
+      },
+      {
+        "frame": 4,
+        "translation": [
+          0,
+          1
+        ],
+        "outputBounds": [
+          89,
+          70,
+          422,
+          402
+        ]
+      },
+      {
+        "frame": 5,
+        "translation": [
+          0,
+          2
+        ],
+        "outputBounds": [
+          89,
+          71,
+          422,
+          402
+        ]
+      }
+    ],
+    "registration": "Top-rod image match in bounded +/-2px X, +/-3px Y; whole frames translated only.",
+    "anchors": "Bottom is the centre of the final lower rod, not lowest antialiased outer pixel. The tie anchors attach separate runtime cord; source contains no authored cut rope."
+  }
+}

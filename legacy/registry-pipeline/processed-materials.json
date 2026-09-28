@@ -1,0 +1,508 @@
+{
+  "arrival-structure": {
+    "source": "layers/arrival-structure-keyed-v2.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\arrival\\alpha.png",
+    "sha256": "7a884ebd4c206421423fa0775e12fc08c43c2baa47ea113207e1991ffd376df5",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "rest-structure": {
+    "source": "layers/rest-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\rest\\alpha.png",
+    "sha256": "6dd7f6e2bf7f1cb44fc446f89e82ff9d828961fc376dacfb61139d05e53bba97",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "registry-structure": {
+    "source": "layers/registry-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\registry\\alpha.png",
+    "sha256": "8ee9f07b20009e82b582b12f431e9136a6b3854a655fed25aa27974c2b881ecc",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "junction-structure": {
+    "source": "layers/junction-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\junction\\alpha.png",
+    "sha256": "cfc9c35db8184b04bf643b0d8eee44af75bac6de19005df94b95fc36cfc8c389",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "vestibule-structure": {
+    "source": "layers/vestibule-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\vestibule\\alpha.png",
+    "sha256": "10e079775d4f4280dbd2a6a179acf83ddc50326530c09a31dba1c2267cee3593",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "arena-structure": {
+    "source": "layers/arena-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\arena\\alpha.png",
+    "sha256": "cfac6bd80d39a8cac529881fe583044fe01775c9df470435f71f4df0fcc72c33",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "archive-structure": {
+    "source": "layers/archive-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\archive\\alpha.png",
+    "sha256": "ea2e07f8e9d6749c1f6cca19ecf19ce9ea2bbb3b8520eddbe4bb4216243828cf",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "low-passage-structure": {
+    "source": "layers/low-passage-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\low-passage\\alpha.png",
+    "sha256": "c312dd33d8fcf08029ba9a9509eae6f7b20aecf8061a84ccac93fa6a2f8350da",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "pool-structure": {
+    "source": "layers/pool-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\pool\\alpha.png",
+    "sha256": "0395425c49286e347fd36cd494e4159141ede905b15bdf1246ff54d419139a56",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "sky-walk-structure": {
+    "source": "layers/sky-walk-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\sky-walk\\alpha.png",
+    "sha256": "a5790f6c313a756bbfd7235ea8d466c573274a635f60208bbea0c1dfa8b6820f",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "exhibit-structure": {
+    "source": "layers/exhibit-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\exhibit\\alpha.png",
+    "sha256": "8f5c96984e9cef4fed1df706891eba02ef07981a8c631db1af0ae6c981c134e1",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "courtyard-structure": {
+    "source": "layers/courtyard-structure-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\courtyard\\alpha.png",
+    "sha256": "a0dfe90bdc4d90657e9884d53ccd893c2a165bcd56dbd334fc2d5e90967d5a5f",
+    "operation": "key/edge conversion; opaque interior unchanged"
+  },
+  "bench": {
+    "source": "props/bench-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\bench-native-v2.png",
+    "sourceBounds": [
+      520,
+      210,
+      1459,
+      584
+    ],
+    "bodySourceBounds": [
+      522,
+      212,
+      1457,
+      582
+    ],
+    "size": [
+      939,
+      374
+    ],
+    "pivot": [
+      469.5,
+      372
+    ],
+    "bodyBounds": {
+      "x": 2,
+      "y": 2,
+      "width": 935,
+      "height": 370
+    },
+    "sha256": "67545185bd5d91e67ceb4ce72ef20816f168818b2ba05865a01138e7e11f7ca3",
+    "operation": "exact substantial-silhouette crop plus2px safety; alpha/RGB inside crop unchanged; native foot boundary pivot; no resize/repaint"
+  },
+  "registry-desk": {
+    "source": "props/registry-desk-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\registry-desk-native-v2.png",
+    "sourceBounds": [
+      383,
+      242,
+      1673,
+      544
+    ],
+    "bodySourceBounds": [
+      385,
+      244,
+      1671,
+      542
+    ],
+    "size": [
+      1290,
+      302
+    ],
+    "pivot": [
+      645.0,
+      300
+    ],
+    "bodyBounds": {
+      "x": 2,
+      "y": 2,
+      "width": 1286,
+      "height": 298
+    },
+    "sha256": "f7795f6e49292a9885261b579bd0512bae31d23c05c88ee202a8918d88a137a0",
+    "operation": "exact substantial-silhouette crop plus2px safety; alpha/RGB inside crop unchanged; native foot boundary pivot; no resize/repaint"
+  },
+  "donor-box": {
+    "source": "props/donor-box-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\donor-box-native-v2.png",
+    "sourceBounds": [
+      458,
+      286,
+      834,
+      939
+    ],
+    "bodySourceBounds": [
+      460,
+      288,
+      832,
+      937
+    ],
+    "size": [
+      376,
+      653
+    ],
+    "pivot": [
+      188.0,
+      651
+    ],
+    "bodyBounds": {
+      "x": 2,
+      "y": 2,
+      "width": 372,
+      "height": 649
+    },
+    "sha256": "d41d924a4e13f4212b81c4b5313f8dacd1c880ae1cadc077ca7a422b74b3f9eb",
+    "operation": "exact substantial-silhouette crop plus2px safety; alpha/RGB inside crop unchanged; native foot boundary pivot; no resize/repaint"
+  },
+  "paper-terminal": {
+    "source": "props/paper-terminal-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\paper-terminal-native-v2.png",
+    "sourceBounds": [
+      472,
+      299,
+      840,
+      922
+    ],
+    "bodySourceBounds": [
+      474,
+      301,
+      838,
+      920
+    ],
+    "size": [
+      368,
+      623
+    ],
+    "pivot": [
+      184.0,
+      621
+    ],
+    "bodyBounds": {
+      "x": 2,
+      "y": 2,
+      "width": 364,
+      "height": 619
+    },
+    "sha256": "6b9dbbf331e5c13e85c1832582f6ac4a74e078a21228edbf1ee0c5edb9d4009d",
+    "operation": "exact substantial-silhouette crop plus2px safety; alpha/RGB inside crop unchanged; native foot boundary pivot; no resize/repaint"
+  },
+  "door-frame": {
+    "source": "props/door-frame-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\door-frame-native-v2.png",
+    "sourceBounds": [
+      340,
+      73,
+      1041,
+      1065
+    ],
+    "bodySourceBounds": [
+      342,
+      75,
+      1039,
+      1063
+    ],
+    "size": [
+      701,
+      992
+    ],
+    "pivot": [
+      350.5,
+      990
+    ],
+    "bodyBounds": {
+      "x": 2,
+      "y": 2,
+      "width": 697,
+      "height": 988
+    },
+    "sha256": "a3b9d9aefee246e8fe724f85261c06a1cab54759598754f3d38ef534ba3548ef",
+    "operation": "exact substantial-silhouette crop plus2px safety; alpha/RGB inside crop unchanged; native foot boundary pivot; no resize/repaint",
+    "anchors": {
+      "apertureTopLeft": [
+        115,
+        97
+      ],
+      "apertureBottomRight": [
+        585,
+        958
+      ]
+    }
+  },
+  "lamp-fixture": {
+    "source": "props/lamp-fixture-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\lamp-fixture-native-v2.png",
+    "sourceBounds": [
+      418,
+      281,
+      727,
+      1077
+    ],
+    "bodySourceBounds": [
+      420,
+      283,
+      725,
+      1075
+    ],
+    "size": [
+      309,
+      796
+    ],
+    "pivot": [
+      154.5,
+      794
+    ],
+    "bodyBounds": {
+      "x": 2,
+      "y": 2,
+      "width": 305,
+      "height": 792
+    },
+    "sha256": "c617186cd5b49058b36064e668dd801f0f68f23810b6cdcf3da5cf2f70393999",
+    "operation": "exact substantial-silhouette crop plus2px safety; alpha/RGB inside crop unchanged; native foot boundary pivot; no resize/repaint"
+  },
+  "tree": {
+    "source": "props/tree-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\tree-native-v2.png",
+    "sourceBounds": [
+      96,
+      38,
+      1480,
+      980
+    ],
+    "bodySourceBounds": [
+      98,
+      40,
+      1478,
+      978
+    ],
+    "size": [
+      1384,
+      942
+    ],
+    "pivot": [
+      692.0,
+      940
+    ],
+    "bodyBounds": {
+      "x": 2,
+      "y": 2,
+      "width": 1380,
+      "height": 938
+    },
+    "sha256": "43d42358b9e6b33c572730834edde06561cae83356109f89c09443565ffff1cc",
+    "operation": "exact substantial-silhouette crop plus2px safety; alpha/RGB inside crop unchanged; native foot boundary pivot; no resize/repaint"
+  },
+  "door-leaf": {
+    "source": "props/door-assembled-keyed-v2.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\door-leaf-native-v2.png",
+    "sourceBounds": [
+      455,
+      170,
+      925,
+      1034
+    ],
+    "size": [
+      470,
+      864
+    ],
+    "pivot": [
+      235,
+      864
+    ],
+    "sha256": "08e72f733f3fe33c51dc1aefa06df7e321f22aef354b0ed49239790ce7abb0c0",
+    "operation": "fixed inner-aperture crop from matched assembled door"
+  },
+  "exhibit-frame-1": {
+    "source": "props/exhibit-frames-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-1-native-v1.png",
+    "sourceBounds": [
+      74,
+      386,
+      180,
+      551
+    ],
+    "size": [
+      106,
+      165
+    ],
+    "pivot": [
+      53.0,
+      82.5
+    ],
+    "sha256": "b427bd0ee03cf2cb7bf30ae6a73b8546933d55644a3df3c114e0a5c95719464c",
+    "operation": "exact component crop; world placement follows room reference, not extraction sheet layout"
+  },
+  "exhibit-frame-2": {
+    "source": "props/exhibit-frames-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-2-native-v1.png",
+    "sourceBounds": [
+      213,
+      417,
+      318,
+      531
+    ],
+    "size": [
+      105,
+      114
+    ],
+    "pivot": [
+      52.5,
+      57.0
+    ],
+    "sha256": "e082da413e2ec6c6d2d470876d3ca15d51654bf048454c0f6599b586ab923b83",
+    "operation": "exact component crop; world placement follows room reference, not extraction sheet layout"
+  },
+  "exhibit-frame-3": {
+    "source": "props/exhibit-frames-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-3-native-v1.png",
+    "sourceBounds": [
+      356,
+      413,
+      529,
+      536
+    ],
+    "size": [
+      173,
+      123
+    ],
+    "pivot": [
+      86.5,
+      61.5
+    ],
+    "sha256": "b6ab99b31c6e47d7f56951bbfa7330ad0e33700e29bcfd66bae85175cf6d9c5a",
+    "operation": "exact component crop; world placement follows room reference, not extraction sheet layout"
+  },
+  "exhibit-frame-4": {
+    "source": "props/exhibit-frames-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-4-native-v1.png",
+    "sourceBounds": [
+      570,
+      375,
+      687,
+      557
+    ],
+    "size": [
+      117,
+      182
+    ],
+    "pivot": [
+      58.5,
+      91.0
+    ],
+    "sha256": "a73827f61c4691e75e28b0179c117a0b4475ebe40378420b9ba82f4459f6adb3",
+    "operation": "exact component crop; world placement follows room reference, not extraction sheet layout"
+  },
+  "exhibit-frame-5": {
+    "source": "props/exhibit-frames-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-5-native-v1.png",
+    "sourceBounds": [
+      727,
+      413,
+      841,
+      532
+    ],
+    "size": [
+      114,
+      119
+    ],
+    "pivot": [
+      57.0,
+      59.5
+    ],
+    "sha256": "7799b6b58ef96a815ccd2efcc9f6c8a773fd10fd451a2ecd77e83a3c21129d20",
+    "operation": "exact component crop; world placement follows room reference, not extraction sheet layout"
+  },
+  "exhibit-frame-6": {
+    "source": "props/exhibit-frames-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-6-native-v1.png",
+    "sourceBounds": [
+      887,
+      400,
+      1119,
+      547
+    ],
+    "size": [
+      232,
+      147
+    ],
+    "pivot": [
+      116.0,
+      73.5
+    ],
+    "sha256": "fb878839f1607ef1b913f6bbffd614b2df2d85ab2ac03ddc684262adff1b5d31",
+    "operation": "exact component crop; world placement follows room reference, not extraction sheet layout"
+  },
+  "exhibit-frame-7": {
+    "source": "props/exhibit-frames-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-7-native-v1.png",
+    "sourceBounds": [
+      1159,
+      378,
+      1277,
+      553
+    ],
+    "size": [
+      118,
+      175
+    ],
+    "pivot": [
+      59.0,
+      87.5
+    ],
+    "sha256": "4de4330a1b320fccec7e3bfa1bb464463ffe17b8313549ef5af925e46d38d5e6",
+    "operation": "exact component crop; world placement follows room reference, not extraction sheet layout"
+  },
+  "exhibit-frame-8": {
+    "source": "props/exhibit-frames-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-8-native-v1.png",
+    "sourceBounds": [
+      1318,
+      417,
+      1443,
+      531
+    ],
+    "size": [
+      125,
+      114
+    ],
+    "pivot": [
+      62.5,
+      57.0
+    ],
+    "sha256": "9a8de7c2d4219462c96dcd66d7794f813d323e4f53b150ff610175591b255ba1",
+    "operation": "exact component crop; world placement follows room reference, not extraction sheet layout"
+  },
+  "exhibit-frame-9": {
+    "source": "props/exhibit-frames-keyed-v1.png",
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-9-native-v1.png",
+    "sourceBounds": [
+      1484,
+      371,
+      1599,
+      558
+    ],
+    "size": [
+      115,
+      187
+    ],
+    "pivot": [
+      57.5,
+      93.5
+    ],
+    "sha256": "356e6262db6c6e7074034a91101d8b5e84b0560886dce5c85c7b5819f4f921a0",
+    "operation": "exact component crop; world placement follows room reference, not extraction sheet layout"
+  }
+}

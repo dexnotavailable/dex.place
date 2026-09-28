@@ -1,0 +1,255 @@
+{
+  "required": {
+    "music": [
+      "support"
+    ],
+    "ambience": [
+      "exterior",
+      "interior"
+    ],
+    "effects": [
+      "cable-cut",
+      "confirm",
+      "hit-metal",
+      "landing",
+      "lift-dock",
+      "lift-start",
+      "paper-open",
+      "slash-1",
+      "slash-2",
+      "step-concrete-1",
+      "step-concrete-2",
+      "step-metal-1",
+      "step-metal-2"
+    ]
+  },
+  "effectContractSha256": "728694aa97db00e8949ccb12b849135801741c13959c3f17456f4cb485019255",
+  "encountersConfigured": false,
+  "materials": [
+    "concrete",
+    "metal"
+  ],
+  "objectKinds": [
+    "banner",
+    "bridge",
+    "cable",
+    "donate",
+    "file",
+    "gallery",
+    "home",
+    "landing",
+    "lift",
+    "terminal"
+  ],
+  "regionLabels": [
+    "Arrival",
+    "Dispatch passage",
+    "Dispatch",
+    "Archive descent",
+    "Archive",
+    "Exhibition lift shaft",
+    "Exhibition",
+    "Support descent",
+    "Support"
+  ],
+  "plans": [
+    {
+      "region": "arrival",
+      "content": "none",
+      "music": "support",
+      "ambience": "exterior"
+    },
+    {
+      "region": "arrival",
+      "content": "reader",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "arrival",
+      "content": "panel",
+      "music": "support",
+      "ambience": "exterior"
+    },
+    {
+      "region": "arrival",
+      "content": "art",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "dispatch",
+      "content": "none",
+      "music": null,
+      "ambience": "interior"
+    },
+    {
+      "region": "dispatch",
+      "content": "reader",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "dispatch",
+      "content": "panel",
+      "music": null,
+      "ambience": "interior"
+    },
+    {
+      "region": "dispatch",
+      "content": "art",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "archive",
+      "content": "none",
+      "music": null,
+      "ambience": "interior"
+    },
+    {
+      "region": "archive",
+      "content": "reader",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "archive",
+      "content": "panel",
+      "music": null,
+      "ambience": "interior"
+    },
+    {
+      "region": "archive",
+      "content": "art",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "gallery",
+      "content": "none",
+      "music": "support",
+      "ambience": "exterior"
+    },
+    {
+      "region": "gallery",
+      "content": "reader",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "gallery",
+      "content": "panel",
+      "music": "support",
+      "ambience": "exterior"
+    },
+    {
+      "region": "gallery",
+      "content": "art",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "support",
+      "content": "none",
+      "music": "support",
+      "ambience": "interior"
+    },
+    {
+      "region": "support",
+      "content": "reader",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "support",
+      "content": "panel",
+      "music": "support",
+      "ambience": "interior"
+    },
+    {
+      "region": "support",
+      "content": "art",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "transition",
+      "content": "none",
+      "music": null,
+      "ambience": "interior"
+    },
+    {
+      "region": "transition",
+      "content": "reader",
+      "music": null,
+      "ambience": null
+    },
+    {
+      "region": "transition",
+      "content": "panel",
+      "music": null,
+      "ambience": "interior"
+    },
+    {
+      "region": "transition",
+      "content": "art",
+      "music": null,
+      "ambience": null
+    }
+  ],
+  "reasons": {
+    "confirm": [
+      "home arrival.home.01",
+      "terminal arrival.terminal.downloads.01",
+      "terminal archive.index.01",
+      "gallery gallery.bay.01",
+      "gallery gallery.bay.02",
+      "donate support.plinth.01"
+    ],
+    "paper-open": [
+      "banner arrival.wayfinding-banner.01 (latched)",
+      "file archive.file.controls.01",
+      "file archive.file.movement.01",
+      "file archive.file.downloads.01",
+      "file archive.file.illustrations.01",
+      "file archive.file.donate.01",
+      "file archive.file.accessibility.01"
+    ],
+    "hit-metal": [
+      "banner arrival.wayfinding-banner.01 (latched)",
+      "bridge dispatch.lowering-bridge.01"
+    ],
+    "cable-cut": [
+      "cable dispatch.bridge-cable.01"
+    ],
+    "lift-start": [
+      "landing support.landing.lower.01",
+      "landing support.landing.upper.01",
+      "lift support.lift.01"
+    ],
+    "lift-dock": [
+      "landing support.landing.lower.01",
+      "landing support.landing.upper.01",
+      "lift support.lift.01"
+    ],
+    "step-concrete-1": [
+      "support material concrete"
+    ],
+    "step-concrete-2": [
+      "support material concrete"
+    ],
+    "step-metal-1": [
+      "support material metal"
+    ],
+    "step-metal-2": [
+      "support material metal"
+    ]
+  },
+  "sourceHashes": {
+    "src/worldsite/audio.ts": "dda26476e6c0a4767e5c328c55eec2191a6d7cc07872974eed3c19b50061257d",
+    "src/worldsite/audio-direction.ts": "74fb4ecde412e1daec01c37e0658796339dacededc6e9c002c07516fda1e2c92",
+    "src/worldsite/experience.ts": "80a7ae57cb28bedc61119a99cde08e7abff8da7f8388a085394c5b6448843483",
+    "src/worldsite/game/WorldScene.ts": "b89c81b6e07d13d6006a4fd3aaefd841eaf1f1f6f0f1ae6d6c265a4b56fcbdba"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "status": "invariants-pass-local-retouch-still-required",
+  "results": [
+    {
+      "room": "rest",
+      "interiorPixelsUnchangedAndOpaque": 970668,
+      "visibleMagentaPixels": 309,
+      "visibleMagentaInsideEdgeBand": 0,
+      "visibleMagentaOutsideEdgeBand": 309,
+      "protectedROIs": [
+        {
+          "rectXYXY": [
+            180,
+            200,
+            420,
+            650
+          ],
+          "rgbUnchanged": true,
+          "allOpaque": true,
+          "alphaMin": 255
+        },
+        {
+          "rectXYXY": [
+            500,
+            650,
+            800,
+            700
+          ],
+          "rgbUnchanged": false,
+          "allOpaque": false,
+          "alphaMin": 0
+        }
+      ],
+      "sourceUnchanged": true,
+      "alphaSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\key-boundary-01\\rest-final\\alpha.png"
+    },
+    {
+      "room": "low-passage",
+      "interiorPixelsUnchangedAndOpaque": 1534929,
+      "visibleMagentaPixels": 313,
+      "visibleMagentaInsideEdgeBand": 0,
+      "visibleMagentaOutsideEdgeBand": 313,
+      "protectedROIs": [
+        {
+          "rectXYXY": [
+            148,
+            648,
+            270,
+            671
+          ],
+          "rgbUnchanged": true,
+          "allOpaque": true,
+          "alphaMin": 255
+        },
+        {
+          "rectXYXY": [
+            400,
+            400,
+            1400,
+            550
+          ],
+          "rgbUnchanged": true,
+          "allOpaque": true,
+          "alphaMin": 255
+        }
+      ],
+      "sourceUnchanged": true,
+      "alphaSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\key-boundary-01\\low-passage-final\\alpha.png"
+    }
+  ]
+}

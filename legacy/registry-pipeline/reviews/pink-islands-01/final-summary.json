@@ -1,0 +1,271 @@
+[
+  {
+    "room": "rest",
+    "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\rest\\alpha.png",
+    "sourceSha256": "6dd7f6e2bf7f1cb44fc446f89e82ff9d828961fc376dacfb61139d05e53bba97",
+    "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\rest-foliage-final\\alpha.png",
+    "outputSha256": "7517656249d9a9e1abf8237206b23bc4cb5e1d4f5570b2aa7c9aab86f349479e",
+    "selectedPixels": 309,
+    "changedPixels": 309,
+    "otherRGBAUnchanged": true,
+    "beforeStrongPink": 309,
+    "afterStrongPink": 0,
+    "remainingBounds": null,
+    "regions": [
+      [
+        0,
+        0,
+        680,
+        695
+      ]
+    ]
+  },
+  {
+    "room": "registry",
+    "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\registry\\alpha.png",
+    "sourceSha256": "8ee9f07b20009e82b582b12f431e9136a6b3854a655fed25aa27974c2b881ecc",
+    "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\registry-foliage-final\\alpha.png",
+    "outputSha256": "b5894dab7e56be505af5f8ffe9777e88ee888f6aa54a4165a0de1a161ecd859d",
+    "selectedPixels": 495,
+    "changedPixels": 495,
+    "otherRGBAUnchanged": true,
+    "beforeStrongPink": 497,
+    "afterStrongPink": 2,
+    "remainingBounds": [
+      1248,
+      674,
+      1250,
+      675
+    ],
+    "regions": [
+      [
+        0,
+        0,
+        450,
+        676
+      ],
+      [
+        1540,
+        0,
+        1672,
+        676
+      ]
+    ]
+  },
+  {
+    "room": "junction",
+    "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\junction\\alpha.png",
+    "sourceSha256": "cfc9c35db8184b04bf643b0d8eee44af75bac6de19005df94b95fc36cfc8c389",
+    "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\junction-foliage-final\\alpha.png",
+    "outputSha256": "5964d98783ecbb5489dcf032de121c483d8f45987a79b6f4835d85a0a2fad342",
+    "selectedPixels": 815,
+    "changedPixels": 815,
+    "otherRGBAUnchanged": true,
+    "beforeStrongPink": 815,
+    "afterStrongPink": 0,
+    "remainingBounds": null,
+    "regions": [
+      [
+        0,
+        0,
+        400,
+        635
+      ],
+      [
+        520,
+        0,
+        710,
+        330
+      ],
+      [
+        1180,
+        0,
+        1672,
+        635
+      ]
+    ]
+  },
+  {
+    "room": "vestibule",
+    "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\vestibule\\alpha.png",
+    "sourceSha256": "10e079775d4f4280dbd2a6a179acf83ddc50326530c09a31dba1c2267cee3593",
+    "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\vestibule-foliage-final\\alpha.png",
+    "outputSha256": "ba7979566d5afd17f24b77b28d53069681cc1f9373210ac6c318c6d83ba8cc76",
+    "selectedPixels": 25,
+    "changedPixels": 25,
+    "otherRGBAUnchanged": true,
+    "beforeStrongPink": 25,
+    "afterStrongPink": 0,
+    "remainingBounds": null,
+    "regions": [
+      [
+        0,
+        0,
+        250,
+        685
+      ],
+      [
+        1480,
+        0,
+        1672,
+        685
+      ]
+    ]
+  },
+  {
+    "room": "archive",
+    "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\archive\\alpha.png",
+    "sourceSha256": "ea2e07f8e9d6749c1f6cca19ecf19ce9ea2bbb3b8520eddbe4bb4216243828cf",
+    "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\archive-foliage-final\\alpha.png",
+    "outputSha256": "f4f30858f43762656eba2a7f8cc7768b0f4f82e4e4a162672859a7e4f46996ee",
+    "selectedPixels": 229,
+    "changedPixels": 229,
+    "otherRGBAUnchanged": true,
+    "beforeStrongPink": 229,
+    "afterStrongPink": 0,
+    "remainingBounds": null,
+    "regions": [
+      [
+        1320,
+        80,
+        1550,
+        230
+      ]
+    ]
+  },
+  {
+    "room": "pool",
+    "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\pool\\alpha.png",
+    "sourceSha256": "0395425c49286e347fd36cd494e4159141ede905b15bdf1246ff54d419139a56",
+    "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\pool-foliage-final\\alpha.png",
+    "outputSha256": "6e014fed13c5d9498ec8c35c5459461d640546af0b7bf80056067bc4c2366f60",
+    "selectedPixels": 836,
+    "changedPixels": 836,
+    "otherRGBAUnchanged": true,
+    "beforeStrongPink": 836,
+    "afterStrongPink": 0,
+    "remainingBounds": null,
+    "regions": [
+      [
+        0,
+        0,
+        380,
+        739
+      ],
+      [
+        1280,
+        0,
+        1672,
+        739
+      ]
+    ]
+  },
+  {
+    "room": "sky-walk",
+    "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\sky-walk\\alpha.png",
+    "sourceSha256": "a5790f6c313a756bbfd7235ea8d466c573274a635f60208bbea0c1dfa8b6820f",
+    "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\sky-walk-foliage-final\\alpha.png",
+    "outputSha256": "5a9db172b2c7464fa8b27b5fc50ad005655593e9a6db27d985dec0ee809261fe",
+    "selectedPixels": 576,
+    "changedPixels": 573,
+    "otherRGBAUnchanged": true,
+    "beforeStrongPink": 578,
+    "afterStrongPink": 5,
+    "remainingBounds": [
+      581,
+      0,
+      1672,
+      741
+    ],
+    "regions": [
+      [
+        0,
+        0,
+        250,
+        941
+      ],
+      [
+        1460,
+        0,
+        1672,
+        941
+      ]
+    ]
+  },
+  {
+    "room": "exhibit",
+    "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\exhibit\\alpha.png",
+    "sourceSha256": "8f5c96984e9cef4fed1df706891eba02ef07981a8c631db1af0ae6c981c134e1",
+    "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\exhibit-foliage-final\\alpha.png",
+    "outputSha256": "fb652b9ac484393234eb7b36ffcdbfb24002a4811cd6d84c1a166bd80a39da5b",
+    "selectedPixels": 1079,
+    "changedPixels": 1076,
+    "otherRGBAUnchanged": true,
+    "beforeStrongPink": 1079,
+    "afterStrongPink": 3,
+    "remainingBounds": [
+      1491,
+      0,
+      1672,
+      601
+    ],
+    "regions": [
+      [
+        0,
+        0,
+        470,
+        688
+      ],
+      [
+        1370,
+        0,
+        1672,
+        688
+      ],
+      [
+        90,
+        810,
+        230,
+        941
+      ],
+      [
+        1150,
+        815,
+        1440,
+        941
+      ]
+    ]
+  },
+  {
+    "room": "courtyard",
+    "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\courtyard\\alpha.png",
+    "sourceSha256": "a0dfe90bdc4d90657e9884d53ccd893c2a165bcd56dbd334fc2d5e90967d5a5f",
+    "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\courtyard-foliage-final\\alpha.png",
+    "outputSha256": "172f7f4482eb95ccecdb43403c4643161f946e8ba8ccc05d91df4bb7e4bd1421",
+    "selectedPixels": 565,
+    "changedPixels": 565,
+    "otherRGBAUnchanged": true,
+    "beforeStrongPink": 569,
+    "afterStrongPink": 4,
+    "remainingBounds": [
+      635,
+      612,
+      1136,
+      678
+    ],
+    "regions": [
+      [
+        0,
+        0,
+        240,
+        941
+      ],
+      [
+        1280,
+        250,
+        1672,
+        941
+      ]
+    ]
+  }
+]

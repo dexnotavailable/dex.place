@@ -1,0 +1,1629 @@
+[
+  {
+    "id": "arrival",
+    "floor": 751,
+    "anchors": [
+      {
+        "id": "spawn",
+        "point": [
+          832,
+          751
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "trail-right",
+        "point": [
+          1230,
+          762
+        ],
+        "bounds": [
+          1008,
+          754,
+          1637,
+          768
+        ],
+        "aperture": null
+      },
+      {
+        "id": "left-structural-edge",
+        "point": [
+          156,
+          739
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "right-structural-edge",
+        "point": [
+          1535,
+          739
+        ],
+        "bounds": null,
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "flat-walk-guide",
+        "xRange": [
+          0,
+          1672
+        ],
+        "y": 751
+      }
+    ]
+  },
+  {
+    "id": "rest",
+    "floor": 706,
+    "anchors": [
+      {
+        "id": "bench",
+        "point": [
+          332,
+          689
+        ],
+        "bounds": [
+          222,
+          594,
+          440,
+          690
+        ],
+        "aperture": null
+      },
+      {
+        "id": "bench-seat",
+        "point": [
+          332,
+          644
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "wall-lantern",
+        "point": [
+          210,
+          396
+        ],
+        "bounds": [
+          193,
+          354,
+          226,
+          434
+        ],
+        "aperture": null
+      },
+      {
+        "id": "right-entry",
+        "point": [
+          1610,
+          706
+        ],
+        "bounds": null,
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "flat-walk-guide",
+        "xRange": [
+          142,
+          1672
+        ],
+        "y": 706
+      }
+    ]
+  },
+  {
+    "id": "registry",
+    "floor": 692,
+    "anchors": [
+      {
+        "id": "counter",
+        "point": [
+          830,
+          680
+        ],
+        "bounds": [
+          666,
+          609,
+          991,
+          682
+        ],
+        "aperture": null
+      },
+      {
+        "id": "counter-top",
+        "point": [
+          832,
+          613
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "accountant",
+        "point": [
+          860,
+          614
+        ],
+        "bounds": [
+          832,
+          554,
+          893,
+          616
+        ],
+        "aperture": null
+      },
+      {
+        "id": "desk-lamp",
+        "point": [
+          954,
+          614
+        ],
+        "bounds": [
+          930,
+          544,
+          981,
+          618
+        ],
+        "aperture": null
+      },
+      {
+        "id": "donation-box",
+        "point": [
+          1033,
+          679
+        ],
+        "bounds": [
+          998,
+          574,
+          1068,
+          681
+        ],
+        "aperture": null
+      },
+      {
+        "id": "courtyard-door",
+        "point": [
+          1312,
+          675
+        ],
+        "bounds": [
+          1217,
+          402,
+          1390,
+          678
+        ],
+        "aperture": null
+      },
+      {
+        "id": "courtyard-aperture",
+        "point": [
+          1308,
+          550
+        ],
+        "bounds": [
+          1264,
+          431,
+          1361,
+          669
+        ],
+        "aperture": null
+      },
+      {
+        "id": "door-leaf-hinge",
+        "point": [
+          1361,
+          551
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "door-status",
+        "point": [
+          1305,
+          376
+        ],
+        "bounds": [
+          1288,
+          359,
+          1321,
+          394
+        ],
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "flat-walk-guide",
+        "xRange": [
+          0,
+          1672
+        ],
+        "y": 692
+      }
+    ]
+  },
+  {
+    "id": "junction",
+    "floor": 645,
+    "anchors": [
+      {
+        "id": "registry-side-door",
+        "point": [
+          171,
+          635
+        ],
+        "bounds": [
+          106,
+          477,
+          238,
+          637
+        ],
+        "aperture": null
+      },
+      {
+        "id": "archive-lower-door",
+        "point": [
+          163,
+          858
+        ],
+        "bounds": [
+          104,
+          728,
+          217,
+          862
+        ],
+        "aperture": null
+      },
+      {
+        "id": "right-door",
+        "point": [
+          1587,
+          636
+        ],
+        "bounds": [
+          1562,
+          452,
+          1614,
+          640
+        ],
+        "aperture": null
+      },
+      {
+        "id": "upper-route",
+        "point": [
+          598,
+          211
+        ],
+        "bounds": [
+          536,
+          67,
+          684,
+          213
+        ],
+        "aperture": null
+      },
+      {
+        "id": "bench",
+        "point": [
+          582,
+          636
+        ],
+        "bounds": [
+          536,
+          596,
+          623,
+          637
+        ],
+        "aperture": null
+      },
+      {
+        "id": "donation-box",
+        "point": [
+          878,
+          635
+        ],
+        "bounds": [
+          858,
+          550,
+          900,
+          637
+        ],
+        "aperture": null
+      },
+      {
+        "id": "map-hanging-sheet",
+        "point": [
+          799,
+          499
+        ],
+        "bounds": [
+          750,
+          444,
+          845,
+          552
+        ],
+        "aperture": null
+      },
+      {
+        "id": "map-fastening",
+        "point": [
+          799,
+          406
+        ],
+        "bounds": null,
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "main-walk-guide",
+        "xRange": [
+          0,
+          1672
+        ],
+        "y": 645,
+        "note": "Foreground central column occludes this lane; lower-left stairs form a deliberate branch."
+      },
+      {
+        "type": "ascending-stair-guide",
+        "polylineXY": [
+          [
+            1270,
+            630
+          ],
+          [
+            1185,
+            576
+          ],
+          [
+            1060,
+            487
+          ],
+          [
+            932,
+            402
+          ],
+          [
+            801,
+            317
+          ],
+          [
+            668,
+            223
+          ],
+          [
+            657,
+            211
+          ]
+        ],
+        "note": "Approximate tread trajectory only; trace visible horizontal tread pixels for final step/slope contacts."
+      },
+      {
+        "type": "upper-landing",
+        "xRange": [
+          85,
+          666
+        ],
+        "y": 211
+      },
+      {
+        "type": "descending-stair-guide",
+        "polylineXY": [
+          [
+            356,
+            641
+          ],
+          [
+            305,
+            704
+          ],
+          [
+            253,
+            769
+          ],
+          [
+            203,
+            827
+          ],
+          [
+            169,
+            861
+          ]
+        ]
+      },
+      {
+        "type": "lower-landing",
+        "xRange": [
+          40,
+          171
+        ],
+        "y": 862
+      }
+    ]
+  },
+  {
+    "id": "vestibule",
+    "floor": 702,
+    "anchors": [
+      {
+        "id": "return-door",
+        "point": [
+          139,
+          685
+        ],
+        "bounds": [
+          92,
+          420,
+          188,
+          688
+        ],
+        "aperture": null
+      },
+      {
+        "id": "bench",
+        "point": [
+          460,
+          687
+        ],
+        "bounds": [
+          389,
+          626,
+          532,
+          688
+        ],
+        "aperture": null
+      },
+      {
+        "id": "left-service-box",
+        "point": [
+          570,
+          685
+        ],
+        "bounds": [
+          541,
+          585,
+          598,
+          688
+        ],
+        "aperture": null
+      },
+      {
+        "id": "right-product-selector",
+        "point": [
+          1067,
+          685
+        ],
+        "bounds": [
+          1030,
+          582,
+          1096,
+          688
+        ],
+        "aperture": null
+      },
+      {
+        "id": "arena-door",
+        "point": [
+          1306,
+          685
+        ],
+        "bounds": [
+          1110,
+          353,
+          1504,
+          688
+        ],
+        "aperture": null
+      },
+      {
+        "id": "arena-door-aperture",
+        "point": [
+          1306,
+          551
+        ],
+        "bounds": [
+          1187,
+          423,
+          1432,
+          683
+        ],
+        "aperture": null
+      },
+      {
+        "id": "arena-door-split",
+        "point": [
+          1305,
+          558
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "hanging-sheet",
+        "point": [
+          594,
+          517
+        ],
+        "bounds": [
+          551,
+          466,
+          637,
+          568
+        ],
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "flat-walk-guide",
+        "xRange": [
+          0,
+          1672
+        ],
+        "y": 702
+      }
+    ]
+  },
+  {
+    "id": "arena",
+    "floor": 757,
+    "anchors": [
+      {
+        "id": "player-start",
+        "point": [
+          401,
+          757
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "warden-foot",
+        "point": [
+          1262,
+          758
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "warden-body",
+        "point": [
+          1261,
+          649
+        ],
+        "bounds": [
+          1215,
+          540,
+          1306,
+          759
+        ],
+        "aperture": null
+      },
+      {
+        "id": "warden-sword",
+        "point": [
+          1169,
+          706
+        ],
+        "bounds": [
+          1103,
+          654,
+          1240,
+          757
+        ],
+        "aperture": null
+      },
+      {
+        "id": "return-door",
+        "point": [
+          167,
+          725
+        ],
+        "bounds": [
+          72,
+          489,
+          269,
+          728
+        ],
+        "aperture": null
+      },
+      {
+        "id": "return-aperture",
+        "point": [
+          165,
+          634
+        ],
+        "bounds": [
+          94,
+          545,
+          234,
+          725
+        ],
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "flat-combat-walk-guide",
+        "xRange": [
+          275,
+          1515
+        ],
+        "y": 757,
+        "note": "Suggested clear fight lane; confirm attack reach, door return and camera framing in runtime."
+      }
+    ]
+  },
+  {
+    "id": "archive",
+    "floor": 722,
+    "anchors": [
+      {
+        "id": "left-door",
+        "point": [
+          142,
+          637
+        ],
+        "bounds": [
+          64,
+          403,
+          219,
+          639
+        ],
+        "aperture": null
+      },
+      {
+        "id": "left-aperture",
+        "point": [
+          142,
+          533
+        ],
+        "bounds": [
+          87,
+          430,
+          199,
+          638
+        ],
+        "aperture": null
+      },
+      {
+        "id": "right-door",
+        "point": [
+          1552,
+          638
+        ],
+        "bounds": [
+          1486,
+          406,
+          1615,
+          640
+        ],
+        "aperture": null
+      },
+      {
+        "id": "right-aperture",
+        "point": [
+          1553,
+          534
+        ],
+        "bounds": [
+          1504,
+          434,
+          1595,
+          638
+        ],
+        "aperture": null
+      },
+      {
+        "id": "donation-box",
+        "point": [
+          249,
+          651
+        ],
+        "bounds": [
+          225,
+          568,
+          276,
+          656
+        ],
+        "aperture": null
+      },
+      {
+        "id": "reading-desk",
+        "point": [
+          838,
+          716
+        ],
+        "bounds": [
+          750,
+          651,
+          925,
+          717
+        ],
+        "aperture": null
+      },
+      {
+        "id": "desk-lamp",
+        "point": [
+          813,
+          659
+        ],
+        "bounds": [
+          794,
+          606,
+          834,
+          659
+        ],
+        "aperture": null
+      },
+      {
+        "id": "chair",
+        "point": [
+          943,
+          716
+        ],
+        "bounds": [
+          920,
+          642,
+          969,
+          717
+        ],
+        "aperture": null
+      },
+      {
+        "id": "book-trolley",
+        "point": [
+          1278,
+          714
+        ],
+        "bounds": [
+          1228,
+          631,
+          1325,
+          715
+        ],
+        "aperture": null
+      },
+      {
+        "id": "shelves",
+        "point": [
+          871,
+          713
+        ],
+        "bounds": [
+          355,
+          509,
+          1370,
+          715
+        ],
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "main-walk-guide",
+        "xRange": [
+          275,
+          1440
+        ],
+        "y": 722
+      },
+      {
+        "type": "left-stair-guide",
+        "polylineXY": [
+          [
+            65,
+            638
+          ],
+          [
+            211,
+            638
+          ],
+          [
+            226,
+            650
+          ],
+          [
+            240,
+            667
+          ],
+          [
+            252,
+            682
+          ],
+          [
+            261,
+            699
+          ],
+          [
+            273,
+            715
+          ]
+        ]
+      },
+      {
+        "type": "right-stair-guide",
+        "polylineXY": [
+          [
+            1441,
+            715
+          ],
+          [
+            1457,
+            701
+          ],
+          [
+            1473,
+            683
+          ],
+          [
+            1484,
+            668
+          ],
+          [
+            1496,
+            651
+          ],
+          [
+            1505,
+            638
+          ],
+          [
+            1617,
+            638
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "low-passage",
+    "floor": 663,
+    "anchors": [
+      {
+        "id": "left-door",
+        "point": [
+          210,
+          647
+        ],
+        "bounds": [
+          122,
+          416,
+          307,
+          648
+        ],
+        "aperture": null
+      },
+      {
+        "id": "left-aperture",
+        "point": [
+          210,
+          571
+        ],
+        "bounds": [
+          150,
+          496,
+          273,
+          647
+        ],
+        "aperture": null
+      },
+      {
+        "id": "blue-status",
+        "point": [
+          210,
+          469
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "first-block",
+        "point": [
+          606,
+          599
+        ],
+        "bounds": [
+          496,
+          597,
+          714,
+          652
+        ],
+        "aperture": null
+      },
+      {
+        "id": "second-block",
+        "point": [
+          998,
+          579
+        ],
+        "bounds": [
+          887,
+          576,
+          1109,
+          653
+        ],
+        "aperture": null
+      },
+      {
+        "id": "right-exit",
+        "point": [
+          1518,
+          663
+        ],
+        "bounds": [
+          1480,
+          365,
+          1596,
+          648
+        ],
+        "aperture": null
+      },
+      {
+        "id": "left-strip-light",
+        "point": [
+          561,
+          383
+        ],
+        "bounds": [
+          510,
+          368,
+          619,
+          394
+        ],
+        "aperture": null
+      },
+      {
+        "id": "right-strip-light",
+        "point": [
+          1190,
+          383
+        ],
+        "bounds": [
+          1140,
+          369,
+          1242,
+          394
+        ],
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "floor-guide",
+        "xRange": [
+          0,
+          1672
+        ],
+        "y": 663
+      },
+      {
+        "type": "platform-top-guide",
+        "xRange": [
+          501,
+          711
+        ],
+        "y": 600
+      },
+      {
+        "type": "platform-top-guide",
+        "xRange": [
+          891,
+          1104
+        ],
+        "y": 580
+      },
+      {
+        "type": "ceiling-clearance-guide",
+        "xRange": [
+          70,
+          1600
+        ],
+        "y": 369
+      }
+    ]
+  },
+  {
+    "id": "pool",
+    "floor": 748,
+    "anchors": [
+      {
+        "id": "left-door",
+        "point": [
+          66,
+          738
+        ],
+        "bounds": [
+          26,
+          617,
+          106,
+          741
+        ],
+        "aperture": null
+      },
+      {
+        "id": "bench",
+        "point": [
+          1358,
+          747
+        ],
+        "bounds": [
+          1304,
+          704,
+          1410,
+          749
+        ],
+        "aperture": null
+      },
+      {
+        "id": "blue-box",
+        "point": [
+          1482,
+          740
+        ],
+        "bounds": [
+          1464,
+          690,
+          1500,
+          742
+        ],
+        "aperture": null
+      },
+      {
+        "id": "right-passage",
+        "point": [
+          1593,
+          742
+        ],
+        "bounds": [
+          1549,
+          505,
+          1638,
+          743
+        ],
+        "aperture": null
+      },
+      {
+        "id": "waterline-background",
+        "point": [
+          823,
+          540
+        ],
+        "bounds": null,
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "flat-walk-guide",
+        "xRange": [
+          0,
+          1672
+        ],
+        "y": 748
+      }
+    ]
+  },
+  {
+    "id": "sky-walk",
+    "floor": 669,
+    "anchors": [
+      {
+        "id": "left-bridge-hinge",
+        "point": [
+          725,
+          676
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "right-receiver",
+        "point": [
+          1074,
+          676
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "raised-deck-tip",
+        "point": [
+          725,
+          477
+        ],
+        "bounds": [
+          711,
+          474,
+          745,
+          674
+        ],
+        "aperture": null
+      },
+      {
+        "id": "cut-cable-left-anchor",
+        "point": [
+          633,
+          634
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "cut-cable-upper-anchor",
+        "point": [
+          718,
+          491
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "cut-cable-target",
+        "point": [
+          674,
+          578
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "courtyard-glimpse",
+        "point": [
+          1648,
+          252
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "left-return",
+        "point": [
+          160,
+          669
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "right-exit",
+        "point": [
+          1575,
+          669
+        ],
+        "bounds": null,
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "left-flat-walk-guide",
+        "xRange": [
+          0,
+          718
+        ],
+        "y": 669
+      },
+      {
+        "type": "right-flat-walk-guide",
+        "xRange": [
+          1082,
+          1672
+        ],
+        "y": 669
+      },
+      {
+        "type": "bridge-gap-guide",
+        "xRange": [
+          725,
+          1074
+        ],
+        "y": 669,
+        "gapEstimatePx": 349
+      },
+      {
+        "type": "lowered-deck-required-guide",
+        "polylineXY": [
+          [
+            725,
+            669
+          ],
+          [
+            1074,
+            669
+          ]
+        ],
+        "note": "Current raised deck is only≈200px long; cannot rotate into this349px span."
+      }
+    ]
+  },
+  {
+    "id": "exhibit",
+    "floor": 703,
+    "anchors": [
+      {
+        "id": "left-door",
+        "point": [
+          112,
+          686
+        ],
+        "bounds": [
+          73,
+          400,
+          160,
+          689
+        ],
+        "aperture": null
+      },
+      {
+        "id": "right-exit",
+        "point": [
+          1575,
+          687
+        ],
+        "bounds": [
+          1484,
+          376,
+          1671,
+          687
+        ],
+        "aperture": null
+      },
+      {
+        "id": "bench",
+        "point": [
+          843,
+          699
+        ],
+        "bounds": [
+          745,
+          652,
+          943,
+          700
+        ],
+        "aperture": null
+      },
+      {
+        "id": "donation-box",
+        "point": [
+          212,
+          691
+        ],
+        "bounds": [
+          184,
+          615,
+          235,
+          692
+        ],
+        "aperture": null
+      },
+      {
+        "id": "exhibit-frame-1",
+        "point": [
+          370,
+          543
+        ],
+        "bounds": [
+          340,
+          492,
+          400,
+          595
+        ],
+        "aperture": [
+          351,
+          503,
+          389,
+          584
+        ]
+      },
+      {
+        "id": "exhibit-frame-2",
+        "point": [
+          457,
+          546
+        ],
+        "bounds": [
+          427,
+          512,
+          487,
+          580
+        ],
+        "aperture": [
+          439,
+          524,
+          475,
+          568
+        ]
+      },
+      {
+        "id": "exhibit-frame-3",
+        "point": [
+          572,
+          549
+        ],
+        "bounds": [
+          520,
+          509,
+          624,
+          589
+        ],
+        "aperture": [
+          535,
+          523,
+          609,
+          575
+        ]
+      },
+      {
+        "id": "exhibit-frame-4",
+        "point": [
+          688,
+          541
+        ],
+        "bounds": [
+          654,
+          486,
+          723,
+          596
+        ],
+        "aperture": [
+          668,
+          501,
+          710,
+          582
+        ]
+      },
+      {
+        "id": "exhibit-frame-5",
+        "point": [
+          796,
+          544
+        ],
+        "bounds": [
+          763,
+          508,
+          829,
+          580
+        ],
+        "aperture": [
+          777,
+          521,
+          816,
+          568
+        ]
+      },
+      {
+        "id": "exhibit-frame-6",
+        "point": [
+          944,
+          546
+        ],
+        "bounds": [
+          875,
+          502,
+          1014,
+          591
+        ],
+        "aperture": [
+          892,
+          517,
+          997,
+          575
+        ]
+      },
+      {
+        "id": "exhibit-frame-7",
+        "point": [
+          1090,
+          543
+        ],
+        "bounds": [
+          1055,
+          491,
+          1126,
+          596
+        ],
+        "aperture": [
+          1069,
+          505,
+          1113,
+          582
+        ]
+      },
+      {
+        "id": "exhibit-frame-8",
+        "point": [
+          1196,
+          548
+        ],
+        "bounds": [
+          1161,
+          513,
+          1232,
+          583
+        ],
+        "aperture": [
+          1175,
+          526,
+          1219,
+          570
+        ]
+      },
+      {
+        "id": "exhibit-frame-9",
+        "point": [
+          1296,
+          540
+        ],
+        "bounds": [
+          1264,
+          485,
+          1329,
+          596
+        ],
+        "aperture": [
+          1279,
+          500,
+          1315,
+          582
+        ]
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "flat-walk-guide",
+        "xRange": [
+          0,
+          1672
+        ],
+        "y": 703
+      }
+    ]
+  },
+  {
+    "id": "courtyard",
+    "floor": 692,
+    "anchors": [
+      {
+        "id": "left-exhibit-entry",
+        "point": [
+          63,
+          684
+        ],
+        "bounds": [
+          38,
+          442,
+          93,
+          687
+        ],
+        "aperture": null
+      },
+      {
+        "id": "bench",
+        "point": [
+          534,
+          690
+        ],
+        "bounds": [
+          417,
+          630,
+          654,
+          691
+        ],
+        "aperture": null
+      },
+      {
+        "id": "bench-seat",
+        "point": [
+          534,
+          655
+        ],
+        "bounds": null,
+        "aperture": null
+      },
+      {
+        "id": "tree-trunk",
+        "point": [
+          536,
+          639
+        ],
+        "bounds": [
+          479,
+          472,
+          591,
+          643
+        ],
+        "aperture": null
+      },
+      {
+        "id": "tree-canopy",
+        "point": [
+          552,
+          424
+        ],
+        "bounds": [
+          225,
+          239,
+          886,
+          640
+        ],
+        "aperture": null
+      },
+      {
+        "id": "return-door",
+        "point": [
+          1487,
+          682
+        ],
+        "bounds": [
+          1428,
+          479,
+          1548,
+          686
+        ],
+        "aperture": null
+      },
+      {
+        "id": "return-aperture",
+        "point": [
+          1487,
+          589
+        ],
+        "bounds": [
+          1444,
+          495,
+          1532,
+          682
+        ],
+        "aperture": null
+      },
+      {
+        "id": "maintenance-latch",
+        "point": [
+          1513,
+          591
+        ],
+        "bounds": [
+          1502,
+          581,
+          1523,
+          604
+        ],
+        "aperture": null
+      },
+      {
+        "id": "door-status",
+        "point": [
+          1487,
+          457
+        ],
+        "bounds": [
+          1473,
+          447,
+          1502,
+          474
+        ],
+        "aperture": null
+      }
+    ],
+    "surfaces": [
+      {
+        "type": "flat-walk-guide",
+        "xRange": [
+          0,
+          1672
+        ],
+        "y": 692
+      }
+    ]
+  }
+]

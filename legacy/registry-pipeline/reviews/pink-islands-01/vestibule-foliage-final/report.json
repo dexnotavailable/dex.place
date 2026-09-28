@@ -1,0 +1,27 @@
+{
+  "room": "vestibule",
+  "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\vestibule\\alpha.png",
+  "sourceSha256": "10e079775d4f4280dbd2a6a179acf83ddc50326530c09a31dba1c2267cee3593",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\vestibule-foliage-final\\alpha.png",
+  "outputSha256": "ba7979566d5afd17f24b77b28d53069681cc1f9373210ac6c318c6d83ba8cc76",
+  "selectedPixels": 25,
+  "changedPixels": 25,
+  "otherRGBAUnchanged": true,
+  "beforeStrongPink": 25,
+  "afterStrongPink": 0,
+  "remainingBounds": null,
+  "regions": [
+    [
+      0,
+      0,
+      250,
+      685
+    ],
+    [
+      1480,
+      0,
+      1672,
+      685
+    ]
+  ]
+}

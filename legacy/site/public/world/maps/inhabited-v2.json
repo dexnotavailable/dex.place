@@ -1,0 +1,4796 @@
+{
+  "type": "map",
+  "version": "1.10",
+  "tiledversion": "1.12.2",
+  "orientation": "orthogonal",
+  "renderorder": "right-down",
+  "width": 3125,
+  "height": 150,
+  "tilewidth": 16,
+  "tileheight": 16,
+  "infinite": false,
+  "nextobjectid": 175,
+  "layers": [
+    {
+      "id": 1,
+      "name": "collision",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "draworder": "topdown",
+      "objects": [
+        {
+          "id": 2,
+          "name": "floor.arrival",
+          "type": "solid",
+          "x": 80,
+          "y": 1000,
+          "width": 2640,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "name": "floor.junction",
+          "type": "solid",
+          "x": 4080,
+          "y": 1120,
+          "width": 3040,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "name": "floor.dispatch",
+          "type": "solid",
+          "x": 8080,
+          "y": 1040,
+          "width": 3040,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 14,
+          "name": "floor.arena",
+          "type": "solid",
+          "x": 12080,
+          "y": 1080,
+          "width": 3040,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arena"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "name": "floor.hearth",
+          "type": "solid",
+          "x": 16080,
+          "y": 1040,
+          "width": 2640,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "hearth"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 22,
+          "name": "floor.treasury",
+          "type": "solid",
+          "x": 20080,
+          "y": 1080,
+          "width": 3240,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "name": "floor.lookout",
+          "type": "solid",
+          "x": 24080,
+          "y": 1000,
+          "width": 3440,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "lookout"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 30,
+          "name": "floor.reservoir.west",
+          "type": "solid",
+          "x": 28080,
+          "y": 1140,
+          "width": 1760,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 31,
+          "name": "floor.reservoir.east",
+          "type": "solid",
+          "x": 30032,
+          "y": 1140,
+          "width": 2688,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 35,
+          "name": "floor.gallery",
+          "type": "solid",
+          "x": 34080,
+          "y": 1040,
+          "width": 5040,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 39,
+          "name": "floor.archive",
+          "type": "solid",
+          "x": 40080,
+          "y": 1080,
+          "width": 3640,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 43,
+          "name": "floor.return.lower",
+          "type": "solid",
+          "x": 45080,
+          "y": 1500,
+          "width": 1024,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 44,
+          "name": "floor.return.upper",
+          "type": "solid",
+          "x": 46296,
+          "y": 1040,
+          "width": 1424,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 91,
+          "name": "junction.lookout.stair.0",
+          "type": "solid",
+          "x": 5300,
+          "y": 1112,
+          "width": 24,
+          "height": 72,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 92,
+          "name": "junction.lookout.stair.1",
+          "type": "solid",
+          "x": 5324,
+          "y": 1104,
+          "width": 24,
+          "height": 80,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 93,
+          "name": "junction.lookout.stair.2",
+          "type": "solid",
+          "x": 5348,
+          "y": 1096,
+          "width": 24,
+          "height": 88,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 94,
+          "name": "junction.lookout.stair.3",
+          "type": "solid",
+          "x": 5372,
+          "y": 1088,
+          "width": 24,
+          "height": 96,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 95,
+          "name": "junction.lookout.stair.4",
+          "type": "solid",
+          "x": 5396,
+          "y": 1080,
+          "width": 24,
+          "height": 104,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 96,
+          "name": "junction.lookout.stair.5",
+          "type": "solid",
+          "x": 5420,
+          "y": 1072,
+          "width": 24,
+          "height": 112,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 97,
+          "name": "junction.lookout.stair.6",
+          "type": "solid",
+          "x": 5444,
+          "y": 1064,
+          "width": 24,
+          "height": 120,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 98,
+          "name": "junction.lookout.stair.7",
+          "type": "solid",
+          "x": 5468,
+          "y": 1056,
+          "width": 24,
+          "height": 128,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 99,
+          "name": "junction.lookout.stair.8",
+          "type": "solid",
+          "x": 5492,
+          "y": 1048,
+          "width": 24,
+          "height": 136,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 100,
+          "name": "junction.lookout.stair.9",
+          "type": "solid",
+          "x": 5516,
+          "y": 1040,
+          "width": 24,
+          "height": 144,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 101,
+          "name": "junction.lookout.stair.10",
+          "type": "solid",
+          "x": 5540,
+          "y": 1032,
+          "width": 24,
+          "height": 152,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 102,
+          "name": "junction.lookout.stair.11",
+          "type": "solid",
+          "x": 5564,
+          "y": 1024,
+          "width": 24,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 103,
+          "name": "junction.lookout.stair.12",
+          "type": "solid",
+          "x": 5588,
+          "y": 1016,
+          "width": 24,
+          "height": 168,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 104,
+          "name": "junction.lookout.stair.13",
+          "type": "solid",
+          "x": 5612,
+          "y": 1008,
+          "width": 24,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 105,
+          "name": "junction.lookout.stair.14",
+          "type": "solid",
+          "x": 5636,
+          "y": 1000,
+          "width": 24,
+          "height": 184,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 106,
+          "name": "junction.lookout.stair.15",
+          "type": "solid",
+          "x": 5660,
+          "y": 992,
+          "width": 24,
+          "height": 192,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 107,
+          "name": "junction.lookout.stair.16",
+          "type": "solid",
+          "x": 5684,
+          "y": 984,
+          "width": 24,
+          "height": 200,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 108,
+          "name": "junction.lookout.stair.17",
+          "type": "solid",
+          "x": 5708,
+          "y": 976,
+          "width": 24,
+          "height": 208,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 109,
+          "name": "junction.lookout.stair.18",
+          "type": "solid",
+          "x": 5732,
+          "y": 968,
+          "width": 24,
+          "height": 216,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 110,
+          "name": "junction.lookout.stair.19",
+          "type": "solid",
+          "x": 5756,
+          "y": 960,
+          "width": 24,
+          "height": 224,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 111,
+          "name": "junction.lookout.landing",
+          "type": "solid",
+          "x": 5780,
+          "y": 960,
+          "width": 290,
+          "height": 72,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "floor"
+            }
+          ]
+        },
+        {
+          "id": 112,
+          "name": "junction.lookout.return-stair.0",
+          "type": "solid",
+          "x": 6070,
+          "y": 968,
+          "width": 24,
+          "height": 216,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 113,
+          "name": "junction.lookout.return-stair.1",
+          "type": "solid",
+          "x": 6094,
+          "y": 976,
+          "width": 24,
+          "height": 208,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 114,
+          "name": "junction.lookout.return-stair.2",
+          "type": "solid",
+          "x": 6118,
+          "y": 984,
+          "width": 24,
+          "height": 200,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 115,
+          "name": "junction.lookout.return-stair.3",
+          "type": "solid",
+          "x": 6142,
+          "y": 992,
+          "width": 24,
+          "height": 192,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 116,
+          "name": "junction.lookout.return-stair.4",
+          "type": "solid",
+          "x": 6166,
+          "y": 1000,
+          "width": 24,
+          "height": 184,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 117,
+          "name": "junction.lookout.return-stair.5",
+          "type": "solid",
+          "x": 6190,
+          "y": 1008,
+          "width": 24,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 118,
+          "name": "junction.lookout.return-stair.6",
+          "type": "solid",
+          "x": 6214,
+          "y": 1016,
+          "width": 24,
+          "height": 168,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 119,
+          "name": "junction.lookout.return-stair.7",
+          "type": "solid",
+          "x": 6238,
+          "y": 1024,
+          "width": 24,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 120,
+          "name": "junction.lookout.return-stair.8",
+          "type": "solid",
+          "x": 6262,
+          "y": 1032,
+          "width": 24,
+          "height": 152,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 121,
+          "name": "junction.lookout.return-stair.9",
+          "type": "solid",
+          "x": 6286,
+          "y": 1040,
+          "width": 24,
+          "height": 144,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 122,
+          "name": "junction.lookout.return-stair.10",
+          "type": "solid",
+          "x": 6310,
+          "y": 1048,
+          "width": 24,
+          "height": 136,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 123,
+          "name": "junction.lookout.return-stair.11",
+          "type": "solid",
+          "x": 6334,
+          "y": 1056,
+          "width": 24,
+          "height": 128,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 124,
+          "name": "junction.lookout.return-stair.12",
+          "type": "solid",
+          "x": 6358,
+          "y": 1064,
+          "width": 24,
+          "height": 120,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 125,
+          "name": "junction.lookout.return-stair.13",
+          "type": "solid",
+          "x": 6382,
+          "y": 1072,
+          "width": 24,
+          "height": 112,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 126,
+          "name": "junction.lookout.return-stair.14",
+          "type": "solid",
+          "x": 6406,
+          "y": 1080,
+          "width": 24,
+          "height": 104,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 127,
+          "name": "junction.lookout.return-stair.15",
+          "type": "solid",
+          "x": 6430,
+          "y": 1088,
+          "width": 24,
+          "height": 96,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 128,
+          "name": "junction.lookout.return-stair.16",
+          "type": "solid",
+          "x": 6454,
+          "y": 1096,
+          "width": 24,
+          "height": 88,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 129,
+          "name": "junction.lookout.return-stair.17",
+          "type": "solid",
+          "x": 6478,
+          "y": 1104,
+          "width": 24,
+          "height": 80,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 130,
+          "name": "junction.lookout.return-stair.18",
+          "type": "solid",
+          "x": 6502,
+          "y": 1112,
+          "width": 24,
+          "height": 72,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        },
+        {
+          "id": 131,
+          "name": "junction.lookout.return-stair.19",
+          "type": "solid",
+          "x": 6526,
+          "y": 1120,
+          "width": 24,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "value": "causeway-concrete"
+            },
+            {
+              "name": "walkSurface",
+              "type": "string",
+              "value": "stairs"
+            },
+            {
+              "name": "rise",
+              "type": "float",
+              "value": 8
+            },
+            {
+              "name": "tread",
+              "type": "float",
+              "value": 24
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "objects",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "draworder": "topdown",
+      "objects": [
+        {
+          "id": 49,
+          "name": "door.arrival.junction",
+          "type": "door",
+          "x": 2550,
+          "y": 1000,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "junction.from.arrival"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 50,
+          "name": "door.junction.arrival",
+          "type": "door",
+          "x": 4220,
+          "y": 1120,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "arrival"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "arrival.from.junction"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "arrival"
+            }
+          ]
+        },
+        {
+          "id": 53,
+          "name": "door.junction.dispatch",
+          "type": "door",
+          "x": 6900,
+          "y": 1120,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "dispatch.from.junction"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "dispatch"
+            }
+          ]
+        },
+        {
+          "id": 54,
+          "name": "door.dispatch.junction",
+          "type": "door",
+          "x": 8250,
+          "y": 1040,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "junction.from.dispatch"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 57,
+          "name": "door.junction.hearth",
+          "type": "door",
+          "x": 4870,
+          "y": 1120,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "hearth"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "hearth.from.junction"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "door"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "hearth"
+            }
+          ]
+        },
+        {
+          "id": 58,
+          "name": "door.hearth.junction",
+          "type": "door",
+          "x": 16280,
+          "y": 1040,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "hearth"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "junction.from.hearth"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "door"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 61,
+          "name": "door.hearth.treasury",
+          "type": "door",
+          "x": 18480,
+          "y": 1040,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "hearth"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "treasury.from.hearth"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "treasury"
+            }
+          ]
+        },
+        {
+          "id": 62,
+          "name": "door.treasury.hearth",
+          "type": "door",
+          "x": 20260,
+          "y": 1080,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "hearth"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "hearth.from.treasury"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "hearth"
+            }
+          ]
+        },
+        {
+          "id": 65,
+          "name": "door.junction.archive",
+          "type": "door",
+          "x": 5190,
+          "y": 1120,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "archive.from.junction"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "door"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "archive"
+            }
+          ]
+        },
+        {
+          "id": 66,
+          "name": "door.archive.junction",
+          "type": "door",
+          "x": 40260,
+          "y": 1080,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "junction.from.archive"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "door"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 69,
+          "name": "door.archive.treasury",
+          "type": "door",
+          "x": 43420,
+          "y": 1080,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "treasury.from.archive"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "treasury"
+            }
+          ]
+        },
+        {
+          "id": 70,
+          "name": "door.treasury.archive",
+          "type": "door",
+          "x": 20880,
+          "y": 1080,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "archive.from.treasury"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "archive"
+            }
+          ]
+        },
+        {
+          "id": 73,
+          "name": "door.junction.lookout",
+          "type": "door",
+          "x": 5890,
+          "y": 960,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "lookout"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "lookout.from.junction"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "lookout"
+            }
+          ]
+        },
+        {
+          "id": 74,
+          "name": "door.lookout.junction",
+          "type": "door",
+          "x": 24260,
+          "y": 1000,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "lookout"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "junction.from.lookout"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 77,
+          "name": "door.lookout.reservoir",
+          "type": "door",
+          "x": 27280,
+          "y": 1000,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "lookout"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "reservoir.from.lookout"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "reservoir"
+            }
+          ]
+        },
+        {
+          "id": 78,
+          "name": "door.reservoir.lookout",
+          "type": "door",
+          "x": 28260,
+          "y": 1140,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "lookout"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "lookout.from.reservoir"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "passage"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "lookout"
+            }
+          ]
+        },
+        {
+          "id": 81,
+          "name": "door.reservoir.gallery",
+          "type": "door",
+          "x": 32480,
+          "y": 1140,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "gallery.from.reservoir"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "door"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "gallery"
+            }
+          ]
+        },
+        {
+          "id": 82,
+          "name": "door.gallery.reservoir",
+          "type": "door",
+          "x": 34260,
+          "y": 1040,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "reservoir.from.gallery"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "door"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "reservoir"
+            }
+          ]
+        },
+        {
+          "id": 85,
+          "name": "door.gallery.return-shaft",
+          "type": "door",
+          "x": 38750,
+          "y": 1040,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "return-shaft.from.gallery"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "lift"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "return-shaft"
+            }
+          ]
+        },
+        {
+          "id": 86,
+          "name": "door.return-shaft.gallery",
+          "type": "door",
+          "x": 47420,
+          "y": 1040,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "gallery.from.return-shaft"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "lift"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "gallery"
+            }
+          ]
+        },
+        {
+          "id": 89,
+          "name": "door.treasury.return-shaft",
+          "type": "door",
+          "x": 23070,
+          "y": 1080,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "return-shaft.from.treasury"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "lift"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "requiresShortcut",
+              "type": "string",
+              "value": "shortcut.gallery-return"
+            }
+          ]
+        },
+        {
+          "id": 90,
+          "name": "door.return-shaft.treasury",
+          "type": "door",
+          "x": 45260,
+          "y": 1500,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "treasury.from.return-shaft"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "lift"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "treasury"
+            }
+          ]
+        },
+        {
+          "id": 132,
+          "name": "map.junction",
+          "type": "map",
+          "x": 4530,
+          "y": 1120,
+          "width": 320,
+          "height": 368,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "persistentCut",
+              "type": "string",
+              "value": "cut.map.junction"
+            }
+          ]
+        },
+        {
+          "id": 133,
+          "name": "product.documentation",
+          "type": "product",
+          "x": 9720,
+          "y": 1040,
+          "width": 32,
+          "height": 96,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "productId",
+              "type": "string",
+              "value": "dex-place-documentation"
+            },
+            {
+              "name": "encounterId",
+              "type": "string",
+              "value": "encounter.documentation"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "downloads"
+            }
+          ]
+        },
+        {
+          "id": 136,
+          "name": "door.arena.dispatch",
+          "type": "door",
+          "x": 12240,
+          "y": 1080,
+          "width": 96,
+          "height": 160,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arena"
+            },
+            {
+              "name": "targetRoom",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "targetEntrance",
+              "type": "string",
+              "value": "dispatch.from.arena"
+            },
+            {
+              "name": "transition",
+              "type": "string",
+              "value": "door"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "dispatch"
+            }
+          ]
+        },
+        {
+          "id": 137,
+          "name": "resident.hearth.account",
+          "type": "resident",
+          "x": 17450,
+          "y": 1040,
+          "width": 32,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "hearth"
+            },
+            {
+              "name": "actorId",
+              "type": "string",
+              "value": "npc.townsfolk1"
+            },
+            {
+              "name": "service",
+              "type": "string",
+              "value": "account"
+            }
+          ]
+        },
+        {
+          "id": 138,
+          "name": "resident.treasury.ledger",
+          "type": "resident",
+          "x": 21950,
+          "y": 1080,
+          "width": 32,
+          "height": 64,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "actorId",
+              "type": "string",
+              "value": "npc.townsfolk2"
+            },
+            {
+              "name": "service",
+              "type": "string",
+              "value": "treasury"
+            }
+          ]
+        },
+        {
+          "id": 139,
+          "name": "donate.junction",
+          "type": "donate",
+          "x": 4990,
+          "y": 1120,
+          "width": 49,
+          "height": 56,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "donate"
+            },
+            {
+              "name": "service",
+              "type": "string",
+              "value": "donate"
+            }
+          ]
+        },
+        {
+          "id": 140,
+          "name": "donate.hearth",
+          "type": "donate",
+          "x": 17740,
+          "y": 1040,
+          "width": 49,
+          "height": 56,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "hearth"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "donate"
+            },
+            {
+              "name": "service",
+              "type": "string",
+              "value": "donate"
+            }
+          ]
+        },
+        {
+          "id": 141,
+          "name": "donate.treasury",
+          "type": "donate",
+          "x": 22080,
+          "y": 1080,
+          "width": 49,
+          "height": 56,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "donate"
+            },
+            {
+              "name": "service",
+              "type": "string",
+              "value": "donate"
+            }
+          ]
+        },
+        {
+          "id": 142,
+          "name": "donate.lookout",
+          "type": "donate",
+          "x": 26150,
+          "y": 1000,
+          "width": 49,
+          "height": 56,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "lookout"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "donate"
+            },
+            {
+              "name": "service",
+              "type": "string",
+              "value": "donate"
+            }
+          ]
+        },
+        {
+          "id": 143,
+          "name": "archive.catalog",
+          "type": "terminal",
+          "x": 41050,
+          "y": 1080,
+          "width": 23,
+          "height": 96,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            }
+          ]
+        },
+        {
+          "id": 144,
+          "name": "archive.file.copy-and-input-contract",
+          "type": "file",
+          "x": 41380,
+          "y": 1080,
+          "width": 32,
+          "height": 20,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "copy-and-input-contract"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "copy-and-input-contract"
+            }
+          ]
+        },
+        {
+          "id": 145,
+          "name": "archive.file.world-and-gameplay",
+          "type": "file",
+          "x": 41780,
+          "y": 1080,
+          "width": 32,
+          "height": 20,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "world-and-gameplay"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "world-and-gameplay"
+            }
+          ]
+        },
+        {
+          "id": 146,
+          "name": "archive.file.art-direction-and-audio",
+          "type": "file",
+          "x": 42180,
+          "y": 1080,
+          "width": 32,
+          "height": 20,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "art-direction-and-audio"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "art-direction-and-audio"
+            }
+          ]
+        },
+        {
+          "id": 147,
+          "name": "archive.file.audio-composition-and-budget",
+          "type": "file",
+          "x": 42580,
+          "y": 1080,
+          "width": 32,
+          "height": 20,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "documentation"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "audio-composition-and-budget"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "audio-composition-and-budget"
+            }
+          ]
+        },
+        {
+          "id": 148,
+          "name": "gallery.bay.01",
+          "type": "gallery",
+          "x": 34780,
+          "y": 1040,
+          "width": 110,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "shot-18-2"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "shot_18-2"
+            }
+          ]
+        },
+        {
+          "id": 149,
+          "name": "gallery.bay.02",
+          "type": "gallery",
+          "x": 35200,
+          "y": 1040,
+          "width": 110,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "shot-23"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "shot_23"
+            }
+          ]
+        },
+        {
+          "id": 150,
+          "name": "gallery.bay.03",
+          "type": "gallery",
+          "x": 35620,
+          "y": 1040,
+          "width": 110,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "inshot-20260620-071233415"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "InShot_20260620_071233415"
+            }
+          ]
+        },
+        {
+          "id": 151,
+          "name": "gallery.bay.04",
+          "type": "gallery",
+          "x": 36040,
+          "y": 1040,
+          "width": 110,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "inshot-20260826-123444237"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "InShot_20260826_123444237"
+            }
+          ]
+        },
+        {
+          "id": 152,
+          "name": "gallery.bay.05",
+          "type": "gallery",
+          "x": 36460,
+          "y": 1040,
+          "width": 110,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "inshot-20260721-200821729"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "InShot_20260721_200821729"
+            }
+          ]
+        },
+        {
+          "id": 153,
+          "name": "gallery.bay.06",
+          "type": "gallery",
+          "x": 36880,
+          "y": 1040,
+          "width": 110,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "inshot-20260708-060051952"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "InShot_20260708_060051952"
+            }
+          ]
+        },
+        {
+          "id": 154,
+          "name": "gallery.bay.07",
+          "type": "gallery",
+          "x": 37300,
+          "y": 1040,
+          "width": 110,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "inshot-20260708-055457338"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "InShot_20260708_055457338"
+            }
+          ]
+        },
+        {
+          "id": 155,
+          "name": "gallery.bay.08",
+          "type": "gallery",
+          "x": 37720,
+          "y": 1040,
+          "width": 110,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "kaizen"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "KAIZEN"
+            }
+          ]
+        },
+        {
+          "id": 156,
+          "name": "gallery.bay.09",
+          "type": "gallery",
+          "x": 38140,
+          "y": 1040,
+          "width": 110,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            },
+            {
+              "name": "itemId",
+              "type": "string",
+              "value": "towaki"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "TOWAKI"
+            }
+          ]
+        },
+        {
+          "id": 157,
+          "name": "gallery.collection",
+          "type": "file",
+          "x": 34620,
+          "y": 1040,
+          "width": 32,
+          "height": 20,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "section",
+              "type": "string",
+              "value": "illustrations"
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "value": "Collection"
+            }
+          ]
+        },
+        {
+          "id": 158,
+          "name": "bridge.reservoir",
+          "type": "bridge",
+          "x": 29840,
+          "y": 1140,
+          "width": 192,
+          "height": 8,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "mechanism",
+              "type": "string",
+              "value": "hinged"
+            },
+            {
+              "name": "persistentCut",
+              "type": "string",
+              "value": "cut.bridge.reservoir"
+            }
+          ]
+        },
+        {
+          "id": 159,
+          "name": "cable.reservoir",
+          "type": "cable",
+          "x": 29879,
+          "y": 1077,
+          "width": 10,
+          "height": 12,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "target",
+              "type": "string",
+              "value": "bridge.reservoir"
+            },
+            {
+              "name": "persistentCut",
+              "type": "string",
+              "value": "cut.bridge.reservoir"
+            }
+          ]
+        },
+        {
+          "id": 162,
+          "name": "lift.gallery-return",
+          "type": "lift",
+          "x": 46200,
+          "y": 1500,
+          "width": 192,
+          "height": 12,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "mechanism",
+              "type": "string",
+              "value": "rail"
+            },
+            {
+              "name": "lower",
+              "type": "string",
+              "value": "lift.return.lower"
+            },
+            {
+              "name": "upper",
+              "type": "string",
+              "value": "lift.return.upper"
+            },
+            {
+              "name": "requiresShortcut",
+              "type": "string",
+              "value": "shortcut.gallery-return"
+            }
+          ]
+        },
+        {
+          "id": 163,
+          "name": "landing.gallery-return.lower",
+          "type": "landing",
+          "x": 46045,
+          "y": 1500,
+          "width": 28,
+          "height": 38,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "target",
+              "type": "string",
+              "value": "lift.gallery-return"
+            },
+            {
+              "name": "stop",
+              "type": "string",
+              "value": "lower"
+            }
+          ]
+        },
+        {
+          "id": 164,
+          "name": "landing.gallery-return.upper",
+          "type": "landing",
+          "x": 46360,
+          "y": 1040,
+          "width": 28,
+          "height": 38,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "target",
+              "type": "string",
+              "value": "lift.gallery-return"
+            },
+            {
+              "name": "stop",
+              "type": "string",
+              "value": "upper"
+            }
+          ]
+        },
+        {
+          "id": 165,
+          "name": "release.gallery-return",
+          "type": "shortcut",
+          "x": 46530,
+          "y": 1040,
+          "width": 28,
+          "height": 38,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "shortcutId",
+              "type": "string",
+              "value": "shortcut.gallery-return"
+            },
+            {
+              "name": "target",
+              "type": "string",
+              "value": "lift.gallery-return"
+            }
+          ]
+        },
+        {
+          "id": 167,
+          "name": "reservoir.rat.01",
+          "type": "mob",
+          "x": 31020,
+          "y": 1140,
+          "width": 32,
+          "height": 32,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "actorId",
+              "type": "string",
+              "value": "mob.rat"
+            },
+            {
+              "name": "patrolLeft",
+              "type": "float",
+              "value": 30840
+            },
+            {
+              "name": "patrolRight",
+              "type": "float",
+              "value": 31340
+            },
+            {
+              "name": "health",
+              "type": "float",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "id": 168,
+          "name": "reservoir.bat.01",
+          "type": "mob",
+          "x": 31950,
+          "y": 1010,
+          "width": 32,
+          "height": 32,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "actorId",
+              "type": "string",
+              "value": "mob.bat"
+            },
+            {
+              "name": "patrolLeft",
+              "type": "float",
+              "value": 31720
+            },
+            {
+              "name": "patrolRight",
+              "type": "float",
+              "value": 32200
+            },
+            {
+              "name": "health",
+              "type": "float",
+              "value": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anchors_and_paths",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "draworder": "topdown",
+      "objects": [
+        {
+          "id": 4,
+          "name": "checkpoint.arrival",
+          "type": "checkpoint",
+          "x": 300,
+          "y": 1000,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "name": "checkpoint.junction",
+          "type": "checkpoint",
+          "x": 4300,
+          "y": 1120,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 12,
+          "name": "checkpoint.dispatch",
+          "type": "checkpoint",
+          "x": 8300,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "name": "checkpoint.arena",
+          "type": "checkpoint",
+          "x": 12300,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arena"
+            }
+          ]
+        },
+        {
+          "id": 20,
+          "name": "checkpoint.hearth",
+          "type": "checkpoint",
+          "x": 16300,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "hearth"
+            }
+          ]
+        },
+        {
+          "id": 24,
+          "name": "checkpoint.treasury",
+          "type": "checkpoint",
+          "x": 20300,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            }
+          ]
+        },
+        {
+          "id": 28,
+          "name": "checkpoint.lookout",
+          "type": "checkpoint",
+          "x": 24300,
+          "y": 1000,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "lookout"
+            }
+          ]
+        },
+        {
+          "id": 33,
+          "name": "checkpoint.reservoir",
+          "type": "checkpoint",
+          "x": 28300,
+          "y": 1140,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            }
+          ]
+        },
+        {
+          "id": 37,
+          "name": "checkpoint.gallery",
+          "type": "checkpoint",
+          "x": 34300,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            }
+          ]
+        },
+        {
+          "id": 41,
+          "name": "checkpoint.archive",
+          "type": "checkpoint",
+          "x": 40300,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            }
+          ]
+        },
+        {
+          "id": 46,
+          "name": "checkpoint.return-shaft",
+          "type": "checkpoint",
+          "x": 45300,
+          "y": 1500,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            }
+          ]
+        },
+        {
+          "id": 47,
+          "name": "checkpoint.arrival.from.junction",
+          "type": "checkpoint",
+          "x": 2460,
+          "y": 1000,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            }
+          ]
+        },
+        {
+          "id": 48,
+          "name": "checkpoint.junction.from.arrival",
+          "type": "checkpoint",
+          "x": 4310,
+          "y": 1120,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 51,
+          "name": "checkpoint.junction.from.dispatch",
+          "type": "checkpoint",
+          "x": 6810,
+          "y": 1120,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 52,
+          "name": "checkpoint.dispatch.from.junction",
+          "type": "checkpoint",
+          "x": 8340,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            }
+          ]
+        },
+        {
+          "id": 55,
+          "name": "checkpoint.junction.from.hearth",
+          "type": "checkpoint",
+          "x": 4960,
+          "y": 1120,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 56,
+          "name": "checkpoint.hearth.from.junction",
+          "type": "checkpoint",
+          "x": 16370,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "hearth"
+            }
+          ]
+        },
+        {
+          "id": 59,
+          "name": "checkpoint.hearth.from.treasury",
+          "type": "checkpoint",
+          "x": 18390,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "hearth"
+            }
+          ]
+        },
+        {
+          "id": 60,
+          "name": "checkpoint.treasury.from.hearth",
+          "type": "checkpoint",
+          "x": 20350,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            }
+          ]
+        },
+        {
+          "id": 63,
+          "name": "checkpoint.junction.from.archive",
+          "type": "checkpoint",
+          "x": 5280,
+          "y": 1120,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 64,
+          "name": "checkpoint.archive.from.junction",
+          "type": "checkpoint",
+          "x": 40350,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            }
+          ]
+        },
+        {
+          "id": 67,
+          "name": "checkpoint.archive.from.treasury",
+          "type": "checkpoint",
+          "x": 43330,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            }
+          ]
+        },
+        {
+          "id": 68,
+          "name": "checkpoint.treasury.from.archive",
+          "type": "checkpoint",
+          "x": 20970,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            }
+          ]
+        },
+        {
+          "id": 71,
+          "name": "checkpoint.junction.from.lookout",
+          "type": "checkpoint",
+          "x": 5800,
+          "y": 960,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 72,
+          "name": "checkpoint.lookout.from.junction",
+          "type": "checkpoint",
+          "x": 24350,
+          "y": 1000,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "lookout"
+            }
+          ]
+        },
+        {
+          "id": 75,
+          "name": "checkpoint.lookout.from.reservoir",
+          "type": "checkpoint",
+          "x": 27190,
+          "y": 1000,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "lookout"
+            }
+          ]
+        },
+        {
+          "id": 76,
+          "name": "checkpoint.reservoir.from.lookout",
+          "type": "checkpoint",
+          "x": 28350,
+          "y": 1140,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            }
+          ]
+        },
+        {
+          "id": 79,
+          "name": "checkpoint.reservoir.from.gallery",
+          "type": "checkpoint",
+          "x": 32390,
+          "y": 1140,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            }
+          ]
+        },
+        {
+          "id": 80,
+          "name": "checkpoint.gallery.from.reservoir",
+          "type": "checkpoint",
+          "x": 34350,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            }
+          ]
+        },
+        {
+          "id": 83,
+          "name": "checkpoint.gallery.from.return-shaft",
+          "type": "checkpoint",
+          "x": 38660,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            }
+          ]
+        },
+        {
+          "id": 84,
+          "name": "checkpoint.return-shaft.from.gallery",
+          "type": "checkpoint",
+          "x": 47330,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            }
+          ]
+        },
+        {
+          "id": 87,
+          "name": "checkpoint.treasury.from.return-shaft",
+          "type": "checkpoint",
+          "x": 22980,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            }
+          ]
+        },
+        {
+          "id": 88,
+          "name": "checkpoint.return-shaft.from.treasury",
+          "type": "checkpoint",
+          "x": 45350,
+          "y": 1500,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            }
+          ]
+        },
+        {
+          "id": 134,
+          "name": "checkpoint.arena.from.dispatch",
+          "type": "checkpoint",
+          "x": 12380,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arena"
+            }
+          ]
+        },
+        {
+          "id": 135,
+          "name": "checkpoint.dispatch.from.arena",
+          "type": "checkpoint",
+          "x": 9760,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            }
+          ]
+        },
+        {
+          "id": 160,
+          "name": "lift.return.lower",
+          "type": "stop",
+          "x": 46200,
+          "y": 1500,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            }
+          ]
+        },
+        {
+          "id": 161,
+          "name": "lift.return.upper",
+          "type": "stop",
+          "x": 46200,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            }
+          ]
+        },
+        {
+          "id": 166,
+          "name": "checkpoint.reservoir.pocket",
+          "type": "checkpoint",
+          "x": 30500,
+          "y": 1140,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "autoCheckpoint",
+              "type": "bool",
+              "value": true
+            }
+          ]
+        },
+        {
+          "id": 169,
+          "name": "anchor.home",
+          "type": "anchor",
+          "x": 1200,
+          "y": 1000,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            }
+          ]
+        },
+        {
+          "id": 170,
+          "name": "anchor.downloads",
+          "type": "anchor",
+          "x": 9630,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            }
+          ]
+        },
+        {
+          "id": 171,
+          "name": "anchor.documentation",
+          "type": "anchor",
+          "x": 40960,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            }
+          ]
+        },
+        {
+          "id": 172,
+          "name": "anchor.illustrations",
+          "type": "anchor",
+          "x": 34710,
+          "y": 1040,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            }
+          ]
+        },
+        {
+          "id": 173,
+          "name": "anchor.donate",
+          "type": "anchor",
+          "x": 21900,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            }
+          ]
+        },
+        {
+          "id": 174,
+          "name": "anchor.arena",
+          "type": "anchor",
+          "x": 12380,
+          "y": 1080,
+          "width": 0,
+          "height": 0,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arena"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "camera_bounds",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "draworder": "topdown",
+      "objects": [
+        {
+          "id": 1,
+          "name": "region.arrival",
+          "type": "region",
+          "x": 0,
+          "y": 0,
+          "width": 2800,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "arrival"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "region.junction",
+          "type": "region",
+          "x": 4000,
+          "y": 0,
+          "width": 3200,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "name": "region.dispatch",
+          "type": "region",
+          "x": 8000,
+          "y": 0,
+          "width": 3200,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            }
+          ]
+        },
+        {
+          "id": 13,
+          "name": "region.arena",
+          "type": "region",
+          "x": 12000,
+          "y": 0,
+          "width": 3200,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "arena"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arena"
+            }
+          ]
+        },
+        {
+          "id": 17,
+          "name": "region.hearth",
+          "type": "region",
+          "x": 16000,
+          "y": 0,
+          "width": 2800,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "hearth"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "hearth"
+            }
+          ]
+        },
+        {
+          "id": 21,
+          "name": "region.treasury",
+          "type": "region",
+          "x": 20000,
+          "y": 0,
+          "width": 3400,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            }
+          ]
+        },
+        {
+          "id": 25,
+          "name": "region.lookout",
+          "type": "region",
+          "x": 24000,
+          "y": 0,
+          "width": 3600,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "lookout"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "lookout"
+            }
+          ]
+        },
+        {
+          "id": 29,
+          "name": "region.reservoir",
+          "type": "region",
+          "x": 28000,
+          "y": 0,
+          "width": 4800,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            }
+          ]
+        },
+        {
+          "id": 34,
+          "name": "region.gallery",
+          "type": "region",
+          "x": 34000,
+          "y": 0,
+          "width": 5200,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            }
+          ]
+        },
+        {
+          "id": 38,
+          "name": "region.archive",
+          "type": "region",
+          "x": 40000,
+          "y": 0,
+          "width": 3800,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            }
+          ]
+        },
+        {
+          "id": 42,
+          "name": "region.return-shaft",
+          "type": "region",
+          "x": 45000,
+          "y": 0,
+          "width": 2800,
+          "height": 2200,
+          "properties": [
+            {
+              "name": "label",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "reset_zones",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "draworder": "topdown",
+      "objects": [
+        {
+          "id": 3,
+          "name": "fall.arrival",
+          "type": "reset",
+          "x": 0,
+          "y": 1750,
+          "width": 2800,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arrival"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.arrival"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "name": "fall.junction",
+          "type": "reset",
+          "x": 4000,
+          "y": 1750,
+          "width": 3200,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "junction"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.junction"
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "name": "fall.dispatch",
+          "type": "reset",
+          "x": 8000,
+          "y": 1750,
+          "width": 3200,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "dispatch"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.dispatch"
+            }
+          ]
+        },
+        {
+          "id": 15,
+          "name": "fall.arena",
+          "type": "reset",
+          "x": 12000,
+          "y": 1750,
+          "width": 3200,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "arena"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.arena"
+            }
+          ]
+        },
+        {
+          "id": 19,
+          "name": "fall.hearth",
+          "type": "reset",
+          "x": 16000,
+          "y": 1750,
+          "width": 2800,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "hearth"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.hearth"
+            }
+          ]
+        },
+        {
+          "id": 23,
+          "name": "fall.treasury",
+          "type": "reset",
+          "x": 20000,
+          "y": 1750,
+          "width": 3400,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "treasury"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.treasury"
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "name": "fall.lookout",
+          "type": "reset",
+          "x": 24000,
+          "y": 1750,
+          "width": 3600,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "lookout"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.lookout"
+            }
+          ]
+        },
+        {
+          "id": 32,
+          "name": "fall.reservoir",
+          "type": "reset",
+          "x": 28000,
+          "y": 1750,
+          "width": 4800,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "reservoir"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.reservoir"
+            }
+          ]
+        },
+        {
+          "id": 36,
+          "name": "fall.gallery",
+          "type": "reset",
+          "x": 34000,
+          "y": 1750,
+          "width": 5200,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "gallery"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.gallery"
+            }
+          ]
+        },
+        {
+          "id": 40,
+          "name": "fall.archive",
+          "type": "reset",
+          "x": 40000,
+          "y": 1750,
+          "width": 3800,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "archive"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.archive"
+            }
+          ]
+        },
+        {
+          "id": 45,
+          "name": "fall.return-shaft",
+          "type": "reset",
+          "x": 45000,
+          "y": 1750,
+          "width": 2800,
+          "height": 450,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "return-shaft"
+            },
+            {
+              "name": "anchor",
+              "type": "string",
+              "value": "checkpoint.return-shaft"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "worldRevision",
+      "type": "string",
+      "value": "inhabited-v2.1"
+    },
+    {
+      "name": "walkMinX",
+      "type": "float",
+      "value": 80
+    },
+    {
+      "name": "walkMaxX",
+      "type": "float",
+      "value": 49800
+    },
+    {
+      "name": "cameraMinX",
+      "type": "float",
+      "value": 0
+    },
+    {
+      "name": "cameraMaxX",
+      "type": "float",
+      "value": 50000
+    }
+  ]
+}

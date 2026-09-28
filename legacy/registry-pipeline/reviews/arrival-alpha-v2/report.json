@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\arrival-structure-alpha-v2.png",
+  "sourceEncodedSha256": "76cd91ac53d2ab788d8f70fdc9389009137e4d79613194f94316216f77464bdf",
+  "sourceMode": "RGBA",
+  "sourceSize": [
+    1672,
+    941
+  ],
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\arrival-alpha-v2",
+  "cellSize": [
+    1672,
+    941
+  ],
+  "declaredFrames": 1,
+  "pivotXY": [
+    836,
+    941
+  ],
+  "alphaMode": "hard",
+  "durationsMs": [
+    1000
+  ],
+  "totalDurationMs": 1000,
+  "loop": true,
+  "decodedRgbaBytes": 6293408,
+  "errors": [],
+  "warnings": [],
+  "frames": [
+    {
+      "index": 0,
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        941
+      ],
+      "rgbaPixelSha256": "7e83e11339fe1565f51390093607851cacf01ae8e5fb2c2dbaa6ab427d612fba",
+      "alphaBoundsXYXY": [
+        0,
+        0,
+        1672,
+        941
+      ],
+      "alpha128BoundsXYXY": [
+        0,
+        0,
+        1672,
+        941
+      ],
+      "transparentPixels": 929386,
+      "partialAlphaPixels": 0,
+      "opaquePixels": 643966,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "coverageFraction": 0.4092955676797055,
+      "partialAlphaFraction": 0.0,
+      "rgbaCornerSamples": {
+        "tl": [
+          55,
+          67,
+          90,
+          255
+        ],
+        "tr": [
+          95,
+          98,
+          116,
+          255
+        ],
+        "bl": [
+          52,
+          65,
+          88,
+          255
+        ],
+        "br": [
+          76,
+          81,
+          106,
+          255
+        ]
+      },
+      "nonzeroRgbUnderZeroAlphaPixels": 0,
+      "alphaWeightedCentroidXY": [
+        815.413627427535,
+        577.6314448278325
+      ],
+      "edgeAlphaPixelCounts": {
+        "top": 1672,
+        "bottom": 1672,
+        "left": 941,
+        "right": 266
+      },
+      "possibleCheckerPatterns": [],
+      "pixelCount": 1573352,
+      "crop": "frames/frame-000.png"
+    }
+  ],
+  "transitions": [],
+  "artifacts": {
+    "contactSheets": [
+      "contact-dark-01.png",
+      "contact-light-01.png"
+    ]
+  },
+  "visualAcceptance": "pending: inspect actual pixels, frame registration, motion and integrated scene",
+  "checkerHeuristic": "Opaque-corner two-colour pattern detector; absence never proves a clean cutout.",
+  "cropContract": "Original source mode/pixels retained in crop PNGs; decoded RGBA equality rechecked. PNG encoded bytes differ.",
+  "columns": 1,
+  "rows": 1,
+  "loopSeam": {
+    "from": 0,
+    "to": 0,
+    "visiblePixelChangeFraction": 0.0,
+    "meanPremultipliedRgbaDelta": 0.0
+  },
+  "sourceUnchanged": true,
+  "status": "measurements-ready-visual-review-required"
+}

@@ -1,0 +1,32 @@
+{
+  "room": "registry",
+  "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\registry\\alpha.png",
+  "sourceSha256": "8ee9f07b20009e82b582b12f431e9136a6b3854a655fed25aa27974c2b881ecc",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\registry-foliage-final\\alpha.png",
+  "outputSha256": "b5894dab7e56be505af5f8ffe9777e88ee888f6aa54a4165a0de1a161ecd859d",
+  "selectedPixels": 495,
+  "changedPixels": 495,
+  "otherRGBAUnchanged": true,
+  "beforeStrongPink": 497,
+  "afterStrongPink": 2,
+  "remainingBounds": [
+    1248,
+    674,
+    1250,
+    675
+  ],
+  "regions": [
+    [
+      0,
+      0,
+      450,
+      676
+    ],
+    [
+      1540,
+      0,
+      1672,
+      676
+    ]
+  ]
+}

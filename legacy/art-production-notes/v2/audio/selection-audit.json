@@ -1,0 +1,853 @@
+{
+  "createdAt": "2026-09-08T11:29:19.217Z",
+  "scope": "V2 active map, WorldScene and Population effect/loader contract. Existing file bytes checked; no listening approval inferred.",
+  "requirements": {
+    "required": {
+      "music": [
+        "arena-chamber",
+        "support"
+      ],
+      "ambience": [
+        "exterior",
+        "interior"
+      ],
+      "effects": [
+        "cable-cut",
+        "confirm",
+        "defeat",
+        "hit-metal",
+        "hurt",
+        "landing",
+        "lift-dock",
+        "lift-start",
+        "paper-open",
+        "slash-1",
+        "slash-2",
+        "step-concrete-1",
+        "step-concrete-2",
+        "step-metal-1",
+        "step-metal-2",
+        "telegraph",
+        "victory"
+      ]
+    },
+    "effectContractSha256": "e370ede42d13b4478f206a091023a18e6461e02aa8e968d75b56c0fae6cc95b9",
+    "encountersConfigured": true,
+    "materials": [
+      "concrete",
+      "metal"
+    ],
+    "objectKinds": [
+      "bridge",
+      "cable",
+      "donate",
+      "door",
+      "file",
+      "gallery",
+      "landing",
+      "lift",
+      "map",
+      "mob",
+      "product",
+      "resident",
+      "shortcut",
+      "terminal"
+    ],
+    "regionLabels": [
+      "arrival",
+      "junction",
+      "dispatch",
+      "arena",
+      "hearth",
+      "treasury",
+      "lookout",
+      "reservoir",
+      "gallery",
+      "archive",
+      "return-shaft"
+    ],
+    "plans": [
+      {
+        "region": "arrival",
+        "content": "none",
+        "music": "support",
+        "ambience": "exterior"
+      },
+      {
+        "region": "arrival",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "arrival",
+        "content": "panel",
+        "music": "support",
+        "ambience": "exterior"
+      },
+      {
+        "region": "arrival",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "dispatch",
+        "content": "none",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "dispatch",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "dispatch",
+        "content": "panel",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "dispatch",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "archive",
+        "content": "none",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "archive",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "archive",
+        "content": "panel",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "archive",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "gallery",
+        "content": "none",
+        "music": "support",
+        "ambience": "exterior"
+      },
+      {
+        "region": "gallery",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "gallery",
+        "content": "panel",
+        "music": "support",
+        "ambience": "exterior"
+      },
+      {
+        "region": "gallery",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "support",
+        "content": "none",
+        "music": "support",
+        "ambience": "interior"
+      },
+      {
+        "region": "support",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "support",
+        "content": "panel",
+        "music": "support",
+        "ambience": "interior"
+      },
+      {
+        "region": "support",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "boss",
+        "content": "none",
+        "music": "arena-chamber",
+        "ambience": "interior"
+      },
+      {
+        "region": "boss",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "boss",
+        "content": "panel",
+        "music": "arena-chamber",
+        "ambience": "interior"
+      },
+      {
+        "region": "boss",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "transition",
+        "content": "none",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "transition",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "transition",
+        "content": "panel",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "transition",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      }
+    ],
+    "reasons": {
+      "cable-cut": [
+        "map map.junction",
+        "cable cable.reservoir"
+      ],
+      "paper-open": [
+        "map map.junction",
+        "file archive.file.copy-and-input-contract",
+        "file archive.file.world-and-gameplay",
+        "file archive.file.art-direction-and-audio",
+        "file archive.file.audio-composition-and-budget",
+        "file gallery.collection"
+      ],
+      "confirm": [
+        "donate donate.junction",
+        "donate donate.hearth",
+        "donate donate.treasury",
+        "donate donate.lookout",
+        "terminal archive.catalog",
+        "gallery gallery.bay.01",
+        "gallery gallery.bay.02",
+        "gallery gallery.bay.03",
+        "gallery gallery.bay.04",
+        "gallery gallery.bay.05",
+        "gallery gallery.bay.06",
+        "gallery gallery.bay.07",
+        "gallery gallery.bay.08",
+        "gallery gallery.bay.09"
+      ],
+      "hit-metal": [
+        "bridge bridge.reservoir",
+        "shortcut release.gallery-return",
+        "mob reservoir.rat.01",
+        "mob reservoir.bat.01",
+        "configured encounter"
+      ],
+      "lift-start": [
+        "lift lift.gallery-return",
+        "landing landing.gallery-return.lower",
+        "landing landing.gallery-return.upper"
+      ],
+      "lift-dock": [
+        "lift lift.gallery-return",
+        "landing landing.gallery-return.lower",
+        "landing landing.gallery-return.upper"
+      ],
+      "hurt": [
+        "mob reservoir.rat.01",
+        "mob reservoir.bat.01",
+        "configured encounter"
+      ],
+      "defeat": [
+        "mob reservoir.rat.01",
+        "mob reservoir.bat.01",
+        "configured encounter"
+      ],
+      "step-concrete-1": [
+        "support material concrete"
+      ],
+      "step-concrete-2": [
+        "support material concrete"
+      ],
+      "step-metal-1": [
+        "support material metal"
+      ],
+      "step-metal-2": [
+        "support material metal"
+      ],
+      "telegraph": [
+        "configured encounter"
+      ],
+      "victory": [
+        "configured encounter"
+      ]
+    },
+    "mapUrl": "/world/maps/inhabited-v2.json",
+    "sourceHashes": {
+      "src/worldsite/audio.ts": "286fe585172c22d4e6e7c632b174aa69c4d14bfbebe89267ca48ff975833718e",
+      "src/worldsite/audio-direction.ts": "354172cab6e69a5724c94e23e4557c15fb2beb312eda2483a6701e0af1380bbf",
+      "src/worldsite/experience.ts": "d7b5a21535f491240186e7ff338045195f5b34f3278c9feefc3e9443557add00",
+      "src/worldsite/game/WorldScene.ts": "b5647d8ad1d9be81d2455d984409e4c382167f601a51a4c3e778802cf9be9cc9",
+      "src/worldsite/game/population.ts": "52fb20bd2654730c1e98c8fa890333dd07c607a24e1cd2abaa118466bc6d8364",
+      "src/worldsite/game/assets.ts": "7240535c1c6ba95847c70366338a39ebb90b41fdc0f83849bbb1f57684dc6973",
+      "public/world/maps/inhabited-v2.json": "717f80fcd3e3253deeef24c2561c048f6806504ef84d502fe9defacd1d59d329"
+    }
+  },
+  "verified": [
+    {
+      "family": "music",
+      "id": "arena-chamber",
+      "format": "opus",
+      "url": "/audio/v2/arena-chamber-v1.opus",
+      "bytes": 979690,
+      "sha256": "76964ba21133620145a744182f512ca4e60b0944211843158e9268f7a709b0c5",
+      "wave": null
+    },
+    {
+      "family": "music",
+      "id": "arena-chamber",
+      "format": "m4a",
+      "url": "/audio/v2/arena-chamber-v1.m4a",
+      "bytes": 1256907,
+      "sha256": "e1dd879ceed841df3f6d1388849e2532bed14066f061b6b789aca924093a9bad",
+      "wave": null
+    },
+    {
+      "family": "music",
+      "id": "support",
+      "format": "opus",
+      "url": "/audio/world-v1/suno-theme-b-v1/support.opus",
+      "bytes": 1152333,
+      "sha256": "b0f5d425b80eb4af4d37dc11bfa6fd4c95192be24ce264b709a7ba4d30d02f1c",
+      "wave": null
+    },
+    {
+      "family": "music",
+      "id": "support",
+      "format": "m4a",
+      "url": "/audio/world-v1/suno-theme-b-v1/support.m4a",
+      "bytes": 1322589,
+      "sha256": "2df21d1caffb73d43ee40a96ccba65b35b6a0d58ae86fd16e3f7bed0660fa9b4",
+      "wave": null
+    },
+    {
+      "family": "ambience",
+      "id": "exterior",
+      "format": "opus",
+      "url": "/audio/world-v1/exterior.opus",
+      "bytes": 68888,
+      "sha256": "3df7279dd1a93bc2e60a2e487673a28ed8547dee2627a787bdfb887715afd816",
+      "wave": null
+    },
+    {
+      "family": "ambience",
+      "id": "exterior",
+      "format": "m4a",
+      "url": "/audio/world-v1/exterior.m4a",
+      "bytes": 99678,
+      "sha256": "f351bc854ec9156563bc73fafe43ddfd54c9810288ac978f8973cccd32bcb6b4",
+      "wave": null
+    },
+    {
+      "family": "ambience",
+      "id": "interior",
+      "format": "opus",
+      "url": "/audio/world-v1/interior.opus",
+      "bytes": 66226,
+      "sha256": "f0e429b8282c64b46f88a279c6d06053e3b024e291f512d1512b2ec490367470",
+      "wave": null
+    },
+    {
+      "family": "ambience",
+      "id": "interior",
+      "format": "m4a",
+      "url": "/audio/world-v1/interior.m4a",
+      "bytes": 99695,
+      "sha256": "fb884963395003f9af17e93715a448d82010fee2e44c99588282301dc7113033",
+      "wave": null
+    },
+    {
+      "family": "effects",
+      "id": "cable-cut",
+      "format": "wav",
+      "url": "/audio/world-v1/cable-cut.wav",
+      "bytes": 28844,
+      "sha256": "ac2282876e85c8a5a5cfb4984b8b30b315f18538353cf3e7e7c0ee0ebbce24b0",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 14400
+      }
+    },
+    {
+      "family": "effects",
+      "id": "confirm",
+      "format": "wav",
+      "url": "/audio/world-v1/confirm.wav",
+      "bytes": 67244,
+      "sha256": "057ff8baa2c95a9f1cdf47c041fd1953d5dbf0ff7063391fdadacece96c0959f",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 33600
+      }
+    },
+    {
+      "family": "effects",
+      "id": "defeat",
+      "format": "wav",
+      "url": "/audio/world-v1/defeat.wav",
+      "bytes": 105644,
+      "sha256": "309812cbea80b7f185f9e4d02c67118800d0a7c0953db934cc0bab676081c1de",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 52800
+      }
+    },
+    {
+      "family": "effects",
+      "id": "hit-metal",
+      "format": "wav",
+      "url": "/audio/world-v1/hit-metal.wav",
+      "bytes": 38444,
+      "sha256": "195bf42fa5e015080f08e5d7cfce72806661180090662ff411d037b6d0ce6543",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 19200
+      }
+    },
+    {
+      "family": "effects",
+      "id": "hurt",
+      "format": "wav",
+      "url": "/audio/world-v1/hurt.wav",
+      "bytes": 26924,
+      "sha256": "317a80f0a8021fcf6ba3d132a051398f24c4b9ae85fec6af228ec78f0f5ec045",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 13440
+      }
+    },
+    {
+      "family": "effects",
+      "id": "landing",
+      "format": "wav",
+      "url": "/audio/world-v1/landing.wav",
+      "bytes": 30764,
+      "sha256": "b0b733917578fb93baa1ba9ea878ec69a5e9fd656eb26690df81af39f9bd6df7",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 15360
+      }
+    },
+    {
+      "family": "effects",
+      "id": "lift-dock",
+      "format": "wav",
+      "url": "/audio/world-v1/lift-dock.wav",
+      "bytes": 38444,
+      "sha256": "0f2b0f3960730d51c0f55fb8af71964c632ea5854f61f86558c81e83cba8f902",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 19200
+      }
+    },
+    {
+      "family": "effects",
+      "id": "lift-start",
+      "format": "wav",
+      "url": "/audio/world-v1/lift-start.wav",
+      "bytes": 52844,
+      "sha256": "1e10325fb3b09006600e43089ddc7a3d9072b4a64f0cb92b365f02856e3b36fe",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 26400
+      }
+    },
+    {
+      "family": "effects",
+      "id": "paper-open",
+      "format": "wav",
+      "url": "/audio/world-v1/paper-open.wav",
+      "bytes": 43244,
+      "sha256": "d78eb5ad7f7f917aea1343c8734c292c0a4cbb22b56101aa11adf96f2374c715",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 21600
+      }
+    },
+    {
+      "family": "effects",
+      "id": "slash-1",
+      "format": "wav",
+      "url": "/audio/world-v1/slash-1.wav",
+      "bytes": 30764,
+      "sha256": "b7174f2c574c42ddcf307a618166aa72e5cec662f726203f65d7473203981e1d",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 15360
+      }
+    },
+    {
+      "family": "effects",
+      "id": "slash-2",
+      "format": "wav",
+      "url": "/audio/world-v1/slash-2.wav",
+      "bytes": 33644,
+      "sha256": "e74c8c4f95d45a3844d5464c7b5328b761a43fef41834c110be1b061be7f8234",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 16800
+      }
+    },
+    {
+      "family": "effects",
+      "id": "step-concrete-1",
+      "format": "wav",
+      "url": "/audio/world-v1/recorded-steps-v1/step-concrete-1.wav",
+      "bytes": 10100,
+      "sha256": "3701d8e37bdafb32196ae1e4efc8214478e23a098b3e731cd74da2e952580285",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 5028
+      }
+    },
+    {
+      "family": "effects",
+      "id": "step-concrete-2",
+      "format": "wav",
+      "url": "/audio/world-v1/recorded-steps-v1/step-concrete-2.wav",
+      "bytes": 10374,
+      "sha256": "09005fca16db735f7c19aafe401c85ea09b2236187291e9fd89dda3d7adb6136",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 5165
+      }
+    },
+    {
+      "family": "effects",
+      "id": "step-metal-1",
+      "format": "wav",
+      "url": "/audio/world-v1/recorded-steps-v1/step-metal-1.wav",
+      "bytes": 34604,
+      "sha256": "00a07e1594d2fb1b481a271ceb1703f2221b42febabffefdd841d3001d1d41ea",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 17280
+      }
+    },
+    {
+      "family": "effects",
+      "id": "step-metal-2",
+      "format": "wav",
+      "url": "/audio/world-v1/recorded-steps-v1/step-metal-2.wav",
+      "bytes": 34604,
+      "sha256": "9c65abe8958ff600ffd8594931c691d0c49587f72cc44d75982598fc33ea1bf8",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 17280
+      }
+    },
+    {
+      "family": "effects",
+      "id": "telegraph",
+      "format": "wav",
+      "url": "/audio/world-v1/telegraph.wav",
+      "bytes": 72044,
+      "sha256": "a60788c6f1aba5a539e1768b9d125f944057500616ccf8208d31c62a33fb642e",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 36000
+      }
+    },
+    {
+      "family": "effects",
+      "id": "victory",
+      "format": "wav",
+      "url": "/audio/world-v1/victory.wav",
+      "bytes": 172844,
+      "sha256": "0ec3017a15e3935d1b8d3e2b8e9e50cdc31872c8de17ee34604b12b0f01c9206",
+      "wave": {
+        "channels": 1,
+        "sampleRate": 48000,
+        "bits": 16,
+        "frames": 86400
+      }
+    }
+  ],
+  "selection": {
+    "schemaVersion": 1,
+    "id": "suno-b-inhabited-v2",
+    "music": [
+      "arena-chamber",
+      "support"
+    ],
+    "ambience": [
+      "exterior",
+      "interior"
+    ],
+    "effects": [
+      "cable-cut",
+      "confirm",
+      "defeat",
+      "hit-metal",
+      "hurt",
+      "landing",
+      "lift-dock",
+      "lift-start",
+      "paper-open",
+      "slash-1",
+      "slash-2",
+      "step-concrete-1",
+      "step-concrete-2",
+      "step-metal-1",
+      "step-metal-2",
+      "telegraph",
+      "victory"
+    ],
+    "files": {
+      "arena-chamber": {
+        "opus": "/audio/v2/arena-chamber-v1.opus",
+        "m4a": "/audio/v2/arena-chamber-v1.m4a"
+      },
+      "support": {
+        "opus": "/audio/world-v1/suno-theme-b-v1/support.opus",
+        "m4a": "/audio/world-v1/suno-theme-b-v1/support.m4a"
+      },
+      "exterior": {
+        "opus": "/audio/world-v1/exterior.opus",
+        "m4a": "/audio/world-v1/exterior.m4a"
+      },
+      "interior": {
+        "opus": "/audio/world-v1/interior.opus",
+        "m4a": "/audio/world-v1/interior.m4a"
+      },
+      "cable-cut": {
+        "wav": "/audio/world-v1/cable-cut.wav"
+      },
+      "confirm": {
+        "wav": "/audio/world-v1/confirm.wav"
+      },
+      "defeat": {
+        "wav": "/audio/world-v1/defeat.wav"
+      },
+      "hit-metal": {
+        "wav": "/audio/world-v1/hit-metal.wav"
+      },
+      "hurt": {
+        "wav": "/audio/world-v1/hurt.wav"
+      },
+      "landing": {
+        "wav": "/audio/world-v1/landing.wav"
+      },
+      "lift-dock": {
+        "wav": "/audio/world-v1/lift-dock.wav"
+      },
+      "lift-start": {
+        "wav": "/audio/world-v1/lift-start.wav"
+      },
+      "paper-open": {
+        "wav": "/audio/world-v1/paper-open.wav"
+      },
+      "slash-1": {
+        "wav": "/audio/world-v1/slash-1.wav"
+      },
+      "slash-2": {
+        "wav": "/audio/world-v1/slash-2.wav"
+      },
+      "step-concrete-1": {
+        "wav": "/audio/world-v1/recorded-steps-v1/step-concrete-1.wav"
+      },
+      "step-concrete-2": {
+        "wav": "/audio/world-v1/recorded-steps-v1/step-concrete-2.wav"
+      },
+      "step-metal-1": {
+        "wav": "/audio/world-v1/recorded-steps-v1/step-metal-1.wav"
+      },
+      "step-metal-2": {
+        "wav": "/audio/world-v1/recorded-steps-v1/step-metal-2.wav"
+      },
+      "telegraph": {
+        "wav": "/audio/world-v1/telegraph.wav"
+      },
+      "victory": {
+        "wav": "/audio/world-v1/victory.wav"
+      }
+    },
+    "buffers": {
+      "arena-chamber": {
+        "sampleRate": 48000,
+        "channels": 2,
+        "frameCount": 3291430,
+        "loopStartFrame": 0,
+        "loopEndFrame": 3291430
+      },
+      "support": {
+        "sampleRate": 48000,
+        "channels": 2,
+        "frameCount": 4020960,
+        "loopStartFrame": 0,
+        "loopEndFrame": 4020960
+      },
+      "exterior": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 576000,
+        "loopStartFrame": 0,
+        "loopEndFrame": 576000
+      },
+      "interior": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 576000,
+        "loopStartFrame": 0,
+        "loopEndFrame": 576000
+      },
+      "cable-cut": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 14400
+      },
+      "confirm": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 33600
+      },
+      "defeat": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 52800
+      },
+      "hit-metal": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 19200
+      },
+      "hurt": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 13440
+      },
+      "landing": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 15360
+      },
+      "lift-dock": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 19200
+      },
+      "lift-start": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 26400
+      },
+      "paper-open": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 21600
+      },
+      "slash-1": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 15360
+      },
+      "slash-2": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 16800
+      },
+      "step-concrete-1": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 5028
+      },
+      "step-concrete-2": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 5165
+      },
+      "step-metal-1": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 17280
+      },
+      "step-metal-2": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 17280
+      },
+      "telegraph": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 36000
+      },
+      "victory": {
+        "sampleRate": 48000,
+        "channels": 1,
+        "frameCount": 86400
+      }
+    }
+  },
+  "ownerManifestSha256": "ae15dbe72ba04a099e979768d3012fcb43ba617d5b3a9ccdd55b33b1f37bdabd"
+}

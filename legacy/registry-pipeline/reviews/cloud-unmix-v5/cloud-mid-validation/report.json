@@ -1,0 +1,530 @@
+{
+  "schemaVersion": 1,
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-mid-unmixed-v5.png",
+  "sourceEncodedSha256": "e1ff193bbfa37a8f38afc0a4cec1a01069a51a203b5a88158a66b20f4caf3639",
+  "sourceMode": "RGBA",
+  "sourceSize": [
+    1536,
+    1024
+  ],
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\cloud-unmix-v5\\cloud-mid-validation",
+  "cellSize": [
+    512,
+    512
+  ],
+  "declaredFrames": 6,
+  "pivotXY": [
+    256,
+    280
+  ],
+  "alphaMode": "soft",
+  "durationsMs": [
+    1300,
+    1300,
+    1300,
+    1300,
+    1300,
+    1300
+  ],
+  "totalDurationMs": 7800,
+  "loop": true,
+  "decodedRgbaBytes": 6291456,
+  "errors": [],
+  "warnings": [],
+  "frames": [
+    {
+      "index": 0,
+      "sourceRectXYXY": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "rgbaPixelSha256": "f5438888df8b1d698250cb56f07a62f30ee48af4c541a957b0ae33d959c5114d",
+      "alphaBoundsXYXY": [
+        19,
+        175,
+        493,
+        367
+      ],
+      "alpha128BoundsXYXY": [
+        19,
+        176,
+        493,
+        366
+      ],
+      "transparentPixels": 204897,
+      "partialAlphaPixels": 3414,
+      "opaquePixels": 53833,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "coverageFraction": 0.21837997436523438,
+      "partialAlphaFraction": 0.01302337646484375,
+      "rgbaCornerSamples": {
+        "tl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tr": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "br": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "nonzeroRgbUnderZeroAlphaPixels": 0,
+      "alphaWeightedCentroidXY": [
+        246.80412852828405,
+        286.0990570296171
+      ],
+      "edgeAlphaPixelCounts": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "possibleCheckerPatterns": [],
+      "pixelCount": 262144,
+      "crop": "frames/frame-000.png"
+    },
+    {
+      "index": 1,
+      "sourceRectXYXY": [
+        512,
+        0,
+        1024,
+        512
+      ],
+      "rgbaPixelSha256": "7fa368fd26c2478f8b23b4f4e3bef658e1fb76300fd3c938684b7de01d3a94d4",
+      "alphaBoundsXYXY": [
+        22,
+        171,
+        497,
+        367
+      ],
+      "alpha128BoundsXYXY": [
+        22,
+        172,
+        496,
+        366
+      ],
+      "transparentPixels": 204730,
+      "partialAlphaPixels": 3524,
+      "opaquePixels": 53890,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "coverageFraction": 0.21901702880859375,
+      "partialAlphaFraction": 0.0134429931640625,
+      "rgbaCornerSamples": {
+        "tl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tr": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "br": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "nonzeroRgbUnderZeroAlphaPixels": 0,
+      "alphaWeightedCentroidXY": [
+        253.70657501389343,
+        285.82075731668715
+      ],
+      "edgeAlphaPixelCounts": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "possibleCheckerPatterns": [],
+      "pixelCount": 262144,
+      "crop": "frames/frame-001.png"
+    },
+    {
+      "index": 2,
+      "sourceRectXYXY": [
+        1024,
+        0,
+        1536,
+        512
+      ],
+      "rgbaPixelSha256": "a2a193f30cab20f465b8dc215d4f689690adbf9218b8e40d2ba746145e0449c7",
+      "alphaBoundsXYXY": [
+        25,
+        167,
+        499,
+        367
+      ],
+      "alpha128BoundsXYXY": [
+        25,
+        167,
+        499,
+        366
+      ],
+      "transparentPixels": 203138,
+      "partialAlphaPixels": 3438,
+      "opaquePixels": 55568,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "coverageFraction": 0.22509002685546875,
+      "partialAlphaFraction": 0.01311492919921875,
+      "rgbaCornerSamples": {
+        "tl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tr": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "br": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "nonzeroRgbUnderZeroAlphaPixels": 0,
+      "alphaWeightedCentroidXY": [
+        256.1381697527416,
+        283.62877989158955
+      ],
+      "edgeAlphaPixelCounts": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "possibleCheckerPatterns": [],
+      "pixelCount": 262144,
+      "crop": "frames/frame-002.png"
+    },
+    {
+      "index": 3,
+      "sourceRectXYXY": [
+        0,
+        512,
+        512,
+        1024
+      ],
+      "rgbaPixelSha256": "c218d238661dc4a83ffe9160c8d5f9cab148cf85ee86c6f3e9169cb4cf4deb62",
+      "alphaBoundsXYXY": [
+        18,
+        174,
+        493,
+        363
+      ],
+      "alpha128BoundsXYXY": [
+        18,
+        175,
+        493,
+        362
+      ],
+      "transparentPixels": 205542,
+      "partialAlphaPixels": 3374,
+      "opaquePixels": 53228,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "coverageFraction": 0.21591949462890625,
+      "partialAlphaFraction": 0.01287078857421875,
+      "rgbaCornerSamples": {
+        "tl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tr": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "br": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "nonzeroRgbUnderZeroAlphaPixels": 0,
+      "alphaWeightedCentroidXY": [
+        246.72289394177935,
+        282.63928362218917
+      ],
+      "edgeAlphaPixelCounts": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "possibleCheckerPatterns": [],
+      "pixelCount": 262144,
+      "crop": "frames/frame-003.png"
+    },
+    {
+      "index": 4,
+      "sourceRectXYXY": [
+        512,
+        512,
+        1024,
+        1024
+      ],
+      "rgbaPixelSha256": "4ef59d7bb3d8e4b5478d92a97ae4532a69c29f7c2fdac6cc6efa1913f44462e4",
+      "alphaBoundsXYXY": [
+        23,
+        174,
+        497,
+        363
+      ],
+      "alpha128BoundsXYXY": [
+        23,
+        175,
+        496,
+        362
+      ],
+      "transparentPixels": 204946,
+      "partialAlphaPixels": 3365,
+      "opaquePixels": 53833,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "coverageFraction": 0.21819305419921875,
+      "partialAlphaFraction": 0.012836456298828125,
+      "rgbaCornerSamples": {
+        "tl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tr": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "br": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "nonzeroRgbUnderZeroAlphaPixels": 0,
+      "alphaWeightedCentroidXY": [
+        253.60162186628583,
+        281.67160343014694
+      ],
+      "edgeAlphaPixelCounts": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "possibleCheckerPatterns": [],
+      "pixelCount": 262144,
+      "crop": "frames/frame-004.png"
+    },
+    {
+      "index": 5,
+      "sourceRectXYXY": [
+        1024,
+        512,
+        1536,
+        1024
+      ],
+      "rgbaPixelSha256": "73f735aa8a218f9a442659439ff8c3a742b332f70318f7f620417a97e3a34337",
+      "alphaBoundsXYXY": [
+        24,
+        174,
+        499,
+        363
+      ],
+      "alpha128BoundsXYXY": [
+        24,
+        175,
+        499,
+        362
+      ],
+      "transparentPixels": 205003,
+      "partialAlphaPixels": 3469,
+      "opaquePixels": 53672,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "coverageFraction": 0.21797561645507812,
+      "partialAlphaFraction": 0.013233184814453125,
+      "rgbaCornerSamples": {
+        "tl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "tr": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bl": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "br": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "nonzeroRgbUnderZeroAlphaPixels": 0,
+      "alphaWeightedCentroidXY": [
+        253.89582586327742,
+        282.07167212155554
+      ],
+      "edgeAlphaPixelCounts": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "possibleCheckerPatterns": [],
+      "pixelCount": 262144,
+      "crop": "frames/frame-005.png"
+    }
+  ],
+  "transitions": [
+    {
+      "from": 0,
+      "to": 1,
+      "visiblePixelChangeFraction": 0.22497177124023438,
+      "meanPremultipliedRgbaDelta": 0.02534780278801918
+    },
+    {
+      "from": 1,
+      "to": 2,
+      "visiblePixelChangeFraction": 0.22109603881835938,
+      "meanPremultipliedRgbaDelta": 0.017334457486867905
+    },
+    {
+      "from": 2,
+      "to": 3,
+      "visiblePixelChangeFraction": 0.23267745971679688,
+      "meanPremultipliedRgbaDelta": 0.034025005996227264
+    },
+    {
+      "from": 3,
+      "to": 4,
+      "visiblePixelChangeFraction": 0.222930908203125,
+      "meanPremultipliedRgbaDelta": 0.023005042225122452
+    },
+    {
+      "from": 4,
+      "to": 5,
+      "visiblePixelChangeFraction": 0.21648025512695312,
+      "meanPremultipliedRgbaDelta": 0.01446150615811348
+    }
+  ],
+  "artifacts": {
+    "contactSheets": [
+      "contact-dark-01.png",
+      "contact-light-01.png"
+    ],
+    "gifPreviews": [
+      "playback-dark.gif",
+      "playback-light.gif"
+    ]
+  },
+  "visualAcceptance": "pending: inspect actual pixels, frame registration, motion and integrated scene",
+  "checkerHeuristic": "Opaque-corner two-colour pattern detector; absence never proves a clean cutout.",
+  "cropContract": "Original source mode/pixels retained in crop PNGs; decoded RGBA equality rechecked. PNG encoded bytes differ.",
+  "columns": 3,
+  "rows": 2,
+  "loopSeam": {
+    "from": 5,
+    "to": 0,
+    "visiblePixelChangeFraction": 0.22858047485351562,
+    "meanPremultipliedRgbaDelta": 0.029441766440868378
+  },
+  "gifPreview": {
+    "lossy": true,
+    "alphaComposited": true,
+    "effectiveDurationsMs": [
+      1300,
+      1300,
+      1300,
+      1300,
+      1300,
+      1300
+    ],
+    "note": "GIF quantizes colours and timing and may merge duplicate frames; crop PNGs remain authoritative."
+  },
+  "sourceUnchanged": true,
+  "status": "measurements-ready-visual-review-required"
+}

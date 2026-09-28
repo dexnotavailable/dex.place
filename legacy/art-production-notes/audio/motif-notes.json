@@ -1,0 +1,40 @@
+{
+  "id": "dex-place-motif-v1",
+  "composer": "Original task-authored note data from accepted specification",
+  "tempoBpm": 80,
+  "meter": "4/4",
+  "key": "D minor",
+  "beatsPerSecond": 1.3333333333333333,
+  "phrase": [
+    {
+      "midi": 74,
+      "note": "D5",
+      "beat": 0,
+      "durationBeats": 1
+    },
+    {
+      "midi": 69,
+      "note": "A4",
+      "beat": 1.5,
+      "durationBeats": 0.5
+    },
+    {
+      "midi": 72,
+      "note": "C5",
+      "beat": 3,
+      "durationBeats": 1
+    },
+    {
+      "midi": 76,
+      "note": "E5",
+      "beat": 5,
+      "durationBeats": 1.5
+    }
+  ],
+  "arrivalPhraseStartsSeconds": [
+    12,
+    36
+  ],
+  "secondPhraseGain": 0.52,
+  "instrumentDirection": "Soft felt-piano-like modal pluck with warm attack and long diffuse tails; listening acceptance required."
+}

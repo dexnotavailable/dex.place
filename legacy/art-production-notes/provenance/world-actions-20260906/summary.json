@@ -1,0 +1,189 @@
+{
+  "status": "owned-world-actions-locally-verified",
+  "scope": "WorldScene action effects, six physical files, native Tiled export, lift/combat verification and authored death presentation.",
+  "browser": "Installed headless Brave through Playwright CLI; existing Vite5188;1280x1024 DPR1; real DOM/keyboard actions with read-only world diagnostics.",
+  "physicalFiles": {
+    "count": 6,
+    "allHashTargetsVisible": true,
+    "nativeTiledVersion": "1.12.2",
+    "sourceNonFileObjectsUnchanged": true,
+    "exportMatchesSourceNonFileObjects": true
+  },
+  "effects": {
+    "expected": [
+      "step-concrete-1",
+      "step-concrete-2",
+      "step-metal-1",
+      "step-metal-2",
+      "slash-1",
+      "slash-2",
+      "hit-metal",
+      "cable-cut",
+      "paper-open",
+      "paper-cut",
+      "lift-start",
+      "lift-dock",
+      "telegraph",
+      "landing",
+      "hurt",
+      "confirm",
+      "victory",
+      "defeat"
+    ],
+    "observed": [
+      "cable-cut",
+      "confirm",
+      "defeat",
+      "hit-metal",
+      "hurt",
+      "landing",
+      "lift-dock",
+      "lift-start",
+      "paper-cut",
+      "paper-open",
+      "slash-1",
+      "slash-2",
+      "step-concrete-1",
+      "step-concrete-2",
+      "step-metal-1",
+      "step-metal-2",
+      "telegraph",
+      "victory"
+    ],
+    "all18Observed": true,
+    "idleEmitsNothing": true,
+    "eventIdsUniqueInEveryBoundedJournal": true,
+    "liftStartOnce": true,
+    "liftDockOnce": true,
+    "cableCutOnce": true
+  },
+  "lift": {
+    "carrierSamples": 36,
+    "maxCarryError": 0,
+    "pausedY": 608.0000000000018,
+    "pausedUnchanged": true,
+    "playerAfterDismount": {
+      "x": 3053.0999999999954,
+      "y": 360,
+      "vx": 0,
+      "vy": 0,
+      "grounded": true,
+      "support": "gallery.walkway",
+      "clip": "idle",
+      "frame": 4,
+      "attack": -1,
+      "facing": -1,
+      "screen": {
+        "x": 539,
+        "y": 759
+      }
+    }
+  },
+  "defeat": {
+    "frames": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "simulationFrozen": true,
+    "retryAndLeaveVisible": {
+      "retry": true,
+      "leave": true
+    },
+    "safeEntrance": {
+      "x": 350,
+      "y": 1100,
+      "vx": 0,
+      "vy": 0,
+      "grounded": true,
+      "support": "floor.arena",
+      "clip": "idle",
+      "frame": 0,
+      "attack": -1,
+      "facing": 1,
+      "screen": {
+        "x": 240,
+        "y": 714
+      }
+    }
+  },
+  "victory": {
+    "assistance": false,
+    "healthChanges": [
+      {
+        "from": 6,
+        "to": 5,
+        "phase": "recovery",
+        "playerX": 814.8666666666687,
+        "playerY": 1100,
+        "playerHealth": 3,
+        "elapsedMs": 3233
+      },
+      {
+        "from": 5,
+        "to": 4,
+        "phase": "recovery",
+        "playerX": 814.8666666666687,
+        "playerY": 1100,
+        "playerHealth": 3,
+        "elapsedMs": 7156
+      },
+      {
+        "from": 4,
+        "to": 3,
+        "phase": "recovery",
+        "playerX": 823.4166666666687,
+        "playerY": 1068.8333333333333,
+        "playerHealth": 3,
+        "elapsedMs": 10603
+      },
+      {
+        "from": 3,
+        "to": 2,
+        "phase": "recovery",
+        "playerX": 814.8666666666687,
+        "playerY": 1100,
+        "playerHealth": 3,
+        "elapsedMs": 14949
+      },
+      {
+        "from": 2,
+        "to": 1,
+        "phase": "recovery",
+        "playerX": 823.4166666666687,
+        "playerY": 1072.75,
+        "playerHealth": 3,
+        "elapsedMs": 18290
+      },
+      {
+        "from": 1,
+        "to": 0,
+        "phase": "defeated",
+        "elapsedMs": 23690
+      }
+    ],
+    "playerHealth": 3,
+    "automatedInputElapsedMs": 23749,
+    "nativeDownloadEvents": 1,
+    "downloadSha256": "a230b1765daa2cb1be209abdc021a085ee92923ad1906f0d2056151744a84ad3",
+    "matchesCurrentPublicArtifact": true
+  },
+  "ownerHashes": {
+    "D:\\Dex\\Projects\\dex-place-world\\site\\src\\worldsite\\game\\WorldScene.ts": "0ad5dba08772ae44980e723a504c5705a237c1b3ab06c8b4b8dc32397ea1d0c9",
+    "D:\\Dex\\Projects\\dex-place-art-production\\maps\\causeway.tmj": "fdee8b9bb1f2dc57298224987fad49cf8f8371da2e2ac5699382ac62b362a8e5",
+    "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\maps\\causeway.json": "2d7945a803921839a19d62c393d49e4422936f90701bc56e7f377b21e87c55d3"
+  },
+  "checks": {
+    "tscNoEmit": "pass",
+    "console": "Initial existing favicon.ico404; final current console read reports zero errors/warnings. No gameplay/asset/audio failures observed."
+  },
+  "limits": [
+    "Local desktop evidence only; physical Samsung Internet/iPad Safari and broader mobile regression remain with root.",
+    "All effects were emitted while native audio opt-in was enabled, but this lane does not claim a recorded listening evaluation.",
+    "Complete layered composition and production visual quality remain incomplete.",
+    "The23.7s normal win is automated input timing, not an estimate of first-player completion time."
+  ]
+}

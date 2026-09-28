@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "creator": "Kenney",
+  "sourcePage": "https://kenney.nl/assets/ui-pack-pixel-adventure",
+  "license": "CC0-1.0",
+  "status": "native-reviewed-ui-material-candidates",
+  "items": [
+    {
+      "id": "steel-frame",
+      "url": "/world/cast-v2/ui/steel-frame.png",
+      "width": 32,
+      "height": 32,
+      "sliceInsets": {
+        "top": 6,
+        "right": 6,
+        "bottom": 6,
+        "left": 6
+      },
+      "sourceMember": "Tiles/Large tiles/Thin outline/tile_0009.png",
+      "sha256": "6327e180d9a565adea0b934d71554373ed3e41a9106aaf11caffd291aff7319d",
+      "bytes": 211,
+      "review": "Original thin-outline corners inspected3x; proposed six-pixel nine-slice inset. Requires real DOM focus/resize/state review; not a flattened finished menu."
+    },
+    {
+      "id": "paper-frame",
+      "url": "/world/cast-v2/ui/paper-frame.png",
+      "width": 32,
+      "height": 32,
+      "sliceInsets": {
+        "top": 6,
+        "right": 6,
+        "bottom": 6,
+        "left": 6
+      },
+      "sourceMember": "Tiles/Large tiles/Thin outline/tile_0018.png",
+      "sha256": "6f9ce5192f9f184e3de0a7ae3062f94d5a1dae60b45a71559046dcea3f86ff26",
+      "bytes": 265,
+      "review": "Original thin-outline corners inspected3x; proposed six-pixel nine-slice inset. Requires real DOM focus/resize/state review; not a flattened finished menu."
+    }
+  ]
+}

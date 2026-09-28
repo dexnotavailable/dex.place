@@ -1,0 +1,145 @@
+{
+  "status": "planned-not-composed",
+  "rooms": [
+    {
+      "id": "archive",
+      "label": "Archive",
+      "x": 6200,
+      "width": 1900,
+      "floorY": 1120,
+      "kind": "archive",
+      "topY": 480,
+      "music": "silent"
+    },
+    {
+      "id": "gallery",
+      "label": "Exhibition",
+      "x": 9000,
+      "width": 1900,
+      "floorY": 832,
+      "kind": "gallery",
+      "topY": 80,
+      "music": "calm"
+    },
+    {
+      "id": "support",
+      "label": "Support",
+      "x": 11800,
+      "width": 2100,
+      "floorY": 960,
+      "kind": "support",
+      "topY": 250,
+      "waterY": 988,
+      "music": "calm"
+    }
+  ],
+  "deferredObjects": [
+    {
+      "height": 64,
+      "id": 143,
+      "name": "arrival.cable.01",
+      "opacity": 1,
+      "properties": [
+        {
+          "name": "target",
+          "type": "string",
+          "value": "arrival.bridge.01"
+        }
+      ],
+      "rotation": 0,
+      "type": "cable",
+      "visible": true,
+      "width": 8,
+      "x": 1344,
+      "y": 615
+    },
+    {
+      "height": 12,
+      "id": 144,
+      "name": "arrival.bridge.01",
+      "opacity": 1,
+      "properties": [
+        {
+          "name": "openY",
+          "type": "float",
+          "value": 604
+        }
+      ],
+      "rotation": 0,
+      "type": "bridge",
+      "visible": true,
+      "width": 110,
+      "x": 1240,
+      "y": 540
+    },
+    {
+      "height": 38,
+      "id": 148,
+      "name": "archive.seal.01",
+      "opacity": 1,
+      "rotation": 0,
+      "type": "seal",
+      "visible": true,
+      "width": 16,
+      "x": 2700,
+      "y": 1016
+    },
+    {
+      "height": 24,
+      "id": 155,
+      "name": "dispatch.ornament.01",
+      "opacity": 1,
+      "rotation": 0,
+      "type": "ornament",
+      "visible": true,
+      "width": 18,
+      "x": 1060,
+      "y": 612
+    }
+  ],
+  "lift": {
+    "id": "support.lift.01",
+    "deckWidth": 192,
+    "centerX": 8600,
+    "deckLeft": 8504,
+    "deckRight": 8696,
+    "lowerY": 1120,
+    "upperY": 832,
+    "status": "registered with safe dock pads only; shaft art and full connecting routes unfinished"
+  },
+  "connections": [
+    {
+      "id": "dispatch-archive",
+      "x": 5300,
+      "width": 900,
+      "fromY": 960,
+      "toY": 1120,
+      "stairs": {
+        "rise": 8,
+        "tread": 24,
+        "steps": 20
+      }
+    },
+    {
+      "id": "archive-gallery",
+      "x": 8100,
+      "width": 900,
+      "fromY": 1120,
+      "toY": 832,
+      "uses": "support.lift.01"
+    },
+    {
+      "id": "gallery-support",
+      "x": 10900,
+      "width": 900,
+      "fromY": 832,
+      "toY": 960,
+      "stairs": {
+        "rise": 8,
+        "tread": 24,
+        "steps": 16
+      }
+    }
+  ],
+  "scope": "First map is safe for canonical anchor arrivals; no claim that these three rooms or full end-to-end route are composed."
+}

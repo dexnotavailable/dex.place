@@ -1,0 +1,1327 @@
+[
+  {
+    "room": "arrival",
+    "visibleMagentaPixels": 2,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 2,
+      "3to6px": 0,
+      "6to12px": 0,
+      "beyond12px": 0
+    },
+    "componentCount": 2,
+    "largestComponents": [
+      {
+        "pixels": 1,
+        "bounds": [
+          1663,
+          729,
+          1664,
+          730
+        ]
+      },
+      {
+        "pixels": 1,
+        "bounds": [
+          1662,
+          238,
+          1663,
+          239
+        ]
+      }
+    ]
+  },
+  {
+    "room": "rest",
+    "visibleMagentaPixels": 309,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 6,
+      "3to6px": 115,
+      "6to12px": 70,
+      "beyond12px": 118
+    },
+    "componentCount": 33,
+    "largestComponents": [
+      {
+        "pixels": 97,
+        "bounds": [
+          320,
+          0,
+          341,
+          10
+        ]
+      },
+      {
+        "pixels": 30,
+        "bounds": [
+          573,
+          27,
+          579,
+          35
+        ]
+      },
+      {
+        "pixels": 26,
+        "bounds": [
+          555,
+          203,
+          561,
+          210
+        ]
+      },
+      {
+        "pixels": 17,
+        "bounds": [
+          434,
+          29,
+          438,
+          35
+        ]
+      },
+      {
+        "pixels": 13,
+        "bounds": [
+          535,
+          243,
+          540,
+          248
+        ]
+      },
+      {
+        "pixels": 12,
+        "bounds": [
+          553,
+          241,
+          556,
+          246
+        ]
+      },
+      {
+        "pixels": 11,
+        "bounds": [
+          424,
+          35,
+          428,
+          38
+        ]
+      },
+      {
+        "pixels": 11,
+        "bounds": [
+          504,
+          23,
+          508,
+          27
+        ]
+      },
+      {
+        "pixels": 9,
+        "bounds": [
+          476,
+          25,
+          478,
+          30
+        ]
+      },
+      {
+        "pixels": 9,
+        "bounds": [
+          595,
+          35,
+          599,
+          39
+        ]
+      },
+      {
+        "pixels": 7,
+        "bounds": [
+          562,
+          23,
+          565,
+          27
+        ]
+      },
+      {
+        "pixels": 7,
+        "bounds": [
+          265,
+          2,
+          269,
+          5
+        ]
+      },
+      {
+        "pixels": 6,
+        "bounds": [
+          396,
+          0,
+          400,
+          2
+        ]
+      },
+      {
+        "pixels": 6,
+        "bounds": [
+          607,
+          30,
+          610,
+          33
+        ]
+      },
+      {
+        "pixels": 6,
+        "bounds": [
+          617,
+          164,
+          619,
+          168
+        ]
+      }
+    ]
+  },
+  {
+    "room": "registry",
+    "visibleMagentaPixels": 497,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 91,
+      "3to6px": 217,
+      "6to12px": 164,
+      "beyond12px": 25
+    },
+    "componentCount": 45,
+    "largestComponents": [
+      {
+        "pixels": 86,
+        "bounds": [
+          269,
+          662,
+          311,
+          665
+        ]
+      },
+      {
+        "pixels": 45,
+        "bounds": [
+          1607,
+          588,
+          1618,
+          599
+        ]
+      },
+      {
+        "pixels": 32,
+        "bounds": [
+          1649,
+          626,
+          1656,
+          634
+        ]
+      },
+      {
+        "pixels": 32,
+        "bounds": [
+          1623,
+          597,
+          1631,
+          603
+        ]
+      },
+      {
+        "pixels": 29,
+        "bounds": [
+          384,
+          171,
+          387,
+          181
+        ]
+      },
+      {
+        "pixels": 27,
+        "bounds": [
+          383,
+          214,
+          387,
+          223
+        ]
+      },
+      {
+        "pixels": 25,
+        "bounds": [
+          1619,
+          608,
+          1624,
+          616
+        ]
+      },
+      {
+        "pixels": 21,
+        "bounds": [
+          358,
+          667,
+          364,
+          674
+        ]
+      },
+      {
+        "pixels": 18,
+        "bounds": [
+          139,
+          355,
+          145,
+          361
+        ]
+      },
+      {
+        "pixels": 18,
+        "bounds": [
+          380,
+          630,
+          384,
+          636
+        ]
+      },
+      {
+        "pixels": 15,
+        "bounds": [
+          139,
+          411,
+          143,
+          417
+        ]
+      },
+      {
+        "pixels": 15,
+        "bounds": [
+          1598,
+          574,
+          1602,
+          579
+        ]
+      },
+      {
+        "pixels": 13,
+        "bounds": [
+          377,
+          617,
+          380,
+          624
+        ]
+      },
+      {
+        "pixels": 12,
+        "bounds": [
+          373,
+          646,
+          377,
+          651
+        ]
+      },
+      {
+        "pixels": 11,
+        "bounds": [
+          376,
+          593,
+          380,
+          598
+        ]
+      }
+    ]
+  },
+  {
+    "room": "junction",
+    "visibleMagentaPixels": 815,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 0,
+      "3to6px": 371,
+      "6to12px": 344,
+      "beyond12px": 100
+    },
+    "componentCount": 76,
+    "largestComponents": [
+      {
+        "pixels": 50,
+        "bounds": [
+          1502,
+          375,
+          1510,
+          383
+        ]
+      },
+      {
+        "pixels": 41,
+        "bounds": [
+          1285,
+          621,
+          1292,
+          627
+        ]
+      },
+      {
+        "pixels": 37,
+        "bounds": [
+          1275,
+          613,
+          1281,
+          620
+        ]
+      },
+      {
+        "pixels": 36,
+        "bounds": [
+          625,
+          202,
+          633,
+          207
+        ]
+      },
+      {
+        "pixels": 31,
+        "bounds": [
+          1515,
+          336,
+          1521,
+          342
+        ]
+      },
+      {
+        "pixels": 30,
+        "bounds": [
+          363,
+          194,
+          368,
+          204
+        ]
+      },
+      {
+        "pixels": 28,
+        "bounds": [
+          1529,
+          460,
+          1534,
+          470
+        ]
+      },
+      {
+        "pixels": 27,
+        "bounds": [
+          1275,
+          621,
+          1281,
+          626
+        ]
+      },
+      {
+        "pixels": 23,
+        "bounds": [
+          1486,
+          391,
+          1491,
+          399
+        ]
+      },
+      {
+        "pixels": 21,
+        "bounds": [
+          1533,
+          491,
+          1535,
+          502
+        ]
+      },
+      {
+        "pixels": 20,
+        "bounds": [
+          1491,
+          65,
+          1497,
+          73
+        ]
+      },
+      {
+        "pixels": 20,
+        "bounds": [
+          1228,
+          502,
+          1232,
+          510
+        ]
+      },
+      {
+        "pixels": 19,
+        "bounds": [
+          1518,
+          420,
+          1523,
+          427
+        ]
+      },
+      {
+        "pixels": 18,
+        "bounds": [
+          1236,
+          460,
+          1244,
+          465
+        ]
+      },
+      {
+        "pixels": 18,
+        "bounds": [
+          363,
+          186,
+          367,
+          191
+        ]
+      }
+    ]
+  },
+  {
+    "room": "vestibule",
+    "visibleMagentaPixels": 25,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 1,
+      "3to6px": 21,
+      "6to12px": 3,
+      "beyond12px": 0
+    },
+    "componentCount": 4,
+    "largestComponents": [
+      {
+        "pixels": 18,
+        "bounds": [
+          89,
+          457,
+          95,
+          462
+        ]
+      },
+      {
+        "pixels": 4,
+        "bounds": [
+          98,
+          601,
+          100,
+          604
+        ]
+      },
+      {
+        "pixels": 2,
+        "bounds": [
+          101,
+          604,
+          103,
+          605
+        ]
+      },
+      {
+        "pixels": 1,
+        "bounds": [
+          101,
+          442,
+          102,
+          443
+        ]
+      }
+    ]
+  },
+  {
+    "room": "arena",
+    "visibleMagentaPixels": 0,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 0,
+      "3to6px": 0,
+      "6to12px": 0,
+      "beyond12px": 0
+    },
+    "componentCount": 0,
+    "largestComponents": []
+  },
+  {
+    "room": "archive",
+    "visibleMagentaPixels": 229,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 0,
+      "3to6px": 54,
+      "6to12px": 65,
+      "beyond12px": 110
+    },
+    "componentCount": 14,
+    "largestComponents": [
+      {
+        "pixels": 78,
+        "bounds": [
+          1416,
+          181,
+          1428,
+          192
+        ]
+      },
+      {
+        "pixels": 69,
+        "bounds": [
+          1426,
+          154,
+          1438,
+          164
+        ]
+      },
+      {
+        "pixels": 42,
+        "bounds": [
+          1403,
+          182,
+          1409,
+          195
+        ]
+      },
+      {
+        "pixels": 13,
+        "bounds": [
+          1408,
+          162,
+          1412,
+          167
+        ]
+      },
+      {
+        "pixels": 5,
+        "bounds": [
+          1434,
+          123,
+          1436,
+          127
+        ]
+      },
+      {
+        "pixels": 4,
+        "bounds": [
+          1430,
+          135,
+          1434,
+          136
+        ]
+      },
+      {
+        "pixels": 4,
+        "bounds": [
+          1430,
+          188,
+          1432,
+          190
+        ]
+      },
+      {
+        "pixels": 3,
+        "bounds": [
+          1401,
+          140,
+          1402,
+          143
+        ]
+      },
+      {
+        "pixels": 3,
+        "bounds": [
+          1395,
+          192,
+          1397,
+          194
+        ]
+      },
+      {
+        "pixels": 3,
+        "bounds": [
+          1406,
+          180,
+          1408,
+          182
+        ]
+      },
+      {
+        "pixels": 2,
+        "bounds": [
+          1428,
+          172,
+          1430,
+          173
+        ]
+      },
+      {
+        "pixels": 1,
+        "bounds": [
+          1410,
+          160,
+          1411,
+          161
+        ]
+      },
+      {
+        "pixels": 1,
+        "bounds": [
+          1426,
+          172,
+          1427,
+          173
+        ]
+      },
+      {
+        "pixels": 1,
+        "bounds": [
+          1424,
+          159,
+          1425,
+          160
+        ]
+      }
+    ]
+  },
+  {
+    "room": "low-passage",
+    "visibleMagentaPixels": 313,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 0,
+      "3to6px": 0,
+      "6to12px": 0,
+      "beyond12px": 313
+    },
+    "componentCount": 5,
+    "largestComponents": [
+      {
+        "pixels": 304,
+        "bounds": [
+          1499,
+          662,
+          1547,
+          672
+        ]
+      },
+      {
+        "pixels": 6,
+        "bounds": [
+          1511,
+          655,
+          1517,
+          656
+        ]
+      },
+      {
+        "pixels": 1,
+        "bounds": [
+          1530,
+          655,
+          1531,
+          656
+        ]
+      },
+      {
+        "pixels": 1,
+        "bounds": [
+          1520,
+          655,
+          1521,
+          656
+        ]
+      },
+      {
+        "pixels": 1,
+        "bounds": [
+          1506,
+          655,
+          1507,
+          656
+        ]
+      }
+    ]
+  },
+  {
+    "room": "pool",
+    "visibleMagentaPixels": 836,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 45,
+      "3to6px": 465,
+      "6to12px": 237,
+      "beyond12px": 89
+    },
+    "componentCount": 79,
+    "largestComponents": [
+      {
+        "pixels": 81,
+        "bounds": [
+          217,
+          400,
+          232,
+          414
+        ]
+      },
+      {
+        "pixels": 77,
+        "bounds": [
+          331,
+          128,
+          337,
+          151
+        ]
+      },
+      {
+        "pixels": 65,
+        "bounds": [
+          1601,
+          405,
+          1610,
+          419
+        ]
+      },
+      {
+        "pixels": 60,
+        "bounds": [
+          1587,
+          724,
+          1608,
+          728
+        ]
+      },
+      {
+        "pixels": 42,
+        "bounds": [
+          1565,
+          723,
+          1585,
+          727
+        ]
+      },
+      {
+        "pixels": 32,
+        "bounds": [
+          333,
+          103,
+          337,
+          113
+        ]
+      },
+      {
+        "pixels": 28,
+        "bounds": [
+          1347,
+          94,
+          1353,
+          104
+        ]
+      },
+      {
+        "pixels": 21,
+        "bounds": [
+          227,
+          156,
+          232,
+          163
+        ]
+      },
+      {
+        "pixels": 21,
+        "bounds": [
+          186,
+          387,
+          193,
+          396
+        ]
+      },
+      {
+        "pixels": 20,
+        "bounds": [
+          318,
+          94,
+          322,
+          101
+        ]
+      },
+      {
+        "pixels": 16,
+        "bounds": [
+          343,
+          83,
+          348,
+          89
+        ]
+      },
+      {
+        "pixels": 15,
+        "bounds": [
+          222,
+          189,
+          224,
+          197
+        ]
+      },
+      {
+        "pixels": 14,
+        "bounds": [
+          311,
+          112,
+          315,
+          118
+        ]
+      },
+      {
+        "pixels": 14,
+        "bounds": [
+          170,
+          88,
+          174,
+          93
+        ]
+      },
+      {
+        "pixels": 14,
+        "bounds": [
+          1534,
+          455,
+          1541,
+          459
+        ]
+      }
+    ]
+  },
+  {
+    "room": "sky-walk",
+    "visibleMagentaPixels": 578,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 25,
+      "3to6px": 342,
+      "6to12px": 167,
+      "beyond12px": 44
+    },
+    "componentCount": 104,
+    "largestComponents": [
+      {
+        "pixels": 42,
+        "bounds": [
+          188,
+          25,
+          194,
+          34
+        ]
+      },
+      {
+        "pixels": 30,
+        "bounds": [
+          104,
+          599,
+          111,
+          607
+        ]
+      },
+      {
+        "pixels": 27,
+        "bounds": [
+          186,
+          63,
+          189,
+          80
+        ]
+      },
+      {
+        "pixels": 19,
+        "bounds": [
+          187,
+          100,
+          191,
+          109
+        ]
+      },
+      {
+        "pixels": 19,
+        "bounds": [
+          198,
+          12,
+          201,
+          23
+        ]
+      },
+      {
+        "pixels": 18,
+        "bounds": [
+          235,
+          645,
+          240,
+          650
+        ]
+      },
+      {
+        "pixels": 18,
+        "bounds": [
+          1663,
+          191,
+          1666,
+          198
+        ]
+      },
+      {
+        "pixels": 16,
+        "bounds": [
+          1606,
+          206,
+          1611,
+          210
+        ]
+      },
+      {
+        "pixels": 16,
+        "bounds": [
+          1540,
+          570,
+          1544,
+          575
+        ]
+      },
+      {
+        "pixels": 14,
+        "bounds": [
+          71,
+          580,
+          76,
+          584
+        ]
+      },
+      {
+        "pixels": 14,
+        "bounds": [
+          1531,
+          595,
+          1536,
+          600
+        ]
+      },
+      {
+        "pixels": 13,
+        "bounds": [
+          88,
+          206,
+          94,
+          209
+        ]
+      },
+      {
+        "pixels": 13,
+        "bounds": [
+          1626,
+          198,
+          1633,
+          201
+        ]
+      },
+      {
+        "pixels": 13,
+        "bounds": [
+          1561,
+          762,
+          1565,
+          766
+        ]
+      },
+      {
+        "pixels": 12,
+        "bounds": [
+          1655,
+          190,
+          1659,
+          195
+        ]
+      }
+    ]
+  },
+  {
+    "room": "exhibit",
+    "visibleMagentaPixels": 1079,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 53,
+      "3to6px": 520,
+      "6to12px": 295,
+      "beyond12px": 211
+    },
+    "componentCount": 102,
+    "largestComponents": [
+      {
+        "pixels": 65,
+        "bounds": [
+          237,
+          136,
+          245,
+          147
+        ]
+      },
+      {
+        "pixels": 64,
+        "bounds": [
+          1490,
+          640,
+          1493,
+          669
+        ]
+      },
+      {
+        "pixels": 58,
+        "bounds": [
+          182,
+          57,
+          200,
+          63
+        ]
+      },
+      {
+        "pixels": 55,
+        "bounds": [
+          1565,
+          136,
+          1579,
+          143
+        ]
+      },
+      {
+        "pixels": 37,
+        "bounds": [
+          1601,
+          122,
+          1615,
+          129
+        ]
+      },
+      {
+        "pixels": 36,
+        "bounds": [
+          246,
+          91,
+          255,
+          97
+        ]
+      },
+      {
+        "pixels": 27,
+        "bounds": [
+          279,
+          95,
+          291,
+          100
+        ]
+      },
+      {
+        "pixels": 25,
+        "bounds": [
+          1480,
+          145,
+          1487,
+          152
+        ]
+      },
+      {
+        "pixels": 25,
+        "bounds": [
+          1597,
+          106,
+          1605,
+          111
+        ]
+      },
+      {
+        "pixels": 24,
+        "bounds": [
+          248,
+          142,
+          255,
+          150
+        ]
+      },
+      {
+        "pixels": 24,
+        "bounds": [
+          1631,
+          137,
+          1637,
+          144
+        ]
+      },
+      {
+        "pixels": 23,
+        "bounds": [
+          234,
+          49,
+          241,
+          55
+        ]
+      },
+      {
+        "pixels": 21,
+        "bounds": [
+          409,
+          151,
+          414,
+          157
+        ]
+      },
+      {
+        "pixels": 21,
+        "bounds": [
+          186,
+          835,
+          191,
+          841
+        ]
+      },
+      {
+        "pixels": 19,
+        "bounds": [
+          181,
+          844,
+          184,
+          851
+        ]
+      }
+    ]
+  },
+  {
+    "room": "courtyard",
+    "visibleMagentaPixels": 569,
+    "distanceToTrueTransparentBackground": {
+      "within3px": 28,
+      "3to6px": 231,
+      "6to12px": 258,
+      "beyond12px": 52
+    },
+    "componentCount": 46,
+    "largestComponents": [
+      {
+        "pixels": 131,
+        "bounds": [
+          102,
+          133,
+          116,
+          152
+        ]
+      },
+      {
+        "pixels": 91,
+        "bounds": [
+          100,
+          153,
+          114,
+          168
+        ]
+      },
+      {
+        "pixels": 41,
+        "bounds": [
+          97,
+          211,
+          103,
+          220
+        ]
+      },
+      {
+        "pixels": 36,
+        "bounds": [
+          110,
+          211,
+          115,
+          222
+        ]
+      },
+      {
+        "pixels": 36,
+        "bounds": [
+          1590,
+          328,
+          1597,
+          337
+        ]
+      },
+      {
+        "pixels": 30,
+        "bounds": [
+          199,
+          406,
+          203,
+          416
+        ]
+      },
+      {
+        "pixels": 18,
+        "bounds": [
+          1325,
+          399,
+          1331,
+          404
+        ]
+      },
+      {
+        "pixels": 17,
+        "bounds": [
+          165,
+          229,
+          171,
+          233
+        ]
+      },
+      {
+        "pixels": 16,
+        "bounds": [
+          1329,
+          465,
+          1334,
+          471
+        ]
+      },
+      {
+        "pixels": 15,
+        "bounds": [
+          1323,
+          433,
+          1327,
+          442
+        ]
+      },
+      {
+        "pixels": 12,
+        "bounds": [
+          206,
+          394,
+          213,
+          397
+        ]
+      },
+      {
+        "pixels": 9,
+        "bounds": [
+          1529,
+          363,
+          1534,
+          367
+        ]
+      },
+      {
+        "pixels": 9,
+        "bounds": [
+          1550,
+          360,
+          1553,
+          364
+        ]
+      },
+      {
+        "pixels": 8,
+        "bounds": [
+          1323,
+          424,
+          1326,
+          428
+        ]
+      },
+      {
+        "pixels": 7,
+        "bounds": [
+          1502,
+          351,
+          1505,
+          354
+        ]
+      }
+    ]
+  }
+]

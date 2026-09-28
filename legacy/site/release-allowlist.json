@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "stagingRoot": "D:/Dex/Projects/dex-place-art-production/release-staging",
+  "additionalStagingRoots": ["A:/Dex/Archives/dex-place/release-staging"],
+  "legacySite": "D:/Dex/Projects/SUMMER PROJECT 3/dex-client/site",
+  "expectedWorldRoles": 60,
+  "expectedRooms": 11,
+  "expectedCastActors": 7,
+  "entrySource": "src/worldsite/v2/main.tsx",
+  "documentationVersion": "1.1",
+  "retainedDocumentationVersions": ["1.0"],
+  "expectedGalleryItems": 9,
+  "previewSource": "src/worldsite/content/world-preview.json",
+  "previewSections": ["home", "downloads", "documentation", "illustrations", "donate"],
+  "previewProfiles": ["compact", "portrait", "tablet", "landscape", "desktop", "wide", "ultrawide"],
+  "runtimeManifests": {
+    "world": "world/scene-assets-v2.json",
+    "rooms": "world/rooms-v2.json",
+    "cast": "world/cast-v2/manifest.json",
+    "fonts": "world/fonts-v2/manifest.json",
+    "ui": "world/cast-v2/ui/manifest.json",
+    "hero": "world/hero/manifest.json",
+    "audio": "audio/world-v1/manifest.json",
+    "gallery": "content/illustrations/manifest.json",
+    "documentation": "content/documentation/v1.1/manifest.json",
+    "download": "files/dex-place-documentation/v1.1/release.json",
+    "preview": "world/preview/manifest.json"
+  },
+  "fixedPublicFiles": [
+    "world/hero/LICENSE.txt", "world/assets/v2/archival-paper-v1.webp",
+    "world/brand/Daniel-Regular.otf", "world/brand/Daniel-license.txt", "world/brand/dex-icon.svg",
+    "audio/world-v1/recorded-steps-v1/ATTRIBUTION.md",
+    "content/documentation/v1.1/README.md", "content/documentation/v1.1/documents.json",
+    "content/documentation/v1.1/physical-files.json"
+  ],
+  "documentationFiles": [
+    "index.md", "decisions-and-scope.md", "art-direction-and-audio.md", "world-and-gameplay.md",
+    "sections-and-controls.md", "donation.md", "shell-and-system-controls.md", "mobile-accessibility.md",
+    "content-runtime-and-hosting.md", "acceptance-and-delivery.md", "sources-and-change-rules.md",
+    "world-production-workflow.md", "framing-and-sprite-comparison.md", "audio-composition-and-budget.md",
+    "build-readiness-and-scope.md", "local-audio-model-research.md", "after-go-workflow.md",
+    "copy-and-input-contract.md", "arrival-and-first-impression.md", "physical-interface-and-review-loop.md",
+    "world-asset-inventory.md", "world-cohesion-revision.md", "inhabited-world-and-experience.md",
+    "dex-account-treasury-and-social-presence.md", "code-donors-and-integration-sources.md",
+    "animation-and-art-donor-catalog.md", "design-reference-and-production-rules.md", "v2-implementation-record.md"
+  ],
+  "legacyDownloads": [
+    "dexClient-Setup-0.1.0.exe", "dexClient-Setup-0.1.0.exe.sha256",
+    "dexSMP-Fabric-26.1.2-Friend-Installer.zip", "dexSMP-Fabric-26.1.2-Friend-Installer.zip.sha256",
+    "Hoshikawa-Haven-Brand-v1.zip", "Hoshikawa-Haven-Brand-v1.zip.sha1", "Hoshikawa-Haven-Brand-v1.zip.sha256"
+  ],
+  "licensePackages": [
+    "react", "react-dom", "scheduler", "phaser", "lucide-react", "marked", "dompurify", "qrcode",
+    "@fontsource/inter", "@fontsource/jetbrains-mono", "livekit-client"
+  ],
+  "excludedPublicPrefixes": ["world/trials/", "assets/art/", "assets/hero/", "assets/portfolio/", "assets/projects/", "assets/brand/"],
+  "externalMounts": [{"route": "/sp13", "owner": "D:/Dex/GameDev/Deploy/SP13/WebGL", "copyIntoRelease": false, "preserveServerRoute": true}]
+}

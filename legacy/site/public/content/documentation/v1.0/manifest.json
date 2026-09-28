@@ -1,0 +1,1623 @@
+{
+  "version": "1.0",
+  "sourceSpecificationVersion": "1.8",
+  "editionId": "dex-place-docs-v1.0",
+  "projectId": "dex-place",
+  "date": "2026-09-08",
+  "status": "public-design-edition",
+  "publicationStatus": "unpublished-candidate",
+  "repairStatus": "active; previous candidate rejected; comparisons unapproved",
+  "documents": [
+    {
+      "slug": "index",
+      "title": "dex.place — world website specification",
+      "versionId": "1.0",
+      "category": "Specification",
+      "headings": [
+        {
+          "id": "dexplace-world-website-specification",
+          "text": "dex.place — world website specification",
+          "level": 1
+        },
+        {
+          "id": "read-order-and-ownership",
+          "text": "Read order and ownership",
+          "level": 2
+        },
+        {
+          "id": "how-to-interpret-this-package",
+          "text": "How to interpret this package",
+          "level": 2
+        },
+        {
+          "id": "conflict-order",
+          "text": "Conflict order",
+          "level": 2
+        },
+        {
+          "id": "scope-at-a-glance",
+          "text": "Scope at a glance",
+          "level": 2
+        },
+        {
+          "id": "finding-a-button-or-behavior",
+          "text": "Finding a button or behavior",
+          "level": 2
+        },
+        {
+          "id": "current-handoff",
+          "text": "Current handoff",
+          "level": 2
+        }
+      ],
+      "sha256": "0f1897976d59ba943088fdf6583a4cf291a14dc3c3ea0a66e1e5b86f68c85ff7",
+      "filename": "index.md"
+    },
+    {
+      "slug": "decisions-and-scope",
+      "title": "Decisions, scope, and change rules",
+      "versionId": "1.0",
+      "category": "Specification",
+      "headings": [
+        {
+          "id": "decisions-scope-and-change-rules",
+          "text": "Decisions, scope, and change rules",
+          "level": 1
+        },
+        {
+          "id": "confirmed-requirement-register",
+          "text": "Confirmed requirement register",
+          "level": 2
+        },
+        {
+          "id": "proposed-baseline-decisions",
+          "text": "Proposed baseline decisions",
+          "level": 2
+        },
+        {
+          "id": "decisions-explicitly-displaced-by-this-conversation",
+          "text": "Decisions explicitly displaced by this conversation",
+          "level": 2
+        },
+        {
+          "id": "out-of-scope-and-deferred-work",
+          "text": "Out of scope and deferred work",
+          "level": 2
+        },
+        {
+          "id": "scope-control-for-future-implementation",
+          "text": "Scope control for future implementation",
+          "level": 2
+        },
+        {
+          "id": "firm-contracts-and-tunable-visual-defaults",
+          "text": "Firm contracts and tunable visual defaults",
+          "level": 3
+        },
+        {
+          "id": "definition-of-a-complete-specification",
+          "text": "Definition of a complete specification",
+          "level": 2
+        }
+      ],
+      "sha256": "e4c4f88865c9877559fe64473e35149fa4b5bb5482cbca7f225ed6badab5ed12",
+      "filename": "decisions-and-scope.md"
+    },
+    {
+      "slug": "art-direction-and-audio",
+      "title": "Art direction, brand, and audio",
+      "versionId": "1.0",
+      "category": "World",
+      "headings": [
+        {
+          "id": "art-direction-brand-and-audio",
+          "text": "Art direction, brand, and audio",
+          "level": 1
+        },
+        {
+          "id": "emotional-and-visual-target",
+          "text": "Emotional and visual target",
+          "level": 2
+        },
+        {
+          "id": "supplied-scale-references-and-what-carries-over",
+          "text": "Supplied scale references and what carries over",
+          "level": 3
+        },
+        {
+          "id": "visual-iteration-policy",
+          "text": "Visual iteration policy",
+          "level": 3
+        },
+        {
+          "id": "brand-and-typography",
+          "text": "Brand and typography",
+          "level": 2
+        },
+        {
+          "id": "proposed-color-tokens",
+          "text": "Proposed color tokens",
+          "level": 2
+        },
+        {
+          "id": "pixel-construction-and-composition",
+          "text": "Pixel construction and composition",
+          "level": 2
+        },
+        {
+          "id": "pixel-scale-evidence-and-authorized-comparison",
+          "text": "Pixel scale evidence and authorized comparison",
+          "level": 3
+        },
+        {
+          "id": "spacious-framing-and-scale-rules",
+          "text": "Spacious framing and scale rules",
+          "level": 3
+        },
+        {
+          "id": "monumental-space-and-breathing-room",
+          "text": "Monumental space and breathing room",
+          "level": 3
+        },
+        {
+          "id": "settled-composed-runtime-checkpoint-source-v15",
+          "text": "Settled composed-runtime checkpoint · source v1.5",
+          "level": 3
+        },
+        {
+          "id": "framing-does-not-waive-animation-quality",
+          "text": "Framing does not waive animation quality",
+          "level": 3
+        },
+        {
+          "id": "independent-player-and-sword-assets",
+          "text": "Independent player and sword assets",
+          "level": 2
+        },
+        {
+          "id": "panels-controls-and-feedback-style",
+          "text": "Panels, controls, and feedback style",
+          "level": 2
+        },
+        {
+          "id": "panel-spacing-and-text-density",
+          "text": "Panel spacing and text density",
+          "level": 3
+        },
+        {
+          "id": "timing-and-motion-vocabulary",
+          "text": "Timing and motion vocabulary",
+          "level": 2
+        },
+        {
+          "id": "audio-direction",
+          "text": "Audio direction",
+          "level": 2
+        },
+        {
+          "id": "provider-and-asset-production-boundary",
+          "text": "Provider and asset-production boundary",
+          "level": 2
+        },
+        {
+          "id": "asset-register-contract",
+          "text": "Asset register contract",
+          "level": 2
+        }
+      ],
+      "sha256": "916cf50117e072de5b35950d21fb4af1307fb1e59e602079d8d82f11cf016534",
+      "filename": "art-direction-and-audio.md"
+    },
+    {
+      "slug": "world-and-gameplay",
+      "title": "World and gameplay specification",
+      "versionId": "1.0",
+      "category": "World",
+      "headings": [
+        {
+          "id": "world-and-gameplay-specification",
+          "text": "World and gameplay specification",
+          "level": 1
+        },
+        {
+          "id": "1-confirmed-direction-and-limits",
+          "text": "1. Confirmed direction and limits",
+          "level": 2
+        },
+        {
+          "id": "2-visual-premise",
+          "text": "2. Visual premise",
+          "level": 2
+        },
+        {
+          "id": "3-map-and-routes",
+          "text": "3. Map and routes",
+          "level": 2
+        },
+        {
+          "id": "4-place-specific-composition",
+          "text": "4. Place-specific composition",
+          "level": 2
+        },
+        {
+          "id": "arrival-causeway",
+          "text": "Arrival Causeway",
+          "level": 3
+        },
+        {
+          "id": "dispatch-terminal-and-arena",
+          "text": "Dispatch Terminal and arena",
+          "level": 3
+        },
+        {
+          "id": "archive",
+          "text": "Archive",
+          "level": 3
+        },
+        {
+          "id": "exhibition-hall",
+          "text": "Exhibition Hall",
+          "level": 3
+        },
+        {
+          "id": "support-alcove",
+          "text": "Support Alcove",
+          "level": 3
+        },
+        {
+          "id": "5-player-movement-and-controls",
+          "text": "5. Player movement and controls",
+          "level": 2
+        },
+        {
+          "id": "6-slice-and-interaction-inventory",
+          "text": "6. Slice and interaction inventory",
+          "level": 2
+        },
+        {
+          "id": "7-boss-encounter-and-file-handoff",
+          "text": "7. Boss encounter and file handoff",
+          "level": 2
+        },
+        {
+          "id": "one-configured-encounter-template",
+          "text": "One configured encounter template",
+          "level": 3
+        },
+        {
+          "id": "download-intent-state",
+          "text": "Download intent state",
+          "level": 3
+        },
+        {
+          "id": "8-camera-sound-and-lifecycle",
+          "text": "8. Camera, sound, and lifecycle",
+          "level": 2
+        },
+        {
+          "id": "9-acceptance-and-remaining-decisions",
+          "text": "9. Acceptance and remaining decisions",
+          "level": 2
+        }
+      ],
+      "sha256": "8aac2275f192b54c5592a52a869e5eb266d4114b369b680d666faaad8165b936",
+      "filename": "world-and-gameplay.md"
+    },
+    {
+      "slug": "sections-and-controls",
+      "title": "Sections, content, and control contracts",
+      "versionId": "1.0",
+      "category": "Interactions",
+      "headings": [
+        {
+          "id": "sections-content-and-control-contracts",
+          "text": "Sections, content, and control contracts",
+          "level": 1
+        },
+        {
+          "id": "1-decision-language-and-boundaries",
+          "text": "1. Decision language and boundaries",
+          "level": 2
+        },
+        {
+          "id": "confirmed-section-intent",
+          "text": "Confirmed section intent",
+          "level": 3
+        },
+        {
+          "id": "2-shared-section-interaction-rules",
+          "text": "2. Shared section interaction rules",
+          "level": 2
+        },
+        {
+          "id": "route-contract",
+          "text": "Route contract",
+          "level": 3
+        },
+        {
+          "id": "panel-focus-and-control-conventions",
+          "text": "Panel, focus, and control conventions",
+          "level": 3
+        },
+        {
+          "id": "3-downloads-place-content-and-transfer",
+          "text": "3. Downloads: place, content, and transfer",
+          "level": 2
+        },
+        {
+          "id": "place-and-visual-arrangement",
+          "text": "Place and visual arrangement",
+          "level": 3
+        },
+        {
+          "id": "content-and-release-authority",
+          "text": "Content and release authority",
+          "level": 3
+        },
+        {
+          "id": "initial-downloadable-content-confirmed-documentation-reward",
+          "text": "Initial downloadable content — confirmed documentation reward",
+          "level": 3
+        },
+        {
+          "id": "download-control-registry",
+          "text": "Download control registry",
+          "level": 3
+        },
+        {
+          "id": "one-file-intent-state-machine",
+          "text": "One-file intent state machine",
+          "level": 3
+        },
+        {
+          "id": "4-documentation-physical-files-and-readable-pages",
+          "text": "4. Documentation: physical files and readable pages",
+          "level": 2
+        },
+        {
+          "id": "place-and-file-behavior",
+          "text": "Place and file behavior",
+          "level": 3
+        },
+        {
+          "id": "documentation-content-contract",
+          "text": "Documentation content contract",
+          "level": 3
+        },
+        {
+          "id": "initial-six-physical-file-destinations",
+          "text": "Initial six physical-file destinations",
+          "level": 3
+        },
+        {
+          "id": "documentation-control-registry",
+          "text": "Documentation control registry",
+          "level": 3
+        },
+        {
+          "id": "5-illustrations-exhibit-hall-and-full-artwork-viewer",
+          "text": "5. Illustrations: exhibit hall and full artwork viewer",
+          "level": 2
+        },
+        {
+          "id": "place-and-presentation",
+          "text": "Place and presentation",
+          "level": 3
+        },
+        {
+          "id": "source-inventory-verified-2026-09-06",
+          "text": "Source inventory verified 2026-09-06",
+          "level": 3
+        },
+        {
+          "id": "illustration-content-contract",
+          "text": "Illustration content contract",
+          "level": 3
+        },
+        {
+          "id": "illustrations-control-registry",
+          "text": "Illustrations control registry",
+          "level": 3
+        },
+        {
+          "id": "6-acceptance-scenarios-and-drift-guard",
+          "text": "6. Acceptance scenarios and drift guard",
+          "level": 2
+        }
+      ],
+      "sha256": "a9f311de23ce4a9829e8827443cc2d4b0fdd3b422267abc00f0eccf9614ea55d",
+      "filename": "sections-and-controls.md"
+    },
+    {
+      "slug": "donation",
+      "title": "Donate: place, panel, amounts, and QR contract",
+      "versionId": "1.0",
+      "category": "Interactions",
+      "headings": [
+        {
+          "id": "donate-place-panel-amounts-and-qr-contract",
+          "text": "Donate: place, panel, amounts, and QR contract",
+          "level": 1
+        },
+        {
+          "id": "confirmed-scope-and-identity",
+          "text": "Confirmed scope and identity",
+          "level": 2
+        },
+        {
+          "id": "the-place-and-first-impression",
+          "text": "The place and first impression",
+          "level": 2
+        },
+        {
+          "id": "panel-composition-and-exact-copy",
+          "text": "Panel composition and exact copy",
+          "level": 2
+        },
+        {
+          "id": "control-inventory",
+          "text": "Control inventory",
+          "level": 2
+        },
+        {
+          "id": "amount-behavior",
+          "text": "Amount behavior",
+          "level": 2
+        },
+        {
+          "id": "slider-mapping-and-precision",
+          "text": "Slider mapping and precision",
+          "level": 3
+        },
+        {
+          "id": "donation-states-and-transitions",
+          "text": "Donation states and transitions",
+          "level": 2
+        },
+        {
+          "id": "qr-content-and-coherence",
+          "text": "QR content and coherence",
+          "level": 2
+        },
+        {
+          "id": "integration-facts-and-open-gates",
+          "text": "Integration facts and open gates",
+          "level": 2
+        },
+        {
+          "id": "visual-mobile-and-access-acceptance",
+          "text": "Visual, mobile, and access acceptance",
+          "level": 2
+        },
+        {
+          "id": "required-verification-before-release",
+          "text": "Required verification before release",
+          "level": 2
+        },
+        {
+          "id": "out-of-scope-unless-separately-approved",
+          "text": "Out of scope unless separately approved",
+          "level": 2
+        }
+      ],
+      "sha256": "a24e4f2dbecdddf39835be6301eb5e0a9a45b7514596796f0d6ca211f9018491",
+      "filename": "donation.md"
+    },
+    {
+      "slug": "shell-and-system-controls",
+      "title": "Shell, navigation, and system controls",
+      "versionId": "1.0",
+      "category": "Interactions",
+      "headings": [
+        {
+          "id": "shell-navigation-and-system-controls",
+          "text": "Shell, navigation, and system controls",
+          "level": 1
+        },
+        {
+          "id": "entry-and-page-structure",
+          "text": "Entry and page structure",
+          "level": 2
+        },
+        {
+          "id": "routes-and-history",
+          "text": "Routes and history",
+          "level": 2
+        },
+        {
+          "id": "global-control-registry",
+          "text": "Global control registry",
+          "level": 2
+        },
+        {
+          "id": "state-and-focus-rules",
+          "text": "State and focus rules",
+          "level": 2
+        },
+        {
+          "id": "loading-and-failure-design",
+          "text": "Loading and failure design",
+          "level": 2
+        },
+        {
+          "id": "preference-and-session-inventory",
+          "text": "Preference and session inventory",
+          "level": 2
+        }
+      ],
+      "sha256": "b9b6544b67fa3295e1553231b4b87770b300bfc217ca739cf2a86286998ae245",
+      "filename": "shell-and-system-controls.md"
+    },
+    {
+      "slug": "mobile-accessibility",
+      "title": "Mobile, input, and accessibility specification",
+      "versionId": "1.0",
+      "category": "Interactions",
+      "headings": [
+        {
+          "id": "mobile-input-and-accessibility-specification",
+          "text": "Mobile, input, and accessibility specification",
+          "level": 1
+        },
+        {
+          "id": "1-confirmed-experience-and-default-approach",
+          "text": "1. Confirmed experience and default approach",
+          "level": 2
+        },
+        {
+          "id": "2-responsive-presentation",
+          "text": "2. Responsive presentation",
+          "level": 2
+        },
+        {
+          "id": "3-touch-control-inventory",
+          "text": "3. Touch control inventory",
+          "level": 2
+        },
+        {
+          "id": "4-keyboard-and-alternative-input",
+          "text": "4. Keyboard and alternative input",
+          "level": 2
+        },
+        {
+          "id": "5-assist-settings",
+          "text": "5. Assist settings",
+          "level": 2
+        },
+        {
+          "id": "6-readable-content-and-assistive-technology",
+          "text": "6. Readable content and assistive technology",
+          "level": 2
+        },
+        {
+          "id": "7-small-device-performance-and-interruption-rules",
+          "text": "7. Small-device performance and interruption rules",
+          "level": 2
+        },
+        {
+          "id": "8-acceptance-checklist",
+          "text": "8. Acceptance checklist",
+          "level": 2
+        }
+      ],
+      "sha256": "0d511540326676c582eb75e9e614c9c56778c7b008a8bbaadc4afd91c22ca10a",
+      "filename": "mobile-accessibility.md"
+    },
+    {
+      "slug": "content-runtime-and-hosting",
+      "title": "Content, runtime, and local hosting contract",
+      "versionId": "1.0",
+      "category": "Production",
+      "headings": [
+        {
+          "id": "content-runtime-and-local-hosting-contract",
+          "text": "Content, runtime, and local hosting contract",
+          "level": 1
+        },
+        {
+          "id": "existing-owner-evidence",
+          "text": "Existing owner evidence",
+          "level": 2
+        },
+        {
+          "id": "proposed-architecture-boundaries",
+          "text": "Proposed architecture boundaries",
+          "level": 2
+        },
+        {
+          "id": "private-authoring-and-reviewed-export-roots",
+          "text": "Private authoring and reviewed export roots",
+          "level": 3
+        },
+        {
+          "id": "public-content-records",
+          "text": "Public content records",
+          "level": 2
+        },
+        {
+          "id": "project-record",
+          "text": "Project record",
+          "level": 3
+        },
+        {
+          "id": "release-downloadable-artifact-record",
+          "text": "Release / downloadable artifact record",
+          "level": 3
+        },
+        {
+          "id": "documentation-record",
+          "text": "Documentation record",
+          "level": 3
+        },
+        {
+          "id": "illustration-record",
+          "text": "Illustration record",
+          "level": 3
+        },
+        {
+          "id": "world-and-encounter-records",
+          "text": "World and encounter records",
+          "level": 3
+        },
+        {
+          "id": "donation-record",
+          "text": "Donation record",
+          "level": 3
+        },
+        {
+          "id": "runtime-state-and-consistency",
+          "text": "Runtime state and consistency",
+          "level": 2
+        },
+        {
+          "id": "loading-and-performance-targets",
+          "text": "Loading and performance targets",
+          "level": 2
+        },
+        {
+          "id": "measured-loading-baseline-and-remaining-performance-work",
+          "text": "Measured loading baseline and remaining performance work",
+          "level": 3
+        },
+        {
+          "id": "implemented-negotiated-text-delivery",
+          "text": "Implemented negotiated text delivery",
+          "level": 3
+        },
+        {
+          "id": "local-hosting-and-delivery",
+          "text": "Local hosting and delivery",
+          "level": 2
+        },
+        {
+          "id": "migration-plan-after-go",
+          "text": "Migration plan after go",
+          "level": 2
+        }
+      ],
+      "sha256": "e00bec34090f7a8e306bd92341c6bb3d2d96823abea3ac8fbc54e56e943ee565",
+      "filename": "content-runtime-and-hosting.md"
+    },
+    {
+      "slug": "acceptance-and-delivery",
+      "title": "Acceptance, proof, and delivery",
+      "versionId": "1.0",
+      "category": "Specification",
+      "headings": [
+        {
+          "id": "acceptance-proof-and-delivery",
+          "text": "Acceptance, proof, and delivery",
+          "level": 1
+        },
+        {
+          "id": "requirement-traceability",
+          "text": "Requirement traceability",
+          "level": 2
+        },
+        {
+          "id": "control-coverage-rule",
+          "text": "Control coverage rule",
+          "level": 2
+        },
+        {
+          "id": "scenario-catalogue",
+          "text": "Scenario catalogue",
+          "level": 2
+        },
+        {
+          "id": "required-visual-and-feel-proof",
+          "text": "Required visual and feel proof",
+          "level": 2
+        },
+        {
+          "id": "device-and-browser-matrix",
+          "text": "Device and browser matrix",
+          "level": 2
+        },
+        {
+          "id": "implementation-milestones-within-the-four-stage-workflow",
+          "text": "Implementation milestones within the four-stage workflow",
+          "level": 2
+        },
+        {
+          "id": "proof-format-and-stop-boundaries",
+          "text": "Proof format and stop boundaries",
+          "level": 2
+        }
+      ],
+      "sha256": "a65200596446759da51366140950c3638c9b2508194c4cd4c930568aa4b0206a",
+      "filename": "acceptance-and-delivery.md"
+    },
+    {
+      "slug": "sources-and-change-rules",
+      "title": "Sources, open items, and change history",
+      "versionId": "1.0",
+      "category": "Specification",
+      "headings": [
+        {
+          "id": "sources-open-items-and-change-history",
+          "text": "Sources, open items, and change history",
+          "level": 1
+        },
+        {
+          "id": "primary-user-decisions-captured",
+          "text": "Primary user decisions captured",
+          "level": 2
+        },
+        {
+          "id": "planning-evidence-snapshot-preserved-history",
+          "text": "Planning evidence snapshot · preserved history",
+          "level": 2
+        },
+        {
+          "id": "historical-implementation-evidence-source-v15",
+          "text": "Historical implementation evidence · source v1.5",
+          "level": 2
+        },
+        {
+          "id": "current-evidence-checkpoint-source18",
+          "text": "Current evidence checkpoint · source1.8",
+          "level": 2
+        },
+        {
+          "id": "external-references-checked",
+          "text": "External references checked",
+          "level": 2
+        },
+        {
+          "id": "open-items-and-their-scope",
+          "text": "Open items and their scope",
+          "level": 2
+        },
+        {
+          "id": "change-record-format",
+          "text": "Change record format",
+          "level": 2
+        },
+        {
+          "id": "handoff-note",
+          "text": "Handoff note",
+          "level": 2
+        }
+      ],
+      "sha256": "b9d56aa71f5ada9ffeb667dd419b7861d6e073662243c312e0882964dba1c406",
+      "filename": "sources-and-change-rules.md"
+    },
+    {
+      "slug": "world-production-workflow",
+      "title": "Coherent asset and modular world production",
+      "versionId": "1.0",
+      "category": "Production",
+      "headings": [
+        {
+          "id": "coherent-asset-and-modular-world-production",
+          "text": "Coherent asset and modular world production",
+          "level": 1
+        },
+        {
+          "id": "1-the-requirement-this-workflow-must-satisfy",
+          "text": "1. The requirement this workflow must satisfy",
+          "level": 2
+        },
+        {
+          "id": "2-proposed-toolchain-and-current-truth",
+          "text": "2. Proposed toolchain and current truth",
+          "level": 2
+        },
+        {
+          "id": "3-make-the-character-coherent-before-expanding-its-actions",
+          "text": "3. Make the character coherent before expanding its actions",
+          "level": 2
+        },
+        {
+          "id": "initial-clip-mapping",
+          "text": "Initial clip mapping",
+          "level": 3
+        },
+        {
+          "id": "4-author-a-level-not-an-interactive-screenshot",
+          "text": "4. Author a level, not an interactive screenshot",
+          "level": 2
+        },
+        {
+          "id": "generate-pieces-then-compose-the-scene",
+          "text": "Generate pieces, then compose the scene",
+          "level": 3
+        },
+        {
+          "id": "map-and-assembly-layers",
+          "text": "Map and assembly layers",
+          "level": 3
+        },
+        {
+          "id": "5-reusable-assemblies",
+          "text": "5. Reusable assemblies",
+          "level": 2
+        },
+        {
+          "id": "terminal-example",
+          "text": "Terminal example",
+          "level": 3
+        },
+        {
+          "id": "elevator-example",
+          "text": "Elevator example",
+          "level": 3
+        },
+        {
+          "id": "cut-cable-and-linked-bridge",
+          "text": "Cut cable and linked bridge",
+          "level": 3
+        },
+        {
+          "id": "6-choose-animation-technique-by-what-actually-changes",
+          "text": "6. Choose animation technique by what actually changes",
+          "level": 2
+        },
+        {
+          "id": "7-source-export-and-revision-contract",
+          "text": "7. Source, export, and revision contract",
+          "level": 2
+        },
+        {
+          "id": "8-one-room-proof-before-whole-world-production",
+          "text": "8. One-room proof before whole-world production",
+          "level": 2
+        },
+        {
+          "id": "interim-flat-platform-material-2026-09-07",
+          "text": "Interim flat platform material · 2026-09-07",
+          "level": 2
+        },
+        {
+          "id": "generated-material-replaces-the-interim-flat-surface",
+          "text": "Generated material replaces the interim flat surface",
+          "level": 3
+        }
+      ],
+      "sha256": "6280d0f49d3d8a04b16c03d598cf782658e51072e37b4be40efb0028dd97b59b",
+      "filename": "world-production-workflow.md"
+    },
+    {
+      "slug": "framing-and-sprite-comparison",
+      "title": "Wide framing and bounded sprite-generation comparison",
+      "versionId": "1.0",
+      "category": "Production",
+      "headings": [
+        {
+          "id": "wide-framing-and-bounded-sprite-generation-comparison",
+          "text": "Wide framing and bounded sprite-generation comparison",
+          "level": 1
+        },
+        {
+          "id": "confirmed-direction",
+          "text": "Confirmed direction",
+          "level": 2
+        },
+        {
+          "id": "framing-rules-and-their-limits",
+          "text": "Framing rules and their limits",
+          "level": 2
+        },
+        {
+          "id": "what-is-being-compared",
+          "text": "What is being compared",
+          "level": 2
+        },
+        {
+          "id": "experiment-boundary",
+          "text": "Experiment boundary",
+          "level": 2
+        },
+        {
+          "id": "fixed-test-brief",
+          "text": "Fixed test brief",
+          "level": 2
+        },
+        {
+          "id": "scoring-and-evidence",
+          "text": "Scoring and evidence",
+          "level": 2
+        },
+        {
+          "id": "outcome-and-attempt-register",
+          "text": "Outcome and attempt register",
+          "level": 2
+        },
+        {
+          "id": "completed-quality-observations",
+          "text": "Completed quality observations",
+          "level": 3
+        },
+        {
+          "id": "dexs-final-review-and-production-decision",
+          "text": "Dex's final review and production decision",
+          "level": 2
+        }
+      ],
+      "sha256": "7a2bc282a2e299bc1df6bb84b8344cd150fe6a304fb6945c0ec8a961eb897c2a",
+      "filename": "framing-and-sprite-comparison.md"
+    },
+    {
+      "slug": "audio-composition-and-budget",
+      "title": "Audio composition, loops, delivery and credit budget",
+      "versionId": "1.0",
+      "category": "Audio",
+      "headings": [
+        {
+          "id": "audio-composition-loops-delivery-and-credit-budget",
+          "text": "Audio composition, loops, delivery and credit budget",
+          "level": 1
+        },
+        {
+          "id": "current-direction-and-runtime-checkpoint",
+          "text": "Current direction and runtime checkpoint",
+          "level": 2
+        },
+        {
+          "id": "historical-v05-production-brief-superseded-musical-plan",
+          "text": "Historical v0.5 production brief · superseded musical plan",
+          "level": 2
+        },
+        {
+          "id": "historical-shared-musical-construction",
+          "text": "Historical shared musical construction",
+          "level": 2
+        },
+        {
+          "id": "historical-cue-sheet-by-place-and-state",
+          "text": "Historical cue sheet by place and state",
+          "level": 2
+        },
+        {
+          "id": "current-event-treatment-and-deferred-encounter-design",
+          "text": "Current event treatment and deferred encounter design",
+          "level": 2
+        },
+        {
+          "id": "historical-ambience-and-effect-request-list",
+          "text": "Historical ambience and effect request list",
+          "level": 2
+        },
+        {
+          "id": "loop-construction-and-transitions",
+          "text": "Loop construction and transitions",
+          "level": 2
+        },
+        {
+          "id": "formats-levels-and-resource-budget",
+          "text": "Formats, levels and resource budget",
+          "level": 2
+        },
+        {
+          "id": "historical-elevenlabs-estimate-reserved-route",
+          "text": "Historical ElevenLabs estimate · reserved route",
+          "level": 2
+        },
+        {
+          "id": "historical-higgsfield-alternative-read-only-quotes-from2026-09-06",
+          "text": "Historical Higgsfield alternative · read-only quotes from2026-09-06",
+          "level": 2
+        },
+        {
+          "id": "rights-and-publication-gate",
+          "text": "Rights and publication gate",
+          "level": 2
+        },
+        {
+          "id": "audio-acceptance-and-authorization",
+          "text": "Audio acceptance and authorization",
+          "level": 2
+        }
+      ],
+      "sha256": "90512b26913cc5a576aba3fcb5efd8a20d5542d32b0ece40f9cd6b8dc41f18b7",
+      "filename": "audio-composition-and-budget.md"
+    },
+    {
+      "slug": "build-readiness-and-scope",
+      "title": "Build readiness and scope closure",
+      "versionId": "1.0",
+      "category": "Production",
+      "headings": [
+        {
+          "id": "build-readiness-and-scope-closure",
+          "text": "Build readiness and scope closure",
+          "level": 1
+        },
+        {
+          "id": "1-current-decision-and-authorization-boundary",
+          "text": "1. Current decision and authorization boundary",
+          "level": 2
+        },
+        {
+          "id": "2-decisions-sufficiently-specified-to-start-after-go",
+          "text": "2. Decisions sufficiently specified to start after go",
+          "level": 2
+        },
+        {
+          "id": "3-fight-route-and-pause-closure",
+          "text": "3. Fight route and pause closure",
+          "level": 2
+        },
+        {
+          "id": "4-local-artifact-proof-versus-public-delivery",
+          "text": "4. Local artifact proof versus public delivery",
+          "level": 2
+        },
+        {
+          "id": "5-one-reviewed-public-documentation-edition",
+          "text": "5. One reviewed public documentation edition",
+          "level": 2
+        },
+        {
+          "id": "explicit-source-allowlist-and-portable-names",
+          "text": "Explicit source allowlist and portable names",
+          "level": 3
+        },
+        {
+          "id": "transformations-and-exclusions",
+          "text": "Transformations and exclusions",
+          "level": 3
+        },
+        {
+          "id": "coverage-and-packaging-proof",
+          "text": "Coverage and packaging proof",
+          "level": 3
+        },
+        {
+          "id": "6-initial-local-gallery-closure",
+          "text": "6. Initial local gallery closure",
+          "level": 2
+        },
+        {
+          "id": "7-media-and-authoring-budgets",
+          "text": "7. Media and authoring budgets",
+          "level": 2
+        },
+        {
+          "id": "8-carry-the-actual-reviewed-spec-into-implementation",
+          "text": "8. Carry the actual reviewed spec into implementation",
+          "level": 2
+        },
+        {
+          "id": "9-work-and-gates-by-phase",
+          "text": "9. Work and gates by phase",
+          "level": 2
+        },
+        {
+          "id": "10-completion-language-and-next-action",
+          "text": "10. Completion language and next action",
+          "level": 2
+        },
+        {
+          "id": "historical-local-integration-and-release-proof-source-v15",
+          "text": "Historical local integration and release proof · source v1.5",
+          "level": 3
+        },
+        {
+          "id": "current-staging-and-rollback-boundary-2026-09-07",
+          "text": "Current staging and rollback boundary ·2026-09-07",
+          "level": 3
+        }
+      ],
+      "sha256": "d4999176d2dfbba22605dab979a6fb06cbafdacc3dd891937e5e069fc3c753a0",
+      "filename": "build-readiness-and-scope.md"
+    },
+    {
+      "slug": "local-audio-model-research",
+      "title": "Local audio: controls, atmosphere and user evidence",
+      "versionId": "1.0",
+      "category": "Audio",
+      "headings": [
+        {
+          "id": "local-audio-controls-atmosphere-and-user-evidence",
+          "text": "Local audio: controls, atmosphere and user evidence",
+          "level": 1
+        },
+        {
+          "id": "practical-recommendation",
+          "text": "Practical recommendation",
+          "level": 2
+        },
+        {
+          "id": "primary-source-capability-comparison",
+          "text": "Primary-source capability comparison",
+          "level": 2
+        },
+        {
+          "id": "actual-user-reports",
+          "text": "Actual user reports",
+          "level": 2
+        },
+        {
+          "id": "other-candidates",
+          "text": "Other candidates",
+          "level": 2
+        },
+        {
+          "id": "fresh-local-inventory",
+          "text": "Fresh local inventory",
+          "level": 2
+        },
+        {
+          "id": "how-we-make-the-result-controllable",
+          "text": "How we make the result controllable",
+          "level": 2
+        },
+        {
+          "id": "bounded-audition-after-go",
+          "text": "Bounded audition after go",
+          "level": 2
+        },
+        {
+          "id": "credits-and-scope",
+          "text": "Credits and scope",
+          "level": 2
+        }
+      ],
+      "sha256": "40c19d50fecdb8183f8cba9b5ea8aaf95040f22c63e3433d0aab8cb0ba6206b6",
+      "filename": "local-audio-model-research.md"
+    },
+    {
+      "slug": "after-go-workflow",
+      "title": "The workflow after go",
+      "versionId": "1.0",
+      "category": "Production",
+      "headings": [
+        {
+          "id": "the-workflow-after-go",
+          "text": "The workflow after go",
+          "level": 1
+        },
+        {
+          "id": "deliverable-and-scope",
+          "text": "Deliverable and scope",
+          "level": 2
+        },
+        {
+          "id": "stage-1-storage-only-when-the-forecast-requires-it",
+          "text": "Stage 1 — Storage only when the forecast requires it",
+          "level": 2
+        },
+        {
+          "id": "establish-the-need",
+          "text": "Establish the need",
+          "level": 3
+        },
+        {
+          "id": "rules-for-selecting-cold-files",
+          "text": "Rules for selecting cold files",
+          "level": 3
+        },
+        {
+          "id": "reversible-archival-after-go",
+          "text": "Reversible archival after go",
+          "level": 3
+        },
+        {
+          "id": "stage-2-reconcile-specification-and-assets",
+          "text": "Stage 2 — Reconcile specification and assets",
+          "level": 2
+        },
+        {
+          "id": "stage-3-complete-implementation-with-bounded-parallel-lanes",
+          "text": "Stage 3 — Complete implementation, with bounded parallel lanes",
+          "level": 2
+        },
+        {
+          "id": "3a-isolated-build-and-usable-shell",
+          "text": "3A. Isolated build and usable shell",
+          "level": 3
+        },
+        {
+          "id": "3b-prove-the-one-room-foundation",
+          "text": "3B. Prove the one-room foundation",
+          "level": 3
+        },
+        {
+          "id": "3c-expand-into-the-whole-place",
+          "text": "3C. Expand into the whole place",
+          "level": 3
+        },
+        {
+          "id": "3d-produce-and-integrate-cohesive-media",
+          "text": "3D. Produce and integrate cohesive media",
+          "level": 3
+        },
+        {
+          "id": "3e-harden-the-integrated-first-version",
+          "text": "3E. Harden the integrated first version",
+          "level": 3
+        },
+        {
+          "id": "stage-4-final-checks-and-a-workable-handoff",
+          "text": "Stage 4 — Final checks and a workable handoff",
+          "level": 2
+        },
+        {
+          "id": "required-complete-user-journey-checks",
+          "text": "Required complete-user-journey checks",
+          "level": 3
+        },
+        {
+          "id": "mobile-coverage-on-every-build-revision",
+          "text": "Mobile coverage on every build revision",
+          "level": 3
+        },
+        {
+          "id": "handoff-and-publication",
+          "text": "Handoff and publication",
+          "level": 3
+        }
+      ],
+      "sha256": "8a8043ad133b773e7588eb2cb05cd981f436676c2adf238aabdc58c4e7d245a3",
+      "filename": "after-go-workflow.md"
+    },
+    {
+      "slug": "copy-and-input-contract",
+      "title": "Visitor copy and required inputs",
+      "versionId": "1.0",
+      "category": "Specification",
+      "headings": [
+        {
+          "id": "visitor-copy-and-required-inputs",
+          "text": "Visitor copy and required inputs",
+          "level": 1
+        },
+        {
+          "id": "1-brand-and-tone",
+          "text": "1. Brand and tone",
+          "level": 2
+        },
+        {
+          "id": "2-closed-visitor-copy-contract",
+          "text": "2. Closed visitor-copy contract",
+          "level": 2
+        },
+        {
+          "id": "3-internal-direction-is-not-a-visitor-tagline",
+          "text": "3. Internal direction is not a visitor tagline",
+          "level": 2
+        },
+        {
+          "id": "4-copy-audit-recorded-in-this-pass",
+          "text": "4. Copy audit recorded in this pass",
+          "level": 2
+        },
+        {
+          "id": "5-inputs-already-sufficient-for-the-local-build",
+          "text": "5. Inputs already sufficient for the local build",
+          "level": 2
+        },
+        {
+          "id": "6-later-evidence-and-optional-inputs",
+          "text": "6. Later evidence and optional inputs",
+          "level": 2
+        },
+        {
+          "id": "7-verification-during-implementation",
+          "text": "7. Verification during implementation",
+          "level": 2
+        }
+      ],
+      "sha256": "425ce149ea0533bff674e7d1b624b065077bb17e942413e98e63f89aac13597a",
+      "filename": "copy-and-input-contract.md"
+    },
+    {
+      "slug": "arrival-and-first-impression",
+      "title": "Arrival, loading, and the first minute",
+      "versionId": "1.0",
+      "category": "World",
+      "headings": [
+        {
+          "id": "arrival-loading-and-the-first-minute",
+          "text": "Arrival, loading, and the first minute",
+          "level": 1
+        },
+        {
+          "id": "1-first-paint-a-signal-in-the-dark",
+          "text": "1. First paint: a signal in the dark",
+          "level": 2
+        },
+        {
+          "id": "2-ready-reveal-the-causeway",
+          "text": "2. Ready: reveal the causeway",
+          "level": 2
+        },
+        {
+          "id": "3-taking-control",
+          "text": "3. Taking control",
+          "level": 2
+        },
+        {
+          "id": "4-the-first-minute-after-taking-control",
+          "text": "4. The first minute after taking control",
+          "level": 2
+        },
+        {
+          "id": "5-sound-and-ambient-motion",
+          "text": "5. Sound and ambient motion",
+          "level": 2
+        },
+        {
+          "id": "6-loading-return-and-interruption-cases",
+          "text": "6. Loading, return and interruption cases",
+          "level": 2
+        },
+        {
+          "id": "7-phone-and-tablet-arrival",
+          "text": "7. Phone and tablet arrival",
+          "level": 2
+        },
+        {
+          "id": "8-acceptance-and-production-evidence",
+          "text": "8. Acceptance and production evidence",
+          "level": 2
+        },
+        {
+          "id": "source-v15-evidence-checkpoint",
+          "text": "Source v1.5 evidence checkpoint",
+          "level": 3
+        }
+      ],
+      "sha256": "ea6c7ad83a8910a9d913e1fc941005602f364da1c411d5dfd5fe47c00ef2b93a",
+      "filename": "arrival-and-first-impression.md"
+    },
+    {
+      "slug": "physical-interface-and-review-loop",
+      "title": "Physical interfaces and the build-review loop",
+      "versionId": "1.0",
+      "category": "World",
+      "headings": [
+        {
+          "id": "physical-interfaces-and-the-build-review-loop",
+          "text": "Physical interfaces and the build-review loop",
+          "level": 1
+        },
+        {
+          "id": "confirmed-direction",
+          "text": "Confirmed direction",
+          "level": 2
+        },
+        {
+          "id": "action-assignment",
+          "text": "Action assignment",
+          "level": 2
+        },
+        {
+          "id": "the-slash-open-banner",
+          "text": "The slash-open banner",
+          "level": 2
+        },
+        {
+          "id": "read-build-step-back-inspect-replace",
+          "text": "Read, build, step back, inspect, replace",
+          "level": 2
+        },
+        {
+          "id": "finish-line-and-honest-proof",
+          "text": "Finish line and honest proof",
+          "level": 2
+        },
+        {
+          "id": "composed-implementation-checkpoint-source-v15",
+          "text": "Composed implementation checkpoint · source v1.5",
+          "level": 3
+        }
+      ],
+      "sha256": "f4072540211c5b496f7d2c15eb27594f07001f609e0d2797d9d981a1b5e1a647",
+      "filename": "physical-interface-and-review-loop.md"
+    },
+    {
+      "slug": "world-asset-inventory",
+      "title": "World asset inventory",
+      "versionId": "1.0",
+      "category": "Production",
+      "headings": [
+        {
+          "id": "world-asset-inventory",
+          "text": "World asset inventory",
+          "level": 1
+        },
+        {
+          "id": "production-and-counting-rules",
+          "text": "Production and counting rules",
+          "level": 2
+        },
+        {
+          "id": "per-asset-scale-and-production-record",
+          "text": "Per-asset scale and production record",
+          "level": 2
+        },
+        {
+          "id": "roster",
+          "text": "Roster",
+          "level": 2
+        },
+        {
+          "id": "initial-actual-status-preserved-v13-history",
+          "text": "Initial actual status · preserved v1.3 history",
+          "level": 2
+        },
+        {
+          "id": "earlier-integration-checkpoint-source-v15",
+          "text": "Earlier integration checkpoint · source v1.5",
+          "level": 2
+        },
+        {
+          "id": "earlier-room-repair-source-v16",
+          "text": "Earlier room repair · source v1.6",
+          "level": 2
+        },
+        {
+          "id": "superseded-flat-platform-checkpoint-source-v17",
+          "text": "Superseded flat platform checkpoint · source v1.7",
+          "level": 2
+        },
+        {
+          "id": "generated-fg01-v4-material-source-v18",
+          "text": "Generated FG01 v4 material · source v1.8",
+          "level": 2
+        },
+        {
+          "id": "p21-and-native-hardware-current-source-v18",
+          "text": "P21 and native hardware · current source v1.8",
+          "level": 2
+        }
+      ],
+      "sha256": "651c896f384422186f365a81de319bf4f2f87b704c391892494d1fbd78452e28",
+      "filename": "world-asset-inventory.md"
+    },
+    {
+      "slug": "world-cohesion-revision",
+      "title": "World repair after Dex's playtest",
+      "versionId": "1.0",
+      "category": "World",
+      "headings": [
+        {
+          "id": "world-repair-after-dexs-playtest",
+          "text": "World repair after Dex's playtest",
+          "level": 1
+        },
+        {
+          "id": "latest-device-and-integrated-sound-checkpoint-2026-09-08",
+          "text": "Latest device and integrated-sound checkpoint ·2026-09-08",
+          "level": 2
+        },
+        {
+          "id": "what-failed-in-the-actual-experience",
+          "text": "What failed in the actual experience",
+          "level": 2
+        },
+        {
+          "id": "repair-priorities",
+          "text": "Repair priorities",
+          "level": 2
+        },
+        {
+          "id": "current-decisions-versus-pending-implementation",
+          "text": "Current decisions versus pending implementation",
+          "level": 2
+        },
+        {
+          "id": "working-spatial-and-musical-direction",
+          "text": "Working spatial and musical direction",
+          "level": 2
+        },
+        {
+          "id": "latest-direct-playtest-steering-2026-09-07",
+          "text": "Latest direct playtest steering · 2026-09-07",
+          "level": 3
+        },
+        {
+          "id": "concrete-mechanism-and-traversal-revision",
+          "text": "Concrete mechanism and traversal revision",
+          "level": 2
+        },
+        {
+          "id": "current-material-gallery-and-movement-checkpoint",
+          "text": "Current material, gallery and movement checkpoint",
+          "level": 3
+        },
+        {
+          "id": "complete-current-route-and-accessibility-proof-2026-09-08",
+          "text": "Complete current-route and accessibility proof ·2026-09-08",
+          "level": 3
+        },
+        {
+          "id": "first-composition-review",
+          "text": "First composition review",
+          "level": 2
+        },
+        {
+          "id": "original-melody-revision-2026-09-07",
+          "text": "Original melody revision · 2026-09-07",
+          "level": 2
+        },
+        {
+          "id": "suno-arrangement-refinement",
+          "text": "Suno arrangement refinement",
+          "level": 3
+        }
+      ],
+      "sha256": "4f7602d46be2001221470bcb8e8752b9bf7a87e2e1539d080d385fecf859e85d",
+      "filename": "world-cohesion-revision.md"
+    }
+  ],
+  "physicalFiles": [
+    {
+      "id": "archive.file.controls.01",
+      "projectId": "dex-place",
+      "slug": "shell-and-system-controls",
+      "headingId": "global-control-registry",
+      "versionId": "1.0",
+      "title": "Controls",
+      "url": "/documentation/dex-place/shell-and-system-controls?version=1.0#global-control-registry"
+    },
+    {
+      "id": "archive.file.movement.01",
+      "projectId": "dex-place",
+      "slug": "world-and-gameplay",
+      "headingId": "5-player-movement-and-controls",
+      "versionId": "1.0",
+      "title": "Movement",
+      "url": "/documentation/dex-place/world-and-gameplay?version=1.0#5-player-movement-and-controls"
+    },
+    {
+      "id": "archive.file.downloads.01",
+      "projectId": "dex-place",
+      "slug": "sections-and-controls",
+      "headingId": "3-downloads-place-content-and-transfer",
+      "versionId": "1.0",
+      "title": "Downloads",
+      "url": "/documentation/dex-place/sections-and-controls?version=1.0#3-downloads-place-content-and-transfer"
+    },
+    {
+      "id": "archive.file.illustrations.01",
+      "projectId": "dex-place",
+      "slug": "sections-and-controls",
+      "headingId": "5-illustrations-exhibit-hall-and-full-artwork-viewer",
+      "versionId": "1.0",
+      "title": "Illustrations",
+      "url": "/documentation/dex-place/sections-and-controls?version=1.0#5-illustrations-exhibit-hall-and-full-artwork-viewer"
+    },
+    {
+      "id": "archive.file.donate.01",
+      "projectId": "dex-place",
+      "slug": "donation",
+      "headingId": "amount-behavior",
+      "versionId": "1.0",
+      "title": "Donate",
+      "url": "/documentation/dex-place/donation?version=1.0#amount-behavior"
+    },
+    {
+      "id": "archive.file.accessibility.01",
+      "projectId": "dex-place",
+      "slug": "mobile-accessibility",
+      "headingId": "5-assist-settings",
+      "versionId": "1.0",
+      "title": "Accessibility",
+      "url": "/documentation/dex-place/mobile-accessibility?version=1.0#5-assist-settings"
+    }
+  ]
+}

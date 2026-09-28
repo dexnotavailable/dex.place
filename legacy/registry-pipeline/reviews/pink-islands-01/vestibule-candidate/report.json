@@ -1,0 +1,66 @@
+{
+  "status": "converted-invariants-pass-visual-review-required",
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\vestibule-structure-keyed-v1.png",
+  "sourceSha256": "865151b8cc8d26d03303bfd518a04881056a5a82a7c9650c104eabaf3ae0f8c4",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\vestibule-candidate\\alpha.png",
+  "toolSha256": "f9e3c52ca163989dd2f920d075b8f4da7164041e19280291f6e271d0880c8266",
+  "outputSha256": "ba7979566d5afd17f24b77b28d53069681cc1f9373210ac6c318c6d83ba8cc76",
+  "size": [
+    1672,
+    941
+  ],
+  "settings": {
+    "keyRgb": [
+      255,
+      0,
+      255
+    ],
+    "keyTolerance": 32,
+    "minDominance": 220,
+    "edgeBandPx": 3,
+    "cleanDominance": 35,
+    "actualKeyMedianRgb": [
+      241.0,
+      1.0,
+      252.0
+    ],
+    "protectRects": [
+      [
+        0,
+        685,
+        1672,
+        941
+      ]
+    ],
+    "explicitSpillRois": [
+      [
+        0,
+        0,
+        250,
+        685
+      ],
+      [
+        1480,
+        0,
+        1672,
+        685
+      ]
+    ]
+  },
+  "trueBackgroundPixels": 222077,
+  "edgeBandPixels": 15438,
+  "edgeCandidates": 7786,
+  "edgeCandidatesWithoutCleanNeighbour": 0,
+  "edgeRgbChangedPixels": 7679,
+  "outsideBandInteriorPixels": 1335837,
+  "outsideBandInteriorUnchanged": false,
+  "outsideDeclaredCorrectionRegionUnchanged": true,
+  "explicitSpillIslandPixels": 25,
+  "protectedUnchangedAndOpaque": true,
+  "protectedNearKeyPixelsKept": 0,
+  "remainingPurpleInteriorPixels": 26,
+  "remainingPurpleInteriorPolicy": "Unselected interiors preserved. Legitimate purple and painted key reflections cannot be distinguished by hue alone; explicit foliage ROIs need reference inspection and floor reflections need separate retouch.",
+  "sourceUnchanged": true,
+  "roiReports": [],
+  "limits": "Near-key false positives remain possible; inspect masks. No cloud processing, global desaturation, interior softening, or runtime publication."
+}

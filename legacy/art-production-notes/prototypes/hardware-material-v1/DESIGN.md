@@ -1,0 +1,10 @@
+# Hardware material correction
+
+2026-09-07, before this lane edits materials. Dex identified generated-looking and SVG/placeholder-looking objects mixed in the same scene. Root supplied one new built-in generated bridge mast, P21. This pass replaces the large flat-colored mechanism bodies with registered native raster material while preserving the verified physical outcomes.
+
+- Bridge: retain192px rigid deck, hinge4920,960, fixed eye(-24,-130), deck eye(72,0), cut fraction.9 and all timing/collision. Measured P21 opaque bbox63,126–708,1938; source boss center about396.9,503.3. Attachment-based nearly uniform integer export58×164 maps boss to30,34. Placing it at(-54,-164) preserves the fixed eye and footy0. No blind stretching to the former rectangle width. Source/crop/key/nearest export remains reproducible.
+- Lift: preserve fixed-frame geometry, bank anchors,192px deck,1120/832 stops and exact carry. Replace broad flat rectangle faces with native P10/FG05 material crops, independently assembled guides, caps, crossmembers and shoes. Do not reintroduce the disconnected full-strip belt appearance.
+- Banner: preserve pole/latch/canvas/DOM geometry and animation timing. Give the pole and substantial latch housing real native metal surfaces using existing material crops; keep small state indicators and the actual rotating latch/action visible.
+- Do not regenerate tiny indicator pixels, light masks or rope primitives just because they are code-drawn. No whole sheet, silhouette-only substitute, new gameplay action or altered personal artwork. P21 is a new independent source role: the library becomes51, not an inflated or silently relabelled50. Native crop/repeat variants do not add source roles.
+
+Keep before material captures and raw source. Inspect at real gameplay size and in motion; repeat actual cut/cross and lift carry/state proof after replacement. This is a local material candidate until integrated review, not whole-site acceptance. Root owns user-spec reconciliation and any further focused image generation.

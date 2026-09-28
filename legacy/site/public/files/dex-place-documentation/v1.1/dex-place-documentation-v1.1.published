@@ -1,0 +1,9 @@
+{
+  "edition": "1.1",
+  "sourceSpecification": "2.1",
+  "publishedAt": "2026-09-08T16:00:46.565395+00:00",
+  "releaseId": "inhabited-20260908-c",
+  "bytes": 312386,
+  "sha256": "ed6a5ffc159bfc7645c0759215275bbbb3f51f3ee883be7f6d171271eacaf58a",
+  "proof": "Verified normal public HTTPS browser download; candidate-c-review/public-brave-proof.json"
+}

@@ -1,0 +1,103 @@
+{
+  "status": "pass",
+  "verifiedAt": "2026-09-06T17:07:13.135Z",
+  "origin": "http://127.0.0.1:5188",
+  "requestOverrides": false,
+  "scope": "Core live room/navigation/reader/gallery/direct-download compatibility; no repeated full-route game suite.",
+  "profiles": [
+    {
+      "profile": "firefox-desktop",
+      "engine": "firefox",
+      "browserVersion": "153.0",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "mobileEmulation": false,
+      "checks": 7,
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "download": {
+        "filename": "dex-place-documentation-v1.0.zip",
+        "bytes": 198472,
+        "sha256": "366cf8cd5dc9ce1495325dda045a3f106b8924f57ae70972fb3f67ca2a3af3c1",
+        "downloadPath": "D:/Dex/Projects/dex-place-art-production/provenance/cross-engine-live-v6-20260906/firefox-desktop-documentation.zip"
+      }
+    },
+    {
+      "profile": "webkit-ipad",
+      "engine": "webkit",
+      "browserVersion": "26.5",
+      "viewport": {
+        "width": 820,
+        "height": 1180
+      },
+      "mobileEmulation": true,
+      "checks": 7,
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "download": {
+        "filename": "dex-place-documentation-v1.0.zip",
+        "bytes": 198472,
+        "sha256": "366cf8cd5dc9ce1495325dda045a3f106b8924f57ae70972fb3f67ca2a3af3c1",
+        "downloadPath": "D:/Dex/Projects/dex-place-art-production/provenance/cross-engine-live-v6-20260906/webkit-ipad-documentation.zip"
+      }
+    },
+    {
+      "profile": "webkit-phone",
+      "engine": "webkit",
+      "browserVersion": "26.5",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mobileEmulation": true,
+      "checks": 7,
+      "pageErrors": [],
+      "consoleErrors": [],
+      "httpErrors": [],
+      "download": {
+        "filename": "dex-place-documentation-v1.0.zip",
+        "bytes": 198472,
+        "sha256": "366cf8cd5dc9ce1495325dda045a3f106b8924f57ae70972fb3f67ca2a3af3c1",
+        "downloadPath": "D:/Dex/Projects/dex-place-art-production/provenance/cross-engine-live-v6-20260906/webkit-phone-documentation.zip"
+      }
+    }
+  ],
+  "visualReview": {
+    "framesViewed": 6,
+    "archive": "Final deep inset and low localized lighting render in Firefox desktop and WebKit iPad/phone.",
+    "support": "M10/rib and water are visibly revealed through the room opening in all three profiles; no opaque wall hiding the view.",
+    "meaning": "Cross-engine rendering evidence, not a new blanket taste acceptance."
+  },
+  "sourceHashesBefore": {
+    "public/world/maps/causeway.json": "abb8c3714388c63135da04202de3441aaed0c23931f408852c64de6c9c5c103a",
+    "public/world/scene-assets.json": "07ebc749d279ab26346585900c8fb51476144bf35a520c5dc9cc057348a5bdc4",
+    "public/world/preview/manifest.json": "1d3d2eec986a900c799760ebcec533238ff7cd9eac59e1248f8bbf8602a0e086",
+    "public/files/dex-place-documentation/v1.0/release.json": "ad80cda92976cad0be46e22795880690558969c325274b5a0bcd863b7f4c3539",
+    "src/worldsite/game/WorldScene.ts": "b89c81b6e07d13d6006a4fd3aaefd841eaf1f1f6f0f1ae6d6c265a4b56fcbdba",
+    "src/worldsite/game/environment.ts": "8988e299b623690cd755e4598c4c0a598128d469c96f27368dc0953d29b83204",
+    "src/worldsite/main.tsx": "5ceac9a81a6fbf9e440c9242cefe1129ac49e3de075adc8fa2aab8d6a737c180",
+    "src/worldsite/arrival.css": "609f22d92c46748a5bfacb5dad442f2d059c86c36354fe1bdc49f965a8f97795"
+  },
+  "sourceHashesAfter": {
+    "public/world/maps/causeway.json": "abb8c3714388c63135da04202de3441aaed0c23931f408852c64de6c9c5c103a",
+    "public/world/scene-assets.json": "07ebc749d279ab26346585900c8fb51476144bf35a520c5dc9cc057348a5bdc4",
+    "public/world/preview/manifest.json": "1d3d2eec986a900c799760ebcec533238ff7cd9eac59e1248f8bbf8602a0e086",
+    "public/files/dex-place-documentation/v1.0/release.json": "ad80cda92976cad0be46e22795880690558969c325274b5a0bcd863b7f4c3539",
+    "src/worldsite/game/WorldScene.ts": "b89c81b6e07d13d6006a4fd3aaefd841eaf1f1f6f0f1ae6d6c265a4b56fcbdba",
+    "src/worldsite/game/environment.ts": "8988e299b623690cd755e4598c4c0a598128d469c96f27368dc0953d29b83204",
+    "src/worldsite/main.tsx": "5ceac9a81a6fbf9e440c9242cefe1129ac49e3de075adc8fa2aab8d6a737c180",
+    "src/worldsite/arrival.css": "609f22d92c46748a5bfacb5dad442f2d059c86c36354fe1bdc49f965a8f97795"
+  },
+  "sourceHashesUnchanged": true,
+  "limitations": [
+    "Playwright Firefox/WebKit binaries on Windows; WebKit iPad/phone are viewport/touch emulation, not physical Safari or Samsung Internet.",
+    "No public origin test, installation or source mutation performed.",
+    "Cached CLI wanted newer browser revisions; switched to the existing project Playwright1.62.1 runtime matching installed1538/2336 binaries.",
+    "Initial harness shorthand v6 expectation corrected to the actual v6-room-repair manifest label; retained separately as a harness-only precheck, not an app failure."
+  ],
+  "browserProcessesClosed": true
+}

@@ -1,0 +1,64 @@
+{
+  "download": {
+    "productId": "dex-place-documentation",
+    "releaseId": "docs-v1.1",
+    "artifactId": "website-docs-zip",
+    "title": "website documentation",
+    "summary": "The design, interactions and production notes for dex.place.",
+    "version": "1.1",
+    "filename": "dex-place-documentation-v1.1.zip",
+    "bytes": 312386,
+    "sha256": "ed6a5ffc159bfc7645c0759215275bbbb3f51f3ee883be7f6d171271eacaf58a",
+    "url": "/files/dex-place-documentation/v1.1/dex-place-documentation-v1.1.zip",
+    "publicUrl": "https://dex.place/files/dex-place-documentation/v1.1/dex-place-documentation-v1.1.zip",
+    "format": "ZIP",
+    "platforms": [
+      "all"
+    ],
+    "arch": "all",
+    "status": "available",
+    "documentationUrl": "/documentation/dex-place/index?version=1.1"
+  },
+  "releases": [
+    {
+      "productId": "dex-place-documentation",
+      "releaseId": "docs-v1.1",
+      "artifactId": "website-docs-zip",
+      "title": "website documentation",
+      "summary": "The design, interactions and production notes for dex.place.",
+      "version": "1.1",
+      "filename": "dex-place-documentation-v1.1.zip",
+      "bytes": 312386,
+      "sha256": "ed6a5ffc159bfc7645c0759215275bbbb3f51f3ee883be7f6d171271eacaf58a",
+      "url": "/files/dex-place-documentation/v1.1/dex-place-documentation-v1.1.zip",
+      "publicUrl": "https://dex.place/files/dex-place-documentation/v1.1/dex-place-documentation-v1.1.zip",
+      "format": "ZIP",
+      "platforms": [
+        "all"
+      ],
+      "arch": "all",
+      "status": "available",
+      "documentationUrl": "/documentation/dex-place/index?version=1.1"
+    },
+    {
+      "productId": "dex-place-documentation",
+      "releaseId": "docs-v1.0",
+      "artifactId": "website-docs-zip",
+      "title": "website documentation",
+      "summary": "The design, interactions and production notes for dex.place.",
+      "version": "1.0",
+      "filename": "dex-place-documentation-v1.0.zip",
+      "bytes": 226602,
+      "sha256": "02b8b3f26c3c83c299274be52689f21cc921dbd559561d7a885797102ab85134",
+      "url": "/files/dex-place-documentation/v1.0/dex-place-documentation-v1.0.zip",
+      "publicUrl": "https://dex.place/files/dex-place-documentation/v1.0/dex-place-documentation-v1.0.zip",
+      "format": "ZIP",
+      "platforms": [
+        "all"
+      ],
+      "arch": "all",
+      "status": "available",
+      "documentationUrl": "/documentation/dex-place/index?version=1.0"
+    }
+  ]
+}

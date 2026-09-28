@@ -1,0 +1,82 @@
+{
+  "rest-structure": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\rest-foliage-final\\alpha.png",
+    "sha256": "7517656249d9a9e1abf8237206b23bc4cb5e1d4f5570b2aa7c9aab86f349479e",
+    "source": "layers/rest-structure-keyed-v1.png",
+    "operation": "Existing boundary-alpha base; replace only visible strong-magenta pixels in explicit visually compared foliage ROIs with local key-unmixed candidate; every other RGBA byte unchanged",
+    "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\rest-foliage-final\\report.json",
+    "baseProcessedSha256": "6dd7f6e2bf7f1cb44fc446f89e82ff9d828961fc376dacfb61139d05e53bba97"
+  },
+  "registry-structure": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\registry-foliage-final\\alpha.png",
+    "sha256": "b5894dab7e56be505af5f8ffe9777e88ee888f6aa54a4165a0de1a161ecd859d",
+    "source": "layers/registry-structure-keyed-v1.png",
+    "operation": "Existing boundary-alpha base; replace only visible strong-magenta pixels in explicit visually compared foliage ROIs with local key-unmixed candidate; every other RGBA byte unchanged",
+    "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\registry-foliage-final\\report.json",
+    "baseProcessedSha256": "8ee9f07b20009e82b582b12f431e9136a6b3854a655fed25aa27974c2b881ecc"
+  },
+  "junction-structure": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\junction-foliage-final\\alpha.png",
+    "sha256": "5964d98783ecbb5489dcf032de121c483d8f45987a79b6f4835d85a0a2fad342",
+    "source": "layers/junction-structure-keyed-v1.png",
+    "operation": "Existing boundary-alpha base; replace only visible strong-magenta pixels in explicit visually compared foliage ROIs with local key-unmixed candidate; every other RGBA byte unchanged",
+    "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\junction-foliage-final\\report.json",
+    "baseProcessedSha256": "cfc9c35db8184b04bf643b0d8eee44af75bac6de19005df94b95fc36cfc8c389"
+  },
+  "vestibule-structure": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\vestibule-foliage-final\\alpha.png",
+    "sha256": "ba7979566d5afd17f24b77b28d53069681cc1f9373210ac6c318c6d83ba8cc76",
+    "source": "layers/vestibule-structure-keyed-v1.png",
+    "operation": "Existing boundary-alpha base; replace only visible strong-magenta pixels in explicit visually compared foliage ROIs with local key-unmixed candidate; every other RGBA byte unchanged",
+    "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\vestibule-foliage-final\\report.json",
+    "baseProcessedSha256": "10e079775d4f4280dbd2a6a179acf83ddc50326530c09a31dba1c2267cee3593"
+  },
+  "archive-structure": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\archive-foliage-final\\alpha.png",
+    "sha256": "f4f30858f43762656eba2a7f8cc7768b0f4f82e4e4a162672859a7e4f46996ee",
+    "source": "layers/archive-structure-keyed-v1.png",
+    "operation": "Existing boundary-alpha base; replace only visible strong-magenta pixels in explicit visually compared foliage ROIs with local key-unmixed candidate; every other RGBA byte unchanged",
+    "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\archive-foliage-final\\report.json",
+    "baseProcessedSha256": "ea2e07f8e9d6749c1f6cca19ecf19ce9ea2bbb3b8520eddbe4bb4216243828cf"
+  },
+  "pool-structure": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\pool-foliage-final\\alpha.png",
+    "sha256": "6e014fed13c5d9498ec8c35c5459461d640546af0b7bf80056067bc4c2366f60",
+    "source": "layers/pool-structure-keyed-v1.png",
+    "operation": "Existing boundary-alpha base; replace only visible strong-magenta pixels in explicit visually compared foliage ROIs with local key-unmixed candidate; every other RGBA byte unchanged",
+    "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\pool-foliage-final\\report.json",
+    "baseProcessedSha256": "0395425c49286e347fd36cd494e4159141ede905b15bdf1246ff54d419139a56"
+  },
+  "sky-walk-structure": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\sky-walk-foliage-final\\alpha.png",
+    "sha256": "5a9db172b2c7464fa8b27b5fc50ad005655593e9a6db27d985dec0ee809261fe",
+    "source": "layers/sky-walk-structure-keyed-v1.png",
+    "operation": "Existing boundary-alpha base; replace only visible strong-magenta pixels in explicit visually compared foliage ROIs with local key-unmixed candidate; every other RGBA byte unchanged",
+    "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\sky-walk-foliage-final\\report.json",
+    "baseProcessedSha256": "a5790f6c313a756bbfd7235ea8d466c573274a635f60208bbea0c1dfa8b6820f"
+  },
+  "exhibit-structure": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\exhibit-foliage-final\\alpha.png",
+    "sha256": "fb652b9ac484393234eb7b36ffcdbfb24002a4811cd6d84c1a166bd80a39da5b",
+    "source": "layers/exhibit-structure-keyed-v1.png",
+    "operation": "Existing boundary-alpha base; replace only visible strong-magenta pixels in explicit visually compared foliage ROIs with local key-unmixed candidate; every other RGBA byte unchanged",
+    "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\exhibit-foliage-final\\report.json",
+    "baseProcessedSha256": "8f5c96984e9cef4fed1df706891eba02ef07981a8c631db1af0ae6c981c134e1"
+  },
+  "courtyard-structure": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\courtyard-foliage-final\\alpha.png",
+    "sha256": "172f7f4482eb95ccecdb43403c4643161f946e8ba8ccc05d91df4bb7e4bd1421",
+    "source": "layers/courtyard-structure-keyed-v1.png",
+    "operation": "Existing boundary-alpha base; replace only visible strong-magenta pixels in explicit visually compared foliage ROIs with local key-unmixed candidate; every other RGBA byte unchanged",
+    "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\courtyard-foliage-final\\report.json",
+    "baseProcessedSha256": "a0dfe90bdc4d90657e9884d53ccd893c2a165bcd56dbd334fc2d5e90967d5a5f"
+  },
+  "low-passage-structure": {
+    "path": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\low-passage-patched\\alpha.png",
+    "sha256": "882338619e1ca04ef2ea3c4022f0644af5370db339563ece9092c2d33a0ffd54",
+    "source": "exports/low-passage-floor-patched-keyed-v2.png",
+    "operation": "Two exact authorized generated floor patches; remaining keyed-source pixels unchanged; boundary key with solid floor protected",
+    "review": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\low-floor-patch.json",
+    "baseProcessedSha256": "c312dd33d8fcf08029ba9a9509eae6f7b20aecf8061a84ccac93fa6a2f8350da"
+  }
+}

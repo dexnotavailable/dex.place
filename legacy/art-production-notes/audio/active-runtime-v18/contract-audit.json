@@ -1,0 +1,278 @@
+{
+  "date": "2026-09-06T22:48:30.622Z",
+  "pass": true,
+  "oldGuard": "04c4d740672e3de284fef381579b0d145dcbaaa0707a722eff2891141196cf16",
+  "newGuard": "6cab10733c57118e52d0f6328528a9720d8e169acbda1028a02b075b4f1b5f88",
+  "requirements": {
+    "required": {
+      "music": [
+        "support"
+      ],
+      "ambience": [
+        "exterior",
+        "interior"
+      ],
+      "effects": [
+        "cable-cut",
+        "confirm",
+        "hit-metal",
+        "landing",
+        "lift-dock",
+        "lift-start",
+        "paper-open",
+        "slash-1",
+        "slash-2",
+        "step-concrete-1",
+        "step-concrete-2",
+        "step-metal-1",
+        "step-metal-2"
+      ]
+    },
+    "effectContractSha256": "6cab10733c57118e52d0f6328528a9720d8e169acbda1028a02b075b4f1b5f88",
+    "encountersConfigured": false,
+    "materials": [
+      "concrete",
+      "metal"
+    ],
+    "objectKinds": [
+      "banner",
+      "bridge",
+      "cable",
+      "donate",
+      "file",
+      "gallery",
+      "home",
+      "landing",
+      "lift",
+      "terminal"
+    ],
+    "regionLabels": [
+      "Arrival",
+      "Dispatch passage",
+      "Dispatch",
+      "Archive descent",
+      "Archive",
+      "Exhibition lift shaft",
+      "Exhibition",
+      "Support descent",
+      "Support"
+    ],
+    "plans": [
+      {
+        "region": "arrival",
+        "content": "none",
+        "music": "support",
+        "ambience": "exterior"
+      },
+      {
+        "region": "arrival",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "arrival",
+        "content": "panel",
+        "music": "support",
+        "ambience": "exterior"
+      },
+      {
+        "region": "arrival",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "dispatch",
+        "content": "none",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "dispatch",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "dispatch",
+        "content": "panel",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "dispatch",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "archive",
+        "content": "none",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "archive",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "archive",
+        "content": "panel",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "archive",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "gallery",
+        "content": "none",
+        "music": "support",
+        "ambience": "exterior"
+      },
+      {
+        "region": "gallery",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "gallery",
+        "content": "panel",
+        "music": "support",
+        "ambience": "exterior"
+      },
+      {
+        "region": "gallery",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "support",
+        "content": "none",
+        "music": "support",
+        "ambience": "interior"
+      },
+      {
+        "region": "support",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "support",
+        "content": "panel",
+        "music": "support",
+        "ambience": "interior"
+      },
+      {
+        "region": "support",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "transition",
+        "content": "none",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "transition",
+        "content": "reader",
+        "music": null,
+        "ambience": null
+      },
+      {
+        "region": "transition",
+        "content": "panel",
+        "music": null,
+        "ambience": "interior"
+      },
+      {
+        "region": "transition",
+        "content": "art",
+        "music": null,
+        "ambience": null
+      }
+    ],
+    "reasons": {
+      "confirm": [
+        "home arrival.home.01",
+        "terminal arrival.terminal.downloads.01",
+        "terminal archive.index.01",
+        "gallery gallery.bay.01",
+        "gallery gallery.bay.02",
+        "donate support.plinth.01"
+      ],
+      "paper-open": [
+        "banner arrival.wayfinding-banner.01 (latched)",
+        "file archive.file.controls.01",
+        "file archive.file.movement.01",
+        "file archive.file.downloads.01",
+        "file archive.file.illustrations.01",
+        "file archive.file.donate.01",
+        "file archive.file.accessibility.01"
+      ],
+      "hit-metal": [
+        "banner arrival.wayfinding-banner.01 (latched)",
+        "bridge dispatch.lowering-bridge.01"
+      ],
+      "cable-cut": [
+        "cable dispatch.bridge-cable.01"
+      ],
+      "lift-start": [
+        "landing support.landing.lower.01",
+        "landing support.landing.upper.01",
+        "lift support.lift.01"
+      ],
+      "lift-dock": [
+        "landing support.landing.lower.01",
+        "landing support.landing.upper.01",
+        "lift support.lift.01"
+      ],
+      "step-concrete-1": [
+        "support material concrete"
+      ],
+      "step-concrete-2": [
+        "support material concrete"
+      ],
+      "step-metal-1": [
+        "support material metal"
+      ],
+      "step-metal-2": [
+        "support material metal"
+      ]
+    },
+    "sourceHashes": {
+      "src/worldsite/audio.ts": "bffde056fd6bd38215a25034fe9963c814e6295ac639e35599d39aa44ab57fc1",
+      "src/worldsite/audio-direction.ts": "74fb4ecde412e1daec01c37e0658796339dacededc6e9c002c07516fda1e2c92",
+      "src/worldsite/experience.ts": "80a7ae57cb28bedc61119a99cde08e7abff8da7f8388a085394c5b6448843483",
+      "src/worldsite/game/WorldScene.ts": "765d4d7c7475de71ccead8808859960ccf1f8edf874bc595fb748b9ed31b30b2"
+    }
+  },
+  "review": [
+    "Double jump adds no new sound identifier. Its genuine landing restores the air jump and retains the existing fall-speed/was-grounded landing condition.",
+    "Gallery display/E/touch navigation now shares inspectAssembly; it retains confirm, while physical documents retain paper-open.",
+    "Native bridge cut/impact and lift drive/dock callbacks retain cable-cut, hit-metal, lift-start and lift-dock. Dynamic bridge/lift surfaces explicitly remain metal; static slabs remain concrete.",
+    "Grounded footstep cadence remains per supporting material and distance. The recorded four-file step set is unchanged.",
+    "Boss/legacy seal/cut-cloth effects remain reserved because the current encounter and map do not use them. Reader/quiet-region direction and the audio loader are unchanged."
+  ],
+  "proof": [
+    "prototypes/gallery-displays-v1/REPORT.md",
+    "prototypes/hardware-material-v1/REPORT.md",
+    "prototypes/platform-continuity-v1/GENERATED-MATERIAL-V4.md"
+  ],
+  "mediaUnchanged": true,
+  "listeningMetadataUnchanged": true,
+  "sourceMediaDigest": "cf0bdcfe554af808b0048c9a3750a44141636d59259a238582084dd6b4831791",
+  "generation": false,
+  "publicPromotion": false
+}

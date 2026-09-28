@@ -1,0 +1,66 @@
+{
+  "status": "converted-invariants-pass-visual-review-required",
+  "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\courtyard-structure-keyed-v1.png",
+  "sourceSha256": "8c07f2938bd42e395ba43ce75367e31c042bc5119f55ada9851c331e4f985064",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\courtyard-candidate\\alpha.png",
+  "toolSha256": "f9e3c52ca163989dd2f920d075b8f4da7164041e19280291f6e271d0880c8266",
+  "outputSha256": "471523053f1c8bb2e1d7023cbf7bcda34b1493bee79c8e5948ea5ee1b7cc9cc7",
+  "size": [
+    1672,
+    941
+  ],
+  "settings": {
+    "keyRgb": [
+      255,
+      0,
+      255
+    ],
+    "keyTolerance": 32,
+    "minDominance": 220,
+    "edgeBandPx": 3,
+    "cleanDominance": 35,
+    "actualKeyMedianRgb": [
+      246.0,
+      3.0,
+      250.0
+    ],
+    "protectRects": [
+      [
+        0,
+        681,
+        1672,
+        800
+      ]
+    ],
+    "explicitSpillRois": [
+      [
+        0,
+        0,
+        240,
+        941
+      ],
+      [
+        1280,
+        250,
+        1672,
+        941
+      ]
+    ]
+  },
+  "trueBackgroundPixels": 858091,
+  "edgeBandPixels": 34527,
+  "edgeCandidates": 17458,
+  "edgeCandidatesWithoutCleanNeighbour": 0,
+  "edgeRgbChangedPixels": 17154,
+  "outsideBandInteriorPixels": 680734,
+  "outsideBandInteriorUnchanged": false,
+  "outsideDeclaredCorrectionRegionUnchanged": true,
+  "explicitSpillIslandPixels": 565,
+  "protectedUnchangedAndOpaque": true,
+  "protectedNearKeyPixelsKept": 0,
+  "remainingPurpleInteriorPixels": 1012,
+  "remainingPurpleInteriorPolicy": "Unselected interiors preserved. Legitimate purple and painted key reflections cannot be distinguished by hue alone; explicit foliage ROIs need reference inspection and floor reflections need separate retouch.",
+  "sourceUnchanged": true,
+  "roiReports": [],
+  "limits": "Near-key false positives remain possible; inspect masks. No cloud processing, global desaturation, interior softening, or runtime publication."
+}

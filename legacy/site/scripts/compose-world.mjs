@@ -1,0 +1,75 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..');
+const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const current=read('public/world/scene-assets.json');
+if(current.rooms?.length)throw new Error('The authored room composition supersedes this legacy causeway recipe. Edit public/world/scene-assets.json and the Tiled map together; this script will not overwrite them.');
+const base=current.assets.filter(a=>['causeway','terminal'].includes(a.id));
+const near=read('public/world/assets/library-v1/export-manifest.json').assets;
+const middle=read('public/world/assets/depth-library-v1/middle-M01-M09.json').assets;
+const far=read('public/world/assets/depth-library-v1/far-B01-B10-M10.json').assets.map(a=>({id:a.id,...a.variants.find(v=>v.variant===(a.id==='B03'?'tone4':a.preferredInitialVariant))}));
+Object.assign(far.find(a=>a.id==='B04'),{url:'/world/assets/depth-library-v1/B04-shell-depth-v2.png',frame:{x:0,y:0,width:1200,height:718}});
+const assets=[...base,...near,...middle,...far].map(a=>({id:a.id,url:a.url,frame:a.frame,...a.repeatFrame&&{repeatFrame:a.repeatFrame},...a.collisionTop!==undefined&&{collisionTop:a.collisionTop},...a.parts&&{parts:a.parts},...a.attachments&&{attachments:a.attachments}}));
+const byId=Object.fromEntries(assets.map(a=>[a.id,a]));
+const placements=[];
+function place(id,assetId,x,y,depth,options={}) {
+  const a=byId[assetId];if(!a)throw Error(assetId);
+  const scale=options.scale??1;delete options.scale;
+  placements.push({id,assetId,x,y,width:a.frame.width*scale,height:a.frame.height*scale,depth,...options});
+}
+// One continuous view with an immense, partially cropped landmark beyond still water.
+// All close pieces remain one export pixel per world pixel. Distant forms are independent.
+place('arrival.monument','B03',1390,-1060,-84,{scrollFactor:.18,alpha:.76,portraitOffset:{x:-650,y:400}});
+place('support.far-curve','B04',2170,-85,-82,{scrollFactor:.24,alpha:.62,portraitOffset:{x:-370,y:100}});
+place('west.colonnade','B05',-730,235,-85,{scrollFactor:.12,alpha:.6});
+place('east.skyline','B06',2600,355,-86,{scrollFactor:.1,alpha:.55});
+place('horizon.cliff','B09',-150,155,-87,{scrollFactor:.1,alpha:.55});
+place('horizon.haze','B02',350,440,-79,{scrollFactor:.18,motion:'haze'});
+place('horizon.haze-east','B02',1600,445,-79,{scrollFactor:.18,motion:'haze'});
+place('sky.drift','B10',540,-230,-89,{scrollFactor:.08,motion:'cloud',optional:true,alpha:.5});
+place('sky.drift-east','B10',2600,-290,-89,{scrollFactor:.08,motion:'cloud',optional:true,alpha:.45});
+place('water.reflection-west','B08',150,664,-73,{scrollFactor:.25,motion:'water',optional:true,alpha:.7});
+place('water.reflection-east','B08',1420,664,-73,{scrollFactor:.25,motion:'water',optional:true,alpha:.7});
+// Middle distance belongs to the same place but never masquerades as a walkable route.
+place('dispatch.gantry','M01',235,132,-54,{scrollFactor:.9,alpha:.38});
+place('causeway.deep-pilings','M09',1150,697,-53,{scrollFactor:.8,alpha:.5});
+place('causeway.low-trestle','M07',660,710,-49,{scrollFactor:.88,alpha:.65});
+place('gallery.arcade','M03',2200,25,-39,{alpha:.85});
+place('gallery.roof','M05',2130,-52,-32,{alpha:.94});
+place('gallery.light-well','M04',2910,-280,-56,{alpha:.68});
+place('archive.wall','M02',2120,705,-43,{alpha:.2});
+place('archive.support-opening','M06',2160,601,-42,{alpha:.75});
+place('archive.catwalk','M08',2010,892,-38,{alpha:.36});
+place('support.overwhelming-rib','M10',3085,-70,-51,{alpha:.78});
+// Sparse familiar furniture is the scale reference, not ornamental clutter.
+place('arrival.bench','P01',1410,620,8);
+place('gallery.bench','P01',2660,340,8);
+place('support.bench','P01',3580,620,8);
+for(const [n,x,y] of [['arrival-west',670,612],['arrival-east',1570,612],['gallery-west',2250,332],['gallery-east',2860,332],['support',3710,612]])place(`rail.${n}`,'FG04',x,y,7);
+for(const [n,x,y] of [['arrival-west',710,706],['arrival-east',1650,706],['gallery',2860,426],['support',3650,706]])place(`pier.${n}`,'FG03',x,y,3);
+place('dispatch.girder','FG05',630,432,7,{tint:0x667b85});
+place('dispatch.girder-hanger','FG08',590,-180,6,{tint:0x627076});
+place('dispatch.girder-hanger-extension','FG08',590,-820,6,{tint:0x627076});
+place('gallery.column-left','FG08',2090,-280,6,{tint:0x899290});
+place('gallery.column-right','FG08',3006,-280,6,{tint:0x899290});
+place('gallery.column-left-extension','FG08',2090,-920,6,{tint:0x899290});
+place('gallery.column-right-extension','FG08',3006,-920,6,{tint:0x899290});
+place('support.arch','FG06',3270,60,6);
+place('support.column','FG08',3270,222,6);
+place('support.column-right','FG08',3724,222,6);
+place('causeway.end','FG02',1637,640,5);
+place('arena.broken-ledge','FG07',1158,998,6);
+place('arena.rubble','FG09',1050,1057,7);
+place('dispatch.rubble','FG09',510,667,2,{alpha:.8});
+place('archive.shelf-west','P13',2310,928,8);
+place('archive.shelf-east','P13',2640,928,8);
+place('archive.portal','FG06',2240,642,6);
+place('archive.jamb-west','FG03',2243,810,6);
+place('archive.jamb-east','FG03',2729,810,6);
+place('causeway.facade-west','M03',560,768,3,{tint:0x4b6370,alpha:.35});
+place('causeway.facade-east','M03',1360,768,3,{tint:0x4b6370,alpha:.35});
+place('lift.rail-west','P10',3085,333,9);
+place('lift.rail-east','P10',3224,333,9);
+const manifest={schemaVersion:2,composition:'causeway-layered-v1',assets,placements};
+fs.writeFileSync(path.join(root,'public/world/scene-assets.json'),JSON.stringify(manifest,null,2)+'\n');
+console.log(JSON.stringify({assets:assets.length,placements:placements.length,bytes:fs.statSync(path.join(root,'public/world/scene-assets.json')).size}));

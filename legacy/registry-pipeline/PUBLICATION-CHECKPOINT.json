@@ -1,0 +1,1315 @@
+{
+  "version": "registry-art-c7a87b2dca86e1",
+  "catalogue": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\assets.json",
+  "catalogueSha256": "090aed16b5c8168a79a11fd54621d4fad9e431018bb9a03ec05e4e6bcb3cc40c",
+  "sourceManifests": {
+    "processed-materials.json": "3cfa724d0ee31c2b1e6989ffe18c469de5dc8dec4916b8ae4b9c949b2a1d7d81",
+    "structure-overrides.json": "2b5ac91d4e6e1af9785d2efadfc8ad79ad69bbf6851054825d63c5fba305322c",
+    "material-overrides.json": "dd8406e5b7c6bb50b9ef564f111f6f6140020ead54242131f522bc1b540790d2",
+    "exports/export-manifest.json": "1554a2c695a1d17a138f9d1c04b66f3b22786c4dca46adf4f3914397e1e695b5",
+    "actor-materials.json": "836ab22e00ee16e33598b40f67da59f2a2a299cb94ed6e8b53c9a45b22fca84a",
+    "cloud-materials.json": "682cc345ba52829380fb2396cedacdd72381ac1a9e162e813d87f0e05eadb762"
+  },
+  "assets": 70,
+  "roomsWithLayers": 12,
+  "missingSemanticKeys": [],
+  "registered": [
+    {
+      "id": "shared-sky",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\shared-sky-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\shared-sky-63afbb17e99b.png",
+      "sha256": "63afbb17e99b5f1b78ed44f04958774cf2ebb4b4beb616d24d769a6e7fb336d8",
+      "metadata": {}
+    },
+    {
+      "id": "shared-ring",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\layers\\shared-ring-alpha-v2.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\shared-ring-56cd98de7582.png",
+      "sha256": "56cd98de75827082f02c2a48037cad9a4b3328237536d046f31135851204e213",
+      "metadata": {}
+    },
+    {
+      "id": "folio-material",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\props\\folio-material-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\folio-material-v1.png",
+      "sha256": "93f85b909f0d99379f6520ee513c92c770bf4ac6ef9352b0091bc4843147c1e8",
+      "metadata": {}
+    },
+    {
+      "id": "cloud-mid",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-mid-alpha-v3.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\cloud-mid-06e72681d946.png",
+      "sha256": "06e72681d946de8762f301894055abb59313ba642ba4a586724e630c805fc1b9",
+      "metadata": {
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": 1300,
+        "loop": true,
+        "pivot": [
+          256,
+          280
+        ]
+      }
+    },
+    {
+      "id": "cloud-far",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\cloud-far-alpha-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\cloud-far-b56f33ee3f53.png",
+      "sha256": "b56f33ee3f5380ec65a3e7034a84e0b53a9d96c5cabd06bc442e04845dbc1433",
+      "metadata": {
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": 1300,
+        "loop": true,
+        "pivot": [
+          256,
+          280
+        ]
+      }
+    },
+    {
+      "id": "lamp-emission",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\lamp-emission-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\lamp-emission-56f508c7e336.png",
+      "sha256": "56f508c7e3362cc7209bd99a7cc5ae515057f498e0af44a46681709edd73f960",
+      "metadata": {
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": 1100,
+        "loop": true,
+        "pivot": [
+          256,
+          256
+        ]
+      }
+    },
+    {
+      "id": "water-shimmer",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\pool-water-wide-v2.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\water-shimmer-b19e2341a8eb.png",
+      "sha256": "b19e2341a8eba8a761882400c6ee14f523fa38d4777b98ff260ccbdeeb924c66",
+      "metadata": {
+        "frameWidth": 1536,
+        "frameHeight": 256,
+        "frames": 4,
+        "columns": 1,
+        "frameMs": 1800,
+        "loop": true,
+        "pivot": [
+          768,
+          128
+        ]
+      }
+    },
+    {
+      "id": "accountant-idle",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\accountant-idle-alpha-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\accountant-idle-a7953f5369cf.png",
+      "sha256": "a7953f5369cf63be97be4a2341fc8d66aeb2880572c027d20fc9e3f21c6167e0",
+      "metadata": {
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": [
+          450,
+          350,
+          300,
+          300,
+          400,
+          500
+        ],
+        "loop": true,
+        "pivot": [
+          256,
+          489
+        ],
+        "bodyBounds": {
+          "x": 149,
+          "y": 77,
+          "width": 315,
+          "height": 415
+        },
+        "anchors": {
+          "handPlane": [
+            256,
+            309
+          ]
+        }
+      }
+    },
+    {
+      "id": "accountant-acknowledge",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\accountant-acknowledge-alpha-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\accountant-acknowledge-e417e8071628.png",
+      "sha256": "e417e807162810bfe8dff6601b78076a04eed5c830874b662565dbe30607e4be",
+      "metadata": {
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": [
+          180,
+          180,
+          240,
+          650,
+          240,
+          300
+        ],
+        "loop": false,
+        "pivot": [
+          256,
+          489
+        ],
+        "bodyBounds": {
+          "x": 149,
+          "y": 77,
+          "width": 315,
+          "height": 415
+        },
+        "anchors": {
+          "handPlane": [
+            256,
+            309
+          ]
+        }
+      }
+    },
+    {
+      "id": "accountant-rest",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\sheets\\accountant-rest-alpha-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\accountant-rest-2f171aaf4404.png",
+      "sha256": "2f171aaf4404c97d92530a9d7e7c1cf1c0528244e4eb19bea6ae2566644080de",
+      "metadata": {
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": [
+          200,
+          450,
+          600,
+          900,
+          500,
+          1700
+        ],
+        "loop": false,
+        "pivot": [
+          256,
+          489
+        ],
+        "bodyBounds": {
+          "x": 149,
+          "y": 77,
+          "width": 315,
+          "height": 415
+        },
+        "anchors": {
+          "handPlane": [
+            256,
+            309
+          ]
+        }
+      }
+    },
+    {
+      "id": "bench",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\bench-native-v2.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\bench-67545185bd5d.png",
+      "sha256": "67545185bd5d91e67ceb4ce72ef20816f168818b2ba05865a01138e7e11f7ca3",
+      "metadata": {
+        "pivot": [
+          469.5,
+          372
+        ],
+        "bodyBounds": {
+          "x": 2,
+          "y": 2,
+          "width": 935,
+          "height": 370
+        }
+      }
+    },
+    {
+      "id": "registry-desk",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\registry-desk-native-v2.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\registry-desk-f7795f6e4929.png",
+      "sha256": "f7795f6e49292a9885261b579bd0512bae31d23c05c88ee202a8918d88a137a0",
+      "metadata": {
+        "pivot": [
+          645.0,
+          300
+        ],
+        "bodyBounds": {
+          "x": 2,
+          "y": 2,
+          "width": 1286,
+          "height": 298
+        }
+      }
+    },
+    {
+      "id": "donor-box",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\donor-box-native-v2.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\donor-box-d41d924a4e13.png",
+      "sha256": "d41d924a4e13f4212b81c4b5313f8dacd1c880ae1cadc077ca7a422b74b3f9eb",
+      "metadata": {
+        "pivot": [
+          188.0,
+          651
+        ],
+        "bodyBounds": {
+          "x": 2,
+          "y": 2,
+          "width": 372,
+          "height": 649
+        }
+      }
+    },
+    {
+      "id": "paper-terminal",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\paper-terminal-native-v2.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\paper-terminal-6b9dbbf331e5.png",
+      "sha256": "6b9dbbf331e5c13e85c1832582f6ac4a74e078a21228edbf1ee0c5edb9d4009d",
+      "metadata": {
+        "pivot": [
+          184.0,
+          621
+        ],
+        "bodyBounds": {
+          "x": 2,
+          "y": 2,
+          "width": 364,
+          "height": 619
+        }
+      }
+    },
+    {
+      "id": "door-frame",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\door-frame-native-v2.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\door-frame-a3b9d9aefee2.png",
+      "sha256": "a3b9d9aefee246e8fe724f85261c06a1cab54759598754f3d38ef534ba3548ef",
+      "metadata": {
+        "pivot": [
+          350.5,
+          990
+        ],
+        "bodyBounds": {
+          "x": 2,
+          "y": 2,
+          "width": 697,
+          "height": 988
+        },
+        "anchors": {
+          "apertureTopLeft": [
+            115,
+            97
+          ],
+          "apertureBottomRight": [
+            585,
+            958
+          ],
+          "apertureTL": [
+            115,
+            97
+          ],
+          "apertureBR": [
+            585,
+            958
+          ]
+        }
+      }
+    },
+    {
+      "id": "lamp-fixture",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\lamp-fixture-native-v2.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\lamp-fixture-c617186cd5b4.png",
+      "sha256": "c617186cd5b49058b36064e668dd801f0f68f23810b6cdcf3da5cf2f70393999",
+      "metadata": {
+        "pivot": [
+          154.5,
+          794
+        ],
+        "bodyBounds": {
+          "x": 2,
+          "y": 2,
+          "width": 305,
+          "height": 792
+        }
+      }
+    },
+    {
+      "id": "tree",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\tree-native-v3.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\tree-f19905ab72a8.png",
+      "sha256": "f19905ab72a8e7d91646ca1b0f308fdb2b3b6687fa8beaa5136342264af373fe",
+      "metadata": {
+        "pivot": [
+          692.0,
+          940
+        ],
+        "bodyBounds": {
+          "x": 2,
+          "y": 2,
+          "width": 1380,
+          "height": 938
+        }
+      }
+    },
+    {
+      "id": "door-leaf",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\door-leaf-native-v2.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\door-leaf-08e72f733f3f.png",
+      "sha256": "08e72f733f3fe33c51dc1aefa06df7e321f22aef354b0ed49239790ce7abb0c0",
+      "metadata": {
+        "pivot": [
+          235,
+          864
+        ]
+      }
+    },
+    {
+      "id": "exhibit-frame-1",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-1-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-frame-1-b427bd0ee03c.png",
+      "sha256": "b427bd0ee03cf2cb7bf30ae6a73b8546933d55644a3df3c114e0a5c95719464c",
+      "metadata": {
+        "pivot": [
+          53.0,
+          165
+        ]
+      }
+    },
+    {
+      "id": "exhibit-frame-2",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-2-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-frame-2-e082da413e2e.png",
+      "sha256": "e082da413e2ec6c6d2d470876d3ca15d51654bf048454c0f6599b586ab923b83",
+      "metadata": {
+        "pivot": [
+          52.5,
+          114
+        ]
+      }
+    },
+    {
+      "id": "exhibit-frame-3",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-3-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-frame-3-b6ab99b31c6e.png",
+      "sha256": "b6ab99b31c6e47d7f56951bbfa7330ad0e33700e29bcfd66bae85175cf6d9c5a",
+      "metadata": {
+        "pivot": [
+          86.5,
+          123
+        ]
+      }
+    },
+    {
+      "id": "exhibit-frame-4",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-4-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-frame-4-a73827f61c46.png",
+      "sha256": "a73827f61c4691e75e28b0179c117a0b4475ebe40378420b9ba82f4459f6adb3",
+      "metadata": {
+        "pivot": [
+          58.5,
+          182
+        ]
+      }
+    },
+    {
+      "id": "exhibit-frame-5",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-5-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-frame-5-7799b6b58ef9.png",
+      "sha256": "7799b6b58ef96a815ccd2efcc9f6c8a773fd10fd451a2ecd77e83a3c21129d20",
+      "metadata": {
+        "pivot": [
+          57.0,
+          119
+        ]
+      }
+    },
+    {
+      "id": "exhibit-frame-6",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-6-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-frame-6-fb878839f160.png",
+      "sha256": "fb878839f1607ef1b913f6bbffd614b2df2d85ab2ac03ddc684262adff1b5d31",
+      "metadata": {
+        "pivot": [
+          116.0,
+          147
+        ]
+      }
+    },
+    {
+      "id": "exhibit-frame-7",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-7-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-frame-7-4de4330a1b32.png",
+      "sha256": "4de4330a1b320fccec7e3bfa1bb464463ffe17b8313549ef5af925e46d38d5e6",
+      "metadata": {
+        "pivot": [
+          59.0,
+          175
+        ]
+      }
+    },
+    {
+      "id": "exhibit-frame-8",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-8-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-frame-8-9a8de7c2d421.png",
+      "sha256": "9a8de7c2d4219462c96dcd66d7794f813d323e4f53b150ff610175591b255ba1",
+      "metadata": {
+        "pivot": [
+          62.5,
+          114
+        ]
+      }
+    },
+    {
+      "id": "exhibit-frame-9",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\exhibit-frame-9-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-frame-9-356e6262db6c.png",
+      "sha256": "356e6262db6c6e7074034a91101d8b5e84b0560886dce5c85c7b5819f4f921a0",
+      "metadata": {
+        "pivot": [
+          57.5,
+          187
+        ]
+      }
+    },
+    {
+      "id": "courtyard-latch-base",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\courtyard-latch-base-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\courtyard-latch-base-26cebc51ee9f.png",
+      "sha256": "26cebc51ee9f5e092d28a70dff5c8e0dd9f270f208a6f028606dd2fac64560c9",
+      "metadata": {
+        "pivot": [
+          112,
+          244
+        ],
+        "anchors": {}
+      }
+    },
+    {
+      "id": "courtyard-latch",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\courtyard-latch-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\courtyard-latch-ddb628d33a71.png",
+      "sha256": "ddb628d33a710e38780ae26efa469b03d64ff8c476e19a8be55e4e720b31c819",
+      "metadata": {
+        "pivot": [
+          77,
+          75
+        ],
+        "anchors": {}
+      }
+    },
+    {
+      "id": "bridge",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\bridge-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\bridge-04db087055e9.png",
+      "sha256": "04db087055e979d4ca6355d878078506846a68a4eb47ce7ed15582a9666b6aa7",
+      "metadata": {
+        "pivot": [
+          46,
+          52
+        ],
+        "anchors": {
+          "end": [
+            2009,
+            52
+          ],
+          "rope": [
+            2009,
+            52
+          ]
+        }
+      }
+    },
+    {
+      "id": "bridge-post",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\bridge-post-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\bridge-post-d7cfeda22bf1.png",
+      "sha256": "d7cfeda22bf10c05b818dd9e21248387ae59089fbae9f78230399cfd4a4ba0a5",
+      "metadata": {
+        "pivot": [
+          77,
+          330
+        ],
+        "anchors": {
+          "rope": [
+            77,
+            25
+          ]
+        }
+      }
+    },
+    {
+      "id": "bridge-rope",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\bridge-rope-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\bridge-rope-e42038a4f36e.png",
+      "sha256": "e42038a4f36e2aec54a631b8d1c2248ab3b54e86b8f7fcb790e5efeb844ee1bd",
+      "metadata": {
+        "pivot": [
+          25,
+          29
+        ],
+        "anchors": {
+          "start": [
+            25,
+            29
+          ],
+          "end": [
+            25,
+            852
+          ]
+        }
+      }
+    },
+    {
+      "id": "service-light",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\service-light-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\service-light-2f848d1ca687.png",
+      "sha256": "2f848d1ca6876e015f8fc0fbcf54212a305e7844feadcc0c0cd6bcec263a3fd9",
+      "metadata": {
+        "pivot": [
+          585,
+          117
+        ],
+        "anchors": {}
+      }
+    },
+    {
+      "id": "service-emission",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\service-emission-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\service-emission-66a47c9d5498.png",
+      "sha256": "66a47c9d54987684136d073213ca18c5c73333b845c1d71cc4b72bd591d6a2f3",
+      "metadata": {
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": 1100,
+        "loop": true,
+        "pivot": [
+          256,
+          256
+        ]
+      }
+    },
+    {
+      "id": "door-recess",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\door-recess-native-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\door-recess-d5e60747bcea.png",
+      "sha256": "d5e60747bcea67421eb9c7db167351923f64f3d37371cce3a253029de48591cf",
+      "metadata": {
+        "pivot": [
+          380.0,
+          1324
+        ]
+      }
+    },
+    {
+      "id": "warden-idle",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\warden-idle-registered-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\warden-idle-45174177de98.png",
+      "sha256": "45174177de9808346d76433b1284d6d428a62d6bc25749f8c4b04bb1f27d8a6b",
+      "metadata": {
+        "frameWidth": 640,
+        "frameHeight": 640,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": [
+          240,
+          240,
+          240,
+          240,
+          240,
+          240
+        ],
+        "loop": true,
+        "pivot": [
+          384,
+          560
+        ],
+        "bodyBounds": {
+          "x": 306,
+          "y": 144,
+          "width": 168,
+          "height": 416
+        }
+      }
+    },
+    {
+      "id": "warden-attack",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\warden-attack-registered-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\warden-attack-6b682c331663.png",
+      "sha256": "6b682c3316631ea2c85f273191c9ed3b707b45bb2eb830a3f1312aed05647d92",
+      "metadata": {
+        "frameWidth": 640,
+        "frameHeight": 640,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": [
+          400,
+          450,
+          65,
+          85,
+          100,
+          150
+        ],
+        "loop": false,
+        "pivot": [
+          384,
+          560
+        ],
+        "bodyBounds": {
+          "x": 306,
+          "y": 144,
+          "width": 168,
+          "height": 416
+        }
+      }
+    },
+    {
+      "id": "warden-recover",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\warden-recover-registered-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\warden-recover-6cba1f010506.png",
+      "sha256": "6cba1f01050632c736142453ba5749350bfc063fa544b066141e39cb05068664",
+      "metadata": {
+        "frameWidth": 640,
+        "frameHeight": 640,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": [
+          180,
+          180,
+          220,
+          220,
+          240,
+          260
+        ],
+        "loop": false,
+        "pivot": [
+          384,
+          560
+        ],
+        "bodyBounds": {
+          "x": 306,
+          "y": 144,
+          "width": 168,
+          "height": 416
+        }
+      }
+    },
+    {
+      "id": "warden-hit",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\warden-hit-registered-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\warden-hit-4e72f96f3ae1.png",
+      "sha256": "4e72f96f3ae173f4abc2b27b57a4174bcb26ebfcf539095e38468356950915e5",
+      "metadata": {
+        "frameWidth": 640,
+        "frameHeight": 640,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": [
+          45,
+          45,
+          45,
+          45,
+          50,
+          50
+        ],
+        "loop": false,
+        "pivot": [
+          384,
+          560
+        ],
+        "bodyBounds": {
+          "x": 306,
+          "y": 144,
+          "width": 168,
+          "height": 416
+        }
+      }
+    },
+    {
+      "id": "warden-death",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\warden-death-registered-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\warden-death-b3f5aac8329e.png",
+      "sha256": "b3f5aac8329e9b422353e3c68613d566413216b6e7fb31215bcd00d439652e1b",
+      "metadata": {
+        "frameWidth": 640,
+        "frameHeight": 640,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": [
+          160,
+          180,
+          200,
+          230,
+          300,
+          400
+        ],
+        "loop": false,
+        "pivot": [
+          384,
+          560
+        ],
+        "bodyBounds": {
+          "x": 306,
+          "y": 144,
+          "width": 168,
+          "height": 416
+        }
+      }
+    },
+    {
+      "id": "map-banner",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\map-banner-registered-v1.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\map-banner-1e9a4d757eb7.png",
+      "sha256": "1e9a4d757eb7848b5518abc2c10f613d1107bc125fd022f59dc0117ee782561f",
+      "metadata": {
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": [
+          80,
+          70,
+          80,
+          90,
+          120,
+          160
+        ],
+        "loop": false,
+        "pivot": [
+          256,
+          88
+        ],
+        "anchors": {
+          "bottom": [
+            256,
+            387
+          ],
+          "rolledTie": [
+            256,
+            113
+          ],
+          "unrolledTie": [
+            256,
+            387
+          ]
+        }
+      }
+    },
+    {
+      "id": "cloud-far",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-far-unmixed-v5.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\cloud-far-49a41619a1ae.png",
+      "sha256": "49a41619a1ae5aad82e84b3da744ca32da03ddeceef40503e92198df93598a0b",
+      "metadata": {
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": 1300,
+        "loop": true,
+        "pivot": [
+          256,
+          280
+        ]
+      }
+    },
+    {
+      "id": "cloud-mid",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\cloud-mid-unmixed-v5.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\cloud-mid-e1ff193bbfa3.png",
+      "sha256": "e1ff193bbfa37a8f38afc0a4cec1a01069a51a203b5a88158a66b20f4caf3639",
+      "metadata": {
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "frames": 6,
+        "columns": 3,
+        "frameMs": 1300,
+        "loop": true,
+        "pivot": [
+          256,
+          280
+        ]
+      }
+    },
+    {
+      "id": "arrival-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\arrival-wall-7a884ebd4c20.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\arrival-wall-66fbbb627022.png",
+      "sha256": "66fbbb627022e2ddbff502da05dfb290572a9cb8490226f72a780d5c50ab7312",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\arrival\\alpha.png",
+      "parentSha256": "7a884ebd4c206421423fa0775e12fc08c43c2baa47ea113207e1991ffd376df5",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        742
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "arrival-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\arrival-floor-7a884ebd4c20.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\arrival-floor-0b88d5ca459e.png",
+      "sha256": "0b88d5ca459e4fc8929a1fc8e419cffdf24860cadd031755c060881db1b0c13c",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\arrival\\alpha.png",
+      "parentSha256": "7a884ebd4c206421423fa0775e12fc08c43c2baa47ea113207e1991ffd376df5",
+      "sourceRectXYXY": [
+        0,
+        742,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "rest-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\rest-wall-7517656249d9.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\rest-wall-a375745a2717.png",
+      "sha256": "a375745a2717eacf5038f43d32ad779d3f5774ec2b078826d690e889c9d4b7c6",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\rest-foliage-final\\alpha.png",
+      "parentSha256": "7517656249d9a9e1abf8237206b23bc4cb5e1d4f5570b2aa7c9aab86f349479e",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        695
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "rest-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\rest-floor-7517656249d9.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\rest-floor-929fc0142484.png",
+      "sha256": "929fc01424847273ed5e4f93d60db20418cbff95942f40dfc39c0704f83fda5f",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\rest-foliage-final\\alpha.png",
+      "parentSha256": "7517656249d9a9e1abf8237206b23bc4cb5e1d4f5570b2aa7c9aab86f349479e",
+      "sourceRectXYXY": [
+        0,
+        695,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "registry-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\registry-wall-b5894dab7e56.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\registry-wall-a6bc8dbdb6ca.png",
+      "sha256": "a6bc8dbdb6cafa01956e456572b9cf1fdbc06cd084c59a727cf36eea9a539bf8",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\registry-foliage-final\\alpha.png",
+      "parentSha256": "b5894dab7e56be505af5f8ffe9777e88ee888f6aa54a4165a0de1a161ecd859d",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        676
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "registry-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\registry-floor-b5894dab7e56.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\registry-floor-551726c0bd2e.png",
+      "sha256": "551726c0bd2e927612c0461e252093c7e87ab8ea2b4d29e54340813e61c80db2",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\registry-foliage-final\\alpha.png",
+      "parentSha256": "b5894dab7e56be505af5f8ffe9777e88ee888f6aa54a4165a0de1a161ecd859d",
+      "sourceRectXYXY": [
+        0,
+        676,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "junction-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\junction-wall-5964d98783ec.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\junction-wall-4a04d2b16c3b.png",
+      "sha256": "4a04d2b16c3b0c9265c050b9c425cd15973c18fbc11787421b1123d0f75edcb2",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\junction-foliage-final\\alpha.png",
+      "parentSha256": "5964d98783ecbb5489dcf032de121c483d8f45987a79b6f4835d85a0a2fad342",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        635
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "junction-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\junction-floor-5964d98783ec.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\junction-floor-bcd73c131d01.png",
+      "sha256": "bcd73c131d01ae5c2d012e19e221204cb391759b965345b7d4e59a950e80ebd3",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\junction-foliage-final\\alpha.png",
+      "parentSha256": "5964d98783ecbb5489dcf032de121c483d8f45987a79b6f4835d85a0a2fad342",
+      "sourceRectXYXY": [
+        0,
+        635,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "junction-column",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\junction-column-5964d98783ec.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\junction-column-47980bb0a445.png",
+      "sha256": "47980bb0a44584041df33ad793fe5a287b8a92abe244215d7677764402446110",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\junction-foliage-final\\alpha.png",
+      "parentSha256": "5964d98783ecbb5489dcf032de121c483d8f45987a79b6f4835d85a0a2fad342",
+      "sourceRectXYXY": [
+        402,
+        0,
+        531,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "vestibule-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\vestibule-wall-ba7979566d5a.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\vestibule-wall-b45ef55da7e4.png",
+      "sha256": "b45ef55da7e454b3bfee79e290960a7a6870e0e091ead80b285797049e20e465",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\vestibule-foliage-final\\alpha.png",
+      "parentSha256": "ba7979566d5afd17f24b77b28d53069681cc1f9373210ac6c318c6d83ba8cc76",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        684
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "vestibule-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\vestibule-floor-ba7979566d5a.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\vestibule-floor-8efb94928c09.png",
+      "sha256": "8efb94928c09b69d1a9287b1df05668aad09e1e20b5784b242705a84abb6cd0c",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\vestibule-foliage-final\\alpha.png",
+      "parentSha256": "ba7979566d5afd17f24b77b28d53069681cc1f9373210ac6c318c6d83ba8cc76",
+      "sourceRectXYXY": [
+        0,
+        684,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "arena-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\arena-wall-cfac6bd80d39.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\arena-wall-eba27a6e169b.png",
+      "sha256": "eba27a6e169b0a67c1d4933159fe00a6316a61b9c14bf8faa7d5ef1074c98fd3",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\arena\\alpha.png",
+      "parentSha256": "cfac6bd80d39a8cac529881fe583044fe01775c9df470435f71f4df0fcc72c33",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        725
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "arena-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\arena-floor-cfac6bd80d39.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\arena-floor-3ba51be27186.png",
+      "sha256": "3ba51be271865d0aeba7d0e5f0bb501bdc09db594ed0168b492aaa2efeec22f5",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\arena\\alpha.png",
+      "parentSha256": "cfac6bd80d39a8cac529881fe583044fe01775c9df470435f71f4df0fcc72c33",
+      "sourceRectXYXY": [
+        0,
+        725,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "archive-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\archive-wall-f4f30858f437.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\archive-wall-00822674d050.png",
+      "sha256": "00822674d0508166f4782b99edb6f988b01d128f99bf9efef006db63031a92b2",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\archive-foliage-final\\alpha.png",
+      "parentSha256": "f4f30858f43762656eba2a7f8cc7768b0f4f82e4e4a162672859a7e4f46996ee",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        713
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "archive-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\archive-floor-f4f30858f437.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\archive-floor-c2b45312a1bf.png",
+      "sha256": "c2b45312a1bf9382fb129084b1721751575e695338c84fc0bc20a3ad25a326fb",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\archive-foliage-final\\alpha.png",
+      "parentSha256": "f4f30858f43762656eba2a7f8cc7768b0f4f82e4e4a162672859a7e4f46996ee",
+      "sourceRectXYXY": [
+        0,
+        713,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "low-passage-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\low-passage-wall-882338619e1c.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\low-passage-wall-53f29d2eb14a.png",
+      "sha256": "53f29d2eb14a43894ba66b9e2f9bcd088dd93801ba74e1124f7efd3e48d981c1",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\low-passage-patched\\alpha.png",
+      "parentSha256": "882338619e1ca04ef2ea3c4022f0644af5370db339563ece9092c2d33a0ffd54",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        647
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "low-passage-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\low-passage-floor-882338619e1c.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\low-passage-floor-9087bca107eb.png",
+      "sha256": "9087bca107eb923a6c0279efc2a947d6c7047343211ae1294c6e9bb339ec9d6e",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\low-passage-patched\\alpha.png",
+      "parentSha256": "882338619e1ca04ef2ea3c4022f0644af5370db339563ece9092c2d33a0ffd54",
+      "sourceRectXYXY": [
+        0,
+        647,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "pool-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\pool-wall-6e014fed13c5.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\pool-wall-0936c00fdb96.png",
+      "sha256": "0936c00fdb9668e17ae2263a1feb425d1556931b157e1afb87f3609b272a1a21",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\pool-foliage-final\\alpha.png",
+      "parentSha256": "6e014fed13c5d9498ec8c35c5459461d640546af0b7bf80056067bc4c2366f60",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        739
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "pool-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\pool-floor-6e014fed13c5.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\pool-floor-32811d1a8284.png",
+      "sha256": "32811d1a828456e97232a2310ff25a231f72285bfd711fd23710762d2b6c34e1",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\pool-foliage-final\\alpha.png",
+      "parentSha256": "6e014fed13c5d9498ec8c35c5459461d640546af0b7bf80056067bc4c2366f60",
+      "sourceRectXYXY": [
+        0,
+        739,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "sky-walk-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\sky-walk-wall-5a9db172b2c7.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\sky-walk-wall-5a15b1f5248a.png",
+      "sha256": "5a15b1f5248acc96a69f518e72d106345d49d3c7249ead41a32389e68d4f8647",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\sky-walk-foliage-final\\alpha.png",
+      "parentSha256": "5a9db172b2c7464fa8b27b5fc50ad005655593e9a6db27d985dec0ee809261fe",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        660
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "sky-walk-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\sky-walk-floor-5a9db172b2c7.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\sky-walk-floor-cb11a5a65e9f.png",
+      "sha256": "cb11a5a65e9f4b315b17b343ae3030a8acb8031e411968957ce9d99a9fde14f4",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\sky-walk-foliage-final\\alpha.png",
+      "parentSha256": "5a9db172b2c7464fa8b27b5fc50ad005655593e9a6db27d985dec0ee809261fe",
+      "sourceRectXYXY": [
+        0,
+        660,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "exhibit-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\exhibit-wall-fb652b9ac484.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-wall-37f5f8d156dc.png",
+      "sha256": "37f5f8d156dc4175fc6e3cd49ba0f4594efe96c0ab15bf0c10174c859fe3a6b7",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\exhibit-foliage-final\\alpha.png",
+      "parentSha256": "fb652b9ac484393234eb7b36ffcdbfb24002a4811cd6d84c1a166bd80a39da5b",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        688
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "exhibit-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\exhibit-floor-fb652b9ac484.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\exhibit-floor-1431b5a347bf.png",
+      "sha256": "1431b5a347bf8dceef68f40559c8cbc7216ed4687616ce5d2d1d1f641daa5302",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\exhibit-foliage-final\\alpha.png",
+      "parentSha256": "fb652b9ac484393234eb7b36ffcdbfb24002a4811cd6d84c1a166bd80a39da5b",
+      "sourceRectXYXY": [
+        0,
+        688,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "courtyard-wall",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\courtyard-wall-172f7f4482eb.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\courtyard-wall-ec7995222a75.png",
+      "sha256": "ec7995222a75d556aa2687b7d00d81cf1507808a4454aeedca3d37e2f4b837df",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\courtyard-foliage-final\\alpha.png",
+      "parentSha256": "172f7f4482eb95ccecdb43403c4643161f946e8ba8ccc05d91df4bb7e4bd1421",
+      "sourceRectXYXY": [
+        0,
+        0,
+        1672,
+        681
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "courtyard-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\courtyard-floor-172f7f4482eb.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\courtyard-floor-5c17188905d5.png",
+      "sha256": "5c17188905d59d1d4860df8ffc9397f24d37da2a9ad395c3da8c16d02423fc13",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\courtyard-foliage-final\\alpha.png",
+      "parentSha256": "172f7f4482eb95ccecdb43403c4643161f946e8ba8ccc05d91df4bb7e4bd1421",
+      "sourceRectXYXY": [
+        0,
+        681,
+        1672,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "left-arrival-extension-top",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\left-arrival-extension-top-93bfb6913e1c.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\left-arrival-extension-top-1acd8d591cdf.png",
+      "sha256": "1acd8d591cdfa9a7431ecf42aa48a77ceddd9699b973346bbefd55ccf4f013f6",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\publication-extension-01\\alpha.png",
+      "parentSha256": "93bfb6913e1cb9dcf7e7fffc97f95cc182ac26fcdca9af01cea9e0de0a443d47",
+      "sourceRectXYXY": [
+        209,
+        0,
+        836,
+        61
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "left-arrival-extension-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\left-arrival-extension-floor-93bfb6913e1c.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\left-arrival-extension-floor-5c43cdf2d8de.png",
+      "sha256": "5c43cdf2d8deb5bc0e3801ec27983bf95b45cc8661b75a45cd9cdbcd8836c1a2",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\publication-extension-01\\alpha.png",
+      "parentSha256": "93bfb6913e1cb9dcf7e7fffc97f95cc182ac26fcdca9af01cea9e0de0a443d47",
+      "sourceRectXYXY": [
+        209,
+        690,
+        836,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "right-arrival-extension-top",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\right-arrival-extension-top-93bfb6913e1c.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\right-arrival-extension-top-b277f56929d3.png",
+      "sha256": "b277f56929d337cce5347e9687a6180fe3ef234aeab1f46c074a523ec9f652ad",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\publication-extension-01\\alpha.png",
+      "parentSha256": "93bfb6913e1cb9dcf7e7fffc97f95cc182ac26fcdca9af01cea9e0de0a443d47",
+      "sourceRectXYXY": [
+        836,
+        0,
+        1463,
+        61
+      ],
+      "operation": "exact pixel crop; no resizing"
+    },
+    {
+      "id": "right-arrival-extension-floor",
+      "source": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\exports\\published-layers\\right-arrival-extension-floor-93bfb6913e1c.png",
+      "target": "D:\\Dex\\Projects\\dex-place-world\\site\\public\\world\\registry\\art\\right-arrival-extension-floor-6b716efe1fb3.png",
+      "sha256": "6b716efe1fb3d45b55cccc00016501b59455f84c8d13eab145d84d9c3075b03c",
+      "metadata": {},
+      "parentSource": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\publication-extension-01\\alpha.png",
+      "parentSha256": "93bfb6913e1cb9dcf7e7fffc97f95cc182ac26fcdca9af01cea9e0de0a443d47",
+      "sourceRectXYXY": [
+        836,
+        690,
+        1463,
+        941
+      ],
+      "operation": "exact pixel crop; no resizing"
+    }
+  ],
+  "scope": "isolated local-game asset publication; no live-site deployment",
+  "review": "Published art verified against source hashes, all12 source splits pixel-reconstructed. Native crop/prop contacts, previous355native browser captures, corrected foliage on dark/warm/sky and floorpatch boundary composites inspected. Latest actual gameplay/taste review remains root-owned.",
+  "arrivalExtension": true,
+  "publicationValidation": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\publication-01\\publication-validation-final.json"
+}

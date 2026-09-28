@@ -1,0 +1,21 @@
+{
+  "room": "rest",
+  "base": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\native-key-final-v1\\rest\\alpha.png",
+  "sourceSha256": "6dd7f6e2bf7f1cb44fc446f89e82ff9d828961fc376dacfb61139d05e53bba97",
+  "output": "D:\\Dex\\Projects\\dex-place-art-production\\registry-game-20260913\\reviews\\pink-islands-01\\rest-foliage-final\\alpha.png",
+  "outputSha256": "7517656249d9a9e1abf8237206b23bc4cb5e1d4f5570b2aa7c9aab86f349479e",
+  "selectedPixels": 309,
+  "changedPixels": 309,
+  "otherRGBAUnchanged": true,
+  "beforeStrongPink": 309,
+  "afterStrongPink": 0,
+  "remainingBounds": null,
+  "regions": [
+    [
+      0,
+      0,
+      680,
+      695
+    ]
+  ]
+}

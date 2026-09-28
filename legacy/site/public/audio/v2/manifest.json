@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "music": [
+    {
+      "id": "arena-chamber",
+      "durationSeconds": 68.57145833333334,
+      "sampleRate": 48000,
+      "channels": 2,
+      "frameCount": 3291430,
+      "loopStartFrame": 0,
+      "loopEndFrame": 3291430,
+      "transitionMode": "fade-through-quiet",
+      "files": {
+        "opus": {
+          "url": "/audio/v2/arena-chamber-v1.opus",
+          "bytes": 979690,
+          "sha256": "76964ba21133620145a744182f512ca4e60b0944211843158e9268f7a709b0c5"
+        },
+        "m4a": {
+          "url": "/audio/v2/arena-chamber-v1.m4a",
+          "bytes": 1256907,
+          "sha256": "e1dd879ceed841df3f6d1388849e2532bed14066f061b6b789aca924093a9bad"
+        }
+      },
+      "listeningStatus": "pending",
+      "productionStatus": "locally-rendered-original-arrangement",
+      "provenance": "Original dex.place 16-bar A-D-E-F motif and harmony, arranged for restrained strings and cello. FluidSynth 2.6.0 with GeneralUser GS 2.0.3; no external song or new provider generation.",
+      "attributions": [
+        {
+          "name": "GeneralUser GS 2.0.3",
+          "creator": "S. Christian Collins",
+          "url": "https://www.schristiancollins.com/generaluser.php",
+          "license": "GeneralUser GS License v2: recordings permitted; soundfont is not distributed."
+        }
+      ]
+    }
+  ],
+  "creditsSpent": 0
+}

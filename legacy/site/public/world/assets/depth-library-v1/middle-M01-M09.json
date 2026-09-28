@@ -1,0 +1,730 @@
+{
+  "schemaVersion": 1,
+  "units": "logical world pixels",
+  "group": "middle M01-M09",
+  "countRule": "Each stable ID is one independent role; source revisions and review sheets do not add assets.",
+  "runtimeAccepted": false,
+  "assets": [
+    {
+      "id": "M01",
+      "name": "transit gantry",
+      "url": "/world/assets/depth-library-v1/M01-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 960,
+        "height": 137
+      },
+      "logicalSize": {
+        "width": 960,
+        "height": 137
+      },
+      "worldScale": 1,
+      "logicalPixelPitchWorldPx": 1,
+      "filter": "nearest",
+      "layer": "middle",
+      "palette": [
+        "#687e84",
+        "#73888e",
+        "#7e9398",
+        "#899da2",
+        "#94a7ab",
+        "#a0b2b4"
+      ],
+      "alphaPolicy": "binary structural cutout; RGB zero wherever alpha is zero",
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 480,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 480,
+          "y": 137
+        }
+      },
+      "openingCheckPoints": [
+        {
+          "x": 263,
+          "y": 74,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 665,
+          "y": 74,
+          "alpha": 0,
+          "clear": true
+        }
+      ],
+      "assemblyNotes": [
+        "Overhead span behind Dispatch. Keep both broad inner intervals clear; upper and lower beam are decoration, without collision.",
+        "Use integer placement and common camera scaling. No automatic physics or occlusion implied.",
+        "Open arches and edge-connected voids may not appear in enclosedTransparentOpenings; preserve all image alpha."
+      ],
+      "sha256": "61e6652a032bd4266ec902259254ba640263064e3aa587e9709b3ce896174fb1",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeVerdict": "pending actual root scene composition",
+      "runtimeAccepted": false,
+      "enclosedTransparentOpenings": [
+        {
+          "x": 118,
+          "y": 55,
+          "width": 346,
+          "height": 68,
+          "transparentPixels": 23412
+        },
+        {
+          "x": 496,
+          "y": 55,
+          "width": 346,
+          "height": 68,
+          "transparentPixels": 23412
+        }
+      ]
+    },
+    {
+      "id": "M02",
+      "name": "concrete wall bay",
+      "url": "/world/assets/depth-library-v1/M02-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 345
+      },
+      "logicalSize": {
+        "width": 720,
+        "height": 345
+      },
+      "worldScale": 1,
+      "logicalPixelPitchWorldPx": 1,
+      "filter": "nearest",
+      "layer": "middle",
+      "palette": [
+        "#687e84",
+        "#73888e",
+        "#7e9398",
+        "#899da2",
+        "#94a7ab",
+        "#a0b2b4"
+      ],
+      "alphaPolicy": "binary structural cutout; RGB zero wherever alpha is zero",
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 360,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 360,
+          "y": 345
+        }
+      },
+      "openingCheckPoints": [],
+      "assemblyNotes": [
+        "Quiet wall backing behind archive/donation props. Continuous face has no window or opening; let other structure overlap its ends.",
+        "Use integer placement and common camera scaling. No automatic physics or occlusion implied.",
+        "Open arches and edge-connected voids may not appear in enclosedTransparentOpenings; preserve all image alpha."
+      ],
+      "sha256": "a1c3216a9d199879aa5703016234c207173eb219e44704458b5bf039b703cd84",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeVerdict": "pending actual root scene composition",
+      "runtimeAccepted": false,
+      "enclosedTransparentOpenings": []
+    },
+    {
+      "id": "M03",
+      "name": "arcade recess",
+      "url": "/world/assets/depth-library-v1/M03-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 320
+      },
+      "logicalSize": {
+        "width": 800,
+        "height": 320
+      },
+      "worldScale": 1,
+      "logicalPixelPitchWorldPx": 1,
+      "filter": "nearest",
+      "layer": "middle",
+      "palette": [
+        "#687e84",
+        "#73888e",
+        "#7e9398",
+        "#899da2",
+        "#94a7ab",
+        "#a0b2b4"
+      ],
+      "alphaPolicy": "binary structural cutout; RGB zero wherever alpha is zero",
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 400,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 400,
+          "y": 320
+        }
+      },
+      "openingCheckPoints": [
+        {
+          "x": 130,
+          "y": 161,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 400,
+          "y": 174,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 653,
+          "y": 174,
+          "alpha": 0,
+          "clear": true
+        }
+      ],
+      "assemblyNotes": [
+        "Three arch openings reveal separately assembled farther layers. Align column bottoms; do not add traversal collision.",
+        "Use integer placement and common camera scaling. No automatic physics or occlusion implied.",
+        "Open arches and edge-connected voids may not appear in enclosedTransparentOpenings; preserve all image alpha."
+      ],
+      "sha256": "5d32643f0d0391af2c68a627d2e2c220b337599bed8526e8934849a76c1e3cac",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeVerdict": "pending actual root scene composition",
+      "runtimeAccepted": false,
+      "enclosedTransparentOpenings": []
+    },
+    {
+      "id": "M04",
+      "name": "archive light well",
+      "url": "/world/assets/depth-library-v1/M04-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 213,
+        "height": 640
+      },
+      "logicalSize": {
+        "width": 213,
+        "height": 640
+      },
+      "worldScale": 1,
+      "logicalPixelPitchWorldPx": 1,
+      "filter": "nearest",
+      "layer": "middle",
+      "palette": [
+        "#687e84",
+        "#73888e",
+        "#7e9398",
+        "#899da2",
+        "#94a7ab",
+        "#a0b2b4"
+      ],
+      "alphaPolicy": "binary structural cutout; RGB zero wherever alpha is zero",
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 106,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 106,
+          "y": 640
+        }
+      },
+      "openingCheckPoints": [
+        {
+          "x": 107,
+          "y": 289,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 107,
+          "y": 582,
+          "alpha": 0,
+          "clear": true
+        }
+      ],
+      "assemblyNotes": [
+        "Very narrow tall frame; preserve its aspect. Central opening stays clear. Top-center or bottom-center can anchor the well behind the archive route.",
+        "Use integer placement and common camera scaling. No automatic physics or occlusion implied.",
+        "Open arches and edge-connected voids may not appear in enclosedTransparentOpenings; preserve all image alpha."
+      ],
+      "sha256": "628f05f89521821a023a66bff4266e7c6cc7a50f4d94faf13987213bdb88ffe8",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeVerdict": "pending actual root scene composition",
+      "runtimeAccepted": false,
+      "enclosedTransparentOpenings": [
+        {
+          "x": 40,
+          "y": 18,
+          "width": 133,
+          "height": 605,
+          "transparentPixels": 79746
+        }
+      ]
+    },
+    {
+      "id": "M05",
+      "name": "gallery roof span",
+      "url": "/world/assets/depth-library-v1/M05-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 103
+      },
+      "logicalSize": {
+        "width": 1024,
+        "height": 103
+      },
+      "worldScale": 1,
+      "logicalPixelPitchWorldPx": 1,
+      "filter": "nearest",
+      "layer": "middle",
+      "palette": [
+        "#687e84",
+        "#73888e",
+        "#7e9398",
+        "#899da2",
+        "#94a7ab",
+        "#a0b2b4"
+      ],
+      "alphaPolicy": "binary structural cutout; RGB zero wherever alpha is zero",
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 512,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 512,
+          "y": 103
+        }
+      },
+      "openingCheckPoints": [
+        {
+          "x": 509,
+          "y": 86,
+          "alpha": 0,
+          "clear": true
+        }
+      ],
+      "assemblyNotes": [
+        "Shallow bowed roof band. Keep its broad underside void; squared left/right ends attach behind other supports. Never stretch height to the original prompt estimate.",
+        "Use integer placement and common camera scaling. No automatic physics or occlusion implied.",
+        "Open arches and edge-connected voids may not appear in enclosedTransparentOpenings; preserve all image alpha."
+      ],
+      "sha256": "c5c1a3e0eeb6e8feba200d31baff9e484c6639e959d6913ecf4a8b100c28093e",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeVerdict": "pending actual root scene composition",
+      "runtimeAccepted": false,
+      "enclosedTransparentOpenings": []
+    },
+    {
+      "id": "M06",
+      "name": "support bay opening",
+      "url": "/world/assets/depth-library-v1/M06-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 720,
+        "height": 444
+      },
+      "logicalSize": {
+        "width": 720,
+        "height": 444
+      },
+      "worldScale": 1,
+      "logicalPixelPitchWorldPx": 1,
+      "filter": "nearest",
+      "layer": "middle",
+      "palette": [
+        "#687e84",
+        "#73888e",
+        "#7e9398",
+        "#899da2",
+        "#94a7ab",
+        "#a0b2b4"
+      ],
+      "alphaPolicy": "binary structural cutout; RGB zero wherever alpha is zero",
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 360,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 360,
+          "y": 444
+        }
+      },
+      "openingCheckPoints": [
+        {
+          "x": 360,
+          "y": 218,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 136,
+          "y": 218,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 567,
+          "y": 218,
+          "alpha": 0,
+          "clear": true
+        }
+      ],
+      "assemblyNotes": [
+        "Frontal frame behind the small donation plinth. Central rectangle is empty; separate sky/haze must show through it.",
+        "Use integer placement and common camera scaling. No automatic physics or occlusion implied.",
+        "Open arches and edge-connected voids may not appear in enclosedTransparentOpenings; preserve all image alpha."
+      ],
+      "sha256": "04a9d84377f29cd42a83b185468049cc93c72ec74cca6d13cb6dbcb37819bd30",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeVerdict": "pending actual root scene composition",
+      "runtimeAccepted": false,
+      "enclosedTransparentOpenings": [
+        {
+          "x": 97,
+          "y": 80,
+          "width": 525,
+          "height": 349,
+          "transparentPixels": 183191
+        }
+      ]
+    },
+    {
+      "id": "M07",
+      "name": "bridge trestle",
+      "url": "/world/assets/depth-library-v1/M07-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 640,
+        "height": 253
+      },
+      "logicalSize": {
+        "width": 640,
+        "height": 253
+      },
+      "worldScale": 1,
+      "logicalPixelPitchWorldPx": 1,
+      "filter": "nearest",
+      "layer": "middle",
+      "palette": [
+        "#687e84",
+        "#73888e",
+        "#7e9398",
+        "#899da2",
+        "#94a7ab",
+        "#a0b2b4"
+      ],
+      "alphaPolicy": "binary structural cutout; RGB zero wherever alpha is zero",
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 320,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 320,
+          "y": 253
+        }
+      },
+      "openingCheckPoints": [
+        {
+          "x": 321,
+          "y": 93,
+          "alpha": 0,
+          "clear": true
+        }
+      ],
+      "assemblyNotes": [
+        "Coplanar V brace under arrival causeway. Top bearing beam anchors below an independent foreground deck; all brace intervals remain transparent.",
+        "Use integer placement and common camera scaling. No automatic physics or occlusion implied.",
+        "Open arches and edge-connected voids may not appear in enclosedTransparentOpenings; preserve all image alpha."
+      ],
+      "sha256": "72cbf001ba9b14709b9e72aa64d8b512753fb431a88a5dd25f32e7b07514ad96",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeVerdict": "pending actual root scene composition",
+      "runtimeAccepted": false,
+      "enclosedTransparentOpenings": [
+        {
+          "x": 122,
+          "y": 31,
+          "width": 396,
+          "height": 183,
+          "transparentPixels": 39515
+        }
+      ]
+    },
+    {
+      "id": "M08",
+      "name": "service catwalk",
+      "url": "/world/assets/depth-library-v1/M08-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 480,
+        "height": 76
+      },
+      "logicalSize": {
+        "width": 480,
+        "height": 76
+      },
+      "worldScale": 1,
+      "logicalPixelPitchWorldPx": 1,
+      "filter": "nearest",
+      "layer": "middle",
+      "palette": [
+        "#687e84",
+        "#73888e",
+        "#7e9398",
+        "#899da2",
+        "#94a7ab",
+        "#a0b2b4"
+      ],
+      "alphaPolicy": "binary structural cutout; RGB zero wherever alpha is zero",
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 240,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 240,
+          "y": 76
+        }
+      },
+      "openingCheckPoints": [
+        {
+          "x": 98,
+          "y": 11,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 98,
+          "y": 31,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 215,
+          "y": 11,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 331,
+          "y": 11,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 419,
+          "y": 31,
+          "alpha": 0,
+          "clear": true
+        }
+      ],
+      "assemblyNotes": [
+        "Distant non-traversable detail on Dispatch structure. Preserve five posts, both thin rail lines, railing gaps and end support brackets.",
+        "Use integer placement and common camera scaling. No automatic physics or occlusion implied.",
+        "Open arches and edge-connected voids may not appear in enclosedTransparentOpenings; preserve all image alpha."
+      ],
+      "sha256": "c941a3077996168c0f358ba3e283034bf0d771daccc153da1fa61d6ba7100ebb",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeVerdict": "pending actual root scene composition",
+      "runtimeAccepted": false,
+      "enclosedTransparentOpenings": [
+        {
+          "x": 10,
+          "y": 4,
+          "width": 110,
+          "height": 20,
+          "transparentPixels": 2192
+        },
+        {
+          "x": 124,
+          "y": 4,
+          "width": 114,
+          "height": 20,
+          "transparentPixels": 2272
+        },
+        {
+          "x": 242,
+          "y": 4,
+          "width": 114,
+          "height": 20,
+          "transparentPixels": 2272
+        },
+        {
+          "x": 360,
+          "y": 4,
+          "width": 111,
+          "height": 20,
+          "transparentPixels": 2207
+        },
+        {
+          "x": 10,
+          "y": 27,
+          "width": 110,
+          "height": 10,
+          "transparentPixels": 1098
+        },
+        {
+          "x": 124,
+          "y": 27,
+          "width": 114,
+          "height": 10,
+          "transparentPixels": 1137
+        },
+        {
+          "x": 242,
+          "y": 27,
+          "width": 114,
+          "height": 10,
+          "transparentPixels": 1138
+        },
+        {
+          "x": 360,
+          "y": 27,
+          "width": 111,
+          "height": 10,
+          "transparentPixels": 1104
+        },
+        {
+          "x": 12,
+          "y": 53,
+          "width": 11,
+          "height": 11,
+          "transparentPixels": 66
+        },
+        {
+          "x": 457,
+          "y": 53,
+          "width": 11,
+          "height": 11,
+          "transparentPixels": 66
+        }
+      ]
+    },
+    {
+      "id": "M09",
+      "name": "water-edge pilings",
+      "url": "/world/assets/depth-library-v1/M09-depth-v1.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 640,
+        "height": 275
+      },
+      "logicalSize": {
+        "width": 640,
+        "height": 275
+      },
+      "worldScale": 1,
+      "logicalPixelPitchWorldPx": 1,
+      "filter": "nearest",
+      "layer": "middle",
+      "palette": [
+        "#687e84",
+        "#73888e",
+        "#7e9398",
+        "#899da2",
+        "#94a7ab",
+        "#a0b2b4"
+      ],
+      "alphaPolicy": "binary structural cutout; RGB zero wherever alpha is zero",
+      "attachments": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topCenter": {
+          "x": 320,
+          "y": 0
+        },
+        "bottomCenter": {
+          "x": 320,
+          "y": 275
+        }
+      },
+      "openingCheckPoints": [
+        {
+          "x": 102,
+          "y": 103,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 254,
+          "y": 119,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 397,
+          "y": 111,
+          "alpha": 0,
+          "clear": true
+        },
+        {
+          "x": 537,
+          "y": 123,
+          "alpha": 0,
+          "clear": true
+        }
+      ],
+      "assemblyNotes": [
+        "Five staggered posts and one low crossbar. Place bottoms at a shared waterline and let separate water/reflection layers overlap lower weathering.",
+        "Use integer placement and common camera scaling. No automatic physics or occlusion implied.",
+        "Open arches and edge-connected voids may not appear in enclosedTransparentOpenings; preserve all image alpha."
+      ],
+      "sha256": "a700eeb2e314c98700ae18fed8a5385742e5cda37e6a4d2ce0c8e03210406dd1",
+      "verdict": "draft-ready-for-root-scene-composition",
+      "runtimeVerdict": "pending actual root scene composition",
+      "runtimeAccepted": false,
+      "enclosedTransparentOpenings": []
+    }
+  ]
+}

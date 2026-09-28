@@ -1,0 +1,95 @@
+{
+  "createdAt": "2026-09-08T11:41:00.458Z",
+  "selection": "suno-b-inhabited-v2",
+  "entries": {
+    "music": 2,
+    "ambience": 2,
+    "effects": 17,
+    "total": 21
+  },
+  "profiles": [
+    {
+      "name": "brave",
+      "checks": 15,
+      "failed": [],
+      "maximumDecodedBytes": 64768372,
+      "maximumDecodedAndReservedBytes": 64768372,
+      "codecOverride": null
+    },
+    {
+      "name": "firefox",
+      "checks": 15,
+      "failed": [],
+      "maximumDecodedBytes": 64768372,
+      "maximumDecodedAndReservedBytes": 64768372,
+      "codecOverride": null
+    },
+    {
+      "name": "brave-aac",
+      "checks": 15,
+      "failed": [],
+      "maximumDecodedBytes": 64768372,
+      "maximumDecodedAndReservedBytes": 64806772,
+      "codecOverride": "Private test only: reports Opus unsupported to exercise native AAC fallback decoding; not a claim about browser codec autodetection."
+    }
+  ],
+  "game": {
+    "checks": 5,
+    "failed": [],
+    "errors": []
+  },
+  "negative": [
+    {
+      "name": "stale map rejected",
+      "pass": true,
+      "error": "Audio audit received a stale map; actual PUBLIC_ASSETS.map is /world/maps/inhabited-v2.json"
+    },
+    {
+      "name": "omitted combat effect rejected",
+      "pass": true,
+      "error": "Active effects selection does not match current runtime/map requirements; missing=hurt; extra="
+    }
+  ],
+  "protectedB": [
+    {
+      "format": "opus",
+      "url": "/audio/world-v1/suno-theme-b-v1/support.opus",
+      "bytes": 1152333,
+      "sha256": "b0f5d425b80eb4af4d37dc11bfa6fd4c95192be24ce264b709a7ba4d30d02f1c",
+      "unchanged": true
+    },
+    {
+      "format": "m4a",
+      "url": "/audio/world-v1/suno-theme-b-v1/support.m4a",
+      "bytes": 1322589,
+      "sha256": "2df21d1caffb73d43ee40a96ccba65b35b6a0d58ae86fd16e3f7bed0660fa9b4",
+      "unchanged": true
+    }
+  ],
+  "sourceHashes": {
+    "src/worldsite/audio.ts": "286fe585172c22d4e6e7c632b174aa69c4d14bfbebe89267ca48ff975833718e",
+    "src/worldsite/audio-direction.ts": "354172cab6e69a5724c94e23e4557c15fb2beb312eda2483a6701e0af1380bbf",
+    "src/worldsite/audio-runtime-selection.json": "0cbd9870288a592b7b1e8cf5dae6b492be72f043d8bf99ecb69ec5adeae25544",
+    "src/worldsite/experience.ts": "d7b5a21535f491240186e7ff338045195f5b34f3278c9feefc3e9443557add00",
+    "scripts/audio-runtime-selection.mjs": "35b9508d4ec38b58daa1708d3a866a59a46ec3db7c2715de0e5e601d932f53a2",
+    "public/audio/world-v1/manifest.json": "ae15dbe72ba04a099e979768d3012fcb43ba617d5b3a9ccdd55b33b1f37bdabd",
+    "public/audio/v2/manifest.json": "f841b51a108619eb42a9c8925a480ec5fc8172d539e3d64dab2ffcba7d5bd001",
+    "public/audio/v2/arena-chamber-v1.opus": "76964ba21133620145a744182f512ca4e60b0944211843158e9268f7a709b0c5",
+    "public/audio/v2/arena-chamber-v1.m4a": "e1dd879ceed841df3f6d1388849e2532bed14066f061b6b789aca924093a9bad"
+  },
+  "guard": "e370ede42d13b4478f206a091023a18e6461e02aa8e968d75b56c0fae6cc95b9",
+  "publicChangedFiles": [
+    "src/worldsite/audio.ts",
+    "src/worldsite/audio-direction.ts",
+    "src/worldsite/audio-runtime-selection.json",
+    "src/worldsite/experience.ts",
+    "scripts/audio-runtime-selection.mjs",
+    "public/audio/world-v1/manifest.json",
+    "public/audio/v2/manifest.json",
+    "public/audio/v2/arena-chamber-v1.opus",
+    "public/audio/v2/arena-chamber-v1.m4a"
+  ],
+  "providerActions": 0,
+  "creditsSpent": 0,
+  "listeningAcceptance": false
+}

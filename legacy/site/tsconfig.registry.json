@@ -1,0 +1,1 @@
+{"extends":"./tsconfig.json","include":["src/worldsite/registry","vite.registry.config.ts"],"compilerOptions":{"noEmit":true}}

@@ -1,0 +1,353 @@
+{
+  "worldRevision": "inhabited-v2.1",
+  "rooms": [
+    {
+      "id": "arrival",
+      "x": 0,
+      "y": 0,
+      "width": 2800,
+      "height": 2200,
+      "floorY": 1000,
+      "topY": 150,
+      "kind": "arrival",
+      "geometryKey": "inhabited-v2.1:arrival:layout1",
+      "entrances": [
+        {
+          "id": "arrival.from.junction",
+          "x": 2460,
+          "y": 1000,
+          "facing": -1,
+          "checkpointId": "checkpoint.arrival.from.junction"
+        }
+      ],
+      "safe": true,
+      "music": "calm"
+    },
+    {
+      "id": "junction",
+      "x": 4000,
+      "y": 0,
+      "width": 3200,
+      "height": 2200,
+      "floorY": 1120,
+      "topY": 270,
+      "kind": "junction",
+      "geometryKey": "inhabited-v2.1:junction:layout1",
+      "entrances": [
+        {
+          "id": "junction.from.arrival",
+          "x": 4310,
+          "y": 1120,
+          "facing": 1,
+          "checkpointId": "checkpoint.junction.from.arrival"
+        },
+        {
+          "id": "junction.from.dispatch",
+          "x": 6810,
+          "y": 1120,
+          "facing": -1,
+          "checkpointId": "checkpoint.junction.from.dispatch"
+        },
+        {
+          "id": "junction.from.hearth",
+          "x": 4960,
+          "y": 1120,
+          "facing": 1,
+          "checkpointId": "checkpoint.junction.from.hearth"
+        },
+        {
+          "id": "junction.from.archive",
+          "x": 5280,
+          "y": 1120,
+          "facing": 1,
+          "checkpointId": "checkpoint.junction.from.archive"
+        },
+        {
+          "id": "junction.from.lookout",
+          "x": 5800,
+          "y": 960,
+          "facing": -1,
+          "checkpointId": "checkpoint.junction.from.lookout"
+        }
+      ],
+      "safe": true,
+      "music": "calm"
+    },
+    {
+      "id": "dispatch",
+      "x": 8000,
+      "y": 0,
+      "width": 3200,
+      "height": 2200,
+      "floorY": 1040,
+      "topY": 190,
+      "kind": "dispatch",
+      "geometryKey": "inhabited-v2.1:dispatch:layout1",
+      "entrances": [
+        {
+          "id": "dispatch.from.junction",
+          "x": 8340,
+          "y": 1040,
+          "facing": 1,
+          "checkpointId": "checkpoint.dispatch.from.junction"
+        },
+        {
+          "id": "dispatch.from.arena",
+          "x": 9760,
+          "y": 1040,
+          "facing": -1,
+          "checkpointId": "checkpoint.dispatch.from.arena"
+        }
+      ],
+      "safe": true,
+      "music": "silent"
+    },
+    {
+      "id": "arena",
+      "x": 12000,
+      "y": 0,
+      "width": 3200,
+      "height": 2200,
+      "floorY": 1080,
+      "topY": 230,
+      "kind": "arena",
+      "geometryKey": "inhabited-v2.1:arena:layout1",
+      "entrances": [
+        {
+          "id": "arena.from.dispatch",
+          "x": 12380,
+          "y": 1080,
+          "facing": 1,
+          "checkpointId": "checkpoint.arena.from.dispatch"
+        }
+      ],
+      "safe": false,
+      "music": "arena"
+    },
+    {
+      "id": "hearth",
+      "x": 16000,
+      "y": 0,
+      "width": 2800,
+      "height": 2200,
+      "floorY": 1040,
+      "topY": 190,
+      "kind": "hearth",
+      "geometryKey": "inhabited-v2.1:hearth:layout1",
+      "entrances": [
+        {
+          "id": "hearth.from.junction",
+          "x": 16370,
+          "y": 1040,
+          "facing": 1,
+          "checkpointId": "checkpoint.hearth.from.junction"
+        },
+        {
+          "id": "hearth.from.treasury",
+          "x": 18390,
+          "y": 1040,
+          "facing": -1,
+          "checkpointId": "checkpoint.hearth.from.treasury"
+        }
+      ],
+      "safe": true,
+      "music": "calm"
+    },
+    {
+      "id": "treasury",
+      "x": 20000,
+      "y": 0,
+      "width": 3400,
+      "height": 2200,
+      "floorY": 1080,
+      "topY": 230,
+      "kind": "treasury",
+      "geometryKey": "inhabited-v2.1:treasury:layout1",
+      "entrances": [
+        {
+          "id": "treasury.from.hearth",
+          "x": 20350,
+          "y": 1080,
+          "facing": 1,
+          "checkpointId": "checkpoint.treasury.from.hearth"
+        },
+        {
+          "id": "treasury.from.archive",
+          "x": 20970,
+          "y": 1080,
+          "facing": 1,
+          "checkpointId": "checkpoint.treasury.from.archive"
+        },
+        {
+          "id": "treasury.from.return-shaft",
+          "x": 22980,
+          "y": 1080,
+          "facing": -1,
+          "checkpointId": "checkpoint.treasury.from.return-shaft"
+        }
+      ],
+      "safe": true,
+      "music": "calm"
+    },
+    {
+      "id": "lookout",
+      "x": 24000,
+      "y": 0,
+      "width": 3600,
+      "height": 2200,
+      "floorY": 1000,
+      "topY": 150,
+      "kind": "lookout",
+      "geometryKey": "inhabited-v2.1:lookout:layout1",
+      "entrances": [
+        {
+          "id": "lookout.from.junction",
+          "x": 24350,
+          "y": 1000,
+          "facing": 1,
+          "checkpointId": "checkpoint.lookout.from.junction"
+        },
+        {
+          "id": "lookout.from.reservoir",
+          "x": 27190,
+          "y": 1000,
+          "facing": -1,
+          "checkpointId": "checkpoint.lookout.from.reservoir"
+        }
+      ],
+      "safe": true,
+      "music": "calm"
+    },
+    {
+      "id": "reservoir",
+      "x": 28000,
+      "y": 0,
+      "width": 4800,
+      "height": 2200,
+      "floorY": 1140,
+      "topY": 290,
+      "kind": "reservoir",
+      "geometryKey": "inhabited-v2.1:reservoir:layout1",
+      "entrances": [
+        {
+          "id": "reservoir.from.lookout",
+          "x": 28350,
+          "y": 1140,
+          "facing": 1,
+          "checkpointId": "checkpoint.reservoir.from.lookout"
+        },
+        {
+          "id": "reservoir.from.gallery",
+          "x": 32390,
+          "y": 1140,
+          "facing": -1,
+          "checkpointId": "checkpoint.reservoir.from.gallery"
+        }
+      ],
+      "safe": false,
+      "music": "calm"
+    },
+    {
+      "id": "gallery",
+      "x": 34000,
+      "y": 0,
+      "width": 5200,
+      "height": 2200,
+      "floorY": 1040,
+      "topY": 190,
+      "kind": "gallery",
+      "geometryKey": "inhabited-v2.1:gallery:layout1",
+      "entrances": [
+        {
+          "id": "gallery.from.reservoir",
+          "x": 34350,
+          "y": 1040,
+          "facing": 1,
+          "checkpointId": "checkpoint.gallery.from.reservoir"
+        },
+        {
+          "id": "gallery.from.return-shaft",
+          "x": 38660,
+          "y": 1040,
+          "facing": -1,
+          "checkpointId": "checkpoint.gallery.from.return-shaft"
+        }
+      ],
+      "safe": true,
+      "music": "silent"
+    },
+    {
+      "id": "archive",
+      "x": 40000,
+      "y": 0,
+      "width": 3800,
+      "height": 2200,
+      "floorY": 1080,
+      "topY": 230,
+      "kind": "archive",
+      "geometryKey": "inhabited-v2.1:archive:layout1",
+      "entrances": [
+        {
+          "id": "archive.from.junction",
+          "x": 40350,
+          "y": 1080,
+          "facing": 1,
+          "checkpointId": "checkpoint.archive.from.junction"
+        },
+        {
+          "id": "archive.from.treasury",
+          "x": 43330,
+          "y": 1080,
+          "facing": -1,
+          "checkpointId": "checkpoint.archive.from.treasury"
+        }
+      ],
+      "safe": true,
+      "music": "silent"
+    },
+    {
+      "id": "return-shaft",
+      "x": 45000,
+      "y": 0,
+      "width": 2800,
+      "height": 2200,
+      "floorY": 1500,
+      "topY": 650,
+      "kind": "shaft",
+      "geometryKey": "inhabited-v2.1:return-shaft:layout1",
+      "entrances": [
+        {
+          "id": "return-shaft.from.gallery",
+          "x": 47330,
+          "y": 1040,
+          "facing": -1,
+          "checkpointId": "checkpoint.return-shaft.from.gallery"
+        },
+        {
+          "id": "return-shaft.from.treasury",
+          "x": 45350,
+          "y": 1500,
+          "facing": 1,
+          "checkpointId": "checkpoint.return-shaft.from.treasury"
+        }
+      ],
+      "safe": true,
+      "music": "silent"
+    }
+  ],
+  "objects": 54,
+  "solids": 54,
+  "doorCount": 23,
+  "galleryIds": [
+    "shot-18-2",
+    "shot-23",
+    "inshot-20260620-071233415",
+    "inshot-20260826-123444237",
+    "inshot-20260721-200821729",
+    "inshot-20260708-060051952",
+    "inshot-20260708-055457338",
+    "kaizen",
+    "towaki"
+  ],
+  "mapSha256": "717f80fcd3e3253deeef24c2561c048f6806504ef84d502fe9defacd1d59d329"
+}
