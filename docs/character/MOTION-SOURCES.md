@@ -497,3 +497,15 @@ MotionPackage Pro 第65弾 "剣", 第64弾 "必殺技", 第63弾 "ファンタ�
   probe).
 - Other licenses: Ubisoft LAFAN1 README; Hugging Face KungfuAthleteBot card; Zenodo 100STYLE
   record; MoCap Online product and license pages.
+
+## Dex's decisions (2026-09-29)
+
+- **Kimodo text encoder:** route (a). Dex signs in to Hugging Face himself and requests access to
+  `meta-llama/Meta-Llama-3-8B-Instruct`; the read token is stored in Windows Credential Manager as
+  `DEX_HF_READ_TOKEN` (via `tools/motion-ai/store-hf-token.ps1`) and passed to downloads as the
+  `HF_TOKEN` environment variable, never on a command line or in a file in the repo.
+- **"Not for profit":** Dex treats dex.place as not for profit; the donate button doesn't change
+  that. Clips under terms that allow not-for-profit use (e.g. Motion Actor) may feed shipped motion.
+- **Transformation:** captured motion is always a starting point, never shipped as-is. It's
+  retargeted to Rosace, re-posed, re-timed, rendered from our own camera, pixelated and covered by
+  our own effects. Dex's call: that's enough change to use video captures as a base.

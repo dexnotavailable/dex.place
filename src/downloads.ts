@@ -10,7 +10,7 @@ export interface Download {
 export const downloads: readonly Download[] = [
   {
     name: "dexClient",
-    href: "/downloads/dexClient-Setup-0.1.0.exe",
-    bytes: 665_563_123,
+    href: "/downloads/dexClient-Setup-0.4.6.exe",
+    bytes: 102_781_000,
   },
 ];

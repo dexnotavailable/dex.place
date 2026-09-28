@@ -117,8 +117,8 @@ traveller and not part of the site's world unless Dex says so.
 ### Donate
 
 - Ko-fi: redirects to https://ko-fi.com/dexdonation.
-- MB Bank: shows a QR for the real account with an amount slider from 100,000 to 10,000,000
-  VND. On-site wording can say something like "donate dex", but the transfer itself always
+- MB Bank: by default shows a QR for the real account with no amount filled in. An amount
+  slider from 100,000 to 10,000,000 VND regenerates the QR with that amount prefilled. On-site wording can say something like "donate dex", but the transfer itself always
   shows the bank's real recipient name.
 - Donation boxes scattered in safe spots, each with an easy view of top donors next to it.
   **No treasury room** (scrapped).
