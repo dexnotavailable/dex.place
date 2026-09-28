@@ -49,9 +49,14 @@ and goes through the same validation, so it exercises every path a real export w
 - Leave at least 2 px of empty gutter between frames.
 - **Normal map**: tangent space for the sprite as drawn facing right. `r = x` (right),
   `g = y` (**down**), `b = z` (toward the viewer), each mapped `-1..1 -> 0..255`. Flat is
-  `(128, 128, 255)`. The runtime negates x when the sprite is mirrored. Silhouette-edge texels
-  should point outward with a small z so rim light catches them (the stand-in writes
-  `z ~= 0.33` on its outline).
+  `(128, 128, 255)`. The runtime negates x when the sprite is mirrored. Surface texels next to
+  the silhouette should turn outward (a small z) so the rim finds them.
+- **Normal alpha is the ink mask.** Alpha >= 128: lit surface. Alpha < 128: ink (the outline
+  and interior lines). Ink stays ink: no rim, half the effect light, flat normal; its RGB is
+  ignored, so any value is fine (alpha 0 is safest). A normal map without alpha (or all 255)
+  is all surface; the runtime then also treats albedo darker than about `#121212` as ink, so
+  near-black outlines are protected either way. The stand-in writes alpha 0 on its outline and
+  inner lines.
 - `normal: null` is allowed; the sprite is then lit as flat.
 
 ## Manifest
@@ -84,7 +89,7 @@ and goes through the same validation, so it exercises every path a real export w
 | `loop` | Loops forever; otherwise the clip ends after its last frame. |
 | `next` | Clip to play when a non-looping clip ends. |
 | `gravity` | Gravity multiplier while this clip plays. `0` hangs in place (root motion still moves). |
-| `angles` | `{ "from": -90, "to": 90 }`: frames are aim angles, evenly spaced (turret barrel). |
+| `angles` | `{ "from": -90, "to": 90 }`: frames are aim angles, evenly spaced (turret barrel). Degrees in -360..360; `from` and `to` must differ. |
 | `tags` | `"locomotion"`, `"free"` (plays without locking control: land, double jump), `"dash"`, `"m1"`, `"finisher"`, `"skill"`, `"ult"`, `"hurt"`, `"indexed"`. |
 | `frames` | At least one. |
 
@@ -96,7 +101,9 @@ message. The M1 chain order is not hard-coded: it comes from cancel windows (see
 five-hit string is a data change.
 
 The turret package uses `base`, `head` (frame 0 idle, frame 1 charged), `barrel`
-(angle-indexed) and `broken`.
+(angle-indexed; `angles` is **required** on it) and `broken`. A missing clip or a barrel
+without a usable `angles` span fails at load with the JSON path on the page, never inside the
+frame loop.
 
 ## Frames
 
@@ -111,7 +118,7 @@ The turret package uses `base`, `head` (frame 0 idle, frame 1 charged), `barrel`
 | `hurtboxes` | Overrides the defaults this frame. `[]` means nothing can hit her. |
 | `iframes` | `true`: hurtboxes ignore hits this frame (dash, ultimate). |
 | `cancel` | Cancel windows (below). |
-| `rootMotion` | `[dx, dy]` pixels travelled over the whole frame, spread evenly over its ticks, facing-relative. A non-zero `dy` overrides gravity for the frame. Collision still applies. |
+| `rootMotion` | `[dx, dy]` pixels travelled over the whole frame, spread evenly over its ticks, facing-relative. A non-zero `dy` overrides gravity for the frame. Collision still applies. Forward travel stops once the clip play has hit something, or while an enemy body is within `attackStopGap` px (tuning, 10) in front of her, so a string never carries her through a target. Clips tagged `dash` are exempt (the dodge passes through). Enemies also have a push box she can't end a tick inside. |
 | `events` | Fired on the tick the frame starts (below). |
 | `anchors` | Named points relative to the pivot: `tip` (weapon tip), `handN`, `handF`, `head`, `chest`, `halo`, `butt` for the player; `mount`, `barrel`, `eye`, `muzzle` for the turret. Events can place themselves on an anchor. |
 | `pose` | Informational: the source pose / action frame name. |
@@ -142,7 +149,14 @@ While the frame plays, a buffered input for an action in `into` interrupts the c
 `m1` (left click / J), `m2` (right click / K / Shift = dash), `skill` (Q), `ult` (R), `jump`,
 `move` (any horizontal input returns control). The value is the clip to play, or `"*"` for the
 controller's default (`m1_1`, `dash`, `skill_q`, `ult_r`, normal jump). `onHit: true` opens the
-window only after this play has hit something. Attacks buffer for 12 ticks, jumps for 8.
+window only after this play has hit something.
+
+Buffering: out of an action, attacks buffer for 12 ticks; jumps, dashes, Q and R for 8. A
+press made **during** an action waits (up to `actionHoldTicks`, 30) for the first window that
+accepts it, or for the action to end, instead of expiring. When several presses wait, a dash,
+jump, Q or R beats a mashed attack, and among those the latest press wins; whatever is chosen
+drops every older press. Give anticipation frames an `m2` window if the dodge should cancel
+the wind-up (the lab's M1 1-3 do; the finisher's rise and hang stay committed).
 
 ## Events
 
@@ -153,11 +167,11 @@ VFX or light follow the character after it spawns.
 | `type` | Fields | Runtime |
 |---|---|---|
 | `vfx` | `id`, `rotation` (degrees, clockwise), `scale` (number or `[sx, sy]`), `colour`, `core`, `edge`, `layer` (`back`/`front`), `params` (primitive overrides), `light` | Spawns a preset from the VFX library (`src/lab/data/vfx.json`). Unknown ids warn at load. |
-| `light` | `colour`, `radius`, `intensity`, `duration`, `height`, `flicker` | A point light that fades out linearly. Up to 16 lights are active; they shade sprites through the normal map and drive the rim. |
+| `light` | `colour`, `radius`, `intensity`, `duration`, `height`, `flicker` | A point light that fades out linearly. Up to 16 lights are active; they shade sprites through the normal map and drive the rim. Keep effect lights around 0.8-1.5: the runtime caps what they can add (see Rendering model), so more intensity only widens the pool. |
 | `shake` | `amplitude` (px), `duration` | Whole-pixel camera shake, decaying. Reduced under `prefers-reduced-motion`. |
 | `zoom` | `steps` (1-2), `duration` | Zoom punch as an **integer upscale step** (3x -> 4x) around the character, so every pixel stays the same size. Skipped under reduced motion. |
 | `slowmo` | `factor` (0.05-1), `duration` (real ticks) | Simulation speed. The strongest active slow-mo wins. |
-| `cutin` | `id`, `duration` | Starts the ultimate cut-in overlay (the lab draws a dark band, speed lines and an eye close-up). The hook receives the id so real cut-in art can be swapped in per id. |
+| `cutin` | `id`, `duration` | Starts the ultimate cut-in overlay: the world behind her drops to ~40% with a cool tint (a real multiply, no dither; she and her effects stay at full strength), then a dark band with speed lines and an eye close-up slides through. The hook receives the id so real cut-in art can be swapped in per id. |
 | `sound` | `id`, `volume` | Sound cue id. The lab plays placeholder synth sounds for the ids it knows; real audio maps the same ids. |
 | `impact` | `mode` (`invert`/`mono`), `duration` (1-2) | Screen-space impact frame at art-pixel resolution. Skipped under `prefers-reduced-motion`, rate-limited so two can't stack. |
 
@@ -168,17 +182,29 @@ curve, white core -> colour -> edge ramp, splitting into slivers), `ring` (flatt
 shockwave), `pillar` (column of light), `burst` (radial rays), `streak` (spear thrust with
 speed lines), `disc` (flash), `particles` (spark, ember, shard, feather, debris, dust, mote;
 gravity, drag, colour over life, optional converge), `cracks` (ground decal), `afterimage`
-(copies the current frame as a fading silhouette), and `group` (several presets with offsets,
-rotations and delays). Every preset can carry a `light`. Shapes are evaluated per low-res
-pixel, so effects are pixel art at the sprite's pixel size by construction.
+(copies the current frame as a fading silhouette), `trail` (stamps an `afterimage` of the
+live frame every `every` ticks while it lasts), and `group` (several presets with offsets,
+rotations and delays). Every preset can carry a `light`. `"over": 0` draws a preset as added
+light instead of paint (flashes do; an additive disc falls off to nothing rather than to a
+flat edge colour). `"realtime": 1` ages a preset and its light in real ticks, so slow motion
+and hitstop never hold it on screen (flashes, 4-6 ticks). Shapes are evaluated per low-res
+pixel, so effects are pixel art at the sprite's pixel size by construction. Her effects stay
+in her palette: white core, pale gold, deep gold `#d9a032` edges, azure `#6fc8ff`.
 
 ## Rendering model (what the art is lit by)
 
 - Ambient + one key light (upper front). With `shading: "baked"` the key light only nudges.
-- Up to 16 point lights from effects, projectiles and the turret's eye.
-- Rim: a scene backlight plus every point light brightens texels whose normals face sideways
-  toward the light. Width, colour, intensity and threshold are in `src/lab/data/lighting.json`.
-- Light is quantized into bands and the rim into 0 / half / full, so lighting stays pixel art.
+- Up to 16 point lights from effects, projectiles and the turret's eye. Effect light
+  multiplies albedo with the summed light capped (`lightCap`, 1.35), then only fills a share
+  (`lightRoom`, 0.6) of the room each channel has left below white; a small band of the
+  light's own colour lands on texels squarely facing it. So a white dress stays white with its
+  folds, skin keeps its ramp and black legwear stays black under the biggest ult.
+- Rim: a scene backlight (upper left) plus every point light. It lands on the **first surface
+  pixel inside the silhouette** (found from the normal and the ink mask), never on the outline,
+  only on the side facing the light, as one full-strength band at least `rimBoost` (1.45x)
+  brighter than the lit colour. Colour, direction, intensity and threshold are in
+  `src/lab/data/lighting.json`.
+- Light is quantized into bands and the rim is on/off, so lighting stays pixel art.
 
 ## Validation
 
@@ -192,8 +218,9 @@ error listing every problem with its JSON path, for example:
   $.clips[7].frames[0].cancel[0].into.m1: unknown clip "m1_5"
 ```
 
-A package that fails validation does not load; the lab shows a short failure line and the
-console has the list.
+A package that fails validation does not load; the lab shows a short failure line with the
+file and the first JSON path, and the console has the full list. Anything that throws while
+the scene runs stops the loop with a "The lab stopped: ..." line instead of a black screen.
 
 ## Export checklist for the pipeline
 
