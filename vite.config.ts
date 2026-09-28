@@ -30,7 +30,7 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     rolldownOptions: {
-      input: { main: page("./index.html"), lab: page("./lab/index.html") },
+      input: { main: page("./index.html"), lab: page("./lab/index.html"), scenes: page("./scenes/index.html") },
     },
   },
 });

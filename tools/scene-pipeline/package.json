@@ -1,0 +1,9 @@
+{
+  "name": "dex-scene-pipeline",
+  "private": true,
+  "type": "module",
+  "description": "Capture tools for /scenes/: screenshots, frame sequences, GIF/MP4 via ffmpeg.",
+  "dependencies": {
+    "playwright-core": "1.56.1"
+  }
+}

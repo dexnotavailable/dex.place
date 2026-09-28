@@ -1,0 +1,84 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#view {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: block;
+  image-rendering: pixelated;
+  outline: none;
+  cursor: grab;
+}
+
+#view:active {
+  cursor: grabbing;
+}
+
+#pick {
+  position: fixed;
+  left: 10px;
+  bottom: 8px;
+  display: flex;
+  gap: 2px;
+  z-index: 2;
+  opacity: 0.28;
+  transition: opacity 0.2s;
+}
+
+#pick:hover,
+#pick:focus-within {
+  opacity: 0.9;
+}
+
+#pick button {
+  font: 11px/1 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color: #d6d9de;
+  background: rgb(0 0 0 / 0.45);
+  border: 0;
+  border-radius: 3px;
+  padding: 5px 7px;
+  cursor: pointer;
+}
+
+#pick button[aria-current="true"] {
+  color: #fff;
+  background: rgb(255 255 255 / 0.14);
+}
+
+#fps {
+  position: fixed;
+  left: 8px;
+  top: 8px;
+  margin: 0;
+  padding: 6px 8px;
+  font: 11px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color: #e8e6f0;
+  background: rgb(0 0 0 / 0.6);
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: pre;
+  z-index: 3;
+}
+
+#fail {
+  position: fixed;
+  inset: auto 0 45% 0;
+  margin: 0;
+  text-align: center;
+  padding: 0 16px;
+  font: 13px/1.4 system-ui, sans-serif;
+  color: #c9c6d6;
+  white-space: pre-wrap;
+}
