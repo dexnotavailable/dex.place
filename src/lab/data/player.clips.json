@@ -1,0 +1,237 @@
+{
+  "name": "player (stand-in)",
+  "defaults": { "hurtboxes": [{ "x": -6, "y": -84, "w": 13, "h": 82 }] },
+  "clips": [
+    {
+      "id": "idle", "loop": true, "tags": ["locomotion"],
+      "frames": [
+        { "pose": "idle0", "duration": 28, "phase": "neutral" },
+        { "pose": "idle0~idle1:0.5", "duration": 8 },
+        { "pose": "idle1", "duration": 28 },
+        { "pose": "idle1~idle0:0.5", "duration": 8 }
+      ]
+    },
+    {
+      "id": "run", "loop": true, "tags": ["locomotion"],
+      "frames": [
+        { "pose": "run0", "duration": 3, "events": [{ "type": "sound", "id": "step", "volume": 0.5 }, { "type": "vfx", "id": "dust.kick", "offset": [-6, 0] }] },
+        { "pose": "run1", "duration": 3 },
+        { "pose": "run2", "duration": 3 },
+        { "pose": "run3", "duration": 3 },
+        { "pose": "run4", "duration": 3, "events": [{ "type": "sound", "id": "step", "volume": 0.5 }, { "type": "vfx", "id": "dust.kick", "offset": [-6, 0] }] },
+        { "pose": "run5", "duration": 3 },
+        { "pose": "run6", "duration": 3 },
+        { "pose": "run7", "duration": 3 }
+      ]
+    },
+    {
+      "id": "jump", "tags": ["locomotion"],
+      "frames": [{ "pose": "jumpRise", "duration": 600, "events": [{ "type": "sound", "id": "jump" }, { "type": "vfx", "id": "dust.land" }] }]
+    },
+    { "id": "apex", "loop": true, "tags": ["locomotion"], "frames": [{ "pose": "jumpApex", "duration": 60 }] },
+    {
+      "id": "fall", "loop": true, "tags": ["locomotion"],
+      "frames": [{ "pose": "jumpApex~fall:0.5", "duration": 6 }, { "pose": "fall", "duration": 60 }]
+    },
+    {
+      "id": "land", "tags": ["free"],
+      "frames": [
+        { "pose": "land", "duration": 4, "events": [{ "type": "vfx", "id": "land.soft" }, { "type": "sound", "id": "land" }] },
+        { "pose": "land~idle0:0.5", "duration": 4 }
+      ]
+    },
+    {
+      "id": "double_jump", "tags": ["free"],
+      "frames": [
+        { "pose": "djump0", "duration": 3, "events": [{ "type": "vfx", "id": "jump.double", "attach": true }, { "type": "sound", "id": "djump" }] },
+        { "pose": "djump1", "duration": 3 },
+        { "pose": "djump2", "duration": 3 },
+        { "pose": "djump3", "duration": 3 },
+        { "pose": "djump3~jumpApex:0.5", "duration": 4 }
+      ]
+    },
+    {
+      "id": "dash", "gravity": 0, "tags": ["dash"],
+      "frames": [
+        {
+          "pose": "dash0", "duration": 3, "phase": "active", "iframes": true, "rootMotion": [36, 0],
+          "events": [
+            { "type": "sound", "id": "dash" },
+            { "type": "vfx", "id": "afterimage.trail" },
+            { "type": "vfx", "id": "dash.speed", "attach": true },
+            { "type": "vfx", "id": "dust.kick", "offset": [-8, 0] },
+            { "type": "light", "anchor": "chest", "attach": true, "colour": "#7fd6ff", "radius": 90, "intensity": 0.9, "duration": 16 }
+          ],
+          "cancel": [{ "into": { "m1": "dash_attack" } }]
+        },
+        { "pose": "dash1", "duration": 3, "phase": "active", "iframes": true, "rootMotion": [34, 0], "cancel": [{ "into": { "m1": "dash_attack" } }] },
+        { "pose": "dash1", "duration": 3, "phase": "active", "iframes": true, "rootMotion": [26, 0], "cancel": [{ "into": { "m1": "dash_attack" } }] },
+        {
+          "pose": "dashEnd", "duration": 4, "phase": "recovery", "rootMotion": [10, 0], "events": [{ "type": "vfx", "id": "afterimage" }],
+          "cancel": [{ "into": { "m1": "dash_attack", "jump": "*", "skill": "*", "ult": "*" } }]
+        },
+        {
+          "pose": "dashEnd~idle0:0.5", "duration": 5, "phase": "recovery", "rootMotion": [3, 0],
+          "cancel": [{ "into": { "m1": "m1_1", "m2": "dash", "jump": "*", "move": "*", "skill": "*", "ult": "*" } }]
+        }
+      ]
+    },
+    {
+      "id": "dash_attack", "gravity": 0.2,
+      "frames": [
+        { "pose": "dAtkWind", "duration": 4, "phase": "anticipation", "rootMotion": [12, 0], "events": [{ "type": "sound", "id": "swing", "volume": 1.2 }] },
+        {
+          "pose": "dAtkWind~dAtkThrust:0.5", "duration": 1, "phase": "active", "rootMotion": [18, 0],
+          "events": [{ "type": "vfx", "id": "streak.thrust", "offset": [-12, -52] }, { "type": "vfx", "id": "afterimage" }]
+        },
+        {
+          "pose": "dAtkThrust", "duration": 3, "hold": 3, "phase": "active", "rootMotion": [40, 0],
+          "hitboxes": [{ "x": 0, "y": -66, "w": 132, "h": 24, "damage": 14, "knockback": [4.5, -1.5], "hitstop": 6, "stagger": 25, "group": "thrust", "hitVfx": "hit.light" }],
+          "events": [{ "type": "shake", "amplitude": 2, "duration": 6 }]
+        },
+        { "pose": "dAtkFollow", "duration": 10, "phase": "recovery", "rootMotion": [6, 0], "cancel": [{ "into": { "m1": "m1_2", "jump": "*", "m2": "dash" }, "onHit": true }] },
+        { "pose": "dAtkFollow~idle0:0.5", "duration": 6, "phase": "recovery", "cancel": [{ "into": { "move": "*", "m1": "m1_1", "m2": "dash", "jump": "*", "skill": "*", "ult": "*" } }] }
+      ]
+    },
+    {
+      "id": "m1_1", "gravity": 0.3, "tags": ["m1"],
+      "frames": [
+        { "pose": "m1aWind", "duration": 4, "hold": 2, "phase": "anticipation", "rootMotion": [2, 0], "events": [{ "type": "sound", "id": "swing" }], "cancel": [{ "into": { "m2": "dash" } }] },
+        {
+          "pose": "m1aWind~m1aStrike:0.45", "duration": 1, "phase": "active",
+          "events": [{ "type": "vfx", "id": "smear.cleave", "offset": [-2, -52] }]
+        },
+        {
+          "pose": "m1aStrike", "duration": 3, "phase": "active", "rootMotion": [10, 0],
+          "hitboxes": [{ "x": -2, "y": -86, "w": 82, "h": 84, "damage": 10, "knockback": [2.4, -1.2], "hitstop": 4, "stagger": 12, "group": "a", "hitVfx": "hit.light" }]
+        },
+        { "pose": "m1aFollow", "duration": 6, "phase": "recovery", "rootMotion": [3, 0], "cancel": [{ "into": { "m1": "m1_2", "m2": "dash", "jump": "*", "skill": "*", "ult": "*" } }] },
+        { "pose": "m1aFollow~idle0:0.5", "duration": 8, "phase": "recovery", "cancel": [{ "into": { "m1": "m1_2", "m2": "dash", "jump": "*", "move": "*", "skill": "*", "ult": "*" } }] }
+      ]
+    },
+    {
+      "id": "m1_2", "gravity": 0.3, "tags": ["m1"],
+      "frames": [
+        { "pose": "m1bWind", "duration": 4, "phase": "anticipation", "events": [{ "type": "sound", "id": "swing" }], "cancel": [{ "into": { "m2": "dash" } }] },
+        {
+          "pose": "m1bWind~m1bStrike:0.5", "duration": 1, "phase": "active",
+          "events": [{ "type": "vfx", "id": "smear.rise", "offset": [8, -46] }]
+        },
+        {
+          "pose": "m1bStrike", "duration": 3, "phase": "active", "rootMotion": [6, 0],
+          "hitboxes": [{ "x": 0, "y": -120, "w": 78, "h": 112, "damage": 10, "knockback": [1.6, -4.2], "hitstop": 4, "stagger": 12, "group": "b", "hitVfx": "hit.light" }]
+        },
+        { "pose": "m1bFollow", "duration": 8, "phase": "recovery", "cancel": [{ "into": { "m1": "m1_3", "m2": "dash", "jump": "*", "skill": "*", "ult": "*" } }] },
+        { "pose": "m1bFollow~idle0:0.5", "duration": 8, "phase": "recovery", "cancel": [{ "into": { "m1": "m1_3", "m2": "dash", "jump": "*", "move": "*", "skill": "*", "ult": "*" } }] }
+      ]
+    },
+    {
+      "id": "m1_3", "gravity": 0.3, "tags": ["m1"],
+      "frames": [
+        { "pose": "m1cWind", "duration": 5, "hold": 1, "phase": "anticipation", "events": [{ "type": "sound", "id": "swing", "volume": 1.1 }], "cancel": [{ "into": { "m2": "dash" } }] },
+        { "pose": "m1cLow", "duration": 2, "phase": "active", "events": [{ "type": "vfx", "id": "smear.sweep", "offset": [2, -46] }] },
+        {
+          "pose": "m1cSweep", "duration": 3, "phase": "active", "rootMotion": [8, 0],
+          "hitboxes": [{ "x": -80, "y": -78, "w": 188, "h": 60, "damage": 12, "knockback": [3, -1.6], "hitstop": 5, "stagger": 14, "group": "c", "hitVfx": "hit.light" }]
+        },
+        { "pose": "m1cFollow", "duration": 9, "phase": "recovery", "cancel": [{ "into": { "m1": "m1_4", "m2": "dash", "jump": "*", "skill": "*", "ult": "*" } }] },
+        { "pose": "m1cFollow~idle0:0.5", "duration": 8, "phase": "recovery", "cancel": [{ "into": { "m1": "m1_4", "m2": "dash", "jump": "*", "move": "*", "skill": "*", "ult": "*" } }] }
+      ]
+    },
+    {
+      "id": "m1_4", "gravity": 0, "tags": ["m1", "finisher"],
+      "frames": [
+        { "pose": "m1dRise", "duration": 6, "phase": "anticipation", "rootMotion": [8, -26], "events": [{ "type": "sound", "id": "rise" }] },
+        {
+          "pose": "m1dHang", "duration": 5, "hold": 5, "phase": "anticipation", "rootMotion": [4, -4],
+          "events": [{ "type": "vfx", "id": "flash.gold", "anchor": "tip", "layer": "front" }, { "type": "light", "anchor": "tip", "colour": "#ffe0a0", "radius": 90, "intensity": 0.9, "duration": 12 }]
+        },
+        { "pose": "m1dHang~m1dSlam:0.5", "duration": 2, "phase": "active", "rootMotion": [10, 24], "events": [{ "type": "vfx", "id": "smear.slam", "offset": [4, -48] }] },
+        {
+          "pose": "m1dSlam", "duration": 3, "phase": "active", "rootMotion": [4, 10],
+          "hitboxes": [{
+            "x": -20, "y": -98, "w": 156, "h": 100, "damage": 24, "knockback": [4.6, -4], "hitstop": 9, "stagger": 60, "heavy": true, "group": "d", "hitVfx": "hit.heavy",
+            "shake": { "amplitude": 6, "duration": 16 }, "zoom": { "steps": 1, "duration": 6 }, "impact": { "mode": "mono", "duration": 2 }
+          }],
+          "events": [
+            { "type": "vfx", "id": "slam.ground", "offset": [44, 0] },
+            { "type": "shake", "amplitude": 2, "duration": 8 },
+            { "type": "sound", "id": "slam" },
+            { "type": "light", "offset": [44, -30], "colour": "#ffd27a", "radius": 260, "intensity": 1.3, "duration": 24 }
+          ]
+        },
+        { "pose": "m1dHold", "duration": 10, "phase": "recovery" },
+        { "pose": "m1dRecover", "duration": 8, "phase": "recovery", "cancel": [{ "into": { "m1": "m1_1", "m2": "dash", "jump": "*", "move": "*", "skill": "*", "ult": "*" } }] },
+        { "pose": "m1dRecover~idle0:0.5", "duration": 6, "phase": "recovery", "cancel": [{ "into": { "m1": "m1_1", "m2": "dash", "jump": "*", "move": "*", "skill": "*", "ult": "*" } }] }
+      ]
+    },
+    {
+      "id": "skill_q", "gravity": 0.3, "tags": ["skill"],
+      "frames": [
+        {
+          "pose": "qRaise", "duration": 8, "hold": 4, "phase": "anticipation",
+          "events": [
+            { "type": "sound", "id": "charge" },
+            { "type": "vfx", "id": "ring.halo", "offset": [0, -4] },
+            { "type": "light", "anchor": "tip", "attach": true, "colour": "#ffe0a0", "radius": 120, "intensity": 1.0, "duration": 14 }
+          ]
+        },
+        { "pose": "qRaise~qPlant:0.5", "duration": 2, "phase": "active" },
+        {
+          "pose": "qPlant", "duration": 4, "phase": "active",
+          "hitboxes": [{ "x": -180, "y": -134, "w": 376, "h": 138, "damage": 18, "knockback": [3.5, -5], "hitstop": 7, "stagger": 45, "heavy": true, "group": "q", "hitVfx": "hit.heavy" }],
+          "events": [
+            { "type": "vfx", "id": "q.wave", "offset": [16, 0] },
+            { "type": "shake", "amplitude": 4, "duration": 18 },
+            { "type": "slowmo", "factor": 0.45, "duration": 14 },
+            { "type": "sound", "id": "wave" },
+            { "type": "light", "offset": [16, -30], "colour": "#ffe0a0", "radius": 340, "intensity": 1.3, "duration": 34 }
+          ]
+        },
+        { "pose": "qHold", "duration": 16, "phase": "recovery" },
+        { "pose": "qHold~idle0:0.5", "duration": 8, "phase": "recovery", "cancel": [{ "into": { "m1": "m1_1", "m2": "dash", "jump": "*", "move": "*" } }] }
+      ]
+    },
+    {
+      "id": "ult_r", "gravity": 0, "tags": ["ult"],
+      "frames": [
+        {
+          "pose": "rCall", "duration": 8, "phase": "anticipation", "iframes": true,
+          "events": [
+            { "type": "cutin", "id": "ult", "duration": 54 },
+            { "type": "slowmo", "factor": 0.15, "duration": 54 },
+            { "type": "vfx", "id": "r.call", "attach": true },
+            { "type": "light", "anchor": "tip", "attach": true, "colour": "#fff0c0", "radius": 200, "intensity": 1.2, "duration": 40 },
+            { "type": "sound", "id": "ult" }
+          ]
+        },
+        { "pose": "rCall", "duration": 10, "phase": "anticipation", "iframes": true },
+        { "pose": "rRise", "duration": 10, "phase": "anticipation", "iframes": true, "rootMotion": [0, -34], "events": [{ "type": "sound", "id": "rise" }, { "type": "vfx", "id": "flash.gold", "anchor": "tip" }] },
+        { "pose": "rRise", "duration": 4, "hold": 4, "phase": "anticipation", "iframes": true },
+        { "pose": "rRise~rCleave:0.5", "duration": 2, "phase": "active", "iframes": true, "rootMotion": [16, 20], "events": [{ "type": "vfx", "id": "smear.ult", "offset": [0, -64] }] },
+        {
+          "pose": "rCleave", "duration": 4, "phase": "active", "iframes": true, "rootMotion": [6, 14],
+          "hitboxes": [{ "x": -330, "y": -250, "w": 704, "h": 254, "damage": 60, "knockback": [5, -6], "hitstop": 12, "stagger": 200, "heavy": true, "group": "r", "hitVfx": "hit.heavy", "shake": { "amplitude": 8, "duration": 24 } }],
+          "events": [
+            { "type": "vfx", "id": "r.finale", "offset": [20, 0] },
+            { "type": "impact", "mode": "invert", "duration": 2 },
+            { "type": "zoom", "steps": 1, "duration": 10 },
+            { "type": "shake", "amplitude": 9, "duration": 30 },
+            { "type": "slowmo", "factor": 0.5, "duration": 24 },
+            { "type": "sound", "id": "ult_hit" },
+            { "type": "light", "offset": [20, -40], "colour": "#fff0d0", "radius": 620, "intensity": 1.4, "duration": 44 }
+          ]
+        },
+        { "pose": "rHold", "duration": 22, "phase": "recovery", "iframes": true },
+        { "pose": "rHold~idle0:0.5", "duration": 10, "phase": "recovery", "cancel": [{ "into": { "m1": "m1_1", "m2": "dash", "jump": "*", "move": "*" } }] }
+      ]
+    },
+    {
+      "id": "hurt", "tags": ["hurt"],
+      "frames": [
+        { "pose": "hurt", "duration": 14, "phase": "recovery" },
+        { "pose": "hurt~idle0:0.5", "duration": 6, "phase": "recovery", "cancel": [{ "into": { "move": "*", "jump": "*", "m1": "m1_1", "m2": "dash" } }] }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#view {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: block;
+  image-rendering: pixelated;
+  cursor: crosshair;
+  outline: none;
+}
+
+#debug {
+  position: fixed;
+  left: 8px;
+  top: 8px;
+  margin: 0;
+  padding: 6px 8px;
+  font: 12px/1.35 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color: #e8e6f0;
+  background: rgb(8 8 14 / 0.72);
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: pre;
+  z-index: 3;
+}
+
+#fail {
+  position: fixed;
+  inset: auto 0 45% 0;
+  margin: 0;
+  text-align: center;
+  padding: 0 16px;
+  font: 14px/1.4 system-ui, sans-serif;
+  color: #c9c6d6;
+  overflow-wrap: anywhere;
+}
+
+/* touch controls: small, translucent, kept to the corners so the character stays clear */
+#touch {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#touch button {
+  position: absolute;
+  pointer-events: auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  background: rgb(20 20 30 / 0.28);
+  color: rgb(255 255 255 / 0.7);
+  font: 600 13px/1 system-ui, sans-serif;
+  padding: 0;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#touch button.on {
+  background: rgb(255 255 255 / 0.2);
+}
+
+#touch button.cool {
+  color: rgb(255 255 255 / 0.28);
+}
+
+#touch .pad {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+}
+
+/* view distance toggle (same as Z): quiet, bottom centre, clear of the touch clusters */
+#res {
+  position: fixed;
+  left: 50%;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 2;
+  padding: 3px 9px;
+  font: 11px/1.2 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  letter-spacing: 0.04em;
+  color: rgb(255 255 255 / 0.5);
+  background: rgb(16 16 26 / 0.35);
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#res:hover,
+#res:focus-visible {
+  color: rgb(255 255 255 / 0.85);
+  outline: none;
+  border-color: rgb(255 255 255 / 0.4);
+}

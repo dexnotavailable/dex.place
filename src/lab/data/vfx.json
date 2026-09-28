@@ -1,0 +1,277 @@
+{
+  "presets": {
+    "smear.cleave": {
+      "kind": "arc", "duration": 11, "layer": "front", "radius": 58, "thickness": 14, "from": -150, "to": 30,
+      "flat": 1, "slivers": 3, "glow": 3, "core": "#ffffff", "colour": "#ffcf5a", "edge": "#d9a032",
+      "light": { "colour": "#ffd27a", "radius": 150, "intensity": 1.4, "duration": 12, "height": 20 }
+    },
+    "smear.rise": {
+      "kind": "arc", "duration": 11, "layer": "front", "radius": 56, "thickness": 13, "from": 50, "to": -120,
+      "flat": 1, "slivers": 3, "glow": 3, "core": "#ffffff", "colour": "#ffcf5a", "edge": "#d9a032",
+      "light": { "colour": "#ffd27a", "radius": 150, "intensity": 1.3, "duration": 12, "height": 20 }
+    },
+    "smear.sweep": {
+      "kind": "arc", "duration": 15, "layer": "front", "radius": 92, "thickness": 16, "from": 200, "to": -70,
+      "flat": 0.3, "slivers": 4, "glow": 3, "core": "#ffffff", "colour": "#ffe08a", "edge": "#d9a032",
+      "light": { "colour": "#ffe0a0", "radius": 200, "intensity": 1.5, "duration": 15, "height": 16 }
+    },
+    "smear.slam": {
+      "kind": "arc", "duration": 16, "layer": "front", "radius": 74, "thickness": 20, "from": -168, "to": 42,
+      "flat": 1, "slivers": 4, "glow": 4, "core": "#ffffff", "colour": "#ffd46a", "edge": "#c98a26",
+      "light": { "colour": "#ffd27a", "radius": 220, "intensity": 1.3, "duration": 16, "height": 18 }
+    },
+    "smear.twirl": {
+      "kind": "arc", "duration": 12, "layer": "front", "radius": 40, "thickness": 7, "from": -90, "to": 250,
+      "flat": 0.42, "slivers": 2, "glow": 2, "core": "#ffffff", "colour": "#fff0b8", "edge": "#7fd6ff"
+    },
+    "smear.ult": {
+      "kind": "arc", "duration": 26, "layer": "front", "radius": 150, "thickness": 40, "from": -175, "to": 55,
+      "flat": 0.9, "slivers": 5, "glow": 6, "core": "#ffffff", "colour": "#fff4c8", "edge": "#6fc8ff",
+      "light": { "colour": "#fff0c0", "radius": 420, "intensity": 1.5, "duration": 26, "height": 26 }
+    },
+    "streak.thrust": {
+      "kind": "streak", "duration": 13, "layer": "front", "length": 168, "thickness": 8, "lines": 3,
+      "core": "#ffffff", "colour": "#ffcf5a", "edge": "#d9a032",
+      "light": { "colour": "#ffd27a", "radius": 160, "intensity": 1.4, "duration": 12, "height": 16 }
+    },
+    "streak.mark": {
+      "kind": "streak", "duration": 9, "layer": "front", "length": 36, "thickness": 4, "lines": 0,
+      "core": "#ffffff", "colour": "#ffcf5a", "edge": "#d9a032"
+    },
+    "streak.markRed": {
+      "kind": "streak", "duration": 9, "layer": "front", "length": 30, "thickness": 4, "lines": 0,
+      "core": "#ffffff", "colour": "#ff5a6a", "edge": "#9a0e22"
+    },
+    "ring.dust": {
+      "kind": "ring", "duration": 16, "layer": "back", "r0": 4, "r1": 34, "thickness": 3, "flat": 0.22, "glow": 0,
+      "core": "#c9c4d8", "colour": "#8f8aa3", "edge": "#5c586e"
+    },
+    "ring.small": {
+      "kind": "ring", "duration": 18, "layer": "front", "r0": 6, "r1": 96, "thickness": 5, "flat": 0.22, "glow": 3,
+      "core": "#ffffff", "colour": "#ffcf5a", "edge": "#d9a032"
+    },
+    "ring.wide": {
+      "kind": "ring", "duration": 32, "layer": "front", "r0": 10, "r1": 300, "thickness": 9, "flat": 0.2, "glow": 4,
+      "core": "#ffffff", "colour": "#ffe9a8", "edge": "#d9a032"
+    },
+    "ring.ult": {
+      "kind": "ring", "duration": 44, "layer": "front", "r0": 20, "r1": 640, "thickness": 12, "flat": 0.17, "glow": 5,
+      "core": "#ffffff", "colour": "#fff4c8", "edge": "#6fc8ff"
+    },
+    "ring.halo": {
+      "kind": "ring", "duration": 22, "layer": "back", "r0": 60, "r1": 12, "thickness": 3, "flat": 0.34, "glow": 2,
+      "core": "#ffffff", "colour": "#fff0b8", "edge": "#7fd6ff"
+    },
+    "ring.redOut": {
+      "kind": "ring", "duration": 12, "layer": "front", "r0": 10, "r1": 48, "thickness": 4, "flat": 0.9, "glow": 3,
+      "core": "#ffffff", "colour": "#ff4a5c", "edge": "#8a0a1e",
+      "light": { "colour": "#ff3048", "radius": 130, "intensity": 1.0, "duration": 10, "height": 14 }
+    },
+    "ring.redIn": {
+      "kind": "ring", "duration": 30, "layer": "front", "r0": 30, "r1": 6, "thickness": 2, "flat": 1, "glow": 2,
+      "core": "#ffffff", "colour": "#ff4a5c", "edge": "#8a0a1e"
+    },
+    "pillar": {
+      "kind": "pillar", "duration": 26, "layer": "back", "width": 9, "height": 170, "glow": 3,
+      "core": "#ffffff", "colour": "#ffe9a8", "edge": "#d9a032",
+      "light": { "colour": "#ffe0a0", "radius": 130, "intensity": 1.2, "duration": 22, "height": 30 }
+    },
+    "pillar.ult": {
+      "kind": "pillar", "duration": 34, "layer": "back", "width": 15, "height": 380, "glow": 4,
+      "core": "#ffffff", "colour": "#fff4c8", "edge": "#6fc8ff",
+      "light": { "colour": "#d8f0ff", "radius": 180, "intensity": 1.4, "duration": 30, "height": 40 }
+    },
+    "burst.hit": {
+      "kind": "burst", "duration": 8, "layer": "front", "r0": 3, "r1": 28, "count": 9, "thickness": 3,
+      "core": "#ffffff", "colour": "#ffcf5a", "edge": "#d9a032"
+    },
+    "burst.big": {
+      "kind": "burst", "duration": 16, "layer": "front", "r0": 6, "r1": 96, "count": 18, "thickness": 5,
+      "core": "#ffffff", "colour": "#ffe9a8", "edge": "#d9a032"
+    },
+    "burst.ult": {
+      "kind": "burst", "duration": 26, "layer": "front", "r0": 10, "r1": 260, "count": 28, "thickness": 7,
+      "core": "#ffffff", "colour": "#fff4c8", "edge": "#6fc8ff"
+    },
+    "burst.red": {
+      "kind": "burst", "duration": 14, "layer": "front", "r0": 4, "r1": 60, "count": 14, "thickness": 4,
+      "core": "#ffffff", "colour": "#ff4a5c", "edge": "#8a0a1e"
+    },
+    "flash.hit": {
+      "kind": "disc", "duration": 4, "realtime": 1, "over": 0, "layer": "front", "r0": 3, "r1": 12, "glow": 2,
+      "core": "#fff4c8", "colour": "#ffe9a8", "edge": "#6fc8ff",
+      "light": { "colour": "#fff0c8", "radius": 110, "intensity": 0.8, "duration": 6, "height": 12 }
+    },
+    "flash.big": {
+      "kind": "disc", "duration": 6, "realtime": 1, "over": 0, "layer": "front", "r0": 6, "r1": 24, "glow": 3,
+      "core": "#fff4c8", "colour": "#ffe9a8", "edge": "#6fc8ff",
+      "light": { "colour": "#fff0c8", "radius": 200, "intensity": 0.9, "duration": 8, "height": 14 }
+    },
+    "flash.red": {
+      "kind": "disc", "duration": 5, "realtime": 1, "over": 0, "layer": "front", "r0": 2, "r1": 9, "glow": 2,
+      "core": "#ffffff", "colour": "#ff6a78", "edge": "#b3122a",
+      "light": { "colour": "#ff3048", "radius": 120, "intensity": 0.9, "duration": 8, "height": 14 }
+    },
+    "flash.gold": {
+      "kind": "disc", "duration": 6, "realtime": 1, "over": 0, "layer": "back", "r0": 2, "r1": 16, "glow": 3,
+      "core": "#fff4c8", "colour": "#ffe9a8", "edge": "#6fc8ff"
+    },
+    "sparks.hit": {
+      "kind": "particles", "particle": "spark", "count": 10, "speedMin": 2.2, "speedMax": 5.5, "spread": 120,
+      "gravity": 0.14, "drag": 0.87, "lifeMin": 8, "lifeMax": 16, "colours": ["#ffffff", "#ffe08a", "#d9a032"]
+    },
+    "sparks.heavy": {
+      "kind": "particles", "particle": "spark", "count": 22, "speedMin": 3, "speedMax": 8, "spread": 200,
+      "gravity": 0.16, "drag": 0.88, "lifeMin": 10, "lifeMax": 22, "colours": ["#ffffff", "#ffe9a8", "#d9a032"]
+    },
+    "sparks.red": {
+      "kind": "particles", "particle": "spark", "count": 8, "speedMin": 1.6, "speedMax": 4, "spread": 160,
+      "gravity": 0.1, "drag": 0.88, "lifeMin": 8, "lifeMax": 14, "colours": ["#ffffff", "#ff6a78", "#b3122a"]
+    },
+    "embers.gold": {
+      "kind": "particles", "particle": "ember", "count": 12, "speedMin": 0.4, "speedMax": 1.4, "spread": 120, "angle": -90,
+      "gravity": -0.015, "drag": 0.97, "lifeMin": 30, "lifeMax": 60, "areaW": 60, "areaH": 20, "sizeMin": 1, "sizeMax": 1,
+      "colours": ["#ffffff", "#ffe08a", "#d9a032", "#a86a1c"]
+    },
+    "feathers": {
+      "kind": "particles", "particle": "feather", "count": 10, "speedMin": 0.6, "speedMax": 2.2, "spread": 150, "angle": -90,
+      "gravity": 0.025, "drag": 0.95, "lifeMin": 50, "lifeMax": 90, "areaW": 80, "areaH": 30, "sizeMin": 2, "sizeMax": 3,
+      "colours": ["#ffffff", "#fff3d0", "#e6d6b0", "#b8a888"]
+    },
+    "dust.land": {
+      "kind": "particles", "particle": "dust", "count": 7, "speedMin": 0.5, "speedMax": 1.8, "spread": 150, "angle": -90,
+      "gravity": 0.02, "drag": 0.9, "lifeMin": 14, "lifeMax": 24, "areaW": 16, "areaH": 2, "sizeMin": 1, "sizeMax": 2,
+      "layer": "back", "colours": ["#bdb8cc", "#8f8aa3", "#6a6680"]
+    },
+    "dust.kick": {
+      "kind": "particles", "particle": "dust", "count": 4, "speedMin": 0.6, "speedMax": 1.6, "spread": 40, "angle": -160,
+      "gravity": 0.02, "drag": 0.9, "lifeMin": 10, "lifeMax": 18, "sizeMin": 1, "sizeMax": 2,
+      "layer": "back", "colours": ["#bdb8cc", "#8f8aa3", "#6a6680"]
+    },
+    "debris.stone": {
+      "kind": "particles", "particle": "debris", "count": 14, "speedMin": 1.5, "speedMax": 4.2, "spread": 120, "angle": -90,
+      "gravity": 0.24, "drag": 0.985, "lifeMin": 40, "lifeMax": 70, "areaW": 40, "areaH": 2, "sizeMin": 1, "sizeMax": 3, "bounce": 0.35,
+      "colours": ["#8a849c", "#625d74", "#474356"]
+    },
+    "debris.turret": {
+      "kind": "particles", "particle": "debris", "count": 26, "speedMin": 1.5, "speedMax": 5.5, "spread": 170, "angle": -90,
+      "gravity": 0.22, "drag": 0.985, "lifeMin": 60, "lifeMax": 110, "areaW": 26, "areaH": 30, "sizeMin": 1, "sizeMax": 4, "bounce": 0.4,
+      "colours": ["#f2eeea", "#c4122b", "#1a1719", "#0b0a0c"]
+    },
+    "shards.turret": {
+      "kind": "particles", "particle": "shard", "count": 12, "speedMin": 2, "speedMax": 5, "spread": 180, "angle": -90,
+      "gravity": 0.2, "drag": 0.98, "lifeMin": 40, "lifeMax": 70, "areaW": 20, "areaH": 20, "sizeMin": 2, "sizeMax": 3,
+      "colours": ["#ffffff", "#f2eeea", "#c4122b", "#2b2629"]
+    },
+    "smoke.dark": {
+      "kind": "particles", "particle": "dust", "count": 12, "speedMin": 0.3, "speedMax": 1.1, "spread": 120, "angle": -90,
+      "gravity": -0.02, "drag": 0.95, "lifeMin": 40, "lifeMax": 70, "areaW": 30, "areaH": 20, "sizeMin": 2, "sizeMax": 3,
+      "colours": ["#3b3440", "#2b2629", "#1a1719"]
+    },
+    "charge.red": {
+      "kind": "particles", "particle": "mote", "count": 3, "inward": 22, "lifeMin": 12, "lifeMax": 16, "gravity": 0, "drag": 1,
+      "sizeMin": 1, "sizeMax": 1, "colours": ["#ffffff", "#ff6a78", "#e0203a"]
+    },
+    "cracks": {
+      "kind": "cracks", "duration": 110, "layer": "back", "length": 92, "branches": 4,
+      "core": "#ffffff", "colour": "#ffd070", "edge": "#17141f"
+    },
+    "cracks.ult": {
+      "kind": "cracks", "duration": 150, "layer": "back", "length": 220, "branches": 6,
+      "core": "#ffffff", "colour": "#bfe8ff", "edge": "#17141f"
+    },
+    "afterimage": {
+      "kind": "afterimage", "duration": 15, "layer": "back", "opacity": 0.8,
+      "core": "#fff6d8", "colour": "#ffd27a", "edge": "#6fc8ff"
+    },
+    "afterimage.trail": { "kind": "trail", "of": "afterimage", "every": 2, "duration": 10 },
+    "dash.line": {
+      "kind": "streak", "duration": 8, "layer": "front", "length": 64, "thickness": 1, "lines": 0,
+      "core": "#ffffff", "colour": "#d8f0ff", "edge": "#6fc8ff"
+    },
+    "dash.speed": {
+      "kind": "group",
+      "parts": [
+        { "id": "dash.line", "rotation": 180, "offset": [-8, -62] },
+        { "id": "dash.line", "rotation": 180, "offset": [-4, -30], "scale": [0.7, 1], "delay": 1 }
+      ]
+    },
+    "hit.light": {
+      "kind": "group",
+      "parts": [{ "id": "flash.hit" }, { "id": "burst.hit" }, { "id": "sparks.hit" }, { "id": "streak.mark", "rotation": 150, "offset": [14, 10] }]
+    },
+    "hit.heavy": {
+      "kind": "group",
+      "parts": [
+        { "id": "flash.big" }, { "id": "burst.big" }, { "id": "sparks.heavy" },
+        { "id": "streak.mark", "rotation": 145, "offset": [18, 14], "scale": 1.6 },
+        { "id": "streak.mark", "rotation": 215, "offset": [18, -14], "scale": 1.6, "delay": 2 },
+        { "id": "embers.gold" }
+      ]
+    },
+    "hit.player": {
+      "kind": "group",
+      "parts": [{ "id": "flash.red" }, { "id": "burst.red" }, { "id": "sparks.red" }, { "id": "streak.markRed", "rotation": 30, "offset": [-12, 8] }]
+    },
+    "land.soft": { "kind": "group", "parts": [{ "id": "dust.land" }, { "id": "ring.dust" }] },
+    "jump.double": {
+      "kind": "group",
+      "parts": [{ "id": "smear.twirl", "offset": [0, -70] }, { "id": "ring.halo", "offset": [0, -6] }, { "id": "feathers", "offset": [0, -40], "params": { "count": 4 } }]
+    },
+    "slam.ground": {
+      "kind": "group",
+      "parts": [
+        { "id": "ring.small" }, { "id": "ring.wide", "params": { "r1": 190, "duration": 24 } },
+        { "id": "cracks" }, { "id": "debris.stone" }, { "id": "flash.gold", "offset": [0, -2] },
+        { "id": "pillar", "offset": [56, 0], "delay": 2, "params": { "height": 110 } },
+        { "id": "embers.gold", "offset": [30, -10] }
+      ]
+    },
+    "q.wave": {
+      "kind": "group",
+      "parts": [
+        { "id": "ring.small" }, { "id": "ring.wide" }, { "id": "cracks", "params": { "length": 150, "branches": 6 } },
+        { "id": "flash.big", "offset": [0, -8] }, { "id": "debris.stone" },
+        { "id": "pillar", "offset": [70, 0], "delay": 3 }, { "id": "pillar", "offset": [-70, 0], "delay": 3 },
+        { "id": "pillar", "offset": [140, 0], "delay": 6, "params": { "height": 140 } }, { "id": "pillar", "offset": [-140, 0], "delay": 6, "params": { "height": 140 } },
+        { "id": "pillar", "offset": [210, 0], "delay": 9, "params": { "height": 110, "width": 7 } }, { "id": "pillar", "offset": [-210, 0], "delay": 9, "params": { "height": 110, "width": 7 } },
+        { "id": "feathers", "offset": [0, -60] }, { "id": "embers.gold", "offset": [0, -10], "params": { "areaW": 300 } }
+      ]
+    },
+    "r.call": {
+      "kind": "group",
+      "parts": [{ "id": "ring.halo", "offset": [0, -4], "scale": 2.4 }, { "id": "flash.gold", "offset": [0, -100], "scale": 1.6 }, { "id": "feathers", "offset": [0, -80], "params": { "count": 16 } }]
+    },
+    "r.finale": {
+      "kind": "group",
+      "parts": [
+        { "id": "ring.ult" }, { "id": "ring.wide", "params": { "duration": 26 } }, { "id": "burst.ult", "offset": [60, -40] },
+        { "id": "cracks.ult" }, { "id": "debris.stone", "params": { "count": 30, "areaW": 200 } },
+        { "id": "pillar.ult", "offset": [0, 0] },
+        { "id": "pillar.ult", "offset": [90, 0], "delay": 2 }, { "id": "pillar.ult", "offset": [-90, 0], "delay": 2 },
+        { "id": "pillar.ult", "offset": [180, 0], "delay": 4 }, { "id": "pillar.ult", "offset": [-180, 0], "delay": 4 },
+        { "id": "pillar.ult", "offset": [270, 0], "delay": 6 }, { "id": "pillar.ult", "offset": [-270, 0], "delay": 6 },
+        { "id": "pillar.ult", "offset": [360, 0], "delay": 8 }, { "id": "pillar.ult", "offset": [-360, 0], "delay": 8 },
+        { "id": "feathers", "offset": [0, -120], "params": { "count": 24, "areaW": 500 } },
+        { "id": "embers.gold", "offset": [0, -20], "params": { "count": 40, "areaW": 640 } }
+      ]
+    },
+    "turret.pulse": {
+      "kind": "group",
+      "parts": [
+        { "id": "ring.redOut" }, { "id": "flash.red", "scale": 1.6 },
+        { "id": "burst.red", "params": { "r1": 44, "count": 12, "duration": 10 } },
+        { "id": "sparks.red", "params": { "count": 10, "spread": 360, "speedMax": 4.5 } }
+      ]
+    },
+    "turret.muzzle": { "kind": "group", "parts": [{ "id": "flash.red" }, { "id": "sparks.red", "params": { "count": 5, "spread": 50 } }] },
+    "turret.break": {
+      "kind": "group",
+      "parts": [
+        { "id": "flash.big", "colour": "#ff6a78", "edge": "#b3122a" }, { "id": "burst.red", "params": { "r1": 90, "count": 18 } },
+        { "id": "debris.turret" }, { "id": "shards.turret" }, { "id": "smoke.dark" }
+      ]
+    },
+    "turret.rebuild": { "kind": "group", "parts": [{ "id": "ring.redIn", "offset": [0, -30], "scale": 1.8 }, { "id": "flash.red", "offset": [0, -30], "delay": 26 }] }
+  }
+}

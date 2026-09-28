@@ -1,0 +1,21 @@
+{
+  "ambient": [0.36, 0.35, 0.42],
+  "keyDir": [0.45, -0.62, 0.64],
+  "keyColour": [0.7, 0.68, 0.64],
+  "rimColour": [0.74, 0.91, 1.0],
+  "rimDir": [-0.62, -0.78],
+  "rimIntensity": 0.9,
+  "rimBoost": 1.45,
+  "rimPointGain": 1.15,
+  "rimThreshold": 0.34,
+  "bands": 6,
+  "lightRoom": 0.6,
+  "lightTint": 1.0,
+  "lightCap": 1.35,
+  "backdrop": {
+    "top": [0.105, 0.113, 0.155],
+    "mid": [0.235, 0.25, 0.31],
+    "low": [0.4, 0.41, 0.46],
+    "bands": 7
+  }
+}
