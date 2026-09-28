@@ -21,4 +21,7 @@ settled there. Items marked **open** get decided with Dex, not by an agent alone
 - Big binaries (installers, raw art production) don't go in git. Downloads are served from the
   host's `downloads` folder; see `ops/README.md`.
 - `legacy/` is reference only. Nothing in it is built or served.
+- Characters (player, NPCs, bosses) follow `docs/character/PIPELINE.md`. Any lane that changes
+  the character, render or motion pipeline updates that file before it finishes: new numbers,
+  settings, commands, gates and pitfalls, marked proven / in progress / proposed.
 - Use npm (Node 24). `npm run dev`, `npm run build`.
