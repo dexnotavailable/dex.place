@@ -13,14 +13,4 @@ export const downloads: readonly Download[] = [
     href: "/downloads/dexClient-Setup-0.1.0.exe",
     bytes: 665_563_123,
   },
-  {
-    name: "dexSMP Fabric friend installer",
-    href: "/downloads/dexSMP-Fabric-26.1.2-Friend-Installer.zip",
-    bytes: 994_485,
-  },
-  {
-    name: "Hoshikawa Haven brand pack",
-    href: "/downloads/Hoshikawa-Haven-Brand-v1.zip",
-    bytes: 43_157,
-  },
 ];
