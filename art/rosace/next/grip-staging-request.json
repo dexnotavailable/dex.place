@@ -1,0 +1,48 @@
+{
+  "id": "rosace-grip-staging-render-batch-20260930",
+  "kind": "render-batch",
+  "owner": "rosace",
+  "wrapper": "tools/pixel-pipeline/next/nx_grip_staging_blender.py",
+  "parent": "actualnativeH1geometry1.30 experimentalpartwin, canonicalR2unchanged",
+  "variable": "onlyLgrip backdirectionrotatedaboutsamehaftaxis",
+  "angles": [
+    0,
+    30,
+    -80
+  ],
+  "interpretation": {
+    "zero": "exactH1parent",
+    "plus30": "palmview",
+    "minus80": "knuckleview"
+  },
+  "commonArgs": [
+    "--hand-scale",
+    "1.3",
+    "--shots",
+    "idle",
+    "--blend",
+    "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+    "--r2",
+    "<executing-worktree>/tools/pixel-pipeline/drive9/r2_model.json",
+    "--head",
+    "1.10",
+    "--ss",
+    "4",
+    "--px",
+    "144,80"
+  ],
+  "outputRelative": "review/rosace/art/next/grip-staging-delivery",
+  "executionPathRule": "UseexecutingfrozenREPOforr2model/wrapper/privateoutputs. Neverliteralplaceholders; nooriginalworktreeoutputguardbypass.",
+  "steps": [
+    "Gatedsourcecheck check_grip_staging.py andoriginalsource/canonical/model/rollbackhashes.",
+    "FiniteexclusiveGPUturn, isolatedblender_env.py: preserve/reuse provenR2andnativeH1parent. Render0angle andcompareexactH1parent pixels before changedangles.",
+    "Render+30/-80 separate freshraw dirs withsame1.30size/idleR2pose/finish; same socket/slide/fingers. Requiredcontactcompensationcanmovearm/wristIK.",
+    "Rununchangedd9_post.py R2finish then hand_metrics.py; recordgrip_stage.json actualbackFacing/gap andraw/copyhashes.",
+    "Showactual144/80whole/native/same-frame/crops withR2/H1parent/variants andnativefinishRefs04/07/08/09plusworldbudgetRef05.",
+    "Threefreshfork-nonecriticsscore/vote eachcandidate/control/ref acrossseparateparts. Noanatomyacceptancefromsyntheticgap; targetsrequirevisiblethumb/haft/wrist,cuffseparation andnoguardregression.",
+    "Ifrotationstillcovered, changecuff/contactgeometrynext; noendlesssize/angleloop. No physicsstack, defaultreplacement/mainmerge/deploy."
+  ],
+  "canonicalChanges": false,
+  "allowArtPromotion": false,
+  "referenceWorld": "D:/Dex/Projects/dex.place/review/refs/character/native/05-anim-sailormars-sheet_1x.png"
+}
