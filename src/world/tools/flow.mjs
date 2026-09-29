@@ -10,14 +10,14 @@ import { writeFileSync, mkdirSync } from "node:fs";
 const require = createRequire(new URL("../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const i = process.argv.indexOf("--port");
-const PORT = i >= 0 ? process.argv[i + 1] : process.env.WORLD_PORT ?? "22763";
+const PORT = i >= 0 ? process.argv[i + 1] : process.env.WORLD_PORT ?? "24001";
 
 const browser = await chromium.launch({ channel: "msedge", args: ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist"] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 page.on("console", (m) => { if (m.type() === "error" && !/404/.test(m.text())) errors.push(m.text()); });
-await page.goto(`http://127.0.0.1:${PORT}/world/?manual&fresh`, { waitUntil: "load" });
+await page.goto(`http://127.0.0.1:${PORT}/world/?manual&fresh&world=test`, { waitUntil: "load" });
 await page.waitForFunction(() => !!window.__world, null, { timeout: 60000 });
 const ev = (fn, a) => page.evaluate(fn, a);
 const adv = (n) => ev((n) => window.__world.advance(n), n);
@@ -78,6 +78,7 @@ report.nearHouseDoor = (await st()).near;
 await ev(() => window.__world.use());
 for (let k = 0; k < 400; k++) { const s = await adv(5); if (s.room === "house" && !s.transition) break; await page.waitForTimeout(20); }
 report.houseDoor = (await st()).room;
+if (report.houseDoor !== "house") { console.log(JSON.stringify({ edge: report.edgeExit, near: report.nearHouseDoor, st: await st() }).slice(0, 800)); }
 
 // --- the lift carries you up
 await ev(() => { const g = window.__world.game; const l = g.room.def.props.find((p) => p.id === "lift"); return window.__world.place(l.x); });

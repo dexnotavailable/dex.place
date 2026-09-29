@@ -4,6 +4,9 @@
 // draggable light and an H toggle (80 exploration / 144 close-up).
 //
 // URL: ?h=144  ?manual (no RAF loop; drive it from window.__pixel)  ?lab (lab lighting)
+//      ?prop=<id> one recipe on its stage (any registered recipe, kit or region)
+//      ?kit the lineup of every registered recipe  ?indoor (chapel wall behind a stage)
+//      ?nave (sway-only room)  ?reduced (reduced motion)  ?wind=<px/s^2>
 
 import { presetHit, hitBounds, cutPath, type Hit, type HitShape, type HitType } from "../hits.ts";
 import { segCross } from "../motion.ts";
@@ -16,6 +19,10 @@ import { PixelWorld, type WorldEvent } from "../world.ts";
 import { bossTerminal, candelabra, donationBox, donorPlaque, floor, font, gauge, mapBanner, stainedGlass, wall } from "../props/index.ts";
 import { assemble, disintegrate, dissolve, glint } from "../fx.ts";
 import type { CellGrid } from "../cells.ts";
+import type { DemoStep } from "../prop.ts";
+import { allRecipes, REGISTRY_ERRORS, soundCues } from "../registry.ts";
+import { buildStage, type StageSlot } from "./stage.ts";
+import type { Backdrop } from "../render.ts";
 
 const q = new URLSearchParams(location.search);
 const manual = q.has("manual");
@@ -39,7 +46,15 @@ interface Room {
   floorY: number;
   fig: Prop;
   byName: Map<string, Prop>;
+  slots?: StageSlot[];
+  lighting?: Partial<Lighting>;
+  backdrop?: Backdrop;
+  kind?: "prop" | "kit";
 }
+
+/** ?prop=a,b: those recipes; ?kit: all of them (null). */
+const stageIds: string[] | null = q.get("prop") ? String(q.get("prop")).split(",") : null;
+const staged = q.has("prop") || q.has("kit");
 
 const state = {
   tool: "slash" as Tool,
@@ -58,6 +73,10 @@ const state = {
   lastHits: [] as { shape: HitShape; t: number }[],
   events: [] as string[],
   keys: new Set<string>(),
+  /** Scripted walk of the gauge: world x from, to, over dur seconds. */
+  walk: null as null | { x0: number; x1: number; t: number; dur: number },
+  vx: 0,
+  wind: Number(q.get("wind") ?? 0),
 };
 
 // ---------------------------------------------------------------------------
@@ -65,6 +84,11 @@ const state = {
 // ---------------------------------------------------------------------------
 
 function buildRoom(H: number, save: PixelWorld["saveData"] = {}): Room {
+  if (staged) {
+    const st = buildStage(H, stageIds, save, { indoor: q.has("indoor"), nave: q.has("nave"), reduced: q.has("reduced") });
+    st.world.wind.x = state.wind;
+    return st;
+  }
   const W = 16 * H, Hh = 9 * H;
   const world = new PixelWorld({ H, width: W, height: Hh, seed: 7, heal: { delay: 4.5, rate: 60 } });
   world.saveData = save;
@@ -89,8 +113,9 @@ function buildRoom(H: number, save: PixelWorld["saveData"] = {}): Room {
 }
 
 let room = buildRoom(state.H);
-state.light = { x: room.fig.x - room.H * 0.8, y: room.floorY - room.H * 1.3, on: true };
-state.selected = "map banner";
+state.light = { x: room.fig.x - room.H * 0.8, y: room.floorY - room.H * 1.3, on: !staged };
+state.selected = staged ? (room.slots?.[0]?.entry.recipe.id ?? "H gauge") : "map banner";
+if (q.has("reduced")) room.world.reduced = true;
 
 // ---------------------------------------------------------------------------
 // render
@@ -115,6 +140,7 @@ function updateCamera(): void {
   const tx = fig.x - vw / 2;
   state.cam.x = Math.round(Math.max(0, Math.min(world.width - vw, tx)));
   state.cam.y = Math.round(Math.max(0, Math.min(world.height - vh, floorY + H * 1.25 - vh)));
+  world.view = { x: state.cam.x, y: state.cam.y, w: vw, h: vh };
 }
 
 function hostLight(): void {
@@ -137,9 +163,9 @@ function frame(): void {
     cam: state.cam,
     view: state.view,
     layers: state.layers,
-    lighting: state.lab ? {} : CHAPEL,
+    lighting: state.lab ? {} : room.lighting ?? CHAPEL,
     particles: state.particles,
-    backdrop: { top: [0.02, 0.018, 0.035], mid: [0.05, 0.045, 0.075], low: [0.08, 0.07, 0.1], bands: 6, horizon: renderer.vh },
+    backdrop: room.backdrop ?? { top: [0.02, 0.018, 0.035], mid: [0.05, 0.045, 0.075], low: [0.08, 0.07, 0.1], bands: 6, horizon: renderer.vh },
   });
   renderer.present();
   drawOverlay();
@@ -410,10 +436,41 @@ function buildPanel(): void {
   sel.value = state.selected;
   sel.addEventListener("change", () => {
     state.selected = sel.value;
+    const p = room.byName.get(sel.value);
+    if (p && room.kind === "kit") room.fig.x = Math.round(p.x - room.H * 0.9);
     refresh();
   });
   propEl = document.createElement("div");
   section("prop", sel, propEl);
+  // every registered recipe (kit and region folders): open its stage
+  const go = document.createElement("select");
+  go.setAttribute("aria-label", "open a recipe stage");
+  const o0 = document.createElement("option");
+  o0.textContent = "open a stage...";
+  o0.value = "";
+  go.append(o0);
+  for (const e of allRecipes()) {
+    if (e.recipe.id === "gauge" || e.recipe.id === "wall") continue;
+    const o = document.createElement("option");
+    o.value = e.recipe.id;
+    o.textContent = `${e.region} / ${e.recipe.id}`;
+    go.append(o);
+  }
+  go.addEventListener("change", () => {
+    if (go.value) location.search = `?prop=${encodeURIComponent(go.value)}${q.has("indoor") ? "&indoor" : ""}`;
+  });
+  const lineup = document.createElement("a");
+  lineup.href = "?kit";
+  lineup.textContent = "lineup (all)";
+  const proof = document.createElement("a");
+  proof.href = "?";
+  proof.textContent = "proof room";
+  section("stages", go, row(lineup, proof));
+  if (REGISTRY_ERRORS.length) {
+    const err = document.createElement("pre");
+    err.textContent = REGISTRY_ERRORS.join("\n");
+    section("registry problems", err);
+  }
   section("view", row(...(["lit", "albedo", "normals", "layers"] as ViewMode[]).map((v) => btn(v, () => (state.view = v), () => state.view === v))));
   const layers = document.createElement("div");
   for (const l of LAYERS) {
@@ -472,6 +529,12 @@ function refresh(): void {
   reason.className = "reason";
   reason.textContent = p.recipe.reason;
   propEl.append(reason);
+  const meta = document.createElement("p");
+  meta.className = "reason";
+  const cues = soundCues(p.recipe);
+  meta.textContent = `breakage: ${p.recipe.breakage}${p.recipe.use ? " · E: " + (p.recipe.use.prompt ?? "use") : ""}${p.recipe.actions ? " · actions: " + Object.keys(p.recipe.actions).join(", ") : ""}${cues.length ? " · cues: " + cues.join(", ") : ""}`;
+  propEl.append(meta);
+  if (p.recipe.actions) propEl.append(row(...Object.keys(p.recipe.actions).map((a) => btn(a, () => p.act(a)))));
   const states = Object.keys(p.recipe.states);
   if (states.length > 1) propEl.append(row(...states.map((s) => btn(s, () => p.go(s), () => p.state === s))));
   const extra: HTMLButtonElement[] = [];
@@ -580,13 +643,48 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keyup", (e) => state.keys.delete(e.key.toLowerCase()));
 
 function walk(dt: number): void {
-  const left = state.keys.has("a") || state.keys.has("arrowleft");
-  const right = state.keys.has("d") || state.keys.has("arrowright");
-  const dir = (right ? 1 : 0) - (left ? 1 : 0);
-  if (!dir) return;
-  state.face = dir > 0 ? 1 : -1;
-  room.fig.flip = state.face;
-  room.fig.x = Math.max(room.H * 0.3, Math.min(room.world.width - room.H * 0.3, room.fig.x + dir * room.H * 3.2 * dt));
+  const x0 = room.fig.x;
+  const w = state.walk;
+  if (w) {
+    // scripted walk (capture scripts): the gauge crosses at a steady pace
+    w.t = Math.min(w.dur, w.t + dt);
+    room.fig.x = Math.round(w.x0 + (w.x1 - w.x0) * (w.t / w.dur));
+    state.face = w.x1 >= w.x0 ? 1 : -1;
+    room.fig.flip = state.face;
+    if (w.t >= w.dur) state.walk = null;
+  } else {
+    const left = state.keys.has("a") || state.keys.has("arrowleft");
+    const right = state.keys.has("d") || state.keys.has("arrowright");
+    const dir = (right ? 1 : 0) - (left ? 1 : 0);
+    if (dir) {
+      state.face = dir > 0 ? 1 : -1;
+      room.fig.flip = state.face;
+      room.fig.x = Math.max(room.H * 0.3, Math.min(room.world.width - room.H * 0.3, room.fig.x + dir * room.H * 2 * dt));
+    }
+  }
+  state.vx = dt > 0 ? (room.fig.x - x0) / dt : 0;
+  // the gauge is the room's actor: grass bends, puddles splash, dust parts
+  room.world.actors = [{ x: room.fig.x, y: room.fig.y, vx: state.vx, h: room.H, id: "player" }];
+}
+
+/** Apply one capture-script step (the tool then advances its wait). */
+function applyStep(p: Prop, s: DemoStep): void {
+  const H = room.H;
+  if (s.wind !== undefined) room.world.wind.x = s.wind;
+  if (s.go) p.go(s.go);
+  if (s.act) p.act(s.act, s.arg);
+  if (s.walk) state.walk = { x0: p.x + s.walk[0] * H, x1: p.x + s.walk[1] * H, t: 0, dur: Math.max(0.1, s.wait) };
+  if (s.use) {
+    room.fig.x = Math.round(p.x + (s.from ?? -0.6) * H);
+    p.use();
+  }
+  if (s.hit) {
+    const face: 1 | -1 = s.face ?? ((s.from ?? -0.9) < 0 ? 1 : -1);
+    room.fig.x = Math.round(p.x + (s.from ?? -0.9) * H);
+    room.fig.flip = face;
+    state.face = face;
+    fire(s.hit, face);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -677,6 +775,111 @@ window.__pixel = {
     state.light = { x, y, on };
   },
   png: toPng,
+  /** Apply a capture-script step to the named prop. */
+  apply(name: string, s: DemoStep): void {
+    const p = room.byName.get(s.on ? `with:${s.on}` : s.variant ? `${name}: ${s.variant}` : name);
+    if (p) applyStep(p, s);
+    else console.error(`capture step: no ${s.on ? `companion ${s.on}` : s.variant ? `variant "${s.variant}"` : name} on this stage`);
+  },
+  /** Stage slots (?prop / ?kit): id, region, centre x, width. */
+  slots(): { id: string; region: string; file: string; x: number; w: number; variants: string[] }[] {
+    return (room.slots ?? []).map((s) => ({ id: s.entry.recipe.id, region: s.entry.region, file: s.entry.file, x: s.x, w: s.w, variants: s.variants.map((v) => v.label) }));
+  },
+  /** Recipe data for the capture tool. */
+  recipeInfo(id: string): unknown {
+    const e = allRecipes().find((q) => q.recipe.id === id);
+    if (!e) return null;
+    const r = e.recipe;
+    return { id: r.id, region: e.region, file: e.file, reason: r.reason, breakage: r.breakage, states: Object.keys(r.states), use: r.use ?? null, persist: r.persist ?? [], actions: Object.keys(r.actions ?? {}), cues: soundCues(r), standard: r.standard ?? null, demo: r.demo ?? null };
+  },
+  registry(): { id: string; region: string; file: string }[] {
+    return allRecipes().map((e) => ({ id: e.recipe.id, region: e.region, file: e.file }));
+  },
+  registryErrors: REGISTRY_ERRORS,
+  /** Measure a prop's drawn size (static parts, or the standard's parts) in px and H. */
+  measure(name: string): { w: number; h: number; wH: number; hH: number; collide: string[]; lights: number; parts: number } | null {
+    const p = room.byName.get(name);
+    if (!p) return null;
+    const only = p.recipe.standard?.parts;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const part of p.parts) {
+      if (only ? !only.includes(part.name) : part.dynamic || part.worldSpace) continue;
+      const b = part.grid.bounds();
+      if (!b) continue;
+      for (const [x, y] of [part.toWorld(b.x0, b.y0), part.toWorld(b.x1 + 1, b.y1 + 1)]) {
+        x0 = Math.min(x0, x!); y0 = Math.min(y0, y!); x1 = Math.max(x1, x!); y1 = Math.max(y1, y!);
+      }
+    }
+    // width of the drawn cells; height = how far their top sits above the origin (floor, mount point)
+    const w = Math.round(x1 - x0), h = Math.round(p.y - y0);
+    return { w, h, wH: w / room.H, hH: h / room.H, collide: [...new Set(p.parts.map((q) => q.collide))], lights: p.lights.length, parts: p.parts.length };
+  },
+  /** Synchronous frame cost: step + render + a 1 px readback (the GPU has to finish), ms per frame. */
+  frameCost(frames = 120): { msPerFrame: number; simMs: number } {
+    const gl = renderer.gl;
+    const px = new Uint8Array(4);
+    const one = (): void => {
+      room.world.step(1 / 60);
+      frame();
+      gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    };
+    for (let i = 0; i < 20; i++) one();
+    let sim = 0;
+    const t0 = performance.now();
+    for (let i = 0; i < frames; i++) {
+      one();
+      sim += room.world.stats.simMs;
+    }
+    return { msPerFrame: +((performance.now() - t0) / frames).toFixed(3), simMs: +(sim / frames).toFixed(3) };
+  },
+  /** Count flash starts the gate allows (per rolling second) from now on. */
+  watchFlashes(): { starts: number[] } {
+    const w = room.world;
+    const log = { starts: [] as number[] };
+    const gate = w.flashGate;
+    const allow = gate.allow.bind(gate);
+    w.flashGate = { allow: (now: number, red: boolean) => { const ok = allow(now, red); if (ok) log.starts.push(now); return ok; } };
+    (window as unknown as { __flashLog: typeof log }).__flashLog = log;
+    return log;
+  },
+  /** Seconds-long idle run: sim ms, uploads and KB per frame (nothing disturbs the room). */
+  idleCost(frames = 120): { simMs: number; uploadsPerFrame: number; uploadKBPerFrame: number; dynamicRuns: number; particles: number } {
+    let sim = 0, up = 0, kb = 0, dyn = 0;
+    for (let i = 0; i < frames; i++) {
+      room.world.step(1 / 60);
+      sim += room.world.stats.simMs;
+      dyn += room.world.stats.dynamicRuns;
+      frame();
+      up += renderer.stats.uploads;
+      kb += renderer.stats.uploadKB;
+    }
+    return { simMs: sim / frames, uploadsPerFrame: up / frames, uploadKBPerFrame: kb / frames, dynamicRuns: dyn / frames, particles: room.world.particles.n };
+  },
+  /** Frame-px crop around everything on the stage (not the floor or wall), plus the gauge. */
+  stageRect(padH = 0.5): [number, number, number, number] {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const [name, p] of room.byName) {
+      if (name === "floor" || name === "wall") continue;
+      const b = p.bounds();
+      for (const part of p.parts) {
+        if (!part.worldSpace || !part.dynamic) continue;
+        const pb = part.grid.bounds();
+        if (!pb) continue;
+        const a = part.toWorld(pb.x0, pb.y0), c = part.toWorld(pb.x1, pb.y1);
+        b.x0 = Math.min(b.x0, a[0], c[0]); b.y0 = Math.min(b.y0, a[1], c[1]); b.x1 = Math.max(b.x1, a[0], c[0]); b.y1 = Math.max(b.y1, a[1], c[1]);
+      }
+      x0 = Math.min(x0, b.x0); y0 = Math.min(y0, b.y0); x1 = Math.max(x1, b.x1); y1 = Math.max(y1, b.y1);
+    }
+    const pad = padH * room.H;
+    const X0 = Math.max(0, Math.floor(x0 - pad - state.cam.x)), Y0 = Math.max(0, Math.floor(y0 - pad - state.cam.y));
+    const X1 = Math.min(renderer.vw, Math.ceil(x1 + pad - state.cam.x)), Y1 = Math.min(renderer.vh, Math.ceil(Math.max(y1, room.floorY + room.H * 0.25) - state.cam.y));
+    // even sizes (video encoders like them)
+    return [X0, Y0, (X1 - X0) & ~1, (Y1 - Y0) & ~1];
+  },
+  lookAt(name: string): void {
+    const p = room.byName.get(name);
+    if (p) room.fig.x = Math.round(p.x - room.H * 0.9);
+  },
   fx(name: string, kind: string): void {
     const p = room.byName.get(name);
     if (p) runFx(p, kind);

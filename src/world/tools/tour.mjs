@@ -13,7 +13,7 @@ const arg = (n, d) => {
   const i = process.argv.indexOf(`--${n}`);
   return i >= 0 ? process.argv[i + 1] : d;
 };
-const W = +arg("w", 1920), H = +arg("h", 1080), DPR = +arg("dpr", 1), TAG = arg("tag", `${W}x${H}`), PORT = arg("port", process.env.WORLD_PORT ?? "22763");
+const W = +arg("w", 1920), H = +arg("h", 1080), DPR = +arg("dpr", 1), TAG = arg("tag", `${W}x${H}`), PORT = arg("port", process.env.WORLD_PORT ?? "24001");
 const ONLY = arg("only", "") ? new Set(arg("only", "").split(",")) : null;
 const OUT = `review/world/runtime/${TAG}`;
 mkdirSync(OUT, { recursive: true });
@@ -24,7 +24,7 @@ const page = await ctx.newPage();
 const logs = [];
 page.on("console", (m) => { if (m.type() === "error" && !/404/.test(m.text())) logs.push(`${m.type()}: ${m.text()}`); });
 page.on("pageerror", (e) => logs.push(`pageerror: ${e.message}`));
-await page.goto(`http://127.0.0.1:${PORT}/world/?manual&fresh`, { waitUntil: "load" });
+await page.goto(`http://127.0.0.1:${PORT}/world/?manual&fresh&world=test`, { waitUntil: "load" });
 await page.waitForFunction(() => !!window.__world, null, { timeout: 60000 });
 const ev = (fn, a) => page.evaluate(fn, a);
 const adv = (n) => ev((n) => window.__world.advance(n), n);
