@@ -151,9 +151,11 @@ export class Panels {
         }
         const first = bay.pages[0]!;
         title = `Archive: ${bay.label}`;
-        html = this.frame(first.url, first.title);
+        // the bay's other pages sit above the page, so a phone sees them without scrolling
+        html = "";
         if (bay.pages.length > 1)
           html += `<nav class="bay" aria-label="${bay.label} documentation">${bay.pages.map((d, i) => `<button type="button" data-doc="${d.url}" aria-pressed="${i === 0}">${d.title}</button>`).join("")}</nav>`;
+        html += this.frame(first.url, first.title);
         break;
       }
       case "downloads":

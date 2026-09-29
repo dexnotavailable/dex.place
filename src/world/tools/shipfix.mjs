@@ -31,7 +31,9 @@ async function open(query, { w = 1280, h = 720, dpr = 1, mobile = false } = {}) 
   page.on("response", (r) => {
     if (r.status() >= 400) bad.push(`${r.status()} ${r.url()}`);
   });
-  page.on("requestfailed", (r) => bad.push(`failed ${r.url()} ${r.failure()?.errorText ?? ""}`));
+  // a media request the page cancels itself (a music element let go on a room change) is not an error
+  const aborted = [];
+  page.on("requestfailed", (r) => (/ERR_ABORTED/.test(r.failure()?.errorText ?? "") ? aborted : bad).push(`failed ${r.url()} ${r.failure()?.errorText ?? ""}`));
   await page.goto(`http://127.0.0.1:${PORT}/world/?${query}`, { waitUntil: "load", timeout: 180000 });
   await page.waitForFunction(() => !!window.__world, null, { timeout: 180000 });
   const ev = (fn, a) => page.evaluate(fn, a);
@@ -39,7 +41,7 @@ async function open(query, { w = 1280, h = 720, dpr = 1, mobile = false } = {}) 
     await page.waitForTimeout(100);
     if (query.includes("manual")) await ev(() => window.__world.advance(1));
   }
-  return { ctx, page, ev, errors, bad };
+  return { ctx, page, ev, errors, bad, aborted };
 }
 /** Wait (advancing a manual world) until the current room's backdrop is ready and no transition runs. */
 async function settle(p, id, manual = true) {
@@ -83,7 +85,9 @@ async function smoke() {
 async function placeAt(p, wx) {
   await p.ev((wx) => {
     const g = window.__world.game;
-    window.__world.place((wx - (g.room.def.origin?.[0] ?? 0)) * 80);
+    // on the ground under her feet (not the top of whatever stands over it: the Crown's overhang)
+    const x = (wx - (g.room.def.origin?.[0] ?? 0)) * 80;
+    window.__world.place(x, g.room.collision.groundAt(x, g.player.body.y - 40));
   }, wx);
   await p.ev(() => window.__world.advance(90));
 }
@@ -296,7 +300,151 @@ async function summon() {
   out.summon = res;
 }
 
-const checks = { smoke, sit, strike, summon };
+// --- archive: each bay opens its own product's real doc pages --------------------------------
+async function archive() {
+  const d = dir("archive");
+  const res = {};
+  for (const [vname, vo] of [["1080p", { w: 1920, h: 1080 }], ["1440p", { w: 2560, h: 1440 }], ["phone", { w: 844, h: 390, dpr: 3, mobile: true }]]) {
+    const p = await open("manual&fresh&mute", vo);
+    await p.ev(() => window.__world.begin());
+    await p.ev(() => window.__world.teleport("C2", "door"));
+    await settle(p, "C2");
+    for (const [id, x] of [["docs-index", 236.4], ["bay-1", 241.0], ["bay-2", 243.0], ["bay-3", 245.0]]) {
+      if (vname !== "1080p" && id !== "bay-3") continue;
+      await placeAt(p, x);
+      const near = await p.ev(() => window.__world.state().near);
+      await p.ev(() => window.__world.use());
+      await p.ev(() => window.__world.advance(10));
+      // let the frame load its page
+      for (let k = 0; k < 60; k++) {
+        const ok = await p.ev(() => { const f = document.querySelector("#panel iframe"); return !!f?.contentDocument && f.contentDocument.readyState === "complete" && f.contentDocument.location.href !== "about:blank"; });
+        if (ok) break;
+        await p.page.waitForTimeout(100);
+      }
+      await p.page.waitForTimeout(400);
+      const panel = await p.ev(() => {
+        const el = document.getElementById("panel");
+        const f = el.querySelector("iframe");
+        const doc = f?.contentDocument;
+        return {
+          kind: window.__world.game.panels.kind,
+          title: el.querySelector("h2")?.textContent,
+          frame: f?.getAttribute("src") ?? null,
+          frameTitle: doc?.title ?? null,
+          frameH1: doc?.querySelector("h1")?.textContent?.trim() ?? null,
+          link: el.querySelector("p.alt a")?.getAttribute("href") ?? null,
+          buttons: [...el.querySelectorAll("button[data-doc]")].map((b) => ({ doc: b.dataset.doc, text: b.textContent, pressed: b.getAttribute("aria-pressed") })),
+          focus: document.activeElement?.className ?? document.activeElement?.tagName,
+        };
+      });
+      await p.page.screenshot({ path: `${d}/C2-${id}-${vname}.png` });
+      const r = { near, ...panel };
+      if (panel.buttons.length > 1) {
+        await p.page.click(`#panel button[data-doc="${panel.buttons[1].doc}"]`);
+        for (let k = 0; k < 60; k++) {
+          const ok = await p.ev((u) => { const f = document.querySelector("#panel iframe"); return f?.contentDocument?.location.pathname === u && f.contentDocument.readyState === "complete"; }, panel.buttons[1].doc);
+          if (ok) break;
+          await p.page.waitForTimeout(100);
+        }
+        await p.page.waitForTimeout(400);
+        r.second = await p.ev(() => {
+          const el = document.getElementById("panel");
+          const f = el.querySelector("iframe");
+          return { frame: f?.getAttribute("src"), frameH1: f?.contentDocument?.querySelector("h1")?.textContent?.trim() ?? null, link: el.querySelector("p.alt a")?.getAttribute("href"), pressed: [...el.querySelectorAll("button[data-doc]")].map((b) => b.getAttribute("aria-pressed")) };
+        });
+        await p.page.screenshot({ path: `${d}/C2-${id}-${vname}-second.png` });
+      }
+      // Esc closes, back to the world
+      await p.page.keyboard.press("Escape");
+      await p.ev(() => window.__world.advance(20));
+      r.closed = await p.ev(() => !window.__world.game.panels.open);
+      res[`${id}-${vname}`] = r;
+      note(`archive ${id} ${vname}: ${r.title} -> ${r.frame} (h1 "${r.frameH1}")${r.second ? `, then ${r.second.frame} (h1 "${r.second.frameH1}")` : ""}`);
+    }
+    res[`errors-${vname}`] = p.errors;
+    res[`bad-${vname}`] = p.bad;
+    await p.ctx.close();
+  }
+  save("archive", res);
+  out.archive = res;
+}
+
+/** Real-time sound samples (the world running on its own clock, sound on). */
+async function sample(p, secs, every = 0.25) {
+  const rows = [];
+  const t0 = Date.now();
+  while ((Date.now() - t0) / 1000 < secs) {
+    rows.push(
+      await p.ev(() => {
+        const g = window.__world.game;
+        const a = g.audio;
+        const o = g.room.def.origin ?? [0, 0];
+        const val = (n) => (n ? +n.gain.value.toFixed(4) : null);
+        return {
+          t: +g.seconds.toFixed(2),
+          room: g.room.def.id,
+          area: g.area?.id ?? null,
+          x: +(o[0] + g.player.body.x / 80).toFixed(2),
+          y: +(o[1] - g.player.body.y / 80).toFixed(2),
+          music: a.state.music,
+          level: +a.state.level.toFixed(3),
+          muffle: +a.state.muffle.toFixed(3),
+          muffleHz: a.muffleFilt ? Math.round(a.muffleFilt.frequency.value) : null,
+          muffleGain: a.muffleGain ? +a.muffleGain.gain.value.toFixed(3) : null,
+          musicGain: a.music ? +a.music.gain.gain.value.toFixed(4) : null,
+          cue: a.music ? +a.music.el.currentTime.toFixed(2) : null,
+          bed: a.state.bed,
+          bedGain: a.bed ? +a.bed.gain.gain.value.toFixed(4) : null,
+          rain: val(a.rain?.gain),
+          wind: val(a.wind?.gain),
+          flag: g.save.get("blade:cleared"),
+        };
+      }),
+    );
+    await p.page.waitForTimeout(every * 1000);
+  }
+  return rows;
+}
+/** Adds an analyser on the master output: RMS dBFS, read with each sample. */
+async function tapMaster(p) {
+  await p.ev(() => {
+    const a = window.__world.game.audio;
+    const ctx = a.ctx;
+    const an = ctx.createAnalyser();
+    an.fftSize = 2048;
+    a.master.connect(an);
+    const buf = new Float32Array(an.fftSize);
+    window.__rms = () => {
+      an.getFloatTimeDomainData(buf);
+      let s = 0;
+      for (const v of buf) s += v * v;
+      return +(10 * Math.log10(s / buf.length + 1e-12)).toFixed(1);
+    };
+  });
+}
+
+// --- lift: the lift ride's music opens up as the car climbs out of the hollow ----------------
+async function lift() {
+  const d = dir("lift");
+  const p = await open("fresh&go");
+  await p.page.waitForTimeout(1500);
+  await p.ev(() => { const g = window.__world.game; for (let n = 1; n <= 3; n++) g.save.set(`shrine:${n}`, true); window.__world.teleport("C3", ""); });
+  await settle(p, "C3", false);
+  // the theme is playing (muffled underground) before the ride
+  await p.page.waitForTimeout(12000);
+  await p.ev(() => window.__world.teleport("D1", "bottom"));
+  const rows = await sample(p, 24);
+  await p.page.screenshot({ path: `${d}/D1-top.png` });
+  const first = rows.find((r) => r.room === "D1");
+  const last = rows[rows.length - 1];
+  const res = { rows, summary: { start: first, end: last, muffleSeen: [...new Set(rows.filter((r) => r.room === "D1").map((r) => r.muffle))].length, errors: p.errors, bad: p.bad, aborted: p.aborted } };
+  note(`lift: muffle ${first?.muffle} (${first?.muffleHz} Hz) at y ${first?.y} -> ${last.muffle} (${last.muffleHz} Hz, gain ${last.muffleGain}) at y ${last.y}; ${res.summary.muffleSeen} distinct steps; music ${last.music}`);
+  await p.ctx.close();
+  save("lift", res);
+  out.lift = res.summary;
+}
+
+const checks = { smoke, sit, strike, summon, archive, lift };
 for (const [k, f] of Object.entries(checks)) if (which === k || which === "all") await f();
 await browser.close();
 console.log(JSON.stringify(out, null, 1).slice(0, 4000));

@@ -7,6 +7,7 @@ re-tuned without Blender.
       --python D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/d9_blender.py -- \
       --out D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/<key> [--shots idle,n1,q,back] [--px 144,80]
       [--ss 4] [--head 1.10] [--drape p5|none|<shot>=<patch>,...] [--save-lane] [--r2 <round-2 json>]
+      [--blend <lane .blend>] [--neck-l 1.0]   (round 5: render another lane build, e.g. lanes/drive9n.blend; never rosace.blend)
 
 Per shot and size, in <out>/<shot>/px<N>/: id, normal, depth, light (R = the toon ramp input v, G = ao, B = the
 spec band; materials.py), beauty (the toon, for reference), noise (R = brush noise, G = strand noise stretched
@@ -140,6 +141,8 @@ def main():
     hcfg = dict(PICK["head"])
     if common.arg(argv, "--head", None) is not None:
         hcfg["head"] = float(common.arg(argv, "--head", None))
+    if common.arg(argv, "--neck-l", None) is not None:      # round 5: the neck's length (head_scale neck_l)
+        hcfg["neck_l"] = float(common.arg(argv, "--neck-l", None))
     hc = head_scale.cfg_from({k: hcfg[k] for k in ("head", "neck_w", "neck_l", "fit_h")})
     drape_arg = common.arg(argv, "--drape", None)
     drape = {s: PICK["shots"][s].get("drape") for s in PICK["shots"]}
@@ -154,7 +157,9 @@ def main():
     r2p = common.arg(argv, "--r2", None)
     R2 = json.load(open(r2p, encoding="utf-8")) if r2p else {}
 
-    bpy.ops.wm.open_mainfile(filepath=BLEND)
+    blend = common.arg(argv, "--blend", BLEND)       # round 5: the recombined build (lanes/drive9n.blend)
+    assert os.path.basename(blend) != "rosace.blend"
+    bpy.ops.wm.open_mainfile(filepath=blend)
     sc = bpy.context.scene
     materials.rebind()
     render.setup_engine(sc)
@@ -165,11 +170,14 @@ def main():
         import r2_blender
         r2rep["mesh_edits"] = r2_blender.mesh_edits(R2.get("mesh_edits"))
         r2rep["circlet"] = r2_blender.circlet(R2.get("circlet"))
+        if R2.get("pin"):
+            import r5_blender     # round 5: the head-top rosette pin and ribbon (r5_blender.py)
+            r2rep["pin"] = r5_blender.pin(R2.get("pin"))
         print("D9 R2", json.dumps(r2rep), flush=True)
     for name in list(materials.PASS_NODES):
         add_noise_pass(name)
     head_scale.install(hc)          # posing.apply_pose = figure-pose applier + head/neck scale + H refit
-    rep = {"blend": BLEND, "blend_sha256": hashlib.sha256(open(BLEND, "rb").read()).hexdigest(),
+    rep = {"blend": blend, "blend_sha256": hashlib.sha256(open(blend, "rb").read()).hexdigest(),
            "head": hc, "drape": drape, "shots": {}, "r2": {"file": r2p, "rep": r2rep}}
     for shot in shots:
         sd = PICK["shots"][shot]

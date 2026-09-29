@@ -23,13 +23,15 @@ sys.path.insert(0, os.path.join(PIPE, "finish_f3"))
 from rosace import common  # noqa: E402
 
 PICK = json.load(open(os.path.join(REPO, "art", "rosace", "drive9.json"), encoding="utf-8"))
-OUT = os.path.join(common.BUILD, "lanes", "drive9.blend")
-assert os.path.basename(OUT) == "drive9.blend"
+# round 5 (ESCALATION 3, the recombined build): D9_VARIANT / D9_OUT pick another F3 variant and lane file
+VARIANT = os.environ.get("D9_VARIANT") or PICK["build"]["f3_variant"]
+OUT = os.environ.get("D9_OUT") or os.path.join(common.BUILD, "lanes", "drive9.blend")
+assert os.path.basename(OUT).startswith("drive9") and os.path.dirname(os.path.abspath(OUT)).endswith("lanes")
 
 import overrides  # noqa: E402  (finish_f3, bpy side)
 from rosace_v2 import figure_shape  # noqa: E402
 
-rep = overrides.install(PICK["build"]["f3_variant"])
+rep = overrides.install(VARIANT)
 shape = figure_shape.load_shape(figure_shape.SHAPE_JSON)
 integ = json.load(open(os.path.join(common.ART, "integrated.json"), encoding="utf-8"))["build"]
 rep["bust"] = {"shape_current": shape.get("current"), "integrated": integ.get("bust")}
