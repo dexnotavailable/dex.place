@@ -1,0 +1,103 @@
+{
+ "_doc": "Round 4 paint-over (ESCALATION 2) for the drive-9 Q stamp at 144 px. Hand-placed on the R4u underlay; STALE if it changes. The face is drawn upright and turned by the head's tilt (+25.9 deg, from the eye landmarks) about the nose.",
+ "palette": {
+  "1": "#f0d5c4",
+  "2": "#ebc5b1",
+  "3": "#e4b3a0",
+  "4": "#d99c8b",
+  "5": "#c98579",
+  "K": "#1b1024",
+  "k": "#4a2c44",
+  "A": "#2c3b80",
+  "B": "#3b4f98",
+  "C": "#2e3f7e",
+  "D": "#86b8ee",
+  "H": "#eef6ff",
+  "W": "#dde2f0",
+  "w": "#d3d7e8",
+  "L": "#a0606c",
+  "R": "#e89c9a",
+  "r": "#eeb6aa",
+  "M": "#7e3f4c",
+  "m": "#b0606a",
+  "n": "#d4927f",
+  "b": "#6e5a9a",
+  "g0": "#1c1733",
+  "g1": "#302747",
+  "g2": "#423555",
+  "g4": "#6a52a2",
+  "g5": "#7f62af",
+  "g6": "#9a82d0",
+  "g7": "#b8aee6",
+  "x": "#a8676a",
+  "y": "#8d535f",
+  "f1": "#8680b4",
+  "f2": "#a29dc8",
+  "f3": "#e6e2e9",
+  "l1": "#0c0920",
+  "l3": "#4d4392",
+  "l4": "#6456ac"
+ },
+ "layers": [
+  {
+   "name": "face",
+   "kind": "stamp",
+   "rot": 25.9,
+   "at": [
+    60,
+    99
+   ],
+   "pivot": [
+    9,
+    8
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Face critic 2: the lash mass, the iris ramp and the catchlight as on the idle; Q is the strike, so the brows angle down to the centre and the mouth is a small open shout (MOVESET Q), not the idle's smile.",
+   "rows": [
+    "...bbb......bbb....",
+    "......b.....b......",
+    "...KKKKKk.kKKKKK...",
+    "...KAAAw...wAAAK...",
+    "....CBHw...wHBC....",
+    ".....DD.....DD.....",
+    "....L.........L....",
+    "...rRr.......rRr...",
+    "...................",
+    "...................",
+    "........MM.........",
+    "........mM.........",
+    "..................."
+   ]
+  },
+  {
+   "name": "strands_out",
+   "kind": "line",
+   "pts": [
+    [
+     55,
+     98
+    ],
+    [
+     52,
+     101
+    ],
+    [
+     51,
+     105
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "why": "Head and hair 4: a strand flung off the outline by the stamp."
+  }
+ ]
+}

@@ -1,0 +1,206 @@
+{
+ "_doc": "Round 4 paint-over (ESCALATION 2) for the drive-9 back view at 144 px: the glance over the shoulder. Hand-placed on the R4u underlay; STALE if it changes. The face is drawn upright and turned by the head's tilt (-23 deg, from the eye landmarks) about the nose.",
+ "palette": {
+  "1": "#f0d5c4",
+  "2": "#ebc5b1",
+  "3": "#e4b3a0",
+  "4": "#d99c8b",
+  "5": "#c98579",
+  "K": "#1b1024",
+  "k": "#4a2c44",
+  "A": "#2c3b80",
+  "B": "#3b4f98",
+  "C": "#2e3f7e",
+  "D": "#86b8ee",
+  "H": "#eef6ff",
+  "W": "#dde2f0",
+  "w": "#d3d7e8",
+  "L": "#a0606c",
+  "R": "#e89c9a",
+  "r": "#eeb6aa",
+  "M": "#7e3f4c",
+  "m": "#b0606a",
+  "n": "#d4927f",
+  "b": "#6e5a9a",
+  "g0": "#1c1733",
+  "g1": "#302747",
+  "g2": "#423555",
+  "g4": "#6a52a2",
+  "g5": "#7f62af",
+  "g6": "#9a82d0",
+  "g7": "#b8aee6",
+  "x": "#a8676a",
+  "y": "#8d535f",
+  "f1": "#8680b4",
+  "f2": "#a29dc8",
+  "f3": "#e6e2e9",
+  "l1": "#0c0920",
+  "l3": "#4d4392",
+  "l4": "#6456ac"
+ },
+ "layers": [
+  {
+   "name": "face_base",
+   "kind": "stamp",
+   "at": [
+    74,
+    66
+   ],
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: a clean, lit face plane under the glance before the features go on (FC-P35).",
+   "rows": [
+    "22222211112222",
+    "32222211111222",
+    "32222211111122",
+    "33222221111122",
+    "33222222111122",
+    "33322222211122",
+    "43322222221122",
+    "44332222222223",
+    "44433222222233",
+    "44443322222333",
+    "44444332223334",
+    "44444433333444"
+   ]
+  },
+  {
+   "name": "fringe",
+   "kind": "clumps",
+   "root_y": 59,
+   "box": [
+    72,
+    59,
+    89,
+    69
+   ],
+   "over": [
+    "hair",
+    "skin"
+   ],
+   "keys": {
+    "body": "g4",
+    "dark": "g2",
+    "lite": "g6",
+    "gap": "g0",
+    "notch": "3",
+    "notch2": "2",
+    "under": "2",
+    "tip": "g5"
+   },
+   "why": "Head and hair 4: the fringe in 5 tapered locks with dark gaps, tips rising with the head's tilt.",
+   "clumps": [
+    {
+     "x": [
+      71,
+      76
+     ],
+     "tip": [
+      74,
+      68
+     ]
+    },
+    {
+     "x": [
+      76,
+      79
+     ],
+     "tip": [
+      77,
+      67
+     ]
+    },
+    {
+     "x": [
+      79,
+      82
+     ],
+     "tip": [
+      80,
+      66
+     ]
+    },
+    {
+     "x": [
+      82,
+      85
+     ],
+     "tip": [
+      83,
+      64
+     ]
+    },
+    {
+     "x": [
+      85,
+      89
+     ],
+     "tip": [
+      87,
+      64
+     ]
+    }
+   ]
+  },
+  {
+   "name": "face",
+   "kind": "stamp",
+   "rot": -23.4,
+   "at": [
+    75,
+    66
+   ],
+   "pivot": [
+    10,
+    7
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Face critic 2/3: 'keep the head turned to camera over the shoulder in back views ... eyes on the viewer'; the same lash mass, iris ramp, catchlight, cool white, blush and asymmetric smile as the idle, placed on the glance's own eye landmarks.",
+   "rows": [
+    "................",
+    ".K............K.",
+    "..KKKKKk.kKKKKK.",
+    "..KAAAw..wAAK...",
+    "...CBHw..wBH....",
+    "....DD....DD....",
+    "..rL.......Rr...",
+    "..RRr...........",
+    "................",
+    ".......m.M......",
+    ".......mm.......",
+    "................"
+   ]
+  },
+  {
+   "name": "strands_out",
+   "kind": "line",
+   "pts": [
+    [
+     92,
+     64
+    ],
+    [
+     95,
+     67
+    ],
+    [
+     96,
+     71
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "why": "Head and hair 4: loose strands breaking the outline."
+  }
+ ]
+}
