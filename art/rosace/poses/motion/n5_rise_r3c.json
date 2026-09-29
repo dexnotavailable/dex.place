@@ -1,0 +1,147 @@
+{
+ "name": "n5_rise_r3c",
+ "note": "N5 Agnus Dei R1 (f68-76), round 3c: the first step of the rise, a half-kneel. The right knee stays down on its spot, the left foot steps forward so its shin stands vertical with the knee over the toes; hips up 12 cm, torso upright, head lifting; the glaive still upright at her right side, the left hand coming in toward the haft. r3b critics: the kneel -> stand popped in one drawing.",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.00964723819589917,
+   -0.23863703305156275,
+   -0.4
+  ],
+  "J_Bip_C_Hips": [
+   0,
+   0,
+   -15.0
+  ],
+  "J_Bip_C_Spine": [
+   -2,
+   0,
+   0
+  ],
+  "J_Bip_C_Chest": [
+   -3,
+   0,
+   0
+  ],
+  "J_Bip_C_UpperChest": [
+   -2,
+   0,
+   0
+  ],
+  "J_Bip_C_Neck": [
+   8,
+   0,
+   0
+  ],
+  "J_Bip_C_Head": [
+   10,
+   0,
+   0
+  ],
+  "J_Bip_L_UpperArm": [
+   0,
+   20,
+   -10
+  ],
+  "J_Bip_L_LowerArm": [
+   0,
+   10,
+   -30
+  ],
+  "J_Bip_L_Hand": [
+   -20,
+   0,
+   0
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.055,
+    -0.873,
+    0.159
+   ],
+   "yaw": -9.0
+  },
+  "R": {
+   "pos": [
+    0.01,
+    0.222,
+    0.1
+   ],
+   "yaw": -15.0,
+   "pitch": 72
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   -0.455,
+   0.133,
+   1.04
+  ],
+  "dir": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "edge": [
+   -0.819,
+   0.574,
+   0.0
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": 0.0,
+   "thumb": "tip",
+   "back": [
+    -0.819,
+    0.574,
+    0.1
+   ]
+  },
+  "L": {
+   "free": true
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -0.218,
+   0.333,
+   0.7
+  ],
+  "leg.L": [
+   0.078,
+   -1.687,
+   0.7
+  ],
+  "leg.R": [
+   -0.673,
+   -0.545,
+   0.12
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 30,
+   "thumb": 20
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0,
+   0.05,
+   0.05
+  ]
+ },
+ "expression": "resolute"
+}

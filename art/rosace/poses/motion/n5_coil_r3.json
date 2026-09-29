@@ -1,0 +1,225 @@
+{
+ "name": "n5_coil_r3",
+ "note": "N5 Agnus Dei A3 held coil (f9-22), round 3. Wound to her RIGHT like the AI clip: pelvis -150, chest ~-205, i.e. back three-quarters to the camera. Deep crouch, torso pitched ~35 deg forward over its own front knee (the right foot, toward +Y), head down; knees pushed out over the toes (round-2 critics: knock-kneed). Both hands choked by the right hip, glaive flat behind her (toward +Y) at hip height. Right foot = the pivot spot it keeps through the spin to contact.",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   -0.07,
+   0.18,
+   -0.42
+  ],
+  "J_Bip_C_Hips": [
+   13,
+   0,
+   -150
+  ],
+  "J_Bip_C_Spine": [
+   8,
+   0,
+   -20
+  ],
+  "J_Bip_C_Chest": [
+   6,
+   0,
+   -20
+  ],
+  "J_Bip_C_UpperChest": [
+   4,
+   0,
+   -15
+  ],
+  "J_Bip_C_Neck": [
+   6,
+   0,
+   12
+  ],
+  "J_Bip_C_Head": [
+   10,
+   0,
+   16
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.216,
+    -0.555,
+    0.159
+   ],
+   "yaw": -130
+  },
+  "R": {
+   "pos": [
+    -0.089,
+    0.492,
+    0.159
+   ],
+   "yaw": -165
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   -0.2,
+   0.42,
+   0.64
+  ],
+  "dir": [
+   0.17,
+   0.985,
+   0.0
+  ],
+  "edge": [
+   0,
+   0,
+   -1
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": -0.8,
+   "thumb": "tip",
+   "back": [
+    0.9,
+    0,
+    0.3
+   ]
+  },
+  "L": {
+   "grip": "grip_main",
+   "slide": -1.2,
+   "thumb": "tip",
+   "back": [
+    -0.9,
+    0,
+    0.3
+   ]
+  }
+ },
+ "poles": {
+  "arm.R": [
+   0.4,
+   -0.1,
+   1.0
+  ],
+  "arm.L": [
+   -0.5,
+   0.5,
+   1.0
+  ],
+  "leg.L": [
+   -0.622,
+   -0.309,
+   0.45
+  ],
+  "leg.R": [
+   -0.634,
+   1.174,
+   0.45
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 85,
+   "thumb": 55
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   -0.6,
+   0.6,
+   0.1
+  ],
+  "chains": {
+   "sleeve_R": {
+    "g": 0.35,
+    "wind": [
+     -0.6,
+     0.6,
+     0.1
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.35,
+    "wind": [
+     -0.6,
+     0.6,
+     0.1
+    ]
+   },
+   "hair_tail": {
+    "g": 0.35,
+    "wind": [
+     -0.6,
+     0.6,
+     0.1
+    ]
+   },
+   "hair_back": {
+    "g": 0.35,
+    "wind": [
+     -0.6,
+     0.6,
+     0.1
+    ]
+   },
+   "side_L": {
+    "g": 0.35,
+    "wind": [
+     -0.6,
+     0.6,
+     0.1
+    ]
+   },
+   "side_R": {
+    "g": 0.35,
+    "wind": [
+     -0.6,
+     0.6,
+     0.1
+    ]
+   },
+   "veil": {
+    "g": 0.35,
+    "wind": [
+     -0.6,
+     0.6,
+     0.1
+    ]
+   },
+   "stole_A": {
+    "g": 0.35,
+    "wind": [
+     -0.6,
+     0.6,
+     0.1
+    ]
+   },
+   "stole_B": {
+    "g": 0.35,
+    "wind": [
+     -0.6,
+     0.6,
+     0.1
+    ]
+   },
+   "tabard": {
+    "g": 0.55,
+    "wind": [
+     -0.6,
+     0.6,
+     0.1
+    ]
+   }
+  }
+ },
+ "expression": "resolute"
+}

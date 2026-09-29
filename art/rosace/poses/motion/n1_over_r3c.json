@@ -1,0 +1,189 @@
+{
+ "name": "n1_over_r3c",
+ "note": "N1 Kyrie F2 (f14-15), round 3c: the rising cut carried on over her head and back over her RIGHT shoulder in the right hand; the left hand has let go and opens out low on her left for balance; she rises onto the front leg, chest open, head up after the blade. The arms stay to her right side (screen-left of her head), so the sleeves and veil no longer cover the face (r3b critics).",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.0,
+   -0.26,
+   -0.2
+  ],
+  "J_Bip_C_Hips": [
+   4,
+   0,
+   -12
+  ],
+  "J_Bip_C_Spine": [
+   -6,
+   0,
+   -8
+  ],
+  "J_Bip_C_Chest": [
+   -8,
+   0,
+   -8
+  ],
+  "J_Bip_C_UpperChest": [
+   -6,
+   0,
+   -6
+  ],
+  "J_Bip_C_Neck": [
+   -8,
+   0,
+   14
+  ],
+  "J_Bip_C_Head": [
+   -10,
+   0,
+   16
+  ],
+  "J_Bip_L_UpperArm": [
+   0,
+   30,
+   -30
+  ],
+  "J_Bip_L_LowerArm": [
+   0,
+   10,
+   -20
+  ],
+  "J_Bip_L_Hand": [
+   -20,
+   0,
+   0
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.12,
+    -0.74,
+    0.159
+   ],
+   "yaw": 4
+  },
+  "R": {
+   "pos": [
+    -0.15,
+    0.22,
+    0.19
+   ],
+   "yaw": -25,
+   "pitch": 25
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   -0.44,
+   -0.16,
+   1.4
+  ],
+  "dir": [
+   0.144,
+   0.8164,
+   0.5592
+  ],
+  "edge": [
+   0.2,
+   0.3,
+   -0.9
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": -0.25,
+   "thumb": "tip",
+   "back": [
+    -0.9,
+    0.2,
+    0.3
+   ]
+  },
+  "L": {
+   "free": true
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -1.0,
+   0.0,
+   1.0
+  ],
+  "leg.L": [
+   0.3,
+   -1.0,
+   0.55
+  ],
+  "leg.R": [
+   -0.4,
+   0.1,
+   0.4
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 20,
+   "thumb": 12
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.0,
+   -0.5,
+   0.3
+  ],
+  "chains": {
+   "sleeve_R": {
+    "g": 0.45,
+    "wind": [
+     -0.9,
+     0.3,
+     0.0
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.3,
+    "wind": [
+     0.3,
+     -0.8,
+     0.3
+    ]
+   },
+   "hair_tail": {
+    "g": 0.5,
+    "wind": [
+     0,
+     0.4,
+     0.2
+    ]
+   },
+   "tabard": {
+    "g": 0.7,
+    "wind": [
+     0,
+     -0.3,
+     0.1
+    ]
+   },
+   "veil": {
+    "g": 0.5,
+    "wind": [
+     0.1,
+     0.5,
+     0.1
+    ]
+   }
+  }
+ },
+ "expression": "resolute"
+}

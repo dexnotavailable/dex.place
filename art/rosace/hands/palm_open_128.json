@@ -1,0 +1,18 @@
+{
+ "_doc": "palm_open, 128 px sprite: hand stamp for override layers (arm enters from the right; 'flip' in the patch mirrors it). origin = [column, row] placed on the patch 'at'. Rows use overrides.ROWKEY codes; '.' leaves the render. Stills round 3.",
+ "name": "palm_open",
+ "px": 128,
+ "arm": "right",
+ "origin": [
+  3,
+  3
+ ],
+ "rows": [
+  ".O.O.O..",
+  "OLOLOLO.",
+  "OSSSSLTO",
+  ".OSSTTO.",
+  "..OTTTT.",
+  "...OO..."
+ ]
+}

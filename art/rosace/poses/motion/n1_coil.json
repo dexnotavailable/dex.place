@@ -1,0 +1,191 @@
+{
+ "name": "n1_coil",
+ "note": "N1 Kyrie A2 coil (f3), round-2 hero key. Weight dropped back onto a bent rear leg, hips low and shifted back, torso wound ~80 degrees to her right so the chest opens to the camera; the right arm trails the glaive one-handed, choked toward the butt, the blade low behind her with the tip about 1 H behind the rear heel and just off the floor; the free left arm reaches toward the target for counterweight. Line of action: front toe -> hips -> trailing blade, one diagonal. Sleeves and hair pulled back.",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.0,
+   0.1,
+   -0.26
+  ],
+  "J_Bip_C_Hips": [
+   -10,
+   0,
+   -35
+  ],
+  "J_Bip_C_Spine": [
+   -6,
+   0,
+   -18
+  ],
+  "J_Bip_C_Chest": [
+   -4,
+   4,
+   -18
+  ],
+  "J_Bip_C_UpperChest": [
+   0,
+   4,
+   -12
+  ],
+  "J_Bip_C_Neck": [
+   4,
+   0,
+   25
+  ],
+  "J_Bip_C_Head": [
+   8,
+   -4,
+   30
+  ],
+  "J_Bip_L_UpperArm": [
+   0,
+   5,
+   -10
+  ],
+  "J_Bip_L_LowerArm": [
+   0,
+   0,
+   -30
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.1,
+    -0.36,
+    0.159
+   ],
+   "yaw": -10
+  },
+  "R": {
+   "pos": [
+    -0.15,
+    0.4,
+    0.159
+   ],
+   "yaw": -30
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   -0.08,
+   0.55,
+   0.95
+  ],
+  "dir": [
+   -0.05,
+   0.92,
+   -0.38
+  ],
+  "edge": [
+   0,
+   -0.3,
+   -1
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": -0.5,
+   "thumb": "tip",
+   "back": [
+    -0.8,
+    0.0,
+    0.5
+   ]
+  },
+  "L": {
+   "free": true
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -0.5,
+   0.4,
+   1.0
+  ],
+  "leg.L": [
+   0.2,
+   -1.0,
+   0.5
+  ],
+  "leg.R": [
+   -0.4,
+   -0.2,
+   0.5
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 25,
+   "thumb": 20
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.0,
+   0.6,
+   0.1
+  ],
+  "chains": {
+   "sleeve_R": {
+    "g": 0.4,
+    "wind": [
+     0.0,
+     0.9,
+     0.2
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.4,
+    "wind": [
+     0.0,
+     0.9,
+     0.2
+    ]
+   },
+   "hair_tail": {
+    "g": 0.5,
+    "wind": [
+     0.0,
+     0.7,
+     0.1
+    ]
+   },
+   "hair_back": {
+    "g": 0.5,
+    "wind": [
+     0.0,
+     0.5,
+     0.1
+    ]
+   },
+   "tabard": {
+    "g": 0.7,
+    "wind": [
+     0.0,
+     0.3,
+     0.0
+    ]
+   },
+   "veil": {
+    "g": 0.6,
+    "wind": [
+     0.0,
+     0.5,
+     0.1
+    ]
+   }
+  }
+ },
+ "expression": "resolute"
+}

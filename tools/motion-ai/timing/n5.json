@@ -1,0 +1,32 @@
+{
+ "name": "n5",
+ "move": "N5 Agnus Dei (m1_5), MOVESET.md section 1: 14 drawings, 94 f at 60 fps",
+ "length": 94,
+ "source": {"npz": "n5/n5_study_ee_s1_00.npz", "meta": "_constraints/n5_study_ee.meta.json"},
+ "push_ref": "ready",
+ "ease_default": "in_out",
+ "glaive_default": "hands",
+ "keys": [
+  {"name": "ready",      "src": "ready",               "frame": 0},
+  {"name": "A1 yank",    "src": "A1 yank",             "frame": 1,  "hold": 3, "ease": "snap",
+   "push": {"arms": 1.2}},
+  {"name": "A2 back-arc","src": "A2 back-arc",         "frame": 5,  "hold": 3, "ease": "snap",
+   "push": {"arms": 1.2, "spine": 1.15}},
+  {"name": "A3 coil",    "src": "A3 coil (held)",      "frame": 9,  "hold": 13, "ease": "snap",
+   "push": {"spine": 1.25, "yaw": 1.1, "root_y": 1.2}, "add": {"twist": -10, "lean": 6}},
+  {"name": "A4 unwind",  "src": "A4 unwind",           "frame": 23, "hold": 3, "ease": "snap",
+   "push": {"spine": 1.2}, "add": {"twist": 12}},
+  {"name": "S1",         "src": "S2 sweep-2",          "frame": 27},
+  {"name": "S2",         "src": "S2 sweep",            "frame": 28, "push": {"arms": 1.1}},
+  {"name": "S3",         "src": "C1 contact-1",        "frame": 29, "push": {"arms": 1.15}},
+  {"name": "C1 contact", "src": "C1 contact",          "frame": 30, "hold": 7, "ease": "linear",
+   "push": {"arms": 1.2, "spine": 1.15}, "add": {"lean": 4}},
+  {"name": "F2 kneel",   "src": "F2 kneel",            "frame": 43, "hold": 4, "ease": "in_out"},
+  {"name": "K1 amen",    "src": "K1 amen kneel (held)","frame": 48, "hold": 19, "ease": "snap"},
+  {"name": "R3 stance",  "src": "R3 stance",           "frame": 86, "hold": 8, "ease": "in_out", "glaive": "upright"}
+ ],
+ "exposure": {"mode": "drawings", "drawings": [
+  ["A1", 1, 4], ["A2", 5, 4], ["A3", 9, 14], ["A4", 23, 4], ["S1", 27, 1], ["S2", 28, 1], ["S3", 29, 1],
+  ["C1", 30, 8], ["F1", 38, 5], ["F2", 43, 5], ["K1", 48, 20], ["R1", 68, 9, 73], ["R2", 77, 9, 81], ["R3", 86, 9]
+ ]}
+}

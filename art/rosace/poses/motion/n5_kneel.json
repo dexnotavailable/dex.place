@@ -1,0 +1,144 @@
+{
+ "name": "n5_kneel",
+ "note": "N5 Agnus Dei K1 amen kneel (f48-67), round-2 hero key: symmetrical end pose. Right knee down, left foot forward flat, hips low, torso square to her facing with a slight bow; glaive upright in front, butt on the floor, both hands stacked on the haft at chest height; head bowed. Cloth hangs and settles.",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.0,
+   0.02,
+   -0.62
+  ],
+  "J_Bip_C_Hips": [
+   6,
+   0,
+   0
+  ],
+  "J_Bip_C_Spine": [
+   4,
+   0,
+   0
+  ],
+  "J_Bip_C_Chest": [
+   4,
+   0,
+   0
+  ],
+  "J_Bip_C_UpperChest": [
+   2,
+   0,
+   0
+  ],
+  "J_Bip_C_Neck": [
+   10,
+   0,
+   0
+  ],
+  "J_Bip_C_Head": [
+   14,
+   0,
+   0
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.14,
+    -0.42,
+    0.159
+   ],
+   "yaw": 5
+  },
+  "R": {
+   "pos": [
+    -0.14,
+    0.4,
+    0.1
+   ],
+   "yaw": -5,
+   "pitch": 70
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   -0.02,
+   -0.36,
+   0.93
+  ],
+  "dir": [
+   0.0,
+   -0.08,
+   1.0
+  ],
+  "edge": [
+   0,
+   -1,
+   0
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": 0.03,
+   "thumb": "tip",
+   "back": [
+    -0.9,
+    -0.2,
+    0.2
+   ]
+  },
+  "L": {
+   "grip": "grip_main",
+   "slide": -0.3,
+   "thumb": "tip",
+   "back": [
+    0.9,
+    -0.2,
+    0.2
+   ]
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -0.6,
+   0.1,
+   0.8
+  ],
+  "arm.L": [
+   0.6,
+   0.1,
+   0.8
+  ],
+  "leg.L": [
+   0.3,
+   -1.0,
+   0.6
+  ],
+  "leg.R": [
+   -0.2,
+   -0.4,
+   0.0
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 85,
+   "thumb": 55
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0,
+   0.05,
+   0
+  ]
+ },
+ "expression": "resolute"
+}

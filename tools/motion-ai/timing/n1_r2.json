@@ -1,0 +1,207 @@
+{
+ "name": "n1_r2",
+ "move": "N1 Kyrie (m1_1), MOVESET.md section 1: 10 drawings, 33 f at 60 fps. Round 2: hand-posed hero keys (coil, scoop, contact, follow-through) on Rosace's rig; the AI clip only gives the in-betweens and weight shifts.",
+ "length": 33,
+ "source": {
+  "npz": "n1/n1_study_ee_s1_00.npz",
+  "meta": "_constraints/n1_study_ee.meta.json"
+ },
+ "push_ref": "stance",
+ "ease_default": "in_out",
+ "glaive_default": "hands",
+ "keys": [
+  {
+   "name": "stance",
+   "src": "stance",
+   "frame": 0,
+   "glaive": "upright"
+  },
+  {
+   "name": "A2 coil",
+   "src": "A2 coil",
+   "frame": 3,
+   "hold": 2,
+   "ease": "in_out",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.6,
+    "arms": 1.2
+   }
+  },
+  {
+   "name": "A3 wind",
+   "src": "A2 coil",
+   "frame": 6,
+   "hold": 1,
+   "ease": [
+    "out",
+    2
+   ],
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.6,
+    "arms": 1.2
+   }
+  },
+  {
+   "name": "S1 scoop",
+   "src": "S1 scoop",
+   "frame": 8,
+   "ease": [
+    "in",
+    3
+   ],
+   "push": {
+    "legs": 1.7,
+    "spine": 1.7,
+    "root_y": 1.7
+   }
+  },
+  {
+   "name": "C1 contact",
+   "src": "C1 contact",
+   "frame": 9,
+   "hold": 2,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.8,
+    "arms": 1.2
+   },
+   "add": {
+    "lean": 22
+   }
+  },
+  {
+   "name": "F2 overhead",
+   "src": "F2 over head",
+   "frame": 14,
+   "hold": 1,
+   "ease": "out",
+   "push": {
+    "spine": 1.4,
+    "arms": 1.2
+   },
+   "settle": {
+    "amount": 0.15,
+    "frames": 8
+   }
+  },
+  {
+   "name": "R3 stance",
+   "src": "R3 stance",
+   "frame": 28,
+   "hold": 5,
+   "ease": "in_out",
+   "glaive": "upright"
+  }
+ ],
+ "exposure": {
+  "mode": "drawings",
+  "drawings": [
+   [
+    "A1",
+    1,
+    2
+   ],
+   [
+    "A2",
+    3,
+    3
+   ],
+   [
+    "A3",
+    6,
+    2
+   ],
+   [
+    "S1",
+    8,
+    1
+   ],
+   [
+    "C1",
+    9,
+    3
+   ],
+   [
+    "F1",
+    12,
+    2
+   ],
+   [
+    "F2",
+    14,
+    2
+   ],
+   [
+    "R1",
+    16,
+    6,
+    18
+   ],
+   [
+    "R2",
+    22,
+    6
+   ],
+   [
+    "R3",
+    28,
+    6
+   ]
+  ]
+ },
+ "hero": {
+  "_about": "blender_apply.py --hero: per retime key, where its delta from the AI pose comes from. pose = a hand-posed hero key (art/rosace/poses/...); carry = reuse another key's delta (the AI's own motion rides on the authored extreme); mix = weighted blend of hero deltas; absent = pure AI. plants = frame spans where a foot is locked on the spot a hero key puts it (0 drift by construction).",
+  "keys": {
+   "A2 coil": {
+    "pose": "motion/n1_coil.json"
+   },
+   "A3 wind": {
+    "carry": "A2 coil",
+    "_why": "A3 is the held coil: same body as A2, only the cloth still settling, so the last step before the strike is small and the big travel lands on S1/C1 (round-1 critics' fix 3)"
+   },
+   "S1 scoop": {
+    "pose": "motion/n1_scoop.json"
+   },
+   "C1 contact": {
+    "pose": "motion/n1_contact_r2.json"
+   },
+   "F2 overhead": {
+    "pose": "motion/n1_over.json"
+   },
+   "R3 stance": {}
+  },
+  "plants": {
+   "R": [
+    [
+     3,
+     11,
+     "C1 contact"
+    ]
+   ],
+   "L": [
+    [
+     3,
+     7,
+     "A2 coil"
+    ],
+    [
+     8,
+     15,
+     "C1 contact"
+    ]
+   ]
+  }
+ }
+}

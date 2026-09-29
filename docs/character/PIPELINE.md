@@ -887,7 +887,359 @@ the clip. It adds 20 if a spin turns under 270° (dash) or 120° (N5).
 - The hips don't follow the source's hip height by default.
 - The source rig gets rescaled (about 0.91).
 
-The SOMA-to-VRM mapping is not built yet.
+The Retarget extension route stalled there. The route in use is our own direct mapping
+(`tools/motion-ai/blender_apply.py`, `bone_map_vrm.json`) [proven 2026-09-29, `RETIME.md`]: each
+mapped `J_Bip_*` bone copies its SOMA joint's rotation from rest, hips height scales by leg
+length (0.919 on Rosace), and limb directions match the source within 3-6° mean, 10-17° worst.
+
+**Round 2: hand-posed hero keys, AI in-betweens, spring cloth** [proven on N1 and N5,
+2026-09-29; blind critique of `review/motion/r2/round-1/`: 6.0-6.2, below]. Round 1's critics kept the AI
+only "as a blocking and in-between layer": retimed AI scored 4.5-5.5 and lost to the crude
+hand-keyed spike, because the AI's poses are tame (upright, narrow stance, no twist) and pushes
+of 1.15-1.4 barely changed them. What round 2 does (`RETIME.md` "Round 2" has the commands):
+
+- **Hero keys are pose-library JSONs on Rosace's rig** (`art/rosace/poses/motion/`): N1 coil,
+  scoop, contact, follow-through; N5 coil, release, contact, kneel. They're authored with
+  `hero_stills.py`, which renders 144 px sprites with `rig_measure.py` numbers under each
+  (about 5 s for 8 poses).
+- **Layering** (`hero_layer.py`, `blender_apply.py --hero SHEET`). The timing sheet's `hero`
+  section gives each retime key a pose, `carry` (reuse another key's offset), `mix` (weighted) or
+  nothing. Body bones (hips, spine, neck, head) are the AI pose times a per-key offset
+  (AI(k)^-1 · hero(k)), slerped on the retime's own eased progress. At a hero key the rig is
+  exactly the authored pose; in between it keeps the AI's weight shifts.
+- **The weapon, arms and IK poles are interpolated key to key, not layered.** They sit in the
+  upper chest's frame. Layered on the AI's noisy wrists, the haft pointed at the camera and the
+  free hand hit her face.
+- **Feet:** `plants` lock a foot on the spot a hero key gives it for a frame span, anchored in
+  world space against in-place root motion. Between two different spots the foot steps (eased,
+  8 cm lift); on the same spot it pivots.
+- **Spring cloth:** each chain bone's tip is a damped spring toward that drawing's static drape,
+  stepped at 60 fps with inertia and a length limit. The drape is blended from the hero keys'
+  `drape` specs. Omega (rad/frame) and zeta: veil and sidelocks 0.70/0.50, sleeves 0.55/0.40,
+  tabard and hair back 0.36, hair tail 0.26, stoles 0.22. A held drawing gets a cloth-only
+  redraw every 2 f while any chain tip still moves 0.75 px or more.
+- **Amplitude:** timing-sheet pushes are 1.6-2.0 on legs, spine and root at the coil and contact
+  keys, with 20-30° of lean into contact. The hero keys then override those keys outright.
+- **Speed:** N1 renders in 18 s (19 images) and N5 in 42 s (52 images).
+
+Measured, round 1 retimed → round 2 (spike in brackets). From `r2_report.py`, in
+`review/motion/r2/round-1/_metrics.json`:
+
+| Number | N1 | N5 |
+|---|---|---|
+| Entry ratio: pixel change at the first strike drawing ÷ the last step before it. Round 1's critics measured it this way; it reproduces their spike 5.2-5.4 | 1.24 → **5.8** (5.2) | 1.12 → **5.4** (5.2) |
+| The same, counting only body-drawing steps | 1.24 → 5.8 | 1.12 → **1.5** |
+| Mean strike ÷ mean anticipation step (RGBA) | 1.22 → 1.71 (1.72) | 0.90 → 1.10 (1.72) |
+| Horizontal span at contact | 0.79 → **1.72 H** (1.48) | 1.38 → **1.91 H** (1.48) |
+| Stance, coil / contact (SW = 0.336 m outer shoulder width) | 1.53 / 1.72 → 2.1 / 3.5 SW | 1.98 / 2.04 → 2.4 / 3.4 SW |
+| Hips height ÷ rest, coil / contact | 0.82 / 0.89 → 0.77 / 0.68 | 0.67 / 0.82 → 0.62 / 0.67 |
+| Torso turn from her facing at the coil; largest hip-shoulder separation | 6°; 9° → **85°; 50°** | 164°; 50° → 114° (wound 246° right); **89°** |
+| Lean into contact | -3.5° → **29.6°** | 15.8° → **22.2°** |
+| Planted-foot drift. Round 1 = inside the retime's contact spans, where its locks re-plant | 19.5 → **0.0 cm** | 40.6 → **0.0 cm** |
+| Hand to shaft centre line, worst gripping hand | 2.7 → 2.3 cm | 3.1 → 0.6 cm |
+| Cloth tip travel on held drawings (largest chain) | 0 → 16-31 px | 0 → 7-58 px; A3 coil 58, C1 contact 48 |
+| Cloth lag, median frames to half-way after a drawing change (round 1 had none) | veil, sides, sleeves, hair 3; tabard 4; stoles 1 | veil, sides, sleeves 2-3; tabard 4; hair 5; stoles 1 |
+
+- The entry ratio clears 3x only because the step before each strike is small. N1's A3 is now
+  the held coil (same body, only the cloth moving), and N5's last step is a cloth-only redraw
+  on the release hold.
+- RGBA change saturates: any pose change reshades almost the whole body, so every body drawing
+  costs 4,500-7,300 px however far it moves. That's why the mean-based ratios stay under 2.
+  N5's release is a real body drawing (the hips turn 32°), so N5's body-only ratio is 1.5.
+- Contact stances run past the requested 1.5-2 SW (3.4-3.5 SW, or 0.63 H between the feet),
+  because the lunges were matched to refs 09 and 10.
+- N5's coil is wound to the right like the AI's (pelvis -180°, chest -240°, which reads as back
+  three-quarters to the camera). Wound left, the deltas slerped the in-betweens the wrong way
+  round and the sweep passed behind her, hidden from the camera.
+- Neither route draws smears yet, so N5's S1 and S2 foreshorten the haft.
+- The stoles measure a 1-frame lag, not the 2-3 drawings `DESIGN.md` 8 asks. Their tips are free
+  and don't collide, so when the anchor moves the length limit drags them along at once. Open.
+
+**Round 2's critique** (blind, `review/motion/r2/round-1/`): round 2 scored 6.0-6.2 against the spike's
+4.5-5.0 (refs = 9). The critics asked for six fixes: slower spacing into the coil, a flat N5 sweep,
+diagonal coils, clean N5 in-betweens, smear drawings, and lagging stoles.
+
+**Round 3: the six fixes** [proven on N1 and N5, 2026-09-29; blind critique of
+`review/motion/r3/round-1/`: N5 6.8, N1 6.4-6.6, against round 2's 5.8-6.0 and the spike's 4.0-4.6]. `RETIME.md` "Round 3" has the commands. What changed:
+
+- **Absolute blends for spacing.** A sheet key can be `blend: [[key, w], ...]`: an exact mix of other
+  keys' whole poses, ignoring the AI's own in-between. N1: A1 = 70% of the way from the stance to
+  the coil, A2 = the coil, A3 = the held coil (same body, cloth settling). N5: A1 = 55%, A2 = 88%,
+  A3 = the coil. N5's strike: S1, S2, S3 = 12%, 38%, 72% of the way from A4 to contact.
+- **The glaive in world.** A key's `glaive` can be given in her ground frame: an explicit grip and
+  direction, or yaw / pitch / grip angle / radius / height around her hips, with `edge: "lead"` and
+  `like: <key>` (hands and elbow poles copied from that key, turned by the yaw difference).
+  Round 2 blended the glaive in the chest's frame. Through N5's ~200° chest twist that lifted the
+  blade over her head. N5's S1-S3 are now 10%, 36% and 70% of a flat 220° sweep, from behind her
+  round her camera side to the front. N1's A1 and N5's A1/A2 are world keys too: the yank lies
+  along the screen, and the back-arc rises behind her.
+- **Coils** (`n1_coil_r3`, `n5_coil_r3`; written by `review/motion/r3/_authoring/author_r3_poses.py`
+  from pelvis-frame parameters):
+  - N1 now winds left, a backhand coil, so her back turns to the camera.
+  - N5 winds right like the AI: pelvis -150°, chest about -205°.
+  - Both put the hips over the front knee with a long, straight rear leg, and knee poles along the
+    toes and pushed out.
+  - The kneel (`n5_kneel_r3`) is a three-quarter genuflection. Her torso is upright and open to the
+    camera, the glaive stands upright in front of her and clear of her face, and her head is bowed.
+- **Tracked smears** (`smear.py`, a post step that `run_pixel.py` runs when a sheet has a `smear`
+  section). This is the spike's method on the Rosace route:
+  1. `blender_apply.py` records every image's blade: butt, tip, blade base, a haft point, hips,
+     head and joints.
+  2. A smear drawing's path runs from the `from` drawing's blade to its own, plus `lead` of the way
+     to the next drawing.
+  3. Along the path, a haft point travels round her hips in cylinder coordinates, and the blade
+     turns round that point. The yaw goes the way `turn` says, so the tip traces an arc.
+  4. The path is sampled 64 times, projected with the render camera and filled in 12 lanes from
+     blade base to tip.
+  5. Colours: an A5 edge on the outer rim, A3 over A2 in the body, and an A1 tail tapering to a
+     point.
+  6. Each pixel is depth-tested against the body's depth pass. The glaive's own pixels never hide
+     the smear, because the smear is the blade drawn bent.
+  7. `ring: true` also draws the rest of the tip's circle, dimmer. That is MOVESET's "whole
+     ellipse" on S2.
+  8. The body-only images are kept as `sprite_####_body.png`.
+- **Stoles.** A sheet can set `cloth_lag` (frames of delay on a chain's drape shape) and `cloth_dyn`
+  (per-chain omega and zeta). The stoles use 3 f of delay and 0.42 / 0.40.
+- **Model.** Everything renders on `work/rosace_snapshot_r3_0529.blend`. That is a read-only copy of
+  the live file as saved at 04:50, with small face and haft edits since round 2. Round 2 was
+  re-rendered on it unchanged (`n1_r2m`, `n5_r2m`), so the blind set compares motion, not model
+  edits.
+
+The next table gives the measured numbers: round 2 re-rendered on the round-3 model, then round 3,
+then the spike in brackets. They come from `r3_report.py`, in `review/motion/r3/round-1/_metrics.json`.
+"Shipped" means the frames as rendered, smears included.
+
+| Number | N1 | N5 |
+|---|---|---|
+| Phase ratio, RGBA, body drawings: mean strike change ÷ mean anticipation step (shipped) | 1.71 → **1.89** (1.72) | 1.10 → **1.15** (1.72) |
+| The same on the body-only frames (smears removed) | 1.71 → 1.51 | 1.10 → 0.92 |
+| Entry ratio, body steps: first strike drawing ÷ the last body step before it | 5.8 → **11.2** | 1.54 → 1.14 |
+| Spacing ratio: mean on-screen travel of the joints and the glaive per drawing, strike ÷ anticipation | 2.51 → 1.94 | 0.78 → 0.96 |
+| The same on head, hips-ground, tip and butt (the anchors the spike also records) | 2.2 → 2.2 (**3.67**) | 0.79 → 0.91 (3.67) |
+| Span at contact; widest strike drawing | 1.72 → 1.72 H; **2.21 H** with S1's smear | 1.90 → 1.92 H; **2.94 H** with S2's ellipse |
+| Line of action at the coil: facing frame / pelvis frame; chest to camera (180 = back to it) | 7.5° / -0.7°; 25° → **33.9° / 36.7°; 142°** | 7.4° / 21.8°; 174° → 3.3° / **43.9°; 150°** |
+| Head at the coil (+ = looking down) | -1° → 58° | -11° → 45° |
+| N5 sweep, A4 to S3: glaive pitch; blade height | r2: 0°, then **18-24°** with the blade over her head at S1-S3 (0.78-1.09 H) → r3: **0-2°**, blade 0.35-0.52 H, between her posed knee (0.17-0.19 H) and upper chest (0.52-0.53 H), never over her head | |
+| Planted-foot drift; worst grip (hand to the haft's centre line) | 0.0 cm; 0.25 cm | 0.0 cm; 0.0 cm |
+| Stole lag, frames to half-way: on screen / in shape (tip relative to its root) | 2-3 / 11-12 → 1 / **6-7** | 3 / 13 → 2 / **4** |
+| Veil / tabard / hair tail, shape (round 3) | 3 / 6 / 13 | 4 / 5 / 13 |
+| Largest cloth travel on a held drawing | 36 → 35 px | 59 → 61 px |
+
+- **The ≥ 3 phase-ratio target isn't met, and on this metric it can't be without breaking the
+  spacing.**
+  - RGBA change saturates. Every body drawing changes 5,000-8,500 px whether it moves 7% or
+    100%. Measured: N1's A2 → A3 step, 7% of the coil's travel, changed 5,264 px in an earlier
+    render.
+  - So a real slow-in over 2-3 drawings raises the anticipation mean. Only a hold (N1's A3: 776 px)
+    brings it down.
+  - The spike itself measures 1.72.
+- **Spacing is the honest measure, and it points at the move design.** For the per-drawing mean to
+  reach 3, the strike has to travel 2 × (N1) or 3 × (N5) as far as the whole wind-up. Both
+  wind-ups carry the glaive from upright or in front to fully behind her, which is about as far as
+  the strike carries it back. The spike gets 3.6 from 9 anticipation drawings on ones, the last
+  three nearly still (1-1.2 px), then one 334 px tip step.
+  - Next lever: a smaller wind-up or a longer strike path. For example, the sweep going 360° or
+    more, which `MOVESET`'s "back half / whole ellipse" hints at.
+- Smears add 270 px (N5 S1, small on purpose), 1,011 px (S3), 2,010 px (N1 S1) and 2,319 px (S2
+  with its ellipse). Only 4-111 px per drawing are hidden behind her.
+- The stoles' shape used to take 11-13 f to get half-way, which reads as limp rather than trailing.
+  Now it lands at 4-7 f (2-3.5 drawings), behind the veil (3-4 f), in `DESIGN.md` 8's order. The
+  on-screen measure stays at 1-2 f, because the root rides the body.
+
+**Round 3's critique** (blind, `review/motion/r3/round-1/`): N5 6.8, N1 6.4-6.6 (round 2 5.8-6.0, spike
+4.0-4.6; refs = 9). Accepted: the diagonal back-three-quarter coils, A1's yank along the screen, A2's back-arc, a
+flat world-plane sweep never over her head. Asked for:
+- a slow-in you can see: a small A1, the bulk on A2, A3 a 1-2 px sink;
+- a J-crescent for N1's S1 (tail on the floor, belly under her feet, curved thick head, bent blade) instead of a
+  floor line plus a vertical bar;
+- N1's C1 as the high-in-front end of the scoop (no horizontal thrust that pops vertical at F1);
+- N5's ellipse with mass (dim thin back half, thick front tapering to a bright head, no solid glaive inside);
+- the body turning inside the spin;
+- C1 as a follow-through past the target that settles inside the hold;
+- stoles visibly trailing;
+- an open, symmetrical kneel;
+- a progressive N1 recovery.
+
+**Round 3b: the round-3 critics' fixes** [proven on N1 and N5, 2026-09-29; blind set `review/motion/r3/round-2/`:
+6.6 on both moves, round 2 5.8-6.0, spike 4.4-4.5]. `RETIME.md` "Round 3b" has the commands and fields. The model is a fresh read-only copy of
+the live file (`work/rosace_snapshot_r3r2_0620.blend`, byte-identical to round 3's, sha256 `0fbbf8e3...`), so
+the `n1_r2m` / `n5_r2m` renders still stand for the blind set.
+
+- **Spacing.** Both A1s are 20% of the way (a weight drop), with the feet planted on their idle spots
+  (`plants` can now name any key). A2 is the coil. A3 is a 1.3 cm (1 px) `sink` with the glaive held still in
+  world. N5's A2 back-arc is 2°. N5's A4 is a smaller release (25° of hips, round 3: 38°) with the glaive held
+  where the coil left it.
+- **N1's arc.** C1 (`n1_contact_r3b`) is the high end of the scoop: tip 1.40 H up, glaive at 33° toward
+  screen-right, line of action 32°. F1 is 70/30 C1 → F2, so the glaive goes 33° → about 70° → back over the
+  shoulder, an even arc. R1 is 55% of F2 and R2 18% of F2, and R3 is idle: a settle that slows into idle.
+- **N5's spin.** S2 is a hand-posed mid-spin (`n5_spin_r3b`): pelvis -70°, chest to the camera (6°). S1 blends
+  A4 → S2 (65%) and S3 blends S2 → C1 (50%), so the body turns through the sweep. The world glaive sweeps
+  170° → 62° (+252°) at 30 / 62 / 86%. C1 (`n5_contact_r3b`) carries the glaive 32° past the target line, arms
+  across, sleeves and tabard flung to the trailing side. A new C1b drawing (f33 ×5) settles back to 38° and
+  sinks 1 cm.
+- **Kneel** (`n5_kneel_r3b`): both knees down and apart, pelvis and torso square to the camera, upright. The
+  glaive stands at her right side at arm's length (0.58 m, about 44 px on screen from her face). The left arm
+  opens out to mirror it, and her head is bowed.
+- **Smears, v2** (`smear_v2.py`; the sheet's `smear._v: 2`). They follow the same tracked path. What's new:
+  - A band with a real width: J bands are offset across the path and lifted off the floor; flat bands run from
+    the tip to the blade base, lowered by `h`.
+  - A thick head tapering to a 1 px tail: (1 - age)^1.3, about 0.39 H at the head, ref 10's scale.
+  - An A5 rim, then A4, A3 and A2 across the band. The back half is one step dimmer.
+  - 4x rasterising with coverage downsampling, so the edges step cleanly.
+  - On a `hide_glaive` drawing, the glaive and stoles are left out of the render and a bent glaive is drawn
+    from the hands into the smear's head.
+  - Per move:
+    - N1 S1 is a J on the camera side, with a `reach_dip` so the belly runs along the floor in front of her
+      feet (MOVESET: 240 px × 168 px at 96 px, i.e. 2.5 H × 1.75 H; drawn 2.29 H wide).
+    - N5 S1 is the back half of the ellipse. S2 is the whole ellipse (2.99 H), glaive hidden. S3 is the bright
+      leading crescent.
+    - C1 and C1b keep the swept ellipse, dimmer and thinner. MOVESET's N5 table runs the main arc f27-37,
+      before the glass ring forms at f38. It's the smear only: no leading, cells or ring.
+- **Stoles.** They're the glaive's ribbons (`DESIGN.md` 7: "the weapon's built-in motion trail"), so their root
+  rides a glaive that moves 100-200 px per drawing. `cloth_world` pins 60% of their spring target to where the
+  lagged (4 f) drape hung in space, and zeta 0.3 gives one overshoot.
+- **Cloth.** Blend keys now blend their sources' drape specs. Before, they fell back to a windless, neutral drape.
+  N5's A3 hold keeps winding up (`hold_build`: wind 1.0 → 1.7x). The cloth floor-clamps.
+
+The next table compares round 2 re-rendered, round 3 and this round, with the spike in brackets. From
+`r3_report.py --new r3b` → `review/motion/r3/round-2/_metrics.json`, which is closed to critics.
+
+| Number | N1 | N5 |
+|---|---|---|
+| **Phase ratio, body drawings, shipped** (mean strike ÷ mean anticipation step; cloth-only redraws excluded) | 1.71 → 1.89 → **3.37** (1.72) | 1.10 → 1.15 → **2.58** (1.72) |
+| The same on the body-only images (smears and bent glaive removed) | 1.71 → 1.51 → 1.23 | 1.10 → 0.92 → 1.05 |
+| Anticipation / strike steps, shipped RGBA px | A 4,954 / 7,654 / 1,963; S 16,190 / 16,508 | A 6,767 / 7,968 / 3,524 / 3,804; S 9,833 / 16,283 / 18,191 / 12,577 |
+| Entry ratio, body steps, shipped (body-only) | 5.8 → 11.2 → **8.25** (2.95) | 1.54 → 1.14 → **2.58** (1.71) |
+| Spacing ratio, joints and glaive / tip only | 2.51 → 1.94 → 2.01 / 2.33 (tip 3.62) | 0.78 → 0.96 → 1.30 / 1.33 (3.62) |
+| Span at contact (C1 image); widest strike drawing | 1.72 → 1.72 → **1.70 H**; 2.31 H (S1's J) | 1.90 → 1.92 → **3.08 H** with the fading ellipse, **1.79 H** body and glaive alone; S2 2.99 H |
+| N5 sweep A4 → S3 (+C1, C1b): glaive pitch; blade height | | **2-3°**; 0.41-0.54 H, between her knee (0.17-0.25 H) and upper chest (0.51-0.56 H); never over her head, haft never over her face |
+| Line of action at the coil: facing / pelvis frame; chest to camera; head down | **34° / 37°**; 142°; 58° | 3° / **44°**; 150°; 45° |
+| Planted-foot drift; worst grip | **0.0 cm**; 2.4 cm | **0.0 cm**; 0.04 cm |
+| Stole streaming: median frames the tail points back along the glaive's move (within 60°) after a move of 6 px or more | **4 / 2 f**; A2 5, S1 4, C1 5, F2 8 | **5 / 6 f**; S2 10, S3 9, F1 12, F2 12 |
+| Stole lag, frames to half-way: on screen / in shape | 1 / 12-13 | 1 / 8 |
+| Cloth-only redraws: count; mean px changed | 8; 1,597 → 1,232 → **1,123** | 37; 1,025 → 1,168 → 1,047 |
+
+- **N1 clears the phase ratio (3.37); N5 doesn't (2.58).** Both reach it only on the shipped frames. On the
+  body-only images the ratio stays at 1.0-1.2, because every whole-body change repaints 4,000-8,000 px however
+  far she moves.
+- **What's left on N5 is the move design, not the retime.** MOVESET gives N5 four wind-up drawings:
+  - A1 (the yank) and A2 (the coil) cost 6.8k and 8.0k px, the glaive alone about 2k of each.
+  - A 1 px sink still repaints 2-3.5k px.
+  - To reach 3, the strike mean would have to be 16.3k (now 14.2k), or the wind-up would lose a drawing.
+  - The critics asked for both slow-in drawings, so they stay.
+- **Spacing ratios are unchanged in kind.** N1 is 2.0-2.3 and N5 1.3. N5's A1 yank moves the tip 315 px on
+  screen, the largest step in the move.
+- The stoles' on-screen "frames to half-way" stays at 1 f and can't grow: the tail is 26 px long and its root
+  jumps 100-200 px. Streaming, where the tail points back along the move, is the visible measure.
+- N1's cloth on holds is still below round 2's (1.12k against 1.60k px per cloth redraw). The gentler recovery
+  excites the springs less; underdamping hair, sleeves and tabard (zeta 0.26-0.28) added about 90 px.
+
+**Round 3b's critique** (blind, `review/motion/r3/round-2/`): 6.6 from both critics, on both moves (round 2 5.8-6.0,
+spike 4.4-4.5; refs = 9). Both called it the first version that reads as grand at gameplay size. Accepted: N1's
+diagonal coil and its C1 (the best contact in any round), N5's flat sweep with the body turning through it, the
+depth-correct smears, the open kneel. Asked for:
+- N1's S1 smear as one tapered J-crescent. It read as an L-shaped hockey stick: a hard corner, a stair-stepped
+  vertical right edge, four flat stripe bands, a 56 px head (MOVESET: 12 px at 96, so 18 at 144) and a belly under the
+  ground line. Wanted: a thin A5 leading edge, 2-3 values fading toward the tail, a pointed head, an inner speed line,
+  a translucent body so hers reads through.
+- N1's S1 body as a diagonal between the coil and the contact, not an upright knees-in squat.
+- N1's A1 as a small dip toward the coil. Round 3b's A1 tilted the glaive up overhead, then A2 swung it about 120°
+  down in one drawing.
+- N5's ellipse without flicker (whole on S2, gone on S3, whole on C1), decaying over 2-3 drawings instead of a static
+  hoop for about 7 ticks. S2 as a curved crescent instead of a straight-cut trapezoid swallowing her legs, and S3's
+  head attached to the blade tip.
+- N5's C1b -> F1 without the jump from flat to about 40° raised: carry the glaive flat first, add an in-between into
+  the kneel, and a breakdown for the rise from kneel to stand.
+- N5's wind-up without two pops (idle -> yank, yank -> full coil), and its coil leaning forward over the front knee
+  toward the target. It leaned back over the rear knee with the front leg locked straight.
+- N1's F1/F2 without the sleeve and veil over her face. The hit still has no impact frame (flash, furrow, dust): that
+  is VFX, outside this lane.
+
+**Round 3c: the round-3b critics' fixes** [proven on N1 and N5, 2026-09-29; blind set `review/motion/r3/round-3/`,
+critique pending]. `RETIME.md` "Round 3c" has the commands and fields. The model is a fresh read-only copy of the live
+file (`work/rosace_snapshot_r3r3_0714.blend`, byte-identical to rounds 3 and 3b, sha256 `0fbbf8e3...`), so `n1_r2m`
+and `n5_r2m` still stand for the blind set. The poses are written by `review/motion/r3/_authoring/author_r3c_poses.py`
+and the sheets by `make_r3c_sheets.py`.
+
+- **Smears v3** (`smear_v3.py`; the sheet's `smear._v: 3`):
+  - The J is one curve through the tracked points. It runs straight along the floor from the tail (A3's tip, behind
+    her) to a belly point in front of her feet, then follows a quadratic that leaves the floor tangent to that run and
+    rises to C1's tracked tip. The control point sits past the head by `hook` H, so the head curls back: a J with no
+    corner. The outer edge is clamped to the ground line.
+  - The ellipse is the tip's circle round her hips, from `start_yaw` to the head, at the head's reach and height.
+  - The inner edge is a screen-space offset toward the curve's inside. The thickness rises from a 1.5 px point to
+    `thick` at `peak` of the length, then falls to a 1 px tail, so it's a crescent. N1's head is 22 px (MOVESET's 18,
+    plus the taper); N5's is 12-16 px.
+  - Colour runs along the stroke (A4 head, A3, A2, A1 tail) with a 1.2 px A5 leading edge and a 1 px A5 inner speed
+    line. Where the body of the band crosses her it's drawn as a 50% checker, so her legs read through.
+  - Two 1 px gold slivers sit outside N1's head (MOVESET).
+  - `ring` draws a fraction of the circle back from the head (2 px A3 in front, 1 px A2 behind her). `fade` sets
+    per-image overrides by frame offset inside a held drawing, and `gone` ends it. `same_as` plus `keep` draw a
+    remnant of another drawing's path.
+- **N1.**
+  - A1 blends 45% into the coil with the glaive tipped back and DOWN to 30° (the hand lowers 0.2 m). A2 is the coil,
+    and A3 a 1 px sink.
+  - S1 is a hand-posed diagonal (`n1_strike_r3c`): front knee driving over its toes, hips turned toward the target, a
+    30° lean.
+  - The J (2.22 H wide) is followed on C1 by a remnant: its head half, thinner and one step dimmer, ending at the
+    solid blade's tip. It's gone by f11.
+  - F1 lets go with the left hand. F2 (`n1_over_r3c`) carries the glaive over her RIGHT shoulder one-handed, the left
+    arm open, and the sleeve wind is turned away from her face.
+  - Stoles: 6 f of lag, 80% pinned in space.
+- **N5.**
+  - The wind-up is spread over three drawings: body 30 / 80 / 100% + sink. The glaive tips up out of the ready
+    diagonal (70°), then hangs up behind her in a back-arc (36°), then lies flat (MOVESET A1 / A2 / A3).
+  - The coil (`n5_coil_r3c`) is a lunge toward the target. The front (left) knee is bent over its toes and the rear
+    (right) leg is straight back to the pivot spot. The pelvis faces the feet line (yaw 50), the torso pitches about
+    40° over the front knee and twists back 54°, so her back is 164° from the camera and her head is down. Both arms
+    reach back to screen-left, and the glaive trails flat at hip height (yaw 210).
+  - The spin is drawn in every strike drawing: A4 releases the hips 25°; S1 (`n5_spin1_r3c`) is the left profile
+    (pelvis 180); S2 is chest to camera (`n5_spin_r3b`); C1 faces the target. The glaive sweeps 212° flat in world
+    (22 / 58 / 86 / 100%).
+  - S1 is the back half of the ellipse, dimmed. S2 is the whole ring plus the front crescent. S3 keeps 80% of the
+    ring and ends its bright crescent on the solid blade's tip. C1 shows 55% of the ring at f30, then 30%, thinner and
+    dimmer, at f32. C1b is a sliver at f33 and gone from f35.
+  - After contact, F1 keeps the glaive flat and carries it back round the front at knee-to-hip height while she
+    sinks. F2 (a new drawing, f42 ×3) raises it 45° and F3 (f45 ×3) 76° at her right side, with the left hand letting
+    go. K1 stands it upright.
+  - The kneel (`n5_kneel_r3c`) has the knees 0.50 m apart with each shin straight back under its thigh, and the
+    pelvis turned to -35 so the thighs read.
+  - R1 (`n5_rise_r3c`) is a half-kneel. R2 is 45% of the way from R1 to standing, and R3 is idle.
+
+The next table compares round 2, round 3b (what the critics just scored) and this round, with the spike in brackets.
+From `r3_report.py --new r3c` → `review/motion/r3/round-3/_metrics.json`, which is closed to critics. Screen line of
+action = rear ankle → head top against screen vertical, + = toward the target (new in `r3_report.py`).
+
+| Number | N1 | N5 |
+|---|---|---|
+| **Phase ratio, body drawings, shipped** (mean strike ÷ mean anticipation step; cloth-only redraws excluded) | 1.71 → 3.37 → **2.19** (1.72) | 1.10 → 2.58 → **1.48** (1.72) |
+| The same on the body-only images | 1.71 → 1.23 → 1.15 | 1.10 → 1.05 → 0.91 |
+| Anticipation / strike steps, shipped RGBA px (round 3c) | A 5,860 / 7,487 / 1,724; S 10,998 / 10,958 | A 6,889 / 7,844 / 7,011 / 3,921; S 8,506 / 9,275 / 10,659 / 9,501 |
+| Silhouette-only phase ratio | 1.71 → 4.48 → 2.40 | → 3.28 → 1.60 |
+| Entry ratio, body steps, shipped (body-only) | 5.8 → 8.25 → **6.38** (3.31) | 1.54 → 2.58 → 2.17 (1.74) |
+| Spacing ratio, joints and glaive / tip only (spike tip 3.62) | 2.51 → 2.01 / 2.33 → 2.32 / **2.91** | 0.78 → 1.30 / 1.33 → 1.33 / 0.99 |
+| Span at contact (C1 image); widest strike drawing | 1.72 → 1.70 → **1.70 H**; S1 2.24 H | 1.90 → 3.08 → **3.01 H** with the decaying ring, **1.79 H** body and glaive; S2/S3 2.92-2.94 H |
+| Line of action at the coil, screen (facing / pelvis frame) | 12.2° → 37.5° → **37.5°** (same coil) | 14.7° → **1.4°** → **43.0°** (33.0° / 46.3°) |
+| Coil: chest to camera; head down | 142°; 58° | 150° → 164°; 45° → 56° |
+| N5 sweep A4 → C1b: glaive pitch; blade height | | **2-3°**; 0.38-0.56 H, between the posed knee (0.17-0.32 H) and upper chest (0.53-0.56 H; C1's tip 1 cm over); never over her head, the haft 26-43 px from her face |
+| Planted-foot drift; worst grip | **0.0 cm**; 2.4 cm (C1, unchanged) | **0.0 cm**; 1.3 cm |
+| Stole streaming, median frames (moves of 6 px or more), A / B | 3 / 2 → **2 / 3** | 5 / 6 → **7 / 7** |
+| Largest cloth travel on a held drawing | 38.5 → 35.9 px | 41.1 → 37.5 px |
+| Smear pixels per drawing (dithered over her; hidden behind her) | S1 4,940 (38; 37); C1 remnant 1,812 | S1 2,275; S2 5,612 (295; 39); S3 4,541 (210; 68); C1 2,276 → 923; C1b 125 |
+
+- **The ≥ 3 phase ratio is not met on either move, and round 3c moved it down on purpose.** Round 3b reached 3.37 on
+  N1 only through smear area: a 56 px slab adds about 10k px to each strike step. The critics rejected that slab and
+  asked for MOVESET's 18 px crescent, dithered where it crosses her. A crescent that size adds about 5k px. On the
+  body-only images every drawing still costs 4-8k px whatever it does, so the RGBA ratio sits at 0.9-1.2 there.
+  Keep reporting it beside the spacing and silhouette ratios, but don't tune toward it.
+- **N5's spread wind-up raises the anticipation mean.** Round 3b's A3 was a 1 px sink (3.5k px). Here A3 finishes the
+  last 20% of the coil and flattens the glaive (7.0k px), because the critics asked for the move into the coil to
+  come over 2-3 drawings. N5's ring also no longer flickers on and off, and flicker was worth pixels: S3 → C1 now
+  keeps most of the ring in place.
+- **Spacing, the measure that doesn't saturate:** N1's tip ratio rose to 2.91 (spike 3.62), because A1 is now a dip
+  and A3 a hold. N5's tip ratio fell to 0.99, because MOVESET's back-arc carries the tip over the top (105 / 208 /
+  117 px in A1-A3). As round 3's note says, N5 winds up about as far as it strikes. Only a shorter back-arc or a
+  longer sweep changes that.
 
 ### 3.15 Runtime contract limits (`dex.sprite/1`) [proven, `RUNTIME-CONTRACT.md`, `src/lab/contracts.ts`]
 
@@ -1225,6 +1577,76 @@ Each line gives the mistake, then the fix.
   dropped. → File them in the HF cache under Meta's model id.
 - The GPU is shared with a local LLM server, and one Kimodo run stalled for 15 min. → Use
   `--device cpu` when that server is busy.
+- Retimed AI poses stayed tame: pushes of 1.15-1.4 left the stance and width almost unchanged.
+  → Hand-pose the hero keys on the rig and keep the AI for in-betweens (3.14, round 2).
+- Layering hero offsets onto the AI's glaive and arms threw the haft at the camera and the free
+  hand at her face: the AI's wrists are noisy. → Interpolate the weapon, arms and IK poles key to
+  key in the chest frame; layer only the body.
+- A hero coil wound the other way from the AI's (N5: left against the AI's right) made the
+  slerped in-betweens turn the wrong way. → Wind hero keys the way the AI does, then push.
+- The floor clamp silently tilted N5's kneeling glaive off vertical because the authored butt
+  sat 3.5 cm under the floor. → Author props clear of the floor; `hero_stills.py` prints tip and
+  butt heights.
+- A count of changed RGBA pixels saturates, because any pose change reshades the whole body.
+  → Report the entry ratio (first strike ÷ the step before it), a silhouette-only count and the
+  mean ratio side by side, with their definitions (`motion_metrics.py`).
+- A relative render path resolves against Blender's working folder (round 1 leaked frames to
+  `C:\review`). → `blender_apply.py` and `hero_stills.py` assert absolute paths.
+- A weapon interpolated in the chest's frame follows the chest. Through N5's ~200° chest twist that
+  lifted the blade over her head (18-24° of pitch, blade at 0.78-1.09 H). Blended between an upright
+  stance and a trailing coil, it also swung N1's A1 blade forward. → Give sweep and anticipation keys
+  a world `glaive`: yaw, pitch and grip round her hips (3.14, round 3).
+- A pixel count of changed RGBA saturates at 5,000-8,500 px per body drawing. So a genuine slow-in
+  (65% → 93% → 100%) scored worse than a jump plus a hold. → Judge spacing by on-screen joint and
+  tip travel (`r3_report.py`), and report the RGBA ratio beside it with the body-only frames.
+- The kneel's glaive leaned 16°: its butt was authored 2.4 cm under the floor, and the floor clamp
+  tilted it. That's round 2's lesson again. → `hero_stills.py` prints `tip_height_H`; check the butt
+  (hand height minus the grip offset) too.
+- A toe-direction knee check read nonsense (up to 147° on a straight lunge): the VRoid foot bone
+  doesn't point along the toes. → Dropped. Judge knock knees on the render, and use
+  `knee_gap_over_ankle_gap` as a hint only.
+- A smear interpolated tip-by-tip round the hips drew a straight-edged slab for N1's rising cut. →
+  Move a haft point round the hips and turn the blade round that point, so the tip arcs.
+- Round 2's key used the same letter order for both moves. → `ab_compose.py --round3` picks, per
+  move, an order where no letter means the same clip as in an earlier move.
+- The "stoles" hang from the glaive head, so their root moves 100-200 px per drawing. A 26 px tail can't lag
+  that on screen, so "frames to half-way" stays at 1 f. → Pin the lagged drape in space (`cloth_world`) and
+  measure streaming: the tail pointing back along the move (3.14, round 3b).
+- `blend` keys fell back to a neutral, windless drape, so N5's mid-spin and N1's recovery sleeves hung limp.
+  → A blend key blends its sources' drape specs.
+- The J's tip, carried round her hips at the glaive's reach, circled 2 m out on her far side, so the "belly"
+  was a flat ring seen edge-on, 30 px above her feet. A band offset toward the grip collapsed on the floor,
+  because there the grip lies along the path. → `reach_dip`, the camera-side `turn`, and a band offset across
+  the path and lifted off the floor.
+- A bent glaive built from the path's later directions whipped along the floor and dragged the smear's head
+  down with it. → A curve from the hands that ends on the smear's head.
+- A "weight drop" blended toward the coil also slid the feet 20% of the way, which cost 900 px of boots. →
+  Plant the idle spots through A1.
+- A 1 px sink carried the glaive (in the chest frame) with it: 1.5k px of glaive. → Hold the glaive in world
+  on sink and release drawings.
+- A `_why` note inside `plants` crashed `plant_spots`. → Skip underscore keys everywhere a sheet section is
+  iterated.
+- The RGBA phase ratio reaches 3 only on the shipped frames, through smear area. Every body drawing still
+  costs 4-8k px. → Always report the body-only ratio and the spacing ratios beside it.
+- Round 3b bought N1's 3.37 with a 56 px smear slab, and the critics read it as a hockey stick. MOVESET's 18 px crescent
+  brings the ratio back to 2.2. → Size smears from MOVESET and the refs, never from the metric (3.14, round 3c).
+- Colouring a band by lane (across it) turned a near-vertical rise into stepped vertical stripes, "a bar chart". →
+  Colour along the stroke (head to tail), with only a thin rim and a speed line running lengthwise.
+- A J built by carrying the tip round her hips has a corner where the floor run meets the rise. → One curve: the
+  floor run, then a quadratic tangent to it through the tracked head, clamped to the ground line.
+- A flat smear whose tail kept the from-drawing's shorter reach drew a second, inner arc beside the ring. → Draw the
+  smear on one circle at the head's reach.
+- "Over the front knee" in the pelvis's own frame read as "leaning back over the rear knee": N5's pelvis faced away
+  from the target, so its front knee was the one away from the target. → Author the lunge toward the target on screen
+  and measure the line of action in screen space (`r3_report.py` `line_of_action_screen`: N5 1.4° → 43°).
+- A blend slerps the short way, so a pelvis turn over 180° between two keys (N5: release 75° → mid-spin 290°) turns
+  backward. → Hand-pose an intermediate turn (`n5_spin1_r3c`) instead of blending across it.
+- A raised arm's bell sleeve fell over her face (N1 F2). → Keep the arms beside the head, point that sleeve's drape
+  wind away from the face, and check the face on every follow-through drawing.
+- Blending a two-handed key with a one-handed one left the free hand 8-10 cm off the haft (N1 F1, N5 F2). → Set `wL`
+  on the key so the left hand lets go.
+- A kneel square to the camera foreshortens the thighs, so both knees down still read knock-kneed. → Wider knees
+  (0.50 m), shins straight back under the thighs, and the pelvis turned 10° toward the target.
 
 ---
 
@@ -1242,7 +1664,15 @@ Each line gives the mistake, then the fix.
 | Height decision: 144 px | proven (round 1). `DESIGN.md` and `MOVESET.md` not yet updated |
 | Stills A/B rounds | round 1 done (average 4.8, not passing). Round-2 sheets exist in `review/rosace/round-2-model/`, but no critique of them was found on record |
 | Kimodo and GEM-X install; key-pose constraints; QC and ranking | proven |
-| SOMA-to-VRM retarget; retime step; frame export to `dex.sprite/1` | in progress / not built |
+| SOMA-to-VRM retarget; retime step (holds, snaps, easing, push, stepped drawings) | proven on N1 and N5 (`RETIME.md`); round-1 critics: retimed AI 4.5-5.5, raw 3-3.5, lost to the hand-keyed spike |
+| Hero keys on the rig + AI in-betweens + spring cloth (`hero_layer.py`, `blender_apply.py --hero`) | proven on N1 and N5, 2026-09-29 (3.14 has the numbers). Blind round 2: 6.0-6.2 against the spike's 4.5-5.0 |
+| Round 3: slow-in blends, world glaive keys, diagonal coils, open kneel, stole lag (`blend`, `glaive`, `cloth_lag`, `cloth_dyn` in the sheets) | proven on N1 and N5, 2026-09-29. Flat N5 sweep: 0-2° of pitch, 0.35-0.52 H, never over her head. Coils: 34-44° line of action, back three-quarters (142° / 150°). 0 cm drift, grip under 0.3 cm, stole shape lag 4-7 f. Phase ratio ≥ 3 not met (1.89 / 1.15 RGBA; 3.14 explains why). Blind A/B/C in `review/motion/r3/round-1/`: N5 6.8, N1 6.4-6.6 |
+| Round 3b: the round-3 critics' fixes (plants on any key, `sink`, world-held glaive on holds, `cloth_world`, `hold_build`, blended drapes, C1b settle, `n1_contact_r3b`, `n5_spin_r3b`, `n5_contact_r3b`, `n5_kneel_r3b`, `n5_release_r3b`) | proven on N1 and N5, 2026-09-29 (3.14). Phase ratio, shipped body drawings: N1 **3.37** (met), N5 **2.58** (not met; the four-drawing wind-up). Spans 1.70 H (N1) and 1.79 H (N5 body alone), 0 cm drift, grip under 2.5 cm, flat sweep 2-3°, coils 34° and 44°, stoles stream 2-12 f. Blind A/B/C in `review/motion/r3/round-2/`: 6.6 on both moves (round 2 5.8-6.0, spike 4.4-4.5) |
+| Round 3c: the round-3b critics' fixes (`n1_strike_r3c`, `n1_over_r3c`, `n5_coil_r3c`, `n5_release_r3c`, `n5_spin1_r3c`, `n5_kneel_r3c`, `n5_rise_r3c`; N5 F2/F3 and R1/R2 breakdowns; screen line of action in `r3_report.py`) | proven on N1 and N5, 2026-09-29 (3.14). Coils 37.5° (N1) and 43° (N5) on screen, back three-quarters, rear leg straight. Flat sweep 2-3°, never over her head. Spans 1.70 H (N1) and 1.79 H (N5 body alone), 0 cm drift, grip under 2.5 cm, stoles stream 2-7 f. Phase ratio ≥ 3 **not met** (2.19 / 1.48 shipped; 3.14 explains why, and says not to tune toward it). Blind A/B/C in `review/motion/r3/round-3/`; critique pending |
+| Smears v3 (`smear_v3.py`: crescent profile, colour along the stroke, A5 edge and speed line, 50% dither over her body, J as one curve, per-image fade, remnants) | proven on N1 S1 (+ C1 remnant) and N5 S1-S3 plus the C1/C1b decay, 2026-09-29 |
+| Smears v2 (`smear_v2.py`: thick bands, bent glaive, 4x raster) | proven on N1 S1 (J) and N5 S1-S3 plus C1/C1b's fading ellipse, 2026-09-29; superseded by v3 (the critics read the bands as slabs) |
+| Tracked blade smears on strike drawings (`smear.py`) | proven on N1 S1 and N5 S1-S3, 2026-09-29: the spike's method, depth-tested, 144 px, palette A1-A5. The stained-glass VFX stages (leaded, shards, panes, furrow) are not built |
+| Frame export to `dex.sprite/1` | not built |
 | Runtime contract and validation; stand-in package in the lab | proven |
 | VFX widths, halo, flash cap, ultimate beats, camera rules | proposed (arithmetic-checked, not playtested) |
 | Engine asks: dithered paint (15), flash governor (8), flipbook effects (1) | proposed |

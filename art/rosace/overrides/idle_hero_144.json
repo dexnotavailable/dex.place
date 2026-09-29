@@ -1,0 +1,938 @@
+{
+ "_doc": "Stills round 4 override layer: authored in tools/pixel-pipeline/author_overrides_data.py on the render named in authored_on. Patches are pixel coordinates on that render.",
+ "face": {
+  "facing": "q34",
+  "expr": "serene",
+  "note": "q34 forced (yaw 17, judged as 3/4 by the critics); rounded open eyes, calm mouth"
+ },
+ "patches": [
+  {
+   "kind": "form",
+   "note": "painted form on skin below the chin: one clean core-shadow band per limb, S4 occlusion edge, one S1 highlight (re-banded from the render normals with the key light of this still)",
+   "shade": {
+    "box": [
+     0,
+     84,
+     76,
+     207
+    ],
+    "mat": "skin",
+    "light": [
+     0.55,
+     0.45,
+     0.7
+    ],
+    "bands": [
+     [
+      -1,
+      "S4"
+     ],
+     [
+      0.12,
+      "S3"
+     ],
+     [
+      0.45,
+      "S2"
+     ],
+     [
+      0.86,
+      "S1"
+     ]
+    ]
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "despeckle the render's dark I4 islands (<= 2 px) in the hair mass",
+   "despeckle": {
+    "box": [
+     34,
+     55,
+     64,
+     86
+    ],
+    "mat": "hair",
+    "codes": [
+     "I4"
+    ],
+    "max": 2
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "crown: soften the dark seam and drop the render's straight I0 bar (the ring is redrawn as arcs)",
+   "box": [
+    42,
+    58,
+    58,
+    63
+   ],
+   "mat": "hair",
+   "map": {
+    "I4": "I3",
+    "I0": "I1"
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "head: the render's loose azure hairtip specks on the crown (critic: 'noise') become hair tones",
+   "box": [
+    34,
+    55,
+    64,
+    86
+   ],
+   "mat": "hairtip",
+   "map": {
+    "A2": "I2",
+    "A3": "I1",
+    "A4": "I1",
+    "A5": "I0"
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "angel ring: short I0 arcs with I1 ends that follow the skull outline, broken at every clump",
+   "ring": {
+    "y": [
+     55,
+     69
+    ],
+    "segments": [
+     [
+      41,
+      44
+     ],
+     [
+      46,
+      52
+     ],
+     [
+      54,
+      57
+     ]
+    ],
+    "depth": 4,
+    "c": "I0",
+    "flank": "I1"
+   }
+  },
+  {
+   "kind": "hair",
+   "on": [
+    "hair"
+   ],
+   "note": "clump separators (I3, one step darker than the I2 shadow) from the ring into the bang notches",
+   "lines": [
+    {
+     "pts": [
+      [
+       47,
+       64
+      ],
+      [
+       47,
+       67
+      ],
+      [
+       48,
+       69
+      ]
+     ],
+     "c": "I3"
+    },
+    {
+     "pts": [
+      [
+       53,
+       64
+      ],
+      [
+       53,
+       66
+      ],
+      [
+       53,
+       69
+      ]
+     ],
+     "c": "I3"
+    }
+   ]
+  },
+  {
+   "kind": "hair",
+   "note": "azure tips (DESIGN s6): the last 3 px of every free hair end, A2 -> A3 -> A4",
+   "tips": {
+    "box": [
+     28,
+     90,
+     76,
+     160
+    ],
+    "ramp": [
+     "A2",
+     "A3",
+     "A4"
+    ]
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "sidelock gold cross clasp (DESIGN s6), 2x2 at collarbone height on the near lock",
+   "on": [
+    "hair"
+   ],
+   "px": [
+    [
+     40,
+     88,
+     "G1"
+    ],
+    [
+     41,
+     88,
+     "G2"
+    ],
+    [
+     40,
+     89,
+     "G2"
+    ],
+    [
+     41,
+     89,
+     "G3"
+    ]
+   ]
+  },
+  {
+   "kind": "fold",
+   "on": [
+    "white"
+   ],
+   "note": "crease lines at the fold roots (one step darker than the cloth shadow)",
+   "lines": [
+    {
+     "pts": [
+      [
+       49,
+       121
+      ],
+      [
+       48,
+       131
+      ]
+     ],
+     "c": "W3"
+    },
+    {
+     "pts": [
+      [
+       47,
+       142
+      ],
+      [
+       47,
+       152
+      ]
+     ],
+     "c": "W3"
+    }
+   ]
+  },
+  {
+   "kind": "glint",
+   "note": "blade glint: A5 core with A4 arms (the one specular star on the weapon)",
+   "px": [
+    [
+     12,
+     14,
+     "A5"
+    ],
+    [
+     11,
+     14,
+     "A4"
+    ],
+    [
+     13,
+     14,
+     "A4"
+    ],
+    [
+     12,
+     13,
+     "A4"
+    ],
+    [
+     12,
+     15,
+     "A4"
+    ]
+   ]
+  },
+  {
+   "kind": "hand",
+   "stamp": "fist_v",
+   "at": [
+    19,
+    99
+   ],
+   "note": "glaive hand: back of the hand to camera round the vertical haft, lit knuckles, thumb lobe under, wrist into the cuff"
+  }
+ ],
+ "rim": {
+  "level": "half",
+  "family": "cool",
+  "dir": [
+   -0.62,
+   -0.78
+  ],
+  "thr": 0.6,
+  "note": "world rim from upper back (lab rimDir); DESIGN.md s9 lit outline"
+ },
+ "patches_round1": {
+  "authored_on": {
+   "round": 1,
+   "canvas": [
+    76,
+    201
+   ],
+   "anchor": [
+    52,
+    191
+   ],
+   "pose_sha1": "630170922b90",
+   "_doc": "The render these patches were painted on. overrides.py applies 'patches' only when the still matches (same canvas, anchor and pose file); otherwise they are stale pixel coordinates and are skipped until re-authored."
+  },
+  "patches": [
+   {
+    "kind": "hand",
+    "note": "right hand closed round the haft at grip_mid: four finger bands over the haft, knuckle creases on the far side, thumb over the top joining the wrist in the sleeve mouth",
+    "at": [
+     23,
+     99
+    ],
+    "rows": [
+     ".OOOO...",
+     "OLSSLM..",
+     "OTSSSS..",
+     "OSSSTS..",
+     "OTSSSM..",
+     ".OOOO..."
+    ]
+   },
+   {
+    "kind": "hair_hl",
+    "note": "tame the rendered I0 spec blob on the fringe back to I1 (strand highlights are placed by hand below)",
+    "box": [
+     48,
+     53,
+     66,
+     64
+    ],
+    "mat": "hair",
+    "map": {
+     "I0": "I1"
+    }
+   },
+   {
+    "kind": "hair_hl",
+    "note": "hand-shaped halo highlight: a broken ring of short strand dashes across the crown, tips pointing down the strands",
+    "px": [
+     [
+      50,
+      54,
+      "I0"
+     ],
+     [
+      51,
+      54,
+      "I0"
+     ],
+     [
+      53,
+      53,
+      "I0"
+     ],
+     [
+      54,
+      54,
+      "I0"
+     ],
+     [
+      55,
+      54,
+      "I0"
+     ],
+     [
+      57,
+      54,
+      "I0"
+     ],
+     [
+      58,
+      54,
+      "I0"
+     ],
+     [
+      60,
+      54,
+      "I0"
+     ],
+     [
+      61,
+      55,
+      "I0"
+     ],
+     [
+      51,
+      55,
+      "I0"
+     ],
+     [
+      54,
+      55,
+      "I0"
+     ],
+     [
+      55,
+      55,
+      "I0"
+     ],
+     [
+      58,
+      55,
+      "I0"
+     ],
+     [
+      62,
+      56,
+      "I0"
+     ],
+     [
+      49,
+      55,
+      "I0"
+     ],
+     [
+      48,
+      56,
+      "I0"
+     ],
+     [
+      54,
+      56,
+      "I0"
+     ],
+     [
+      58,
+      56,
+      "I0"
+     ],
+     [
+      55,
+      60,
+      "I0"
+     ],
+     [
+      55,
+      61,
+      "I0"
+     ],
+     [
+      59,
+      60,
+      "I0"
+     ],
+     [
+      60,
+      61,
+      "I0"
+     ],
+     [
+      60,
+      62,
+      "I0"
+     ],
+     [
+      52,
+      60,
+      "I0"
+     ]
+    ]
+   },
+   {
+    "kind": "fold",
+    "note": "tabard pleat: crease deepened to W3 with a W2 shadow beside it, and the right edge turning into shade",
+    "px": [
+     [
+      59,
+      126,
+      "W3"
+     ],
+     [
+      59,
+      127,
+      "W3"
+     ],
+     [
+      59,
+      128,
+      "W3"
+     ],
+     [
+      59,
+      129,
+      "W3"
+     ],
+     [
+      59,
+      130,
+      "W3"
+     ],
+     [
+      59,
+      131,
+      "W3"
+     ],
+     [
+      59,
+      132,
+      "W3"
+     ],
+     [
+      59,
+      133,
+      "W3"
+     ],
+     [
+      59,
+      134,
+      "W3"
+     ],
+     [
+      59,
+      135,
+      "W3"
+     ],
+     [
+      59,
+      136,
+      "W3"
+     ],
+     [
+      59,
+      137,
+      "W3"
+     ],
+     [
+      59,
+      138,
+      "W3"
+     ],
+     [
+      59,
+      139,
+      "W3"
+     ],
+     [
+      59,
+      140,
+      "W3"
+     ],
+     [
+      60,
+      128,
+      "W2"
+     ],
+     [
+      60,
+      129,
+      "W2"
+     ],
+     [
+      60,
+      130,
+      "W2"
+     ],
+     [
+      60,
+      131,
+      "W2"
+     ],
+     [
+      60,
+      132,
+      "W2"
+     ],
+     [
+      60,
+      133,
+      "W2"
+     ],
+     [
+      60,
+      134,
+      "W2"
+     ],
+     [
+      60,
+      135,
+      "W2"
+     ],
+     [
+      60,
+      136,
+      "W2"
+     ],
+     [
+      60,
+      137,
+      "W2"
+     ],
+     [
+      60,
+      138,
+      "W2"
+     ],
+     [
+      60,
+      139,
+      "W2"
+     ],
+     [
+      60,
+      140,
+      "W2"
+     ],
+     [
+      60,
+      141,
+      "W2"
+     ],
+     [
+      60,
+      142,
+      "W2"
+     ],
+     [
+      60,
+      143,
+      "W2"
+     ],
+     [
+      60,
+      144,
+      "W2"
+     ],
+     [
+      64,
+      120,
+      "W2"
+     ],
+     [
+      64,
+      121,
+      "W2"
+     ],
+     [
+      64,
+      122,
+      "W2"
+     ],
+     [
+      64,
+      123,
+      "W2"
+     ],
+     [
+      64,
+      124,
+      "W2"
+     ],
+     [
+      64,
+      125,
+      "W2"
+     ],
+     [
+      64,
+      126,
+      "W2"
+     ],
+     [
+      64,
+      127,
+      "W2"
+     ],
+     [
+      64,
+      128,
+      "W2"
+     ],
+     [
+      64,
+      129,
+      "W2"
+     ],
+     [
+      64,
+      130,
+      "W2"
+     ],
+     [
+      64,
+      131,
+      "W2"
+     ],
+     [
+      64,
+      132,
+      "W2"
+     ],
+     [
+      64,
+      133,
+      "W2"
+     ],
+     [
+      64,
+      134,
+      "W2"
+     ],
+     [
+      64,
+      135,
+      "W2"
+     ],
+     [
+      64,
+      136,
+      "W2"
+     ],
+     [
+      64,
+      137,
+      "W2"
+     ],
+     [
+      64,
+      138,
+      "W2"
+     ],
+     [
+      64,
+      139,
+      "W2"
+     ],
+     [
+      64,
+      140,
+      "W2"
+     ],
+     [
+      64,
+      141,
+      "W2"
+     ],
+     [
+      64,
+      142,
+      "W2"
+     ],
+     [
+      64,
+      143,
+      "W2"
+     ],
+     [
+      64,
+      144,
+      "W2"
+     ],
+     [
+      64,
+      145,
+      "W2"
+     ]
+    ]
+   }
+  ]
+ },
+ "authored_on": {
+  "round": "stills round 4 (r4)",
+  "canvas": [
+   77,
+   208
+  ],
+  "anchor": [
+   54,
+   199
+  ],
+  "pose_sha1": "d5dbe7bf9d69",
+  "_doc": "The render these patches were painted on. overrides.py applies 'patches' only when the still matches (same canvas, anchor and pose file); otherwise they are stale pixel coordinates and are skipped until re-authored."
+ },
+ "preface": [
+  {
+   "kind": "facewin",
+   "note": "adopt the anti-aliased skin-coloured contour pixels as skin",
+   "box": [
+    41,
+    70,
+    57,
+    84
+   ],
+   "adopt_skin": true
+  },
+  {
+   "kind": "bangs",
+   "note": "3 clumps with pointed tips (x45, x50, x55); notches at x48 and x53; the lash row sits under the tips",
+   "span": [
+    69,
+    74
+   ],
+   "edge": [
+    [
+     42,
+     72
+    ],
+    [
+     43,
+     70
+    ],
+    [
+     44,
+     71
+    ],
+    [
+     45,
+     72
+    ],
+    [
+     46,
+     71
+    ],
+    [
+     47,
+     70
+    ],
+    [
+     48,
+     69
+    ],
+    [
+     49,
+     71
+    ],
+    [
+     50,
+     73
+    ],
+    [
+     51,
+     72
+    ],
+    [
+     52,
+     70
+    ],
+    [
+     53,
+     69
+    ],
+    [
+     54,
+     71
+    ],
+    [
+     55,
+     72
+    ]
+   ]
+  },
+  {
+   "kind": "facewin",
+   "note": "veil block on the far jaw becomes the side lock (I2)",
+   "box": [
+    53,
+    78,
+    57,
+    83
+   ],
+   "from": [
+    "veil"
+   ],
+   "to": "I2",
+   "as": "hair"
+  },
+  {
+   "kind": "contour",
+   "note": "near jaw S3 line tapering to a 2 px chin point at x49-50 (1 px toward the facing side), S4 neck shadow under the jaw, 1 px far-jaw S3; the chin point replaces two collar pixels",
+   "px": [
+    [
+     43,
+     79,
+     "S3"
+    ],
+    [
+     44,
+     80,
+     "S3"
+    ],
+    [
+     45,
+     81,
+     "S3"
+    ],
+    [
+     45,
+     82,
+     "S4"
+    ],
+    [
+     46,
+     82,
+     "S3"
+    ],
+    [
+     45,
+     83,
+     "S4"
+    ],
+    [
+     46,
+     83,
+     "S4"
+    ],
+    [
+     47,
+     83,
+     "S4"
+    ],
+    [
+     48,
+     83,
+     "S3"
+    ],
+    [
+     49,
+     83,
+     "S2"
+    ],
+    [
+     50,
+     83,
+     "S2"
+    ],
+    [
+     53,
+     80,
+     "S3"
+    ]
+   ]
+  }
+ ]
+}

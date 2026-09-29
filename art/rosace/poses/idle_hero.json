@@ -1,0 +1,220 @@
+{
+ "name": "idle_hero",
+ "note": "Processional hero stance (DESIGN 1), round 3 re-key after the round-2 critics ('a vertical column: straight spine, level shoulders, weight split, head centred'). Real contrapposto: all the weight on the near (right) leg, the pelvis thrust 7 cm out over it and turned ~20 degrees toward the camera, near hip high; the ribcage counter-tilts so the shoulder line drops over the weight leg (about 8 degrees against the hips); the free far leg comes in and forward with the heel lifted and the knee crossing. The glaive stands beside the near foot, leaning out so staff, arm and body keep a triangle of negative space; the near hand wraps the haft at chest height with the back of the hand to the camera (fingers over the front of the haft, not beside it). The far hand on the far hip, elbow out: a second window. Head turned three-quarter to the camera, chin a touch down and tilted toward the weight side. Camera 45 (was 55) so the frontal plane, where the S-curve lives, faces the viewer more. Round 3 fix (body critic: 'far hand lost in the sleeve, 2-3 px hip cock, sleeve slab against the waist'; gear critic: 'staff held at arm's length'): hip cock and shoulder counter-tilt raised (hips roll 19 -> 24, ribcage -28 -> -34 degrees), head leans into the tilt; the glaive leans in toward her so the holding elbow bends; the far hand sits on the hip at the silhouette edge, fingers forward, elbow out, and its sleeve drapes out and back so a gap opens at the waist. Round 4 fix (body/overall/gear critics: 'mannequin stance, free arm hugs the body, flagpole grip, head straight on'): camera 45 -> 30 (more frontal, like refs 07/09); weight on the near leg with the pelvis shifted over it, the free leg planted wide and bent (feet ~27 px apart at 144); hips roll 12 up on the staff side, ribcage counter-tilt -20 so the torso leans onto the staff; head canted ~10 degrees toward the staff; the glaive butt planted out to the side and ahead, shaft leaning ~7 degrees outward with a gap to the body, the near hand at waist-chest height with a bent elbow (137); the far hand on the waist, elbow out (arms lengthened in body.py so the akimbo opens a triangle), its sleeve blown back.",
+ "camera": {
+  "yaw": 30,
+  "elev": 8
+ },
+ "root": {
+  "loc": [
+   0,
+   0,
+   0
+  ],
+  "rot": [
+   0,
+   0,
+   0
+  ]
+ },
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   -0.06,
+   0.01,
+   -0.025
+  ],
+  "J_Bip_C_Hips": [
+   6,
+   12,
+   -10
+  ],
+  "J_Bip_C_Spine": [
+   -4,
+   -6,
+   3
+  ],
+  "J_Bip_C_Chest": [
+   -6,
+   -10,
+   4
+  ],
+  "J_Bip_C_UpperChest": [
+   -2,
+   -4,
+   2
+  ],
+  "J_Bip_C_Neck": [
+   3,
+   0,
+   -3
+  ],
+  "J_Bip_C_Head": [
+   4,
+   -3,
+   -8
+  ]
+ },
+ "feet": {
+  "R": {
+   "pos": [
+    -0.13,
+    0.03,
+    0.159
+   ],
+   "yaw": -20
+  },
+  "L": {
+   "pos": [
+    0.2,
+    -0.1,
+    0.172
+   ],
+   "yaw": 24,
+   "pitch": 12
+  }
+ },
+ "poles": {
+  "leg.L": [
+   0.15,
+   -0.8,
+   0.6
+  ],
+  "leg.R": [
+   -0.2,
+   -0.6,
+   0.55
+  ],
+  "arm.R": [
+   -0.45,
+   0.45,
+   0.9
+  ],
+  "arm.L": [
+   1.2,
+   0.05,
+   1.55
+  ]
+ },
+ "weapon": {
+  "butt": [
+   -0.34,
+   -0.08,
+   0.0
+  ],
+  "dir": [
+   -0.13,
+   0.0,
+   1.0
+  ],
+  "edge": [
+   0,
+   -1,
+   0
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_mid",
+   "slide": 0.12,
+   "thumb": "tip",
+   "back": [
+    -0.6,
+    -0.75,
+    0.1
+   ]
+  },
+  "L": {
+   "pos": [
+    0.115,
+    -0.005,
+    1.14
+   ],
+   "fdir": [
+    -0.35,
+    -0.55,
+    -0.75
+   ],
+   "palm": [
+    -1,
+    0.25,
+    0
+   ]
+  }
+ },
+ "fingers": {
+  "R": {
+   "curl": 88,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 20,
+   "thumb": 10
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.04,
+   0.12,
+   0
+  ],
+  "chains": {
+   "tabard": {
+    "g": 0.95,
+    "wind": [
+     0.06,
+     0.02,
+     0
+    ]
+   },
+   "hair_tail": {
+    "g": 0.8
+   },
+   "sleeve_R": {
+    "g": 0.6,
+    "wind": [
+     -0.45,
+     0.35,
+     0.0
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.3,
+    "wind": [
+     0.25,
+     1.0,
+     0.1
+    ]
+   },
+   "stole_A": {
+    "g": 0.55,
+    "wind": [
+     -0.35,
+     0.25,
+     0.05
+    ]
+   },
+   "stole_B": {
+    "g": 0.55,
+    "wind": [
+     -0.25,
+     0.4,
+     0.0
+    ]
+   },
+   "side_R": {
+    "g": 0.45,
+    "wind": [
+     -0.15,
+     0.55,
+     0.0
+    ]
+   }
+  }
+ },
+ "expression": "serene"
+}

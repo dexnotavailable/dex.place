@@ -1,0 +1,496 @@
+{
+ "_doc": "Stills round 4 override layer: authored in tools/pixel-pipeline/author_overrides_data.py on the render named in authored_on. Patches are pixel coordinates on that render.",
+ "face": {
+  "facing": "profile",
+  "expr": "serene",
+  "note": "over-the-shoulder profile; the nose / lips / chin silhouette is the contour preface"
+ },
+ "patches": [
+  {
+   "kind": "form",
+   "note": "painted form on skin below the chin: one clean core-shadow band per limb, S4 occlusion edge, one S1 highlight (re-banded from the render normals with the key light of this still)",
+   "shade": {
+    "box": [
+     95,
+     33,
+     203,
+     156
+    ],
+    "mat": "skin",
+    "light": [
+     -0.5,
+     0.45,
+     0.7
+    ],
+    "bands": [
+     [
+      -1,
+      "S4"
+     ],
+     [
+      0.12,
+      "S3"
+     ],
+     [
+      0.45,
+      "S2"
+     ],
+     [
+      0.86,
+      "S1"
+     ]
+    ]
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "despeckle the render's dark I4 islands (<= 2 px) in the hair mass",
+   "despeckle": {
+    "box": [
+     100,
+     2,
+     150,
+     60
+    ],
+    "mat": "hair",
+    "codes": [
+     "I4"
+    ],
+    "max": 2
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "crown: soften the dark seam and drop the render's straight I0 bar (the ring is redrawn as arcs)",
+   "box": [
+    112,
+    8,
+    132,
+    14
+   ],
+   "mat": "hair",
+   "map": {
+    "I4": "I3",
+    "I0": "I1"
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "head: the render's loose azure hairtip specks on the crown (critic: 'noise') become hair tones",
+   "box": [
+    100,
+    2,
+    150,
+    60
+   ],
+   "mat": "hairtip",
+   "map": {
+    "A2": "I2",
+    "A3": "I1",
+    "A4": "I1",
+    "A5": "I0"
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "angel ring: short I0 arcs with I1 ends that follow the skull outline, broken at every clump",
+   "ring": {
+    "y": [
+     6,
+     20
+    ],
+    "segments": [
+     [
+      113,
+      116
+     ],
+     [
+      118,
+      123
+     ],
+     [
+      125,
+      130
+     ]
+    ],
+    "depth": 4,
+    "c": "I0",
+    "flank": "I1"
+   }
+  },
+  {
+   "kind": "hair",
+   "on": [
+    "hair"
+   ],
+   "note": "clump separators (I3, one step darker than the I2 shadow) from the ring into the bang notches",
+   "lines": [
+    {
+     "pts": [
+      [
+       117,
+       12
+      ],
+      [
+       116,
+       15
+      ],
+      [
+       115,
+       18
+      ]
+     ],
+     "c": "I3"
+    }
+   ]
+  },
+  {
+   "kind": "hair",
+   "note": "azure tips (DESIGN s6): the last 3 px of every free hair end, A2 -> A3 -> A4",
+   "tips": {
+    "box": [
+     100,
+     32,
+     203,
+     156
+    ],
+    "ramp": [
+     "A2",
+     "A3",
+     "A4"
+    ]
+   }
+  },
+  {
+   "kind": "glint",
+   "note": "blade glint: A5 core with A4 arms (the one specular star on the weapon)",
+   "px": [
+    [
+     14,
+     21,
+     "A5"
+    ],
+    [
+     13,
+     21,
+     "A4"
+    ],
+    [
+     15,
+     21,
+     "A4"
+    ],
+    [
+     14,
+     20,
+     "A4"
+    ],
+    [
+     14,
+     22,
+     "A4"
+    ]
+   ]
+  },
+  {
+   "kind": "hand",
+   "stamp": "fist_h",
+   "flip": true,
+   "at": [
+    88,
+    36
+   ],
+   "note": "lead hand closed on the level haft, arm from the right"
+  },
+  {
+   "kind": "form",
+   "on": [
+    "skin"
+   ],
+   "note": "near (right) glute: lit S2 lobe with an S1 highlight upper-outer, S4 gluteal fold arcing into the thigh",
+   "ellipses": [
+    {
+     "box": [
+      119,
+      66,
+      127,
+      82
+     ],
+     "c": "S2",
+     "only": [
+      "S3"
+     ]
+    },
+    {
+     "box": [
+      122,
+      68,
+      125,
+      72
+     ],
+     "c": "S1",
+     "only": [
+      "S2"
+     ]
+    }
+   ],
+   "lines": [
+    {
+     "pts": [
+      [
+       118,
+       86
+      ],
+      [
+       120,
+       87
+      ],
+      [
+       123,
+       87
+      ],
+      [
+       125,
+       85
+      ]
+     ],
+     "c": "S4"
+    }
+   ]
+  },
+  {
+   "kind": "form",
+   "on": [
+    "skin"
+   ],
+   "note": "far (left) glute: S3 core shadow on the inner / lower curve toward the thong (it read as one pale blob), S1 highlight on the lit upper-outer lobe, S4 fold under it",
+   "polys": [
+    {
+     "pts": [
+      [
+       113,
+       75
+      ],
+      [
+       116,
+       71
+      ],
+      [
+       117,
+       87
+      ],
+      [
+       114,
+       89
+      ],
+      [
+       111,
+       88
+      ],
+      [
+       112,
+       82
+      ]
+     ],
+     "c": "S3",
+     "only": [
+      "S1",
+      "S2"
+     ]
+    }
+   ],
+   "ellipses": [
+    {
+     "box": [
+      110,
+      67,
+      113,
+      71
+     ],
+     "c": "S1",
+     "only": [
+      "S2"
+     ]
+    }
+   ],
+   "lines": [
+    {
+     "pts": [
+      [
+       110,
+       87
+      ],
+      [
+       112,
+       88
+      ],
+      [
+       115,
+       88
+      ]
+     ],
+     "c": "S4"
+    }
+   ]
+  },
+  {
+   "kind": "form",
+   "on": [
+    "skin"
+   ],
+   "note": "spine groove (S3) down the open back into the waist band",
+   "lines": [
+    {
+     "pts": [
+      [
+       121,
+       47
+      ],
+      [
+       121,
+       52
+      ],
+      [
+       120,
+       58
+      ]
+     ],
+     "c": "S3"
+    }
+   ]
+  }
+ ],
+ "rim": {
+  "level": "half",
+  "family": "cool",
+  "dir": [
+   -0.62,
+   -0.78
+  ],
+  "thr": 0.6,
+  "note": "world rim from upper back (lab rimDir); DESIGN.md s9 lit outline"
+ },
+ "patches_round1": {
+  "authored_on": {
+   "round": 1,
+   "canvas": [
+    210,
+    152
+   ],
+   "anchor": [
+    63,
+    145
+   ],
+   "pose_sha1": "5c7b7c595b37",
+   "_doc": "The render these patches were painted on. overrides.py applies 'patches' only when the still matches (same canvas, anchor and pose file); otherwise they are stale pixel coordinates and are skipped until re-authored."
+  },
+  "patches": [
+   {
+    "kind": "relight",
+    "note": "face kept lit for the over-the-shoulder look: S3 -> S2 on the front of the face; the back of the cheek (x>=64) and the jaw row stay S3 for form",
+    "box": [
+     56,
+     20,
+     63,
+     28
+    ],
+    "mat": "skin",
+    "map": {
+     "S3": "S2"
+    }
+   },
+   {
+    "kind": "hand",
+    "note": "near (left) hand closed over the haft at the sleeve mouth: fingers wrap down over the haft's near side",
+    "at": [
+     96,
+     33
+    ],
+    "rows": [
+     ".OOOOO..",
+     "OSLLSSO.",
+     "OLSSTSSO",
+     ".OTSSTSO",
+     "..OTSSO.",
+     "...OOO.."
+    ]
+   }
+  ]
+ },
+ "authored_on": {
+  "round": "stills round 4 (r4)",
+  "canvas": [
+   204,
+   157
+  ],
+  "anchor": [
+   120,
+   149
+  ],
+  "pose_sha1": "6bcb25e72a2b",
+  "_doc": "The render these patches were painted on. overrides.py applies 'patches' only when the still matches (same canvas, anchor and pose file); otherwise they are stale pixel coordinates and are skipped until re-authored."
+ },
+ "preface": [
+  {
+   "kind": "facewin",
+   "note": "adopt the anti-aliased skin-coloured contour pixels as skin",
+   "box": [
+    108,
+    18,
+    118,
+    31
+   ],
+   "adopt_skin": true
+  },
+  {
+   "kind": "contour",
+   "note": "profile silhouette facing left: bangs over the forehead, brow step, nose bridge, 1 px nose tip at x109, notch under the nose, upper lip, lip notch (the stamp mouth sits in it), chin, jaw back under the ear; the crossing lock over the eye is removed",
+   "at": [
+    108,
+    19
+   ],
+   "rows": [
+    "...........",
+    ".....II....",
+    "....VII....",
+    "....TSSS...",
+    "....SSSSS..",
+    "...TSSSSS..",
+    "..SSSSSSS..",
+    "...SSSSST..",
+    "...SSSSSS..",
+    "....SSSSS..",
+    "...SSSSN...",
+    "....TSN....",
+    "..........."
+   ]
+  },
+  {
+   "kind": "contour",
+   "note": "the profile's warm G4 outline (the skin's shadow-side sel-out)",
+   "at": [
+    108,
+    19
+   ],
+   "as": "keep",
+   "key": {
+    "K": "G4"
+   },
+   "rows": [
+    "...........",
+    "...........",
+    "...........",
+    "...K.......",
+    "...K.......",
+    "..K........",
+    ".K.........",
+    "..K........",
+    "..K........",
+    "...K.......",
+    "..K........",
+    "...K.......",
+    "....KK....."
+   ]
+  }
+ ]
+}

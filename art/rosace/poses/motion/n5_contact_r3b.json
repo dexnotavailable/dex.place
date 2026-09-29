@@ -1,0 +1,225 @@
+{
+ "name": "n5_contact_r3b",
+ "note": "N5 Agnus Dei C1 (f30-32), round 3b: the sweep's follow-through. The glaive has been carried past the target line (yaw 62, 32 deg past screen-right) at knee-to-hip height, both arms across the body to her left-front (the right arm crossing her chest), the chest wrapped round after it (~+30), the head still on the target line; front knee over its toes, rear foot on the coil's pivot spot. Sleeves, stoles and tabard flung out on the trailing side (her right, where the blade came from). C1b (a sheet blend, f33) settles back from this overshoot.",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.02,
+   -0.25,
+   -0.4
+  ],
+  "J_Bip_C_Hips": [
+   16,
+   0,
+   8
+  ],
+  "J_Bip_C_Spine": [
+   6,
+   0,
+   10
+  ],
+  "J_Bip_C_Chest": [
+   4,
+   0,
+   8
+  ],
+  "J_Bip_C_UpperChest": [
+   2,
+   0,
+   6
+  ],
+  "J_Bip_C_Neck": [
+   -6,
+   0,
+   -14
+  ],
+  "J_Bip_C_Head": [
+   -8,
+   0,
+   -18
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.2,
+    -0.74,
+    0.159
+   ],
+   "yaw": 20
+  },
+  "R": {
+   "pos": [
+    -0.089,
+    0.492,
+    0.159
+   ],
+   "yaw": -5
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   0.265,
+   -0.753,
+   0.93
+  ],
+  "dir": [
+   0.8817,
+   -0.4688,
+   0.0523
+  ],
+  "edge": [
+   0.469,
+   0.883,
+   0.0
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": -0.75,
+   "thumb": "tip",
+   "back": [
+    -0.2,
+    -0.3,
+    0.95
+   ]
+  },
+  "L": {
+   "grip": "grip_main",
+   "slide": -1.3,
+   "thumb": "tip",
+   "back": [
+    0.4,
+    -0.1,
+    0.9
+   ]
+  }
+ },
+ "poles": {
+  "arm.R": [
+   0.0,
+   -0.9,
+   0.6
+  ],
+  "arm.L": [
+   0.9,
+   0.1,
+   0.9
+  ],
+  "leg.L": [
+   0.145,
+   -1.611,
+   0.5
+  ],
+  "leg.R": [
+   -0.507,
+   -0.274,
+   0.4
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 85,
+   "thumb": 55
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   -0.7,
+   0.5,
+   0.25
+  ],
+  "chains": {
+   "sleeve_R": {
+    "g": 0.08,
+    "wind": [
+     -0.9,
+     0.4,
+     0.35
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.08,
+    "wind": [
+     -0.9,
+     0.4,
+     0.35
+    ]
+   },
+   "hair_tail": {
+    "g": 0.2,
+    "wind": [
+     -0.7,
+     0.5,
+     0.25
+    ]
+   },
+   "hair_back": {
+    "g": 0.2,
+    "wind": [
+     -0.7,
+     0.5,
+     0.25
+    ]
+   },
+   "side_L": {
+    "g": 0.2,
+    "wind": [
+     -0.7,
+     0.5,
+     0.25
+    ]
+   },
+   "side_R": {
+    "g": 0.2,
+    "wind": [
+     -0.7,
+     0.5,
+     0.25
+    ]
+   },
+   "veil": {
+    "g": 0.2,
+    "wind": [
+     -0.7,
+     0.5,
+     0.25
+    ]
+   },
+   "stole_A": {
+    "g": 0.2,
+    "wind": [
+     -0.7,
+     0.5,
+     0.25
+    ]
+   },
+   "stole_B": {
+    "g": 0.2,
+    "wind": [
+     -0.7,
+     0.5,
+     0.25
+    ]
+   },
+   "tabard": {
+    "g": 0.5,
+    "wind": [
+     -0.5,
+     0.5,
+     0.1
+    ]
+   }
+  }
+ },
+ "expression": "resolute"
+}

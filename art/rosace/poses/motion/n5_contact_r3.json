@@ -1,0 +1,225 @@
+{
+ "name": "n5_contact_r3",
+ "note": "N5 Agnus Dei C1 contact (f30-37), round 3: round 2's lunge (arms extended, hands choked at the butt, glaive flat across the screen at knee-to-hip height, ~22 deg lean), with the rear foot on the coil's pivot spot and the knees over the toes.",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.0,
+   -0.26,
+   -0.38
+  ],
+  "J_Bip_C_Hips": [
+   16,
+   0,
+   -15
+  ],
+  "J_Bip_C_Spine": [
+   8,
+   0,
+   -8
+  ],
+  "J_Bip_C_Chest": [
+   4,
+   0,
+   -8
+  ],
+  "J_Bip_C_UpperChest": [
+   2,
+   0,
+   -6
+  ],
+  "J_Bip_C_Neck": [
+   -6,
+   0,
+   10
+  ],
+  "J_Bip_C_Head": [
+   -8,
+   0,
+   12
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.16,
+    -0.72,
+    0.159
+   ],
+   "yaw": 12
+  },
+  "R": {
+   "pos": [
+    -0.089,
+    0.492,
+    0.159
+   ],
+   "yaw": -15
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   0.02,
+   -0.76,
+   1.0
+  ],
+  "dir": [
+   0.5,
+   -0.86,
+   0.06
+  ],
+  "edge": [
+   0,
+   0,
+   -1
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": -0.75,
+   "thumb": "tip",
+   "back": [
+    -0.3,
+    0,
+    0.95
+   ]
+  },
+  "L": {
+   "grip": "grip_main",
+   "slide": -1.12,
+   "thumb": "tip",
+   "back": [
+    0.3,
+    0,
+    0.95
+   ]
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -0.6,
+   -0.2,
+   0.9
+  ],
+  "arm.L": [
+   0.7,
+   -0.2,
+   0.9
+  ],
+  "leg.L": [
+   -0.016,
+   -1.575,
+   0.5
+  ],
+  "leg.R": [
+   -0.634,
+   -0.19,
+   0.4
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 85,
+   "thumb": 55
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.2,
+   0.8,
+   0.15
+  ],
+  "chains": {
+   "sleeve_R": {
+    "g": 0.15,
+    "wind": [
+     0.8,
+     0.6,
+     0.25
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.15,
+    "wind": [
+     0.8,
+     0.6,
+     0.25
+    ]
+   },
+   "hair_tail": {
+    "g": 0.3,
+    "wind": [
+     0.2,
+     0.8,
+     0.15
+    ]
+   },
+   "hair_back": {
+    "g": 0.3,
+    "wind": [
+     0.2,
+     0.8,
+     0.15
+    ]
+   },
+   "side_L": {
+    "g": 0.3,
+    "wind": [
+     0.2,
+     0.8,
+     0.15
+    ]
+   },
+   "side_R": {
+    "g": 0.3,
+    "wind": [
+     0.2,
+     0.8,
+     0.15
+    ]
+   },
+   "veil": {
+    "g": 0.3,
+    "wind": [
+     0.2,
+     0.8,
+     0.15
+    ]
+   },
+   "stole_A": {
+    "g": 0.3,
+    "wind": [
+     0.2,
+     0.8,
+     0.15
+    ]
+   },
+   "stole_B": {
+    "g": 0.3,
+    "wind": [
+     0.2,
+     0.8,
+     0.15
+    ]
+   },
+   "tabard": {
+    "g": 0.6,
+    "wind": [
+     0.2,
+     0.8,
+     0.15
+    ]
+   }
+  }
+ },
+ "expression": "resolute"
+}

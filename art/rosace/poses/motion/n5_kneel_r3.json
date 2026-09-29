@@ -1,0 +1,144 @@
+{
+ "name": "n5_kneel_r3",
+ "note": "N5 Agnus Dei K1 amen kneel (f48-67), round 3: the open, symmetrical end pose MOVESET asks for, as a three-quarter genuflection. Pelvis turned 20 deg toward the camera, torso upright with the shoulders back, right knee down under the hip with the shin flat behind it, left foot forward with the shin vertical and the knee over its toes, knees apart (round-2 critics: knock-kneed, hunched). The glaive stands upright in front of her, clear of the face, butt on the floor; both hands stacked on it at chest height, elbows out to both sides; head bowed toward it.",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.04,
+   -0.28,
+   -0.6
+  ],
+  "J_Bip_C_Hips": [
+   0,
+   0,
+   -20
+  ],
+  "J_Bip_C_Spine": [
+   -2,
+   0,
+   -3
+  ],
+  "J_Bip_C_Chest": [
+   -3,
+   0,
+   -3
+  ],
+  "J_Bip_C_UpperChest": [
+   -2,
+   0,
+   -2
+  ],
+  "J_Bip_C_Neck": [
+   18,
+   0,
+   0
+  ],
+  "J_Bip_C_Head": [
+   28,
+   0,
+   0
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.019,
+    -0.805,
+    0.159
+   ],
+   "yaw": -10
+  },
+  "R": {
+   "pos": [
+    0.108,
+    0.227,
+    0.1
+   ],
+   "yaw": -20,
+   "pitch": 70
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   -0.129,
+   -0.687,
+   0.95
+  ],
+  "dir": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "edge": [
+   -0.342,
+   -0.94,
+   0
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": 0.0,
+   "thumb": "tip",
+   "back": [
+    -0.94,
+    0.342,
+    0.2
+   ]
+  },
+  "L": {
+   "grip": "grip_main",
+   "slide": -0.36,
+   "thumb": "tip",
+   "back": [
+    0.94,
+    -0.342,
+    0.2
+   ]
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -0.524,
+   -0.075,
+   0.7
+  ],
+  "arm.L": [
+   0.604,
+   -0.485,
+   0.7
+  ],
+  "leg.L": [
+   0.077,
+   -1.628,
+   0.8
+  ],
+  "leg.R": [
+   -0.248,
+   -0.75,
+   0.1
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 85,
+   "thumb": 55
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0,
+   0.05,
+   0
+  ]
+ },
+ "expression": "resolute"
+}

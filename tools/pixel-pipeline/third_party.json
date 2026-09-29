@@ -1,0 +1,107 @@
+{
+  "_about": "Third-party inputs for the Rosace character build. Fetched by fetch_third_party.py into DEXPLACE_DOWNLOADS (default D:/Dex/Inbox/Downloads/dexplace-character), never into this repo. Licenses and use notes: THIRD_PARTY.md.",
+  "items": [
+    {
+      "id": "seed-san",
+      "kind": "url",
+      "url": "https://raw.githubusercontent.com/vrm-c/vrm-specification/837f156dbce43ad69183ce1bdab549961ae1c1ee/samples/Seed-san/vrm/Seed-san.vrm",
+      "dest": "vrm/Seed-san.vrm",
+      "size": 10917800,
+      "sha256": "624d0d554bc205bbdc33e22a68a2c3c20edebb3e573011ead8878a65e5329b23"
+    },
+    {
+      "id": "seed-san-readme",
+      "kind": "url",
+      "url": "https://raw.githubusercontent.com/vrm-c/vrm-specification/837f156dbce43ad69183ce1bdab549961ae1c1ee/samples/Seed-san/README.md",
+      "dest": "vrm/Seed-san_README.md",
+      "sha256": "f0fdc21cf26437d9becd90a64d350bc0307fcfa172e1caea5aa39c52a5b3b9b6",
+      "size": 194
+    },
+    {
+      "id": "hairsample-female",
+      "kind": "url",
+      "url": "https://raw.githubusercontent.com/madjin/vrm-samples/e16eb187100149a315ad92c3c9968f1d5baa6c7d/vroid/beta/HairSample_Female.vrm",
+      "dest": "vrm/HairSample_Female.vrm",
+      "size": 17518216,
+      "sha256": "adfd242317aaabc773f31f7fff7b013979fbb5baa47e97427a78913d9cb4e979"
+    },
+    {
+      "id": "quaternius-ual2-standard",
+      "kind": "itch",
+      "itch": {
+        "user": "quaternius",
+        "game": "universal-animation-library-2",
+        "upload": "Universal Animation Library 2[Standard].zip"
+      },
+      "dest": "quaternius/Universal Animation Library 2[Standard].zip",
+      "extract_to": "quaternius/UAL2_Standard",
+      "size": 18735003,
+      "sha256": "4008ea208a604773a2b2177d965f0f5d3195498b5bf838c3f5785d68e95f2a68"
+    },
+    {
+      "id": "quaternius-ual1-standard",
+      "kind": "itch",
+      "itch": {
+        "user": "quaternius",
+        "game": "universal-animation-library",
+        "upload": "Universal Animation Library[Standard].zip"
+      },
+      "dest": "quaternius/Universal Animation Library[Standard].zip",
+      "extract_to": "quaternius/UAL1_Standard",
+      "size": 15904933,
+      "sha256": "cc73fc4e495b82958207316596317a3f40b9fa38065bde1027937452da537724"
+    },
+    {
+      "id": "cmu-bvh-01-09",
+      "kind": "url",
+      "url": "http://codewelt.com/dl/cmuconvert/cmuconvert-mb2-01-09.zip",
+      "dest": "cmu/cmuconvert-mb2-01-09.zip",
+      "extract_to": "cmu/bvh",
+      "extract_members": [
+        "*/02_07.bvh",
+        "*/02_08.bvh",
+        "*/02_09.bvh",
+        "*.txt"
+      ],
+      "size": 33755687,
+      "sha256": "8822d96dac5694cb5df35e017fa7df174a051249d48d70d6732a7b68953016d9"
+    },
+    {
+      "id": "cmu-bvh-86-94",
+      "kind": "url",
+      "url": "http://codewelt.com/dl/cmuconvert/cmuconvert-mb2-86-94.zip",
+      "dest": "cmu/cmuconvert-mb2-86-94.zip",
+      "extract_to": "cmu/bvh",
+      "extract_members": [
+        "*/88_*.bvh",
+        "*.txt"
+      ],
+      "size": 92487061,
+      "sha256": "b35e3c0e47ddfe32a58600f57e552a2387a9acbcbde1ad5d35b69277a25829d4"
+    },
+    {
+      "id": "mesh2motion-human-base-animations",
+      "kind": "url",
+      "url": "https://raw.githubusercontent.com/Mesh2Motion/mesh2motion-app/79f3f61a9852ef70234a5a4a7c13ed87f7a71833/static/animations/human-base-animations.glb",
+      "dest": "mesh2motion/human-base-animations.glb",
+      "sha256": "406eb0a8dc4ab366e623b79b6e3005a4951392e1bda78ae39c1099d31147733c",
+      "size": 5656648
+    },
+    {
+      "id": "mesh2motion-human-addon-animations",
+      "kind": "url",
+      "url": "https://raw.githubusercontent.com/Mesh2Motion/mesh2motion-app/79f3f61a9852ef70234a5a4a7c13ed87f7a71833/static/animations/human-addon-animations.glb",
+      "dest": "mesh2motion/human-addon-animations.glb",
+      "sha256": "a0d64d555e0d492026b72d58bf8e16c5e86779295f9093e376dcc001915c2c95",
+      "size": 5292804
+    },
+    {
+      "id": "mesh2motion-human-mocap-animations",
+      "kind": "url",
+      "url": "https://raw.githubusercontent.com/Mesh2Motion/mesh2motion-app/79f3f61a9852ef70234a5a4a7c13ed87f7a71833/static/animations/human-mocap-animations.glb",
+      "dest": "mesh2motion/human-mocap-animations.glb",
+      "sha256": "814593d62522f5be8d6bd32df2a8fa3c7feb90a8e1a1ba43f4aaf0048555280d",
+      "size": 2025372
+    }
+  ]
+}

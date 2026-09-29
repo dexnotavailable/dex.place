@@ -1,0 +1,16 @@
+{
+ "_doc": "fist_h, 96 px sprite: hand stamp for override layers (arm enters from the left; 'flip' in the patch mirrors it). origin = [column, row] placed on the patch 'at'. Rows use overrides.ROWKEY codes; '.' leaves the render. Stills round 3.",
+ "name": "fist_h",
+ "px": 96,
+ "arm": "left",
+ "origin": [
+  2,
+  2
+ ],
+ "rows": [
+  ".OOO.",
+  "TLLLO",
+  "TSMSO",
+  ".OOO."
+ ]
+}

@@ -1,0 +1,596 @@
+{
+ "name": "n5_r3b",
+ "move": "N5 Agnus Dei (m1_5), MOVESET.md section 1: 14 drawings, 94 f at 60 fps. Round 3b (r3 critics): slow-in A1 25% / A2 the coil with a small back-arc / A3 a 2 px sink; the body turns through the spin (S2 = chest to the camera); C1 a follow-through past the target line that settles at C1b; an open, symmetrical Amen kneel; thick ellipse smears (smear v2) with the glaive drawn bent on S2; world-pinned stole lag; the coil's cloth keeps winding through the hold.",
+ "length": 94,
+ "source": {
+  "npz": "n5/n5_study_ee_s1_00.npz",
+  "meta": "_constraints/n5_study_ee.meta.json"
+ },
+ "push_ref": "ready",
+ "ease_default": "in_out",
+ "glaive_default": "hands",
+ "keys": [
+  {
+   "name": "ready",
+   "src": "ready",
+   "frame": 0
+  },
+  {
+   "name": "A1 yank",
+   "src": "A1 yank",
+   "frame": 1,
+   "hold": 3,
+   "ease": "snap",
+   "push": {
+    "arms": 1.2
+   }
+  },
+  {
+   "name": "A2 back-arc",
+   "src": "A2 back-arc",
+   "frame": 5,
+   "hold": 3,
+   "ease": "snap",
+   "push": {
+    "arms": 1.2,
+    "spine": 1.3
+   }
+  },
+  {
+   "name": "A3 coil",
+   "src": "A3 coil (held)",
+   "frame": 9,
+   "hold": 13,
+   "ease": "snap",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 2.0,
+    "yaw": 1.2
+   }
+  },
+  {
+   "name": "A4 unwind",
+   "src": "A4 unwind",
+   "frame": 23,
+   "hold": 3,
+   "ease": "snap",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.6,
+    "root_y": 2.0
+   }
+  },
+  {
+   "name": "S1",
+   "src": "S2 sweep-2",
+   "frame": 27,
+   "push": {
+    "legs": 1.6,
+    "root_y": 1.8
+   },
+   "ease": "linear"
+  },
+  {
+   "name": "S2",
+   "src": "S2 sweep",
+   "frame": 28,
+   "push": {
+    "legs": 1.6,
+    "root_y": 1.8,
+    "arms": 1.1
+   },
+   "ease": "linear"
+  },
+  {
+   "name": "S3",
+   "src": "C1 contact-1",
+   "frame": 29,
+   "push": {
+    "legs": 1.7,
+    "root_y": 1.8,
+    "arms": 1.15
+   },
+   "ease": "linear"
+  },
+  {
+   "name": "C1 contact",
+   "src": "C1 contact",
+   "frame": 30,
+   "hold": 2,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 2.0,
+    "root_xz": 1.8,
+    "arms": 1.2
+   },
+   "add": {
+    "lean": 22
+   }
+  },
+  {
+   "name": "C1b settle",
+   "src": "C1 contact+1.5",
+   "frame": 33,
+   "hold": 4,
+   "ease": "linear"
+  },
+  {
+   "name": "F1 sink",
+   "src": "F2 kneel-2",
+   "frame": 38,
+   "hold": 4,
+   "ease": "linear"
+  },
+  {
+   "name": "F2 kneel",
+   "src": "F2 kneel",
+   "frame": 43,
+   "hold": 4,
+   "ease": "in_out"
+  },
+  {
+   "name": "K1 amen",
+   "src": "K1 amen kneel (held)",
+   "frame": 48,
+   "hold": 19,
+   "ease": [
+    "snap_out",
+    3
+   ]
+  },
+  {
+   "name": "R3 stance",
+   "src": "R3 stance",
+   "frame": 86,
+   "hold": 8,
+   "ease": "in_out",
+   "glaive": "upright"
+  }
+ ],
+ "exposure": {
+  "mode": "drawings",
+  "drawings": [
+   [
+    "A1",
+    1,
+    4
+   ],
+   [
+    "A2",
+    5,
+    4
+   ],
+   [
+    "A3",
+    9,
+    14
+   ],
+   [
+    "A4",
+    23,
+    4
+   ],
+   [
+    "S1",
+    27,
+    1
+   ],
+   [
+    "S2",
+    28,
+    1
+   ],
+   [
+    "S3",
+    29,
+    1
+   ],
+   [
+    "C1",
+    30,
+    3
+   ],
+   [
+    "C1b",
+    33,
+    5
+   ],
+   [
+    "F1",
+    38,
+    5
+   ],
+   [
+    "F2",
+    43,
+    5
+   ],
+   [
+    "K1",
+    48,
+    20
+   ],
+   [
+    "R1",
+    68,
+    9,
+    73
+   ],
+   [
+    "R2",
+    77,
+    9,
+    81
+   ],
+   [
+    "R3",
+    86,
+    9
+   ]
+  ]
+ },
+ "hero": {
+  "_about": "Round 3b (see n1_r3b.json _about). A1-A3: slow-in blends of ready and the coil, glaive in world. S1-S3: the body goes A4 -> S2 (a hand-posed mid-spin, chest to the camera) -> C1, the glaive swept flat in world at 30 / 62 / 86% of its 252 deg turn (A4 170 -> C1 62, 32 past the target line), settling back to 38 at C1b.",
+  "keys": {
+   "A1 yank": {
+    "blend": [
+     [
+      "ready",
+      0.8
+     ],
+     [
+      "A3 coil",
+      0.2
+     ]
+    ],
+    "glaive": {
+     "yaw": -150,
+     "pitch": 6,
+     "grip_az": -110,
+     "grip_r": 0.22,
+     "grip_h": 0.86,
+     "edge": [
+      0,
+      0,
+      -1
+     ],
+     "like": "A3 coil",
+     "wL": 1.0,
+     "slideL": -1.5
+    },
+    "_why": "r3 critics: idle to a full lunge in 1 f. A1 is a small weight drop (20%) while the glaive is yanked back along the screen"
+   },
+   "A2 back-arc": {
+    "blend": [
+     [
+      "A3 coil",
+      1.0
+     ]
+    ],
+    "glaive": {
+     "yaw": 171,
+     "pitch": 2,
+     "grip_az": -151,
+     "grip_r": 0.27,
+     "grip_h": 0.72,
+     "edge": [
+      0,
+      0.25,
+      0.97
+     ],
+     "like": "A3 coil",
+     "wL": 1.0
+    },
+    "_why": "the bulk of the wind-up: the coil body, the glaive in a SMALL back-arc behind her (r3 critics: shrink it so the wind-up travels less than S1-S3)"
+   },
+   "A3 coil": {
+    "pose": "motion/n5_coil_r3.json",
+    "sink": 0.013,
+    "glaive": {
+     "yaw": 171,
+     "pitch": 2,
+     "grip_az": -151,
+     "grip_r": 0.27,
+     "grip_h": 0.72,
+     "edge": [
+      0,
+      0.25,
+      0.97
+     ],
+     "like": "A3 coil",
+     "wL": 1.0
+    },
+    "_why": "a 1 px sink into the held coil; the glaive settles flat"
+   },
+   "A4 unwind": {
+    "pose": "motion/n5_release_r3b.json",
+    "glaive": {
+     "yaw": 171,
+     "pitch": 2,
+     "grip_az": -151,
+     "grip_r": 0.27,
+     "grip_h": 0.72,
+     "edge": [
+      0,
+      0.25,
+      0.97
+     ],
+     "like": "A3 coil",
+     "wL": 1.0
+    },
+    "_why": "MOVESET A4: the hips release, the glaive still trailing flat behind (held where the coil left it)"
+   },
+   "S1": {
+    "blend": [
+     [
+      "A4 unwind",
+      0.35
+     ],
+     [
+      "S2",
+      0.65
+     ]
+    ],
+    "glaive": {
+     "yaw": -114.4,
+     "pitch": 2.0,
+     "grip_az": -98.3,
+     "grip_r": 0.359,
+     "grip_h": 0.742,
+     "edge": "lead",
+     "turn": 1,
+     "like": "C1 contact"
+    }
+   },
+   "S2": {
+    "pose": "motion/n5_spin_r3b.json",
+    "glaive": {
+     "yaw": -33.8,
+     "pitch": 2.0,
+     "grip_az": -41.5,
+     "grip_r": 0.451,
+     "grip_h": 0.851,
+     "edge": "lead",
+     "turn": 1,
+     "like": "C1 contact"
+    }
+   },
+   "S3": {
+    "blend": [
+     [
+      "S2",
+      0.5
+     ],
+     [
+      "C1 contact",
+      0.5
+     ]
+    ],
+    "glaive": {
+     "yaw": 26.7,
+     "pitch": 2.0,
+     "grip_az": 1.1,
+     "grip_r": 0.52,
+     "grip_h": 0.932,
+     "edge": "lead",
+     "turn": 1,
+     "like": "C1 contact"
+    }
+   },
+   "C1 contact": {
+    "pose": "motion/n5_contact_r3b.json",
+    "_why": "r3 critics: a sweep follow-through (past the target line, arms across), not a thrust"
+   },
+   "C1b settle": {
+    "blend": [
+     [
+      "C1 contact",
+      0.75
+     ],
+     [
+      "S3",
+      0.25
+     ]
+    ],
+    "glaive": {
+     "yaw": 38.1,
+     "pitch": 2.0,
+     "grip_az": 9.1,
+     "grip_r": 0.533,
+     "grip_h": 0.948,
+     "edge": "lead",
+     "turn": 1,
+     "like": "C1 contact"
+    },
+    "sink": 0.012,
+    "_why": "the overshoot settles back inside the 8 f contact hold"
+   },
+   "F1 sink": {
+    "blend": [
+     [
+      "C1 contact",
+      0.6
+     ],
+     [
+      "K1 amen",
+      0.4
+     ]
+    ],
+    "wL": 1.0
+   },
+   "F2 kneel": {
+    "blend": [
+     [
+      "C1 contact",
+      0.25
+     ],
+     [
+      "K1 amen",
+      0.75
+     ]
+    ],
+    "wL": 0.0
+   },
+   "K1 amen": {
+    "pose": "motion/n5_kneel_r3b.json"
+   }
+  },
+  "plants": {
+   "R": [
+    [
+     0,
+     4,
+     "ready"
+    ],
+    [
+     5,
+     26,
+     "A3 coil"
+    ],
+    [
+     30,
+     37,
+     "C1 contact"
+    ],
+    [
+     48,
+     67,
+     "K1 amen"
+    ]
+   ],
+   "L": [
+    [
+     0,
+     4,
+     "ready"
+    ],
+    [
+     5,
+     26,
+     "A3 coil"
+    ],
+    [
+     30,
+     42,
+     "C1 contact"
+    ],
+    [
+     48,
+     67,
+     "K1 amen"
+    ]
+   ],
+   "_why": "A1 is a weight drop: the feet stay on the idle spots; A2 steps into the coil spots"
+  },
+  "hold_build": {
+   "A3": {
+    "wind": [
+     1.0,
+     1.7
+    ],
+    "g": [
+     1.0,
+     0.8
+    ],
+    "_why": "r3 critics: the coil held unchanged for ~8 drawings read as a freeze. The body holds (MOVESET A3 x14); the sleeves, stoles and hair keep winding tighter"
+   }
+  },
+  "cloth_lag": {
+   "stole_A": 4,
+   "stole_B": 4,
+   "_why": "DESIGN.md 8: stole tails trail 2-3 drawings; 4 f = 2 drawings of delay on the drape"
+  },
+  "cloth_world": {
+   "stole_A": 0.6,
+   "stole_B": 0.6,
+   "_why": "r3 critics: the stole lag measured 1-2 f on screen because the root rides the body. 60% of the spring target is where the lagged drape hung in space, so the tails stay behind on screen while she moves, then swing through"
+  },
+  "cloth_dyn": {
+   "stole_A": [
+    0.42,
+    0.3
+   ],
+   "stole_B": [
+    0.42,
+    0.3
+   ],
+   "_why": "zeta 0.3: one visible overshoot after the swing-through, then settle"
+  }
+ },
+ "smear": {
+  "_v": 2,
+  "_about": "smear_v2.py (tools/motion-ai): band, profile, colour, bent glaive, 4x raster; see its docstring",
+  "S1": {
+   "from": "A4",
+   "turn": 1,
+   "lead": 0.2,
+   "turn_lead": 1,
+   "style": "flat",
+   "thick": 40,
+   "h": 30,
+   "hide_glaive": true,
+   "bend": 0.4,
+   "bend_mix": 0.5,
+   "ring": true,
+   "ring_deg": 110,
+   "ring_px": 5,
+   "_why": "MOVESET S1: the start of the ellipse, from behind her round her camera side (r3 critics: 'a small blue tip, too small to register')"
+  },
+  "S2": {
+   "from": "A4",
+   "turn": 1,
+   "lead": 0.3,
+   "turn_lead": 1,
+   "style": "flat",
+   "thick": 58,
+   "h": 50,
+   "hide_glaive": true,
+   "ring": true,
+   "ring_px": 9,
+   "_why": "MOVESET S2 / r3 critics: the whole ellipse with mass: a thick front band tapering to a bright head, a thin dim back half behind her, the glaive drawn bent into the head (no solid glaive inside)"
+  },
+  "S3": {
+   "from": "S2",
+   "turn": 1,
+   "lead": 0.25,
+   "turn_lead": 1,
+   "style": "flat",
+   "thick": 56,
+   "h": 48,
+   "bright": true,
+   "hide_glaive": true,
+   "bend": 0.4,
+   "bend_mix": 0.5,
+   "_why": "MOVESET S3: the brightest leading edge, arriving at contact; the glaive drawn bent into it (the solid glaive covered the band's head)"
+  },
+  "C1": {
+   "from": "A4",
+   "turn": 1,
+   "lead": 0.0,
+   "style": "flat",
+   "thick": 26,
+   "h": 18,
+   "dim": 1,
+   "ring": true,
+   "ring_px": 5,
+   "_why": "MOVESET N5 strike table: the main arc (the flat ellipse) lasts f27-37, through the contact hold, before it leads into the glass ring at f38. On C1 the whole swept ellipse stays, one step dimmer and thinner (the smear only: no leading, cells or ring VFX)"
+  },
+  "C1b": {
+   "from": "A4",
+   "turn": 1,
+   "lead": 0.0,
+   "style": "flat",
+   "thick": 14,
+   "h": 8,
+   "dim": 2,
+   "ring": true,
+   "ring_px": 3,
+   "_why": "f33-37: the same ellipse fading (two steps dimmer, thin) until the ring forms at f38"
+  }
+ }
+}

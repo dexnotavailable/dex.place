@@ -1,0 +1,18 @@
+{
+ "_doc": "profile, resolute = focus/attack: short angled brows over the bangs, straight lash dropping at the inner end, narrowed iris, set 2 px mouth; 128 px sprite (22 px head; near eye 5-6 wide x 3 tall, far eye 4 wide). Authored facing screen-right (mirrored for screen-left). origin = [column, row] placed on the face anchor. 'flat' = box (stamp columns/rows) where rendered S1/S3/S4 skin is flattened to S2 (s1), then a 1 px S3 row under the bangs (bang). Contour, bang tips and face-window clean-up are per-still override 'preface' patches. Stills round 4.",
+ "facing": "profile",
+ "expr": "resolute",
+ "px": 128,
+ "origin": [
+  1,
+  0
+ ],
+ "rows": [
+  "OOOO..",
+  ".Oha..",
+  ".p....",
+  "......",
+  "......",
+  "...mm."
+ ]
+}

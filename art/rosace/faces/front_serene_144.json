@@ -1,0 +1,34 @@
+{
+ "_doc": "front, serene = neutral-confident hero face (idle): open eyes with a rounded lash arc, 3-tone iris, highlight right, calm 2 px mouth; 144 px sprite (25 px head; q34 near eye 7 wide x 4 tall + lower-lash dot, far eye 5 wide). Authored facing screen-right (mirrored for screen-left). origin = [column, row] placed on the face anchor. 'flat' = box (stamp columns/rows) where rendered S1/S3/S4 skin is flattened to S2 (s1), then a 1 px S3 row under the bangs (bang). Contour, bang tips and face-window clean-up are per-still override 'preface' patches. Stills round 4.",
+ "facing": "front",
+ "expr": "serene",
+ "px": 144,
+ "origin": [
+  8,
+  3
+ ],
+ "rows": [
+  "...............",
+  "...............",
+  "..OOO....OOO...",
+  ".OddhO..OddhO..",
+  "OOaaaw..waaaOO.",
+  "..bcb....bcb...",
+  ".m..........m..",
+  "...............",
+  ".pp........pp..",
+  "......s........",
+  "...............",
+  "......mm......."
+ ],
+ "flat": {
+  "box": [
+   0,
+   0,
+   14,
+   13
+  ],
+  "s1": true,
+  "bang": true
+ }
+}

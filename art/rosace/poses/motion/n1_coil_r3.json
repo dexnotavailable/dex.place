@@ -1,0 +1,225 @@
+{
+ "name": "n1_coil_r3",
+ "note": "N1 Kyrie coil (A3 extreme, f6), round 3. Round-2 critics: a 30-45 deg line of action forward over the front knee, back three-quarters to camera, head down. Wound LEFT (pelvis +38, chest ~+80) so her back turns to the camera (camera at her right-front); a backhand coil: both hands by the left hip, glaive trailing low behind her on the left, tip ~1 H behind the rear heel and just off the floor. Torso pitched ~35 deg forward over the bent front knee, head down. Rear (right) foot on the spot it keeps through contact; knees over the toes.",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.02,
+   -0.2,
+   -0.36
+  ],
+  "J_Bip_C_Hips": [
+   16,
+   0,
+   38
+  ],
+  "J_Bip_C_Spine": [
+   8,
+   0,
+   14
+  ],
+  "J_Bip_C_Chest": [
+   7,
+   0,
+   14
+  ],
+  "J_Bip_C_UpperChest": [
+   5,
+   0,
+   10
+  ],
+  "J_Bip_C_Neck": [
+   10,
+   0,
+   -18
+  ],
+  "J_Bip_C_Head": [
+   16,
+   0,
+   -22
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.12,
+    -0.46,
+    0.159
+   ],
+   "yaw": 8
+  },
+  "R": {
+   "pos": [
+    -0.15,
+    0.4,
+    0.159
+   ],
+   "yaw": -30
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   0.2,
+   -0.22,
+   0.74
+  ],
+  "dir": [
+   0.12,
+   0.955,
+   -0.285
+  ],
+  "edge": [
+   0,
+   -0.3,
+   -1
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": -0.72,
+   "thumb": "tip",
+   "back": [
+    0.1,
+    -0.5,
+    0.85
+   ]
+  },
+  "L": {
+   "grip": "grip_main",
+   "slide": -1.12,
+   "thumb": "tip",
+   "back": [
+    0.9,
+    0.1,
+    0.35
+   ]
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -0.1,
+   -0.5,
+   0.4
+  ],
+  "arm.L": [
+   0.8,
+   0.5,
+   0.7
+  ],
+  "leg.L": [
+   0.578,
+   -1.204,
+   0.5
+  ],
+  "leg.R": [
+   -0.853,
+   -0.118,
+   0.45
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 85,
+   "thumb": 55
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.2,
+   0.8,
+   0.25
+  ],
+  "chains": {
+   "sleeve_R": {
+    "g": 0.3,
+    "wind": [
+     0.3,
+     0.9,
+     0.3
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.3,
+    "wind": [
+     0.3,
+     0.9,
+     0.3
+    ]
+   },
+   "hair_tail": {
+    "g": 0.35,
+    "wind": [
+     0.2,
+     0.8,
+     0.25
+    ]
+   },
+   "hair_back": {
+    "g": 0.35,
+    "wind": [
+     0.2,
+     0.8,
+     0.25
+    ]
+   },
+   "side_L": {
+    "g": 0.35,
+    "wind": [
+     0.2,
+     0.8,
+     0.25
+    ]
+   },
+   "side_R": {
+    "g": 0.35,
+    "wind": [
+     0.2,
+     0.8,
+     0.25
+    ]
+   },
+   "veil": {
+    "g": 0.35,
+    "wind": [
+     0.2,
+     0.8,
+     0.25
+    ]
+   },
+   "stole_A": {
+    "g": 0.35,
+    "wind": [
+     0.2,
+     0.8,
+     0.25
+    ]
+   },
+   "stole_B": {
+    "g": 0.35,
+    "wind": [
+     0.2,
+     0.8,
+     0.25
+    ]
+   },
+   "tabard": {
+    "g": 0.6,
+    "wind": [
+     0.2,
+     0.8,
+     0.25
+    ]
+   }
+  }
+ },
+ "expression": "resolute"
+}

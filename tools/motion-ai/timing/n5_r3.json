@@ -1,0 +1,445 @@
+{
+ "name": "n5_r3",
+ "move": "N5 Agnus Dei (m1_5), MOVESET.md section 1: 14 drawings, 94 f at 60 fps. Round 3: the round-2 critics' fixes. Slow-in into the coil (A1 55%, A2 88%), a clean yank and back-arc (world glaive), a diagonal back-three-quarter coil, a small A4, a flat sweep in world (small S1, big S3/C1), tracked smears on S1-S3, an open kneel.",
+ "length": 94,
+ "source": {
+  "npz": "n5/n5_study_ee_s1_00.npz",
+  "meta": "_constraints/n5_study_ee.meta.json"
+ },
+ "push_ref": "ready",
+ "ease_default": "in_out",
+ "glaive_default": "hands",
+ "keys": [
+  {
+   "name": "ready",
+   "src": "ready",
+   "frame": 0
+  },
+  {
+   "name": "A1 yank",
+   "src": "A1 yank",
+   "frame": 1,
+   "hold": 3,
+   "ease": "snap",
+   "push": {
+    "arms": 1.2
+   }
+  },
+  {
+   "name": "A2 back-arc",
+   "src": "A2 back-arc",
+   "frame": 5,
+   "hold": 3,
+   "ease": "snap",
+   "push": {
+    "arms": 1.2,
+    "spine": 1.3
+   }
+  },
+  {
+   "name": "A3 coil",
+   "src": "A3 coil (held)",
+   "frame": 9,
+   "hold": 13,
+   "ease": "snap",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 2.0,
+    "yaw": 1.2
+   }
+  },
+  {
+   "name": "A4 unwind",
+   "src": "A4 unwind",
+   "frame": 23,
+   "hold": 3,
+   "ease": "snap",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.6,
+    "root_y": 2.0
+   }
+  },
+  {
+   "name": "S1",
+   "src": "S2 sweep-2",
+   "frame": 27,
+   "push": {
+    "legs": 1.6,
+    "root_y": 1.8
+   },
+   "ease": "linear"
+  },
+  {
+   "name": "S2",
+   "src": "S2 sweep",
+   "frame": 28,
+   "push": {
+    "legs": 1.6,
+    "root_y": 1.8,
+    "arms": 1.1
+   },
+   "ease": "linear"
+  },
+  {
+   "name": "S3",
+   "src": "C1 contact-1",
+   "frame": 29,
+   "push": {
+    "legs": 1.7,
+    "root_y": 1.8,
+    "arms": 1.15
+   },
+   "ease": "linear"
+  },
+  {
+   "name": "C1 contact",
+   "src": "C1 contact",
+   "frame": 30,
+   "hold": 7,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 2.0,
+    "root_xz": 1.8,
+    "arms": 1.2
+   },
+   "add": {
+    "lean": 22
+   }
+  },
+  {
+   "name": "F2 kneel",
+   "src": "F2 kneel",
+   "frame": 43,
+   "hold": 4,
+   "ease": "in_out"
+  },
+  {
+   "name": "K1 amen",
+   "src": "K1 amen kneel (held)",
+   "frame": 48,
+   "hold": 19,
+   "ease": [
+    "snap_out",
+    3
+   ]
+  },
+  {
+   "name": "R3 stance",
+   "src": "R3 stance",
+   "frame": 86,
+   "hold": 8,
+   "ease": "in_out",
+   "glaive": "upright"
+  }
+ ],
+ "exposure": {
+  "mode": "drawings",
+  "drawings": [
+   [
+    "A1",
+    1,
+    4
+   ],
+   [
+    "A2",
+    5,
+    4
+   ],
+   [
+    "A3",
+    9,
+    14
+   ],
+   [
+    "A4",
+    23,
+    4
+   ],
+   [
+    "S1",
+    27,
+    1
+   ],
+   [
+    "S2",
+    28,
+    1
+   ],
+   [
+    "S3",
+    29,
+    1
+   ],
+   [
+    "C1",
+    30,
+    8
+   ],
+   [
+    "F1",
+    38,
+    5
+   ],
+   [
+    "F2",
+    43,
+    5
+   ],
+   [
+    "K1",
+    48,
+    20
+   ],
+   [
+    "R1",
+    68,
+    9,
+    73
+   ],
+   [
+    "R2",
+    77,
+    9,
+    81
+   ],
+   [
+    "R3",
+    86,
+    9
+   ]
+  ]
+ },
+ "hero": {
+  "_about": "Round 3 (see n1_r3.json _about). A1/A2: blends of ready and coil for slow-in spacing, with the glaive placed in world (the yank in profile at hip height, the back-arc up behind her). S1-S3: body blends A4 -> C1 at 12 / 38 / 72%, glaive swept in world at 10 / 36 / 70% of its 220 deg turn (small S1, big S3 and C1).",
+  "keys": {
+   "A1 yank": {
+    "blend": [
+     [
+      "ready",
+      0.45
+     ],
+     [
+      "A3 coil",
+      0.55
+     ]
+    ],
+    "glaive": {
+     "yaw": -150,
+     "pitch": 6,
+     "grip_az": -110,
+     "grip_r": 0.22,
+     "grip_h": 0.86,
+     "edge": [
+      0,
+      0,
+      -1
+     ],
+     "like": "A3 coil",
+     "wL": 1.0
+    },
+    "_why": "round-2 critics: A1's haft pointed at the camera. Now it is pulled back along the screen (yaw -150 is parallel to the view plane), at hip height"
+   },
+   "A2 back-arc": {
+    "blend": [
+     [
+      "ready",
+      0.12
+     ],
+     [
+      "A3 coil",
+      0.88
+     ]
+    ],
+    "glaive": {
+     "yaw": -165,
+     "pitch": 34,
+     "grip_az": -125,
+     "grip_r": 0.24,
+     "grip_h": 1.0,
+     "edge": [
+      0,
+      0.5,
+      0.85
+     ],
+     "like": "A3 coil",
+     "wL": 1.0
+    },
+    "_why": "round-2 critics: A2 swung in front. Now the blade rises BEHIND her (toward +Y) in the back-arc, then drops flat for the coil"
+   },
+   "A3 coil": {
+    "pose": "motion/n5_coil_r3.json"
+   },
+   "A4 unwind": {
+    "pose": "motion/n5_release_r3.json"
+   },
+   "S1": {
+    "blend": [
+     [
+      "A4 unwind",
+      0.88
+     ],
+     [
+      "C1 contact",
+      0.12
+     ]
+    ],
+    "glaive": {
+     "yaw": -168.0,
+     "pitch": 2.0,
+     "grip_az": -137.5,
+     "grip_r": 0.302,
+     "grip_h": 0.694,
+     "edge": "lead",
+     "turn": 1,
+     "like": "C1 contact"
+    }
+   },
+   "S2": {
+    "blend": [
+     [
+      "A4 unwind",
+      0.62
+     ],
+     [
+      "C1 contact",
+      0.38
+     ]
+    ],
+    "glaive": {
+     "yaw": -110.8,
+     "pitch": 2.0,
+     "grip_az": -97.2,
+     "grip_r": 0.359,
+     "grip_h": 0.782,
+     "edge": "lead",
+     "turn": 1,
+     "like": "C1 contact"
+    }
+   },
+   "S3": {
+    "blend": [
+     [
+      "A4 unwind",
+      0.28
+     ],
+     [
+      "C1 contact",
+      0.72
+     ]
+    ],
+    "glaive": {
+     "yaw": -36.0,
+     "pitch": 2.0,
+     "grip_az": -44.5,
+     "grip_r": 0.434,
+     "grip_h": 0.898,
+     "edge": "lead",
+     "turn": 1,
+     "like": "C1 contact"
+    }
+   },
+   "C1 contact": {
+    "pose": "motion/n5_contact_r3.json"
+   },
+   "F2 kneel": {
+    "blend": [
+     [
+      "C1 contact",
+      0.3
+     ],
+     [
+      "K1 amen",
+      0.7
+     ]
+    ]
+   },
+   "K1 amen": {
+    "pose": "motion/n5_kneel_r3.json"
+   }
+  },
+  "plants": {
+   "R": [
+    [
+     9,
+     26,
+     "A3 coil"
+    ],
+    [
+     30,
+     37,
+     "C1 contact"
+    ],
+    [
+     48,
+     67,
+     "K1 amen"
+    ]
+   ],
+   "L": [
+    [
+     9,
+     26,
+     "A3 coil"
+    ],
+    [
+     30,
+     42,
+     "C1 contact"
+    ],
+    [
+     48,
+     67,
+     "K1 amen"
+    ]
+   ]
+  },
+  "cloth_lag": {
+   "stole_A": 3,
+   "stole_B": 3,
+   "_why": "DESIGN.md 8: stole tails trail 2-3 drawings. A 3 f delay on the drape shape, then the spring"
+  },
+  "cloth_dyn": {
+   "stole_A": [
+    0.42,
+    0.4
+   ],
+   "stole_B": [
+    0.42,
+    0.4
+   ],
+   "_why": "round 2's 0.22 rad/f spring took 11-13 f to get half-way in shape; with the delay this lands the stole's shape half-way at about 2-3 drawings"
+  }
+ },
+ "smear": {
+  "_about": "see n1_r3.json",
+  "S1": {
+   "from": "A4",
+   "turn": 1,
+   "lead": 0.35,
+   "style": "flat",
+   "_why": "MOVESET N5 S1: the back half of the ellipse (the start: small)"
+  },
+  "S2": {
+   "from": "A4",
+   "turn": 1,
+   "lead": 0.35,
+   "style": "flat",
+   "ring": true,
+   "_why": "S2: the whole ellipse. The tracked path covers ~120 deg; the rest of its circle (same radius and height around her) is drawn dimmer and depth-tested, so the back half sits behind her"
+  },
+  "S3": {
+   "from": "S2",
+   "turn": 1,
+   "lead": 0.5,
+   "style": "flat",
+   "bright": true,
+   "_why": "S3: the brightest leading edge, arriving at contact"
+  }
+ }
+}

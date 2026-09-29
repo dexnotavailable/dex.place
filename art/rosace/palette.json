@@ -1,0 +1,30 @@
+{
+  "_doc": "Rosace sprite palette (docs/character/DESIGN.md section 4, revision 2): 29 colours. 'colors' is the palette; 'materials' maps each render material to its toon ramp (codes, dark -> light: deep, shadow, lit, highlight), the band thresholds on lit value, the outline colour (line) and the lit-side selective outline (selout). 'inner' is the colour for inner/overlap lines. 'spec' is a view-space highlight band (code, threshold on N.H). Build and post-process read this file; edit colours here only.",
+  "colors": {"OL": "#181032", "W1": "#f8f5f0", "W2": "#dcd7e6", "W3": "#b7aecb", "W4": "#8b80a6", "G0": "#fff3c4", "G1": "#ecc96f", "G2": "#d1a452", "G3": "#a2722f", "G4": "#6a4520", "S1": "#fbe4cf", "S2": "#f3d2b2", "S3": "#e2a996", "S4": "#b8766f", "SB": "#ee9ea0", "B1": "#e4d2ba", "B2": "#c4ab93", "I0": "#a9b8f2", "I1": "#6c72d0", "I2": "#4a4aa6", "I3": "#322c78", "I4": "#271f5e", "T2": "#bccae2", "T3": "#8290b4", "T4": "#505a84", "A2": "#2a62d0", "A3": "#4aa8f0", "A4": "#a0e6ff", "A5": "#f0fcff"},
+  "materials": {
+    "skin": {"id": 1, "ramp": ["S4", "S3", "S2", "S1"], "t": [0.0, 0.14, 0.42, 0.72], "line": "OL", "selout": "S4", "inner": "S4"},
+    "white": {"id": 2, "ramp": ["W4", "W3", "W2", "W1"], "t": [0.0, 0.13, 0.40, 0.62], "line": "OL", "selout": "W4", "inner": "W4"},
+    "stocking": {"id": 3, "ramp": ["W4", "W3", "W2", "W1"], "t": [0.0, 0.26, 0.62, 0.94], "line": "OL", "selout": "W4", "inner": "I4", "spec": {"code": "W1", "thr": 0.97}},
+    "gold": {"id": 4, "ramp": ["G4", "G3", "G2", "G1"], "t": [0.0, 0.1, 0.28, 0.6], "line": "OL", "selout": "G4", "inner": "G4", "spec": {"code": "G0", "thr": 0.93}},
+    "hair": {"id": 5, "ramp": ["I4", "I3", "I2", "I1"], "t": [0.0, 0.22, 0.54, 0.86], "line": "OL", "selout": "I4", "inner": "I4", "spec": {"code": "I0", "mode": "ring", "y0": 0.6, "y1": 0.8, "zmin": 0.4, "xmin": -0.25}},
+    "hairtip": {"id": 6, "ramp": ["I3", "A2", "A3", "A4"], "t": [0.0, 0.12, 0.32, 0.64], "line": "OL", "selout": "I4", "inner": "I3"},
+    "indigo": {"id": 7, "ramp": ["I4", "I3", "I2", "I1"], "t": [0.0, 0.08, 0.25, 0.6], "line": "OL", "selout": "I4", "inner": "I4", "spec": {"code": "I0", "thr": 0.96}},
+    "lining": {"id": 8, "ramp": ["I4", "I4", "I3", "I2"], "t": [0.0, 0.3, 0.62, 0.9], "line": "OL", "selout": "I4", "inner": "OL"},
+    "boot": {"id": 9, "ramp": ["I4", "I3", "I2", "I1"], "t": [0.0, 0.22, 0.52, 0.86], "line": "OL", "selout": "I4", "inner": "I4"},
+    "haft": {"id": 10, "ramp": ["OL", "I4", "I3", "I2"], "t": [0.0, 0.26, 0.56, 0.86], "line": "OL", "selout": "OL", "inner": "OL", "spec": {"code": "I1", "thr": 0.62}},
+    "steel": {"id": 11, "ramp": ["T4", "T4", "T3", "T2"], "t": [0.0, 0.12, 0.3, 0.58], "line": "OL", "selout": "T4", "inner": "T4", "spec": {"code": "A5", "thr": 0.9}},
+    "edge": {"id": 12, "ramp": ["T3", "A5", "A5", "A5"], "t": [0.0, 0.05, 0.3, 0.7], "line": "OL", "selout": "T3", "inner": "T3"},
+    "glass": {"id": 13, "ramp": ["A2", "A2", "A2", "A3"], "t": [0.0, 0.05, 0.1, 0.92], "line": "OL", "selout": "A2", "inner": "A2", "spec": {"code": "A4", "thr": 0.95}},
+    "glass2": {"id": 14, "ramp": ["A3", "A3", "A3", "A4"], "t": [0.0, 0.05, 0.1, 0.92], "line": "OL", "selout": "A2", "inner": "A2"},
+    "glasscore": {"id": 15, "ramp": ["A4", "A5", "A5", "A5"], "t": [0.0, 0.1, 0.45, 0.8], "line": "OL", "selout": "A4", "inner": "A4"},
+    "beige": {"id": 16, "ramp": ["W3", "W2", "B1", "B1"], "t": [0.0, 0.1, 0.4, 0.85], "line": "OL", "selout": "W4", "inner": "W4"},
+    "thong": {"id": 17, "ramp": ["OL", "I4", "I4", "I3"], "t": [0.0, 0.12, 0.4, 0.85], "line": "OL", "selout": "OL", "inner": "OL", "spec": {"code": "I2", "thr": 0.96}},
+    "steeldark": {"id": 19, "ramp": ["T4", "T4", "T4", "T3"], "t": [0.0, 0.12, 0.3, 0.75], "line": "OL", "selout": "T4", "inner": "T4", "spec": {"code": "T2", "thr": 0.97}},
+    "veil": {"id": 18, "ramp": ["W4", "W3", "W2", "W1"], "t": [0.0, 0.1, 0.26, 0.52], "line": "OL", "selout": "W4", "inner": "W4"}
+  },
+  "thong_variants": {"black": "thong", "white": "white"},
+  "face_stamp_colors": ["OL", "A2", "A3", "A5", "S3", "S4", "SB", "I2"],
+  "_round4fix": "Round 4 value plan (craft / overall / gear critics: 70% light values, no dark mass framing the face, legs merge into the tabard, the chest shows flat W4 masses): hair ramp one step down (I3 core 0.14 -> 0.22, I2 0.40 -> 0.54, I1 0.80 -> 0.86) so the head has a dark frame; white cloth W4 only for real occlusion (0.20 -> 0.13) and more W1 (0.66 -> 0.62); thigh-highs one more step down to the lavender W3 core (W2 0.46 -> 0.62, W1 sheen 0.94) with an I4 inner line where the tabard or the other leg crosses them; haft shadow side one step darker (I4 0.12 -> 0.26, I3 0.40 -> 0.56).",
+  "_round3fix": "Round 3 value plan (craft / gear / overall critics: bodice, tabard and thigh-highs merged into one white mass; hair brighter than the face): stocking lit band one step down (W1 only above 0.9 plus the W1 sheen spec, W3 core 0.10 -> 0.22, W2 0.28 -> 0.46) so the legs read as a cooler, darker surface than the white tabard; hair I1 band 0.66 -> 0.80 and I2 0.36 -> 0.40 so the hair mass drops toward I2/I3 and the face is the brightest value on the head.",
+  "_round2": "Round 2 value plan (critics: 80% of the body high value, no core shadow): white shadow family pushed 1 step darker (t 0.14/0.31/0.56 -> 0.20/0.42/0.66), skin core-shadow band wider (S3 0.36 -> 0.42, S1 0.64 -> 0.72), boot spec removed (scattered I0 specks), haft spec widened to a continuous I1 spine line so the thinner haft reads on dark backgrounds."
+}

@@ -1,0 +1,28 @@
+{
+ "_doc": "front, radiant = smile: eyes closed into ^ arcs with a tail, blush, open smile (S4 line over an SB tongue pixel); 96 px sprite (16 px head; ref 05 budget: eyes 3 wide x 2 tall, 2-tone iris, no highlight, no brows). Authored facing screen-right (mirrored for screen-left). origin = [column, row] placed on the face anchor. 'flat' = box (stamp columns/rows) where rendered S1/S3/S4 skin is flattened to S2 (s1), then a 1 px S3 row under the bangs (bang). Contour, bang tips and face-window clean-up are per-still override 'preface' patches. Stills round 4.",
+ "facing": "front",
+ "expr": "radiant",
+ "px": 96,
+ "origin": [
+  5,
+  1
+ ],
+ "rows": [
+  "..O....O...",
+  ".O.O..O.O..",
+  ".p......p..",
+  "...........",
+  "....mm.....",
+  ".....p....."
+ ],
+ "flat": {
+  "box": [
+   0,
+   0,
+   10,
+   8
+  ],
+  "s1": true,
+  "bang": true
+ }
+}

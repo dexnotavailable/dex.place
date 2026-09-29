@@ -1,0 +1,158 @@
+{
+ "name": "n5_kneel_r3c",
+ "note": "N5 Agnus Dei K1 Amen kneel (f48-67), round 3c: r3b's open, symmetrical kneel with the legs straightened: knees 0.50 m apart (r3b 0.34), pelvis turned 10 deg further toward the target (-35) so the thighs read, each shin straight back under its own thigh with the foot on its toes directly behind the knee (r3b splayed the boots out past the knees, which read knock-kneed). Torso upright and square to the camera, glaive upright at her right side at arm's length, left arm open, head bowed.",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.02,
+   -0.2,
+   -0.5
+  ],
+  "J_Bip_C_Hips": [
+   0,
+   0,
+   -35
+  ],
+  "J_Bip_C_Spine": [
+   -3,
+   0,
+   0
+  ],
+  "J_Bip_C_Chest": [
+   -4,
+   0,
+   0
+  ],
+  "J_Bip_C_UpperChest": [
+   -3,
+   0,
+   0
+  ],
+  "J_Bip_C_Neck": [
+   16,
+   0,
+   0
+  ],
+  "J_Bip_C_Head": [
+   24,
+   0,
+   0
+  ],
+  "J_Bip_L_UpperArm": [
+   0,
+   38,
+   -18
+  ],
+  "J_Bip_L_LowerArm": [
+   0,
+   6,
+   -14
+  ],
+  "J_Bip_L_Hand": [
+   -30,
+   0,
+   0
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.42,
+    -0.065,
+    0.1
+   ],
+   "yaw": -35.0,
+   "pitch": 72
+  },
+  "R": {
+   "pos": [
+    0.01,
+    0.222,
+    0.1
+   ],
+   "yaw": -35.0,
+   "pitch": 72
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   -0.455,
+   0.133,
+   0.96
+  ],
+  "dir": [
+   0.0,
+   0.0,
+   1.0
+  ],
+  "edge": [
+   -0.819,
+   0.574,
+   0.0
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": 0.0,
+   "thumb": "tip",
+   "back": [
+    -0.819,
+    0.574,
+    0.1
+   ]
+  },
+  "L": {
+   "free": true
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -0.218,
+   0.333,
+   0.6
+  ],
+  "leg.L": [
+   -0.067,
+   -0.969,
+   0.12
+  ],
+  "leg.R": [
+   -0.673,
+   -0.545,
+   0.12
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 18,
+   "thumb": 12
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0,
+   0.05,
+   0
+  ],
+  "chains": {
+   "tabard": {
+    "g": 0.35,
+    "wind": [
+     -0.516,
+     -0.737,
+     0.1
+    ]
+   }
+  }
+ },
+ "expression": "resolute"
+}

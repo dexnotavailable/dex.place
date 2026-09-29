@@ -1,0 +1,390 @@
+{
+ "name": "n1_r3b",
+ "move": "N1 Kyrie (m1_1), MOVESET.md section 1: 10 drawings, 33 f at 60 fps. Round 3b (r3 critics): slow-in A1 25% / A2 the coil / A3 a 2 px sink; C1 = the high-in-front end of the scoop; F1 and F2 continue that arc over her head; R1-R3 a progressive settle into idle; a thick J smear with the glaive drawn bent (smear v2); world-pinned stole lag.",
+ "length": 33,
+ "source": {
+  "npz": "n1/n1_study_ee_s1_00.npz",
+  "meta": "_constraints/n1_study_ee.meta.json"
+ },
+ "push_ref": "stance",
+ "ease_default": "in_out",
+ "glaive_default": "hands",
+ "keys": [
+  {
+   "name": "stance",
+   "src": "stance",
+   "frame": 0,
+   "glaive": "upright"
+  },
+  {
+   "name": "A1 drop",
+   "src": "A2 coil-3",
+   "frame": 1,
+   "hold": 1,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.6,
+    "arms": 1.2
+   }
+  },
+  {
+   "name": "A2 coil",
+   "src": "A2 coil",
+   "frame": 3,
+   "hold": 2,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.6,
+    "arms": 1.2
+   }
+  },
+  {
+   "name": "A3 coil",
+   "src": "A2 coil",
+   "frame": 6,
+   "hold": 1,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.6,
+    "arms": 1.2
+   }
+  },
+  {
+   "name": "S1 scoop",
+   "src": "S1 scoop",
+   "frame": 8,
+   "ease": [
+    "in",
+    3
+   ],
+   "push": {
+    "legs": 1.7,
+    "spine": 1.7,
+    "root_y": 1.7
+   }
+  },
+  {
+   "name": "C1 contact",
+   "src": "C1 contact",
+   "frame": 9,
+   "hold": 2,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.8,
+    "arms": 1.2
+   },
+   "add": {
+    "lean": 22
+   }
+  },
+  {
+   "name": "F1 carry",
+   "src": "F2 over head-1",
+   "frame": 12,
+   "hold": 1,
+   "ease": "linear"
+  },
+  {
+   "name": "F2 overhead",
+   "src": "F2 over head",
+   "frame": 14,
+   "hold": 1,
+   "ease": "linear"
+  },
+  {
+   "name": "R1 settle",
+   "src": "F2 over head+1",
+   "frame": 16,
+   "hold": 5,
+   "ease": "linear"
+  },
+  {
+   "name": "R2 settle",
+   "src": "R3 stance-3",
+   "frame": 22,
+   "hold": 5,
+   "ease": "linear"
+  },
+  {
+   "name": "R3 stance",
+   "src": "R3 stance",
+   "frame": 28,
+   "hold": 5,
+   "ease": "linear",
+   "glaive": "upright"
+  }
+ ],
+ "exposure": {
+  "mode": "drawings",
+  "drawings": [
+   [
+    "A1",
+    1,
+    2
+   ],
+   [
+    "A2",
+    3,
+    3
+   ],
+   [
+    "A3",
+    6,
+    2
+   ],
+   [
+    "S1",
+    8,
+    1
+   ],
+   [
+    "C1",
+    9,
+    3
+   ],
+   [
+    "F1",
+    12,
+    2
+   ],
+   [
+    "F2",
+    14,
+    2
+   ],
+   [
+    "R1",
+    16,
+    6
+   ],
+   [
+    "R2",
+    22,
+    6
+   ],
+   [
+    "R3",
+    28,
+    6
+   ]
+  ]
+ },
+ "hero": {
+  "_about": "Round 3b. blend = an absolute mix of other keys' states; glaive = the weapon in world; sink = the hips lowered (m) with the feet planted; wL = the left hand's grip weight at that key.",
+  "keys": {
+   "A1 drop": {
+    "blend": [
+     [
+      "stance",
+      0.8
+     ],
+     [
+      "A2 coil",
+      0.2
+     ]
+    ],
+    "glaive": {
+     "yaw": 176,
+     "pitch": 70,
+     "grip_az": -45,
+     "grip_r": 0.2,
+     "grip_h": 1.0,
+     "edge": [
+      0,
+      0.3,
+      -1
+     ],
+     "like": "A2 coil",
+     "wL": 1.0
+    },
+    "_why": "r3 critics: f0 -> f1 jumped into a near-coil, so the slow-in was invisible. A1 is now 20% of the way (a weight drop), the glaive only tipping back from upright"
+   },
+   "A2 coil": {
+    "pose": "motion/n1_coil_r3.json",
+    "_why": "the bulk of the wind-up in one drawing"
+   },
+   "A3 coil": {
+    "carry": "A2 coil",
+    "sink": 0.013,
+    "glaive": {
+     "hand_R": [
+      0.2,
+      -0.22,
+      0.74
+     ],
+     "dir": [
+      0.12,
+      0.955,
+      -0.285
+     ],
+     "edge": [
+      0,
+      -0.3,
+      -1
+     ],
+     "like": "A2 coil"
+    },
+    "_why": "a 1 px sink into the held coil (1 px = 1.3 cm at 144 px), cloth still settling"
+   },
+   "S1 scoop": {
+    "pose": "motion/n1_scoop.json"
+   },
+   "C1 contact": {
+    "pose": "motion/n1_contact_r3b.json",
+    "_why": "r3 critics: C1 is the high-in-front end of the scoop, not a horizontal chest thrust"
+   },
+   "F1 carry": {
+    "blend": [
+     [
+      "C1 contact",
+      0.7
+     ],
+     [
+      "F2 overhead",
+      0.3
+     ]
+    ],
+    "_why": "the arc continues from high-in-front over her head (no pop to vertical)"
+   },
+   "F2 overhead": {
+    "pose": "motion/n1_over.json"
+   },
+   "R1 settle": {
+    "blend": [
+     [
+      "F2 overhead",
+      0.55
+     ],
+     [
+      "R3 stance",
+      0.45
+     ]
+    ],
+    "wL": 1.0,
+    "_why": "r3 critics: R1-R3 were near-identical holds, then a pop into idle at f28"
+   },
+   "R2 settle": {
+    "blend": [
+     [
+      "F2 overhead",
+      0.18
+     ],
+     [
+      "R3 stance",
+      0.82
+     ]
+    ],
+    "wL": 0.0
+   },
+   "R3 stance": {}
+  },
+  "plants": {
+   "R": [
+    [
+     0,
+     2,
+     "stance"
+    ],
+    [
+     3,
+     11,
+     "C1 contact"
+    ]
+   ],
+   "L": [
+    [
+     0,
+     2,
+     "stance"
+    ],
+    [
+     3,
+     7,
+     "A2 coil"
+    ],
+    [
+     8,
+     15,
+     "C1 contact"
+    ]
+   ],
+   "_why": "A1 is a weight drop: the feet stay on the idle spots until the coil (A2)"
+  },
+  "cloth_lag": {
+   "stole_A": 4,
+   "stole_B": 4,
+   "_why": "DESIGN.md 8: stole tails trail 2-3 drawings; 4 f = 2 drawings of delay on the drape"
+  },
+  "cloth_world": {
+   "stole_A": 0.6,
+   "stole_B": 0.6,
+   "_why": "r3 critics: the stole lag measured 1-2 f on screen because the root rides the body. 60% of the spring target is where the lagged drape hung in space, so the tails stay behind on screen while she moves, then swing through"
+  },
+  "cloth_dyn": {
+   "stole_A": [
+    0.42,
+    0.3
+   ],
+   "stole_B": [
+    0.42,
+    0.3
+   ],
+   "_why": "zeta 0.3: one visible overshoot after the swing-through, then settle; N1 (r3 critics: its cloth on holds moved less than round 2's, 1.1k vs 1.6k px): hair, sleeves and tabard a little underdamped (zeta 0.26-0.28) so they swing on",
+   "tabard": [
+    0.36,
+    0.26
+   ],
+   "hair_tail": [
+    0.26,
+    0.26
+   ],
+   "hair_back": [
+    0.36,
+    0.28
+   ],
+   "sleeve_L": [
+    0.55,
+    0.28
+   ],
+   "sleeve_R": [
+    0.55,
+    0.28
+   ]
+  }
+ },
+ "smear": {
+  "_v": 2,
+  "_about": "smear_v2.py (tools/motion-ai): band, profile, colour, bent glaive, 4x raster; see its docstring",
+  "S1": {
+   "from": "A3",
+   "turn": 1,
+   "lead": 0.85,
+   "style": "J",
+   "thick": 56,
+   "hide_glaive": true,
+   "bend": 0.4,
+   "bend_mix": 0.55,
+   "reach_dip": 0.5,
+   "lift": 1.5,
+   "smooth": 17,
+   "head_round": 0.06,
+   "_why": "MOVESET N1 S1 / r3 critics: one J-crescent from a knife-thin tail on the floor behind her, a belly along the floor under her feet, rising into a thick curved head high in front; the glaive itself drawn bent (ref 09), the solid one hidden on this drawing"
+  }
+ }
+}

@@ -1,0 +1,441 @@
+{
+ "_doc": "Stills round 4 override layer: authored in tools/pixel-pipeline/author_overrides_data.py on the render named in authored_on. Patches are pixel coordinates on that render.",
+ "face": {
+  "facing": "q34",
+  "expr": "resolute",
+  "dx": 0,
+  "note": "yaw 41, head pitched into the thrust; the stamp sits 1 px left on the narrow face"
+ },
+ "patches": [
+  {
+   "kind": "form",
+   "note": "painted form on skin below the chin: one clean core-shadow band per limb, S4 occlusion edge, one S1 highlight (re-banded from the render normals with the key light of this still) [mapped from the 144 layer through the root anchor, x0.889]",
+   "shade": {
+    "box": [
+     1,
+     29,
+     176,
+     106
+    ],
+    "mat": "skin",
+    "light": [
+     0.55,
+     0.45,
+     0.7
+    ],
+    "bands": [
+     [
+      -1,
+      "S4"
+     ],
+     [
+      0.12,
+      "S3"
+     ],
+     [
+      0.45,
+      "S2"
+     ],
+     [
+      0.86,
+      "S1"
+     ]
+    ]
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "despeckle the render's dark I4 islands (<= 2 px) in the hair mass [mapped from the 144 layer through the root anchor, x0.889]",
+   "despeckle": {
+    "box": [
+     75,
+     3,
+     102,
+     54
+    ],
+    "mat": "hair",
+    "codes": [
+     "I4"
+    ],
+    "max": 2
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "crown: soften the dark seam and drop the render's straight I0 bar (the ring is redrawn as arcs) [mapped from the 144 layer through the root anchor, x0.889]",
+   "mat": "hair",
+   "map": {
+    "I4": "I3",
+    "I0": "I1"
+   },
+   "box": [
+    81,
+    6,
+    98,
+    12
+   ]
+  },
+  {
+   "kind": "hair",
+   "note": "head: the render's loose azure hairtip specks on the crown (critic: 'noise') become hair tones [mapped from the 144 layer through the root anchor, x0.889]",
+   "mat": "hairtip",
+   "map": {
+    "A2": "I2",
+    "A3": "I1",
+    "A4": "I1",
+    "A5": "I0"
+   },
+   "box": [
+    75,
+    3,
+    102,
+    54
+   ]
+  },
+  {
+   "kind": "hair",
+   "note": "angel ring: short I0 arcs with I1 ends that follow the skull outline, broken at every clump [mapped from the 144 layer through the root anchor, x0.889]",
+   "ring": {
+    "y": [
+     3,
+     21
+    ],
+    "segments": [
+     [
+      79,
+      82
+     ],
+     [
+      84,
+      89
+     ],
+     [
+      91,
+      96
+     ]
+    ],
+    "depth": 4,
+    "c": "I0",
+    "flank": "I1"
+   }
+  },
+  {
+   "kind": "hair",
+   "on": [
+    "hair"
+   ],
+   "note": "clump separators (I3, one step darker than the I2 shadow) from the ring into the bang notches [mapped from the 144 layer through the root anchor, x0.889]",
+   "lines": [
+    {
+     "pts": [
+      [
+       88,
+       14
+      ],
+      [
+       88,
+       17
+      ],
+      [
+       88,
+       20
+      ]
+     ],
+     "c": "I3"
+    },
+    {
+     "pts": [
+      [
+       92,
+       14
+      ],
+      [
+       92,
+       16
+      ],
+      [
+       92,
+       19
+      ]
+     ],
+     "c": "I3"
+    }
+   ]
+  },
+  {
+   "kind": "hair",
+   "note": "azure tips (DESIGN s6): the last 3 px of every free hair end, A2 -> A3 -> A4 [mapped from the 144 layer through the root anchor, x0.889]",
+   "tips": {
+    "box": [
+     1,
+     30,
+     105,
+     81
+    ],
+    "ramp": [
+     "A2",
+     "A3",
+     "A4"
+    ]
+   }
+  },
+  {
+   "kind": "glint",
+   "note": "blade glint: A5 core with A4 arms (the one specular star on the weapon) [mapped from the 144 layer through the root anchor, x0.889]",
+   "px": [
+    [
+     163,
+     14,
+     "A5"
+    ],
+    [
+     162,
+     14,
+     "A4"
+    ],
+    [
+     164,
+     14,
+     "A4"
+    ],
+    [
+     163,
+     13,
+     "A4"
+    ],
+    [
+     163,
+     15,
+     "A4"
+    ]
+   ]
+  },
+  {
+   "kind": "hand",
+   "stamp": "fist_h",
+   "note": "lead hand closed across the haft behind the guard, arm fully extended [mapped from the 144 layer through the root anchor, x0.889]",
+   "at": [
+    118,
+    26
+   ]
+  },
+  {
+   "kind": "hand",
+   "stamp": "fist_h",
+   "note": "rear hand at the hip, closed on the rear third of the haft where it leaves the sleeve [mapped from the 144 layer through the root anchor, x0.889]",
+   "at": [
+    68,
+    41
+   ]
+  }
+ ],
+ "rim": {
+  "level": "full",
+  "family": "cool",
+  "dir": [
+   -0.62,
+   -0.78
+  ],
+  "thr": 0.6,
+  "note": "skill / attack frame: the glaive glow motivates the full level (DESIGN.md s9)"
+ },
+ "patches_round1": {
+  "authored_on": {
+   "round": 1,
+   "canvas": [
+    149,
+    166
+   ],
+   "anchor": [
+    42,
+    157
+   ],
+   "pose_sha1": "08bd7d5c72f1",
+   "_doc": "The render these patches were painted on. overrides.py applies 'patches' only when the still matches (same canvas, anchor and pose file); otherwise they are stale pixel coordinates and are skipped until re-authored."
+  },
+  "patches": [
+   {
+    "kind": "hand",
+    "note": "haft highlight (I1) over the same-value sleeve lining",
+    "px": [
+     [
+      99,
+      42,
+      "I1"
+     ],
+     [
+      98,
+      43,
+      "I1"
+     ],
+     [
+      96,
+      44,
+      "I1"
+     ],
+     [
+      95,
+      45,
+      "I1"
+     ],
+     [
+      94,
+      46,
+      "I1"
+     ],
+     [
+      93,
+      47,
+      "I1"
+     ],
+     [
+      92,
+      48,
+      "I1"
+     ],
+     [
+      91,
+      49,
+      "I1"
+     ],
+     [
+      90,
+      50,
+      "I1"
+     ],
+     [
+      89,
+      51,
+      "I1"
+     ],
+     [
+      88,
+      52,
+      "I1"
+     ],
+     [
+      86,
+      53,
+      "I1"
+     ],
+     [
+      85,
+      54,
+      "I1"
+     ]
+    ]
+   },
+   {
+    "kind": "hand",
+    "note": "front (left) hand closed round the haft at the upper sleeve mouth",
+    "at": [
+     78,
+     54
+    ],
+    "rows": [
+     ".....OO.",
+     "....OLSO",
+     "...OLTSO",
+     "..OSSTO.",
+     ".OLTSO..",
+     ".STSO...",
+     "..OO...."
+    ]
+   }
+  ]
+ },
+ "authored_on": {
+  "round": "stills round 4 (r4)",
+  "canvas": [
+   177,
+   108
+  ],
+  "anchor": [
+   53,
+   98
+  ],
+  "pose_sha1": "0575639c123e",
+  "_doc": "The render these patches were painted on. overrides.py applies 'patches' only when the still matches (same canvas, anchor and pose file); otherwise they are stale pixel coordinates and are skipped until re-authored."
+ },
+ "preface": [
+  {
+   "kind": "facewin",
+   "note": "adopt the anti-aliased skin-coloured contour pixels as skin",
+   "box": [
+    85,
+    19,
+    96,
+    29
+   ],
+   "adopt_skin": true
+  },
+  {
+   "kind": "bangs",
+   "note": "fringe profile: pointed clump tips, notches over the eyes",
+   "span": [
+    19,
+    23
+   ],
+   "edge": [
+    [
+     87,
+     21
+    ],
+    [
+     88,
+     20
+    ],
+    [
+     89,
+     20
+    ],
+    [
+     90,
+     21
+    ],
+    [
+     91,
+     20
+    ],
+    [
+     92,
+     20
+    ],
+    [
+     93,
+     20
+    ],
+    [
+     94,
+     21
+    ]
+   ]
+  },
+  {
+   "kind": "contour",
+   "note": "jaw S3 tapering to the chin point, S4 neck shadow under it",
+   "px": [
+    [
+     88,
+     27,
+     "S3"
+    ],
+    [
+     89,
+     28,
+     "S3"
+    ],
+    [
+     90,
+     28,
+     "S2"
+    ],
+    [
+     91,
+     28,
+     "S2"
+    ]
+   ]
+  }
+ ]
+}

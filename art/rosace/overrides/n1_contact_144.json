@@ -1,0 +1,430 @@
+{
+ "_doc": "Stills round 4 override layer: authored in tools/pixel-pipeline/author_overrides_data.py on the render named in authored_on. Patches are pixel coordinates on that render.",
+ "face": {
+  "facing": "q34",
+  "expr": "resolute",
+  "dx": -1,
+  "note": "yaw 41, head pitched into the thrust; the stamp sits 1 px left on the narrow face"
+ },
+ "patches": [
+  {
+   "kind": "form",
+   "note": "painted form on skin below the chin: one clean core-shadow band per limb, S4 occlusion edge, one S1 highlight (re-banded from the render normals with the key light of this still)",
+   "shade": {
+    "box": [
+     0,
+     31,
+     197,
+     118
+    ],
+    "mat": "skin",
+    "light": [
+     0.55,
+     0.45,
+     0.7
+    ],
+    "bands": [
+     [
+      -1,
+      "S4"
+     ],
+     [
+      0.12,
+      "S3"
+     ],
+     [
+      0.45,
+      "S2"
+     ],
+     [
+      0.86,
+      "S1"
+     ]
+    ]
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "despeckle the render's dark I4 islands (<= 2 px) in the hair mass",
+   "despeckle": {
+    "box": [
+     84,
+     2,
+     114,
+     60
+    ],
+    "mat": "hair",
+    "codes": [
+     "I4"
+    ],
+    "max": 2
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "crown: soften the dark seam and drop the render's straight I0 bar (the ring is redrawn as arcs)",
+   "box": [
+    90,
+    6,
+    110,
+    12
+   ],
+   "mat": "hair",
+   "map": {
+    "I4": "I3",
+    "I0": "I1"
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "head: the render's loose azure hairtip specks on the crown (critic: 'noise') become hair tones",
+   "box": [
+    84,
+    2,
+    114,
+    60
+   ],
+   "mat": "hairtip",
+   "map": {
+    "A2": "I2",
+    "A3": "I1",
+    "A4": "I1",
+    "A5": "I0"
+   }
+  },
+  {
+   "kind": "hair",
+   "note": "angel ring: short I0 arcs with I1 ends that follow the skull outline, broken at every clump",
+   "ring": {
+    "y": [
+     2,
+     22
+    ],
+    "segments": [
+     [
+      88,
+      92
+     ],
+     [
+      94,
+      100
+     ],
+     [
+      102,
+      107
+     ]
+    ],
+    "depth": 4,
+    "c": "I0",
+    "flank": "I1"
+   }
+  },
+  {
+   "kind": "hair",
+   "on": [
+    "hair"
+   ],
+   "note": "clump separators (I3, one step darker than the I2 shadow) from the ring into the bang notches",
+   "lines": [
+    {
+     "pts": [
+      [
+       98,
+       15
+      ],
+      [
+       98,
+       18
+      ],
+      [
+       98,
+       21
+      ]
+     ],
+     "c": "I3"
+    },
+    {
+     "pts": [
+      [
+       103,
+       14
+      ],
+      [
+       103,
+       17
+      ],
+      [
+       103,
+       20
+      ]
+     ],
+     "c": "I3"
+    }
+   ]
+  },
+  {
+   "kind": "hair",
+   "note": "azure tips (DESIGN s6): the last 3 px of every free hair end, A2 -> A3 -> A4",
+   "tips": {
+    "box": [
+     0,
+     32,
+     118,
+     90
+    ],
+    "ramp": [
+     "A2",
+     "A3",
+     "A4"
+    ]
+   }
+  },
+  {
+   "kind": "glint",
+   "note": "blade glint: A5 core with A4 arms (the one specular star on the weapon)",
+   "px": [
+    [
+     183,
+     15,
+     "A5"
+    ],
+    [
+     182,
+     15,
+     "A4"
+    ],
+    [
+     184,
+     15,
+     "A4"
+    ],
+    [
+     183,
+     14,
+     "A4"
+    ],
+    [
+     183,
+     16,
+     "A4"
+    ]
+   ]
+  },
+  {
+   "kind": "hand",
+   "stamp": "fist_h",
+   "at": [
+    132,
+    28
+   ],
+   "note": "lead hand closed across the haft behind the guard, arm fully extended"
+  },
+  {
+   "kind": "hand",
+   "stamp": "fist_h",
+   "at": [
+    76,
+    45
+   ],
+   "note": "rear hand at the hip, closed on the rear third of the haft where it leaves the sleeve"
+  }
+ ],
+ "rim": {
+  "level": "full",
+  "family": "cool",
+  "dir": [
+   -0.62,
+   -0.78
+  ],
+  "thr": 0.6,
+  "note": "skill / attack frame: the glaive glow motivates the full level (DESIGN.md s9)"
+ },
+ "patches_round1": {
+  "authored_on": {
+   "round": 1,
+   "canvas": [
+    166,
+    185
+   ],
+   "anchor": [
+    47,
+    176
+   ],
+   "pose_sha1": "08bd7d5c72f1",
+   "_doc": "The render these patches were painted on. overrides.py applies 'patches' only when the still matches (same canvas, anchor and pose file); otherwise they are stale pixel coordinates and are skipped until re-authored."
+  },
+  "patches": [
+   {
+    "kind": "hand",
+    "note": "haft highlight (I1 spec line) so the lacquered haft reads as a round shaft over the same-value sleeve lining",
+    "px": [
+     [
+      112,
+      46,
+      "I1"
+     ],
+     [
+      111,
+      47,
+      "I1"
+     ],
+     [
+      110,
+      48,
+      "I1"
+     ],
+     [
+      108,
+      49,
+      "I1"
+     ],
+     [
+      107,
+      50,
+      "I1"
+     ],
+     [
+      106,
+      51,
+      "I1"
+     ],
+     [
+      105,
+      52,
+      "I1"
+     ],
+     [
+      104,
+      53,
+      "I1"
+     ],
+     [
+      103,
+      54,
+      "I1"
+     ],
+     [
+      102,
+      55,
+      "I1"
+     ],
+     [
+      101,
+      56,
+      "I1"
+     ],
+     [
+      100,
+      57,
+      "I1"
+     ],
+     [
+      98,
+      58,
+      "I1"
+     ],
+     [
+      97,
+      59,
+      "I1"
+     ]
+    ]
+   },
+   {
+    "kind": "hand",
+    "note": "front (left) hand closed round the haft where it leaves the upper sleeve: fist straddles the haft at 45 deg, finger creases across it, wrist joins the rendered hand at lower left",
+    "at": [
+     88,
+     60
+    ],
+    "rows": [
+     ".......OO.",
+     "......OLSO",
+     ".....OLTSO",
+     "....OSSSTO",
+     "...OLTSSO.",
+     "..OSSSTO..",
+     "..STSSO...",
+     "..SSTO....",
+     "...OO....."
+    ]
+   }
+  ]
+ },
+ "authored_on": {
+  "round": "stills round 4 (r4)",
+  "canvas": [
+   198,
+   119
+  ],
+  "anchor": [
+   59,
+   109
+  ],
+  "pose_sha1": "0575639c123e",
+  "_doc": "The render these patches were painted on. overrides.py applies 'patches' only when the still matches (same canvas, anchor and pose file); otherwise they are stale pixel coordinates and are skipped until re-authored."
+ },
+ "preface": [
+  {
+   "kind": "facewin",
+   "note": "adopt the anti-aliased skin-coloured contour pixels as skin",
+   "box": [
+    96,
+    21,
+    107,
+    31
+   ],
+   "adopt_skin": true
+  },
+  {
+   "kind": "bangs",
+   "note": "tips at x97, x99, x101 (between the eyes) and x106; notches at x98, x100, x103",
+   "span": [
+    20,
+    26
+   ],
+   "edge": [
+    [
+     97,
+     23
+    ],
+    [
+     98,
+     21
+    ],
+    [
+     99,
+     22
+    ],
+    [
+     100,
+     21
+    ],
+    [
+     101,
+     23
+    ],
+    [
+     102,
+     21
+    ],
+    [
+     103,
+     20
+    ],
+    [
+     104,
+     21
+    ],
+    [
+     105,
+     22
+    ],
+    [
+     106,
+     23
+    ]
+   ]
+  }
+ ]
+}

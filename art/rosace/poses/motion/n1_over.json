@@ -1,0 +1,178 @@
+{
+ "name": "n1_over",
+ "note": "N1 Kyrie F2 follow-through (f14), round-2 hero key: the rising cut carries the glaive up over her head; she rises out of the lunge onto the front leg, back arched a little, arms high, haft over her head pointing back-up. Sleeves overshoot forward (N1's lead flag).",
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.0,
+   -0.24,
+   -0.2
+  ],
+  "J_Bip_C_Hips": [
+   4,
+   0,
+   -10
+  ],
+  "J_Bip_C_Spine": [
+   -6,
+   0,
+   -6
+  ],
+  "J_Bip_C_Chest": [
+   -8,
+   0,
+   -6
+  ],
+  "J_Bip_C_UpperChest": [
+   -6,
+   0,
+   -4
+  ],
+  "J_Bip_C_Neck": [
+   -6,
+   0,
+   8
+  ],
+  "J_Bip_C_Head": [
+   -10,
+   2,
+   10
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.12,
+    -0.74,
+    0.159
+   ],
+   "yaw": 4
+  },
+  "R": {
+   "pos": [
+    -0.15,
+    0.22,
+    0.19
+   ],
+   "yaw": -25,
+   "pitch": 25
+  }
+ },
+ "weapon": {
+  "hand_R": [
+   -0.1,
+   -0.22,
+   1.6
+  ],
+  "dir": [
+   0.2,
+   0.88,
+   0.43
+  ],
+  "edge": [
+   0,
+   0.4,
+   -0.9
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": -0.2,
+   "thumb": "tip",
+   "back": [
+    -0.8,
+    -0.3,
+    0.2
+   ]
+  },
+  "L": {
+   "grip": "grip_main",
+   "slide": -0.56,
+   "thumb": "tip",
+   "back": [
+    0.5,
+    -0.3,
+    0.5
+   ]
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -0.6,
+   -0.2,
+   1.5
+  ],
+  "arm.L": [
+   0.6,
+   -0.2,
+   1.5
+  ],
+  "leg.L": [
+   0.3,
+   -1.0,
+   0.55
+  ],
+  "leg.R": [
+   -0.4,
+   0.1,
+   0.4
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 85,
+   "thumb": 55
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.0,
+   -0.5,
+   0.3
+  ],
+  "chains": {
+   "sleeve_R": {
+    "g": 0.2,
+    "wind": [
+     0.0,
+     -1.0,
+     0.4
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.2,
+    "wind": [
+     0.1,
+     -1.0,
+     0.4
+    ]
+   },
+   "hair_tail": {
+    "g": 0.5,
+    "wind": [
+     0,
+     0.4,
+     0.2
+    ]
+   },
+   "tabard": {
+    "g": 0.7,
+    "wind": [
+     0,
+     -0.3,
+     0.1
+    ]
+   }
+  }
+ },
+ "expression": "resolute"
+}

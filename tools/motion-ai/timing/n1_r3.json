@@ -1,0 +1,273 @@
+{
+ "name": "n1_r3",
+ "move": "N1 Kyrie (m1_1), MOVESET.md section 1: 10 drawings, 33 f at 60 fps. Round 3: the round-2 critics' fixes. Slow-in into the coil over A1-A3 (absolute blends 65% / 93% / 100% of the coil), a diagonal back-three-quarter coil (n1_coil_r3), and a tracked smear on S1 (smear.py).",
+ "length": 33,
+ "source": {
+  "npz": "n1/n1_study_ee_s1_00.npz",
+  "meta": "_constraints/n1_study_ee.meta.json"
+ },
+ "push_ref": "stance",
+ "ease_default": "in_out",
+ "glaive_default": "hands",
+ "keys": [
+  {
+   "name": "stance",
+   "src": "stance",
+   "frame": 0,
+   "glaive": "upright"
+  },
+  {
+   "name": "A1 drop",
+   "src": "A2 coil-3",
+   "frame": 1,
+   "hold": 1,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.6,
+    "arms": 1.2
+   }
+  },
+  {
+   "name": "A2 coil",
+   "src": "A2 coil",
+   "frame": 3,
+   "hold": 2,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.6,
+    "arms": 1.2
+   }
+  },
+  {
+   "name": "A3 coil",
+   "src": "A2 coil",
+   "frame": 6,
+   "hold": 1,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.6,
+    "arms": 1.2
+   }
+  },
+  {
+   "name": "S1 scoop",
+   "src": "S1 scoop",
+   "frame": 8,
+   "ease": [
+    "in",
+    3
+   ],
+   "push": {
+    "legs": 1.7,
+    "spine": 1.7,
+    "root_y": 1.7
+   }
+  },
+  {
+   "name": "C1 contact",
+   "src": "C1 contact",
+   "frame": 9,
+   "hold": 2,
+   "ease": "linear",
+   "push": {
+    "legs": 1.8,
+    "spine": 1.8,
+    "hips": 1.6,
+    "root_y": 1.8,
+    "root_xz": 1.8,
+    "arms": 1.2
+   },
+   "add": {
+    "lean": 22
+   }
+  },
+  {
+   "name": "F2 overhead",
+   "src": "F2 over head",
+   "frame": 14,
+   "hold": 1,
+   "ease": "out",
+   "push": {
+    "spine": 1.4,
+    "arms": 1.2
+   },
+   "settle": {
+    "amount": 0.15,
+    "frames": 8
+   }
+  },
+  {
+   "name": "R3 stance",
+   "src": "R3 stance",
+   "frame": 28,
+   "hold": 5,
+   "ease": "in_out",
+   "glaive": "upright"
+  }
+ ],
+ "exposure": {
+  "mode": "drawings",
+  "drawings": [
+   [
+    "A1",
+    1,
+    2
+   ],
+   [
+    "A2",
+    3,
+    3
+   ],
+   [
+    "A3",
+    6,
+    2
+   ],
+   [
+    "S1",
+    8,
+    1
+   ],
+   [
+    "C1",
+    9,
+    3
+   ],
+   [
+    "F1",
+    12,
+    2
+   ],
+   [
+    "F2",
+    14,
+    2
+   ],
+   [
+    "R1",
+    16,
+    6,
+    18
+   ],
+   [
+    "R2",
+    22,
+    6
+   ],
+   [
+    "R3",
+    28,
+    6
+   ]
+  ]
+ },
+ "hero": {
+  "_about": "blender_apply.py --hero: per retime key, where its delta from the AI pose comes from. pose = a hand-posed hero key (art/rosace/poses/...); carry = reuse another key's delta (the AI's own motion rides on the authored extreme); mix = weighted blend of hero deltas; absent = pure AI. plants = frame spans where a foot is locked on the spot a hero key puts it (0 drift by construction). Round 3: blend = an absolute mix of other keys' states (the AI's own in-between ignored), for exact slow-in spacing; glaive = the weapon in world (hero_layer.py 'weapon in world').",
+  "keys": {
+   "A1 drop": {
+    "blend": [
+     [
+      "stance",
+      0.3
+     ],
+     [
+      "A2 coil",
+      0.7
+     ]
+    ],
+    "glaive": {
+     "yaw": 172,
+     "pitch": 15,
+     "grip_az": 72,
+     "grip_r": 0.2,
+     "grip_h": 0.88,
+     "edge": [
+      0,
+      0.3,
+      -1
+     ],
+     "like": "A2 coil",
+     "wL": 1.0
+    },
+    "_why": "slow-in inside f1-f3 (round-2 critics): A1 covers 70% of the way into the coil, A2 the last 30% in twice the time; the glaive tips BACK from upright toward the trailing coil (a chest-frame blend swung it forward)"
+   },
+   "A2 coil": {
+    "pose": "motion/n1_coil_r3.json"
+   },
+   "A3 coil": {
+    "carry": "A2 coil",
+    "_why": "MOVESET's A3 is the held coil: same body (same AI source frame, same offset), the cloth still settling, so nothing but the strike is fast"
+   },
+   "S1 scoop": {
+    "pose": "motion/n1_scoop.json"
+   },
+   "C1 contact": {
+    "pose": "motion/n1_contact_r2.json"
+   },
+   "F2 overhead": {
+    "pose": "motion/n1_over.json"
+   },
+   "R3 stance": {}
+  },
+  "plants": {
+   "R": [
+    [
+     3,
+     11,
+     "C1 contact"
+    ]
+   ],
+   "L": [
+    [
+     3,
+     7,
+     "A2 coil"
+    ],
+    [
+     8,
+     15,
+     "C1 contact"
+    ]
+   ]
+  },
+  "cloth_lag": {
+   "stole_A": 3,
+   "stole_B": 3,
+   "_why": "DESIGN.md 8: stole tails trail 2-3 drawings. A 3 f delay on the drape shape, then the spring"
+  },
+  "cloth_dyn": {
+   "stole_A": [
+    0.42,
+    0.4
+   ],
+   "stole_B": [
+    0.42,
+    0.4
+   ],
+   "_why": "round 2's 0.22 rad/f spring took 11-13 f to get half-way in shape; with the delay this lands the stole's shape half-way at about 2-3 drawings"
+  }
+ },
+ "smear": {
+  "_about": "smear.py: tracked blade smears on strike drawings. The path runs from the 'from' drawing's rendered blade to this drawing's (and 'lead' of the way on toward the next drawing's), interpolated around her hips (tip and grip in cylinder coordinates; 'turn' +1 / -1 forces the way round), sampled 48 times, projected with the render camera and depth-tested against her body.",
+  "S1": {
+   "from": "A3",
+   "turn": -1,
+   "lead": 0.85,
+   "style": "J",
+   "head": 0.55,
+   "_why": "MOVESET N1 S1: one smear drawing, the tip runs from behind her along the floor and whips up in front; the blade drawn bent (refs 09/10)"
+  }
+ }
+}
