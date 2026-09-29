@@ -7,6 +7,7 @@ import { defineRecipe } from "../prop.ts";
 
 export const gauge = defineRecipe<Record<string, unknown>, null>({
   id: "gauge",
+  breakage: "never",
   reason: "Scale reference in the sandbox: exactly one H tall in Rosace's palette, so props are judged at the locked player size.",
   defaults: {},
   build(b) {
