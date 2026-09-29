@@ -30,6 +30,10 @@ visitor in the legacy test world, while preserving the old save for rollback.
 
 The round, sound and ship-fix recorders now produce failure verdicts. CPU/SwiftShader runs
 are source verification; delivery's D3D and real-device runs provide the hardware boundaries.
+Current CPU closure passes old-rest migration/save preservation and the separate 11-ledge
+Stonetop climb. Verifier cleanup awaits its own Windows process trees, tested with an actual
+Node descendant. Original replay errors/count correction and five navigation aborts remain
+recorded; see the release record for exact proof paths and limits.
 
 ## Run it
 

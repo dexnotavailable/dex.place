@@ -4,6 +4,7 @@
 import { spawn } from "node:child_process";
 import { mkdirSync, createWriteStream } from "node:fs";
 import { randomUUID } from "node:crypto";
+import { stopOwnedProcess } from "./process-tree.mjs";
 const scripts = { round: "src/world/story/_tools/round.mjs", shipfix: "src/world/tools/shipfix.mjs", sound: "src/world/sound/verify.mjs" };
 const [kind, ...args] = process.argv.slice(2);
 if (!scripts[kind]) throw new Error("Choose round, shipfix, or sound");
@@ -21,12 +22,6 @@ const start = (argv) => {
   children.add(p);
   for (const stream of [p.stdout, p.stderr]) stream.on("data", (d) => { process.stdout.write(d); log.write(d); });
   return p;
-};
-const stop = async (p) => {
-  if (p.exitCode !== null || p.signalCode !== null) return;
-  const ended = new Promise((resolve) => p.once("exit", resolve));
-  p.kill();
-  await ended;
 };
 const server = start(["node_modules/vite/bin/vite.js", "--config", "src/world/tools/vite.capture.config.mjs", "--port", port, "--strictPort", "--host", "127.0.0.1"]);
 let serverError = null;
@@ -47,6 +42,9 @@ try {
   ]);
   if (code !== 0) throw new Error(`${kind} verifier failed: ${code}`);
 } finally {
-  for (const p of children) await stop(p);
+  // Try every owned tree even if one cleanup fails; leave a concrete error.
+  const stopped = await Promise.allSettled([...children].map(stopOwnedProcess));
   await new Promise((r) => log.end(r));
+  const failed = stopped.filter((r) => r.status === "rejected");
+  if (failed.length) throw new AggregateError(failed.map((r) => r.reason), "Owned verifier process-tree cleanup failed");
 }
