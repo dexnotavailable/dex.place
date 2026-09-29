@@ -1932,7 +1932,28 @@ python tools/pixel-pipeline/drive9/d9_round.py --round round-5 --seed 20261601 -
 python tools/pixel-pipeline/drive9/r5_look.py
 ```
 
-### 3.6s Controlled next pass [in progress 2026-09-30; finish-only source proof]
+### 3.6t Readable authored hands [in progress 2026-09-30; source-ready, native pixels pending]
+
+The next bounded variable is idle hand geometry at absolute uniform1.30 on both
+existing authored hand bones. `next/nx_hands_blender.py` wraps the preserved R2
+renderer in process; it solves the gripped wrist with the scaled rest offset so
+the final grip center remains at the same haft/socket/slide. This necessary
+contact compensation may move wrist/elbow IK; arm transforms are not claimed
+unchanged. Free-hand pose and finger curls stay R2. No face, sleeve, pose gesture,
+finish or N1/Q/back lever is bundled. No paint layers or new hand mass stamps.
+
+Control scale1 leaves pose/grip calls unchanged. Both control/candidate add raw
+`depth2` limb IDs and separate `haft_grips.json`. `next/hand_metrics.py` records
+categorical hand visibility and synthetic grip gaps without painting pixels or
+inferring material colors from finished RGB. Raw counts do not prove finger
+anatomy or seams; GH reach_m is unscaled-rest information. Candidate guards:
+identity armature/unit-scale ancestors, effective1.30 hand scale, idle only,
+canonical R2 blend/model hashes, head1.10, ss4,144/80, no save or output overwrite.
+Independent source review and focused pure-Python checks passed; delivery must
+prove fresh instrumented R2 control0px before rendering the candidate. Recipe,
+targets, exact commands and acceptance limits: `NEXT-HANDS-PC-CHECK.md`.
+
+### 3.6s Controlled next pass [completed native trial 2026-09-30; no promotion]
 
 Round 2 remains promoted at 5.78; target remains reference parity 9. The cloud
 proposal was recovered as `NEXT-RUN.md` and `next-run-workflow.js`; it has not
@@ -1943,10 +1964,15 @@ unchanged. Independent blind review and the coordinator preferred the R2
 baseline. Its color attribution was unsafe after cleanup/AA; the rejected
 adapter and switch were removed and archived with the trial. No glyph retry or
 promotion is planned. `next/nx_post.py` is now only the R2 replay verifier.
-The next single-variable source candidate changes idle look.tilt16->8 (DESIGN
-3.5), keeping all other R2 settings. Actual pixels depend on delivery's
-exclusive render; no improvement is claimed yet. Canonical/backup blends are
-unchanged. Commands, rollback proof and delivery request: `NEXT-PC-CHECK.md`.
+Delivery rendered the single-variable idle look.tilt16->8 candidate plus a
+fresh R2 control: all16 control images match the preserved reference at0px.
+Independent blind review and root prefer R2 personality at144, with80 a rough
+tie; the trial remains unpromoted. Canonical blend/backup and all7state maps
+are hash-verified unchanged. Source/coverage and replay verifier checks also
+passed at delivery. Native receipt: `rosace-headtilt8-render-request-20260930`;
+actual preview: `review/rosace/art/next/headtilt8-delivery/PREVIEW.json` and the
+owner `lanes/rosace/PREVIEW.json`. Do not repeat the marginal collar/tilt loops.
+Commands and rollback proof: `NEXT-PC-CHECK.md`.
 
 ### 3.6r Promote drive 9 round 2: the canonical build and stills make the judged round-2 look [done 2026-09-29; `build_rosace_v2.py`, `stills_v2.py`, `drive9/d9_blender.py`, `art/rosace/drive9.json` `promoted`]
 

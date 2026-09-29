@@ -1,0 +1,35 @@
+{
+  "id": "hands130",
+  "parent": "Claude promotedR2",
+  "variable": "authored idle hand geometry: uniform absolute Hand.scale1.30 both sides",
+  "handScale": 1.3,
+  "shots": [
+    "idle"
+  ],
+  "scaleMeaning": "absolute1.30; other moves including N1existing1.20 untouched",
+  "gripConstraint": "solve wrist with scaled rest grip offset, keep original haft/socket/slide",
+  "expected": "readable palm/finger groups at144, visible fist at80",
+  "target": {
+    "gripGapCmMaximum": 1.5,
+    "fist80Minimum": [
+      4,
+      5
+    ],
+    "fist144": [
+      7,
+      9,
+      7,
+      9
+    ],
+    "handPixels80Minimum": 20
+  },
+  "gates": [
+    "Instrumented control still/ground remains0px from preservedR2.",
+    "Actual hand geometry/effective scale1.30; no transformed armature/scaled ancestor assumption accepted.",
+    "Synthetic grip gap <=1.5cm and actual hand/haft overlap visible in pixels.",
+    "Report skin handL/R visibility from depth2limb IDs; do not paint or infer anatomy from metadata.",
+    "Keep R2pose/headtilt16/face/cloth/ramp/weapon/80worldframing; any guard loss means no promotion."
+  ],
+  "acceptance": "independent blind actual144/80native and3x comparison, with face/hands/body/outfit/weapon/pose/pixelcraft separate; no whole-character9claim from part",
+  "canonicalChanges": false
+}
