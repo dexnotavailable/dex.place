@@ -1,0 +1,152 @@
+{
+  "_doc": "Single-variable candidate: R2 idle head tilt16 ->8 degrees, DESIGN3.5 range5-10. All mesh edits, circlet, pose/bust/hand settings, Q/back and finish remain R2. Unrendered, unpromoted; delivery owns exclusive Blender proof.",
+  "mesh_edits": {
+    "tabard": {
+      "scale_x": [
+        1.3,
+        1.65
+      ],
+      "z": [
+        1.135,
+        0.138
+      ],
+      "cx": 0.0
+    }
+  },
+  "circlet": {
+    "z_front": 1.775,
+    "z_back": 1.845,
+    "band_h": 0.032,
+    "thick": 0.006,
+    "offset": 0.004,
+    "centre": [
+      0.0,
+      -0.02
+    ],
+    "pass_index": 40,
+    "jewel": {
+      "r": 0.03,
+      "dz": 0.02
+    }
+  },
+  "poses": {
+    "idle_appeal": {
+      "bones": {
+        "J_Bip_C_Hips": [
+          6.5,
+          19.5,
+          5.2
+        ],
+        "sleeve_R_1.scale": 0.78
+      },
+      "poles": {
+        "leg.L": [
+          0.35,
+          -0.75,
+          0.55
+        ],
+        "arm.R": [
+          -0.9,
+          1.0,
+          1.3
+        ]
+      },
+      "drape": {
+        "chains": {
+          "tabard": {
+            "g": 1.0,
+            "wind": [
+              0.0,
+              -0.05,
+              0.0
+            ]
+          },
+          "sleeve_R": {
+            "g": 0.5,
+            "wind": [
+              -0.3,
+              1.2,
+              0.2
+            ]
+          }
+        }
+      },
+      "figure": {
+        "torso": {
+          "bend": [
+            -15.6,
+            0,
+            -6.5
+          ]
+        },
+        "joints": {
+          "upper_chest": [
+            0,
+            8,
+            0
+          ]
+        },
+        "look": {
+          "at": "camera",
+          "amount": 0.6,
+          "neck": 0.35,
+          "tilt": 8,
+          "chin": 10
+        },
+        "hands": {
+          "R": {
+            "pos": [
+              -0.21,
+              0.09,
+              1.1
+            ]
+          }
+        }
+      }
+    },
+    "back_appeal": {
+      "figure": {
+        "look": {
+          "at": "camera",
+          "amount": 0.62,
+          "neck": 0.5,
+          "tilt": 6,
+          "chin": 7,
+          "max": 60
+        }
+      }
+    },
+    "q_stamp": {
+      "camera": {
+        "yaw": 35,
+        "elev": 8
+      },
+      "feet": {
+        "R": {
+          "pos": [
+            -0.06,
+            0.8,
+            0.32
+          ],
+          "yaw": -5,
+          "pitch": 55
+        }
+      },
+      "poles": {
+        "leg.R": [
+          -0.1,
+          0.4,
+          0.1
+        ]
+      }
+    }
+  },
+  "why": {
+    "tabard": "Critics (first impression, body, outfit): the pelvis read as one skin block with a 1 px string ('bottomless'), and the thin pointed tabard read as a sword. The design's front tabard is meant to cover the front (DESIGN table: 'covers the front, main flag'): widened x1.3 at the waist to x1.65 at the hem (a flare, silhouette mass) and hung straight (idle tabard g 1.0, no side wind), so it covers the crotch at 144 and 80.",
+    "circlet": "Critic (head and hair): 'no signature priestess head piece; the side beads are tiny; add a gold circlet, rosace pin or short veil that reads at 80'. A gold front diadem on the hair's own contour at the brow (front 1.775 m, back 1.845 m, 160 deg arc whose ends sink into the hair) with a glass rosace jewel at the centre. A full ring read as a hat brim; a band 0.02 m tall drew as outline only.",
+    "idle": "Pose angles +30 % over the figure-pose lane's concept A (ESCALATION 1): hip rotation 5/15/4 -> 6.5/19.5/5.2, torso bend -12/-5 -> -15.6/-6.5, upper chest lift 6 -> 8, head tilt 12 -> 16 and chin 7 -> 10 (critic: 'tilt 6-8 deg chin down, knowing look'). The near bell sleeve is scaled 0.78 and blown back (g 0.5) so the waist-to-hip curve breaks the silhouette (critic: 'clear the sleeve off the hip'). The free knee's pole moves out-forward (the stance note: 'idle knees cross inward').",
+    "back": "Critic: 'not a back view: a near-frontal face'. The look amount 1.0 -> 0.62 with max 85 -> 60: the head turns over the shoulder to three-quarter (head facing the camera 0.78 -> 0.44), and d9_post draws one profile eye when the far eye faces away (r2_faces.json profile_below).",
+    "q": "Critic (first impression): 'the q crouch reads as a broken hip / a fall at 80'. The kicked-up rear leg drops into a driving back lunge (foot 0.64 -> 0.32 m high, knee pole down) and the camera turns 50 -> 35 deg so the rear leg reads behind her instead of splayed sideways. The stamp itself (planted glaive, front heel) is unchanged.",
+    "hand": "Critics (body 6, grip 8): 'the free hand is a clump at the sternum; move it to the hip, back of the wrist on the hip bone, elbow out'. The figure-pose lane's rest-frame wrist [-0.15, 0, 1.22] lands in front of the belly in the 45 deg view, under the cuff. Moved to [-0.21, 0.09, 1.10] (out, back and down onto the side of the hip) with the elbow pole out-back [-0.9, 1.0, 1.3]: the hand now sits on the silhouette's hip with the forearm and waist framing a gap (trials r2_vd / r2_ve, ve kept)."
+  }
+}

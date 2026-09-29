@@ -1932,6 +1932,22 @@ python tools/pixel-pipeline/drive9/d9_round.py --round round-5 --seed 20261601 -
 python tools/pixel-pipeline/drive9/r5_look.py
 ```
 
+### 3.6s Controlled next pass [in progress 2026-09-30; finish-only source proof]
+
+Round 2 remains promoted at 5.78; target remains reference parity 9. The cloud
+proposal was recovered as `NEXT-RUN.md` and `next-run-workflow.js`; it has not
+been dispatched. All 16 unchanged-control transparent/contact-shadow images
+reproduce at 0 changed pixels in private copies of R2 raw passes. A collar-only
+trial changed idle25/20 px and N1 19/0 at144/80; Q/back and silhouette stayed
+unchanged. Independent blind review and the coordinator preferred the R2
+baseline. Its color attribution was unsafe after cleanup/AA; the rejected
+adapter and switch were removed and archived with the trial. No glyph retry or
+promotion is planned. `next/nx_post.py` is now only the R2 replay verifier.
+The next single-variable source candidate changes idle look.tilt16->8 (DESIGN
+3.5), keeping all other R2 settings. Actual pixels depend on delivery's
+exclusive render; no improvement is claimed yet. Canonical/backup blends are
+unchanged. Commands, rollback proof and delivery request: `NEXT-PC-CHECK.md`.
+
 ### 3.6r Promote drive 9 round 2: the canonical build and stills make the judged round-2 look [done 2026-09-29; `build_rosace_v2.py`, `stills_v2.py`, `drive9/d9_blender.py`, `art/rosace/drive9.json` `promoted`]
 
 The drive-9 loop ran five blind whole-character rounds (3.6m-3.6q). Round 2 scored best, 5.78 over five critics, with the refs at
