@@ -1,0 +1,14 @@
+{
+  "id": "rosace-hands-ladder-20260930",
+  "parent": "Claude promoted R2, exact baseline",
+  "oneLever": "uniform authored idle hand dimensions, seated on identical grip",
+  "scales": [1.0, 1.15, 1.3, 1.45],
+  "candidateShots": ["idle"],
+  "unchanged": ["R2 head tilt16", "figure gesture", "finger curl", "sleeves", "face", "finish", "weapon", "framing"],
+  "contactConstraint": "preserved H1 scaled-offset wrist solve; wrist/elbow IK can move as needed to retain exact socket/slide",
+  "constraints": ["identity rig and unit inherited scale", "actual effective scale matches", "instrumented control16images0px", "no saved blend/default changes"],
+  "criticalPixels": ["palm/thumb ownership of haft", "visible wrist versus sleeve", "fingers in groups", "skin seam", "80px contact readability"],
+  "review": "three fresh fork-none critics per candidate, actual144/80 and refs, per-part scores/votes/gaps; no weak-part averaging",
+  "reuse": "1.30 may reuse original H1 raw outputs only when hashes, source semantics, framing and contact guards match; do not gratuitously rerender accepted control",
+  "target": "9/reference parity remains"
+}

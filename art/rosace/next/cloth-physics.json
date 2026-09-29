@@ -1,0 +1,47 @@
+{
+  "contract": "dex.cloth/1",
+  "status": "source-proposal-native-qualification-pending",
+  "runtime": "physically simulated Blender fabric baked into2D sprite clips",
+  "fps": 60,
+  "warmupFrames": 45,
+  "gravity": [0, 0, -9.81],
+  "settings": {
+    "quality": 12,
+    "mass": 0.002,
+    "tension_stiffness": 20,
+    "compression_stiffness": 15,
+    "shear_stiffness": 5,
+    "bending_stiffness": 0.4,
+    "tension_damping": 5,
+    "compression_damping": 5,
+    "shear_damping": 5,
+    "bending_damping": 0.8,
+    "air_damping": 1,
+    "pin_stiffness": 50,
+    "use_dynamic_mesh": false
+  },
+  "collisions": {
+    "use_collision": true,
+    "use_self_collision": true,
+    "collision_quality": 6,
+    "distance_min": 0.003,
+    "self_distance_min": 0.003,
+    "friction": 5,
+    "self_friction": 5,
+    "damping": 0.2
+  },
+  "colliderParts": ["body", "head"],
+  "weaponPartPrefix": "glaive",
+  "garments": [
+    {"object": "tabard", "part": "tabard", "seam": "top-boundary", "rootBone": "J_Bip_C_Hips", "ornaments": ["tabard_cross"]},
+    {"object": "sleeve.L", "part": "sleeves", "seam": "upper-arm-opening", "rootBone": "J_Bip_L_UpperArm", "ornaments": ["sleeve_cross.L"]},
+    {"object": "sleeve.R", "part": "sleeves", "seam": "upper-arm-opening", "rootBone": "J_Bip_R_UpperArm", "ornaments": ["sleeve_cross.R"]}
+  ],
+  "pinToleranceMeters": 0.004,
+  "pinFractionMaximum": 0.15,
+  "wind": {"direction": [1, 0, 0], "strength": 0.4, "noise": 0},
+  "requiredClips": ["idle", "run", "turn", "jump", "apex", "fall", "land", "dash", "m1_1", "skill_q", "ult_r"],
+  "requiredTransitions": ["idle->run", "run->idle", "run->turn", "turn->run", "run->jump", "fall->land", "idle->dash", "dash->idle", "m1_1->idle", "skill_q->idle", "ult_r->idle"],
+  "acceptance": "actual moving144/80 clips; seams pinned, free fabric lag/settle, body/haft collision, no obvious clipping/stretch/jitter or loop/transition snaps; frame/cache/pin/collider provenance",
+  "canonicalReplacement": false
+}

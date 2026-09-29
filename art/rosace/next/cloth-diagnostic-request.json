@@ -1,0 +1,61 @@
+{
+  "id": "rosace-cloth-diagnostic-20260930",
+  "kind": "physics-qualification",
+  "owner": "rosace",
+  "worktree": "D:/Dex/Temp/dex-place-rosace-ladder-20260930",
+  "wrapper": "tools/pixel-pipeline/next/cloth/qualify_blender.py",
+  "profile": "art/rosace/next/cloth-physics.json",
+  "blend": "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+  "modes": [
+    "off",
+    "on"
+  ],
+  "modeArgs": [
+    {
+      "mode": "off",
+      "args": [
+        "--physics",
+        "off",
+        "--blend",
+        "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+        "--out",
+        "D:/Dex/Temp/dex-place-rosace-ladder-20260930/review/rosace/physics/diagnostic-20260930/off"
+      ]
+    },
+    {
+      "mode": "on",
+      "args": [
+        "--physics",
+        "on",
+        "--blend",
+        "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+        "--out",
+        "D:/Dex/Temp/dex-place-rosace-ladder-20260930/review/rosace/physics/diagnostic-20260930/on"
+      ]
+    }
+  ],
+  "steps": [
+    "Finite independentphysicslever afterhandsbatch, never interrupt activepackage/install/media lease.",
+    "Run cloth/check_contract.py and actualinstalledRNA checks; validate source/canonical/rollback hashes.",
+    "Deliveryexclusive+GPUlease and isolatedblender_env.py: run qualify_blender.py separately withoff/onargs, synchronous120tick80pxdiagnostic; no canonicalscene save.",
+    "Complete25/30wearer-only pins, collisions/body+head+weapon/selfmargins, ornamentbind/visibility, warmupheldentry and sequential geometrybake must passnative.",
+    "Aftereachnative mode run python cloth/make_clip.py --root modematchingprivateoutput; recordactualGIFencodedtiming, frame/image/geometry hashes.",
+    "Inspect actualmovingoff/onclips forclothlag/settle/clipping/jitter/pins/ornaments; publishGIFandrawproofs promptly. Static/geometry alone neverprovesmotion.",
+    "This held-idlebody-translation is solverdiagnosticONLY; full144/80idle/run/turn/jump/land/dash/M1/Q/Randtransitionbakes/playback remainmandatory before acceptance."
+  ],
+  "sourceContract": "docs/character/CLOTH-PHYSICS.md",
+  "expectedPins": {
+    "tabard": 25,
+    "sleeveR": 30,
+    "sleeveL": 30
+  },
+  "runtime": "physicallysimulatedfabricbaked2D; no runtimemeshclothclaim",
+  "canonicalChanges": false,
+  "acceptancePending": [
+    "nativeRNA",
+    "solver/bind/collisions",
+    "actualmovingpixels",
+    "loop/transition/gameplayplayback",
+    "strictfreshcriticjudgments"
+  ]
+}

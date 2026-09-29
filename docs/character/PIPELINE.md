@@ -1932,6 +1932,32 @@ python tools/pixel-pipeline/drive9/d9_round.py --round round-5 --seed 20261601 -
 python tools/pixel-pipeline/drive9/r5_look.py
 ```
 
+### 3.6u Finite hand ladder and physical fabric [source in progress 2026-09-30]
+
+Dex's stricter/faster steering requires three fresh/fork-none actual-pixel
+critics per candidate and physical tabard/sleeves. The3root calibration reports
+were consumed, not duplicated: hand/thumb/shaft and arm separation, fragmented
+material/form clusters, then80face/hair clarity are the shared priorities. Their
+6.3/6.5/6.8 baseline judgments are not a gain or a direct rescore of old5.78.
+
+Frozen H1 source stays at322e7cd in the original Rosace worktree. Next source is
+isolated at `D:/Dex/Temp/dex-place-rosace-ladder-20260930` on
+`codex/rosace-ladder-physics-20260930`. The one-lever1.15/1.30/1.45 ladder keeps
+the R2pose/finish/seated grip; H1 wrappers/recipe/driver/model remain byte-identical.
+New ladder recipe substitution is local to the native process and restored.
+Source tests pass equality/control/one-lever/invalid-values/syntax. Actual
+framing/contact/quality are delivery and pixel-panel evidence still pending.
+
+Actual native Cloth modifier source now pins complete25/30waist/upperarm seams,
+frees hems/cuffs, applies gravity/inertia/damping/wind/body+weapon/self collision,
+and carries ornaments on simulated fabric. It bakes chronologically with held
+warmup and preserves driver pose/frame in rendering callbacks. The finite
+80px body-translation diagnostic produces actual moving frame/GIF proof when
+delivery executes it, but does not qualify gameplay motion/transition clips.
+No source install or metadata alone is cloth/motion acceptance. Source contract
+and module: `CLOTH-PHYSICS.md`, `next/cloth/`, `cloth-physics.json`. Baseline,
+rollbacks, defaults and world/UI/layout code remain unchanged.
+
 ### 3.6t Readable authored hands [in progress 2026-09-30; source-ready, native pixels pending]
 
 The next bounded variable is idle hand geometry at absolute uniform1.30 on both
