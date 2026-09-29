@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="robots" content="noindex" />
+    <title>dex</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/world/world.css" />
+  </head>
+  <body>
+    <div id="stage">
+      <canvas id="view" tabindex="0" aria-label="the world: arrow keys or A and D to move, space to jump, J to strike, E to use"></canvas>
+      <p id="enter" aria-live="polite"><span class="key">enter</span></p>
+      <button id="sound" type="button" aria-pressed="true" aria-label="sound on"><span aria-hidden="true"></span></button>
+      <pre id="debug" hidden></pre>
+      <div id="touch" hidden></div>
+      <p id="fail" hidden></p>
+    </div>
+    <main id="site" aria-label="dex.place">
+      <nav aria-label="destinations">
+        <a href="/downloads/">Downloads</a>
+        <a href="/donate/">Donate</a>
+        <a href="/gallery/">Illustrations</a>
+        <a href="/docs/">Documentation</a>
+      </nav>
+    </main>
+    <script type="module" src="/src/world/main.ts"></script>
+  </body>
+</html>

@@ -9,3 +9,4 @@ export { shiftRamp, type Hex } from "./palette.ts";
 export { FlashAccents, type FlashSpec } from "./flashes.ts";
 export { Embers, Falling, Flock, Motes } from "./particles.ts";
 export { STANDIN_HEIGHT } from "./character.ts";
+export { SCALE, MODES, RESOLUTIONS, playerPx, presentRect, type PresentMode, type PresentRect } from "./scale.ts";

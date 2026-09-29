@@ -1,0 +1,351 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1130" width="1600" height="1130" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<title>dex.place layout 3: hub and spokes. Map to scale (1 H = 4 px) and pacing along the first-visit loop.</title>
+<rect width="1600" height="1130" fill="#fcfcfb"/>
+<text x="64" y="40" font-size="22" font-weight="600" fill="#0b0b0b">Layout 3: hub and spokes</text>
+<text x="64" y="64" font-size="13" fill="#52514e">Side view, drawn to scale: 1 H (player height, 80 world px) = 4 px here. Solid outline = indoors, dashed = outdoors. Thin grey dashes = the first-visit loop, numbered in order.</text>
+<line x1="56" x2="1540" y1="542" y2="542" stroke="#e4e3df" stroke-width="1"/>
+<text x="50" y="546" font-size="10" fill="#8a8984" text-anchor="end">0 H</text>
+<line x1="56" x2="1540" y1="442" y2="442" stroke="#e4e3df" stroke-width="1"/>
+<text x="50" y="446" font-size="10" fill="#8a8984" text-anchor="end">25 H</text>
+<line x1="56" x2="1540" y1="342" y2="342" stroke="#e4e3df" stroke-width="1"/>
+<text x="50" y="346" font-size="10" fill="#8a8984" text-anchor="end">50 H</text>
+<line x1="56" x2="1540" y1="242" y2="242" stroke="#e4e3df" stroke-width="1"/>
+<text x="50" y="246" font-size="10" fill="#8a8984" text-anchor="end">75 H</text>
+<line x1="56" x2="1540" y1="142" y2="142" stroke="#e4e3df" stroke-width="1"/>
+<text x="50" y="146" font-size="10" fill="#8a8984" text-anchor="end">100 H</text>
+<rect x="64" y="542" width="336" height="14" fill="#2a78d6" opacity="0.12"/>
+<text x="66" y="584" font-size="11" fill="#52514e">the lake</text>
+<text x="1360" y="568" font-size="11" fill="#52514e">the plain (colossi walk west, toward the ring)</text>
+<path d="M 64 382 C 120 158, 320 94, 416 174" fill="none" stroke="#4a3aa7" stroke-width="10" opacity="0.10"/>
+<text x="152" y="130" font-size="11" fill="#4a3aa7">the ring hull, behind (the chapel is built on it)</text>
+<path d="M 400 530 L 400 450 Q 440 390 528 390 L 680 390 Q 760 422 768 510" fill="none" stroke="#eb6834" stroke-width="2" stroke-dasharray="2 4" opacity="0.7"/>
+<text x="672" y="382" font-size="11" fill="#52514e">hollow shell (fallen megastructure)</text>
+<text x="760" y="262" font-size="11" fill="#52514e">the spire (leans east)</text>
+<text x="760" y="278" font-size="11" fill="#52514e">storm cloud deck ~60-90 H</text>
+<g><title>A0 Pier&#39;s End: 16 x 9 H (1.00 x 1.00 screens)</title>
+<rect x="80" y="506" width="64" height="36" fill="#2a78d6" fill-opacity="0.12" stroke="#2a78d6" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="66" y="556" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">A0</tspan> Pier&#39;s End</text>
+</g>
+<g><title>A1 The Dock (arrival): 32 x 9 H (2.00 x 1.00 screens)</title>
+<rect x="144" y="506" width="128" height="36" fill="#2a78d6" fill-opacity="0.12" stroke="#2a78d6" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="148" y="556" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">A1</tspan> The Dock (arrival)</text>
+</g>
+<g><title>A2 Reed Shore: 32 x 12 H (2.00 x 1.33 screens)</title>
+<rect x="272" y="494" width="128" height="48" fill="#2a78d6" fill-opacity="0.12" stroke="#2a78d6" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="276" y="556" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">A2</tspan> Reed Shore</text>
+</g>
+<g><title>A3 Hollow Gate: 12 x 20 H (0.75 x 2.22 screens)</title>
+<rect x="400" y="450" width="48" height="80" fill="#2a78d6" fill-opacity="0.12" stroke="#2a78d6" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="404" y="464" font-size="10" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">A3</tspan> </text>
+<text x="404" y="476" font-size="10" fill="#0b0b0b">Hollow Gate</text>
+</g>
+<g><title>B1 Gate Hall: 18 x 6 H (1.13 x 0.67 screens)</title>
+<rect x="448" y="506" width="72" height="24" fill="#eb6834" fill-opacity="0.28" stroke="#eb6834" stroke-width="2" />
+<text x="452" y="544" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">B1</tspan> Gate Hall</text>
+</g>
+<g><title>B2 The Well (plaza): 36 x 28 H (2.25 x 3.11 screens)</title>
+<rect x="520" y="418" width="144" height="112" fill="#eb6834" fill-opacity="0.28" stroke="#eb6834" stroke-width="2" />
+<text x="524" y="432" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">B2</tspan> The Well (plaza)</text>
+</g>
+<g><title>B3 Archive: 36 x 6 H (2.25 x 0.67 screens)</title>
+<rect x="592" y="542" width="144" height="24" fill="#eb6834" fill-opacity="0.28" stroke="#eb6834" stroke-width="2" />
+<text x="596" y="580" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">B3</tspan> Archive</text>
+</g>
+<g><title>B4 Lamplighters&#39; Stair: 14 x 16 H (0.88 x 1.78 screens)</title>
+<rect x="464" y="434" width="56" height="64" fill="#eb6834" fill-opacity="0.28" stroke="#eb6834" stroke-width="2" />
+<text x="468" y="448" font-size="10" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">B4</tspan> </text>
+<text x="468" y="460" font-size="10" fill="#0b0b0b">Lamplighters&#39; Stair</text>
+</g>
+<g><title>B5 Foundry Row: 26 x 10 H (1.63 x 1.11 screens)</title>
+<rect x="664" y="510" width="104" height="40" fill="#eb6834" fill-opacity="0.28" stroke="#eb6834" stroke-width="2" />
+<text x="668" y="524" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">B5</tspan> Foundry Row</text>
+</g>
+<g><title>C1 The Causeway: 64 x 12 H (4.00 x 1.33 screens)</title>
+<rect x="768" y="486" width="256" height="48" fill="#1baf7a" fill-opacity="0.12" stroke="#1baf7a" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="772" y="500" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">C1</tspan> The Causeway</text>
+</g>
+<g><title>C2 Footprint Field: 48 x 13 H (3.00 x 1.44 screens)</title>
+<rect x="1024" y="494" width="192" height="52" fill="#1baf7a" fill-opacity="0.12" stroke="#1baf7a" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="1028" y="508" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">C2</tspan> Footprint Field</text>
+</g>
+<g><title>C3 Procession Shrine: 16 x 6 H (1.00 x 0.67 screens)</title>
+<rect x="1216" y="518" width="64" height="24" fill="#1baf7a" fill-opacity="0.28" stroke="#1baf7a" stroke-width="2" />
+<text x="1220" y="556" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">C3</tspan> Procession Shrine</text>
+</g>
+<g><title>C4 The Fallen Arm: 64 x 20 H (4.00 x 2.22 screens)</title>
+<rect x="1280" y="462" width="256" height="80" fill="#1baf7a" fill-opacity="0.12" stroke="#1baf7a" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="1284" y="476" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">C4</tspan> The Fallen Arm</text>
+</g>
+<g><title>D2 Storm Gallery: 48 x 18 H (3.00 x 2.00 screens)</title>
+<rect x="544" y="222" width="192" height="72" fill="#eda100" fill-opacity="0.12" stroke="#eda100" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="548" y="236" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">D2</tspan> Storm Gallery</text>
+</g>
+<g><title>D3 Antechamber: 16 x 5 H (1.00 x 0.56 screens)</title>
+<rect x="560" y="202" width="64" height="20" fill="#eda100" fill-opacity="0.28" stroke="#eda100" stroke-width="2" />
+<text x="556" y="216" font-size="11" fill="#0b0b0b" text-anchor="end"><tspan font-weight="700">D3</tspan> Antechamber</text>
+</g>
+<g><title>D4 The Arena: 32 x 10 H (2.00 x 1.11 screens)</title>
+<rect x="624" y="174" width="128" height="40" fill="#eda100" fill-opacity="0.12" stroke="#eda100" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="628" y="188" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">D4</tspan> The Arena</text>
+</g>
+<g><title>D5 The Crown: 32 x 10 H (2.00 x 1.11 screens)</title>
+<rect x="560" y="126" width="128" height="40" fill="#eda100" fill-opacity="0.12" stroke="#eda100" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="564" y="140" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">D5</tspan> The Crown</text>
+</g>
+<g><title>D1 Lift: 6 x 59 H (0.38 x 6.56 screens)</title>
+<rect x="576" y="294" width="24" height="236" fill="#eda100" fill-opacity="0.28" stroke="#eda100" stroke-width="2" />
+<text x="604" y="358" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">D1</tspan> Lift</text>
+</g>
+<g><title>E1 Quarters: 24 x 10 H (1.50 x 1.11 screens)</title>
+<rect x="368" y="402" width="96" height="40" fill="#e87ba4" fill-opacity="0.28" stroke="#e87ba4" stroke-width="2" />
+<text x="372" y="416" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">E1</tspan> Quarters</text>
+</g>
+<g><title>E2 Bell Tower: 12 x 20 H (0.75 x 2.22 screens)</title>
+<rect x="320" y="362" width="48" height="80" fill="#e87ba4" fill-opacity="0.28" stroke="#e87ba4" stroke-width="2" />
+<text x="324" y="376" font-size="10" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">E2</tspan> </text>
+<text x="324" y="388" font-size="10" fill="#0b0b0b">Bell Tower</text>
+</g>
+<g><title>E3 High Shore: 44 x 9 H (2.75 x 1.00 screens)</title>
+<rect x="144" y="326" width="176" height="36" fill="#e87ba4" fill-opacity="0.12" stroke="#e87ba4" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="148" y="340" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">E3</tspan> High Shore</text>
+</g>
+<g><title>E4 Chain Stair: 12 x 27 H (0.75 x 3.00 screens)</title>
+<rect x="96" y="254" width="48" height="108" fill="#e87ba4" fill-opacity="0.12" stroke="#e87ba4" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="100" y="268" font-size="10" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">E4</tspan> </text>
+<text x="100" y="280" font-size="10" fill="#0b0b0b" stroke="#fcfcfb" stroke-width="3" paint-order="stroke">Chain Stair</text>
+</g>
+<g><title>E5 Narthex: 12 x 5 H (0.75 x 0.56 screens)</title>
+<rect x="144" y="234" width="48" height="20" fill="#e87ba4" fill-opacity="0.28" stroke="#e87ba4" stroke-width="2" />
+<text x="146" y="230" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">E5</tspan> Narthex</text>
+</g>
+<g><title>E6 Chapel of Light: 48 x 14 H (3.00 x 1.56 screens)</title>
+<rect x="192" y="198" width="192" height="56" fill="#e87ba4" fill-opacity="0.28" stroke="#e87ba4" stroke-width="2" />
+<text x="196" y="212" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">E6</tspan> Chapel of Light</text>
+</g>
+<g><title>E7 Oculus: 12 x 10 H (0.75 x 1.11 screens)</title>
+<rect x="384" y="206" width="48" height="40" fill="#e87ba4" fill-opacity="0.12" stroke="#e87ba4" stroke-width="2" stroke-dasharray="6 3"/>
+<text x="388" y="259" font-size="11" fill="#0b0b0b" text-anchor="start"><tspan font-weight="700">E7</tspan> Oculus</text>
+</g>
+<g><title>The Ring Line (the one grand shortcut): ring car Oculus - Crown - Fallen Arm, plus the lamp cage Narthex - Pier's End</title>
+<path d="M 416 198 C 466 148, 554 120, 624 126 C 884 130, 1210 296, 1360 446" fill="none" stroke="#4a3aa7" stroke-width="4"/>
+<line x1="120" y1="254" x2="120" y2="538" stroke="#4a3aa7" stroke-width="3" stroke-dasharray="8 4"/>
+<line x1="1360" y1="446" x2="1374" y2="526" stroke="#4a3aa7" stroke-width="3" stroke-dasharray="3 3"/>
+<circle cx="416" cy="198" r="6" fill="#4a3aa7" stroke="#fcfcfb" stroke-width="2"/>
+<text x="406" y="186" font-size="11" fill="#0b0b0b" text-anchor="end">Oculus stop (grille opens from the chapel side)</text>
+<circle cx="624" cy="126" r="6" fill="#4a3aa7" stroke="#fcfcfb" stroke-width="2"/>
+<text x="624" y="114" font-size="11" fill="#0b0b0b" text-anchor="middle">Crown stop (gate opens from the crown side)</text>
+<circle cx="1360" cy="446" r="6" fill="#4a3aa7" stroke="#fcfcfb" stroke-width="2"/>
+<text x="1350" y="436" font-size="11" fill="#0b0b0b" text-anchor="end">Arm stop: cut the rope bridge down to the plain</text>
+<circle cx="120" cy="538" r="6" fill="#4a3aa7" stroke="#fcfcfb" stroke-width="2"/>
+<text x="110" y="382" font-size="11" fill="#4a3aa7" text-anchor="middle" transform="rotate(-90 110 382)">lamp cage (lever in the narthex)</text>
+<text x="872" y="158" font-size="13" font-weight="600" fill="#4a3aa7">THE RING LINE: the one grand shortcut</text>
+</g>
+<polyline points="184,534 336,526 424,522 468,518 552,522 664,554 588,382 648,262 592,214 696,198 624,154 993.0427500000003,213.59475000000003 1416,526 1248,534 1120,534 896,522 716,534 632,510 492,470 416,430 344,406 240,350 120,310 168,246 288,238 408,230 104,530 508,512" fill="none" stroke="#52514e" stroke-width="1.25" stroke-dasharray="3 3" opacity="0.8"/>
+<g><title>loop step 1</title><circle cx="184" cy="534" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="184" y="537.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">1</text></g>
+<g><title>loop step 2</title><circle cx="336" cy="526" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="336" y="529.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">2</text></g>
+<g><title>loop step 3</title><circle cx="424" cy="522" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="424" y="525.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">3</text></g>
+<g><title>loop step 4</title><circle cx="468" cy="518" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="468" y="521.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">4</text></g>
+<g><title>loop step 5</title><circle cx="552" cy="522" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="552" y="525.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">5</text></g>
+<g><title>loop step 6</title><circle cx="664" cy="554" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="664" y="557.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">6</text></g>
+<g><title>loop step 7</title><circle cx="588" cy="382" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="588" y="385.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">7</text></g>
+<g><title>loop step 8</title><circle cx="648" cy="262" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="648" y="265.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">8</text></g>
+<g><title>loop step 9</title><circle cx="592" cy="214" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="592" y="217.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">9</text></g>
+<g><title>loop step 10</title><circle cx="696" cy="198" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="696" y="201.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">10</text></g>
+<g><title>loop step 11</title><circle cx="624" cy="154" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="624" y="157.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">11</text></g>
+<g><title>loop step 12</title><circle cx="993.0427500000003" cy="213.59475000000003" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="993.0427500000003" y="217.09475000000003" font-size="9.5" text-anchor="middle" fill="#0b0b0b">12</text></g>
+<g><title>loop step 13</title><circle cx="1416" cy="526" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="1416" y="529.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">13</text></g>
+<g><title>loop step 14</title><circle cx="1248" cy="534" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="1248" y="537.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">14</text></g>
+<g><title>loop step 15</title><circle cx="1120" cy="534" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="1120" y="537.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">15</text></g>
+<g><title>loop step 16</title><circle cx="896" cy="522" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="896" y="525.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">16</text></g>
+<g><title>loop step 17</title><circle cx="716" cy="534" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="716" y="537.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">17</text></g>
+<g><title>loop step 18</title><circle cx="632" cy="510" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="632" y="513.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">18</text></g>
+<g><title>loop step 19</title><circle cx="492" cy="470" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="492" y="473.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">19</text></g>
+<g><title>loop step 20</title><circle cx="416" cy="430" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="416" y="433.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">20</text></g>
+<g><title>loop step 21</title><circle cx="344" cy="406" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="344" y="409.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">21</text></g>
+<g><title>loop step 22</title><circle cx="240" cy="350" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="240" y="353.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">22</text></g>
+<g><title>loop step 23</title><circle cx="120" cy="310" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="120" y="313.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">23</text></g>
+<g><title>loop step 24</title><circle cx="168" cy="246" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="168" y="249.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">24</text></g>
+<g><title>loop step 25</title><circle cx="288" cy="238" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="288" y="241.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">25</text></g>
+<g><title>loop step 26</title><circle cx="408" cy="230" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="408" y="233.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">26</text></g>
+<g><title>loop step 27</title><circle cx="104" cy="530" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="104" y="533.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">27</text></g>
+<g><title>loop step 28</title><circle cx="508" cy="512" r="8" fill="#fcfcfb" stroke="#0b0b0b" stroke-width="1.25"/><text x="508" y="515.5" font-size="9.5" text-anchor="middle" fill="#0b0b0b">28</text></g>
+<text x="64" y="614" font-size="12" fill="#0b0b0b"><tspan font-weight="700">Content:</tspan> account counter + shrine S1 in B1 (about 40 s from spawn) · map banner in B2 · Documentation: an ordinary door from B2 down into B3 · Downloads: arena terminal in D4 (lift from B2)</text>
+<text x="64" y="632" font-size="12" fill="#0b0b0b">Illustrations: 9 works in E6 · donation shrines S1 B1, S2 C3, S3 D3, S4 E2, S5 E5 · the four views (A0, C4, D5, E7) get a bench only, no box · the website is one scroll away everywhere</text>
+<rect x="1440" y="136" width="64" height="36" fill="none" stroke="#52514e" stroke-width="1"/>
+<text x="1472" y="188" font-size="10" fill="#52514e" text-anchor="middle">one screen</text>
+<text x="1472" y="200" font-size="10" fill="#52514e" text-anchor="middle">16 x 9 H</text>
+<rect x="900" y="30" width="12" height="12" fill="#2a78d6" fill-opacity="0.5" stroke="#2a78d6" stroke-width="2"/><text x="917" y="41" font-size="12" fill="#0b0b0b">Lake</text>
+<rect x="964" y="30" width="12" height="12" fill="#eb6834" fill-opacity="0.5" stroke="#eb6834" stroke-width="2"/><text x="981" y="41" font-size="12" fill="#0b0b0b">Hollow (hub)</text>
+<rect x="1084" y="30" width="12" height="12" fill="#1baf7a" fill-opacity="0.5" stroke="#1baf7a" stroke-width="2"/><text x="1101" y="41" font-size="12" fill="#0b0b0b">Plain</text>
+<rect x="1155" y="30" width="12" height="12" fill="#eda100" fill-opacity="0.5" stroke="#eda100" stroke-width="2"/><text x="1172" y="41" font-size="12" fill="#0b0b0b">Spire</text>
+<rect x="1226" y="30" width="12" height="12" fill="#e87ba4" fill-opacity="0.5" stroke="#e87ba4" stroke-width="2"/><text x="1243" y="41" font-size="12" fill="#0b0b0b">Chapel</text>
+<rect x="1304" y="30" width="12" height="12" fill="#4a3aa7" fill-opacity="1" stroke="#4a3aa7" stroke-width="2"/><text x="1321" y="41" font-size="12" fill="#0b0b0b">Ring line</text>
+<text x="64" y="664" font-size="16" font-weight="600" fill="#0b0b0b">Pacing along the first-visit loop</text>
+<text x="330" y="664" font-size="12" fill="#52514e">Two readings of the same 28 steps. Top: how big the space feels. Bottom: how calm or tense it is. The loop alternates big and small, and the storm peaks once, in the middle.</text>
+<text x="64" y="686" font-size="12" font-weight="600" fill="#0b0b0b">Space: vast (+2) to cozy (-2)</text>
+<line x1="100" x2="1540" y1="712" y2="712" stroke="#e4e3df" stroke-width="1"/>
+<text x="94" y="716" font-size="10" fill="#8a8984" text-anchor="end">vast</text>
+<line x1="100" x2="1540" y1="779" y2="779" stroke="#c9c8c3" stroke-width="1"/>
+<text x="94" y="783" font-size="10" fill="#8a8984" text-anchor="end">0</text>
+<line x1="100" x2="1540" y1="846" y2="846" stroke="#e4e3df" stroke-width="1"/>
+<text x="94" y="850" font-size="10" fill="#8a8984" text-anchor="end">cozy</text>
+<polyline points="110,712 162.5925925925926,745.5 215.1851851851852,712 267.77777777777777,846 320.3703703703704,745.5 372.962962962963,846 425.55555555555554,829.25 478.14814814814815,728.75 530.7407407407408,846 583.3333333333334,762.25 635.925925925926,712 688.5185185185186,712 741.1111111111111,712 793.7037037037037,829.25 846.2962962962963,728.75 898.8888888888889,728.75 951.4814814814815,795.75 1004.0740740740741,745.5 1056.6666666666667,812.5 1109.2592592592594,846 1161.851851851852,795.75 1214.4444444444446,712 1267.0370370370372,728.75 1319.6296296296298,846 1372.2222222222222,762.25 1424.8148148148148,712 1477.4074074074074,745.5 1530,846" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="110" cy="712" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>1. A1 Dock: space +2</title></circle>
+<circle cx="162.5925925925926" cy="745.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>2. A2 Reed Shore: space +1</title></circle>
+<circle cx="215.1851851851852" cy="712" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>3. A3 Hollow Gate: space +2</title></circle>
+<circle cx="267.77777777777777" cy="846" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>4. B1 Gate Hall: space -2</title></circle>
+<circle cx="320.3703703703704" cy="745.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>5. B2 The Well: space +1</title></circle>
+<circle cx="372.962962962963" cy="846" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>6. B3 Archive (side): space -2</title></circle>
+<circle cx="425.55555555555554" cy="829.25" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>7. D1 Lift: space -1.5</title></circle>
+<circle cx="478.14814814814815" cy="728.75" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>8. D2 Storm Gallery: space +1.5</title></circle>
+<circle cx="530.7407407407408" cy="846" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>9. D3 Antechamber: space -2</title></circle>
+<circle cx="583.3333333333334" cy="762.25" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>10. D4 Arena: space +0.5</title></circle>
+<circle cx="635.925925925926" cy="712" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>11. D5 Crown: space +2</title></circle>
+<circle cx="688.5185185185186" cy="712" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>12. F Ring car east: space +2</title></circle>
+<circle cx="741.1111111111111" cy="712" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>13. C4 Fallen Arm: space +2</title></circle>
+<circle cx="793.7037037037037" cy="829.25" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>14. C3 Procession Shrine: space -1.5</title></circle>
+<circle cx="846.2962962962963" cy="728.75" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>15. C2 Footprint Field: space +1.5</title></circle>
+<circle cx="898.8888888888889" cy="728.75" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>16. C1 Causeway: space +1.5</title></circle>
+<circle cx="951.4814814814815" cy="795.75" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>17. B5 Foundry Row: space -0.5</title></circle>
+<circle cx="1004.0740740740741" cy="745.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>18. B2 The Well (return): space +1</title></circle>
+<circle cx="1056.6666666666667" cy="812.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>19. B4 Lamplighters&#39; Stair: space -1</title></circle>
+<circle cx="1109.2592592592594" cy="846" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>20. E1 Quarters: space -2</title></circle>
+<circle cx="1161.851851851852" cy="795.75" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>21. E2 Bell Tower: space -0.5</title></circle>
+<circle cx="1214.4444444444446" cy="712" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>22. E3 High Shore: space +2</title></circle>
+<circle cx="1267.0370370370372" cy="728.75" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>23. E4 Chain Stair: space +1.5</title></circle>
+<circle cx="1319.6296296296298" cy="846" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>24. E5 Narthex: space -2</title></circle>
+<circle cx="1372.2222222222222" cy="762.25" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>25. E6 Chapel of Light: space +0.5</title></circle>
+<circle cx="1424.8148148148148" cy="712" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>26. E7 Oculus: space +2</title></circle>
+<circle cx="1477.4074074074074" cy="745.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>27. A0 Cage to Pier&#39;s End: space +1</title></circle>
+<circle cx="1530" cy="846" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"><title>28. B1 Gate Hall (cup break): space -2</title></circle>
+<text x="64" y="886" font-size="12" font-weight="600" fill="#0b0b0b">Mood: calm (0) to tense / storm (4)</text>
+<line x1="100" x2="1540" y1="1046" y2="1046" stroke="#e4e3df" stroke-width="1"/>
+<text x="94" y="1050" font-size="10" fill="#8a8984" text-anchor="end">calm</text>
+<line x1="100" x2="1540" y1="979" y2="979" stroke="#e4e3df" stroke-width="1"/>
+<text x="94" y="983" font-size="10" fill="#8a8984" text-anchor="end">2</text>
+<line x1="100" x2="1540" y1="912" y2="912" stroke="#e4e3df" stroke-width="1"/>
+<text x="94" y="916" font-size="10" fill="#8a8984" text-anchor="end">tense</text>
+<polyline points="110,1046 162.5925925925926,1046 215.1851851851852,1029.25 267.77777777777777,1046 320.3703703703704,1029.25 372.962962962963,1046 425.55555555555554,1012.5 478.14814814814815,945.5 530.7407407407408,995.75 583.3333333333334,912 635.925925925926,1046 688.5185185185186,1029.25 741.1111111111111,979 793.7037037037037,1046 846.2962962962963,1012.5 898.8888888888889,995.75 951.4814814814815,1012.5 1004.0740740740741,1046 1056.6666666666667,1046 1109.2592592592594,1046 1161.851851851852,1029.25 1214.4444444444446,1012.5 1267.0370370370372,979 1319.6296296296298,1046 1372.2222222222222,1046 1424.8148148148148,1046 1477.4074074074074,1046 1530,1046" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="110" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>1. A1 Dock: tension 0</title></circle>
+<circle cx="162.5925925925926" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>2. A2 Reed Shore: tension 0</title></circle>
+<circle cx="215.1851851851852" cy="1029.25" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>3. A3 Hollow Gate: tension 0.5</title></circle>
+<circle cx="267.77777777777777" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>4. B1 Gate Hall: tension 0</title></circle>
+<circle cx="320.3703703703704" cy="1029.25" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>5. B2 The Well: tension 0.5</title></circle>
+<circle cx="372.962962962963" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>6. B3 Archive (side): tension 0</title></circle>
+<circle cx="425.55555555555554" cy="1012.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>7. D1 Lift: tension 1</title></circle>
+<circle cx="478.14814814814815" cy="945.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>8. D2 Storm Gallery: tension 3</title></circle>
+<circle cx="530.7407407407408" cy="995.75" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>9. D3 Antechamber: tension 1.5</title></circle>
+<circle cx="583.3333333333334" cy="912" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>10. D4 Arena: tension 4</title></circle>
+<circle cx="635.925925925926" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>11. D5 Crown: tension 0</title></circle>
+<circle cx="688.5185185185186" cy="1029.25" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>12. F Ring car east: tension 0.5</title></circle>
+<circle cx="741.1111111111111" cy="979" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>13. C4 Fallen Arm: tension 2</title></circle>
+<circle cx="793.7037037037037" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>14. C3 Procession Shrine: tension 0</title></circle>
+<circle cx="846.2962962962963" cy="1012.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>15. C2 Footprint Field: tension 1</title></circle>
+<circle cx="898.8888888888889" cy="995.75" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>16. C1 Causeway: tension 1.5</title></circle>
+<circle cx="951.4814814814815" cy="1012.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>17. B5 Foundry Row: tension 1</title></circle>
+<circle cx="1004.0740740740741" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>18. B2 The Well (return): tension 0</title></circle>
+<circle cx="1056.6666666666667" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>19. B4 Lamplighters&#39; Stair: tension 0</title></circle>
+<circle cx="1109.2592592592594" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>20. E1 Quarters: tension 0</title></circle>
+<circle cx="1161.851851851852" cy="1029.25" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>21. E2 Bell Tower: tension 0.5</title></circle>
+<circle cx="1214.4444444444446" cy="1012.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>22. E3 High Shore: tension 1</title></circle>
+<circle cx="1267.0370370370372" cy="979" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>23. E4 Chain Stair: tension 2</title></circle>
+<circle cx="1319.6296296296298" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>24. E5 Narthex: tension 0</title></circle>
+<circle cx="1372.2222222222222" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>25. E6 Chapel of Light: tension 0</title></circle>
+<circle cx="1424.8148148148148" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>26. E7 Oculus: tension 0</title></circle>
+<circle cx="1477.4074074074074" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>27. A0 Cage to Pier&#39;s End: tension 0</title></circle>
+<circle cx="1530" cy="1046" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>28. B1 Gate Hall (cup break): tension 0</title></circle>
+<text x="110" y="702" font-size="10" fill="#52514e" text-anchor="middle">arrival</text>
+<text x="267.77777777777777" y="864" font-size="10" fill="#52514e" text-anchor="middle">counter</text>
+<text x="583.3333333333334" y="902" font-size="10" fill="#52514e" text-anchor="middle">arena peak</text>
+<text x="635.925925925926" y="1036" font-size="10" fill="#52514e" text-anchor="middle">above the storm</text>
+<text x="741.1111111111111" y="969" font-size="10" fill="#52514e" text-anchor="middle">colossus passes</text>
+<text x="1267.0370370370372" y="969" font-size="10" fill="#52514e" text-anchor="middle">vertigo</text>
+<text x="1424.8148148148148" y="702" font-size="10" fill="#52514e" text-anchor="middle">the view</text>
+<text x="1530" y="864" font-size="10" fill="#52514e" text-anchor="middle">cup break</text>
+<rect x="84.7037037037037" y="1068" width="50.592592592592595" height="8" fill="#2a78d6" opacity="0.55"/>
+<text x="110" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">A1</text>
+<text x="110" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">1</text>
+<rect x="137.2962962962963" y="1068" width="50.592592592592595" height="8" fill="#2a78d6" opacity="0.55"/>
+<text x="162.5925925925926" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">A2</text>
+<text x="162.5925925925926" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">2</text>
+<rect x="189.88888888888889" y="1068" width="50.592592592592595" height="8" fill="#2a78d6" opacity="0.55"/>
+<text x="215.1851851851852" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">A3</text>
+<text x="215.1851851851852" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">3</text>
+<rect x="242.48148148148147" y="1068" width="50.592592592592595" height="8" fill="#eb6834" opacity="0.55"/>
+<text x="267.77777777777777" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">B1</text>
+<text x="267.77777777777777" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">4</text>
+<rect x="295.0740740740741" y="1068" width="50.592592592592595" height="8" fill="#eb6834" opacity="0.55"/>
+<text x="320.3703703703704" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">B2</text>
+<text x="320.3703703703704" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">5</text>
+<rect x="347.6666666666667" y="1068" width="50.592592592592595" height="8" fill="#eb6834" opacity="0.55"/>
+<text x="372.962962962963" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">B3</text>
+<text x="372.962962962963" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">6</text>
+<rect x="400.25925925925924" y="1068" width="50.592592592592595" height="8" fill="#eda100" opacity="0.55"/>
+<text x="425.55555555555554" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">D1</text>
+<text x="425.55555555555554" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">7</text>
+<rect x="452.85185185185185" y="1068" width="50.592592592592595" height="8" fill="#eda100" opacity="0.55"/>
+<text x="478.14814814814815" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">D2</text>
+<text x="478.14814814814815" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">8</text>
+<rect x="505.44444444444446" y="1068" width="50.592592592592595" height="8" fill="#eda100" opacity="0.55"/>
+<text x="530.7407407407408" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">D3</text>
+<text x="530.7407407407408" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">9</text>
+<rect x="558.0370370370371" y="1068" width="50.592592592592595" height="8" fill="#eda100" opacity="0.55"/>
+<text x="583.3333333333334" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">D4</text>
+<text x="583.3333333333334" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">10</text>
+<rect x="610.6296296296297" y="1068" width="50.592592592592595" height="8" fill="#eda100" opacity="0.55"/>
+<text x="635.925925925926" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">D5</text>
+<text x="635.925925925926" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">11</text>
+<rect x="663.2222222222223" y="1068" width="50.592592592592595" height="8" fill="#4a3aa7" opacity="0.55"/>
+<text x="688.5185185185186" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">RL</text>
+<text x="688.5185185185186" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">12</text>
+<rect x="715.8148148148148" y="1068" width="50.592592592592595" height="8" fill="#1baf7a" opacity="0.55"/>
+<text x="741.1111111111111" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">C4</text>
+<text x="741.1111111111111" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">13</text>
+<rect x="768.4074074074074" y="1068" width="50.592592592592595" height="8" fill="#1baf7a" opacity="0.55"/>
+<text x="793.7037037037037" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">C3</text>
+<text x="793.7037037037037" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">14</text>
+<rect x="821" y="1068" width="50.592592592592595" height="8" fill="#1baf7a" opacity="0.55"/>
+<text x="846.2962962962963" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">C2</text>
+<text x="846.2962962962963" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">15</text>
+<rect x="873.5925925925926" y="1068" width="50.592592592592595" height="8" fill="#1baf7a" opacity="0.55"/>
+<text x="898.8888888888889" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">C1</text>
+<text x="898.8888888888889" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">16</text>
+<rect x="926.1851851851852" y="1068" width="50.592592592592595" height="8" fill="#eb6834" opacity="0.55"/>
+<text x="951.4814814814815" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">B5</text>
+<text x="951.4814814814815" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">17</text>
+<rect x="978.7777777777778" y="1068" width="50.592592592592595" height="8" fill="#eb6834" opacity="0.55"/>
+<text x="1004.0740740740741" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">B2</text>
+<text x="1004.0740740740741" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">18</text>
+<rect x="1031.3703703703704" y="1068" width="50.592592592592595" height="8" fill="#eb6834" opacity="0.55"/>
+<text x="1056.6666666666667" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">B4</text>
+<text x="1056.6666666666667" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">19</text>
+<rect x="1083.962962962963" y="1068" width="50.592592592592595" height="8" fill="#e87ba4" opacity="0.55"/>
+<text x="1109.2592592592594" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">E1</text>
+<text x="1109.2592592592594" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">20</text>
+<rect x="1136.5555555555557" y="1068" width="50.592592592592595" height="8" fill="#e87ba4" opacity="0.55"/>
+<text x="1161.851851851852" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">E2</text>
+<text x="1161.851851851852" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">21</text>
+<rect x="1189.1481481481483" y="1068" width="50.592592592592595" height="8" fill="#e87ba4" opacity="0.55"/>
+<text x="1214.4444444444446" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">E3</text>
+<text x="1214.4444444444446" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">22</text>
+<rect x="1241.7407407407409" y="1068" width="50.592592592592595" height="8" fill="#e87ba4" opacity="0.55"/>
+<text x="1267.0370370370372" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">E4</text>
+<text x="1267.0370370370372" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">23</text>
+<rect x="1294.3333333333335" y="1068" width="50.592592592592595" height="8" fill="#e87ba4" opacity="0.55"/>
+<text x="1319.6296296296298" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">E5</text>
+<text x="1319.6296296296298" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">24</text>
+<rect x="1346.9259259259259" y="1068" width="50.592592592592595" height="8" fill="#e87ba4" opacity="0.55"/>
+<text x="1372.2222222222222" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">E6</text>
+<text x="1372.2222222222222" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">25</text>
+<rect x="1399.5185185185185" y="1068" width="50.592592592592595" height="8" fill="#e87ba4" opacity="0.55"/>
+<text x="1424.8148148148148" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">E7</text>
+<text x="1424.8148148148148" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">26</text>
+<rect x="1452.111111111111" y="1068" width="50.592592592592595" height="8" fill="#2a78d6" opacity="0.55"/>
+<text x="1477.4074074074074" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">A0</text>
+<text x="1477.4074074074074" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">27</text>
+<rect x="1504.7037037037037" y="1068" width="50.592592592592595" height="8" fill="#eb6834" opacity="0.55"/>
+<text x="1530" y="1090" font-size="10" fill="#0b0b0b" text-anchor="middle">B1</text>
+<text x="1530" y="1102" font-size="9" fill="#8a8984" text-anchor="middle">28</text>
+<text x="64" y="1090" font-size="10" fill="#52514e">room</text>
+<text x="64" y="1102" font-size="10" fill="#52514e">step</text>
+</svg>

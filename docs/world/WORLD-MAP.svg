@@ -1,0 +1,304 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="viz" viewBox="0 0 1600 1329.6" width="1600" height="1329.6">
+<title>dex.place world map, "The Round": side-view map of the final world plan and its pacing curve</title>
+<desc>Side view of the world to scale in player heights, with regions, rooms, the first-round route, four shortcuts, six shrines and the content destinations; below it, space (vast to cozy) and tension (serene to storm) along the route. The same data is in docs/world/WORLD-PLAN.md sections 3, 5, 6 and 10.</desc>
+<style>
+.viz{color-scheme:light;--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#8a8984;--grid:#e4e3df;
+--r1:#2a78d6;--r2:#eb6834;--r3:#1baf7a;--r4:#eda100;--r5:#e87ba4;--s1:#2a78d6;--s2:#eb6834;
+--lake:#cfe3ea;--sheet:#dcebef;--ground:#e3e1dc;--cavity:#f3eadb;--cliff:#ebe8e2;--lm:#b9b7b0;--spire:#d6d4ce;--storm:#c9ccd6;--planet:#eeeeea;--sun:#f4e3b0}
+@media (prefers-color-scheme: dark){.viz{color-scheme:dark;--surface:#1a1a19;--ink:#ffffff;--ink2:#c3c2b7;--muted:#9a998f;--grid:#33332f;
+--r1:#3987e5;--r2:#d95926;--r3:#199e70;--r4:#c98500;--r5:#d55181;--s1:#3987e5;--s2:#d95926;
+--lake:#1f3640;--sheet:#1c2d33;--ground:#2a2926;--cavity:#35302a;--cliff:#262523;--lm:#5d5c57;--spire:#34332f;--storm:#2e3140;--planet:#2c2c2a;--sun:#8a7a45}}
+.bg{fill:var(--surface)}
+text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.t1{font-size:22px;font-weight:700;fill:var(--ink)}.t2{font-size:13px;font-weight:600;fill:var(--ink)}.t3{font-size:13px;fill:var(--ink2)}
+.ax{font-size:10.5px;fill:var(--muted)}.lab{font-size:11px;fill:var(--ink2);font-weight:400}.lab.i{font-style:italic;fill:var(--muted)}.lab.b{font-weight:600;fill:var(--ink)}
+.id{font-size:11px;font-weight:700;fill:var(--ink)}
+.grid{stroke:var(--grid);stroke-width:1}.zero{stroke:var(--muted);stroke-width:1}
+.lm ellipse{stroke:var(--lm)}.sun{fill:var(--sun);stroke:var(--lm)}.shaft{stroke:var(--sun);stroke-width:6;opacity:.8}
+.planet{fill:var(--planet);stroke:var(--grid)}.spire{fill:var(--spire)}.storm ellipse{fill:var(--storm);opacity:.85}
+.seg{fill:var(--spire);opacity:.7}.col ellipse{fill:var(--lm);opacity:.7}.col line{stroke:var(--lm);opacity:.7}
+.lake{fill:var(--lake)}.sheet{fill:var(--sheet)}.ground{fill:var(--ground)}.cavity{fill:var(--cavity)}.cliff{fill:var(--cliff)}
+.room{fill-opacity:.2;stroke-width:1.5}
+.r1{fill:var(--r1);stroke:var(--r1)}.r2{fill:var(--r2);stroke:var(--r2)}.r3{fill:var(--r3);stroke:var(--r3)}.r4{fill:var(--r4);stroke:var(--r4)}.r5{fill:var(--r5);stroke:var(--r5)}
+.inset{fill:var(--surface);stroke:var(--ink2);stroke-width:1}
+.route{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round}.route.thin{stroke-width:1.5;stroke-dasharray:2 3}
+.arrow{fill:var(--ink)}.spawn{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.short{fill:none;stroke:var(--ink2);stroke-width:1.8;stroke-dasharray:7 5}
+.sclab{font-size:11px;font-weight:600;fill:var(--ink2)}
+.shrine{fill:var(--sun);stroke:var(--ink);stroke-width:1}.shn{font-size:9px;font-weight:700;fill:#0b0b0b}
+.pill{fill:var(--surface);stroke:var(--ink);stroke-width:1.2}.pilltx{font-size:11px;font-weight:600;fill:var(--ink)}
+.lead{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2}
+.phase{fill:var(--grid)}
+.line{fill:none;stroke-width:2;stroke-linejoin:round}.line.s1{stroke:var(--s1)}.line.s2{stroke:var(--s2)}
+.dot{stroke:var(--surface);stroke-width:2}.dot.s1{fill:var(--s1)}.dot.s2{fill:var(--s2)}
+.hit{fill:transparent}.pt:hover .dot{r:6}
+</style>
+<rect class="bg" width="1600" height="1329.6"/>
+<text class="t1" x="70" y="34">dex.place world map: "The Round"</text>
+<text class="t3" x="70" y="56">Side view, to scale in H (player height, 80 px). x = west to east, y = height; lake surface = 0. Vertical drawn 1.17x. One screen = 16 x 9 H. Room ids match WORLD-PLAN.md.</text>
+<line class="grid" x1="70" x2="1530" y1="689.2" y2="689.2"/>
+<text class="ax" x="64" y="693.2" text-anchor="end">-40</text>
+<line class="grid" x1="70" x2="1530" y1="621.2" y2="621.2"/>
+<text class="ax" x="64" y="625.2" text-anchor="end">-20</text>
+<line class="grid" x1="70" x2="1530" y1="553.2" y2="553.2"/>
+<text class="ax" x="64" y="557.2" text-anchor="end">0</text>
+<line class="grid" x1="70" x2="1530" y1="485.2" y2="485.2"/>
+<text class="ax" x="64" y="489.2" text-anchor="end">20</text>
+<line class="grid" x1="70" x2="1530" y1="417.2" y2="417.2"/>
+<text class="ax" x="64" y="421.2" text-anchor="end">40</text>
+<line class="grid" x1="70" x2="1530" y1="349.2" y2="349.2"/>
+<text class="ax" x="64" y="353.2" text-anchor="end">60</text>
+<line class="grid" x1="70" x2="1530" y1="281.2" y2="281.2"/>
+<text class="ax" x="64" y="285.2" text-anchor="end">80</text>
+<line class="grid" x1="70" x2="1530" y1="213.2" y2="213.2"/>
+<text class="ax" x="64" y="217.2" text-anchor="end">100</text>
+<text class="ax" x="64" y="186" text-anchor="end">y (H)</text>
+<text class="ax" x="139.8" y="725.6" text-anchor="middle">0</text>
+<text class="ax" x="285.2" y="725.6" text-anchor="middle">50</text>
+<text class="ax" x="430.6" y="725.6" text-anchor="middle">100</text>
+<text class="ax" x="576.1" y="725.6" text-anchor="middle">150</text>
+<text class="ax" x="721.5" y="725.6" text-anchor="middle">200</text>
+<text class="ax" x="866.9" y="725.6" text-anchor="middle">250</text>
+<text class="ax" x="1012.3" y="725.6" text-anchor="middle">300</text>
+<text class="ax" x="1157.7" y="725.6" text-anchor="middle">350</text>
+<text class="ax" x="1303.1" y="725.6" text-anchor="middle">400</text>
+<text class="ax" x="1448.6" y="725.6" text-anchor="middle">450</text>
+<text class="ax" x="1530" y="725.6" text-anchor="end">x (H)</text>
+<g class="lm"><ellipse cx="180.5" cy="356" rx="110.5" ry="88.4" transform="rotate(-14 180.5 356)" fill="none" stroke-width="9" stroke-dasharray="70 10"/></g>
+<circle class="sun" cx="192.2" cy="349.2" r="10"/>
+<line class="shaft" x1="192.2" y1="362.8" x2="174.7" y2="549.8"/>
+<text class="lab i" x="81.6" y="240.4" text-anchor="start">the ring (west landmark): sun in its hole; a colossus wades the far strand</text>
+<circle class="planet" cx="1023.9" cy="226.8" r="43.6"/>
+<polygon class="spire" points="849.4,621.2 983.2,621.2 1012.3,240.4 960,192.8 901.8,226.8"/>
+<g class="storm"><ellipse cx="872.7" cy="315.2" rx="46.5" ry="24.5"/><ellipse cx="925.1" cy="301.6" rx="52.4" ry="27.5"/><ellipse cx="983.2" cy="322" rx="40.7" ry="21.4"/><ellipse cx="837.8" cy="349.2" rx="29.1" ry="15.3"/><ellipse cx="1006.5" cy="356" rx="29.1" ry="15.3"/></g>
+<text class="lab i" x="1012.3" y="383.2" text-anchor="start">storm sits on the spire</text>
+<text class="lab i" x="1012.3" y="396.8" text-anchor="start">(breaks at the Blade)</text>
+<polygon class="seg" points="1047.2,254 1070.5,233.6 1303.1,390 1279.9,417.2"/>
+<text class="lab i" x="483" y="447.8" text-anchor="middle">colossi cross close behind the causeway</text>
+<rect class="lake" x="70" y="553.2" width="325.7" height="20.4"/>
+<rect class="sheet" x="395.7" y="548.1" width="244.3" height="8.5"/>
+<polygon class="ground" points="238.7,552.2 273.6,532.8 360.8,532.8 395.7,552.5 453.9,553.2 640,553.2 640,709.6 238.7,709.6"/>
+<polygon class="ground" points="686.6,553.2 849.4,553.2 849.4,709.6 686.6,709.6"/>
+<polygon class="ground" points="983.2,621.2 1012.3,709.6 826.2,709.6 849.4,621.2"/>
+<polygon class="cavity" points="640,546.4 686.6,546.4 692.4,604.2 936.7,604.2 942.5,702.8 634.2,702.8"/>
+<polygon class="cliff" points="1279.9,417.2 1530,417.2 1530,580.4 1303.1,580.4"/>
+<text class="lab i" x="1419.5" y="519.2" text-anchor="middle">far cliffs</text>
+<text class="lab i" x="131.1" y="564.1" text-anchor="start">the lake</text>
+<text class="lab i" x="470" y="566.8" text-anchor="start">flooded flats reflect the sky</text>
+<text class="lab i" x="945.4" y="651.8" text-anchor="start">the hollow: a city inside a fallen structure</text>
+<rect class="room r1" x="81.6" y="522.6" width="58.2" height="29.6" rx="2"><title>A0 Pier's End</title></rect>
+<rect class="room r1" x="139.8" y="522.6" width="98.9" height="29.6" rx="2"><title>A1 The Dock</title></rect>
+<rect class="room r1" x="238.7" y="512.4" width="34.9" height="39.8" rx="2"><title>A2 Cliff Stair</title></rect>
+<rect class="room r1" x="273.6" y="502.2" width="40.7" height="30.6" rx="2"><title>A3 Lodge</title></rect>
+<rect class="room r1" x="314.3" y="502.2" width="46.5" height="30.6" rx="2"><title>A4 Yard</title></rect>
+<rect class="room r2" x="360.8" y="519.2" width="93.1" height="33.3" rx="2"><title>B1 Reed Shallows</title></rect>
+<rect class="room r2" x="453.9" y="509" width="186.1" height="40.8" rx="2"><title>B2 The Causeway</title></rect>
+<rect class="room r2" x="605.1" y="481.8" width="34.9" height="27.2" rx="2"><title>B4 Stonetop (optional)</title></rect>
+<rect class="room r2" x="640" y="532.8" width="46.5" height="129.2" rx="2"><title>B5 Hollow Mouth</title></rect>
+<rect class="room r3" x="686.6" y="614.4" width="186.1" height="47.6" rx="2"><title>C1 Foundry Market (hub)</title></rect>
+<rect class="room r3" x="791.3" y="663.7" width="69.8" height="20.4" rx="2"><title>C2 Archive</title></rect>
+<rect class="room r3" x="872.7" y="628" width="52.4" height="34" rx="2"><title>C3 Lift Foot</title></rect>
+<rect class="room r4" x="855.3" y="294.8" width="116.3" height="122.4" rx="2"><title>D2 Outer Climb</title></rect>
+<rect class="room r4" x="872.7" y="254" width="93.1" height="40.8" rx="2"><title>D3 Crown (arena)</title></rect>
+<rect class="room r4" x="965.8" y="254" width="93.1" height="40.8" rx="2"><title>D4 The Blade</title></rect>
+<rect class="room r5" x="1291.5" y="386.6" width="40.7" height="30.6" rx="2"><title>E2 Porch</title></rect>
+<rect class="room r5" x="1332.2" y="369.6" width="139.6" height="47.6" rx="2"><title>E3 Chapel of Light</title></rect>
+<rect class="room r5" x="1471.8" y="369.6" width="40.7" height="47.6" rx="2"><title>E4 Balcony</title></rect>
+<rect class="room r4" x="901.8" y="417.2" width="17.5" height="210.8" rx="2"><title>D1 Lift Ride</title></rect>
+<text class="id" x="928" y="526" text-anchor="start">D1</text><text class="lab" x="928" y="541" text-anchor="start">Lift Ride</text>
+<rect class="inset" x="605.1" y="536.2" width="23.3" height="10.2" rx="1"><title>B3 Bus Shelter (shrine 2)</title></rect>
+<polygon class="room r5" points="1058.8,267.6 1058.8,240.4 1291.5,390 1291.5,417.2"><title>E1 Pilgrim Path</title></polygon>
+<text class="id" x="1157.7" y="281.2" text-anchor="start">E1</text><text class="lab" x="1157.7" y="296.2" text-anchor="start">Pilgrim Path (dusk)</text>
+<rect class="inset" x="904.7" y="350.9" width="20.4" height="11.9" rx="1"><title>D2 Storm Alcove (shrine 4)</title></rect>
+<polyline class="route" points="186.3,551.2 238.7,551.2 273.6,531.8 360.8,531.8 395.7,551.2 453.9,548.4 640,545 663.3,545 663.3,660.6 872.7,660.6 910.5,660.6 910.5,415.5 866.9,393.4 960,369.6 866.9,345.8 960,322 884.3,293.4 965.8,293.4 1058.8,266.2 1291.5,415.8 1471.8,415.8 1495.1,376.4"/>
+<polyline class="route thin" points="186.3,551.2 104.9,551.2"/>
+<polyline class="route thin" points="808.7,660.6 826.2,682.4"/>
+<polyline class="route thin" points="622.6,545 622.6,485.2"/>
+<polygon class="arrow" points="222.4,551.2 209.8,547 209.8,555.4"/>
+<polygon class="arrow" points="554,546.7 541.4,542.5 541.4,550.9"/>
+<polygon class="arrow" points="663.3,607.8 667.5,595.2 659.1,595.2"/>
+<polygon class="arrow" points="772.1,660.6 759.5,656.4 759.5,664.8"/>
+<polygon class="arrow" points="910.5,512.2 906.3,524.8 914.7,524.8"/>
+<polygon class="arrow" points="932.1,293.4 919.5,289.2 919.5,297.6"/>
+<polygon class="arrow" points="1181.3,344.5 1172.4,334.6 1168.2,341.8"/>
+<polygon class="arrow" points="1409,415.8 1396.4,411.6 1396.4,420"/>
+<circle class="spawn" cx="186.3" cy="551.2" r="5"/>
+<text class="lab b" x="192.2" y="541.6" text-anchor="start">spawn</text>
+<path class="short" d="M407.4,550.5 L424.8,550.5"/>
+<text class="sclab" x="416.1" y="568.2" text-anchor="middle">S1 rope bridge</text>
+<path class="short" d="M110.7,556.6 L110.7,580.4 L651.7,580.4 L651.7,553.2"/>
+<text class="sclab" x="0" y="0" text-anchor="start"></text>
+<text class="sclab" x="87.5" y="595.4" text-anchor="start">S2 ferry: Pier's End, across the lake and through the culvert (after the lever)</text>
+<path class="short" d="M925.1,641.6 C1012.3,553.2 1012.3,383.2 965.8,284.6"/>
+<text class="sclab" x="1000.7" y="471.6" text-anchor="start">S3 express lift</text>
+<path class="short" d="M1500.9,373 C1477.6,43.2 372.5,43.2 302.7,500.5"/>
+<text class="sclab" x="919.2" y="133.3" text-anchor="middle">S4 the sky door: balcony latch to the lodge loft</text>
+<g><polygon class="shrine" points="343.4,515.8 349.4,522.8 343.4,529.8 337.4,522.8"/><text class="shn" x="343.4" y="526.3" text-anchor="middle">1</text><title>Shrine 1: lantern, offering bowl, donation box and donor plaque</title></g>
+<g><polygon class="shrine" points="616.8,529.4 622.8,536.4 616.8,543.4 610.8,536.4"/><text class="shn" x="616.8" y="539.9" text-anchor="middle">2</text><title>Shrine 2: lantern, offering bowl, donation box and donor plaque</title></g>
+<g><polygon class="shrine" points="768,645 774,652 768,659 762,652"/><text class="shn" x="768" y="655.5" text-anchor="middle">3</text><title>Shrine 3: lantern, offering bowl, donation box and donor plaque</title></g>
+<g><polygon class="shrine" points="914.9,339 920.9,346 914.9,353 908.9,346"/><text class="shn" x="914.9" y="349.5" text-anchor="middle">4</text><title>Shrine 4: lantern, offering bowl, donation box and donor plaque</title></g>
+<g><polygon class="shrine" points="1186.8,331.5 1192.8,338.5 1186.8,345.5 1180.8,338.5"/><text class="shn" x="1186.8" y="342" text-anchor="middle">5</text><title>Shrine 5: lantern, offering bowl, donation box and donor plaque</title></g>
+<g><polygon class="shrine" points="1309,400.2 1315,407.2 1309,414.2 1303,407.2"/><text class="shn" x="1309" y="410.7" text-anchor="middle">6</text><title>Shrine 6: lantern, offering bowl, donation box and donor plaque</title></g>
+<text class="id" x="78.7" y="512.4" text-anchor="start">A0<tspan class="lab" dx="4">Pier's End</tspan></text>
+<text class="id" x="189.2" y="490.3" text-anchor="middle">A1<tspan class="lab" dx="4">The Dock</tspan></text>
+<text class="id" x="256.1" y="469.9" text-anchor="middle">A2<tspan class="lab" dx="4">Cliff Stair</tspan></text>
+<text class="id" x="297" y="493.7" text-anchor="end">A3<tspan class="lab" dx="4">Lodge</tspan></text>
+<text class="id" x="343.4" y="493.7" text-anchor="middle">A4<tspan class="lab" dx="4">Yard</tspan></text>
+<text class="id" x="407.4" y="507.3" text-anchor="middle">B1<tspan class="lab" dx="4">Reed Shallows</tspan></text>
+<text class="id" x="529.5" y="497.1" text-anchor="middle">B2<tspan class="lab" dx="4">The Causeway</tspan></text>
+<text class="id" x="576.1" y="469.9" text-anchor="middle">B4<tspan class="lab" dx="4">Stonetop (optional)</tspan></text>
+<text class="id" x="709.8" y="520.9" text-anchor="start">B5<tspan class="lab" dx="4">Hollow Mouth</tspan></text>
+<text class="id" x="762.2" y="634.8" text-anchor="middle">C1<tspan class="lab" dx="4">Foundry Market (hub)</tspan></text>
+<text class="id" x="750.6" y="697.7" text-anchor="middle">C2<tspan class="lab" dx="4">Archive</tspan></text>
+<text class="id" x="898.9" y="677.3" text-anchor="middle">C3<tspan class="lab" dx="4">Lift Foot</tspan></text>
+<text class="id" x="802.9" y="356" text-anchor="end">D2<tspan class="lab" dx="4">Outer Climb</tspan></text>
+<text class="id" x="919.2" y="223.4" text-anchor="middle">D3<tspan class="lab" dx="4">Crown (arena)</tspan></text>
+<text class="id" x="1012.3" y="223.4" text-anchor="middle">D4<tspan class="lab" dx="4">The Blade</tspan></text>
+<text class="id" x="1311.9" y="441" text-anchor="middle">E2<tspan class="lab" dx="4">Porch</tspan></text>
+<text class="id" x="1402" y="357.7" text-anchor="middle">E3<tspan class="lab" dx="4">Chapel of Light</tspan></text>
+<text class="id" x="1492.2" y="441" text-anchor="middle">E4<tspan class="lab" dx="4">Balcony</tspan></text>
+<text class="id" x="600.8" y="532.1" text-anchor="end">B3<tspan class="lab" dx="4">Shelter</tspan></text>
+<g><rect class="pill" x="225.4" y="425.6" width="119.6" height="17" rx="8.5"/><text class="pilltx" x="285.2" y="437.6" text-anchor="middle">Account + Donate</text></g>
+<g><rect class="pill" x="326.7" y="398.4" width="80" height="17" rx="8.5"/><text class="pilltx" x="366.7" y="410.4" text-anchor="middle">Map banner</text></g>
+<g><rect class="pill" x="856.1" y="191" width="126.2" height="17" rx="8.5"/><text class="pilltx" x="919.2" y="203" text-anchor="middle">Downloads (arena)</text></g>
+<g><rect class="pill" x="776.3" y="544.6" width="99.8" height="17" rx="8.5"/><text class="pilltx" x="826.2" y="556.6" text-anchor="middle">Documentation</text></g>
+<g><rect class="pill" x="1319.1" y="316.8" width="165.8" height="17" rx="8.5"/><text class="pilltx" x="1402" y="328.8" text-anchor="middle">Illustrations (9 works)</text></g>
+<g><rect class="pill" x="33.6" y="459.6" width="165.8" height="17" rx="8.5"/><text class="pilltx" x="116.5" y="471.6" text-anchor="middle">Rest, ferry, the ending</text></g>
+<line class="lead" x1="285.2" y1="445.8" x2="285.2" y2="483.5"/>
+<line class="lead" x1="366.7" y1="418.6" x2="346.3" y2="483.5"/>
+<line class="lead" x1="826.2" y1="568.5" x2="826.2" y2="612.7"/>
+<line class="lead" x1="116.5" y1="480.1" x2="116.5" y2="501.5"/>
+<text class="t2" x="70" y="749.6">Regions</text>
+<rect class="room r1" x="140" y="738.6" width="16" height="12" rx="2"/><text class="lab" x="162" y="749.6">A Ringwater</text>
+<rect class="room r2" x="253.3" y="738.6" width="16" height="12" rx="2"/><text class="lab" x="275.3" y="749.6">B Shore and Plain</text>
+<rect class="room r3" x="404.4" y="738.6" width="16" height="12" rx="2"/><text class="lab" x="426.4" y="749.6">C The Hollow</text>
+<rect class="room r4" x="524" y="738.6" width="16" height="12" rx="2"/><text class="lab" x="546" y="749.6">D The Spire</text>
+<rect class="room r5" x="637.3" y="738.6" width="16" height="12" rx="2"/><text class="lab" x="659.3" y="749.6">E Pilgrim Path and Chapel</text>
+<line class="route" x1="848.8" x2="874.8" y1="744.6" y2="744.6"/><text class="lab" x="880.8" y="749.6">first round</text>
+<line class="short" x1="958.8" x2="984.8" y1="744.6" y2="744.6"/><text class="lab" x="990.8" y="749.6">shortcut, opened once from its far side</text>
+<polygon class="shrine" points="1226.8,737.6 1232.8,744.6 1226.8,751.6 1220.8,744.6"/><text class="lab" x="1238.8" y="749.6">shrine n (rest, donation box)</text>
+<text class="t1" x="70" y="801.6" font-size="18">Pacing along the first round</text>
+<text class="t3" x="70" y="821.6">Two panels on the same route axis (beats in walking order). Values are design intent; a playtest checks them. Hover a point for its value and time.</text>
+<rect class="phase" x="101" y="841.6" width="220.6" height="18" rx="3"/><text class="ax" x="211.3" y="854.6" text-anchor="middle">serene (morning)</text>
+<rect class="phase" x="344.5" y="841.6" width="281.5" height="18" rx="3"/><text class="ax" x="485.3" y="854.6" text-anchor="middle">wind rising, overcast</text>
+<rect class="phase" x="648.8" y="841.6" width="159.8" height="18" rx="3"/><text class="ax" x="728.7" y="854.6" text-anchor="middle">sheltered underground</text>
+<rect class="phase" x="831.4" y="841.6" width="220.6" height="18" rx="3"/><text class="ax" x="941.7" y="854.6" text-anchor="middle">storm</text>
+<rect class="phase" x="1074.9" y="841.6" width="38" height="18" rx="3"/><text class="ax" x="1093.9" y="854.6" text-anchor="middle">break</text>
+<rect class="phase" x="1135.8" y="841.6" width="281.5" height="18" rx="3"/><text class="ax" x="1276.5" y="854.6" text-anchor="middle">after the storm (dusk)</text>
+<rect class="phase" x="1440.1" y="841.6" width="98.9" height="18" rx="3"/><text class="ax" x="1489.5" y="854.6" text-anchor="middle">home</text>
+<text class="t2" x="70" y="883.6">Space: vast (+5) to cozy (-5)</text>
+<line class="grid" x1="110" x2="1530" y1="1023.6" y2="1023.6"/>
+<text class="ax" x="104" y="1027.6" text-anchor="end">−5 cozy</text>
+<line class="zero" x1="110" x2="1530" y1="958.6" y2="958.6"/>
+<text class="ax" x="104" y="962.6" text-anchor="end">0</text>
+<line class="grid" x1="110" x2="1530" y1="893.6" y2="893.6"/>
+<text class="ax" x="104" y="897.6" text-anchor="end">+5 vast</text>
+<polyline class="line s1" points="120,893.6 180.9,932.6 241.7,1010.6 302.6,945.6 363.5,906.6 424.3,893.6 485.2,997.6 546.1,893.6 607,919.6 667.8,945.6 728.7,1023.6 789.6,984.6 850.4,906.6 911.3,919.6 972.2,1010.6 1033,945.6 1093.9,893.6 1154.8,906.6 1215.7,971.6 1276.5,984.6 1337.4,945.6 1398.3,893.6 1459.1,1010.6 1520,958.6"/>
+<g class="pt"><circle class="hit" cx="120" cy="893.6" r="11"/><circle class="dot s1" cx="120" cy="893.6" r="4.5"/><title>A1 Dock (arrival) (0:00): Space +5</title></g>
+<g class="pt"><circle class="hit" cx="180.9" cy="932.6" r="11"/><circle class="dot s1" cx="180.9" cy="932.6" r="4.5"/><title>A2 Cliff Stair (0:12): Space +2</title></g>
+<g class="pt"><circle class="hit" cx="241.7" cy="1010.6" r="11"/><circle class="dot s1" cx="241.7" cy="1010.6" r="4.5"/><title>A3 Lodge (0:20): Space -4</title></g>
+<g class="pt"><circle class="hit" cx="302.6" cy="945.6" r="11"/><circle class="dot s1" cx="302.6" cy="945.6" r="4.5"/><title>A4 Yard, shrine 1 (1:10): Space +1</title></g>
+<g class="pt"><circle class="hit" cx="363.5" cy="906.6" r="11"/><circle class="dot s1" cx="363.5" cy="906.6" r="4.5"/><title>B1 Reed Shallows (1:35): Space +4</title></g>
+<g class="pt"><circle class="hit" cx="424.3" cy="893.6" r="11"/><circle class="dot s1" cx="424.3" cy="893.6" r="4.5"/><title>B2 Causeway (2:05): Space +5</title></g>
+<g class="pt"><circle class="hit" cx="485.2" cy="997.6" r="11"/><circle class="dot s1" cx="485.2" cy="997.6" r="4.5"/><title>B3 Bus Shelter (2:40): Space -3</title></g>
+<g class="pt"><circle class="hit" cx="546.1" cy="893.6" r="11"/><circle class="dot s1" cx="546.1" cy="893.6" r="4.5"/><title>B4 Stonetop (opt.) (2:50): Space +5</title></g>
+<g class="pt"><circle class="hit" cx="607" cy="919.6" r="11"/><circle class="dot s1" cx="607" cy="919.6" r="4.5"/><title>B5 Hollow Mouth (3:10): Space +3</title></g>
+<g class="pt"><circle class="hit" cx="667.8" cy="945.6" r="11"/><circle class="dot s1" cx="667.8" cy="945.6" r="4.5"/><title>C1 Market (3:35): Space +1</title></g>
+<g class="pt"><circle class="hit" cx="728.7" cy="1023.6" r="11"/><circle class="dot s1" cx="728.7" cy="1023.6" r="4.5"/><title>C2 Archive (4:10): Space -5</title></g>
+<g class="pt"><circle class="hit" cx="789.6" cy="984.6" r="11"/><circle class="dot s1" cx="789.6" cy="984.6" r="4.5"/><title>C3 Lift Foot (5:10): Space -2</title></g>
+<g class="pt"><circle class="hit" cx="850.4" cy="906.6" r="11"/><circle class="dot s1" cx="850.4" cy="906.6" r="4.5"/><title>D1 Lift Ride (5:30): Space +4</title></g>
+<g class="pt"><circle class="hit" cx="911.3" cy="919.6" r="11"/><circle class="dot s1" cx="911.3" cy="919.6" r="4.5"/><title>D2 Outer Climb (5:50): Space +3</title></g>
+<g class="pt"><circle class="hit" cx="972.2" cy="1010.6" r="11"/><circle class="dot s1" cx="972.2" cy="1010.6" r="4.5"/><title>D2 Storm Alcove (6:40): Space -4</title></g>
+<g class="pt"><circle class="hit" cx="1033" cy="945.6" r="11"/><circle class="dot s1" cx="1033" cy="945.6" r="4.5"/><title>D3 Crown (arena) (7:20): Space +1</title></g>
+<g class="pt"><circle class="hit" cx="1093.9" cy="893.6" r="11"/><circle class="dot s1" cx="1093.9" cy="893.6" r="4.5"/><title>D4 Blade (8:20): Space +5</title></g>
+<g class="pt"><circle class="hit" cx="1154.8" cy="906.6" r="11"/><circle class="dot s1" cx="1154.8" cy="906.6" r="4.5"/><title>E1 Pilgrim Path (8:40): Space +4</title></g>
+<g class="pt"><circle class="hit" cx="1215.7" cy="971.6" r="11"/><circle class="dot s1" cx="1215.7" cy="971.6" r="4.5"/><title>E1 shrine 5 (9:05): Space -1</title></g>
+<g class="pt"><circle class="hit" cx="1276.5" cy="984.6" r="11"/><circle class="dot s1" cx="1276.5" cy="984.6" r="4.5"/><title>E2 Porch (9:35): Space -2</title></g>
+<g class="pt"><circle class="hit" cx="1337.4" cy="945.6" r="11"/><circle class="dot s1" cx="1337.4" cy="945.6" r="4.5"/><title>E3 Chapel (9:50): Space +1</title></g>
+<g class="pt"><circle class="hit" cx="1398.3" cy="893.6" r="11"/><circle class="dot s1" cx="1398.3" cy="893.6" r="4.5"/><title>E4 Balcony (12:50): Space +5</title></g>
+<g class="pt"><circle class="hit" cx="1459.1" cy="1010.6" r="11"/><circle class="dot s1" cx="1459.1" cy="1010.6" r="4.5"/><title>A3 Lodge loft (13:20): Space -4</title></g>
+<g class="pt"><circle class="hit" cx="1520" cy="958.6" r="11"/><circle class="dot s1" cx="1520" cy="958.6" r="4.5"/><title>A0 Pier's End (13:45): Space 0</title></g>
+<text class="t2" x="70" y="1055.6">Tension: serene (0) to storm (10)</text>
+<line class="grid" x1="110" x2="1530" y1="1195.6" y2="1195.6"/>
+<text class="ax" x="104" y="1199.6" text-anchor="end">0 serene</text>
+<line class="grid" x1="110" x2="1530" y1="1130.6" y2="1130.6"/>
+<text class="ax" x="104" y="1134.6" text-anchor="end">5</text>
+<line class="grid" x1="110" x2="1530" y1="1065.6" y2="1065.6"/>
+<text class="ax" x="104" y="1069.6" text-anchor="end">10 storm</text>
+<polyline class="line s2" points="120,1182.6 180.9,1182.6 241.7,1195.6 302.6,1182.6 363.5,1156.6 424.3,1156.6 485.2,1169.6 546.1,1143.6 607,1143.6 667.8,1169.6 728.7,1195.6 789.6,1169.6 850.4,1130.6 911.3,1091.6 972.2,1143.6 1033,1065.6 1093.9,1169.6 1154.8,1182.6 1215.7,1195.6 1276.5,1195.6 1337.4,1195.6 1398.3,1195.6 1459.1,1195.6 1520,1195.6"/>
+<g class="pt"><circle class="hit" cx="120" cy="1182.6" r="11"/><circle class="dot s2" cx="120" cy="1182.6" r="4.5"/><title>A1 Dock (arrival) (0:00): Tension 1</title></g>
+<g class="pt"><circle class="hit" cx="180.9" cy="1182.6" r="11"/><circle class="dot s2" cx="180.9" cy="1182.6" r="4.5"/><title>A2 Cliff Stair (0:12): Tension 1</title></g>
+<g class="pt"><circle class="hit" cx="241.7" cy="1195.6" r="11"/><circle class="dot s2" cx="241.7" cy="1195.6" r="4.5"/><title>A3 Lodge (0:20): Tension 0</title></g>
+<g class="pt"><circle class="hit" cx="302.6" cy="1182.6" r="11"/><circle class="dot s2" cx="302.6" cy="1182.6" r="4.5"/><title>A4 Yard, shrine 1 (1:10): Tension 1</title></g>
+<g class="pt"><circle class="hit" cx="363.5" cy="1156.6" r="11"/><circle class="dot s2" cx="363.5" cy="1156.6" r="4.5"/><title>B1 Reed Shallows (1:35): Tension 3</title></g>
+<g class="pt"><circle class="hit" cx="424.3" cy="1156.6" r="11"/><circle class="dot s2" cx="424.3" cy="1156.6" r="4.5"/><title>B2 Causeway (2:05): Tension 3</title></g>
+<g class="pt"><circle class="hit" cx="485.2" cy="1169.6" r="11"/><circle class="dot s2" cx="485.2" cy="1169.6" r="4.5"/><title>B3 Bus Shelter (2:40): Tension 2</title></g>
+<g class="pt"><circle class="hit" cx="546.1" cy="1143.6" r="11"/><circle class="dot s2" cx="546.1" cy="1143.6" r="4.5"/><title>B4 Stonetop (opt.) (2:50): Tension 4</title></g>
+<g class="pt"><circle class="hit" cx="607" cy="1143.6" r="11"/><circle class="dot s2" cx="607" cy="1143.6" r="4.5"/><title>B5 Hollow Mouth (3:10): Tension 4</title></g>
+<g class="pt"><circle class="hit" cx="667.8" cy="1169.6" r="11"/><circle class="dot s2" cx="667.8" cy="1169.6" r="4.5"/><title>C1 Market (3:35): Tension 2</title></g>
+<g class="pt"><circle class="hit" cx="728.7" cy="1195.6" r="11"/><circle class="dot s2" cx="728.7" cy="1195.6" r="4.5"/><title>C2 Archive (4:10): Tension 0</title></g>
+<g class="pt"><circle class="hit" cx="789.6" cy="1169.6" r="11"/><circle class="dot s2" cx="789.6" cy="1169.6" r="4.5"/><title>C3 Lift Foot (5:10): Tension 2</title></g>
+<g class="pt"><circle class="hit" cx="850.4" cy="1130.6" r="11"/><circle class="dot s2" cx="850.4" cy="1130.6" r="4.5"/><title>D1 Lift Ride (5:30): Tension 5</title></g>
+<g class="pt"><circle class="hit" cx="911.3" cy="1091.6" r="11"/><circle class="dot s2" cx="911.3" cy="1091.6" r="4.5"/><title>D2 Outer Climb (5:50): Tension 8</title></g>
+<g class="pt"><circle class="hit" cx="972.2" cy="1143.6" r="11"/><circle class="dot s2" cx="972.2" cy="1143.6" r="4.5"/><title>D2 Storm Alcove (6:40): Tension 4</title></g>
+<g class="pt"><circle class="hit" cx="1033" cy="1065.6" r="11"/><circle class="dot s2" cx="1033" cy="1065.6" r="4.5"/><title>D3 Crown (arena) (7:20): Tension 10</title></g>
+<g class="pt"><circle class="hit" cx="1093.9" cy="1169.6" r="11"/><circle class="dot s2" cx="1093.9" cy="1169.6" r="4.5"/><title>D4 Blade (8:20): Tension 2</title></g>
+<g class="pt"><circle class="hit" cx="1154.8" cy="1182.6" r="11"/><circle class="dot s2" cx="1154.8" cy="1182.6" r="4.5"/><title>E1 Pilgrim Path (8:40): Tension 1</title></g>
+<g class="pt"><circle class="hit" cx="1215.7" cy="1195.6" r="11"/><circle class="dot s2" cx="1215.7" cy="1195.6" r="4.5"/><title>E1 shrine 5 (9:05): Tension 0</title></g>
+<g class="pt"><circle class="hit" cx="1276.5" cy="1195.6" r="11"/><circle class="dot s2" cx="1276.5" cy="1195.6" r="4.5"/><title>E2 Porch (9:35): Tension 0</title></g>
+<g class="pt"><circle class="hit" cx="1337.4" cy="1195.6" r="11"/><circle class="dot s2" cx="1337.4" cy="1195.6" r="4.5"/><title>E3 Chapel (9:50): Tension 0</title></g>
+<g class="pt"><circle class="hit" cx="1398.3" cy="1195.6" r="11"/><circle class="dot s2" cx="1398.3" cy="1195.6" r="4.5"/><title>E4 Balcony (12:50): Tension 0</title></g>
+<g class="pt"><circle class="hit" cx="1459.1" cy="1195.6" r="11"/><circle class="dot s2" cx="1459.1" cy="1195.6" r="4.5"/><title>A3 Lodge loft (13:20): Tension 0</title></g>
+<g class="pt"><circle class="hit" cx="1520" cy="1195.6" r="11"/><circle class="dot s2" cx="1520" cy="1195.6" r="4.5"/><title>A0 Pier's End (13:45): Tension 0</title></g>
+<text class="lab b" x="1043" y="1069.6">arena peak, 10</text>
+<text class="lab" x="1103.9" y="1161.6">the storm breaks</text>
+<text class="lab" x="728.7" y="1041.6" text-anchor="middle">archive, coziest</text>
+<text class="ax" transform="translate(120,1209.6) rotate(-38)" text-anchor="end">A1 Dock (arrival)</text>
+<line class="grid" x1="120" x2="120" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(180.9,1209.6) rotate(-38)" text-anchor="end">A2 Cliff Stair</text>
+<line class="grid" x1="180.9" x2="180.9" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(241.7,1209.6) rotate(-38)" text-anchor="end">A3 Lodge</text>
+<line class="grid" x1="241.7" x2="241.7" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(302.6,1209.6) rotate(-38)" text-anchor="end">A4 Yard, shrine 1</text>
+<line class="grid" x1="302.6" x2="302.6" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(363.5,1209.6) rotate(-38)" text-anchor="end">B1 Reed Shallows</text>
+<line class="grid" x1="363.5" x2="363.5" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(424.3,1209.6) rotate(-38)" text-anchor="end">B2 Causeway</text>
+<line class="grid" x1="424.3" x2="424.3" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(485.2,1209.6) rotate(-38)" text-anchor="end">B3 Bus Shelter</text>
+<line class="grid" x1="485.2" x2="485.2" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(546.1,1209.6) rotate(-38)" text-anchor="end">B4 Stonetop (opt.)</text>
+<line class="grid" x1="546.1" x2="546.1" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(607,1209.6) rotate(-38)" text-anchor="end">B5 Hollow Mouth</text>
+<line class="grid" x1="607" x2="607" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(667.8,1209.6) rotate(-38)" text-anchor="end">C1 Market</text>
+<line class="grid" x1="667.8" x2="667.8" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(728.7,1209.6) rotate(-38)" text-anchor="end">C2 Archive</text>
+<line class="grid" x1="728.7" x2="728.7" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(789.6,1209.6) rotate(-38)" text-anchor="end">C3 Lift Foot</text>
+<line class="grid" x1="789.6" x2="789.6" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(850.4,1209.6) rotate(-38)" text-anchor="end">D1 Lift Ride</text>
+<line class="grid" x1="850.4" x2="850.4" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(911.3,1209.6) rotate(-38)" text-anchor="end">D2 Outer Climb</text>
+<line class="grid" x1="911.3" x2="911.3" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(972.2,1209.6) rotate(-38)" text-anchor="end">D2 Storm Alcove</text>
+<line class="grid" x1="972.2" x2="972.2" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(1033,1209.6) rotate(-38)" text-anchor="end">D3 Crown (arena)</text>
+<line class="grid" x1="1033" x2="1033" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(1093.9,1209.6) rotate(-38)" text-anchor="end">D4 Blade</text>
+<line class="grid" x1="1093.9" x2="1093.9" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(1154.8,1209.6) rotate(-38)" text-anchor="end">E1 Pilgrim Path</text>
+<line class="grid" x1="1154.8" x2="1154.8" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(1215.7,1209.6) rotate(-38)" text-anchor="end">E1 shrine 5</text>
+<line class="grid" x1="1215.7" x2="1215.7" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(1276.5,1209.6) rotate(-38)" text-anchor="end">E2 Porch</text>
+<line class="grid" x1="1276.5" x2="1276.5" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(1337.4,1209.6) rotate(-38)" text-anchor="end">E3 Chapel</text>
+<line class="grid" x1="1337.4" x2="1337.4" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(1398.3,1209.6) rotate(-38)" text-anchor="end">E4 Balcony</text>
+<line class="grid" x1="1398.3" x2="1398.3" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(1459.1,1209.6) rotate(-38)" text-anchor="end">A3 Lodge loft</text>
+<line class="grid" x1="1459.1" x2="1459.1" y1="893.6" y2="1195.6" opacity="0.5"/>
+<text class="ax" transform="translate(1520,1209.6) rotate(-38)" text-anchor="end">A0 Pier's End</text>
+<line class="grid" x1="1520" x2="1520" y1="893.6" y2="1195.6" opacity="0.5"/>
+</svg>

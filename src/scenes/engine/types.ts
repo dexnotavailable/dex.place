@@ -1,12 +1,14 @@
 // The scene contract. A scene file default-exports a SceneDef; the engine
-// calls build(ctx) whenever the resolution mode changes (near 640x360, far
-// 960x540), so a scene regenerates at the new pixel size instead of scaling.
+// calls build(ctx) whenever the resolution mode changes (world 1280x720, the
+// locked view; near 640x360 and far 960x540, the old prototype sizes kept for
+// comparison), so a scene regenerates at the new pixel size instead of scaling.
+// The sizes themselves live in scale.ts.
 
 import type { Hex } from "./palette.ts";
 import type { Pix } from "./pix.ts";
 
-export type Mode = "near" | "far";
-export const RESOLUTIONS: Record<Mode, [number, number]> = { near: [640, 360], far: [960, 540] };
+export type Mode = "world" | "near" | "far";
+export { RESOLUTIONS } from "./scale.ts";
 
 export type Blend = "over" | "add";
 
@@ -35,6 +37,14 @@ export interface LayerCommon {
    * The engine scissors to it, so a thin band costs only its own pixels.
    */
   bounds?: { y0: number; y1: number; x0?: number; x1?: number };
+  /**
+   * With reflect: the mirrored copy fades out over this many px below its
+   * waterline (stepped, dithered), so a reflection dims with distance from the
+   * thing that casts it. 0 / undefined = no fade (the old behaviour).
+   */
+  reflectFade?: number;
+  /** With reflect: darken the mirrored copy by this much (0..1, default 0). */
+  reflectDim?: number;
 }
 
 /** A layer computed per pixel by scene GLSL. body must define vec4 layer(vec2 p, vec2 s). */
@@ -101,6 +111,8 @@ export interface CharacterLayer extends LayerCommon {
   facing?: 1 | -1;
   /** Direction toward the key light for the 1px rim (screen, y down). */
   rimDir?: [number, number];
+  /** Skull top to sole in px (default STANDIN_HEIGHT, 136; the locked player is ctx.player). */
+  height?: number;
 }
 
 export type LayerDef = GlslLayer | PixLayer | PointsLayer | CharacterLayer;
@@ -110,8 +122,12 @@ export interface BuildCtx {
   /** Low-res buffer size. */
   W: number;
   H: number;
-  /** H / 360: multiply view-scaled sizes by this so a scene composes the same in both modes. */
+  /** H / 360: multiply view-scaled sizes by this so a scene composes the same in every mode. */
   u: number;
+  /** H / 720: world px per locked-view px (1 in world mode, 0.5 in near). */
+  world: number;
+  /** The locked player height in this mode's px (80 in world mode). */
+  player: number;
   /** Camera pan range at depth 1, in pixels. */
   span: number;
   /** Ramp row index by name. */

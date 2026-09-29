@@ -2,13 +2,17 @@
 // scene (default export: SceneDef); they are found by import.meta.glob, so
 // adding a scene never touches this file.
 //
-// Keys: 1-9 scene, Z near/far, C stand-in, ` fps, M reduced motion,
-// arrows / A-D pan (drag also pans), Space toggles the auto drift, P pauses time.
-// URL: ?scene=<id> ?far ?nochar ?reduced ?fps ?cam=0..1 (fixed camera) ?t=<s>
+// Keys: 1-9 scene, Z resolution (world 1280x720 / old near 640x360 / old far
+// 960x540), X presentation (auto / integer / sharp), C stand-in, ` fps,
+// M reduced motion, arrows / A-D pan (drag also pans), Space toggles the auto
+// drift, P pauses time.
+// URL: ?scene=<id> ?res=world|near|far (?near, ?far) ?present=auto|integer|sharp
+// ?nochar ?reduced ?fps ?cam=0..1 (fixed camera) ?t=<s>
 // ?solo=a,b / ?hide=a,b (layer names, for debugging)
 // ?manual (no real-time loop; drive it through window.__scenes).
 
 import { Engine } from "./engine/engine.ts";
+import { MODES, RESOLUTIONS, type PresentMode } from "./engine/scale.ts";
 import type { Mode, SceneDef } from "./engine/types.ts";
 
 const canvas = document.getElementById("view") as HTMLCanvasElement;
@@ -50,7 +54,10 @@ async function boot(): Promise<void> {
   const engine = new Engine(canvas);
   engine.reduced = q.has("reduced") || matchMedia("(prefers-reduced-motion: reduce)").matches;
   engine.showChar = !q.has("nochar");
-  if (q.has("far")) engine.mode = "far" as Mode;
+  const res = q.get("res") ?? (q.has("far") ? "far" : q.has("near") ? "near" : "");
+  if (res in RESOLUTIONS) engine.mode = res as Mode;
+  const pres = q.get("present") ?? "";
+  if (["auto", "integer", "sharp"].includes(pres)) engine.present = pres as PresentMode;
   fpsEl.hidden = !q.has("fps");
   const names = (k: string): string[] => (q.get(k) ?? "").split(",").filter(Boolean);
   engine.solo = new Set(names("solo"));
@@ -107,7 +114,11 @@ async function boot(): Promise<void> {
     if (/^[1-9]$/.test(k)) {
       const id = ids[Number(k) - 1];
       if (id) void select(id);
-    } else if (k === "z") engine.setMode(engine.mode === "near" ? "far" : "near");
+    } else if (k === "z") engine.setMode(MODES[(MODES.indexOf(engine.mode) + 1) % MODES.length]!);
+    else if (k === "x") {
+      const ps: PresentMode[] = ["auto", "integer", "sharp"];
+      engine.present = ps[(ps.indexOf(engine.present) + 1) % ps.length]!;
+    }
     else if (k === "c") engine.showChar = !engine.showChar;
     else if (k === "`") fpsEl.hidden = !fpsEl.hidden;
     else if (k === "m") engine.reduced = !engine.reduced;
@@ -172,10 +183,10 @@ async function boot(): Promise<void> {
         const s = engine.stats;
         fpsEl.textContent = [
           `${fps.toFixed(0)} fps  cpu ${(cpu / frames).toFixed(2)} ms`,
-          `${engine.sceneId}  ${engine.W}x${engine.H} ${engine.mode} x${engine.out.scale}`,
+          `${engine.sceneId}  ${engine.W}x${engine.H} ${engine.mode}  x${+engine.out.scale.toFixed(3)} ${engine.out.sharp ? `sharp (pre x${engine.out.prescale})` : "integer"}  [${engine.present}]`,
           `layers ${s.layers}  draws ${s.draws}  points ${s.points}  build ${s.buildMs} ms`,
           `cam ${engine.camera.x.toFixed(0)}/${engine.camera.span} ${engine.camera.auto ? "drift" : "fixed"}${engine.reduced ? "  reduced" : ""}${engine.paused ? "  paused" : ""}`,
-          "1-9 scene  Z res  C figure  M reduced  space drift  P pause",
+          "1-9 scene  Z res  X present  C figure  M reduced  space drift  P pause",
         ].join("\n");
       }
       frames = 0;

@@ -1,9 +1,12 @@
 // The layered scene renderer. Every layer is drawn back to front into one
-// low-res target (640x360 "near" or 960x540 "far"), then that target is shown
-// at the largest whole-number scale that fits the window, letterboxed in black.
-// Layers that declare a waterline are also drawn mirrored into a reflection
-// target first, which water layers sample. Nothing is ever filtered: every
-// texture is NEAREST, every offset a whole pixel.
+// low-res target (the locked 1280x720 world view, or the old 640x360 "near" /
+// 960x540 "far" for comparison; sizes in scale.ts). The target is presented at
+// the largest whole-number scale when that fills the window, otherwise fitted
+// with sharp-bilinear (nearest to the next whole multiple, then a linear
+// downsample), letterboxed in black. Layers that declare a waterline are also
+// drawn mirrored into a reflection target first, which water layers sample.
+// Inside the frame nothing is filtered: every texture is NEAREST, every offset
+// a whole pixel.
 
 import { buildStandin } from "./character.ts";
 import { Camera } from "./camera.ts";
@@ -13,6 +16,7 @@ import { BLIT_FS, DEFAULT_PRELUDE, FULL_VS, HEADER, LIB, LIB_FOG, MAIN, POINT_BO
 import { f } from "./layers.ts";
 import { mulberry } from "./noise.ts";
 import { buildPalette, hex, paletteDefines, type Hex, type Palette } from "./palette.ts";
+import { SCALE, playerPx, presentRect, type PresentMode } from "./scale.ts";
 import { RESOLUTIONS, type BuildCtx, type FogSpec, type LayerDef, type LightOut, type Mode, type SceneDef, type SimEnv } from "./types.ts";
 
 const PIX_BODY = (twinkle: number): string => /* glsl */ `
@@ -64,9 +68,11 @@ export interface EngineStats {
 
 export class Engine {
   readonly gl: WebGL2RenderingContext;
-  mode: Mode = "near";
-  W = 640;
-  H = 360;
+  mode: Mode = SCALE.defaultMode;
+  W: number = SCALE.view.w;
+  H: number = SCALE.view.h;
+  /** auto: the locked rule (scale.ts); integer: the old letterbox; sharp: always fit. */
+  present: PresentMode = "auto";
   readonly camera = new Camera();
   time = 0;
   reduced = false;
@@ -75,8 +81,8 @@ export class Engine {
   /** Debug: only draw layers whose name is in solo (if non-empty); never draw hidden ones. */
   solo = new Set<string>();
   hidden = new Set<string>();
-  /** Output rect in device pixels (bottom-left origin) and integer scale. */
-  out = { x: 0, y: 0, scale: 1 };
+  /** Output rect in device pixels (bottom-left origin), device px per world px, and how. */
+  out = { x: 0, y: 0, w: 0, h: 0, scale: 1, prescale: 1, sharp: false };
   stats: EngineStats = { layers: 0, draws: 0, points: 0, buildMs: 0 };
 
   private def: SceneDef | null = null;
@@ -181,6 +187,8 @@ export class Engine {
       W,
       H,
       u: H / 360,
+      world: H / SCALE.view.h,
+      player: playerPx(H),
       span,
       row: (name) => {
         const r = pal.rows[name];
@@ -227,7 +235,7 @@ export class Engine {
         const box = bb ? { x0: l.x + bb[0], y0: l.y + bb[1], x1: l.x + bb[2], y1: l.y + bb[3] } : { x0: 0, y0: 0, x1: 0, y1: 0 };
         this.layers.push({ def: l, ...p, tex, box, origin: [l.x, l.y], repeat: !!l.repeatX, fog, points: false });
       } else {
-        const st = buildStandin(ctx.row("standin"), l.rimDir ?? [1, -1], l.facing ?? 1);
+        const st = buildStandin(ctx.row("standin"), l.rimDir ?? [1, -1], l.facing ?? 1, l.height);
         const tex = dataTexture(gl, st.pix.w, st.pix.h, st.pix.data);
         this.layers.push({ def: l, ...p, tex, origin: [l.x - st.ax, l.ground - st.ay], repeat: false, fog, points: false });
       }
@@ -299,19 +307,18 @@ export class Engine {
     gl.disable(gl.SCISSOR_TEST);
     const cw = this.canvas.width;
     const ch = this.canvas.height;
-    const scale = Math.max(1, Math.floor(Math.min(cw / this.W, ch / this.H)));
-    const ox = Math.floor((cw - this.W * scale) / 2);
-    const oy = Math.floor((ch - this.H * scale) / 2);
-    this.out = { x: ox, y: oy, scale };
+    const r = presentRect(cw, ch, this.W, this.H, this.present);
+    this.out = r;
     gl.viewport(0, 0, cw, ch);
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.viewport(ox, oy, this.W * scale, this.H * scale);
+    gl.viewport(r.x, r.y, r.w, r.h);
     gl.useProgram(this.blit.prog);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.main.color.tex);
     gl.uniform1i(this.blit.u.uSrc!, 0);
-    gl.uniform4f(this.blit.u.uRect!, ox, oy, scale, 0);
+    gl.uniform4f(this.blit.u.uRect!, r.x, r.y, r.w, r.h);
+    gl.uniform3f(this.blit.u.uMode!, r.sharp ? 1 : 0, r.prescale, r.scale);
     gl.bindVertexArray(this.emptyVao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
@@ -345,6 +352,8 @@ export class Engine {
     s1("uHalf", this.camera.span / 2);
     s1("uDither", d.dither ?? 0);
     s1("uOpacity", d.opacity ?? 1);
+    s1("uReflFade", mirror >= 0 ? (d.reflectFade ?? 0) : 0);
+    s1("uReflDim", mirror >= 0 ? (d.reflectDim ?? 0) : 0);
     if (u.uFlash) gl.uniform4fv(u.uFlash, this.flashU);
     if (u.uFlashC) gl.uniform3fv(u.uFlashC, this.flashC);
     gl.activeTexture(gl.TEXTURE0);

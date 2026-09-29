@@ -1,0 +1,272 @@
+/* /world/: the world on top, the website underneath (scroll). Restrained UI:
+   no text in the world except a quiet "enter" before you start. */
+@import "@fontsource/silkscreen";
+
+html,
+body {
+  margin: 0;
+  background: #000;
+  color: #d8d2c4;
+  overscroll-behavior: none;
+}
+
+#stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  z-index: 0;
+}
+
+#view {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  outline: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#enter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(9vh, 40px);
+  margin: 0;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 2.4s ease;
+}
+#enter.shown {
+  opacity: 1;
+}
+#enter .key {
+  display: inline-block;
+  padding: 3px 9px 4px;
+  font: 11px/1 "Silkscreen", ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  color: rgb(236 228 210 / 0.55);
+  border: 1px solid rgb(236 228 210 / 0.22);
+  animation: breathe 4.8s ease-in-out infinite;
+}
+@keyframes breathe {
+  50% {
+    color: rgb(236 228 210 / 0.3);
+    border-color: rgb(236 228 210 / 0.1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #enter .key {
+    animation: none;
+  }
+}
+
+#sound {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 3;
+  opacity: 0.4;
+}
+#sound:hover,
+#sound:focus-visible {
+  opacity: 0.85;
+  outline: 1px solid rgb(236 228 210 / 0.4);
+}
+#sound span {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: auto;
+  background:
+    linear-gradient(#e8e0cc, #e8e0cc) 0 5px / 4px 4px no-repeat,
+    linear-gradient(#e8e0cc, #e8e0cc) 4px 3px / 2px 8px no-repeat,
+    linear-gradient(#e8e0cc, #e8e0cc) 6px 1px / 2px 12px no-repeat,
+    linear-gradient(#e8e0cc, #e8e0cc) 10px 4px / 1px 6px no-repeat,
+    linear-gradient(#e8e0cc, #e8e0cc) 12px 2px / 1px 10px no-repeat;
+}
+#sound[data-on="false"] span {
+  background:
+    linear-gradient(#e8e0cc, #e8e0cc) 0 5px / 4px 4px no-repeat,
+    linear-gradient(#e8e0cc, #e8e0cc) 4px 3px / 2px 8px no-repeat,
+    linear-gradient(#e8e0cc, #e8e0cc) 6px 1px / 2px 12px no-repeat,
+    linear-gradient(45deg, transparent 45%, #e8e0cc 45% 55%, transparent 55%) 9px 3px / 5px 8px no-repeat;
+}
+
+#debug {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  margin: 0;
+  padding: 6px 8px;
+  font: 11px/1.35 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color: #e8e6f0;
+  background: rgb(8 8 14 / 0.75);
+  border-radius: 4px;
+  pointer-events: none;
+  white-space: pre;
+  z-index: 5;
+}
+
+#fail {
+  position: absolute;
+  inset: auto 0 45% 0;
+  margin: 0;
+  text-align: center;
+  padding: 0 16px;
+  font: 14px/1.4 system-ui, sans-serif;
+  color: #c9c6d6;
+}
+
+#touch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+#touch button {
+  position: absolute;
+  pointer-events: auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  background: rgb(20 20 30 / 0.28);
+  color: rgb(255 255 255 / 0.7);
+  font: 600 13px/1 system-ui, sans-serif;
+  padding: 0;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#touch button.on {
+  background: rgb(255 255 255 / 0.2);
+}
+#touch button.cool {
+  color: rgb(255 255 255 / 0.28);
+}
+#touch .pad {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+}
+#touch button[hidden] {
+  display: none;
+}
+
+/* in-world panels: part of the setting (dark wood and brass), real DOM */
+#panel {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(4 4 6 / 0.55);
+  z-index: 10;
+}
+#panel[hidden] {
+  display: none;
+}
+#panel .frame {
+  width: min(880px, 92vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  background: #15110e;
+  border: 2px solid #5a4630;
+  box-shadow: 0 0 0 2px #0a0806, 0 0 0 3px #7c6440;
+  color: #e4dccb;
+  font: 16px/1.5 system-ui, sans-serif;
+}
+#panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid #3a2e22;
+}
+#panel h2 {
+  margin: 0;
+  font: 14px/1 "Silkscreen", ui-monospace, monospace;
+  letter-spacing: 0.06em;
+  color: #e8c98a;
+}
+#panel .close {
+  width: 32px;
+  height: 32px;
+  font: 22px/1 system-ui, sans-serif;
+  color: #e4dccb;
+  background: transparent;
+  border: 1px solid #5a4630;
+  cursor: pointer;
+}
+#panel .close:focus-visible {
+  outline: 2px solid #e8c98a;
+}
+#panel .body {
+  padding: 12px 16px 16px;
+  overflow: auto;
+}
+#panel iframe {
+  width: 100%;
+  height: min(64vh, 640px);
+  border: 1px solid #3a2e22;
+  background: #0d0b09;
+}
+#panel figure {
+  margin: 0;
+}
+#panel img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 68vh;
+  object-fit: contain;
+}
+#panel a {
+  color: #e8c98a;
+}
+#panel .alt {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+#panel svg {
+  width: 100%;
+  height: auto;
+  background: #2a1414;
+  font-family: "Silkscreen", monospace;
+}
+
+/* the website underneath */
+#site {
+  position: relative;
+  z-index: 4;
+  min-height: 100vh;
+  padding: 12vh 8vw;
+  background: #0b0a0d;
+  font: 18px/1.5 system-ui, sans-serif;
+}
+#site .lede {
+  margin: 0 0 24px;
+  color: #a39c90;
+}
+#site nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+}
+#site a {
+  color: #e8dcc0;
+  font-size: 22px;
+}

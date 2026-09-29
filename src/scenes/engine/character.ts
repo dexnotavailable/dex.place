@@ -1,5 +1,6 @@
-// Stand-in for the player character: a dark silhouette at 136 px (skull top to
-// sole) with a glaive 1.35 H long, proportions from docs/character/DESIGN.md.
+// Stand-in for the player character: a dark silhouette, 136 px by default (skull
+// top to sole; pass a height for the locked player, SCALE.player = 80 px in the
+// world view) with a glaive 1.35 H long, proportions from docs/character/DESIGN.md.
 // Only there to judge readability and scale against a scene; it is not the
 // character design. Built as a Pix so it is lit and fogged like everything else.
 
@@ -14,17 +15,21 @@ export interface Standin {
   ay: number;
 }
 
-export function buildStandin(row: number, rimDir: [number, number] = [1, -1], facing: 1 | -1 = 1): Standin {
-  const W = 64;
-  const Hh = 192;
+export function buildStandin(row: number, rimDir: [number, number] = [1, -1], facing: 1 | -1 = 1, height = STANDIN_HEIGHT): Standin {
+  // design units are the 136 px figure; k scales them (k = 1 is the old figure, pixel for pixel)
+  const k = height / 136;
+  const W = Math.max(24, Math.ceil(64 * k));
+  const Hh = Math.ceil(192 * k);
   const pix = new Pix(W, Hh);
-  const top = Hh - STANDIN_HEIGHT; // skull top
-  const Y = (y: number): number => top + (y * STANDIN_HEIGHT) / 136;
+  const top = Hh - height; // skull top
+  const Y = (y: number): number => top + y * k;
+  const X = (x: number): number => x * k;
+  const w1 = (n: number): number => Math.max(1, Math.round(n * k));
   const body = { row, shade: 0.08 };
   const hair = { row, shade: 0.16 };
   const cloth = { row, shade: 0.12 };
   const boot = { row, shade: 0.04 };
-  const P = (pts: [number, number][]): [number, number][] => pts.map(([x, y]) => [x, Y(y)]);
+  const P = (pts: [number, number][]): [number, number][] => pts.map(([x, y]) => [X(x), Y(y)]);
 
   // hair behind the back, gathered near the end at mid-thigh
   pix.poly(P([[17, 7], [24, 2], [27, 14], [23, 30], [21, 46], [20, 62], [18, 72], [17, 79], [14, 73], [13, 58], [13, 42], [14, 24]]), hair);
@@ -36,8 +41,8 @@ export function buildStandin(row: number, rimDir: [number, number] = [1, -1], fa
   // torso
   pix.poly(P([[21, 24], [34, 24], [33, 42], [31, 56], [33, 64], [34, 73], [19, 73], [20, 63], [21, 55], [20, 40]]), body);
   // head, neck, veil
-  pix.disc(27.5, Y(10.5), 10.5, body);
-  pix.rect(24, Y(19), 6, 6, body);
+  pix.disc(X(27.5), Y(10.5), 10.5 * k, body);
+  pix.rect(X(24), Y(19), w1(6), w1(6), body);
   pix.poly(P([[16, 5], [22, 1], [22, 22], [15, 29]]), hair);
   // front leg (weight leg)
   pix.poly(P([[26, 71], [33, 71], [34, 96], [33, 116], [34, 131], [38, 135], [28, 135], [28, 116], [27, 96]]), body);
@@ -46,14 +51,14 @@ export function buildStandin(row: number, rimDir: [number, number] = [1, -1], fa
   pix.poly(P([[29, 64], [35, 64], [37, 104], [33, 110], [30, 104]]), cloth);
   // front bell sleeve, hand on the haft
   pix.poly(P([[31, 26], [36, 28], [41, 44], [47, 56], [45, 64], [35, 66], [33, 54], [30, 40]]), cloth);
-  pix.disc(46.5, Y(57), 2.6, body);
+  pix.disc(X(46.5), Y(57), Math.max(1, 2.6 * k), body);
 
   // glaive: haft, rose disc with cross arms, lancet blade
   const hx = 46;
   const haft = { row, shade: 0.1 };
-  pix.rect(hx, Y(-25), 2, Y(136) - Y(-25), haft);
-  pix.disc(hx + 1, Y(-17), 4.6, haft);
-  pix.rect(hx - 5, Y(-18), 12, 2, haft);
+  pix.rect(X(hx), Y(-25), w1(2), Y(136) - Y(-25), haft);
+  pix.disc(X(hx + 1), Y(-17), 4.6 * k, haft);
+  pix.rect(X(hx - 5), Y(-18), w1(12), w1(2), haft);
   pix.poly(P([[hx + 1, -48], [hx + 4.5, -35], [hx + 2.5, -24], [hx - 0.5, -24], [hx - 2.5, -35]]), haft);
 
   // 1 px rim toward the light, softer second pixel
@@ -71,7 +76,7 @@ export function buildStandin(row: number, rimDir: [number, number] = [1, -1], fa
           d[b + k] = t;
         }
       }
-    return { pix, ax: W - 1 - 30, ay: Hh };
+    return { pix, ax: W - 1 - Math.round(30 * k), ay: Hh };
   }
-  return { pix, ax: 30, ay: Hh };
+  return { pix, ax: Math.round(30 * k), ay: Hh };
 }

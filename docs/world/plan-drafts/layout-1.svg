@@ -1,0 +1,257 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1660 1215" width="1660" height="1215" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<title>dex.place layout 1, the Pilgrimage Loop: map to scale and pacing chart</title>
+<defs>
+<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#e6e7ec"/><line x1="0" y1="0" x2="0" y2="7" stroke="#b9bcc7" stroke-width="2"/></pattern>
+<marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4a3aa7"/></marker>
+</defs>
+<rect width="1660" height="1215" fill="#fcfcfb"/>
+<text x="70" y="44" font-size="24" font-weight="600" fill="#0b0b0b">Layout 1: the Pilgrimage Loop</text>
+<text x="70" y="70" font-size="14" fill="#52514e">Side-view map drawn to scale in H (player height, 80 world px). Height is altitude above the lake. One screen = 16 x 9 H (box at lower right).</text>
+<text x="70" y="90" font-size="14" fill="#52514e">Interiors behind doors (Ferry House, Archive) are drawn just below their doors. The route runs left to right; branches go up or down; shortcuts close the loop.</text>
+<line x1="70" y1="592" x2="1586.4" y2="592" stroke="#e4e3df" stroke-width="1"/>
+<text x="62" y="596" font-size="11" fill="#8a8984" text-anchor="end">-40 H</text>
+<line x1="70" y1="524" x2="1586.4" y2="524" stroke="#e4e3df" stroke-width="1"/>
+<text x="62" y="528" font-size="11" fill="#8a8984" text-anchor="end">-20 H</text>
+<line x1="70" y1="456" x2="1586.4" y2="456" stroke="#e4e3df" stroke-width="1"/>
+<text x="62" y="460" font-size="11" fill="#8a8984" text-anchor="end">0 H</text>
+<line x1="70" y1="388" x2="1586.4" y2="388" stroke="#e4e3df" stroke-width="1"/>
+<text x="62" y="392" font-size="11" fill="#8a8984" text-anchor="end">20 H</text>
+<line x1="70" y1="320" x2="1586.4" y2="320" stroke="#e4e3df" stroke-width="1"/>
+<text x="62" y="324" font-size="11" fill="#8a8984" text-anchor="end">40 H</text>
+<line x1="70" y1="252" x2="1586.4" y2="252" stroke="#e4e3df" stroke-width="1"/>
+<text x="62" y="256" font-size="11" fill="#8a8984" text-anchor="end">60 H</text>
+<line x1="70" y1="184" x2="1586.4" y2="184" stroke="#e4e3df" stroke-width="1"/>
+<text x="62" y="188" font-size="11" fill="#8a8984" text-anchor="end">80 H</text>
+<ellipse cx="185.6" cy="286" rx="108.8" ry="81.6" fill="none" stroke="#c5ced8" stroke-width="10" stroke-dasharray="130 20" transform="rotate(-18 185.6 286)"/>
+<text x="170" y="270" font-size="12" fill="#8a8984" text-anchor="middle">the broken ring</text>
+<text x="170" y="285" font-size="12" fill="#8a8984" text-anchor="middle">(far away, cropped)</text>
+<text x="170" y="303" font-size="11" fill="#8a8984" text-anchor="middle">a colossus wades</text>
+<text x="170" y="317" font-size="11" fill="#8a8984" text-anchor="middle">the far lake below it</text>
+<rect x="70" y="456" width="231.2" height="8.5" fill="#cfe3f6"/>
+<text x="76.8" y="477.5" font-size="11" fill="#2a78d6">the lake (reflections kept)</text>
+<polygon points="1192,456 1266.8,456 1341.6,360.8 1266.8,360.8" fill="url(#hatch)" stroke="#52514e" stroke-width="1.5"/>
+<text x="1297.4" y="422" font-size="11" fill="#0b0b0b" font-weight="600">18 Segment, lower</text>
+<polygon points="1266.8,360.8 1341.6,360.8 1416.4,265.6 1341.6,265.6" fill="url(#hatch)" stroke="#52514e" stroke-width="1.5"/>
+<text x="1385.8" y="320" font-size="11" fill="#0b0b0b" font-weight="600">20 Bell Ledge</text>
+<rect x="886" y="238.4" width="20.4" height="285.6" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="913.2" y="367.6" font-size="11" fill="#0b0b0b" font-weight="600">13 Spire Lift</text>
+<text x="913.2" y="381.6" font-size="10.5" fill="#52514e">96 H ride, about 32 s</text>
+<rect x="131.2" y="394.8" width="102.0" height="61.2" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="135.2" y="407.8" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">1 Dock (spawn)</text>
+<rect x="90.4" y="425.4" width="40.8" height="30.6" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="129.2" y="420.4" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="end">2 Pier's End</text>
+<rect x="233.2" y="425.4" width="40.8" height="30.6" fill="#fbe7d3" stroke="#eb6834" stroke-width="1.5"/>
+<rect x="233.2" y="469.6" width="47.6" height="20.4" fill="#fbe7d3" stroke="#eb6834" stroke-width="1.5"/>
+<text x="233.2" y="503" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">3 Ferry Yard + House</text>
+<rect x="274" y="418.6" width="102.0" height="37.4" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="278" y="431.6" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">4 Reed Shore</text>
+<rect x="376" y="388" width="272.0" height="54.4" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="380" y="401" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">5 Causeway</text>
+<rect x="430.4" y="422" width="47.6" height="20.4" fill="#fbe7d3" stroke="#eb6834" stroke-width="1.5"/>
+<text x="430.4" y="417" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">6 Waymark</text>
+<rect x="478" y="357.4" width="47.6" height="30.6" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="482" y="370.4" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">7 Stonetop</text>
+<rect x="539.2" y="422" width="95.2" height="28.9" fill="#fbe7d3" stroke="#eb6834" stroke-width="1.5"/>
+<text x="543.2" y="435" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">8 Ribs, Footprint</text>
+<rect x="648" y="442.4" width="54.4" height="122.4" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="643" y="476.4" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="end">9 Throat</text>
+<rect x="702.4" y="503.6" width="149.6" height="61.2" fill="#fbe7d3" stroke="#eb6834" stroke-width="1.5"/>
+<text x="770.4" y="516.6" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">10 Lamp Market</text>
+<rect x="770.4" y="578.4" width="74.8" height="34.0" fill="#fbe7d3" stroke="#eb6834" stroke-width="1.5"/>
+<text x="774.4" y="591.4" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">11 Archive</text>
+<rect x="852" y="524" width="81.6" height="40.8" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="852" y="577.8" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">12 Crane Yard</text>
+<rect x="838.4" y="211.2" width="68.0" height="27.2" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="838.4" y="206.2" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">14 Landing</text>
+<rect x="906.4" y="197.6" width="108.8" height="40.8" fill="#f8d9d8" stroke="#e34948" stroke-width="1.5"/>
+<text x="910.4" y="210.6" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">15 Seal Floor (arena)</text>
+<rect x="933.6" y="496.8" width="95.2" height="68.0" fill="#fbe7d3" stroke="#eb6834" stroke-width="1.5"/>
+<text x="937.6" y="509.8" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">16 Culvert</text>
+<rect x="1028.8" y="435.6" width="163.2" height="88.4" fill="url(#hatch)" stroke="#52514e" stroke-width="1.5"/>
+<text x="1032.8" y="448.6" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">17 Stormward</text>
+<rect x="1273.6" y="354" width="40.8" height="20.4" fill="#fbe7d3" stroke="#eb6834" stroke-width="1.5"/>
+<text x="1318.4" y="367" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">19 Shelter</text>
+<rect x="1321.2" y="245.2" width="74.8" height="20.4" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="1321.2" y="240.2" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">21 Cloudbreak</text>
+<rect x="1396" y="204.4" width="136.0" height="47.6" fill="#fbe7d3" stroke="#eb6834" stroke-width="1.5"/>
+<text x="1400" y="217.4" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">22 Chapel</text>
+<rect x="1532" y="211.2" width="40.8" height="40.8" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="1532" y="206.2" font-size="11" fill="#0b0b0b" font-weight="600" text-anchor="start">23 Balcony</text>
+<text x="158.4" y="407.8" font-size="0"> </text>
+<polyline points="158.4,454.6 253.6,454.6 274,454 376,441 648,441 695.6,462.8 654.8,493.4 695.6,524 661.6,547.8 705.8,563.4 933.6,563.4 981.2,530.8 1028.8,496.8 1079.8,476.4 1086.6,510.4 1127.4,510.4 1134.2,476.4 1192,454.6 1232.8,454.6 1304.2,360.8 1379,265.6 1396,250.6 1552.4,250.6" fill="none" stroke="#0b0b0b" stroke-width="2.5" stroke-linejoin="round"/>
+<polyline points="158.4,454.6 100.6,454.6" fill="none" stroke="#0b0b0b" stroke-width="1.6"/>
+<polyline points="501.8,441 501.8,386.6" fill="none" stroke="#0b0b0b" stroke-width="1.6"/>
+<polyline points="896.2,563.4 896.2,237 988,237" fill="none" stroke="#0b0b0b" stroke-width="1.6"/>
+<polyline points="811.2,563.4 811.2,578.4" fill="none" stroke="#0b0b0b" stroke-width="1.6"/>
+<polyline points="253.6,454.6 253.6,469.6" fill="none" stroke="#0b0b0b" stroke-width="1.6"/>
+<circle cx="158.4" cy="454.6" r="6" fill="#0b0b0b"/><text x="158.4" y="444.6" font-size="11" text-anchor="middle" fill="#0b0b0b">spawn</text>
+<rect x="131.2" y="425.4" width="54.4" height="30.599999999999998" fill="none" stroke="#0b0b0b" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="183.6" y="421.4" font-size="10" fill="#52514e" text-anchor="end">first frame</text>
+<path d="M699,561.4 L699,442.4" fill="none" stroke="#4a3aa7" stroke-width="2.2" stroke-dasharray="7 4" marker-start="url(#arr)" marker-end="url(#arr)"/>
+<text x="644.6" y="524" font-size="11" fill="#4a3aa7" font-weight="600" text-anchor="end">S1 freight lift</text>
+<path d="M668.4,445.8 C729.6,462.8 743.2,510.4 743.2,558" fill="none" stroke="#4a3aa7" stroke-width="2.2" stroke-dasharray="7 4" marker-end="url(#arr)"/>
+<text x="736.4" y="476.4" font-size="11" fill="#4a3aa7" font-weight="600" text-anchor="start">S2 awning drop (one way)</text>
+<line x1="1079.8" y1="473" x2="1134.2" y2="473" stroke="#4a3aa7" stroke-width="3" stroke-dasharray="5 3"/>
+<text x="1110.4" y="429.6" font-size="11" fill="#4a3aa7" font-weight="600" text-anchor="middle">S3 rope bridge, cut from the far side</text>
+<path d="M1406.2,204.4 L1406.2,163.6 L260.4,163.6 L260.4,469.6" fill="none" stroke="#4a3aa7" stroke-width="2.2" stroke-dasharray="7 4" marker-end="url(#arr)"/>
+<text x="566.4" y="156.6" font-size="11" fill="#4a3aa7" font-weight="600" text-anchor="start">S4 the chapel door: lift the latch inside the chapel and it opens into the Ferry House, beside the dock</text>
+<circle cx="450.8" cy="433.4" r="5.5" fill="#eda100" stroke="#fcfcfb" stroke-width="2"><title>shrine: lantern, rest, respawn</title></circle>
+<circle cx="787.4" cy="555.8" r="5.5" fill="#eda100" stroke="#fcfcfb" stroke-width="2"><title>shrine: lantern, rest, respawn</title></circle>
+<circle cx="858.8" cy="229.4" r="5.5" fill="#eda100" stroke="#fcfcfb" stroke-width="2"><title>shrine: lantern, rest, respawn</title></circle>
+<circle cx="1287.2" cy="365.4" r="5.5" fill="#eda100" stroke="#fcfcfb" stroke-width="2"><title>shrine: lantern, rest, respawn</title></circle>
+<circle cx="1406.2" cy="243" r="5.5" fill="#eda100" stroke="#fcfcfb" stroke-width="2"><title>shrine: lantern, rest, respawn</title></circle>
+<rect x="270.7" y="476" width="10" height="10" transform="rotate(45 275.7 481)" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>donation box + donor plaque</title></rect>
+<rect x="456" y="428.4" width="10" height="10" transform="rotate(45 461 433.4)" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>donation box + donor plaque</title></rect>
+<rect x="792.6" y="550.8" width="10" height="10" transform="rotate(45 797.6 555.8)" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>donation box + donor plaque</title></rect>
+<rect x="864" y="224.4" width="10" height="10" transform="rotate(45 869 229.4)" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>donation box + donor plaque</title></rect>
+<rect x="1292.4" y="360.4" width="10" height="10" transform="rotate(45 1297.4 365.4)" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>donation box + donor plaque</title></rect>
+<rect x="1411.4" y="238" width="10" height="10" transform="rotate(45 1416.4 243)" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"><title>donation box + donor plaque</title></rect>
+<rect x="1022" y="205" width="181.60000000000002" height="19" rx="9.5" fill="#0b0b0b"/><text x="1030" y="219" font-size="11.5" fill="#fff" font-weight="600">DOWNLOADS: boss terminal</text>
+<rect x="287.6" y="466.8" width="181.60000000000002" height="19" rx="9.5" fill="#0b0b0b"/><text x="295.6" y="480.8" font-size="11.5" fill="#fff" font-weight="600">ACCOUNT counter + DONATE</text>
+<rect x="376" y="358" width="85" height="19" rx="9.5" fill="#0b0b0b"/><text x="384" y="372" font-size="11.5" fill="#fff" font-weight="600">MAP BANNER</text>
+<rect x="852" y="592.6" width="140.2" height="19" rx="9.5" fill="#0b0b0b"/><text x="860" y="606.6" font-size="11.5" fill="#fff" font-weight="600">DOCS: archive door</text>
+<rect x="1443.6" y="171" width="147.1" height="19" rx="9.5" fill="#0b0b0b"/><text x="1451.6" y="185" font-size="11.5" fill="#fff" font-weight="600">GALLERY: 9 artworks</text>
+<rect x="916.6" y="286.6" width="98.80000000000001" height="19" rx="9.5" fill="#0b0b0b"/><text x="924.6" y="300.6" font-size="11.5" fill="#fff" font-weight="600">arena branch</text>
+<rect x="1464" y="544.4" width="54.4" height="30.599999999999998" fill="none" stroke="#0b0b0b" stroke-width="1.2"/>
+<text x="1464" y="539.4" font-size="11" fill="#52514e">one screen, 16 x 9 H</text>
+<text x="1464" y="588" font-size="11" fill="#52514e">H = 80 px, view 1280 x 720</text>
+<rect x="70" y="664" width="20" height="14" fill="#e3eefa" stroke="#2a78d6" stroke-width="1.5"/>
+<text x="96" y="676" font-size="12" fill="#52514e">vast, serene</text>
+<rect x="190" y="664" width="20" height="14" fill="#fbe7d3" stroke="#eb6834" stroke-width="1.5"/>
+<text x="216" y="676" font-size="12" fill="#52514e">cozy: indoor or sheltered</text>
+<rect x="390" y="664" width="20" height="14" fill="url(#hatch)" stroke="#52514e" stroke-width="1.5"/>
+<text x="416" y="676" font-size="12" fill="#52514e">storm</text>
+<rect x="480" y="664" width="20" height="14" fill="#f8d9d8" stroke="#e34948" stroke-width="1.5"/>
+<text x="506" y="676" font-size="12" fill="#52514e">arena (tense)</text>
+<line x1="610" y1="672" x2="630" y2="672" stroke="#0b0b0b" stroke-width="2.5"/>
+<text x="636" y="676" font-size="12" fill="#52514e">main route and branches</text>
+<line x1="800" y1="672" x2="820" y2="672" stroke="#4a3aa7" stroke-width="2.2" stroke-dasharray="7 4"/>
+<text x="826" y="676" font-size="12" fill="#52514e">shortcut, opened from the far side</text>
+<circle cx="1080" cy="672" r="5.5" fill="#eda100"/>
+<text x="1096" y="676" font-size="12" fill="#52514e">shrine (rest, lamp)</text>
+<rect x="1225" y="667" width="10" height="10" transform="rotate(45 1230 672)" fill="#eb6834"/>
+<text x="1246" y="676" font-size="12" fill="#52514e">donation box + donor plaque</text>
+<text x="70" y="735" font-size="18" font-weight="600" fill="#0b0b0b">Pacing along the route: vast vs cozy, tense vs calm</text>
+<text x="70" y="757" font-size="13" fill="#52514e">Design intent on one 0 to 1 scale, in walking order (the gallery run with the spire branch taken). Every vast peak is followed by a small room; both tense peaks end in a quiet one.</text>
+<line x1="1150" y1="731" x2="1174" y2="731" stroke="#2a78d6" stroke-width="2"/><circle cx="1162" cy="731" r="4.5" fill="#2a78d6"/><text x="1182" y="735" font-size="12" fill="#52514e">vast (1) vs cozy (0)</text>
+<line x1="1330" y1="731" x2="1354" y2="731" stroke="#eb6834" stroke-width="2"/><circle cx="1342" cy="731" r="4.5" fill="#eb6834"/><text x="1362" y="735" font-size="12" fill="#52514e">tense (1) vs calm (0)</text>
+<rect x="121.1" y="790" width="173.5" height="265" fill="#f1f0ec"/>
+<text x="207.8" y="784" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="600">A Ringwater</text>
+<text x="439.1" y="784" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="600">B Causeway</text>
+<rect x="583.7" y="790" width="231.3" height="265" fill="#f1f0ec"/>
+<text x="699.3" y="784" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="600">C Hollow</text>
+<text x="901.7" y="784" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="600">D Spire</text>
+<rect x="988.5" y="790" width="289.1" height="265" fill="#f1f0ec"/>
+<text x="1133.0" y="784" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="600">E Storm</text>
+<text x="1393.3" y="784" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="600">F Chapel</text>
+<line x1="121.08695652173913" y1="1045" x2="1508.913043478261" y2="1045" stroke="#e4e3df" stroke-width="1"/>
+<line x1="121.08695652173913" y1="922.5" x2="1508.913043478261" y2="922.5" stroke="#e4e3df" stroke-width="1"/>
+<line x1="121.08695652173913" y1="800" x2="1508.913043478261" y2="800" stroke="#e4e3df" stroke-width="1"/>
+<text x="115.08695652173913" y="804" font-size="11" fill="#8a8984" text-anchor="end">1 vast / tense</text>
+<text x="115.08695652173913" y="926.5" font-size="11" fill="#8a8984" text-anchor="end">0.5</text>
+<text x="115.08695652173913" y="1049" font-size="11" fill="#8a8984" text-anchor="end">0 cozy / calm</text>
+<polyline points="150.0,812.3 207.8,849.0 265.7,1008.3 323.5,898.0 381.3,800.0 439.1,934.8 497.0,812.3 554.8,947.0 612.6,824.5 670.4,934.8 728.3,1032.8 786.1,922.5 843.9,800.0 901.7,898.0 959.6,849.0 1017.4,1008.3 1075.2,836.8 1133.0,898.0 1190.9,1020.5 1248.7,824.5 1306.5,800.0 1364.3,959.3 1422.2,800.0 1480.0,1020.5" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="150.0,1032.8 207.8,1045.0 265.7,1032.8 323.5,1020.5 381.3,971.5 439.1,1032.8 497.0,959.3 554.8,983.8 612.6,947.0 670.4,1008.3 728.3,1045.0 786.1,983.8 843.9,922.5 901.7,934.8 959.6,824.5 1017.4,947.0 1075.2,861.3 1133.0,849.0 1190.9,971.5 1248.7,824.5 1306.5,1020.5 1364.3,1045.0 1422.2,1032.8 1480.0,1045.0" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="150.0" cy="812.3" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="207.8" cy="849.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="265.7" cy="1008.3" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="323.5" cy="898.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="381.3" cy="800.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="439.1" cy="934.8" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="497.0" cy="812.3" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="554.8" cy="947.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="612.6" cy="824.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="670.4" cy="934.8" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="728.3" cy="1032.8" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="786.1" cy="922.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="843.9" cy="800.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="901.7" cy="898.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="959.6" cy="849.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1017.4" cy="1008.3" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1075.2" cy="836.8" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1133.0" cy="898.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1190.9" cy="1020.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1248.7" cy="824.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1306.5" cy="800.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1364.3" cy="959.3" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1422.2" cy="800.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1480.0" cy="1020.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="150.0" cy="1032.8" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="207.8" cy="1045.0" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="265.7" cy="1032.8" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="323.5" cy="1020.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="381.3" cy="971.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="439.1" cy="1032.8" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="497.0" cy="959.3" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="554.8" cy="983.8" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="612.6" cy="947.0" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="670.4" cy="1008.3" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="728.3" cy="1045.0" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="786.1" cy="983.8" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="843.9" cy="922.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="901.7" cy="934.8" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="959.6" cy="824.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1017.4" cy="947.0" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1075.2" cy="861.3" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1133.0" cy="849.0" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1190.9" cy="971.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1248.7" cy="824.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1306.5" cy="1020.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1364.3" cy="1045.0" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1422.2" cy="1032.8" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="1480.0" cy="1045.0" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<rect x="121.1" y="800" width="57.8" height="245" fill="transparent"><title>1 Dock: vast 0.95, tense 0.05</title></rect>
+<rect x="178.9" y="800" width="57.8" height="245" fill="transparent"><title>2 Pier's End: vast 0.8, tense 0</title></rect>
+<rect x="236.7" y="800" width="57.8" height="245" fill="transparent"><title>3 Ferry House: vast 0.15, tense 0.05</title></rect>
+<rect x="294.6" y="800" width="57.8" height="245" fill="transparent"><title>4 Reed Shore: vast 0.6, tense 0.1</title></rect>
+<rect x="352.4" y="800" width="57.8" height="245" fill="transparent"><title>5 Causeway: vast 1, tense 0.3</title></rect>
+<rect x="410.2" y="800" width="57.8" height="245" fill="transparent"><title>6 Waymark Shrine: vast 0.45, tense 0.05</title></rect>
+<rect x="468.0" y="800" width="57.8" height="245" fill="transparent"><title>7 Stonetop: vast 0.95, tense 0.35</title></rect>
+<rect x="525.9" y="800" width="57.8" height="245" fill="transparent"><title>8 Ribs, Footprint: vast 0.4, tense 0.25</title></rect>
+<rect x="583.7" y="800" width="57.8" height="245" fill="transparent"><title>9 Throat: vast 0.9, tense 0.4</title></rect>
+<rect x="641.5" y="800" width="57.8" height="245" fill="transparent"><title>10 Lamp Market: vast 0.45, tense 0.15</title></rect>
+<rect x="699.3" y="800" width="57.8" height="245" fill="transparent"><title>11 Archive: vast 0.05, tense 0</title></rect>
+<rect x="757.2" y="800" width="57.8" height="245" fill="transparent"><title>12 Crane Yard: vast 0.5, tense 0.25</title></rect>
+<rect x="815.0" y="800" width="57.8" height="245" fill="transparent"><title>13 Spire Lift: vast 1, tense 0.5</title></rect>
+<rect x="872.8" y="800" width="57.8" height="245" fill="transparent"><title>14 Spire Landing: vast 0.6, tense 0.45</title></rect>
+<rect x="930.7" y="800" width="57.8" height="245" fill="transparent"><title>15 Seal Floor: vast 0.8, tense 0.9</title></rect>
+<rect x="988.5" y="800" width="57.8" height="245" fill="transparent"><title>16 Culvert: vast 0.15, tense 0.4</title></rect>
+<rect x="1046.3" y="800" width="57.8" height="245" fill="transparent"><title>17 Stormward: vast 0.85, tense 0.75</title></rect>
+<rect x="1104.1" y="800" width="57.8" height="245" fill="transparent"><title>18 Segment, lower: vast 0.6, tense 0.8</title></rect>
+<rect x="1162.0" y="800" width="57.8" height="245" fill="transparent"><title>19 Storm Shelter: vast 0.1, tense 0.3</title></rect>
+<rect x="1219.8" y="800" width="57.8" height="245" fill="transparent"><title>20 Bell Ledge: vast 0.9, tense 0.9</title></rect>
+<rect x="1277.6" y="800" width="57.8" height="245" fill="transparent"><title>21 Cloudbreak: vast 1, tense 0.1</title></rect>
+<rect x="1335.4" y="800" width="57.8" height="245" fill="transparent"><title>22 Chapel nave: vast 0.35, tense 0</title></rect>
+<rect x="1393.3" y="800" width="57.8" height="245" fill="transparent"><title>23 Rose Balcony: vast 1, tense 0.05</title></rect>
+<rect x="1451.1" y="800" width="57.8" height="245" fill="transparent"><title>24 Door home: vast 0.1, tense 0</title></rect>
+<text x="1500" y="1016.5" font-size="12" fill="#0b0b0b" font-weight="600">vast</text>
+<text x="1500" y="1059" font-size="12" fill="#0b0b0b" font-weight="600">tense</text>
+<text x="959.5652173913044" y="812.5" font-size="11" fill="#52514e" text-anchor="middle">arena</text>
+<text x="1248.695652173913" y="812.5" font-size="11" fill="#52514e" text-anchor="middle">storm peak</text>
+<text x="728.2608695652174" y="1062" font-size="11" fill="#52514e" text-anchor="middle">reading silence</text>
+<text x="150.0" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 150.0 1075)">1 Dock</text>
+<text x="207.8" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 207.8 1075)">2 Pier's End</text>
+<text x="265.7" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 265.7 1075)">3 Ferry House</text>
+<text x="323.5" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 323.5 1075)">4 Reed Shore</text>
+<text x="381.3" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 381.3 1075)">5 Causeway</text>
+<text x="439.1" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 439.1 1075)">6 Waymark Shrine</text>
+<text x="497.0" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 497.0 1075)">7 Stonetop</text>
+<text x="554.8" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 554.8 1075)">8 Ribs, Footprint</text>
+<text x="612.6" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 612.6 1075)">9 Throat</text>
+<text x="670.4" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 670.4 1075)">10 Lamp Market</text>
+<text x="728.3" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 728.3 1075)">11 Archive</text>
+<text x="786.1" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 786.1 1075)">12 Crane Yard</text>
+<text x="843.9" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 843.9 1075)">13 Spire Lift</text>
+<text x="901.7" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 901.7 1075)">14 Spire Landing</text>
+<text x="959.6" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 959.6 1075)">15 Seal Floor</text>
+<text x="1017.4" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 1017.4 1075)">16 Culvert</text>
+<text x="1075.2" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 1075.2 1075)">17 Stormward</text>
+<text x="1133.0" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 1133.0 1075)">18 Segment, lower</text>
+<text x="1190.9" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 1190.9 1075)">19 Storm Shelter</text>
+<text x="1248.7" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 1248.7 1075)">20 Bell Ledge</text>
+<text x="1306.5" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 1306.5 1075)">21 Cloudbreak</text>
+<text x="1364.3" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 1364.3 1075)">22 Chapel nave</text>
+<text x="1422.2" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 1422.2 1075)">23 Rose Balcony</text>
+<text x="1480.0" y="1075" font-size="11" fill="#52514e" text-anchor="end" transform="rotate(-38 1480.0 1075)">24 Door home</text>
+<text x="70" y="1196" font-size="11" fill="#8a8984">Numbers match the room tables and the pacing table in layout-1.md. Hover a column for its values. Plan draft; nothing is built.</text>
+</svg>

@@ -24,6 +24,8 @@ uniform float uCam;
 uniform float uHalf;
 uniform float uDither;
 uniform float uOpacity;
+uniform float uReflFade;
+uniform float uReflDim;
 uniform sampler2D uPal;
 uniform sampler2D uTex;
 uniform vec2 uTexOrigin;
@@ -144,14 +146,22 @@ export const MAIN = /* glsl */ `
 out vec4 fragColor;
 void main() {
   vec2 s = vec2(floor(gl_FragCoord.x), uRes.y - 1.0 - floor(gl_FragCoord.y));
+  float fade = 1.0;
   if (uMirror >= 0.0) {
     if (s.y <= uMirror) discard;
+    // a reflection can dim with distance below its waterline: stepped in quarters,
+    // dithered only at the step edges (keyed to the reflection's own rows)
+    if (uReflFade > 0.0) {
+      float k = clamp(1.0 - (s.y - uMirror) / uReflFade, 0.0, 1.0);
+      fade = clamp(floor(k * 4.0 + (bayer4(s) - 0.5) * 0.8 + 0.5) / 4.0, 0.0, 1.0);
+      if (fade <= 0.0) discard;
+    }
     s.y = 2.0 * uMirror - s.y;
   }
   vec2 p = s + uOff;
   vec4 c = layer(p, s);
   if (c.a <= 0.0) discard;
-  fragColor = vec4(c.rgb, c.a * uOpacity);
+  fragColor = vec4(c.rgb * (1.0 - uReflDim), c.a * uOpacity * fade);
 }
 `;
 
@@ -162,15 +172,37 @@ void main() {
 }
 `;
 
-// final upscale: the low-res target shown at an integer scale, nearest only
+// Final presentation (see scale.ts). Whole-number scale: plain nearest.
+// Otherwise sharp-bilinear: exactly what you get from a nearest upscale to the
+// next whole multiple (prescale) followed by a linear resize to the fitted size,
+// done in one pass with four texel fetches. Only the seams between world pixels
+// get a blended device pixel; the pixels themselves stay flat. Never plain bilinear.
 export const BLIT_FS = /* glsl */ `#version 300 es
 precision highp float;
 uniform sampler2D uSrc;
-uniform vec4 uRect; // x, y, scale, unused (device px, bottom-left origin)
+uniform vec4 uRect; // x, y, w, h (device px, bottom-left origin)
+uniform vec3 uMode; // sharp (0/1), prescale, device px per world px
 out vec4 fragColor;
 void main() {
-  vec2 q = floor((gl_FragCoord.xy - uRect.xy) / uRect.z);
-  fragColor = vec4(texelFetch(uSrc, ivec2(q), 0).rgb, 1.0);
+  vec2 o = gl_FragCoord.xy - uRect.xy;
+  if (uMode.x < 0.5) {
+    fragColor = vec4(texelFetch(uSrc, ivec2(floor(o / uMode.z)), 0).rgb, 1.0);
+    return;
+  }
+  vec2 src = vec2(textureSize(uSrc, 0));
+  float pre = uMode.y;
+  // this device pixel's centre in prescaled pixels, then the two prescaled texels around it
+  vec2 P = o * (src * pre) / uRect.zw - 0.5;
+  vec2 i0 = floor(P);
+  vec2 t = P - i0;
+  vec2 hi = src - 1.0;
+  ivec2 a = ivec2(clamp(floor(i0 / pre), vec2(0.0), hi));
+  ivec2 b = ivec2(clamp(floor((i0 + 1.0) / pre), vec2(0.0), hi));
+  vec3 c00 = texelFetch(uSrc, a, 0).rgb;
+  vec3 c10 = texelFetch(uSrc, ivec2(b.x, a.y), 0).rgb;
+  vec3 c01 = texelFetch(uSrc, ivec2(a.x, b.y), 0).rgb;
+  vec3 c11 = texelFetch(uSrc, b, 0).rgb;
+  fragColor = vec4(mix(mix(c00, c10, t.x), mix(c01, c11, t.x), t.y), 1.0);
 }
 `;
 

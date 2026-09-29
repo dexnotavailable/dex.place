@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="robots" content="noindex" />
+    <title>dex props</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/pixel/sandbox/sandbox.css" />
+  </head>
+  <body>
+    <canvas id="view" tabindex="0" aria-label="pixel matter sandbox"></canvas>
+    <canvas id="overlay" aria-hidden="true"></canvas>
+    <aside id="panel" aria-label="sandbox controls"></aside>
+    <div id="prompt" hidden></div>
+    <dialog id="dialog" aria-labelledby="dialog-title">
+      <h2 id="dialog-title"></h2>
+      <div id="dialog-body"></div>
+      <button id="dialog-close" type="button">close</button>
+    </dialog>
+    <p id="fail" hidden></p>
+    <script type="module" src="/src/pixel/sandbox/main.ts"></script>
+  </body>
+</html>

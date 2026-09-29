@@ -1,5 +1,12 @@
 # Map and story (draft 1, for discussion)
 
+> **Superseded.** The final world plan is [`WORLD-PLAN.md`](WORLD-PLAN.md), with its map and
+> pacing chart in [`WORLD-MAP.svg`](WORLD-MAP.svg). It keeps this draft's Procession premise and
+> builds on it: the rooms, the story "The Round", the locked scale, every prop placed, and the
+> phase 2 build lanes. The competing layout drafts it was chosen from are in `plan-drafts/`.
+> The world runtime those lanes extend is described in [`RUNTIME.md`](RUNTIME.md).
+> What follows is kept as the history of draft 1.
+
 A new layout for the new look. The content is unchanged from CANON: an arena for downloads,
 rest places, a gallery for Dex's art, an archive for docs, donation boxes, the account counter,
 the slashable map. This draft ties those to the world refs in `REFS.md` and gives the route a

@@ -20,6 +20,8 @@ export default defineConfig({
         main: page("./index.html"),
         lab: page("./lab/index.html"),
         scenes: page("./scenes/index.html"),
+        world: page("./world/index.html"),
+        props: page("./props/index.html"),
         // Shared template for every non-root website page; cloned per route and
         // removed from dist/ by the site plugin.
         site: page(`./${TEMPLATE}`),

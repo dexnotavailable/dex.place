@@ -451,6 +451,12 @@ export interface BodyOpts {
   groundFog: number;
   /** Height (design units) the ground haze reaches up the legs. */
   groundH?: number;
+  /** Direction toward the key light (x right, y up, z toward the viewer); default upper left, in front. */
+  key?: [number, number, number];
+  /** Screen-plane direction of the lit rim (x right, y up); defaults to the key's x/y. */
+  rim?: [number, number];
+  /** Added to every shade (a backlit body in haze needs more fill). Default 0. */
+  fill?: number;
 }
 
 /** The colossus layer body: vec4 layer(vec2 p, vec2 s). */
@@ -593,11 +599,11 @@ vec4 layer(vec2 p, vec2 s) {
     float b0 = fbm(qq * 0.075, 2);
     N = normalize(N + vec3(fbm(qq * 0.075 + vec2(0.35, 0.0), 2) - b0, fbm(qq * 0.075 + vec2(0.0, 0.35), 2) - b0, 0.0) * 2.4);
   }
-  vec3 L = normalize(vec3(-0.55, 0.62, 0.56));
+  vec3 L = normalize(vec3(${(o.key ?? [-0.55, 0.62, 0.56]).map(f).join(", ")}));
   float dif = max(dot(N, L), 0.0);
   float skyl = 0.5 + 0.5 * N.y;
   // flatter than a studio render: the haze fills the shadows
-  float shade = 0.16 + 0.42 * dif + 0.18 * skyl;
+  float shade = ${f(0.16 + (o.fill ?? 0))} + 0.42 * dif + 0.18 * skyl;
   float row = R_FLESH;
   float extra = 0.0;
   float px = -g.x * CS;                   // whole pixels inside the edge
@@ -670,7 +676,7 @@ vec4 layer(vec2 p, vec2 s) {
   extra += ${f(o.groundFog)} * (1.0 - smoothstep(0.0, ${f(o.groundH ?? 80)}, q.y));
   // edges: only the edge facing the key light catches a rim; the shadow edge
   // goes a step darker, so a thin limb reads as a lit form, not an outline
-  float lit = dot(g.yz, normalize(vec2(-0.55, 0.62)));
+  float lit = dot(g.yz, normalize(vec2(${(o.rim ?? (o.key ? [o.key[0], o.key[1]] : [-0.55, 0.62])).map(f).join(", ")})));
   if (px < 1.0) shade += lit > 0.25 ? 0.1 : lit < -0.2 ? -0.06 : 0.0;
   // thin parts (a few px across) sink into the haze as a whole, both sides alike
   extra += 0.22 * smoothstep(4.0, 1.2, g.w * CS);
