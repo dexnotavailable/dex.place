@@ -1,18 +1,18 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-09-29T14:37:04.139Z (29/09/2026, 21:37:04 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-09-29T14:37:51.153Z (29/09/2026, 21:37:51 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
-- main: `4b8416e` "Website: dark full-pixel rework"
+- main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
 - live on dex.place: `4b8416e`
-- uncommitted on the PC (all included in this pc-sync snapshot): 209 paths
+- uncommitted on the PC (all included in this pc-sync snapshot): 205 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
 
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_68cebea7-8e1 — last activity 19 min ago
+### wf_68cebea7-8e1 — last activity 20 min ago
 28 agents: 27 done, 1 running or stopped mid-way, 0 failed.
 
 - **whole:overall:r1** (done): score 5.5 · prefers ours: no · top fixes: Kill the 'bottomless' read: add a dark pelvis garment shape that survives 144 and 80 px (the 1 px thong vanishes, and the skin panel from sternum to thigh is the loudest value on her). | Match the refs' finish: lower the value key 10-15%, add warm/cool multi-tone ramps and more hues, soften hard banding. The codec sheet shows compression softness alone closes only part of the gap. | Give the face 
@@ -35,7 +35,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 
 - **cross-lane-fix** (running)
 
-### wf_a38b10a9-aa1 — last activity 25 min ago
+### wf_a38b10a9-aa1 — last activity 26 min ago
 13 agents: 13 done, 0 running or stopped mid-way, 0 failed.
 
 - **R-A:critic** (done): verdict pass-with-notes · score 8.4
@@ -58,7 +58,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **tablet-cap** (done): I picked up the earlier attempt's edits and finished the work. The tablet cap was already in place and still holds. On its own it left the home arrival (/#gallery) at 2.7-3.3 s on tablets, so I added a small preload that only runs for that arrival. Both pages now land at or just under 2.5 s on 768 and 820 tablets. Phones hold or improve, and desktop /#gallery improved. Nothing was committed or pushed. **What changed*
 - **verify** (done): verdict pass-with-notes · score 8.8
 
-### wf_8dbb7c86-4f2 — last activity 191 min ago
+### wf_8dbb7c86-4f2 — last activity 192 min ago
 20 agents: 12 done, 2 running or stopped mid-way, 6 failed.
 
 - **P0:critic** (done): verdict blocking · score 7.5 · blocking: The nave rule (sway-only room) is not enforced for grass and vines, so the section 13 item 'the breakage policy in section 4 is enforced' fails, along with the lane's claim of '0 cells lost, 0 tears, 0 cuts across all props in a sway-only room'. In src/pixel/props/plants.ts, grassHit (about line 187) and vineHit (about line 402) cut blades and strands without checking c.keepsCells. Measured in /pr
@@ -76,7 +76,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **R-A:critic** (failed)
 - **I1:build** (failed)
 
-### wf_941a8d14-64d — last activity 342 min ago
+### wf_941a8d14-64d — last activity 343 min ago
 2 agents: 0 done, 0 running or stopped mid-way, 2 failed.
 
 - **tablet-cap** (failed)
@@ -115,7 +115,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **refine:r3** (failed)
 - **report** (failed)
 
-### wf_ad38c33b-de5 — last activity 348 min ago
+### wf_ad38c33b-de5 — last activity 349 min ago
 50 agents: 46 done, 4 running or stopped mid-way, 0 failed.
 
 - **outfit:critic:r3** (done): score 6 · prefers ours: no · top fixes: Chest window: replace the gold teardrop emblem with a true 5x9 diamond (3x5 at 80): 1 px thin gold frame, two skin tones, a 1 px dark cleavage line, and W3/W4 shading under the bust so it sits on a curved surface. | Pelvis gold: cut it to one hip band with the rose medallion plus one 1 px garter strap per thigh. Delete the crossing diagonal runs. Idle at 80 must pass CL-P15 (gold share now 0.151).
@@ -133,7 +133,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **whole:craft:r2** (done): score 5.5 · prefers ours: no · top fixes: Separate skin from white cloth in value: drop the skin base about one step and warm it, so the figure stops reading as one pale blob at 1x and 80 px. The top value belongs to the white cloth, gold highlight and eyes only. | Replace the thigh and glute sub-band/core with whole-form darkening plus authored cast shadows (bust, tabard, hair, sleeve) and a contact shadow. Round 2's thigh re-band made t
 - **whole:overall:r2** (done): score 6.2 · prefers ours: no · top fixes: Idle with real attitude: contrapposto hip toward the staff, head tilted with chin down and a Confident smirk, and the near hand closed around the shaft instead of lying open. The idle is the first-impression frame. | Put the stained-glass signature into the n1_contact and q_stamp frames (a smear, then leaded-glass cells, plus a ground decal). The attack frames currently have a plain crescent or no
 
-### wf_9c8f81ae-b55 — last activity 429 min ago
+### wf_9c8f81ae-b55 — last activity 430 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **fix** (done): Both tech-critic blockers are fixed and checked on a local build. Nothing was committed or pushed. 1) Arriving at /#gallery was slow because the gallery images waited for the main script, and then 9 images all shared the Slow 4G line. It's now 2.1 s on a direct /#gallery load (was 5.3 s) and about 1.5–1.6 s from a Gallery link (was about 4.5 s). The plain home page is 1.4–1.5 s (was 1.76 s). Fix: a small inline scrip
@@ -151,7 +151,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **critic:2** (done): top fixes: Face stamps on the MMD head: the v2 144 px idle has no visible mouth. Re-anchor the mouth/brow/blush stamps to the new head's UV or landmarks, and check them at 3/4 and profile at both 80 and 144 px. | Stop hair strands crossing the face. In the v2 144 px contact, a dark strand runs across the cheek near the eye and reads as a scar. Mask the front strands off the face in the object-ID pass, or pus
 - **adopt** (done): The v2 base is now canonical. `rosace.blend` is built from the SiroinoSotai body and the MMD用女性素体 head. The four cheap body fixes the judge asked for are in, and the targets are met or close. The shipped v1 file was backed up first as `build/rosace_v1.blend`; its sha256 (0fbbf8e3…) is unchanged. There were no commits or pushes, and I didn't touch the other lanes' paths. **What changed in her body** (bare, front view,
 
-### wf_32604e00-a2e — last activity 573 min ago
+### wf_32604e00-a2e — last activity 574 min ago
 20 agents: 20 done, 0 running or stopped mid-way, 0 failed.
 
 - **critic:visual:r1** (done): verdict pass-with-notes

@@ -16,7 +16,8 @@ Override file (one per still and size; the 80 px file is authored on the 80 px u
                 OKLab L, at fraction t: 0 = its darkest, 1 = its lightest) | "~" (erase to transparent)
   layers        a list, painted in order; every layer has a 'name' and a 'kind':
     stamp       rows (strings; '.' or ' ' leaves the pixel), at [x, y] = the top-left of rows; each letter is a
-                palette key
+                palette key; 'rot' (degrees, clockwise on screen) and 'pivot' [x, y] (in the stamp) turn an upright
+                face by the head's tilt (nearest-pixel sampling)
     px          pts [[x, y, key], ...]
     line        pts [[x, y], ...] (a polyline, 1 px, Bresenham), key, or keys (one per segment: a taper)
     clumps      the fringe as hand-placed tapered locks: root_y, box, keys {body, dark, lite, gap, notch, notch2},
@@ -125,7 +126,28 @@ def layer_pixels(L, img, mnames):
     """[(x, y, key)] for one layer"""
     k = L["kind"]
     px = []
-    if k == "stamp":
+    if k == "stamp" and L.get("rot"):
+        # a stamp drawn upright, turned by the head's tilt about 'pivot' (stamp coordinates; it lands on at + pivot):
+        # every target pixel samples the upright stamp at its inverse-rotated position (nearest), so a lash row
+        # becomes a stair-stepped slant instead of a smeared line
+        import math
+        x0, y0 = L["at"]
+        px_, py_ = L.get("pivot", [0, 0])
+        a = math.radians(L["rot"])
+        ca, sa = math.cos(a), math.sin(a)
+        rows = L["rows"]
+        hgt, wid = len(rows), max(len(r) for r in rows)
+        R_ = int(math.ceil(math.hypot(hgt, wid))) + 1
+        cx, cy = x0 + px_, y0 + py_
+        for ty in range(int(cy) - R_, int(cy) + R_ + 1):
+            for tx in range(int(cx) - R_, int(cx) + R_ + 1):
+                dx, dy = tx - cx, ty - cy
+                sx = ca * dx + sa * dy + px_
+                sy = -sa * dx + ca * dy + py_
+                i, j = int(round(sx)), int(round(sy))
+                if 0 <= j < hgt and 0 <= i < len(rows[j]) and rows[j][i] not in ". ":
+                    px.append((tx, ty, rows[j][i]))
+    elif k == "stamp":
         x0, y0 = L["at"]
         for j, row in enumerate(L["rows"]):
             for i, c in enumerate(row):

@@ -148,7 +148,111 @@ async function sit() {
   out.sit = res;
 }
 
-const checks = { smoke, sit };
+/** Mean luminance (0..255) of screenshot A where it differs from B (the player's own pixels), and of B in a box. */
+async function lumaDiff(p, a, b, box) {
+  return p.ev(async ([a, b, box]) => {
+    const load = async (s) => {
+      const bm = await createImageBitmap(await (await fetch(`data:image/png;base64,${s}`)).blob());
+      const c = new OffscreenCanvas(bm.width, bm.height);
+      const x = c.getContext("2d");
+      x.drawImage(bm, 0, 0);
+      return x.getImageData(0, 0, bm.width, bm.height);
+    };
+    const A = await load(a), B = await load(b);
+    const L = (d, i) => 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+    let n = 0, sum = 0, peak = 0, wn = 0, wsum = 0;
+    for (let y = 0; y < A.height; y++)
+      for (let x = 0; x < A.width; x++) {
+        const i = (y * A.width + x) * 4;
+        const d = Math.abs(A.data[i] - B.data[i]) + Math.abs(A.data[i + 1] - B.data[i + 1]) + Math.abs(A.data[i + 2] - B.data[i + 2]);
+        if (d > 24) {
+          const l = L(A.data, i);
+          sum += l;
+          n++;
+          peak = Math.max(peak, l);
+        }
+        if (box && x >= box[0] && x < box[0] + box[2] && y >= box[1] && y < box[1] + box[3]) {
+          wsum += L(B.data, i);
+          wn++;
+        }
+      }
+    return { playerPx: n, playerLuma: n ? +(sum / n).toFixed(1) : 0, playerPeak: +peak.toFixed(0), worldLuma: wn ? +(wsum / wn).toFixed(1) : null };
+  }, [a, b, box]);
+}
+
+// --- strike: lightning lights the world, not the player (D1 to D3) -------------------------
+async function strike() {
+  const d = dir("strike");
+  const res = {};
+  const p = await open("manual&fresh&mute", { w: 1920, h: 1080 });
+  await p.ev(() => window.__world.begin());
+  for (const [room, spawn] of [["D2", "lift"], ["D3", "west"], ["D1", ""]]) {
+    await p.ev(([room, spawn]) => window.__world.teleport(room, spawn), [room, spawn]);
+    await settle(p, room);
+    await p.ev(() => window.__world.advance(120));
+    // no natural strikes during the A/B: only the ones set here
+    await p.ev(() => {
+      const g = window.__world.game;
+      g.__allow ??= g.gate.allow.bind(g.gate);
+      g.gate.allow = () => false;
+      g.weather.strikes = [];
+      g.weather.flash = 0;
+    });
+    const r = {};
+    for (const mode of ["fixed", "before"]) {
+      // "before": the old path (the strike's key and ambient surge and its point light on her too), for comparison
+      await p.ev((mode) => {
+        const g = window.__world.game;
+        const W = g.weather;
+        W.__lighting ??= W.lighting.bind(W);
+        W.lighting = mode === "before" ? (b) => W.__lighting(b) : W.__lighting;
+        g.__lights ??= g.lights.bind(g);
+        g.lights = mode === "before" ? () => g.__lights(true) : g.__lights;
+      }, mode);
+      for (const lvl of [0, 0.5, 1]) {
+        await p.ev((lvl) => {
+          const g = window.__world.game, W = g.weather;
+          W.strikes = lvl ? [{ x: g.player.body.x + 200, seed: 7, age: 0.05, dur: 0.3, level: lvl, double: false, thunderIn: 9, heard: true, bolt: true }] : [];
+          W.flash = lvl;
+          window.__world.render();
+        }, lvl);
+        const shot = async (hide) => {
+          await p.ev((hide) => {
+            const g = window.__world.game;
+            g.player.__sd ??= g.player.spriteDraw;
+            g.player.spriteDraw = hide ? () => undefined : g.player.__sd;
+            window.__world.render();
+          }, hide);
+          return (await p.page.screenshot()).toString("base64");
+        };
+        const A = await shot(false);
+        const B = await shot(true);
+        const pos = await p.ev(() => { const g = window.__world.game; const [cx, cy] = g.camera.view(); return [g.player.body.x - cx, g.player.body.y - cy]; });
+        // the world beside her: a 120 x 120 box (view px) ahead of her at chest height, in page px (1.5x)
+        const box = [Math.round((pos[0] + 60) * 1.5), Math.round((pos[1] - 140) * 1.5), 180, 180];
+        const m = await lumaDiff(p, A, B, box);
+        r[`${mode}-${lvl}`] = m;
+        if (mode === "fixed" || lvl === 1) {
+          const { writeFileSync } = await import("node:fs");
+          writeFileSync(`${d}/${room}-${mode}-strike${lvl}.png`, Buffer.from(A, "base64"));
+        }
+        await shotPlayer(p, `${d}/${room}-${mode}-strike${lvl}-player.png`);
+      }
+    }
+    const k = (mode, l) => +(r[`${mode}-${l}`].playerLuma / r[`${mode}-0`].playerLuma).toFixed(2);
+    const w = (mode, l) => +(r[`${mode}-${l}`].worldLuma / r[`${mode}-0`].worldLuma).toFixed(2);
+    res[room] = { ...r, playerRatio: { fixed05: k("fixed", 0.5), fixed1: k("fixed", 1), before05: k("before", 0.5), before1: k("before", 1) }, worldRatio: { fixed1: w("fixed", 1), before1: w("before", 1) } };
+    note(`strike ${room}: player x${res[room].playerRatio.fixed1} at a full strike (before x${res[room].playerRatio.before1}); world x${res[room].worldRatio.fixed1}`);
+    await p.ev(() => { const g = window.__world.game; g.gate.allow = g.__allow; g.player.spriteDraw = g.player.__sd; g.weather.lighting = g.weather.__lighting; g.lights = g.__lights; });
+  }
+  res.errors = p.errors;
+  res.bad = p.bad;
+  await p.ctx.close();
+  save("strike", res);
+  out.strike = res;
+}
+
+const checks = { smoke, sit, strike };
 for (const [k, f] of Object.entries(checks)) if (which === k || which === "all") await f();
 await browser.close();
 console.log(JSON.stringify(out, null, 1).slice(0, 4000));
