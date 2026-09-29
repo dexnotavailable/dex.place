@@ -26,7 +26,9 @@ test("run-length paths cover exactly the painted pixels", () => {
 
 test("svg has fixed integer size, crisp edges and is decorative unless labelled", () => {
   const svg = pixelSvg("download", { scale: 3 });
-  assert.match(svg, /width="33" height="36"/);
+  assert.match(svg, /width="33" height="33"/);
+  // Dark-site glyphs: solid shapes with holes that follow the text colour.
+  assert.match(svg, /fill="var\(--px-a,currentColor\)"/);
   assert.match(svg, /shape-rendering="crispEdges"/);
   assert.match(svg, /aria-hidden="true"/);
   const labelled = pixelSvg("heart", { label: 'a "heart" & <3' });

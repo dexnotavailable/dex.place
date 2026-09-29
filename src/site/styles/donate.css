@@ -1,80 +1,90 @@
-/* /donate/: Ko-fi card and the MB Bank card with its live VietQR.
-   Markup: render/donate.ts. Behaviour: motion/donate.ts.
-   Magenta is this section's tone (DESIGN-SYSTEM §2); ink on magenta is 5.02:1. */
+/* Donate (render/donate.ts): the home section and /donate/. Ko-fi card and
+   the MB Bank card with its live VietQR. Behaviour: motion/donate.ts.
+   Magenta is this section's tone. The QR itself stays black on white: that
+   is what banking apps scan best. */
 
 .donate {
   display: grid;
   grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
   gap: var(--s-6);
-  align-items: stretch;
+  /* Each card is its own height: a Ko-fi card stretched to the bank card
+     would be a tall, mostly empty panel. */
+  align-items: start;
 }
 @media (max-width: 1040px) { .donate { grid-template-columns: 1fr; } }
 
+/* ------------------------------------------------------- card headers */
+/* Both cards open the same way: a magenta tile, the name in pixel type and
+   one plain line under it. */
+.dhead { display: flex; align-items: center; gap: 18px; min-width: 0; }
+.dhead__text { display: grid; gap: 6px; min-width: 0; }
+.dhead__name { margin: 0; font: 400 clamp(1.75rem, 1.5rem + 0.8vw, 2.125rem) / 1 var(--f-px); letter-spacing: 0.01em; color: var(--fg); }
+.dhead__line { color: var(--fg-2); overflow-wrap: anywhere; }
+
 /* ------------------------------------------------------------------ Ko-fi */
 .kofi {
+  --pop-hi: var(--magenta);
+  --pop-grow: 1.015;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 22px;
+  gap: 22px;
+  padding: clamp(18px, 3vw, 28px);
+  border-color: var(--line-2);
+  color: var(--fg);
   text-decoration: none;
   transition:
-    transform var(--d-spring) var(--ease-spring),
-    box-shadow var(--d-spring) var(--ease-spring),
-    background-color var(--d-hover) var(--ease-std);
+    transform var(--d-pop) var(--ease-spring),
+    box-shadow var(--d-pop) var(--ease-spring),
+    border-color var(--d-hover) var(--ease-std);
 }
-.kofi__top { display: flex; align-items: center; gap: 18px; }
-.kofi__text { display: grid; gap: 6px; min-width: 0; }
-.kofi__name { font: var(--title-weight) 1.875rem / 1 var(--f-title); font-stretch: 128%; }
-.kofi__line { color: var(--ink-2); overflow-wrap: anywhere; }
 
-/* A small stage of pixel stickers around a pale disc. Decorative. */
+/* The stage: a Ko-fi cup on a magenta-washed well with a crisp 2px dot grid
+   (an SVG tile, so the dots are square and never smeared). */
 .kofi__stage {
   position: relative;
+  display: grid;
+  place-items: center;
   flex: 1;
-  min-height: 190px;
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r);
+  min-height: 220px;
+  border: var(--bw) solid var(--line);
   background:
-    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.9) 1.4px, transparent 1.9px) 0 0 / 16px 16px,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect x='7' y='7' width='2' height='2' fill='%23ff1aac' fill-opacity='.4'/%3E%3C/svg%3E") 0 0 / 16px 16px,
     var(--magenta-t);
   overflow: hidden;
 }
-.kofi__disc {
+/* A table edge for the cup to stand on: level with the saucer's shadow row. */
+.kofi__stage::after {
+  content: "";
   position: absolute;
-  left: 50%; top: 52%;
-  width: min(62%, 190px);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  background: var(--paper);
-  border: var(--bw) solid var(--ink);
-  border-radius: 38%;
-  box-shadow: var(--sh);
-  rotate: -8deg;
-  transition: rotate var(--d-spring) var(--ease-spring), scale var(--d-spring) var(--ease-spring);
+  left: 0; right: 0; top: calc(50% + 88px);
+  height: 2px;
+  background: var(--magenta);
+  opacity: 0.55;
 }
-.kofi__st { position: absolute; }
-.kofi__st--0 { left: 50%; top: 52%; translate: -50% -50%; }
-.kofi__st--1 { left: 16%; top: 18%; }
-.kofi__st--2 { right: 14%; top: 14%; }
-.kofi__st--3 { right: 18%; bottom: 14%; }
-.kofi__st--1 { --px-a: var(--yellow); }
+.kofi__cup {
+  position: relative;
+  z-index: 1;
+  margin-top: 48px; /* sits a little low, so the table reads as a floor */
+  transition: translate var(--d-pop) var(--ease-spring);
+}
+.kofi__steam--1 { visibility: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .kofi__steam--0 { animation: kofi-steam-0 1.6s steps(1, end) infinite; }
+  .kofi__steam--1 { animation: kofi-steam-1 1.6s steps(1, end) infinite; }
+}
+@keyframes kofi-steam-0 { 0%, 49% { visibility: visible; } 50%, 100% { visibility: hidden; } }
+@keyframes kofi-steam-1 { 0%, 49% { visibility: hidden; } 50%, 100% { visibility: visible; } }
+
 .kofi__cta { width: 100%; pointer-events: none; }
 
 @media (hover: hover) {
-  .kofi:hover { transform: translate(-3px, -3px); box-shadow: var(--sh-l); }
-  .kofi:hover .kofi__disc { rotate: 6deg; scale: 1.08; }
-  .kofi:hover .kofi__cta { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+  .kofi:hover { transform: translate(-2px, -2px) scale(1.015); border-color: var(--magenta); box-shadow: 7px 7px 0 var(--magenta); }
+  .kofi:hover .kofi__cta { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--fg); }
+  .kofi:hover .kofi__cup { translate: 0 -4px; }
 }
-.kofi:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); transition-duration: var(--d-press); }
-.kofi:active .kofi__cta { transform: translate(5px, 5px); box-shadow: 0 0 0 var(--ink); transition-duration: var(--d-press); }
-
-@media (prefers-reduced-motion: no-preference) {
-  .kofi__st > svg { animation: kofi-bob 3.1s var(--ease-float) infinite alternate; }
-  .kofi__st--1 > svg { animation-duration: 3.7s; animation-delay: -1.2s; }
-  .kofi__st--2 > svg { animation-duration: 2.3s; animation-delay: -0.6s; }
-  .kofi__st--3 > svg { animation-duration: 4.3s; animation-delay: -2s; }
-}
-@keyframes kofi-bob { to { translate: 0 -7px; } }
+.kofi:active { transform: translate(2px, 2px) scale(0.98); box-shadow: 0 0 0 var(--shadow); transition-duration: var(--d-press); }
+.kofi:active .kofi__cta { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--shadow); transition-duration: var(--d-press); }
+.kofi:focus-visible { transform: translate(-2px, -2px); border-color: var(--magenta); box-shadow: 7px 7px 0 var(--magenta), 0 0 0 2px var(--bg); }
 
 @media (max-width: 1040px) {
   .kofi { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
@@ -88,7 +98,6 @@
 
 /* --------------------------------------------------------------- MB Bank */
 .bank { padding: clamp(18px, 3vw, 32px); container-type: inline-size; }
-.bank__title { display: flex; align-items: center; gap: 12px; font-size: var(--fs-20); font-weight: 700; line-height: 1.2; }
 
 .bank__grid {
   display: grid;
@@ -119,88 +128,97 @@
 }
 
 /* ------------------------------------------------------------------- QR */
-/* 37 modules + 4 quiet each side = 45 units for every amount (lean-qr picks
-   version 5 for all of them), so --qm whole pixels per module keeps it crisp. */
+/* A square window: 2px magenta frame, a magenta title bar (VietQR and the
+   amount tag), then the code. The code keeps its 4-module white quiet zone
+   and black modules: that is what banking apps scan best. 37 modules + 8
+   quiet = 45 units for every amount (lean-qr picks version 5 for all of
+   them), so --qm whole pixels per module keeps it crisp. */
 .qr {
   --qm: 6;
+  --qr-sh: var(--shadow);
   grid-area: qr;
-  position: relative;
   justify-self: center;
-  padding: 14px;
+  align-self: start;
+  width: calc(45px * var(--qm) + 2 * var(--bw));
+  margin: 0;
+  border: var(--bw) solid var(--magenta);
+  background: var(--magenta);
+  box-shadow: 6px 6px 0 var(--qr-sh);
+  transition: box-shadow var(--d-pop) var(--ease-spring);
 }
 @media (max-width: 359px) { .qr { --qm: 5; } }
-.qr__code {
-  width: calc(45px * var(--qm) + 2 * var(--bw));
-  aspect-ratio: 1;
-  border: var(--bw) solid var(--ink);
-  border-radius: 8px;
-  overflow: hidden;
-  background: #fff;
+[data-state="amount"] .qr { --qr-sh: var(--yellow); }
+.qr__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+  margin: 0;
+  padding: 0 4px 2px 8px;
+  color: var(--on-accent);
 }
-.qr__code svg { display: block; width: 100%; height: 100%; }
-.qr__corners i {
-  position: absolute;
-  width: 26px; height: 26px;
-  border: 0 solid var(--magenta);
-  transition: translate var(--d-spring) var(--ease-spring), border-color var(--d-hover) var(--ease-std);
+.qr__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 400 var(--fs-12) / 1 var(--f-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
-.qr__corners i:nth-child(1) { left: 0; top: 0; border-width: 5px 0 0 5px; }
-.qr__corners i:nth-child(2) { right: 0; top: 0; border-width: 5px 5px 0 0; }
-.qr__corners i:nth-child(3) { left: 0; bottom: 0; border-width: 0 0 5px 5px; }
-.qr__corners i:nth-child(4) { right: 0; bottom: 0; border-width: 0 5px 5px 0; }
 .qr__tag {
-  position: absolute;
-  right: -10px; top: -12px;
-  padding: 7px 9px;
-  background: var(--paper);
-  color: var(--ink);
-  border: var(--bw) solid var(--ink);
-  border-radius: 6px;
-  box-shadow: 2px 2px 0 var(--ink);
+  padding: 5px 7px;
+  background: var(--on-accent);
+  color: var(--fg);
   /* Plain bold type: the amount must be readable at 1x (pixel type was not). */
   font: 700 var(--fs-14) / 1 var(--f-body);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
   white-space: nowrap;
-  rotate: 4deg;
-  transition: background-color var(--d-hover) var(--ease-std);
+  transition: color var(--d-hover) var(--ease-std);
 }
-[data-state="amount"] .qr__tag { background: var(--magenta); }
-[data-state="amount"] .qr__corners i:nth-child(odd) { border-color: var(--ink); }
+[data-state="amount"] .qr__tag { color: var(--yellow); }
+.qr__code {
+  width: calc(45px * var(--qm));
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #fff;
+  image-rendering: pixelated;
+}
+.qr__code svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
 
 /* ---------------------------------------------------------- amount panel */
 .amt { grid-area: amt; display: grid; gap: 12px; align-content: start; min-width: 0; }
 html:not(.js) .amt { display: none; }
-.amt__label { font: 400 var(--fs-12) / 1.2 var(--f-px); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.amt__label { font: 400 var(--fs-12) / 1.2 var(--f-label); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .amt__readout { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; min-height: 2.9rem; }
 .amt__num {
-  font: var(--title-weight) clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem) / 1.1 var(--f-title);
-  font-stretch: 112%;
+  font: 700 clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem) / 1.1 var(--f-body);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
-.amt__unit { font: 400 var(--fs-14) / 1 var(--f-px); letter-spacing: 0.08em; color: var(--magenta-text); }
+.amt__unit { font: 400 var(--fs-14) / 1 var(--f-label); letter-spacing: 0.08em; color: var(--magenta); }
 [data-state="none"] .amt__unit { display: none; }
 [data-state="none"] .amt__num { font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); }
 
-/* The slider: a native range over stop indexes, painted as a chunky pill.
-   --pos (0..1) is the thumb position, set by motion/donate.ts. */
-.amt__slider { --thumb: 30px; position: relative; padding-bottom: 22px; }
+/* The slider: a native range over stop indexes, painted as a square pixel
+   track. --pos (0..1) is the thumb position, set by motion/donate.ts. */
+.amt__slider { --thumb: 28px; position: relative; padding-bottom: 22px; }
 .amt__track {
   position: absolute;
-  left: 0; right: 0; top: 13px;
-  height: 18px;
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-pill);
-  background: repeating-linear-gradient(-45deg, var(--paper) 0 6px, var(--panel) 6px 12px);
+  left: 0; right: 0; top: 14px;
+  height: 16px;
+  border: var(--bw) solid var(--line-2);
+  background: repeating-linear-gradient(90deg, var(--panel-2) 0 6px, var(--sunk) 6px 8px);
   overflow: hidden;
+  transition: opacity var(--d-hover) var(--ease-std);
 }
 .amt__fill {
   position: absolute;
   inset: 0 auto 0 0;
   width: calc(var(--thumb) / 2 + var(--pos) * (100% - var(--thumb)));
   background: var(--magenta);
-  border-right: var(--bw) solid var(--ink);
+  border-right: var(--bw) solid var(--shadow);
 }
 [data-state="none"] .amt__fill { width: 0; border: 0; }
 .amt__range {
@@ -223,43 +241,41 @@ html:not(.js) .amt { display: none; }
   width: var(--thumb); height: var(--thumb);
   margin-top: calc((44px - var(--thumb)) / 2);
   background: var(--yellow);
-  border: var(--bw) solid var(--ink);
-  border-radius: 9px;
-  box-shadow: 3px 3px 0 var(--ink);
-  transition: scale var(--d-spring) var(--ease-spring), box-shadow var(--d-fast) var(--ease-out), background-color var(--d-hover) var(--ease-std);
+  border: var(--bw) solid var(--shadow);
+  border-radius: 0;
+  box-shadow: 3px 3px 0 var(--shadow);
+  transition: scale var(--d-pop) var(--ease-spring), translate var(--d-pop) var(--ease-spring), box-shadow var(--d-pop) var(--ease-spring), background-color var(--d-hover) var(--ease-std);
 }
 .amt__range::-moz-range-thumb {
   box-sizing: border-box;
   width: var(--thumb); height: var(--thumb);
   background: var(--yellow);
-  border: var(--bw) solid var(--ink);
-  border-radius: 9px;
-  box-shadow: 3px 3px 0 var(--ink);
-  transition: scale var(--d-spring) var(--ease-spring), box-shadow var(--d-fast) var(--ease-out), background-color var(--d-hover) var(--ease-std);
+  border: var(--bw) solid var(--shadow);
+  border-radius: 0;
+  box-shadow: 3px 3px 0 var(--shadow);
+  transition: scale var(--d-pop) var(--ease-spring), translate var(--d-pop) var(--ease-spring), box-shadow var(--d-pop) var(--ease-spring), background-color var(--d-hover) var(--ease-std);
 }
-/* Idle ("Any amount"): a ghost thumb on a dimmed track, so the control never
+/* Idle ("Any amount"): a hollow thumb on a dimmed track, so the control never
    seems to claim the 100K stop it rests on. The first move makes it solid.
-   Only the track dims: the tick labels are text and stay at full --muted
-   (5.1:1 on white) in every state. */
-[data-state="none"] .amt__range::-webkit-slider-thumb { background: var(--paper); border-style: dashed; box-shadow: none; }
-[data-state="none"] .amt__range::-moz-range-thumb { background: var(--paper); border-style: dashed; box-shadow: none; }
-[data-state="none"] .amt__track { opacity: 0.5; }
-.amt__track { transition: opacity var(--d-hover) var(--ease-std); }
+   Only the track dims: the tick labels are text and stay at full --muted. */
+[data-state="none"] .amt__range::-webkit-slider-thumb { background: var(--panel); border-color: var(--yellow); border-style: dashed; box-shadow: none; }
+[data-state="none"] .amt__range::-moz-range-thumb { background: var(--panel); border-color: var(--yellow); border-style: dashed; box-shadow: none; }
+[data-state="none"] .amt__track { opacity: 0.55; }
 @media (hover: hover) {
-  .amt__range:hover::-webkit-slider-thumb { scale: 1.12; }
-  .amt__range:hover::-moz-range-thumb { scale: 1.12; }
+  .amt__range:hover::-webkit-slider-thumb { scale: 1.14; translate: -1px -1px; box-shadow: 5px 5px 0 var(--fg); }
+  .amt__range:hover::-moz-range-thumb { scale: 1.14; translate: -1px -1px; box-shadow: 5px 5px 0 var(--fg); }
 }
-.amt__range:active::-webkit-slider-thumb { scale: 0.94; box-shadow: 1px 1px 0 var(--ink); }
-.amt__range:active::-moz-range-thumb { scale: 0.94; box-shadow: 1px 1px 0 var(--ink); }
-.amt__range:focus-visible::-webkit-slider-thumb { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 3px 3px 0 var(--ink), 0 0 0 7px var(--periwinkle); }
-.amt__range:focus-visible::-moz-range-thumb { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 3px 3px 0 var(--ink), 0 0 0 7px var(--periwinkle); }
+.amt__range:active::-webkit-slider-thumb { scale: 0.9; translate: 1px 1px; box-shadow: 0 0 0 var(--shadow); }
+.amt__range:active::-moz-range-thumb { scale: 0.9; translate: 1px 1px; box-shadow: 0 0 0 var(--shadow); }
+.amt__range:focus-visible::-webkit-slider-thumb { outline: var(--bw) solid var(--yellow); outline-offset: 3px; box-shadow: 3px 3px 0 var(--shadow), 0 0 0 3px var(--bg); }
+.amt__range:focus-visible::-moz-range-thumb { outline: var(--bw) solid var(--yellow); outline-offset: 3px; box-shadow: 3px 3px 0 var(--shadow), 0 0 0 3px var(--bg); }
 
 .amt__ticks { position: absolute; left: 0; right: 0; bottom: 0; height: 16px; }
 .amt__ticks span {
   position: absolute;
   left: calc(var(--thumb) / 2 + var(--at) * (100% - var(--thumb)));
   translate: -50% 0;
-  font: 400 var(--fs-12) / 1 var(--f-px);
+  font: 400 var(--fs-12) / 1 var(--f-label);
   letter-spacing: 0.04em;
   color: var(--muted);
 }
@@ -270,55 +286,41 @@ html:not(.js) .amt { display: none; }
   .amt__ticks span:nth-child(2) { display: none; }
 }
 
-/* Quick picks: small keys that press like the house button. */
-.amt__picks { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Quick picks: a 4-column grid of small keys with the house pop. "Any amount"
+   takes two cells, so the seven keys make two even rows. */
+.amt__picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 4px; }
+.pick--none { grid-column: span 2; }
 .pick {
+  --pop-off: var(--off-s);
+  --pop-hi: var(--magenta);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   min-height: 40px;
-  padding: 0 12px;
-  background: var(--paper);
-  color: var(--ink);
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-s);
-  box-shadow: 3px 3px 0 var(--ink);
+  padding: 0 8px;
+  background: var(--panel-2);
+  color: var(--fg);
+  border: var(--bw) solid var(--line-2);
   font: 650 var(--fs-14) / 1 var(--f-body);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
-  transition:
-    transform var(--d-spring) var(--ease-spring),
-    box-shadow var(--d-spring) var(--ease-spring),
-    background-color var(--d-hover) var(--ease-std),
-    color var(--d-hover) var(--ease-std);
 }
 .pick .px { display: none; }
-@media (hover: hover) {
-  .pick:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
-}
-.pick:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); transition-duration: var(--d-press); }
-.pick[aria-pressed="true"] { background: var(--magenta); transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
-.pick--none[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.pick[aria-pressed="true"] { background: var(--magenta); color: var(--on-accent); border-color: var(--shadow); transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--shadow); }
+.pick--none[aria-pressed="true"] { background: var(--fg); color: var(--on-accent); }
 /* "Any amount" shows a close glyph while an amount is set: the way back. */
-[data-state="amount"] .pick--none { background: var(--yellow); }
 [data-state="amount"] .pick--none .px { display: block; }
 
 /* ------------------------------------------------------------- live bits */
 @media (prefers-reduced-motion: no-preference) {
-  .qr__code.is-swap { animation: qr-swap 240ms var(--ease-out); }
-  .qr.is-flip .qr__code { animation: qr-flip var(--d-spring) var(--ease-spring); }
-  .qr.is-flip .qr__corners i:nth-child(1) { animation: qr-corner-1 var(--d-spring) var(--ease-spring); }
-  .qr.is-flip .qr__corners i:nth-child(2) { animation: qr-corner-2 var(--d-spring) var(--ease-spring); }
-  .qr.is-flip .qr__corners i:nth-child(3) { animation: qr-corner-3 var(--d-spring) var(--ease-spring); }
-  .qr.is-flip .qr__corners i:nth-child(4) { animation: qr-corner-4 var(--d-spring) var(--ease-spring); }
+  /* Only the modules fade: the white field (and its quiet zone) stays put. */
+  .qr__code.is-swap svg { animation: qr-swap 200ms steps(3, end); }
+  .qr.is-flip { animation: qr-flip var(--d-spring) var(--ease-spring); }
   .qr__tag.is-pop { animation: tag-pop var(--d-spring) var(--ease-spring); }
   .pick.is-pop { animation: pick-pop var(--d-spring) var(--ease-spring); }
 }
-@keyframes qr-swap { from { opacity: 0.55; scale: 0.985; } }
-@keyframes qr-flip { from { scale: 0.9; rotate: -2deg; } }
-@keyframes qr-corner-1 { from { translate: 8px 8px; } }
-@keyframes qr-corner-2 { from { translate: -8px 8px; } }
-@keyframes qr-corner-3 { from { translate: 8px -8px; } }
-@keyframes qr-corner-4 { from { translate: -8px -8px; } }
-@keyframes tag-pop { from { scale: 0.6; rotate: -8deg; } }
+@keyframes qr-swap { from { opacity: 0.55; } }
+@keyframes qr-flip { from { translate: 4px 4px; scale: 0.97; } }
+@keyframes tag-pop { from { scale: 0.7; } }
 @keyframes pick-pop { 40% { scale: 1.1; } }

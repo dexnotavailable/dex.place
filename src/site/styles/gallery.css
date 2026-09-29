@@ -1,72 +1,65 @@
-/* Gallery: the collage (/gallery/), the click-in viewer, and piece pages
-   (/gallery/<id>/). Markup: render/gallery.ts. Layout numbers: collage.ts.
-   Motion: motion/gallery.ts (cursor field, viewer, swipe). */
+/* Gallery: the justified collage (home section and /gallery/), the click-in
+   viewer, and piece pages (/gallery/<id>/). Markup: render/gallery.ts.
+   Layout numbers: collage.ts. Motion: motion/gallery.ts (hover field,
+   viewer, swipe). */
 
 /* ================================================================ collage */
-/* Positions are in container units (1 unit = 1cqw of .collage-box), computed
-   at build time for three widths. No JS, no layout shift. */
-.collage-box {
-  container-type: inline-size;
-  margin-top: clamp(40px, 6vw, 80px);
-  /* The footer's own margin is the space after the collage. */
-  padding-bottom: 0;
-}
+/* Rows are decided at build time per layout (collage.ts). Each piece gets
+   its share of its row's width after the gaps (--fw*) and its row's gap
+   count (--gn*); the container query picks the layout. Heights follow from
+   each image's own aspect ratio, so a row is one height and nothing is
+   cropped. No JS, no layout shift. */
+.collage-box { container-type: inline-size; }
 .collage {
-  --mat: 1;
+  --gap: 3px;
+  /* The tiles' offsetParent: motion/gallery.ts reads each tile's layout
+     position (offsetLeft/Top) against the collage's own box. */
   position: relative;
-  height: calc(var(--hw) * 1cqw);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
 }
 .art {
-  --x: var(--xw); --y: var(--yw); --w: var(--ww); --t: var(--tw); --z: var(--zw);
-  --tone: var(--yellow);
-  position: absolute;
-  left: calc(var(--x) * 1cqw);
-  top: calc(var(--y) * 1cqw);
-  width: calc(var(--w) * 1cqw);
-  z-index: var(--z);
-  rotate: calc(var(--t) * 1deg);
+  --fw: var(--fwn);
+  --gn: var(--gnn);
+  position: relative;
+  flex: none;
+  /* Its share of the row's picture width (after the gaps and every piece's
+     2px frame edges), plus its own edges: every picture in a row is then one
+     height, whatever its shape. A hair under exact, so rounding never pushes
+     a piece to the next row. */
+  width: calc((100% - var(--gn) * var(--gap) - (var(--gn) + 1) * 2 * var(--bw)) * var(--fw) + 2 * var(--bw) - 0.05px);
   transform-origin: 50% 50%;
-  will-change: transform;
 }
-@container (max-width: 999px) {
-  .collage { --mat: 1.5; height: calc(var(--hm) * 1cqw); }
-  .art { --x: var(--xm); --y: var(--ym); --w: var(--wm); --t: var(--tm); --z: var(--zm); }
+@container (min-width: 600px) {
+  .art { --fw: var(--fwm); --gn: var(--gnm); }
 }
-@container (max-width: 599px) {
-  .collage { --mat: 2.6; height: calc(var(--hn) * 1cqw); }
-  .art { --x: var(--xn); --y: var(--yn); --w: var(--wn); --t: var(--tn); --z: var(--zn); }
+@container (min-width: 1000px) {
+  .art { --fw: var(--fww); --gn: var(--gnw); }
 }
-.art--magenta { --tone: var(--magenta); }
-.art--mint { --tone: var(--mint); }
-.art--cyan { --tone: var(--cyan); }
 
-/* The frame: white mat, ink outline, hard shadow. The mat is part of the
-   layout maths (collage.ts `mat`), so it is sized in container units too. */
+/* The frame: a sharp 2px edge, no mat. The piece is the picture. */
 .art__link {
   position: relative;
   display: block;
-  padding: max(4px, calc(var(--mat) * 1cqw - var(--bw-l)));
-  background: var(--paper);
-  border: var(--bw-l) solid var(--ink);
-  border-radius: clamp(10px, 1.2cqw, 16px);
-  box-shadow: var(--sh);
+  border: var(--bw) solid var(--line-2);
+  background: var(--panel);
   text-decoration: none;
   cursor: zoom-in;
-  transition:
-    box-shadow var(--d-spring) var(--ease-spring),
-    translate var(--d-spring) var(--ease-spring);
+  transition: border-color var(--d-hover) var(--ease-std), box-shadow var(--d-pop) var(--ease-spring);
 }
-.art__pic {
-  display: block;
-  border-radius: clamp(4px, 0.5cqw, 7px);
-  background: var(--panel);
-}
+/* The picture holds the aspect ratio and the image fills it, so a tile is
+   its final size before its image arrives (an <img> with alt but no src
+   lays out as alt text, not as a picture). */
+.art__pic { position: relative; display: block; aspect-ratio: var(--ar); background: var(--panel-2); }
 .art__img {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  height: auto;
-  border-radius: clamp(4px, 0.5cqw, 7px);
-  background: var(--panel);
+  height: 100%;
+  object-fit: cover;
+  background: var(--panel-2);
   user-select: none;
   -webkit-user-drag: none;
 }
@@ -80,75 +73,58 @@ img[data-src]:not([src]) { opacity: 0; }
 html:not(.js) .art__pic[data-defer],
 html:not(.js) .film__link img[data-defer] { display: none; }
 
-/* A strip of coloured tape holding the piece up. Decorative. */
-.art__tape {
-  position: absolute;
-  top: calc(clamp(10px, 1.3cqw, 18px) * -0.55);
-  width: clamp(44px, 26%, 110px);
-  height: clamp(12px, 1.3cqw, 18px);
-  background: var(--tone);
-  border: var(--bw) solid var(--ink);
-  border-radius: 3px;
-  box-shadow: 2px 2px 0 var(--ink);
-  pointer-events: none;
-  transition: translate var(--d-spring) var(--ease-spring), rotate var(--d-spring) var(--ease-spring);
-}
-.art__tape--tc { left: 50%; margin-left: calc(clamp(44px, 26%, 110px) / -2); rotate: -2.5deg; }
-.art__tape--tl { left: -2%; top: 4%; rotate: -38deg; width: clamp(40px, 20%, 86px); }
-.art__tape--tr { right: -2%; top: 4%; rotate: 36deg; width: clamp(40px, 20%, 86px); }
-
 /* "Open" key that pops out of the corner on hover and focus. */
 .art__open {
   position: absolute;
-  right: -12px;
-  bottom: -12px;
+  right: 8px;
+  bottom: 8px;
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
-  background: var(--tone);
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-s);
-  box-shadow: var(--sh-s);
-  --px-a: var(--paper);
+  width: 32px;
+  height: 32px;
+  background: var(--yellow);
+  color: var(--on-accent);
+  border: var(--bw) solid var(--shadow);
+  box-shadow: 2px 2px 0 var(--shadow);
   scale: 0;
-  rotate: -25deg;
   pointer-events: none;
-  transition: scale 260ms var(--ease-out), rotate 260ms var(--ease-out);
+  transition: scale 160ms steps(3, end);
 }
 
+/* Hover and focus: the piece comes forward the way every block pops (§3):
+   its edge lights and a hard yellow shadow steps out under it, the same
+   frame the viewer and the piece page use, so the tile reads as the start of
+   that frame. The growing, the 2px lift and the neighbours stepping back are
+   motion/gallery.ts (a transform on each .art); without it, CSS does a
+   simpler version below. A black shadow would vanish on the dark page. */
+.art:focus-within { z-index: 3; }
 .art__link:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 4px;
-  box-shadow: 8px 8px 0 var(--tone), 8px 8px 0 var(--bw-l) var(--ink);
-  border-radius: clamp(10px, 1.2cqw, 16px);
+  outline: var(--bw) solid var(--yellow);
+  outline-offset: 2px;
+  border-color: var(--fg);
+  box-shadow: 5px 5px 0 var(--yellow);
 }
-.art:focus-within { z-index: 20; }
-.art__link:focus-visible .art__open { scale: 1; rotate: 0deg; transition: scale var(--d-spring) var(--ease-spring), rotate var(--d-spring) var(--ease-spring); }
-
+.art__link:focus-visible .art__open { scale: 1; }
+.art[data-lift] { z-index: 3; }
 @media (hover: hover) and (pointer: fine) {
-  .art:hover { z-index: 20; }
-  .art:hover .art__link { box-shadow: 10px 10px 0 var(--tone), 10px 10px 0 var(--bw-l) var(--ink); }
-  .art:hover .art__open { scale: 1; rotate: 0deg; transition: scale var(--d-spring) var(--ease-spring), rotate var(--d-spring) var(--ease-spring); }
-  .art:hover .art__tape { translate: 0 -3px; }
+  .art:hover { z-index: 3; }
+  .art:hover .art__link { border-color: var(--fg); box-shadow: 5px 5px 0 var(--yellow); }
+  .art:hover .art__open { scale: 1; }
 }
-/* Without the JS cursor field: hover grows the piece and settles the rest. */
+/* Without the JS field: hover grows the piece and settles the rest. */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  html:not(.has-field) .art { transition: scale 420ms var(--ease-out), rotate 420ms var(--ease-out); }
-  html:not(.has-field) .collage:has(.art:hover) .art:not(:hover) { scale: 0.96; }
-  html:not(.has-field) .art:hover { scale: 1.05; rotate: 0deg; }
+  html:not(.has-field) .art { transition: scale 280ms var(--ease-spring), translate 280ms var(--ease-spring); }
+  html:not(.has-field) .collage:has(.art:hover) .art:not(:hover) { scale: 0.97; }
+  html:not(.has-field) .art:hover { scale: 1.05; translate: -2px -2px; }
 }
-/* Touch: a press sinks the frame into its shadow, like the keys. */
-.art__link:active { translate: 3px 3px; box-shadow: 2px 2px 0 var(--ink); transition-duration: var(--d-press); }
+/* Press: the piece shrinks a step and sinks into its shadow before the
+   viewer takes it. */
+.art__link:active { box-shadow: 0 0 0 var(--yellow); transition-duration: var(--d-press); }
+.art:has(.art__link:active) { scale: 0.97; }
 /* The piece that flew into the viewer leaves an empty spot behind. */
 .art.is-away .art__link { visibility: hidden; }
 
-/* Container queries missing (old browsers): a plain two-column flow. */
-@supports not (container-type: inline-size) {
-  .collage { position: static; height: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 32px; }
-  .art { position: relative; left: auto; top: auto; width: auto; }
-  .art__link { padding: 10px; }
-}
+/* Container queries missing (old browsers): the phone layout at every width. */
 
 /* ================================================================= viewer */
 /* A modal <dialog>: focus stays inside, Esc and the browser back button close
@@ -164,7 +140,7 @@ html:not(.js) .film__link img[data-defer] { display: none; }
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--ink);
+  color: var(--fg);
   overflow: hidden;
   overscroll-behavior: contain;
   touch-action: none;
@@ -175,60 +151,38 @@ html:not(.js) .film__link img[data-defer] { display: none; }
 .viewer__bg {
   position: absolute;
   inset: 0;
-  overflow: hidden;
-  background:
-    linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 48px 48px,
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 48px 48px,
-    rgb(255 255 255 / 0.97);
+  background-color: rgb(10 11 15 / 0.97);
+  background-image: radial-gradient(var(--line) 1px, transparent 1px);
+  background-size: 32px 32px;
   opacity: 0;
-  transition: opacity 280ms var(--ease-std);
+  transition: opacity 220ms var(--ease-std);
 }
-.viewer.is-open .viewer__bg { opacity: 1; transition-duration: 200ms; }
-
-/* Big blocky shapes slide in from the corners: the hyperpop layer. */
-.viewer__blk {
-  position: absolute;
-  border: var(--bw-l) solid var(--ink);
-  border-radius: var(--r-l);
-  box-shadow: var(--sh-l);
-  transition: translate 360ms var(--ease-in-back), rotate 360ms var(--ease-in-back);
-}
-.viewer__blk--a { left: -7vmax; top: -8vmax; width: 27vmax; height: 17vmax; background: var(--tone, var(--yellow)); rotate: -8deg; translate: -40vmax -30vmax; }
-.viewer__blk--b { right: -9vmax; bottom: -10vmax; width: 24vmax; height: 19vmax; background: var(--tone-b, var(--magenta)); rotate: 10deg; translate: 40vmax 34vmax; }
-.viewer__blk--c { right: 6vmax; top: 11vh; width: 4.5vmax; height: 4.5vmax; background: var(--mint); border-radius: var(--r); rotate: 14deg; translate: 30vmax -30vmax; }
-.viewer__blk--d { left: 5vmax; bottom: 12vh; width: 3.6vmax; height: 3.6vmax; background: var(--cyan); border-radius: var(--r-pill); translate: -30vmax 30vmax; }
-.viewer.is-open .viewer__blk { translate: 0 0; transition: translate 760ms var(--ease-spring), rotate 760ms var(--ease-spring), background-color 300ms var(--ease-std); }
-.viewer.is-open .viewer__blk--b { transition-delay: 60ms; }
-.viewer.is-open .viewer__blk--c { transition-delay: 120ms; }
-.viewer.is-open .viewer__blk--d { transition-delay: 160ms; }
+.viewer.is-open .viewer__bg { opacity: 1; transition-duration: 160ms; }
 
 .viewer__stage { position: absolute; inset: 0; cursor: zoom-out; }
 .viewer__frame {
-  --pad: 12px;
+  --pad: 0px;
   position: absolute;
   margin: 0;
-  padding: var(--pad);
-  background: var(--paper);
-  border: var(--bw-l) solid var(--ink);
-  border-radius: 18px;
-  box-shadow: 12px 12px 0 var(--tone, var(--yellow)), 12px 12px 0 var(--bw-l) var(--ink);
+  padding: 0;
+  background: var(--panel);
+  border: var(--bw) solid var(--line-2);
+  box-shadow: 10px 10px 0 var(--yellow);
   cursor: default;
   transform-origin: 50% 50%;
   will-change: transform;
-  transition: box-shadow 300ms var(--ease-std);
 }
 .viewer__lo, .viewer__hi {
   position: absolute;
-  inset: var(--pad);
-  width: calc(100% - var(--pad) * 2);
-  height: calc(100% - var(--pad) * 2);
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  border-radius: 7px;
   user-select: none;
   -webkit-user-drag: none;
 }
-.viewer__lo { background: var(--panel); }
-.viewer__hi { opacity: 0; transition: opacity 320ms var(--ease-std); }
+.viewer__lo { background: var(--panel-2); }
+.viewer__hi { opacity: 0; transition: opacity 260ms var(--ease-std); }
 .viewer__hi.is-loaded { opacity: 1; }
 
 .viewer__bar {
@@ -245,61 +199,56 @@ html:not(.js) .film__link img[data-defer] { display: none; }
 .viewer__bar > * { pointer-events: auto; }
 .viewer__count {
   padding: 10px 14px;
-  background: var(--paper);
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-s);
+  background: var(--panel);
+  border: var(--bw) solid var(--line-2);
   box-shadow: var(--sh-s);
-  color: var(--ink);
+  color: var(--fg);
 }
-.viewer__nav { position: absolute; top: 50%; margin-top: -24px; }
+.viewer__nav { position: absolute; top: 50%; margin-top: -23px; }
 .viewer__nav--prev { left: 24px; }
 .viewer__nav--next { right: 24px; }
 @media (max-width: 699px) {
-  .viewer__frame { --pad: 8px; border-radius: 14px; box-shadow: 7px 7px 0 var(--tone, var(--yellow)), 7px 7px 0 var(--bw-l) var(--ink); }
+  .viewer__frame { box-shadow: 6px 6px 0 var(--yellow); }
   .viewer__nav { top: auto; bottom: 20px; margin-top: 0; }
-  .viewer__nav--prev { left: calc(50% - 64px); }
-  .viewer__nav--next { right: calc(50% - 64px); }
+  .viewer__nav--prev { left: calc(50% - 62px); }
+  .viewer__nav--next { right: calc(50% - 62px); }
 }
 
 /* Controls pop in after the piece lands, and duck out when it leaves. */
-.viewer__count, .viewer__close, .viewer__nav { opacity: 0; scale: 0.6; }
+.viewer__count, .viewer__close, .viewer__nav { opacity: 0; scale: 0.7; }
 .viewer.is-open .viewer__count,
 .viewer.is-open .viewer__close,
 .viewer.is-open .viewer__nav {
   opacity: 1;
   scale: 1;
   transition:
-    opacity 160ms linear 220ms,
-    scale var(--d-spring) var(--ease-spring) 220ms,
-    transform var(--d-spring) var(--ease-spring),
-    box-shadow var(--d-spring) var(--ease-spring),
-    translate 320ms var(--ease-out),
-    background-color var(--d-hover) var(--ease-std);
+    opacity 120ms linear 180ms,
+    scale var(--d-pop) var(--ease-spring) 180ms,
+    transform var(--d-pop) var(--ease-spring),
+    box-shadow var(--d-pop) var(--ease-spring),
+    background-color var(--d-hover) var(--ease-std),
+    border-color var(--d-hover) var(--ease-std);
 }
-.viewer.is-open .viewer__close { transition-delay: 260ms, 260ms, 0s, 0s, 0s, 0s; }
-.viewer.is-open .viewer__nav--prev { transition-delay: 300ms, 300ms, 0s, 0s, 0s, 0s; }
-.viewer.is-open .viewer__nav--next { transition-delay: 340ms, 340ms, 0s, 0s, 0s, 0s; }
+.viewer.is-open .viewer__close { transition-delay: 210ms, 210ms, 0s, 0s, 0s, 0s; }
+.viewer.is-open .viewer__nav--prev { transition-delay: 240ms, 240ms, 0s, 0s, 0s, 0s; }
+.viewer.is-open .viewer__nav--next { transition-delay: 270ms, 270ms, 0s, 0s, 0s, 0s; }
 .viewer:not(.is-open) .viewer__count,
 .viewer:not(.is-open) .viewer__close,
-.viewer:not(.is-open) .viewer__nav { transition: opacity 120ms linear, scale 160ms var(--ease-out); }
+.viewer:not(.is-open) .viewer__nav { transition: opacity 100ms linear, scale 120ms var(--ease-out); }
 
 /* ============================================================ piece pages */
 .page--piece { padding-bottom: var(--s-8); }
-.piece__top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: var(--s-6) 0 var(--s-6); }
-.piece { --tone: var(--yellow); display: grid; place-items: center; }
-.piece--magenta { --tone: var(--magenta); }
-.piece--mint { --tone: var(--mint); }
-.piece--cyan { --tone: var(--cyan); }
+.piece__top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: var(--s-6) 0; }
+.piece { display: grid; place-items: center; }
+/* 13px dark mat + 2px edge a side (15px: render/gallery.ts pieceSizes). */
 .piece__frame {
   position: relative;
   max-width: 100%;
-  padding: 12px;
-  background: var(--paper);
-  border: var(--bw-l) solid var(--ink);
-  border-radius: 18px;
-  box-shadow: 12px 12px 0 var(--tone), 12px 12px 0 var(--bw-l) var(--ink);
+  padding: 13px;
+  background: var(--panel);
+  border: var(--bw) solid var(--line-2);
+  box-shadow: 10px 10px 0 var(--yellow);
 }
-.piece__frame .art__tape { top: -10px; }
 .piece__pic { display: contents; }
 /* The background is the piece's smallest copy (set inline), fitted like the
    image itself: it paints first on a slow line, then the sharp copy covers it. */
@@ -312,8 +261,7 @@ html:not(.js) .film__link img[data-defer] { display: none; }
      would outgrow the picture and letterbox it. */
   min-height: min(220px, calc((100vw - 66px) / var(--ar, 1)), calc((91vw - 30px) / var(--ar, 1)));
   object-fit: contain;
-  border-radius: 7px;
-  background: var(--panel) center / contain no-repeat;
+  background: var(--panel-2) center / contain no-repeat;
 }
 .piece--l .piece__img { max-height: calc(100svh - 330px); }
 
@@ -324,30 +272,28 @@ html:not(.js) .film__link img[data-defer] { display: none; }
   gap: 16px;
   margin-top: var(--s-7);
 }
-.film { display: flex; align-items: center; gap: 8px; min-width: 0; overflow-x: auto; padding: 6px 6px 10px; scrollbar-width: thin; }
+.film { display: flex; align-items: center; gap: 6px; min-width: 0; overflow-x: auto; padding: 6px 6px 10px; scrollbar-width: thin; }
 .film li { flex: none; }
 .film__link {
   display: block;
-  height: 52px;
-  padding: 3px;
-  background: var(--paper);
-  border: var(--bw) solid var(--ink);
-  border-radius: 8px;
-  box-shadow: 2px 2px 0 var(--ink);
-  opacity: 0.72;
-  transition: opacity var(--d-hover) var(--ease-std), translate var(--d-spring) var(--ease-spring), box-shadow var(--d-spring) var(--ease-spring);
+  height: 50px;
+  border: var(--bw) solid var(--line-2);
+  box-shadow: 2px 2px 0 var(--shadow);
+  opacity: 0.6;
+  transition: opacity var(--d-hover) var(--ease-std), transform var(--d-pop) var(--ease-spring), box-shadow var(--d-pop) var(--ease-spring), border-color var(--d-hover) var(--ease-std);
 }
-.film__link img { width: auto; height: 100%; border-radius: 4px; }
-.film__link:hover { opacity: 1; translate: 0 -3px; box-shadow: 3px 5px 0 var(--ink); }
-.film__link.is-here { opacity: 1; background: var(--yellow); translate: 0 -4px; box-shadow: 3px 6px 0 var(--ink); }
+.film__link img { width: auto; height: 100%; }
+.film__link:hover { opacity: 1; transform: translateY(-3px) scale(1.06); box-shadow: 3px 5px 0 var(--shadow); }
+.film__link:active { transform: scale(0.94); box-shadow: none; transition-duration: var(--d-press); }
+.film__link.is-here { opacity: 1; border-color: var(--yellow); transform: translateY(-4px); box-shadow: 3px 6px 0 var(--shadow); }
 @media (max-width: 699px) {
   .piece__pager { flex-wrap: wrap; }
   .film { order: 3; width: 100%; justify-content: flex-start; }
   .piece__img { max-height: calc(100svh - 260px); }
+  .piece__frame { box-shadow: 6px 6px 0 var(--yellow); }
 }
 
-/* Reduced motion: no flight, no sliding blocks, no staggered pop-in. */
+/* Reduced motion: no flight, no staggered pop-in. */
 @media (prefers-reduced-motion: reduce) {
   .viewer *, .viewer *::before, .viewer *::after { transition-delay: 0s !important; }
-  .viewer__blk { translate: 0 0; }
 }

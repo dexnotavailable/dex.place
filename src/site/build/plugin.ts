@@ -21,8 +21,34 @@ const HEAD = "<!--site:head-->";
 const BODY = "<!--site:body-->";
 const PRELOAD = "<!--site:preload-->";
 
-// Latin files of the two text fonts are needed on every page; preload them.
-const PRELOAD_FONTS = [/\/anybody-latin-standard-normal-[\w-]+\.woff2$/, /\/space-grotesk-latin-wght-normal-[\w-]+\.woff2$/];
+// Latin files of the heading and body fonts are needed on every page; preload them.
+const PRELOAD_FONTS = [/\/jersey-15-latin-400-normal-[\w-]+\.woff2$/, /\/space-grotesk-latin-wght-normal-[\w-]+\.woff2$/];
+
+/**
+ * Moves the page's stylesheet links ahead of every script in <head>. Vite
+ * emits the entry's <script type="module"> first and its <link
+ * rel="stylesheet"> after it. In Chromium (Edge, Chrome, Samsung Internet),
+ * when the scripts come from cache the new page's first style pass can then
+ * run before the sheet is in, so its `@view-transition` opt-in
+ * (styles/shell.css) reads as off and the incoming cross-document view
+ * transition is aborted ("Transition was aborted because of invalid state.
+ * ViewTransition opt-in disabled", an uncaught promise rejection). With the
+ * sheet first, the inline head scripts after it hold the parser until the
+ * sheet has loaded, so nothing on the page runs or is styled without it. The
+ * sheet is render-blocking either way, so first paint is not delayed.
+ */
+export function stylesheetsFirst(html: string): string {
+  const headEnd = html.indexOf("</head>");
+  if (headEnd < 0) return html;
+  const links: string[] = [];
+  const head = html.slice(0, headEnd).replace(/<link rel="stylesheet"[^>]*>\s*/g, (tag) => {
+    links.push(tag.trim());
+    return "";
+  });
+  const at = head.search(/<script[\s>]/);
+  if (!links.length || at < 0) return html;
+  return head.slice(0, at) + links.map((tag) => `${tag}\n    `).join("") + head.slice(at) + html.slice(headEnd);
+}
 
 function fill(template: string, page: Rendered, preload: string): string {
   if (!template.includes(HEAD) || !template.includes(BODY)) {
@@ -107,13 +133,13 @@ export function sitePages(): Plugin {
 
       const home = bundle["index.html"];
       if (!home || home.type !== "asset") throw new Error("index.html is not in the bundle");
-      home.source = String(home.source).replace(PRELOAD, () => preload);
+      home.source = stylesheetsFirst(String(home.source).replace(PRELOAD, () => preload));
 
       const source = String(template.source);
       const c = content();
       for (const route of routes(c)) {
         if (route.path === "/") continue;
-        this.emitFile({ type: "asset", fileName: route.file, source: fill(source, route.render(), preload) });
+        this.emitFile({ type: "asset", fileName: route.file, source: stylesheetsFirst(fill(source, route.render(), preload)) });
       }
       this.emitFile({ type: "asset", fileName: "blog/feed.xml", source: blogFeed(c) });
       delete bundle[TEMPLATE];

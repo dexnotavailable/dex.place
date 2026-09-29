@@ -1,5 +1,7 @@
-// The coloured glyph system and small shared components (DESIGN-SYSTEM.md §5).
+// The glyph system and small shared components (DESIGN-SYSTEM.md §5).
 // Every function returns an HTML string; styles live in styles/components.css.
+// Everything is square: no radius, no tilt. Blocks pop by lifting off a hard
+// pixel shadow, never by rotating.
 
 import { pixelSvg, type IconName } from "../pixels.ts";
 import type { Tone } from "../data/projects.ts";
@@ -9,9 +11,9 @@ export function icon(name: IconName, scale = 2, className?: string): string {
   return pixelSvg(name, { scale, ...(className ? { className } : {}) });
 }
 
-/** The three-colour strip (magenta, yellow, mint in equal thirds). Decorative. */
+/** The four-colour pixel strip (yellow, magenta, mint, cyan). Decorative. */
 export function strip(className?: string, reveal = true): string {
-  return `<span class="${cx("strip", className)}" aria-hidden="true"${reveal ? ' data-reveal="strip"' : ""}><i></i><i></i><i></i></span>`;
+  return `<span class="${cx("strip", className)}" aria-hidden="true"${reveal ? ' data-reveal="strip"' : ""}><i></i><i></i><i></i><i></i></span>`;
 }
 
 /** Fraction counter, e.g. 03 / 09. */
@@ -19,17 +21,16 @@ export function counter(n: number, total: number, className?: string): string {
   return `<span class="${cx("counter", className)}"><b>${pad2(n)}</b><span aria-hidden="true"> / </span><span class="sr"> of </span>${pad2(total)}</span>`;
 }
 
-/** Square glyph tile: a pixel icon on a tone fill with an ink outline. */
+/** Square glyph tile: a pixel icon on a tone fill with a hard edge. */
 export function tile(name: IconName, tone: Tone, size: "s" | "m" | "l" = "m"): string {
   const scale = size === "l" ? 4 : size === "m" ? 3 : 2;
   return `<span class="tile tile--${tone} tile--${size}" aria-hidden="true">${icon(name, scale)}</span>`;
 }
 
-/** Die-cut pixel sticker (white outline, hard shadow), tilted. Decorative. */
-export function sticker(name: IconName, opts: { scale?: number; tilt?: number; tone?: Tone; className?: string; reveal?: boolean } = {}): string {
-  const style = [`--tilt:${opts.tilt ?? -6}deg`];
+/** A small pixel mascot or sparkle, sitting square on the grid. Decorative. */
+export function sticker(name: IconName, opts: { scale?: number; tone?: Tone; className?: string; reveal?: boolean } = {}): string {
   return (
-    `<span class="${cx("sticker", opts.tone && `sticker--${opts.tone}`, opts.className)}" style="${style.join(";")}" aria-hidden="true"` +
+    `<span class="${cx("sticker", opts.tone && `sticker--${opts.tone}`, opts.className)}" aria-hidden="true"` +
     `${opts.reveal === false ? "" : ' data-reveal="pop"'}>${icon(name, opts.scale ?? 3)}</span>`
   );
 }
@@ -51,12 +52,11 @@ export interface ButtonOptions {
   size?: "s" | "m" | "l";
   download?: boolean;
   external?: boolean;
-  magnet?: boolean;
   className?: string;
   ariaLabel?: string;
 }
 
-/** The blocky key: rounded block, ink outline, hard shadow; lifts and presses. */
+/** The key: square block, 2px edge, hard shadow; pops on hover, shrinks on press. */
 export function button(o: ButtonOptions): string {
   const ic = o.icon ? `<span class="btn__ic">${icon(o.icon, o.size === "l" ? 3 : 2)}</span>` : "";
   const label = `<span class="btn__label">${esc(o.label)}</span>`;
@@ -65,7 +65,6 @@ export function button(o: ButtonOptions): string {
     `href="${esc(o.href)}"`,
     o.download ? "download" : "",
     o.external ? 'rel="noopener"' : "",
-    o.magnet ? "data-magnet" : "",
     o.ariaLabel ? `aria-label="${esc(o.ariaLabel)}"` : "",
   ].filter(Boolean);
   return `<a ${attrs.join(" ")}>${o.iconFirst ? ic + label : label + ic}</a>`;
@@ -81,29 +80,34 @@ export function copyButton(value: string, what: string): string {
 
 export interface SectionHeadOptions {
   id: string;
-  no?: number;
   kicker: string;
   title: string;
   tone: Tone;
-  /** slab: title on a tilted tone block. line: plain title with an underline block. */
-  variant?: "slab" | "line";
+  icon?: IconName;
   /** Real counts only, e.g. "03 items". */
   aside?: string;
-  level?: 1 | 2;
+  level?: 1 | 2 | 3;
+  /** The section's own full page, linked from the head ("Open page"). */
+  more?: { href: string; label: string };
 }
 
-/** Section header kit: // kicker, rule, aside, big wide title, strip. */
+/**
+ * Section header: a tone tile, `// kicker` and a real count on a rule, the
+ * title in the pixel face, and optionally a small link to the section's own
+ * page. Used by home sections and inner pages alike, so they read as one site.
+ */
 export function sectionHead(o: SectionHeadOptions): string {
   const h = `h${o.level ?? 2}`;
-  const title = o.variant === "line"
-    ? `<span class="sh__line sh__line--${o.tone}">${esc(o.title)}</span>`
-    : `<span class="slab slab--${o.tone}" data-reveal="wipe">${esc(o.title)}</span>`;
   return (
-    `<header class="sh">` +
-    `<p class="sh__kicker" data-reveal>${o.no ? `<span class="sh__no">${pad2(o.no)}</span>` : ""}` +
+    `<header class="sh sh--${o.tone}">` +
+    `<p class="sh__kicker" data-reveal>` +
+    (o.icon ? tile(o.icon, o.tone, "s") : "") +
     `<span class="sh__slash" aria-hidden="true">//</span><span>${esc(o.kicker)}</span>` +
     `<span class="sh__rule" aria-hidden="true"></span>${o.aside ? `<span class="sh__aside">${esc(o.aside)}</span>` : ""}</p>` +
-    `<${h} class="sh__title" id="${esc(o.id)}">${title}</${h}>` +
+    `<div class="sh__row">` +
+    `<${h} class="sh__title" id="${esc(o.id)}" data-reveal="pop-block">${esc(o.title)}</${h}>` +
+    (o.more ? button({ href: o.more.href, label: o.more.label, icon: "arrow", size: "s", tone: "paper", className: "sh__more" }) : "") +
+    `</div>` +
     `</header>`
   );
 }
@@ -112,24 +116,18 @@ export interface PageHeadOptions {
   kicker: string;
   title: string;
   tone: Tone;
+  icon?: IconName;
   /** Short functional line (never a tagline). */
   lead?: string;
-  stickers?: readonly IconName[];
   aside?: string;
 }
 
-/** Page header: a big tone panel with a faint grid, wide title, pixel stickers. */
+/** Inner-page header: the same kit as a section head, at h1, with room above. */
 export function pageHead(o: PageHeadOptions): string {
-  const stickers = (o.stickers ?? [])
-    .map((name, i) => sticker(name, { scale: i === 0 ? 5 : 4, tilt: i % 2 ? 8 : -7, className: `phead__st phead__st--${i}` }))
-    .join("");
   return (
-    `<header class="phead phead--${o.tone}" data-reveal="pop-block">` +
-    `<p class="sh__kicker"><span class="sh__slash" aria-hidden="true">//</span><span>${esc(o.kicker)}</span>` +
-    `${o.aside ? `<span class="sh__rule" aria-hidden="true"></span><span class="sh__aside">${esc(o.aside)}</span>` : ""}</p>` +
-    `<h1 class="phead__title">${esc(o.title)}</h1>` +
+    `<div class="phead">` +
+    sectionHead({ id: "page-title", kicker: o.kicker, title: o.title, tone: o.tone, level: 1, ...(o.icon ? { icon: o.icon } : {}), ...(o.aside ? { aside: o.aside } : {}) }) +
     (o.lead ? `<p class="phead__lead">${esc(o.lead)}</p>` : "") +
-    `<div class="phead__stickers" aria-hidden="true">${stickers}</div>` +
-    `</header>`
+    `</div>`
   );
 }

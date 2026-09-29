@@ -1,6 +1,6 @@
-/* /downloads/ (render/downloads.ts). One big mint block per published file,
-   a dashed "not yet" card per project without one, then install steps and
-   the checksum panel. Tokens and motion: DESIGN-SYSTEM.md §2-3. */
+/* Downloads (render/downloads.ts): the home section and /downloads/. One big
+   block per published file, a dashed "not yet" card per project without one,
+   then install steps and the checksum panel. Mint is this section's tone. */
 
 .dl-list { display: grid; gap: var(--s-6); }
 
@@ -9,117 +9,147 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font: 400 var(--fs-12) / 1 var(--f-px);
+  font: 400 var(--fs-12) / 1 var(--f-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
-.dl-state--ready { color: var(--mint-text); }
-.dl-state__dot {
-  width: 10px;
-  height: 10px;
-  border: var(--bw) solid var(--ink);
-  border-radius: 3px;
-  background: var(--chip);
-}
+.dl-state--ready { color: var(--mint); }
+.dl-state__dot { width: 8px; height: 8px; background: var(--line-2); }
 .dl-state--ready .dl-state__dot { background: var(--mint); }
 @media (prefers-reduced-motion: no-preference) {
   .dl-state--ready .dl-state__dot { animation: dl-blink 2.4s steps(1, end) infinite; }
 }
-@keyframes dl-blink { 50% { background: var(--paper); } }
+@keyframes dl-blink { 50% { background: transparent; box-shadow: inset 0 0 0 2px var(--mint); } }
 
 /* ------------------------------------------------------ published: block */
 .dlf {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  background: var(--paper);
-  border: var(--bw-l) solid var(--ink);
-  border-radius: var(--r-xl);
-  box-shadow: var(--sh-l);
-  scroll-margin-top: 112px;
+  background: var(--panel);
+  border: var(--bw) solid var(--line-2);
+  box-shadow: 8px 8px 0 var(--shadow);
+  scroll-margin-top: 8px;
 }
 .dlf__body {
   display: grid;
   align-content: center;
   justify-items: start;
   gap: 14px;
-  padding: clamp(24px, 4vw, 52px);
+  padding: clamp(24px, 4vw, 48px);
 }
-.dlf__name {
-  font: var(--title-weight) var(--fs-h2) / 0.95 var(--f-title);
-  font-stretch: 128%;
-  letter-spacing: -0.005em;
-}
-.dlf__line { font-size: var(--fs-20); max-width: 34ch; }
+.dlf__head { display: flex; align-items: center; gap: 18px; }
+.dlf__title { display: grid; justify-items: start; gap: 14px; }
+.dlf__badge { display: none; line-height: 0; }
+.dlf__name { font: 400 var(--fs-h2) / 0.95 var(--f-px); letter-spacing: 0.01em; }
+.dlf__line { font-size: var(--fs-20); max-width: 34ch; color: var(--fg-2); }
 .dlf__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; margin: 10px 0 6px; }
 .dlf__file { display: grid; gap: 2px; font-size: var(--fs-14); color: var(--muted); }
-.dlf__file code { font: 600 var(--fs-14) / 1.3 var(--f-mono); color: var(--ink); overflow-wrap: anywhere; }
+.dlf__file code { font: 600 var(--fs-14) / 1.3 var(--f-mono); color: var(--fg); overflow-wrap: anywhere; }
 
 /* The key's arrow drops into its tray while pressed. */
-.btn--dl .btn__ic .px { transition: translate var(--d-press) var(--ease-out); }
-.btn--dl:active .btn__ic .px { translate: 0 3px; }
+.btn--dl .btn__ic .px { transition: translate var(--d-press) steps(2, end); }
+.btn--dl:active .btn__ic .px { translate: 0 4px; }
 
-/* Specs: black key, grey value. */
-.spec { display: flex; flex-wrap: wrap; gap: 10px; }
-.spec > div { display: flex; align-items: stretch; border: var(--bw) solid var(--ink); border-radius: 8px; overflow: hidden; }
+/* Specs: light key, dark value, stacked as one aligned block (subgrid keeps
+   every key and every value the same width). Only the SHA-256 row can be
+   pressed, so only it rests on a shadow. */
+.spec { display: grid; grid-template-columns: max-content max-content; gap: 6px 0; }
+.spec > div { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; border: var(--bw-1) solid var(--line-2); }
+@supports not (grid-template-columns: subgrid) {
+  .spec > div { grid-template-columns: 104px auto; }
+}
 .spec dt {
   display: flex;
   align-items: center;
   padding: 0 10px;
-  background: var(--ink);
-  color: #fff;
-  font: 400 var(--fs-12) / 1 var(--f-px);
+  background: var(--fg);
+  color: var(--on-accent);
+  font: 400 var(--fs-12) / 1 var(--f-label);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.spec dd { display: flex; align-items: center; min-height: 36px; padding: 4px 10px; background: var(--panel); font-weight: 600; font-variant-numeric: tabular-nums; }
+.spec dd { display: flex; align-items: center; min-height: 34px; padding: 4px 10px; background: var(--panel-2); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* The checksum chip is the one you can press: it jumps to "Check the file".
+   Same pop as every key (§3): lift with a mint step-out shadow,
+   sink when pressed. The whole chip moves, so the key half goes with it. */
+.spec__sha {
+  margin-top: 4px;
+  box-shadow: var(--off-s) var(--off-s) 0 var(--shadow);
+  transition: transform var(--d-pop) var(--ease-spring), box-shadow var(--d-pop) var(--ease-spring);
+}
+.spec__sha dd { padding: 0; }
+.spec__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+  min-height: 34px;
+  padding: 4px 10px;
+  color: var(--fg);
+  text-decoration: none;
+}
+.spec__link code { font: 600 var(--fs-14) / 1 var(--f-mono); letter-spacing: 0.02em; }
+.spec__link .px { flex: none; color: var(--mint); transition: translate var(--d-hover) steps(2, end); }
+.spec__link:focus-visible { outline: none; }
+.spec__sha:has(.spec__link:hover),
+.spec__sha:has(.spec__link:focus-visible) {
+  transform: translate(-2px, -2px);
+  box-shadow: calc(var(--off-s) + 2px) calc(var(--off-s) + 2px) 0 var(--mint);
+  border-color: var(--fg);
+}
+.spec__sha:has(.spec__link:focus-visible) { outline: 2px solid var(--yellow); outline-offset: 3px; }
+.spec__sha:has(.spec__link:hover) dd, .spec__sha:has(.spec__link:focus-visible) dd { background: var(--mint-t); }
+.spec__link:hover .px, .spec__link:focus-visible .px { translate: 0 2px; }
+.spec__sha:has(.spec__link:active) {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--shadow);
+  transition-duration: var(--d-press);
+}
 
 .dl-notes { display: grid; gap: 4px; padding: 0; list-style: none; color: var(--muted); }
-.dl-notes li::before { content: "▪ "; color: var(--mint-text); }
+.dl-notes li::before { content: "■ "; color: var(--mint); font-size: 0.7em; vertical-align: 0.15em; }
 
 /* ------------------------------------------- published: the drawn setup file */
 .dlf__art {
   position: relative;
-  min-height: 380px;
+  min-height: 360px;
   overflow: hidden;
   background-color: var(--mint);
   background-image:
-    linear-gradient(rgb(25 25 25 / 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(25 25 25 / 0.07) 1px, transparent 1px);
-  background-size: 24px 24px;
+    linear-gradient(rgb(15 16 21 / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(15 16 21 / 0.1) 1px, transparent 1px);
+  background-size: 16px 16px;
   background-position: -1px -1px;
-  border-right: var(--bw-l) solid var(--ink);
-  border-radius: calc(var(--r-xl) - 3px) 0 0 calc(var(--r-xl) - 3px);
+  border-right: var(--bw) solid var(--shadow);
 }
-.dlf__art [data-depth] { transition: translate 700ms var(--ease-out); }
-/* cursor tilt by depth: motion/magnet.ts writes an inline translate per layer */
+.dlf__art [data-depth] { transition: translate 600ms var(--ease-out); }
+/* cursor depth: motion/magnet.ts writes an inline translate per layer */
 
-.dlf-disc {
+.dlf-back {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 62%;
+  width: 56%;
   aspect-ratio: 1;
-  margin: -31% 0 0 -31%;
-  background: var(--yellow);
-  border: var(--bw-l) solid var(--ink);
-  border-radius: 30%;
-  rotate: 12deg;
+  margin: -28% 0 0 -28%;
+  background: var(--sunk);
+  opacity: 0.12;
 }
-/* The file: an ink sheet with its top-right corner cut, a paper face inset
-   3px (the outline), a folded flap in the cut, and a hard drop shadow on the
-   wrapper (box-shadow would be clipped with the corner). */
+/* The file: a dark sheet with its top-right corner cut, a folded flap in the
+   cut, and a hard drop shadow (filter, so the cut corner keeps its shape). */
 .dlf-file {
-  --fold: 30px;
+  --fold: 28px;
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 44%;
+  width: 42%;
   aspect-ratio: 0.78;
-  transform: translate(-50%, -50%) rotate(-4deg);
-  filter: drop-shadow(8px 8px 0 var(--ink));
-  transition: transform var(--d-spring) var(--ease-spring), filter var(--d-spring) var(--ease-spring);
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(8px 8px 0 var(--shadow));
+  transition: transform var(--d-pop) var(--ease-spring), filter var(--d-pop) var(--ease-spring);
 }
 .dlf-file__sheet {
   position: absolute;
@@ -128,90 +158,56 @@
   justify-items: center;
   align-content: center;
   gap: 14px;
-  background: var(--ink);
-  border-radius: var(--r);
+  background: var(--panel);
+  color: var(--mint);
   clip-path: polygon(0 0, calc(100% - var(--fold)) 0, 100% var(--fold), 100% 100%, 0 100%);
 }
-.dlf-file__sheet::before {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  z-index: -1;
-  background: var(--paper);
-  border-radius: calc(var(--r) - 3px);
-  clip-path: polygon(0 0, calc(100% - var(--fold) + 1.5px) 0, 100% calc(var(--fold) - 1.5px), 100% 100%, 0 100%);
-}
-.dlf-file__sheet > :not(.dlf-file__fold) { position: relative; }
 .dlf-file__fold {
   position: absolute;
   top: 0;
   right: 0;
   width: var(--fold);
   height: var(--fold);
-  background: var(--ink);
+  background: var(--line-2);
   clip-path: polygon(0 0, 0 100%, 100% 100%);
 }
-.dlf-file__fold::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--chip);
-  clip-path: polygon(3px 9px, 3px calc(100% - 3px), calc(100% - 9px) calc(100% - 3px));
-}
-.dlf-file__ic { line-height: 0; --px-a: var(--mint); }
+.dlf-file__ic { line-height: 0; }
 .dlf-file__ext {
   padding: 5px 8px 4px;
-  background: var(--ink);
-  color: #fff;
-  border-radius: 5px;
-  font: 400 var(--fs-12) / 1 var(--f-px);
+  background: var(--mint);
+  color: var(--on-accent);
+  font: 400 var(--fs-12) / 1 var(--f-label);
   letter-spacing: 0.1em;
 }
 .dlf-bar { display: flex; gap: 3px; width: 70%; }
-.dlf-bar i { flex: 1; height: 10px; border: var(--bw) solid var(--ink); border-radius: 3px; background: var(--mint); }
+.dlf-bar i { flex: 1; height: 8px; background: var(--mint); }
 
 .dlf-st { position: absolute; line-height: 0; }
-.dlf-st--a { left: 12%; top: 12%; }
-.dlf-st--b { right: 11%; bottom: 14%; }
-.dlf-st--c { left: 9%; bottom: 10%; }
+.dlf-st--a { left: 12%; top: 13%; }
+.dlf-st--c { right: 11%; bottom: 12%; }
+.dlf-st .sticker { color: var(--on-accent); filter: none; }
+.dlf-st--c .sticker { color: var(--yellow); filter: drop-shadow(3px 3px 0 var(--shadow)); }
 
 @media (hover: hover) {
-  .dlf:hover .dlf-file { transform: translate(-50%, -50%) rotate(2deg) scale(1.04); filter: drop-shadow(11px 11px 0 var(--ink)); }
+  .dlf:hover .dlf-file { transform: translate(calc(-50% - 3px), calc(-50% - 3px)) scale(1.04); filter: drop-shadow(11px 11px 0 var(--shadow)); }
 }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .dlf:hover .dlf-file__ic .px { animation: dl-bob 900ms steps(2, end) infinite; }
 }
-@keyframes dl-bob { 50% { translate: 0 5px; } }
+@keyframes dl-bob { 50% { translate: 0 4px; } }
 
 /* On reveal the bar fills one segment at a time, like a pixel loader. */
 @media (prefers-reduced-motion: no-preference) {
-  .js .dlf:not(.is-in) .dlf-bar i { background: var(--paper); }
-  .js .dlf.is-in .dlf-bar i { animation: dl-seg 1ms steps(1, end) calc(420ms + var(--i) * 90ms) backwards; }
-  .js .dlf:not(.is-in) .dlf-st .sticker { scale: 0; }
-  .js .dlf.is-in .dlf-st .sticker { animation: rv-pop var(--d-spring) var(--ease-spring) 520ms backwards; }
-  .js .dlf.is-in .dlf-st--b .sticker { animation-delay: 620ms; }
-  .js .dlf.is-in .dlf-st--c .sticker { animation-delay: 720ms; }
+  .js .dlf:not(.is-in) .dlf-bar i { background: var(--line); }
+  .js .dlf.is-in .dlf-bar i { animation: dl-seg 1ms steps(1, end) calc(360ms + var(--i) * 80ms) backwards; }
 }
-@keyframes dl-seg { from { background: var(--paper); } }
+@keyframes dl-seg { from { background: var(--line); } }
 
-/* Arriving from the landing (/downloads/#dexclient): a ring pops once. */
-.dlf:target::after,
-.dlp:target::after {
-  content: "";
-  position: absolute;
-  inset: -12px;
-  border: var(--bw-l) solid var(--ink);
-  border-radius: calc(var(--r-xl) + 10px);
-  background: none;
-  pointer-events: none;
-  opacity: 0;
-  animation: dl-ring 1100ms var(--ease-out) 500ms both;
-}
-.dlp:target::after { border-radius: calc(var(--r-l) + 10px); }
+/* Arriving on a download (#dexclient): its edge flashes yellow once. */
+.dlf:target, .dlp:target { animation: dl-ring 1200ms steps(6, end) 300ms both; }
 @keyframes dl-ring {
-  0% { opacity: 1; scale: 0.97; }
-  60% { opacity: 1; }
-  100% { opacity: 0; scale: 1.02; }
+  0%, 60% { border-color: var(--yellow); box-shadow: 8px 8px 0 var(--yellow); }
+  100% { }
 }
 
 /* ------------------------------------------------------------- not yet */
@@ -221,29 +217,27 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 20px 28px;
-  padding: clamp(20px, 3vw, 32px);
-  background: var(--paper-2);
-  border: var(--bw-l) dashed var(--ink);
-  border-radius: var(--r-l);
-  scroll-margin-top: 112px;
+  padding: clamp(20px, 3vw, 28px);
+  background: var(--bg-2);
+  border: var(--bw) dashed var(--line-2);
+  scroll-margin-top: 8px;
 }
 .dlp__tile { position: relative; align-self: start; line-height: 0; }
-.dlp__zz { position: absolute; left: -16px; top: -20px; }
+.dlp__zz { position: absolute; right: -14px; top: -18px; }
 .dlp__body { display: grid; justify-items: start; gap: 8px; }
-.dlp__name { font: var(--title-weight) var(--fs-h3) / 1 var(--f-title); font-stretch: 128%; }
-.dlp__line { font-size: 1.125rem; }
+.dlp__name { font: 400 var(--fs-h3) / 1 var(--f-px); }
+.dlp__line { font-size: 1.125rem; color: var(--fg-2); }
 .dlp__note { color: var(--muted); }
 
 /* ------------------------------------------------------ install guide */
-.dlg { margin-top: var(--section); }
-.dlg .sh { margin-bottom: var(--s-6); }
+.dlg { margin-top: var(--s-8); }
+.dlg .sub { margin-bottom: var(--s-5); }
 .steps {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 22px;
+  gap: 16px;
   padding: 0;
   list-style: none;
-  counter-reset: none;
 }
 .step {
   position: relative;
@@ -251,28 +245,25 @@
   align-content: start;
   justify-items: start;
   gap: 12px;
-  padding: 22px 22px 24px;
-  background: var(--paper);
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-l);
+  padding: 20px 20px 22px;
+  background: var(--panel);
+  border: var(--bw) solid var(--line);
   box-shadow: var(--sh);
-  transition: transform var(--d-spring) var(--ease-spring), box-shadow var(--d-spring) var(--ease-spring);
+  transition: transform var(--d-pop) var(--ease-spring), box-shadow var(--d-pop) var(--ease-spring), border-color var(--d-hover) var(--ease-std);
 }
-.step .tile { transition: rotate var(--d-spring) var(--ease-spring); }
 @media (hover: hover) {
-  .step:hover { transform: translate(-3px, -3px); box-shadow: var(--sh-l); }
-  .step:hover .tile { rotate: -8deg; }
+  .step:hover { transform: translate(-2px, -2px); border-color: var(--line-2); box-shadow: 6px 6px 0 var(--shadow); }
 }
 .step__no {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  font: 400 var(--fs-14) / 1 var(--f-px);
+  top: 18px;
+  right: 18px;
+  font: 400 var(--fs-14) / 1 var(--f-label);
   letter-spacing: 0.06em;
   color: var(--muted);
 }
-.step__title { margin-top: 4px; font-size: var(--fs-20); font-weight: 700; line-height: 1.2; }
-.step__text { color: var(--ink-2); }
+.step__title { margin-top: 4px; font: 700 var(--fs-20) / 1.2 var(--f-body); }
+.step__text { color: var(--fg-2); }
 
 .dlg__caveat {
   display: flex;
@@ -282,7 +273,7 @@
   color: var(--muted);
   font-size: var(--fs-14);
 }
-.dlg__caveat .px { flex: none; }
+.dlg__caveat .px { flex: none; color: var(--yellow); }
 
 /* ------------------------------------------------------ checksum panel */
 .verify {
@@ -290,25 +281,28 @@
   justify-items: start;
   gap: 12px;
   margin-top: var(--s-6);
-  padding: clamp(20px, 3vw, 32px);
+  padding: clamp(20px, 3vw, 28px);
   background: var(--mint-t);
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-l);
+  border: var(--bw) solid var(--line);
+  border-left: var(--stripe) solid var(--mint);
+  scroll-margin-top: 8px;
 }
-.verify__title { display: flex; align-items: center; gap: 12px; font-size: var(--fs-20); font-weight: 700; }
-.verify__line code { font: 600 0.95em var(--f-mono); }
+.verify:target { animation: dl-edge 1200ms steps(6, end) 300ms both; }
+@keyframes dl-edge { 0%, 60% { border-color: var(--mint); box-shadow: 6px 6px 0 var(--mint); } 100% { } }
+.verify__title { display: flex; align-items: center; gap: 12px; font: 700 var(--fs-20) / 1.2 var(--f-body); }
+.verify__line { color: var(--fg-2); }
+.verify__line code { font: 600 0.95em var(--f-mono); color: var(--fg); }
 .verify__row { display: flex; align-items: center; gap: 10px; max-width: 100%; }
 .verify__row .btn { flex: none; }
 .hash,
 .cmd {
   min-width: 0;
   padding: 10px 14px;
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-s);
+  border: var(--bw-1) solid var(--line-2);
   font: 500 var(--fs-16) / 1.5 var(--f-mono);
 }
-.hash { display: flex; flex-wrap: wrap; gap: 0 0.7ch; background: var(--paper); font-variant-numeric: tabular-nums; }
-.cmd { background: var(--night); color: #f2f2f2; overflow-wrap: anywhere; }
+.hash { display: flex; flex-wrap: wrap; gap: 0 0.7ch; background: var(--sunk); color: var(--fg); font-variant-numeric: tabular-nums; }
+.cmd { background: var(--sunk); color: var(--fg); overflow-wrap: anywhere; }
 .cmd span { color: var(--mint); }
 
 /* ------------------------------------------------------------ narrow */
@@ -316,31 +310,36 @@
   .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 860px) {
-  .dlf { grid-template-columns: minmax(0, 1fr); }
-  .dlf__art {
-    min-height: 0;
-    height: 210px;
-    border-right: 0;
-    border-bottom: var(--bw-l) solid var(--ink);
-    border-radius: calc(var(--r-xl) - 3px) calc(var(--r-xl) - 3px) 0 0;
-  }
-  .dlf-disc { width: 172px; margin: -86px 0 0 -86px; }
-  .dlf-file { width: 124px; --fold: 22px; }
-  .dlf-file__sheet { gap: 8px; }
-  .dlf-file__ic .px { width: 55px; height: auto; }
-  .dlf-st--a { left: 8%; }
-  .dlf-st--b { right: 8%; }
-  .dlf-st--c { left: 7%; bottom: 9%; }
+  .dlf__art { min-height: 320px; }
+  .dlf-file { width: 54%; --fold: 22px; }
+  .dlf-file__ic .px { width: 52px; height: auto; }
   .dlp { grid-template-columns: auto minmax(0, 1fr); }
   .dlp__cta { grid-column: 1 / -1; }
-  .dlp .tile--l { width: 60px; height: 60px; }
-  .dlp .tile--l .px { width: 33px; height: auto; }
+  .dlp .tile--l { width: 56px; height: 56px; }
+  .dlp .tile--l .px { width: 36px; height: auto; }
+}
+/* Phones: no drawn file; a small mint tile heads the block (like the
+   "not yet" card below it) and the key spans the block, so the file is one
+   thumb-press from the top of the section. */
+@media (max-width: 700px) {
+  .dlf { grid-template-columns: minmax(0, 1fr); box-shadow: 6px 6px 0 var(--shadow); }
+  .dlf__art { display: none; }
+  .dlf__body { gap: 12px; padding: 20px 18px 22px; }
+  .dlf__badge { display: block; }
+  .dlf__badge .tile--l { width: 56px; height: 56px; }
+  .dlf__badge .tile--l .px { width: 36px; height: auto; }
+  .dlf__head { gap: 14px; }
+  .dlf__title { gap: 8px; }
+  .dlf__line { font-size: var(--fs-16, 1rem); }
+  .dlf__cta { display: grid; width: 100%; gap: 10px; margin: 4px 0 2px; }
+  .dlf__cta .btn--dl { justify-content: center; width: 100%; }
+  .dlf__file { grid-auto-flow: column; justify-content: space-between; align-items: baseline; gap: 12px; }
 }
 @media (max-width: 640px) {
-  .steps { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .step { grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; padding: 18px; }
+  .steps { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .step { grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; padding: 16px; }
   .step .tile { grid-row: span 2; }
   .step__title { margin-top: 0; padding-right: 32px; }
-  .step__no { top: 18px; right: 18px; }
+  .step__no { top: 16px; right: 16px; }
   .verify__row { align-items: flex-start; }
 }

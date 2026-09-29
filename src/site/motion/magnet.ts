@@ -1,27 +1,6 @@
-// Cursor-following touches for fine pointers only (never touch, never under
-// reduced motion):
-// - [data-magnet] buttons lean a few px toward the cursor (CSS `translate`,
-//   which composes with the button's hover lift on `transform`).
-// - [data-tilt-scene] panels shift their depth layers by depth, so the
-//   code-drawn placeholder scenes read as layers.
-
-export function initMagnet(reduced: MediaQueryList, fine: MediaQueryList): void {
-  if (reduced.matches || !fine.matches) return;
-  for (const el of document.querySelectorAll<HTMLElement>("[data-magnet]")) {
-    el.addEventListener("pointermove", (e) => {
-      const r = el.getBoundingClientRect();
-      const dx = (e.clientX - (r.left + r.width / 2)) / r.width;
-      const dy = (e.clientY - (r.top + r.height / 2)) / r.height;
-      el.style.setProperty("--mag-x", `${(dx * 10).toFixed(1)}px`);
-      el.style.setProperty("--mag-y", `${(dy * 8).toFixed(1)}px`);
-    });
-    el.addEventListener("pointerleave", () => {
-      el.style.removeProperty("--mag-x");
-      el.style.removeProperty("--mag-y");
-    });
-  }
-}
-
+// Placeholder scenes ([data-tilt-scene], render/art.ts and the downloads file
+// art): fine pointers only, never touch, never under reduced motion.
+//
 // Scenes also get `.is-vis` while on screen; CSS pauses their idle loops
 // (caret, orb, clouds, drop, fill, tap) when off screen, like the floats.
 //

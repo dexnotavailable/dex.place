@@ -5,63 +5,84 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { collageLayouts, compose, LAYOUTS, packOrder, WIDTH } from "./collage.ts";
+import { breakRows, collage, imageWidth, LAYOUTS } from "./collage.ts";
 import { loadContent, loadGallery } from "./build/content.ts";
-import { artSrcset, collageSizes, galleryOrder, galleryPage, PIECE_PHONE_BUDGET, phoneCap, piecePage, piecePhoneCap } from "./render/gallery.ts";
+import { artSrcset, collageBlock, collageSizes, galleryArrival, galleryOrder, galleryPage, gallerySection, leadPhoneCaps, leadTabletCaps, leadTiles, PIECE_PHONE_BUDGET, phoneCap, piecePage, piecePhoneCap, tabletCap, tabletLeadTiles, TABLET_COLLAGE } from "./render/gallery.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const content = loadContent(ROOT);
 
 const L = { width: 16, height: 9 };
 const P = { width: 9, height: 16 };
+const aspect = (p) => p.width / p.height;
 
-function overlap(a, b) {
-  const w = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
-  const h = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
-  return w > 0 && h > 0 ? w * h : 0;
-}
-
-function checkLayout(pieces, name, comp) {
-  assert.equal(comp.boxes.length, pieces.length, `${name}: one box per piece`);
-  for (const [i, b] of comp.boxes.entries()) {
-    assert.ok(b.x >= 0 && b.x + b.w <= WIDTH + 0.01, `${name} #${i} inside the width: ${JSON.stringify(b)}`);
-    assert.ok(b.y >= 0 && b.y + b.h <= comp.height, `${name} #${i} inside the height`);
-    assert.ok(b.w >= 8, `${name} #${i} not a sliver`);
-    assert.ok(Math.abs(b.tilt) <= LAYOUTS[name].tilt + 1e-9, `${name} #${i} tilt within range`);
-    // The frame keeps the art's aspect ratio (no cropping).
-    const m = LAYOUTS[name].mat;
-    const ratio = (b.h - 2 * m) / (b.w - 2 * m);
-    const want = pieces[i].height / pieces[i].width;
-    assert.ok(Math.abs(ratio - want) < 0.02, `${name} #${i} aspect ${ratio} vs ${want}`);
-  }
-  // Collage, not a pile: frames never cover more than a sliver of each other.
-  for (let a = 0; a < comp.boxes.length; a += 1) {
-    for (let c = a + 1; c < comp.boxes.length; c += 1) {
-      const A = comp.boxes[a];
-      const C = comp.boxes[c];
-      const share = overlap(A, C) / Math.min(A.w * A.h, C.w * C.h);
-      assert.ok(share < 0.06, `${name}: #${a} and #${c} overlap ${(share * 100).toFixed(1)}%`);
+function checkCollage(pieces) {
+  const c = collage(pieces);
+  // A reading order: every piece exactly once, the first piece leads.
+  assert.deepEqual([...c.order].sort((a, b) => a - b), pieces.map((_, i) => i));
+  if (pieces.length) assert.equal(c.order[0], 0);
+  for (const name of Object.keys(LAYOUTS)) {
+    const { rows, slots } = c.layouts[name];
+    // Rows cover the order in sequence (flex rows follow the DOM order).
+    assert.deepEqual(rows.flat(), c.order.map((_, i) => i), `${name}: rows in order`);
+    assert.equal(slots.length, pieces.length);
+    for (const row of rows) {
+      // Every row fills the width exactly, and every piece in it has the
+      // same height: its share follows its own aspect ratio (no cropping).
+      const sum = row.reduce((s, i) => s + slots[i].share, 0);
+      assert.ok(Math.abs(sum - 1) < 1e-9, `${name}: row shares sum to 1 (${sum})`);
+      const heights = row.map((i) => slots[i].share / aspect(pieces[c.order[i]]));
+      for (const h of heights) assert.ok(Math.abs(h - heights[0]) < 1e-9, `${name}: one height per row`);
+      for (const i of row) assert.equal(slots[i].gaps, row.length - 1);
     }
   }
+  return c;
 }
 
-test("collage: every layout keeps pieces inside, uncropped and apart", () => {
-  for (const pieces of [content.gallery, [L], [P, P], [L, P, L, P, L, L, P, P, L, L, P, L, P, P, L, L]]) {
-    const layouts = collageLayouts(pieces);
-    for (const name of Object.keys(LAYOUTS)) checkLayout(pieces, name, layouts[name]);
+test("collage: justified rows, full width, one height per row, nothing cropped", () => {
+  for (const pieces of [content.gallery, [L], [P, P], [L, P, L, P, L, L, P, P, L, L, P, L, P, P, L, L]]) checkCollage(pieces);
+});
+
+test("collage: rows stay near the target height; no lone portrait on a wide row", () => {
+  const c = checkCollage(content.gallery);
+  for (const [name, spec] of Object.entries(LAYOUTS)) {
+    for (const row of c.layouts[name].rows) {
+      const h = c.layouts[name].slots[row[0]].height;
+      assert.ok(h > spec.target * 0.55 && h < spec.target * 1.8, `${name}: row height ${h.toFixed(3)} near ${spec.target}`);
+      if (name !== "narrow") assert.ok(!(row.length === 1 && aspect(content.gallery[c.order[row[0]]]) < 1), `${name}: lone portrait`);
+    }
   }
 });
 
 test("collage: deterministic, and empty is empty", () => {
-  assert.deepEqual(collageLayouts(content.gallery), collageLayouts(content.gallery));
-  assert.deepEqual(compose([], { ...LAYOUTS.wide, seed: "x" }), { boxes: [], height: 0 });
+  assert.deepEqual(collage(content.gallery), collage(content.gallery));
+  const empty = collage([]);
+  assert.deepEqual(empty.order, []);
+  assert.deepEqual(empty.layouts.wide.rows, []);
+  assert.deepEqual(breakRows([], LAYOUTS.wide), { rows: [], cost: 0 });
 });
 
-test("collage: the first piece leads and shapes alternate by pattern", () => {
-  const order = packOrder([L, L, L, P, P], ["P", "L"]);
-  assert.deepEqual(order, [0, 3, 1, 4, 2]);
-  const wide = collageLayouts(content.gallery).wide.boxes;
-  assert.deepEqual([wide[0].x, wide[0].y], [0, 0]);
+test("collage: image width is the share of the row after its gaps and every frame edge", () => {
+  const slot = { share: 0.5, gaps: 1, row: 0, height: 0.28 };
+  assert.equal(imageWidth(slot, 1200), (1200 - 3 - 2 * 4) * 0.5);
+  // One height per row in CSS px too: pictures of a mixed row (portrait next
+  // to landscape) come out the same height once the frames are counted.
+  const { layouts, order } = collage(content.gallery);
+  for (const name of Object.keys(LAYOUTS)) {
+    for (const row of layouts[name].rows) {
+      const hs = row.map((i) => imageWidth(layouts[name].slots[i], 1200) / aspect(content.gallery[order[i]]));
+      for (const h of hs) assert.ok(Math.abs(h - hs[0]) < 1e-6, `${name}: picture heights ${hs.map((x) => x.toFixed(2))}`);
+    }
+  }
+});
+
+test("gallery section on the home page: same collage, every tile waits, links the full page", () => {
+  const html = gallerySection(content);
+  assert.match(html, /<section class="sec sec--gallery" id="gallery"/);
+  assert.match(html, /href="\/gallery\/"/);
+  assert.doesNotMatch(html, /fetchpriority="high"/);
+  assert.equal((html.match(/<picture class="art__pic" data-defer>/g) ?? []).length, content.gallery.length);
+  assert.equal(collageBlock({ ...content, gallery: [] }, true), `<p class="empty">Nothing here yet.</p>`);
 });
 
 test("gallery page: every piece framed and linked, alt text kept, no visible titles", () => {
@@ -74,7 +95,10 @@ test("gallery page: every piece framed and linked, alt text kept, no visible tit
   }
   assert.doesNotMatch(html, /<figcaption|<h[2-6][^>]*class="art/);
   assert.match(html, /<dialog class="viewer" data-viewer/);
-  assert.equal((html.match(/loading="lazy"/g) ?? []).length + (html.match(/loading="eager"/g) ?? []).length, content.gallery.length);
+  // One lazy image per <noscript> copy; eager only on the lead tiles.
+  assert.equal((html.match(/loading="lazy"/g) ?? []).length, (html.match(/<noscript><picture/g) ?? []).length);
+  const leads = new Set([...leadTiles(placed), ...tabletLeadTiles(placed)]);
+  assert.equal((html.match(/loading="eager"/g) ?? []).length, leads.size);
 });
 
 test("piece pages: prev/next follow the collage's reading order, in a ring", () => {
@@ -86,9 +110,11 @@ test("piece pages: prev/next follow the collage's reading order, in a ring", () 
     const prev = placed[(at - 1 + placed.length) % placed.length].item.id;
     assert.match(html, new RegExp(`href="/gallery/${next}/" rel="next"`));
     assert.match(html, new RegExp(`href="/gallery/${prev}/" rel="prev"`));
-    // The visible number is the catalogue id, so the URL and counter agree.
-    assert.match(html, new RegExp(`piece ${item.id} of ${String(placed.length).padStart(2, "0")}`));
-    assert.match(html, new RegExp(`class="counter piece__count"><b>${item.id}</b>`));
+    // The visible number is the piece's place on the wall (reading order), so
+    // stepping with the arrows counts 01, 02, 03 and never looks like a skip.
+    const pos = String(at + 1).padStart(2, "0");
+    assert.match(html, new RegExp(`piece ${pos} of ${String(placed.length).padStart(2, "0")}`));
+    assert.match(html, new RegExp(`class="counter piece__count"><b>${pos}</b>`));
   });
 });
 
@@ -108,35 +134,240 @@ test("gallery images: every srcset candidate exists at its stated width, display
   }
 });
 
-test("gallery page: only the lead piece loads at once; the rest wait, with a no-JS copy", () => {
+// Which <source> (or the <img>) a browser picks for a tile's picture, as the
+// HTML picture algorithm does: the first source whose media matches and that
+// has a srcset (one still in data-srcset is skipped), else the <img>. Returns
+// the pick's srcset, or null when nothing loads yet.
+const SCREENS = {
+  phone: { w: 390, dpr: 3 },
+  tablet: { w: 820, dpr: 2 },
+  tablet768: { w: 768, dpr: 2 },
+  midWindow: { w: 1000, dpr: 1 },
+  wide: { w: 1440, dpr: 1 },
+};
+function mediaMatches(media, { w, dpr }) {
+  return media.split(/\s+and\s+/).every((q) => {
+    const m = q.match(/^\((min|max)-(width|resolution): ([\d.]+)(px|dppx)\)$/);
+    assert.ok(m, `known media feature: ${q}`);
+    const v = m[2] === "width" ? w : dpr;
+    return m[1] === "min" ? v >= Number(m[3]) : v <= Number(m[3]);
+  });
+}
+function pick(picture, screen) {
+  for (const s of picture.match(/<source [^>]*>/g) ?? []) {
+    if (!mediaMatches(attr(s, "media"), screen)) continue;
+    const srcset = attr(s, "srcset");
+    if (srcset !== undefined) return srcset;
+  }
+  return attr(picture.match(/<img [^>]*>/)[0], "srcset") ?? null;
+}
+/** Each tile's live picture (not its <noscript> copy), by piece id. */
+function pictures(html) {
+  return new Map([...html.matchAll(/data-piece="(\d+)"[^>]*>(<picture class="art__pic"[^]*?<\/picture>)/g)].map((m) => [m[1], m[2]]));
+}
+const maxWidth = (srcset) => Math.max(...urls(srcset).map(([, w]) => parseInt(w)));
+
+test("gallery page: each layout's lead tiles load at once; the rest wait, with a no-JS copy", () => {
   const html = galleryPage(content);
   const { placed } = galleryOrder(content.gallery);
-  const imgs = [...html.matchAll(/<img class="art__img"[^>]*>/g)].map((m) => m[0]);
-  const live = imgs.filter((t) => / srcset="/.test(t));
-  const waiting = imgs.filter((t) => / data-srcset="/.test(t));
-  // Lead: one live image with high priority. Others: one waiting image + one <noscript> copy each.
-  assert.equal(waiting.length, placed.length - 1);
-  assert.equal(live.length, 1 + (placed.length - 1));
-  assert.equal((html.match(/fetchpriority="high"/g) ?? []).length, 1);
-  assert.equal((html.match(/loading="eager"/g) ?? []).length, 1);
-  const lead = imgs.find((t) => /fetchpriority="high"/.test(t));
-  assert.equal(attr(lead, "alt"), placed[0].item.alt.replaceAll('"', "&quot;"));
-  assert.equal((html.match(/<picture class="art__pic" data-defer>/g) ?? []).length, placed.length - 1);
-  assert.equal((html.match(/<noscript><picture class="art__pic">/g) ?? []).length, placed.length - 1);
+  const phoneLeads = leadTiles(placed);
+  const tabletLeads = tabletLeadTiles(placed);
+  const leads = placed.filter((p) => phoneLeads.includes(p) || tabletLeads.includes(p));
+  const byId = pictures(html);
+  assert.equal(byId.size, placed.length);
+  // A tile loads at once exactly on the screens where it leads: the phone's
+  // pair on phones and on desktop (as before), the tablet's lead on tablets
+  // and 1x windows of the same layout. Nothing else loads before the script.
+  for (const p of placed) {
+    const pic = byId.get(p.item.id);
+    const want = { phone: phoneLeads.includes(p), tablet: tabletLeads.includes(p), tablet768: tabletLeads.includes(p), midWindow: tabletLeads.includes(p), wide: phoneLeads.includes(p) };
+    for (const [name, screen] of Object.entries(SCREENS)) assert.equal(pick(pic, screen) !== null, want[name], `${p.item.id} on ${name}`);
+    const lead = leads.includes(p);
+    assert.equal(/fetchpriority="high"/.test(pic), lead, `${p.item.id}: high priority iff it leads somewhere`);
+    assert.equal(/loading="eager"/.test(pic), lead);
+  }
+  assert.equal((html.match(/fetchpriority="high"/g) ?? []).length, leads.length);
+  const high = [...html.matchAll(/<img class="art__img"[^>]*fetchpriority="high"[^>]*>/g)].map((m) => attr(m[0], "alt"));
+  assert.equal(high[0], placed[0].item.alt.replaceAll('"', "&quot;"), "the first piece leads");
+  // Today the phone's pair (01, 02) and the tablet's big second-row piece (03) differ.
+  assert.ok(!tabletLeads.includes(placed[0]), "the tablet's lead is not the phone's");
+  // Every tile that waits anywhere is a deferred picture with a <noscript> copy.
+  const deferred = placed.filter((p) => !(phoneLeads.includes(p) && tabletLeads.includes(p)));
+  assert.equal((html.match(/<picture class="art__pic" data-defer>/g) ?? []).length, deferred.length);
+  assert.equal((html.match(/<noscript><picture class="art__pic">/g) ?? []).length, deferred.length);
   // Nothing on the page points at the 2048px display file except the viewer's data-src.
+  const imgs = [...html.matchAll(/<img class="art__img"[^>]*>/g)].map((m) => m[0]);
   for (const t of imgs) assert.doesNotMatch(attr(t, "src") ?? attr(t, "data-src") ?? "", /\/gallery\/\d{2}\.webp$/);
+});
+
+test("gallery page: the lead's same-size twin on a phone loads with it, inside one byte budget", () => {
+  const { placed } = galleryOrder(content.gallery);
+  const leads = leadTiles(placed);
+  // The phone layout's first two rows are 01 and 02, both full width and the
+  // same shape: one size, so the second must not load after the first.
+  assert.equal(leads[0], placed[0]);
+  const w = (p) => imageWidth(p.slots.narrow, 390 - 36);
+  for (const p of placed.slice(1)) {
+    const twin = p.slots.narrow.row <= 1 && w(p) ** 2 * (p.item.height / p.item.width) >= 0.97 * w(placed[0]) ** 2 * (placed[0].item.height / placed[0].item.width);
+    assert.equal(leads.includes(p), twin, `${p.item.id}: twin ${twin}`);
+  }
+  assert.ok(leads.length >= 2, "the current wall has a phone twin");
+  const caps = leadPhoneCaps(leads);
+  const bytes = leads.reduce((sum, p) => sum + p.item.bytes.get(caps.get(p)), 0);
+  assert.ok(bytes <= PIECE_PHONE_BUDGET, `lead tiles ${bytes} B on a phone`);
+  for (const p of leads) {
+    const cap = caps.get(p);
+    assert.ok(cap >= 1.5 * w(p) * 0.95, `${p.item.id}: cap ${cap} keeps ~1.5x`);
+    assert.ok(cap <= phoneCap(p.item, w(p)), `${p.item.id}: never above the plain cap`);
+  }
+  // A lone lead that fits keeps its plain cap.
+  assert.equal(leadPhoneCaps([placed[0]]).get(placed[0]), phoneCap(placed[0].item, w(placed[0])));
+  // The same budgeted copies on both pages: /gallery/ (live) and the home section (waiting).
+  for (const html of [galleryPage(content), gallerySection(content)]) {
+    for (const p of leads) {
+      const src = html.match(new RegExp(`data-piece="${p.item.id}"[^]*?<source media="\\(max-width: 659px\\)" (?:data-)?srcset="([^"]*)"`))[1];
+      assert.equal(Math.max(...urls(src).map(([, x]) => parseInt(x))), caps.get(p), p.item.id);
+    }
+  }
 });
 
 test("gallery page: phones are capped near 2x of their tile; sizes follow the layout", () => {
   const html = galleryPage(content);
   const sources = [...html.matchAll(/<source media="\(max-width: 659px\)" (?:data-)?srcset="([^"]*)"/g)].map((m) => m[1]);
-  assert.equal(sources.length, 2 * content.gallery.length - 1);
-  for (const s of sources) assert.ok(Math.max(...urls(s).map(([, w]) => parseInt(w))) <= 640, s);
   const { placed } = galleryOrder(content.gallery);
-  // The lead is half the wide collage: 48% of 1200px (mat 1 unit a side) from 1296px.
-  assert.match(collageSizes(placed[0].boxes), /^\(min-width: 1296px\) 576px, /);
-  // And full width on a phone: (390 - 36) * 94.8% = 336 CSS px, capped at the 640 copy.
-  assert.equal(phoneCap(placed[0].item, (390 - 36) * 0.948), 640);
+  // One per tile, and one per <noscript> copy.
+  assert.equal(sources.length, content.gallery.length + (html.match(/<noscript>/g) ?? []).length);
+  for (const s of sources) assert.ok(Math.max(...urls(s).map(([, w]) => parseInt(w))) <= 640, s);
+  // The lead shares the first wide row with another landscape: half of 1200px
+  // less one 3px gap, less the 2px frame a side, from 1296px.
+  assert.equal(placed[0].slots.wide.gaps, 1);
+  assert.match(collageSizes(placed[0].slots), /^\(min-width: 1296px\) 595px, /);
+  // And full width on a phone: 390 - 36 less the frame = 350 CSS px, capped at the 640 copy.
+  assert.equal(placed[0].slots.narrow.share, 1);
+  assert.equal(phoneCap(placed[0].item, imageWidth(placed[0].slots.narrow, 390 - 36)), 640);
+});
+
+test("gallery page: tablets are capped near 1.5x of their tile; the tablet's lead fits the byte budget", () => {
+  const { placed } = galleryOrder(content.gallery);
+  // The mid layout's image width on an 820px tablet (91vw box).
+  const w = (p) => imageWidth(p.slots.mid, 0.91 * 820);
+  const all = (item) => [...item.widths, item.width];
+  for (const p of placed) {
+    const cap = tabletCap(p.item, w(p));
+    // At most 1.5x, unless that would drop under 1x (then the first copy at or above 1x).
+    const oneX = all(p.item).find((x) => x >= w(p));
+    assert.ok(cap <= 1.5 * w(p) || cap === oneX, `${p.item.id}: cap ${cap} for ${w(p).toFixed(0)} px`);
+    assert.ok(cap >= w(p), `${p.item.id}: never under 1x`);
+    assert.ok(!all(p.item).some((x) => x > cap && x <= 1.5 * w(p)), `${p.item.id}: the largest copy within 1.5x`);
+  }
+  // The tablet's lead: the largest picture in the mid layout's first two
+  // rows (today 03, the big second-row piece), alone on the line.
+  const leads = tabletLeadTiles(placed);
+  const area = (p) => w(p) ** 2 * (p.item.height / p.item.width);
+  const top = placed.filter((p) => p.slots.mid.row <= 1);
+  const most = Math.max(...top.map(area));
+  assert.deepEqual(leads, top.filter((p) => area(p) >= 0.97 * most));
+  assert.deepEqual(leads.map((p) => p.item.id), ["03"]);
+  // They share the byte budget, but never drop under 1x: an upscaled lead
+  // counts only its own pixels toward Largest Contentful Paint, so the next
+  // big tile to land would take the largest paint from it.
+  const caps = leadTabletCaps(leads);
+  const bytes = leads.reduce((sum, p) => sum + p.item.bytes.get(caps.get(p)), 0);
+  const floor = (p) => all(p.item).find((x) => x >= w(p));
+  assert.ok(bytes <= PIECE_PHONE_BUDGET || leads.every((p) => caps.get(p) === floor(p)), `tablet lead tiles ${bytes} B`);
+  for (const p of leads) {
+    assert.ok(caps.get(p) <= tabletCap(p.item, w(p)), `${p.item.id}: never above the plain tablet cap`);
+    assert.ok(caps.get(p) >= floor(p), `${p.item.id}: cap ${caps.get(p)} at least 1x on an 820px tablet`);
+    // And at least 1x on a 768px tablet too (its tiles are a little smaller).
+    assert.ok(caps.get(p) >= imageWidth(p.slots.mid, 0.91 * 768), `${p.item.id}: 1x at 768px`);
+  }
+  // On the first screen of a 768 or 820px tablet no other tile, at its
+  // tablet cap, scores a larger paint than the lead (min of its drawn area
+  // and its own pixels), so none can take the largest paint after it.
+  for (const vw of [768, 820]) {
+    const box = 0.91 * vw;
+    const score = (p, cap) => {
+      const dw = imageWidth(p.slots.mid, box);
+      const drawn = dw * dw * (p.item.height / p.item.width);
+      return Math.min(drawn, cap * cap * (p.item.height / p.item.width));
+    };
+    const lead = Math.max(...leads.map((p) => score(p, caps.get(p))));
+    for (const p of placed.filter((q) => q.slots.mid.row <= 2 && !leads.includes(q)))
+      assert.ok(score(p, tabletCap(p.item, w(p))) < lead, `${p.item.id} at ${vw}px scores under the lead`);
+  }
+  // In the markup: a 2x tablet picks from the capped srcset, on /gallery/ and
+  // in the home section alike (the same copies); a 1x window at the same
+  // widths and every desktop keep every copy.
+  for (const html of [galleryPage(content), gallerySection(content)]) {
+    const tablet = [...html.matchAll(/<source media="([^"]*)" (?:data-)?srcset="([^"]*)"/g)].filter((m) => m[1] === TABLET_COLLAGE);
+    assert.equal(tablet.length, content.gallery.length + (html.match(/<noscript>/g) ?? []).length);
+    assert.match(TABLET_COLLAGE, /\(min-resolution: 1\.5dppx\)/);
+    for (const p of placed) {
+      const src = html.match(new RegExp(`data-piece="${p.item.id}"[^]*?<source media="${TABLET_COLLAGE.replace(/[()]/g, "\\$&")}" (?:data-)?srcset="([^"]*)"`))[1];
+      assert.equal(maxWidth(src), caps.get(p) ?? tabletCap(p.item, w(p)), `${p.item.id} tablet cap in the markup`);
+      assert.ok(maxWidth(src) < p.item.width, `${p.item.id}: a tablet never pulls the display file`);
+    }
+  }
+  const byId = pictures(galleryPage(content));
+  for (const p of leads) {
+    const pic = byId.get(p.item.id);
+    assert.equal(maxWidth(pick(pic, SCREENS.tablet)), caps.get(p));
+    assert.equal(maxWidth(pick(pic, SCREENS.midWindow)), p.item.width, "1x windows keep every copy");
+  }
+});
+
+test("arriving at /#gallery: the head preloads each layout's first-screen lead, the very copy its tile picks", () => {
+  const script = galleryArrival(content);
+  assert.match(script, /^<script>if\(location\.hash==="#gallery"\)\[\[/);
+  assert.doesNotMatch(script.slice("<script".length, -"</script>".length), /<\//, "nothing closes the script early");
+  // Run it: only #gallery adds preloads.
+  const run = (hash) => {
+    const added = [];
+    const document = {
+      createElement: () => ({ attrs: {}, setAttribute(k, v) { this.attrs[k] = v; } }),
+      head: { appendChild: (l) => added.push({ rel: l.rel, as: l.as, media: l.media, ...l.attrs }) },
+    };
+    new Function("location", "document", script.slice("<script>".length, -"</script>".length))({ hash }, document);
+    return added;
+  };
+  assert.deepEqual(run(""), []);
+  assert.deepEqual(run("#donate"), []);
+  const links = run("#gallery");
+  for (const l of links) {
+    assert.equal(l.rel, "preload");
+    assert.equal(l.as, "image");
+    assert.equal(l.fetchpriority, "high");
+  }
+  // Per screen: the preloads that apply there are exactly the tiles ARRIVAL
+  // starts first on that screen, with the srcset and sizes each tile's
+  // picture uses once released (its data-srcset moved into place).
+  const { placed } = galleryOrder(content.gallery);
+  const byId = pictures(gallerySection(content));
+  const released = (p) => byId.get(p.item.id).replaceAll("data-srcset=", "srcset=").replaceAll("data-src=", "src=");
+  const sizesOf = (pic, screen) => {
+    for (const s of pic.match(/<source [^>]*>/g) ?? []) if (mediaMatches(attr(s, "media"), screen)) return attr(s, "sizes");
+    return attr(pic.match(/<img [^>]*>/)[0], "sizes");
+  };
+  const want = { phone: [placed[0]], tablet: tabletLeadTiles(placed), tablet768: tabletLeadTiles(placed), midWindow: [], wide: leadTiles(placed) };
+  for (const [name, screen] of Object.entries(SCREENS)) {
+    const here = links.filter((l) => mediaMatches(l.media, screen));
+    assert.equal(here.length, want[name].length, `${name}: ${here.length} preloads`);
+    want[name].forEach((p, i) => {
+      const pic = released(p);
+      assert.equal(here[i].imagesrcset, pick(pic, screen), `${name}: ${p.item.id} srcset`);
+      const sizes = sizesOf(pic, screen);
+      // The <img> covers the wide layout with every layout's sizes; the
+      // preload carries just the wide ones, the same length there.
+      if (name === "wide") {
+        const [top, rest] = here[i].imagesizes.split(/, (?=calc)/);
+        assert.ok(sizes.startsWith(`${top}, (min-width: 1096px) ${rest}, `), `${name}: ${p.item.id} sizes`);
+      } else assert.equal(here[i].imagesizes, sizes, `${name}: ${p.item.id} sizes`);
+    });
+  }
+  // A tablet's preload is its capped lead, not a 960 or 1280 copy.
+  for (const l of links.filter((x) => x.media === TABLET_COLLAGE)) assert.ok(maxWidth(l.imagesrcset) <= 640, l.imagesrcset);
+  // No pieces, no script.
+  assert.equal(galleryArrival({ ...content, gallery: [] }), "");
 });
 
 test("piece pages: srcset with a phone cap inside the byte budget, deferred film strip", () => {
@@ -176,7 +407,7 @@ test("gallery css: a waiting image (data-src, no src) is not painted, so no brok
   // Chromium paints a broken-image icon on <img alt="..."> without src; colour alone does not hide it.
   assert.match(css, /img\[data-src\]:not\(\[src\]\)\s*\{\s*opacity:\s*0;\s*\}/);
   // The grey card the waiting tile shows comes from the <picture>, which stays painted.
-  assert.match(css, /\.art__pic\s*\{[^}]*background:\s*var\(--panel\)/);
+  assert.match(css, /\.art__pic\s*\{[^}]*background:\s*var\(--panel(-2)?\)/);
   // Every waiting collage <img> carries data-src, so the rule covers all of them.
   const html = galleryPage(content);
   for (const t of [...html.matchAll(/<img class="art__img"[^>]*>/g)].map((m) => m[0]))

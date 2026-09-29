@@ -64,6 +64,12 @@ export interface PageMeta {
   readonly description: string;
   readonly page: PageId;
   readonly noindex?: boolean;
+  /**
+   * Markup that closes <head>, after the stylesheet and the head scripts:
+   * the home page's /#gallery image preloads (render/gallery.ts
+   * galleryArrival).
+   */
+  readonly headEnd?: string;
 }
 
 /** What a route renders into the page shell's slots. */

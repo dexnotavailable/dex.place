@@ -5,7 +5,7 @@
 // State: 0 = no amount (the default, and what "Any amount" returns to), or a
 // stop from 100,000 to 10,000,000 VND (src/site/donate.ts).
 
-import { STOPS, amountAt, donateQr, fineText, formatVnd, groupVnd, indexOf } from "../donate.ts";
+import { QR_TAG_NONE, STOPS, amountAt, donateQr, fineText, formatVnd, groupVnd, indexOf } from "../donate.ts";
 
 const LAST = STOPS.length - 1;
 const NAV_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"]);
@@ -79,7 +79,7 @@ export function initDonate(reduced: MediaQueryList): void {
     range!.value = String(next > 0 ? indexOf(next) : 0);
     range!.setAttribute("aria-valuetext", next > 0 ? formatVnd(next) : "No amount set");
     for (const b of picks) b.setAttribute("aria-pressed", String(Number(b.dataset.pick) === next));
-    if (tag) tag.textContent = next > 0 ? formatVnd(next) : "Any amount";
+    if (tag) tag.textContent = next > 0 ? formatVnd(next) : QR_TAG_NONE;
     if (fine) fine.textContent = fineText(next);
     showNumber(prev, next, from === "pick");
 

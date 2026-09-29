@@ -1,18 +1,26 @@
-/* Page layouts: 404. Landing: landing.css; other pages have
-   their own files (see site.css). */
+/* Page frame and the home page's sections. Section bodies have their own
+   files (landing, downloads, gallery, docs, donate: see site.css). */
 
 .main { display: block; outline: none; }
 .page { position: relative; padding-bottom: var(--s-6); }
 
-/* Landing and project pages: landing.css. */
-
-/* downloads: styles/downloads.css */
-
-/* Gallery and piece pages: styles/gallery.css. */
-
-/* Docs and blog: styles/docs.css. */
-
-/* Donate: styles/donate.css. */
+/* Home: one continuous scroll. Every section starts on the 8px grid, with the
+   same rhythm; alternate sections sit on a slightly lifted band with crisp
+   hairline edges, so the page reads as stacked blocks without noise. */
+.sec {
+  position: relative;
+  padding-block: var(--section);
+  /* Jumps land with the section's head just under the header, not its padding. */
+  scroll-margin-top: calc(var(--s-5) - var(--section));
+}
+.sec:nth-of-type(even) {
+  background: var(--bg-2);
+  border-block: var(--bw-1) solid var(--line);
+}
+.sec--projects { padding-top: var(--s-7); scroll-margin-top: calc(var(--s-5) - var(--s-7)); }
+/* The last section's own padding is the space above the footer; the
+   footer's margin would double it into an empty band. */
+.main:has(> .sec:last-child) + .ftr { margin-top: 0; }
 
 /* =================================================================== 404 */
 .nf__links { display: flex; flex-wrap: wrap; gap: 14px; }

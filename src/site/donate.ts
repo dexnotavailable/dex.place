@@ -74,6 +74,9 @@ export function shortVnd(amount: number): string {
   return `${+(amount / 1_000).toFixed(1)}k`;
 }
 
+/** The QR window's tag with no amount set (the tag shows the amount otherwise). */
+export const QR_TAG_NONE = "No amount";
+
 /** Accessible name of the QR. */
 export function qrLabel(amount: number): string {
   const what = amount > 0 ? `${formatVnd(amount)} prefilled` : "no amount set";

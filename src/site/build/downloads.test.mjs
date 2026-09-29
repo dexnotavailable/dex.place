@@ -1,11 +1,12 @@
-// node --test: /downloads/ lists only real files, one click each, and says
-// plainly when a project has no public file (CANON: never invent binaries).
+// node --test: /downloads/ and the home page's downloads section list only
+// real files, one click each, and say plainly when a project has no public
+// file (CANON: never invent binaries).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { downloads, formatBytes } from "../data/downloads.ts";
-import { downloadsPage } from "../render/downloads.ts";
+import { downloadsPage, downloadsSection } from "../render/downloads.ts";
 
 // The host's downloads folder (ops/README.md). Only checked where it exists.
 const HOST_DOWNLOADS = process.env.DEX_DOWNLOADS_DIR || "D:/Dex/Servers/dex.place/downloads";
@@ -38,10 +39,22 @@ test("page: each published file is one direct download with size and checksum", 
   }
 });
 
+test("page: the SHA-256 is shown by the key and jumps to the full check", () => {
+  for (const html_ of [html, downloadsSection()]) {
+    for (const d of published) {
+      const sha = d.file.sha256;
+      const link = html_.match(new RegExp(`<a class="spec__link" href="#${d.id}-verify"[^>]*>`));
+      assert.ok(link, `${d.id}: checksum chip`);
+      assert.match(link[0], new RegExp(`aria-label="SHA-256 ${sha.slice(0, 8)}…${sha.slice(-6)}, check the file"`));
+      assert.ok(html_.includes(`id="${d.id}-verify"`), `${d.id}: jump target exists`);
+    }
+  }
+});
+
 test("page: projects without a file say so and link nothing that looks like a binary", () => {
   for (const d of downloads.filter((x) => !x.file)) {
     const block = html.slice(html.indexOf(`id="${d.id}"`));
-    const end = block.indexOf("</section>");
+    const end = block.indexOf("</article>");
     const section = block.slice(0, end);
     assert.match(section, /Not yet/);
     assert.doesNotMatch(section, /\.(exe|msi|zip|dmg)"/);
@@ -52,6 +65,18 @@ test("page: projects without a file say so and link nothing that looks like a bi
   }
   const exeLinks = html.match(/href="[^"]+\.exe"/g) ?? [];
   assert.equal(exeLinks.length, published.length);
+});
+
+test("home section: the same blocks one heading level down, linking the full page", () => {
+  const section = downloadsSection();
+  assert.match(section, /<section class="sec sec--downloads" id="downloads"/);
+  assert.match(section, /href="\/downloads\/"/);
+  for (const d of published) {
+    const links = section.match(new RegExp(`href="${d.file.href.replaceAll(".", "\\.")}"`, "g")) ?? [];
+    assert.equal(links.length, 1, `${d.id}: one download key`);
+    assert.match(section, new RegExp(`<h3 class="dlf__name" id="${d.id}-name">`));
+  }
+  assert.match(html, /<h2 class="dlf__name"/);
 });
 
 test("host folder: sizes and SHA-256 match the real files", { skip: !fs.existsSync(HOST_DOWNLOADS) && "no host downloads folder here" }, () => {

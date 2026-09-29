@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { countWords, loadContent, loadEntries, readingMinutes, renderMarkdown } from "./content.ts";
 import { highlight, langLabel } from "./highlight.ts";
-import { groupedDocs, postsByYear } from "../render/docs.ts";
+import { HOME_POSTS, docsSection, groupedDocs, postsByYear } from "../render/docs.ts";
 import { routes } from "../render/routes.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -116,4 +116,25 @@ test("repo docs and blog pages: grouped index, sidebar, contents, pager, placeho
     if (p.placeholder) assert.match(page.body, /tag--ph/);
     if (!p.date) assert.match(page.body, /Draft, not dated/);
   }
+});
+
+test("home section: docs catalogue, the latest posts as rows, older posts folded but still linked", () => {
+  const dir = fixture(
+    Object.fromEntries(
+      Array.from({ length: HOME_POSTS + 2 }, (_, i) => [`p${i}.md`, `---\ntitle: Post ${i}\ndate: 2026-0${i + 1}-15\n---\n`]),
+    ),
+  );
+  const posts = loadEntries(dir, "blog");
+  const docs = loadContent(ROOT).docs;
+  const html = docsSection({ docs, posts, gallery: [] });
+  assert.ok(html.indexOf('id="docs"') < html.indexOf('id="blog"'), "docs before blog, like the nav");
+  assert.equal((html.match(/class="bpost"/g) ?? []).length, HOME_POSTS);
+  assert.match(html, /<details class="bmore">/);
+  for (const p of posts) assert.ok(html.includes(`href="${p.url}"`), p.url);
+  for (const d of docs) assert.ok(html.includes(`href="${d.url}"`), d.url);
+  // Headings nest under the section's h2: part heads h3, groups and posts h4.
+  assert.doesNotMatch(html, /<h[156][ >]/);
+  assert.equal((html.match(/<h3[ >]/g) ?? []).length, 2);
+  const few = docsSection({ docs, posts: posts.slice(0, 2), gallery: [] });
+  assert.doesNotMatch(few, /bmore/);
 });

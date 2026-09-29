@@ -4,6 +4,15 @@ The website that takes over when you scroll past the world. This page records wh
 checked, what was decided and why, and what still needs Dex. Research date: 2026-09-29.
 `CANON.md` and Dex's newest words win over anything here.
 
+## Since then (2026-09-29): dark pixel rework
+
+Dex asked for a dark, square, full-on pixel site that scrolls as one page. The architecture
+below is unchanged (Vite pages plus one build plugin, prerendered routes, the same VietQR and
+gallery pipelines). What changed is recorded in `DESIGN-SYSTEM.md`: the home page now holds
+every section in order (projects, downloads, gallery, docs and blog, donate) with
+section anchors and a scroll-spy nav, while every sub-URL stays a full page; the gallery is
+a justified collage (`src/site/collage.ts`); headings use Jersey 15 instead of Anybody.
+
 ## The short version
 
 - **Build it as plain Vite pages plus one small build plugin, not Astro.** The plugin turns
@@ -15,7 +24,9 @@ checked, what was decided and why, and what still needs Dex. Research date: 2026
 - **Page-to-page animation comes from the browser, not from a JS router.** One CSS rule
   (`@view-transition { navigation: auto }`) morphs between pages on Samsung Internet 28+ and
   iPad Safari 18.2+. Both of Dex's review browsers are past those versions today (Samsung
-  Internet 30, iPadOS 27). Firefox just navigates normally.
+  Internet 30, iPadOS 27). Firefox just navigates normally. The stylesheet must come before
+  every head script, and a head guard keeps an aborted transition from ever surfacing as an
+  uncaught error (DESIGN-SYSTEM.md §"Page transitions").
 - **The donation QR is solved and tested.** `src/site/vietqr.ts` builds the bank payload.
   For every amount the old site could make, it matches the old code, which Dex checked in
   his MB Bank app, character for character. At 0 VND it makes a "no amount" code, so the

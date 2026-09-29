@@ -1,14 +1,18 @@
-// Gallery motion (loaded as its own chunk on /gallery/ only).
+// Gallery motion (its own chunk, loaded wherever the collage is: the home
+// page's gallery section and /gallery/).
 //
-// - Cursor field (fine pointers, motion welcome): the piece under the cursor
-//   grows and tilts toward it; its neighbours shrink a little and lean away,
-//   more the closer they are. Springs smooth every value.
+// - Hover field (fine pointers, motion welcome): the piece under the cursor
+//   grows; its neighbours shrink a little and lean away, more the closer they
+//   are. Transform only, no layout change. Keyboard focus does the same.
+//   Springs smooth every value. Nothing rotates.
 // - Viewer: clicking a piece flies it (FLIP) from the collage into a large
 //   frame, and closing flies it back to its spot. The URL follows the piece
 //   (/gallery/<id>/, a real prerendered page), so it can be shared, reloaded,
 //   and the back button closes the viewer. Arrows and swipes step through
 //   pieces in reading order; Esc, the close key or a click outside close it.
-// Without this module every piece is a plain link to its own page.
+// Closing returns the URL to the page the viewer was opened from (/, /#gallery
+// or /gallery/). Without this module every piece is a plain link to its own
+// page.
 
 import { release as releaseTile } from "./defer.ts";
 
@@ -24,12 +28,7 @@ interface Piece {
   readonly li: HTMLElement;
   readonly link: HTMLAnchorElement;
   readonly img: HTMLImageElement;
-  readonly tone: string;
 }
-
-const TONE_CLASSES = ["yellow", "magenta", "mint", "cyan"] as const;
-// The viewer's second corner block contrasts with the piece's tone.
-const SECOND: Readonly<Record<string, string>> = { yellow: "magenta", magenta: "yellow", mint: "magenta", cyan: "yellow" };
 
 export function initGallery(reduced: MediaQueryList, fine: MediaQueryList): void {
   const collage = document.querySelector<HTMLElement>("[data-collage]");
@@ -37,7 +36,6 @@ export function initGallery(reduced: MediaQueryList, fine: MediaQueryList): void
   const pieces: Piece[] = Array.from(collage.querySelectorAll<HTMLAnchorElement>("a[data-piece]")).map((link) => {
     const li = link.closest<HTMLElement>(".art")!;
     const img = link.querySelector<HTMLImageElement>("img")!;
-    const tone = TONE_CLASSES.find((t) => li.classList.contains(`art--${t}`)) ?? "yellow";
     return {
       id: link.dataset.piece!,
       href: link.getAttribute("href")!,
@@ -49,7 +47,6 @@ export function initGallery(reduced: MediaQueryList, fine: MediaQueryList): void
       li,
       link,
       img,
-      tone,
     };
   });
   if (!pieces.length) return;
@@ -60,71 +57,90 @@ export function initGallery(reduced: MediaQueryList, fine: MediaQueryList): void
 
 // ------------------------------------------------------------------ field
 
-interface FieldState { s: number; x: number; y: number; rx: number; ry: number }
+interface FieldState { s: number; x: number; y: number }
 
 interface Field {
   /** Current scale of a piece (the viewer starts its flight from it). */
   scaleOf(i: number): number;
   /** Drops every piece back to rest at once. */
   rest(): void;
+  /** The next focus on a piece is a return from the viewer: no lift for it. */
+  quiet(): void;
 }
 
 function initField(collage: HTMLElement, pieces: readonly Piece[], reduced: MediaQueryList, fine: MediaQueryList): Field {
-  const now: FieldState[] = pieces.map(() => ({ s: 1, x: 0, y: 0, rx: 0, ry: 0 }));
-  const idle: Field = { scaleOf: (i) => now[i]!.s, rest: () => undefined };
+  const now: FieldState[] = pieces.map(() => ({ s: 1, x: 0, y: 0 }));
+  const idle: Field = { scaleOf: (i) => now[i]!.s, rest: () => undefined, quiet: () => undefined };
   if (reduced.matches || !fine.matches) return idle;
   document.documentElement.classList.add("has-field");
 
-  const goal: FieldState[] = pieces.map(() => ({ s: 1, x: 0, y: 0, rx: 0, ry: 0 }));
+  const goal: FieldState[] = pieces.map(() => ({ s: 1, x: 0, y: 0 }));
   let px = 0;
   let py = 0;
+  /** The lifted piece was chosen by keyboard focus, not the cursor. */
+  let byKey = false;
   let inside = false;
   let hovered = -1;
   let raf = 0;
   let last = 0;
   let paused = false;
+  /** Set while the viewer hands focus back to the piece it closed on. */
+  let muted = false;
 
+  // Each tile's layout box against the collage (offset* ignore transforms, so
+  // the field never feeds back; .collage is position: relative).
+  const boxOf = (i: number) => {
+    const el = pieces[i]!.li;
+    const l = el.offsetLeft;
+    const t = el.offsetTop;
+    return { l, t, r: l + el.offsetWidth, b: t + el.offsetHeight };
+  };
+
+  // The lifted piece grows and rises 2px up-left like every block that pops
+  // (§3). Only the pieces touching it step back: they shrink a little and
+  // lean away from it, more the closer their edges are to its edges. Measured
+  // edge to edge (not from the cursor), so the pieces right beside a big tile
+  // react the same wherever the cursor sits on it, and keyboard focus matches
+  // hover. The shrink is capped in pixels (a big neighbour gives up no more
+  // than a small one), so the tight wall never opens wide gaps: calm, not a
+  // ripple across the whole collage.
+  const REACH = 40;
+  const GIVE = 8;
   const aim = () => {
-    const box = collage.getBoundingClientRect();
-    pieces.forEach((p, i) => {
+    const lifted = inside && !paused && hovered >= 0 ? boxOf(hovered) : null;
+    pieces.forEach((_, i) => {
       const g = goal[i]!;
-      g.s = 1; g.x = 0; g.y = 0; g.rx = 0; g.ry = 0;
-      if (!inside || paused) return;
-      // Layout rect (offset* ignore transforms, so the field never feeds back).
-      const w = p.li.offsetWidth;
-      const h = p.li.offsetHeight;
-      const cx = box.left + p.li.offsetLeft + w / 2;
-      const cy = box.top + p.li.offsetTop + h / 2;
-      const dx = px - cx;
-      const dy = py - cy;
+      g.s = 1; g.x = 0; g.y = 0;
+      if (!lifted) return;
       if (i === hovered) {
-        g.s = 1.05;
-        g.rx = Math.max(-1, Math.min(1, -dy / (h / 2))) * 5;
-        g.ry = Math.max(-1, Math.min(1, dx / (w / 2))) * 7;
+        g.s = 1.06; g.x = -2; g.y = -2;
         return;
       }
-      // Distance from the cursor to this piece's edge.
-      const ex = Math.max(0, Math.abs(dx) - w / 2);
-      const ey = Math.max(0, Math.abs(dy) - h / 2);
-      const reach = 300;
-      const f = Math.max(0, 1 - Math.hypot(ex, ey) / reach);
+      const r = boxOf(i);
+      const ex = Math.max(0, r.l - lifted.r, lifted.l - r.r);
+      const ey = Math.max(0, r.t - lifted.b, lifted.t - r.b);
+      const f = Math.max(0, 1 - Math.hypot(ex, ey) / REACH);
+      if (!f) return;
+      const dx = (r.l + r.r - lifted.l - lifted.r) / 2;
+      const dy = (r.t + r.b - lifted.t - lifted.b) / 2;
       const len = Math.hypot(dx, dy) || 1;
-      g.s = hovered >= 0 ? 1 - 0.07 * f : 1 + 0.025 * f;
-      g.x = hovered >= 0 ? (-dx / len) * 16 * f : 0;
-      g.y = hovered >= 0 ? (-dy / len) * 16 * f : 0;
+      const size = Math.max(r.r - r.l, r.b - r.t, 1);
+      g.s = 1 - Math.min(0.03, GIVE / size) * f;
+      g.x = (dx / len) * 3 * f;
+      g.y = (dy / len) * 3 * f;
     });
   };
 
   const write = (i: number) => {
     const c = now[i]!;
     const el = pieces[i]!.li;
-    if (Math.abs(c.s - 1) < 1e-3 && Math.abs(c.x) < 0.05 && Math.abs(c.y) < 0.05 && Math.abs(c.rx) < 0.02 && Math.abs(c.ry) < 0.02) {
+    if (Math.abs(c.s - 1) < 1e-3 && Math.abs(c.x) < 0.05 && Math.abs(c.y) < 0.05) {
       el.style.removeProperty("transform");
+      el.removeAttribute("data-lift");
       return;
     }
-    el.style.transform =
-      `translate3d(${c.x.toFixed(2)}px, ${c.y.toFixed(2)}px, 0) perspective(900px) ` +
-      `rotateX(${c.rx.toFixed(2)}deg) rotateY(${c.ry.toFixed(2)}deg) scale(${c.s.toFixed(4)})`;
+    el.toggleAttribute("data-lift", c.s > 1.001);
+    el.style.transform = `translate3d(${c.x.toFixed(2)}px, ${c.y.toFixed(2)}px, 0) scale(${c.s.toFixed(4)})`;
   };
 
   const tick = (t: number) => {
@@ -137,12 +153,10 @@ function initField(collage: HTMLElement, pieces: readonly Piece[], reduced: Medi
       c.s += (g.s - c.s) * k;
       c.x += (g.x - c.x) * k;
       c.y += (g.y - c.y) * k;
-      c.rx += (g.rx - c.rx) * k;
-      c.ry += (g.ry - c.ry) * k;
-      if (Math.abs(g.s - c.s) > 2e-4 || Math.abs(g.x - c.x) > 0.02 || Math.abs(g.y - c.y) > 0.02 || Math.abs(g.rx - c.rx) > 0.01 || Math.abs(g.ry - c.ry) > 0.01) {
+      if (Math.abs(g.s - c.s) > 2e-4 || Math.abs(g.x - c.x) > 0.02 || Math.abs(g.y - c.y) > 0.02) {
         moving = true;
       } else {
-        c.s = g.s; c.x = g.x; c.y = g.y; c.rx = g.rx; c.ry = g.ry;
+        c.s = g.s; c.x = g.x; c.y = g.y;
       }
       write(i);
     });
@@ -155,13 +169,22 @@ function initField(collage: HTMLElement, pieces: readonly Piece[], reduced: Medi
     if (!raf) raf = requestAnimationFrame(tick);
   };
 
+  const hit = (el: Element | null) => {
+    const li = el?.closest?.(".art");
+    return li ? pieces.findIndex((p) => p.li === li) : -1;
+  };
   collage.addEventListener("pointermove", (e) => {
     if (e.pointerType !== "mouse") return;
     px = e.clientX;
     py = e.clientY;
     inside = true;
-    const li = (e.target as Element | null)?.closest?.(".art");
-    hovered = li ? pieces.findIndex((p) => p.li === li) : -1;
+    byKey = false;
+    // In a 3px gap the collage itself is the target: keep the lifted piece
+    // until the cursor reaches the next one, so crossing a gap never flickers.
+    if (e.target === collage) return;
+    const i = hit(e.target as Element | null);
+    if (i === hovered) return;
+    hovered = i;
     kick();
   });
   collage.addEventListener("pointerleave", () => {
@@ -172,11 +195,10 @@ function initField(collage: HTMLElement, pieces: readonly Piece[], reduced: Medi
   // Keyboard focus gets the same lift as hover.
   collage.addEventListener("focusin", (e) => {
     const i = pieces.findIndex((p) => p.link === e.target);
+    if (muted) { muted = false; return; }
     if (i < 0 || !(e.target as HTMLElement).matches(":focus-visible")) return;
-    const r = pieces[i]!.li.getBoundingClientRect();
-    px = r.left + r.width / 2;
-    py = r.top + r.height / 2;
     inside = true;
+    byKey = true;
     hovered = i;
     kick();
   });
@@ -186,7 +208,12 @@ function initField(collage: HTMLElement, pieces: readonly Piece[], reduced: Medi
     hovered = -1;
     kick();
   });
-  window.addEventListener("scroll", () => { if (inside) kick(); }, { passive: true });
+  // Scrolling under a still cursor moves a different piece under it.
+  window.addEventListener("scroll", () => {
+    if (!inside || byKey) return;
+    const i = hit(document.elementFromPoint(px, py));
+    if (i !== hovered) { hovered = i; kick(); }
+  }, { passive: true });
 
   return {
     scaleOf: (i) => now[i]!.s,
@@ -194,11 +221,12 @@ function initField(collage: HTMLElement, pieces: readonly Piece[], reduced: Medi
       paused = true;
       inside = false;
       hovered = -1;
-      now.forEach((c) => { c.s = 1; c.x = 0; c.y = 0; c.rx = 0; c.ry = 0; });
-      goal.forEach((c) => { c.s = 1; c.x = 0; c.y = 0; c.rx = 0; c.ry = 0; });
+      now.forEach((c) => { c.s = 1; c.x = 0; c.y = 0; });
+      goal.forEach((c) => { c.s = 1; c.x = 0; c.y = 0; });
       pieces.forEach((_, i) => write(i));
       requestAnimationFrame(() => { paused = false; });
     },
+    quiet: () => { muted = true; },
   };
 }
 
@@ -247,6 +275,9 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
   const count = dialog.querySelector<HTMLElement>("[data-viewer-count]")!;
   const closeBtn = dialog.querySelector<HTMLButtonElement>("[data-viewer-close]")!;
   const baseTitle = document.title;
+  // Where closing the viewer returns the address bar to.
+  const isPiece = (path: string): boolean => /^\/gallery\/\d{2}\/$/.test(path);
+  let base = isPiece(location.pathname) ? "/gallery/" : location.pathname + location.search + location.hash;
   const spring = springEasing(190, 24);
   const soft = springEasing(260, 30);
 
@@ -255,12 +286,37 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
   let closing = false;
   let pushed = false;
   let flight: Animation | null = null;
+  // Where the page was when the viewer opened. Closing with history.back()
+  // returns to an entry that may carry a fragment (/#gallery after a nav
+  // jump); the browser would then scroll the page to that anchor while the
+  // piece flies home, and it would land on the wrong spot. So scroll
+  // restoration is manual while the viewer is up, and the close puts the
+  // page back where it was, instantly, before the flight home is measured.
+  let openY = -1;
+  let restoration: ScrollRestoration | null = null;
+  const holdScroll = () => {
+    openY = window.scrollY;
+    if ("scrollRestoration" in history && restoration === null) {
+      restoration = history.scrollRestoration;
+      history.scrollRestoration = "manual";
+    }
+  };
+  const putBack = () => {
+    if (openY >= 0 && Math.abs(window.scrollY - openY) > 0.5) window.scrollTo({ top: openY, behavior: "instant" });
+  };
+  const releaseScroll = () => {
+    openY = -1;
+    if (restoration !== null) {
+      history.scrollRestoration = restoration;
+      restoration = null;
+    }
+  };
 
   const motion = () => !reduced.matches;
   const n = pieces.length;
 
-  // Mat plus outline around the image, both sides.
-  const chromeOf = (): number => 2 * ((window.innerWidth < 700 ? 8 : 12) + 3);
+  // The frame edge around the image, both sides (gallery.css .viewer__frame).
+  const chromeOf = (): number => 2 * 2;
 
   // Fits the piece (plus mat and outline) into the space the controls leave.
   const target = (p: Piece): Rect => {
@@ -290,30 +346,26 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
 
   // Where the piece sits in the collage right now: its untransformed frame
   // size times the field's scale, around its (rotation-proof) centre.
-  const origin = (i: number): { rect: Rect; tilt: number } => {
+  const origin = (i: number): { rect: Rect } => {
     const p = pieces[i]!;
     const bounds = p.link.getBoundingClientRect();
     const s = field.scaleOf(i);
     const width = p.link.offsetWidth * s;
     const height = p.link.offsetHeight * s;
-    const tilt = parseFloat(getComputedStyle(p.li).rotate) || 0;
     return {
       rect: { left: bounds.left + bounds.width / 2 - width / 2, top: bounds.top + bounds.height / 2 - height / 2, width, height },
-      tilt,
     };
   };
 
-  const delta = (from: Rect, to: Rect, tilt: number): string => {
+  const delta = (from: Rect, to: Rect): string => {
     const dx = from.left + from.width / 2 - (to.left + to.width / 2);
     const dy = from.top + from.height / 2 - (to.top + to.height / 2);
-    return `translate(${dx}px, ${dy}px) rotate(${tilt}deg) scale(${from.width / to.width}, ${from.height / to.height})`;
+    return `translate(${dx}px, ${dy}px) scale(${from.width / to.width}, ${from.height / to.height})`;
   };
 
   const fill = (i: number) => {
     const p = pieces[i]!;
     index = i;
-    dialog.style.setProperty("--tone", `var(--${p.tone})`);
-    dialog.style.setProperty("--tone-b", `var(--${SECOND[p.tone] ?? "magenta"})`);
     // A tile still waiting for its turn (motion/defer.ts) starts loading now.
     releaseTile(p.img.closest("picture"));
     lo.src = p.img.currentSrc || p.img.src;
@@ -329,10 +381,11 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
     const done = () => { if (hi.getAttribute("src") === want) hi.classList.add("is-loaded"); };
     if (hi.complete && hi.naturalWidth) done();
     else hi.decode().then(done, () => hi.addEventListener("load", done, { once: true }));
-    // The number is the piece's catalogue id (its URL), not its place on the
-    // wall, so /gallery/05/ always reads 05.
-    count.innerHTML = `<b>${p.id}</b><span aria-hidden="true"> / </span><span class="sr"> of </span>${String(n).padStart(2, "0")}`;
-    document.title = `Gallery ${p.id} · dex`;
+    // The number is the piece's place on the wall (reading order), the same
+    // as its piece page's counter, so stepping reads 03, 04, 05.
+    const at = String(i + 1).padStart(2, "0");
+    count.innerHTML = `<b>${at}</b><span aria-hidden="true"> / </span><span class="sr"> of </span>${String(n).padStart(2, "0")}`;
+    document.title = `Gallery ${at} · dex`;
     place(rect);
     // Warm the neighbours' tiles (they may still be lazy): the browser then
     // loads them at the size their own srcset picks.
@@ -348,6 +401,7 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
     flight?.cancel();
     open = true;
     closing = false;
+    holdScroll();
     const from = origin(i);
     field.rest();
     fill(i);
@@ -357,6 +411,7 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
     // Next frame: let the dialog lay out before the classes start transitions.
     requestAnimationFrame(() => dialog.classList.add("is-open"));
     if (push) {
+      if (!isPiece(location.pathname)) base = location.pathname + location.search + location.hash;
       history.pushState({ gallery: pieces[i]!.id }, "", pieces[i]!.href);
       pushed = true;
     }
@@ -364,7 +419,7 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
       const to = target(pieces[i]!);
       flight = animate(
         frame,
-        [{ transform: delta(from.rect, to, from.tilt) }, { transform: "none" }],
+        [{ transform: delta(from.rect, to) }, { transform: "none" }],
         { duration: spring.duration, easing: spring.easing },
         "cubic-bezier(.2,.9,.1,1)",
       );
@@ -379,7 +434,21 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
     open = false;
     closing = false;
     frame.getAnimations().forEach((a) => a.cancel());
-    if (p) p.link.focus({ preventScroll: true });
+    putBack();
+    releaseScroll();
+    if (p) {
+      field.quiet();
+      p.link.focus({ preventScroll: true });
+      // With reduced motion this runs inside the popstate of history.back();
+      // the browser's own fragment handling for that step (/#gallery) then
+      // drops focus to <body>. Put it back on the piece once that settles
+      // (WCAG 2.4.3), unless the visitor has moved on.
+      const settle = () => {
+        const a = document.activeElement;
+        if (!open && (!a || a === document.body)) p.link.focus({ preventScroll: true });
+      };
+      requestAnimationFrame(() => setTimeout(settle, 0));
+    }
   };
 
   // Animated close; called for UI closes (after history.back) and popstate.
@@ -387,10 +456,13 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
     if (!open || closing) return;
     closing = true;
     const p = pieces[index]!;
-    // Bring the piece's spot into view first so it has somewhere to land.
+    putBack();
+    // Bring the piece's spot into view first so it has somewhere to land
+    // (stepping may have moved to a piece that was off screen).
     const r = p.li.getBoundingClientRect();
     if (r.bottom < 60 || r.top > window.innerHeight - 60) {
       window.scrollBy({ top: r.top + r.height / 2 - window.innerHeight / 2, behavior: "instant" });
+      openY = window.scrollY;
     }
     for (const q of pieces) q.li.classList.toggle("is-away", q === p);
     dialog.classList.remove("is-open");
@@ -400,7 +472,7 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
     const to = target(p);
     flight = animate(
       frame,
-      [{ transform: "none" }, { transform: delta(from.rect, to, from.tilt) }],
+      [{ transform: "none" }, { transform: delta(from.rect, to) }],
       { duration: 420, easing: "cubic-bezier(.5,0,.15,1)", fill: "forwards" },
       "ease-in-out",
     );
@@ -413,7 +485,7 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
       pushed = false;
       history.back(); // popstate runs closeNow
     } else {
-      history.replaceState(null, "", "/gallery/");
+      history.replaceState(null, "", base);
       closeNow();
     }
   };
@@ -427,7 +499,7 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
     flight?.cancel();
     const out = animate(
       frame,
-      [{ transform: `translateX(${fromX}px)`, opacity: 1 }, { transform: `translateX(${-dir * 90 + fromX}px) rotate(${-dir * 3}deg)`, opacity: 0 }],
+      [{ transform: `translateX(${fromX}px)`, opacity: 1 }, { transform: `translateX(${-dir * 90 + fromX}px)`, opacity: 0 }],
       { duration: 150, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" },
       "ease-in",
     );
@@ -438,7 +510,7 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
       out.cancel();
       flight = animate(
         frame,
-        [{ transform: `translateX(${dir * 90}px) rotate(${dir * 3}deg) scale(.94)`, opacity: 0 }, { transform: "none", opacity: 1 }],
+        [{ transform: `translateX(${dir * 90}px) scale(.94)`, opacity: 0 }, { transform: "none", opacity: 1 }],
         { duration: soft.duration, easing: soft.easing },
         "cubic-bezier(.2,.9,.1,1)",
       );
@@ -474,7 +546,9 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
     document.title = baseTitle;
     open = false;
     closing = false;
-    if (location.pathname !== "/gallery/") history.replaceState(null, "", "/gallery/");
+    putBack();
+    releaseScroll();
+    if (isPiece(location.pathname)) history.replaceState(null, "", base);
   });
   dialog.addEventListener("keydown", (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;

@@ -1,11 +1,11 @@
-/* Floating layered background (render/floats.ts, motion/floats.ts).
-   Three depths in the gutters, never under the reading column. Idle drift on
-   co-prime periods; scroll and cursor parallax per depth.
+/* The quiet background layer (render/floats.ts, motion/floats.ts).
+   A few small pixel shapes per section, in the gutters beside the reading
+   column only. They drift a few pixels in whole steps on long periods and
+   rest when off screen. Never rotated, never over text: below 1240px, where
+   the gutters get narrow, the layer is not drawn at all.
 
-   Stacking: .floats has no z-index, so it is not a stacking context. Each
-   depth gets its own level in the page's one stacking context (.sheet), so a
-   near sticker always paints over a far tint, whichever section or layer set
-   either belongs to. All three stay under the .wrap content (--z-content). */
+   Stacking: .floats has no z-index; shapes sit at --z-floats, under the
+   .wrap content (--z-content). */
 
 .floats {
   position: absolute;
@@ -16,128 +16,36 @@
 .fl {
   position: absolute;
   top: var(--y);
-  width: var(--s, auto);
-  height: var(--s, auto);
-  /* The free gutter beside the reading column, measured against this layer
-     (the % resolves in `left`/`right`, so a classic scrollbar is excluded).
-     Below the wrap width it is the page padding. */
-  --free: max(var(--pad), (100% - var(--wrap)) / 2);
+  width: var(--s);
+  height: var(--s);
+  z-index: var(--z-floats);
+  /* A fraction (--x) into the free gutter, never closer than 24px to the column. */
+  --free: max(0px, (100% - var(--wrap)) / 2);
+  --at: clamp(12px, calc(var(--free) * var(--x)), calc(var(--free) - var(--s) - 24px));
+  line-height: 0;
 }
-.fl--far { z-index: var(--z-floats); }
-.fl--mid { z-index: calc(var(--z-floats) + 1); }
-.fl--near { z-index: calc(var(--z-floats) + 2); }
-
-/* Mid and near pieces sit a fraction (--x) into the gutter, clamped so the
-   piece plus its drift and cursor travel (--keep) never crosses into the
-   reading column on narrow gutters (1280 and 1366 wide laptops). */
-.fl--mid { --keep: 24px; --lo: calc(var(--s) * -0.4); }
-.fl--near { --keep: 34px; --lo: 4px; }
-.fl--mid, .fl--near { --at: clamp(var(--lo), calc(var(--free) * var(--x)), calc(var(--free) - var(--s) - var(--keep))); }
 .fl[data-side="l"] { left: var(--at); }
 .fl[data-side="r"] { right: var(--at); }
-/* Far blocks hang off the page edge by a third of their size. */
-.fl--far[data-side="l"] { left: calc(var(--gut) * 0.2 - var(--s) * 0.55); }
-.fl--far[data-side="r"] { right: calc(var(--gut) * 0.2 - var(--s) * 0.55); }
+@media (max-width: 1239px) { .floats { display: none; } }
 
-/* Scroll and cursor parallax: motion/floats.ts writes an inline `translate`
-   on each .fl (never an inherited custom property on an ancestor). */
+/* tones: a dimmed accent, so shapes stay in the background */
+.fl-t-yellow { --c: var(--yellow); }
+.fl-t-magenta { --c: var(--magenta); }
+.fl-t-mint { --c: var(--mint); }
+.fl-t-cyan { --c: var(--cyan); }
 
-.fl__shape { display: block; width: 100%; height: 100%; }
+.fl--box { border: var(--bw) solid var(--c); opacity: 0.35; }
+.fl--box::after { content: ""; position: absolute; right: -6px; bottom: -6px; width: 4px; height: 4px; background: var(--c); }
+.fl--dots {
+  background-image: radial-gradient(var(--c) 1px, transparent 1.5px);
+  background-size: 8px 8px;
+  background-position: -2px -2px;
+  opacity: 0.45;
+}
+.fl--glyph { color: var(--c); opacity: 0.5; }
+
 @media (prefers-reduced-motion: no-preference) {
-  .fl__shape { animation: drift var(--T, 7.1s) var(--ease-float) var(--delay, 0s) infinite alternate; }
-  .fl--near .fl__shape { animation-timing-function: steps(5, end); }
-  .js .floats:not(.is-vis) .fl__shape,
-  .js .floats:not(.is-vis) .px-f { animation-play-state: paused; }
+  .fl { animation: drift var(--T, 17.3s) steps(4, jump-none) var(--delay, 0s) infinite alternate; }
+  .js .floats:not(.is-vis) .fl { animation-play-state: paused; }
 }
-@keyframes drift {
-  from { transform: translate(0, 0) rotate(var(--r0, 0deg)); }
-  to { transform: translate(var(--dx, 0px), var(--dy, 0px)) rotate(var(--r1, 0deg)); }
-}
-
-/* tones: pale tint for far blocks, full accent for small mid pieces */
-.fl-t-yellow { --t: var(--yellow-t); --c: var(--yellow); }
-.fl-t-magenta { --t: var(--magenta-t); --c: var(--magenta); }
-.fl-t-mint { --t: var(--mint-t); --c: var(--mint); }
-.fl-t-cyan { --t: var(--cyan-t); --c: var(--cyan); }
-
-/* far */
-.fl-block { background: var(--t); border-radius: 26%; }
-.fl-pill { background: var(--t); border-radius: var(--r-pill); height: 58%; }
-.fl-step {
-  background: var(--t);
-  clip-path: polygon(0 25%, 25% 25%, 25% 0, 75% 0, 75% 25%, 100% 25%, 100% 75%, 75% 75%, 75% 100%, 25% 100%, 25% 75%, 0 75%);
-}
-
-/* mid */
-.fl-outline {
-  position: relative;
-  background: var(--paper);
-  border: var(--bw) solid var(--ink);
-  border-radius: 8px;
-  box-shadow: 3px 3px 0 var(--ink);
-}
-.fl-outline::after {
-  content: "";
-  position: absolute;
-  right: -6px; bottom: -6px;
-  width: 10px; height: 10px;
-  background: var(--c);
-  border: var(--bw) solid var(--ink);
-}
-.fl-tile { background: var(--c); border: var(--bw) solid var(--ink); border-radius: 10px; box-shadow: 3px 3px 0 var(--ink); }
-.fl-dots {
-  height: 60%;
-  background-image: radial-gradient(circle, var(--ink) 1.6px, transparent 1.8px);
-  background-size: 9px 9px;
-  opacity: 0.3;
-}
-.fl-strip {
-  height: 6px;
-  background: linear-gradient(90deg, var(--magenta) 0 33.3%, var(--yellow) 0 66.6%, var(--mint) 0);
-}
-.fl-cross { display: grid; place-items: center; width: auto; height: auto; opacity: 0.55; }
-
-/* near: die-cut pixel stickers */
-.fl--near { width: auto; height: auto; }
-.fl-sticker {
-  width: auto;
-  height: auto;
-  line-height: 0;
-  rotate: var(--tilt, 0deg);
-  --px-a: var(--yellow);
-  filter:
-    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
-    drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
-    drop-shadow(3px 3px 0 var(--ink));
-}
-.fl--near:nth-child(3n) .fl-sticker { --px-a: var(--mint); }
-.fl--near:nth-child(3n + 1) .fl-sticker { --px-a: var(--magenta); --px-b: var(--yellow); }
-
-/* entrance: shapes pop in the first time their layer is seen */
-@media (prefers-reduced-motion: no-preference) {
-  .js .floats:not(.seen) .fl { opacity: 0; scale: 0.3; }
-  .js .floats.seen .fl { animation: fl-in 620ms var(--ease-spring) backwards; }
-  .js .floats.seen .fl:nth-child(2n) { animation-delay: 90ms; }
-  .js .floats.seen .fl:nth-child(3n) { animation-delay: 180ms; }
-}
-@keyframes fl-in { from { opacity: 0; scale: 0.3; } }
-
-/* A gutter too narrow for a whole sticker plus its travel: no stickers
-   (a clamped sticker would be cut by the page edge). Mid pieces may hang off
-   the edge a little, like the far blocks. */
-@media (max-width: 1339px) {
-  .fl--near { display: none; }
-}
-/* fewer, quieter shapes where there is no gutter */
-@media (max-width: 1180px) {
-  .fl--mid, .fl--near { display: none; }
-}
-/* No gutter at all: far blocks become strict edge slivers inside the page
-   padding, so they never sit behind the reading column. */
-@media (max-width: 900px) {
-  .fl--far[data-side="l"] { left: calc(var(--pad) * 0.8 - var(--s)); }
-  .fl--far[data-side="r"] { right: calc(var(--pad) * 0.8 - var(--s)); }
-}
-@media (max-width: 700px) {
-  .fl--far { opacity: 0.75; }
-}
+@keyframes drift { to { translate: 0 var(--dy, 8px); } }

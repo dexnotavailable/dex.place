@@ -1,11 +1,11 @@
-// Documentation and blog pages (DESIGN-SYSTEM.md §7): /docs/, /docs/<slug>/,
-// /blog/, /blog/<slug>/. Built from content/docs and content/blog markdown by
+// Documentation and blog (DESIGN-SYSTEM.md §7): the "Docs & blog" home-page
+// section, /docs/, /docs/<slug>/, /blog/, /blog/<slug>/. Built from content/docs and content/blog markdown by
 // build/content.ts. Complete without JavaScript; motion/toc.ts only adds the
 // scroll-spy and anchor copying.
 
 import { DOC_GROUPS, OTHER_GROUP, docGroup, type DocGroup } from "../data/docs.ts";
 import { floats } from "./floats.ts";
-import { button, icon, pageHead, placeholderTag, sticker, strip, tile } from "./glyphs.ts";
+import { button, icon, pageHead, placeholderTag, sectionHead, strip, tile } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import type { Entry, SiteContent } from "./types.ts";
 
@@ -50,54 +50,67 @@ function dateText(e: Entry): string {
 
 function docLink(e: Entry, i: number): string {
   return (
-    `<li><a class="dlink" href="${e.url}" style="--i:${i}">` +
+    `<li><a class="dlink" href="${e.url}" data-reveal style="--i:${Math.min(i, 5)}">` +
     `<span class="dlink__main"><span class="dlink__title">${esc(e.title)}</span>` +
     (e.summary ? `<span class="dlink__sum">${esc(e.summary)}</span>` : "") +
-    (e.placeholder ? placeholderTag() : "") +
     `</span>` +
+    (e.placeholder ? placeholderTag() : "") +
     `<span class="dlink__go" aria-hidden="true">${icon("arrow", 2)}</span>` +
     `</a></li>`
   );
 }
 
-export function docsIndex(content: SiteContent): string {
+/**
+ * The docs catalogue: one row per project group (tone edge, tile, name, real
+ * count), its docs as full-width index lines beside it that pop on hover. Rows
+ * grow with the docs, so a group with one page never leaves an empty box.
+ * Group titles at `level`.
+ */
+function docGroups(content: SiteContent, level: 2 | 3 | 4): string {
   const groups = groupedDocs(content.docs);
-  const body = groups.length
-    ? `<div class="dgroups">` +
-      groups
-        .map(({ group, docs }, i) =>
-          `<section class="dgroup dgroup--${group.tone}" aria-labelledby="g-${group.id}" data-reveal="pop-block" style="--i:${i}">` +
-          `<header class="dgroup__head">${tile(group.icon, group.tone, "m")}` +
-          `<h2 class="dgroup__title" id="g-${group.id}">${esc(group.label)}</h2>` +
-          `<span class="dgroup__count">${plural(docs.length, "page", "pages")}</span></header>` +
-          `<ol class="dgroup__list">${docs.map(docLink).join("")}</ol>` +
-          `</section>`,
-        )
-        .join("") +
-      `</div>`
-    : `<p class="empty">Nothing here yet.</p>`;
+  const h = `h${level}`;
+  if (!groups.length) return `<p class="empty">Nothing here yet.</p>`;
+  return (
+    `<div class="dcat" data-reveal="pop-block">` +
+    groups
+      .map(({ group, docs }) =>
+        `<section class="dgroup dgroup--${group.tone}" aria-labelledby="g-${group.id}">` +
+        `<header class="dgroup__head">${tile(group.icon, group.tone, "s")}` +
+        `<${h} class="dgroup__title" id="g-${group.id}">${esc(group.label)}</${h}>` +
+        `<span class="dgroup__count">${plural(docs.length, "page", "pages")}</span></header>` +
+        `<ol class="dgroup__list">${docs.map(docLink).join("")}</ol>` +
+        `</section>`,
+      )
+      .join("") +
+    `</div>`
+  );
+}
+
+export function docsIndex(content: SiteContent): string {
   return (
     `<div class="page page--docs">` +
-    floats("docs", { tone: "yellow", stickers: ["book", "page", "blob"] }) +
+    floats("docs", { tone: "cyan", count: 3, glyph: "sparkle" }) +
     `<div class="wrap">` +
-    pageHead({ kicker: "documentation", title: "Docs", tone: "yellow", aside: plural(content.docs.length, "page", "pages"), stickers: ["book", "page"] }) +
-    body +
+    pageHead({ kicker: "documentation", title: "Docs", tone: "cyan", icon: "book", aside: plural(content.docs.length, "page", "pages") }) +
+    docGroups(content, 2) +
     `</div></div>`
   );
 }
 
 // ----------------------------------------------------------- blog index
 
-function postItem(e: Entry, i: number): string {
+/** One post as an index row: date block, title and summary, facts, arrow. The whole row is the link. */
+function postItem(e: Entry, i: number, level: 2 | 3 | 4 = 3): string {
+  const h = `h${level}`;
   return (
     `<li class="bpost" data-reveal style="--i:${Math.min(i, 5)}">` +
     dateBlock(e) +
     `<div class="bpost__main">` +
-    `<h3 class="bpost__title"><a class="bpost__link" href="${e.url}">${esc(e.title)}</a></h3>` +
+    `<${h} class="bpost__title"><a class="bpost__link" href="${e.url}">${esc(e.title)}</a></${h}>` +
     (e.summary ? `<p class="bpost__sum">${esc(e.summary)}</p>` : "") +
+    `</div>` +
     `<p class="bpost__meta">${e.placeholder ? placeholderTag() : ""}` +
     `<span class="when">${dateText(e)}<span aria-hidden="true"> · </span><span>${e.minutes} min read</span></span></p>` +
-    `</div>` +
     `<span class="bpost__go" aria-hidden="true">${icon("arrow", 3)}</span>` +
     `</li>`
   );
@@ -126,21 +139,72 @@ export function blogIndex(content: SiteContent): string {
         .map((y) =>
           `<section class="byear" aria-labelledby="${y.id}">` +
           `<h2 class="byear__label" id="${y.id}" data-reveal="pop">${esc(y.label)}</h2>` +
-          `<ol class="bposts">${y.posts.map(postItem).join("")}</ol>` +
+          `<ol class="bposts">${y.posts.map((p, i) => postItem(p, i)).join("")}</ol>` +
           `</section>`,
         )
         .join("")
     : `<p class="empty">Nothing here yet.</p>`;
   return (
     `<div class="page page--blog">` +
-    floats("blog", { tone: "cyan", span: 0.35, stickers: ["page", "sparkle", "sleepy"] }) +
+    floats("blog", { tone: "cyan", count: 2, span: 0.35, glyph: "star" }) +
     `<div class="wrap">` +
-    pageHead({ kicker: "blog", title: "Blog", tone: "cyan", aside: plural(posts.length, "post", "posts"), stickers: ["page", "star"] }) +
+    pageHead({ kicker: "blog", title: "Blog", tone: "cyan", icon: "page", aside: plural(posts.length, "post", "posts") }) +
     `<div class="btools"><p class="btools__order">Newest first</p>` +
     button({ href: "/blog/feed.xml", label: "RSS feed", icon: "rss", iconFirst: true, size: "s", tone: "paper" }) +
     `</div>` +
     list +
     `</div></div>`
+  );
+}
+
+// ------------------------------------------------------ home section
+
+/** Posts shown in the home section; the rest are one key away on /blog/. */
+export const HOME_POSTS = 4;
+
+/** Every post past the latest few, as a compact folded list, so the whole blog stays reachable in place. */
+function olderPosts(rest: readonly Entry[]): string {
+  return (
+    `<details class="bmore"><summary class="bmore__sum pop">${icon("plus", 2, "bmore__ic")}<span>Older posts</span>` +
+    `<span class="bmore__n">${pad2(rest.length)}</span></summary>` +
+    `<ol class="bmore__list">` +
+    rest
+      .map((p) => `<li><a class="bmore__link" href="${p.url}"><span>${esc(p.title)}</span><span class="bmore__when">${p.date ? dateParts(p.date).long : "Draft"}</span></a></li>`)
+      .join("") +
+    `</ol></details>`
+  );
+}
+
+/**
+ * "Docs & blog" on the home page: the docs catalogue, then the latest posts.
+ * Docs come first to match the nav order, so the scroll-spy reaches Docs, then
+ * Blog (#blog is the second part's own anchor).
+ */
+export function docsSection(content: SiteContent): string {
+  const posts = content.posts;
+  const latest = posts.slice(0, HOME_POSTS);
+  const more = posts.length - latest.length;
+  return (
+    `<section class="sec sec--docs" id="docs" aria-labelledby="docs-title">` +
+    floats("home-docs", { tone: "cyan", count: 2, glyph: "star" }) +
+    `<div class="wrap">` +
+    sectionHead({ id: "docs-title", kicker: "docs · blog", title: "Docs & blog", tone: "cyan", icon: "book", more: { href: "/docs/", label: "Docs page" } }) +
+    `<div class="dpart">` +
+    `<div class="btools"><h3 class="sub" id="docs-sub">${tile("book", "cyan", "s")}<span>Docs</span></h3>` +
+    `<span class="btools__count">${plural(content.docs.length, "page", "pages")}</span></div>` +
+    docGroups(content, 4) +
+    `</div>` +
+    `<div class="blogpart" id="blog">` +
+    `<div class="btools"><h3 class="sub" id="blog-title">${tile("page", "cyan", "s")}<span>${more > 0 ? "Latest posts" : "Blog"}</span></h3>` +
+    `<span class="btools__count">${plural(posts.length, "post", "posts")}</span>` +
+    `<span class="btools__keys">` +
+    button({ href: "/blog/feed.xml", label: "RSS feed", icon: "rss", iconFirst: true, size: "s", tone: "paper" }) +
+    button({ href: "/blog/", label: more > 0 ? `All ${pad2(posts.length)} posts` : "Blog page", icon: "arrow", size: "s", tone: "paper" }) +
+    `</span></div>` +
+    (latest.length ? `<ol class="bposts">${latest.map((p, i) => postItem(p, i, 4)).join("")}</ol>` : `<p class="empty">Nothing here yet.</p>`) +
+    (more > 0 ? olderPosts(posts.slice(HOME_POSTS)) : "") +
+    `</div>` +
+    `</div></section>`
   );
 }
 
@@ -159,7 +223,7 @@ function pagerLink(e: Entry | undefined, dir: "prev" | "next", label: string): s
   if (!e) return `<span class="apager__gap"></span>`;
   const arrow = dir === "prev" ? icon("arrow-left", 2) : icon("arrow", 2);
   return (
-    `<a class="apager__link apager__link--${dir}" href="${e.url}" rel="${dir}">` +
+    `<a class="apager__link apager__link--${dir} pop" href="${e.url}" rel="${dir}">` +
     `<span class="apager__dir">${dir === "prev" ? arrow : ""}<span>${label}</span>${dir === "next" ? arrow : ""}</span>` +
     `<span class="apager__title">${esc(e.title)}</span></a>`
   );
@@ -198,14 +262,13 @@ export function docPage(content: SiteContent, e: Entry): string {
     `<p class="ahead__kicker">${tile(group.icon, group.tone, "s")}<span>${esc(group.label)}</span>${e.placeholder ? placeholderTag() : ""}</p>` +
     `<h1 class="ahead__title">${esc(e.title)}</h1>` +
     (e.summary ? `<p class="ahead__sum">${esc(e.summary)}</p>` : "") +
-    strip("ahead__strip") +
     `</header>` +
     // Narrow screens: both navigators fold into disclosures above the text.
     `<div class="jumps">` +
-    `<details class="jump jump--docs"><summary class="jump__sum">${icon("book", 2)}<span>All docs</span>${icon("arrow-down", 2, "jump__chev")}</summary>` +
+    `<details class="jump jump--docs"><summary class="jump__sum pop">${icon("book", 2)}<span>All docs</span>${icon("arrow-down", 2, "jump__chev")}</summary>` +
     `<nav class="jump__panel" aria-label="All docs (compact)">${side}</nav></details>` +
     (toc
-      ? `<details class="jump jump--toc"><summary class="jump__sum">${icon("menu", 2)}<span>On this page</span>${icon("arrow-down", 2, "jump__chev")}</summary>` +
+      ? `<details class="jump jump--toc"><summary class="jump__sum pop">${icon("menu", 2)}<span>On this page</span>${icon("arrow-down", 2, "jump__chev")}</summary>` +
         `<nav class="jump__panel" aria-label="On this page (compact)">${toc}</nav></details>`
       : "") +
     `</div>` +
@@ -227,19 +290,18 @@ export function postPage(content: SiteContent, e: Entry): string {
   return (
     readbar() +
     `<div class="page page--post">` +
-    floats(`post-${e.slug}`, { tone: "cyan", far: 2, mid: 2, near: 2, span: 0.4, stickers: ["sparkle", "page"] }) +
+    floats(`post-${e.slug}`, { tone: "cyan", count: 2, span: 0.4, glyph: "sparkle" }) +
     `<div class="wrap">` +
     `<nav class="crumbs crumbs--post" aria-label="Breadcrumb"><a href="/blog/">Blog</a><span aria-hidden="true">/</span><span aria-current="page">${esc(e.title)}</span></nav>` +
     `<article class="post">` +
-    `<header class="ahead ahead--post" data-reveal>` +
+    `<header class="ahead ahead--post ahead--cyan" data-reveal>` +
     `<div class="ahead__row">${e.date ? dateBlock(e) : ""}` +
     `<p class="ahead__facts">${e.placeholder ? placeholderTag() : ""}<span class="when">${dateText(e)}<span aria-hidden="true"> · </span><span>${e.minutes} min read</span></span></p></div>` +
     `<h1 class="ahead__title">${esc(e.title)}</h1>` +
     (e.summary ? `<p class="ahead__sum">${esc(e.summary)}</p>` : "") +
-    strip("ahead__strip") +
     `</header>` +
     `<div class="prose">${e.html}</div>` +
-    `<div class="post__end" aria-hidden="true">${sticker("sparkle", { scale: 3, tilt: -8, tone: "cyan" })}${strip("post__strip")}</div>` +
+    `<div class="post__end" aria-hidden="true">${icon("sparkle", 3)}${strip("post__strip")}</div>` +
     `</article>` +
     `<nav class="apager apager--post" aria-label="More posts">${pagerLink(newer, "prev", "Newer")}${pagerLink(older, "next", "Older")}</nav>` +
     `<p class="post__back">${button({ href: "/blog/", label: "All posts", icon: "arrow-left", iconFirst: true, size: "m" })}</p>` +

@@ -5,14 +5,14 @@
 import { downloadsPage } from "./downloads.ts";
 import { shell } from "./layout.ts";
 import { notFoundPage } from "./pages.ts";
-import { galleryPage, piecePage } from "./gallery.ts";
+import { galleryArrival, galleryOrder, galleryPage, piecePage } from "./gallery.ts";
 import { landing, projectPage, projectsIndex } from "./landing.ts";
 import { projectHref, projects } from "../data/projects.ts";
 import { blogIndex, docsIndex, entryPage } from "./docs.ts";
 import { docGroup } from "../data/docs.ts";
 import { donatePage } from "./donate.ts";
 import type { Entry, PageMeta, Rendered, SiteContent } from "./types.ts";
-import { esc } from "./html.ts";
+import { esc, pad2 } from "./html.ts";
 import { ORIGIN } from "./layout.ts";
 
 export interface Route {
@@ -32,7 +32,7 @@ function fileFor(path: string): string {
 export function routes(content: SiteContent): Route[] {
   const list: { meta: PageMeta; main: () => string }[] = [
     {
-      meta: { path: "/", title: null, page: "home", description: "Dex's projects: downloads, docs, illustrations and donations." },
+      meta: { path: "/", title: null, page: "home", description: "Dex's projects: downloads, docs, illustrations and donations.", headEnd: galleryArrival(content) },
       main: () => landing(content),
     },
     {
@@ -54,7 +54,7 @@ export function routes(content: SiteContent): Route[] {
     ...content.gallery.map((item, i) => ({
       meta: {
         path: `/gallery/${item.id}/`,
-        title: `Gallery ${item.id}`,
+        title: `Gallery ${pad2(galleryOrder(content.gallery).placed.findIndex((q) => q.item === item) + 1)}`,
         page: "gallery" as const,
         description: item.alt,
       },

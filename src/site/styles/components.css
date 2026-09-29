@@ -1,8 +1,8 @@
-/* Components: the blocky key, chips, glyph tiles, stickers, strip, section
-   heads, page heads, cards, key/value lists. */
+/* Components: the pop (the one interaction language), keys, chips, tiles,
+   stickers, strip, section heads, cards, key/value lists. Square everywhere. */
 
 /* ------------------------------------------------------------ pixel icons */
-.px { display: block; flex: none; image-rendering: pixelated; }
+.px, .spr { display: block; flex: none; image-rendering: pixelated; }
 .px--anim .px-f1 { visibility: hidden; }
 @media (prefers-reduced-motion: no-preference) {
   .px--anim .px-f0 { animation: px-f0 var(--px-period, 4.1s) steps(1, end) infinite; }
@@ -11,24 +11,66 @@
 @keyframes px-f0 { 0%, 92% { visibility: visible; } 93%, 100% { visibility: hidden; } }
 @keyframes px-f1 { 0%, 92% { visibility: hidden; } 93%, 100% { visibility: visible; } }
 
-/* ------------------------------------------------------ the blocky button */
+/* =============================================================== the pop
+   Every pressable block shares it (DESIGN-SYSTEM.md §3):
+   rest   a hard shadow, --pop-off px down-right, in --pop-sh
+   hover  (and keyboard focus) lifts 2px up-left, grows by --pop-grow, and the
+          shadow steps out 2px in --pop-hi: it pops out
+   press  sinks 2px into its shadow (and shrinks by --pop-press), fast
+   Transform and box-shadow only, so nothing around it moves.
+   Keys and other small controls stay whole-pixel (grow and press scale 1):
+   a fractional scale softens their pixel glyphs and edges. Cards, rows and
+   gallery tiles set --pop-grow / --pop-press to really grow and shrink. */
+.btn, .pop {
+  --pop-sh: var(--shadow);
+  --pop-hi: var(--yellow);
+  --pop-off: var(--off);
+  --pop-grow: 1;
+  --pop-press: 1;
+  box-shadow: var(--pop-off) var(--pop-off) 0 var(--pop-sh);
+  /* The fill stops inside the edge: scaled mid-press, an edge pixel is
+     anti-aliased, and a fill running under the border would bleed through
+     it as a sliver of accent colour. */
+  background-clip: padding-box;
+  transition:
+    transform var(--d-pop) var(--ease-spring),
+    box-shadow var(--d-pop) var(--ease-spring),
+    background-color var(--d-hover) var(--ease-std),
+    border-color var(--d-hover) var(--ease-std),
+    color var(--d-hover) var(--ease-std);
+}
+@media (hover: hover) {
+  .btn:hover, .pop:hover {
+    transform: translate(-2px, -2px) scale(var(--pop-grow));
+    box-shadow: calc(var(--pop-off) + 2px) calc(var(--pop-off) + 2px) 0 var(--pop-hi);
+  }
+}
+.btn:focus-visible, .pop:focus-visible {
+  transform: translate(-2px, -2px) scale(var(--pop-grow));
+  box-shadow: calc(var(--pop-off) + 2px) calc(var(--pop-off) + 2px) 0 var(--pop-hi), 0 0 0 2px var(--bg);
+}
+.btn:active, .pop:active {
+  transform: translate(2px, 2px) scale(var(--pop-press));
+  box-shadow: 0 0 0 var(--pop-sh);
+  transition-duration: var(--d-press);
+  transition-timing-function: var(--ease-out);
+}
+
+/* ------------------------------------------------------------------- keys */
 .btn {
-  --btn-bg: var(--paper);
-  --btn-fg: var(--ink);
-  --btn-sh: var(--ink);
-  --btn-off: 3px;
+  --btn-bg: var(--panel-2);
+  --btn-fg: var(--fg);
+  --btn-edge: var(--line-2);
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 48px;
-  padding: 0 20px;
+  min-height: 46px;
+  padding: 0 18px;
   background: var(--btn-bg);
   color: var(--btn-fg);
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-s);
-  box-shadow: var(--btn-off) var(--btn-off) 0 var(--btn-sh);
+  border: var(--bw) solid var(--btn-edge);
   font: 650 var(--fs-16) / 1 var(--f-body);
   letter-spacing: 0.005em;
   text-decoration: none;
@@ -36,47 +78,43 @@
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-  translate: var(--mag-x, 0) var(--mag-y, 0);
-  transition:
-    transform var(--d-spring) var(--ease-spring),
-    box-shadow var(--d-spring) var(--ease-spring),
-    translate 320ms var(--ease-out),
-    background-color var(--d-hover) var(--ease-std),
-    color var(--d-hover) var(--ease-std);
 }
 .btn__ic { display: grid; place-items: center; line-height: 0; }
 .btn__done { display: none; line-height: 0; }
 @media (hover: hover) {
-  .btn:hover { transform: translate(-2px, -2px); box-shadow: calc(var(--btn-off) + 2px) calc(var(--btn-off) + 2px) 0 var(--btn-sh); }
+  .btn:hover { --btn-edge: var(--fg); }
 }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .btn:hover .btn__ic .px { animation: px-nudge 260ms steps(2, end) 1; }
-}
-.btn:active {
-  transform: translate(var(--btn-off), var(--btn-off));
-  box-shadow: 0 0 0 var(--btn-sh);
-  transition-duration: var(--d-press), var(--d-press), 320ms, var(--d-hover), var(--d-hover);
-  transition-timing-function: var(--ease-out);
+  .btn:hover .btn__ic .px { animation: px-nudge 240ms steps(2, end) 1; }
 }
 @keyframes px-nudge { 50% { translate: 2px 0; } }
 
-.btn--s { min-height: 40px; padding: 0 14px; font-size: var(--fs-14); gap: 8px; }
-.btn--l { min-height: 60px; padding: 0 28px; font-size: var(--fs-20); border-width: var(--bw-l); border-radius: var(--r); --btn-off: 5px; gap: 12px; }
+.btn--s { min-height: 38px; padding: 0 12px; font-size: var(--fs-14); gap: 8px; --pop-off: var(--off-s); }
+.btn--l { min-height: 58px; padding: 0 26px; font-size: var(--fs-20); gap: 12px; --pop-off: 5px; }
 .btn--icon { padding: 0; aspect-ratio: 1; }
-.btn--s.btn--icon { width: 40px; }
-.btn--m.btn--icon { width: 48px; }
+.btn--s.btn--icon { width: 38px; }
+.btn--m.btn--icon { width: 46px; }
 
-.btn--paper { --btn-bg: var(--paper); }
+/* Accent keys: the fill is the colour, the text is near-black, the pop is light. */
+.btn--yellow, .btn--mint, .btn--magenta, .btn--cyan {
+  --btn-fg: var(--on-accent);
+  --btn-edge: var(--shadow);
+  --pop-hi: var(--fg);
+  font-weight: 700;
+}
 .btn--yellow { --btn-bg: var(--yellow); }
 .btn--mint { --btn-bg: var(--mint); }
 .btn--magenta { --btn-bg: var(--magenta); }
 .btn--cyan { --btn-bg: var(--cyan); }
-.btn--ink { --btn-bg: var(--ink); --btn-fg: #fff; --btn-sh: var(--yellow); --px-k: #fff; }
-.btn--ink:focus-visible { box-shadow: 0 0 0 7px var(--yellow); }
+@media (hover: hover) {
+  .btn--yellow:hover, .btn--mint:hover, .btn--magenta:hover, .btn--cyan:hover { --btn-edge: var(--shadow); }
+}
+/* The World key: the stage's own black, yellow glyph. */
+.btn--ink { --btn-bg: var(--sunk); --btn-fg: var(--fg); --btn-edge: var(--line-2); --px-a: var(--yellow); }
 
 [data-copy].is-done .btn__ic { display: none; }
 [data-copy].is-done .btn__done { display: grid; }
-[data-copy].is-done { --btn-bg: var(--mint); }
+[data-copy].is-done { --btn-bg: var(--mint); --btn-fg: var(--on-accent); --btn-edge: var(--shadow); }
 html:not(.js) [data-copy] { display: none; }
 
 /* -------------------------------------------------------- chips and tags */
@@ -86,171 +124,145 @@ html:not(.js) [data-copy] { display: none; }
   align-items: center;
   min-height: 28px;
   padding: 0 10px;
-  border-radius: var(--r-xs);
+  border: var(--bw-1) solid var(--line-2);
   font: 600 var(--fs-14) / 1 var(--f-body);
   white-space: nowrap;
 }
-.chip--key { background: var(--ink); color: #fff; }
-.chip--value { background: var(--chip); color: var(--ink); }
-.chip--tone { background: var(--yellow); color: var(--ink); }
+.chip--key { background: var(--fg); color: var(--on-accent); border-color: var(--fg); }
+.chip--value { background: var(--panel-2); color: var(--fg); }
+.chip--tone { background: var(--yellow); color: var(--on-accent); border-color: var(--yellow); }
 
 .tag {
   display: inline-flex;
   align-items: center;
   min-height: 24px;
   padding: 0 8px;
-  border-radius: 5px;
-  font: 400 var(--fs-12) / 1 var(--f-px);
+  font: 400 var(--fs-12) / 1 var(--f-label);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
 }
-.tag--ph { background: var(--ink); color: var(--yellow); }
+/* Placeholder: honest but quiet, so it never competes with the section's one
+   bright block. */
+.tag--ph { background: var(--sunk); color: var(--fg-2); border: var(--bw-1) solid var(--line-2); }
 
 /* ----------------------------------------------------------- glyph tiles */
 .tile {
-  --tile-bg: var(--paper);
+  --tile-bg: var(--panel-2);
   display: inline-grid;
   place-items: center;
   flex: none;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   background: var(--tile-bg);
-  border: var(--bw) solid var(--ink);
-  border-radius: var(--r-s);
+  color: var(--on-accent);
+  border: var(--bw) solid var(--shadow);
   box-shadow: var(--sh-s);
 }
-.tile--s { width: 34px; height: 34px; border-radius: 8px; box-shadow: 2px 2px 0 var(--ink); }
-.tile--l { width: 76px; height: 76px; border-width: var(--bw-l); border-radius: var(--r); box-shadow: var(--sh); }
-.tile--yellow { --tile-bg: var(--yellow); --px-a: var(--paper); }
-.tile--mint { --tile-bg: var(--mint); --px-a: var(--yellow); }
-.tile--magenta { --tile-bg: var(--magenta); --px-a: var(--paper); --px-b: var(--yellow); }
-.tile--cyan { --tile-bg: var(--cyan); --px-a: var(--yellow); }
-.tile--ink { --tile-bg: var(--ink); --px-k: #fff; }
-.tile--paper { --tile-bg: var(--paper); }
+.tile--s { width: 30px; height: 30px; box-shadow: 2px 2px 0 var(--shadow); }
+.tile--l { width: 72px; height: 72px; box-shadow: var(--sh); }
+.tile--yellow { --tile-bg: var(--yellow); }
+.tile--mint { --tile-bg: var(--mint); }
+.tile--magenta { --tile-bg: var(--magenta); --px-b: var(--yellow); }
+.tile--cyan { --tile-bg: var(--cyan); }
+.tile--paper { --tile-bg: var(--panel-2); color: var(--fg); border-color: var(--line-2); }
+.tile--ink { --tile-bg: var(--sunk); color: var(--yellow); border-color: var(--line-2); }
 
-/* ------------------------------------------------------------- stickers */
+/* ---------------------------------------------------- stickers (mascots) */
+/* A pixel glyph with a one-pixel-step hard shadow: square, never tilted. */
 .sticker {
   display: inline-block;
   line-height: 0;
-  rotate: var(--tilt, -6deg);
-  /* die-cut: white outline hugging the pixels, then a hard ink shadow */
-  filter:
-    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff)
-    drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
-    drop-shadow(3px 3px 0 var(--ink));
+  color: var(--yellow);
+  filter: drop-shadow(3px 3px 0 var(--shadow));
 }
-.sticker--yellow { --px-a: var(--yellow); }
-.sticker--mint { --px-a: var(--mint); }
-.sticker--magenta { --px-a: var(--magenta); --px-b: var(--yellow); }
-.sticker--cyan { --px-a: var(--cyan); }
+.sticker--yellow { color: var(--yellow); }
+.sticker--mint { color: var(--mint); }
+.sticker--magenta { color: var(--magenta); --px-b: var(--yellow); }
+.sticker--cyan { color: var(--cyan); }
 
-/* ------------------------------------------------ three-colour strip, counter */
-.strip { display: inline-flex; width: 132px; height: 6px; flex: none; }
-.strip i { flex: 1; background: var(--magenta); transform-origin: left center; }
-.strip i:nth-child(2) { background: var(--yellow); box-shadow: inset 0 0 0 1px rgb(25 25 25 / 0.12); }
+/* ------------------------------------------------ four-colour strip, counter */
+.strip { display: inline-flex; width: 128px; height: 4px; flex: none; }
+.strip i { flex: 1; background: var(--yellow); transform-origin: left center; }
+.strip i:nth-child(2) { background: var(--magenta); }
 .strip i:nth-child(3) { background: var(--mint); }
+.strip i:nth-child(4) { background: var(--cyan); }
 
-.counter { font: 400 var(--fs-14) / 1 var(--f-px); letter-spacing: 0.06em; color: var(--muted); white-space: nowrap; }
-.counter b { font-weight: 400; color: var(--ink); }
+.counter { font: 400 var(--fs-14) / 1 var(--f-label); letter-spacing: 0.06em; color: var(--muted); white-space: nowrap; }
+.counter b { font-weight: 400; color: var(--fg); }
 
-/* --------------------------------------------------------- section heads */
-.sh { position: relative; display: grid; gap: var(--s-4); margin-bottom: var(--s-7); }
-.sh__kicker,
-.phead .sh__kicker {
+/* ---------------------------------------------------------- section heads */
+.sh {
+  --tone: var(--yellow);
+  position: relative;
+  display: grid;
+  gap: var(--s-4);
+  margin-bottom: var(--s-7);
+}
+.sh--mint { --tone: var(--mint); }
+.sh--magenta { --tone: var(--magenta); }
+.sh--cyan { --tone: var(--cyan); }
+.sh__kicker {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font: 400 var(--fs-12) / 1 var(--f-px);
+  gap: 12px;
+  font: 400 var(--fs-12) / 1 var(--f-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--fg-2);
 }
-.sh__no { padding: 5px 6px 4px; background: var(--ink); color: #fff; border-radius: 4px; }
-.sh__slash { color: var(--magenta-text); letter-spacing: -0.05em; }
+.sh__kicker .tile { margin-right: 2px; }
+.sh__kicker > span:not(.sh__rule) { white-space: nowrap; }
+.sh__slash { color: var(--tone); letter-spacing: -0.05em; }
 .sh__rule { flex: 1; min-width: 24px; height: 2px; background: var(--line); }
 .sh__aside { color: var(--muted); white-space: nowrap; }
+.sh__row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
 .sh__title {
-  font: var(--title-weight) var(--fs-h2) / 0.95 var(--f-title);
-  font-stretch: var(--title-stretch);
-  text-transform: uppercase;
-  letter-spacing: 0.005em;
+  font: 400 var(--fs-h2) / 0.95 var(--f-px);
+  letter-spacing: 0.01em;
+  color: var(--fg);
+  text-shadow: 4px 4px 0 var(--shadow);
   text-wrap: balance;
 }
-.slab {
-  display: inline-block;
-  padding: 0.16em 0.3em 0.1em;
-  background: var(--yellow);
-  border: var(--bw-l) solid var(--ink);
-  border-radius: var(--r);
-  box-shadow: var(--sh-l);
-  rotate: -1.2deg;
+/* A block of the tone under the first letters: the section's one bright mark. */
+.sh__title::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 8px;
+  margin-top: 14px;
+  background: var(--tone);
+  box-shadow: 4px 4px 0 var(--shadow);
 }
-.slab--mint { background: var(--mint); }
-.slab--magenta { background: var(--magenta); }
-.slab--cyan { background: var(--cyan); }
-.sh__line { box-shadow: inset 0 -0.3em 0 var(--line-t, var(--yellow-t)); padding-inline: 0.04em; }
-.sh__line--magenta { --line-t: var(--magenta-t); }
-.sh__line--mint { --line-t: var(--mint-t); }
-.sh__line--cyan { --line-t: var(--cyan-t); }
+.sh__more {
+  /* A paper key (.btn--s), like the section's other keys; its pop is the
+     section's colour. */
+  --pop-hi: var(--tone);
+}
+.sh__more .px { color: var(--tone); }
 
-/* ------------------------------------------------------------ page heads */
-.phead {
-  --tone: var(--paper);
-  position: relative;
-  margin: var(--s-6) 0 var(--s-8);
-  padding: clamp(24px, 4.5vw, 56px);
-  padding-right: clamp(24px, 24vw, 340px);
-  background-color: var(--tone);
-  background-image:
-    linear-gradient(rgb(25 25 25 / 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(25 25 25 / 0.06) 1px, transparent 1px);
-  background-size: 24px 24px;
-  background-position: -1px -1px;
-  border: var(--bw-l) solid var(--ink);
-  border-radius: var(--r-l);
-  box-shadow: var(--sh-l);
-  container-type: inline-size;
-}
-.phead--yellow { --tone: var(--yellow); }
-.phead--mint { --tone: var(--mint); }
-.phead--magenta { --tone: var(--magenta); }
-.phead--cyan { --tone: var(--cyan); }
-.phead .sh__slash { color: var(--ink); }
-.phead .sh__rule { background: rgb(25 25 25 / 0.25); }
-.phead .sh__aside { color: var(--ink); }
-.phead__title {
-  margin-top: var(--s-4);
-  font: var(--title-weight) var(--fs-h1) / 0.9 var(--f-title);
-  /* Never break a word: the title shrinks to its box (a 9-letter word fits). */
-  font-size: min(var(--fs-h1), 10cqi);
-  font-stretch: var(--title-stretch);
-  text-transform: uppercase;
-  letter-spacing: -0.005em;
-}
-.phead__lead { max-width: 46ch; margin-top: var(--s-4); font-size: var(--fs-20); }
-.phead__stickers {
-  position: absolute;
-  right: clamp(20px, 5vw, 72px);
-  top: 50%;
-  translate: 0 -46%;
+/* Sub-heads inside a section (Install, Blog): tile, label, real count. */
+.sub {
   display: flex;
   align-items: center;
-  gap: clamp(10px, 2vw, 28px);
+  gap: 12px;
+  font: 400 var(--fs-h3) / 1.1 var(--f-px);
+  letter-spacing: 0.01em;
 }
-.phead__st--1 { translate: 0 30%; }
-@media (max-width: 640px) {
-  .phead { padding-right: clamp(24px, 4.5vw, 56px); padding-top: 72px; }
-  .phead__stickers { top: 18px; right: 18px; translate: none; transform: scale(0.7); transform-origin: top right; }
-}
+.sub__aside { margin-left: auto; font: 400 var(--fs-12) / 1 var(--f-label); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+
+/* ------------------------------------------------------------- page heads */
+.phead { padding-top: var(--s-7); }
+.phead .sh { margin-bottom: var(--s-7); }
+.phead .sh__title { font-size: var(--fs-h1); }
+.phead__lead { max-width: 46ch; margin: calc(var(--s-5) * -1) 0 var(--s-7); font-size: var(--fs-20); color: var(--fg-2); }
 
 /* ----------------------------------------------------------------- cards */
 .card {
   position: relative;
   display: block;
-  background: var(--paper);
-  border: var(--bw-l) solid var(--ink);
-  border-radius: var(--r-l);
+  background: var(--panel);
+  border: var(--bw) solid var(--line);
   box-shadow: var(--sh);
 }
 
@@ -263,23 +275,10 @@ html:not(.js) [data-copy] { display: none; }
   gap: 12px;
   min-height: 56px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: var(--bw-1) solid var(--line);
 }
-.kv dt { font: 400 var(--fs-12) / 1.2 var(--f-px); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.kv dt { font: 400 var(--fs-12) / 1.2 var(--f-label); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .kv dd { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 600; font-size: var(--fs-20); overflow-wrap: anywhere; }
 .kv__mono { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
 
-.note {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: var(--s-5) 0;
-  padding: 14px 16px;
-  border: var(--bw) dashed var(--ink);
-  border-radius: var(--r);
-  background: var(--yellow-t);
-  font-weight: 600;
-}
 .fine { color: var(--muted); font-size: var(--fs-14); }
-
-/* Crumbs, pagers, tables of contents and prose: styles/docs.css. */
