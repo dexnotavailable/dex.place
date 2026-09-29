@@ -2,7 +2,7 @@
 // line allows it.
 // The markup starts every screen from the sharpest copy inside the slow-line
 // byte budget (piecePhoneCap, pieceTabletCap, pieceDesktopCap: the <source>s
-// with data-cap), so the art is on screen by 2.5 s even on a slow line, where
+// with data-cap), aiming for a quick first paint even on a slow line, where
 // the big landscapes are then soft on tablets and desktops. Once that copy has
 // landed, this reads how fast it came (its own download) and, if a sharper
 // copy would still be on screen by DEADLINE, fetches the sharpest such copy up
@@ -10,7 +10,8 @@
 // 2x, as its cap does), decodes it off screen and only then swaps it in: the
 // same box, so no layout shift and no blank frame. On a slow line nothing
 // changes; the budget copy is what that line can show in time. Save-Data
-// never sharpens.
+// never sharpens. The Full size link lets the visitor open the complete file
+// without a deadline or connection heuristic, including without JavaScript.
 
 /** Latest landing (ms after the page started loading) at which a sharper copy is still worth it: 2.5 s less decode and paint. */
 const DEADLINE = 2000;
@@ -33,7 +34,8 @@ function measured(url: string): { rate: number; rtt: number } | null {
   const e = performance.getEntriesByName(url, "resource")[0] as PerformanceResourceTiming | undefined;
   if (!e || !(e.transferSize > 0) || !(e.encodedBodySize > 0)) return null;
   const ms = e.responseEnd - e.responseStart;
-  return { rate: ms > 0 ? e.encodedBodySize / ms : Infinity, rtt: Math.max(0, e.responseStart - e.requestStart) };
+  if (!(ms > 0)) return null;
+  return { rate: e.encodedBodySize / ms, rtt: Math.max(0, e.responseStart - e.requestStart) };
 }
 
 function sharpen(img: HTMLImageElement): void {
@@ -56,8 +58,11 @@ function sharpen(img: HTMLImageElement): void {
   const need = img.getBoundingClientRect().width * Math.min(devicePixelRatio || 1, 2);
   const off = (c: Copy): number => Math.abs(Math.log(c.w / need));
   const top = copies.reduce((a, c) => (off(c) < off(a) ? c : a));
-  // The line: this image's own download, else the browser's estimate, else assume it is fine.
-  const line = measured(img.currentSrc) ?? (conn?.downlink ? { rate: conn.downlink * 125, rtt: conn.rtt ?? 0 } : { rate: Infinity, rtt: 0 });
+  // A cached preview says nothing about the cost of an uncached sharper copy.
+  // Keep the cap when neither the download nor the browser provides a rate;
+  // the Full size link remains available on every connection.
+  const line = measured(img.currentSrc) ?? (conn?.downlink ? { rate: conn.downlink * 125, rtt: conn.rtt ?? 0 } : null);
+  if (!line) return;
   const start = performance.now();
   const pick = copies.filter((c) => c.w > now.w && c.w <= top.w && start + line.rtt + c.bytes / line.rate <= DEADLINE).pop();
   if (!pick) return;
@@ -66,7 +71,7 @@ function sharpen(img: HTMLImageElement): void {
   probe.decode().then(
     () => {
       // One candidate, same sizes: the box keeps its size, and the copy is already decoded.
-      for (const s of sources) if (s.hasAttribute("data-cap")) s.srcset = `${pick.url} ${pick.w}w`;
+      active.srcset = `${pick.url} ${pick.w}w`;
     },
     () => {},
   );

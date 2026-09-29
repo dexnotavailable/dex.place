@@ -118,6 +118,16 @@ test("piece pages: prev/next follow the collage's reading order, in a ring", () 
   });
 });
 
+test("piece pages: full-size files remain reachable without JavaScript; 05 stays the last tile", () => {
+  content.gallery.forEach((item, i) => {
+    const html = piecePage(content, i);
+    assert.match(html, new RegExp(`<a[^>]*href="${item.src}"[^>]*target="_blank"[^>]*>Full size</a>`));
+  });
+  const five = content.gallery.findIndex((item) => item.id === "05");
+  assert.equal(galleryOrder(content.gallery).placed.at(-1).item.id, "05");
+  assert.match(piecePage(content, five), /class="counter piece__count"><b>09<\/b>/);
+});
+
 // ------------------------------------------------------- responsive images
 
 const PUBLIC = path.join(ROOT, "public");

@@ -551,6 +551,7 @@ function viewer(): string {
     `</figure></div>` +
     `<div class="viewer__bar">` +
     `<p class="viewer__count counter" data-viewer-count aria-live="polite"></p>` +
+    `<a class="btn btn--paper btn--s viewer__full" data-viewer-full target="_blank" rel="noopener" aria-label="Open full-size artwork in a new tab">Full size</a>` +
     `<button class="btn btn--paper btn--m btn--icon viewer__close" type="button" data-viewer-close aria-label="Close" autofocus>` +
     `<span class="btn__ic">${icon("close", 3)}</span></button>` +
     `</div>` +
@@ -745,7 +746,8 @@ export function piecePage(content: SiteContent, index: number): string {
     (item.bytes ? `data-bytes="${allWidths(item).map((w) => item.bytes!.get(w) ?? 0).join(" ")}" ` : "") +
     `width="${item.width}" height="${item.height}" alt="${esc(item.alt)}" fetchpriority="high" decoding="async" ` +
     `style="view-transition-name:art-${item.id};--ar:${k4(item.width / item.height)};background-image:url(${thumb(item)})" /></picture>` +
-    `</div></figure>` +
+    `</div>` +
+    `<figcaption class="piece__full"><a class="btn btn--paper btn--s" href="${item.src}" target="_blank" rel="noopener" aria-label="Open full-size artwork in a new tab">Full size</a></figcaption></figure>` +
     `<nav class="piece__pager" aria-label="More pieces">` +
     `<a class="btn btn--paper btn--m btn--icon" href="/gallery/${prev.item.id}/" rel="prev" data-key="ArrowLeft" aria-label="Previous piece">` +
     `<span class="btn__ic">${icon("arrow-left", 3)}</span></a>` +

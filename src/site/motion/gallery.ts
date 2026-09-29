@@ -273,6 +273,7 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
   const lo = dialog.querySelector<HTMLImageElement>("[data-viewer-lo]")!;
   const hi = dialog.querySelector<HTMLImageElement>("[data-viewer-hi]")!;
   const count = dialog.querySelector<HTMLElement>("[data-viewer-count]")!;
+  const full = dialog.querySelector<HTMLAnchorElement>("[data-viewer-full]")!;
   const closeBtn = dialog.querySelector<HTMLButtonElement>("[data-viewer-close]")!;
   const baseTitle = document.title;
   // Where closing the viewer returns the address bar to.
@@ -366,6 +367,7 @@ function initViewer(dialog: HTMLDialogElement, pieces: readonly Piece[], reduced
   const fill = (i: number) => {
     const p = pieces[i]!;
     index = i;
+    full.href = p.src;
     // A tile still waiting for its turn (motion/defer.ts) starts loading now.
     releaseTile(p.img.closest("picture"));
     lo.src = p.img.currentSrc || p.img.src;

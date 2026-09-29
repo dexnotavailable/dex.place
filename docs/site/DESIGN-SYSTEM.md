@@ -472,6 +472,12 @@ the same renderers one heading level up (`downloadsBody(2)`, `donateBody(2)`,
   the same on the viewer, the piece page's counter, its `h1` and `<title>`; the URL keeps
   the catalogue id (`/gallery/07/`), so shared links never move. Reduced motion: no
   flight, instant state changes.
+- **Full size:** a small existing-style key below each piece frame and in the viewer's
+  control bar opens that piece's complete lossless display file in a new tab. The piece
+  page's link works without JavaScript. The viewer updates it when stepping to another
+  piece. This keeps the framed composition and lets visitors request detail even when
+  the connection keeps the initial image capped. `/gallery/05/` stays the final tile,
+  `09 / 09`; catalogue IDs and wall order intentionally differ.
 - **Loading** (`render/gallery.ts`, `motion/defer.ts`):
   - Every piece has lossless smaller copies at 160-1280px (`npm run gallery:derive`). Never
     lossy: a lossy export would be a new treatment of Dex's art.
@@ -481,6 +487,16 @@ the same renderers one heading level up (`downloadsBody(2)`, `donateBody(2)`,
   - Phones are capped near 2x of the tile on a 390px phone (640px for full-width tiles);
     piece pages keep the 200 KB Slow 4G budget, and so do the lead tiles together (below).
     The viewer is not capped.
+  - Piece pages also cap tablet and desktop initial loads to the sharpest available
+    copy within the 200 KB image budget, with a floor at half the reference drawn width.
+    On a sufficiently fast measured connection, `motion/piece.ts` decodes a sharper copy
+    before swapping only the active screen source. Save-Data, late loads and unknown
+    throughput retain the cap. A cached preview alone is not evidence of bandwidth.
+    The Full size key bypasses these automatic-loading limits by explicit choice.
+  - The added 560px lossless copies let a 1x desktop's leading pair use 560px rather
+    than 640px. Tablet lead caps split at 850px: the smaller tablet class can use
+    560px, while larger tablets retain 640px so a later tile does not take over LCP.
+    The matching home-gallery arrival preloads use the same media and copies.
   - Tablets are capped at about 1.5x: in the mid layout (660-1095px) on a screen of
     1.5 dppx or more (`TABLET_COLLAGE`), each tile's srcset stops at the largest copy
     within 1.5x of its width on an 820px tablet, never under 1x there (`tabletCap`; today

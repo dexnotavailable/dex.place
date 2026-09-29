@@ -197,6 +197,7 @@ html:not(.js) .film__link img[data-defer] { display: none; }
   pointer-events: none;
 }
 .viewer__bar > * { pointer-events: auto; }
+.viewer__full { margin-left: auto; }
 .viewer__count {
   padding: 10px 14px;
   background: var(--panel);
@@ -215,8 +216,9 @@ html:not(.js) .film__link img[data-defer] { display: none; }
 }
 
 /* Controls pop in after the piece lands, and duck out when it leaves. */
-.viewer__count, .viewer__close, .viewer__nav { opacity: 0; scale: 0.7; }
+.viewer__count, .viewer__full, .viewer__close, .viewer__nav { opacity: 0; scale: 0.7; }
 .viewer.is-open .viewer__count,
+.viewer.is-open .viewer__full,
 .viewer.is-open .viewer__close,
 .viewer.is-open .viewer__nav {
   opacity: 1;
@@ -233,6 +235,7 @@ html:not(.js) .film__link img[data-defer] { display: none; }
 .viewer.is-open .viewer__nav--prev { transition-delay: 240ms, 240ms, 0s, 0s, 0s, 0s; }
 .viewer.is-open .viewer__nav--next { transition-delay: 270ms, 270ms, 0s, 0s, 0s, 0s; }
 .viewer:not(.is-open) .viewer__count,
+.viewer:not(.is-open) .viewer__full,
 .viewer:not(.is-open) .viewer__close,
 .viewer:not(.is-open) .viewer__nav { transition: opacity 100ms linear, scale 120ms var(--ease-out); }
 
@@ -240,6 +243,7 @@ html:not(.js) .film__link img[data-defer] { display: none; }
 .page--piece { padding-bottom: var(--s-8); }
 .piece__top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: var(--s-6) 0; }
 .piece { display: grid; place-items: center; }
+.piece__full { margin-top: var(--s-4); }
 /* 13px dark mat + 2px edge a side (15px: render/gallery.ts pieceSizes). */
 .piece__frame {
   position: relative;
