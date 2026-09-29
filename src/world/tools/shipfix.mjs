@@ -5,6 +5,7 @@
 // unfiltered, and writes to review/world/phase2/ship-fix/<check>/.
 import { createRequire } from "node:module";
 import { mkdirSync, writeFileSync } from "node:fs";
+import { browserOptions, angle } from "./browser.mjs";
 const require = createRequire(new URL("../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const arg = (n, d) => {
@@ -12,15 +13,16 @@ const arg = (n, d) => {
   return i >= 0 ? process.argv[i + 1] : d;
 };
 const PORT = arg("port", process.env.WORLD_PORT ?? "25001");
-const ROOT = "review/world/phase2/ship-fix";
+const ROOT = arg("out", "review/world/phase2/ship-fix");
 const which = process.argv[2] ?? "all";
-const browser = await chromium.launch({ channel: "msedge", args: ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required"] });
+const browser = await chromium.launch(browserOptions);
 const out = {};
 const note = (s) => console.log(`[${new Date().toISOString().slice(11, 19)}] ${s}`);
 
 /** A world page: size, device scale, query. Collects errors and bad responses. */
-async function open(query, { w = 1280, h = 720, dpr = 1, mobile = false } = {}) {
+async function open(query, { w = 1280, h = 720, dpr = 1, mobile = false, saved = null } = {}) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr, isMobile: mobile, hasTouch: mobile });
+  if (saved) await ctx.addInitScript((saved) => localStorage.setItem("dex.world.v1", JSON.stringify(saved)), saved);
   const page = await ctx.newPage();
   const errors = [];
   const bad = [];
@@ -82,13 +84,14 @@ async function smoke() {
 }
 
 /** Put her at world x in the current room (manual world) and let the camera settle. */
-async function placeAt(p, wx) {
-  await p.ev((wx) => {
+async function placeAt(p, wx, wy = null) {
+  await p.ev(([wx, wy]) => {
     const g = window.__world.game;
     // on the ground under her feet (not the top of whatever stands over it: the Crown's overhang)
     const x = (wx - (g.room.def.origin?.[0] ?? 0)) * 80;
-    window.__world.place(x, g.room.collision.groundAt(x, g.player.body.y - 40));
-  }, wx);
+    const y = wy === null ? g.room.collision.groundAt(x, g.player.body.y - 40) : ((g.room.def.origin?.[1] ?? 0) - wy) * 80;
+    window.__world.place(x, y);
+  }, [wx, wy]);
   await p.ev(() => window.__world.advance(90));
 }
 /** A crop around the player, scaled from the 1280x720 view to the page size. */
@@ -114,7 +117,7 @@ async function sit() {
   const res = {};
   const spots = [
     ["A0-pier-bench", "A0", "east", -11.65],
-    ["C1-market-bench", "C1", "", 215.9],
+    ["C1-market-bench", "C1", "shrine", 215.9],
     ["D4-blade-bench", "D4", "east", 314.3],
     ["E3-look-pew", "E3", "", 445.1],
   ];
@@ -125,7 +128,7 @@ async function sit() {
       if (vname !== "1080p" && name !== "A0-pier-bench" && name !== "D4-blade-bench") continue;
       await p.ev(([room, spawn]) => window.__world.teleport(room, spawn), [room, spawn]);
       await settle(p, room);
-      await placeAt(p, x);
+      await placeAt(p, x, room === "C1" ? -32 : null);
       const before = await shotPlayer(p, `${d}/${name}-${vname}-standing.png`);
       await p.ev(() => window.__world.use());
       await p.ev(() => window.__world.advance(150));
@@ -141,7 +144,13 @@ async function sit() {
       await p.ev(() => window.__world.advance(20));
       await p.ev(() => window.__world.release("right"));
       const stood = await p.ev(() => !window.__world.game.sitting && window.__world.game.player.spriteDraw().sh);
-      res[`${name}-${vname}`] = { ...s, before, crop, stoodUp: !!stood };
+      // Return to the same bench and use it once: movement must have reset
+      // its prop state as well as the runtime's seated pose.
+      await placeAt(p, x, room === "C1" ? -32 : null);
+      await p.ev(() => window.__world.use());
+      await p.ev(() => window.__world.advance(10));
+      const satAgain = await p.ev(() => !!window.__world.game.sitting);
+      res[`${name}-${vname}`] = { ...s, before, crop, stoodUp: !!stood, satAgain };
       note(`sit ${name} ${vname}: sitting ${!!s.sitting}, drawn ${JSON.stringify(s.drawn)}`);
     }
     res[`errors-${vname}`] = p.errors;
@@ -442,7 +451,7 @@ async function lift() {
   note(`lift: muffle ${first?.muffle} (${first?.muffleHz} Hz) at y ${first?.y} -> ${last.muffle} (${last.muffleHz} Hz, gain ${last.muffleGain}) at y ${last.y}; ${res.summary.muffleSeen} distinct steps; music ${last.music}`);
   await p.ctx.close();
   save("lift", res);
-  out.lift = res.summary;
+  out.lift = res;
 }
 
 // --- blade: the storm's sound cuts off at the break, two seconds of silence, then the swell ----
@@ -454,6 +463,16 @@ async function blade() {
   await p.ev(() => { const g = window.__world.game; for (let n = 1; n <= 4; n++) g.save.set(`shrine:${n}`, true); for (const k of ["cut:map-banner", "cut:rope-bridge", "lever:culvert", "keeper:greeted", "lever:express"]) g.save.set(k, true); window.__world.teleport("D4", "west"); });
   await settle(p, "D4", false);
   await tapMaster(p);
+  await p.ev(() => {
+    const g = window.__world.game;
+    window.__clearedStormCues = [];
+    const play = g.audio.play.bind(g.audio);
+    g.audio.play = (id, ...args) => {
+      if (id.startsWith("storm.") && g.save.get("blade:cleared")) window.__clearedStormCues.push({ id, t: g.seconds });
+      return play(id, ...args);
+    };
+    window.__restoreStormPlay = () => { g.audio.play = play; };
+  });
   // stand in the storm long enough for its sound to settle, then walk east over the break with the real arrow key
   await p.page.waitForTimeout(8000);
   await p.page.keyboard.down("ArrowRight");
@@ -486,6 +505,9 @@ async function blade() {
     firstBedAt: firstBed?.since ?? null,
     cleared: rows[rows.length - 1].flag,
   };
+  // This is the first uninterrupted crossing, while the old storm's rain
+  // is still easing. A teleport to clear weather would hide the regression.
+  res.clearedStormCues = await p.ev(() => { window.__restoreStormPlay(); return window.__clearedStormCues; });
   res.rows = rel;
   note(`blade: storm ${res.summary.stormRmsBefore} dBFS -> ${res.summary.silenceRms} dBFS (max ${res.summary.silenceMax}) in the 0.5-1.9 s after the break; music audible from +${res.summary.firstMusicAt} s (cue ${res.summary.firstMusicCue}); dusk bed from +${res.summary.firstBedAt} s`);
   // a later visit: cleared, walking back west stays dusk (bed) with the theme
@@ -493,13 +515,24 @@ async function blade() {
   await settle(p, "D4", false);
   await p.page.waitForTimeout(6000);
   res.later = (await sample(p, 0.3))[0];
+  // A complete gust cycle after the flag, including on a later visit. Rain
+  // can still be easing, but storm.tell/gust must never return to the sound.
+  res.laterStormCues = await p.ev(() => {
+    const g = window.__world.game;
+    const cues = [];
+    const play = g.audio.play.bind(g.audio);
+    g.audio.play = (id, ...args) => { if (id.startsWith("storm.")) cues.push(id); return play(id, ...args); };
+    window.__world.advance(60 * 18);
+    g.audio.play = play;
+    return cues;
+  });
   note(`blade later visit (west part, cleared): bed ${res.later.bed}, music ${res.later.music}, rain ${res.later.rain}`);
   res.errors = p.errors;
   res.bad = p.bad;
   res.aborted = p.aborted;
   await p.ctx.close();
   save("blade", res);
-  out.blade = res.summary;
+  out.blade = res;
 }
 
 // --- lamps: every lit shrine shows as a lamp point from the Blade's tip ----------------------
@@ -576,7 +609,58 @@ async function api() {
   out.api = res;
 }
 
-const checks = { smoke, sit, strike, summon, archive, lift, blade, lamps, api };
+async function migration() {
+  dir("migration");
+  const saved = { v: 1, flags: { "migration:keep": true }, rest: { room: "plain", spawn: "shrine" }, sound: false, props: { retained: { cut: true } } };
+  const p = await open("manual", { saved });
+  const normal = await p.ev(() => { const g = window.__world.game; return { room: g.room.def.id, ids: g.roomIds(), data: g.save.data }; });
+  const errors = [...p.errors], bad = [...p.bad];
+  await p.ctx.close();
+  const test = await open("world=test&room=house&manual&mute");
+  const legacy = await test.ev(() => ({ room: window.__world.game.room.def.id, ids: window.__world.game.roomIds() }));
+  errors.push(...test.errors); bad.push(...test.bad);
+  await test.ctx.close();
+  out.migration = { normal, legacy, errors, bad };
+  save("migration", out.migration);
+}
+const checks = { smoke, sit, strike, summon, archive, lift, blade, lamps, api, migration };
 for (const [k, f] of Object.entries(checks)) if (which === k || which === "all") await f();
 await browser.close();
+const failures = [];
+const requirePass = (ok, message) => { if (!ok) failures.push(message); };
+const errorsIn = (obj, path = "") => {
+  for (const [k, v] of Object.entries(obj ?? {})) {
+    if (/^(errors|bad)(-|$)/.test(k)) requirePass(Array.isArray(v) && v.length === 0, `${path}${k}: ${JSON.stringify(v)}`);
+    else if (v && typeof v === "object") errorsIn(v, `${path}${k}.`);
+  }
+};
+errorsIn(out);
+if (out.migration) {
+  const { normal, legacy } = out.migration;
+  requirePass(normal.room === "A1" && !normal.ids.includes("plain"), "migration: phase1 rest must fall back to phase2 dock");
+  requirePass(normal.data.flags["migration:keep"] && normal.data.props.retained.cut && normal.data.sound === false && normal.data.rest.room === "plain", "migration: preserve old progress, sound and rest for rollback");
+  requirePass(legacy.room === "house" && legacy.ids.includes("plain") && !legacy.ids.includes("A1"), "migration: explicit test world must remain accessible");
+}
+if (out.sit) for (const [k, v] of Object.entries(out.sit)) if (v && "stoodUp" in v) requirePass(v.sitting && v.drawn && v.stoodUp && v.satAgain, `sit: ${k} must sit, stand, and sit again on one use`);
+if (out.strike) for (const id of ["D1", "D2", "D3"]) requirePass(out.strike[id]?.playerRatio.fixed1 < 1.15, `strike: ${id} brightens player by 15% or more`);
+if (out.summon) for (const f of out.summon.frames) requirePass(f.inView.every(Boolean), `summon: seals clipped at ${f.at}s`);
+if (out.archive) for (const [k, v] of Object.entries(out.archive)) if (v?.frame) {
+  const expected = k.startsWith("docs-index") ? "/docs/" : k.startsWith("bay-1") ? "/docs/installing-dexclient/" : k.startsWith("bay-2") ? "/docs/dexcode/" : "/docs/about-dex-place/";
+  requirePass(v.frameH1 && v.closed && v.frame.split("?")[0] === expected, `archive: ${k} must load its product's doc and close`);
+  if (v.second) requirePass(v.second.frame.split("?")[0] === "/docs/writing-docs/" && v.second.pressed.filter((p) => p === "true").length === 1, `archive: ${k} second page/selection mismatch`);
+}
+if (out.lift) requirePass(out.lift.summary.muffleSeen > 10 && out.lift.summary.start.muffle >= 0.95 && out.lift.summary.end.muffle <= 0.05, "lift: music must open through a gradual muffle ramp");
+if (out.api) {
+  requirePass(out.api.rebuildCurrent === false && out.api.rebuildNeighbour[1] === true && out.api.rebuildUnknown === false, "api: rebuild boundary failed");
+  requirePass(out.api.stored?.room === "E2" && out.api.stored?.spawn === "west" && out.api.worldHandleReachIns.length === 0, "api: start-place persistence/reach-in failed");
+  for (const [id, a] of Object.entries(out.api.actors)) requirePass(a && a.h === 80 && a.x === a.player[0] && Math.abs(a.y - a.player[1]) < 2, `api: actor not fed in ${id}`);
+}
+if (out.blade) {
+  requirePass(out.blade.summary.crossedAt !== null && out.blade.summary.cleared, "blade: clear trigger not reached");
+  requirePass(out.blade.summary.silenceMax <= -50 && out.blade.summary.rainWindInSilence < 0.001, "blade: storm does not cut to silence");
+  requirePass(out.blade.clearedStormCues.length === 0, `blade: cleared storm cues ${out.blade.clearedStormCues}`);
+  requirePass(out.blade.laterStormCues.length === 0, `blade: later storm cues ${out.blade.laterStormCues}`);
+}
+writeFileSync(`${ROOT}/verdict-${which}.json`, JSON.stringify({ at: new Date().toISOString(), angle, checks: Object.keys(out), failures, passed: failures.length === 0 }, null, 2));
+if (failures.length) throw new Error(failures.join("\n"));
 console.log(JSON.stringify(out, null, 1).slice(0, 4000));

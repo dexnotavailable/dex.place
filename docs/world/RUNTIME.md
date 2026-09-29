@@ -4,12 +4,32 @@ The engine the whole world runs on: the locked scale, the presenter, rooms as da
 streaming, the camera and its modes, the lab's player at world scale, rides, wading and sitting,
 weather and time, ambient life, the music state machine, interaction and panels, pixel matter
 (through the adapter), the save, the story and sound hooks, the travel-time logger, debug and
-touch. Since phase 2 (lane W0) it runs **the round**: a grey-box of all 21 rooms of
+touch. Phase 2 runs **the round**: the authored regions covering all 21 spaces of
 [`WORLD-PLAN.md`](WORLD-PLAN.md) section 3, walkable end to end, with the four shortcuts. The
 original 3-room test world (arrival, plain, house) is kept at `?world=test`. Mobs and bosses are
 out of scope; the arena hooks (terminal states, arena music, the arena clamp, combat zoom) are in.
 
 Status marks: **proven** (built and checked in captures), **in progress**, **proposed**.
+
+## Phase 2 candidate, September 30
+
+Recovered from cloud world commit `24b8f75` and the matching PC snapshot, isolated from
+the PC's uncommitted character work. The authored rooms, composition, controls and motion
+are preserved. The current release record is [`RELEASE-20260930.md`](RELEASE-20260930.md).
+The historical lane results below belong to their recorded runs; they are not a current
+Safari, Samsung, laptop or listening approval.
+
+The recovered cross-lane source includes S1's entry/rest patch, D1's muffle ramp, the Blade
+audio cut and all lamp points, subject lighting isolated from lightning, summon framing,
+product documentation bays, the build-time sprite manifest probe, the seated stand-in and
+the rebuild/setRest story API. Independent source review found and fixed two additional
+issues: standing now resets a kit bench's seated state, and `blade:cleared` stops the storm
+driver's sound cues even while visual rain is still easing. Source probes cover both.
+Normal/test room-graph selection also prevents a saved phase 1 rest from stranding a returning
+visitor in the legacy test world, while preserving the old save for rollback.
+
+The round, sound and ship-fix recorders now produce failure verdicts. CPU/SwiftShader runs
+are source verification; delivery's D3D and real-device runs provide the hardware boundaries.
 
 ## Run it
 
@@ -18,8 +38,8 @@ npx vite --port 24000 --strictPort --host 127.0.0.1      # W0's ports: 24000-240
 sh src/world/tools/restart-capture.sh 24001              # capture-only server (no HMR, no watching)
 ```
 
-Open `http://127.0.0.1:24000/world/`. Dev-only: `world/index.html` is not a build input
-(`vite.config.ts` is not this lane's), so `npm run build` does not ship it yet. The capture
+Open `http://127.0.0.1:24000/world/`. `world/index.html` is a build input and `npm run build`
+writes `dist/world/index.html`. Build inputs remain owned by the shared integration. The capture
 server (`src/world/tools/vite.capture.config.mjs`) keeps other lanes' edits from reloading a page
 mid-run; restart it after your own edits.
 
@@ -374,8 +394,9 @@ outside `src/world/sound/` was edited. What it changes:
 - Effects load after the bed has data, two at a time at low fetch priority, footsteps first, and
   pause while a music entry waits for its data, so the theme gets a phone's bandwidth first.
 
-Apply with `git apply review/world/phase2/S1/w0-handoff/audio.ts.patch` (it applies cleanly to the current file: `git apply --check` passes), then
-`node src/world/sound/verify.mjs --port <dev port>` should read 29 of 29.
+The patch was incorporated by the recovered cross-lane fix. Do not apply it again.
+`node src/world/sound/verify.mjs --port <dev port>` checks the current source and now exits
+nonzero when a recorded check fails; its historical 29-of-29 result above is not a new run.
 
 Nothing here is approved by ear. The listening list for Dex: the theme's entry points (A1, D4,
 E3) and fade lengths, every bed, the bells, the colossus footfall, the horn, and the footsteps.
@@ -1026,22 +1047,13 @@ handle today.
   proven; all three cues have files.)
 - Real Rosace sprites, the real map on the banner, donor and account data, the real ferry ride,
   listening approval for all sound (the beds are built: S1).
-- S1's ask (W0, `audio.ts`): apply `review/world/phase2/S1/w0-handoff/audio.ts.patch`: swell on
-  `playing`, rescale rather than cancel during an entry, re-arm after a rest that ended in
-  silence, effects after the theme (see "Sound"; proven 29 of 29 on the patched server).
-- S1's asks of R-D (room data, not S1's paths): D1 `muffle: 1` is a plain number, so "Opening up"
-  never ramps; section 9 wants `{ y0, y1, from: 1, to: 0 }` over the lift ride. D4's storm doesn't
-  cut off in sound: the total output only falls from about -30 to -35 dB and the procedural rain
-  takes about 8 s to fade, so section 4's "the storm's sound cuts off, two seconds of silence" isn't
-  heard. After `blade:cleared`, D4's west part keeps the storm bed under clear dusk.
-- From I1's integrated round (owners in brackets): S1's `audio.ts` patch is still unapplied
-  (W0); strikes still brighten the player in D1 to D3 (W0's sky-only strike); the summon close-up
-  hides the seal ring (W0); the archive bays can't open their own product's docs (W0's `ui.ts`);
-  D1's "Opening up" muffle ramp and D4's storm sound cut-off (R-D's room data); from the Blade's
-  tip only the yard's lamp is in view of the lit shrines (R-D); she stands on benches (no sit pose,
-  character lane); on a phone the touch E button sits over the ending's lamps while the bench is
-  in reach.
+- Cross-lane source fixes are incorporated (see the current candidate above). Final release
+  verification must use their explicit verdicts and inspect every region at desktop and phone
+  size, including an actual evening ending with lamps rather than the morning sit fixture.
 - Not tested: iOS Safari. Music and beds call `play()` from a timer outside the Enter gesture,
   and each music entry makes a new element; iOS may block that. Needs a real device.
-- Licensing, for Dex: `theme-b` is not redistributable under Suno's terms (its ATTRIBUTION says
-  so) but ships in `public/` of a public repo; it was already public under `legacy/`.
+- `theme-b` retains the existing paid-use provenance and Dex-selected arrangement. Its
+  attribution says it is not a CC0/redistributable asset library, rather than claiming the
+  site's playback is forbidden. Suno's linked paid-use guidance permits video-game use;
+  private generation/download provenance remains outside this public repo. See the release
+  record for the asset audit and the boundary of that check.

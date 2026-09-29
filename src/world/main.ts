@@ -77,13 +77,18 @@ async function boot(): Promise<void> {
   const assets = await loadPlayer(r);
   const input = new Input(canvas);
   const touch = new Touch(input, touchEl);
-  const rooms = [...found.rooms.values()];
+  // Phase 1 used the same save key and could rest in arrival/plain/house.
+  // Those rooms are now an explicit test world, so an old rest must not
+  // strand a returning public visitor there. Keep the save itself intact.
+  const testMode = q.get("world") === "test";
+  const rooms = [...found.rooms.values()].filter((d) => (found.source.get(d.id) === "test") === testMode);
+  const roomIds = new Set(rooms.map((d) => d.id));
   const room = q.get("room");
-  const home = q.get("world") === "test" ? { room: "arrival", spawn: "start" } : { room: "A1", spawn: "start" };
-  const start = room && found.rooms.has(room) ? { room, spawn: q.get("spawn") ?? "" } : home;
+  const home = testMode ? { room: "arrival", spawn: "start" } : { room: "A1", spawn: "start" };
+  const start = room && roomIds.has(room) ? { room, spawn: q.get("spawn") ?? "" } : home;
   const game = new WorldGame(r, input, touch, assets, { rooms, start, engine, source: found.source, route: [...ROUTE] });
   // ?room= wins over the saved rest place (tools and links)
-  if (room && found.rooms.has(room) && game.room.def.id !== room) game.teleport(room, q.get("spawn") ?? "");
+  if (room && roomIds.has(room) && game.room.def.id !== room) game.teleport(room, q.get("spawn") ?? "");
   if (q.has("debug")) game.debug = true;
   game.manual = q.has("manual");
   if (q.has("mute")) game.save.data.sound = false;

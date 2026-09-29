@@ -362,6 +362,7 @@ export class WorldGame {
   }
 
   private enter(roomId: string, spawnId: string, first = false): void {
+    if (this.sitting) this.stand();
     const room = this.stream.get(roomId);
     room.build();
     this.room = room;
@@ -579,8 +580,12 @@ export class WorldGame {
   }
 
   private stand(): void {
+    const id = this.sitting?.id;
     this.sitting = null;
     this.camera.override = null;
+    // Keep the kit bench's state in step with the player. Otherwise moving
+    // away leaves it "sat", and the next use only stands the empty bench up.
+    if (id) this.room.pixel?.world.find(id)?.act("stand");
   }
 
   // --- input ---------------------------------------------------------------------------

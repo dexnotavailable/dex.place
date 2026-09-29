@@ -28,6 +28,7 @@
 import { createRequire } from "node:module";
 import { mkdirSync, writeFileSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { browserOptions } from "../tools/browser.mjs";
 const require = createRequire(new URL("../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const arg = (n, d) => {
@@ -70,7 +71,7 @@ for (const f of [...walk("src/world"), ...walk("src/pixel")]) {
 emitted.delete("step"); // footsteps go through the surface table
 for (const fam of families) for (const k of ["hit", "break"]) emitted.add(`${fam}.${k}`);
 
-const browser = await chromium.launch({ channel: "msedge", args: ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required"] });
+const browser = await chromium.launch(browserOptions);
 const errors = [];
 const net = [];
 const notFound = [];
@@ -593,10 +594,11 @@ if (SHOTS) {
 const legacy = net.filter((n) => n.url.includes("/legacy/"));
 const bad = net.filter((n) => n.status >= 400);
 check("no request to /legacy/, no failed audio request", legacy.length === 0 && bad.length === 0, { requests: net.length, legacy: legacy.slice(0, 5), bad: bad.slice(0, 5) });
-check("no page errors", errors.filter((e) => !/Failed to load resource/.test(e)).length === 0, { errors: errors.slice(0, 8), notFound: [...new Set(notFound)].slice(0, 8) });
+check("no page errors or 404s", errors.length === 0 && notFound.length === 0, { errors: errors.slice(0, 8), notFound: [...new Set(notFound)].slice(0, 8) });
 
 
 writeFileSync(join(OUT, "verify.json"), JSON.stringify({ at: new Date().toISOString(), port: PORT, passed: results.filter((r) => r.ok).length, of: results.length, results }, null, 1));
 writeFileSync(join(OUT, "samples.json"), JSON.stringify(charts));
 console.log(`${results.filter((r) => r.ok).length} of ${results.length} pass`);
 await browser.close();
+if (results.some((r) => !r.ok)) process.exitCode = 1;
