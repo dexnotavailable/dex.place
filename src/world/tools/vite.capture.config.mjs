@@ -6,11 +6,23 @@
 // world's panels (/docs/<page>/, /downloads/, /donate/) load real pages here too
 // instead of 404s.
 import { fileURLToPath } from "node:url";
+import { realpathSync } from "node:fs";
 import { sitePages } from "../../site/build/plugin.ts";
+const root = fileURLToPath(new URL("../../..", import.meta.url));
 export default {
-  root: fileURLToPath(new URL("../../..", import.meta.url)),
+  root,
   appType: "mpa",
-  plugins: [sitePages()],
-  server: { hmr: false, watch: null },
+  plugins: [sitePages(), {
+    name: "world-verifier-identity",
+    configureServer(server) {
+      server.middlewares.use("/__world-verifier", (_req, res) => {
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify({ root, nonce: process.env.WORLD_VERIFY_NONCE ?? null }));
+      });
+    },
+  }],
+  // Isolated D-backed worktrees can reuse installed dependencies via a
+  // junction. Permit that exact dependency directory for font requests.
+  server: { hmr: false, watch: null, fs: { allow: [root, realpathSync(new URL("../../../node_modules", import.meta.url))] } },
   logLevel: "warn",
 };

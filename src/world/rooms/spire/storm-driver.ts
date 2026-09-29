@@ -53,7 +53,9 @@ class StormDriver extends StubProp {
   update(w: PropWorld): void {
     super.update(w);
     this.own += 1 / 60;
-    if (this.followRain) this.strength = Math.min(1, w.rain / 0.4);
+    // The visual rain eases asymptotically. It never reaches exactly zero,
+    // so it cannot decide whether the cleared Blade still emits storm cues.
+    if (this.followRain) this.strength = w.save.get("blade:cleared") ? 0 : Math.min(1, w.rain / 0.4);
     STORM.frame++;
     STORM.flash = w.flash;
     STORM.strength = this.strength;

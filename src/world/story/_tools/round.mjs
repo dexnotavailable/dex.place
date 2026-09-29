@@ -26,6 +26,8 @@
 import { createRequire } from "node:module";
 import { mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
+import { browserOptions, angle } from "../../tools/browser.mjs";
+import { assessRound } from "../../tools/round-verdict.mjs";
 const require = createRequire(new URL("../../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const arg = (n, d) => {
@@ -40,7 +42,7 @@ const FFMPEG = process.env.FFMPEG ?? "ffmpeg";
 mkdirSync(`${OUT}/beats`, { recursive: true });
 const BOT = readFileSync(new URL("../../tools/bot.js", import.meta.url), "utf8");
 
-const browser = await chromium.launch({ channel: "msedge", args: ["--use-angle=d3d11", "--enable-gpu", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required"] });
+const browser = await chromium.launch(browserOptions);
 const page = await browser.newPage({ viewport: { width: VW, height: VH } });
 const errors = [];
 page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
@@ -751,6 +753,9 @@ for (const id of ids) {
 
 writeFileSync(`${OUT}/round.json`, JSON.stringify(report, null, 1));
 await browser.close();
+const { failures, maxFlashes } = assessRound(report);
+writeFileSync(`${OUT}/verdict.json`, JSON.stringify({ at: new Date().toISOString(), angle, sourceOnly: true, rooms: ids.length, beats: beats.length, maxFlashes, failures, passed: failures.length === 0 }, null, 2));
+if (failures.length) throw new Error(failures.join("\n"));
 note("encoding");
 encode();
 note(`done: first round ${report.first.time} s, ${errors.length} errors`);
