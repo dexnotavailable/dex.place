@@ -37,7 +37,18 @@ function drawWater(c: Prop<Refs>): void {
 
 export const font = defineRecipe<{ width: number }, Refs>({
   id: "font",
+  breakage: "heal",
   reason: "Holy water at the chapel door: a still surface that answers every movement near it (ripples), and a quiet place to stop.",
+  demo: {
+    w: 4, indoor: true,
+    script: [
+      { label: "still water", wait: 1 },
+      { label: "slash: splash and ripples", hit: "slash", from: -0.7, wait: 2 },
+      { label: "heavy: the stone chips", hit: "heavy", from: -1.0, wait: 2 },
+      { label: "dash wind over it", hit: "wind", from: -1.4, wait: 2 },
+      { label: "mends", wait: 5 },
+    ],
+  },
   defaults: { width: 0.62 },
   build(b, p) {
     const u = (f: number): number => b.u(f);
@@ -70,8 +81,11 @@ export const font = defineRecipe<{ width: number }, Refs>({
         if (c.rand() < dt * 0.25) R.ripples.disturb(c.rand() * R.ripples.n, -3, 2);
         const [wx] = c.world.windAt(c.x, c.y - c.params.H * 0.8);
         if (Math.abs(wx) > 60) R.ripples.disturb(c.rand() * R.ripples.n, wx * 0.004 * (c.rand() - 0.3), 2);
-        R.ripples.step(dt);
-        drawWater(c);
+        // redraw only while the surface moves (a still font costs nothing)
+        if (R.ripples.step(dt) > 0.02 || !R.water.tag["drawn"]) {
+          drawWater(c);
+          R.water.tag["drawn"] = true;
+        }
       },
       hit(c, h) {
         const R = c.refs;
