@@ -623,7 +623,95 @@ async function migration() {
   out.migration = { normal, legacy, errors, bad };
   save("migration", out.migration);
 }
-const checks = { smoke, sit, strike, summon, archive, lift, blade, lamps, api, migration };
+// Optional B4 branch: walk/jump from the shelter to the summit. Positions
+// are observed after real inputs; no placement/teleport once the route starts.
+async function stonetop() {
+  const d = dir("stonetop");
+  const p = await open("room=B2&spawn=shrine&manual&fresh&mute");
+  await p.ev(() => window.__world.begin());
+  await settle(p, "B2");
+  const route = await p.ev(() => {
+    const w = window.__world, g = w.game, b = g.player.body;
+    const o = g.room.def.origin;
+    const pos = () => ({ x: +(o[0] + b.x / 80).toFixed(3), y: +(o[1] - b.y / 80).toFixed(3), grounded: b.grounded, area: g.area?.id });
+    const steer = (x) => { const dx = x - (o[0] + b.x / 80); w.release("left"); w.release("right"); if (Math.abs(dx) > 0.045) w.press(dx < 0 ? "left" : "right"); };
+    const walk = (x) => { for (let n = 0; n < 180; n++) { steer(x); g.realTick(); if (Math.abs(pos().x - x) < 0.08) break; } w.release("left"); w.release("right"); for (let n = 0; n < 12; n++) g.realTick(); };
+    const hops = [];
+    const jump = (x, y) => {
+      const from = pos();
+      // Discriminate reach from driver timing with the actual controller,
+      // collision and input classes. Cosmetic events are silent in the search;
+      // the selected inputs are then executed on the real world below.
+      let plan = null;
+      const noop = () => {};
+      const cosmetic = new Proxy({}, { get: () => noop });
+      for (const lead of [0, 3, 6, 9]) for (const second of [16, 20, 22, 26, 30]) {
+        if (plan) break;
+        const player = new g.player.constructor(g.player.sprite, g.player.t, { vfx: cosmetic, feel: cosmetic, camera: cosmetic }, [b.x, b.y]);
+        player.body.grounded = b.grounded;
+        const collision = new g.room.collision.constructor(g.room.def.w, g.room.def.h);
+        collision.solids = g.room.collision.solids.map((s) => ({ ...s }));
+        collision.oneWays = g.room.collision.oneWays.map((s) => ({ ...s }));
+        const input = Object.create(Object.getPrototypeOf(g.input));
+        input.held = new Map([...g.input.held.keys()].map((a) => [a, new Set()]));
+        input.pressedAt = new Map(); input.releasedAt = new Map(); input.tick = 0;
+        let airborne = false;
+        for (let n = -lead; n < 150; n++) {
+          const dx = x - (o[0] + player.body.x / 80);
+          input.up("left", "trial"); input.up("right", "trial");
+          if (Math.abs(dx) > 0.045) input.down(dx < 0 ? "left" : "right", "trial");
+          if (n === 0 || n === second) input.down("jump", "trial");
+          if (n === second - 2 || n === second + 20) input.up("jump", "trial");
+          player.update(input, collision, []); input.tick++;
+          if (n >= 0 && !player.body.grounded) airborne = true;
+          if (airborne && n > second && player.body.grounded) {
+            const py = o[1] - player.body.y / 80;
+            const px = o[0] + player.body.x / 80;
+            if (Math.abs(py - y) < 0.05 && Math.abs(px - x) < 0.6) plan = { lead, second };
+            break;
+          }
+        }
+      }
+      if (!plan) { hops.push({ from, target: [x, y], reached: false, reason: "no double-jump timing found by actual-controller discriminator" }); return false; }
+      let airborne = false;
+      let peak = from.y;
+      const trace = [];
+      w.release("jump");
+      for (let n = -plan.lead; n < 150; n++) {
+        steer(x);
+        if (n === 0 || n === plan.second) w.press("jump");
+        if (n === plan.second - 2 || n === plan.second + 20) w.release("jump");
+        g.realTick();
+        peak = Math.max(peak, pos().y);
+        if ([0, 20, 22, 35, 45, 55, 70].includes(n)) trace.push({ tick: n, ...pos() });
+        if (n >= 0 && !b.grounded) airborne = true;
+        if (airborne && n > plan.second && b.grounded) break;
+      }
+      w.release("left"); w.release("right"); w.release("jump");
+      const to = pos();
+      const reached = to.grounded && Math.abs(to.y - y) < 0.05 && Math.abs(to.x - x) < 0.6;
+      hops.push({ from, target: [x, y], to, reached, peak, trace, plan, moves: ["jump", "double-jump"] });
+      return reached;
+    };
+    for (let n = 0; n < 60; n++) g.realTick();
+    const steps = [
+      [159.0, 159.0, 3.3], [158.5, 157.65, 4.6], [157.95, 159.9, 5.3],
+      [166.6, 166.6, 6.8], [167.35, 169.1, 8.3], [169.1, 167.35, 9.8],
+      [166.05, 163.9, 11.3], [162.55, 160.95, 12.8], [160.95, 162.55, 14.3],
+      [163.95, 165.6, 15.8], [165.6, 165.6, 17.3],
+    ];
+    for (const [takeoff, x, y] of steps) { walk(takeoff); if (!jump(x, y)) break; }
+    w.advance(180);
+    return { hops, expectedHops: steps.length, end: pos() };
+  });
+  await p.page.screenshot({ path: `${d}/route-end.png` });
+  route.errors = p.errors; route.bad = p.bad;
+  save("stonetop", route);
+  await p.ctx.close();
+  out.stonetop = route;
+  note(`stonetop: ${route.hops.filter((h) => h.reached).length}/${route.expectedHops} double-jump ledges, end ${JSON.stringify(route.end)}`);
+}
+const checks = { smoke, sit, strike, summon, archive, lift, blade, lamps, api, migration, stonetop };
 for (const [k, f] of Object.entries(checks)) if (which === k || which === "all") await f();
 await browser.close();
 const failures = [];
@@ -635,6 +723,7 @@ const errorsIn = (obj, path = "") => {
   }
 };
 errorsIn(out);
+if (out.stonetop) requirePass(out.stonetop.hops.length === out.stonetop.expectedHops && out.stonetop.hops.every((h) => h.reached && h.to.grounded) && out.stonetop.end.area === "B4" && out.stonetop.end.grounded && Math.abs(out.stonetop.end.y - 17.3) < 0.05, "stonetop: optional double-jump route must reach the grounded summit through real input");
 if (out.migration) {
   const { normal, legacy } = out.migration;
   requirePass(normal.room === "A1" && !normal.ids.includes("plain"), "migration: phase1 rest must fall back to phase2 dock");
