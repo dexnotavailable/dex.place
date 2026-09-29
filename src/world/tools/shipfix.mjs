@@ -398,6 +398,7 @@ async function sample(p, secs, every = 0.25) {
           rain: val(a.rain?.gain),
           wind: val(a.wind?.gain),
           flag: g.save.get("blade:cleared"),
+          rms: window.__rms ? window.__rms() : null,
         };
       }),
     );
@@ -444,7 +445,98 @@ async function lift() {
   out.lift = res.summary;
 }
 
-const checks = { smoke, sit, strike, summon, archive, lift };
+// --- blade: the storm's sound cuts off at the break, two seconds of silence, then the swell ----
+async function blade() {
+  const d = dir("blade");
+  const res = {};
+  const p = await open("fresh&go");
+  await p.page.waitForTimeout(1500);
+  await p.ev(() => { const g = window.__world.game; for (let n = 1; n <= 4; n++) g.save.set(`shrine:${n}`, true); for (const k of ["cut:map-banner", "cut:rope-bridge", "lever:culvert", "keeper:greeted", "lever:express"]) g.save.set(k, true); window.__world.teleport("D4", "west"); });
+  await settle(p, "D4", false);
+  await tapMaster(p);
+  // stand in the storm long enough for its sound to settle, then walk east over the break with the real arrow key
+  await p.page.waitForTimeout(8000);
+  await p.page.keyboard.down("ArrowRight");
+  const rows = [];
+  const t0 = Date.now();
+  let crossedAt = null;
+  while ((Date.now() - t0) / 1000 < 26) {
+    const r = (await sample(p, 0.1, 0.1))[0];
+    r.wall = +((Date.now() - t0) / 1000).toFixed(2);
+    rows.push(r);
+    if (crossedAt === null && r.area === "D4-break") crossedAt = r.wall;
+    if (crossedAt !== null && r.wall - crossedAt > 1.2) await p.page.keyboard.up("ArrowRight");
+    if (r.wall > 3 && crossedAt === null && r.x > 300) break;
+  }
+  await p.page.screenshot({ path: `${d}/D4-after-break.png` });
+  const rel = rows.filter((r) => crossedAt !== null).map((r) => ({ ...r, since: +(r.wall - crossedAt).toFixed(2) }));
+  const before = rel.filter((r) => r.since < 0 && r.since > -2);
+  const gap = rel.filter((r) => r.since >= 0.5 && r.since <= 1.9);
+  const firstMusic = rel.find((r) => r.since > 0 && r.musicGain !== null && r.musicGain > 0.005);
+  const firstBed = rel.find((r) => r.since > 0 && r.bed === "dusk" && r.bedGain > 0.005);
+  const avg = (a, k) => +(a.reduce((s, r) => s + r[k], 0) / Math.max(1, a.length)).toFixed(1);
+  res.summary = {
+    crossedAt,
+    stormRmsBefore: avg(before, "rms"),
+    silenceRms: avg(gap, "rms"),
+    silenceMax: Math.max(...gap.map((r) => r.rms)),
+    rainWindInSilence: Math.max(...gap.map((r) => (r.rain ?? 0) + (r.wind ?? 0))),
+    firstMusicAt: firstMusic?.since ?? null,
+    firstMusicCue: firstMusic?.cue ?? null,
+    firstBedAt: firstBed?.since ?? null,
+    cleared: rows[rows.length - 1].flag,
+  };
+  res.rows = rel;
+  note(`blade: storm ${res.summary.stormRmsBefore} dBFS -> ${res.summary.silenceRms} dBFS (max ${res.summary.silenceMax}) in the 0.5-1.9 s after the break; music audible from +${res.summary.firstMusicAt} s (cue ${res.summary.firstMusicCue}); dusk bed from +${res.summary.firstBedAt} s`);
+  // a later visit: cleared, walking back west stays dusk (bed) with the theme
+  await p.ev(() => window.__world.teleport("D4", "west"));
+  await settle(p, "D4", false);
+  await p.page.waitForTimeout(6000);
+  res.later = (await sample(p, 0.3))[0];
+  note(`blade later visit (west part, cleared): bed ${res.later.bed}, music ${res.later.music}, rain ${res.later.rain}`);
+  res.errors = p.errors;
+  res.bad = p.bad;
+  res.aborted = p.aborted;
+  await p.ctx.close();
+  save("blade", res);
+  out.blade = res.summary;
+}
+
+// --- lamps: every lit shrine shows as a lamp point from the Blade's tip ----------------------
+async function lamps() {
+  const d = dir("lamps");
+  const res = {};
+  for (const [vname, vo] of [["1080p", { w: 1920, h: 1080 }], ["1440p", { w: 2560, h: 1440 }], ["phone", { w: 844, h: 390, dpr: 3, mobile: true }]]) {
+    const p = await open("manual&fresh&mute", vo);
+    await p.ev(() => window.__world.begin());
+    for (const lit of vname === "1080p" ? [0, 3, 6] : [6]) {
+      await p.ev((lit) => {
+        const g = window.__world.game;
+        for (let n = 1; n <= 6; n++) g.save.set(`shrine:${n}`, n <= lit);
+        g.save.set("blade:cleared", true);
+        window.__world.teleport("D4", "east");
+      }, lit);
+      await settle(p, "D4");
+      await placeAt(p, 313.2);
+      // stand still for the vista hold, and let the storm driver read the save
+      await p.ev(() => window.__world.advance(60 * 5));
+      const s = await p.ev(() => {
+        const g = window.__world.game;
+        const [cx, cy] = g.camera.view();
+        return { view: [cx, cy], zone: +g.camera.zoneWeight.toFixed(2), lit: [1, 2, 3, 4, 5, 6].filter((n) => g.save.get(`shrine:${n}`)) };
+      });
+      await p.page.screenshot({ path: `${d}/D4-tip-${lit}lit-${vname}.png` });
+      res[`${vname}-${lit}`] = s;
+    }
+    res[`errors-${vname}`] = p.errors;
+    res[`bad-${vname}`] = p.bad;
+    await p.ctx.close();
+  }
+  save("lamps", res);
+  out.lamps = res;
+}
+
+const checks = { smoke, sit, strike, summon, archive, lift, blade, lamps };
 for (const [k, f] of Object.entries(checks)) if (which === k || which === "all") await f();
 await browser.close();
 console.log(JSON.stringify(out, null, 1).slice(0, 4000));

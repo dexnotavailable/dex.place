@@ -10,6 +10,8 @@ the critics can say whether the round moved; the shuffle then keeps ours, prev a
 --confounds replaces the confound list with the json's 'confounds' (a round's own list).
 --under-tag (round 4) adds ours before the paint-over (same raw, that tag) as one more slot, 'under', kept apart from
 ours, prev and the control like they are; letters run to I.
+--alt-raw / --alt-tag (round 5, ESCALATION 3) add the other lever mix's stills (another raw) as one more slot, 'alt',
+kept apart from ours, prev and the control; the critics can overturn the builder's side-by-side pick.
 
 Writes review/rosace/art/drive9/<round>/ (git-ignored: the refs are third-party and never committed):
   <shot>_px144_x3.png, _x1.png   ours and the control beside refs 07/08/09/04 native (137-158 px figures)
@@ -124,7 +126,7 @@ def webp_rt(im, q=90):
 
 def shuffle(seed, slots=None):
     slots = slots or SLOTS
-    ours = [x for x in ("ours", "control", "prev", "under") if x in slots]
+    ours = [x for x in ("ours", "control", "prev", "under", "alt") if x in slots]
     while True:
         o = slots[:]
         random.Random(seed).shuffle(o)
@@ -145,13 +147,15 @@ def main():
     ap.add_argument("--confounds", default=None)
     ap.add_argument("--under-tag", default=None, help="round 4: add the same raw's stills under this tag (the render "
                                                         "before the paint-over) as one more blind slot, 'under'")
+    ap.add_argument("--alt-raw", default=None, help="round 5: the other lever mix's raw root (one more blind slot, 'alt')")
+    ap.add_argument("--alt-tag", default="R5")
     ap.add_argument("--files", default=None, help="comma list of this round's finish/face/post files (next to this "
                                                    "script or absolute), recorded in key.json by sha1")
     a = ap.parse_args()
     out = os.path.join(REPO, "review", "rosace", "art", "drive9", a.round)
     os.makedirs(os.path.join(out, "verdicts"), exist_ok=True)
-    slots = SLOTS + (["prev"] if a.prev_raw else []) + (["under"] if a.under_tag else [])
-    letters_all = "ABCDEFGHI"[:len(slots)]
+    slots = SLOTS + (["prev"] if a.prev_raw else []) + (["under"] if a.under_tag else []) + (["alt"] if a.alt_raw else [])
+    letters_all = "ABCDEFGHIJ"[:len(slots)]
     order, seed = shuffle(a.seed, slots)
     mapping = {letters_all[i]: who for i, who in enumerate(order)}
     confounds = json.load(open(a.confounds, encoding="utf-8"))["confounds"] if a.confounds else CONFOUNDS
@@ -213,6 +217,10 @@ def main():
         key["_doc"] += (" 'under' = ours before the hand-authored paint-over (the same render and finish, tag %s), so "
                         "the critics can judge what the paint-over adds." % a.under_tag)
         key["sources"]["under"] = os.path.join(a.raw, "<shot>", "px<N>", a.under_tag, "still_ground.png")
+    if a.alt_raw:
+        key["_doc"] += (" 'alt' = the other lever mix of this round (ESCALATION 3: %s, tag %s), finished and painted the "
+                        "same way; 'ours' is the builder's side-by-side pick." % (a.alt_raw, a.alt_tag))
+        key["sources"]["alt"] = os.path.join(a.alt_raw, "<shot>", "px<N>", a.alt_tag, "still_ground.png")
     if a.prev_raw:
         key["_doc"] += (" 'prev' = the previous round's drive-9 stills (%s, tag %s), so the critics can judge whether "
                         "this round moved." % (a.prev_raw, a.prev_tag))
@@ -230,6 +238,10 @@ def main():
                 p = ours_path(a.raw, a.under_tag, shot, px)
                 panels["under"] = WS.on_bg(crop(Image.open(p).convert("RGBA")))
                 info["under"] = {"still": p, "still_sha1": sha(p)}
+            if a.alt_raw:
+                p = ours_path(a.alt_raw, a.alt_tag, shot, px)
+                panels["alt"] = WS.on_bg(crop(Image.open(p).convert("RGBA")))
+                info["alt"] = {"still": p, "still_sha1": sha(p)}
             if a.prev_raw:
                 p = ours_path(a.prev_raw, a.prev_tag, shot, px)
                 panels["prev"] = WS.on_bg(crop(Image.open(p).convert("RGBA")))
@@ -256,7 +268,7 @@ def main():
                 key["sheets"][name] = {L: dict(who=mapping[L], **info[mapping[L]]) for L in letters}
             if shot == "idle" and px == 144:
                 diag = dict(panels)
-                for w_ in ("ours", "control", "prev", "under"):
+                for w_ in ("ours", "control", "prev", "under", "alt"):
                     if w_ in diag:
                         diag[w_] = webp_rt(panels[w_])
                 sh = WS.sheet([WS.zoom(diag[mapping[L]], 3) for L in letters], letters,

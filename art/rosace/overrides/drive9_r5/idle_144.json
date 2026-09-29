@@ -41,7 +41,16 @@
   "s2": "#5a4e84",
   "s3": "#8a7cb4",
   "g8": "#c291cf",
-  "g9": "#d6b0dc"
+  "g9": "#d6b0dc",
+  "J": "#7a3c4a",
+  "Wd": "mat:white@0.3",
+  "O": "#5a2c3a",
+  "G": "mat:gold@0.75",
+  "g": "mat:gold@0.35",
+  "t1": "#1d2258",
+  "t2": "#3f2f82",
+  "t3": "#6c42a4",
+  "t4": "#a66cc0"
  },
  "layers": [
   {
@@ -604,6 +613,82 @@
    ],
    "port": true,
    "why": "Head and hair 4: 'a lavender sheen arc across the crown (1 px highlight line)'."
+  },
+  {
+   "name": "fist",
+   "kind": "stamp",
+   "at": [
+    77,
+    67
+   ],
+   "port": true,
+   "why": "Body critic (round 4, arms and hands 6: 3.4; grip 8: 4.5): 'no hand is visible on the haft, so the glaive floats ... show a 4-5 px fist high on the haft with a gold cuff so the grip reads at 144 and at 80'; the confound note: ours lacks the integrated chain's constructed hand stamps. A 6x6 fist on the haft just under the disc (the render's wrist_left at 81,70): back of the hand to camera, lit from the upper right, a 1 px knuckle crease (4), a warm dark outline (O), a 2 px gold cuff where the wrist enters from the lower left (the forearm runs to the elbow at 67,80). Built the way HD-P01 constructs a fist (palm box, knuckle line, wrist step), drawn by hand.",
+   "rows": [
+    ".OOO..",
+    "O211O.",
+    "O2112O",
+    "O3422O",
+    "GO343O",
+    "GGOOO."
+   ]
+  },
+  {
+   "name": "hip_hand",
+   "kind": "stamp",
+   "at": [
+    29,
+    109
+   ],
+   "port": true,
+   "why": "Body critic (arms and hands 6): 'the free hand is a detached blue claw at the hip ... put the other hand on the hip with the elbow out'; the claw was the hair tail's azure tips over the hand (now periwinkle, r5_finish). The hand on the hip is drawn as its own shape: back of the hand, fingers grouped and pointing down the hip, one finger split (HD-N02: at most two separations), a warm dark outline against the hip skin (wrist_right at 31,111).",
+   "rows": [
+    "OOO...",
+    "O21O..",
+    "O211O.",
+    "O3212O",
+    ".O322O",
+    ".O3O3O",
+    "..O3O.",
+    "...O.."
+   ]
+  },
+  {
+   "name": "tail_tips",
+   "kind": "matbox",
+   "box": [
+    15,
+    118,
+    52,
+    142
+   ],
+   "on": [
+    "hairtip"
+   ],
+   "keys": [
+    "t1",
+    "t2",
+    "t3",
+    "t4"
+   ],
+   "port": true,
+   "why": "Body critic (round 4, arms and hands 6): 'the free hand is a detached blue claw at the hip'. It is the hair tail's azure tips fanning under the hip hand. Inside the hip box they take the hair's own violet ramp by value rank (the tips higher up keep the azure, DESIGN's identity)."
   }
- ]
+ ],
+ "authored_on": {
+  "still_sha1": "cccb2e2c13f891b3b7e8ff83536cf9c414b2c1a2",
+  "canvas": [
+   133,
+   203
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5x/idle/px144/R5xu"
+ },
+ "ported_on": {
+  "still_sha1": "90a60553961505cbc4427be04ac9a05079b99201",
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5/idle/px144/R5u",
+  "offset": [
+   2,
+   0
+  ],
+  "how": "head-skin mask overlap (r5_paint.head_offset)"
+ }
 }

@@ -6,20 +6,20 @@
   "3": "#e4b3a0",
   "4": "#d99c8b",
   "5": "#c98579",
-  "K": "#1b1024",
+  "K": "#150c1e",
   "k": "#4a2c44",
-  "A": "#2c3b80",
-  "B": "#3b4f98",
-  "C": "#2e3f7e",
+  "A": "#34307a",
+  "B": "#465a98",
+  "C": "#6078b0",
   "D": "#86b8ee",
-  "H": "#eef6ff",
-  "W": "#dde2f0",
-  "w": "#d3d7e8",
-  "L": "#a0606c",
-  "R": "#e89c9a",
-  "r": "#eeb6aa",
-  "M": "#7e3f4c",
-  "m": "#b0606a",
+  "H": "#b8cce6",
+  "W": "#dcdfec",
+  "w": "#c4c6da",
+  "L": "#b27a78",
+  "R": "#e2928f",
+  "r": "#eab0a4",
+  "M": "#8a4452",
+  "m": "#b86a70",
   "n": "#d4927f",
   "b": "#6e5a9a",
   "g0": "#1c1733",
@@ -36,7 +36,11 @@
   "f3": "#e6e2e9",
   "l1": "#0c0920",
   "l3": "#4d4392",
-  "l4": "#6456ac"
+  "l4": "#6456ac",
+  "g8": "#c291cf",
+  "g9": "#d6b0dc",
+  "J": "#7a3c4a",
+  "Wd": "mat:white@0.3"
  },
  "layers": [
   {
@@ -68,23 +72,23 @@
    "name": "eye",
    "kind": "stamp",
    "at": [
-    87,
-    32
+    85,
+    31
    ],
    "over": [
     "skin",
     "hair"
    ],
-   "why": "Face critic 2: 'the lash mass with an outer flick, a dark-to-light iris, a catchlight'; in profile the eye is a wedge: the lash sweeps back into a flick, the iris is a half-oval at the front. A two-row lash (the first try) read as a dark slab at 144, so the lash is one row plus the flick.",
+   "port": true,
    "rows": [
-    "K.....",
-    ".KKKKk",
-    "..wAA.",
-    "...BH.",
-    "...DC.",
-    "......"
+    "KK.....",
+    ".KKKKK.",
+    "..KKKKk",
+    "..wAAB.",
+    "...BC..",
+    "...H..."
    ],
-   "port": true
+   "why": "Face critic (round 4, face 2): 'narrow, slanted almond eyes with a heavy 2-3 px dark upper-lash block, a dark-to-warm iris ramp and a small catchlight; make it about 1 px narrower and tilted up at the outer corner, a 2 px near-black upper-lash block running 1 px past the outer corner, an iris of deep indigo on top, desaturated blue in the middle and a 1 px pale lower catchlight; drop the pure cyan; lift the lid 1 px'. N1 (face 2, consistency): the same almond as the idle, turned 3/4 (outer corner toward the ear)."
   },
   {
    "name": "brow",
@@ -93,25 +97,30 @@
     "skin",
     "hair"
    ],
-   "why": "N1 is the thrust: a set brow, angled down to the front.",
+   "port": true,
+   "why": "N1: a set brow over the eye (focused)",
    "pts": [
+    [
+     86,
+     29,
+     "b"
+    ],
+    [
+     87,
+     29,
+     "b"
+    ],
+    [
+     88,
+     29,
+     "b"
+    ],
     [
      89,
      30,
      "b"
-    ],
-    [
-     90,
-     30,
-     "b"
-    ],
-    [
-     91,
-     31,
-     "b"
     ]
-   ],
-   "port": true
+   ]
   },
   {
    "name": "blush",
@@ -119,20 +128,20 @@
    "over": [
     "skin"
    ],
-   "why": "Face critic 2: the blush.",
+   "port": true,
+   "why": "Attractiveness 3 (round 4): 'lock one signature expression (half-lidded smirk, one brow slightly raised) and carry it into the back and Q frames; never ship an open O mouth in a key pose'; face 2: 'the default mouth is a 2-3 px asymmetric smirk; blush as 1-2 px strokes under the eye, not a blob'.",
    "pts": [
     [
-     91,
-     39,
+     90,
+     38,
      "R"
     ],
     [
-     92,
-     39,
+     91,
+     37,
      "r"
     ]
-   ],
-   "port": true
+   ]
   },
   {
    "name": "mouth",
@@ -140,20 +149,37 @@
    "over": [
     "skin"
    ],
-   "why": "MOVESET N1: a set line mouth, one dark corner.",
+   "port": true,
+   "why": "Face 2 (N1): 'a Q (and N1) face override: mouth closed or a small determined smirk (1-2 px)'.",
    "pts": [
     [
      92,
-     42,
+     41,
      "m"
     ],
     [
      93,
-     42,
+     41,
      "M"
     ]
-   ],
-   "port": true
+   ]
   }
- ]
+ ],
+ "authored_on": {
+  "still_sha1": "952a75d208bd528713a711cc52002f233edfd3ed",
+  "canvas": [
+   246,
+   136
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5x/n1/px144/R5xu"
+ },
+ "ported_on": {
+  "still_sha1": "8fa0de88b7b9001d8ed6beeec311dc7da07f7a85",
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5/n1/px144/R5u",
+  "offset": [
+   0,
+   0
+  ],
+  "how": "head-skin mask overlap (r5_paint.head_offset)"
+ }
 }

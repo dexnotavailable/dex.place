@@ -6,20 +6,20 @@
   "3": "#e4b3a0",
   "4": "#d99c8b",
   "5": "#c98579",
-  "K": "#1b1024",
+  "K": "#150c1e",
   "k": "#4a2c44",
-  "A": "#2c3b80",
-  "B": "#3b4f98",
-  "C": "#2e3f7e",
-  "D": "#86b8ee",
-  "H": "#eef6ff",
-  "W": "#dde2f0",
-  "w": "#d3d7e8",
-  "L": "#a0606c",
-  "R": "#e89c9a",
-  "r": "#eeb6aa",
-  "M": "#7e3f4c",
-  "m": "#b0606a",
+  "A": "#34307a",
+  "B": "#465a98",
+  "C": "#6078b0",
+  "D": "#8ea6d2",
+  "H": "#b8cce6",
+  "W": "#dcdfec",
+  "w": "#c4c6da",
+  "L": "#b27a78",
+  "R": "#e2928f",
+  "r": "#eab0a4",
+  "M": "#8a4452",
+  "m": "#b86a70",
   "n": "#d4927f",
   "b": "#6e5a9a",
   "g0": "#1c1733",
@@ -36,7 +36,11 @@
   "f3": "#e6e2e9",
   "l1": "#0c0920",
   "l3": "#4d4392",
-  "l4": "#6456ac"
+  "l4": "#6456ac",
+  "g8": "#c291cf",
+  "g9": "#d6b0dc",
+  "J": "#7a3c4a",
+  "Wd": "mat:white@0.2"
  },
  "layers": [
   {
@@ -73,7 +77,7 @@
     "skin",
     "hair"
    ],
-   "why": "Face critic 2/3: 'the face must read as two eyes plus blush at 80 px; judge the face first at 80, where the donation read happens'. Placed by hand on the 80 px underlay, not scaled from 144. In profile: one lash with the flick back, a 1x2 iris with a catchlight.",
+   "why": "Face critic (round 4, face 2): 'an iris of deep indigo on top, desaturated blue in the middle and a 1 px pale lower catchlight; drop the pure cyan'. At 80 the eye keeps round 4's 3-4 row shape (a 2-row lash block would close it); the palette takes the 144 eye's ramp: D (was #86b8ee cyan) is now the pale desaturated #8ea6d2, B/C the muted blues.",
    "rows": [
     "K...",
     ".KKK",
@@ -114,5 +118,22 @@
    ],
    "port": true
   }
- ]
+ ],
+ "authored_on": {
+  "still_sha1": "f3750a91ade89b0c29eef9273169ab88be471a22",
+  "canvas": [
+   142,
+   81
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5x/n1/px80/R5xu"
+ },
+ "ported_on": {
+  "still_sha1": "8e8d2f7a011e22742015edc6286047ec994b1364",
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5/n1/px80/R5u",
+  "offset": [
+   0,
+   0
+  ],
+  "how": "head-skin mask overlap (r5_paint.head_offset)"
+ }
 }

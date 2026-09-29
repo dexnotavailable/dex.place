@@ -6,20 +6,20 @@
   "3": "#e4b3a0",
   "4": "#d99c8b",
   "5": "#c98579",
-  "K": "#1b1024",
+  "K": "#150c1e",
   "k": "#4a2c44",
-  "A": "#2c3b80",
-  "B": "#3b4f98",
-  "C": "#2e3f7e",
+  "A": "#34307a",
+  "B": "#465a98",
+  "C": "#6078b0",
   "D": "#86b8ee",
-  "H": "#eef6ff",
-  "W": "#dde2f0",
-  "w": "#d3d7e8",
-  "L": "#a0606c",
-  "R": "#e89c9a",
-  "r": "#eeb6aa",
-  "M": "#7e3f4c",
-  "m": "#b0606a",
+  "H": "#b8cce6",
+  "W": "#dcdfec",
+  "w": "#c4c6da",
+  "L": "#b27a78",
+  "R": "#e2928f",
+  "r": "#eab0a4",
+  "M": "#8a4452",
+  "m": "#b86a70",
   "n": "#d4927f",
   "b": "#6e5a9a",
   "g0": "#1c1733",
@@ -36,7 +36,11 @@
   "f3": "#e6e2e9",
   "l1": "#0c0920",
   "l3": "#4d4392",
-  "l4": "#6456ac"
+  "l4": "#6456ac",
+  "g8": "#c291cf",
+  "g9": "#d6b0dc",
+  "J": "#7a3c4a",
+  "Wd": "mat:white@0.2"
  },
  "layers": [
   {
@@ -71,111 +75,121 @@
    "port": true
   },
   {
+   "name": "chin",
+   "kind": "stamp",
+   "at": [
+    64,
+    106
+   ],
+   "over": [
+    "skin",
+    "white",
+    "hair"
+   ],
+   "port": true,
+   "why": "Face 2 (Q): 'a grey sleeve or shoulder mass sits right under the chin and cuts off the jaw ... a clear jaw and chin'. The sleeve cut the face flat at the mouth row; the jaw is drawn on over it as a tapering V to a 6 px chin with a warm dark underside (J), so the face ends in a chin, not a sleeve edge.",
+   "rows": [
+    "3222222222222223",
+    ".32222222222223.",
+    "..322222222223..",
+    "...3222222223...",
+    "....J332233J....",
+    ".....JJJJJJ....."
+   ]
+  },
+  {
    "name": "brows",
-   "kind": "px",
+   "kind": "line",
+   "pts": [
+    [
+     63,
+     97
+    ],
+    [
+     66,
+     97
+    ],
+    [
+     68,
+     98
+    ]
+   ],
+   "key": "b",
    "over": [
     "skin",
     "hair"
    ],
-   "why": "Q is the strike: brows angle down toward the centre (a set, fierce look), drawn in the mid hair tone.",
+   "port": true,
+   "why": "Q: set brows angled toward the nose (determined, not startled)."
+  },
+  {
+   "name": "brows_near",
+   "kind": "line",
    "pts": [
     [
-     65,
-     95,
-     "b"
-    ],
-    [
-     66,
-     95,
-     "b"
-    ],
-    [
-     67,
-     96,
-     "b"
-    ],
-    [
-     68,
-     96,
-     "b"
-    ],
-    [
-     69,
-     97,
-     "b"
-    ],
-    [
-     72,
-     99,
-     "b"
-    ],
-    [
      73,
-     99,
-     "b"
-    ],
-    [
-     74,
-     99,
-     "b"
+     98
     ],
     [
      75,
-     99,
-     "b"
+     97
     ],
     [
-     76,
-     100,
-     "b"
+     78,
+     97
     ]
    ],
-   "port": true
+   "key": "b",
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "port": true,
+   "why": "as brows"
   },
   {
    "name": "eye_far",
    "kind": "stamp",
    "at": [
-    64,
-    97
+    63,
+    99
    ],
    "over": [
     "skin",
     "hair"
    ],
-   "why": "Face critic 2: the lash mass with an outer flick, the iris ramp and a catchlight, along the tilted eye line (far eye, outer corner left).",
+   "port": true,
    "rows": [
-    "K.....",
-    ".KK...",
-    ".KKKK.",
-    ".wAAKK",
-    "..BHAw",
-    "..DD..",
-    "......"
+    "KK.....",
+    ".KKKKK.",
+    "..KKKKk",
+    "..wAAAW",
+    "...BBC.",
+    "....H.."
    ],
-   "port": true
+   "why": "Face critic (round 4, face 2): 'narrow, slanted almond eyes with a heavy 2-3 px dark upper-lash block, a dark-to-warm iris ramp and a small catchlight; make it about 1 px narrower and tilted up at the outer corner, a 2 px near-black upper-lash block running 1 px past the outer corner, an iris of deep indigo on top, desaturated blue in the middle and a 1 px pale lower catchlight; drop the pure cyan; lift the lid 1 px'. Q (face 2, consistency): 'both eyes on one tilt line ... the far eye crowds the hairline'. Moved 2 px down and 1 px in from the hairline; the pair now rises 1 px over 9 px."
   },
   {
    "name": "eye_near",
    "kind": "stamp",
    "at": [
     72,
-    101
+    100
    ],
    "over": [
     "skin",
     "hair"
    ],
-   "why": "as eye_far (near eye, outer corner right, flick up-right)",
+   "port": true,
    "rows": [
-    "KKK....",
-    ".KKKK.K",
-    ".wAAKK.",
-    "..BHA..",
-    "..DD...",
-    ".....L."
+    "....KK",
+    ".KKKK.",
+    "kKKKK.",
+    "WAAAw.",
+    ".CBB..",
+    "..H..."
    ],
-   "port": true
+   "why": "as eye_far"
   },
   {
    "name": "blush",
@@ -183,16 +197,12 @@
    "over": [
     "skin"
    ],
-   "why": "Face critic 2: the blush, on the strike too.",
+   "port": true,
+   "why": "Attractiveness 3 (round 4): 'lock one signature expression (half-lidded smirk, one brow slightly raised) and carry it into the back and Q frames; never ship an open O mouth in a key pose'; face 2: 'the default mouth is a 2-3 px asymmetric smirk; blush as 1-2 px strokes under the eye, not a blob'.",
    "pts": [
     [
-     64,
-     103,
-     "r"
-    ],
-    [
      65,
-     103,
+     105,
      "R"
     ],
     [
@@ -201,22 +211,21 @@
      "r"
     ],
     [
-     75,
-     107,
-     "r"
-    ],
-    [
-     76,
-     107,
+     67,
+     105,
      "R"
     ],
     [
-     77,
-     108,
+     75,
+     106,
+     "R"
+    ],
+    [
+     76,
+     105,
      "r"
     ]
-   ],
-   "port": true
+   ]
   },
   {
    "name": "mouth",
@@ -224,30 +233,25 @@
    "over": [
     "skin"
    ],
-   "why": "MOVESET Q: the kiai, a small open mouth (dark with a lighter tongue step).",
+   "port": true,
+   "why": "Face 2 (Q): 'replace the startled O mouth with a closed smirk (1-2 px)'. A 3 px closed line, the near corner lifted.",
    "pts": [
     [
-     68,
-     107,
-     "M"
-    ],
-    [
-     69,
-     107,
-     "M"
-    ],
-    [
-     68,
+     70,
      108,
      "m"
     ],
     [
-     69,
+     71,
      108,
+     "m"
+    ],
+    [
+     72,
+     107,
      "M"
     ]
-   ],
-   "port": true
+   ]
   },
   {
    "name": "strands_out",
@@ -277,5 +281,22 @@
    "why": "Head and hair 4: a strand flung off the outline by the stamp.",
    "port": true
   }
- ]
+ ],
+ "authored_on": {
+  "still_sha1": "c4136271b66ff98830c6db78fd81cd0c552f6a0b",
+  "canvas": [
+   109,
+   216
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5x/q/px144/R5xu"
+ },
+ "ported_on": {
+  "still_sha1": "624a0e193ccd63c9f65af9570f92928bf72c64ce",
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5/q/px144/R5u",
+  "offset": [
+   0,
+   0
+  ],
+  "how": "head-skin mask overlap (r5_paint.head_offset)"
+ }
 }

@@ -6,20 +6,20 @@
   "3": "#e4b3a0",
   "4": "#d99c8b",
   "5": "#c98579",
-  "K": "#1b1024",
+  "K": "#150c1e",
   "k": "#4a2c44",
-  "A": "#2c3b80",
-  "B": "#3b4f98",
-  "C": "#2e3f7e",
-  "D": "#86b8ee",
-  "H": "#eef6ff",
-  "W": "#dde2f0",
-  "w": "#d3d7e8",
-  "L": "#a0606c",
-  "R": "#e89c9a",
-  "r": "#eeb6aa",
-  "M": "#7e3f4c",
-  "m": "#b0606a",
+  "A": "#34307a",
+  "B": "#465a98",
+  "C": "#6078b0",
+  "D": "#8ea6d2",
+  "H": "#b8cce6",
+  "W": "#dcdfec",
+  "w": "#c4c6da",
+  "L": "#b27a78",
+  "R": "#e2928f",
+  "r": "#eab0a4",
+  "M": "#8a4452",
+  "m": "#b86a70",
   "n": "#d4927f",
   "b": "#6e5a9a",
   "g0": "#1c1733",
@@ -36,7 +36,17 @@
   "f3": "#e6e2e9",
   "l1": "#0c0920",
   "l3": "#4d4392",
-  "l4": "#6456ac"
+  "l4": "#6456ac",
+  "g8": "#c291cf",
+  "g9": "#d6b0dc",
+  "J": "#7a3c4a",
+  "Wd": "mat:white@0.2",
+  "t1": "#1d2258",
+  "t2": "#3f2f82",
+  "t3": "#6c42a4",
+  "t4": "#a66cc0",
+  "O": "#5a2c3a",
+  "G": "mat:gold@0.75"
  },
  "layers": [
   {
@@ -147,7 +157,7 @@
     "skin",
     "hair"
    ],
-   "why": "Face critic 2/3 at 80: 'the face drops to diadem plus two blue dots; the face must read as two eyes plus blush at 80'. A 4 px lash with a flick over a 2x2 iris (dark top, light bottom, a catchlight).",
+   "why": "Face critic (round 4, face 2): 'an iris of deep indigo on top, desaturated blue in the middle and a 1 px pale lower catchlight; drop the pure cyan'. At 80 the eye keeps round 4's 3-4 row shape (a 2-row lash block would close it); the palette takes the 144 eye's ramp: D (was #86b8ee cyan) is now the pale desaturated #8ea6d2, B/C the muted blues.",
    "rows": [
     "K....",
     ".KKKK",
@@ -167,7 +177,7 @@
     "skin",
     "hair"
    ],
-   "why": "as eye_near, foreshortened, flick to the right",
+   "why": "Face critic (round 4, face 2): 'an iris of deep indigo on top, desaturated blue in the middle and a 1 px pale lower catchlight; drop the pure cyan'. At 80 the eye keeps round 4's 3-4 row shape (a 2-row lash block would close it); the palette takes the 144 eye's ramp: D (was #86b8ee cyan) is now the pale desaturated #8ea6d2, B/C the muted blues.",
    "rows": [
     "....K",
     "KKKK.",
@@ -260,6 +270,60 @@
    ],
    "why": "Head and hair 4: one loose strand breaks the outline at 80 (two at 144).",
    "port": true
+  },
+  {
+   "name": "tail_tips",
+   "kind": "matbox",
+   "box": [
+    8,
+    68,
+    30,
+    82
+   ],
+   "on": [
+    "hairtip"
+   ],
+   "keys": [
+    "t1",
+    "t2",
+    "t3",
+    "t4"
+   ],
+   "port": true,
+   "why": "Body critic (round 4, arms and hands 6): 'the free hand is a detached blue claw at the hip'. It is the hair tail's azure tips fanning under the hip hand. Inside the hip box they take the hair's own violet ramp by value rank (the tips higher up keep the azure, DESIGN's identity)."
+  },
+  {
+   "name": "fist",
+   "kind": "stamp",
+   "at": [
+    45,
+    40
+   ],
+   "port": true,
+   "why": "Body critic (round 4, arms and hands 6): 'show a 4-5 px fist high on the haft with a gold cuff so the grip reads at 144 and at 80'. At 80 a 4x4 fist under the disc at the render's wrist_left (47.8, 41.7), placed by hand on the 80 px render (never scaled from 144).",
+   "rows": [
+    ".OO.",
+    "O12O",
+    "O23O",
+    "GOO."
+   ]
   }
- ]
+ ],
+ "authored_on": {
+  "still_sha1": "5aba6ce7c0e97ce4e614ba508a6daceab3d3349a",
+  "canvas": [
+   79,
+   118
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5x/idle/px80/R5xu"
+ },
+ "ported_on": {
+  "still_sha1": "5aeaea866399fc83149c4f85a37f86bc368781ed",
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R5/idle/px80/R5u",
+  "offset": [
+   1,
+   0
+  ],
+  "how": "head-skin mask overlap (r5_paint.head_offset)"
+ }
 }

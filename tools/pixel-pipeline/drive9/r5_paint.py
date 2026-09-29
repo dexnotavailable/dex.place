@@ -8,8 +8,9 @@ ONE underlay, recorded in authored_on (WF-P12: a changed underlay makes the file
 (the head: face, eyes, brows, mouth, blush, fringe, strands, pin) is also painted on the other underlay, moved by the
 offset that best overlaps the two renders' head-skin masks (the id pass; the heads sit within 0-2 px of each other,
 since both builds share the pose, camera and head scale). The offset and the other underlay's sha1 are recorded in
-the file's 'ported_on' at --sign; a changed twin makes the port STALE the same way. Unported layers (cloth folds,
-hands) stay on the underlay they were placed on.
+the file's 'ported_on' at --sign; a changed twin makes the port STALE the same way. Unported layers stay on the
+underlay they were placed on. One new layer kind, 'matbox' {box, on: [materials], keys: [dark .. light]}: the underlay's
+pixels of those materials inside the box take the keys by their own value rank (a local recolour that keeps the shading).
 
   python tools/pixel-pipeline/drive9/r5_paint.py --root <raw>/R5x --under R5xu --tag R5x \
       --twin-root <raw>/R5 --twin-under R5u --twin-tag R5 [--shots ...] [--px ...] [--layers ...] [--sign]
@@ -75,10 +76,39 @@ def move(L, dx, dy):
         for c in L["clumps"]:
             c["x"] = [c["x"][0] + dx, c["x"][1] + dx]
             c["tip"] = [c["tip"][0] + dx, c["tip"][1] + dy]
-    elif k == "edge":
+    elif k in ("edge", "matbox"):
         b = L["box"]
         L["box"] = [b[0] + dx, b[1] + dy, b[2] + dx, b[3] + dy]
     return L
+
+
+def expand(spec, d_under):
+    """round-5 layer kind 'matbox' -> 'px': every underlay pixel of material(s) 'on' inside 'box' [x0, y0, x1, y1] takes one
+    of 'keys' (dark to light) by its own OKLab L rank among those pixels: a local recolour that keeps the shading"""
+    if not spec or not any(L.get("kind") == "matbox" for L in spec.get("layers", [])):
+        return spec
+    img = np.asarray(Image.open(os.path.join(d_under, "still.png")).convert("RGBA")).astype(float)
+    sub, names = P4.mat_map(d_under)
+    mn = P4.material_names(img, sub, names)
+    spec = copy.deepcopy(spec)
+    for L in spec["layers"]:
+        if L.get("kind") != "matbox":
+            continue
+        x0, y0, x1, y1 = L["box"]
+        pts = [(x, y) for y in range(max(0, y0), min(img.shape[0], y1)) for x in range(max(0, x0), min(img.shape[1], x1))
+               if mn[y, x] in L["on"] and img[y, x, 3] > 0]
+        if not pts:
+            L.update(kind="px", pts=[])
+            continue
+        Ls = P4.F1.oklab(np.array([img[y, x, :3] for x, y in pts]))[:, 0]
+        u = np.unique(np.round(Ls, 3))
+        keys = L["keys"]
+        out = []
+        for (x, y), l in zip(pts, Ls):
+            r = np.searchsorted(u, round(float(l), 3)) / max(1, len(u) - 1)
+            out.append([x, y, keys[min(len(keys) - 1, int(r * len(keys)))]])
+        L.update(kind="px", pts=out)
+    return spec
 
 
 def load(shot, px):
@@ -136,13 +166,13 @@ def main():
                 json.dump(spec, open(p, "w", encoding="utf-8"), indent=1)
                 print("signed", p, spec["authored_on"]["still_sha1"][:12], spec.get("ported_on", {}).get("offset"))
                 continue
-            r = P4.paint_one(du, os.path.join(a.root, s, f"px{px}", a.tag), spec, only)
+            r = P4.paint_one(du, os.path.join(a.root, s, f"px{px}", a.tag), expand(spec, du), only)
             print(s, px, a.tag, "stale" if r["stale"] else "ok", sum(r["layers"].values()), "px, colours", r["colours"])
             if dt and os.path.exists(os.path.join(dt, "still.png")):
                 ts = twin_spec(spec, dt) if spec else None
                 if ts is not None:
                     ts["_path"] = spec["_path"]
-                r2 = P4.paint_one(dt, os.path.join(a.twin_root, s, f"px{px}", a.twin_tag), ts, only)
+                r2 = P4.paint_one(dt, os.path.join(a.twin_root, s, f"px{px}", a.twin_tag), expand(ts, dt), only)
                 print(s, px, a.twin_tag, "stale" if r2["stale"] else "ok", sum(r2["layers"].values()), "px (port)")
 
 

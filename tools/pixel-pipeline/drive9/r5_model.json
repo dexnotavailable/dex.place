@@ -839,15 +839,15 @@
      "sleeve_R": {
       "g": 0.2,
       "wind": [
-       1.2,
        -1.6,
-       0.2
+       -1.2,
+       0.3
       ]
      }
     }
    },
    "bones": {
-    "sleeve_R_1.scale": 0.72,
+    "sleeve_R_1.scale": 0.62,
     "J_Bip_C_Spine.scale": [
      1.0,
      1.14,
@@ -903,7 +903,8 @@
   "tabard": "Kept from rounds 2-3 (x1.3 at the waist to x1.65 at the hem).",
   "haft": "Kept from round 3 (x1.25).",
   "pin": "Face critic (round 4, head and hair 4): 'every ref head has a memorable top silhouette (ears, horns, a hat or a hair accessory); ours has none now that the diadem is gone ... add a small head-top signature that sits in the hairline, never across the brow: a gold stained-glass rosette or veil pin at the crown on the far side, 3-4 px, with a short veil or ribbon trailing off it'. r5_blender.pin: a 3.4 cm rosace (gold rim, glass, glasscore: the weapon disc's materials) on the hair's surface at azimuth 25 / elevation 58 (upper crown, toward the model's left = the far side in the idle's 45 deg view), two 13 cm veil tails with V cuts falling back and down. Trials: azimuth 75 put it edge-on and behind the hair (2 gold px, raw/r5_t1); a tail laid straight down the tangent plane from the front crown fell over the face.",
-  "idle_r5": "Body critic (round 4, posture 9 / posing 10 / body 5): 'lift the chest and lengthen the neck 2 px; tilt the head 6-8 deg, chin down'; 'pull the near sleeve behind the hip so a 3-4 px waist notch of background shows'. Upper chest 8 -> 11, look tilt 9 -> 7 and chin 5 -> 6, neck_l 1.15 (d9_blender --neck-l), the near bell x0.78 -> x0.72 and blown back harder (g 0.5 -> 0.4, wind [-0.3, 1.2, 0.2] -> [-0.5, 1.6, 0.3])."
+  "idle_r5": "Body critic (round 4, posture 9 / posing 10 / body 5): 'lift the chest and lengthen the neck 2 px; tilt the head 6-8 deg, chin down'; 'pull the near sleeve behind the hip so a 3-4 px waist notch of background shows'. Upper chest 8 -> 11, look tilt 9 -> 7 and chin 5 -> 6, neck_l 1.15 (d9_blender --neck-l), the near bell x0.78 -> x0.72 and blown back harder (g 0.5 -> 0.4, wind [-0.3, 1.2, 0.2] -> [-0.5, 1.6, 0.3]).",
+  "back_r5": "Body critic (round 4, posing 10): 'the back view hides the spine and thong-cut back behind the white panel ... swing it so the spine curve, the thong cut and both glutes show'. The white panel is the near bell (sleeve_R) hanging over the back: x0.72 -> x0.62 and blown toward screen right and the camera (wind [1.2, -1.6, 0.2] -> [-1.6, -1.2, 0.3], g 0.2). Trial raw/r5_bk0 against r5_bk1 (blown back, [-0.6, 1.8, 0.3]): bk0 opened the back and hip, bk1 left the panel over the waist."
  },
  "pin": {
   "azimuth": 25,
