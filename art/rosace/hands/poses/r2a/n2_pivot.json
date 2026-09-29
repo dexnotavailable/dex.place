@@ -1,0 +1,229 @@
+{
+ "name": "n2_pivot",
+ "note": "N2 'Gloria' anticipation A2, round 3 re-key after the round-2 critics ('profile bust bolted onto a back-view pelvis; head facing left while the glaive thrusts right; tube legs; off-model'). Now a true three-quarter back: shoulders and pelvis turned the same way (only ~15 degrees of spine twist), so the back plane, spine groove, halter yoke and cross read as one surface over the thong-cut seat. The glaive leads forward in the direction she faces (screen left, tilted up ~25 degrees) with both hands on it in front of her body, so the haft passes behind her silhouette cleanly: blade out past her far shoulder, butt out behind the near hip. She looks over her shoulder along the haft (profile). Weight on the far leg, the seat tilts toward it, the near heel lifts. The hair tail swings out to the near side, the veil trails. Round 3 fix (body/gear/overall critics: 'profile torso reads topless, one flat glute, back hidden, the shaft cuts across the waist'): a true rear three-quarter; root turned to 140 so with camera 55 the pelvis faces ~15 degrees off straight-away (both cheeks and the thong V show), the chest 15 degrees more toward screen-left, the head over the shoulder in profile; the pelvis tilts forward and the ribcage lifts (arched lower back, seat pushed back); the glaive is held level at chest/shoulder height in front of her (MOVESET A2: 'glaive at shoulder height behind her'), so its middle hides behind her body and only the blade (screen-left) and butt (screen-right) show, elbows out to both sides; hair and hair tail swing over her left shoulder so the open back, spine and halter yoke read. Round 4 fix (body/overall/gear critics: 'scarecrow T-pose, level spear cuts the figure, profile head, back covered by hair'): root 140 -> 150 (both cheeks + thong V), shoulders twisted ~28 degrees against the hips, head over the left shoulder toward three-quarter (neck/head yaw 42/48); both hands on the haft in front of her (lead hand mid-shaft on a nearly straight arm, rear hand hidden behind the body), the glaive on a ~22 degree diagonal, blade up screen-left, butt out at the right below the shoulders; hair mantle and tail swing to her right so the open back shows.",
+ "camera": {
+  "yaw": 55,
+  "elev": 8
+ },
+ "root": {
+  "loc": [
+   0,
+   0,
+   0
+  ],
+  "rot": [
+   0,
+   0,
+   150
+  ]
+ },
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.04,
+   0.02,
+   -0.05
+  ],
+  "J_Bip_C_Hips": [
+   16,
+   -10,
+   0
+  ],
+  "J_Bip_C_Spine": [
+   -7,
+   5,
+   -8
+  ],
+  "J_Bip_C_Chest": [
+   -8,
+   5,
+   -12
+  ],
+  "J_Bip_C_UpperChest": [
+   -3,
+   2,
+   -8
+  ],
+  "J_Bip_C_Neck": [
+   -4,
+   -4,
+   42
+  ],
+  "J_Bip_C_Head": [
+   -6,
+   -8,
+   48
+  ]
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.1,
+    -0.06,
+    0.159
+   ],
+   "yaw": 18
+  },
+  "R": {
+   "pos": [
+    -0.19,
+    0.2,
+    0.22
+   ],
+   "yaw": -34,
+   "pitch": 38
+  }
+ },
+ "weapon": {
+  "socket": "glaive_butt",
+  "at": [
+   -0.9663,
+   0.2,
+   0.9755
+  ],
+  "dir": [
+   0.9292,
+   0.0,
+   0.3697
+  ],
+  "edge": [
+   0,
+   0,
+   1
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": -0.1241,
+   "thumb": "tip",
+   "back": [
+    0,
+    0.6,
+    0.8
+   ]
+  },
+  "L": {
+   "grip": "grip_off",
+   "slide": 0.3559,
+   "thumb": "tip",
+   "back": [
+    0.2,
+    0.5,
+    0.8
+   ]
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -0.6,
+   0.3,
+   1.1
+  ],
+  "arm.L": [
+   0.6,
+   0.3,
+   1.1
+  ],
+  "leg.R": [
+   -0.25,
+   -0.6,
+   0.5
+  ],
+  "leg.L": [
+   0.2,
+   -0.8,
+   0.55
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 85,
+   "thumb": 55
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "chains": {
+   "hair_tail": {
+    "g": 0.65,
+    "wind": [
+     -0.55,
+     0.05,
+     0.0
+    ]
+   },
+   "hair_back": {
+    "g": 0.35,
+    "wind": [
+     -0.9,
+     -0.1,
+     0.2
+    ]
+   },
+   "tabard": {
+    "g": 0.9,
+    "wind": [
+     -0.45,
+     -0.35,
+     0.0
+    ]
+   },
+   "sleeve_R": {
+    "g": 0.85,
+    "wind": [
+     -0.15,
+     0.1,
+     0.0
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.5,
+    "wind": [
+     0.5,
+     -0.25,
+     0.1
+    ]
+   },
+   "veil": {
+    "g": 0.5,
+    "wind": [
+     -0.6,
+     0.1,
+     0.1
+    ]
+   },
+   "stole_A": {
+    "g": 0.8,
+    "wind": [
+     -0.2,
+     0.05,
+     0
+    ]
+   },
+   "stole_B": {
+    "g": 0.8,
+    "wind": [
+     -0.2,
+     0.08,
+     0
+    ]
+   }
+  }
+ },
+ "expression": "serene",
+ "note_glaive_hands": "glaive-hands lane round 2 (probe n2_r2, pick b): MOVESET N2 A2 as drawn: her back to us, the glaive at shoulder height BEHIND her (0.20 m behind her back, on the camera side, over the hair), both fists out at the sides of her silhouette 0.48 m apart (32.7 px: a wind-up, GR-P02), 0 cm gaps. Round 1 put the near grip in front of her chest behind the hair, so the glaive looked balanced on the far cuff (critique 8). Round-1 pose kept in poses/r1/.",
+ "note_stole_r2": "glaive-hands round 2: the stole tails hang (g 0.6-0.9, little wind) on the l4 glaive's 10 du tails; critique 7b: curled tails read as a hooked second blade."
+}

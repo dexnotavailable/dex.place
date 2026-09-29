@@ -1,0 +1,494 @@
+{
+ "_doc": "Outfit lane (art round 2): authored pixel stamps that tools/pixel-pipeline/outfit_px2.py places on projected 3D anchors (outfit_art.py 'anc' flag). Letters map to palette codes through 'key'; '.' is left alone. Rows are authored for a figure whose chest faces screen-right; the pass mirrors them when it faces screen-left (anchor facing_screen_x < 0). Each stamp paints only over pixels of its 'on_parts' (so a hand, hair or haft in front masks it) and is skipped when fewer than 'min_visible' of its pixels land there.",
+ "window": {
+  "_doc": "DESIGN 3 row 2: the diamond chest window on the centre line directly under the collar cross, a 1 px gold frame (G2: 2.08:1 on W1, 1.59:1 on S2, CL-P07) around two skin tones split by a 1 px cleavage shadow (S4), no gold inside. DESIGN gives 5x9 front / 3x9 three-quarter at 96 px; at 144 that is 7-8 x 13 (x1.5). Round 2 first drew the critique's 5x9 at 144: a skin interior of 3 px read as a gold drop pendant at x8 and 1x, so the 144 rows are the DESIGN size (7x12 front; q34 5x11 with the far frame straight along the far breast, the near side slanting); the _s rows are for a chest foreshortened under 60% of the rows (Q). 80 px: 5x6 front, 4x5 q34. At 80 the 5x6 diamond read as a gold bar between the breasts (x5): 3x3: a gold chevron over the skin, the cleavage pixel open below (x5 and 1x).",
+  "144": {
+   "front": {
+    "rows": [
+     "...g...",
+     "..gLg..",
+     ".gLLTg.",
+     "gLLcTTg",
+     "gLLcTTg",
+     "gLLcTTg",
+     ".gLcTg.",
+     ".gLcTg.",
+     "..gcg..",
+     "..gcg..",
+     "...g...",
+     "...g..."
+    ],
+    "origin": [
+     3,
+     0
+    ]
+   },
+   "q34": {
+    "rows": [
+     "..g..",
+     ".gLg.",
+     "gLLcg",
+     "gLLcg",
+     "gLLcg",
+     ".gLcg",
+     ".gLcg",
+     ".gLcg",
+     "..gcg",
+     "..gg.",
+     "..g.."
+    ],
+    "origin": [
+     2,
+     0
+    ]
+   },
+   "front_s": {
+    "rows": [
+     "..g..",
+     ".gLg.",
+     "gLcTg",
+     ".gcg.",
+     "..g.."
+    ],
+    "origin": [
+     2,
+     0
+    ]
+   },
+   "q34_s": {
+    "rows": [
+     ".g..",
+     "gLg.",
+     "gLcg",
+     ".gcg",
+     "..g."
+    ],
+    "origin": [
+     1,
+     0
+    ]
+   },
+   "front_5x9": {
+    "rows": [
+     "..g..",
+     ".gLg.",
+     "gLcTg",
+     "gLcTg",
+     "gLcTg",
+     ".gcg.",
+     ".gcg.",
+     "..g..",
+     "..g.."
+    ],
+    "origin": [
+     2,
+     0
+    ]
+   }
+  },
+  "80": {
+   "front": {
+    "rows": [
+     ".g.",
+     "gLg",
+     ".c."
+    ],
+    "origin": [
+     1,
+     0
+    ]
+   },
+   "q34": {
+    "rows": [
+     ".g.",
+     "gLg",
+     ".c."
+    ],
+    "origin": [
+     1,
+     0
+    ]
+   },
+   "front_s": {
+    "rows": [
+     ".g.",
+     "gLg",
+     ".g."
+    ],
+    "origin": [
+     1,
+     0
+    ]
+   },
+   "q34_s": {
+    "rows": [
+     ".g.",
+     "gLg",
+     ".g."
+    ],
+    "origin": [
+     1,
+     0
+    ]
+   }
+  },
+  "key": {
+   "g": "G2",
+   "L": "S2",
+   "T": "S3",
+   "c": "S4"
+  },
+  "on_parts": [
+   "bodice",
+   "body"
+  ],
+  "min_visible": 0.7
+ },
+ "rose": {
+  "_doc": "DESIGN 3 row 7: the hip band's medallion as a tiny rose, 3x3 gold with 1 azure pixel, lit on the key-light side; centred on the band so the band has a focal point (critique 13). At 80 a 2x2 with the azure pixel would be dirt, so a single A3 pixel in the band.",
+  "144": {
+   "rows": [
+    "hgs",
+    "gAs",
+    "sss"
+   ],
+   "origin": [
+    1,
+    1
+   ]
+  },
+  "80": {
+   "rows": [
+    "A"
+   ],
+   "origin": [
+    0,
+    0
+   ]
+  },
+  "key": {
+   "h": "G1",
+   "g": "G2",
+   "s": "G3",
+   "A": "A3"
+  },
+  "on_parts": [
+   "gold_harness",
+   "thong",
+   "tabard",
+   "bodice",
+   "body"
+  ],
+  "need_parts": [
+   "gold_harness"
+  ],
+  "min_visible": 0.6
+ },
+ "sleeve_cross": {
+  "_doc": "DESIGN 3 row 5: the 3x5 fleur-cross on the lowest corner of each detached sleeve, G2 on the white (2.08:1 on W1) with a G3 foot. 80: 3x3.",
+  "144": {
+   "rows": [
+    ".g.",
+    "ggg",
+    ".g.",
+    ".g.",
+    ".s."
+   ],
+   "origin": [
+    1,
+    2
+   ]
+  },
+  "80": {
+   "rows": [
+    ".g.",
+    "ggg",
+    ".s."
+   ],
+   "origin": [
+    1,
+    1
+   ]
+  },
+  "key": {
+   "g": "G2",
+   "s": "G3"
+  },
+  "on_parts": [
+   "sleeves"
+  ],
+  "on_mats": [
+   "white",
+   "gold"
+  ],
+  "min_visible": 0.8
+ },
+ "tabard_cross": {
+  "_doc": "round 2b (critique 13c: the 3D cross read as a blobby 7x10 gold mass): DESIGN 3 row 6's 5x7 fleur-cross at 144 (3x5 at 80), G2 strokes (2.08:1 on W1), G3 on the shade side of the flares, a G4 centre pixel where the arms cross; authored lit from the left, mirrored when the key light is on the right. Placed by outfit_px2 'tabx' on the anchors riding the tabard chain; only on the tabard's white.",
+  "144": {
+   "rows": [
+    ".ggs.",
+    "..g..",
+    "ggcgs",
+    "..g..",
+    "..g..",
+    "..g..",
+    ".ggs."
+   ],
+   "origin": [
+    2,
+    2
+   ]
+  },
+  "80": {
+   "rows": [
+    ".g.",
+    "gcs",
+    ".g.",
+    ".g.",
+    ".s."
+   ],
+   "origin": [
+    1,
+    1
+   ]
+  },
+  "key": {
+   "g": "G2",
+   "s": "G3",
+   "c": "G4"
+  },
+  "on_parts": [
+   "tabard"
+  ],
+  "on_mats": [
+   "white"
+  ],
+  "min_visible": 0.8
+ },
+ "window3": {
+  "_doc": "round 3 (critique 12a: 'a gold-rimmed leaf or brooch on a white ball, not cleavage ... no cleavage line and no inner breast curves'): the window filled as cleavage. A Y-fork (S3) opens into a 1 px S4 cleavage line from a third of the way down; a lit S1 pixel on each inner curve beside it (two on the lit side), S2 between, S3 under the curves; the frame (G2) closes at row 9 and the line runs on 2 px past the tip ('1','2' = the tail letters, opts win_tail: 'cw' = S4 then a W4 cloth valley on the bodice). Authored for a chest facing screen-right lit from the right; outfit_px3 'win3' mirrors the shape for a left-facing chest, mirrors the tones for a light from the left, and rotates the whole stamp by the torso's roll (the line across the breasts) past 12 deg, redrawing the frame on the rotated edge, so it never shears into a sliver.",
+  "144": {
+   "front": {
+    "rows": [
+     "...g...",
+     "..gLg..",
+     ".gLLLg.",
+     "gLTLTLg",
+     "gLLcLLg",
+     "gLhchLg",
+     ".gLchg.",
+     ".gTcLg.",
+     "..gcg..",
+     "..gcg..",
+     "...1...",
+     "...2..."
+    ],
+    "origin": [
+     3,
+     0
+    ]
+   },
+   "q34": {
+    "rows": [
+     "..g..",
+     ".gLg.",
+     "gLLTg",
+     "gLhcg",
+     "gLhcg",
+     ".gLcg",
+     ".gTcg",
+     ".gTcg",
+     "..gcg",
+     "...1.",
+     "...2."
+    ],
+    "origin": [
+     2,
+     0
+    ]
+   },
+   "front_s": {
+    "rows": [
+     "..g..",
+     ".gLg.",
+     "gTcTg",
+     "ghchg",
+     ".gcg.",
+     "..1.."
+    ],
+    "origin": [
+     2,
+     0
+    ]
+   },
+   "q34_s": {
+    "rows": [
+     ".g..",
+     "gLg.",
+     "gTcg",
+     "ghcg",
+     ".gcg",
+     "..1."
+    ],
+    "origin": [
+     1,
+     0
+    ]
+   }
+  },
+  "80": {
+   "front": {
+    "rows": [
+     ".g.",
+     "gLg",
+     ".c.",
+     ".2."
+    ],
+    "origin": [
+     1,
+     0
+    ]
+   },
+   "q34": {
+    "rows": [
+     ".g.",
+     "gLg",
+     ".c.",
+     ".2."
+    ],
+    "origin": [
+     1,
+     0
+    ]
+   }
+  },
+  "tail": "cw",
+  "key": {
+   "g": "G2",
+   "h": "S1",
+   "L": "S2",
+   "T": "S3",
+   "c": "S4",
+   "w": "W4"
+  },
+  "on_parts": [
+   "bodice",
+   "body"
+  ],
+  "min_visible": 0.7
+ },
+ "tabard_cross3": {
+  "_doc": "round 3 (critique 13c: 'the 5x7 stamp renders as a thin 1 px I or dagger at 144 ... gone at 80'; the round-1 control's 3D cross read bold): the fleur-cross at the control's weight: a 2 px stem (G2 lit column, G3 shade column), a 6 px arm, a flared head and foot; the G4 backing sits in the four inner corners of the crossing (a drop plate round the whole cross filled a 7 px panel and read as a brown blob, x12), so the plus is cut out by dark negative corners and at 80 it stays a 3x3 plus in a 3x3 G4-cornered block. Authored lit from the left; mirrored when the key light is on the right. The '_ring' variants back it all round (opts tabx3_ring).",
+  "144": {
+   "rows": [
+    "..gs..",
+    ".ggss.",
+    ".ogso.",
+    "gggsss",
+    ".ogso.",
+    "..gs..",
+    "..gs..",
+    ".ggss."
+   ],
+   "origin": [
+    2,
+    3
+   ]
+  },
+  "80": {
+   "rows": [
+    "ogo",
+    "ggs",
+    "oso"
+   ],
+   "origin": [
+    1,
+    1
+   ]
+  },
+  "144_ring": {
+   "rows": [
+    "...oo...",
+    "..ogso..",
+    ".oggsso.",
+    ".oogsoo.",
+    "ogggssso",
+    ".oogsoo.",
+    "..ogso..",
+    "..ogso..",
+    "..ogso..",
+    ".oggsso.",
+    "..oooo.."
+   ],
+   "origin": [
+    3,
+    4
+   ]
+  },
+  "80_ring": {
+   "rows": [
+    "..o..",
+    ".ogo.",
+    "oggso",
+    ".ogo.",
+    ".oso.",
+    "..o.."
+   ],
+   "origin": [
+    2,
+    2
+   ]
+  },
+  "key": {
+   "g": "G2",
+   "s": "G3",
+   "o": "G4",
+   "h": "G1"
+  },
+  "on_parts": [
+   "tabard"
+  ],
+  "on_mats": [
+   "white"
+  ],
+  "min_visible": 0.8
+ },
+ "yoke_cross": {
+  "_doc": "round 3 (critique 12c: the halter yoke and the back cross never show): DESIGN 3 row 9's 3x5 yoke cross on the back yoke (144), 3x3 at 80, G2 strokes with a G4 centre where the arms cross (gold on white is 1.13:1 alone), G3 foot; placed by outfit_px3 'ykx' on the outfit_ykx anchors when the back faces us and the yoke is clear of hair",
+  "144": {
+   "rows": [
+    ".g.",
+    "gcs",
+    ".g.",
+    ".g.",
+    ".s."
+   ],
+   "origin": [
+    1,
+    1
+   ]
+  },
+  "80": {
+   "rows": [
+    ".g.",
+    "gcs",
+    ".s."
+   ],
+   "origin": [
+    1,
+    1
+   ]
+  },
+  "key": {
+   "g": "G2",
+   "s": "G3",
+   "c": "G4"
+  },
+  "on_parts": [
+   "bodice",
+   "body"
+  ],
+  "min_visible": 0.8
+ }
+}

@@ -1,0 +1,35 @@
+{
+ "_doc": "F2 front hurt at 80 px: glyph names from lib_80.json; params tune the placement (face_f2.py). Written by face_f2_lib.py.",
+ "facing": "front",
+ "expr": "hurt",
+ "px": 80,
+ "eye_near": "near_hurt",
+ "eye_far": "far_hurt",
+ "brow_near": null,
+ "brow_far": null,
+ "mouth": "hurt",
+ "nose": null,
+ "gaze": "closed",
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "gap": 1,
+  "chin_len": 1,
+  "chin_far": 0,
+  "chin_w": [
+   0,
+   1
+  ],
+  "taper": false,
+  "jaw_min": 1,
+  "chin_contact": "S3",
+  "lash_gap": 0,
+  "jaw_pow": 1.6,
+  "lash_clip": 1,
+  "form": false,
+  "form_lit": [
+   0,
+   0
+  ]
+ }
+}

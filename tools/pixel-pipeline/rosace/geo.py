@@ -20,6 +20,7 @@ def fix_closed_normals(bm):
     """outward normals for every closed connected part (tubes, clumps, slabs); open sheets keep
     the orientation their builder chose"""
     bm.faces.ensure_lookup_table()
+    bm.faces.index_update()
     seen = set()
     for f in bm.faces:
         if f in seen:
@@ -34,11 +35,21 @@ def fix_closed_normals(bm):
                         stack.append(h)
         seen |= part
         if all(not e.is_boundary for g in part for e in g.edges):
-            bmesh.ops.recalc_face_normals(bm, faces=list(part))
+            # sorted: a set's order changes between runs, and recalc_face_normals' result (which
+            # loop each face starts on) follows it, so builds were not byte-reproducible
+            bmesh.ops.recalc_face_normals(bm, faces=sorted(part, key=lambda f: f.index))
 
 
 def bm_to_object(name, bm, materials=(), smooth=True, arm=None, part=None):
     fix_closed_normals(bm)
+    # canonical face order (by centre, then by vertex indices): bmesh.ops.create_uvsphere's face
+    # order changes between runs, which made builds differ byte for byte (rendering never depends on it)
+    bm.verts.index_update()
+    bm.faces.index_update()
+    order = sorted(bm.faces, key=lambda f: (tuple(round(c, 6) for c in f.calc_center_median()),
+                                            sorted(v.index for v in f.verts)))
+    rank = {f.index: i for i, f in enumerate(order)}
+    bm.faces.sort(key=lambda f: rank[f.index])
     me = bpy.data.meshes.new(name)
     bm.to_mesh(me)
     bm.free()

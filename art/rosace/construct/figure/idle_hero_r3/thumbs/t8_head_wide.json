@@ -1,0 +1,58 @@
+{
+ "name": "t8_head_wide",
+ "idea": "t3 + t7: the cocked head with the wider bent stance",
+ "set": {
+  "head": {
+   "chin_dx": 17
+  },
+  "neck": {
+   "back": 7
+  },
+  "legs": {
+   "near": {
+    "heel": [
+     -14,
+     8
+    ],
+    "knee_hint": [
+     -1,
+     41
+    ],
+    "toe": [
+     -11,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "butt": [
+    -20,
+    0
+   ]
+  }
+ },
+ "score": 11,
+ "gap_area": 372,
+ "width": 97,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "feet_apart": 29,
+ "failed": [
+  "FG-P12: 4.1 deg between head and neck axes",
+  "CL-P05: 11 gold px, plus shape True; backing contrast 5.3:1; 2 covering px"
+ ],
+ "verdict": "first picked as the hero (11/11, the most attitude by eye), then dropped for t3's two fails on the full build (CL-P05 block, FG-P12); the stance half of it is t7 [M]",
+ "kept": false,
+ "rank": 6
+}

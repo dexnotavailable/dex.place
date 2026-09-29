@@ -31,14 +31,99 @@ outline pixel, because the old white-to-RW "temperature rim" measured 1.03:1 and
 now have a stated build route that uses no procedural contour drawing and no image generation
 (section 12). The move changes are in `MOVESET.md`'s revision log.
 
+**Revision 3** (2026-09-29, Dex-approved design fixes after critic round 4): a bright, confident
+default face (the half-lid becomes one expression), dark indigo thigh-highs, the collar cross
+restored and enlarged at 144, constructed hands with a real two-hand grip, and an idle with
+attitude (contrapposto, a weight leg, the glaive angled away with negative space). How to *draw*
+all of it now lives in `ART-RULES.md`, whose rule IDs are quoted below. Every change is listed
+in the revision log at the end of this file.
+
+**Revision 3.1** (2026-09-29, construct round R1): the part sizes at 144 px (section 2), and two
+open calls for Dex (section 13, decisions 7 and 8). No change to how she looks.
+
+**Revision 3.2** (2026-09-29, construct round R2, after the round-1 critique): the face's details
+that read tired or sad are respecified (the iris top, the lash shape, the brows, the smirk, the
+blush), the fringe becomes unequal clumps from a parting, and the idle leans a little toward her
+staff. The list is in the revision log; the rule IDs are in `ART-RULES.md`.
+
+**Revision 3.3** (2026-09-29, construct round R3, after the round-2 critique, 6.2/10): the face's details
+that read sullen are respecified again (the near eye's lash and size, matched catchlights, brows in
+clean windows under a fringe shadow, a 4 px smile, a curved jaw, the Ignited shout), the hair's
+highlight follows the skull, the back hair falls in clumps, the front view parts off-centre, and the
+idle's free foot steps toward the staff. Each was a trial variant kept by rule check and by eye; the
+list is in the revision log.
+
+**Revision 3.4** (2026-09-29, 3D base adopted): the SiroinoSotai + MMD用女性素体 base won the
+blind A/B and is now the model `rosace.blend` is built from, with a bigger bust, a narrower waist,
+slimmer thighs and longer legs than the base that was judged. Measured numbers are in section 2;
+the list is in the revision log.
+
+**Revision 3.5** (2026-09-29, Dex's appeal direction, after she lost every artist-lane A/B). **This
+block overrides anything below that conflicts with it.** Numbers are first candidates [I]; the
+critics' picks settle them.
+
+1. **Target: 9/10**, which means matching the finish-bar refs (07, 08, 09, 04). Every lens aims
+   for 9, and blind critics should prefer her, or be unable to choose, in at least half the picks.
+   Scoring 7.5 no longer counts as done.
+2. **Pose: seductive and elegant, with more appeal.** Applies to the idle hero, the back view and
+   the 80 px world idle.
+   - **S-curve:** the shoulder and hip tilts oppose each other and are pushed past revision 3,
+     roughly 8–14° each at 144. The hip is cocked over the weight leg, the chest is lifted and the
+     back is slightly arched.
+   - **Turn:** the torso is turned three-quarters, so the bust curve and the hip curve each break
+     the silhouette.
+   - **Head:** tilted 5–10°, chin a little down, eyes on the viewer with a knowing look and a soft
+     smile.
+   - **Hands:** relaxed and elegant, with the fingers in groups and the wrist bent. The free hand
+     rests on the hip or at the collar or hair. The glaive hand sits high on the haft, and the
+     glaive is planted 15–35° away so it frames her instead of covering her.
+   - **Back view:** she glances over her shoulder, her hip is shifted and the weight leg is
+     straight. The spine curve and the thong-cut back are visible, with the hair tail moved off the
+     open back.
+3. **A wider starting stance.** The heels are about 1.3–1.6 shoulder-widths apart, with the
+   weight-leg ankle under the pit of the neck. The free leg is extended out and forward, with a
+   soft knee and the toe pointed and turned out. The legs make a long A or λ shape, not two
+   parallel columns.
+4. **Bust bigger or more prominent.** Stylised anime/gacha: start at about +20–30% volume over the
+   adopted base, lifted and projecting, so it breaks the torso outline in the three-quarter and
+   side views at 144 and still reads at 80. Read it with an underbust shadow, one designed
+   highlight, and bodice tension lines that follow the form. Try more size and try more
+   prominence (lift, projection, chest-up posture), and keep what the critics pick. Keep the
+   narrow waist.
+5. **Thinner thong string.** The back strap and side strings are 1 px at 144 and black. At 80 they
+   stay a single line, or merge into the harness line. The gold harness and garters stay.
+6. **Never:**
+   - a crotch-forward or splayed stance;
+   - a symmetric stance, parallel feet, or both knees locked;
+   - hunched shoulders or fists at rest;
+   - hands, sleeves or the glaive hiding the bust or hip curve;
+   - realistic sag, or a bust that looks like spheres stuck on.
+
+   Elegant first. The appeal comes from line and curve, not from showing more skin.
+7. **Who owns what.**
+   - The new **figure-pose** lane owns stance, pose and bust shape. It works from
+     `tools/pixel-pipeline/rosace_v2/figure_shape.py`, `figure_pose.py`, `art/rosace/figure/` and
+     new files in `art/rosace/poses/`. It builds to `lanes/figure-pose.blend`, and its report is at
+     `review/rosace/art/figure-pose/REPORT.md`.
+   - The **outfit** lane owns the thong string, and from its next round it fits the bodice to
+     `art/rosace/figure/shape.json` once that file exists.
+   - The **glaive-hands** lane owns how the hands are drawn and the grip.
+   - The **integration** step merges the figure-pose lane as well, if its report says it's done.
+     If the outfit lane stopped before it thinned the string, integration makes that change.
+
+**Credits** (the 3D base, canonical since 2026-09-29; licences in `tools/pixel-pipeline/THIRD_PARTY.md`):
+Base body: SiroinoSotai by しろいの (CC0) · Head base: MMD用女性素体 by 射当ユウキ
+
 ## The short version
 
 1. **Who she is.** A priestess whose fighting is a church service: every input is the next step
    of one continuous dance, and her effects are made of stained glass. Working name
    **Rosace** (French for "rose window"); Dex names her.
 2. **What she looks like.** Ref 14's white-and-gold priest costume **including its thong-cut
-   back** (Dex's call, 2026-09-28: keep it for appeal), white thigh-highs, indigo boots, a short white veil and an indigo sleeve
-   lining. Long indigo hime-cut hair with azure tips, azure eyes, a calm half-lidded face.
+   back** (Dex's call, 2026-09-28: keep it for appeal), dark indigo thigh-highs, indigo boots, a short white veil and an indigo sleeve
+   lining. Long indigo hime-cut hair with azure tips, bright azure eyes, a confident,
+   charismatic face that looks at something (the half-lidded look is kept only as her prayer
+   expression).
 3. **Her weapon.** A glaive, "Lancet", 1.35 H long, that is also a processional cross: a dark
    indigo haft, a small rose-window disc with gold cross arms, and a lancet-shaped blade.
 4. **Her colours.** 29 colours on the sprite. Effects are "Chartres azure" glass with gold
@@ -71,6 +156,11 @@ are given at 96; the face and the smallest parts also get a 128 px column. The f
 should be rendered at 96, 112 and 128 and put through one blind A/B round on the Face and
 Proportion dimensions before anything else is authored. [I]
 
+**Update (revision 3):** the height is decided: **144 px** ships (PIPELINE 2.1; all five
+critics picked it). The face, hand and grip specs below are written at 144, and `ART-RULES.md`
+holds every 144 px construction number. The 96 and 128 px columns elsewhere in this file are not
+converted yet; where they conflict with a 144 value, 144 wins.
+
 Two knock-on effects of going to 128 px:
 
 - The 640 px view is then only 5 H wide, so any width over 5 H runs off screen. The Q and R
@@ -89,18 +179,49 @@ In a solid black fill at real size (3x) she should read as **a slim figure with 
 sleeves, standing beside a tall cross-staff**. The glaive is the tallest shape on screen, so it
 identifies her before any detail does.
 
-- **Rest pose (the processional stance).** The glaive stands upright beside her, blade up, butt
-  on the floor, held 4–8 px away from her hip so there's negative space between staff and body.
-  Weight on the back leg, hip out (contrapposto). Her free hand rests at the collar cross.
+- **Rest pose (the processional stance, revision 3).** An idle with attitude, not a mannequin
+  beside a flagpole. Numbers at 144 px; the rule IDs are in `ART-RULES.md`.
+  - **Weight:** on the back leg, which stands vertical from hip to heel (FG-P10). That hip rides
+    up and out 2–4 px, and the shoulders tilt the other way by 2–5 px (FG-P08, FG-P09). The
+    free (near) knee bends 10–30° with the heel lifted or the toe pointed. Feet 20–30 px apart,
+    which is only allowed with that bent knee (FG-P15). A plumb line from the pit of the neck
+    lands on the weight foot (FG-P11).
+  - **Glaive angled away:** the butt is planted just outside the near foot and the haft leans
+    **away from her body, 15–35° from vertical** (GR-P09), blade up and outward. That opens a
+    wedge of background between the staff and her body that widens toward the top, and it
+    widens her silhouette past 0.40 H (FG-P14). The near hand grips at chest height with the
+    arm reaching out and the elbow slightly bent, which opens the first arm–body gap (FG-P13).
+    Revision 3.2: her chest and head lean about 2 px toward the staff, so the grip arm bends
+    instead of reaching out level at full length (the thumbnail round in ART-RULES 10, round R2).
+    Revision 3.3: the free foot steps about 5 px out toward the staff with its heel lifted (feet about
+    29 px apart, still inside the 20–30 px stance), so the knee bends and the legs stop reading as
+    two columns; the glaive butt moves out with it only 5 px, so the grip arm keeps its bend
+    (ART-RULES 10, round R3). A cocked head was tried too and dropped: the chin covered the collar
+    cross.
+    The haft is never within 10° of parallel to her legs or torso (GR-N02) and never crosses
+    her centre band (GR-N03). A/B alternatives, from `art-rules/figure.md` section 8: the haft
+    leaning across behind her, and the glaive resting in the crook of the arm against the
+    shoulder at 40–50°.
+  - **Free hand at the collar cross,** with the elbow lifted away from the ribs so it makes the
+    second arm gap. The hand is a relaxed mitten that frames the cross and never covers it
+    (CL-P05, HD-P04).
+    *Revision 3.1 note:* at the 144 px sleeve size this pose drapes the far bell across the chest
+    (ART-RULES CL-N03); the construct's round R1 hero puts the hand on the far hip instead. That
+    choice is decision 7 in section 13 and is not made here.
+  - **Head:** tilted 5–15°, chin slightly down, eyes at the viewer in the Confident expression
+    (FG-P12, section 5).
 - **Head shape.** Long dark hair, a short white veil behind it, a small gold rose pin at the
   crown. Each ref 13 enemy has a distinct crown, halo ring, hood or horns [M, REF-BREAKDOWN]; a
   dark head with a white veil point is unlike all of them. **No halo on her head**, because one
   ref 13 enemy wears a full red ring [visible].
 - **Value structure** (from judgment.md): dark at the top (hair), light in the middle (white and
-  gold costume, skin), dark at the ground (indigo boots) and in the weapon (indigo haft). That
-  stops a white costume reading as one pale blob, and gives the rim light dark edges to sit on.
-- **Personality in the pose:** serene. The violence belongs to the ritual, so she never looks
-  strained. That matches CANON's quiet, still arrival.
+  gold costume, skin), dark from mid-thigh to the ground (indigo thigh-highs and boots, revision
+  3) and in the weapon (indigo haft). That stops a white costume reading as one pale blob, puts
+  a dark value between the legs so they separate from the white tabard, and gives the rim light
+  dark edges to sit on.
+- **Personality in the pose:** serene and completely sure of herself. The violence belongs to
+  the ritual, so she never looks strained, but serene is an attitude, not stillness: the tilted
+  hips, the cocked head and the angled glaive say it. That matches CANON's quiet, still arrival.
 - **Idle flourish:** about every 6 s she turns the staff once in her hand (24 f), and the rose
   disc glints.
 
@@ -113,21 +234,42 @@ the arms must clear the torso.
 About 6 heads tall, inside the rubric's 5.5–6.5 band [M, rubric 2]. Sizes are proposals, sized
 from REF-BREAKDOWN's estimates for ref 14 at 96 px.
 
-| Part | At 96 px | At 128 px | Note |
+| Part | At 96 px | At 128 px | At 144 px (revision 3.1) | Note |
+|---|---|---|---|---|
+| Height | 96 | 128 | 144 | skull top to sole, boots included |
+| Head (skull top to chin) | 16 | 21 | 24 (the face grid runs to 26 with the hair volume: ART-RULES O-1) | |
+| Chin to crotch | 30 | 40 | 45; collar 7–8 | collar 5 px (7 at 128) |
+| Crotch to sole | 50 | 67 | 75 | 52% of height: long gacha legs (04, 08) |
+| Shoulders / waist / hips, three-quarter view | 18 / 10 / 16 | 24 / 13 / 21 | 27 / 15 / 24 | a clear hourglass |
+| Arm, shoulder to wrist | 30 | 40 | 45 | hands 4–5 px (5–6). At 144 (revision 3): a fist is 7–9 × 6–8 px with a 2–3 px thumb wedge; an open hand is 10–12 px long (ART-RULES HD-P02, HD-P03) |
+| Knee height | 26 | 35 | 39 | |
+| Detached sleeve | 28 long; mouth 18 hanging, up to 32 flared | 37; 24 / 42 | **42 long; mouth 27 hanging, up to 48 flared** | flare keyed per drawing. The bell is the biggest mass after the hair (ART-RULES CL-P06) |
+| Front tabard | 7 × 34 | 9 × 45 | 11 × 51 | hip to mid-shin |
+| Thong-cut back | 1 px gold edge lines | 1–2 px gold edge lines | 1–2 px gold edge lines | ref 14's cut, kept (Dex's call) |
+| Hair | tail ends at mid-thigh, about 55 px from the crown | about 73 | about 82 | gathered by a ring near the end |
+| Veil | 12 × 16 | 16 × 21 | 18 × 24 | back of the head to the shoulder blades |
+| Glaive | 130 (1.35 H) | 173 | 194 | the refs' weapons run 0.93–1.1 H [M, REF-BREAKDOWN]; a glaive goes longer on purpose |
+
+**Why the 144 column (revision 3.1).** 144 px shipped in revision 3 but this table stayed at 96
+and 128. Round C1 of the construct route drew the sleeves with a 13 px drop, a third of the size
+the 96 px row implies at 144, and the figure read thin next to refs 07, 08 and 09 [M, ART-RULES
+10 round R1]. The 3D reference layer (r4fix idle, px144) measures the near bell at about 20 × 27
+px [M]. The column is the 96 values × 1.5, rounded; the design itself is unchanged.
+
+**Measured on the 3D base (revision 3.4).** The table above holds the design targets. The base
+that `rosace.blend` is built from since 2026-09-29 (SiroinoSotai body + MMD用女性素体 head,
+`PIPELINE.md` 3.6e) measures as follows, bare, in front view, on the rest pose. The three-quarter
+row of the table can't be compared one-to-one, because a front view is wider at the shoulders
+and hips than a three-quarter view. [M, `base_search.py`]
+
+| Measure (front view) | At 144 px | At 80 px | Retired v1 base at 144 |
 |---|---|---|---|
-| Height | 96 | 128 | skull top to sole, boots included |
-| Head (skull top to chin) | 16 | 21 | |
-| Chin to crotch | 30 | 40 | collar 5 px (7 at 128) |
-| Crotch to sole | 50 | 67 | 52% of height: long gacha legs (04, 08) |
-| Shoulders / waist / hips, three-quarter view | 18 / 10 / 16 | 24 / 13 / 21 | a clear hourglass |
-| Arm, shoulder to wrist | 30 | 40 | hands 4–5 px (5–6) |
-| Knee height | 26 | 35 | |
-| Detached sleeve | 28 long; mouth 18 hanging, up to 32 flared | 37; 24 / 42 | flare keyed per drawing |
-| Front tabard | 7 × 34 | 9 × 45 | hip to mid-shin |
-| Thong-cut back | 1 px gold edge lines | 1–2 px gold edge lines | ref 14's cut, kept (Dex's call) |
-| Hair | tail ends at mid-thigh, about 55 px from the crown | about 73 | gathered by a ring near the end |
-| Veil | 12 × 16 | 16 × 21 | back of the head to the shoulder blades |
-| Glaive | 130 (1.35 H) | 173 | the refs' weapons run 0.93–1.1 H [M, REF-BREAKDOWN]; a glaive goes longer on purpose |
+| Heads tall | 6.1 (head 23.6 px) | 6.1 (13.1 px) | 5.92 |
+| Crotch to sole | 77.3 (53.7% of height) | 42.9 | 77.7 (53.9%) |
+| Shoulders / bust / waist / hips | 26.6 / 20.9 / 10.0 / 24.1 | 14.8 / 11.6 / 5.6 / 13.4 | 30.6 / 19.2 / 10.9 / 25.5 |
+| Bust depth (side view) | 18.1 | 10.0 | 15.6 |
+| Waist / hips | 0.417 | | 0.429 |
+| Thigh top, one leg | 10.8 | 6.0 | 10.4 |
 
 ## 3. Outfit, adapted from `14-outfit-priest-sister.png`
 
@@ -137,7 +279,7 @@ reads as "designed costume" rather than bare skin at 96 px [I, REF-BREAKDOWN und
 
 | # | Part | From 14? | Shown or covered | At 96 px | Motion job |
 |---|---|---|---|---|---|
-| 1 | High stand collar, gold edge, gold cross at the throat, small shoulder yoke | yes | covers the neck | white block 5 px tall, 1 px gold rim, 3×3 gold cross | rigid |
+| 1 | High stand collar, gold edge, gold cross at the throat, small shoulder yoke | yes | covers the neck | white block 5 px tall, 1 px gold rim, 3×3 gold cross. **At 144 (revision 3): a 5×5 cross (G1 lit arms, G3 shade side) on a 1 px dark backing (G4 or I3), because gold on white is only 1.13:1 and the round-4 cross read as a gold blob.** Must be visible in every front and three-quarter key pose: no hand, hair lock or haft covers it (ART-RULES CL-P05) | rigid |
 | 2 | Front panel with a diamond chest window in gold | yes | window shown | window 5×9 front, 3×9 three-quarter; 1 px gold frame around 2 skin tones | rigid |
 | 3 | Open sides, armpit to hip | yes; front panel 1 px wider each side | shown | 3–4 px strip in side view, crossed by gold lines; this is her most visible designed skin in a side-view game | none |
 | 4 | Bare shoulders, gold armbands | yes | shown | armband 1–2 px gold line, 1 highlight pixel | none |
@@ -147,8 +289,8 @@ reads as "designed costume" rather than bare skin at 96 px [I, REF-BREAKDOWN und
 | 8 | Garter straps to a gold thigh band, cross charms | yes | about 16 px of bare thigh shown | 1 px gold straps | charms |
 | 9 | Open back: pentagon halter yoke, cross on the upper back, mid-back strap | yes | back shown | 3×5 yoke cross, 1 px gold straps | shows in N2's pivot, the dash pirouette and R |
 | 10 | Thong-cut back | **yes, kept as ref 14 designs it** (Dex's call) | seat shown, framed | thong (white, or black if white doesn't read — see below) with a 1 px gold edge meeting the hip band and garter harness; the glutes are shaded as form with the skin ramp (lit, shadow, deep crease) so they read as body, never a flat skin blob | none; the sleeves, veil and hair carry motion from behind |
-| 11 | Legs (not on the sheet) | **added**: white thigh-highs, 1 px gold top band | covered below mid-thigh | lavender shadow side, 1 px sheen | none |
-| 12 | Feet (not on the sheet) | **added**: indigo mid-calf boots, gold toe and heel caps | covered | 9 px tall | ground her on light floors, take rim light |
+| 11 | Legs (not on the sheet) | **added**: **dark indigo thigh-highs** (revision 3; were white), 1 px gold top band | covered below mid-thigh | the outfit's dark tone, the indigo ramp: I2 core, I1 sheen, I3 shadow side, I4 deep. Against the white tabard that's 6.8:1 (W1/I2) where white-on-white was 1.30:1, so the legs always separate from the tabard and a dark value sits between them (ART-RULES CL-P04, PX-P26) | none |
+| 12 | Feet (not on the sheet) | **added**: indigo mid-calf boots, gold toe and heel caps, **and a 1 px gold cuff line at the boot top** (revision 3) | covered | 9 px tall. The boot runs one step darker than the stocking (I3 core, I4 shadow, one I0 gloss streak) and meets it at the gold cuff, because I2 against I4 is only 1.95:1 | ground her on light floors, take rim light |
 | 13 | Head (not on the sheet) | **added**: short white veil with a beige lace hem, gold rose hairpin | covered | 12×16 | light flag |
 
 **The thong stays** (Dex, 2026-09-28: "keep the thong to keep the appeal"). An earlier revision
@@ -164,6 +306,8 @@ darkest outline-family tone, not pure #000) gives a strong value break against s
 dark accents (boots, sleeve lining, hair) and reads as costume at any height. Every back-view still
 renders both variants side by side; keep whichever the critics find more readable and attractive
 at game size, and record the pick here.
+
+**Pick (round 1, 2026-09-29): black.** All three critics who judged the back view chose it: it gives the seat a dark value anchor and keeps the thong cut and garter geometry readable, while white merged with the gold trim and the skin highlight. The `--thong white` render stays available for comparison.
 
 **Net read:** bare shoulders, chest window, sides, open back, thong-cut seat and a band of thigh,
 all framed in gold. Revealing and attractive in exactly the places ref 14 chose, and plainly a
@@ -187,12 +331,21 @@ haft. Ramps are listed light to dark.
 | G0–G4 | Gold | `#fff3c4` `#ecc96f` `#d1a452` `#a2722f` `#6a4520` | G2 is ref 14's gold chip [M]. G0 is the 1 px specular only. |
 | S1–S4, SB | Skin, blush | `#fbe4cf` `#f3d2b2` `#e2a996` `#b8766f`; blush `#ee9ea0` | S2 is ref 14's skin chip [M]. S4 doubles as the mouth. |
 | B1–B2 | Beige | `#e4d2ba` `#c4ab93` | ref 14's beige chip [M]. Veil lace, the back of the stole, so a ribbon twist shows as a colour flip |
-| I0–I4 | Indigo | `#a9b8f2` `#6c72d0` `#4a4aa6` `#322c78` `#211a4e` | hair, sleeve lining, boots, haft |
+| I0–I4 | Indigo | `#a9b8f2` `#6c72d0` `#4a4aa6` `#322c78` `#271f5e` | hair, sleeve lining, boots, haft, and the thigh-highs (revision 3). I4 lifted from `#211a4e` in round 2: it merged with OL `#181032`, so hair and boot interiors clumped into the outline |
 | T2–T4 | Steel | `#bccae2` `#8290b4` `#505a84` | blade; the cutting edge uses A5, like ref 08's white edge line [visible] |
 | A2–A5 | Azure (shared with the effects) | `#2a62d0` `#4aa8f0` `#a0e6ff` `#f0fcff` | eyes, hair tips, the weapon's glass, and the cool rim (section 9) |
 
 That's 1 + 4 + 5 + 5 + 2 + 5 + 3 + 4 = 29. [M, count] Revision 1 had a 30th colour, RW
 `#e6f4ff`, as the rim target on white. It measured 1.03:1 against W1 and is gone (section 9).
+
+Revision 3 adds no colour: the thigh-highs move onto the indigo ramp, and the collar cross's dark
+backing reuses G4 or I3. `art/rosace/palette.json` still maps the `stocking` material to the W
+ramp; moving it to the indigo ramp (deep I4, shadow I3, lit I2, sheen I1) is an edit for that
+file's owner (ART-RULES open question O-6).
+
+**No A1 on the sprite** (revision 3.2). The round-1 critique proposed an A1 iris top at 2:1 against
+the outline; A1 on OL measures 1.58:1, so it would read as lid. The iris top is A2 (3.24:1) and the
+sprite stays at 29 colours.
 
 **The indigo is deliberately light.** At least a third of the hair's pixels should sit in I1 and
 I2, so the hair mass never reads as black next to the ref 13 enemies. Check with
@@ -229,7 +382,55 @@ The face is **hand-authored per facing** (three-quarter, profile, back) and stam
 rendered head. It is never a downsampled 3D face: 3D toon eyes at 2–5 px turn to mush
 [S, REF-BREAKDOWN "what the route has to add by hand"].
 
-**At 96 px** (16 px head): ref 05's size built with ref 01's logic (rubric 3).
+**Revision 3: who she is in the face.** Bright, confident and charismatic: open azure eyes that
+look at something, visible brows, a mouth with a bent corner, and a little asymmetry. The
+critics' repeated note was "a blank half-lidded stare, no charisma", and Dex's call is that her
+resting face is the confident one; the half-lid survives only as the Serene expression for
+prayer beats. The face is **constructed** on the grid in `ART-RULES.md` section 6 (head ball,
+side plane, centre line, eye line, then pixels), whether or not the 3D head is good; the 3D
+head only says where the face sits and which way it turns (ART-RULES WF-P02).
+
+**At 144 px** (the shipped height; rule IDs from `ART-RULES.md`):
+
+| Feature | Spec | Colour |
+|---|---|---|
+| Layout | rows above the chin: mouth 2–3, nose 6–7, eye bottom 9–11, lash top 13–15, brows 2–3 rows over the lash; face 15–16 px wide at the eye row, (lash top to chin) ÷ width 0.85–0.95 (FC-P01, FC-P02). The round-4 face was 0.69: too short below the eyes | – |
+| Eye, near | 5–6 wide × 5–6 tall, **the bigger and brighter eye** in three-quarter view (one more iris row and a column more iris and white than the far eye, FC-P26; revision 3.3); the upper lash is the 2 px flick up and out plus **one** row across the eye, its inner corner dipping 1 px (revision 3.3: a third lash row had squeezed the top iris row to 1 px and made the near eye the smaller one), never down at the outer end (FC-N25); the iris touches the lash with an **A2 top** (A2 against the lash is 3.24:1; I3 and A1 are 1.5–1.6:1 and read as more lid), an I3 pupil on the gaze side, a 2 px **A4 crescent** at the bottom; the white on the side opposite the gaze, one column; a lower-lash mark at the outer corner that rises into the eye on the smirk side (FC-P22, FC-P24) *(revision 3.2)* | OL; A2, A3, A4, A5; I3 pupil; W2 |
+| Eye, far (three-quarter) | 1–2 px narrower, 0–1 px shorter (FC-P04) | same |
+| Gaze | both irises offset the same way by the same amount, at a named target (the viewer at idle). Never both whites on the nose side (FC-P11, FC-N01) | – |
+| Highlight | 1 px A5 on the same side in both eyes, the key light's side, **on the top iris row and at the same offset from each pupil**, so both eyes focus on one point (FC-P12; revision 3.3) | A5 |
+| Openness | at least 3 iris rows show on the default face; the half-lid is Serene only (FC-P13) | – |
+| Brows | always present: 1 px thick, 2–3 rows over the lash, in forehead windows where the fringe arches, with no hair within 1 px (FC-P27); the fringe's cast shadow sits above them as a solid band, never a speckle (FC-N27). Confident: the near brow 3 px with its outer end a step up (the cocked brow), the far brow 2 px and level; never the worry slope (FC-P15, FC-N26) *(revision 3.2; lengths and windows revision 3.3: 4/3 px brows filled the windows and read stern)* | I3 on skin, OL where they cross hair |
+| Nose | 1 × 2 px mark toward the far eye (FC-P06) | S3 |
+| Mouth | the Confident mouth: **a 4 px S4 smile, both corners up (a shallow U), with an S3 dimple at the near corner** (revision 3.3: the 3 px smirk read as a pout; the U beat a 4 px smirk in the whole-face pick beside ref 08); an S3 corner alone vanishes (1.42:1); open 2 × 2 or 3 × 2; in profile a 2–3 px mark whose back corner rises (FC-P07, FC-P23) | S4, SB, S3 dimple |
+| Blush | a solid 2 px (3 on Radiant) on one row under the outer half of each eye, on S2 only; never diagonal or vertical (with the nose mark it read as tear tracks) (FC-P17, FC-N24) *(revision 3.2)* | SB |
+| Contour | chin point 2–4 px wide toward the far side, a 1 px far-cheek bump, no straight cheek run over 3 rows on either side, and no neck skin beside the chin row (the hair or the jaw's shadow sits there), so the chin reads as a point (FC-P08, FC-N13). Revision 3.3: the jaws are curves whose runs shorten toward the chin (the far jaw 4, 3, 2, 1, 1 into a 3 px chin under a 5 px row), never a staircase of equal steps (FC-N28); the far lock backs the far jaw with a dark value | silhouette OL; S3 far-cheek cluster |
+
+**Expressions** (ART-RULES 6.5; each changes at least two of brows, lids and mouth):
+
+- **Confident** (default: idle, walk, menus): open eyes at the viewer, the near one the bigger, the
+  lash the flick plus one row; the smile side's lower lid lifted; the near brow cocked, the far brow
+  level; a 4 px smile with both corners up and a dimple at the near corner; head tilted 1 px across
+  the eye line (revision 3.2; eye, brows and mouth revision 3.3).
+- **Focused** (attacks): brows down and together; the lash flattened and lowered 1 px on the
+  iris; lower lid up 1 px; eyes on the target; mouth pressed or open in a shout.
+- **Radiant** (happy, wins): brows up; eyes closed into upward arcs or crescent-open with the
+  lower lid pushed up; a U-shaped mouth.
+- **Serene** (prayer beats only: the staff-turn flourish, Sanctuary, R's cut-in wind-up): the
+  half-lid, with 1–2 iris rows showing and a soft flick; a small closed smile.
+- **Ignited** (R and Illumination): Focused with a dark A2 iris core inside an A4 rim (revision 3.2:
+  an all-pale iris reads blind) and a 1 px A4 glow beside the eye; the brows pulled in; a battle cry:
+  the teeth as one W1 row on the mouth line over a dark open mouth and the lower lip (revision 3.3:
+  one W1 pixel over SB read as buck teeth).
+- **Hurt:** brows up at the inner ends; eyes squeezed into > < shapes pointing at the nose (revision
+  3.2: a flat line read as asleep); one mouth corner down.
+
+The 96 and 128 px tables below are the revision-2 spec, kept for the record. They are
+**superseded** by the 144 spec above: in particular, "Brows: none" and the half-lidded Serene
+default no longer apply. The round-4 face stamps in `art/rosace/faces/` were built to them and
+are superseded too (not deleted).
+
+**At 96 px** (16 px head, superseded): ref 05's size built with ref 01's logic (rubric 3).
 
 | Feature | Pixels | Colour |
 |---|---|---|
@@ -241,7 +442,7 @@ rendered head. It is never a downsampled 3D face: 3D toon eyes at 2–5 px turn 
 | Mouth | 1 px; 2 px open | S4 |
 | Blush | 1 px under each eye | SB |
 
-**At 128 px** (21 px head), closer to 07 and 08:
+**At 128 px** (21 px head, superseded), closer to 07 and 08:
 
 | Feature | Pixels |
 |---|---|
@@ -251,10 +452,12 @@ rendered head. It is never a downsampled 3D face: 3D toon eyes at 2–5 px turn 
 | Mouth | 2 px; 2×2 open |
 | Blush | 2 px under each eye |
 
-**Expressions** (at least neutral, happy, angry per rubric 3):
+**Expressions, revision 2** (superseded by the list above; kept for the record):
 
-- **Serene** (default): half-lidded, the lash row lowered 1 px so only 1 iris pixel shows.
-- **Resolute** (attacks): the inner lash end drops 1 px.
+- ~~**Serene** (default)~~: half-lidded, the lash row lowered 1 px so only 1 iris pixel shows.
+  Now an occasional expression, not the default.
+- **Resolute** (attacks): the inner lash end drops 1 px. Now **Focused**, which also moves the
+  brows and the mouth.
 - **Radiant** (happy, wins): eyes closed into 3 px arcs, mouth open 2 px.
 - **Ignited** (R and Illumination): the iris turns A4, with a 1 px A4 glow beside the eye.
 - **Hurt:** eyes squeezed into a 1 px arc, mouth 2 px.
@@ -267,7 +470,19 @@ generated (CANON: no image generation).
 
 ## 6. Hair
 
-- **Cut:** a long hime cut. Straight bangs broken into 3 clumps by 1 px separators. Sidelocks
+- **Cut:** a long hime cut. **Revision 3.2:** the fringe is 4 clumps of unequal width from a parting
+  (in three-quarter view about 4 / 6 / 5 / 3 px), their tips on different rows, one lock sweeping
+  across the parting, and windows over the brows; the near clumps swing to the near side and the far
+  ones to the far side. (Revision 3 had "straight bangs broken into 3 clumps by 1 px separators",
+  which the round-1 critique read as a comb.) Clump lines bend at least every 3 rows, and the deepest
+  indigo sits behind the sidelocks so they separate from the back mass (ART-RULES HR-P11, HR-P12,
+  HR-N04). **Revision 3.3:** the highlight is an angel ring broken into one tapering dash per crown
+  clump, the dashes on different rows as the skull curves (a straight row read as a halo band); the
+  back hair falls as 2–3 big clumps with one lit ridge, the deepest indigo only under the overlaps and
+  behind the sidelocks (parallel strands read as a striped wig); the head's silhouette breaks with a
+  lit clump tip on the light side, never a dark strand (a crown cowlick and two dark flyaways were
+  tried and read as an antenna, a twig and a horn); in front view the hair parts off-centre (a mirrored
+  dome read as a wig) (ART-RULES HR-P08, HR-P13, HR-N05). Sidelocks
   to the collarbone, held by small gold cross clasps that swing like the garter charms. Back hair
   to mid-thigh, gathered loosely near the end by a 2×2 gold ring so the lower half moves as one
   clean ribbon, not a spray.
@@ -306,11 +521,27 @@ glaive's blade slashes and cuts cords the same way; if Dex keeps the glaive, tha
 
 **Carry and grip:**
 
-- Rest: upright in the near hand (her right hand, toward the camera; the spike's convention
-  [M, `blender_spike.py`]), butt beside the rear foot.
+- Rest (revision 3): in the near hand (her right hand, toward the camera; the spike's convention
+  [M, `blender_spike.py`]), butt planted just outside the near foot, the haft **leaning away
+  from her body 15–35° from vertical** with negative space between staff and body (section 1).
+  Revision 2 had it upright beside the rear foot; at 144 that measured about 6.5° and read as a
+  flagpole (the refs hold theirs at 16–56° [M, `art-rules/figure.md` 3.2]).
 - Walk: upright, swinging slightly. Run: angled forward, blade leading low, stole streaming.
-- Both hands on every attack. The grip slides to the middle of the haft for twirls (N3, Q) and
-  to the butt for the widest sweeps (N5).
+- **Hands are constructed, not stamped** (revision 3). Every hand is built per pose from a palm
+  box, a mitten of fingers, a thumb wedge and a 1 px wrist step (ART-RULES HD-P01). At 144 a fist
+  on the haft is 7–9 × 6–8 px with a 2–3 px thumb wedge crossing the haft on the near side and a
+  curved knuckle line; an open hand is a mitten with at most two separated fingers, never four
+  equal bumps (HD-P02, HD-P03, HD-N02). The round-4 hand library (`art/rosace/hands/`: rounded
+  rectangles, a four-bump palm) is superseded, not deleted.
+- **A real two-hand grip** on every attack (revision 3). The rear hand sits at the hip or in
+  front of the lower belly; the front hand is 24–30 px up the haft on ready and thrust grips
+  (di Grassi's "about one foot", the naginata mid-guard's shoulder width; ART-RULES GR-P01,
+  GR-P04). Both fists sit on the haft line within 1 px, the haft disappears behind the fingers
+  and comes out collinear on the other side (GR-P05), and the wrists stay inside the functional
+  limits (HD-P06). The grip slides to the middle of the haft for twirls (N3, Q: both hands
+  within 8–14 px of the middle) and spreads to 40 px toward the butt for the widest sweeps (N5).
+  The haft passes above or below the pelvis, never through it, and the spine leans into the
+  thrust (GR-N05, FG-P18).
 - The weapon never floats: in every drawing at least one hand is on the haft, except N4's vault
   (she's on it) and the moment Q plants it.
 
@@ -476,13 +707,13 @@ motion") no matter how good it looks alone.
    selective outline on white where it touches the veil or sleeve (a W4 line, not OL).
 5. **Light.** Baked key light always from upper front; rim only from real lights, on the lit
    side's outline and, on broad shapes, one pixel inside it.
-6. **Gold trim** is always 1 px; cross glyphs keep their sizes (collar 3×3, sleeve 3×5, tabard
-   5×7, stole 3×5).
+6. **Gold trim** is always 1 px; cross glyphs keep their sizes (collar 3×3 at 96 and **5×5 with
+   a dark backing at 144**, revision 3; sleeve 3×5, tabard 5×7, stole 3×5).
 7. **The glaive** is 130 px in every drawing except smears, where it may stretch up to 15% and
    bend (ref 09's bent blade [visible]). The disc and glass spine always show the current meter
    and cooldown state.
 8. **Pivot** at the foot centre on the ground; hands on the haft (section 7).
-9. **Cloth sizes:** sleeve mouth 18 px hanging, never over 32 px flared; tabards keep their
+9. **Cloth sizes:** sleeve mouth 18 px hanging, never over 32 px flared (27 and 48 at 144); tabards keep their
    lengths; only the lead flag flares.
 10. **Pixel size:** effects, apparitions, face stamps and the cut-in are all on the sprite's
     pixel grid; no mixed pixel sizes (rubric 7). The 2.5x glass saint is a bigger render, not an
@@ -492,9 +723,10 @@ motion") no matter how good it looks alone.
 
 - **Rendered in Blender** from a rigged model: body, costume, hair, glaive with its disc.
   Orthographic camera, no anti-aliasing, constant toon ramps, and per-frame albedo, normal and
-  material-ID passes [S, RESEARCH 4.1, 4.7]. The body comes from VRoid Studio's new-model base
-  (installed; its guidelines allow editing and publishing in games and websites [S,
-  MOTION-SOURCES]). Cloth and hair are hand-keyed per drawing; shape keys push the flare on
+  material-ID passes [S, RESEARCH 4.1, 4.7]. Since revision 3.4 the body is SiroinoSotai by
+  しろいの (CC0) and the head is MMD用女性素体 by 射当ユウキ (commercial use and modification
+  allowed), welded and rigged by `tools/pixel-pipeline/build_rosace_v2.py` (`PIPELINE.md` 3.6b–3.6e;
+  licences in `THIRD_PARTY.md`). The retired v1 base was VRoid's CC0 `HairSample_Female.vrm`. Cloth and hair are hand-keyed per drawing; shape keys push the flare on
   contact and smear drawings.
 
 **Nothing is drawn as procedural contours in code.** That was the previous attempt's approach
@@ -533,7 +765,10 @@ through the same Blender pipeline as her body:
     per facing and expression (section 5). Route: render the 3D head at sprite size to fix the
     stamp's position, and at 4x as a reference for eye placement, then place the stamp pixels
     explicitly as a small per-pixel data file or in a pixel editor. That's pixel placement on a
-    tiny, fixed budget, checked at 6x against 05 and 01. It isn't contour drawing.
+    tiny, fixed budget, checked at 6x against 05 and 01. It isn't contour drawing. **Revision
+    3:** at 144 the stamp is constructed on the `ART-RULES.md` section 6 grid (the 3D head gives
+    only position and turn), tried in 3 variants per expression, and checked at 6x against 07,
+    08 and 09 with the rules in `art-rules/checklist.json`.
   - **Cut-in bust** (640×96): render the same model as a bust at about 3x the sprite's head size
     (a head of about 48 px) through the same toon, no-anti-aliasing, palette-snapped pipeline,
     then paint over the eyes, lashes, iris, highlight, brows and blush pixel by pixel (ref 01's
@@ -563,9 +798,146 @@ through the same Blender pipeline as her body:
 2. **Glaive over sword.** CANON's "the sword" line would change.
 3. **Hair and eyes:** indigo with azure tips and azure eyes. Alternatives to A/B: gold eyes
    (judgment.md, halo.md), or hair shifted toward violet if she dissolves into her own blue.
-4. **Costume additions:** thong-cut back kept (decided by Dex 2026-09-28), white thigh-highs, indigo boots, short
-   veil, indigo sleeve lining.
+4. **Costume additions:** thong-cut back kept (decided by Dex 2026-09-28), dark indigo
+   thigh-highs (decided by Dex 2026-09-29, revision 3; were white), indigo boots, short veil,
+   indigo sleeve lining.
 5. **Name.** "Rosace" is a placeholder.
 6. **Who does the pixel paint-over** on the face stamps and the cut-in (section 12): Dex, a
    pixel artist he brings in, or an agent making explicit pixel edits under A/B? Recommended:
    prove it on one stamp and one cut-in drawing first. [I]
+7. **The free hand at rest** (revision 3.1, from construct round R1). Section 1 puts it at the
+   collar cross. With the sleeves at their DESIGN size (the 144 column above), the far bell hangs
+   from a forearm that crosses the chest: it closes the far arm window (ART-RULES FG-N04, a block
+   rule) and covers the chest window and hip band (CL-N03). The hand on the far hip passes every
+   silhouette rule and reads with more attitude, and the 3D rig's own idle already stands that
+   way. Options: hand on the far hip (the round R1 hero), or the collar hand with the far bell
+   pinned back. [I; M, ART-RULES 10 round R1, O-10]
+8. **Boot height** (revision 3.1). Section 3 row 12 gives the boots 9 px at 96 (about 13.5 at 144,
+   an ankle boot) but calls them mid-calf; both construct rounds draw them 20–21 px tall at 144.
+   Which is it? [conflict; ART-RULES O-12]
+
+## Revision log
+
+**Revision 3**, 2026-09-29. Design fixes Dex approved after critic round 4, which plateaued at
+about 5.7/10 against the refs' 9. The critics' repeated notes were a blank half-lidded stare, a
+mannequin stance, white-on-white legs, block hands, a flagpole grip and a missing collar cross.
+The construction rules behind every fix are in `ART-RULES.md` (rule IDs in brackets); the
+evidence is in `art-rules/face.md`, `figure.md` and `pixel.md`.
+
+1. **Face: bright and confident by default** (section 5, short version item 2). Was: "a calm
+   half-lidded face", Serene (half-lid, 1 iris pixel) as the default, no brows at 96. Now: open
+   azure eyes aimed at a named target, brows always present, a smirk with a bent corner, one
+   asymmetry, and a 144 px construction grid that lengthens the face below the eyes (round 4 was
+   0.69 of the face width; the refs are 0.87–0.91). The half-lid survives as Serene, for prayer
+   beats only. Resolute is renamed Focused and now moves brows and mouth as well as lids. The 96
+   and 128 px face tables and the round-4 stamps in `art/rosace/faces/` are marked superseded,
+   not deleted. [FC-P01–FC-P20, FC-N01, FC-N22, FC-N23]
+2. **Dark thigh-highs** (section 3 rows 11–12, section 4, section 1 value structure, decision
+   4). Was: white thigh-highs on the tabard's W ramp, 1.30:1 against the W1 tabard, so the legs
+   merged. Now: the outfit's dark indigo ramp (I2 core), 6.8:1 against W1, which also puts a dark
+   value between the legs. The boot gets a 1 px gold cuff line and runs one step darker so it
+   still separates from the stocking (I2/I4 is only 1.95:1). No new colour; `palette.json`'s
+   `stocking` material needs its ramp moved by that file's owner. [CL-P04, PX-P26]
+3. **Collar cross restored** (section 3 row 1, section 11 lock 6). Was: a 3×3 cross that read
+   as a gold blob at 144 (gold on white is 1.13:1). Now: 5×5 at 144 on a 1 px dark backing,
+   visible in every front and three-quarter key pose, framed (not covered) by the free hand.
+   [CL-P05]
+4. **Constructed hands and a real two-hand grip** (section 7, section 2 arm row). Was: a
+   three-stamp hand library (rounded-rectangle fists, a four-bump palm) and a forward arm lying
+   along the haft. Now: every hand built per pose from palm box, mitten, thumb wedge and wrist
+   step, at 144 px sizes; two-hand grips with the rear hand at the hip, the hands 24–30 px apart,
+   both fists on the haft line, the haft collinear through them, and wrists inside the
+   functional limits. The round-4 hand library is superseded, not deleted. [HD-P01–HD-P06,
+   GR-P01–GR-P06, GR-N01, GR-N05]
+5. **An idle with attitude** (section 1 rest pose and personality, section 7 rest carry). Was:
+   the glaive upright beside her (about 6.5° at 144), level shoulders and hips, both knees
+   locked, no gap between the arms and the body. Now: contrapposto with a vertical weight leg,
+   opposed shoulder and hip tilts, a bent free knee, a tilted head, the glaive leaning away from
+   her body at 15–35° with a wedge of negative space, and both arms opened off the body (the
+   glaive arm reaching out, the free hand at the collar with the elbow lifted). [FG-P08–FG-P16,
+   FG-N01, FG-N02, FG-N04, GR-P09, GR-N02, GR-N03]
+6. **Height note** (section "Height"). 144 px is recorded as the shipped height, as PIPELINE 2.1
+   already decided. The 96 and 128 px columns elsewhere are not converted yet; 144 wins where
+   they conflict.
+7. **Build route note** (section 12, face stamps). At 144 the stamp is constructed on the
+   `ART-RULES.md` grid in 3 variants per expression and checked with `art-rules/checklist.json`;
+   the 3D head gives only position and turn.
+
+**Revision 3.1**, 2026-09-29. Design fixes from construct round R1 (`ART-RULES.md` section 10); no
+change to how she looks.
+
+1. **A 144 px column in section 2** for every part size that was only written at 96 and 128, most
+   importantly the sleeve (42 long, 27 mouth, 48 flared), the tabard (11 × 51), the hair (about
+   82 from the crown) and the veil (18 × 24). Round C1 drew the bells at a third of that size
+   because the table had no 144 values. Lock 9 in section 11 gets the 144 sleeve numbers too.
+   [ART-RULES CL-P06]
+2. **Decision 7 added (the free hand at rest):** the collar hand of section 1 fails FG-N04 once the
+   bells are at size; the hip hand passes. Section 1 carries a note and is otherwise unchanged
+   until Dex picks. [ART-RULES CL-N03, O-10]
+3. **Decision 8 added (boot height):** section 3 row 12's 9 px at 96 against "mid-calf" and the
+   20–21 px both constructs draw. [ART-RULES O-12]
+
+**Revision 3.2**, 2026-09-29. Design fixes from construct round R2 (`ART-RULES.md` section 10, round
+R2), answering the round-1 critique of the painted face ("a tired, faintly sad young woman, not a
+confident priestess"). Each item was tried as a trial variant and kept by rule check and by eye.
+
+1. **The eye** (section 5): an A2 iris top with a 2 px A4 crescent and an I3 pupil, replacing the I3
+   top that merged with the lash; the lash heavy only at the outer end with a 2 px flick; on
+   Confident the lid line falls toward the nose. [FC-P22, FC-P13, FC-N25]
+2. **The smile reaches the eyes:** the smirk side's lower lid lifts 1 px. [FC-P24]
+3. **Brows** sit in forehead windows between fringe clumps and never slope down at the outer end on
+   Confident, Focused or Ignited. [FC-P15, FC-N26]
+4. **The smirk** is S4 throughout, 3 px, the near corner rising 2 rows. [FC-P07]
+5. **Blush** is 2 px on one row; no vertical or diagonal marks under the eyes except the nose. [FC-P17,
+   FC-N24]
+6. **Chin** reads as a point: no neck skin beside the chin row. [FC-N13]
+7. **Ignited and Hurt:** a dark iris core in an A4 rim; > < squeezed eyes. (section 5)
+8. **The fringe** (section 6): 4 unequal clumps from a parting, not 3 equal ones. [HR-P11, HR-P12,
+   HR-N04]
+9. **The idle** (section 1): she leans about 2 px toward her staff, so the grip arm bends.
+10. **No A1 on the sprite** (section 4): measured, it cannot serve as an iris top.
+
+**Revision 3.3**, 2026-09-29. Design fixes from construct round R3 (`ART-RULES.md` section 10, round R3),
+answering the round-2 critique (6.2/10: "sullen or unimpressed ... not confident and charming"). Each item
+was a trial variant (one axis) kept by rule check and by eye beside refs 07, 08 and 09; the mouth by the
+whole-face pick (ART-RULES WF-P11).
+
+1. **The near eye is the big one** (section 5): the lash is the flick plus one row (was three rows over
+   the near eye), so the near eye shows 4 iris rows against the far eye's 3. [FC-P09, FC-P13, FC-P26]
+2. **Matched catchlights:** both on the top iris row at one offset from the pupils. [FC-P12]
+3. **Brows in clean windows** under a solid fringe shadow; near 3 px cocked, far 2 px level. [FC-P15,
+   FC-P27, FC-N27]
+4. **The Confident mouth:** a 4 px smile with both corners up and a near dimple (was a 3 px smirk).
+   [FC-P07]
+5. **The jaw curves** into the chin (runs that shorten), never a staircase. [FC-N28]
+6. **Ignited's shout:** the teeth row over a dark mouth. (section 5)
+7. **Hair** (section 6): the angel ring on the skull's curve, the back hair in clumps, a lit silhouette
+   break, an off-centre parting in front view. [HR-P08, HR-P13, HR-N05]
+8. **The idle** (section 1): the free foot steps about 5 px toward the staff with the heel lifted (feet
+   about 29 px apart). A cocked head was tried and dropped (it covered the collar cross, CL-P05).
+
+**Revision 3.4**, 2026-09-29. The 3D base is adopted. Dex asked for "the busty SiroinoSotai body,
+then swap in the head from the MMD女性素体"; that base won the blind A/B against the old one 6 to 5
+(`review/rosace/base-v2/compare/`). The judge also found it was not busty yet and had heavier
+thighs and shorter legs than the old base. Those fixes were made before adopting it. Numbers are
+at 144 px, front view; the table is in section 2.
+
+1. **Bust:** 15.8 → 18.1 px deep, 18.9 → 20.9 wide (the source's Breasts_LLL key at 0.5 added to
+   Breasts_LL 1.0).
+2. **Waist:** 11.9 → 10.0 px; waist to hips 0.47 → 0.417 (the old base: 0.429).
+3. **Thighs:** 11.8 → 10.8 px at the top (the UpperLeg_L key is off).
+4. **Legs:** the crotch moves from 51.6% to 53.7% of her height, 74.2 → 77.3 px at 144, back to the
+   old base's 53.9%. The legs are stretched more and the torso is shortened, so the body isn't
+   scaled down to fit.
+5. **What it cost:** hips 25.3 → 24.1 px and shoulders 26.9 → 26.6. The glaive's off hand reaches
+   less far: in N1 the worst hand-to-haft gap goes from 3.35 to 4.59 cm (about 3.5 px at 144).
+   That one is open (`PIPELINE.md` 3.6e).
+6. **Not done here, because they are pose work** (the hero keys in `art/rosace/poses/`): the near
+   knee bowing in on the 80 px idle, hip tilt and back arch in the profile N1 frames, and deeper,
+   more stylised bends to match refs 07 and 09.
+
+**Revision 3.5**, 2026-09-29. Dex's appeal direction after the artist lane's A/B sheets, where she
+lost every pick: the target is raised to 9/10 (parity with the refs); the idle and the back view
+become seductive and elegant, on a wider stance; the bust gets bigger or more prominent; the thong
+string becomes 1 px and black. The full block, with the numbers, the never-list and who owns
+each change, is at the top of this file. A new figure-pose lane owns stance, pose and bust shape.

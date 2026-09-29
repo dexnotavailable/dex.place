@@ -1,0 +1,57 @@
+{
+ "name": "t7_wide_bent",
+ "idea": "t1's idea done again: the free foot 5 px out (feet about 29 px apart, the top of FG-P15's demure range), the heel lifted so the knee bends (a spread heel on the ground straightens the IK leg: t1 bent 2 deg), the glaive butt only 5 px out so the grip arm keeps its bend",
+ "set": {
+  "head": {
+   "chin_dx": 15
+  },
+  "neck": {
+   "back": 6
+  },
+  "legs": {
+   "near": {
+    "heel": [
+     -14,
+     8
+    ],
+    "knee_hint": [
+     -1,
+     41
+    ],
+    "toe": [
+     -11,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "butt": [
+    -20,
+    0
+   ]
+  }
+ },
+ "score": 13,
+ "gap_area": 378,
+ "width": 97,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P12",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02",
+  "CL-P05"
+ ],
+ "feet_apart": 29,
+ "failed": [],
+ "verdict": "KEPT, HERO (#1, 13/13, gap 378 px2, width 97, feet 29): the near foot steps 5 px out with its heel lifted and knee bent (10-30 deg), the butt 5 px out; at x3 and 1x the legs stop reading as two columns and the pose steps toward the staff, inside DESIGN 1's 20-30 px demure stance. The first try (heel height 10) bent the knee 32 deg (FG-P10) [M; visible]",
+ "kept": true,
+ "rank": 1
+}

@@ -1,0 +1,83 @@
+export const meta = {
+  name: 'world-build-phase1',
+  description: 'World build phase 1: final world plan (map/story/pacing/scale), hybrid ring-lake+colossus arrival at 1280x720, pixel-matter props engine + proof props, unified world runtime (rooms, camera, weather, audio) — each with critics',
+  phases: [
+    { title: 'Plan', detail: '3 map layouts -> judges -> WORLD-PLAN.md' },
+    { title: 'Arrival', detail: 'hybrid ring lake + colossus at 1280x720 with water reflections' },
+    { title: 'Props engine', detail: 'pixel matter engine, /props/ sandbox, proof props' },
+    { title: 'Runtime', detail: 'unified world runtime at the locked scale' },
+    { title: 'Review', detail: 'critics per lane + one fix round' },
+  ],
+}
+
+const CTX = `
+Project: dex.place (repo D:\\Dex\\Projects\\dex.place, public; main is live; do NOT commit/push; the coordinator integrates). Read CANON.md, AGENTS.md, docs/world/REFS.md, docs/world/MAP-AND-STORY.md (draft 1 "the Procession"), docs/world/SCENES.md, docs/props/PIXEL-MATTER.md (prop system + approved prop list), docs/character/RUNTIME-CONTRACT.md, docs/character/MOVESET.md. World refs (other artists'; look, never commit): D:\\Dex\\Projects\\dex.place\\review\\refs\\world\\ w01-colossus-plain, w02-monolith-planet, w03-ring-over-lake, w04-amber-foundry-hollow. Live prototypes: src/scenes/ (procedural scene engine; scenes ring-lake, colossus-plain, monolith-planet, amber-hollow), src/lab/ (gameplay: player controller, M1/dash/Q/R, VFX, normal-map rim lighting, turret, runtime contract).
+Dex's direction for this build (verbatim essentials): "I want a hybrid of ring over lake and colossus — the surface reflections from the water should be kept while we add the colossus; increase the resolution to be higher, like twice the amount. Go for a full scale world build, lock in the player and camera scale — similar to the old website, maybe player a little bigger — get all the props in, make everything cohesive and alive, look good, basically get the whole world done except for mobs and bosses; make sure the map has a good flow, good storytelling, the scale feels grand in places yet cozy in others, vast then indoors, serene then storm."
+LOCKED SCALE (coordinator decision; implement as ONE config source of truth so it can be nudged later): world view 1280x720 world pixels (double the old 640x360); presentation = largest integer nearest-neighbour upscale that fits, otherwise "sharp-bilinear" (nearest upscale to the next integer multiple, then linear downsample to fit) so pixels stay crisp at fractional sizes like 1.5x on 1080p — never plain bilinear; player height H = 80 world px in exploration (old site hero was ~52 of 900 units, ~6% of view; ours ~11%), with a 144 px close-up render reserved for cut-ins / combat zoom / portraits. All world geometry, props, doors, steps, platforms and jump heights are sized in units of H.
+Content (unchanged, CANON): arrival with scenery first; downloads via an arena with a boss terminal (bosses/mobs themselves are OUT of scope now — build the arena, terminal and summoning states but no boss); rest places (shrines) with donation boxes + donor plaques; the gallery as a chapel of light with Dex's 9 artworks shown individually (display only; files in public/gallery/ with content/gallery/manifest.json); the archive (documentation) behind an ordinary door; the account counter; the slashable map banner; direct website access by scrolling.
+HARD RULES: no image generation; props are pixel matter (data, not image files) per PIXEL-MATTER.md; backgrounds procedural where possible; Dex's art only as gallery display. Don't edit: vite.config.ts, src/site/** (a website lane is running), src/lab/** , tools/**, art/**, docs/character/**. Each lane owns only its listed paths. Ports 22000-22999. Look at your own screenshots before reporting.
+`
+const DOC = { type: 'object', properties: { summary: { type: 'string' }, files: { type: 'array', items: { type: 'string' } }, checks: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, result: { type: 'string' } }, required: ['name', 'result'] } }, media: { type: 'array', items: { type: 'string' } }, openIssues: { type: 'array', items: { type: 'string' } } }, required: ['summary', 'files', 'checks'] }
+const CRIT = { type: 'object', properties: { verdict: { type: 'string', enum: ['pass', 'pass-with-notes', 'blocking'] }, score: { type: 'number' }, blocking: { type: 'array', items: { type: 'string' } }, notes: { type: 'array', items: { type: 'string' } } }, required: ['verdict', 'score', 'blocking', 'notes'] }
+
+const lanes = [
+  {
+    key: 'plan', phase: 'Plan',
+    build: async () => {
+      const LAYOUTS = [
+        'PILGRIMAGE LOOP: a mostly horizontal journey outward from the ring lake with vertical branches, returning via shortcuts (Hollow Knight-style connected loops).',
+        'DESCENT AND ASCENT: arrival high on a ledge above the lake, a descent through the plain into the hollow underground, then the long climb up the spire into the storm, then down the pilgrim path to the chapel at dusk.',
+        'HUB AND SPOKES: the hollow as a warm central hub with three spokes (the plain/colossus, the spire/storm, the chapel/gallery) that each end in a view, reconnected by one grand shortcut.',
+      ]
+      const drafts = await parallel(LAYOUTS.map((l, i) => () => agent(`${CTX}
+Design a complete world plan using this layout idea: ${l}
+Deliver docs/world/plan-drafts/layout-${i + 1}.md with: the story told through the route (building on "the Procession" or improving it; small human story, no lore dumps), a region list with each room's size in H and in screens, its purpose, mood (vast/cozy, serene/storm), light and weather state, music/ambience state (Dex prefers calm, emotional, a higher piano phrase, gentle strings, silence in reading spots, an orchestral arena variant; the selected theme is the Suno "B" cue in legacy/site/public/audio/), which world ref it draws from, every prop placed (from PIXEL-MATTER.md's list, with states and interactions), the content destinations and how you find them, the pacing curve (a chart of vast vs cozy, calm vs tense along the route), traversal (jumps, dash gaps, doors, lifts, shortcuts), and a simple map diagram as SVG (docs/world/plan-drafts/layout-${i + 1}.svg).`, { label: `plan:draft${i + 1}`, phase: 'Plan', schema: DOC, effort: 'high' })))
+      const judged = await parallel(['FLOW AND STORYTELLING: does the route teach, surprise and pay off; is the small story felt; are the destinations easy to find without breaking immersion?', 'SCALE AND PACING: grand vs cozy, vast then indoors, serene then storm — is the rhythm right; does megalophobia land; is it buildable at the locked scale?'].map((lens, i) => () => agent(`${CTX}
+Judge ${i + 1}. Lens: ${lens}. Read docs/world/plan-drafts/*.md and look at the SVGs. Score each draft /10, name the best ideas to graft, and the weaknesses.`, { label: `plan:judge${i + 1}`, phase: 'Plan', schema: { type: 'object', properties: { ranking: { type: 'array', items: { type: 'object', properties: { draft: { type: 'string' }, score: { type: 'number' }, why: { type: 'string' } }, required: ['draft', 'score', 'why'] } }, graft: { type: 'array', items: { type: 'string' } } }, required: ['ranking', 'graft'] }, effort: 'high' })))
+      return agent(`${CTX}
+Drafts: ${JSON.stringify(drafts.filter(Boolean)).slice(0, 6000)}; judges: ${JSON.stringify(judged.filter(Boolean)).slice(0, 5000)}.
+Write the FINAL docs/world/WORLD-PLAN.md (and docs/world/WORLD-MAP.svg) from the winning draft plus grafts: story, regions and rooms (sizes in H and screens), room graph and shortcuts, every prop placed with states/interactions, destinations, weather/time progression (serene -> storm -> after-storm), music/ambience map, pacing curve, the locked scale section, the arrival (the ring-lake + colossus hybrid) as the first room, and a build breakdown into independent room/region lanes for phase 2 (each lane: rooms, props, scenes, interactions, acceptance checks). Update docs/world/MAP-AND-STORY.md to point at it.`, { label: 'plan:final', phase: 'Plan', schema: DOC, effort: 'high' })
+    },
+    critic: 'WORLD PLAN: read docs/world/WORLD-PLAN.md and the SVG. Is the flow good, the storytelling felt, the scale grand in places and cozy in others, vast then indoors, serene then storm? Are all destinations and props placed and reachable? Is phase 2 decomposable into independent lanes? Blocking = missing content, broken flow, or a plan that cannot be built at the locked scale.',
+  },
+  {
+    key: 'arrival', phase: 'Arrival',
+    build: async () => agent(`${CTX}
+Your paths: src/scenes/** (engine upgrade must stay backward compatible with the four existing scenes) and review/world/arrival/.
+1. Upgrade the scene engine resolution to the locked 1280x720 world view with the sharp-bilinear presentation rule (keep a way to compare the old 640x360).
+2. Build the hybrid scene "arrival" (src/scenes/scenes/arrival.ts): the ring-over-lake composition (tilted ring megastructure, light shaft, still lake with the reflections, ripples, sparkles, mist, dark cliffs, the dock) PLUS the colossus from colossus-plain walking across the far distance BEHIND the lake — and the colossus, its dust and the haze around it are REFLECTED in the water surface (reflection respects the waterline, ripples distort it, reflection dims with depth). Loop seamlessly. Rework detail for the doubled resolution (finer far detail, but near objects still read as pixel art with visible pixel clusters). Stand-in figure at the locked player height H = 80 px on the dock.
+3. Verify at 1280x720 on 1080p (1.5x sharp) and 1440p (2x): screenshots and a GIF of a full colossus pass with reflection into review/world/arrival/; look at them against w01 and w03.`, { label: 'arrival:build', phase: 'Arrival', schema: DOC, effort: 'high' }),
+    critic: 'ARRIVAL SCENE vs refs w01 + w03 and Dex\u2019s ask: the colossus reads as enormous and its reflection is convincing in the lake; the ring-lake mood is kept; doubled resolution looks finer but still clearly pixel art; crisp at 1.5x and 2x (no blur); seamless loop; the 80 px figure reads; fps. Blocking = reflection wrong/missing, blur, broken loop, or the colossus reads small.',
+  },
+  {
+    key: 'props', phase: 'Props engine',
+    build: async () => agent(`${CTX}
+Your paths: src/pixel/** (the pixel matter engine), props/index.html (sandbox at /props/ via the Vite dev server; don't edit vite.config.ts), docs/props/ENGINE.md, review/world/props/.
+Build the pixel matter engine exactly as docs/props/PIXEL-MATTER.md describes: cell data (material, height/normal, piece, health, age), recipe DSL (shapes with height profiles, details, text-grid ornaments, parts with pivots/layers, parameters sized in H), shading through the same normal lighting + material colour ramps + outline pass as the characters, layers (far bg, bg, mid, fg, light, decal), state machines, motion (procedural sway/flicker, springs/pendulums, verlet ropes/chains/cloth, keyed eased motion, pixel-safe rotation), pixel effects (dissolve/assemble, disintegrate, glint, ripples), breaking (hit shapes incl. a slash line along an arc, carving, craters with raised rims, fracture into rigid chunks and pixel particles, per-material behaviour, debris keeps real colours), a healing destructible floor, game hooks (onHit, light emission, collision types, wind, sound cues, "reason"), and performance (static cells cached; only disturbed regions simulate; budgets). Sandbox: hit tool with slash/heavy/Q/R shapes, state buttons, layer and normal views, slow motion, draggable light, H-scale toggle. Proof props: the map banner (cord cut -> unroll -> E to read), the boss terminal (dormant/woken/summoning/cooldown), the donation box + donor plaque, a stained-glass window (shatter + slow reassemble, coloured light), a candelabra (flicker, light source, gutter out, relight), and the crater-able floor. Render at the locked scale (H = 80 px, 1280x720 view). Document the recipe format for the prop lanes in docs/props/ENGINE.md. Screenshots/GIFs of every proof prop's states and breakage into review/world/props/; look at them.`, { label: 'props:build', phase: 'Props engine', schema: DOC, effort: 'high' }),
+    critic: 'PROPS ENGINE: open /props/ (dev server), exercise every proof prop and the floor with every hit shape; judge readability at the locked scale, style match with the character pipeline (palette ramps, outline, normal lighting), states and motion quality, physics feel (debris weight, bounce, settle), destruction satisfaction, healing, performance (hammer it), and the recipe format being usable by other lanes. Blocking = broken physics, ugly/off-style props, or unusable recipe API.',
+  },
+  {
+    key: 'runtime', phase: 'Runtime',
+    build: async () => agent(`${CTX}
+Your paths: src/world/** (new), world/index.html (served at /world/ by the Vite dev server; don't edit vite.config.ts), docs/world/RUNTIME.md, review/world/runtime/. You may IMPORT from src/lab/** and src/scenes/** but not edit them (copy into src/world if you must change something). src/pixel/ is being built by another lane right now: define a small prop interface in src/world/props-api.ts that matches docs/props/PIXEL-MATTER.md and stub it, so the real engine drops in later.
+Build the unified world runtime: the single scale config (locked values above) and the sharp-bilinear presenter; a room/region system (rooms as data: size in H, layers from the scene engine, terrain/platform collision, spawn points, doors/transitions with fades, lifts, one-way platforms, shortcuts that unlock and persist per visit, streaming so only nearby rooms are live); the camera (follow with look-ahead and vertical framing like the old site but at the new scale, room bounds, cinematic framing zones for vistas, zoom-in hook for combat using the 144 px close-up render path, screen shake from the lab); the player from src/lab with its controller, moves, VFX, rim lighting and runtime contract (stand-in character until Rosace's sprites land); a weather and time system (serene, overcast, mist, rain, storm with wind that pushes cloth/props, lightning flashes within the 3-per-second cap, after-storm) driven per room/region; ambient life hooks (birds, moths, dust, distant lights); an audio system (music states with crossfades that never start abruptly, ambience beds per room, silence zones, SFX hooks; use the legacy Suno "B" theme files from legacy/site/public/audio/ where licensed per their ATTRIBUTION.md, otherwise stubs); interaction (E use, slash on props, UI panel hooks for gallery/archive/account/donate that will call the website's pages); save of shortcuts/cut state in local storage; debug overlay; touch controls. Build a 3-room test world (arrival stub -> a plain room with weather going from mist to storm -> an indoor room) to prove it end to end. Verify with Playwright at 1080p and 1440p and on a phone viewport; screenshots/GIFs into review/world/runtime/; look at them.`, { label: 'runtime:build', phase: 'Runtime', schema: DOC, effort: 'high' }),
+    critic: 'WORLD RUNTIME: play the 3-room test world via Playwright (desktop 1080p/1440p, phone): scale feels right (player ~11% of view height; vast), crisp sharp-bilinear at 1.5x, doors/transitions/lifts/shortcuts, camera follow and framing, weather progression mist -> storm with wind and lightning cap, audio never abrupt, E and slash interactions, save of shortcuts, perf 60 fps, zero console errors, touch. Blocking = broken core systems, blur, janky camera, or abrupt audio.',
+  },
+]
+
+const results = await pipeline(
+  lanes,
+  async (lane) => { const r = await lane.build(); return r },
+  async (built, lane) => {
+    if (!built) return { key: lane.key, built: null }
+    const review = await agent(`${CTX}
+Independent critic. ${lane.critic}
+Lane report: ${JSON.stringify(built).slice(0, 4000)}
+Capture your own evidence into review/world/critic-${lane.key}/ and look at it.`, { label: `critic:${lane.key}`, phase: 'Review', schema: CRIT, effort: 'high' })
+    if (!review || (review.verdict !== 'blocking' && review.score >= 7)) return { key: lane.key, built, review }
+    const fixed = await agent(`${CTX}
+Fix the ${lane.key} lane (its own paths only) per this critique, properly, and re-verify with fresh evidence: ${JSON.stringify(review).slice(0, 6000)}. Previous report: ${JSON.stringify(built).slice(0, 2500)}`, { label: `fix:${lane.key}`, phase: 'Review', schema: DOC, effort: 'high' })
+    return { key: lane.key, built, review, fixed }
+  },
+)
+return { results }

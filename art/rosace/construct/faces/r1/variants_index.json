@@ -1,0 +1,382 @@
+{
+ "_doc": "WF-P04 one-axis face variants (round R1): each moves one feature group 1 px up; the base is kept unless a variant beats it on the rules and by eye (verdicts: ART-RULES 10, round R1)",
+ "variants": [
+  {
+   "base": "q34_confident_144",
+   "axis": "eye_row",
+   "passed": 51,
+   "failed": [
+    "FC-N15 3 stray single px in the face",
+    "FC-N17 2 hair px in the eye boxes / between the eyes",
+    "FC-P21 FC-N17 2 hair px in the eye boxes / between the eyes; HR-P04 near: lowest",
+    "HR-P10 4 root clumps (row 19) -> 5 runs at row 18 (widths [3, 2, 2, 2, 2])"
+   ],
+   "base_passed": 55
+  },
+  {
+   "base": "q34_confident_144",
+   "axis": "brow_raise",
+   "passed": 53,
+   "failed": [
+    "FC-N15 2 stray single px in the face",
+    "HR-P10 4 root clumps (row 19) -> 5 runs at row 18 (widths [3, 2, 2, 2, 2])"
+   ],
+   "base_passed": 55
+  },
+  {
+   "base": "q34_confident_144",
+   "axis": "mouth_row",
+   "passed": 55,
+   "failed": [],
+   "base_passed": 55
+  },
+  {
+   "base": "q34_focused_144",
+   "axis": "eye_row",
+   "passed": 49,
+   "failed": [
+    "FC-N15 3 stray single px in the face",
+    "FC-N17 2 hair px in the eye boxes / between the eyes",
+    "FC-P21 FC-N17 2 hair px in the eye boxes / between the eyes; HR-P04 near: lowest"
+   ],
+   "base_passed": 52
+  },
+  {
+   "base": "q34_focused_144",
+   "axis": "brow_raise",
+   "passed": 51,
+   "failed": [
+    "FC-N15 2 stray single px in the face"
+   ],
+   "base_passed": 52
+  },
+  {
+   "base": "q34_focused_144",
+   "axis": "mouth_row",
+   "passed": 52,
+   "failed": [],
+   "base_passed": 52
+  },
+  {
+   "base": "q34_radiant_144",
+   "axis": "eye_row",
+   "passed": 38,
+   "failed": [
+    "FC-N15 1 stray single px in the face",
+    "FC-N17 2 hair px in the eye boxes / between the eyes",
+    "FC-P21 FC-N17 2 hair px in the eye boxes / between the eyes; HR-P04 near: lowest",
+    "HR-P10 4 root clumps (row 19) -> 5 runs at row 18 (widths [2, 2, 2, 2, 2])"
+   ],
+   "base_passed": 41
+  },
+  {
+   "base": "q34_radiant_144",
+   "axis": "brow_raise",
+   "passed": 40,
+   "failed": [
+    "FC-N15 1 stray single px in the face",
+    "HR-P10 4 root clumps (row 19) -> 5 runs at row 18 (widths [2, 2, 2, 2, 2])"
+   ],
+   "base_passed": 41
+  },
+  {
+   "base": "q34_radiant_144",
+   "axis": "mouth_row",
+   "passed": 40,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 3, hair_top 29 [constru",
+    "HR-P10 4 root clumps (row 19) -> 5 runs at row 18 (widths [3, 2, 2, 2, 2])"
+   ],
+   "base_passed": 41
+  },
+  {
+   "base": "q34_serene_144",
+   "axis": "eye_row",
+   "passed": 51,
+   "failed": [
+    "FC-N15 2 stray single px in the face",
+    "FC-N17 2 hair px in the eye boxes / between the eyes",
+    "FC-P21 FC-N17 2 hair px in the eye boxes / between the eyes; HR-P04 near: lowest"
+   ],
+   "base_passed": 54
+  },
+  {
+   "base": "q34_serene_144",
+   "axis": "brow_raise",
+   "passed": 53,
+   "failed": [
+    "FC-N15 2 stray single px in the face"
+   ],
+   "base_passed": 54
+  },
+  {
+   "base": "q34_serene_144",
+   "axis": "mouth_row",
+   "passed": 54,
+   "failed": [],
+   "base_passed": 54
+  },
+  {
+   "base": "q34_ignited_144",
+   "axis": "eye_row",
+   "passed": 45,
+   "failed": [
+    "FC-N15 3 stray single px in the face",
+    "FC-N17 2 hair px in the eye boxes / between the eyes",
+    "FC-P21 FC-N17 2 hair px in the eye boxes / between the eyes; HR-P04 near: lowest"
+   ],
+   "base_passed": 48
+  },
+  {
+   "base": "q34_ignited_144",
+   "axis": "brow_raise",
+   "passed": 47,
+   "failed": [
+    "FC-N15 2 stray single px in the face"
+   ],
+   "base_passed": 48
+  },
+  {
+   "base": "q34_ignited_144",
+   "axis": "mouth_row",
+   "passed": 48,
+   "failed": [],
+   "base_passed": 48
+  },
+  {
+   "base": "q34_hurt_144",
+   "axis": "eye_row",
+   "passed": 39,
+   "failed": [
+    "FC-N15 2 stray single px in the face",
+    "FC-N17 2 hair px in the eye boxes / between the eyes",
+    "FC-P21 FC-N17 2 hair px in the eye boxes / between the eyes; HR-P04 near: lowest"
+   ],
+   "base_passed": 42
+  },
+  {
+   "base": "q34_hurt_144",
+   "axis": "brow_raise",
+   "passed": 41,
+   "failed": [
+    "FC-N15 2 stray single px in the face"
+   ],
+   "base_passed": 42
+  },
+  {
+   "base": "q34_hurt_144",
+   "axis": "mouth_row",
+   "passed": 41,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 1, hair_top 29 [constru"
+   ],
+   "base_passed": 42
+  },
+  {
+   "base": "front_confident_144",
+   "axis": "eye_row",
+   "passed": 47,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N15 2 stray single px in the face",
+    "FC-N17 3 hair px in the eye boxes / between the eyes",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-P21 FC-N17 3 hair px in the eye boxes / between the eyes; HR-P04 near: lowest"
+   ],
+   "base_passed": 50
+  },
+  {
+   "base": "front_confident_144",
+   "axis": "brow_raise",
+   "passed": 49,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N15 2 stray single px in the face",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 50
+  },
+  {
+   "base": "front_confident_144",
+   "axis": "mouth_row",
+   "passed": 50,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 50
+  },
+  {
+   "base": "front_focused_144",
+   "axis": "eye_row",
+   "passed": 44,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N15 2 stray single px in the face",
+    "FC-N17 3 hair px in the eye boxes / between the eyes",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-P21 FC-N17 3 hair px in the eye boxes / between the eyes; HR-P04 near: lowest"
+   ],
+   "base_passed": 47
+  },
+  {
+   "base": "front_focused_144",
+   "axis": "brow_raise",
+   "passed": 46,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N15 2 stray single px in the face",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 47
+  },
+  {
+   "base": "front_focused_144",
+   "axis": "mouth_row",
+   "passed": 47,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 47
+  },
+  {
+   "base": "front_radiant_144",
+   "axis": "eye_row",
+   "passed": 37,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N17 3 hair px in the eye boxes / between the eyes",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-P21 FC-N17 3 hair px in the eye boxes / between the eyes; HR-P04 near: lowest"
+   ],
+   "base_passed": 39
+  },
+  {
+   "base": "front_radiant_144",
+   "axis": "brow_raise",
+   "passed": 39,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 39
+  },
+  {
+   "base": "front_radiant_144",
+   "axis": "mouth_row",
+   "passed": 38,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 3, hair_top 29 [constru",
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 39
+  },
+  {
+   "base": "profile_confident_144",
+   "axis": "eye_row",
+   "passed": 37,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N15 1 stray single px in the face",
+    "FC-N17 1 hair px in the eye boxes / between the eyes",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-P21 FC-N17 1 hair px in the eye boxes / between the eyes; HR-P04 near: lowest",
+    "HR-P08 3 dashes over 2 rows; 1 clumps"
+   ],
+   "base_passed": 41
+  },
+  {
+   "base": "profile_confident_144",
+   "axis": "brow_raise",
+   "passed": 40,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N15 1 stray single px in the face",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 41
+  },
+  {
+   "base": "profile_confident_144",
+   "axis": "mouth_row",
+   "passed": 41,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 41
+  },
+  {
+   "base": "profile_focused_144",
+   "axis": "eye_row",
+   "passed": 36,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N17 1 hair px in the eye boxes / between the eyes",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-P21 FC-N17 1 hair px in the eye boxes / between the eyes; HR-P04 near: lowest"
+   ],
+   "base_passed": 38
+  },
+  {
+   "base": "profile_focused_144",
+   "axis": "brow_raise",
+   "passed": 38,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 38
+  },
+  {
+   "base": "profile_focused_144",
+   "axis": "mouth_row",
+   "passed": 37,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 1, hair_top 29 [constru",
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 38
+  },
+  {
+   "base": "profile_radiant_144",
+   "axis": "eye_row",
+   "passed": 29,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N17 1 hair px in the eye boxes / between the eyes",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-P21 FC-N17 1 hair px in the eye boxes / between the eyes; HR-P04 near: lowest",
+    "HR-P03 4 clumps at row 19 (widths [1, 1, 3, 1]); tips at row 15: [1, 1]",
+    "HR-N01 4 clumps at row 19 (widths [1, 1, 3, 1]); tips at row 15: [1, 1]"
+   ],
+   "base_passed": 33
+  },
+  {
+   "base": "profile_radiant_144",
+   "axis": "brow_raise",
+   "passed": 31,
+   "failed": [
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "HR-P03 4 clumps at row 19 (widths [1, 1, 3, 1]); tips at row 15: [1, 1]",
+    "HR-N01 4 clumps at row 19 (widths [1, 1, 3, 1]); tips at row 15: [1, 1]"
+   ],
+   "base_passed": 33
+  },
+  {
+   "base": "profile_radiant_144",
+   "axis": "mouth_row",
+   "passed": 32,
+   "failed": [
+    "FC-P01 mouth 4, nose 6, eye_bottom 10, lash_top 14, brow 3, hair_top 29 [constru",
+    "FC-P19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {",
+    "FC-N19 present ['confident', 'focused', 'radiant']; zones changed vs Confident {"
+   ],
+   "base_passed": 33
+  }
+ ]
+}

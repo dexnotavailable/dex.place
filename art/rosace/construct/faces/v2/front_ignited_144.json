@@ -1,0 +1,20 @@
+{
+ "_doc": "front ignited at 144 px: glyph names from lib_144.json; params tune the placement (face_v2.py). Written by face_v2_lib.py.",
+ "facing": "front",
+ "expr": "ignited",
+ "px": 144,
+ "eye_near": "near_ignited",
+ "eye_far": "far_ignited",
+ "brow_near": "near_fierce",
+ "brow_far": "far_fierce",
+ "mouth": "shout",
+ "gaze": "target (the way she faces)",
+ "nose": "q34",
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "fringe_band": 2,
+  "eye_dy": 0,
+  "gap": null
+ }
+}

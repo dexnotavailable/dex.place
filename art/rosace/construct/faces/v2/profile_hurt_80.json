@@ -1,0 +1,18 @@
+{
+ "_doc": "profile hurt at 80 px: glyph names from lib_80.json; params tune the placement (face_v2.py). Written by face_v2_lib.py.",
+ "facing": "profile",
+ "expr": "hurt",
+ "px": 80,
+ "eye_near": "profile_hurt",
+ "brow_near": null,
+ "mouth": "profile",
+ "gaze": "target",
+ "nose": null,
+ "params": {
+  "edge_keep": 1,
+  "strand_max": 3,
+  "fringe_band": 1,
+  "jaw": false,
+  "eye_dy": 0
+ }
+}

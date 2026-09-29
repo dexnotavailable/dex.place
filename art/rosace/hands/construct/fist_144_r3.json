@@ -1,0 +1,49 @@
+{
+ "_doc": "Constructed fist, 144 px, ROUND 2 variant r3 (glaive-hands lane; author_hands.py template='r3'). Same canonical frame as r1/r2: the haft vertical through haft_cols (tip up), the thumb end at the top, the knuckles on the LEFT, the forearm entering from the RIGHT. Round-2 critique: 'no knuckle line, no thumb wedge and no wrist step'; in the r2 stills the fist read as S1 with S4 dots (the n separations and a sheared l column broke into specks). r3 builds it from four value groups and continuous lines only: the finger band (k, S3) on the knuckle side; ONE knuckle line (l, S4) bowing toward the fingers in the middle rows (HD-P02: middle knuckle highest); the lit knuckle ridge (r, S1) beside it; the back of the hand (b, S2) with its far edge (B, S3); the thumb wedge (t, S1) crossing the haft on the near side with its underside (T, S3) and a 3 px crease (c, S4) under it; the pinky end (d, S3); the wrist (w, S3: the 1 px wrist step, a darker column between hand and forearm). No finger separations at 144 (HD-N02 allows up to two; on a 6-col interior they speckle). O = OL always. 'codes' fixes the tones (the one key light is on the lit side of every lane grip; plane_codes is not used for r3).",
+ "haft_cols": [3, 5],
+ "origin": [4, 4],
+ "codes": {"k": "S3", "l": "S4", "r": "S1", "b": "S2", "B": "S3", "t": "S1", "T": "S3", "c": "S4", "d": "S3", "w": "S3",
+           "f": "S2", "e": "S3", "n": "S4"},
+ "views": {
+  "back": {"rows": [
+    "..OOOOO...",
+    ".OtttttO..",
+    "OktttttTO.",
+    "OkklcccbBw",
+    "OklrrbbbBw",
+    "OklrrbbbBw",
+    "Okklddddw.",
+    ".OOOOOOO.."
+  ]},
+  "fingers": {"rows": [
+    "..OOOOO...",
+    ".OtttttO..",
+    "OktttttTOw",
+    "OkfffffeBw",
+    "Oknnnnnnbw",
+    "OkfffffeBw",
+    ".Okdddddw.",
+    "..OOOOOO.."
+  ]},
+  "back_along": {"rows": [
+    "..OOOOO...",
+    ".OtttttO..",
+    "OktttttTO.",
+    "OkklcccbBO",
+    "OklrrbbbBO",
+    "OklrrbbbwO",
+    ".OOlddwwO.",
+    "....www..."
+  ]},
+  "fingers_along": {"rows": [
+    "..OOOOO...",
+    ".OtttttO..",
+    "OktttttTO.",
+    "OkfffffeO.",
+    "Oknnnnnnb.",
+    ".OkfffffwO",
+    "..OOdwww..",
+    "....www..."
+  ]}
+ }
+}

@@ -1,0 +1,56 @@
+{
+ "name": "t1_r1arm",
+ "idea": "control: the R1 near arm (glaive 17 deg, grip 98 px up the haft: the hand level with the shoulder and the arm at full reach, the flag-holder read) with the R2 masses and head",
+ "set": {
+  "neck": {
+   "pit_dx": 13,
+   "back": 4
+  },
+  "head": {
+   "chin_dx": 15
+  },
+  "ribcage": {
+   "dx": 12
+  },
+  "waist": {
+   "dx": 12
+  },
+  "legs": {
+   "far": {
+    "heel": [
+     17,
+     1
+    ],
+    "knee_hint": [
+     24,
+     40
+    ],
+    "toe": [
+     28,
+     0
+    ]
+   }
+  }
+ },
+ "score": 11,
+ "gap_area": 347,
+ "width": 94,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "near_reach_px": 44.7,
+ "failed": [],
+ "verdict": "KEPT as #2 (the control, 11/11): the R1 arm, hand level with the shoulder at 44.7 px from it, the bell hanging off a level forearm (the flag-holder read by eye)",
+ "kept": true,
+ "rank": 2
+}

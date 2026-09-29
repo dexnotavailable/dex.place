@@ -1,0 +1,35 @@
+{
+ "name": "t5_hip_haft24",
+ "idea": "t2 and t3 together: hand on the hip plus the steeper glaive",
+ "set": {
+  "glaive": {
+   "angle_deg": 24,
+   "butt": [
+    -13,
+    0
+   ],
+   "grip_along": 93
+  }
+ },
+ "score": 10,
+ "gap_area": 347,
+ "width": 100,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-N02"
+ ],
+ "failed": [
+  "GR-P10: closest clear gap 3.0 px; overlap 0 px"
+ ],
+ "verdict": "KEPT (#2, 10/11, gap 347 px2, widest silhouette): the steeper glaive opens the wedge, but the haft passes 3 px from the near sleeve (GR-P10 wants 4-8 or an overlap >= 3); next round: move the butt 2 px out or let the haft overlap the bell",
+ "rank": 2,
+ "kept": true
+}

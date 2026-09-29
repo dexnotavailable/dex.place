@@ -1,0 +1,85 @@
+{
+ "name": "t5_rest_push",
+ "idea": "t3 plus one step more contrapposto (FG-N09): shoulders -9, hips +9, free heel lifted 2 px more",
+ "set": {
+  "neck": {
+   "pit_dx": 13,
+   "back": 4
+  },
+  "head": {
+   "chin_dx": 15
+  },
+  "ribcage": {
+   "dx": 12
+  },
+  "waist": {
+   "dx": 12
+  },
+  "legs": {
+   "far": {
+    "heel": [
+     17,
+     1
+    ],
+    "knee_hint": [
+     24,
+     40
+    ],
+    "toe": [
+     28,
+     0
+    ]
+   },
+   "near": {
+    "heel": [
+     -9,
+     9
+    ],
+    "knee_hint": [
+     3,
+     41
+    ],
+    "toe": [
+     -5,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "angle_deg": 18,
+   "butt": [
+    -11,
+    0
+   ],
+   "grip_along": 92
+  },
+  "shoulders": {
+   "tilt_deg": -9
+  },
+  "pelvis": {
+   "tilt_deg": 9
+  }
+ },
+ "score": 9,
+ "gap_area": 333,
+ "width": 89,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-N02"
+ ],
+ "near_reach_px": 44.3,
+ "failed": [
+  "FG-P10: weight leg 2.2 deg; free knee bend 36 deg; free knee +2.2 px lower",
+  "GR-P10: closest clear gap 1.0 px; overlap 0 px"
+ ],
+ "verdict": "dropped (#7, 9/11): the extra tilt bent the free knee to 36 deg and read as a sway (the R1 t4 finding again)",
+ "kept": false,
+ "rank": 7
+}

@@ -1,0 +1,21 @@
+{
+ "_doc": "q34 serene at 144 px: glyph names from lib_144.json; params tune the placement (face_v2.py). Written by face_v2_lib.py.",
+ "facing": "q34",
+ "expr": "serene",
+ "px": 144,
+ "eye_near": "near_serene",
+ "eye_far": "far_serene",
+ "brow_near": "near_serene",
+ "brow_far": "far_serene",
+ "blush": "soft",
+ "mouth": "serene",
+ "gaze": "lowered (prayer)",
+ "nose": "q34",
+ "params": {
+  "edge_keep": 2,
+  "strand_max": 3,
+  "fringe_band": 2,
+  "eye_dy": 0,
+  "gap": null
+ }
+}

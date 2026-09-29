@@ -11,6 +11,7 @@ Two construction routes:
 Gold fittings (crosses, rings, charms, medallions) are small slabs.
 """
 import math
+import os
 
 import bmesh
 import bpy
@@ -95,15 +96,18 @@ class Body:
 
 # ---------------------------------------------------------------------------- shell
 def shell(Bd, name, region, offset, mats, trim=0.0, trim_raise=0.0015, part=None, subdiv=1,
-          smooth_iters=8, trim_seeds=None, extra=None):
+          smooth_iters=8, trim_seeds=None, extra=None, coarse=None):
     """Garment shell from body faces where region(p, masks) is True (p = face centre).
-    mats: [cloth, trim]. Returns the object (weights transferred from the body)."""
+    mats: [cloth, trim]. coarse(p, masks), if given, replaces region for the first (whole-face)
+    pick only; the cut on the subdivided mesh always uses region. Returns the object (weights
+    transferred from the body)."""
     body = Bd.ob
     me = body.data
     keep_coarse = set()
+    pick = coarse or region
     for f in me.polygons:
         ms = _avg_masks(Bd, f.vertices)
-        if region(f.center, ms):
+        if pick(f.center, ms):
             keep_coarse.add(f.index)
     bm = bmesh.new()
     bm.from_mesh(me)
@@ -829,7 +833,17 @@ def set_thong_variant(which):
 
 
 # ---------------------------------------------------------------------------- build
+# art lane (2026-09-29): the outfit variant to build. "r0" is the pre-lane outfit exactly; the
+# others live in outfit_art.py (VARIANTS). The lane driver (tools/pixel-pipeline/outfit_lane.py)
+# sets ROSACE_OUTFIT per lane build; the default is the variant the lane last kept.
+OUTFIT_DEFAULT = "r0"
+
+
 def build(arm, body):
+    variant = os.environ.get("ROSACE_OUTFIT", OUTFIT_DEFAULT)
+    if variant != "r0":
+        from . import outfit_art
+        return outfit_art.build(arm, body, variant)
     _KD.clear()
     Bd = Body(arm, body)
     parts = {}

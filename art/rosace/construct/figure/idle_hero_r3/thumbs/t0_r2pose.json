@@ -1,0 +1,57 @@
+{
+ "name": "t0_r2pose",
+ "idea": "the incumbent: the R2 hero pose (demure stance, feet about 24 px apart) with the R3 head",
+ "set": {
+  "head": {
+   "chin_dx": 15
+  },
+  "neck": {
+   "back": 6
+  },
+  "legs": {
+   "near": {
+    "heel": [
+     -9,
+     7
+    ],
+    "knee_hint": [
+     3,
+     40
+    ],
+    "toe": [
+     -5,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "butt": [
+    -15,
+    0
+   ]
+  }
+ },
+ "score": 13,
+ "gap_area": 359,
+ "width": 92,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P12",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02",
+  "CL-P05"
+ ],
+ "feet_apart": 24,
+ "failed": [],
+ "verdict": "KEPT as #2 (13/13): the incumbent R2 pose, the alternative if the stance reads too casual in motion; beside t7 at x3 its legs are two columns [visible]",
+ "kept": true,
+ "rank": 2
+}

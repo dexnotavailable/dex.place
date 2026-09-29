@@ -1,0 +1,24 @@
+{
+ "name": "t1_base",
+ "idea": "the spec as written: weight far leg, free knee back, glaive 17 deg out, hand on the collar",
+ "set": {},
+ "score": 11,
+ "gap_area": 161,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "failed": [],
+ "rank": 2,
+ "kept": true,
+ "_doc": "thumbnail t1_base (the spec as written: weight far leg, free knee back, glaive 17 deg out, hand on the collar): 11/11 silhouette rules pass, gap area 161 px2. KEPT: passes FG-P08, FG-P09, FG-P10, FG-P11, FG-P13, FG-P14, FG-N04, GR-P05, GR-P09, GR-P10, GR-N02"
+}

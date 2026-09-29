@@ -1,0 +1,44 @@
+{
+ "name": "t1_c1hero",
+ "idea": "the C1 hero gesture (wide stance, glaive 17 deg out, hand at the collar cross) with the R1 masses",
+ "set": {
+  "arms": {
+   "far": {
+    "pose": "collar",
+    "hand": [
+     14,
+     103
+    ],
+    "elbow_hint": [
+     40,
+     96
+    ],
+    "foreshorten": [
+     0.62,
+     0.95
+    ]
+   }
+  }
+ },
+ "score": 10,
+ "gap_area": 161,
+ "width": 89,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "failed": [
+  "FG-N04: arms without a gap: far"
+ ],
+ "verdict": "dropped (#4, 10/11): with the DESIGN-size bell (27 px mouth) the collar hand drapes the far sleeve across the chest and closes the far arm window (FG-N04, block) and hides the chest window; C1 passed only because its sleeve was a third of the size. Built full size as idle_hero_r1_collar for the A/B record",
+ "rank": 4,
+ "kept": false
+}

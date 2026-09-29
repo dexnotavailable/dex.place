@@ -1,0 +1,18 @@
+{
+ "_doc": "profile serene at 144 px: glyph names from lib_144.json; params tune the placement (face_v2.py). Written by face_v2_lib.py.",
+ "facing": "profile",
+ "expr": "serene",
+ "px": 144,
+ "eye_near": "profile_serene",
+ "brow_near": "profile",
+ "mouth": "profile",
+ "gaze": "target",
+ "nose": null,
+ "params": {
+  "edge_keep": 1,
+  "strand_max": 3,
+  "fringe_band": 1,
+  "jaw": false,
+  "eye_dy": 0
+ }
+}

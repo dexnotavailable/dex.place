@@ -1,0 +1,26 @@
+{
+ "_doc": "glaive-hands round 1: GR-N02 on N2: the near forearm runs 8 deg off the haft at full reach. Slide the rear (R) grip toward the butt so the forearm crosses it; the front hand follows to keep 24-30 px.",
+ "base": "art/rosace/hands/poses/n2_pivot.json",
+ "variants": {
+  "p5_slide_back": {
+   "hands": {
+    "R": {
+     "slide": -0.1
+    },
+    "L": {
+     "slide": 0.0
+    }
+   }
+  },
+  "p6_slide_fwd": {
+   "hands": {
+    "R": {
+     "slide": 0.1
+    },
+    "L": {
+     "slide": 0.19
+    }
+   }
+  }
+ }
+}

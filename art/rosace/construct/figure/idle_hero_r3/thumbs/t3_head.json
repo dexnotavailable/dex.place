@@ -1,0 +1,58 @@
+{
+ "name": "t3_head",
+ "idea": "the head cocked further toward the viewer: chin 2 px toward the facing side, the neck set back 1 px more (FG-P12 toward the top of 5-15 deg)",
+ "set": {
+  "head": {
+   "chin_dx": 17
+  },
+  "neck": {
+   "back": 7
+  },
+  "legs": {
+   "near": {
+    "heel": [
+     -9,
+     7
+    ],
+    "knee_hint": [
+     3,
+     40
+    ],
+    "toe": [
+     -5,
+     0
+    ]
+   }
+  },
+  "glaive": {
+   "butt": [
+    -15,
+    0
+   ]
+  }
+ },
+ "score": 11,
+ "gap_area": 387,
+ "width": 92,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "feet_apart": 24,
+ "failed": [
+  "FG-P12: 4.1 deg between head and neck axes",
+  "CL-P05: 11 gold px, plus shape True; backing contrast 5.3:1; 2 covering px"
+ ],
+ "verdict": "dropped on the full build: first scored #1 (11/11 on the silhouette rules), but the hero build failed CL-P05 (block: the chin covers 2 px of the collar cross) and FG-P12 (the neck follows the chin: 4.1 deg); R2's t7 found the same. Re-scored with CL-P05 and FG-P12 added to the thumbnail score: 11/13 [M]",
+ "kept": false,
+ "rank": 5
+}

@@ -1,0 +1,17 @@
+{
+ "_doc": "Collar cross at 144 px (DESIGN.md 3 row 1, revision 3): a 5 x 5 cross, G1 lit arms, G3 on the shade side, a G0 glint where the arms cross, on a 1 px I3 backing (gold on white is only 1.13:1). Authored pixels, stamped by tools/pixel-pipeline/glyphs.py on the projected centre of the 3D pendant; mirrored when the chest faces screen-left. o = I3 backing, g = G1, h = G3, s = G0.",
+ "rows": [
+  "..ooo..",
+  "ooogooo",
+  "ohhsggo",
+  "ooogooo",
+  "..ogo..",
+  "..oho..",
+  "..ooo.."
+ ],
+ "origin": [3, 3],
+ "key": {"o": "I3", "g": "G1", "h": "G3", "s": "G0"},
+ "on_parts": ["collar_cross", "collar_plate", "bodice", "collar", "body"],
+ "need_parts": ["collar_cross", "collar_plate"],
+ "min_facing": 0.25
+}

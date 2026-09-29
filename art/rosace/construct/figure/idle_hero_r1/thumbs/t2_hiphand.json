@@ -1,0 +1,27 @@
+{
+ "name": "t2_hiphand",
+ "idea": "far hand on the far hip (the 3D reference's pose, C1's A/B alternative t5): the far sleeve hangs beside the hip and opens a triangle window",
+ "set": {
+  "fist_shift": 0.4
+ },
+ "score": 11,
+ "gap_area": 316,
+ "width": 93,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "failed": [],
+ "verdict": "KEPT, HERO (#1, 11/11, gap 316 px2): the hand on the far hip keeps a clean triangle window; the far bell hangs beside the hip, so torso, chest window and collar cross stay clear; the most attitude at 1x",
+ "rank": 1,
+ "kept": true
+}

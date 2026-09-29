@@ -201,14 +201,43 @@ export class CellGrid {
     this.markAll();
   }
 
-  /** Empty every cell (dynamic parts re-rasterise from scratch). */
+  /**
+   * Empty every cell (dynamic parts re-rasterise from scratch). Only the
+   * rect that held cells is marked dirty, so a flame or a swinging rope
+   * uploads its own few rows, not its whole grid.
+   */
   clearAll(): void {
+    const { W, mat } = this;
+    let x0 = W, y0 = this.Hh, x1 = -1, y1 = -1;
+    for (let i = 0; i < mat.length; i++) {
+      if (!mat[i]) continue;
+      const X = i % W, Y = (i / W) | 0;
+      if (X < x0) x0 = X;
+      if (X > x1) x1 = X;
+      if (Y < y0) y0 = Y;
+      if (Y > y1) y1 = Y;
+    }
+    if (x1 < 0) return;
     this.mat.fill(0);
     this.flags.fill(0);
     this.tone.fill(0);
     this.height.fill(0);
     this.count = 0;
-    this.markAll();
+    this.markRect(x0, y0, x1, y1);
+    this.shapeVersion++;
+  }
+
+  /** Mark a raw-coordinate rect dirty (union with what is already dirty). */
+  markRect(x0: number, y0: number, x1: number, y1: number): void {
+    const d = this.dirty;
+    if (!d) this.dirty = { x0, y0, x1, y1 };
+    else {
+      if (x0 < d.x0) d.x0 = x0;
+      if (y0 < d.y0) d.y0 = y0;
+      if (x1 > d.x1) d.x1 = x1;
+      if (y1 > d.y1) d.y1 = y1;
+    }
+    this.version++;
   }
 
   recount(): void {

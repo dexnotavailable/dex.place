@@ -46,6 +46,8 @@ changes and every few pixels, peaks brighter, none below the knee, only a glint 
 
   python overrides.py build --still <render>/px<N> --layer <pose>_<N>
   python overrides.py apply --still <render>/px<N> --layer <pose>_<N>   -> still.png (+x3, x6)
+  python overrides.py build|apply ... --layer-dir <dir> [--ops <other layer>]   (v2 refit: layers
+      built outside the repo; an 80 px still borrowing the 144 layer's face choice and rim)
   python overrides.py authored --still <render>/px<N> --layer <pose>_<N>   record that the
       patches were (re)painted on this render ('authored_on' from its meta.json)
 """
@@ -61,6 +63,10 @@ import faces
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 ODIR = os.path.join(REPO, "art", "rosace", "overrides")
+# where built layer PNGs / .touched.json go and where apply reads the PNG (--layer-dir); the
+# authored ops JSON is always read from ODIR. Default ODIR, as before.
+LDIR = ODIR
+OPS_LAYER = {}      # layer -> the layer whose ops JSON to use (--ops), e.g. an 80 px still on 144 ops
 HANDS = os.path.join(REPO, "art", "rosace", "hands")
 ERASE = (255, 0, 255)
 ROWKEY = dict(faces.KEY)
@@ -73,25 +79,40 @@ def load_still(still, tag="noface"):
     meta = json.load(open(os.path.join(still, "meta.json")))
     img = np.array(Image.open(os.path.join(still, tag + ".png")).convert("RGBA"))
     mat = np.asarray(Image.open(os.path.join(still, tag + "_id.png")).convert("RGBA"))[..., 0].astype(int)
+    meta["_still"], meta["_tag"] = still, tag     # glyphs.py reads the part ids next to the render
     return meta, img, mat
 
 
 def ops_for(layer):
-    p = os.path.join(ODIR, layer + ".json")
+    p = os.path.join(ODIR, OPS_LAYER.get(layer, layer) + ".json")
     return json.load(open(p, encoding="utf-8")) if os.path.exists(p) else {}
 
 
 def face_layer(meta, img, mat, ops, keep=None):
-    """returns (image with the face, touched mask, stamp name)"""
+    """returns (image with the face, touched mask, stamp name); pixel glyphs (glyphs.py: the v2
+    collar cross) are stamped with the face and count as face pixels (patches keep off them)"""
+    out, t, name = _face_layer(meta, img, mat, ops, keep)
+    import glyphs
+    g = glyphs.apply(meta, out, ops)
+    return out, t | g, name
+
+
+def _face_layer(meta, img, mat, ops, keep=None):
     an = meta.get("anchors") or {}
     f = ops.get("face", {})
     if f.get("off") or "eye_L" not in an:
         return img.copy(), np.zeros(mat.shape, bool), None
+    v2 = faces.v2_face(meta, img, mat, ops, keep)    # the v2 head's face lane route (needs a face pass)
+    if v2 is not None:
+        return v2
     facing = f.get("facing") or faces.facing_of(an)[0]
     if facing is None:
         return img.copy(), np.zeros(mat.shape, bool), None
     expr = f.get("expr") or meta.get("expression") or "serene"
     st = faces.load(facing, expr, meta["px"])
+    if st is None:
+        print(f"no face stamp for {facing}/{expr} at {meta['px']} px: face skipped")
+        return img.copy(), np.zeros(mat.shape, bool), None
     if f.get("far_dx"):
         st = dict(st, far_dx=f["far_dx"])
     out = img.copy()
@@ -511,8 +532,8 @@ def build(still, layer):  # noqa: C901
     lay[pa] = work[pa]
     lay[er, :3] = ERASE
     lay[er, 3] = 255
-    os.makedirs(ODIR, exist_ok=True)
-    Image.fromarray(lay).save(os.path.join(ODIR, layer + ".png"))
+    os.makedirs(LDIR, exist_ok=True)
+    Image.fromarray(lay).save(os.path.join(LDIR, layer + ".png"))
     touched = {}
     for y, x in zip(*np.nonzero(diff)):
         touched.setdefault(kinds[y, x] or "other", []).extend([int(x), int(y)])
@@ -520,7 +541,7 @@ def build(still, layer):  # noqa: C901
     json.dump({"_doc": f"Pixels the override layer {layer}.png touches, by kind; 'xy' is a flat x,y list on "
                        f"the {W}x{H} sprite grid. Rebuilt by overrides.py build; do not edit by hand.",
                "sprite_size": [W, H], "face_stamp": fname, "kinds": summary},
-              open(os.path.join(ODIR, layer + ".touched.json"), "w"), separators=(",", ":"))
+              open(os.path.join(LDIR, layer + ".touched.json"), "w"), separators=(",", ":"))
     print(layer, {k: v["count"] for k, v in summary.items()})
 
 
@@ -528,7 +549,7 @@ def apply(still, layer, tag="still"):
     meta, img, mat = load_still(still)
     ops = ops_for(layer)
     out, _, name = face_layer(meta, img, mat, ops)
-    lp = os.path.join(ODIR, layer + ".png")
+    lp = os.path.join(LDIR, layer + ".png")
     if os.path.exists(lp):
         lay = np.asarray(Image.open(lp).convert("RGBA"))
         if lay.shape[:2] != out.shape[:2]:
@@ -553,7 +574,13 @@ if __name__ == "__main__":
     ap.add_argument("--still", required=True)
     ap.add_argument("--layer", required=True)
     ap.add_argument("--tag", default="still")
+    ap.add_argument("--layer-dir", default=None, help="build/read the layer PNG here instead of art/rosace/overrides")
+    ap.add_argument("--ops", default=None, help="take the authored ops (face, rim, patches) from this layer name")
     a = ap.parse_args()
+    if a.layer_dir:
+        LDIR = os.path.abspath(a.layer_dir)
+    if a.ops:
+        OPS_LAYER[a.layer] = a.ops
     if a.cmd == "build":
         build(a.still, a.layer)
     elif a.cmd == "apply":

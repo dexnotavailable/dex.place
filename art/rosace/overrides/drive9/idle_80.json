@@ -1,0 +1,258 @@
+{
+ "_doc": "Round 4 paint-over (ESCALATION 2) for the drive-9 idle at 80 px, placed by hand on the 80 px underlay (not scaled from 144): the face must read as two eyes plus blush at world size (face critic). Coordinates are sprite pixels on the R4u underlay; STALE if it changes.",
+ "palette": {
+  "1": "#f0d5c4",
+  "2": "#ebc5b1",
+  "3": "#e4b3a0",
+  "4": "#d99c8b",
+  "5": "#c98579",
+  "K": "#1b1024",
+  "k": "#4a2c44",
+  "A": "#2c3b80",
+  "B": "#3b4f98",
+  "C": "#2e3f7e",
+  "D": "#86b8ee",
+  "H": "#eef6ff",
+  "W": "#dde2f0",
+  "w": "#d3d7e8",
+  "L": "#a0606c",
+  "R": "#e89c9a",
+  "r": "#eeb6aa",
+  "M": "#7e3f4c",
+  "m": "#b0606a",
+  "n": "#d4927f",
+  "b": "#6e5a9a",
+  "g0": "#1c1733",
+  "g1": "#302747",
+  "g2": "#423555",
+  "g4": "#6a52a2",
+  "g5": "#7f62af",
+  "g6": "#9a82d0",
+  "g7": "#b8aee6",
+  "x": "#a8676a",
+  "y": "#8d535f",
+  "f1": "#8680b4",
+  "f2": "#a29dc8",
+  "f3": "#e6e2e9",
+  "l1": "#0c0920",
+  "l3": "#4d4392",
+  "l4": "#6456ac"
+ },
+ "layers": [
+  {
+   "name": "face_base",
+   "kind": "stamp",
+   "at": [
+    24,
+    39
+   ],
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: clean face plane before the features (FC-P35), lit from the upper right.",
+   "rows": [
+    "322211112223",
+    "322211111223",
+    "332221111223",
+    "332222112233",
+    "433222222334",
+    "443322222344",
+    "444332223444",
+    "444443334444",
+    "444444444444"
+   ]
+  },
+  {
+   "name": "fringe",
+   "kind": "clumps",
+   "root_y": 36,
+   "box": [
+    24,
+    36,
+    36,
+    40
+   ],
+   "over": [
+    "hair",
+    "skin"
+   ],
+   "keys": {
+    "body": "g4",
+    "dark": "g2",
+    "lite": "g5",
+    "gap": "g0",
+    "notch": "3",
+    "notch2": "2",
+    "under": "2",
+    "tip": "g5"
+   },
+   "why": "Head and hair 4: the fringe in 4 tapered locks with dark gaps (5-7 at 144 is 3-4 at 80); the forehead shows between them.",
+   "clumps": [
+    {
+     "x": [
+      23,
+      27
+     ],
+     "tip": [
+      25,
+      39
+     ],
+     "lite_frac": 0.4
+    },
+    {
+     "x": [
+      27,
+      29
+     ],
+     "tip": [
+      28,
+      38
+     ],
+     "lite_frac": 0.4
+    },
+    {
+     "x": [
+      29,
+      32
+     ],
+     "tip": [
+      31,
+      39
+     ],
+     "lite_frac": 0.4
+    },
+    {
+     "x": [
+      32,
+      36
+     ],
+     "tip": [
+      34,
+      39
+     ],
+     "lite_frac": 0.4
+    }
+   ]
+  },
+  {
+   "name": "eye_near",
+   "kind": "stamp",
+   "at": [
+    23,
+    39
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Face critic 2/3 at 80: 'the face drops to diadem plus two blue dots; the face must read as two eyes plus blush at 80'. A 4 px lash with a flick over a 2x2 iris (dark top, light bottom, a catchlight).",
+   "rows": [
+    "K....",
+    ".KKKK",
+    ".kBHw",
+    "..DC."
+   ]
+  },
+  {
+   "name": "eye_far",
+   "kind": "stamp",
+   "at": [
+    29,
+    39
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "as eye_near, foreshortened, flick to the right",
+   "rows": [
+    "....K",
+    "KKKK.",
+    "wBAk.",
+    ".DC.."
+   ]
+  },
+  {
+   "name": "blush",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: the 2-tone blush, one px each tone at 80.",
+   "pts": [
+    [
+     24,
+     43,
+     "R"
+    ],
+    [
+     25,
+     43,
+     "r"
+    ],
+    [
+     32,
+     43,
+     "R"
+    ],
+    [
+     33,
+     43,
+     "r"
+    ]
+   ]
+  },
+  {
+   "name": "mouth",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Attractiveness 3: an asymmetric closed smile, the far corner lifted.",
+   "pts": [
+    [
+     29,
+     45,
+     "m"
+    ],
+    [
+     30,
+     45,
+     "m"
+    ],
+    [
+     31,
+     44,
+     "M"
+    ]
+   ]
+  },
+  {
+   "name": "strands_out",
+   "kind": "line",
+   "pts": [
+    [
+     21,
+     42
+    ],
+    [
+     19,
+     45
+    ],
+    [
+     19,
+     48
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "why": "Head and hair 4: one loose strand breaks the outline at 80 (two at 144)."
+  }
+ ]
+}

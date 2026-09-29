@@ -1,0 +1,246 @@
+{
+ "name": "back_appeal_C",
+ "note": "Figure-pose concept C back view, kept sub-variant B4: the idle_appeal_C body and glaive seen from behind at camera yaw 225 (her back-left), the upper chest twisted 6 deg back toward the camera and the head turned the rest of the way (look, capped 80 deg) so she glances over her shoulder with the near eye and cheek showing; the weight hip pushed out, weight leg straight, still leaning on the planted glaive, which frames her on the right; the raised left elbow frames the head; the hair tail blown to her left, off the open back. Blind sheets in review/rosace/art/figure-pose/explore/C/blind (key.json). Grip gap 12.4 mm (GR-P11 <= 15). The rig check (figure_pose check) measures turn, tilt and stance against the camera as for a front view, so its PS-P01/P03/P04/P05/N14 results do not apply to this back view; PS-P18 is fill-based and judged on the still.",
+ "camera": {
+  "yaw": 225,
+  "elev": 8
+ },
+ "root": {
+  "loc": [
+   0,
+   0,
+   0
+  ],
+  "rot": [
+   0,
+   0,
+   0
+  ]
+ },
+ "bones": {},
+ "feet": {
+  "R": {
+   "pos": [
+    -0.08,
+    0.0,
+    0.159
+   ],
+   "yaw": -10
+  },
+  "L": {
+   "pos": [
+    0.1346,
+    -0.3212,
+    0.195
+   ],
+   "yaw": 45,
+   "pitch": 45
+  }
+ },
+ "poles": {
+  "leg.L": [
+   -1.4,
+   -1.0,
+   0.5
+  ],
+  "leg.R": [
+   -0.1,
+   -0.8,
+   0.6
+  ],
+  "arm.R": [
+   -0.4,
+   0.5,
+   1.0
+  ],
+  "arm.L": [
+   0.9,
+   0.3,
+   1.8
+  ]
+ },
+ "weapon": {
+  "butt": [
+   -0.1947,
+   -0.0418,
+   0.0
+  ],
+  "dir": [
+   -0.248,
+   0.2804,
+   1.0
+  ],
+  "edge": [
+   0,
+   -1,
+   0
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_main",
+   "slide": -0.07,
+   "thumb": "tip",
+   "back": [
+    -0.5,
+    -0.8,
+    0.2
+   ]
+  }
+ },
+ "fingers": {
+  "R": {
+   "curl": 88,
+   "thumb": 55
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.04,
+   0.12,
+   0
+  ],
+  "chains": {
+   "tabard": {
+    "g": 0.95,
+    "wind": [
+     0.06,
+     0.02,
+     0
+    ]
+   },
+   "hair_tail": {
+    "g": 0.6,
+    "wind": [
+     0.5,
+     0.2,
+     0.0
+    ]
+   },
+   "sleeve_R": {
+    "g": 0.2,
+    "wind": [
+     -0.8,
+     1.0,
+     0.3
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.45,
+    "wind": [
+     0.25,
+     0.6,
+     0.1
+    ]
+   },
+   "stole_A": {
+    "g": 0.55,
+    "wind": [
+     -0.35,
+     0.25,
+     0.05
+    ]
+   },
+   "stole_B": {
+    "g": 0.55,
+    "wind": [
+     -0.25,
+     0.4,
+     0.0
+    ]
+   },
+   "side_R": {
+    "g": 0.45,
+    "wind": [
+     -0.15,
+     0.55,
+     0.0
+    ]
+   }
+  }
+ },
+ "expression": "confident",
+ "figure": {
+  "appeal": true,
+  "joints": {
+   "hips": [
+    0,
+    15.5,
+    10
+   ],
+   "spine": [
+    -4,
+    -37,
+    -2
+   ],
+   "chest": [
+    -3,
+    -6,
+    -2
+   ],
+   "upper_chest": [
+    -2,
+    20,
+    6
+   ],
+   "shoulder.R": [
+    0,
+    4,
+    0
+   ]
+  },
+  "weight": {
+   "leg": "R",
+   "knee": 176,
+   "over": "neck",
+   "offset": [
+    -0.018,
+    0.0126
+   ]
+  },
+  "hands": {
+   "L": {
+    "rel": "upper_chest",
+    "pos": [
+     0.1,
+     -0.05,
+     1.52
+    ],
+    "fdir": [
+     -0.5,
+     -0.35,
+     0.8
+    ],
+    "palm": [
+     -0.6,
+     0.6,
+     0.3
+    ]
+   }
+  },
+  "fingers": {
+   "L": {
+    "curl": 18,
+    "per": {
+     "Index": 6,
+     "Little": 30
+    },
+    "spread": 6,
+    "thumb": 12
+   }
+  },
+  "look": {
+   "at": "camera",
+   "amount": 1.0,
+   "neck": 0.45,
+   "tilt": -8,
+   "chin": 4,
+   "max": 80
+  }
+ }
+}

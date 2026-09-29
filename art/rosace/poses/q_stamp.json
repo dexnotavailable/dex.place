@@ -52,7 +52,8 @@
    -18,
    -6,
    -8
-  ]
+  ],
+  "sleeve_R_1.scale": 0.7
  },
  "feet": {
   "L": {
@@ -98,24 +99,24 @@
  "weapon": {
   "butt": [
    0.04,
-   -0.66,
-   0.0
+   -1.0519,
+   -0.0421
   ],
   "dir": [
    0.0,
-   -0.2,
-   1.0
+   0.3387,
+   0.9409
   ],
   "edge": [
-   0,
-   -1,
+   0.64,
+   -0.77,
    0
   ]
  },
  "hands": {
   "L": {
-   "grip": "grip_main",
-   "slide": -0.12,
+   "grip": "grip_off",
+   "slide": -0.0741,
    "thumb": "butt",
    "back": [
     -0.6,
@@ -124,20 +125,13 @@
    ]
   },
   "R": {
-   "pos": [
-    -0.46,
-    0.44,
-    0.98
-   ],
-   "fdir": [
-    -0.35,
-    0.6,
-    -0.6
-   ],
-   "palm": [
-    0.2,
-    0.3,
-    -1.0
+   "grip": "grip_off",
+   "slide": 0.1859,
+   "thumb": "butt",
+   "back": [
+    -0.7,
+    -0.5,
+    0.3
    ]
   }
  },
@@ -147,8 +141,8 @@
    "thumb": 60
   },
   "R": {
-   "curl": 15,
-   "thumb": 5
+   "curl": 88,
+   "thumb": 55
   }
  },
  "drape": {
@@ -204,11 +198,11 @@
     ]
    },
    "sleeve_R": {
-    "g": 0.2,
+    "g": 0.8,
     "wind": [
      -0.3,
-     0.4,
-     0.8
+     0.3,
+     0.0
     ]
    },
    "sleeve_L": {
@@ -220,30 +214,33 @@
     ]
    },
    "tabard": {
-    "g": 0.45,
+    "g": 0.97,
     "wind": [
-     0.45,
-     0.35,
-     0.35
+     0.0,
+     -0.08,
+     -0.05
     ]
    },
    "stole_A": {
-    "g": 0.4,
+    "g": 0.85,
     "wind": [
-     0.3,
-     0.2,
-     0.5
+     0.05,
+     0.05,
+     0.1
     ]
    },
    "stole_B": {
-    "g": 0.4,
+    "g": 0.85,
     "wind": [
-     -0.3,
-     0.2,
-     0.5
+     -0.05,
+     0.05,
+     0.1
     ]
    }
   }
  },
- "expression": "resolute"
+ "expression": "resolute",
+ "note_glaive_hands": "glaive-hands lane round 2 (probes q_r2 to r2d, pick q): a two-hand mid-haft drive (GR-P03: the near R hand 0.13 m above the haft's middle, the far L 0.13 m below, 19.7 px apart; round 1 was one hand and a claw-like free hand by the knee); the haft leans its top 20 deg back toward her (screen -15 deg against the torso's +31: 46 deg off the torso axis, critique: >= 12) with the butt driven into the floor ahead of the front foot, so haft and torso make an A; hands under the chin so the near bell does not cross her face (hands at 0.97 m put the sleeve over the mouth: probes q_r2b), the near sleeve scaled 0.7 and weighted down; the edge turned so the flats face the camera (disc facing 1.0; was 0.76, under the rose stamp's 0.85). The near R hand takes the upper grip because its nearest haft point is 0.4 m above the lower socket. Round-1 pose kept in poses/r1/.",
+ "note_stole_r2": "glaive-hands round 2: the stole tails hang (g 0.6-0.9, little wind) on the l4 glaive's 10 du tails; critique 7b: curled tails read as a hooked second blade.",
+ "note_integrate": "Integrate step 2026-09-29: the glaive-hands lane's pose (art/rosace/hands/poses) with the outfit lane's R2Q drape patches (qtab, hair, tabn2 from overrides/global/outfit/pose_patches.json) folded in; the pre-integration file is build/scratch/poses_pre_artistry/"
 }

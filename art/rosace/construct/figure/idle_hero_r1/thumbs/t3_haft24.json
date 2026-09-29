@@ -1,0 +1,52 @@
+{
+ "name": "t3_haft24",
+ "idea": "glaive leaning 24 deg with the butt 2 px nearer and the grip 5 px lower (so the fist can reach it: C1 log, GR-P05), the near arm reaching further out: a wider wedge of background",
+ "set": {
+  "arms": {
+   "far": {
+    "pose": "collar",
+    "hand": [
+     14,
+     103
+    ],
+    "elbow_hint": [
+     40,
+     96
+    ],
+    "foreshorten": [
+     0.62,
+     0.95
+    ]
+   }
+  },
+  "glaive": {
+   "angle_deg": 24,
+   "butt": [
+    -13,
+    0
+   ],
+   "grip_along": 93
+  }
+ },
+ "score": 9,
+ "gap_area": 192,
+ "width": 96,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "GR-P05",
+  "GR-P09",
+  "GR-N02"
+ ],
+ "failed": [
+  "FG-N04: arms without a gap: far",
+  "GR-P10: closest clear gap 3.0 px; overlap 0 px"
+ ],
+ "verdict": "dropped (#5, 9/11): the collar hand's FG-N04 plus the 24 deg glaive's GR-P10",
+ "rank": 5,
+ "kept": false
+}

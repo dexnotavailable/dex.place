@@ -416,6 +416,23 @@ def anchors(sc, px):
     for n in ("grip_main", "grip_mid", "grip_off", "glaive_tip", "glaive_butt"):
         if n in pb:
             out[n] = project(sc, M @ pb[n].head)
+    # pixel glyphs (v2 refit: the collar cross, glyphs.py): objects flagged 'glyph' get their posed
+    # centre projected, with the facing of their front (-Y at rest, carried by 'glyph_bone');
+    # v1 has no flagged object, so its anchors are unchanged
+    dg = bpy.context.evaluated_depsgraph_get()
+    for ob in sc.objects:
+        g = ob.get("glyph") if ob.type == "MESH" else None
+        if not g:
+            continue
+        ev = ob.evaluated_get(dg)
+        me = ev.to_mesh()
+        ps = [ob.matrix_world @ v.co for v in me.vertices]
+        ev.to_mesh_clear()
+        c = sum(ps, V()) / max(len(ps), 1)
+        bn = ob.get("glyph_bone", "J_Bip_C_UpperChest")
+        b = pb[bn]
+        nrm = ((M @ b.matrix).to_3x3() @ b.bone.matrix_local.to_3x3().inverted() @ V((0, -1, 0))).normalized()
+        out["glyph_" + g] = project(sc, c) + [nrm.dot(cam_back), nrm.dot(right)]
     return out
 
 

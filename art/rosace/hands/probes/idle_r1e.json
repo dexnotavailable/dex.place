@@ -1,0 +1,45 @@
+{
+ "_doc": "glaive-hands round 1e: GR-N02 on the adopted idle (f2, 16.8 deg): the haft is 9 deg off both thighs (block). Leans of 18.5-19 deg solved for reach (grip within 0.435 m of the near shoulder, 8 cm in front of it): the butt moves to the near foot's line (1-2 cm inside it on screen).",
+ "base": "art/rosace/hands/poses/idle_hero.json",
+ "variants": {
+  "g0_f2": {},
+  "g1_185": {
+   "weapon": {
+    "butt": [
+     -0.17,
+     -0.07,
+     0.0
+    ],
+    "dir": [
+     -0.2748,
+     0.1587,
+     0.9483
+    ]
+   },
+   "hands": {
+    "R": {
+     "slide": 0.17
+    }
+   }
+  },
+  "g2_19": {
+   "weapon": {
+    "butt": [
+     -0.23,
+     -0.2,
+     0.0
+    ],
+    "dir": [
+     -0.2308,
+     0.2481,
+     0.9408
+    ]
+   },
+   "hands": {
+    "R": {
+     "slide": 0.19
+    }
+   }
+  }
+ }
+}

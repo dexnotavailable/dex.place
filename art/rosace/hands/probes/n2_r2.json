@@ -1,0 +1,276 @@
+{
+ "_doc": "glaive-hands round 2: N2 A2 as MOVESET draws it: her back to us, the glaive at shoulder height BEHIND her (on the camera side, over the hair), both fists out at the sides where the silhouette shows them (critique: the near grip was hidden behind the hair, so the glaive looked balanced on one cuff).",
+ "base": "art/rosace/hands/poses/n2_pivot.json",
+ "variants": {
+  "a_c12": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.9663,
+     0.12,
+     0.9755
+    ],
+    "dir": [
+     0.9292,
+     0.0,
+     0.3697
+    ],
+    "edge": [
+     0,
+     0,
+     1
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.1241,
+     "thumb": "tip",
+     "back": [
+      0,
+      0.6,
+      0.8
+     ]
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": 0.3559,
+     "thumb": "tip",
+     "back": [
+      0.2,
+      0.5,
+      0.8
+     ]
+    }
+   },
+   "poles": {
+    "arm.R": [
+     -0.6,
+     0.3,
+     1.1
+    ],
+    "arm.L": [
+     0.6,
+     0.3,
+     1.1
+    ]
+   }
+  },
+  "b_c20": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.9663,
+     0.2,
+     0.9755
+    ],
+    "dir": [
+     0.9292,
+     0.0,
+     0.3697
+    ],
+    "edge": [
+     0,
+     0,
+     1
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.1241,
+     "thumb": "tip",
+     "back": [
+      0,
+      0.6,
+      0.8
+     ]
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": 0.3559,
+     "thumb": "tip",
+     "back": [
+      0.2,
+      0.5,
+      0.8
+     ]
+    }
+   },
+   "poles": {
+    "arm.R": [
+     -0.6,
+     0.3,
+     1.1
+    ],
+    "arm.L": [
+     0.6,
+     0.3,
+     1.1
+    ]
+   }
+  },
+  "c_c16lo": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.9663,
+     0.16,
+     0.8955
+    ],
+    "dir": [
+     0.9292,
+     0.0,
+     0.3697
+    ],
+    "edge": [
+     0,
+     0,
+     1
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.1241,
+     "thumb": "tip",
+     "back": [
+      0,
+      0.6,
+      0.8
+     ]
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": 0.3559,
+     "thumb": "tip",
+     "back": [
+      0.2,
+      0.5,
+      0.8
+     ]
+    }
+   },
+   "poles": {
+    "arm.R": [
+     -0.6,
+     0.3,
+     1.1
+    ],
+    "arm.L": [
+     0.6,
+     0.3,
+     1.1
+    ]
+   }
+  },
+  "d_c16w": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -0.9742,
+     0.16,
+     0.9645
+    ],
+    "dir": [
+     0.9292,
+     0.0,
+     0.3697
+    ],
+    "edge": [
+     0,
+     0,
+     1
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.1241,
+     "thumb": "tip",
+     "back": [
+      0,
+      0.6,
+      0.8
+     ]
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": 0.4159,
+     "thumb": "tip",
+     "back": [
+      0.2,
+      0.5,
+      0.8
+     ]
+    }
+   },
+   "poles": {
+    "arm.R": [
+     -0.6,
+     0.3,
+     1.1
+    ],
+    "arm.L": [
+     0.6,
+     0.3,
+     1.1
+    ]
+   }
+  },
+  "e_c16flat": {
+   "weapon": {
+    "socket": "glaive_butt",
+    "at": [
+     -1.0058,
+     0.16,
+     1.0753
+    ],
+    "dir": [
+     0.9671,
+     0.0,
+     0.2545
+    ],
+    "edge": [
+     0,
+     0,
+     1
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": -0.1241,
+     "thumb": "tip",
+     "back": [
+      0,
+      0.6,
+      0.8
+     ]
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": 0.3559,
+     "thumb": "tip",
+     "back": [
+      0.2,
+      0.5,
+      0.8
+     ]
+    }
+   },
+   "poles": {
+    "arm.R": [
+     -0.6,
+     0.3,
+     1.1
+    ],
+    "arm.L": [
+     0.6,
+     0.3,
+     1.1
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,25 @@
+{
+ "_doc": "glaive-hands round 2: r3 fist template (construct/fist_<px>_r3.json: one continuous knuckle line, lit thumb over the haft, S3 wrist step); a two-hand mid-haft drive (GR-P03): the near R fist above the haft's middle, the far L below it.",
+ "hands": [
+  {
+   "side": "L",
+   "kind": "fist",
+   "template": "r3"
+  },
+  {
+   "side": "R",
+   "kind": "fist",
+   "template": "r3",
+   "edge": "OL",
+   "edge_on": [
+    "skin",
+    "white",
+    "beige",
+    "veil"
+   ]
+  }
+ ],
+ "rose": {
+  "on": true
+ }
+}

@@ -1,0 +1,255 @@
+{
+ "name": "idle_appeal",
+ "note": "Figure-pose refine round 2 (critique of round 1: the idle leaned 15 deg toward the glaive as one slab; glaive across the hip; bust spheres). Back to concept A's layout, the control the critics found best balanced: glaive in the far (left) hand planted beyond the free foot as an A-frame leaning 19 deg IN (butt 1.0 m out on screen, 0.15 m behind, grip at 1.66 m, elbow soft 50 deg), so it frames her with a triangle of negative space and never crosses the hip; near (right) hand on the cocked weight hip, fingers grouped (spread 2), wrist bent. Weight on the near leg, pit of the neck over its ankle (0 px). The S is inside the body: lumbar -22 (was -30) with the upper chest +6 lets figure.weight push the pelvis out over the weight leg (weight hip 4.5 px outboard of the ankle, leg 3.8 deg off vertical) while the shoulders tilt 13.9 deg against the hips 13.7. Arch torso x -12 (A -9), chin 7 down, head tilt 12. Stance: free upper leg 1.1 (PS-P20 cheat), free foot 0.60 m out and 0.10 m toward the camera: heels 41 px at 144, free knee 25 deg. Both bell sleeves hang (g 0.9, no wind; PS-P27). Silhouette axis 10.6 deg (round 1 18.6, A 6.4): PS-P28.",
+ "camera": {
+  "yaw": 45,
+  "elev": 8
+ },
+ "root": {
+  "loc": [
+   0,
+   0,
+   0
+  ],
+  "rot": [
+   0,
+   0,
+   0
+  ]
+ },
+ "bones": {
+  "J_Bip_C_Hips": [
+   5,
+   15.0,
+   4
+  ],
+  "J_Bip_L_UpperLeg.scale": 1.1
+ },
+ "feet": {
+  "R": {
+   "pos": [
+    -0.04,
+    0.02,
+    0.105
+   ],
+   "yaw": -35
+  },
+  "L": {
+   "pos": [
+    0.3136,
+    -0.475,
+    0.17
+   ],
+   "yaw": 70,
+   "pitch": 24
+  }
+ },
+ "poles": {
+  "leg.L": [
+   -0.55,
+   -0.15,
+   0.55
+  ],
+  "leg.R": [
+   -0.12,
+   -0.8,
+   0.6
+  ],
+  "arm.R": [
+   -0.65,
+   0.95,
+   1.6
+  ],
+  "arm.L": [
+   0.8,
+   0.3,
+   1.45
+  ]
+ },
+ "weapon": {
+  "butt": [
+   0.7732,
+   -0.581,
+   0.0
+  ],
+  "dir": [
+   -0.2435,
+   0.2435,
+   1.0
+  ],
+  "edge": [
+   0.4,
+   -1,
+   0
+  ]
+ },
+ "hands": {
+  "L": {
+   "grip": "grip_main",
+   "slide": 0.2667,
+   "thumb": "tip",
+   "back": [
+    1,
+    -0.2,
+    0
+   ]
+  }
+ },
+ "fingers": {
+  "L": {
+   "curl": 86,
+   "thumb": 50
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.04,
+   0.12,
+   0
+  ],
+  "chains": {
+   "tabard": {
+    "g": 0.9,
+    "wind": [
+     0.22,
+     -0.08,
+     0.0
+    ]
+   },
+   "hair_tail": {
+    "g": 0.8
+   },
+   "sleeve_R": {
+    "g": 0.9,
+    "wind": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.9,
+    "wind": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "stole_A": {
+    "g": 0.85,
+    "wind": [
+     0.25,
+     0.6,
+     0.0
+    ]
+   },
+   "stole_B": {
+    "g": 0.85,
+    "wind": [
+     0.3,
+     0.5,
+     0.0
+    ]
+   },
+   "side_R": {
+    "g": 0.3,
+    "wind": [
+     -0.1,
+     1.0,
+     0.0
+    ]
+   }
+  }
+ },
+ "expression": "serene",
+ "figure": {
+  "appeal": true,
+  "torso": {
+   "bend": [
+    -12,
+    0,
+    -5
+   ]
+  },
+  "joints": {
+   "spine": [
+    0,
+    -22,
+    0
+   ],
+   "chest": [
+    0,
+    -4,
+    0
+   ],
+   "upper_chest": [
+    0,
+    6,
+    0
+   ]
+  },
+  "feet": {
+   "L": {
+    "toe": 28
+   }
+  },
+  "weight": {
+   "leg": "R",
+   "knee": 178,
+   "over": "neck",
+   "offset": [
+    0,
+    0
+   ]
+  },
+  "hands": {
+   "R": {
+    "rel": "hips",
+    "pos": [
+     -0.15,
+     0.0,
+     1.22
+    ],
+    "fdir": [
+     0.15,
+     -0.65,
+     -0.75
+    ],
+    "palm": [
+     1,
+     0.1,
+     0.1
+    ]
+   }
+  },
+  "fingers": {
+   "R": {
+    "curl": 16,
+    "per": {
+     "Index": 10,
+     "Middle": 16,
+     "Ring": 22,
+     "Little": 28
+    },
+    "spread": 2,
+    "thumb": {
+     "fold": 12,
+     "curl": 12,
+     "swing": 16
+    }
+   }
+  },
+  "look": {
+   "at": "camera",
+   "amount": 0.6,
+   "neck": 0.35,
+   "tilt": 12,
+   "chin": 7
+  }
+ }
+}

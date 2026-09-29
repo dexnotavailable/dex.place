@@ -19,6 +19,9 @@ export const P_FADE = 8; // dithers out over the last third of its life
 export const P_DRAG = 16; // air drag
 export const P_RISE = 32; // buoyant (smoke, motes)
 export const P_HOME = 64; // flies back to a cell and restores it (assemble)
+export const P_AMB = 128; // ambient (dust, motes, moths): counted against world.budget.ambient
+export const P_FLOAT = 256; // hangs in the air: slow wandering drift, carried by wind, no gravity (dust motes, seeds)
+export const P_ORBIT = 512; // flutters around a point (hSx, hSy): moths around a lamp
 
 export interface ParticleSpec {
   x: number;
@@ -29,6 +32,8 @@ export interface ParticleSpec {
   rgb: [number, number, number];
   flags: number;
   size?: 1 | 2;
+  /** P_ORBIT: the point it flutters around. */
+  orbit?: [number, number];
   home?: { part: Part; idx: number; delay?: number; dur?: number };
 }
 
@@ -46,7 +51,7 @@ export class Particles {
   life: Float32Array;
   max: Float32Array;
   rgb: Uint32Array;
-  flags: Uint8Array;
+  flags: Uint16Array;
   size: Uint8Array;
   hPart: (Part | null)[];
   hIdx: Int32Array;
@@ -66,7 +71,7 @@ export class Particles {
     this.life = new Float32Array(cap);
     this.max = new Float32Array(cap);
     this.rgb = new Uint32Array(cap);
-    this.flags = new Uint8Array(cap);
+    this.flags = new Uint16Array(cap);
     this.size = new Uint8Array(cap);
     this.hPart = new Array(cap).fill(null);
     this.hIdx = new Int32Array(cap);
@@ -101,6 +106,10 @@ export class Particles {
     this.hIdx[i] = s.home?.idx ?? -1;
     this.hT[i] = -(s.home?.delay ?? 0);
     this.hDur[i] = s.home?.dur ?? 0.8;
+    if (s.orbit) {
+      this.hSx[i] = s.orbit[0];
+      this.hSy[i] = s.orbit[1];
+    }
     return i;
   }
 
@@ -172,6 +181,28 @@ export class Particles {
       this.life[i] = this.life[i]! - dt;
       if (this.life[i]! <= 0) { this.kill(i); continue; }
       let vx = this.vx[i]!, vy = this.vy[i]!;
+      if (f & P_FLOAT) {
+        // a slow wander (value noise per particle), then the wind carries it
+        const s = i * 12.9898 + this.life[i]! * 0.7;
+        vx += (Math.sin(s * 1.3) * 0.5 + Math.sin(s * 3.1) * 0.5) * 18 * dt;
+        vy += (Math.cos(s * 1.7) * 0.5 + Math.sin(s * 2.3) * 0.5) * 12 * dt;
+        vx *= Math.pow(0.4, dt);
+        vy *= Math.pow(0.4, dt);
+        if (wind) {
+          const [wx, wy] = wind(this.x[i]!, this.y[i]!);
+          vx += wx * dt * 0.08;
+          vy += wy * dt * 0.08;
+        }
+      }
+      if (f & P_ORBIT) {
+        // pulled toward its lamp, jinking: a moth
+        const dx = this.hSx[i]! - this.x[i]!, dy = this.hSy[i]! - this.y[i]!;
+        const s = i * 7.31 + this.life[i]! * 9;
+        vx += dx * 3.2 * dt + Math.sin(s) * 260 * dt;
+        vy += dy * 3.2 * dt + Math.cos(s * 1.3) * 220 * dt;
+        vx *= Math.pow(0.3, dt);
+        vy *= Math.pow(0.3, dt);
+      }
       if (f & P_GRAV) vy += gravity * dt;
       if (f & P_RISE) vy -= gravity * 0.02 * dt;
       if (f & P_DRAG) { vx *= Math.pow(0.08, dt); vy *= Math.pow(0.08, dt); }
@@ -369,7 +400,12 @@ export class Chunk extends Part {
       if (Math.abs(this.vy) < 30) this.vy = 0;
       this.vx *= 1 - this.friction * Math.min(1, dt * 20);
       // settle flat: spring to the nearest quarter turn, then lock there
-      const snap = Math.round(this.rot / (Math.PI / 2)) * (Math.PI / 2);
+      // a long piece (a splinter, a plank) lies on its long side, never stands on end
+      const q = this.rot / (Math.PI / 2);
+      let k = Math.round(q);
+      const long = this.grid.w >= this.grid.h * 1.6 ? 0 : this.grid.h >= this.grid.w * 1.6 ? 1 : -1;
+      if (long >= 0 && (((k % 2) + 2) % 2) !== long) k = q > k ? k + 1 : k - 1;
+      const snap = k * (Math.PI / 2);
       const off = snap - this.rot;
       if (Math.abs(off) < 0.02 && Math.abs(this.vr) < 1.5) {
         this.rot = snap;

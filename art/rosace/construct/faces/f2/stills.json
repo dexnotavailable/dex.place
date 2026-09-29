@@ -1,0 +1,36 @@
+{
+ "_doc": "Face lane round F2: which face each key still wears when the render path runs with ROSACE_FACES=f2 (faces.v2_face -> tools/art-construct/face_f2.py). Keyed by pose name, then px ('*' = every size, a px key overrides it). Gaze targets: idle and back view at the viewer, N1 at the enemy (the way she faces), Q with closed smiling eyes. N1 drops F1's shout (critique F1 2g: no teeth block unless Ignited). Q's eyes are pulled in from the projection (far_dx / near_dx): on the tilted front head the projected far eye sits on the hair edge. Picks from round F2 (ART-RULES learning log). Round F2b (second pass of round 2): the same picks drawn with the F2b library (one eye template per view, OL brows over the fringe at 144, lash/brow clipped at the face contour, three skin tones; face_f2_lib.py).",
+ "idle_hero": {
+  "*": {
+   "expr": "confident",
+   "params": {}
+  }
+ },
+ "n1_contact": {
+  "*": {
+   "expr": "focused",
+   "params": {}
+  }
+ },
+ "q_stamp": {
+  "*": {
+   "expr": "smile",
+   "params": {
+    "far_dx": -1
+   }
+  },
+  "144": {
+   "expr": "smile",
+   "params": {
+    "far_dx": -2,
+    "near_dx": -1
+   }
+  }
+ },
+ "n2_pivot": {
+  "*": {
+   "expr": "confident",
+   "params": {}
+  }
+ }
+}

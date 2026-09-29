@@ -1,0 +1,27 @@
+{
+ "_doc": "front, radiant = happy / skill: eyes closed into upward arcs, blush, an open smile. 80 px sprite (the in-world height; 13 px head). Authored 2026-09-29 for the v2 refit (the library stopped at 96). Built to DESIGN.md 5 revision 3 at the smallest budget that still reads: open azure eyes (an A2 iris top under the lash, a matched A5 catch-light on the key-light side), the near eye one iris row taller than the far eye, the lash flicking up at the near eye's outer corner, a 1 px blush under each eye on S2, a 2 px S4 smile. Authored facing screen-right (mirrored for screen-left); origin = [column, row] on the face anchor; 'flat' as the other stamps.",
+ "facing": "front",
+ "expr": "radiant",
+ "px": 80,
+ "origin": [
+  4,
+  1
+ ],
+ "flat": {
+  "box": [
+   0,
+   0,
+   8,
+   5
+  ],
+  "s1": true,
+  "bang": true
+ },
+ "rows": [
+  ".O....O.",
+  "O.O..O.O",
+  "p......p",
+  "...mm...",
+  "....p..."
+ ]
+}

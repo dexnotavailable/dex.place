@@ -97,25 +97,25 @@
  },
  "weapon": {
   "butt": [
-   -0.34,
-   -0.08,
+   -0.31,
+   -0.24,
    0.0
   ],
   "dir": [
-   -0.13,
-   0.0,
-   1.0
+   -0.1762,
+   0.273,
+   0.9457
   ],
   "edge": [
-   0,
-   -1,
+   -0.87,
+   0.5,
    0
   ]
  },
  "hands": {
   "R": {
    "grip": "grip_mid",
-   "slide": 0.12,
+   "slide": 0.2,
    "thumb": "tip",
    "back": [
     -0.6,
@@ -175,10 +175,10 @@
     "g": 0.8
    },
    "sleeve_R": {
-    "g": 0.6,
+    "g": 0.55,
     "wind": [
-     -0.45,
-     0.35,
+     -0.1,
+     0.9,
      0.0
     ]
    },
@@ -191,19 +191,19 @@
     ]
    },
    "stole_A": {
-    "g": 0.55,
+    "g": 0.9,
     "wind": [
-     -0.35,
-     0.25,
-     0.05
+     -0.04,
+     0.06,
+     0
     ]
    },
    "stole_B": {
-    "g": 0.55,
+    "g": 0.9,
     "wind": [
-     -0.25,
-     0.4,
-     0.0
+     -0.02,
+     0.08,
+     0
     ]
    },
    "side_R": {
@@ -216,5 +216,8 @@
    }
   }
  },
- "expression": "serene"
+ "expression": "serene",
+ "note_glaive_hands": "glaive-hands lane round 1: the haft leans 17 deg away on screen (GR-P09; was 6.5, the flagpole) from a butt just outside the near foot, IN FRONT of the grip arm (the grip 9 cm nearer the camera than the shoulder), the top leaning slightly back in depth; the flats and the rose disc face the viewer (edge outward; disc facing 1.0: the processional cross reads); the near hand on the haft (0.8 cm) near full reach (0.43 of 0.54 m); the near bell sleeve blown back behind the haft so the hand and haft stay visible. Leans past 18 deg leave the hand off the haft unless the body moves (probes idle_r1 to r1d).",
+ "note_stole_r2": "glaive-hands round 2: the stole tails hang (g 0.6-0.9, little wind) on the l4 glaive's 10 du tails; critique 7b: curled tails read as a hooked second blade.",
+ "note_integrate": "Integrate step 2026-09-29: the glaive-hands lane's pose (art/rosace/hands/poses) with the outfit lane's R2Q drape patches (qtab, hair, tabn2 from overrides/global/outfit/pose_patches.json) folded in; the pre-integration file is build/scratch/poses_pre_artistry/"
 }

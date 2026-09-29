@@ -1,0 +1,121 @@
+{
+ "_doc": "Shading lane round 1, variant a: re-band from the light pass (designed light = the render's key, 35% shadow per skin form, cast shadows from the fine depth, clean clusters, no 1 px shadow strips), gold trims lit-over-shade, palette unchanged. Read by rosace_post.py --shade (rosace_shade.py). tones = [deep, shadow, lit, highlight]; trim tones = [shade, mid, lit].",
+ "skip_parts": [
+  "head"
+ ],
+ "light": [
+  0.5,
+  0.62,
+  0.6
+ ],
+ "cast": {
+  "on": true,
+  "max_px": 8,
+  "bias": 0.012
+ },
+ "materials": {
+  "skin": {
+   "tones": [
+    "S4",
+    "S3",
+    "S2",
+    "S1"
+   ],
+   "sigma": 1.5,
+   "share": 0.35,
+   "t_min": 0.25,
+   "t_max": 0.7,
+   "hi": 0.93,
+   "hi_share": 0.06,
+   "hi_max": 6,
+   "min_px": 5,
+   "contact_px": 1,
+   "hi_abs": true,
+   "anti_hug": false
+  },
+  "white": {
+   "tones": [
+    "W4",
+    "W3",
+    "W2",
+    "W1"
+   ],
+   "sigma": 1.5,
+   "share": 0.3,
+   "t_min": 0.25,
+   "t_max": 0.7,
+   "hi": 0.9,
+   "hi_share": 0.15,
+   "min_px": 5,
+   "contact_px": 1,
+   "ao_deep": 0.45,
+   "anti_hug": false
+  },
+  "veil": {
+   "tones": [
+    "W4",
+    "W3",
+    "W2",
+    "W1"
+   ],
+   "sigma": 1.5,
+   "share": 0.3,
+   "t_min": 0.25,
+   "t_max": 0.7,
+   "hi": 0.9,
+   "hi_share": 0.15,
+   "min_px": 5,
+   "contact_px": 1,
+   "anti_hug": false
+  },
+  "stocking": {
+   "tones": [
+    "I4",
+    "I3",
+    "I2",
+    "I2"
+   ],
+   "sigma": 1.5,
+   "share": 0.35,
+   "t_min": 0.15,
+   "t_max": 0.6,
+   "min_px": 5,
+   "contact_px": 1,
+   "spec": "I1",
+   "spec_max": 6,
+   "anti_hug": false
+  },
+  "boot": {
+   "tones": [
+    "I4",
+    "I4",
+    "I3",
+    "I3"
+   ],
+   "sigma": 1.2,
+   "share": 0.35,
+   "t_min": 0.15,
+   "t_max": 0.6,
+   "min_px": 4,
+   "contact_px": 0,
+   "spec": "I1",
+   "spec_max": 5,
+   "anti_hug": false
+  },
+  "gold": {
+   "mode": "trim",
+   "tones": [
+    "G3",
+    "G2",
+    "G1"
+   ],
+   "spec": "G0",
+   "glint_min": 5,
+   "skip_parts": [
+    "glaive*",
+    "collar_cross"
+   ],
+   "anti_hug": false
+  }
+ }
+}

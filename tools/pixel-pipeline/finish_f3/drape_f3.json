@@ -1,0 +1,226 @@
+{
+ "_doc": "Route F3 drape patches: cloth and hair drape only (the 'drape' block of a pose file), deep-merged over the snapshot of the figure-pose lane's pose at render time by run_f3.py (the pose files themselves are never edited; the same mechanism as the outfit lane's pose_patches.json in integrated.json). Directions are in the pose's world frame (+X her left, -Y her front). Idle camera yaw 45: screen right = (0.71, -0.71, 0), screen left and back = (-0.71, 0.71, 0). Back camera yaw 150: screen right = (-0.87, -0.5, 0), away from the camera = (0.5, -0.87, 0).",
+ "p1": {
+  "_why": "mass where the figure is thin without covering what shows: the hair tail and back hair fan out behind her near (weight) hip, on the screen-left side where the idle silhouette is a single leg column; the near bell (hip hand) blows back so it widens the silhouette behind the hip instead of hanging over the hip curve; the veil lifts behind the head. Back view: the tabard swings forward and toward the free leg so it leaves the leg gap (CL-N05)",
+  "idle_appeal": {
+   "drape": {
+    "chains": {
+     "hair_tail": {
+      "g": 0.45,
+      "wind": [
+       -0.8,
+       0.8,
+       0.05
+      ]
+     },
+     "hair_back": {
+      "g": 0.6,
+      "wind": [
+       -0.4,
+       0.5,
+       0.0
+      ]
+     },
+     "sleeve_R": {
+      "g": 0.7,
+      "wind": [
+       -0.4,
+       0.5,
+       0.0
+      ]
+     },
+     "veil": {
+      "g": 0.6,
+      "wind": [
+       -0.3,
+       0.4,
+       0.05
+      ]
+     }
+    }
+   }
+  },
+  "back_appeal": {
+   "drape": {
+    "chains": {
+     "tabard": {
+      "g": 0.7,
+      "wind": [
+       0.25,
+       -0.6,
+       0.0
+      ]
+     }
+    }
+   }
+  }
+ },
+ "p2": {
+  "_why": "p1 after its look sheet: the veil point blew out as a horn beside the head (HR-N05), the tail left the back hair and poked out of the hip as a separate ribbon with a claw of azure tips, and the near bell turned its lining fully to the camera. Here the back hair and the tail swing together, less, so one hair mass continues from the head behind the near shoulder and hip; the veil keeps the pose's drape; the near bell blows back half as far (white outside and a lining crescent)",
+  "idle_appeal": {
+   "drape": {
+    "chains": {
+     "hair_back": {
+      "g": 0.45,
+      "wind": [
+       -0.6,
+       0.55,
+       0.0
+      ]
+     },
+     "hair_tail": {
+      "g": 0.55,
+      "wind": [
+       -0.55,
+       0.6,
+       0.0
+      ]
+     },
+     "sleeve_R": {
+      "g": 0.8,
+      "wind": [
+       -0.22,
+       0.3,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "back_appeal": {
+   "drape": {
+    "chains": {
+     "tabard": {
+      "g": 0.7,
+      "wind": [
+       0.25,
+       -0.6,
+       0.0
+      ]
+     }
+    }
+   }
+  }
+ },
+ "p3": {
+  "_why": "the near bell only (p2's): what the sleeve drape buys without moving the hair",
+  "idle_appeal": {
+   "drape": {
+    "chains": {
+     "sleeve_R": {
+      "g": 0.8,
+      "wind": [
+       -0.22,
+       0.3,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "back_appeal": {
+   "drape": {
+    "chains": {
+     "tabard": {
+      "g": 0.7,
+      "wind": [
+       0.25,
+       -0.6,
+       0.0
+      ]
+     }
+    }
+   }
+  }
+ },
+ "p4": {
+  "_why": "p3 plus N1: the bigger far bell, flung forward by N1's drape (g 0.25), turned its lining to the camera over the chest and bust (DESIGN 3.5 never-list). It trails further back and lower, behind her far side",
+  "idle_appeal": {
+   "drape": {
+    "chains": {
+     "sleeve_R": {
+      "g": 0.8,
+      "wind": [
+       -0.22,
+       0.3,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "back_appeal": {
+   "drape": {
+    "chains": {
+     "tabard": {
+      "g": 0.7,
+      "wind": [
+       0.25,
+       -0.6,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "n1_contact": {
+   "drape": {
+    "chains": {
+     "sleeve_L": {
+      "g": 0.55,
+      "wind": [
+       0.35,
+       0.9,
+       0.1
+      ]
+     }
+    }
+   }
+  }
+ },
+ "p5": {
+  "_why": "p3 plus N1 with the far bell hanging (g 0.9) and only a small trail",
+  "idle_appeal": {
+   "drape": {
+    "chains": {
+     "sleeve_R": {
+      "g": 0.8,
+      "wind": [
+       -0.22,
+       0.3,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "back_appeal": {
+   "drape": {
+    "chains": {
+     "tabard": {
+      "g": 0.7,
+      "wind": [
+       0.25,
+       -0.6,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "n1_contact": {
+   "drape": {
+    "chains": {
+     "sleeve_L": {
+      "g": 0.9,
+      "wind": [
+       0.2,
+       0.5,
+       0.0
+      ]
+     }
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,275 @@
+// The keeper's lodge, inside (WORLD-PLAN A3): the backdrop behind the room's
+// floors, counter and stove. A small two-floor timber house on the cliff
+// shelf: log walls with a wainscot, a heavy beam under the loft, the roof
+// timbers, a west window on each floor with the morning (or the evening after
+// the round) in it and its light slanting in over the floor, dust in that
+// light, a warm wash around the stove and the counter, the stair's handrail.
+// Behind the loft's sky door the wall is open onto the view the door shows
+// when it swings: a dusk sky, the lake far below with a tiny ring, and the
+// black spire with its storm. It is morning outside; nobody comments.
+//
+// Everything is placed in room px; the room is narrower than the view and
+// its camera is locked, so layer x = room x + (view - room) / 2.
+
+import { f } from "../../../scenes/engine/layers.ts";
+import { Motes } from "../../../scenes/engine/particles.ts";
+import { Pix } from "../../../scenes/engine/pix.ts";
+import { fbm, hashInt } from "../../../scenes/engine/noise.ts";
+import type { BuildCtx, LayerDef, SceneDef } from "../../../scenes/engine/types.ts";
+
+export interface LodgeOpts {
+  roomW: number;
+  roomH: number;
+  /** Room y of the ground floor and the loft floor. */
+  floor: number;
+  loft: number;
+  /** Room y of the ceiling's underside. */
+  ceiling: number;
+  /** Windows (room px): the west light. */
+  windows: { x: number; y: number; w: number; h: number }[];
+  /** The sky door's opening (room px): the dusk view behind it. */
+  skyDoor: { x: number; y: number; w: number; h: number };
+  /** Warm spots on the wall (room px): the stove, the counter's candle, the loft lantern. */
+  warm: [number, number, number][];
+  /** The stair's handrail: from (x0, y0) to (x1, y1) in room px. */
+  rail: [number, number, number, number];
+  /** Posts in the wall (room x). */
+  posts: number[];
+  evening: boolean;
+}
+
+const WALL = 1.04;
+
+export function lodgeScene(o: LodgeOpts): SceneDef {
+  const off = (ctx: BuildCtx): number => Math.round((ctx.W - o.roomW) / 2);
+  const ev = o.evening;
+  return {
+    title: ev ? "lodge (evening)" : "lodge",
+    palette: {
+      log: ev ? ["#150f0e", "#211714", "#2e201a", "#3e2b21", "#503828", "#644632"] : ["#1a120e", "#281b14", "#38261b", "#4a3322", "#5e422c", "#755538"],
+      timber: ["#0d0907", "#171009", "#22180f", "#312216", "#44301f", "#5a4029"],
+      plaster: ev ? ["#2a221e", "#382c26", "#46382e", "#554438"] : ["#30271f", "#403328", "#524233", "#66523f"],
+      frame: ["#0b0806", "#140e0a", "#1f160f", "#2e2115"],
+      outside: ev ? ["#1c1a2c", "#2c2638", "#4a3a4a", "#7a5a5c", "#b27e6c", "#e0aa84"] : ["#1a2a2e", "#2a3e40", "#46605f", "#6a8480", "#9eb2a4", "#dcd4b0"],
+      dusk: ["#1c1628", "#2e2238", "#4c3248", "#7a4a56", "#b06a60", "#e89c78", "#f8d0a0"],
+      far: ["#141220", "#1e1a2c", "#2a2438", "#3a3048"],
+      lake: ["#141a2a", "#1e283a", "#2c3a4e", "#46586a"],
+      ringd: ["#0c0a12", "#16121c", "#221a26", "#3a2c34", "#9a6a50"],
+      spire: ["#050407", "#0a080d", "#120e14"],
+      storm: ["#1a1824", "#24202e", "#322c3c", "#48405a"],
+      red: ["#6a1a18", "#b02a22", "#f04a36"],
+      beam: ev ? ["#4a3028", "#7a4c38", "#b07050", "#e0a070"] : ["#4a4a38", "#7a7658", "#b0a67a", "#e6d8a4"],
+      warmwall: ["#3a2418", "#6a3e22", "#a4622e", "#e09448"],
+      dust: ev ? ["#6a4a3a", "#9c7050", "#d0a070"] : ["#6a5a44", "#9c8664", "#d2bc90"],
+      standin: ["#07070a", "#101015", "#24232c", "#a29792"],
+    },
+    fog: { stops: [[0, "#0e0b0a"], [1, "#120e0c"]], bands: 4, dither: 0.4, density: 0.3, max: 0.5 },
+    span: () => 0,
+    prelude: (ctx) => {
+      const ox = off(ctx);
+      const wins = o.windows.map((w) => `vec4(${f(w.x + ox)}, ${f(w.y)}, ${f(w.w)}, ${f(w.h)})`);
+      const warm = o.warm.map(([x, y, r]) => `vec3(${f(x + ox)}, ${f(y)}, ${f(r)})`);
+      return /* glsl */ `
+const vec4 WINS[${wins.length}] = vec4[${wins.length}](${wins.join(", ")});
+const vec3 WARM[${warm.length}] = vec3[${warm.length}](${warm.join(", ")});
+// light from each west window falls down and to the right (the low morning sun), stepped in thirds
+float windowLight(vec2 lp) {
+  float l = 0.0;
+  for (int i = 0; i < ${wins.length}; i++) {
+    vec4 w = WINS[i];
+    float dy = lp.y - w.y;
+    if (dy < 0.0) continue;
+    float x0 = w.x + dy * 0.62;
+    float k = (lp.x - x0) / (w.z * 1.1);
+    if (k < 0.0 || k > 1.0) continue;
+    float fall = 1.0 - smoothstep(w.w * 0.8, w.w * 3.2, dy);
+    l += fall * (1.0 - abs(k - 0.5) * 0.6);
+  }
+  return floor(clamp(l, 0.0, 1.0) * 3.0 + 0.2) / 3.0;
+}
+float warmLight(vec2 lp) {
+  float l = 0.0;
+  for (int i = 0; i < ${warm.length}; i++) {
+    float d = length((lp - WARM[i].xy) * vec2(1.0, 1.2)) / WARM[i].z;
+    float k = max(0.0, 1.0 - d);
+    l += floor(k * k * k * 5.0 + 0.5) / 5.0;
+  }
+  return min(l, 1.0);
+}
+float sceneLight(vec2 s, float depth) {
+  vec2 lp = s;
+  float l = windowLight(lp) * ${f(ev ? 0.1 : 0.2)} + warmLight(lp) * ${f(ev ? 0.3 : 0.22)};
+  return l * (1.0 - smoothstep(3.0, 20.0, depth));
+}`;
+    },
+    build: (ctx) => {
+      const { W, H } = ctx;
+      const P = ctx.player;
+      const ox = off(ctx);
+      const R = (n: string): number => ctx.row(n);
+      const L: LayerDef[] = [];
+      const X = (x: number): number => Math.round(x + ox);
+
+      // --- outside: what the west windows show ----------------------------------------
+      L.push({
+        kind: "glsl",
+        name: "outside",
+        depth: 30,
+        fog: 0,
+        body: /* glsl */ `
+vec4 layer(vec2 p, vec2 s) {
+  float y = s.y / uRes.y;
+  float sh = 0.25 + y * 0.9 + (fbm(vec2(p.x / 70.0 - uWx2.y * 0.01, p.y / 18.0), 3) - 0.5) * 0.25;
+  return vec4(ramp(R_OUTSIDE, sh, p, 0.5), 1.0);
+}`,
+      });
+
+      // --- the dusk view behind the sky door: a separate little world far below -------
+      {
+        const d = o.skyDoor;
+        const pix = new Pix(d.w + 8, d.h + 8);
+        const x0 = X(d.x) - 4, y0 = d.y - 4;
+        const dusk = R("dusk");
+        const hor = Math.round(pix.h * 0.62);
+        for (let y = 0; y < pix.h; y++)
+          for (let x = 0; x < pix.w; x++) {
+            // a stepped dusk: violet high, rose, then a warm band at the horizon
+            const t = y / hor;
+            let s = y < hor ? 0.08 + t * t * 0.9 : 0.18;
+            if (y < hor && hashInt(x, y, 5) > 0.992) s += 0.3;
+            pix.set(x, y, s + (hashInt(x >> 2, y >> 1, 7) - 0.5) * 0.04, dusk);
+          }
+        // far hills and the lake, far below
+        for (let x = 0; x < pix.w; x++) {
+          const hh = Math.round(3 + fbm(x / 9, 3, 11) * 6);
+          for (let y = hor - hh; y < hor; y++) pix.set(x, y, 0.3 + (y === hor - hh ? 0.25 : 0), R("far"));
+          for (let y = hor; y < pix.h; y++) pix.set(x, y, 0.2 + ((y - hor) / (pix.h - hor)) * 0.5 + (hashInt(x, y, 9) > 0.93 ? 0.3 : 0), R("lake"));
+        }
+        // a tiny ring over the lake, sun-less now, a warm rim on its lower arc
+        const rcx = Math.round(pix.w * 0.66), rcy = hor - 10, rr = 10;
+        for (let a = 0; a < 360; a += 2) {
+          if (a > 20 && a < 60) continue;
+          const rx = Math.round(rcx + Math.cos((a * Math.PI) / 180) * rr);
+          const ry = Math.round(rcy + Math.sin((a * Math.PI) / 180) * rr * 0.55);
+          pix.set(rx, ry, a > 200 && a < 340 ? 0.3 : 0.85, R("ringd"));
+        }
+        // the black spire on the far side of the lake, its storm sitting on it, a red light
+        const sx = Math.round(pix.w * 0.44), sb = hor - 1, st = Math.round(pix.h * 0.2);
+        for (let y = st; y <= sb; y++) {
+          const w = Math.max(1, Math.round(((y - st) / (sb - st)) * 3));
+          for (let k = -w + 1; k < w; k++) pix.set(sx + k, y, 0.3, R("spire"));
+        }
+        pix.set(sx, st + 3, 0.99, R("red"), 0, true);
+        for (let y = st - 12; y < st + 10; y++)
+          for (let x = sx - 16; x < sx + 17; x++) {
+            const e = ((x - sx) / 16) ** 2 + ((y - st + 1) / 11) ** 2;
+            if (e < 1 && fbm(x / 5, y / 4, 13) > 0.38 + e * 0.3) pix.set(x, y, 0.2 + fbm(x / 3, y / 3, 17) * 0.5, R("storm"));
+          }
+        L.push({ kind: "pix", name: "sky-view", depth: WALL + 0.01, fog: 0, pix, x: x0, y: y0, dither: 0 });
+      }
+
+      // --- the log walls -----------------------------------------------------------------
+      {
+        const pix = new Pix(W, H);
+        const log = R("log");
+        const timber = R("timber");
+        const plaster = R("plaster");
+        const frame = R("frame");
+        const logH = Math.round(P * 0.26);
+        for (let y = 0; y < H; y++)
+          for (let x = 0; x < W; x++) {
+            // horizontal logs: rounded (lit top, dark underside), knots, checks along the grain
+            const ly = y % logH;
+            const row = Math.floor(y / logH);
+            let s = 0.36 + Math.sin((ly / logH) * Math.PI) * 0.14 - (ly === logH - 1 ? 0.18 : 0) - (ly === 0 ? 0.06 : 0);
+            s += (fbm((x + row * 97) / 40, row * 3.1, 3) - 0.5) * 0.1;
+            if (hashInt(Math.floor((x + row * 57) / 7), row, 5) > 0.985 && ly > 2 && ly < logH - 3) s -= 0.12;
+            if (hashInt(x, y, 7) > 0.994) s -= 0.08;
+            pix.set(x, y, s, log);
+          }
+        // the heavy beam under the loft floor, the ceiling timbers, the wainscot on each floor
+        const beam = Math.round(P * 0.22);
+        pix.rect(0, o.loft, W, beam, { row: timber, shade: (_x, y) => (y === o.loft ? 0.62 : y === o.loft + beam - 1 ? 0.12 : 0.3) });
+        pix.rect(0, 0, W, o.ceiling + Math.round(P * 0.1), { row: timber, shade: (_x, y) => (y === o.ceiling + Math.round(P * 0.1) - 1 ? 0.5 : 0.18) });
+        for (const fy of [o.floor, o.loft]) {
+          const wh = Math.round(P * 0.5);
+          pix.rect(0, fy - wh, W, wh, { row: plaster, shade: (x, y) => 0.4 + (y === fy - wh ? 0.3 : 0) + (x % Math.round(P * 0.45) === 0 ? -0.25 : 0) });
+          pix.rect(0, fy - wh - 2, W, 2, { row: timber, shade: 0.55 });
+        }
+        // rafters and posts in the wall
+        for (const px of o.posts) {
+          const pw = Math.round(P * 0.18);
+          pix.rect(X(px) - (pw >> 1), 0, pw, H, { row: timber, shade: (x) => (x === X(px) - (pw >> 1) ? 0.55 : 0.28) });
+        }
+        // the thick outer walls beyond the room's ends (the view is wider than the room)
+        pix.rect(0, 0, ox, H, { row: timber, shade: (x) => (x === ox - 1 ? 0.4 : 0.08) });
+        pix.rect(W - ox, 0, ox, H, { row: timber, shade: (x) => (x === W - ox ? 0.4 : 0.08) });
+        // windows: a hole with a deep frame, a cross of muntins, a sill; the sky door's opening
+        for (const wn of o.windows) {
+          const x0 = X(wn.x);
+          const fw = Math.round(P * 0.1);
+          pix.rect(x0 - fw, wn.y - fw, wn.w + fw * 2, wn.h + fw * 2, { row: frame, shade: (x, y) => (y === wn.y - fw || x === x0 - fw ? 0.5 : 0.3) });
+          for (let y = wn.y; y < wn.y + wn.h; y++) for (let x = x0; x < x0 + wn.w; x++) pix.clear(x, y);
+          pix.rect(x0 + (wn.w >> 1) - 1, wn.y, 3, wn.h, { row: frame, shade: 0.3 });
+          pix.rect(x0, wn.y + (wn.h >> 1) - 1, wn.w, 3, { row: frame, shade: 0.3 });
+          pix.rect(x0 - fw - 3, wn.y + wn.h + fw, wn.w + fw * 2 + 6, Math.round(P * 0.06), { row: timber, shade: (_x, y) => (y === wn.y + wn.h + fw ? 0.7 : 0.35) });
+        }
+        const sd = o.skyDoor;
+        for (let y = sd.y; y < sd.y + sd.h; y++) for (let x = X(sd.x); x < X(sd.x) + sd.w; x++) pix.clear(x, y);
+        // the stair's handrail: a rail on posts along the treads
+        const [rx0, ry0, rx1, ry1] = o.rail;
+        const railUp = Math.round(P * 0.7);
+        for (let x = X(rx0); x <= X(rx1); x++) {
+          const t = (x - X(rx0)) / Math.max(1, X(rx1) - X(rx0));
+          const y = Math.round(ry0 + (ry1 - ry0) * t) - railUp;
+          pix.rect(x, y, 1, 3, { row: timber, shade: 0.6 });
+          pix.set(x, y + 3, 0.12, timber);
+        }
+        for (let k = 0; k <= 5; k++) {
+          const t = k / 5;
+          const x = Math.round(X(rx0) + (X(rx1) - X(rx0)) * t);
+          const y = Math.round(ry0 + (ry1 - ry0) * t);
+          pix.rect(x - 1, y - railUp, 3, railUp, { row: timber, shade: (xx) => (xx === x - 1 ? 0.5 : 0.25) });
+        }
+        L.push({ kind: "pix", name: "wall", depth: WALL, fog: 0, pix, x: 0, y: 0, dither: 0.1 });
+      }
+
+      // morning light through the west windows, visible in the dust; a warm wash by the stove
+      L.push({
+        kind: "glsl",
+        name: "window-beams",
+        depth: WALL,
+        fog: 0,
+        blend: "add",
+        body: /* glsl */ `
+vec4 layer(vec2 p, vec2 s) {
+  float w = windowLight(p);
+  if (w <= 0.0) return vec4(0.0);
+  return vec4(ramp(R_BEAM, 0.55, p, 0.0), w * ${f(ev ? 0.07 : 0.12)});
+}`,
+      });
+      L.push({
+        kind: "glsl",
+        name: "warm-wash",
+        depth: WALL,
+        fog: 0,
+        blend: "add",
+        body: /* glsl */ `
+vec4 layer(vec2 p, vec2 s) {
+  float w = warmLight(p);
+  if (w <= 0.0) return vec4(0.0);
+  return vec4(ramp(R_WARMWALL, 0.5, p, 0.0), w * ${f(ev ? 0.11 : 0.07)});
+}`,
+      });
+      L.push({
+        kind: "points",
+        name: "dust",
+        depth: 1.02,
+        blend: "add",
+        system: new Motes({ region: [ox, o.ceiling, W - ox, o.floor], count: 90, row: R("dust"), shade: [0.3, 0.9], vel: [2, -1.2], wander: 3, size: 1, twinkle: 0.5 }, ctx.rng),
+      });
+      void H;
+      return L;
+    },
+  };
+}

@@ -1,0 +1,248 @@
+{
+ "name": "n1_contact",
+ "note": "N1 'Kyrie' contact drawing C1 (f9), round 3 re-key after the round-2 critics ('a guard stance: glaive across the chest, square torso, butt by the foot like a crutch; three parallel diagonals in the legs'). Now the committed extension: a deep open lunge (far leg forward, knee over the toe; near leg straight behind on the ball of the foot) with a clear triangle of background between the legs; the torso leans ~25 degrees forward down the line of action and the head drives along it, turned three-quarter toward the strike. Both hands on the haft ~30 px apart at 144 (rear hand at the off grip by the chest, front hand at full reach, foreshortened 1.2x); the glaive points forward and up past her face with the blade tip leading and the butt off the ground behind her hip, so one line runs from the back heel through the spine and arms into the blade. Tabard, sleeves and hair trail back off the lunge (the tabard swings ~30 degrees off the haft angle, splitting the diagonals). Round 3 fix (body/gear/overall critics: 'hands bunched at the sternum 33 px apart, rear hand at the armpit, lead arm foreshortened across the chest, a guard stance'): the lead (far) arm now reaches straight forward along the screen (elbow 180 degrees), the rear hand sits low at the near hip on grip_off with the shaft running from behind the hip up through the lead fist (~64 px apart at 144), the hips drive further forward and lower (head over the front knee), the rear leg locks straight on the ball of the foot, and both sleeves trail back off the arms (rear elbow dropped by its pole so its sleeve no longer stands up as a wing). Round 4 fix (body/gear/overall critics: 'torso collapses, head on the pelvis, lead hand choked at the guard, rear hand hidden'): bend at the hips (pitch 33) with an arched chest instead of a rounded spine, neck and head lifted (neck->hips 28 px, head forward past the front knee); the pelvis turned ~20 degrees off camera so the lead thigh overlaps the crotch; the glaive near level (+6 degrees) with the lead hand at mid-shaft on a fully extended arm and the rear hand at the near hip ~45 px behind; streamers trail back along the haft.",
+ "camera": {
+  "yaw": 58,
+  "elev": 8
+ },
+ "root": {
+  "loc": [
+   0,
+   0,
+   0
+  ],
+  "rot": [
+   0,
+   0,
+   0
+  ]
+ },
+ "bones": {
+  "J_Bip_C_Hips.loc": [
+   0.0,
+   -0.4,
+   -0.35
+  ],
+  "J_Bip_C_Hips": [
+   33,
+   2,
+   4
+  ],
+  "J_Bip_C_Spine": [
+   4,
+   2,
+   -8
+  ],
+  "J_Bip_C_Chest": [
+   -4,
+   -2,
+   -10
+  ],
+  "J_Bip_C_UpperChest": [
+   -3,
+   -2,
+   -6
+  ],
+  "J_Bip_C_Neck": [
+   -16,
+   0,
+   6
+  ],
+  "J_Bip_C_Head": [
+   -11,
+   4,
+   10
+  ],
+  "J_Bip_L_Hand.scale": 1.2,
+  "sleeve_R_1.scale": 0.62,
+  "sleeve_L_1.scale": 0.68
+ },
+ "feet": {
+  "L": {
+   "pos": [
+    0.12,
+    -0.72,
+    0.159
+   ],
+   "yaw": 4
+  },
+  "R": {
+   "pos": [
+    -0.13,
+    0.44,
+    0.2
+   ],
+   "yaw": -14,
+   "pitch": 40
+  }
+ },
+ "weapon": {
+  "socket": "glaive_butt",
+  "at": [
+   -0.2338,
+   -0.554,
+   0.895
+  ],
+  "dir": [
+   0.2819,
+   -0.8833,
+   0.3746
+  ],
+  "edge": [
+   0,
+   0.4,
+   0.92
+  ]
+ },
+ "hands": {
+  "R": {
+   "grip": "grip_off",
+   "slide": -0.8041,
+   "thumb": "tip",
+   "back": [
+    -0.9,
+    -0.2,
+    0.3
+   ]
+  },
+  "L": {
+   "grip": "grip_off",
+   "slide": -0.4541,
+   "thumb": "tip",
+   "back": [
+    -0.3,
+    -0.2,
+    0.9
+   ]
+  }
+ },
+ "poles": {
+  "arm.R": [
+   -0.45,
+   0.1,
+   0.35
+  ],
+  "arm.L": [
+   0.5,
+   0.1,
+   1.0
+  ],
+  "leg.L": [
+   0.3,
+   -1.0,
+   0.55
+  ],
+  "leg.R": [
+   -0.3,
+   0.1,
+   0.4
+  ]
+ },
+ "fingers": {
+  "R": {
+   "curl": 85,
+   "thumb": 55
+  },
+  "L": {
+   "curl": 85,
+   "thumb": 55
+  }
+ },
+ "drape": {
+  "gravity": [
+   0,
+   0,
+   -1
+  ],
+  "wind": [
+   0.0,
+   0.45,
+   0.08
+  ],
+  "chains": {
+   "sleeve_R": {
+    "g": 0.8,
+    "wind": [
+     -0.15,
+     0.45,
+     -0.1
+    ]
+   },
+   "sleeve_L": {
+    "g": 0.25,
+    "wind": [
+     0.05,
+     0.95,
+     0.15
+    ]
+   },
+   "tabard": {
+    "g": 0.55,
+    "wind": [
+     0.05,
+     0.7,
+     0.1
+    ]
+   },
+   "hair_tail": {
+    "g": 0.4,
+    "wind": [
+     0.05,
+     0.8,
+     0.15
+    ]
+   },
+   "hair_back": {
+    "g": 0.4,
+    "wind": [
+     0.05,
+     0.6,
+     0.08
+    ]
+   },
+   "side_L": {
+    "g": 0.5,
+    "wind": [
+     0.05,
+     0.4,
+     0.05
+    ]
+   },
+   "side_R": {
+    "g": 0.5,
+    "wind": [
+     -0.05,
+     0.4,
+     0.05
+    ]
+   },
+   "veil": {
+    "g": 0.55,
+    "wind": [
+     0.0,
+     0.5,
+     0.1
+    ]
+   },
+   "stole_A": {
+    "g": 0.6,
+    "wind": [
+     -0.02,
+     0.35,
+     0.05
+    ]
+   },
+   "stole_B": {
+    "g": 0.6,
+    "wind": [
+     0.02,
+     0.4,
+     0.03
+    ]
+   }
+  }
+ },
+ "expression": "resolute",
+ "note_glaive_hands": "glaive-hands lane round 2 (probes n1_r2 to r2c, pick j): the rear (near, R) hand choked 0.12 m from the butt (a 9 px stub) and raised in front of the lower belly, 0.20 m toward the camera, so the butt ends at the near hip crease instead of trailing back through the pelvis and thigh (GR-N05: 0 px of the haft line in the pelvis box; round 1 had the rear fist on the pelvis centre); the haft crosses toward her far side (dir x 0.30) so the far (L) hand reaches its socket (1.1 cm, GR-P11; 0.12-0.22 crossings left it 3-10 cm short); front fist 0.35 m up the haft (25.5 px, GR-P01); rise 21 deg (GR-N02 as round 1). Round-1 pose kept in poses/r1/.",
+ "note_stole_r2": "glaive-hands round 2: the stole tails hang (g 0.6-0.9, little wind) on the l4 glaive's 10 du tails; critique 7b: curled tails read as a hooked second blade."
+}

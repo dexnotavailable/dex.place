@@ -1,0 +1,76 @@
+{
+ "_doc": "The Integrate step's picks (2026-09-29): which part-lane result the canonical build and the canonical stills use. build_rosace_v2.py reads 'build' (the environment still wins: ROSACE_OUTFIT, ROSACE_GLAIVE, ROSACE_HAIR, so lane drivers build their own variants); stills_v2.py reads 'stills' (--plain skips every lane pass and gives the pre-integration chain). The pose-side picks are folded into art/rosace/poses/*.json (see 'poses'). Change a pick here, then rebuild; PIPELINE.md 3.6g has the order and the reasons.",
+ "build": {
+  "outfit": "R2Q",
+  "glaive": "l5",
+  "hair": "r2f",
+  "limbs": true,
+  "bust": "S7",
+  "waist_pinch": {
+   "amount": 0.25
+  }
+ },
+ "stills": {
+  "passes": "beauty,albedo,id,normal,depth,light,depth2",
+  "landmarks": true,
+  "face": {
+   "composer": "f2",
+   "facepass": true
+  },
+  "shading": "art/rosace/overrides/global/shading_r3g.json",
+  "hair_px": {
+   "preset": "p1h_nowin",
+   "skip": [
+    "tips"
+   ]
+  },
+  "outfit_px": [
+   "outfit_px"
+  ],
+  "outfit_px2": [
+   "win",
+   "rose",
+   "slvx",
+   "welt",
+   "vund",
+   "hem80",
+   "glute",
+   "string",
+   "ubust",
+   "folds",
+   "colsh",
+   "tabx",
+   "sheen",
+   "tabsolid"
+  ],
+  "hands": "art/rosace/hands/poses",
+  "hair_hue_after_remap": true,
+  "ground": true,
+  "hair_hue_base": "palette",
+  "post_face": true,
+  "wh2": {
+   "steps": [
+    "face",
+    "facehair",
+    "hair",
+    "tips",
+    "ornament",
+    "hands",
+    "skin"
+   ],
+   "faces": "art/rosace/faces/wh2.json"
+  }
+ },
+ "poses": {
+  "glaive-hands": "art/rosace/hands/poses/<pose>.json copied whole (the canonical pose plus the lane's weapon, hands, fingers, poles, stole and sleeve drape): idle_hero, n1_contact, q_stamp, n2_pivot",
+  "outfit": "pose_patches.json qtab (q_stamp) + hair and tabn2 (n2_pivot) deep-merged on top: R2Q's round-2 set, the one its critic preferred"
+ },
+ "why": {
+  "outfit": "R2Q, not R3K3: the round-3 critic did not prefer R3K3 over R2Q (both 6/10); round 2 was the outfit round the critic preferred. R3K3's stocking and boot ramps would be re-banded by the shading stage anyway",
+  "hair": "r2f with pixel preset p1h_nowin minus 'tips' (the lane's round-2 pick p1h, two steps dropped at integration: the brow windows turned the F2b brows into a second pair of shut eyes in skin patches over the eyes (idle 144; the lane's own fallback p1h_nowin, ART-RULES O-28), and the A3/A4 fringe tips drew a blue streak down the nose where N1's centre clump ends between the eyes). The hue trial runs after the shading remap but shifts palette.json's indigo, not the remapped one: shifted from the shading lane's desaturated indigo the hair went grey-lavender and lost its read against the dark stockings (side by side in review/rosace/art/integrated/trials/)",
+  "glaive": "l5 build, r3 fists, 80 px procedural rose, N1 smear (the lane's round-2 pick)",
+  "face": "F2b composer (ROSACE_FACES=f2) on the per-still face pass: re-anchors every face to the v2 head (the canonical round-4 stamps lost the 144 idle mouth)",
+  "shading": "preset r3g: the round-2 critic's one win for the lane was o's dark stockings, which g keeps; g brings back the warm skin and gold the control won on",
+  "wh2": "Round WH2 (2026-09-29, the whole-character critique at 5-5.5/10): the build takes the figure-pose lane's bust S7 (+42% volume, lift 4, projection 0.22; the critique asked to bring back the control's bust volume, DESIGN 3.5) and a deeper waist pinch (0.17 -> 0.25, about 2 px at 144); the stills end with tools/art-construct/wh2_px.py before the remap: faces re-anchored on facepass with an expression per pose (idle smirk, N1 focused, Q fierce open-eyed, back glance), a dedicated 80 px face, hair despeckled with one dark tone, clump separators and one sheen arc, azure tips stepped down, the crown pin as one cluster, fists a value under the cuff, the thighs as cylinders"
+ }
+}

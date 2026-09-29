@@ -1,0 +1,34 @@
+{
+ "_doc": "Drive 9 whole-character round 4 finish: an overlay deep-merged over r3_finish.json (over r2_finish.json over d9_finish.json; d9_post.load_finish, lists replaced whole). Each change answers a round-3 blind critic (review/rosace/art/drive9/round-3/verdicts/); the reasons are in 'why'. The 'r4' block switches on round 4's steps in drive9/r4_post.py. The hand-authored paint-over (ESCALATION 2) runs after this, in drive9/r4_paint.py, from art/rosace/overrides/drive9/.",
+ "base": "r3_finish.json",
+ "rim_color": "#f0dcc6",
+ "materials": {
+  "white": {
+   "stops": [[0, "#1b1733"], [0.06, "#2a2550"], [0.12, "#3c366a"], [0.19, "#524c86"], [0.26, "#6b659e"], [0.34, "#8680b4"], [0.42, "#a29dc8"], [0.52, "#bdb8d8"], [0.63, "#d4cfe2"], [0.76, "#e4e0e8"], [0.9, "#ece8e9"], [1, "#f1ede9"]],
+   "bounce": 0.1,
+   "bounce_col": "#b9a6d8"
+  },
+  "veil": {
+   "stops": [[0, "#1b1733"], [0.06, "#2a2550"], [0.12, "#3c366a"], [0.19, "#524c86"], [0.26, "#6b659e"], [0.34, "#8680b4"], [0.42, "#a29dc8"], [0.52, "#bdb8d8"], [0.63, "#d4cfe2"], [0.76, "#e4e0e8"], [0.9, "#ece8e9"], [1, "#f1ede9"]]
+  },
+  "hair": {"gamma": 1.35, "chroma": 0.85, "rim_col": "#b9a2e0"},
+  "stocking": {"gamma": 1.3},
+  "lining": {"chroma": 0.7},
+  "indigo": {"chroma": 0.7}
+ },
+ "r3": {
+  "rim_outline": {"k": 0.45},
+  "bust": {"lit_k": 0.35, "underside_k": 0.5}
+ },
+ "r4": {
+  "rim_limit": {"max_run": 3, "share": 0.3, "gap": 7},
+  "ramp_soften": {"min_rank": 2, "min_dl": 0.07, "t": 0.5, "skip": ["thong", "glass", "glass2", "glasscore", "edge", "gold", "steel", "steeldark"]}
+ },
+ "why": {
+  "rim": "Critic rim light 17 (4.5): 'the rim is a 1 px cyan continuous line on the back edges of stockings, sleeves and hair: it reads as a second outline and flattens; refs barely use rim; only on convex peaks, 1-3 px segments, coloured from the environment'. rim_limit keeps 3 px around each run's most rim-facing pixel (about 30 % of the run, peaks 7 px apart); the rim colour is a warm neutral #f0dcc6 (hair a quieter lavender) at k 0.45.",
+  "white": "Critic materials 14 (6): 'white cloth has no light: the whole mass sits at one lavender-grey mid value; lift the lit side to near-white warm (L ~235) with a cool lavender core shadow and one reflected-light band'. The white ramp's upper stops go warm near-white (#e4e0e8 -> #f1ede9 from t 0.76), the mids stay lavender, and the bounce (reflected light on down-facing shadow) goes 0.06 -> 0.10. Round 2's critic had asked for whites under paper white: the top stays under #f3f0ec.",
+  "values": "Critic palette 15 (5.5): 'mid-high key; push the shadow side and hair/stockings darker; target the refs' L median'. Hair gamma 1.25 -> 1.35 and chroma 0.9 -> 0.85; stocking gamma 1.1 -> 1.3; the lining and indigo chroma 0.75 -> 0.7 (PX-P45 still failed on N1 and the back at S 0.44).",
+  "bust": "Critic first impression 1: 'the bust = two flat grey-lavender balloons at sleeve value; shade it into the bodice (underbust core shadow two values down, one designed highlight) and drop its value below the white sleeves'. The lift toward the white's light drops 0.6 -> 0.35 and the underside step goes 0.3 -> 0.5; the tension lines are painted over by hand (r4_paint).",
+  "ramp_soften": "Critic first impression 1: 'the finish is hard-edged clean toon ... versus the refs' soft low-key painted ramps' and R3 read 'more hard-banded than R2'. One OKLab in-between pixel wherever two same-material neighbours sit 2+ tone ranks apart. Metals and glass keep their crisp steps."
+ }
+}

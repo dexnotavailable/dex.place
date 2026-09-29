@@ -1,0 +1,56 @@
+{
+ "name": "t7_lean_soft",
+ "idea": "t4 with half the lean (pit and head 2 px toward the staff) and the weight heel kept under the far hip, so FG-P10 holds",
+ "set": {
+  "neck": {
+   "pit_dx": 11,
+   "back": 6
+  },
+  "head": {
+   "chin_dx": 15
+  },
+  "ribcage": {
+   "dx": 10
+  },
+  "waist": {
+   "dx": 11
+  },
+  "legs": {
+   "far": {
+    "heel": [
+     15,
+     1
+    ],
+    "knee_hint": [
+     22,
+     40
+    ],
+    "toe": [
+     26,
+     0
+    ]
+   }
+  }
+ },
+ "score": 11,
+ "gap_area": 361,
+ "width": 92,
+ "passed": [
+  "FG-P08",
+  "FG-P09",
+  "FG-P10",
+  "FG-P11",
+  "FG-P13",
+  "FG-P14",
+  "FG-N04",
+  "GR-P05",
+  "GR-P09",
+  "GR-P10",
+  "GR-N02"
+ ],
+ "near_reach_px": 42.8,
+ "failed": [],
+ "verdict": "KEPT, HERO (#1, 11/11, gap 361 px2): the chest and head lean 2 px toward the staff and the neck sets 2 px further back, so the near shoulder comes closer to the grip (reach 42.8 px, elbow 124 deg against R1's 134) and the head tilts off the neck (FG-P12); she leans on her staff instead of holding it out, and the plumb line still lands on the weight heel",
+ "kept": true,
+ "rank": 1
+}

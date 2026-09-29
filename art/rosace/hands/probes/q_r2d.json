@@ -1,0 +1,341 @@
+{
+ "_doc": "glaive-hands round 2: Q as a two-hand mid-haft drive (GR-P03: hands 0.15 m, about 11 px, either side of the haft's middle; the free-hand claw gone), the haft tilted off the torso axis (critique: the one-hand vertical clutch read as a pole hang). Leans: toward her (top back over her), toward her near side, away (forward). r2d: the reach under the chin: the haft 6-10 cm nearer her, hands +-0.13 m about the middle.",
+ "base": "art/rosace/hands/poses/q_stamp.json",
+ "variants": {
+  "q_20a": {
+   "weapon": {
+    "butt": [
+     0.04,
+     -1.0519,
+     -0.0421
+    ],
+    "dir": [
+     0.0,
+     0.3387,
+     0.9409
+    ],
+    "edge": [
+     0.64,
+     -0.77,
+     0
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": 0.1859,
+     "thumb": "butt",
+     "back": [
+      -0.7,
+      -0.5,
+      0.3
+     ],
+     "__del__": [
+      "pos",
+      "fdir",
+      "palm"
+     ]
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.0741,
+     "thumb": "butt",
+     "back": [
+      -0.6,
+      -0.5,
+      0.4
+     ]
+    }
+   },
+   "fingers": {
+    "R": {
+     "curl": 88,
+     "thumb": 55
+    }
+   },
+   "bones": {
+    "sleeve_R_1.scale": 0.7
+   },
+   "drape": {
+    "chains": {
+     "sleeve_R": {
+      "g": 0.8,
+      "wind": [
+       -0.3,
+       0.3,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "r_20b": {
+   "weapon": {
+    "butt": [
+     0.02,
+     -1.0319,
+     -0.0221
+    ],
+    "dir": [
+     0.0,
+     0.3387,
+     0.9409
+    ],
+    "edge": [
+     0.64,
+     -0.77,
+     0
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": 0.1859,
+     "thumb": "butt",
+     "back": [
+      -0.7,
+      -0.5,
+      0.3
+     ],
+     "__del__": [
+      "pos",
+      "fdir",
+      "palm"
+     ]
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.0741,
+     "thumb": "butt",
+     "back": [
+      -0.6,
+      -0.5,
+      0.4
+     ]
+    }
+   },
+   "fingers": {
+    "R": {
+     "curl": 88,
+     "thumb": 55
+    }
+   },
+   "bones": {
+    "sleeve_R_1.scale": 0.7
+   },
+   "drape": {
+    "chains": {
+     "sleeve_R": {
+      "g": 0.8,
+      "wind": [
+       -0.3,
+       0.3,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "s_15a": {
+   "weapon": {
+    "butt": [
+     0.04,
+     -0.9755,
+     -0.0661
+    ],
+    "dir": [
+     0.0,
+     0.2607,
+     0.9654
+    ],
+    "edge": [
+     0.64,
+     -0.77,
+     0
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": 0.1859,
+     "thumb": "butt",
+     "back": [
+      -0.7,
+      -0.5,
+      0.3
+     ],
+     "__del__": [
+      "pos",
+      "fdir",
+      "palm"
+     ]
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.0741,
+     "thumb": "butt",
+     "back": [
+      -0.6,
+      -0.5,
+      0.4
+     ]
+    }
+   },
+   "fingers": {
+    "R": {
+     "curl": 88,
+     "thumb": 55
+    }
+   },
+   "bones": {
+    "sleeve_R_1.scale": 0.7
+   },
+   "drape": {
+    "chains": {
+     "sleeve_R": {
+      "g": 0.8,
+      "wind": [
+       -0.3,
+       0.3,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "t_20c": {
+   "weapon": {
+    "butt": [
+     0.0,
+     -1.0119,
+     -0.0621
+    ],
+    "dir": [
+     0.0,
+     0.3387,
+     0.9409
+    ],
+    "edge": [
+     0.64,
+     -0.77,
+     0
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": 0.1859,
+     "thumb": "butt",
+     "back": [
+      -0.7,
+      -0.5,
+      0.3
+     ],
+     "__del__": [
+      "pos",
+      "fdir",
+      "palm"
+     ]
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.0741,
+     "thumb": "butt",
+     "back": [
+      -0.6,
+      -0.5,
+      0.4
+     ]
+    }
+   },
+   "fingers": {
+    "R": {
+     "curl": 88,
+     "thumb": 55
+    }
+   },
+   "bones": {
+    "sleeve_R_1.scale": 0.7
+   },
+   "drape": {
+    "chains": {
+     "sleeve_R": {
+      "g": 0.8,
+      "wind": [
+       -0.3,
+       0.3,
+       0.0
+      ]
+     }
+    }
+   }
+  },
+  "u_25": {
+   "weapon": {
+    "butt": [
+     0.02,
+     -1.1169,
+     -0.0069
+    ],
+    "dir": [
+     0.0,
+     0.4254,
+     0.905
+    ],
+    "edge": [
+     0.64,
+     -0.77,
+     0
+    ]
+   },
+   "hands": {
+    "R": {
+     "grip": "grip_off",
+     "slide": 0.1859,
+     "thumb": "butt",
+     "back": [
+      -0.7,
+      -0.5,
+      0.3
+     ],
+     "__del__": [
+      "pos",
+      "fdir",
+      "palm"
+     ]
+    },
+    "L": {
+     "grip": "grip_off",
+     "slide": -0.0741,
+     "thumb": "butt",
+     "back": [
+      -0.6,
+      -0.5,
+      0.4
+     ]
+    }
+   },
+   "fingers": {
+    "R": {
+     "curl": 88,
+     "thumb": 55
+    }
+   },
+   "bones": {
+    "sleeve_R_1.scale": 0.7
+   },
+   "drape": {
+    "chains": {
+     "sleeve_R": {
+      "g": 0.8,
+      "wind": [
+       -0.3,
+       0.3,
+       0.0
+      ]
+     }
+    }
+   }
+  }
+ }
+}

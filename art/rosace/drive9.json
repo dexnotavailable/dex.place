@@ -1,0 +1,316 @@
+{
+ "_doc": "Drive 9: the combined build (routes F3 mass + F2 head + the figure-pose lane's appeal poses and bust + route F1's painterly finish, re-tuned). Read by tools/pixel-pipeline/drive9/ (bl_build.py 'build', d9_blender.py 'head' and 'shots', d9_post.py 'finish'). Never overwrites integrated.json; nothing here is promoted to rosace.blend. 'why' gives the reason for each pick.",
+ "build": {
+  "f3_variant": "L",
+  "blend": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9.blend"
+ },
+ "head": {
+  "head": 1.1,
+  "neck_w": 0.4,
+  "neck_l": 1.0,
+  "fit_h": true,
+  "eyes_big": true
+ },
+ "shots": {
+  "idle": {
+   "pose": [
+    "idle_appeal.json",
+    "idle_appeal_A.json"
+   ],
+   "drape": "p5",
+   "expr": "idle_appeal"
+  },
+  "n1": {
+   "pose": [
+    "n1_contact.json"
+   ],
+   "drape": "p5",
+   "expr": "n1_contact"
+  },
+  "q": {
+   "pose": [
+    "q_stamp.json"
+   ],
+   "drape": null,
+   "expr": "q_stamp"
+  },
+  "back": {
+   "pose": [
+    "back_appeal.json",
+    "back_appeal_A.json"
+   ],
+   "drape": "p5",
+   "expr": "back_appeal"
+  }
+ },
+ "finish": "drive9/d9_finish.json",
+ "why": {
+  "build": "Route F3 pick L (ref-14 bells, mid tabard with pipe folds, hair volume): two of three finish-route judges kept it for mass. Idle mass 0.264 at 144 / 0.277 at 80 in the combined stills (current 0.229 / 0.244). The judges split on the near bell's dark lining lobe at the hip; a side-by-side with the bell hanging (drape idle=none) looked almost the same, because the lobe is the bigger bell itself. Kept, and the lining got a 7-step ramp with strand texture so it reads as cloth, not a flat navy fill.",
+  "bust": "shape.json 'current' (S7), read from the figure-pose lane at build time. The bust fix is shading, not size (the judges' note): d9_post.py 'bust' puts a cleavage wedge where the bodice normal flips, an underbust shadow and a darker underside.",
+  "head": "1.10 (route F2 H110E, with the bigger 144 px eye stamps). The judges asked for 1.15-1.20 toward '1/6 of height, 24-25 px'. Measured on these stills (hair top to chin / hair top to sole), H110 is already 0.195 (27.6 px) on the idle and H115 is 0.201: every ref measures 0.14-0.20 (finish-gap.md 2.5), so 1/6 would mean a smaller head than now. F2's blind set put H115E next to last and H120E last. By eye on the combined build (work/c_face_h110_h115.png), H115 gains nothing at 144 or 80.",
+  "poses": "The figure-pose lane's newest idle_appeal.json (a89be9fabdd7) and back_appeal.json (d65ee47e75d8), concept A 'queen contrapposto', through its own applier (read-only); n1_contact and q_stamp are the canonical poses. Route F3's drape patch p5 is merged at render time. The stance fix (wider feet, free knee out) belongs to the figure-pose lane and isn't done here.",
+  "finish": "Route F1's method (a 4x render, then painterly ramps, texture, interior AA, an adaptive palette and selective lines), re-tuned per the judges: ramps hue-shifted around the current colour anchors, darks pushed low-key (gamma), 6-10 tones per material plus AA in-betweens (no 32-colour cap), a dark line all round light shapes, a 1 px rim, a skin ramp with a narrow red terminator and a clean face, soft blush, glossy stockings, a hair angel ring, cleavage and underbust. The ramps live in drive9/d9_finish.json; everything runs in numpy on our own passes (no image generation).",
+  "thong": "1 px, the line colour #16131d, via f1_post.thong (DESIGN 3.5 item 5). The model string is thicker; the pixel pass thins it."
+ },
+ "measured": {
+  "_doc": "d9_metrics.py (lanes/drive9/metrics.json): combined (d9) vs current at 144 / 80",
+  "idle": {
+   "colours": [
+    152,
+    118
+   ],
+   "S_mean": [
+    0.451,
+    0.431
+   ],
+   "V_lt_035": [
+    0.323,
+    0.369
+   ],
+   "mass": [
+    0.264,
+    0.277
+   ],
+   "current": {
+    "colours": [
+     33,
+     30
+    ],
+    "S_mean": [
+     0.458,
+     0.476
+    ],
+    "V_lt_035": [
+     0.336,
+     0.372
+    ],
+    "mass": [
+     0.229,
+     0.244
+    ]
+   }
+  },
+  "head_over_H_idle": [
+   0.195,
+   0.196
+  ],
+  "n1": {
+   "colours": [
+    156,
+    141
+   ],
+   "S_mean": [
+    0.482,
+    0.461
+   ],
+   "V_lt_035": [
+    0.361,
+    0.391
+   ],
+   "mass": [
+    0.31,
+    0.331
+   ]
+  },
+  "back": {
+   "colours": [
+    149,
+    125
+   ],
+   "S_mean": [
+    0.459,
+    0.451
+   ],
+   "V_lt_035": [
+    0.394,
+    0.418
+   ],
+   "mass": [
+    0.228,
+    0.242
+   ]
+  }
+ },
+ "round2": {
+  "_doc": "Whole-character round 2 on drive 9 (PIPELINE 3.6n): the round-1 critics' fixes plus ESCALATION 1, as render-time patches and a finish overlay. The round-1 picks above are unchanged; nothing is baked into lanes/drive9.blend or rosace.blend.",
+  "render": "d9_blender.py --r2 tools/pixel-pipeline/drive9/r2_model.json --head 1.10 -> lanes/drive9/raw/R2",
+  "model": "tools/pixel-pipeline/drive9/r2_model.json (mesh_edits: tabard x1.3-1.65; circlet: gold diadem + glass jewel; poses: idle/back/q patches) sha1 b8dc3cb59154",
+  "finish": "tools/pixel-pipeline/drive9/r2_finish.json (overlay on d9_finish.json) sha1 086d0528f83b",
+  "faces": "tools/pixel-pipeline/drive9/r2_faces.json sha1 e6fa0fa85cf6",
+  "post": "d9_post.py --root <raw>/R2 --finish tools/pixel-pipeline/drive9/r2_finish.json --tag R2",
+  "sheets": "review/rosace/art/drive9/round-2/ (d9_round.py --round round-2 --seed 20261301 --raw <raw>/R2 --tag R2 --prev-raw <raw>/H110 --prev-tag D1 --confounds tools/pixel-pipeline/drive9/r2_confounds.json)",
+  "head": {
+   "kept": 1.1,
+   "why": "ESCALATION 1 names head and eye scale, but the round-1 face and body critics measured the head at about 1/5 of height, at or above the refs' 1/6, and said 'do not spend the next round on head scale'; route F2's blind set had H115 next to last. H113 was rendered (raw/R2_H113, idle) and gains nothing by eye at 144 or 80. Pulled back: 1.10 kept, the eye stamps got smaller irises under a lower lid instead."
+  },
+  "why": {
+   "tabard": "Critics (first impression, body, outfit): the pelvis read as one skin block with a 1 px string ('bottomless'), and the thin pointed tabard read as a sword. The design's front tabard is meant to cover the front (DESIGN table: 'covers the front, main flag'): widened x1.3 at the waist to x1.65 at the hem (a flare, silhouette mass) and hung straight (idle tabard g 1.0, no side wind), so it covers the crotch at 144 and 80.",
+   "circlet": "Critic (head and hair): 'no signature priestess head piece; the side beads are tiny; add a gold circlet, rosace pin or short veil that reads at 80'. A gold front diadem on the hair's own contour at the brow (front 1.775 m, back 1.845 m, 160 deg arc whose ends sink into the hair) with a glass rosace jewel at the centre. A full ring read as a hat brim; a band 0.02 m tall drew as outline only.",
+   "idle": "Pose angles +30 % over the figure-pose lane's concept A (ESCALATION 1): hip rotation 5/15/4 -> 6.5/19.5/5.2, torso bend -12/-5 -> -15.6/-6.5, upper chest lift 6 -> 8, head tilt 12 -> 16 and chin 7 -> 10 (critic: 'tilt 6-8 deg chin down, knowing look'). The near bell sleeve is scaled 0.78 and blown back (g 0.5) so the waist-to-hip curve breaks the silhouette (critic: 'clear the sleeve off the hip'). The free knee's pole moves out-forward (the stance note: 'idle knees cross inward').",
+   "back": "Critic: 'not a back view: a near-frontal face'. The look amount 1.0 -> 0.62 with max 85 -> 60: the head turns over the shoulder to three-quarter (head facing the camera 0.78 -> 0.44), and d9_post draws one profile eye when the far eye faces away (r2_faces.json profile_below).",
+   "q": "Critic (first impression): 'the q crouch reads as a broken hip / a fall at 80'. The kicked-up rear leg drops into a driving back lunge (foot 0.64 -> 0.32 m high, knee pole down) and the camera turns 50 -> 35 deg so the rear leg reads behind her instead of splayed sideways. The stamp itself (planted glaive, front heel) is unchanged.",
+   "hand": "Critics (body 6, grip 8): 'the free hand is a clump at the sternum; move it to the hip, back of the wrist on the hip bone, elbow out'. The figure-pose lane's rest-frame wrist [-0.15, 0, 1.22] lands in front of the belly in the 45 deg view, under the cuff. Moved to [-0.21, 0.09, 1.10] (out, back and down onto the side of the hip) with the elbow pole out-back [-0.9, 1.0, 1.3]: the hand now sits on the silhouette's hip with the forearm and waist framing a gap (trials r2_vd / r2_ve, ve kept)."
+  },
+  "measured": {
+   "idle_144": {
+    "colours": 197,
+    "S_mean": 0.409,
+    "V_lt_035": 0.333,
+    "mass": 0.273
+   },
+   "idle_80": {
+    "colours": 170,
+    "S_mean": 0.397,
+    "V_lt_035": 0.367,
+    "mass": 0.281
+   },
+   "n1_144": {
+    "colours": 201,
+    "S_mean": 0.451,
+    "V_lt_035": 0.384,
+    "mass": 0.314
+   },
+   "n1_80": {
+    "colours": 172,
+    "S_mean": 0.431,
+    "V_lt_035": 0.434,
+    "mass": 0.334
+   },
+   "back_144": {
+    "colours": 194,
+    "S_mean": 0.44,
+    "V_lt_035": 0.416,
+    "mass": 0.234
+   },
+   "back_80": {
+    "colours": 156,
+    "S_mean": 0.438,
+    "V_lt_035": 0.458,
+    "mass": 0.251
+   },
+   "q_144": {
+    "colours": 192,
+    "S_mean": 0.406,
+    "V_lt_035": 0.275,
+    "mass": 0.234
+   },
+   "q_80": {
+    "colours": 165,
+    "S_mean": 0.395,
+    "V_lt_035": 0.316,
+    "mass": 0.252
+   }
+  },
+  "p90_value": {
+   "idle": [
+    0.92,
+    0.89
+   ],
+   "n1": [
+    0.89,
+    0.89
+   ],
+   "q": [
+    0.89,
+    0.89
+   ],
+   "back": [
+    0.88,
+    0.89
+   ],
+   "round1_idle": [
+    0.97,
+    null
+   ]
+  }
+ },
+ "round3": {
+  "_doc": "Whole-character round 3 on drive 9 (PIPELINE 3.6o): the round-2 blind critics' fixes as render-time patches, a finish overlay, a face spec and new pixel steps (drive9/r3_post.py, switched on by the finish json's 'r3' block). The round-1 and round-2 picks above are unchanged; nothing is baked into lanes/drive9.blend or rosace.blend, and the figure-pose lane's files are only read.",
+  "render": "d9_blender.py --r2 tools/pixel-pipeline/drive9/r3_model.json --head 1.05 -> lanes/drive9/raw/R3",
+  "model": "tools/pixel-pipeline/drive9/r3_model.json (round 2's edits + hair volume x1.12 at the crown, haft x1.25, idle/back/Q pose patches) sha1 d9a3185e27df",
+  "finish": "tools/pixel-pipeline/drive9/r3_finish.json (overlay on r2_finish.json) sha1 eeba1d10653d",
+  "faces": "tools/pixel-pipeline/drive9/r3_faces.json sha1 a0db63a84af2",
+  "post": "tools/pixel-pipeline/drive9/r3_post.py sha1 d36f1dce41eb (called by d9_post.py sha1 cc12ad8420b7)",
+  "sheets": "review/rosace/art/drive9/round-3/ (d9_round.py --round round-3 --seed 20261401 -> 20261403, prev = round 2's R2 stills)",
+  "pose_check": "The figure-pose lane has promoted nothing new: idle_appeal.json a89be9fabdd7 and back_appeal.json d65ee47e75d8 are still its newest promoted files, its work files stop at 15:54, and review/rosace/art/figure-pose/REPORT.md does not exist. Its concept A poses are used with round 3's patches on top.",
+  "head": {
+   "kept": 1.05,
+   "why": "Body critic (round 2): 'the head is about 1/5 of her height over a short ribcage; bring the head toward 1/5.5'; face critic: 'widen the hair mass so the face reads smaller'. With the hair volume x1.12 at the crown, head x1.05 against x1.10 looks nearly the same by eye (trial r3_t3), and head / H on the idle goes 0.196 -> 0.190 (back 0.187 -> 0.181)."
+  },
+  "why": {
+   "face": "FC-P36 changed: the eye as a lid wedge (flick + two rows over the outer third) with an A2 band and a 2x2 pupil over a desaturated but light iris; every shot takes the open eye, n1 a set line mouth, Q a small symmetric open mouth. FC-P38: the neck's cast shadow, a jaw step and a drawn 2 px blush. The first eye (a full two-row lash on a dark navy iris) read as a sleepy slab and was lightened.",
+   "back": "FC-P37 changed: look amount 0.62 -> 0.75 (0.85 read near-frontal), the turned face lifted (face lift 0.56), the back hair and tail blown to the far side.",
+   "hair": "HR-P26: an authored sheen arc from the crown's own top edge, a fringe cut at 4 unequal places from an off-centre parting, a 3-step azure tip taper, flyaways launched along the silhouette's downward tangent; hair volume x1.12 at the crown.",
+   "finish": "PX-P46: the rim on the outline pixel (the inset rim is off). PX-P47: noise blurred to clusters and a despeckle pass; no haft texture. Whites capped at #e3dfe5, OKLab chroma x0.75-0.85. CL-P23: a sheer stocking against an opaque, bluer boot.",
+   "body": "Idle: spine side tilt -26 (opposing shoulders), chest and upper-chest lift, the hip-hand elbow pole out-back, the glaive hand 9 cm up the haft. Bust: the cleavage wedge only under the neckline, the lit side of the bust lifted toward the white ramp's 0.8 tone, one 4 px highlight on the lit apex (the 'two grey spheres' fix). Skin beside the tabard takes an occlusion step.",
+   "q": "PS-P31: the kicked rear leg planted behind the front leg, hips 7 cm higher, the glaive tilted about 10 degrees off her face; a 25 degree tilt left both hands off the haft.",
+   "fx": "PX-P48: N1 (contact f9, the leaded stage) takes the blade's swept glass fan about the rear fist with A0 leading and a G1 sliver; Q takes a glass flash and a leaded floor crack at the butt (MOVESET Q5). A thin crescent read as a scythe blade."
+  },
+  "measured": {
+   "_doc": "figure pixels only (sil.png; effects excluded): colours, mean HSV S, HSV p90 value, and the round-2 materials critic's horizontal-step shares (lanes/drive9/metrics_r3_critic.json, copied to round-3/metrics_critic_measure.json; round 2 in the same file)",
+   "idle_144": {
+    "colours": 188,
+    "S_mean": 0.38,
+    "p90_value": 0.898,
+    "flat_steps": 0.409,
+    "hard_steps": 0.296
+   },
+   "idle_80": {
+    "colours": 134,
+    "S_mean": 0.382,
+    "p90_value": 0.886,
+    "flat_steps": 0.329,
+    "hard_steps": 0.392
+   },
+   "n1_144": {
+    "colours": 193,
+    "S_mean": 0.439,
+    "p90_value": 0.882,
+    "flat_steps": 0.524,
+    "hard_steps": 0.232
+   },
+   "n1_80": {
+    "colours": 142,
+    "S_mean": 0.43,
+    "p90_value": 0.875,
+    "flat_steps": 0.446,
+    "hard_steps": 0.328
+   },
+   "q_144": {
+    "colours": 173,
+    "S_mean": 0.372,
+    "p90_value": 0.89,
+    "flat_steps": 0.409,
+    "hard_steps": 0.317
+   },
+   "q_80": {
+    "colours": 132,
+    "S_mean": 0.377,
+    "p90_value": 0.886,
+    "flat_steps": 0.323,
+    "hard_steps": 0.452
+   },
+   "back_144": {
+    "colours": 183,
+    "S_mean": 0.425,
+    "p90_value": 0.878,
+    "flat_steps": 0.415,
+    "hard_steps": 0.247
+   },
+   "back_80": {
+    "colours": 134,
+    "S_mean": 0.414,
+    "p90_value": 0.878,
+    "flat_steps": 0.33,
+    "hard_steps": 0.378
+   }
+  },
+  "not_done": [
+   "the constructed hand stamps and two-hand grip (the hands come from the pose)",
+   "bodice construction (seams, lacing, a gold cross panel), a hip side-cut line on a curve, one simplified belt line, the collar cross at 5x7",
+   "a longer, more stretched N1 lunge and squash/stretch frames; the motion lane's N1 frames through the round-3 finish",
+   "the Q glaive at 15-35 degrees (not reachable with this grip, PS-P31)",
+   "PX-P45 on N1 (S 0.439) and the back (S 0.425)"
+  ]
+ }
+}

@@ -1,0 +1,1953 @@
+{
+ "entries": {
+  "beds/alcove": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 209158,
+     "sha256": "beccabbefbc30499dbc3b1e11a824d4c82dfd6942e0dad2b93b2930bdfd55dc1"
+    },
+    "m4a": {
+     "bytes": 297160,
+     "sha256": "dd537d6c43fa1ab4707e0be1bc3c6e9778b18ea0981bb83a173619acca580a56"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -19.7,
+   "rmsDbFS": -34,
+   "loopSeam": 1.54,
+   "describes": "sheltered: rain on the glass, muffled downpour outside, drops tapping and trickling",
+   "provenance": "Original deterministic synthesis (seed 909), built as an exact 36 s loop.",
+   "sources": [],
+   "listening": "pending"
+  },
+  "beds/archive": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 183778,
+     "sha256": "24af1a67db108ae0eb44e1ffd841287988f588d83dc4b580e59d13b333b11e09"
+    },
+    "m4a": {
+     "bytes": 297059,
+     "sha256": "1537f2ad49ca5404c04df76fa6b846b1c86076430532a70fc5b82ce829ad287f"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -27,
+   "rmsDbFS": -41,
+   "loopSeam": 0.15,
+   "describes": "a quiet reading room: room tone, a slow clock, now and then a page",
+   "provenance": "Original deterministic synthesis (seed 606), built as an exact 36 s loop; recorded CC0 hits layered in, processed.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactWood_light_000.ogg",
+     "license": "CC0-1.0",
+     "sha256": "eb45e35b4bed784d3f120de4afec4b0d6ac09d9e143cce8cfcb7d739e1b1f3c3"
+    },
+    {
+     "pack": "legacy",
+     "file": "world-v1/paper-open.wav",
+     "license": "see the ATTRIBUTION.md beside each file",
+     "sha256": "d78eb5ad7f7f917aea1343c8734c292c0a4cbb22b56101aa11adf96f2374c715"
+    }
+   ],
+   "listening": "pending"
+  },
+  "beds/chapel": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 201139,
+     "sha256": "286c25fdc2a81c9b58cf7f4d0e2abe1fd7322d732cbd4fab141e81cd80d44282"
+    },
+    "m4a": {
+     "bytes": 297715,
+     "sha256": "517f1c07c74b124469881cebcfea78e28fe50676839b2e09f6fd596f0c120ee1"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -26.5,
+   "rmsDbFS": -40,
+   "loopSeam": 1.05,
+   "describes": "a large stone chapel: deep air and a long reverb tail, candles hissing, the building settling",
+   "provenance": "Original deterministic synthesis (seed 1111), built as an exact 36 s loop.",
+   "sources": [],
+   "listening": "pending"
+  },
+  "beds/dusk": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 182349,
+     "sha256": "0cd38ca44878a96528bf10b227a55dbdb64654b755091fdd7d7072435a9a3a2a"
+    },
+    "m4a": {
+     "bytes": 296948,
+     "sha256": "e10befba2dd3d711880dd4975f6e48e61ced8103e4f4ea2674daf5d3ee99907e"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -18.3,
+   "rmsDbFS": -36,
+   "loopSeam": 0.31,
+   "describes": "after the storm: a soft wind with long lulls, water dripping off stone and metal",
+   "provenance": "Original deterministic synthesis (seed 1010), built as an exact 36 s loop.",
+   "sources": [],
+   "listening": "pending"
+  },
+  "beds/exterior": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 68888,
+     "sha256": "3df7279dd1a93bc2e60a2e487673a28ed8547dee2627a787bdfb887715afd816"
+    },
+    "m4a": {
+     "bytes": 99678,
+     "sha256": "f351bc854ec9156563bc73fafe43ddfd54c9810288ac978f8973cccd32bcb6b4"
+    }
+   },
+   "seconds": 12.007,
+   "provenance": "Original deterministic synthesis (legacy world-v1, seed 9062031); kept for the test world.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/exterior.opus/.m4a",
+     "license": "see ATTRIBUTION.md"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "beds/interior": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 66226,
+     "sha256": "f0e429b8282c64b46f88a279c6d06053e3b024e291f512d1512b2ec490367470"
+    },
+    "m4a": {
+     "bytes": 99695,
+     "sha256": "fb884963395003f9af17e93715a448d82010fee2e44c99588282301dc7113033"
+    }
+   },
+   "seconds": 12.007,
+   "provenance": "Original deterministic synthesis (legacy world-v1, seed 9062031); kept for the test world.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/interior.opus/.m4a",
+     "license": "see ATTRIBUTION.md"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "beds/lake": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 187444,
+     "sha256": "bbe4596e69e6f31bf08f664380d31ce23e3216b6c0f0dc68b4946d33aee0524d"
+    },
+    "m4a": {
+     "bytes": 296987,
+     "sha256": "720dbf7cf27a573b27e1a92218d1d3dcce246feba2b97c411b0cd00e724f7c3b"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -18,
+   "rmsDbFS": -33,
+   "loopSeam": 1.42,
+   "describes": "water lapping at the dock, a rope creaking, a far gull, still air",
+   "provenance": "Original deterministic synthesis (seed 101), built as an exact 36 s loop.",
+   "sources": [],
+   "listening": "pending"
+  },
+  "beds/lodge": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 221440,
+     "sha256": "a139cbbfe193c2654f7d661b898f994db780bdfd6c4fdb43548da47eccbd5147"
+    },
+    "m4a": {
+     "bytes": 298582,
+     "sha256": "73bebf375431fa1995bb3d1586ca18e578e44dc280c39a46ae441c9bf77be8ae"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -19.3,
+   "rmsDbFS": -34,
+   "loopSeam": 1.16,
+   "describes": "a small warm room: the stove ticking and crackling, a kettle simmering, a clock, wind outside the walls",
+   "provenance": "Original deterministic synthesis (seed 1212), built as an exact 36 s loop; recorded CC0 hits layered in, processed.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactWood_light_002.ogg",
+     "license": "CC0-1.0",
+     "sha256": "b183cf7a5bd783817e0e4b82af34ac6658fa1927049089dadc8b15c2ecc771dc"
+    }
+   ],
+   "listening": "pending"
+  },
+  "beds/market": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 215893,
+     "sha256": "f47d2a2444858b07dc1316e8c172a7ace1796edda4199b557852d1b8f72fa496"
+    },
+    "m4a": {
+     "bytes": 297436,
+     "sha256": "db97ee38107bc7465638079ecb575afe5aa1a0a4df2e7422de5903920e60aba4"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -12.7,
+   "rmsDbFS": -30,
+   "loopSeam": 1.73,
+   "describes": "a market murmur with no words, hammering at a forge, steam, a furnace roar, a far freighter horn, all inside a huge space",
+   "provenance": "Original deterministic synthesis (seed 505), built as an exact 36 s loop; recorded CC0 hits layered in, processed.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactMetal_medium_000.ogg",
+     "license": "CC0-1.0",
+     "sha256": "a96f879fec0864a8938e0c745b6996a6c5679c16a234ce31a01cc995e8401003"
+    },
+    {
+     "pack": "kenney",
+     "file": "impactPlate_medium_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "68ba7701b71ef620f498f3038e832157d71ac8db7ad59424545890b250ceb24e"
+    },
+    {
+     "pack": "kenney",
+     "file": "impactMetal_medium_003.ogg",
+     "license": "CC0-1.0",
+     "sha256": "2a185e2e57211d02c1bdd33b872d6b6a2fe83e6c14f4e56f426a95e717acf08e"
+    }
+   ],
+   "listening": "pending"
+  },
+  "beds/plain": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 268643,
+     "sha256": "02bccb0c873dcf6d5fc19d5c3f167c145a5b4eea828a0b2e88433a526b202e9d"
+    },
+    "m4a": {
+     "bytes": 297647,
+     "sha256": "5b0ee3313989f78b9787ac3c01a0733983d34cf58a28b71448ebb129442e67e6"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -14.1,
+   "rmsDbFS": -31,
+   "loopSeam": 0.41,
+   "describes": "layered wind rising and falling, grass hiss, thunder far off",
+   "provenance": "Original deterministic synthesis (seed 303), built as an exact 36 s loop.",
+   "sources": [],
+   "listening": "pending"
+  },
+  "beds/reeds": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 248611,
+     "sha256": "574d6e9f17581bbde104ed4cde4b0614bffb6989a933f1a8791815dc3f568f7f"
+    },
+    "m4a": {
+     "bytes": 297540,
+     "sha256": "8c2c4d98f7670211992ded918a00c2b6f4de57c34ee3cb74f63ab57c012a2973"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -12.4,
+   "rmsDbFS": -32,
+   "loopSeam": 1.35,
+   "describes": "reeds hissing and rustling in a light wind, shallow water moving",
+   "provenance": "Original deterministic synthesis (seed 202), built as an exact 36 s loop.",
+   "sources": [],
+   "listening": "pending"
+  },
+  "beds/shaft": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 189960,
+     "sha256": "a9dd0fc8c71c371c44975ce114fd2b3b497e4a2e389ffec83b4bcd67a58675cb"
+    },
+    "m4a": {
+     "bytes": 297012,
+     "sha256": "44639357283d1b085a95906bc33e37851252f4681ec7adc6231052754d6a323d"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -19.4,
+   "rmsDbFS": -32,
+   "loopSeam": 1.33,
+   "describes": "a deep machine hum rising from below, far metal knocks in a big shaft, air moving",
+   "provenance": "Original deterministic synthesis (seed 404), built as an exact 36 s loop; recorded CC0 hits layered in, processed.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactMetal_heavy_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "83554049f81f4db9209379e103c30bfa63f65c42189a03f300b045c2c82e23ae"
+    }
+   ],
+   "listening": "pending"
+  },
+  "beds/storm": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 205391,
+     "sha256": "3527d5827cc8d0da1f16ba579817a10ccaccce880f13cf42f2751f96b9ddff0f"
+    },
+    "m4a": {
+     "bytes": 296886,
+     "sha256": "6cf5349a1b7a1298eb9607192aa88bd854ca1aab8ec78e4c0820eb6dc21c6c48"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -14.4,
+   "rmsDbFS": -29,
+   "loopSeam": 0.93,
+   "describes": "heavy rain on metal and stone, gusting wind, a pennant snapping; thunder is added live after each flash",
+   "provenance": "Original deterministic synthesis (seed 808), built as an exact 36 s loop.",
+   "sources": [],
+   "listening": "pending"
+  },
+  "beds/waiting": {
+   "kind": "bed",
+   "files": {
+    "opus": {
+     "bytes": 191148,
+     "sha256": "43c93c211c8169d7852cbb9aacc28f9deec759f6a62c0ad9eafc841c3f3ceb6c"
+    },
+    "m4a": {
+     "bytes": 297029,
+     "sha256": "4feb9e2c8e7e2184c29b9e08e829da32f56aef23d91612ffaac5c30a7ce67e43"
+    }
+   },
+   "seconds": 36,
+   "channels": 2,
+   "loop": true,
+   "peakDbFS": -27.8,
+   "rmsDbFS": -38,
+   "loopSeam": 2.88,
+   "describes": "a waiting room under fluorescent tubes: the hum and buzz, a flicker now and then, far lift machinery",
+   "provenance": "Original deterministic synthesis (seed 707), built as an exact 36 s loop.",
+   "sources": [],
+   "listening": "pending"
+  },
+  "music/arena-chamber": {
+   "kind": "music",
+   "files": {
+    "opus": {
+     "bytes": 979690,
+     "sha256": "76964ba21133620145a744182f512ca4e60b0944211843158e9268f7a709b0c5"
+    },
+    "m4a": {
+     "bytes": 1256907,
+     "sha256": "e1dd879ceed841df3f6d1388849e2532bed14066f061b6b789aca924093a9bad"
+    }
+   },
+   "seconds": 68.578,
+   "provenance": "Original dex.place motif for strings and cello, FluidSynth 2.6.0 + GeneralUser GS 2.0.3 (recordings permitted); bytes unchanged. Stand-in for the arena (WORLD-PLAN section 14 default 5).",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "v2/arena-chamber-v1.opus/.m4a",
+     "license": "see ATTRIBUTION.md"
+    }
+   ],
+   "listening": "pending"
+  },
+  "music/theme-b": {
+   "kind": "music",
+   "files": {
+    "opus": {
+     "bytes": 1152333,
+     "sha256": "b0f5d425b80eb4af4d37dc11bfa6fd4c95192be24ce264b709a7ba4d30d02f1c"
+    },
+    "m4a": {
+     "bytes": 1322589,
+     "sha256": "2df21d1caffb73d43ee40a96ccba65b35b6a0d58ae86fd16e3f7bed0660fa9b4"
+    }
+   },
+   "seconds": 83.776,
+   "provenance": "Dex's chosen Suno \"B\" arrangement of the original dex.place theme (legacy id support, suno-theme-b-v1); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/suno-theme-b-v1/support.opus/.m4a",
+     "license": "see ATTRIBUTION.md"
+    }
+   ],
+   "listening": "approved (theme choice, 2026-09)"
+  },
+  "sfx/bell-chapel": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 294444,
+     "sha256": "7c08526656f144ba3212adbb1868c787bc9b7cac4382afd06fb55e1bb513174d"
+    }
+   },
+   "seconds": 4.6,
+   "sampleRate": 32000,
+   "peakDbFS": -5.1,
+   "loudDbFS": -15.8,
+   "describes": "the chapel bell: deep, long",
+   "provenance": "Original deterministic synthesis (seed 5017).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/bell-ferry": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 128044,
+     "sha256": "2108d64df1245f016cb0a0b231581ee81aa8a835a0d73a377880a2904fff1ef9"
+    }
+   },
+   "seconds": 2,
+   "sampleRate": 32000,
+   "peakDbFS": -7.1,
+   "loudDbFS": -17.7,
+   "describes": "the ferry bell: small and bright",
+   "provenance": "Original deterministic synthesis (seed 5051).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/bell-rib": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 204844,
+     "sha256": "591462b9bd3415a33f941fbb9eecdff49f5b85623c5cdd3bd031e3ae08daf93e"
+    }
+   },
+   "seconds": 3.2,
+   "sampleRate": 32000,
+   "peakDbFS": -4.7,
+   "loudDbFS": -16.9,
+   "describes": "the rib bell on the causeway: mid, weathered",
+   "provenance": "Original deterministic synthesis (seed 5034).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/bench-sit": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 38444,
+     "sha256": "e4ef0aced1056101a69ad9d5e1b65f42cc0c448824ad3cbe9159dd0e6d1038be"
+    }
+   },
+   "seconds": 0.4,
+   "sampleRate": 48000,
+   "peakDbFS": -12.2,
+   "loudDbFS": -23,
+   "describes": "sitting down on a wooden bench",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactWood_light_003.ogg",
+     "license": "CC0-1.0",
+     "sha256": "cdfbe8af2fe7ff9ee28f337a0a989deee0f327620da456c8413644880e9d0004"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/cable-cut": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 28844,
+     "sha256": "ac2282876e85c8a5a5cfb4984b8b30b315f18538353cf3e7e7c0ee0ebbce24b0"
+    }
+   },
+   "seconds": 0.3,
+   "peakDbFS": -12.6,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/cable-cut.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "sfx/chain": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 57644,
+     "sha256": "c4cc31d392685a3a677ec80ac3ad5befcba314ab438387673a038e5203597356"
+    }
+   },
+   "seconds": 0.6,
+   "sampleRate": 48000,
+   "peakDbFS": -6.2,
+   "loudDbFS": -21,
+   "describes": "a chain rattling",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactTin_medium_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "84253095543c094d83cd749f42ecfbc96e356b60385f18a192c18eafb25b3cc6"
+    },
+    {
+     "pack": "kenney",
+     "file": "impactTin_medium_003.ogg",
+     "license": "CC0-1.0",
+     "sha256": "0d18737d93ba7aa0669f751094cbc1671bbebac4fe207783922938ce75e24334"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/clink": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 15002,
+     "sha256": "e6da4939a70fb208cf8094ed30ce5cf258bd7a8d6a3e40e0be3d50a00b3c093e"
+    }
+   },
+   "seconds": 0.156,
+   "sampleRate": 48000,
+   "peakDbFS": -10.2,
+   "loudDbFS": -22,
+   "describes": "a small tin clink",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactTin_medium_000.ogg",
+     "license": "CC0-1.0",
+     "sha256": "f4bbee66ca191ec744b84fc07ac9ed2a6fda955d51cfed8360f12b62815d3cbd"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/cloth-1": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 28844,
+     "sha256": "19bf82776d5df3e94733fc8e5cdda452fbcee1cdd28a76ea46c96965119b7286"
+    }
+   },
+   "seconds": 0.3,
+   "sampleRate": 48000,
+   "peakDbFS": -11.2,
+   "loudDbFS": -22,
+   "describes": "a cloth swish",
+   "provenance": "Original deterministic synthesis (seed 5102).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/cloth-2": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 40364,
+     "sha256": "dd1d287476bd0c4cae6de691f2c111d5cc059fb4ad237418bf80bc66bc36f779"
+    }
+   },
+   "seconds": 0.42,
+   "sampleRate": 48000,
+   "peakDbFS": -10.8,
+   "loudDbFS": -22,
+   "describes": "a heavier cloth swish",
+   "provenance": "Original deterministic synthesis (seed 5119).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/cloth-flap": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 96044,
+     "sha256": "f983d5631f562f3f94a58c56cb5466741e46b466c48446334d0ecb9df91fab9c"
+    }
+   },
+   "seconds": 1,
+   "sampleRate": 48000,
+   "peakDbFS": -7.7,
+   "loudDbFS": -22,
+   "describes": "a banner flapping",
+   "provenance": "Original deterministic synthesis (seed 5153).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/cloth-tear": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 43244,
+     "sha256": "49f75fdd8761fb49a5a09785f9af3d6301c2178d8b14a9d95a1b3d6528740e01"
+    }
+   },
+   "seconds": 0.45,
+   "sampleRate": 48000,
+   "peakDbFS": -6.5,
+   "loudDbFS": -20,
+   "describes": "cloth tearing",
+   "provenance": "Original deterministic synthesis (seed 5136).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/colossus-footfall": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 240044,
+     "sha256": "3538ab409ebf43d18253e8fd086f86d5084bc5edc72d7fade58840337c638d30"
+    }
+   },
+   "seconds": 5,
+   "sampleRate": 24000,
+   "peakDbFS": -1.5,
+   "loudDbFS": -14.1,
+   "describes": "the colossus's foot coming down: a sub-bass thud, then a long wash",
+   "provenance": "Original deterministic synthesis (seed 5221).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/confirm": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 67244,
+     "sha256": "057ff8baa2c95a9f1cdf47c041fd1953d5dbf0ff7063391fdadacece96c0959f"
+    }
+   },
+   "seconds": 0.7,
+   "peakDbFS": -31.9,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/confirm.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "sfx/crank": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 124844,
+     "sha256": "0f77808998f5f87eea20467436010c8829371df2cb059d47fae594521ee46ca7"
+    }
+   },
+   "seconds": 1.3,
+   "sampleRate": 48000,
+   "peakDbFS": -6.4,
+   "loudDbFS": -20,
+   "describes": "the rose-window crank: a ratchet turning a heavy gear",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactMetal_light_002.ogg",
+     "license": "CC0-1.0",
+     "sha256": "25a96f90a9a1f88a531e824e126f0519504625e5635e65a72e4f31611428db29"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/door-close": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 67244,
+     "sha256": "73abc73e1a543d2b7d42b6738f965b356509f13f99c427ef417ac6f323ee59e3"
+    }
+   },
+   "seconds": 0.7,
+   "sampleRate": 48000,
+   "peakDbFS": -8.7,
+   "loudDbFS": -19,
+   "describes": "a wooden door closing",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_door_03.ogg",
+     "license": "CC0-1.0",
+     "sha256": "9776b3858ca41bb6e8363b8195a70ebc70e3404a6c08ead1907177c65ccd04b6"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/door-open": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 39876,
+     "sha256": "1d9ec6dd7cd01c1a641452e2f9cc4894991a217b96693d9811a62b5c2376d271"
+    }
+   },
+   "seconds": 0.415,
+   "sampleRate": 48000,
+   "peakDbFS": -3.8,
+   "loudDbFS": -20,
+   "describes": "a wooden door opening",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_door_01.ogg",
+     "license": "CC0-1.0",
+     "sha256": "3fffeef28d3c1662814c33411fe5e76cbb1f74fe58c9ed0cab796c57ca9846b7"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/door-rattle": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 29386,
+     "sha256": "9a24b34829955f3aa017b770f4783b6fdb5f9cb5646d74611e2b725535c0630c"
+    }
+   },
+   "seconds": 0.306,
+   "sampleRate": 48000,
+   "peakDbFS": -4.8,
+   "loudDbFS": -21,
+   "describes": "a latched door rattling",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_door_05.ogg",
+     "license": "CC0-1.0",
+     "sha256": "96e51ecf6c493753740ae3ddd260734a079b5f492d087c7e68891ce78289e535"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/flame-gutter": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 57644,
+     "sha256": "547068a608742880453518ee0dc84a5474ebeedb73ebfe21d3a64d7aa2d4f9a0"
+    }
+   },
+   "seconds": 0.6,
+   "sampleRate": 48000,
+   "peakDbFS": -13.2,
+   "loudDbFS": -28,
+   "describes": "a flame guttering in a draught",
+   "provenance": "Original deterministic synthesis (seed 5578).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/flame-light": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 48044,
+     "sha256": "fa408c4f2f4a5e4566aa1d1ab0f8c463be21ae09061563adddc07d5d6f57eb32"
+    }
+   },
+   "seconds": 0.5,
+   "sampleRate": 48000,
+   "peakDbFS": -13.5,
+   "loudDbFS": -24,
+   "describes": "a wick or lamp catching: a soft whump",
+   "provenance": "Original deterministic synthesis (seed 5561).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/glass-hit": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 19244,
+     "sha256": "b94f3be7d7396610a1bd07158899c83d351c571c6576038986bfba8c1af1d166"
+    }
+   },
+   "seconds": 0.2,
+   "sampleRate": 48000,
+   "peakDbFS": -11.2,
+   "loudDbFS": -20,
+   "describes": "a light knock on glass",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactGlass_light_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "05e513fbd42829060eb37855f8c3866722ec5c39a8937c9bfde518cc609effa2"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/glass-shatter": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 115244,
+     "sha256": "3c12631603d7e5ba120a1700bbb1760536b905cb568970ca49906d059ba32418"
+    }
+   },
+   "seconds": 1.2,
+   "sampleRate": 48000,
+   "peakDbFS": -1,
+   "loudDbFS": -26.1,
+   "describes": "a pane shattering, then tinkling pieces",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactGlass_heavy_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "58686e0e562612cc566791844a10e269f8d1921f4766c14ba43976fd0a429f4e"
+    },
+    {
+     "pack": "kenney",
+     "file": "impactGlass_light_000.ogg",
+     "license": "CC0-1.0",
+     "sha256": "d750cf88097d0c3e69920e6e14496e1444e1a9da01aa4cca8f5ec8cb44c57b4f"
+    },
+    {
+     "pack": "kenney",
+     "file": "impactGlass_light_002.ogg",
+     "license": "CC0-1.0",
+     "sha256": "710db7451bb7857b9140dfe6afe4621ea2188ad65eda3919c569d1bb285b933d"
+    },
+    {
+     "pack": "kenney",
+     "file": "impactGlass_light_004.ogg",
+     "license": "CC0-1.0",
+     "sha256": "f535b7cb7835400d8d28bcf9e1cf047ce3c0eb7a6456bdb1a4a27acbec1ed2cb"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/grit-sift": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 134444,
+     "sha256": "92a60a69cc1b2e3891c698b88748689d5d9b848b4effc53f713889200e9ab3bf"
+    }
+   },
+   "seconds": 1.4,
+   "sampleRate": 48000,
+   "peakDbFS": -9.5,
+   "loudDbFS": -30,
+   "describes": "grit sifting down from the ceiling",
+   "provenance": "Original deterministic synthesis (seed 5629).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/hit-metal": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 38444,
+     "sha256": "195bf42fa5e015080f08e5d7cfce72806661180090662ff411d037b6d0ce6543"
+    }
+   },
+   "seconds": 0.4,
+   "peakDbFS": -7.1,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/hit-metal.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "sfx/horn": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 144044,
+     "sha256": "852edca2ed43f1015f180ddac7e34aba94e4c70f3cc63f01cf97d4fd096d570e"
+    }
+   },
+   "seconds": 3,
+   "sampleRate": 24000,
+   "peakDbFS": -6.2,
+   "loudDbFS": -15.9,
+   "describes": "the causeway horn: long and low",
+   "provenance": "Original deterministic synthesis (seed 5238).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/hurt": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 26924,
+     "sha256": "317a80f0a8021fcf6ba3d132a051398f24c4b9ae85fec6af228ec78f0f5ec045"
+    }
+   },
+   "seconds": 0.28,
+   "peakDbFS": -11.7,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/hurt.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/landing": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 30764,
+     "sha256": "b0b733917578fb93baa1ba9ea878ec69a5e9fd656eb26690df81af39f9bd6df7"
+    }
+   },
+   "seconds": 0.32,
+   "peakDbFS": -12.3,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/landing.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "sfx/leaf-rustle": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 37484,
+     "sha256": "600201f8f91c99e12b6b8e725ea882739f3cd6dd3f55e92df37d1cad26e365b2"
+    }
+   },
+   "seconds": 0.39,
+   "sampleRate": 48000,
+   "peakDbFS": -7.9,
+   "loudDbFS": -24,
+   "describes": "leaves and straw rustling",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "tinyworlds",
+     "file": "leaves01.ogg",
+     "license": "CC0-1.0",
+     "sha256": "93b3bbcd06380eec54335d1869924db6ff2cc6c1cb103502133d78484c5ca836"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/lever-pull": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 57644,
+     "sha256": "45ebf47004c0464819f8e5d44adde36074f866cdaebf221908b7fbcc15346f72"
+    }
+   },
+   "seconds": 0.6,
+   "sampleRate": 48000,
+   "peakDbFS": -1,
+   "loudDbFS": -21.5,
+   "describes": "a heavy lever thrown",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_switch_01.ogg",
+     "license": "CC0-1.0",
+     "sha256": "fa2c8ebd6361394762e9964698a0be2e31ae62dc91510f81c716c0ef8cf5741d"
+    },
+    {
+     "pack": "kenney",
+     "file": "impactMetal_heavy_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "83554049f81f4db9209379e103c30bfa63f65c42189a03f300b045c2c82e23ae"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/lift-dock": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 38444,
+     "sha256": "0f2b0f3960730d51c0f55fb8af71964c632ea5854f61f86558c81e83cba8f902"
+    }
+   },
+   "seconds": 0.4,
+   "peakDbFS": -13.7,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/lift-dock.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "sfx/lift-start": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 52844,
+     "sha256": "1e10325fb3b09006600e43089ddc7a3d9072b4a64f0cb92b365f02856e3b36fe"
+    }
+   },
+   "seconds": 0.55,
+   "peakDbFS": -12,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/lift-start.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "sfx/metal-heavy": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 34256,
+     "sha256": "671c564b1fbc1f581602d663140686dc62171951ad97916234568ed9a7099f0c"
+    }
+   },
+   "seconds": 0.356,
+   "sampleRate": 48000,
+   "peakDbFS": -7.4,
+   "loudDbFS": -18,
+   "describes": "a heavy metal clank",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactMetal_heavy_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "83554049f81f4db9209379e103c30bfa63f65c42189a03f300b045c2c82e23ae"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/metal-hit": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 25856,
+     "sha256": "4382149e20efc8aaed5a621e525abe2bb9d91a41bd640c88d16dcc135fe91a66"
+    }
+   },
+   "seconds": 0.269,
+   "sampleRate": 48000,
+   "peakDbFS": -12.6,
+   "loudDbFS": -20,
+   "describes": "a blow on metal",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactMetal_medium_000.ogg",
+     "license": "CC0-1.0",
+     "sha256": "a96f879fec0864a8938e0c745b6996a6c5679c16a234ce31a01cc995e8401003"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/neon-buzz": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 57644,
+     "sha256": "f0b652e35aaac3a0ffe6829f90d91ddd7a00993ec7ce2e7b772d99456065ae6b"
+    }
+   },
+   "seconds": 0.6,
+   "sampleRate": 48000,
+   "peakDbFS": -20.3,
+   "loudDbFS": -26,
+   "describes": "a neon sign buzzing on",
+   "provenance": "Original deterministic synthesis (seed 5595).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/neon-spark": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 17324,
+     "sha256": "2c21de1bb8d704be89c9d35fc8ca3c188823aad36fe9224d2008c40ebf707971"
+    }
+   },
+   "seconds": 0.18,
+   "sampleRate": 48000,
+   "peakDbFS": -6.5,
+   "loudDbFS": -22,
+   "describes": "a neon tube sparking",
+   "provenance": "Original deterministic synthesis (seed 5612).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/paper-cut": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 33644,
+     "sha256": "2a2db2e1296d6b27683e1439f15b9bf11c7488416e00676666c0eacbd64f2600"
+    }
+   },
+   "seconds": 0.35,
+   "peakDbFS": -15.2,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/paper-cut.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/paper-open": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 43244,
+     "sha256": "d78eb5ad7f7f917aea1343c8734c292c0a4cbb22b56101aa11adf96f2374c715"
+    }
+   },
+   "seconds": 0.45,
+   "peakDbFS": -14.7,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/paper-open.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "sfx/shard-reassemble": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 192044,
+     "sha256": "72a592b185b45423a4fcc6cd0ce26127b9d1b97444b78fb7452d05a8b7e17a32"
+    }
+   },
+   "seconds": 2,
+   "sampleRate": 48000,
+   "peakDbFS": -10.2,
+   "loudDbFS": -22,
+   "describes": "shards flying back and setting (the stained glass healing): tinkles in reverse, rising, a soft chime",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactGlass_light_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "05e513fbd42829060eb37855f8c3866722ec5c39a8937c9bfde518cc609effa2"
+    },
+    {
+     "pack": "kenney",
+     "file": "impactGlass_light_003.ogg",
+     "license": "CC0-1.0",
+     "sha256": "765290ce32fa108c939a0dbd6fbacbcd05abde622b57b708eb8a64058ef4225a"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/slash-1": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 30764,
+     "sha256": "b7174f2c574c42ddcf307a618166aa72e5cec662f726203f65d7473203981e1d"
+    }
+   },
+   "seconds": 0.32,
+   "peakDbFS": -13.8,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/slash-1.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "sfx/slash-2": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 33644,
+     "sha256": "e74c8c4f95d45a3844d5464c7b5328b761a43fef41834c110be1b061be7f8234"
+    }
+   },
+   "seconds": 0.35,
+   "peakDbFS": -13.5,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/slash-2.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "reviewed in the 2026-09-08 playtest"
+  },
+  "sfx/splash-1": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 86444,
+     "sha256": "c8bf12689dfb369d6ad8e13a0a94cf3584eb558dc61a5d7f7679e8a7d5c90a86"
+    }
+   },
+   "seconds": 0.9,
+   "sampleRate": 48000,
+   "peakDbFS": -6.1,
+   "loudDbFS": -18,
+   "describes": "a splash into shallow water",
+   "provenance": "Original deterministic synthesis (seed 5068).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/splash-2": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 69644,
+     "sha256": "4417ba68c65030e20f495162ce2408ccb173662ef13997dcd81ac3e5ce88e712"
+    }
+   },
+   "seconds": 0.725,
+   "sampleRate": 48000,
+   "peakDbFS": -10,
+   "loudDbFS": -20,
+   "describes": "a small splash",
+   "provenance": "Original deterministic synthesis (seed 5085).",
+   "sources": [],
+   "listening": "pending"
+  },
+  "sfx/stone-break": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 96044,
+     "sha256": "fcdc8b93778b92ea0ff3963b87fd25359a5bc1d6ac7457aa0564c21feb6df959"
+    }
+   },
+   "seconds": 1,
+   "sampleRate": 48000,
+   "peakDbFS": -1.4,
+   "loudDbFS": -16,
+   "describes": "stone cracking and falling in pieces",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactMining_003.ogg",
+     "license": "CC0-1.0",
+     "sha256": "4237fa2cd80364ad81cd0af44f67d7497f1c5edcc7bdb02cd22be2ba4580c83d"
+    },
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_stones_02.ogg",
+     "license": "CC0-1.0",
+     "sha256": "23f8c7335eb656ea759899946ed665712ec41f4572656f421f7f5652bea66279"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/stone-hit": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 33644,
+     "sha256": "c99bfea486ce024d127001a870238ed906e1ff77956108e77ca9b9ba50966878"
+    }
+   },
+   "seconds": 0.35,
+   "sampleRate": 48000,
+   "peakDbFS": -13.3,
+   "loudDbFS": -19,
+   "describes": "a blow on stone",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactMining_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "61235a18de3f3d92118235398222dbf51d448f1be70b1c8bc962b10b86f2d9c6"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/telegraph": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 72044,
+     "sha256": "a60788c6f1aba5a539e1768b9d125f944057500616ccf8208d31c62a33fb642e"
+    }
+   },
+   "seconds": 0.75,
+   "peakDbFS": -17.5,
+   "provenance": "Original offline synthesis from the legacy world-v1 set (confirm: derived from the original soft motif instrument); bytes unchanged.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/telegraph.wav",
+     "license": "original, dex.place"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/thud": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 38444,
+     "sha256": "2d1bd63ed8cb270e037247fd97e0dce73d9fcd2c5bb453ed3ad54be56275ce1c"
+    }
+   },
+   "seconds": 0.4,
+   "sampleRate": 48000,
+   "peakDbFS": -13.3,
+   "loudDbFS": -18,
+   "describes": "a soft heavy thud (earth, luggage, a sack)",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactSoft_heavy_000.ogg",
+     "license": "CC0-1.0",
+     "sha256": "49e7ca88743fca974bb8676ea138b751cfd8f9033b5e7af8736c2a215d6edbc1"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/unlatch": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 59264,
+     "sha256": "2dcb4e80a77d935eeca6f07abceb2424fa32b832d1c6b43deaf041098e2ae0e3"
+    }
+   },
+   "seconds": 0.617,
+   "sampleRate": 48000,
+   "peakDbFS": -1,
+   "loudDbFS": -24.7,
+   "describes": "a latch lifting",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_lock_open_01.ogg",
+     "license": "CC0-1.0",
+     "sha256": "5147f96254216792e0bf5f32a3589efbc4e4632fbba4737740f336b7bfbf3f55"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/whoosh": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 26924,
+     "sha256": "978e4d0936b42943cda11d0cd11f476483a3a63595121d3133fd8fa2445958b2"
+    }
+   },
+   "seconds": 0.28,
+   "sampleRate": 48000,
+   "peakDbFS": -10.6,
+   "loudDbFS": -22,
+   "describes": "a quick air whoosh (dash, jump)",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_air_03.ogg",
+     "license": "CC0-1.0",
+     "sha256": "df32019155c3a8b5fc77244126261695f762ba7018a4fc4c6d9ad201cedeb985"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/wood-break": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 76844,
+     "sha256": "87b1ad74e4971b1757cc645ad03f0da4cd0a66d26ceeba9633e045c8cf351d69"
+    }
+   },
+   "seconds": 0.8,
+   "sampleRate": 48000,
+   "peakDbFS": -7.2,
+   "loudDbFS": -17,
+   "describes": "wood splintering",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactWood_heavy_002.ogg",
+     "license": "CC0-1.0",
+     "sha256": "ce1e06f2a05f2634c645cb72f6a1623e64bc2d92be34917430a61031fb6597d4"
+    },
+    {
+     "pack": "kenney",
+     "file": "impactPlank_medium_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "d7c304319f8beac616231b62041fa8da74045b62d7155965516efb9b19303df4"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/wood-hit": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 30764,
+     "sha256": "87d9d0a56522d6174202df3e784517295d814eaf2ded151ae50940c097602776"
+    }
+   },
+   "seconds": 0.32,
+   "sampleRate": 48000,
+   "peakDbFS": -8.7,
+   "loudDbFS": -19,
+   "describes": "a blow on wood",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactWood_medium_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "15271dbe8e2872dbb0ff1aeb7b12b2d2b92b7c1951c88532b9ab9158c36dfc73"
+    }
+   ],
+   "listening": "pending"
+  },
+  "sfx/wood-knock": {
+   "kind": "sfx",
+   "files": {
+    "wav": {
+     "bytes": 24044,
+     "sha256": "e1014ef7768367ec0b251ff1a424990b4dca004a639e4d120720a17d6b3291f0"
+    }
+   },
+   "seconds": 0.25,
+   "sampleRate": 48000,
+   "peakDbFS": -10.2,
+   "loudDbFS": -21,
+   "describes": "a knock on wood",
+   "provenance": "CC0 recordings, processed (mono, trimmed, fixed gain; layered where listed).",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "impactWood_light_000.ogg",
+     "license": "CC0-1.0",
+     "sha256": "eb45e35b4bed784d3f120de4afec4b0d6ac09d9e143cce8cfcb7d739e1b1f3c3"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/earth-1": {
+   "kind": "step",
+   "surface": "earth",
+   "files": {
+    "wav": {
+     "bytes": 32684,
+     "sha256": "39d6e7599b9275f662c3aa0a477e0587757324fcae58c01d7ec40c7b8e0f17ab"
+    }
+   },
+   "seconds": 0.34,
+   "peakDbFS": -23.8,
+   "loudDbFS": -37.3,
+   "materialGainDb": -25.7,
+   "provenance": "CC0 recorded footstep; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "footstep_grass_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "fb28781bd22b2eefdc14077f1adf5c94d7fe9c3a130194633b55f3e0d39d9f04"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/earth-2": {
+   "kind": "step",
+   "surface": "earth",
+   "files": {
+    "wav": {
+     "bytes": 32684,
+     "sha256": "8f5fafab434d92292a03f7f3664ceb0aaeb8044bdabe875ac98095f0c2cd9a5f"
+    }
+   },
+   "seconds": 0.34,
+   "peakDbFS": -23.7,
+   "loudDbFS": -37.7,
+   "materialGainDb": -25.7,
+   "provenance": "CC0 recorded footstep; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "footstep_grass_002.ogg",
+     "license": "CC0-1.0",
+     "sha256": "73a520139f5be716a403bfe9c80e0e94d1e61d8e9de04a354b336392164b53dc"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/grating-1": {
+   "kind": "step",
+   "surface": "grating",
+   "files": {
+    "wav": {
+     "bytes": 26694,
+     "sha256": "c0683d63bb7622b1675982af334a1142c4c91df6bb8e9ffb7b48def10e778dae"
+    }
+   },
+   "seconds": 0.278,
+   "peakDbFS": -22.7,
+   "loudDbFS": -32.4,
+   "materialGainDb": -0.2,
+   "provenance": "CC0 recorded footstep; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/recorded-steps-v1/step-metal-1.wav",
+     "license": "see the ATTRIBUTION.md beside each file",
+     "sha256": "00a07e1594d2fb1b481a271ceb1703f2221b42febabffefdd841d3001d1d41ea"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/grating-2": {
+   "kind": "step",
+   "surface": "grating",
+   "files": {
+    "wav": {
+     "bytes": 34142,
+     "sha256": "5256bc6ab2b33705e5d79a6e33d3766b936208cb0289a54bb7bdf253ee540d1c"
+    }
+   },
+   "seconds": 0.355,
+   "peakDbFS": -22.6,
+   "loudDbFS": -33.6,
+   "materialGainDb": -0.2,
+   "provenance": "CC0 recorded footstep; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/recorded-steps-v1/step-metal-2.wav",
+     "license": "see the ATTRIBUTION.md beside each file",
+     "sha256": "9c65abe8958ff600ffd8594931c691d0c49587f72cc44d75982598fc33ea1bf8"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/metal-1": {
+   "kind": "step",
+   "surface": "metal",
+   "files": {
+    "wav": {
+     "bytes": 26694,
+     "sha256": "71f6fa1018283c8461b9b830635087bf392923a7ba168160e3104e0bd46a8ec3"
+    }
+   },
+   "seconds": 0.278,
+   "peakDbFS": -24,
+   "loudDbFS": -33.9,
+   "materialGainDb": -2.3,
+   "provenance": "CC0 recorded footstep, EQ; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/recorded-steps-v1/step-metal-1.wav",
+     "license": "see the ATTRIBUTION.md beside each file",
+     "sha256": "00a07e1594d2fb1b481a271ceb1703f2221b42febabffefdd841d3001d1d41ea"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/metal-2": {
+   "kind": "step",
+   "surface": "metal",
+   "files": {
+    "wav": {
+     "bytes": 34142,
+     "sha256": "e422a421c921b660e26ac0460f8120a6a7ff37fe183c4f008d5b7f2b50b2d7ea"
+    }
+   },
+   "seconds": 0.355,
+   "peakDbFS": -23.2,
+   "loudDbFS": -34.1,
+   "materialGainDb": -2.3,
+   "provenance": "CC0 recorded footstep, EQ; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/recorded-steps-v1/step-metal-2.wav",
+     "license": "see the ATTRIBUTION.md beside each file",
+     "sha256": "9c65abe8958ff600ffd8594931c691d0c49587f72cc44d75982598fc33ea1bf8"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/rug-1": {
+   "kind": "step",
+   "surface": "rug",
+   "files": {
+    "wav": {
+     "bytes": 15404,
+     "sha256": "5fb1ebadedb9b2674597c420485a04cde0f428ab6af6734d25dde1296ded4185"
+    }
+   },
+   "seconds": 0.16,
+   "peakDbFS": -27.2,
+   "loudDbFS": -40.9,
+   "materialGainDb": -29.1,
+   "provenance": "CC0 recorded footstep; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "footstep_carpet_000.ogg",
+     "license": "CC0-1.0",
+     "sha256": "b9524658b52a99a20590f8feefc103088637fd13ea8ec35811aee785e1f2f330"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/rug-2": {
+   "kind": "step",
+   "surface": "rug",
+   "files": {
+    "wav": {
+     "bytes": 13666,
+     "sha256": "f0b278dffddd97496ab2547b1d956f14d470ba9c5c628b3500e22165e7eaa201"
+    }
+   },
+   "seconds": 0.142,
+   "peakDbFS": -27.2,
+   "loudDbFS": -41.1,
+   "materialGainDb": -29.1,
+   "provenance": "CC0 recorded footstep; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "footstep_carpet_003.ogg",
+     "license": "CC0-1.0",
+     "sha256": "4ae7454338d57c7d102145919ae653c7d010eb542797c4f25a1c7470be3a7e4c"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/stone-1": {
+   "kind": "step",
+   "surface": "stone",
+   "files": {
+    "wav": {
+     "bytes": 10100,
+     "sha256": "5c387dedbe4db77014b1807ac800e85361fc805cceb53b5452f857ca976cf2bf"
+    }
+   },
+   "seconds": 0.105,
+   "peakDbFS": -22.2,
+   "loudDbFS": -36.4,
+   "materialGainDb": -0.2,
+   "provenance": "CC0 recorded footstep; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/recorded-steps-v1/step-concrete-1.wav",
+     "license": "see the ATTRIBUTION.md beside each file",
+     "sha256": "3701d8e37bdafb32196ae1e4efc8214478e23a098b3e731cd74da2e952580285"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/stone-2": {
+   "kind": "step",
+   "surface": "stone",
+   "files": {
+    "wav": {
+     "bytes": 10374,
+     "sha256": "999b87286d3f72b8aba60a8d159417c253b5bf49aa97519c06f6c00e348cbca2"
+    }
+   },
+   "seconds": 0.108,
+   "peakDbFS": -22.3,
+   "loudDbFS": -35.6,
+   "materialGainDb": -0.2,
+   "provenance": "CC0 recorded footstep; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/recorded-steps-v1/step-concrete-2.wav",
+     "license": "see the ATTRIBUTION.md beside each file",
+     "sha256": "09005fca16db735f7c19aafe401c85ea09b2236187291e9fd89dda3d7adb6136"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/tile-1": {
+   "kind": "step",
+   "surface": "tile",
+   "files": {
+    "wav": {
+     "bytes": 28844,
+     "sha256": "6c60d3081ba2120deb110cfc0c9f05016cd73e34009e5261fcd0a968d9373357"
+    }
+   },
+   "seconds": 0.3,
+   "peakDbFS": -22,
+   "loudDbFS": -35.5,
+   "materialGainDb": -24.1,
+   "provenance": "CC0 recorded footstep, EQ, a short room; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "footstep_concrete_000.ogg",
+     "license": "CC0-1.0",
+     "sha256": "d7267e183067757c92c169de2a379abea592cfca6b39bb2e8feea15221ad79fe"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/tile-2": {
+   "kind": "step",
+   "surface": "tile",
+   "files": {
+    "wav": {
+     "bytes": 28844,
+     "sha256": "0c07a5d6ebbf3cc2fc00df5673ffba6d565e41c16b35dffcceee016dc0eb6128"
+    }
+   },
+   "seconds": 0.3,
+   "peakDbFS": -22.1,
+   "loudDbFS": -35.5,
+   "materialGainDb": -24.1,
+   "provenance": "CC0 recorded footstep, EQ, a short room; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "footstep_concrete_004.ogg",
+     "license": "CC0-1.0",
+     "sha256": "24dd8db2413e5b81ad181e1205c12a1c7801da5f85715d471b92a4b2f632e45e"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/water-1": {
+   "kind": "step",
+   "surface": "water",
+   "files": {
+    "wav": {
+     "bytes": 40364,
+     "sha256": "b90182f6f17933d5ab195e4e64dbb23cb5f7dc63139e5b95eeb16cd4a4ed4847"
+    }
+   },
+   "seconds": 0.42,
+   "peakDbFS": -19.2,
+   "loudDbFS": -34,
+   "materialGainDb": -8.6,
+   "provenance": "CC0 recorded footstep with a synthesised water slosh under it; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_footstep_wet_02.ogg",
+     "license": "CC0-1.0",
+     "sha256": "b2cfbdd75ee970dcb68cc157fec818eda2f5802989b0da684aa67817cb914b52"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/water-2": {
+   "kind": "step",
+   "surface": "water",
+   "files": {
+    "wav": {
+     "bytes": 40364,
+     "sha256": "ec7208c8eb4b5e037edf464bb28c586d30708610436d4a2279ce49a11efa979e"
+    }
+   },
+   "seconds": 0.42,
+   "peakDbFS": -17.8,
+   "loudDbFS": -33,
+   "materialGainDb": -8.6,
+   "provenance": "CC0 recorded footstep with a synthesised water slosh under it; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_footstep_wet_03.ogg",
+     "license": "CC0-1.0",
+     "sha256": "4d475dd54d72a862cb72fcff4d1970161e619352f500f8b75755a2f5e987513e"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/wet-metal-1": {
+   "kind": "step",
+   "surface": "wet-metal",
+   "files": {
+    "wav": {
+     "bytes": 26950,
+     "sha256": "70a4c73b67a152d3690e6a00319995d9f0aef8895ec0310a184863cd319ecdef"
+    }
+   },
+   "seconds": 0.28,
+   "peakDbFS": -23.3,
+   "loudDbFS": -33,
+   "materialGainDb": -0.9,
+   "provenance": "CC0 recorded footstep with a CC0 wet step layered in; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/recorded-steps-v1/step-metal-1.wav",
+     "license": "see the ATTRIBUTION.md beside each file",
+     "sha256": "00a07e1594d2fb1b481a271ceb1703f2221b42febabffefdd841d3001d1d41ea"
+    },
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_footstep_wet_01.ogg",
+     "license": "CC0-1.0",
+     "sha256": "c2663b62fc7239972c044719b95daec4004976fc9bd0a1678c06170d99a3d408"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/wet-metal-2": {
+   "kind": "step",
+   "surface": "wet-metal",
+   "files": {
+    "wav": {
+     "bytes": 37366,
+     "sha256": "dde8c943e812f7fab90d5b2a6ba7660d53a83b6fa655441e9b016d99bc6fc2a8"
+    }
+   },
+   "seconds": 0.389,
+   "peakDbFS": -23.3,
+   "loudDbFS": -34,
+   "materialGainDb": -0.9,
+   "provenance": "CC0 recorded footstep with a CC0 wet step layered in; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "legacy",
+     "file": "world-v1/recorded-steps-v1/step-metal-2.wav",
+     "license": "see the ATTRIBUTION.md beside each file",
+     "sha256": "9c65abe8958ff600ffd8594931c691d0c49587f72cc44d75982598fc33ea1bf8"
+    },
+    {
+     "pack": "sfx100",
+     "file": "sfx100v2_footstep_wet_02.ogg",
+     "license": "CC0-1.0",
+     "sha256": "b2cfbdd75ee970dcb68cc157fec818eda2f5802989b0da684aa67817cb914b52"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/wood-1": {
+   "kind": "step",
+   "surface": "wood",
+   "files": {
+    "wav": {
+     "bytes": 21164,
+     "sha256": "57160619d160809987b26d4d817c7c770d5b7333d01ab74d1d60e5729ceb1db4"
+    }
+   },
+   "seconds": 0.22,
+   "peakDbFS": -27.5,
+   "loudDbFS": -35.7,
+   "materialGainDb": -29.5,
+   "provenance": "CC0 recorded footstep; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "footstep_wood_001.ogg",
+     "license": "CC0-1.0",
+     "sha256": "e4f68e1c9fd55b4dc8ca89ed2bbab6f200171bc54bdc18aa96b80d8e7336f462"
+    }
+   ],
+   "listening": "pending"
+  },
+  "steps/wood-2": {
+   "kind": "step",
+   "surface": "wood",
+   "files": {
+    "wav": {
+     "bytes": 21164,
+     "sha256": "a13a26a7e048c02d7faddb0bf10ec9e97d12c5bc889578b3b084f7df9c003b04"
+    }
+   },
+   "seconds": 0.22,
+   "peakDbFS": -27.4,
+   "loudDbFS": -35.3,
+   "materialGainDb": -29.5,
+   "provenance": "CC0 recorded footstep; one fixed gain for the pair, no per-hit normalisation.",
+   "sources": [
+    {
+     "pack": "kenney",
+     "file": "footstep_wood_004.ogg",
+     "license": "CC0-1.0",
+     "sha256": "b33e0854e2b3f6b6492e25c25ef8f90447a332f7c6bb25dd02edced9581d3441"
+    }
+   ],
+   "listening": "pending"
+  }
+ },
+ "schema": "dex.world.audio/1",
+ "note": "Built by src/world/sound/build/build.mjs (lane S1). listening: every file is pending until Dex approves it by ear.",
+ "totalBytes": 15028741
+}

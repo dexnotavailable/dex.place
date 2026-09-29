@@ -1,0 +1,21 @@
+{
+ "_doc": "glaive-hands round 2: r3 fist template (construct/fist_<px>_r3.json: one continuous knuckle line, lit thumb over the haft, S3 wrist step); the near (R) hand closes on the haft at chest height, back of the hand to the viewer; wrist_ext shows the wrist out of the bell (critique 6).",
+ "hands": [
+  {
+   "side": "R",
+   "kind": "fist",
+   "template": "r3",
+   "edge": "OL",
+   "edge_on": [
+    "skin",
+    "white",
+    "beige",
+    "veil"
+   ],
+   "wrist_ext": 2
+  }
+ ],
+ "rose": {
+  "on": true
+ }
+}

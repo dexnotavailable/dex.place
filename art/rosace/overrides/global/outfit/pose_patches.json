@@ -1,0 +1,154 @@
+{
+ "_doc": "Outfit lane (art round 2): drape patches on the key poses, merged over art/rosace/poses/<pose>.json by tools/pixel-pipeline/outfit_lane.py when it renders the lane's stills (--patch). The pose files themselves are not edited here: Integrate folds a kept patch into the pose file. Each patch names the critique line it answers. Keys: patch name -> {pose: partial pose dict (deep-merged)}.",
+ "qtab": {
+  "_why": "critique 12 (taste in Q): the splayed-leg crouch put the crotch dead centre with the tabard swung to the side; the tabard now falls between the thighs and covers it (as the keyed lifts do)",
+  "q_stamp": {
+   "drape": {
+    "chains": {
+     "tabard": {
+      "g": 0.97,
+      "wind": [
+       0.0,
+       -0.08,
+       -0.05
+      ]
+     }
+    }
+   }
+  }
+ },
+ "hair": {
+  "_why": "critique 12 (open back): the hair tail covered the whole back in the back view, so the halter yoke, the back cross and the spine never showed; the tail sweeps to one side. The hair chains are the hair lane's; this is a proposal for the pose owner",
+  "n2_pivot": {
+   "drape": {
+    "chains": {
+     "hair_tail": {
+      "g": 0.45,
+      "wind": [
+       -1.1,
+       -0.35,
+       0.15
+      ]
+     },
+     "hair_back": {
+      "g": 0.3,
+      "wind": [
+       -1.2,
+       -0.3,
+       0.25
+      ]
+     }
+    }
+   }
+  }
+ },
+ "hair2": {
+  "_why": "as 'hair', the tail swept the other way (over her left shoulder side)",
+  "n2_pivot": {
+   "drape": {
+    "chains": {
+     "hair_tail": {
+      "g": 0.45,
+      "wind": [
+       0.9,
+       -0.2,
+       0.15
+      ]
+     },
+     "hair_back": {
+      "g": 0.3,
+      "wind": [
+       0.9,
+       -0.2,
+       0.2
+      ]
+     }
+    }
+   }
+  }
+ },
+ "qtab2": {
+  "_why": "as 'qtab', with a little of the pose's 'float, then fall' left in the tabard (it trails back and up a touch but still covers the crotch)",
+  "q_stamp": {
+   "drape": {
+    "chains": {
+     "tabard": {
+      "g": 0.8,
+      "wind": [
+       0.0,
+       0.12,
+       0.18
+      ]
+     }
+    }
+   }
+  }
+ },
+ "tabn2": {
+  "_why": "critique 12 (back view): keep the tabard out of the gap between the legs; it swings toward her right, behind the far thigh (a +x swing put it across the near leg)",
+  "n2_pivot": {
+   "drape": {
+    "chains": {
+     "tabard": {
+      "g": 0.8,
+      "wind": [
+       -1.0,
+       0.05,
+       0.0
+      ]
+     }
+    }
+   }
+  }
+ },
+ "hair3": {
+  "_why": "round 3 (critique 12, back): 'the hair covers the open back, so the halter yoke and back cross never show' - the tail and the back mass swept harder to the far side and lifted, so the spine, the yoke and the 3x5 back cross read; a proposal for the hair lane and the pose owner (O-24)",
+  "n2_pivot": {
+   "drape": {
+    "chains": {
+     "hair_tail": {
+      "g": 0.3,
+      "wind": [
+       -1.8,
+       -0.55,
+       0.25
+      ]
+     },
+     "hair_back": {
+      "g": 0.2,
+      "wind": [
+       -2.0,
+       -0.45,
+       0.4
+      ]
+     }
+    }
+   }
+  }
+ },
+ "hair4": {
+  "_why": "as hair3, swept over the near shoulder instead (toward the camera side)",
+  "n2_pivot": {
+   "drape": {
+    "chains": {
+     "hair_tail": {
+      "g": 0.3,
+      "wind": [
+       -1.4,
+       -1.2,
+       0.3
+      ]
+     },
+     "hair_back": {
+      "g": 0.2,
+      "wind": [
+       -1.5,
+       -1.1,
+       0.45
+      ]
+     }
+    }
+   }
+  }
+ }
+}

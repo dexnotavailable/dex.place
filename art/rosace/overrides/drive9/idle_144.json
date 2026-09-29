@@ -1,0 +1,695 @@
+{
+ "_doc": "Round 4 paint-over (ESCALATION 2) for the drive-9 idle at 144 px: hand-placed pixels on the R4u underlay (d9_post.py with r4_finish.json on raw/R4). Coordinates are sprite pixels on that underlay; r4_paint.py skips the file as STALE if the underlay changes. Each layer's 'why' names the round-3 critic fix it answers.",
+ "palette": {
+  "1": "#f0d5c4",
+  "2": "#ebc5b1",
+  "3": "#e4b3a0",
+  "4": "#d99c8b",
+  "5": "#c98579",
+  "K": "#1b1024",
+  "k": "#4a2c44",
+  "A": "#2c3b80",
+  "B": "#3b4f98",
+  "C": "#2e3f7e",
+  "D": "#86b8ee",
+  "H": "#eef6ff",
+  "W": "#dde2f0",
+  "w": "#d3d7e8",
+  "L": "#a0606c",
+  "R": "#e89c9a",
+  "r": "#eeb6aa",
+  "M": "#7e3f4c",
+  "m": "#b0606a",
+  "n": "#d4927f",
+  "b": "#6e5a9a",
+  "g0": "#1c1733",
+  "g1": "#302747",
+  "g2": "#423555",
+  "g4": "#6a52a2",
+  "g5": "#7f62af",
+  "g6": "#9a82d0",
+  "g7": "#b8aee6",
+  "x": "#a8676a",
+  "y": "#8d535f",
+  "f1": "#8680b4",
+  "f2": "#a29dc8",
+  "f3": "#e6e2e9",
+  "l1": "#0c0920",
+  "l3": "#4d4392",
+  "l4": "#6456ac"
+ },
+ "layers": [
+  {
+   "name": "face_base",
+   "kind": "stamp",
+   "at": [
+    41,
+    66
+   ],
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: 'the whites read grey ... no cheek or nose form'; a clean 4-tone face plane (refs' faces are 2-3 clean tones, FC-P35) lit from the upper right, with the near cheek and jaw a step down, so the old stamp's grey and brown specks are gone before the new features go on.",
+   "rows": [
+    "333222222111122223",
+    "333222222111122223",
+    "332222221111112223",
+    "322222211111112223",
+    "322222211111111223",
+    "332222211111112223",
+    "332222221111122233",
+    "333222222111122333",
+    "433322222211222334",
+    "443332222222223344",
+    "444333222222233444",
+    "444433322222333444",
+    "444443332223334444",
+    "444444433333444444"
+   ]
+  },
+  {
+   "name": "fringe",
+   "kind": "clumps",
+   "root_y": 61,
+   "box": [
+    41,
+    61,
+    59,
+    68
+   ],
+   "over": [
+    "hair",
+    "skin"
+   ],
+   "keys": {
+    "body": "g4",
+    "dark": "g2",
+    "lite": "g6",
+    "gap": "g0",
+    "notch": "3",
+    "notch2": "2",
+    "under": "2",
+    "tip": "g5"
+   },
+   "why": "Face critic 4 (head and hair): 'split the fringe into 5-7 tapered clumps with 1 px dark gaps'; FC: 'a warm skin shadow under the bangs'. Six locks from an off-centre parting (x 48), unequal lengths, tips at the brow line so the eyes stay clear.",
+   "clumps": [
+    {
+     "x": [
+      40,
+      44
+     ],
+     "tip": [
+      42,
+      66
+     ]
+    },
+    {
+     "x": [
+      44,
+      47
+     ],
+     "tip": [
+      45,
+      65
+     ]
+    },
+    {
+     "x": [
+      47,
+      49
+     ],
+     "tip": [
+      47,
+      64
+     ]
+    },
+    {
+     "x": [
+      49,
+      53
+     ],
+     "tip": [
+      51,
+      66
+     ]
+    },
+    {
+     "x": [
+      53,
+      56
+     ],
+     "tip": [
+      54,
+      65
+     ]
+    },
+    {
+     "x": [
+      56,
+      59
+     ],
+     "tip": [
+      58,
+      67
+     ]
+    }
+   ]
+  },
+  {
+   "name": "brows",
+   "kind": "line",
+   "key": "b",
+   "pts": [
+    [
+     44,
+     66
+    ],
+    [
+     45,
+     65
+    ]
+   ],
+   "onkeys": [
+    "5",
+    "4",
+    "2"
+   ],
+   "why": "FC: brows always there; a mid hair tone where the fringe leaves skin."
+  },
+  {
+   "name": "brows_far",
+   "kind": "line",
+   "key": "b",
+   "pts": [
+    [
+     55,
+     65
+    ],
+    [
+     56,
+     65
+    ]
+   ],
+   "onkeys": [
+    "5",
+    "4",
+    "2"
+   ],
+   "why": "as brows"
+  },
+  {
+   "name": "eye_near",
+   "kind": "stamp",
+   "at": [
+    42,
+    67
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Face critic 2: 'a 2-3 px black upper-lash mass with an outer flick, an iris ramp from dark at the top to light at the bottom with a 1 px catchlight, a cooler white'; attractiveness 3: 'lids lowered slightly, eyes on the viewer'. Sized to refs 08/09 (an almond 5-6 px wide, 3 iris rows, whites only at the inner corner): the first 7x6 version with a full two-row lash read as closed, sleepy eyes.",
+   "rows": [
+    "K......",
+    ".KKKKKk",
+    ".KAAAw.",
+    "..CBHw.",
+    "...DD..",
+    "..L...."
+   ]
+  },
+  {
+   "name": "eye_far",
+   "kind": "stamp",
+   "at": [
+    53,
+    67
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "as eye_near; the far eye is foreshortened (iris 2 px, toward the nose so she looks at the camera), its flick lifting to the right",
+   "rows": [
+    ".....K",
+    "kKKKKK",
+    "wAAK..",
+    "wBH...",
+    ".DD...",
+    "...L.."
+   ]
+  },
+  {
+   "name": "blush",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: 'a 2-tone soft pink blush'; the face must read as two eyes plus blush at 80.",
+   "pts": [
+    [
+     43,
+     73,
+     "r"
+    ],
+    [
+     44,
+     73,
+     "R"
+    ],
+    [
+     45,
+     73,
+     "R"
+    ],
+    [
+     46,
+     73,
+     "r"
+    ],
+    [
+     44,
+     74,
+     "r"
+    ],
+    [
+     45,
+     74,
+     "r"
+    ],
+    [
+     55,
+     73,
+     "r"
+    ],
+    [
+     56,
+     73,
+     "R"
+    ],
+    [
+     57,
+     73,
+     "r"
+    ],
+    [
+     56,
+     74,
+     "r"
+    ]
+   ]
+  },
+  {
+   "name": "nose",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: 'no cheek or nose form': one warm tick on the nose's shadow side.",
+   "pts": [
+    [
+     52,
+     74,
+     "n"
+    ]
+   ]
+  },
+  {
+   "name": "mouth",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Attractiveness 3: 'an asymmetric closed smile'; face 2: 'a 1 px darker mouth corner'. A 4 px soft V, the far corner darker (M).",
+   "pts": [
+    [
+     48,
+     76,
+     "m"
+    ],
+    [
+     49,
+     77,
+     "m"
+    ],
+    [
+     50,
+     77,
+     "m"
+    ],
+    [
+     51,
+     76,
+     "M"
+    ]
+   ]
+  },
+  {
+   "name": "strand_face",
+   "kind": "line",
+   "pts": [
+    [
+     50,
+     63
+    ],
+    [
+     50,
+     66
+    ],
+    [
+     51,
+     68
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "hair",
+    "skin"
+   ],
+   "why": "Head and hair 4: 'add 2-3 loose strands that cross the face or the outline': one lock end from the parting falls between the eyes."
+  },
+  {
+   "name": "shoulder_split",
+   "kind": "stamp",
+   "at": [
+    36,
+    84
+   ],
+   "over": [
+    "skin"
+   ],
+   "why": "Body critic 5/6 and first impression: 'the collar forearm lies across the top of the bust and flattens it, so it looks stuck on (a rev-3.5 Never)'. There is no forearm there: the lit d\u00e9colletage (x 41-49) runs straight into the near shoulder and upper arm (x 36-44, going down-left to the elbow), so the two read as one horizontal limb ending in a 'hand'. A shadow line at the chest-shoulder boundary and the shoulder turned a step darker separate the chest plane from the arm. The lit horizontal strip itself is what reads as a limb, so the near chest (x 41-49) is turned into a side plane stepping into shadow toward the arm, lit only at the neck pit.",
+   "rows": [
+    ".......4322222",
+    ".....44443322",
+    "....4445444332",
+    "..44455.44433",
+    ".444x55...443",
+    "44xxx5........",
+    "4xxyy.........",
+    "xxyy..........",
+    "xyy..........."
+   ]
+  },
+  {
+   "name": "neckline",
+   "kind": "px",
+   "over": [
+    "skin",
+    "white",
+    "gold"
+   ],
+   "why": "First impression 1: 'shade the bust into the bodice'; the neckline dips into the cleavage (a sweetheart V) so the chest and the bust read as one form.",
+   "pts": [
+    [
+     50,
+     86,
+     "3"
+    ],
+    [
+     51,
+     86,
+     "4"
+    ],
+    [
+     50,
+     87,
+     "4"
+    ],
+    [
+     51,
+     87,
+     "5"
+    ],
+    [
+     51,
+     88,
+     "5"
+    ]
+   ]
+  },
+  {
+   "name": "strands_out",
+   "kind": "line",
+   "pts": [
+    [
+     34,
+     69
+    ],
+    [
+     31,
+     73
+    ],
+    [
+     30,
+     78
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "why": "Head and hair 4: 'no flyaway strands past the silhouette ... add 2-3 loose strands that cross the face or the outline'. A lock end lifts off the near side and falls."
+  },
+  {
+   "name": "strands_out2",
+   "kind": "line",
+   "pts": [
+    [
+     64,
+     70
+    ],
+    [
+     66,
+     73
+    ],
+    [
+     66,
+     77
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "why": "as strands_out, far side"
+  },
+  {
+   "name": "lock_gaps",
+   "kind": "line",
+   "pts": [
+    [
+     38,
+     66
+    ],
+    [
+     37,
+     72
+    ],
+    [
+     37,
+     80
+    ],
+    [
+     38,
+     86
+    ]
+   ],
+   "key": "g0",
+   "over": [
+    "hair"
+   ],
+   "why": "Head and hair 4: 'no clump separation, no dark gaps between clumps': a 1 px dark gap splits the near side mass into two locks."
+  },
+  {
+   "name": "lock_lights",
+   "kind": "line",
+   "pts": [
+    [
+     36,
+     67
+    ],
+    [
+     35,
+     72
+    ],
+    [
+     35,
+     79
+    ]
+   ],
+   "keys": [
+    "g6",
+    "g5"
+   ],
+   "over": [
+    "hair"
+   ],
+   "why": "Head and hair 4: 'a hue-shifted ramp ... soft-edged locks': a lit edge on the outer lock, tapering."
+  },
+  {
+   "name": "lock_lights2",
+   "kind": "line",
+   "pts": [
+    [
+     39,
+     70
+    ],
+    [
+     39,
+     76
+    ],
+    [
+     40,
+     82
+    ]
+   ],
+   "keys": [
+    "g5",
+    "g4"
+   ],
+   "over": [
+    "hair"
+   ],
+   "why": "as lock_lights, inner lock"
+  },
+  {
+   "name": "bell_folds",
+   "kind": "line",
+   "pts": [
+    [
+     35,
+     93
+    ],
+    [
+     30,
+     99
+    ],
+    [
+     25,
+     106
+    ]
+   ],
+   "key": "f1",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and first impression: 'bust and sleeves read as pillow blobs': two pipe folds hang from the cuff to the hem of the near bell, each a shadow line with a lit edge beside it."
+  },
+  {
+   "name": "bell_folds_lit",
+   "kind": "line",
+   "pts": [
+    [
+     36,
+     94
+    ],
+    [
+     31,
+     100
+    ],
+    [
+     26,
+     107
+    ]
+   ],
+   "key": "f3",
+   "over": [
+    "white"
+   ],
+   "why": "as bell_folds"
+  },
+  {
+   "name": "bell_folds2",
+   "kind": "line",
+   "pts": [
+    [
+     39,
+     98
+    ],
+    [
+     35,
+     103
+    ],
+    [
+     32,
+     108
+    ]
+   ],
+   "key": "f1",
+   "over": [
+    "white"
+   ],
+   "why": "as bell_folds"
+  },
+  {
+   "name": "lining_folds",
+   "kind": "line",
+   "pts": [
+    [
+     77,
+     84
+    ],
+    [
+     76,
+     96
+    ],
+    [
+     77,
+     110
+    ],
+    [
+     79,
+     120
+    ]
+   ],
+   "key": "l3",
+   "over": [
+    "lining",
+    "indigo",
+    "white"
+   ],
+   "why": "Mass (F3's bell) and materials 14: the far bell's lining was one flat navy scythe shape; a lit fold ridge and a dark crease give it cloth."
+  },
+  {
+   "name": "lining_folds_dk",
+   "kind": "line",
+   "pts": [
+    [
+     78,
+     84
+    ],
+    [
+     77,
+     96
+    ],
+    [
+     78,
+     110
+    ],
+    [
+     80,
+     120
+    ]
+   ],
+   "key": "l1",
+   "over": [
+    "lining",
+    "indigo",
+    "white"
+   ],
+   "why": "as lining_folds"
+  }
+ ]
+}

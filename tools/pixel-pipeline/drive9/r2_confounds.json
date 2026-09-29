@@ -1,0 +1,12 @@
+{
+ "_doc": "Round 2's confound list for d9_round.py --confounds (key.json 'confounds').",
+ "confounds": [
+  "ours (drive 9 round 2) is route F1's render-to-pixels chain, so the integrated chain's pixel passes are still not in it: the constructed hand stamps and the two-hand grip, N1's glass blade crescent, the outfit glyphs and windows and the collar cross. The control carries them. The round-1 body critic asked for the hand stamps to be ported first; that port is not done (the idle hand now reads from the pose, not a stamp).",
+  "ours applies round-2 render-time edits over the figure-pose lane's pose files (r2_model.json 'poses', deep-merged, the files unchanged): idle angles +30 %, the near hand moved onto the hip, the near sleeve scaled 0.78; back look amount 0.62 (a three-quarter glance); Q's rear leg lowered and the camera at yaw 35 instead of 50. The control and prev use the pose files as they are, so the Q camera differs.",
+  "ours has two model edits the others lack: a gold diadem with a glass jewel, and the front tabard widened x1.3-1.65 and hung straight.",
+  "The control's idle, N1 and back are run_f3.py's control (the integrated build and stills chain) in the same pose files; its Q is the integrated canonical still. Ours and prev have the head x1.10.",
+  "The 80 px refs 07/08/09/04 are box-resampled and palette-snapped (WF-P15): an approximation of the ref at world scale, not a drawing. Ref 05 is a native sprite at its own 1x (about 100 px, a little over our 80), JPEG-sourced, white ground keyed out; an 'ours reads better at 80' call counts only if it holds against ref 05 (WF-P18).",
+  "07/08/09 are lossy WebP sources; the diag_codec sheet puts ours, prev and the control through the same kind of round trip (WF-P16) and does not count as progress.",
+  "The 144 sheets have seven panels; ref 05's letter only appears on the 80 sheets."
+ ]
+}

@@ -1,0 +1,20 @@
+{
+ "_doc": "Constructed hands for the Q stamp, round 2: a two-hand mid-haft drive; the near R fist above the haft's middle, the far L below it.",
+ "hands": [
+  {
+   "side": "L",
+   "kind": "fist"
+  },
+  {
+   "side": "R",
+   "kind": "fist",
+   "edge": "OL",
+   "edge_on": [
+    "skin",
+    "white",
+    "beige",
+    "veil"
+   ]
+  }
+ ]
+}

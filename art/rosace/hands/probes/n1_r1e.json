@@ -1,0 +1,46 @@
+{
+ "_doc": "glaive-hands round 1d: GR-N02 on N1: at a 27 deg rise the haft runs 7 deg off the near upper arm (the arm is at full reach, so its pole cannot move the elbow: probe n1_r1d e1/e2 moved it 1-2 px) and 9 deg off the back leg. The rise between them: 20-22 deg, still in front of the near thigh.",
+ "base": "art/rosace/hands/poses/n1_contact.json",
+ "variants": {
+  "e3_rise20": {
+   "weapon": {
+    "socket": "grip_off",
+    "at": [
+     -0.18,
+     -0.55,
+     0.8
+    ],
+    "dir": [
+     0.12,
+     -0.94,
+     0.342
+    ],
+    "edge": [
+     0,
+     0.35,
+     0.94
+    ]
+   }
+  },
+  "e4_rise22": {
+   "weapon": {
+    "socket": "grip_off",
+    "at": [
+     -0.18,
+     -0.55,
+     0.8
+    ],
+    "dir": [
+     0.12,
+     -0.927,
+     0.375
+    ],
+    "edge": [
+     0,
+     0.4,
+     0.92
+    ]
+   }
+  }
+ }
+}

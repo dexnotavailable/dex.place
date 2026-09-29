@@ -60,10 +60,16 @@ EXTENSIONS = [
         "sha256": "521ec8ff5c2373893ea8022b3f71d27ed191fb73f3a5634cac31585e0dcb7af3",
         "size": 225631,
     },
+    {
+        # MMD Tools (UuuNyaa / MMD team). Imports PMX/PMD/VMD for the MMD base-body search
+        # (docs/character/BASE-OPTIONS/mmd-search.md). GPL-3.0-or-later.
+        "id": "mmd_tools",
+        "version": "4.5.14",
+        "url": "https://extensions.blender.org/download/sha256:ed3b78184ae9862be0df04e2e147803d011ad067edd8c31029c92fb719e19a6f/add-on-mmd-tools-v4.5.14.zip",
+        "sha256": "ed3b78184ae9862be0df04e2e147803d011ad067edd8c31029c92fb719e19a6f",
+        "size": 803729,
+    },
 ]
-# Considered, not installed: MMD Tools 4.5.14 (GPL-3.0-or-later, 803,729 B,
-# sha256 ed3b78184ae9862be0df04e2e147803d011ad067edd8c31029c92fb719e19a6f). Only needed for
-# VMD/PMX sources, and none are in the current batch. Add it here if that changes.
 
 # Substrings of module names that must never be loaded in this environment.
 FORBIDDEN = ("stablegen", "higgsfield", "meshy", "blender_mcp", "retopoflow", "ucupaint")
