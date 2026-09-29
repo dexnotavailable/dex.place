@@ -568,13 +568,15 @@ async function route(ctx, req, res) {
     const found = rest.length && rest[rest.length - 1] !== ''
       ? await resolveFile(ctx.downloadsDir, rest, false)
       : null;
-    if (!found) { await notFound(ctx, req, res, root); return; }
-    await sendFile(req, res, found, {
-      cache: CACHE.download,
-      conditional: false,
-      disposition: contentDisposition(path.basename(found.file)),
-    });
-    return;
+    if (found) {
+      await sendFile(req, res, found, {
+        cache: CACHE.download,
+        conditional: false,
+        disposition: contentDisposition(path.basename(found.file)),
+      });
+      return;
+    }
+    // Not a published file (for example the /downloads/ page itself): the build answers.
   }
 
   if (parsed.segments[0] === 'sp13') {

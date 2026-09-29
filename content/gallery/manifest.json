@@ -1,0 +1,104 @@
+{
+  "//": "Dex's illustrations. Display only: never reuse as decoration, backgrounds or placeholders. No visible titles; alt text stays. Files: public/gallery/<id>.webp (display) and <id>-t.webp (thumbnail), copied unmodified from legacy/site/public/content/illustrations. <id>-<w>.webp are lossless smaller copies for srcset (same picture resampled: no crop, no recolour, ICC kept), made by npm run gallery:derive and listed in widths.",
+  "items": [
+    {
+      "id": "01",
+      "alt": "Black-haired figure in a suit surrounded by sweeping black ink marks.",
+      "src": "/gallery/01.webp",
+      "width": 2048,
+      "height": 1152,
+      "thumb": "/gallery/01-t.webp",
+      "thumbWidth": 512,
+      "thumbHeight": 288,
+      "widths": [160, 384, 512, 640, 960, 1280]
+    },
+    {
+      "id": "02",
+      "alt": "Smiling red-haired character with closed eyes, black ribbons and sketch-like fading edges.",
+      "src": "/gallery/02.webp",
+      "width": 2048,
+      "height": 1152,
+      "thumb": "/gallery/02-t.webp",
+      "thumbWidth": 512,
+      "thumbHeight": 288,
+      "widths": [160, 384, 512, 640, 960, 1280]
+    },
+    {
+      "id": "03",
+      "alt": "Close-up of a red-haired, golden-eyed character against a pale blue sky with red and black graphic marks.",
+      "src": "/gallery/03.webp",
+      "width": 2048,
+      "height": 1152,
+      "thumb": "/gallery/03-t.webp",
+      "thumbWidth": 512,
+      "thumbHeight": 288,
+      "widths": [160, 384, 512, 640, 960, 1280]
+    },
+    {
+      "id": "04",
+      "alt": "Red-and-white-haired hooded character crouching in a glowing red scene.",
+      "src": "/gallery/04.webp",
+      "width": 2048,
+      "height": 1152,
+      "thumb": "/gallery/04-t.webp",
+      "thumbWidth": 512,
+      "thumbHeight": 288,
+      "widths": [160, 384, 512, 640, 960, 1280]
+    },
+    {
+      "id": "05",
+      "alt": "Ensemble character poster with red, black and white graphics and VNMC 4K 2026 CONVERGENCE text.",
+      "src": "/gallery/05.webp",
+      "width": 2048,
+      "height": 1152,
+      "thumb": "/gallery/05-t.webp",
+      "thumbWidth": 512,
+      "thumbHeight": 288,
+      "widths": [160, 384, 512, 640, 960, 1280]
+    },
+    {
+      "id": "06",
+      "alt": "Character in a split black-and-white coat beneath a large black brushstroke.",
+      "src": "/gallery/06.webp",
+      "width": 1366,
+      "height": 2048,
+      "thumb": "/gallery/06-t.webp",
+      "thumbWidth": 342,
+      "thumbHeight": 512,
+      "widths": [160, 384, 512, 640, 960]
+    },
+    {
+      "id": "07",
+      "alt": "Black-haired character in a long dark coat and red tie with cyan graphic strokes.",
+      "src": "/gallery/07.webp",
+      "width": 1151,
+      "height": 2048,
+      "thumb": "/gallery/07-t.webp",
+      "thumbWidth": 288,
+      "thumbHeight": 512,
+      "widths": [160, 384, 512, 640, 960]
+    },
+    {
+      "id": "08",
+      "alt": "Red-and-white-haired character standing in a dark hoodie and loose trousers against a peach background.",
+      "src": "/gallery/08.webp",
+      "width": 1152,
+      "height": 2048,
+      "thumb": "/gallery/08-t.webp",
+      "thumbWidth": 288,
+      "thumbHeight": 512,
+      "widths": [160, 384, 512, 640, 960]
+    },
+    {
+      "id": "09",
+      "alt": "Lilac-haired character in a white dress carrying an oversized gun and hammer against a vivid pink background.",
+      "src": "/gallery/09.webp",
+      "width": 1152,
+      "height": 2048,
+      "thumb": "/gallery/09-t.webp",
+      "thumbWidth": 288,
+      "thumbHeight": 512,
+      "widths": [160, 384, 512, 640, 960]
+    }
+  ]
+}

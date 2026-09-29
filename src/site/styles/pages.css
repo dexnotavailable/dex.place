@@ -1,0 +1,18 @@
+/* Page layouts: 404. Landing: landing.css; other pages have
+   their own files (see site.css). */
+
+.main { display: block; outline: none; }
+.page { position: relative; padding-bottom: var(--s-6); }
+
+/* Landing and project pages: landing.css. */
+
+/* downloads: styles/downloads.css */
+
+/* Gallery and piece pages: styles/gallery.css. */
+
+/* Docs and blog: styles/docs.css. */
+
+/* Donate: styles/donate.css. */
+
+/* =================================================================== 404 */
+.nf__links { display: flex; flex-wrap: wrap; gap: 14px; }

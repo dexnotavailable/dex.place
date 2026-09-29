@@ -1,0 +1,68 @@
+/* Reveal-on-scroll variants (motion/reveal.ts marks [data-reveal] .is-in).
+   Content is visible by default; only html.js hides it before its reveal,
+   and only when motion is welcome. Animations use fill-mode "backwards" so
+   that, once finished, hover transitions on the same element are untouched.
+   Stagger: set --i (0..5) on siblings; delay = --i x --stagger. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal]:not(.is-in) { opacity: 0; }
+
+  .js [data-reveal].is-in {
+    --rv-delay: calc(var(--i, 0) * var(--stagger));
+    animation:
+      rv-fade 140ms linear var(--rv-delay) backwards,
+      rv-up var(--d-reveal) var(--ease-out) var(--rv-delay) backwards;
+  }
+  .js [data-reveal="pop"].is-in {
+    animation:
+      rv-fade 140ms linear var(--rv-delay) backwards,
+      rv-pop var(--d-spring) var(--ease-spring) var(--rv-delay) backwards;
+  }
+  .js [data-reveal="pop-block"].is-in {
+    animation:
+      rv-fade 160ms linear backwards,
+      rv-block 760ms var(--ease-spring) backwards;
+  }
+  .js [data-reveal="slab"].is-in {
+    animation:
+      rv-fade 160ms linear backwards,
+      rv-slab 900ms var(--ease-spring) backwards;
+  }
+  .js [data-reveal="wipe"].is-in {
+    animation: rv-wipe var(--d-wipe) var(--ease-wipe) 120ms backwards;
+  }
+  .js [data-reveal="strip"].is-in { animation: none; }
+  .js [data-reveal="strip"].is-in i { animation: rv-strip var(--d-strip) var(--ease-out) 200ms backwards; }
+  .js [data-reveal="strip"].is-in i:nth-child(2) { animation-delay: 280ms; }
+  .js [data-reveal="strip"].is-in i:nth-child(3) { animation-delay: 360ms; }
+  .js [data-reveal="flicker"].is-in { animation: rv-flicker 480ms linear backwards; }
+}
+
+@keyframes rv-fade { from { opacity: 0; } }
+@keyframes rv-up { from { translate: 0 24px; } }
+@keyframes rv-pop { from { scale: 0.6; } }
+@keyframes rv-block { from { translate: 0 36px; scale: 0.96; } }
+@keyframes rv-slab { from { rotate: -14deg; scale: 0.55; } }
+@keyframes rv-wipe {
+  from { clip-path: inset(-12px 100% -12px -12px round var(--r)); }
+  to { clip-path: inset(-12px -24px -24px -12px round var(--r)); }
+}
+@keyframes rv-strip { from { scale: 0 1; } }
+@keyframes rv-flicker {
+  0% { opacity: 0; } 20% { opacity: 0.5; } 22% { opacity: 0; } 40% { opacity: 0.5; } 42% { opacity: 0; } 100% { opacity: 1; }
+}
+
+/* Reduced motion: no movement anywhere; state changes stay instant. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Idle loops rest off screen (motion/reveal.ts initIdle) and while the world
+   is fully covered by the site sheet (motion/world.ts). */
+.is-off, .is-off *, .is-off *::after,
+.world[data-covered] *, .world[data-covered] *::after { animation-play-state: paused !important; }

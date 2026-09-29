@@ -1,0 +1,8 @@
+{
+  // Type-checks the Node side of the website build: vite.config.ts and the
+  // site plugin (src/site/build), plus the DOM-free renderers it runs.
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node"] },
+  "include": ["vite.config.ts", "src/site/build", "src/site/render", "src/site/data", "src/site/*.ts"],
+  "exclude": []
+}

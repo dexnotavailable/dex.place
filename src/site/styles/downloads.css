@@ -1,0 +1,346 @@
+/* /downloads/ (render/downloads.ts). One big mint block per published file,
+   a dashed "not yet" card per project without one, then install steps and
+   the checksum panel. Tokens and motion: DESIGN-SYSTEM.md §2-3. */
+
+.dl-list { display: grid; gap: var(--s-6); }
+
+/* ------------------------------------------------------------ state label */
+.dl-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 400 var(--fs-12) / 1 var(--f-px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dl-state--ready { color: var(--mint-text); }
+.dl-state__dot {
+  width: 10px;
+  height: 10px;
+  border: var(--bw) solid var(--ink);
+  border-radius: 3px;
+  background: var(--chip);
+}
+.dl-state--ready .dl-state__dot { background: var(--mint); }
+@media (prefers-reduced-motion: no-preference) {
+  .dl-state--ready .dl-state__dot { animation: dl-blink 2.4s steps(1, end) infinite; }
+}
+@keyframes dl-blink { 50% { background: var(--paper); } }
+
+/* ------------------------------------------------------ published: block */
+.dlf {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  background: var(--paper);
+  border: var(--bw-l) solid var(--ink);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-l);
+  scroll-margin-top: 112px;
+}
+.dlf__body {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 14px;
+  padding: clamp(24px, 4vw, 52px);
+}
+.dlf__name {
+  font: var(--title-weight) var(--fs-h2) / 0.95 var(--f-title);
+  font-stretch: 128%;
+  letter-spacing: -0.005em;
+}
+.dlf__line { font-size: var(--fs-20); max-width: 34ch; }
+.dlf__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; margin: 10px 0 6px; }
+.dlf__file { display: grid; gap: 2px; font-size: var(--fs-14); color: var(--muted); }
+.dlf__file code { font: 600 var(--fs-14) / 1.3 var(--f-mono); color: var(--ink); overflow-wrap: anywhere; }
+
+/* The key's arrow drops into its tray while pressed. */
+.btn--dl .btn__ic .px { transition: translate var(--d-press) var(--ease-out); }
+.btn--dl:active .btn__ic .px { translate: 0 3px; }
+
+/* Specs: black key, grey value. */
+.spec { display: flex; flex-wrap: wrap; gap: 10px; }
+.spec > div { display: flex; align-items: stretch; border: var(--bw) solid var(--ink); border-radius: 8px; overflow: hidden; }
+.spec dt {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  background: var(--ink);
+  color: #fff;
+  font: 400 var(--fs-12) / 1 var(--f-px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.spec dd { display: flex; align-items: center; min-height: 36px; padding: 4px 10px; background: var(--panel); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.dl-notes { display: grid; gap: 4px; padding: 0; list-style: none; color: var(--muted); }
+.dl-notes li::before { content: "▪ "; color: var(--mint-text); }
+
+/* ------------------------------------------- published: the drawn setup file */
+.dlf__art {
+  position: relative;
+  min-height: 380px;
+  overflow: hidden;
+  background-color: var(--mint);
+  background-image:
+    linear-gradient(rgb(25 25 25 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(25 25 25 / 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+  border-right: var(--bw-l) solid var(--ink);
+  border-radius: calc(var(--r-xl) - 3px) 0 0 calc(var(--r-xl) - 3px);
+}
+.dlf__art [data-depth] { transition: translate 700ms var(--ease-out); }
+/* cursor tilt by depth: motion/magnet.ts writes an inline translate per layer */
+
+.dlf-disc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 62%;
+  aspect-ratio: 1;
+  margin: -31% 0 0 -31%;
+  background: var(--yellow);
+  border: var(--bw-l) solid var(--ink);
+  border-radius: 30%;
+  rotate: 12deg;
+}
+/* The file: an ink sheet with its top-right corner cut, a paper face inset
+   3px (the outline), a folded flap in the cut, and a hard drop shadow on the
+   wrapper (box-shadow would be clipped with the corner). */
+.dlf-file {
+  --fold: 30px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44%;
+  aspect-ratio: 0.78;
+  transform: translate(-50%, -50%) rotate(-4deg);
+  filter: drop-shadow(8px 8px 0 var(--ink));
+  transition: transform var(--d-spring) var(--ease-spring), filter var(--d-spring) var(--ease-spring);
+}
+.dlf-file__sheet {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 14px;
+  background: var(--ink);
+  border-radius: var(--r);
+  clip-path: polygon(0 0, calc(100% - var(--fold)) 0, 100% var(--fold), 100% 100%, 0 100%);
+}
+.dlf-file__sheet::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  z-index: -1;
+  background: var(--paper);
+  border-radius: calc(var(--r) - 3px);
+  clip-path: polygon(0 0, calc(100% - var(--fold) + 1.5px) 0, 100% calc(var(--fold) - 1.5px), 100% 100%, 0 100%);
+}
+.dlf-file__sheet > :not(.dlf-file__fold) { position: relative; }
+.dlf-file__fold {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--fold);
+  height: var(--fold);
+  background: var(--ink);
+  clip-path: polygon(0 0, 0 100%, 100% 100%);
+}
+.dlf-file__fold::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--chip);
+  clip-path: polygon(3px 9px, 3px calc(100% - 3px), calc(100% - 9px) calc(100% - 3px));
+}
+.dlf-file__ic { line-height: 0; --px-a: var(--mint); }
+.dlf-file__ext {
+  padding: 5px 8px 4px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 5px;
+  font: 400 var(--fs-12) / 1 var(--f-px);
+  letter-spacing: 0.1em;
+}
+.dlf-bar { display: flex; gap: 3px; width: 70%; }
+.dlf-bar i { flex: 1; height: 10px; border: var(--bw) solid var(--ink); border-radius: 3px; background: var(--mint); }
+
+.dlf-st { position: absolute; line-height: 0; }
+.dlf-st--a { left: 12%; top: 12%; }
+.dlf-st--b { right: 11%; bottom: 14%; }
+.dlf-st--c { left: 9%; bottom: 10%; }
+
+@media (hover: hover) {
+  .dlf:hover .dlf-file { transform: translate(-50%, -50%) rotate(2deg) scale(1.04); filter: drop-shadow(11px 11px 0 var(--ink)); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .dlf:hover .dlf-file__ic .px { animation: dl-bob 900ms steps(2, end) infinite; }
+}
+@keyframes dl-bob { 50% { translate: 0 5px; } }
+
+/* On reveal the bar fills one segment at a time, like a pixel loader. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .dlf:not(.is-in) .dlf-bar i { background: var(--paper); }
+  .js .dlf.is-in .dlf-bar i { animation: dl-seg 1ms steps(1, end) calc(420ms + var(--i) * 90ms) backwards; }
+  .js .dlf:not(.is-in) .dlf-st .sticker { scale: 0; }
+  .js .dlf.is-in .dlf-st .sticker { animation: rv-pop var(--d-spring) var(--ease-spring) 520ms backwards; }
+  .js .dlf.is-in .dlf-st--b .sticker { animation-delay: 620ms; }
+  .js .dlf.is-in .dlf-st--c .sticker { animation-delay: 720ms; }
+}
+@keyframes dl-seg { from { background: var(--paper); } }
+
+/* Arriving from the landing (/downloads/#dexclient): a ring pops once. */
+.dlf:target::after,
+.dlp:target::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border: var(--bw-l) solid var(--ink);
+  border-radius: calc(var(--r-xl) + 10px);
+  background: none;
+  pointer-events: none;
+  opacity: 0;
+  animation: dl-ring 1100ms var(--ease-out) 500ms both;
+}
+.dlp:target::after { border-radius: calc(var(--r-l) + 10px); }
+@keyframes dl-ring {
+  0% { opacity: 1; scale: 0.97; }
+  60% { opacity: 1; }
+  100% { opacity: 0; scale: 1.02; }
+}
+
+/* ------------------------------------------------------------- not yet */
+.dlp {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px 28px;
+  padding: clamp(20px, 3vw, 32px);
+  background: var(--paper-2);
+  border: var(--bw-l) dashed var(--ink);
+  border-radius: var(--r-l);
+  scroll-margin-top: 112px;
+}
+.dlp__tile { position: relative; align-self: start; line-height: 0; }
+.dlp__zz { position: absolute; left: -16px; top: -20px; }
+.dlp__body { display: grid; justify-items: start; gap: 8px; }
+.dlp__name { font: var(--title-weight) var(--fs-h3) / 1 var(--f-title); font-stretch: 128%; }
+.dlp__line { font-size: 1.125rem; }
+.dlp__note { color: var(--muted); }
+
+/* ------------------------------------------------------ install guide */
+.dlg { margin-top: var(--section); }
+.dlg .sh { margin-bottom: var(--s-6); }
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+.step {
+  position: relative;
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 12px;
+  padding: 22px 22px 24px;
+  background: var(--paper);
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-l);
+  box-shadow: var(--sh);
+  transition: transform var(--d-spring) var(--ease-spring), box-shadow var(--d-spring) var(--ease-spring);
+}
+.step .tile { transition: rotate var(--d-spring) var(--ease-spring); }
+@media (hover: hover) {
+  .step:hover { transform: translate(-3px, -3px); box-shadow: var(--sh-l); }
+  .step:hover .tile { rotate: -8deg; }
+}
+.step__no {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font: 400 var(--fs-14) / 1 var(--f-px);
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.step__title { margin-top: 4px; font-size: var(--fs-20); font-weight: 700; line-height: 1.2; }
+.step__text { color: var(--ink-2); }
+
+.dlg__caveat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: var(--s-5);
+  color: var(--muted);
+  font-size: var(--fs-14);
+}
+.dlg__caveat .px { flex: none; }
+
+/* ------------------------------------------------------ checksum panel */
+.verify {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  margin-top: var(--s-6);
+  padding: clamp(20px, 3vw, 32px);
+  background: var(--mint-t);
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-l);
+}
+.verify__title { display: flex; align-items: center; gap: 12px; font-size: var(--fs-20); font-weight: 700; }
+.verify__line code { font: 600 0.95em var(--f-mono); }
+.verify__row { display: flex; align-items: center; gap: 10px; max-width: 100%; }
+.verify__row .btn { flex: none; }
+.hash,
+.cmd {
+  min-width: 0;
+  padding: 10px 14px;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-s);
+  font: 500 var(--fs-16) / 1.5 var(--f-mono);
+}
+.hash { display: flex; flex-wrap: wrap; gap: 0 0.7ch; background: var(--paper); font-variant-numeric: tabular-nums; }
+.cmd { background: var(--night); color: #f2f2f2; overflow-wrap: anywhere; }
+.cmd span { color: var(--mint); }
+
+/* ------------------------------------------------------------ narrow */
+@media (max-width: 1100px) {
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .dlf { grid-template-columns: minmax(0, 1fr); }
+  .dlf__art {
+    min-height: 0;
+    height: 210px;
+    border-right: 0;
+    border-bottom: var(--bw-l) solid var(--ink);
+    border-radius: calc(var(--r-xl) - 3px) calc(var(--r-xl) - 3px) 0 0;
+  }
+  .dlf-disc { width: 172px; margin: -86px 0 0 -86px; }
+  .dlf-file { width: 124px; --fold: 22px; }
+  .dlf-file__sheet { gap: 8px; }
+  .dlf-file__ic .px { width: 55px; height: auto; }
+  .dlf-st--a { left: 8%; }
+  .dlf-st--b { right: 8%; }
+  .dlf-st--c { left: 7%; bottom: 9%; }
+  .dlp { grid-template-columns: auto minmax(0, 1fr); }
+  .dlp__cta { grid-column: 1 / -1; }
+  .dlp .tile--l { width: 60px; height: 60px; }
+  .dlp .tile--l .px { width: 33px; height: auto; }
+}
+@media (max-width: 640px) {
+  .steps { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .step { grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; padding: 18px; }
+  .step .tile { grid-row: span 2; }
+  .step__title { margin-top: 0; padding-right: 32px; }
+  .step__no { top: 18px; right: 18px; }
+  .verify__row { align-items: flex-start; }
+}

@@ -16,5 +16,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  // Node-only build code has its own config (tsconfig.build.json).
+  "exclude": ["src/site/build"]
 }

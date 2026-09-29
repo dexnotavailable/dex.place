@@ -7,3 +7,7 @@ logs/
 
 # Local A/B review sheets; may hold third-party reference images. Never commit.
 review/
+
+# Python bytecode from tools/ scripts
+__pycache__/
+*.pyc

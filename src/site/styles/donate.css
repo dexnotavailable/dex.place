@@ -1,0 +1,324 @@
+/* /donate/: Ko-fi card and the MB Bank card with its live VietQR.
+   Markup: render/donate.ts. Behaviour: motion/donate.ts.
+   Magenta is this section's tone (DESIGN-SYSTEM §2); ink on magenta is 5.02:1. */
+
+.donate {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: var(--s-6);
+  align-items: stretch;
+}
+@media (max-width: 1040px) { .donate { grid-template-columns: 1fr; } }
+
+/* ------------------------------------------------------------------ Ko-fi */
+.kofi {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px;
+  text-decoration: none;
+  transition:
+    transform var(--d-spring) var(--ease-spring),
+    box-shadow var(--d-spring) var(--ease-spring),
+    background-color var(--d-hover) var(--ease-std);
+}
+.kofi__top { display: flex; align-items: center; gap: 18px; }
+.kofi__text { display: grid; gap: 6px; min-width: 0; }
+.kofi__name { font: var(--title-weight) 1.875rem / 1 var(--f-title); font-stretch: 128%; }
+.kofi__line { color: var(--ink-2); overflow-wrap: anywhere; }
+
+/* A small stage of pixel stickers around a pale disc. Decorative. */
+.kofi__stage {
+  position: relative;
+  flex: 1;
+  min-height: 190px;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r);
+  background:
+    radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.9) 1.4px, transparent 1.9px) 0 0 / 16px 16px,
+    var(--magenta-t);
+  overflow: hidden;
+}
+.kofi__disc {
+  position: absolute;
+  left: 50%; top: 52%;
+  width: min(62%, 190px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: var(--paper);
+  border: var(--bw) solid var(--ink);
+  border-radius: 38%;
+  box-shadow: var(--sh);
+  rotate: -8deg;
+  transition: rotate var(--d-spring) var(--ease-spring), scale var(--d-spring) var(--ease-spring);
+}
+.kofi__st { position: absolute; }
+.kofi__st--0 { left: 50%; top: 52%; translate: -50% -50%; }
+.kofi__st--1 { left: 16%; top: 18%; }
+.kofi__st--2 { right: 14%; top: 14%; }
+.kofi__st--3 { right: 18%; bottom: 14%; }
+.kofi__st--1 { --px-a: var(--yellow); }
+.kofi__cta { width: 100%; pointer-events: none; }
+
+@media (hover: hover) {
+  .kofi:hover { transform: translate(-3px, -3px); box-shadow: var(--sh-l); }
+  .kofi:hover .kofi__disc { rotate: 6deg; scale: 1.08; }
+  .kofi:hover .kofi__cta { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+}
+.kofi:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); transition-duration: var(--d-press); }
+.kofi:active .kofi__cta { transform: translate(5px, 5px); box-shadow: 0 0 0 var(--ink); transition-duration: var(--d-press); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .kofi__st > svg { animation: kofi-bob 3.1s var(--ease-float) infinite alternate; }
+  .kofi__st--1 > svg { animation-duration: 3.7s; animation-delay: -1.2s; }
+  .kofi__st--2 > svg { animation-duration: 2.3s; animation-delay: -0.6s; }
+  .kofi__st--3 > svg { animation-duration: 4.3s; animation-delay: -2s; }
+}
+@keyframes kofi-bob { to { translate: 0 -7px; } }
+
+@media (max-width: 1040px) {
+  .kofi { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .kofi__stage { display: none; }
+  .kofi__cta { width: auto; }
+}
+@media (max-width: 560px) {
+  .kofi { grid-template-columns: 1fr; }
+  .kofi__cta { width: 100%; }
+}
+
+/* --------------------------------------------------------------- MB Bank */
+.bank { padding: clamp(18px, 3vw, 32px); container-type: inline-size; }
+.bank__title { display: flex; align-items: center; gap: 12px; font-size: var(--fs-20); font-weight: 700; line-height: 1.2; }
+
+.bank__grid {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "qr amt" "kv kv";
+  gap: 28px 36px;
+  margin-top: 24px;
+  align-items: start;
+}
+.bank__kv { grid-area: kv; }
+@container (min-width: 640px) {
+  .bank__kv { grid-template-columns: 1fr 1fr; column-gap: 36px; }
+}
+@container (max-width: 599px) {
+  .bank__grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "qr" "amt" "kv"; }
+}
+.bank__kv > div { grid-template-columns: minmax(92px, 34%) minmax(0, 1fr); }
+/* Narrow cards: label above value, so the recipient name stays on one line. */
+@container (max-width: 440px) {
+  .bank__kv > div { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 10px 0; }
+}
+.bank__kv dd > span:first-child { user-select: all; -webkit-user-select: all; }
+.bank__fine { margin-top: 18px; max-width: 70ch; }
+/* No JS: no amount panel, so the details sit beside the QR instead. */
+@container (min-width: 600px) {
+  html:not(.js) .bank__grid { grid-template-areas: "qr kv"; align-items: center; }
+  html:not(.js) .bank__kv { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ------------------------------------------------------------------- QR */
+/* 37 modules + 4 quiet each side = 45 units for every amount (lean-qr picks
+   version 5 for all of them), so --qm whole pixels per module keeps it crisp. */
+.qr {
+  --qm: 6;
+  grid-area: qr;
+  position: relative;
+  justify-self: center;
+  padding: 14px;
+}
+@media (max-width: 359px) { .qr { --qm: 5; } }
+.qr__code {
+  width: calc(45px * var(--qm) + 2 * var(--bw));
+  aspect-ratio: 1;
+  border: var(--bw) solid var(--ink);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+.qr__code svg { display: block; width: 100%; height: 100%; }
+.qr__corners i {
+  position: absolute;
+  width: 26px; height: 26px;
+  border: 0 solid var(--magenta);
+  transition: translate var(--d-spring) var(--ease-spring), border-color var(--d-hover) var(--ease-std);
+}
+.qr__corners i:nth-child(1) { left: 0; top: 0; border-width: 5px 0 0 5px; }
+.qr__corners i:nth-child(2) { right: 0; top: 0; border-width: 5px 5px 0 0; }
+.qr__corners i:nth-child(3) { left: 0; bottom: 0; border-width: 0 0 5px 5px; }
+.qr__corners i:nth-child(4) { right: 0; bottom: 0; border-width: 0 5px 5px 0; }
+.qr__tag {
+  position: absolute;
+  right: -10px; top: -12px;
+  padding: 7px 9px;
+  background: var(--paper);
+  color: var(--ink);
+  border: var(--bw) solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 2px 2px 0 var(--ink);
+  /* Plain bold type: the amount must be readable at 1x (pixel type was not). */
+  font: 700 var(--fs-14) / 1 var(--f-body);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  rotate: 4deg;
+  transition: background-color var(--d-hover) var(--ease-std);
+}
+[data-state="amount"] .qr__tag { background: var(--magenta); }
+[data-state="amount"] .qr__corners i:nth-child(odd) { border-color: var(--ink); }
+
+/* ---------------------------------------------------------- amount panel */
+.amt { grid-area: amt; display: grid; gap: 12px; align-content: start; min-width: 0; }
+html:not(.js) .amt { display: none; }
+.amt__label { font: 400 var(--fs-12) / 1.2 var(--f-px); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.amt__readout { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; min-height: 2.9rem; }
+.amt__num {
+  font: var(--title-weight) clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem) / 1.1 var(--f-title);
+  font-stretch: 112%;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.amt__unit { font: 400 var(--fs-14) / 1 var(--f-px); letter-spacing: 0.08em; color: var(--magenta-text); }
+[data-state="none"] .amt__unit { display: none; }
+[data-state="none"] .amt__num { font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); }
+
+/* The slider: a native range over stop indexes, painted as a chunky pill.
+   --pos (0..1) is the thumb position, set by motion/donate.ts. */
+.amt__slider { --thumb: 30px; position: relative; padding-bottom: 22px; }
+.amt__track {
+  position: absolute;
+  left: 0; right: 0; top: 13px;
+  height: 18px;
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-pill);
+  background: repeating-linear-gradient(-45deg, var(--paper) 0 6px, var(--panel) 6px 12px);
+  overflow: hidden;
+}
+.amt__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--thumb) / 2 + var(--pos) * (100% - var(--thumb)));
+  background: var(--magenta);
+  border-right: var(--bw) solid var(--ink);
+}
+[data-state="none"] .amt__fill { width: 0; border: 0; }
+.amt__range {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.amt__range:focus-visible { outline: none; box-shadow: none; }
+.amt__range::-webkit-slider-runnable-track { height: 44px; background: transparent; border: 0; }
+.amt__range::-moz-range-track { height: 44px; background: transparent; border: 0; }
+.amt__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--thumb); height: var(--thumb);
+  margin-top: calc((44px - var(--thumb)) / 2);
+  background: var(--yellow);
+  border: var(--bw) solid var(--ink);
+  border-radius: 9px;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: scale var(--d-spring) var(--ease-spring), box-shadow var(--d-fast) var(--ease-out), background-color var(--d-hover) var(--ease-std);
+}
+.amt__range::-moz-range-thumb {
+  box-sizing: border-box;
+  width: var(--thumb); height: var(--thumb);
+  background: var(--yellow);
+  border: var(--bw) solid var(--ink);
+  border-radius: 9px;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: scale var(--d-spring) var(--ease-spring), box-shadow var(--d-fast) var(--ease-out), background-color var(--d-hover) var(--ease-std);
+}
+/* Idle ("Any amount"): a ghost thumb on a dimmed track, so the control never
+   seems to claim the 100K stop it rests on. The first move makes it solid.
+   Only the track dims: the tick labels are text and stay at full --muted
+   (5.1:1 on white) in every state. */
+[data-state="none"] .amt__range::-webkit-slider-thumb { background: var(--paper); border-style: dashed; box-shadow: none; }
+[data-state="none"] .amt__range::-moz-range-thumb { background: var(--paper); border-style: dashed; box-shadow: none; }
+[data-state="none"] .amt__track { opacity: 0.5; }
+.amt__track { transition: opacity var(--d-hover) var(--ease-std); }
+@media (hover: hover) {
+  .amt__range:hover::-webkit-slider-thumb { scale: 1.12; }
+  .amt__range:hover::-moz-range-thumb { scale: 1.12; }
+}
+.amt__range:active::-webkit-slider-thumb { scale: 0.94; box-shadow: 1px 1px 0 var(--ink); }
+.amt__range:active::-moz-range-thumb { scale: 0.94; box-shadow: 1px 1px 0 var(--ink); }
+.amt__range:focus-visible::-webkit-slider-thumb { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 3px 3px 0 var(--ink), 0 0 0 7px var(--periwinkle); }
+.amt__range:focus-visible::-moz-range-thumb { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 3px 3px 0 var(--ink), 0 0 0 7px var(--periwinkle); }
+
+.amt__ticks { position: absolute; left: 0; right: 0; bottom: 0; height: 16px; }
+.amt__ticks span {
+  position: absolute;
+  left: calc(var(--thumb) / 2 + var(--at) * (100% - var(--thumb)));
+  translate: -50% 0;
+  font: 400 var(--fs-12) / 1 var(--f-px);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.amt__ticks span:first-child { translate: calc(var(--thumb) / -2) 0; }
+.amt__ticks span:last-child { translate: calc(-100% + var(--thumb) / 2) 0; }
+/* Phones: 100K and 500K sit too close to read apart; keep the ends and 1M, 5M. */
+@media (max-width: 480px) {
+  .amt__ticks span:nth-child(2) { display: none; }
+}
+
+/* Quick picks: small keys that press like the house button. */
+.amt__picks { display: flex; flex-wrap: wrap; gap: 8px; }
+.pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  background: var(--paper);
+  color: var(--ink);
+  border: var(--bw) solid var(--ink);
+  border-radius: var(--r-s);
+  box-shadow: 3px 3px 0 var(--ink);
+  font: 650 var(--fs-14) / 1 var(--f-body);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    transform var(--d-spring) var(--ease-spring),
+    box-shadow var(--d-spring) var(--ease-spring),
+    background-color var(--d-hover) var(--ease-std),
+    color var(--d-hover) var(--ease-std);
+}
+.pick .px { display: none; }
+@media (hover: hover) {
+  .pick:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
+}
+.pick:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); transition-duration: var(--d-press); }
+.pick[aria-pressed="true"] { background: var(--magenta); transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.pick--none[aria-pressed="true"] { background: var(--ink); color: #fff; }
+/* "Any amount" shows a close glyph while an amount is set: the way back. */
+[data-state="amount"] .pick--none { background: var(--yellow); }
+[data-state="amount"] .pick--none .px { display: block; }
+
+/* ------------------------------------------------------------- live bits */
+@media (prefers-reduced-motion: no-preference) {
+  .qr__code.is-swap { animation: qr-swap 240ms var(--ease-out); }
+  .qr.is-flip .qr__code { animation: qr-flip var(--d-spring) var(--ease-spring); }
+  .qr.is-flip .qr__corners i:nth-child(1) { animation: qr-corner-1 var(--d-spring) var(--ease-spring); }
+  .qr.is-flip .qr__corners i:nth-child(2) { animation: qr-corner-2 var(--d-spring) var(--ease-spring); }
+  .qr.is-flip .qr__corners i:nth-child(3) { animation: qr-corner-3 var(--d-spring) var(--ease-spring); }
+  .qr.is-flip .qr__corners i:nth-child(4) { animation: qr-corner-4 var(--d-spring) var(--ease-spring); }
+  .qr__tag.is-pop { animation: tag-pop var(--d-spring) var(--ease-spring); }
+  .pick.is-pop { animation: pick-pop var(--d-spring) var(--ease-spring); }
+}
+@keyframes qr-swap { from { opacity: 0.55; scale: 0.985; } }
+@keyframes qr-flip { from { scale: 0.9; rotate: -2deg; } }
+@keyframes qr-corner-1 { from { translate: 8px 8px; } }
+@keyframes qr-corner-2 { from { translate: -8px 8px; } }
+@keyframes qr-corner-3 { from { translate: 8px -8px; } }
+@keyframes qr-corner-4 { from { translate: -8px -8px; } }
+@keyframes tag-pop { from { scale: 0.6; rotate: -8deg; } }
+@keyframes pick-pop { 40% { scale: 1.1; } }

@@ -122,6 +122,12 @@ work. To publish a download, copy the file into that folder. Nothing gets commit
 or deployed. `install-hosting.ps1` hardlinks the existing installer and packs there
 from the old site, so they take no extra disk space.
 
+A file in that folder always wins. Any other `/downloads/...` path (the
+`/downloads/` page itself, for example) falls through to the build like every
+other URL, and an unknown name gets the build's 404 page. Never put an
+`index.html` in the downloads folder: it would be served as an attachment in
+place of the page.
+
 ## Changing the ops code itself
 
 The code in `ops/` ships through `main` like everything else, and it runs the site,

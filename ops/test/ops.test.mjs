@@ -7,6 +7,7 @@
 import { after, before, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
@@ -121,6 +122,8 @@ function patchOps(name, find, replace) {
 
 // The live v2 Cloudflare Tunnel script. Tests only ever read it (and patch copies).
 const REAL_TUNNEL_SCRIPT = 'D:\\Dex\\Projects\\SUMMER PROJECT 3\\dex-client\\site\\scripts\\start-cloudflare-tunnel.ps1';
+// Where install-hosting.ps1 keeps its backups (its -BackupRoot default).
+const TUNNEL_BACKUP_ROOT = process.env.DEX_OPS_TUNNEL_BACKUPS || 'D:\\Dex\\Automation\\backups\\dex-place';
 const TUNNEL_COMMENT = [
   '# Origin fallback removed by dex.place ops/install-hosting.ps1: the origin on 127.0.0.1:8088',
   '# is owned by the "Dex Site Origin" task running dex.place/ops/start-origin.ps1.',
@@ -171,6 +174,37 @@ function expectedTunnelPatch(bytes) {
   return Buffer.from(text.slice(0, m.index) + TUNNEL_COMMENT.join(nl) + text.slice(m.index + m[0].length), 'latin1');
 }
 
+// The real tunnel script as it was before the hosting patch, for fixture
+// copies. Production has since patched the live file, so once it no longer
+// carries the fallback block, its original comes from the newest install
+// backup whose metadata names the live script and whose bytes match the
+// recorded original SHA-256. Read-only: neither the live script nor a backup is
+// ever written; tests only patch copies under RUN. null when neither exists
+// (another machine): the synthetic cases still run.
+function realTunnelOriginal() {
+  const hasBlock = (bytes) => FALLBACK_BLOCK.test(bytes.toString('latin1'));
+  if (fs.existsSync(REAL_TUNNEL_SCRIPT)) {
+    const live = fs.readFileSync(REAL_TUNNEL_SCRIPT);
+    if (hasBlock(live)) return live;
+  }
+  if (!fs.existsSync(TUNNEL_BACKUP_ROOT)) return null;
+  for (const stamp of fs.readdirSync(TUNNEL_BACKUP_ROOT).sort().reverse()) {
+    const metaFile = path.join(TUNNEL_BACKUP_ROOT, stamp, 'start-cloudflare-tunnel.backup.json');
+    const backup = path.join(TUNNEL_BACKUP_ROOT, stamp, 'start-cloudflare-tunnel.ps1');
+    if (!fs.existsSync(metaFile) || !fs.existsSync(backup)) continue;
+    const raw = fs.readFileSync(metaFile);
+    const text = raw[0] === 0xff && raw[1] === 0xfe ? raw.subarray(2).toString('utf16le') : raw.toString('utf8').replace(/^\uFEFF/, '');
+    let meta;
+    try { meta = JSON.parse(text); } catch { continue; }
+    if (String(meta.path ?? '').toLowerCase() !== REAL_TUNNEL_SCRIPT.toLowerCase()) continue;
+    const bytes = fs.readFileSync(backup);
+    const sha = crypto.createHash('sha256').update(bytes).digest('hex');
+    if (sha !== String(meta.originalSha256 ?? '').toLowerCase() || !hasBlock(bytes)) continue;
+    return bytes;
+  }
+  return null;
+}
+
 // ------------------------------------------------------------------ fixture
 
 const SECRET = 'TOP-SECRET';
@@ -197,6 +231,8 @@ before(() => {
     'dist/sub/.hidden': `${SECRET}-HIDDEN`,
     'dist/assets/app-abc12345.js': 'console.log(1)',
     'dist/data.json': '{"a":1}',
+    'dist/downloads/index.html': '<h1>downloads page</h1>',
+    'dist/downloads/setup.exe': 'decoy from the build',
     'downloads/setup.exe': 'MZ fake installer',
     'downloads/.hidden-dl': `${SECRET}-DL`,
   });
@@ -431,6 +467,24 @@ describe('server.mjs', () => {
 
     const missing = await request(srv.port, { target: '/downloads/nope.exe' });
     assert.equal(missing.status, 404);
+    assert.match(missing.body.toString(), /fixture 404/);
+  });
+
+  test('downloads: the /downloads/ page comes from the build; published files still win', async () => {
+    for (const target of ['/downloads/', '/downloads']) {
+      const page = await request(srv.port, { target });
+      assert.equal(page.status, 200, target);
+      assert.match(page.headers['content-type'], /^text\/html/, target);
+      assert.equal(page.headers['cache-control'], 'no-cache, no-transform', target);
+      assert.equal(page.headers['content-disposition'], undefined, target);
+      assert.match(page.body.toString(), /downloads page/, target);
+    }
+    // The downloads folder wins over a same-named file in the build.
+    const exe = await request(srv.port, { target: '/downloads/setup.exe' });
+    assert.equal(exe.status, 200);
+    assert.equal(exe.body.toString(), 'MZ fake installer');
+    assert.equal(exe.headers['cache-control'], 'private, no-store');
+    assert.match(exe.headers['content-disposition'], /^attachment;/);
   });
 
   test('304 via ETag and If-Modified-Since', async () => {
@@ -1089,7 +1143,9 @@ describe('deploy.mjs', () => {
         // UTF-8 BOM and a non-ASCII comment elsewhere: every byte outside the block survives.
         bom: Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(`# caf\u00e9 \u2713\r\n${syntheticTunnelScript('\r\n')}`, 'utf8')]),
       };
-      if (fs.existsSync(REAL_TUNNEL_SCRIPT)) cases.real = fs.readFileSync(REAL_TUNNEL_SCRIPT);
+      // Fixture copy of the real script as it was before the patch (never the live file).
+      const real = realTunnelOriginal();
+      if (real) cases.real = real;
       for (const [name, bytes] of Object.entries(cases)) fs.writeFileSync(path.join(dir, `${name}.ps1`), bytes);
       fs.writeFileSync(path.join(dir, 'changed.ps1'), cases.lf);
       const noBlock = Buffer.from(syntheticTunnelScript('\n').replace('} catch {\n    & $originLauncher | Out-Null\n}', '} catch {\n    Write-Warning "origin down"\n}'), 'latin1');
@@ -1178,7 +1234,8 @@ $result.verifyBroken = @(Test-DexTunnelScriptPatch -Original $original -Patched 
       const whatIfBackups = path.join(RUN, 'whatif-backups');
       const tunnelCopy = path.join(RUN, 'whatif-tunnel', 'start-cloudflare-tunnel.ps1');
       fs.mkdirSync(path.dirname(tunnelCopy), { recursive: true });
-      const tunnelBytes = fs.existsSync(REAL_TUNNEL_SCRIPT) ? fs.readFileSync(REAL_TUNNEL_SCRIPT) : Buffer.from(syntheticTunnelScript());
+      // Fixture copy of the real script as it was before the patch (never the live file).
+      const tunnelBytes = realTunnelOriginal() ?? Buffer.from(syntheticTunnelScript());
       fs.writeFileSync(tunnelCopy, tunnelBytes);
       const before = taskXml();
       const install = (tunnel) => ps(['-File', path.join(OPS, 'install-hosting.ps1'), '-WhatIf', '-DeployRoot', whatIfRoot,

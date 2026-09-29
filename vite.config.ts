@@ -1,36 +1,29 @@
 import { fileURLToPath } from "node:url";
-import { defineConfig, type Plugin } from "vite";
-import { renderDownloads } from "./src/render.ts";
+import { defineConfig } from "vite";
+import { sitePages, TEMPLATE } from "./src/site/build/plugin.ts";
 
 const page = (path: string): string => fileURLToPath(new URL(path, import.meta.url));
-
-const DOWNLOADS_MARKER = "<!--downloads-->";
-
-// Writes the downloads list from src/downloads.ts into index.html at dev and
-// build time. Vite restarts the dev server when that file changes.
-function prerenderDownloads(): Plugin {
-  return {
-    name: "dex:prerender-downloads",
-    transformIndexHtml(html, ctx) {
-      // Only the root page carries the downloads list; the lab (/lab/) does not.
-      if (ctx.path !== "/index.html") return html;
-      if (!html.includes(DOWNLOADS_MARKER)) {
-        throw new Error(`index.html is missing ${DOWNLOADS_MARKER}`);
-      }
-      return html.replace(DOWNLOADS_MARKER, renderDownloads());
-    },
-  };
-}
 
 export default defineConfig({
   // Static multi-page site: unknown paths are 404s, never a silent index.html fallback.
   appType: "mpa",
-  plugins: [prerenderDownloads()],
+  // The website layer: prerenders /, /downloads/, /gallery/, /docs/, /blog/,
+  // /donate/ and 404.html from src/site (see docs/site/DESIGN-SYSTEM.md).
+  plugins: [sitePages()],
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    // Every target browser has native modulepreload; skip the polyfill.
+    modulePreload: { polyfill: false },
     rolldownOptions: {
-      input: { main: page("./index.html"), lab: page("./lab/index.html"), scenes: page("./scenes/index.html") },
+      input: {
+        main: page("./index.html"),
+        lab: page("./lab/index.html"),
+        scenes: page("./scenes/index.html"),
+        // Shared template for every non-root website page; cloned per route and
+        // removed from dist/ by the site plugin.
+        site: page(`./${TEMPLATE}`),
+      },
     },
   },
 });
