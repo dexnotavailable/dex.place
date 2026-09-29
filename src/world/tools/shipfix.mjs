@@ -225,8 +225,8 @@ async function strike() {
           }, hide);
           return (await p.page.screenshot()).toString("base64");
         };
-        const A = await shot(false);
         const B = await shot(true);
+        const A = await shot(false);
         const pos = await p.ev(() => { const g = window.__world.game; const [cx, cy] = g.camera.view(); return [g.player.body.x - cx, g.player.body.y - cy]; });
         // the world beside her: a 120 x 120 box (view px) ahead of her at chest height, in page px (1.5x)
         const box = [Math.round((pos[0] + 60) * 1.5), Math.round((pos[1] - 140) * 1.5), 180, 180];
@@ -252,7 +252,51 @@ async function strike() {
   out.strike = res;
 }
 
-const checks = { smoke, sit, strike };
+// --- summon: the view is on the seal ring while it lights in sequence and holds --------------
+async function summon() {
+  const d = dir("summon");
+  const res = { frames: [] };
+  for (const [vname, vo] of [["1080p", { w: 1920, h: 1080 }], ["1440p", { w: 2560, h: 1440 }], ["phone", { w: 844, h: 390, dpr: 3, mobile: true }]]) {
+    const p = await open("manual&fresh&mute", vo);
+    await p.ev(() => window.__world.begin());
+    await p.ev(() => window.__world.teleport("D3", "west"));
+    await settle(p, "D3");
+    await placeAt(p, 255.3);
+    await p.ev(() => window.__world.use());
+    await p.ev(() => window.__world.advance(60));
+    const woke = await p.ev(() => window.__world.game.room.pixel.world.find("terminal").state);
+    if (vname === "1080p") await p.page.screenshot({ path: `${d}/D3-${vname}-woken.png` });
+    await p.ev(() => window.__world.use());
+    let t = 0;
+    for (const at of [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 3.2, 4.4, 5.4, 7]) {
+      await p.ev((n) => window.__world.advance(n), Math.round((at - t) * 60));
+      t = at;
+      const s = await p.ev(() => {
+        const g = window.__world.game;
+        const [cx] = g.camera.view();
+        const seals = g.room.pixel.world.find("seals");
+        const o = g.room.def.origin[0];
+        const lit = seals.refs.lights.map((l) => +l.level.toFixed(2));
+        const xs = [-2, -1, 0, 1, 2].map((k) => o + (seals.x + k * 2.5 * 80) / 80);
+        const view = [+(o + cx / 80).toFixed(2), +(o + (cx + 1280) / 80).toFixed(2)];
+        const inView = xs.map((x) => x - 0.5 >= view[0] && x + 0.5 <= view[1]);
+        return { terminal: g.room.pixel.world.find("terminal").state, seals: seals.state, lit, inView, view, closeup: +g.camera.closeup.toFixed(2), bars: +g.camera.bars.toFixed(3), panel: g.panels.kind, playerX: +(o + g.player.body.x / 80).toFixed(2) };
+      });
+      if (vname === "1080p") res.frames.push({ at, ...s });
+      else res[`${vname}-${at}`] = s;
+      if (vname === "1080p" || at === 2.4) await p.page.screenshot({ path: `${d}/D3-${vname}-t${at}.png` });
+    }
+    res[`woke-${vname}`] = woke;
+    res[`errors-${vname}`] = p.errors;
+    res[`bad-${vname}`] = p.bad;
+    await p.ctx.close();
+  }
+  for (const f of res.frames) note(`summon t ${f.at}: ${f.terminal}/${f.seals} lit ${f.lit.join(" ")} inView ${f.inView.map((v) => (v ? 1 : 0)).join("")} view ${f.view.join("-")} closeup ${f.closeup} panel ${f.panel}`);
+  save("summon", res);
+  out.summon = res;
+}
+
+const checks = { smoke, sit, strike, summon };
 for (const [k, f] of Object.entries(checks)) if (which === k || which === "all") await f();
 await browser.close();
 console.log(JSON.stringify(out, null, 1).slice(0, 4000));

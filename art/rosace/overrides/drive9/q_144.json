@@ -1,5 +1,5 @@
 {
- "_doc": "Round 4 paint-over (ESCALATION 2) for the drive-9 Q stamp at 144 px. Hand-placed on the R4u underlay; STALE if it changes. The face is drawn upright and turned by the head's tilt (+25.9 deg, from the eye landmarks) about the nose.",
+ "_doc": "Round 4 paint-over (ESCALATION 2) for the drive-9 Q stamp at 144 px. Hand-placed on the R4u underlay; STALE if it changes. The head is tilted about 26 deg (from the eye landmarks), so the features are drawn stair-stepped in screen space.",
  "palette": {
   "1": "#f0d5c4",
   "2": "#ebc5b1",
@@ -40,36 +40,207 @@
  },
  "layers": [
   {
-   "name": "face",
+   "name": "face_base",
    "kind": "stamp",
-   "rot": 25.9,
    "at": [
-    60,
-    99
+    62,
+    97
    ],
-   "pivot": [
-    9,
-    8
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: a clean face plane before the features (FC-P35); the old stamp's eyes are cleared.",
+   "rows": [
+    "3322222211112222222",
+    "3322222211111222222",
+    "3322222211111122222",
+    "3332222221111122222",
+    "3332222222111122223",
+    "4333222222211122233",
+    "4433322222222222233",
+    "4443332222222222333",
+    "4444333222222223334",
+    "4444433322222233344",
+    "4444443333333333444",
+    "4444444444444444444",
+    "4444444444444444444",
+    "4444444444444444444",
+    "4444444444444444444",
+    "4444444444444444444"
+   ]
+  },
+  {
+   "name": "brows",
+   "kind": "px",
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Q is the strike: brows angle down toward the centre (a set, fierce look), drawn in the mid hair tone.",
+   "pts": [
+    [
+     65,
+     97,
+     "b"
+    ],
+    [
+     66,
+     97,
+     "b"
+    ],
+    [
+     67,
+     98,
+     "b"
+    ],
+    [
+     68,
+     98,
+     "b"
+    ],
+    [
+     69,
+     99,
+     "b"
+    ],
+    [
+     72,
+     101,
+     "b"
+    ],
+    [
+     73,
+     101,
+     "b"
+    ],
+    [
+     74,
+     101,
+     "b"
+    ],
+    [
+     75,
+     101,
+     "b"
+    ],
+    [
+     76,
+     102,
+     "b"
+    ]
+   ]
+  },
+  {
+   "name": "eye_far",
+   "kind": "stamp",
+   "at": [
+    64,
+    99
    ],
    "over": [
     "skin",
     "hair"
    ],
-   "why": "Face critic 2: the lash mass, the iris ramp and the catchlight as on the idle; Q is the strike, so the brows angle down to the centre and the mouth is a small open shout (MOVESET Q), not the idle's smile.",
+   "why": "Face critic 2: the lash mass with an outer flick, the iris ramp and a catchlight, along the tilted eye line (far eye, outer corner left).",
    "rows": [
-    "...bbb......bbb....",
-    "......b.....b......",
-    "...KKKKKk.kKKKKK...",
-    "...KAAAw...wAAAK...",
-    "....CBHw...wHBC....",
-    ".....DD.....DD.....",
-    "....L.........L....",
-    "...rRr.......rRr...",
-    "...................",
-    "...................",
-    "........MM.........",
-    "........mM.........",
-    "..................."
+    "K.....",
+    ".KK...",
+    ".KKKK.",
+    ".wAAKK",
+    "..BHAw",
+    "..DD..",
+    "......"
+   ]
+  },
+  {
+   "name": "eye_near",
+   "kind": "stamp",
+   "at": [
+    72,
+    103
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "as eye_far (near eye, outer corner right, flick up-right)",
+   "rows": [
+    "KKK....",
+    ".KKKK.K",
+    ".wAAKK.",
+    "..BHA..",
+    "..DD...",
+    ".....L."
+   ]
+  },
+  {
+   "name": "blush",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: the blush, on the strike too.",
+   "pts": [
+    [
+     64,
+     105,
+     "r"
+    ],
+    [
+     65,
+     105,
+     "R"
+    ],
+    [
+     66,
+     106,
+     "r"
+    ],
+    [
+     75,
+     109,
+     "r"
+    ],
+    [
+     76,
+     109,
+     "R"
+    ],
+    [
+     77,
+     110,
+     "r"
+    ]
+   ]
+  },
+  {
+   "name": "mouth",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "MOVESET Q: the kiai, a small open mouth (dark with a lighter tongue step).",
+   "pts": [
+    [
+     68,
+     109,
+     "M"
+    ],
+    [
+     69,
+     109,
+     "M"
+    ],
+    [
+     68,
+     110,
+     "m"
+    ],
+    [
+     69,
+     110,
+     "M"
+    ]
    ]
   },
   {
@@ -98,6 +269,106 @@
     "hair"
    ],
    "why": "Head and hair 4: a strand flung off the outline by the stamp."
+  },
+  {
+   "name": "tabard_folds",
+   "kind": "line",
+   "pts": [
+    [
+     56,
+     147
+    ],
+    [
+     55,
+     170
+    ],
+    [
+     55,
+     200
+    ]
+   ],
+   "key": "f1",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and mass: 'the refs' silhouettes are big cloth shapes; ours reads as flat white planks'; pipe folds as a lavender shadow line with a near-white lit line beside it."
+  },
+  {
+   "name": "tabard_folds_lit",
+   "kind": "line",
+   "pts": [
+    [
+     57,
+     147
+    ],
+    [
+     56,
+     170
+    ],
+    [
+     56,
+     200
+    ]
+   ],
+   "key": "f3",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and mass: 'the refs' silhouettes are big cloth shapes; ours reads as flat white planks'; pipe folds as a lavender shadow line with a near-white lit line beside it."
+  },
+  {
+   "name": "tabard_folds2",
+   "kind": "line",
+   "pts": [
+    [
+     61,
+     150
+    ],
+    [
+     62,
+     175
+    ],
+    [
+     63,
+     198
+    ]
+   ],
+   "key": "f1",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and mass: 'the refs' silhouettes are big cloth shapes; ours reads as flat white planks'; pipe folds as a lavender shadow line with a near-white lit line beside it."
+  },
+  {
+   "name": "tabard_folds2_lit",
+   "kind": "line",
+   "pts": [
+    [
+     62,
+     150
+    ],
+    [
+     63,
+     175
+    ],
+    [
+     64,
+     198
+    ]
+   ],
+   "key": "f3",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and mass: 'the refs' silhouettes are big cloth shapes; ours reads as flat white planks'; pipe folds as a lavender shadow line with a near-white lit line beside it."
   }
- ]
+ ],
+ "authored_on": {
+  "still_sha1": "f321d6b4a144d54da7b01027d606cbfd7dc7b377",
+  "canvas": [
+   110,
+   218
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R4/q/px144/R4u"
+ }
 }

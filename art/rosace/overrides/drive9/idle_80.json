@@ -254,5 +254,13 @@
    ],
    "why": "Head and hair 4: one loose strand breaks the outline at 80 (two at 144)."
   }
- ]
+ ],
+ "authored_on": {
+  "still_sha1": "241bcb4b1afed21adcd5d726391ae80a07c33508",
+  "canvas": [
+   80,
+   119
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R4/idle/px80/R4u"
+ }
 }

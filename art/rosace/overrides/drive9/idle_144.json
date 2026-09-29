@@ -36,7 +36,10 @@
   "f3": "#e6e2e9",
   "l1": "#0c0920",
   "l3": "#4d4392",
-  "l4": "#6456ac"
+  "l4": "#6456ac",
+  "s1": "#3a3160",
+  "s2": "#5a4e84",
+  "s3": "#8a7cb4"
  },
  "layers": [
   {
@@ -690,6 +693,182 @@
     "white"
    ],
    "why": "as lining_folds"
+  },
+  {
+   "name": "tabard_folds",
+   "kind": "line",
+   "pts": [
+    [
+     50,
+     128
+    ],
+    [
+     50,
+     150
+    ],
+    [
+     49,
+     176
+    ]
+   ],
+   "key": "f1",
+   "over": [
+    "white"
+   ],
+   "why": "Materials 14 and mass: 'the refs' silhouettes are big cloth shapes'; the widened tabard read as one flat white plank. Two pipe folds, each a lavender shadow line with a near-white lit line beside it, and a softer third."
+  },
+  {
+   "name": "tabard_folds_lit",
+   "kind": "line",
+   "pts": [
+    [
+     51,
+     128
+    ],
+    [
+     51,
+     150
+    ],
+    [
+     50,
+     176
+    ]
+   ],
+   "key": "f3",
+   "over": [
+    "white"
+   ],
+   "why": "as tabard_folds"
+  },
+  {
+   "name": "tabard_folds2",
+   "kind": "line",
+   "pts": [
+    [
+     55,
+     140
+    ],
+    [
+     56,
+     160
+    ],
+    [
+     57,
+     178
+    ]
+   ],
+   "key": "f1",
+   "over": [
+    "white"
+   ],
+   "why": "as tabard_folds"
+  },
+  {
+   "name": "tabard_folds2_lit",
+   "kind": "line",
+   "pts": [
+    [
+     56,
+     140
+    ],
+    [
+     57,
+     160
+    ],
+    [
+     58,
+     178
+    ]
+   ],
+   "key": "f3",
+   "over": [
+    "white"
+   ],
+   "why": "as tabard_folds"
+  },
+  {
+   "name": "tabard_folds3",
+   "kind": "line",
+   "pts": [
+    [
+     47,
+     150
+    ],
+    [
+     47,
+     172
+    ]
+   ],
+   "key": "f2",
+   "over": [
+    "white"
+   ],
+   "why": "as tabard_folds"
+  },
+  {
+   "name": "stocking_sheen",
+   "kind": "line",
+   "pts": [
+    [
+     43,
+     139
+    ],
+    [
+     43,
+     146
+    ],
+    [
+     43,
+     160
+    ],
+    [
+     42,
+     168
+    ]
+   ],
+   "keys": [
+    "s2",
+    "s3",
+    "s2"
+   ],
+   "over": [
+    "stocking"
+   ],
+   "why": "Materials 14: 'give the stockings a 3-step sheen stripe along the shin/thigh'."
+  },
+  {
+   "name": "stocking_sheen2",
+   "kind": "line",
+   "pts": [
+    [
+     59,
+     142
+    ],
+    [
+     62,
+     145
+    ],
+    [
+     65,
+     149
+    ]
+   ],
+   "keys": [
+    "s2",
+    "s3"
+   ],
+   "over": [
+    "stocking"
+   ],
+   "why": "as stocking_sheen, far thigh"
   }
- ]
+ ],
+ "authored_on": {
+  "still_sha1": "a74e880f743ba99c6f164fd0c5c4f661bcf41f47",
+  "canvas": [
+   134,
+   205
+  ],
+  "underlay": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R4/idle/px144/R4u"
+ }
 }

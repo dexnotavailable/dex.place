@@ -8,6 +8,8 @@ the current build as the control, idle / N1 contact / Q stamp / back, at 144 (re
 --prev-raw adds the previous round's drive-9 stills as one more blind slot, 'prev' (round 2: round 1's stills), so
 the critics can say whether the round moved; the shuffle then keeps ours, prev and the control apart from each other.
 --confounds replaces the confound list with the json's 'confounds' (a round's own list).
+--under-tag (round 4) adds ours before the paint-over (same raw, that tag) as one more slot, 'under', kept apart from
+ours, prev and the control like they are; letters run to I.
 
 Writes review/rosace/art/drive9/<round>/ (git-ignored: the refs are third-party and never committed):
   <shot>_px144_x3.png, _x1.png   ours and the control beside refs 07/08/09/04 native (137-158 px figures)
@@ -122,7 +124,7 @@ def webp_rt(im, q=90):
 
 def shuffle(seed, slots=None):
     slots = slots or SLOTS
-    ours = [x for x in ("ours", "control", "prev") if x in slots]
+    ours = [x for x in ("ours", "control", "prev", "under") if x in slots]
     while True:
         o = slots[:]
         random.Random(seed).shuffle(o)
@@ -141,13 +143,15 @@ def main():
     ap.add_argument("--prev-raw", default=None)
     ap.add_argument("--prev-tag", default="D1")
     ap.add_argument("--confounds", default=None)
+    ap.add_argument("--under-tag", default=None, help="round 4: add the same raw's stills under this tag (the render "
+                                                        "before the paint-over) as one more blind slot, 'under'")
     ap.add_argument("--files", default=None, help="comma list of this round's finish/face/post files (next to this "
                                                    "script or absolute), recorded in key.json by sha1")
     a = ap.parse_args()
     out = os.path.join(REPO, "review", "rosace", "art", "drive9", a.round)
     os.makedirs(os.path.join(out, "verdicts"), exist_ok=True)
-    slots = SLOTS + (["prev"] if a.prev_raw else [])
-    letters_all = "ABCDEFGH"[:len(slots)]
+    slots = SLOTS + (["prev"] if a.prev_raw else []) + (["under"] if a.under_tag else [])
+    letters_all = "ABCDEFGHI"[:len(slots)]
     order, seed = shuffle(a.seed, slots)
     mapping = {letters_all[i]: who for i, who in enumerate(order)}
     confounds = json.load(open(a.confounds, encoding="utf-8"))["confounds"] if a.confounds else CONFOUNDS
@@ -205,6 +209,10 @@ def main():
         "sheets": {},
     }
 
+    if a.under_tag:
+        key["_doc"] += (" 'under' = ours before the hand-authored paint-over (the same render and finish, tag %s), so "
+                        "the critics can judge what the paint-over adds." % a.under_tag)
+        key["sources"]["under"] = os.path.join(a.raw, "<shot>", "px<N>", a.under_tag, "still_ground.png")
     if a.prev_raw:
         key["_doc"] += (" 'prev' = the previous round's drive-9 stills (%s, tag %s), so the critics can judge whether "
                         "this round moved." % (a.prev_raw, a.prev_tag))
@@ -218,6 +226,10 @@ def main():
             p = os.path.join(control_dir(shot, px), "still_ground.png")
             panels["control"] = WS.on_bg(crop(Image.open(p).convert("RGBA")))
             info["control"] = {"still": p, "still_sha1": sha(p)}
+            if a.under_tag:
+                p = ours_path(a.raw, a.under_tag, shot, px)
+                panels["under"] = WS.on_bg(crop(Image.open(p).convert("RGBA")))
+                info["under"] = {"still": p, "still_sha1": sha(p)}
             if a.prev_raw:
                 p = ours_path(a.prev_raw, a.prev_tag, shot, px)
                 panels["prev"] = WS.on_bg(crop(Image.open(p).convert("RGBA")))
@@ -244,7 +256,7 @@ def main():
                 key["sheets"][name] = {L: dict(who=mapping[L], **info[mapping[L]]) for L in letters}
             if shot == "idle" and px == 144:
                 diag = dict(panels)
-                for w_ in ("ours", "control", "prev"):
+                for w_ in ("ours", "control", "prev", "under"):
                     if w_ in diag:
                         diag[w_] = webp_rt(panels[w_])
                 sh = WS.sheet([WS.zoom(diag[mapping[L]], 3) for L in letters], letters,

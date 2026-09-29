@@ -195,8 +195,10 @@ def clump_pixels(L, mnames):
     for ci, c in enumerate(L["clumps"]):
         xl, xr = c["x"]
         tx, ty = c["tip"]
+        t0 = c.get("taper_from", L.get("taper_from", 0.0))
         for y in range(ry, ty + 1):
             t = (y - ry) / max(1, ty - ry)
+            t = max(0.0, (t - t0) / (1 - t0)) if t0 else t
             a = int(round(xl + (tx - xl) * t))
             b = int(round(xr + (tx - xr) * t))
             for x in range(min(a, b), max(a, b) + 1):
