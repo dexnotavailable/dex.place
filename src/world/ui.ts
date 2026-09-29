@@ -227,6 +227,28 @@ export class Panels {
         }
         for (const o of this.body.querySelectorAll("button[data-doc]")) o.setAttribute("aria-pressed", String(o === b));
       });
+    // Keys inside a frame do not bubble to the parent dialog. Bind after
+    // each same-origin page loads, and let its own widgets consume Escape
+    // first; an unhandled Escape returns to the world like the Close button.
+    for (const frame of this.body.querySelectorAll<HTMLIFrameElement>("iframe"))
+      frame.addEventListener("load", () => {
+        try {
+          frame.contentWindow?.addEventListener("keydown", (e) => {
+            if (e.key !== "Escape" || e.defaultPrevented || !this.open || !this.root.contains(frame)) return;
+            const child = frame.contentDocument;
+            // Native light-dismiss/cancel is a default action after keydown;
+            // it need not set defaultPrevented. Let that child overlay close
+            // on this press before returning from the parent world dialog.
+            if (child?.querySelector("dialog[open]") || (CSS.supports("selector(:popover-open)") && child?.querySelector(":popover-open"))) return;
+            e.preventDefault();
+            e.stopPropagation();
+            this.close();
+          });
+        } catch {
+          // A page that navigated off-site remains browser-owned; the
+          // parent dialog's Close button still provides the return path.
+        }
+      });
     this.root.hidden = false;
     this.open = true;
     this.closeBtn.focus();
