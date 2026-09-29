@@ -26,6 +26,7 @@ const shoreY = [deck - h(0.55), deck - h(0.75), deck - h(0.95)];
 export const arrival: RoomDef = {
   id: "arrival",
   title: "arrival: the dock under the ring",
+  region: "test",
   w: W,
   h: SCALE.viewH,
   backdrop: { scene: arrivalScene, hide: ["figure"], vertical: 0, weather: true },

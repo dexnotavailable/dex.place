@@ -40,6 +40,7 @@ const terrace = deck - h(0.75);
 export const plain: RoomDef = {
   id: "plain",
   title: "plain: the colossus crossing, mist to storm",
+  region: "test",
   w: W,
   h: SCALE.viewH,
   backdrop: { scene: plainScene, hide: ["figure", "causeway", "cloth", "foreground", "lightning", "sheet-flash"], vertical: 0, weather: true },
