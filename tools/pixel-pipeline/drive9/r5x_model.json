@@ -1,5 +1,5 @@
 {
- "_doc": "Drive 9 whole-character round 5: render-time model and pose edits (d9_blender.py --r2 <this file> [--blend lanes/drive9n.blend]). Round 4's file plus the round-4 critics' body and head fixes and the head-top rosette pin (r5_blender.py). Nothing is baked into lanes/drive9.blend, lanes/drive9n.blend or rosace.blend and the pose files are never edited. Each value's reason is in 'why'.",
+ "_doc": "Drive 9 whole-character round 5, ESCALATION 3 (recombine): the alternative lever mix, rendered on lanes/drive9n.blend (route F3 variant N: A's smaller bells, L's tabard and B's hair). r5_model.json plus the far bell blown back behind the haft, so the silhouette opens where the critics found it clogged (elbow-hip, waist, body-haft). Paired with r5x_finish.json (a lower key). Never baked; pose files never edited.",
  "mesh_edits": {
   "tabard": {
    "scale_x": [
@@ -745,7 +745,7 @@
      19.5,
      5.2
     ],
-    "sleeve_R_1.scale": 0.72,
+    "sleeve_R_1.scale": 0.85,
     "J_Bip_C_Spine.scale": [
      1.0,
      1.14,
@@ -780,6 +780,14 @@
        -0.5,
        1.6,
        0.3
+      ]
+     },
+     "sleeve_L": {
+      "g": 0.4,
+      "wind": [
+       0.4,
+       1.8,
+       0.2
       ]
      }
     }
@@ -903,7 +911,8 @@
   "tabard": "Kept from rounds 2-3 (x1.3 at the waist to x1.65 at the hem).",
   "haft": "Kept from round 3 (x1.25).",
   "pin": "Face critic (round 4, head and hair 4): 'every ref head has a memorable top silhouette (ears, horns, a hat or a hair accessory); ours has none now that the diadem is gone ... add a small head-top signature that sits in the hairline, never across the brow: a gold stained-glass rosette or veil pin at the crown on the far side, 3-4 px, with a short veil or ribbon trailing off it'. r5_blender.pin: a 3.4 cm rosace (gold rim, glass, glasscore: the weapon disc's materials) on the hair's surface at azimuth 25 / elevation 58 (upper crown, toward the model's left = the far side in the idle's 45 deg view), two 13 cm veil tails with V cuts falling back and down. Trials: azimuth 75 put it edge-on and behind the hair (2 gold px, raw/r5_t1); a tail laid straight down the tangent plane from the front crown fell over the face.",
-  "idle_r5": "Body critic (round 4, posture 9 / posing 10 / body 5): 'lift the chest and lengthen the neck 2 px; tilt the head 6-8 deg, chin down'; 'pull the near sleeve behind the hip so a 3-4 px waist notch of background shows'. Upper chest 8 -> 11, look tilt 9 -> 7 and chin 5 -> 6, neck_l 1.15 (d9_blender --neck-l), the near bell x0.78 -> x0.72 and blown back harder (g 0.5 -> 0.4, wind [-0.3, 1.2, 0.2] -> [-0.5, 1.6, 0.3])."
+  "idle_r5": "Body critic (round 4, posture 9 / posing 10 / body 5): 'lift the chest and lengthen the neck 2 px; tilt the head 6-8 deg, chin down'; 'pull the near sleeve behind the hip so a 3-4 px waist notch of background shows'. Upper chest 8 -> 11, look tilt 9 -> 7 and chin 5 -> 6, neck_l 1.15 (d9_blender --neck-l), the near bell x0.78 -> x0.72 and blown back harder (g 0.5 -> 0.4, wind [-0.3, 1.2, 0.2] -> [-0.5, 1.6, 0.3]).",
+  "x_mix": "ESCALATION 3: rebuild from a different lever mix. Round 4's body critic: 'silhouette clogged: the far drape fills the space between body and haft, the near sleeve fills the waist'; the outfit critic credited the big bells for mass. Mix X takes the mass from the tabard and hair (F3 N) instead of the bells, blows the far bell back behind the haft (sleeve_L g 0.4, wind [0.4, 1.8, 0.2]) and keeps the near bell at x0.85 of N's smaller bell; the finish goes lower-key (r5x_finish.json)."
  },
  "pin": {
   "azimuth": 25,

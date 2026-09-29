@@ -1,0 +1,281 @@
+{
+ "_doc": "Round 5 paint-over for q at 144 (r5_paint.py). Seeded from round 4's head layers (art/rosace/overrides/drive9/q_144.json) moved by the head-skin offset R4u -> R5xu (0, -2), then re-authored for the round-4 critics' face and hair fixes. Layers with port: true are also painted on the twin build (R5u).",
+ "palette": {
+  "1": "#f0d5c4",
+  "2": "#ebc5b1",
+  "3": "#e4b3a0",
+  "4": "#d99c8b",
+  "5": "#c98579",
+  "K": "#1b1024",
+  "k": "#4a2c44",
+  "A": "#2c3b80",
+  "B": "#3b4f98",
+  "C": "#2e3f7e",
+  "D": "#86b8ee",
+  "H": "#eef6ff",
+  "W": "#dde2f0",
+  "w": "#d3d7e8",
+  "L": "#a0606c",
+  "R": "#e89c9a",
+  "r": "#eeb6aa",
+  "M": "#7e3f4c",
+  "m": "#b0606a",
+  "n": "#d4927f",
+  "b": "#6e5a9a",
+  "g0": "#1c1733",
+  "g1": "#302747",
+  "g2": "#423555",
+  "g4": "#6a52a2",
+  "g5": "#7f62af",
+  "g6": "#9a82d0",
+  "g7": "#b8aee6",
+  "x": "#a8676a",
+  "y": "#8d535f",
+  "f1": "#8680b4",
+  "f2": "#a29dc8",
+  "f3": "#e6e2e9",
+  "l1": "#0c0920",
+  "l3": "#4d4392",
+  "l4": "#6456ac"
+ },
+ "layers": [
+  {
+   "name": "face_base",
+   "kind": "stamp",
+   "at": [
+    62,
+    95
+   ],
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: a clean face plane before the features (FC-P35); the old stamp's eyes are cleared.",
+   "rows": [
+    "3322222211112222222",
+    "3322222211111222222",
+    "3322222211111122222",
+    "3332222221111122222",
+    "3332222222111122223",
+    "4333222222211122233",
+    "4433322222222222233",
+    "4443332222222222333",
+    "4444333222222223334",
+    "4444433322222233344",
+    "4444443333333333444",
+    "4444444444444444444",
+    "4444444444444444444",
+    "4444444444444444444",
+    "4444444444444444444",
+    "4444444444444444444"
+   ],
+   "port": true
+  },
+  {
+   "name": "brows",
+   "kind": "px",
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Q is the strike: brows angle down toward the centre (a set, fierce look), drawn in the mid hair tone.",
+   "pts": [
+    [
+     65,
+     95,
+     "b"
+    ],
+    [
+     66,
+     95,
+     "b"
+    ],
+    [
+     67,
+     96,
+     "b"
+    ],
+    [
+     68,
+     96,
+     "b"
+    ],
+    [
+     69,
+     97,
+     "b"
+    ],
+    [
+     72,
+     99,
+     "b"
+    ],
+    [
+     73,
+     99,
+     "b"
+    ],
+    [
+     74,
+     99,
+     "b"
+    ],
+    [
+     75,
+     99,
+     "b"
+    ],
+    [
+     76,
+     100,
+     "b"
+    ]
+   ],
+   "port": true
+  },
+  {
+   "name": "eye_far",
+   "kind": "stamp",
+   "at": [
+    64,
+    97
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Face critic 2: the lash mass with an outer flick, the iris ramp and a catchlight, along the tilted eye line (far eye, outer corner left).",
+   "rows": [
+    "K.....",
+    ".KK...",
+    ".KKKK.",
+    ".wAAKK",
+    "..BHAw",
+    "..DD..",
+    "......"
+   ],
+   "port": true
+  },
+  {
+   "name": "eye_near",
+   "kind": "stamp",
+   "at": [
+    72,
+    101
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "as eye_far (near eye, outer corner right, flick up-right)",
+   "rows": [
+    "KKK....",
+    ".KKKK.K",
+    ".wAAKK.",
+    "..BHA..",
+    "..DD...",
+    ".....L."
+   ],
+   "port": true
+  },
+  {
+   "name": "blush",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: the blush, on the strike too.",
+   "pts": [
+    [
+     64,
+     103,
+     "r"
+    ],
+    [
+     65,
+     103,
+     "R"
+    ],
+    [
+     66,
+     104,
+     "r"
+    ],
+    [
+     75,
+     107,
+     "r"
+    ],
+    [
+     76,
+     107,
+     "R"
+    ],
+    [
+     77,
+     108,
+     "r"
+    ]
+   ],
+   "port": true
+  },
+  {
+   "name": "mouth",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "MOVESET Q: the kiai, a small open mouth (dark with a lighter tongue step).",
+   "pts": [
+    [
+     68,
+     107,
+     "M"
+    ],
+    [
+     69,
+     107,
+     "M"
+    ],
+    [
+     68,
+     108,
+     "m"
+    ],
+    [
+     69,
+     108,
+     "M"
+    ]
+   ],
+   "port": true
+  },
+  {
+   "name": "strands_out",
+   "kind": "line",
+   "pts": [
+    [
+     55,
+     96
+    ],
+    [
+     52,
+     99
+    ],
+    [
+     51,
+     103
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "why": "Head and hair 4: a strand flung off the outline by the stamp.",
+   "port": true
+  }
+ ]
+}

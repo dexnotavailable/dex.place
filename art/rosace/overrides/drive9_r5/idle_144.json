@@ -1,0 +1,609 @@
+{
+ "_doc": "Round 5 paint-over for idle at 144 (r5_paint.py). Seeded from round 4's head layers (art/rosace/overrides/drive9/idle_144.json) moved by the head-skin offset R4u -> R5xu (0, -1), then re-authored for the round-4 critics' face and hair fixes. Layers with port: true are also painted on the twin build (R5u).",
+ "palette": {
+  "1": "#f0d5c4",
+  "2": "#ebc5b1",
+  "3": "#e4b3a0",
+  "4": "#d99c8b",
+  "5": "#c98579",
+  "K": "#150c1e",
+  "k": "#4a2c44",
+  "A": "#34307a",
+  "B": "#465a98",
+  "C": "#6078b0",
+  "D": "#86b8ee",
+  "H": "#b8cce6",
+  "W": "#dcdfec",
+  "w": "#c4c6da",
+  "L": "#b27a78",
+  "R": "#e2928f",
+  "r": "#eab0a4",
+  "M": "#8a4452",
+  "m": "#b86a70",
+  "n": "#d4927f",
+  "b": "#6e5a9a",
+  "g0": "#1c1733",
+  "g1": "#302747",
+  "g2": "#423555",
+  "g4": "#6a52a2",
+  "g5": "#7f62af",
+  "g6": "#9a82d0",
+  "g7": "#b8aee6",
+  "x": "#a8676a",
+  "y": "#8d535f",
+  "f1": "#8680b4",
+  "f2": "#a29dc8",
+  "f3": "#e6e2e9",
+  "l1": "#0c0920",
+  "l3": "#4d4392",
+  "l4": "#6456ac",
+  "s1": "#3a3160",
+  "s2": "#5a4e84",
+  "s3": "#8a7cb4",
+  "g8": "#c291cf",
+  "g9": "#d6b0dc"
+ },
+ "layers": [
+  {
+   "name": "face_base",
+   "kind": "stamp",
+   "at": [
+    41,
+    65
+   ],
+   "over": [
+    "skin"
+   ],
+   "port": true,
+   "why": "Face critic (round 4, face 2): 'a soft, warm, low-contrast skin ramp ... use a 3-tone warm skin ramp with a soft cheek shadow under the far eye'. Three tones (1 lit, 2 mid, 3 shadow) lit from the upper right; the near cheek and jaw step to 3, a 2 px soft shadow under the far eye.",
+   "rows": [
+    "333222222111122223",
+    "332222222111112223",
+    "322222221111111223",
+    "322222211111111223",
+    "322222211111111223",
+    "322222211111122223",
+    "332222221111222223",
+    "333222222111122233",
+    "333322222211222333",
+    "333332222222223333",
+    "333333222222233333",
+    "333333322222333333",
+    "333333332223333333",
+    "333333333333333333"
+   ]
+  },
+  {
+   "name": "fringe",
+   "kind": "clumps",
+   "root_y": 60,
+   "box": [
+    41,
+    60,
+    59,
+    67
+   ],
+   "over": [
+    "hair",
+    "skin"
+   ],
+   "keys": {
+    "body": "g4",
+    "dark": "g2",
+    "lite": "g6",
+    "gap": "g0",
+    "notch": "3",
+    "notch2": "2",
+    "under": "2",
+    "tip": "g5"
+   },
+   "why": "Face critic 4 (head and hair): 'split the fringe into 5-7 tapered clumps with 1 px dark gaps'; FC: 'a warm skin shadow under the bangs'. Six locks from an off-centre parting (x 48), unequal lengths, tips at the brow line so the eyes stay clear.",
+   "clumps": [
+    {
+     "x": [
+      40,
+      44
+     ],
+     "tip": [
+      42,
+      65
+     ]
+    },
+    {
+     "x": [
+      44,
+      47
+     ],
+     "tip": [
+      45,
+      64
+     ]
+    },
+    {
+     "x": [
+      47,
+      49
+     ],
+     "tip": [
+      47,
+      63
+     ]
+    },
+    {
+     "x": [
+      49,
+      53
+     ],
+     "tip": [
+      51,
+      65
+     ]
+    },
+    {
+     "x": [
+      53,
+      56
+     ],
+     "tip": [
+      54,
+      64
+     ]
+    },
+    {
+     "x": [
+      56,
+      59
+     ],
+     "tip": [
+      58,
+      66
+     ]
+    }
+   ],
+   "port": true
+  },
+  {
+   "name": "brows",
+   "kind": "line",
+   "key": "b",
+   "pts": [
+    [
+     42,
+     63
+    ],
+    [
+     45,
+     63
+    ],
+    [
+     46,
+     64
+    ]
+   ],
+   "onkeys": [
+    "1",
+    "2",
+    "3"
+   ],
+   "port": true,
+   "why": "Attractiveness 3: 'lock one signature expression (half-lidded smirk, one brow slightly raised)'. The near brow level, set."
+  },
+  {
+   "name": "brows_far",
+   "kind": "line",
+   "key": "b",
+   "pts": [
+    [
+     53,
+     63
+    ],
+    [
+     55,
+     62
+    ],
+    [
+     57,
+     62
+    ]
+   ],
+   "onkeys": [
+    "1",
+    "2",
+    "3"
+   ],
+   "port": true,
+   "why": "as brows: the far brow 1 px raised (the knowing look)."
+  },
+  {
+   "name": "eye_near",
+   "kind": "stamp",
+   "at": [
+    41,
+    65
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "port": true,
+   "why": "Face critic (round 4, face 2): 'narrow, slanted almond eyes with a heavy 2-3 px dark upper-lash block, a dark-to-warm iris ramp and a small catchlight ... about 1 px narrower and tilted up at the outer corner, a 2 px near-black upper-lash block that runs 1 px past the outer corner, an iris of deep indigo on top, desaturated blue in the middle and a 1 px pale lower catchlight; drop the pure cyan; lift E's lid by 1 px'. Outer corner (left) one row higher than the inner; the lash block 2 rows; the iris 3 rows under it (lid lifted, so the iris shows 3 rows, not 2).",
+   "rows": [
+    "KK......",
+    ".KKKKK..",
+    "..KKKKKk",
+    "..wAAAW.",
+    "...BBC..",
+    "....H..."
+   ]
+  },
+  {
+   "name": "eye_far",
+   "kind": "stamp",
+   "at": [
+    52,
+    65
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "port": true,
+   "why": "as eye_near, mirrored and foreshortened (6 px): the iris toward the nose so she looks at the viewer; both eyes on one tilt line (outer corners one row up).",
+   "rows": [
+    "....KK",
+    ".KKKK.",
+    "kKKKK.",
+    "WAAAw.",
+    ".CBB..",
+    "..H..."
+   ]
+  },
+  {
+   "name": "blush",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "port": true,
+   "why": "Face critic (round 4, face 2): 'blush should be 1-2 px strokes under the eye, not a blob'. Two short diagonal hatch strokes under each eye.",
+   "pts": [
+    [
+     43,
+     72,
+     "R"
+    ],
+    [
+     44,
+     71,
+     "r"
+    ],
+    [
+     45,
+     72,
+     "R"
+    ],
+    [
+     46,
+     71,
+     "r"
+    ],
+    [
+     55,
+     72,
+     "R"
+    ],
+    [
+     56,
+     71,
+     "r"
+    ],
+    [
+     57,
+     72,
+     "r"
+    ]
+   ]
+  },
+  {
+   "name": "nose",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "port": true,
+   "why": "one warm tick on the nose's shadow side",
+   "pts": [
+    [
+     51,
+     73,
+     "L"
+    ]
+   ]
+  },
+  {
+   "name": "mouth",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "port": true,
+   "why": "Face critic (round 4, face 2): 'the default mouth is a 2-3 px asymmetric smirk'; attractiveness 3: 'never ship an open O mouth in a key pose'. A 3 px line with the far corner lifted and darker.",
+   "pts": [
+    [
+     48,
+     76,
+     "m"
+    ],
+    [
+     49,
+     76,
+     "m"
+    ],
+    [
+     50,
+     75,
+     "M"
+    ]
+   ]
+  },
+  {
+   "name": "strand_face",
+   "kind": "line",
+   "pts": [
+    [
+     50,
+     62
+    ],
+    [
+     50,
+     65
+    ],
+    [
+     51,
+     67
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "hair",
+    "skin"
+   ],
+   "why": "Head and hair 4: 'add 2-3 loose strands that cross the face or the outline': one lock end from the parting falls between the eyes.",
+   "port": true
+  },
+  {
+   "name": "strands_out",
+   "kind": "line",
+   "pts": [
+    [
+     34,
+     68
+    ],
+    [
+     31,
+     72
+    ],
+    [
+     30,
+     77
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "why": "Head and hair 4: 'no flyaway strands past the silhouette ... add 2-3 loose strands that cross the face or the outline'. A lock end lifts off the near side and falls.",
+   "port": true
+  },
+  {
+   "name": "strands_out2",
+   "kind": "line",
+   "pts": [
+    [
+     64,
+     69
+    ],
+    [
+     66,
+     72
+    ],
+    [
+     66,
+     76
+    ]
+   ],
+   "keys": [
+    "g4",
+    "g5"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "why": "as strands_out, far side",
+   "port": true
+  },
+  {
+   "name": "lock_gaps",
+   "kind": "line",
+   "pts": [
+    [
+     38,
+     65
+    ],
+    [
+     37,
+     71
+    ],
+    [
+     37,
+     79
+    ],
+    [
+     38,
+     85
+    ]
+   ],
+   "key": "g0",
+   "over": [
+    "hair"
+   ],
+   "why": "Head and hair 4: 'no clump separation, no dark gaps between clumps': a 1 px dark gap splits the near side mass into two locks.",
+   "port": true
+  },
+  {
+   "name": "lock_lights",
+   "kind": "line",
+   "pts": [
+    [
+     36,
+     66
+    ],
+    [
+     35,
+     71
+    ],
+    [
+     35,
+     78
+    ]
+   ],
+   "keys": [
+    "g6",
+    "g5"
+   ],
+   "over": [
+    "hair"
+   ],
+   "why": "Head and hair 4: 'a hue-shifted ramp ... soft-edged locks': a lit edge on the outer lock, tapering.",
+   "port": true
+  },
+  {
+   "name": "lock_lights2",
+   "kind": "line",
+   "pts": [
+    [
+     39,
+     69
+    ],
+    [
+     39,
+     75
+    ],
+    [
+     40,
+     81
+    ]
+   ],
+   "keys": [
+    "g5",
+    "g4"
+   ],
+   "over": [
+    "hair"
+   ],
+   "why": "as lock_lights, inner lock",
+   "port": true
+  },
+  {
+   "name": "ahoge",
+   "kind": "line",
+   "pts": [
+    [
+     47,
+     54
+    ],
+    [
+     47,
+     50
+    ],
+    [
+     48,
+     48
+    ],
+    [
+     50,
+     48
+    ]
+   ],
+   "keys": [
+    "g5",
+    "g6",
+    "g8"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "port": true,
+   "why": "Head and hair 4 (round 4): '2-3 flyaways plus one ahoge to break the silhouette'. One curled lock off the crown."
+  },
+  {
+   "name": "flyaway3",
+   "kind": "line",
+   "pts": [
+    [
+     39,
+     58
+    ],
+    [
+     36,
+     57
+    ],
+    [
+     33,
+     58
+    ]
+   ],
+   "keys": [
+    "g5",
+    "g6"
+   ],
+   "over": [
+    "bg",
+    "hair"
+   ],
+   "port": true,
+   "why": "Head and hair 4: '2-3 flyaways ... break the silhouette' (the third, off the near side of the crown)."
+  },
+  {
+   "name": "sheen_arc",
+   "kind": "line",
+   "pts": [
+    [
+     42,
+     56
+    ],
+    [
+     45,
+     54
+    ],
+    [
+     49,
+     54
+    ],
+    [
+     53,
+     55
+    ]
+   ],
+   "keys": [
+    "g8",
+    "g9",
+    "g8"
+   ],
+   "over": [
+    "hair"
+   ],
+   "port": true,
+   "why": "Head and hair 4: 'a lavender sheen arc across the crown (1 px highlight line)'."
+  }
+ ]
+}

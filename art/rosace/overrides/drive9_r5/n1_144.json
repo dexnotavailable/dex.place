@@ -1,0 +1,159 @@
+{
+ "_doc": "Round 5 paint-over for n1 at 144 (r5_paint.py). Seeded from round 4's head layers (art/rosace/overrides/drive9/n1_144.json) moved by the head-skin offset R4u -> R5xu (-1, -1), then re-authored for the round-4 critics' face and hair fixes. Layers with port: true are also painted on the twin build (R5u).",
+ "palette": {
+  "1": "#f0d5c4",
+  "2": "#ebc5b1",
+  "3": "#e4b3a0",
+  "4": "#d99c8b",
+  "5": "#c98579",
+  "K": "#1b1024",
+  "k": "#4a2c44",
+  "A": "#2c3b80",
+  "B": "#3b4f98",
+  "C": "#2e3f7e",
+  "D": "#86b8ee",
+  "H": "#eef6ff",
+  "W": "#dde2f0",
+  "w": "#d3d7e8",
+  "L": "#a0606c",
+  "R": "#e89c9a",
+  "r": "#eeb6aa",
+  "M": "#7e3f4c",
+  "m": "#b0606a",
+  "n": "#d4927f",
+  "b": "#6e5a9a",
+  "g0": "#1c1733",
+  "g1": "#302747",
+  "g2": "#423555",
+  "g4": "#6a52a2",
+  "g5": "#7f62af",
+  "g6": "#9a82d0",
+  "g7": "#b8aee6",
+  "x": "#a8676a",
+  "y": "#8d535f",
+  "f1": "#8680b4",
+  "f2": "#a29dc8",
+  "f3": "#e6e2e9",
+  "l1": "#0c0920",
+  "l3": "#4d4392",
+  "l4": "#6456ac"
+ },
+ "layers": [
+  {
+   "name": "face_base",
+   "kind": "stamp",
+   "at": [
+    87,
+    31
+   ],
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: clear the old stamp to a clean face plane (FC-P35).",
+   "rows": [
+    "2222211",
+    "3222211",
+    "3222211",
+    "3222221",
+    "3322221",
+    "3322222",
+    "3332222",
+    "4332222",
+    "4433222",
+    "4443322"
+   ],
+   "port": true
+  },
+  {
+   "name": "eye",
+   "kind": "stamp",
+   "at": [
+    87,
+    32
+   ],
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "Face critic 2: 'the lash mass with an outer flick, a dark-to-light iris, a catchlight'; in profile the eye is a wedge: the lash sweeps back into a flick, the iris is a half-oval at the front. A two-row lash (the first try) read as a dark slab at 144, so the lash is one row plus the flick.",
+   "rows": [
+    "K.....",
+    ".KKKKk",
+    "..wAA.",
+    "...BH.",
+    "...DC.",
+    "......"
+   ],
+   "port": true
+  },
+  {
+   "name": "brow",
+   "kind": "px",
+   "over": [
+    "skin",
+    "hair"
+   ],
+   "why": "N1 is the thrust: a set brow, angled down to the front.",
+   "pts": [
+    [
+     89,
+     30,
+     "b"
+    ],
+    [
+     90,
+     30,
+     "b"
+    ],
+    [
+     91,
+     31,
+     "b"
+    ]
+   ],
+   "port": true
+  },
+  {
+   "name": "blush",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "Face critic 2: the blush.",
+   "pts": [
+    [
+     91,
+     39,
+     "R"
+    ],
+    [
+     92,
+     39,
+     "r"
+    ]
+   ],
+   "port": true
+  },
+  {
+   "name": "mouth",
+   "kind": "px",
+   "over": [
+    "skin"
+   ],
+   "why": "MOVESET N1: a set line mouth, one dark corner.",
+   "pts": [
+    [
+     92,
+     42,
+     "m"
+    ],
+    [
+     93,
+     42,
+     "M"
+    ]
+   ],
+   "port": true
+  }
+ ]
+}

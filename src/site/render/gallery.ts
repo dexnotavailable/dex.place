@@ -123,6 +123,17 @@ export const MID_COLLAGE = "(min-width: 660px) and (max-width: 1095px)";
 export const TABLET_COLLAGE = `${MID_COLLAGE} and (min-resolution: 1.5dppx)`;
 /** The collage's wide layout. */
 export const WIDE_COLLAGE = "(min-width: 1096px)";
+/** The wide layout on a 1x screen: a desktop monitor. Its lead tiles are capped (leadWideCaps). */
+export const WIDE_1X = `${WIDE_COLLAGE} and (max-resolution: 1dppx)`;
+/** The wide layout on anything denser (WIDE_1X's complement, for preloads, which must not overlap). */
+export const WIDE_DENSE = `${WIDE_COLLAGE} and (min-resolution: 1.01dppx)`;
+/** Viewport the desktop caps are sized for. */
+const DESKTOP_W = 1440;
+const DESKTOP_H = 900;
+/** A piece page on a 1.5x-or-denser screen past the phone layout: a tablet. Capped (pieceTabletCap). */
+export const TABLET_PIECE = "(min-width: 700px) and (min-resolution: 1.5dppx)";
+/** A piece page on any other screen past the phone layout: a desktop. Capped (pieceDesktopCap). */
+export const DESKTOP_PIECE = "(min-width: 700px)";
 
 const k4 = (n: number): string => n.toFixed(4);
 
@@ -190,13 +201,51 @@ function nearest(item: GalleryItem, want: number): number {
   return allWidths(item).reduce((best, w) => (Math.abs(Math.log(w / want)) < Math.abs(Math.log(best / want)) ? w : best));
 }
 
-export function piecePhoneCap(item: GalleryItem): number {
-  const css = piecePhoneWidth(item);
-  const top = nearest(item, 2 * css);
-  const floor = nearest(item, 1.5 * css);
+/** The sharpest copy from `floor` to `top` inside PIECE_PHONE_BUDGET, else `floor` (else `top` without byte counts). */
+function budgetCap(item: GalleryItem, top: number, floor: number): number {
   if (!item.bytes) return top;
   const fits = allWidths(item).filter((w) => w >= floor && w <= top && (item.bytes!.get(w) ?? Infinity) <= PIECE_PHONE_BUDGET);
   return fits.length ? fits[fits.length - 1]! : floor;
+}
+
+export function piecePhoneCap(item: GalleryItem): number {
+  const css = piecePhoneWidth(item);
+  return budgetCap(item, nearest(item, 2 * css), nearest(item, 1.5 * css));
+}
+
+/** Width of the piece-page image in a `vw` x `vh` window past the phone layout (pieceSizes). */
+export function pieceWidthAt(item: GalleryItem, vw: number, vh: number): number {
+  const chrome = item.height > item.width ? 320 : 330;
+  const byHeight = Math.max(((vh - chrome) * item.width) / item.height, (220 * item.width) / item.height);
+  const byWidth = vw >= 1296 ? 1170 : vw >= 1067 ? vw - 126 : 0.91 * vw - 30;
+  return Math.min(byWidth, byHeight);
+}
+
+/** The first copy at or above `css` pixels (the display file when none is). */
+const atLeast = (item: GalleryItem, css: number): number => allWidths(item).find((w) => w >= css) ?? item.width;
+
+// Tablets and desktops open piece pages from shared links too, and there the
+// big image is drawn 470-1170 CSS px wide: a 2x tablet took the 2048 display
+// file (1.8 MB, 11 s to the largest paint on a slow line) and a 1440x900
+// desktop the 1280 copy (0.9 MB, 6.8 s). So they get caps in the lead tiles'
+// style: the sharpest copy inside the same 200 KB budget, from the tablet cap
+// (1.5x) on an 820x1180 tablet, or 1x on a 1440x900 desktop, down to half the
+// drawn width. Portraits keep 1.1-1.4x; the big landscapes drop to 0.5-0.9x
+// (a lossless 1x copy of the heaviest is 0.5 MB and more, which no slow line
+// brings in by 2.5 s). A sharper copy follows once the budget copy has landed,
+// on any line fast enough to bring it in time (motion/piece.ts): the capped
+// <source>s carry data-cap, and the <img> its copies' sizes in data-bytes.
+
+/** The piece page's cap on a tablet (TABLET_PIECE), sized for an 820x1180 screen. */
+export function pieceTabletCap(item: GalleryItem): number {
+  const css = pieceWidthAt(item, TABLET_W, 1180);
+  return budgetCap(item, tabletCap(item, css), atLeast(item, css / 2));
+}
+
+/** The piece page's cap on a desktop (DESKTOP_PIECE), sized for a 1440x900 screen at 1x. */
+export function pieceDesktopCap(item: GalleryItem): number {
+  const css = pieceWidthAt(item, DESKTOP_W, DESKTOP_H);
+  return budgetCap(item, atLeast(item, css), atLeast(item, css / 2));
 }
 
 /** Width of a collage tile's image on the reference phone (see narrowSizes). */
@@ -233,7 +282,8 @@ export function tabletCap(item: GalleryItem, cssWidth: number): number {
 // - Tablet (mid): the largest picture in the first two rows, and any within
 //   3% of it (today the big second-row piece, 03, which the phone pair's 960
 //   copies used to hold back to 13-15 s).
-// - Desktop (wide): the phone's lead tiles, as before (the first row's pair).
+// - Desktop (wide): the phone's lead tiles, as before (the first row's pair),
+//   on a 1x screen from copies of at least 0.9x (leadWideCaps).
 // Each device class's lead tiles share one byte budget on its first load
 // (PIECE_PHONE_BUDGET, 200 KB: about 2.5 s on a slow line), on /gallery/ and
 // in the home section alike, so both pages share the same copies. Any larger
@@ -329,6 +379,31 @@ export function leadTabletCaps(tiles: readonly Placed[]): Map<Placed, number> {
   );
 }
 
+/** Width of a collage tile's image on the reference desktop (the wide layout's box, 1200px there). */
+const tileDesktopWidth = (slots: Readonly<Record<LayoutName, Slot>>): number => imageWidth(slots.wide, Math.min(1200, DESKTOP_W - 96));
+
+/**
+ * Desktop caps for the wide layout's lead tiles on a 1x screen (WIDE_1X):
+ * the sharpest copies from 1x down to 0.9x of each tile's width on a
+ * 1440x900 desktop that together fit the budget, or the 0.9x copies when
+ * nothing sharper fits. At 1x a copy 0.9x or more of the drawn width loses
+ * no visible detail; the first-row pair (01, 02: 595 CSS px) then comes from
+ * the 560 copies (222 KB together) instead of the 640s (277 KB), which held
+ * the page's largest paint at 2.52-2.56 s on a slow line. Two landscapes of
+ * one shape drawn from the same copy score the same area for Largest
+ * Contentful Paint (their own pixels), so neither can take it from the other
+ * by landing second.
+ */
+export function leadWideCaps(tiles: readonly Placed[]): Map<Placed, number> {
+  return sharedCaps(
+    tiles,
+    tiles.map((p) => {
+      const css = tileDesktopWidth(p.slots);
+      return ladder(p.item, atLeast(p.item, css), atLeast(p.item, 0.9 * css));
+    }),
+  );
+}
+
 // Collage tiles that do not lead are deferred: their sources sit in
 // data-srcset / data-src and motion/defer.ts moves them into srcset / src once
 // the lead images have landed and the tile is within half a screen of view. A
@@ -348,17 +423,19 @@ interface Live {
 const NONE: Live = { phone: false, tablet: false, wide: false };
 const ALL: Live = { phone: true, tablet: true, wide: true };
 
-/** A tile's phone and tablet caps. */
+/** A tile's phone and tablet caps, and its 1x desktop cap when it leads the wide layout. */
 interface Caps {
   readonly phone: number;
   readonly tablet: number;
+  readonly wide?: number;
 }
 
 /**
  * A tile's <source>s and <img>, in selection order: phone, tablet, then
- * the mid (1x) and wide layouts where their liveness differs from the <img>
- * (which is live only when the tile leads everywhere); elsewhere the <img>
- * covers them with the same srcset.
+ * the mid (1x) layout where its liveness differs from the <img> (which is
+ * live only when the tile leads everywhere), the wide layout at 1x for a
+ * wide lead tile (its desktop cap), and the wide layout where its liveness
+ * differs from the <img>; elsewhere the <img> covers them with the same srcset.
  */
 function tileSources(p: Placed, caps: Caps, live: Live, tail: string): string {
   const { item, slots } = p;
@@ -370,6 +447,7 @@ function tileSources(p: Placed, caps: Caps, live: Live, tail: string): string {
     source(PHONE_COLLAGE, artSrcset(item, caps.phone), narrowSizes(slots), live.phone) +
     source(TABLET_COLLAGE, artSrcset(item, caps.tablet), midSizes(slots), live.tablet) +
     (live.tablet !== img ? source(MID_COLLAGE, artSrcset(item), midSizes(slots), live.tablet) : "") +
+    (caps.wide !== undefined ? source(WIDE_1X, artSrcset(item, caps.wide), wideSizes(slots), live.wide) : "") +
     (live.wide !== img ? source(WIDE_COLLAGE, artSrcset(item), wideSizes(slots), live.wide) : "") +
     `<img class="art__img" ${at("src", img)}="${fallbackSrc(item)}" ${at("srcset", img)}="${artSrcset(item)}" sizes="${collageSizes(slots)}" ` +
     `width="${item.width}" height="${item.height}" alt="${esc(item.alt)}" ${tail}/>`
@@ -449,12 +527,15 @@ function leadPlan(placed: readonly Placed[]): LeadPlan {
   const tablet = tabletLeadTiles(placed);
   const phoneCaps = leadPhoneCaps(phone);
   const tabletCaps = leadTabletCaps(tablet);
+  // Desktop keeps the phone's lead tiles (the first row's pair there).
+  const wideCaps = leadWideCaps(phone);
   return {
     phone,
     tablet,
     caps: (p) => ({
       phone: phoneCaps.get(p) ?? phoneCap(p.item, tilePhoneWidth(p.slots)),
       tablet: tabletCaps.get(p) ?? tabletCap(p.item, tileTabletWidth(p.slots)),
+      wide: wideCaps.get(p),
     }),
   };
 }
@@ -475,7 +556,9 @@ function leadPlan(placed: readonly Placed[]): LeadPlan {
 // - phone: the first tile, atop the section on every phone (its twin sits
 //   below the fold on most, and ARRIVAL still starts it when it is in view);
 // - tablet: the tablet lead tiles (tabletLeadTiles), with their shared caps;
-// - desktop: the first row's pair (the phone's lead tiles, as on /gallery/).
+// - desktop: the first row's pair (the phone's lead tiles, as on /gallery/),
+//   at their desktop caps on a 1x screen (WIDE_1X) and uncapped on denser
+//   ones (WIDE_DENSE: preload media must not overlap, or both would load).
 // Each preload carries its tile's <source> media, srcset and sizes, so the
 // browser picks the very copy the tile will pick, and the tile reuses it.
 // A 1x window in the mid layout (a narrow desktop browser) gets none: its
@@ -494,7 +577,10 @@ export function galleryArrival(content: SiteContent): string {
   const links: [string, string, string][] = [
     [PHONE_COLLAGE, artSrcset(first.item, plan.caps(first).phone), narrowSizes(first.slots)],
     ...plan.tablet.map((p): [string, string, string] => [TABLET_COLLAGE, artSrcset(p.item, plan.caps(p).tablet), midSizes(p.slots)]),
-    ...plan.phone.map((p): [string, string, string] => [WIDE_COLLAGE, artSrcset(p.item), wideSizes(p.slots)]),
+    ...plan.phone.flatMap((p): [string, string, string][] => [
+      [WIDE_1X, artSrcset(p.item, plan.caps(p).wide), wideSizes(p.slots)],
+      [WIDE_DENSE, artSrcset(p.item), wideSizes(p.slots)],
+    ]),
   ];
   // JSON is valid JS; "<" is escaped so no value can close the <script>.
   const data = JSON.stringify(links).replace(/</g, "\\u003c");
@@ -593,9 +679,14 @@ export function piecePage(content: SiteContent, index: number): string {
     // The smallest copy paints first as the image's own background, so the
     // piece is on screen within a moment even on a slow phone; the sharp copy
     // then draws over it.
+    // Each screen class starts from its budget copy (phone, tablet, desktop);
+    // the <img> keeps every copy for motion/piece.ts to sharpen from.
     `<picture class="piece__pic">` +
     `<source media="${PHONE_PIECE}" srcset="${artSrcset(item, piecePhoneCap(item))}" sizes="${pieceSizes(item, true)}" />` +
+    `<source media="${TABLET_PIECE}" srcset="${artSrcset(item, pieceTabletCap(item))}" sizes="${pieceSizes(item, false)}" data-cap />` +
+    `<source media="${DESKTOP_PIECE}" srcset="${artSrcset(item, pieceDesktopCap(item))}" sizes="${pieceSizes(item, false)}" data-cap />` +
     `<img class="piece__img" src="${fallbackSrc(item)}" srcset="${artSrcset(item)}" sizes="${pieceSizes(item, false)}" ` +
+    (item.bytes ? `data-bytes="${allWidths(item).map((w) => item.bytes!.get(w) ?? 0).join(" ")}" ` : "") +
     `width="${item.width}" height="${item.height}" alt="${esc(item.alt)}" fetchpriority="high" decoding="async" ` +
     `style="view-transition-name:art-${item.id};--ar:${k4(item.width / item.height)};background-image:url(${thumb(item)})" /></picture>` +
     `</div></figure>` +

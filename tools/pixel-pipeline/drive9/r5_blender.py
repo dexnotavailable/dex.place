@@ -10,7 +10,8 @@ built at render time from our own geometry on the opened lane file and never sav
 
   cfg: {"azimuth": deg (0 = the face's front, -y; + toward the model's left, +x), "elevation": deg (0 = level with
         'centre_z', 90 = straight up), "centre": [x, y, z] the skull centre, "r": rosette radius (m), "out": gap over
-        the hair (m), "ribbon": {"len": m, "w": m, "spread": deg, "mat": "veil"} or null}
+        the hair (m), "ribbon": {"len": m, "w": m, "spread": deg, "mat": "veil", "dir": [x, y, z] the fall
+        direction (laid into the tangent plane; default straight down)} or null}
 """
 import math
 
@@ -86,7 +87,8 @@ def pin(cfg):
         # two tails from under the rosette, hanging down and out along the hair (the tangent plane at the pin), a V cut
         # at each end; a ribbon (w) of 'veil', solidified thin so both sides render
         L, w = rb.get("len", 0.10), rb.get("w", 0.014)
-        down = (Vector((0, 0, -1)) - d * Vector((0, 0, -1)).dot(d)).normalized()
+        g = Vector(rb.get("dir", [0, 0, -1])).normalized()       # the fall direction, laid into the pin's tangent plane
+        down = (g - d * g.dot(d)).normalized()
         side = d.cross(down).normalized()
         bm = bmesh.new()
         for sgn in (-1, 1):

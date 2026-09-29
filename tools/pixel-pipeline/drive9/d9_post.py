@@ -42,6 +42,7 @@ import f1_post as F1  # noqa: E402   (route F1's pixel pass, as a library)
 sys.path.insert(0, HERE)
 import r3_post as R3  # noqa: E402   (round 3's steps; used only when the finish json has an 'r3' block)
 import r4_post as R4  # noqa: E402   (round 4's steps; used only when the finish json has an 'r4' block)
+import r5_post as R5  # noqa: E402   (round 5's steps; used only when the finish json has an 'r5' block)
 
 PICK = json.load(open(os.path.join(REPO, "art", "rosace", "drive9.json"), encoding="utf-8"))
 N4, N8 = F1.N4, F1.N8
@@ -730,7 +731,10 @@ def process(raw, FIN, preset, tag, big_eyes=True):
     if r3.get("rim_outline"):
         pre_rim = out.copy()
         r3rep["rim_outline_px"], rsel = R3.rim_outline(out, alpha, ring, mat, part, d2, byid, FIN, n2)
-        if r4.get("rim_limit"):
+        if (FIN.get("r5") or {}).get("rim_arcs"):
+            r3rep["r5_rim_arcs"] = R5.rim_arcs(out, pre_rim, rsel, alpha, FIN)
+            rsel &= np.any(out != pre_rim, -1)
+        elif r4.get("rim_limit"):
             r3rep["r4_rim_limit"] = R4.rim_limit(out, pre_rim, rsel, alpha, FIN)
             rsel &= np.any(out != pre_rim, -1)
     rq_keep = (keep | ring | ln) if r3 else (fch | ring | ln)
@@ -742,10 +746,15 @@ def process(raw, FIN, preset, tag, big_eyes=True):
         r3rep["despeckle_px"] = R3.despeckle(out, alpha, mat, prot, r3["despeckle"].get("passes", 2))
     if r4.get("ramp_soften"):
         r3rep["r4_soften_px"] = R4.ramp_soften(out, alpha, mat, byid, keep | ln | ring | rsel, FIN)
+    r5 = FIN.get("r5") or {}
+    if r5.get("underbust_trim"):
+        r3rep["r5_trim_px"] = R5.underbust_trim(out, alpha, mat, part, meta, byid, keep | rsel, FIN)
     fill = alpha & ~fch
     rgb = out[..., :3].copy()
     cl["checker_final"] = F1.cleanup_checkers(fill, rgb)
     out[..., :3] = rgb
+    if r5.get("contour_clean"):
+        r3rep["r5_contour_px"] = R5.contour_clean(out, alpha, keep | ln | rsel, FIN)
     drawn = np.zeros_like(alpha)
     if r3.get("hair", {}).get("flyaways"):
         r3rep["flyaway_px"] = R3.flyaways(out, alpha, mat, part, meta, byid, FIN, drawn)

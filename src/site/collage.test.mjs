@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { breakRows, collage, imageWidth, LAYOUTS } from "./collage.ts";
 import { loadContent, loadGallery } from "./build/content.ts";
-import { artSrcset, collageBlock, collageSizes, galleryArrival, galleryOrder, galleryPage, gallerySection, leadPhoneCaps, leadTabletCaps, leadTiles, PIECE_PHONE_BUDGET, phoneCap, piecePage, piecePhoneCap, tabletCap, tabletLeadTiles, TABLET_COLLAGE } from "./render/gallery.ts";
+import { artSrcset, collageBlock, collageSizes, DESKTOP_PIECE, galleryArrival, galleryOrder, galleryPage, gallerySection, leadPhoneCaps, leadTabletCaps, leadTiles, leadWideCaps, PIECE_PHONE_BUDGET, phoneCap, pieceDesktopCap, piecePage, piecePhoneCap, pieceTabletCap, pieceWidthAt, tabletCap, tabletLeadTiles, TABLET_COLLAGE, TABLET_PIECE, WIDE_1X } from "./render/gallery.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const content = loadContent(ROOT);
@@ -144,6 +144,7 @@ const SCREENS = {
   tablet768: { w: 768, dpr: 2 },
   midWindow: { w: 1000, dpr: 1 },
   wide: { w: 1440, dpr: 1 },
+  wide2x: { w: 1440, dpr: 2 },
 };
 function mediaMatches(media, { w, dpr }) {
   return media.split(/\s+and\s+/).every((q) => {
@@ -180,7 +181,7 @@ test("gallery page: each layout's lead tiles load at once; the rest wait, with a
   // and 1x windows of the same layout. Nothing else loads before the script.
   for (const p of placed) {
     const pic = byId.get(p.item.id);
-    const want = { phone: phoneLeads.includes(p), tablet: tabletLeads.includes(p), tablet768: tabletLeads.includes(p), midWindow: tabletLeads.includes(p), wide: phoneLeads.includes(p) };
+    const want = { phone: phoneLeads.includes(p), tablet: tabletLeads.includes(p), tablet768: tabletLeads.includes(p), midWindow: tabletLeads.includes(p), wide: phoneLeads.includes(p), wide2x: phoneLeads.includes(p) };
     for (const [name, screen] of Object.entries(SCREENS)) assert.equal(pick(pic, screen) !== null, want[name], `${p.item.id} on ${name}`);
     const lead = leads.includes(p);
     assert.equal(/fetchpriority="high"/.test(pic), lead, `${p.item.id}: high priority iff it leads somewhere`);
@@ -348,7 +349,7 @@ test("arriving at /#gallery: the head preloads each layout's first-screen lead, 
     for (const s of pic.match(/<source [^>]*>/g) ?? []) if (mediaMatches(attr(s, "media"), screen)) return attr(s, "sizes");
     return attr(pic.match(/<img [^>]*>/)[0], "sizes");
   };
-  const want = { phone: [placed[0]], tablet: tabletLeadTiles(placed), tablet768: tabletLeadTiles(placed), midWindow: [], wide: leadTiles(placed) };
+  const want = { phone: [placed[0]], tablet: tabletLeadTiles(placed), tablet768: tabletLeadTiles(placed), midWindow: [], wide: leadTiles(placed), wide2x: leadTiles(placed) };
   for (const [name, screen] of Object.entries(SCREENS)) {
     const here = links.filter((l) => mediaMatches(l.media, screen));
     assert.equal(here.length, want[name].length, `${name}: ${here.length} preloads`);
@@ -356,9 +357,9 @@ test("arriving at /#gallery: the head preloads each layout's first-screen lead, 
       const pic = released(p);
       assert.equal(here[i].imagesrcset, pick(pic, screen), `${name}: ${p.item.id} srcset`);
       const sizes = sizesOf(pic, screen);
-      // The <img> covers the wide layout with every layout's sizes; the
-      // preload carries just the wide ones, the same length there.
-      if (name === "wide") {
+      // On a dense wide screen the <img> covers the wide layout with every
+      // layout's sizes; the preload carries just the wide ones, the same length there.
+      if (name === "wide2x") {
         const [top, rest] = here[i].imagesizes.split(/, (?=calc)/);
         assert.ok(sizes.startsWith(`${top}, (min-width: 1096px) ${rest}, `), `${name}: ${p.item.id} sizes`);
       } else assert.equal(here[i].imagesizes, sizes, `${name}: ${p.item.id} sizes`);
@@ -366,8 +367,80 @@ test("arriving at /#gallery: the head preloads each layout's first-screen lead, 
   }
   // A tablet's preload is its capped lead, not a 960 or 1280 copy.
   for (const l of links.filter((x) => x.media === TABLET_COLLAGE)) assert.ok(maxWidth(l.imagesrcset) <= 640, l.imagesrcset);
+  // A 1x desktop's preloads are the wide lead tiles at their desktop caps.
+  const wideCaps = leadWideCaps(leadTiles(placed));
+  for (const l of links.filter((x) => x.media === WIDE_1X)) assert.ok([...wideCaps.values()].includes(maxWidth(l.imagesrcset)), l.imagesrcset);
   // No pieces, no script.
   assert.equal(galleryArrival({ ...content, gallery: [] }), "");
+});
+
+test("gallery page: a 1x desktop's lead pair comes from copies of 0.9-1x, the same on both pages", () => {
+  const { placed } = galleryOrder(content.gallery);
+  const leads = leadTiles(placed);
+  const caps = leadWideCaps(leads);
+  // The first wide row's pair, 595 CSS px each on a 1440px desktop.
+  const w = (p) => imageWidth(p.slots.wide, 1200);
+  const all = (item) => [...item.widths, item.width];
+  const bytes = leads.reduce((sum, p) => sum + p.item.bytes.get(caps.get(p)), 0);
+  const floor = (p) => all(p.item).find((x) => x >= 0.9 * w(p));
+  assert.ok(bytes <= PIECE_PHONE_BUDGET || leads.every((p) => caps.get(p) === floor(p)), `wide lead tiles ${bytes} B`);
+  for (const p of leads) {
+    const cap = caps.get(p);
+    assert.ok(cap >= 0.9 * w(p), `${p.item.id}: cap ${cap} at least 0.9x of ${w(p).toFixed(0)} px`);
+    assert.ok(cap <= all(p.item).find((x) => x >= w(p)), `${p.item.id}: never above 1x`);
+  }
+  // Today: both 560 (the 640 pair, 277 KB, held LCP at 2.52-2.56 s), and one
+  // shape from one copy, so both score the same area for LCP.
+  assert.deepEqual(leads.map((p) => caps.get(p)), [560, 560]);
+  for (const html of [galleryPage(content), gallerySection(content)]) {
+    const byId = pictures(html);
+    for (const p of leads) {
+      const pic = byId.get(p.item.id).replaceAll("data-srcset=", "srcset=");
+      assert.equal(maxWidth(pick(pic, SCREENS.wide)), caps.get(p), `${p.item.id} on a 1x desktop`);
+      assert.equal(maxWidth(pick(pic, SCREENS.wide2x)), p.item.width, `${p.item.id}: a dense desktop keeps every copy`);
+    }
+    // Only the lead pair carries a desktop cap.
+    assert.equal((html.split(`<source media="${WIDE_1X}"`).length - 1), leads.length * (html.includes("<noscript>") ? 2 : 1));
+  }
+});
+
+test("piece pages: tablets and desktops start from a copy inside the byte budget, and can sharpen", () => {
+  const all = (item) => [...item.widths, item.width];
+  const want = {};
+  content.gallery.forEach((item, i) => {
+    const html = piecePage(content, i);
+    const img = html.match(/<img class="piece__img"[^>]*>/)[0];
+    const source = (media) => html.match(new RegExp(`<source media="${media.replace(/[()]/g, "\\$&")}" srcset="([^"]*)" sizes="([^"]*)" data-cap />`));
+    const tablet = source(TABLET_PIECE);
+    const desktop = source(DESKTOP_PIECE);
+    assert.ok(tablet && desktop, `${item.id}: tablet and desktop sources`);
+    // In selection order: phone, tablet (dense), desktop; the <img> keeps every copy.
+    assert.ok(html.indexOf("(max-width: 699px)") < html.indexOf(TABLET_PIECE) && html.indexOf(TABLET_PIECE) < html.indexOf(`"${DESKTOP_PIECE}"`));
+    assert.equal(maxWidth(tablet[1]), pieceTabletCap(item));
+    assert.equal(maxWidth(desktop[1]), pieceDesktopCap(item));
+    assert.equal(tablet[2], attr(img, "sizes"));
+    assert.equal(desktop[2], attr(img, "sizes"));
+    assert.equal(attr(img, "srcset"), artSrcset(item));
+    // Byte counts in srcset order, for motion/piece.ts.
+    assert.deepEqual(attr(img, "data-bytes").split(" ").map(Number), all(item).map((w) => item.bytes.get(w)));
+    for (const [name, cap, css, top] of [
+      ["tablet", pieceTabletCap(item), pieceWidthAt(item, 820, 1180), tabletCap(item, pieceWidthAt(item, 820, 1180))],
+      ["desktop", pieceDesktopCap(item), pieceWidthAt(item, 1440, 900), all(item).find((w) => w >= pieceWidthAt(item, 1440, 900)) ?? item.width],
+    ]) {
+      assert.ok(item.bytes.get(cap) <= PIECE_PHONE_BUDGET, `${item.id} ${name}: ${cap} is ${item.bytes.get(cap)} B`);
+      assert.ok(cap <= top, `${item.id} ${name}: never above its top (${top})`);
+      assert.ok(cap >= css / 2, `${item.id} ${name}: ${cap} at least half of ${css.toFixed(0)} px`);
+      const sharper = all(item).filter((w) => w > cap && w <= top && item.bytes.get(w) <= PIECE_PHONE_BUDGET);
+      assert.deepEqual(sharper, [], `${item.id} ${name}: the sharpest copy that fits`);
+    }
+    want[item.id] = [pieceTabletCap(item), pieceDesktopCap(item)];
+  });
+  // Today, [tablet, desktop]: landscapes 512-640, portraits 384-640.
+  assert.deepEqual(want, { "01": [640, 640], "02": [640, 640], "03": [512, 512], "04": [640, 640], "05": [512, 512], "06": [640, 512], "07": [640, 384], "08": [640, 384], "09": [384, 384] });
+  // The drawn width matches the page's sizes: 768 and 820 tablets, a 1440x900 desktop.
+  const five = content.gallery.find((x) => x.id === "05");
+  assert.equal(pieceWidthAt(five, 768, 1024).toFixed(1), "668.9");
+  assert.equal(pieceWidthAt(five, 1440, 900).toFixed(1), "1013.3");
 });
 
 test("piece pages: srcset with a phone cap inside the byte budget, deferred film strip", () => {

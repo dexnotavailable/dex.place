@@ -1,0 +1,27 @@
+{
+ "_doc": "Drive 9 whole-character round 5 finish: an overlay deep-merged over r4_finish.json (d9_post.load_finish, lists replaced whole). Each change answers a round-4 blind critic (review/rosace/art/drive9/round-4/verdicts/); the reasons are in 'why'. The 'r5' block switches on round 5's steps in drive9/r5_post.py (rim_arcs replaces round 4's rim_limit). The paint-over runs after this (r4_paint.py with the round-5 override files).",
+ "base": "r4_finish.json",
+ "materials": {
+  "hair": {
+   "stops": [[0, "#0b0c26"], [0.08, "#121a44"], [0.17, "#1d2258"], [0.27, "#2c276c"], [0.38, "#3f2f82"], [0.5, "#553894"], [0.62, "#6c42a4"], [0.74, "#8650b2"], [0.86, "#a66cc0"], [0.95, "#c291cf"], [1.0, "#d6b0dc"]],
+   "chroma": 1.0
+  },
+  "hairtip": {
+   "stops": [[0.0, "#12163e"], [0.12, "#1e2a68"], [0.26, "#2c3e8e"], [0.42, "#3f58ae"], [0.58, "#5876c4"], [0.74, "#7896d4"], [0.88, "#9db6e2"], [1.0, "#c2d2ee"]],
+   "chroma": 0.9
+  }
+ },
+ "r4": {"rim_limit": null},
+ "r5": {
+  "rim_arcs": {"min_run": 5, "max_len": 7, "second_after": 22, "gap": 14},
+  "contour_clean": {"min_dl": 0.10, "passes": 1},
+  "underbust_trim": {"part": "bodice", "t": 0.62, "t_dark": 0.3, "rows": 1, "skin_steps": 2}
+ },
+ "why": {
+  "hair": "Face critic (round 4, head and hair 4): 'a nearly single-hue purple mass with 2-3 flat steps ... the refs' hair has 5+ hue-shifted tones: near-black indigo shadow, then violet, then a lavender sheen'. The ramp now runs blue-navy (#121a44) -> indigo -> violet -> red-violet (#8650b2) -> orchid -> pink-lavender (#d6b0dc) at the top (hue about 235 -> 290 deg), chroma 0.85 -> 1.0. Gamma 1.35 (the low key) is kept.",
+  "hairtip": "Materials critic (palette 15): 'blue accent used on gem, ribbons, bow-ties and weapon glints dilutes it; reserve saturated blue for the gem and eyes'. The 'ribbons' are the hair's azure tips (hairtip is 72 px on the idle, on the side masses and tails; the body critic's 'detached blue claw at the hip' is the tail's tips). DESIGN keeps azure tips, so they stay blue but go periwinkle and softer (#5876c4 mid, was #4193e6), under the glaive gem's saturation.",
+  "rim": "Materials critic (rim light 17, 4.5): 'rim appears as dotted white beads on the dark sleeve edge, reads as noise rather than light ... threshold to solid 1-px arcs'. rim_arcs: runs under 5 px go back to the outline, a longer run keeps one contiguous arc of up to 7 px from its most rim-facing pixel (a second arc on runs over 22 px).",
+  "contour": "Materials critic (pixel craft 16, 5.5): 'orphan light pixels stippled along the tabard and sleeve outlines ... remove isolated contour pixels (1-px islands differing from both neighbours)'.",
+  "trim": "Weapon-grip-outfit critic (outfit 13): 'bodice still grey blobs ... bodice tension lines + gold underbust trim'; body critic (body 5): 'a 2-tone underbust shadow'. A 1 px gold trim on the bodice's bottom edge over skin, the skin under it two steps darker."
+ }
+}
