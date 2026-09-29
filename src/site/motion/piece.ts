@@ -1,15 +1,16 @@
 // Piece pages (render/gallery.ts piecePage): sharpen the big image when the
 // line allows it.
-// On tablets and desktops the markup starts from the sharpest copy inside the
-// slow-line byte budget (pieceTabletCap, pieceDesktopCap: <source data-cap>),
-// so the art is on screen by 2.5 s even on a slow line, where the big
-// landscapes are then a little soft. Once that copy has landed, this reads how
-// fast it came (its own download) and, if a sharper copy would still be on
-// screen by DEADLINE, fetches the sharpest such copy up to what the screen can
-// show, decodes it off screen and only then swaps it in: the same box, so no
-// layout shift and no blank frame. On a slow line nothing changes; the budget
-// copy is what that line can show in time. Save-Data never sharpens, and
-// phones keep their cap (their <source> has no data-cap).
+// The markup starts every screen from the sharpest copy inside the slow-line
+// byte budget (piecePhoneCap, pieceTabletCap, pieceDesktopCap: the <source>s
+// with data-cap), so the art is on screen by 2.5 s even on a slow line, where
+// the big landscapes are then soft on tablets and desktops. Once that copy has
+// landed, this reads how fast it came (its own download) and, if a sharper
+// copy would still be on screen by DEADLINE, fetches the sharpest such copy up
+// to the one nearest what the screen shows (at most 2x: a 3x phone stops near
+// 2x, as its cap does), decodes it off screen and only then swaps it in: the
+// same box, so no layout shift and no blank frame. On a slow line nothing
+// changes; the budget copy is what that line can show in time. Save-Data
+// never sharpens.
 
 /** Latest landing (ms after the page started loading) at which a sharper copy is still worth it: 2.5 s less decode and paint. */
 const DEADLINE = 2000;
@@ -50,9 +51,11 @@ function sharpen(img: HTMLImageElement): void {
   });
   const now = copies.find((c) => c.url === img.currentSrc);
   if (!now || copies.some((c) => !(c.w > 0) || !(c.bytes > 0))) return;
-  // What the screen can show: the first copy at or above the drawn width in device pixels.
-  const need = img.getBoundingClientRect().width * devicePixelRatio;
-  const top = copies.find((c) => c.w >= need) ?? copies[copies.length - 1]!;
+  // What the screen shows: the drawn width in device pixels, at most 2x, and
+  // the copy nearest it (a 1280 copy for 1338 px: 4% short, and half the bytes of the next).
+  const need = img.getBoundingClientRect().width * Math.min(devicePixelRatio || 1, 2);
+  const off = (c: Copy): number => Math.abs(Math.log(c.w / need));
+  const top = copies.reduce((a, c) => (off(c) < off(a) ? c : a));
   // The line: this image's own download, else the browser's estimate, else assume it is fine.
   const line = measured(img.currentSrc) ?? (conn?.downlink ? { rate: conn.downlink * 125, rtt: conn.rtt ?? 0 } : { rate: Infinity, rtt: 0 });
   const start = performance.now();

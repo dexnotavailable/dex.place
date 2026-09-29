@@ -82,6 +82,11 @@ function slotVars(slots: Readonly<Record<LayoutName, Slot>>): string {
 // 1.5x of the image's width on an 820px tablet, and never under 1x there. The
 // cap sits behind `min-resolution: 1.5dppx`: a 1x window at those widths
 // (a narrow desktop browser) keeps picking from every copy, as before.
+//
+// On a 1x desktop only the wide layout's lead pair is capped (leadWideCaps),
+// and piece pages have their own caps per screen class (piecePhoneCap,
+// pieceTabletCap, pieceDesktopCap), sharpened afterwards where the line
+// allows (motion/piece.ts).
 
 /** URL of a piece's smaller lossless copy, `w` pixels wide. */
 export const galleryVariant = (src: string, w: number): string => src.replace(/\.webp$/, `-${w}.webp`);
@@ -191,11 +196,16 @@ const piecePhoneWidth = (item: GalleryItem): number => Math.min(PHONE_W - 66, ((
  * A piece page is often the first page a phone opens (a shared link), and its
  * big image is what the visitor waits for. On a slow phone line (Slow 4G,
  * ~200 KB/s) the image has to be about 200 KB to be on screen by 2.5 s, so
- * the phone cap here is the sharpest copy between 1.5x and 2x that fits that
- * budget, or the 1.5x copy when none does (the grainiest pieces). The lead
- * tiles on /gallery/ share the same budget between them (leadPhoneCaps).
+ * the phone cap here is the sharpest copy between 1x and 2x that fits that
+ * budget: 1.5x or more for every piece but the grainiest, 09, whose 512 copy
+ * (296 KB, 1.6x) held its page's largest paint at 2.9 s; it starts from its
+ * 384 copy (198 KB, 1.2x) and sharpens where the line allows (motion/piece.ts).
+ * The lead tiles on /gallery/ share the same budget between them (leadPhoneCaps).
  */
 export const PIECE_PHONE_BUDGET = 200 * 1024;
+
+/** The first copy at or above `css` pixels (the display file when none is). */
+const atLeast = (item: GalleryItem, css: number): number => allWidths(item).find((w) => w >= css) ?? item.width;
 
 function nearest(item: GalleryItem, want: number): number {
   return allWidths(item).reduce((best, w) => (Math.abs(Math.log(w / want)) < Math.abs(Math.log(best / want)) ? w : best));
@@ -210,7 +220,7 @@ function budgetCap(item: GalleryItem, top: number, floor: number): number {
 
 export function piecePhoneCap(item: GalleryItem): number {
   const css = piecePhoneWidth(item);
-  return budgetCap(item, nearest(item, 2 * css), nearest(item, 1.5 * css));
+  return budgetCap(item, nearest(item, 2 * css), atLeast(item, css));
 }
 
 /** Width of the piece-page image in a `vw` x `vh` window past the phone layout (pieceSizes). */
@@ -221,20 +231,18 @@ export function pieceWidthAt(item: GalleryItem, vw: number, vh: number): number 
   return Math.min(byWidth, byHeight);
 }
 
-/** The first copy at or above `css` pixels (the display file when none is). */
-const atLeast = (item: GalleryItem, css: number): number => allWidths(item).find((w) => w >= css) ?? item.width;
-
 // Tablets and desktops open piece pages from shared links too, and there the
 // big image is drawn 470-1170 CSS px wide: a 2x tablet took the 2048 display
 // file (1.8 MB, 11 s to the largest paint on a slow line) and a 1440x900
 // desktop the 1280 copy (0.9 MB, 6.8 s). So they get caps in the lead tiles'
 // style: the sharpest copy inside the same 200 KB budget, from the tablet cap
 // (1.5x) on an 820x1180 tablet, or 1x on a 1440x900 desktop, down to half the
-// drawn width. Portraits keep 1.1-1.4x; the big landscapes drop to 0.5-0.9x
-// (a lossless 1x copy of the heaviest is 0.5 MB and more, which no slow line
-// brings in by 2.5 s). A sharper copy follows once the budget copy has landed,
-// on any line fast enough to bring it in time (motion/piece.ts): the capped
-// <source>s carry data-cap, and the <img> its copies' sizes in data-bytes.
+// drawn width. Portraits keep 1.1-1.6x; the big landscapes drop to 0.7-0.96x
+// on a tablet and 0.5-0.63x on a 1440x900 desktop (a lossless 1x copy of the
+// heaviest is 0.5 MB and more, which no slow line brings in by 2.5 s). A
+// sharper copy follows once the budget copy has landed, on any line fast
+// enough to bring it in time (motion/piece.ts): the capped <source>s (the
+// phone's too) carry data-cap, and the <img> its copies' sizes in data-bytes.
 
 /** The piece page's cap on a tablet (TABLET_PIECE), sized for an 820x1180 screen. */
 export function pieceTabletCap(item: GalleryItem): number {
@@ -682,7 +690,7 @@ export function piecePage(content: SiteContent, index: number): string {
     // Each screen class starts from its budget copy (phone, tablet, desktop);
     // the <img> keeps every copy for motion/piece.ts to sharpen from.
     `<picture class="piece__pic">` +
-    `<source media="${PHONE_PIECE}" srcset="${artSrcset(item, piecePhoneCap(item))}" sizes="${pieceSizes(item, true)}" />` +
+    `<source media="${PHONE_PIECE}" srcset="${artSrcset(item, piecePhoneCap(item))}" sizes="${pieceSizes(item, true)}" data-cap />` +
     `<source media="${TABLET_PIECE}" srcset="${artSrcset(item, pieceTabletCap(item))}" sizes="${pieceSizes(item, false)}" data-cap />` +
     `<source media="${DESKTOP_PIECE}" srcset="${artSrcset(item, pieceDesktopCap(item))}" sizes="${pieceSizes(item, false)}" data-cap />` +
     `<img class="piece__img" src="${fallbackSrc(item)}" srcset="${artSrcset(item)}" sizes="${pieceSizes(item, false)}" ` +

@@ -7523,22 +7523,26 @@
    "kind": "parameter",
    "severity": "major",
    "added": "round D9-R3 (drive 9 whole round 3)",
-   "rule": "The rim lives on the outline pixel: in the painterly chain the rim is drawn on the outline pixel of curved forms facing the rim direction (the material's 0.72 tone about 55% toward the rim colour, under 230), 1 px gaps bridged, runs < 3 dropped; never an inset second line. Only on convex peaks: each rim run keeps at most 3 px around its most rim-facing pixel (about 30% of the run, peaks at least 7 px apart), in a warm neutral from the world light (#f0dcc6; hair a quiet lavender), never the blade cyan outside an effect. (Changed in round D9-R4; old: continuous runs in cyan.)",
+   "rule": "The rim lives on the outline pixel: in the painterly chain the rim is drawn on the outline pixel of curved forms facing the rim direction (the material's 0.72 tone about 55% toward the rim colour, under 230), 1 px gaps bridged, runs < 3 dropped; never an inset second line. Only on convex peaks: each rim run keeps at most 3 px around its most rim-facing pixel (about 30% of the run, peaks at least 7 px apart), in a warm neutral from the world light (#f0dcc6; hair a quiet lavender), never the blade cyan outside an effect. (Changed in round D9-R4; old: continuous runs in cyan.) Changed in round D9-R5 (old: 3 px kept around each peak, which read as dotted beads): runs under 5 px go back to the outline; a longer run keeps one contiguous arc of up to 7 px from its most rim-facing pixel (a second arc on runs over 22 px).",
    "basis": [
     "critic D9-R2 rim 17: 'a dashed cyan line inset 1 px from the outline: a double outline'",
     "DESIGN revision 2",
-    "critic D9-R3 rim 17 (4.5): reads as a second outline"
+    "critic D9-R3 rim 17 (4.5): reads as a second outline",
+    "critic D9-R4 rim 17 (4.5): 'dotted white beads on the dark sleeve edge'"
    ],
    "check": {
     "method": "auto",
     "input": [
      "post.json"
     ],
-    "metric": "rim_px (inset) and r3.rim_outline_px; r4_rim_limit kept/reverted in post.json r3 block",
-    "pass": "rim only on the outline pixel; no rim run longer than 3 px",
-    "tool": "d9_post.py / r3_post.rim_outline; drive9/r4_post.rim_limit",
+    "metric": "r5_rim_arcs kept/reverted/arcs in post.json r3 block (round 5); r4_rim_limit before",
+    "pass": "rim only on the outline pixel; every kept rim cluster is one contiguous arc of 5-7 px (two on runs > 22 px)",
+    "tool": "d9_post.py / r3_post.rim_outline; drive9/r5_post.rim_arcs",
     "tool_status": "exists"
-   }
+   },
+   "changed": [
+    "round D9-R5"
+   ]
   },
   {
    "id": "PX-P47",
@@ -7639,11 +7643,12 @@
    "kind": "parameter",
    "severity": "major",
    "added": "round D9-R4 (drive 9 whole round 4)",
-   "rule": "The painted face at the refs' eye size: at 144 an almond 5-6 px (near) / 4-5 px (far), one lash row plus a 1 px flick and a second lash pixel at the outer end, three iris rows dark-to-light with a 1 px catchlight, cool white only at the inner corner; at 80 a 4 px lash with the flick over a 2x2 iris, a 1-2 px blush and a 2-3 px mouth; tilted heads drawn stair-stepped in screen space, never a rotated stamp; lids a little lowered, irises toward the camera, an asymmetric closed smile on the idle and back.",
+   "rule": "The painted face at the refs' eye size: at 144 an almond 5-6 px (near) / 4-5 px (far), one lash row plus a 1 px flick and a second lash pixel at the outer end, three iris rows dark-to-light with a 1 px catchlight, cool white only at the inner corner; at 80 a 4 px lash with the flick over a 2x2 iris, a 1-2 px blush and a 2-3 px mouth; tilted heads drawn stair-stepped in screen space, never a rotated stamp; lids a little lowered, irises toward the camera, an asymmetric closed smile on the idle and back. Changed in round D9-R5 (old: one lash row plus a flick; a line or small open mouth on the attacks): at 144 a narrower almond tilted up at the outer corner under a 2-row near-black lash block running 1 px past the outer corner, iris deep indigo top / desaturated blue middle / 1 px pale catchlight bottom, no cyan; both eyes on one tilt line; a closed mouth in every key pose (attacks included); one brow raised on the idle and back; blush as 1-2 px diagonal strokes; a sleeve that cuts the lower face gets the jaw drawn over it as a V to the chin.",
    "basis": [
     "critics D9-R3 face 2 and attractiveness 3",
     "trials D9-R4",
-    "refs 08/09 at x10"
+    "refs 08/09 at x10",
+    "critic D9-R4 face 2 (5.8) and attractiveness 3"
    ],
    "check": {
     "method": "semi",
@@ -7655,7 +7660,10 @@
     "pass": "144: width 5-7 incl. flick, lash rows <= 1 over the iris except the outer 1-2 px, iris rows 2-3, one catchlight per eye; 80: two eyes and a blush painted; no layer with 'rot' on a face; a critic confirms 'two eyes plus blush' at 80 x1",
     "tool": "drive9/r4_paint.py paint.json (pixel counts per layer); by eye on round-4-look/head_*_px80_x1.png",
     "tool_status": "partial"
-   }
+   },
+   "changed": [
+    "round D9-R5"
+   ]
   },
   {
    "id": "HR-P27",
@@ -7678,6 +7686,96 @@
     "pass": "crown scale <= 1.05; 5-7 clumps at 144 (3-4 at 80) with taper_from >= 0.4 or gaps-only on a turned head; >= 2 strands at 144 and >= 1 at 80 with pixels on the ground",
     "tool": "drive9/r4_paint.py paint.json",
     "tool_status": "partial"
+   }
+  },
+  {
+   "id": "WF-P21",
+   "area": "WF",
+   "kind": "process",
+   "severity": "major",
+   "added": "round D9-R5 (drive 9 whole round 5)",
+   "rule": "Recombine, then let the blind set pick: on a plateau (ESCALATION 3) the same round's fixes are rebuilt on a second lever mix, the two are compared labelled, the better is 'ours' and the other enters the blind set as 'alt'. One paint-over is authored on ours; its 'port' layers (head, hands) move onto the twin by the head-skin-mask offset, recorded with the twin's sha1 (ported_on); cloth layers never port.",
+   "basis": [
+    "task ESCALATION 3 (D9-R5)",
+    "M D9-R5 head offsets 0-2 px"
+   ],
+   "check": {
+    "method": "auto",
+    "input": [
+     "review/rosace/art/drive9/<round>/key.json",
+     "art/rosace/overrides/drive9_r5/<shot>_<px>.json"
+    ],
+    "metric": "'alt' in key.json letters; every override file has authored_on and ported_on (offset, twin sha1); paint.json of the twin not stale",
+    "pass": "both mixes in the blind set; no stale port",
+    "tool": "drive9/r5_paint.py, d9_round.py --alt-raw",
+    "tool_status": "exists"
+   }
+  },
+  {
+   "id": "CL-P24",
+   "area": "CL",
+   "kind": "parameter",
+   "severity": "minor",
+   "added": "round D9-R5 (drive 9 whole round 5)",
+   "rule": "The bodice ends in a 1 px gold underbust trim over skin (lit side the gold ramp's upper-mid tone, far side darker) with the skin row under it two tones down.",
+   "basis": [
+    "critic D9-R4 outfit 13: 'bodice tension lines + gold underbust trim'",
+    "critic D9-R4 body 5: 'a 2-tone underbust shadow'"
+   ],
+   "check": {
+    "method": "auto",
+    "input": [
+     "post.json"
+    ],
+    "metric": "r3.r5_trim_px",
+    "pass": "> 0 on every still where the bodice meets skin (idle, Q, N1, back)",
+    "tool": "drive9/r5_post.underbust_trim",
+    "tool_status": "exists"
+   }
+  },
+  {
+   "id": "HR-P28",
+   "area": "HR",
+   "kind": "parameter",
+   "severity": "major",
+   "added": "round D9-R5 (drive 9 whole round 5)",
+   "rule": "A head-top signature in the hairline, never across the brow (a modelled gold rosace pin, 3-4 px at 144, at the crown on the far side with two short veil ribbon tails falling back and down; one ahoge and 2-3 flyaways at 144), and a hair ramp spanning about 55 deg of hue (blue-navy, indigo, violet, red-violet, orchid, pink-lavender) with a 1 px sheen arc across the crown.",
+   "basis": [
+    "critic D9-R4 head and hair 4",
+    "trials D9-R5 (pin azimuth 75 edge-on; tangent-plane tail over the face)"
+   ],
+   "check": {
+    "method": "semi",
+    "input": [
+     "drive9/r5_model.json pin",
+     "drive9/r5_finish.json materials.hair.stops",
+     "art/rosace/overrides/drive9_r5/<shot>_144.json"
+    ],
+    "metric": "pin present with ribbon; hair stops' OKLab hue span; ahoge / flyaway / sheen_arc layers painting on 'bg' and hair",
+    "pass": "pin visible (>= 3 gold px) on idle and back at 144; hue span >= 45 deg; >= 2 flyaways + 1 ahoge at 144",
+    "tool": "drive9/r5_blender.pin, r5_paint.py paint.json",
+    "tool_status": "partial"
+   }
+  },
+  {
+   "id": "PX-P49",
+   "area": "PX",
+   "kind": "parameter",
+   "severity": "minor",
+   "added": "round D9-R5 (drive 9 whole round 5)",
+   "rule": "No orphan light pixels on the silhouette ring: a ring pixel lighter than every ring neighbour by > 0.10 OKLab L with a colour no ring neighbour shares takes its closest darker ring neighbour's colour (face, lines, rim protected).",
+   "basis": [
+    "critic D9-R4 pixel craft 16: 'orphan light pixels stippled along the tabard and sleeve outlines'"
+   ],
+   "check": {
+    "method": "auto",
+    "input": [
+     "post.json"
+    ],
+    "metric": "r3.r5_contour_px",
+    "pass": "the pass ran; residual orphans 0",
+    "tool": "drive9/r5_post.contour_clean",
+    "tool_status": "exists"
    }
   }
  ],
@@ -7721,6 +7819,7 @@
   "2026-09-29 round D9-R1 (drive 9 whole-character round 1): WF-P18 changed (flood-fill keying of white-ground refs, a pose-matched ref 05 frame per shot). d9_round.py writes review/rosace/art/drive9/round-1/. See ART-RULES 10, round D9-R1, and PIPELINE 3.6m.",
   "2026-09-29 round D9-R2 (drive 9 whole-character round 2): new WF-P19, PS-P30, CL-P21, CL-P22, FC-P36, FC-P37, HR-P24, HR-P25, PX-P45. d9_round.py writes review/rosace/art/drive9/round-2/ (8 letters, round 1 as 'prev'). See ART-RULES 10, round D9-R2, and PIPELINE 3.6n.",
   "2026-09-29 round D9-R3 (drive 9 whole-character round 3): FC-P36 and FC-P37 changed; new FC-P38, HR-P26, PS-P31, CL-P23, PX-P46, PX-P47, PX-P48. d9_round.py writes review/rosace/art/drive9/round-3/ (8 letters, round 2 as 'prev'). See ART-RULES 10, round D9-R3, and PIPELINE 3.6o.",
-  "2026-09-29 round D9-R4 (drive 9 whole-character round 4): PX-P46 changed (rim on peaks, 3 px, warm); new WF-P20, PS-N24, FC-P39, HR-P27. d9_round.py writes review/rosace/art/drive9/round-4/ (9 letters: round 3 as 'prev', the render without the paint-over as 'under'). See ART-RULES 10, round D9-R4, and PIPELINE 3.6p."
+  "2026-09-29 round D9-R4 (drive 9 whole-character round 4): PX-P46 changed (rim on peaks, 3 px, warm); new WF-P20, PS-N24, FC-P39, HR-P27. d9_round.py writes review/rosace/art/drive9/round-4/ (9 letters: round 3 as 'prev', the render without the paint-over as 'under'). See ART-RULES 10, round D9-R4, and PIPELINE 3.6p.",
+  "2026-09-29 round D9-R5 (drive 9 whole-character round 5, ESCALATION 3 recombine): FC-P39 and PX-P46 changed; new WF-P21, CL-P24, HR-P28, PX-P49. d9_round.py --alt-raw writes review/rosace/art/drive9/round-5/ (9 letters: ours = mix X, alt = mix P, round 4 as 'prev'). See ART-RULES 10, round D9-R5, and PIPELINE 3.6q."
  ]
 }

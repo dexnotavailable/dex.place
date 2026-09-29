@@ -1821,6 +1821,116 @@ python tools/pixel-pipeline/drive9/d9_round.py --round round-4 --seed 20261501 -
 python tools/pixel-pipeline/drive9/r4_look.py
 ```
 
+### 3.6q Drive 9 whole-character round 5: the round-4 critics' fixes, ESCALATION 3 (recombine), the blind set [built 2026-09-29; not promoted; `drive9/r5_model.json`, `r5x_model.json`, `r5_finish.json`, `r5x_finish.json`, `r5_post.py`, `r5_blender.py`, `r5_paint.py`, `r5_look.py`, `art/rosace/overrides/drive9_r5/`]
+
+Round 4's blind critics (3.6p; verdicts in `review/rosace/art/drive9/round-4/verdicts/`) scored drive 9 at 5.2-6 (face 5.8, body 5.2,
+materials 5.8, first impression 6, weapon/outfit 5.5; the paint-over and the bare render tied). This round applies their fixes and
+ESCALATION 3: the same fixes rebuilt on a second lever mix, the two compared side by side, the better kept as ours and the other put
+in the blind set as its own letter, `alt` (WF-P21). Nothing is baked: `lanes/drive9.blend`, the new `lanes/drive9n.blend` and
+`rosace.blend` (sha256 `23545647...`) are not written by any step, and the figure-pose lane's files are only read.
+`art/rosace/drive9.json` has a `round5` block with each pick, its reason, the measures and what is not done.
+
+- **Pose check first.** The figure-pose lane has still promoted nothing new (`idle_appeal.json` `a89be9fabdd7`, `back_appeal.json`
+  `d65ee47e75d8`; its work files stop at 15:54; no `review/rosace/art/figure-pose/REPORT.md`). Concept A is kept with patches.
+- **The two mixes** (every value's reason is in the model json's `why`):
+  - **P** (`alt`): round 4's build, `lanes/drive9.blend` (F3 L: the big bells), with `r5_model.json` and `r5_finish.json`.
+  - **X** (ours): `lanes/drive9n.blend`, F3 variant N (A's smaller bells, L's tabard, B's hair; bust S7), built by
+    `bl_build.py` with `D9_VARIANT=N D9_OUT=<build>/lanes/drive9n.blend`; `r5x_model.json` = `r5_model.json` plus the far bell
+    blown back behind the haft (`sleeve_L` g 0.4, wind [0.4, 1.8, 0.2]) and the near bell x0.85; `r5x_finish.json` = `r5_finish.json`
+    plus a lower key (white gamma 1.55, veil 1.5, skin 1.22, hair 1.45, stocking 1.4, lining 1.2).
+  - N alone (raw `R5n`) looked almost the same as L: the clog was the far bell's dark lining lobe between the body and the haft,
+    not the bells' size. Opening that gap is what changed the read.
+  - **Pick: X**, by the labelled side-by-side (`review/rosace/art/drive9/round-5-look/`): at 144 the girl reads before the weapon
+    (the body-haft gap is open, the glaive arm and fist read); at 80 X reads as a figure plus a staff while P's dark lobe merges
+    with the haft. Back, Q and N1 are nearly the same. X gives up some mass (body area ÷ H², glaive materials out: idle 0.300 ->
+    0.280 at 144, 0.331 -> 0.310 at 80), still at the refs' 0.28 low end. The critics can overturn it through `alt`.
+- **Render-time model and pose patches** (both mixes; `d9_blender.py --r2 <model json> --head 1.05 --neck-l 1.15 [--blend ...]`):
+  - new `d9_blender.py` options: `--blend` (another lane file; asserts it is not `rosace.blend`) and `--neck-l` (head_scale's
+    `neck_l`: 1.15 lengthens the neck; the body critic's 'the head sinks onto the bust');
+  - idle: upper chest 8 -> 11, head tilt 9 -> 7 and chin 5 -> 6, the near bell smaller (x0.72 on L) and blown back harder;
+  - back: the near bell (the white panel over her back) x0.62, blown toward screen right and the camera (wind [-1.6, -1.2, 0.3],
+    g 0.2), so the back and hip read; trial `raw/r5_bk0` against `r5_bk1` (blown back: the panel stayed on the waist). The back was
+    re-rendered into `raw/R5` and `raw/R5x` from `raw/R5_b` and `raw/R5x_b` after this trial;
+  - **the head-top pin** (`r5_blender.pin`, HR-P28): a flat rosace (gold rim, glass, glasscore: the weapon disc's materials) on the
+    hair's own surface at azimuth 25 / elevation 58 from the skull centre, r 3.4 cm, with two 13 cm veil ribbon tails falling back and
+    down (a V cut at each end), all weighted to the head bone. At azimuth 75 it was edge-on behind the hair (`raw/r5_t1`); a tail laid
+    straight down the tangent plane from the front crown fell over the face.
+- **Finish** (`d9_post.py --finish drive9/r5_finish.json` or `r5x_finish.json`; an `r5` block turns on `r5_post.py`, and without it
+  `d9_post.py` runs exactly as in round 4):
+  - `rim_arcs` (PX-P46 changed) replaces round 4's `rim_limit`: a rim run under 5 px goes back to the outline; a longer run keeps one
+    contiguous arc of up to 7 px walked from its most rim-facing pixel (a second arc on runs over 22 px, 14 px away). About 30-90 rim
+    px in 4-13 arcs per still; round 4's 3 px islands read as dotted beads;
+  - `contour_clean` (PX-P49): orphan light pixels on the silhouette ring take their closest darker ring neighbour (0-4 px per still:
+    the 'beads' were the rim islands);
+  - `underbust_trim` (CL-P24): a 1 px gold trim on the bodice's bottom edge over skin, the skin row under it two tones down
+    (0-11 px per still; none where no bodice edge meets skin, N1 at 80);
+  - ramps: hair from blue-navy to pink-lavender (about 55 deg of hue, chroma 1.0); the hair tips periwinkle (`#5876c4` mid, was
+    `#4193e6`), so the saturated blue is the gem's and the eyes'.
+  - The lower key (X) barely moves the measured low-key share: on the same render V < 0.35 goes 0.300 -> 0.315. The per-material
+    palette re-spreads each material's tones over its own range, so an input gamma mostly relabels pixels. A real key change has to
+    move the ramp stops.
+- **The paint-over** (`r5_paint.py`, round 4's `r4_paint.py` used as a library; WF-P20, WF-P21):
+  - one file per still and size in `art/rosace/overrides/drive9_r5/`, seeded from round 4's head layers moved by the head-skin offset
+    (R4u -> R5xu, 0-2 px), then re-authored; authored on X's underlay (`R5xu`, `authored_on`);
+  - layers marked `port: true` (face, eyes, brows, mouth, blush, fringe, strands, ahoge, sheen arc, fists, hip hand) are also painted
+    on P's underlay (`R5u` -> tag `R5`), moved by `head_offset(ours, twin)` (idle +2/+1 px, the rest 0), recorded with the twin's sha1
+    in `ported_on`; a changed twin makes the port STALE;
+  - a new layer kind, `matbox` {box, on: [materials], keys: dark .. light}: the underlay's pixels of those materials inside the box take
+    the keys by their own value rank (a local recolour that keeps the shading);
+  - what is painted: the eye (FC-P39 changed: a narrower almond tilted up at the outer corner, a 2-row near-black lash block running
+    1 px past it, indigo -> muted blue -> 1 px pale catchlight, no cyan; at 80 the same ramp on round 4's shape), a 3-tone warm face
+    plane with a soft shadow under the far eye, blush as 1-2 px strokes, a 3 px smirk and a raised far brow on the idle and back; on Q
+    closed mouth, set brows, both eyes on one line and the jaw drawn over the sleeve as a V to a 6 px chin (a jaw line on the old skin
+    edge drew a bar at mouth height: the sleeve cut the face at the mouth row); on N1 the same almond and a closed 2 px mouth; an ahoge,
+    a third flyaway and a lavender sheen arc at 144; painted fists on the idle and back glaive hands (6x6 at 144, 4x4 at 80, gold
+    cuff, knuckle crease) at the render's wrist landmarks and a painted hip hand (grouped fingers, one split); the hair tail's azure
+    tips at the idle's hip and by the back view's glaive hand recoloured to the hair's violet (the critics' 'detached blue claw');
+  - round 4's cloth-fold, stocking-sheen, spine and chest-repaint layers were placed on round 4's renders and are not in round 5.
+- **Measured** on the figure only (`r4_metrics.py` -> `lanes/drive9/metrics_r5.json`; round 4 / P painted / X painted):
+
+  | Still 144 | Colours | Mean S | p90 V | V < 0.35 | Flat | Hard |
+  |---|---|---|---|---|---|---|
+  | idle | 196 / 201 / 197 | 0.399 / 0.399 / 0.402 | 0.906 / 0.906 / 0.902 | 0.33 / 0.31 / 0.31 | 0.33 / 0.34 / 0.33 | 0.32 / 0.31 / 0.31 |
+  | N1 | 205 / 201 / 195 | 0.438 / 0.446 / 0.448 | 0.871 / 0.878 / 0.851 | 0.39 / 0.39 / 0.39 | 0.49 / 0.49 / 0.50 | 0.19 / 0.19 / 0.18 |
+  | Q | 187 / 179 / 177 | 0.383 / 0.388 / 0.388 | 0.902 / 0.902 / 0.898 | 0.27 / 0.26 / 0.28 | 0.36 / 0.38 / 0.37 | 0.33 / 0.31 / 0.31 |
+  | back | 211 / 203 / 200 | 0.432 / 0.440 / 0.446 | 0.882 / 0.875 / 0.875 | 0.44 / 0.45 / 0.44 | 0.35 / 0.38 / 0.38 | 0.22 / 0.21 / 0.20 |
+
+  The numbers barely move between the rounds and the mixes: round 5's changes are shape and drawing (face, hands, pin, the open
+  silhouette), not the global colour statistics.
+- **Blind set** (`d9_round.py`, new options `--alt-raw` / `--alt-tag`: another raw's stills as one more slot, `alt`, kept apart from
+  ours, prev and the control; letters run to I). Seed 20261601 became 20261616. The slots are ours (X, `R5x`), alt (P, `R5`), prev
+  (round 4's `R4`), the control and refs 07/08/09/04, plus ref 05 on the 80 sheets. Pose freshness is current on all four shots.
+  - Output: `review/rosace/art/drive9/round-5/` (git-ignored): `<shot>_px144_x3/x1`, `<shot>_px80_x3/x1` (refs at world scale plus
+    ref 05 native), `all_*`, `diag_codec_idle_px144_x3`, `key.json`, `verdicts/TEMPLATE.json`; confounds in `r5_confounds.json`.
+  - Labelled side-by-side sheets (round 4 / P / X under / X / control; heads at x6, whole figures) are in the sibling
+    `review/rosace/art/drive9/round-5-look/` (`r5_look.py`), so a blind critic never opens them first.
+  - **Not judged yet.** The sheet builder has seen the key.
+- **Not in round 5** (`drive9.json` `round5.not_done`): the constructed hand stamps and two-hand grip (`author_hands.py` works in the
+  integrated chain's palette codes; the fists are painted); bodice tension lines, the collar cross at 5x7 and the stained-glass panels;
+  a real low-key move; the bust apex drop and teardrop contour (the figure-pose lane's shape keys); N1 stretch and squash and the motion
+  frames through this finish.
+
+```sh
+# the recombined model (one Blender, ~15 s): F3 variant N -> lanes/drive9n.blend
+D9_VARIANT=N D9_OUT=D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9n.blend \
+    python tools/pixel-pipeline/blender_env.py run --python-exit-code 1 --python D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/bl_build.py
+# passes, one Blender at a time: X (ours) and P (alt)
+python tools/pixel-pipeline/blender_env.py run --python-exit-code 1 --python D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/d9_blender.py -- \
+    --out <raw>/R5x --head 1.05 --neck-l 1.15 --blend D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9n.blend --r2 D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/r5x_model.json
+python tools/pixel-pipeline/blender_env.py run --python-exit-code 1 --python D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/d9_blender.py -- \
+    --out <raw>/R5 --head 1.05 --neck-l 1.15 --r2 D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/r5_model.json
+# finish (numpy)
+python tools/pixel-pipeline/drive9/d9_post.py --root <raw>/R5x --finish tools/pixel-pipeline/drive9/r5x_finish.json --tag R5xu
+python tools/pixel-pipeline/drive9/d9_post.py --root <raw>/R5 --finish tools/pixel-pipeline/drive9/r5_finish.json --tag R5u
+# paint-over on X and its port to P (--sign after re-authoring records authored_on and ported_on)
+python tools/pixel-pipeline/drive9/r5_paint.py --root <raw>/R5x --twin-root <raw>/R5
+# measures, blind set, labelled look sheets
+python tools/pixel-pipeline/drive9/r4_metrics.py --set R4=<raw>/R4:R4 --set R5=<raw>/R5:R5 --set R5xu=<raw>/R5x:R5xu --set R5x=<raw>/R5x:R5x --out <build>/lanes/drive9/metrics_r5.json
+python tools/pixel-pipeline/drive9/d9_round.py --round round-5 --seed 20261601 --raw <raw>/R5x --tag R5x --alt-raw <raw>/R5 --alt-tag R5 \
+    --prev-raw <raw>/R4 --prev-tag R4 --confounds tools/pixel-pipeline/drive9/r5_confounds.json --files r5_model.json,r5x_model.json,...
+python tools/pixel-pipeline/drive9/r5_look.py
+```
+
 ### 3.7 Pose file and render outputs [proven, `rosace/posing.py`, `render_rosace.py`]
 
 A pose file is JSON in degrees and metres, in the rest-pose world frame:
@@ -3236,7 +3346,7 @@ Each line gives the mistake, then the fix.
 | Blind base A/B (3.6d: v2 vs current base, same outfit; 144 + 80 px idle, N1 contact, back, N1 strip; v2 vs refs 07/09) | judged 2026-09-29: v2 6/10, old base 5/10; its cheap top fixes (bust, waist, thighs, leg length) applied in 3.6e, the pose fixes not |
 | Bust shape variants (3.6f: `figure_shape.py`, S0-S4 on the v2 body, garments keyed to follow) | built 2026-09-29 in `lanes/figure-pose-shape*.blend`, blind sheets in `review/rosace/art/figure-pose/shape/`; not adopted. S3 and S4 fail PS-N20 (shelf); +30% (S2) is the ceiling. FP2: the critics picked S3; S5 (S3's lift with S2's mass plus an upper fill, shelf 2.92) is shape.json's `current` and is applied in `lanes/figure-pose-base.blend`. Not promoted: a blind S3 vs S5 round comes first. Refine round 1: S7 (+42%, lift 4) and S8 (+50%) added, shelf ≤ 3.03; `current` = S7 and `lanes/figure-pose-base.blend` rebuilt with it, pending the blind S5/S7/S8 round in `review/rosace/art/figure-pose/refine/round-1/` |
 | Figure-pose applier (3.7b: `figure_pose.py`, a `figure` block on top of posing.py, check mode with landmarks.json) | built 2026-09-29 (FP2). Round-trip proven: all four pose files bone-identical to posing.py, idle_hero stills pixel-identical at 144 and 80. Rig-measurable PS checks in; the fill-based ones (PS-P02, P10, P16, P17, N07, N10) and the posed bust rows still to build (lane helper `work/A/fillcheck.py` approximates P02, P10, P17 and N07) |
-| Drive 9: the combined build (3.6l: F3 L + F2 head 1.10 + figure-pose appeal poses and S7 + the re-tuned F1 finish; `drive9.json`, `lanes/drive9.blend`) | built 2026-09-29, not promoted: idle, N1, Q and back at 144 and 80 plus the N1 motion through the finish. Whole round 1 (3.6m): blind sheets against refs 07/08/09/04 (+05 at 80) and the current build in `review/rosace/art/drive9/round-1/`, judged 5-5.5. Round 2 (3.6n) judged 5.5-6.2. Round 3 (3.6o) judged 5-5.5 (it regressed from round 2 on arms, posing and finish). Round 4 (3.6p): the round-3 fixes plus ESCALATION 2, a hand-authored paint-over on the four key stills at 144 and 80 (`art/rosace/overrides/drive9/`), blind sheets in `round-4/` with round 3 as prev and the render without the paint-over as under, awaiting critics. Open: the chain's pixel passes (constructed hands and weapon, glyphs, collar cross) and smears aren't in the finish; the stance fix belongs to the figure-pose lane |
+| Drive 9: the combined build (3.6l: F3 L + F2 head 1.10 + figure-pose appeal poses and S7 + the re-tuned F1 finish; `drive9.json`, `lanes/drive9.blend`) | built 2026-09-29, not promoted: idle, N1, Q and back at 144 and 80 plus the N1 motion through the finish. Whole round 1 (3.6m): blind sheets against refs 07/08/09/04 (+05 at 80) and the current build in `review/rosace/art/drive9/round-1/`, judged 5-5.5. Round 2 (3.6n) judged 5.5-6.2. Round 3 (3.6o) judged 5-5.5 (it regressed from round 2 on arms, posing and finish). Round 4 (3.6p): the round-3 fixes plus ESCALATION 2, a hand-authored paint-over on the four key stills at 144 and 80 (`art/rosace/overrides/drive9/`), blind sheets in `round-4/` with round 3 as prev and the render without the paint-over as under, judged 5.2-6 (paint-over and bare render tied). Round 5 (3.6q): the round-4 fixes plus ESCALATION 3, the same fixes on a recombined build (`lanes/drive9n.blend`: F3 N, the far bell blown back behind the haft, a lower key) picked over round 4's build by side-by-side; blind sheets in `round-5/` with the other mix as alt and round 4 as prev, awaiting critics. Open: the chain's pixel passes (constructed hands and weapon, glyphs, collar cross) and smears aren't in the finish; the stance fix belongs to the figure-pose lane |
 | Appeal poses, refine round 1 (3.7b: `idle_appeal.json`, `back_appeal.json`) | built 2026-09-29 in `lanes/figure-pose.blend` (S7). Idle passes every rig check at 144 (PS-P01 at 80 fails, O-32); bust break 10 / 5 px at 144 / 80, bust keep-out 0 px, no skin islands. Awaiting the blind round against refs 07, 09, 04a, 04b; not promoted |
 | Route F1, hi-bit painterly finish (3.6i: `finish_f1/`, painterly material branch, 4x render, per-group OKLab palette, selective coloured outline) | built 2026-09-29 as a lane (`lanes/finish-F1.blend`), not promoted. Pick P4 passes 44 of 60 measured targets (control 11); blind sheets in `review/rosace/art/finish/F1/` await a critic. Open: PX-P15 (43-45 colours), N1 chromatic 0.78, O-35 |
 | Route F2 head scale (3.6i: `finish_f2/`, head 1.10/1.15/1.20 at pose time, bigger 144 eye stamps) | trial 2026-09-29: pick H110E (head ÷ H 0.181 → 0.195 on the appeal idle, inside the refs' 0.14-0.20; H120 0.208 rejected as big-headed). One judge (blind to the key), not promoted: no `integrated.json` hook yet |

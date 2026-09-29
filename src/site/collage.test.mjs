@@ -450,13 +450,16 @@ test("piece pages: srcset with a phone cap inside the byte budget, deferred film
     assert.match(img, /fetchpriority="high"/);
     assert.equal(urls(attr(img, "srcset")).at(-1)[0], item.src);
     assert.doesNotMatch(attr(img, "src"), /\/gallery\/\d{2}\.webp$/);
-    const phone = html.match(/<source media="\(max-width: 699px\)" srcset="([^"]*)"/)[1];
+    const phone = html.match(/<source media="\(max-width: 699px\)" srcset="([^"]*)" sizes="[^"]*" data-cap \/>/)[1];
     const cap = Math.max(...urls(phone).map(([, w]) => parseInt(w)));
     assert.equal(cap, piecePhoneCap(item));
     const capBytes = item.bytes.get(cap);
+    assert.ok(capBytes <= PIECE_PHONE_BUDGET, `${item.id}: cap ${cap} is ${capBytes} B`);
     const within = [...item.bytes].filter(([w, b]) => w > cap && w <= 2 * 324 * 1.2 && b <= PIECE_PHONE_BUDGET);
     assert.deepEqual(within, [], `${item.id}: no sharper copy fits the budget`);
-    assert.ok(cap >= 1.5 * 324 * 0.75, `${item.id}: cap ${cap} (${capBytes} B) keeps at least ~1.5x`);
+    // 1.5x or more for all but the grainiest (09: 384, 1.2x; its 512 copy is 296 KB), never under 1x.
+    assert.ok(cap >= 324, `${item.id}: cap ${cap} at least 1x`);
+    if (item.id !== "09") assert.ok(cap >= 1.5 * 324 * 0.95, `${item.id}: cap ${cap} (${capBytes} B) keeps ~1.5x`);
     assert.equal((html.match(/<img data-defer="lead" data-src="/g) ?? []).length, content.gallery.length);
     assert.equal((html.match(/<noscript><img src="/g) ?? []).length, content.gallery.length);
   });

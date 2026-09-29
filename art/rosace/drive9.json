@@ -550,5 +550,357 @@
    "the near chest still reads a little as a shoulder wedge at x3 (PS-N24 partly met)",
    "horizontal hard steps are unchanged (the steps are at outlines and material borders)"
   ]
+ },
+ "round5": {
+  "_doc": "Whole-character round 5 on drive 9 (PIPELINE 3.6q): the round-4 blind critics' fixes plus ESCALATION 3 (recombine): the same fixes on two lever mixes, compared side by side; the better ('X') is ours, the other ('P') is 'alt' in the blind set. The round-1..4 picks above are unchanged; nothing is baked into lanes/drive9.blend, lanes/drive9n.blend or rosace.blend, and the figure-pose lane's files are only read.",
+  "pose_check": "The figure-pose lane has still promoted nothing new: idle_appeal.json a89be9fabdd7 and back_appeal.json d65ee47e75d8 are its newest promoted files, its work files stop at 15:54 (lanes/figure-pose/work/R3), and review/rosace/art/figure-pose/REPORT.md does not exist. Concept A is used with round 5's patches on top.",
+  "mixes": {
+   "X (ours)": {
+    "blend": "lanes/drive9n.blend (bl_build.py with D9_VARIANT=N: route F3 variant N = A's bells 0.125, L's tabard, B's hair; bust S7)",
+    "model": "tools/pixel-pipeline/drive9/r5x_model.json sha1 007786219d57",
+    "finish": "tools/pixel-pipeline/drive9/r5x_finish.json (overlay on r5_finish.json) sha1 a11f2439f188",
+    "render": "d9_blender.py --blend lanes/drive9n.blend --r2 r5x_model.json --head 1.05 --neck-l 1.15 -> lanes/drive9/raw/R5x (the back re-rendered into it from raw/R5x_b after the back sleeve trial)",
+    "tags": "R5xu (the finish), R5x (the paint-over)"
+   },
+   "P (alt)": {
+    "blend": "lanes/drive9.blend (F3 L, round 4's build)",
+    "model": "tools/pixel-pipeline/drive9/r5_model.json sha1 b4a0134c41dc",
+    "finish": "tools/pixel-pipeline/drive9/r5_finish.json (overlay on r4_finish.json) sha1 a635bc03149d",
+    "render": "d9_blender.py --r2 r5_model.json --head 1.05 --neck-l 1.15 -> lanes/drive9/raw/R5 (back from raw/R5_b)",
+    "tags": "R5u, R5 (the paint-over ported from X)"
+   }
+  },
+  "post": "tools/pixel-pipeline/drive9/r5_post.py sha1 0030b6dc1c4f (rim_arcs, contour_clean, underbust_trim; called by d9_post.py sha1 ef4fb487d93d)",
+  "pin": "tools/pixel-pipeline/drive9/r5_blender.py sha1 0129e99d2226 (via d9_blender.py sha1 b499671382e6)",
+  "paint": "tools/pixel-pipeline/drive9/r5_paint.py sha1 c0f71a5491c6: art/rosace/overrides/drive9_r5/<shot>_<px>.json authored on R5xu, 'port' layers moved onto R5u by the head-mask offset",
+  "overrides": {
+   "back_144.json": "f006ea5e1795",
+   "back_80.json": "19c39bb3299e",
+   "idle_144.json": "d255e858e673",
+   "idle_80.json": "346b58959d1d",
+   "n1_144.json": "f0041e4b488a",
+   "n1_80.json": "3a4dd96279b8",
+   "q_144.json": "eec8024e953b",
+   "q_80.json": "409bb6bbabfa"
+  },
+  "sheets": "review/rosace/art/drive9/round-5/ (d9_round.py --round round-5 --seed 20261601 -> 20261616, --alt-raw raw/R5, prev = round 4's R4); labelled side-by-side sheets in review/rosace/art/drive9/round-5-look/ (r5_look.py)",
+  "pick": "X. Side by side (round-5-look/whole_*): at 144 the girl reads before the weapon (the body-haft gap is open, the glaive arm and the painted fist read); at 80 X's silhouette is a figure plus a staff while P's dark far-bell lobe merges with the haft. Back, Q and N1 are nearly the same in both. X gives up mass (body area / H^2, glaive materials out: idle 0.300 -> 0.280 at 144, 0.331 -> 0.310 at 80), still at the refs' 0.28 low end. The critics can overturn it: P is 'alt'.",
+  "why": {
+   "recombine": "ESCALATION 3. The first candidate, F3 N with round 5's patches only (raw/R5n), looked almost the same as L: the bells' size was not the clog; the far bell's dark lining lobe between the body and the haft was (body critic: 'the far drape fills the space between body and haft'). X = N + the far bell blown back behind the haft (sleeve_L g 0.4, wind [0.4, 1.8, 0.2]; trial raw/r5x_t1) + the near bell x0.85 of N's + a lower key (r5x_finish.json).",
+   "face": "FC-P39 changed (face critic 5.8): a narrower almond tilted up at the outer corner, a 2-row near-black lash block running past the corner, an indigo -> muted blue -> pale catchlight iris, no cyan (80: the same ramp); a 3-tone warm face plane; blush as 1-2 px strokes; a 3 px smirk on the idle and back, a far brow raised; Q and N1 get closed mouths, set brows, the Q eyes on one line and a jaw drawn over the sleeve as a V to the chin.",
+   "hair": "HR-P28: the hair ramp spans blue-navy -> pink-lavender (chroma 1.0), a sheen arc, an ahoge and a third flyaway at 144; the head-top rosace pin with two veil tails is modelled (r5_blender.pin, azimuth 25 / elevation 58, r 3.4 cm).",
+   "body": "Idle: upper chest 8 -> 11, head tilt 9 -> 7 and chin 5 -> 6, neck_l 1.15 (all shots), the near bell smaller and blown back. Back: the near bell x0.62 blown toward screen right and the camera so the back and hip read (trial raw/r5_bk0 against r5_bk1). CL-P24: a gold underbust trim with a 2-step skin shadow under it.",
+   "hands": "Painted fists on the idle and back glaive hands (6x6 at 144, 4x4 at 80, gold cuff, knuckle crease) at the render's wrist landmarks, and a painted hip hand (grouped fingers, one split). The 'blue claw at the hip' was the hair tail's azure tips: recoloured to the hair's violet there (matbox), the tips elsewhere stay azure but go periwinkle in the ramp (the materials critic: reserve saturated blue for the gem and eyes).",
+   "finish": "PX-P46 changed: rim_arcs (one contiguous arc of up to 7 px per run, runs under 5 dropped) replaces rim_limit's 3 px beads. PX-P49: contour_clean (0-4 px matched per still). X's lower key: white/veil/skin/hair/stocking/lining gammas up."
+  },
+  "measured": {
+   "_doc": "r4_metrics.py on the figure only (sil.png) -> lanes/drive9/metrics_r5.json. R4 = round 4 (prev), R5 = mix P painted (alt), R5xu = mix X before the paint-over, R5x = ours.",
+   "R4": {
+    "idle_144": {
+     "colours": 196,
+     "S_mean": 0.399,
+     "p90_value": 0.906,
+     "V_lt_035": 0.334,
+     "flat_steps": 0.331,
+     "hard_steps": 0.32
+    },
+    "idle_80": {
+     "colours": 146,
+     "S_mean": 0.394,
+     "p90_value": 0.906,
+     "V_lt_035": 0.35,
+     "flat_steps": 0.265,
+     "hard_steps": 0.36
+    },
+    "n1_144": {
+     "colours": 205,
+     "S_mean": 0.438,
+     "p90_value": 0.871,
+     "V_lt_035": 0.393,
+     "flat_steps": 0.491,
+     "hard_steps": 0.188
+    },
+    "n1_80": {
+     "colours": 147,
+     "S_mean": 0.431,
+     "p90_value": 0.867,
+     "V_lt_035": 0.427,
+     "flat_steps": 0.408,
+     "hard_steps": 0.257
+    },
+    "q_144": {
+     "colours": 187,
+     "S_mean": 0.383,
+     "p90_value": 0.902,
+     "V_lt_035": 0.267,
+     "flat_steps": 0.364,
+     "hard_steps": 0.325
+    },
+    "q_80": {
+     "colours": 134,
+     "S_mean": 0.379,
+     "p90_value": 0.906,
+     "V_lt_035": 0.326,
+     "flat_steps": 0.281,
+     "hard_steps": 0.402
+    },
+    "back_144": {
+     "colours": 211,
+     "S_mean": 0.432,
+     "p90_value": 0.882,
+     "V_lt_035": 0.436,
+     "flat_steps": 0.354,
+     "hard_steps": 0.217
+    },
+    "back_80": {
+     "colours": 144,
+     "S_mean": 0.428,
+     "p90_value": 0.851,
+     "V_lt_035": 0.48,
+     "flat_steps": 0.307,
+     "hard_steps": 0.294
+    }
+   },
+   "R5": {
+    "idle_144": {
+     "colours": 201,
+     "S_mean": 0.399,
+     "p90_value": 0.906,
+     "V_lt_035": 0.31,
+     "flat_steps": 0.342,
+     "hard_steps": 0.306
+    },
+    "idle_80": {
+     "colours": 147,
+     "S_mean": 0.395,
+     "p90_value": 0.902,
+     "V_lt_035": 0.35,
+     "flat_steps": 0.265,
+     "hard_steps": 0.385
+    },
+    "n1_144": {
+     "colours": 201,
+     "S_mean": 0.446,
+     "p90_value": 0.878,
+     "V_lt_035": 0.386,
+     "flat_steps": 0.486,
+     "hard_steps": 0.186
+    },
+    "n1_80": {
+     "colours": 137,
+     "S_mean": 0.442,
+     "p90_value": 0.839,
+     "V_lt_035": 0.403,
+     "flat_steps": 0.431,
+     "hard_steps": 0.256
+    },
+    "q_144": {
+     "colours": 179,
+     "S_mean": 0.388,
+     "p90_value": 0.902,
+     "V_lt_035": 0.257,
+     "flat_steps": 0.381,
+     "hard_steps": 0.309
+    },
+    "q_80": {
+     "colours": 135,
+     "S_mean": 0.381,
+     "p90_value": 0.902,
+     "V_lt_035": 0.273,
+     "flat_steps": 0.282,
+     "hard_steps": 0.418
+    },
+    "back_144": {
+     "colours": 203,
+     "S_mean": 0.44,
+     "p90_value": 0.875,
+     "V_lt_035": 0.447,
+     "flat_steps": 0.378,
+     "hard_steps": 0.209
+    },
+    "back_80": {
+     "colours": 149,
+     "S_mean": 0.432,
+     "p90_value": 0.871,
+     "V_lt_035": 0.466,
+     "flat_steps": 0.301,
+     "hard_steps": 0.322
+    }
+   },
+   "R5xu": {
+    "idle_144": {
+     "colours": 190,
+     "S_mean": 0.405,
+     "p90_value": 0.902,
+     "V_lt_035": 0.315,
+     "flat_steps": 0.342,
+     "hard_steps": 0.297
+    },
+    "idle_80": {
+     "colours": 135,
+     "S_mean": 0.397,
+     "p90_value": 0.902,
+     "V_lt_035": 0.336,
+     "flat_steps": 0.278,
+     "hard_steps": 0.377
+    },
+    "n1_144": {
+     "colours": 186,
+     "S_mean": 0.448,
+     "p90_value": 0.855,
+     "V_lt_035": 0.392,
+     "flat_steps": 0.5,
+     "hard_steps": 0.184
+    },
+    "n1_80": {
+     "colours": 135,
+     "S_mean": 0.432,
+     "p90_value": 0.839,
+     "V_lt_035": 0.427,
+     "flat_steps": 0.44,
+     "hard_steps": 0.249
+    },
+    "q_144": {
+     "colours": 173,
+     "S_mean": 0.389,
+     "p90_value": 0.898,
+     "V_lt_035": 0.278,
+     "flat_steps": 0.365,
+     "hard_steps": 0.315
+    },
+    "q_80": {
+     "colours": 131,
+     "S_mean": 0.382,
+     "p90_value": 0.898,
+     "V_lt_035": 0.28,
+     "flat_steps": 0.272,
+     "hard_steps": 0.415
+    },
+    "back_144": {
+     "colours": 187,
+     "S_mean": 0.443,
+     "p90_value": 0.875,
+     "V_lt_035": 0.439,
+     "flat_steps": 0.381,
+     "hard_steps": 0.203
+    },
+    "back_80": {
+     "colours": 142,
+     "S_mean": 0.44,
+     "p90_value": 0.839,
+     "V_lt_035": 0.473,
+     "flat_steps": 0.301,
+     "hard_steps": 0.316
+    }
+   },
+   "R5x": {
+    "idle_144": {
+     "colours": 197,
+     "S_mean": 0.402,
+     "p90_value": 0.902,
+     "V_lt_035": 0.31,
+     "flat_steps": 0.333,
+     "hard_steps": 0.31
+    },
+    "idle_80": {
+     "colours": 145,
+     "S_mean": 0.395,
+     "p90_value": 0.906,
+     "V_lt_035": 0.341,
+     "flat_steps": 0.265,
+     "hard_steps": 0.384
+    },
+    "n1_144": {
+     "colours": 195,
+     "S_mean": 0.448,
+     "p90_value": 0.851,
+     "V_lt_035": 0.393,
+     "flat_steps": 0.5,
+     "hard_steps": 0.183
+    },
+    "n1_80": {
+     "colours": 137,
+     "S_mean": 0.432,
+     "p90_value": 0.839,
+     "V_lt_035": 0.428,
+     "flat_steps": 0.438,
+     "hard_steps": 0.251
+    },
+    "q_144": {
+     "colours": 177,
+     "S_mean": 0.388,
+     "p90_value": 0.898,
+     "V_lt_035": 0.275,
+     "flat_steps": 0.368,
+     "hard_steps": 0.312
+    },
+    "q_80": {
+     "colours": 138,
+     "S_mean": 0.382,
+     "p90_value": 0.898,
+     "V_lt_035": 0.28,
+     "flat_steps": 0.272,
+     "hard_steps": 0.413
+    },
+    "back_144": {
+     "colours": 200,
+     "S_mean": 0.446,
+     "p90_value": 0.875,
+     "V_lt_035": 0.441,
+     "flat_steps": 0.38,
+     "hard_steps": 0.204
+    },
+    "back_80": {
+     "colours": 150,
+     "S_mean": 0.441,
+     "p90_value": 0.839,
+     "V_lt_035": 0.472,
+     "flat_steps": 0.297,
+     "hard_steps": 0.319
+    }
+   },
+   "mass_body_over_H2_glaive_out": {
+    "_doc": "sil minus haft/steel/edge/glass materials, / px^2 (not d9_metrics' definition)",
+    "R4": {
+     "idle": [
+      0.302,
+      0.337
+     ],
+     "back": [
+      0.276,
+      0.312
+     ]
+    },
+    "R5": {
+     "idle": [
+      0.3,
+      0.331
+     ],
+     "back": [
+      0.286,
+      0.321
+     ]
+    },
+    "R5x": {
+     "idle": [
+      0.28,
+      0.31
+     ],
+     "back": [
+      0.276,
+      0.311
+     ]
+    }
+   },
+   "key_trial": "the same render (raw/r5x_t1 idle 144): V<0.35 0.300 with r5_finish, 0.315 with r5x_finish's gammas"
+  },
+  "not_done": [
+   "the integrated chain's constructed hand stamps and two-hand grip (author_hands.py works in palette codes; the fists are painted instead)",
+   "bodice tension lines and the collar cross at 5x7; the stained-glass hem and cuff panels",
+   "round 4's cloth-fold, stocking-sheen, spine and chest-repaint paint layers (placed on round 4's renders; not re-authored)",
+   "N1 stretch and squash; the motion lane's frames through this finish and paint-over",
+   "a real low-key move: the input gammas barely move V<0.35 because the per-material palette re-spreads the tones",
+   "bust apex drop (2-3 px) and a designed teardrop contour (a shape-key job for the figure-pose lane's bust)"
+  ]
  }
 }

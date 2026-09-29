@@ -189,8 +189,22 @@ float sceneLight(vec2 s, float depth) {
       }
       // what is left of the lower cloud, lit rose from beneath by the sun
       L.push(billows({ name: "cloud-sea", depth: 26, base: hor + 90 * u, wander: 8 * u, cell: 30 * u, radius: 16 * u, bottom: H + 400, drift: 2, row: "cloudd", tone: 0.28, range: 0.55, tint: 0.35, lightGain: 1.8, seed: 12, crown: 0.7 }));
-      // the lamps you have lit (shrines 1-6), far below along the way you came
-      L.push({ kind: "points", name: "lit-lamps", depth: 40, fog: 0.1, blend: "add", system: new LitLamps([[Math.round(W * 0.46 + 10 * u), hor + 2 * u], [Math.round(W * 0.53), hor + 10 * u], [Math.round(W * 0.575), hor + 17 * u], [Math.round(W * 0.035), Math.round(H * 0.34)], [Math.round(W * 0.9), hor + 64 * u], [Math.round(W * 0.97), hor + 86 * u]], ctx.row("lamp")) });
+      // the lamps you have lit (shrines 1-6), far below along the way you came. From the tip (the rail
+      // camera sits at the room's east clamp there) the edge you climbed covers the middle of the view
+      // from about (0, 567) up to the deck at (1013, 267) (view px at 1280 x 720), and the storm covers
+      // the far left, so every lamp stands where the tip can see it: the yard on the lake's near shore
+      // (west, under the sun), the shelter out on the plain, the hollow's mouth on its knoll, the alcove
+      // on the spire's flank straight below the tip, the pilgrim shrine and the porch down the ring
+      // segment in the east
+      const lamps: [number, number][] = [
+        [Math.round(W * 0.21), hor + 4 * u],
+        [Math.round(W * 0.37), hor + 30 * u],
+        [Math.round(W * 0.46 + 10 * u), hor + 2 * u],
+        [Math.round(W * 0.83), hor + 50 * u],
+        [Math.round(W * 0.9), hor + 64 * u],
+        [Math.round(W * 0.97), hor + 86 * u],
+      ];
+      L.push({ kind: "points", name: "lit-lamps", depth: 40, fog: 0.1, blend: "add", system: new LitLamps(lamps, ctx.row("lamp")) });
       // the storm, still sitting on the spire behind you (west): it never clears
       {
         L.push(spireStorm(W, H, u));
