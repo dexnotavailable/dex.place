@@ -108,9 +108,14 @@ export function renderMarkdown(body: string): { html: string; headings: Heading[
           (title ? `<span class="code__title">${esc(title)}</span>` : "") +
           `<span class="code__copy">${copyButton(copy, title ? `code: ${title}` : "code")}</span>` +
           `</figcaption>`;
+        // The block scrolls sideways, so it takes keyboard focus; a focusable
+        // box needs a role and a name to be announced, and a <pre> may only
+        // carry aria-label with a role. So it is a named region, like the
+        // scrolling tables (below).
+        const name = title || (label ? `${label} code` : "Code");
         return (
           `<figure class="code"${lang ? ` data-lang="${esc(lang.toLowerCase())}"` : ""}>${bar}` +
-          `<pre tabindex="0"${label ? ` aria-label="${esc(title || `${label} code`)}"` : ""}><code>${highlight(text, lang)}</code></pre></figure>\n`
+          `<pre tabindex="0" role="region" aria-label="${esc(name)}"><code>${highlight(text, lang)}</code></pre></figure>\n`
         );
       },
 
