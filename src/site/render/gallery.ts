@@ -126,6 +126,12 @@ const TABLET_W = 820;
 export const MID_COLLAGE = "(min-width: 660px) and (max-width: 1095px)";
 /** The mid layout on a 1.5x-or-denser screen: a tablet. Its tiles are capped (tabletCap). */
 export const TABLET_COLLAGE = `${MID_COLLAGE} and (min-resolution: 1.5dppx)`;
+/**
+ * TABLET_COLLAGE split at 850px, for the tablet lead tiles only (leadTabletCaps):
+ * tablets up to an 11-inch one in portrait (768-834px), and the larger ones (1024px).
+ */
+export const TABLET_SMALL = "(min-width: 660px) and (max-width: 849px) and (min-resolution: 1.5dppx)";
+export const TABLET_BIG = "(min-width: 850px) and (max-width: 1095px) and (min-resolution: 1.5dppx)";
 /** The collage's wide layout. */
 export const WIDE_COLLAGE = "(min-width: 1096px)";
 /** The wide layout on a 1x screen: a desktop monitor. Its lead tiles are capped (leadWideCaps). */
@@ -289,7 +295,8 @@ export function tabletCap(item: GalleryItem, cssWidth: number): number {
 //   whenever it landed (6 s on a slow phone line). The pair loads together.
 // - Tablet (mid): the largest picture in the first two rows, and any within
 //   3% of it (today the big second-row piece, 03, which the phone pair's 960
-//   copies used to hold back to 13-15 s).
+//   copies used to hold back to 13-15 s), with its caps split at 850px
+//   (leadTabletCaps: TABLET_SMALL, TABLET_BIG).
 // - Desktop (wide): the phone's lead tiles, as before (the first row's pair),
 //   on a 1x screen from copies of at least 0.9x (leadWideCaps).
 // Each device class's lead tiles share one byte budget on its first load
@@ -367,22 +374,46 @@ export function leadPhoneCaps(tiles: readonly Placed[]): Map<Placed, number> {
   );
 }
 
+/** Pixels in a piece's copy `w` wide. */
+const pixels = (item: GalleryItem, w: number): number => w * Math.round((w * item.height) / item.width);
+
+/** The two tablet classes: the screen a lead's cap ladder is sized for, and the class's widest screen. */
+const TABLET_CLASSES = { small: { ref: TABLET_W, max: 849 }, big: { ref: 1024, max: 1095 } } as const;
+export type TabletClass = keyof typeof TABLET_CLASSES;
+
 /**
- * Tablet caps for the tablet's lead tiles: the sharpest copies between 1x
- * and the tablet cap (1.5x) of each tile's width on the reference tablet
- * that together fit the budget, or the 1x copies when nothing sharper fits.
- * The floor is the first copy at or above 1x, never one just under it: a
- * browser scores an upscaled image by its own pixels for Largest Contentful
- * Paint, so a lead drawn from fewer pixels than it covers would lose the
- * largest paint to the next big tile to land (a slightly smaller 1.2x piece
- * on an 820px tablet), and it looks soft at 2x besides.
+ * Tablet caps for the tablet's lead tiles (tabletLeadTiles) in one tablet
+ * class (TABLET_SMALL or TABLET_BIG): the sharpest copies from the tablet
+ * cap (1.5x) of each tile's width on the class's reference tablet down to a
+ * floor, that together fit the budget, or the floors when nothing sharper
+ * fits. A browser scores an upscaled image by its own pixels for Largest
+ * Contentful Paint, so a lead drawn from fewer pixels than another tile on
+ * the screen scores would lose the largest paint to it when it lands: 03 at
+ * its 512 copy lost to 04 at 640 (5.6-7.2 s at 820x1180), and at its 560 copy
+ * to 04 at 640 on a 1024x1366 tablet (5.5 s). So the floor is the first copy
+ * with at least as many pixels as any other tile can score on the class's
+ * widest screen at its tablet cap, and never under 0.9x there (soft at 2x).
+ * Today: 560 up to 849px (1.0-1.07x at 768-820, 208 KB), 640 from 850px (as
+ * before the split: 0.86-0.92x at 1024-1095, 262 KB).
  */
-export function leadTabletCaps(tiles: readonly Placed[]): Map<Placed, number> {
+export function leadTabletCaps(placed: readonly Placed[], size: TabletClass): Map<Placed, number> {
+  const { ref, max } = TABLET_CLASSES[size];
+  const tiles = tabletLeadTiles(placed);
+  const rival = Math.max(
+    0,
+    ...placed
+      .filter((p) => !tiles.includes(p))
+      .map((p) => {
+        const w = imageWidth(p.slots.mid, 0.91 * max);
+        return Math.min((w * w * p.item.height) / p.item.width, pixels(p.item, tabletCap(p.item, tileTabletWidth(p.slots))));
+      }),
+  );
   return sharedCaps(
     tiles,
     tiles.map((p) => {
-      const css = tileTabletWidth(p.slots);
-      return ladder(p.item, tabletCap(p.item, css), allWidths(p.item).find((w) => w >= css) ?? p.item.width);
+      const css = imageWidth(p.slots.mid, 0.91 * ref);
+      const outscores = allWidths(p.item).find((w) => pixels(p.item, w) >= rival) ?? p.item.width;
+      return ladder(p.item, tabletCap(p.item, css), Math.max(outscores, atLeast(p.item, 0.9 * css)));
     }),
   );
 }
@@ -431,11 +462,25 @@ interface Live {
 const NONE: Live = { phone: false, tablet: false, wide: false };
 const ALL: Live = { phone: true, tablet: true, wide: true };
 
-/** A tile's phone and tablet caps, and its 1x desktop cap when it leads the wide layout. */
+/**
+ * A tile's phone and tablet caps; a tablet lead's cap on the larger tablets
+ * (TABLET_BIG) when it differs there; and its 1x desktop cap when it leads
+ * the wide layout.
+ */
 interface Caps {
   readonly phone: number;
   readonly tablet: number;
+  readonly tabletBig?: number;
   readonly wide?: number;
+}
+
+/** A tile's tablet <source> media and srcsets: split at 850px for a lead whose caps differ there. */
+function tabletSets(item: GalleryItem, caps: Caps): [string, string][] {
+  if (caps.tabletBig === undefined || caps.tabletBig === caps.tablet) return [[TABLET_COLLAGE, artSrcset(item, caps.tablet)]];
+  return [
+    [TABLET_SMALL, artSrcset(item, caps.tablet)],
+    [TABLET_BIG, artSrcset(item, caps.tabletBig)],
+  ];
 }
 
 /**
@@ -453,7 +498,7 @@ function tileSources(p: Placed, caps: Caps, live: Live, tail: string): string {
     `<source media="${media}" ${at("srcset", on)}="${srcset}" sizes="${sizes}" />`;
   return (
     source(PHONE_COLLAGE, artSrcset(item, caps.phone), narrowSizes(slots), live.phone) +
-    source(TABLET_COLLAGE, artSrcset(item, caps.tablet), midSizes(slots), live.tablet) +
+    tabletSets(item, caps).map(([media, srcset]) => source(media, srcset, midSizes(slots), live.tablet)).join("") +
     (live.tablet !== img ? source(MID_COLLAGE, artSrcset(item), midSizes(slots), live.tablet) : "") +
     (caps.wide !== undefined ? source(WIDE_1X, artSrcset(item, caps.wide), wideSizes(slots), live.wide) : "") +
     (live.wide !== img ? source(WIDE_COLLAGE, artSrcset(item), wideSizes(slots), live.wide) : "") +
@@ -534,7 +579,8 @@ function leadPlan(placed: readonly Placed[]): LeadPlan {
   const phone = leadTiles(placed);
   const tablet = tabletLeadTiles(placed);
   const phoneCaps = leadPhoneCaps(phone);
-  const tabletCaps = leadTabletCaps(tablet);
+  const tabletCaps = leadTabletCaps(placed, "small");
+  const tabletBigCaps = leadTabletCaps(placed, "big");
   // Desktop keeps the phone's lead tiles (the first row's pair there).
   const wideCaps = leadWideCaps(phone);
   return {
@@ -543,6 +589,7 @@ function leadPlan(placed: readonly Placed[]): LeadPlan {
     caps: (p) => ({
       phone: phoneCaps.get(p) ?? phoneCap(p.item, tilePhoneWidth(p.slots)),
       tablet: tabletCaps.get(p) ?? tabletCap(p.item, tileTabletWidth(p.slots)),
+      tabletBig: tabletBigCaps.get(p),
       wide: wideCaps.get(p),
     }),
   };
@@ -563,7 +610,8 @@ function leadPlan(placed: readonly Placed[]): LeadPlan {
 // against 1.3-1.8 s.) It starts:
 // - phone: the first tile, atop the section on every phone (its twin sits
 //   below the fold on most, and ARRIVAL still starts it when it is in view);
-// - tablet: the tablet lead tiles (tabletLeadTiles), with their shared caps;
+// - tablet: the tablet lead tiles (tabletLeadTiles), with their shared caps,
+//   one preload per tablet class where the caps differ;
 // - desktop: the first row's pair (the phone's lead tiles, as on /gallery/),
 //   at their desktop caps on a 1x screen (WIDE_1X) and uncapped on denser
 //   ones (WIDE_DENSE: preload media must not overlap, or both would load).
@@ -584,7 +632,7 @@ export function galleryArrival(content: SiteContent): string {
   const plan = leadPlan(placed);
   const links: [string, string, string][] = [
     [PHONE_COLLAGE, artSrcset(first.item, plan.caps(first).phone), narrowSizes(first.slots)],
-    ...plan.tablet.map((p): [string, string, string] => [TABLET_COLLAGE, artSrcset(p.item, plan.caps(p).tablet), midSizes(p.slots)]),
+    ...plan.tablet.flatMap((p) => tabletSets(p.item, plan.caps(p)).map(([media, srcset]): [string, string, string] => [media, srcset, midSizes(p.slots)])),
     ...plan.phone.flatMap((p): [string, string, string][] => [
       [WIDE_1X, artSrcset(p.item, plan.caps(p).wide), wideSizes(p.slots)],
       [WIDE_DENSE, artSrcset(p.item), wideSizes(p.slots)],

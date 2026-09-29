@@ -7,7 +7,8 @@ re-tuned without Blender.
       --python D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/d9_blender.py -- \
       --out D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/<key> [--shots idle,n1,q,back] [--px 144,80]
       [--ss 4] [--head 1.10] [--drape p5|none|<shot>=<patch>,...] [--save-lane] [--r2 <round-2 json>]
-      [--blend <lane .blend>] [--neck-l 1.0]   (round 5: render another lane build, e.g. lanes/drive9n.blend; never rosace.blend)
+      [--blend <lane .blend>] [--neck-l 1.0]   (round 5: render another lane build, e.g. lanes/drive9n.blend; since the promotion also the
+      canonical rosace.blend, opened read-only: stills_v2.py's default chain)
 
 Per shot and size, in <out>/<shot>/px<N>/: id, normal, depth, light (R = the toon ramp input v, G = ao, B = the
 spec band; materials.py), beauty (the toon, for reference), noise (R = brush noise, G = strand noise stretched
@@ -158,7 +159,9 @@ def main():
     R2 = json.load(open(r2p, encoding="utf-8")) if r2p else {}
 
     blend = common.arg(argv, "--blend", BLEND)       # round 5: the recombined build (lanes/drive9n.blend)
-    assert os.path.basename(blend) != "rosace.blend"
+    # drive-9 promotion (PIPELINE 3.6r): stills_v2.py renders the canonical rosace.blend through here. The opened file is
+    # never saved (the render-time patches stay in memory; --save-lane writes a copy to lanes/drive9_idle.blend only).
+    assert not (save_lane and os.path.basename(blend) == "rosace.blend"), "--save-lane is for lane builds"
     bpy.ops.wm.open_mainfile(filepath=blend)
     sc = bpy.context.scene
     materials.rebind()

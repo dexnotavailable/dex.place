@@ -15,7 +15,7 @@ Status tags:
 - **[in progress]**: built in part, or waiting on a redraw or engine change.
 - **[proposed]**: designed and checked by arithmetic, but not built or playtested yet.
 
-Last full update: 2026-09-29 (Integrate step, 3.6g: the five part lanes in the canonical build and stills). Latest section: 3.6n (drive 9 whole-character round 2, 2026-09-29).
+Last full update: 2026-09-29 (Integrate step, 3.6g: the five part lanes in the canonical build and stills). Latest section: 3.6r (drive 9 round 2 promoted: the canonical build and stills make its look by default, 2026-09-29).
 
 ---
 
@@ -1040,7 +1040,8 @@ backup at all. Nothing figure-pose built is in here: its bust shape S5 and appea
 # the canonical build (needs build/rosace_v1.blend and build/rosace_pre_artistry.blend)
 python tools/pixel-pipeline/blender_env.py run --python-exit-code 1 --python tools/pixel-pipeline/build_rosace_v2.py
 # the integrated stills (default out build/renders/integrated), then the sheets
-python tools/pixel-pipeline/stills_v2.py [--no-render] [--only idle_hero] [--config <trial.json>]
+# (since 3.6r the default chain is drive 9: the integrated chain needs --chain integrated; --config implies it)
+python tools/pixel-pipeline/stills_v2.py --chain integrated [--no-render] [--only idle_hero] [--config <trial.json>]
 python tools/pixel-pipeline/integrated_sheets.py
 # N1 on the integrated build (motion_finish.py runs by default; --no-finish skips it)
 python tools/pixel-pipeline/rosace_v2/motion_v2.py --tag integrated --review review/rosace/art/integrated/motion
@@ -1929,6 +1930,75 @@ python tools/pixel-pipeline/drive9/r4_metrics.py --set R4=<raw>/R4:R4 --set R5=<
 python tools/pixel-pipeline/drive9/d9_round.py --round round-5 --seed 20261601 --raw <raw>/R5x --tag R5x --alt-raw <raw>/R5 --alt-tag R5 \
     --prev-raw <raw>/R4 --prev-tag R4 --confounds tools/pixel-pipeline/drive9/r5_confounds.json --files r5_model.json,r5x_model.json,...
 python tools/pixel-pipeline/drive9/r5_look.py
+```
+
+### 3.6r Promote drive 9 round 2: the canonical build and stills make the judged round-2 look [done 2026-09-29; `build_rosace_v2.py`, `stills_v2.py`, `drive9/d9_blender.py`, `art/rosace/drive9.json` `promoted`]
+
+The drive-9 loop ran five blind whole-character rounds (3.6m-3.6q). Round 2 scored best, 5.78 over five critics, with the refs at
+9. It beat the integrated build twice in blind sets: in round 2 itself (control 5.6) and in round 3, where it was `prev` (5.7
+against the control's 5.2). The integrated build scored 5.6 in the finish-routes bake-off. Round 4 tied round 2 (5.7), but it leans
+on hand-painted per-still layers that don't carry to new poses or motion frames, and rounds 3 and 5 scored lower. So round 2 is
+the one promoted: it is all procedural, a model patch plus a finish json. ART-RULES 10, round D9-P, has the per-lens
+reading.
+
+- **Backup:** `build/rosace_pre_drive9.blend` (sha256 `23545647...`, the integrated WH2 build, with `_build.json`). `rosace.blend` is
+  now sha256 `aef28c7f...`. `build_rosace_v2.py` refuses to write the canonical file with the drive9 chain unless that backup exists,
+  and it never writes any backup (`rosace_v1`, `rosace_pre_artistry`, `rosace_pre_drive9`).
+- **The pick file:** `art/rosace/drive9.json` `promoted`: `f3_variant` L, head 1.10, `model` `drive9/r2_model.json`, `finish`
+  `drive9/r2_finish.json`, tag R2, the four pose files with the sha1s round 2 was judged on, and the sha1s of the r2 jsons.
+  `integrated.json` is unchanged: the drive-9 build is the integrated build plus route F3's mass.
+- **`build_rosace_v2.py`** takes `--chain drive9|integrated` (or `ROSACE_CHAIN`). The default is drive9. It loads
+  `finish_f3/overrides.py` under its own module name (`overrides` is also the face tool's name) and runs `install('L')` before the
+  build, just as `drive9/bl_build.py` did for `lanes/drive9.blend`: ref-14 bells, the mid tabard with pipe folds, hair variant `f3`
+  (r2f with more volume). The bust stays `integrated.json`'s S7. The mass lever is **skipped** for `--bare`, when a lane driver already
+  set `ROSACE_OUTFIT`, `ROSACE_GLAIVE` or `ROSACE_HAIR`, or when a driver already installed an F3 variant (`finish_f3/bl_build.py`,
+  `drive9/bl_build.py`). So every lane driver builds exactly what it built before. `_build.json` has a `chain` block.
+- **`stills_v2.py`** takes `--chain drive9|integrated`. The default is drive9, and `--plain` or `--config` imply integrated. The drive-9
+  chain:
+  1. (`--build`) `build_rosace_v2.py` → `--blend` (rosace.blend by default);
+  2. `drive9/d9_blender.py --blend <blend> --head 1.10 --r2 drive9/r2_model.json`: the figure-pose lane's appeal poses through its
+     applier (read-only), drape p5, round 2's render-time patches (the tabard flare, the circlet, the pose patches), route F2's head
+     scale; the passes at 4x plus facepass and landmarks;
+  3. `drive9/d9_post.py --finish drive9/r2_finish.json --tag R2`;
+  4. `still.png`, `still_ground.png`, `sil.png` and `post.json` copied up from `R2/` into `<shot>/px<N>/`, with `_x3` and `_x6`
+     previews.
+
+  The shots are idle, n1, q and back at 144 and 80. `--only` takes those names or the integrated names (`idle_hero`, `n1_contact`,
+  `q_stamp`, `n2_pivot*`). The default out is `build/renders/drive9`; the integrated chain's default is still `renders/integrated`. If
+  a pose file's sha1 no longer matches the one round 2 was judged on (for example, the figure-pose lane promotes a refined
+  `idle_appeal.json`), the chain prints a WARN and writes it to `_log.json`. It still renders, because the drive-9 idle and back
+  follow the lane's newest pose by design.
+- **`d9_blender.py`** may now open `rosace.blend`. It never saves the opened file (the patches stay in memory), and `--save-lane`
+  on `rosace.blend` is refused.
+- **Proof** [M]:
+  - The finish alone: `d9_post.py` re-run on round 2's own passes gives 0 changed pixels on all 16 images (4 shots × 2 sizes ×
+    `still` / `still_ground`). The later rounds' steps are opt-in blocks in the finish json, so round 2's json skips them.
+  - A fresh build: `build_rosace_v2.py` (drive9 chain) into a scratch file gives a `_build.json` identical to
+    `lanes/drive9_build.json` except for the new `chain` block. `stills_v2.py` on that file gives 0 changed pixels against the
+    judged `lanes/drive9/raw/R2/<shot>/px<N>/R2/` stills, on all 16 images.
+  - The canonical run: `stills_v2.py --build` wrote `rosace.blend` (16 s), rendered (13 s) and finished (3 s). It also gives 0
+    changed pixels on all 16, both the tag copies and the top-level copies.
+  - The old chain: `--chain integrated` builds a `_build.json` identical to `rosace_pre_drive9_build.json` except for `chain`
+    (hair r2f, no F3). `stills_v2.py --chain integrated --no-render` on a copy of `renders/integrated/idle_hero` (with its `_layers`)
+    reproduces the old idle at 144 and 80 exactly.
+- **Not carried by the promotion** (open):
+  - The N2 thong variants and the 640 beauty (`--hi` is ignored on the drive-9 chain).
+  - The integrated chain's pixel passes: the constructed hands and weapon, the glyphs, the collar cross and the wh2 faces.
+  - Motion: `rosace_v2/motion_v2.py --tag integrated` now renders the drive-9 geometry with the old `motion_finish.py`. The finish
+    that matches is `drive9/d9_motion.py`, which still reads `lanes/drive9.blend` and d9_finish.json, not r2_finish.json. So no motion
+    has been re-run for the promoted look.
+  - `whole_sheets.py`, `integrated_sheets.py` and the finish lanes' controls read `renders/integrated` or rebuild from their own
+    files, so they are unchanged.
+  - The figure-pose lane was still running at promotion. Its `figure_shape.py build` defaults to `--src rosace.blend`, which now
+    carries F3 L's cloth. A variant it builds from the canonical file from here on includes that cloth.
+
+```sh
+# the canonical build + the promoted stills (one Blender at a time; about 35 s)
+python tools/pixel-pipeline/stills_v2.py --build          # = build_rosace_v2.py (drive9) -> rosace.blend, then the drive-9 chain -> renders/drive9
+python tools/pixel-pipeline/stills_v2.py --no-render      # the finish only, on the existing passes (about 3 s)
+# the old integrated build and stills (lane controls, comparison)
+python tools/pixel-pipeline/blender_env.py run --python-exit-code 1 --python D:/Dex/Projects/dex.place/tools/pixel-pipeline/build_rosace_v2.py -- --chain integrated --out <lane.blend>
+python tools/pixel-pipeline/stills_v2.py --chain integrated --blend <lane.blend> --out <dir>
 ```
 
 ### 3.7 Pose file and render outputs [proven, `rosace/posing.py`, `render_rosace.py`]
@@ -3346,7 +3416,7 @@ Each line gives the mistake, then the fix.
 | Blind base A/B (3.6d: v2 vs current base, same outfit; 144 + 80 px idle, N1 contact, back, N1 strip; v2 vs refs 07/09) | judged 2026-09-29: v2 6/10, old base 5/10; its cheap top fixes (bust, waist, thighs, leg length) applied in 3.6e, the pose fixes not |
 | Bust shape variants (3.6f: `figure_shape.py`, S0-S4 on the v2 body, garments keyed to follow) | built 2026-09-29 in `lanes/figure-pose-shape*.blend`, blind sheets in `review/rosace/art/figure-pose/shape/`; not adopted. S3 and S4 fail PS-N20 (shelf); +30% (S2) is the ceiling. FP2: the critics picked S3; S5 (S3's lift with S2's mass plus an upper fill, shelf 2.92) is shape.json's `current` and is applied in `lanes/figure-pose-base.blend`. Not promoted: a blind S3 vs S5 round comes first. Refine round 1: S7 (+42%, lift 4) and S8 (+50%) added, shelf ≤ 3.03; `current` = S7 and `lanes/figure-pose-base.blend` rebuilt with it, pending the blind S5/S7/S8 round in `review/rosace/art/figure-pose/refine/round-1/` |
 | Figure-pose applier (3.7b: `figure_pose.py`, a `figure` block on top of posing.py, check mode with landmarks.json) | built 2026-09-29 (FP2). Round-trip proven: all four pose files bone-identical to posing.py, idle_hero stills pixel-identical at 144 and 80. Rig-measurable PS checks in; the fill-based ones (PS-P02, P10, P16, P17, N07, N10) and the posed bust rows still to build (lane helper `work/A/fillcheck.py` approximates P02, P10, P17 and N07) |
-| Drive 9: the combined build (3.6l: F3 L + F2 head 1.10 + figure-pose appeal poses and S7 + the re-tuned F1 finish; `drive9.json`, `lanes/drive9.blend`) | built 2026-09-29, not promoted: idle, N1, Q and back at 144 and 80 plus the N1 motion through the finish. Whole round 1 (3.6m): blind sheets against refs 07/08/09/04 (+05 at 80) and the current build in `review/rosace/art/drive9/round-1/`, judged 5-5.5. Round 2 (3.6n) judged 5.5-6.2. Round 3 (3.6o) judged 5-5.5 (it regressed from round 2 on arms, posing and finish). Round 4 (3.6p): the round-3 fixes plus ESCALATION 2, a hand-authored paint-over on the four key stills at 144 and 80 (`art/rosace/overrides/drive9/`), blind sheets in `round-4/` with round 3 as prev and the render without the paint-over as under, judged 5.2-6 (paint-over and bare render tied). Round 5 (3.6q): the round-4 fixes plus ESCALATION 3, the same fixes on a recombined build (`lanes/drive9n.blend`: F3 N, the far bell blown back behind the haft, a lower key) picked over round 4's build by side-by-side; blind sheets in `round-5/` with the other mix as alt and round 4 as prev, awaiting critics. Open: the chain's pixel passes (constructed hands and weapon, glyphs, collar cross) and smears aren't in the finish; the stance fix belongs to the figure-pose lane |
+| Drive 9: the combined build (3.6l: F3 L + F2 head 1.10 + figure-pose appeal poses and S7 + the re-tuned F1 finish; `drive9.json`, `lanes/drive9.blend`) | built 2026-09-29; **round 2 promoted 2026-09-29 (3.6r)**: `build_rosace_v2.py` and `stills_v2.py` make its look by default (0 px from the judged stills; `rosace_pre_drive9.blend` is the backup). Idle, N1, Q and back at 144 and 80 plus the N1 motion through the finish. Whole round 1 (3.6m): blind sheets against refs 07/08/09/04 (+05 at 80) and the current build in `review/rosace/art/drive9/round-1/`, judged 5-5.5. Round 2 (3.6n) judged 5.5-6.2. Round 3 (3.6o) judged 5-5.5 (it regressed from round 2 on arms, posing and finish). Round 4 (3.6p): the round-3 fixes plus ESCALATION 2, a hand-authored paint-over on the four key stills at 144 and 80 (`art/rosace/overrides/drive9/`), blind sheets in `round-4/` with round 3 as prev and the render without the paint-over as under, judged 5.2-6 (paint-over and bare render tied). Round 5 (3.6q): the round-4 fixes plus ESCALATION 3, the same fixes on a recombined build (`lanes/drive9n.blend`: F3 N, the far bell blown back behind the haft, a lower key) picked over round 4's build by side-by-side; blind sheets in `round-5/` with the other mix as alt and round 4 as prev, judged 5.0-5.7 (5.36; round 4 as prev 5.68). Open: the chain's pixel passes (constructed hands and weapon, glyphs, collar cross) and smears aren't in the finish; the stance fix belongs to the figure-pose lane |
 | Appeal poses, refine round 1 (3.7b: `idle_appeal.json`, `back_appeal.json`) | built 2026-09-29 in `lanes/figure-pose.blend` (S7). Idle passes every rig check at 144 (PS-P01 at 80 fails, O-32); bust break 10 / 5 px at 144 / 80, bust keep-out 0 px, no skin islands. Awaiting the blind round against refs 07, 09, 04a, 04b; not promoted |
 | Route F1, hi-bit painterly finish (3.6i: `finish_f1/`, painterly material branch, 4x render, per-group OKLab palette, selective coloured outline) | built 2026-09-29 as a lane (`lanes/finish-F1.blend`), not promoted. Pick P4 passes 44 of 60 measured targets (control 11); blind sheets in `review/rosace/art/finish/F1/` await a critic. Open: PX-P15 (43-45 colours), N1 chromatic 0.78, O-35 |
 | Route F2 head scale (3.6i: `finish_f2/`, head 1.10/1.15/1.20 at pose time, bigger 144 eye stamps) | trial 2026-09-29: pick H110E (head ÷ H 0.181 → 0.195 on the appeal idle, inside the refs' 0.14-0.20; H120 0.208 rejected as big-headed). One judge (blind to the key), not promoted: no `integrated.json` hook yet |

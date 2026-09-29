@@ -1,6 +1,6 @@
 {
  "_doc": "Rosace art-rule checklist. Every rule in docs/character/ART-RULES.md has one entry here with its severity and HOW TO CHECK it. method: auto = a script can decide pass/fail; semi = a script measures and a person confirms; critic = only a human or critic eye can judge. tool_status: exists = tools/art-construct already computes the metric; exists_partial = the measurement exists but the pass/fail wrapper or the ids/face input does not; to_build = planned in tools/art-construct/rules_check.py (the rule prints SKIP until it is written); n/a = critic only. Thresholds are copied from ART-RULES.md; when a rule changes there, change it here in the same edit and add a learning-log row. basis tags: M measured, S <key> sourced (ART-RULES section 12), I inference, Dex = Dex's direction, other doc names point to that doc.",
- "version": "2026-09-29.5+fp0+fg1+rf2+fn1+rf3+fj1+d9+d9r1",
+ "version": "2026-09-29.5+fp0+fg1+rf2+fn1+rf3+fj1+d9+d9r1+d9p",
  "rules_doc": "docs/character/ART-RULES.md",
  "severity": {
   "block": "the drawing is rejected; fix before any review",
@@ -7777,6 +7777,32 @@
     "tool": "drive9/r5_post.contour_clean",
     "tool_status": "exists"
    }
+  },
+  {
+   "id": "WF-P22",
+   "area": "WF",
+   "kind": "parameter",
+   "severity": "major",
+   "added": "round D9-P (drive 9 report and promote)",
+   "rule": "Promote only a whole-character round that (a) beat the current canonical build as a blind letter, in its own round and again as 'prev' in the next; (b) is built from model and finish data, not per-still paint layers; (c) re-renders from a fresh canonical build to 0 changed pixels against the judged stills. Keep the pre-promotion canonical file as a backup no build may overwrite, and the old chain behind a flag.",
+   "basis": [
+    "task REPORT and PROMOTE (D9-P)",
+    "WF-P11",
+    "WF-P20"
+   ],
+   "check": {
+    "method": "auto",
+    "input": [
+     "art/rosace/drive9.json promoted",
+     "build/renders/drive9/<shot>/px<N>/still_ground.png",
+     "the judged stills named in promoted.judged",
+     "round key.json + verdicts"
+    ],
+    "metric": "changed pixels between the canonical re-render and the judged stills; the round's mean vs the control's in its own and the next blind set; paint layers in the promoted chain",
+    "pass": "0 px on every shot and size; beat the control in both sets; no per-still paint layer",
+    "tool": "stills_v2.py --build (drive9 chain) then a pixel diff against the judged tag (PIPELINE 3.6r proof)",
+    "tool_status": "exists_partial"
+   }
   }
  ],
  "_changes": [
@@ -7820,6 +7846,7 @@
   "2026-09-29 round D9-R2 (drive 9 whole-character round 2): new WF-P19, PS-P30, CL-P21, CL-P22, FC-P36, FC-P37, HR-P24, HR-P25, PX-P45. d9_round.py writes review/rosace/art/drive9/round-2/ (8 letters, round 1 as 'prev'). See ART-RULES 10, round D9-R2, and PIPELINE 3.6n.",
   "2026-09-29 round D9-R3 (drive 9 whole-character round 3): FC-P36 and FC-P37 changed; new FC-P38, HR-P26, PS-P31, CL-P23, PX-P46, PX-P47, PX-P48. d9_round.py writes review/rosace/art/drive9/round-3/ (8 letters, round 2 as 'prev'). See ART-RULES 10, round D9-R3, and PIPELINE 3.6o.",
   "2026-09-29 round D9-R4 (drive 9 whole-character round 4): PX-P46 changed (rim on peaks, 3 px, warm); new WF-P20, PS-N24, FC-P39, HR-P27. d9_round.py writes review/rosace/art/drive9/round-4/ (9 letters: round 3 as 'prev', the render without the paint-over as 'under'). See ART-RULES 10, round D9-R4, and PIPELINE 3.6p.",
-  "2026-09-29 round D9-R5 (drive 9 whole-character round 5, ESCALATION 3 recombine): FC-P39 and PX-P46 changed; new WF-P21, CL-P24, HR-P28, PX-P49. d9_round.py --alt-raw writes review/rosace/art/drive9/round-5/ (9 letters: ours = mix X, alt = mix P, round 4 as 'prev'). See ART-RULES 10, round D9-R5, and PIPELINE 3.6q."
+  "2026-09-29 round D9-R5 (drive 9 whole-character round 5, ESCALATION 3 recombine): FC-P39 and PX-P46 changed; new WF-P21, CL-P24, HR-P28, PX-P49. d9_round.py --alt-raw writes review/rosace/art/drive9/round-5/ (9 letters: ours = mix X, alt = mix P, round 4 as 'prev'). See ART-RULES 10, round D9-R5, and PIPELINE 3.6q.",
+  "2026-09-29 round D9-P (drive 9 report and promote): new WF-P22. Round 2 promoted: build_rosace_v2.py and stills_v2.py default to the drive-9 chain (--chain integrated keeps the old one); rosace_pre_drive9.blend is the backup. See ART-RULES 10, round D9-P and PIPELINE 3.6r."
  ]
 }

@@ -44,8 +44,19 @@ const browser = await chromium.launch({ channel: "msedge", args: ["--use-angle=d
 const page = await browser.newPage({ viewport: { width: VW, height: VH } });
 const errors = [];
 page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
+// every console error counts, 404s included, and every response of 400 or more and every failed
+// request; only a media request the page cancels itself (a music element let go) is set apart
 page.on("console", (m) => {
-  if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text());
+  if (m.type() === "error") errors.push(m.text());
+});
+page.on("response", (r) => {
+  if (r.status() >= 400) errors.push(`HTTP ${r.status()} ${r.url()}`);
+});
+const aborted = [];
+page.on("requestfailed", (r) => {
+  const why = r.failure()?.errorText ?? "";
+  if (/ERR_ABORTED/.test(why)) aborted.push(r.url());
+  else errors.push(`request failed ${r.url()} ${why}`);
 });
 const ev = (fn, a) => page.evaluate(fn, a);
 const FROM = arg("from", null); // debug: start the first round at a section ("D2 ", "E3 " ...) with the flags before it
@@ -296,7 +307,7 @@ async function beat(n, label, name) {
   note(`beat ${n} ${label}: t ${m.t} s in ${m.room}${m.area ? `/${m.area}` : ""}`);
 }
 
-const report = { port: PORT, viewport: [VW, VH], first: {}, later: {}, returning: {}, scroll: {}, errors };
+const report = { port: PORT, viewport: [VW, VH], first: {}, later: {}, returning: {}, scroll: {}, errors, aborted };
 
 // =====================================================================================
 // 1. the first round

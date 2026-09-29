@@ -2,7 +2,20 @@
 
   python tools/pixel-pipeline/stills_v2.py [--build] [--no-render] [--px 144,80] [--hi 640]
       [--blend D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend]
-      [--out D:/Dex/Projects/dex-place-art/rosace/build/renders/integrated] [--only idle_hero] [--plain]
+      [--out D:/Dex/Projects/dex-place-art/rosace/build/renders/drive9] [--only idle] [--plain]
+      [--chain drive9|integrated]
+
+Drive-9 chain (the default since the drive-9 promotion, 2026-09-29, PIPELINE.md 3.6r; the picks live in
+art/rosace/drive9.json 'promoted'): whole-character round 2's judged look on the canonical build.
+  1. (--build) build_rosace_v2.py (its default chain drive9: + route F3's mass variant L) -> --blend
+  2. drive9/d9_blender.py --blend <blend> --head 1.10 --r2 drive9/r2_model.json: the figure-pose lane's appeal
+     poses (read-only) + drape p5 + round 2's render-time patches (tabard flare, circlet, pose patches) + route
+     F2's head scale; the id/normal/depth/light/beauty/noise passes at 4x, facepass, landmarks
+  3. drive9/d9_post.py --finish drive9/r2_finish.json --tag R2: the painterly finish (numpy)
+  4. <shot>/px<N>/{still,still_ground,sil}.png (+ _x3, _x6) copied up from the R2 tag; a WARN when a pose file's
+     sha1 no longer matches the one round 2 was judged on
+  Shots: idle, n1, q, back (--only takes these or idle_hero / n1_contact / q_stamp / n2_pivot*). No --hi pass.
+--chain integrated: the chain below (default out renders/integrated). --plain and --config imply it.
 
 Stills: idle hero, N1 contact, Q stamp, the N2 pivot back view in the black and the white thong.
 One Blender process at a time.
@@ -162,18 +175,69 @@ def lane_passes(name, pose, px, still, cfg, preset, P, log):
     return notes
 
 
+D9_SHOT = {"idle_hero": "idle", "n1_contact": "n1", "q_stamp": "q", "n2_pivot": "back", "n2_pivot_black": "back",
+           "n2_pivot_white": "back"}
+
+
+def drive9_chain(a):
+    """the drive-9 chain (module doc): round 2's judged look on the canonical build"""
+    import hashlib
+    d9 = os.path.join(HERE, "drive9")
+    PR = json.load(open(os.path.join(REPO, "art", "rosace", "drive9.json"), encoding="utf-8"))["promoted"]
+    blend, out = os.path.abspath(a.blend), os.path.abspath(a.out)
+    assert not (a.build and os.path.basename(blend).startswith(("rosace_v1", "rosace_pre_"))), "never rebuild a backup"
+    shots = list(PR["shots"])
+    if a.only:
+        want = {D9_SHOT.get(x, x) for x in a.only.split(",")}
+        shots = [s_ for s_ in shots if s_ in want]
+    log, warn = [], []
+    for s_ in shots:
+        pf = os.path.join(POSES, PR["shots"][s_])
+        sha = hashlib.sha1(open(pf, "rb").read()).hexdigest()[:12]
+        if sha != PR["pose_sha1"][s_]:
+            warn.append(f"WARN pose {s_}: {os.path.basename(pf)} sha1 {sha}, round 2 was judged on {PR['pose_sha1'][s_]}")
+            print(warn[-1])
+    if a.build:
+        blender(["--python", os.path.join(HERE, "build_rosace_v2.py"), "--", "--out", blend], "build", log)
+    if not a.no_render:
+        blender(["--python", os.path.join(d9, "d9_blender.py"), "--", "--blend", blend, "--out", out,
+                 "--shots", ",".join(shots), "--px", a.px, "--head", str(PR["head"]),
+                 "--r2", os.path.join(REPO, PR["model"])], "render drive9", log)
+    run([sys.executable, os.path.join(d9, "d9_post.py"), "--root", out, "--finish", os.path.join(REPO, PR["finish"]),
+         "--tag", PR["tag"], "--shots", ",".join(shots), "--px", a.px], "finish drive9", log)
+    for s_ in shots:
+        for px in a.px.split(","):
+            d = os.path.join(out, s_, f"px{px}")
+            for f in ("still.png", "still_ground.png", "sil.png", "post.json"):
+                shutil.copyfile(os.path.join(d, PR["tag"], f), os.path.join(d, f))
+            previews(os.path.join(d, "still.png"))
+            previews(os.path.join(d, "still_ground.png"))
+    json.dump({"chain": "drive9", "blend": blend, "px": a.px, "shots": shots, "promoted": PR, "warn": warn,
+               "steps": log}, open(os.path.join(out, "_log.json"), "w"), indent=1, default=str)
+    print("stills in", out)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--blend", default=os.path.join(BUILD, "rosace.blend"))
-    ap.add_argument("--out", default=os.path.join(BUILD, "renders", "integrated"))
+    ap.add_argument("--out", default=None, help="default renders/drive9 (drive9 chain) or renders/integrated")
     ap.add_argument("--px", default="144,80")
     ap.add_argument("--hi", type=int, default=640, help="also a hi-res beauty pass at this px (0 = none)")
     ap.add_argument("--build", action="store_true")
     ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--only", default="", help="comma list of still names")
     ap.add_argument("--plain", action="store_true", help="the pre-integration chain: no lane passes")
-    ap.add_argument("--config", default=INTEGRATED, help="an integrated.json to trial (default: the canonical picks)")
+    ap.add_argument("--config", default=None, help="an integrated.json to trial (default: the canonical picks)")
+    ap.add_argument("--chain", default=None, choices=("drive9", "integrated"),
+                    help="drive9 (default) or the integrated chain (implied by --plain / --config)")
     a = ap.parse_args()
+    chain = a.chain or ("integrated" if (a.plain or a.config) else "drive9")
+    assert not (chain == "drive9" and a.plain), "--plain is the integrated chain's pre-integration variant"
+    a.config = a.config or INTEGRATED
+    if a.out is None:
+        a.out = os.path.join(BUILD, "renders", "drive9" if chain == "drive9" else "integrated")
+    if chain == "drive9":
+        return drive9_chain(a)
     blend, out = os.path.abspath(a.blend), os.path.abspath(a.out)
     # the retired v1 base may be rendered read-only for comparison; it is never rebuilt from here
     assert not (a.build and os.path.basename(blend) in ("rosace_v1.blend", "rosace_pre_artistry.blend")), \

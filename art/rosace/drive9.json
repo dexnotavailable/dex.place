@@ -902,5 +902,35 @@
    "a real low-key move: the input gammas barely move V<0.35 because the per-material palette re-spreads the tones",
    "bust apex drop (2-3 px) and a designed teardrop contour (a shape-key job for the figure-pose lane's bust)"
   ]
+ },
+ "promoted": {
+  "_doc": "Drive-9 promotion (2026-09-29, PIPELINE 3.6r): the canonical build and stills produce round 2's judged look by default. build_rosace_v2.py reads f3_variant (default chain 'drive9'); stills_v2.py reads the rest (its default chain 'drive9': d9_blender.py on rosace.blend with 'model' and 'head', then d9_post.py with 'finish' and 'tag'). '--chain integrated' on either is the old chain. Nothing in round2..round5 above changes.",
+  "round": 2,
+  "why": "Round 2 is the best whole-character round (5.78 over five critics; the refs 9). It beat the integrated build in two separate blind sets (round 2: 5.8 vs control 5.6; round 3, as 'prev': 5.7 vs control 5.2) and the integrated build's bake-off score (5.6). Round 4 tied it (5.7) but leans on hand-painted per-still overrides that do not carry to new poses or frames; round 2 is all procedural (model patches + finish json).",
+  "f3_variant": "L",
+  "bust": "S7 (integrated.json build.bust; = shape.json 'current' when round 2 rendered)",
+  "head": 1.1,
+  "model": "tools/pixel-pipeline/drive9/r2_model.json",
+  "finish": "tools/pixel-pipeline/drive9/r2_finish.json",
+  "tag": "R2",
+  "shots": {
+   "idle": "idle_appeal.json",
+   "n1": "n1_contact.json",
+   "q": "q_stamp.json",
+   "back": "back_appeal.json"
+  },
+  "pose_sha1": {
+   "idle": "a89be9fabdd7",
+   "n1": "7530082156ab",
+   "q": "d9801054cd42",
+   "back": "d65ee47e75d8"
+  },
+  "judged": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R2/<shot>/px<N>/R2/still_ground.png (review/rosace/art/drive9/round-2/)",
+  "sha1": {
+   "r2_model.json": "b8dc3cb59154",
+   "r2_finish.json": "086d0528f83b",
+   "r2_faces.json": "e6fa0fa85cf6",
+   "d9_finish.json": "dd362543678e"
+  }
  }
 }

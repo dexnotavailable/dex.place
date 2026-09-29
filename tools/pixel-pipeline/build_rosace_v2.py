@@ -7,6 +7,7 @@ kept as build/rosace_v1.blend (backed up before the first v2 write; build_rosace
 elsewhere). Run headless through the isolated wrapper (one Blender at a time):
   tools/pixel-pipeline/blender.ps1 --python tools/pixel-pipeline/build_rosace_v2.py '--' \
       [--out D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend] [--no-glaive] [--no-ao] [--bare]
+      [--chain drive9|integrated]   (default drive9 since the drive-9 promotion; see below)
 Exploration only: --keys JSON, --leg-stretch K, --torso-k K, --pinch JSON (rosace_v2/key_sweep.py).
 
 Steps: body (append, bake the body keys, quads, J_Bip_* names, chest split) -> head (plan the
@@ -22,6 +23,15 @@ rosace/hair_v3.py; 'control' = the v2 refit hair) and the shading lane's per-fac
 (rosace_v2/limbs.py). An environment variable that is already set wins, so a lane driver still builds
 its own variant. The canonical rosace.blend is only written when build/rosace_pre_artistry.blend (the
 pre-integration canonical file) exists.
+
+Drive-9 promotion (2026-09-29, PIPELINE.md 3.6r): the default chain is 'drive9', which adds route F3's
+mass variant (art/rosace/drive9.json 'promoted.f3_variant', L: ref-14 bells, the mid tabard with pipe
+folds, hair volume) through finish_f3/overrides.install before the build, exactly as drive9/bl_build.py
+made lanes/drive9.blend. '--chain integrated' (or ROSACE_CHAIN=integrated) is the old integrated build.
+The mass lever is skipped for --bare, when a lane driver already set ROSACE_OUTFIT / ROSACE_GLAIVE /
+ROSACE_HAIR, or when a driver already installed an F3 variant (finish_f3/bl_build.py, drive9/bl_build.py),
+so every lane driver builds what it built before. Writing rosace.blend with the drive9 chain needs
+build/rosace_pre_drive9.blend (the integrated canonical file) to exist; no backup is ever overwritten.
 """
 import json
 import os
@@ -55,7 +65,29 @@ TORSO_K = common.arg(argv, "--torso-k", None, float)
 CANON = os.path.join(common.BUILD, "rosace.blend")
 V1_BACKUP = os.path.join(common.BUILD, "rosace_v1.blend")   # the retired v1 base (Adopt, 2026-09-29)
 PRE_ART = os.path.join(common.BUILD, "rosace_pre_artistry.blend")   # canonical before the Integrate step
+PRE_D9 = os.path.join(common.BUILD, "rosace_pre_drive9.blend")      # canonical before the drive-9 promotion
 INTEGRATED = json.load(open(os.path.join(common.ART, "integrated.json"), encoding="utf-8"))["build"]
+# drive-9 promotion: the chain, and route F3's mass lever unless a lane driver owns this build
+CHAIN = common.arg(argv, "--chain", None) or os.environ.get("ROSACE_CHAIN") or "drive9"
+assert CHAIN in ("drive9", "integrated"), f"--chain drive9|integrated, not {CHAIN}"
+PROMOTED = json.load(open(os.path.join(common.ART, "drive9.json"), encoding="utf-8"))["promoted"]
+_LANE_ENV = [k for k in ("ROSACE_OUTFIT", "ROSACE_GLAIVE", "ROSACE_HAIR") if k in os.environ]
+_F3_DONE = getattr(sys.modules.get("overrides"), "REPORT", {}).get("variant") \
+    if hasattr(sys.modules.get("overrides"), "TABF") else None
+MASS = {"chain": CHAIN, "skipped": None}
+if CHAIN != "drive9":
+    MASS["skipped"] = "chain integrated"
+elif BARE:
+    MASS["skipped"] = "--bare"
+elif _LANE_ENV or _F3_DONE:
+    MASS["skipped"] = f"lane driver owns the build (env {_LANE_ENV}, f3 installed {_F3_DONE})"
+else:
+    import importlib.util
+    _p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "finish_f3", "overrides.py")
+    _spec = importlib.util.spec_from_file_location("f3_overrides", _p)    # 'overrides' is also the face tool's name
+    _f3 = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_f3)
+    MASS["f3"] = dict(_f3.install(PROMOTED["f3_variant"]))
 # the lane picks as defaults; a variable a lane driver already set wins
 os.environ.setdefault("ROSACE_OUTFIT", INTEGRATED["outfit"])
 os.environ.setdefault("ROSACE_GLAIVE", INTEGRATED["glaive"])
@@ -95,9 +127,13 @@ def main():
         assert os.path.exists(V1_BACKUP), "back up the v1 rosace.blend as rosace_v1.blend first"
         assert os.path.exists(PRE_ART), "back up the pre-integration rosace.blend as rosace_pre_artistry.blend first"
         assert not (BARE or KEYS or LEG_K or TORSO_K or PINCH), "exploration builds never write rosace.blend"
-    assert os.path.abspath(OUT) != os.path.abspath(V1_BACKUP), "never overwrite rosace_v1.blend"
-    assert os.path.abspath(OUT) != os.path.abspath(PRE_ART), "never overwrite rosace_pre_artistry.blend"
+        if CHAIN == "drive9":
+            assert os.path.exists(PRE_D9), "back up the integrated rosace.blend as rosace_pre_drive9.blend first"
+    for bk in (V1_BACKUP, PRE_ART, PRE_D9):
+        assert os.path.abspath(OUT) != os.path.abspath(bk), f"never overwrite {os.path.basename(bk)}"
     bpy.ops.wm.read_homefile(use_empty=True)
+    REPORT["chain"] = MASS
+    log("chain", json.dumps(MASS, default=str))
     REPORT["integrated"] = {"outfit": os.environ["ROSACE_OUTFIT"], "glaive": os.environ["ROSACE_GLAIVE"],
                             "hair": HAIR, "hair_materials": use_hair(HAIR), "limbs": INTEGRATED.get("limbs", False)}
     log("integrated", REPORT["integrated"])

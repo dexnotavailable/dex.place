@@ -536,7 +536,47 @@ async function lamps() {
   out.lamps = res;
 }
 
-const checks = { smoke, sit, strike, summon, archive, lift, blade, lamps };
+// --- api: the story API rebuilds a room and sets the start place; the runtime feeds the actor --
+async function api() {
+  dir("api");
+  const p = await open("manual&fresh&mute");
+  await p.ev(() => window.__world.begin());
+  const res = await p.ev(() => {
+    const w = window.__world, g = w.game, api = g.api;
+    const out = {};
+    w.teleport("A1", "start");
+    for (let i = 0; i < 400 && g.stream.status().split(" ").filter((s) => s.endsWith("*")).length < 3; i++) w.advance(5);
+    out.warm = g.stream.status();
+    const neighbour = g.room.def.neighbours.find((id) => g.stream.rooms.get(id)?.built);
+    out.rebuildCurrent = api.rebuild("A1");
+    out.rebuildNeighbour = [neighbour, api.rebuild(neighbour), g.stream.rooms.get(neighbour)?.built];
+    out.rebuildUnknown = api.rebuild("nowhere");
+    api.setRest("E2", "west");
+    out.restAfterSet = g.save.data.rest;
+    out.stored = JSON.parse(localStorage.getItem("dex.world.v1") ?? "{}").rest ?? null;
+    // the pixel world's actor is the player in every room with pixel matter, fed by the runtime
+    out.actors = {};
+    for (const id of ["A1", "B1", "C1", "C2", "D2", "E1", "E3"]) {
+      w.teleport(id, "");
+      w.advance(3);
+      const a = g.room.pixel?.world.actors?.[0];
+      const b = g.player.body;
+      out.actors[id] = a ? { x: Math.round(a.x), y: Math.round(a.y), player: [Math.round(b.x), Math.round(b.y)], h: a.h } : null;
+    }
+    return out;
+  });
+  // no story or Ringwater code reaches through the page's world handle any more
+  const { readdirSync, readFileSync } = await import("node:fs");
+  res.worldHandleReachIns = ["src/world/story", "src/world/rooms/ringwater"].flatMap((dd) => readdirSync(dd).filter((f) => f.endsWith(".ts")).filter((f) => readFileSync(`${dd}/${f}`, "utf8").includes("__world")).map((f) => `${dd}/${f}`));
+  res.errors = p.errors;
+  res.bad = p.bad;
+  await p.ctx.close();
+  save("api", res);
+  note(`api: rebuild current ${res.rebuildCurrent}, neighbour ${JSON.stringify(res.rebuildNeighbour)}, rest ${JSON.stringify(res.restAfterSet)}; actors ${Object.entries(res.actors).map(([k, v]) => `${k}:${v ? "ok" : "none"}`).join(" ")}`);
+  out.api = res;
+}
+
+const checks = { smoke, sit, strike, summon, archive, lift, blade, lamps, api };
 for (const [k, f] of Object.entries(checks)) if (which === k || which === "all") await f();
 await browser.close();
 console.log(JSON.stringify(out, null, 1).slice(0, 4000));

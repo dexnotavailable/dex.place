@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { breakRows, collage, imageWidth, LAYOUTS } from "./collage.ts";
 import { loadContent, loadGallery } from "./build/content.ts";
-import { artSrcset, collageBlock, collageSizes, DESKTOP_PIECE, galleryArrival, galleryOrder, galleryPage, gallerySection, leadPhoneCaps, leadTabletCaps, leadTiles, leadWideCaps, PIECE_PHONE_BUDGET, phoneCap, pieceDesktopCap, piecePage, piecePhoneCap, pieceTabletCap, pieceWidthAt, tabletCap, tabletLeadTiles, TABLET_COLLAGE, TABLET_PIECE, WIDE_1X } from "./render/gallery.ts";
+import { artSrcset, collageBlock, collageSizes, DESKTOP_PIECE, galleryArrival, galleryOrder, galleryPage, gallerySection, leadPhoneCaps, leadTabletCaps, leadTiles, leadWideCaps, PIECE_PHONE_BUDGET, phoneCap, pieceDesktopCap, piecePage, piecePhoneCap, pieceTabletCap, pieceWidthAt, tabletCap, tabletLeadTiles, TABLET_BIG, TABLET_COLLAGE, TABLET_PIECE, TABLET_SMALL, WIDE_1X } from "./render/gallery.ts";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const content = loadContent(ROOT);
@@ -142,6 +142,7 @@ const SCREENS = {
   phone: { w: 390, dpr: 3 },
   tablet: { w: 820, dpr: 2 },
   tablet768: { w: 768, dpr: 2 },
+  tablet1024: { w: 1024, dpr: 2 },
   midWindow: { w: 1000, dpr: 1 },
   wide: { w: 1440, dpr: 1 },
   wide2x: { w: 1440, dpr: 2 },
@@ -181,7 +182,7 @@ test("gallery page: each layout's lead tiles load at once; the rest wait, with a
   // and 1x windows of the same layout. Nothing else loads before the script.
   for (const p of placed) {
     const pic = byId.get(p.item.id);
-    const want = { phone: phoneLeads.includes(p), tablet: tabletLeads.includes(p), tablet768: tabletLeads.includes(p), midWindow: tabletLeads.includes(p), wide: phoneLeads.includes(p), wide2x: phoneLeads.includes(p) };
+    const want = { phone: phoneLeads.includes(p), tablet: tabletLeads.includes(p), tablet768: tabletLeads.includes(p), tablet1024: tabletLeads.includes(p), midWindow: tabletLeads.includes(p), wide: phoneLeads.includes(p), wide2x: phoneLeads.includes(p) };
     for (const [name, screen] of Object.entries(SCREENS)) assert.equal(pick(pic, screen) !== null, want[name], `${p.item.id} on ${name}`);
     const lead = leads.includes(p);
     assert.equal(/fetchpriority="high"/.test(pic), lead, `${p.item.id}: high priority iff it leads somewhere`);
@@ -269,50 +270,68 @@ test("gallery page: tablets are capped near 1.5x of their tile; the tablet's lea
   const most = Math.max(...top.map(area));
   assert.deepEqual(leads, top.filter((p) => area(p) >= 0.97 * most));
   assert.deepEqual(leads.map((p) => p.item.id), ["03"]);
-  // They share the byte budget, but never drop under 1x: an upscaled lead
-  // counts only its own pixels toward Largest Contentful Paint, so the next
-  // big tile to land would take the largest paint from it.
-  const caps = leadTabletCaps(leads);
-  const bytes = leads.reduce((sum, p) => sum + p.item.bytes.get(caps.get(p)), 0);
+  // They share the byte budget, per tablet class (split at 850px), down to a
+  // floor: an upscaled lead counts only its own pixels toward Largest
+  // Contentful Paint, so a tile that outscores it would take the largest
+  // paint when it lands (04 at 640 over 03 at 560 on a 1024px tablet: 5.5 s).
+  const small = leadTabletCaps(placed, "small");
+  const big = leadTabletCaps(placed, "big");
+  const bytes = leads.reduce((sum, p) => sum + p.item.bytes.get(small.get(p)), 0);
   const floor = (p) => all(p.item).find((x) => x >= w(p));
-  assert.ok(bytes <= PIECE_PHONE_BUDGET || leads.every((p) => caps.get(p) === floor(p)), `tablet lead tiles ${bytes} B`);
+  assert.ok(bytes <= PIECE_PHONE_BUDGET || leads.every((p) => small.get(p) === floor(p)), `tablet lead tiles ${bytes} B`);
   for (const p of leads) {
-    assert.ok(caps.get(p) <= tabletCap(p.item, w(p)), `${p.item.id}: never above the plain tablet cap`);
-    assert.ok(caps.get(p) >= floor(p), `${p.item.id}: cap ${caps.get(p)} at least 1x on an 820px tablet`);
-    // And at least 1x on a 768px tablet too (its tiles are a little smaller).
-    assert.ok(caps.get(p) >= imageWidth(p.slots.mid, 0.91 * 768), `${p.item.id}: 1x at 768px`);
+    assert.ok(small.get(p) <= tabletCap(p.item, w(p)), `${p.item.id}: never above the plain tablet cap`);
+    // At least 1x on 768 and 820px tablets, and 0.9x on a 1024px one.
+    assert.ok(small.get(p) >= floor(p), `${p.item.id}: cap ${small.get(p)} at least 1x on an 820px tablet`);
+    assert.ok(small.get(p) >= imageWidth(p.slots.mid, 0.91 * 768), `${p.item.id}: 1x at 768px`);
+    assert.ok(big.get(p) >= 0.9 * imageWidth(p.slots.mid, 0.91 * 1024), `${p.item.id}: 0.9x at 1024px`);
   }
-  // On the first screen of a 768 or 820px tablet no other tile, at its
-  // tablet cap, scores a larger paint than the lead (min of its drawn area
-  // and its own pixels), so none can take the largest paint after it.
-  for (const vw of [768, 820]) {
-    const box = 0.91 * vw;
+  // Today: 03 from its 560 copy up to 849px (208 KB, 1.0-1.07x at 768-820px), and its 640 from 850px.
+  assert.deepEqual(leads.map((p) => [small.get(p), big.get(p)]), [[560, 640]]);
+  // At every dense mid-layout width no other tile, at its tablet cap, scores
+  // a larger paint than the lead (the least of its drawn area and its own
+  // pixels), so none can take the largest paint after it. A tie is fine: the
+  // other tiles wait until the lead has landed (motion/defer.ts).
+  const pixels = (item, cap) => cap * Math.round((cap * item.height) / item.width);
+  for (let vw = 660; vw <= 1095; vw++) {
+    const caps = vw < 850 ? small : big;
     const score = (p, cap) => {
-      const dw = imageWidth(p.slots.mid, box);
-      const drawn = dw * dw * (p.item.height / p.item.width);
-      return Math.min(drawn, cap * cap * (p.item.height / p.item.width));
+      const dw = imageWidth(p.slots.mid, 0.91 * vw);
+      return Math.min(dw * dw * (p.item.height / p.item.width), pixels(p.item, cap));
     };
     const lead = Math.max(...leads.map((p) => score(p, caps.get(p))));
-    for (const p of placed.filter((q) => q.slots.mid.row <= 2 && !leads.includes(q)))
-      assert.ok(score(p, tabletCap(p.item, w(p))) < lead, `${p.item.id} at ${vw}px scores under the lead`);
+    for (const p of placed.filter((q) => !leads.includes(q)))
+      assert.ok(score(p, tabletCap(p.item, w(p))) <= lead, `${p.item.id} at ${vw}px scores under the lead`);
   }
   // In the markup: a 2x tablet picks from the capped srcset, on /gallery/ and
   // in the home section alike (the same copies); a 1x window at the same
   // widths and every desktop keep every copy.
+  const esc = (m) => m.replace(/[()]/g, "\\$&");
   for (const html of [galleryPage(content), gallerySection(content)]) {
-    const tablet = [...html.matchAll(/<source media="([^"]*)" (?:data-)?srcset="([^"]*)"/g)].filter((m) => m[1] === TABLET_COLLAGE);
-    assert.equal(tablet.length, content.gallery.length + (html.match(/<noscript>/g) ?? []).length);
-    assert.match(TABLET_COLLAGE, /\(min-resolution: 1\.5dppx\)/);
+    const copies = 1 + (html.includes("<noscript>") ? 1 : 0);
+    const count = (media) => html.split(`<source media="${media}"`).length - 1;
+    assert.equal(count(TABLET_COLLAGE), (content.gallery.length - leads.length) * copies);
+    assert.equal(count(TABLET_SMALL), leads.length * copies);
+    assert.equal(count(TABLET_BIG), leads.length * copies);
+    for (const m of [TABLET_COLLAGE, TABLET_SMALL, TABLET_BIG]) assert.match(m, /\(min-resolution: 1\.5dppx\)/);
     for (const p of placed) {
-      const src = html.match(new RegExp(`data-piece="${p.item.id}"[^]*?<source media="${TABLET_COLLAGE.replace(/[()]/g, "\\$&")}" (?:data-)?srcset="([^"]*)"`))[1];
-      assert.equal(maxWidth(src), caps.get(p) ?? tabletCap(p.item, w(p)), `${p.item.id} tablet cap in the markup`);
-      assert.ok(maxWidth(src) < p.item.width, `${p.item.id}: a tablet never pulls the display file`);
+      const src = (media) => html.match(new RegExp(`data-piece="${p.item.id}"[^]*?<source media="${esc(media)}" (?:data-)?srcset="([^"]*)"`))[1];
+      if (leads.includes(p)) {
+        assert.equal(maxWidth(src(TABLET_SMALL)), small.get(p), `${p.item.id} small tablet cap in the markup`);
+        assert.equal(maxWidth(src(TABLET_BIG)), big.get(p), `${p.item.id} big tablet cap in the markup`);
+      } else assert.equal(maxWidth(src(TABLET_COLLAGE)), tabletCap(p.item, w(p)), `${p.item.id} tablet cap in the markup`);
     }
   }
   const byId = pictures(galleryPage(content));
+  for (const p of placed) {
+    const pic = byId.get(p.item.id).replaceAll("data-srcset=", "srcset=");
+    for (const screen of [SCREENS.tablet, SCREENS.tablet768, SCREENS.tablet1024]) assert.ok(maxWidth(pick(pic, screen)) < p.item.width, `${p.item.id}: a tablet never pulls the display file`);
+  }
   for (const p of leads) {
     const pic = byId.get(p.item.id);
-    assert.equal(maxWidth(pick(pic, SCREENS.tablet)), caps.get(p));
+    assert.equal(maxWidth(pick(pic, SCREENS.tablet)), small.get(p));
+    assert.equal(maxWidth(pick(pic, SCREENS.tablet768)), small.get(p));
+    assert.equal(maxWidth(pick(pic, SCREENS.tablet1024)), big.get(p));
     assert.equal(maxWidth(pick(pic, SCREENS.midWindow)), p.item.width, "1x windows keep every copy");
   }
 });
@@ -349,7 +368,7 @@ test("arriving at /#gallery: the head preloads each layout's first-screen lead, 
     for (const s of pic.match(/<source [^>]*>/g) ?? []) if (mediaMatches(attr(s, "media"), screen)) return attr(s, "sizes");
     return attr(pic.match(/<img [^>]*>/)[0], "sizes");
   };
-  const want = { phone: [placed[0]], tablet: tabletLeadTiles(placed), tablet768: tabletLeadTiles(placed), midWindow: [], wide: leadTiles(placed), wide2x: leadTiles(placed) };
+  const want = { phone: [placed[0]], tablet: tabletLeadTiles(placed), tablet768: tabletLeadTiles(placed), tablet1024: tabletLeadTiles(placed), midWindow: [], wide: leadTiles(placed), wide2x: leadTiles(placed) };
   for (const [name, screen] of Object.entries(SCREENS)) {
     const here = links.filter((l) => mediaMatches(l.media, screen));
     assert.equal(here.length, want[name].length, `${name}: ${here.length} preloads`);
@@ -366,7 +385,7 @@ test("arriving at /#gallery: the head preloads each layout's first-screen lead, 
     });
   }
   // A tablet's preload is its capped lead, not a 960 or 1280 copy.
-  for (const l of links.filter((x) => x.media === TABLET_COLLAGE)) assert.ok(maxWidth(l.imagesrcset) <= 640, l.imagesrcset);
+  for (const l of links.filter((x) => [TABLET_COLLAGE, TABLET_SMALL, TABLET_BIG].includes(x.media))) assert.ok(maxWidth(l.imagesrcset) <= 640, l.imagesrcset);
   // A 1x desktop's preloads are the wide lead tiles at their desktop caps.
   const wideCaps = leadWideCaps(leadTiles(placed));
   for (const l of links.filter((x) => x.media === WIDE_1X)) assert.ok([...wideCaps.values()].includes(maxWidth(l.imagesrcset)), l.imagesrcset);
