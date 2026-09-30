@@ -1,7 +1,13 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "sourceAdmission": {
+    "sourceBase": "1295062e2454c85d584751ba58448a1b18bef34c",
+    "sourceHead": "d2e4ef0d93d678c6a87fd1480013f8fec2a61909",
+    "geometryParent": "54518211eb9a342bc5f6689562c5a0179d466a52"
+  },
   "contract": {
     "base": "54518211eb9a342bc5f6689562c5a0179d466a52",
+    "entryRepairSourceBase": "1295062e2454c85d584751ba58448a1b18bef34c",
     "parentMode": "actual545 reconstruction opening",
     "nativeArgs": [
       "--reconstruction-mode",
@@ -33,6 +39,7 @@
       "normal.png"
     ],
     "finish": "unchanged reconstruction_finish.finish_recipe over exact R2 base; no compositing",
+    "rawPngComparison": "validated8bit RGBA IHDR/dimensions/native decoded sample bytes exact; original file SHA retained as provenance, no tolerance or mode/depth conversion",
     "bodyAo": {
       "distance": 0.075,
       "strength": 0.9,
@@ -620,14 +627,16 @@
     "art/rosace/hands/probes/q_r2c.json": "fef6a8e1602dc4b649688c4ab7e39d50907b4b5acc3e02d33b288ce148dbc233",
     "art/rosace/hands/probes/q_r2d.json": "47837302f0640894664c05beb2e8976b21516503927923fb9a6931956d082fcf",
     "art/rosace/integrated.json": "b58d46501b399f3d7363004a672a2784891212e25300c7b54cf7abb41f39ed91",
-    "art/rosace/integration/window_ao/binding.py": "0f05f21e954cefbf49ff65c62280f2401e40caf9a0acd8252d0b39d52fa8afd9",
-    "art/rosace/integration/window_ao/check.py": "063133a4d442115c2553af3b460f97a18a532ffb9dd4c260f1118269cebe93da",
+    "art/rosace/integration/window_ao/binding.py": "d2fba58fdd227ca0fe291a1229f3768f8fac50d1bbec7893f0ff2eb4448cb3bf",
+    "art/rosace/integration/window_ao/check.py": "52b9027a0eac38d149e7dc7b2d2bd8c8b0d39c773e389b7d270fb07e765c7997",
+    "art/rosace/integration/window_ao/check_import.py": "b21ff4a6095cd03c9bd15717b333554158d26949f8b58a4001fa19d42f493ca9",
+    "art/rosace/integration/window_ao/check_png.py": "d4b241ca0ad38a414d2c8b88e44318ffa15580a32058ae3d551a55025303f515",
     "art/rosace/integration/window_ao/check_rest.py": "bc59757c7ac51b9e1480f410b621681f5ff756496c41215d7699330e01948138",
     "art/rosace/integration/window_ao/geometry.py": "ebebc2f3f3e5c9437182c941c371793296c2184ebee236de42942b5df75a3213",
     "art/rosace/integration/window_ao/native.py": "c2fbc127607abd275c7848917a03bf8f62ac65882757d6c7b28927b3238281a8",
-    "art/rosace/integration/window_ao/post.py": "23952c4867fb34c9ab85291fd186a29c633699a9d761198ddee22357419d85d5",
+    "art/rosace/integration/window_ao/post.py": "8c02ce43e7649e6b4b22b89b5474cb27932c66471e4d2e506da9d9a8a39ffeba",
     "art/rosace/integration/window_ao/rest_geometry.py": "907a06e324cf5072d8600234fad207f8d7cdffeb4479c50f742a706e532d237c",
-    "art/rosace/integration/window_ao/wrapper.py": "2a9d5023202d91da3c1bd514781ea5293bbfa938679a6eecf80a81d3145cf8eb",
+    "art/rosace/integration/window_ao/wrapper.py": "e4ddc1b249188a648ebb68c559f0aa90771e9834c9baf12c47ab2725a5cad1d2",
     "art/rosace/next/cloth-diagnostic-request.json": "d5a8c2a864f9943dbdeffba7e13b3192074d915870d0c5baea30261988574919",
     "art/rosace/next/cloth-physics.json": "f6ef7ec472b66822f86d1fd672e247e6fb334ca83dd9aadd3e62931466956e57",
     "art/rosace/next/grip-staging-request.json": "5ed2df2985586688f63407e2b1488ec42deff3e51dc512faf7ed94e564b6f210",
@@ -1033,6 +1042,9 @@
     "D:\\Dex\\Temp\\rosace-sharp-face-native-20260930\\review\\rosace\\art\\next\\sharp-face-preservation-delivery\\reconstruction-raw\\idle\\px144\\haft_grips.json": "86533ddb55dac1682d5fe643a69b79dd59a2569dcc630c30db691d08bd4c042a",
     "D:\\Dex\\Temp\\rosace-sharp-face-native-20260930\\review\\rosace\\art\\next\\sharp-face-preservation-delivery\\reconstruction-raw\\idle\\px144\\R2\\still.png": "59d0b9593a9f4a1c3b04c5c7b555b8db8fc70e5a0cc6c39eb0e3e57454a96b80",
     "D:\\Dex\\Temp\\rosace-sharp-face-native-20260930\\review\\rosace\\art\\next\\sharp-face-preservation-delivery\\reconstruction-raw\\idle\\px144\\R2\\still_ground.png": "89a2cb22894c314bba0beec1a3e6cf7c2584b5fc63e2a4d4c3008c1597770f6c"
+  },
+  "supportingEvidence": {
+    "D:\\Dex\\Automation\\reports\\dex-suite-resumption-20260930\\source-findings\\rosace-cuff2-parent-decoded-replay-20260930.json": "313c299a9fc8b266fd36e8edf2c2773475613001ee66fb1b27f4a67e05c800a2"
   },
   "sourceOnly": true,
   "nativeQualification": "pending; manifest hashes are read-only evidence binding"

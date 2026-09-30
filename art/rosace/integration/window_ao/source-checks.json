@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "state": "PNG guard follow-up fresh gated CPU checks passed; final review/binding/READY pending ROOT two-step freeze",
+  "state": "independently reviewed source fixtures and exact runtime-head freeze passed; native pending",
   "observedDate": "2026-09-30",
   "worktree": "D:/Dex/Temp/dex-place-rosace-window-ao-entry-bootstrap-20260930",
-  "head": "ef243b08a560958d89892382444a615e02a51c6b",
+  "head": "d2e4ef0d93d678c6a87fd1480013f8fec2a61909",
   "geometryParent": "54518211eb9a342bc5f6689562c5a0179d466a52",
   "gate": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/resource-gate.ps1 -Owner rosace-source",
   "sourceFixtureCommand": "python art/rosace/integration/window_ao/check.py",
@@ -23,9 +23,9 @@
     "actualPngReplaySupportingEvidence": "pass, exact actual finding SHA313c299a9fc8b266fd36e8edf2c2773475613001ee66fb1b27f4a67e05c800a2; separate supportingEvidence bound by freeze/verify, encoding method only",
     "explicitExactSourceHeadAndAncestryAdmission": "pass, live check-admission ef243b08a560958d89892382444a615e02a51c6b exact plus545/129 ancestry; freeze exact later reviewed runtime HEAD, runtime uses bounded source ancestor and exact fingerprints; external ROOT final executing HEAD remains exact",
     "metadataOnlyDescendantAndRuntimeDriftGuards": "pass, CPU supplied lineage/fingerprint cases; metadata-only descendant with equal runtime fingerprints allowed, source drift or missing545/129/sourceHead ancestry and unrelated heads rejected; no synthetic Git commits made",
-    "bindingFreezeAndVerification": "pending parent independent review and ROOT freeze at exact reviewed new source HEAD"
+    "bindingFreezeAndVerification": "pass, gated freeze at exact reviewed runtime d2e4ef0d93d678c6a87fd1480013f8fec2a61909 and complete946 source/2canonical inputs/36actual545 evidence/1supporting evidence equality; metadata descendant must pass runtime ancestry and fingerprints"
   },
-  "bindingSha256": null,
+  "bindingSha256": "36c2dd95afd1b438b45b8d9ef40775f09c778d1caadaf9140653dd466788644b",
   "previousHeldBindingSha256": "74a4eeab68c5aa7e37f6001f7f0d7d41493bcc214f63965ad795c9c76ba76802",
   "previousHeldBoundSourceFiles": 944,
   "previousHeldActual545OpenEvidenceFiles": 36,
@@ -36,7 +36,15 @@
   "actualNewPixelsExist": false,
   "artAccepted": false,
   "defaultAdoption": false,
-  "sourceReadyOrDispatched": false,
+  "sourceReadyOrDispatched": "root external exact final-head READY to follow metadata commit",
   "gateAdmission": "PNG follow-up checks and actual finished-format validation passed at free resource boundary; historical entry repair had four admission timeouts then pass, no bypass",
-  "limits": "Existing129 source/request/binding/admission remain held and unchanged. Fresh source fixtures do not prove native behavior. ROOT sequence remains reviewed runtime code commit -> exact runtime-head freeze -> binding/receipt metadata commit -> external exact final-head READY/delivery admission. No new manifest/native/READY claimed by implementor."
+  "limits": "Reviewed source and bindings only; final executing HEAD pinned externally after metadata-only commit. Four fresh native stills, actual schema/BVH/readback and art acceptance remain pending. Existing129 held source and all original actual545/C2 evidence unchanged.",
+  "boundSourceFiles": 946,
+  "boundActual545OpenEvidenceFiles": 36,
+  "boundCanonicalInputs": 2,
+  "boundSupportingEvidenceFiles": 1,
+  "independentReviews": {
+    "entryBootstrapAndAdmissionLifecycle": "PASS, independent window_ao_source_review",
+    "decodedNativePngDelta": "PASS, independent window_ao_source_review; post SHA8c02ce43e7649e6b4b22b89b5474cb27932c66471e4d2e506da9d9a8a39ffeba"
+  }
 }

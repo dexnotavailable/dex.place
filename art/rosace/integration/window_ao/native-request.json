@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "rosace-open-window-physical-ao-entry-bootstrap-129-20260930",
-  "status": "source-checkpoint-pending-parent-review",
+  "status": "independently-reviewed-source-ready-native-pending",
   "owner": "stage2-rosace-source",
   "executor": "sole native delivery owner, exclusive/GPU gate at a free boundary; preserve world priority",
   "exactBase": "54518211eb9a342bc5f6689562c5a0179d466a52",
@@ -9,12 +9,24 @@
   "previousHeldSource": "1295062e2454c85d584751ba58448a1b18bef34c; old worktree/request/admission preserved held",
   "entryRepair": "own-directory/helper bootstrap before real sibling imports; exact sys.path identity/content restored after dependency import including failure; geometry/S7/ray/calculation source unchanged",
   "pngGuardRepair": "actual C2 encoding evidence shows different file hashes with identical native RGBA8 samples. Validate8bitRGBA IHDR+dimensions+sample bytes exactly, no mode/depth conversion or tolerance; retain original file SHA plus decoded hashes in proof/binding. AO ROI/alpha/scope guards unchanged.",
-  "supportingEvidence": {"path": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/source-findings/rosace-cuff2-parent-decoded-replay-20260930.json", "sha256": "313c299a9fc8b266fd36e8edf2c2773475613001ee66fb1b27f4a67e05c800a2", "role": "PNG encoding equality method only; not AO parent substitution or art acceptance"},
+  "supportingEvidence": {
+    "path": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/source-findings/rosace-cuff2-parent-decoded-replay-20260930.json",
+    "sha256": "313c299a9fc8b266fd36e8edf2c2773475613001ee66fb1b27f4a67e05c800a2",
+    "role": "PNG encoding equality method only; not AO parent substitution or art acceptance"
+  },
   "sourceFreeze": "independent parent review, runtime source commit, then binding.py freeze --expected-source-head <full exact live reviewed runtime HEAD>. Commit generated binding/receipt metadata after freeze; bounded sourceHead must remain an ancestor with complete runtime-source fingerprint equality. Actual545 parent HEAD remains guarded. Fresh manifest uses normalized LF. External ROOT READY/delivery pins final executing HEAD exactly; verify/proofs record actual executing HEAD. No final executing hash is embedded self-referentially in its tracked manifest.",
   "wrapper": "art/rosace/integration/window_ao/wrapper.py",
-  "entryArgs": ["--window-ao-mode", "<control|rebaked>", "--out", "<executing-private-output>/<mode>-raw"],
+  "entryArgs": [
+    "--window-ao-mode",
+    "<control|rebaked>",
+    "--out",
+    "<executing-private-output>/<mode>-raw"
+  ],
   "forwardedSource": "unchanged tools/pixel-pipeline/next/nx_reconstruction_blender.py reconstruction mode; idle, same gesture and seated hands1.30, head1.10, R2 model/canonical blend, ss4, 144+80",
-  "modes": ["control", "rebaked"],
+  "modes": [
+    "control",
+    "rebaked"
+  ],
   "rawStills": 4,
   "reuseActual545Control": false,
   "scope": "body mesh copy, named FLOAT/POINT ao only at geometry-selected front points; actual W2 ring/aperture unchanged; all outside AO and other data exact",
