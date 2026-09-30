@@ -12,7 +12,7 @@ dexClient has its own reports too; they're covered [further down](#reports-from-
 
 ## Where to find it
 
-In dexCode, open Settings (<kbd>Ctrl</kbd> + <kbd>,</kbd>) and choose **Privacy**.
+In dexCode, open Settings <span class="keys">(<kbd>Ctrl</kbd> + <kbd>,</kbd>)</span> and choose **Privacy**.
 
 ## What a report contains
 

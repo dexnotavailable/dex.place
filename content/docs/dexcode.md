@@ -24,7 +24,7 @@ Some parts are ready to use, and some are still being tested. This table says wh
 | Part | Today |
 |---|---|
 | Chat agent: files, commands, the web, controlling the PC | Available. Still being tested against a list of real everyday tasks, so expect rough edges. |
-| Yuki's chat, and her small floating window (<kbd>Alt</kbd> + <kbd>Q</kbd>) | Available. |
+| Yuki's chat, and her small floating window <span class="keys">(<kbd>Alt</kbd> + <kbd>Q</kbd>)</span> | Available. |
 | Yuki reading her replies out loud | Available, and still being fixed: it can be slow to start and can stop partway through a long reply. |
 | Talking with Yuki by voice, back and forth | Still being tested. |
 | Making pictures, video and music | Still being tested. Results aren't good enough yet, and a normal install doesn't include them. |
@@ -41,14 +41,14 @@ dexCode keeps one brain loaded at a time. It loads the brain when you open dexCo
 
 | Keys | Does |
 |---|---|
-| <kbd>Ctrl</kbd> + <kbd>,</kbd> | Open Settings |
-| <kbd>Alt</kbd> + <kbd>Q</kbd> | Bring up Yuki's small chat window from anywhere. You can change this key in Settings, under Agent. |
-| <kbd>Ctrl</kbd> + <kbd>W</kbd> | Close the window |
-| <kbd>Ctrl</kbd> + <kbd>Q</kbd> | Quit dexCode |
+| <span class="keys"><kbd>Ctrl</kbd> + <kbd>,</kbd></span> | Open Settings |
+| <span class="keys"><kbd>Alt</kbd> + <kbd>Q</kbd></span> | Bring up Yuki's small chat window from anywhere. You can change this key in Settings, under Agent. |
+| <span class="keys"><kbd>Ctrl</kbd> + <kbd>W</kbd></span> | Close the window |
+| <span class="keys"><kbd>Ctrl</kbd> + <kbd>Q</kbd></span> | Quit dexCode |
 
 ## Settings
 
-Open Settings with <kbd>Ctrl</kbd> + <kbd>,</kbd>. There's a search box at the top if you know what you're looking for.
+Open Settings with <span class="keys"><kbd>Ctrl</kbd> + <kbd>,</kbd></span>. There's a search box at the top if you know what you're looking for.
 
 | Section | What's there |
 |---|---|

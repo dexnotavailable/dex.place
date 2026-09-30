@@ -44,7 +44,7 @@ Docs are listed by group, then by `order`, then by title.
 
 ## Formatting
 
-Headings from `##` down get a link and appear under **On this page**. Links to other sites, like [the Ko-fi page](https://ko-fi.com/dexdonation), are marked for screen readers. Keys look like <kbd>Ctrl</kbd> + <kbd>C</kbd>.
+Headings from `##` down get a link and appear under **On this page**. Links to other sites, like [the Ko-fi page](https://ko-fi.com/dexdonation), are marked for screen readers. Keys look like <span class="keys"><kbd>Ctrl</kbd> + <kbd>C</kbd></span>.
 
 > [!NOTE]
 > A quote that starts with `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]` or `[!CAUTION]` becomes a callout.

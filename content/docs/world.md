@@ -65,4 +65,4 @@ Open [dex.place/world/?fresh](/world/?fresh). It forgets your save, but keeps yo
 
 ## Reduced motion
 
-If your device is set to reduce motion, the world skips its screen shakes.
+If your device is set to reduce motion, the world skips or strongly damps its screen shakes.

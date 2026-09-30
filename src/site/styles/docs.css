@@ -489,6 +489,8 @@
   line-height: 1.5;
 }
 
+.prose .keys { white-space: nowrap; }
+
 .prose blockquote {
   padding: 4px 0 4px 20px;
   border-left: 4px solid var(--yellow);
