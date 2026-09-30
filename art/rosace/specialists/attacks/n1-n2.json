@@ -1,0 +1,93 @@
+{
+  "contract": "rosace.choreography/1",
+  "id": "rosace-n1-n2-liturgy-20260930-v1",
+  "state": "authored-proposal",
+  "base": "bcb220de03c0b84e8fa68851328cd1d799a11de5",
+  "fps": 60,
+  "sourceH": 96,
+  "targetsH": [80, 144],
+  "space": {"pivot": "feet-current-root", "x": "facing-positive", "y": "down-positive", "units": "H", "yaw": "unwrapped-relative-to-entry"},
+  "rendered": false,
+  "buffers": {"m1Ticks": 12, "otherActionTicks": 8, "stringResetTicks": 45},
+  "guards": {"interpolateRaster": false, "cameraZoom": false, "cameraRotation": false, "maxShakeSourcePx": 4, "fullScreenFlashes": 0, "actorFreezeFxContinue": true, "contactGate": "collision", "physicalSleevesTabardsRequired": true},
+  "boundary": {"from": "m1_1", "afterTick": 15, "to": "m1_2", "entryTick": 1, "inheritDrawing": "F2", "carry": ["actualBodyPose", "worldRoot", "rootVelocity", "weaponTransform", "anatomicalGrip", "clothPosition", "clothVelocity", "facing", "effectClock"], "lateEntry": "sample-current-state; two-tick entry-variant inside f1-3; native-authoring-required", "earliestChainWhiffTicks": 53},
+  "clips": [
+    {
+      "id": "m1_1", "name": "Kyrie", "length": 33, "chainedOnly": false, "leadFlag": "sleeves",
+      "control": "tools/motion-ai/timing/n1_r3c.json",
+      "drawings": [
+        {"id":"A1","start":1,"ticks":2,"phase":"anticipation","poseGoal":"45% into low rear coil; broad stance; feet retain stance spots; downward weight leads","weapon":"right primary; left support; blade dipping behind hip","grip":{"R":1,"L":1}},
+        {"id":"A2","start":3,"ticks":3,"phase":"anticipation","poseGoal":"knees flex; hips back, ribcage counterbalances; face looks toward front; low rear coil held","weapon":"tip just above floor about1H behind heel; world shaft clear of pelvis","grip":{"R":1,"L":1}},
+        {"id":"A3","start":6,"ticks":2,"phase":"anticipation","poseGoal":"carry A2 with small hips sink; preserve planted feet and world weapon; no second wind-up","weapon":"same rigid weapon as A2; cloth continues against held body","grip":{"R":1,"L":1}},
+        {"id":"S1","start":8,"ticks":1,"phase":"active","poseGoal":"diagonal extension between coil and contact lunge; front knee drives; largest tip spacing","weapon":"J sweep behind-floor-high-front; one bent raster shaft inside smear only","grip":{"R":1,"L":1}},
+        {"id":"C1","start":9,"ticks":3,"phase":"active","poseGoal":"front lunge; rear leg extended; body diagonal; high-front solid blade; head/face visible","weapon":"rigid shaft ends at J head; no horizontal chest-thrust replacement","grip":{"R":1,"L":1}},
+        {"id":"F1","start":12,"ticks":2,"phase":"recovery","poseGoal":"60% contact +40% shoulder carry; right elbow leads up; left hand opens away","weapon":"right primary remains attached while left releases","grip":{"R":1,"L":0}},
+        {"id":"F2","start":14,"ticks":2,"phase":"recovery","poseGoal":"weapon over right shoulder; left hand open; face clear between sleeve and veil; front foot ready to pivot","weapon":"one-hand right shoulder carry; N2 boundary state","grip":{"R":1,"L":0}},
+        {"id":"R1","start":16,"ticks":6,"phase":"recovery","poseGoal":"55% shoulder carry +45% stance; easing slows; cloth overshoots once","weapon":"right hand carries; left stays open","grip":{"R":1,"L":0}},
+        {"id":"R2","start":22,"ticks":6,"phase":"recovery","poseGoal":"18% shoulder carry +82% stance; smaller settle spacing","weapon":"right hand returns glaive upright","grip":{"R":1,"L":0}},
+        {"id":"R3","start":28,"ticks":6,"phase":"recovery","poseGoal":"processional stance; feet settle; cloth still damps","weapon":"upright; no grip/cloth reset on clip-end","grip":{"R":1,"L":0}}
+      ],
+      "root": [{"from":6,"to":9,"deltaH":[0.08333333333333333,0]}, {"from":12,"to":15,"deltaH":[0.041666666666666664,0]}],
+      "plants": [{"foot":"R","from":1,"to":2,"binding":"stance"},{"foot":"R","from":3,"to":11,"binding":"C1"},{"foot":"L","from":1,"to":2,"binding":"stance"},{"foot":"L","from":3,"to":7,"binding":"A2"},{"foot":"L","from":8,"to":15,"binding":"C1; anatomical front pivot candidate"}],
+      "tipPathH": [[-1.04,-0.02],[-0.6,-0.02],[0,-0.03],[0.52,-0.38],[1.15,-1.15],[1.46,-1.75]],
+      "tipPathMode": "ordered J spatial guide, not temporal samples; rigid world grip circle plus reach dip, no linear corner at floor",
+      "hits": [{"group":"n1","active":[8,10],"nominalContact":9,"hitstop":3,"boxBasis":"sourceH96-exact","boxes":[[-100,-44,150,44],[40,-120,100,120],[20,-168,104,48]],"spanH":2.5,"knockbackBasis":"sourceH96-px-per-tick","knockback":[0.8,-2],"outward":true}],
+      "cancels": [{"to":"m1_2","from":15},{"to":"dash","from":12},{"to":"jump","from":12},{"to":"skill_q","from":12},{"to":"ult_r","from":12},{"to":"walk","from":24}],
+      "invulnerable": [],
+      "fx": [
+        {"id":"n1.blade-glint","ticks":[5,6],"gate":"always","layer":"weapon","palette":["A5"],"shape":"one point on cutting edge"},
+        {"id":"n1.J","ticks":[8,24],"gate":"always","layer":"split-body-occlusion","spanH":2.5,"heightH":1.75,"stages":{"full":[8,8],"leaded":[9,14],"shards":[15,24]},"palette":["A5","A3","A2","A1","A0"],"shape":"filled J; floor belly; tapered tail; internal leading only; preserve face/grip"},
+        {"id":"n1.gold-slivers","ticks":[8,12],"gate":"always","layer":"front","palette":["G1","G2"],"shape":"two thin arcs outside head; cosmetic"},
+        {"id":"n1.furrow","ticks":[8,32],"gate":"always","layer":"ground","spanH":1.5625,"heightH":0.041666666666666664,"stages":{"full":[8,8],"leaded":[9,20],"shards":[21,32]},"palette":["A2","A3","A0","A4"],"shape":"surface-following; clip at platform edges"},
+        {"id":"n1.dust","ticks":[8,26],"gate":"always","layer":"ground","spanH":2.9,"palette":["W3","W4"],"shape":"stepped band behind1.3H to ahead1.6H, source4px high"},
+        {"id":"n1.star","ticks":[9,10],"gate":"contact","layer":"contact","diameterSourcePx":9,"palette":["A5","A4"],"shape":"8-point local star at actual victim impact; early hit offsets start"},
+        {"id":"n1.contact-shards","ticks":[9,30],"gate":"contact","layer":"front","palette":["A2","A3","A5","G0"],"shape":"4-6 shards source2-3px; three gold motes"},
+        {"id":"n1.pane","ticks":[9,158],"gate":"contact","layer":"world","palette":["A1","A2","A3","A0","A4"],"shape":"source7x13px lancet at tip;150tick life; max6; no first-build absorption"}
+      ],
+      "cues": [
+        {"id":"n1.swish","tick":7,"gate":"always","kind":"sound","sound":["silk.whoosh","blade.swish"]},
+        {"id":"n1.tip-rim","tick":8,"gate":"always","kind":"light","anchor":"tip","duration":16,"radiusH":0.9375,"intensity":1.4,"palette":"A4","rim":"lit side A3/A4; broad white inside A5 at full"},
+        {"id":"n1.chime","tick":9,"gate":"contact","kind":"sound","sound":["glass.chime.1"]},
+        {"id":"n1.push","tick":9,"gate":"contact","kind":"camera","sourcePx":1,"duration":1,"rule":"whole-pixel facing push; disabled reduced-motion"}
+      ]
+    },
+    {
+      "id":"m1_2","name":"Gloria","length":38,"chainedOnly":true,"leadFlag":"tabards",
+      "drawings":[
+        {"id":"A1","start":1,"ticks":3,"phase":"anticipation","inherit":"m1_1.F2","poseGoal":"exact entry carry, same root/body/weapon/cloth; left hand approaches shaft on hidden solve track","weapon":"right primary; left not closed until A2","grip":{"R":1,"L":0},"yawRelative":0},
+        {"id":"A2","start":4,"ticks":3,"phase":"anticipation","poseGoal":"true rear three-quarter coil; hips/shoulders coherent; knees flexed; open back visible; front toe pin, rear heel unloaded","weapon":"two hands; diagonal shoulder-high rear shaft; head looks along travel","grip":{"R":1,"L":1},"yawRelative":150},
+        {"id":"S1","start":7,"ticks":1,"phase":"active","poseGoal":"explosive unwind around pinned toe; head leads exit; clear silhouette inside horizontal smear","weapon":"flat sweep; dim back half precedes full front half; rigid actual haft","grip":{"R":1,"L":1},"yawRelative":300},
+        {"id":"C1","start":8,"ticks":3,"phase":"active","poseGoal":"front again; low leading glaive; tabards wrapped opposite coil; stable bent support knee","weapon":"both palms attached; tip at hip/chest corridor, not high overhead","grip":{"R":1,"L":1},"yawRelative":360},
+        {"id":"F1","start":11,"ticks":3,"phase":"recovery","poseGoal":"turn overshoots; tabards unwind and flare away from shaft/face","weapon":"both hands guide haft toward upright N3 corridor","grip":{"R":1,"L":1},"yawRelative":382},
+        {"id":"F2","start":14,"ticks":3,"phase":"recovery","poseGoal":"counter-settle; support stable; left palm starts permitted socket slide for N3","weapon":"upright-in-front corridor; no shaft pelvis intersection","grip":{"R":1,"L":1},"yawRelative":370},
+        {"id":"R1","start":17,"ticks":7,"phase":"recovery","poseGoal":"decelerate turn into processional stance; earliest N3 inherits this state","weapon":"two hands; keep active grips until actual N3 slide","grip":{"R":1,"L":1},"yawRelative":363},
+        {"id":"R2","start":24,"ticks":7,"phase":"recovery","poseGoal":"smaller hip/shoulder settle; one fabric rebound ends","weapon":"upright","grip":{"R":1,"L":1},"yawRelative":360},
+        {"id":"R3","start":31,"ticks":8,"phase":"recovery","poseGoal":"stable stance and continuous cloth velocity decay","weapon":"upright; idle transition must inherit current grip","grip":{"R":1,"L":1},"yawRelative":360}
+      ],
+      "root":[{"from":7,"to":10,"deltaH":[0.0625,0]}],
+      "plants":[{"foot":"front-bound-from-N1","from":1,"to":10,"binding":"actual N1 front toe; retain world translation, allow heel rise and yaw"},{"foot":"rear-bound-from-N1","from":11,"to":16,"binding":"replant after unload; solve new world spot once"}],
+      "tipPathH":[[-1.25,-0.6],[-0.65,-0.5],[0,-0.45],[0.65,-0.5],[1.25,-0.6]],
+      "tipPathMode":"front/back depth ellipse around hips; positions are screen guide only; unwrapped yaw prevents reverse shortest-path interpolation",
+      "hits":[{"group":"n2","active":[7,9],"nominalContact":8,"hitstop":3,"boxBasis":"sourceH96-exact","boxes":[[-120,-82,240,58]],"spanH":2.5,"knockbackBasis":"sourceH96-px-per-tick","knockback":[2,-0.6],"outward":true}],
+      "cancels":[{"to":"m1_3","from":17},{"to":"dash","from":11},{"to":"jump","from":11},{"to":"skill_q","from":11},{"to":"ult_r","from":11},{"to":"walk","from":26}],
+      "invulnerable":[],
+      "fx":[
+        {"id":"n2.ellipse-back","ticks":[7,24],"gate":"always","layer":"back","spanH":2.6,"heightH":0.5,"stages":{"full":[7,7],"leaded":[8,13],"shards":[14,24]},"palette":["A4","A2","A1","A0"],"shape":"dim rear half; one art pixel thinner than front after quantization"},
+        {"id":"n2.ellipse-front","ticks":[7,24],"gate":"always","layer":"front","spanH":2.6,"heightH":0.5,"stages":{"full":[7,7],"leaded":[8,13],"shards":[14,24]},"palette":["A5","A3","A2","A1","A0"],"shape":"filled front half; clear face/grip; 0.05H end overscan cosmetic"},
+        {"id":"n2.slivers","ticks":[7,11],"gate":"always","layer":"front","palette":["G1"],"shape":"thin above/below arcs; total visible height0.65H; cosmetic"},
+        {"id":"n2.dust","ticks":[7,20],"gate":"always","layer":"ground","spanH":2.9,"palette":["W3","W4"],"shape":"surface-following source4px band; no dust beyond platform edge"},
+        {"id":"n2.star","ticks":[8,9],"gate":"contact","layer":"contact","diameterSourcePx":9,"palette":["A5","A4"],"shape":"8-point local star at each actual enemy impact"},
+        {"id":"n2.shards","ticks":[8,30],"gate":"contact","layer":"front","palette":["A2","A3"],"shape":"sideways victim shards; keep body visible"},
+        {"id":"n2.pane","ticks":[8,157],"gate":"contact","layer":"world","palette":["A1","A2","A3","A0","A4"],"shape":"source7x13px front-tip lancet;150ticks; max6"}
+      ],
+      "cues":[
+        {"id":"n2.flutter","tick":1,"gate":"always","kind":"sound","duration":6,"sound":["silk.flutter.long"]},
+        {"id":"n2.back-swish","tick":7,"gate":"always","kind":"sound","sound":["blade.swish.low"]},
+        {"id":"n2.tip-rim","tick":7,"gate":"always","kind":"light","anchor":"tip","duration":16,"radiusH":1.0416666666666667,"intensity":1,"palette":"A4","rim":"behind at7, front at8; light travels back-to-front through silhouette"},
+        {"id":"n2.front-swish","tick":8,"gate":"always","kind":"sound","sound":["blade.swish.high"]},
+        {"id":"n2.chime","tick":8,"gate":"contact","kind":"sound","sound":["glass.chime.2"]},
+        {"id":"n2.push","tick":8,"gate":"contact","kind":"camera","sourcePx":1,"duration":1,"rule":"whole-pixel facing push; disabled reduced-motion"}
+      ]
+    }
+  ]
+}
