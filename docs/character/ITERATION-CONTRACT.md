@@ -48,3 +48,31 @@ Physical cloth is mandatory and separate. Stills cannot score physics or
 motion: view moving bake outputs and actual transition/loop playback before
 such judgments. A pinned-wind or translated-idle diagnostic can qualify the
 solver first; real run/turn/jump/land/dash/M1/Q/R/transition exports remain due.
+
+## Auxiliary Imagegen references (2026-09-30 exception)
+
+Latest direct Dex steering: "right, tell them they can use imagegen but only
+as an additional ref". This overrides earlier no-imagegen wording only for
+auxiliary construction/pose/face/outfit reference guides. Use the built-in
+Imagegen route after reading `C:/Users/sanic/.codex/skills/.system/imagegen/SKILL.md`.
+It needs no API key. Do not silently switch to a CLI/API/model fallback or
+change paid accounts, credits or usage resets. If built-in generation is
+unavailable, record the limitation and continue authored source work.
+
+All17 human-provided old/new references remain fixed9 benchmarks. A generated
+guide has no automatic9 score, no acceptance authority and no native/cloth
+proof. Inspect it as fallible reference information and resolve its advice
+against actual human references, DESIGN and the real current model.
+
+Keep prompts, tool/parameters, original input/output paths and SHA256 hashes
+in a private git-ignored reference folder. Label every generated view
+"GENERATED REFERENCE ONLY" and keep it out of genuine candidate PREVIEW/READY
+queues. Never present it as a native render, installed/game output or progress
+toward9. Do not trace, copy its pixels, downsample it into sprites/textures,
+or substitute generated assets for authored source. No generated final game
+art, scene assets, sprites, textures, UI/layout or canonical replacement.
+
+The existing real art loop continues: one source author, three fresh actual
+candidate critics, original identity/palette/coverage, exact R2/two rollbacks,
+separate controlled levers and moving physical cloth acceptance. Auxiliary
+reference work does not retarget or mutate the frozen native requests.

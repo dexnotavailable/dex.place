@@ -3534,3 +3534,30 @@ commands, gates and pitfalls, each tagged proven, in progress or proposed, with 
   and frozen62/72/322 packets stay exact. Physical sleeve/tabard moving clips, collisions,
   gameplay transitions and playback remain mandatory and pending from separate immutable72
   source. See `WINDOW-MESH-FACE2.md` for source commands, limitations and private proof paths.
+
+### 8b. Auxiliary-reference permission (2026-09-30)
+
+**Authorized auxiliary use, not production acceptance:** Dex now permits built-in Imagegen
+only as an additional reference. Read the installed Imagegen skill first; no API key or silent
+CLI/API/model fallback. Keep generated guides and prompt/tool/input/output/hash provenance
+private and git-ignored, clearly labelled GENERATED REFERENCE ONLY. They may inform original
+authored geometry/construction, with no tracing, pixel copying, downsampling or generated
+sprite/texture/scene/UI substitution. All17 human references remain fixed9. A generated guide
+is not automatically9, a Rosace candidate, native output, cloth proof or visual progress.
+Keep it out of genuine PREVIEW/READY queues. R2/rollbacks, frozen native packets and the
+three-fresh-critic/moving-physics gates are unchanged. Exact scope is in ITERATION-CONTRACT.
+
+**Proven auxiliary tool output only:** one built-in generated facial-construction guide was
+inspected and copied byte-exact into private ignored review storage with prompt/input/output
+provenance. Its model ID was not exposed and is not inferred. Generic perspective/under-jaw
+cues may inform questions; longer hair and diadem/cross design drift are excluded. Neither
+the guide nor its illustration polish establishes144/80 readability or native quality.
+
+**Source reviewed, execution in progress:** `next/face_native_diagnostic.py` compares only
+preserved genuine R2 beauty/ID/normal/light/landmarks with finished face pixels, no generated
+image input, repainting, geometry edit or Blender run. Its first shared-gate attempt timed
+out at120seconds behind delivery's exclusive lease without executing. No measured output
+exists yet. `FACE-CONSTRUCTION-SOURCE.md` maps the socket-filled visible head, welded custom
+normals, hidden feature references and eye-bone anchors. Diagnose those actual relationships
+before a new coherent face cage or bounded front-normal experiment; preserve the neck seam.
+Guides/baseline diagnostics remain outside genuine candidate queues; READY794 stays frozen.
