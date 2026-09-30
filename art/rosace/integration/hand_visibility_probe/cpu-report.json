@@ -1,0 +1,17 @@
+{
+  "schema": "rosace.hand-visibility-probe.cpu/1",
+  "sourceBase": "925ee69072034408f34c25984f88afc20a65b064",
+  "tests": 11,
+  "passed": true,
+  "nativeExecuted": false,
+  "nativeRenderedImages": 0,
+  "limits": "native bpy/BVH/evaluated-mesh APIs are unexecuted; fake boundaries do not prove native geometry or renderer occlusion",
+  "inputBindingsSha256": "6f3f3da029af8245f9a05b5ba1c17e7b93ed848958c44049a2b42e1d33fa2465",
+  "sourceHashes": {
+    "art\\rosace\\integration\\hand_visibility_probe\\check_probe.py": "1556f5ed0c2766d1fa3c6fb18aadb77f502ded8917ad86e3889c9c997922dd78",
+    "art\\rosace\\integration\\hand_visibility_probe\\probe_entry.py": "ca8e7f0e6c7d2a6463de3f457b55b090286852d8618b2033e6ddf115a0d47f47",
+    "art\\rosace\\integration\\hand_visibility_probe\\probe_math.py": "ebb9659f5c7e5e5d0208c0c9e0bf14bf37eae91d1b4640be2213fb26c34c52de",
+    "art\\rosace\\integration\\hand_visibility_probe\\probe_native.py": "76be5243ff505abae80597a907784e6f9b90e3e1552ddacc6f26ff8f1e664318",
+    "art\\rosace\\integration\\hand_visibility_probe\\probe_shot.py": "4b96c7308bececad868d1db0f899f6ab4605c5b94b38f95c9e8a958131170ffd"
+  }
+}

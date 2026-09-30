@@ -1,0 +1,46 @@
+{
+  "schema": "rosace.hand-visibility-probe.request/1",
+  "id": "rosace-hand-visibility-probe-first144-zero-image-20260930",
+  "owner": "rosace-source",
+  "nativeOwner": "delivery",
+  "sourceBase": "925ee69072034408f34c25984f88afc20a65b064",
+  "sourceBranch": "codex/rosace-hand-visibility-probe-20260930",
+  "sourceWorktree": "D:/Dex/Temp/dex-place-rosace-hand-visibility-probe-20260930",
+  "sourceReview": "PASS independent hand_probe_review; root verified11CPU/current source/binding/30shared+55immutable inputs. External exact final-head READY follows scoped commit; native/API/cause unqualified.",
+  "entry": "art/rosace/integration/hand_visibility_probe/probe_entry.py",
+  "inputBindings": "art/rosace/integration/hand_visibility_probe/input-bindings.json",
+  "arguments": [
+    "--out",
+    "<executing-worktree>/review/rosace/integration/hand_visibility_probe/first144-zero-image-20260930"
+  ],
+  "sceneCount": 1,
+  "cameraCount": 1,
+  "cameraPixels": 144,
+  "nativeRenderedImageCount": 0,
+  "existingPipelineEntryOutputRelative": "review/rosace/integration/cuff2/hand_visibility_probe-zero-image-20260930",
+  "existingPipelineArgs": "actual925 Cuff2 T.main candidate, idle/hand1.30/head1.10/ss4, required H1 --px144,80 unchanged; controlled stop at first144 prevents80 setup and every pass/noise image",
+  "limits": {
+    "maxSampleROI": 8192,
+    "maxEvaluatedActors": 512,
+    "maxEvaluatedTriangles": 500000,
+    "maxPrivateJsonBytes": 8388608,
+    "suggestedDeadlineSeconds": 180,
+    "failureAtLimit": "explicit failed diagnostic; no dropped guard, retune, clipped hand ROI or image fallback"
+  },
+  "steps": [
+    "Root independently reviews exact source, fake-boundary CPU checks and binding SHA; freezes a reviewed probe head/own and shared-source hashes in its own READY. This request is source-only, not native admission.",
+    "Delivery alone obtains the existing native/resource exclusive ownership for one background process. No image render, post, model generation, browser, bake, save, main/default/canonical mutation or asset promotion.",
+    "Preflight binds 30existing925source files, all50raw files, native925 receipt293470..., postd18 result74b058..., root visibility finding1d699..., canonical blend and S7 against exact receipts. Repeat input/source checks after cleanup; current S7 must remain S7.",
+    "Use actual T.main/H1/C2 install preparation. Own temporary library/install hooks capture the actual C2 receipt and camera metadata, then intercept render.render_passes immediately after the first144 setup_shot. Ops proxy independently forbids render/opengl/save/bake/screenshot paths.",
+    "Before interpretation require actual first144/ss4 camera, dimensions/material table/pose bones and C2 coordinate/invariant hashes to match frozen925. Query evaluated body36/skin1/limb14 palm/finger faces and their original bone-weight labels; record hand/finger bone projections, full theoretical hand footprint and actual frozen144 visible mask/native chosen cells.",
+    "Query scene/evaluated instance geometry only, filter hide_render and render-layer exclusions, retain camera/viewport/render-modifier/instance ambiguities. Report possible centre-ray frontmost object/evaluated face/material/depth through the hand footprint. Unknown material opacity is not opaque; generated faces have no source mapping unless complete indexed topology equality is proven. Backface traversal and raster/jitter centre-ray disagreements remain explicit.",
+    "Raise only the private intended DiagnosticStop after capture. Existing H/C2 finally blocks restore copied meshes and transitive pose hooks before success is caught; outer finally restores library/install/render/shot/ops hooks, exact sys.path/argv, camera/pass setup and all owned evaluated meshes. Unexpected failure remains failure and writes bounded private JSON/nativeRenderedImages0.",
+    "Verify no pipeline files/images were emitted, no forbidden operations were attempted, exact hooks and copied-mesh pointers/removal restored, all55bound inputs unchanged and source HEAD unchanged. Output diagnostic.json is evidence for independent interpretation, not proof of a named occluder, exact GPU coverage, anatomy acceptance or an art score.",
+    "Root decides the next coherent hand/shaft/cuff scope from this finite diagnostic. Keep55mm, all geometry/pose/shader/raw guards, 20native-cell/4x5 floor, sealed925/d18/raw91/oldREADY and rollback/default immutable."
+  ],
+  "nativeExecuted": false,
+  "causeEstablished": false,
+  "appearanceAccepted": false,
+  "allowPromotion": false,
+  "allowDeployment": false
+}

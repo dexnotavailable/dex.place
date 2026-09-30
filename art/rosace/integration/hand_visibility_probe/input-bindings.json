@@ -1,0 +1,318 @@
+{
+  "schema": "rosace.hand-visibility-probe.inputs/1",
+  "renderSource": "925ee69072034408f34c25984f88afc20a65b064",
+  "postSource": "d18b3dc7b307d98407d899a347414c951c1edad4",
+  "originalRawRoot": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930",
+  "blendPath": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\rosace.blend",
+  "shapePath": "D:\\Dex\\Projects\\dex.place\\art\\rosace\\figure\\shape.json",
+  "inputs": [
+    {
+      "role": "native-render-receipt",
+      "path": "D:\\Dex\\Automation\\reports\\dex-suite-resumption-20260930\\lanes\\delivery\\rosace-cuff2-rna\\native-render.json",
+      "sha256": "293470714c9ff8d456918c0ffb89a9543069fe76b0f61a58568a890550cc366b"
+    },
+    {
+      "role": "post-d18-result",
+      "path": "D:\\Dex\\Automation\\reports\\dex-suite-resumption-20260930\\lanes\\delivery\\rosace-cuff2-post\\post-only.json",
+      "sha256": "74b058ae64d7379abc377841fef983b64b57c593c2c2a34c1c2fae94a96b48f9"
+    },
+    {
+      "role": "root-visibility-finding",
+      "path": "D:\\Dex\\Automation\\reports\\dex-suite-resumption-20260930\\lanes\\rosace\\STAGE2-CUFF2-RAW-VISIBILITY.json",
+      "sha256": "1d699f53d90ea6e8f653af233bb96cc6a06029821b454512ef0b9725f2ebdb55"
+    },
+    {
+      "role": "frozen925raw:cuff2/_render.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\_render.json",
+      "sha256": "85829cb1c4992bf95a993bc12658a793af9259aad8a40b62eb0a7443cee848f0"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/beauty.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\beauty.png",
+      "sha256": "891e2bd7e96ef42ac2a1dd92e7763f94bcf8a38eadf01e50e72864e7f797fd89"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/cuff2_trial.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\cuff2_trial.json",
+      "sha256": "b849bba59cd87fdc4b1ca6329de719d684be1edada1eaa3aba6ea9a6ed0db193"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/depth.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\depth.png",
+      "sha256": "5ccd05015efa5d9d90132169e79ea39763f8bda79e6b4a52371b047d89b29a99"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/depth2.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\depth2.png",
+      "sha256": "e648b5d0ce97a45b0c3f9a4706a85b54d1cbad617bf56a15ee855e7f5fdbedda"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/facepass.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\facepass.json",
+      "sha256": "bc41f64c7c8680fff7b7ffd84b9781b436ff17c710a0500c84e1412a5599d36e"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/haft_grips.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\haft_grips.json",
+      "sha256": "86533ddb55dac1682d5fe643a69b79dd59a2569dcc630c30db691d08bd4c042a"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/id.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\id.png",
+      "sha256": "25305a0a33a83cc9c4bb2fed8d08e14c28a473353344c25de0c1eb5423c97907"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/landmarks.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\landmarks.json",
+      "sha256": "d12b251289314417752cc62004c4efdf9b34b6e83ab2603efd72a6bfce3cbe08"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/light.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\light.png",
+      "sha256": "b8c94af82ed02b5617314f5250dd285233b3ccfd2fb56f6bbd7091fa7f7709c7"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/meta.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\meta.json",
+      "sha256": "e6888a42ed3419ee88805a4df479e7406f6eb777e93b62d7a43a49533d841fb4"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/noise.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\noise.png",
+      "sha256": "176ae6157f37e0174a90782872e56eaae068cee6ad799b52035fd67a3bd13595"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px144/normal.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px144\\normal.png",
+      "sha256": "791a2d54a16c23b4727c2358b30578d687d0e5c6dfd76e0bf3d6a6538e024233"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/beauty.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\beauty.png",
+      "sha256": "1314b10e639fadc092984a14249a09d25aa4494e3fe7e86912398b895215b902"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/cuff2_trial.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\cuff2_trial.json",
+      "sha256": "6ec1853720fb6fa06c1ae933d32986c16b5e60c355203de5329850104aebf9b4"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/depth.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\depth.png",
+      "sha256": "10276ffcb060a4efadaf003e7528e8eb98a9f56e1ad40b0a3079beb34b193dc2"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/depth2.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\depth2.png",
+      "sha256": "ccebe8cd6b97da52356abc0a04166c8702e1d6ec24b996cbf3e19aa9b4ec0390"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/facepass.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\facepass.json",
+      "sha256": "471ee3e9dbd31fee7d9098c0f43a29a0e87d30950ed77537a9df5aaf8f7c16ec"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/haft_grips.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\haft_grips.json",
+      "sha256": "286095974b56b0c503d6e3a4c3b5712bfd5fee442c02ee24aad996fa18259005"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/id.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\id.png",
+      "sha256": "5087499d08c0295c3c82d87a40ee0a5235fb02d3f21c471bb02d4f66cce14c3b"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/landmarks.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\landmarks.json",
+      "sha256": "5b6e33259cc1cf81f429a4db6e152df820ea31d1d369ab19519a52b932907131"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/light.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\light.png",
+      "sha256": "04882b9bb5837d3e1e2fa6a5d2080d9cda40c73185f1a45b98b7f4bce9c917d5"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/meta.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\meta.json",
+      "sha256": "cd5c1a941e3c0c751cfdd376dcced94a2bc655ebc7093083129e6413a01020f7"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/noise.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\noise.png",
+      "sha256": "a4df9c425dc20124f0a0e12245158da8f699f289b2963d785c02017d9fe1a6ba"
+    },
+    {
+      "role": "frozen925raw:cuff2/idle/px80/normal.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\cuff2\\idle\\px80\\normal.png",
+      "sha256": "c15a7defbd9170c656f1a0f4c96aa6549a8f36f2240c6285fddb1c91e177de78"
+    },
+    {
+      "role": "frozen925raw:parent/_render.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\_render.json",
+      "sha256": "85829cb1c4992bf95a993bc12658a793af9259aad8a40b62eb0a7443cee848f0"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/beauty.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\beauty.png",
+      "sha256": "08345aaff7cb2e2de8cb4dc1b81dea2f5aa43dc1ccbaa7501d2463e93a48130c"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/cuff2_trial.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\cuff2_trial.json",
+      "sha256": "94c4d874a311587c8f58a56c87e573fec900648db591a2e331d0cc28a9c0717b"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/depth.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\depth.png",
+      "sha256": "3a775c713c9234d0a42cf843c1b4758d2f5bb83cf6fb3c7720d88c23735aa67f"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/depth2.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\depth2.png",
+      "sha256": "85e044a524140a3e2973b6e4da2b337986b89161c129d1e6704afd752a1d32fb"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/facepass.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\facepass.json",
+      "sha256": "bc41f64c7c8680fff7b7ffd84b9781b436ff17c710a0500c84e1412a5599d36e"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/haft_grips.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\haft_grips.json",
+      "sha256": "86533ddb55dac1682d5fe643a69b79dd59a2569dcc630c30db691d08bd4c042a"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/id.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\id.png",
+      "sha256": "fbb7ca7797f24cc54475fd07d47acea6e4734b76fbdc6c30167fb8566862b2c3"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/landmarks.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\landmarks.json",
+      "sha256": "d12b251289314417752cc62004c4efdf9b34b6e83ab2603efd72a6bfce3cbe08"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/light.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\light.png",
+      "sha256": "bc49dd11932f6695954dde496f7f264f1cb09c7bae6ebe12584ab504320ddefa"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/meta.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\meta.json",
+      "sha256": "e6888a42ed3419ee88805a4df479e7406f6eb777e93b62d7a43a49533d841fb4"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/noise.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\noise.png",
+      "sha256": "237a830feb5ca8ea1e32e0ba58d273fac56cdaf8d4c8b8b02611b4835b23227e"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px144/normal.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px144\\normal.png",
+      "sha256": "1f768f275a55af07a28e38d0584f9a2b1b82f600bcac4643452ed5c408ea07b9"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/beauty.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\beauty.png",
+      "sha256": "83a12880e575008d51431e650b7c05babd5ebd5e08dd519613c0c3e27e66aa45"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/cuff2_trial.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\cuff2_trial.json",
+      "sha256": "17c7bc480dd39cc480c6931af78cd9eb0eaafb0811279c1a9a30f8819f680347"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/depth.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\depth.png",
+      "sha256": "cc95df14d439ab2c495652c335d23d140ad6c46e38a81389b7ffd739a0d9ce6e"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/depth2.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\depth2.png",
+      "sha256": "7d2f74686c7c8116d061e2b92f67d10de67f2bb1c3c7deb1bb7e05c94f4775d8"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/facepass.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\facepass.json",
+      "sha256": "471ee3e9dbd31fee7d9098c0f43a29a0e87d30950ed77537a9df5aaf8f7c16ec"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/haft_grips.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\haft_grips.json",
+      "sha256": "286095974b56b0c503d6e3a4c3b5712bfd5fee442c02ee24aad996fa18259005"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/id.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\id.png",
+      "sha256": "07ef0d33347ed3e2c6c88e0694d5887c0999485caeb20f02b14e9a4e789ddfac"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/landmarks.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\landmarks.json",
+      "sha256": "5b6e33259cc1cf81f429a4db6e152df820ea31d1d369ab19519a52b932907131"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/light.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\light.png",
+      "sha256": "576d36d2c2470540d3fbcde4d29eb77a11bfc432805ad0ed9433801897659140"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/meta.json",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\meta.json",
+      "sha256": "cd5c1a941e3c0c751cfdd376dcced94a2bc655ebc7093083129e6413a01020f7"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/noise.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\noise.png",
+      "sha256": "e9ec3b8202ce814721e6b9524bda122d3379e1e07ba4393fa8dd98fc766bf162"
+    },
+    {
+      "role": "frozen925raw:parent/idle/px80/normal.png",
+      "path": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930\\parent\\idle\\px80\\normal.png",
+      "sha256": "187cecdfed2a03196eba36d94a974b78c2697a8837f1ccab877972f1252c7a32"
+    },
+    {
+      "role": "frozen-canonical:rosace.blend",
+      "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\rosace.blend",
+      "sha256": "aef28c7f5cdddee6f18bd12c06d988b5436eeac24049ddf4f6ca37f654394373"
+    },
+    {
+      "role": "frozen-canonical:shape.json",
+      "path": "D:\\Dex\\Projects\\dex.place\\art\\rosace\\figure\\shape.json",
+      "sha256": "e672b5a40eb95c40932a36d155260172ac8a842d154de29035164c4f4ef09dd2"
+    }
+  ],
+  "sourceHashes": {
+    "art/rosace/integration/cuff2/cuff2_trial.py": "6f1b890aeaa4bed58ca0e0d4285de97a117d35ada50b057983eb68a5d5e80c13",
+    "art/rosace/integration/cuff2/cuff2_blender.py": "94da9a9760b233183b0e3deb7f6c6870ab948a32e045302f3b7593753cbb3737",
+    "art/rosace/integration/cuff2/cuff2_geometry.py": "12d2d6fb87c1604c11c1103fb5f1882ed24bb78373bdc15123777a2ef66c63e7",
+    "art/rosace/integration/cuff2/_reuse.py": "1d828fa349b00ad1db0d0ba0658bbc0e72199771d061c29fd0260e57c95ab105",
+    "art/rosace/specialists/refinement/cuff_blender.py": "22a6eb0a2af4df11af823fb2aab61480bc467ce3b60404b6a9291297e99e40a2",
+    "art/rosace/specialists/refinement/cuff_geometry.py": "d5e30c847b0688959ee2638f81e8b5c85a9cb761e066dfdef918b906366cad6e",
+    "art/rosace/specialists/refinement/cuff_native_post.py": "7e5f152d938921ddf9db5fbcd0bea0ea7d59962eac9c7b27802d343f2e27ec36",
+    "tools/pixel-pipeline/next/nx_hands_blender.py": "22f74176cccf91ad6f42192ec9a1a62f04d27722cc1f408dadd1b37af3890251",
+    "tools/pixel-pipeline/next/reconstruction_recipe.py": "3d68baf8d37fa776c08d504e201b54765c577907e0c6a985a7a525e916abd7d2",
+    "tools/pixel-pipeline/next/hand_recipe.py": "386317358e774ee2122851e7f0dd266d79e9b50dcead9cb899f00b4b489eb3c1",
+    "tools/pixel-pipeline/drive9/d9_blender.py": "5edb5e43d299031f6dbe4c784520fa0920039fc622c7b6133e539f8d1af97f31",
+    "tools/pixel-pipeline/drive9/r2_blender.py": "982dd03c23dd7df27f0b877cb55ec230c953bfa71671dba792ad45db34e3c4c3",
+    "tools/pixel-pipeline/drive9/r5_blender.py": "3578233be36315169eaac6ff8ba076d4ac5c83d5c943dca6cb93f2c732c9b1cc",
+    "tools/pixel-pipeline/drive9/d9_post.py": "7ebc53600cb7793e48ee91bc84f481584a02aabac17fa71163e6f4a1b4ecbc99",
+    "tools/pixel-pipeline/finish_f1/f1_post.py": "43c45a7836277f9ff59be71acb8ff0b043f3c7e36cb590da6a2abe2eba740d76",
+    "tools/pixel-pipeline/finish_f2/head_scale.py": "55220ee7bbf0ed54c2a6ac8de81e0a58a8bffc88c9e4132dfb36c1c597538563",
+    "tools/pixel-pipeline/rosace/render.py": "f05248a65d96ea44bde933a55d6d7d0bb7c7c7843fd7169ec21176ff7d44a68a",
+    "tools/pixel-pipeline/rosace/materials.py": "9c8f77286241c37a25ff11cc0e79e7826175012c2c482b6571eff7f0828f24ca",
+    "tools/pixel-pipeline/rosace/posing.py": "d5df664c3c7a88794336bba121a539fafed74a89d50381e1b7afa1397f55b15d",
+    "tools/pixel-pipeline/rosace/common.py": "6d2ff472e0afb76afe81e4bf57ac5b710b6b1979576db0b30abb283ce206154c",
+    "tools/pixel-pipeline/rosace/rig.py": "5f4b3d6bf947d87e7f90ebefebf09974e80dfda07d0b0916a64123a1aa072c76",
+    "tools/pixel-pipeline/rosace_v2/figure_pose.py": "21c716aa24eef034779ae58fc6bbc2158372e41b4bc94acd98297c672641b296",
+    "tools/pixel-pipeline/rosace_v2/limbs.py": "ab87109ab054e4c6cb250102bc81b92ed09309dbcdda34fe1f3d99e2614a5c80",
+    "tools/pixel-pipeline/finish_f3/drape_f3.json": "c2d9855542c7ae1baf30b457e5f33b612f60d7b507f0a309b36af47b56c55ba9",
+    "tools/pixel-pipeline/drive9/r2_model.json": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3",
+    "art/rosace/drive9.json": "ba3312e0d971d7ebecdb42577a9d61fb09eca019aa08d580b5553a82db1ad066",
+    "art/rosace/poses/idle_appeal.json": "a89f0ddf1fcb2b6a8e623abba51a790aee676603d004d61ce9b04eb6578df958",
+    "art/rosace/figure/shape.json": "71c3da7eee50a97caee4a6b6025ad80d3b4362f79571bdcec0c101fecf0c6620",
+    "art/rosace/palette.json": "de9bb8a416ce4daabcf018e2da8370744408a2afd6a5a620d62e1f7ec95628bc",
+    "tools/art-construct/gh_render.py": "8ced887daf00487af32ba60ad3849146158f8d5f4e7bcc5da324d7fb70f3896a"
+  },
+  "scope": "source-only, native execution pending independent review; first144 zero-image evaluation"
+}
