@@ -17,7 +17,7 @@
 import { compile, nearestTexture, quadIndices, uniforms, type Texture } from "../../lab/engine/gl.ts";
 import { DIM_FS, FULL_VS, MAX_LIGHTS, SPRITE_FS, SPRITE_VS, VFX_FS, VFX_VS } from "../../lab/engine/shaders.ts";
 import type { Lighting, PointLight, RGB, SpriteDraw, VfxQuad } from "../../lab/engine/renderer.ts";
-import { FRAME } from "../config.ts";
+import { FRAME, frameWidthFor } from "../config.ts";
 import { Presenter, type PresentOpts } from "./presenter.ts";
 
 export type { Lighting, PointLight, RGB, SpriteDraw, VfxQuad };
@@ -63,17 +63,20 @@ export class WorldRenderer {
   readonly gl: WebGL2RenderingContext;
   /** Kept for lab code that reads it; the world has one view size. */
   mode: "near" | "far" = "near";
-  readonly iw = FRAME.w;
+  /** The frame's size; its width follows the window's shape (config.ts FRAME_W), see layout(). */
+  iw: number = FRAME.w;
   readonly ih = FRAME.h;
+  /** Called after the frame's width changes (targets already rebuilt), so others can follow. */
+  onFrame: (() => void) | null = null;
   camX = 0;
   camY = 0;
   lightCount = 0;
   drawCalls = 0;
   readonly presenter: Presenter;
   /** The world target (sampled LINEAR by the presenter only; everything else uses texelFetch). */
-  readonly main: Target;
+  main: Target;
   /** Close-up overlay (transparent, same size), drawn over the zoomed world. */
-  readonly over: Target;
+  over: Target;
   private current: Target;
 
   private spriteProg: WebGLProgram;
@@ -165,8 +168,31 @@ export class WorldRenderer {
     return nearestTexture(this.gl, src);
   }
 
+  /**
+   * Fits the frame to the window: the frame's width follows the canvas's shape (so the view
+   * extends sideways instead of leaving black side borders), then the presenter places it.
+   */
   layout(): void {
-    this.presenter.layout(this.canvas.width, this.canvas.height);
+    const cw = this.canvas.width, ch = this.canvas.height;
+    if (cw > 0 && ch > 0) this.setFrameWidth(frameWidthFor(cw / ch));
+    this.presenter.layout(cw, ch);
+  }
+
+  /** Rebuilds the world and close-up targets at a new frame width (a window-shape change, never per frame). */
+  setFrameWidth(w: number): void {
+    if (w === this.iw) return;
+    this.flush();
+    const gl = this.gl;
+    for (const t of [this.main, this.over]) {
+      gl.deleteFramebuffer(t.fbo);
+      gl.deleteTexture(t.color.tex);
+    }
+    FRAME.w = w;
+    this.iw = w;
+    this.main = makeTarget(gl, w, this.ih, true);
+    this.over = makeTarget(gl, w, this.ih, true);
+    this.current = this.main;
+    this.onFrame?.();
   }
 
   /** Binds a target for drawing (the backdrop engine draws into the same one). */

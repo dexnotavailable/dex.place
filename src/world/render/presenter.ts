@@ -1,8 +1,8 @@
 // Shows the world target on the canvas.
 //
-// Scale rule: presentRect() in src/scenes/engine/scale.ts (shared with the
-// scene engine): the largest whole-number nearest upscale when it fills the
-// window well enough, otherwise sharp-bilinear at the exact fitting scale:
+// Scale rule: the scale comes from the window HEIGHT (the frame's width follows
+// the window's shape, so no black side borders; see layout()): a whole-number
+// nearest upscale when it is exact, otherwise sharp-bilinear at the exact scale:
 // exactly a nearest upscale to the next whole multiple N followed by a linear
 // resize (four texel fetches). Inside a world pixel the colour is flat; only
 // the seams between world pixels get a blended device pixel, so pixels stay
@@ -15,7 +15,6 @@
 
 import { compile, uniforms } from "../../lab/engine/gl.ts";
 import { FULL_VS } from "../../lab/engine/shaders.ts";
-import { presentRect } from "../../scenes/engine/scale.ts";
 import { FRAME } from "../config.ts";
 import type { Target } from "./renderer.ts";
 
@@ -125,13 +124,29 @@ export class Presenter {
     return true;
   }
 
-  /** Works out the output scale for a canvas size (device px). */
+  /**
+   * Works out the output scale for a canvas size (device px). The frame's width already follows
+   * the window's shape (renderer.layout, config.ts FRAME_W), so the scale comes from the HEIGHT
+   * (cover horizontally: the frame is at most a hair wider than the window and its outer columns
+   * are cropped, never a black side border). A window narrower than the narrowest frame fits by
+   * width instead (black top and bottom only), and one wider than the widest frame keeps its
+   * pillars. Whole-number scales only when exact; otherwise sharp-bilinear at the exact fit.
+   */
   layout(cw: number, ch: number): void {
     const left = Math.min(this.leftInset, Math.max(0, cw - 1));
     const right = Math.min(this.rightInset, Math.max(0, cw - left - 1));
-    const r = presentRect(cw - left - right, ch, FRAME.w, FRAME.h, "auto");
-    // presentRect is bottom-left based; the shader works top-left
-    this.rect = { x: r.x + left, y: ch - (r.y + r.h), scale: r.scale, sharp: r.sharp, w: r.w, h: r.h };
+    const availW = cw - left - right;
+    const W = FRAME.w, H = FRAME.h;
+    const fitH = ch / H, fitW = availW / W;
+    const fit = fitW >= fitH * 0.97 ? fitH : fitW;
+    const k = Math.round(fit);
+    if (fit >= 1 && Math.abs(fit - k) < 1e-6) {
+      const w = W * k, h = H * k;
+      this.rect = { x: left + Math.floor((availW - w) / 2), y: Math.floor((ch - h) / 2), scale: k, sharp: false, w, h };
+      return;
+    }
+    const w = Math.round(W * fit), h = Math.round(H * fit);
+    this.rect = { x: left + Math.floor((availW - w) / 2), y: Math.floor((ch - h) / 2), scale: fit, sharp: true, w, h };
   }
 
   draw(scene: Target, over: Target | null, cw: number, ch: number, o: PresentOpts): void {

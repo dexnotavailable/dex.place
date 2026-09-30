@@ -72,6 +72,13 @@ export class PixelDraw {
       if (typeof this.io[k] !== "function") throw new Error(`pixel adapter: PixelRenderer.${k} is gone; the adapter (src/world/pixel/adapter.ts) needs a public per-layer draw (docs/props/ENGINE.md)`);
   }
 
+  /** The frame's width changed (window shape): the pixel renderer projects into the new width. */
+  resizeFrame(w: number, h: number): void {
+    const pr = this.pr as unknown as { vw: number; vh: number };
+    pr.vw = w;
+    pr.vh = h;
+  }
+
   /** Free a room's textures (room teardown). */
   release(world: PixelWorld): void {
     this.pr.releaseWorld(world);
