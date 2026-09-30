@@ -8,7 +8,7 @@
 //
 // Built for the room's size (a tall room: the far layers sink as you climb).
 
-import { f, Flock, Pix, megastructure, mist, sky, smooth, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
+import { f, moveBefore, placeByDepth, Flock, Pix, megastructure, mist, sky, smooth, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
 import { planetBody } from "../../../../scenes/scenes/monolith-planet/planet.ts";
 import { billows } from "../../../../scenes/scenes/monolith-planet/clouds.ts";
 import type { WorldLayer } from "../../../backdrop/engine.ts";
@@ -134,6 +134,10 @@ float sceneLight(vec2 s, float depth) {
       spray.wx = (w) => Math.max(w.rain, 0.8 * (1 - w.after)) * 0.8;
       L.push(spray);
       void f;
+      // the far rain (depth 5-6) falls behind anything nearer and solid (the blade's face, the crown, the lift's haze)
+      placeByDepth(L, "rain-far");
+      // the spray (0.9) is farther than the near rain (0.8)
+      moveBefore(L, "spray", "rain-near");
       return L;
     },
   };

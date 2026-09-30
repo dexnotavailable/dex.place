@@ -168,8 +168,26 @@ export interface FlockOpts {
   shade?: number;
 }
 
-/** An occasional small flock crossing, 7x3 flapping birds in a loose V. */
+/**
+ * Bird sprite by distance: a bird is the same size in the world whatever the layer, so its sprite
+ * shrinks with depth like everything else on that layer. 9x4 under depth 11, 7x3 from there to 22,
+ * 5x2 beyond (a speck against the cloud). Returns the shape, its width and its height.
+ */
+export function birdSprite(depth: number): { shape: number; w: number; h: number } {
+  if (depth >= 22) return { shape: FLASH_SHAPE.birdFar, w: 5, h: 2 };
+  if (depth >= 11) return { shape: FLASH_SHAPE.bird, w: 7, h: 3 };
+  return { shape: FLASH_SHAPE.birdNear, w: 9, h: 4 };
+}
+
+/**
+ * An occasional small flock crossing, flapping birds in a loose V. The engine sets `depth` from the
+ * layer that holds it (engine/order.ts), so the sprite size and the spacing follow the layer's
+ * distance; `depth` is 12 (the 7x3 birds) until then.
+ */
 export class Flock implements PointSystem {
+  /** Marks a bird layer for engine/order.ts, which gives it its depth and its place in the draw order. */
+  readonly isFlock = true;
+  depth = 12;
   private birds: { x: number; y: number; ph: number; rate: number }[] = [];
   private wait: number;
   private dir = 1;
@@ -192,7 +210,8 @@ export class Flock implements PointSystem {
         for (let i = 0; i < n; i++) {
           const rank = Math.ceil(i / 2);
           const side = i % 2 ? 1 : -1;
-          this.birds.push({ x: x - this.dir * rank * (9 + r() * 5), y: y + side * rank * (3 + r() * 2), ph: r() * 6, rate: 5 + r() * 2 });
+          const sc = this.spriteScale();
+          this.birds.push({ x: x - this.dir * rank * (9 + r() * 5) * sc, y: y + side * rank * (3 + r() * 2) * sc, ph: r() * 6, rate: 5 + r() * 2 });
         }
       }
       return;
@@ -203,12 +222,18 @@ export class Flock implements PointSystem {
     }
     this.birds = this.birds.filter((b) => (this.dir > 0 ? b.x < this.o.x[1] + 60 : b.x > this.o.x[0] - 60));
   }
+  /** Bird width against the native 7: loose-V spacing scales with the sprite. */
+  private spriteScale(): number {
+    return birdSprite(this.depth).w / 7;
+  }
+
   draw(sink: PointSink): void {
+    const sp = birdSprite(this.depth);
     for (const b of this.birds) {
       // flap cycle: up, level, down, level; with glides
       const c = Math.floor(this.t * b.rate + b.ph) % 8;
       const frame = c < 4 ? [0, 1, 2, 1][c]! : 1;
-      sink.push(Math.round(b.x) - 3, Math.round(b.y) - 1, 7, FLASH_SHAPE.bird, this.o.row, this.o.shade ?? 0.1, frame, 1);
+      sink.push(Math.round(b.x) - (sp.w >> 1), Math.round(b.y) - (sp.h >> 1), sp.w, sp.shape, this.o.row, this.o.shade ?? 0.1, frame, 1);
     }
   }
 }

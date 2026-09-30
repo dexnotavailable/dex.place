@@ -17,6 +17,7 @@ import type { FramingZone } from "./camera.ts";
 import type { TerrainArt } from "./terrain.ts";
 import type { WeatherProgram } from "../weather.ts";
 import type { Lighting } from "../render/renderer.ts";
+import type { BlendSpec } from "../render/blend.ts";
 
 export interface Spawn {
   x: number;
@@ -204,6 +205,8 @@ export interface RoomDef {
   backdrop: BackdropSpec;
   /** Sprite lighting (key light, rim) for the player and props in this room. */
   lighting: Lighting;
+  /** The blending toolkit (render/blend.ts): colour grade, distance haze, contact band, shadow strength, lamp halos. None: the room renders as before. */
+  blend?: BlendSpec;
   terrain: TerrainPiece[];
   spawns: Record<string, Spawn>;
   exits: Exit[];

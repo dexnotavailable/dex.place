@@ -8,7 +8,7 @@
 // rain beginning on the car as it nears the break. Everything keys to the
 // camera's height (the room is one tall shaft; the camera rides with the car).
 
-import { f, Pix, megastructure, sky, smooth, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
+import { f, placeByDepth, Pix, megastructure, sky, smooth, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
 import { planetBody } from "../../../../scenes/scenes/monolith-planet/planet.ts";
 import { city } from "../../../../scenes/scenes/amber-hollow/city.ts";
 import { billows } from "../../../../scenes/scenes/monolith-planet/clouds.ts";
@@ -219,6 +219,8 @@ function withAltitudeRain(L: LayerDef[], geo: LiftGeo): LayerDef[] {
   if (rain <= 0.01) return vec4(0.0);`,
     );
   }
+  // the far rain (depth 5-6) falls behind anything nearer and solid (the blade's face, the crown, the lift's haze)
+  placeByDepth(L, "rain-far");
   return L;
 }
 

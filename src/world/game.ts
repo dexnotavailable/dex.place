@@ -1205,7 +1205,10 @@ export class WorldGame {
     const v = this.viewRect();
     const H = SCALE.H;
     const out: [number, number, number, number, number][] = [];
+    const sk = this.room.blend?.shadow ?? 1; // the room's contact shadow strength (blend toolkit)
+    if (sk <= 0) return;
     const cast = (x0: number, x1: number, foot: number, k = 1): void => {
+      k *= sk;
       if (x1 < v.x - 8 || x0 > v.x + v.w + 8 || foot < v.y - 8 || foot > v.y + v.h + 8) return;
       const w = Math.min(x1 - x0, H * 4);
       if (w < 6) return;
@@ -1263,6 +1266,7 @@ export class WorldGame {
     room.drawProps(this.canvasApi, "far", cx, reflects);
     room.drawProps(this.canvasApi, "back", cx, reflects);
     if (!reflection) this.drawPixel(["far", "bg"], lights);
+    if (!reflection) room.blend?.drawBand(r);
     room.drawTerrain(r, false, reflection);
     if (!reflection) this.drawContactShadows();
     if (!reflection) room.drawProps(this.canvasApi, "decal", cx);
@@ -1358,6 +1362,15 @@ export class WorldGame {
     if (bd) bd.render(r.main, "back");
     r.begin(cx, cy, lighting, lights);
     this.drawWorldSprites(false, lights);
+    if (room.blend) {
+      // the blending toolkit: the room's colour grade over everything composed so far, then its lamp halos on top
+      room.blend.drawGrade(r);
+      if (room.blend.spec.halo) {
+        const pl: PropLight[] = [];
+        room.lights(pl, this.viewRect());
+        room.blend.drawHalos(r, pl);
+      }
+    }
     this.ambientUpdate();
     r.flush();
     if (bd) bd.render(r.main, "front");

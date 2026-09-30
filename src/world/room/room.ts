@@ -13,6 +13,7 @@ import type { WorldRenderer } from "../render/renderer.ts";
 import { Collision, type OneWay, type Solid } from "./collision.ts";
 import { terrainTexture } from "./terrain.ts";
 import { plantStand, settle, type Moved } from "./ground.ts";
+import { applyHaze, resolveBlend, RoomBlend } from "../render/blend.ts";
 import type { RoomDef, TerrainPiece } from "./types.ts";
 
 interface TerrainSprite {
@@ -60,6 +61,8 @@ export class Room {
   buildMs = 0;
   /** Placements the shared grounding pass put on the terrain under them (debug, the audit). */
   moved: Moved[] = [];
+  /** The room's blending (render/blend.ts), when its def asks for one. */
+  blend: RoomBlend | null = null;
   /** Seconds the room has been live (props' clock). */
   time = 0;
   tick = 0;
@@ -130,6 +133,10 @@ export class Room {
         }),
       );
     }
+    // the blending toolkit: distance haze on the far and bg props, and the room's contact band, shadows and halos
+    const spec = resolveBlend(d);
+    this.blend = spec ? new RoomBlend(d, spec) : null;
+    if (this.pixel) applyHaze(this.pixel.world, spec);
     this.syncCollision();
     this.built = true;
     this.buildMs = Math.round(performance.now() - t0);
@@ -230,6 +237,7 @@ export class Room {
     this.terrain = [];
     for (const p of this.props) p.dispose();
     this.props = [];
+    this.blend = null;
     if (this.pixel) this.deps.pixelDraw()?.release(this.pixel.world);
     this.pixel = null;
     this.built = false;

@@ -47,6 +47,7 @@ import {
   FlashAccents,
   Falling,
   Flock,
+  moveAfter,
   Motes,
   Pix,
   fogBand,
@@ -810,6 +811,8 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
       });
       L.push({ kind: "pix", name: "foreground", depth: d, pix, x, y: 0, dither: 0 });
     }
+    // the ring-cloud (26) is nearer than the hills (29) and the ghost colossus (27): it goes over them
+    moveAfter(L, "ring-cloud", "ghost");
     const out = biasLayers(L, o.bias ?? 0);
     if (o.extra) out.push(...o.extra(ctx0, g, (n) => ctx0.row(n)));
     return out;

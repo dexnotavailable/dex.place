@@ -15,6 +15,7 @@ import { compile, dataTexture, freeTarget, target, uniforms, type Target, type T
 import { BLIT_FS, DEFAULT_PRELUDE, FULL_VS, HEADER, LIB, LIB_FOG, LIB_REFL, MAIN, POINT_BODY, POINT_VS } from "./glsl.ts";
 import { f } from "./layers.ts";
 import { mulberry } from "./noise.ts";
+import { placeFlocks } from "./order.ts";
 import { buildPalette, hex, paletteDefines, type Hex, type Palette } from "./palette.ts";
 import { SCALE, playerPx, presentRect, type PresentMode } from "./scale.ts";
 import { RESOLUTIONS, type BuildCtx, type FogSpec, type LayerDef, type LightOut, type Mode, type SceneDef, type SimEnv } from "./types.ts";
@@ -215,7 +216,7 @@ export class Engine {
       return p;
     };
 
-    for (const l of def.build(ctx)) {
+    for (const l of placeFlocks(def.build(ctx))) {
       const fog = l.fog ?? this.fogAt(l.depth);
       if (l.kind === "points") {
         const p = program("points", POINT_VS, `${head}\n${POINT_BODY}`, l.name);

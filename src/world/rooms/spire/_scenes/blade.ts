@@ -10,7 +10,7 @@
 // driver). The storm stays sitting on the spire behind you. Wet iron turns
 // gold.
 
-import { f, Flock, disc, sky, type LayerDef, type PointSystem, type SceneDef } from "../../../../scenes/engine/index.ts";
+import { f, placeByDepth, Flock, disc, sky, type LayerDef, type PointSystem, type SceneDef } from "../../../../scenes/engine/index.ts";
 import type { PointSink, SimEnv } from "../../../../scenes/engine/types.ts";
 import { EXTENT, LEGS, colossusGlsl, type ColossusDef } from "../../../../scenes/scenes/colossus-plain/colossus.ts";
 import { Wheelers } from "../../../../scenes/scenes/colossus-plain/systems.ts";
@@ -227,6 +227,8 @@ float sceneLight(vec2 s, float depth) {
       L.push(gustRain({ name: "rain-far", depth: 5, cw: 5, len: 7 * u, speed: 210 * u, alpha: 0.4, dens: 0.7, seed: 17, shade: 0.28, lean: 0.2, tellLean: 0.12, gustLean: 0.38, floor: 0 }));
       L.push({ kind: "character", name: "figure", depth: 1, x: W / 2, ground: Math.round(H * 0.62) });
       L.push(gustRain({ name: "rain-near", depth: 0.8, cw: 12, len: 16 * u, speed: 440 * u, alpha: 0.5, dens: 0.48, seed: 37, shade: 0.45, lean: 0.22, tellLean: 0.14, gustLean: 0.42, floor: 0, pass: "front" }));
+      // the far rain (depth 5-6) falls behind anything nearer and solid (the blade's face, the crown, the lift's haze)
+      placeByDepth(L, "rain-far");
       return L;
     },
   };

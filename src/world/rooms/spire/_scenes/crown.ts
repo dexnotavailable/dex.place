@@ -6,7 +6,7 @@
 // far off in a gap in the west, the ring, small (a visual rhyme: it was huge
 // over the dock). Heavy rain leans with the gusts.
 
-import { f, Pix, hashInt, fbm1, sky, smooth, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
+import { f, placeByDepth, Pix, hashInt, fbm1, sky, smooth, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
 import { planetBody } from "../../../../scenes/scenes/monolith-planet/planet.ts";
 import type { WorldLayer } from "../../../backdrop/engine.ts";
 import { SPIRE_PALETTE, clockLayer, cloudLightning, gustRain, stormCloud } from "./common.ts";
@@ -165,6 +165,8 @@ float sceneLight(vec2 s, float depth) {
       L.push({ kind: "character", name: "figure", depth: 1, x: W / 2, ground: geo.floorS });
       L.push(gustRain({ name: "rain-near", depth: 0.8, cw: 12, len: 16 * u, speed: 440 * u, alpha: 0.52, dens: 0.48, seed: 31, shade: 0.45, lean: 0.22, tellLean: 0.14, gustLean: 0.42, floor: 0.85, pass: "front" }));
       void (null as unknown as WorldLayer);
+      // the far rain (depth 5-6) falls behind anything nearer and solid (the blade's face, the crown, the lift's haze)
+      placeByDepth(L, "rain-far");
       return L;
     },
   };

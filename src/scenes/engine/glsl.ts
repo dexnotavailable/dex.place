@@ -252,6 +252,13 @@ const int BIRD[9] = int[9](
   0x41, 0x22, 0x1C,   // wings up
   0x00, 0x7F, 0x08,   // wings level
   0x00, 0x1C, 0x63);  // wings down
+// far birds, 5x2 (a flock at depth 22 and beyond): up, level, down
+const int BIRD_S[6] = int[6](0x11, 0x0E, 0x00, 0x1F, 0x0E, 0x11);
+// near birds, 9x4 (depth under 11): up, level, down
+const int BIRD_L[12] = int[12](
+  0x101, 0x082, 0x07C, 0x010,
+  0x000, 0x0C6, 0x139, 0x000,
+  0x000, 0x07C, 0x092, 0x101);
 void main() {
   vec2 lp = floor(gl_PointCoord * vSize);
   if (uMirror >= 0.0) lp.y = vSize - 1.0 - lp.y;
@@ -267,6 +274,16 @@ void main() {
     if (lp.x > 6.0 || lp.y > 2.0) discard;
     int bits = BIRD[f * 3 + int(lp.y)];
     if (((bits >> int(lp.x)) & 1) == 0) discard;
+  } else if (shape == 5) {
+    // far bird: 5x2 frames in the top-left of the sprite
+    int f = int(vLook.z) % 3;
+    if (lp.x > 4.0 || lp.y > 1.0) discard;
+    if (((BIRD_S[f * 2 + int(lp.y)] >> int(lp.x)) & 1) == 0) discard;
+  } else if (shape == 6) {
+    // near bird: 9x4 frames in the top-left of the sprite
+    int f = int(vLook.z) % 3;
+    if (lp.x > 8.0 || lp.y > 3.0) discard;
+    if (((BIRD_L[f * 4 + int(lp.y)] >> int(lp.x)) & 1) == 0) discard;
   } else if (shape == 2) {
     // glint: four stepped arms plus a core; arm length scales with alpha
     float arm = (vSize - 1.0) * 0.5 * a;
