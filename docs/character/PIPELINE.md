@@ -3561,3 +3561,25 @@ exists yet. `FACE-CONSTRUCTION-SOURCE.md` maps the socket-filled visible head, w
 normals, hidden feature references and eye-bone anchors. Diagnose those actual relationships
 before a new coherent face cage or bounded front-normal experiment; preserve the neck seam.
 Guides/baseline diagnostics remain outside genuine candidate queues; READY794 stays frozen.
+
+### 8c. Literal pixel guide reconstruction (2026-09-30)
+
+- **Proven auxiliary output, not native art:** built-in full-character pixel guide generated
+  from R2 identity/outfit14/human04+17; private provenance and exact copyhash. Actual1024x1536
+  with mixed apparent grid, not verified144/80. Human17refs remainfixed9. No guide raster
+  is consumed by production recipe/renderer/finish; no paste/tracing/downsampling.
+- **Proven authored finish prototype, unpromoted:** `next/reconstruction_finish.py` on genuine
+  R2 raw: control0px144/80, candidate4298/1360changed,alpha0; uniqueRGB197->165/170->142,
+  not29color compliance. Three fresh actual-pixel critics: smallface gain144, others/world
+  largelytie, none9. Existing mesh/pose/hands/closedwindow unchanged in this prototype.
+- **Source in progress, native pending:** `next/reconstruction_recipe.py` and
+  `nx_reconstruction_blender.py` compose conceptA torso/hip/chest rhythm, hip freehand,
+  seated1.30 authoredhands and actualW2 copied-mesh aperture beforepose, with unchanged
+  headscale/tilt/feet/weight/weapon/palette ramps. One explicit dispatch; frozen helpers
+  unchanged. ModesR2control/newconstructionclosed/fullreconstruction,144/80sixstills.
+  `reconstruction_native_post.py` requires exactR2 and samepose/bone matrices/framing plus
+  nativebody/skin gain betweenclosed/open. Threefreshactualcritics/movingcloth stilldue.
+- **Proven baseline diagnostic after earlier gate timeout:** genuine R2 native pass crops
+  show jaw turn;144screen-band mediancheeklight0.545,jaw0.424. No newBlender run, no geometry
+  winner inferred. Do not blindly reconstruct welded normals. See PIXEL-GUIDE-RECONSTRUCTION
+  and explicit `art/rosace/next/reconstruction1-request.json` for source/limits/finite gates.

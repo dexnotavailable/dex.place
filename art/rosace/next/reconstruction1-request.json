@@ -1,0 +1,32 @@
+{
+  "id": "rosace-authored-pixel-reconstruction1-native-20260930",
+  "owner": "rosace",
+  "kind": "finite-integrated-native-reconstruction",
+  "wrapper": "tools/pixel-pipeline/next/nx_reconstruction_blender.py",
+  "modes": [
+    {"name": "control", "handScale": "1.0", "window": false, "finish": "preservedR2"},
+    {"name": "construction-control", "handScale": "1.3", "window": false, "finish": "authoredreconstruction"},
+    {"name": "reconstruction", "handScale": "1.3", "window": true, "finish": "authoredreconstruction"}
+  ],
+  "commonArgs": ["--shots", "idle", "--blend", "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend", "--r2", "<executing-worktree>/tools/pixel-pipeline/drive9/r2_model.json", "--head", "1.10", "--ss", "4", "--px", "144,80"],
+  "modeArgs": ["--reconstruction-mode", "<mode.name>", "--hand-scale", "<mode.handScale>"],
+  "outputRelative": "review/rosace/art/next/reconstruction1-delivery",
+  "outputRule": "Fresh <outputRelative>/<mode.name>-raw per mode; resolve all placeholders in executing frozenREPO; separate Blenderprocess eachmode",
+  "construction": "one coherent authored letter: conceptA torso/hip rhythm plus freehandathip, seated1.30 authoredhands, actualcopied-mesh sternumaperture/goldrim, F1eye seed plus broadmaterialclusters. Originalheadtilt16/headscale/feet/weightsolver/legscale1.10/weapon/palette ramps unchanged.",
+  "causalLimits": "integrated letter doesnotattribute art gains to individual levers; samegesture/hands closed-windowcontrol isolates actualskin visibility frompose",
+  "steps": [
+    "Gatedsourcecheck check_reconstruction.py and canonical/model/rollback/source hashes; no guide image consumed byrenderer/finish. Preserve frozen794/62/72/322 requests unchanged.",
+    "Sole delivery finite native/GPUturn at freeboundary after world priority, no interruption. Sixstills: control2,construction-control2,reconstruction2. Explicit1.30candidate branch avoids inheritedscale1pose-bypass. Keep originalseatedscaled-rest hand solve.",
+    "NativeW2preservation assertions mustpass: samevertex/key/weight/group/point/retainedface/UV/cornerdata, oneclosednewboundary, body/collar/cross protected,5mmradialrim carried bysamekeys/weights/AO. If nativeguardfails stop/report; no bypass/paintedskin replacement.",
+    "Capture reconstruction.json full effectivepose,recipe/sourcehashes,actualrigmatrices/contact; window_geometry.json actualprojected rim. Run reconstruction_native_post.py --root resolvedoutputRelative --reference preservedgenuineR2control-raw.",
+    "R2control0pxrequired. construction-control/reconstruction effectivepose and actualbone matrices mustmatch within1e-6, samecanvas/anchor/camera. All3modes Lsyntheticgripgap finite0..1.5cm; stopifinvalid. Actualbody/skinID gain insideprojectedhole required; no literalopeningclaim frompaint. Inspect rimcontinuity/clothedge/cross/skin at144/80.",
+    "Preserve originalraw/controlPNG0px; for overallA/B require equalppm/camerabasis, integerworld-origin-anchor alignment oncommoncanvas only, noresampling. Reportalignment/differences. Inspectwhole/native/face/chest/handcrops pluspose/waist/contact checks andhand_metrics beforepublish; syntheticbonegap doesnotprove fingerwrap. No measuredwiderwaist claim because livepinch25 unchanged.",
+    "Immediately publish genuine nativecandidate/controlimages,exacthashes,proof andbothrollbacks; then3freshfork-none actualpixelcritics, fixed9allhumanrefs shownparts/nullunshown, separateperparts/noaveraging. Generatedguide staysoutside candidatequeue andhasnoauto9.",
+    "No canonicalreplacement/defaultmaps/mainmerge/deploy. Mandatoryphysicaltabard/sleeve movinggameplay/transitions/collision/playback proof remainsdue; currentstaticdrape stills prove none. If weakparts fail, changeconstruction usingactualcritics, avoidmicroloops."
+  ],
+  "canonicalChanges": false,
+  "allowArtPromotion": false,
+  "allowDeployment": false,
+  "nativeQualification": "pending delivery",
+  "referenceHumanAnchor": 9
+}

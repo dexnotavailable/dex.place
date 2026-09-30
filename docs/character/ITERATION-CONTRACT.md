@@ -76,3 +76,13 @@ The existing real art loop continues: one source author, three fresh actual
 candidate critics, original identity/palette/coverage, exact R2/two rollbacks,
 separate controlled levers and moving physical cloth acceptance. Auxiliary
 reference work does not retarget or mutate the frozen native requests.
+
+Dex's subsequent direction is explicit: "for rosace my idea is generate her
+in her literal pixel art form then try to reconstruct it". Make a bounded
+full-character pixel guide using actual R2 identity/palette/glaive, outfit14
+and appropriate fixed9 human refs; record actual tool resolution/grid limits.
+Then reconstruct semantic forms through authored geometry/pixel/rig source,
+with no guide raster input/paste/tracing/downsampling shortcut. The actual
+reconstruction gets its own R2 A/B at144/80 and three fresh fixed9 critics.
+An integrated letter requires per-part guards and explicit causal limits;
+an auxiliary guide is never that candidate. See PIXEL-GUIDE-RECONSTRUCTION.
