@@ -206,6 +206,32 @@ class Geometry(unittest.TestCase):
 
 
 class WrapperCleanup(unittest.TestCase):
+    def test_real_dependency_bootstrap_without_script_directory_or_cached_modules(self):
+        # Blender --python does not reliably insert the script's directory.
+        # Load the real adapters, then intentionally fail mode validation before
+        # H1.main can import bpy or open a scene. Injected dependencies cannot
+        # satisfy this regression.
+        names=("cuff2_blender","cuff2_geometry","_reuse","nx_hands_blender",
+               "reconstruction_recipe","hand_recipe","cuff_geometry")
+        saved={name:sys.modules.get(name) for name in names}
+        prior_path=sys.path[:]
+        try:
+            sys.path[:]=[p for p in prior_path if Path(p or '.').resolve() not in
+                         (HERE.resolve(),(REPO/"tools/pixel-pipeline/next").resolve())]
+            for name in names: sys.modules.pop(name,None)
+            stripped=sys.path[:]
+            with self.assertRaisesRegex(ValueError,"explicit parent/cuff2"):
+                T.main(["--cuff-mode","invalid-source-fixture","--hand-scale","1.3","--shots","idle"])
+            self.assertEqual(sys.path,stripped)
+            self.assertEqual(Path(sys.modules["cuff2_blender"].__file__).resolve(),HERE/"cuff2_blender.py")
+            self.assertEqual(Path(sys.modules["cuff2_geometry"].__file__).resolve(),HERE/"cuff2_geometry.py")
+            self.assertEqual(Path(sys.modules["_reuse"].__file__).resolve(),HERE/"_reuse.py")
+        finally:
+            sys.path[:]=prior_path
+            for name,old in saved.items():
+                sys.modules.pop(name,None)
+                if old is not None: sys.modules[name]=old
+
     def test_actual_adapters_copy_restore_and_custom_normal_rejection(self):
         import cuff2_blender as adapter
         points,faces,_=old_fixture(.60)

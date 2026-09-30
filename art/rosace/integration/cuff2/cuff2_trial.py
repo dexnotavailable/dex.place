@@ -21,6 +21,7 @@ def main(argv=None, *, hands=None, recipe=None, adapter=None, bpy_module=None):
     if hands is None or recipe is None or adapter is None:
         try:
             sys.path.insert(0, str(PIPE / "next"))
+            sys.path.insert(0, str(HERE))
             import nx_hands_blender
             import reconstruction_recipe
             import cuff2_blender
