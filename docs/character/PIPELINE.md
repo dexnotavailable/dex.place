@@ -9,6 +9,12 @@ bosses, which flip, and which don't apply. Units (H_px, H_m, ppm, du) are define
 `AGENTS.md` makes this file the entry point for character work. Any lane that changes the
 character, render or motion pipeline updates this file before it finishes.
 
+September 30 World export update **[in progress]**: the runtime's paired 80/144
+asset checks and seated hold timing are implemented in `src/world/player/`.
+See [WORLD-EXPORT.md](WORLD-EXPORT.md) for required clips, source pose keys,
+decoded atlas validation, failure behavior and the remaining actual-character
+release proof. This guard work does not establish a finished Rosace export.
+
 Status tags:
 
 - **[proven]**: measured or run on this PC. The source file is cited.
