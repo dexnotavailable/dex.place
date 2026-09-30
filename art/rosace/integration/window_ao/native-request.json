@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "rosace-open-window-physical-ao-545-diagnostic-20260930",
+  "status": "source-checkpoint-pending-parent-review",
+  "owner": "stage2-rosace-source",
+  "executor": "sole native delivery owner, exclusive/GPU gate at a free boundary; preserve world priority",
+  "exactBase": "54518211eb9a342bc5f6689562c5a0179d466a52",
+  "wrapper": "art/rosace/integration/window_ao/wrapper.py",
+  "entryArgs": ["--window-ao-mode", "<control|rebaked>", "--out", "<executing-private-output>/<mode>-raw"],
+  "forwardedSource": "unchanged tools/pixel-pipeline/next/nx_reconstruction_blender.py reconstruction mode; idle, same gesture and seated hands1.30, head1.10, R2 model/canonical blend, ss4, 144+80",
+  "modes": ["control", "rebaked"],
+  "rawStills": 4,
+  "reuseActual545Control": false,
+  "scope": "body mesh copy, named FLOAT/POINT ao only at geometry-selected front points; actual W2 ring/aperture unchanged; all outside AO and other data exact",
+  "geometryEligibility": "simple actual rest ring X/Z triangulation, positive-area polygon intersections, front -Y normal, every overlap depth strictly behind ring and within actual body ao_dist; all selected polygon vertices plus explicit incident interpolation faces",
+  "physicalMethod": "current render-visible active-relative-shape REST BVH includes body/self/cut bodice/real gold rim/collar/garments. Every occluder is evaluated on temporary owned object/mesh/key copies retaining active relative values/mutes/group masks, while stripping ALL modifiers (Armature/Solidify included), constraints, parent/object animation; original world transform exact. Body ray positions/normals and ring footprint use that same shaped rest geometry. POINT/FACE stamps plus oriented face/corner equality prove original index identity. No hidden references. Existing hemisphere_dirs24, world inverse-transpose normals,1.5mm origin, canonical distance-weighted ray formula and original authored crease; actual body settings .075/.9 preserved. Known S7/nonzero figure_bust mix supported; absolute/show-only/driven mesh/key contexts reject explicitly.",
+  "sourceBinding": "art/rosace/integration/window_ao/binding.json; complete bounded Python/JSON source set, canonical blend plus actual S7 build companion/input/CLI and actual545 opening frozen20 plus native provenance/geometry/finished proof hashes",
+  "checks": [
+    "Before dispatch run check.py and binding.py verify through resource-gate.ps1 -Owner rosace-source. Parent independently reviews source before READY/native request is routed.",
+    "Native candidate must complete unmodified W2 strict body/retained-face guard before AO hook; unsupported typed body schemas, nonfinite geometry, ambiguous polygon, depth tie or exact preservation difference stops. No tolerance waiver.",
+    "Use fresh private control-raw/rebaked-raw in separate native processes. Do not save blend or overwrite the actual545 parent. Capture actual native version, selected source indices, typed schema, original exact hashes, all24 per-point ray distances/crease/calculation/float32 readback and field/palette/source hashes.",
+    "Run post.py --root <executing-private-output> through delivery CPU gate. All7 control PNG passes byte-exact actual545; candidate ID/normal/depth/depth2/noise byte-exact control; exact bones/pose/camera/ppm/anchor/W2 projection; unchanged actual reconstruction finish replays control still/ground0px.",
+    "Only light/beauty differences admitted in actual aperture plus declared incident interpolation support,1raw supersample edge; finished outside support plus1local sprite-cell edge must be0. Retain/reject any adaptive finish coupling elsewhere; never composite it away.",
+    "Inspect full actual80/144 panels plus gold-frame/skin/shadow chest crops, native AO/ramp distributions and literal changed-color clusters. No automatic art score or inferred cause certainty. Parent owns three fresh blind actual-pixel critics if qualified materially new evidence exists.",
+    "If appearance remains a dark patch or scope guard fails, preserve rejected diagnostic; next coherent window contour/rim/material-junction construction, not forced AO/global lift/painted pixels/microtint loop. No default adoption, canonical/R2/rollbacks/Stage3/Stage4 changes. Stills prove no motion/cloth."
+  ],
+  "nativeQualification": "pending; source fixtures are not native/render/art acceptance",
+  "humanReferenceAnchor": 9,
+  "currentWindowGeometryMaterialJunction": "below9, unaccepted",
+  "allowDefaultAdoption": false,
+  "allowCanonicalReplacement": false,
+  "allowCommitPushDeploy": false
+}

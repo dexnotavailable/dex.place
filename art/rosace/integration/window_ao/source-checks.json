@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "state": "independent source review passed; native pending",
+  "observedDate": "2026-09-30",
+  "worktree": "D:/Dex/Temp/dex-place-rosace-open-window-ao-20260930",
+  "head": "54518211eb9a342bc5f6689562c5a0179d466a52",
+  "gate": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/resource-gate.ps1 -Owner rosace-source",
+  "sourceFixtureCommand": "python art/rosace/integration/window_ao/check.py",
+  "checks": {
+    "geometryAndCanonicalRayFormula": "pass, CPU synthetic fixtures",
+    "typedOutsideDataAndFrozenSourceInputCliMutationRejection": "pass, CPU synthetic fixtures",
+    "actualWrapperInjectedSuccessExceptionCleanupPaths": "pass, 6 CPU paths through actual X.main",
+    "actualShapeAwareRestHelperPaths": "pass, 12 CPU paths through actual rest_geometry.evaluate; supplied nonzero relative S7-like/group/mute geometry and changed normals, source-index/winding/corner rejection, temporary failure cleanup",
+    "currentViewLayerBaseOrdering": "pass, fixture hide_set rejects pre-link/no-Base calls; actual helper links and updates before hide_set, temporary hide_render remains true and original hidden flags remain exact",
+    "unsupportedShapeContexts": "absolute, show-only/pinned, driven mesh/key and missing group explicitly rejected; known S7 nonzero relative mix supported",
+    "rawOutsideScopeAndAlphaLeakage": "pass, CPU synthetic fixtures",
+    "allNewPythonSourceCompilation": "pass, in-memory compile with no bytecode output",
+    "bindingFreezeAndVerification": "pass, live read-only source/input/actual545 evidence hashes"
+  },
+  "bindingSha256": "74a4eeab68c5aa7e37f6001f7f0d7d41493bcc214f63965ad795c9c76ba76802",
+  "boundSourceFiles": 944,
+  "boundActual545OpenEvidenceFiles": 36,
+  "boundCanonicalBlendSha256": "aef28c7f5cdddee6f18bd12c06d988b5436eeac24049ddf4f6ca37f654394373",
+  "boundCanonicalBuildCompanion": "D:/Dex/Projects/dex-place-art/rosace/build/rosace_build.json, exact SHA in binding.json inputs",
+  "nativeExecuted": false,
+  "nativeSchemaBvhReadbackRenderPassed": false,
+  "actualNewPixelsExist": false,
+  "artAccepted": false,
+  "defaultAdoption": false,
+  "sourceReadyOrDispatched": false,
+  "limits": "Existing actual545 OPEN evidence is hash-bound only. Injected CPU surfaces do not establish native behavior. Parent review precedes READY and sole-delivery four-still request."
+}
