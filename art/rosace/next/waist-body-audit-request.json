@@ -1,0 +1,32 @@
+{
+  "id": "rosace-waist-body-audit-20260930",
+  "kind": "native-diagnostic",
+  "wrapper": "tools/pixel-pipeline/next/nx_waist_audit_blender.py",
+  "variable": "diagnosticvisibilityonly,no candidatecorrection",
+  "args": [
+    "--hand-scale",
+    "1.0",
+    "--shots",
+    "idle",
+    "--blend",
+    "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+    "--r2",
+    "<executing-worktree>/tools/pixel-pipeline/drive9/r2_model.json",
+    "--head",
+    "1.10",
+    "--ss",
+    "4",
+    "--px",
+    "144,80"
+  ],
+  "outputRelative": "review/rosace/art/next/waist-body-audit",
+  "steps": [
+    "Nativeonlydeliveryexclusive+GPUlease,exactpreservedR2,no canonicalwrites.",
+    "FullR2control outputs andbody-onlydiagnostics share samecamera/canvas/pose.",
+    "FinishfullcontrolR2and compareacceptedidle144/80at0px beforeinterpretingdiagnostics.",
+    "Read body-onlyid/depth2/beauty, declaredwaist/hipmesh-band envelopes andrestXwidths; actualactivepinch25,default17.",
+    "Explain bandselection/pose/projection/torso-bend distinctions; no falsefront10vs3/4target15one-to-one.",
+    "Ifneededreviewseparatewaist-only25/17/8correctionsfittingdependentgarments; noassumedwiderwinner."
+  ],
+  "canonicalChanges": false
+}

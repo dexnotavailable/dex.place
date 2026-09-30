@@ -1,0 +1,23 @@
+{
+  "id": "rosace-pose-grounded-rest-20260930",
+  "kind": "render-request",
+  "model": "art/rosace/next/pose-grounded-rest-model.json",
+  "parent": "exactR2appearance",
+  "variable": "onecoherentpelvis/chest/freearmgesture",
+  "unchanged": [
+    "headtilt16/face",
+    "R2bodygeometry/waist25",
+    "feet/weightleg/legscale",
+    "weapon",
+    "appearance/palette",
+    "nohand/physicsstack"
+  ],
+  "steps": [
+    "Deliveryexclusive+GPUlease,exactcanonical/rollbacks/sourcechecks.",
+    "RenderfreshR2controlorpreservealreadyqualifiedsameappearance/posecontrol.",
+    "d9_blender.py --blend exactR2 --r2 newmodel --head1.10 --shots idle --px144,80 --ss4 into freshprivateoutput; sourceCLIhas spaces --head 1.10 --px 144,80 --ss 4.",
+    "UnchangedR2finish, same-frame native/x3comparisons, actualPSweight/turn/stance checks and body-onlycontext.",
+    "Threefreshblindbody/pose/face/outfitcriticswithold/new9refs, explicitwaist/window/gestureconstraints. Nohead-angleonlyproof oracceptedwinassumed."
+  ],
+  "canonicalChanges": false
+}

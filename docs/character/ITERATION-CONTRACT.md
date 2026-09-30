@@ -2,6 +2,13 @@
 
 Reference parity9 remains the goal, at144hero and80world. The promoted R2 and
 both exact rollback bundles stay authoritative until an accepted change lands.
+Dex explicitly declares **ALL old and new references fixed9/10anchors**.
+Future panels keep9for shown/applicable parts rather than lowering references
+to make Rosace appear closer; unshown parts remain unobservable/null. Historical
+panels keep their original numbers and are not rewritten as a quality gain.
+New private refs15/16/17 supplement the earlier14; inspect actual originals,
+acknowledge screenshot/UI/resampling limits, and do not infer motion fromGIF
+labels onPNG. Never trace or copy reference pixels into Rosace.
 The root's form/craft/appeal calibration reports are baseline observations,
 not improvement claims; their scores are not comparable to the older5.78panel.
 
