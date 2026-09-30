@@ -14,6 +14,15 @@ never embedded.
 This is **revision 2**, after a critique round on revision 1. What changed and why is listed in
 the revision log at the end.
 
+**2026-09-30 production integration note:** the original wide Liturgy brief is
+retained. Attack/motion/effect specialists stage authored data at80/144 using
+H-normalized extents and exact60Hz exposures; source integrator owns shared
+changes. Existing N1/N5 source/actions do not establish the complete kit or
+physical sleeve/tabard playback. First proposed batch is finite N1 keys/cycle
+and oneN1->N2transition before wider view/kit coverage. Diagnostic front/q34/
+profile/back/both-side views are private construction/retarget references;
+gameplay remains the canon flat side view. SeeSPECIALIST-INTEGRATION.md.
+
 Tags, the same as the companion docs:
 
 - **[M]** measured, here or in the companion doc named next to it.

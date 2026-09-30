@@ -30,7 +30,8 @@ def main():
         raise ValueError("fresh output in executing private review tree required")
     original_library,original_recipe=H.library,H.hand_recipe
     state={"mode":mode,"handScale":scale,"recipeHash":R.recipe_hash(),
-        "sourceGuideRole":"additional semantic reference only; no raster input"}
+        "sourceGuideRole":"additional semantic reference only; no raster input",
+        "preservationOutput":str(output/"mesh-preservation")}
     R.MODE="control" if mode=="control" else "reconstruction"
 
     def library(path,name):

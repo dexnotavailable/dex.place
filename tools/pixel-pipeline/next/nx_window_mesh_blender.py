@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import nx_hands_blender as H
 import window_mesh_recipe as R
+import mesh_preservation as P
 
 
 def digest(value):
@@ -31,21 +32,14 @@ def mesh_invariants(ob):
             "vertexGroup": k.vertex_group, "sliderMin": k.slider_min, "sliderMax": k.slider_max,
             "coordinates": [[*p.co] for p in k.data]} for k in keys.key_blocks],
         "shapeKeyMode": None if not keys else [keys.use_relative, keys.eval_time],
-        "pointAttributes": {a.name: [[getattr(p, f) if isinstance(getattr(p, f), (str, bool, int, float))
-            else list(getattr(p, f)) for f in ("value", "vector", "color") if hasattr(p, f)] for p in a.data]
-            for a in me.attributes if a.domain == "POINT"},
+        "pointAttributes": P.attributes(me,"POINT",range(len(me.vertices))),
         "materials": [m.name if m else None for m in me.materials],
         "part": ob.get("part"), "passIndex": ob.pass_index,
     }
 
 
 def face_data(me, f):
-    return {"vertices": list(f.vertices), "material": f.material_index, "smooth": f.use_smooth,
-            "uv": {layer.name: [[*layer.data[i].uv] for i in f.loop_indices] for layer in me.uv_layers},
-            "attributes": {a.name: [[getattr(a.data[i], field) if isinstance(getattr(a.data[i], field), (str, bool, int, float))
-                else list(getattr(a.data[i], field)) for field in ("value", "vector", "color") if hasattr(a.data[i], field)]
-                for i in ([f.index] if a.domain == "FACE" else f.loop_indices)]
-                for a in me.attributes if a.domain in ("FACE", "CORNER") and not a.name.startswith(".")}}
+    return P.face_data(me,f)
 
 
 def install(state):
@@ -71,6 +65,9 @@ def install(state):
     faces = [list(f.vertices) for f in original.polygons]
     planned = R.plan(before["vertices"], faces, *anchors)
     expected_faces = [face_data(original, original.polygons[i]) for i in planned["retainedFaces"]]
+    # Legacy UV access may initialize internal schema; snapshot point data
+    # after that read so any lazy materialization is represented consistently.
+    before = mesh_invariants(bodice)
     copy = original.copy()
     copy.name = "rosace_window2_private_bodice"
     bodice.data = copy
@@ -86,7 +83,15 @@ def install(state):
     if mesh_invariants(bodice) != before:
         raise AssertionError("face-only cut changed vertices, weights, shape keys, point data, materials or IDs")
     actual_faces = [face_data(copy, f) for f in copy.polygons]
-    if actual_faces != expected_faces:
+    preservation=P.compare(expected_faces,actual_faces)
+    preservation.update(vertexKeyWeightPointGuard="exact pass",nativeVersion=bpy.app.version_string,
+                        hypothesis="old native trace lacks records; cause not assumed")
+    if state.get("preservationOutput"):
+        folder=Path(state["preservationOutput"])
+        folder.mkdir(parents=True,exist_ok=True)
+        (folder/"retained-face-preservation.json").write_text(json.dumps(preservation,indent=2),encoding="utf-8")
+    state["preservationReport"]=preservation
+    if not preservation["exactSemanticEqual"]:
         raise AssertionError("retained faces/UV/corner attributes were not preserved exactly")
     # Gold is actual geometry, outside the cut; its inside is not filled.
     count = len(planned["loop"])
@@ -152,6 +157,7 @@ def install(state):
         "removedFaceCount": len(planned["removedFaces"]), "boundaryVertexCount": count,
         "singleClosedBoundary": True, "unchangedBodiceVertexCount": len(copy.vertices),
         "preservedBodiceInvariantHash": digest(before), "protectedGeometry": protected,
+        "retainedFacePreservation":preservation,
         "halfWidthMeters": planned["halfWidthMeters"], "heightMeters": planned["heightMeters"],
         "rimWidthMeters": planned["rimWidthMeters"], "nativePixelsPending": True,
         "limitations": "whole-face border may be jagged; actual skin visibility/rim continuity/144+80 appeal require pixels"}
@@ -169,7 +175,7 @@ def main():
     if not (H.REPO / "review/rosace").resolve() in output.parents:
         raise ValueError("fresh output must be in executing worktree's private review tree")
     original_library = H.library
-    state = {}
+    state = {"preservationOutput":str(output/"mesh-preservation")}
 
     def library(path, name):
         module = original_library(path, name)

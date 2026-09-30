@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "status": "proposed-source-interface",
+  "sourceIntegrator": "rosace",
+  "criticOwner": "rosace-critics",
+  "nativeOwner": "delivery",
+  "baseline": "bcb220de03c0b84e8fa68851328cd1d799a11de5",
+  "roles": {
+    "rosace-attacks": "choreography/ticks/cancels/root/hit/FX cue specification",
+    "rosace-motion": "local route/adapter inventory and numeric rig/key/motion/view production",
+    "rosace-refinement": "anatomical/outfit/grip construction, own optional geometry hook",
+    "rosace-artistry": "geometry-preserving native pixel/material/face/hair finish",
+    "rosace-effects": "Liturgy FX implementation with normalized extent/contact/layer metadata",
+    "rosace-critics": "independent materially-new still/moving acceptance, read-only source"
+  },
+  "context": {
+    "clock": "60Hz game ticks; explicit exposure/holds; model30Hz conversion declared",
+    "size": "characterHeightPx=80 or144; old96pixel values convert fromH",
+    "rigSpace": "Blender metres,Zup,forward-Y,left+X",
+    "adapterSpace": "SOMA/verifiedKimodo numericdata,Yup,forward+Z; (x,y,z)SOMA -> (x,-z,y)Blender",
+    "pixelSpace": "xright,ydown,facingright; relative to declaredfootpivot/worldorigin",
+    "requiredChannels": ["Root translation/rotation", "bone rotations", "bone scales", "foot plant state", "weapon transform", "grip socket/slide/influence", "finger state"],
+    "nativeAnchors": ["root", "foot.L", "foot.R", "hand.L", "hand.R", "grip_main", "grip_off", "glaive_butt", "glaive_tip", "head", "chest"],
+    "rootMotion": "worldtrajectory drives physics before inplace export; runtime rootMotion consumedonce",
+    "framing": "equalppm/camera basis, stable clipcanvas/anchor; integer alignment only"
+  },
+  "handoff": {
+    "sourceIdentity": ["owner", "worktree", "branch", "base", "head", "scope", "checks", "review", "risks", "dependencies"],
+    "implementationMetadata": ["entry module/config relativepath", "hookstage", "input/output schema and units", "preservation guards", "PIPELINE/MOVESET amendment proposal"],
+    "phaseLabels": ["proposed", "authored", "rendered", "verified"],
+    "normalization": "integrator adapts named namespaces; this proposedinterface doesnot silently invalidate an existing reviewed specialist schema"
+  },
+  "mergeStages": [
+    {"id": "shared-window-repair", "status": "source-authored-native-pending", "scope": "actualbcb retainedface/UV/corner guard, no specialist duplication"},
+    {"id": "N1-gameplay-key-gate", "status": "proposed", "keys": ["coil", "strike", "contact", "followthrough", "recovery"], "sizes": [80,144], "view": "gameplay_side", "budget": "5keypairs=10stills after authoredspecialist source passes; no motionclaim"},
+    {"id": "N1-cycle-FX-gate", "status": "proposed", "ticks": 33, "sizes": [80,144], "view": "gameplay_side", "variants": ["noFX", "FXwhiff", "FXcontact"], "budget": "onebody/meshcloth chronological bake reusedbyFXvariants; fullcycle movingproof, no unqualified root/cloth reuse"},
+    {"id": "N1-to-N2-transition", "status": "proposed", "entry": "actualN1cancel/followthrough state, notidle", "condition": "planner exactexposure/unwrappedturn/regrip contract", "budget": "onefinitephrase before wider kit"},
+    {"id": "multiview-key-reference", "status": "proposed", "views": ["front", "q34.L", "q34.R", "profile.L", "profile.R", "back"], "sizes": [80,144], "budget": "contact/coil selectedviews first; no allmovesXallviewsXallphases fanout", "role": "private retarget/occlusion reference, not gameplay camera change"},
+    {"id": "expanded-kit", "status": "proposed", "moves": ["idle/run/turn", "jump/apex/fall/land", "dash/Aspersion", "N2-N5", "Q", "R"], "budget": "small accepted cycles and transitions oneatime after N1/N2 interfaces work"}
+  ],
+  "acceptance": {
+    "humanRefs": "all17fixed9 shownparts; nullunshown; no averagedweakpart acceptance",
+    "partLedger": "31separate CRITIQUE-PARAMS parts per independent rosace-critics ACCEPTANCE checklist",
+    "camera": "MOVESET0.4 no gameplayzoom; integer inspection enlargement is evidence display only",
+    "generatedGuides": "auxonly,no productionraster/noauto9/no nativeproof",
+    "cloth": "actual meshCloth sleeves/tabard pins/collision/inertia/settle, chronological warmup/bake, fullmoving transitions; spring-drape is legacyonly",
+    "FX": "hit-matchedH extents; front/back layering; contact distinctfromwhiff; silhouette/face/grip visible; flash/reduced-motion/pool/performance gates",
+    "playback": "tickmanifest authoritative; encodedpreview delays readback; actualfullcycles atnative80/144 withwithoutFX",
+    "critics": "rosace-critics owns3fresh-history neutral materiallynew actualpixel/moving panels; no duplicateintegrator waves",
+    "native": "sole deliveryfreeboundary/resource leases; source/interface table isnot nativeverification"
+  },
+  "preservation": "exactR2/bcb/794/62/72/322 andtwo rollbacks; no canonical/default/main/deploy writes or model launches"
+}

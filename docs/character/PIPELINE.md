@@ -259,9 +259,10 @@ the next step. "<char>" is the character's folder name.
 - **Characters that aren't human-sized:** generate and QC at Kimodo's 1.76 m human scale, and
   scale at retarget (3.14 "Scale convention") [proposed].
 
-**Step 11. Retarget and retime.** [**BLOCKED** until the SOMA-to-VRM mapping and the retime
-step exist. Steps 12-13 need real motion, so they are blocked for every character too: a new
-character can get through step 10 and no further.]
+**Step 11. Retarget and retime.** [Implemented for inspected N1/N5 by the later
+direct SOMA-to-rig/hero/retime route in3.14. The earlier blanket mapping-blocked
+status is superseded. This does not establish complete80/144view/full-kit,
+mesh-cloth, glassFX, export or playback acceptance; each remains gated.]
 
 - Import the BVH into Blender and retarget SOMA onto the VRM rig. Sample it at the MOVESET's
   drawing frames only, add holds, snaps and overshoot, and push the poses. Then bake to FK
@@ -3583,3 +3584,40 @@ Guides/baseline diagnostics remain outside genuine candidate queues; READY794 st
   show jaw turn;144screen-band mediancheeklight0.545,jaw0.424. No newBlender run, no geometry
   winner inferred. Do not blindly reconstruct welded normals. See PIXEL-GUIDE-RECONSTRUCTION
   and explicit `art/rosace/next/reconstruction1-request.json` for source/limits/finite gates.
+
+### 8d. Actual native preservation finding (2026-09-30)
+
+**Native observed, opening unqualified:** frozenbcb under5.1.2 rendered R2control andclosed
+construction144/80 raw; finishedcontrolstill/ground0px. Actualopening stoppedbefore-render
+atretainedface/UV/corner equality, code1/nottimeout. Inputs/R2/maps/rollbacks remainedexact;
+no complete integratedopening candidate ornewfullcriticwave. Do notlabel4xrawbeautynativefinish.
+
+**Source correction, nativepending:** mesh_preservation.py compares fulltyped orientedloop
+multisets, normalizingonlyfacearrayorder/cyclicstart withUV/corner associations rotatedtogether.
+No tolerance, reversewinding, omittedinternalattrs, schema/value loss orduplicate-count waiver.
+Requiredcorner-edge storageindices comparebyactualedge identity, withrawindices in diagnostics.
+Sourcefixtures pass order/cycliccases and rejectrealdata corruption. Native diagnosticrecords
+mustestablishactualcause; oldtrace alonecannot. SeeWINDOW-NATIVE-PRESERVATION.md and finite
+window-preservation-repair-request.json. Frozenbcb/794/62/72/322 stayunchanged; integrator owns
+sharedrepair while specialistskeepseparate namespaces and criticsown newactualacceptance.
+
+### 8e. Specialist motion/art source integration (2026-09-30)
+
+**Ownership active; interfaces proposed:** six named specialists own attacks/motion/refinement/
+artistry/effects/critics in separate art/docs namespaces. Rosace source integrator alone resolves
+shared builders/MOVESET/PIPELINE; sole deliveryowns native/model execution/publication and
+rosace-critics owns3fresh-history panels for materiallynew actualstills/fullmovingcycles.
+No duplicateimplementation/integrator criticwaves or dexCode motioninventory delegation.
+
+**Existing source/artifacts, incomplete acceptance:** N1/N5 directretarget/actions/timing/hero
+keys/springdrape/smears andsome144frames exist; blanketStep11blocked text corrected above.
+Full80/144views/fullkit/actualmeshcloth/glassstages/runtimeexport remainunverified. OldpublicLAB
+standin finding islab-package-specific, notproof no worldsprite exists. Preservehistoryscores,
+all17humanfixed9refs and R2/frozen bcb/794/62/72/322/two rollbacks.
+
+**Proposed finite stages:** sharedwindowrepair first; N1 five-key80/144gameplaypairs then one
+33tick body/meshcloth cycle withwithoutFX/contact-vs-whiff; oneN1->N2transition; selected
+multiviewkeyreference andlaterfullkit cycles. No giantcartesianrender batch. Requiredchannels
+include scales/Root/feet/weapon/grip/fingers; FXH-normalization, clock/encodedplayback and
+physicalcloth/world-root-inertia boundaries explicit. SeeSPECIALIST-INTEGRATION.md and
+art/rosace/integration/specialist-interfaces-v1.json. A writtenmatrix isnot renderedacceptance.

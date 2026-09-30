@@ -1,0 +1,28 @@
+{
+  "id": "rosace-window-native-preservation-repair-20260930",
+  "owner": "rosace",
+  "kind": "finite-native-shared-source-correction",
+  "parentFrozenHead": "bcb220de03c0b84e8fa68851328cd1d799a11de5",
+  "sourceFinding": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/lanes/delivery/source-findings/rosace-reconstruction1-bcb220d.md",
+  "oldNativeProof": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/lanes/delivery/rosace-reconstruction1/native-render.json",
+  "oldNativeRaw": "D:/Dex/Temp/rosace-reconstruction1-native-20260930/review/rosace/art/next/reconstruction1-delivery",
+  "wrapper": "tools/pixel-pipeline/next/nx_reconstruction_blender.py",
+  "correction": "exact typed oriented face/corner association; only polygonorder/cyclicstarts/storage-edge-address normalize, no tolerance or omitted internal attributes",
+  "outputRelative": "review/rosace/art/next/window-preservation-repair-delivery",
+  "minimumNewRenders": 2,
+  "fallbackNewRendersIfControlsCannotBeReused": 6,
+  "renderArgs": ["--reconstruction-mode", "reconstruction", "--hand-scale", "1.3", "--shots", "idle", "--blend", "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend", "--r2", "<executing-worktree>/tools/pixel-pipeline/drive9/r2_model.json", "--head", "1.10", "--ss", "4", "--px", "144,80", "--out", "<fresh-private-output>/reconstruction-raw"],
+  "steps": [
+    "Freeze the new reviewed exacthead. Sourcefixtures check_mesh_preservation.py and inherited reconstruction checks; preservebcb/794/62/72/322 requests andfailedartifact bytes. Sole deliverynative/GPU atfree boundary, no model launch.",
+    "Preflight exactcanonical/model/rig/pose/finish/renderbackend+settings and body/control path identity. Control-mode newdriver adds only preservationOutput metadata; no newart hook runs there. Reuse oldcontrol andconstruction-control raw only if complete hashes/argv/metadata/input identity establishes unchanged drawing path; sourcefile changes mustbe reviewed, never assume identicalhead means identicalpixels.",
+    "Copy oldtwo mode raw into executingREPO freshprivate control-raw/construction-control-raw, exclude priorR2 finish directories so unchangedfinisher neveroverwrites. Log everycopysha againstsource. If guards fail, rendercontrol1.0 andconstruction-control1.3 again separately and requireR2replay0px.",
+    "Run missingreconstruction2stills withnewtyped preservation. Save mesh-preservation/retained-face-preservation.json before equalityassert. Exactsemantic preservation required; if trueUV/schema/material/corner mismatch remains, stopbefore rendering and report exactbefore/aftervalues forsource repair. No waivedguard, fakepaint or canonical save.",
+    "If preservation passes, finishvia unchanged reconstruction_native_post.py. RequireR2control0px, sameclosed/open effectivepose/allbones<=1e-6/camera, equalppm/basis integeranchor overallalignment, finiteLgap0..1.5cm, realbody/skinID gain insidewindow andrawhandmetrics. Inspect actualthinrim/skin/clothedge/contact at144/80.",
+    "Publish fullgenuine nativecandidate/control/proof onlyafter qualification; route materiallynewactualimages via root to rosace-critics for3freshfixed9perpartcritic judgments. Partial rawbeauty is4xsupersampled unfinisheddiagnostic, notfinishednative144/80 oropeningproof. No duplicatecriticwave here.",
+    "Physical sleeves/tabard movingcollisions/transitions/bake/playback andfullmotionview/FX acceptance remainopen. No default/canonical/main/deployment changes. Record actual failurecause fromnewdata, not fromsourcehypothesis."
+  ],
+  "canonicalChanges": false,
+  "allowArtPromotion": false,
+  "allowDeployment": false,
+  "nativeQualification": "pending finite corrected-path execution"
+}
