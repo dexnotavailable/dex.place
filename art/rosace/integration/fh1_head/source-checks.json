@@ -1,0 +1,85 @@
+{
+  "schema": "fh1.source-cpu-checks/1",
+  "startedUTC": "2026-09-30T16:12:57.028732+00:00",
+  "finishedUTC": "2026-09-30T16:12:59.149410+00:00",
+  "gate": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/resource-gate.ps1 -Owner rosace-source",
+  "sourceBinding": {
+    "sourceBindingSha256": "e535430fad5396aea5e1b76aaf7a0716d64cfa0834a29d79e10392e0f98def9e",
+    "reviewedSourceHead": "0979146fcea3f320717f4dbb6dd8233dbc2e1cc2",
+    "actualExecutingHead": "0979146fcea3f320717f4dbb6dd8233dbc2e1cc2",
+    "sourceCount": 957,
+    "supportingEvidenceCount": 5
+  },
+  "reusedFrozenInputBinding": {
+    "inputBindingSha256": "574ecde6cddd33c9a90b1f951f5fd4f22df880e7652faa8f6fa10262eb3a258d",
+    "depth2Provenance": "actual failed FC1 bd94059 control, not invented as frozen R2 seventh pass",
+    "metadataSourceBindingSha256": "66ca81de83ea87985db32d025168edcaf2e20e906c2cb21c0639553b14b38438",
+    "executionModelSha256": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3",
+    "historicalModelReference": "D:\\Dex\\Temp\\dex-place-rosace-facecage-support-20260930\\tools\\pixel-pipeline\\drive9\\r2_model.json"
+  },
+  "sourceInventorySha256": "e535430fad5396aea5e1b76aaf7a0716d64cfa0834a29d79e10392e0f98def9e",
+  "results": [
+    {
+      "file": "check_fh1.py",
+      "sha256": "5e98c040baa6084c8ef78d5efa124f06033e2c9f0b1196d5d62885d8df17ce68",
+      "argv": [
+        "C:\\Users\\sanic\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "D:\\Dex\\Temp\\dex-place-rosace-fh1-authored-encoding-20260930\\art\\rosace\\integration\\fh1_head\\check_fh1.py"
+      ],
+      "exitCode": 0,
+      "stdout": "{\"tests\": 19, \"pass\": true, \"nativeExecuted\": false, \"limits\": \"synthetic native typed/topology/helper lifecycle fixtures; actual canonical geometry,5120 readback/interface and pixels remain native requirements\"}\n",
+      "stderr": "test_actual_constructor_contract_bijective_oriented_strip (__main__.BoundaryTests.test_actual_constructor_contract_bijective_oriented_strip) ... ok\ntest_duplicate_extra_shared_coordinate_rejects (__main__.BoundaryTests.test_duplicate_extra_shared_coordinate_rejects) ... ok\ntest_nonfinite_and_unstored_double_reject (__main__.BoundaryTests.test_nonfinite_and_unstored_double_reject) ... ok\ntest_one_float32_step_not_nearest_match (__main__.BoundaryTests.test_one_float32_step_not_nearest_match) ... ok\ntest_orientation_and_weight_drift_reject (__main__.BoundaryTests.test_orientation_and_weight_drift_reject) ... ok\ntest_positive_neck_one_neighbor_only (__main__.BoundaryTests.test_positive_neck_one_neighbor_only) ... ok\ntest_anatomical_decoded_and_any_encoded_drift_reject_complete_rows (__main__.EncodingTests.test_anatomical_decoded_and_any_encoded_drift_reject_complete_rows) ... ok\ntest_full5120_exact_and_stationary_decoding_declared_without_setter (__main__.EncodingTests.test_full5120_exact_and_stationary_decoding_declared_without_setter) ... ok\ntest_no_native_normal_write_call_exists (__main__.EncodingTests.test_no_native_normal_write_call_exists) ... ok\ntest_unsupported_normal_schema_reject (__main__.EncodingTests.test_unsupported_normal_schema_reject) ... ok\ntest_actual_main_blender_separator_cleanup_both_modes (__main__.EntryTests.test_actual_main_blender_separator_cleanup_both_modes) ... ok\ntest_no_separator_blender_args_reject_before_imported_native (__main__.EntryTests.test_no_separator_blender_args_reject_before_imported_native) ... ok\ntest_real_importlib_stripped_path_cache_restoration (__main__.EntryTests.test_real_importlib_stripped_path_cache_restoration) ... ok\ntest_actual_failure_diagnostic_retained_after_cleanup (__main__.NativeSafetyTests.test_actual_failure_diagnostic_retained_after_cleanup) ... ok\ntest_cleanup_restores_every_pointer_before_all_removals (__main__.NativeSafetyTests.test_cleanup_restores_every_pointer_before_all_removals) ... ok\ntest_native_quantized_original_field_and_triangle_guard (__main__.NativeSafetyTests.test_native_quantized_original_field_and_triangle_guard) ... ok\ntest_only_modifier_execution_time_is_separate_other_readonly_values_exact (__main__.TypedOriginalTests.test_only_modifier_execution_time_is_separate_other_readonly_values_exact) ... ok\ntest_outside_typed_value_rna_drift_and_original_position_reject (__main__.TypedOriginalTests.test_outside_typed_value_rna_drift_and_original_position_reject) ... ok\ntest_uv_materialization_precedes_complete_required_rna_snapshot (__main__.TypedOriginalTests.test_uv_materialization_precedes_complete_required_rna_snapshot) ... ok\n\n----------------------------------------------------------------------\nRan 19 tests in 0.157s\n\nOK\n"
+    },
+    {
+      "file": "check_fh1_post.py",
+      "sha256": "2333cb6a0f27bf7be7a29ad2e902ca5752c80fc6320114ab10293a340d595403",
+      "argv": [
+        "C:\\Users\\sanic\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "D:\\Dex\\Temp\\dex-place-rosace-fh1-authored-encoding-20260930\\art\\rosace\\integration\\fh1_head\\check_fh1_post.py"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"kind\": \"direct FC1 post binding/frozen-semantic/dimension guards, no actual post\",\n  \"cases\": 34,\n  \"actualDualFrozenMetadataLfSourceEquivalencePairs\": 4,\n  \"allSevenRawShapesBeforeRoi\": true,\n  \"inputBinding\": {\n    \"inputBindingSha256\": \"574ecde6cddd33c9a90b1f951f5fd4f22df880e7652faa8f6fa10262eb3a258d\",\n    \"depth2Provenance\": \"actual failed FC1 bd94059 control, not invented as frozen R2 seventh pass\",\n    \"metadataSourceBindingSha256\": \"66ca81de83ea87985db32d025168edcaf2e20e906c2cb21c0639553b14b38438\",\n    \"executionModelSha256\": \"1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3\",\n    \"historicalModelReference\": \"D:\\\\Dex\\\\Temp\\\\dex-place-rosace-facecage-support-20260930\\\\tools\\\\pixel-pipeline\\\\drive9\\\\r2_model.json\"\n  },\n  \"sourceCompiled\": true,\n  \"postRun\": false,\n  \"nativeExecuted\": false\n}\n",
+      "stderr": ""
+    },
+    {
+      "file": "check_fh1_inputs.py",
+      "sha256": "92f7cb62123c9d9fbd1dbc77f70af164c649b79719d262fddabbfcc0969e2a0c",
+      "argv": [
+        "C:\\Users\\sanic\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "D:\\Dex\\Temp\\dex-place-rosace-fh1-authored-encoding-20260930\\art\\rosace\\integration\\fh1_head\\check_fh1_inputs.py"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"kind\": \"FC1 exact native PNG plus distinct failedbd depth2 binding source checks\",\n  \"fixtureCases\": 4,\n  \"actualFailedBdDepth2Rgba8Validated\": 4,\n  \"binding\": {\n    \"inputBindingSha256\": \"574ecde6cddd33c9a90b1f951f5fd4f22df880e7652faa8f6fa10262eb3a258d\",\n    \"depth2Provenance\": \"actual failed FC1 bd94059 control, not invented as frozen R2 seventh pass\",\n    \"metadataSourceBindingSha256\": \"66ca81de83ea87985db32d025168edcaf2e20e906c2cb21c0639553b14b38438\",\n    \"executionModelSha256\": \"1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3\",\n    \"historicalModelReference\": \"D:\\\\Dex\\\\Temp\\\\dex-place-rosace-facecage-support-20260930\\\\tools\\\\pixel-pipeline\\\\drive9\\\\r2_model.json\"\n  },\n  \"allSourceCompiled\": true,\n  \"nativeExecuted\": false,\n  \"postRun\": false\n}\n",
+      "stderr": ""
+    },
+    {
+      "file": "check_fh1_relocation.py",
+      "sha256": "d5df066596c3b13f2689a8bdda5ffb28483f3cbc273c964809ba8fcaee4fb726",
+      "argv": [
+        "C:\\Users\\sanic\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "D:\\Dex\\Temp\\dex-place-rosace-fh1-authored-encoding-20260930\\art\\rosace\\integration\\fh1_head\\check_fh1_relocation.py"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"kind\": \"actual collect/verify executing-root relocation with byte-exact model/poses\",\n  \"relocatedSameBytesPass\": true,\n  \"changedExecutingModelRejected\": true,\n  \"changedHistoricalModelRejected\": true,\n  \"originalInputsByteExact\": \"574ecde6cddd33c9a90b1f951f5fd4f22df880e7652faa8f6fa10262eb3a258d\",\n  \"metadataSourceBindingByteExact\": \"66ca81de83ea87985db32d025168edcaf2e20e906c2cb21c0639553b14b38438\",\n  \"realInputsEdited\": false,\n  \"nativeExecuted\": false\n}\n",
+      "stderr": ""
+    },
+    {
+      "file": "check_fh1_binding.py",
+      "sha256": "e08e81840fd9bfb0193af15a86521bad24cec0ac365a694594f8d52d54cf27b5",
+      "argv": [
+        "C:\\Users\\sanic\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "D:\\Dex\\Temp\\dex-place-rosace-fh1-authored-encoding-20260930\\art\\rosace\\integration\\fh1_head\\check_fh1_binding.py"
+      ],
+      "exitCode": 0,
+      "stdout": "{\"cases\": 6, \"metadataOnlyDescendantSameSourcePass\": true, \"sourceDriftReject\": true, \"noAncestorReject\": true, \"freezeWrongLiveHeadReject\": true, \"actualSourceInventoryCount\": 957, \"originalFieldCanonicalLfExact\": true, \"noCommitsMade\": true, \"nativeExecuted\": false}\n",
+      "stderr": ""
+    }
+  ],
+  "passed": true,
+  "fixtureScope": "synthetic typed5120 encoding/decoded disclosure, exact construction topology, actual wrapper injected cleanup/import/argv, direct actual metadata/PNG guard helpers, model relocation and source binding; no actual native object/geometry or post run",
+  "nativeExecuted": false,
+  "nativeMembershipOrSafetyPassed": false,
+  "candidatePixelsExist": false,
+  "art9": false,
+  "commitOrPushPerformed": false
+}
