@@ -25,7 +25,7 @@
 //               from the 144 px bake at native pixel size, over the zoomed world
 //   present:    scale rule, bars, impact frames, fades
 
-import type { Action, Input } from "../lab/engine/input.ts";
+import { ACTIONS, type Action, type Input } from "../lab/engine/input.ts";
 import type { Camera } from "../lab/engine/camera.ts";
 import type { Renderer as LabRenderer, SpriteSheet } from "../lab/engine/renderer.ts";
 import { Vfx } from "../lab/engine/vfx.ts";
@@ -47,7 +47,7 @@ import { WorldRenderer, VFX_TYPE, type PointLight, type RGB } from "./render/ren
 import { WorldCamera } from "./room/camera.ts";
 import { Room, RoomStream } from "./room/room.ts";
 import type { Area, RoomAudio, RoomCamera, RoomDef, Spawn } from "./room/types.ts";
-import { Save } from "./save.ts";
+import { Save, startPlace, type Place, type StartWhy } from "./save.ts";
 import type { StubTexture } from "./props/stub.ts";
 import type { Touch } from "./touch.ts";
 import { Travel, type Dest } from "./travel.ts";
@@ -57,6 +57,8 @@ import type { PixelMatterEngine } from "./props-api.ts";
 import type { Prop as PxProp, HitType, LayerName } from "../pixel/index.ts";
 
 const TICK = 1000 / 60;
+/** The place heartbeat: at most one position write this often while playing (wall ms). */
+const PLACE_EVERY_MS = 3000;
 
 type Mode = "intro" | "play" | "transition";
 
@@ -68,6 +70,8 @@ export interface GameOpts {
   source?: Map<string, string>;
   /** The route order for the map (room ids). */
   route?: string[];
+  /** start is an explicit ?room= link: it wins over any saved place or rest place. */
+  link?: boolean;
 }
 
 /** Something the player can use: a stub prop or a pixel-matter prop. */
@@ -154,6 +158,14 @@ export class WorldGame {
   private triggersIn = new Set<number>();
   private rumbleIn = 30;
   private stillFor = 0;
+  /** How this load chose its start: the exact saved place, the rest place, the spawn, or a ?room= link. */
+  startedBy: StartWhy | "link" = "spawn";
+  /** Wall ms of the player's last activity (0: none recorded; nothing to resume). */
+  private activeAt = 0;
+  /** Where activity was last measured from (movement counts as activity). */
+  private activeRef: [number, number] = [0, 0];
+  private placeWrittenAt = 0;
+  private placeKey = "";
 
   constructor(
     readonly r: WorldRenderer,
@@ -257,9 +269,64 @@ export class WorldGame {
       if (what === "debug") this.debug = !this.debug;
     };
     this.hooks.install(this.api);
-    const rest = this.save.data.rest;
-    const start = rest && this.defs.has(rest.room) ? rest : opts.start;
-    this.enter(start.room, start.spawn, true);
+    // where this load starts (save.ts startPlace): a ?room= link as given; otherwise the exact
+    // saved place if the last activity was under 3 minutes ago, else the spawn (the dock)
+    if (opts.link) {
+      this.startedBy = "link";
+      this.enter(opts.start.room, opts.start.spawn, true);
+    } else {
+      const s = startPlace(this.save.data, Date.now(), { start: opts.start, has: (id) => this.defs.has(id), spotOk: (p) => this.spotOk(p) });
+      this.startedBy = s.why;
+      this.enter(s.room, s.spawn, true, s.at);
+      // an idle reload does not extend the window: it still counts from the saved activity
+      if (s.at) this.activeAt = this.save.data.lastSeen ?? 0;
+    }
+    this.activeRef = [this.player.body.x, this.player.body.y];
+    if (typeof document !== "undefined") document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") this.writePlace(true);
+    });
+    if (typeof window !== "undefined") window.addEventListener("pagehide", () => this.writePlace(true));
+  }
+
+  /** A saved spot is still standable: inside the room, above its pits, on a surface. */
+  private spotOk(p: Place): boolean {
+    const room = this.stream.get(p.room);
+    room.build();
+    const d = room.def;
+    if (p.x < 0 || p.x > d.w || p.y < 0) return false;
+    const pitY = d.pitY ?? d.h + PHYSICS.pitMargin * SCALE.H;
+    if (p.y > pitY || d.pits?.some((q) => p.x >= q.x0 && p.x <= q.x1 && p.y > q.y)) return false;
+    return Math.abs(room.collision.groundAt(p.x, p.y - 1) - p.y) <= 2;
+  }
+
+  /** Activity (movement, held input, an open panel) moves the resume clock forward. */
+  private notePlace(): void {
+    const b = this.player.body;
+    const now = Date.now();
+    if (this.mode === "play") {
+      const moved = Math.abs(b.x - this.activeRef[0]) > 0.5 || Math.abs(b.y - this.activeRef[1]) > 0.5;
+      if (moved || this.panels.open || ACTIONS.some((a) => this.input.isDown(a))) {
+        this.activeAt = now;
+        this.activeRef = [b.x, b.y];
+      }
+    }
+    if (now - this.placeWrittenAt >= PLACE_EVERY_MS) this.writePlace(false, now);
+  }
+
+  /**
+   * Save the room, the last safe ground in it and the facing, stamped with the last activity
+   * (not "now", so a tab left open and idle still resets after 3 minutes). Throttled to the
+   * heartbeat unless forced (away, hidden, pagehide); unchanged records are not rewritten.
+   */
+  private writePlace(force: boolean, now = Date.now()): void {
+    if (!force && now - this.placeWrittenAt < PLACE_EVERY_MS) return;
+    this.placeWrittenAt = now;
+    if (this.loading || !this.activeAt || !this.room) return;
+    const place: Place = { room: this.room.def.id, x: this.lastSafe[0], y: this.lastSafe[1], facing: this.player.facing >= 0 ? 1 : -1 };
+    const key = `${place.room}|${place.x}|${place.y}|${place.facing}|${this.activeAt}`;
+    if (key === this.placeKey) return;
+    this.placeKey = key;
+    this.save.setPlace(place, this.activeAt);
   }
 
   private pan(x: number): number {
@@ -363,14 +430,15 @@ export class WorldGame {
     return null;
   }
 
-  private enter(roomId: string, spawnId: string, first = false): void {
+  private enter(roomId: string, spawnId: string, first = false, at?: Place): void {
     if (this.sitting) this.stand();
     const room = this.stream.get(roomId);
     room.build();
     this.room = room;
     this.stream.settle(roomId);
     const d = room.def;
-    const sp: Spawn = d.spawns[spawnId] ?? Object.values(d.spawns)[0]!;
+    // resuming puts her on the exact saved spot (no carrier ride: that belongs to arriving)
+    const sp: Spawn = at ? { x: at.x, y: at.y, facing: at.facing } : d.spawns[spawnId] ?? Object.values(d.spawns)[0]!;
     const b = this.player.body;
     b.x = sp.x;
     b.y = sp.y;
@@ -482,6 +550,7 @@ export class WorldGame {
     this.beganAt = this.seconds;
     this.travel.begin();
     this.travel.mark("room", this.room.def.id);
+    this.activeAt = Date.now();
     this.audio.start(!this.save.data.sound);
     this.roomAudio(true);
   }
@@ -502,7 +571,10 @@ export class WorldGame {
     this.frameMs = 0;
     this.fps = 0;
     this.audio.setAway(away);
-    if (away) this.input.releaseAll();
+    if (away) {
+      this.input.releaseAll();
+      this.writePlace(true);
+    }
   }
 
   // --- panels --------------------------------------------------------------------------
@@ -691,6 +763,7 @@ export class WorldGame {
     }
     this.hooks.tick(this.api, 1 / 60);
     this.storyTick();
+    this.notePlace();
   }
 
   /** The test world's beat: the storm passes while you're indoors. Final rooms keep their weather. */
@@ -1353,7 +1426,7 @@ export class WorldGame {
       `weather ${d.underground ? "underground/" : w.interior ? "inside/" : ""}${w.label}  rain ${w.p.rain.toFixed(2)} wind ${w.wind.toFixed(2)} mist ${w.p.mist.toFixed(2)} dark ${w.p.dark.toFixed(2)} flash ${w.flash.toFixed(2)} strikes ${w.strikes.length}${this.stormPassed ? "  (storm passed)" : ""}`,
       `sound ${this.audio.started ? (this.audio.muted ? "muted" : "on") : "not started"}  music ${a.music} ${a.level.toFixed(2)} muffle ${a.muffle.toFixed(2)}${a.resting ? " resting" : ""}  bed ${a.bed}  ducks ${[...this.ducks].map(([k, v]) => `${k} ${v}`).join(",") || "-"}`,
       `near ${this.near ? (this.near.kind === "stub" ? `${this.near.prop.recipe}#${this.near.prop.id}` : `px:${this.near.prop.recipe.id}#${this.near.prop.id}`) : "-"}  props ${this.room.props.length}+${this.room.pixel?.props.length ?? 0}px  lights ${this.r.lightCount}  vfx ${this.vfx.counts.effects}/${this.vfx.counts.particles}`,
-      `save ${Object.keys(this.save.data.flags).filter((k) => this.save.data.flags[k]).join(", ") || "-"}  rest ${this.save.data.rest ? `${this.save.data.rest.room}/${this.save.data.rest.spawn}` : "-"}`,
+      `save ${Object.keys(this.save.data.flags).filter((k) => this.save.data.flags[k]).join(", ") || "-"}  rest ${this.save.data.rest ? `${this.save.data.rest.room}/${this.save.data.rest.spawn}` : "-"}  start ${this.startedBy}  place ${this.save.data.place ? `${this.save.data.place.room} ${this.save.data.place.x.toFixed(0)},${this.save.data.place.y.toFixed(0)}` : "-"}${this.activeAt ? ` active ${((Date.now() - this.activeAt) / 1000).toFixed(0)} s ago` : ""}`,
       this.travel.summary(),
     ].join("\n");
   }
@@ -1389,6 +1462,7 @@ export class WorldGame {
       live: this.stream.status(),
       save: this.save.data,
       session: this.save.session,
+      startedBy: this.startedBy,
       fps: this.fps,
       frameMs: this.frameMs,
       sim: this.simTicks,
