@@ -44,19 +44,27 @@ Newest first. Times are local time at the build machine (UTC+7).
 
 ### 2026-10-01
 
+<a id="e-20261001-0551"></a>**05:51 · S4 face system (Claude, Opus 5.5) · S4**
+
+C001's face system first pass: flush anime eyes built from layered iris/highlight graphics, a real mouth interior (teeth, tongue), and 25 expression shapes shown in clay, flat colour and wireframe. Next: the head shape is being rebuilt from pro-model data, then these eyes and expressions get regenerated onto it.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s4-face-r3-9eec6f83.webp" width="1194" height="1600" alt="Render sheet from the S4 face system (Claude, Opus 5.5) lane, stage S4: C001&#x27;s face system first pass: flush anime eyes built from layered iris/highlight graphics, a real mouth interior (teeth, tongue), and 25 expression shapes shown in clay, flat colour and wireframe. Next: the head shape is being" loading="lazy" decoding="async">
+
+---
+
+<a id="e-20261001-0544"></a>**05:44 · S5a hair · S5**
+
+First full pass at C001's short silver bob: about 30 clumps authored over the head (under-layer, bob masses, choppy bangs, face-framing locks) in clean quads with one UV strip per clump. It also has a hood-on tucked state and a first spring-chain physics test (head turn, run bob, settle). Next: the silhouette still reads as a stiff helmet with a stamped zigzag hem, so round 3 switches to hand-shaped curve clumps: bigger hero bangs, tapered individual ends, an inward tuck at the jaw.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s5-hair-r2-5214e489.webp" width="876" height="1600" alt="Render sheet from the S5a hair lane, stage S5: First full pass at C001&#x27;s short silver bob: about 30 clumps authored over the head (under-layer, bob masses, choppy bangs, face-framing locks) in clean quads with one UV strip per clump. It also has a hood-on tucked state and a first spring-chain physic" loading="lazy" decoding="async">
+
+---
+
 <a id="e-20261001-0540"></a>**05:40 · shader · S7**
 
 Round 2 of the toon shader kit in Blender: a cleaner face-shadow map that moves as one shape with the light, thin tinted hair highlight, no skin gloss, blush zones, painted-fold cloak with a real lace motif, and a new WuWa-style key+fill+rim lighting preset. Placeholder test model, not the final character: the bob is the AI tracing guide's placeholder hair, not final art.
 
 <img src="/blog/characterforge-03-live-build-log/2026-10-01-s7-shader-r2-blender-20487300.webp" width="1600" height="1548" alt="Render sheet from the shader lane, stage S7: Round 2 of the toon shader kit in Blender: a cleaner face-shadow map that moves as one shape with the light, thin tinted hair highlight, no skin gloss, blush zones, painted-fold cloak with a real lace motif, and a new WuWa-style key+fill+rim lighting pres" loading="lazy" decoding="async">
-
----
-
-<a id="e-20261001-0539"></a>**05:39 · Blender hair · S5**
-
-Hair round 2: the short bob is now built from strand-recipe clumps over the S3 head, shown in clay, flat and gradient previews with hood-off and hood-on shapes, plus a first spring-chain physics test (head turn, run bob, stop). The clump shapes and the physics are first passes, not final.
-
-<img src="/blog/characterforge-03-live-build-log/2026-10-01-s5-hair-r2-365b9ec6.webp" width="1162" height="1600" alt="Render sheet of the short grey clay bob hair from front, three-quarter, side and back, then flat and gradient previews, hood shape tests, and ten frames of a head-turn physics test." loading="lazy" decoding="async">
 
 ---
 
