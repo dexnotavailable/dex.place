@@ -3629,3 +3629,27 @@ motion/FX/cloth/runtime/9acceptance remainpending. N4f9narrowopening expresslyfa
 instant2.2H gate andisnotacceptedpendingwidealternative; originalclock/cameracanon notrewritten.
 Sharedwindowrepair andindependentC1four-still request canadvanceasfinitebatches; nostacked
 controls. Criticcriteria31parts consumedreadonly; hair2triage4/0px isnotnewartacceptance.
+
+### 8f. Source-reviewed opening occlusion diagnostic (2026-09-30)
+
+Actual sharp-face repair545 passed native typed preservation and real opening
+visibility at80/144; three fresh blind Stage2 critics rejected its dark chest
+patch for appearance. R2 remains the default. Native light data and shader
+inspection identify stale closed-clothing occlusion as a hypothesis to test.
+
+`art/rosace/integration/window_ao/` recomputes only a declared body POINT `ao`
+patch derived from the actual open ring and front-body geometry. It uses
+current relative shape-key REST evaluation, including canonical S7, before
+pose and without Armature/Solidify; all selected points, ring depths, BVH
+occluders, ray origins and normals use the same shaped geometry. Twenty-four
+deterministic rays and authored crease semantics match the original bake.
+Original meshes, geometry, normal fields, UVs, all other typed data and AO
+outside the selected patch stay exact. It paints no replacement pixels.
+
+Independent review corrected Basis-geometry sampling and temporary-object
+view-layer ordering. Gated fixtures and source/input binding verification pass.
+Native schema/key evaluation/BVH/readback and the four actual matched stills
+remain pending sole delivery. Raw and finished outside-scope differences reject
+the diagnostic, including adaptive-palette coupling. See
+[WINDOW-OPEN-AO.md](WINDOW-OPEN-AO.md). This accepts source correctness, not
+the window's cause, contour, visual quality9, motion, cloth or publication.
