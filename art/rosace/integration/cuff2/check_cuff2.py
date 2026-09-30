@@ -435,7 +435,7 @@ def main():
             "fixtureSource":"actual F3 sleeves_f3.point AST; unchanged rejected C1 check_cuff.fixture(.28)",
             "cleanupSource":"actual cuff2_trial.main and actual nx_hands_blender.main; injected native dependencies",
             "sourceHashes":{str(path.relative_to(REPO)):hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(HERE.glob("*.py"))}}
-    (HERE/"cpu-report.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
+    (HERE/"cpu-report.json").write_text(json.dumps(report,indent=2),encoding="utf-8",newline="\n")
     print(json.dumps(report))
     return 0 if result.wasSuccessful() else 1
 

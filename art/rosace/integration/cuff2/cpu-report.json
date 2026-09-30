@@ -10,7 +10,7 @@
   "cleanupSource": "actual cuff2_trial.main and actual nx_hands_blender.main; injected native dependencies",
   "sourceHashes": {
     "art\\rosace\\integration\\cuff2\\_reuse.py": "1d828fa349b00ad1db0d0ba0658bbc0e72199771d061c29fd0260e57c95ab105",
-    "art\\rosace\\integration\\cuff2\\check_cuff2.py": "ce8f6c2f5d834fb44cd0d551d635445c434479aba3144d8f26db95b3d0444fa3",
+    "art\\rosace\\integration\\cuff2\\check_cuff2.py": "4b8ee2c55deeada65e0fa03fac0f9e1570c26241f6dd69f58a1be57927277a18",
     "art\\rosace\\integration\\cuff2\\cuff2_blender.py": "781bc6c966e43196bf0a23d0800dcba938fd67fcef3da7217ccb83365a4638a4",
     "art\\rosace\\integration\\cuff2\\cuff2_geometry.py": "12d2d6fb87c1604c11c1103fb5f1882ed24bb78373bdc15123777a2ef66c63e7",
     "art\\rosace\\integration\\cuff2\\cuff2_native_post.py": "f32a28cb898cbf145929a284dbf4791865971c1a95d17e0524a182b93fc7ce30",
