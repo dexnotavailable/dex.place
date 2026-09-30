@@ -622,6 +622,15 @@ export class WorldGame {
     // Keep the cheap RAF clock alive for smooth return, but submit no hidden
     // World render, shader polling or neighbour warming while reading the site.
     if (this.away) {
+      // A World that loads behind the website (the homepage opened covered)
+      // finishes loading there: once the first room's shaders are ready it
+      // draws one hidden frame to warm the pipeline and skips the arrival
+      // fade nobody saw, so scrolling back up finds it ready.
+      if (this.loading && (!this.room.backdrop || this.room.backdrop.ready())) {
+        this.loading = false;
+        this.fade = 0;
+        this.render();
+      }
       this.acc = 0;
       this.frameMs = 0;
       this.fps = 0;
