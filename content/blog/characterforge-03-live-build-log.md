@@ -52,6 +52,14 @@ C001's body got a smaller head (toward the concept's proportions), a slightly fu
 
 ---
 
+<a id="e-20261001-0615"></a>**06:15 · S5b rigid parts (bone arms, boots, hood ornaments) · S5**
+
+Round 2 of C001's bone arm: we switched from hand-coded shapes to a sculpt made by a 3D generator, cut to our own joint plan, retopologised and baked; the forearm is done this way and stays clash-free in every test pose. Next: cut the hand and upper arm from the same sculpt so no simple primitives remain.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s5-rigid-r2-98c8e2c8.webp" width="1600" height="1453" alt="Render sheet from the S5b rigid parts (bone arms, boots, hood ornaments) lane, stage S5: Round 2 of C001&#x27;s bone arm: we switched from hand-coded shapes to a sculpt made by a 3D generator, cut to our own joint plan, retopologised and baked; the forearm is done this way and stays clash-free in every t" loading="lazy" decoding="async">
+
+---
+
 <a id="e-20261001-0602"></a>**06:02 · gameplay · S8**
 
 Epic's free mannequin running around inside our own Unreal project: idle, walk, run, sprint, stop, a turn and a jump, all chosen automatically by motion matching from scripted controller input. It is a stand-in body so C001 can drop onto the same system later.
