@@ -2,11 +2,11 @@
 title: Writing docs and posts
 summary: How a markdown file in content/ becomes a page on this site.
 group: dex-place
-order: 2
-placeholder: true
+order: 3
+placeholder: false
 ---
 
-A sample page that shows every piece of formatting the docs and blog support. Dex will replace or remove it.
+How the pages in Docs and Blog are made, for anyone editing this site. The site's source is public on [GitHub](https://github.com/dexnotavailable/dex.place). This page also shows every piece of formatting the docs and blog support, so you can see how each one looks.
 
 ## Where files go
 
@@ -29,15 +29,14 @@ title: Installing dexClient
 summary: One line for the index
 group: dexclient
 order: 1
-placeholder: true
 ---
 ```
 
 - `title` is required.
 - `summary` shows under the title on index pages.
-- `date` (posts, `YYYY-MM-DD`) sets the order on the blog. Undated posts are listed as drafts.
+- `date` (posts, `YYYY-MM-DD`) sets the order on the blog. Undated posts are listed as drafts. Never make a date up.
 - `group` (docs) is one of `dexcode`, `dexclient` or `dex-place`.
-- `placeholder: true` shows the Placeholder tag, hides the page from search engines and keeps it out of the feed.
+- `placeholder: true` marks a page that is still a stand-in: it shows the Placeholder tag, hides the page from search engines and keeps it out of the feed. Leave it out, or set `placeholder: false`, on a finished page.
 
 ### Groups and order
 
