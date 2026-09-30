@@ -10,17 +10,17 @@ This page is a placeholder. Dex will write it.
 
 ## Download
 
-Get the setup from [Downloads](/downloads/#dexclient). The page lists its version, size and SHA-256.
+Get dexClient 0.4.21 from [Downloads](/downloads/#dexclient). The page lists the setup's exact filename, size and SHA-256.
 
 ## Check the file
 
-To be written.
+In PowerShell, open the folder containing the downloaded setup and run:
 
 ```powershell title="Print the SHA-256 of the setup"
-PS> Get-FileHash .\dexClient-Setup-*.exe -Algorithm SHA256
+Get-FileHash .\dexClient-Setup-0.4.21.exe -Algorithm SHA256
 ```
 
-The hash it prints should match the one on the Downloads page.
+The hash it prints should match the one on the Downloads page. Letter case does not matter.
 
 ## Install
 

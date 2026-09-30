@@ -104,7 +104,7 @@ function hashGroups(sha: string): string {
 function guide(d: DownloadEntry, f: DownloadFile, level: Level): string {
   const steps = d.steps ?? [];
   const name = fileName(f);
-  const cmd = `Get-FileHash .\\${name}`;
+  const cmd = `Get-FileHash .\\${name} -Algorithm SHA256`;
   const h = `h${level}`;
   const h2 = `h${level + 1}`;
   return (
