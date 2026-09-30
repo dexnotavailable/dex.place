@@ -148,4 +148,3 @@ original sleeve meshes and typed structure remain protected. CPU source and
 injected actual-wrapper checks pass; exact four-still native/API/visibility/
 anatomy/appearance/cloth proof remains pending. Source/request/limits live in
 CUFF2-LOFT.md and art/rosace/integration/cuff2. Rejected C1 remains preserved.
-
