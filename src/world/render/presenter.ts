@@ -103,17 +103,29 @@ export class Presenter {
   private u: Record<string, WebGLUniformLocation>;
   /** Output rect in device px (top-left origin), scale, and whether sharp-bilinear is on. */
   rect = { x: 0, y: 0, scale: 1, sharp: false, w: 0, h: 0 };
+  private leftInset = 0;
+  private rightInset = 0;
 
   constructor(private gl: WebGL2RenderingContext, private vao: WebGLVertexArrayObject) {
     this.prog = compile(gl, FULL_VS, PRESENT_FS, "present");
     this.u = uniforms(gl, this.prog);
   }
 
+  /** Touch gutters affect only presentation; the world target stays 1280x720. */
+  setHorizontalInsets(left: number, right: number): boolean {
+    left = Math.max(0, Math.round(left)); right = Math.max(0, Math.round(right));
+    if (left === this.leftInset && right === this.rightInset) return false;
+    this.leftInset = left; this.rightInset = right;
+    return true;
+  }
+
   /** Works out the output scale for a canvas size (device px). */
   layout(cw: number, ch: number): void {
-    const r = presentRect(cw, ch, SCALE.viewW, SCALE.viewH, "auto");
+    const left = Math.min(this.leftInset, Math.max(0, cw - 1));
+    const right = Math.min(this.rightInset, Math.max(0, cw - left - 1));
+    const r = presentRect(cw - left - right, ch, SCALE.viewW, SCALE.viewH, "auto");
     // presentRect is bottom-left based; the shader works top-left
-    this.rect = { x: r.x, y: ch - (r.y + r.h), scale: r.scale, sharp: r.sharp, w: r.w, h: r.h };
+    this.rect = { x: r.x + left, y: ch - (r.y + r.h), scale: r.scale, sharp: r.sharp, w: r.w, h: r.h };
   }
 
   draw(scene: Target, over: Target | null, cw: number, ch: number, o: PresentOpts): void {

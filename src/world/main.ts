@@ -152,6 +152,13 @@ async function boot(): Promise<void> {
   let n = 0;
   const loop = (now: number): void => {
     try {
+      const b = game.player.body, camera = game.camera;
+      const heldVista = camera.zoneWeight >= 0.95 && camera.zones.some((z) => z.hold !== undefined && camera.still >= z.hold &&
+        b.x >= z.x0 && b.x <= z.x1 && (z.y0 === undefined || b.y >= z.y0) && (z.y1 === undefined || b.y <= z.y1));
+      const scenic = game.mode === "play" && !game.away && !game.loading && !game.panels.open && camera.closeup < 0.02 && (!!game.sitting || heldVista);
+      const insets = touch.present(scenic, canvas.clientWidth, canvas.clientHeight);
+      const k = canvas.width / Math.max(1, canvas.clientWidth);
+      if (r.presenter.setHorizontalInsets(insets.left * k, insets.right * k)) r.layout();
       game.frame(now);
       if (game.debug) {
         if (n++ % 6 === 0) debugEl.textContent = game.debugText();
