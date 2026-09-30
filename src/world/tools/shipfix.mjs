@@ -6,6 +6,7 @@
 import { createRequire } from "node:module";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { browserOptions, angle } from "./browser.mjs";
+import { assessSummon, SUMMON_TIMES } from "./summon-verdict.mjs";
 const require = createRequire(new URL("../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const arg = (n, d) => {
@@ -281,7 +282,7 @@ async function summon() {
     if (vname === "1080p") await p.page.screenshot({ path: `${d}/D3-${vname}-woken.png` });
     await p.ev(() => window.__world.use());
     let t = 0;
-    for (const at of [0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 3.2, 4.4, 5.4, 7]) {
+    for (const at of SUMMON_TIMES) {
       await p.ev((n) => window.__world.advance(n), Math.round((at - t) * 60));
       t = at;
       const s = await p.ev(() => {
@@ -732,7 +733,7 @@ if (out.migration) {
 }
 if (out.sit) for (const [k, v] of Object.entries(out.sit)) if (v && "stoodUp" in v) requirePass(v.sitting && v.drawn && v.stoodUp && v.satAgain, `sit: ${k} must sit, stand, and sit again on one use`);
 if (out.strike) for (const id of ["D1", "D2", "D3"]) requirePass(out.strike[id]?.playerRatio.fixed1 < 1.15, `strike: ${id} brightens player by 15% or more`);
-if (out.summon) for (const f of out.summon.frames) requirePass(f.inView.every(Boolean), `summon: seals clipped at ${f.at}s`);
+if (out.summon) failures.push(...assessSummon(out.summon).failures);
 if (out.archive) for (const [k, v] of Object.entries(out.archive)) if (v?.frame) {
   const expected = k.startsWith("docs-index") ? "/docs/" : k.startsWith("bay-1") ? "/docs/installing-dexclient/" : k.startsWith("bay-2") ? "/docs/dexcode/" : "/docs/about-dex-place/";
   requirePass(v.frameH1 && v.closed && v.frame.split("?")[0] === expected, `archive: ${k} must load its product's doc and close`);
