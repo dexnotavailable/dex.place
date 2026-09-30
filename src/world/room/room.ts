@@ -12,6 +12,7 @@ import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../render/renderer.ts";
 import { Collision, type OneWay, type Solid } from "./collision.ts";
 import { terrainTexture } from "./terrain.ts";
+import { plantStand, settle, type Moved } from "./ground.ts";
 import type { RoomDef, TerrainPiece } from "./types.ts";
 
 interface TerrainSprite {
@@ -57,6 +58,8 @@ export class Room {
   private staticOneWays: OneWay[] = [];
   built = false;
   buildMs = 0;
+  /** Placements the shared grounding pass put on the terrain under them (debug, the audit). */
+  moved: Moved[] = [];
   /** Seconds the room has been live (props' clock). */
   time = 0;
   tick = 0;
@@ -93,7 +96,11 @@ export class Room {
     // props: the runtime's stub recipes, or pixel matter (src/pixel) through the adapter
     this.props = [];
     const saved = this.deps.pixelSave();
-    for (const pl of d.props) {
+    // a ground-standing placement a few px off the terrain under it is put on it (room/ground.ts)
+    const settled = settle({ terrain: d.terrain, props: d.props, w: d.w, waterline: d.waterline, water: d.water });
+    this.moved = settled.moved;
+    const stand = plantStand(d);
+    for (const pl of settled.props) {
       const how = resolveRecipe(pl.recipe, pl.engine, (n) => engine.has(n));
       if (!how) throw new Error(`room ${d.id}: no prop recipe "${pl.recipe}" (stub or pixel matter)`);
       if (how.engine === "pixel") {
@@ -101,7 +108,7 @@ export class Room {
           // the room's terrain is the pixel world's ground too (cut cords and debris come to rest on it)
           const ground = (x: number, y: number): boolean =>
             this.staticSolids.some((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h) || this.staticOneWays.some((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + 2);
-          this.pixel = new PixelRoom(d.w, d.h, SCALE.H, saved, ground, { gate, reduced: this.deps.reduced });
+          this.pixel = new PixelRoom(d.w, d.h, SCALE.H, saved, ground, { gate, reduced: this.deps.reduced }, stand);
         }
         if (this.deps.flag(`cut:${pl.id}`) && !saved[pl.id]) this.pixel.world.saveData[pl.id] = { cut: true };
         // a world flag named in the placement (lever:culvert, shrine:1, latch:sky-door) sets the kit prop's own persisted key

@@ -42,10 +42,14 @@ interface Stem {
   leaf: number;
   regrow: number;
   w: number;
+  /** Rows the bed's footing under this stem sits above the bed's base (shallows shelve); 0 on the flat. */
+  gy: number;
 }
 
 interface Refs {
   part: Part;
+  /** Grid row of the bed's base (stems with gy > 0 root above it). */
+  base: number;
   stems: Stem[];
   dirty: boolean;
   wake: number;
@@ -56,8 +60,8 @@ interface Refs {
 function draw(r: Refs): void {
   const g = r.part.grid;
   g.clearAll();
-  const bottom = g.h - 1;
   for (const s of r.stems) {
+    const bottom = r.base - s.gy;
     const h = Math.max(1, Math.round(s.h));
     const lean = Math.max(-1.4, Math.min(1.4, s.lean));
     let tx = s.x, ty = bottom;
@@ -113,24 +117,35 @@ export const reedBed = defineRecipe<ReedParams, Refs>({
   build(b, p) {
     const W = b.u(p.width), sh = b.u(p.height);
     const Ht = Math.round(sh * 1.25) + 4;
-    const part = b.part("reeds", { w: W + Math.round(sh * 0.6), h: Ht, pivot: [0, Ht], at: [0, 1], layer: p.layer, parallax: 1, z: p.layer === "fg" ? 5 : 3, outline: 2, hittable: false });
-    part.piece("stems");
     const r = b.rand;
     const green = matId(p.kind === "dry" ? "reedDry" : "reedStem"), dry = matId("reedDry");
     const n = Math.max(3, Math.round((W / 10) * p.density));
     const stems: Stem[] = [];
+    // every stem roots where the shallows' floor (or the water's surface) is under its own x; a
+    // stem with nothing to stand in is not grown. Draws stay in order so flat beds look as before.
+    const reach = Math.round(b.H * 0.6);
+    let up = 0, down = 0;
     for (let k = 0; k < n; k++) {
       const x = Math.round(((k + r() * 0.8) / n) * (W - 1));
+      const gy = b.groundRise(x + 0.5, reach);
       const clump = vnoise(x / (sh * 0.8), 0.5, p.seed);
       const h0 = Math.max(4, Math.round(sh * (0.4 + clump * 0.7) * (0.75 + r() * 0.35)));
       stems.push({
         x, h: h0, h0, lean: 0, v: 0, rest: (r() - 0.5) * 0.35,
         mat: r() < (p.kind === "dry" ? 0.85 : 0.18) ? dry : green,
-        head: r() < p.heads, leaf: r() < 0.3 ? 0.35 + r() * 0.3 : 0, regrow: 0, w: r() < 0.3 ? 2 : 1,
+        head: r() < p.heads, leaf: r() < 0.3 ? 0.35 + r() * 0.3 : 0, regrow: 0, w: r() < 0.3 ? 2 : 1, gy: Number.isNaN(gy) ? 0 : gy,
       });
+      if (Number.isNaN(gy)) {
+        stems.pop();
+        continue;
+      }
+      up = Math.max(up, gy);
+      down = Math.max(down, -gy);
     }
+    const part = b.part("reeds", { w: W + Math.round(sh * 0.6), h: Ht + up + down, pivot: [0, Ht + up], at: [0, 1], layer: p.layer, parallax: 1, z: p.layer === "fg" ? 5 : 3, outline: 2, hittable: false });
+    part.piece("stems");
     for (const s of stems) s.lean = s.rest;
-    const refs: Refs = { part: b.get("reeds"), stems, dirty: true, wake: 1, regrowing: false, head: matId("reedHead") };
+    const refs: Refs = { part: b.get("reeds"), base: Ht + up - 1, stems, dirty: true, wake: 1, regrowing: false, head: matId("reedHead") };
     refs.part.dynamicEvery = 3;
     refs.part.dynamic = () => {
       if (refs.dirty) draw(refs);
@@ -204,14 +219,15 @@ function cut(c: Prop<Refs>, hit: Hit): void {
   const cuts = !c.keepsCells && (hit.type === "slash" || hit.type === "heavy" || hit.type === "q" || hit.type === "r");
   let n = 0, bent = 0;
   for (const s of r.stems) {
-    const sx = c.x + s.x, mid = c.y - s.h * 0.5;
-    const cov = Math.max(coverage(hit.shape, sx, mid), coverage(hit.shape, sx, c.y - s.h * 0.85));
+    const sy = c.y - s.gy;
+    const sx = c.x + s.x, mid = sy - s.h * 0.5;
+    const cov = Math.max(coverage(hit.shape, sx, mid), coverage(hit.shape, sx, sy - s.h * 0.85));
     const near = hit.shape.kind === "cone" ? Math.hypot(sx - hit.shape.x, mid - hit.shape.y) < hit.shape.len : cov > 0;
     if (!near) continue;
     s.v += (hit.dir[0] || 1) * (hit.type === "wind" ? 7 : 11);
     bent++;
     if (cuts && cov > 0 && s.h > s.h0 * 0.4) {
-      const top = c.y - s.h;
+      const top = sy - s.h;
       s.h = Math.max(3, Math.round(s.h0 * 0.3));
       s.regrow = 2.5 + c.rand() * 2;
       r.regrowing = true;

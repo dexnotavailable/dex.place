@@ -48,10 +48,14 @@ interface Blade {
   flower: number;
   regrow: number;
   seed: number;
+  /** Rows the ground under this blade sits above the patch's base (steps, slopes); 0 on the flat. */
+  gy: number;
 }
 
 interface GrassRefs {
   part: Part;
+  /** Grid row of the patch's base (blades with gy > 0 root above it). */
+  base: number;
   blades: Blade[];
   dirty: boolean;
   drawn: Float32Array;
@@ -65,8 +69,8 @@ const FLOWERS = ["flowerRose", "flowerPale", "flowerGold"];
 function drawGrass(r: GrassRefs): void {
   const g = r.part.grid;
   g.clearAll();
-  const bottom = g.h - 1;
   for (const b of r.blades) {
+    const bottom = r.base - b.gy;
     const h = Math.max(1, Math.round(b.h));
     const lean = Math.max(-1.3, Math.min(1.3, b.lean));
     let tipX = b.x, tipY = bottom;
@@ -103,25 +107,36 @@ export const grass = defineRecipe<GrassParams, GrassRefs>({
     const u = (f: number): number => b.u(f);
     const W = u(p.width), bh = u(p.height);
     const Ht = Math.round(bh * 1.35) + 3;
-    const part = b.part("grass", { w: W, h: Ht, pivot: [0, Ht], at: [0, 1], layer: "fg", parallax: 1, z: 4, outline: 2, hittable: false });
-    part.piece("blades");
-    const blades: Blade[] = [];
     const n = Math.max(3, Math.round((W / 10) * p.density));
     const r = b.rand;
+    // every blade roots on the ground under its own x: the patch climbs steps and slopes, and a
+    // blade over a drop or inside a wall is not grown (no floating tufts, no buried ones). The
+    // random draws run in the same order for every blade, grown or not, so a patch on flat ground
+    // looks exactly as before.
+    const reach = Math.round(b.H * 0.6);
     const green = matId(p.kind === "dry" ? "grassDry" : "grass"), dry = matId("grassDry");
+    const blades: Blade[] = [];
+    let up = 0, down = 0;
     for (let k = 0; k < n; k++) {
       const x = Math.round(((k + r() * 0.8) / n) * (W - 1));
+      const gy = b.groundRise(x + 0.5, reach);
       // clumps: taller in the middle of a clump, shorter at its edges
       const clump = vnoise(x / (bh * 1.4), 0.5, p.seed);
       const h0 = Math.max(3, Math.round(bh * (0.45 + clump * 0.75) * (0.8 + r() * 0.4)));
       const flower = p.kind === "flowers" && r() < 0.34 ? matId(FLOWERS[Math.floor(r() * FLOWERS.length)]!) : 0;
-      blades.push({
+      const blade: Blade = {
         x, h: h0, h0, lean: 0, v: 0, rest: (r() - 0.5) * 0.5, mat: r() < (p.kind === "dry" ? 0.9 : 0.14) ? dry : green,
-        tone: r() < 0.3 ? -1 : 0, flower, regrow: 0, seed: r(),
-      });
+        tone: r() < 0.3 ? -1 : 0, flower, regrow: 0, seed: r(), gy: Number.isNaN(gy) ? 0 : gy,
+      };
+      if (Number.isNaN(gy)) continue;
+      up = Math.max(up, gy);
+      down = Math.max(down, -gy);
+      blades.push(blade);
     }
+    const part = b.part("grass", { w: W, h: Ht + up + down, pivot: [0, Ht + up], at: [0, 1], layer: "fg", parallax: 1, z: 4, outline: 2, hittable: false });
+    part.piece("blades");
     for (const bl of blades) bl.lean = bl.rest;
-    const refs: GrassRefs = { part: b.get("grass"), blades, dirty: true, drawn: new Float32Array(n), wake: 1, regrowing: false };
+    const refs: GrassRefs = { part: b.get("grass"), base: Ht + up - 1, blades, dirty: true, drawn: new Float32Array(blades.length), wake: 1, regrowing: false };
     refs.part.dynamicEvery = 3;
     refs.part.dynamic = () => {
       if (refs.dirty) drawGrass(refs);
@@ -200,8 +215,9 @@ function grassHit(c: Prop<GrassRefs>, hit: Hit): void {
   const cuts = !c.keepsCells && (hit.type === "slash" || hit.type === "heavy" || hit.type === "q" || hit.type === "r");
   let n = 0, bent = 0;
   for (const b of r.blades) {
-    const bx = c.x + b.x, mid = c.y - b.h * 0.5;
-    const cov = Math.max(coverage(hit.shape, bx, mid), coverage(hit.shape, bx, c.y - b.h * 0.9));
+    const by = c.y - b.gy;
+    const bx = c.x + b.x, mid = by - b.h * 0.5;
+    const cov = Math.max(coverage(hit.shape, bx, mid), coverage(hit.shape, bx, by - b.h * 0.9));
     const near = hit.shape.kind === "cone" ? Math.hypot(bx - hit.shape.x, mid - hit.shape.y) < hit.shape.len : cov > 0;
     if (!near) {
       // a swing close by still bows it
@@ -210,7 +226,7 @@ function grassHit(c: Prop<GrassRefs>, hit: Hit): void {
     b.v += (hit.dir[0] || 1) * (hit.type === "wind" ? 9 : 14);
     bent++;
     if (cuts && cov > 0 && b.h > b.h0 * 0.4) {
-      const top = c.y - b.h;
+      const top = by - b.h;
       b.h = Math.max(2, Math.round(b.h0 * 0.22));
       b.regrow = 2 + c.rand() * 1.5;
       r.regrowing = true;

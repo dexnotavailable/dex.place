@@ -392,6 +392,28 @@ export class PixelWorld {
     return y >= this.height + 40;
   }
 
+  /**
+   * What living ground cover stands on: the host's terrain (and water surfaces it lets plants
+   * root in), not other props. null: the world has no terrain of its own (the sandbox), so cover
+   * falls back to `solidAt` and then to where it was placed.
+   */
+  plantGround: ((x: number, y: number) => boolean) | null = null;
+
+  /**
+   * Where cover rooted near (x, y) meets the ground: the first row at or below `y - up` (down to
+   * `y + down`) that is ground. Returns the row's y (the base pixel sits on it, the same row a
+   * prop placed on the ground uses), NaN when the ground is out of reach (over a drop, inside a
+   * wall), or `y` when the world has no ground to ask (sandbox previews keep their old look).
+   */
+  surfaceY(x: number, y: number, up: number, down: number): number {
+    const at = this.plantGround ?? ((px: number, py: number): boolean => this.solidAt(px, py));
+    const y0 = Math.round(y - up), y1 = Math.round(y + down);
+    const miss = this.plantGround ? NaN : y;
+    if (at(x, y0)) return miss;
+    for (let yy = y0 + 1; yy <= y1; yy++) if (at(x, yy)) return yy;
+    return miss;
+  }
+
   /** First solid/platform surface at x at or below fromY. */
   groundY(x: number, fromY: number, limit = 2000): number {
     for (let y = Math.floor(fromY); y < fromY + limit; y++) {

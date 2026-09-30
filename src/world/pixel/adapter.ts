@@ -123,7 +123,7 @@ export class PixelRoom {
   readonly ids = new Set<string>();
   private lastBlow = -1;
 
-  constructor(w: number, h: number, H: number, saved: Record<string, Record<string, unknown>>, ground: (x: number, y: number) => boolean, private host?: { gate: () => boolean; reduced: () => boolean }) {
+  constructor(w: number, h: number, H: number, saved: Record<string, Record<string, unknown>>, ground: (x: number, y: number) => boolean, private host?: { gate: () => boolean; reduced: () => boolean }, plant?: (x: number, y: number) => boolean) {
     this.world = new PixelWorld({ H, width: w, height: h, seed: 7, heal: { delay: 4.5, rate: 70 } });
     if (host) {
       // All pixel callers (including direct neon flickers) use the host's
@@ -135,6 +135,9 @@ export class PixelRoom {
     // the world's terrain is ground for ropes, cloth and debris (the engine asks solidAt)
     const own = this.world.solidAt.bind(this.world);
     this.world.solidAt = (x: number, y: number): boolean => ground(x, y) || own(x, y);
+    // living cover (grass, reeds) roots in the room's terrain (and the water's surface when the
+    // room says so), never on other props: each blade finds the ground under its own x
+    this.world.plantGround = plant ?? ground;
   }
 
   add(recipe: AnyRecipe, id: string, x: number, y: number, params: Record<string, unknown>, flip: boolean): PxProp {
