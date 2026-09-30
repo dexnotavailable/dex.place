@@ -1,0 +1,16 @@
+{
+  "id": "rosace-artistry-focal-bands-1",
+  "purpose": "Connected crown/frame/mantle shade bands around the unchanged face; preserve native specular/rim accents and their footprint",
+  "material": "hair",
+  "parts": ["hair_mantle_C", "hair_fringe_frame_near", "hair_fringe_over_near", "hair_fringe_centre", "hair_fringe_over_far", "hair_fringe_frame_far", "hair_side_L", "hair_side_R", "hair_side_R2", "hair_sidemass_L", "hair_sidemass_R", "hair_mantle_L", "hair_mantle_R"],
+  "roles": {
+    "crown": {"parts": ["hair_fringe_over_near", "hair_fringe_centre", "hair_fringe_over_far", "hair_sidemass_L", "hair_sidemass_R"], "lightnessThresholds": [0.38, 0.61], "representativePopulationQuantile": 0.60},
+    "frame": {"parts": ["hair_fringe_frame_near", "hair_fringe_frame_far", "hair_side_L", "hair_side_R", "hair_side_R2"], "lightnessThresholds": [0.30, 0.52], "representativePopulationQuantile": 0.45},
+    "mantle": {"parts": ["hair_mantle_C", "hair_mantle_L", "hair_mantle_R"], "lightnessThresholds": [0.24, 0.43], "representativePopulationQuantile": 0.40}
+  },
+  "maxLightnessDelta": 0.14,
+  "maxOKLabDistance": 0.16,
+  "faceMargin144": [6, 5, 12],
+  "generatedPixelsUsed": false,
+  "newColorsAllowed": false
+}

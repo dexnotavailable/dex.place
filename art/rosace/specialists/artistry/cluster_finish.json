@@ -1,0 +1,12 @@
+{
+  "id": "rosace-artistry-hair-clusters-1",
+  "materials": ["hair", "hairtip"],
+  "maxFragmentPixels": {"144": 6, "80": 2},
+  "minSupportRatio": 2,
+  "minBoundaryContacts": 2,
+  "maxOKLabDistance": 0.10,
+  "maxLightnessDelta": 0.08,
+  "sheenCoverage": 0.3,
+  "faceMargin144": [6, 5, 12],
+  "iterations": 1
+}
