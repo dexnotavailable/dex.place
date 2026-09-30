@@ -38,6 +38,21 @@
 /* Still frame drawn in code until the world module mounts (no art). */
 .world__still { position: absolute; inset: 0; }
 .world[data-world-ready] .world__still { display: none; }
+.world__fallback { position: absolute; inset: 50% auto auto 50%; translate: -50% -50%; z-index: 1; }
+.world[data-world-ready] .world__fallback { display: none; }
+.world__hint { position: absolute; top: calc(50% + 44px); width: 100%; padding: 0 18px; text-align: center; font: var(--fs-14) / 1.5 var(--f-body); }
+.world__frame {
+  position: absolute;
+  --frame-bar: calc(var(--bar) * max(0, 1 - var(--world-progress) * 1.6));
+  top: var(--frame-bar);
+  left: 0;
+  width: 100%;
+  height: calc(100% - var(--frame-bar) * 2);
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.world[data-world-ready] .world__frame { opacity: 1; pointer-events: auto; }
 .world__stars {
   position: absolute;
   left: 0; top: 0;

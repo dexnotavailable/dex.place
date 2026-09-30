@@ -19,7 +19,8 @@ export function initKeys(): void {
     const t = e.target as HTMLElement | null;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
     if (e.key === "Escape" && document.querySelector(".page--piece")) {
-      window.location.assign("/gallery/");
+      e.preventDefault();
+      window.location.assign(document.documentElement.dataset.embed === "world" ? "/gallery/?embed=world" : "/gallery/");
       return;
     }
     const link = Array.from(targets).find((a) => a.dataset.key === e.key);
