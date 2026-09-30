@@ -44,19 +44,19 @@ Newest first. Times are local time at the build machine (UTC+7).
 
 ### 2026-10-01
 
-<a id="e-20261001-0539"></a>**05:39 · shader · S7**
+<a id="e-20261001-0540"></a>**05:40 · shader · S7**
 
-First pass of the layered toon shader kit in Blender: two-tier ramp, face shadow map, hull outline, matcap gold, sheer stockings and alpha-clip lace lit under four lighting presets. Test model is placeholder geometry, not the final character.
+Round 2 of the toon shader kit in Blender: a cleaner face-shadow map that moves as one shape with the light, thin tinted hair highlight, no skin gloss, blush zones, painted-fold cloak with a real lace motif, and a new WuWa-style key+fill+rim lighting preset. Placeholder test model, not the final character: the bob is the AI tracing guide's placeholder hair, not final art.
 
-<img src="/blog/characterforge-03-live-build-log/2026-10-01-s7-shader-r2-blender-6f452f59.webp" width="1600" height="1548" alt="Render sheet from the shader lane, stage S7: First pass of the layered toon shader kit in Blender: two-tier ramp, face shadow map, hull outline, matcap gold, sheer stockings and alpha-clip lace lit under four lighting presets. Test model is placeholder geometry, not the final character." loading="lazy" decoding="async">
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s7-shader-r2-blender-20487300.webp" width="1600" height="1548" alt="Render sheet from the shader lane, stage S7: Round 2 of the toon shader kit in Blender: a cleaner face-shadow map that moves as one shape with the light, thin tinted hair highlight, no skin gloss, blush zones, painted-fold cloak with a real lace motif, and a new WuWa-style key+fill+rim lighting pres" loading="lazy" decoding="async">
 
 ---
 
-<a id="e-20261001-0539-2"></a>**05:39 · Hair, clothing layers, bone arms, boots · S5**
+<a id="e-20261001-0539"></a>**05:39 · Blender hair · S5**
 
-New render: hair r2.
+Hair round 2: the short bob is now built from strand-recipe clumps over the S3 head, shown in clay, flat and gradient previews with hood-off and hood-on shapes, plus a first spring-chain physics test (head turn, run bob, stop). The clump shapes and the physics are first passes, not final.
 
-<img src="/blog/characterforge-03-live-build-log/2026-10-01-s5-hair-r2-4a7bb5ff.webp" width="1162" height="1600" alt="Render sheet from the Hair, clothing layers, bone arms, boots lane, stage S5: New render: hair r2." loading="lazy" decoding="async">
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s5-hair-r2-365b9ec6.webp" width="1162" height="1600" alt="Render sheet of the short grey clay bob hair from front, three-quarter, side and back, then flat and gradient previews, hood shape tests, and ten frames of a head-turn physics test." loading="lazy" decoding="async">
 
 ---
 
