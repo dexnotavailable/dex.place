@@ -3,6 +3,31 @@ title: CharacterForge 01: building the reference library
 summary: What CharacterForge is, how the pipeline is planned, and the numbers from measuring 919 reference character models on the first day.
 date: 2026-10-01
 ---
+<!-- tldr:start -->
+
+> [!NOTE]
+> **TL;DR** — Product 1 (playable character): **3%** · Overall (Products 1 + 2): **2%** · Now: **S0 — Foundations** (reference library: measuring run in progress, 919 reference character models measured so far)
+
+**Roadmap.** S0 to S10 are Product 1, S11 is Product 2.
+
+| Stage | Work | Status |
+|---|---|---|
+| S0 | Foundations: research, MMD dataset + metrics, reference shelf | ▶ in progress, 60% |
+| S1 | Critic (judge) kit + calibration | ○ not started |
+| S2 | C001 concept sheets + Meshy ghost | ○ not started |
+| S3 | Body + head topology (adult-female family template) | ○ not started |
+| S4 | Face system: eyes, mouth interior, expressions, face shading | ○ not started |
+| S5 | Hair, clothing layers, bone arms, boots | ○ not started |
+| S6 | Rig, weights, correctives, physics | ○ not started |
+| S7 | Texturing + materials (Kuro-look NPR, Blender to Unreal) | ○ not started |
+| S8 | Unreal import, motion, motion-matching locomotion | ○ not started |
+| S9 | Combat kit + VFX | ○ not started |
+| S10 | Full blind test (Product 1) | ○ not started |
+| S11 | Chassis + C002 + C003 + provider swap tests (Product 2) | ○ not started |
+
+*As of 2026-10-01. Percentages are effort-weighted stage estimates and get re-forecast as real costs come in.*
+
+<!-- tldr:end -->
 
 CharacterForge is a project to build one playable anime-style character that looks like it came from a professional gacha game, and a pipeline that can build more characters the same way. The project started on 2026-09-30. This is the first progress post. It covers the plan and the first day of work, which was mostly collecting reference material and measuring it.
 
