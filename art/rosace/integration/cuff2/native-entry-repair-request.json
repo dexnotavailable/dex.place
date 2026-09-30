@@ -62,7 +62,7 @@
     "tools/pixel-pipeline/finish_f1/f1_post.py"
   ],
   "steps": [
-    "Independent source review passed after computed-overflow correction. Parent freezes exact commit, scoped and effective dependency SHA in STAGE2-CUFF2-READY.json; native admission requires delivery exact-head/preflight. Preserve frozen inputs.",
+    "Independent source review passed after computed-overflow correction. Parent freezes exact commit, scoped and effective dependency SHA in STAGE2-CUFF2-ENTRY-READY.json; native admission requires delivery exact-head/preflight. Preserve frozen inputs.",
     "Delivery alone obtains packet exclusive native/GPU lease, finite deadline, Python-exit-code1 and owned cleanup. Parent/cuff2 run in separate fresh processes. No canonical save, GPU/model/browser work by source worker.",
     "Hash both canonical blends, seven maps, R2 assets, and both exact rollback bundles before/after through the existing preservation owner; all must remain byte-identical.",
     "Actual geometry must preserve copied oriented topology, UV/corner/point/crease/limb attributes, exact weights/material faces/modifier properties/transforms, row0/lowersector and both original meshes. Custom normals/shape keys or unknown mutable modifier collections reject. Derived surface normals may change with coordinates.",
