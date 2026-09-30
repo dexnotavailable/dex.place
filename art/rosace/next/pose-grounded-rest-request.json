@@ -15,9 +15,24 @@
   "steps": [
     "Deliveryexclusive+GPUlease,exactcanonical/rollbacks/sourcechecks.",
     "RenderfreshR2controlorpreservealreadyqualifiedsameappearance/posecontrol.",
-    "d9_blender.py --blend exactR2 --r2 newmodel --head1.10 --shots idle --px144,80 --ss4 into freshprivateoutput; sourceCLIhas spaces --head 1.10 --px 144,80 --ss 4.",
+    "d9_blender.py --blend <exact-R2-blend> --r2 <executing-worktree>/art/rosace/next/pose-grounded-rest-model.json --head 1.10 --shots idle --px 144,80 --ss 4 --out <fresh-private-output>",
     "UnchangedR2finish, same-frame native/x3comparisons, actualPSweight/turn/stance checks and body-onlycontext.",
     "Threefreshblindbody/pose/face/outfitcriticswithold/new9refs, explicitwaist/window/gestureconstraints. Nohead-angleonlyproof oracceptedwinassumed."
   ],
-  "canonicalChanges": false
+  "canonicalChanges": false,
+  "args": [
+    "--blend",
+    "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+    "--r2",
+    "<executing-worktree>/art/rosace/next/pose-grounded-rest-model.json",
+    "--head",
+    "1.10",
+    "--shots",
+    "idle",
+    "--px",
+    "144,80",
+    "--ss",
+    "4"
+  ],
+  "executionPathRule": "Rebase source/privatepaths to executing frozenREPO; placeholders never literal. Preserve exactR2control and allcanonicalmaps."
 }
