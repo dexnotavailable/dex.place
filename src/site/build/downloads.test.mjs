@@ -4,6 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { downloads, formatBytes } from "../data/downloads.ts";
 import { downloadsPage, downloadsSection } from "../render/downloads.ts";
@@ -79,7 +80,7 @@ test("home section: the same blocks one heading level down, linking the full pag
   assert.match(html, /<h2 class="dlf__name"/);
 });
 
-test("host folder: sizes and SHA-256 match the real files", { skip: !fs.existsSync(HOST_DOWNLOADS) && "no host downloads folder here" }, () => {
+test("download folder: sizes, sidecars and computed SHA-256 match the real files", { skip: !fs.existsSync(HOST_DOWNLOADS) && "no downloads folder here" }, async () => {
   for (const d of published) {
     const name = d.file.href.slice("/downloads/".length);
     const file = path.join(HOST_DOWNLOADS, name);
@@ -87,5 +88,8 @@ test("host folder: sizes and SHA-256 match the real files", { skip: !fs.existsSy
     assert.equal(fs.statSync(file).size, d.file.bytes, `${name} size`);
     const sidecar = fs.readFileSync(`${file}.sha256`, "utf8").trim().split(/\s+/)[0].toLowerCase();
     assert.equal(sidecar, d.file.sha256, `${name} sidecar hash`);
+    const hash = createHash("sha256");
+    for await (const chunk of fs.createReadStream(file)) hash.update(chunk);
+    assert.equal(hash.digest("hex"), d.file.sha256, `${name} executable hash`);
   }
 });
