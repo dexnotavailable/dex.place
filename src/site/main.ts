@@ -5,6 +5,7 @@
 import "./styles/site.css";
 import { initCopy } from "./motion/copy.ts";
 import { initDefer } from "./motion/defer.ts";
+import { initEmbed } from "./motion/embed.ts";
 import { initFloats } from "./motion/floats.ts";
 import { initKeys } from "./motion/keys.ts";
 import { initScenes } from "./motion/magnet.ts";
@@ -31,6 +32,7 @@ const failed = (name: string) => (error: unknown): void => {
 };
 
 const steps: [string, () => void][] = [
+  ["embed", () => initEmbed()],
   // Gallery tiles past the first screen (render/gallery.ts).
   ["defer", () => initDefer()],
   // Piece pages: a sharper copy of the big image when the line allows (render/gallery.ts).

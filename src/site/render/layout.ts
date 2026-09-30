@@ -31,6 +31,8 @@ const JS_FLAG =
 //   not a fault: its rejection is marked handled. Nothing else is filtered.
 // Browsers without view transitions never fire these events. Navigation is
 // never blocked or delayed: nothing here waits on a transition.
+const EMBED_FLAG = `<script>if(window.parent!==window&&new URLSearchParams(location.search).get("embed")==="world")document.documentElement.setAttribute("data-embed","world")</script>`;
+
 const VT_GUARD =
   `<script>(function(w){var q=function(t){if(!t)return t;[t.ready,t.finished,t.updateCallbackDone].forEach(function(p){if(p&&p.catch)p.catch(function(){})});return t};` +
   `w.addEventListener("pageswap",function(e){var t=q(e.viewTransition);if(!t)return;var a=e.activation,u=null;` +
@@ -97,6 +99,7 @@ export function head(meta: PageMeta): string {
     `<link rel="alternate" type="application/rss+xml" title="dex blog" href="/blog/feed.xml" />`,
     `<link rel="preload" href="/fonts/Daniel-Regular.otf" as="font" type="font/otf" crossorigin />`,
     `<!--site:preload-->`,
+    EMBED_FLAG,
     JS_FLAG,
     VT_GUARD,
     meta.headEnd ?? "",
@@ -191,6 +194,9 @@ export function world(): string {
     // Still frame drawn in code; the world module replaces it when it mounts.
     `<div class="world__still" aria-hidden="true"><span class="world__stars"></span><span class="world__ring"></span>` +
     `<span class="world__ground"></span><span class="world__floor"></span></div>` +
+    `<div class="world__fallback">${button({ href: "/world/", label: "World", icon: "up", iconFirst: true, tone: "ink", size: "s" })}</div>` +
+    `<p class="world__hint" data-world-failure role="status" hidden></p>` +
+    `<noscript><p class="world__hint">The world needs JavaScript. <a href="#site">Visit the site</a>.</p></noscript>` +
     `</div>` +
     `<div class="world__bars" aria-hidden="true"><span class="world__bar world__bar--top"></span><span class="world__bar world__bar--bottom"></span></div>` +
     `<a class="world__cue" href="#site"><span>Site</span>${icon("arrow-down", 2)}</a>` +

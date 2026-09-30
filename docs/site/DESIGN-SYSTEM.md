@@ -256,21 +256,37 @@ changes stay visible.
 
 ### World mount and the scroll handoff (root page only)
 
-Unchanged in behaviour; restyled only.
+The authored bars and scroll handoff remain; the mount now loads the playable runtime.
 
-- The root page starts with `<section id="world" data-world-mount>`, one viewport tall, then
-  the site sheet (`#site`). Until a world module exists the stage shows a still frame drawn
-  in CSS: night, faint stars, a distant ring arc and a floor line. No art.
+- The root page starts with the world mount, one viewport tall, then the site sheet
+  (`#site`). `src/world/mount.ts` now reuses the authored `/world/` runtime in one
+  same-origin frame. Its viewport sits inside the existing bars, so the sound and touch
+  controls remain usable. The CSS still frame stays until real backdrop/loading/fade
+  readiness; the direct World link remains a fallback. Without scripts the page says the
+  world needs JavaScript and links straight to the site.
 - Black cinematic bars sit at the top and bottom of the world. As the reader scrolls,
   `motion/world.ts` sets `--world-progress` (0 to 1) on the world element. The bars shrink
   to nothing, the world dims and scales down slightly, and the dark site sheet, with its
   four-colour top edge, slides up over it. At progress 1 the world is marked
   `data-covered`: paused and hidden from paint.
-- **Contract for the world workflow:** create `src/world/mount.ts` exporting
+- **Mount contract:** `src/world/mount.ts` exports
   `mount(el: HTMLElement): { pause(): void; resume(): void; destroy(): void }`. It is found
   with `import.meta.glob`, code-split, and loaded only on `/`. The site calls `pause()` when
   the sheet covers the world and `resume()` when it uncovers. The module must honour
   `prefers-reduced-motion` itself. If it is missing or throws, the website still works.
+- **Implemented adapter:** calls the existing runtime's `__world.game.setAway`, with
+  separate construction/readiness, focus and cleanup. It preserves gameplay, saves,
+  assets, the Enter gate and saved sound choice. Root room/spawn links work; `fresh`,
+  `go`, `manual`, `mute` and debug flags never propagate. It loads only when the world
+  is visible after the outer page's fragment landing, so `/#gallery` does not boot it.
+  Covered worlds hand keyboard focus to `#main`; returning reuses the same frame.
+  This proves simulation/audio-state pause, not rendering or GPU suspension.
+- **World panels:** framed `?embed=world` pages hide header/menu/footer/outer strip and
+  keep their authored content. Internal page and gallery-history links retain embed;
+  files/full-size artwork stay direct. Copied embed URLs opened standalone retain the
+  normal site. Framed root pages omit the world to avoid nested runtimes. The world
+  owner supplies iframe Escape handling; a child gallery widget consumes its own first
+  Escape, then an unhandled Escape returns to the world.
 - The "Site" cue at the bottom of the world is a plain anchor to `#site`.
 
 ## 5. Pixel icons and glyphs

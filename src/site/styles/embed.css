@@ -1,0 +1,11 @@
+/* Framed world pages retain authored content; outer site chrome is omitted.
+   Standalone URLs, including copied embed URLs, retain their normal layout. */
+html[data-embed="world"] { scroll-padding-top: 16px; }
+html[data-embed="world"] .hdr,
+html[data-embed="world"] .menu,
+html[data-embed="world"] .ftr,
+html[data-embed="world"] .sheet__top,
+html[data-embed="world"] .skip,
+html[data-embed="world"] .world,
+html[data-embed="world"] .world-top { display: none; }
+html[data-embed="world"] .sheet { background-image: none; }
