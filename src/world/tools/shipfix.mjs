@@ -7,6 +7,7 @@ import { createRequire } from "node:module";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { browserOptions, angle } from "./browser.mjs";
 import { assessSummon, SUMMON_TIMES } from "./summon-verdict.mjs";
+import { waitForWarmNeighbour, probeRebuildBoundary, assessRebuildBoundary } from "./api-readiness.mjs";
 const require = createRequire(new URL("../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const arg = (n, d) => {
@@ -575,16 +576,13 @@ async function api() {
   dir("api");
   const p = await open("manual&fresh&mute");
   await p.ev(() => window.__world.begin());
+  await p.ev(() => window.__world.teleport("A1", "start"));
+  const settled = await settle(p, "A1");
+  const warmReadiness = await waitForWarmNeighbour(p, "A1", settled);
+  const boundary = await p.ev(probeRebuildBoundary, { roomId: "A1", target: warmReadiness.target, ready: warmReadiness.passed });
   const res = await p.ev(() => {
     const w = window.__world, g = w.game, api = g.api;
     const out = {};
-    w.teleport("A1", "start");
-    for (let i = 0; i < 400 && g.stream.status().split(" ").filter((s) => s.endsWith("*")).length < 3; i++) w.advance(5);
-    out.warm = g.stream.status();
-    const neighbour = g.room.def.neighbours.find((id) => g.stream.rooms.get(id)?.built);
-    out.rebuildCurrent = api.rebuild("A1");
-    out.rebuildNeighbour = [neighbour, api.rebuild(neighbour), g.stream.rooms.get(neighbour)?.built];
-    out.rebuildUnknown = api.rebuild("nowhere");
     api.setRest("E2", "west");
     out.restAfterSet = g.save.data.rest;
     out.stored = JSON.parse(localStorage.getItem("dex.world.v1") ?? "{}").rest ?? null;
@@ -599,6 +597,7 @@ async function api() {
     }
     return out;
   });
+  Object.assign(res, boundary, { warmReadiness });
   // no story or Ringwater code reaches through the page's world handle any more
   const { readdirSync, readFileSync } = await import("node:fs");
   res.worldHandleReachIns = ["src/world/story", "src/world/rooms/ringwater"].flatMap((dd) => readdirSync(dd).filter((f) => f.endsWith(".ts")).filter((f) => readFileSync(`${dd}/${f}`, "utf8").includes("__world")).map((f) => `${dd}/${f}`));
@@ -741,7 +740,7 @@ if (out.archive) for (const [k, v] of Object.entries(out.archive)) if (v?.frame)
 }
 if (out.lift) requirePass(out.lift.summary.muffleSeen > 10 && out.lift.summary.start.muffle >= 0.95 && out.lift.summary.end.muffle <= 0.05, "lift: music must open through a gradual muffle ramp");
 if (out.api) {
-  requirePass(out.api.rebuildCurrent === false && out.api.rebuildNeighbour[1] === true && out.api.rebuildUnknown === false, "api: rebuild boundary failed");
+  failures.push(...assessRebuildBoundary(out.api).failures);
   requirePass(out.api.stored?.room === "E2" && out.api.stored?.spawn === "west" && out.api.worldHandleReachIns.length === 0, "api: start-place persistence/reach-in failed");
   for (const [id, a] of Object.entries(out.api.actors)) requirePass(a && a.h === 80 && a.x === a.player[0] && Math.abs(a.y - a.player[1]) < 2, `api: actor not fed in ${id}`);
 }
