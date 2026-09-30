@@ -11,6 +11,7 @@ sys.path.insert(0,str(HERE))
 sys.path.insert(0,str(PIPE/"next"))
 import nx_hands_blender as H
 import facecage_blender as C
+import facecage_inputs as INPUTS
 
 
 def main():
@@ -21,6 +22,7 @@ def main():
     output = Path(H.argument(argv,"--out")).resolve()
     if not (REPO/"review/rosace/specialists/refinement/facecage").resolve() in output.parents:
         raise ValueError("fresh executing-worktree private facecage output required")
+    input_binding=INPUTS.verify()
     original_library = H.library
     state = {}
 
@@ -35,7 +37,7 @@ def main():
         state["restore"] = (module,prior_install,prior_anchors,prior_apply_pose,prior_f1)
         def install(cfg):
             result = prior_install(cfg)
-            state["cage"] = C.install(mode=="facecage1")
+            state["cage"] = C.install(mode=="facecage1",output/'facecage-support-install.json')
             return result
         def anchors(scene,px):
             result = prior_anchors(scene,px)
@@ -67,6 +69,7 @@ def main():
                 import bpy
                 rig = bpy.data.objects["rosace_rig"]
                 record = {"mode":mode,"geometry":cage["report"],"px":meta["px"],
+                    'sourceInputBinding':input_binding,
                     "evaluatedBoneMatrices":{b.name:[list(row) for row in b.matrix] for b in rig.pose.bones},
                     "headMetrics":{k:list(v) if hasattr(v,"__len__") and not isinstance(v,str) else v for k,v in rig["head_metrics"].items()},"finish":"exact unchanged R2 ramps/stamps/expressions",
                     "cuffC1Included":False,"bodyPoseChanged":False,"eyeRigChanged":False,

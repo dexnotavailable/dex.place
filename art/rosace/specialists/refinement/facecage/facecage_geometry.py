@@ -25,7 +25,7 @@ def config(chin, top, eyes, neck_top=None):
     return {"chin":chin,"top":top,"eyeY":ey,"eyeZ":ez,"span":span,
         "orbitalLiftSpan":.14,"orbitalWidthGain":.03,"jawWidthReduction":.10,
         "bridgeForwardSpan":.02,"neckProtectedThrough":protected,
-        "crownProtectedFrom":min(top-.02,ez+.65*span)}
+        "crownProtectedFrom":min(top-.02,ez+.65*span),"backProtectionY":ey+.60*span}
 
 
 def move(p,c,enabled=True):
@@ -35,11 +35,12 @@ def move(p,c,enabled=True):
         raise ValueError("invalid face point")
     x,y,z = p
     d = c["span"]
-    if z<=c["neckProtectedThrough"] or z>=c["crownProtectedFrom"] or y>=c["eyeY"]+.60*d:
+    back = c.get("backProtectionY",c["eyeY"]+.60*d)
+    if z<=c["neckProtectedThrough"] or z>=c["crownProtectedFrom"] or y>=back:
         return p
     gate = smooth(c["neckProtectedThrough"],max(c["neckProtectedThrough"]+.12*d,c["chin"]+.20*d),z)
     gate *= 1-smooth(c["eyeZ"]+.30*d,c["crownProtectedFrom"],z)
-    gate *= smooth(c["eyeY"]+.60*d,c["eyeY"]-.10*d,y)
+    gate *= smooth(back,c["eyeY"]-.10*d,y)
     orbit = math.exp(-((z-c["eyeZ"])/(.36*d))**2)
     jaw = math.exp(-((z-(c["chin"]+.34*d))/(.26*d))**2)
     bridge = math.exp(-((z-(c["chin"]+.61*d))/(.21*d))**2)*math.exp(-(x/(.21*d))**2)
@@ -89,6 +90,12 @@ def transport_normal(p,n,c):
 
 def validate(points,triangles,c,require_change=True):
     candidate = tuple(move(p,c) for p in points)
+    return validate_candidate(points,candidate,triangles,c,require_change)
+
+
+def validate_candidate(points,candidate,triangles,c,require_change=True):
+    if len(points)!=len(candidate) or any(len(p)!=3 or not all(math.isfinite(v) for v in p) for p in (*points,*candidate)):
+        raise ValueError("actual final coordinates/count must be finite")
     changed = [i for i,(a,b) in enumerate(zip(points,candidate)) if a!=b]
     if not changed and require_change:
         raise ValueError("cage changes no geometry")
@@ -112,8 +119,9 @@ def validate(points,triangles,c,require_change=True):
         old = normal(points[a],points[b],points[d])
         new = normal(candidate[a],candidate[b],candidate[d])
         aa,bb = sum(x*x for x in old),sum(x*x for x in new)
-        if aa<=1e-18 or bb<.20*aa or sum(x*y for x,y in zip(old,new))<=0:
+        dot = sum(x*y for x,y in zip(old,new))
+        if not all(math.isfinite(v) for v in (*old,*new,aa,bb,dot)) or aa<=1e-18 or bb<.20*aa or dot<=0:
             raise ValueError("actual head triangle degenerates/flips")
     return candidate,{"changedVertices":len(changed),"changedIndices":changed,
         "maxDisplacementM":max((math.dist(points[i],candidate[i]) for i in changed),default=0),
-        "method":"FC1 fixed smooth rest-space orbital/midface/jaw cage; no pixel or rig edit"}
+        "method":"FC1 same amplitudes, shared final smooth rest-space support field; no pixel or rig edit"}

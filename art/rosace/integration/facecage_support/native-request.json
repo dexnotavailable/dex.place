@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "rosace-fc1-original-p0-support-normal-correction-20260930",
+  "status": "independently-reviewed-source-native-pending",
+  "sourceBase": "bd94059a13d5becd68b80c0d219fdb6ad1d989f9",
+  "preservedProbe": "41843b1f920f94d8247ca2de64f6cfe32bce151e",
+  "diagnosticSha256": "df39907e0d9f8240cdc988653d2c9da667a78ab896f1f54d33a06ef32ae70e43",
+  "worktree": "D:/Dex/Temp/dex-place-rosace-facecage-support-20260930",
+  "branch": "codex/rosace-facecage-support-20260930",
+  "entry": "art/rosace/specialists/refinement/facecage/facecage_trial.py",
+  "post": "art/rosace/specialists/refinement/facecage/facecage_native_post.py",
+  "modes": [
+    "control",
+    "facecage1"
+  ],
+  "poses": [
+    "idle",
+    "back"
+  ],
+  "sizes": [
+    144,
+    80
+  ],
+  "rawStillCount": 8,
+  "args": "explicit mode, hand-scale1.0, shots idle,back, px144,80, ss4, head1.10, exact executing R2 model and canonical aef blend; fresh private mode output",
+  "hypothesis": "whole original polygon stars of original neck/crown/back protected regions are conservative decoder support; no inferred smoothing fan and no actual-space-pass claim from source",
+  "field": "immutable ALL zero vertices under ORIGINAL FC1 field (actual941) plus explicit Neck-weight/anatomical neighborhood; neck plane up/crown down/back toward front by full actual stars, final back for both cutoff and taper; SAME final continuous G.move and config for head/all hidden refs, original orbital/jaw/bridge amplitudes",
+  "geometryRejection": "neck insufficient facial space, crown<=eyeZ+.30span, back<=eyeY-.10span, no actual geometry change, nonfinite/overstrained/folded actual triangles, exact native-float field mismatch; reject before candidate image",
+  "normalContractClarification": "OriginalP0+anatomy EXACT decoded+encoded, no originally protected corner removed. Newly pinned originally active support stays inside ORIGINAL active normal footprint and may require normal encoding changes. This clarifies the old dynamic final-zero guard; it is not a literal unchanged-old-guard claim or a tolerance/omission waiver.",
+  "normalMethod": "bind final deformation, read actual deform-only decoded normals; G.transport with FINALcfg; preserve original INT16_2D pairs on COMPLETE set where deform-only==original AND target==original, including setter-only encoded changes with identical decoded values; update/bind/read exact originalP0+anatomy/outside-original-active and all preservable guards",
+  "failureDiagnostics": "fresh private mode/facecage-support-install.json before first candidate image, including old/new planes/full support sets/originalP0 corners/schema/full encoded SHA/count/all mismatch indices/vectors/pairs and cleanup result; finite native corner-count bound; no canonical write or extra probe",
+  "rawReplay": "exact validatedRGBA8 dimensions/sample bytes, file SHA retained; six raw passes against immutable frozenR2. Seventh depth2 against separately bound ACTUAL failed bd FC1 controls at rosace-facecage1-native...stage2-delivery/control, explicit _render/READY/native receipt provenance; do not fabricate depth2 inside frozenR2",
+  "inputBinding": "art/rosace/integration/facecage_support/inputs.json",
+  "metadataSourceBinding": "art/rosace/integration/facecage_support/metadata-sources.json",
+  "modelIdentityAdmission": "frozen inputs574ecde6 retain the explicit historical source-support model key/read path; actual executing REPO/model separately rawSHA-matches that frozen model and relative executingReferencedSources66ca81de. Only code checkout root relocation, no arbitrary data root/model aliasing.",
+  "postMetadataGuard": "both actual trial sourceInputBinding records exactly equal INPUTS.verify; entire new metadata matches frozenR2 AND actual failedbddepth2 after only declared pass schema/cage anchors/specific absolute pose_file,d9.r2 source relocation. Source filenames and bytes exact after ONLY CRLF->LF, raw SHA retained and own recorded pose_sha1 verified. No general omissions/whitespace/JSONsemantic/float/image waiver.",
+  "postRawDimensionsGuard": "every7 control/candidate nativeRGBA8 PNG exactshape against ID/meta BEFORE any ROI comparison; reject all broadcast-shaped malformed nonID maps",
+  "acceptance": "source review first, ROOT exact-source READY then sole delivery exclusive/GPU free boundary. Full raw outside union head+4SS and finished outside head+2pixels unchanged; no composition. Actual original941 guards and metadata/rig replay mandatory. Three fresh actual-pixel critics after qualified pixels, no automatic9.",
+  "actualSupportSpacePassed": false,
+  "nativeExecutedBySourceWorker": false,
+  "allowCanonicalPromotion": false,
+  "allowCommitPushDeploy": false,
+  "sourceReview": "PASS independent core/post/metadata/raw shape and narrow copied-root admission review; actual space/normal guards unqualified. Root external READY pins final source HEAD."
+}

@@ -1,5 +1,12 @@
 # FC1: coherent face construction before pixel finishing
 
+The bd94059 source and418 native diagnostic remain preserved. A new support correction
+explicitly clarifies the original dynamic final-zero normal guard into immutable ALL
+original P0 (actual941) plus neck anatomy, with separately declared originally active
+support footprint and exact decoded+encoded pair guards. It does not claim the literal
+old guard is unchanged. See [FACE-CAGE-SUPPORT.md](FACE-CAGE-SUPPORT.md) for current
+source-only hypothesis, bounded failure diagnostics and distinct failedbd depth2 replay.
+
 One unpromoted geometric/feature letter from frozen
 bcb220de03c0b84e8fa68851328cd1d799a11de5. C1 cuff a6d31d3 is a separate
 immutable request; it is not present on this face branch or imported here.

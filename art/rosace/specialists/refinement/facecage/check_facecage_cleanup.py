@@ -36,7 +36,7 @@ class CleanupGuards(unittest.TestCase):
             head_scale=types.SimpleNamespace(install=caller_install),f1_module=caller_f1)
         def caller_library(path,name):
             return module
-        def cage_install(enabled):
+        def cage_install(enabled,diagnostic_output=None):
             self.assertEqual(enabled,mode=="facecage1")
             if failure=="cage":
                 raise RuntimeError("cage constructor exception")
@@ -56,7 +56,7 @@ class CleanupGuards(unittest.TestCase):
                 raise RuntimeError("render exception after construction")
         argv = ["fixture","--","--facecage-mode",mode,"--hand-scale","1.0",
             "--shots","idle,back","--out",str(T.REPO/"review/rosace/specialists/refinement/facecage/cleanup-fixture"/mode)]
-        with patch.object(sys,"argv",argv),patch.object(T.H,"library",caller_library),patch.object(T.H,"main",enclosing_hand_main),patch.object(T.C,"install",cage_install),patch.object(T.C,"restore",cage_restore):
+        with patch.object(T.INPUTS,'verify',return_value={'fixture':True}),patch.object(sys,"argv",argv),patch.object(T.H,"library",caller_library),patch.object(T.H,"main",enclosing_hand_main),patch.object(T.C,"install",cage_install),patch.object(T.C,"restore",cage_restore):
             if failure:
                 with self.assertRaises(RuntimeError):
                     T.main()
