@@ -44,6 +44,14 @@ Newest first. Times are local time at the build machine (UTC+7).
 
 ### 2026-10-01
 
+<a id="e-20261001-0652"></a>**06:52 · S5b rigid parts (bone arms, boots, hood ornaments) · S5**
+
+Round 3 of C001's bone arm: the hand and upper arm are now cut from generated sculpts onto our own joint plan too, so every knuckle is a hidden ball-and-socket and nothing clashes in the fist, elbow or claw tests, at under 6k triangles per arm. Next: a crisper sculpt for the upper arm, which still reads too smooth.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s5-rigid-r3-dad6b02b.webp" width="1600" height="1363" alt="Render sheet from the S5b rigid parts (bone arms, boots, hood ornaments) lane, stage S5: Round 3 of C001&#x27;s bone arm: the hand and upper arm are now cut from generated sculpts onto our own joint plan too, so every knuckle is a hidden ball-and-socket and nothing clashes in the fist, elbow or claw test" loading="lazy" decoding="async">
+
+---
+
 <a id="e-20261001-0649"></a>**06:49 · shader · S7**
 
 The same layered toon shader kit now renders in both Blender and Unreal 5.8 from one parameter table: the colours, face-shadow sweep, hair highlight, lace and sheer stockings line up closely. Placeholder test props, not the final character.
