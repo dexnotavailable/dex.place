@@ -1,0 +1,121 @@
+{
+  "schema": "window-ao-key-state-probe-source-checks/1",
+  "status": "CPU-pass pending ROOT independent review and zero-image native",
+  "base": "5965e24337551120ad5c7a0f87dff1aa726a6ce4",
+  "worktree": "D:\\Dex\\Temp\\dex-place-rosace-window-ao-key-state-probe-20260930",
+  "branch": "codex/rosace-window-ao-key-state-probe-20260930",
+  "executionRoute": "resource-gate.ps1 Ownerrosace-source, Python313 -B",
+  "actualShapeStateCases": 5,
+  "actualOriginalWrapperLifecycleCases": 8,
+  "unittestMethods": 2,
+  "fixtureChecksPassed": true,
+  "fixtureObservedResult": "Initial five actual authored shape-state cases retained; only the changed wrapper/proxy fixture rerun: one method/eight lifecycle scenarios OK, including bake and screenshot denial",
+  "originalCalculationWrapperBindingBytesExactBase": true,
+  "sourceCompiledInMemory": true,
+  "originalRuntimeSourceCount": 946,
+  "originalFailureLogs": 19,
+  "originalFailureFiles": 31,
+  "originalCollectedFailureCopies": 31,
+  "inputBinding": {
+    "probeInputBindingSha256": "a7f3205f78c393e1bfae140d58a7a56703a0ac619865604f1363dec242a9caf4",
+    "actualFailureReceiptSha256": "9fa791e9711b38aa06a767265d3b38e0bb8bc7ad411c8706fa924ed63fdd1cfb",
+    "originalFailureFiles": 31,
+    "oldRuntime": {
+      "bindingSha256": "36c2dd95afd1b438b45b8d9ef40775f09c778d1caadaf9140653dd466788644b",
+      "executingHead": "5965e24337551120ad5c7a0f87dff1aa726a6ce4",
+      "authorizedBase": "54518211eb9a342bc5f6689562c5a0179d466a52",
+      "sourceCount": 946,
+      "actual545EvidenceCount": 36,
+      "canonicalBlendSha256": "aef28c7f5cdddee6f18bd12c06d988b5436eeac24049ddf4f6ca37f654394373",
+      "sourceAdmission": {
+        "sourceBase": "1295062e2454c85d584751ba58448a1b18bef34c",
+        "sourceHead": "d2e4ef0d93d678c6a87fd1480013f8fec2a61909",
+        "geometryParent": "54518211eb9a342bc5f6689562c5a0179d466a52",
+        "executingHead": "5965e24337551120ad5c7a0f87dff1aa726a6ce4",
+        "sourceFingerprintExact": true,
+        "finalHeadAdmission": "external ROOT READY/delivery exact executing HEAD remains mandatory"
+      },
+      "contract": {
+        "base": "54518211eb9a342bc5f6689562c5a0179d466a52",
+        "entryRepairSourceBase": "1295062e2454c85d584751ba58448a1b18bef34c",
+        "parentMode": "actual545 reconstruction opening",
+        "nativeArgs": [
+          "--reconstruction-mode",
+          "reconstruction",
+          "--hand-scale",
+          "1.3",
+          "--shots",
+          "idle",
+          "--blend",
+          "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\rosace.blend",
+          "--r2",
+          "<EXECUTING_REPO>/tools/pixel-pipeline/drive9/r2_model.json",
+          "--head",
+          "1.10",
+          "--ss",
+          "4",
+          "--px",
+          "144,80",
+          "--out",
+          "<FRESH_PRIVATE_OUTPUT>"
+        ],
+        "rawPasses": [
+          "beauty.png",
+          "depth.png",
+          "depth2.png",
+          "id.png",
+          "light.png",
+          "noise.png",
+          "normal.png"
+        ],
+        "finish": "unchanged reconstruction_finish.finish_recipe over exact R2 base; no compositing",
+        "rawPngComparison": "validated8bit RGBA IHDR/dimensions/native decoded sample bytes exact; original file SHA retained as provenance, no tolerance or mode/depth conversion",
+        "bodyAo": {
+          "distance": 0.075,
+          "strength": 0.9,
+          "rays": 24,
+          "originOffset": 0.0015
+        },
+        "newModes": [
+          "control",
+          "rebaked"
+        ],
+        "newStills": 4,
+        "reuseParentControlAllowed": false
+      }
+    },
+    "newProbeCodeAdmission": "ROOT exact-source READY independently pins this new namespace"
+  },
+  "sourceSha256": {
+    "art/rosace/integration/window_ao_key_state/check.py": "6b061ed43fbb07aeca36e74c3f7410a586ad87b4b66d63e109cf29ec193f1d57",
+    "art/rosace/integration/window_ao_key_state/key_state_audit.py": "5bf30497c886f6a328ddd457e9cbd01624b2eb9f605cb0e6d30c3d5a3e8331a4",
+    "art/rosace/integration/window_ao_key_state/probe.py": "e5784bffc40bb4b67bee593eee5d5f451b558d1ec176cb6cca02d5af50df6cd3",
+    "art/rosace/integration/window_ao_key_state/probe_binding.py": "325e8db27b0e92a7106aff7e3525c975adb5e527ed6f331f77f1a8259cd934b4",
+    "art/rosace/integration/window_ao_key_state/inputs.json": "a7f3205f78c393e1bfae140d58a7a56703a0ac619865604f1363dec242a9caf4",
+    "art/rosace/integration/window_ao_key_state/native-request.json": "6d9bf44d73bc9d9d20443b6adaccbb332f9cfc30e8c7220b7a3fa538ed70472f",
+    "docs/character/WINDOW-AO-KEY-STATE-PROBE.md": "47e76c49b3187ba33e3db2b908532b07fc869acde753ee43d1aa8ecf61e71474"
+  },
+  "nativeExecuted": false,
+  "actualRejectingObjectKnown": false,
+  "nativeShapeSemanticsProven": false,
+  "renderedImages": 0,
+  "aoPlans": 0,
+  "aoRays": 0,
+  "aoBodyCopies": 0,
+  "poseRuns": 0,
+  "blendSaves": 0,
+  "postRun": false,
+  "artAccepted": false,
+  "committed": false,
+  "proxyFixtureRecheckOnly": {
+    "unittestMethodsExecuted": 1,
+    "actualWrapperLifecycleCases": 8,
+    "deniedAddedOperations": [
+      "object.bake",
+      "screen.screenshot"
+    ],
+    "underlyingBakeAndScreenshotCalls": 0,
+    "passed": true,
+    "nativeExecuted": false
+  }
+}
