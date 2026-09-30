@@ -1,0 +1,26 @@
+{
+  "id": "rosace-sharp-face-preservation-native-20260930",
+  "owner": "rosace",
+  "nativeOwner": "delivery",
+  "parentFrozenHead": "c138e5d1b4f4f37ec09f03261fc4a7a34fd213a1",
+  "finding": "Blender5.1.2 BMesh drops sharp_face FACE/BOOLEAN/required=false; 4737 retained oriented faces remain; point/vertex/weight/key/material guard passed",
+  "diagnostic": "D:/Dex/Temp/rosace-window-repair-native-20260930/review/rosace/art/next/window-preservation-repair-delivery/reconstruction-raw/mesh-preservation/retained-face-preservation.json",
+  "preservedRaw": "D:/Dex/Temp/rosace-window-repair-native-20260930/review/rosace/art/next/window-preservation-repair-delivery",
+  "wrapper": "tools/pixel-pipeline/next/nx_reconstruction_blender.py",
+  "outputRelative": "review/rosace/art/next/sharp-face-preservation-delivery",
+  "minimumNewRenders": 2,
+  "fallbackNewRenders": 6,
+  "renderArgs": ["--reconstruction-mode", "reconstruction", "--hand-scale", "1.3", "--shots", "idle", "--blend", "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend", "--r2", "<executing-worktree>/tools/pixel-pipeline/drive9/r2_model.json", "--head", "1.10", "--ss", "4", "--px", "144,80", "--out", "<fresh-private-output>/reconstruction-raw"],
+  "steps": [
+    "Freeze reviewed READY head. Sole delivery native/GPU leases at free boundary. No model launch or canonical save. Preserve c138 proof and all failed bytes.",
+    "Preflight unchanged scene/model/head/pose/hand/finish/renderer/backend settings. Reuse fresh c138 control-raw and construction-control-raw only with exact input/path hash and argv/meta/output checks; copy raw files with per-file SHA receipts into fresh root excluding old R2 finish. Otherwise rerender those two modes.",
+    "Run reconstruction only at144/80. Save pre-restoration whole-record comparison plus restoration faceCount/trueCount and full post-restoration report. Only missing sharp_face is recreated, each exact typed Boolean copied by unique oriented original identity. Present corrupted values are never overwritten. Mixed values, ambiguous identities or wrong schema fail.",
+    "Require post restoration exactSemanticEqual across all4737 retained faces, UV/material/smooth/all FACE+CORNER attributes, no dropped/added schema, and independent point/vertex/weight/key/material guard. New native mismatches remain blockers, with exact values; no tolerance or ignored false fields.",
+    "Run unchanged reconstruction_native_post.py with exact original R2 reference. Require R2 replay0 pixels, closed/open same effectivePose/allbone matrices/camera/canvas/ppm/anchor, real skin gain through native mesh opening, bounded grip gaps and finished144/80 visual review.",
+    "Record actual construction body identity and source/config/finish/input hashes for the subsequent motion binding. Full moving cloth, anatomical grips, transition/FX/playback and fresh critics remain separate gates. No art/default/main/publication change."
+  ],
+  "nativeQualification": "pending exact typed RNA readback and opening pixels",
+  "guardRelaxed": false,
+  "canonicalChanges": false,
+  "allowPromotion": false
+}

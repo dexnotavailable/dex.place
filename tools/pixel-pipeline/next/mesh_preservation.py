@@ -106,6 +106,78 @@ def hash_records(records):
     return hashlib.sha256(encoded(records).encode()).hexdigest()
 
 
+def sharp_face_restore_plan(before, after):
+    """Restore only a missing native FACE/BOOLEAN sharp_face by oriented identity.
+
+    Do not overwrite an existing field, substitute all-false, or repair other
+    corruption. The caller must run the complete comparison after restoration.
+    This pure plan preserves mixed true/false values and rejects ambiguous faces.
+    """
+    left = [canonical(f) for f in before]
+    right = [canonical(f) for f in after]
+    def indexed(rows):
+        result = {}
+        for i, f in enumerate(rows):
+            key = tuple(f["vertices"])
+            if key in result:
+                raise ValueError("ambiguous oriented face identity; cannot restore sharp_face")
+            result[key] = (i, f)
+        return result
+    source, target = indexed(left), indexed(right)
+    if set(source) != set(target):
+        raise ValueError("retained face identity changed; cannot restore sharp_face")
+    expected = ("sharp_face", "FACE", "BOOLEAN", False)
+    values = []
+    present = []
+    for key, (i, f) in target.items():
+        attr = source[key][1]["attributes"].get("sharp_face")
+        if attr is None:
+            if "sharp_face" in f["attributes"]:
+                raise ValueError("unexpected sharp_face added by native conversion")
+            values.append(None)
+            present.append(False)
+            continue
+        if tuple(attr[k] for k in ("name", "domain", "dataType", "required")) != expected:
+            raise ValueError("unsupported original sharp_face schema")
+        rows = attr["rows"]
+        if len(rows) != 1 or set(rows[0]) != {"value"}:
+            raise ValueError("unsupported sharp_face payload")
+        field = rows[0]["value"]
+        if field.get("rnaType") != "BOOLEAN" or field.get("array") is not False or type(field.get("value")) is not bool:
+            raise ValueError("sharp_face requires an exact typed scalar Boolean")
+        values.append(field["value"])
+        present.append("sharp_face" in f["attributes"])
+    if not values or all(v is None for v in values):
+        return None
+    if any(v is None for v in values) or (any(present) and not all(present)):
+        raise ValueError("inconsistent sharp_face schema across retained faces")
+    # Present but corrupted data stays visible to the unmodified strict guard.
+    if all(present):
+        return None
+    return {"name": "sharp_face", "domain": "FACE", "dataType": "BOOLEAN",
+            "values": values, "faceCount": len(values),
+            "trueCount": sum(values), "association": "unique oriented original face identity"}
+
+
+def restore_sharp_face(me, before, after):
+    plan = sharp_face_restore_plan(before, after)
+    if plan is None:
+        return {"restored": False, "reason": "field absent in original or already present"}
+    if me.attributes.get(plan["name"]) is not None:
+        raise ValueError("refuse to overwrite existing native sharp_face")
+    attr = me.attributes.new(name=plan["name"], type=plan["dataType"], domain=plan["domain"])
+    if attr.name != "sharp_face" or attr.is_required or len(attr.data) != plan["faceCount"]:
+        raise ValueError("native sharp_face creation differs from exact original schema")
+    for row, value in zip(attr.data, plan["values"]):
+        row.value = value
+    me.update()
+    actual = [typed_value(row) for row in attr.data]
+    expected = [{"value": {"rnaType": "BOOLEAN", "array": False, "value": v}} for v in plan["values"]]
+    if actual != expected:
+        raise AssertionError("native sharp_face values failed exact typed readback")
+    return {k: v for k, v in dict(plan, restored=True).items() if k != "values"}
+
+
 def compare(before,after):
     left=[canonical(f) for f in before]
     right=[canonical(f) for f in after]
