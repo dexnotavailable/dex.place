@@ -1,0 +1,233 @@
+{
+  "contract": "dex.character-profile/1",
+  "id": "rosace-provisional-w2-545-cold-review",
+  "kind": "provisional-w2-native-request",
+  "character": {
+    "id": "rosace",
+    "name": "Rosace545 W2 mechanical prototype; appearance rejected, cloth pending"
+  },
+  "sourceHead": "54518211eb9a342bc5f6689562c5a0179d466a52",
+  "sourcePins": [
+    {
+      "path": "tools/pixel-pipeline/blender_env.py",
+      "sha256": "0761e86e899a169f6d567c7726a56122f6c1fedb191b21a8c58134bc98b8d415"
+    },
+    {
+      "path": "tools/pixel-pipeline/next/nx_reconstruction_blender.py",
+      "sha256": "7310667c7b48caa0ab213708a05aedddb4e776741902a4db2ead42ebf740eb35"
+    },
+    {
+      "path": "tools/pixel-pipeline/next/nx_hands_blender.py",
+      "sha256": "22f74176cccf91ad6f42192ec9a1a62f04d27722cc1f408dadd1b37af3890251"
+    },
+    {
+      "path": "tools/pixel-pipeline/next/nx_window_mesh_blender.py",
+      "sha256": "1ec05bec83d8d98f08001413a24949a379d131397dd69c1b5f7ff9dbcc3c14b9"
+    },
+    {
+      "path": "tools/pixel-pipeline/next/mesh_preservation.py",
+      "sha256": "65d4bf776e8384e64dd7205e836f5aeac2989cb38499a9adaabe9c21f37c0e97"
+    },
+    {
+      "path": "tools/pixel-pipeline/next/reconstruction_recipe.py",
+      "sha256": "3d68baf8d37fa776c08d504e201b54765c577907e0c6a985a7a525e916abd7d2"
+    },
+    {
+      "path": "tools/pixel-pipeline/next/window_mesh_recipe.py",
+      "sha256": "a41f2177774937cd8bfa03679771b7b61cdf7360b6d2877230d31e89cd4c69e3"
+    },
+    {
+      "path": "tools/pixel-pipeline/next/hand_recipe.py",
+      "sha256": "386317358e774ee2122851e7f0dd266d79e9b50dcead9cb899f00b4b489eb3c1"
+    },
+    {
+      "path": "tools/pixel-pipeline/drive9/d9_blender.py",
+      "sha256": "5edb5e43d299031f6dbe4c784520fa0920039fc622c7b6133e539f8d1af97f31"
+    },
+    {
+      "path": "tools/pixel-pipeline/drive9/r2_model.json",
+      "sha256": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3"
+    },
+    {
+      "path": "art/rosace/next/sharp-face-preservation-request.json",
+      "sha256": "f3a40bfd0f3fe9b930b66a876cb125454cdae2ab33396daff6a16ec6e6c29967"
+    },
+    {
+      "path": "tools/pixel-pipeline/THIRD_PARTY.md",
+      "sha256": "ce4d1da4791ca836243aa6df96d9d82a11ff2a63b269fadeef1fe3a7c4d36c9b"
+    }
+  ],
+  "sourceTrees": [
+    {
+      "path": "tools/pixel-pipeline",
+      "extensions": [
+        ".py",
+        ".json"
+      ],
+      "count": 174,
+      "sha256": "9c542c68c3ac82e8220749533d0cdb575dfa939f701a91c57b4448e87592c39d"
+    },
+    {
+      "path": "tools/art-construct",
+      "extensions": [
+        ".py",
+        ".json"
+      ],
+      "count": 48,
+      "sha256": "d4bd76dde8cb2c46897e5f402930c7314ec533edf7d5486539463e799d076970"
+    },
+    {
+      "path": "art/rosace",
+      "extensions": [
+        ".json"
+      ],
+      "count": 717,
+      "sha256": "cdf460c6d5879d901db0b7cc77b0102b8c59f7c9b8ee7c03002c53335fe5dc0f"
+    }
+  ],
+  "privatePins": [
+    {
+      "path": "build/rosace.blend",
+      "sha256": "aef28c7f5cdddee6f18bd12c06d988b5436eeac24049ddf4f6ca37f654394373"
+    }
+  ],
+  "referencePins": [
+    {
+      "path": "reconstruction-raw/idle/px80/meta.json",
+      "sha256": "fb4ee27e3e2c16c069357c23b078f065b8b8f8207c50d48446ac73a941d9abdb"
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/beauty.png",
+      "sha256": "7e493faed80182254b812785598f79f576a1fb50ba433ad740c6034341b6ab30"
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/id.png",
+      "sha256": "4ea719a722dc84112768ff550419d4eaf7bc9ca99b283f8f12d71865a19e69b6"
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/normal.png",
+      "sha256": "d2f8cdc2b6d96152308aa11ddcd0ef706319f550ff3f5a6ca4a6e67465a684d2"
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/depth.png",
+      "sha256": "4c8e7166cf9ccd8ac3177ed2ec2df335982492884975492d65f63af76d695145"
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/light.png",
+      "sha256": "94db31334b367af265d5d61bbd9e298f05510a895ae96969140e2c94dc73838d"
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/noise.png",
+      "sha256": "cb024817f2d83f718dd717aae6c2ed3398d2011e736791f03a20ed8ba1606686"
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/reconstruction.json",
+      "sha256": "d9f26b739602bc502114c8c89fd680c5533843c42c594bae46ac4ec24c472341"
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/window_geometry.json",
+      "sha256": "7c70ab67c45254ee7ebf722c5d2b696325b3da549d7878f0b643c9b73ffafa62"
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/haft_grips.json",
+      "sha256": "286095974b56b0c503d6e3a4c3b5712bfd5fee442c02ee24aad996fa18259005"
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/R2/still.png",
+      "sha256": "076852708489c82a60bdac8a4d268d13f3d1fe20479a97d0a991e92441f7a1a3"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/meta.json",
+      "sha256": "acccf8f071c887f50c44635dcdceb8ca2aedc516e5a2ede8a943aa0e6b856190"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/beauty.png",
+      "sha256": "f89dac984384d5b07b6ed05da8537365855cda6f5c0534e1be4129583bb901a8"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/id.png",
+      "sha256": "c1a485404a164be48ba986afce20e7be072e3bdcd6510828a002e87b13243b60"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/normal.png",
+      "sha256": "dea4271f550e539540ccb4862d416b1f0a997f6ad2d759fb772e1831bb1c061c"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/depth.png",
+      "sha256": "af0b06a5b7a9b97b132a15a1feeb91caa1ad4de3b123300552bc7df3a6ee30e5"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/light.png",
+      "sha256": "b759e0650bd8157a858ac9e401bf204ca59ca2e73178538a04f741963f40a362"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/noise.png",
+      "sha256": "34a5a98e0e4ea9551265fed0997abc5b7bf2e5622288b66d77baec41893222ac"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/reconstruction.json",
+      "sha256": "b14bc8a4cc115a6191c5e73739061b7f8a1160e904a2a490b649cf9925176158"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/window_geometry.json",
+      "sha256": "55298c6aca915d191d48d79490f165be0cc2c4a98cbdb458420d8de463a81154"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/haft_grips.json",
+      "sha256": "86533ddb55dac1682d5fe643a69b79dd59a2569dcc630c30db691d08bd4c042a"
+    },
+    {
+      "path": "reconstruction-raw/idle/px144/R2/still.png",
+      "sha256": "59d0b9593a9f4a1c3b04c5c7b555b8db8fc70e5a0cc6c39eb0e3e57454a96b80"
+    },
+    {
+      "path": "reconstruction-raw/mesh-preservation/retained-face-preservation.json",
+      "sha256": "be001a2ac35fb87e103388859fcf1074d2feb4fa05d39091b96e9e33a5a5220b"
+    }
+  ],
+  "native": {
+    "wrapper": "tools/pixel-pipeline/next/nx_reconstruction_blender.py",
+    "blenderEnv": "tools/pixel-pipeline/blender_env.py",
+    "r2": "tools/pixel-pipeline/drive9/r2_model.json",
+    "blend": "build/rosace.blend",
+    "sourceRequest": "art/rosace/next/sharp-face-preservation-request.json",
+    "shots": "idle",
+    "head": "1.10",
+    "handScale": "1.3",
+    "mode": "reconstruction",
+    "px": "144,80",
+    "ss": "4",
+    "camera": [
+      45,
+      8
+    ],
+    "expected": [
+      "idle/px80/meta.json",
+      "idle/px80/beauty.png",
+      "idle/px80/id.png",
+      "idle/px80/normal.png",
+      "idle/px80/depth.png",
+      "idle/px80/light.png",
+      "idle/px80/noise.png",
+      "idle/px80/reconstruction.json",
+      "idle/px80/window_geometry.json",
+      "idle/px80/haft_grips.json",
+      "idle/px144/meta.json",
+      "idle/px144/beauty.png",
+      "idle/px144/id.png",
+      "idle/px144/normal.png",
+      "idle/px144/depth.png",
+      "idle/px144/light.png",
+      "idle/px144/noise.png",
+      "idle/px144/reconstruction.json",
+      "idle/px144/window_geometry.json",
+      "idle/px144/haft_grips.json",
+      "mesh-preservation/retained-face-preservation.json"
+    ]
+  },
+  "limits": [
+    "Actual prior545 native mesh/R2 preservation passed. Three fresh critics rejected its appearance; R2 default held. Mechanical prototype only, never accepted9. Anatomical grip and moving cloth/FX/transitions remain pending.",
+    "This profile binds/exposes the guarded producer and emits request only. No source-to-baseline rebuild/native execution/new still proof here.",
+    "Existing guarded --out requires executing sourceRoot/review/rosace; source/private inputs never enter public output."
+  ]
+}

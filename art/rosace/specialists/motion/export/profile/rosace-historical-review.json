@@ -1,0 +1,207 @@
+{
+  "contract": "dex.character-profile/1",
+  "id": "rosace-historical-n1-review",
+  "kind": "historical-review",
+  "character": {
+    "id": "rosace",
+    "name": "Rosace historical dressed N1 — unqualified review"
+  },
+  "sourceHead": "9da17aa3359b9f70a1d7acf90e0d17cd9645d2b5",
+  "sourcePins": [
+    {
+      "path": "art/rosace/specialists/motion/export/from_motion_meta.mjs",
+      "sha256": "45bca91d729e839c54eb342cd17eeb0880d90ce6298167414adab904d1cded8f"
+    },
+    {
+      "path": "art/rosace/specialists/motion/export/export_frames.mjs",
+      "sha256": "a6ab279917bf3bfbb0195582a40eef7cc6c0a4395f174b292984594faf5ef6a5"
+    },
+    {
+      "path": "art/rosace/specialists/motion/export/png_codec.py",
+      "sha256": "7b836d91790af5f66579504d2a9bf635f90a2c6bc3380c461ff8cdb6030dada4"
+    },
+    {
+      "path": "art/rosace/specialists/motion/export/rosace-review-import.json",
+      "sha256": "c88daaba401c082b59d52ea779679ec06647cfb85344ec35881b89d336244dfb"
+    },
+    {
+      "path": "src/lab/art/atlas-builder.ts",
+      "sha256": "f97ec83528404512120021c4345bc42c6fa314cf50b0d843d6509a0d6a6812d1"
+    },
+    {
+      "path": "src/lab/contracts.ts",
+      "sha256": "cbfceaf0c56b1070aa40e3f54037953f87c4c36ce9af29f57157c587a78e6380"
+    },
+    {
+      "path": "src/lab/game/player.ts",
+      "sha256": "b2297dc084bc1eee2a0b506b5dd3676fbcae6ec964f896d3a040f99f9d11367e"
+    },
+    {
+      "path": "src/lab/game/clip-player.ts",
+      "sha256": "7604c697f3dad940c4384b846d27e23574c26a1a2e2d632937686d5a4fc6af0c"
+    }
+  ],
+  "renderPins": [
+    {
+      "path": "n1_r3c_integrated/px144/meta.json",
+      "sha256": "f5a1ede51ec6cbbb39dbee0e5dae13fabc594b56e1330a8f636b3c9cc67ada4c"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0001.png",
+      "sha256": "38102f1f884cf23e5ea5ea4f994272d0565199c0b45ff66f177fc3e517a42995"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0003.png",
+      "sha256": "0ff38f5663e21056e0efa945e02cc55a155462ae0f88b87a3faefb875c2f9f36"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0005.png",
+      "sha256": "a5dbbca8a75689062852105ae1965be3566e4eeca73f32c34482f4af92409180"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0006.png",
+      "sha256": "ad45e3515cdb28ea70df6b0940356d98b4d482da46982a0be800df876b3bc22f"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0008.png",
+      "sha256": "98c7ee087ea86dc62d399579998ff3efa4d0c31e31ec2202af031d6688692754"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0009.png",
+      "sha256": "1bbf0ebcbfddc02657dc712efccf5feb55ce6d9d8bd01da42b554d3c441a25f7"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0011.png",
+      "sha256": "3f06baf0137338500ce10403ccaa680242ed7cf20f11d5368877eb92d7712b60"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0012.png",
+      "sha256": "b35427ed2d8fa053f4fdcbda92dc247597cc90fdda411df3d89d1d01e9a47f0c"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0014.png",
+      "sha256": "44c4718e923d33f4bec1705cf857eff18dda05486519ce2676bb295ac70985cd"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0016.png",
+      "sha256": "461d6babcc5250bd2f32ecdbb4321aef489603b33c740b1cdd99cfa25a103056"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0018.png",
+      "sha256": "e7d2bb2923cfff2e0d5bb8d9edd288080ccd36416f0f66e5b2885c5a00559414"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0020.png",
+      "sha256": "645c66f02ac3b5670d09cf64ab6b91321412db274c0a297a6ec9db02552120b5"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0022.png",
+      "sha256": "1c10fb58f7831b44d54fd7913f63899ee7de3b11214843f06ebb2c5317c91e2e"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0024.png",
+      "sha256": "f2e0c3694cc5b2ad4b7ea0a75ab80221471fe0251ae504931d71d049ed387378"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0026.png",
+      "sha256": "78c9ce92634fe5c55a5393a9192f566cc04e59a562e5be056e5d7c7df47fbef2"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0028.png",
+      "sha256": "4503a51597f58cfe8a833997dd54411816ed1e1f2cd508fb1a440b85667ccb88"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0030.png",
+      "sha256": "bd785cd1607bda7120bdb1478b9a85d15b2db789cc782382f0eaac9efe6905e9"
+    },
+    {
+      "path": "n1_r3c_integrated/px144/sprite_0032.png",
+      "sha256": "a4f9d48ddb5799028f3bda5135055fcf6412376d539a45684e066902c9f27935"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/meta.json",
+      "sha256": "cdc85bcc1fef51b96d71a657fdde0e83404e2832e9f8e3abf43cef4994f761f7"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0001.png",
+      "sha256": "50ce4cacb8817142b5914eb312f2e20a802dfc6ff956c04ac3703252b4d9af99"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0003.png",
+      "sha256": "c5ff6ee64e491e620e99fdfaaf6ba01a014709efa6f968c16c18f71012317c74"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0005.png",
+      "sha256": "5d21f51834e0671e0d4705d2a510f2604f4010e366009457c6d20f282584e0d3"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0006.png",
+      "sha256": "0f4e354bcf31c29f52a33dbd41869dad6a74972b609a5f7ecf6c9123e5463af5"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0008.png",
+      "sha256": "143df838b0c6c532f988db441e53d0c7c1215178756f6c57296b51e8f8ed035c"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0009.png",
+      "sha256": "83852a103b9070d50d7b1c9a43693dc7e1e34ba8dd6d8c6b6a48050a8627afba"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0011.png",
+      "sha256": "4f6aa188f5211d75dec29a35100549d75ffd6225dc45302d0e1b2031e11c2579"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0012.png",
+      "sha256": "97d5f34516da32c0d43b19cfdff5b39af7b0811a87fd4105a1ab6ed5b3ab7d5d"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0014.png",
+      "sha256": "4ff78de108724afcdf29dc6a76dc1e2b8ee31ac769fb4048cda6d7ccb3c8ee64"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0016.png",
+      "sha256": "631b4e28740da40de7ebf20c26548c9cbeeca98538dd4c4b43865b60e926796a"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0018.png",
+      "sha256": "02c5e3ffbd4eb4fe453d6fd39177d6c9463ecd18ff3c85f6612e6de73655fd1b"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0020.png",
+      "sha256": "6fb54553de7aa10cd872f94dda07207e8368040fdaf711333d893fb75554bdbe"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0022.png",
+      "sha256": "0737949daa9e33cd86fafd91e00e8a7e3d3ca3d13a664dac0f3222cbdc9f5046"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0024.png",
+      "sha256": "cb7e02777a54485c9d6c305f30874ea7d6618094cc4def505674d2218dabbacb"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0026.png",
+      "sha256": "a89021661784082979b4d18354dea10af3b34f5f7510dd365551771e9ee10209"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0028.png",
+      "sha256": "7801de9deebd938b2734ce0c93a28a6dbb567266159a58a1852bca05b2833cd3"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0030.png",
+      "sha256": "c652ace3cfc83520e11839ebc7413bdf1aa10393ab5c230429afbdf002bb86b7"
+    },
+    {
+      "path": "n1_r3c_integrated/px80/sprite_0032.png",
+      "sha256": "22b0a9cc22eb54c02033d17161762c6ebcd5e5d6140e88e35764a8ba4c34f365"
+    }
+  ],
+  "historical": {
+    "importer": "art/rosace/specialists/motion/export/from_motion_meta.mjs",
+    "exporter": "art/rosace/specialists/motion/export/export_frames.mjs",
+    "config": "art/rosace/specialists/motion/export/rosace-review-import.json"
+  },
+  "limits": [
+    "Historical realN1 paired80/144 packaging proof only; spring secondary motion, no accepted current body or physical-cloth/FX acceptance.",
+    "Review only; m1_1 exists, seventeen other required clips including sit/m1_5 absent; no release manifest/fallback/qualification."
+  ]
+}
