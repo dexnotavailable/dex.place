@@ -55,7 +55,22 @@ function watchSize(r: WorldRenderer): void {
   window.addEventListener("resize", fallback);
 }
 
+/**
+ * Boot runs as a few separate tasks, not one long one: on the homepage this
+ * frame shares its thread with the website, which keeps scrolling and taking
+ * input between the steps. A message-channel turn is not timer-throttled, so
+ * a background tab still boots at full speed.
+ */
+function breathe(): Promise<void> {
+  return new Promise((resolve) => {
+    const ch = new MessageChannel();
+    ch.port1.onmessage = () => { ch.port1.close(); resolve(); };
+    ch.port2.postMessage(0);
+  });
+}
+
 async function boot(): Promise<void> {
+  performance.mark("world:boot");
   const q = new URLSearchParams(location.search);
   if (q.has("fresh")) new Save().clear();
   const r = new WorldRenderer(canvas);
@@ -74,7 +89,13 @@ async function boot(): Promise<void> {
   // stub recipes a region lane exports next to its rooms are placeable by name
   for (const r of found.recipes) engine.register(r);
   setPropEngine(engine);
+  performance.mark("world:renderer");
+  await breathe();
+  performance.mark("world:player-start");
   const assets = await loadPlayer(r);
+  performance.mark("world:player");
+  await breathe();
+  performance.mark("world:room-start");
   const input = new Input(canvas);
   const touch = new Touch(input, touchEl);
   // Phase 1 used the same save key and could rest in arrival/plain/house.
@@ -87,6 +108,7 @@ async function boot(): Promise<void> {
   const home = testMode ? { room: "arrival", spawn: "start" } : { room: "A1", spawn: "start" };
   const start = room && roomIds.has(room) ? { room, spawn: q.get("spawn") ?? "" } : home;
   const game = new WorldGame(r, input, touch, assets, { rooms, start, engine, source: found.source, route: [...ROUTE] });
+  performance.mark("world:room");
   // ?room= wins over the saved rest place (tools and links)
   if (room && roomIds.has(room) && game.room.def.id !== room) game.teleport(room, q.get("spawn") ?? "");
   if (q.has("debug")) game.debug = true;
@@ -171,6 +193,17 @@ async function boot(): Promise<void> {
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);
+  // A background tab runs no animation frames. The World still finishes
+  // loading there (its shaders, its first draw), so it appears as soon as the
+  // tab is shown instead of starting that work then.
+  const warm = (): void => {
+    if (!game.loading) return;
+    if (document.visibilityState === "hidden") {
+      try { game.frame(performance.now()); } catch (e) { showFailure(e, "The world stopped"); return; }
+    }
+    if (game.loading) window.setTimeout(warm, 250);
+  };
+  warm();
 
   const src = "auto";
   Object.assign(window, {

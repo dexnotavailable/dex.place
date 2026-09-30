@@ -29,6 +29,7 @@ export function mount(stage: HTMLElement): WorldHandle {
   frame.src = worldFrameUrl(location.href);
   let paused = false;
   let destroyed = false;
+  let drawn = false;
   let configured = false;
   let waitingFocus = false;
   let playable = false;
@@ -106,35 +107,57 @@ export function mount(stage: HTMLElement): WorldHandle {
   let resolveReady: () => void = () => {};
   let rejectReady: (error: Error) => void = () => {};
   const ready = new Promise<void>((resolve, reject) => { resolveReady = resolve; rejectReady = reject; });
-  const poll = window.setInterval(() => {
-    if (destroyed) return;
+  let resolveShown: () => void = () => {};
+  const shown = new Promise<void>((resolve) => { resolveShown = resolve; });
+  // Cheap reads. Checked on the page's animation frames too, so the frame is
+  // revealed in the same update the World draws its first scene (frames share
+  // one rendering update); the timer covers tabs that aren't drawing.
+  let settled = false;
+  const stop = (): void => { settled = true; clearInterval(poll); };
+  const check = (): void => {
+    if (destroyed || settled) return;
     const now = performance.now();
-    if (!paused) visibleWait += now - last;
+    // Only time someone could be watching counts toward the timeout: a
+    // background tab or a covered World loads without a deadline.
+    if (!paused && document.visibilityState === "visible") visibleWait += now - last;
     last = now;
     configure(); sync();
     const fail = win()?.document.getElementById("fail");
     if (fail && !fail.hidden) {
-      clearInterval(poll); rejectReady(new Error(fail.textContent || "World failed to load")); return;
+      stop(); rejectReady(new Error(fail.textContent || "World failed to load")); return;
     }
     const game = runtime()?.game;
+    // The World draws its scene (its own arrival fade-in from black): show the
+    // frame now rather than after the fade, still inert until playable.
+    if (game && !game.loading && !drawn) {
+      drawn = true;
+      frame.style.opacity = "1";
+      resolveShown();
+    }
     if (game && !game.loading && game.fade < 0.01 && (game.room.backdrop?.ready() ?? true)) {
-      clearInterval(poll);
+      stop();
       playable = true;
       frame.inert = false;
       frame.tabIndex = 0;
       if (waitingFocus && !paused) focus();
       resolveReady();
     } else if (visibleWait > 60000) {
-      clearInterval(poll); rejectReady(new Error("World loading timed out"));
+      stop(); rejectReady(new Error("World loading timed out"));
     }
-  }, 100);
+  };
+  const poll = window.setInterval(check, 100);
+  const watch = (): void => {
+    check();
+    if (!destroyed && !settled) requestAnimationFrame(watch);
+  };
+  requestAnimationFrame(watch);
   return {
-    ready, focus,
+    ready, shown, focus,
     pause: () => { paused = true; waitingFocus = false; sync(); },
     resume: () => { paused = false; last = performance.now(); sync(); },
     destroy: () => {
       if (destroyed) return;
-      destroyed = true; clearInterval(poll);
+      destroyed = true; stop();
       for (const cleanup of cleanups) cleanup();
       frame.remove();
       rejectReady(new Error("World mount closed"));
