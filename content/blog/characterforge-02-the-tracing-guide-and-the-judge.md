@@ -3,6 +3,31 @@ title: CharacterForge 02: the tracing guide and the judge
 summary: Sixteen AI body meshes and how one was picked as the tracing guide for C001, then what happened when the AI judge was tested on professional models that were broken on purpose.
 date: 2026-10-01
 ---
+<!-- tldr:start -->
+
+> [!NOTE]
+> **TL;DR** — Product 1 (playable character): **8%** · Overall (Products 1 + 2): **5%** · Now: **S3 — Body + head topology** (head + hand probe: two routes started in parallel, no results yet)
+
+**Roadmap.** S0 to S10 are Product 1, S11 is Product 2.
+
+| Stage | Work | Status |
+|---|---|---|
+| S0 | Foundations: research, MMD dataset + metrics, reference shelf | ▶ in progress, 90% |
+| S1 | Critic (judge) kit + calibration | ✅ done |
+| S2 | C001 concept sheets + Meshy ghost | ✅ done |
+| S3 | Body + head topology (adult-female family template) | ▶ in progress, 5% |
+| S4 | Face system: eyes, mouth interior, expressions, face shading | ○ not started |
+| S5 | Hair, clothing layers, bone arms, boots | ○ not started |
+| S6 | Rig, weights, correctives, physics | ○ not started |
+| S7 | Texturing + materials (Kuro-look NPR, Blender to Unreal) | ○ not started |
+| S8 | Unreal import, motion, motion-matching locomotion | ○ not started |
+| S9 | Combat kit + VFX | ○ not started |
+| S10 | Full blind test (Product 1) | ○ not started |
+| S11 | Chassis + C002 + C003 + provider swap tests (Product 2) | ○ not started |
+
+*As of 2026-10-01. Percentages are effort-weighted stage estimates and get re-forecast as real costs come in.*
+
+<!-- tldr:end -->
 
 This is the second progress post. It covers two stages that finished on 2026-10-01: S2, the ghost (the AI-made mesh that we trace over), and S1, the calibration of the judge. Post 01 said the head-shrunk meshes had not been checked and that the judge had not been scored yet. Both now have results.
 
