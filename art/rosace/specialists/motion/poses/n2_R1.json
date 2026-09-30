@@ -1,0 +1,231 @@
+{
+  "name": "motion_n2_R1",
+  "note": "Original authored low sweep/overshoot/settle; source targets, native rig and pixel validation pending.",
+  "camera": {
+    "yaw": 60,
+    "elev": 8
+  },
+  "root": {
+    "loc": [
+      0,
+      0,
+      0
+    ],
+    "rot": [
+      0,
+      0,
+      363
+    ]
+  },
+  "bones": {
+    "J_Bip_C_Hips.loc": [
+      0,
+      -0.1,
+      -0.04
+    ],
+    "J_Bip_C_Hips": [
+      3,
+      -4,
+      0
+    ],
+    "J_Bip_C_Spine": [
+      -4,
+      2,
+      0.8
+    ],
+    "J_Bip_C_Chest": [
+      -6,
+      2,
+      0.8
+    ],
+    "J_Bip_C_UpperChest": [
+      -2,
+      0,
+      0.4
+    ],
+    "J_Bip_C_Neck": [
+      -3,
+      0,
+      -0.6
+    ],
+    "J_Bip_C_Head": [
+      -5,
+      -3,
+      -0.8
+    ]
+  },
+  "feet": {
+    "L": {
+      "pos": [
+        0.12,
+        -0.36,
+        0.159
+      ],
+      "yaw": 4
+    },
+    "R": {
+      "pos": [
+        -0.16,
+        0.22,
+        0.159
+      ],
+      "yaw": -24
+    }
+  },
+  "weapon": {
+    "hand_R": [
+      -0.18,
+      -0.27,
+      1.08
+    ],
+    "dir": [
+      0,
+      -0.24192189559966767,
+      0.9702957262759965
+    ],
+    "edge": [
+      1,
+      0,
+      0
+    ]
+  },
+  "hands": {
+    "R": {
+      "grip": "grip_off",
+      "slide": -0.45,
+      "thumb": "tip",
+      "back": [
+        -0.9,
+        0.1,
+        0.4
+      ]
+    },
+    "L": {
+      "grip": "grip_main",
+      "slide": -1.0,
+      "thumb": "tip",
+      "back": [
+        0.8,
+        0.1,
+        0.5
+      ]
+    }
+  },
+  "poles": {
+    "arm.R": [
+      -0.6,
+      -0.3,
+      0.95
+    ],
+    "arm.L": [
+      0.55,
+      -0.3,
+      1.05
+    ],
+    "leg.R": [
+      -0.3,
+      -0.65,
+      0.55
+    ],
+    "leg.L": [
+      0.3,
+      -0.9,
+      0.55
+    ]
+  },
+  "fingers": {
+    "L": {
+      "curl": 80,
+      "thumb": 50
+    },
+    "R": {
+      "curl": 80,
+      "thumb": 50
+    }
+  },
+  "drape": {
+    "gravity": [
+      0,
+      0,
+      -1
+    ],
+    "wind": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "chains": {
+      "hair_tail": {
+        "g": 0.45,
+        "wind": [
+          -1.1,
+          -0.35,
+          0.15
+        ]
+      },
+      "hair_back": {
+        "g": 0.3,
+        "wind": [
+          -1.2,
+          -0.3,
+          0.25
+        ]
+      },
+      "tabard": {
+        "g": 0.8,
+        "wind": [
+          -1.0,
+          0.05,
+          0.0
+        ]
+      },
+      "sleeve_R": {
+        "g": 0.85,
+        "wind": [
+          -0.15,
+          0.1,
+          0.0
+        ]
+      },
+      "sleeve_L": {
+        "g": 0.5,
+        "wind": [
+          0.5,
+          -0.25,
+          0.1
+        ]
+      },
+      "veil": {
+        "g": 0.5,
+        "wind": [
+          -0.6,
+          0.1,
+          0.1
+        ]
+      },
+      "stole_A": {
+        "g": 0.4,
+        "wind": [
+          -0.6,
+          0.2,
+          0.0
+        ]
+      },
+      "stole_B": {
+        "g": 0.4,
+        "wind": [
+          -0.6,
+          0.3,
+          0.0
+        ]
+      }
+    }
+  },
+  "expression": "serene",
+  "_motion": {
+    "drawing": "R1",
+    "yawUnwrapped": 363,
+    "status": "authored-unrendered",
+    "anatomicalPrimary": "R"
+  }
+}

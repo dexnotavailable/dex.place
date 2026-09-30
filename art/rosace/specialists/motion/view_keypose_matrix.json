@@ -1,0 +1,25 @@
+{
+  "contract": "rosace.motion-matrix/1",
+  "id": "rosace-80-144-motion-matrix-20260930-v1",
+  "state": "proposed-native-request",
+  "bodyHeights": [80, 144],
+  "framing": {"projection":"orthographic","scale":"ppm=bodyPixels/actualRigHeightMeters","anchors":"integer world foot origin, common canvas per view/trajectory/control pair","resample":false,"finalExportCamera":"integrator-adjudicated; flat world camera is not an export-yaw decision","comparison":"equal camera basis/ppm and identical executing scene/driver; retain existing idle45/8 and moving60/8 controls; any final view change needs matched native A/B"},
+  "controlCameras": [{"id":"existing-idle-control","yaw":45,"elev":8,"evidence":"actual R2 idle metadata"},{"id":"existing-motion-control","yaw":60,"elev":8,"evidence":"actual N1/N5 r3c metadata"}],
+  "views": [
+    {"id":"front","yaw":0,"elev":0,"purpose":"face, sternum opening, symmetric cuff/grip paths"},
+    {"id":"right-three-quarter","yaw":45,"elev":8,"purpose":"face/hair/body construction and depth-separated hands"},
+    {"id":"right-profile-inspection-proposed","yaw":90,"elev":0,"purpose":"private strict-profile silhouette/floor/reach/weapon-face coverage; not an approved final export camera"},
+    {"id":"back","yaw":180,"elev":0,"purpose":"back yoke, pelvis/cloth seams, rear silhouette and grip exits"},
+    {"id":"left-three-quarter","yaw":315,"elev":8,"purpose":"opposite cuff/hair/weapon occlusion, no mirrored anatomy shortcut"},
+    {"id":"left-profile","yaw":270,"elev":0,"purpose":"opposite wrist/shaft/cloth collision visibility"}
+  ],
+  "stages": [
+    {"id":"A-new-coil-views","kind":"keypose","recipe":"m1_2.A2","views":["front","right-three-quarter","right-profile-inspection-proposed","back","left-three-quarter","left-profile"],"bodyHeights":[80,144],"candidateImages":12,"criterion":"private view legibility and construction, no export-camera decision or cloth acceptance from stills; stop to resolve gross rig/grip clipping"},
+    {"id":"B-seam-extremes","kind":"keypose","recipes":["m1_1.F2","m1_2.A2","m1_2.S1","m1_2.C1","m1_2.F1"],"views":["existing-motion-control"],"bodyHeights":[80,144],"candidateImages":10,"criterion":"one-hand entry, open-back coil, largest low sweep, front contact, overshoot at preserved60/8; all10 unique because A has no60/8 row"},
+    {"id":"C-80-continuous-physics","kind":"moving","trajectory":"idle-prewarm->N1f1-15->N2f1-38->24tick two-hand settle","views":["existing-motion-control"],"bodyHeights":[80],"modes":["same-authored-driver-mesh-physics-off","same-authored-driver-mesh-physics-on"],"criterion":"preserved60/8;60Hz full chronological mesh bake with floor/body/haft collision;30Hz sprite sample plus exact regrip/seam ticks;no reset at seam;moving actual-pixel inspection before D"},
+    {"id":"D-144-confirmation","kind":"moving","trajectory":"same exact qualified C source/scene/driver","views":["existing-motion-control"],"bodyHeights":[144],"modes":["same-authored-driver-mesh-physics-off","same-authored-driver-mesh-physics-on"],"criterion":"preserved60/8;genuine144 sprites at sameH framing;grip/cuff/face,inertia/settle/collision and actual timing hold at hero scale"},
+    {"id":"E-opposite-obstruction","kind":"moving-diagnostic","views":["left-profile"],"bodyHeights":[80],"modes":["mesh-physics-on"],"criterion":"only after C/D: short actual seam/strike diagnostic if a hidden collision remains; no Cartesian full-motion fanout"}
+  ],
+  "coverageQueue": ["N1 standalone whiff recovery", "late N1f16-23 andf24-33 entries", "N2->actual idle/N3/dash transitions", "run/turn/jump/apex/fall/land/dash/Aspersion", "N3 twirls, N4 vault, N5 coil/spin/kneel/rise", "Q hold/stamp", "R rise/pour/ultimate drop"],
+  "acceptance": {"humanReferenceCount":17,"fixedHumanAnchor":9,"parts":31,"criteriaOwner":"packet lanes/rosace-critics/ACCEPTANCE.md and CRITIC-PROTOCOL.md","generatedGuides":"additional-only, never production pixels or automatic score","critics":"three fresh independent critics for materially new actual still/moving candidate, per-part evidence; no unchanged-art wave; actual full-cycle playback route required for temporal verdict","claims":"data/authored action/key still/rendered motion/verified playback are separate stages; preliminary body/cloth requests do not satisfy full FX-on/off/runtime/transition acceptance","gameplay":"world camera remains flat; inspection enlargement separate, no gameplay zoom"}
+}
