@@ -1,0 +1,51 @@
+{
+  "contract": "rosace.motion/1",
+  "id": "rosace-n1-n2-authored-driver-20260930-v1",
+  "state": "authored-native-unexecuted",
+  "base": "bcb220de03c0b84e8fa68851328cd1d799a11de5",
+  "planner": "art/rosace/specialists/attacks/n1-n2.json",
+  "plannerContract": "rosace.choreography/1",
+  "plannerId": "rosace-n1-n2-liturgy-20260930-v1",
+  "plannerHead": "9c80ea6635448cf80ac654756fc84a368e806981",
+  "plannerSha256": "c53974dab8ae91279d17dfa8121be5f7eee795fd14d6faa8b32254263e68886a",
+  "fps": 60,
+  "chainAfterTick": 15,
+  "settleTicks": 24,
+  "earliestChainOnly": true,
+  "rootForward": [0, -1, 0],
+  "sources": {
+    "stance": "art/rosace/poses/idle_hero.json",
+    "coil": "art/rosace/poses/motion/n1_coil_r3.json",
+    "strike": "art/rosace/poses/motion/n1_strike_r3c.json",
+    "contact": "art/rosace/poses/motion/n1_contact_r3b.json",
+    "over": "art/rosace/poses/motion/n1_over_r3c.json"
+  },
+  "recipes": {
+    "m1_1.A1": {"blend": [["stance", 0.55], ["coil", 0.45]], "leftGrip": 1},
+    "m1_1.A2": {"source": "coil", "leftGrip": 1},
+    "m1_1.A3": {"source": "coil", "sinkMeters": 0.013, "leftGrip": 1},
+    "m1_1.S1": {"source": "strike", "leftGrip": 1},
+    "m1_1.C1": {"source": "contact", "leftGrip": 1},
+    "m1_1.F1": {"blend": [["contact", 0.6], ["over", 0.4]], "leftGrip": 0},
+    "m1_1.F2": {"source": "over", "leftGrip": 0},
+    "m1_1.R1": {"blend": [["over", 0.55], ["stance", 0.45]], "leftGrip": 0},
+    "m1_1.R2": {"blend": [["over", 0.18], ["stance", 0.82]], "leftGrip": 0},
+    "m1_1.R3": {"source": "stance", "leftGrip": 0},
+    "m1_2.A1": {"inherit": "m1_1.F2", "leftGrip": 0},
+    "m1_2.A2": {"pose": "poses/n2_A2.json", "leftGrip": 1},
+    "m1_2.S1": {"pose": "poses/n2_S1.json", "leftGrip": 1},
+    "m1_2.C1": {"pose": "poses/n2_C1.json", "leftGrip": 1},
+    "m1_2.F1": {"pose": "poses/n2_F1.json", "leftGrip": 1},
+    "m1_2.F2": {"pose": "poses/n2_F2.json", "leftGrip": 1},
+    "m1_2.R1": {"pose": "poses/n2_R1.json", "leftGrip": 1},
+    "m1_2.R2": {"pose": "poses/n2_R2.json", "leftGrip": 1},
+    "m1_2.R3": {"pose": "poses/n2_R3.json", "leftGrip": 1}
+  },
+  "regrip": {"clip": "m1_2", "entryTick": 1, "reachTicks": [[2, 0.35], [3, 0.75]], "closedTick": 4, "anatomicalPrimary": "R", "support": "L", "socket": "grip_main", "slideMeters": -1.0, "redrawRequired": true},
+  "plants": {
+    "m1_1": [{"side":"R","from":1,"to":2,"anchor":"stance","anchorTick":0},{"side":"R","from":3,"to":11,"anchor":"m1_1.C1","anchorTick":9},{"side":"L","from":1,"to":2,"anchor":"stance","anchorTick":0},{"side":"L","from":3,"to":7,"anchor":"m1_1.A2","anchorTick":3},{"side":"L","from":8,"to":15,"anchor":"m1_1.C1","anchorTick":9}],
+    "m1_2": [{"side":"L","from":1,"to":10,"anchor":"m1_1.C1","anchorTick":9},{"side":"R","from":11,"to":16,"anchor":"m1_2.F1","anchorTick":11}]
+  },
+  "cloth": {"contract":"dex.cloth/1","config":"art/rosace/next/cloth-physics.json","installer":"tools/pixel-pipeline/next/cloth/setup.py","warmupTicks":45,"reuseFrozenInstaller":true,"resetAtSeam":false,"springClothAcceptable":false,"nativeEvidenceRequired":true},
+  "limits": ["N1 timing/hero extremes are reused; A1 and blend weapons require native comparison against r3c, not assumed pixel-identical", "N2 poses and regrip redraws are authored, not solved or accepted here", "no model inference or AI inbetweens in this focused authored route", "late cancels, mirrored clips, collision-wall recomputation, hitstop variants and N3 continuation remain subsequent native requests", "native rig and full mesh-cloth/collision/baked80/144 playback acceptance pending"]
+}
