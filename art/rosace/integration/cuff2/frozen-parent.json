@@ -1,0 +1,27 @@
+{
+  "schema": "rosace.cuff2.frozen-parent/1",
+  "parentSource": "bcb220de03c0b84e8fa68851328cd1d799a11de5",
+  "root": "D:\\Dex\\Temp\\rosace-reconstruction1-native-20260930\\review\\rosace\\art\\next\\reconstruction1-delivery\\construction-control-raw",
+  "sha256": {
+    "idle/px144/beauty.png": "e640eff8a86fb79e4ea64f74354bbdaf3f09a359f812662de06b9e4043bcb565",
+    "idle/px144/id.png": "4944d9595d52972bfae05a4b28e738834667ea54a5551d2d8a9b35e58ab96ea9",
+    "idle/px144/normal.png": "32921b13621fb967804f1ee6ae33d40b6d9b0b3d338697b6e39f5532a5df49b7",
+    "idle/px144/depth.png": "a8e8b9dfa5df549395cb4c76a25a5a58b400899c00fa30272759154f8fd45adf",
+    "idle/px144/depth2.png": "538f0934faa8917209c336a3438b9c9fea8c2eafb88fc1a9bd720a0b574efe0b",
+    "idle/px144/light.png": "126acfb1664cc9216076c3e8ba44b06f6db79c04fa617c542710313496f85db0",
+    "idle/px144/noise.png": "4f6f4d49d2000814e9c14eaa8526f9d5832c5698e6057215d315daef69f4d157",
+    "idle/px144/meta.json": "360a6addc0b83eb9935b36eabd0a01a65b2faad223149d0d7675bfac97b0a9cb",
+    "idle/px144/haft_grips.json": "86533ddb55dac1682d5fe643a69b79dd59a2569dcc630c30db691d08bd4c042a",
+    "idle/px144/reconstruction.json": "606991a709438a78370e1892ac175b5422bf63be4fb68aea9cb233acf632a877",
+    "idle/px80/beauty.png": "6318774c761422f7ad094962eeecc8762c27f0fa38c3540435fcee9b54b299e9",
+    "idle/px80/id.png": "68de95e667cc422638c97b7516bef65c99eb59caf480f0c26bc0ba237e2e8fd0",
+    "idle/px80/normal.png": "3ee314d32ee61dcb47a4a41ae2daa4b491a4d9259251faf7f7e7087b136d8549",
+    "idle/px80/depth.png": "d87bc49aa93b8a6584fdcaf909459361696b99e62adfa1844507785e6b295019",
+    "idle/px80/depth2.png": "2b1942383fafddf6ef00c1e53f914db3136a85ec2f04ad2542c6de7fc8c81555",
+    "idle/px80/light.png": "aa8b9c23aa24f96ec6bcea3b62a7b0ee8b80df2a9383f9fd7775106af4baa4ad",
+    "idle/px80/noise.png": "0657c35b30a3776731dd10afb3b5455474544ee343dcd73c1899c604b0029c3f",
+    "idle/px80/meta.json": "cc62aff24b60cca3c678bf5587c02dfbbbb6cdc1c62a6f23c1863e99c878f900",
+    "idle/px80/haft_grips.json": "286095974b56b0c503d6e3a4c3b5712bfd5fee442c02ee24aad996fa18259005",
+    "idle/px80/reconstruction.json": "659ff8354301f956e142c0f2a58323b6040b3c41e847ed624c2cc7618a45d70b"
+  }
+}

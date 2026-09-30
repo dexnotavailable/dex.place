@@ -1,0 +1,79 @@
+{
+  "schema": "rosace.cuff2.request/1",
+  "id": "rosace-cuff2-upper-loft-native-20260930",
+  "owner": "rosace-source",
+  "nativeOwner": "delivery",
+  "sourceReview": "independent source pass; overflow finding corrected+verified; exact dispatch head in STAGE2-CUFF2-READY.json",
+  "sourceBase": "bd94059a13d5becd68b80c0d219fdb6ad1d989f9",
+  "sourceBranch": "codex/rosace-cuff2-loft-20260930",
+  "sourceWorktree": "D:/Dex/Temp/dex-place-rosace-cuff2-20260930",
+  "kind": "finite-independent-namespace-native-qualification",
+  "entry": "art/rosace/integration/cuff2/cuff2_trial.py",
+  "post": "art/rosace/integration/cuff2/cuff2_native_post.py",
+  "modes": [
+    "parent",
+    "cuff2"
+  ],
+  "rawStillCount": 4,
+  "sizes": [
+    144,
+    80
+  ],
+  "parentSource": "bcb220de03c0b84e8fa68851328cd1d799a11de5",
+  "parentRole": "exact frozen closed bcb gesture/seated1.30/head1.10; diagnostic, no canonical appearance acceptance",
+  "frozenParentRaw": "D:/Dex/Temp/rosace-reconstruction1-native-20260930/review/rosace/art/next/reconstruction1-delivery/construction-control-raw",
+  "frozenParentBinding": "art/rosace/integration/cuff2/frozen-parent.json",
+  "outputRelative": "review/rosace/integration/cuff2/native-20260930",
+  "commonArgs": [
+    "--hand-scale",
+    "1.3",
+    "--shots",
+    "idle",
+    "--px",
+    "144,80",
+    "--ss",
+    "4",
+    "--head",
+    "1.10",
+    "--blend",
+    "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+    "--r2",
+    "<executing-worktree>/tools/pixel-pipeline/drive9/r2_model.json"
+  ],
+  "perModeArgs": [
+    "--cuff-mode",
+    "<mode>",
+    "--out",
+    "<executing-worktree>/<outputRelative>/<mode>"
+  ],
+  "construction": {
+    "requestedRetreatM": 0.055,
+    "formula": "55mm * smoothstep(-.35,.35,sin(phi)) * dot(p(row,k)-p(0,k),axis) / dot(p(22,k)-p(0,k),axis)",
+    "changedScope": "upper-sector rows1..22; prior C1 proximal rows1..14 freeze intentionally removed",
+    "protectedScope": "row0, sin(phi)<=-.35 lower bell/cross/anchor, all radial components; sleeve.R and both original meshes",
+    "reject": "invalid unique22x30 source azimuth/topology, finite positive span, any axial gap below max10um/25percent of parent, either quad diagonal triangle/corner Jacobian degenerate or reversed; no clamp/retune/waiver"
+  },
+  "reusedReadOnlySource": [
+    "art/rosace/specialists/refinement/cuff_blender.py",
+    "art/rosace/specialists/refinement/cuff_native_post.py",
+    "tools/pixel-pipeline/next/nx_hands_blender.py",
+    "tools/pixel-pipeline/next/reconstruction_recipe.py",
+    "tools/pixel-pipeline/drive9/d9_post.py",
+    "tools/pixel-pipeline/finish_f1/f1_post.py"
+  ],
+  "steps": [
+    "Independent source review passed after computed-overflow correction. Parent freezes exact commit, scoped and effective dependency SHA in STAGE2-CUFF2-READY.json; native admission requires delivery exact-head/preflight. Preserve frozen inputs.",
+    "Delivery alone obtains packet exclusive native/GPU lease, finite deadline, Python-exit-code1 and owned cleanup. Parent/cuff2 run in separate fresh processes. No canonical save, GPU/model/browser work by source worker.",
+    "Hash both canonical blends, seven maps, R2 assets, and both exact rollback bundles before/after through the existing preservation owner; all must remain byte-identical.",
+    "Actual geometry must preserve copied oriented topology, UV/corner/point/crease/limb attributes, exact weights/material faces/modifier properties/transforms, row0/lowersector and both original meshes. Custom normals/shape keys or unknown mutable modifier collections reject. Derived surface normals may change with coordinates.",
+    "Run cuff2_native_post.py on fresh trial root plus exact frozenParentRaw. Hash binding includes seven raw image passes/meta/grip/reconstruction records at both sizes. Require parent zero-pixel replay for all7 passes, same evaluated paired/frozen bones<=1e-6, exact camera/ppm/anchor/canvas/ss/size, same seated1.30 grip/socket/slide and finite Lgap<=1.5cm.",
+    "Reuse exact unchanged R2 d9_post.process API both modes. No FC1, W2, reconstruction finish, hand pose, face, shader, motion/FX or cloth stack. Native records/proof/sheets explicitly cuff2; rejected C1 remains separate.",
+    "Measure real categorical raw material+part+limb14 holding-hand visibility: at80 >=20skin pixels and >=4x5bbox are necessary, not sufficient. Inspect wrist/palm/cuff separation, thumb/finger opposition, shaft interruption/contact, pinching/clipping and whole144/80. A failed floor is diagnostic output, not anatomy/appearance acceptance.",
+    "When genuinely new qualified finished pixels exist, publish exact parent/candidate PREVIEW paths/hashes/rollback and route to Stage2 three fresh neutral fixed9 human-reference critics. No raw-only quality claim or mean hiding per-part rejection. No canonical/main/default promotion.",
+    "Actual native construction can reject. Retain its trace/cleanup and change method after meaningful failures. Moving physical sleeves/tabard collision/inertia/bake/transitions and complete motion/runtime remain separate Stage3 dependencies."
+  ],
+  "allowArtPromotion": false,
+  "allowDeployment": false,
+  "nativeQualification": "not run",
+  "visualAcceptance": "not established by CPU source checks"
+}

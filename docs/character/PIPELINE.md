@@ -3629,3 +3629,34 @@ motion/FX/cloth/runtime/9acceptance remainpending. N4f9narrowopening expresslyfa
 instant2.2H gate andisnotacceptedpendingwidealternative; originalclock/cameracanon notrewritten.
 Sharedwindowrepair andindependentC1four-still request canadvanceasfinitebatches; nostacked
 controls. Criticcriteria31parts consumedreadonly; hair2triage4/0px isnotnewartacceptance.
+
+### 8f. Stage 2 native construction and Cuff2 (2026-09-30)
+
+**Native engineering passed, appearance rejected:** sharp-face repair
+`5451821` restored every retained `FACE/BOOLEAN sharp_face` value by original
+oriented identity. Actual Blender 5.1.2 output passed all 4,737 typed retained
+face records, with no schema additions/drops, zero changed R2 control pixels,
+matching closed/open bone matrices and real skin through the mesh opening at
+80/144. Three fresh blind critics then rejected the opening's dark chest patch
+as appearance progress. Gesture/finish preferences were mixed; R2 remains the
+canonical/default. No part scores were averaged and no appearance9 was granted.
+
+**Reviewed source, native pending:** Cuff2 replaces C1's concentrated distal
+55 mm retreat, which failed actual native longitudinal compression, with the
+same goal distributed through each column's actual upper-loft length. Row 0
+and the lower hanging bell/cross sector remain exact; upper rows 1–22 now
+refit. Topology, UVs, attributes, weights, materials, transforms and both
+original sleeve meshes stay protected. Sixteen meaningful CPU checks pass,
+including the rejected C1 short fixture, actual-wrapper cleanup, native receipt
+guards and a computed-overflow regression corrected after independent review.
+Its four-still request compares a labelled closed gesture/seated1.30 diagnostic
+parent with Cuff2. It requires raw replay, native API/geometry/grip/visibility
+and three fresh actual-pixel judgments; source fixtures do not accept anatomy.
+See [CUFF2-LOFT.md](CUFF2-LOFT.md) and `art/rosace/integration/cuff2/`.
+
+Stage 2 owns appearance and final body selection. Stage 3 received the clean
+motion/cloth/FX checkpoint `51220b8` with explicit unresolved source-binding
+guards and writer release; Stage 4 owns export and reusable pipeline seams.
+Whole-simulation runtime hitstop remains unchanged. All rejected C1/W2 pixels,
+frozen native controls, seventeen fixed9 human references and rollback bundles
+remain intact. FC1 stays a separate eight-still source-reviewed face trial.
