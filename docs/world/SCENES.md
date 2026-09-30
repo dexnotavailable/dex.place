@@ -525,3 +525,140 @@ camera up the yard stair, up Stonetop and down the shaft.
 
 Cost (in the world, whole frame at 1280x720, d3d11): B1 4.5 to 5.6 ms, B2 4.9 to 6.6, B5 1.7 to
 3.8. Captures: `review/world/phase2/R-B/` (the B5 street fix: `fix-b5/`).
+
+## Layering, grounding and blending (lane `layers`, 2026-10-01)
+
+Dex, 2026-10-01: blend every layer into one image; patch bad layering; the colossus's legs must not
+clip through each other; birds on the right layers; nothing floating (props, grass). This is the
+shared, code-side half: three audits that say what is wrong, the shared fixes, and a small toolkit
+the region lanes use to make a room sit in one light. Room composition itself (doors built into
+their walls, terrain and backdrop designed together) is the region lanes' work; the numbers below
+are what they can rely on.
+
+### The three audits
+
+All are headless (vite's SSR loader; no GPU, no browser), exit 1 on a finding, and run in seconds.
+Run them through the shared resource gate like any build.
+
+| command | checks |
+|---|---|
+| `node src/world/tools/ground-audit.mjs [--room A1,B2] [--raw] [--verbose] [--json f]` | every placement of every room stands on the surface under it |
+| `node src/world/tools/layer-audit.mjs [--scene s] [--raw] [--verbose] [--json f]` | every scene's draw order matches its depth order; every bird layer is where its depth says |
+| `node src/world/tools/colossus-legs.mjs [--margin n] [--verbose]` | no two of the colossus's eight legs touch at any moment of the gait, for every stride the scenes use |
+
+**ground-audit** builds each room the way `Room.build()` does (the shared `settle()` pass, then the
+pixel world with the room's ground) and reports, per placement: `float` (base above the surface,
+gap in px), `sunk` (base inside a solid), `void` (nothing under it), `lifted` (the drawing stops
+short of its base, so it floats whatever the anchor says), `edge` (a wide rigid prop hangs past its
+surface or straddles a step), `blade` (a blade of grass or reed whose base is not on the ground
+under ITS x; slopes and steps are handled because each blade is tested alone). Tolerance 1 px.
+Support is a solid top, a one-way top, the water's surface (a room's waterline and wade zones) or
+the collider of another prop (a deck, a crate, a stair). `--raw` skips `settle()`.
+
+Recipes that are not meant to touch the ground (hangs, wall mounts, effects, spans, things that are
+the surface, things that stand in water) are listed with the reason in `ANCHORS`
+(`src/world/room/ground.ts`); the audit skips them and says why. A new recipe that hangs or mounts
+needs one line there; an unlisted recipe is treated as standing on the ground. Invisible stub
+controllers (the plain's keeper, the storm driver) are skipped automatically.
+
+Result, 23 rooms, 530 placements (303 ground-standing checked, 227 exempt by `ANCHORS`):
+
+| | before (main 44dc763, as authored) | after |
+|---|---|---|
+| grass and reed blades off the ground | 506 of 1902 (7 rooms) | **0 of 1811** (91 blades are no longer grown: nothing to root in) |
+| floating / sunk / void / lifted props | 1 / 1 / 0 / 0 | **0 / 0 / 0 / 0** |
+| `edge` (a wide prop on a step) | 1 | 1 (B2 bus shelter, a 16 px step; B lane) |
+| total findings | 509 | **1** |
+
+Left for region lanes (per-room placements a shared fix cannot know): **B2 `shelter`** (busShelter,
+x 4160) straddles a 16 px step: nudge it onto one step or split the step. Patches whose blades are
+now trimmed because the ground is out of reach (over a drop, inside a wall) and may want moving:
+A2 `shelf-grass` and the stair tufts (43 blades), E1 `grass-bottom` and two others (24), A0
+`pier-reeds` (16: the rest now root on the deck), D4 `moss-tip` (8). `--verbose` lists them.
+
+### The shared fixes behind those numbers
+
+- **Living cover roots blade by blade.** `PropBuilder.groundRise(x, reach)` (`pixel/prop.ts`) asks
+  the world (`PixelWorld.surfaceY`, `plantGround`) where the ground is under prop-local x, within
+  0.6 H of the patch's base. `grass`, `reeds` and `reedBed` use it: each blade's base sits on the
+  terrain top (or the water's surface) under its own x, so a patch climbs steps and slopes; a blade
+  over a drop or inside a wall is not grown. Random draws run in the same order for every blade, so
+  a patch on flat ground looks exactly as before. The room hands the world its terrain and water
+  through `plantStand()` (`room/ground.ts`); a world with no terrain (the sandbox) keeps the old
+  behaviour. New ground cover in a region folder should call `groundRise` the same way.
+- **`settle()`** (`room/ground.ts`, run by `Room.build()` and the audit): a ground-standing
+  placement a few px off the terrain under it is put on it (down onto it up to 0.3 H, up out of it
+  up to 0.15 H; never onto a one-way top or the water). Anything further off is a placement
+  decision and stays. `Room.moved` lists what it moved.
+
+### Layer order
+
+The engine draws layers in list order and never sorts, so depth order is whatever the scene code
+happened to push. `layer-audit` builds every scene (the /scenes/ prototypes and every room's
+backdrop) and reports a layer drawn after a nearer one but farther than it (an inversion: a far
+ridge over a near rock, parallax out of depth order). Ground planes (`water`, `plain`, `flats`,
+`floor`) are drawn first by design and skipped; additive light, points and the figure do not hide
+anything. Before (same tool, scenes as they were built): **40 inversions, 9 misplaced bird layers**.
+After: **0 inversions, 0 misplaced birds**, with 14 more listed in `INTENT` in the tool with their
+reasons (the valley mist wrapping the pilgrim spire's base, the Blade's storm bands over the world
+below, the hollow-mouth arcade over its rim).
+
+- **Birds** (`Flock`): `placeFlocks()` (`engine/order.ts`, called by both `Engine.build` and
+  `Backdrop`) seats every bird layer at the slot its depth says (behind every opaque layer nearer
+  than it, in front of every layer farther) and gives the flock its depth. Before, the flocks of
+  arrival, ring-lake, causeway, colossus-plain, reed-shallows, pilgrim-path, the Blade and the
+  climb were pushed wherever the code was (often after the near cliffs, the dock and the figure): a
+  bird 12 units away flew over rock 2 units away, and in front of the player. The sprite follows
+  the depth (`birdSprite()`): 9x4 under depth 11, 7x3 to 22, 5x2 beyond; the loose V scales with it.
+  Scene files change nothing: push the `Flock` layer at its depth and the engine does the rest.
+- `moveAfter`, `moveBefore`, `placeByDepth` (same file, exported from `engine/index.ts`) fix the
+  rest: the ring-cloud over the arrival hills, the high cloud over the ring (pilgrim-path), the
+  causeway and reed-shallows spires behind the ring and high streaks, the mooring line behind the
+  water mist, the far rain (spire rooms) behind the nearer solid layers, the spray behind the near
+  rain. `wade-haze` (reed-shallows) is now nearer than the colossus it veils.
+
+### The colossus's legs
+
+The walker is an SDF shader with a CPU twin (`colossus-plain/colossus.ts`); the eight legs are four
+near ones and four on the far flank, drawn behind the body. The far legs were a half-cycle copy 18
+units behind their near twins, so each pair fused into one lumpy limb or crossed for most of the
+gait (near0/far0 overlapped 556 to 699 of ~600 sampled moments per gait, up to 17.9 units deep).
+`FAR_LEGS` now gives each far leg its own hip offset, reach and phase, and three near legs a little
+reach, found by search against all five strides the scenes use (vd x T = 73 to 97). `colossus-legs`
+measures the gap between every pair of legs' lower bones over three loops of each gait (less 75% of
+the two radii, since the drawn limb is thicker than its axis): **tightest 2.7 to 3.1 units, 0
+clips** (before: -17.9, 556 to 699 clips per gait). The rearmost drawn pixel is body x 370 (the
+clip is 380). Change a leg, `FAR_LEGS` or a scene's gait and run the tool: it fails if two legs come
+back together. The dust, the footfalls and the keeper read the same `legList()`, so everything
+follows.
+
+### The blending toolkit (`render/blend.ts`, `RoomDef.blend`)
+
+What makes a room read as one image. Off unless a room asks; a room without `blend` renders exactly
+as before. `?blend=auto` turns `fromLight()` on for every room that has none (a review switch).
+
+```ts
+blend: fromLight(lighting, { amount: 0.16, haze: 0.3 })                 // derive it all from the room's light
+blend: { grade: { mul: [0.97, 0.98, 1], lift: [0.01, 0.01, 0.015] },     // or author it
+         haze: { colour: [0.6, 0.55, 0.7], far: 0.3, bg: 0.12 },
+         band: { colour: [0.6, 0.55, 0.7], rows: 8, strength: 1 },
+         shadow: 1, halo: { strength: 1 } }
+```
+
+| field | does | notes |
+|---|---|---|
+| `grade` | a multiply then a small additive lift over the composed world (backdrop, terrain, props, the player), before the front backdrop pass | `fromLight` turns the room's key and rim colours into a cast (hue only) at `amount`; 0.16 is felt, not a filter |
+| `haze` | far pixel parts take a veil of the haze colour, bg parts `bg` (default 45% of it): `Part.fog` | recipes that set their own fog keep it |
+| `band` | up to 8 stepped, Bayer-dithered rows of haze colour above every exposed terrain top (tops under a higher neighbour are skipped; rock and earth over their rim) | turn it off, or make it a dark occlusion tone, in a room whose backdrop behind the ground is a wall, not sky |
+| `shadow` | strength of the contact shadows under props and the player (`game.ts drawContactShadows`, in since the grounding commit); 0 is off | |
+| `halo` | a stepped, dithered additive glow in each lit lamp's own colour (5 thin steps, radius 0.55 of the light's), at most 5 in view | steady: quarter steps of intensity, never follows a flicker, so it adds nothing to the flash budget |
+
+Everything is whole pixels and uses the renderer's dithered rect; the cost is a few hundred quads
+per frame with lamps in view. It is not a substitute for painting a room in one palette: it carries
+the last 10 to 15% (shared cast, distance, contact, light spill).
+
+### Checks run for this lane
+
+`tsc --noEmit` (both configs) clean; `npm test` 102 of 103 (the one failure, the site blog feed
+test in `src/site/build/content.test.mjs`, fails identically on main 44dc763); the source
+regressions pass; the three audits as above.
