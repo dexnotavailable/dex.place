@@ -6,15 +6,15 @@ date: 2026-10-01
 <!-- tldr:start -->
 
 > [!NOTE]
-> **TL;DR** — Product 1 (playable character): **3%** · Overall (Products 1 + 2): **2%** · Now: **S0 — Foundations** (reference library: measuring run in progress, 919 reference character models measured so far)
+> **TL;DR** — Product 1 (playable character): **4%** · Overall (Products 1 + 2): **2%** · Now: **S0 — Foundations** (reference library: measuring run in progress, 919 reference character models measured so far)
 
 **Roadmap.** S0 to S10 are Product 1, S11 is Product 2.
 
 | Stage | Work | Status |
 |---|---|---|
 | S0 | Foundations: research, MMD dataset + metrics, reference shelf | ▶ in progress, 60% |
-| S1 | Critic (judge) kit + calibration | ○ not started |
-| S2 | C001 concept sheets + Meshy ghost | ○ not started |
+| S1 | Critic (judge) kit + calibration | ▶ in progress, 30% |
+| S2 | C001 concept sheets + Meshy ghost | ▶ in progress, 40% |
 | S3 | Body + head topology (adult-female family template) | ○ not started |
 | S4 | Face system: eyes, mouth interior, expressions, face shading | ○ not started |
 | S5 | Hair, clothing layers, bone arms, boots | ○ not started |
