@@ -91,9 +91,11 @@ async function boot(): Promise<void> {
   setPropEngine(engine);
   performance.mark("world:renderer");
   await breathe();
+  performance.mark("world:player-start");
   const assets = await loadPlayer(r);
   performance.mark("world:player");
   await breathe();
+  performance.mark("world:room-start");
   const input = new Input(canvas);
   const touch = new Touch(input, touchEl);
   // Phase 1 used the same save key and could rest in arrival/plain/house.
