@@ -7,7 +7,7 @@ import type { PixelMatterEngine, Prop, PropCanvas, PropLayer, PropLight, PropWor
 import { PixelRoom, resolveRecipe, type PixelDraw } from "../pixel/adapter.ts";
 import { Backdrop } from "../backdrop/engine.ts";
 import { withWeather } from "../weather.ts";
-import { SCALE } from "../config.ts";
+import { FRAME, SCALE } from "../config.ts";
 import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../render/renderer.ts";
 import { Collision, type OneWay, type Solid } from "./collision.ts";
@@ -85,7 +85,7 @@ export class Room {
     for (const t of d.terrain) {
       if (t.oneWay) this.staticOneWays.push({ x: t.x, y: t.y, w: t.w, surface: t.surface, stair: t.stair });
       else this.staticSolids.push({ x: t.x, y: t.y, w: t.w, h: t.h, surface: t.surface });
-      if (t.art !== "none") this.bakeTerrain(t);
+      if (t.art !== "none") this.bakeTerrain(t, d.terrain);
     }
     const band = (e: RoomDef["exits"][number]): [number, number] => [e.y0 ?? -1e9, e.y1 ?? 1e9];
     this.collision.open.left = d.exits.filter((e) => e.side === "left").map(band);
@@ -128,8 +128,13 @@ export class Room {
     this.buildMs = Math.round(performance.now() - t0);
   }
 
-  private bakeTerrain(t: TerrainPiece): void {
+  private bakeTerrain(t: TerrainPiece, all: TerrainPiece[]): void {
     const r = this.deps.r;
+    // an end is exposed (a lit or shaded side) only where no other drawn ground carries on at
+    // about the same height: two slabs meeting (rock into flags) read as one floor, no seam
+    const joins = (x: number): boolean => all.some((o) => o !== t && o.art !== "none" && !o.oneWay && Math.abs(o.y - t.y) <= 3 && o.x <= x + 1 && o.x + o.w >= x - 1 && (o.x + o.w <= t.x + 1 || o.x >= t.x + t.w - 1));
+    const openL = !joins(t.x);
+    const openR = !joins(t.x + t.w);
     const art = t.art as Exclude<TerrainPiece["art"], "none">;
     // tall slabs only need their visible depth; below that the ground is dark
     const h = Math.min(t.h, SCALE.H * 3);
@@ -138,7 +143,7 @@ export class Room {
     for (let x = 0; x < t.w; x += SEG) {
       const w = Math.min(SEG, t.w - x);
       const seed = art === "block" ? (((t.x + x) % 65536) << 16) | ((t.seed ?? 1) & 0xffff) : (t.seed ?? 1) * 97 + x;
-      const tex = terrainTexture(w, h + rim, art, seed, SCALE.H, t.ramp, { left: x === 0, right: x + w >= t.w }, rim);
+      const tex = terrainTexture(w, h + rim, art, seed, SCALE.H, t.ramp, { left: x === 0 && openL, right: x + w >= t.w && openR }, rim);
       const albedo = r.texture({ w: tex.w, h: tex.h, data: tex.albedo });
       const normal = r.texture({ w: tex.w, h: tex.h, data: tex.normal });
       this.textures.push(albedo.tex, normal.tex);
@@ -200,7 +205,7 @@ export class Room {
       if (!p.layers.includes(layer)) continue;
       if (filter && !filter(p)) continue;
       const b = p.bounds();
-      if (b.x > camX + SCALE.viewW + 64 || b.x + b.w < camX - 64) continue;
+      if (b.x > camX + FRAME.w + 64 || b.x + b.w < camX - 64) continue;
       p.draw(c, layer);
     }
   }

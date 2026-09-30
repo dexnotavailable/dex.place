@@ -21,6 +21,30 @@ export const SCALE = {
   sourceH: 96,
 } as const;
 
+/**
+ * The frame the world renders into, in world px. It is wider than the design
+ * view (1280x720, what scenes and rooms are composed in) so the camera can
+ * stand further back outside: exteriors show the whole frame (the player is
+ * ~9% of its height instead of 11%), interiors zoom in (ZOOM) so a room fills
+ * it. Backdrops keep their 1280x720 composition inside it and extend to its
+ * edges (backdrop/engine.ts, "frame").
+ */
+export const FRAME = { w: 1536, h: 864 } as const;
+
+export const ZOOM = {
+  /** Outside: the whole frame. */
+  exterior: 1,
+  /** Inside: at least the design view's framing (1536 / 1280), more when that still shows past the room. */
+  interior: FRAME.w / LOCKED.view.w,
+  /** Never closer than this (pixels stay readable, the room still reads as a room). */
+  max: 1.5,
+  /**
+   * Short screens (a phone held sideways: CSS height up to this) keep the design view's framing
+   * outside too, so she stays readable there.
+   */
+  compactHeight: 540,
+} as const;
+
 /** Player-scale factor from the authored 96 px data to the world's H. */
 export const K = SCALE.H / SCALE.sourceH;
 /** Close-up factor from the authored data to the close-up render. */

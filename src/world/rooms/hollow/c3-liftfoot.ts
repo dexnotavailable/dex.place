@@ -29,7 +29,8 @@ const b = new Box({
   top: TOP,
   bottom: -33.3,
   mood: "tile",
-  camera: { mode: "locked" },
+  // the station hall is a room: zoomed in so it fills the frame
+  camera: { mode: "locked", zoom: "fit" },
   audio: { music: "theme", bed: "waiting", muffle: 1, weatherThrough: 0, surface: "tile" },
   weather: { state: "serene", time: "day" },
   neighbours: ["C1", "D1"],

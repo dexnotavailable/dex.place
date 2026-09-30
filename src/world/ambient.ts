@@ -8,7 +8,7 @@ import type { PropLight } from "./props-api.ts";
 import type { WorldRenderer } from "./render/renderer.ts";
 import type { Collision } from "./room/collision.ts";
 import type { AmbientSpec } from "./room/types.ts";
-import { SCALE } from "./config.ts";
+import { FRAME } from "./config.ts";
 
 interface Mote {
   x: number;
@@ -44,7 +44,7 @@ export class Ambient {
     this.motes = [];
     this.moths = [];
     this.splashes = [];
-    const n = Math.round((this.spec.dust ?? 0) * (w / SCALE.viewW));
+    const n = Math.round((this.spec.dust ?? 0) * (w / FRAME.w));
     for (let i = 0; i < n; i++) this.motes.push({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.2, vy: -0.05 - Math.random() * 0.1, ph: Math.random() * 99 });
   }
 
@@ -78,9 +78,9 @@ export class Ambient {
     if (outdoors && rain > 0.08) {
       const n = Math.round(rain * 4 * (reduced ? 0.5 : 1));
       for (let i = 0; i < n; i++) {
-        const x = camX + Math.random() * SCALE.viewW;
+        const x = camX + Math.random() * FRAME.w;
         const y = col.groundAt(x, camY + 10);
-        if (y < camY + SCALE.viewH && y > camY) this.splashes.push({ x: Math.round(x), y, age: 0 });
+        if (y < camY + FRAME.h && y > camY) this.splashes.push({ x: Math.round(x), y, age: 0 });
       }
     }
     for (const s of this.splashes) s.age++;

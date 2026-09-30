@@ -4,11 +4,17 @@
 // cut stone steps (lit treads, shadowed risers, worn edges), a landing, and the
 // shelf the lodge stands on; the end of the dock's old boardwalk at the left.
 // The room's collision is the same geometry (terrain pieces with art "none").
+// Both layers run EDGE px past the design view on each side: the world's frame
+// is wider than it (config.ts FRAME), so the rock and the yard continue there.
 
-import { Pix, terrain } from "../../../scenes/engine/pix.ts";
+import { Pix } from "../../../scenes/engine/pix.ts";
+import { paintGround, paintSteps } from "../../../scenes/engine/ground.ts";
 import { hashInt } from "../../../scenes/engine/noise.ts";
 import type { BuildCtx, LayerDef } from "../../../scenes/engine/types.ts";
 import type { Geo } from "../../../scenes/scenes/arrival.ts";
+
+/** How far the layers continue past the design view's sides (px). */
+const EDGE = 200;
 
 export interface CliffSpec {
   /** Room px -> screen px (the room is narrower than the view and locked). */
@@ -27,8 +33,8 @@ export function cliffStair(s: CliffSpec): (ctx: BuildCtx, g: Geo, row: (n: strin
   return (ctx, g, row) => {
     const { W, H } = ctx;
     const u = g.u;
-    const pix = new Pix(W, H + 4);
-    const X = (x: number): number => Math.round(x + s.ox);
+    const pix = new Pix(W + 2 * EDGE, H + 4);
+    const X = (x: number): number => Math.round(x + s.ox + EDGE);
     const tops = s.tops.map(([a, b, y]) => [X(a), X(b), y] as const);
     const top = (x: number): number => {
       let best = 1e9;
@@ -38,49 +44,20 @@ export function cliffStair(s: CliffSpec): (ctx: BuildCtx, g: Geo, row: (n: strin
       if (x < f0 && x > f0 - 18 * u) best = Math.min(best, fy + Math.round(((f0 - x) / (18 * u)) ** 1.5 * (s.water - fy + 6)));
       return best;
     };
-    const c = Math.max(1, Math.round(1.5 * u));
-    terrain(pix, {
-      row: row("cliff"),
+    // the rock: lit facets and cracks (the moon is up and to the left of the climb), a grass cap on
+    // the landing and the shelf, hanging over their drops; the steps are cut stone laid on it
+    const stepX = s.steps.map(([a, b]) => [X(a), X(b)] as const);
+    const onStep = (x: number): boolean => stepX.some(([a, b]) => x >= a - 1 && x < b + 1);
+    paintGround(pix, {
       top,
       bottom: () => H + 4,
-      seed: 91,
-      scale: 16 * u,
-      chunk: c,
-      light: [0.7, -1],
-      base: 0.3,
-      contrast: 0.55,
-      vertical: 0.25,
-      strata: 0.4,
-      rim: 0.32,
-      rimDepth: c * 2,
-      ao: 0.35,
+      rock: { seed: 91, cell: Math.round(13 * u), flatten: 1.9, light: [-0.45, -1], base: 0.4, contrast: 0.5, cracks: 0.3 },
+      row: row("cliff"),
+      cap: { row: row("moss"), depth: Math.round(3 * u), blades: Math.round(3 * u), where: (x) => !onStep(x) && x > X(s.tops[0]![1]) - 1 },
+      dark: 0.3,
+      darkDepth: 150 * u,
     });
-    // moss and grass along the lit lips of the landing and the shelf
-    const moss = row("moss");
-    for (const [a0, b0, y] of s.tops) if (b0 - a0 > g.P * 0.6) for (let x = X(a0); x < X(b0); x++) {
-      const n = hashInt(x >> 1, 3, 37);
-      for (let k = 2; k < 2 + Math.round(n * 5 * u); k++) pix.set(x, y + k, 0.25 + n * 0.3, moss);
-      if (n > 0.8) for (let k = 1; k < Math.round((n - 0.8) * 20); k++) pix.set(x, y - k, 0.5, moss);
-    }
-    // the steps: a lit tread, a darker riser under the tread's lip, worn corners
-    const stone = row("mid");
-    for (const [a0, b0, y] of s.steps) {
-      const a = X(a0), b = X(b0);
-      const riser = Math.max(4, Math.round(g.P * 0.18));
-      for (let x = a; x < b; x++) {
-        const worn = hashInt(x, y, 31) < 0.12;
-        pix.set(x, y, worn ? 0.55 : 0.82, stone);
-        pix.set(x, y + 1, 0.5, stone);
-        for (let k = 2; k < riser; k++) pix.set(x, y + k, 0.24 - k * 0.012 + (hashInt(x >> 1, y + k, 33) - 0.5) * 0.06, stone);
-      }
-      // the riser's left edge catches the light off the lake
-      for (let k = 0; k < riser; k++) pix.set(a, y + k, 0.45, stone);
-    }
-    // the landing's and the shelf's edges: a lit lip
-    for (const [a0, b0, y] of s.tops) if (b0 - a0 > g.P * 0.6) for (let x = X(a0); x < X(b0); x++) {
-      pix.set(x, y, hashInt(x, 7, 35) < 0.15 ? 0.5 : 0.72, stone);
-      pix.set(x, y + 1, 0.4, stone);
-    }
+    paintSteps(pix, s.steps.map(([a, b, y]) => [X(a), X(b), y] as [number, number, number]), { row: row("mid"), riser: Math.max(4, Math.round(g.P * 0.18)), seed: 33, moss: row("moss"), light: -1 });
     // the dock's old boardwalk, ending at the rock
     const wood = row("wood");
     const [bx1, by] = s.boardwalk;
@@ -92,7 +69,7 @@ export function cliffStair(s: CliffSpec): (ctx: BuildCtx, g: Geo, row: (n: strin
       if (hashInt(Math.floor(x / 3), 11, 17) > 0.08) pix.set(x, by, 0.72, row("red"));
     }
     for (let px = Math.round(g.P * 0.3); px < X(bx1); px += Math.round(g.P * 0.9)) for (let y = by + th; y <= s.water + 1; y++) for (let k = 0; k < 5; k++) pix.set(px + k, y, k === 0 ? 0.28 : 0.12, wood);
-    return [{ kind: "pix", name: "cliff-stair", depth: 1, pix, x: 0, y: 0, reflect: s.water, reflectFade: 40 * u, dither: 0.15 }];
+    return [{ kind: "pix", name: "cliff-stair", depth: 1, pix, x: -EDGE, y: 0, reflect: s.water, reflectFade: 40 * u, dither: 0.15 }];
   };
 }
 
@@ -101,32 +78,18 @@ export function shelfGround(s: { ox: number; y: number }): (ctx: BuildCtx, g: Ge
   return (ctx, g, row) => {
     const { W, H } = ctx;
     const u = g.u;
-    const pix = new Pix(W, H + 4);
-    const c = Math.max(1, Math.round(1.5 * u));
-    terrain(pix, {
-      row: row("mid"),
-      top: () => s.y + 2,
+    const pix = new Pix(W + 2 * EDGE, H + 4);
+    // packed earth and bedded rock under a thick grass cap, stones in the soil
+    paintGround(pix, {
+      top: () => s.y,
       bottom: () => H + 4,
-      seed: 97,
-      scale: 18 * u,
-      chunk: c,
-      light: [0.7, -1],
-      base: 0.3,
-      contrast: 0.45,
-      strata: 0.5,
-      rim: 0.1,
-      rimDepth: c,
-      ao: 0.45,
+      rock: { seed: 97, cell: Math.round(9 * u), flatten: 2.2, light: [-0.5, -1], base: 0.36, contrast: 0.45 },
+      row: row("mid"),
+      cap: { row: row("moss"), depth: Math.round(3.5 * u), blades: Math.round(3.5 * u) },
+      stones: 0.4,
+      dark: 0.3,
+      darkDepth: 90 * u,
     });
-    const moss = row("moss");
-    for (let x = 0; x < W; x++) {
-      const n = hashInt(x >> 1, 5, 41);
-      const deep = 3 + Math.round(hashInt(x >> 3, 6, 41) * 5 * u);
-      for (let k = 0; k < deep; k++) pix.set(x, s.y + k, k === 0 ? 0.62 : 0.42 - k * 0.03 + n * 0.1, moss);
-      if (n > 0.86) for (let k = 1; k < Math.round((n - 0.8) * 22); k++) pix.set(x, s.y - k, 0.55, moss);
-      // stones set in the earth
-      if (hashInt(x >> 4, 7, 43) > 0.82 && (x & 15) < 9) for (let k = 0; k < 4; k++) pix.set(x, s.y + deep + 6 + k, 0.55 - k * 0.08, row("mid"));
-    }
-    return [{ kind: "pix", name: "shelf-ground", depth: 1, pix, x: 0, y: 0, dither: 0.1 }];
+    return [{ kind: "pix", name: "shelf-ground", depth: 1, pix, x: -EDGE, y: 0, dither: 0.1 }];
   };
 }

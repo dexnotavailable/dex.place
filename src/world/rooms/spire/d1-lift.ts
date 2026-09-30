@@ -18,7 +18,8 @@ const d1 = new Spire({
   x1: 268,
   top: 81,
   bottom: -36.2,
-  camera: { mode: "locked", anchor: 0.6 },
+  // the ride keeps its design framing (the shaft scene is composed for it)
+  camera: { mode: "locked", anchor: 0.6, zoom: 1.2 },
   audio: { music: "theme", bed: "shaft", weatherThrough: 0.6, muffle: 1, surface: "metal" },
   weather: { state: "rain", time: "day" },
   neighbours: ["C3", "D2", "D3"],

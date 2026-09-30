@@ -73,8 +73,9 @@ geometry is authored in H through `h(n)`.
 
 | | |
 |---|---|
-| World view | 1280 x 720 world px |
-| Player | H = 80 px (~11% of the view; the old site's hero was ~6%) |
+| World view (design) | 1280 x 720 world px: what scenes and rooms are composed in |
+| Frame | 1536 x 864 world px (`config.ts` `FRAME`, Dex 2026-10-01: "foreground zoom further, the character slightly smaller; indoors could use zoom"). Outside, the whole frame shows (H is ~9% of its height); inside, `viewZoom` zooms in about its centre (see Frame and zoom below) |
+| Player | H = 80 px (~9% of the frame outside, ~11% at the design framing; the old site's hero was ~6%) |
 | Close-up | 144 px render for combat zoom, cut-ins, portraits (`CLOSEUP_ZOOM` = 1.8) |
 | Presentation | `presentRect()`: whole-number nearest when it fills the window (1440p: 2x, 4K: 3x); otherwise sharp-bilinear at the exact fit (1080p: 1.5x; phone landscape 2532x1170: 1.625x). Never plain bilinear. |
 | Bars | 0.03 of the view height per bar exploring, up to 0.085 in cinematic zones |
@@ -207,8 +208,43 @@ underground flag, sound, ambient life, a waterline, neighbours, a pit line.
   ordinary rooms, 0.35 in the Hollow Mouth, 0.5 on the Pilgrim Path); **vista holds** (a zone
   with `hold: 2` takes over only after 2 s standing still, easing in whole pixels, no zoom); the
   **arena clamp** while the terminal summons and holds its seal; an **override** (sitting). The
-  view never zooms while exploring. Framing zones, shake, the zoom punch and `setCloseup()` (the
-  1.8x combat zoom that hands the player to the 144 px render) are as before.
+  view zoom is per room or area (`RoomCamera.zoom`, below), not per moment. Framing zones, shake,
+  the zoom punch and `setCloseup()` (the 1.8x combat zoom that hands the player to the 144 px
+  render) are as before, on top of it.
+
+## Frame and zoom (2026-10-01)
+
+- **Frame** (`config.ts` `FRAME`, 1536 x 864): the world target, the pixel-matter renderer and
+  the reflection targets are this size. `camera.viewZoom` 1 shows all of it; more zooms in about
+  its centre in the presenter (sharp-bilinear like the rest). The camera clamps and frames with
+  the zoomed view (`camera.vw`, `camera.vh`); `camera.view()` is the frame's top-left.
+- **Zoom rule** (`game.ts` `zoomFor`, `ZOOM`): outside 1; interiors (`weather.interior`) and rooms
+  with `camera.zoom: "fit"` zoom in until the room fills the frame, at least 1.2 (the old
+  1280 x 720 framing) and at most 1.5. Explicit numbers win (D1's ride keeps 1.2). Areas can set
+  their own; the zoom eases between areas and snaps on a room change (behind the door fade). A
+  short screen (CSS height up to 540: a phone held sideways) keeps 1.2 everywhere, so she stays
+  readable there. Rooms shorter than the zoomed view sit on the frame's bottom outside (the extra
+  is sky) and centre inside.
+- **Backdrops keep their composition.** A scene is still built and composed for 1280 x 720 (its
+  `ctx.W`, `ctx.H`, `ctx.span`); `camera.design()` says where the old design camera stands for
+  this frame (clamped exactly as before, so player-plane layers stay on the collision) and where
+  that design view sits in the frame (`Backdrop.setCamera(x, y, at)`). The shaders evaluate `s`
+  over the whole frame (`uFrame`), so procedural layers simply continue past the old edges, and
+  `ctx.panWidth` is `MARGIN` wider on each side so pan textures do too. Layers a scene builds at
+  exactly the design width need their own margin (A2's cliff, A4's yard: `_cliff.ts` `EDGE`).
+  Reflections sample the frame-sized reflection target through `reflPx()` (`glsl.ts` `LIB_REFL`).
+- **Cost**: the frame has 1.44x the pixels. Headless Edge on the laptop's Intel Arc 140V
+  (uncapped): A1 162 -> 146 fps, B2 142 -> 126, C1 195 -> 160, E3 587 -> 476.
+- **Contact shadows** (`game.ts` `drawContactShadows`, `renderer.shade()`): a stepped band of
+  multiply-darkened pixels on the floor line under every grounded prop (pixel matter and stub)
+  and the player, so nothing sits on the floor like a sticker. A true darken (not dithered),
+  drawn after the terrain and before the props.
+- **Ground painter** (`src/scenes/engine/ground.ts`): `rockInfo`/`paintGround`/`paintSteps` paint
+  near ground as lit rock facets (a stretched Voronoi, a bevel toward the key light, open cracks
+  on some borders, big masses carrying their own tone, calming with depth) under a grass cap
+  with blades and overhangs, stones bedded in the soil, and cut stone steps with joints and
+  chipped corners. Used by A2's cliff and A4's yard (`_cliff.ts`), B1's embankment
+  (`reed-shallows/land.ts`) and B2's crater and Stonetop (`causeway/road.ts`).
 - **Rides and moving floors** (`props/kit.ts` `carrier`): stops with eased keyed motion at an
   average speed in H/s, per-stop speeds (the express), stops that need a flag (`lever:express`),
   E to go on, `call:<i>` / `go:<i>` signals from levers, spawns that put the carrier at a stop and

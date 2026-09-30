@@ -37,7 +37,7 @@ import type { World as LabWorld } from "../lab/game/world.ts";
 import { FlashGate } from "../scenes/engine/flashes.ts";
 import { Ambient } from "./ambient.ts";
 import { WorldAudio } from "./audio.ts";
-import { h, PHYSICS, SCALE, STREAM } from "./config.ts";
+import { FRAME, h, PHYSICS, SCALE, STREAM, ZOOM } from "./config.ts";
 import { Hooks, type WorldApi } from "./hooks.ts";
 import type { PlayerAssets } from "./player/setup.ts";
 import { loopFrameAt } from "./player/frames.ts";
@@ -330,7 +330,7 @@ export class WorldGame {
   }
 
   private pan(x: number): number {
-    return Math.max(-1, Math.min(1, (x - (this.camera.x + SCALE.viewW / 2)) / (SCALE.viewW / 2)));
+    return Math.max(-1, Math.min(1, (x - (this.camera.x + this.camera.vw / 2)) / (this.camera.vw / 2)));
   }
 
   private makeApi(): WorldApi {
@@ -392,23 +392,52 @@ export class WorldGame {
     return d.weather;
   }
 
-  /** The room's camera, or the current area's. */
+  /** The room's camera, or the current area's (its zoom resolved to a number). */
   private cameraFor(): RoomCamera {
     const d = this.room.def;
     const base: RoomCamera = d.camera ?? { mode: "free" };
     const a = this.area;
-    if (!a?.camera) return base;
-    const c = { ...a.camera };
-    if (c.mode === "locked" && !c.at) {
+    const c: RoomCamera = a?.camera ? { ...a.camera } : { ...base };
+    c.zoom = this.zoomFor(c.zoom ?? (a?.camera ? base.zoom : undefined));
+    if (a?.camera && c.mode === "locked" && !c.at) {
       // a locked area frames itself where you walked in: centred on the area, feet at its anchor
       if (!this.lockedAt) {
         const b = this.player.body;
         const anchor = c.anchor ?? base.anchor ?? 0.64;
-        this.lockedAt = [Math.round((a.x0 + a.x1) / 2 - SCALE.viewW / 2), Math.round(b.y - SCALE.viewH * anchor)];
+        const vw = FRAME.w / c.zoom;
+        const vh = FRAME.h / c.zoom;
+        this.lockedAt = [Math.round((a.x0 + a.x1) / 2 - vw / 2), Math.round(b.y - vh * anchor)];
       }
       c.at = this.lockedAt;
     }
     return c;
+  }
+
+  /**
+   * View zoom (config.ts ZOOM): outside the whole frame; inside ("fit", the default for interior
+   * rooms) close enough that the room fills the frame, at least the design view's framing.
+   */
+  private zoomFor(z: number | "fit" | undefined): number {
+    const d = this.room.def;
+    const want = z ?? (d.weather.interior ? "fit" : ZOOM.exterior);
+    // a phone held sideways keeps the closer framing everywhere
+    const floor = this.compact() ? ZOOM.interior : 1;
+    if (want !== "fit") return Math.max(floor, Math.min(ZOOM.max, want));
+    return Math.max(ZOOM.interior, Math.min(ZOOM.max, Math.max(FRAME.w / d.w, FRAME.h / d.h)));
+  }
+
+  /** A short screen (phone landscape): see ZOOM.compactHeight. */
+  private compact(): boolean {
+    const h = this.r.canvas.clientHeight;
+    return h > 0 && h <= ZOOM.compactHeight;
+  }
+  private wasCompact = false;
+
+  /** Camera mode and zoom for where the player is now. */
+  private applyCamera(): void {
+    this.wasCompact = this.compact();
+    this.camera.mode = this.cameraFor();
+    this.camera.viewZoomTarget = typeof this.camera.mode.zoom === "number" ? this.camera.mode.zoom : 1;
   }
   private lockedAt: [number, number] | null = null;
 
@@ -465,7 +494,7 @@ export class WorldGame {
     this.area = this.findArea();
     this.camera.zones = d.zones ?? [];
     this.camera.resetRail();
-    this.camera.mode = this.cameraFor();
+    this.applyCamera();
     this.camera.arenaActive = false;
     this.camera.snapTo(b.x, b.y, sp.facing, room.collision.bounds());
     this.ambient.reset(d.ambient, d.w, d.h);
@@ -654,7 +683,7 @@ export class WorldGame {
     this.sitTicks = 0;
     // hold on the room's vista near the bench if there is one, else a little ahead of the way she faces
     const z = (this.room.def.zones ?? []).find((q) => bench.x >= q.x0 && bench.x <= q.x1 && q.cx !== undefined);
-    this.camera.override = { cx: z?.cx ?? bench.x + this.player.facing * SCALE.viewW * 0.12, cy: z?.cy, bars: 0.07 };
+    this.camera.override = { cx: z?.cx ?? bench.x + this.player.facing * this.camera.vw * 0.12, cy: z?.cy, bars: 0.07 };
     this.input.releaseAll();
     this.touch.usable(false);
   }
@@ -753,6 +782,7 @@ export class WorldGame {
     this.stillFor = moving ? 0 : this.stillFor + 1 / 60;
     this.camera.still = this.stillFor;
     this.camera.arenaActive = this.arenaClamp;
+    if (this.realTicks % 30 === 0 && this.compact() !== this.wasCompact) this.applyCamera(); // rotated or resized
     this.camera.update(b.x, b.y, this.player.facing, this.room.collision.bounds(), Math.abs(b.vx) > 0.5, b.vy);
     this.touch.cooldowns(this.player.skillCd <= 0, this.player.ultCd <= 0);
     if (++this.audioTick % 12 === 0) this.musicLevel();
@@ -904,7 +934,7 @@ export class WorldGame {
       if (cut && !(cut.unless && this.save.get(cut.unless))) this.audio.cut(cut.silence, this.audioFor().bed);
       else this.audio.setBed(this.audioFor().bed);
     }
-    this.camera.mode = this.cameraFor();
+    this.applyCamera();
     this.triggers();
     this.destinations();
     // safety: the last solid ground, and pits
@@ -1023,7 +1053,7 @@ export class WorldGame {
       b.x = p.x;
       this.sitting = { id: p.id, x: p.x, y: p.y };
       this.sitTicks = 0;
-      this.camera.override = { cx: p.x + this.player.facing * SCALE.viewW * 0.12, bars: 0.07 };
+      this.camera.override = { cx: p.x + this.player.facing * this.camera.vw * 0.12, bars: 0.07 };
       this.input.releaseAll();
     } else if (type === "stand") this.stand();
   }
@@ -1140,8 +1170,10 @@ export class WorldGame {
 
   // --- drawing ---------------------------------------------------------------------------
 
+  /** Everything the frame draws (room px); the zoomed view is its middle. */
   private viewRect(): { x: number; y: number; w: number; h: number } {
-    return { x: this.camera.x, y: this.camera.y, w: SCALE.viewW, h: SCALE.viewH };
+    const [x, y] = this.camera.view();
+    return { x, y, w: FRAME.w, h: FRAME.h };
   }
 
   /** The frame's effect lights; `strikes: false` leaves out the lightning (the player's own lights). */
@@ -1157,9 +1189,60 @@ export class WorldGame {
     // lightning: a strong light high above the strike (rims everything toward it)
     for (const s of this.weather.strikes) {
       if (!strikes || s.level <= 0 || this.weather.interior || this.room.def.underground) continue;
-      out.push({ x: s.x, y: this.camera.y - SCALE.H * 2, height: SCALE.H * 3, radius: SCALE.viewW * 1.2, colour: [0.8, 0.84, 1], intensity: s.level * 1.1 });
+      out.push({ x: s.x, y: this.camera.y - SCALE.H * 2, height: SCALE.H * 3, radius: FRAME.w * 1.2, colour: [0.8, 0.84, 1], intensity: s.level * 1.1 });
     }
     return out;
+  }
+
+  /**
+   * Contact shadows: a soft stepped band of shade on the floor line under everything that
+   * stands on the ground (props, the player), so nothing sits on the floor like a sticker.
+   * Whole pixels, no blur; wider things cast wider, tall thin things a small pool.
+   */
+  private drawContactShadows(): void {
+    const r = this.r;
+    const c = this.room.collision;
+    const v = this.viewRect();
+    const H = SCALE.H;
+    const out: [number, number, number, number, number][] = [];
+    const cast = (x0: number, x1: number, foot: number, k = 1): void => {
+      if (x1 < v.x - 8 || x0 > v.x + v.w + 8 || foot < v.y - 8 || foot > v.y + v.h + 8) return;
+      const w = Math.min(x1 - x0, H * 4);
+      if (w < 6) return;
+      const cx = (x0 + x1) / 2;
+      // bands from just above the floor line to a few below it: [dy, rows, width share, darkening]
+      const bands: [number, number, number, number][] = [[-1, 1, 0.7, 0.16], [0, 2, 1, 0.42], [2, 2, 0.74, 0.26], [4, 1, 0.42, 0.12]];
+      for (const [dy, rows, share, a] of bands) {
+        const rw = Math.max(2, Math.round((w + 6) * share));
+        out.push([Math.round(cx - rw / 2), Math.round(foot + dy), rw, rows, 1 - a * k]);
+      }
+    };
+    // stands on the ground here (not hanging, not a ledge above a drop)
+    const grounded = (x: number, y: number): boolean => Math.abs(c.groundAt(x, y - 6) - y) <= 3;
+    const px = this.room.pixel;
+    if (px) {
+      for (const p of px.props) {
+        if (p.parts.some((q) => q.ground)) continue; // decks and floors are the ground
+        const b = p.bounds();
+        if (b.y1 - b.y0 < H * 0.12 || b.x1 - b.x0 > H * 6) continue; // flat decals, facades
+        const foot = Math.round(b.y1);
+        const cx = (b.x0 + b.x1) / 2;
+        if (!grounded(cx, foot)) continue;
+        // hug the footprint: a post's base, not its lantern arm
+        const reach = Math.min(b.x1 - b.x0, Math.max(H * 0.35, (b.y1 - b.y0) * 0.6));
+        cast(cx - reach / 2, cx + reach / 2, foot);
+      }
+    }
+    for (const p of this.room.props) {
+      const b = p.bounds();
+      if (b.h < H * 0.12 || b.w > H * 6) continue;
+      const foot = Math.round(b.y + b.h);
+      if (!grounded(b.x + b.w / 2, foot)) continue;
+      cast(b.x, b.x + b.w, foot);
+    }
+    const pb = this.player.body;
+    if (pb.grounded && this.player.dead === 0 && !this.wading) cast(pb.x - H * 0.22, pb.x + H * 0.22, Math.round(pb.y), 0.8);
+    r.shade(out);
   }
 
   /** Pixel-matter layers at this point of the draw order (flushes the world batch around them). */
@@ -1181,6 +1264,7 @@ export class WorldGame {
     room.drawProps(this.canvasApi, "back", cx, reflects);
     if (!reflection) this.drawPixel(["far", "bg"], lights);
     room.drawTerrain(r, false, reflection);
+    if (!reflection) this.drawContactShadows();
     if (!reflection) room.drawProps(this.canvasApi, "decal", cx);
     room.drawProps(this.canvasApi, "middle", cx, reflects);
     if (!reflection) this.drawPixel(["mid", "decal"], lights, { particles: "solid" });
@@ -1250,8 +1334,10 @@ export class WorldGame {
     const horizon = Math.round(SCALE.viewH * 0.7);
     if (bd) {
       bd.reduced = this.reduced;
-      bd.setCamera(cx, cy);
-      bd.setWeather(this.weather.uniforms(cx, horizon), this.weather.interior || room.def.underground ? [] : this.weather.flashLights(cx));
+      // the backdrop is composed for the 1280x720 design view: where that camera stands, and where its view sits in the frame
+      const dz = this.camera.design(room.collision.bounds());
+      bd.setCamera(dz.cam[0], dz.cam[1], dz.at);
+      bd.setWeather(this.weather.uniforms(dz.cam[0], horizon), this.weather.interior || room.def.underground ? [] : this.weather.flashLights(dz.cam[0]));
       // reflection pass
       const wl = room.def.waterline;
       bd.renderReflection(
@@ -1301,6 +1387,7 @@ export class WorldGame {
     r.present({
       impact: this.feel.impact,
       zoom: closeup ? Z : punch,
+      view: this.camera.viewZoom,
       focus,
       fade: [0.02, 0.02, 0.035, Math.max(this.fade, this.player.fade)],
       bars: this.camera.bars,
@@ -1374,30 +1461,33 @@ export class WorldGame {
     const p = this.player;
     const show = p.hp < p.t.hp || p.skillCd > 0 || p.ultCd > 0;
     if (!show) return;
-    const y = Math.round(SCALE.viewH * this.camera.bars) + 12;
+    // the zoomed view is the frame's middle: keep the HUD inside it
+    const vx0 = Math.round((FRAME.w - this.camera.vw) / 2);
+    const vx1 = Math.round((FRAME.w + this.camera.vw) / 2);
+    const y = Math.round((FRAME.h - this.camera.vh) / 2 + this.camera.vh * this.camera.bars) + 12;
     const diamond = (x: number, yy: number, s: number, c: RGB, opacity = 1): void =>
       r.vfx({ type: VFX_TYPE.diamond, t: 0, seed: 0, over: 1, p0: [s, s, 0, 0], p1: [opacity, 0, 0, 0], core: c, main: c, edge: c, x, y: yy, rot: 0, sx: 1, sy: 1, ext: [-s - 1, -s - 1, s + 1, s + 1], screen: true });
-    for (let i = 0; i < p.t.hp; i++) diamond(14 + i * 11, y, 4, i < p.hp ? [0.96, 0.8, 0.42] : [0.22, 0.22, 0.3], 0.9);
+    for (let i = 0; i < p.t.hp; i++) diamond(vx0 + 14 + i * 11, y, 4, i < p.hp ? [0.96, 0.8, 0.42] : [0.22, 0.22, 0.3], 0.9);
     const pip = (x: number, cd: number, max: number): void => {
       const ready = cd <= 0;
       diamond(x, y, 4.5, ready ? [0.98, 0.86, 0.5] : [0.2, 0.2, 0.28], 0.9);
       if (!ready) r.rect(x - 5, y + 8, Math.round(11 * (1 - cd / max)), 1, [0.6, 0.55, 0.45], 1, 0.9, true);
     };
-    pip(SCALE.viewW - 34, p.skillCd, p.t.skillCooldown);
-    pip(SCALE.viewW - 16, p.ultCd, p.t.ultCooldown);
+    pip(vx1 - 34, p.skillCd, p.t.skillCooldown);
+    pip(vx1 - 16, p.ultCd, p.t.ultCooldown);
   }
 
   private drawDebug(): void {
     const r = this.r;
     const c = this.room.collision;
-    for (const s of c.solids) r.box(s.x, s.y, s.w, Math.max(1, Math.min(s.h, SCALE.viewH)), s.mover ? [1, 0.6, 0.2] : [0.3, 0.8, 1]);
+    for (const s of c.solids) r.box(s.x, s.y, s.w, Math.max(1, Math.min(s.h, FRAME.h)), s.mover ? [1, 0.6, 0.2] : [0.3, 0.8, 1]);
     for (const o of c.oneWays) r.rect(o.x, o.y, o.w, 1, [0.4, 1, 0.5]);
     for (const p of this.room.props) {
       const b = p.bounds();
       r.box(b.x, b.y, b.w, b.h, p.interaction() ? [1, 0.9, 0.3] : [0.55, 0.5, 0.7]);
     }
     for (const w of this.room.def.water ?? []) r.rect(w.x0, w.y, w.x1 - w.x0, 1, [0.3, 0.6, 1]);
-    for (const a of this.room.def.areas ?? []) r.box(a.x0, a.y0 ?? this.camera.y + 4, a.x1 - a.x0, (a.y1 ?? this.camera.y + SCALE.viewH - 4) - (a.y0 ?? this.camera.y + 4), [1, 0.5, 0.2]);
+    for (const a of this.room.def.areas ?? []) r.box(a.x0, a.y0 ?? this.camera.y + 4, a.x1 - a.x0, (a.y1 ?? this.camera.y + this.camera.vh - 4) - (a.y0 ?? this.camera.y + 4), [1, 0.5, 0.2]);
     for (const z of this.camera.zones) r.rect(z.x0, this.camera.y + 2, z.x1 - z.x0, 1, z.hold ? [0.6, 0.9, 1] : [1, 0.4, 0.8]);
     for (const hbx of this.player.hurtboxes()) r.box(hbx.x, hbx.y, hbx.w, hbx.h, [0.3, 1, 0.55]);
     for (const { box } of this.player.hitboxes()) r.box(box.x, box.y, box.w, box.h, [1, 0.2, 0.25]);
@@ -1419,7 +1509,7 @@ export class WorldGame {
     const a = this.audio.state;
     return [
       `fps ${this.fps.toFixed(0)}  frame ${this.frameMs.toFixed(2)} ms  draws ${this.r.drawCalls}+${bd?.stats.draws ?? 0}  points ${bd?.stats.points ?? 0}`,
-      `view ${SCALE.viewW}x${SCALE.viewH} @${pr.scale.toFixed(3)}x ${pr.sharp ? "sharp-bilinear" : "nearest"}  H ${SCALE.H} close-up ${SCALE.closeupH} (stand-in bbox incl. halo+glaive ${this.heights.world}/${this.heights.closeup})`,
+      `frame ${FRAME.w}x${FRAME.h} zoom ${this.camera.viewZoom.toFixed(2)} (view ${Math.round(this.camera.vw)}x${Math.round(this.camera.vh)}) @${pr.scale.toFixed(3)}x ${pr.sharp ? "sharp-bilinear" : "nearest"}  H ${SCALE.H} close-up ${SCALE.closeupH} (stand-in bbox incl. halo+glaive ${this.heights.world}/${this.heights.closeup})`,
       `room ${d.id} (${src}) ${d.w}x${d.h} (${(d.w / SCALE.H).toFixed(1)}x${(d.h / SCALE.H).toFixed(1)} H)${this.area ? `  area ${this.area.id}` : ""}  build ${this.room.buildMs} ms (backdrop ${bd?.buildMs ?? 0})  live: ${this.stream.status()}`,
       `pos ${b.x.toFixed(0)}, ${b.y.toFixed(0)} (${(b.x / SCALE.H).toFixed(2)}, ${(b.y / SCALE.H).toFixed(2)} H)${d.origin ? ` world ${(d.origin[0] + b.x / SCALE.H).toFixed(1)}, ${(d.origin[1] - b.y / SCALE.H).toFixed(1)} H` : ""}  ${b.grounded ? "ground" : "air"} on ${this.room.collision.lastSurface}${this.wading ? " (wading)" : ""}${this.sitting ? " (sitting)" : ""}  clip ${p.clip.clip.id}`,
       `camera ${this.camera.mode.mode} anchor ${this.camera.anchor.toFixed(2)}  ${this.camera.x.toFixed(0)}, ${this.camera.y.toFixed(0)}  zone ${this.camera.zoneWeight.toFixed(2)} still ${this.stillFor.toFixed(1)}  bars ${this.camera.bars.toFixed(3)}  close-up ${this.camera.closeup.toFixed(2)}${this.camera.arenaActive ? "  arena" : ""}`,
@@ -1448,6 +1538,7 @@ export class WorldGame {
       clip: this.player.clip.clip.id,
       hp: this.player.hp,
       camera: [this.camera.x, this.camera.y],
+      zoom: this.camera.viewZoom,
       cameraMode: this.camera.mode.mode,
       anchor: this.camera.anchor,
       bars: this.camera.bars,
@@ -1487,7 +1578,7 @@ export class WorldGame {
     this.area = this.findArea();
     this.lockedAt = null;
     this.camera.resetRail();
-    this.camera.mode = this.cameraFor();
+    this.applyCamera();
     this.camera.snapTo(b.x, b.y, this.player.facing, this.room.collision.bounds());
     this.weather.snap(this.program(), b.x / this.room.def.w);
     return this.state();

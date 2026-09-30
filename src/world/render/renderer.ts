@@ -3,7 +3,7 @@
 // extended for the world:
 //
 // - one GL context shared with the backdrop engine; everything lands in one
-//   world target (viewW x viewH), which the presenter shows (presenter.ts);
+//   world target (FRAME, config.ts), which the presenter shows (presenter.ts);
 // - a draw transform: zoom about a focus for the close-up overlay, and a
 //   mirror about a waterline for the reflection pass;
 // - an overlay target for the close-up path: during combat zoom the world is
@@ -17,7 +17,7 @@
 import { compile, nearestTexture, quadIndices, uniforms, type Texture } from "../../lab/engine/gl.ts";
 import { DIM_FS, FULL_VS, MAX_LIGHTS, SPRITE_FS, SPRITE_VS, VFX_FS, VFX_VS } from "../../lab/engine/shaders.ts";
 import type { Lighting, PointLight, RGB, SpriteDraw, VfxQuad } from "../../lab/engine/renderer.ts";
-import { SCALE } from "../config.ts";
+import { FRAME } from "../config.ts";
 import { Presenter, type PresentOpts } from "./presenter.ts";
 
 export type { Lighting, PointLight, RGB, SpriteDraw, VfxQuad };
@@ -63,8 +63,8 @@ export class WorldRenderer {
   readonly gl: WebGL2RenderingContext;
   /** Kept for lab code that reads it; the world has one view size. */
   mode: "near" | "far" = "near";
-  readonly iw = SCALE.viewW;
-  readonly ih = SCALE.viewH;
+  readonly iw = FRAME.w;
+  readonly ih = FRAME.h;
   camX = 0;
   camY = 0;
   lightCount = 0;
@@ -278,6 +278,31 @@ export class WorldRenderer {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     this.drawCalls++;
+  }
+
+  /**
+   * Multiply a world-space rect by `mul` (a true darken, not dithered): contact shadows. Each
+   * rect is one scissored full-frame draw, so keep them few and whole-pixel.
+   */
+  shade(rects: [number, number, number, number, number][]): void {
+    if (!rects.length) return;
+    this.flush();
+    const gl = this.gl;
+    gl.useProgram(this.dimProg);
+    gl.bindVertexArray(this.emptyVao);
+    gl.blendFunc(gl.DST_COLOR, gl.ZERO);
+    gl.enable(gl.SCISSOR_TEST);
+    for (const [x, y, w, h, m] of rects) {
+      const sx = Math.round(x) - this.camX, sy = Math.round(y) - this.camY;
+      const x0 = Math.max(0, sx), y0 = Math.max(0, sy), x1 = Math.min(this.iw, sx + Math.round(w)), y1 = Math.min(this.ih, sy + Math.round(h));
+      if (x1 <= x0 || y1 <= y0) continue;
+      gl.scissor(x0, this.ih - y1, x1 - x0, y1 - y0);
+      gl.uniform3f(this.dimU.uMul!, m, m, m);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      this.drawCalls++;
+    }
+    gl.disable(gl.SCISSOR_TEST);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
   }
 
   sprite(d: SpriteDraw): void {

@@ -5,7 +5,8 @@
 //   the rail (unlatching), then it opens; the release is saved
 //
 // Kinds (WORLD-PLAN section 1 sizes; the opening, not the frame):
-//   ordinary  1.4 x 0.7 H  plank door (lodge, archive, yard)
+//   ordinary  1.4 x 0.7 H  plank door (lodge, yard); leaf "iron": a riveted
+//                          steel door for iron and brick walls (the archive in the foundry)
 //   sky       1.4 x 0.7 H  the sky door: an ordinary door with the red mark
 //   big       4 x 2.5 H    arched double door (the chapel)
 //   gate      4 x 2.5 H    iron lift gate that slides into its post
@@ -39,8 +40,10 @@ export interface DoorParams {
   beyond: "dark" | "none";
   /** Paint the red mark on the leaf (the sky door has it on both sides). */
   mark: boolean;
-  /** Frame material. */
-  frame: "stone" | "timber";
+  /** Frame material ("iron": a riveted steel frame for industrial walls). */
+  frame: "stone" | "timber" | "iron";
+  /** Ordinary / sky doors: planks, or a riveted steel leaf that belongs in an iron or brick wall. */
+  leaf: "plank" | "iron";
   /** Blocks passage while closed (a door in a walkway); back-wall doors don't. */
   solid: boolean;
 }
@@ -130,6 +133,40 @@ function archMask(w: number, h: number): (x: number, y: number) => boolean {
   return (x, y) => t.grid.solid(x, y);
 }
 
+/** A steel leaf: two riveted plates, a wired-glass vision panel, a kick plate and a lever handle. */
+function ironLeaf(b: PartBuilder, w: number, h: number, u: (f: number) => number, seed: number): void {
+  const seam = Math.round(h * 0.46);
+  b.rect(0, 0, w, seam, { mat: "iron", profile: "bevel", r: 2, depth: 3, piece: "plateTop" });
+  b.rect(0, seam, w, h - seam, { mat: "iron", profile: "bevel", r: 2, depth: 3, tone: -1, piece: "plateLow" });
+  // rivets round each plate and along the seam
+  const edge = Math.max(3, u(0.05));
+  const rv: [number, number][] = [];
+  for (let x = edge; x < w - 2; x += u(0.11)) rv.push([x, edge], [x, seam - edge], [x, seam + edge], [x, h - edge]);
+  for (let y = edge + u(0.12); y < h - edge; y += u(0.14)) if (Math.abs(y - seam) > u(0.08)) rv.push([edge, y], [w - edge - 1, y]);
+  b.rivets(rv, { mat: "iron", r: 1, z: 3 });
+  // the vision panel: wired glass, dark behind, a lit corner
+  const vw = Math.round(w * 0.42), vh = u(0.26), vx = Math.round((w - vw) / 2), vy = u(0.2);
+  b.rect(vx - 2, vy - 2, vw + 4, vh + 4, { mat: "iron", profile: "bevel", r: 1, depth: 2, z: 2, piece: "vision" });
+  b.rect(vx, vy, vw, vh, { mat: "soot", profile: "flat", z: 3, piece: "glass" });
+  for (let x = vx + 2; x < vx + vw; x += 3) b.rect(x, vy, 1, vh, { mat: "iron", mode: "paint", tone: -1 });
+  b.rect(vx, vy, 2, 1, { mat: "iron", mode: "paint", tone: 2 });
+  // the kick plate, scuffed bright where boots meet it
+  const kh = u(0.14);
+  b.rect(1, h - kh - 1, w - 2, kh, { mat: "rust", profile: "bevel", r: 1, depth: 2, z: 2, piece: "kick" });
+  for (let k = 0; k < 5; k++) b.rect(u(0.05) + Math.floor(b.rand() * (w - u(0.15))), h - kh + 1 + Math.floor(b.rand() * (kh - 3)), u(0.06), 1, { mat: "iron", mode: "paint", tone: 1 });
+  // the lever handle and its rose on the latch side
+  const hx = w - u(0.12), hy = Math.round(h * 0.52);
+  b.circle(hx, hy, 2.2, { mat: "iron", profile: "dome", r: 2, z: 4, piece: "rose" });
+  b.rect(hx - u(0.13), hy - 1, u(0.13), 3, { mat: "iron", profile: "cylH", z: 5, piece: "lever" });
+  // rust weeping from the rivets, and grime at the foot
+  for (let k = 0; k < 6; k++) {
+    const x = Math.floor(b.rand() * (w - 2)) + 1;
+    b.rect(x, Math.floor(b.rand() * h * 0.7), 1, u(0.1 + b.rand() * 0.25), { mat: "rust", mode: "paint", tone: -1 });
+  }
+  b.speckle({ amount: 0.12, seed, tone: -1, mats: ["iron"] });
+  b.wear({ amount: 0.01, seed: seed + 3 });
+}
+
 function gateLeaf(b: PartBuilder, w: number, h: number, u: (f: number) => number): void {
   const bars = Math.round(w / u(0.2));
   for (let k = 0; k <= bars; k++) {
@@ -213,7 +250,7 @@ export const door = defineRecipe<DoorParams, Refs>({
   id: "door",
   breakage: "never",
   reason: "Ways in and on: the lodge, the archive's ordinary door, the chapel, the lift gate, the arena shutters, and the sky door whose latch is the story's shortcut home.",
-  defaults: { kind: "ordinary", latch: "none", open: false, beyond: "dark", mark: false, frame: "stone", solid: false },
+  defaults: { kind: "ordinary", latch: "none", open: false, beyond: "dark", mark: false, frame: "stone", leaf: "plank", solid: false },
   use: { reach: 0.6, prompt: "open" },
   persist: ["unlatched"],
   cues: ["door.rattle", "door.unlatch", "door.open", "door.close"],
@@ -229,7 +266,13 @@ export const door = defineRecipe<DoorParams, Refs>({
     const fx = Math.floor(FW / 2);
     // the frame (jambs, lintel or arch, a worn threshold)
     const fr = b.part("frame", { w: FW, h: FH + 3, pivot: [fx, FH], at: [0, 0], layer: "bg", z: 4, hittable: true });
-    const fm = p.frame === "timber" ? "woodDark" : "stone";
+    const fm = p.frame === "timber" ? "woodDark" : p.frame === "iron" ? "iron" : "stone";
+    // a steel frame sits in a dark reveal cut into the wall, so it reads as set into it, not stuck on
+    if (p.frame === "iron" && !big) {
+      const rv = b.part("reveal", { w: FW + 6, h: FH + 5, pivot: [fx + 3, FH + 2], at: [0, 0], layer: "bg", z: 2, hittable: false });
+      rv.rect(0, 0, FW + 6, FH + 5, { mat: "soot", profile: "flat", tone: -1 });
+      rv.rect(0, 0, FW + 6, 2, { mat: "soot", mode: "paint", tone: 1 });
+    }
     if (kind === "big") {
       fr.arch(0, 0, FW, FH, { mat: fm, profile: "bevel", r: 4, depth: 5, pointed: 0.62, piece: "frame" });
       fr.arch(jamb, lint, w, h, { mat: fm, mode: "erase", pointed: 0.62 });
@@ -243,7 +286,15 @@ export const door = defineRecipe<DoorParams, Refs>({
       fr.rect(0, 0, jamb, FH, { mat: fm, profile: "bevel", r: 3, depth: 4, piece: "jambL" });
       fr.rect(FW - jamb, 0, jamb, FH, { mat: fm, profile: "bevel", r: 3, depth: 4, piece: "jambR" });
       fr.rect(0, 0, FW, lint, { mat: fm, profile: "bevel", r: 3, depth: 5, z: 1, piece: "lintel" });
-      if (p.frame === "stone") {
+      if (p.frame === "iron") {
+        // a riveted steel frame: bolts down both jambs and along the lintel, a painted route band
+        const bolts: [number, number][] = [];
+        for (let y = lint + u(0.08); y < FH - 2; y += u(0.16)) bolts.push([Math.round(jamb / 2), y], [FW - Math.round(jamb / 2) - 1, y]);
+        for (let x = u(0.06); x < FW - 2; x += u(0.14)) bolts.push([x, Math.round(lint / 2)]);
+        fr.rivets(bolts, { mat: "iron", r: 1, z: 3 });
+        fr.rect(0, lint - 2, FW, 2, { mat: "rust", mode: "paint", tone: 0 });
+        fr.speckle({ amount: 0.1, seed: p.seed + 2, tone: -1, mats: ["iron"] });
+      } else if (p.frame === "stone") {
         for (let y = lint + u(0.3); y < FH; y += u(0.32)) {
           fr.rect(0, y, jamb, 1, { mat: fm, mode: "paint", tone: -2 });
           fr.rect(FW - jamb, y - u(0.16), jamb, 1, { mat: fm, mode: "paint", tone: -2 });
@@ -281,7 +332,8 @@ export const door = defineRecipe<DoorParams, Refs>({
       src.push(c);
     } else {
       const c = b.canvas(w, h);
-      plankLeaf(c, w, h, u, { mark: p.mark || kind === "sky", arch: false, hinge: "l", seed: p.seed, studs: false });
+      if (p.leaf === "iron") ironLeaf(c, w, h, u, p.seed);
+      else plankLeaf(c, w, h, u, { mark: p.mark || kind === "sky", arch: false, hinge: "l", seed: p.seed, studs: false });
       src.push(c);
     }
     for (const s of src) s.grid.computeNormals({ x0: 0, y0: 0, x1: s.grid.W - 1, y1: s.grid.Hh - 1 });
@@ -327,6 +379,9 @@ export const door = defineRecipe<DoorParams, Refs>({
         const latch = c.params["latch"] as DoorParams["latch"];
         if (latch === "far" && !c.data["unlatched"]) return "rattle";
         if (latch === "near" && !c.data["unlatched"]) return "unlatching";
+        // opened by your hand: once it stands open it takes you through (one E, like the lodge's
+        // doors); a door opened from elsewhere (a lever, the story) just stands open
+        c.data["carry"] = true;
         return "opening";
       },
       hit: (c, h) => doorHit(c, h.hit.dir[0], h.hit.type),
@@ -378,8 +433,10 @@ export const door = defineRecipe<DoorParams, Refs>({
       update: (c, dt) => moveStep(c, dt),
     },
     open: {
-      enter(c) {
+      enter(c, from) {
         c.refs.leaf.collide = "none";
+        if (from === "opening" && c.data["carry"]) c.emit({ type: "door", action: "enter" });
+        c.data["carry"] = false;
       },
       use(c) {
         c.emit({ type: "door", action: "enter" });

@@ -101,8 +101,10 @@ everything written in H below. Nothing in this plan is sized in raw pixels.
 That is CANON's rule from "How assets get made": chunkier pixels near, finer far. It is also what
 makes the distance read as huge.
 
-**Camera scale is locked too.** In exploration the camera never zooms, and the view is always
-16 x 9 H. Combat zoom and cut-ins use the 144 px close-up render. How the character runtime's
+**Camera scale is locked too.** (Revised 2026-10-01, Dex: the camera stands further back
+outside and zooms in indoors.) The world renders a 1536 x 864 frame; outside the whole frame shows
+(19.2 x 10.8 H), interiors zoom in until the room fills it (16 x 9 H or closer). Scenes are still
+composed at 1280 x 720 and extend past it (RUNTIME.md "Frame and zoom"). Combat zoom and cut-ins use the 144 px close-up render. How the character runtime's
 `zoom` event maps onto it belongs to the character lane (`docs/character/RUNTIME-CONTRACT.md`),
 not to this plan.
 

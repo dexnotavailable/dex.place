@@ -144,6 +144,11 @@ export interface RoomCamera {
   /** free: look ahead this many H in the direction of travel vertically (+ down). */
   lookY?: number;
   /**
+   * View zoom (config.ts ZOOM): 1 shows the whole frame; "fit" zooms in until the room (or area)
+   * fills the frame, at least ZOOM.interior. Default: "fit" in interiors, 1 outside.
+   */
+  zoom?: number | "fit";
+  /**
    * Arena clamp while the arena is active (the terminal summoning): the view stays inside x0..x1.
    * `focus` (room px): while it summons and holds its seal the view centres here (the Crown: the
    * seal ring, so the seals are seen lighting one after another), instead of the close-up on her.

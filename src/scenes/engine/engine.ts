@@ -12,7 +12,7 @@ import { buildStandin } from "./character.ts";
 import { Camera } from "./camera.ts";
 import { FlashGate } from "./flashes.ts";
 import { compile, dataTexture, freeTarget, target, uniforms, type Target, type Texture } from "./gl.ts";
-import { BLIT_FS, DEFAULT_PRELUDE, FULL_VS, HEADER, LIB, LIB_FOG, MAIN, POINT_BODY, POINT_VS } from "./glsl.ts";
+import { BLIT_FS, DEFAULT_PRELUDE, FULL_VS, HEADER, LIB, LIB_FOG, LIB_REFL, MAIN, POINT_BODY, POINT_VS } from "./glsl.ts";
 import { f } from "./layers.ts";
 import { mulberry } from "./noise.ts";
 import { buildPalette, hex, paletteDefines, type Hex, type Palette } from "./palette.ts";
@@ -204,7 +204,7 @@ export class Engine {
 
     let prelude = def.prelude ? def.prelude(ctx) : DEFAULT_PRELUDE;
     if (!/float\s+sceneLight\s*\(/.test(prelude)) prelude += DEFAULT_PRELUDE;
-    const head = [HEADER, paletteDefines(pal), LIB, fogGlsl(def.fog), LIB_FOG, prelude].join("\n");
+    const head = [HEADER, paletteDefines(pal), LIB, LIB_REFL, fogGlsl(def.fog), LIB_FOG, prelude].join("\n");
     const program = (key: string, vs: string, fs: string, name: string) => {
       let p = this.programs.get(key);
       if (!p) {

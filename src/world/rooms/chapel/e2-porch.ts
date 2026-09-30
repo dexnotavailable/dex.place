@@ -35,9 +35,9 @@ const r = new RoomBuilder({
 });
 
 // the cliff top where the path comes in, then the porch's flags
-// (both run a little past the room's edges, which the locked view shows: 1 H each side)
-r.floor(PORCH.x0 - 1.05, PORCH.front, F, { art: "rock", ramp: ["#0f0c14", "#17121d", "#211a28", "#2e2434", "#443442"], surface: "stone" });
-r.floor(PORCH.front, PORCH.x1 + 1.05, F, { art: "stone", ramp: ["#140f15", "#1f171e", "#2b2029", "#3a2c35", "#4f3d45"], surface: "stone" });
+// (both run past the room's edges, which the locked view shows: 2.6 H each side in the world's frame)
+r.floor(PORCH.x0 - 3.2, PORCH.front, F, { art: "rock", ramp: ["#0f0c14", "#17121d", "#211a28", "#2e2434", "#443442"], surface: "stone" });
+r.floor(PORCH.front, PORCH.x1 + 3.2, F, { art: "stone", ramp: ["#140f15", "#1f171e", "#2b2029", "#3a2c35", "#4f3d45"], surface: "stone" });
 
 // --- by the entrance: the font; shrine 6, the last lamp ---
 r.px("font", "porch-font", 397.6, F);

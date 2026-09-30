@@ -52,7 +52,7 @@ d3.px("stormDirector", "storm-hand", 252.5, 84, { mode: "storm" });
 
 // the arena: shutters, terminal and roster, banners, pillars, seals
 // the shutters stand open while the arena is idle; E on one steps you through it
-d3.door("shutter-w", "door", 253.05, 76, { room: "D2", spawn: "top" }, { kind: "shutter", open: true, beyond: "none", frame: "stone" }, { engine: "pixel" });
+d3.door("shutter-w", "door", 253.05, 76, { room: "D2", spawn: "top" }, { kind: "shutter", open: true, beyond: "none", frame: "iron" }, { engine: "pixel" });
 d3.px("spirePortal", "portal-w", 253.05, 76, { kind: "shutter" });
 d3.px("stormBanner", "banner-w", 254.3, 79.4, { colour: "red", length: 2.3 });
 d3.px("stormBanner", "banner-e", 256.6, 79.4, { colour: "indigo", length: 2.3 });
@@ -63,7 +63,7 @@ d3.px("pillar", "pillar-w2", 259.6, 76, { kind: "broken", height: 0.9, width: 0.
 d3.px("arenaSeals", "seals", 268, 76, { spacing: 2.5, terminal: "terminal", shutters: ["shutter-w", "shutter-e"] });
 d3.px("pillar", "pillar-e2", 274.8, 76, { kind: "broken", height: 0.9, width: 0.46, stone: "stoneDark" });
 d3.px("pillar", "pillar-e1", 276.0, 76, { kind: "round", height: 2.3, width: 0.42, stone: "stoneDark" });
-d3.door("shutter-e", "door", 278.2, 76, { room: "D3", spawn: "lift" }, { kind: "shutter", open: true, beyond: "none", frame: "stone" }, { engine: "pixel" });
+d3.door("shutter-e", "door", 278.2, 76, { room: "D3", spawn: "lift" }, { kind: "shutter", open: true, beyond: "none", frame: "iron" }, { engine: "pixel" });
 d3.px("spirePortal", "portal-e", 278.2, 76, { kind: "shutter" });
 
 // the fight floor's leavings, the rain on it, the storm's marks
@@ -79,7 +79,7 @@ d3.px("warningLight", "beacon-e", 273.6, 79.2, { mode: "blink", mount: "wall", a
 d3.px("warningLight", "beacon-lift", 283.3, 79.7, { mode: "blink", mount: "wall", arena: true, phase: 0.3 });
 
 // the lift's gate (the express stop), the express lever (S3)
-d3.door("lift-top", "door", 281.1, 76, { room: "D1", spawn: "top" }, { kind: "gate", open: true, beyond: "dark", frame: "stone" }, { engine: "pixel" });
+d3.door("lift-top", "door", 281.1, 76, { room: "D1", spawn: "top" }, { kind: "gate", open: true, beyond: "dark", frame: "iron" }, { engine: "pixel" });
 d3.px("spirePortal", "portal-lift", 281.1, 76, { kind: "gate" });
 d3.px("lever", "express-lever", 282.9, 76, { flag: "lever:express", mount: "floor" });
 

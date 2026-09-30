@@ -129,6 +129,15 @@ vec3 flashTint(vec2 s) {
 }
 `;
 
+// The reflection buffer's pixel for a screen pixel (the world draws scenes into a larger frame).
+export const LIB_REFL = /* glsl */ `
+#ifdef WORLD_FRAME
+ivec2 reflPx(float x, float y) { return ivec2(clamp(x + uFrame.x, 0.0, uFrame.z - 1.0), clamp(uFrame.w - 1.0 - y - uFrame.y, 0.0, uFrame.w - 1.0)); }
+#else
+ivec2 reflPx(float x, float y) { return ivec2(clamp(x, 0.0, uRes.x - 1.0), uRes.y - 1.0 - y); }
+#endif
+`;
+
 export const LIB_FOG = /* glsl */ `
 // base: exact layer fog (no dither, so a flat layer stays flat);
 // extra: fog that varies across the layer, stepped in 8ths with dithered edges

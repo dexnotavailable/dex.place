@@ -7,7 +7,7 @@
 // tor of stacked slabs behind the bus shelter whose shelves are the climb.
 // Sized in P (the locked player height), pixel data only.
 
-import { Pix, fbm, fbm1, hashInt, terrain } from "../../engine/index.ts";
+import { Pix, fbm, fbm1, hashInt, paintGround, rockInfo } from "../../engine/index.ts";
 import { B2, type Geo } from "./geo.ts";
 
 export interface RoadRows {
@@ -96,16 +96,18 @@ export function buildRoad(pix: Pix, g: Geo, x0: number, y0: number, r: RoadRows)
         // under it falling off into the dark with depth (so every step reads as a
         // terrace, not a black slab), broken flags of the road pressed into it
         const depthT = Math.min(1, dy / (P * 1.5));
-        const nn = fbm(x / (8 * u), y / (6 * u), 71, 3);
+        const f = rockInfo(x, y, { seed: 71, cell: Math.round(7 * u), flatten: 2, light: [-0.5, -1], base: 0.52, contrast: 0.45, cracks: 0.45 });
         if (dy === 0) s = 0.95;
         else if (dy <= n(0.03)) s = 0.78;
-        else if (nn > 0.66) {
+        else if (f.crack) {
+          row = r.earth;
+          s = 0.18 - 0.14 * depthT;
+        } else if (f.cell < 0.4) {
           row = r.stone;
-          const edge = fbm(x / (8 * u), (y - 1) / (6 * u), 71, 3) <= 0.66;
-          s = (edge ? 0.62 : 0.44) - 0.26 * depthT;
+          s = f.shade - 0.26 * depthT;
         } else {
           row = r.earth;
-          s = 0.66 - 0.5 * depthT + 0.16 * (nn - 0.5) + (hashInt(x >> 1, y >> 1, 76) < 0.12 ? -0.08 : 0);
+          s = 0.28 + f.shade * 0.45 - 0.5 * depthT;
         }
       } else if (dy === 0) s = hashInt(Math.floor(x / n(0.4)), 1, 3) < 0.15 ? 0.58 : 0.74;
       else if (dy === 1) s = 0.52;
@@ -178,8 +180,7 @@ export function buildTor(pix: Pix, g: Geo, x0: number, y0: number, r: RoadRows):
   const W2 = (px: number): number => B2.x0 + (px + x0 - g.X(B2.x0)) / P;
   const rock = r.tor ?? r.stone;
   // the core, set back: a rounded mass from the shelter up to under the summit
-  terrain(pix, {
-    row: rock,
+  paintGround(pix, {
     top: (px) => {
       const wx = W2(px);
       const t = (wx - 160.6) / 7.6;
@@ -187,15 +188,11 @@ export function buildTor(pix: Pix, g: Geo, x0: number, y0: number, r: RoadRows):
       return Y(15.0 - 10.0 * Math.pow(Math.abs(t - 0.45) * 2, 1.3) + (fbm1(wx * 1.3, 99, 3) - 0.5) * 1.6);
     },
     bottom: () => Y(4.8),
-    seed: 111,
-    scale: 16 * u,
-    chunk: 2,
-    light: [-1, -0.6],
-    base: 0.34,
-    contrast: 0.5,
-    strata: 0.4,
-    vertical: 0.2,
-    ao: 0.2,
+    rock: { seed: 111, cell: Math.round(12 * u), flatten: 1.4, light: [-1, -0.6], base: 0.34, contrast: 0.5, cracks: 0.35 },
+    row: rock,
+    lip: 0.5,
+    dark: 0.16,
+    darkDepth: 260 * u,
   });
   // the slabs, lowest first, each rounded at its corners
   TOR.forEach(([a, b, top, bot], i) => {
@@ -204,7 +201,7 @@ export function buildTor(pix: Pix, g: Geo, x0: number, y0: number, r: RoadRows):
     // bedded slabs sit nearly flat on what is under them: only their corners are worn round
     const rb = Math.min(P * 0.16, (Y(bot) - Y(top)) * 0.25, (xb - xa) * 0.15);
     const arc = (e: number, r0: number): number => (e < r0 ? r0 - Math.sqrt(Math.max(0, r0 * r0 - (r0 - e) * (r0 - e))) : 0);
-    terrain(pix, {
+    paintGround(pix, {
       row: rock,
       x0: xa,
       x1: xb,
@@ -220,17 +217,14 @@ export function buildTor(pix: Pix, g: Geo, x0: number, y0: number, r: RoadRows):
         const e = Math.min(px - xa, xb - 1 - px);
         return Y(bot) - arc(e, rb) - Math.round(Math.max(0, fbm1(px / (16 * u), 130 + i, 2) - 0.6) * P * 0.25);
       },
-      seed: 121 + i,
-      scale: 11 * u,
-      chunk: 2,
-      light: [-1, -0.7],
-      base: 0.5,
-      contrast: 0.45,
-      strata: 0.55,
-      vertical: 0.08,
-      rim: 0.45,
+      // bedded slabs: wide, flat facets lit from the sky side, a lit rim, shade gathering underneath
+      rock: { seed: 121 + i, cell: Math.round(8 * u), flatten: 2.6, light: [-1, -0.7], base: 0.5, contrast: 0.42, cracks: 0.3 },
+      lip: 0.8,
+      rim: 0.3,
       rimDepth: 3 * u,
-      ao: 0.3,
+      under: 0.26,
+      dark: 0.14,
+      darkDepth: 60 * u,
     });
     // the shelf you stand on: a flat top face exactly at the ledge's height, lit by the white
     // sky, with lichen in crusts on it

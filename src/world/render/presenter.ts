@@ -16,13 +16,15 @@
 import { compile, uniforms } from "../../lab/engine/gl.ts";
 import { FULL_VS } from "../../lab/engine/shaders.ts";
 import { presentRect } from "../../scenes/engine/scale.ts";
-import { SCALE } from "../config.ts";
+import { FRAME } from "../config.ts";
 import type { Target } from "./renderer.ts";
 
 export interface PresentOpts {
   impact: 0 | 1 | 2;
   /** World zoom (1 = none). Close-up uses CLOSEUP_ZOOM; the zoom punch a whole step. */
   zoom: number;
+  /** View zoom about the frame's centre (the camera's; 1 shows the whole frame). */
+  view: number;
   /** Low-res pixel the zoom keeps in place. */
   focus: [number, number];
   /** rgb + amount 0..1 (dithered per world pixel). */
@@ -41,6 +43,7 @@ uniform vec2 uIRes;
 uniform vec2 uCanvas;
 uniform vec4 uRect;   // x, y (top-left, device px), scale S, 1 = sharp-bilinear
 uniform vec4 uZoom;   // focus x, y (low-res px), zoom, overlay on
+uniform float uView;  // view zoom about the frame's centre
 uniform int uImpact;
 uniform vec4 uFade;
 uniform float uBars;
@@ -76,18 +79,21 @@ void main() {
   if (q0.x < 0.0 || q0.y < 0.0 || q0.x >= uIRes.x || q0.y >= uIRes.y) { o = vec4(0.0, 0.0, 0.0, 1.0); return; }
   float bar = uBars * uIRes.y;
   if (q0.y < bar || q0.y >= uIRes.y - bar) { o = vec4(0.0, 0.0, 0.0, 1.0); return; }
+  // the view zoom first (about the frame's centre), then the close-up / punch zoom about its focus
+  vec2 q1 = uIRes * 0.5 + (q0 - uIRes * 0.5) / uView;
   float Z = uZoom.z;
-  vec2 q = uZoom.xy + (q0 - uZoom.xy) / Z;
-  float sc = S * Z;
+  vec2 q = uZoom.xy + (q1 - uZoom.xy) / Z;
+  float sc = S * uView * Z;
   // whole-number effective scale: plain nearest; otherwise sharp-bilinear
   bool sharp = abs(sc - floor(sc + 0.5)) > 1e-3;
   vec3 c = samp(uScene, q, sc, sharp).rgb;
   vec2 art = floor(q);
   if (uZoom.w > 0.5) {
-    bool sharpO = abs(S - floor(S + 0.5)) > 1e-3;
-    vec4 ov = samp(uOver, q0, S, sharpO);
+    float so = S * uView;
+    bool sharpO = abs(so - floor(so + 0.5)) > 1e-3;
+    vec4 ov = samp(uOver, q1, so, sharpO);
     c = c * (1.0 - ov.a) + ov.rgb;
-    art = floor(q0);
+    art = floor(q1);
   }
   if (uImpact == 1) c = vec3(1.0) - c;
   else if (uImpact == 2) {
@@ -111,7 +117,7 @@ export class Presenter {
     this.u = uniforms(gl, this.prog);
   }
 
-  /** Touch gutters affect only presentation; the world target stays 1280x720. */
+  /** Touch gutters affect only presentation; the world target stays FRAME. */
   setHorizontalInsets(left: number, right: number): boolean {
     left = Math.max(0, Math.round(left)); right = Math.max(0, Math.round(right));
     if (left === this.leftInset && right === this.rightInset) return false;
@@ -123,7 +129,7 @@ export class Presenter {
   layout(cw: number, ch: number): void {
     const left = Math.min(this.leftInset, Math.max(0, cw - 1));
     const right = Math.min(this.rightInset, Math.max(0, cw - left - 1));
-    const r = presentRect(cw - left - right, ch, SCALE.viewW, SCALE.viewH, "auto");
+    const r = presentRect(cw - left - right, ch, FRAME.w, FRAME.h, "auto");
     // presentRect is bottom-left based; the shader works top-left
     this.rect = { x: r.x + left, y: ch - (r.y + r.h), scale: r.scale, sharp: r.sharp, w: r.w, h: r.h };
   }
@@ -142,11 +148,12 @@ export class Presenter {
     const u = this.u;
     gl.uniform1i(u.uScene!, 0);
     gl.uniform1i(u.uOver!, 1);
-    gl.uniform2f(u.uIRes!, SCALE.viewW, SCALE.viewH);
+    gl.uniform2f(u.uIRes!, FRAME.w, FRAME.h);
     gl.uniform2f(u.uCanvas!, cw, ch);
     const r = this.rect;
     gl.uniform4f(u.uRect!, r.x, r.y, r.scale, r.sharp ? 1 : 0);
     gl.uniform4f(u.uZoom!, o.focus[0], o.focus[1], Math.max(1, o.zoom), over ? 1 : 0);
+    gl.uniform1f(u.uView!, Math.max(1, o.view));
     gl.uniform1i(u.uImpact!, o.impact);
     gl.uniform4fv(u.uFade!, o.fade);
     gl.uniform1f(u.uBars!, o.bars);

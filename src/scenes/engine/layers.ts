@@ -364,7 +364,7 @@ vec4 layer(vec2 p, vec2 s) {
   float amp = mix(0.6, ${f(o.rippleAmp ?? 3)}, k);
   float ph = s.y * (1.3 - k * 0.8) + tm * ${f(o.rippleSpeed ?? 0.9)} + vnoise(vec2(wp.x / 37.0, s.y * 0.35)) * 5.0;
   float dx = floor(sin(ph) * amp * (0.55 + 0.45 * vnoise(vec2(wp.x / 21.0 + tm * 0.15, s.y * 0.6))) + 0.5);
-  ivec2 rp = ivec2(clamp(s.x + dx, 0.0, uRes.x - 1.0), uRes.y - 1.0 - s.y);
+  ivec2 rp = reflPx(s.x + dx, s.y);
   vec3 refl = texelFetch(uRefl, rp, 0).rgb;
   float rl = stepd(mix(${f(o.reflFar ?? 0.85)}, ${f(o.reflNear ?? 0.45)}, pow(k, 0.7)), 5.0, wp, ${f(o.waterDither ?? 0.9)});
   vec3 body = ramp(${rowRef(o.row)}, mix(0.62, 0.05, pow(k, 0.6)), wp, ${f(o.waterDither ?? 0.9)});

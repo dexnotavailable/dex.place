@@ -63,7 +63,8 @@ px(b, "grass", "landing-grass", LANDING + 0.1, 3.1, { kind: "grass", width: 0.9,
 px(b, "grass", "shelf-grass", 43.1, 6, { kind: "flowers", width: 1.4, height: 0.22 });
 px(b, "rubble", "stair-rubble", 34.95, 0.3, { kind: "stone", width: 0.6, height: 0.22 });
 // the lodge on its shelf: its end wall and the front door
-px(b, "lodgeFacade", "lodge-facade-west", 45.2, 6, { width: 3.2, height: 4.3, side: 1, windowAt: 0.45 });
+// the lodge runs on east past the frame's edge (its interior is A3)
+px(b, "lodgeFacade", "lodge-facade-west", 45.2, 6, { width: 5.4, height: 4.3, side: 1, windowAt: 0.27 });
 px(b, "lodgeDoor", "lodge-front-out", 45.6, 6, { kind: "ordinary", frame: "timber" });
 b.doors["lodge-front-out"] = { room: "A3", spawn: "front" };
 b.prop(
@@ -87,7 +88,7 @@ b.exit("left", "A1", "east", -0.5, 2);
 const RY = (wy: number): number => h(TOP - wy);
 const cliff: CliffSpec = {
   ox: Math.round((SCALE.viewW - h(X1 - X0)) / 2),
-  tops: [[h(0), h(35.2 - X0), RY(0.3)], ...steps, [h(LANDING - X0), h(LANDING + 1.3 - X0), RY(3.1)], [h(x - X0), h(48.5 - X0), RY(6.0)]],
+  tops: [[h(0), h(35.2 - X0), RY(0.3)], ...steps, [h(LANDING - X0), h(LANDING + 1.3 - X0), RY(3.1)], [h(x - X0), h(X1 + 3.5 - X0), RY(6.0)]],
   steps,
   water: RY(0.025),
   boardwalk: [h(-0.05), RY(0.1)],

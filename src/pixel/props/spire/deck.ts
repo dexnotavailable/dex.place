@@ -21,8 +21,8 @@ export interface DeckParams {
   depth: number;
   /** "catwalk" (truss under), "landing" (deep plate), "arena" (plate with a wide inlaid band). */
   kind: "catwalk" | "landing" | "arena";
-  /** Which end carries the 0.3 H lip. */
-  lip: "west" | "east" | "none";
+  /** Which end carries the 0.3 H lip ("both": a landing with two open ends). */
+  lip: "west" | "east" | "both" | "none";
 }
 
 const LIP_H = 0.3;
@@ -119,9 +119,10 @@ export const spireDeck = defineRecipe<DeckParams, { head: number }>({
       f.rect(x, top + plate, 1, Math.round(D * (0.3 + b.rand() * 0.6)), { mat: "rust", mode: "paint", tone: -1 });
     }
     // the lip at the open end, painted with the route's red (its own part: the deck needs no headroom for it)
-    if (p.lip !== "none") {
+    const ends = p.lip === "both" ? (["west", "east"] as const) : p.lip === "none" ? [] : [p.lip];
+    for (const end of ends) {
       const lw = u(LIP_W);
-      const lp = b.part("lip", { w: lw, h: lipH + plate, pivot: [0, lipH], at: [p.lip === "west" ? 0 : W - lw, 0], layer: "mid", collide: "none", z: -4 });
+      const lp = b.part(ends.length > 1 ? `lip-${end}` : "lip", { w: lw, h: lipH + plate, pivot: [0, lipH], at: [end === "west" ? 0 : W - lw, 0], layer: "mid", collide: "none", z: -4 });
       lp.rect(0, 0, lw, lipH + plate, { mat: "spireIron", profile: "bevel", r: 2, depth: 4, z: 4 });
       lp.rect(0, 0, lw, 1, { mat: "spireIron", mode: "paint", tone: 1 });
       lp.rect(2, 4, lw - 4, Math.round(lipH * 0.4), { mat: "routeRed", mode: "paint", tone: 0 });

@@ -27,6 +27,7 @@
 import { PixelRenderer, PixelWorld, LAB_LIGHTING, presetHit, type Hit, type HitType, type LayerName, type PointLight, type Prop as PxProp, type Recipe, type WorldEvent, type Lighting as PxLighting } from "../../pixel/index.ts";
 import { findRecipe } from "../../pixel/registry.ts";
 import type { Lighting } from "../render/renderer.ts";
+import { FRAME } from "../config.ts";
 
 type AnyRecipe = Recipe<object, unknown>;
 
@@ -64,7 +65,7 @@ export class PixelDraw {
   readonly pr: PixelRenderer;
   private io: Internals;
   constructor(canvas: HTMLCanvasElement, private gl: WebGL2RenderingContext) {
-    this.pr = new PixelRenderer(canvas);
+    this.pr = new PixelRenderer(canvas, FRAME.w, FRAME.h);
     if (this.pr.gl !== gl) throw new Error("pixel adapter: the pixel renderer did not get the world's WebGL2 context");
     this.io = this.pr as unknown as Internals;
     for (const k of ["syncMaterials", "useCell", "drawPart", "drawGlows", "drawParticles"] as const)

@@ -12,18 +12,26 @@
 //   (the world's own sprites, mirrored) before water samples it;
 // - weather reaches every layer through uWx / uWx2 uniforms, and extra flash
 //   lights (lightning) are merged into the scene's flash lights;
-// - a "mul" blend for a flat multiply grade (storm darkening), no dither.
+// - a "mul" blend for a flat multiply grade (storm darkening), no dither;
+// - the frame: the world renders into FRAME (config.ts), larger than the 1280x720
+//   design view a scene is composed in. The design view sits inside it at `at`
+//   (camera.design()); layers are evaluated over the whole frame, so a scene
+//   simply continues past its old edges (textures are built MARGIN wider).
 //
 // Scene files written for /scenes/ build here unchanged.
 
 import { dataTexture, uniforms, type Texture } from "../../scenes/engine/gl.ts";
-import { DEFAULT_PRELUDE, FULL_VS, HEADER, LIB, LIB_FOG, MAIN as SCENE_MAIN, POINT_BODY, POINT_VS } from "../../scenes/engine/glsl.ts";
+import { DEFAULT_PRELUDE, FULL_VS, HEADER, LIB, LIB_FOG, LIB_REFL, MAIN as SCENE_MAIN, POINT_BODY, POINT_VS } from "../../scenes/engine/glsl.ts";
 import { f } from "../../scenes/engine/layers.ts";
 import { mulberry } from "../../scenes/engine/noise.ts";
 import { buildPalette, hex, paletteDefines, type Hex, type Palette } from "../../scenes/engine/palette.ts";
 import { SCALE, playerPx } from "../../scenes/engine/scale.ts";
 import type { BuildCtx, FogSpec, LayerDef, LightOut, SceneDef, SimEnv } from "../../scenes/engine/types.ts";
 import { makeTarget, type Target } from "../render/renderer.ts";
+import { FRAME } from "../config.ts";
+
+/** Extra texture width per side so pan layers cover the frame past the design view. */
+const MARGIN = Math.ceil((FRAME.w - SCALE.view.w) / 2) + 32;
 
 /** Uniforms every world layer can read (weather, wind, time of day). */
 export const WORLD_UNIFORMS = /* glsl */ `
@@ -32,6 +40,8 @@ uniform vec4 uWx2;  // lightning flash 0..1, world seconds, overcast 0..1, after
 uniform vec2 uVOff; // this layer's whole-pixel vertical parallax offset
 uniform vec4 uBolt; // lightning bolt: screen x, seed, level 0..1, bottom row
 uniform float uCamY; // the camera's vertical offset from the room's reference framing, times the vertical factor
+uniform vec4 uFrame; // where the design view sits in the frame (x, y from its top-left), frame w, h
+#define WORLD_FRAME 1
 float vOff(float depth) { return depth > 1e6 ? 0.0 : floor(uCamY / depth + 0.5); }
 `;
 
@@ -40,8 +50,17 @@ float vOff(float depth) { return depth > 1e6 ? 0.0 : floor(uCamY / depth + 0.5);
 // later changes there carry over.
 const MAIN = ((): string => {
   const from = "vec2 p = s + uOff;";
-  if (!SCENE_MAIN.includes(from)) throw new Error("world backdrop: the scene engine's MAIN changed; update src/world/backdrop/engine.ts");
-  return SCENE_MAIN.replace(from, "vec2 p = s + vec2(uOff.x, uVOff.y);");
+  const fromS = "vec2 s = vec2(floor(gl_FragCoord.x), uRes.y - 1.0 - floor(gl_FragCoord.y));";
+  if (!SCENE_MAIN.includes(from) || !SCENE_MAIN.includes(fromS)) throw new Error("world backdrop: the scene engine's MAIN changed; update src/world/backdrop/engine.ts");
+  // s stays in design-view px (0..1280 x 0..720 inside the design view, beyond it in the frame's margins)
+  return SCENE_MAIN.replace(fromS, "vec2 s = vec2(floor(gl_FragCoord.x) - uFrame.x, uFrame.w - 1.0 - floor(gl_FragCoord.y) - uFrame.y);").replace(from, "vec2 p = s + vec2(uOff.x, uVOff.y);");
+})();
+
+/** Point sprites placed in the frame (the scene engine's POINT_VS maps design px to its own target). */
+const WORLD_POINT_VS = ((): string => {
+  const from = "gl_Position = vec4(c.x / uRes.x * 2.0 - 1.0, 1.0 - c.y / uRes.y * 2.0, 0.0, 1.0);";
+  if (!POINT_VS.includes(from)) throw new Error("world backdrop: the scene engine's POINT_VS changed; update src/world/backdrop/engine.ts");
+  return POINT_VS.replace("uniform vec2 uRes;", "uniform vec2 uRes;\nuniform vec4 uFrame;").replace(from, "vec2 fc = c + uFrame.xy;\n  gl_Position = vec4(fc.x / uFrame.z * 2.0 - 1.0, 1.0 - fc.y / uFrame.w * 2.0, 0.0, 1.0);");
 })();
 
 const PIX_BODY = (twinkle: number): string => /* glsl */ `
@@ -137,6 +156,8 @@ export class Backdrop {
   readonly span: number;
   camX = 0;
   camY = 0;
+  /** Where the design view sits in the frame (px from the frame's top-left). */
+  frameAt: [number, number] = [0, 0];
   time = 0;
   reduced = false;
   buildMs = 0;
@@ -177,7 +198,7 @@ export class Backdrop {
     this.W = o.W;
     this.H = o.H;
     this.span = Math.max(0, Math.round(o.span));
-    this.refl = makeTarget(gl, o.W, o.H);
+    this.refl = makeTarget(gl, FRAME.w, FRAME.h);
     this.pointVao = gl.createVertexArray()!;
     this.pointBuf = gl.createBuffer()!;
     gl.bindVertexArray(this.pointVao);
@@ -210,7 +231,7 @@ export class Backdrop {
         return r;
       },
       par: (d) => (Number.isFinite(d) ? 1 / d : 0),
-      panWidth: (d) => W + Math.ceil(span * (Number.isFinite(d) ? 1 / d : 0)) + 2,
+      panWidth: (d) => W + 2 * MARGIN + Math.ceil(span * (Number.isFinite(d) ? 1 / d : 0)) + 2,
       fogAt: (d) => this.fogAt(d),
       rng,
     };
@@ -218,7 +239,7 @@ export class Backdrop {
 
     let prelude = def.prelude ? def.prelude(ctx) : DEFAULT_PRELUDE;
     if (!/float\s+sceneLight\s*\(/.test(prelude)) prelude += DEFAULT_PRELUDE;
-    const head = [HEADER, WORLD_UNIFORMS, paletteDefines(pal), LIB, fogGlsl(def.fog), LIB_FOG, prelude].join("\n");
+    const head = [HEADER, WORLD_UNIFORMS, paletteDefines(pal), LIB, LIB_REFL, fogGlsl(def.fog), LIB_FOG, prelude].join("\n");
     // shaders start compiling now and finish in the background (ready() polls them)
     const program = (key: string, vsSrc: string, fsSrc: string, name: string): Prog => {
       let p = this.programs.get(key);
@@ -250,7 +271,7 @@ export class Backdrop {
       const fog = l.fog ?? this.fogAt(l.depth);
       const base = { origin: [0, 0] as [number, number], repeat: false, fog, baseOpacity: l.opacity ?? 1, pass };
       if (l.kind === "points") {
-        this.layers.push({ def: l, p: program("points", POINT_VS, `${head}\n${POINT_BODY}`, l.name), ...base });
+        this.layers.push({ def: l, p: program("points", WORLD_POINT_VS, `${head}\n${POINT_BODY}`, l.name), ...base });
         return;
       }
       if (l.kind === "glsl") {
@@ -341,10 +362,14 @@ export class Backdrop {
     return Math.floor((this.camY * this.o.vertical) / depth + 0.5);
   }
 
-  /** Camera: x = world camera left edge (0..span), y = vertical offset from the reference framing. */
-  setCamera(x: number, y: number): void {
+  /**
+   * Camera: x = the design camera's left edge (0..span), y = vertical offset from the reference
+   * framing; `at`: where that design view sits in the frame (camera.design()).
+   */
+  setCamera(x: number, y: number, at: [number, number] = [0, 0]): void {
     this.camX = Math.min(this.span, Math.max(0, x));
     this.camY = y;
+    this.frameAt = at;
   }
 
   setWeather(w: WeatherUniforms, lights: LightOut[]): void {
@@ -397,7 +422,7 @@ export class Backdrop {
     const gl = this.gl;
     this.gatherLights();
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.refl.fbo);
-    gl.viewport(0, 0, this.W, this.H);
+    gl.viewport(0, 0, FRAME.w, FRAME.h);
     gl.disable(gl.SCISSOR_TEST);
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -417,7 +442,7 @@ export class Backdrop {
       this.gatherLights();
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
-    gl.viewport(0, 0, this.W, this.H);
+    gl.viewport(0, 0, FRAME.w, FRAME.h);
     gl.disable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     for (const l of this.layers) if (this.passOf(l) === pass) this.draw(l, -1);
@@ -445,6 +470,7 @@ export class Backdrop {
       if (loc) gl.uniform2f(loc, a, b);
     };
     s2("uRes", this.W, this.H);
+    if (u.uFrame) gl.uniform4f(u.uFrame, this.frameAt[0], this.frameAt[1], FRAME.w, FRAME.h);
     s2("uOff", off, 0);
     s2("uVOff", 0, offY);
     s1("uCamY", this.camY * this.o.vertical);
@@ -527,8 +553,9 @@ export class Backdrop {
       gl.disable(gl.SCISSOR_TEST);
       return true;
     }
-    const x0 = Math.max(0, Math.floor(b.x0 - off));
-    const x1 = Math.min(this.W, Math.ceil(b.x1 - off));
+    const [ax, ay] = this.frameAt;
+    const x0 = Math.max(0, Math.floor(b.x0 - off) + ax);
+    const x1 = Math.min(FRAME.w, Math.ceil(b.x1 - off) + ax);
     let y0 = b.y0 - offY;
     let y1 = b.y1 - offY;
     if (mirror >= 0) {
@@ -537,11 +564,11 @@ export class Backdrop {
       y0 = Math.max(m0, mirror);
       y1 = m1 + 1;
     }
-    const sy0 = Math.max(0, Math.floor(y0));
-    const sy1 = Math.min(this.H, Math.ceil(y1));
+    const sy0 = Math.max(0, Math.floor(y0) + ay);
+    const sy1 = Math.min(FRAME.h, Math.ceil(y1) + ay);
     if (x1 <= x0 || sy1 <= sy0) return false;
     gl.enable(gl.SCISSOR_TEST);
-    gl.scissor(x0, this.H - sy1, x1 - x0, sy1 - sy0);
+    gl.scissor(x0, FRAME.h - sy1, x1 - x0, sy1 - sy0);
     return true;
   }
 

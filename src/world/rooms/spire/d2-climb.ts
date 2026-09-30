@@ -39,9 +39,12 @@ const d2 = new Spire({
 const H80 = 80;
 
 // ---------------------------------------------------------------------------------
-// The landing at the break (y 40): where the lift's gate lets you out.
+// The landing at the break (y 40): where the lift's gate lets you out. Both its ends carry the
+// 0.3 H lip, so walking to either end stops you there instead of dropping you into the void.
 d2.floor(248, 284, 40, 2.2);
-d2.px("spireDeck", "landing", 248, 40, { width: 36 * H80, depth: 0.9, kind: "landing", lip: "none" });
+d2.block(248, 248.22, 40.3, 39.8, { surface: "metal", art: "none" });
+d2.block(283.78, 284, 40.3, 39.8, { surface: "metal", art: "none" });
+d2.px("spireDeck", "landing", 248, 40, { width: 36 * H80, depth: 0.9, kind: "landing", lip: "both" });
 
 /** A flight up from a catwalk at `y`, starting at x, going `dir`: two 0.8 H housings, then 22 steps to y + 6. */
 const flight = (id: string, x: number, y: number, dir: 1 | -1): void => {
@@ -84,7 +87,7 @@ d2.pit(246, 256, 38.5);
 // The storm (driver + gust decks, and its hand on the props), the lift gate, shrine 4.
 d2.prop("spire-storm", "storm", 247, 80, { decks: d2.decks, strength: 1 }, { engine: "stub" });
 d2.px("stormDirector", "storm-hand", 247, 80, { mode: "storm" });
-d2.door("lift-gate-d2", "door", 267.2, 40, { room: "D1", spawn: "break" }, { kind: "gate", open: true, beyond: "dark", frame: "stone" }, { engine: "pixel" });
+d2.door("lift-gate-d2", "door", 267.2, 40, { room: "D1", spawn: "break" }, { kind: "gate", open: true, beyond: "dark", frame: "iron" }, { engine: "pixel" });
 d2.px("spirePortal", "portal-lift", 267.2, 40, { kind: "gate" });
 
 // shrine 4 (the storm alcove): the recess, lantern, donation box and plaque, bench, candles, the window

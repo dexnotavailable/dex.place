@@ -32,7 +32,8 @@ const b = new Box({
   top: TOP,
   bottom: BOTTOM,
   mood: "archive",
-  camera: { mode: "rail", anchor: 0.64 },
+  // a reading room under the market: zoomed in like an interior (config.ts ZOOM)
+  camera: { mode: "rail", anchor: 0.64, zoom: "fit" },
   audio: { music: "theme", bed: "archive", silent: true, weatherThrough: 0, surface: "rug" },
   weather: { state: "serene", time: "day" },
   neighbours: ["C1"],

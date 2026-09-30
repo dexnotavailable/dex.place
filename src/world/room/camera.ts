@@ -1,8 +1,8 @@
 // World camera. Follows the player like the old site did, at the new scale:
 // a look-ahead toward the way she faces (she sits a little behind centre),
 // feet low in the frame with the sky above, a vertical dead zone so small
-// hops don't bob the view, clamped to the room. The camera never zooms while
-// exploring; the view is always 16 x 9 H.
+// hops don't bob the view, clamped to the room. Outside, the view is the whole
+// frame (19.2 x 10.8 H); interiors zoom in (viewZoom, set per room or area).
 //
 // Modes (WORLD-PLAN section 1), per room and per area:
 //   locked  the room (or area) fits one screen and the view doesn't move
@@ -17,8 +17,14 @@
 // combat and hands the player to the 144 px render path (game.ts).
 //
 // Its position is float; what the renderer sees is whole pixels.
+//
+// View zoom: the world renders into FRAME (1536x864); `viewZoom` 1 shows all of it
+// (outside), more zooms in about its centre (interiors). x, y and the clamp
+// are for the zoomed view (vw x vh); view() returns the frame's top-left.
+// design() is where the old 1280x720 camera would stand for this view, which
+// is what backdrops (composed at 1280x720) are drawn with.
 
-import { CAMERA, CLOSEUP_ZOOM, PRESENT, SCALE } from "../config.ts";
+import { CAMERA, CLOSEUP_ZOOM, FRAME, PRESENT, SCALE } from "../config.ts";
 import type { RoomCamera } from "./types.ts";
 
 export interface FramingZone {
@@ -73,8 +79,15 @@ export class WorldCamera {
   override: { cx: number; cy?: number; bars?: number } | null = null;
   /** The rail row for the current room (set on snap unless the room gives one). */
   private railRow: number | null = null;
-  private vw = SCALE.viewW;
-  private vh = SCALE.viewH;
+  /** View zoom (1 = the whole frame), easing to viewZoomTarget; the game sets the target per room or area. */
+  viewZoom = 1;
+  viewZoomTarget = 1;
+  get vw(): number {
+    return FRAME.w / this.viewZoom;
+  }
+  get vh(): number {
+    return FRAME.h / this.viewZoom;
+  }
 
   get anchor(): number {
     return this.mode.anchor ?? CAMERA.anchorY;
@@ -135,6 +148,7 @@ export class WorldCamera {
   }
 
   snapTo(tx: number, ty: number, facing: number, bounds: [number, number, number, number]): void {
+    this.viewZoom = this.viewZoomTarget;
     this.look = facing * this.vw * CAMERA.lookahead * 0.5;
     this.lookV = 0;
     const [gx, gy] = this.target(tx, ty, bounds);
@@ -146,6 +160,9 @@ export class WorldCamera {
 
   /** One real-time tick (runs through hitstop so shake keeps going). */
   update(tx: number, ty: number, facing: number, bounds: [number, number, number, number], moving: boolean, vy = 0): void {
+    // an area with its own zoom eases into it (a room change snaps, behind the door fade)
+    this.viewZoom += (this.viewZoomTarget - this.viewZoom) * (this.reducedMotion ? 1 : 0.05);
+    if (Math.abs(this.viewZoomTarget - this.viewZoom) < 0.002) this.viewZoom = this.viewZoomTarget;
     const wantLook = this.mode.mode === "locked" ? 0 : facing * this.vw * CAMERA.lookahead * (moving ? 1 : 0.5);
     this.look += (wantLook - this.look) * CAMERA.lookaheadRate;
     const wantV = this.mode.mode === "free" && this.mode.lookY ? Math.sign(vy) * Math.min(1, Math.abs(vy) / 4) * this.mode.lookY * SCALE.H : 0;
@@ -191,7 +208,9 @@ export class WorldCamera {
       x1 = Math.min(x1, a.x1);
     }
     this.x = x1 - x0 <= this.vw ? (x0 + x1 - this.vw) / 2 : Math.min(Math.max(this.x, x0), x1 - this.vw);
-    this.y = y1 - y0 <= this.vh ? (y0 + y1 - this.vh) / 2 : Math.min(Math.max(this.y, y0), y1 - this.vh);
+    // a room shorter than the view: outside, it sits on the frame's bottom (the extra is sky);
+    // zoomed in (inside), it centres
+    this.y = y1 - y0 <= this.vh ? (this.viewZoom > 1.001 ? (y0 + y1 - this.vh) / 2 : y1 - this.vh) : Math.min(Math.max(this.y, y0), y1 - this.vh);
   }
 
   shake(amplitude: number, duration: number): void {
@@ -218,9 +237,25 @@ export class WorldCamera {
     return 1 + (CAMERA_ZOOM - 1) * this.closeup;
   }
 
-  /** Integer view origin for this frame. */
+  /** Integer origin (top-left, room px) of the whole frame the renderer draws. */
   view(): [number, number] {
-    return [Math.round(this.x) + this.offX, Math.round(this.y) + this.offY];
+    return [Math.round(this.x - (FRAME.w - this.vw) / 2) + this.offX, Math.round(this.y - (FRAME.h - this.vh) / 2) + this.offY];
+  }
+
+  /**
+   * Where the design camera (1280x720, what scenes and rooms were composed with) stands for
+   * this frame, clamped the way it always was (so a backdrop's player-plane layers stay on the
+   * room's geometry), and where that design view sits inside the frame (px from its top-left).
+   * Short rooms keep the design view at the frame's bottom, so the extra height is sky.
+   */
+  design(b: [number, number, number, number]): { cam: [number, number]; at: [number, number] } {
+    const [fx, fy] = this.view();
+    const [x0, y0, x1, y1] = b;
+    const dw = SCALE.viewW;
+    const dh = SCALE.viewH;
+    const cx = x1 - x0 <= dw ? Math.round((x0 + x1 - dw) / 2) : Math.round(Math.min(Math.max(fx + (FRAME.w - dw) / 2, x0), x1 - dw));
+    const cy = y1 - y0 <= dh ? Math.round((y0 + y1 - dh) / 2) : Math.round(Math.min(Math.max(fy + (FRAME.h - dh), y0), y1 - dh));
+    return { cam: [cx, cy], at: [cx - fx, cy - fy] };
   }
 }
 

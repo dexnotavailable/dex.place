@@ -84,7 +84,8 @@ b.prop("hearthFire", "hearth-3", 217.7, STREET, { width: 1.2 }, px);
 b.spawn("shrine", 211.4, STREET, 1);
 
 // --- the archive door in the back alley: an ordinary door, a small lamp above, the book mark ----
-b.prop("door", "archive-door", 232, STREET, { kind: "ordinary", frame: "stone" }, px);
+// a steel door in the brick and iron of the foundry, not a cottage plank door (it opens the same)
+b.prop("door", "archive-door", 232, STREET, { kind: "ordinary", frame: "iron", leaf: "iron" }, px);
 b.doors["archive-door"] = { room: "C2", spawn: "door" };
 b.prop("neonGlyph", "archive-mark", 232, STREET + 1.78, { kind: "book", colour: "amber" }, px);
 b.prop("marketLantern", "archive-lamp", 231.2, WALK - 0.3, { kind: "iron", drop: 0.9 }, px);

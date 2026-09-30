@@ -4,7 +4,7 @@
 // and the earth bank up to the causeway. Sized in H (P, the locked player
 // height), pixel data only: shade + ramp per texel, lit live by sceneLight().
 
-import { Pix, fbm, fbm1, hashInt } from "../../engine/index.ts";
+import { Pix, fbm, fbm1, hashInt, rockInfo } from "../../engine/index.ts";
 import { B1, type Geo } from "./geo.ts";
 
 export interface ShoreRows {
@@ -52,18 +52,18 @@ export function buildShore(pix: Pix, g: Geo, x0: number, y0: number, r: ShoreRow
     else if (inC === 1) s += 0.06;
     return [s, r.stone];
   };
-  /** The embankment under the stair: packed earth, bedded rocks with lit tops, grass in patches, darker toward the water. */
+  /**
+   * The embankment under the stair: bedded rocks (lit facets, cracks) packed in dark earth, moss
+   * in the seams higher up, all darker and wetter toward the water. Facets, not noise blobs.
+   */
   const bank = (x: number, y: number): [number, number] => {
-    const n1 = fbm(x / (9 * u), y / (7 * u), 61, 3);
-    const n2 = fbm(x / (16 * u), y / (10 * u), 62, 2);
     const wet = Math.min(1, Math.max(0, 1 - (wl - y) / (P * 1.2)));
-    if (n1 > 0.66) {
-      // a bedded rock: its upper edge catches the light
-      const up = fbm(x / (9 * u), (y - 1) / (7 * u), 61, 3) <= 0.66;
-      return [(up ? 0.5 : 0.24) - 0.1 * wet, r.stone];
-    }
-    if (n2 > 0.62 && wet < 0.5) return [0.16 + (hashInt(x, y, 63) < 0.15 ? 0.14 : 0), r.moss];
-    return [0.12 + 0.1 * (n1 - 0.5) + (hashInt(x >> 1, y >> 1, 64) < 0.06 ? 0.08 : 0) - 0.06 * wet, r.earth];
+    const f = rockInfo(x, y, { seed: 61, cell: Math.round(8 * u), flatten: 1.6, light: [0.6, -1], base: 0.36, contrast: 0.5, cracks: 0.5 });
+    if (f.crack) return [0.06, r.earth];
+    const moss = fbm(x / (16 * u), y / (10 * u), 62, 2) > 0.6 && wet < 0.4;
+    if (f.cell < 0.58) return [f.shade - 0.12 * wet, r.stone];
+    if (moss) return [0.18 + f.shade * 0.3, r.moss];
+    return [0.1 + f.shade * 0.22 - 0.05 * wet, r.earth];
   };
 
 
