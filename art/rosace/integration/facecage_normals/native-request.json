@@ -1,0 +1,18 @@
+{
+  "id": "rosace-fc1-normal-cause-probe-20260930",
+  "owner": "rosace",
+  "stage": 2,
+  "nativeExecutor": "delivery",
+  "sourceBase": "bd94059a13d5becd68b80c0d219fdb6ad1d989f9",
+  "failedNativeReceipt": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/lanes/delivery/rosace-facecage1/native-render.json",
+  "entry": "art/rosace/integration/facecage_normals/probe.py",
+  "outputRelative": "review/rosace/integration/facecage_normals/native-20260930",
+  "args": ["--out", "<executing-worktree>/<outputRelative>"],
+  "newImages": 0,
+  "cases": ["copy-only", "copy-update-only", "zero-deformation-normal-roundtrip", "deformation-old-encoded-normals", "deformation-transport-and-roundtrip"],
+  "purpose": "diagnose actual FC1 protected decoded-normal failure without a new candidate render",
+  "requiredEvidence": ["all exact mismatching corner/vertex indices", "before/after decoded vectors and encoded typed payloads", "neck weight/support/height/crown/back/zero-displacement classifications", "incident faces and adjacent deformed source vertices", "component and angular deltas, including zero-length cases", "actual normal attribute schema and exact original/canonical preservation"],
+  "admission": "independent source review plus exact head/scoped/effective source SHA in STAGE2-FC1-NORMAL-PROBE-READY before sole delivery native lease",
+  "guardPolicy": "existing FC1 guard remains unchanged and its failed bytes retained. Diagnostic reports hypothetical guard failures, never approves them. No tolerance waiver, rig edit, source mesh mutation, normal rebuild on canonical data, saved blend, model run, GPU render, art promotion or critic wave.",
+  "next": "compare copy/update versus zero-roundtrip versus true deformation before choosing a demonstrated preservation-method correction; real face stills only after corrected source review"
+}
