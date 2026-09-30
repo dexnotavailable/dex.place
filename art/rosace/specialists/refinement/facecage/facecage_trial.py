@@ -30,8 +30,9 @@ def main():
             return module
         prior_install = module.head_scale.install
         prior_anchors = module.posing.anchors
+        prior_apply_pose = module.posing.apply_pose
         prior_f1 = module.f1_module
-        state["restore"] = (module,prior_install,prior_anchors,prior_f1)
+        state["restore"] = (module,prior_install,prior_anchors,prior_apply_pose,prior_f1)
         def install(cfg):
             result = prior_install(cfg)
             state["cage"] = C.install(mode=="facecage1")
@@ -81,8 +82,8 @@ def main():
     finally:
         H.library = original_library
         if "restore" in state:
-            module,install,anchors,f1 = state["restore"]
-            module.head_scale.install,module.posing.anchors,module.f1_module = install,anchors,f1
+            module,install,anchors,apply_pose,f1 = state["restore"]
+            module.head_scale.install,module.posing.anchors,module.posing.apply_pose,module.f1_module = install,anchors,apply_pose,f1
         C.restore(state.get("cage"))
 
 
