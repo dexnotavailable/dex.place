@@ -388,6 +388,87 @@ class WrapperCleanup(unittest.TestCase):
             adapter.C1.G=prior
 
 
+class ModifierRNADescriptors(unittest.TestCase):
+    class StringProperty:
+        def __init__(self, identifier, readonly=False):
+            self.identifier, self.type, self.is_readonly = identifier, "STRING", readonly
+
+    class EnumProperty:
+        def __init__(self, identifier):
+            self.identifier, self.type, self.is_readonly = identifier, "ENUM", False
+
+    def fixture(self):
+        import cuff2_blender as adapter
+        def prop(name, kind, array=False, readonly=False):
+            return types.SimpleNamespace(identifier=name,type=kind,is_array=array,is_readonly=readonly)
+        descriptors=[self.StringProperty("label"),self.EnumProperty("mode"),self.EnumProperty("flags"),
+                     prop("enabled","BOOLEAN"),prop("count","INT"),prop("gain","FLOAT"),
+                     prop("float_array","FLOAT",True),prop("int_array","INT",True),prop("bool_array","BOOLEAN",True),
+                     prop("target","POINTER"),prop("null_target","POINTER"),
+                     self.StringProperty("read_only_label",True),prop("read_only_unknown","COLLECTION",readonly=True),
+                     prop("rna_type","POINTER")]
+        pointer=types.SimpleNamespace(bl_rna=types.SimpleNamespace(identifier="Object"),name_full="rosace_rig")
+        modifier=types.SimpleNamespace(name="arm",type="ARMATURE",bl_rna=types.SimpleNamespace(properties=descriptors),
+            label="retained string",mode="VERTEX_GROUP",flags={"B","A"},enabled=True,count=3,gain=.25,
+            float_array=[.5,1.0],int_array=[1,2],bool_array=[True,False],target=pointer,null_target=None,
+            read_only_label="ignored old value")
+        identity=[[1 if i==j else 0 for j in range(4)] for i in range(4)]
+        class Layers(list):
+            active_index=0
+        obj=types.SimpleNamespace(modifiers=[modifier],matrix_basis=identity,matrix_parent_inverse=identity,
+                                  data=types.SimpleNamespace(uv_layers=Layers()))
+        return adapter,obj,modifier
+
+    def structure_hash(self,adapter,obj):
+        with mock.patch.object(adapter.C1,"structure",return_value={"unchangedMeshFixture":True}):
+            return adapter.C1.digest(adapter.structure(obj))
+
+    def test_missing_array_metadata_scalars_arrays_pointers_and_enum_flags(self):
+        adapter,obj,modifier=self.fixture()
+        for descriptor in modifier.bl_rna.properties[:3]:
+            self.assertFalse(hasattr(descriptor,"is_array"))
+        state=adapter.modifier_state(obj)[0][2]
+        self.assertEqual(set(state),{"label","mode","flags","enabled","count","gain","float_array","int_array","bool_array","target","null_target"})
+        self.assertEqual(state,{"label":"retained string","mode":"VERTEX_GROUP","flags":["A","B"],
+            "enabled":True,"count":3,"gain":.25,"float_array":[.5,1.0],"int_array":[1,2],"bool_array":[True,False],
+            "target":["Object","rosace_rig"],"null_target":None})
+
+    def test_all_mutable_property_mutations_change_actual_structure_hash(self):
+        mutations={"label":"different","mode":"BONE_ENVELOPES","flags":{"A","C"},"enabled":False,
+                   "count":4,"gain":.5,"float_array":[.5,.9],"int_array":[1,3],"bool_array":[False,False],
+                   "target":types.SimpleNamespace(bl_rna=types.SimpleNamespace(identifier="Object"),name_full="other_rig"),
+                   "null_target":types.SimpleNamespace(bl_rna=types.SimpleNamespace(identifier="Object"),name_full="rosace_rig")}
+        for field,value in mutations.items():
+            adapter,obj,modifier=self.fixture()
+            before=self.structure_hash(adapter,obj)
+            setattr(modifier,field,value)
+            with self.subTest(field=field):
+                self.assertNotEqual(self.structure_hash(adapter,obj),before)
+        adapter,obj,modifier=self.fixture()
+        before=self.structure_hash(adapter,obj)
+        modifier.read_only_label="ignored new value"
+        modifier.flags=set(("A","B"))
+        self.assertEqual(self.structure_hash(adapter,obj),before)
+
+    def test_unsupported_mutable_property_types_and_collections_reject(self):
+        for kind in ("COLLECTION","VECTOR","UNKNOWN"):
+            adapter,obj,modifier=self.fixture()
+            modifier.bl_rna.properties.append(types.SimpleNamespace(identifier="unsupported",type=kind,is_readonly=False))
+            modifier.unsupported=object()
+            with self.subTest(kind=kind),self.assertRaisesRegex(ValueError,"unsupported mutable"):
+                self.structure_hash(adapter,obj)
+
+    def test_invalid_scalar_array_enum_values_and_nonfinite_numbers_reject(self):
+        mutations=(("gain",float("nan")),("gain",float("inf")),("float_array",[.5,float("nan")]),
+                   ("float_array",[.5,float("inf")]),("float_array",True),("bool_array",[True,1]),
+                   ("int_array",[1,True]),("count",True),("enabled",1),("label",5),("mode",5),("flags",{"A",1}))
+        for field,value in mutations:
+            adapter,obj,modifier=self.fixture()
+            setattr(modifier,field,value)
+            with self.subTest(field=field,value=value),self.assertRaises(ValueError):
+                self.structure_hash(adapter,obj)
+
+
 class NativeReceiptGuards(unittest.TestCase):
     def fixture(self):
         import cuff2_native_post as post
@@ -453,13 +534,15 @@ class NativeReceiptGuards(unittest.TestCase):
 
 
 def main():
-    suite=unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(cls) for cls in (Geometry,WrapperCleanup,NativeReceiptGuards))
+    suite=unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromTestCase(cls) for cls in (Geometry,WrapperCleanup,ModifierRNADescriptors,NativeReceiptGuards))
     result=unittest.TextTestRunner(verbosity=2).run(suite)
     report={"schema":"rosace.cuff2.cpu/1","kind":"CPU source fixtures and injected actual-wrapper cleanup",
-            "sourceBase":"bd94059a13d5becd68b80c0d219fdb6ad1d989f9","tests":result.testsRun,
+            "sourceBase":"f2f2d83d396627955e8c4ae0768895e58333d86e",
+            "originalConstructionBase":"bd94059a13d5becd68b80c0d219fdb6ad1d989f9","tests":result.testsRun,
             "passed":result.wasSuccessful(),"nativeExecuted":False,"visualAcceptance":False,
             "fixtureSource":"actual F3 sleeves_f3.point AST; unchanged rejected C1 check_cuff.fixture(.28)",
             "cleanupSource":"actual cuff2_trial.main and actual nx_hands_blender.main; injected native dependencies",
+            "rnaDescriptorSource":"StringProperty/EnumProperty fixtures lack is_array; every supported mutable value participates in structure hash",
             "sourceHashes":{str(path.relative_to(REPO)):hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted(HERE.glob("*.py"))}}
     (HERE/"cpu-report.json").write_text(json.dumps(report,indent=2),encoding="utf-8",newline="\n")
     print(json.dumps(report))

@@ -1,17 +1,19 @@
 {
   "schema": "rosace.cuff2.cpu/1",
   "kind": "CPU source fixtures and injected actual-wrapper cleanup",
-  "sourceBase": "bd94059a13d5becd68b80c0d219fdb6ad1d989f9",
-  "tests": 17,
+  "sourceBase": "f2f2d83d396627955e8c4ae0768895e58333d86e",
+  "originalConstructionBase": "bd94059a13d5becd68b80c0d219fdb6ad1d989f9",
+  "tests": 21,
   "passed": true,
   "nativeExecuted": false,
   "visualAcceptance": false,
   "fixtureSource": "actual F3 sleeves_f3.point AST; unchanged rejected C1 check_cuff.fixture(.28)",
   "cleanupSource": "actual cuff2_trial.main and actual nx_hands_blender.main; injected native dependencies",
+  "rnaDescriptorSource": "StringProperty/EnumProperty fixtures lack is_array; every supported mutable value participates in structure hash",
   "sourceHashes": {
     "art\\rosace\\integration\\cuff2\\_reuse.py": "1d828fa349b00ad1db0d0ba0658bbc0e72199771d061c29fd0260e57c95ab105",
-    "art\\rosace\\integration\\cuff2\\check_cuff2.py": "212636fed4044ff9c1cf08ff18711f4ec874c3264feb3d83f462c16221e78f08",
-    "art\\rosace\\integration\\cuff2\\cuff2_blender.py": "781bc6c966e43196bf0a23d0800dcba938fd67fcef3da7217ccb83365a4638a4",
+    "art\\rosace\\integration\\cuff2\\check_cuff2.py": "6d2d5ff273ba837240c7d440fd80a236b634337b7fc2b4e606b0c4e68760ea70",
+    "art\\rosace\\integration\\cuff2\\cuff2_blender.py": "94da9a9760b233183b0e3deb7f6c6870ab948a32e045302f3b7593753cbb3737",
     "art\\rosace\\integration\\cuff2\\cuff2_geometry.py": "12d2d6fb87c1604c11c1103fb5f1882ed24bb78373bdc15123777a2ef66c63e7",
     "art\\rosace\\integration\\cuff2\\cuff2_native_post.py": "f32a28cb898cbf145929a284dbf4791865971c1a95d17e0524a182b93fc7ce30",
     "art\\rosace\\integration\\cuff2\\cuff2_trial.py": "6f1b890aeaa4bed58ca0e0d4285de97a117d35ada50b057983eb68a5d5e80c13"

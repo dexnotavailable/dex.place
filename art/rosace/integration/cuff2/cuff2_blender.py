@@ -1,4 +1,6 @@
 """Delivery-only Cuff2 adapter. Reuse copied-mesh guards, never save a blend."""
+import math
+
 import cuff2_geometry as G
 from _reuse import load
 
@@ -16,16 +18,35 @@ def modifier_state(obj):
         for prop in modifier.bl_rna.properties:
             if prop.identifier == "rna_type" or prop.is_readonly:
                 continue
+            kind = prop.type
+            if kind not in ("BOOLEAN", "INT", "FLOAT", "STRING", "ENUM", "POINTER"):
+                raise ValueError("unsupported mutable modifier property: "+prop.identifier+"/"+kind)
             value = getattr(modifier, prop.identifier)
-            if prop.type == "POINTER":
+            if kind == "POINTER":
                 value = None if value is None else [value.bl_rna.identifier, value.name_full]
-            elif prop.type == "COLLECTION":
-                # Unknown modifier collection needs a typed snapshot before use.
-                raise ValueError("unsupported mutable modifier collection: "+prop.identifier)
-            elif prop.is_array:
-                value = list(value)
-            elif isinstance(value, set):
-                value = sorted(value)
+            elif kind == "STRING":
+                if type(value) is not str:
+                    raise ValueError("invalid modifier string: "+prop.identifier)
+            elif kind == "ENUM":
+                if isinstance(value, set) and all(type(v) is str for v in value):
+                    value = sorted(value)
+                elif type(value) is not str:
+                    raise ValueError("invalid modifier enum/flag set: "+prop.identifier)
+            else:
+                # Only numeric/boolean RNA descriptors support array readout.
+                # StringProperty and EnumProperty do not expose is_array.
+                array = bool(getattr(prop, "is_array", False))
+                try:
+                    values = list(value) if array else [value]
+                except TypeError as error:
+                    raise ValueError("invalid modifier array: "+prop.identifier) from error
+                valid = {"BOOLEAN": lambda v: type(v) is bool,
+                         "INT": lambda v: type(v) is int,
+                         "FLOAT": lambda v: type(v) in (int, float) and math.isfinite(v)}[kind]
+                if not all(valid(v) for v in values):
+                    raise ValueError("invalid/nonfinite modifier numeric value: "+prop.identifier)
+                if array:
+                    value = values
             fields[prop.identifier] = value
         result.append([modifier.name, modifier.type, fields])
     return result

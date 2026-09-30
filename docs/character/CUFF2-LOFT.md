@@ -148,3 +148,44 @@ original sleeve meshes and typed structure remain protected. CPU source and
 injected actual-wrapper checks pass; exact four-still native/API/visibility/
 anatomy/appearance/cloth proof remains pending. Source/request/limits live in
 CUFF2-LOFT.md and art/rosace/integration/cuff2. Rejected C1 remains preserved.
+
+## Native RNA descriptor repair (source only)
+
+The exact f2f2d83 entry repair produced parent144/80, then the candidate stopped
+in `cuff2_blender.modifier_state` because Blender's StringProperty descriptor
+does not expose `is_array`. This is an RNA descriptor/API failure before the
+loft construction runs, not a Cuff2 geometry or appearance verdict. The old27/f2
+sources, requests and failure packets remain frozen.
+
+The bounded repair lives in `D:/Dex/Temp/dex-place-rosace-cuff2-rna-descriptors-20260930`,
+branch `codex/rosace-cuff2-rna-descriptors-20260930`, base
+f2f2d83d396627955e8c4ae0768895e58333d86e. STRING and ENUM use explicit
+scalar/enum-flag readout without accessing array metadata. Only BOOLEAN, INT
+and FLOAT query their array capability with `getattr(is_array,False)`.
+Scalar and array values remain in the exact modifier structure snapshot;
+nonfinite floats and invalid value types reject. Enum flag sets sort
+deterministically. Pointer/null values retain the existing RNA type/name
+identity snapshot. Unsupported mutable RNA types and collections reject;
+readonly descriptors and rna_type stay ignored under the existing contract.
+No mutable STRING/ENUM value is skipped to bypass the descriptor failure.
+
+Fixtures instantiate StringProperty and EnumProperty objects that genuinely
+lack `is_array`. They cover boolean/integer/float scalars and arrays,
+pointer/null, enum flag sets, ignored readonly descriptors versus every
+retained mutable field, unsupported types/collections and nonfinite values.
+Mutations to each supported mutable field change the actual adapter structure
+hash, including strings, enums, booleans, numeric arrays and pointer identities.
+These are injected CPU fixtures; actual Blender descriptor/native acceptance
+still requires delivery. The source CPU receipt is regenerated deterministically
+with LF bytes and binds the current source hashes; all21test methods pass under
+the packet resource gate as `rosace-source`.
+
+`native-rna-descriptor-repair-request.json`, ID
+`rosace-cuff2-rna-descriptor-repair-20260930`, requests the same bounded four
+parent/Cuff2 idle144/80 stills in a new output namespace. The old
+`native-entry-repair-request.json` is untouched. Fresh independent review and
+Root's new exact-head READY precede delivery. Fixed55mm, indices, coordinates,
+quarter-gap/triangle/Jacobian/radial guards, copied-original preservation,
+camera/rig/shape/custom-normal/UV/data guards and existing raw replay/visibility
+acceptance all remain unchanged. No native run or visual gain is claimed by
+this repair, and no additional shader, pose, window or motion lever is added.
