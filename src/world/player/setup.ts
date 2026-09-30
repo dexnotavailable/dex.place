@@ -21,6 +21,8 @@ import { K, K_CLOSE, SCALE } from "../config.ts";
 import type { WorldRenderer } from "../render/renderer.ts";
 import { scaleClipSource, scaleTuning, scaleVfxLibrary } from "./scale.ts";
 import { bakeScaledStandin, WORLD_CLIPS } from "./standin.ts";
+import { PLAYER_CLIPS } from "../../lab/game/player.ts";
+import { validateAtlasImages, validateExportPair } from "./export-validation.ts";
 
 export interface PlayerAssets {
   /** Exploration sprite (H = 80). The simulation runs on this one. */
@@ -58,17 +60,18 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 const EXPORTS = new Set(Object.keys(import.meta.glob("/public/world/*/manifest.json")).map((k) => k.slice("/public".length)));
 
 /** A pipeline export at /world/<dir>/, or null (missing / placeholder) so the stand-in is used. */
-async function loadExport(r: WorldRenderer, dir: string): Promise<RuntimeSprite | null> {
+async function loadExport(dir: string): Promise<SpritePackage | null> {
   const base = `/world/${dir}/`;
   const file = `${base}manifest.json`;
   if (!EXPORTS.has(file)) return null;
   let text: string;
   try {
     const res = await fetch(file, { cache: "no-cache" });
-    if (!res.ok || !(res.headers.get("content-type") ?? "").includes("json")) return null;
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!(res.headers.get("content-type") ?? "").includes("json")) throw new Error("expected a JSON response");
     text = await res.text();
-  } catch {
-    return null;
+  } catch (e) {
+    throw new ContractError(file, [`could not load declared export: ${e instanceof Error ? e.message : String(e)}`]);
   }
   let json: unknown;
   try {
@@ -77,11 +80,16 @@ async function loadExport(r: WorldRenderer, dir: string): Promise<RuntimeSprite 
     throw new ContractError(file, [`$: not valid JSON: ${e instanceof Error ? e.message : String(e)}`]);
   }
   if (isStandinManifest(json)) return null;
-  const pkg = validatePackage(json, file);
+  return validatePackage(json, file);
+}
+
+async function loadSprite(r: WorldRenderer, pkg: SpritePackage, dir: string): Promise<RuntimeSprite> {
+  const base = `/world/${dir}/`;
   const sheets = new Map<string, SpriteSheet>();
   for (const a of pkg.atlases) {
     const albedo = await loadImage(base + a.albedo);
     const normal = a.normal ? await loadImage(base + a.normal) : null;
+    validateAtlasImages(a, albedo, normal, base);
     sheets.set(a.id, { albedo: r.texture(albedo), normal: normal ? r.texture(normal) : r.flatNormal, keyInfluence: a.shading === "flat" ? 1 : 0.25 });
   }
   return wrap(pkg, sheets, "pipeline");
@@ -107,7 +115,9 @@ export async function loadPlayer(r: WorldRenderer): Promise<PlayerAssets> {
     const sheets = new Map<string, SpriteSheet>([["standin", { albedo: r.texture(b.atlas.albedo), normal: r.texture(b.atlas.normal), keyInfluence: 0.25 }]]);
     return wrap(b.pkg, sheets, "standin");
   };
-  const sprite = (await loadExport(r, "character")) ?? bake(K, "player (stand-in, world)");
-  const closeup = (await loadExport(r, "character-closeup")) ?? bake(K_CLOSE, "player (stand-in, close-up)");
+  const [worldExport, closeupExport] = await Promise.all([loadExport("character"), loadExport("character-closeup")]);
+  validateExportPair(worldExport, closeupExport, [...PLAYER_CLIPS, ...WORLD_CLIPS.map((clip) => clip.id)]);
+  const sprite = worldExport ? await loadSprite(r, worldExport, "character") : bake(K, "player (stand-in, world)");
+  const closeup = closeupExport ? await loadSprite(r, closeupExport, "character-closeup") : bake(K_CLOSE, "player (stand-in, close-up)");
   return { sprite, closeup, tuning, vfx, heights, bakeMs: Math.round(performance.now() - t0) };
 }

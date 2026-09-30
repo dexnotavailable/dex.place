@@ -40,6 +40,7 @@ import { WorldAudio } from "./audio.ts";
 import { h, PHYSICS, SCALE, STREAM } from "./config.ts";
 import { Hooks, type WorldApi } from "./hooks.ts";
 import type { PlayerAssets } from "./player/setup.ts";
+import { loopFrameAt } from "./player/frames.ts";
 import { PixelDraw } from "./pixel/adapter.ts";
 import type { CellTexture, Interaction, Prop, PropCanvas, PropHit, PropLight, PropWorld } from "./props-api.ts";
 import { WorldRenderer, VFX_TYPE, type PointLight, type RGB } from "./render/renderer.ts";
@@ -1120,16 +1121,7 @@ export class WorldGame {
     const clip = s ? this.worldSprite.clips.get("sit") : undefined;
     const sheet = clip ? this.worldSprite.sheets.get(clip.atlas) : undefined;
     if (!s || !clip || !sheet || !clip.frames.length) return null;
-    const total = clip.frames.reduce((a, f) => a + f.duration, 0);
-    let t = this.sitTicks % Math.max(1, total);
-    let frame = clip.frames[0]!;
-    for (const f of clip.frames) {
-      if (t < f.duration) {
-        frame = f;
-        break;
-      }
-      t -= f.duration;
-    }
+    const frame = loopFrameAt(clip.frames, this.sitTicks);
     return { frame, sheet, x: s.x, y: s.y };
   }
 
