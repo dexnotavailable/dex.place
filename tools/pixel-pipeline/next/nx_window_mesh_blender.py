@@ -83,9 +83,18 @@ def install(state):
     if mesh_invariants(bodice) != before:
         raise AssertionError("face-only cut changed vertices, weights, shape keys, point data, materials or IDs")
     actual_faces = [face_data(copy, f) for f in copy.polygons]
+    before_restore=P.compare(expected_faces,actual_faces)
+    restoration=P.restore_sharp_face(copy,expected_faces,actual_faces)
+    actual_faces = [face_data(copy, f) for f in copy.polygons]
     preservation=P.compare(expected_faces,actual_faces)
     preservation.update(vertexKeyWeightPointGuard="exact pass",nativeVersion=bpy.app.version_string,
-                        hypothesis="old native trace lacks records; cause not assumed")
+                        sharpFaceRestoration=restoration,
+                        beforeRestoration={k:v for k,v in before_restore.items() if k not in
+                            ("firstRawMismatch","firstSemanticMismatch","missingExactRecords","extraExactRecords")},
+                        diagnosedParentFailure="Blender5.1.2 BMesh dropped FACE/BOOLEAN sharp_face",
+                        restorationStatus="typed values restored; full guard follows" if restoration["restored"] else "no attribute restoration needed; full guard follows")
+    if mesh_invariants(bodice) != before:
+        raise AssertionError("attribute restoration changed protected point/vertex/weight/key/material data")
     if state.get("preservationOutput"):
         folder=Path(state["preservationOutput"])
         folder.mkdir(parents=True,exist_ok=True)
