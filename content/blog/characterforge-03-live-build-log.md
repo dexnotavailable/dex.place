@@ -13,7 +13,7 @@ Only our own renders appear here. No concept art, no other studios' models or st
 <!-- tldr:start -->
 
 > [!NOTE]
-> **TL;DR** — Product 1 (playable character): **30%** · Overall (Products 1 + 2): **16%** · Now: **S3 — Body + head topology** (construction works across lanes (rigs, physics, expressions, zero clipping); the LOOK of face and hair is being rebuilt with data-driven poly modelling (head-construction study, tolerance bands))
+> **TL;DR** — Product 1 (playable character): **32%** · Overall (Products 1 + 2): **17%** · Now: **S3 — Body + head topology** (construction works across lanes (rigs, physics, expressions, zero clipping); the LOOK of face and hair is being rebuilt with data-driven poly modelling (head-construction study, tolerance bands))
 
 **Roadmap.** S0 to S10 are Product 1, S11 is Product 2.
 
@@ -26,7 +26,7 @@ Only our own renders appear here. No concept art, no other studios' models or st
 | S4 | Face system: eyes, mouth interior, expressions, face shading | ▶ in progress, 25% |
 | S5 | Hair, clothing layers, bone arms, boots | ▶ in progress, 15% |
 | S6 | Rig, weights, correctives, physics | ○ not started |
-| S7 | Texturing + materials (Kuro-look NPR, Blender to Unreal) | ▶ in progress, 15% |
+| S7 | Texturing + materials (Kuro-look NPR, Blender to Unreal) | ▶ in progress, 30% |
 | S8 | Unreal import, motion, motion-matching locomotion | ▶ in progress, 35% |
 | S9 | Combat kit + VFX | ▶ in progress, 20% |
 | S10 | Full blind test (Product 1) | ○ not started |
