@@ -1,0 +1,19 @@
+{
+  "contract": "dex.cold-depth2-supplement/1",
+  "scope": "additional depth2 pins only; original request and original23 reference pins unchanged",
+  "requestSha256": "d7985e326f211fde3d2869457439c7ae7f0784e9ed48433b643bb13b43f6c46f",
+  "bindingSha256": "8ce3d4d64803a85b44745cde8ab9a1fea984678c5ebc2318e4b72e55ebf8900a",
+  "originalReferenceRoot": "D:/Dex/Temp/rosace-sharp-face-native-20260930/review/rosace/art/next/sharp-face-preservation-delivery",
+  "files": [
+    {
+      "path": "reconstruction-raw/idle/px144/depth2.png",
+      "sha256": "fe6941ba53ee2e8ea70b670054f6b915484d2280c08d9fed1222ad1bea322de8",
+      "bytes": 153053
+    },
+    {
+      "path": "reconstruction-raw/idle/px80/depth2.png",
+      "sha256": "f7186a4c098e3ba7ff47bd245a22ed68691b8c4833e64e6d5328c01b8e75b4e9",
+      "bytes": 61585
+    }
+  ]
+}
