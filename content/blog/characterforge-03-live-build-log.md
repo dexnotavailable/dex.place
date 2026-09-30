@@ -13,7 +13,7 @@ Only our own renders appear here. No concept art, no other studios' models or st
 <!-- tldr:start -->
 
 > [!NOTE]
-> **TL;DR** — Product 1 (playable character): **15%** · Overall (Products 1 + 2): **8%** · Now: **S3 — Body + head topology** (C001 body conformed to the dressed ghost (identity green); head being rebuilt from a data-driven study of pro head construction; face, hair, bone arms, shader and gameplay lanes running)
+> **TL;DR** — Product 1 (playable character): **23%** · Overall (Products 1 + 2): **12%** · Now: **S3 — Body + head topology** (construction works across lanes (rigs, physics, expressions, zero clipping); the LOOK of face and hair is being rebuilt with data-driven poly modelling (head-construction study, tolerance bands))
 
 **Roadmap.** S0 to S10 are Product 1, S11 is Product 2.
 
@@ -22,11 +22,11 @@ Only our own renders appear here. No concept art, no other studios' models or st
 | S0 | Foundations: research, MMD dataset + metrics, reference shelf | ▶ in progress, 95% |
 | S1 | Critic (judge) kit + calibration | ✅ done |
 | S2 | C001 concept sheets + Meshy ghost | ✅ done |
-| S3 | Body + head topology (adult-female family template) | ▶ in progress, 85% |
-| S4 | Face system: eyes, mouth interior, expressions, face shading | ○ not started |
-| S5 | Hair, clothing layers, bone arms, boots | ○ not started |
+| S3 | Body + head topology (adult-female family template) | ▶ in progress, 90% |
+| S4 | Face system: eyes, mouth interior, expressions, face shading | ▶ in progress, 25% |
+| S5 | Hair, clothing layers, bone arms, boots | ▶ in progress, 15% |
 | S6 | Rig, weights, correctives, physics | ○ not started |
-| S7 | Texturing + materials (Kuro-look NPR, Blender to Unreal) | ○ not started |
+| S7 | Texturing + materials (Kuro-look NPR, Blender to Unreal) | ▶ in progress, 15% |
 | S8 | Unreal import, motion, motion-matching locomotion | ○ not started |
 | S9 | Combat kit + VFX | ○ not started |
 | S10 | Full blind test (Product 1) | ○ not started |
@@ -43,6 +43,22 @@ Only our own renders appear here. No concept art, no other studios' models or st
 Newest first. Times are local time at the build machine (UTC+7).
 
 ### 2026-10-01
+
+<a id="e-20261001-0616"></a>**06:16 · character-forge S3 body · S3**
+
+C001's body got a smaller head (toward the concept's proportions), a slightly fuller bust and a smoothed neck base, shown in clay and wireframe so every polygon is visible; next up are the golden bone arms, hair and clothing.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s3-c001-body-v1b-69f726bb.webp" width="1600" height="781" alt="Render sheet from the character-forge S3 body lane, stage S3: C001&#x27;s body got a smaller head (toward the concept&#x27;s proportions), a slightly fuller bust and a smoothed neck base, shown in clay and wireframe so every polygon is visible; next up are the golden bone arms, hair and clothing." loading="lazy" decoding="async">
+
+---
+
+<a id="e-20261001-0602"></a>**06:02 · gameplay · S8**
+
+Epic's free mannequin running around inside our own Unreal project: idle, walk, run, sprint, stop, a turn and a jump, all chosen automatically by motion matching from scripted controller input. It is a stand-in body so C001 can drop onto the same system later.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s8-gameplay-locomotion-r1-5dc39bbb.webp" width="1600" height="734" alt="Render sheet from the gameplay lane, stage S8: Epic&#x27;s free mannequin running around inside our own Unreal project: idle, walk, run, sprint, stop, a turn and a jump, all chosen automatically by motion matching from scripted controller input. It is a stand-in body so C001 can drop onto the same system" loading="lazy" decoding="async">
+
+---
 
 <a id="e-20261001-0551"></a>**05:51 · S4 face system (Claude, Opus 5.5) · S4**
 
