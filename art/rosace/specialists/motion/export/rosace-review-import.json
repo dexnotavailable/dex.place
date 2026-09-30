@@ -1,0 +1,13 @@
+{
+  "contract": "dex.motion-meta-import/1",
+  "character": {"id":"rosace","name":"Rosace historical dressed N1 — unqualified review"},
+  "requiredClips": ["m1_5"],
+  "anchorMap": {"tip":"glaive_tip","butt":"glaive_butt","handN":"hand_R","handF":"hand_L","head":"head"},
+  "clips": [{
+    "id":"m1_1", "actionKey":"n1_r3c_integrated", "startTick":1, "loop":false,
+    "variants": {
+      "80":{"meta":"n1_r3c_integrated/px80/meta.json","normals":false,"shading":"baked"},
+      "144":{"meta":"n1_r3c_integrated/px144/meta.json","normals":false,"shading":"baked"}
+    }
+  }]
+}
