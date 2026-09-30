@@ -13,7 +13,7 @@ Only our own renders appear here. No concept art, no other studios' models or st
 <!-- tldr:start -->
 
 > [!NOTE]
-> **TL;DR** — Product 1 (playable character): **23%** · Overall (Products 1 + 2): **12%** · Now: **S3 — Body + head topology** (construction works across lanes (rigs, physics, expressions, zero clipping); the LOOK of face and hair is being rebuilt with data-driven poly modelling (head-construction study, tolerance bands))
+> **TL;DR** — Product 1 (playable character): **30%** · Overall (Products 1 + 2): **16%** · Now: **S3 — Body + head topology** (construction works across lanes (rigs, physics, expressions, zero clipping); the LOOK of face and hair is being rebuilt with data-driven poly modelling (head-construction study, tolerance bands))
 
 **Roadmap.** S0 to S10 are Product 1, S11 is Product 2.
 
@@ -27,8 +27,8 @@ Only our own renders appear here. No concept art, no other studios' models or st
 | S5 | Hair, clothing layers, bone arms, boots | ▶ in progress, 15% |
 | S6 | Rig, weights, correctives, physics | ○ not started |
 | S7 | Texturing + materials (Kuro-look NPR, Blender to Unreal) | ▶ in progress, 15% |
-| S8 | Unreal import, motion, motion-matching locomotion | ○ not started |
-| S9 | Combat kit + VFX | ○ not started |
+| S8 | Unreal import, motion, motion-matching locomotion | ▶ in progress, 35% |
+| S9 | Combat kit + VFX | ▶ in progress, 20% |
 | S10 | Full blind test (Product 1) | ○ not started |
 | S11 | Chassis + C002 + C003 + provider swap tests (Product 2) | ○ not started |
 
@@ -43,6 +43,46 @@ Only our own renders appear here. No concept art, no other studios' models or st
 Newest first. Times are local time at the build machine (UTC+7).
 
 ### 2026-10-01
+
+<a id="e-20261001-0649"></a>**06:49 · shader · S7**
+
+The same layered toon shader kit now renders in both Blender and Unreal 5.8 from one parameter table: the colours, face-shadow sweep, hair highlight, lace and sheer stockings line up closely. Placeholder test props, not the final character.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s7-shader-r2-compare-26d40e0a.webp" width="1600" height="1314" alt="Render sheet from the shader lane, stage S7: The same layered toon shader kit now renders in both Blender and Unreal 5.8 from one parameter table: the colours, face-shadow sweep, hair highlight, lace and sheer stockings line up closely. Placeholder test props, not the final character." loading="lazy" decoding="async">
+
+---
+
+<a id="e-20261001-0649-2"></a>**06:49 · shader · S7**
+
+Round 2 of the toon shader kit in Blender: a cleaner face-shadow map that moves as one shape with the light, thin tinted hair highlight, no skin gloss, blush zones, painted-fold cloak with a real lace motif, and a new WuWa-style key+fill+rim lighting preset. Placeholder test props (template mannequin, stand-in hair and cloak), not the final character.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s7-shader-r2-blender-ca8c1c5c.webp" width="1600" height="1548" alt="Render sheet from the shader lane, stage S7: Round 2 of the toon shader kit in Blender: a cleaner face-shadow map that moves as one shape with the light, thin tinted hair highlight, no skin gloss, blush zones, painted-fold cloak with a real lace motif, and a new WuWa-style key+fill+rim lighting pres" loading="lazy" decoding="async">
+
+---
+
+<a id="e-20261001-0648"></a>**06:48 · gameplay · S9**
+
+First combat pass on a stand-in mannequin, all driven by a scripted player: a five-hit chain with input buffering, charged attack, skill, dodge with invulnerability, perfect dodge into slow-motion and a counter, parry into a riposte, a swap intro/outro, and an ultimate with a cut-in camera. The moves, timing windows and numbers live in data, so C001's real animations replace the placeholder clips without touching the combat code.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s9-gameplay-combat-r1-8f1c1e13.webp" width="1600" height="739" alt="Render sheet from the gameplay lane, stage S9: First combat pass on a stand-in mannequin, all driven by a scripted player: a five-hit chain with input buffering, charged attack, skill, dodge with invulnerability, perfect dodge into slow-motion and a counter, parry into a riposte, a swap intro/outro," loading="lazy" decoding="async">
+
+---
+
+<a id="e-20261001-0634"></a>**06:34 · S5a hair · S5**
+
+Hair round 4: the bob's sides are pulled in and the ends tuck toward the chin, and hair physics now keeps strands off the jaw and cheeks in motion. Numbers are inside the pro ranges, but side by side it still reads as a helmet of flat slabs. Next: switch method and trace a sculpted hair target into clumps, keeping all the rig, physics and hood plumbing.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s5-hair-r4-46439762.webp" width="683" height="1600" alt="Render sheet from the S5a hair lane, stage S5: Hair round 4: the bob&#x27;s sides are pulled in and the ends tuck toward the chin, and hair physics now keeps strands off the jaw and cheeks in motion. Numbers are inside the pro ranges, but side by side it still reads as a helmet of flat slabs. Next: switc" loading="lazy" decoding="async">
+
+---
+
+<a id="e-20261001-0633"></a>**06:33 · S5a hair · S5**
+
+Hair round 3: every clump of C001's bob is now its own hand-shaped curve instead of one generator rule. That gives an off-centre part, swept hero bangs, big smooth masses and a hem at the chin. The silhouette sits inside the range of 30 professional chin-length bobs (grey bands). Next: the crown still reads as stacked lids and the sides as flat slabs.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s5-hair-r3-54030137.webp" width="683" height="1600" alt="Render sheet from the S5a hair lane, stage S5: Hair round 3: every clump of C001&#x27;s bob is now its own hand-shaped curve instead of one generator rule. That gives an off-centre part, swept hero bangs, big smooth masses and a hem at the chin. The silhouette sits inside the range of 30 professional chi" loading="lazy" decoding="async">
+
+---
 
 <a id="e-20261001-0616"></a>**06:16 · character-forge S3 body · S3**
 
@@ -81,14 +121,6 @@ C001's face system first pass: flush anime eyes built from layered iris/highligh
 First full pass at C001's short silver bob: about 30 clumps authored over the head (under-layer, bob masses, choppy bangs, face-framing locks) in clean quads with one UV strip per clump. It also has a hood-on tucked state and a first spring-chain physics test (head turn, run bob, settle). Next: the silhouette still reads as a stiff helmet with a stamped zigzag hem, so round 3 switches to hand-shaped curve clumps: bigger hero bangs, tapered individual ends, an inward tuck at the jaw.
 
 <img src="/blog/characterforge-03-live-build-log/2026-10-01-s5-hair-r2-5214e489.webp" width="876" height="1600" alt="Render sheet from the S5a hair lane, stage S5: First full pass at C001&#x27;s short silver bob: about 30 clumps authored over the head (under-layer, bob masses, choppy bangs, face-framing locks) in clean quads with one UV strip per clump. It also has a hood-on tucked state and a first spring-chain physic" loading="lazy" decoding="async">
-
----
-
-<a id="e-20261001-0540"></a>**05:40 · shader · S7**
-
-Round 2 of the toon shader kit in Blender: a cleaner face-shadow map that moves as one shape with the light, thin tinted hair highlight, no skin gloss, blush zones, painted-fold cloak with a real lace motif, and a new WuWa-style key+fill+rim lighting preset. Placeholder test model, not the final character: the bob is the AI tracing guide's placeholder hair, not final art.
-
-<img src="/blog/characterforge-03-live-build-log/2026-10-01-s7-shader-r2-blender-20487300.webp" width="1600" height="1548" alt="Render sheet from the shader lane, stage S7: Round 2 of the toon shader kit in Blender: a cleaner face-shadow map that moves as one shape with the light, thin tinted hair highlight, no skin gloss, blush zones, painted-fold cloak with a real lace motif, and a new WuWa-style key+fill+rim lighting pres" loading="lazy" decoding="async">
 
 ---
 
