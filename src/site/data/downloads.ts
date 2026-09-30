@@ -44,10 +44,10 @@ export const downloads: readonly DownloadEntry[] = [
     id: "dexclient",
     name: "dexClient",
     file: {
-      href: "/downloads/dexClient-Setup-0.4.21.exe",
-      version: "0.4.21",
-      bytes: 102_920_157,
-      sha256: "d9a35b2f6da5b9e9fc41decc96c9fd3dc2472087a6a7bba5ee9d74963c4a6530",
+      href: "/downloads/dexClient-Setup-0.4.23.exe",
+      version: "0.4.23",
+      bytes: 102_923_632,
+      sha256: "36313368dd7cb92692a8320f398391a4d57266cb30aa48ad3c270e1ac7961ff9",
       platform: "Windows",
     },
     // dexClient README: per-user installer, no admin prompt, unsigned.

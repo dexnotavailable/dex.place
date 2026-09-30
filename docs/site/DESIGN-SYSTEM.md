@@ -377,7 +377,7 @@ Jersey name (the real link to the page), the one factual line, chips from
 | Project | Main key | Then |
 |---|---|---|
 | dexCode | Get dexClient (to `#dexclient`; no standalone file) | Details, Docs |
-| dexClient | Download (the 0.4.21 file itself, one click) in mint | Details, Docs |
+| dexClient | Download (the 0.4.23 file itself, one click) in mint | Details, Docs |
 | dex.place | World (up to `#world`), black key | Details, Docs |
 
 The card pops as a whole (lift 2px, grow 1.01, a 2px-deeper shadow and edge in its tone);
@@ -415,7 +415,7 @@ small key to its own page:
 | Anchor | Section | Built by | In place |
 |---|---|---|---|
 | `#projects` | the "dex" mark on a square yellow block (the page's `h1`) beside the head, then one card per project (§5) | `landing.ts`, `art.ts` | scenes, chips from `data/downloads.ts`, the one action that matters, Details, Docs |
-| `#downloads` | dexClient 0.4.21 block (the direct Download key, file name and size beside it, a Version / Platform / SHA-256 spec stack whose SHA row pops and jumps to "Check the file"), dexCode "Not yet", the four install steps and "Check the file". Below 700px the drawn file gives way to a small mint tile and a full-width key, so the key sits in the first screen after a jump | `downloadsSection()` in `downloads.ts` | the file downloads in one click; SHA-256 and command copy |
+| `#downloads` | dexClient 0.4.23 block (the direct Download key, file name and size beside it, a Version / Platform / SHA-256 spec stack whose SHA row pops and jumps to "Check the file"), dexCode "Not yet", the four install steps and "Check the file". Below 700px the drawn file gives way to a small mint tile and a full-width key, so the key sits in the first screen after a jump | `downloadsSection()` in `downloads.ts` | the file downloads in one click; SHA-256 and command copy |
 | `#gallery` | the justified collage and its viewer | `gallerySection()` in `gallery.ts` | hover field, click-in viewer, every tile deferred until near |
 | `#docs`, `#blog` | the docs catalogue (one row per project group), then the latest four posts as index rows, older posts folded underneath, RSS | `docsSection()` in `docs.ts` | links into every doc and post |
 | `#donate` | Ko-fi and the MB Bank card with the VietQR and slider | `donateSection()` in `donate.ts` | QR, slider, copy |
