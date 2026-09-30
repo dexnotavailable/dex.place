@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "status": "independently reviewed selected Phase1 private source build and explicit closed Phase2 cohort; final ROOT source freeze/HEAD admission pending",
+  "sourceBase": "54518211eb9a342bc5f6689562c5a0179d466a52",
+  "worktree": "D:/Dex/Temp/dex-place-rosace-source-baseline-contract-20260930",
+  "branch": "codex/rosace-source-baseline-contract-20260930",
+  "gate": "existing resource-gate.ps1 Ownerrosace-source",
+  "bindingSha256": "759d386f82d5a090c2b3cfdee0b496defbd05f3d45346e3739404e06968ea746",
+  "sourceFileCount": 943,
+  "inputFileCount": 249,
+  "checks": {
+    "childEnvironmentSanitizationParentImmutability": "pass, injected ROSACE/Python/Blender/proxy/syntheticsecret values excluded, parent mapping unchanged",
+    "exactChildAndActualWrapperNativeArgv": "pass, real blender_env.blender_cmd pure function matches frozen native args; no run/check/setup or native import",
+    "freshDWriteContainment": "pass, private-only outputs/resource/profile/temp dirs, traversal/canonical/base/C targets reject",
+    "argEnvRecipeMutationRejections": "pass, noao/drive9-bl_build/canonicalout/manualhair/Dexprofile/AO-choice/historicalclaim mutations reject",
+    "fullSourceInputToolIntakeBinding": "pass, complete selected superset/path sets and exact SHA including verified inputs/cache/sourceintake/tool files",
+    "utf8LfArtifactRoundtrip": "pass, explicit UTF8 reads preserve Japanese source input paths, LF-only artifact writes",
+    "actualFreezeAdmissionVersusPostbuildVerifierLifecycle": "pass, isolated bound temp fixture: occupied-root freeze/admission rejects, actualverify passes afterprecreate/mockoutput, changedcontract/source/input rejects; outputacceptance explicitlyfalse",
+    "boundedRuntimeEvidenceScope": "selectedsource/vendor/data pins, observedtoolversions, privatePROJECToutputinventory/logs/ownedcleanup and protectedbeforeafterhashes/filesets required; unobservedOS/DLL/driveractivity explicitunverified, no blankettracing/closureprerequisite, no newobserver",
+    "selectedClosedR2Phase2Cohort": "pass, targeted gated4rows/24six-mapraw/8finished/4metadata with ownposeSHA/sourceCRLF-only proof; all actual framing/head1.10/p5/ss4/yaw/elev selected. Historical lane94 separatefrom cachedaef replay; no native comparison executed."
+  },
+  "selectedInitialBaseAoEnabled": true,
+  "recordedOldInitialBaseAoKnown": false,
+  "historicalExactRebuildClaim": false,
+  "nativeVersionObserved": false,
+  "actualBuildOrRenderExecuted": false,
+  "freshOutputExists": false,
+  "freshOutputShaOrSchemaFrozen": false,
+  "actualWriteAndInputClosureObserved": false,
+  "artAcceptedOrPipelineComplete": false,
+  "defaultCanonicalGuardChanged": false,
+  "stage4CodeChanged": false,
+  "limits": "A frozen source/command/env/project-write declaration is not a nativebuild, historical reproduction, fresh structural/render equivalence, appearance9 or completedpipeline. Late freshSHA/schema, observednative/toolversions, declaredPROJECToutputinventory/protectedhashes and Stage4 existing bound consumer remain pending. Relevant resources WHEN OBSERVED are recorded; unobserved OS/DLL/driver activity stays unverified without an absent claim or blanket tracing prerequisite.",
+  "independentReview": {
+    "reviewer": "cuff2_source_review",
+    "verdict": "PASS lifecycle and bounded project-evidence scope",
+    "helperSha256": "b3f2710cf9afd5b7d7b226aa52771975c91fd58cc0baf9f0bc9e9d2b427e06f7",
+    "checksSha256": "b084c727aa24407f93898683a5e51b966b489672a341277d748e37bbf2f9770d",
+    "finalCohortAndAcyclicPhaseSequence": "PASS independent cuff2_source_review; cohort SHAa0490c47330995e82c0423268163c2e3e9ee2fff2ee871e534dfa7e12d247953"
+  },
+  "phase2CohortSha256": "a0490c47330995e82c0423268163c2e3e9ee2fff2ee871e534dfa7e12d247953"
+}

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "rosace-direct-drive9-fresh-source-baseline-diagnostic-20260930",
+  "status": "selected-provisional-recipe-source-reviewed-native-build-pending",
+  "sourceBase": "54518211eb9a342bc5f6689562c5a0179d466a52",
+  "contract": "art/rosace/integration/source_baseline/contract.json",
+  "sourceInputBinding": "art/rosace/integration/source_baseline/binding.json",
+  "intake": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/source-findings/character-fresh-baseline-recipe-intake-20260930.md",
+  "selectedRoute": "python blender_env.py run --factory-startup --python-exit-code 1 --python build_rosace_v2.py -- --chain drive9 --out freshPrivate/baseline-source.blend, exact arg list/env in contract, shellfalse",
+  "AO": "NEW explicit initial base AO ENABLED by validated exact args without --no-ao; original whole-model AO flag remains unknown",
+  "historicalScope": "recorded F3-L/outfitR2Q/glaivel5/resultinghairf3/S7-volume1.42/bodykeys/leg1.30-torso.92/waist.25/height1.8956 only. Old argv/env/sourcehash/tool/AO absent; no exact historical rebuild claim.",
+  "phase1": {
+    "owner": "sole native delivery executor at existing exclusive/GPU gate and free boundary, world priority",
+    "action": "one fresh DIRECT source build diagnostic, no canonical/default overwrite",
+    "requiredCapture": [
+      "exact executed argv, full clean child and wrapper-effective env",
+      "actual observed executable/native/Python/NumPy/tool-package versions/build-hash/fileSHA",
+      "declared private project output inventory and relevant external-resource paths/hashes WHEN OBSERVED",
+      "stdout/stderr/exit/deadline/owned process cleanup",
+      "actual fresh blend SHA and _build receipt SHA",
+      "before/after protected source/input/cache/default hashes and exact file sets"
+    ],
+    "ambientBoundary": "unobserved OS/DLL/driver activity explicitly unverified, neither absent claim nor blanket full-closure/tracing prerequisite; legitimate ambient OS writes not project-scope violations, no new observer/ProcMon. Canonical/backups/protected data and private PROJECT-output bounds remain strict."
+  },
+  "phase1Acceptance": {
+    "freshIdentity": "EXPECTED different binary SHA fromaef, no art/pipeline/default promotion; latefreeze actual freshSHA/schema/nativeversion only after output exists",
+    "requiredStructuralComparison": [
+      "object names/types/parents/visibility/pass IDs/material slots",
+      "full mesh topology/oriented faces/corner associations/UV+typed attributes+encoded/decoded normals",
+      "weights/groups/shape keys/values/relative/mute/drivers",
+      "rig bones/rest matrices/constraints/modifiers/head metrics/assembly scale",
+      "AO fields and actual F3/outfit/glaive/hair/S7/body-key recipe receipt"
+    ],
+    "mismatchReceipts": "complete per-field/count/hash deltas, indices and relevant values, missing/extra schema/objects/dependencies/writes; retain unexpected outcomes, no omission/tolerance/coercion. Recipe match alone does not prove geometry/render equivalence.",
+    "conditionalDifferences": "file binary metadata/order/codecs may differ while semantics equal; AO may differ because original base AO was not recorded. Measure rather than explain away. Any structural/material/normal/rig/pixel difference remains reported and requires Stage2 synthesis, no automatic acceptance.",
+    "renderComparison": "Phase2 REQUIRED actual native closed/R2 direct-six-pass idle/back80/144 raw+unchanged R2 finish comparison AFTER Stage4 reviews its existing declared-fresh-input route. No already-qualified render is required to create that route or execute Phase1. Exact selected cohort is phase2-cohort.json, no resampling/composition/auto quality score."
+  },
+  "stage4ForwardContract": {
+    "owner": "Stage4 existing bound profile/renderer/export pipeline owner",
+    "requiredData": [
+      "fresh private blend path+actual SHA latefrozen",
+      "actual build receipt/path/SHA and selected recipe",
+      "bound source/input/child-env/argv hashes plus declared project-output inventory/protected before-after hashes",
+      "observed native/tool-package versions and relevant resources WHEN OBSERVED, ambient OS/DLL/driver activity labelled unverified",
+      "native typed mesh/normal/key/rig schema+structural mismatch receipt",
+      "cachedaef controls separately named and rollback identity unchanged"
+    ],
+    "sequence": ["Phase1 real fresh blend path+actualSHA+build receipt and source/env/input identity", "Stage4 reviews/binds new declared fresh input at its EXISTING profile/direct-six-pass comparison route", "Phase2 actual matched raw/finished renders and structural/comparison receipts", "Stage2 synthesis/conditional acceptance, then forwarding qualified evidence for later pipeline acceptance"],
+    "routeCreationNotBlockedByMissingRender": "Actual fresh identity from Phase1 is required for the new consumer binding; qualified Phase2 render evidence is a RESULT, never a prerequisite to creating the route. Missing futureSHA does not block Phase1.",
+    "consumerRule": "Stage4 owns new declared-input binding at its EXISTING profile/renderer seams. Do not bypass old H.EXPECTED_BLEND=aef, silently substitute fresh blend, double-bake head1.10/p5/r2_model edits/finish, or create a generic renderer/adapter/exporter here.",
+    "ifConsumerNotAdmitted": "Phase1 fresh-build diagnostic may complete without a consuming route. Phase2 fresh-render acceptance waits for Stage4 route review; keep diagnostic and cached controls separate, never pretend the cached renderer consumed fresh input."
+  },
+  "phase2Cohort": "art/rosace/integration/source_baseline/phase2-cohort.json",
+  "phase2CohortSealRule": "ROOT READY must pin cohort JSON SHA and verify all selected comparator source/input/meta/raw/finish hashes against the binding inventory before admission. Source recipe/helper code unchanged; new JSON is not silently self-included in the source-only helper fingerprint.",
+  "existingCachedControlSha": "aef28c7f5cdddee6f18bd12c06d988b5436eeac24049ddf4f6ca37f654394373",
+  "existingBuildReceiptSha": "4530f21971c885d31b9096f33f5ef6b1deac6095543a4d15fb268163e5fe56e7",
+  "canBeProvisionalBeforeAppearance9": true,
+  "historicalExactRebuildQualified": false,
+  "nativeBuildExecuted": false,
+  "actualFreshInputFrozen": false,
+  "completedPipelineOrArt9": false,
+  "allowCommitPushCanonicalPromotion": false,
+  "sourceReview": "PASS independent direct recipe/env/argv/project write bounds, post-precreate verification lifecycle and bounded runtime-evidence corrections. Root exact source/input contract READY follows final freeze+commit. No native build/equivalence/art claim."
+}

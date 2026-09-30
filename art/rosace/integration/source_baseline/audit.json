@@ -1,0 +1,37 @@
+{
+  "schema": "rosace.source-baseline-audit/1",
+  "route": "DIRECT build_rosace_v2.py --chain drive9; selected initial base AO enabled",
+  "sourceOwner": "54518211eb9a342bc5f6689562c5a0179d466a52",
+  "buildEnvironmentReads": [
+    {"name": "ROSACE_BASES", "owner": "rosace_v2/sources.py", "action": "fixed existing verified bases, read-only full siroino/primero subtree snapshot"},
+    {"name": "ROSACE_BUILD", "owner": "rosace/common.py and figure_shape.py", "action": "fresh private D output root"},
+    {"name": "ROSACE_OUTFIT/GLAIVE/HAIR/CHAIN", "owner": "build_rosace_v2.py and outfit/glaive/hair selectors", "action": "absent on entry; inherited values including empty values would skip F3 and are removed by clean child mapping"},
+    {"name": "ROSACE_HAIR", "owner": "finish_f3/overrides.install(L)", "action": "child-only mutation to f3, required default F3 path; no parent env edit"},
+    {"name": "DEXPLACE_BLENDER_ROOT/EXE", "owner": "blender_env.py", "action": "fresh private user-resource root and explicit inspected executable file, hash-bound; no version execution in this source task"},
+    {"name": "DEXPLACE_DOWNLOADS", "owner": "blender_env.py and rosace/common.py", "action": "fresh private downloads path; setup/fetch and VRM import are NOT called by selected direct route"},
+    {"name": "BLENDER_SYSTEM_*/BLENDER_USER_*", "owner": "blender_env.isolated_env", "action": "clean child mapping contains none, wrapper strips inherited forms and creates private resource directories before native launch"},
+    {"name": "TEMP/TMP/USERPROFILE/HOME/APPDATA/LOCALAPPDATA/Python env", "owner": "host runtime", "action": "bound private child cache/profile/temp paths, no inherited PYTHONPATH/PYTHONHOME/user-site/proxy/credential variables"}
+  ],
+  "builderKnownFilesystemWrites": [
+    {"owner": "build_rosace_v2.py244", "target": "freshPrivate/baseline-source.blend", "method": "bpy.ops.wm.save_as_mainfile(compress=True)"},
+    {"owner": "build_rosace_v2.py245", "target": "freshPrivate/baseline-source_build.json", "method": "build receipt next to explicit OUT"},
+    {"owner": "blender_env.isolated_env", "target": "freshPrivate/blender-user config/scripts/extensions/datafiles/extensions-user_default", "method": "precreate folders, BLENDER_USER_* overrides"}
+  ],
+  "backupGuardAnalysis": "ROSACE_BUILD is private; explicit baseline-source.blend differs from private rosace.blend CANON and all private legacy backup names. Builder canonical-write assertions do not authorize real canonical writes and no real backup is generated/overwritten.",
+  "nonCalledFilesystemBranches": [
+    "blender_env setup/fetch/check commands, extension install/network downloads",
+    "rosace.body.import_base VRM import; direct v2 import_body uses verified siroino blend",
+    "figure_shape blender_main/select/bundle/render/source-save CLI branches; selected builder calls apply only",
+    "drive9/bl_build.py extra D9/shape-current substitution, image exporters, render/pose methods"
+  ],
+  "memoryOnlyCaches": "figure_shape Python dict/KDTree/BVH and procedural builders; no on-disk cache write found in selected apply/import/build functions",
+  "remainingRuntimeClosureUnknown": [
+    "Unobserved OS/DLL/driver activity stays explicitly unverified, no absent-activity claim and no blanket tracing prerequisite. Legitimate ambient OS writes are not project-scope violations; no new observer or ProcMon is required.",
+    "Selected source/vendor/data inputs are bound. Relevant external resources are recorded with path/hash/context WHEN OBSERVED; full runtime dependency closure is not claimed or required before a valid bounded build.",
+    "Native tool/package versions are captured when observed. Actual declared private project output inventory/logs/owned cleanup and before-after protected source/input/cache hashes+file sets are required. Project writes outside private bounds or protected mutations still reject. Factory/background/offline/disable-autoexec remain declared until executed."
+  ],
+  "protection": "all canonical/backups/R2 controls/source bases/defaults remain read-only, before/after hashes and input sets mandatory",
+  "consumerDependencyOrder": "Phase1 real fresh blend/path/SHA/receipt+identity -> Stage4 existing new declared-input profile/direct-six-pass route review -> Phase2 actual renders/comparison -> acceptance. Qualified render is not a prerequisite to creating its own route; futureSHA is not a Phase1 stall.",
+  "phase2Selection": "phase2-cohort.json chooses CLOSED/R2 actual rawRoot idle/back144/80, directd9 six passes and unchanged R2 finish, no nx_hands depth2/W2/reconstruction/cuff stack. ROOT READY pins JSON plus selected comparator inventory hashes.",
+  "nativeExecuted": false
+}

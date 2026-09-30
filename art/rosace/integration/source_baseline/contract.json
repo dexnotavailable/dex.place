@@ -1,0 +1,402 @@
+{
+  "schema": "rosace.source-baseline-contract/1",
+  "id": "rosace-direct-drive9-fresh-source-baseline-20260930",
+  "status": "source-contract-only-pending-review/native-diagnostic",
+  "sourceBase": "54518211eb9a342bc5f6689562c5a0179d466a52",
+  "privateRoot": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930",
+  "exactChildArgv": [
+    "C:\\Users\\sanic\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\tools\\pixel-pipeline\\blender_env.py",
+    "run",
+    "--factory-startup",
+    "--python-exit-code",
+    "1",
+    "--python",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\tools\\pixel-pipeline\\build_rosace_v2.py",
+    "--",
+    "--chain",
+    "drive9",
+    "--out",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\baseline-source.blend"
+  ],
+  "shell": false,
+  "cwd": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930",
+  "expectedNativeArgv": [
+    "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+    "-b",
+    "--offline-mode",
+    "--disable-autoexec",
+    "--factory-startup",
+    "--python-exit-code",
+    "1",
+    "--python",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\tools\\pixel-pipeline\\build_rosace_v2.py",
+    "--",
+    "--chain",
+    "drive9",
+    "--out",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\baseline-source.blend"
+  ],
+  "exactWrapperEnvironment": {
+    "SYSTEMROOT": "C:\\WINDOWS",
+    "WINDIR": "C:\\WINDOWS",
+    "COMSPEC": "C:\\WINDOWS\\System32\\cmd.exe",
+    "SYSTEMDRIVE": "C:",
+    "PATHEXT": ".COM;.EXE;.BAT;.CMD",
+    "PATH": "C:\\Users\\sanic\\AppData\\Local\\Programs\\Python\\Python313;C:\\Program Files\\Blender Foundation\\Blender 5.1;C:\\WINDOWS\\System32;C:\\WINDOWS",
+    "TEMP": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\temp",
+    "TMP": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\temp",
+    "USERPROFILE": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile",
+    "HOME": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile",
+    "APPDATA": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile\\AppData\\Roaming",
+    "LOCALAPPDATA": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile\\AppData\\Local",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "ROSACE_BASES": "D:\\Dex\\Projects\\dex-place-art\\rosace\\bases",
+    "ROSACE_BUILD": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930",
+    "DEXPLACE_BLENDER_EXE": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+    "DEXPLACE_BLENDER_ROOT": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user",
+    "DEXPLACE_DOWNLOADS": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\downloads"
+  },
+  "expectedInitialBlenderEnvironment": {
+    "SYSTEMROOT": "C:\\WINDOWS",
+    "WINDIR": "C:\\WINDOWS",
+    "COMSPEC": "C:\\WINDOWS\\System32\\cmd.exe",
+    "SYSTEMDRIVE": "C:",
+    "PATHEXT": ".COM;.EXE;.BAT;.CMD",
+    "PATH": "C:\\Users\\sanic\\AppData\\Local\\Programs\\Python\\Python313;C:\\Program Files\\Blender Foundation\\Blender 5.1;C:\\WINDOWS\\System32;C:\\WINDOWS",
+    "TEMP": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\temp",
+    "TMP": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\temp",
+    "USERPROFILE": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile",
+    "HOME": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile",
+    "APPDATA": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile\\AppData\\Roaming",
+    "LOCALAPPDATA": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile\\AppData\\Local",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONUTF8": "1",
+    "PYTHONIOENCODING": "utf-8",
+    "ROSACE_BASES": "D:\\Dex\\Projects\\dex-place-art\\rosace\\bases",
+    "ROSACE_BUILD": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930",
+    "DEXPLACE_BLENDER_EXE": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+    "DEXPLACE_BLENDER_ROOT": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user",
+    "DEXPLACE_DOWNLOADS": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\downloads",
+    "BLENDER_USER_RESOURCES": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user",
+    "BLENDER_USER_CONFIG": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\config",
+    "BLENDER_USER_SCRIPTS": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\scripts",
+    "BLENDER_USER_EXTENSIONS": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\extensions",
+    "BLENDER_USER_DATAFILES": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\datafiles"
+  },
+  "precreateWithinPrivateRoot": [
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\temp",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile\\AppData\\Roaming",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile\\AppData\\Local",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\downloads",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\config",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\scripts",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\extensions",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\datafiles",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\extensions\\user_default"
+  ],
+  "builderExplicitFileWrites": [
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\baseline-source.blend",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\baseline-source_build.json"
+  ],
+  "otherAllowedProcessWriteRoots": [
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\temp",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile\\AppData\\Roaming",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\profile\\AppData\\Local",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\downloads",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\config",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\scripts",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\extensions",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\datafiles",
+    "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\review\\rosace\\integration\\source_baseline\\fresh-diagnostic-20260930\\blender-user\\extensions\\user_default"
+  ],
+  "parentEnvironmentMutationAllowed": false,
+  "removedInheritedOverrides": [
+    "ROSACE_OUTFIT",
+    "ROSACE_GLAIVE",
+    "ROSACE_HAIR",
+    "ROSACE_CHAIN"
+  ],
+  "environmentPolicy": "complete child mapping from safe fixed essentials; no arbitrary parent values copied; wrapper strips BLENDER_SYSTEM/USER overrides then precreates its private resources",
+  "selectedProvisionalRecipe": {
+    "chain": "drive9",
+    "F3": "L by default promotion, not lane wrapper",
+    "outfit": "R2Q",
+    "glaive": "l5",
+    "resultingHair": "f3 via F3.install, no initial ROSACE_HAIR override",
+    "bust": "S7",
+    "initialBaseAoEnabled": true,
+    "forbiddenBuildFlags": [
+      "--no-ao",
+      "--no-glaive",
+      "--bare",
+      "--keys",
+      "--pinch",
+      "--leg-stretch",
+      "--torso-k"
+    ],
+    "expectedChildOnlyBuilderEnvMutations": {
+      "ROSACE_HAIR": "f3",
+      "ROSACE_OUTFIT": "R2Q",
+      "ROSACE_GLAIVE": "l5"
+    }
+  },
+  "recordedCacheReceiptFacts": {
+    "chain": {
+      "chain": "drive9",
+      "skipped": null,
+      "f3": {
+        "variant": "L",
+        "sleeve": {
+          "bell": 0.16,
+          "lip_hang": 0.3,
+          "short": 0.065,
+          "rh": 0.09,
+          "rt": 0.02,
+          "flute": 0.19,
+          "scallop": 0.018,
+          "lip": 0.05,
+          "crease": 1.0,
+          "r_arm0": 0.047,
+          "r_arm1": 0.055,
+          "el_off": 0.09
+        },
+        "tabard": {
+          "bot_t": 0.7,
+          "w_top": 0.064,
+          "w_bot": 0.118,
+          "v_point": 0.13,
+          "turn": 0.034,
+          "bulge": 0.01,
+          "pipes": 0.012,
+          "pipe_u": 0.4,
+          "pipe_crease": 0.7,
+          "slit_t": null,
+          "slit_w": 0.2,
+          "cross_t": 0.66
+        },
+        "hair": {
+          "crown_k": 1.28,
+          "ear_k": 1.33,
+          "layer_flick": 1.85,
+          "mantle_s": 0.065,
+          "tail_s": 0.085,
+          "scale": {
+            "mantle_w": 1.25,
+            "layer_w": 1.2,
+            "tail_w": 1.4,
+            "tail_dx": 1.35
+          },
+          "veil": {
+            "k": 1.34,
+            "k_hang": 1.5,
+            "az_hem": 76,
+            "flare": 0.12
+          }
+        }
+      }
+    },
+    "integrated": {
+      "outfit": "R2Q",
+      "glaive": "l5",
+      "hair": "f3",
+      "hair_materials": [
+        "hair",
+        "hairtip"
+      ],
+      "limbs": true,
+      "limb_meshes": 128,
+      "bust": {
+        "variant": "S7",
+        "k": 0.05681,
+        "volume_ratio_solved": 1.42,
+        "moved": {
+          "body": {
+            "verts": 987,
+            "max_mm": 40.46
+          },
+          "anchor_outfit_ubust_L": {
+            "verts": 3,
+            "max_mm": 34.01
+          },
+          "anchor_outfit_ubust_R": {
+            "verts": 3,
+            "max_mm": 34.01
+          },
+          "anchor_outfit_win_b": {
+            "verts": 3,
+            "max_mm": 4.12
+          },
+          "anchor_outfit_win_t": {
+            "verts": 3,
+            "max_mm": 1.47
+          },
+          "bodice": {
+            "verts": 3573,
+            "max_mm": 42.4
+          },
+          "collar": {
+            "verts": 36,
+            "max_mm": 25.72
+          },
+          "collar_cross": {
+            "verts": 48,
+            "max_mm": 3.49
+          },
+          "collar_plate": {
+            "verts": 16,
+            "max_mm": 5.15
+          },
+          "garter_straps": {
+            "verts": 1,
+            "max_mm": 17.97
+          },
+          "hair_clump_00": {
+            "verts": 7,
+            "max_mm": 13.09
+          },
+          "hair_clump_01": {
+            "verts": 7,
+            "max_mm": 13.09
+          },
+          "hair_clump_02": {
+            "verts": 1,
+            "max_mm": 0.04
+          },
+          "hair_clump_03": {
+            "verts": 1,
+            "max_mm": 0.04
+          },
+          "hair_clump_18": {
+            "verts": 9,
+            "max_mm": 9.06
+          },
+          "hair_clump_19": {
+            "verts": 5,
+            "max_mm": 5.54
+          },
+          "hair_clump_45": {
+            "verts": 9,
+            "max_mm": 1.51
+          },
+          "halter_straps": {
+            "verts": 1,
+            "max_mm": 0.74
+          },
+          "midback_strap": {
+            "verts": 199,
+            "max_mm": 20.36
+          }
+        },
+        "ao_rebaked_verts": 9114,
+        "profile": {
+          "shelf_px": 2.99,
+          "shelf_row": 4.0,
+          "upper_rows": 10,
+          "flat_rows": 3,
+          "lower_rows": 6,
+          "lower_step_px": 1.34,
+          "fold_px": 6.3,
+          "apex_below_sh_px": 8.0,
+          "apex_frac_upperarm": 0.432,
+          "side_projection_px": 11.76,
+          "bust_depth_px": 20.5,
+          "breaks_px": {
+            "yaw30_right": 9.91,
+            "yaw30_left": 2.76,
+            "yaw45_right": 11.42,
+            "yaw45_left": 2.52,
+            "yaw90_right": 11.76,
+            "yaw90_left": 1.72
+          },
+          "setback_to_fold": [
+            16.35,
+            16.35,
+            16.2,
+            15.0,
+            13.72,
+            10.82,
+            7.91,
+            6.02,
+            3.03,
+            1.45,
+            0.66,
+            0.24,
+            0.02,
+            0.14,
+            0.52,
+            1.19,
+            2.17,
+            3.51,
+            9.81
+          ]
+        }
+      }
+    },
+    "bodyKeys": {
+      "Breasts_LL": 1.0,
+      "Breasts_LLL": 0.5,
+      "Hips_01_L": 1.0,
+      "Hips_02_L": 1.0,
+      "Spine_Slim": 1.8,
+      "Chest_Slim": 0.5,
+      "Heels": 1.0
+    },
+    "legStretch": {
+      "k": 1.3,
+      "torso_k": 0.92,
+      "ankle_z": 0.0836,
+      "hip_z": 0.6963,
+      "neck_z": 1.0351
+    },
+    "waistPinch": {
+      "amount": 0.25,
+      "at": 0.63,
+      "sigma_lo": 0.06,
+      "sigma_hi": 0.045,
+      "z": 1.2988
+    },
+    "assemblyHeight": 1.8956
+  },
+  "historicalUnknown": [
+    "original argv",
+    "original full environment",
+    "original whole-model/base AO flag",
+    "original executable/runtime version",
+    "original build source hashes"
+  ],
+  "notHistoricalExactRebuildClaim": true,
+  "newExplicitAoChoiceDoesNotInferOldAo": true,
+  "downstreamOnly": [
+    "head1.10",
+    "p5 pose/drape",
+    "r2_model render-time mesh/circlet/pin/pose edits",
+    "unchanged R2 finish"
+  ],
+  "forbiddenRoutes": [
+    "drive9/bl_build.py",
+    "overwriting cached canonical/backups",
+    "feeding newSHA to old H.EXPECTED_BLEND guard",
+    "silent fresh-for-aef substitution"
+  ],
+  "expectedFreshBinaryShaRelation": "different, separately identified; byte difference is expected and not by itself an art/structural mismatch or promotion",
+  "nativeStillUnverified": [
+    "actual observed Blender/Python/NumPy/tool-package versions",
+    "unobserved OS/DLL/driver activity, neither absent claim nor blanket tracing prerequisite",
+    "relevant external resources when observed, with path/hash/context",
+    "actual private project outputs/logs/owned cleanup and protected before-after hashes/file sets",
+    "actual fresh build/schema/hash/receipt",
+    "native structural/render comparison"
+  ],
+  "nativeExecutionAllowedHere": false,
+  "defaultPromotionAllowed": false,
+  "art9OrPipelineComplete": false
+}

@@ -1,0 +1,2765 @@
+{
+  "schema": "rosace.closed-r2-phase2-cohort/1",
+  "id": "rosace-closed-r2-idle-back-sixpass-20260930",
+  "selected": true,
+  "cohortRoot": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2",
+  "rows": [
+    {
+      "shot": "idle",
+      "px": 144,
+      "mode": "CLOSED/R2",
+      "meta": {
+        "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\meta.json",
+        "sha256": "db008864b22c93913599fa710fd392a26eb9d1bc7d4b799785d5885c35953fb6"
+      },
+      "raw6": {
+        "id.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\id.png",
+          "sha256": "9a4b76e1d6d30c557fecccf9540a46404ce7e6603a6ce719dde95335c50d3a62"
+        },
+        "normal.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\normal.png",
+          "sha256": "fecd033537cc98bed9c21bade29ae270f8a6dcf700798a49bee5deadbe2fbb7c"
+        },
+        "depth.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\depth.png",
+          "sha256": "e1e34c86dbbd4f8514594f08e13ebc738969ce93bb41bca19d30786472621893"
+        },
+        "light.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\light.png",
+          "sha256": "ec0bb3066785454a364ebe443b213e1ce4cde811fda002b8a77a351fd2227f5f"
+        },
+        "beauty.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\beauty.png",
+          "sha256": "333fa203c9f1c7578386cf3dad14fcd6321fa7d7f32a9d04d64183aa4d35e869"
+        },
+        "noise.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\noise.png",
+          "sha256": "6baafc4914d8c5ddf6d5b41e9f08d3be40aa916faecaaa5444de711bc2769558"
+        }
+      },
+      "finished": {
+        "still.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\R2\\still.png",
+          "sha256": "49d76c0fc90dcbb1d8ecc029e48ecd8c8d4db18386869ad64b44e3575158b824"
+        },
+        "still_ground.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\R2\\still_ground.png",
+          "sha256": "7dee4fb09cef9a5db4de250298ca88330c74c9ce9cbe9f5216f05aee81873d49"
+        }
+      },
+      "pose": {
+        "path": "D:\\Dex\\Projects\\dex.place\\art\\rosace\\poses\\idle_appeal.json",
+        "rawSha256": "2091f3a1e497a8aef93ba4baa25b4f54e58a07ef1e8272186fb8768cba299adb",
+        "recordedSha1Prefix": "a89be9fabdd7",
+        "executingRelative": "art/rosace/poses/idle_appeal.json",
+        "executingRawSha256": "a89f0ddf1fcb2b6a8e623abba51a790aee676603d004d61ce9b04eb6578df958"
+      },
+      "effectiveMetadata": {
+        "canvas": [
+          134,
+          203
+        ],
+        "anchor": [
+          54,
+          195
+        ],
+        "anchors": {
+          "head_fwd_dot_cam": 0.9574474725523032,
+          "head_fwd_screen": [
+            0.25222900584646557,
+            0.1402675248682499
+          ],
+          "eye_L": [
+            223.56682062149048,
+            292.1395802497864,
+            11.72684383392334,
+            0.815759607590735
+          ],
+          "eye_R": [
+            192.21735835075378,
+            286.1181674003601,
+            11.696078300476074,
+            0.9977257139980793
+          ],
+          "mouth": [
+            204.05527567863464,
+            320.4097583293915,
+            11.679370880126953,
+            0.9574474725523032
+          ],
+          "head": [
+            194.40431690216064,
+            314.5555639266968,
+            11.802915573120117
+          ],
+          "root": [
+            216.0001871585846,
+            779.9999582022429,
+            12.0
+          ],
+          "hand_L": [
+            329.7394914627075,
+            280.59681272506714,
+            11.957548141479492
+          ],
+          "hand_L_tip": [
+            332.03547286987305,
+            281.16298389434814,
+            11.911953926086426
+          ],
+          "hand_R": [
+            129.47216498851776,
+            441.77913331985474,
+            11.737995147705078
+          ],
+          "hand_R_tip": [
+            151.45503044128418,
+            479.6594111919403,
+            11.723116874694824
+          ],
+          "knee_L": [
+            313.8987979888916,
+            569.0543444156647,
+            11.809452056884766
+          ],
+          "knee_R": [
+            192.44938135147095,
+            589.8050888776779,
+            11.858999252319336
+          ],
+          "grip_main": [
+            357.5488338470459,
+            356.9977836608887,
+            11.938668251037598
+          ],
+          "grip_mid": [
+            385.07310342788696,
+            436.14839696884155,
+            11.975824356079102
+          ],
+          "grip_off": [
+            412.5973410606384,
+            515.2989860773087,
+            12.012980461120605
+          ],
+          "glaive_tip": [
+            252.45623207092285,
+            54.78652262687683,
+            11.796798706054688
+          ],
+          "glaive_butt": [
+            502.67673683166504,
+            774.3372906297445,
+            12.134583473205566
+          ],
+          "glyph_outfit_tabx_c": [
+            220.20781445503235,
+            628.7781429290771,
+            11.801275253295898,
+            0.6482728011906147,
+            0.7611231152976776
+          ],
+          "glyph_outfit_tabx_t": [
+            219.3208556175232,
+            610.9100896120071,
+            11.795878410339355,
+            0.6482728011906147,
+            0.7611231152976776
+          ],
+          "glyph_outfit_slvx_L": [
+            303.526403427124,
+            479.70766496658325,
+            12.012151718139648,
+            0.9610465485602617,
+            -0.2763110865857694
+          ],
+          "glyph_outfit_slvx_R": [
+            43.42309659719467,
+            442.8721272945404,
+            12.094170570373535,
+            0.07333093509078026,
+            0.9056537484438465
+          ],
+          "glyph_collar_cross": [
+            207.01646423339844,
+            343.9977231025696,
+            11.767692565917969,
+            0.7443334758281708,
+            0.6649552067708271
+          ],
+          "glyph_outfit_win_t": [
+            219.8102843761444,
+            364.747572183609,
+            11.727272987365723,
+            0.7443334758281708,
+            0.6649552067708271
+          ],
+          "glyph_outfit_win_b": [
+            221.93441700935364,
+            400.0097076892853,
+            11.731310844421387,
+            0.7443334758281708,
+            0.6649552067708271
+          ],
+          "glyph_outfit_rose_f": [
+            218.3720293045044,
+            450.2985622882843,
+            11.769798278808594,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_rose_b": [
+            175.07811880111694,
+            440.8531399965286,
+            11.893559455871582,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glT_L": [
+            184.05618691444397,
+            448.5633623600006,
+            11.947508811950684,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glF_L": [
+            177.08873987197876,
+            479.7687928676605,
+            11.948217391967773,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glI_L": [
+            173.05471849441528,
+            462.41471242904663,
+            11.898362159729004,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glO_L": [
+            211.24929857254028,
+            469.7760992050171,
+            11.972208023071289,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glT_R": [
+            160.78818559646606,
+            438.34014439582825,
+            11.848655700683594,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glF_R": [
+            150.79725122451782,
+            466.082483291626,
+            11.857181549072266,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glI_R": [
+            168.08583211898804,
+            455.78361773490906,
+            11.883698463439941,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glO_R": [
+            155.37796831130981,
+            455.96656584739685,
+            11.748270034790039,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_ubust_L": [
+            256.66106390953064,
+            396.2040481567383,
+            11.71422290802002,
+            0.7443334758281708,
+            0.6649552067708271
+          ],
+          "glyph_outfit_ubust_R": [
+            225.4060242176056,
+            400.1731026172638,
+            11.6184720993042,
+            0.7443334758281708,
+            0.6649552067708271
+          ],
+          "glyph_outfit_waist": [
+            215.10626363754272,
+            450.38231670856476,
+            11.778367042541504,
+            0.662985650356859,
+            0.7402196290320291
+          ]
+        },
+        "ppm": 74.84526196712649,
+        "height_m": 1.9239694833755494,
+        "ss": 4,
+        "px": 144,
+        "yaw": 45.0,
+        "elev": 8.0,
+        "cam": {
+          "loc": [
+            -8.156946182250977,
+            -8.402583122253418,
+            2.9071640968322754
+          ],
+          "right": [
+            0.7071067690849304,
+            -0.7071067690849304,
+            0.0
+          ],
+          "up": [
+            0.09841025620698929,
+            0.09841025620698929,
+            0.9902681112289429
+          ],
+          "fwd": [
+            0.700225293636322,
+            0.700225293636322,
+            -0.13917312026023865
+          ]
+        },
+        "light_cam": [
+          0.5014058947563171,
+          0.6217433214187622,
+          0.6016870737075806
+        ],
+        "depth_range": [
+          9.0,
+          15.0
+        ],
+        "parts": {
+          "body": 36,
+          "head": 37,
+          "hair_mantle_C": 9,
+          "hair_fringe_frame_near": 5,
+          "hair_fringe_over_near": 4,
+          "hair_fringe_centre": 6,
+          "hair_fringe_over_far": 7,
+          "hair_fringe_frame_far": 8,
+          "hair_side_L": 13,
+          "hair_side_R": 12,
+          "hair_side_R2": 14,
+          "hair_sidemass_L": 11,
+          "hair_sidemass_R": 10,
+          "hair_mantle_L": 3,
+          "hair_mantle_R": 2,
+          "hair_tail_a": 15,
+          "hair_tail_b": 17,
+          "hair_tail_c": 16,
+          "gold_hair": 18,
+          "veil": 19,
+          "bodice": 20,
+          "gold_harness": 21,
+          "thong": 22,
+          "stockings": 23,
+          "gold_thigh": 24,
+          "boots": 25,
+          "gold_arm": 26,
+          "collar": 27,
+          "tabard": 28,
+          "anchor": 29,
+          "sleeves": 30,
+          "collar_cross": 31,
+          "collar_plate": 32,
+          "glaive": 33,
+          "glaive_glass": 34,
+          "stole": 35,
+          "circlet": 40,
+          "circlet_jewel": 41,
+          "head_ref": 0
+        },
+        "materials": {
+          "skin": {
+            "id": 1,
+            "ramp": [
+              "S4",
+              "S3",
+              "S2",
+              "S1"
+            ],
+            "line": "OL",
+            "selout": "S4",
+            "inner": "S4",
+            "spec": null
+          },
+          "white": {
+            "id": 2,
+            "ramp": [
+              "W4",
+              "W3",
+              "W2",
+              "W1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          },
+          "stocking": {
+            "id": 3,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "OL",
+            "spec": null
+          },
+          "gold": {
+            "id": 4,
+            "ramp": [
+              "G4",
+              "G3",
+              "G2",
+              "G1"
+            ],
+            "line": "OL",
+            "selout": "G4",
+            "inner": "G4",
+            "spec": "G0"
+          },
+          "hair": {
+            "id": 5,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "hairtip": {
+            "id": 6,
+            "ramp": [
+              "I3",
+              "A3",
+              "A3",
+              "A4"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I3",
+            "spec": null
+          },
+          "indigo": {
+            "id": 7,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "lining": {
+            "id": 8,
+            "ramp": [
+              "I4",
+              "I4",
+              "I3",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "OL",
+            "spec": null
+          },
+          "boot": {
+            "id": 9,
+            "ramp": [
+              "I4",
+              "I4",
+              "I3",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "haft": {
+            "id": 10,
+            "ramp": [
+              "OL",
+              "I4",
+              "I3",
+              "I2"
+            ],
+            "line": "OL",
+            "selout": "OL",
+            "inner": "OL",
+            "spec": "I1"
+          },
+          "steel": {
+            "id": 11,
+            "ramp": [
+              "T4",
+              "T4",
+              "T3",
+              "T2"
+            ],
+            "line": "OL",
+            "selout": "T4",
+            "inner": "T4",
+            "spec": "A5"
+          },
+          "edge": {
+            "id": 12,
+            "ramp": [
+              "T3",
+              "A5",
+              "A5",
+              "A5"
+            ],
+            "line": "OL",
+            "selout": "T3",
+            "inner": "T3",
+            "spec": null
+          },
+          "glass": {
+            "id": 13,
+            "ramp": [
+              "A2",
+              "A2",
+              "A2",
+              "A3"
+            ],
+            "line": "OL",
+            "selout": "A2",
+            "inner": "A2",
+            "spec": "A4"
+          },
+          "glass2": {
+            "id": 14,
+            "ramp": [
+              "A3",
+              "A3",
+              "A3",
+              "A4"
+            ],
+            "line": "OL",
+            "selout": "A2",
+            "inner": "A2",
+            "spec": null
+          },
+          "glasscore": {
+            "id": 15,
+            "ramp": [
+              "A4",
+              "A5",
+              "A5",
+              "A5"
+            ],
+            "line": "OL",
+            "selout": "A4",
+            "inner": "A4",
+            "spec": null
+          },
+          "beige": {
+            "id": 16,
+            "ramp": [
+              "W3",
+              "W2",
+              "B1",
+              "B1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          },
+          "thong": {
+            "id": 17,
+            "ramp": [
+              "OL",
+              "I4",
+              "I4",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "OL",
+            "inner": "OL",
+            "spec": "I2"
+          },
+          "steeldark": {
+            "id": 19,
+            "ramp": [
+              "T4",
+              "T4",
+              "T4",
+              "T3"
+            ],
+            "line": "OL",
+            "selout": "T4",
+            "inner": "T4",
+            "spec": "T2"
+          },
+          "veil": {
+            "id": 18,
+            "ramp": [
+              "W4",
+              "W3",
+              "W2",
+              "W1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          }
+        },
+        "pose": "idle_appeal",
+        "d9": {
+          "shot": "idle",
+          "expr": "idle_appeal",
+          "head": {
+            "head": 1.1,
+            "neck_w": 0.4,
+            "neck_l": 1.0,
+            "fit_h": true
+          },
+          "drape": "p5",
+          "r2": "D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/r2_model.json",
+          "r2_pose_patch": true
+        }
+      }
+    },
+    {
+      "shot": "idle",
+      "px": 80,
+      "mode": "CLOSED/R2",
+      "meta": {
+        "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\meta.json",
+        "sha256": "0fb1ea6a11ed0479c931bc72995049d1198301b5924984743a2df3caf0f5f746"
+      },
+      "raw6": {
+        "id.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\id.png",
+          "sha256": "edb8a0c84bedad03e210ad62e437985e6c1f3879e3485f4f4f8aa56a9ed6b585"
+        },
+        "normal.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\normal.png",
+          "sha256": "1768725a1869155d2ae489f9efef12dda954b1d64d814f4825bc5761839709af"
+        },
+        "depth.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\depth.png",
+          "sha256": "45c4d51cb73ecd5a394934008fe9a4419267de10bcd0302ba26fdb3c825ee017"
+        },
+        "light.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\light.png",
+          "sha256": "54470d44ad410cff53b6312da496f2b2d0ea7f67791a8ab01b3ff78a239cb406"
+        },
+        "beauty.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\beauty.png",
+          "sha256": "7bff7bd2822733054b2a2920ccb760dc150dd046a468ac96032dd511792e537d"
+        },
+        "noise.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\noise.png",
+          "sha256": "1ea71bfc05b10336dcdb2eefb8520dc5e242470520fa5b4027c07209110abb7f"
+        }
+      },
+      "finished": {
+        "still.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\R2\\still.png",
+          "sha256": "da0289d2b7a1bb8baf4caf53aa81fa2f1f8885d7c054dc26d5de19d2eaf82084"
+        },
+        "still_ground.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\R2\\still_ground.png",
+          "sha256": "8f21083dc95957974b57e23c7f2a6cd4231e057e102fac574a84afad96dbc8a5"
+        }
+      },
+      "pose": {
+        "path": "D:\\Dex\\Projects\\dex.place\\art\\rosace\\poses\\idle_appeal.json",
+        "rawSha256": "2091f3a1e497a8aef93ba4baa25b4f54e58a07ef1e8272186fb8768cba299adb",
+        "recordedSha1Prefix": "a89be9fabdd7",
+        "executingRelative": "art/rosace/poses/idle_appeal.json",
+        "executingRawSha256": "a89f0ddf1fcb2b6a8e623abba51a790aee676603d004d61ce9b04eb6578df958"
+      },
+      "effectiveMetadata": {
+        "canvas": [
+          80,
+          118
+        ],
+        "anchor": [
+          32,
+          111
+        ],
+        "anchors": {
+          "head_fwd_dot_cam": 0.9574474725523032,
+          "head_fwd_screen": [
+            0.25222900584646557,
+            0.1402675248682499
+          ],
+          "eye_L": [
+            132.2037124633789,
+            172.96643114089966,
+            11.726844787597656,
+            0.815759607590735
+          ],
+          "eye_R": [
+            114.78734970092773,
+            169.6212019920349,
+            11.69607925415039,
+            0.9977257139980793
+          ],
+          "mouth": [
+            121.36397361755371,
+            188.67209434509277,
+            11.67937183380127,
+            0.9574474725523032
+          ],
+          "head": [
+            116.00232124328613,
+            185.41976165771484,
+            11.802916526794434
+          ],
+          "root": [
+            128.00003051757812,
+            443.9999757707119,
+            12.000000953674316
+          ],
+          "hand_L": [
+            191.18852615356445,
+            166.55379009246826,
+            11.957549095153809
+          ],
+          "hand_L_tip": [
+            192.4640655517578,
+            166.8683214187622,
+            11.911954879760742
+          ],
+          "hand_R": [
+            79.9289083480835,
+            256.09950828552246,
+            11.737996101379395
+          ],
+          "hand_R_tip": [
+            92.14160919189453,
+            277.1441156864166,
+            11.72311782836914
+          ],
+          "knee_L": [
+            182.38815307617188,
+            326.8079650402069,
+            11.809453010559082
+          ],
+          "knee_R": [
+            114.91625785827637,
+            338.3361711502075,
+            11.859000205993652
+          ],
+          "grip_main": [
+            206.63816452026367,
+            208.99877977371216,
+            11.938669204711914
+          ],
+          "grip_mid": [
+            221.92941665649414,
+            252.97134232521057,
+            11.975825309753418
+          ],
+          "grip_off": [
+            237.2206687927246,
+            296.94387674331665,
+            12.012981414794922
+          ],
+          "glaive_tip": [
+            148.25339317321777,
+            41.10364580154419,
+            11.796799659729004
+          ],
+          "glaive_butt": [
+            287.26476669311523,
+            440.85404884815216,
+            12.134584426879883
+          ],
+          "glyph_outfit_tabx_c": [
+            130.3376007080078,
+            359.98786199092865,
+            11.801276206970215,
+            0.6482728011906147,
+            0.7611231152976776
+          ],
+          "glyph_outfit_tabx_t": [
+            129.84484672546387,
+            350.06117033958435,
+            11.795879364013672,
+            0.6482728011906147,
+            0.7611231152976776
+          ],
+          "glyph_outfit_slvx_L": [
+            176.62569046020508,
+            277.1709268093109,
+            12.012152671813965,
+            0.9610465485602617,
+            -0.2763110865857694
+          ],
+          "glyph_outfit_slvx_R": [
+            32.12387561798096,
+            256.7067394256592,
+            12.094171524047852,
+            0.07333093509078026,
+            0.9056537484438465
+          ],
+          "glyph_collar_cross": [
+            123.00907135009766,
+            201.77651596069336,
+            11.767693519592285,
+            0.7443334758281708,
+            0.6649552067708271
+          ],
+          "glyph_outfit_win_t": [
+            130.11674880981445,
+            213.30422973632812,
+            11.727273941040039,
+            0.7443334758281708,
+            0.6649552067708271
+          ],
+          "glyph_outfit_win_b": [
+            131.29681587219238,
+            232.89427042007446,
+            11.731311798095703,
+            0.7443334758281708,
+            0.6649552067708271
+          ],
+          "glyph_outfit_rose_f": [
+            129.31771278381348,
+            260.8325436115265,
+            11.76979923248291,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_rose_b": [
+            105.26555061340332,
+            255.5850751399994,
+            11.893560409545898,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glT_L": [
+            110.25336265563965,
+            259.86853885650635,
+            11.947509765625,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glF_L": [
+            106.38256072998047,
+            277.20488381385803,
+            11.94821834564209,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glI_L": [
+            104.14144515991211,
+            267.5637249946594,
+            11.89836311340332,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glO_L": [
+            125.36065101623535,
+            271.65339183807373,
+            11.972208976745605,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glT_R": [
+            97.32669830322266,
+            254.18896961212158,
+            11.84865665435791,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glF_R": [
+            91.77618026733398,
+            269.60137033462524,
+            11.857182502746582,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glI_R": [
+            101.38094902038574,
+            263.8797838687897,
+            11.883699417114258,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_glO_R": [
+            94.3210220336914,
+            263.98142981529236,
+            11.748270988464355,
+            0.6437037400901318,
+            0.7391564055974387
+          ],
+          "glyph_outfit_ubust_L": [
+            150.58939933776855,
+            230.7800178527832,
+            11.714223861694336,
+            0.7443334758281708,
+            0.6649552067708271
+          ],
+          "glyph_outfit_ubust_R": [
+            133.2254981994629,
+            232.98505687713623,
+            11.618473052978516,
+            0.7443334758281708,
+            0.6649552067708271
+          ],
+          "glyph_outfit_waist": [
+            127.50340461730957,
+            260.87906217575073,
+            11.77836799621582,
+            0.662985650356859,
+            0.7402196290320291
+          ]
+        },
+        "ppm": 41.580701092848045,
+        "height_m": 1.9239694833755494,
+        "ss": 4,
+        "px": 80,
+        "yaw": 45.0,
+        "elev": 8.0,
+        "cam": {
+          "loc": [
+            -8.143588066101074,
+            -8.415678977966309,
+            2.90848708152771
+          ],
+          "right": [
+            0.7071067690849304,
+            -0.7071067690849304,
+            0.0
+          ],
+          "up": [
+            0.09841025620698929,
+            0.09841025620698929,
+            0.9902681112289429
+          ],
+          "fwd": [
+            0.700225293636322,
+            0.700225293636322,
+            -0.13917312026023865
+          ]
+        },
+        "light_cam": [
+          0.5014058947563171,
+          0.6217433214187622,
+          0.6016870737075806
+        ],
+        "depth_range": [
+          9.0,
+          15.0
+        ],
+        "parts": {
+          "body": 36,
+          "head": 37,
+          "hair_mantle_C": 9,
+          "hair_fringe_frame_near": 5,
+          "hair_fringe_over_near": 4,
+          "hair_fringe_centre": 6,
+          "hair_fringe_over_far": 7,
+          "hair_fringe_frame_far": 8,
+          "hair_side_L": 13,
+          "hair_side_R": 12,
+          "hair_side_R2": 14,
+          "hair_sidemass_L": 11,
+          "hair_sidemass_R": 10,
+          "hair_mantle_L": 3,
+          "hair_mantle_R": 2,
+          "hair_tail_a": 15,
+          "hair_tail_b": 17,
+          "hair_tail_c": 16,
+          "gold_hair": 18,
+          "veil": 19,
+          "bodice": 20,
+          "gold_harness": 21,
+          "thong": 22,
+          "stockings": 23,
+          "gold_thigh": 24,
+          "boots": 25,
+          "gold_arm": 26,
+          "collar": 27,
+          "tabard": 28,
+          "anchor": 29,
+          "sleeves": 30,
+          "collar_cross": 31,
+          "collar_plate": 32,
+          "glaive": 33,
+          "glaive_glass": 34,
+          "stole": 35,
+          "circlet": 40,
+          "circlet_jewel": 41,
+          "head_ref": 0
+        },
+        "materials": {
+          "skin": {
+            "id": 1,
+            "ramp": [
+              "S4",
+              "S3",
+              "S2",
+              "S1"
+            ],
+            "line": "OL",
+            "selout": "S4",
+            "inner": "S4",
+            "spec": null
+          },
+          "white": {
+            "id": 2,
+            "ramp": [
+              "W4",
+              "W3",
+              "W2",
+              "W1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          },
+          "stocking": {
+            "id": 3,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "OL",
+            "spec": null
+          },
+          "gold": {
+            "id": 4,
+            "ramp": [
+              "G4",
+              "G3",
+              "G2",
+              "G1"
+            ],
+            "line": "OL",
+            "selout": "G4",
+            "inner": "G4",
+            "spec": "G0"
+          },
+          "hair": {
+            "id": 5,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "hairtip": {
+            "id": 6,
+            "ramp": [
+              "I3",
+              "A3",
+              "A3",
+              "A4"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I3",
+            "spec": null
+          },
+          "indigo": {
+            "id": 7,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "lining": {
+            "id": 8,
+            "ramp": [
+              "I4",
+              "I4",
+              "I3",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "OL",
+            "spec": null
+          },
+          "boot": {
+            "id": 9,
+            "ramp": [
+              "I4",
+              "I4",
+              "I3",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "haft": {
+            "id": 10,
+            "ramp": [
+              "OL",
+              "I4",
+              "I3",
+              "I2"
+            ],
+            "line": "OL",
+            "selout": "OL",
+            "inner": "OL",
+            "spec": "I1"
+          },
+          "steel": {
+            "id": 11,
+            "ramp": [
+              "T4",
+              "T4",
+              "T3",
+              "T2"
+            ],
+            "line": "OL",
+            "selout": "T4",
+            "inner": "T4",
+            "spec": "A5"
+          },
+          "edge": {
+            "id": 12,
+            "ramp": [
+              "T3",
+              "A5",
+              "A5",
+              "A5"
+            ],
+            "line": "OL",
+            "selout": "T3",
+            "inner": "T3",
+            "spec": null
+          },
+          "glass": {
+            "id": 13,
+            "ramp": [
+              "A2",
+              "A2",
+              "A2",
+              "A3"
+            ],
+            "line": "OL",
+            "selout": "A2",
+            "inner": "A2",
+            "spec": "A4"
+          },
+          "glass2": {
+            "id": 14,
+            "ramp": [
+              "A3",
+              "A3",
+              "A3",
+              "A4"
+            ],
+            "line": "OL",
+            "selout": "A2",
+            "inner": "A2",
+            "spec": null
+          },
+          "glasscore": {
+            "id": 15,
+            "ramp": [
+              "A4",
+              "A5",
+              "A5",
+              "A5"
+            ],
+            "line": "OL",
+            "selout": "A4",
+            "inner": "A4",
+            "spec": null
+          },
+          "beige": {
+            "id": 16,
+            "ramp": [
+              "W3",
+              "W2",
+              "B1",
+              "B1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          },
+          "thong": {
+            "id": 17,
+            "ramp": [
+              "OL",
+              "I4",
+              "I4",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "OL",
+            "inner": "OL",
+            "spec": "I2"
+          },
+          "steeldark": {
+            "id": 19,
+            "ramp": [
+              "T4",
+              "T4",
+              "T4",
+              "T3"
+            ],
+            "line": "OL",
+            "selout": "T4",
+            "inner": "T4",
+            "spec": "T2"
+          },
+          "veil": {
+            "id": 18,
+            "ramp": [
+              "W4",
+              "W3",
+              "W2",
+              "W1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          }
+        },
+        "pose": "idle_appeal",
+        "d9": {
+          "shot": "idle",
+          "expr": "idle_appeal",
+          "head": {
+            "head": 1.1,
+            "neck_w": 0.4,
+            "neck_l": 1.0,
+            "fit_h": true
+          },
+          "drape": "p5",
+          "r2": "D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/r2_model.json",
+          "r2_pose_patch": true
+        }
+      }
+    },
+    {
+      "shot": "back",
+      "px": 144,
+      "mode": "CLOSED/R2",
+      "meta": {
+        "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\meta.json",
+        "sha256": "b6305b96089c9314e29dcf0aeb074729e4f12c897e2e01b822481f5b1cd3147d"
+      },
+      "raw6": {
+        "id.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\id.png",
+          "sha256": "b68091744ac19ec6dadeca639d955863cfca7fce1ad80abb35390efe884d22b4"
+        },
+        "normal.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\normal.png",
+          "sha256": "7b5f0b75d57870cd65027d93d0d70127ab2ce146475f684a6253ee1679f6e4fc"
+        },
+        "depth.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\depth.png",
+          "sha256": "da227b28265838769ad8ab642dfe8c4e2327453cad48ef5b77ce88be46a0d0fd"
+        },
+        "light.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\light.png",
+          "sha256": "d144e5ada072d4247063491455e063f80e1ff61323767556d3edd1cf2a37c9e7"
+        },
+        "beauty.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\beauty.png",
+          "sha256": "cee79088a332841601e2faa4b91b5639759cc9b58f1424a2dd416b0b2f401608"
+        },
+        "noise.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\noise.png",
+          "sha256": "7e2fc66f3ddb8aee1344adb353ec681dbee118804347cd1c364f52a7339b4ec5"
+        }
+      },
+      "finished": {
+        "still.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\R2\\still.png",
+          "sha256": "b3fd70216408b873d82fcd0bcaf41e9dd3e7a6a0e1ff45f9b4e302b1d9a50c3c"
+        },
+        "still_ground.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\R2\\still_ground.png",
+          "sha256": "fc02eda40a6449acba729a454f2546c5f0fcf3a1066c90acfb45ebe24abfaa53"
+        }
+      },
+      "pose": {
+        "path": "D:\\Dex\\Projects\\dex.place\\art\\rosace\\poses\\back_appeal.json",
+        "rawSha256": "24f7a0435c3043598c2633c30deb4a7c203cd526ea38f385f0017126af4d3892",
+        "recordedSha1Prefix": "d65ee47e75d8",
+        "executingRelative": "art/rosace/poses/back_appeal.json",
+        "executingRawSha256": "ad591c59c5cfa0643cc9a9bd9300b63a567f993f22303d9fff571934cb81e47b"
+      },
+      "effectiveMetadata": {
+        "canvas": [
+          111,
+          204
+        ],
+        "anchor": [
+          80,
+          195
+        ],
+        "anchors": {
+          "head_fwd_dot_cam": 0.44421138148754835,
+          "head_fwd_screen": [
+            0.8947870921564194,
+            -0.04508174955844879
+          ],
+          "eye_L": [
+            341.667720079422,
+            280.86803913116455,
+            11.711795806884766,
+            0.1348897274583578
+          ],
+          "eye_R": [
+            327.40670943260193,
+            287.40529346466064,
+            11.613662719726562,
+            0.7172316778451204
+          ],
+          "mouth": [
+            349.9484238624573,
+            313.2956085205078,
+            11.659042358398438,
+            0.44421138148754835
+          ],
+          "head": [
+            315.2769613265991,
+            314.6060457229614,
+            11.716217041015625
+          ],
+          "root": [
+            319.9998621940613,
+            780.0006101131439,
+            12.000001907348633
+          ],
+          "hand_L": [
+            178.28432071208954,
+            296.73467445373535,
+            11.869332313537598
+          ],
+          "hand_L_tip": [
+            190.5231817960739,
+            299.61979579925537,
+            11.888751983642578
+          ],
+          "hand_R": [
+            366.4845049381256,
+            488.28342962265015,
+            11.63640022277832
+          ],
+          "hand_R_tip": [
+            356.44005060195923,
+            530.5498566627502,
+            11.639887809753418
+          ],
+          "knee_L": [
+            249.29552578926086,
+            603.6928796768188,
+            11.84566593170166
+          ],
+          "knee_R": [
+            337.59023451805115,
+            589.7349457740784,
+            11.853172302246094
+          ],
+          "grip_main": [
+            173.1250605583191,
+            357.9636039733887,
+            11.915694236755371
+          ],
+          "grip_mid": [
+            145.6016889810562,
+            437.1148524284363,
+            11.952842712402344
+          ],
+          "grip_off": [
+            118.07831740379333,
+            516.2660279273987,
+            11.989991188049316
+          ],
+          "glaive_tip": [
+            278.21430230140686,
+            55.74992752075195,
+            11.77385425567627
+          ],
+          "glaive_butt": [
+            28.001822590827942,
+            775.3063997626305,
+            12.111568450927734
+          ],
+          "glyph_outfit_tabx_c": [
+            359.97464418411255,
+            575.3621349334717,
+            12.236069679260254,
+            -0.5413206797093153,
+            0.3345602755236037
+          ],
+          "glyph_outfit_tabx_t": [
+            358.2974588871002,
+            564.607264995575,
+            12.188340187072754,
+            -0.5413206797093153,
+            0.3345602755236037
+          ],
+          "glyph_outfit_slvx_L": [
+            210.72513341903687,
+            486.97484064102173,
+            12.128816604614258,
+            0.15807151794433594,
+            0.7431503726947639
+          ],
+          "glyph_outfit_slvx_R": [
+            310.51370215415955,
+            463.8508257865906,
+            12.066805839538574,
+            -0.9485561791807413,
+            0.09944586186317306
+          ],
+          "glyph_collar_cross": [
+            332.1368086338043,
+            341.70563220977783,
+            11.767378807067871,
+            -0.5389495939016342,
+            0.8275225222009297
+          ],
+          "glyph_outfit_win_t": [
+            347.073668718338,
+            360.5822410583496,
+            11.809793472290039,
+            -0.5389495939016342,
+            0.8275225222009297
+          ],
+          "glyph_outfit_win_b": [
+            348.1270866394043,
+            395.4848699569702,
+            11.828115463256836,
+            -0.5389495939016342,
+            0.8275225222009297
+          ],
+          "glyph_outfit_rose_f": [
+            335.57128715515137,
+            442.4775137901306,
+            11.879197120666504,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_rose_b": [
+            309.59848165512085,
+            446.83163022994995,
+            11.707480430603027,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glT_L": [
+            292.3758330345154,
+            452.9226851463318,
+            11.728946685791016,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glF_L": [
+            293.8293671607971,
+            481.22869777679443,
+            11.710607528686523,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glI_L": [
+            309.26910495758057,
+            464.98252058029175,
+            11.706597328186035,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glO_L": [
+            279.99874806404114,
+            463.76298666000366,
+            11.821433067321777,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glT_R": [
+            325.86025857925415,
+            445.57036542892456,
+            11.670339584350586,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glF_R": [
+            328.2433304786682,
+            474.906907081604,
+            11.657015800476074,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glI_R": [
+            315.30337285995483,
+            462.5181369781494,
+            11.698726654052734,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glO_R": [
+            357.9079020023346,
+            458.7670269012451,
+            11.687251091003418,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_ubust_L": [
+            355.6149151325226,
+            386.98300552368164,
+            11.942511558532715,
+            -0.5389495939016342,
+            0.8275225222009297
+          ],
+          "glyph_outfit_ubust_R": [
+            381.01320362091064,
+            392.98962593078613,
+            11.831442832946777,
+            -0.5389495939016342,
+            0.8275225222009297
+          ],
+          "glyph_outfit_waist": [
+            333.8955309391022,
+            443.5498466491699,
+            11.86701774597168,
+            -0.8379611889249645,
+            0.5319945293530067
+          ]
+        },
+        "ppm": 74.84526196712649,
+        "height_m": 1.9239694833755494,
+        "ss": 4,
+        "px": 144,
+        "yaw": 150.0,
+        "elev": 8.0,
+        "cam": {
+          "loc": [
+            -5.571656227111816,
+            10.305075645446777,
+            2.9005484580993652
+          ],
+          "right": [
+            -0.866025447845459,
+            -0.5,
+            0.0
+          ],
+          "up": [
+            0.06958655267953873,
+            -0.12052745372056961,
+            0.9902680516242981
+          ],
+          "fwd": [
+            0.49513402581214905,
+            -0.857597291469574,
+            -0.13917310535907745
+          ]
+        },
+        "light_cam": [
+          0.5014058947563171,
+          0.6217433214187622,
+          0.6016870737075806
+        ],
+        "depth_range": [
+          9.0,
+          15.0
+        ],
+        "parts": {
+          "body": 36,
+          "head": 37,
+          "hair_mantle_C": 9,
+          "hair_fringe_frame_near": 5,
+          "hair_fringe_over_near": 4,
+          "hair_fringe_centre": 6,
+          "hair_fringe_over_far": 7,
+          "hair_fringe_frame_far": 8,
+          "hair_side_L": 13,
+          "hair_side_R": 12,
+          "hair_side_R2": 14,
+          "hair_sidemass_L": 11,
+          "hair_sidemass_R": 10,
+          "hair_mantle_L": 3,
+          "hair_mantle_R": 2,
+          "hair_tail_a": 15,
+          "hair_tail_b": 17,
+          "hair_tail_c": 16,
+          "gold_hair": 18,
+          "veil": 19,
+          "bodice": 20,
+          "gold_harness": 21,
+          "thong": 22,
+          "stockings": 23,
+          "gold_thigh": 24,
+          "boots": 25,
+          "gold_arm": 26,
+          "collar": 27,
+          "tabard": 28,
+          "anchor": 29,
+          "sleeves": 30,
+          "collar_cross": 31,
+          "collar_plate": 32,
+          "glaive": 33,
+          "glaive_glass": 34,
+          "stole": 35,
+          "circlet": 40,
+          "circlet_jewel": 41,
+          "head_ref": 0
+        },
+        "materials": {
+          "skin": {
+            "id": 1,
+            "ramp": [
+              "S4",
+              "S3",
+              "S2",
+              "S1"
+            ],
+            "line": "OL",
+            "selout": "S4",
+            "inner": "S4",
+            "spec": null
+          },
+          "white": {
+            "id": 2,
+            "ramp": [
+              "W4",
+              "W3",
+              "W2",
+              "W1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          },
+          "stocking": {
+            "id": 3,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "OL",
+            "spec": null
+          },
+          "gold": {
+            "id": 4,
+            "ramp": [
+              "G4",
+              "G3",
+              "G2",
+              "G1"
+            ],
+            "line": "OL",
+            "selout": "G4",
+            "inner": "G4",
+            "spec": "G0"
+          },
+          "hair": {
+            "id": 5,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "hairtip": {
+            "id": 6,
+            "ramp": [
+              "I3",
+              "A3",
+              "A3",
+              "A4"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I3",
+            "spec": null
+          },
+          "indigo": {
+            "id": 7,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "lining": {
+            "id": 8,
+            "ramp": [
+              "I4",
+              "I4",
+              "I3",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "OL",
+            "spec": null
+          },
+          "boot": {
+            "id": 9,
+            "ramp": [
+              "I4",
+              "I4",
+              "I3",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "haft": {
+            "id": 10,
+            "ramp": [
+              "OL",
+              "I4",
+              "I3",
+              "I2"
+            ],
+            "line": "OL",
+            "selout": "OL",
+            "inner": "OL",
+            "spec": "I1"
+          },
+          "steel": {
+            "id": 11,
+            "ramp": [
+              "T4",
+              "T4",
+              "T3",
+              "T2"
+            ],
+            "line": "OL",
+            "selout": "T4",
+            "inner": "T4",
+            "spec": "A5"
+          },
+          "edge": {
+            "id": 12,
+            "ramp": [
+              "T3",
+              "A5",
+              "A5",
+              "A5"
+            ],
+            "line": "OL",
+            "selout": "T3",
+            "inner": "T3",
+            "spec": null
+          },
+          "glass": {
+            "id": 13,
+            "ramp": [
+              "A2",
+              "A2",
+              "A2",
+              "A3"
+            ],
+            "line": "OL",
+            "selout": "A2",
+            "inner": "A2",
+            "spec": "A4"
+          },
+          "glass2": {
+            "id": 14,
+            "ramp": [
+              "A3",
+              "A3",
+              "A3",
+              "A4"
+            ],
+            "line": "OL",
+            "selout": "A2",
+            "inner": "A2",
+            "spec": null
+          },
+          "glasscore": {
+            "id": 15,
+            "ramp": [
+              "A4",
+              "A5",
+              "A5",
+              "A5"
+            ],
+            "line": "OL",
+            "selout": "A4",
+            "inner": "A4",
+            "spec": null
+          },
+          "beige": {
+            "id": 16,
+            "ramp": [
+              "W3",
+              "W2",
+              "B1",
+              "B1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          },
+          "thong": {
+            "id": 17,
+            "ramp": [
+              "OL",
+              "I4",
+              "I4",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "OL",
+            "inner": "OL",
+            "spec": "I2"
+          },
+          "steeldark": {
+            "id": 19,
+            "ramp": [
+              "T4",
+              "T4",
+              "T4",
+              "T3"
+            ],
+            "line": "OL",
+            "selout": "T4",
+            "inner": "T4",
+            "spec": "T2"
+          },
+          "veil": {
+            "id": 18,
+            "ramp": [
+              "W4",
+              "W3",
+              "W2",
+              "W1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          }
+        },
+        "pose": "back_appeal",
+        "d9": {
+          "shot": "back",
+          "expr": "back_appeal",
+          "head": {
+            "head": 1.1,
+            "neck_w": 0.4,
+            "neck_l": 1.0,
+            "fit_h": true
+          },
+          "drape": "p5",
+          "r2": "D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/r2_model.json",
+          "r2_pose_patch": true
+        }
+      }
+    },
+    {
+      "shot": "back",
+      "px": 80,
+      "mode": "CLOSED/R2",
+      "meta": {
+        "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\meta.json",
+        "sha256": "a0eb662d8e47dc07ba670d2f7aa96bcaad41f7f11b849edb30f1edb7a8dc0e19"
+      },
+      "raw6": {
+        "id.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\id.png",
+          "sha256": "4a5d87f6ae1f7c59f1a4c906387c2a8d03cb9d6ba433e73fc2571efbbd0a2e21"
+        },
+        "normal.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\normal.png",
+          "sha256": "1f61f26ad057db744a46057e0894d2b9e12eb96b85c93292b81db73b678a0e19"
+        },
+        "depth.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\depth.png",
+          "sha256": "d22cf3fa3afe930917bbb6a9df76b2ed87b1c17ad2f9f5debf398ea8f2d0bb38"
+        },
+        "light.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\light.png",
+          "sha256": "dca7c9d21dcf0a121f1bfa8ee678eb92605cf7b19f8c106a84c5a039cf335c9c"
+        },
+        "beauty.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\beauty.png",
+          "sha256": "e6e8d83aaec252f4c9d7fde9c32489a53aa6ed4fc8f970ead8d964df97fb88da"
+        },
+        "noise.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\noise.png",
+          "sha256": "e3252c298c0d864c1765d803929527f1defc8b1aa4da41210b04d0726b54a7a6"
+        }
+      },
+      "finished": {
+        "still.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\R2\\still.png",
+          "sha256": "523362373048939f996bb91721b6987972cc5db44f30397ad01def3907c478ac"
+        },
+        "still_ground.png": {
+          "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\R2\\still_ground.png",
+          "sha256": "094b0d7f3d794527c3a098e0f2dbf57debea05a179dcf2d05c3e47f307c34512"
+        }
+      },
+      "pose": {
+        "path": "D:\\Dex\\Projects\\dex.place\\art\\rosace\\poses\\back_appeal.json",
+        "rawSha256": "24f7a0435c3043598c2633c30deb4a7c203cd526ea38f385f0017126af4d3892",
+        "recordedSha1Prefix": "d65ee47e75d8",
+        "executingRelative": "art/rosace/poses/back_appeal.json",
+        "executingRawSha256": "ad591c59c5cfa0643cc9a9bd9300b63a567f993f22303d9fff571934cb81e47b"
+      },
+      "effectiveMetadata": {
+        "canvas": [
+          67,
+          119
+        ],
+        "anchor": [
+          47,
+          111
+        ],
+        "anchors": {
+          "head_fwd_dot_cam": 0.44421138148754835,
+          "head_fwd_screen": [
+            0.8947870921564194,
+            -0.04508174955844879
+          ],
+          "eye_L": [
+            200.03764367103577,
+            166.70447635650635,
+            11.711793899536133,
+            0.1348897274583578
+          ],
+          "eye_R": [
+            192.11486887931824,
+            170.33626675605774,
+            11.61366081237793,
+            0.7172316778451204
+          ],
+          "mouth": [
+            204.63802480697632,
+            184.71978187561035,
+            11.659040451049805,
+            0.44421138148754835
+          ],
+          "head": [
+            185.37612223625183,
+            185.44780254364014,
+            11.716215133666992
+          ],
+          "root": [
+            187.99993896484375,
+            444.00032818317413,
+            12.0
+          ],
+          "hand_L": [
+            109.26909565925598,
+            175.5192575454712,
+            11.869330406188965
+          ],
+          "hand_L_tip": [
+            116.06847178936005,
+            177.12209463119507,
+            11.888750076293945
+          ],
+          "hand_R": [
+            213.8247458934784,
+            281.93522453308105,
+            11.636398315429688
+          ],
+          "hand_R_tip": [
+            208.24450087547302,
+            305.41658639907837,
+            11.639885902404785
+          ],
+          "knee_L": [
+            148.71976280212402,
+            346.05160188674927,
+            11.845664024353027
+          ],
+          "knee_R": [
+            197.77236437797546,
+            338.2971887588501,
+            11.853170394897461
+          ],
+          "grip_main": [
+            106.40284883975983,
+            209.53532814979553,
+            11.915692329406738
+          ],
+          "grip_mid": [
+            91.11208581924438,
+            253.50824463367462,
+            11.952840805053711
+          ],
+          "grip_off": [
+            75.82132279872894,
+            297.48111855983734,
+            11.989989280700684
+          ],
+          "glaive_tip": [
+            164.7857542037964,
+            41.638866901397705,
+            11.773852348327637
+          ],
+          "glaive_butt": [
+            25.778829634189606,
+            441.39243388175964,
+            12.111566543579102
+          ],
+          "glyph_outfit_tabx_c": [
+            210.2081582546234,
+            330.312283039093,
+            12.236067771911621,
+            -0.5413206797093153,
+            0.3345602755236037
+          ],
+          "glyph_outfit_tabx_t": [
+            209.2763922214508,
+            324.33736407756805,
+            12.188338279724121,
+            -0.5413206797093153,
+            0.3345602755236037
+          ],
+          "glyph_outfit_slvx_L": [
+            127.29177176952362,
+            281.2082394361496,
+            12.128814697265625,
+            0.15807151794433594,
+            0.7431503726947639
+          ],
+          "glyph_outfit_slvx_R": [
+            182.7298619747162,
+            268.361568570137,
+            12.066803932189941,
+            -0.9485561791807413,
+            0.09944586186317306
+          ],
+          "glyph_collar_cross": [
+            194.7426950931549,
+            200.5031337738037,
+            11.767376899719238,
+            -0.5389495939016342,
+            0.8275225222009297
+          ],
+          "glyph_outfit_win_t": [
+            203.04095578193665,
+            210.99014949798584,
+            11.809791564941406,
+            -0.5389495939016342,
+            0.8275225222009297
+          ],
+          "glyph_outfit_win_b": [
+            203.6261808872223,
+            230.38046646118164,
+            11.828113555908203,
+            -0.5389495939016342,
+            0.8275225222009297
+          ],
+          "glyph_outfit_rose_f": [
+            196.65073084831238,
+            256.4874975681305,
+            11.879195213317871,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_rose_b": [
+            182.2214081287384,
+            258.9064497947693,
+            11.707478523254395,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glT_L": [
+            172.6532588005066,
+            262.2903698682785,
+            11.728944778442383,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glF_L": [
+            173.46077871322632,
+            278.01594257354736,
+            11.71060562133789,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glI_L": [
+            182.03842544555664,
+            268.990287899971,
+            11.706595420837402,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glO_L": [
+            165.77710342407227,
+            268.3127690553665,
+            11.821431159973145,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glT_R": [
+            191.25572085380554,
+            258.2057511806488,
+            11.670337677001953,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glF_R": [
+            192.57964968681335,
+            274.50382447242737,
+            11.657013893127441,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glI_R": [
+            185.39078640937805,
+            267.62117779254913,
+            11.698724746704102,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_glO_R": [
+            209.05995988845825,
+            265.5372257232666,
+            11.687249183654785,
+            -0.888584298081696,
+            0.45697741707701933
+          ],
+          "glyph_outfit_ubust_L": [
+            207.78607773780823,
+            225.65721249580383,
+            11.942509651184082,
+            -0.5389495939016342,
+            0.8275225222009297
+          ],
+          "glyph_outfit_ubust_R": [
+            221.8962390422821,
+            228.99421977996826,
+            11.831440925598145,
+            -0.5389495939016342,
+            0.8275225222009297
+          ],
+          "glyph_outfit_waist": [
+            195.71976351737976,
+            257.0832488536835,
+            11.867015838623047,
+            -0.8379611889249645,
+            0.5319945293530067
+          ]
+        },
+        "ppm": 41.580701092848045,
+        "height_m": 1.9239694833755494,
+        "ss": 4,
+        "px": 80,
+        "yaw": 150.0,
+        "elev": 8.0,
+        "cam": {
+          "loc": [
+            -5.574249267578125,
+            10.304222106933594,
+            2.8965790271759033
+          ],
+          "right": [
+            -0.866025447845459,
+            -0.5,
+            0.0
+          ],
+          "up": [
+            0.06958655267953873,
+            -0.12052745372056961,
+            0.9902680516242981
+          ],
+          "fwd": [
+            0.49513402581214905,
+            -0.857597291469574,
+            -0.13917310535907745
+          ]
+        },
+        "light_cam": [
+          0.5014058947563171,
+          0.6217433214187622,
+          0.6016870737075806
+        ],
+        "depth_range": [
+          9.0,
+          15.0
+        ],
+        "parts": {
+          "body": 36,
+          "head": 37,
+          "hair_mantle_C": 9,
+          "hair_fringe_frame_near": 5,
+          "hair_fringe_over_near": 4,
+          "hair_fringe_centre": 6,
+          "hair_fringe_over_far": 7,
+          "hair_fringe_frame_far": 8,
+          "hair_side_L": 13,
+          "hair_side_R": 12,
+          "hair_side_R2": 14,
+          "hair_sidemass_L": 11,
+          "hair_sidemass_R": 10,
+          "hair_mantle_L": 3,
+          "hair_mantle_R": 2,
+          "hair_tail_a": 15,
+          "hair_tail_b": 17,
+          "hair_tail_c": 16,
+          "gold_hair": 18,
+          "veil": 19,
+          "bodice": 20,
+          "gold_harness": 21,
+          "thong": 22,
+          "stockings": 23,
+          "gold_thigh": 24,
+          "boots": 25,
+          "gold_arm": 26,
+          "collar": 27,
+          "tabard": 28,
+          "anchor": 29,
+          "sleeves": 30,
+          "collar_cross": 31,
+          "collar_plate": 32,
+          "glaive": 33,
+          "glaive_glass": 34,
+          "stole": 35,
+          "circlet": 40,
+          "circlet_jewel": 41,
+          "head_ref": 0
+        },
+        "materials": {
+          "skin": {
+            "id": 1,
+            "ramp": [
+              "S4",
+              "S3",
+              "S2",
+              "S1"
+            ],
+            "line": "OL",
+            "selout": "S4",
+            "inner": "S4",
+            "spec": null
+          },
+          "white": {
+            "id": 2,
+            "ramp": [
+              "W4",
+              "W3",
+              "W2",
+              "W1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          },
+          "stocking": {
+            "id": 3,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "OL",
+            "spec": null
+          },
+          "gold": {
+            "id": 4,
+            "ramp": [
+              "G4",
+              "G3",
+              "G2",
+              "G1"
+            ],
+            "line": "OL",
+            "selout": "G4",
+            "inner": "G4",
+            "spec": "G0"
+          },
+          "hair": {
+            "id": 5,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "hairtip": {
+            "id": 6,
+            "ramp": [
+              "I3",
+              "A3",
+              "A3",
+              "A4"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I3",
+            "spec": null
+          },
+          "indigo": {
+            "id": 7,
+            "ramp": [
+              "I4",
+              "I3",
+              "I2",
+              "I1"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "lining": {
+            "id": 8,
+            "ramp": [
+              "I4",
+              "I4",
+              "I3",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "OL",
+            "spec": null
+          },
+          "boot": {
+            "id": 9,
+            "ramp": [
+              "I4",
+              "I4",
+              "I3",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "I4",
+            "inner": "I4",
+            "spec": "I0"
+          },
+          "haft": {
+            "id": 10,
+            "ramp": [
+              "OL",
+              "I4",
+              "I3",
+              "I2"
+            ],
+            "line": "OL",
+            "selout": "OL",
+            "inner": "OL",
+            "spec": "I1"
+          },
+          "steel": {
+            "id": 11,
+            "ramp": [
+              "T4",
+              "T4",
+              "T3",
+              "T2"
+            ],
+            "line": "OL",
+            "selout": "T4",
+            "inner": "T4",
+            "spec": "A5"
+          },
+          "edge": {
+            "id": 12,
+            "ramp": [
+              "T3",
+              "A5",
+              "A5",
+              "A5"
+            ],
+            "line": "OL",
+            "selout": "T3",
+            "inner": "T3",
+            "spec": null
+          },
+          "glass": {
+            "id": 13,
+            "ramp": [
+              "A2",
+              "A2",
+              "A2",
+              "A3"
+            ],
+            "line": "OL",
+            "selout": "A2",
+            "inner": "A2",
+            "spec": "A4"
+          },
+          "glass2": {
+            "id": 14,
+            "ramp": [
+              "A3",
+              "A3",
+              "A3",
+              "A4"
+            ],
+            "line": "OL",
+            "selout": "A2",
+            "inner": "A2",
+            "spec": null
+          },
+          "glasscore": {
+            "id": 15,
+            "ramp": [
+              "A4",
+              "A5",
+              "A5",
+              "A5"
+            ],
+            "line": "OL",
+            "selout": "A4",
+            "inner": "A4",
+            "spec": null
+          },
+          "beige": {
+            "id": 16,
+            "ramp": [
+              "W3",
+              "W2",
+              "B1",
+              "B1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          },
+          "thong": {
+            "id": 17,
+            "ramp": [
+              "OL",
+              "I4",
+              "I4",
+              "I3"
+            ],
+            "line": "OL",
+            "selout": "OL",
+            "inner": "OL",
+            "spec": "I2"
+          },
+          "steeldark": {
+            "id": 19,
+            "ramp": [
+              "T4",
+              "T4",
+              "T4",
+              "T3"
+            ],
+            "line": "OL",
+            "selout": "T4",
+            "inner": "T4",
+            "spec": "T2"
+          },
+          "veil": {
+            "id": 18,
+            "ramp": [
+              "W4",
+              "W3",
+              "W2",
+              "W1"
+            ],
+            "line": "OL",
+            "selout": "W4",
+            "inner": "W4",
+            "spec": null
+          }
+        },
+        "pose": "back_appeal",
+        "d9": {
+          "shot": "back",
+          "expr": "back_appeal",
+          "head": {
+            "head": 1.1,
+            "neck_w": 0.4,
+            "neck_l": 1.0,
+            "fit_h": true
+          },
+          "drape": "p5",
+          "r2": "D:/Dex/Projects/dex.place/tools/pixel-pipeline/drive9/r2_model.json",
+          "r2_pose_patch": true
+        }
+      }
+    }
+  ],
+  "cachedCanonicalControlIdentity": {
+    "path": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\rosace.blend",
+    "sha256": "aef28c7f5cdddee6f18bd12c06d988b5436eeac24049ddf4f6ca37f654394373",
+    "rule": "separate cached aef identity; old H.EXPECTED_BLEND guard unchanged"
+  },
+  "actualRawHistoricalProvenance": {
+    "renderReceiptPath": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\_render.json",
+    "renderReceiptSha256": "e8927c90701fdf58703320d0a01726a9f74333dc44e113b236ecbc1eddfc52eb",
+    "recordedBlendPath": "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9.blend",
+    "recordedBlendSha256": "94f47a8f41d7d6e9d75f90b3f67c6c40574b9bb73761583b632b2325a588d908",
+    "currentRecordedBlendSha256": "94f47a8f41d7d6e9d75f90b3f67c6c40574b9bb73761583b632b2325a588d908",
+    "note": "historical raw cohort records lane94, not aef; controlled cached-aef replay must match samples, do not mislabel history"
+  },
+  "selectedRenderer": {
+    "entry": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\tools\\pixel-pipeline\\drive9\\d9_blender.py",
+    "sha256": "5edb5e43d299031f6dbe4c784520fa0920039fc622c7b6133e539f8d1af97f31",
+    "rawPasses": [
+      "id",
+      "normal",
+      "depth",
+      "light",
+      "beauty",
+      "noise"
+    ],
+    "sourceEvidence": "d9_blender.PASSES id/normal/depth/light/beauty plus separately emitted noise",
+    "noDepth2": true,
+    "noNxHandsW2ReconstructionCuffStack": true
+  },
+  "controlledDownstreamArgSelection": {
+    "common": [
+      "--shots",
+      "idle,back",
+      "--px",
+      "144,80",
+      "--ss",
+      "4",
+      "--head",
+      "1.10",
+      "--drape",
+      "p5",
+      "--r2",
+      "<executing-source>/tools/pixel-pipeline/drive9/r2_model.json"
+    ],
+    "cachedControl": [
+      "--blend",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\rosace.blend",
+      "--shots",
+      "idle,back",
+      "--px",
+      "144,80",
+      "--ss",
+      "4",
+      "--head",
+      "1.10",
+      "--drape",
+      "p5",
+      "--r2",
+      "<executing-source>/tools/pixel-pipeline/drive9/r2_model.json",
+      "--out",
+      "<fresh-phase2>/cached-aef-control"
+    ],
+    "freshInput": [
+      "--blend",
+      "<Phase1-actual-fresh-path-with-latefrozenSHA>",
+      "--shots",
+      "idle,back",
+      "--px",
+      "144,80",
+      "--ss",
+      "4",
+      "--head",
+      "1.10",
+      "--drape",
+      "p5",
+      "--r2",
+      "<executing-source>/tools/pixel-pipeline/drive9/r2_model.json",
+      "--out",
+      "<fresh-phase2>/fresh-baseline"
+    ],
+    "scope": "prospective controlled selection, not historical argv claim; Stage4 existing bound profile/directdriver route review precedes Phase2"
+  },
+  "downstreamEffectiveSettings": {
+    "head": {
+      "head": 1.1,
+      "neck_w": 0.4,
+      "neck_l": 1.0,
+      "fit_h": true
+    },
+    "drape": {
+      "idle": "p5",
+      "back": "p5"
+    },
+    "r2RenderTimePatches": {
+      "idle": {
+        "bones": {
+          "J_Bip_C_Hips": [
+            6.5,
+            19.5,
+            5.2
+          ],
+          "sleeve_R_1.scale": 0.78
+        },
+        "poles": {
+          "leg.L": [
+            0.35,
+            -0.75,
+            0.55
+          ],
+          "arm.R": [
+            -0.9,
+            1.0,
+            1.3
+          ]
+        },
+        "drape": {
+          "chains": {
+            "tabard": {
+              "g": 1.0,
+              "wind": [
+                0.0,
+                -0.05,
+                0.0
+              ]
+            },
+            "sleeve_R": {
+              "g": 0.5,
+              "wind": [
+                -0.3,
+                1.2,
+                0.2
+              ]
+            }
+          }
+        },
+        "figure": {
+          "torso": {
+            "bend": [
+              -15.6,
+              0,
+              -6.5
+            ]
+          },
+          "joints": {
+            "upper_chest": [
+              0,
+              8,
+              0
+            ]
+          },
+          "look": {
+            "at": "camera",
+            "amount": 0.6,
+            "neck": 0.35,
+            "tilt": 16,
+            "chin": 10
+          },
+          "hands": {
+            "R": {
+              "pos": [
+                -0.21,
+                0.09,
+                1.1
+              ]
+            }
+          }
+        }
+      },
+      "back": {
+        "figure": {
+          "look": {
+            "at": "camera",
+            "amount": 0.62,
+            "neck": 0.5,
+            "tilt": 6,
+            "chin": 7,
+            "max": 60
+          }
+        }
+      }
+    },
+    "cameraSource": "exact row effectiveMetadata from cached meta and matching _render pose yaw/elev, no guessing"
+  },
+  "unchangedFinish": {
+    "postPath": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\tools\\pixel-pipeline\\drive9\\d9_post.py",
+    "postSha256": "7ebc53600cb7793e48ee91bc84f481584a02aabac17fa71163e6f4a1b4ecbc99",
+    "finishPath": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\tools\\pixel-pipeline\\drive9\\r2_finish.json",
+    "finishSha256": "7228bc18217e343bca3fa2ed0829c1161cae4ada805a4da1349542b997b5e146",
+    "facesPath": "D:\\Dex\\Temp\\dex-place-rosace-source-baseline-contract-20260930\\tools\\pixel-pipeline\\drive9\\r2_faces.json",
+    "facesSha256": "c667720986abf9eee651a763602649593ae01932270dd8a8d9f389a70e198183",
+    "selection": "D1 preset, R2 finish/still+still_ground; downstream only, no duplicate bake"
+  },
+  "sourceContextInputs": {
+    "D:\\Dex\\Projects\\dex.place\\art\\rosace\\poses\\idle_appeal.json": {
+      "rawSha256": "2091f3a1e497a8aef93ba4baa25b4f54e58a07ef1e8272186fb8768cba299adb",
+      "canonicalLfSha256": "a89f0ddf1fcb2b6a8e623abba51a790aee676603d004d61ce9b04eb6578df958"
+    },
+    "D:\\Dex\\Projects\\dex.place\\tools\\pixel-pipeline\\drive9\\r2_model.json": {
+      "rawSha256": "932a260552058718bc4bf0f986884afaf53bb11f7d7e76193e0735903b5a0405",
+      "canonicalLfSha256": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3"
+    },
+    "D:\\Dex\\Projects\\dex.place\\art\\rosace\\poses\\back_appeal.json": {
+      "rawSha256": "24f7a0435c3043598c2633c30deb4a7c203cd526ea38f385f0017126af4d3892",
+      "canonicalLfSha256": "ad591c59c5cfa0643cc9a9bd9300b63a567f993f22303d9fff571934cb81e47b"
+    }
+  },
+  "supportingIntakes": {
+    "D:\\Dex\\Automation\\reports\\dex-suite-resumption-20260930\\source-findings\\character-fresh-baseline-recipe-intake-20260930.md": "073fc668db740735a56b88d9775a81b54d2a959297d9f444d261c18f8c80e793",
+    "D:\\Dex\\Automation\\reports\\dex-suite-resumption-20260930\\lanes\\rosace-motion\\source-baseline-draft-intake.md": "2be7d0bb0e06ff800e100295e3abdd5b6d2fa42fa8b7b8d195c60234506571cd"
+  },
+  "sequence": [
+    "Phase1 real fresh identity/receipt/source-env-input pins",
+    "Stage4 existing new-input-profile/direct-sixpass route review",
+    "Phase2 actual controlled cached-aef replay and fresh raw+finished comparison",
+    "acceptance/synthesis"
+  ],
+  "nativeComparisonRule": "exact validated RGBA8 dimensions/sample bytes with original fileSHA retained; exact camera/anchor/ppm; no resampling/compositing/numeric-image tolerance. Structural/normal/AO/material/pixel mismatches retained for synthesis, no automatic9.",
+  "seal": "ROOT READY pins this JSON SHA plus validates complete selected comparator input/source hash inventory, including both intake files. Existing source helper remains unchanged.",
+  "unknownHistorical": [
+    "original argv/env/native executable version/source hash at old render time",
+    "original initial base AO flag"
+  ],
+  "phase1StillAllowed": true,
+  "freshHashRequiredBeforePhase1": false,
+  "nativeBuildOrRenderExecuted": false,
+  "qualityAccepted": false
+}
