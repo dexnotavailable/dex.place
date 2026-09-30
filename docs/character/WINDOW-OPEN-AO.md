@@ -1,5 +1,40 @@
 # Bounded open-window AO diagnostic
 
+Entry follow-up, September30: frozen source129's held native request is preserved.
+The new `codex/rosace-window-ao-entry-bootstrap-20260930` worktree repairs only entry
+discovery and explicit source admission. `wrapper.py` temporarily adds its own directory
+and the reviewed helper directory before importing the actual siblings, restoring the
+exact `sys.path` list identity/content after imports succeed or fail. No geometry,
+S7 shape evaluation, ray formula, native guard or existing execute/main cleanup changes.
+The real `importlib` regression clears binding/native/geometry/rest/helper caches and
+removes those directories from the path; it loads the actual wrapper and siblings with
+no `bpy` import or native call. A separate forced-import-failure route checks restoration.
+
+The new request id is `rosace-open-window-physical-ao-entry-bootstrap-129-20260930`.
+Its source base is129; actual geometry/native parent remains545. Parent independently
+reviews this source before the runtime source commit, ROOT freeze and final READY:
+
+```text
+python art/rosace/integration/window_ao/binding.py check-admission --expected-source-head <full exact current source HEAD>
+python art/rosace/integration/window_ao/binding.py freeze --expected-source-head <full reviewed source HEAD>
+python art/rosace/integration/window_ao/binding.py verify
+```
+
+Freeze requires the exact explicit current runtime source HEAD and ancestry from545
+and129; freeze still checks actual545 parent HEAD. It records that reviewed `sourceHead`
+as a bounded ancestor. Native verify requires545,129 and that sourceHead ancestry plus
+complete exact runtime source/input/CLI/frozen-evidence fingerprints. It records the
+actual executing HEAD, while external ROOT READY/delivery admission pins that final
+HEAD exactly. Changed runtime source or an unrelated/non-descendant HEAD fails.
+
+The two-step checkpoint avoids a tracked commit-hash cycle: commit reviewed runtime
+code first, freeze at that exact live HEAD, then commit only generated manifest/receipt
+metadata. An unchanged runtime fingerprint permits that metadata-only descendant;
+ROOT READY records its final executing HEAD outside the tracked binding. Do not embed
+that final commit hash self-referentially in its manifest. Manifest/receipt JSON uses
+UTF-8 LF, matching eol=lf; binding/source-checks do not self-hash. The inherited binding
+here remains pending root's post-review freeze. Same four stills/guards, no art change.
+
 Stage2 source checkpoint, September30. Actual545 W2 native geometry preservation passed,
 but three fresh blind critics rejected the dark burgundy chest patch. Native opening
 light has median AO29/255 and ramp16/255; differently oriented other skin has about235

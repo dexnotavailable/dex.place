@@ -2,12 +2,21 @@
 import json
 import sys
 from pathlib import Path
-import binding
-import native
 
+HERE=Path(__file__).resolve().parent
 REPO=Path(__file__).resolve().parents[4]
-sys.path.insert(0,str(REPO/'tools/pixel-pipeline/next'))
-import nx_reconstruction_blender as X
+_import_path=sys.path[:]
+try:
+    # Blender --python/importlib does not guarantee the entry's directory is
+    # searchable. Scope both sibling/helper paths to dependency import only.
+    sys.path.insert(0,str(REPO/'tools/pixel-pipeline/next'))
+    sys.path.insert(0,str(HERE))
+    import binding
+    import native
+    import nx_reconstruction_blender as X
+finally:
+    sys.path[:]=_import_path
+    del _import_path
 
 
 def execute(mode,output,provenance):

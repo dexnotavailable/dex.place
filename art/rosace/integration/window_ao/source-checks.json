@@ -1,9 +1,10 @@
 {
   "schemaVersion": 1,
-  "state": "independent source review passed; native pending",
+  "state": "entry repair gated CPU checks passed; independent review and final binding/READY pending ROOT two-step freeze",
   "observedDate": "2026-09-30",
-  "worktree": "D:/Dex/Temp/dex-place-rosace-open-window-ao-20260930",
-  "head": "54518211eb9a342bc5f6689562c5a0179d466a52",
+  "worktree": "D:/Dex/Temp/dex-place-rosace-window-ao-entry-bootstrap-20260930",
+  "head": "1295062e2454c85d584751ba58448a1b18bef34c",
+  "geometryParent": "54518211eb9a342bc5f6689562c5a0179d466a52",
   "gate": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/resource-gate.ps1 -Owner rosace-source",
   "sourceFixtureCommand": "python art/rosace/integration/window_ao/check.py",
   "checks": {
@@ -14,12 +15,17 @@
     "currentViewLayerBaseOrdering": "pass, fixture hide_set rejects pre-link/no-Base calls; actual helper links and updates before hide_set, temporary hide_render remains true and original hidden flags remain exact",
     "unsupportedShapeContexts": "absolute, show-only/pinned, driven mesh/key and missing group explicitly rejected; known S7 nonzero relative mix supported",
     "rawOutsideScopeAndAlphaLeakage": "pass, CPU synthetic fixtures",
-    "allNewPythonSourceCompilation": "pass, in-memory compile with no bytecode output",
-    "bindingFreezeAndVerification": "pass, live read-only source/input/actual545 evidence hashes"
+    "allNewPythonSourceCompilation": "pass, fresh gated in-memory compile, no bytecode output",
+    "actualStrippedPathAndCacheEntryImport": "pass, 2 actual importlib routes, real siblings/helper modules loaded without HERE/helper directories or caches, exact sys.path identity/content restoration on success and injected import failure, no bpy/native called",
+    "frozenCalculationRestSourceBytes": "pass, geometry/native/rest_geometry/post/check_rest byte-exact frozen129 Git blobs",
+    "explicitExactSourceHeadAndAncestryAdmission": "pass, live check-admission HEAD129 exact plus545/129 ancestry; freeze exact runtime HEAD, runtime uses bounded source ancestor and exact fingerprints; external ROOT final executing HEAD remains exact",
+    "metadataOnlyDescendantAndRuntimeDriftGuards": "pass, CPU supplied lineage/fingerprint cases; metadata-only descendant with equal runtime fingerprints allowed, source drift or missing545/129/sourceHead ancestry and unrelated heads rejected; no synthetic Git commits made",
+    "bindingFreezeAndVerification": "pending parent independent review and ROOT freeze at exact reviewed new source HEAD"
   },
-  "bindingSha256": "74a4eeab68c5aa7e37f6001f7f0d7d41493bcc214f63965ad795c9c76ba76802",
-  "boundSourceFiles": 944,
-  "boundActual545OpenEvidenceFiles": 36,
+  "bindingSha256": null,
+  "previousHeldBindingSha256": "74a4eeab68c5aa7e37f6001f7f0d7d41493bcc214f63965ad795c9c76ba76802",
+  "previousHeldBoundSourceFiles": 944,
+  "previousHeldActual545OpenEvidenceFiles": 36,
   "boundCanonicalBlendSha256": "aef28c7f5cdddee6f18bd12c06d988b5436eeac24049ddf4f6ca37f654394373",
   "boundCanonicalBuildCompanion": "D:/Dex/Projects/dex-place-art/rosace/build/rosace_build.json, exact SHA in binding.json inputs",
   "nativeExecuted": false,
@@ -28,5 +34,6 @@
   "artAccepted": false,
   "defaultAdoption": false,
   "sourceReadyOrDispatched": false,
-  "limits": "Existing actual545 OPEN evidence is hash-bound only. Injected CPU surfaces do not establish native behavior. Parent review precedes READY and sole-delivery four-still request."
+  "gateAdmission": "four bounded60second attempts timed out behind valid delivery exclusive leases without running tests; fifth attempt acquired free boundary and all CPU checks/check-admission passed, no bypass",
+  "limits": "Existing129 source/request/binding/admission remain held and unchanged. Fresh source fixtures do not prove native behavior. ROOT sequence remains reviewed runtime code commit -> exact runtime-head freeze -> binding/receipt metadata commit -> external exact final-head READY/delivery admission. No new manifest/native/READY claimed by implementor."
 }
