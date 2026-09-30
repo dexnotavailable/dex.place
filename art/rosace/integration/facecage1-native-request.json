@@ -1,0 +1,64 @@
+{
+  "id": "rosace-stage2-facecage1-native-20260930",
+  "owner": "rosace-refinement",
+  "status": "source-integrated-native-pending",
+  "targetOwner": "rosace",
+  "nativeExecutorOwner": "delivery",
+  "sourceHead": "f5f586f379cb0e87890b7d94708e92f4a41aadf8",
+  "sourceBase": "bcb220de03c0b84e8fa68851328cd1d799a11de5",
+  "preservedOldFaceHead": "3d6ad4caecc0f2afea1b37606b21779e6cb411e0",
+  "worktree": "D:/Dex/Temp/dex-place-rosace-stage2-appearance-20260930",
+  "branch": "codex/rosace-stage2-appearance-20260930",
+  "modes": [
+    "control",
+    "facecage1"
+  ],
+  "poses": [
+    "idle",
+    "back"
+  ],
+  "sizes": [
+    144,
+    80
+  ],
+  "rawStillCount": 8,
+  "supersampling": 4,
+  "entry": "art/rosace/specialists/refinement/facecage/facecage_trial.py",
+  "post": "art/rosace/specialists/refinement/facecage/facecage_native_post.py",
+  "commands": "docs/character/specialists/refinement/FACE-CAGE1.md",
+  "parent": "exact frozen bcb R2 head/pose/scale/hair/rig/palette/stamps; hand1.0; noC1/Face2/window/cloth changes",
+  "reference": "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R2",
+  "inputHashesRecord": "D:\\Dex\\Automation\\reports\\dex-suite-resumption-20260930\\lanes\\rosace-refinement\\facecage1-input-hashes.json",
+  "dispatch": [
+    "Integrator emits exact merged-head native READY after dependency verification; no retarget of old requests",
+    "Standalone opt-in face experiment; do not mix into opening or cuff controls or canonical source/assets",
+    "Sole delivery at finite free native boundary, preserving primary opening-repair request and all frozen inputs",
+    "Packet exclusive/GPU leases, Python-exit-code1, bounded deadline, owned cleanup; no active-job interruption",
+    "Hash both canonical blends/7maps/R2 assets/both full exact rollback bundles before/after"
+  ],
+  "requiredGuards": [
+    "Actual copied geometry/topology/UV/attributes/weights/materials/hidden flags/originals",
+    "EXACT decoded protected welded/crown/back corner normals; reject any mismatch without waiver",
+    "True mixed Neck-weight vertices+one neighborhood protected; bounded displacement/positive Jacobian/triangles",
+    "Real rig/head metrics/head axes/eye bones/facing unchanged; actual bone matrices<=1e-6",
+    "Same camera/ppm/anchor/canvas/materials; finished R2 control0px",
+    "Raw outside union head+4SS and finished outside union head+2native0changes; retain/reject coupling, no compositing",
+    "Actual eye openness/stamp shifts/fringe/diadem/cheek/jaw/chin/profile144/80; no automatic9"
+  ],
+  "preview": "Real PREVIEW only after new outputs, stableID/exacthead/control/candidate native+raw paths/hashes/rollback;3freshneutralactualpixelcritics against fixed9human refs",
+  "limits": "Source-ready request only, native API/normal/geometry/appeal/motion/cloth/promote still unqualified",
+  "integratedSourceHead": "exact merged head supplied by STAGE2-FC1-READY.json",
+  "dependenciesSha256": {
+    "tools/pixel-pipeline/next/nx_hands_blender.py": "22f74176cccf91ad6f42192ec9a1a62f04d27722cc1f408dadd1b37af3890251",
+    "tools/pixel-pipeline/drive9/d9_blender.py": "5edb5e43d299031f6dbe4c784520fa0920039fc622c7b6133e539f8d1af97f31",
+    "tools/pixel-pipeline/drive9/r2_model.json": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3",
+    "tools/pixel-pipeline/drive9/r2_finish.json": "7228bc18217e343bca3fa2ed0829c1161cae4ada805a4da1349542b997b5e146",
+    "tools/pixel-pipeline/drive9/r2_faces.json": "c667720986abf9eee651a763602649593ae01932270dd8a8d9f389a70e198183",
+    "tools/pixel-pipeline/drive9/d9_post.py": "7ebc53600cb7793e48ee91bc84f481584a02aabac17fa71163e6f4a1b4ecbc99",
+    "tools/pixel-pipeline/finish_f1/f1_blender.py": "e7d95e72f5c0c23acca11726227076bf99a7f6c35667764f2c78df37825c4453",
+    "tools/pixel-pipeline/finish_f2/head_scale.py": "55220ee7bbf0ed54c2a6ac8de81e0a58a8bffc88c9e4132dfb36c1c597538563",
+    "tools/art-construct/wh2_px.py": "fed2c589ef899a6d91946062bc97fbc46265dc539292fdf48c1d1d297c1e4799",
+    "tools/pixel-pipeline/rosace_v2/head.py": "1958324d9a4fe31e41f209989a268503592e962fd2d718588619c2b881a01824"
+  },
+  "sourceChange": "Only original3d6 cage plus reviewedf5 cleanup correction; shared sharp_face545 irrelevant to standalone FC1 execution; not stacked."
+}
