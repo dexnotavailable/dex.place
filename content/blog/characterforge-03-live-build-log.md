@@ -13,7 +13,7 @@ Only our own renders appear here. No concept art, no other studios' models or st
 <!-- tldr:start -->
 
 > [!NOTE]
-> **TL;DR** — Product 1 (playable character): **14%** · Overall (Products 1 + 2): **8%** · Now: **S3 — Body + head topology** (family body template done (green); conforming C001's body to the dressed ghost D4. Face, hair, bone arms, shader and gameplay lanes running in parallel)
+> **TL;DR** — Product 1 (playable character): **15%** · Overall (Products 1 + 2): **8%** · Now: **S3 — Body + head topology** (C001 body conformed to the dressed ghost (identity green); head being rebuilt from a data-driven study of pro head construction; face, hair, bone arms, shader and gameplay lanes running)
 
 **Roadmap.** S0 to S10 are Product 1, S11 is Product 2.
 
@@ -22,7 +22,7 @@ Only our own renders appear here. No concept art, no other studios' models or st
 | S0 | Foundations: research, MMD dataset + metrics, reference shelf | ▶ in progress, 95% |
 | S1 | Critic (judge) kit + calibration | ✅ done |
 | S2 | C001 concept sheets + Meshy ghost | ✅ done |
-| S3 | Body + head topology (adult-female family template) | ▶ in progress, 70% |
+| S3 | Body + head topology (adult-female family template) | ▶ in progress, 85% |
 | S4 | Face system: eyes, mouth interior, expressions, face shading | ○ not started |
 | S5 | Hair, clothing layers, bone arms, boots | ○ not started |
 | S6 | Rig, weights, correctives, physics | ○ not started |
@@ -43,6 +43,22 @@ Only our own renders appear here. No concept art, no other studios' models or st
 Newest first. Times are local time at the build machine (UTC+7).
 
 ### 2026-10-01
+
+<a id="e-20261001-0539"></a>**05:39 · shader · S7**
+
+First pass of the layered toon shader kit in Blender: two-tier ramp, face shadow map, hull outline, matcap gold, sheer stockings and alpha-clip lace lit under four lighting presets. Test model is placeholder geometry, not the final character.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s7-shader-r2-blender-6f452f59.webp" width="1600" height="1548" alt="Render sheet from the shader lane, stage S7: First pass of the layered toon shader kit in Blender: two-tier ramp, face shadow map, hull outline, matcap gold, sheer stockings and alpha-clip lace lit under four lighting presets. Test model is placeholder geometry, not the final character." loading="lazy" decoding="async">
+
+---
+
+<a id="e-20261001-0539-2"></a>**05:39 · Hair, clothing layers, bone arms, boots · S5**
+
+New render: hair r2.
+
+<img src="/blog/characterforge-03-live-build-log/2026-10-01-s5-hair-r2-4a7bb5ff.webp" width="1162" height="1600" alt="Render sheet from the Hair, clothing layers, bone arms, boots lane, stage S5: New render: hair r2." loading="lazy" decoding="async">
+
+---
 
 <a id="e-20261001-0537"></a>**05:37 · character-forge S3 body · S3**
 
