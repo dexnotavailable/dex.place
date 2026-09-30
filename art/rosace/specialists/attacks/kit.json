@@ -1,0 +1,2124 @@
+{
+  "contract": "rosace.kit-plan/1",
+  "id": "rosace-original-kit-liturgy-20260930-v1",
+  "state": "authored-proposal",
+  "rendered": false,
+  "fps": 60,
+  "sourceH": 96,
+  "targetsH": [
+    80,
+    144
+  ],
+  "m1Chain": [
+    "m1_1",
+    "m1_2",
+    "m1_3",
+    "m1_4",
+    "m1_5"
+  ],
+  "firstMiniSequence": "n1-n2.json",
+  "exposureFormat": [
+    "drawingId",
+    "startTick",
+    "durationTicks"
+  ],
+  "boxFormat": [
+    "x",
+    "y",
+    "w",
+    "h"
+  ],
+  "units": "source pixel fields are exact H96 ratios; targetPx = sourcePx * targetH/96; H fields scale directly; x forward/y down",
+  "globalConstraints": [
+    "stepped raster drawings; no interpolated pixels",
+    "unwrapped yaw with intentional turn direction",
+    "at least one anatomical palm attached during weapon carries; support regrips explicitly authored",
+    "physical sleeve/tabard position+velocity carry through every transition",
+    "source root collision applies; plan never bypasses wall/body collision",
+    "contact feedback requires actual collision; ground response/spectacle may occur on whiff",
+    "persistent effects own world anchors and continue after cancels",
+    "flash/camera settings and finite resource gate apply; no specialist native execution"
+  ],
+  "clips": [
+    {
+      "id": "m1_3",
+      "name": "Sanctus",
+      "length": 55,
+      "leadFlag": "hair",
+      "entry": "N2 f17 current R1; both palms guide shaft upright before chest; never reset to idle",
+      "drawings": [
+        [
+          "A1",
+          1,
+          3
+        ],
+        [
+          "A2",
+          4,
+          3
+        ],
+        [
+          "D1",
+          7,
+          1
+        ],
+        [
+          "C1",
+          8,
+          2
+        ],
+        [
+          "T1",
+          10,
+          2
+        ],
+        [
+          "D2",
+          12,
+          1
+        ],
+        [
+          "C2",
+          13,
+          2
+        ],
+        [
+          "K1",
+          15,
+          6
+        ],
+        [
+          "D3",
+          21,
+          1
+        ],
+        [
+          "C3",
+          22,
+          4
+        ],
+        [
+          "F1",
+          26,
+          3
+        ],
+        [
+          "F2",
+          29,
+          3
+        ],
+        [
+          "R1",
+          32,
+          8
+        ],
+        [
+          "R2",
+          40,
+          8
+        ],
+        [
+          "R3",
+          48,
+          8
+        ]
+      ],
+      "keyDirections": {
+        "A1/A2": "catch shaft at middle; body shoulders/hips counterpose, broad stance",
+        "D1/C1": "first wrist-led twirl; body lean opens elbow/face space; physical shaft rigid",
+        "T1/D2/C2": "left support slides along shaft while right holds; second larger ring",
+        "K1": "rise onto toes; butt grip and diagonal high-rear glaive; held six ticks with growing cloth inertia",
+        "D3/C3": "strongest whole-body release, largest ring; front knee loads; hair fans on exit side",
+        "F1/F2/R1/R2/R3": "glaive high, ready for N4 overhead lift; progressively smaller settle spacing"
+      },
+      "root": [
+        {
+          "from": 7,
+          "to": 9,
+          "deltaSourcePx": [
+            4,
+            0
+          ]
+        },
+        {
+          "from": 12,
+          "to": 14,
+          "deltaSourcePx": [
+            4,
+            0
+          ]
+        },
+        {
+          "from": 21,
+          "to": 25,
+          "deltaSourcePx": [
+            4,
+            0
+          ]
+        }
+      ],
+      "feet": "alternate load without translating a planted toe; K1 raises heels, not floating soles",
+      "hits": [
+        {
+          "group": "n3:a",
+          "active": [
+            7,
+            8
+          ],
+          "nominal": 8,
+          "boxesSourcePx96": [
+            [
+              -53,
+              -178,
+              212,
+              178
+            ]
+          ],
+          "hitstop": 2,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": null,
+          "heavy": null,
+          "reactionStatus": "unspecified-canon; adapter decision required",
+          "anchor": "current-root",
+          "outwardX": true
+        },
+        {
+          "group": "n3:b",
+          "active": [
+            12,
+            13
+          ],
+          "nominal": 13,
+          "boxesSourcePx96": [
+            [
+              -67,
+              -192,
+              240,
+              192
+            ]
+          ],
+          "hitstop": 2,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": null,
+          "heavy": null,
+          "reactionStatus": "unspecified-canon; adapter decision required",
+          "anchor": "current-root",
+          "outwardX": true
+        },
+        {
+          "group": "n3:c",
+          "active": [
+            21,
+            23
+          ],
+          "nominal": 22,
+          "boxesSourcePx96": [
+            [
+              -81,
+              -206,
+              268,
+              206
+            ]
+          ],
+          "hitstop": 4,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": null,
+          "heavy": null,
+          "reactionStatus": "unspecified-canon; adapter decision required",
+          "anchor": "current-root",
+          "outwardX": true
+        }
+      ],
+      "fx": [
+        {
+          "ticks": [
+            7,
+            36
+          ],
+          "layer": "split-body-occlusion",
+          "shape": "three thrown filled glass rings grow from tip disc over2ticks to2.2/2.5/2.8H; band source6px; full1/leaded4/shards6 per ring",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            22,
+            30
+          ],
+          "layer": "back-around-body",
+          "shape": "nonhitting eight-pane mini-rose reaches3.2H",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            22,
+            25
+          ],
+          "layer": "contact",
+          "shape": "1.2H palette-dither halo +local star at victim",
+          "gate": "contact"
+        },
+        {
+          "ticks": [
+            22,
+            171
+          ],
+          "layer": "world",
+          "shape": "one150tick pane only on third group connect; max6",
+          "gate": "contact"
+        }
+      ],
+      "cues": {
+        "rim": "disc-centre A4 light radius120/96H, intensity1.2,8ticks each twirl",
+        "sound": "handbells/chime at8,13,22 gated to actual hit; third shimmer; swishes always",
+        "camera": "third hit only1wholepixel shake6ticks; reduce-motion0"
+      },
+      "cancel": [
+        [
+          "m1_4",
+          32
+        ],
+        [
+          "dash",
+          10
+        ],
+        [
+          "jump",
+          26
+        ],
+        [
+          "skill_q",
+          26
+        ],
+        [
+          "ult_r",
+          26
+        ],
+        [
+          "walk",
+          40
+        ]
+      ],
+      "iframes": []
+    },
+    {
+      "id": "m1_4",
+      "name": "Credo",
+      "length": 63,
+      "leadFlag": "all-cloth-at-hang",
+      "entry": "N3 f32 raised-glaive carry; front support foot remains actual world spot",
+      "drawings": [
+        [
+          "A1",
+          1,
+          3
+        ],
+        [
+          "A2",
+          4,
+          5
+        ],
+        [
+          "S1",
+          9,
+          1
+        ],
+        [
+          "C1",
+          10,
+          4
+        ],
+        [
+          "V1",
+          14,
+          3
+        ],
+        [
+          "V2",
+          17,
+          6
+        ],
+        [
+          "V3",
+          23,
+          2
+        ],
+        [
+          "V4",
+          25,
+          4
+        ],
+        [
+          "V5",
+          29,
+          5
+        ],
+        [
+          "R1",
+          34,
+          8
+        ],
+        [
+          "R2",
+          42,
+          8
+        ],
+        [
+          "R3",
+          50,
+          7
+        ],
+        [
+          "R4",
+          57,
+          7
+        ]
+      ],
+      "keyDirections": {
+        "A1/A2": "stretch boot-to-blade vertical line; arched ribcage without bending anatomical shaft",
+        "S1/C1": "snap blade into bite1H ahead; hips compress; haft leans back, no inverted cross",
+        "V1": "transfer weight to fixed haft; one locked primary hand, support can release only after load transfer",
+        "V2": "invert over planted weapon; strong curled-to-long silhouette; head/face corridor clear; weightless cloth away from body",
+        "V3/V4": "heels lead stretched snap then fall; weapon stays anchored at bite",
+        "V5": "land squash beyond haft; absorb with bent knees; cloth crashes and bounces once",
+        "R1/R2/R3/R4": "extract weapon behind, preserve exact hand-contact until extraction; carry into N5 yank"
+      },
+      "root": [
+        {
+          "from": 14,
+          "to": 16,
+          "deltaSourcePx": [
+            10,
+            -24
+          ]
+        },
+        {
+          "from": 17,
+          "to": 22,
+          "deltaSourcePx": [
+            40,
+            -16
+          ]
+        },
+        {
+          "from": 23,
+          "to": 24,
+          "deltaSourcePx": [
+            20,
+            10
+          ]
+        },
+        {
+          "from": 25,
+          "to": 28,
+          "deltaSourcePx": [
+            30,
+            20
+          ]
+        },
+        {
+          "from": 29,
+          "to": 33,
+          "deltaSourcePx": [
+            20,
+            10
+          ]
+        }
+      ],
+      "feet": "takeoff/landing only; no floor plant while inverted; bite fixed at inputOrigin+1H; ground clamp must not tilt weapon",
+      "hits": [
+        {
+          "group": "n4:a",
+          "active": [
+            9,
+            11
+          ],
+          "nominal": 10,
+          "boxesSourcePx96": [
+            [
+              29,
+              -163,
+              96,
+              163
+            ]
+          ],
+          "hitstop": 4,
+          "role": "narrow initial blade before wide fissures; temporal width caveat",
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            0.5,
+            1.5
+          ],
+          "heavy": true,
+          "reactionStatus": "known",
+          "anchor": "current-root",
+          "outwardX": true
+        },
+        {
+          "group": "n4:a",
+          "active": [
+            10,
+            12
+          ],
+          "nominal": 10,
+          "boxesSourcePx96": [
+            [
+              -24,
+              -34,
+              240,
+              34
+            ]
+          ],
+          "hitstop": 4,
+          "anchor": "inputOrigin",
+          "role": "wide floor shock shared damage group",
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            0.5,
+            1.5
+          ],
+          "heavy": true,
+          "reactionStatus": "known",
+          "outwardX": true
+        },
+        {
+          "group": "n4:b",
+          "active": [
+            18,
+            22
+          ],
+          "nominal": 18,
+          "boxesSourcePx96": [
+            [
+              53,
+              -106,
+              86,
+              106
+            ],
+            [
+              -24,
+              -77,
+              77,
+              77
+            ],
+            [
+              139,
+              -77,
+              77,
+              77
+            ]
+          ],
+          "hitstop": 3,
+          "anchor": "inputOrigin",
+          "persistent": true,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            0,
+            -3
+          ],
+          "heavy": null,
+          "reactionStatus": "known velocity; unspecified heavy flag",
+          "outwardX": true
+        }
+      ],
+      "fx": [
+        {
+          "ticks": [
+            9,
+            26
+          ],
+          "layer": "front",
+          "shape": "vertical crescent1.7H; full1/leaded6/shards11",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            10,
+            70
+          ],
+          "layer": "ground",
+          "shape": "filled fissures +/-1.25H from bite; brighter tips traverse3ticks, then leaded cracks",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            18,
+            34
+          ],
+          "layer": "world-split",
+          "shape": "seven jagged spikes at bite and+/-0.4/0.8/1.2H; heights1.1/0.9/0.7/0.5H; erupt3ticks/full2/decay",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            10,
+            28
+          ],
+          "layer": "ground",
+          "shape": "2.9H dust around bite clipped at edges",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            10,
+            13
+          ],
+          "layer": "contact",
+          "shape": "1.2H palette-dither halo; local star; enemy spark only on connect",
+          "gate": "contact"
+        }
+      ],
+      "cues": {
+        "rim": "bite A4 radius160/96H,intensity1.6 at18-30; floor-facing edges while inverted",
+        "sound": "chop swish8; physical floor stone crack10; glass rise18; held breath17-22; cloth snap23; contact chime4 on actual enemy/landing cue distinct",
+        "camera": "physical bite2px10ticks; vault lag4ticks; no zoom; enemy hit feedback distinct"
+      },
+      "cancel": [
+        [
+          "m1_5",
+          34
+        ],
+        [
+          "dash",
+          14
+        ],
+        [
+          "jump",
+          14
+        ],
+        [
+          "skill_q",
+          34
+        ],
+        [
+          "ult_r",
+          34
+        ],
+        [
+          "walk",
+          50
+        ]
+      ],
+      "iframes": [],
+      "cancelWeapon": "one smear retrieval on vault cancel; resulting rigid hand socket required before next tick"
+    },
+    {
+      "id": "m1_5",
+      "name": "Agnus Dei",
+      "length": 94,
+      "leadFlag": "sleeves-coil",
+      "entry": "N4f34 extraction; bind actual blade/haft and world bite until yank; preserve existing n5_r3c as control",
+      "drawings": [
+        [
+          "A1",
+          1,
+          4
+        ],
+        [
+          "A2",
+          5,
+          4
+        ],
+        [
+          "A3",
+          9,
+          14
+        ],
+        [
+          "A4",
+          23,
+          4
+        ],
+        [
+          "S1",
+          27,
+          1
+        ],
+        [
+          "S2",
+          28,
+          1
+        ],
+        [
+          "S3",
+          29,
+          1
+        ],
+        [
+          "C1",
+          30,
+          8
+        ],
+        [
+          "F1",
+          38,
+          5
+        ],
+        [
+          "F2",
+          43,
+          5
+        ],
+        [
+          "K1",
+          48,
+          7
+        ],
+        [
+          "K1",
+          55,
+          13
+        ],
+        [
+          "R1",
+          68,
+          9
+        ],
+        [
+          "R2",
+          77,
+          9
+        ],
+        [
+          "R3",
+          86,
+          9
+        ]
+      ],
+      "keyDirections": {
+        "A1/A2": "yank from rear and back-arc; retain meaningful body dip",
+        "A3": "deep coherent rear-three-quarter crouch; flat hip-high rear glaive; all cloth winds same direction;14tick hold with saint assembly",
+        "A4": "hips already unwound, shoulders following, weapon trailing; no second anticipation",
+        "S1/S2/S3": "unwrapped360turn; one-tick back/whole/front smear sequence; rigid colliders",
+        "C1": "front arms wide; saint different pose behind;8tick body contact hold",
+        "F1/F2/K1": "kneel without blade/butt floor clamp; upright glaive; body still while ring expands/shatters",
+        "R1/R2/R3": "rising through planted feet with continuous fabric settle; new-string entry inherits current state"
+      },
+      "root": [
+        {
+          "from": 9,
+          "to": 22,
+          "deltaSourcePx": [
+            -6,
+            0
+          ]
+        },
+        {
+          "from": 27,
+          "to": 30,
+          "deltaSourcePx": [
+            10,
+            0
+          ]
+        }
+      ],
+      "feet": "hold support spots through coil; turn about loaded toe; kneel butt authored above floor before solve",
+      "hits": [
+        {
+          "group": "n5:a",
+          "active": [
+            27,
+            31
+          ],
+          "nominal": 30,
+          "boxesSourcePx96": [
+            [
+              -154,
+              -79,
+              308,
+              53
+            ]
+          ],
+          "hitstop": 8,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            3,
+            -1.5
+          ],
+          "heavy": true,
+          "reactionStatus": "known",
+          "anchor": "current-root",
+          "outwardX": true
+        },
+        {
+          "group": "n5:b",
+          "active": [
+            54,
+            56
+          ],
+          "nominal": 54,
+          "boxesSourcePx96": [
+            [
+              -230,
+              -69,
+              153,
+              34
+            ],
+            [
+              77,
+              -69,
+              153,
+              34
+            ]
+          ],
+          "hitstop": 4,
+          "persistent": true,
+          "anchor": "ring-centre-at38",
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            2.4,
+            -3
+          ],
+          "heavy": null,
+          "reactionStatus": "known velocity; unspecified heavy flag",
+          "outwardX": true
+        },
+        {
+          "group": "n5:c",
+          "active": [
+            54,
+            58
+          ],
+          "nominal": 54,
+          "boxesSourcePx96": [
+            [
+              77,
+              -106,
+              77,
+              106
+            ],
+            [
+              154,
+              -144,
+              86,
+              144
+            ],
+            [
+              -154,
+              -106,
+              77,
+              106
+            ],
+            [
+              -240,
+              -144,
+              86,
+              144
+            ]
+          ],
+          "hitstop": 4,
+          "persistent": true,
+          "anchor": "ring-centre-at38",
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            0.5,
+            -3.5
+          ],
+          "heavy": null,
+          "reactionStatus": "known velocity; unspecified heavy flag",
+          "outwardX": true
+        }
+      ],
+      "fx": [
+        {
+          "ticks": [
+            5,
+            8
+          ],
+          "layer": "back",
+          "shape": "nonhitting back arc1.2H",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            9,
+            26
+          ],
+          "layer": "ground",
+          "shape": "dotted floor telegraph +/-2.4H,source12px high",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            9,
+            29
+          ],
+          "layer": "back",
+          "shape": "2.5H faceless glass saint G1 vigil; builds floor-up9-22; held23-29",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            30,
+            53
+          ],
+          "layer": "back",
+          "shape": "saint G2 arms wide; own distinct pose; leading internal glass cells; dimmer than hero",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            27,
+            37
+          ],
+          "layer": "split",
+          "shape": "3.3H cosmetic sweep; actual308/96H hit; back dimmer",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            38,
+            54
+          ],
+          "layer": "world-split",
+          "shape": "16-24cell ring; expands +/-1.6 to2.4H at48-53; shatter54",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            30,
+            33
+          ],
+          "layer": "contact",
+          "shape": "1.5H dither halo and source13pxstar only actual enemy hit",
+          "gate": "contact"
+        },
+        {
+          "id": "n5.shards",
+          "ticks": [
+            54,
+            80
+          ],
+          "layer": "world",
+          "shape": "ring cells shatter outward/up; saint cells fall into ring",
+          "gate": "always"
+        },
+        {
+          "id": "n5.spikes",
+          "ticks": [
+            54,
+            72
+          ],
+          "layer": "world",
+          "shape": "eight spikes erupt54-56,full57-58,glass-decay through72; outer heights1.5H",
+          "gate": "always"
+        },
+        {
+          "id": "n5.ground",
+          "ticks": [
+            30,
+            60
+          ],
+          "layer": "ground",
+          "shape": "stepped5.2H dust; source12px floor-light band; surface clipped",
+          "gate": "grounded"
+        },
+        {
+          "id": "n5.glyph",
+          "ticks": [
+            54,
+            110
+          ],
+          "layer": "ground",
+          "shape": "G2-to-G3 floortracery fading; no added hit",
+          "gate": "grounded"
+        }
+      ],
+      "cues": {
+        "rim": "saint backlight9-54 A3 radius200/96H intensity0.9; ring27-60 A4 radius160/96H1.6; kneel floorlight",
+        "sound": "coil breath/creak; silence27-29; contact bell/choir only connect; physical ring shatter54 crash/resolvechord always",
+        "camera": "coil2px back; contact3px forward on hit; physical shatter3px16ticks; no full-screen flash"
+      },
+      "cancel": [
+        [
+          "dash",
+          50
+        ],
+        [
+          "jump",
+          50
+        ],
+        [
+          "skill_q",
+          50
+        ],
+        [
+          "ult_r",
+          50
+        ],
+        [
+          "m1_1",
+          72
+        ],
+        [
+          "walk",
+          76
+        ]
+      ],
+      "iframes": [],
+      "poiseProposal": [
+        9,
+        29
+      ],
+      "dependency": "persistent ring/spikes required for f50cancel; without it use explicit f57fallback; no silent dropped finisher",
+      "secondBuild": "up to4absorbed panes add0.3H per side;7.2Hring; not enabled first build"
+    },
+    {
+      "id": "dash",
+      "name": "Procession",
+      "length": 23,
+      "leadFlag": "hair-veil",
+      "entry": "inherit any legal recovery; left/right grips and fabric velocity retained",
+      "drawings": [
+        [
+          "D1",
+          1,
+          3
+        ],
+        [
+          "D2",
+          4,
+          3
+        ],
+        [
+          "D3",
+          7,
+          4
+        ],
+        [
+          "D4",
+          11,
+          4
+        ],
+        [
+          "D5",
+          15,
+          3
+        ],
+        [
+          "D6",
+          18,
+          3
+        ],
+        [
+          "D7",
+          21,
+          3
+        ]
+      ],
+      "keyDirections": {
+        "D1": "low forward lean; hair/veil recoil; glaive travels rigidly with primary palm",
+        "D2/D3": "turn away then full back; cloth wraps around one turn direction",
+        "D4/D5": "unwind front; lean back to brake; broad curved silhouette",
+        "D6/D7": "heel-first skid then planted settle, fabric overshoots once"
+      },
+      "root": [
+        {
+          "from": 4,
+          "to": 9,
+          "deltaSourcePx": [
+            110,
+            0
+          ]
+        },
+        {
+          "from": 10,
+          "to": 17,
+          "deltaSourcePx": [
+            58,
+            0
+          ]
+        },
+        {
+          "from": 18,
+          "to": 23,
+          "deltaSourcePx": [
+            8,
+            0
+          ]
+        }
+      ],
+      "hits": [],
+      "iframes": [
+        [
+          3,
+          18
+        ]
+      ],
+      "perfectWindow": [
+        3,
+        10
+      ],
+      "airGravityZero": [
+        3,
+        17
+      ],
+      "feet": "no glued toe during travel; floor collision remains; no ground FX in air",
+      "fx": [
+        {
+          "ticks": [
+            4,
+            35
+          ],
+          "layer": "world-back",
+          "shape": "afterimages at4/8/12; each24ticks:full8/leaded8/shards8; same actual silhouette IDs, trail2.3H",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            4,
+            30
+          ],
+          "layer": "ground",
+          "shape": "thin streak clipped to surface; startup/brake dust only grounded",
+          "gate": "grounded"
+        }
+      ],
+      "cues": {
+        "rim": "back attached A4radius80/96H0.8 at4-18",
+        "sound": "silkwhirl, softglass, breath; no hit chime",
+        "camera": "4px direction push decays15% per tick; wholepixel quantization, reduce-motion0; no shake"
+      },
+      "cancel": [
+        [
+          "dash_attack",
+          10
+        ],
+        [
+          "skill_q",
+          10
+        ],
+        [
+          "ult_r",
+          10
+        ],
+        [
+          "jump",
+          6
+        ],
+        [
+          "dash",
+          20
+        ]
+      ],
+      "aspersionTailWindow": 8,
+      "twoDashLockout": 36
+    },
+    {
+      "id": "dash_attack",
+      "name": "Aspersion",
+      "length": 41,
+      "leadFlag": "stole",
+      "entry": "inherit Procession current momentum; capture immutable inputOrigin and actual seam anchor",
+      "drawings": [
+        [
+          "A1",
+          1,
+          3
+        ],
+        [
+          "S1",
+          4,
+          2
+        ],
+        [
+          "P1",
+          6,
+          4
+        ],
+        [
+          "W1",
+          10,
+          6
+        ],
+        [
+          "V1",
+          16,
+          12
+        ],
+        [
+          "R1",
+          28,
+          7
+        ],
+        [
+          "R2",
+          35,
+          7
+        ]
+      ],
+      "keyDirections": {
+        "A1": "sliding low; glaive at rear hip both hands; momentum no reset",
+        "S1/P1": "straight body extension and passing cut; maintain shoulder/hip offset; primary palm fixed",
+        "W1": "straighten into right shoulder carry, back toward victim line; support release authored",
+        "V1": "quiet proud walk-away hold, face over shoulder; seam shatters behind without a second swing",
+        "R1/R2": "catch glaive toward N3 middle-haft twirl entry; support hand regrip explicit"
+      },
+      "root": [
+        {
+          "from": 1,
+          "to": 3,
+          "deltaSourcePx": [
+            40,
+            0
+          ]
+        },
+        {
+          "from": 4,
+          "to": 9,
+          "deltaSourcePx": [
+            80,
+            0
+          ]
+        },
+        {
+          "from": 10,
+          "to": 15,
+          "deltaSourcePx": [
+            8,
+            0
+          ]
+        }
+      ],
+      "hits": [
+        {
+          "group": "aspersion:a",
+          "active": [
+            4,
+            9
+          ],
+          "nominal": 4,
+          "boxesSourcePx96": [
+            [
+              -10,
+              -106,
+              100,
+              96
+            ]
+          ],
+          "hitstop": 12,
+          "freeze": "victim-only",
+          "role": "moving pass box, accumulated travel is not instantaneous2.2H width",
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            0,
+            0
+          ],
+          "heavy": null,
+          "reactionStatus": "known velocity; unspecified heavy flag",
+          "anchor": "current-root",
+          "outwardX": true
+        },
+        {
+          "group": "aspersion:b",
+          "active": [
+            22,
+            25
+          ],
+          "nominal": 22,
+          "boxH": [
+            [
+              -0.3,
+              -0.9,
+              2.6,
+              0.9
+            ]
+          ],
+          "hitstop": 5,
+          "freeze": "victim-only",
+          "anchor": "inputOrigin",
+          "persistent": true,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            1.5,
+            -3
+          ],
+          "heavy": null,
+          "reactionStatus": "known velocity; unspecified heavy flag",
+          "outwardX": true
+        },
+        {
+          "group": "aspersion:droplets",
+          "active": [
+            26,
+            36
+          ],
+          "nominal": 26,
+          "hitstop": 1,
+          "freeze": "victim-only",
+          "geometry": "seven separate source12x12 landing boxes;26/27/29/30/32/34/36; derive from actual ballistic collision landing; distinct per-dropletgroup",
+          "persistent": true,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": null,
+          "heavy": null,
+          "reactionStatus": "unspecified-canon; adapter decision required",
+          "anchor": "world-ballistic-landings",
+          "outwardX": true
+        }
+      ],
+      "feet": "continuous sliding travel, no artificial plant before brake; wall stops travel; enemies do not stop tagged dash pass",
+      "fx": [
+        {
+          "ticks": [
+            4,
+            9
+          ],
+          "layer": "front",
+          "shape": "source150x10px needle-tail horizontal wedge",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            10,
+            21
+          ],
+          "layer": "world",
+          "shape": "seam hardens to3sourcepx leaded glass across2.6H at immutable inputOrigin",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            22,
+            36
+          ],
+          "layer": "world",
+          "shape": "seam opens1/3/12sourcepx; seven beads arc outward and splash16x4sourcepx at actual floor",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            4,
+            21
+          ],
+          "layer": "victim",
+          "shape": "cut line only on actual victim",
+          "gate": "contact"
+        },
+        {
+          "id": "aspersion.afterimages",
+          "spawnTicks": [
+            4,
+            7
+          ],
+          "layer": "world-back",
+          "gate": "always",
+          "lifeTicks": 24,
+          "decay": [
+            8,
+            8,
+            8
+          ],
+          "shape": "capture actual body/material-ID silhouette at each spawn; full8/leaded8/falling-shards8; immutable world transform"
+        }
+      ],
+      "cues": {
+        "rim": "seam-centre A4radius160/96H intensity2.0 for20ticks from22; backlights walk-away",
+        "sound": "clean shhk4; ambience duck10-21, boot clicks, glasscrack/midbell22, landing ticks",
+        "camera": "none on pass; verdict2px8ticks"
+      },
+      "cancel": [
+        [
+          "m1_3",
+          28
+        ],
+        [
+          "dash",
+          24
+        ],
+        [
+          "skill_q",
+          24
+        ],
+        [
+          "ult_r",
+          24
+        ],
+        [
+          "walk",
+          30
+        ]
+      ],
+      "iframes": [
+        [
+          1,
+          3
+        ]
+      ],
+      "dependency": "victim-only freeze and persistent world seam/landing boxes; do not stall Rosace12ticks on pass"
+    },
+    {
+      "id": "skill_q",
+      "name": "Nave",
+      "length": 81,
+      "leadFlag": "sleeves",
+      "entry": "inherit current body/weapon/grip; root planted; carry original string index",
+      "drawings": [
+        [
+          "Q1",
+          1,
+          3
+        ],
+        [
+          "Q2",
+          4,
+          3
+        ],
+        [
+          "T1",
+          7,
+          2
+        ],
+        [
+          "T2",
+          9,
+          2
+        ],
+        [
+          "T3",
+          11,
+          2
+        ],
+        [
+          "T4",
+          13,
+          2
+        ],
+        [
+          "T1",
+          15,
+          2
+        ],
+        [
+          "T2",
+          17,
+          2
+        ],
+        [
+          "T3",
+          19,
+          2
+        ],
+        [
+          "Q3",
+          21,
+          2
+        ],
+        [
+          "Q4",
+          23,
+          1
+        ],
+        [
+          "Q5",
+          24,
+          6
+        ],
+        [
+          "Q6",
+          30,
+          4
+        ],
+        [
+          "Q7",
+          34,
+          30
+        ],
+        [
+          "Q9",
+          64,
+          8
+        ],
+        [
+          "Q10",
+          72,
+          10
+        ]
+      ],
+      "keyDirections": {
+        "Q1/Q2": "two-hand flat overhead raise; elbows clear face; sleeves slide upward through real simulation",
+        "T1/T2/T3/T4": "flat overhead twirl; toes lift heels; hips stay rooted; cloth/hair float; never fake rise by foot drift",
+        "Q3/Q4": "long vertical stretch then butt-driven stamp; rigid butt clear of floor before impact",
+        "Q5/Q6": "contact squat then rise; left primary remains on planted glaive when right releases",
+        "Q7": "right blessing hand two fingers raised, head tilt; elegant counterpose; hero silhouette clear through windows",
+        "Q8": "conditional close raised hand4ticks on t10shatter only if still Q7; rejoins actual current pose",
+        "Q9/Q10": "recover with regrip; any input from52inherits sampled ritual state"
+      },
+      "conditionalDrawings": [
+        {
+          "id": "Q8",
+          "ticks": 4,
+          "when": "shatter t10 while still Q7",
+          "returns": "sample-current-Q-or-next-action-state"
+        }
+      ],
+      "root": [],
+      "feet": "both soles/toes stable; floor collision; no pelvis sink carrying planted butt through ground",
+      "hits": [
+        {
+          "group": "q:stamp",
+          "active": [
+            24,
+            26
+          ],
+          "nominal": 24,
+          "boxesSourcePx96": [
+            [
+              -77,
+              -24,
+              154,
+              24
+            ]
+          ],
+          "hitstop": 6,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            2,
+            -2
+          ],
+          "heavy": null,
+          "reactionStatus": "known velocity; unspecified heavy flag",
+          "anchor": "current-root",
+          "outwardX": true
+        },
+        {
+          "group": "q:lancets",
+          "active": [
+            30,
+            44
+          ],
+          "nominal": 30,
+          "geometry": "each pair has separate damage group;3ticks at pair rise; sourcewidth24; heights/positions listed in pairs",
+          "hitstop": 2,
+          "persistent": true,
+          "anchor": "stampOrigin-highestGroundAtX",
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            0,
+            -2
+          ],
+          "heavy": null,
+          "reactionStatus": "known velocity; unspecified heavy flag",
+          "outwardX": true
+        }
+      ],
+      "pairs": [
+        {
+          "tick": 30,
+          "xH": 0.5,
+          "heightH": 0.7
+        },
+        {
+          "tick": 33,
+          "xH": 0.95,
+          "heightH": 0.85
+        },
+        {
+          "tick": 36,
+          "xH": 1.4,
+          "heightH": 1
+        },
+        {
+          "tick": 39,
+          "xH": 1.85,
+          "heightH": 1.15
+        },
+        {
+          "tick": 42,
+          "xH": 2.3,
+          "heightH": 1.3
+        }
+      ],
+      "fx": [
+        {
+          "ticks": [
+            7,
+            20
+          ],
+          "layer": "split-overhead",
+          "shape": "1.8H flat overhead ellipse, back dimmer; gold converging/rising floor motes",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            24,
+            27
+          ],
+          "layer": "back",
+          "shape": "1.5H dither stamp halo/localstar from physical floor impact, separate enemy sparks",
+          "gate": "ground-contact"
+        },
+        {
+          "layer": "world-back",
+          "shape": "five rising lancet pairs,3-5cells,source24pxwidth; backglass/frontfloorband; persist to actual shatter",
+          "gate": "always",
+          "id": "q.standing-lancets",
+          "startTick": 30,
+          "endOn": "q.shatter:t10",
+          "clock": "persistent-effect-trigger-relative",
+          "autoFallbackEndTick": 154
+        },
+        {
+          "id": "q.crack",
+          "ticks": [
+            24,
+            90
+          ],
+          "layer": "ground",
+          "shape": "1.6H floorcrack/internal leading A0/A3",
+          "gate": "grounded"
+        },
+        {
+          "id": "q.dust",
+          "ticks": [
+            24,
+            50
+          ],
+          "layer": "ground",
+          "shape": "stepped6H dust clipped at edges",
+          "gate": "grounded"
+        }
+      ],
+      "cues": {
+        "rim": "disc top during twirl; A4base lights each pair radius70/96H0.9, strongest new pair; walks outward; no all-direction halo",
+        "sound": "raising choir/whoosh; physical floor bell/stone24; pair chimes30/33/36/39/42; ward-shot tik",
+        "camera": "physical stamp2px down and2px12tick shake; background70%from34; reduce-motion0"
+      },
+      "cancel": [
+        [
+          "any-input",
+          52
+        ]
+      ],
+      "iframes": [
+        [
+          21,
+          30
+        ]
+      ],
+      "cooldownTicks": 480,
+      "shatter": {
+        "earliestRetriggerTick": 44,
+        "autoTriggerTick": 144,
+        "clock": "persistent-effect, counted120ticks from stamp actor time; not tied to remaining clip",
+        "relativeTimeline": [
+          [
+            "float",
+            0,
+            10
+          ],
+          [
+            "vault-arches",
+            2,
+            8
+          ],
+          [
+            "silence",
+            6,
+            4
+          ],
+          [
+            "shatter",
+            10,
+            3
+          ],
+          [
+            "shards",
+            10,
+            31
+          ],
+          [
+            "glyphs",
+            10,
+            61
+          ]
+        ],
+        "enemyLiftSourcePx": 16,
+        "boxesSourcePx96": [
+          [
+            -269,
+            -173,
+            240,
+            173
+          ],
+          [
+            29,
+            -173,
+            240,
+            173
+          ]
+        ],
+        "hitstop": 8,
+        "freeze": "victim-only",
+        "sound": "organ then4tick silence; glasscrash with choir/reverb-tail",
+        "camera": "3px18ticks; background returns20ticks aftershatter",
+        "knockbackBasis": "sourceH96-px-per-tick",
+        "knockbackSourcePxPerTick": [
+          2.5,
+          2
+        ],
+        "heavy": true,
+        "anchor": "stampOrigin-highestGroundAtX"
+      },
+      "wards": "each standing lancet blocks projectiles on actual shape; break projectile,5pxstar; not false damage box barrier",
+      "secondBuild": "heldtwirl adds pair every18ticks,up to3; pane/hold total extras max4; max8.2H; rooted with noholdiframes; first build excludes"
+    },
+    {
+      "id": "ult_r",
+      "name": "Te Deum",
+      "length": 208,
+      "leadFlag": "all-cloth-float-fall",
+      "entry": "freeze world, preserve current pose under cutin then inherit rise; original string survives",
+      "drawings": [
+        [
+          "ENTRY-INHERITED",
+          1,
+          24
+        ],
+        [
+          "L1",
+          25,
+          4
+        ],
+        [
+          "L2",
+          29,
+          4
+        ],
+        [
+          "L3a",
+          33,
+          8
+        ],
+        [
+          "L3b",
+          41,
+          8
+        ],
+        [
+          "L3a",
+          49,
+          8
+        ],
+        [
+          "L3b",
+          57,
+          8
+        ],
+        [
+          "L3a",
+          65,
+          8
+        ],
+        [
+          "L3b",
+          73,
+          8
+        ],
+        [
+          "L3a",
+          81,
+          8
+        ],
+        [
+          "L3b",
+          89,
+          2
+        ],
+        [
+          "C1",
+          91,
+          2
+        ],
+        [
+          "C2",
+          93,
+          4
+        ],
+        [
+          "I1",
+          97,
+          8
+        ],
+        [
+          "I2",
+          105,
+          8
+        ],
+        [
+          "P1",
+          113,
+          16
+        ],
+        [
+          "P2",
+          129,
+          16
+        ],
+        [
+          "L4",
+          145,
+          6
+        ],
+        [
+          "L5",
+          151,
+          6
+        ],
+        [
+          "K1",
+          157,
+          26
+        ],
+        [
+          "K2",
+          183,
+          26
+        ]
+      ],
+      "keyDirections": {
+        "ENTRY-INHERITED": "body retains actual entry pose; cutin eyes shut/opening/ignited over24ticks, slide6/hold12/out6; no second newbodykey",
+        "L1/L2/L3a/L3b": "upright processional-cross rise24sourcepx; floating slow loop with physically drifting cloth; full rose behind head at73-90 beautyhold",
+        "C1/C2": "one vertical consecration twirl before oculus; silence91-94",
+        "I1/I2": "palette swaps of float/rose, stable darkbackground; no alternation",
+        "P1": "clockwise glaive sweep while eight petals release",
+        "P2": "skyward thrust; verticalbeam behind, fourtick dark silhouette and twoflankrim",
+        "L4/L5": "stretched fall then kneel/squash; realcloth bounce",
+        "K1/K2": "upright side glaive kneel; complete freeze161-182; then lift ignited eyes as cross thickens"
+      },
+      "root": [
+        {
+          "from": 25,
+          "to": 32,
+          "deltaSourcePx": [
+            0,
+            -24
+          ]
+        },
+        {
+          "from": 145,
+          "to": 156,
+          "deltaSourcePx": [
+            0,
+            24
+          ]
+        }
+      ],
+      "feet": "rise/fall explicitly airborne; world weapon constraints continue; fixed oculus anchored from head at rise completion",
+      "hits": [
+        {
+          "group": "r:flash1",
+          "active": [
+            95,
+            95
+          ],
+          "nominal": 95,
+          "geometry": "current logical viewport",
+          "hitstop": 0,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": null,
+          "heavy": null,
+          "reactionStatus": "unspecified-canon; adapter decision required",
+          "anchor": "logicalViewport",
+          "outwardX": true,
+          "freeze": "stage-world-freeze; no extra hitstop",
+          "storeKnockbackUntil": 197
+        },
+        {
+          "group": "r:wave1",
+          "active": [
+            113,
+            116
+          ],
+          "nominal": 113,
+          "geometry": "oculus ring inner0.4H outer1.9H; true ring mask",
+          "hitstop": 0,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": null,
+          "heavy": null,
+          "reactionStatus": "unspecified-canon; adapter decision required",
+          "anchor": "world-oculus-at-rise-end",
+          "outwardX": true,
+          "freeze": "stage-world-freeze; no extra hitstop",
+          "storeKnockbackUntil": 197
+        },
+        {
+          "group": "r:wave2",
+          "active": [
+            129,
+            132
+          ],
+          "nominal": 129,
+          "geometry": "eight axes,source20pxthick beams to viewportedges",
+          "hitstop": 0,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": null,
+          "heavy": null,
+          "reactionStatus": "unspecified-canon; adapter decision required",
+          "anchor": "world-oculus-at-rise-end",
+          "outwardX": true,
+          "freeze": "stage-world-freeze; no extra hitstop",
+          "storeKnockbackUntil": 197
+        },
+        {
+          "group": "r:wave3",
+          "active": [
+            145,
+            148
+          ],
+          "nominal": 145,
+          "geometry": "oculus circle diameter3.6H",
+          "hitstop": 0,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": null,
+          "heavy": null,
+          "reactionStatus": "unspecified-canon; adapter decision required",
+          "anchor": "world-oculus-at-rise-end",
+          "outwardX": true,
+          "freeze": "stage-world-freeze; no extra hitstop",
+          "storeKnockbackUntil": 197
+        },
+        {
+          "group": "r:wave4",
+          "active": [
+            195,
+            198
+          ],
+          "nominal": 195,
+          "geometry": "viewport plus1H past left/right, allheight",
+          "hitstop": 0,
+          "knockbackBasis": "sourceH96-px-per-tick",
+          "knockbackSourcePxPerTick": [
+            3,
+            -5
+          ],
+          "heavy": true,
+          "reactionStatus": "known",
+          "anchor": "logicalViewport-plus1H",
+          "outwardX": true,
+          "freeze": "stage-world-freeze; no extra hitstop",
+          "storeKnockbackUntil": 197
+        }
+      ],
+      "fx": [
+        {
+          "ticks": [
+            1,
+            24
+          ],
+          "layer": "cutin",
+          "shape": "logical viewportwidth x1H band; actual pixel-painted bust required; three eye drawings",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            33,
+            56
+          ],
+          "layer": "back",
+          "shape": "goldcircle/spokes/petals; one45degreewedge lossless rotations;3.6Hrose outer4.8Hlancets; floor hides underside",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            57,
+            112
+          ],
+          "layer": "back",
+          "shape": "about96glasscells fillclockwise; cobalt/azure/amethysthearts/goldoculus; internalA0leading",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            113,
+            128
+          ],
+          "layer": "split",
+          "shape": "eight clockwise petalsweep crescents; two drawing orientations lossless rotations",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            129,
+            144
+          ],
+          "layer": "back-vertical/front-other",
+          "shape": "16outerlancets fire along8axes; beams beyond viewport",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            145,
+            156
+          ],
+          "layer": "front",
+          "shape": "goldtracery slivers break, floor response",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            157,
+            194
+          ],
+          "layer": "screen",
+          "shape": "fullwidth/fullheight cross throughoculus; cores2px then4then8 at183/187/191; worldgrey; no texturefiltering",
+          "gate": "always"
+        },
+        {
+          "ticks": [
+            195,
+            208
+          ],
+          "layer": "screen",
+          "shape": "cross opens48/40sourcepx over3ticks; outwardcolourwipe; outline preserved",
+          "gate": "always"
+        }
+      ],
+      "stage": {
+        "worldFreeze": [
+          1,
+          196
+        ],
+        "storeKnockbackUntil": 197,
+        "victimTintPercent": 40,
+        "worldDimPercent": [
+          100,
+          60,
+          35,
+          25
+        ],
+        "totalFreezeIncludingParticles": [
+          161,
+          182
+        ],
+        "iframes": [
+          1,
+          208
+        ],
+        "controlReturns": 209,
+        "cinematicBarsSourcePx": 16,
+        "edgePanWithinH": 1.2,
+        "edgePanMaxWholePxPerTick": 8
+      },
+      "flashes": [
+        {
+          "ticks": [
+            95,
+            96
+          ],
+          "palette": "A5",
+          "reducedFlash": "40%tint"
+        },
+        {
+          "ticks": [
+            195,
+            196
+          ],
+          "palette": "warm-gold-white",
+          "reducedFlash": "40%tint"
+        }
+      ],
+      "cues": {
+        "rim": "goldtracer25-56; eight4tickA4lights2ticksapart57-72; oculusA4backlight73-90; verticalbeamflanks129-132; goldfront195-200",
+        "sound": "reversed swell/timecut organ; quillscratch/tracerychimes; risingglass; silence91-94; hit1choirbell; waveglass; fullsilence161-182 and191-194; flash2organchoirbell; music returns over60ticks",
+        "camera": "wholepixel edgepan only, nozoom; bars16sourcepx; wave2shake2px12ticks; wave4shake4px20ticks; reducedmotion0"
+      },
+      "cancel": [],
+      "iframes": [
+        [
+          1,
+          208
+        ]
+      ],
+      "tail": {
+        "rain": [
+          197,
+          270
+        ],
+        "rainDamage": [
+          209,
+          245
+        ],
+        "rainHitstop": 1,
+        "rainGeometry": "36falling source6x6boxes, actual paths/collision, distinctgroups",
+        "floorScar": [
+          197,
+          440
+        ],
+        "illuminationStarts": 209
+      },
+      "dependency": "actor/effect/world/total-freeze clocks must be distinct; no hitstop added to stage waves; live realviewport resolution and reducedsettings proof"
+    }
+  ],
+  "sanctuary": {
+    "trigger": "enemy overlap during dash3-10 only",
+    "clock": "real ticks from trigger",
+    "saint": [
+      0,
+      8
+    ],
+    "shatterTick": 8,
+    "shardsCount": [
+      12,
+      16
+    ],
+    "slowmo": {
+      "factor": 0.3,
+      "duration": 30,
+      "enter": 3,
+      "exit": 12,
+      "playerFullSpeed": true
+    },
+    "rim": {
+      "ticks": [
+        0,
+        6
+      ],
+      "palette": "G1",
+      "radiusH": 0.9375,
+      "intensity": 1.4
+    },
+    "absolvedWindow": 40,
+    "absolved": "Aspersion seam shatter fires12-16source6x6shards in30degreefan3H toward originalattacker plus1.1Hspike; separate actualcollisions; no separatePaxmove"
+  },
+  "illumination": {
+    "start": "ult_r controlreturn209",
+    "duration": 720,
+    "paneExtinguishEvery": 90,
+    "shoulderRoseSourcePx": 25,
+    "orbitSourcePx": 4,
+    "ghost": {
+      "moves": [
+        "m1_1",
+        "m1_2",
+        "m1_3",
+        "m1_4"
+      ],
+      "delay": 4,
+      "scale": 1.6,
+      "hitstop": 2,
+      "anchor": "snapshot actual source swingcentre when emitted",
+      "body": "filled glasscopy of own Lancet, internalleading; delayed separate hitgroups; no decorative-onlyecho"
+    },
+    "n5Rose": "ring at least7H, past bothviewportedges; gildedsaint; originalphysicalspikes",
+    "qExtraPairs": 2,
+    "gildedPaneLife": 240,
+    "end": "lastpane extinguishes, rose breaks goldmotes, one softchime"
+  },
+  "dependencies": [
+    "physicalcloth bake/collision/transition nativeproof",
+    "actual80/144keydrawings and real60fpsmotion",
+    "persistent worldanchored effect hitboxes and terrainquery",
+    "victim-only hitstop / actor-FX clockseparation",
+    "Rstage/allfreeze and storedknockback; no globalclock conflation",
+    "proper loop/cancel/regrip adapters on unchangedrig",
+    "actualaudio authored/listened, not placeholder-synth acceptance",
+    "performance/flash/reducedmotion measured by delivery"
+  ],
+  "canonAmbiguities": [
+    "N4initialf9chop only1H before2.5Hfissure at10; retain rev2 and flag strict instantaneous2.2Hfloor mismatch tointegrator; specialist does not rewrite MOVESET",
+    "Qprose5.6H but exact538/96H boxspan; N3/N5roundedH differ from exactH96boxes; preserve exactboxbasis",
+    "Q14unique includes conditionalQ8; normal path13unique and repeatedtwirl exposures; export explicit14tick loop, not16",
+    "N514unique butK1 repeats two exposure records; no extra artdrawing implied",
+    "R12unique bodydrawings excludes inheritedentry andpalette-swapI1/I2; tail remains afterclip208"
+  ],
+  "knownReactionPolicy": "sourceH96 px/simulationtick scaled by targetH/96; outward sign per victim; null means unspecified-canon, never default zero"
+}
