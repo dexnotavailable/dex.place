@@ -48,6 +48,13 @@ also retain any tongue/tooth source references. Zero-effect references may
 remain geometrically unchanged. Reject unexpected shape keys or modifiers.
 No delete/apply-key workaround. All references stay hidden. Keep original mesh
 pointers, coordinates and all shared hooks for finally cleanup; never save.
+The enclosing hand driver does not restore the shared posing.apply_pose that
+head_scale.install replaces. FC1 snapshots that exact pre-existing function
+before installation and restores it, alongside install/anchors/f1/library,
+even when installation, construction, rendering or mesh cleanup raises. It
+restores the prior caller's nested hook rather than assuming a default poser.
+The original3d6ad4 commit remains preserved; this explicit lifecycle repair is
+the only construction-independent correction, with no native activation.
 
 Custom head normals are transported from the actual existing decoded corner
 normals using normalized inverse-transpose cage Jacobians, only within the
@@ -138,3 +145,7 @@ transport, actual cage tangents, and invalid/degenerate rejection. These are
 source safety fixtures; actual Blender/corner-normal/landmark/visual proof is
 pending. After actual pixels choose the next construction from the largest
 shown gap; no headtilt/lid/mouth microloop or assumed appeal gain.
+check_facecage_cleanup exercises the actual FC1 wrapper with an injected
+driver/mesh/render boundary: both control/candidate success and five exception
+boundaries (12scenarios) restore the exact prior nested caller state. This is
+hook-lifecycle source proof, not a native Blender/mesh/render qualification.
