@@ -490,10 +490,16 @@ export class WorldGame {
     this.audio.setMuted(!on);
   }
 
-  /** The website came up (scrolled away) or went back down: the world waits, its sound fades. */
+  /** Scroll-away pauses World work; resume starts a fresh clock without hidden-time catch-up. */
   setAway(away: boolean): void {
     if (this.away === away) return;
     this.away = away;
+    this.last = -1;
+    this.acc = 0;
+    this.fpsFrames = 0;
+    this.fpsT0 = performance.now();
+    this.frameMs = 0;
+    this.fps = 0;
     this.audio.setAway(away);
     if (away) this.input.releaseAll();
   }
@@ -612,6 +618,16 @@ export class WorldGame {
     if (this.last < 0) this.last = now;
     const dt = Math.min(100, now - this.last);
     this.last = now;
+    // Keep the cheap RAF clock alive for smooth return, but submit no hidden
+    // World render, shader polling or neighbour warming while reading the site.
+    if (this.away) {
+      this.acc = 0;
+      this.frameMs = 0;
+      this.fps = 0;
+      this.fpsFrames = 0;
+      this.fpsT0 = now;
+      return;
+    }
     if (!this.manual) {
       this.acc += dt;
       while (this.acc >= TICK) {
