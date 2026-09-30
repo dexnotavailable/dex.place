@@ -3,7 +3,7 @@
 // and the old 3-room test world at ?world=test). Dev-only page; see
 // docs/world/RUNTIME.md.
 //
-// URL options: ?room=<id>&spawn=<id> start somewhere else; ?world=test the
+// URL options: ?room=<id>&spawn=<id> start somewhere else (over any saved place); ?world=test the
 // test world; ?debug overlay; ?manual no real-time loop (drive it from
 // window.__world); ?mute; ?fresh forget the save first; ?go skip the Enter
 // gate (automation).
@@ -85,10 +85,11 @@ async function boot(): Promise<void> {
   const roomIds = new Set(rooms.map((d) => d.id));
   const room = q.get("room");
   const home = testMode ? { room: "arrival", spawn: "start" } : { room: "A1", spawn: "start" };
-  const start = room && roomIds.has(room) ? { room, spawn: q.get("spawn") ?? "" } : home;
-  const game = new WorldGame(r, input, touch, assets, { rooms, start, engine, source: found.source, route: [...ROUTE] });
-  // ?room= wins over the saved rest place (tools and links)
-  if (room && roomIds.has(room) && game.room.def.id !== room) game.teleport(room, q.get("spawn") ?? "");
+  // ?room= wins over the saved place and rest place (tools and links); otherwise game.ts picks
+  // the start (save.ts startPlace: the exact place within 3 minutes of the last activity, else home)
+  const link = !!room && roomIds.has(room);
+  const start = link && room ? { room, spawn: q.get("spawn") ?? "" } : home;
+  const game = new WorldGame(r, input, touch, assets, { rooms, start, engine, source: found.source, route: [...ROUTE], link });
   if (q.has("debug")) game.debug = true;
   game.manual = q.has("manual");
   if (q.has("mute")) game.save.data.sound = false;

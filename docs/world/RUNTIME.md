@@ -58,7 +58,7 @@ mid-run; restart it after your own edits.
 | backquote | debug overlay (fps, scale, room, area, camera mode, streaming, weather, sound, save, travel) + boxes |
 | scroll down | the world closes like a curtain and waits; the website is underneath |
 
-URL options: `?room=<id>&spawn=<id>` (wins over the saved rest place), `?world=test` (the old
+URL options: `?room=<id>&spawn=<id>` (wins over the saved place and rest place), `?world=test` (the old
 test world), `?debug`, `?manual` (no real-time loop; drive it from `window.__world`:
 `advance(n)`, `press(a)`, `release(a)`, `begin()`, `use()`, `teleport(room, spawn)`,
 `place(x, y?)`, `closeup(on)`, `state()`), `?mute`, `?fresh` (forget the save), `?go` (skip the
@@ -426,9 +426,30 @@ in `away`: no simulation, its sound fades; scrolling back resumes it. Proven in 
 - `save.ts`: localStorage `dex.world.v1`: flags in the `kind:id` names of WORLD-PLAN section 11
   (`shrine:1` ... `shrine:6`, `cut:map-banner`, `cut:rope-bridge`, `lever:culvert`,
   `lever:express`, `blade:cleared`, `rose:open`, `latch:sky-door`, `round:done`,
-  `keeper:greeted`), the pixel-matter props' persisted keys, the last rest place (the next visit
-  starts at the last shrine you rested at), sound on/off. Session flags (not saved) hold this
-  visit's state (the evening after the round). Nothing about payment or donations is stored.
+  `keeper:greeted`), the pixel-matter props' persisted keys, the last rest place (the record of
+  the last shrine you rested at), sound on/off, and the position: `place` (room id, x, y and
+  facing of the last safe ground) with `lastSeen` (wall-clock ms of the last player activity).
+  Session flags (not saved) hold this visit's state (the evening after the round). Nothing about
+  payment or donations is stored. Saves from before the position fields load unchanged.
+- **Where a load starts** (`startPlace` in `save.ts`, `RESUME_MS` = 180000 ms): under 3 minutes
+  since `lastSeen`, the exact saved place; if that room is gone or the spot is no longer
+  standable (outside the room, over a pit, no surface under it) the rest place, else the spawn.
+  At 3 minutes or more, with no `lastSeen`, or with a future one: the world's spawn (`A1`/`start`,
+  the arrival dock). Only the position resets; flags, props, shortcuts, cuts, the rest place
+  record and the sound choice stay. `?room=`/`?spawn=` links start exactly there (over any saved
+  place or rest place) and `?fresh` forgets the whole save. The homepage embed (`/world/?embed=site`)
+  and `/world/` share the key, so the rule is the same on both. `state().startedBy` says which
+  rule applied (`place`, `rest`, `spawn`, `link`).
+- **When the position is written** (`game.ts`): a heartbeat at most every 3 s while the world runs
+  (not away), and immediately on `setAway(true)`, `visibilitychange` to hidden and `pagehide`;
+  an unchanged record is not rewritten. `lastSeen` is the last *activity* (movement, a held
+  action, an open panel, Enter), not the write time, so a tab left open and idle for 3 minutes
+  and then reloaded also starts at the dock, and an idle reload does not extend the window. The
+  place write merges only `place`/`lastSeen` into the stored save, so a second open tab cannot
+  roll back the other's flags through it (other writes still store this tab's whole save).
+  Proof: `node --test src/world/save.test.mjs` (fake clock), and a real-browser check on a
+  local build (move, reload within 3 minutes resumes; `lastSeen` 4 minutes back starts at the
+  dock with flags and rest kept; the homepage embed resumes the same place).
 - **Travel-time logger** (`travel.ts`): room and area entries, flags and the first arrival at
   each destination (a placement with `params.dest`: downloads, donate, illustrations,
   documentation, account, map), in simulation seconds since Enter. In the debug overlay and
