@@ -1,0 +1,220 @@
+{
+  "schema": "rosace.cuff2.post-copy/1",
+  "renderSource": "925ee69072034408f34c25984f88afc20a65b064",
+  "postSourceBase": "925ee69072034408f34c25984f88afc20a65b064",
+  "nativeReceipt": "D:\\Dex\\Automation\\reports\\dex-suite-resumption-20260930\\lanes\\delivery\\rosace-cuff2-rna\\native-render.json",
+  "nativeReceiptSha256": "293470714c9ff8d456918c0ffb89a9543069fe76b0f61a58568a890550cc366b",
+  "originalRawRoot": "D:\\Dex\\Temp\\rosace-cuff2-rna-native-20260930\\review\\rosace\\integration\\cuff2\\native-rna-descriptor-repair-20260930",
+  "freshRawRoot": "D:\\Dex\\Temp\\dex-place-rosace-cuff2-post-bootstrap-20260930\\review\\rosace\\integration\\cuff2\\post-bootstrap-20260930",
+  "freshOutputRelative": "review/rosace/integration/cuff2/post-bootstrap-20260930",
+  "fileCount": 50,
+  "rawBytes": 2912697,
+  "files": {
+    "cuff2/_render.json": {
+      "bytes": 2135,
+      "sha256": "85829cb1c4992bf95a993bc12658a793af9259aad8a40b62eb0a7443cee848f0"
+    },
+    "cuff2/idle/px144/beauty.png": {
+      "bytes": 47510,
+      "sha256": "891e2bd7e96ef42ac2a1dd92e7763f94bcf8a38eadf01e50e72864e7f797fd89"
+    },
+    "cuff2/idle/px144/cuff2_trial.json": {
+      "bytes": 66863,
+      "sha256": "b849bba59cd87fdc4b1ca6329de719d684be1edada1eaa3aba6ea9a6ed0db193"
+    },
+    "cuff2/idle/px144/depth.png": {
+      "bytes": 41075,
+      "sha256": "5ccd05015efa5d9d90132169e79ea39763f8bda79e6b4a52371b047d89b29a99"
+    },
+    "cuff2/idle/px144/depth2.png": {
+      "bytes": 153223,
+      "sha256": "e648b5d0ce97a45b0c3f9a4706a85b54d1cbad617bf56a15ee855e7f5fdbedda"
+    },
+    "cuff2/idle/px144/facepass.json": {
+      "bytes": 46108,
+      "sha256": "bc41f64c7c8680fff7b7ffd84b9781b436ff17c710a0500c84e1412a5599d36e"
+    },
+    "cuff2/idle/px144/haft_grips.json": {
+      "bytes": 3039,
+      "sha256": "86533ddb55dac1682d5fe643a69b79dd59a2569dcc630c30db691d08bd4c042a"
+    },
+    "cuff2/idle/px144/id.png": {
+      "bytes": 31039,
+      "sha256": "25305a0a33a83cc9c4bb2fed8d08e14c28a473353344c25de0c1eb5423c97907"
+    },
+    "cuff2/idle/px144/landmarks.json": {
+      "bytes": 5953,
+      "sha256": "d12b251289314417752cc62004c4efdf9b34b6e83ab2603efd72a6bfce3cbe08"
+    },
+    "cuff2/idle/px144/light.png": {
+      "bytes": 150145,
+      "sha256": "b8c94af82ed02b5617314f5250dd285233b3ccfd2fb56f6bbd7091fa7f7709c7"
+    },
+    "cuff2/idle/px144/meta.json": {
+      "bytes": 10802,
+      "sha256": "e6888a42ed3419ee88805a4df479e7406f6eb777e93b62d7a43a49533d841fb4"
+    },
+    "cuff2/idle/px144/noise.png": {
+      "bytes": 239376,
+      "sha256": "176ae6157f37e0174a90782872e56eaae068cee6ad799b52035fd67a3bd13595"
+    },
+    "cuff2/idle/px144/normal.png": {
+      "bytes": 199697,
+      "sha256": "791a2d54a16c23b4727c2358b30578d687d0e5c6dfd76e0bf3d6a6538e024233"
+    },
+    "cuff2/idle/px80/beauty.png": {
+      "bytes": 22727,
+      "sha256": "1314b10e639fadc092984a14249a09d25aa4494e3fe7e86912398b895215b902"
+    },
+    "cuff2/idle/px80/cuff2_trial.json": {
+      "bytes": 66862,
+      "sha256": "6ec1853720fb6fa06c1ae933d32986c16b5e60c355203de5329850104aebf9b4"
+    },
+    "cuff2/idle/px80/depth.png": {
+      "bytes": 18988,
+      "sha256": "10276ffcb060a4efadaf003e7528e8eb98a9f56e1ad40b0a3079beb34b193dc2"
+    },
+    "cuff2/idle/px80/depth2.png": {
+      "bytes": 61535,
+      "sha256": "ccebe8cd6b97da52356abc0a04166c8702e1d6ec24b996cbf3e19aa9b4ec0390"
+    },
+    "cuff2/idle/px80/facepass.json": {
+      "bytes": 46087,
+      "sha256": "471ee3e9dbd31fee7d9098c0f43a29a0e87d30950ed77537a9df5aaf8f7c16ec"
+    },
+    "cuff2/idle/px80/haft_grips.json": {
+      "bytes": 3029,
+      "sha256": "286095974b56b0c503d6e3a4c3b5712bfd5fee442c02ee24aad996fa18259005"
+    },
+    "cuff2/idle/px80/id.png": {
+      "bytes": 15085,
+      "sha256": "5087499d08c0295c3c82d87a40ee0a5235fb02d3f21c471bb02d4f66cce14c3b"
+    },
+    "cuff2/idle/px80/landmarks.json": {
+      "bytes": 5952,
+      "sha256": "5b6e33259cc1cf81f429a4db6e152df820ea31d1d369ab19519a52b932907131"
+    },
+    "cuff2/idle/px80/light.png": {
+      "bytes": 59467,
+      "sha256": "04882b9bb5837d3e1e2fa6a5d2080d9cda40c73185f1a45b98b7f4bce9c917d5"
+    },
+    "cuff2/idle/px80/meta.json": {
+      "bytes": 10806,
+      "sha256": "cd5c1a941e3c0c751cfdd376dcced94a2bc655ebc7093083129e6413a01020f7"
+    },
+    "cuff2/idle/px80/noise.png": {
+      "bytes": 78891,
+      "sha256": "a4df9c425dc20124f0a0e12245158da8f699f289b2963d785c02017d9fe1a6ba"
+    },
+    "cuff2/idle/px80/normal.png": {
+      "bytes": 78244,
+      "sha256": "c15a7defbd9170c656f1a0f4c96aa6549a8f36f2240c6285fddb1c91e177de78"
+    },
+    "parent/_render.json": {
+      "bytes": 2135,
+      "sha256": "85829cb1c4992bf95a993bc12658a793af9259aad8a40b62eb0a7443cee848f0"
+    },
+    "parent/idle/px144/beauty.png": {
+      "bytes": 47215,
+      "sha256": "08345aaff7cb2e2de8cb4dc1b81dea2f5aa43dc1ccbaa7501d2463e93a48130c"
+    },
+    "parent/idle/px144/cuff2_trial.json": {
+      "bytes": 58987,
+      "sha256": "94c4d874a311587c8f58a56c87e573fec900648db591a2e331d0cc28a9c0717b"
+    },
+    "parent/idle/px144/depth.png": {
+      "bytes": 41044,
+      "sha256": "3a775c713c9234d0a42cf843c1b4758d2f5bb83cf6fb3c7720d88c23735aa67f"
+    },
+    "parent/idle/px144/depth2.png": {
+      "bytes": 152941,
+      "sha256": "85e044a524140a3e2973b6e4da2b337986b89161c129d1e6704afd752a1d32fb"
+    },
+    "parent/idle/px144/facepass.json": {
+      "bytes": 46108,
+      "sha256": "bc41f64c7c8680fff7b7ffd84b9781b436ff17c710a0500c84e1412a5599d36e"
+    },
+    "parent/idle/px144/haft_grips.json": {
+      "bytes": 3039,
+      "sha256": "86533ddb55dac1682d5fe643a69b79dd59a2569dcc630c30db691d08bd4c042a"
+    },
+    "parent/idle/px144/id.png": {
+      "bytes": 30910,
+      "sha256": "fbb7ca7797f24cc54475fd07d47acea6e4734b76fbdc6c30167fb8566862b2c3"
+    },
+    "parent/idle/px144/landmarks.json": {
+      "bytes": 5953,
+      "sha256": "d12b251289314417752cc62004c4efdf9b34b6e83ab2603efd72a6bfce3cbe08"
+    },
+    "parent/idle/px144/light.png": {
+      "bytes": 150136,
+      "sha256": "bc49dd11932f6695954dde496f7f264f1cb09c7bae6ebe12584ab504320ddefa"
+    },
+    "parent/idle/px144/meta.json": {
+      "bytes": 10802,
+      "sha256": "e6888a42ed3419ee88805a4df479e7406f6eb777e93b62d7a43a49533d841fb4"
+    },
+    "parent/idle/px144/noise.png": {
+      "bytes": 239468,
+      "sha256": "237a830feb5ca8ea1e32e0ba58d273fac56cdaf8d4c8b8b02611b4835b23227e"
+    },
+    "parent/idle/px144/normal.png": {
+      "bytes": 199465,
+      "sha256": "1f768f275a55af07a28e38d0584f9a2b1b82f600bcac4643452ed5c408ea07b9"
+    },
+    "parent/idle/px80/beauty.png": {
+      "bytes": 22655,
+      "sha256": "83a12880e575008d51431e650b7c05babd5ebd5e08dd519613c0c3e27e66aa45"
+    },
+    "parent/idle/px80/cuff2_trial.json": {
+      "bytes": 58986,
+      "sha256": "17c7bc480dd39cc480c6931af78cd9eb0eaafb0811279c1a9a30f8819f680347"
+    },
+    "parent/idle/px80/depth.png": {
+      "bytes": 19065,
+      "sha256": "cc95df14d439ab2c495652c335d23d140ad6c46e38a81389b7ffd739a0d9ce6e"
+    },
+    "parent/idle/px80/depth2.png": {
+      "bytes": 61532,
+      "sha256": "7d2f74686c7c8116d061e2b92f67d10de67f2bb1c3c7deb1bb7e05c94f4775d8"
+    },
+    "parent/idle/px80/facepass.json": {
+      "bytes": 46087,
+      "sha256": "471ee3e9dbd31fee7d9098c0f43a29a0e87d30950ed77537a9df5aaf8f7c16ec"
+    },
+    "parent/idle/px80/haft_grips.json": {
+      "bytes": 3029,
+      "sha256": "286095974b56b0c503d6e3a4c3b5712bfd5fee442c02ee24aad996fa18259005"
+    },
+    "parent/idle/px80/id.png": {
+      "bytes": 15023,
+      "sha256": "07ef0d33347ed3e2c6c88e0694d5887c0999485caeb20f02b14e9a4e789ddfac"
+    },
+    "parent/idle/px80/landmarks.json": {
+      "bytes": 5952,
+      "sha256": "5b6e33259cc1cf81f429a4db6e152df820ea31d1d369ab19519a52b932907131"
+    },
+    "parent/idle/px80/light.png": {
+      "bytes": 59573,
+      "sha256": "576d36d2c2470540d3fbcde4d29eb77a11bfc432805ad0ed9433801897659140"
+    },
+    "parent/idle/px80/meta.json": {
+      "bytes": 10806,
+      "sha256": "cd5c1a941e3c0c751cfdd376dcced94a2bc655ebc7093083129e6413a01020f7"
+    },
+    "parent/idle/px80/noise.png": {
+      "bytes": 78934,
+      "sha256": "e9ec3b8202ce814721e6b9524bda122d3379e1e07ba4393fa8dd98fc766bf162"
+    },
+    "parent/idle/px80/normal.png": {
+      "bytes": 78214,
+      "sha256": "187cecdfed2a03196eba36d94a974b78c2697a8837f1ccab877972f1252c7a32"
+    }
+  },
+  "originalAndCopyHashesVerified": true,
+  "actualRawPostExecuted": false,
+  "rerendered": false,
+  "visualAcceptance": false,
+  "postIdentity": "existing cuff2_native_post.run and unchanged d9_post.process D1/R2/big_eyes=True; local lazy import context only",
+  "sourceReview": "PASS independent cuff2_source_review; root verified23CPU source pins,170 effective dependencies and exact50 original/copied raw hashes. Final post source HEAD is pinned externally in STAGE2-CUFF2-POST-READY.json; render925 remains separate."
+}

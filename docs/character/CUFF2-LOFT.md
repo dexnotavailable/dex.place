@@ -189,3 +189,55 @@ quarter-gap/triangle/Jacobian/radial guards, copied-original preservation,
 camera/rig/shape/custom-normal/UV/data guards and existing raw replay/visibility
 acceptance all remain unchanged. No native run or visual gain is claimed by
 this repair, and no additional shader, pose, window or motion lever is added.
+
+## Post-only lazy import bootstrap (source only)
+
+The exact925 native run completed both parent/Cuff2 at144/80 with exit0 and
+all50raw files preserved. Finishing then failed in d9_post.stamp_face at the
+lazy `import wh2_px`. `_reuse.load` correctly restored its prior search path
+after loading C1, removing paths that the finish libraries had inserted for
+later lazy calls. A second lazy dependency is judge_sheets in the ground-shadow
+step, which imports sheets_f3 -> finish_metrics -> pixel_metrics. This failure
+does not require or authorize rerendering already completed raw inputs.
+
+The repair is isolated at
+`D:/Dex/Temp/dex-place-rosace-cuff2-post-bootstrap-20260930`, branch
+`codex/rosace-cuff2-post-bootstrap-20260930`, from
+925ee69072034408f34c25984f88afc20a65b064. Only Cuff2 post's local
+`finish_imports` context adds `tools/art-construct` and
+`tools/pixel-pipeline/finish_judge` around the exact existing C1.D.process call.
+It restores the exact prior sys.path in finally, including paths added by real
+nested imports. `_reuse`, the shared shader/finish implementations and JSON,
+geometry, pose, render, RNA and every raw/preservation/visibility guard remain
+unchanged. No preloaded wh2_px shortcut hides the judging dependency.
+
+`check_post_bootstrap.py` removes source search paths and clears real finish
+module caches, then performs the real `_reuse.load` of C1. Its negative control
+calls the real lazy stamp_face and exposes the original missing-module error.
+Inside the scoped context it executes actual d9/F1 face stamping, FaceCanvas,
+r2_brows and R3 face_extras on synthetic in-memory arrays with the existing
+authored face/finish JSON. It imports and checks file identities of the complete
+real judging closure, and exercises its ground-shadow helper on an in-memory
+PNG. No injected fake finishing dependency or actual rendered raw finish masks
+the closure. A failure after actual nested lazy imports verifies exact finally
+path restoration. The unchanged21construction/wrapper/RNA/native source checks
+also run without overwriting their frozen CPU receipt. A new LF
+`post-bootstrap-cpu-report.json` binds this post source and its real dependencies.
+All23test methods pass through the shared `rosace-source` resource gate.
+
+`post-copy-receipt.json` binds50original and fresh copied raw files, including
+byte counts/SHA and the native render receipt SHA
+293470714c9ff8d456918c0ffb89a9543069fe76b0f61a58568a890550cc366b.
+The original raw root remains in the exact925 delivery worktree. The fresh copy
+is `review/rosace/integration/cuff2/post-bootstrap-20260930` under this repair
+worktree. Copying preserves all raw bytes; it does not run finishing. The new
+`post-bootstrap-request.json` is post-only, with separate render925 and reviewed
+post-source identity. Fresh independent review and Root's new exact-head READY
+precede delivery's actual post execution. No Blender/GPU/browser/model launch,
+rerender, canonical change, native post success or visual gain is claimed here.
+
+Delivery must reverify all50original/copy inputs before and after post, retain
+the existing exact bcb replay/geometry/rig/grip/camera/visibility guards, and
+emit a complete input manifest and finished/proof/source hashes. Real anatomy,
+matched144/80 appearance votes and physical cloth/motion remain subsequent
+acceptance. Prior sources/requests/native failure packets remain frozen.

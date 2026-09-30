@@ -1,0 +1,42 @@
+{
+  "schema": "rosace.cuff2.post-only-request/1",
+  "id": "rosace-cuff2-post-bootstrap-20260930",
+  "owner": "rosace-source",
+  "executionOwner": "delivery",
+  "sourceReview": "PASS independent cuff2_source_review; root verified23CPU source pins,170 effective dependencies and exact50 original/copied raw hashes. Final post source HEAD is pinned externally in STAGE2-CUFF2-POST-READY.json; render925 remains separate.",
+  "postSourceBase": "925ee69072034408f34c25984f88afc20a65b064",
+  "postSourceBranch": "codex/rosace-cuff2-post-bootstrap-20260930",
+  "postSourceWorktree": "D:/Dex/Temp/dex-place-rosace-cuff2-post-bootstrap-20260930",
+  "renderSource": "925ee69072034408f34c25984f88afc20a65b064",
+  "nativeRenderReceipt": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/lanes/delivery/rosace-cuff2-rna/native-render.json",
+  "nativeRenderReceiptSha256": "293470714c9ff8d456918c0ffb89a9543069fe76b0f61a58568a890550cc366b",
+  "originalRawRoot": "D:/Dex/Temp/rosace-cuff2-rna-native-20260930/review/rosace/integration/cuff2/native-rna-descriptor-repair-20260930",
+  "copiedRawBinding": "art/rosace/integration/cuff2/post-copy-receipt.json",
+  "copiedRawCount": 50,
+  "freshRawRootRelative": "review/rosace/integration/cuff2/post-bootstrap-20260930",
+  "entry": "art/rosace/integration/cuff2/cuff2_native_post.py",
+  "arguments": [
+    "--root",
+    "<executing-worktree>/<freshRawRootRelative>",
+    "--frozen-parent",
+    "D:/Dex/Temp/rosace-reconstruction1-native-20260930/review/rosace/art/next/reconstruction1-delivery/construction-control-raw"
+  ],
+  "exactPostIdentity": "Existing Cuff2 run/guards; same d9_post.process(raw, load_finish(r2_finish.json), D1, R2, True). Only scoped art-construct and finish_judge search paths are added during process and restored in finally.",
+  "steps": [
+    "Root obtains fresh independent source review, verifies CPU closure evidence and freezes new exact post head/dependency/request hashes in a post-only READY. Keep render925 separate from reviewed post source; no retargeting old requests or source.",
+    "Read native-render.json only after exact receipt SHA/source/finalHead/completedModes/preservation checks. Verify all50 existing raw file paths, byte counts and SHA against the receipt and original root. Keep the original925 worktree/raw/failure packet untouched.",
+    "The source review worktree already holds a fresh exact50-file copy, bound by post-copy-receipt.json. If executing elsewhere, create an empty fresh executing-worktree output and copy only these50 bound files, preserving every byte. Verify every destination and every original hash before processing; reject preexisting R2 outputs/proof or extra/missing/raw-mismatched files.",
+    "Delivery alone executes the post-only entry using its established resource ownership/gate. No Blender, native rerender, model, GPU or browser launch. Process the fresh copy, never the originalrawroot. No shader/pose/config/geometry/raw guard changes or copied data edits.",
+    "Keep the original frozen bcb seven-pass hash binding, zero-pixel parent replay, actual paired/frozen rig/camera/ppm/anchor/canvas/ss/size/grip guards and fixed55mm geometry preservation unchanged. Keep categorical limb14 >=20raw skin pixels and >=4x5bbox at80 necessary, not sufficient; anatomy/appearance still needs actual pixels.",
+    "After finishing, verify all50 original and copied raw hashes again. Delivery emits complete50-input manifest plus separate exact renderSource/postSource heads, source/dependency/post-file/finished-output/proof hashes, status, fresh root and preservation/rollback receipts. A finished-image/proof hash is distinct from frozen render source provenance.",
+    "Publish real finished parent/Cuff2/native crops/hashes only when produced, then route qualified materiallynew144/80 pixels to Stage2's3fresh neutral fixed9 critics. Raw completion, import checks or finishing success alone do not establish anatomy/appearance/cloth/motion acceptance or promotion."
+  ],
+  "allowRerender": false,
+  "allowBlender": false,
+  "allowGpu": false,
+  "allowBrowser": false,
+  "allowArtPromotion": false,
+  "allowDeployment": false,
+  "actualPostExecuted": false,
+  "visualAcceptance": false
+}

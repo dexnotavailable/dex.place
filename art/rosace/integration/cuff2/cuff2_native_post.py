@@ -3,9 +3,11 @@
 No C1 proof is relabeled. The input schema, mode and geometry must be Cuff2.
 """
 import argparse
+from contextlib import contextmanager
 import hashlib
 import json
 import math
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -17,6 +19,17 @@ PIPE = REPO / "tools/pixel-pipeline"
 PARENT = "bcb220de03c0b84e8fa68851328cd1d799a11de5"
 HERE = Path(__file__).resolve().parent
 read, rgba = C1.read, C1.rgba
+
+
+@contextmanager
+def finish_imports():
+    """Keep the real lazy finish closure searchable only during processing."""
+    prior = sys.path[:]
+    try:
+        sys.path[:0] = [str(REPO/"tools/art-construct"), str(PIPE/"finish_judge")]
+        yield
+    finally:
+        sys.path[:] = prior
 
 
 def guard_frozen(frozen):
@@ -97,7 +110,8 @@ def run(root, frozen):
         for raw in (a,b):
             if (raw/"R2").exists():
                 raise ValueError("fresh unchanged R2 finish required")
-            C1.D.process(str(raw), C1.D.load_finish(str(PIPE/"drive9/r2_finish.json")), "D1", "R2", True)
+            with finish_imports():
+                C1.D.process(str(raw), C1.D.load_finish(str(PIPE/"drive9/r2_finish.json")), "D1", "R2", True)
         native = [rgba(raw/"R2/still.png") for raw in (a,b)]
         images = [Image.open(raw/"R2/still_ground.png").convert("RGBA") for raw in (a,b)]
         row = {"px": px, "frozenParentRawReplayChangedPixels": 0,
