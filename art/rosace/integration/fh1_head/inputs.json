@@ -1,0 +1,77 @@
+{
+  "schema": "fc1.support-inputs/1",
+  "sourceBase": "bd94059a13d5becd68b80c0d219fdb6ad1d989f9",
+  "inputs": {
+    "normalDiagnostic": {
+      "D:\\Dex\\Temp\\rosace-fc1-normal-probe-native-20260930\\review\\rosace\\integration\\facecage_normals\\native-20260930\\diagnostic.json": "df39907e0d9f8240cdc988653d2c9da667a78ab896f1f54d33a06ef32ae70e43"
+    },
+    "failedBdControlProvenance": {
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\_render.json": "673ca49b459abf123b5f85dc393ba5dd7f8581d5266f07109078abfe202e1406",
+      "D:\\Dex\\Automation\\reports\\dex-suite-resumption-20260930\\lanes\\delivery\\FC1-FROZEN-READY.json": "c0af076f6196e73c7ca338a363b8d6135f33576090e3986c621163148b90bb2b",
+      "D:\\Dex\\Automation\\reports\\dex-suite-resumption-20260930\\lanes\\delivery\\rosace-facecage1\\native-render.json": "888072664d827a147d0e7d0ba9dc3c8ff67f3a8ba118665690793984754a14b7"
+    },
+    "canonicalAndModel": {
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\rosace.blend": "aef28c7f5cdddee6f18bd12c06d988b5436eeac24049ddf4f6ca37f654394373",
+      "D:\\Dex\\Temp\\dex-place-rosace-facecage-support-20260930\\tools\\pixel-pipeline\\drive9\\r2_model.json": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3"
+    },
+    "frozenR2SixRawAndFinished": {
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\id.png": "9a4b76e1d6d30c557fecccf9540a46404ce7e6603a6ce719dde95335c50d3a62",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\normal.png": "fecd033537cc98bed9c21bade29ae270f8a6dcf700798a49bee5deadbe2fbb7c",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\depth.png": "e1e34c86dbbd4f8514594f08e13ebc738969ce93bb41bca19d30786472621893",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\light.png": "ec0bb3066785454a364ebe443b213e1ce4cde811fda002b8a77a351fd2227f5f",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\beauty.png": "333fa203c9f1c7578386cf3dad14fcd6321fa7d7f32a9d04d64183aa4d35e869",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\noise.png": "6baafc4914d8c5ddf6d5b41e9f08d3be40aa916faecaaa5444de711bc2769558",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\meta.json": "db008864b22c93913599fa710fd392a26eb9d1bc7d4b799785d5885c35953fb6",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\facepass.json": "e982719a6a304540d61eb010be0e685b3c10741ec488efc1869d26af47a27722",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\R2\\still.png": "49d76c0fc90dcbb1d8ecc029e48ecd8c8d4db18386869ad64b44e3575158b824",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px144\\R2\\still_ground.png": "7dee4fb09cef9a5db4de250298ca88330c74c9ce9cbe9f5216f05aee81873d49",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\id.png": "edb8a0c84bedad03e210ad62e437985e6c1f3879e3485f4f4f8aa56a9ed6b585",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\normal.png": "1768725a1869155d2ae489f9efef12dda954b1d64d814f4825bc5761839709af",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\depth.png": "45c4d51cb73ecd5a394934008fe9a4419267de10bcd0302ba26fdb3c825ee017",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\light.png": "54470d44ad410cff53b6312da496f2b2d0ea7f67791a8ab01b3ff78a239cb406",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\beauty.png": "7bff7bd2822733054b2a2920ccb760dc150dd046a468ac96032dd511792e537d",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\noise.png": "1ea71bfc05b10336dcdb2eefb8520dc5e242470520fa5b4027c07209110abb7f",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\meta.json": "0fb1ea6a11ed0479c931bc72995049d1198301b5924984743a2df3caf0f5f746",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\facepass.json": "8853f4495736cd51ec337e6426ab5b74776bf2c119f16ca9383e7be80757a118",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\R2\\still.png": "da0289d2b7a1bb8baf4caf53aa81fa2f1f8885d7c054dc26d5de19d2eaf82084",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\idle\\px80\\R2\\still_ground.png": "8f21083dc95957974b57e23c7f2a6cd4231e057e102fac574a84afad96dbc8a5",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\id.png": "b68091744ac19ec6dadeca639d955863cfca7fce1ad80abb35390efe884d22b4",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\normal.png": "7b5f0b75d57870cd65027d93d0d70127ab2ce146475f684a6253ee1679f6e4fc",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\depth.png": "da227b28265838769ad8ab642dfe8c4e2327453cad48ef5b77ce88be46a0d0fd",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\light.png": "d144e5ada072d4247063491455e063f80e1ff61323767556d3edd1cf2a37c9e7",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\beauty.png": "cee79088a332841601e2faa4b91b5639759cc9b58f1424a2dd416b0b2f401608",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\noise.png": "7e2fc66f3ddb8aee1344adb353ec681dbee118804347cd1c364f52a7339b4ec5",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\meta.json": "b6305b96089c9314e29dcf0aeb074729e4f12c897e2e01b822481f5b1cd3147d",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\facepass.json": "d0813a183d06cff198eb34120c205eeb3e8b80a799a5f7e4f34fdecaf64ce205",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\R2\\still.png": "b3fd70216408b873d82fcd0bcaf41e9dd3e7a6a0e1ff45f9b4e302b1d9a50c3c",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px144\\R2\\still_ground.png": "fc02eda40a6449acba729a454f2546c5f0fcf3a1066c90acfb45ebe24abfaa53",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\id.png": "4a5d87f6ae1f7c59f1a4c906387c2a8d03cb9d6ba433e73fc2571efbbd0a2e21",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\normal.png": "1f61f26ad057db744a46057e0894d2b9e12eb96b85c93292b81db73b678a0e19",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\depth.png": "d22cf3fa3afe930917bbb6a9df76b2ed87b1c17ad2f9f5debf398ea8f2d0bb38",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\light.png": "dca7c9d21dcf0a121f1bfa8ee678eb92605cf7b19f8c106a84c5a039cf335c9c",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\beauty.png": "e6e8d83aaec252f4c9d7fde9c32489a53aa6ed4fc8f970ead8d964df97fb88da",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\noise.png": "e3252c298c0d864c1765d803929527f1defc8b1aa4da41210b04d0726b54a7a6",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\meta.json": "a0eb662d8e47dc07ba670d2f7aa96bcaad41f7f11b849edb30f1edb7a8dc0e19",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\facepass.json": "0e2322e8fcaa3f1eb537beb4d73e5bf4c75f1b88f459803a5e782bc6a5c40a49",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\R2\\still.png": "523362373048939f996bb91721b6987972cc5db44f30397ad01def3907c478ac",
+      "D:\\Dex\\Projects\\dex-place-art\\rosace\\build\\lanes\\drive9\\raw\\R2\\back\\px80\\R2\\still_ground.png": "094b0d7f3d794527c3a098e0f2dbf57debea05a179dcf2d05c3e47f307c34512"
+    },
+    "separateFailedBdDepth2AndMeta": {
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\idle\\px144\\depth2.png": "318bb06f47e0a57469d45ecb28cc55fc3bdf335c8ff4843f7ca46f91bf07ecdb",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\idle\\px144\\meta.json": "66f00c5b5e44678f609639a9be6ed5f73fe1c5a910b9f9e45f751be1a24a3c90",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\idle\\px144\\facecage_trial.json": "534d531d24077c391d48932700bf2a76b39f4b40cd34852d2661ce7413bc1873",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\idle\\px80\\depth2.png": "912fadbfe34f62718f5aea4e561eea1309adf2218b5637324d4761513983a65b",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\idle\\px80\\meta.json": "f781251a18e4cc4205933b398ea66c307fbd12706d00e76237b75d0f38a1047a",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\idle\\px80\\facecage_trial.json": "217400713e00be377e96e0d1e957f07a09a7255fed5597447996ee96556d9561",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\back\\px144\\depth2.png": "adb1a6614f0796c10ad7064a38867bb2829cbd0170533627bcd767f50cdc3118",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\back\\px144\\meta.json": "13cd996c7bc88dbc2bcdf292687869fce2538b2ccc49f918382c02620c563d68",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\back\\px144\\facecage_trial.json": "e64428e5769774ba7fde901d037dc17db5f35d18ced93deefdfd2acbd4615062",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\back\\px80\\depth2.png": "8ac12404fb0f168c9c1c5388a205a12e8e2cd7d8ddb903a8b6f99f0735fd1388",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\back\\px80\\meta.json": "c1d11896da13bd378d14f6e4a132215dbc9f33bebc18b296577baba430395b8b",
+      "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\review\\rosace\\specialists\\refinement\\facecage\\stage2-delivery\\control\\back\\px80\\facecage_trial.json": "b4718a093a99dd70411b83d879e630309fff277a3271785f194e0f2fb4b8519c"
+    }
+  },
+  "depth2Provenance": "actual failed FC1 bd94059 control, not invented as frozen R2 seventh pass",
+  "actualSupportPlanesQualified": false,
+  "nativeNewCandidateExists": false
+}

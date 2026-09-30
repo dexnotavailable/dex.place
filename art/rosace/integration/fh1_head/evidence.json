@@ -1,0 +1,28 @@
+{
+  "schema": "fh1.method-witness-construction-evidence/1",
+  "files": {
+    "methodMarkdown": {
+      "path": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/lanes/rosace/STAGE2-FACE-NEXT-METHOD-DECISION.md",
+      "sha256": "3bf2fca4b56fe15547775d5434fee3c8274bc56318e6cef8ac91e3b9a671cde5"
+    },
+    "methodDecision": {
+      "path": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/lanes/rosace/STAGE2-FACE-NEXT-METHOD-DECISION.json",
+      "sha256": "a86b773cdf09be7de5db24509584c3fa04bd9408b1b95c27271fc43abbea59b8"
+    },
+    "acceptedWitnessReceipt": {
+      "path": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/deliveries/rosace-fc1-jacobian-witness-native-20260930/receipt.json",
+      "sha256": "65c3f8ad5dd4513364818d95c0aba567046741addbab350f750e935230793993"
+    },
+    "acceptedWitnessArtifact": {
+      "path": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/lanes/delivery/rosace-fc1-jacobian-witness-20260930/OUTPUT/jacobian-witness.json",
+      "sha256": "be705edc8dbab77568b536e6e32db27b1dd3164a8b5b6ed3d6d5af47d9c8b6ce"
+    },
+    "canonicalConstructionReceipt": {
+      "path": "D:/Dex/Projects/dex-place-art/rosace/build/rosace_build.json",
+      "sha256": "4530f21971c885d31b9096f33f5ef6b1deac6095543a4d15fb268163e5fe56e7"
+    }
+  },
+  "witnessInterpretation": "failed97 vertex55 positive determinant0.006129979, compression below original .35 lower bound; not a fold claim; bd/97 remain failed",
+  "knownNoSetterExperiment": "old418 retained encoded arrays while1798decoded corners changed incl412stationary; no unchangedshading or whole-neck-height claim",
+  "nativeFH1Executed": false
+}

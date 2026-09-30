@@ -1,0 +1,52 @@
+{
+  "frozenReferencedSources": {
+    "D:\\Dex\\Projects\\dex.place\\art\\rosace\\poses\\idle_appeal.json": {
+      "filename": "idle_appeal.json",
+      "rawSha256": "2091f3a1e497a8aef93ba4baa25b4f54e58a07ef1e8272186fb8768cba299adb",
+      "canonicalLfSha256": "a89f0ddf1fcb2b6a8e623abba51a790aee676603d004d61ce9b04eb6578df958"
+    },
+    "D:\\Dex\\Projects\\dex.place\\tools\\pixel-pipeline\\drive9\\r2_model.json": {
+      "filename": "r2_model.json",
+      "rawSha256": "932a260552058718bc4bf0f986884afaf53bb11f7d7e76193e0735903b5a0405",
+      "canonicalLfSha256": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3"
+    },
+    "D:\\Dex\\Projects\\dex.place\\art\\rosace\\poses\\back_appeal.json": {
+      "filename": "back_appeal.json",
+      "rawSha256": "24f7a0435c3043598c2633c30deb4a7c203cd526ea38f385f0017126af4d3892",
+      "canonicalLfSha256": "ad591c59c5cfa0643cc9a9bd9300b63a567f993f22303d9fff571934cb81e47b"
+    },
+    "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\art\\rosace\\poses\\idle_appeal.json": {
+      "filename": "idle_appeal.json",
+      "rawSha256": "a89f0ddf1fcb2b6a8e623abba51a790aee676603d004d61ce9b04eb6578df958",
+      "canonicalLfSha256": "a89f0ddf1fcb2b6a8e623abba51a790aee676603d004d61ce9b04eb6578df958"
+    },
+    "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\tools\\pixel-pipeline\\drive9\\r2_model.json": {
+      "filename": "r2_model.json",
+      "rawSha256": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3",
+      "canonicalLfSha256": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3"
+    },
+    "D:\\Dex\\Temp\\rosace-facecage1-native-20260930\\art\\rosace\\poses\\back_appeal.json": {
+      "filename": "back_appeal.json",
+      "rawSha256": "ad591c59c5cfa0643cc9a9bd9300b63a567f993f22303d9fff571934cb81e47b",
+      "canonicalLfSha256": "ad591c59c5cfa0643cc9a9bd9300b63a567f993f22303d9fff571934cb81e47b"
+    }
+  },
+  "executingReferencedSources": {
+    "art/rosace/poses/idle_appeal.json": {
+      "filename": "idle_appeal.json",
+      "rawSha256": "a89f0ddf1fcb2b6a8e623abba51a790aee676603d004d61ce9b04eb6578df958",
+      "canonicalLfSha256": "a89f0ddf1fcb2b6a8e623abba51a790aee676603d004d61ce9b04eb6578df958"
+    },
+    "tools/pixel-pipeline/drive9/r2_model.json": {
+      "filename": "r2_model.json",
+      "rawSha256": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3",
+      "canonicalLfSha256": "1b30ca8eccc324cda999d90e3bae20f58e62970483ea3f9f877b8d61f73cebf3"
+    },
+    "art/rosace/poses/back_appeal.json": {
+      "filename": "back_appeal.json",
+      "rawSha256": "ad591c59c5cfa0643cc9a9bd9300b63a567f993f22303d9fff571934cb81e47b",
+      "canonicalLfSha256": "ad591c59c5cfa0643cc9a9bd9300b63a567f993f22303d9fff571934cb81e47b"
+    }
+  },
+  "equivalence": "ONLY CRLF->LF; retain raw SHA256 and verify pose_sha1 against its own raw bytes; no other normalization"
+}

@@ -1,0 +1,162 @@
+{
+  "schema": "fh1.four-still-native-request/1",
+  "id": "rosace-fh1-original-field-authored-encoding-idle-20260930",
+  "status": "source implementation pending independent review and ROOT seal; native not admitted",
+  "sourceBase": "bd94059a13d5becd68b80c0d219fdb6ad1d989f9",
+  "ownedNamespace": "art/rosace/integration/fh1_head",
+  "sourceBinding": "art/rosace/integration/fh1_head/binding.json",
+  "reusedInputBinding": {
+    "path": "art/rosace/integration/fh1_head/inputs.json",
+    "sha256": "574ecde6cddd33c9a90b1f951f5fd4f22df880e7652faa8f6fa10262eb3a258d",
+    "files": 58
+  },
+  "reusedMetadataSources": {
+    "path": "art/rosace/integration/fh1_head/metadata-sources.json",
+    "sha256": "66ca81de83ea87985db32d025168edcaf2e20e906c2cb21c0639553b14b38438",
+    "files": 9
+  },
+  "evidence": "art/rosace/integration/fh1_head/evidence.json",
+  "method": "ORIGINAL bd G.move/config/amplitudes, same unattenuated field on head and ALL nine hidden feature refs. Complete native authored INT16_2D encoding preserved; no setter/reset, support-plane expansion, topology, rig or renderer edit.",
+  "decodedContract": "Decoded NONanatomical head/feature normals may change at moved and stationary vertices under retained original encoding. Disclose complete indices/original+actual vectors/deltas/regions/pairs/hashes. Old4181798/412 evidence is not an unchanged shading claim; FH1 does not inherit or waive old941P0 decoded preservation. All anatomical Neck+neighbor and exact construction interface remain exact.",
+  "constructionInterface": {
+    "source": "rosace_v2/head.py weld+split and frozen4530f219 build receipt",
+    "required": "exactly30 unique common full native float32 coordinate keys; one closed boundary cycle each,30 edges degree2 onein/out, mapped opposite oriented halfedges, exact paired named positive Head/Neck weights; body polygons incident to cut30 are46triangles, union30+16vertices, exact two strip-boundary cycles30/16",
+    "normals": "each object's OWN full original encoded pairs and original protected decoded corner values remain exact; no cross-object equality of encoded or decoded corner bytes demanded",
+    "rejection": "ambiguity, unexpected extra/duplicate shared coordinates, nonfinite/un-stored-double point, topology/winding/count/weight drift, any protected coordinate/decoded/encoded mismatch stops before first candidate image; no nearest or tolerance"
+  },
+  "preCandidateGuards": [
+    "original unkeyed head and ALL actual hidden references, sole Armature and exact original settings/transforms/weights/materials/UV/full typed schema/counts",
+    "all5120 head INT16_2D pairs plus full per-object encoding schema/pair arrays exact through copy/update; no normal mutation API called",
+    "positive Neck-weight vertices plus one explicit edge neighborhood and source-derived cut-ring exact coordinates+decoded+encoded normals",
+    "same original cfg and fixed amplitudes across all head/ref copies; native float32 field readback exact; unchanged .35<JacobianDet<2, displacement<=.17span, triangle squared-area>=.20original and positive orientation",
+    "ALL original scene mesh pointers/data/coords/normals/schema including body+keys rechecked after all operations; rig rest/eye bones/head metrics/constraints exact before pose",
+    "fresh private rejection diagnostic includes config/interface sets/schema/full encoded SHAs and complete normal mismatches before candidate images; owned cleanup restores all pointers then attempts every owned deletion and all mutated hooks"
+  ],
+  "execution": {
+    "owner": "sole native delivery through existing exclusive/GPU resource gate; root independent source admission first",
+    "entry": "art/rosace/integration/fh1_head/fh1_trial.py",
+    "scriptArgumentsRequireBlenderSeparator": true,
+    "shell": false,
+    "canonicalBlend": "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+    "canonicalBlendSha256": "aef28c7f5cdddee6f18bd12c06d988b5436eeac24049ddf4f6ca37f654394373",
+    "commonScriptArgv": [
+      "--blend",
+      "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+      "--r2",
+      "<executingSource>/tools/pixel-pipeline/drive9/r2_model.json",
+      "--hand-scale",
+      "1.0",
+      "--head",
+      "1.10",
+      "--shots",
+      "idle",
+      "--px",
+      "144,80",
+      "--ss",
+      "4"
+    ],
+    "commands": [
+      {
+        "argv": [
+          "python",
+          "<executingSource>/tools/pixel-pipeline/blender_env.py",
+          "run",
+          "--factory-startup",
+          "--python-exit-code",
+          "1",
+          "--python",
+          "<executingSource>/art/rosace/integration/fh1_head/fh1_trial.py",
+          "--",
+          "--blend",
+          "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+          "--r2",
+          "<executingSource>/tools/pixel-pipeline/drive9/r2_model.json",
+          "--hand-scale",
+          "1.0",
+          "--head",
+          "1.10",
+          "--shots",
+          "idle",
+          "--px",
+          "144,80",
+          "--ss",
+          "4",
+          "--fh1-mode",
+          "control",
+          "--out",
+          "<executingSource>/review/rosace/integration/fh1_head/<freshRequest>/control"
+        ],
+        "stills": 2
+      },
+      {
+        "argv": [
+          "python",
+          "<executingSource>/tools/pixel-pipeline/blender_env.py",
+          "run",
+          "--factory-startup",
+          "--python-exit-code",
+          "1",
+          "--python",
+          "<executingSource>/art/rosace/integration/fh1_head/fh1_trial.py",
+          "--",
+          "--blend",
+          "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend",
+          "--r2",
+          "<executingSource>/tools/pixel-pipeline/drive9/r2_model.json",
+          "--hand-scale",
+          "1.0",
+          "--head",
+          "1.10",
+          "--shots",
+          "idle",
+          "--px",
+          "144,80",
+          "--ss",
+          "4",
+          "--fh1-mode",
+          "FH1",
+          "--out",
+          "<executingSource>/review/rosace/integration/fh1_head/<freshRequest>/FH1"
+        ],
+        "stills": 2
+      }
+    ],
+    "modeSelection": "control leaves original body/head data uninspected/uncopied by C.install; FH1 all native guards precede first candidate image",
+    "sourceAdmission": "ROOT commits reviewed runtime source, freezes exact live sourceHead, commits manifest/CPU metadata; sourceHead remains ancestor with exact fingerprint. ROOT external READY MUST bind exact final executingHEAD. No self-referential tracked final commit hash.",
+    "noAdditionalZeroImageProbe": true,
+    "noSave": true,
+    "rawStills": 4,
+    "passes": [
+      "id",
+      "normal",
+      "depth",
+      "light",
+      "beauty",
+      "depth2",
+      "noise"
+    ],
+    "stack": "closed/default R2, hand1.0/head1.10, existing selected R2 drape/model/finish; no W2/Cuff/reconstruction/alternate input"
+  },
+  "post": {
+    "entry": "art/rosace/integration/fh1_head/fh1_post.py",
+    "argv": [
+      "python",
+      "<executingSource>/art/rosace/integration/fh1_head/fh1_post.py",
+      "--root",
+      "<executingSource>/review/rosace/integration/fh1_head/<freshRequest>",
+      "--reference",
+      "D:/Dex/Projects/dex-place-art/rosace/build/lanes/drive9/raw/R2"
+    ],
+    "control": "validated nativeRGBA8 dimensions and sample bytes EXACT against six frozen R2 raw maps+unchanged still/still_ground; seventh depth2 EXACT separately bound actual failedbd control. Native file SHA remains provenance, no color conversion/tolerance.",
+    "metadata": "both trial bindings equal actual INPUTS+BINDING verify; full metadata equals corresponding frozenR2 and separate failedbd depth2meta. Only explicit same-filename pose_file/d9.r2 CRLF->LF byte equivalence with both raw SHAs and each raw pose_sha1 proof; no other omission/numeric waiver.",
+    "outsideScope": "every7 raw shape exactly equals meta canvas*SS BEFORE comparison; exact evaluated bone matrices/eye-bone/facing and other metadata; categorical control/candidate head union plus declared4 raw subpixel edge/2 native finish support, measured literal head XYXY bounds; raw and both finished outside-scope changed samples MUST0. Retain/reject adaptive finish spill; never ROI-composite or resample candidate.",
+    "output": "actual whole/native/nearest enlarged face panels, raw+finish proof with full normal disclosure and complete preservation failures retained; no automatic quality score"
+  },
+  "visibleHypothesis": "native144 useful orbital-to-cheek-to-jaw/eye placement; native80 distinct near/far features and legible feature step with unchanged fringe clearance. Subpixel-only/invisible change or eye loss is not progress.",
+  "laterAcceptance": "only qualified materially new actual pixels allow root's three fresh fixed9 critics; back/profile/motion/fullcharacter/art9 remain later requirements",
+  "nativeExecuted": false,
+  "nativeInterfaceOrGeometryQualified": false,
+  "candidatePixelsExist": false,
+  "art9": false,
+  "defaultPromotion": false
+}
