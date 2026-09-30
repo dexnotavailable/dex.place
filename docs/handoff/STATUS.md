@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-09-30T15:58:55.209Z (30/09/2026, 22:58:55 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-09-30T16:58:59.593Z (30/09/2026, 23:58:59 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,20 +12,28 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_1e5499b2-d83 — last activity 1453 min ago
+### wf_5cb6279a-9f2 — last activity 5 min ago
+4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
+
+- **build:world-load** (running)
+- **build:position-reset** (done): The position reset works. If you reload less than 3 minutes after your last activity, you come back at the exact spot where you stopped (room, x, y and facing). If it has been 3 minutes or more, or the save has no timestamp, you start at the arrival dock (A1/start). Only the position resets: flags, shrines, shortcuts, cuts, props, the rest place record and the sound choice all stay. The rule lives in `startPlace` in 
+- **build:docs** (done): I replaced all four placeholder docs with real pages and added four new ones. That makes 8 docs pages, all written from files I read, and none is marked placeholder any more. The work is one commit on claude/lane-docs, and I didn't touch src/site because no new doc group was needed. The docs don't pin a dexClient version: they point to the Downloads page and use `Get-FileHash .\dexClient-Setup-*.exe`, so they stay ri
+- **build:downloads-0423** (done): The download provenance checked out, so I made the switch. The site's dexClient download now points at the normal 0.4.23 installer, and it is the exact file the signed update channel serves. Provenance (sources read): - The desktop lane's handoff record D:/Dex/Automation/reports/dex-suite-resumption-20260930/desktop-acceptance/website-client0423-artifact-handoff.json names A:/Dex/Releases/dex-suite-resumption-2026093
+
+### wf_1e5499b2-d83 — last activity 1513 min ago
 2 agents: 0 done, 0 running or stopped mid-way, 2 failed.
 
 - **followups** (failed)
 - **verify** (failed)
 
-### wf_5ef68e55-dd7 — last activity 1459 min ago
+### wf_5ef68e55-dd7 — last activity 1520 min ago
 3 agents: 0 done, 0 running or stopped mid-way, 3 failed.
 
 - **cross-lane-fix** (failed)
 - **verify-regions-1** (failed)
 - **verify-release-1** (failed)
 
-### wf_68cebea7-8e1 — last activity 1461 min ago
+### wf_68cebea7-8e1 — last activity 1521 min ago
 40 agents: 40 done, 0 running or stopped mid-way, 0 failed.
 
 - **whole:overall:r3** (done): score 5.5 · prefers ours: no · top fixes: Undo the R3 regression in finish. Blind, the previous round (R2) beat this round (R3) at both 144 and 80 px. Return to R2's lower-key, softer ramps and push further toward textured painted shading with selective or coloured outlines instead of a navy outline on every edge. | Integrate the bust. Right now it is two flat grey-lavender spheres at sleeve value, which is on the never-list. Add an under
@@ -43,7 +51,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **whole:overall:r5** (done): score 5.7 · prefers ours: no · top fixes: Face regressed versus R4: restore the open, bright-eyed default face, pull the dark hair strands off the eyes, trim the crown flyaways to one clean ahoge, and go to a head of 1/6 of height | Pose: replace the walking-stride legs with a true weight-leg contrapposto (feet closer, free knee crossing in front, hip cocked out, hand on hip); the current idle reads as mid-step, not seductive-elegant | Bu
 - **report** (done): I promoted round 2. It is the best round of the five, at 5.78 against the refs' 9, and it beat the old integrated build in two separate blind sets (5.8 vs 5.6, then 5.7 vs 5.2). The canonical build and the stills chain now produce its look by default, and a fresh build plus re-render matches the judged stills pixel for pixel. One thing is missing: the harness blocked writing review/rosace/art/drive9/REPORT.md ("subag
 
-### wf_a38b10a9-aa1 — last activity 1547 min ago
+### wf_a38b10a9-aa1 — last activity 1607 min ago
 13 agents: 13 done, 0 running or stopped mid-way, 0 failed.
 
 - **R-A:critic** (done): verdict pass-with-notes · score 8.4
@@ -60,13 +68,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **I1:build** (done): Lane I1 is built. I played the whole round once from a fresh save and recorded it, and the pacing check is done. The phone and tablet runs and a laptop GPU measurement still need Dex, so the lane is not fully signed off. Nothing is committed. **What I played.** The bot played every region's real rooms with real input (W0's bot only decides which keys to press), from the dock through the lodge and every region, back t
 - **I1:critic** (done): verdict pass-with-notes · score 8
 
-### wf_168f26ae-9f9 — last activity 1567 min ago
+### wf_168f26ae-9f9 — last activity 1627 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **tablet-cap** (done): I picked up the earlier attempt's edits and finished the work. The tablet cap was already in place and still holds. On its own it left the home arrival (/#gallery) at 2.7-3.3 s on tablets, so I added a small preload that only runs for that arrival. Both pages now land at or just under 2.5 s on 768 and 820 tablets. Phones hold or improve, and desktop /#gallery improved. Nothing was committed or pushed. **What changed*
 - **verify** (done): verdict pass-with-notes · score 8.8
 
-### wf_8dbb7c86-4f2 — last activity 1713 min ago
+### wf_8dbb7c86-4f2 — last activity 1773 min ago
 20 agents: 12 done, 2 running or stopped mid-way, 6 failed.
 
 - **P0:critic** (done): verdict blocking · score 7.5 · blocking: The nave rule (sway-only room) is not enforced for grass and vines, so the section 13 item 'the breakage policy in section 4 is enforced' fails, along with the lane's claim of '0 cells lost, 0 tears, 0 cuts across all props in a sway-only room'. In src/pixel/props/plants.ts, grassHit (about line 187) and vineHit (about line 402) cut blades and strands without checking c.keepsCells. Measured in /pr
@@ -84,13 +92,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **R-A:critic** (failed)
 - **I1:build** (failed)
 
-### wf_941a8d14-64d — last activity 1864 min ago
+### wf_941a8d14-64d — last activity 1924 min ago
 2 agents: 0 done, 0 running or stopped mid-way, 2 failed.
 
 - **tablet-cap** (failed)
 - **verify** (failed)
 
-### wf_70330ee7-91c — last activity 1864 min ago
+### wf_70330ee7-91c — last activity 1925 min ago
 11 agents: 0 done, 0 running or stopped mid-way, 11 failed.
 
 - **diagnose** (failed)
@@ -105,7 +113,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **whole:r1** (failed)
 - **report** (failed)
 
-### wf_b9b542bc-170 — last activity 1864 min ago
+### wf_b9b542bc-170 — last activity 1925 min ago
 22 agents: 20 done, 0 running or stopped mid-way, 2 failed.
 
 - **judge-sheets** (done): The blind judging set is built. It is in D:\Dex\Projects\dex.place\review\rosace\art\figure-pose\judge\ (git-ignored). It has 12 sheets, a key.json and the script that makes the sheets. No critic has scored it yet. **Letters.** The four entries were shuffled once with seed 20260936, and every sheet uses the same mapping. I used K–N so the letters can't be confused with the concept names A/B/C: - K = C_leaning_on_lanc
@@ -123,7 +131,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **refine:r3** (failed)
 - **report** (failed)
 
-### wf_ad38c33b-de5 — last activity 1870 min ago
+### wf_ad38c33b-de5 — last activity 1930 min ago
 50 agents: 46 done, 4 running or stopped mid-way, 0 failed.
 
 - **outfit:critic:r3** (done): score 6 · prefers ours: no · top fixes: Chest window: replace the gold teardrop emblem with a true 5x9 diamond (3x5 at 80): 1 px thin gold frame, two skin tones, a 1 px dark cleavage line, and W3/W4 shading under the bust so it sits on a curved surface. | Pelvis gold: cut it to one hip band with the rose medallion plus one 1 px garter strap per thigh. Delete the crossing diagonal runs. Idle at 80 must pass CL-P15 (gold share now 0.151).
@@ -141,23 +149,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **whole:craft:r2** (done): score 5.5 · prefers ours: no · top fixes: Separate skin from white cloth in value: drop the skin base about one step and warm it, so the figure stops reading as one pale blob at 1x and 80 px. The top value belongs to the white cloth, gold highlight and eyes only. | Replace the thigh and glute sub-band/core with whole-form darkening plus authored cast shadows (bust, tabard, hair, sleeve) and a contact shadow. Round 2's thigh re-band made t
 - **whole:overall:r2** (done): score 6.2 · prefers ours: no · top fixes: Idle with real attitude: contrapposto hip toward the staff, head tilted with chin down and a Confident smirk, and the near hand closed around the shaft instead of lying open. The idle is the first-impression frame. | Put the stained-glass signature into the n1_contact and q_stamp frames (a smear, then leaded-glass cells, plus a ground decal). The attack frames currently have a plain crescent or no
 
-### wf_9c8f81ae-b55 — last activity 1951 min ago
+### wf_9c8f81ae-b55 — last activity 2011 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **fix** (done): Both tech-critic blockers are fixed and checked on a local build. Nothing was committed or pushed. 1) Arriving at /#gallery was slow because the gallery images waited for the main script, and then 9 images all shared the Slow 4G line. It's now 2.1 s on a direct /#gallery load (was 5.3 s) and about 1.5–1.6 s from a Gallery link (was about 4.5 s). The plain home page is 1.4–1.5 s (was 1.76 s). Fix: a small inline scrip
 - **verify** (running)
 - **verify** (done): verdict blocking · score 7.6 · blocking: The /gallery/ page (not /#gallery) misses the LCP budget on the target profile: 6.0 s on Slow 4G + 4x CPU at 390x844 DPR3. It failed all 7 runs (5984-6004 ms in the recheck, 5944-5964 ms earlier); 393x852 and 412x915 fail the same way. Cause: the first tile 01-640.webp (the fetchpriority=high one) shows 68,600 px² because one pixel row is clipped. Tile 02-640.webp is the same size but shows in ful
 - **fix2** (done): Fixed: /gallery/ on a phone now hits LCP (the "largest contentful paint" timing) at about 2.07 s on Slow 4G + 4x CPU. It was 6.0 s, and it now passes at 390x844, 393x852 and 412x915 with no over-budget run. Nothing was committed or pushed. The cause was that on a phone, tiles 01 and 02 are the same size and sit one above the other. Which one the browser measures as a pixel larger depends only on where their edges rou
-
-### wf_832d2dd9-5ac — last activity 2090 min ago
-6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
-
-- **assemble** (done): The v2 base is built: the busty SiroinoSotai body with the head from the MMD女性素体 welded on, saved as D:\Dex\Projects\dex-place-art\rosace\build\rosace_v2.blend. It is rebuilt entirely by tools/pixel-pipeline/build_rosace_v2.py plus the rosace_v2/ helpers, and two builds came out byte-for-byte the same. rosace.blend was not touched (its sha256 and timestamp are unchanged). Nothing was committed. **How it looks.** At 1
-- **refit** (done): Rosace is refit onto the v2 base and looks right at 144 px and at 80 px. The model is still D:\Dex\Projects\dex-place-art\rosace\build\rosace_v2.blend, now dressed, and a script rebuilds it (build_rosace_v2.py; --bare gives the old undressed base). She has her hair, veil, full outfit, glaive, the revision-3 palette and a readable collar cross. I rendered the four key stills at both heights and one N1 attack clip on t
-- **compare:sheets** (done): The blind A/B sheets are built. There are 8 sheets comparing the v2 base with the current base, plus one sheet putting v2 next to refs 07 and 09. They are in D:\Dex\Projects\dex.place\review\rosace\base-v2\compare\ and nobody has judged them yet. This picked up a run that had stopped partway. Most of the work was already on disk from before this run: - rosace_v2.blend (base, outfit refit, motion) - the THIRD_PARTY.md
-- **critic:1** (done): top fixes: Make the bust actually bigger. At 144 px, bust depth is 15.8 px vs v1's 15.6, and width 18.9 vs 19.2. Push Breasts_LL past 1.0, or stack the other Breast keys and move the Breast_L/R tip refit, until depth is about 18 px at 144 (about 10 at 80). Then confirm it reads in profile on N1 A1/A2/F1, not just the front idle. | Pull the waist in. Waist-to-hip is 0.47 on v2 vs 0.429 on v1. Raise Spine_Slim
-- **critic:2** (done): top fixes: Face stamps on the MMD head: the v2 144 px idle has no visible mouth. Re-anchor the mouth/brow/blush stamps to the new head's UV or landmarks, and check them at 3/4 and profile at both 80 and 144 px. | Stop hair strands crossing the face. In the v2 144 px contact, a dark strand runs across the cheek near the eye and reads as a scar. Mask the front strands off the face in the object-ID pass, or pus
-- **adopt** (done): The v2 base is now canonical. `rosace.blend` is built from the SiroinoSotai body and the MMD用女性素体 head. The four cheap body fixes the judge asked for are in, and the targets are met or close. The shipped v1 file was backed up first as `build/rosace_v1.blend`; its sha256 (0fbbf8e3…) is unchanged. There were no commits or pushes, and I didn't touch the other lanes' paths. **What changed in her body** (bare, front view,
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
