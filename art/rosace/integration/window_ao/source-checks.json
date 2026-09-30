@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "state": "entry repair gated CPU checks passed; independent review and final binding/READY pending ROOT two-step freeze",
+  "state": "PNG guard follow-up fresh gated CPU checks passed; final review/binding/READY pending ROOT two-step freeze",
   "observedDate": "2026-09-30",
   "worktree": "D:/Dex/Temp/dex-place-rosace-window-ao-entry-bootstrap-20260930",
-  "head": "1295062e2454c85d584751ba58448a1b18bef34c",
+  "head": "ef243b08a560958d89892382444a615e02a51c6b",
   "geometryParent": "54518211eb9a342bc5f6689562c5a0179d466a52",
   "gate": "D:/Dex/Automation/reports/dex-suite-resumption-20260930/resource-gate.ps1 -Owner rosace-source",
   "sourceFixtureCommand": "python art/rosace/integration/window_ao/check.py",
@@ -17,8 +17,11 @@
     "rawOutsideScopeAndAlphaLeakage": "pass, CPU synthetic fixtures",
     "allNewPythonSourceCompilation": "pass, fresh gated in-memory compile, no bytecode output",
     "actualStrippedPathAndCacheEntryImport": "pass, 2 actual importlib routes, real siblings/helper modules loaded without HERE/helper directories or caches, exact sys.path identity/content restoration on success and injected import failure, no bpy/native called",
-    "frozenCalculationRestSourceBytes": "pass, geometry/native/rest_geometry/post/check_rest byte-exact frozen129 Git blobs",
-    "explicitExactSourceHeadAndAncestryAdmission": "pass, live check-admission HEAD129 exact plus545/129 ancestry; freeze exact runtime HEAD, runtime uses bounded source ancestor and exact fingerprints; external ROOT final executing HEAD remains exact",
+    "frozenCalculationRestSourceBytes": "pass, four files geometry/native/rest_geometry/check_rest byte-exact129; post explicitly changed only for validated PNG sample comparison",
+    "exactValidatedDecodedPngSamples": "pass, 11 fixtures: encoding/metadata accepted with exact native samples; single R/G/B/A sample/dimension/depth/mode/IHDR corruption rejected, tolerance0 and no mode/depth conversion",
+    "actualPreserved545FinishedPngFormat": "pass, four actual preserved545 still/ground PNGs validated8bitRGBA; original files read-only",
+    "actualPngReplaySupportingEvidence": "pass, exact actual finding SHA313c299a9fc8b266fd36e8edf2c2773475613001ee66fb1b27f4a67e05c800a2; separate supportingEvidence bound by freeze/verify, encoding method only",
+    "explicitExactSourceHeadAndAncestryAdmission": "pass, live check-admission ef243b08a560958d89892382444a615e02a51c6b exact plus545/129 ancestry; freeze exact later reviewed runtime HEAD, runtime uses bounded source ancestor and exact fingerprints; external ROOT final executing HEAD remains exact",
     "metadataOnlyDescendantAndRuntimeDriftGuards": "pass, CPU supplied lineage/fingerprint cases; metadata-only descendant with equal runtime fingerprints allowed, source drift or missing545/129/sourceHead ancestry and unrelated heads rejected; no synthetic Git commits made",
     "bindingFreezeAndVerification": "pending parent independent review and ROOT freeze at exact reviewed new source HEAD"
   },
@@ -34,6 +37,6 @@
   "artAccepted": false,
   "defaultAdoption": false,
   "sourceReadyOrDispatched": false,
-  "gateAdmission": "four bounded60second attempts timed out behind valid delivery exclusive leases without running tests; fifth attempt acquired free boundary and all CPU checks/check-admission passed, no bypass",
+  "gateAdmission": "PNG follow-up checks and actual finished-format validation passed at free resource boundary; historical entry repair had four admission timeouts then pass, no bypass",
   "limits": "Existing129 source/request/binding/admission remain held and unchanged. Fresh source fixtures do not prove native behavior. ROOT sequence remains reviewed runtime code commit -> exact runtime-head freeze -> binding/receipt metadata commit -> external exact final-head READY/delivery admission. No new manifest/native/READY claimed by implementor."
 }

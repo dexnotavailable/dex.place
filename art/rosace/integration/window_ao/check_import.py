@@ -57,7 +57,7 @@ def run():
             assert sys.modules.get('bpy') is original_bpy
             sys.meta_path[:]=original_meta
             routes+=1
-        for name in ('geometry.py','native.py','rest_geometry.py','post.py','check_rest.py'):
+        for name in ('geometry.py','native.py','rest_geometry.py','check_rest.py'):
             frozen=subprocess.check_output(['git','show',
                 '1295062e2454c85d584751ba58448a1b18bef34c:art/rosace/integration/window_ao/'+name],cwd=REPO)
             if (HERE/name).read_bytes()!=frozen:
@@ -72,5 +72,5 @@ def run():
                 sys.modules[name]=old
     return {'actualImportRoutes':routes,'realSiblingLoadWithoutHereOrHelperPath':'pass',
             'sysPathIdentityAndContentsRestoredOnSuccessAndFailure':'pass',
-            'fiveFrozenCalculationRestFilesByteExact129':True,
+            'fourFrozenCalculationRestFilesByteExact129':True,
             'bpyImportedOrNativeCalled':False}

@@ -13,6 +13,7 @@ import native as N
 import wrapper as W
 import check_rest
 import check_import
+import check_png
 
 
 def refuses(call):
@@ -69,9 +70,10 @@ def preservation_binding_checks():
         changed=copy.deepcopy(before); changed[key]=value
         refuses(lambda:N.assert_preserved(before,changed))
     payload={'sourceAdmission':{'sourceBase':B.SOURCE_BASE,'sourceHead':B.SOURCE_BASE,'geometryParent':B.BASE},
-             'contract':B.contract(),'source':{'a':'0'},'inputs':{'blend':'1'},'actual545Evidence':{'actual-open':'2'}}
-    B.verify_data(payload,payload['source'],payload['inputs'],payload['actual545Evidence'])
-    for key in ('source','inputs','actual545Evidence'):
+             'contract':B.contract(),'source':{'a':'0'},'inputs':{'blend':'1'},'actual545Evidence':{'actual-open':'2'},
+             'supportingEvidence':{'finding':B.PNG_FINDING_SHA}}
+    B.verify_data(payload,payload['source'],payload['inputs'],payload['actual545Evidence'],payload['supportingEvidence'])
+    for key in ('source','inputs','actual545Evidence','supportingEvidence'):
         for mutation in ('value','addition','deletion'):
             changed=copy.deepcopy(payload[key])
             if mutation=='value':
@@ -80,11 +82,11 @@ def preservation_binding_checks():
                 changed['new']='unbound'
             else:
                 changed.pop(next(iter(changed)))
-            args=[payload['source'],payload['inputs'],payload['actual545Evidence']]
-            args[('source','inputs','actual545Evidence').index(key)]=changed
+            args=[payload['source'],payload['inputs'],payload['actual545Evidence'],payload['supportingEvidence']]
+            args[('source','inputs','actual545Evidence','supportingEvidence').index(key)]=changed
             refuses(lambda:B.verify_data(payload,*args))
     changed=copy.deepcopy(payload); changed['contract']['bodyAo']['strength']=.8
-    refuses(lambda:B.verify_data(changed,payload['source'],payload['inputs'],payload['actual545Evidence']))
+    refuses(lambda:B.verify_data(changed,payload['source'],payload['inputs'],payload['actual545Evidence'],payload['supportingEvidence']))
     for expected,actual,a,b in ((None,B.SOURCE_BASE,True,True),('129',B.SOURCE_BASE,True,True),
                                 (B.SOURCE_BASE,B.BASE,True,True),(B.SOURCE_BASE,B.SOURCE_BASE,False,True),
                                 (B.SOURCE_BASE,B.SOURCE_BASE,True,False)):
@@ -92,11 +94,12 @@ def preservation_binding_checks():
     B.authorize_source_head(B.SOURCE_BASE,B.SOURCE_BASE,True,True)
     for key,value in (('sourceBase',B.BASE),('geometryParent',B.SOURCE_BASE),('sourceHead','129')):
         changed=copy.deepcopy(payload); changed['sourceAdmission'][key]=value
-        refuses(lambda:B.verify_data(changed,payload['source'],payload['inputs'],payload['actual545Evidence']))
+        refuses(lambda:B.verify_data(changed,payload['source'],payload['inputs'],payload['actual545Evidence'],payload['supportingEvidence']))
     # Same runtime fingerprint plus a metadata-only descendant may pass. The
     # separately admitted final executing HEAD stays an external ROOT guard.
-    unchanged=B.verify_data(payload,payload['source'],payload['inputs'],payload['actual545Evidence'])
+    unchanged=B.verify_data(payload,payload['source'],payload['inputs'],payload['actual545Evidence'],payload['supportingEvidence'])
     B.authorize_runtime_head(B.SOURCE_BASE,'c'*40,True,True,True,unchanged)
+    assert list(B.supporting_evidence().values())==[B.PNG_FINDING_SHA]
     for geometry,entry,source,equal in ((False,True,True,True),(True,False,True,True),
                                       (True,True,False,True),(True,True,True,False)):
         refuses(lambda:B.authorize_runtime_head(B.SOURCE_BASE,'c'*40,geometry,entry,source,equal))
@@ -243,7 +246,8 @@ def main():
             'actualWrapperInjectedCleanupPaths':wrapper_checks(),
             'shapeAwareRestHelper':check_rest.run(),
             'outsideScopeAndSourceSyntax':post_scope_checks(),
-            'actualStrippedPathCacheEntryImport':check_import.run()}
+            'actualStrippedPathCacheEntryImport':check_import.run(),
+            'exactDecodedPngSamples':check_png.run()}
     print(json.dumps({'status':'source-fixtures-pass','counts':counts,
                       'nativeExecuted':False,'artAccepted':False,
                       'limits':'injected CPU fixtures test actual wrapper control flow; native Blender schemas/BVH/readback/render remain pending'},indent=2))

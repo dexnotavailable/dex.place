@@ -18,6 +18,8 @@ RAW=('beauty.png','depth.png','depth2.png','id.png','light.png','noise.png','nor
      'meta.json','facepass.json','landmarks.json')
 BLEND=Path('D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend')
 BUILD_RECEIPT=BLEND.with_name('rosace_build.json')
+PNG_FINDING=PACKET/'source-findings/rosace-cuff2-parent-decoded-replay-20260930.json'
+PNG_FINDING_SHA='313c299a9fc8b266fd36e8edf2c2773475613001ee66fb1b27f4a67e05c800a2'
 
 
 def sha(path):
@@ -53,11 +55,19 @@ def evidence():
     return {str(p.resolve()):sha(p) for p in files}
 
 
+def supporting_evidence():
+    actual=sha(PNG_FINDING)
+    if actual!=PNG_FINDING_SHA:
+        raise AssertionError('actual PNG decoded-replay supporting finding changed')
+    return {str(PNG_FINDING.resolve()):actual}
+
+
 def contract():
     args=native_args('<FRESH_PRIVATE_OUTPUT>')
     args[args.index('--r2')+1]='<EXECUTING_REPO>/tools/pixel-pipeline/drive9/r2_model.json'
     return {'base':BASE,'entryRepairSourceBase':SOURCE_BASE,'parentMode':'actual545 reconstruction opening','nativeArgs':args,
             'rawPasses':list(RAW[:7]),'finish':'unchanged reconstruction_finish.finish_recipe over exact R2 base; no compositing',
+            'rawPngComparison':'validated8bit RGBA IHDR/dimensions/native decoded sample bytes exact; original file SHA retained as provenance, no tolerance or mode/depth conversion',
             'bodyAo':{'distance':.075,'strength':.9,'rays':24,'originOffset':.0015},
             'newModes':['control','rebaked'],'newStills':4,'reuseParentControlAllowed':False}
 
@@ -100,24 +110,25 @@ def freeze(expected_source_head):
         raise ValueError('actual545 parent source HEAD changed')
     data={'schemaVersion':2,'sourceAdmission':source_admission,'contract':contract(),'source':sources(),
           'inputs':{str(BLEND):sha(BLEND),str(BUILD_RECEIPT):sha(BUILD_RECEIPT)},'actual545Evidence':evidence(),
+          'supportingEvidence':supporting_evidence(),
           'sourceOnly':True,'nativeQualification':'pending; manifest hashes are read-only evidence binding'}
     # Explicit bytes keep LF stable across Windows writes/fresh Git checkouts.
     MANIFEST.write_bytes((json.dumps(data,indent=2)+'\n').encode('utf-8'))
     return data
 
 
-def verify_data(data,current_source,current_inputs,current_evidence):
+def verify_data(data,current_source,current_inputs,current_evidence,current_supporting):
     source_admission=data.get('sourceAdmission',{})
     if source_admission.get('sourceBase')!=SOURCE_BASE or source_admission.get('geometryParent')!=BASE or re.fullmatch('[0-9a-f]{40}',str(source_admission.get('sourceHead',''))) is None:
         raise AssertionError('exact authorized source admission missing or changed')
-    if data['contract']!=contract() or data['source']!=current_source or data['inputs']!=current_inputs or data['actual545Evidence']!=current_evidence:
+    if data['contract']!=contract() or data['source']!=current_source or data['inputs']!=current_inputs or data['actual545Evidence']!=current_evidence or data.get('supportingEvidence')!=current_supporting:
         raise AssertionError('source/input/CLI/frozen actual545 binding mutation or set change')
     return True
 
 
 def verify():
     data=json.loads(MANIFEST.read_text(encoding='utf-8'))
-    fingerprint_equal=verify_data(data,sources(),{str(BLEND):sha(BLEND),str(BUILD_RECEIPT):sha(BUILD_RECEIPT)},evidence())
+    fingerprint_equal=verify_data(data,sources(),{str(BLEND):sha(BLEND),str(BUILD_RECEIPT):sha(BUILD_RECEIPT)},evidence(),supporting_evidence())
     source_admission=runtime_admission(data['sourceAdmission']['sourceHead'],fingerprint_equal)
     head=source_admission['executingHead']
     return {'bindingSha256':sha(MANIFEST),'executingHead':head,'authorizedBase':BASE,

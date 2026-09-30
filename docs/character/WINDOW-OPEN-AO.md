@@ -1,5 +1,22 @@
 # Bounded open-window AO diagnostic
 
+PNG guard follow-up, September30: root's actual C2 parent replay found all14 PNG file
+hashes different while their native RGBA dimensions/sample bytes remained identical;
+independent IHDR inspection found8bitRGBA for all28 files. The source finding is bound
+as separate supporting evidence with SHA313c299a...5c800a2; it does not substitute C2's
+closed bcb parent for this actual545 opening parent. `post.py` now validates PNG signature,
+first13byte IHDR/CRC,8bit color type6, dimensions and decoded native RGBA8 mode/sample
+bytes without conversion or tolerance. Encoding/metadata-only changes pass; single
+R/G/B/A sample, dimension, depth, mode or corrupt-IHDR changes fail. Original file SHA
+and decoded sample SHA remain in proof, while frozen source/input PNG bytes remain
+hash-bound in binding. ROI/alpha/all spatial guards and art method are unchanged.
+
+This follow-up starts at root's runtime commit `ef243b08a560958d89892382444a615e02a51c6b`.
+Geometry/native/rest/check_rest remain byte-exact129; post is now explicitly changed
+for image comparison only. Root reviews this increment before a later runtime commit
+and the same exact-runtime-head freeze -> metadata commit -> external finalHEAD READY
+sequence. No child freeze at ef243b0, no commit/native run or existing129 request edit.
+
 Entry follow-up, September30: frozen source129's held native request is preserved.
 The new `codex/rosace-window-ao-entry-bootstrap-20260930` worktree repairs only entry
 discovery and explicit source admission. `wrapper.py` temporarily adds its own directory
@@ -111,8 +128,9 @@ Four fresh stills are requested: open control144/80 and same opening rebaked144/
 Parent reuse is disabled in this first request. Native delivery alone owns execution
 through its exclusive/GPU lease at a free boundary. Parent source review precedes READY.
 The unchanged reconstruction finish (over the R2 base) must replay actual545 control
-still/ground0px; all seven control raw PNGs must match actual545 byte-exact. Candidate
-ID/normal/depth/depth2/noise stay exact; bones/pose/camera/ppm/anchor and opening/rim
+still/ground0px; all seven control raw PNGs must match actual545 in validated native
+RGBA8 dimensions/sample bytes. File hashes remain provenance and can differ by encoding.
+Candidate ID/normal/depth/depth2/noise samples stay exact; bones/pose/camera/ppm/anchor and opening/rim
 projection stay exact. Only light/beauty may differ in the declared actual support.
 `post.py` retains full outputs, reports AO/ramp distributions and changed-color clusters,
 and rejects any raw/finished outside-scope or alpha difference. Adaptive palette

@@ -2,6 +2,10 @@
 import argparse
 import json
 import sys
+import hashlib
+import io
+import struct
+import zlib
 from pathlib import Path
 import numpy as np
 from PIL import Image,ImageDraw,ImageFilter
@@ -11,14 +15,43 @@ sys.path.insert(0,str(B.REPO/'tools/pixel-pipeline/next'))
 import reconstruction_finish as F
 
 
+def rgba8_png(path):
+    """Validated native RGBA8 PNG samples, without mode/depth conversion."""
+    raw=Path(path).read_bytes()
+    if len(raw)<33 or raw[:8]!=b'\x89PNG\r\n\x1a\n' or raw[8:12]!=struct.pack('>I',13) or raw[12:16]!=b'IHDR':
+        raise ValueError('PNG needs a valid first13byte IHDR: '+str(path))
+    header=raw[16:29]
+    if struct.unpack('>I',raw[29:33])[0]!=(zlib.crc32(b'IHDR'+header)&0xffffffff):
+        raise ValueError('PNG IHDR CRC differs: '+str(path))
+    width,height,depth,color,compression,filter_method,interlace=struct.unpack('>IIBBBBB',header)
+    if not width or not height or depth!=8 or color!=6 or compression!=0 or filter_method!=0 or interlace not in (0,1):
+        raise ValueError('only validated8bit RGBA PNG accepted: '+str(path))
+    with Image.open(io.BytesIO(raw)) as im:
+        if im.format!='PNG' or im.mode!='RGBA' or im.size!=(width,height):
+            raise ValueError('native PNG mode/dimensions differ from RGBA8 IHDR')
+        im.verify()
+    with Image.open(io.BytesIO(raw)) as im:
+        im.load()
+        if im.mode!='RGBA' or im.size!=(width,height):
+            raise ValueError('decoded PNG mode/dimensions changed')
+        pixels=np.asarray(im).copy()
+    if pixels.dtype!=np.uint8 or pixels.shape!=(height,width,4):
+        raise ValueError('decoded PNG samples are not exact native RGBA8')
+    return pixels,{'mode':'RGBA','bitDepth':8,'dimensions':[width,height],
+                   'fileSha256':hashlib.sha256(raw).hexdigest(),
+                   'decodedSampleSha256':hashlib.sha256(pixels.tobytes()).hexdigest()}
+
+
 def read_image(path):
-    with Image.open(path) as im:
-        return np.asarray(im.convert('RGBA')).copy()
+    return rgba8_png(path)[0]
 
 
 def exact_file(a,b):
-    if B.sha(a)!=B.sha(b):
-        raise AssertionError(f'exact genuine native file differs: {a.name}')
+    left,lrecord=rgba8_png(a); right,rrecord=rgba8_png(b)
+    if left.shape!=right.shape or left.tobytes()!=right.tobytes():
+        raise AssertionError(f'exact decoded native RGBA8 samples differ: {a.name}')
+    return {'sampleEquality':'exact, no tolerance/conversion','left':lrecord,'right':rrecord,
+            'fileBytesEqual':lrecord['fileSha256']==rrecord['fileSha256']}
 
 
 def mask(size,polygons,scale):
@@ -64,13 +97,13 @@ def run(root):
     for px in (144,80):
         parent=B.PARENT/f'reconstruction-raw/idle/px{px}'
         control=root/f'control-raw/idle/px{px}'; candidate=root/f'rebaked-raw/idle/px{px}'
-        rawhashes={}
+        rawhashes={}; control_comparisons={}; invariant_comparisons={}
         for name in B.RAW[:7]:
-            exact_file(control/name,parent/name)
+            control_comparisons[name]=exact_file(control/name,parent/name)
             rawhashes[name]={mode:B.sha(path/name) for mode,path in
                             (('actual545',parent),('control',control),('rebaked',candidate))}
         for name in ('id.png','normal.png','depth.png','depth2.png','noise.png'):
-            exact_file(control/name,candidate/name)
+            invariant_comparisons[name]=exact_file(control/name,candidate/name)
         metas=[json.loads((p/'meta.json').read_text()) for p in (parent,control,candidate)]
         for key in ('canvas','anchor','ss','px','ppm','cam','materials','parts','anchors','d9'):
             # Only absolute source path may differ between executing exact worktrees.
@@ -112,9 +145,9 @@ def run(root):
                 raise ValueError('preserve prior finish; fresh native output required')
             F.D.process(str(path),finish,'D1','R2',True)
             finished.append(read_image(path/'R2/still.png'))
+        finish_comparisons={}
         for name in ('still.png','still_ground.png'):
-            if not np.array_equal(read_image(control/'R2'/name),read_image(parent/'R2'/name)):
-                raise AssertionError(f'unchanged actual545 finish replay differs: {px}/{name}')
+            finish_comparisons[name]=exact_file(control/'R2'/name,parent/'R2'/name)
         change=np.any(finished[0]!=finished[1],axis=2)
         outside=int((change&~finalallow).sum())
         alpha=int((finished[0][...,3]!=finished[1][...,3]).sum())
@@ -125,7 +158,7 @@ def run(root):
             values,counts=np.unique(im[change,:3],axis=0,return_counts=True)
             clusters[mode]=[{'RGB':list(map(int,v)),'pixels':int(n)} for v,n in zip(values,counts)]
         lights=[read_image(p/'light.png') for p in (control,candidate)]
-        rows.append({'px':px,'controlSevenRawPassBytesEqualActual545':True,
+        rows.append({'px':px,'controlSevenRawPassDecodedRGBA8SamplesEqualActual545':True,
                      'controlFinishedStillAndGroundReplayChangedPixels':0,
                      'candidateIdNormalDepthDepth2NoiseExact':True,
                      'sameExactCameraBonePoseAnchorPpm':True,'rawDifferences':rawdiff,
@@ -134,6 +167,9 @@ def run(root):
                      'openingLight':{mode:summarize_light(light,aperture&skin) for mode,light in zip(('control','rebaked'),lights)},
                      'otherBodySkinLight':{mode:summarize_light(light,skin&~rawallow) for mode,light in zip(('control','rebaked'),lights)},
                      'changedPixelClusters':clusters,'rawHashes':rawhashes,
+                     'controlDecodedPngComparisons':control_comparisons,
+                     'candidateInvariantDecodedPngComparisons':invariant_comparisons,
+                     'controlFinishedDecodedPngComparisons':finish_comparisons,
                      'selectedFaceCount':len(records[1]['ao']['plan']['selectedFaces']),
                      'selectedPointCount':len(records[1]['ao']['plan']['selectedPoints']),
                      'fieldSourceSha256':records[1]['ao']['fieldSourceSha256']})
