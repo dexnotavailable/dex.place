@@ -1,0 +1,26 @@
+{
+  "id": "rosace-window-mesh2-native-20260930",
+  "kind": "finite-native-geometry-comparison",
+  "owner": "rosace",
+  "wrapper": "tools/pixel-pipeline/next/nx_window_mesh_blender.py",
+  "windowModes": ["control", "mesh"],
+  "variable": "actual front bodice face termination around preserved body skin; separate5mm continuous gold rim",
+  "commonArgs": ["--hand-scale", "1.0", "--shots", "idle", "--blend", "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend", "--r2", "<executing-worktree>/tools/pixel-pipeline/drive9/r2_model.json", "--head", "1.10", "--ss", "4", "--px", "144,80"],
+  "outputRelative": "review/rosace/art/next/window-mesh2-delivery",
+  "executionPathRule": "Rebase wrapper,r2 and privateoutputs to executing frozen worktree; resolve placeholders before dispatch; separate fresh Blender process per mode",
+  "steps": [
+    "Check source check_window_mesh.py plus exact canonical/model/rollback hashes; acquire sole delivery native/GPU leases at free boundary after world priority.",
+    "Render window-modecontrol to outputRelative/control-raw; mode mesh to outputRelative/candidate-raw. No save-lane,physics,hand,pose,face or headtilt stack.",
+    "Native candidate assertions: one new closed internal loop; all originalvertex coords/weights/groups/shape keys/point data and retainedface/UV/corner data exact; body/collar/cross/plate geometry unchanged. Stop on guard failure, preserve output and report. No bypass or canonical edits.",
+    "Actual geometry removes front cloth faces only and adds gold strip outside cutedge with transferred weights/keydeltas/AO. Inspect native RNA, ring normals, current-shape deformation and collar placement; source is not a qualification.",
+    "Run window_mesh_post.py --root resolvedoutputRelative --reference preserved genuineR2control-raw. Control must0px144/80; categorical raw body+skin gain inside projectedhole required, not skin-colored paint. Finish is unchangedR2, report all outsidewindow/alpha changes rather than discard them.",
+    "Immediately inspect and publish real144/80control/candidate/native/whole/chestcrops, exact hashes, geometry/skin proof and both rollback manifests. The rim must visibly frame an actual opening below cross, with cloth terminating around distinctskin; shader colors alone fail.",
+    "Three fresh fork-none actual-pixel fixed9 old/newref critics per candidate. No averaging weak parts or native motion claims from stills. Window1 badge direction stays rejected.",
+    "Do not replace canonical/default/maps/main or deploy. Mandatory physical sleeve/tabard moving proof from immutable72 remains pending separately. Wholeface boundary may be jagged; if insufficient, refine topology as a new reviewed construction, do not fake pixel-hole proof."
+  ],
+  "canonicalChanges": false,
+  "allowArtPromotion": false,
+  "referenceOutfit": "D:/Dex/Projects/dex.place/review/refs/character/14-outfit-priest-sister.png",
+  "fixedReferenceAnchor": 9,
+  "nativeQualification": "pending delivery; source author does not run Blender/GPU"
+}

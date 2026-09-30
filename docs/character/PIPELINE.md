@@ -3503,3 +3503,34 @@ Each line gives the mistake, then the fix.
 **Keep this file current.** Every lane that changes the character, render or motion pipeline
 updates the matching section before it finishes: new numbers with their source file, changed
 commands, gates and pitfalls, each tagged proven, in progress or proposed, with the date.
+
+### 8a. Isolated window/face construction continuation (2026-09-30)
+
+- **Proven source check, native in progress:** `next/window_mesh_recipe.py` plans an anterior
+  bodice face-only opening from the preserved sternum anchors (about118mm high,44mm half width)
+  plus a separate gold boundary strip5mm radially wide. `next/nx_window_mesh_blender.py`
+  installs it on an in-memory mesh copy after R2 edits, before pose/render. Preserves original
+  vertices/weights/keys/point data and retained face/UV/corner data by native assertions; one
+  new closed loop, actual body/collar/cross geometry untouched, no blend save. Synthetic
+  front/back topology fixture passed; this is not an installed Blender/shape-key proof.
+- **Proposed finite native comparison:** `art/rosace/next/window-mesh-request.json` has explicit
+  control/mesh modes, idle only, hand1.0/head1.10/ss4 at144/80. Resolve all paths to executing
+  frozen worktree. Sole delivery native/GPU leases at a free boundary, world priority retained.
+  `next/window_mesh_post.py --root <private-native-output> --reference <preserved-R2-control>`
+  runs unchanged R2 finish, demands exact control pixels and categorical native body/skin
+  gain inside the projected aperture, and reports outside-window/alpha changes honestly.
+  Actual cloth termination, thin continuous gold rim below cross and skin readability still
+  need pixels plus three fresh fixed9 critics. Prior Window1 applique direction stays rejected.
+- **Proven actual finish-only pixels, unpromoted:** `next/face2_trial.py --root <genuine-R2-raw>
+  --out <fresh-private-review>` compares R2, prior F1 eye seed and Face2. Shared eyeline slope
+  0.192, tapered lids/brows/shared iris offset, cheek/jaw planes; native head/pose unchanged,
+  original mouth cells exact. Controls0px; final changes93/18 at144/80, all within declared
+  face box, alpha0. Late global skin requantization leaked56/1 outside-face intermediate
+  pixels; explicit face-region composition discards those changes and preserves intermediate
+  diagnostics. Three fresh actual-pixel critics: two prefer F1, craft prefers R2 at144 and
+  ties R2/F1 at80. Noneface9; Face2 does not beat its seed and remains unpromoted.
+- **Acceptance in progress:** all old/new supplied references are fixed9 for shown parts;
+  unshown/motion partsnull; no average hides a weak part. Canonical R2/two rollbacks/seven maps
+  and frozen62/72/322 packets stay exact. Physical sleeve/tabard moving clips, collisions,
+  gameplay transitions and playback remain mandatory and pending from separate immutable72
+  source. See `WINDOW-MESH-FACE2.md` for source commands, limitations and private proof paths.
