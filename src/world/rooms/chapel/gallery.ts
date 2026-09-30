@@ -137,7 +137,8 @@ class Overlay {
     const pr = g.r.presenter.rect;
     const k = canvas.clientWidth / Math.max(1, canvas.width);
     const [cx, cy] = g.camera.view();
-    const top = canvas.height - pr.y - pr.h;
+    // Presenter.rect already uses a top-left origin, as the scene shader does.
+    const top = pr.y;
     const L = (pr.x + (x0 - cx) * pr.scale) * k;
     const T = (top + (y0 - cy) * pr.scale) * k;
     const W = (x1 - x0) * pr.scale * k;

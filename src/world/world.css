@@ -137,10 +137,15 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 2;
+  --touch-safe-left: env(safe-area-inset-left, 0px);
+  --touch-safe-right: env(safe-area-inset-right, 0px);
+  --touch-safe-top: env(safe-area-inset-top, 0px);
+  --touch-safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 #touch button {
   position: absolute;
   pointer-events: auto;
+  box-sizing: border-box;
   width: 54px;
   height: 54px;
   border-radius: 50%;
@@ -165,6 +170,10 @@ body {
 }
 #touch button[hidden] {
   display: none;
+}
+#stage:is([data-touch-layout="rails"], [data-touch-layout="compact-rails"]) #sound {
+  right: auto;
+  left: calc(var(--touch-safe-left, env(safe-area-inset-left, 0px)) + 23px);
 }
 
 /* in-world panels: part of the setting (dark wood and brass), real DOM */
