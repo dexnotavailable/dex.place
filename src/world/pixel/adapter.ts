@@ -122,8 +122,14 @@ export class PixelRoom {
   readonly ids = new Set<string>();
   private lastBlow = -1;
 
-  constructor(w: number, h: number, H: number, saved: Record<string, Record<string, unknown>>, ground: (x: number, y: number) => boolean) {
+  constructor(w: number, h: number, H: number, saved: Record<string, Record<string, unknown>>, ground: (x: number, y: number) => boolean, private host?: { gate: () => boolean; reduced: () => boolean }) {
     this.world = new PixelWorld({ H, width: w, height: h, seed: 7, heal: { delay: 4.5, rate: 70 } });
+    if (host) {
+      // All pixel callers (including direct neon flickers) use the host's
+      // common clock and live mode; room-local time must not reset its gate.
+      this.world.flashGate = { allow: () => host.gate() };
+      this.world.reduced = host.reduced();
+    }
     this.world.saveData = structuredClone(saved);
     // the world's terrain is ground for ropes, cloth and debris (the engine asks solidAt)
     const own = this.world.solidAt.bind(this.world);
@@ -144,6 +150,7 @@ export class PixelRoom {
   /** One 60 Hz step with the room's wind (-1..1) and the player's air pushes. */
   step(wind: number, gust: number, pushes: { x: number; y: number; r: number; s: number }[], tick: number): void {
     if (this.empty) return;
+    if (this.host) this.world.reduced = this.host.reduced();
     const H = this.world.H;
     this.world.wind = { x: wind * H * 3, gust: gust * H * 2 };
     // a dash or spin push blows once per start (the engine keeps the gust alive for its duration)

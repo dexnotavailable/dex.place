@@ -324,7 +324,7 @@ screen. See `docs/world/RUNTIME.md`, "Props".
 | Actors | `world.actors = [{ x, y, vx, h }]` each frame (the player, later mobs): grass parts, vines brush aside, puddles ring under steps, the offering bowl rocks, paper lifts when you hurry past |
 | View | `world.view = { x, y, w, h }` each frame: dynamic parts more than 2 H outside it skip redrawing; ambient emitters spawn only in view |
 | Weather | `world.wind` (steady + gust), `world.rain` (0..1: puddles dot), `world.reduced` (reduced motion: ambient halves, flashes go through the reduced gate) |
-| Flash gate | `world.flashGate` (default: the scene engine's `FlashGate`, 3 starts a second, 1 per 2 s reduced). Every `flashLight` / `flashGlow` and a neon flicker asks it; pass the runtime's global gate so lightning and props share one budget |
+| Flash gate | `world.flashGate` (default: the scene engine's `FlashGate`, 3 starts a second, 1 per 2 s reduced). Every `flashLight` / `flashGlow` and a neon flicker asks it. World's `PixelRoom` delegates to its host callback using `game.seconds` and current `game.reduced`, and copies reduced mode before building/stepping props; assigning the host gate object directly would mix room-local and global clocks. Standalone/hostless worlds retain their local gate. Count accepted starts once at the authoritative host gate; delegated caller observations are separate and same-tick starts remain distinct. CPU regression: `node --test src/world/tools/shared-flash.test.mjs`; native appearance/flash qualification remains separate |
 | Room rule | `world.breakage = "sway"` makes a room sway-only (the chapel nave) |
 
 ## Performance and budgets

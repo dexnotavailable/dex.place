@@ -189,6 +189,7 @@ export class WorldGame {
       {
         r,
         gate: () => this.gate.allow(this.seconds, this.reduced),
+        reduced: () => this.reduced,
         engine: opts.engine,
         flag: (k) => this.save.get(k),
         pixelDraw: () => this.pixelDraw,

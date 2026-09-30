@@ -34,6 +34,7 @@ const PIXEL_FLAG_KEYS: Record<string, string> = { lever: "on", shrineLantern: "l
 export interface RoomDeps {
   r: WorldRenderer;
   gate: () => boolean;
+  reduced: () => boolean;
   engine: PixelMatterEngine;
   /** Save flag lookup (recipes read cut state at build). */
   flag: (key: string) => boolean;
@@ -100,7 +101,7 @@ export class Room {
           // the room's terrain is the pixel world's ground too (cut cords and debris come to rest on it)
           const ground = (x: number, y: number): boolean =>
             this.staticSolids.some((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h) || this.staticOneWays.some((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + 2);
-          this.pixel = new PixelRoom(d.w, d.h, SCALE.H, saved, ground);
+          this.pixel = new PixelRoom(d.w, d.h, SCALE.H, saved, ground, { gate, reduced: this.deps.reduced });
         }
         if (this.deps.flag(`cut:${pl.id}`) && !saved[pl.id]) this.pixel.world.saveData[pl.id] = { cut: true };
         // a world flag named in the placement (lever:culvert, shrine:1, latch:sky-door) sets the kit prop's own persisted key
