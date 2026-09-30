@@ -1,0 +1,73 @@
+{
+  "contract":"rosace.attack-option/1",
+  "id":"rosace-n4-wide-opening-fan-option-20260930-v1",
+  "dispatch":"rosace-attacks-next-n4-wide-opening-option-20260930",
+  "state":"authored-unadjudicated-alternative",
+  "rendered":false,
+  "runtimeReady":false,
+  "controlHead":"267ef4c6ce058be617fc702079af9a892e71ea7e",
+  "controlData":"kit.json",
+  "controlDataSha256":"f61489fd07ffa442d16f7e16678b23c69dcebf143f1770413fcd37e141e81515",
+  "clip":"m1_4",
+  "sourceH":96,
+  "targetsH":[80,144],
+  "fps":60,
+  "preserve":["all63actor ticks and13drawings","A1/A2fromN3; C1andvault/recoverykeys","allrootdeltas,foot/rig/grip/socketbindings","biteinputOrigin+1H atactor10","originalf10-12fissures andf18-22worldspikes","alloriginalFX/light/sound/camera trigger clocks","allcancels,N5handoff,noiframes","samea damage ledger acrosschop/fan/fissures","sameheavy,4tickfreeze andsource[0.5,1.5]slam"],
+  "drawingInstructions":{
+    "A1":"inherit actual N3 raised-glaive recovery; both anatomical hands guide the overhead lift, planted support spots retained",
+    "A2":"same f4-8 vertical boot-to-blade stretch; hold body coil and let realcloth evolve; no new anticipation drawing",
+    "S1":"same f9 downstroke silhouette; ribcage folds into chop while hips counterbalance over actualfeet. The blade head is still above ground. A filled low glassfan spreads both sides of that descending head, then the same rigid tip bites atf10. Keep shaft/head/face visible; no physicalshaftstretch beyond existing one-tick raster smear",
+    "C1":"unchanged f10-13 planted bite atinputOrigin+1H; shaft leans back toward body; broad fan becomes the existing floor-fissure phrase rather than a new swing",
+    "later":"V1/V2/V3/V4/V5andR1-R4 unchanged; nativehand/weapon/cloth state samples carry through; no retime or recoveryreset"
+  },
+  "fan":{
+    "actorWindow":[9,9],
+    "anchor":"inputOrigin",
+    "originH":[1,-0.25],
+    "originMeaning":"proposed descending blade-head emission point, inside middle core; native rig must establish actual blade overlap here",
+    "shape":"connected three-tier filled glass fan, low above floor; sourceboxes tile with shared edges; native contours must keep this actual core or regenerate both paint and collision together",
+    "visualCoreBoxesSourcePx96":[[-24,-17,240,12],[0,-29,192,12],[48,-39,96,10]],
+    "collisionCoreBoxesSourcePx96":[[-24,-17,240,12],[0,-29,192,12],[48,-39,96,10]],
+    "spanH":2.5,
+    "minimumFullWidthThicknessH":0.125,
+    "floorClearanceH":0.052083333333333336,
+    "damageGroup":"n4:a",
+    "hitstop":4,
+    "heavy":true,
+    "knockbackSourcePxPerTick":[0.5,1.5],
+    "knockbackBasis":"sourceH96-px-per-tick",
+    "outwardX":true,
+    "nominalContactTick":10,
+    "earliestCollisionTick":9,
+    "floorContactTick":10,
+    "bodyFreezeRule":"an actualf9collision holdsS1,rootandcurrentweapon for4extra ticks; neverwarp intoC1",
+    "visibleCoreClock":"retained whileS1/f9hitgeometry is active, including insertedhitstop; damage sampling disabled during actorfreeze; contact ledger suppresses repeat atf10",
+    "ornamentClock":"live wall-time glints/slivers/shards independent of frozen actor; do not pause original liveFX clock",
+    "exit":"on actorf10 disablefan hitcore, hand off to unchanged originalfissures; optional residual decorativeglints cannot hit",
+    "layer":"rear wing behind legs; front wing in front; same geometric core on both, no missingpaint/collision; outline/rig remainvisible",
+    "palette":["A2","A3","A4","A5","A0"],
+    "paint":"filled A2/A3cell clusters throughout damage core; A4/A5 leading pixels; A0onlyinternal glassleading. Gildedslivers and2.9Hdust are cosmetic and excluded from damage",
+    "lighting":"existing bite spike light18-30 preserved; fan may reflect existing blade glint at9 locally, no new global light/camera/flash",
+    "floorResponse":"no physicalcrack,dust,stoneaudio orfloorlight moves from10to9; f9fan is airborne stainedglass from blade, not an earlyfloorimpact"
+  },
+  "negativeControls":[
+    {"id":"A-rev2","role":"immutable baseline","expected":"f9only29..125sourcepxchop,1H; far-endground targets miss"},
+    {"id":"thin-outline","role":"must reject","change":"render one-sourcepx wing line while keeping12pxdeep damage core","expected":"visible/collision mask disagreement and too-thin width proof"},
+    {"id":"cosmetic-only-wide","role":"must reject","change":"paint fullfan but collide only original narrowchop","expected":"far-end targets visuallyinside do nothit; width mismatch"},
+    {"id":"bounding-box-void","role":"must reject","change":"usefull240x34enclosing rectangle instead of three actual coretiles","expected":"falsehit at[-12,-34]sourcepxoutside fan butinside enclosingbox"},
+    {"id":"independent-fan-group","role":"must reject","change":"newn4:fangroup","expected":"possible duplicate damage on samevictim at10"},
+    {"id":"premature-floor","role":"must reject","change":"floorcontacttick9","expected":"breaks originalf10bite/ground/audio clock"},
+    {"id":"contact-pose-warp","role":"must reject","change":"f9collision showsC1","expected":"violates currentpose freeze and weaponcontinuity"}
+  ],
+  "targetFixturesSourcePx96":{
+    "insideLeft":[-12,-11],"insideRight":[204,-11],"insideMiddle":[24,-23],"insideTop":[96,-34],
+    "outsideLeft":[-25,-11],"outsideRight":[217,-11],"outsideVoid":[-12,-34],"outsideFloor":[204,-2]
+  },
+  "acceptance":{
+    "source":"matchedcore masks,2.5Hwidth with0.125Hfull-width depth,explicitairgap,onegroup,f9earlyfreeze and allpreservedclip/triggerdata",
+    "native":"actualrig must show sourcebladehead connected to emittedfan, broadfilledcore at9rather thana line; overlayfar-end hits andvoidmisses; modelgrip/cloth must carry fromN3andthroughvault",
+    "motion":"controlA exact267 plus optionB on same immutablemodel/look/camera;80and144 real60fps whiff/earlyhit;0.5xscrub diagnostic supplementary; contactfeedback distinct; no art/posepop",
+    "adjudication":"Rosace integrator decides whether toadopt afteractualA/B; keeps rev2control andbothrejected/acceptedtrials; no native/9scoreclaimhere"
+  },
+  "risks":["S1native tip/core emission overlap is an authored target, not solvedgeometry","fullwidth damage is low atankle/shinheight; does not makeallairtargets hittable","damagecore hold duringactorfreeze is explicit, live ornaments continue; adapter must support this lifetime split","native pixelpainting/contour must not substitute an enclosingAABB","no runtime/native output produced; all original267inputs andREADY stayunchanged"]
+}
