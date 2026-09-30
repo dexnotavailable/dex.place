@@ -1,0 +1,31 @@
+{
+  "id": "rosace-integrated-cuff-C1-native-20260930",
+  "owner": "rosace",
+  "nativeOwner": "delivery",
+  "originalSubmission": "rosace-refinement-cuff1-source-20260930-a6d31d3",
+  "originalSourceCommit": "a6d31d330d67e5131bedb0f57099422277e3462a",
+  "sourceBase": "bcb220de03c0b84e8fa68851328cd1d799a11de5",
+  "kind": "finite-independent-namespace-native-qualification",
+  "entry": "art/rosace/specialists/refinement/cuff_trial.py",
+  "post": "art/rosace/specialists/refinement/cuff_native_post.py",
+  "modes": ["parent", "cuff1"],
+  "rawStillCount": 4,
+  "sizes": [144, 80],
+  "parent": "exact bcb construction-control gesture/seated1.30, closed window; no repairedwindow/artistry/FX stack",
+  "frozenParentRaw": "D:/Dex/Temp/rosace-reconstruction1-native-20260930/review/rosace/art/next/reconstruction1-delivery/construction-control-raw",
+  "outputRelative": "review/rosace/specialists/refinement/cuff1-native",
+  "commonArgs": ["--hand-scale", "1.3", "--shots", "idle", "--px", "144,80", "--ss", "4", "--head", "1.10", "--blend", "D:/Dex/Projects/dex-place-art/rosace/build/rosace.blend", "--r2", "<executing-worktree>/tools/pixel-pipeline/drive9/r2_model.json"],
+  "perModeArgs": ["--cuff-mode", "<mode>", "--out", "<executing-worktree>/<outputRelative>/<mode>"],
+  "steps": [
+    "Freeze integrator reviewed mergedhead fromREADY, not moving specialistHEAD; rebase all executingREPO/private paths. Distinct independent batch, can run after currentfinite repair boundary without waiting for other specialists.",
+    "Delivery exclusive native/GPU lease, deadline and ownedcleanup. Parent/cuff1 separate fresh processes; no model launch/save/canonical mutation. FullR2/maps/rollback preservation before/after.",
+    "Nativeguards: unchanged proximal/lowerbell sector, topology/UV/attributes/material/weights/part/transforms; fixed55mm uppermouth retreat mustnot reverse/compress triangles. ActualAPI/topology failure stops; no retune/waiver.",
+    "Run cuff_native_post.py with frozenParentRaw. Require zero-pixel7rawpass parent replay, equalactualbones/camera/ppm/anchor/canvas and identicalgrip/scale/socket/slide; finitegap<=1.5cm. Same originalR2finish bothmodes.",
+    "MeasurecategoricalrawLhand visibility: at80 >=20skin pixels and>=4x5bbox necessary. Inspect actualwrist/palm/cuff separation/thumbnail opposition/shaftinterruption/clipping at144/80; counts aren't anatomy acceptance.",
+    "Publish genuine finishedparent/candidate/native crops/hashes/rollback androutevia root to independent rosace-critics for3fresh actualperpart panels if materiallynew. Raw/diagnostic failures stayexplicit; nofullwindow/motion/cloth/9claim.",
+    "Physicalsleeves/tabard pin/collision/inertia/bake/transitions/playback remainsrequired after geometry changes. No default/main/publication/canonical promotion. Failedsource/artifacts remainpreserved."
+  ],
+  "allowArtPromotion": false,
+  "allowDeployment": false,
+  "nativeQualification": "not-run on mergedhead"
+}

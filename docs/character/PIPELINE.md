@@ -3621,3 +3621,11 @@ multiviewkeyreference andlaterfullkit cycles. No giantcartesianrender batch. Req
 include scales/Root/feet/weapon/grip/fingers; FXH-normalization, clock/encodedplayback and
 physicalcloth/world-root-inertia boundaries explicit. SeeSPECIALIST-INTEGRATION.md and
 art/rosace/integration/specialist-interfaces-v1.json. A writtenmatrix isnot renderedacceptance.
+
+**Exact first merges, source-only:** attacks9c80ea6/267ef4c sevennamespacefiles provide
+N1->N2 andremaining original-kit planning/export; cuffa6d31d3 sixnamespacefiles optional
+distalupper-mouth construction. Their CPU guards/planning checks pass aftermerge. Native/
+motion/FX/cloth/runtime/9acceptance remainpending. N4f9narrowopening expresslyfailsstrict
+instant2.2H gate andisnotacceptedpendingwidealternative; originalclock/cameracanon notrewritten.
+Sharedwindowrepair andindependentC1four-still request canadvanceasfinitebatches; nostacked
+controls. Criticcriteria31parts consumedreadonly; hair2triage4/0px isnotnewartacceptance.

@@ -76,3 +76,28 @@ is this integrator's immediate native repair; refinement separately owns cuff/
 grip and other authors stay isolated. No full candidate critic wave on unfinished
 4xrawbeauty. Keep bcb/794/62/72/322 original requests and R2/rollbacks exact.
 The independent critic chat receives new qualified images/clips through root.
+
+## First exact source merges
+
+Attacks9c80ea6 fourfiles and267ef4c three-file increment were integrated as
+exact namespace source; cuffa6d31d3 sixfiles separately. No later/untracked
+specialist work was borrowed. Source planning/CPU guards pass; no new motion
+is rendered or accepted by these merges. `acceptance-boundaries-v1.json`
+records the source/native/runtime distinction and the N4 first-tick block.
+
+N4f9's narrow opening conflicts with the strict instantaneous2.2H M1 floor.
+The authored original-kit packet acknowledges it; it is not accepted as a
+default/native N4 move. Wait for the planner's bounded wide-opening option and
+adjudicate through actual upcoming motion/FX A/B, without silently rewriting
+MOVESET. Likewise actor-only freeze/continuingFX/cloth is a source proposal;
+the current runtime whole-simulation freeze stays unchanged until its adapter
+and real playback are qualified.
+
+Two independent finite native requests are reviewable now: shared window
+preservation repair (missing opening pair; guarded oldcontrol reuse) and
+optional C1 parent/cuff pair at144/80 (fourrawstills, closedwindowparent,
+sameR2finish). Do not stack C1 into the repaired opening's controls. Actual
+new outputs go to root/rosace-critics; no extra source integrator score waves.
+Motion/FX producers still supply their reviewed numerical/bake modules before
+the proposed N1 cycle request is instantiated. A choreography table alone
+does not justify launching models or a full view-by-move batch.

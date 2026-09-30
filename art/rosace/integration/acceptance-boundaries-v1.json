@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "status": "source-integration-boundaries",
+  "records": [
+    {"owner": "rosace-attacks", "commit": "9c80ea6635448cf80ac654756fc84a368e806981", "files": 4, "state": "authored-planning-source", "rendered": false, "limits": ["rig/yaw/feet/grip/cloth notsolved", "planning ticks notdex.sprite/1", "actor-onlyfreeze/continuingFXcloth needs runtimeadapter orlabelledfallback; originalruntime whole-simfreeze unchanged"]},
+    {"owner": "rosace-attacks", "commit": "267ef4c6ce058be617fc702079af9a892e71ea7e", "incrementFiles": 3, "state": "remaining-kit-authored-source", "rendered": false, "explicitBlock": "N4f9 initialnarrow opening violates strictinstant2.2H floor; notaccepted forN4native/default integration until plannerwidealternative/adjudication", "limits": ["persistentanchors/terrainqueries/victim-onlyfreeze/Rtotalfreeze/clocks/deferredknockback/actorbindings/runtime unimplemented", "nativegeometry/FX/cloth/playback/reference9 pending"]},
+    {"owner": "rosace-refinement", "commit": "a6d31d330d67e5131bedb0f57099422277e3462a", "files": 6, "state": "reviewed-source-optional-C1", "rendered": false, "limits": ["native55mm/topology/API/framing/visibility/contact pending", "closedbcbexperimentalparent only", "motion/physicalcloth notqualified"]},
+    {"owner": "rosace-critics", "checkpoint": "rosace-critics-verification-20260930-4fa1c48de4a8", "state": "read-onlycriteria-evidence", "sourceDelta": false, "limits": ["31 separateparts/17humanfixed9/actualplayback/nulltemporal gates", "notanart/native/motionpass; no sourcecherrypick"]},
+    {"owner": "rosace-critics", "checkpoint": "rosace-critics-hair2-triage-20260930-5e291e96aea2", "state": "observation-only", "sourceDelta": false, "limits": ["4changedpixels144/0world notmaterialchange", "no fresh3wave orsource merge; artistryconnectedplane method next"]}
+  ],
+  "global": "Frozenbcb/794/62/72/322/R2/maps/two rollbacks exact. Sourceintegration isn'tqualification orpromotion. Gameplay camera nozoom, independent materiallynew candidatecritics only."
+}
