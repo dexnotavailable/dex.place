@@ -24,6 +24,7 @@ import { B1, SPAN, geo, type Geo } from "./reed-shallows/geo.ts";
 import { buildShore } from "./reed-shallows/land.ts";
 import { reeds } from "./reed-shallows/reeds.ts";
 import { shallows } from "./reed-shallows/water.ts";
+import type { Ramp } from "./causeway/paint.ts";
 
 export const TITLE = "reed-shallows";
 const GHOST_DEPTH = 28;
@@ -83,11 +84,16 @@ export function reedShallows(inWorld: boolean): SceneDef {
       vein: ["#46302c", "#6a3b33", "#8e4f40", "#ad6a50"],
       dust: ["#4a5a58", "#5f706c", "#798882", "#95a299", "#b6bcad"],
       glintc: ["#a6b8ae", "#dfe8dc", "#fbfbf2"],
-      wood: ["#0c1011", "#151b1d", "#222a2a", "#39413d", "#62624f"],
-      stone: ["#0e1315", "#182022", "#253033", "#3a4747", "#5f6b62"],
-      moss: ["#16211a", "#1f2e22", "#2c3f2b", "#3f5536"],
+      // the near ground (land.ts): hue-shifted ramps, cool teal shadows up to warm sunlit tops
+      wood: ["#101314", "#1a1e1e", "#272b28", "#363932", "#494a3f", "#615f4f", "#7e7a63"],
+      stone: ["#141b1d", "#1f292a", "#2c3938", "#3d4c47", "#536258", "#6c7a6a", "#8f9a82"],
+      moss: ["#162015", "#1f2f1b", "#2c4023", "#3e552c", "#546b35", "#728544"],
       earth: ["#101413", "#181e1c", "#232a27", "#333b36", "#4a5249"],
       iron: ["#07090b", "#101417", "#1d2326", "#39403f"],
+      algae: ["#0c1814", "#12231c", "#1a3224", "#26432d"],
+      recess: ["#05080a", "#0a1113", "#111b1c", "#2a3a37"],
+      grass: ["#1a2716", "#25371b", "#334b21", "#456129", "#5b7832", "#7a9341"],
+      rust: ["#2a1a12", "#432717", "#5e3a1f"],
       buoy: ["#3a1512", "#6a241c", "#98392a"],
       bird: ["#1c2628", "#2a3739"],
       standin: ["#06080a", "#0d1216", "#26303a", "#e6d8a8"],
@@ -432,6 +438,68 @@ float sceneLight(vec2 s, float depth) {
         });
         L.push({ kind: "pix", name: "mooring-line", depth: dd, pix, x, y: 0, reflect: base, reflectFade: 30 * u, dither: 0 });
       }
+      // the ferry that no longer runs: a rowboat sunk at its mooring off the landing, stern up, its
+      // painter still tied to a post, the water inside it level with the lake
+      {
+        const dd = 2.2;
+        const { x, w } = wide(dd);
+        const base = g.LY(g.waterY(dd), dd);
+        const pix = new Pix(w, base + Math.round(12 * u));
+        const bx = Math.round(W * 0.93) - x;
+        // a clinker rowboat in side view, stern (west) lifted, bow (east) under: the sheer rises at
+        // both ends, the keel has rocker, a transom at the stern, a curved stem at the bow
+        const L0 = Math.round(52 * u),
+          D = 9 * u,
+          ang = 0.2;
+        const ca = Math.cos(ang),
+          sa = Math.sin(ang);
+        const midY = base - Math.round(3 * u);
+        for (let yy = -Math.round(30 * u); yy <= Math.round(8 * u); yy++)
+          for (let xx = -Math.round(4 * u); xx <= L0 + Math.round(4 * u); xx++) {
+            // into the boat's frame (t along it from the stern, v up from the keel at midship)
+            const lx = xx * ca + yy * sa,
+              ly = -xx * sa + yy * ca;
+            const t = lx / L0;
+            if (t < 0 || t > 1) continue;
+            const e = 2 * t - 1;
+            const top = -(D + 4 * u * e * e + (t > 0.8 ? (t - 0.8) * 10 * u : 0));
+            let bot = -D * 0.3 * e * e;
+            if (t > 0.78) bot -= Math.pow((t - 0.78) / 0.22, 2) * D * 1.15; // the stem curves up to the sheer
+            if (ly < top || ly > bot) continue;
+            const py = midY + yy;
+            if (py > base) continue; // under the lake
+            const d = ly - top;
+            let sh = d < 1 ? 0.78 : d < 2 ? 0.6 : 0.42;
+            // lapped strakes following the sheer: a lit edge over a shaded lap
+            const strake = Math.floor((d - 2) / (2.2 * u));
+            const inS = (d - 2) % (2.2 * u);
+            if (d >= 2) sh = 0.4 - strake * 0.04 + (inS < 1 ? 0.12 : inS > 2.2 * u - 1.2 ? -0.1 : 0);
+            // the transom's end grain and the stem post, a step darker
+            if (t < 0.03 || t > 0.97) sh -= 0.12;
+            if (hashInt(bx + xx, py, 141) < 0.05) sh -= 0.1;
+            pix.set(bx + xx, py, sh, R("wood"));
+          }
+        // the waterline: a lit seam where the hull goes under, a wet dark band just above it
+        for (let xx = -Math.round(4 * u); xx <= L0; xx++) {
+          if (pix.solid(bx + xx, base)) pix.set(bx + xx, base, 0.16, R("recess"));
+          if (pix.solid(bx + xx, base - 1)) pix.setShade(bx + xx, base - 1, 0.22);
+        }
+        // a thwart's end and an oarlock standing up out of the stern half
+        const ox = bx + Math.round(L0 * 0.3), oy = midY + Math.round(-(L0 * 0.3) * sa - D * ca) - 1;
+        for (let k = 0; k < Math.round(3 * u); k++) pix.set(ox, oy - k, 0.55, R("iron"));
+        // the painter: a line from the stern ring down to an old post
+        const px0 = bx - Math.round(14 * u);
+        for (let y = base - Math.round(16 * u); y <= base + 1; y++) {
+          pix.set(px0, y, y === base - Math.round(16 * u) ? 0.55 : 0.25, R("wood"));
+          pix.set(px0 + 1, y, 0.12, R("wood"));
+        }
+        const sy = Math.round(midY + (-(0) * sa) - D * 1.2 - 2 * u);
+        for (let k = 0; k <= bx - px0; k++) {
+          const t = k / (bx - px0);
+          pix.set(px0 + 1 + k, Math.round(base - Math.round(13 * u) + (sy - base + Math.round(13 * u)) * t + Math.sin(Math.PI * t) * 3 * u), 0.32, R("wood"));
+        }
+        L.push({ kind: "pix", name: "wreck", depth: dd, pix, x, y: 0, reflect: base, dither: 0 });
+      }
       L.push(
         mist({
           name: "water-mist",
@@ -469,8 +537,10 @@ float sceneLight(vec2 s, float depth) {
         const y0 = g.Y(B1.yard + 0.6);
         const y1 = g.Y(B1.bottom - 0.4);
         const pix = new Pix(x1 - x0, y1 - y0);
-        buildShore(pix, g, x0, y0, { wood: R("wood"), stone: R("stone"), moss: R("moss"), earth: R("earth"), iron: R("iron") });
-        L.push({ kind: "pix", name: "shore", depth: 1, pix, x: x0, y: y0, reflect: g.Y(B1.water), reflectFade: 40 * u, dither: 0 });
+        const rp = (name: string, n: number): Ramp => ({ row: R(name), n });
+        buildShore(pix, g, x0, y0, { wood: rp("wood", 7), stone: rp("stone", 7), moss: rp("moss", 6), earth: rp("earth", 5), iron: rp("iron", 4), algae: rp("algae", 4), recess: rp("recess", 4), grass: rp("grass", 6), rust: rp("rust", 3) });
+        // no reflectFade: the near ground's mirror must stay whole, or what stands on it reflects with nothing under it
+        L.push({ kind: "pix", name: "shore", depth: 1, pix, x: x0, y: y0, reflect: g.Y(B1.water), dither: 0 });
       }
       L.push({ kind: "character", name: "figure", depth: 1, x: g.X(90), ground: g.Y(B1.deck), rimDir: [-1, -1], height: g.P });
 
@@ -520,6 +590,7 @@ float sceneLight(vec2 s, float depth) {
       moveAfter(L, "spire", "sun");
       // the mooring line (2.4) is nearer than the water mist (3)
       moveAfter(L, "mooring-line", "water-mist");
+      moveAfter(L, "wreck", "mooring-line");
       return L;
     },
   };

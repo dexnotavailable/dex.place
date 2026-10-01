@@ -12,6 +12,7 @@ import { B1 } from "../../../scenes/scenes/reed-shallows/geo.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { Box } from "../_blockout/_build.ts";
 import { lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 import { h } from "../../config.ts";
 
 const b = new Box({
@@ -76,8 +77,11 @@ for (const [id, lx, ly] of [
   ["lamp-1-7", 106.6, B1.east],
 ] as [string, number, number][])
   b.prop("lampPost", id, lx, ly, { lit: false, arm: 1 }, px);
-// the ferry board: its words worn away to nothing (a blank board, no invented text)
-b.prop("sign", "ferry-board", 99.4, B1.deck, { kind: "board", lines: [], scale: 2 }, px);
+// the ferry board: its times worn away to nothing (ghost rules, no invented text)
+b.prop("ferryBoard", "ferry-board", 99.6, B1.deck, {}, px);
+// green spilling over the quay: from the yard's lip down the first treads, and down the wall over the boat arch
+b.prop("vines", "quay-vines-1", 76.25, B1.yard, { width: 0.7, length: 0.9, strands: 5 }, px);
+b.prop("vines", "quay-vines-2", 79.3, 4.05, { width: 1.1, length: 1.7, strands: 8 }, px);
 // puddles on the planks
 b.prop("puddle", "puddle-1", 86.9, B1.deck, { width: 0.7, sky: "day" }, px);
 b.prop("puddle", "puddle-2", 102.1, B1.deck, { width: 0.9, sky: "day" }, px);
@@ -90,19 +94,24 @@ b.exit("left", "A4", "east", 4, 8).exit("right", "B2", "west");
 
 const built = b.build();
 
+const LIGHT = lighting({
+  ambient: [0.36, 0.42, 0.41],
+  keyDir: [-0.5, -0.66, 0.56],
+  keyColour: [0.74, 0.7, 0.58],
+  rimColour: [1, 0.93, 0.74],
+  rimDir: [-0.62, -0.78],
+  rimIntensity: 0.95,
+});
+
 export const b1: RoomDef = {
   ...built,
   // the backdrop draws the stair, the boardwalk and the banks where this collision is
   terrain: built.terrain.map((t) => ({ ...t, art: "none" as const })),
   backdrop: { scene: reedShallows(true), vertical: 1, weather: true },
-  lighting: lighting({
-    ambient: [0.36, 0.42, 0.41],
-    keyDir: [-0.5, -0.66, 0.56],
-    keyColour: [0.74, 0.7, 0.58],
-    rimColour: [1, 0.93, 0.74],
-    rimDir: [-0.62, -0.78],
-    rimIntensity: 0.95,
-  }),
+  lighting: LIGHT,
+  // one image: the morning's warm cast over everything, the far pixel props veiled in the lake's haze,
+  // the lamps' light tinting the planks around them
+  blend: fromLight(LIGHT, { amount: 0.12, haze: 0.3 }),
   ambient: { dust: 6 },
   // the lake's surface under the boardwalk: the player and reflecting props mirror here
   waterline: h(B1.top - B1.water),
