@@ -15,7 +15,7 @@
 // Default export: the /scenes/ preview at the road framing; causeway(true)
 // is the world backdrop (rows follow the camera up Stonetop).
 
-import { Flock, Motes, Pix, fogBand, mist, sky, smooth, terrain, fbm1, hashInt, f, type LayerDef, type SceneDef, type BuildCtx } from "../engine/index.ts";
+import { Flock, moveAfter, Motes, Pix, fogBand, mist, sky, smooth, terrain, fbm1, hashInt, f, type LayerDef, type SceneDef, type BuildCtx } from "../engine/index.ts";
 import { Bolts, EyeGlint, SheetLight, Wheelers } from "./colossus-plain/systems.ts";
 import { dustGlsl, type ColossusDef } from "./colossus-plain/colossus.ts";
 import { cloudMassGlsl } from "./colossus-plain/sky.ts";
@@ -315,6 +315,8 @@ float sceneLight(vec2 s, float depth) {
         system: new Motes({ region: [-40, hor - 30 * u, W + 40, H], count: Math.round(40 * u), row: R("dust"), shade: [0.3, 0.8], vel: [26, -1.5], wander: 4, size: 1, twinkle: 0.2 }, ctx.rng),
       });
       void R("rock");
+      // the spire (200) and its lightning are farther than the high streaks (140) and cloud masses (110): they sit behind them
+      moveAfter(L, ["spire", "spire-lightning", "sheet-flash"], "ring");
       return L;
     },
   };

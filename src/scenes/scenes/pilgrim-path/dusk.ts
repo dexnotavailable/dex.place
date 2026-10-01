@@ -13,7 +13,7 @@
 // and (in rooms that move vertically) up and down. Colours only come from
 // ramps; light is stepped; nothing is an image.
 
-import { f, fbm1, Flock, mist, Motes, Pix, rangeProfile, cragProfile, minProfile, sky, disc, terrain, type BuildCtx, type LayerDef, type PointSystem, type SceneDef } from "../../engine/index.ts";
+import { f, fbm1, Flock, moveAfter, mist, Motes, Pix, rangeProfile, cragProfile, minProfile, sky, disc, terrain, type BuildCtx, type LayerDef, type PointSystem, type SceneDef } from "../../engine/index.ts";
 import type { PointSink, SimEnv } from "../../engine/types.ts";
 
 export const DUSK_PALETTE: Record<string, string[]> = {
@@ -361,6 +361,8 @@ export function duskLayers(ctx: BuildCtx, o: DuskOpts): LayerDef[] {
   }
   // birds heading home
   L.push({ kind: "points", name: "birds", depth: 20, system: new Flock({ y: [H * 0.2, H * 0.42], x: [-60, W + 60], every: 38, speed: 16, count: [3, 6], row: R("bird"), shade: 0.2 }) });
+  // the high cloud (400) is nearer than the ring (never moves): it goes over it, not under
+  moveAfter(L, "high-cloud", "ring-chunks");
   return L;
 }
 

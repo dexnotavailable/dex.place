@@ -98,8 +98,8 @@ export function biasLayers(layers: LayerDef[], bias: number): LayerDef[] {
         return { ...l, x: l.x + s, bounds };
       case "points": {
         const system = s ? new ShiftedPoints(l.system, s) : l.system;
-        // keep the system's own fields reachable (flash checks read system.specs / live)
-        if (s) for (const k of Object.keys(l.system)) if (!(k in system)) Object.defineProperty(system, k, { get: () => (l.system as unknown as Record<string, unknown>)[k] });
+        // keep the system's own fields reachable, and writable (flash checks read system.specs / live; placeFlocks sets a flock's depth)
+        if (s) for (const k of Object.keys(l.system)) if (!(k in system)) Object.defineProperty(system, k, { get: () => (l.system as unknown as Record<string, unknown>)[k], set: (v: unknown) => { (l.system as unknown as Record<string, unknown>)[k] = v; } });
         return { ...l, system, bounds };
       }
       case "glsl": {

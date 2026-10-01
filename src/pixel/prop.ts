@@ -224,6 +224,8 @@ export interface PartSpec extends PartOptions {
 
 /** The `b` a recipe's build() receives. */
 export class PropBuilder {
+  /** The world the prop is being built in (ground queries); null when built on its own. */
+  world: PixelWorld | null = null;
   readonly H: number;
   readonly rand: Rng;
   /** World position of the prop origin (for ropes and cloth). */
@@ -250,6 +252,18 @@ export class PropBuilder {
   /** Whole pixels for a length in H. */
   u(f: number): number {
     return Math.round(f * this.H);
+  }
+
+  /**
+   * Where ground cover rooted at prop-local `x` meets the ground, as rows ABOVE the prop's own
+   * base (positive: the ground is higher there, a step or slope; negative: lower), or NaN when
+   * there is no ground within `reach` px of the base (over a drop, inside a wall): that blade
+   * should not be drawn. A world with no ground to ask leaves everything at 0.
+   */
+  groundRise(x: number, reach: number): number {
+    if (!this.world) return 0;
+    const y = this.world.surfaceY(this.ox + this.flip * x, this.oy, reach, reach);
+    return Number.isNaN(y) ? NaN : this.oy - y;
   }
 
   part(name: string, spec: PartSpec): PartBuilder {
@@ -430,6 +444,7 @@ export class Prop<R = any> {
   /** Build parts from the recipe (called by the world). */
   build(): void {
     const b = new PropBuilder(this.params.H, this.params.seed, this.x, this.y, this.flip);
+    b.world = this.world ?? null;
     this.refs = this.recipe.build(b, this.params as never);
     for (const { spec, part } of b.parts) {
       part.prop = this;

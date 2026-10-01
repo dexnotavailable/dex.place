@@ -16,7 +16,7 @@
 // boardwalk framing; reedShallows(true) is the world backdrop (its rows
 // follow the camera up the stair).
 
-import { Flock, Motes, Pix, disc, fogBand, mist, rangeProfile, shaft, shaftFn, sky, smooth, terrain, fbm1, hashInt, f, type LayerDef, type SceneDef, type BuildCtx } from "../engine/index.ts";
+import { Flock, moveAfter, Motes, Pix, disc, fogBand, mist, rangeProfile, shaft, shaftFn, sky, smooth, terrain, fbm1, hashInt, f, type LayerDef, type SceneDef, type BuildCtx } from "../engine/index.ts";
 import { EyeGlint, Wheelers } from "./colossus-plain/systems.ts";
 import type { ColossusDef } from "./colossus-plain/colossus.ts";
 import { EXT, Spray, Track, WalkClock, bodyGlsl, camYGlsl, crossing, farRingGlsl, passWindow, ringsGlsl, spireGlsl, wadeFrontGlsl, type FeedColossus } from "./causeway/shared.ts";
@@ -353,7 +353,8 @@ float sceneLight(vec2 s, float depth) {
       L.push(
         fogBand({
           name: "wade-haze",
-          depth: 9,
+          // the haze drifts in front of the colossus' feet: nearer than it (d), so it is drawn over it
+          depth: d - 0.5,
           y0: wk.surface - 16 * u,
           y1: wk.surface + 2,
           softTop: 10 * u,
@@ -515,6 +516,10 @@ float sceneLight(vec2 s, float depth) {
         depth: 16,
         system: new Flock({ y: [H * 0.2, H * 0.36], x: [-40, W + 40], every: 40, speed: 12 * u, count: [3, 6], row: R("bird"), shade: 0.2 }),
       });
+      // the spire (180) is farther than the ring (140): it sits behind it
+      moveAfter(L, "spire", "sun");
+      // the mooring line (2.4) is nearer than the water mist (3)
+      moveAfter(L, "mooring-line", "water-mist");
       return L;
     },
   };

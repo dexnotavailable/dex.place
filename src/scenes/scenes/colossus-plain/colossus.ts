@@ -63,12 +63,37 @@ export const LEGS: LegDef[] = [
   // front: thick, knee forward, tar-stained to the thigh, root-like toes (the weight leg)
   { hip: [-52, 150], a: 92, b: 104, r: [19, 13, 10], bend: -1, reach: -16, phase: 0.75, tar: 96, toes: 5 },
   // middle: plain two-bone, knee back
-  { hip: [8, 140], a: 88, b: 100, r: [14, 9.5, 7], bend: 1, reach: 4, phase: 0.5, tar: 70, toes: 4 },
+  { hip: [8, 140], a: 88, b: 100, r: [14, 9.5, 7], bend: 1, reach: 2.6, phase: 0.5, tar: 70, toes: 4 },
   // rear: long spider legs, a short thigh rising off the flank to a high knee, then a
   // long bowed shin and a thin tarsus down to the ground (thick at the joints, tapering)
-  { hip: [84, 146], fem: { len: 70, ang: 1.42 }, a: 150, b: 112, r: [15, 10, 4.2], bend: 1, reach: 30, phase: 0.25, tar: 52, toes: 2 },
-  { hip: [168, 128], fem: { len: 62, ang: 1.12 }, a: 146, b: 104, r: [13, 8.5, 3.6], bend: 1, reach: 66, phase: 0.0, tar: 46, toes: 2 },
+  { hip: [84, 146], fem: { len: 70, ang: 1.42 }, a: 150, b: 112, r: [15, 10, 4.2], bend: 1, reach: 0, phase: 0.25, tar: 52, toes: 2 },
+  { hip: [168, 128], fem: { len: 62, ang: 1.12 }, a: 146, b: 104, r: [13, 8.5, 3.6], bend: 1, reach: 50, phase: 0.0, tar: 46, toes: 2 },
 ];
+
+/**
+ * The far-side legs (the four on the other flank, drawn behind the body), one row per LEGS entry:
+ * where each hip sits relative to its near twin, where the foot plants relative to that hip, and
+ * its place in the step cycle. They are NOT a mirrored copy of the near legs: a copy (the old
+ * dx 18, half a cycle out of step) stood each far leg almost on top of its near twin and the two
+ * fused into one lumpy limb for most of the gait. This layout (and the near legs' reach) was
+ * searched offline so that no two legs' bones come within 3 design units of each other, near
+ * against far or side against side, at any moment of the gait, for every stride the scenes use
+ * (vd x T = 73 to 97). `node src/world/tools/colossus-legs.mjs` re-checks it, and fails if a
+ * change to the legs, the layout or a scene's gait brings two legs back together.
+ */
+export const FAR_LEGS: { dx: number; dy: number; reach: number; phase: number }[] = [
+  { dx: 37.85, dy: 24, reach: -5.78, phase: 0.637 },
+  { dx: 63.69, dy: 18.33, reach: -27.64, phase: 0.338 },
+  { dx: 22.17, dy: 5.86, reach: 6.99, phase: 0.233 },
+  { dx: 34.88, dy: 8.5, reach: 49.83, phase: 0.779 },
+];
+
+/** A far leg's layout: the table above, or the scene's uniform offset when the body has other legs. */
+function farOf(c: ColossusDef, leg: LegDef): { dx: number; dy: number; reach: number; phase: number } {
+  const i = c.legs.indexOf(leg);
+  if (c.legs === LEGS && FAR_LEGS[i]) return FAR_LEGS[i]!;
+  return { dx: c.far.dx, dy: c.far.dy, reach: 0, phase: (leg.phase + c.far.phase) % 1 };
+}
 
 export const EYE: [number, number] = [-150, 207];
 export const HEAD_PIVOT: [number, number] = [-80, 195];
@@ -104,7 +129,8 @@ export function toWorld([x, y]: [number, number]): [number, number] {
 }
 
 function hipWorld(c: ColossusDef, leg: LegDef, far: boolean): [number, number] {
-  return toWorld([leg.hip[0] + (far ? c.far.dx : 0), leg.hip[1] + (far ? c.far.dy : 0)]);
+  const o = far ? farOf(c, leg) : null;
+  return toWorld([leg.hip[0] + (o ? o.dx : 0), leg.hip[1] + (o ? o.dy : 0)]);
 }
 
 // --- the walk model (CPU twin) --------------------------------------------------
@@ -160,7 +186,7 @@ export function foot(c: ColossusDef, tl: number, phase: number, hx: number): Foo
 export function legList(c: ColossusDef): { leg: LegDef; hx: number; phase: number; far: boolean }[] {
   const out: { leg: LegDef; hx: number; phase: number; far: boolean }[] = [];
   for (const leg of c.legs) out.push({ leg, hx: hipWorld(c, leg, false)[0] + leg.reach, phase: leg.phase, far: false });
-  for (const leg of c.legs) out.push({ leg, hx: hipWorld(c, leg, true)[0] + leg.reach, phase: (leg.phase + c.far.phase) % 1, far: true });
+  for (const leg of c.legs) out.push({ leg, hx: hipWorld(c, leg, true)[0] + leg.reach + farOf(c, leg).reach, phase: farOf(c, leg).phase, far: true });
   return out;
 }
 
@@ -280,11 +306,12 @@ function legsGlsl(c: ColossusDef): { decl: string; body: string } {
     for (const leg of c.legs) {
       const k = far ? c.far.scale : 1;
       const [hx, hy] = hipWorld(c, leg, far);
-      const ph = far ? (leg.phase + c.far.phase) % 1 : leg.phase;
+      const fo = far ? farOf(c, leg) : null;
+      const ph = fo ? fo.phase : leg.phase;
       rows.push({
         A: [hx, hy, leg.fem ? leg.fem.len : 0, leg.fem ? leg.fem.ang : 0],
         B: [leg.a, leg.b, leg.bend, ph],
-        C: [leg.r[0] * k, leg.r[1] * k, leg.r[2] * k, hx + leg.reach],
+        C: [leg.r[0] * k, leg.r[1] * k, leg.r[2] * k, hx + leg.reach + (fo ? fo.reach : 0)],
         D: [leg.tar * (far ? 0.9 : 1), leg.toes, seedOf(leg, far), k],
       });
     }

@@ -7,7 +7,7 @@
 import { hex, type Hex } from "./palette.ts";
 import type { LightOut, PointSink, PointSystem, SimEnv } from "./types.ts";
 
-export const FLASH_SHAPE = { square: 0, bird: 1, glint: 2, glow: 3, plus: 4 } as const;
+export const FLASH_SHAPE = { square: 0, bird: 1, glint: 2, glow: 3, plus: 4, birdFar: 5, birdNear: 6 } as const;
 
 export class FlashGate {
   private starts: number[] = [];

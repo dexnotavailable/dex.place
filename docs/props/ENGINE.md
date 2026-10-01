@@ -634,3 +634,13 @@ blank, their numbers worn off. `bus.ts` is the region's controller channel (not 
 - The critic pass looked at every recipe's stills at game size and fixed what read badly (the
   pew's back, vine leaves, grass height, the pennant in wind, puddles, moths, dust, paper faces,
   splinters landing on end); motion was judged from the capture stills, not by Dex.
+
+## Ground cover and the ground (2026-10-01)
+
+`PropBuilder.groundRise(x, reach)` returns how many rows the ground under prop-local `x` sits above
+the prop's own base (negative: below), or NaN when there is no ground within `reach` px (over a
+drop, inside a wall); a blade that gets NaN should not be grown. It asks `PixelWorld.surfaceY`,
+which uses `world.plantGround` (the host's terrain and water surface; null in the sandbox, where it
+falls back to `solidAt` and then to the placement). `grass`, `reeds` and `reedBed` root every blade
+this way, so a patch follows steps and slopes and stops at edges. Write new cover the same way; see
+docs/world/SCENES.md, "Layering, grounding and blending".

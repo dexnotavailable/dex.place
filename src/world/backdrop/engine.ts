@@ -24,6 +24,7 @@ import { dataTexture, uniforms, type Texture } from "../../scenes/engine/gl.ts";
 import { DEFAULT_PRELUDE, FULL_VS, HEADER, LIB, LIB_FOG, LIB_REFL, MAIN as SCENE_MAIN, POINT_BODY, POINT_VS } from "../../scenes/engine/glsl.ts";
 import { f } from "../../scenes/engine/layers.ts";
 import { mulberry } from "../../scenes/engine/noise.ts";
+import { placeFlocks } from "../../scenes/engine/order.ts";
 import { buildPalette, hex, paletteDefines, type Hex, type Palette } from "../../scenes/engine/palette.ts";
 import { SCALE, playerPx } from "../../scenes/engine/scale.ts";
 import type { BuildCtx, FogSpec, LayerDef, LightOut, SceneDef, SimEnv } from "../../scenes/engine/types.ts";
@@ -262,7 +263,7 @@ export class Backdrop {
       return p;
     };
     const hide = new Set(o.hide ?? []);
-    const all = def.build(ctx) as WorldLayer[];
+    const all = placeFlocks(def.build(ctx)) as WorldLayer[];
     // the player plane sits where the scene put its figure: layers after it draw in front of the world
     const fig = all.findIndex((l) => l.kind === "character");
     all.forEach((l, i) => {
