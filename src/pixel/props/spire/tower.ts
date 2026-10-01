@@ -92,6 +92,16 @@ export const crownTower = defineRecipe<TowerParams, Record<string, never>>({
     for (let y = top - crest - u(1.0); y < top - crest; y += u(0.3)) f.rect(ax - 2, y, 6, 1, { mat: "spireIronDark", mode: "over", z: 4, piece: "mast" });
     f.rect(ax - 1, top - crest - u(1.1) - 3, 4, 3, { mat: "lampRed", mode: "over", z: 5, noInk: true, piece: "lamp" });
     b.glow({ at: [ax + 1, top - crest - u(1.1) - 2 - TOT], colour: [1, 0.25, 0.25], radius: u(0.35), intensity: 0.6 });
+    // two slit windows high in the wall, lit warm from inside (a lamp still burns in the gatehouse), each in
+    // a recessed frame with a sill catching its light
+    for (const fx of [0.3, 0.72]) {
+      const sx = Math.round(W * fx), sy = top + u(0.9);
+      if (Number.isFinite(p.hoist) && Math.abs(sx - u(p.hoist)) < u(1.2)) continue;
+      f.rect(sx - 3, sy - 2, 8, u(0.62) + 4, { mat: "spireIronDark", mode: "paint", tone: -2 });
+      f.rect(sx - 1, sy, 4, u(0.62), { mat: "lampAmber", mode: "over", z: 6, noInk: true, piece: "slit" });
+      f.rect(sx - 3, sy + u(0.62) + 2, 8, 2, { mat: "spireIron", mode: "paint", tone: 1 });
+      b.glow({ at: [sx + 1, sy + u(0.31) - TOT], colour: [1, 0.62, 0.3], radius: u(0.5), intensity: 0.35 });
+    }
     // the hoist head over the lift: a wheel housing on the crest, cables down the face into the gate
     if (Number.isFinite(p.hoist)) {
       const hx = Math.round(u(p.hoist));

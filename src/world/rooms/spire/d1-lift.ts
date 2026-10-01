@@ -55,7 +55,8 @@ d1.prop("spire-lift", "spire-lift", 265, -32, {
 // the counterweight: at the top of its channel while the car waits below; they pass halfway (y 4)
 d1.px("counterweight", "counterweight", 262.7, 42.4, { mode: "ride", cable: 40, liftBottom: d1.Y(-32) });
 // warning lights at the stops (the break's hangs where the rail broke)
-d1.px("warningLight", "beacon-foot", 263.2, -29.6, { mode: "blink", mount: "wall", phase: 0.1 });
+// (the foot's beacon stands on the landing, clear of the tower's leg)
+d1.px("warningLight", "beacon-foot", 262.55, -32, { mode: "blink", mount: "floor", phase: 0.1 });
 d1.px("warningLight", "beacon-break", 267.6, 42.8, { mode: "blink", mount: "wall", phase: 0.5 });
 d1.px("warningLight", "beacon-crown", 267.6, 78.8, { mode: "blink", mount: "wall", phase: 0.9 });
 // the storm's clock (the rain and the pennant-free shaft share the spire's one gust program)

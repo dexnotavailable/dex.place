@@ -12,7 +12,7 @@ import { f, moveBefore, placeByDepth, Flock, Pix, megastructure, mist, sky, smoo
 import { planetBody } from "../../../../scenes/scenes/monolith-planet/planet.ts";
 import { billows } from "../../../../scenes/scenes/monolith-planet/clouds.ts";
 import type { WorldLayer } from "../../../backdrop/engine.ts";
-import { Frame, SPIRE_PALETTE, clockLayer, cloudLightning, gustRain, spireFace, stormCloud } from "./common.ts";
+import { Frame, SPIRE_PALETTE, clockLayer, cloudLightning, foreFrame, gustRain, spireFace, stormCloud, type Pool } from "./common.ts";
 
 export interface ClimbGeo {
   /** Room size (px). */
@@ -30,7 +30,10 @@ export interface ClimbGeo {
   /** Openings built into the face (room px rects): the lift's gate, the alcove. */
   openings?: [number, number, number, number][];
   /** Warm light on the face (room px x, y, rx, ry, strength). */
-  pools?: [number, number, number, number, number][];
+  pools?: Pool[];
+  /** The route's painted marks (room px x, y, size) and lightning scars (room px x, y, radius) on the face. */
+  marks?: [number, number, number][];
+  scars?: [number, number, number][];
 }
 
 // The face is the wall the catwalks are bolted to and the alcove and the lift's gate are cut into,
@@ -100,7 +103,7 @@ float sceneLight(vec2 s, float depth) {
           [0.93, 0.22, 0.03, 0.15, 7],
         ];
         for (const [cx, hh, ww, lean, seed] of towers)
-          megastructure(pix, { row: ctx.row("far"), lightRow: ctx.row("windim"), cx: cx * w, ground: sea + 10, height: hh * H, width: ww * W, lean, seed, tiers: 4, windows: 0.01, fog: (_x, y) => 0.45 * smooth(sea - H * 0.25, sea + 4, y) });
+          megastructure(pix, { row: ctx.row("far"), lightRow: ctx.row("windim"), cx: cx * w, ground: sea + 10, height: hh * H, width: ww * W, lean, seed, tiers: 4, windows: 0.01, attach: true, fog: (_x, y) => 0.45 * smooth(sea - H * 0.25, sea + 4, y) });
         L.push({ kind: "pix", name: "far-ruins", depth: d, pix, x: Math.round(c.x0), y: 0, dither: 0.3, twinkle: 0.3 });
         L.push(billows({ name: "cloud-sea", depth: 26, base: Math.round(H * 0.9 + (geo.h - H) / 26), wander: 4 * u, cell: 16 * u, radius: 9 * u, bottom: sea + 400, drift: -3, row: "cloud", tone: 0.14, range: 0.4, tint: 0.55, lightGain: 1.2, seed: 5, crown: 0.7 }));
       }
@@ -132,7 +135,9 @@ float sceneLight(vec2 s, float depth) {
             lift: 0.12,
             shadows: (geo.shadows ?? []).map(([x0, y0, x1, y1, r]) => [F.x(x0, FACE_DEPTH), F.y(y0, FACE_DEPTH), F.x(x1, FACE_DEPTH), F.y(y1, FACE_DEPTH), r / FACE_DEPTH]),
             openings: (geo.openings ?? []).map(([x0, y0, x1, y1]) => [F.x(x0, FACE_DEPTH), F.y(y0, FACE_DEPTH), F.x(x1, FACE_DEPTH), F.y(y1, FACE_DEPTH)]),
-            pools: (geo.pools ?? []).map(([x, y, rx, ry, k]) => [F.x(x, FACE_DEPTH), F.y(y, FACE_DEPTH), rx / FACE_DEPTH, ry / FACE_DEPTH, k]),
+            marks: (geo.marks ?? []).map(([x, y, z]) => [F.x(x, FACE_DEPTH), F.y(y, FACE_DEPTH), z / FACE_DEPTH]),
+            scars: (geo.scars ?? []).map(([x, y, r]) => [F.x(x, FACE_DEPTH), F.y(y, FACE_DEPTH), r / FACE_DEPTH]),
+            pools: (geo.pools ?? []).map(([x, y, rx, ry, k, yMax]) => [F.x(x, FACE_DEPTH), F.y(y, FACE_DEPTH), rx / FACE_DEPTH, ry / FACE_DEPTH, k, yMax === undefined ? undefined : F.y(yMax, FACE_DEPTH)] as Pool),
           }),
         );
       }
@@ -145,6 +150,23 @@ float sceneLight(vec2 s, float depth) {
       spray.pass = "front";
       spray.wx = (w) => Math.max(w.rain, 0.8 * (1 - w.after)) * 0.8;
       L.push(spray);
+      // the near foreground (depth 0.6): a lattice mast frames the void at the climb's west end, another
+      // the lift's channel at its east end, and chains hang down the face between them; all of it slides
+      // past faster than the climb, darker and greyer than the iron she stands on
+      {
+        const d = 0.6;
+        const c = cov(d);
+        // layer x of a screen x when the camera is at room x camX (p = s + (camX - span / 2) / d)
+        const at = (screenX: number, camX: number): number => screenX + (camX - ctx.span / 2) / d;
+        const camMax = geo.w - W;
+        L.push(foreFrame({ name: "fore", depth: d, els: [
+          { kind: "girder", x: at(-6, 0), w: 36, y0: c.y0, y1: c.y1 },
+          { kind: "girder", x: at(W - 26, camMax), w: 36, y0: c.y0, y1: c.y1 },
+          { kind: "chain", x: at(W - 40, camMax * 0.5), y0: c.y0, y1: c.y1 },
+          { kind: "chain", x: at(W - 20, camMax * 0.5), y0: c.y0, y1: c.y1 },
+          { kind: "chain", x: at(30, camMax * 0.25), y0: c.y0, y1: c.y1 },
+        ] }));
+      }
       void f;
       // the far rain (depth 5-6) falls behind anything nearer and solid (the blade's face, the crown, the lift's haze)
       placeByDepth(L, "rain-far");

@@ -1,8 +1,8 @@
 // The Crown's arena (lane R-D; WORLD-PLAN D3): the floor seals and the
 // terminal's roster.
 //
-//   arenaSeals      five seals set into the arena floor's face, a ring 10 H
-//                   across: dark (engraved iron and old brass), glowing (the
+//   arenaSeals      five seal plates set into the arena floor's face, 10 H
+//                   across: dark (iron medallions inlaid with old brass), glowing (the
 //                   terminal is awake: a slow red pulse), forming (it summons:
 //                   they light one after another and columns of red rise
 //                   from them), held (the seal holds), spent (it cools down:
@@ -52,23 +52,46 @@ interface SealRefs {
   since: number;
 }
 
+/**
+ * A seal plate set into the arena floor's face: a square iron plate bolted flush at its corners, a
+ * round medallion in it (a bronze bezel lit on its upper left, a recessed dark field, the seal's ring
+ * and five spokes inlaid). Lit, the inlay and the bezel burn red. A medallion, not a ring of lines:
+ * it reads as a thing built into the floor, never as water rippling on a wall.
+ */
 function drawSeal(p: Part, lit: boolean): void {
   const g = p.grid;
   g.clearAll();
-  const m = resolveMat(lit ? "seal" : "spireIronDark").id;
-  const inlay = resolveMat(lit ? "seal" : "bronze").id;
-  const cx = g.w / 2, cy = g.h / 2, rx = g.w / 2 - 1, ry = g.h / 2 - 1;
+  const plate = resolveMat("spireIron").id;
+  const field = resolveMat(lit ? "seal" : "spireIronDark").id;
+  const rim = resolveMat(lit ? "seal" : "bronze").id;
+  const cx = g.w / 2, cy = g.h / 2, R = Math.min(g.w, g.h) / 2 - 2;
   for (let y = 0; y < g.h; y++)
     for (let x = 0; x < g.w; x++) {
-      const nx = (x + 0.5 - cx) / rx, ny = (y + 0.5 - cy) / ry;
-      const d = Math.hypot(nx, ny);
-      const a = Math.atan2(ny, nx);
-      let on = false, tone = 0, mm = m;
-      if (Math.abs(d - 0.92) < 0.1) on = true;
-      else if (Math.abs(d - 0.55) < 0.1) { on = true; tone = -1; mm = inlay; }
-      else if (d < 0.9 && d > 0.6 && ((a / (Math.PI * 2)) * 10 + 10) % 1 < 0.14) { on = true; tone = -1; }
-      else if (d < 0.22) { on = true; mm = inlay; }
-      if (on) g.setRaw(g.inner(x, y), mm, tone, 1, lit ? 1 : 2, lit ? F_NOINK : 0, 999);
+      const dx = x + 0.5 - cx, dy = y + 0.5 - cy;
+      const d = Math.hypot(dx, dy) / R;
+      const a = Math.atan2(dy, dx);
+      let m = plate, tone = 0, flags = 0;
+      // the backing plate: a lit top edge and planet-side edge, a dark foot, bolts at its corners
+      if (y === 0 || x === 0) tone = 1;
+      else if (y === g.h - 1 || x === g.w - 1) tone = -1;
+      const corner = (x === 2 || x === g.w - 3) && (y === 2 || y === g.h - 3);
+      if (corner) tone = 1;
+      if (d <= 1.0 && d > 0.8) {
+        // the bezel
+        m = rim;
+        tone = dx + dy < -2 ? 1 : dx + dy > 2 ? -1 : 0;
+        if (lit) flags = F_NOINK;
+      } else if (d <= 0.8) {
+        m = field;
+        tone = lit ? -1 : d > 0.66 ? -1 : 0;
+        const spoke = ((a / (Math.PI * 2)) * 5 + 5.25) % 1 < 0.16;
+        if (Math.abs(d - 0.48) < 0.1 || (d < 0.48 && d > 0.2 && spoke) || d < 0.16) {
+          m = rim;
+          tone = lit ? 1 : 0;
+        }
+        if (lit) flags = F_NOINK;
+      }
+      g.setRaw(g.inner(x, y), m, tone, 1, lit ? 1 : 2, flags, 999);
     }
   p.tag["lit"] = lit;
 }
@@ -91,7 +114,7 @@ export const arenaSeals = defineRecipe<SealParams, SealRefs>({
   },
   build(b, p) {
     const u = (f: number): number => b.u(f);
-    const sw = u(0.7), sh = u(0.36);
+    const sw = u(0.5), sh = u(0.5);
     const seals: Part[] = [];
     const lights: PropLight[] = [];
     const beams: PropGlow[] = [];

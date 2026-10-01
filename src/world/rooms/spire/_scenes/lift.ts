@@ -12,7 +12,7 @@ import { f, placeByDepth, Pix, megastructure, sky, smooth, type LayerDef, type S
 import { planetBody } from "../../../../scenes/scenes/monolith-planet/planet.ts";
 import { city } from "../../../../scenes/scenes/amber-hollow/city.ts";
 import { billows } from "../../../../scenes/scenes/monolith-planet/clouds.ts";
-import { Frame, SPIRE_PALETTE, clockLayer, cloudLightning, gustRain, spireFace, stormCloud } from "./common.ts";
+import { Frame, SPIRE_PALETTE, clockLayer, cloudLightning, foreFrame, gustRain, spireFace, stormCloud } from "./common.ts";
 
 export interface LiftGeo {
   w: number;
@@ -76,7 +76,7 @@ export function liftScene(geo: LiftGeo): SceneDef {
         const w = Math.ceil(ctx.panWidth(d)) + 8;
         const pix = new Pix(w, sea + 40);
         for (const [cx, hh, ww, lean, seed] of [[0.1, 0.16, 0.03, 0.1, 3], [0.33, 0.24, 0.036, -0.12, 4], [0.52, 0.12, 0.02, 0.2, 6]] as const)
-          megastructure(pix, { row: ctx.row("far"), lightRow: ctx.row("windim"), cx: cx * w, ground: sea + 16, height: hh * H, width: ww * W, lean, seed, tiers: 4, windows: 0.01, fog: (_x, y) => 0.4 * smooth(sea - H * 0.2, sea + 4, y) });
+          megastructure(pix, { row: ctx.row("far"), lightRow: ctx.row("windim"), cx: cx * w, ground: sea + 16, height: hh * H, width: ww * W, lean, seed, tiers: 4, windows: 0.01, attach: true, fog: (_x, y) => 0.4 * smooth(sea - H * 0.2, sea + 4, y) });
         L.push({ kind: "pix", name: "far-ruins", depth: d, pix, x: -4, y: 0, dither: 0.3, twinkle: 0.3 });
         L.push(billows({ name: "cloud-sea", depth: 26, base: Math.round(F.y(geo.ground, 26)), wander: 5 * u, cell: 18 * u, radius: 10 * u, bottom: Math.round(F.y(geo.ground, 26)) + 800, drift: -3, row: "cloud", tone: 0.14, range: 0.4, tint: 0.55, lightGain: 1.2, seed: 7, crown: 0.7 }));
       }
@@ -113,11 +113,27 @@ export function liftScene(geo: LiftGeo): SceneDef {
         L.push(spireFace({ name: "stem-face", depth: d, edge: { x0: ex, x1: ex, y0: cut, y1: 0, side: 1 }, tier: Math.round((1.9 * 80) / d), panel: Math.round((1.3 * 80) / d), rib: Math.round((3.4 * 80) / d), windows: 0.2, shade: 0.2, seed: 29, wet: true, bounds: { y0: -10, y1: cut } }));
       }
       // the lift tower: two rails either side of the car and cross braces, the whole way up
-      L.push(tower(W / 2));
+      // (it stands in the room's plane, where the car rides it, and on footings at the yard: it never runs
+      // on down through the ground)
+      L.push(tower(W / 2, Math.round(F.y(geo.floor, 1)) - 12));
+      // the hollow's floor at the tower's foot: the yard's kerb and paving, the footings, the lift's pit
+      L.push(yard(W / 2, Math.round(F.y(geo.floor, 1)), u));
       L.push(gustRain({ name: "rain-far", depth: 6, cw: 5, len: 6 * u, speed: 190 * u, alpha: 0.35, dens: 0.6, seed: 19, shade: 0.25, lean: 0.16, tellLean: 0.1, gustLean: 0.3, floor: 0.7 }));
       L.push({ kind: "character", name: "figure", depth: 1, x: W / 2, ground: H * 0.62 });
       const rn = gustRain({ name: "rain-near", depth: 0.8, cw: 13, len: 15 * u, speed: 420 * u, alpha: 0.5, dens: 0.4, seed: 23, shade: 0.45, lean: 0.18, tellLean: 0.12, gustLean: 0.36, floor: 0.7, pass: "front" });
       L.push(rn);
+      // the near foreground: a lattice column of the tower's outer frame down the left edge, chains and a
+      // hoist cable down the right, rushing past faster than the car (depth 0.6); the car stays clear
+      {
+        const d = 0.6;
+        const c = F.cover(d, geo.h);
+        L.push(foreFrame({ name: "fore", depth: d, els: [
+          { kind: "girder", x: 52, w: 34, y0: c.y0, y1: c.y1 },
+          { kind: "chain", x: 1188, y0: c.y0, y1: c.y1, sway: 0 },
+          { kind: "chain", x: 1214, y0: c.y0, y1: c.y1, sway: 0 },
+          { kind: "cable", x0: 1238, y0: c.y0, x1: 1239, y1: c.y1, sag: 0 },
+        ] }));
+      }
       // rain only once the car is well out of the hollow (it begins on the car near the break)
       return withAltitudeRain(L, geo);
     },
@@ -293,13 +309,13 @@ vec4 layer(vec2 p, vec2 s) {
 }
 
 /** The lift tower: two heavy rails either side of the car and a cross brace every 2 H, lit by what's around. */
-function tower(cx: number): LayerDef {
+function tower(cx: number, foot: number): LayerDef {
   const half = Math.round(1.75 * 80);
   return {
     kind: "glsl",
     name: "lift-tower",
-    depth: 1.04,
-    bounds: { y0: -1e6, y1: 1e6, x0: cx - half - 20, x1: cx + half + 20 },
+    depth: 1,
+    bounds: { y0: -1e6, y1: foot, x0: cx - half - 20, x1: cx + half + 20 },
     body: /* glsl */ `
 vec4 layer(vec2 p, vec2 s) {
   float dx = p.x - ${f(cx)};
@@ -317,6 +333,81 @@ vec4 layer(vec2 p, vec2 s) {
   if (sh < 0.0) return vec4(0.0);
   vec3 c = ramp(R_MONO, sh + flashLight(s) * 0.4 + sceneLight(s, uDepth), p, 0.0);
   return vec4(applyFog(c, uFog, 0.0, p, s), 1.0);
+}`,
+  };
+}
+
+/**
+ * The hollow's floor where the lift tower stands (the room's plane, under the car's bottom stop): the
+ * yard's kerb lit warm by the furnaces, its paving in dressed courses falling into shadow, a concrete
+ * footing under each of the tower's legs (stepped, a lit top, a bolted base plate where the rail meets
+ * it, a contact shadow on the kerb), and between the legs the lift's pit with a lit rim and buffers at
+ * its foot. Ground, not backdrop running out.
+ */
+function yard(cx: number, top: number, u: number): LayerDef {
+  const half = Math.round(1.75 * 80);
+  return {
+    kind: "glsl",
+    name: "yard",
+    depth: 1,
+    bounds: { y0: top - 14, y1: top + 2000 },
+    body: /* glsl */ `
+vec4 layer(vec2 p, vec2 s) {
+  float y = p.y - ${f(top)};
+  float dx = p.x - ${f(cx)};
+  float ax = abs(dx);
+  // the footings: a stepped plinth under each leg (the rail is ax ${f(half)}..${f(half + 12)})
+  float lc = ax - ${f(half + 6)};
+  bool plinthUp = y >= -12.0 && y < 0.0 && abs(lc) < (y < -6.0 ? 10.0 : 13.0);
+  if (y < 0.0) {
+    if (!plinthUp) return vec4(0.0);
+    float side = sign(dx) * lc;
+    float sh = y < -11.0 || (y >= -6.0 && y < -5.0) ? 0.62 : side < -8.0 ? 0.5 : side > 8.0 ? 0.16 : 0.36;
+    // the base plate the rail is bolted to
+    if (y >= -12.0 && y < -10.0 && abs(lc) < 9.0) sh = abs(lc) > 7.0 ? 0.62 : 0.24;
+    vec3 c = ramp(R_ROCK, sh + flashLight(s) * 0.2, p, 0.0);
+    c = mix(c, ramp(R_AMBERHAZE, sh * 0.6, p, 0.0), 0.35);
+    return vec4(c, 1.0);
+  }
+  vec3 c;
+  // the lift's pit between the legs: a lit rim, a dark shaft, two buffers at its foot
+  if (ax < ${f(half)} && y < 48.0) {
+    float sh = 0.04 + 0.05 * step(40.0, y);
+    if (y < 2.0) sh = 0.55;
+    else if (ax > ${f(half - 3)}) sh = 0.2;
+    if (y > 36.0 && abs(ax - ${f(half * 0.5)}) < 9.0) sh = y < 38.0 ? 0.4 : 0.18;
+    return vec4(ramp(R_ROCK, sh, p, 0.0), 1.0);
+  }
+  // the kerb: lit warm from the furnaces out in the yard, a dark joint under it
+  float glow = clamp(1.0 - y / ${f(140 * u)}, 0.0, 1.0);
+  float sh;
+  if (y < 2.0) sh = 0.82;
+  else if (y < 4.0) sh = 0.12;
+  else {
+    // dressed courses, staggered blocks, each lit on its top edge and dark at its foot
+    float cy = mod(y - 4.0, 18.0);
+    float row = floor((y - 4.0) / 18.0);
+    float bw = 44.0 + 8.0 * hash2(vec2(row, 3.0));
+    float bx = mod(p.x + row * 23.0, bw);
+    float bid = hash2(vec2(floor((p.x + row * 23.0) / bw), row));
+    sh = 0.42 + (bid - 0.5) * 0.12;
+    if (cy < 1.0 || bx < 1.0) sh = 0.08;
+    else if (cy < 2.0) sh += 0.16;
+    else if (cy > 15.0) sh -= 0.1;
+    else if (bx < 2.0) sh += 0.08;
+    // chips and pitting in small clusters
+    float n = vnoise(p / 3.0 + bid * 9.0);
+    if (n > 0.86) sh += 0.08; else if (n < 0.1) sh -= 0.08;
+    // the light falls away down the face
+    sh *= 0.35 + 0.65 * glow;
+  }
+  // contact shadow on the kerb either side of each footing
+  if (y < 4.0 && abs(lc) < 17.0 && abs(lc) >= 13.0) sh -= 0.3;
+  if (y < 6.0 && abs(lc) < 13.0) sh = y < 2.0 ? 0.2 : sh - 0.15;
+  c = ramp(R_ROCK, sh + flashLight(s) * 0.2, p, 0.0);
+  // warm bounce from the furnace light near the top
+  c = mix(c, ramp(R_AMBERHAZE, sh * 0.75, p, 0.0), 0.45 * glow);
+  return vec4(c, 1.0);
 }`,
   };
 }

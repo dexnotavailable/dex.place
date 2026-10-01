@@ -18,7 +18,7 @@ import { planetBody } from "../../../../scenes/scenes/monolith-planet/planet.ts"
 import { billows } from "../../../../scenes/scenes/monolith-planet/clouds.ts";
 import type { WorldLayer } from "../../../backdrop/engine.ts";
 import { STORM } from "../../../../pixel/props/spire/storm.ts";
-import { SPIRE_PALETTE, clockLayer, cloudLightning, gustRain } from "./common.ts";
+import { SPIRE_PALETTE, clockLayer, cloudLightning, foreFrame, gustRain } from "./common.ts";
 
 export interface BladeGeo {
   /** Room size (px) and the camera's top row while standing near the break (rail camera). */
@@ -180,12 +180,15 @@ float sceneLight(vec2 s, float depth) {
       L.push(worldBelow(W, H, u, hor, SUN, RING));
       // colossi walking west across the plain, birds over their backs
       {
-        const far = below({ S: 0.12 * u, ground: hor + 30 * u, W, startAt: 0.8, vd: 9, seed: 5, T: 5.2 });
-        const near = below({ S: 0.2 * u, ground: hor + 58 * u, W, startAt: 0.97, vd: 11, seed: 9, T: 4.8 });
+        // (the near one starts west of the far one and walks faster, so they draw apart instead of crossing)
+        const far = below({ S: 0.12 * u, ground: hor + 30 * u, W, startAt: 0.99, vd: 9, seed: 5, T: 5.2 });
+        const near = below({ S: 0.2 * u, ground: hor + 58 * u, W, startAt: 0.72, vd: 11, seed: 9, T: 4.8 });
         for (const [name, c, d] of [["colossus-far", far, 48], ["colossus-near", near, 34]] as const) {
           // (light haze only, and in shadow but for the low sun on their west sides: solid giants in clear
           // evening air, not pale ghosts)
-          L.push({ kind: "glsl", name, depth: d, fog: 0.06, body: colossusGlsl(c, { farFog: 0.12, rearFog: 0.12, groundFog: 0.14, groundH: 30, key: [-0.9, 0.3, 0.3], rim: [-1, 0.2], fill: -0.12 }), bounds: { y0: c.ground - (EXTENT.y1 + 20) * c.S, y1: c.ground + 2 }, dither: 0.15 });
+          // (each body is one opaque silhouette with one veil of distance over the whole of it: no extra fog on
+          // its far legs or its rear, so no limb shows through another like an x-ray)
+          L.push({ kind: "glsl", name, depth: d, fog: d > 40 ? 0.3 : 0.22, body: colossusGlsl(c, { farFog: 0, rearFog: 0, groundFog: 0.05, groundH: 30, key: [-0.9, 0.3, 0.3], rim: [-1, 0.2], fill: -0.12 }), bounds: { y0: c.ground - (EXTENT.y1 + 20) * c.S, y1: c.ground + 2 }, dither: 0.15 });
           L.push({ kind: "points", name: `${name}-birds`, depth: d, fog: 0.4, system: new Wheelers(c, ctx.row("bird"), 6, ctx.rng) });
         }
       }
@@ -229,6 +232,17 @@ float sceneLight(vec2 s, float depth) {
       L.push(gustRain({ name: "rain-far", depth: 5, cw: 5, len: 7 * u, speed: 210 * u, alpha: 0.4, dens: 0.7, seed: 17, shade: 0.28, lean: 0.2, tellLean: 0.12, gustLean: 0.38, floor: 0 }));
       L.push({ kind: "character", name: "figure", depth: 1, x: W / 2, ground: Math.round(H * 0.62) });
       L.push(gustRain({ name: "rain-near", depth: 0.8, cw: 12, len: 16 * u, speed: 440 * u, alpha: 0.5, dens: 0.48, seed: 37, shade: 0.45, lean: 0.22, tellLean: 0.14, gustLean: 0.42, floor: 0, pass: "front" }));
+      // the near foreground (depth 0.6): a broken spar of the spire's iron juts up into the bottom-left corner
+      // as you step out of the Crown, another frames the bottom-right at the tip; nowhere else
+      {
+        const d = 0.6;
+        const at = (screenX: number, camX: number): number => screenX + (camX - ctx.span / 2) / d;
+        const lyb = (screenY: number, camY: number): number => screenY + camY / d;
+        L.push(foreFrame({ name: "fore", depth: d, els: [
+          { kind: "spar", x: at(-30, 0), y: lyb(560, 608), w: 44, h: 200, lean: 0.35 },
+          { kind: "spar", x: at(1150, 1280), y: lyb(600, 216), w: 40, h: 160, lean: -0.3 },
+        ] }));
+      }
       // the far rain (depth 5-6) falls behind anything nearer and solid (the blade's face, the crown, the lift's haze)
       placeByDepth(L, "rain-far");
       return L;
@@ -320,8 +334,24 @@ vec4 layer(vec2 p, vec2 s) {
   float cx = ${f(W * 0.46)};
   float cliffTop = ${f(hor - 2 * u)} + pow(abs(x - cx) / ${f(18 * u)}, 1.6) * ${f(10 * u)};
   bool cliff = abs(x - cx) < ${f(24 * u)} && y > cliffTop && y < ${f(hor + 14 * u)};
+  // the lodge on the crag's crown: a dark block under a pitched roof, its lit window; the crag's west
+  // face catches the low sun (an island with a house on it, not a stray shadow on the water)
+  {
+    float lx0 = cx + ${f(0.5 * u)}, lx1 = cx + ${f(6.5 * u)};
+    float base = ${f(hor - 2 * u)} + pow(abs(clamp(x, lx0, lx1) - cx) / ${f(18 * u)}, 1.6) * ${f(10 * u)};
+    float wallTop = base - ${f(3 * u)};
+    float roof = wallTop - ${f(2.5 * u)} * (1.0 - abs(x - (lx0 + lx1) * 0.5) / ${f(3.6 * u)});
+    if (x > lx0 - ${f(0.6 * u)} && x < lx1 + ${f(0.6 * u)} && y > roof && y <= base + 1.0) {
+      if (abs(x - (cx + ${f(3 * u)})) < 1.0 && abs(y - (wallTop + ${f(1.5 * u)})) < 1.0) return vec4(pal(R_LAMP, 2.0), 1.0);
+      float sh = y < wallTop ? (x < (lx0 + lx1) * 0.5 ? 0.42 : 0.2) : (x < lx0 + 2.0 ? 0.36 : 0.16);
+      return vec4(applyFog(ramp(R_LAND, sh, p, 0.0), uFog * 0.8, 0.0, p, s), 1.0);
+    }
+  }
   if (cliff) {
     float sh = 0.2 + 0.25 * step(x, cx - 3.0) * step(y, cliffTop + 3.0);
+    // the west face lit by the low sun, ledges across it
+    if (x < cx - ${f(4 * u)} && x - (cx - ${f(24 * u)}) < 6.0 + (y - cliffTop) * 0.6) sh += 0.12;
+    if (mod(y - cliffTop, ${f(4 * u)}) < 1.0) sh -= 0.06;
     if (abs(x - (cx + ${f(3 * u)})) < 1.0 && abs(y - (cliffTop + ${f(4 * u)})) < 1.0) return vec4(pal(R_LAMP, 1.0), 1.0);
     return vec4(applyFog(ramp(R_LAND, sh, p, 0.0), uFog * 0.8, 0.0, p, s), 1.0);
   }
@@ -357,8 +387,22 @@ vec4 layer(vec2 p, vec2 s) {
     float sh = 0.22 + 0.12 * st - k * 0.3;
     float cy = ${f(hor + 10 * u)} + (x - ${f(W * 0.53)}) * 0.05;
     if (abs(y - cy) < 1.0 && x > ${f(W * 0.5)} && x < ${f(W * 0.8)}) sh = 0.55;
-    float mouth = exp(-pow(length((vec2(x, y) - vec2(${f(W * 0.575)}, ${f(hor + 19 * u)})) / vec2(${f(7 * u)}, ${f(2.5 * u)})), 2.0));
-    if (mouth > 0.3) return vec4(ramp(R_LAMP, 0.3 + mouth * 0.6, p, 0.5), 1.0);
+    // the hollow's mouth: a knoll on the plain with an arched opening, the foundry's glow inside it and
+    // spilling onto the ground in front (a light with a source, not a glow lying on the water)
+    vec2 mc = vec2(${f(W * 0.575)}, ${f(hor + 19 * u)});
+    float kx = (x - mc.x) / ${f(12 * u)};
+    float knollTop = mc.y - ${f(5 * u)} * (1.0 - kx * kx);
+    if (abs(kx) < 1.0 && y > knollTop && y < mc.y + ${f(2 * u)}) {
+      float ax2 = (x - mc.x) / ${f(4 * u)};
+      float archTop = mc.y + ${f(2 * u)} - ${f(4.2 * u)} * sqrt(max(0.0, 1.0 - ax2 * ax2));
+      if (abs(ax2) < 1.0 && y > archTop) return vec4(ramp(R_LAMP, 0.45 + 0.45 * clamp((y - archTop) / ${f(4 * u)}, 0.0, 1.0), p, 0.5), 1.0);
+      float ksh = 0.26 + 0.14 * step(x, mc.x - ${f(5 * u)}) * step(y, knollTop + 2.0) - 0.06 * step(mc.x + ${f(4 * u)}, x);
+      // the arch's rim catches the glow
+      if (abs(ax2) < 1.35 && y > archTop - 2.0) ksh += 0.12;
+      return vec4(applyFog(ramp(R_LAND, ksh, p, 0.0), uFog * 0.85, 0.0, p, s), 1.0);
+    }
+    float spill = exp(-pow(length((vec2(x, y) - mc - vec2(0.0, ${f(3 * u)})) / vec2(${f(9 * u)}, ${f(1.6 * u)})), 2.0));
+    if (spill > 0.35 && y > mc.y + ${f(2 * u)}) return vec4(ramp(R_LAMP, 0.15 + spill * 0.35, p, 0.6), 1.0);
     c = ramp(R_LAND, sh, p, 0.3);
   }
   c = applyFog(c, uFog, 0.35 * smoothstep(${f(hor + 40 * u)}, ${f(hor)}, y), p, s);
@@ -391,11 +435,12 @@ function bladeFace(W: number, H: number, geo: BladeGeo, span: number): LayerDef 
 vec4 layer(vec2 p, vec2 s) {
   float t = (p.x - ${f(a[0]!)}) / ${f(b[0]! - a[0]!)};
   float top = mix(${f(a[1]!)}, ${f(b[1]!)}, t);
-  if (p.x > ${f(b[0]! + 30)}) return vec4(0.0);
+  if (p.x > ${f(b[0]! - 2)}) return vec4(0.0);
   // thickness grows toward the root (west), the underside a fringe of spikes
   float th = mix(170.0, 60.0, clamp(t, 0.0, 1.0));
   float sp = hash2(vec2(floor(p.x / 7.0), 3.0));
-  float bot = top + th + (sp > 0.6 ? floor(sp * 30.0) : 0.0) - abs(mod(p.x, 7.0) - 3.5) * 2.0 * step(0.6, sp);
+  float spk = step(0.6, sp) * step(p.x, ${f(b[0]! - 60)});
+  float bot = top + th + spk * (floor(sp * 30.0) - abs(mod(p.x, 7.0) - 3.5) * 2.0);
   if (p.y < top || p.y > bot) return vec4(0.0);
   float dd = p.y - top;
   float gold = uWx2.w;
