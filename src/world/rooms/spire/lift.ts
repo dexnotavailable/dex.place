@@ -54,9 +54,14 @@ class SpireLift extends Carrier {
     this.lampAt = [pad + Math.round(W * 0.18) - ax, ay - Hc + n(H, 0.42) - ay];
     back.rect(pad + Math.round(W * 0.18) - 3, ay - Hc + n(H, 0.32), 8, n(H, 0.2), "iron", { ramp: IRON, profile: "bevel", tone: 1, piece: 2 });
     back.rect(pad + Math.round(W * 0.18) - 1, ay - Hc + n(H, 0.32) + 2, 4, n(H, 0.2) - 4, "flame", { ramp: AMBER, emissive: true, tone: 2, piece: 3 });
-    // a plate with the spire's mark
-    back.rect(pad + Math.round(W * 0.7), ay - waist + n(H, 0.14), n(H, 0.3), n(H, 0.18), "iron", { ramp: IRON, profile: "bevel", tone: 1, piece: 2 });
-    back.rect(pad + Math.round(W * 0.7) + 3, ay - waist + n(H, 0.14) + 3, n(H, 0.3) - 6, 2, "cloth", { ramp: RED, profile: "flat", piece: 3 });
+    // a plate with the spire's mark, bolted to the kick panel: its shadow on the panel, a bolt at each
+    // corner, and the conduit that feeds its lamp running up the panel into the top rail
+    const mx = pad + Math.round(W * 0.7), my = ay - waist + n(H, 0.14), mw = n(H, 0.3), mh = n(H, 0.18);
+    back.rect(mx + 2, my + 2, mw, mh, "iron", { ramp: IRON_DARK, profile: "flat", tone: -2, piece: 1 });
+    back.rect(mx + mw - 4, ay - waist + 1, 2, my - (ay - waist) - 1, "iron", { ramp: IRON, profile: "flat", tone: 0, piece: 1 });
+    back.rect(mx, my, mw, mh, "iron", { ramp: IRON, profile: "bevel", tone: 1, piece: 2 });
+    back.rect(mx + 3, my + 3, mw - 6, 2, "cloth", { ramp: RED, profile: "flat", piece: 3 });
+    for (const [bx, by] of [[mx + 1, my + 1], [mx + mw - 2, my + 1], [mx + 1, my + mh - 2], [mx + mw - 2, my + mh - 2]] as const) back.rect(bx, by, 1, 1, "iron", { ramp: IRON, profile: "flat", tone: 2, piece: 3 });
     this.cage.push(...this.addCells(back, ax, ay, "back"));
     // the frame in front: floor, posts, roof, hoist, the route's red on the floor's edge
     const f = new Cells(cw, ch);

@@ -19,6 +19,7 @@
 
 import { Spire, LIGHT, RAMP } from "./_build.ts";
 import { climbScene } from "./_scenes/climb.ts";
+import type { Pool } from "./_scenes/common.ts";
 import { SURROUND } from "../../../pixel/props/spire/portal.ts";
 import { fromLight } from "../../render/blend.ts";
 
@@ -42,7 +43,7 @@ const H80 = 80;
 /** What the backdrop's face needs to know about the iron bolted to it (room px): shadows, openings, warm light. */
 const shadows: [number, number, number, number, number][] = [];
 const openings: [number, number, number, number][] = [];
-const pools: [number, number, number, number, number][] = [];
+const pools: Pool[] = [];
 /** The face's west edge at elevation y (world x): the backdrop's silhouette (edgeBottom 253.5 at the room's foot, edgeTop 257 at its top). */
 const faceX = (y: number): number => 253.5 + ((y - 37.2) / (82.5 - 37.2)) * (257 - 253.5);
 /** How far a walkway starting at x0 hangs out past the face at y (H; NaN: it doesn't). */
@@ -68,7 +69,8 @@ const flight = (id: string, x: number, y: number, dir: 1 | -1): void => {
   const c = Math.min(x + dir * 1.2, x + dir * 2.4), e = Math.max(x + dir * 1.2, x + dir * 2.4);
   d2.block(c, e, y + 1.6, y - 0.15);
   d2.stairs(x + dir * 2.4, y + 1.6, y + 6, dir, y - 0.15);
-  d2.px("spireStair", id, x, y, {}, { flip: dir < 0 });
+  // (its rail stops under the walkway it comes up through: that walkway has a stairwell over it)
+  d2.px("spireStair", id, x, y, { clear: 0.5 }, { flip: dir < 0 });
   // the housings and the stringer throw their shadow on the face
   shade(Math.min(x, x + dir * 1.2), y + 0.8, Math.max(x, x + dir * 1.2), y + 0.8, 1.05);
   shade(Math.min(x + dir * 1.2, x + dir * 2.4), y + 1.6, Math.max(x + dir * 1.2, x + dir * 2.4), y + 1.6, 1.85);
@@ -78,9 +80,24 @@ const flight = (id: string, x: number, y: number, dir: 1 | -1): void => {
 /** A catwalk: a gust deck (collision and the push) and its iron (spireDeck). */
 const catwalk = (id: string, x0: number, x1: number, y: number, o: { lipWest?: boolean; lipEast?: boolean; stopAt?: number; shelter?: [number, number][] }): void => {
   d2.deck(x0, x1, y, o);
-  d2.px("spireDeck", id, x0, y, { width: (x1 - x0) * H80, depth: 0.42, kind: "catwalk", lip: o.lipEast ? "east" : o.lipWest ? "west" : "none", cantilever: overhang(x0, y) });
+  // the stairwell over the head of the flight that comes up from the row below: the last 1.6 H of its
+  // run (where the stringer reaches the walkway's depth), the truss cut and framed there
+  const wells = FLIGHTS.filter(([, , fy]) => fy + 6 === y).map(([, fx, , dir]) => {
+    const end = fx + dir * 9;
+    return [Math.min(end, end - dir * 1.7) - x0, Math.max(end, end - dir * 1.7) - x0] as [number, number];
+  });
+  d2.px("spireDeck", id, x0, y, { width: (x1 - x0) * H80, depth: 0.42, kind: "catwalk", lip: o.lipEast ? "east" : o.lipWest ? "west" : "none", cantilever: overhang(x0, y), wells });
   shade(x0, y, x1, y, 1.0);
 };
+/** The six flights: id, foot x, row, direction (each climbs 6 H to the next row, 9 H along). */
+const FLIGHTS: [string, number, number, 1 | -1][] = [
+  ["flight-40", 272, 40, 1],
+  ["flight-46", 262, 46, -1],
+  ["flight-52", 268, 52, 1],
+  ["flight-58", 258, 58, -1],
+  ["flight-64", 262, 64, 1],
+  ["flight-70", 260, 70, -1],
+];
 
 flight("flight-40", 272, 40, 1);
 catwalk("walk-46", 254, 282, 46, { lipEast: true });
@@ -152,7 +169,8 @@ d2.px("counterweight", "counterweight", 284.9, 57, { mode: "hang", cable: 26 });
 d2.ledge(247.3, 249.2, 52);
 d2.px("spireDeck", "perch", 247.3, 52, { width: 1.9 * H80, depth: 0.36, kind: "catwalk", lip: "west", posts: [0.25, 1.65], postLen: 1 });
 d2.block(247.3, 247.52, 52.3, 51.8);
-d2.px("clothHanging", "pennant-lone", 247.9, 52, { kind: "pennant", colour: "red" });
+// (at the perch's west end, clear of where she stands to look out: the cloth never hangs over her)
+d2.px("clothHanging", "pennant-lone", 247.58, 52, { kind: "pennant", colour: "red" });
 d2.ledge(247.0, 252.6, 51);
 d2.block(252.38, 252.6, 51.3, 50.8);
 d2.px("spireDeck", "catch", 247.0, 51, { width: 5.6 * H80, depth: 0.3, kind: "catwalk", lip: "east", cantilever: overhang(247.0, 51) });
@@ -166,14 +184,24 @@ d2.exit("left", "D3", "west", 75.5, 78);
 // alcove's candles spill warm light onto the iron around its mouth
 openings.push([d2.X(267.2 - SURROUND.gate.half), d2.Y(40 + SURROUND.gate.top), d2.X(267.2 + SURROUND.gate.half), d2.Y(40)]);
 openings.push([d2.X(261.6 - 0.72), d2.Y(58 + 3.45 + 0.68), d2.X(270.4 + 0.72), d2.Y(58)]);
-pools.push([d2.X(266), d2.Y(58.9), 6.8 * H80, 3.4 * H80, 0.75]);
+// (the spill stops at the catwalk: nothing of it shows on the face under the deck)
+pools.push([d2.X(266), d2.Y(58.9), 6.8 * H80, 3.4 * H80, 0.75, d2.Y(58)]);
+// every warning light throws a small warm pool on the plating behind it (the blink is quick; the pool is
+// the glass's steady warmth, stepped like the halos)
+for (const [x, y] of [[281.89, 46.3], [252.3, 52], [277.89, 58.3], [248.11, 64.3], [271.89, 70.3], [257.89, 76.3]] as const) pools.push([d2.X(x), d2.Y(y + 0.55), 1.3 * H80, 0.9 * H80, 0.4, d2.Y(y - 0.05)]);
+pools.push([d2.X(269.3), d2.Y(43.4), 1.5 * H80, 1.2 * H80, 0.45, d2.Y(40)]);
 
 // one light over everything: the storm's cold cast and the lamps' halos; no distance veil (the wall
 // and everything on it stand at her depth) and no haze band over the walkways (the wall is right
 // behind them, not sky)
 d2.extra = { blend: { ...fromLight(LIGHT.storm, { amount: 0.14, band: 0 }), haze: undefined } };
 
+// the route's red chevrons painted on the face over the foot of every flight (the wardens marked the way),
+// and the lightning's scar where it broke the lift's rail, high on the face over the landing at the break
+const marks: [number, number, number][] = FLIGHTS.map(([, x, y, dir]) => [d2.X(x + dir * 0.6), d2.Y(y + 2.6), 13]);
+const scars: [number, number, number][] = [[d2.X(281.2), d2.Y(44.6), 1.5 * H80]];
+
 export const climb = d2.build(
-  climbScene({ w: d2.W, h: d2.Ht, edgeBottom: d2.X(253.5), edgeTop: d2.X(257), channel: [d2.X(284.3), d2.X(285.5)], dry: [[d2.X(261.8), d2.Y(61.45), d2.X(270.2), d2.Y(57.9)]], shadows, openings, pools }),
+  climbScene({ w: d2.W, h: d2.Ht, edgeBottom: d2.X(253.5), edgeTop: d2.X(257), channel: [d2.X(284.3), d2.X(285.5)], dry: [[d2.X(261.8), d2.Y(61.45), d2.X(270.2), d2.Y(57.9)]], shadows, openings, pools, marks, scars }),
   { hide: ["wx-rain-far", "wx-rain-near"] },
 );

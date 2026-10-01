@@ -9,7 +9,7 @@
 import { f, placeByDepth, Pix, hashInt, fbm1, sky, smooth, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
 import { planetBody } from "../../../../scenes/scenes/monolith-planet/planet.ts";
 import type { WorldLayer } from "../../../backdrop/engine.ts";
-import { SPIRE_PALETTE, clockLayer, cloudLightning, gustRain, stormCloud } from "./common.ts";
+import { SPIRE_PALETTE, clockLayer, cloudLightning, foreFrame, gustRain, stormCloud } from "./common.ts";
 
 export interface CrownGeo {
   /** The camera's top row in the room while you're on the arena floor (rail camera), px. */
@@ -44,7 +44,7 @@ vec4 layer(vec2 p, vec2 s) {
 }
 
 /** The crown behind the arena: fins, broken spikes, antenna masts with red lights (Pix data, lit live). */
-function crownPix(W: number, H: number, u: number, base: number, rows: { mono: number; red: number; win: number }, seed: number, gap: [number, number]): Pix {
+function crownPix(W: number, H: number, u: number, base: number, rows: { mono: number; red: number; win: number; amber: number }, seed: number, gap: [number, number]): Pix {
   const pix = new Pix(W, H);
   const crest = new Float32Array(W);
   const face = new Uint8Array(W); // 1 on a fin's steep west face
@@ -110,7 +110,9 @@ function crownPix(W: number, H: number, u: number, base: number, rows: { mono: n
   for (let i = 0; i < 22; i++) {
     const X = Math.round(hashInt(i, 11, seed) * W);
     const Y = Math.round(crest[X]! + (24 + hashInt(i, 12, seed) * 60) * u);
-    if (Y < H - 4 && Y > 0) for (let j = 0; j < 3; j++) pix.set(X + j, Y, 0.9, rows.win, 0, true);
+    // a third of the slits burn warm (the wardens' lamps still lit inside): the crown's warm against the storm's cold
+    const warm = i % 3 === 0;
+    if (Y < H - 4 && Y > 0) for (let j = 0; j < 3; j++) { pix.set(X + j, Y, warm ? 0.8 : 0.9, warm ? rows.amber : rows.win, 0, true); if (warm) pix.set(X + j, Y + 1, 0.45, rows.amber, 0, true); }
   }
   return pix;
 }
@@ -148,7 +150,8 @@ float sceneLight(vec2 s, float depth) {
       L.push(sky({ name: "sky" }));
       L.push(clockLayer());
       L.push({ kind: "glsl", name: "planet", depth: Infinity, fog: 0.74, dither: 0.5, body: planetBody({ x: W * 0.72, y: -H * 0.02, r: H * 0.42, halo: 0.16 }), bounds: { y0: -1e6, y1: H * 0.45 } });
-      L.push(farRing({ name: "far-ring", x: W * 0.37, y: H * 0.43, r: 26 * u, tilt: 0.3, row: "far", glowRow: "amber" }));
+      // (the small far ring that sat in the crest's gap read as a halo stuck to the screen: it is gone; the
+      // gap stays, low storm showing through it)
       L.push(stormCloud({ name: "storm-ceiling", depth: 80, y0: -H * 0.35, y1: H * 0.46, sx: 150 * u, sy: 50 * u, drift: 7, cover: 0.8, tone: 0.1, alpha: 1, levels: 3 }));
       L.push(cloudLightning(ctx, { name: "cloud-lightning", depth: 60, rate: 5, region: [0, 10, W, H * 0.45], radius: 170 * u, strength: 0.65 }));
       L.push(stormCloud({ name: "storm-low", depth: 40, y0: H * 0.42, y1: H * 0.66, sx: 170 * u, sy: 26 * u, drift: 10, cover: 0.52, tone: 0.16, alpha: 0.9, levels: 3 }));
@@ -161,12 +164,19 @@ float sceneLight(vec2 s, float depth) {
         const base = Math.round(ly(geo.floorS + 6, d));
         // the gap in the crest lines up with the far ring when you stand at the terminal
         const gx = W * 0.37 - ctx.span / (2 * d) - x0;
-        const pix = crownPix(w, base + H, u, base, { mono: ctx.row("mono"), red: ctx.row("red"), win: ctx.row("windim") }, 41, [gx - 70 * u, gx + 90 * u]);
+        const pix = crownPix(w, base + H, u, base, { mono: ctx.row("mono"), red: ctx.row("red"), win: ctx.row("windim"), amber: ctx.row("amber") }, 41, [gx - 70 * u, gx + 90 * u]);
         L.push({ kind: "pix", name: "crown", depth: d, pix, x: x0, y: 0, dither: 0, twinkle: 0.5 });
       }
       L.push(gustRain({ name: "rain-far", depth: 5, cw: 5, len: 7 * u, speed: 210 * u, alpha: 0.4, dens: 0.7, seed: 13, shade: 0.28, lean: 0.2, tellLean: 0.12, gustLean: 0.38, floor: 0.85 }));
       L.push({ kind: "character", name: "figure", depth: 1, x: W / 2, ground: geo.floorS });
       L.push(gustRain({ name: "rain-near", depth: 0.8, cw: 12, len: 16 * u, speed: 440 * u, alpha: 0.52, dens: 0.48, seed: 31, shade: 0.45, lean: 0.22, tellLean: 0.14, gustLean: 0.42, floor: 0.85, pass: "front" }));
+      // the near foreground (depth 0.6): the crown's near parapet along the bottom of the frame, posts and
+      // swagged chains in silhouette below the arena's edge, the darkest thing on screen
+      {
+        const d = 0.6;
+        const x0 = -Math.ceil(ctx.span / (2 * d)) - 40, x1 = W + Math.ceil(ctx.span / (2 * d)) + 40;
+        L.push(foreFrame({ name: "fore", depth: d, els: [{ kind: "rail", y: Math.round(ly(geo.floorS + 96, d)), x0, x1, post: 150 }] }));
+      }
       void (null as unknown as WorldLayer);
       // the far rain (depth 5-6) falls behind anything nearer and solid (the blade's face, the crown, the lift's haze)
       placeByDepth(L, "rain-far");

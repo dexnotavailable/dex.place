@@ -33,6 +33,14 @@ export interface DeckParams {
   /** Posts down from the underside to the walkway below (H from the left end), and how long they are (H). */
   posts: number[];
   postLen: number;
+  /**
+   * Stairwells: where a flight comes up through the walkway (H from the left end, [from, to]). The truss
+   * is cut there (no bottom chord, no web) and the gap is framed by an end post on each side with a
+   * gusset, so the stair rises through an opening instead of through the lattice.
+   */
+  wells: [number, number][];
+  /** Where the face is above the tip of a cantilever, H over the deck: a tie rod runs from the tip up to an anchor flange on the face (0: none). */
+  tie: number;
 }
 
 const LIP_H = 0.3;
@@ -51,7 +59,7 @@ export const spireDeck = defineRecipe<DeckParams, { head: number }>({
   id: "spireDeck",
   breakage: "floor",
   reason: "The spire's walkways: iron catwalks on the storm face, the landing at the lift's break, the arena floor; they take her hits as dents, sparks and buckled plate, and mend.",
-  defaults: { width: 640, depth: 0.42, kind: "catwalk", lip: "none", cantilever: NaN, posts: [], postLen: 1 },
+  defaults: { width: 640, depth: 0.42, kind: "catwalk", lip: "none", cantilever: NaN, posts: [], postLen: 1, wells: [], tie: 1.7 },
   cues: ["metal.hit", "metal.crater"],
   standard: { w: 8, parts: ["deck"], note: "a catwalk 8 H long; its lip (the gust stop) is 0.3 H" },
   demo: {
@@ -87,21 +95,38 @@ export const spireDeck = defineRecipe<DeckParams, { head: number }>({
     if (p.kind === "catwalk") {
       const g0 = top + plate, g1 = top + D;
       const fl = 3;
+      const wells = p.wells.map(([a, b]) => [Math.round(u(Math.min(a, b))), Math.round(u(Math.max(a, b)))] as const);
+      const inWell = (x0: number, x1: number): boolean => wells.some(([a, b]) => x1 > a && x0 < b);
       f.rect(0, g0, W, fl, { mat: "spireIronDark", profile: "bevel", r: 1, depth: 2, z: 1 });
-      f.rect(0, g1 - fl, W, fl, { mat: "spireIronDark", profile: "bevel", r: 1, depth: 2, z: 1, piece: "flange" });
-      // Warren truss: diagonals between the flanges, open between them
+      // the bottom chord, broken at every stairwell
+      const cuts = [0, ...wells.flat(), W];
+      for (let i = 0; i + 1 < cuts.length; i += 2) if (cuts[i + 1]! - cuts[i]! > 2) f.rect(cuts[i]!, g1 - fl, cuts[i + 1]! - cuts[i]!, fl, { mat: "spireIronDark", profile: "bevel", r: 1, depth: 2, z: 1, piece: "flange" });
+      // Warren truss: diagonals between the flanges, open between them (none across a stairwell)
       const bay = u(0.5);
       const hh = g1 - fl - (g0 + fl);
       for (let x = 0; x < W; x += bay) {
+        if (inWell(x, x + bay)) continue;
         f.stroke([x, g0 + fl, x + bay / 2, g0 + fl + hh], 3, { mat: "spireIronDark", profile: "cylV", z: 0, piece: "web" });
         f.stroke([x + bay / 2, g0 + fl + hh, x + bay, g0 + fl], 3, { mat: "spireIronDark", profile: "cylV", z: 0, piece: "web" });
       }
+      // each stairwell framed: an end post either side, a gusset into the top chord, the cut chord capped
+      for (const [a, b] of wells) {
+        for (const [x, side] of [[a - 4, -1], [b, 1]] as const) {
+          if (x < 0 || x > W - 4) continue;
+          f.rect(x, g0, 4, g1 - g0, { mat: "spireIronDark", profile: "cylV", z: 2, piece: "wellpost" });
+          f.rect(side < 0 ? x : x + 3, g0, 1, g1 - g0, { mat: "spireIron", mode: "paint", tone: 1 });
+          f.poly([x + (side < 0 ? 0 : 4), g0 + fl, x + (side < 0 ? -6 : 10), g0 + fl, x + (side < 0 ? 0 : 4), g0 + fl + 6], { mat: "spireIronDark", profile: "bevel", r: 1, depth: 1, z: 2, piece: "gusset" });
+          f.rivets([[x + 2, g0 + fl + 2], [x + 2, g1 - fl - 2]], { mat: "spireIron", r: 1 });
+        }
+        // the opening's soffit: the top chord's underside in shadow over the stair
+        if (b - a > 4) f.rect(a, g0 + fl, b - a, 1, { mat: "spireIronDark", mode: "paint", tone: -2 });
+      }
       // rivets along the flanges
       const pts: [number, number][] = [];
-      for (let x = 4; x < W - 3; x += u(0.25)) pts.push([x, g0 + 1], [x, g1 - 2]);
+      for (let x = 4; x < W - 3; x += u(0.25)) { pts.push([x, g0 + 1]); if (!inWell(x - 2, x + 2)) pts.push([x, g1 - 2]); }
       f.rivets(pts, { mat: "spireIron", r: 1 });
       // brackets back to the face every few bays (they read as bolted to the spire)
-      for (let x = u(1.5); x < W - u(1); x += u(3.2)) f.poly([x, g0, x + 5, g0, x + 5, g1 + u(0.35), x, g1 + u(0.35) - 4], { mat: "spireIronDark", profile: "bevel", r: 1, depth: 2, z: 1, piece: "bracket" });
+      for (let x = u(1.5); x < W - u(1); x += u(3.2)) if (!inWell(x - 2, x + 7)) f.poly([x, g0, x + 5, g0, x + 5, g1 + u(0.35), x, g1 + u(0.35) - 4], { mat: "spireIronDark", profile: "bevel", r: 1, depth: 2, z: 1, piece: "bracket" });
     } else {
       // deep plate in courses with a shadowed underside
       const g0 = top + plate;
@@ -174,6 +199,23 @@ export const spireDeck = defineRecipe<DeckParams, { head: number }>({
       const hy = dAt(fx);
       kn.rect(fx - 4, 0, 8, hy + 4, { mat: "spireIron", profile: "bevel", r: 1, depth: 2, z: 2, piece: "heel" });
       kn.rivets([[fx - 2, 4], [fx - 2, Math.max(6, hy - 2)], [fx + 2, Math.round(hy / 2)]], { mat: "spireIron", r: 1 });
+      // a tie rod from the tip up to an anchor flange on the face: the cantilever hangs from the wall too,
+      // it does not end in open air (drawn behind her, bg)
+      // (only on a short cantilever, where the rod rises steeply behind the walkway's tip; a long one is a
+      // deep truss of its own, and a long shallow rod would cut across her as she walks)
+      if (p.tie > 0 && p.cantilever <= 2.5) {
+        const th = Math.max(u(p.tie), Math.round(fx * 0.9));
+        const tie = b.part("tie", { w: fx + 10, h: th + 8, pivot: [0, th + 4], at: [0, 0], layer: "bg", collide: "none", hittable: false, z: -7 });
+        const ty0 = th + 4;
+        tie.stroke([3, ty0 - 2, fx, 4], 1, { mat: "spireIronDark", profile: "flat", z: 1, piece: "rod" });
+        // the turnbuckle a third of the way up, the clevis at the tip
+        const tx = Math.round(3 + (fx - 3) * 0.33), tyy = Math.round(ty0 - 2 - (ty0 - 6) * 0.33);
+        tie.rect(tx - 2, tyy - 2, 5, 4, { mat: "spireIron", profile: "bevel", r: 1, depth: 1, z: 2, piece: "buckle" });
+        tie.rect(1, ty0 - 4, 5, 4, { mat: "spireIron", profile: "bevel", r: 1, depth: 1, z: 2, piece: "clevis" });
+        // the anchor flange on the face, bolted
+        tie.rect(fx - 4, 0, 9, 9, { mat: "spireIron", profile: "bevel", r: 1, depth: 2, z: 2, piece: "anchor" });
+        tie.rivets([[fx - 2, 2], [fx + 2, 2], [fx - 2, 6], [fx + 2, 6]], { mat: "spireIron", r: 1 });
+      }
       void d0;
     }
     // posts down to the walkway below (the perch stands on the catch ledge)

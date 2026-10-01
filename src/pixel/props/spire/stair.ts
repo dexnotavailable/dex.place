@@ -19,13 +19,15 @@ export interface StairParams {
   steps: number;
   rise: number;
   tread: number;
+  /** The walkway the flight comes up under: its rail stops this far (H) below the top landing (the deck's underside), so it never sticks up through the walkway. 0: none. */
+  clear: number;
 }
 
 export const spireStair = defineRecipe<StairParams, Record<string, never>>({
   id: "spireStair",
   breakage: "floor",
   reason: "The way up the storm face: machine housings you hop, then a steep iron stair between the catwalks, readable as steps at a glance.",
-  defaults: { housing: 0.8, steps: 22, rise: 0.2, tread: 0.3 },
+  defaults: { housing: 0.8, steps: 22, rise: 0.2, tread: 0.3, clear: 0 },
   cues: ["metal.hit"],
   standard: { w: 2.4, h: 1.6, parts: ["housing0", "housing1"], note: "the two 0.8 H housings (single jumps); then 22 steps of 0.2 x 0.3 H to 6 H" },
   demo: {
@@ -77,28 +79,40 @@ export const spireStair = defineRecipe<StairParams, Record<string, never>>({
       for (let x = 0; x < w; x++) {
         const i = Math.min(i1, i0 + Math.floor(x / tr));
         const ty = stepTop(i) - top;
-        const by = stepTop(i0 - 1) - top + plate - Math.round(x * slope);
+        // (the first stretch rests on the second housing's lid: its plate starts shallow there and deepens,
+        // so the stringer sits on the housing instead of running into its corner)
+        const pl = k === 0 ? Math.round(Math.min(plate, 5 + (x * (plate - 5)) / (tr * 2))) : plate;
+        const by = stepTop(i0 - 1) - top + pl - Math.round(x * slope);
         if (by > ty) s.rect(x, ty, 1, by - ty, { mat: "spireIronDark", profile: "flat", z: 1, piece: "side" });
       }
       // the beam, lit, riveted
-      const bx0 = 0, by0 = stepTop(i0 - 1) - top + beam, bx1 = w - 1, by1 = by0 - Math.round((w - 1) * slope);
+      const bx0 = k === 0 ? Math.round(tr * 2) : 0, by0 = stepTop(i0 - 1) - top + beam - Math.round(bx0 * slope), bx1 = w - 1, by1 = by0 - Math.round((w - 1 - bx0) * slope);
       s.stroke([bx0, by0, bx1, by1], 5, { mat: "spireIron", profile: "cylV", z: 3, piece: "beam" });
-      s.rivets([[Math.round(w * 0.3), Math.round(by0 - w * 0.3 * slope)], [Math.round(w * 0.8), Math.round(by0 - w * 0.8 * slope)]], { mat: "spireIron", r: 1, z: 5 });
+      s.rivets([[Math.round(w * 0.6), Math.round(by0 - (w * 0.6 - bx0) * slope)], [Math.round(w * 0.85), Math.round(by0 - (w * 0.85 - bx0) * slope)]], { mat: "spireIron", r: 1, z: 5 });
       // treads with lit noses
       for (let i = i0; i <= i1; i++) {
         const a = (i - i0) * tr, ty = stepTop(i) - top;
         s.rect(a, ty, tr, 4, { mat: "spireIron", profile: "bevel", r: 1, depth: 3, z: 4, piece: `tread${i % 2}` });
         s.pixels([[a, ty], [a + 1, ty]], { mat: "spireIron", mode: "paint", tone: 1 });
       }
-      // the handrail behind this stretch: one post, and the rail along the slope
+      // the handrail behind this stretch: a post every second tread, the rail at the stringer's pitch;
+      // under a walkway it stops short of the deck's underside (never up through it)
       const railTop = stepTop(i1) - railH;
       const rh = stepTop(i0) - railTop + 4;
-      const r = b.part(`rail${k}`, { w, h: rh, pivot: [0, 0], at: [x0, railTop], layer: "bg", collide: "none", hittable: false, z: 2 });
       const lineY = (x: number): number => stepTop(i0) - railH - railTop - Math.round(x * slope);
-      const pxp = Math.round(tr * 1.5);
-      const tread = stepTop(Math.min(i1, i0 + Math.floor(pxp / tr))) - railTop;
-      r.rect(pxp, lineY(pxp), 2, Math.max(4, tread - lineY(pxp)), { mat: "spireIronDark", profile: "cylV", piece: "post" });
-      r.stroke([0, lineY(0), w - 1, lineY(w - 1)], 2, { mat: "spireIron", profile: "cylH", piece: "rail" });
+      const limit = p.clear > 0 ? stepTop(n) + u(p.clear) - railTop : -1e9;
+      let xe = w - 1;
+      while (xe > 0 && lineY(xe) < limit) xe--;
+      if (xe > tr) {
+        const r = b.part(`rail${k}`, { w, h: rh, pivot: [0, 0], at: [x0, railTop], layer: "bg", collide: "none", hittable: false, z: 2 });
+        for (let i = i0; i <= i1; i += 2) {
+          const pxp = Math.round((i - i0) * tr + tr * 0.5);
+          if (pxp > xe) break;
+          const tread = stepTop(i) - railTop;
+          r.rect(pxp, lineY(pxp), 2, Math.max(4, tread - lineY(pxp)), { mat: "spireIronDark", profile: "cylV", piece: "post" });
+        }
+        r.stroke([0, lineY(0), xe, lineY(xe)], 2, { mat: "spireIron", profile: "cylH", piece: "rail" });
+      }
     }
     // support posts down to the catwalk, every 7 steps
     for (let i = 5; i < n; i += 7) {

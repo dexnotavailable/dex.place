@@ -384,6 +384,9 @@ export interface MegaOpts {
   light?: [number, number];
   windows?: number;
   fog?: (x: number, y: number) => number;
+  /** Opt-in: cantilevers start at the tier's actual edge at their height (a tier tapers, so at the old
+   *  bottom-width anchor a high cantilever floated off the narrower wall). Default off: scenes unchanged. */
+  attach?: boolean;
 }
 
 export function megastructure(pix: Pix, o: MegaOpts): void {
@@ -433,7 +436,9 @@ export function megastructure(pix: Pix, o: MegaOpts): void {
       const cy = top + th * rnd();
       const side = rnd() < 0.5 ? -1 : 1;
       const len = w * (0.2 + rnd() * 0.3);
-      const [ax, ay] = shear(o.cx + (side * w) / 2, cy);
+      const wAt = o.attach ? w + (nw - w) * ((y - cy) / th) : w;
+      const [ax0, ay] = shear(o.cx + (side * wAt) / 2, cy);
+      const ax = o.attach ? Math.round(ax0) - side : ax0;
       pix.rect(side > 0 ? ax : ax - len, ay, len, 2 + Math.round(rnd() * 2), { row: o.row, shade: 0.3, fog: o.fog });
     }
     w = nw;
