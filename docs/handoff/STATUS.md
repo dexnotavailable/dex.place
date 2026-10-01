@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-01T12:56:11.278Z (01/10/2026, 19:56:11 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-01T13:58:45.720Z (01/10/2026, 20:58:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `4b0eb73`
+- live on dex.place: `df9117e`
 - uncommitted on the PC (all included in this pc-sync snapshot): 223 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,7 +12,18 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_ec033edb-845 — last activity 25 min ago
+### wf_9be17a6b-880 — last activity 14 min ago
+7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
+
+- **finish-b** (done): Region B's interrupted round is finished and committed. The code saved at the WIP checkpoint (78622fa) turned out to be complete. It had no loose ends, broken references or type errors, so nothing needed fixing. It covers: - Stonetop rebuilt as a stepped cairn of cut stone blocks, with ledges on supporting brackets, three capstones, a small cairn on top and fallen blocks at its foot (D:/Dex/Temp/claude-wq-reg-b/src/s
+- **finish-c** (done): The Hollow round is finished, and the work in the WIP commit turned out to be complete already. I reviewed the WIP diff in b5b48a9 (8 files, +487/-115) against every reg-c:critic:r3 item, and nothing was half-done or broken, so no source changes were needed. Every critique item has its change in that commit: - C1: the crate stacks under the street deck now stay below the slab and have straps, rivets and lit lids. The
+- **finish-d** (done): Region D (the Spire, rooms D1-D4) round is finished and committed. The interrupted WIP commit turned out to hold the whole round, with nothing half-written: it typechecks, and every audit passes. I added no new code. Since that commit was local and never pushed, I reworded it with git commit --amend to "Spire D1-D4: finish round" instead of stacking an empty commit on top. Nothing was pushed, and the capture server o
+- **finish-e** (done): The Chapel round (E1-E4) is finished. The WIP checkpoint af61b76 already held a complete, working version of every change it set out to make. Typecheck, build and both audits passed, and the screenshots looked right, so no code edits were needed. The "Chapel: finish round" commit (ede9295) is therefore empty. Its message records what the round covered and how it was checked. Nothing was pushed. What the round fixed, 
+- **integrate** (done): All six branches merged into claude/world-pass-20261001. Not pushed. There was one conflict, in src/scenes/scenes/causeway.ts, where wq-reg-b and the earlier round both edited the road layer. I kept both changes: wq-reg-b's buildTorFoot call and the earlier reflectFade setting. check and build pass. npm test is 107 of 108: the one failure is a src/site feed test, unrelated to the merges. Both audits come out clean.
+- **verify-release-1** (done): verdict pass-with-notes · score 0.9
+- **verify-art-1** (done): verdict pass-with-notes · score 7.3
+
+### wf_ec033edb-845 — last activity 87 min ago
 10 agents: 5 done, 5 running or stopped mid-way, 0 failed.
 
 - **sysfix** (done): All three systems fixes are done and committed on claude/wq-sysfix (7579af4). I did not touch the workflow. I have no record of regions A, B or D round 2 being cut off, so I could not answer that question. Nothing here was pushed. 1. Phone side borders: the missed case was the touch rails. When she sat or held a vista on a phone, main.ts passed 76 px black gutters per side to the presenter. That shrank the frame to f
@@ -26,7 +37,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **reg-a:critic:c1** (done): verdict revise · score 6.4
 - **reg-a:c2** (running)
 
-### wf_cc0765c3-3f0 — last activity 86 min ago
+### wf_cc0765c3-3f0 — last activity 149 min ago
 28 agents: 20 done, 2 running or stopped mid-way, 6 failed.
 
 - **reg-d:r2** (failed)
@@ -44,7 +55,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-release-1** (running)
 - **verify-art-1** (done): verdict blocking · score 6.2 · blocking: E1 Pilgrim Path (a room this branch reworked) has floating foliage. At the second stained-glass window ruin, the hanging vines start about 80 px above the wall's top edge and hang from open sky (rooms/E1-04.png, crop-E1-net.png, at screen x 1170-1260, y 288). Fix: anchor the vine tops on the wall crest or the arch shoulder, or cut them to start at the wall edge. | D3 Crown has floating props. Wall
 
-### wf_54ca354a-626 — last activity 668 min ago
+### wf_54ca354a-626 — last activity 730 min ago
 5 agents: 3 done, 2 running or stopped mid-way, 0 failed.
 
 - **package** (done): The real rendered Rosace (drive-9 round 2, R2) is packaged as dex.sprite/1 at 80 px and 144 px, all 17 clips plus sit, and committed on claude/rosace-package. Nothing was pushed. I left the level art alone (see openIssues). Scope: the relayed request was about level art, with doors popping out of walls. The task text and namespace are the Rosace package, so I did only that. Level art is not touched. Look used: R2. Co
@@ -53,25 +64,25 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **review-motion-1** (done): verdict pass-with-notes · score 7.5
 - **review-runtime-1** (done): verdict pass-with-notes · score 0.9
 
-### wf_b70fb9cc-c84 — last activity 890 min ago
+### wf_b70fb9cc-c84 — last activity 952 min ago
 3 agents: 0 done, 3 running or stopped mid-way, 0 failed.
 
 - **sys:cam** (running)
 - **sys:layers** (running)
 - **sys:ixr** (running)
 
-### wf_43490aa2-fb3 — last activity 895 min ago
+### wf_43490aa2-fb3 — last activity 957 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **package** (running)
 
-### wf_e8bdf118-24f — last activity 896 min ago
+### wf_e8bdf118-24f — last activity 958 min ago
 2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
 
 - **sys-camera** (running)
 - **sys-layers** (running)
 
-### wf_5cb6279a-9f2 — last activity 1099 min ago
+### wf_5cb6279a-9f2 — last activity 1162 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:world-load** (done): The World now starts loading with the homepage. Before, it was only mounted from an animation frame after the page's load event. - **Page opened at the top:** the World frame is added as soon as the page is interactive, 13–34 ms after DOMContentLoaded (median). - **Background tab:** the frame is created while the tab is hidden, and the World boots, compiles its shaders and draws a warm-up frame there. Before this cha
@@ -82,20 +93,20 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-world-1** (done): verdict pass-with-notes · score 9
 - **verify-site-1** (done): verdict pass-with-notes · score 9
 
-### wf_1e5499b2-d83 — last activity 2710 min ago
+### wf_1e5499b2-d83 — last activity 2773 min ago
 2 agents: 0 done, 0 running or stopped mid-way, 2 failed.
 
 - **followups** (failed)
 - **verify** (failed)
 
-### wf_5ef68e55-dd7 — last activity 2717 min ago
+### wf_5ef68e55-dd7 — last activity 2779 min ago
 3 agents: 0 done, 0 running or stopped mid-way, 3 failed.
 
 - **cross-lane-fix** (failed)
 - **verify-regions-1** (failed)
 - **verify-release-1** (failed)
 
-### wf_68cebea7-8e1 — last activity 2718 min ago
+### wf_68cebea7-8e1 — last activity 2780 min ago
 40 agents: 40 done, 0 running or stopped mid-way, 0 failed.
 
 - **whole:overall:r3** (done): score 5.5 · prefers ours: no · top fixes: Undo the R3 regression in finish. Blind, the previous round (R2) beat this round (R3) at both 144 and 80 px. Return to R2's lower-key, softer ramps and push further toward textured painted shading with selective or coloured outlines instead of a navy outline on every edge. | Integrate the bust. Right now it is two flat grey-lavender spheres at sleeve value, which is on the never-list. Add an under
@@ -113,7 +124,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **whole:overall:r5** (done): score 5.7 · prefers ours: no · top fixes: Face regressed versus R4: restore the open, bright-eyed default face, pull the dark hair strands off the eyes, trim the crown flyaways to one clean ahoge, and go to a head of 1/6 of height | Pose: replace the walking-stride legs with a true weight-leg contrapposto (feet closer, free knee crossing in front, hip cocked out, hand on hip); the current idle reads as mid-step, not seductive-elegant | Bu
 - **report** (done): I promoted round 2. It is the best round of the five, at 5.78 against the refs' 9, and it beat the old integrated build in two separate blind sets (5.8 vs 5.6, then 5.7 vs 5.2). The canonical build and the stills chain now produce its look by default, and a fresh build plus re-render matches the judged stills pixel for pixel. One thing is missing: the harness blocked writing review/rosace/art/drive9/REPORT.md ("subag
 
-### wf_a38b10a9-aa1 — last activity 2804 min ago
+### wf_a38b10a9-aa1 — last activity 2867 min ago
 13 agents: 13 done, 0 running or stopped mid-way, 0 failed.
 
 - **R-A:critic** (done): verdict pass-with-notes · score 8.4
@@ -129,12 +140,6 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **S1:fix** (done): S1 is not signed off yet. All three blocking bugs are in src/world/audio.ts, which is W0's file, so I didn't edit it (its SHA-256 is still 2c0c786d... from before I started). Instead I wrote a W0 handoff patch and proved it on a separate dev server that swaps in the patched copy of audio.ts. With the patch, the new checks pass 29 of 29. On the tree as it is, 25 of 29 pass, and the 4 failures are exactly what the crit
 - **I1:build** (done): Lane I1 is built. I played the whole round once from a fresh save and recorded it, and the pacing check is done. The phone and tablet runs and a laptop GPU measurement still need Dex, so the lane is not fully signed off. Nothing is committed. **What I played.** The bot played every region's real rooms with real input (W0's bot only decides which keys to press), from the dock through the lodge and every region, back t
 - **I1:critic** (done): verdict pass-with-notes · score 8
-
-### wf_168f26ae-9f9 — last activity 2824 min ago
-2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
-
-- **tablet-cap** (done): I picked up the earlier attempt's edits and finished the work. The tablet cap was already in place and still holds. On its own it left the home arrival (/#gallery) at 2.7-3.3 s on tablets, so I added a small preload that only runs for that arrival. Both pages now land at or just under 2.5 s on 768 and 820 tablets. Phones hold or improve, and desktop /#gallery improved. Nothing was committed or pushed. **What changed*
-- **verify** (done): verdict pass-with-notes · score 8.8
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
@@ -301,4 +306,13 @@ The script now tells the interrupted steps (A r2, B r2, C/D/E r1) to start from 
 TO RESUME: Workflow({scriptPath: "C:/Users/sanic/.claude/projects/D--Dex-Temp-claude-rosace-pack/5562f87c-2ca6-46da-b895-2c48f7f0d7d2/workflows/scripts/world-quality-continue-20261001-wf_ec033edb-845.js", resumeFromRunId: "wf_ec033edb-845"}).
 
 Live main is df78cbb, which includes the Rosace package. The world pass is not live yet.
+
+**21:10. The world quality pass is LIVE at df9117e.** The lean finish was wf_9be17a6b-880.
+
+Results:
+- Art critic: 7.3/10 overall. Regions: A 7.5, B 6.8, C 7.8, D 6.7, E 8.0.
+- Audits: grounding 0 issues; interactions 113/113.
+- Tests: 108/108 pass.
+
+Next candidates if Dex wants more: a Spire (D) and Shore and Plain (B) polish round, and the S2 raft. We are on a $20 account, so stay lean.
 
