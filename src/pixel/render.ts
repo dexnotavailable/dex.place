@@ -109,6 +109,8 @@ export class PixelRenderer {
   private pointVao: WebGLVertexArrayObject;
   private pointData = new Float32Array(0);
   private frame = 0;
+  /** >= 0: parts draw mirrored about this view row (the world's reflection pass sets it around its draw). */
+  mirror = -1;
   /** Parts currently holding cell textures (for leak checks). */
   private live = 0;
   private emptyTex: WebGLTexture;
@@ -370,8 +372,19 @@ export class PixelRenderer {
     const { u } = this.cell;
     const cx = Math.round(cam.x * part.parallax), cy = Math.round(cam.y * part.parallax);
     const b = part.worldBounds();
-    const x0 = Math.max(0, Math.floor(b.x0 - cx) - 2), y0 = Math.max(0, Math.floor(b.y0 - cy) - 2);
-    const x1 = Math.min(this.vw, Math.ceil(b.x1 - cx) + 2), y1 = Math.min(this.vh, Math.ceil(b.y1 - cy) + 2);
+    const x0 = Math.max(0, Math.floor(b.x0 - cx) - 2);
+    const x1 = Math.min(this.vw, Math.ceil(b.x1 - cx) + 2);
+    let y0 = Math.floor(b.y0 - cy) - 2, y1 = Math.ceil(b.y1 - cy) + 2;
+    const m = this.mirror;
+    if (m >= 0) {
+      // mirrored: the rows of the part above the line land below it
+      const t = 2 * m - y0;
+      y0 = Math.max(m, 2 * m - y1);
+      y1 = Math.min(this.vh, t);
+    } else {
+      y0 = Math.max(0, y0);
+      y1 = Math.min(this.vh, y1);
+    }
     if (x1 <= x0 || y1 <= y0) return;
     const gpu = this.sync(part);
     const mask = this.resolveMask(part, world);
@@ -407,6 +420,7 @@ export class PixelRenderer {
     gl.uniform2f(u["uGrid"]!, part.grid.W, part.grid.Hh);
     gl.uniform2f(u["uRot"]!, Math.cos(part.wrot), Math.sin(part.wrot));
     gl.uniform1f(u["uFlip"]!, part.wflip);
+    gl.uniform1f(u["uMirror"]!, m);
     gl.uniform1i(u["uOutline"]!, part.outline);
     gl.uniform1f(u["uLit"]!, part.lit);
     gl.uniform1f(u["uGlow"]!, part.glow);

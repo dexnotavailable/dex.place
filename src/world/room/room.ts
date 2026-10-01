@@ -58,6 +58,8 @@ export class Room {
   private staticSolids: Solid[] = [];
   private staticOneWays: OneWay[] = [];
   built = false;
+  /** Placement ids that opted out of the water's mirror (`reflect: false`). */
+  readonly noReflect = new Set<string>();
   buildMs = 0;
   /** Placements the shared grounding pass put on the terrain under them (debug, the audit). */
   moved: Moved[] = [];
@@ -99,11 +101,17 @@ export class Room {
     // props: the runtime's stub recipes, or pixel matter (src/pixel) through the adapter
     this.props = [];
     const saved = this.deps.pixelSave();
+<<<<<<< HEAD
     // a ground-standing placement a few px off the terrain under it is put on it (room/ground.ts)
     const settled = settle({ terrain: d.terrain, props: d.props, w: d.w, waterline: d.waterline, water: d.water });
     this.moved = settled.moved;
     const stand = plantStand(d);
     for (const pl of settled.props) {
+=======
+    this.noReflect.clear();
+    for (const pl of d.props) {
+      if (pl.reflect === false) this.noReflect.add(pl.id);
+>>>>>>> claude/wq-ixr
       const how = resolveRecipe(pl.recipe, pl.engine, (n) => engine.has(n));
       if (!how) throw new Error(`room ${d.id}: no prop recipe "${pl.recipe}" (stub or pixel matter)`);
       if (how.engine === "pixel") {
@@ -161,7 +169,7 @@ export class Room {
       const albedo = r.texture({ w: tex.w, h: tex.h, data: tex.albedo });
       const normal = r.texture({ w: tex.w, h: tex.h, data: tex.normal });
       this.textures.push(albedo.tex, normal.tex);
-      this.terrain.push({ sheet: { albedo, normal, keyInfluence: 0.55 }, x: t.x + x, y: t.y - rim, w, h: h + rim, front: !!t.front, reflect: !!t.reflect });
+      this.terrain.push({ sheet: { albedo, normal, keyInfluence: 0.55 }, x: t.x + x, y: t.y - rim, w, h: h + rim, front: !!t.front, reflect: t.reflect ?? this.def.waterline !== undefined });
       if (t.h > h) {
         // the rest of a deep slab: a flat fill in the ramp's darkest colour
         const c = hexRgb((t.ramp ?? ["#08080a"])[0]!);

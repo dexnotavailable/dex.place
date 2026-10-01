@@ -41,6 +41,7 @@ uniform vec4 uWx2;  // lightning flash 0..1, world seconds, overcast 0..1, after
 uniform vec2 uVOff; // this layer's whole-pixel vertical parallax offset
 uniform vec4 uBolt; // lightning bolt: screen x, seed, level 0..1, bottom row
 uniform float uCamY; // the camera's vertical offset from the room's reference framing, times the vertical factor
+uniform float uWl;  // the world mirror's waterline in the view's rows (-1: none)
 uniform vec4 uFrame; // where the design view sits in the frame (x, y from its top-left), frame w, h
 #define WORLD_FRAME 1
 float vOff(float depth) { return depth > 1e6 ? 0.0 : floor(uCamY / depth + 0.5); }
@@ -159,6 +160,8 @@ export class Backdrop {
   camY = 0;
   /** Where the design view sits in the frame (px from the frame's top-left). */
   frameAt: [number, number] = [0, 0];
+  /** The world mirror's waterline in design rows (room waterline minus the design camera's y); -1 with none. */
+  waterRow = -1;
   time = 0;
   reduced = false;
   buildMs = 0;
@@ -482,6 +485,7 @@ export class Backdrop {
     s2("uVOff", 0, offY);
     s1("uCamY", this.camY * this.o.vertical);
     s1("uMirror", m);
+    s1("uWl", this.waterRow);
     s1("uTime", this.time % 4096);
     s1("uFog", l.fog);
     s1("uDepth", Number.isFinite(d.depth) ? d.depth : 1e9);

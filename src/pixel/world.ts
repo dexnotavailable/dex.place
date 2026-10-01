@@ -361,14 +361,20 @@ export class PixelWorld {
     return out;
   }
 
-  /** Nearest prop whose E reach includes (x, y), or null. */
+  /**
+   * The prop E would use at (x, y), or null. Whoever's use zone you are standing in (or nearest to) wins; among
+   * zones about equally close, the prop whose centre is nearest. So a tall door you stand in front of is not
+   * out-pulled by a low terminal whose centre happens to sit nearer the chest.
+   */
   nearestUsable(x: number, y: number): Prop | null {
-    let best: Prop | null = null, bd = Infinity;
+    let best: Prop | null = null, bz = Infinity, bd = Infinity;
+    const tol = this.H * 0.2;
     for (const p of this.props) {
-      if (!p.inReach(x, y) || !p.stateDef.use) continue;
+      if (!p.inReach(x, y) || !p.stateDef.use || p.stateDef.can?.(p) === false) continue;
+      const z = p.useDistance(x, y);
       const [cx, cy] = p.centre();
       const d = Math.hypot(cx - x, cy - y);
-      if (d < bd) { bd = d; best = p; }
+      if (z < bz - tol || (z <= bz + tol && d < bd)) { bz = Math.min(z, bz); bd = d; best = p; }
     }
     return best;
   }

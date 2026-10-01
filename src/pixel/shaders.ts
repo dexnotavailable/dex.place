@@ -48,6 +48,7 @@ uniform vec2 uOrigin;
 uniform vec2 uGrid;
 uniform vec2 uRot;
 uniform float uFlip;
+uniform float uMirror;     // >= 0: draw mirrored about this view row (a reflection pass); the quad already covers only the rows below it
 uniform int uOutline;
 uniform float uLit;
 uniform float uGlow;
@@ -166,6 +167,7 @@ vec3 shade(vec3 col, vec3 n, bool ink, float sil, vec2 n2, vec2 wc) {
 
 void main() {
   vec2 p = floor(vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y));
+  if (uMirror >= 0.0) p.y = 2.0 * uMirror - 1.0 - p.y;
   vec2 wc = p + 0.5 + uCam;
   if (uUseMask == 1 && !maskSolid(wc)) discard;
   ivec2 c = cellAt(wc);

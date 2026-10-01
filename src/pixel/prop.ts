@@ -39,6 +39,8 @@ export interface StateDef<R> {
   hit?(c: Prop<R>, h: HitContext): string | void;
   /** E / use. Return a state to go to. */
   use?(c: Prop<R>): string | void;
+  /** Is E worth offering right now (default yes)? A prompt for a use that would do nothing is a dead spot. */
+  can?(c: Prop<R>): boolean;
   /** Automatic transition after this many seconds in the state. */
   after?: [number, string];
   /** Sound cue on entering. */
@@ -618,14 +620,18 @@ export class Prop<R = any> {
     return { x0: Math.min(ax, bx), y0: Math.min(ay, by), x1: Math.max(ax, bx), y1: Math.max(ay, by) };
   }
 
+  /** How far (x, y) is outside the E zone (its zone rect, or its bounds): 0 when you stand in it. Infinity with no `use`. */
+  useDistance(x: number, y: number): number {
+    const u = this.recipe.use;
+    if (!u) return Infinity;
+    const b = u.zone ? this.zoneRect(u.zone) : this.bounds();
+    return Math.hypot(Math.max(b.x0 - x, 0, x - b.x1), Math.max(b.y0 - y, 0, y - b.y1));
+  }
+
   /** Is (x, y) within the E reach? */
   inReach(x: number, y: number): boolean {
     const u = this.recipe.use;
-    if (!u) return false;
-    const b = u.zone ? this.zoneRect(u.zone) : this.bounds();
-    const dx = Math.max(b.x0 - x, 0, x - b.x1);
-    const dy = Math.max(b.y0 - y, 0, y - b.y1);
-    return Math.hypot(dx, dy) <= u.reach * this.params.H;
+    return !!u && this.useDistance(x, y) <= u.reach * this.params.H;
   }
 
   use(): boolean {

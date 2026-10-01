@@ -361,7 +361,7 @@ vec4 layer(vec2 p, vec2 s) {
   float off = layerOff(depth);
   vec2 wp = vec2(s.x + off, s.y);
   float tm = uTime * (1.0 - 0.5 * uReduced);
-  float amp = mix(0.6, ${f(o.rippleAmp ?? 3)}, k);
+  float amp = mix(0.6, ${f(o.rippleAmp ?? 3)}, k) * nearWl(s.y);
   float ph = s.y * (1.3 - k * 0.8) + tm * ${f(o.rippleSpeed ?? 0.9)} + vnoise(vec2(wp.x / 37.0, s.y * 0.35)) * 5.0;
   float dx = floor(sin(ph) * amp * (0.55 + 0.45 * vnoise(vec2(wp.x / 21.0 + tm * 0.15, s.y * 0.6))) + 0.5);
   ivec2 rp = reflPx(s.x + dx, s.y);

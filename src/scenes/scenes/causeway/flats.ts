@@ -59,13 +59,13 @@ vec4 layer(vec2 p, vec2 s) {
   vec3 c;
   if (isWater) {
     float ruff = step(0.62, vnoise(vec2(wx / ${f(900 * u)} - tm * 0.05 * (0.5 + east), depth * 0.4)));
-    float amp = mix(0.5, ${f(2.5 * hu)}, k) * (1.0 + ruff + east) + fr.y * ${f(3 * hu)} + fr.z * ${f(2 * hu)};
+    float amp = mix(0.5, ${f(2.5 * hu)}, k) * (1.0 + ruff + east) * nearWl(s.y) + fr.y * ${f(3 * hu)} + fr.z * ${f(2 * hu)};
     float ph = s.y * (1.25 - k * 0.75) / ${f(hu)} + tm * (0.8 + east) + vnoise(vec2(wp.x / ${f(37 * u)}, s.y * 0.35)) * 5.0;
     float dx = floor(sin(ph) * amp * (0.55 + 0.45 * vnoise(vec2(wp.x / ${f(21 * u)} + tm * 0.15, s.y * 0.6))) + 0.5);
     float jn = vnoise(vec2(wp.x / ${f(11 * u)} + tm * 0.3, s.y * 0.45 - tm * 0.9));
-    float dy = floor((jn - 0.5) * 2.0 * ${f(1.2 * u)} * k * (0.6 + ruff + fr.y) + 0.5);
-    float ry = clamp(s.y + dy, hor + 1.0, uRes.y - 1.0);
-    vec3 refl = texelFetch(uRefl, ivec2(clamp(s.x + dx, 0.0, uRes.x - 1.0), uRes.y - 1.0 - ry), 0).rgb;
+    float dy = floor((jn - 0.5) * 2.0 * ${f(1.2 * u)} * k * nearWl(s.y) * (0.6 + ruff + fr.y) + 0.5);
+    float ry = clamp(s.y + dy, hor + 1.0, reflMaxY());
+    vec3 refl = texelFetch(uRefl, reflPx(s.x + dx, ry), 0).rgb;
     float rs = mix(0.9, 0.5, pow(k, 0.7)) * (1.0 - 0.35 * ruff) * (1.0 - 0.5 * fr.z);
     // shallow: the mud shows through at the lagoon's edge
     rs *= smoothstep(0.0, 0.05, edge);
