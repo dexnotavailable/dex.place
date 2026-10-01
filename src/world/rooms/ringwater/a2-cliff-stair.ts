@@ -4,8 +4,9 @@
 // behind and below you, the shaft moving across the water (the backdrop seen
 // from higher: the same lake, its things standing lower in the frame). Three
 // lamp posts up the stair, dark until shrine 1 is lit, then lit one after
-// another down toward the dock. Vines hang from the rock, grass on the ledges,
-// rubble at the foot. The lodge's end wall and its front door at the top.
+// another down toward the dock. Bedded rock under a cut-stone stair; ferns in its joints, vines off
+// the landing, a windswept pine on the landing, grass on the ledges, rubble at
+// the foot. The lodge's end wall at the top with its door built into the logs.
 
 import { arrivalScene } from "../../../scenes/scenes/arrival.ts";
 import { h } from "../../config.ts";
@@ -14,7 +15,7 @@ import { Box } from "../_blockout/_build.ts";
 import { px, sessionRoom, styled } from "./_lib.ts";
 import { cliffStair as cliffLayers, type CliffSpec } from "./_cliff.ts";
 import { SCALE } from "../../config.ts";
-import { EVENING_LIGHT, MORNING_LIGHT } from "./a1-dock.ts";
+import { EVENING_BLEND, EVENING_LIGHT, MORNING_BLEND, MORNING_LIGHT } from "./a1-dock.ts";
 
 // The whole climb in one locked frame (9 H tall): the stair is short enough to see from
 // its foot to the lodge's door, and a still frame lets the backdrop's lake hold true.
@@ -56,16 +57,19 @@ styled(b, "none", () => b.floor(x, X1, 6.0));
 px(b, "lampPost", "lamp-1-0", 43.25, 3.1 + 9 * (2.9 / 15), { lit: false, arm: -1 });
 px(b, "lampPost", "lamp-1-1", LANDING + 0.9, 3.1, { lit: false, arm: -1 });
 px(b, "lampPost", "lamp-1-2", 34.6, 0.3, { lit: false, arm: 1 });
-// vines down the rock, grass on the landing and the shelf, rubble at the foot
-px(b, "vines", "stair-vines-1", LANDING + 0.1, 3.1, { width: 1.1, length: 1.2, strands: 6 });
-px(b, "vines", "stair-vines-2", 44.0, 6.0, { width: 1.0, length: 1.5, strands: 6, flowers: true });
-px(b, "grass", "landing-grass", LANDING + 0.1, 3.1, { kind: "grass", width: 0.9, height: 0.2 });
-px(b, "grass", "shelf-grass", 43.1, 6, { kind: "flowers", width: 1.4, height: 0.22 });
+// vines off the landing's lip, grass on the landing (you brush through it), rubble at the foot;
+// the rest of the growth (ferns in the joints, the shelf's grass, the pine) is the backdrop's,
+// rooted where it grows (_cliff.ts). The old shelf grass and vines at x 43-44 hung over the stair
+// in mid-air (their shelf is at 45.2): gone.
+px(b, "vines", "stair-vines-1", LANDING + 0.15, 3.1, { width: 1.0, length: 1.1, strands: 5 });
+px(b, "grass", "landing-grass", LANDING + 0.35, 3.1, { kind: "grass", width: 0.8, height: 0.2 });
 px(b, "rubble", "stair-rubble", 34.95, 0.3, { kind: "stone", width: 0.6, height: 0.22 });
 // the lodge on its shelf: its end wall and the front door
 // the lodge runs on east past the frame's edge (its interior is A3)
-px(b, "lodgeFacade", "lodge-facade-west", 45.2, 6, { width: 5.4, height: 4.3, side: 1, windowAt: 0.27 });
-px(b, "lodgeDoor", "lodge-front-out", 45.6, 6, { kind: "ordinary", frame: "timber" });
+// the door is built into the end wall (the facade cuts its opening, lintel, sill and hood at DOOR)
+const DOOR = 45.84;
+px(b, "lodgeFacade", "lodge-facade-west", 45.2, 6, { width: 5.4, height: 4.3, side: 1, windowAt: 0.3, door: DOOR - 45.2 });
+px(b, "lodgeDoor", "lodge-front-out", DOOR, 6, { kind: "ordinary", frame: "timber" });
 b.doors["lodge-front-out"] = { room: "A3", spawn: "front" };
 b.prop(
   "ringwater-state",
@@ -92,6 +96,8 @@ const cliff: CliffSpec = {
   steps,
   water: RY(0.025),
   boardwalk: [h(-0.05), RY(0.1)],
+  landing: [h(LANDING - X0), h(LANDING + 1.3 - X0), RY(3.1)],
+  shelf: [h(x - X0), h(45.2 - X0)],
 };
 
 // the lake from a little higher: the horizon (the eye) sits 1.1 H above the dock's
@@ -105,6 +111,7 @@ const morning: RoomDef = {
   ...b.build(),
   backdrop: lake(false),
   lighting: MORNING_LIGHT,
+  blend: MORNING_BLEND,
   ambient: { dust: 12 },
   waterline: RY(0.025),
 };
@@ -112,5 +119,6 @@ const morning: RoomDef = {
 export const cliffStair: RoomDef = sessionRoom(morning, () => ({
   backdrop: lake(true),
   lighting: EVENING_LIGHT,
+  blend: EVENING_BLEND,
   weather: { state: "serene", time: "dusk" },
 }));

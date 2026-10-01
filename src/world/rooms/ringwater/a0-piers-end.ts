@@ -15,7 +15,8 @@ import type { RoomDef } from "../../room/types.ts";
 import { geoCtx } from "../common.ts";
 import { Box } from "../_blockout/_build.ts";
 import { px, sessionRoom, styled } from "./_lib.ts";
-import { EVENING_LIGHT, MORNING_LIGHT } from "./a1-dock.ts";
+import { pierShore } from "./_shore.ts";
+import { EVENING_BLEND, EVENING_LIGHT, MORNING_BLEND, MORNING_LIGHT } from "./a1-dock.ts";
 
 const X0 = -20;
 const X1 = 0;
@@ -64,8 +65,8 @@ px(b, "hangingBell", "ferry-bell", -5.9 + 0.44, DECK + 1.47, { size: "small", us
 // mooring posts, floats and reeds in the water; a tuft of grass in the old planks
 px(b, "mooring", "pier-mooring-1", -17.2, WATER, { height: 0.58, buoy: 1.0 });
 px(b, "mooring", "pier-mooring-2", -8.4, WATER, { height: 0.46, buoy: -0.8 });
-px(b, "reeds", "pier-reeds-1", X0 + 0.2, WATER + 0.02, { width: 1.1, height: 0.9 });
-px(b, "reeds", "pier-reeds-2", -14.6, WATER + 0.02, { width: 0.7, height: 0.75, density: 2 });
+// the reeds are the backdrop's now (_shore.ts): in open water past the pier's end and as dark tips
+// in the corners. As props they rooted in the planks (-14.6) or inside the wall at the pier's end.
 px(b, "grass", "pier-grass", -9.6, DECK, { kind: "grass", width: 0.35, height: 0.14, density: 7 });
 px(b, "dust", "pier-dust", -16, DECK + 1.4, { kind: "dust", width: 12, height: 3, count: 18, lit: true });
 b.prop("ringwater-state", "state-A0", -10, DECK, { ferry: "ferry-boat", keeper: { id: "keeper-pier", pose: "pier" } }, { engine: "stub" });
@@ -74,7 +75,7 @@ b.spawn("east", X1 - 0.8, DECK, -1).spawn("ferry", -4.6, DECK, 1);
 b.exit("right", "A1", "west");
 
 const lake = (evening: boolean): RoomDef["backdrop"] => ({
-  scene: arrivalScene({ title: evening ? "A0 Pier's End (evening)" : "A0 Pier's End", dock: "pier", bias: BIAS, without: ["near-left", "near-right", "foreground"], evening }),
+  scene: arrivalScene({ title: evening ? "A0 Pier's End (evening)" : "A0 Pier's End", dock: "pier", bias: BIAS, without: ["near-left", "near-right", "foreground"], evening, extra: pierShore({ span: SPAN }) }),
   vertical: 0,
   weather: true,
 });
@@ -83,6 +84,7 @@ const morning: RoomDef = {
   ...b.build(),
   backdrop: lake(false),
   lighting: MORNING_LIGHT,
+  blend: MORNING_BLEND,
   ambient: { dust: 10, moths: true },
   waterline: g.wl,
   pitY: g.wl + h(0.9),
@@ -93,6 +95,7 @@ const cupsAt = { x: -12.18, y: DECK + 0.34 };
 export const piersEnd: RoomDef = sessionRoom(morning, () => ({
   backdrop: lake(true),
   lighting: EVENING_LIGHT,
+  blend: EVENING_BLEND,
   weather: { state: "serene", time: "dusk" },
   add: [
     { recipe: "keeper", id: "keeper-pier", x: h(-12.62 - X0), y: h(TOP - DECK), params: { pose: "pier" }, engine: "pixel" },

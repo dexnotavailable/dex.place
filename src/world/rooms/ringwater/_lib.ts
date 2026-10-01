@@ -100,7 +100,7 @@ export const hpx = h;
  * props to drop). Getters are read when the room is built (and each frame for
  * lighting and weather), so the same def serves both.
  */
-export function sessionRoom(morning: RoomDef, patch: () => { backdrop?: RoomDef["backdrop"]; lighting?: RoomDef["lighting"]; weather?: RoomDef["weather"]; add?: PropPlacement[]; drop?: string[] }): RoomDef {
+export function sessionRoom(morning: RoomDef, patch: () => { backdrop?: RoomDef["backdrop"]; lighting?: RoomDef["lighting"]; weather?: RoomDef["weather"]; blend?: RoomDef["blend"]; add?: PropPlacement[]; drop?: string[] }): RoomDef {
   let cache: ReturnType<typeof patch> | null = null;
   const eve = (): ReturnType<typeof patch> | null => {
     if (!evening()) return null;
@@ -111,6 +111,7 @@ export function sessionRoom(morning: RoomDef, patch: () => { backdrop?: RoomDef[
     backdrop: { enumerable: true, get: () => eve()?.backdrop ?? morning.backdrop },
     lighting: { enumerable: true, get: () => eve()?.lighting ?? morning.lighting },
     weather: { enumerable: true, get: () => eve()?.weather ?? morning.weather },
+    blend: { enumerable: true, get: () => eve()?.blend ?? morning.blend },
     props: {
       enumerable: true,
       get: () => {

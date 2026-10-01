@@ -168,6 +168,15 @@ const MORNING: Record<string, string[]> = {
     standin: ["#06080a", "#0d1216", "#26303a", "#bba77a"],
     red: ["#3a1512", "#5a221c", "#7a3226", "#93402e"],
     moss: ["#0e140f", "#172216", "#22301d", "#34442a", "#4d5c38"],
+    // the near ground of the cliff stair and the yard (region lane a): hue-shifted ramps, violet-blue
+    // in the shadows, olive and warm where the sun (up and right) reaches
+    crag: ["#07080e", "#10141c", "#1b2128", "#2a3134", "#3e4543", "#5e6157", "#8c8a72"],
+    ashlar: ["#0d0d12", "#1a1b21", "#2a2b2e", "#3f3f3c", "#5b5850", "#827b68", "#b2a68a"],
+    leaf: ["#08100f", "#0f1c16", "#182b1b", "#243c1f", "#354f24", "#52692d", "#7e8c46"],
+    earth: ["#0e0b0c", "#181312", "#241c18", "#33281f", "#463728", "#5c4a33", "#7a6646"],
+    bark: ["#0a090b", "#141012", "#201a18", "#2e241e", "#423326"],
+    petal: ["#3a2c3e", "#6e4a5e", "#a8707a", "#d8a890"],
+    roof: ["#0b0c10", "#13151b", "#1c1f26", "#282b30", "#3a3b3a"],
 };
 
 const MORNING_FOG: SceneDef["fog"] = {
@@ -209,6 +218,13 @@ const EVENING: Record<string, string[]> = {
   bird: ["#16161c", "#22222a"],
   red: ["#321215", "#4e1c1e", "#6c2a28", "#86382e"],
   moss: ["#0e0f12", "#171a18", "#22261e", "#323626", "#4a4a32"],
+  crag: ["#08080e", "#100f17", "#1b1922", "#29252d", "#3e3638", "#5c4e46", "#886e58"],
+  ashlar: ["#0a0a10", "#14141b", "#201e26", "#302b30", "#483e3c", "#6c5a4a", "#9c806a"],
+  leaf: ["#090b0e", "#101614", "#192119", "#252e1d", "#363c22", "#50502c", "#7a6e40"],
+  earth: ["#0c0a0d", "#161114", "#211a1a", "#2e231f", "#3f3026", "#56412f", "#735840"],
+  bark: ["#09080b", "#120f12", "#1d1718", "#2a201e", "#3c2c24"],
+  petal: ["#3a2638", "#6a3e50", "#a0606a", "#d09080"],
+  roof: ["#09090e", "#111118", "#1a1820", "#252128", "#363030"],
 };
 
 const EVENING_FOG: SceneDef["fog"] = {
@@ -396,7 +412,9 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
         glintRow: "glint",
         warmRow: "warm",
         reflFar: 0.9,
-        reflNear: 0.42,
+        // near water mirrors strongly enough that the dark cliff and the dock read in it (at 0.42 the
+        // lake's own teal washed the cliff's mirror out to mid-grey)
+        reflNear: 0.6,
         shear: 3 * u,
         jitter: 1.5 * u,
         glints: 0.004,
@@ -706,7 +724,12 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
       const face = (X: number): number => {
         const e = W * 0.88 + (fbm1(X / 30, 51) - 0.5) * 20 * u;
         if (X < e - W * 0.05) return 1e9;
-        const t = smooth(e - W * 0.05, e + W * 0.07, X);
+        // a broken edge, not a ruled diagonal: the rise wanders in bulges and bays at two scales
+        // and pauses on a few bedded shelves (the strata the planes and ledges below pick out)
+        const j = (fbm1(X / (5 * u), 54) - 0.5) * W * 0.035 + (fbm1(X / (14 * u), 55) - 0.5) * W * 0.03;
+        const t0 = smooth(e - W * 0.05, e + W * 0.07, X + j);
+        const q = t0 * 5;
+        const t = 0.6 * t0 + (0.4 * (Math.floor(q) + smooth(0.55, 1, q - Math.floor(q)))) / 5;
         return base - (base + H * 0.15) * t + (fbm1(X / (9 * u), 52) - 0.5) * 12 * u;
       };
       const c = chunk(1.5);
@@ -764,13 +787,13 @@ function build(ctx0: BuildCtx, o: ArrivalOpts): LayerDef[] {
     if (dock === "scene" || dock === "world") {
       const { x, w } = wide(1);
       const pix = new Pix(w, H);
-      buildDock(pix, g, x, R("wood"), R("lamp"), R("iron"), posts, { lantern: dock === "scene" });
-      if (dock === "world") buildWorldDock(pix, g, x, ctx0.span, { wood: R("wood"), red: R("red"), rock: R("near") });
+      buildDock(pix, g, x, R("wood"), R("lamp"), R("iron"), posts, { lantern: dock === "scene", moss: R("moss") });
+      if (dock === "world") buildWorldDock(pix, g, x, ctx0.span, { wood: R("wood"), red: R("red"), rock: R("near"), crag: R("crag"), moss: R("moss"), leaf: R("leaf") });
       L.push({ kind: "pix", name: "dock", depth: 1, pix, x: x - bias, y: 0, reflect: g.wl, reflectFade: 36 * u, dither: 0 });
     } else if (dock === "pier") {
       const { x, w } = wide(1);
       const pix = new Pix(w, H);
-      buildPier(pix, g, x, ctx0.span, R("wood"), R("iron"), posts);
+      buildPier(pix, g, x, ctx0.span, R("wood"), R("iron"), posts, R("moss"));
       L.push({ kind: "pix", name: "dock", depth: 1, pix, x: x - bias, y: 0, reflect: g.wl, reflectFade: 36 * u, dither: 0 });
     }
     if (dock === "scene") {
