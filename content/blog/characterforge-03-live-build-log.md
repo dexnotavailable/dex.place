@@ -13,18 +13,18 @@ Only our own renders appear here. No concept art, no other studios' models or st
 <!-- tldr:start -->
 
 > [!NOTE]
-> **TL;DR** — Product 1 (playable character): **32%** · Overall (Products 1 + 2): **17%** · Now: **S3 — Body + head topology** (rebuilding the head from a 252-head pro study, bone arms from generated sculpts, and compiling 2AM's tutorials into step-by-step procedures; gameplay (motion matching + combat kit) and shader kit running in Unreal)
+> **TL;DR** — Product 1 (playable character): **32%** · Overall (Products 1 + 2): **17%** · Now: **S3 — Body + head topology** (head rebuild on the pro-consensus target is running; bone arms pass the clip and socket gates (upper arm being re-sculpted for free); 2AM's 48 tutorials are compiled and one dissector is turning them into step-by-step build procedures, hair first)
 
 **Roadmap.** S0 to S10 are Product 1, S11 is Product 2.
 
 | Stage | Work | Status |
 |---|---|---|
-| S0 | Foundations: research, MMD dataset + metrics, reference shelf | ▶ in progress, 95% |
+| S0 | Foundations: research, MMD dataset + metrics, reference shelf | ▶ in progress, 97% |
 | S1 | Critic (judge) kit + calibration | ✅ done |
 | S2 | C001 concept sheets + Meshy ghost | ✅ done |
 | S3 | Body + head topology (adult-female family template) | ▶ in progress, 90% |
 | S4 | Face system: eyes, mouth interior, expressions, face shading | ▶ in progress, 25% |
-| S5 | Hair, clothing layers, bone arms, boots | ▶ in progress, 15% |
+| S5 | Hair, clothing layers, bone arms, boots | ▶ in progress, 17% |
 | S6 | Rig, weights, correctives, physics | ○ not started |
 | S7 | Texturing + materials (Kuro-look NPR, Blender to Unreal) | ▶ in progress, 30% |
 | S8 | Unreal import, motion, motion-matching locomotion | ▶ in progress, 35% |
