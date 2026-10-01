@@ -40,12 +40,14 @@ export const culvertGate = defineRecipe<GateParams, Refs>({
     const u = (f: number): number => b.u(f);
     const W = u(p.w), Ht = u(p.h);
     // the lake's light far down the tunnel: a small cold opening, seen only once the bars are up
-    const lk = b.part("lake", { w: W, h: Ht, pivot: [W >> 1, Ht], at: [0, 0], layer: "bg", z: 1, visible: false });
+    // the bars stand on the threshold stone the backdrop draws across the opening (sill high)
+    const sill = u(0.1);
+    const lk = b.part("lake", { w: W, h: Ht, pivot: [W >> 1, Ht], at: [0, -sill], layer: "bg", z: 1, visible: false });
     lk.ellipse(W >> 1, Math.round(Ht * 0.62), Math.round(W * 0.09), Math.round(Ht * 0.06), { mat: "glassPale", profile: "flat" });
     lk.rect(Math.round(W * 0.35), Math.round(Ht * 0.66), Math.round(W * 0.3), 2, { mat: "water", profile: "flat" });
     // the bars: a grid of square iron with a spiked foot. Drawn in code so they can retract up into the
     // housing: only the part below the housing shows, its spiked foot rising as it lifts.
-    const bars = b.part("bars", { w: W, h: Ht + 4, pivot: [W >> 1, Ht], at: [0, 0], layer: "bg", z: 3, hittable: false });
+    const bars = b.part("bars", { w: W, h: Ht + 4, pivot: [W >> 1, Ht], at: [0, -sill], layer: "bg", z: 3, hittable: false });
     const gap = u(0.19), bw = Math.max(2, u(0.05)), cross = u(0.42), cw = Math.max(2, u(0.05));
     const iron = matId("plainIron");
     const drawBars = (part: Part, f: number): void => {
@@ -81,13 +83,18 @@ export const culvertGate = defineRecipe<GateParams, Refs>({
       part.tag["drawnF"] = f;
     };
     void bars;
-    // the housing over the arch, and the brass horn on it pointing down the tunnel
-    const hs = b.part("housing", { w: W + u(0.3), h: u(0.3), pivot: [(W + u(0.3)) >> 1, u(0.3)], at: [0, -Ht + 2], layer: "bg", z: 5 });
-    hs.rect(0, 0, W + u(0.3), u(0.3), { mat: "plainIron", profile: "bevel", r: 2 });
-    hs.rivets(Array.from({ length: 6 }, (_, i) => [u(0.08) + i * Math.round((W + u(0.14)) / 6), u(0.15)] as [number, number]), { mat: "plainIron", r: 1 });
-    const horn = b.part("horn", { w: u(0.62), h: u(0.3), pivot: [u(0.05), u(0.22)], at: [Math.round(W * 0.35), -Ht - u(0.18)], layer: "bg", z: 6 });
-    horn.poly([0, u(0.18), u(0.42), u(0.12), u(0.6), 0, u(0.6), u(0.3), u(0.42), u(0.2), 0, u(0.24)], { mat: "plainBrass", profile: "dome", r: 3 });
-    horn.rect(0, u(0.17), u(0.12), u(0.08), { mat: "plainIron", profile: "bevel" });
+    // the housing the bars rise into: set back inside the arch, between its reveals and under the
+    // soffit (narrower than the opening, dark as the tunnel round it, a lit lower lip only), and the
+    // brass horn on it inside the intrados, pointing down the tunnel
+    const hw = W - u(0.12), hh = u(0.2);
+    const hs = b.part("housing", { w: hw, h: hh, pivot: [hw >> 1, hh], at: [0, -Ht - sill + 2], layer: "bg", z: 5 });
+    hs.rect(0, 0, hw, hh, { mat: "plainIron", profile: "flat", tone: -1 });
+    hs.rect(0, 0, hw, 2, { mat: "plainIron", profile: "flat", tone: -2 });
+    hs.rect(0, hh - 2, hw, 2, { mat: "plainIron", profile: "bevel" });
+    hs.rivets(Array.from({ length: 5 }, (_, i) => [u(0.08) + i * Math.round((hw - u(0.16)) / 4), Math.round(hh * 0.55)] as [number, number]), { mat: "plainIron", r: 1 });
+    const horn = b.part("horn", { w: u(0.4), h: u(0.19), pivot: [u(0.02), u(0.19)], at: [-u(0.2), -Ht - sill - hh + 2], layer: "bg", z: 6 });
+    horn.poly([0, u(0.11), u(0.27), u(0.08), u(0.39), 0, u(0.39), u(0.19), u(0.27), u(0.13), 0, u(0.15)], { mat: "plainBrass", profile: "dome", r: 2 });
+    horn.rect(0, u(0.1), u(0.07), u(0.06), { mat: "plainIron", profile: "bevel" });
     return { bars: b.get("bars"), horn: b.get("horn"), lake: b.get("lake"), f: 0, H0: Ht };
   },
   initial: (c) => (c.data["open"] ? "open" : "closed"),

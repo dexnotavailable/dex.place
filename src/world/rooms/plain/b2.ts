@@ -149,7 +149,7 @@ export const b2: RoomDef = {
   lighting: LIGHT,
   // one image: the overcast's cool cast over road, tor and props, the far props veiled in the flats'
   // haze, contact shadows, the lamps' light tinting the stone round them
-  blend: fromLight(LIGHT, { amount: 0.12, haze: 0.32, band: 0.7 }),
+  blend: fromLight(LIGHT, { amount: 0.12, haze: 0.32, band: 0.7, halo: 1.3 }),
   // rain drips off the shelter roof's edges
   ambient: { dust: 14, drips: [[h(B2.shelter.roof[0] - B2.x0), h(B2.top - B2.shelter.roof[3])], [h(B2.shelter.roof[1] - B2.x0), h(B2.top - B2.shelter.roof[3])]] },
   waterline: h(B2.top - B2.flats),

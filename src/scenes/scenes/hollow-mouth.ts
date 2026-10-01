@@ -13,11 +13,13 @@
 // /scenes/ preview standing on the culvert platform; hollowMouth(true) is the
 // world backdrop.
 
-import { Embers, Falling, Pix, fbm1, hashInt, skyline, terrain, fogBand, f, rowRef, type LayerDef, type SceneDef } from "../engine/index.ts";
+import { Embers, Falling, Pix, fbm1, hashInt, skyline, fogBand, f, rowRef, type LayerDef, type SceneDef } from "../engine/index.ts";
 import { camYGlsl, spireGlsl } from "./causeway/shared.ts";
 import { B5, REF, ROOM_H, geo, type Geo } from "./hollow-mouth/geo.ts";
 import { arcade, eastArch, floorGlsl, stallRow, type Pool } from "./hollow-mouth/street.ts";
-import { buildColumn, buildHeadwall, buildStairs, underPlatform, type MouthRows } from "./hollow-mouth/mouth.ts";
+import { COLUMN, buildColumn, buildHeadwall, buildStairs, culvertSill, member, underPlatform, type MouthRows } from "./hollow-mouth/mouth.ts";
+import { ashlar, known, put, shift } from "./causeway/paint.ts";
+import { castShadow } from "./causeway/blocks.ts";
 
 export const TITLE = "hollow-mouth";
 
@@ -51,10 +53,14 @@ vec4 layer(vec2 p, vec2 s) {
 /**
  * The far side of the shaft (depth 4.5): the plain's turf and soil on its lip, then the fallen
  * structure in section, lying a little tilted. Read as built: floor slabs with a lit nosing and a
- * shadow under them, columns on a bay rhythm, panel joints, two windows to a bay with frames,
- * mullions and sills and the rain stains running from the sills. Most windows are dead black; lit
- * ones (more of them toward the market's warmth below) glow and tint the wall around them. Where
- * a floor fell, the hole is cut in 4 px steps with a lit broken edge and rebar, not smeared.
+ * shadow under them, a heavier cornice every fourth storey, columns on a bay rhythm, panel joints,
+ * windows that change from storey to storey (pairs, tall triples, a ribbon), sills, soot over the
+ * burnt-out ones and rain stains under the sills, downpipes with clamps running down the face,
+ * balconies with railings. Most windows are dead; lit ones (more toward the market's warmth below)
+ * glow and spill warm light down and around them onto the wall. Where the facade fell away, the
+ * collapse is a section you can see into: the slab above in shadow, the room's back wall and its
+ * columns, rubble on the floor, the broken panel edges stepped in 4 px blocks, lit on one side,
+ * rebar sticking out.
  */
 function wallGlsl(g: Geo, d: number): string {
   const k = g.P / 80;
@@ -103,74 +109,140 @@ vec4 layer(vec2 p, vec2 s) {
   float bi = floor(bxx / BAY);
   float inB = bxx - bi * BAY;
   float SL = ${n(9)}, CW = ${n(12)};
-  // a floor that fell: its hole cut in 4 px steps, a lit broken edge, rebar
-  float gapC = hash2(vec2(fi, 3.0)) * ${f(g.W)};
-  float gapW = ${f(36 * k)} + ${f(110 * k)} * hash2(vec2(fi, 5.0));
-  float jag = (hash2(vec2(floor(p.y / 4.0), fi + 9.0)) - 0.5) * 14.0 + (hash2(vec2(floor(p.x / 4.0), fi + 2.0)) - 0.5) * 6.0;
-  float dg = abs(p.x - gapC) - gapW - jag;
+  bool corn = mod(fi, 4.0) < 0.5;
+  float SLc = corn ? SL + ${n(5)} : SL;
   float cool = 1.0 - smoothstep(0.0, 0.45, t);
   float warm = smoothstep(0.45, 1.0, t);
-  if (hash2(vec2(fi, 6.0)) < 0.6 && dg < 0.0 && inF > ${n(3)}) {
-    vec3 hole = ramp(${rowRef("deep")}, 0.08 + 0.12 * t, p, 0.3);
-    if (dg > -2.0) hole = ramp(${rowRef("wall")}, 0.34 + 0.08 * cool, p, 0.0);
-    else if (mod(p.y + floor(p.x / 6.0) * 3.0, 9.0) < 1.0 && dg > -8.0) hole = ramp(${rowRef("iron")}, 0.4, p, 0.0);
-    if (warm > 0.2 && hash2(vec2(floor(p.x / 8.0), fi)) < 0.06 * warm) hole = ramp(${rowRef("amber")}, 0.35, p, 0.0);
-    return vec4(applyFog(hole, uFog, 0.0, p, s), 1.0);
+  // --- a collapse: part of a storey's facade fallen away, the room behind it open ---------------
+  float gapC = (0.1 + 0.8 * hash2(vec2(fi, 3.0))) * ${f(g.W)};
+  float gapW = ${f(26 * k)} + ${f(60 * k)} * hash2(vec2(fi, 5.0));
+  // the panels broke away in whole pieces: the edge stepped in 4 px blocks, a little wider low down
+  float hw = gapW * (0.9 + 0.15 * step(0.5, (inF - SLc) / (FH - SLc)));
+  float jag = (hash2(vec2(floor(inF / 4.0), fi * 13.0 + step(gapC, p.x))) - 0.5) * 10.0;
+  float dg = abs(p.x - gapC) - hw - jag;
+  if (hash2(vec2(fi, 6.0)) < 0.42 && dg < 0.0 && inF >= SLc) {
+    float ii = inF - SLc;
+    float span = FH - SLc;
+    float sh;
+    vec3 hc;
+    if (dg > -3.0) {
+      // the broken panel edge: lit on the west side of the hole, in shade on the east
+      sh = p.x < gapC ? 0.36 : 0.12;
+    } else if (ii < ${n(6)}) {
+      // the slab overhead seen from below, in shadow
+      sh = ii < 1.0 ? 0.03 : 0.07;
+    } else if (ii > span - ${n(4)} - ${n(16)} * max(0.0, 1.0 - abs(p.x - gapC) / max(1.0, hw)) - floor(hash2(vec2(floor(p.x / 4.0), fi + 61.0)) * ${n(5)})) {
+      // the fallen panels heaped on the room's floor, their tops catching the light from the hole
+      float rtop = span - ${n(4)} - ${n(16)} * max(0.0, 1.0 - abs(p.x - gapC) / max(1.0, hw)) - floor(hash2(vec2(floor(p.x / 4.0), fi + 61.0)) * ${n(5)});
+      sh = ii - rtop < 2.0 ? 0.34 : 0.2 + 0.06 * step(0.6, hash2(floor(p / 3.0) + fi));
+    } else {
+      // the room's back wall: its columns and a doorway deeper in, the light falling off inward
+      float bb = mod(p.x + fi * 23.0, ${n(64)});
+      sh = 0.17 + 0.06 * (1.0 - ii / span) - (bb < ${n(6)} ? 0.07 : 0.0);
+      if (abs(bb - ${n(36)}) < ${n(8)} && ii > span * 0.35) sh = 0.05;
+      // the hole's west edge throws its shadow into the room
+      if (p.x > gapC && dg > -${n(10)}) sh -= 0.04;
+    }
+    // rebar bent out of the broken edges
+    if (dg > -${n(9)} && dg < -3.0 && mod(inF + floor(p.x / 6.0) * 3.0, 11.0) < 1.0) sh = 0.32;
+    hc = ramp(${rowRef("wall")}, sh + 0.06 * cool, p, 0.0);
+    if (warm > 0.2) {
+      hc = mix(hc, ramp(${rowRef("amber")}, sh * 0.9, p, 0.0), stepd(warm * 0.55, 3.0, p, 0.6));
+      // a fire still burning in a room far down
+      if (hash2(vec2(fi, 66.0)) < 0.5 * warm && ii > span * 0.4 && dg < -${n(14)}) hc = mix(hc, ramp(${rowRef("amber")}, 0.35 + 0.2 * (ii / span), p, 0.6), 0.55);
+    }
+    return vec4(applyFog(hc, uFog, 0.0, p, s), 1.0);
   }
   float shade;
   vec3 glow = vec3(0.0);
+  // a downpipe every so often, down the whole face, clamped at every slab
+  float pc = floor(p.x / ${n(170)});
+  float px0 = pc * ${n(170)} + ${n(30)} + floor(hash2(vec2(pc, 81.0)) * ${n(100)});
+  bool hasPipe = hash2(vec2(pc, 83.0)) < 0.55;
+  float dpx = p.x - px0;
   if (root) shade = 0.3;
-  else if (inF < SL) {
-    // the slab: a lit nosing, the edge, its underside in shadow
-    shade = inF < 1.0 ? 0.48 : inF < 2.0 ? 0.34 : inF > SL - 2.0 ? 0.1 : 0.22;
+  else if (hasPipe && dpx >= 0.0 && dpx < ${n(4)}) {
+    shade = dpx < 1.0 ? 0.34 : dpx < ${n(3)} ? 0.2 : 0.08;
+    if (mod(inF, ${n(24)}) < 2.0 || inF < SLc) shade = dpx < 1.0 ? 0.4 : 0.28;
+  } else if (inF < SLc) {
+    // the slab: a lit nosing, the edge, its underside in shadow; a cornice storey has a dentil course
+    shade = inF < 1.0 ? 0.5 : inF < 2.0 ? 0.36 : inF > SLc - 2.0 ? 0.08 : 0.22;
+    if (corn && inF > SL - 1.0 && inF < SLc - 2.0) shade = mod(p.x, ${n(6)}) < ${n(3)} ? 0.28 : 0.1;
     if (hash2(vec2(floor(p.x / 3.0), fi + 31.0)) < 0.08 && inF > 2.0) shade -= 0.06;
+    if (hasPipe && dpx >= -2.0 && dpx < ${n(4)} + 2.0) shade -= 0.04;
   } else if (inB < CW) {
     // a column: lit west face, its body, a shaded east edge
     shade = inB < 2.0 ? 0.36 : inB > CW - 2.0 ? 0.1 : 0.2;
-    if (inF < SL + 3.0) shade -= 0.06;
+    if (inF < SLc + 3.0) shade -= 0.06;
   } else {
     // the bay: precast panels, a joint between, the slab's shadow under its nosing
-    shade = 0.14 + 0.02 * (hash2(vec2(bi, fi + 40.0)) - 0.5);
+    shade = 0.14 + 0.025 * (hash2(vec2(bi, fi + 40.0)) - 0.5);
     float mid = CW + (BAY - CW) * 0.5;
-    if (abs(inB - mid) < 0.5 || abs(inF - (SL + (FH - SL) * 0.55)) < 0.5) shade = 0.08;
-    if (inF < SL + 4.0) shade -= 0.05;
-    // two windows to the bay (a plant floor now and then has none, a few bays lost their panels)
-    bool plant = hash2(vec2(fi, 51.0)) < 0.22;
-    if (!plant && hash2(vec2(bi, fi + 53.0)) < 0.06 && inF > SL + 3.0) return vec4(applyFog(ramp(${rowRef("deep")}, 0.1 + 0.1 * t, p, 0.3), uFog, 0.0, p, s), 1.0);
-    if (plant && abs(inF - (SL + (FH - SL) * 0.3)) < 2.0) shade = 0.2;
-    for (int jj = 0; jj < 2; jj++) {
-      if (plant) break;
+    if (abs(inB - mid) < 0.5 || abs(inF - (SLc + (FH - SLc) * 0.55)) < 0.5) shade = 0.08;
+    if (inF < SLc + 4.0) shade -= corn ? 0.07 : 0.05;
+    // grime: a dark wash down from the slab above, in streaks
+    if (hash2(vec2(floor(p.x / 2.0), fi + 90.0)) < 0.22 && inF - SLc < ${n(18)} * hash2(vec2(floor(p.x / 2.0), fi + 91.0))) shade -= 0.03;
+    // the storey's windows: pairs, tall triples or one ribbon (a plant floor has none)
+    float cls = hash2(vec2(fi, 71.0));
+    bool plant = cls < 0.16;
+    if (plant && abs(inF - (SLc + (FH - SLc) * 0.3)) < 2.0) shade = 0.2;
+    // a balcony along the bay's foot now and then: a railing, its slab, its shadow on the panel
+    bool balc = !plant && hash2(vec2(bi, fi + 77.0)) < 0.14;
+    float nw = cls < 0.45 ? 2.0 : cls < 0.78 ? 3.0 : 1.0;
+    float ww = nw > 2.5 ? ${n(16)} : nw > 1.5 ? ${n(26)} : BAY - CW - ${n(22)};
+    float wy0 = SLc + (nw > 2.5 ? ${n(10)} : nw > 1.5 ? ${n(15)} : ${n(20)});
+    float wy1 = FH - (nw > 2.5 ? ${n(12)} : nw > 1.5 ? ${n(17)} : ${n(24)});
+    float pitch = (BAY - CW) / nw;
+    for (int jj = 0; jj < 3; jj++) {
       float j = float(jj);
-      float wx0 = CW + ${n(12)} + j * (BAY - CW) * 0.5, wx1 = wx0 + ${n(26)};
-      float wy0 = SL + ${n(15)}, wy1 = FH - ${n(17)};
+      if (plant || j >= nw) break;
+      float wx0 = CW + (pitch - ww) * 0.5 + j * pitch, wx1 = wx0 + ww;
       bool lit = winLit(fi, bi, j, t) > 0.5;
+      bool burnt = !lit && hash2(vec2(fi * 3.0 + j, bi + 17.0)) < 0.16;
       if (inB >= wx0 && inB < wx1 && inF >= wy0 && inF < wy1) {
         // frame, mullion and transom, the glass dead or lit
         bool frame = inB < wx0 + 2.0 || inB >= wx1 - 2.0 || inF < wy0 + 2.0 || inF >= wy1 - 1.0;
         bool mull = abs(inB - (wx0 + wx1) * 0.5) < 1.0 || abs(inF - (wy0 + (wy1 - wy0) * 0.38)) < 1.0;
+        if (nw < 1.5) mull = mod(inB - wx0, ${n(16)}) < 1.0 || abs(inF - (wy0 + (wy1 - wy0) * 0.38)) < 1.0;
         if (frame) shade = inF < wy0 + 1.0 ? 0.06 : 0.24;
-        else if (mull) shade = lit ? 0.2 : 0.17;
+        else if (mull && !burnt) shade = lit ? 0.2 : 0.17;
         else {
           vec3 w;
           if (lit) w = ramp(${rowRef("amber")}, 0.5 + 0.25 * step(inF, wy0 + (wy1 - wy0) * 0.38) + 0.15 * hash2(vec2(fi, bi + j)), p, 0.0);
           else {
             w = ramp(${rowRef("deep")}, 0.15 + 0.15 * step(hash2(vec2(fi + j, bi)), 0.3), p, 0.0);
+            if (burnt) w = ramp(${rowRef("deep")}, 0.05, p, 0.0);
             // the sky's last grey on the top pane of the near-surface windows
-            if (inF < wy0 + 4.0 && cool > 0.5) w = ramp(${rowRef("wall")}, 0.3, p, 0.0);
+            else if (inF < wy0 + 4.0 && cool > 0.5) w = ramp(${rowRef("wall")}, 0.3, p, 0.0);
           }
           return vec4(applyFog(w, uFog * 0.6, 0.0, p, s), 1.0);
         }
       } else {
-        // the sill, lit; rain stains running down from it; a lit window's light on the wall around it
-        if (inB >= wx0 - 1.0 && inB < wx1 + 1.0 && inF >= wy1 && inF < wy1 + 2.0) shade = 0.3;
+        // the sill, lit; rain stains running down from it
+        if (inB >= wx0 - 1.0 && inB < wx1 + 1.0 && inF >= wy1 && inF < wy1 + 2.0) shade = lit ? 0.34 : 0.3;
         float stx = floor(inB);
         if (inB >= wx0 && inB < wx1 && inF >= wy1 + 2.0 && hash2(vec2(stx, fi + bi * 3.0 + j)) < 0.35 && inF < wy1 + 2.0 + ${n(22)} * hash2(vec2(stx, 5.0 + j))) shade -= 0.04;
+        // soot licking up the panel over a burnt-out window
+        float up = wy0 - inF;
+        if (burnt && inB >= wx0 - 2.0 && inB < wx1 + 2.0 && up > 0.0 && up < ${n(20)} * (0.5 + 0.5 * hash2(vec2(floor(inB / 2.0), fi + j))) ) shade -= 0.06;
         if (lit) {
-          vec2 c0 = vec2((wx0 + wx1) * 0.5, (wy0 + wy1) * 0.5);
-          vec2 dd = (vec2(inB, inF) - c0) / vec2(${n(30)}, ${n(30)});
+          // the window's light on the wall: below and to the sides, stepped and dithered
+          vec2 c0 = vec2((wx0 + wx1) * 0.5, wy1 - ${n(4)});
+          vec2 dd = (vec2(inB, inF) - c0) / vec2(${n(26)} + ww * 0.5, ${n(30)});
+          if (dd.y < 0.0) dd.y *= 1.6;
           float gl = floor(max(0.0, 1.0 - length(dd)) * 3.0 + (bayer4(p) - 0.5) * 0.7) / 3.0;
           glow = max(glow, vec3(gl));
         }
+      }
+    }
+    // the balcony: a slab at the bay's foot, balusters and a rail, a shadow under the rail
+    if (balc && inB > CW + 1.0 && inB < BAY - 1.0) {
+      float bz = FH - inF;
+      if (bz < ${n(3)}) shade = bz < 1.0 ? 0.06 : 0.3;
+      else if (bz < ${n(15)}) {
+        if (bz > ${n(13)}) shade = 0.34;
+        else if (mod(inB, ${n(4)}) < 1.0) shade = 0.24;
+        else if (bz < ${n(5)}) shade -= 0.03;
       }
     }
   }
@@ -178,7 +250,7 @@ vec4 layer(vec2 p, vec2 s) {
   shade += sceneLight(s, uDepth) * 0.8 + 0.08 * cool;
   vec3 c = root ? ramp(${rowRef("root")}, shade, p, 0.0) : ramp(${rowRef("wall")}, shade, p, 0.4);
   if (warm > 0.0) c = mix(c, ramp(${rowRef("amber")}, shade * 0.8 + 0.04, p, 0.4), stepd(warm * 0.45, 3.0, p, 0.6));
-  if (glow.x > 0.0) c = mix(c, ramp(${rowRef("amber")}, 0.2 + 0.3 * glow.x, p, 0.0), 0.55 * glow.x);
+  if (glow.x > 0.0) c = mix(c, ramp(${rowRef("amber")}, 0.18 + 0.32 * glow.x, p, 0.0), 0.7 * glow.x);
   c = applyFog(c, uFog, 0.0, p, s);
   return vec4(c, 1.0);
 }`;
@@ -323,6 +395,8 @@ float sceneLight(vec2 s, float depth) {
         rust: { row: R("rust"), n: 3 },
         deep: { row: R("deep"), n: 5 },
         root: { row: R("root"), n: 4 },
+        paving: { row: R("paving"), n: 5 },
+        amber: { row: R("amber"), n: 6 },
       };
 
       // --- the sky and the deep, the spire close on the east sky -----------------------------
@@ -394,43 +468,107 @@ float sceneLight(vec2 s, float depth) {
         // the stairs and the platform: the same dressed stone as the headwall, treads with lit nosings
         buildStairs(pix, g, y0, mr);
         underPlatform(pix, g, y0, mr);
+        culvertSill(pix, g, y0, mr);
         L.push({ kind: "pix", name: "rim", depth: 1, pix, x: 0, y: y0, dither: 0 });
       }
       {
-        // the west wall with its broken ledges, down to the street
+        // the west wall: the fallen structure's end wall, down to the street. A concrete frame (a
+        // pilaster on its east arris, a floor slab every storey) filled with brick, rain stains under
+        // every slab, moss in the joints high up. The way down is its floor slabs, broken off and
+        // jutting into the shaft: each slab a cast nosing with a dark underside, its shadow on the
+        // wall under it, a steel knee brace from the wall up to it and rebar at its torn end.
         const y0 = g.LY(g.RY(-1.4), 1);
         const y1 = g.LY(g.RY(B5.street + 0.2), 1);
         const w = g.X(177.4);
         const pix = new Pix(w, y1 - y0);
         const Yr = (wy: number): number => g.LY(g.RY(wy), 1) - y0;
-        terrain(pix, {
-          row: R("concrete"),
+        known(pix, mr.concrete, mr.paving, mr.iron, mr.rust, mr.moss, mr.amber);
+        const wx1 = g.X(172.9);
+        const pil = Math.round(P * 0.26);
+        const slabH = Math.round(P * 0.34);
+        const slabs = B5.ledges.map(([, , y]) => Yr(y));
+        const inSlab = (y: number): boolean => slabs.some((t) => y >= t && y < t + slabH);
+        // the brick infill
+        ashlar(pix, {
+          x0: 0,
+          x1: wx1 - pil,
           top: () => 0,
           bottom: () => pix.h,
-          x0: 0,
-          x1: g.X(172.9),
-          seed: 211,
-          scale: 18 * u,
-          chunk: 2,
-          light: [1, -0.3],
-          base: 0.22,
-          contrast: 0.4,
-          strata: 0.7,
-          vertical: 0.4,
-          ao: 0.2,
+          stone: mr.paving,
+          course: Math.round(P * 0.11),
+          courseVar: 0.08,
+          block: [Math.round(P * 0.2), Math.round(P * 0.3)],
+          originY: slabs[0]!,
+          seed: 4201,
+          base: 2,
+          swing: 1,
+          mortar: 0,
+          light: -1,
+          stain: 0.5,
+          pits: 0.1,
+          cracks: 0.1,
+          moss: { ramp: mr.moss, amount: 0.12, where: (_x, y) => Math.max(0, 1 - y / (P * 6)) },
+          // the pilaster's shadow on the brick west of it, the street's dark at the foot
+          shade: (x, y) => (x > wx1 - pil - Math.round(P * 0.08) ? -1 : 0) + (y > pix.h - P * 0.4 ? -1 : 0),
         });
+        // the pilaster on the east arris: cast concrete, board marks, its east edge lit (cool high up,
+        // the market's warmth low down), the west edge in shade
+        for (let y = 0; y < pix.h; y++)
+          for (let x = wx1 - pil; x < wx1; x++) {
+            const e = wx1 - 1 - x;
+            let i = e < 2 ? 4 : e < 4 ? 3 : x < wx1 - pil + 2 ? 1 : 2;
+            if (i === 2 && y % Math.round(P * 0.12) === 0) i = 1;
+            if (i === 2 && hashInt(x >> 1, y >> 2, 4203) < 0.08) i = 3;
+            if (e < 2 && y > pix.h * 0.6 && hashInt(y >> 1, 1, 4205) < (y / pix.h - 0.6) * 2.5) {
+              put(pix, x, y, mr.amber, 1 + (e === 0 ? 1 : 0));
+              continue;
+            }
+            put(pix, x, y, mr.concrete, i);
+          }
+        // rain stains down from each slab, and grime toward the foot
+        for (const t of slabs)
+          for (let x = 0; x < wx1; x++) {
+            if (hashInt(x >> 1, t, 4207) > 0.3) continue;
+            const len = Math.round(P * (0.3 + 1.6 * hashInt(x >> 1, t + 1, 4207)));
+            for (let k = 0; k < len; k++) if (hashInt(x, (t + slabH + k) >> 1, 4209) > k / len) shift(pix, x, t + slabH + k, -1);
+          }
+        // the slabs: a band across the wall at every storey, jutting out as the ledge
         for (const [a, b, y] of B5.ledges) {
-          const x0 = g.X(a), x1 = g.X(b), top = Yr(y);
-          // a broken floor slab jutting from the wall, rebar at its torn end
-          for (let x = Math.min(x0, g.X(172.3)); x < x1; x++) {
-            const ragged = x > x1 - 8 && hashInt(x, y, 213) < 0.4;
-            for (let yy = top + (ragged ? 2 : 0); yy < top + Math.round(P * 0.34); yy++) {
+          const x1 = g.X(b),
+            top = Yr(y);
+          void a;
+          for (let x = 0; x < x1; x++) {
+            // the torn end broken back in 4 px steps
+            const torn = x > x1 - Math.round(P * 0.14) ? Math.floor(hashInt(x >> 2, y, 213) * 3) * 3 : 0;
+            for (let yy = top + (x > x1 - 8 ? torn : 0); yy < top + slabH - (x > x1 - 10 ? torn : 0); yy++) {
               const dy = yy - top;
-              pix.set(x, yy, dy === 0 ? 0.6 : dy === 1 ? 0.42 : 0.22 - dy * 0.003, R("concrete"));
+              let i = dy === 0 ? 5 : dy === 1 ? 4 : dy >= slabH - 2 ? 0 : dy >= slabH - 4 ? 1 : 2;
+              if (i === 2 && (x + dy * 3) % Math.round(P * 0.5) === 0) i = 1;
+              if (i === 2 && hashInt(x >> 1, yy >> 1, 4211) < 0.07) i = 3;
+              put(pix, x, yy, mr.concrete, i);
             }
           }
-          for (let j = 0; j < 3; j++) for (let yy = 0; yy < 8; yy++) pix.set(x1 + 1 + j * 3 + (yy >> 2), top + 4 + j * 3 + yy, 0.3, R("iron"));
+          // the slab's shadow down the wall
+          castShadow(pix, 0, wx1, top + slabH, 4, 8, 4213, (x, yy, d) => shift(pix, x, yy, d));
+          // rebar at the torn end
+          for (let j = 0; j < 3; j++) for (let yy = 0; yy < 8; yy++) put(pix, x1 + 1 + j * 3 + (yy >> 2), top + 4 + j * 3 + yy, mr.rust, 1 + (j & 1));
+          // the knee brace from the wall up to the slab's underside, a gusset plate at each end
+          const reach = b > 175 ? 175.7 : 173.75;
+          const drop = Math.round(P * (b > 175 ? 1.5 : 0.9));
+          const bx = g.X(reach),
+            by = top + slabH;
+          member(pix, wx1 - 2, by + drop, bx, by, Math.max(5, Math.round(P * 0.09)), mr, 4215 + top);
+          for (const [gx, gy] of [
+            [wx1 - 2, by + drop],
+            [bx, by + 2],
+          ] as [number, number][]) {
+            const sz = Math.round(P * 0.07);
+            for (let yy = gy - sz; yy < gy + sz; yy++) for (let x = gx - sz; x < gx + sz; x++) put(pix, x, yy, mr.iron, x === gx - sz || yy === gy - sz ? 4 : 2);
+            put(pix, gx - 2, gy - 1, mr.iron, 4);
+            put(pix, gx + 2, gy + 1, mr.iron, 4);
+          }
         }
+        void inSlab;
         L.push({ kind: "pix", name: "west-wall", depth: 1, pix, x: 0, y: y0, dither: 0 });
       }
       {
@@ -455,6 +593,9 @@ float sceneLight(vec2 s, float depth) {
             let s = dy === 0 ? 0.62 : dy === 1 ? 0.46 : 0.3 + 0.1 * (hashInt(bx, Math.floor(dy / 10), 215) - 0.5);
             if (dy > 1 && (dy % 10 === 0 || (x + (Math.floor(dy / 10) % 2) * (cw >> 1)) % cw === 0)) s = 0.12;
             s -= Math.min(0.24, dy * 0.006);
+            // the column's footing: its contact on the street, the shadow thrown west (the market's light is east)
+            const cx = g.X(COLUMN.x), half = Math.round(P * (COLUMN.w / 2 + 0.22));
+            if (dy < 5 && x > cx - half - Math.round(P * 0.35) + dy * 4 && x < cx + half - 2) s -= dy < 2 ? 0.2 : 0.12;
             pix.set(x, y, s, R("paving"));
           }
         L.push({ kind: "pix", name: "street", depth: 1, pix, x: 0, y: y0, dither: 0 });

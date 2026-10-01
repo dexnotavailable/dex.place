@@ -22,7 +22,7 @@ import { cloudMassGlsl } from "./colossus-plain/sky.ts";
 import { EXT, Spray, Track, WalkClock, bodyGlsl, camYGlsl, crossing, farRingGlsl, passWindow, ringsGlsl, spireGlsl, splitPix, wadeFrontGlsl, type FeedColossus } from "./causeway/shared.ts";
 import { B2, SPAN, geo, type Geo } from "./causeway/geo.ts";
 import { flats } from "./causeway/flats.ts";
-import { buildRoad, buildTor } from "./causeway/road.ts";
+import { buildRoad, buildTor, buildTorFoot } from "./causeway/road.ts";
 import type { Ramp } from "./causeway/paint.ts";
 
 export const TITLE = "causeway";
@@ -301,6 +301,7 @@ float sceneLight(vec2 s, float depth) {
         const rows = { stone: rp("stone", 7), moss: rp("moss", 6), earth: rp("earth", 7), lichen: rp("lichen", 5), algae: rp("algae", 4), grass: rp("grassc", 6), recess: rp("recess", 4), tor: rp("tor", 7), ochre: rp("ochre", 3) };
         buildTor(pix, g, x0, y0, rows);
         buildRoad(pix, g, x0, y0, rows);
+        buildTorFoot(pix, g, x0, y0, rows);
         L.push(...splitPix(pix, { name: "road", depth: 1, x: x0, y: y0, reflect: g.Y(B2.flats), dither: 0 }));
       }
       L.push({ kind: "character", name: "figure", depth: 1, x: g.X(126), ground: g.Y(1.2), rimDir: [-1, -1], height: g.P });

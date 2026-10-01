@@ -31,6 +31,8 @@ export interface MouthRows {
   rust: Ramp;
   deep: Ramp;
   root: Ramp;
+  paving: Ramp;
+  amber: Ramp;
 }
 
 /** The culvert's arch: opening half-width, springing and crown (elevation, H). */
@@ -39,7 +41,7 @@ export const ARCH = { half: 0.92, spring: 1.8, crown: 2.35, ring: 0.3 };
 export const WALL = { x0: 178.95, x1: 185.8, top: 3.0, pier: 0.55, pierTop: 3.35 };
 
 /** A straight steel member (an I-section seen side-on) from (ax, ay) to (bx, by), px. */
-function member(pix: Pix, ax: number, ay: number, bx: number, by: number, w: number, r: MouthRows, seed: number): void {
+export function member(pix: Pix, ax: number, ay: number, bx: number, by: number, w: number, r: MouthRows, seed: number): void {
   const dx = bx - ax,
     dy = by - ay;
   const len = Math.hypot(dx, dy) || 1;
@@ -264,18 +266,9 @@ export function buildHeadwall(pix: Pix, g: Geo, y0: number, r: MouthRows): void 
         if (!sNear && hashInt(x >> 1, y >> 1, 4117) < 0.12) i = 1;
         put(pix, x, y, r.deep, i);
       }
-    // the threshold stone across the opening, the trickle running over it
     const th = Math.round(P * 0.1);
-    for (let x = cx - ow - Math.round(P * 0.08); x <= cx + ow + Math.round(P * 0.08); x++)
-      for (let k = 0; k < th; k++) {
-        const y = base - th + k;
-        const water = Math.abs(x - cx - Math.round(P * 0.1)) < P * 0.24 && k === 0;
-        if (water) {
-          put(pix, x, y, r.masonry, hashInt(x, 2, 4119) < 0.3 ? 6 : 5);
-          continue;
-        }
-        put(pix, x, y, r.masonry, k === 0 ? 5 : k === th - 1 ? 1 : 3);
-      }
+    // the bars' feet and the housing set back in the opening: the soffit's shadow on the reveal tops
+    for (let x = cx - ow; x <= cx + ow; x++) if (inOpening(x, spring - 1)) for (let k = 0; k < 3; k++) if (pix.solid(x, spring + k)) shift(pix, x, spring + k, -1);
     // a wet stain spreading down the wall below each springer
     for (const sx of [cx - ow - Math.round(P * 0.15), cx + ow + Math.round(P * 0.15)])
       for (let y = spring; y < base - th; y++) {
@@ -363,6 +356,41 @@ export function buildHeadwall(pix: Pix, g: Geo, y0: number, r: MouthRows): void 
   }
   grassCap(pix, { x0: 0, x1: cEnd, top: () => Yr(B5.plain), grass: r.grass, seed: 4143, depth: Math.round(P * 0.06), blades: Math.round(P * 0.1), cover: 0.85, lean: 0.35, hang: { drop: Math.round(P * 0.3), length: Math.round(P * 0.35) } });
   void hashInt;
+}
+
+/**
+ * The culvert's threshold stone, after the stairs and the platform (their lee shading must not
+ * darken it): one long stone across the opening running past both jambs, the gate's bars standing
+ * on it, the culvert's trickle running over it.
+ */
+export function culvertSill(pix: Pix, g: Geo, y0: number, r: MouthRows): void {
+  const P = g.P;
+  const Yr = (wy: number): number => g.LY(g.RY(wy), 1) - y0;
+  const cx = g.X(B5.culvertGate);
+  const ow = Math.round(P * ARCH.half);
+  const base = Yr(B5.platform);
+    // the threshold stone across the opening, the trickle running over it
+    const th = Math.round(P * 0.1);
+    // (one long stone running past both jambs, its ends chipped, a lit arris, its face, a dark foot)
+    const tx0 = cx - ow - Math.round(P * 0.2),
+      tx1 = cx + ow + Math.round(P * 0.2);
+    for (let x = tx0; x <= tx1; x++)
+      for (let k = 0; k < th; k++) {
+        const y = base - th + k;
+        const end = Math.min(x - tx0, tx1 - x);
+        if (end < 3 && k < 3 - end) continue;
+        const water = Math.abs(x - cx - Math.round(P * 0.1)) < P * 0.24 && k === 0;
+        if (water) {
+          put(pix, x, y, r.masonry, hashInt(x, 2, 4119) < 0.3 ? 6 : 5);
+          continue;
+        }
+        let i = k === 0 ? 6 : k === 1 ? 5 : k >= th - 2 ? 1 : 3;
+        if (end < 2 && k > 0) i = x < cx ? 5 : 1;
+        if (i === 3 && hashInt(x >> 1, k, 4120) < 0.1) i = 2;
+        put(pix, x, y, r.masonry, i);
+      }
+  // its shadow on the platform's coping in front of it
+  for (let x = cx - ow - Math.round(P * 0.16); x <= cx + ow + Math.round(P * 0.24); x++) if (pix.solid(x, base)) shift(pix, x, base, -1);
 }
 
 /**
@@ -470,27 +498,37 @@ export const COLUMN = { x: 180.5, w: 0.62 };
 
 /**
  * The lattice column: two riveted chords, zigzag lacing between, batten plates every few metres,
- * a base plate bolted onto a concrete plinth on the street. Its own narrow layer; returns it.
+ * its east edges warmed by the market's light below. It stands in front of the arcade (depth 1 over
+ * 1.3) on a stepped concrete footing bolted down to the street, its shadow on the street east of it
+ * (the street layer). Its own narrow layer; returns it.
  */
 export function buildColumn(g: Geo, r: MouthRows): { pix: Pix; x: number; y: number } {
   const P = g.P;
-  const w = Math.round(P * COLUMN.w) + 8;
+  const cwid = Math.round(P * COLUMN.w) + 8;
+  const foot = Math.round(P * 0.2);
+  const w = cwid + foot * 2;
   const y0 = g.LY(g.RY(-1.2), 1) + Math.round(P * 0.24) + 4;
   const y1 = g.LY(g.RY(B5.street), 1);
   const pix = new Pix(w, y1 - y0);
-  known(pix, r.iron, r.rust, r.concrete);
+  known(pix, r.iron, r.rust, r.concrete, r.amber);
   const ch = Math.max(5, Math.round(P * 0.1));
-  const L = 4,
-    R = w - 4 - ch;
+  const L = foot + 4,
+    R = foot + cwid - 4 - ch;
   const bay = Math.round(P * 0.62);
-  const plinth = Math.round(P * 0.3);
+  const plinth = Math.round(P * 0.42);
   const H = pix.h - plinth;
+  // the market's warmth on the east edges, rising toward the street
+  const warmAt = (y: number): boolean => y > pix.h * 0.55 && hashInt(y >> 1, 3, 4163) < (y / pix.h - 0.55) * 2.6;
   for (let y = 0; y < H; y++) {
     // the chords
     for (const c0 of [L, R])
       for (let k = 0; k < ch; k++) {
         let i = k === 0 ? 3 : k === ch - 1 ? 1 : 2;
         if (y % 9 === 4 && (k === 1 || k === ch - 2)) i = 4;
+        if (k === ch - 1 && warmAt(y)) {
+          put(pix, c0 + k, y, r.amber, y > pix.h * 0.8 ? 2 : 1);
+          continue;
+        }
         if (hashInt(c0 + k, y >> 3, 4161) < 0.05) {
           put(pix, c0 + k, y, r.rust, 1);
           continue;
@@ -505,13 +543,31 @@ export function buildColumn(g: Geo, r: MouthRows): { pix: Pix; x: number; y: num
     // batten plates every few metres
     if (y % (bay * 5) < 5) for (let x = L; x < R + ch; x++) put(pix, x, y, r.iron, y % (bay * 5) === 0 ? 4 : 2);
   }
-  // the base plate and the plinth
-  for (let x = 0; x < w; x++) {
-    for (let k = 0; k < 4; k++) put(pix, x, H - 4 + k, r.iron, k === 0 ? 4 : 1);
-    for (let y = H; y < pix.h; y++) put(pix, x, y, r.concrete, y === H ? 4 : x === 0 ? 3 : x === w - 1 ? 1 : 2);
+  // the base plate with its gussets, bolted onto a stepped concrete footing
+  for (let x = L - 4; x < R + ch + 4; x++) for (let k = 0; k < 4; k++) put(pix, x, H - 4 + k, r.iron, k === 0 ? 4 : 1);
+  for (const gx of [L - 1, R + ch]) for (let k = 0; k < Math.round(P * 0.16); k++) for (let j = 0; j <= k >> 2; j++) put(pix, gx + (gx < L ? -j : j), H - 5 - Math.round(P * 0.16) + k, r.iron, gx < L ? 3 : 1);
+  const step = Math.round(plinth * 0.45);
+  for (let y = H; y < pix.h; y++) {
+    const lower = y >= H + step;
+    const a = lower ? 0 : foot >> 1,
+      b = lower ? w : w - (foot >> 1);
+    for (let x = a; x < b; x++) {
+      const top = lower ? H + step : H;
+      let i = y === top ? 5 : y === top + 1 ? 4 : x <= a + 1 ? 4 : x >= b - 2 ? 1 : 2;
+      if (y >= pix.h - 2) i = 1;
+      if (i === 2 && hashInt(x >> 1, y >> 1, 4165) < 0.1) i = 3;
+      // the market's light on the footing's east face
+      if (x >= b - 2 && y > top + 1) {
+        put(pix, x, y, r.amber, 1);
+        continue;
+      }
+      put(pix, x, y, r.concrete, i);
+    }
   }
-  put(pix, 2, H - 2, r.iron, 4);
-  put(pix, w - 3, H - 2, r.iron, 4);
+  for (const bx of [L + 1, R + ch - 2]) {
+    put(pix, bx, H - 2, r.iron, 4);
+    put(pix, bx, H - 6, r.iron, 4);
+  }
   void fbm;
   return { pix, x: g.X(COLUMN.x) - (w >> 1), y: y0 };
 }

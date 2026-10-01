@@ -14,15 +14,17 @@
 //   grass; the walk is terraces of packed earth with the road's flags pressed
 //   into their edges, down to the pool;
 // - break 2: a breach, its sides broken masonry stepping down to the wade;
-// - Stonetop: a tor of bedded, weathered boulders behind the bus shelter, each
-//   lit from its own outline, every shelf of the climb a boulder's level top
-//   exactly at its ledge, lichen on the lit faces, a darker core set back.
+// - Stonetop: a cairn of quarried blocks behind the bus shelter, stepping in
+//   as it rises, each block lit from the top-left with its own chipped
+//   corners, cracks and stains (blocks.ts); every shelf of the climb a ledge
+//   stone on a corbel with its shadow on the face; the upper courses in haze.
 //
 // Sized in P (the locked player height), pixel data only.
 
 import { fbm, fbm1, hashInt, type Pix } from "../../engine/index.ts";
 import { ashlar, boulders, coping, grassCap, known, put, shift, soil, type Boulder, type Ramp } from "./paint.ts";
 import { B2, type Geo } from "./geo.ts";
+import { blocks, castShadow, type Block } from "./blocks.ts";
 
 export interface RoadRows {
   stone: Ramp;
@@ -432,181 +434,243 @@ export const TOR: [number, number, number, number][] = [
   [159.5, 166.5, 17.3, 0.8],
 ];
 
-/** The tor's half-extents at an elevation: wide enough to bear every shelf above it, flaring into talus at the foot. */
+const TOR_GROUND = 2.0;
+
+/**
+ * The tor's extent at an elevation: wide enough to bear every shelf above it, tapering as it rises
+ * (a cairn, not a wall) and flaring into talus at its foot. Each course's ends then jog in by their
+ * own amount, so the sides step instead of running ruler-straight.
+ */
 function torSpan(y: number): [number, number] {
   let l = 1e9,
     r = -1e9;
   for (const [a, b, t] of TOR) {
     if (t < y) continue;
-    l = Math.min(l, a - 0.45);
-    r = Math.max(r, b + 0.45);
+    l = Math.min(l, a - 0.4);
+    r = Math.max(r, b + 0.4);
   }
   // the base sits behind the shelter and spreads at its foot
   if (y < 6.8) {
     l = Math.min(l, 159.2);
     r = Math.max(r, 170.9);
   }
-  // the tor tapers as it rises: each course a little wider than the one above, a talus flare at the foot
-  const taper = Math.max(0, 15.8 - y) * 0.09 + Math.max(0, 1 - (y - 2) / 2.6) * 0.7;
-  return [l - taper, r + taper];
+  const taper = Math.max(0, 16.5 - y) * 0.075 + Math.max(0, 1 - (y - 2) / 2.6) * 0.6;
+  return [Math.max(157.4, l - taper), Math.min(171.75, r + taper)];
 }
 
 /**
- * Stonetop: a tor of bedded granite rising behind the bus shelter, built as one stacked outcrop.
- * Courses of rounded blocks rise from the ground, each course no wider than the one under it,
- * so every block bears on the block below and every shelf of the climb is a ledge stone bedded
- * into the face (its lip lit, a shadow under it on the stone it juts from), never a slab over air.
- * The face darkens toward its foot and behind the shelter's roof (occlusion), the upper courses
- * take the white sky's light and a little of the plain's haze, lichen and tufts in the joints.
+ * Stonetop: a tor of bedded granite rising behind the bus shelter, stacked as a cairn. Courses of
+ * quarried blocks rise from the road, each course no wider than the one under it and stepping in
+ * as it rises, so every block bears on the block below. Every block has its own corners (some
+ * square and chipped, some worn round), a lit arris and west edge, an underside and east edge in
+ * shade, cracks, drip stains and lichen (blocks.ts). The joints between them are dark recess that
+ * holds the shade. Every shelf of the climb is a ledge stone jutting from its course on a corbel,
+ * a shadow cast on the face under it, the same stone and value as the blocks round it. The face
+ * darkens toward its foot and behind the shelter's roof, the upper courses fade into the plain's
+ * haze; the summit is three capstones with a small cairn on its east end.
  */
 export function buildTor(pix: Pix, g: Geo, x0: number, y0: number, r: RoadRows): void {
   const P = g.P;
   const X = (wx: number): number => g.X(wx) - x0;
   const Y = (wy: number): number => g.Y(wy) - y0;
   known(pix, r.tor, r.lichen, r.ochre, r.grass, r.moss);
-  const lich: Ramp = r.lichen;
-  const ground = 2.0;
-  // --- the core: courses from the ground up. Every shelf's underside is a course top, so a shelf
-  // bears on the course under it; each course spans the tor's width at its top (never wider than
-  // the one below), its blocks of mixed sizes, some sitting a little low (a dark gap over them)
+  const ground = TOR_GROUND;
+  const summit = TOR[TOR.length - 1]!;
+  // --- the courses: every shelf's underside is a course top, so a shelf bears on the course under it
   const bounds: number[] = [ground];
   {
     const tops = [...new Set(TOR.map(([, , t, th]) => +(t - th).toFixed(2)))].sort((p, q) => p - q);
     for (const t of tops) {
       const last = bounds[bounds.length - 1]!;
       if (t - last < 0.5) continue;
-      const parts = Math.ceil((t - last) / 1.5);
+      const parts = Math.ceil((t - last) / 1.3);
       for (let k = 1; k <= parts; k++) bounds.push(+(last + ((t - last) * k) / parts).toFixed(3));
     }
   }
   const bearing = (x0w: number, x1w: number, yt: number): boolean => TOR.some(([a, b, t, th]) => Math.abs(t - th - yt) < 0.01 && b > x0w && a < x1w);
-  const core: Boulder[] = [];
+  const radii = (seed: number, hmax: number): [number, number, number, number] =>
+    [0, 1, 2, 3].map((k) => {
+      const h = hashInt(seed, k + 50, 505);
+      // mostly tight, worn corners; now and then a stone weathered round
+      return Math.round(Math.min(hmax, P * (h < 0.55 ? 0.04 + 0.08 * h : 0.12 + 0.22 * (h - 0.55)))) as number;
+    }) as [number, number, number, number];
+  const core: Block[] = [];
   const courseOf: number[] = [];
+  // each course's ends inside the ends of the course it stands on (nothing overhangs the air)
+  let below: [number, number] = [-1e9, 1e9];
   for (let c = 0; c < bounds.length - 1; c++) {
     const yb = bounds[c]!,
       yt = bounds[c + 1]!;
     const [l, rr] = torSpan(yt);
-    const inL = 0.1 + 0.3 * hashInt(c, 2, 505),
-      inR = 0.1 + 0.3 * hashInt(c, 3, 505);
-    let x = l + inL;
-    const xe = rr - inR;
+    const inL = 0.08 + 0.42 * hashInt(c, 2, 505),
+      inR = 0.08 + 0.42 * hashInt(c, 3, 505);
+    let x = Math.max(l + inL, below[0]);
+    const xe = Math.min(rr - inR, below[1]);
+    below = [x, xe];
     let j = 0;
     while (x < xe - 0.3) {
-      let w = 1.1 + 2.0 * hashInt(c, j + 10, 505) * hashInt(c, j + 11, 505) + 0.6 * hashInt(c, j + 12, 505);
-      if (xe - x - w < 0.9) w = xe - x;
-      // a block may sit low in its course, unless a shelf bears on it
-      const low = bearing(x, x + w, yt) ? 0 : hashInt(c, j + 40, 505) < 0.35 ? 0.08 + 0.18 * hashInt(c, j + 41, 505) : 0;
-      core.push({
-        x0: X(x) + 1,
-        x1: X(x + w) - 1,
-        y0: Y(yt - low),
-        // bottoms jog a little below the course line, over the course under it (drawn later, in front)
-        y1: Y(yb) + 1 + (c > 0 ? Math.round(P * 0.12 * hashInt(c, j + 42, 505)) : 0),
-        r: Math.min(P * (0.22 + 0.3 * hashInt(c, j + 20, 505)), P * (yt - low - yb) * 0.45),
-        tone: hashInt(c, j + 30, 505) < 0.2 ? -1 : hashInt(c, j + 31, 505) < 0.12 ? 1 : 0,
-        seed: 506 + c * 13 + j,
-      });
-      courseOf.push(c);
+      let w = 0.7 + 2.2 * hashInt(c, j + 10, 505) * hashInt(c, j + 11, 505) + 0.5 * hashInt(c, j + 12, 505);
+      if (xe - x - w < 0.7) w = xe - x;
+      const low = bearing(x, x + w, yt) ? 0 : hashInt(c, j + 40, 505) < 0.3 ? 0.06 + 0.16 * hashInt(c, j + 41, 505) : 0;
+      // a big course is sometimes laid as two thinner stones, one over the other
+      const split = yt - low - yb > 1.0 && w < 1.6 && hashInt(c, j + 43, 505) < 0.35;
+      const hpx = Y(yb) - Y(yt - low);
+      const jog = c > 0 ? Math.round(P * 0.1 * hashInt(c, j + 42, 505)) : 0;
+      const tone = hashInt(c, j + 30, 505) < 0.22 ? -1 : hashInt(c, j + 31, 505) < 0.14 ? 1 : 0;
+      if (split) {
+        const ym = Y(yt - low) + Math.round(hpx * (0.4 + 0.2 * hashInt(c, j + 44, 505)));
+        core.push({ x0: X(x) + 1, x1: X(x + w) - 1, y0: Y(yt - low), y1: ym + 1, r: radii(506 + c * 13 + j, hpx * 0.3), tone, seed: 506 + c * 13 + j });
+        courseOf.push(c);
+        core.push({ x0: X(x) + 2 + Math.round(P * 0.05 * hashInt(c, j + 45, 505)), x1: X(x + w) - 1, y0: ym, y1: Y(yb) + 1 + jog, r: radii(906 + c * 13 + j, hpx * 0.3), tone: tone - (hashInt(c, j + 46, 505) < 0.5 ? 1 : 0), seed: 906 + c * 13 + j });
+        courseOf.push(c);
+      } else {
+        core.push({ x0: X(x) + 1, x1: X(x + w) - 1, y0: Y(yt - low), y1: Y(yb) + 1 + jog, r: radii(506 + c * 13 + j, hpx * 0.45), tone, seed: 506 + c * 13 + j });
+        courseOf.push(c);
+      }
       x += w;
       j++;
     }
   }
-  // the dark of the crevices between the blocks: each course backed in recess inside its outer
-  // blocks, the band at its top only where the course above covers it too (no dark line on an open step)
+  // --- the joints: each course backed in dark recess inside its outer blocks (the band at its top
+  // only where the course above covers it too: no dark line along an open step)
   {
-    const ranges: [number, number, number, number][] = []; // [x0, x1, yTop, yBot] px per course
+    const ranges: [number, number, number, number][] = [];
     for (let c = 0; c < bounds.length - 1; c++) {
       const cur = core.filter((_, i) => courseOf[i] === c);
       if (!cur.length) continue;
       const first = cur[0]!,
         last = cur[cur.length - 1]!;
-      ranges.push([Math.round(first.x0 + first.r), Math.round(last.x1 - last.r), Y(bounds[c + 1]!), Y(bounds[c]!)]);
+      ranges.push([Math.round(first.x0 + 6), Math.round(last.x1 - 6), Y(bounds[c + 1]!), Y(bounds[c]!)]);
     }
     for (let c = 0; c < ranges.length; c++) {
       const [a0, a1, top, bot] = ranges[c]!;
-      // the top course is covered by the summit's slab
-      const sm = TOR[TOR.length - 1]!;
-      const up = ranges[c + 1] ?? [X(sm[0]) + 4, X(sm[1]) - 4, 0, 0];
+      const up = ranges[c + 1] ?? [X(summit[0]) + 6, X(summit[1]) - 6, 0, 0];
       const band = top + Math.round(P * 0.14);
       for (let y = top - 2; y < bot + 2; y++) {
-        let x0 = a0,
-          x1 = a1;
+        let xa = a0,
+          xb = a1;
         if (y < band) {
-          if (!up) continue;
-          x0 = Math.max(x0, up[0]);
-          x1 = Math.min(x1, up[1]);
+          xa = Math.max(xa, up[0]);
+          xb = Math.min(xb, up[1]);
         }
-        for (let x = x0; x < x1; x++) if (!pix.solid(x, y)) put(pix, x, y, r.tor, hashInt(x >> 1, y >> 1, 503) < 0.2 ? 1 : 0, 0.06);
+        // the recess darkest deep in a joint, a step lighter where it opens
+        for (let x = xa; x < xb; x++) if (!pix.solid(x, y)) put(pix, x, y, r.recess, hashInt(x >> 1, y >> 1, 503) < 0.15 ? 1 : 0, 0.04);
       }
     }
   }
   const roofY = Y(B2.shelter.roof[2]);
-  const occl = (x: number, y: number): number => {
-    // the foot and the shelter's lee in shade; the top courses lit by the open sky
+  const gy = Y(ground),
+    sy = Y(summit[2]);
+  const occl = (_x: number, y: number): number => {
     let d = 0;
     if (y > roofY - P * 0.2) d -= 1;
-    if (y > Y(ground) - P * 0.5) d -= 1;
-    if (y < Y(14.5)) d += 1;
-    void x;
+    if (y > gy - P * 0.5) d -= 1;
     return d;
   };
-  boulders(pix, core, { stone: r.tor, base: 3, light: [-0.8, -1], rim: 3, bedding: Math.round(P * 0.42), rough: 1.6, lichen: { ramp: lich, amount: 0.14 }, shade: occl, fog: (_x, y) => 0.05 + 0.07 * Math.max(0, Math.min(1, (Y(ground) - y) / (Y(ground) - Y(17)))) });
-  // --- the shelves: ledge stones bedded into the face, their lips lit and level at the ledge ----
-  const shelves: Boulder[] = TOR.map(([a, b, t, th], i) => ({ x0: X(a), x1: X(b), y0: Y(t), y1: Y(t - th), r: Math.min(P * 0.22, (Y(t - th) - Y(t)) * 0.45), tone: 0, seed: 520 + i }));
-  // the shadow each shelf casts on the face under it (the light is high and to the west)
-  for (const s of shelves) {
-    const sh = Math.round(P * 0.32);
-    for (let lx = s.x0 + Math.round(P * 0.12); lx < s.x1 + Math.round(P * 0.1); lx++)
-      for (let k = 0; k < sh; k++) {
-        if (!pix.solid(lx, s.y1 + k)) continue;
-        const fall = k < sh * 0.4 ? -2 : -1;
-        if (k > sh * 0.4 && hashInt(lx, s.y1 + k, 547) < (k - sh * 0.4) / (sh * 0.6)) continue;
-        shift(pix, lx, s.y1 + k, fall);
-      }
-  }
-  boulders(pix, shelves, {
-    stone: r.tor,
-    base: 4,
-    light: [-0.8, -1],
-    rim: 3,
-    bedding: 0,
-    rough: 1.0,
-    lichen: { ramp: lich, amount: 0.22 },
-    flatTop: () => Math.round(P * 0.07),
+  // the plain's haze thickens with height: the upper courses fade toward the sky's grey
+  const fog = (_x: number, y: number): number => {
+    const t = Math.max(0, Math.min(1, (gy - y) / (gy - sy)));
+    return 0.03 + 0.3 * t * t;
+  };
+  const kit = { stone: r.tor, base: 3, chips: 0.45, nicks: 0.9, cracks: 1.1, drips: 0.7, rough: 1, lichen: { ramp: r.lichen, amount: 0.12 }, spots: { ramp: r.ochre, amount: 0.22 }, shade: occl, fog };
+  blocks(pix, core, kit);
+  // --- the ledge stones: each juts from its course on a corbel, the same stone as the face -------
+  const shelves: Block[] = [];
+  const corbels: Block[] = [];
+  TOR.slice(0, -1).forEach(([a, b, t, th], i) => {
+    const s0 = X(a),
+      s1 = X(b),
+      st = Y(t),
+      sb = Y(t - th);
+    shelves.push({ x0: s0, x1: s1, y0: st, y1: sb + 2, r: [Math.round(P * 0.05), Math.round(P * 0.07), Math.round(P * 0.1), Math.round(P * 0.08)], tone: 0, seed: 520 + i, flat: true });
+    // the corbel under it: a short stone bedded in the course below
+    const cw = Math.round((s1 - s0) * (0.22 + 0.08 * hashInt(i, 1, 529)));
+    const cx = Math.round(s0 + (s1 - s0) * (0.2 + 0.4 * hashInt(i, 2, 529)));
+    corbels.push({ x0: cx, x1: cx + cw, y0: sb - 2, y1: sb + Math.round(P * 0.46), r: [2, 2, Math.round(P * 0.26), Math.round(P * 0.08)], tone: 0, seed: 530 + i });
   });
-  // orange lichen in a few sheltered spots on the core, grass and tufts in the joints and on the shelves' backs
-  for (const s of core) {
-    if (hashInt(s.seed, 40, 541) < 0.65) continue;
-    const w = s.x1 - s.x0;
-    const cx = Math.round(s.x0 + w * (0.2 + 0.6 * hashInt(s.seed, 1, 541))),
-      cy = Math.round(s.y0 + (s.y1 - s.y0) * (0.3 + 0.4 * hashInt(s.seed, 9, 541)));
-    const rr = 2 + Math.floor(hashInt(s.seed, 3, 541) * 3);
-    for (let yy = -rr; yy <= rr; yy++)
-      for (let xx = -rr * 2; xx <= rr * 2; xx++) {
-        if ((xx * xx) / 4 + yy * yy > rr * rr || hashInt((cx + xx) >> 1, (cy + yy) >> 1, 543) < 0.3) continue;
-        if (pix.solid(cx + xx, cy + yy)) put(pix, cx + xx, cy + yy, r.ochre, yy < 0 ? 2 : 1);
-      }
+  blocks(pix, corbels, { ...kit, cracks: 0.4, lichen: undefined, spots: undefined, chips: 0.6 });
+  // the corbel's shadow on the face east of it and under it
+  for (const c of corbels) castShadow(pix, c.x1, c.x1 + Math.round(P * 0.08), c.y0 + 2, Math.round(P * 0.26), 4, 537, (x, y, d) => shift(pix, x, y, d));
+  // --- the summit: three capstones, their tops the summit's level line, their bottoms jogging --
+  const caps: Block[] = [];
+  {
+    const [a, b, t] = summit;
+    const cuts = [a, a + (b - a) * (0.3 + 0.08 * hashInt(1, 1, 541)), a + (b - a) * (0.66 + 0.08 * hashInt(1, 2, 541)), b];
+    for (let k = 0; k < 3; k++) {
+      const outer = k === 0 ? 0 : k === 2 ? 1 : -1;
+      caps.push({
+        x0: X(cuts[k]!) + (k > 0 ? 1 : 0),
+        x1: X(cuts[k + 1]!) - (k < 2 ? 1 : 0),
+        y0: Y(t),
+        y1: Y(t - 0.8) + 2 + Math.round(P * 0.12 * hashInt(k, 3, 541)),
+        r: [outer === 0 ? Math.round(P * 0.16) : 3, outer === 1 ? Math.round(P * 0.2) : 3, outer === 1 ? Math.round(P * 0.28) : Math.round(P * 0.08), outer === 0 ? Math.round(P * 0.22) : Math.round(P * 0.06)],
+        tone: k === 1 ? 0 : 1,
+        seed: 545 + k,
+        flat: true,
+      });
+    }
   }
-  for (const s of shelves) {
-    const w = s.x1 - s.x0;
-    // tufts at the shelf's back corners (never on its walking line's middle)
-    grassCap(pix, { x0: s.x0 + 2, x1: Math.round(s.x0 + w * 0.16), top: () => s.y0, grass: r.grass, seed: s.seed + 7, depth: 1, blades: Math.round(P * 0.1), cover: 0.9, lean: 0.4 });
-    grassCap(pix, { x0: Math.round(s.x1 - w * 0.12), x1: s.x1 - 2, top: () => s.y0, grass: r.grass, seed: s.seed + 8, depth: 1, blades: Math.round(P * 0.08), cover: 0.9, lean: 0.4 });
+  blocks(pix, [...shelves, ...caps], { ...kit, chips: 0.35, cracks: 0.8, lichen: { ramp: r.lichen, amount: 0.2 } });
+  // each ledge's and capstone's shadow down the face under it (the light is high and to the west)
+  for (const s of [...shelves, ...caps]) castShadow(pix, s.x0 + Math.round(P * 0.1), s.x1 + Math.round(P * 0.06), s.y1, 4, 7, 547, (x, y, d) => shift(pix, x, y, d));
+  // a small cairn on the summit's east end
+  {
+    const t = Y(summit[2]);
+    const cx = X(166.08);
+    const stack: Block[] = [
+      { x0: cx, x1: cx + Math.round(P * 0.42), y0: t - Math.round(P * 0.24), y1: t + 1, r: [6, 8, 4, 3], tone: 0, seed: 561 },
+      { x0: cx + Math.round(P * 0.06), x1: cx + Math.round(P * 0.34), y0: t - Math.round(P * 0.42), y1: t - Math.round(P * 0.23), r: [5, 6, 3, 3], tone: 1, seed: 562 },
+      { x0: cx + Math.round(P * 0.1), x1: cx + Math.round(P * 0.27), y0: t - Math.round(P * 0.56), y1: t - Math.round(P * 0.41), r: [5, 5, 3, 3], tone: 1, seed: 563 },
+    ];
+    blocks(pix, stack, { ...kit, cracks: 0.3, chips: 0.5, drips: 0, spots: undefined, lichen: { ramp: r.lichen, amount: 0.25 } });
+    for (const s of stack) for (let x = s.x0; x < s.x1; x++) if (pix.solid(x, s.y1)) shift(pix, x, s.y1, -2);
   }
-  // grass where the core's courses step in (the tops of the blocks that are open to the sky)
+  // grass and tufts at the ledges' back corners (never on their walking line's middle)
+  for (const s of [...shelves, ...caps]) {
+    const w = s.x1 - s.x0;
+    grassCap(pix, { x0: s.x0 + 3, x1: Math.round(s.x0 + w * 0.14), top: () => s.y0, grass: r.grass, seed: s.seed + 7, depth: 1, blades: Math.round(P * 0.1), cover: 0.9, lean: 0.4 });
+    grassCap(pix, { x0: Math.round(s.x1 - w * 0.1), x1: s.x1 - 3, top: () => s.y0, grass: r.grass, seed: s.seed + 8, depth: 1, blades: Math.round(P * 0.08), cover: 0.9, lean: 0.4 });
+  }
+  // grass where the courses step in (the tops of blocks open to the sky), hanging a little over the edge
   for (const c of core) {
-    for (let lx = c.x0 + 3; lx < c.x1 - 3; lx++) {
+    for (let lx = c.x0 + 4; lx < c.x1 - 4; lx++) {
       if (pix.solid(lx, c.y0 - 2) || !pix.solid(lx, c.y0 + 2)) continue;
-      if (hashInt(lx >> 2, c.seed, 549) < 0.45) continue;
-      const hh = 1 + Math.floor(hashInt(lx, c.seed, 551) * Math.round(P * 0.09));
+      if (hashInt(lx >> 2, c.seed, 549) < 0.4) continue;
+      const hh = 1 + Math.floor(hashInt(lx, c.seed, 551) * Math.round(P * 0.1));
       for (let k = 0; k < hh; k++) put(pix, lx, c.y0 + 1 - k, r.grass, k === hh - 1 ? 4 : 2 + (k & 1));
     }
   }
-  // the tor's foot: its contact with the road, dark
-  for (let lx = X(158); lx < X(172); lx++) {
-    const y = Y(ground);
-    for (let k = 1; k <= 3; k++) if (pix.solid(lx, y - k)) shift(pix, lx, y - k, k === 1 ? -2 : -1);
-  }
   void fbm;
   void fbm1;
+}
+
+/**
+ * Stonetop's foot, after the road is painted: blocks fallen from the tor lying on the road east of
+ * the shelter and behind the climbing stones, each with its contact shadow on the road.
+ */
+export function buildTorFoot(pix: Pix, g: Geo, x0: number, y0: number, r: RoadRows): void {
+  const P = g.P;
+  const X = (wx: number): number => g.X(wx) - x0;
+  const Y = (wy: number): number => g.Y(wy) - y0;
+  const gy = Y(TOR_GROUND);
+  const fallen: Block[] = [
+    { x0: X(170.95), x1: X(171.62), y0: gy - Math.round(P * 0.44), y1: gy + 1, r: [Math.round(P * 0.12), Math.round(P * 0.2), 4, 3], tone: 0, seed: 571 },
+    { x0: X(170.7), x1: X(171.02), y0: gy - Math.round(P * 0.2), y1: gy + 1, r: [6, 4, 3, 3], tone: -1, seed: 572 },
+    { x0: X(171.6), x1: X(171.85), y0: gy - Math.round(P * 0.14), y1: gy + 1, r: [5, 5, 2, 2], tone: 0, seed: 573 },
+  ];
+  blocks(pix, fallen, { stone: r.tor, base: 3, chips: 0.7, nicks: 1, cracks: 0.8, drips: 0.3, rough: 1, lichen: { ramp: r.lichen, amount: 0.18 }, shade: (_x, y) => (y > gy - 4 ? -1 : 0) });
+  // contact: the road dark right under each, the shadow running a little east (the light is west)
+  for (const s of fallen)
+    for (let x = s.x0 + 2; x < s.x1 + Math.round(P * 0.1); x++)
+      for (let k = 0; k < 4; k++) if (pix.solid(x, gy + k)) shift(pix, x, gy + k, k < 2 ? -2 : -1);
+  // pebbles spilled from them
+  for (let j = 0; j < 9; j++) {
+    const px = X(170.4 + 1.5 * hashInt(j, 1, 575));
+    const w = 2 + Math.floor(hashInt(j, 2, 575) * 4);
+    for (let k = 0; k < w; k++) {
+      put(pix, px + k, gy - 1, r.tor, k === 0 ? 5 : 3);
+      if (w > 3 && k > 0 && k < w - 1) put(pix, px + k, gy - 2, r.tor, 4);
+      shift(pix, px + k, gy, -1);
+    }
+  }
 }
