@@ -104,9 +104,10 @@ export function liftScene(geo: LiftGeo): SceneDef {
       }
       // the ceiling rock you pass through: dark, lit amber from beneath, pipes and cables through it
       L.push(ceilingRock(u, Math.round(F.y(geo.rockTop, 1.3)), Math.round(F.y(geo.rockBottom, 1.3))));
-      // the spire's stem: its face on the right (above ground), window slits streaming past
+      // the spire's stem: its face on the right (above ground), window slits streaming past. It stands
+      // in the room's plane: the landings at the break and the Crown and the beacons are fixed to it.
       {
-        const d = 1.15;
+        const d = 1;
         const ex = W / 2 + 2.4 * 80;
         const cut = Math.round(F.y(geo.rockTop, d)) + 300;
         L.push(spireFace({ name: "stem-face", depth: d, edge: { x0: ex, x1: ex, y0: cut, y1: 0, side: 1 }, tier: Math.round((1.9 * 80) / d), panel: Math.round((1.3 * 80) / d), rib: Math.round((3.4 * 80) / d), windows: 0.2, shade: 0.2, seed: 29, wet: true, bounds: { y0: -10, y1: cut } }));

@@ -37,8 +37,9 @@ d1.floor(262, 263.5, -32, 1.0, { surface: "tile" });
 d1.floor(266.5, 268, 40, 0.5, { surface: "metal" });
 d1.floor(266.5, 268, 76, 0.5, { surface: "metal" });
 d1.px("spireDeck", "landing-foot", 262, -32, { width: 1.5 * 80, depth: 0.6, kind: "landing", lip: "none" });
-d1.px("spireDeck", "landing-break", 266.5, 40, { width: 1.5 * 80, depth: 0.5, kind: "landing", lip: "none" });
-d1.px("spireDeck", "landing-crown", 266.5, 76, { width: 1.5 * 80, depth: 0.5, kind: "landing", lip: "none" });
+// (the stem's face stands at x 267.4: each landing's outer end sits on a cantilever back into it)
+d1.px("spireDeck", "landing-break", 266.5, 40, { width: 1.5 * 80, depth: 0.5, kind: "landing", lip: "none", cantilever: 0.9 });
+d1.px("spireDeck", "landing-crown", 266.5, 76, { width: 1.5 * 80, depth: 0.5, kind: "landing", lip: "none", cantilever: 0.9 });
 
 // the car, its stops, its cables up out of the shaft
 d1.prop("spire-lift", "spire-lift", 265, -32, {

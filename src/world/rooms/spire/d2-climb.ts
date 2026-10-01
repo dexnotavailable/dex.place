@@ -70,7 +70,8 @@ const flight = (id: string, x: number, y: number, dir: 1 | -1): void => {
   d2.stairs(x + dir * 2.4, y + 1.6, y + 6, dir, y - 0.15);
   d2.px("spireStair", id, x, y, {}, { flip: dir < 0 });
   // the housings and the stringer throw their shadow on the face
-  shade(Math.min(x, x + dir * 2.4), y + 1.6, Math.max(x, x + dir * 2.4), y + 1.6, 1.85);
+  shade(Math.min(x, x + dir * 1.2), y + 0.8, Math.max(x, x + dir * 1.2), y + 0.8, 1.05);
+  shade(Math.min(x + dir * 1.2, x + dir * 2.4), y + 1.6, Math.max(x + dir * 1.2, x + dir * 2.4), y + 1.6, 1.85);
   shade(x + dir * 2.4, y + 1.6, x + dir * 9, y + 6, 0.75);
 };
 

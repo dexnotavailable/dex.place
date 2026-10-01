@@ -365,8 +365,6 @@ vec4 layer(vec2 p, vec2 s) {
   if (body && px2 < 1.0) sh = 0.12;
   else if (body && px2 < 2.0) sh += 0.07;
   else if (body && px2 > pw - 2.0) sh -= 0.05;
-  // the plate's own surface: a faint mottle in a few flat clusters (not noise in every pixel)
-  if (body) sh += 0.022 * (floor(vnoise(vec2(p.x / 9.0, p.y / 6.0) + ph * 9.0) * 2.0) - 0.5);
   // a row of rivet heads under every lip (lit dot, its own little shadow under it), and down each seam
   float lipRow = lipH + (girdle ? 9.0 : 6.0);
   if (body && abs(ty - lipRow) < 0.5 && mod(p.x + tier * 3.0, 8.0) < 1.0) sh = 0.6;
@@ -375,15 +373,15 @@ vec4 layer(vec2 p, vec2 s) {
   // weather: old water and rust stains running down from each lip, a few px wide, fading as they fall
   float sc = floor(p.x / 3.0);
   float sk = hash2(vec2(sc, tier * 1.7 + ${f(o.seed + 23)}));
-  if (body && sk < 0.22) {
-    float len = 10.0 + sk * 160.0;
+  if (body && sk < 0.1 && mod(p.x, 3.0) < 2.0) {
+    float len = 14.0 + sk * 600.0;
     float st = (ty - lipH) / len;
     if (st < 1.0) sh -= (st < 0.35 ? 0.05 : st < 0.7 ? 0.035 : 0.02) * step(bayer4(p) * 0.6, 1.0 - st);
   }
   // a hatch now and then
   if (!quiet && body && ph > 0.9 && px > pw * 0.3 && px < pw * 0.3 + 14.0 && ty > T * 0.45 && ty < T * 0.45 + 18.0) {
     float hx = px - pw * 0.3, hy = ty - T * 0.45;
-    sh = (hx < 1.0 || hy < 1.0) ? 0.5 : (hx > 12.0 || hy > 16.0) ? 0.12 : 0.26;
+    sh = (hx < 1.0 || hy < 1.0) ? 0.5 + ${f(o.lift ?? 0)} : (hx > 12.0 || hy > 16.0) ? 0.12 : 0.26 + ${f((o.lift ?? 0) * 0.7)};
   }
   ${o.rib > 0 ? `
   // buttress ribs standing proud: light on the planet side, a cast shadow on the other
