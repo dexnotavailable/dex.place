@@ -24,7 +24,7 @@
 // its per-layer internals through one typed seam (Internals below), checked
 // at start-up; ENGINE.md lists the ask to make it public.
 
-import { PixelRenderer, PixelWorld, LAB_LIGHTING, presetHit, type Hit, type HitType, type LayerName, type PointLight, type Prop as PxProp, type Recipe, type WorldEvent, type Lighting as PxLighting } from "../../pixel/index.ts";
+import { PixelRenderer, PixelWorld, LAB_LIGHTING, presetHit, type Hit, type HitType, type LayerName, type Part, type PointLight, type Prop as PxProp, type Recipe, type WorldEvent, type Lighting as PxLighting } from "../../pixel/index.ts";
 import { findRecipe } from "../../pixel/registry.ts";
 import type { Lighting } from "../render/renderer.ts";
 import { FRAME } from "../config.ts";
@@ -81,20 +81,23 @@ export class PixelDraw {
    * Draw these layers of a pixel world into the bound target (the world's
    * main target, 1280 x 720). Leaves blending as the world renderer expects.
    */
-  draw(world: PixelWorld, layers: LayerName[], cam: { x: number; y: number }, lighting: Lighting, lights: PointLight[], o: { glows?: boolean; particles?: "solid" | "add" | "both" } = {}): void {
+  draw(world: PixelWorld, layers: LayerName[], cam: { x: number; y: number }, lighting: Lighting, lights: PointLight[], o: { glows?: boolean; particles?: "solid" | "add" | "both"; mirror?: number; only?: (p: Part) => boolean } = {}): void {
     const gl = this.gl;
     for (const p of world.drainRetired()) this.pr.release(p);
-    const parts = world.allParts().filter((p) => p.visible && p.grid.count > 0 && layers.includes(p.layer));
+    const parts = world.allParts().filter((p) => p.visible && p.grid.count > 0 && layers.includes(p.layer) && (!o.only || o.only(p)));
     if (!parts.length && !o.glows && !o.particles) return;
     this.io.frame++;
     this.io.syncMaterials();
     const L: PxLighting = { ...LAB_LIGHTING, ...(lighting as Partial<PxLighting>) };
     this.io.useCell(L, lights.slice(0, 16), "lit");
     gl.bindVertexArray(null);
+    // a reflection pass: every part mirrored about this view row (world sprites and the water share one waterline)
+    this.pr.mirror = o.mirror ?? -1;
     for (const layer of layers) {
       const list = parts.filter((p) => p.layer === layer).sort((a, b) => a.z - b.z);
       for (const p of list) this.io.drawPart(p, cam, layer, world);
     }
+    this.pr.mirror = -1;
     if (o.particles === "solid" || o.particles === "both") this.io.drawParticles(world, cam, false);
     if (o.glows) this.io.drawGlows(world, cam);
     if (o.particles === "add" || o.particles === "both") this.io.drawParticles(world, cam, true);

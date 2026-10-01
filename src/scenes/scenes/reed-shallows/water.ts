@@ -66,13 +66,13 @@ vec4 layer(vec2 p, vec2 s) {
   vec3 fr = ${o.rings ? "footRings(wx, depth, G - hor + 1.0)" : "vec3(0.0)"};
 
   // sideways shear per row (stronger inside a ruffle and where the big ring passes)
-  float amp = mix(0.5, ${f(o.shear)}, k) * (1.0 + 1.4 * ruff) + fr.y * ${f(3 * hu)} + fr.z * ${f(2 * hu)};
+  float amp = mix(0.5, ${f(o.shear)}, k) * (1.0 + 1.4 * ruff) * nearWl(s.y) + fr.y * ${f(3 * hu)} + fr.z * ${f(2 * hu)};
   float ph = s.y * (1.25 - k * 0.75) / ${f(hu)} + tm * 0.8 + vnoise(vec2(wp.x / ${f(37 * u)}, s.y * 0.35 / ${f(hu)})) * 5.0;
   float dx = floor(sin(ph) * amp * (0.55 + 0.45 * vnoise(vec2(wp.x / ${f(21 * u)} + tm * 0.15, s.y * 0.6))) + 0.5);
   float jn = vnoise(vec2(wp.x / ${f(11 * u)} + tm * 0.3, s.y * 0.45 - tm * 0.9));
-  float dy = floor((jn - 0.5) * 2.0 * ${f(o.jitter)} * k * (0.6 + ruff + fr.y) + 0.5);
-  float ry = clamp(s.y + dy, hor + 1.0, uRes.y - 1.0);
-  ivec2 rp = ivec2(clamp(s.x + dx, 0.0, uRes.x - 1.0), uRes.y - 1.0 - ry);
+  float dy = floor((jn - 0.5) * 2.0 * ${f(o.jitter)} * k * nearWl(s.y) * (0.6 + ruff + fr.y) + 0.5);
+  float ry = clamp(s.y + dy, hor + 1.0, reflMaxY());
+  ivec2 rp = reflPx(s.x + dx, ry);
   vec3 refl = texelFetch(uRefl, rp, 0).rgb;
 
   // breaks of sun on the water: the reflection thins, the water brightens

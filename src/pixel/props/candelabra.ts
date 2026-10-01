@@ -186,6 +186,7 @@ export const candelabra = defineRecipe<CandelabraParams, Refs>({
       use(c) {
         if (c.refs.flames.some((f) => f.target === 0)) return "relighting";
       },
+      can: (c) => c.refs.flames.some((f) => f.target === 0),
     },
     guttering: {
       after: [0.8, "out"],

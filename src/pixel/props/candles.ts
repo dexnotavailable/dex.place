@@ -82,6 +82,7 @@ export const candles = defineRecipe<CandleParams, Refs>({
       update: (c, dt) => step(c, dt),
       hit: (c, h) => onHit(c, h.hit, h.contact),
       use: (c) => (c.refs.flames.some((f) => f.target === 0) ? "relighting" : undefined),
+      can: (c) => c.refs.flames.some((f) => f.target === 0),
     },
     guttering: {
       after: [0.8, "out"],

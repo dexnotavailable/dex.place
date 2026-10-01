@@ -75,6 +75,9 @@ export interface GameOpts {
 }
 
 /** Something the player can use: a stub prop or a pixel-matter prop. */
+/** Pixel recipes that never mirror in water: ambient motes and invisible state keepers. */
+const REFLECT_SKIP = new Set(["dust", "moths", "paper", "ringwater-state", "plainRumble", "puddle"]);
+
 type Near = { kind: "stub"; prop: Prop; it: Interaction } | { kind: "pixel"; prop: PxProp };
 
 /** Duck-typed door protocol: a prop that finishes opening (doors, the ferry boat). */
@@ -704,11 +707,14 @@ export class WorldGame {
       this.begin();
       return;
     }
-    if (this.mode !== "play" || this.panels.open || !this.near || this.away) return;
+    if (this.mode !== "play" || this.panels.open || this.away) return;
+    // E stands you up from a bench (findNear finds nothing while sitting, so this comes before it)
     if (this.sitting) {
       this.stand();
       return;
     }
+    // not through a room change, and not twice in the pause of a rest
+    if (!this.near || this.trans || this.resting > 0) return;
     const n = this.near;
     if (n.kind === "stub") n.it.use(this.propWorld);
     else n.prop.use();
@@ -1245,6 +1251,25 @@ export class WorldGame {
     r.shade(out);
   }
 
+  /**
+   * Pixel matter in the reflection pass: the same parts the main pass draws on the player plane (far, back and
+   * middle layers), flipped about the room's waterline. Not the ground (a deck mirrors as the terrain art does),
+   * not ambient dust, moths or paper, not what the placement keeps out with `reflect: false`.
+   */
+  private drawPixelReflection(lights: PointLight[]): void {
+    const px = this.room.pixel;
+    const wl = this.room.def.waterline;
+    if (!px || px.empty || wl === undefined) return;
+    const r = this.r;
+    r.flush();
+    const off = this.room.noReflect;
+    const lighting = this.weather.lighting(this.room.def.lighting);
+    this.pixelDraw.draw(px.world, ["far", "bg", "mid"], { x: r.camX, y: r.camY }, lighting, lights, {
+      mirror: wl - r.camY,
+      only: (p) => !p.ground && !!p.prop && !off.has(p.prop.id) && !REFLECT_SKIP.has(p.prop.recipe.id),
+    });
+  }
+
   /** Pixel-matter layers at this point of the draw order (flushes the world batch around them). */
   private drawPixel(layers: LayerName[], lights: PointLight[], o: { glows?: boolean; particles?: "solid" | "add" | "both" } = {}): void {
     const px = this.room.pixel;
@@ -1259,10 +1284,12 @@ export class WorldGame {
     const r = this.r;
     const room = this.room;
     const [cx] = this.camera.view();
-    const reflects = (p: Prop): boolean => !reflection || !!room.def.props.find((pl) => pl.id === p.id)?.reflect;
+    // in a room with water everything on the player plane mirrors in it unless its placement says `reflect: false`
+    const reflects = (p: Prop): boolean => !reflection || room.def.props.find((pl) => pl.id === p.id)?.reflect !== false;
     room.drawProps(this.canvasApi, "far", cx, reflects);
     room.drawProps(this.canvasApi, "back", cx, reflects);
     if (!reflection) this.drawPixel(["far", "bg"], lights);
+    else this.drawPixelReflection(lights);
     room.drawTerrain(r, false, reflection);
     if (!reflection) this.drawContactShadows();
     if (!reflection) room.drawProps(this.canvasApi, "decal", cx);
@@ -1337,6 +1364,7 @@ export class WorldGame {
       // the backdrop is composed for the 1280x720 design view: where that camera stands, and where its view sits in the frame
       const dz = this.camera.design(room.collision.bounds());
       bd.setCamera(dz.cam[0], dz.cam[1], dz.at);
+      bd.waterRow = room.def.waterline === undefined ? -1 : room.def.waterline - dz.cam[1];
       bd.setWeather(this.weather.uniforms(dz.cam[0], horizon), this.weather.interior || room.def.underground ? [] : this.weather.flashLights(dz.cam[0]));
       // reflection pass
       const wl = room.def.waterline;
@@ -1347,7 +1375,7 @@ export class WorldGame {
               r.bindTarget(bd.refl, false);
               r.begin(cx, cy, lighting, lights);
               r.setTransform(1, [0, 0], wl - cy);
-              this.drawWorldSprites(true);
+              this.drawWorldSprites(true, lights);
               r.flush();
               r.setTransform(1, [0, 0], null);
             },

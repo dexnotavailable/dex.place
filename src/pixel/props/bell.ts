@@ -103,6 +103,7 @@ export const hangingBell = defineRecipe<BellParams, Refs>({
     rest: {
       update: (c, dt) => step(c, dt),
       use: (c) => (c.params["usable"] ? ring(c, 1) : undefined),
+      can: (c) => !!c.params["usable"],
       hit: (c, h) => onHit(c, h.hit),
     },
     swinging: {
@@ -116,6 +117,7 @@ export const hangingBell = defineRecipe<BellParams, Refs>({
         }
       },
       use: (c) => (c.params["usable"] ? ring(c, 1) : undefined),
+      can: (c) => !!c.params["usable"],
       hit: (c, h) => onHit(c, h.hit),
     },
   },

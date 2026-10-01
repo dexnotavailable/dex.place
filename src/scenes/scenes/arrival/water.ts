@@ -64,14 +64,14 @@ vec4 layer(vec2 p, vec2 s) {
   ruff = clamp(ruff, 0.0, 1.0);
 
   // sideways shear per row
-  float amp = mix(0.5, ${f(o.shear)}, k) * (1.0 + 1.4 * ruff);
+  float amp = mix(0.5, ${f(o.shear)}, k) * (1.0 + 1.4 * ruff) * nearWl(s.y);
   float ph = s.y * (1.25 - k * 0.75) / ${f(Math.max(1, u / 2))} + tm * 0.8 + vnoise(vec2(wp.x / ${f(37 * u)}, s.y * 0.35 / ${f(Math.max(1, u / 2))})) * 5.0;
   float dx = floor(sin(ph) * amp * (0.55 + 0.45 * vnoise(vec2(wp.x / ${f(21 * u)} + tm * 0.15, s.y * 0.6))) + 0.5);
   // vertical jitter: a few rows borrow a neighbour's row, so the mirror image breaks into streaks
   float jn = vnoise(vec2(wp.x / ${f(11 * u)} + tm * 0.3, s.y * 0.45 - tm * 0.9));
-  float dy = floor((jn - 0.5) * 2.0 * ${f(o.jitter)} * k * (0.6 + ruff) + 0.5);
-  float ry = clamp(s.y + dy, hor + 1.0, uRes.y - 1.0);
-  ivec2 rp = ivec2(clamp(s.x + dx, 0.0, uRes.x - 1.0), uRes.y - 1.0 - ry);
+  float dy = floor((jn - 0.5) * 2.0 * ${f(o.jitter)} * k * nearWl(s.y) * (0.6 + ruff) + 0.5);
+  float ry = clamp(s.y + dy, hor + 1.0, reflMaxY());
+  ivec2 rp = reflPx(s.x + dx, ry);
   vec3 refl = texelFetch(uRefl, rp, 0).rgb;
 
   float rs = mix(${f(o.reflFar)}, ${f(o.reflNear)}, pow(k, 0.7)) * (1.0 - 0.4 * ruff);

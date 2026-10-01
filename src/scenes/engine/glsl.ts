@@ -133,8 +133,15 @@ vec3 flashTint(vec2 s) {
 export const LIB_REFL = /* glsl */ `
 #ifdef WORLD_FRAME
 ivec2 reflPx(float x, float y) { return ivec2(clamp(x + uFrame.x, 0.0, uFrame.z - 1.0), clamp(uFrame.w - 1.0 - y - uFrame.y, 0.0, uFrame.w - 1.0)); }
+// the lowest row (in s) the reflection buffer holds: the frame's bottom edge in the world, the view's elsewhere
+float reflMaxY() { return uFrame.w - 1.0 - uFrame.y; }
+// Reflections of what stands on the player plane are sharpest at the waterline and break up with distance
+// below it, so a ripple's shear and jitter ease in over ~1.5 H under the world's mirror line (uWl).
+float nearWl(float y) { return uWl < 0.0 ? 1.0 : mix(0.2, 1.0, smoothstep(0.0, 120.0, y - uWl)); }
 #else
 ivec2 reflPx(float x, float y) { return ivec2(clamp(x, 0.0, uRes.x - 1.0), uRes.y - 1.0 - y); }
+float reflMaxY() { return uRes.y - 1.0; }
+float nearWl(float y) { return 1.0; }
 #endif
 `;
 

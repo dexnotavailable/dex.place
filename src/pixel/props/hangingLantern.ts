@@ -24,6 +24,19 @@ interface Refs {
   flame: Flame;
 }
 
+/**
+ * E is only offered where a player can stand to use it: some floor within the use zone's reach below the hook
+ * (a lantern hung high in a nave or under a loft is light, not a switch). Asked each time, so a room that
+ * rebuilds its floor is followed.
+ */
+function withinReach(c: Prop<Refs>): boolean {
+  const H = c.params.H;
+  const top = c.y + 0.5 * H;
+  const bottom = c.y + (2.6 + 0.5) * H;
+  for (let y = top; y <= bottom; y += 4) if (c.world.solidAt(c.x, y)) return true;
+  return false;
+}
+
 export const hangingLantern = defineRecipe<HangingLanternParams, Refs>({
   id: "hangingLantern",
   breakage: "heal",
@@ -73,6 +86,7 @@ export const hangingLantern = defineRecipe<HangingLanternParams, Refs>({
       },
       update: (c, dt) => step(c, dt),
       use: () => "off",
+      can: withinReach,
       hit: (c, h) => onHit(c, h.hit),
     },
     off: {
@@ -82,6 +96,7 @@ export const hangingLantern = defineRecipe<HangingLanternParams, Refs>({
       },
       update: (c, dt) => step(c, dt),
       use: () => "on",
+      can: withinReach,
       hit: (c, h) => onHit(c, h.hit),
     },
   },
