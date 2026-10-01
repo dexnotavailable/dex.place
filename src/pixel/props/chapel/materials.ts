@@ -26,6 +26,13 @@ defineMaterial("limestone", { ramp: ["#2d2428", "#4a3c3e", "#6d5a57", "#917a70"]
 defineMaterial("chapelStone", { ramp: ["#1e171f", "#33272f", "#4e3d41", "#715850"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 140, sound: "stone", debris: 0.3 });
 defineMaterial("chapelStoneLight", { ramp: ["#2a2027", "#45363a", "#655048", "#8c6e5c"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 140, sound: "stone", debris: 0.3 });
 defineMaterial("chapelStoneDark", { ramp: ["#120d13", "#1c151c", "#2a2028", "#3b2e34"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 140, sound: "stone", debris: 0.3 });
+/**
+ * The porch font's stone: the chapel's limestone in the dusk (warm grey, violet shadows), not the kit's
+ * cool marble; its sunward rim in the low sun's amber, the bowl's inner rim in shadow.
+ */
+defineMaterial("fontStone", { ramp: ["#272026", "#40363a", "#5f524f", "#837068"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 120, sound: "stone", debris: 0.3 });
+defineMaterial("fontStoneLit", { ramp: ["#4a3030", "#7a4a3e", "#b0704e", "#e2a070"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 120, sound: "stone", debris: 0.3 });
+defineMaterial("fontStoneDark", { ramp: ["#0f0b10", "#181217", "#221a20", "#2e242a"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 120, sound: "stone", debris: 0.3, ink: false });
 /** The fallen ring's hull on the pilgrim path: the window surrounds set in its fins are cut from it. */
 defineMaterial("hullStone", { ramp: ["#120f19", "#1d1727", "#2b2335", "#3f3248"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 140, sound: "stone", debris: 0.3 });
 defineMaterial("hullStoneDark", { ramp: ["#100d16", "#1a1522", "#272030", "#382e40"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 140, sound: "stone", debris: 0.3 });
@@ -45,4 +52,4 @@ defineMaterial("broomStraw", { ramp: ["#3c3022", "#5e4c34", "#86704a", "#a89066"
 /** The shawl: a faded rose wool. */
 defineMaterial("shawlRose", { ramp: ["#3a1c26", "#5c2c36", "#834446", "#a4645a"], t: [0.12, 0.4, 0.78], behaviour: "tear", hardness: 30, sound: "cloth", debris: 0.15 });
 
-export const CHAPEL_MATERIALS = ["gilt", "giltDark", "artBoard", "limestone", "oak", "roseCrimson", "roseGold", "roseViolet", "roseBlue", "roseAmber", "stoneware", "dustBloom", "broomStraw", "shawlRose", "chapelStone", "chapelStoneLight", "chapelStoneDark", "hullStone", "hullStoneDark"] as const;
+export const CHAPEL_MATERIALS = ["gilt", "giltDark", "artBoard", "limestone", "oak", "roseCrimson", "roseGold", "roseViolet", "roseBlue", "roseAmber", "stoneware", "dustBloom", "broomStraw", "shawlRose", "chapelStone", "chapelStoneLight", "chapelStoneDark", "hullStone", "hullStoneDark", "fontStone", "fontStoneLit", "fontStoneDark"] as const;
