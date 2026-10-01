@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-01T10:48:45.863Z (01/10/2026, 17:48:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-01T11:48:49.138Z (01/10/2026, 18:48:49 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `d712e21`
+- live on dex.place: `776fc80`
 - uncommitted on the PC (all included in this pc-sync snapshot): 223 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,13 +12,19 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_cc0765c3-3f0 — last activity 5 min ago
-24 agents: 16 done, 2 running or stopped mid-way, 6 failed.
+### wf_ec033edb-845 — last activity 16 min ago
+6 agents: 0 done, 6 running or stopped mid-way, 0 failed.
 
-- **integrate** (failed)
-- **verify-release-1** (failed)
-- **verify-art-1** (failed)
-- **reg-d:critic:r1** (done): verdict revise · score 5
+- **sysfix** (running)
+- **reg-a:c1** (running)
+- **reg-b:c1** (running)
+- **reg-d:c1** (running)
+- **reg-c:c1** (running)
+- **reg-e:c1** (running)
+
+### wf_cc0765c3-3f0 — last activity 19 min ago
+28 agents: 20 done, 2 running or stopped mid-way, 6 failed.
+
 - **reg-d:r2** (failed)
 - **reg-e:critic:r1** (done): verdict revise · score 6
 - **reg-e:r2** (done): I've fixed all six round-2 critique items for E1-E4 and committed them as 138aa5c on claude/wq-reg-e (not pushed). The audits, the end-to-end walk-through and the new window/pier check all pass. I looked at every after screenshot and the four sheets before reporting. What changed, critique by critique: 1. **Windows hidden behind piers (E3):** fixed. The aisle windows used to drift with the background as the camera pa
@@ -27,10 +33,14 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **reg-e:critic:r2** (done): verdict revise · score 7
 - **reg-e:r3** (done): Round 3 for region E (E1 to E4) is committed as 57e0bee on claude/wq-reg-e. I didn't push. I could only read the E1 critique items. The critique text was cut off partway through the E1 fog-band item, so the work on E2 to E4 comes from my own review of the round-2 shots. **E1 critique items** - **Walkers and ring:** the colossi now walk behind the ring's band. The ring's two ends fade into the haze at the horizon inst
 - **reg-c:critic:r2** (done): verdict revise · score 6.5
-- **reg-c:r3** (running)
+- **reg-c:r3** (done): Round 3 for the Hollow (C1 to C3) is committed as bd35555 on claude/wq-reg-c. This round reworks each room's values, framing and light rather than adding more props, and it answers every critique item that was readable (the brief cut off partway through C2, and no C3 critique arrived). All three rooms now separate into near, middle and far layers the way the refs do: dark silhouettes close to the camera, a middle lay
 - **reg-e:critic:r3** (done): verdict revise · score 7.6
+- **reg-c:critic:r3** (done): verdict revise · score 7.3
+- **integrate** (done): Both region branches merged into claude/world-pass-20261001 with no conflicts (C then E, two --no-ff merge commits). Head is 50e6192. npm ci, check and build pass. npm test has 1 failure in the site blog-feed test, which this merge did not cause. The interaction and reflection audits pass over all rooms. The grounding audit has 1 edge issue in B2, a room neither region touched. Nothing was pushed and no engine edits 
+- **verify-release-1** (running)
+- **verify-art-1** (done): verdict blocking · score 6.2 · blocking: E1 Pilgrim Path (a room this branch reworked) has floating foliage. At the second stained-glass window ruin, the hanging vines start about 80 px above the wall's top edge and hang from open sky (rooms/E1-04.png, crop-E1-net.png, at screen x 1170-1260, y 288). Fix: anchor the vine tops on the wall crest or the arch shoulder, or cut them to start at the wall edge. | D3 Crown has floating props. Wall
 
-### wf_54ca354a-626 — last activity 540 min ago
+### wf_54ca354a-626 — last activity 600 min ago
 5 agents: 3 done, 2 running or stopped mid-way, 0 failed.
 
 - **package** (done): The real rendered Rosace (drive-9 round 2, R2) is packaged as dex.sprite/1 at 80 px and 144 px, all 17 clips plus sit, and committed on claude/rosace-package. Nothing was pushed. I left the level art alone (see openIssues). Scope: the relayed request was about level art, with doors popping out of walls. The task text and namespace are the Rosace package, so I did only that. Level art is not touched. Look used: R2. Co
@@ -39,25 +49,25 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **review-motion-1** (done): verdict pass-with-notes · score 7.5
 - **review-runtime-1** (done): verdict pass-with-notes · score 0.9
 
-### wf_b70fb9cc-c84 — last activity 762 min ago
+### wf_b70fb9cc-c84 — last activity 822 min ago
 3 agents: 0 done, 3 running or stopped mid-way, 0 failed.
 
 - **sys:cam** (running)
 - **sys:layers** (running)
 - **sys:ixr** (running)
 
-### wf_43490aa2-fb3 — last activity 767 min ago
+### wf_43490aa2-fb3 — last activity 828 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **package** (running)
 
-### wf_e8bdf118-24f — last activity 768 min ago
+### wf_e8bdf118-24f — last activity 828 min ago
 2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
 
 - **sys-camera** (running)
 - **sys-layers** (running)
 
-### wf_5cb6279a-9f2 — last activity 972 min ago
+### wf_5cb6279a-9f2 — last activity 1032 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:world-load** (done): The World now starts loading with the homepage. Before, it was only mounted from an animation frame after the page's load event. - **Page opened at the top:** the World frame is added as soon as the page is interactive, 13–34 ms after DOMContentLoaded (median). - **Background tab:** the frame is created while the tab is hidden, and the World boots, compiles its shaders and draws a warm-up frame there. Before this cha
@@ -68,20 +78,20 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-world-1** (done): verdict pass-with-notes · score 9
 - **verify-site-1** (done): verdict pass-with-notes · score 9
 
-### wf_1e5499b2-d83 — last activity 2583 min ago
+### wf_1e5499b2-d83 — last activity 2643 min ago
 2 agents: 0 done, 0 running or stopped mid-way, 2 failed.
 
 - **followups** (failed)
 - **verify** (failed)
 
-### wf_5ef68e55-dd7 — last activity 2589 min ago
+### wf_5ef68e55-dd7 — last activity 2649 min ago
 3 agents: 0 done, 0 running or stopped mid-way, 3 failed.
 
 - **cross-lane-fix** (failed)
 - **verify-regions-1** (failed)
 - **verify-release-1** (failed)
 
-### wf_68cebea7-8e1 — last activity 2590 min ago
+### wf_68cebea7-8e1 — last activity 2650 min ago
 40 agents: 40 done, 0 running or stopped mid-way, 0 failed.
 
 - **whole:overall:r3** (done): score 5.5 · prefers ours: no · top fixes: Undo the R3 regression in finish. Blind, the previous round (R2) beat this round (R3) at both 144 and 80 px. Return to R2's lower-key, softer ramps and push further toward textured painted shading with selective or coloured outlines instead of a navy outline on every edge. | Integrate the bust. Right now it is two flat grey-lavender spheres at sleeve value, which is on the never-list. Add an under
@@ -99,7 +109,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **whole:overall:r5** (done): score 5.7 · prefers ours: no · top fixes: Face regressed versus R4: restore the open, bright-eyed default face, pull the dark hair strands off the eyes, trim the crown flyaways to one clean ahoge, and go to a head of 1/6 of height | Pose: replace the walking-stride legs with a true weight-leg contrapposto (feet closer, free knee crossing in front, hip cocked out, hand on hip); the current idle reads as mid-step, not seductive-elegant | Bu
 - **report** (done): I promoted round 2. It is the best round of the five, at 5.78 against the refs' 9, and it beat the old integrated build in two separate blind sets (5.8 vs 5.6, then 5.7 vs 5.2). The canonical build and the stills chain now produce its look by default, and a fresh build plus re-render matches the judged stills pixel for pixel. One thing is missing: the harness blocked writing review/rosace/art/drive9/REPORT.md ("subag
 
-### wf_a38b10a9-aa1 — last activity 2677 min ago
+### wf_a38b10a9-aa1 — last activity 2737 min ago
 13 agents: 13 done, 0 running or stopped mid-way, 0 failed.
 
 - **R-A:critic** (done): verdict pass-with-notes · score 8.4
@@ -116,29 +126,11 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **I1:build** (done): Lane I1 is built. I played the whole round once from a fresh save and recorded it, and the pacing check is done. The phone and tablet runs and a laptop GPU measurement still need Dex, so the lane is not fully signed off. Nothing is committed. **What I played.** The bot played every region's real rooms with real input (W0's bot only decides which keys to press), from the dock through the lodge and every region, back t
 - **I1:critic** (done): verdict pass-with-notes · score 8
 
-### wf_168f26ae-9f9 — last activity 2696 min ago
+### wf_168f26ae-9f9 — last activity 2756 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **tablet-cap** (done): I picked up the earlier attempt's edits and finished the work. The tablet cap was already in place and still holds. On its own it left the home arrival (/#gallery) at 2.7-3.3 s on tablets, so I added a small preload that only runs for that arrival. Both pages now land at or just under 2.5 s on 768 and 820 tablets. Phones hold or improve, and desktop /#gallery improved. Nothing was committed or pushed. **What changed*
 - **verify** (done): verdict pass-with-notes · score 8.8
-
-### wf_8dbb7c86-4f2 — last activity 2843 min ago
-20 agents: 12 done, 2 running or stopped mid-way, 6 failed.
-
-- **P0:critic** (done): verdict blocking · score 7.5 · blocking: The nave rule (sway-only room) is not enforced for grass and vines, so the section 13 item 'the breakage policy in section 4 is enforced' fails, along with the lane's claim of '0 cells lost, 0 tears, 0 cuts across all props in a sway-only room'. In src/pixel/props/plants.ts, grassHit (about line 187) and vineHit (about line 402) cut blades and strands without checking c.keepsCells. Measured in /pr
-- **W0:fix** (done): I fixed both blocking items from the W0 critique and re-checked them with fresh evidence. Everything passes. I also fixed two of the critic's non-blocking notes: held keys getting dropped at doors, and the empty black band at the bottom of the stand-in site. 1. **Sky door open on a fresh save (blocking).** Entering a room closes every door (`game.ts` room entry). But `Door.close()` in `src/world/props/recipes.ts` had
-- **P0:fix** (done): I fixed the blocking item: in a sway-only room (the nave), grass and vines now only bend and swing. Nothing gets mown or cut, and the policy check now measures plants directly, so it can't be fooled by them again. The resume note pointed at an earlier fix round (pillar toppling, door and neon demo scripts). That work was already in the tree and the critic had rechecked and passed it, so I didn't redo it. Changes, all
-- **R-A:build** (done): Lane R-A (Ringwater) is built and works end to end. Nothing was committed. All five rooms, A0 Pier's End to A4 Keeper's Yard, now replace the grey-box versions. So does the lake behind the ferry ride (S2). They keep the grey-box's coordinates, spawns, exits and prop ids, so W0's round bot still walks them. **Arrival fix.** The sliced rear leg is fixed. The colossus's extent value `EXTENT.x1` in `colossus.ts` said the
-- **R-B:build** (failed)
-- **R-C:build** (done): Lane R-C (the Hollow) is built, and all of its section 13 acceptance checks pass except one: a product's shelf can't yet open that product's own docs page. That last step needs a small change in W0's panel code (details under open issues). Nothing is committed. The three rooms in src/world/rooms/hollow/ replace the grey-box C1, C2 and C3 by id. They keep the grey-box's geometry, spawns, exits and doors, so the round 
-- **R-D:build** (failed)
-- **R-E:build** (done): Lane R-E is done: the four chapel rooms (E1 Pilgrim Path, E2 Porch, E3 Chapel of Light, E4 Bell Stair and Balcony) are built and working in /world/. They replace W0's grey-box rooms by id, at the same world coordinates, so the round's positions still hold. My region E test passes 23 of 23 checks, played with real input through W0's bot.js, and the common checks pass. I didn't commit or push anything. What you see in 
-- **S1:build** (failed)
-- **R-E:critic** (done): verdict blocking · score 6.5 · blocking: Dex's art gets a black rectangle cut out of it whenever Rosace overlaps a frame. In src/world/rooms/chapel/gallery.ts, Overlay.place() punches a clip-path hole the size of a fixed player box (b.x ± 0.34 H, b.y - 1.32 H to b.y + 2) into the thumbnail <img>. That box is not her silhouette, so the hole shows the frame's black board. (1) Standing under an easel frame to press E, which is where every p
-- **R-C:critic** (done): verdict pass-with-notes · score 8
-- **R-E:fix** (failed)
-- **R-A:critic** (failed)
-- **I1:build** (failed)
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
@@ -272,4 +264,17 @@ decent-size level art and composition rework; no doors popping out of walls; fix
 broken E spots):
 - World pass v3: w13b188ho / wf_cc0765c3-3f0. Lane worktrees are D:/Dex/Temp/claude-wq-*; the driver is still claude-world-pass.
 - Rosace package: w31xoc9z5 / wf_54ca354a-626. The build runs on Sonnet; the motion review is on Opus.
+
+**18:40.** The Rosace package is live (df78cbb).
+
+The world pass wf_cc0765c3-3f0 finished systems, plus C and E with 3 rounds each (7.3 and 7.6). A, B and D died on usage limits (429). Its art verify was blocking at 6.2.
+
+Continuation running: weh1gkf1v / wf_ec033edb-845.
+- Regions A and B continue from their dirty worktrees, up to 3 rounds.
+- D continues from its committed round 1, up to 2 rounds.
+- C and E get 1 targeted round each.
+- A Sonnet sysfix lane covers phone side borders, reflections of dark masses, and prompt placement.
+- Then integrate into claude/world-pass (50e6192), verify, and fix.
+
+Critique inputs are in D:/Dex/Temp/claude-world-pass/review/continue-inputs.json. Publish: rebase onto origin/main, then a fast-forward push.
 
