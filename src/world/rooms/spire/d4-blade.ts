@@ -12,6 +12,7 @@
 
 import { Spire, LIGHT, RAMP } from "./_build.ts";
 import { bladeScene } from "./_scenes/blade.ts";
+import { fromLight } from "../../render/blend.ts";
 
 const d4 = new Spire({
   id: "D4",
@@ -49,7 +50,9 @@ d4.floor(E0 + EL, 316, 84);
 const edgeY = (x: number): number => (x <= E0 ? 76 : x >= E0 + EL ? 84 : 76 + (ER / STEPS) * (Math.floor((x - E0) / (EL / STEPS)) + 0.5));
 d4.px("spireDeck", "landing", 284, 76, { width: (E0 - 284) * H80, depth: 0.5, kind: "landing", lip: "none" });
 d4.px("bladeEdge", "edge", E0, 76, { length: EL, rise: ER, plate: 0.9, depth: 0.55 });
-d4.px("spireDeck", "tip", E0 + EL, 84, { width: (316 - E0 - EL) * H80, depth: 0.55, kind: "landing", lip: "none" });
+// (the tip is a solid block as deep as the blade under it, so the ramp runs into it with one shared
+// underside: no spikes or underside sticking out below its west end)
+d4.px("spireDeck", "tip", E0 + EL, 84, { width: (316 - E0 - EL) * H80, depth: 1.0, kind: "landing", lip: "none" });
 
 // the storm (its strength follows the rain: gone once the sky clears) and its hand (still air here)
 d4.prop("spire-storm", "storm", 284.5, 88, { strength: "rain" }, { engine: "stub" });
@@ -62,6 +65,9 @@ d4.trigger(292, 293.5, { flag: "blade:cleared" });
 d4.area({ id: "D4-break", title: "D4 the storm breaks", x0: 292, x1: 317.5, audio: { music: "theme", enter: { at: 48, rise: 5, delay: 2 }, bed: "dusk", cut: { silence: 2, unless: "blade:cleared" } } });
 // once cleared the whole Blade is above the weather: the west part hears the dusk too, and the theme carries on there
 d4.extra = {
+  // one light over everything: the dusk's warm cast, a veil on far iron, a soft band where the blade's
+  // top meets the open sky, the lamps' halos
+  blend: fromLight(LIGHT.dusk, { amount: 0.16, haze: 0.25, band: 0.7 }),
   weatherIf: { flag: "blade:cleared", program: { state: "after", time: "dusk" } },
   audioIf: { flag: "blade:cleared", audio: { bed: "dusk", music: "theme" } },
 };
@@ -69,8 +75,13 @@ d4.extra = {
 // pennants (they whip in the storm by the Crown, then hang still), rubble, moss on the edge, the bench at the tip
 d4.px("clothHanging", "pennant-1", 285.4, 76, { kind: "pennant", colour: "red" });
 d4.px("clothHanging", "pennant-2", 297.4, edgeY(297.4), { kind: "pennant", colour: "red" });
-d4.px("rubble", "rubble-1", 290.2, edgeY(290.2), { kind: "stone", width: 0.8, height: 0.26 });
-d4.px("rubble", "rubble-2", 304.6, edgeY(304.6), { kind: "stone", width: 0.7, height: 0.24 });
+// (rubble on the slope is laid stone by stone, each small piece on the slope under its own x, so no end
+// hangs over the downhill side)
+for (const [x0, n, k] of [[289.7, 3, 1], [304.2, 3, 2]] as const)
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * 0.34;
+    d4.px("rubble", `rubble-${k}-${i}`, x, edgeY(x), { kind: "stone", width: 0.26 + (i % 2) * 0.06, height: 0.14 + ((i + k) % 3) * 0.04 });
+  }
 // (every piece sits on the surface under its whole width: the moss on the slope is laid in tufts 0.45 H
 // wide, each on the slope under it, so no end floats more than 5 px; the tip's moss and the bench stand
 // on the flat deck, 313.5 to 315.1 and 315.3 to 315.9)
@@ -81,7 +92,9 @@ for (const [x, w] of [[300.2, 1.4], [307.6, 1.8]] as const) {
     d4.px("grass", `moss-${x}-${k}`, tx, edgeY(tx), { kind: "grass", width: w / n + 0.04, height: 0.16, density: 5 });
   }
 }
-d4.px("grass", "moss-tip", 315.6, 84, { kind: "grass", width: 0.6, height: 0.14, density: 5 });
+// (the tip's moss grows in the lee of the slope's last plate, west of the bench, where the deck is
+// whole under every blade; east of the bench a third of it had nothing to root in)
+d4.px("grass", "moss-tip", 313.05, 84, { kind: "grass", width: 0.6, height: 0.14, density: 5 });
 d4.px("bench", "blade-bench", 314.3, 84, { kind: "stone", length: 1.6 });
 // at the tip, looking out: the view settles so the world below fills the frame
 d4.vista(308, 316, 309.5, 82.8, 0.06);

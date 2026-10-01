@@ -52,34 +52,84 @@ export const stormAlcove = defineRecipe<AlcoveParams, { drip: number; lintelY: n
   build(b, p) {
     const u = (f: number): number => b.u(f);
     const W = u(p.width), Ht = u(p.height);
-    const jamb = u(0.42), lintel = u(0.5);
-    // the back wall, behind everything
+    // the wall's thickness at the mouth: an outer order of plate and a dark reveal
+    const O = u(0.2), R = u(0.24), jamb = O + R;
+    const lintel = u(0.5), hood = u(0.18), bear = u(0.12), hoodOut = u(0.16);
+
+    // the back wall, behind everything: three bays of warm-lit plate between pilaster strips (the
+    // window in the middle one), a skirting at the foot, the lintel's shadow stepped down from the top
     const back = b.part("back", { w: W, h: Ht, pivot: [0, Ht], at: [0, 0], layer: "bg", z: 1, collide: "none" });
     const course = u(0.46);
     for (let y = 0, k = 0; y < Ht; y += course, k++) {
       const hh = Math.min(course, Ht - y);
-      back.rect(0, y, W, hh, { mat: "spireIron", profile: "bevel", r: 1, depth: 2, piece: `c${k % 2}`, tone: k === 0 ? -1 : 0 });
+      back.rect(0, y, W, hh, { mat: "spireIronWarm", profile: "bevel", r: 1, depth: 2, piece: `c${k % 2}`, tone: k === 0 ? -1 : 0 });
       const jw = u(1.2 + (k % 3) * 0.25);
       for (let x = (k % 2) * (jw >> 1); x < W; x += jw) back.rect(x, y, 1, hh, { mat: "spireIronDark", mode: "paint" });
+      // a lit line along each course's top (the candles catch it)
+      if (k > 0) back.rect(0, y + 1, W, 1, { mat: "spireIronWarm", mode: "paint", tone: 1 });
+    }
+    const bay = Math.round(W / 3);
+    for (const bx of [bay, W - bay]) {
+      back.rect(bx - u(0.09), 0, u(0.18), Ht, { mat: "spireIronWarm", profile: "bevel", r: 2, depth: 4, z: 2, piece: "pilaster" });
+      back.rect(bx - u(0.09), 0, 1, Ht, { mat: "spireIronWarm", mode: "paint", tone: 1 });
+      const pr: [number, number][] = [];
+      for (let y = u(0.3); y < Ht - u(0.3); y += u(0.42)) pr.push([bx, y]);
+      back.rivets(pr, { mat: "spireIronWarm", r: 1 });
+    }
+    // the skirting: a darker plinth with a lit top edge, where the floor meets the wall
+    const sk = u(0.24);
+    back.rect(0, Ht - sk, W, sk, { mat: "spireIronDark", profile: "bevel", r: 1, depth: 3, z: 2, piece: "skirt" });
+    back.rect(0, Ht - sk, W, 1, { mat: "spireIron", mode: "paint", tone: 1 });
+    // under the lintel the back wall is in its shadow: two stepped bands
+    back.rect(0, 0, W, u(0.22), { mat: "spireIronDark", mode: "paint", tone: -1 });
+    back.rect(0, u(0.22), W, u(0.14), { mat: "spireIronDark", mode: "paint", tone: 0 });
+    // water that got in once: stains down from the top course
+    for (let k = 0; k < Math.round(W / 60); k++) {
+      const x = Math.floor(b.rand() * W);
+      back.rect(x, u(0.36), 1, Math.round(u(0.3) + b.rand() * u(1.0)), { mat: "rust", mode: "paint", tone: -2 });
     }
     back.speckle({ amount: 0.07, seed: p.seed, tone: -1, scale: 2 });
-    // jambs: the thickness of the spire's skin, cut clean, a lit bevel on the left one (two small parts)
+
+    // jambs: the spire's skin cut clean, two orders (the outer plate lit toward the planet, the
+    // reveal in shadow on the lit side and catching the candles on the other)
     for (const [side, lit] of [[0, true], [1, false]] as const) {
       const name = lit ? "jambL" : "jambR";
       const jb = b.part(name, { w: jamb, h: Ht, pivot: [0, Ht], at: [side === 0 ? -jamb : W, 0], layer: "bg", z: 3, collide: "none" });
-      jb.rect(0, 0, jamb, Ht, { mat: "spireIron", profile: "bevel", r: 3, depth: 5, z: 2 });
-      jb.rect(lit ? jamb - 2 : 0, 0, 2, Ht, { mat: "spireIron", mode: "paint", tone: lit ? 1 : -1 });
-      jb.rivets([[4, 6], [jamb - 5, 6], [4, Ht - 6], [jamb - 5, Ht - 6]], { mat: "spireIron", r: 1 });
+      const ox = lit ? 0 : R, rx = lit ? O : 0;
+      jb.rect(ox, 0, O, Ht, { mat: "spireIron", profile: "bevel", r: 3, depth: 5, z: 2, piece: "outer" });
+      jb.rect(lit ? ox : ox + O - 2, 0, 2, Ht, { mat: "spireIron", mode: "paint", tone: lit ? 1 : -1 });
+      jb.rect(rx, 0, R, Ht, { mat: "spireIronDark", profile: "bevel", r: 2, depth: 3, z: 1, tone: lit ? -1 : 0, piece: "reveal" });
+      if (!lit) jb.rect(rx, 0, 1, Ht, { mat: "spireIronDark", mode: "paint", tone: 1 });
+      for (let y = u(0.5); y < Ht - 2; y += u(0.55)) jb.rect(rx, y, R, 1, { mat: "spireIronDark", mode: "paint", tone: -2 });
+      const rv: [number, number][] = [];
+      for (let y = 6; y < Ht - 4; y += u(0.38)) rv.push([ox + 4, y], [ox + O - 5, y]);
+      jb.rivets(rv, { mat: "spireIron", r: 1 });
+      // a worn sill plate at the jamb's foot
+      jb.rect(0, Ht - 3, jamb, 3, { mat: "spireIron", profile: "bevel", r: 1, depth: 2, z: 3, piece: "sill" });
     }
-    // the lintel over the opening (in front of her: she walks under it)
-    const lt = b.part("lintel", { w: W + jamb * 2 + 8, h: lintel, pivot: [jamb + 4, lintel], at: [0, -Ht], layer: "fg", z: 4, collide: "none", parallax: 1 });
-    lt.rect(0, 0, W + jamb * 2 + 8, lintel, { mat: "spireIron", profile: "bevel", r: 3, depth: 5, z: 2 });
-    lt.rect(0, 0, W + jamb * 2 + 8, 1, { mat: "spireIron", mode: "paint", tone: 1 });
-    lt.rect(0, lintel - 3, W + jamb * 2 + 8, 3, { mat: "spireIronDark", mode: "paint" });
+
+    // the lintel over the mouth (in front of her: she walks under it), bearing past both jambs, with a
+    // hood over it that throws the rain clear; corbels under its ends
+    const LW = W + jamb * 2 + bear * 2, TW = LW + hoodOut * 2;
+    const lt = b.part("lintel", { w: TW, h: hood + lintel + u(0.32), pivot: [hoodOut + bear + jamb, hood + lintel], at: [0, -Ht], layer: "fg", z: 4, collide: "none", parallax: 1 });
+    lt.rect(hoodOut, hood, LW, lintel, { mat: "spireIron", profile: "bevel", r: 3, depth: 6, z: 2, piece: "beam" });
+    lt.rect(hoodOut, hood, LW, 1, { mat: "spireIron", mode: "paint", tone: 1 });
+    lt.rect(hoodOut, hood + lintel - 3, LW, 3, { mat: "spireIronDark", mode: "paint", tone: -1 });
     const rv: [number, number][] = [];
-    for (let x = 6; x < W + jamb * 2; x += u(0.4)) rv.push([x, lintel >> 1]);
+    for (let x = hoodOut + 6; x < hoodOut + LW - 4; x += u(0.32)) rv.push([x, hood + 5], [x, hood + lintel - 7]);
     lt.rivets(rv, { mat: "spireIron", r: 1 });
-    lt.rect(u(0.6), 5, u(1.2), 3, { mat: "routeRed", mode: "paint" });
+    lt.rect(hoodOut + u(0.7), hood + Math.round(lintel / 2) - 1, u(1.2), 3, { mat: "routeRed", mode: "paint" });
+    // the hood
+    lt.rect(0, 0, TW, hood, { mat: "spireIron", profile: "bevel", r: 2, depth: 5, z: 3, piece: "hood" });
+    lt.rect(0, 0, TW, 1, { mat: "spireIron", mode: "paint", tone: 1 });
+    lt.rect(0, hood - 2, TW, 2, { mat: "spireIronDark", mode: "paint", tone: -1 });
+    // corbels under the beam's ends, outside the jambs
+    for (const cx of [hoodOut, hoodOut + LW - u(0.2)]) lt.poly([cx, hood + lintel - 1, cx + u(0.2), hood + lintel - 1, cx + u(0.2), hood + lintel + u(0.12), cx + u(0.07), hood + lintel + u(0.3), cx, hood + lintel + u(0.3)], { mat: "spireIron", profile: "bevel", r: 2, depth: 4, z: 3, piece: "corbel" });
+    for (let k = 0; k < Math.round(TW / 40); k++) {
+      const x = Math.floor(b.rand() * TW);
+      lt.rect(x, hood, 1, Math.round(u(0.1) + b.rand() * u(0.25)), { mat: "rust", mode: "paint", tone: -2 });
+    }
+    lt.speckle({ amount: 0.05, seed: p.seed + 2, tone: -1, scale: 2 });
     b.get("back").tag["heal"] = true;
     // the recess holds the candles' warmth: a low warm fill across the back wall
     b.light({ at: [Math.round(W * 0.62), -Math.round(Ht * 0.35)], colour: [1, 0.66, 0.4], radius: u(4.6), intensity: 0.42, height: u(1.4), flicker: 0.08 });

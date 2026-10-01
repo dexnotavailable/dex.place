@@ -10,6 +10,7 @@
 
 import { Spire, LIGHT, RAMP } from "./_build.ts";
 import { liftScene } from "./_scenes/lift.ts";
+import { fromLight } from "../../render/blend.ts";
 
 const d1 = new Spire({
   id: "D1",
@@ -36,8 +37,9 @@ d1.floor(262, 263.5, -32, 1.0, { surface: "tile" });
 d1.floor(266.5, 268, 40, 0.5, { surface: "metal" });
 d1.floor(266.5, 268, 76, 0.5, { surface: "metal" });
 d1.px("spireDeck", "landing-foot", 262, -32, { width: 1.5 * 80, depth: 0.6, kind: "landing", lip: "none" });
-d1.px("spireDeck", "landing-break", 266.5, 40, { width: 1.5 * 80, depth: 0.5, kind: "landing", lip: "none" });
-d1.px("spireDeck", "landing-crown", 266.5, 76, { width: 1.5 * 80, depth: 0.5, kind: "landing", lip: "none" });
+// (the stem's face stands at x 267.4: each landing's outer end sits on a cantilever back into it)
+d1.px("spireDeck", "landing-break", 266.5, 40, { width: 1.5 * 80, depth: 0.5, kind: "landing", lip: "none", cantilever: 0.9 });
+d1.px("spireDeck", "landing-crown", 266.5, 76, { width: 1.5 * 80, depth: 0.5, kind: "landing", lip: "none", cantilever: 0.9 });
 
 // the car, its stops, its cables up out of the shaft
 d1.prop("spire-lift", "spire-lift", 265, -32, {
@@ -53,16 +55,23 @@ d1.prop("spire-lift", "spire-lift", 265, -32, {
 // the counterweight: at the top of its channel while the car waits below; they pass halfway (y 4)
 d1.px("counterweight", "counterweight", 262.7, 42.4, { mode: "ride", cable: 40, liftBottom: d1.Y(-32) });
 // warning lights at the stops (the break's hangs where the rail broke)
-d1.px("warningLight", "beacon-foot", 263.2, -29.6, { mode: "blink", mount: "wall", phase: 0.1 });
+// (the foot's beacon stands on the landing, clear of the tower's leg)
+d1.px("warningLight", "beacon-foot", 262.55, -32, { mode: "blink", mount: "floor", phase: 0.1 });
 d1.px("warningLight", "beacon-break", 267.6, 42.8, { mode: "blink", mount: "wall", phase: 0.5 });
 d1.px("warningLight", "beacon-crown", 267.6, 78.8, { mode: "blink", mount: "wall", phase: 0.9 });
 // the storm's clock (the rain and the pennant-free shaft share the spire's one gust program)
 d1.prop("spire-storm", "storm", 262.2, 80, { strength: 1 }, { engine: "stub" });
 
-d1.spawn("bottom", 265, -32, 1, { prop: "spire-lift", stop: 0, go: -1 });
+// (the break first: the room's first spawn is where the tools stand to test the car's E, and at the
+// bottom the car leaves on its own 0.6 s after you board, so E is never offered there)
 d1.spawn("break", 266.9, 40, -1, { prop: "spire-lift", stop: 1 });
+d1.spawn("bottom", 265, -32, 1, { prop: "spire-lift", stop: 0, go: -1 });
 d1.spawn("top", 266.9, 76, -1, { prop: "spire-lift", stop: 2 });
 d1.exit("left", "C3", "lift", -33, -30).exit("right", "D2", "lift", 39.5, 42).exit("right", "D3", "lift", 75.5, 78);
+
+// one light over everything (the shaft's cold cast, the lamps' halos); no haze band (the shaft's walls
+// are behind the landings, not sky)
+d1.extra = { blend: { ...fromLight(LIGHT.shaft, { amount: 0.12, band: 0 }), haze: undefined } };
 
 export const ride = d1.build(
   liftScene({ w: d1.W, h: d1.Ht, floor: d1.Y(-32), ground: d1.Y(-4), rockTop: d1.Y(-4.5), rockBottom: d1.Y(-18.5), rainFrom: d1.Y(14), rainFull: d1.Y(30), shaftX: d1.X(265), breakCam: d1.Y(40) - 0.6 * 720 }),
