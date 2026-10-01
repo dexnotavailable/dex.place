@@ -50,6 +50,9 @@ export interface NeonGlyphParams {
    * to the street, `pole` H from the board's centre to the ground), "chains" (hung, `pole` H up). */
   mount: "wall" | "pole" | "chains";
   pole: number;
+  /** Chains only: the underside they hang from slopes (H of rise per H, + = higher to the left, a
+   * stair's stringer), so each chain is cut to reach it and clipped to it. */
+  slope: number;
 }
 
 interface NeonRefs {
@@ -89,7 +92,7 @@ export const neonGlyph = defineRecipe<NeonGlyphParams, NeonRefs>({
   id: "neonGlyph",
   breakage: "never",
   reason: "Glyph signs keep the market awake and give it colour against the amber; they mean nothing, except the small book mark over the archive's door, which is how you find the documentation.",
-  defaults: { kind: "glyphs", colour: "rose", count: 3, vertical: true, lit: true, mount: "wall", pole: 0 },
+  defaults: { kind: "glyphs", colour: "rose", count: 3, vertical: true, lit: true, mount: "wall", pole: 0, slope: 0 },
   cues: ["neon.buzz", "neon.spark"],
   build(b, p) {
     const s = 2; // font px
@@ -116,9 +119,19 @@ export const neonGlyph = defineRecipe<NeonGlyphParams, NeonRefs>({
       pl.rivets([[2, len - 2], [11, len - 2]], { mat: "iron", r: 1, z: 2 });
       pl.speckle({ amount: 0.1, seed: p.seed + 5, tone: -1, mats: ["iron"] });
     } else if (p.mount === "chains" && p.pole > 0) {
+      // each chain cut to reach the underside it hangs from (sloped under a stair) and clipped to it
+      // with a small bolted clamp, so the sign hangs from something at both ends (round 3's left chain
+      // ended in the air under the stair's stringer)
       const len = Math.max(4, b.u(p.pole) - (bh >> 1));
-      const ch = b.part("chains", { w: bw, h: len, pivot: [bw >> 1, len], at: [0, -(bh >> 1) + 1], layer: "bg", z: 9, hittable: false });
-      for (const x of [3, bw - 5]) for (let y = 0; y < len; y++) ch.rect(x + ((y >> 1) % 2), y, 2, 1, { mat: "iron", profile: "flat", piece: "chain" });
+      const xs = [3, bw - 5];
+      const lens = xs.map((x) => Math.max(4, Math.round(len - (x + 1 - bw / 2) * p.slope)));
+      const ht = Math.max(...lens) + 3;
+      const ch = b.part("chains", { w: bw, h: ht, pivot: [bw >> 1, ht], at: [0, -(bh >> 1) + 1], layer: "bg", z: 9, hittable: false });
+      for (const [n, x] of xs.entries()) {
+        const L = lens[n]!;
+        for (let y = ht - L; y < ht; y++) ch.rect(x + ((y >> 1) % 2), y, 2, 1, { mat: "iron", profile: "flat", piece: "chain" });
+        ch.rect(x - 1, ht - L - 3, 5, 3, { mat: "iron", profile: "bevel", r: 1, depth: 2, piece: "clip" });
+      }
     } else {
       // standoffs at the corners and the board's shadow on the wall behind it
       const sh = b.part("standoff", { w: bw + 4, h: bh + 4, pivot: [(bw >> 1) + 1, (bh >> 1) - 1], at: [0, 0], layer: "bg", z: 8, hittable: false, outline: 0 });

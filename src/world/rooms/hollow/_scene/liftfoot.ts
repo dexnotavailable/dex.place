@@ -37,6 +37,8 @@ export interface LiftFootOpts {
   vent: number;
   notice: number;
   sign: [number, number];
+  /** The lift queue's stanchions (world x), standing on the tile in front of the gate. */
+  queue: number[];
 }
 
 export function liftFootScene(o: LiftFootOpts): SceneDef {
@@ -55,6 +57,9 @@ export function liftFootScene(o: LiftFootOpts): SceneDef {
     fore: ["#050607", "#0a0c0d", "#111415", "#191d1e", "#242a2a", "#3a4242", "#5e6866"],
     // the station clock's face and the posters' faded paper
     poster: ["#16130f", "#2a241c", "#423828", "#5e5038", "#7e6c4c", "#a08a62"],
+    // the queue's brass caps and the call panel's plate; the belt's worn red
+    brass: ["#141008", "#2a2010", "#46361a", "#6a5228", "#94763a", "#c0a05a"],
+    belt: ["#1a0a0c", "#2e1214", "#4a1c1c", "#6a2a26", "#8c3e32"],
     wood: ["#140e0b", "#21160f", "#312116", "#452f1f", "#5e422b"],
   };
   return lifted(amber, {
@@ -67,10 +72,22 @@ export function liftFootScene(o: LiftFootOpts): SceneDef {
     // the tubes' cold light falling in cones (round 3: the room had no lighting shape; the cones give it
     // one, against the window's amber)
     prelude: (ctx) =>
-      (amber.prelude ? amber.prelude(ctx) : "") +
+      noDeckLamp(amber.prelude ? amber.prelude(ctx) : "") +
       o.tubes.map((tx, i) => shaftFn({ fn: `tube${i}`, from: [(tx - o.x0) * o.H - ctx.span / 2, o.floor - o.ceiling * o.H + 10], to: [(tx - o.x0) * o.H - ctx.span / 2, o.floor + 4], w0: o.H * 0.7, w1: o.H * 1.55, streaks: 3, speed: 0.01, fadeStart: 0.82, intensity: 0.75 })).join("\n"),
     compose: (ctx, ls) => [...ls, ...room(ctx, o), ...cones(ctx, o), ...liftFore(ctx, o)],
   });
+}
+
+/**
+ * The scene's prelude lights its deck lamp (the figure's, on the gantry this room drops) on every layer
+ * near depth 1: here that put a stepped grey disc on the stem with nothing to cast it (reg-c critic r3,
+ * "the C3 translucent disc"). The room keeps the scene's other light (the pits, the ship, the sign) and
+ * turns that one lamp off; the market moves it off the map for the same reason (_scene/market.ts).
+ */
+function noDeckLamp(src: string): string {
+  const lamp = "float ld = (1.0 - smoothstep(0.9, 1.8, depth));";
+  if (!src.includes(lamp)) throw new Error("hollow lift foot: the amber prelude's deck lamp moved; update noDeckLamp()");
+  return src.replace(lamp, "float ld = 0.0;");
 }
 
 /** The tubes' cones of cold light (additive, stepped; behind the props and the player). */
@@ -82,17 +99,14 @@ function cones(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
 }
 
 /**
- * Near silhouettes (round 3): along the frame's foot, the queue for the lift, stanchions with a sagging
- * belt between them (the waiting room's story, nearer than the player and short enough to leave her
- * readable); along its top, a ventilation duct close to the camera, flanged and hung on straps. Front
- * pass: they draw over the world and slide faster than it. Near-black, cold, rimmed by the tubes.
+ * Near silhouettes: along the frame's top, a ventilation duct close to the camera, flanged and hung on
+ * straps. Front pass: it draws over the world and slides faster than it. Near-black, cold, rimmed by
+ * the tubes.
  */
 function liftFore(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
   const { W, H } = ctx;
-  const span = ctx.span;
   const R = (n: string): number => ctx.row(n);
   const d = 0.72;
-  const X = (wx: number): number => W / 2 + ((wx - o.x0) * o.H - W / 2 - span / 2) / d;
   const w = Math.ceil(ctx.panWidth(d)) + 300;
   const x = -Math.ceil((w - W) / 2);
   const pix = new Pix(w, H + 80);
@@ -106,32 +120,9 @@ function liftFore(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
     for (let yy = 0; yy < dB + (flange ? 4 : 0); yy++) put(xx, yy, 0.22 + (yy >= dB - 2 ? 0.34 : 0) + (flange ? 0.08 : 0) + (k === 6 ? -0.08 : 0) + ((yy - dB) % 9 === 0 ? 0.03 : 0));
     if (k > 100 && k < 104) for (let yy = 0; yy < dB; yy++) put(xx, yy, 0.12);
   }
-  // the queue: stanchions (a weighted base, a post, a cap) in pairs with a belt sagging between them
-  // (the second pair channels the queue toward the gate; neither crosses in front of it)
-  const posts = [253.9, 256.1, 260.3, 262.3];
-  const tops: [number, number][] = [];
-  for (const wx of posts) {
-    const cx = Math.round(X(wx));
-    const foot = o.floor + 26;
-    const top = Math.round(o.floor - o.H * 0.62);
-    tops.push([cx, top + 8]);
-    for (let yy = top; yy < foot; yy++)
-      for (let q = -3; q <= 3; q++) put(cx + q, yy, 0.24 + (q === 2 ? 0.36 : q === 3 ? 0.18 : q === -3 ? -0.06 : 0) + (yy < top + 6 ? 0.06 : 0));
-    // the cap and the base
-    for (let q = -6; q <= 6; q++) for (let yy = top - 4; yy < top; yy++) put(cx + q, yy, 0.3 + (yy === top - 4 ? 0.3 : 0));
-    for (let yy = foot - 10; yy < foot + 12; yy++) {
-      const hw = 7 + Math.round((yy - foot + 10) * 0.55);
-      for (let q = -hw; q <= hw; q++) put(cx + q, yy, 0.28 + (yy === foot - 10 ? 0.34 : 0) + (q > hw - 3 ? 0.14 : 0) - (yy - foot + 10) * 0.004);
-    }
-  }
-  for (let i = 0; i + 1 < tops.length; i += 2) {
-    const [ax, ay] = tops[i]!, [bx, by] = tops[i + 1]!;
-    for (let xx = ax + 4; xx < bx - 3; xx++) {
-      const t = (xx - ax) / (bx - ax);
-      const yy = Math.round(ay + (by - ay) * t + Math.sin(t * Math.PI) * 22);
-      for (let q = 0; q < 6; q++) put(xx, yy + q, q === 0 ? 0.56 : q === 5 ? 0.16 : 0.34, q > 0 && q < 5 && (xx >> 3) % 2 ? R("poster") : R("fore"));
-    }
-  }
+  // (round 4: the queue's stanchions moved off this layer, onto the walk line in front of the gate: as
+  // near silhouettes they were the darkest values in the frame, sank 60 px under the floor and their
+  // belts slid across the chairs and the dummy as the camera panned. room() stands them on the tile)
   return [{ kind: "pix", name: "fore", depth: d, fog: 0, pix, x, y: 0, twinkle: 0, dither: 0 }];
 }
 
@@ -395,6 +386,157 @@ function room(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
     const [sx, sy] = o.sign;
     const X = rx(sx), Y = up(sy);
     for (let y = Y - 26; y < Y + 34; y++) for (let x = X - 16; x < X + 26; x++) bump(x, y, -0.1);
+  }
+  // round 4: the stem's right half carried no detail (broad flat slate panels next to the busy waiting
+  // room). Plate seams with rivet rows, grime run down from every band, a cable tray on hangers under
+  // the ceiling collar, the call panel lit on the portal's jamb (its amber the only warm light on this
+  // side, so it pools on the steel), a stencilled level mark, a hazard placard and a fuse box
+  {
+    const R2 = (k: number, q: number): number => hashInt(k, q, 131);
+    const portal = (x: number, y: number): boolean => x >= mx0 - pf - 8 && x < mx1 + pf + 8 && y >= my - pf - 12;
+    const ladder = (x: number): boolean => (x >= stemX + 40 && x < stemX + 66) || (x >= stemX + 108 && x < stemX + 126);
+    const band = (y: number): number => (o.floor - y + 4000) % (o.H * 2);
+    // vertical plate seams every four flutes (a dark joint, its lit lip), rivets down them
+    for (let x = stemX + 104; x < o.roomW + 8; x += 104) {
+      if (ladder(x) || ladder(x + 2)) continue;
+      for (let y = ceil + 18; y < o.floor - 22; y++) {
+        if (portal(x, y)) continue;
+        bump(x, y, -0.11);
+        bump(x + 1, y, 0.07);
+        if ((y - ceil) % 12 === 6) (bump(x - 3, y, 0.16), bump(x - 3, y + 1, -0.06), bump(x + 4, y, 0.16), bump(x + 4, y + 1, -0.06));
+      }
+    }
+    // rivets along the mid-plate seams, between the bolted bands
+    for (let y = ceil + 18; y < o.floor - 22; y++) {
+      if (band(y) !== o.H) continue;
+      for (let x = stemX + 24; x < o.roomW + 8; x += 13) if (!portal(x, y) && !ladder(x)) (bump(x, y - 2, 0.15), bump(x, y - 1, -0.05));
+    }
+    // grime run down from each band and from the collar: dithered streaks that thin as they fall
+    {
+      const bands = [ceil + 18, ...Array.from({ length: 4 }, (_, i) => o.floor - o.H * 2 * (i + 1) + 6)];
+      for (let k = 0; k < (o.roomW - stemX) / 9; k++) {
+        const x = stemX + 24 + Math.round(R2(k, 1) * (o.roomW - stemX - 24));
+        if (ladder(x)) continue;
+        const y0 = bands[Math.floor(R2(k, 2) * bands.length)]!;
+        const len = 18 + Math.round(R2(k, 3) * 70);
+        for (let y = y0; y < y0 + len && y < o.floor - 22; y++) {
+          if (portal(x, y)) break;
+          const t = (y - y0) / len;
+          if (((x ^ y) & 1 || t < 0.4) && R2(x, y) > t * 0.8) bump(x, y, -0.06 + t * 0.03);
+          if (R2(k, 4) > 0.6 && t < 0.5 && y & 1) bump(x + 1, y, -0.04);
+        }
+      }
+    }
+    // the cable tray: a channel on hangers from the collar, cables sagging out of it between the hangers
+    {
+      const ty = ceil + 40;
+      for (let x = stemX + 128; x < o.roomW + 8; x++) {
+        for (let q = 0; q < 9; q++) put(x, ty + q, q === 0 ? 0.56 : q === 1 ? 0.4 : q === 8 ? 0.14 : q > 5 ? 0.2 : 0.28 + ((x >> 2) % 5 === 0 ? 0.04 : 0), R("stem"));
+        for (let q = 9; q < 13; q++) bump(x, ty + q, -0.08 + (q - 9) * 0.018);
+        if ((x - stemX) % 64 === 0) for (let y = ceil + 18; y < ty; y++) (put(x, y, 0.46, R("stem")), put(x + 1, y, 0.24, R("stem")));
+      }
+      for (let x0 = stemX + 128; x0 + 64 < o.roomW; x0 += 64) {
+        if (R2(x0, 9) < 0.4) continue;
+        for (let x = x0 + 4; x < x0 + 60; x++) {
+          const t = (x - x0 - 4) / 56;
+          const y = Math.round(ty + 9 + Math.sin(t * Math.PI) * (6 + R2(x0, 8) * 10));
+          put(x, y, 0.3, R("stem"));
+          put(x, y + 1, 0.12, R("stem"));
+        }
+      }
+    }
+    // the call panel on the portal's right jamb: a brass plate, an up button lit amber, the down one dark;
+    // its warm light on the steel round it (a small source, stepped)
+    {
+      const cx = mx1 + pf + 18, cy = up(1.25);
+      pool(bump, cx, cy + 4, o.H * 0.55, o.H * 0.7, 0.12, 3, 151);
+      for (let y = cy - 18; y < cy + 18; y++)
+        for (let x = cx - 9; x < cx + 9; x++) {
+          const e = Math.min(x - (cx - 9), cx + 8 - x, y - (cy - 18), cy + 17 - y);
+          put(x, y, e === 0 ? (x === cx - 9 || y === cy - 18 ? 0.62 : 0.2) : e === 1 ? 0.44 : 0.34 + (hashInt(x, y, 7) < 0.2 ? -0.06 : 0), R("brass"));
+        }
+      for (const [by, lit] of [[cy - 8, true], [cy + 6, false]] as [number, boolean][])
+        for (let y = by - 4; y <= by + 4; y++)
+          for (let x = cx - 4; x <= cx + 4; x++) {
+            const d = Math.hypot(x - cx, y - by);
+            if (d > 4.3) continue;
+            if (d > 3.2) put(x, y, 0.14, R("brass"));
+            else if (lit) put(x, y, d < 1.5 ? 0.9 : 0.62, R("stemlit"), d < 1.5);
+            else put(x, y, 0.24 + (x < cx && y < by ? 0.1 : 0), R("stem"));
+          }
+      for (let q = 0; q < 4; q++) for (let y = cy - 18; y < cy + 18; y++) bump(cx + 9 + q, y, -0.08 + q * 0.02);
+    }
+    // a stencilled level mark high on the stem past the portal: an up arrow and the two-digit level,
+    // painted, faded and chipped (not a word)
+    {
+      const DIG: Record<string, string> = { "0": "111101101101111", "1": "010110010010111" };
+      const sx = mx1 + pf + 46, sy = up(4.0), k = 5;
+      const paint = (x: number, y: number): void => {
+        if (hashInt(x, y, 141) < 0.18) return;
+        put(x, y, 0.36 + (hashInt(x >> 1, y >> 1, 143) - 0.5) * 0.08, R("poster"));
+      };
+      for (let i = 0; i < 9; i++) for (let q = -i; q <= i; q++) for (let a = 0; a < 2; a++) for (let c2 = 0; c2 < 2; c2++) paint(sx + 18 + q * 2 + a, sy + i * 2 + c2);
+      for (let y = sy + 18; y < sy + 44; y++) for (let x = sx + 12; x < sx + 24; x++) paint(x, y);
+      [..."01"].forEach((ch, n) => {
+        const g = DIG[ch]!;
+        for (let i = 0; i < 15; i++) if (g[i] === "1") for (let a = 0; a < k; a++) for (let c2 = 0; c2 < k; c2++) paint(sx + 44 + n * 4 * k + (i % 3) * k + a, sy + 8 + Math.floor(i / 3) * k + c2);
+      });
+    }
+    // a hazard placard and a fuse box with its conduit, above the operator's booth
+    {
+      const hx = rx(268.25), hy = up(3.05);
+      for (let y = hy; y < hy + 30; y++)
+        for (let x = hx; x < hx + 40; x++) {
+          const e = Math.min(x - hx, hx + 39 - x, y - hy, hy + 29 - y);
+          if (e < 4) {
+            const stripe = Math.floor((x + y) / 5) % 2 === 0;
+            put(x, y, stripe ? 0.62 : 0.12, stripe ? R("stemlit") : R("stem"));
+          } else put(x, y, 0.5 + ((y - hy) % 6 === 2 && x > hx + 8 && x < hx + 32 ? -0.3 : 0) + (hashInt(x, y, 151) < 0.06 ? -0.12 : 0), R("poster"));
+        }
+      for (let q = 0; q < 4; q++) for (let x = hx + 2; x < hx + 42; x++) bump(x, hy + 30 + q, -0.08 + q * 0.02);
+      const fx = rx(269.2), fy = up(4.6);
+      for (let y = fy; y < fy + 46; y++)
+        for (let x = fx; x < fx + 34; x++) {
+          const e = Math.min(x - fx, fx + 33 - x, y - fy, fy + 45 - y);
+          put(x, y, e === 0 ? (x === fx || y === fy ? 0.6 : 0.16) : e === 1 ? 0.46 : x === fx + 17 ? 0.18 : 0.34 + ((y - fy) % 11 === 5 && Math.abs(x - fx - 9) < 4 ? 0.14 : 0), R("portal"));
+        }
+      for (let q = 0; q < 5; q++) for (let x = fx + 2; x < fx + 38; x++) bump(x, fy + 46 + q, -0.09 + q * 0.018);
+      for (let y = ceil + 49; y < fy; y++) (put(fx + 12, y, 0.44, R("stem")), put(fx + 13, y, 0.22, R("stem")));
+    }
+  }
+
+  // the lift queue: stanchions on the walk line in front of the gate (round 3 drew them as near
+  // silhouettes; the critic read them as the heaviest values in the frame and as sunk under the floor).
+  // Polished steel posts in the room's cold light on weighted bases, brass caps with the tubes' cool rim,
+  // a worn red belt sagging between them; the tile's contact shadows sit under the bases (c3-liftfoot.ts)
+  {
+    const tops: [number, number][] = [];
+    for (const wx of o.queue) {
+      const cx = Math.round(rx(wx));
+      const top = Math.round(o.floor - o.H * 0.62);
+      tops.push([cx, top + 6]);
+      for (let y = top; y < o.floor - 6; y++)
+        for (let q = -2; q <= 2; q++) put(cx + q, y, (q === -1 ? 0.6 : q === -2 ? 0.44 : q === 2 ? 0.2 : 0.36) + ((y - top) % 22 === 0 ? 0.04 : 0), R("tile"));
+      for (let y = top - 6; y < top; y++)
+        for (let q = -4; q <= 4; q++) put(cx + q, y, (y === top - 6 ? 0.62 : q < -1 ? 0.5 : q > 2 ? 0.22 : 0.38) + (q === -3 && y === top - 5 ? 0.3 : 0), R("brass"));
+      // the cool rim from the tubes on the cap's top
+      for (let q = -3; q <= 2; q++) put(cx + q, top - 6, 0.9, R("tube"), true);
+      for (let y = o.floor - 8; y < o.floor; y++) {
+        const hw = 5 + Math.round((y - (o.floor - 8)) * 0.9);
+        for (let q = -hw; q <= hw; q++) put(cx + q, y, (y === o.floor - 8 ? 0.56 : 0.36) + (q < -hw + 2 ? 0.1 : q > hw - 2 ? -0.14 : 0) - (y === o.floor - 1 ? 0.14 : 0), R("tile"));
+      }
+    }
+    for (let i = 0; i + 1 < tops.length; i++) {
+      const [ax, ay] = tops[i]!, [bx, by] = tops[i + 1]!;
+      for (let x = ax + 3; x < bx - 2; x++) {
+        const t = (x - ax) / (bx - ax);
+        const y = Math.round(ay + (by - ay) * t + Math.sin(t * Math.PI) * 12);
+        for (let q = 0; q < 4; q++) put(x, y + q, q === 0 ? 0.62 : q === 3 ? 0.14 : 0.42 - q * 0.04, R("belt"));
+      }
+      // a small plate hung on the belt's middle (blank: the queue's notice, faded)
+      const mx = Math.round((ax + bx) / 2), myb = Math.round((ay + by) / 2 + 12) + 4;
+      for (let y = myb; y < myb + 12; y++) for (let x = mx - 9; x < mx + 9; x++) put(x, y, x === mx - 9 || y === myb ? 0.62 : y === myb + 11 || x === mx + 8 ? 0.2 : 0.46 - ((y - myb) % 4 === 2 && Math.abs(x - mx) < 6 ? 0.18 : 0), R("poster"));
+    }
   }
   // broken tiles where the stem came through the floor
   for (let k = 0; k < 9; k++) {
