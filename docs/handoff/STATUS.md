@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-01T00:18:47.052Z (01/10/2026, 07:18:47 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-01T01:08:46.286Z (01/10/2026, 08:08:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `b4a46fb`
+- live on dex.place: `75c998f`
 - uncommitted on the PC (all included in this pc-sync snapshot): 223 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,37 +12,38 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_cc0765c3-3f0 — last activity 25 min ago
-3 agents: 2 done, 1 running or stopped mid-way, 0 failed.
+### wf_cc0765c3-3f0 — last activity 4 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
 
 - **sys:cam** (done): Camera lane done. Wider frame follows the window so there are no black side borders, the view is about 20% bigger, and the camera now punches in on attacks, does a cinematic zoom on the ult, and leads the way you run. Checked in headless software-GL at 16:10, 21:9, 16:9 and 8:7, including live resizes. Not checked in a real browser: the attack and ult zoom, phone portrait/landscape, and the homepage embed. Borders: t
 - **sys:layers** (done): Lane `layers` is done on branch claude/wq-layers: four commits on origin/main 44dc763, nothing pushed, working tree clean. Bird layering, leg clipping and floating grass are fixed and measured. The blending toolkit is in but off by default. I did no door or level-art work; that stays with the region lanes. **Birds and layer order.** - Bird layers were pushed wherever the scene code happened to be (often after the nea
 - **sys:ixr** (running)
+- **sys:ixr** (running)
 
-### wf_54ca354a-626 — last activity 131 min ago
+### wf_54ca354a-626 — last activity 181 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **package** (running)
 
-### wf_b70fb9cc-c84 — last activity 132 min ago
+### wf_b70fb9cc-c84 — last activity 182 min ago
 3 agents: 0 done, 3 running or stopped mid-way, 0 failed.
 
 - **sys:cam** (running)
 - **sys:layers** (running)
 - **sys:ixr** (running)
 
-### wf_43490aa2-fb3 — last activity 137 min ago
+### wf_43490aa2-fb3 — last activity 187 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **package** (running)
 
-### wf_e8bdf118-24f — last activity 138 min ago
+### wf_e8bdf118-24f — last activity 188 min ago
 2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
 
 - **sys-camera** (running)
 - **sys-layers** (running)
 
-### wf_5cb6279a-9f2 — last activity 342 min ago
+### wf_5cb6279a-9f2 — last activity 392 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:world-load** (done): The World now starts loading with the homepage. Before, it was only mounted from an animation frame after the page's load event. - **Page opened at the top:** the World frame is added as soon as the page is interactive, 13–34 ms after DOMContentLoaded (median). - **Background tab:** the frame is created while the tab is hidden, and the World boots, compiles its shaders and draws a warm-up frame there. Before this cha
@@ -53,20 +54,20 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-world-1** (done): verdict pass-with-notes · score 9
 - **verify-site-1** (done): verdict pass-with-notes · score 9
 
-### wf_1e5499b2-d83 — last activity 1953 min ago
+### wf_1e5499b2-d83 — last activity 2003 min ago
 2 agents: 0 done, 0 running or stopped mid-way, 2 failed.
 
 - **followups** (failed)
 - **verify** (failed)
 
-### wf_5ef68e55-dd7 — last activity 1959 min ago
+### wf_5ef68e55-dd7 — last activity 2009 min ago
 3 agents: 0 done, 0 running or stopped mid-way, 3 failed.
 
 - **cross-lane-fix** (failed)
 - **verify-regions-1** (failed)
 - **verify-release-1** (failed)
 
-### wf_68cebea7-8e1 — last activity 1960 min ago
+### wf_68cebea7-8e1 — last activity 2010 min ago
 40 agents: 40 done, 0 running or stopped mid-way, 0 failed.
 
 - **whole:overall:r3** (done): score 5.5 · prefers ours: no · top fixes: Undo the R3 regression in finish. Blind, the previous round (R2) beat this round (R3) at both 144 and 80 px. Return to R2's lower-key, softer ramps and push further toward textured painted shading with selective or coloured outlines instead of a navy outline on every edge. | Integrate the bust. Right now it is two flat grey-lavender spheres at sleeve value, which is on the never-list. Add an under
@@ -84,7 +85,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **whole:overall:r5** (done): score 5.7 · prefers ours: no · top fixes: Face regressed versus R4: restore the open, bright-eyed default face, pull the dark hair strands off the eyes, trim the crown flyaways to one clean ahoge, and go to a head of 1/6 of height | Pose: replace the walking-stride legs with a true weight-leg contrapposto (feet closer, free knee crossing in front, hip cocked out, hand on hip); the current idle reads as mid-step, not seductive-elegant | Bu
 - **report** (done): I promoted round 2. It is the best round of the five, at 5.78 against the refs' 9, and it beat the old integrated build in two separate blind sets (5.8 vs 5.6, then 5.7 vs 5.2). The canonical build and the stills chain now produce its look by default, and a fresh build plus re-render matches the judged stills pixel for pixel. One thing is missing: the harness blocked writing review/rosace/art/drive9/REPORT.md ("subag
 
-### wf_a38b10a9-aa1 — last activity 2047 min ago
+### wf_a38b10a9-aa1 — last activity 2097 min ago
 13 agents: 13 done, 0 running or stopped mid-way, 0 failed.
 
 - **R-A:critic** (done): verdict pass-with-notes · score 8.4
@@ -101,13 +102,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **I1:build** (done): Lane I1 is built. I played the whole round once from a fresh save and recorded it, and the pacing check is done. The phone and tablet runs and a laptop GPU measurement still need Dex, so the lane is not fully signed off. Nothing is committed. **What I played.** The bot played every region's real rooms with real input (W0's bot only decides which keys to press), from the dock through the lodge and every region, back t
 - **I1:critic** (done): verdict pass-with-notes · score 8
 
-### wf_168f26ae-9f9 — last activity 2066 min ago
+### wf_168f26ae-9f9 — last activity 2116 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **tablet-cap** (done): I picked up the earlier attempt's edits and finished the work. The tablet cap was already in place and still holds. On its own it left the home arrival (/#gallery) at 2.7-3.3 s on tablets, so I added a small preload that only runs for that arrival. Both pages now land at or just under 2.5 s on 768 and 820 tablets. Phones hold or improve, and desktop /#gallery improved. Nothing was committed or pushed. **What changed*
 - **verify** (done): verdict pass-with-notes · score 8.8
 
-### wf_8dbb7c86-4f2 — last activity 2213 min ago
+### wf_8dbb7c86-4f2 — last activity 2263 min ago
 20 agents: 12 done, 2 running or stopped mid-way, 6 failed.
 
 - **P0:critic** (done): verdict blocking · score 7.5 · blocking: The nave rule (sway-only room) is not enforced for grass and vines, so the section 13 item 'the breakage policy in section 4 is enforced' fails, along with the lane's claim of '0 cells lost, 0 tears, 0 cuts across all props in a sway-only room'. In src/pixel/props/plants.ts, grassHit (about line 187) and vineHit (about line 402) cut blades and strands without checking c.keepsCells. Measured in /pr
