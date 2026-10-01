@@ -46,6 +46,8 @@ export const PORCH = {
   door: 408.2,
   window: 405.2,
   sill: 1.05,
+  /** A buttress on the west front between the bench and the lancet: its west and east faces (H). */
+  buttress: [403.98, 404.62] as [number, number],
 };
 
 /**
@@ -111,7 +113,10 @@ vec4 layer(vec2 p, vec2 s) {
   // ---------- below the floor line ----------
   if (hy < 0.0) {
     float dn = -hy * P;                                    // px below the floor's top
-    if (r.x < ${f(X(PORCH.front))}) {
+    // the platform's west end is a built corner (lit end stones down its dressed courses); below the
+    // plinth the cliff's rock bulges out under the foundation, so the two are one footing, not a seam
+    float seam = ${f(X(PORCH.front))} + (dn > 0.98 * P ? (dn - 0.98 * P) * 0.55 + floor(vnoise(vec2(dn / 9.0, 4.4)) * 14.0) : 0.0);
+    if (r.x < seam) {
       // the cliff top the path comes in on: rock in leaning beds, a turf lip
       float bed = (r.y + r.x * 0.3) / 18.0;
       float fb = fract(bed + vnoise(vec2(r.x / 37.0, floor(bed))) * 0.4);
@@ -119,6 +124,7 @@ vec4 layer(vec2 p, vec2 s) {
       if (fb > 0.92) shade = 0.1;
       else if (fb < 0.07) shade += 0.08;
       if (dn < 3.0) moss = dn < 1.0 ? 0.8 : 0.5;
+      if (dn > 0.98 * P && seam - r.x < 2.0) { shade = 0.5; lit = 0.4; }
       else if (dn < 9.0 && cluster(vec2(r.x / 14.0, 1.0), 0.45) > 0.5 && dn < 3.0 + hash1(floor(r.x / 2.0)) * 8.0) moss = 0.36;
       lit = 0.0;
     } else {
@@ -149,8 +155,23 @@ vec4 layer(vec2 p, vec2 s) {
         if (fy < 1.2 || (edge > 0.5 && bxs > 7.8)) shade = 0.08;
         else if (edge > 0.5 && bxs > 6.0) shade -= 0.05;
       }
+      // the corner: end stones down the dressed courses, their west faces in the low sun
+      float ce = r.x - ${f(X(PORCH.front))};
+      if (dn >= 4.0 && dn < 0.98 * P && ce < 7.0) {
+        shade = ce < 2.0 ? 0.62 : 0.42 + (hash1(floor((dn - 4.0) / (0.43 * P))) - 0.5) * 0.06;
+        lit = ce < 2.0 ? 0.6 : 0.2;
+        if (mod(dn - 4.0, 0.43 * P) < 1.2) shade = 0.14;
+      }
+      // where the rock meets the foundation: a dark crevice, a lit lip of rock over it
+      if (dn > 0.98 * P && r.x - seam < 2.0) { shade = 0.08; lit = 0.0; }
       // moss and grass in the joints along the flag edge
       if (dn >= 4.0 && dn < 10.0 && cluster(vec2(r.x / 22.0, 4.0), 0.55) > 0.5 && dn - 4.0 < hash1(floor(r.x / 2.0)) * 7.0) moss = 0.34 + hash1(floor(r.x)) * 0.1;
+      // the lanterns' light falls on the flags' edge and the course under it
+      for (int i = 0; i < 2; i++) {
+        float lx = i == 0 ? ${f(X(401.2))} : ${f(X(406.2))};
+        float ld = abs(r.x - lx) / ${f(1.1 * P)} + dn / ${f(0.7 * P)};
+        lamp = max(lamp, max(0.0, 1.0 - ld));
+      }
     }
   }
   // ---------- the west front ----------
@@ -164,6 +185,8 @@ vec4 layer(vec2 p, vec2 s) {
     if (fy < 1.0 || fx > 0.9 * P - 1.0) shade = 0.13;           // joints below and to the east
     else if (fx < 1.5) shade += 0.04;
     if (hash2(floor(r.xy / 3.0) + 11.0) > 0.955) shade -= 0.08;  // chips
+    // a few blocks replaced over the years: paler, sharper-edged
+    if (hash2(vec2(bxi, course) + 41.0) > 0.93 && fy > 1.0 && fx < 0.9 * P - 1.0) shade += 0.07;
     // damp streaks under the eave
     float sx = floor(r.x / 3.0);
     if (hy > ${f(eave)} - 1.2 - hash1(sx) * 1.4 && hy < ${f(eave)} && hash1(sx * 3.7) > 0.8) shade -= 0.04;
@@ -179,6 +202,70 @@ vec4 layer(vec2 p, vec2 s) {
       if (fy < 1.0 || qx > qw - 1.0) shade = 0.16;
       lit = qx < 4.0 ? 0.8 : 0.3;
       if (qx < 4.0) shade = 0.64;
+    }
+    // ---- the buttress: a pier of the same stone standing out of the front, stepping back at two
+    // set-offs (sloped caps lit by the sky, a drip under each), its sunward side face lit warm, its
+    // own coursing with staggered joints, its shadow cast on the wall to the east ----
+    {
+      float b0 = ${f(X(PORCH.buttress[0]))}, b1 = ${f(X(PORCH.buttress[1]))};
+      float bw = b1 - b0;
+      float frac = hy < 2.6 ? 1.0 : hy < 4.3 ? 0.68 : 0.42;
+      float bE = b0 + bw * frac;
+      bool inB = r.x >= b0 && r.x < bE && hy >= 0.0 && hy < ${f(eave)} - 0.05;
+      // the sloped caps on each set-off
+      float capH = 1.0;                                // < 0: px under a cap's sloped top
+      if (hy >= 2.6 && r.x >= b0 + bw * 0.68 && r.x < b1) capH = (hy - 2.6) * P - (b1 - r.x) * 1.0;
+      if (hy >= 4.3 && r.x >= b0 + bw * 0.42 && r.x < b0 + bw * 0.68) capH = (hy - 4.3) * P - (b0 + bw * 0.68 - r.x) * 1.0;
+      if (!inB && capH < 0.0) {
+        float k = -capH;
+        shade = k < 2.0 ? 0.66 : 0.46;
+        lit = k < 2.0 ? 0.6 : 0.2;
+        moss = -1.0;
+      } else if (inB) {
+        float xs = r.x - b0;
+        float bc = floor(hy / 0.3);
+        float bfy = fract(hy / 0.3) * 0.3 * P;
+        if (xs < 8.0) {
+          // the side face toward the low sun
+          shade = 0.56 + (xs < 1.5 ? 0.08 : 0.0);
+          lit = 0.65;
+          if (bfy < 1.0) shade = 0.34;
+        } else {
+          float jx = mod(xs - 8.0 + mod(bc, 2.0) * 13.0, 26.0);
+          shade = 0.47 + (hash2(vec2(floor((xs - 8.0 + mod(bc, 2.0) * 13.0) / 26.0), bc + 70.0)) - 0.5) * 0.1 + (floor(vnoise(vec2(r.x / 8.0, r.y / 7.0)) * 3.0) / 3.0 - 0.5) * 0.06;
+          if (bfy > 0.3 * P - 1.5) shade += 0.07;
+          if (bfy < 1.0 || jx < 1.0) shade = 0.17;
+          if (hash2(floor(r.xy / 2.0) + 19.0) > 0.95) shade -= 0.08;
+          if (r.x >= bE - 2.0) shade = 0.13;
+        }
+        // the drip under each set-off's cap and the plinth running round its foot
+        if ((abs(hy - 2.6) * P < 1.0 || abs(hy - 4.3) * P < 1.0) && xs >= 8.0) shade = 0.1;
+        if (hy < 0.6) { shade = hy > 0.53 ? 0.54 : 0.36; if (hy < 0.03) shade = 0.1; if (xs < 8.0) { shade = 0.6; lit = 0.55; } }
+        moss = -1.0;
+        if (hy < 0.5 && cluster(vec2(r.x / 7.0, 9.0), 0.4) > 0.5 && hy * P < 4.0 + hash1(floor(r.x / 2.0)) * 22.0) moss = 0.34 + hash1(floor(r.y / 2.0)) * 0.14;
+      } else if (r.x >= bE && r.x < bE + 16.0 && hy > 0.0 && hy < ${f(eave)} - 0.05) {
+        // its shadow on the wall to the east, the last px dithered
+        float k = (r.x - bE) / 16.0;
+        if (k < 0.7 || bayer4(p) > (k - 0.7) / 0.3) shade *= 0.55;
+      }
+    }
+    // ---- ivy climbing the front's corner from the plinth: clumps of leaves on wandering stems,
+    // thinning upward, breaking the quoins' hard edge; lit where the low sun reaches round the corner ----
+    {
+      float ix = r.x - ${f(X(PORCH.front))};
+      float reach = 2.9 * (0.6 + 0.4 * vnoise(vec2(ix / 23.0, 2.0)));
+      if (ix > -3.0 && ix < 0.9 * P && hy > 0.0 && hy < reach) {
+        float stem = 10.0 + 14.0 * sin(hy * 1.7) + 8.0 * sin(hy * 4.1 + 1.0);
+        float lv = vnoise(vec2(r.x / 6.0, r.y / 5.0));
+        float dens = sqrt(1.0 - hy / reach) * (1.0 - smoothstep(26.0, 70.0, ix)) * 1.15;
+        bool leaf = lv > 1.0 - dens * 0.9 && hash2(floor(vec2(r.x / 3.0, r.y / 3.0))) > 0.12;
+        if (abs(ix - stem) < 1.0 && hash1(floor(hy * 6.0)) > 0.2) moss = 0.18;
+        if (leaf) {
+          float edge = vnoise(vec2((r.x - 1.0) / 6.0, (r.y + 1.0) / 5.0)) < 1.0 - dens * 0.9 ? 1.0 : 0.0;
+          moss = 0.36 + hash2(floor(vec2(r.x / 3.0, r.y / 3.0)) + 3.0) * 0.16 + edge * 0.28;
+          if (ix < 6.0 && edge > 0.5) { shade = 0.7; lit = 0.8; moss = -1.0; }
+        }
+      }
     }
     // ---- the portal round the chapel doors: three orders stepping back to the door's own frame,
     // voussoirs in each ring, a hood mould with label stops; all under the eave beam ----
@@ -377,6 +464,23 @@ float arch(float u, float a, float sp, float k) {
   float c = R - a;
   float x = abs(u) + c;
   return sp + sqrt(max(0.0, R * R - x * x));
+}
+// ivy climbing a wall from its foot: leaf clumps on wandering stems, thinning upward and away from
+// the stem's line; -3 a stem, -4 a leaf, -5 a leaf's sunlit edge, 0 nothing (r room px, foot row fy)
+float ivy(vec2 r, float x0, float fy, float reach, float width, float seed) {
+  float ix = r.x - x0;
+  float hy = (fy - r.y) / P;
+  if (abs(ix) > width || hy < 0.0 || hy > reach) return 0.0;
+  float stem = sin(hy * 1.9 + seed) * width * 0.35 + sin(hy * 4.3 + seed * 2.0) * 3.0;
+  float dens = sqrt(1.0 - hy / reach) * (1.0 - smoothstep(width * 0.35, width, abs(ix - stem))) * 1.15;
+  float lv = vnoise(vec2(r.x / 8.0 + seed, r.y / 7.0)) * 0.75 + vnoise(vec2(r.x / 3.0, r.y / 3.0) + seed) * 0.25;
+  if (lv > 1.0 - dens * 0.8) {
+    bool edge = vnoise(vec2((r.x - 1.0) / 8.0 + seed, (r.y - 1.0) / 7.0)) * 0.75 + vnoise(vec2((r.x - 1.0) / 3.0, (r.y - 1.0) / 3.0) + seed) * 0.25 < 1.0 - dens * 0.8;
+    if (!edge && hash2(floor(r / 2.0) + seed) < 0.22) return -3.0;      // the dark between leaves
+    return edge ? -5.0 : -4.0;
+  }
+  if (abs(ix - stem) < 1.0 && hash1(floor(hy * 6.0) + seed) > 0.25) return -3.0;
+  return 0.0;
 }
 // coursed ashlar: every block its own value (a few darker, weathered ones), a lit top bed and west
 // arris, a shaded underside and east arris, crisp joints, chips in clusters and the odd hairline crack
@@ -694,8 +798,19 @@ vec4 layer(vec2 p, vec2 s) {
       if (abs(cx) < 1.6 && hash2(vec2(col, floor(dy / 3.0))) > 0.5) return vec4(ramp(R_MOSS, 0.5 + hash1(floor(dy / 3.0) + col * 3.0) * 0.16, p, 0.3), 1.0);
     }
   }
-  if (shade == -3.0) return vec4(ramp(R_MOSS, 0.32 + hash1(floor(r.y / 3.0) + floor(r.x)) * 0.1, p, 0.3), 1.0);
-  if (shade == -4.0) return vec4(ramp(R_MOSS, 0.5 + hash1(floor(r.y / 3.0) + floor(r.x / 2.0)) * 0.16, p, 0.3), 1.0);
+  // ivy up the arcade's piers and the chapel's east wall by the doorway, from the doorstep
+  if (shade >= 0.0 && r.y < ${f(Y(B.floor))} && r.x < ${f(towerE)}) {
+    float iv = ivy(r, ${f(X(459.25))}, ${f(Y(B.floor))}, 2.8, 30.0, 1.0);
+    for (int k = 0; k < 3; k++) {
+      if (iv < 0.0) break;
+      iv = ivy(r, ${f(X(458.95))} + float(k) * ${f(3.4 * P)} + ${f(0.25 * P)}, ${f(Y(B.floor))}, 1.6 + float(k) * 0.5, 22.0, 3.0 + float(k) * 2.0);
+    }
+    // the stair's masonry stands in front of the tower: no ivy over it
+    if (iv < 0.0 && !stairMass) shade = iv;
+  }
+  if (shade == -5.0) return vec4(ramp(R_MOSS, 0.62, p, 0.3), 1.0);
+  if (shade == -3.0) return vec4(ramp(R_MOSS, 0.2 + hash1(floor(r.y / 3.0) + floor(r.x)) * 0.1, p, 0.3), 1.0);
+  if (shade == -4.0) return vec4(ramp(R_MOSS, 0.4 + hash1(floor(r.y / 3.0) + floor(r.x / 2.0)) * 0.14, p, 0.3), 1.0);
   if (shade < 0.0) return vec4(0.0);`
   }
   // the tower in the last light: the foot of every wall in its own shadow (stepped, dithered), and warm
@@ -703,9 +818,9 @@ vec4 layer(vec2 p, vec2 s) {
   float gh = (${f(Y(B.floor))} - r.y) / P;
   if (gh > -0.4 && gh < 2.4 && r.x < ${f(towerE)}) shade -= floor((1.0 - gh / 2.4) * 3.0 + bayer4(p) * 0.9) / 3.0 * 0.07;
   float warm = 0.0;
-  for (int i = 0; i < 2; i++) {
-    vec2 lc = i == 0 ? vec2(${f(X(468.6))}, ${f(Y(46.25))}) : vec2(${f(X(B.cote[0] - 0.02))}, ${f(Y(B.deck + 2.0))});
-    float ld = length((r - lc) * vec2(1.0, 1.25)) / ${f(1.5 * P)};
+  for (int i = 0; i < 3; i++) {
+    vec2 lc = i == 0 ? vec2(${f(X(468.6))}, ${f(Y(46.25))}) : i == 1 ? vec2(${f(X(B.cote[0] - 0.02))}, ${f(Y(B.deck + 2.0))}) : vec2(${f(X(B.eastDoor + 0.2))}, ${f(Y(B.floor + 0.1))});
+    float ld = length((r - lc) * vec2(1.0, i == 2 ? 2.2 : 1.25)) / ${f(1.5 * P)};
     warm = max(warm, floor(max(0.0, 1.0 - ld) * 3.0 + bayer4(p + vec2(1.0, 3.0)) * 0.9) / 3.0);
   }
   vec3 c = lit > 0.25 ? ramp(R_WALLLIT, shade * 0.6 + lit * 0.35, p, 0.4) : ramp(R_WALL, shade, p, 0.4);

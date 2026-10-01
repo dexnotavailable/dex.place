@@ -38,6 +38,9 @@ const PALETTE: Record<string, string[]> = {
   lead: ["#08070b", "#0e0c12"],
   shaft: ["#3a2a3c", "#6a4a5c", "#a4787c", "#d8b096"],
   warm: ["#4a2c1c", "#8a5a30", "#d09a58", "#f2cc8c"],
+  // the west bay's fresco: earth pigments gone soft under centuries of candle smoke
+  fresco: ["#221619", "#3a2224", "#58302c", "#7a4a38", "#9a6a4a", "#b88e64"],
+  frescoSky: ["#1a1824", "#24233a", "#323250", "#46466a"],
   mote: ["#6a5460", "#a08078", "#dcc0a0"],
   standin: ["#07060a", "#110e14", "#2a2230", "#c9a489"],
 };
@@ -272,6 +275,8 @@ function naveBody(ctx: BuildCtx): string {
   const open = NAVE.piers.slice(0, -1).map((_, i) => (NAVE.closed.includes(i) ? 0 : 1));
   const niches = NAVE.niches.map(RX);
   const portal = RX(NAVE.door);
+  // the fresco on the west bay's wall, between the portal and the first pier, over the lectern
+  const fresco = { x0: RX(414.95), x1: RX(418.0), h0: 2.45, h1: 5.95 };
   const chancel = RX(NAVE.piers[NAVE.piers.length - 1]!);
   const exitX = RX(457.2);
   return /* glsl */ `
@@ -465,6 +470,72 @@ vec4 layer(vec2 p, vec2 s) {
         dd = min(dd, (hy < top ? 99.0 : (hy - top) * P));
         shade = dd < 3.0 ? 0.56 : dd < 7.0 ? 0.3 : 0.5;
       }
+    }
+  }
+  // --- the west bay's fresco: the Round as the pilgrims knew it (the broken ring round the low sun,
+  // the spire black on the horizon, a line of haloed walkers climbing to the chapel), painted on
+  // plaster in earth colours, a painted border; the plaster has flaked away in patches down to the
+  // stone (a pale lip round each loss), smoke-darkened toward the top, warmed by the candelabra ----
+  {
+    float fu = (r.x - ${f(fresco.x0)}) / ${f(fresco.x1 - fresco.x0)};
+    float fv = (hy - ${f(fresco.h0)}) / ${f(fresco.h1 - fresco.h0)};
+    if (fu >= 0.0 && fu < 1.0 && fv >= 0.0 && fv < 1.0) {
+      float FW = ${f(fresco.x1 - fresco.x0)}, Hh = ${f((fresco.h1 - fresco.h0) * P)};
+      vec2 fp = vec2(fu * FW, (1.0 - fv) * Hh);           // px from the fresco's top-left
+      // losses: the plaster gone in drifting patches, more of it low and near the edges
+      float loss = vnoise(fp / vec2(14.0, 11.0) + 3.0) * 0.7 + vnoise(fp / 5.0 + 9.0) * 0.3;
+      float edgeK = min(min(fu, 1.0 - fu), min(fv, 1.0 - fv));
+      float thr = 0.8 - (1.0 - smoothstep(0.0, 0.12, edgeK)) * 0.12 - (1.0 - fv) * 0.05;
+      if (loss < thr && bayer4(p + vec2(3.0, 1.0)) > 0.12) {
+        float lip = loss > thr - 0.012 ? 1.0 : 0.0;
+        float row = 3.0;                               // R_FRESCOSKY
+        float t = 0.0;
+        // the painted border: an ochre band with a dark line inside it
+        float bd = min(min(fp.x, FW - fp.x), min(fp.y, Hh - fp.y));
+        if (bd < 5.0) { row = 1.0; t = bd < 1.0 || bd > 4.0 ? 0.14 : 0.42 + hash2(floor(fp / 2.0)) * 0.06; }
+        else if (bd < 7.0) { row = 1.0; t = 0.1; }
+        else {
+          // the sky: night blue above, the glow of the sunset low down
+          float gy = fp.y / Hh;
+          row = 2.0;
+          t = 0.18 + gy * 0.3 + (hash2(floor(fp / 3.0)) - 0.5) * 0.12;
+          if (gy > 0.62) { row = 1.0; t = 0.3 + (0.8 - gy) * 0.3 + (hash2(floor(fp / 3.0)) - 0.5) * 0.1; }
+          // the sun and the broken ring round it
+          vec2 sc = vec2(FW * 0.56, Hh * 0.58);
+          vec2 dd = fp - sc;
+          if (length(dd) < 13.0) { row = 1.0; t = length(dd) < 10.0 ? 0.74 : 0.6; }
+          float ca = cos(-0.4), sa = sin(-0.4);
+          vec2 q = vec2(dd.x * ca - dd.y * sa, dd.x * sa + dd.y * ca) / vec2(70.0, 38.0);
+          float e = length(q);
+          float ang = atan(q.y, q.x);
+          if (e > 0.82 && e < 1.0 && !(ang > 0.55 && ang < 0.95)) { row = 1.0; t = e < 0.87 ? 0.56 : 0.14 + (mod(ang * 8.0, 1.0) < 0.1 ? -0.06 : 0.0); }
+          // the horizon and the spire
+          if (fp.y > Hh * 0.74 && fp.y < Hh * 0.76) { row = 1.0; t = 0.32; }
+          if (abs(fp.x - FW * 0.17) < 3.0 - (Hh * 0.75 - fp.y) / 40.0 && fp.y > Hh * 0.25 && fp.y < Hh * 0.75) { row = 1.0; t = 0.12; }
+          // a stair of haloed pilgrims climbing east to the chapel on the right
+          for (int k = 0; k < 6; k++) {
+            float fk = float(k);
+            vec2 pc = vec2(FW * (0.12 + fk * 0.14), Hh * (0.93 - fk * 0.05));
+            vec2 d2 = fp - pc;
+            if (abs(d2.x) < 2.0 && d2.y > -9.0 && d2.y < 0.0) { row = 1.0; t = d2.x < 0.0 ? 0.18 : 0.1; }
+            if (length(d2 - vec2(0.0, -11.0)) < 2.0) { row = 1.0; t = 0.2; }
+            if (abs(length(d2 - vec2(0.0, -12.0)) - 3.2) < 0.6) { row = 1.0; t = 0.66; }
+          }
+          if (fp.y > Hh * 0.95 - (fp.x / FW) * Hh * 0.32 && fp.y < Hh * 0.97 - (fp.x / FW) * Hh * 0.32) { row = 1.0; t = 0.26; }
+          // the chapel the walkers climb to, its window lit
+          vec2 cc = fp - vec2(FW * 0.9, Hh * 0.62);
+          if (abs(cc.x) < 9.0 && cc.y > -18.0 + abs(cc.x) * 0.8 && cc.y < 6.0) { row = 1.0; t = 0.12; if (abs(cc.x) < 1.6 && cc.y > -6.0 && cc.y < 0.0) t = 0.7; }
+        }
+        // age: smoke from the candles darkens the top, the paint is worn in clusters
+        t -= (1.0 - fv) * 0.0 + fv * fv * 0.18;
+        t += (floor(vnoise(fp / 6.0) * 3.0) / 3.0 - 0.5) * 0.1;
+        if (lip > 0.5) { row = 1.0; t = 0.42; }
+        t += stepd(clamp(lit, 0.0, 1.0), 4.0, p, 0.9) * 0.14;
+        if (row < 1.5) return vec4(ramp(R_FRESCO, t, p, 0.4), 1.0);
+        return vec4(ramp(R_FRESCOSKY, t, p, 0.4), 1.0);
+      }
+      // the stone where the plaster fell: in shadow a little, the loss is a shallow pit
+      shade -= 0.08;
     }
   }
   // --- the piers: a clustered column with a base and a capital, up into the vault ---

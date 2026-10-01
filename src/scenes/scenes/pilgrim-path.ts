@@ -57,7 +57,7 @@ export const PATH = {
     { kind: "flat", x: 394.2, to: 396.0, y: 40.0 },
   ] as Seg[],
   /** The rib that holds the bell: its foot, and the tip of its arm the bell hangs from. */
-  rib: { x: 340.95, foot: 68.8, tipX: 342.45, tipY: 72.2, ledges: [[340.55, 341.45, 69.7], [341.1, 341.95, 70.9]] as [number, number, number][] },
+  rib: { x: 340.95, foot: 68.8, tipX: 342.45, tipY: 72.2, ledges: [[340.55, 341.45, 69.7], [340.85, 341.95, 70.9]] as [number, number, number][] },
   /** Standing fins with stained glass set in them: [x, the landing's elevation]. */
   fins: [[324.25, 79.2], [332.5, 74.4], [364.5, 58.0], [374.6, 52.0]] as [number, number][],
   /** The camera: free, leaning downhill, feet at half the view. */
@@ -151,18 +151,33 @@ bool inArch(float u, float hh, float a, float base, float apex, float hd) {
 function segmentBody(ctx: BuildCtx, yRoom: number): string {
   const hx = Math.round(ctx.span / 2);
   const rib = PATH.rib;
-  const gap = PATH.segs.find((s) => s.kind === "gap")!;
   const shrine = { x0: RX(351.6), x1: RX(358.0), c: RX(356.65) };
   const brackets = rib.ledges
     .map(([a, b, y]) => {
       const bx0 = RX(a), bx1 = RX(b), by = RY(y);
-      const cx = (bx0 + bx1) / 2, cw = (bx1 - bx0) * 0.45;
       return `
-    if (shade < 0.0 && x > ${f(bx0)} && x < ${f(bx1)} && r.y >= ${f(by)} && r.y < ${f(by + 6)}) { shade = r.y < ${f(by + 2)} ? 0.64 : r.y > ${f(by + 4)} ? 0.16 : 0.32; lit = r.y < ${f(by + 2)} ? 0.6 : 0.0; }
+    // a shelf of plate 7 px thick round the rib: lit top (its walkable top is the ledge's top), a dark
+    // underside, the west end in the sun, bolts along its face
+    if (x >= ${f(bx0)} && x < ${f(bx1)} && r.y >= ${f(by)} && r.y < ${f(by + 7)}) {
+      float k = r.y - ${f(by)};
+      shade = k < 1.0 ? 0.74 : k < 2.0 ? 0.6 : k < 5.0 ? 0.36 - hash1(floor(x / 6.0)) * 0.05 : 0.14;
+      lit = k < 2.0 ? 0.85 : 0.0;
+      if (x < ${f(bx0 + 2)} && k >= 2.0) { shade = 0.56; lit = 0.6; }
+      if (x >= ${f(bx1 - 1)} && k >= 1.0) { shade = 0.1; lit = 0.0; }
+      if (k >= 2.0 && k < 5.0 && mod(x - ${f(bx0)}, 9.0) < 1.0 && k > 2.5 && k < 3.5) { shade = 0.56; lit = 0.3; }
+      moss = -1.0;
+    }
+    // its shadow on the rib under it
+    if (shade < 0.0 && inRib && x >= ${f(bx0)} && x < ${f(bx1)} && r.y >= ${f(by + 7)} && r.y < ${f(by + 10)}) { shade = 0.05; lit = 0.0; }
+    // a corbel under each end, tapering back into the rib
     {
-      float dd = r.y - ${f(by + 6)};
-      float hw = ${f(cw)} * (1.0 - dd / 22.0);
-      if (shade < 0.0 && dd >= 0.0 && dd < 22.0 && abs(x - ${f(cx)}) < hw) { bool w = x < ${f(cx)} - hw + 2.0; shade = w ? 0.5 : 0.22; lit = w ? 0.45 : 0.0; }
+      float dd = r.y - ${f(by + 7)};
+      if (shade < 0.0 && dd >= 0.0 && dd < 16.0) {
+        float hw = 4.5 * (1.0 - dd / 16.0) + 0.5;
+        float lc = ${f(bx0 + 6)} + dd * 0.7, rc = ${f(bx1 - 6)} - dd * 0.7;
+        if (abs(x - lc) < hw) { bool w = x < lc - hw + 1.5; shade = w ? 0.56 : 0.24; lit = w ? 0.5 : 0.0; }
+        else if (abs(x - rc) < hw) { shade = x > rc + hw - 1.5 ? 0.1 : 0.26; lit = 0.0; }
+      }
     }`;
     })
     .join("");
@@ -175,6 +190,16 @@ vec4 layer(vec2 p, vec2 s) {
   float line = lineAt(x);
   float d = r.y - top;           // px below the walking surface
   float under = line + 1.75 * P; // the band's underside (smooth)
+  // the missing panel: the upper flight broke off at GX0 and the ring bay's broken slab lies in the notch
+  const float GX0 = ${f(RX(336.1))}, GX1 = ${f(RX(337.2))}, DECK = ${f(RY(72.4))};
+  bool inBay = x >= GX0 && x < GX1;
+  // the bay's slab is the broken stub of the lower flight's band: deepest where it joins it, thinning
+  // back toward the break, its torn underside ragged
+  if (inBay) under = mix(top + 0.4 * P, lineAt(GX1) + 1.75 * P, pow((x - GX0) / (GX1 - GX0), 1.5)) - floor(vnoise(vec2(x / 7.0, 1.7)) * 10.0);
+  float tmb = uTime * (1.0 - 0.8 * uReduced);
+  // the upper flight's broken end: its plates tear back under the deck in a ragged line
+  float brk = GX0 - max(0.0, r.y - DECK - 3.0) * 0.24 - floor(vnoise(vec2(r.y / 5.0, 3.3)) * 9.0) - (hash1(floor(r.y / 3.0)) > 0.72 ? 3.0 : 0.0);
+  bool torn = x < GX0 && x >= brk && r.y > DECK + 6.0;
   float t = (r.y - line) / P;    // H below the smooth line
   float shade = -1.0;
   float lit = 0.0;               // share of warm sunset light (the hullLit ramp)
@@ -182,7 +207,21 @@ vec4 layer(vec2 p, vec2 s) {
   float stone = -1.0;            // >= 0: the shrine wall's limestone at this shade
   float glow = 0.0;              // the shrine niche's lamp light
   // ================= the band under the stair =================
-  if (d >= 0.0 && r.y < under) {
+  if (d >= 0.0 && r.y < under && !torn && inBay) {
+    // --- the ring bay's broken slab: a lit top (the floor you walk), cracked plate, a torn underside ---
+    float k = d;
+    shade = 0.34 + (floor(vnoise(vec2(x / 9.0, r.y / 7.0)) * 4.0) / 4.0 - 0.5) * 0.1;
+    if (k < 2.0) { shade = 0.66; lit = 0.8; }
+    else if (k < 4.0) { shade = 0.48; lit = 0.3; }
+    // each step's west face catches the sun; a dark joint where it meets the lower step
+    if (abs(topAt(x - 1.0) - top) > 0.5 && k < 16.0) { shade = 0.56; lit = 0.6; }
+    if (abs(topAt(x + 1.0) - top) > 0.5 && k >= 2.0) shade = 0.14;
+    // cracks wandering across the slab
+    float cr = abs(r.y - top - 14.0 - (vnoise(vec2(x / 11.0, 5.0)) - 0.5) * 18.0);
+    if (cr < 0.7 && k > 5.0) shade = 0.12;
+    if (under - r.y < 2.0) { shade = 0.1; lit = 0.0; }
+    if (hash2(floor(vec2(x / 2.0, r.y / 2.0)) + 5.0) > 0.95 && k > 4.0) shade -= 0.07;
+  } else if (d >= 0.0 && r.y < under && !torn) {
     float courseTop = line + 0.22 * P;
     if (r.y < courseTop) {
       // --- the carved stair: one block per step ---
@@ -251,6 +290,41 @@ vec4 layer(vec2 p, vec2 s) {
     if (r.y >= cy - 1.0 && cluster(vec2(x / 38.0, 3.7), 0.56) > 0.5) {
       float drip = 2.0 + hash1(floor(x / 2.0) + 3.0) * 12.0 * vnoise(vec2(x / 9.0, 1.3));
       if (r.y - cy < drip) moss = r.y - cy < 1.5 ? 0.78 : 0.42 - (r.y - cy) / max(drip, 1.0) * 0.18 + hash1(floor(x / 3.0)) * 0.08;
+    }
+  }
+  // ================= the break =================
+  if (x < GX0 && x > GX0 - 60.0 && d >= 0.0 && r.y < under) {
+    // the torn face (it faces east, away from the sun) with a few bright chips; cracks running back
+    if (!torn && x >= brk - 2.0 && r.y > DECK + 3.0) { shade = hash1(floor(r.y / 2.0)) > 0.8 ? 0.5 : 0.1; lit = shade > 0.4 ? 0.4 : 0.0; moss = -1.0; }
+    float c1 = abs(r.y - DECK - 22.0 - (GX0 - x) * 0.55 - (vnoise(vec2(x / 6.0, 2.0)) - 0.5) * 8.0);
+    float c2 = abs(r.y - DECK - 70.0 + (GX0 - x) * 0.35 - (vnoise(vec2(x / 5.0, 9.0)) - 0.5) * 6.0);
+    if (!torn && shade >= 0.0 && (c1 < 0.6 && x > GX0 - 44.0 || c2 < 0.6 && x > GX0 - 30.0)) { shade = 0.07; lit = 0.0; }
+  }
+  {
+    // a truss member, bent down where the plates tore away from it
+    vec2 A = vec2(GX0 - 8.0, DECK + 46.0), B = vec2(GX0 + 11.0, DECK + 51.0), C = vec2(GX0 + 18.0, DECK + 69.0);
+    float t1 = clamp(dot(r - A, B - A) / dot(B - A, B - A), 0.0, 1.0);
+    float t2 = clamp(dot(r - B, C - B) / dot(C - B, C - B), 0.0, 1.0);
+    vec2 n1 = A + (B - A) * t1, n2 = B + (C - B) * t2;
+    float dl = min(length(r - n1), length(r - n2));
+    if (dl < 1.8 && (torn || x >= GX0)) { bool up = r.y < (length(r - n1) < length(r - n2) ? n1.y : n2.y); shade = up ? 0.58 : 0.2; lit = up ? 0.55 : 0.0; moss = -1.0; }
+    // a few chips falling away from the break into the void (slow, a whole pixel at a time)
+    for (int i = 0; i < 4; i++) {
+      float fi = float(i);
+      float fall = mod(tmb * (9.0 + fi * 3.0) + fi * 37.0, 150.0);
+      vec2 cpos = vec2(GX0 + 3.0 + fi * 6.0 + floor(fall * 0.05 * (fi - 1.5)), DECK + 60.0 + floor(fall));
+      if (fall < 120.0 && abs(x - cpos.x) < 1.0 + step(2.0, fi) && abs(r.y - cpos.y) < 1.0 && shade < 0.0) { shade = 0.42; lit = 0.3; }
+    }
+  }
+  // rubble lying on the bay floor (sitting on it: a dark contact pixel under each piece)
+  if (inBay && d < 0.0 && d > -7.0 && shade < 0.0) {
+    float cell = floor((x - GX0) / 9.0);
+    float ch = hash1(cell * 3.7 + 1.0);
+    float cx = GX0 + cell * 9.0 + 2.0 + hash1(cell) * 4.0;
+    float hgt = 2.0 + floor(ch * 4.0);
+    if (ch > 0.35 && abs(x - cx) < 1.5 + ch * 2.0 && -d <= hgt - abs(x - cx) * 0.6) {
+      shade = -d < 1.0 ? 0.08 : (-d > hgt - abs(x - cx) * 0.6 - 1.0 ? 0.6 : 0.32);
+      lit = shade > 0.5 ? 0.5 : 0.0;
     }
   }
   // ================= under the band: hanging ribs and vines =================
@@ -352,7 +426,17 @@ vec4 layer(vec2 p, vec2 s) {
     } else {
       // --- a railing of posts with two rails, broken in places ---
       float broken = step(0.78, vnoise(vec2(x / 55.0, 7.0)));
-      float post = mod(x + 8.0, 0.9 * P);
+      if (x > GX0 - 2.0 && x < GX1 + 6.0) broken = 1.0;
+      if (x >= GX1 + 6.0 && x < GX1 + 10.0) broken = 0.0;
+      // the snapped top rail droops over the break; the lower rail is a short bent stub
+      if (x >= GX0 - 2.0 && x < GX0 + 15.0) {
+        float k = (x - GX0 + 2.0) / 17.0;
+        float ry = DECK - 0.6 * P + k * k * 22.0;
+        if (abs(r.y - ry) < 1.3 + k * 0.4) { bool up = r.y < ry; shade = up ? 0.6 : 0.24; lit = up ? 0.55 : 0.0; }
+        float ry2 = DECK - 0.3 * P + k * k * 30.0;
+        if (x < GX0 + 4.0 && abs(r.y - ry2) < 0.9) { shade = 0.3; lit = 0.2; }
+      }
+      float post = x >= GX1 + 6.0 && x < GX1 + 10.0 ? x - GX1 - 6.0 : x >= GX1 && x < GX1 + 40.0 ? 99.0 : mod(x + 8.0, 0.9 * P);
       if (broken < 0.5 && hh < 0.66 && post < 4.0) {
         shade = post < 1.0 ? 0.58 : post < 3.0 ? 0.28 : 0.16;
         lit = post < 1.0 ? 0.6 : 0.0;
@@ -362,13 +446,39 @@ vec4 layer(vec2 p, vec2 s) {
       if (broken < 0.5 && abs(hh - 0.3) * P < 0.8) { shade = 0.3; lit = 0.2; }
     }
   }
+  // ================= leaves at the fins' feet =================
+  // authored cover where soil gathers against each fin: an irregular silhouette of leaf clumps (tall
+  // at the fin's foot, thinning away from it) that follows the treads, three value steps, a dark
+  // contact row on the stone, tips lit by the glass above (warm) or the sky; a few sprigs hang over
+  // each nosing so the stair's hard line breaks.
+  for (int i = 0; i < ${PATH.fins.length}; i++) {
+    vec2 c = FIN[i];
+    float fi = float(i);
+    float u = (x - c.x) / P;
+    if (shade >= 0.0 || moss >= 0.0 || abs(u) > 1.5) continue;
+    float near = 1.0 - smoothstep(0.9, 1.5, abs(u));
+    float clump = smoothstep(0.32, 0.7, vnoise(vec2(x / 11.0, fi * 3.1)));
+    float sway = floor(sin(tmb * 0.8 + x * 0.07) * 0.6 + 0.5);
+    float hgt = clump * near * (10.0 + 14.0 * vnoise(vec2(x / 5.0, fi))) + (hash1(floor((x - sway) / 2.0) + fi * 17.0) - 0.5) * 5.0 * clump;
+    float up = -d;
+    if (d < 0.0 && up < hgt) {
+      float ub = hgt - up;                         // px below the silhouette's top
+      float sh = ub < 1.5 ? 0.82 : ub < 5.0 ? 0.56 : 0.36;
+      if (hash2(floor(vec2((x - sway) / 3.0, r.y / 3.0)) + fi) > 0.74 && ub > 2.0) sh += 0.16;   // leaf faces
+      if (up < 1.5) sh = 0.12;                                                                   // contact
+      moss = sh;
+      if (ub < 1.5 && abs(u) < 0.75) { stone = -1.0; shade = 0.86; lit = 0.9; moss = -1.0; }   // rim from the glass
+    } else if (d >= 0.0 && d < 2.0 + 7.0 * hash1(floor(x / 2.0) + fi) * clump * near && clump > 0.4 && hash1(floor(x / 2.0) * 1.3 + fi) > 0.55) {
+      moss = 0.3 + (d < 2.0 ? 0.12 : 0.0);                                                      // sprigs over the nosing
+    }
+  }
   // ================= standing fins: upright hull plates holding the stained glass =================
   for (int i = 0; i < ${PATH.fins.length}; i++) {
     vec2 c = FIN[i];
     float u = (x - c.x) / P;
     float hh = (c.y - r.y) / P;                     // H above the landing
     float crest = 4.3 + 0.35 * sin(u * 3.1 + float(i)) - step(0.6, abs(u)) * 0.5;
-    if (shade < 0.0 && moss < 0.0 && stone < 0.0 && d < 0.0 && abs(u) < 1.25 && hh > -0.2 && hh < crest) {
+    if (shade < 0.0 && moss < 0.0 && stone < 0.0 && d < 0.0 && abs(u) < 1.25 && hh > -4.0 && hh < crest) {
       // the glass opening is cut through (the window sits in it), with a dark reveal round it
       if (inArch(u, hh, 0.7, 0.92, 3.74, 1.0)) return vec4(0.0);
       float band = floor(hh / 0.8);
@@ -380,7 +490,7 @@ vec4 layer(vec2 p, vec2 s) {
       if (crest - hh < 0.05) { shade = 0.6; lit = 0.6; }
       if (inArch(u, hh, 0.84, 0.8, 3.9, 1.08)) { shade = 0.06; lit = 0.0; }           // the reveal
       if (mod(x, 9.0) < 1.0 && abs(abs(u) - 1.0) < 0.03) shade = 0.5;                  // rivets
-      if (hh < 0.6 && cluster(vec2(x / 17.0, float(i)), 0.45) > 0.5 && hh * P < 4.0 + hash1(floor(x / 2.0)) * 14.0) moss = 0.4 + hash1(floor(r.y / 2.0)) * 0.15;
+      if (-d < 3.0) { shade = 0.08; lit = 0.0; }    // its foot: a dark seam where it stands in the tread
     }
   }
   // ================= the rib that holds the bell =================
@@ -390,7 +500,10 @@ vec4 layer(vec2 p, vec2 s) {
     float bend = hh * hh * 0.06;                    // curves east as it rises
     float u = (x - fx) / P - bend;
     float w = 0.34 - hh * 0.03;
-    if (shade < 0.0 && moss < 0.0 && d < 0.0 && hh > -0.2 && hh < 5.4 && abs(u) < w) {
+    bool inRib = d < 0.0 && hh > -0.2 && hh < 5.4 && abs(u) < w;
+    // the climbing shelves on it (the one-way ledges), each on corbels, drawn over it
+    ${brackets}
+    if (shade < 0.0 && moss < 0.0 && inRib) {
       float seg = floor(hh / 0.55);
       shade = 0.24 + (hash1(seg + 31.0) - 0.5) * 0.08;
       if (mod(hh, 0.55) * P < 1.0) shade = 0.12;
@@ -404,11 +517,9 @@ vec4 layer(vec2 p, vec2 s) {
     vec2 ab = a1 - a0;
     float tt = clamp(dot(r - a0, ab) / dot(ab, ab), 0.0, 1.0);
     if (shade < 0.0 && length(r - a0 - ab * tt) < 4.0 + (1.0 - tt) * 3.0) { shade = 0.26 + (r.y < (a0 + ab * tt).y - 2.0 ? 0.32 : 0.0); lit = 0.4; }
-    // the climbing brackets on its flank (the one-way ledges), each carried on a corbel
-    ${brackets}
   }
   // the ring bay: the wall on its far side catches the sun
-  if (d >= 0.0 && x > ${f(RX(gap.to) - 3)} && x < ${f(RX(gap.to))} && r.y < ${f(RY((gap as { y: number }).y) + 0.6 * P)}) { shade = 0.55; lit = 0.7; moss = -1.0; }
+  if (d >= 0.0 && x >= GX1 && x < GX1 + 3.0 && r.y < under && r.y > top + 2.0) { shade = 0.55; lit = 0.65; moss = -1.0; }
   if (moss >= 0.0) return vec4(ramp(R_MOSS, moss, p, 0.3), 1.0);
   if (stone >= 0.0) {
     vec3 c = glow > 0.0 ? ramp(R_WALLLIT, stone * 0.7 + glow * 0.4, p, 0.3) : ramp(R_WALL, stone, p, 0.35);
