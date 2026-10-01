@@ -12,7 +12,7 @@ import type { RoomDef } from "../../room/types.ts";
 import { geoCtx } from "../common.ts";
 import { ringwater as greybox } from "../_blockout/a-ringwater.ts";
 import { sessionRoom } from "./_lib.ts";
-import { EVENING_LIGHT, MORNING_LIGHT } from "./a1-dock.ts";
+import { EVENING_BLEND, EVENING_LIGHT, MORNING_BLEND, MORNING_LIGHT } from "./a1-dock.ts";
 
 const base = greybox.find((r) => r.id === "S2")!;
 const g = arrivalGeo(geoCtx(base.w - SCALE.viewW));
@@ -29,8 +29,9 @@ const morning: RoomDef = {
   terrain: base.terrain.map((t) => ({ ...t, art: "wood", ramp: ["#08090c", "#0f1115", "#191b20", "#2a2a2c", "#4c4238"] })),
   backdrop: lake(false),
   lighting: MORNING_LIGHT,
+  blend: MORNING_BLEND,
   ambient: { dust: 8 },
   waterline: g.wl,
 };
 
-export const ferryRide: RoomDef = sessionRoom(morning, () => ({ backdrop: lake(true), lighting: EVENING_LIGHT, weather: { state: "serene", time: "dusk" } }));
+export const ferryRide: RoomDef = sessionRoom(morning, () => ({ backdrop: lake(true), lighting: EVENING_LIGHT, blend: EVENING_BLEND, weather: { state: "serene", time: "dusk" } }));

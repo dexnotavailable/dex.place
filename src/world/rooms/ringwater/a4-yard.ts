@@ -13,7 +13,7 @@ import type { RoomDef } from "../../room/types.ts";
 import { Box } from "../_blockout/_build.ts";
 import { litShrines, px, sessionRoom, styled } from "./_lib.ts";
 import { shelfGround } from "./_cliff.ts";
-import { EVENING_LIGHT, MORNING_LIGHT } from "./a1-dock.ts";
+import { EVENING_BLEND, EVENING_LIGHT, MORNING_BLEND, MORNING_LIGHT } from "./a1-dock.ts";
 
 const X0 = 60;
 const X1 = 76;
@@ -40,8 +40,10 @@ const b = new Box({
 styled(b, "none", () => b.floor(X0, X1, GROUND));
 
 // the lodge's east end with the yard door
-px(b, "lodgeFacade", "lodge-facade-east", 62.3, GROUND, { width: 4.3, height: 4.3, side: -1, windowAt: 0.04 });
-px(b, "lodgeDoor", "yard-door", 60.7, GROUND, { kind: "ordinary", frame: "timber" });
+// the yard door is built into the end wall (the facade cuts its opening, lintel, sill and hood)
+const DOOR = 60.7;
+px(b, "lodgeFacade", "lodge-facade-east", 62.3, GROUND, { width: 4.3, height: 4.3, side: -1, windowAt: 0.04, door: 62.3 - DOOR, woodpile: [0.12, 0.98] });
+px(b, "lodgeDoor", "yard-door", DOOR, GROUND, { kind: "ordinary", frame: "timber" });
 b.doors["yard-door"] = { room: "A3", spawn: "yard" };
 // the keeper's training dummy (she beats rugs on it) and the laundry line
 px(b, "trainingDummy", "yard-dummy", 62.4, GROUND);
@@ -92,9 +94,23 @@ b.prop(
 b.spawn("west", 61.5, GROUND, 1).spawn("east", 75.3, GROUND, -1).spawn("shrine", 63.4, GROUND, 1);
 b.exit("right", "B1", "west");
 
+// the yard's ground (_yard.ts), in room px: flagstones from the door and under the arch, the
+// shrine's plinth and its dry-stone wall, the bank behind the yard (kept low inside the arch, which
+// frames the colossus), two firs
+const RX = (wx: number): number => h(wx - X0);
+const YARD = {
+  ox: 0,
+  y: h(TOP - GROUND),
+  paved: [[RX(57.5), RX(63.6)], [RX(69.1), RX(71.7)]] as [number, number][],
+  plinth: [[RX(63.75), RX(66.85)]] as [number, number][],
+  wall: [RX(63.55), RX(67.05), 34] as [number, number, number],
+  open: [[RX(57.5), RX(62.4)], [RX(69.25), RX(71.55)]] as [number, number][],
+  firs: [[RX(75.7), 300], [RX(68.1), 150]] as [number, number][],
+};
+
 // the lake far below on the left, the far shore and hills ahead
 const lake = (evening: boolean): RoomDef["backdrop"] => ({
-  scene: arrivalScene({ title: evening ? "A4 keeper's yard (evening)" : "A4 keeper's yard", dock: "none", rise: h(5.7), bias: -h(10), without: ["near-left", "near-right", "foreground", "mid-right"], evening, extra: shelfGround({ ox: 0, y: h(TOP - GROUND) }) }),
+  scene: arrivalScene({ title: evening ? "A4 keeper's yard (evening)" : "A4 keeper's yard", dock: "none", rise: h(5.7), bias: -h(10), without: ["near-left", "near-right", "foreground", "mid-right"], evening, extra: shelfGround(YARD) }),
   vertical: 0,
   weather: true,
 });
@@ -103,11 +119,13 @@ const morning: RoomDef = {
   ...b.build(),
   backdrop: lake(false),
   lighting: MORNING_LIGHT,
+  blend: MORNING_BLEND,
   ambient: { dust: 10 },
 };
 
 export const keepersYard: RoomDef = sessionRoom(morning, () => ({
   backdrop: lake(true),
   lighting: EVENING_LIGHT,
+  blend: EVENING_BLEND,
   weather: { state: "serene", time: "dusk" },
 }));

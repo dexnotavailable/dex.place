@@ -16,6 +16,7 @@ import { geo as arrivalGeo } from "../../../scenes/scenes/arrival/geo.ts";
 import { h, SCALE } from "../../config.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { geoCtx, lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 import { Box } from "../_blockout/_build.ts";
 import { px, sessionRoom, styled } from "./_lib.ts";
 
@@ -54,6 +55,14 @@ export const EVENING_LIGHT = lighting({
   rimDir: [0.7, -0.7],
   rimIntensity: 1.0,
 });
+
+/**
+ * Ringwater's blending (render/blend.ts): one cast toward the room's own light over everything
+ * composed, a veil of the lake's haze on far props, contact shadows, halos round lit lamps. The
+ * evening's is warmer and a little stronger (the low amber sun through rose haze).
+ */
+export const MORNING_BLEND = fromLight(MORNING_LIGHT, { amount: 0.14, haze: 0.25 });
+export const EVENING_BLEND = fromLight(EVENING_LIGHT, { amount: 0.2, haze: 0.32 });
 
 const b = new Box({
   id: "A1",
@@ -101,6 +110,7 @@ const morning: RoomDef = {
   ...b.build(),
   backdrop: { scene: arrivalScene({ title: "A1 the dock", dock: "world" }), vertical: 0, weather: true },
   lighting: MORNING_LIGHT,
+  blend: MORNING_BLEND,
   ambient: { dust: 14, moths: true },
   waterline: g.wl,
   pitY: g.wl + h(0.9),
@@ -109,5 +119,6 @@ const morning: RoomDef = {
 export const dock: RoomDef = sessionRoom(morning, () => ({
   backdrop: { scene: arrivalScene({ title: "A1 the dock (evening)", dock: "world", evening: true }), vertical: 0, weather: true },
   lighting: EVENING_LIGHT,
+  blend: EVENING_BLEND,
   weather: { state: "serene", time: "dusk" },
 }));

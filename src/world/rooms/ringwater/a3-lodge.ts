@@ -19,6 +19,7 @@
 import { h, SCALE } from "../../config.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 import { Box } from "../_blockout/_build.ts";
 import { lodgeScene, type LodgeOpts } from "./_lodge.ts";
 import { flag, px, sessionRoom, styled } from "./_lib.ts";
@@ -78,7 +79,7 @@ b.doors["lodge-yard"] = { room: "A4", spawn: "west" };
 // --- the loft -----------------------------------------------------------------------
 px(b, "ringBench", "loft-bench-art", 55.25, LOFT, { kind: "wood", length: 1.2 });
 b.prop("ring-seat", "loft-bench", 55.25, LOFT, {}, { engine: "stub" });
-px(b, "lodgeShelf", "loft-shelf", 57.0, LOFT + 2.55, { width: 1.3, boards: 2 });
+px(b, "lodgeShelf", "loft-shelf", 56.35, LOFT + 2.55, { width: 1.3, boards: 2 });
 px(b, "luggage", "lost-trunk", 56.6, LOFT, { kind: "trunk" });
 px(b, "luggage", "lost-bag", 57.45, LOFT, { kind: "bag" });
 // the sky door: opens onto the dusk, barred by the rail bolted on the far side, until the latch (S4)
@@ -109,14 +110,34 @@ const lodge = (evening: boolean): LodgeOpts => ({
     [RX(55.0), RY(LOFT - 1.1), h(1.6)],
   ],
   rail: [RX(47.3), RY(FLOOR), RX(loftFrom), RY(LOFT)],
-  posts: [RX(53.9), RX(46.25), RX(59.75)],
+  // one post under the loft's edge (the old ones at 46.25 and 59.75 stood behind the doors' casings)
+  posts: [RX(53.9)],
+  // every door's opening is built into the logs: reveal, lintel beam, sill (the kit casing sits inside)
+  doors: [
+    { x: RX(46.6), y: RY(FLOOR) },
+    { x: RX(59.3), y: RY(FLOOR) },
+    { x: RX(58.9), y: RY(LOFT) },
+  ],
+  // the stove's chimney breast, the stovepipe entering it under the loft's beam
+  chimney: { x: RX(57.75), w: h(0.8), thimble: RY(FLOOR + 0.72 + (LOFT - FLOOR - 0.72 - 0.15)) },
+  pegs: [RX(58.2), RY(FLOOR + 1.2)],
+  herbs: [RX(55.5), RX(56.9)],
+  // the keeper's chart of the lake over the counter (the ferry's route, the lodge marked), and the
+  // ferry's spare oars crossed on the wall between the lantern and the chimney
+  chart: [RX(49.75), RY(FLOOR + 2.95), h(1.25), h(0.8)],
+  oars: [RX(56.45), RY(FLOOR + 2.55)],
   evening,
 });
 
+const LODGE_LIGHT = lighting({ ambient: [0.3, 0.26, 0.24], keyColour: [0.62, 0.5, 0.38], rimColour: [1, 0.74, 0.46], rimIntensity: 0.95 });
+const LODGE_EVENING = lighting({ ambient: [0.28, 0.24, 0.26], keyColour: [0.56, 0.42, 0.36], rimColour: [1, 0.7, 0.44], rimIntensity: 1 });
 const morning: RoomDef = {
   ...b.build(),
   backdrop: { scene: lodgeScene(lodge(false)), vertical: 1, weather: false },
-  lighting: lighting({ ambient: [0.3, 0.26, 0.24], keyColour: [0.62, 0.5, 0.38], rimColour: [1, 0.74, 0.46], rimIntensity: 0.95 }),
+  lighting: LODGE_LIGHT,
+  // one warm cast over the room, contact shadows under the furniture, halos round the lamp, the
+  // candles and the stove; no distance haze or ground band indoors
+  blend: { ...fromLight(LODGE_LIGHT, { amount: 0.12 }), haze: undefined, band: undefined },
   ambient: { dust: 16, moths: false },
 };
 
@@ -131,7 +152,8 @@ const afterRound = (): RoomDef["props"] =>
 
 const base = sessionRoom(morning, () => ({
   backdrop: { scene: lodgeScene(lodge(true)), vertical: 1, weather: false },
-  lighting: lighting({ ambient: [0.28, 0.24, 0.26], keyColour: [0.56, 0.42, 0.36], rimColour: [1, 0.7, 0.44], rimIntensity: 1 }),
+  lighting: LODGE_EVENING,
+  blend: { ...fromLight(LODGE_EVENING, { amount: 0.16 }), haze: undefined, band: undefined },
   // the keeper is at Pier's End (the room state sends her away if the room was built before);
   // the room state swings the front door open
   drop: ["keeper"],
@@ -142,5 +164,5 @@ export const keepersLodge: RoomDef = Object.defineProperty({ ...base }, "props",
   get: () => [...base.props, ...afterRound()],
 }) as RoomDef;
 // keep the evening getters (spreading copies values, so re-point them at the session room)
-for (const k of ["backdrop", "lighting", "weather"] as const) Object.defineProperty(keepersLodge, k, { enumerable: true, get: () => base[k] });
+for (const k of ["backdrop", "lighting", "weather", "blend"] as const) Object.defineProperty(keepersLodge, k, { enumerable: true, get: () => base[k] });
 void SCALE;

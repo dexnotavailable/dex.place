@@ -26,5 +26,10 @@ defineMaterial("ringSpeechBack", { ramp: ["#0c0b10", "#111016", "#16141c", "#1c1
 defineMaterial("ringLampOff", { ramp: ["#141218", "#1e1a20", "#2a2428", "#383034"], t: [0.14, 0.42, 0.8], behaviour: "none", hardness: 999, sound: "glass" });
 defineMaterial("ringLampOn", { ramp: ["#7a3e18", "#c87a30", "#f2b456", "#ffe0a0"], emissive: true, ink: false, behaviour: "none", hardness: 999, sound: "glass" });
 
+// the lodge outside (region lane a): its footing in the cliff stair's own stone (the arrival backdrop's
+// crag ramp, hue-shifted: violet shadow, olive light), the pale clay chinking between the logs
+defineMaterial("ringFooting", { ramp: ["#15181e", "#262c2e", "#3b4240", "#5c5e54"], t: [0.16, 0.44, 0.8], behaviour: "crumble", hardness: 90, sound: "stone", debris: 0.35, bounce: 0.25 });
+defineMaterial("ringChink", { ramp: ["#2a2420", "#3e3428", "#544634", "#6a5a44"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 40, sound: "stone", debris: 0.2 });
+
 /** Nothing to call: importing this module defines the materials. */
 export const RINGWATER_MATERIALS = true;

@@ -97,9 +97,10 @@ export function cliffReflection(pix: Pix, base: number, row: number, seed: numbe
       const y = base + k;
       if (y >= pix.h) break;
       const t = k / l;
-      const shift = Math.round(Math.sin(k * 1.7 + seed) * (1 + t * 2));
-      const seg = Math.floor((x + shift) / (3 + (k % 3)));
-      if (hashInt(seg, k, seed) < 0.15 + t * 0.7) continue;
+      const shift = k < 3 ? 0 : Math.round(Math.sin(k * 0.9 + seed) * (1 + t * 2));
+      // long horizontal dashes that thin out with distance (ripples), solid right at the contact
+      const seg = Math.floor((x + shift + k * 7) / (9 + (k % 4) * 3));
+      if (k >= 3 && hashInt(seg, k >> 1, seed) < 0.1 + t * 0.75) continue;
       if (!pix.solid(x + shift, base - 1)) continue;
       pix.set(x, y, 0.1 - t * 0.06, row);
     }
