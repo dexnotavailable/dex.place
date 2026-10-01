@@ -19,6 +19,10 @@
 //             dash's wind put out gutters and relights by itself a few
 //             seconds later (WORLD-PLAN E3, "gutter out and relight if hit");
 //             E still relights at once.
+// wallSet     the DOOR RULE for kit fittings that draw their own grey stone
+//             surround (the pilgrim path's stained glass): an invisible prop
+//             that re-cuts the named props' frames in the material of the
+//             wall they are set in, once, and keeps it through their mending.
 // naveBench   the kit's pew without its own E, for a spot where the room's
 //             "sit and look" seat (the runtime's sit, holding the camera on
 //             the works) is the thing you use.
@@ -29,7 +33,8 @@ import { lampPost } from "../lampPost.ts";
 import { bench } from "../bench.ts";
 import { candles } from "../candles.ts";
 import { candelabra, type CandelabraParams } from "../candelabra.ts";
-import { defineRecipe, type Prop, type Recipe } from "../../prop.ts";
+import { defineRecipe, type Prop, type PropBuilder, type Recipe } from "../../prop.ts";
+import { resolveMat } from "../../materials.ts";
 
 // the kit recipes are extended by spreading them; their refs types are private to their files
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,11 +51,49 @@ export interface ChapelDoorParams extends DoorParams {
 
 const D = door.states;
 
+/**
+ * The DOOR RULE (Dex, 2026-10-01): a door is built into its wall, never a sprite pasted on it. The kit
+ * draws its frame in its generic grey stone; here the same frame (same geometry, same arch) is re-cut
+ * in the chapel's own ashlar, and a dark reveal a few pixels wider sits behind it, so the jambs and
+ * arch read as the inner order of the wall's recessed portal (the backdrop draws the outer orders,
+ * the hood and the step around it) and the leaf sits back in the wall's thickness.
+ */
+function buildIntoWall(b: PropBuilder, p: ChapelDoorParams): void {
+  if (p.frame !== "stone") return;
+  const g = b.get("frame").grid;
+  const map = new Map<number, number>([
+    [resolveMat("stone").id, resolveMat("chapelStone").id],
+    [resolveMat("stoneLight").id, resolveMat("chapelStoneLight").id],
+    [resolveMat("stoneDark").id, resolveMat("chapelStoneDark").id],
+  ]);
+  for (let y = 0; y < g.h; y++) {
+    for (let x = 0; x < g.w; x++) {
+      const i = g.inner(x, y);
+      const m = map.get(g.mat[i]!);
+      if (m !== undefined) g.mat[i] = m;
+    }
+  }
+  const u = (f: number): number => b.u(f);
+  const big = p.kind === "big" || p.kind === "gate" || p.kind === "shutter";
+  const w = u(big ? 2.5 : 0.7), h = u(big ? 4 : 1.4);
+  const FW = w + u(big ? 0.22 : 0.12) * 2, FH = h + u(big ? 0.3 : 0.14);
+  const fx = Math.floor(FW / 2), R = 4;
+  // R px of shadowed reveal beyond the jambs and over the arch, down to the floor
+  const rv = b.part("reveal", { w: FW + R * 2, h: FH + R, pivot: [fx + R, FH + R], at: [0, 0], layer: "bg", z: 2, hittable: false, outline: 0 });
+  if (p.kind === "big") rv.arch(0, 0, FW + R * 2, FH + R, { mat: "soot", profile: "flat", pointed: 0.62 });
+  else rv.rect(0, 0, FW + R * 2, FH + R, { mat: "soot", profile: "flat" });
+}
+
 export const chapelDoor = defineRecipe<ChapelDoorParams, unknown>({
   ...(door as AnyRecipe),
   id: "chapelDoor",
   reason: "The chapel's doors (big, a red ribbon, never locked) and the balcony's red-marked sky door, whose rail released from this side rings the bell and opens the way home to the keeper's loft (S4).",
   defaults: { ...door.defaults, auto: 0.45, bell: "" },
+  build(b, p) {
+    const refs = (door as AnyRecipe).build(b, p);
+    buildIntoWall(b, p as ChapelDoorParams);
+    return refs;
+  },
   states: {
     ...(D as Record<string, unknown>),
     unlatching: {
@@ -209,4 +252,54 @@ export const naveCandelabra = defineRecipe<CandelabraParams, unknown>({
     },
     out: { ...K["out"], after: [RELIGHT_AFTER, "relighting"] },
   } as never,
+});
+
+// ---------------------------------------------------------------------------------
+
+export interface WallSetParams {
+  /** Prop ids (in this room) whose surround is re-cut. */
+  props: string[];
+  /** The part to re-cut. */
+  part: string;
+  /** The wall's material; its "Dark" twin takes the kit's dark stone. */
+  to: string;
+}
+
+export const wallSet = defineRecipe<WallSetParams, null>({
+  id: "wallSet",
+  breakage: "never",
+  reason: "The DOOR RULE (Dex): a window set in a wall is cut from that wall, never a grey frame stuck on it. Invisible: re-cuts the kit glass's stone surround in the wall's own material (and keeps it when the stone mends).",
+  defaults: { props: [], part: "frame", to: "hullStone" },
+  build: () => null,
+  initial: "on",
+  states: {
+    on: {
+      update(c) {
+        if (c.data["done"]) return;
+        const p = c.params as unknown as WallSetParams;
+        const to = resolveMat(p.to).id;
+        const dark = resolveMat(`${p.to}Dark`).id;
+        const kit = new Map<number, number>([
+          [resolveMat("stone").id, to],
+          [resolveMat("stoneLight").id, to],
+          [resolveMat("stoneDark").id, dark],
+        ]);
+        let all = true;
+        for (const id of p.props) {
+          const q = c.world.find(id);
+          if (!q) {
+            all = false;
+            continue;
+          }
+          q.paint(p.part, (_x, _y, m) => {
+            const n = kit.get(m);
+            return n === undefined ? undefined : n === to ? p.to : `${p.to}Dark`;
+          });
+          // the re-cut stone is what it mends back to
+          q.part(p.part).grid.snapshot();
+        }
+        c.data["done"] = all;
+      },
+    },
+  },
 });

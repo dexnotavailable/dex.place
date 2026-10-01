@@ -86,6 +86,9 @@ interface Opts {
   yRoom: number;
 }
 
+/** Height (H above the floor) of the candle sconce built into each pier. */
+const SCONCE = 3.05;
+
 /** Room px from world H. */
 const RX = (wx: number): number => Math.round((wx - NAVE.x0) * P);
 const FLOOR_Y = Math.round((NAVE.top - NAVE.floor) * P);
@@ -103,6 +106,8 @@ function candlePools(): [number, number, number, number][] {
   for (const x of NAVE.racks) at(x, 0.75, 1.3, 0.6);
   for (const x of NAVE.niches) at(x, 0.5, 1.2, 0.6);
   for (const x of NAVE.lanterns) at(x, 5.1, 1.4, 0.5);
+  // the candle sconces set in the piers, a rhythm of warm light down the nave
+  for (const x of NAVE.piers) at(x, SCONCE + 0.2, 1.15, 0.5);
   return L;
 }
 
@@ -229,8 +234,54 @@ float arch(float u, float a, float sp, float k) {
 vec4 layer(vec2 p, vec2 s) {
   vec2 r = vec2(p.x + ${f(hx)}, p.y + YROOM);
   float hy = (FLOOR_Y - r.y) / P;
-  if (hy < 0.0) return vec4(0.0);
   float xH = r.x / P;
+  if (hy < 0.0) {
+    // --- the floor: polished flags seen at a grazing angle, holding the candle light; then its front ---
+    float dn = -hy * P;
+    float sh = 0.3;
+    float warmth = 0.0;
+    if (dn < 2.0) { sh = 0.62; warmth = 0.5; }                       // the floor's front arris, lit
+    else if (dn < 30.0) {
+      // four rows of flags, nearer rows taller; joints staggered per row
+      float q = sqrt((dn - 2.0) / 28.0) * 4.0;
+      float row = floor(q);
+      float fq = fract(q);
+      float jw = 44.0 + row * 16.0;
+      float jx = mod(r.x + row * 23.0, jw);
+      sh = 0.26 + (hash2(vec2(floor((r.x + row * 23.0) / jw), row)) - 0.5) * 0.06 + row * 0.015;
+      if (fq < 0.12 || jx < 1.0) sh = 0.12;
+      // the candles mirrored in the polish: their pools sampled above the floor, squashed, stepped
+      float m = candles(vec2(r.x + floor(sin(dn * 0.9 + uTime * (1.0 - 0.8 * uReduced)) * 0.6), FLOOR_Y - (dn - 2.0) * 2.6));
+      float lv = floor(clamp(m, 0.0, 1.0) * 3.0 + bayer4(p) * 0.8) / 3.0;
+      sh += lv * 0.22;
+      warmth = lv;
+      if (hash1(floor(r.x / 3.0) + row * 9.0) > 0.985 && fq > 0.4) sh += 0.08;  // a glint on the polish
+    } else if (dn < 34.0) {
+      sh = dn < 32.0 ? 0.48 : 0.12;                                  // a moulded step down to the footing
+    } else {
+      // the footing: big coursed blocks, a blind arcade of small crypt vents with a faint glow in them
+      float dd = dn - 34.0;
+      float course = floor(dd / 30.0);
+      float off = mod(course, 2.0) * 40.0;
+      float fx = mod(r.x + off, 80.0), fy = mod(dd, 30.0);
+      sh = 0.22 + (hash2(vec2(floor((r.x + off) / 80.0), course)) - 0.5) * 0.06 - dd / P * 0.05;
+      if (fy < 1.0 || fx < 1.0) sh = 0.08;
+      else if (fy < 2.5) sh += 0.06;
+      float vx = mod(r.x - ${f(RX(NAVE.piers[0]!) + 2.7 * P)}, ${f(5.4 * P)}) - ${f(2.7 * P)};
+      // a vent: a round-headed opening 32 px wide, iron bars, the crypt's candle glow behind
+      float head = 16.0 - sqrt(max(0.0, 256.0 - min(vx * vx, 256.0)));
+      if (abs(vx) < 19.0 && dd > 4.0 + head && dd < 44.0) {
+        sh = 0.42;                                                   // the moulded surround
+        if (abs(vx) < 16.0 && dd > 7.0 + head && dd < 41.0) {
+          sh = 0.05;
+          warmth = floor(max(0.0, 1.0 - (dd - 12.0) / 26.0) * 2.0 + bayer4(p) * 0.8) / 2.0 * 0.6;
+          if (mod(vx + 16.0, 6.0) < 1.5) { sh = 0.18; warmth = 0.0; }   // bars
+        }
+      }
+    }
+    vec3 fc = warmth > 0.2 ? ramp(R_STONEWARM, sh + warmth * 0.08, p, 0.35) : ramp(R_STONE, sh, p, 0.35);
+    return vec4(fc, 1.0);
+  }
   float shade = 0.42;
   bool hole = false;
   float lit = candles(r);
@@ -239,10 +290,12 @@ vec4 layer(vec2 p, vec2 s) {
   float off = mod(course, 2.0) * 0.4;
   float blk = floor((xH + off) / 0.8);
   float fy = fract(hy / 0.4), fx = fract((xH + off) / 0.8);
-  shade += (hash2(vec2(blk, course)) - 0.5) * 0.1;
+  shade += (hash2(vec2(blk, course)) - 0.5) * 0.1 + (floor(vnoise(vec2(r.x / 15.0, r.y / 9.0)) * 4.0) / 4.0 - 0.5) * 0.06;
   if (fy * 0.4 * P < 1.0) shade -= 0.12;
   else if (fx * 0.8 * P < 1.0) shade -= 0.1;
-  else if (fy * 0.4 * P > 0.4 * P - 1.5) shade += 0.05;
+  else if (fy * 0.4 * P > 0.4 * P - 1.5) shade += 0.07;
+  else if (fx * 0.8 * P < 2.5) shade += 0.03;
+  if (hash2(floor(r.xy / 3.0) + 5.0) > 0.955) shade -= 0.07;      // chips
   // dado: a plinth band with a moulding along the foot of every wall
   if (hy < 0.75) { shade -= 0.05; if (hy > 0.68) shade += 0.1; if (hy > 0.62 && hy <= 0.68) shade -= 0.1; }
   // string course above the arcade
@@ -325,6 +378,19 @@ vec4 layer(vec2 p, vec2 s) {
       if (hy > 4.02 && hy < 4.3) { shade = 0.52 + cyl * 0.1; if (hy > 4.24) shade -= 0.14; }
       // the vaulting shaft keeps rising above the capital
       if (hy > 4.3 && abs(u) > 0.2) shade -= 0.08;
+    }
+  }
+  // --- a candle sconce built into each pier: an iron bracket, a dish, a candle, a slow stepped flame ---
+  for (int i = 0; i < ${piers.length}; i++) {
+    vec2 q = vec2(r.x - PIER[i], (FLOOR_Y - ${f(SCONCE)} * P) - r.y);   // y up from the dish
+    if (abs(q.x) < 9.0 && q.y > -16.0 && q.y < 18.0) {
+      float tm = floor(uTime * (1.0 - 0.7 * uReduced) * 3.0);
+      float fl = hash1(tm + float(i) * 7.0);
+      if (q.y < 0.0 && q.y > -14.0 && abs(q.x + q.y * 0.35) < 1.6) return vec4(pal(R_LEAD, 1.0), 1.0);             // the bracket's strut
+      if (q.y >= 0.0 && q.y < 2.0 && abs(q.x) < 7.0) return vec4(ramp(R_WARM, q.y > 1.0 ? 0.45 : 0.15, p, 0.0), 1.0); // the dish
+      if (q.y >= 2.0 && q.y < 8.0 && abs(q.x) < 1.5) return vec4(ramp(R_MOTE, q.x < 0.0 ? 1.0 : 0.7, p, 0.0), 1.0);   // the candle
+      float fh = 5.0 + (fl > 0.6 ? 1.0 : 0.0);
+      if (q.y >= 8.0 && q.y < 8.0 + fh && abs(q.x - (fl > 0.8 ? 0.5 : 0.0)) < 1.6 - (q.y - 8.0) / fh) return vec4(ramp(R_WARM, q.y < 10.0 ? 1.0 : 0.7, p, 0.0), 1.0);
     }
   }
   if (hole) return vec4(0.0);

@@ -249,7 +249,13 @@ vec4 layer(vec2 p, vec2 s) {
 }`;
 }
 
-/** The lake far to the west: a flat strip under the horizon holding the sun's path. */
+/**
+ * The lake far to the west: a flat strip under the horizon holding the sun's path. The sun never
+ * moves on screen (depth Infinity), so its reflection is keyed to the screen column under it, not to
+ * the lake's own parallax: rows of broken horizontal streaks straight below the disc, narrow at the
+ * far shore and wider toward you, brightest in the middle, sliding a whole pixel at a time (no blink).
+ * A cooler strip of sky lies along the far shore, and the far range's dark foot is mirrored under it.
+ */
 function lakeBody(ctx: BuildCtx, o: DuskOpts, d: number): string {
   const of = offs(ctx, o, d);
   const top = o.horizon + 2;
@@ -258,15 +264,29 @@ vec4 layer(vec2 p, vec2 s) {
   vec2 q = vec2(p.x + ${f(of.x)}, p.y + ${f(of.y)});
   float dx = q.x - ${f(o.lakeX)};
   float dy = q.y - ${f(top)};
-  if (dy < 0.0 || dy > 26.0 || abs(dx) > 260.0 - dy * 3.0) return vec4(0.0);
-  float tm = uTime * (1.0 - 0.6 * uReduced);
-  float shade = 0.3 + dy * 0.004;
-  // the sun path: broken dashes of gold down the middle, flickering slowly
-  float path = 1.0 - smoothstep(10.0, 40.0 + dy * 2.0, abs(q.x - ${f(o.sun[0])} + ${f(of.x)} * 0.0));
-  float dash = step(0.5, vnoise(vec2(floor(q.x / 3.0) + floor(tm * 1.5), q.y)));
-  if (path * dash > 0.4) shade = 0.85 + (dy < 6.0 ? 0.1 : 0.0);
-  vec3 c = ramp(R_WATER, shade, p, 0.3);
-  return vec4(applyFog(c, uFog * 0.6, 0.0, p, s), 1.0);
+  float reach = 300.0 - dy * 3.2 + (vnoise(vec2(q.x / 31.0, 3.0)) - 0.5) * 24.0;
+  if (dy < 0.0 || dy > 26.0 || abs(dx) > reach) return vec4(0.0);
+  float tm = uTime * (1.0 - 0.7 * uReduced);
+  // the water's body: the sky's colour near the far shore, deeper and violet toward you
+  float shade = 0.36 - dy * 0.006;
+  if (dy < 1.0) shade = 0.5;                                   // the far shore's lit line
+  else if (dy < 4.0 && mod(q.x + floor(dy) * 7.0, 23.0) < 9.0) shade = 0.18; // the range's dark foot mirrored
+  // long slow swells: faint lighter lines drifting across
+  float row = floor(dy / 2.0);
+  if (mod(dy, 2.0) < 1.0 && vnoise(vec2((q.x + floor(tm * 3.0 + row * 5.0)) / 17.0, row)) > 0.72) shade += 0.08;
+  // the sun's path, straight under the disc on screen
+  float sx = s.x - ${f(o.sun[0])};
+  float hw = 7.0 + dy * 2.4;
+  float u = abs(sx) / hw;
+  if (u < 1.0 && mod(dy, 2.0) < 1.0) {
+    float len = 4.0 + hash1(row * 3.1) * 7.0;
+    float drift = floor(tm * (1.5 + hash1(row) * 1.5) + hash1(row + 9.0) * 40.0) * (mod(row, 2.0) < 1.0 ? 1.0 : -1.0);
+    float seg = floor((sx + drift) / len);
+    float on = hash2(vec2(seg, row));
+    if (on > 0.25 + u * 0.6) shade = u < 0.35 ? 0.98 : u < 0.7 ? 0.85 : 0.7;
+  }
+  vec3 c = ramp(R_WATER, shade, p, 0.25);
+  return vec4(applyFog(c, uFog * 0.55, 0.0, p, s), 1.0);
 }`;
 }
 

@@ -132,15 +132,15 @@ export const roseWindow = defineRecipe<RoseParams, Refs>({
     }
     // --- the stone: an outer ring, petal mullions and cusps, the oculus ring (in front of the glass) ---
     const st = b.part("stone", { w: S + 4, h: S + 4, pivot: [c + 2, c + 2], at: [0, 0], layer: "bg", z: 12, hittable: false });
-    st.ring(c + 2, c + 2, R - 1, R + ring, { mat: "limestone", profile: "dome", r: 5, depth: 6, piece: "ring" });
+    st.ring(c + 2, c + 2, R - 1, R + ring, { mat: "chapelStoneLight", profile: "dome", r: 5, depth: 6, piece: "ring" });
     // two mouldings round the ring: a bead near the glass, a roll at the outer edge
-    st.ring(c + 2, c + 2, R + 2, R + 4, { mat: "limestone", profile: "dome", r: 1, z: 6, tone: 1, piece: "bead" });
-    st.ring(c + 2, c + 2, R + ring - 3, R + ring, { mat: "limestone", profile: "dome", r: 2, z: 5, piece: "roll" });
+    st.ring(c + 2, c + 2, R + 2, R + 4, { mat: "chapelStoneLight", profile: "dome", r: 1, z: 6, tone: 1, piece: "bead" });
+    st.ring(c + 2, c + 2, R + ring - 3, R + ring, { mat: "chapelStoneLight", profile: "dome", r: 2, z: 5, piece: "roll" });
     // a bead of darker stone at the inner edge, voussoir joints round the ring
-    st.ring(c + 2, c + 2, R - 1, R + 1, { mat: "limestone", mode: "paint", tone: -1 });
+    st.ring(c + 2, c + 2, R - 1, R + 1, { mat: "chapelStoneLight", mode: "paint", tone: -1 });
     for (let k = 0; k < 24; k++) {
       const a = (k / 24) * Math.PI * 2;
-      st.line(c + 2 + Math.cos(a) * (R + 2), c + 2 + Math.sin(a) * (R + 2), c + 2 + Math.cos(a) * (R + ring), c + 2 + Math.sin(a) * (R + ring), { mat: "limestone", mode: "paint", tone: -2 });
+      st.line(c + 2 + Math.cos(a) * (R + 2), c + 2 + Math.sin(a) * (R + 2), c + 2 + Math.cos(a) * (R + ring), c + 2 + Math.sin(a) * (R + ring), { mat: "chapelStoneLight", mode: "paint", tone: -2 });
     }
     // spokes: thin stone mullions between the petals, from the oculus to the rim
     for (let k = 0; k < 12; k++) {
@@ -148,9 +148,9 @@ export const roseWindow = defineRecipe<RoseParams, Refs>({
       const a = ((k + 0.5) / 12) * Math.PI * 2 - Math.PI / 2;
       const x0 = c + 2 + Math.cos(a) * R * 0.2, y0 = c + 2 + Math.sin(a) * R * 0.2;
       const x1 = c + 2 + Math.cos(a) * R * 0.98, y1 = c + 2 + Math.sin(a) * R * 0.98;
-      st.stroke([x0, y0, x1, y1], 3, { mat: "limestone", profile: "cylV", z: 2, piece: "spoke" });
+      st.stroke([x0, y0, x1, y1], 3, { mat: "chapelStoneLight", profile: "cylV", z: 2, piece: "spoke" });
     }
-    st.ring(c + 2, c + 2, R * 0.19, R * 0.24, { mat: "limestone", profile: "dome", r: 2, z: 3, piece: "oculus" });
+    st.ring(c + 2, c + 2, R * 0.19, R * 0.24, { mat: "chapelStoneLight", profile: "dome", r: 2, z: 3, piece: "oculus" });
     st.ring(c + 2, c + 2, R * 0.72, R * 0.76, { mat: "limestone", profile: "dome", r: 2, z: 2, piece: "inner" });
     st.speckle({ amount: 0.12, seed: p.seed, tone: -1, mats: ["limestone"] });
     // --- the shutter: two half-round oak leaves, drawn from one design as they swing ---

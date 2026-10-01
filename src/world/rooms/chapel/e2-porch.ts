@@ -7,11 +7,21 @@
 // break. Nobody says so; the props do.
 
 import { lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { PORCH, porchScene } from "../../../scenes/scenes/chapel/outside.ts";
 import { RoomBuilder } from "./_room.ts";
 
 const F = PORCH.floor;
+const LIGHT = lighting({
+  ambient: [0.3, 0.25, 0.3],
+  keyDir: [-0.7, -0.4, 0.6],
+  keyColour: [0.82, 0.56, 0.46],
+  rimColour: [1, 0.68, 0.5],
+  rimDir: [-0.9, -0.4],
+  rimIntensity: 0.95,
+});
+
 const r = new RoomBuilder({
   id: "E2",
   title: "E2 Chapel Porch",
@@ -23,24 +33,20 @@ const r = new RoomBuilder({
   audio: { music: "theme", bed: "dusk", weatherThrough: 1, surface: "stone" },
   weather: { state: "after", time: "dusk" },
   neighbours: ["E1", "E3"],
-  lighting: lighting({
-    ambient: [0.3, 0.25, 0.3],
-    keyDir: [-0.7, -0.4, 0.6],
-    keyColour: [0.82, 0.56, 0.46],
-    rimColour: [1, 0.68, 0.5],
-    rimDir: [-0.9, -0.4],
-    rimIntensity: 0.95,
-  }),
+  lighting: LIGHT,
   surface: "stone",
 });
 
 // the cliff top where the path comes in, then the porch's flags
-// (both run past the room's edges, which the locked view shows: 2.6 H each side in the world's frame)
-r.floor(PORCH.x0 - 3.2, PORCH.front, F, { art: "rock", ramp: ["#0f0c14", "#17121d", "#211a28", "#2e2434", "#443442"], surface: "stone" });
-r.floor(PORCH.front, PORCH.x1 + 3.2, F, { art: "stone", ramp: ["#140f15", "#1f171e", "#2b2029", "#3a2c35", "#4f3d45"], surface: "stone" });
+// (both run past the room's edges, which the locked view shows: 2.6 H each side in the world's frame).
+// Drawn by the backdrop (outside.ts porchBody: the cliff's beds and turf, the platform's dressed
+// front over its rubble foundation), so the ground is in the same light and stone as the wall.
+r.floor(PORCH.x0 - 3.2, PORCH.front, F, { art: "none", surface: "stone" });
+r.floor(PORCH.front, PORCH.x1 + 3.2, F, { art: "none", surface: "stone" });
 
 // --- by the entrance: the font; shrine 6, the last lamp ---
-r.px("font", "porch-font", 397.6, F);
+// the font: E touches the water (a ring spreads), a hit splashes it (holyFont: the kit font with its E)
+r.px("holyFont", "porch-font", 397.6, F);
 r.px("shrineLantern", "shrine-6", 399.3, F, { flag: "shrine:6", n: 6 });
 r.px("offeringBowl", "bowl-6", 400.0, F);
 r.px("donationBox", "box-6", 400.9, F, { dest: "donate" });
@@ -70,4 +76,4 @@ r.px("moths", "moths-porch", 401.2, F, { count: 4, reach: 2.5 });
 r.spawn("west", 396.6, F, 1).spawn("chapel", 406.4, F, -1);
 r.exit("left", "E1", "east");
 
-export const e2: RoomDef = r.build({ scene: porchScene, vertical: 0, weather: true }, { ambient: { dust: 6, moths: true } });
+export const e2: RoomDef = r.build({ scene: porchScene, vertical: 0, weather: true }, { ambient: { dust: 6, moths: true }, blend: fromLight(LIGHT, { amount: 0.15, haze: 0.25, band: 0, halo: 0.9 }) });

@@ -25,6 +25,7 @@
 
 import galleryRaw from "../../../../content/gallery/manifest.json?raw";
 import { artRect } from "../../../pixel/props/chapel/artFrame.ts";
+import { FRAME, SCALE } from "../../config.ts";
 import type { Box, Interaction, Prop, PropCanvas, PropLayer, PropLight, PropParams, PropRecipe, PropWorld } from "../../props-api.ts";
 
 interface Item {
@@ -54,7 +55,7 @@ interface SpriteDrawLike {
 
 /** The world game, reached through its public automation handle (window.__world). */
 interface GameLike {
-  camera: { view(): [number, number]; closeup: number };
+  camera: { view(): [number, number]; closeup: number; viewZoom?: number; zoomSteps?: number; actionZoom?: number };
   r: { canvas: HTMLCanvasElement; gl?: WebGL2RenderingContext; presenter: { rect: { x: number; y: number; w: number; h: number; scale: number } } };
   player: { body: { x: number; y: number }; fade: number; spriteDraw?(): SpriteDrawLike | undefined; dead?: number; invuln?: number; mode?: string };
   panels: { show(kind: string, arg?: string): void; open: boolean; kind: string | null };
@@ -137,12 +138,21 @@ class Overlay {
     const pr = g.r.presenter.rect;
     const k = canvas.clientWidth / Math.max(1, canvas.width);
     const [cx, cy] = g.camera.view();
+    // The presenter's mapping (presenter.ts main()): a frame pixel q goes through the action punch about
+    // the player's focus (Z), then the view zoom about the frame's centre (V), then the output rect.
     // Presenter.rect already uses a top-left origin, as the scene shader does.
-    const top = pr.y;
-    const L = (pr.x + (x0 - cx) * pr.scale) * k;
-    const T = (top + (y0 - cy) * pr.scale) * k;
-    const W = (x1 - x0) * pr.scale * k;
-    const Hh = (y1 - y0) * pr.scale * k;
+    const V = Math.max(1, g.camera.viewZoom ?? 1);
+    const steps = g.camera.zoomSteps ?? 0;
+    const Z = Math.max(1, (steps > 0 ? 1 + steps / Math.max(1, Math.round(pr.scale)) : 1) * (g.camera.actionZoom ?? 1));
+    const b = g.player.body;
+    const fx = b.x - cx, fy = b.y - SCALE.H * 0.55 - cy;
+    const scr = (wx: number, wy: number): [number, number] => {
+      const q1x = fx + (wx - cx - fx) * Z, q1y = fy + (wy - cy - fy) * Z;
+      return [(pr.x + (FRAME.w / 2 + (q1x - FRAME.w / 2) * V) * pr.scale) * k, (pr.y + (FRAME.h / 2 + (q1y - FRAME.h / 2) * V) * pr.scale) * k];
+    };
+    const [L, T] = scr(x0, y0);
+    const W = (x1 - x0) * Z * V * pr.scale * k;
+    const Hh = (y1 - y0) * Z * V * pr.scale * k;
     const fade = Math.max(Number((g as unknown as { fade?: number }).fade ?? 0), g.player.fade ?? 0);
     const hidden = g.camera.closeup >= 0.02 || fade > 0.98;
     img.style.width = `${W.toFixed(2)}px`;
@@ -153,7 +163,7 @@ class Overlay {
     img.style.visibility = hidden ? "hidden" : "visible";
     // Rosace in front of the work: mask exactly her drawn pixels out of the picture,
     // so the canvas below shows her (lit, as drawn) and never the frame's board
-    this.maskPlayer(img, g, x0, y0, x1, y1, pr.scale * k);
+    this.maskPlayer(img, g, x0, y0, x1, y1, Z * V * pr.scale * k);
     this.seen.add(key);
     if (!this.sweepQueued) {
       this.sweepQueued = true;
