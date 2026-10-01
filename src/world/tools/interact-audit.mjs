@@ -36,7 +36,8 @@ const EXPECT_QUIET = {
   // (filled in from reviewed results; every entry needs a reason)
 };
 
-const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required"] });
+const GL = process.argv.includes("--gpu") ? ["--use-angle=d3d11", "--ignore-gpu-blocklist"] : ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"];
+const browser = await chromium.launch({ args: [...GL, "--autoplay-policy=no-user-gesture-required"] });
 
 async function boot() {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });

@@ -1,6 +1,6 @@
 // Reflection audit: does every water room mirror the player about the room's waterline, where the water
 // shader looks for it?
-//   node src/world/tools/reflect-audit.mjs [--port 28201] [--out review/reflect-audit]
+//   node src/world/tools/reflect-audit.mjs [--gpu] [--port 28201] [--out review/reflect-audit]
 //
 // The world draws what stands on the player plane into the backdrop's reflection target, flipped about the
 // room's waterline; the water layer reads that target at its own screen pixel. This renders a frame with and
@@ -27,7 +27,8 @@ const SPOTS = [
   ["A0", "east", 6], ["A1", "start", 15], ["A2", "west", 1, "buffer"], ["S2", "west", 3], ["B1", "west", 14], ["B1", "west", 22], ["B2", "west", 4], ["B2", "west", 20],
 ];
 
-const browser = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
+const GL = process.argv.includes("--gpu") ? ["--use-angle=d3d11", "--ignore-gpu-blocklist"] : ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"];
+const browser = await chromium.launch({ args: GL });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
