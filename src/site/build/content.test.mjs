@@ -37,7 +37,13 @@ test("repo content loads; every route is unique; placeholders are noindex and no
     assert.match(page.head, /name="robots" content="noindex"/);
     assert.match(page.body, /Placeholder/);
   }
-  assert.doesNotMatch(blogFeed(content), /<item>/);
+  // The feed lists exactly the real, dated posts; placeholders never appear in it.
+  const feed = blogFeed(content);
+  for (const p of content.posts) {
+    const listed = feed.includes(`<guid>https://dex.place${p.url}</guid>`);
+    assert.equal(listed, !p.placeholder && !!p.date, p.url);
+  }
+  assert.equal((feed.match(/<item>/g) ?? []).length, content.posts.filter((p) => !p.placeholder && p.date).length);
 });
 
 test("every page has one h1, a main landmark and no external asset URLs", () => {

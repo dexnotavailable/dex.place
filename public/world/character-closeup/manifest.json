@@ -1,0 +1,4333 @@
+{
+ "contract": "dex.sprite/1",
+ "name": "Rosace (pipeline, drive9 R2)",
+ "atlases": [
+  {
+   "id": "body",
+   "albedo": "body.png",
+   "normal": "body_n.png",
+   "width": 2016,
+   "height": 1063,
+   "shading": "baked"
+  }
+ ],
+ "clips": [
+  {
+   "id": "idle",
+   "loop": true,
+   "tags": [
+    "locomotion"
+   ],
+   "frames": [
+    {
+     "pose": "idle0",
+     "duration": 28,
+     "phase": "neutral",
+     "anchors": {
+      "tip": [
+       5.7,
+       -181.6
+      ],
+      "butt": [
+       65.6,
+       -4.3
+      ],
+      "handN": [
+       -18.4,
+       -83.7
+      ],
+      "handF": [
+       23,
+       -125.9
+      ],
+      "head": [
+       -5.7,
+       -116.1
+      ],
+      "chest": [
+       -3,
+       -102.4
+      ],
+      "halo": [
+       -5.7,
+       -129.6
+      ]
+     },
+     "rect": [
+      1142,
+      274,
+      120,
+      191
+     ],
+     "pivot": [
+      52,
+      189
+     ]
+    },
+    {
+     "pose": "idle0~idle1:0.5",
+     "duration": 8,
+     "anchors": {
+      "tip": [
+       5.7,
+       -181.6
+      ],
+      "butt": [
+       65.6,
+       -4.3
+      ],
+      "handN": [
+       -18.3,
+       -83.7
+      ],
+      "handF": [
+       23,
+       -125.9
+      ],
+      "head": [
+       -5.8,
+       -116.1
+      ],
+      "chest": [
+       -2.9,
+       -102.3
+      ],
+      "halo": [
+       -5.8,
+       -129.6
+      ]
+     },
+     "rect": [
+      1264,
+      274,
+      120,
+      191
+     ],
+     "pivot": [
+      52,
+      189
+     ]
+    },
+    {
+     "pose": "idle1",
+     "duration": 28,
+     "anchors": {
+      "tip": [
+       5.7,
+       -181.6
+      ],
+      "butt": [
+       65.6,
+       -4.3
+      ],
+      "handN": [
+       -18.2,
+       -83.7
+      ],
+      "handF": [
+       23,
+       -125.9
+      ],
+      "head": [
+       -5.9,
+       -116
+      ],
+      "chest": [
+       -2.8,
+       -102.3
+      ],
+      "halo": [
+       -5.9,
+       -129.5
+      ]
+     },
+     "rect": [
+      1386,
+      274,
+      120,
+      191
+     ],
+     "pivot": [
+      52,
+      189
+     ]
+    },
+    {
+     "pose": "idle1~idle0:0.5",
+     "duration": 8,
+     "anchors": {
+      "tip": [
+       5.7,
+       -181.6
+      ],
+      "butt": [
+       65.6,
+       -4.3
+      ],
+      "handN": [
+       -18.3,
+       -83.7
+      ],
+      "handF": [
+       23,
+       -125.9
+      ],
+      "head": [
+       -5.8,
+       -116.1
+      ],
+      "chest": [
+       -2.9,
+       -102.3
+      ],
+      "halo": [
+       -5.8,
+       -129.6
+      ]
+     },
+     "rect": [
+      1508,
+      274,
+      120,
+      191
+     ],
+     "pivot": [
+      52,
+      189
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "run",
+   "loop": true,
+   "tags": [
+    "locomotion"
+   ],
+   "frames": [
+    {
+     "pose": "run0",
+     "duration": 3,
+     "events": [
+      {
+       "type": "sound",
+       "id": "step",
+       "volume": 0.5
+      },
+      {
+       "type": "vfx",
+       "id": "dust.kick",
+       "offset": [
+        -9,
+        0
+       ]
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -146.9,
+       -97.5
+      ],
+      "butt": [
+       44.1,
+       -77.4
+      ],
+      "handN": [
+       -4.9,
+       -78.6
+      ],
+      "handF": [
+       6,
+       -82.5
+      ],
+      "head": [
+       5.6,
+       -112.3
+      ],
+      "chest": [
+       2.8,
+       -98.9
+      ],
+      "halo": [
+       5.6,
+       -125.8
+      ]
+     },
+     "rect": [
+      399,
+      667,
+      201,
+      140
+     ],
+     "pivot": [
+      156,
+      138
+     ]
+    },
+    {
+     "pose": "run1",
+     "duration": 3,
+     "anchors": {
+      "tip": [
+       -146.9,
+       -97.5
+      ],
+      "butt": [
+       44.1,
+       -77.4
+      ],
+      "handN": [
+       -4.9,
+       -78.6
+      ],
+      "handF": [
+       10.5,
+       -87
+      ],
+      "head": [
+       5.6,
+       -109.1
+      ],
+      "chest": [
+       2.8,
+       -95.8
+      ],
+      "halo": [
+       5.6,
+       -122.6
+      ]
+     },
+     "rect": [
+      1206,
+      667,
+      201,
+      137
+     ],
+     "pivot": [
+      156,
+      135
+     ]
+    },
+    {
+     "pose": "run2",
+     "duration": 3,
+     "anchors": {
+      "tip": [
+       -146.9,
+       -97.5
+      ],
+      "butt": [
+       44.1,
+       -77.4
+      ],
+      "handN": [
+       -4.9,
+       -78.6
+      ],
+      "handF": [
+       16.5,
+       -91.5
+      ],
+      "head": [
+       5.6,
+       -114.1
+      ],
+      "chest": [
+       2.8,
+       -100.7
+      ],
+      "halo": [
+       5.6,
+       -127.6
+      ]
+     },
+     "rect": [
+      1713,
+      477,
+      201,
+      142
+     ],
+     "pivot": [
+      156,
+      140
+     ]
+    },
+    {
+     "pose": "run3",
+     "duration": 3,
+     "anchors": {
+      "tip": [
+       -146.9,
+       -97.5
+      ],
+      "butt": [
+       44.1,
+       -77.4
+      ],
+      "handN": [
+       -4.9,
+       -78.6
+      ],
+      "handF": [
+       21,
+       -94.5
+      ],
+      "head": [
+       5.6,
+       -116.4
+      ],
+      "chest": [
+       2.8,
+       -103
+      ],
+      "halo": [
+       5.6,
+       -129.9
+      ]
+     },
+     "rect": [
+      1307,
+      477,
+      201,
+      144
+     ],
+     "pivot": [
+      156,
+      142
+     ]
+    },
+    {
+     "pose": "run4",
+     "duration": 3,
+     "events": [
+      {
+       "type": "sound",
+       "id": "step",
+       "volume": 0.5
+      },
+      {
+       "type": "vfx",
+       "id": "dust.kick",
+       "offset": [
+        -9,
+        0
+       ]
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -148.9,
+       -92.5
+      ],
+      "butt": [
+       42.8,
+       -79.1
+      ],
+      "handN": [
+       -6.3,
+       -78.6
+      ],
+      "handF": [
+       21,
+       -96
+      ],
+      "head": [
+       5.6,
+       -111.5
+      ],
+      "chest": [
+       2.8,
+       -98.1
+      ],
+      "halo": [
+       5.6,
+       -125
+      ]
+     },
+     "rect": [
+      798,
+      667,
+      202,
+      137
+     ],
+     "pivot": [
+      158,
+      137
+     ]
+    },
+    {
+     "pose": "run5",
+     "duration": 3,
+     "anchors": {
+      "tip": [
+       -147.2,
+       -95
+      ],
+      "butt": [
+       44.2,
+       -78.2
+      ],
+      "handN": [
+       -4.8,
+       -78.6
+      ],
+      "handF": [
+       16.5,
+       -91.5
+      ],
+      "head": [
+       5.6,
+       -109
+      ],
+      "chest": [
+       2.8,
+       -95.6
+      ],
+      "halo": [
+       5.6,
+       -122.5
+      ]
+     },
+     "rect": [
+      1610,
+      667,
+      201,
+      136
+     ],
+     "pivot": [
+      156,
+      135
+     ]
+    },
+    {
+     "pose": "run6",
+     "duration": 3,
+     "anchors": {
+      "tip": [
+       -146.9,
+       -97.5
+      ],
+      "butt": [
+       44.1,
+       -77.4
+      ],
+      "handN": [
+       -4.9,
+       -78.6
+      ],
+      "handF": [
+       10.5,
+       -87
+      ],
+      "head": [
+       5.6,
+       -114.1
+      ],
+      "chest": [
+       2.8,
+       -100.7
+      ],
+      "halo": [
+       5.6,
+       -127.6
+      ]
+     },
+     "rect": [
+      196,
+      667,
+      201,
+      141
+     ],
+     "pivot": [
+      156,
+      140
+     ]
+    },
+    {
+     "pose": "run7",
+     "duration": 3,
+     "anchors": {
+      "tip": [
+       -146.9,
+       -97.5
+      ],
+      "butt": [
+       44.1,
+       -77.4
+      ],
+      "handN": [
+       -4.9,
+       -78.6
+      ],
+      "handF": [
+       6,
+       -83.7
+      ],
+      "head": [
+       5.6,
+       -116.5
+      ],
+      "chest": [
+       2.8,
+       -103.2
+      ],
+      "halo": [
+       5.6,
+       -130
+      ]
+     },
+     "rect": [
+      1510,
+      477,
+      201,
+      144
+     ],
+     "pivot": [
+      156,
+      142
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "jump",
+   "tags": [
+    "locomotion"
+   ],
+   "frames": [
+    {
+     "pose": "jumpRise",
+     "duration": 600,
+     "events": [
+      {
+       "type": "sound",
+       "id": "jump"
+      },
+      {
+       "type": "vfx",
+       "id": "dust.land"
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -56.3,
+       -210.9
+      ],
+      "butt": [
+       15.7,
+       -32.7
+      ],
+      "handN": [
+       -14.3,
+       -96
+      ],
+      "handF": [
+       15,
+       -100.5
+      ],
+      "head": [
+       -2.7,
+       -118.4
+      ],
+      "chest": [
+       -0.9,
+       -104.5
+      ],
+      "halo": [
+       -2.7,
+       -131.9
+      ]
+     },
+     "rect": [
+      920,
+      2,
+      90,
+      216
+     ],
+     "pivot": [
+      62,
+      219
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "apex",
+   "loop": true,
+   "tags": [
+    "locomotion"
+   ],
+   "frames": [
+    {
+     "pose": "jumpApex",
+     "duration": 60,
+     "anchors": {
+      "tip": [
+       -76.8,
+       -198.2
+      ],
+      "butt": [
+       25,
+       -35.3
+      ],
+      "handN": [
+       -15.5,
+       -92.3
+      ],
+      "handF": [
+       16.5,
+       -97.5
+      ],
+      "head": [
+       -0.7,
+       -118.2
+      ],
+      "chest": [
+       -0.2,
+       -104.3
+      ],
+      "halo": [
+       -0.7,
+       -131.7
+      ]
+     },
+     "rect": [
+      855,
+      274,
+      115,
+      196
+     ],
+     "pivot": [
+      84,
+      205
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "fall",
+   "loop": true,
+   "tags": [
+    "locomotion"
+   ],
+   "frames": [
+    {
+     "pose": "jumpApex~fall:0.5",
+     "duration": 6,
+     "anchors": {
+      "tip": [
+       -82.1,
+       -196.1
+      ],
+      "butt": [
+       28.1,
+       -38.8
+      ],
+      "handN": [
+       -15.3,
+       -93.6
+      ],
+      "handF": [
+       17.3,
+       -100.5
+      ],
+      "head": [
+       -1.1,
+       -118.7
+      ],
+      "chest": [
+       -0.5,
+       -104.8
+      ],
+      "halo": [
+       -1.1,
+       -132.2
+      ]
+     },
+     "rect": [
+      462,
+      274,
+      118,
+      199
+     ],
+     "pivot": [
+      89,
+      203
+     ]
+    },
+    {
+     "pose": "fall",
+     "duration": 60,
+     "anchors": {
+      "tip": [
+       -87.3,
+       -193.8
+      ],
+      "butt": [
+       31,
+       -42.4
+      ],
+      "handN": [
+       -15.2,
+       -95
+      ],
+      "handF": [
+       18,
+       -103.5
+      ],
+      "head": [
+       -1.6,
+       -119.2
+      ],
+      "chest": [
+       -0.8,
+       -105.3
+      ],
+      "halo": [
+       -1.6,
+       -132.7
+      ]
+     },
+     "rect": [
+      1571,
+      2,
+      127,
+      202
+     ],
+     "pivot": [
+      95,
+      200
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "land",
+   "tags": [
+    "free"
+   ],
+   "frames": [
+    {
+     "pose": "land",
+     "duration": 4,
+     "events": [
+      {
+       "type": "vfx",
+       "id": "land.soft"
+      },
+      {
+       "type": "sound",
+       "id": "land"
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -63.4,
+       -170.9
+      ],
+      "butt": [
+       26.8,
+       -1.2
+      ],
+      "handN": [
+       -12.9,
+       -67.2
+      ],
+      "handF": [
+       18.6,
+       -69.1
+      ],
+      "head": [
+       6.5,
+       -98.2
+      ],
+      "chest": [
+       2.9,
+       -85.1
+      ],
+      "halo": [
+       6.5,
+       -111.7
+      ]
+     },
+     "rect": [
+      116,
+      477,
+      101,
+      187
+     ],
+     "pivot": [
+      70,
+      178
+     ]
+    },
+    {
+     "pose": "land~idle0:0.5",
+     "duration": 4,
+     "anchors": {
+      "tip": [
+       -29.6,
+       -178
+      ],
+      "butt": [
+       46.2,
+       -2.8
+      ],
+      "handN": [
+       -25.6,
+       -82.9
+      ],
+      "handF": [
+       -7.2,
+       -122.4
+      ],
+      "head": [
+       -9.7,
+       -117.4
+      ],
+      "chest": [
+       -8.8,
+       -103.7
+      ],
+      "halo": [
+       -9.7,
+       -130.9
+      ]
+     },
+     "rect": [
+      219,
+      477,
+      100,
+      187
+     ],
+     "pivot": [
+      52,
+      185
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "double_jump",
+   "tags": [
+    "free"
+   ],
+   "frames": [
+    {
+     "pose": "djump0",
+     "duration": 3,
+     "events": [
+      {
+       "type": "vfx",
+       "id": "jump.double",
+       "attach": true
+      },
+      {
+       "type": "sound",
+       "id": "djump"
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -12.5,
+       -224.5
+      ],
+      "butt": [
+       20.9,
+       -35.3
+      ],
+      "handN": [
+       0.2,
+       -129.2
+      ],
+      "handF": [
+       18,
+       -97.5
+      ],
+      "head": [
+       -1.1,
+       -118.9
+      ],
+      "chest": [
+       -0.1,
+       -104.9
+      ],
+      "halo": [
+       -1.1,
+       -132.4
+      ]
+     },
+     "rect": [
+      1012,
+      2,
+      82,
+      215
+     ],
+     "pivot": [
+      50,
+      233
+     ]
+    },
+    {
+     "pose": "djump1",
+     "duration": 3,
+     "anchors": {
+      "tip": [
+       98.8,
+       -146.6
+      ],
+      "butt": [
+       -90.4,
+       -113.3
+      ],
+      "handN": [
+       3.6,
+       -133.4
+      ],
+      "handF": [
+       18,
+       -97.5
+      ],
+      "head": [
+       -1.1,
+       -118.9
+      ],
+      "chest": [
+       -0.1,
+       -104.9
+      ],
+      "halo": [
+       -1.1,
+       -132.4
+      ]
+     },
+     "rect": [
+      1409,
+      667,
+      199,
+      137
+     ],
+     "pivot": [
+      91,
+      155
+     ]
+    },
+    {
+     "pose": "djump2",
+     "duration": 3,
+     "anchors": {
+      "tip": [
+       20.9,
+       -35.3
+      ],
+      "butt": [
+       -12.5,
+       -224.6
+      ],
+      "handN": [
+       6.4,
+       -130.3
+      ],
+      "handF": [
+       18,
+       -97.5
+      ],
+      "head": [
+       -1.1,
+       -118.9
+      ],
+      "chest": [
+       -0.1,
+       -104.9
+      ],
+      "halo": [
+       -1.1,
+       -132.4
+      ]
+     },
+     "rect": [
+      1213,
+      2,
+      82,
+      208
+     ],
+     "pivot": [
+      50,
+      226
+     ]
+    },
+    {
+     "pose": "djump3",
+     "duration": 3,
+     "anchors": {
+      "tip": [
+       -90.4,
+       -113.3
+      ],
+      "butt": [
+       98.8,
+       -146.6
+      ],
+      "handN": [
+       4.9,
+       -126.3
+      ],
+      "handF": [
+       18,
+       -97.5
+      ],
+      "head": [
+       -1.1,
+       -118.9
+      ],
+      "chest": [
+       -0.1,
+       -104.9
+      ],
+      "halo": [
+       -1.1,
+       -132.4
+      ]
+     },
+     "rect": [
+      432,
+      811,
+      199,
+      131
+     ],
+     "pivot": [
+      99,
+      149
+     ]
+    },
+    {
+     "pose": "djump3~jumpApex:0.5",
+     "duration": 4,
+     "anchors": {
+      "tip": [
+       -103.5,
+       -156.9
+      ],
+      "butt": [
+       72,
+       -78.8
+      ],
+      "handN": [
+       -5.4,
+       -108.8
+      ],
+      "handF": [
+       17.3,
+       -97.5
+      ],
+      "head": [
+       -0.9,
+       -118.5
+      ],
+      "chest": [
+       -0.1,
+       -104.6
+      ],
+      "halo": [
+       -0.9,
+       -132
+      ]
+     },
+     "rect": [
+      975,
+      477,
+      185,
+      149
+     ],
+     "pivot": [
+      112,
+      162
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "dash",
+   "gravity": 0,
+   "tags": [
+    "dash"
+   ],
+   "frames": [
+    {
+     "pose": "dash0",
+     "duration": 3,
+     "phase": "active",
+     "iframes": true,
+     "rootMotion": [
+      54,
+      0
+     ],
+     "events": [
+      {
+       "type": "sound",
+       "id": "dash"
+      },
+      {
+       "type": "vfx",
+       "id": "afterimage.trail"
+      },
+      {
+       "type": "vfx",
+       "id": "dash.speed",
+       "attach": true
+      },
+      {
+       "type": "vfx",
+       "id": "dust.kick",
+       "offset": [
+        -12,
+        0
+       ]
+      },
+      {
+       "type": "light",
+       "anchor": "chest",
+       "attach": true,
+       "colour": "#7fd6ff",
+       "radius": 135,
+       "intensity": 0.9,
+       "duration": 16
+      }
+     ],
+     "cancel": [
+      {
+       "into": {
+        "m1": "dash_attack"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -119.6,
+       -102.7
+      ],
+      "butt": [
+       66.8,
+       -56.2
+      ],
+      "handN": [
+       8.2,
+       -66.7
+      ],
+      "handF": [
+       4.6,
+       -67.6
+      ],
+      "head": [
+       22.2,
+       -86.2
+      ],
+      "chest": [
+       12.4,
+       -78.3
+      ],
+      "halo": [
+       22.2,
+       -99.7
+      ]
+     },
+     "rect": [
+      218,
+      947,
+      196,
+      113
+     ],
+     "pivot": [
+      128,
+      111
+     ]
+    },
+    {
+     "pose": "dash1",
+     "duration": 3,
+     "phase": "active",
+     "iframes": true,
+     "rootMotion": [
+      51,
+      0
+     ],
+     "cancel": [
+      {
+       "into": {
+        "m1": "dash_attack"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -122.3,
+       -102.6
+      ],
+      "butt": [
+       65.6,
+       -62.7
+      ],
+      "handN": [
+       6.7,
+       -71.1
+      ],
+      "handF": [
+       4.4,
+       -72.7
+      ],
+      "head": [
+       19.3,
+       -95.1
+      ],
+      "chest": [
+       10.8,
+       -85.5
+      ],
+      "halo": [
+       19.3,
+       -108.6
+      ]
+     },
+     "rect": [
+      1045,
+      811,
+      198,
+      123
+     ],
+     "pivot": [
+      131,
+      121
+     ]
+    },
+    {
+     "pose": "dash1",
+     "duration": 3,
+     "phase": "active",
+     "iframes": true,
+     "rootMotion": [
+      39,
+      0
+     ],
+     "cancel": [
+      {
+       "into": {
+        "m1": "dash_attack"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -122.3,
+       -102.6
+      ],
+      "butt": [
+       65.6,
+       -62.7
+      ],
+      "handN": [
+       6.7,
+       -71.1
+      ],
+      "handF": [
+       4.4,
+       -72.7
+      ],
+      "head": [
+       19.3,
+       -95.1
+      ],
+      "chest": [
+       10.8,
+       -85.5
+      ],
+      "halo": [
+       19.3,
+       -108.6
+      ]
+     },
+     "rect": [
+      1045,
+      811,
+      198,
+      123
+     ],
+     "pivot": [
+      131,
+      121
+     ]
+    },
+    {
+     "pose": "dashEnd",
+     "duration": 4,
+     "phase": "recovery",
+     "rootMotion": [
+      15,
+      0
+     ],
+     "events": [
+      {
+       "type": "vfx",
+       "id": "afterimage"
+      }
+     ],
+     "cancel": [
+      {
+       "into": {
+        "m1": "dash_attack",
+        "jump": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -136,
+       -91.1
+      ],
+      "butt": [
+       55.1,
+       -71
+      ],
+      "handN": [
+       2.6,
+       -72.6
+      ],
+      "handF": [
+       9,
+       -76.5
+      ],
+      "head": [
+       8.8,
+       -106.5
+      ],
+      "chest": [
+       4.8,
+       -93.6
+      ],
+      "halo": [
+       8.8,
+       -120
+      ]
+     },
+     "rect": [
+      2,
+      811,
+      201,
+      134
+     ],
+     "pivot": [
+      145,
+      132
+     ]
+    },
+    {
+     "pose": "dashEnd~idle0:0.5",
+     "duration": 5,
+     "phase": "recovery",
+     "rootMotion": [
+      4.5,
+      0
+     ],
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_1",
+        "m2": "dash",
+        "jump": "*",
+        "move": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -89.3,
+       -155.4
+      ],
+      "butt": [
+       60.3,
+       -37.6
+      ],
+      "handN": [
+       -28.1,
+       -83.1
+      ],
+      "handF": [
+       -43,
+       -116.9
+      ],
+      "head": [
+       -11.6,
+       -117.4
+      ],
+      "chest": [
+       -11,
+       -103.8
+      ],
+      "halo": [
+       -11.6,
+       -130.9
+      ]
+     },
+     "rect": [
+      814,
+      477,
+      159,
+      162
+     ],
+     "pivot": [
+      98,
+      160
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "dash_attack",
+   "gravity": 0.2,
+   "frames": [
+    {
+     "pose": "dAtkWind",
+     "duration": 4,
+     "phase": "anticipation",
+     "rootMotion": [
+      18,
+      0
+     ],
+     "events": [
+      {
+       "type": "sound",
+       "id": "swing",
+       "volume": 1.2
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -145.7,
+       -85.5
+      ],
+      "butt": [
+       46.4,
+       -85.5
+      ],
+      "handN": [
+       -6,
+       -81.7
+      ],
+      "handF": [
+       12,
+       -82.2
+      ],
+      "head": [
+       3.2,
+       -106.7
+      ],
+      "chest": [
+       0.2,
+       -93.4
+      ],
+      "halo": [
+       3.2,
+       -120.2
+      ]
+     },
+     "rect": [
+      1813,
+      667,
+      201,
+      135
+     ],
+     "pivot": [
+      154,
+      133
+     ]
+    },
+    {
+     "pose": "dAtkWind~dAtkThrust:0.5",
+     "duration": 1,
+     "phase": "active",
+     "rootMotion": [
+      27,
+      0
+     ],
+     "events": [
+      {
+       "type": "vfx",
+       "id": "streak.thrust",
+       "offset": [
+        -18,
+        -78
+       ]
+      },
+      {
+       "type": "vfx",
+       "id": "afterimage"
+      }
+     ],
+     "anchors": {
+      "tip": [
+       15.9,
+       -228.9
+      ],
+      "butt": [
+       20.9,
+       -36.8
+      ],
+      "handN": [
+       15.6,
+       -85.6
+      ],
+      "handF": [
+       17.2,
+       -95.6
+      ],
+      "head": [
+       14.6,
+       -101.5
+      ],
+      "chest": [
+       10,
+       -88.9
+      ],
+      "halo": [
+       14.6,
+       -115
+      ]
+     },
+     "rect": [
+      393,
+      2,
+      84,
+      241
+     ],
+     "pivot": [
+      49,
+      238
+     ]
+    },
+    {
+     "pose": "dAtkThrust",
+     "duration": 3,
+     "hold": 3,
+     "phase": "active",
+     "rootMotion": [
+      60,
+      0
+     ],
+     "hitboxes": [
+      {
+       "x": 0,
+       "y": -99,
+       "w": 198,
+       "h": 36,
+       "damage": 14,
+       "knockback": [
+        6.8,
+        -2.2
+       ],
+       "hitstop": 6,
+       "stagger": 25,
+       "group": "thrust",
+       "hitVfx": "hit.light"
+      }
+     ],
+     "events": [
+      {
+       "type": "shake",
+       "amplitude": 3,
+       "duration": 6
+      }
+     ],
+     "anchors": {
+      "tip": [
+       185.9,
+       -94.1
+      ],
+      "butt": [
+       -5.9,
+       -84.1
+      ],
+      "handN": [
+       39.2,
+       -89.8
+      ],
+      "handF": [
+       24.2,
+       -89.5
+      ],
+      "head": [
+       26,
+       -95.8
+      ],
+      "chest": [
+       19.8,
+       -84.2
+      ],
+      "halo": [
+       26,
+       -109.3
+      ]
+     },
+     "rect": [
+      809,
+      811,
+      234,
+      126
+     ],
+     "pivot": [
+      39,
+      122
+     ]
+    },
+    {
+     "pose": "dAtkFollow",
+     "duration": 10,
+     "phase": "recovery",
+     "rootMotion": [
+      9,
+      0
+     ],
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_2",
+        "jump": "*",
+        "m2": "dash"
+       },
+       "onHit": true
+      }
+     ],
+     "anchors": {
+      "tip": [
+       180.2,
+       -109.6
+      ],
+      "butt": [
+       -10,
+       -82.9
+      ],
+      "handN": [
+       34.4,
+       -92.6
+      ],
+      "handF": [
+       21.7,
+       -91.1
+      ],
+      "head": [
+       21.6,
+       -103.4
+      ],
+      "chest": [
+       17.5,
+       -90.5
+      ],
+      "halo": [
+       21.6,
+       -116.9
+      ]
+     },
+     "rect": [
+      205,
+      811,
+      225,
+      133
+     ],
+     "pivot": [
+      36,
+      129
+     ]
+    },
+    {
+     "pose": "dAtkFollow~idle0:0.5",
+     "duration": 6,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "move": "*",
+        "m1": "m1_1",
+        "m2": "dash",
+        "jump": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       55.6,
+       -156.9
+      ],
+      "butt": [
+       -46.2,
+       2.5
+      ],
+      "handN": [
+       -33.2,
+       -83.9
+      ],
+      "handF": [
+       18.4,
+       -108.5
+      ],
+      "head": [
+       -16.2,
+       -118
+      ],
+      "chest": [
+       -15.6,
+       -104.4
+      ],
+      "halo": [
+       -16.2,
+       -131.5
+      ]
+     },
+     "rect": [
+      490,
+      477,
+      126,
+      170
+     ],
+     "pivot": [
+      66,
+      165
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "m1_1",
+   "gravity": 0.3,
+   "tags": [
+    "m1"
+   ],
+   "frames": [
+    {
+     "pose": "m1aWind",
+     "duration": 4,
+     "hold": 2,
+     "phase": "anticipation",
+     "rootMotion": [
+      3,
+      0
+     ],
+     "events": [
+      {
+       "type": "sound",
+       "id": "swing"
+      }
+     ],
+     "cancel": [
+      {
+       "into": {
+        "m2": "dash"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -117.1,
+       -19.5
+      ],
+      "butt": [
+       33.5,
+       -58.7
+      ],
+      "handN": [
+       19.2,
+       -57.9
+      ],
+      "handF": [
+       14.9,
+       -54.6
+      ],
+      "head": [
+       31.6,
+       -88.3
+      ],
+      "chest": [
+       23.9,
+       -77
+      ],
+      "halo": [
+       31.6,
+       -101.8
+      ]
+     },
+     "rect": [
+      621,
+      947,
+      182,
+      111
+     ],
+     "pivot": [
+      125,
+      112
+     ]
+    },
+    {
+     "pose": "m1aWind~m1aStrike:0.45",
+     "duration": 1,
+     "phase": "active",
+     "events": [
+      {
+       "type": "vfx",
+       "id": "smear.cleave",
+       "offset": [
+        -3,
+        -78
+       ]
+      }
+     ],
+     "anchors": {
+      "tip": [
+       194.5,
+       6.5
+      ],
+      "butt": [
+       10.3,
+       -47.7
+      ],
+      "handN": [
+       45.4,
+       -41.5
+      ],
+      "handF": [
+       39,
+       -42.7
+      ],
+      "head": [
+       43.6,
+       -79.9
+      ],
+      "chest": [
+       35.8,
+       -69.6
+      ],
+      "halo": [
+       43.6,
+       -93.4
+      ]
+     },
+     "rect": [
+      1466,
+      811,
+      240,
+      116
+     ],
+     "pivot": [
+      37,
+      104
+     ]
+    },
+    {
+     "pose": "m1aStrike",
+     "duration": 3,
+     "phase": "active",
+     "rootMotion": [
+      15,
+      0
+     ],
+     "hitboxes": [
+      {
+       "x": -3,
+       "y": -129,
+       "w": 123,
+       "h": 126,
+       "damage": 10,
+       "knockback": [
+        3.6,
+        -1.8
+       ],
+       "hitstop": 4,
+       "stagger": 12,
+       "group": "a",
+       "hitVfx": "hit.light"
+      }
+     ],
+     "anchors": {
+      "tip": [
+       202.8,
+       -195.2
+      ],
+      "butt": [
+       41.8,
+       -90.9
+      ],
+      "handN": [
+       44.2,
+       -97.3
+      ],
+      "handF": [
+       59.7,
+       -102.3
+      ],
+      "head": [
+       27.3,
+       -92.6
+      ],
+      "chest": [
+       27.7,
+       -78.7
+      ],
+      "halo": [
+       27.3,
+       -106.1
+      ]
+     },
+     "rect": [
+      96,
+      274,
+      249,
+      200
+     ],
+     "pivot": [
+      37,
+      200
+     ]
+    },
+    {
+     "pose": "m1aFollow",
+     "duration": 6,
+     "phase": "recovery",
+     "rootMotion": [
+      4.5,
+      0
+     ],
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_2",
+        "m2": "dash",
+        "jump": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -97.4,
+       -187.5
+      ],
+      "butt": [
+       28.1,
+       -67.4
+      ],
+      "handN": [
+       -7.9,
+       -96.3
+      ],
+      "handF": [
+       55,
+       -79.3
+      ],
+      "head": [
+       16.2,
+       -102.7
+      ],
+      "chest": [
+       19.2,
+       -89.2
+      ],
+      "halo": [
+       16.2,
+       -116.2
+      ]
+     },
+     "rect": [
+      673,
+      274,
+      180,
+      197
+     ],
+     "pivot": [
+      104,
+      195
+     ]
+    },
+    {
+     "pose": "m1aFollow~idle0:0.5",
+     "duration": 8,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_2",
+        "m2": "dash",
+        "jump": "*",
+        "move": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -54.2,
+       -197.9
+      ],
+      "butt": [
+       46.8,
+       -35.8
+      ],
+      "handN": [
+       -23.4,
+       -85.5
+      ],
+      "handF": [
+       -22,
+       -142.8
+      ],
+      "head": [
+       -15.3,
+       -118.6
+      ],
+      "chest": [
+       -9.7,
+       -106
+      ],
+      "halo": [
+       -15.3,
+       -132.1
+      ]
+     },
+     "rect": [
+      1096,
+      2,
+      115,
+      208
+     ],
+     "pivot": [
+      61,
+      206
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "m1_2",
+   "gravity": 0.3,
+   "tags": [
+    "m1"
+   ],
+   "frames": [
+    {
+     "pose": "m1bWind",
+     "duration": 4,
+     "phase": "anticipation",
+     "events": [
+      {
+       "type": "sound",
+       "id": "swing"
+      }
+     ],
+     "cancel": [
+      {
+       "into": {
+        "m2": "dash"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       133.2,
+       -3.2
+      ],
+      "butt": [
+       -33.2,
+       -99.2
+      ],
+      "handN": [
+       16.5,
+       -73.6
+      ],
+      "handF": [
+       7.4,
+       -80.5
+      ],
+      "head": [
+       18,
+       -101.1
+      ],
+      "chest": [
+       12.2,
+       -89.2
+      ],
+      "halo": [
+       18,
+       -114.6
+      ]
+     },
+     "rect": [
+      633,
+      811,
+      174,
+      130
+     ],
+     "pivot": [
+      34,
+      127
+     ]
+    },
+    {
+     "pose": "m1bWind~m1bStrike:0.5",
+     "duration": 1,
+     "phase": "active",
+     "events": [
+      {
+       "type": "vfx",
+       "id": "smear.rise",
+       "offset": [
+        12,
+        -69
+       ]
+      }
+     ],
+     "anchors": {
+      "tip": [
+       146.1,
+       -133.6
+      ],
+      "butt": [
+       -36.7,
+       -74.2
+      ],
+      "handN": [
+       15.4,
+       -95
+      ],
+      "handF": [
+       13.8,
+       -94.3
+      ],
+      "head": [
+       9.3,
+       -111.7
+      ],
+      "chest": [
+       8.8,
+       -97.8
+      ],
+      "halo": [
+       9.3,
+       -125.2
+      ]
+     },
+     "rect": [
+      2,
+      667,
+      192,
+      142
+     ],
+     "pivot": [
+      38,
+      139
+     ]
+    },
+    {
+     "pose": "m1bStrike",
+     "duration": 3,
+     "phase": "active",
+     "rootMotion": [
+      9,
+      0
+     ],
+     "hitboxes": [
+      {
+       "x": 0,
+       "y": -180,
+       "w": 117,
+       "h": 168,
+       "damage": 10,
+       "knockback": [
+        2.4,
+        -6.3
+       ],
+       "hitstop": 4,
+       "stagger": 12,
+       "group": "b",
+       "hitVfx": "hit.light"
+      }
+     ],
+     "anchors": {
+      "tip": [
+       73,
+       -237.2
+      ],
+      "butt": [
+       -5.1,
+       -61.7
+      ],
+      "handN": [
+       13.9,
+       -114.4
+      ],
+      "handF": [
+       12,
+       -106.9
+      ],
+      "head": [
+       0.6,
+       -118.1
+      ],
+      "chest": [
+       5.5,
+       -105
+      ],
+      "halo": [
+       0.6,
+       -131.6
+      ]
+     },
+     "rect": [
+      293,
+      2,
+      98,
+      248
+     ],
+     "pivot": [
+      20,
+      246
+     ]
+    },
+    {
+     "pose": "m1bFollow",
+     "duration": 8,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_3",
+        "m2": "dash",
+        "jump": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -10,
+       -256.4
+      ],
+      "butt": [
+       16.8,
+       -66.2
+      ],
+      "handN": [
+       5,
+       -120.9
+      ],
+      "handF": [
+       8.7,
+       -107.9
+      ],
+      "head": [
+       -0.8,
+       -115.5
+      ],
+      "chest": [
+       4.9,
+       -102.8
+      ],
+      "halo": [
+       -0.8,
+       -129
+      ]
+     },
+     "rect": [
+      75,
+      2,
+      59,
+      266
+     ],
+     "pivot": [
+      22,
+      265
+     ]
+    },
+    {
+     "pose": "m1bFollow~idle0:0.5",
+     "duration": 8,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_3",
+        "m2": "dash",
+        "jump": "*",
+        "move": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       3.9,
+       -175.6
+      ],
+      "butt": [
+       47.7,
+       10.2
+      ],
+      "handN": [
+       -14.6,
+       -81.8
+      ],
+      "handF": [
+       16.2,
+       -117
+      ],
+      "head": [
+       -11.6,
+       -114
+      ],
+      "chest": [
+       -3.5,
+       -102.6
+      ],
+      "halo": [
+       -11.6,
+       -127.5
+      ]
+     },
+     "rect": [
+      972,
+      274,
+      93,
+      195
+     ],
+     "pivot": [
+      43,
+      184
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "m1_3",
+   "gravity": 0.3,
+   "tags": [
+    "m1"
+   ],
+   "frames": [
+    {
+     "pose": "m1cWind",
+     "duration": 5,
+     "hold": 1,
+     "phase": "anticipation",
+     "events": [
+      {
+       "type": "sound",
+       "id": "swing",
+       "volume": 1.1
+      }
+     ],
+     "cancel": [
+      {
+       "into": {
+        "m2": "dash"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -136.2,
+       -124.1
+      ],
+      "butt": [
+       48.4,
+       -71.2
+      ],
+      "handN": [
+       -13.1,
+       -84.7
+      ],
+      "handF": [
+       4.5,
+       -80.7
+      ],
+      "head": [
+       -0.5,
+       -109.4
+      ],
+      "chest": [
+       0.8,
+       -95.5
+      ],
+      "halo": [
+       -0.5,
+       -122.9
+      ]
+     },
+     "rect": [
+      602,
+      667,
+      194,
+      138
+     ],
+     "pivot": [
+      145,
+      136
+     ]
+    },
+    {
+     "pose": "m1cLow",
+     "duration": 2,
+     "phase": "active",
+     "events": [
+      {
+       "type": "vfx",
+       "id": "smear.sweep",
+       "offset": [
+        3,
+        -69
+       ]
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -11.3,
+       1.8
+      ],
+      "butt": [
+       35.2,
+       -184.6
+      ],
+      "handN": [
+       11.3,
+       -78.9
+      ],
+      "handF": [
+       17.3,
+       -96
+      ],
+      "head": [
+       8.9,
+       -105.6
+      ],
+      "chest": [
+       7.4,
+       -92
+      ],
+      "halo": [
+       8.9,
+       -119.1
+      ]
+     },
+     "rect": [
+      1067,
+      274,
+      73,
+      195
+     ],
+     "pivot": [
+      35,
+      185
+     ]
+    },
+    {
+     "pose": "m1cSweep",
+     "duration": 3,
+     "phase": "active",
+     "rootMotion": [
+      12,
+      0
+     ],
+     "hitboxes": [
+      {
+       "x": -120,
+       "y": -117,
+       "w": 282,
+       "h": 90,
+       "damage": 12,
+       "knockback": [
+        4.5,
+        -2.4
+       ],
+       "hitstop": 5,
+       "stagger": 14,
+       "group": "c",
+       "hitVfx": "hit.light"
+      }
+     ],
+     "anchors": {
+      "tip": [
+       152.9,
+       -79.5
+      ],
+      "butt": [
+       -38.7,
+       -92.9
+      ],
+      "handN": [
+       24.2,
+       -91.7
+      ],
+      "handF": [
+       13.9,
+       -93.1
+      ],
+      "head": [
+       14.6,
+       -106.5
+      ],
+      "chest": [
+       11.5,
+       -93.3
+      ],
+      "halo": [
+       14.6,
+       -120
+      ]
+     },
+     "rect": [
+      1002,
+      667,
+      202,
+      137
+     ],
+     "pivot": [
+      40,
+      132
+     ]
+    },
+    {
+     "pose": "m1cFollow",
+     "duration": 9,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_4",
+        "m2": "dash",
+        "jump": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       125.1,
+       -172.8
+      ],
+      "butt": [
+       -34.1,
+       -65.3
+      ],
+      "handN": [
+       15.8,
+       -103.7
+      ],
+      "handF": [
+       12.6,
+       -100.7
+      ],
+      "head": [
+       11.1,
+       -108.9
+      ],
+      "chest": [
+       10,
+       -95.2
+      ],
+      "halo": [
+       11.1,
+       -122.4
+      ]
+     },
+     "rect": [
+      321,
+      477,
+      167,
+      182
+     ],
+     "pivot": [
+      35,
+      180
+     ]
+    },
+    {
+     "pose": "m1cFollow~idle0:0.5",
+     "duration": 8,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_4",
+        "m2": "dash",
+        "jump": "*",
+        "move": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       39.3,
+       -168.5
+      ],
+      "butt": [
+       -23.4,
+       11
+      ],
+      "handN": [
+       -25.8,
+       -82.9
+      ],
+      "handF": [
+       17.9,
+       -112.9
+      ],
+      "head": [
+       -13.7,
+       -117.5
+      ],
+      "chest": [
+       -10.7,
+       -104
+      ],
+      "halo": [
+       -13.7,
+       -131
+      ]
+     },
+     "rect": [
+      1835,
+      274,
+      100,
+      190
+     ],
+     "pivot": [
+      55,
+      178
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "m1_4",
+   "gravity": 0,
+   "tags": [
+    "m1",
+    "finisher"
+   ],
+   "frames": [
+    {
+     "pose": "m1dRise",
+     "duration": 6,
+     "phase": "anticipation",
+     "rootMotion": [
+      12,
+      -39
+     ],
+     "events": [
+      {
+       "type": "sound",
+       "id": "rise"
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -64.4,
+       -252.6
+      ],
+      "butt": [
+       25.8,
+       -83
+      ],
+      "handN": [
+       -5.7,
+       -133.5
+      ],
+      "handF": [
+       4.3,
+       -118.8
+      ],
+      "head": [
+       -9.8,
+       -122.3
+      ],
+      "chest": [
+       -4.1,
+       -109.6
+      ],
+      "halo": [
+       -9.8,
+       -135.8
+      ]
+     },
+     "rect": [
+      193,
+      2,
+      98,
+      253
+     ],
+     "pivot": [
+      71,
+      260
+     ]
+    },
+    {
+     "pose": "m1dHang",
+     "duration": 5,
+     "hold": 5,
+     "phase": "anticipation",
+     "rootMotion": [
+      6,
+      -6
+     ],
+     "events": [
+      {
+       "type": "vfx",
+       "id": "flash.gold",
+       "anchor": "tip",
+       "layer": "front"
+      },
+      {
+       "type": "light",
+       "anchor": "tip",
+       "colour": "#ffe0a0",
+       "radius": 135,
+       "intensity": 0.9,
+       "duration": 12
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -134.3,
+       -167.7
+      ],
+      "butt": [
+       50.4,
+       -114.8
+      ],
+      "handN": [
+       -7.8,
+       -127.3
+      ],
+      "handF": [
+       -1,
+       -126.3
+      ],
+      "head": [
+       -12.4,
+       -116.6
+      ],
+      "chest": [
+       -5.4,
+       -104.7
+      ],
+      "halo": [
+       -12.4,
+       -130.1
+      ]
+     },
+     "rect": [
+      618,
+      477,
+      194,
+      165
+     ],
+     "pivot": [
+      143,
+      174
+     ]
+    },
+    {
+     "pose": "m1dHang~m1dSlam:0.5",
+     "duration": 2,
+     "phase": "active",
+     "rootMotion": [
+      15,
+      36
+     ],
+     "events": [
+      {
+       "type": "vfx",
+       "id": "smear.slam",
+       "offset": [
+        6,
+        -72
+       ]
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -31.1,
+       26.1
+      ],
+      "butt": [
+       31.5,
+       -155.6
+      ],
+      "handN": [
+       14.5,
+       -98.7
+      ],
+      "handF": [
+       15.2,
+       -95.9
+      ],
+      "head": [
+       6.8,
+       -105.8
+      ],
+      "chest": [
+       6.1,
+       -92
+      ],
+      "halo": [
+       6.8,
+       -119.3
+      ]
+     },
+     "rect": [
+      1752,
+      274,
+      81,
+      191
+     ],
+     "pivot": [
+      44,
+      157
+     ]
+    },
+    {
+     "pose": "m1dSlam",
+     "duration": 3,
+     "phase": "active",
+     "rootMotion": [
+      6,
+      15
+     ],
+     "hitboxes": [
+      {
+       "x": -30,
+       "y": -147,
+       "w": 234,
+       "h": 150,
+       "damage": 24,
+       "knockback": [
+        6.9,
+        -6
+       ],
+       "hitstop": 9,
+       "stagger": 60,
+       "heavy": true,
+       "group": "d",
+       "hitVfx": "hit.heavy",
+       "shake": {
+        "amplitude": 9,
+        "duration": 16
+       },
+       "zoom": {
+        "steps": 1,
+        "duration": 6
+       },
+       "impact": {
+        "mode": "mono",
+        "duration": 2
+       }
+      }
+     ],
+     "events": [
+      {
+       "type": "vfx",
+       "id": "slam.ground",
+       "offset": [
+        66,
+        0
+       ]
+      },
+      {
+       "type": "shake",
+       "amplitude": 3,
+       "duration": 8
+      },
+      {
+       "type": "sound",
+       "id": "slam"
+      },
+      {
+       "type": "light",
+       "offset": [
+        66,
+        -45
+       ],
+       "colour": "#ffd27a",
+       "radius": 390,
+       "intensity": 1.3,
+       "duration": 24
+      }
+     ],
+     "anchors": {
+      "tip": [
+       153.8,
+       -17.2
+      ],
+      "butt": [
+       -24.3,
+       -89.2
+      ],
+      "handN": [
+       31.8,
+       -69.6
+      ],
+      "handF": [
+       20,
+       -75.7
+      ],
+      "head": [
+       26,
+       -86.8
+      ],
+      "chest": [
+       17.8,
+       -76.9
+      ],
+      "halo": [
+       26,
+       -100.3
+      ]
+     },
+     "rect": [
+      1708,
+      811,
+      206,
+      115
+     ],
+     "pivot": [
+      45,
+      112
+     ]
+    },
+    {
+     "pose": "m1dHold",
+     "duration": 10,
+     "phase": "recovery",
+     "anchors": {
+      "tip": [
+       150.1,
+       -5.9
+      ],
+      "butt": [
+       -22.6,
+       -90.2
+      ],
+      "handN": [
+       32,
+       -66.6
+      ],
+      "handF": [
+       20.3,
+       -73.7
+      ],
+      "head": [
+       27.1,
+       -84.2
+      ],
+      "chest": [
+       18.3,
+       -74.9
+      ],
+      "halo": [
+       27.1,
+       -97.7
+      ]
+     },
+     "rect": [
+      416,
+      947,
+      203,
+      112
+     ],
+     "pivot": [
+      45,
+      110
+     ]
+    },
+    {
+     "pose": "m1dRecover",
+     "duration": 8,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_1",
+        "m2": "dash",
+        "jump": "*",
+        "move": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -39.8,
+       -213.9
+      ],
+      "butt": [
+       32.2,
+       -35.7
+      ],
+      "handN": [
+       2.2,
+       -99
+      ],
+      "handF": [
+       0.4,
+       -108.6
+      ],
+      "head": [
+       8,
+       -109
+      ],
+      "chest": [
+       6,
+       -95.4
+      ],
+      "halo": [
+       8,
+       -122.5
+      ]
+     },
+     "rect": [
+      756,
+      2,
+      80,
+      223
+     ],
+     "pivot": [
+      46,
+      221
+     ]
+    },
+    {
+     "pose": "m1dRecover~idle0:0.5",
+     "duration": 6,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_1",
+        "m2": "dash",
+        "jump": "*",
+        "move": "*",
+        "skill": "*",
+        "ult": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -7.4,
+       -174
+      ],
+      "butt": [
+       58.9,
+       4.9
+      ],
+      "handN": [
+       -25.1,
+       -82.9
+      ],
+      "handF": [
+       12,
+       -117.4
+      ],
+      "head": [
+       -11.8,
+       -117.6
+      ],
+      "chest": [
+       -9.5,
+       -104
+      ],
+      "halo": [
+       -11.8,
+       -131.1
+      ]
+     },
+     "rect": [
+      2,
+      477,
+      112,
+      188
+     ],
+     "pivot": [
+      51,
+      182
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "skill_q",
+   "gravity": 0.3,
+   "tags": [
+    "skill"
+   ],
+   "frames": [
+    {
+     "pose": "qRaise",
+     "duration": 8,
+     "hold": 4,
+     "phase": "anticipation",
+     "events": [
+      {
+       "type": "sound",
+       "id": "charge"
+      },
+      {
+       "type": "vfx",
+       "id": "ring.halo",
+       "offset": [
+        0,
+        -6
+       ]
+      },
+      {
+       "type": "light",
+       "anchor": "tip",
+       "attach": true,
+       "colour": "#ffe0a0",
+       "radius": 180,
+       "intensity": 1,
+       "duration": 14
+      }
+     ],
+     "anchors": {
+      "tip": [
+       4.3,
+       -244.9
+      ],
+      "butt": [
+       4.3,
+       -52.8
+      ],
+      "handN": [
+       0.2,
+       -122.7
+      ],
+      "handF": [
+       2,
+       -108.2
+      ],
+      "head": [
+       -8.5,
+       -116.5
+      ],
+      "chest": [
+       -3.6,
+       -103.4
+      ],
+      "halo": [
+       -8.5,
+       -130
+      ]
+     },
+     "rect": [
+      136,
+      2,
+      55,
+      256
+     ],
+     "pivot": [
+      30,
+      254
+     ]
+    },
+    {
+     "pose": "qRaise~qPlant:0.5",
+     "duration": 2,
+     "phase": "active",
+     "anchors": {
+      "tip": [
+       8.7,
+       -204.8
+      ],
+      "butt": [
+       37.7,
+       -14.9
+      ],
+      "handN": [
+       29,
+       -97.6
+      ],
+      "handF": [
+       25.1,
+       -77.4
+      ],
+      "head": [
+       13.3,
+       -103.9
+      ],
+      "chest": [
+       10.5,
+       -90.2
+      ],
+      "halo": [
+       13.3,
+       -117.4
+      ]
+     },
+     "rect": [
+      838,
+      2,
+      80,
+      219
+     ],
+     "pivot": [
+      39,
+      213
+     ]
+    },
+    {
+     "pose": "qPlant",
+     "duration": 4,
+     "phase": "active",
+     "hitboxes": [
+      {
+       "x": -270,
+       "y": -201,
+       "w": 564,
+       "h": 207,
+       "damage": 18,
+       "knockback": [
+        5.3,
+        -7.5
+       ],
+       "hitstop": 7,
+       "stagger": 45,
+       "heavy": true,
+       "group": "q",
+       "hitVfx": "hit.heavy"
+      }
+     ],
+     "events": [
+      {
+       "type": "vfx",
+       "id": "q.wave",
+       "offset": [
+        24,
+        0
+       ]
+      },
+      {
+       "type": "shake",
+       "amplitude": 6,
+       "duration": 18
+      },
+      {
+       "type": "slowmo",
+       "factor": 0.45,
+       "duration": 14
+      },
+      {
+       "type": "sound",
+       "id": "wave"
+      },
+      {
+       "type": "light",
+       "offset": [
+        24,
+        -45
+       ],
+       "colour": "#ffe0a0",
+       "radius": 510,
+       "intensity": 1.3,
+       "duration": 34
+      }
+     ],
+     "anchors": {
+      "tip": [
+       13.5,
+       -175.4
+      ],
+      "butt": [
+       70.9,
+       7.9
+      ],
+      "handN": [
+       49.8,
+       -72.5
+      ],
+      "handF": [
+       49.1,
+       -52
+      ],
+      "head": [
+       31.7,
+       -82.8
+      ],
+      "chest": [
+       22.9,
+       -73.3
+      ],
+      "halo": [
+       31.7,
+       -96.3
+      ]
+     },
+     "rect": [
+      1297,
+      2,
+      135,
+      205
+     ],
+     "pivot": [
+      62,
+      184
+     ]
+    },
+    {
+     "pose": "qHold",
+     "duration": 16,
+     "phase": "recovery",
+     "anchors": {
+      "tip": [
+       13.5,
+       -175.4
+      ],
+      "butt": [
+       70.9,
+       7.9
+      ],
+      "handN": [
+       49.8,
+       -72.5
+      ],
+      "handF": [
+       49.1,
+       -52
+      ],
+      "head": [
+       31.7,
+       -82.8
+      ],
+      "chest": [
+       22.9,
+       -73.3
+      ],
+      "halo": [
+       31.7,
+       -96.3
+      ]
+     },
+     "rect": [
+      1434,
+      2,
+      135,
+      205
+     ],
+     "pivot": [
+      62,
+      184
+     ]
+    },
+    {
+     "pose": "qHold~idle0:0.5",
+     "duration": 8,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_1",
+        "m2": "dash",
+        "jump": "*",
+        "move": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       5.7,
+       -181.6
+      ],
+      "butt": [
+       65.6,
+       -4.3
+      ],
+      "handN": [
+       -18.4,
+       -83.7
+      ],
+      "handF": [
+       23,
+       -125.9
+      ],
+      "head": [
+       -5.7,
+       -116.1
+      ],
+      "chest": [
+       -3,
+       -102.4
+      ],
+      "halo": [
+       -5.7,
+       -129.6
+      ]
+     },
+     "rect": [
+      1630,
+      274,
+      120,
+      191
+     ],
+     "pivot": [
+      52,
+      189
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "ult_r",
+   "gravity": 0,
+   "tags": [
+    "ult"
+   ],
+   "frames": [
+    {
+     "pose": "rCall",
+     "duration": 8,
+     "phase": "anticipation",
+     "iframes": true,
+     "events": [
+      {
+       "type": "cutin",
+       "id": "ult",
+       "duration": 54
+      },
+      {
+       "type": "slowmo",
+       "factor": 0.15,
+       "duration": 54
+      },
+      {
+       "type": "vfx",
+       "id": "r.call",
+       "attach": true
+      },
+      {
+       "type": "light",
+       "anchor": "tip",
+       "attach": true,
+       "colour": "#fff0c0",
+       "radius": 300,
+       "intensity": 1.2,
+       "duration": 40
+      },
+      {
+       "type": "sound",
+       "id": "ult"
+      }
+     ],
+     "anchors": {
+      "tip": [
+       7.1,
+       -259
+      ],
+      "butt": [
+       7.1,
+       -66.9
+      ],
+      "handN": [
+       1.5,
+       -100.5
+      ],
+      "handF": [
+       4.9,
+       -129.8
+      ],
+      "head": [
+       -9.1,
+       -116.3
+      ],
+      "chest": [
+       -3.7,
+       -103.4
+      ],
+      "halo": [
+       -9.1,
+       -129.8
+      ]
+     },
+     "rect": [
+      2,
+      2,
+      71,
+      270
+     ],
+     "pivot": [
+      30,
+      268
+     ]
+    },
+    {
+     "pose": "rCall",
+     "duration": 10,
+     "phase": "anticipation",
+     "iframes": true,
+     "anchors": {
+      "tip": [
+       7.1,
+       -259
+      ],
+      "butt": [
+       7.1,
+       -66.9
+      ],
+      "handN": [
+       1.5,
+       -100.5
+      ],
+      "handF": [
+       4.9,
+       -129.8
+      ],
+      "head": [
+       -9.1,
+       -116.3
+      ],
+      "chest": [
+       -3.7,
+       -103.4
+      ],
+      "halo": [
+       -9.1,
+       -129.8
+      ]
+     },
+     "rect": [
+      2,
+      2,
+      71,
+      270
+     ],
+     "pivot": [
+      30,
+      268
+     ]
+    },
+    {
+     "pose": "rRise",
+     "duration": 10,
+     "phase": "anticipation",
+     "iframes": true,
+     "rootMotion": [
+      0,
+      -51
+     ],
+     "events": [
+      {
+       "type": "sound",
+       "id": "rise"
+      },
+      {
+       "type": "vfx",
+       "id": "flash.gold",
+       "anchor": "tip"
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -94.8,
+       -242.7
+      ],
+      "butt": [
+       33.8,
+       -100
+      ],
+      "handN": [
+       -6.7,
+       -138.8
+      ],
+      "handF": [
+       4.5,
+       -128.9
+      ],
+      "head": [
+       -10.5,
+       -128.6
+      ],
+      "chest": [
+       -4.5,
+       -116.1
+      ],
+      "halo": [
+       -10.5,
+       -142.1
+      ]
+     },
+     "rect": [
+      479,
+      2,
+      137,
+      240
+     ],
+     "pivot": [
+      102,
+      249
+     ]
+    },
+    {
+     "pose": "rRise",
+     "duration": 4,
+     "hold": 4,
+     "phase": "anticipation",
+     "iframes": true,
+     "anchors": {
+      "tip": [
+       -94.8,
+       -242.7
+      ],
+      "butt": [
+       33.8,
+       -100
+      ],
+      "handN": [
+       -6.7,
+       -138.8
+      ],
+      "handF": [
+       4.5,
+       -128.9
+      ],
+      "head": [
+       -10.5,
+       -128.6
+      ],
+      "chest": [
+       -4.5,
+       -116.1
+      ],
+      "halo": [
+       -10.5,
+       -142.1
+      ]
+     },
+     "rect": [
+      479,
+      2,
+      137,
+      240
+     ],
+     "pivot": [
+      102,
+      249
+     ]
+    },
+    {
+     "pose": "rRise~rCleave:0.5",
+     "duration": 2,
+     "phase": "active",
+     "iframes": true,
+     "rootMotion": [
+      24,
+      30
+     ],
+     "events": [
+      {
+       "type": "vfx",
+       "id": "smear.ult",
+       "offset": [
+        0,
+        -96
+       ]
+      }
+     ],
+     "anchors": {
+      "tip": [
+       87.2,
+       -219
+      ],
+      "butt": [
+       -14.6,
+       -56.1
+      ],
+      "handN": [
+       11.6,
+       -105.6
+      ],
+      "handF": [
+       12.2,
+       -104
+      ],
+      "head": [
+       10,
+       -112.2
+      ],
+      "chest": [
+       8.3,
+       -98.5
+      ],
+      "halo": [
+       10,
+       -125.7
+      ]
+     },
+     "rect": [
+      618,
+      2,
+      136,
+      226
+     ],
+     "pivot": [
+      44,
+      228
+     ]
+    },
+    {
+     "pose": "rCleave",
+     "duration": 4,
+     "phase": "active",
+     "iframes": true,
+     "rootMotion": [
+      9,
+      21
+     ],
+     "hitboxes": [
+      {
+       "x": -495,
+       "y": -375,
+       "w": 1056,
+       "h": 381,
+       "damage": 60,
+       "knockback": [
+        7.5,
+        -9
+       ],
+       "hitstop": 12,
+       "stagger": 200,
+       "heavy": true,
+       "group": "r",
+       "hitVfx": "hit.heavy",
+       "shake": {
+        "amplitude": 12,
+        "duration": 24
+       }
+      }
+     ],
+     "events": [
+      {
+       "type": "vfx",
+       "id": "r.finale",
+       "offset": [
+        30,
+        0
+       ]
+      },
+      {
+       "type": "impact",
+       "mode": "invert",
+       "duration": 2
+      },
+      {
+       "type": "zoom",
+       "steps": 1,
+       "duration": 10
+      },
+      {
+       "type": "shake",
+       "amplitude": 14,
+       "duration": 30
+      },
+      {
+       "type": "slowmo",
+       "factor": 0.5,
+       "duration": 24
+      },
+      {
+       "type": "sound",
+       "id": "ult_hit"
+      },
+      {
+       "type": "light",
+       "offset": [
+        30,
+        -60
+       ],
+       "colour": "#fff0d0",
+       "radius": 930,
+       "intensity": 1.4,
+       "duration": 44
+      }
+     ],
+     "anchors": {
+      "tip": [
+       164.8,
+       -29.4
+      ],
+      "butt": [
+       -19.9,
+       -82.4
+      ],
+      "handN": [
+       34.7,
+       -69.8
+      ],
+      "handF": [
+       23.7,
+       -74
+      ],
+      "head": [
+       30.1,
+       -88.7
+      ],
+      "chest": [
+       21.4,
+       -79.4
+      ],
+      "halo": [
+       30.1,
+       -102.2
+      ]
+     },
+     "rect": [
+      1245,
+      811,
+      219,
+      117
+     ],
+     "pivot": [
+      46,
+      114
+     ]
+    },
+    {
+     "pose": "rHold",
+     "duration": 22,
+     "phase": "recovery",
+     "iframes": true,
+     "anchors": {
+      "tip": [
+       161.9,
+       -17.5
+      ],
+      "butt": [
+       -18.7,
+       -83.2
+      ],
+      "handN": [
+       34.8,
+       -66.8
+      ],
+      "handF": [
+       22.8,
+       -72.4
+      ],
+      "head": [
+       30.2,
+       -87
+      ],
+      "chest": [
+       21.4,
+       -77.7
+      ],
+      "halo": [
+       30.2,
+       -100.5
+      ]
+     },
+     "rect": [
+      2,
+      947,
+      214,
+      114
+     ],
+     "pivot": [
+      44,
+      112
+     ]
+    },
+    {
+     "pose": "rHold~idle0:0.5",
+     "duration": 10,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "m1": "m1_1",
+        "m2": "dash",
+        "jump": "*",
+        "move": "*"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       66.1,
+       -137
+      ],
+      "butt": [
+       -70.2,
+       -10.8
+      ],
+      "handN": [
+       -37,
+       -83
+      ],
+      "handF": [
+       19,
+       -100.4
+      ],
+      "head": [
+       -12.2,
+       -114.2
+      ],
+      "chest": [
+       -16.2,
+       -102.1
+      ],
+      "halo": [
+       -12.2,
+       -127.7
+      ]
+     },
+     "rect": [
+      1162,
+      477,
+      143,
+      146
+     ],
+     "pivot": [
+      71,
+      144
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "hurt",
+   "tags": [
+    "hurt"
+   ],
+   "frames": [
+    {
+     "pose": "hurt",
+     "duration": 14,
+     "phase": "recovery",
+     "anchors": {
+      "tip": [
+       -70.1,
+       -192.3
+      ],
+      "butt": [
+       31.7,
+       -29.3
+      ],
+      "handN": [
+       -12.5,
+       -92.3
+      ],
+      "handF": [
+       12,
+       -100.5
+      ],
+      "head": [
+       -16.2,
+       -110.7
+      ],
+      "chest": [
+       -9.8,
+       -98.3
+      ],
+      "halo": [
+       -16.2,
+       -124.2
+      ]
+     },
+     "rect": [
+      347,
+      274,
+      113,
+      200
+     ],
+     "pivot": [
+      77,
+      199
+     ]
+    },
+    {
+     "pose": "hurt~idle0:0.5",
+     "duration": 6,
+     "phase": "recovery",
+     "cancel": [
+      {
+       "into": {
+        "move": "*",
+        "jump": "*",
+        "m1": "m1_1",
+        "m2": "dash"
+       }
+      }
+     ],
+     "anchors": {
+      "tip": [
+       -33.2,
+       -189.2
+      ],
+      "butt": [
+       48.6,
+       -16.8
+      ],
+      "handN": [
+       -15,
+       -81.4
+      ],
+      "handF": [
+       -8.9,
+       -134.4
+      ],
+      "head": [
+       -13.3,
+       -113.2
+      ],
+      "chest": [
+       -4.8,
+       -102.2
+      ],
+      "halo": [
+       -13.3,
+       -126.7
+      ]
+     },
+     "rect": [
+      582,
+      274,
+      89,
+      199
+     ],
+     "pivot": [
+      39,
+      197
+     ]
+    }
+   ],
+   "atlas": "body"
+  },
+  {
+   "id": "sit",
+   "loop": true,
+   "tags": [
+    "world"
+   ],
+   "frames": [
+    {
+     "pose": "sit0",
+     "duration": 34,
+     "anchors": {
+      "tip": [
+       21.3,
+       -184
+      ],
+      "butt": [
+       11.3,
+       7.8
+      ],
+      "handN": [
+       4.8,
+       -61.4
+      ],
+      "handF": [
+       13.6,
+       -79.5
+      ],
+      "head": [
+       -7.3,
+       -86.4
+      ],
+      "chest": [
+       -7.2,
+       -72.5
+      ],
+      "halo": [
+       -7.3,
+       -99.9
+      ]
+     },
+     "rect": [
+      1700,
+      2,
+      93,
+      202
+     ],
+     "pivot": [
+      50,
+      193
+     ]
+    },
+    {
+     "pose": "sit0~sit1:0.5",
+     "duration": 10,
+     "anchors": {
+      "tip": [
+       21.4,
+       -183.7
+      ],
+      "butt": [
+       11.3,
+       8.1
+      ],
+      "handN": [
+       4.9,
+       -61.1
+      ],
+      "handF": [
+       13.6,
+       -79.2
+      ],
+      "head": [
+       -7.1,
+       -86.1
+      ],
+      "chest": [
+       -7.2,
+       -72.3
+      ],
+      "halo": [
+       -7.1,
+       -99.6
+      ]
+     },
+     "rect": [
+      1795,
+      2,
+      92,
+      202
+     ],
+     "pivot": [
+      49,
+      193
+     ]
+    },
+    {
+     "pose": "sit1",
+     "duration": 34,
+     "anchors": {
+      "tip": [
+       21.5,
+       -183.4
+      ],
+      "butt": [
+       11.4,
+       8.4
+      ],
+      "handN": [
+       5,
+       -60.8
+      ],
+      "handF": [
+       13.7,
+       -78.9
+      ],
+      "head": [
+       -7,
+       -85.8
+      ],
+      "chest": [
+       -7.1,
+       -72
+      ],
+      "halo": [
+       -7,
+       -99.3
+      ]
+     },
+     "rect": [
+      2,
+      274,
+      92,
+      201
+     ],
+     "pivot": [
+      49,
+      192
+     ]
+    },
+    {
+     "pose": "sit1~sit0:0.5",
+     "duration": 10,
+     "anchors": {
+      "tip": [
+       21.4,
+       -183.7
+      ],
+      "butt": [
+       11.3,
+       8.1
+      ],
+      "handN": [
+       4.9,
+       -61.1
+      ],
+      "handF": [
+       13.6,
+       -79.2
+      ],
+      "head": [
+       -7.1,
+       -86.1
+      ],
+      "chest": [
+       -7.2,
+       -72.3
+      ],
+      "halo": [
+       -7.1,
+       -99.6
+      ]
+     },
+     "rect": [
+      1889,
+      2,
+      92,
+      202
+     ],
+     "pivot": [
+      49,
+      193
+     ]
+    }
+   ],
+   "atlas": "body"
+  }
+ ],
+ "defaults": {
+  "hurtboxes": [
+   {
+    "x": -9,
+    "y": -126,
+    "w": 20,
+    "h": 123
+   }
+  ]
+ }
+}
