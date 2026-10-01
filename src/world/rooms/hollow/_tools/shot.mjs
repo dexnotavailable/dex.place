@@ -4,7 +4,7 @@
 import { createRequire } from "node:module";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-const require = createRequire(new URL("../../../../../tools/scene-pipeline/package.json", import.meta.url));
+const require = createRequire(process.env.PW_ROOT ?? new URL("../../../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const argv = process.argv.slice(2);
 const arg = (n, d) => {

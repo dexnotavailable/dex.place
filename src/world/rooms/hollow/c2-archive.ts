@@ -12,6 +12,7 @@ import { h, SCALE } from "../../config.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { Box } from "../_blockout/_build.ts";
 import { lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 import { archiveScene } from "./_scene/archive.ts";
 import { dressTerrain, HOLLOW_RAMP } from "./_room.ts";
 
@@ -44,11 +45,27 @@ b.floor(X0, X1, FLOOR, undefined, "rug");
 b.block(X0, X1, TOP, CEIL, "wood");
 
 // the door back up to the alley (an ordinary door), the boards, the rug
-b.prop("door", "archive-exit", 225.2, FLOOR, { kind: "ordinary", frame: "timber" }, px);
+// the door is built into the wall: the backdrop's moulded oak case is its frame (_scene/archive.ts)
+const DOOR = 225.2;
+b.prop("hollowDoor", "archive-exit", DOOR, FLOOR, { kind: "ordinary", frame: "timber", sill: 6, recess: 6, shade: 1, jamb: 5 }, px);
 b.doors["archive-exit"] = { room: "C1", spawn: "archive" };
-b.prop("hollowFloor", "boards", X0, FLOOR, { width: h(X1 - X0), depth: 2.2, kind: "boards" }, px);
-b.prop("hollowRug", "rug-reading", 231, FLOOR, { width: 5.6, colour: "clothRed" }, px);
-b.prop("hollowRug", "rug-lectern", 238.4, FLOOR, { width: 4, colour: "clothIndigo" }, px);
+// light wells: grates in the ceiling under the street's drains; the market's amber falls through them
+// in shafts (the room's dominant light, from above) and pools on the boards where each lands (the
+// shaft leans 0.7 H east on its way down)
+const WELLS = [229.6, 236.9, 243.1];
+// contact shadows under everything that stands on the boards or the rugs ([x, width], world H): the
+// boards and the rugs darken under each foot, so nothing floats on the floor
+const SHADOWS: [number, number][] = [
+  [225.2, 1.2], [228.4, 1.2], [231.2, 1.1], [232.5, 0.5], [234.6, 0.8], [236.4, 0.7], [238.8, 0.6],
+  [241.0, 1.8], [243.0, 1.8], [245.0, 1.8], [246.9, 0.8],
+];
+const RUGS: [string, number, number, string][] = [
+  ["rug-reading", 231, 5.6, "clothRed"],
+  ["rug-lectern", 238.4, 4, "clothIndigo"],
+];
+const onRug = (x: number): boolean => RUGS.some(([, c, w]) => Math.abs(x - c) < w / 2);
+b.prop("hollowFloor", "boards", X0, FLOOR, { width: h(X1 - X0), depth: 2.2, kind: "boards", shadows: SHADOWS.filter(([x]) => !onRug(x)).map(([x, w]) => [x - X0, w]), pools: [[232.6 - X0, 1.6, 0.5], [238.8 - X0, 1.4, 0.45], [234.6 - X0, 0.9, 0.35], [246.9 - X0, 0.9, 0.35], ...WELLS.map((x) => [x + 0.7 - X0, 1.0, 0.6] as [number, number, number])] }, px);
+for (const [id, c, w, colour] of RUGS) b.prop("hollowRug", id, c, FLOOR, { width: w, colour, shadows: SHADOWS.filter(([x]) => Math.abs(x - c) < w / 2).map(([x, sw]) => [x - c, sw]) }, px);
 
 // the reading corner: the archivist in her armchair, the green lamp, a chair for you
 b.prop("archivist", "archivist", 231.2, FLOOR, {}, px);
@@ -76,6 +93,15 @@ b.prop("dust", "motes-bays", 239.5, FLOOR, { kind: "dust", width: 7, height: 3, 
 
 b.spawn("door", 226.1, FLOOR, 1);
 
+const LIGHT = lighting({
+    ambient: [0.24, 0.2, 0.16],
+    keyDir: [0.2, -0.6, 0.75],
+    keyColour: [0.6, 0.48, 0.32],
+    rimColour: [1, 0.8, 0.5],
+    rimDir: [0.7, -0.7],
+    rimIntensity: 0.8,
+  });
+
 const built = b.build();
 const roomH = built.h;
 // the room is shorter than the view: the camera centres it (camera.ts clamp)
@@ -94,24 +120,26 @@ export const c2: RoomDef = {
       H: SCALE.H,
       arches: [227.2, 234.2, 247.2],
       lights: [
-        [232.6, 1.0],
-        [234.6, 0.3],
-        [238.8, 1.4],
-        [246.9, 0.4],
-        [225.2, 1.6],
+        [232.6, 1.0, 1],
+        [234.6, 0.3, 0.35],
+        [238.8, 1.4, 0.8],
+        [246.9, 0.4, 0.35],
       ],
+      door: DOOR,
+      products: [239.85, 246.15],
+      clock: 228.6,
+      ladder: 229.7,
+      wells: WELLS,
     }),
     vertical: 1,
     weather: false,
   },
-  lighting: lighting({
-    ambient: [0.24, 0.2, 0.16],
-    keyDir: [0.2, -0.6, 0.75],
-    keyColour: [0.6, 0.48, 0.32],
-    rimColour: [1, 0.8, 0.5],
-    rimDir: [0.7, -0.7],
-    rimIntensity: 0.8,
-  }),
+  lighting: LIGHT,
+  // one light over everything: a cast toward the lamps, haze on far props, contact shadows. No
+  // horizon band (the ground meets a wall here, not sky) and no lamp halos: the backdrop paints each
+  // lamp's light into its walls in steps, and the halos cost about 1 ms a frame (d3d11) with five
+  // lamps in view, which the room's budget does not have (review/reg-c/round-1, cost.mjs)
+  blend: { ...fromLight(LIGHT, { amount: 0.12, haze: 0.2 }), band: undefined, halo: undefined },
   terrain: dressTerrain(built.terrain, { rug: "none", wood: "wood" }, HOLLOW_RAMP.archive),
   ambient: { dust: 6, moths: false },
 };

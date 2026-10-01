@@ -142,11 +142,11 @@ const SEG: Record<string, string> = {
   "9": "111101111001111",
 };
 
-export const ticketDisplay = defineRecipe<{ number: string }, { box: Part; lit: number[] }>({
+export const ticketDisplay = defineRecipe<{ number: string; hang: number }, { box: Part; lit: number[] }>({
   id: "ticketDisplay",
   breakage: "never",
   reason: "The waiting room's ticket display, frozen on one number: nobody is called; it only makes the waiting feel real.",
-  defaults: { number: "47" },
+  defaults: { number: "47", hang: 0 },
   cues: ["display.buzz"],
   build(b, p) {
     const u = (f: number): number => b.u(f);
@@ -154,6 +154,16 @@ export const ticketDisplay = defineRecipe<{ number: string }, { box: Part; lit: 
     const s = 3;
     const w = digits.length * 4 * s + 6 + u(0.1), h = 5 * s + 6 + u(0.06);
     const box = b.part("box", { w, h, pivot: [w >> 1, h >> 1], at: [0, 0], layer: "bg", z: 9 });
+    // hung from the ceiling on two rods with ceiling plates (never stuck on the air)
+    if (p.hang > 0) {
+      const len = Math.max(4, u(p.hang) - (h >> 1) + 2);
+      const rods = b.part("rods", { w, h: len, pivot: [w >> 1, len], at: [0, -(h >> 1) + 2], layer: "bg", z: 8, hittable: false });
+      for (const x of [u(0.08), w - u(0.08) - 2]) {
+        rods.rect(x, 0, 2, len, { mat: "iron", profile: "cylV", piece: "rod" });
+        rods.rect(x - 3, 0, 8, 3, { mat: "iron", profile: "bevel", r: 1, depth: 2, piece: "plate" });
+        rods.rect(x - 1, len - 4, 4, 3, { mat: "iron", profile: "bevel", r: 1, depth: 2, piece: "clamp" });
+      }
+    }
     box.roundRect(0, 0, w, h, 2, { mat: "iron", profile: "bevel", r: 2, depth: 3, piece: "case" });
     box.rect(3, 3, w - 6, h - 6, { mat: "screen", profile: "flat", z: 2, piece: "glass" });
     const lit: number[] = [];
@@ -584,7 +594,13 @@ export const operatorBooth = defineRecipe<Record<string, never>, { booth: Part }
     // walls: panelled below, a glazed window above, a little roof
     bo.rect(0, u(0.15), W, Hh - u(0.15), { mat: "hollowSeat", profile: "flat", depth: 1, tone: -1, piece: "wall" });
     bo.rect(0, 0, W, u(0.15), { mat: "iron", profile: "bevel", r: 2, depth: 3, piece: "roof" });
-    bo.rect(u(0.1), u(0.35), W - u(0.2), u(0.75), { mat: "glassPale", profile: "flat", z: 2, piece: "glass" });
+    // dusty dark glass with the empty booth behind it, a sheen across it from the tubes (round 1's pale
+    // pane was the brightest, most saturated thing in the room)
+    bo.rect(u(0.1), u(0.35), W - u(0.2), u(0.75), { mat: "hollowGlassDim", profile: "flat", z: 2, piece: "glass" });
+    for (let k = 0; k < 2; k++) {
+      const gx = u(0.2) + k * u(0.55);
+      for (let t = 0; t < u(0.3); t++) bo.rect(gx + t, u(0.4) + Math.round(t * 1.4), 2 - k, 1, { mat: "hollowGlassDim", mode: "paint", tone: 2 });
+    }
     bo.rect(u(0.1), u(0.35) + u(0.37), W - u(0.2), 2, { mat: "iron", profile: "cylH", z: 3, piece: "mullion" });
     bo.rect(Math.round(W / 2) - 1, u(0.35), 2, u(0.75), { mat: "iron", profile: "cylV", z: 3, piece: "mullion" });
     bo.rect(0, u(1.1), W, u(0.07), { mat: "wood", profile: "bevel", r: 1, depth: 2, z: 3, piece: "counter" });

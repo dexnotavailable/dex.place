@@ -105,7 +105,27 @@ export const gratingStair = defineRecipe<StairParams, null>({
     // drawn left to right in a grid whose bottom-left is the stair foot (dir +1) or foot at the right (dir -1)
     const X = (x: number): number => (s > 0 ? x : W - x);
     const base = Ht;
+    // round 3: a real steel stair, not treads hung off a line. Two cut stringers (the far one a step
+    // darker, standing a few px up and back so the treads read as seated BETWEEN them), each tread
+    // resting on the near stringer's notch with an angle bracket and a bolt, the riser's shadow under
+    // every nose, a base plate bolted to the deck at the foot and a cleat at the head
+    const far = b.part("stringer-far", { w: W, h: Ht, pivot: [s > 0 ? 0 : W, base], at: [0, 0], layer: "bg", z: 1, collide: "none" });
     const st = b.part("treads", { w: W, h: Ht, pivot: [s > 0 ? 0 : W, base], at: [0, 0], layer: "mid", z: 4, collide: "none" });
+    const run = Math.round(tread * n);
+    const K = 13; // the stringer's depth under the line of inner corners
+    const col = (a: number): number => (s > 0 ? a : W - 1 - a);
+    const lineY = (a: number): number => base - (u(p.rise) * a) / run;
+    const treadTop = (a: number): number => Math.round(base - rise * Math.min(n, Math.floor(a / tread) + 1));
+    // the far stringer: the same sawtooth 5 px higher, dark, and the open risers' shadow on it
+    for (let a = 0; a < run; a++) {
+      const y0 = treadTop(a) + 1 - 5, y1 = Math.min(base - 1, Math.round(lineY(a) + K - 5));
+      if (y1 > y0) far.rect(col(a), y0, 1, y1 - y0, { mat: "hollowSteel", profile: "flat", depth: 1, tone: -2, piece: "stringer" });
+    }
+    for (let i = 1; i < n; i++) {
+      const xr = col(Math.round(tread * i));
+      const yt = Math.round(base - rise * (i + 1)) + 6, yb = Math.round(base - rise * i);
+      if (yb > yt) far.rect(Math.min(xr, xr - s), yt, 2, yb - yt, { mat: "soot", profile: "flat", depth: 1, piece: "stringer" });
+    }
     for (let i = 1; i <= n; i++) {
       const top = Math.round(base - rise * i);
       const a = Math.round(tread * (i - 1)), e = Math.round(tread * i);
@@ -115,22 +135,59 @@ export const gratingStair = defineRecipe<StairParams, null>({
       st.rect(x0 + 1, top + 3, x1 - x0 - 2, 3, { mat: "hollowSteel", profile: "flat", depth: 1, tone: -1, piece: "tread" });
       for (let x = x0 + 2; x < x1 - 2; x += 4) st.rect(x, top + 3, 2, 3, { mat: "hollowSteel", mode: "erase" });
     }
-    // the stringer: a channel under the tread noses, from the foot to the top
-    const pts: number[] = [];
-    for (const f of [0, 1]) pts.push(X(Math.round(tread * n * f)), Math.round(base - u(p.rise) * f + 8));
-    st.stroke(pts, 5, { mat: "hollowSteel", profile: "cylV", piece: "stringer", z: -1 });
-    // handrail: posts at the foot and the top, a sloped rail
+    // the near stringer: a channel cut to the steps, its top edge lit, its face a step darker toward
+    // its foot, a shadow band under each tread's nose, an angle bracket and a bolt under each tread
+    for (let a = 0; a < run; a++) {
+      const top = treadTop(a) + 4;
+      const bot = Math.min(base - 1, Math.round(lineY(a) + K));
+      if (bot <= top) continue;
+      const x = col(a);
+      st.rect(x, top, 1, bot - top, {
+        mat: "hollowSteel",
+        profile: "flat",
+        depth: 2,
+        z: 1,
+        piece: "stringer",
+        // the tread's shadow under its nose, the face a step darker toward the bottom
+        toneFn: (_x, y) => (y < top + 2 ? -2 : y > top + (bot - top) * 0.6 ? -1 : 0),
+      });
+      // the lower flange: a lit lip along the bottom edge
+      st.rect(x, bot, 1, 1, { mat: "hollowSteel", profile: "flat", depth: 2, z: 1, piece: "stringer", tone: 1 });
+    }
+    for (let i = 1; i <= n; i++) {
+      const top = Math.round(base - rise * i);
+      const mid = Math.round(tread * (i - 0.5));
+      const bx = col(mid) - 2;
+      st.rect(bx, top + 4, 5, 2, { mat: "hollowSteel", profile: "bevel", r: 1, depth: 2, z: 3, piece: "bracket", tone: 1 });
+      st.rect(s > 0 ? bx : bx + 3, top + 4, 2, 6, { mat: "hollowSteel", profile: "bevel", r: 1, depth: 2, z: 3, piece: "bracket" });
+      st.rivets([[col(mid), top + 8]], { mat: "iron", r: 1, z: 4 });
+    }
+    // the base plate on the deck at the foot (bolted), and the cleat that hangs the head on the walkway
+    {
+      const pw = Math.round(tread * 1.5);
+      const x0 = s > 0 ? 0 : W - pw;
+      st.rect(x0, base - 3, pw, 3, { mat: "hollowSteel", profile: "bevel", r: 1, depth: 2, z: 2, piece: "plate" });
+      st.rect(x0, base - 3, pw, 1, { mat: "hollowSteel", mode: "paint", tone: 1 });
+      st.rivets([[x0 + 3, base - 2], [x0 + pw - 4, base - 2]], { mat: "iron", r: 1, z: 4 });
+      const hx = col(run - 1), hy = Math.round(base - u(p.rise));
+      st.rect(Math.min(hx, hx - s * 8), hy + 3, 9, 10, { mat: "hollowSteel", profile: "bevel", r: 1, depth: 2, z: 2, piece: "cleat", tone: -1 });
+      st.rivets([[hx - s * 4, hy + 6], [hx - s * 4, hy + 10]], { mat: "iron", r: 1, z: 4 });
+    }
+    // handrail: a top rail and a knee rail on posts every three treads, each post standing on the near
+    // stringer (its foot on the tread line), not hanging off the rail
     if (p.rail > 0) {
       const rh = u(p.rail);
       const rail = b.part("rail", { w: W, h: Ht, pivot: [s > 0 ? 0 : W, base], at: [0, 0], layer: "bg", z: 2, collide: "none" });
       const r0: [number, number] = [X(2), base - rh];
-      const r1: [number, number] = [X(Math.round(tread * n) - 2), Math.round(base - u(p.rise) - rh)];
+      const r1: [number, number] = [X(run - 2), Math.round(base - u(p.rise) - rh)];
       rail.stroke([r0[0], r0[1], r1[0], r1[1]], 3, { mat: "hollowSteel", profile: "cylV", piece: "rail" });
-      for (let k = 0; k <= 4; k++) {
-        const t = k / 4;
-        const x = Math.round(r0[0] + (r1[0] - r0[0]) * t);
-        const y = Math.round(r0[1] + (r1[1] - r0[1]) * t);
-        rail.rect(x - 1, y, 3, rh - 4, { mat: "hollowSteel", profile: "cylV", piece: "post" });
+      rail.stroke([r0[0], r0[1] + Math.round(rh * 0.5), r1[0], r1[1] + Math.round(rh * 0.5)], 2, { mat: "hollowSteel", profile: "cylV", piece: "rail", tone: -1 });
+      for (let i = 1; i <= n; i += 3) {
+        const a = Math.round(tread * (i - 0.5));
+        const x = col(a);
+        const yTop = Math.round(lineY(a) - rh - rise * 0.5);
+        const yFoot = treadTop(a);
+        rail.rect(x - 1, yTop, 3, yFoot - yTop, { mat: "hollowSteel", profile: "cylV", piece: "post" });
       }
     }
     return null;
