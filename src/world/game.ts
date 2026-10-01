@@ -1312,11 +1312,8 @@ export class WorldGame {
     room.drawProps(this.canvasApi, "far", cx, reflects);
     room.drawProps(this.canvasApi, "back", cx, reflects);
     if (!reflection) this.drawPixel(["far", "bg"], lights);
-<<<<<<< HEAD
     if (!reflection) room.blend?.drawBand(r);
-=======
     else this.drawPixelReflection(lights);
->>>>>>> claude/wq-ixr
     room.drawTerrain(r, false, reflection);
     if (!reflection) this.drawContactShadows();
     if (!reflection) room.drawProps(this.canvasApi, "decal", cx);

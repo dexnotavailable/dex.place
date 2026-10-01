@@ -101,17 +101,13 @@ export class Room {
     // props: the runtime's stub recipes, or pixel matter (src/pixel) through the adapter
     this.props = [];
     const saved = this.deps.pixelSave();
-<<<<<<< HEAD
     // a ground-standing placement a few px off the terrain under it is put on it (room/ground.ts)
     const settled = settle({ terrain: d.terrain, props: d.props, w: d.w, waterline: d.waterline, water: d.water });
     this.moved = settled.moved;
     const stand = plantStand(d);
-    for (const pl of settled.props) {
-=======
     this.noReflect.clear();
-    for (const pl of d.props) {
+    for (const pl of settled.props) {
       if (pl.reflect === false) this.noReflect.add(pl.id);
->>>>>>> claude/wq-ixr
       const how = resolveRecipe(pl.recipe, pl.engine, (n) => engine.has(n));
       if (!how) throw new Error(`room ${d.id}: no prop recipe "${pl.recipe}" (stub or pixel matter)`);
       if (how.engine === "pixel") {
