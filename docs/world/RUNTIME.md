@@ -53,7 +53,7 @@ mid-run; restart it after your own edits.
 | A D / arrows | move; W / Up / Space jump (hold for height, again in the air for the double jump) |
 | S / Down + jump | drop through a one-way platform |
 | J / left click, K / Shift / right click, Q, R | the lab's moveset (M1 string, dash, skill, ultimate) |
-| E / Enter (after start) | use the nearest usable thing (a small key glyph shows over it) |
+| E / Enter (after start) | use the nearest usable thing (a small key glyph shows over her head at her interaction point, so it stays put when the prop changes state) |
 | M, the speaker top right | sound on / off (saved) |
 | backquote | debug overlay (fps, scale, room, area, camera mode, streaming, weather, sound, save, travel) + boxes |
 | scroll down | the world closes like a curtain and waits; the website is underneath |
@@ -74,7 +74,7 @@ geometry is authored in H through `h(n)`.
 | | |
 |---|---|
 | World view (design) | 1280 x 720 world px: what scenes and rooms are composed in |
-| Frame (2026-10-01, camera lane) | The frame's HEIGHT is fixed at 864; its WIDTH follows the window (`frameWidthFor`, `config.ts` `FRAME_W`: 1280..2304 in steps of 8: 16:9 1536, 21:9 2016, 16:10 1384, 3:2 1296). The view extends sideways, never stretches, and the scale comes from the window height, so there are no black side borders; windows narrower than 1280:864 letterbox top and bottom only, ultrawides past 8:3 keep pillars. Outside the view is the design view's framing (`ZOOM.exterior` 1.2, player 11% of the view), inside `ZOOM.interior` 1.45 (max 1.8). Attack punch-in, the ult_r zoom and the running look-ahead live in `camera.ts` (`CAMERA.punch`, `CAMERA.ult`, `CAMERA.lookRun`). Earlier: 1536 x 864 world px (`config.ts` `FRAME`, Dex 2026-10-01: "foreground zoom further, the character slightly smaller; indoors could use zoom"). Outside, the whole frame shows (H is ~9% of its height); inside, `viewZoom` zooms in about its centre (see Frame and zoom below) |
+| Frame (2026-10-01, camera lane) | The frame's HEIGHT is fixed at 864; its WIDTH follows the window (`frameWidthFor`, `config.ts` `FRAME_W`: 1280..3072 in steps of 8: 16:9 1536, 21:9 2016, 16:10 1384, 3:2 1296). The view extends sideways, never stretches, and the scale comes from the window height, so there are no black side borders; windows narrower than 1280:864 letterbox top and bottom only, ultrawides past 32:9 keep pillars; the touch rails never reserve black gutters (the picture runs full width under the buttons, `main.ts`). Outside the view is the design view's framing (`ZOOM.exterior` 1.2, player 11% of the view), inside `ZOOM.interior` 1.45 (max 1.8). Attack punch-in, the ult_r zoom and the running look-ahead live in `camera.ts` (`CAMERA.punch`, `CAMERA.ult`, `CAMERA.lookRun`). Earlier: 1536 x 864 world px (`config.ts` `FRAME`, Dex 2026-10-01: "foreground zoom further, the character slightly smaller; indoors could use zoom"). Outside, the whole frame shows (H is ~9% of its height); inside, `viewZoom` zooms in about its centre (see Frame and zoom below) |
 | Player | H = 80 px (~9% of the frame outside, ~11% at the design framing; the old site's hero was ~6%) |
 | Close-up | 144 px render for combat zoom, cut-ins, portraits (`CLOSEUP_ZOOM` = 1.8) |
 | Presentation | `presentRect()`: whole-number nearest when it fills the window (1440p: 2x, 4K: 3x); otherwise sharp-bilinear at the exact fit (1080p: 1.5x; phone landscape 2532x1170: 1.625x). Never plain bilinear. |

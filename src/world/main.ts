@@ -179,9 +179,10 @@ async function boot(): Promise<void> {
       const heldVista = camera.zoneWeight >= 0.95 && camera.zones.some((z) => z.hold !== undefined && camera.still >= z.hold &&
         b.x >= z.x0 && b.x <= z.x1 && (z.y0 === undefined || b.y >= z.y0) && (z.y1 === undefined || b.y <= z.y1));
       const scenic = game.mode === "play" && !game.away && !game.loading && !game.panels.open && camera.closeup < 0.02 && (!!game.sitting || heldVista);
-      const insets = touch.present(scenic, canvas.clientWidth, canvas.clientHeight);
-      const k = canvas.width / Math.max(1, canvas.clientWidth);
-      if (r.presenter.setHorizontalInsets(insets.left * k, insets.right * k)) r.layout();
+      // The rails lay out for a held vista, but the picture always runs full width underneath them:
+      // reserving black gutters pillarboxed phones and shrank the frame (thick top/bottom bands).
+      // The frame's outer columns are scenery past the design view, so the buttons sit over those.
+      touch.present(scenic, canvas.clientWidth, canvas.clientHeight);
       game.frame(now);
       if (game.debug) {
         if (n++ % 6 === 0) debugEl.textContent = game.debugText();

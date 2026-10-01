@@ -294,7 +294,7 @@ float sceneLight(vec2 s, float depth) {
         const rows = { stone: R("stone"), dark: R("dark"), moss: R("moss"), earth: R("earth"), lichen: R("lichen"), tor: R("tor") };
         buildTor(pix, g, x0, y0, rows);
         buildRoad(pix, g, x0, y0, rows);
-        L.push(...splitPix(pix, { name: "road", depth: 1, x: x0, y: y0, reflect: g.Y(B2.flats), reflectFade: 40 * u, dither: 0 }));
+        L.push(...splitPix(pix, { name: "road", depth: 1, x: x0, y: y0, reflect: g.Y(B2.flats), reflectFade: 110 * u, dither: 0 }));
       }
       L.push({ kind: "character", name: "figure", depth: 1, x: g.X(126), ground: g.Y(1.2), rimDir: [-1, -1], height: g.P });
 

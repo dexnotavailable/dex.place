@@ -1324,6 +1324,8 @@ export class WorldGame {
       this.vfx.drawAfterimages(r as unknown as LabRenderer);
     }
     if (this.camera.closeup < 0.02 || reflection) this.drawPlayer();
+    // near terrain (the front slabs a wall or cliff foot is made of) meets the water too: it mirrors at the contact
+    if (reflection) room.drawTerrain(r, true, true);
     if (!reflection) {
       if (this.camera.closeup < 0.02) this.vfx.draw(r as unknown as LabRenderer, "front");
       room.drawProps(this.canvasApi, "front", cx);
@@ -1484,24 +1486,28 @@ export class WorldGame {
     r.sprite({ sheet, sx, sy, sw, sh, x, y: fy - py, flip: p.facing < 0, screen: true, lit: 1 });
   }
 
+  /**
+   * Where the E glyph sits (before its bob): just above the player's head, leaning at most half an H toward
+   * the prop's own origin. Anchored to the player's interaction point rather than the prop's bounds, so a prop
+   * that changes state (a rose window opening, a door swinging, a lamp lighting) and so its bounds does not
+   * make the prompt jump.
+   */
+  promptSpot(): { x: number; y: number } | null {
+    const n = this.near;
+    if (!n || this.mode !== "play") return null;
+    const b = this.player.body;
+    const lean = Math.max(-SCALE.H * 0.5, Math.min(SCALE.H * 0.5, n.prop.x - b.x));
+    return { x: Math.round(b.x + lean), y: Math.round(b.y - SCALE.H - 14) };
+  }
+
   /** A small key glyph over the thing you can use. */
   private drawPrompt(): void {
-    const n = this.near;
-    if (!n || this.mode !== "play") return;
+    const spot = this.promptSpot();
+    if (!spot) return;
     const r = this.r;
-    let x: number;
-    let top: number;
-    if (n.kind === "stub") {
-      const bb = n.prop.bounds();
-      x = Math.round(n.prop.x);
-      top = bb.y;
-    } else {
-      const bb = n.prop.bounds();
-      x = Math.round((bb.x0 + bb.x1) / 2);
-      top = bb.y0;
-    }
     const bob = this.reduced ? 0 : Math.round(Math.sin(this.realTicks * 0.08));
-    const y = Math.round(Math.min(top, this.player.body.y - SCALE.H) - 14 + bob);
+    const x = spot.x;
+    const y = spot.y + bob;
     const ink: RGB = [0.05, 0.05, 0.07];
     const cap: RGB = [0.86, 0.82, 0.72];
     r.rect(x - 6, y - 6, 13, 13, ink, 1, 0.85);

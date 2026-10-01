@@ -166,11 +166,8 @@ const probeItem = (item) => {
     const n = g.near;
     const r = { x: p.x, y: p.y, near: n ? n.prop.id : null };
     if (n && n.prop.id === item.id) {
-      const bb = n.prop.bounds();
-      let px, top;
-      if (n.kind === "stub") { px = Math.round(n.prop.x); top = bb.y; } else { px = Math.round((bb.x0 + bb.x1) / 2); top = bb.y0; }
-      const py = Math.round(Math.min(top, body.y - H) - 14);
-      r.glyph = [px, py];
+      const sp = g.promptSpot();
+      r.glyph = [sp.x, sp.y];
     }
     res.push(r);
   }
@@ -196,11 +193,9 @@ const place = ([x, y]) => {
   const n = g.near;
   let glyph = null;
   if (n) {
-    const bb = n.prop.bounds();
-    let px, top;
-    if (n.kind === "stub") { px = Math.round(n.prop.x); top = bb.y; } else { px = Math.round((bb.x0 + bb.x1) / 2); top = bb.y0; }
-    const py = Math.round(Math.min(top, g.player.body.y - 80) - 14);
-    glyph = { x: px, y: py, inside: px >= vx + (1536 - g.camera.vw) / 2 && px <= vx + (1536 + g.camera.vw) / 2 && py >= vy + (864 - g.camera.vh) / 2 && py <= vy + (864 + g.camera.vh) / 2, view: [vx, vy, Math.round(g.camera.vw), Math.round(g.camera.vh)] };
+    const sp = g.promptSpot();
+    const px = sp.x, py = sp.y;
+    glyph = { x: px, y: py, nearPlayer: Math.abs(px - g.player.body.x) <= 40 + 1e-6 && Math.abs(py - (g.player.body.y - 94)) <= 1, inside: px >= vx + (1536 - g.camera.vw) / 2 && px <= vx + (1536 + g.camera.vw) / 2 && py >= vy + (864 - g.camera.vh) / 2 && py <= vy + (864 + g.camera.vh) / 2, view: [vx, vy, Math.round(g.camera.vw), Math.round(g.camera.vh)] };
   }
   return { near: n ? n.prop.id : null, glyph };
 };
@@ -224,6 +219,12 @@ const sig = () => {
   };
 };
 /** E, recording the sounds and events pixel matter raised and the sounds stub props made (feedback counts as an effect). */
+/** Where the E glyph is now, with who it is for and where the player stands (it must not jump when the prop changes state). */
+const spotNow = () => {
+  const g = window.__world.game;
+  const sp = g.promptSpot();
+  return { id: g.near ? g.near.prop.id : null, x: Math.round(g.player.body.x), spot: sp ? [sp.x, sp.y] : null, room: g.room.def.id };
+};
 const press = () => {
   const g = window.__world.game;
   window.__fb = [];
@@ -315,11 +316,14 @@ for (const room of roomIds) {
     const at = good[0];
     const placed = await page.evaluate(place, [at.x, at.y]);
     if (placed.near !== item.id) { bad("prompt", `after placing the player at (${at.x}, ${at.y}) and stepping the game, the prompt is ${placed.near}`); continue; }
-    if (placed.glyph && !placed.glyph.inside) bad("glyph", `the key glyph at (${placed.glyph.x}, ${placed.glyph.y}) is outside the camera view [${placed.glyph.view}]`);
+    if (placed.glyph && !placed.glyph.nearPlayer) bad("glyph", `the key glyph at (${placed.glyph.x}, ${placed.glyph.y}) is not at the player's interaction point`);
+    else if (placed.glyph && !placed.glyph.inside) bad("glyph", `the key glyph at (${placed.glyph.x}, ${placed.glyph.y}) is outside the camera view [${placed.glyph.view}]`);
     else res.checks.glyph = "ok";
     if (!item.usableNow) { res.checks.effect = "skipped"; continue; }
     // press E and watch
     const s0 = await page.evaluate(sig);
+    const sp0 = await page.evaluate(spotNow);
+    let jump = 0;
     await page.evaluate(press);
     let changes = [];
     let roomChanged = false;
@@ -327,6 +331,9 @@ for (const room of roomIds) {
     for (let k = 0; k < 30; k++) {
       await page.evaluate(tick, 8);
       const s1 = await page.evaluate(sig);
+      const sp1 = await page.evaluate(spotNow);
+      // while the same thing is prompted and she has not moved, the glyph stays put, whatever the prop does (a window opening, a door swinging)
+      if (sp1.room === sp0.room && sp1.id === sp0.id && sp1.x === sp0.x && sp0.spot && sp1.spot) jump = Math.max(jump, Math.abs(sp1.spot[0] - sp0.spot[0]), Math.abs(sp1.spot[1] - sp0.spot[1]));
       for (const c of diff(s0, s1)) if (!changes.includes(c)) changes.push(c);
       if (s1.room !== s0.room) { roomChanged = true; break; }
       if (s1.panel && !s1.trans) break;
@@ -334,6 +341,8 @@ for (const room of roomIds) {
       if (!changes.length && k >= 14) break;
       await page.waitForTimeout(10);
     }
+    if (jump > 2) bad("promptJump", `the E glyph moved ${jump} px while the prop changed state and she stood still`);
+    else res.checks.promptStable = "ok";
     const fb = await page.evaluate(feedback, item);
     res.effect = changes.slice(0, 6);
     if (fb.length) res.feedback = fb.slice(0, 6);

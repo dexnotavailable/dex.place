@@ -91,6 +91,7 @@ vec4 layer(vec2 p, vec2 s) {
       : ""
   }
   vec3 body = ramp(${rowRef(o.row)}, bodyShade, wp, ${f(o.dither)});
+  rl = max(rl, stepd(darkMass(body, refl) * 0.92, 5.0, wp, ${f(o.dither)}));
   vec3 c = mix(body, refl, rl);
 
   // sparkles: short dashes, longer toward the viewer, denser in sun, on bright reflections and ruffles

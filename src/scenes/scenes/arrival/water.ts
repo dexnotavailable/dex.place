@@ -80,6 +80,7 @@ vec4 layer(vec2 p, vec2 s) {
   if (gap < (0.05 + 0.25 * ruff) * k) rs *= 0.45;
   float rl = stepd(rs, 5.0, wp, ${f(o.dither)});
   vec3 body = ramp(${rowRef(o.row)}, mix(0.62, 0.05, pow(k, 0.6)) - 0.08 * ruff, wp, ${f(o.dither)});
+  rl = max(rl, stepd(darkMass(body, refl) * 0.92, 5.0, wp, ${f(o.dither)}));
   vec3 c = mix(body, refl, rl);
 
   // the warm path under the shaft

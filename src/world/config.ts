@@ -36,9 +36,9 @@ export const FRAME: { w: number; h: number } = { w: 1536, h: 864 };
  * set by the window height alone): a wider window gets a wider frame, so the view extends
  * sideways instead of showing black side borders. `min` is where narrower windows stop
  * getting narrower frames (they letterbox top and bottom instead; the design view's width),
- * `max` is 8:3 (beyond that, ultrawides get pillars). Widths are multiples of `step`.
+ * `max` is 32:9 (beyond that, ultrawides get pillars). Widths are multiples of `step`.
  */
-export const FRAME_W = { base: 1536, min: 1280, max: 2304, step: 8 } as const;
+export const FRAME_W = { base: 1536, min: 1280, max: 3072, step: 8 } as const;
 
 /** Frame width for a window of this aspect (width / height); rounds up so the frame covers it. */
 export function frameWidthFor(aspect: number): number {

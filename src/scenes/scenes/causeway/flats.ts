@@ -71,6 +71,7 @@ vec4 layer(vec2 p, vec2 s) {
     rs *= smoothstep(0.0, 0.05, edge);
     float rl = stepd(rs, 5.0, wp, 0.5);
     vec3 body = ramp(${rowRef(o.water)}, mix(0.6, 0.1, pow(k, 0.6)) + sceneLight(s, depth) * 1.2, wp, 0.5);
+    rl = max(rl, stepd(darkMass(body, refl) * 0.92, 5.0, wp, 0.5) * smoothstep(0.0, 0.05, edge));
     c = mix(body, refl, rl);
     // a darker, muddier margin where the water thins over the mud
     if (edge < 0.02) c = mix(c, ramp(${rowRef(o.water)}, 0.12, wp, 0.0), 0.5);

@@ -138,10 +138,18 @@ float reflMaxY() { return uFrame.w - 1.0 - uFrame.y; }
 // Reflections of what stands on the player plane are sharpest at the waterline and break up with distance
 // below it, so a ripple's shear and jitter ease in over ~1.5 H under the world's mirror line (uWl).
 float nearWl(float y) { return uWl < 0.0 ? 1.0 : mix(0.2, 1.0, smoothstep(0.0, 120.0, y - uWl)); }
+// A big dark mass that meets the water (an embankment wall, a cliff foot) must read as a dark mirror image,
+// not a thin teal wash: where the reflected pixel is clearly darker than the water body (and is something, not
+// the buffer's empty black), the reflection takes over (0..1 weight, quantised by the caller).
+float darkMass(vec3 body, vec3 refl) {
+  float lb = dot(body, vec3(0.3, 0.5, 0.2)), lr = dot(refl, vec3(0.3, 0.5, 0.2));
+  return step(0.012, lr) * smoothstep(0.03, 0.14, lb - lr);
+}
 #else
 ivec2 reflPx(float x, float y) { return ivec2(clamp(x, 0.0, uRes.x - 1.0), uRes.y - 1.0 - y); }
 float reflMaxY() { return uRes.y - 1.0; }
 float nearWl(float y) { return 1.0; }
+float darkMass(vec3 body, vec3 refl) { return 0.0; }
 #endif
 `;
 

@@ -368,6 +368,7 @@ vec4 layer(vec2 p, vec2 s) {
   vec3 refl = texelFetch(uRefl, rp, 0).rgb;
   float rl = stepd(mix(${f(o.reflFar ?? 0.85)}, ${f(o.reflNear ?? 0.45)}, pow(k, 0.7)), 5.0, wp, ${f(o.waterDither ?? 0.9)});
   vec3 body = ramp(${rowRef(o.row)}, mix(0.62, 0.05, pow(k, 0.6)), wp, ${f(o.waterDither ?? 0.9)});
+  rl = max(rl, stepd(darkMass(body, refl) * 0.92, 5.0, wp, ${f(o.waterDither ?? 0.9)}));
   vec3 c = mix(body, refl, rl);
   // sparkles: short dashes that switch on and off, denser in the sun pool and on bright reflections
   float lum = dot(refl, vec3(0.3, 0.5, 0.2));
