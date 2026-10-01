@@ -28,10 +28,10 @@ import { buildPalette, hex, paletteDefines, type Hex, type Palette } from "../..
 import { SCALE, playerPx } from "../../scenes/engine/scale.ts";
 import type { BuildCtx, FogSpec, LayerDef, LightOut, SceneDef, SimEnv } from "../../scenes/engine/types.ts";
 import { makeTarget, type Target } from "../render/renderer.ts";
-import { FRAME } from "../config.ts";
+import { FRAME, FRAME_W } from "../config.ts";
 
 /** Extra texture width per side so pan layers cover the frame past the design view. */
-const MARGIN = Math.ceil((FRAME.w - SCALE.view.w) / 2) + 32;
+const MARGIN = Math.ceil((FRAME_W.max - SCALE.view.w) / 2) + 32;
 
 /** Uniforms every world layer can read (weather, wind, time of day). */
 export const WORLD_UNIFORMS = /* glsl */ `
@@ -162,7 +162,7 @@ export class Backdrop {
   reduced = false;
   buildMs = 0;
   stats = { layers: 0, draws: 0, points: 0 };
-  readonly refl: Target;
+  refl: Target;
   private layers: RL[] = [];
   private pal: Palette;
   private programs = new Map<string, Prog>();
@@ -420,6 +420,12 @@ export class Backdrop {
     this.poll();
     if (!this.usesReflection) return;
     const gl = this.gl;
+    if (this.refl.color.w !== FRAME.w) {
+      // the frame changed width (the window's shape changed): rebuild the reflection target
+      gl.deleteFramebuffer(this.refl.fbo);
+      gl.deleteTexture(this.refl.color.tex);
+      this.refl = makeTarget(gl, FRAME.w, FRAME.h);
+    }
     this.gatherLights();
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.refl.fbo);
     gl.viewport(0, 0, FRAME.w, FRAME.h);

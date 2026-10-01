@@ -37,7 +37,7 @@ import type { World as LabWorld } from "../lab/game/world.ts";
 import { FlashGate } from "../scenes/engine/flashes.ts";
 import { Ambient } from "./ambient.ts";
 import { WorldAudio } from "./audio.ts";
-import { FRAME, h, PHYSICS, SCALE, STREAM, ZOOM } from "./config.ts";
+import { CAMERA, FRAME, h, PHYSICS, SCALE, STREAM, ZOOM } from "./config.ts";
 import { Hooks, type WorldApi } from "./hooks.ts";
 import type { PlayerAssets } from "./player/setup.ts";
 import { loopFrameAt } from "./player/frames.ts";
@@ -121,6 +121,7 @@ export class WorldGame {
   private lastSafe: [number, number] = [0, 0];
   private near: Near | null = null;
   private pushes: PropWorld["pushes"] = [];
+  private frameDirty = false;
   private hitProps = new Map<string, Set<string>>();
   private pixelGroups = new Set<string>();
   private insideFor = 0;
@@ -191,6 +192,11 @@ export class WorldGame {
     this.panels = new Panels(r.canvas);
     this.panels.onClose = (k) => this.panelClosed(k);
     this.pixelDraw = new PixelDraw(r.canvas, r.gl);
+    // the window's shape changed the frame's width: the pixel renderer follows now, the camera's zoom next tick
+    r.onFrame = () => {
+      this.pixelDraw.resizeFrame(FRAME.w, FRAME.h);
+      this.frameDirty = true;
+    };
     this.api = this.makeApi();
     this.save.onFlag = (k, v) => {
       this.travel.mark("flag", `${k}=${v}`);
@@ -419,10 +425,11 @@ export class WorldGame {
    */
   private zoomFor(z: number | "fit" | undefined): number {
     const d = this.room.def;
-    const want = z ?? (d.weather.interior ? "fit" : ZOOM.exterior);
-    // a phone held sideways keeps the closer framing everywhere
-    const floor = this.compact() ? ZOOM.interior : 1;
-    if (want !== "fit") return Math.max(floor, Math.min(ZOOM.max, want));
+    const want = z ?? (d.weather.interior ? "fit" : 1);
+    // a phone held sideways keeps a closer framing everywhere
+    const floor = this.compact() ? ZOOM.exterior * 1.1 : ZOOM.exterior;
+    // explicit room zooms are relative to the exterior framing (the global factor)
+    if (want !== "fit") return Math.max(floor, Math.min(ZOOM.max, want * ZOOM.exterior));
     return Math.max(ZOOM.interior, Math.min(ZOOM.max, Math.max(FRAME.w / d.w, FRAME.h / d.h)));
   }
 
@@ -782,8 +789,13 @@ export class WorldGame {
     this.stillFor = moving ? 0 : this.stillFor + 1 / 60;
     this.camera.still = this.stillFor;
     this.camera.arenaActive = this.arenaClamp;
-    if (this.realTicks % 30 === 0 && this.compact() !== this.wasCompact) this.applyCamera(); // rotated or resized
-    this.camera.update(b.x, b.y, this.player.facing, this.room.collision.bounds(), Math.abs(b.vx) > 0.5, b.vy);
+    if (this.frameDirty || (this.realTicks % 30 === 0 && this.compact() !== this.wasCompact)) {
+      this.frameDirty = false;
+      this.applyCamera(); // rotated or resized
+    }
+    // the ultimate's cinematic zoom rides the clip (ease in, hold, ease out in the camera)
+    this.camera.ultActive = this.mode === "play" && this.player.mode === "action" && this.player.clip.hasTag("ult") && !this.player.clip.done;
+    this.camera.update(b.x, b.y, this.player.facing, this.room.collision.bounds(), Math.abs(b.vx) > 0.5, b.vy, b.vx);
     this.touch.cooldowns(this.player.skillCd <= 0, this.player.ultCd <= 0);
     if (++this.audioTick % 12 === 0) this.musicLevel();
     if (this.restDuck > 0) this.restDuck -= 1 / 60;
@@ -1127,8 +1139,14 @@ export class WorldGame {
       }
       return;
     }
+    const hitBefore = clip.hit;
     for (const { box, hb } of hits) {
       const group = `${clip.clip.id}/${hb.group ?? `f${clip.index}`}`;
+      // a quick punch-in as each swing goes active (the ultimate has its own, bigger zoom)
+      if (!clip.hasTag("ult") && !this.pixelGroups.has(`cam:${group}`)) {
+        this.pixelGroups.add(`cam:${group}`);
+        this.camera.punch(hb.heavy ? CAMERA.punch.heavy : CAMERA.punch.light);
+      }
       // pixel matter: the move's preset hit shape, once per hit group (Q and R once per clip)
       if (this.room.pixel) {
         const type: HitType = clip.hasTag("ult") ? "r" : clip.hasTag("skill") ? "q" : hb.heavy ? "heavy" : "slash";
@@ -1158,6 +1176,8 @@ export class WorldGame {
         }
       }
     }
+    // contact: a firmer punch-in on the frame the swing connects
+    if (!hitBefore && clip.hit && !clip.hasTag("ult")) this.camera.punch(CAMERA.punch.heavy * 1.3);
     // clip changed: forget old groups
     if (this.hitProps.size > 24) this.hitProps.clear();
     if (this.pixelGroups.size > 48) this.pixelGroups.clear();
@@ -1383,7 +1403,7 @@ export class WorldGame {
       r.flush();
       r.setTransform(1, [0, 0], null);
     }
-    const punch = this.camera.zoomSteps > 0 ? 1 + this.camera.zoomSteps / Math.max(1, Math.round(r.presenter.rect.scale)) : 1;
+    const punch = (this.camera.zoomSteps > 0 ? 1 + this.camera.zoomSteps / Math.max(1, Math.round(r.presenter.rect.scale)) : 1) * this.camera.actionZoom;
     r.present({
       impact: this.feel.impact,
       zoom: closeup ? Z : punch,

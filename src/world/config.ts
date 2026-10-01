@@ -29,15 +29,34 @@ export const SCALE = {
  * it. Backdrops keep their 1280x720 composition inside it and extend to its
  * edges (backdrop/engine.ts, "frame").
  */
-export const FRAME = { w: 1536, h: 864 } as const;
+export const FRAME: { w: number; h: number } = { w: 1536, h: 864 };
+
+/**
+ * The frame's width follows the window's shape (height is fixed, so the world's scale is
+ * set by the window height alone): a wider window gets a wider frame, so the view extends
+ * sideways instead of showing black side borders. `min` is where narrower windows stop
+ * getting narrower frames (they letterbox top and bottom instead; the design view's width),
+ * `max` is 8:3 (beyond that, ultrawides get pillars). Widths are multiples of `step`.
+ */
+export const FRAME_W = { base: 1536, min: 1280, max: 2304, step: 8 } as const;
+
+/** Frame width for a window of this aspect (width / height); rounds up so the frame covers it. */
+export function frameWidthFor(aspect: number): number {
+  const a = Number.isFinite(aspect) && aspect > 0 ? aspect : 16 / 9;
+  const want = Math.ceil((FRAME.h * a - 1e-6) / FRAME_W.step) * FRAME_W.step;
+  return Math.max(FRAME_W.min, Math.min(FRAME_W.max, want));
+}
 
 export const ZOOM = {
-  /** Outside: the whole frame. */
-  exterior: 1,
-  /** Inside: at least the design view's framing (1536 / 1280), more when that still shows past the room. */
-  interior: FRAME.w / LOCKED.view.w,
+  /**
+   * Outside: the design view's framing (1536 / 1280 = 1.2 of the base frame; the player is 11%
+   * of the view height, was 9.3%). Also the global factor: explicit room zooms are multiplied by it.
+   */
+  exterior: 1536 / LOCKED.view.w,
+  /** Inside: closer still (was 1.2), more when that still shows past the room. */
+  interior: 1.45,
   /** Never closer than this (pixels stay readable, the room still reads as a room). */
-  max: 1.5,
+  max: 1.8,
   /**
    * Short screens (a phone held sideways: CSS height up to this) keep the design view's framing
    * outside too, so she stays readable there.
@@ -70,6 +89,12 @@ export const CAMERA = {
    */
   lookahead: 0.09, // of viewW
   lookaheadRate: 0.035,
+  /** Extra look-ahead at a full run, share of viewW (on top of `lookahead`). */
+  lookRun: 0.04,
+  /** Hit punch: zoom factor added at contact (eased in fast, out slower), per tap. */
+  punch: { light: 0.035, heavy: 0.07, inRate: 0.35, outRate: 0.09 },
+  /** Ultimate: extra zoom (1 = none) and the ease-in, hold and ease-out in ticks (60/s). */
+  ult: { zoom: 0.32, inTicks: 14, holdTicks: 24, outTicks: 28 },
   /** Feet sit at this share of the view height. */
   anchorY: 0.78,
   /** Vertical dead zone in H: small hops don't move the camera. */

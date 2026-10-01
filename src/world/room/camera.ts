@@ -12,6 +12,11 @@
 // zone that takes over only after you've stood still for `hold` seconds, easing
 // in whole pixels), the arena clamp (the view stays on the arena floor while
 // the terminal summons) and an override (sitting: the camera holds on a view).
+// Action camera: a quick eased punch-in as each swing goes active and on contact
+// (punch()), a bigger cinematic zoom on the ultimate (ease in, hold, ease out;
+// ultActive), a running look-ahead that grows with speed, and vertical framing
+// that catches up faster the further she is from the anchor. Reduced motion
+// turns the punches, the ultimate zoom and shake off (actionZoom stays 1).
 // Shake and the zoom punch behave like the lab's camera (same calls, so the
 // lab's Feel and contract events drive it); the close-up zoom eases in for
 // combat and hands the player to the 144 px render path (game.ts).
@@ -58,6 +63,14 @@ export class WorldCamera {
   private offY = 0;
   zoomSteps = 0;
   private zoomLeft = 0;
+  /** Attack punch-in: current extra zoom (eased toward punchGoal, which itself decays). */
+  punchLevel = 0;
+  private punchGoal = 0;
+  /** The ultimate is playing (the game sets it each tick); `ultEase` is its 0..1 ease in, hold, ease out. */
+  ultActive = false;
+  private ultP = 0;
+  private ultHold = 0;
+  ultEase = 0;
   reducedMotion = false;
   /** 0..1 close-up zoom level (eased). */
   closeup = 0;
@@ -69,6 +82,8 @@ export class WorldCamera {
   /** Extra bars requested by the game (cut-ins, scroll to site). */
   extraBars = 0;
   zones: FramingZone[] = [];
+  /** Horizontal speed, px per tick, for the running look-ahead (set by update). */
+  private speedX = 0;
   /** The mode in force (room or area), set by the game each tick. */
   mode: RoomCamera = { mode: "free" };
   /** Seconds the player has stood still (vista holds). */
@@ -150,6 +165,7 @@ export class WorldCamera {
   snapTo(tx: number, ty: number, facing: number, bounds: [number, number, number, number]): void {
     this.viewZoom = this.viewZoomTarget;
     this.look = facing * this.vw * CAMERA.lookahead * 0.5;
+    this.punchLevel = this.punchGoal = this.ultP = this.ultEase = this.speedX = 0;
     this.lookV = 0;
     const [gx, gy] = this.target(tx, ty, bounds);
     this.x = gx;
@@ -159,11 +175,15 @@ export class WorldCamera {
   }
 
   /** One real-time tick (runs through hitstop so shake keeps going). */
-  update(tx: number, ty: number, facing: number, bounds: [number, number, number, number], moving: boolean, vy = 0): void {
+  update(tx: number, ty: number, facing: number, bounds: [number, number, number, number], moving: boolean, vy = 0, vx = 0): void {
     // an area with its own zoom eases into it (a room change snaps, behind the door fade)
     this.viewZoom += (this.viewZoomTarget - this.viewZoom) * (this.reducedMotion ? 1 : 0.05);
     if (Math.abs(this.viewZoomTarget - this.viewZoom) < 0.002) this.viewZoom = this.viewZoomTarget;
-    const wantLook = this.mode.mode === "locked" ? 0 : facing * this.vw * CAMERA.lookahead * (moving ? 1 : 0.5);
+    // look-ahead toward the way she runs (her velocity, else the way she faces), growing to a full run
+    this.speedX += (Math.abs(vx) - this.speedX) * 0.08;
+    const dir = Math.abs(vx) > 0.6 ? Math.sign(vx) : facing;
+    const run = Math.min(1, this.speedX / 2.6);
+    const wantLook = this.mode.mode === "locked" ? 0 : dir * this.vw * (CAMERA.lookahead * (moving ? 1 : 0.5) + CAMERA.lookRun * run);
     this.look += (wantLook - this.look) * CAMERA.lookaheadRate;
     const wantV = this.mode.mode === "free" && this.mode.lookY ? Math.sign(vy) * Math.min(1, Math.abs(vy) / 4) * this.mode.lookY * SCALE.H : 0;
     this.lookV += (wantV - this.lookV) * CAMERA.lookaheadRate;
@@ -177,8 +197,11 @@ export class WorldCamera {
     }
     const fx = this.zoneWeight > 0 ? CAMERA.followX * 0.5 + CAMERA.zoneRate : CAMERA.followX;
     const fy = this.zoneWeight > 0 ? CAMERA.followY * 0.5 + CAMERA.zoneRate : CAMERA.followY;
+    // vertical framing is smooth: slow while the feet are near the anchor, catching up faster the
+    // further she gets from it (a long fall or climb never loses her)
+    const fyk = fy * (1 + Math.min(2.5, Math.abs(gy - this.y) / (SCALE.H * 2.5)));
     this.x += (gx - this.x) * (this.reducedMotion ? Math.min(1, fx * 1.6) : fx);
-    this.y += (gy - this.y) * (this.reducedMotion ? Math.min(1, fy * 1.6) : fy);
+    this.y += (gy - this.y) * (this.reducedMotion ? Math.min(1, fyk * 1.6) : Math.min(0.5, fyk));
     this.clamp(bounds);
     const bt = Math.max(this.barsTarget, this.extraBars);
     this.bars += Math.sign(bt - this.bars) * Math.min(Math.abs(bt - this.bars), PRESENT.bars.rate * 0.1);
@@ -198,6 +221,37 @@ export class WorldCamera {
       this.offY = 0;
     }
     if (this.zoomLeft > 0 && --this.zoomLeft === 0) this.zoomSteps = 0;
+    this.tickAction();
+  }
+
+  /** Attack punch: the goal jumps to `amount`, the level chases it fast, the goal decays slower. */
+  punch(amount: number): void {
+    if (this.reducedMotion) return;
+    this.punchGoal = Math.min(amount * 2, Math.max(this.punchGoal, amount));
+  }
+
+  private tickAction(): void {
+    if (this.reducedMotion) {
+      this.punchLevel = this.punchGoal = this.ultP = this.ultEase = 0;
+      return;
+    }
+    const P = CAMERA.punch;
+    this.punchLevel += (this.punchGoal - this.punchLevel) * P.inRate;
+    this.punchGoal *= 1 - P.outRate;
+    if (this.punchGoal < 0.0008) this.punchGoal = 0;
+    if (this.punchLevel < 0.0008 && this.punchGoal === 0) this.punchLevel = 0;
+    // the ultimate: ease in, hold while it plays (+ a beat), ease out
+    const U = CAMERA.ult;
+    if (this.ultActive) this.ultHold = U.holdTicks;
+    else if (this.ultHold > 0) this.ultHold--;
+    const on = this.ultActive || this.ultHold > 0;
+    this.ultP = Math.min(1, Math.max(0, this.ultP + (on ? 1 / U.inTicks : -1 / U.outTicks)));
+    this.ultEase = this.ultP * this.ultP * (3 - 2 * this.ultP);
+  }
+
+  /** The world zoom the action adds about the player (1 = none): attack punches and the ultimate. */
+  get actionZoom(): number {
+    return 1 + this.punchLevel + this.ultEase * CAMERA.ult.zoom;
   }
 
   private clamp(b: [number, number, number, number]): void {
