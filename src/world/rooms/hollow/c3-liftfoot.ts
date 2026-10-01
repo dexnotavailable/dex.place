@@ -44,7 +44,19 @@ const b = new Box({
   surface: "tile",
 });
 b.floor(X0, X1, FLOOR, undefined, "tile");
-b.prop("hollowFloor", "tiles", X0, FLOOR, { width: h(X1 - X0), depth: 1.3, kind: "tile" }, px);
+// the tile: contact shadows under everything standing on it ([x, width], world H) and the amber from
+// the window and the west doorway lying on its polish ([x, radius, strength])
+const SHADOWS: [number, number][] = [
+  [255.4, 2.7], [259.4, 2.1], [257.6, 0.75], [253.4, 1.15], [260.9, 0.85], [254.1, 0.5], [262.2, 0.7],
+  [268.7, 2.1], [267.6, 0.7], [265.6, 3.2],
+];
+b.prop("hollowFloor", "tiles", X0, FLOOR, {
+  width: h(X1 - X0),
+  depth: 1.3,
+  kind: "tile",
+  shadows: SHADOWS.map(([x, w]) => [x - X0, w]),
+  pools: [[256.1 - X0, 3.2, 0.7], [252.4 - X0, 1.3, 0.6]],
+}, px);
 
 // the lift: its gate (a big door that slides), the car parked in the shaft behind it, the beacon
 b.prop("hollowLiftCar", "lift-car", 265.6, FLOOR, { shaft: 4.4, watch: "lift-gate" }, px);

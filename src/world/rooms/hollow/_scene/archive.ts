@@ -47,6 +47,9 @@ const PALETTE = {
   candle: ["#6d3f1c", "#c7803a", "#ffd494", "#fff0cc"],
   glass: ["#1a3a26", "#2e6644", "#5aa27a"],
   standin: ["#07070a", "#101015", "#24232c", "#a29792"],
+  paper: ["#1a140e", "#2e2418", "#4a3c28", "#6a583c", "#8c7754", "#ad966c"],
+  brass: ["#1c1208", "#3a2610", "#5e4018", "#8a6424", "#b48a3a", "#d6ae5a"],
+  ink: ["#12141a", "#1e2230", "#2e364c", "#465270"],
 };
 
 export function archiveScene(o: ArchiveOpts): SceneDef {
@@ -263,18 +266,26 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
     // the door's case: a moulded oak architrave round a reveal 4 px proud of the leaf all round, a
     // cornice with a pediment board, a worn sill; the leaf (the prop) fills the opening
     {
+      // (the opening is cut 6 px deeper than the leaf all round: the leaf stands back in the wall's
+      // thickness on an oak sill, its head in the architrave's shadow: the prop's sill and recess)
       const lw = Math.round(o.H * 0.35), lh = Math.round(o.H * 1.4);
-      const ow = lw + 4, oh = lh + 4;
+      const ow = lw + 6, oh = lh + 6;
       const top = floorS - oh;
       for (let y = top; y < floorS; y++)
         for (let x = dX - ow; x < dX + ow; x++) {
           const inL = x - (dX - ow), inR = dX + ow - 1 - x, inT = y - top;
           let s = 0.04;
-          if (inT < 4) s = 0.06 - inT * 0.01;
-          else if (inR < 4) s = 0.22 - inR * 0.035; // the reveal facing the reading lamp
-          else if (inL < 4) s = 0.08;
-          put(x, y, s);
+          if (inT < 6) s = 0.04 + (inT === 5 ? 0.02 : 0);
+          else if (inR < 6) s = 0.36 - inR * 0.04 - (inT < 16 ? 0.1 : 0); // the reveal facing the reading lamp
+          else if (inL < 6) s = 0.1 - inL * 0.008;
+          put(x, y, s + wallTex("boards", x, y, 6) * 0.3);
         }
+      // the sill: an oak threshold proud of the boards, its nose lit, worn in the middle, its contact
+      // shadow where it meets the floor
+      for (let x = dX - ow - 16; x < dX + ow + 16; x++) {
+        const worn = Math.abs(x - dX) < lw - 6 ? 1 : 0;
+        for (let q = worn; q < 6; q++) put(x, floorS - 6 + q, q === worn ? 0.56 : q === worn + 1 ? 0.4 : q === 5 ? 0.08 : 0.3 - q * 0.02);
+      }
       const aw = 14;
       for (let y = top - aw; y < floorS; y++)
         for (let x = dX - ow - aw; x < dX + ow + aw; x++) {
@@ -283,7 +294,8 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
           const dEdge = Math.min(x - (dX - ow - aw), dX + ow + aw - 1 - x, y - (top - aw));
           // a three-step moulding: outer bead, flat, inner bead
           let s = dEdge < 2 ? 0.44 : dEdge < 4 ? 0.22 : dEdge < 10 ? 0.38 + ((x + y) % 5 === 0 ? -0.02 : 0) : dEdge < 12 ? 0.52 : 0.26;
-          if (y >= floorS - 14) s = 0.42 + (y === floorS - 14 ? 0.12 : 0); // plinth blocks
+          if (y >= floorS - 20) s = 0.42 + (y === floorS - 20 ? 0.12 : 0) + (dEdge === 0 ? -0.1 : 0); // plinth blocks
+          if (y >= floorS - 6) continue; // the sill runs across the plinths
           put(x, y, s);
         }
       // cornice and pediment board
@@ -295,6 +307,186 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
           put(x, y, ly === 0 ? 0.56 : ly < 3 ? 0.42 : ly === 10 ? 0.16 : ly < 10 ? 0.34 : 0.3 + (ly === 21 ? -0.1 : 0));
         }
       // the reading lamp's light on the case's right side
+    }
+    // the archive's fittings, built into the two stretches of panelling (round 1 left them as large
+    // empty planes): over the product bays a card catalogue, the chart of the Round in a gilt frame
+    // under its picture lamp, and pigeonholes of rolled charts; over the door a wall of pigeonholes
+    // with scrolls, bundles and ledgers, and a carved name board. Each sits in a moulded case let into
+    // the panelling (a lit top edge, a shadow under it), so it reads as part of the wall
+    {
+      const caseBox = (x0: number, y0: number, x1: number, y1: number): void => {
+        // a moulded case: lit top and near edge, dark far edge, the shadow it throws on the panel under it
+        for (let y = y0 - 5; y < y1 + 6; y++)
+          for (let x = x0 - 5; x < x1 + 5; x++) {
+            if (x >= x0 && x < x1 && y >= y0 && y < y1) continue;
+            let s = 0.32 + (y < y0 ? 0.08 : 0) + (y >= y1 ? -0.02 : 0);
+            if (y === y0 - 5) s = 0.5;
+            else if (x === x0 - 5) s = 0.44;
+            else if (x === x1 + 4) s = 0.14;
+            else if (y === y1 + 5) s = 0.14;
+            else if (y === y0 - 1 || x === x0 - 1) s = 0.16; // the inner arris into the case
+            put(x, y, s);
+          }
+        for (let q = 0; q < 6; q++) for (let x = x0 - 3; x < x1 + 7; x++) bump(x, y1 + 6 + q, -0.07 + q * 0.012);
+      };
+      const drawers = (x0: number, y0: number, x1: number, y1: number, seed: number): void => {
+        caseBox(x0, y0, x1, y1);
+        const cw = 21, ch = 14;
+        for (let y = y0; y < y1; y++)
+          for (let x = x0; x < x1; x++) {
+            const lx = (x - x0) % cw, ly = (y - y0) % ch;
+            const col = Math.floor((x - x0) / cw), row = Math.floor((y - y0) / ch);
+            if (lx < 2 || ly < 2) {
+              put(x, y, 0.08);
+              continue;
+            }
+            let s = 0.3 + hashInt(col, row, seed) * 0.04;
+            if (ly === 2) s = 0.42;
+            else if (lx === 2) s = 0.38;
+            else if (ly === ch - 1) s = 0.18;
+            else if (lx === cw - 1) s = 0.2;
+            put(x, y, s);
+            // the label holder (brass rim, a card in it) and the pull under it
+            const mx = lx - Math.floor(cw / 2), my = ly - 5;
+            if (Math.abs(mx) <= 4 && my >= -1 && my <= 2) {
+              const rim = Math.abs(mx) === 4 || my === -1 || my === 2;
+              if (rim) put(x, y, my === -1 ? 0.6 : 0.42, R("brass"));
+              else put(x, y, 0.5 + (hashInt(x, y, seed + col) < 0.25 ? -0.2 : 0), R("paper"));
+            }
+            if (Math.abs(mx) <= 2 && (ly === 10 || ly === 11)) put(x, y, ly === 10 ? 0.62 : 0.34, R("brass"));
+          }
+      };
+      const holes = (x0: number, y0: number, x1: number, y1: number, cw: number, ch: number, seed: number): void => {
+        caseBox(x0, y0, x1, y1);
+        for (let y = y0; y < y1; y++)
+          for (let x = x0; x < x1; x++) {
+            const lx = (x - x0) % cw, ly = (y - y0) % ch;
+            // the dividers: 3 px of oak, the shelf's lip lit, the upright's near face lit
+            if (ly < 3) {
+              put(x, y, ly === 0 ? 0.46 : ly === 1 ? 0.32 : 0.2);
+              continue;
+            }
+            if (lx < 3) {
+              put(x, y, lx === 0 ? 0.36 : lx === 1 ? 0.28 : 0.16);
+              continue;
+            }
+            // inside: dark at the back, the shelf's shadow at the top
+            put(x, y, 0.05 + (ly > ch - 4 ? 0.03 : 0) - (ly < 6 ? 0.02 : 0));
+          }
+        // contents, one kind per hole: rolled charts end-on, a tied bundle, a stack of ledgers, empty
+        for (let row = 0; row * ch < y1 - y0 - 3; row++)
+          for (let col = 0; col * cw < x1 - x0 - 3; col++) {
+            const hx = x0 + col * cw + 3, hy = y0 + row * ch + 3, iw = cw - 3, ih = ch - 3;
+            if (hx + iw > x1 || hy + ih > y1) continue;
+            const k = hashInt(col, row, seed);
+            if (k < 0.45) {
+              // scrolls, end-on: rings of paper with a dark core, stacked in a little pyramid
+              const rr = (ih > 16 ? 3 : 2) + (hashInt(row, col, seed + 5) > 0.5 ? 1 : 0);
+              const n = Math.max(1, Math.floor(iw / (rr * 2 + 1)) - (k < 0.2 ? 1 : 0));
+              for (let i = 0; i < n; i++)
+                for (const lift of i % 2 && n > 2 ? [0, 1] : [0]) {
+                  const cx = hx + rr + 1 + i * (rr * 2 + 1), cy = hy + ih - rr - 1 - lift * (rr * 2 - 1);
+                  for (let y = -rr; y <= rr; y++)
+                    for (let x = -rr; x <= rr; x++) {
+                      const d = Math.hypot(x, y);
+                      if (d > rr + 0.3) continue;
+                      put(cx + x, cy + y, d < 1.2 ? 0.12 : 0.36 + (x + y < 0 ? 0.16 : 0) - (d > rr - 0.6 ? 0.08 : 0), R("paper"));
+                    }
+                }
+            } else if (k < 0.7) {
+              // a bundle of papers, tied with red tape
+              const bw = iw - 4, bh2 = Math.min(ih - 4, 10);
+              for (let y = 0; y < bh2; y++) for (let x = 0; x < bw; x++) put(hx + 2 + x, hy + ih - bh2 + y, 0.32 + (y % 3 === 0 ? 0.12 : 0) + (x === 0 ? 0.06 : 0), R("paper"));
+              for (let y = 0; y < bh2; y++) put(hx + 2 + Math.floor(bw / 2), hy + ih - bh2 + y, 0.5, R("spine"));
+            } else if (k < 0.88) {
+              // ledgers lying flat, spines out
+              let y = hy + ih - 1;
+              for (let n = 0; y > hy + 4 && n < 4; n++) {
+                const lh = 3 + (hashInt(n, col, seed + row) > 0.5 ? 1 : 0);
+                const rowk = hashInt(n, row, seed + 3);
+                for (let q = 0; q < lh; q++) for (let x = hx + 1 + (n % 2); x < hx + iw - 1 - (n % 3); x++) put(x, y - q, 0.24 + (q === lh - 1 ? 0.1 : 0), rowk < 0.4 ? R("spine") : rowk < 0.7 ? R("spine2") : R("spine3"));
+                y -= lh;
+              }
+            }
+          }
+      };
+      // over the product bays
+      const p0 = rx(o.products[0]), p1 = rx(o.products[1]);
+      const bandT = ceilS + 46, bandB = floorS - Math.round(o.H * 2.82);
+      const third = Math.round((p1 - p0) / 3);
+      drawers(p0 + 14, bandT + 8, p0 + third - 10, bandB, 31);
+      holes(p1 - third + 10, bandT + 8, p1 - 14, bandB, 24, 20, 37);
+      // the chart of the Round: a gilt frame, parchment, the ring and its five places, the red route
+      {
+        const mx0 = p0 + third + 4, mx1 = p1 - third - 4, my0 = bandT - 4, my1 = bandB + 4;
+        const cx = (mx0 + mx1) / 2, cy = (my0 + my1) / 2 - 4;
+        for (let y = my0; y < my1; y++)
+          for (let x = mx0; x < mx1; x++) {
+            const e = Math.min(x - mx0, mx1 - 1 - x, y - my0, my1 - 1 - y);
+            if (e < 7) {
+              // the frame: a lit outer bead, a hollow, a lit inner bead
+              const lit = x - mx0 + (y - my0) < (mx1 - mx0 + my1 - my0) / 2;
+              put(x, y, (e === 0 ? 0.3 : e === 1 ? 0.62 : e < 4 ? 0.44 : e === 4 ? 0.26 : e === 5 ? 0.56 : 0.2) + (lit ? 0.04 : -0.06), R("brass"));
+              continue;
+            }
+            // parchment, foxed toward its edges, a grid of faint lines
+            let s = 0.5 - Math.max(0, 14 - e) * 0.012 + (hashInt(x >> 2, y >> 2, 41) - 0.5) * 0.06;
+            if ((x - mx0) % 16 === 0 || (y - my0) % 16 === 0) s -= 0.05;
+            put(x, y, s, R("paper"));
+          }
+        const ry = (my1 - my0) * 0.28, rxx = ry * 1.3;
+        const ring = (x: number, y: number): number => Math.hypot((x - cx) / rxx, (y - cy) / ry);
+        for (let y = Math.floor(cy - ry - 6); y < cy + ry + 6; y++)
+          for (let x = Math.floor(cx - rxx - 8); x < cx + rxx + 8; x++) {
+            const d = ring(x, y);
+            if (d > 0.82 && d < 1.12) put(x, y, d > 0.9 && d < 1.04 ? 0.44 : 0.3, R("ink"));
+            else if (d > 0.74 && d < 1.2 && (x + y) & 1) put(x, y, 0.36, R("paper"));
+          }
+        // the five places round the ring: Ringwater (on it), the Shore and Plain, the Hollow, the
+        // Spire, the Chapel; a dot each, the Spire a mark that goes up, the Hollow ringed in brass
+        const places: [number, number][] = [[-1.0, 0.2], [0.95, -0.35], [0.3, 1.02], [-0.25, -1.05], [0.9, 0.62]];
+        const marks: [number, number][] = [];
+        for (const [i, [a, bb]] of places.entries()) {
+          const x = Math.round(cx + a * rxx), y = Math.round(cy + bb * ry);
+          marks.push([x, y]);
+          for (let q = -2; q <= 2; q++) for (let w = -2; w <= 2; w++) if (Math.abs(q) + Math.abs(w) < 4) put(x + w, y + q, 0.22, R("ink"));
+          if (i === 3) for (let q = 0; q < 12; q++) put(x, y - 3 - q, 0.22, R("ink"));
+          if (i === 2) for (let t = 0; t < Math.PI * 2; t += 0.2) put(Math.round(x + Math.cos(t) * 5), Math.round(y + Math.sin(t) * 5), 0.55, R("brass"));
+        }
+        // the route in red, dashed, place to place
+        for (let i = 0; i + 1 < marks.length; i++) {
+          const [ax, ay] = marks[i]!, [bx, by] = marks[i + 1]!;
+          const n = Math.round(Math.hypot(bx - ax, by - ay));
+          for (let t = 3; t < n - 3; t++) if (t % 5 < 3) put(Math.round(ax + ((bx - ax) * t) / n), Math.round(ay + ((by - ay) * t) / n), 0.5, R("spine"));
+        }
+        // a compass rose in the corner, a title cartouche at the foot
+        const kx = mx1 - 22, ky = my0 + 22;
+        for (let q = -9; q <= 9; q++) (put(kx, ky + q, 0.26, R("ink")), put(kx + q, ky, 0.26, R("ink")));
+        for (let q = -4; q <= 4; q++) (put(kx + q, ky + q, 0.34, R("ink")), put(kx + q, ky - q, 0.34, R("ink")));
+        for (let x = Math.round(cx - 30); x < cx + 30; x++)
+          for (let y = my1 - 22; y < my1 - 12; y++) put(x, y, y === my1 - 22 || y === my1 - 13 ? 0.3 : 0.44 + (y === my1 - 18 && x % 4 < 3 && Math.abs(x - cx) < 24 ? -0.2 : 0), R("paper"));
+        // the picture lamp: a brass bar on a stem over the frame, its light falling on the chart
+        for (let x = Math.round(cx - 22); x < cx + 22; x++) (put(x, my0 - 12, 0.6, R("brass")), put(x, my0 - 11, 0.3, R("brass")), put(x, my0 - 10, 0.5, R("candle"), true));
+        for (let q = 1; q < 10; q++) put(Math.round(cx), my0 - 12 - q, 0.4, R("brass"));
+        pool(bump, cx, my0 + 20, (mx1 - mx0) * 0.6, (my1 - my0) * 0.7, 0.14, 4, 43);
+      }
+      // over the door: pigeonholes up to the frieze and a carved name board on the cornice
+      {
+        const caseTop = floorS - (Math.round(o.H * 1.4) + 4) - 14 - 22;
+        holes(dX - 66, ceilS + 46, dX + 66, caseTop - 34, 22, 22, 53);
+        for (let y = caseTop - 26; y < caseTop - 8; y++)
+          for (let x = dX - 46; x < dX + 46; x++) {
+            const e = Math.min(x - (dX - 46), dX + 45 - x, y - (caseTop - 26), caseTop - 9 - y);
+            let s = e === 0 ? 0.5 : e < 3 ? 0.34 : 0.26;
+            // carved letters: blocky strokes, lit on their upper edge (no real word: the archive's mark)
+            const lx = x - (dX - 36), ly = y - (caseTop - 21);
+            if (lx >= 0 && lx < 72 && ly >= 0 && ly < 8 && lx % 9 < 6) {
+              const bit = hashInt(Math.floor(lx / 3), Math.floor(ly / 3), 61) < 0.55;
+              if (bit) s = ly % 3 === 0 ? 0.46 : 0.14;
+            }
+            put(x, y, s);
+          }
+      }
     }
     // beams under the ceiling, every 3 H, with brackets
     for (let bx = Math.round(o.H * 1.5); bx < o.roomW; bx += o.H * 3) {
@@ -332,8 +524,15 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
     for (let y = ceilS; y < floorS; y++) for (let x = -8; x < o.roomW + 8; x++) if (!inArch(x, y)) bump(x, y, 0.09 + ((y - ceilS) / (floorS - ceilS)) * 0.06);
     for (const [wx, hy, k] of o.lights) {
       const lx2 = rx(wx), ly2 = floorS - hy * o.H;
-      const rad = o.H * (1 + k * 1.5);
-      pool(bump, lx2, ly2 + rad * 0.15, rad, rad * 1.05, 0.08 + k * 0.16, 4, Math.round(wx * 10));
+      const rad = o.H * (1.2 + k * 1.8);
+      pool(bump, lx2, ly2 + rad * 0.15, rad, rad * 1.05, 0.14 + k * 0.3, 5, Math.round(wx * 10));
+    }
+    // the light is all low (candles, a table lamp): the wall darkens toward the ceiling, so the
+    // pools read as light and the shelves go up into the dark
+    for (let y = ceilS; y < floorS; y++) {
+      const t = 1 - (y - ceilS) / (floorS - ceilS);
+      if (t < 0.45) continue;
+      for (let x = -8; x < o.roomW + 8; x++) if (!inArch(x, y) && ((x ^ y) & 1 || t > 0.6)) bump(x, y, -(t - 0.45) * 0.18);
     }
     // occlusion: the floor's edge, the corners under the beams
     for (let q = 0; q < 10; q++) for (let x = -8; x < o.roomW + 8; x++) bump(x, floorS - 1 - q, -0.06 + q * 0.006);

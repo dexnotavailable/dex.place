@@ -83,6 +83,8 @@ export interface MarketOpts {
   plaque?: [number, number];
   /** The hearth (world x). */
   hearth: number;
+  /** Where the ledge's supports run (world x): posts under the girder, straps on the face. */
+  ribs?: number[];
 }
 
 export function marketScene(o: MarketOpts): SceneDef {
@@ -97,6 +99,10 @@ export function marketScene(o: MarketOpts): SceneDef {
     awng: ["#2a1e0e", "#46321a", "#6a4c26", "#8e6a36"],
     shop: ["#5a2c10", "#a2521c", "#e08a3a", "#f0a650"],
     furn: ["#5a1a08", "#a8400e", "#e8761e", "#ffb050", "#ffe6a8"],
+    // lit glass seen through iron and stone: the archive's fanlight, the hearth hall's oculi. One
+    // step less saturated and darker than the street's windows, so they glow without pulling the eye
+    fan: ["#1e140e", "#3a2618", "#5e3e24", "#8a5e36", "#b4824c", "#d4a66a"],
+    oculus: ["#22140c", "#422614", "#6a3e1c", "#94582a", "#b87a40", "#d29a5a"],
   };
   const ref = o.ref;
   return lifted(amber, {
@@ -225,6 +231,8 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
     const ox = -Math.round(span / 2) - 4;
     const put = putter(pix, ox + Math.round(span / 2), 0, R("wall"));
     // put() takes room x (the layer x is room x - span / 2)
+    /** An emissive pixel at a chosen shade (lit glass that falls off, not one flat colour). */
+    const glow = (x: number, y: number, s: number, row: number): void => pix.set(Math.round(x - ox - Math.round(span / 2)), Math.round(y), s, row, 0, true);
     const Y = (wy: number): number => o.street - (wy - -32) * o.H;
     const X = rx;
     // parapet over the drop wherever no house stands behind the street
@@ -236,34 +244,86 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
     }
     if (at < o.x0 + o.roomW / o.H) open.push([at, o.x0 + o.roomW / o.H]);
     for (const [a, b] of open) parapet(pix, ox + Math.round(span / 2), 0, { x0: X(a), x1: X(b), top: o.street - Math.round(o.H * 0.55), bottom: o.street + 40, row: R("wall"), seed: 7 });
-    // under the street: the ledge is a slab on a deep girder, with trusses, pipes and a few
-    // work lamps hanging into the drop (the street's flagstones are pixel matter, 1.2 H deep)
+    // under the street: the ledge is a slab on a riveted plate girder (its top tucked under the
+    // flagstones' dark foot, so there is no seam), carried by posts that run on down into the drop
+    // at the same x as the iron straps on the ledge's face and the walkway's columns above, with
+    // knee braces, a lattice between them, cables sagging post to post, and work lamps hanging into
+    // the drop. Lit from below by the furnaces in the drop (a warm under-edge), from above by nothing
     {
-      const g0 = o.street + Math.round(o.H * 1.2);
+      const g0 = o.street + Math.round(o.H * 1.2) - 3;
+      const GH = 28;
       for (let x = 0; x < o.roomW; x++) {
-        for (let y = g0; y < g0 + 26; y++) {
-          let s = 0.14;
-          if (y === g0) s = 0.3;
-          else if (y < g0 + 4) s = 0.2;
-          else if (y > g0 + 21) s = 0.18;
-          else if (x % 48 < 3) s = 0.2;
-          put(x, y, s);
+        for (let y = g0; y < g0 + GH; y++) {
+          const q = y - g0;
+          let s: number;
+          if (q < 5) s = 0.16 + (q === 4 ? 0.1 : q === 3 ? 0.04 : 0); // top flange, in the slab's shadow, its outer edge catching light
+          else if (q >= GH - 5) s = 0.27 + (q === GH - 1 ? 0.12 : q === GH - 5 ? 0.08 : 0); // bottom flange, lit from the drop below
+          else {
+            // the web: stiffener plates every 48 px (lit edge, dark edge), rivet rows, rust weeping
+            const st = x % 48;
+            s = 0.21 + (q - 5) * 0.004;
+            if (st < 5) s = st === 0 ? 0.34 : st === 4 ? 0.1 : 0.24;
+            else if (st < 9) s -= 0.04 - (st - 5) * 0.01;
+            if ((q === 7 || q === GH - 8) && x % 8 === 3) s += 0.14;
+            if (hashInt(Math.floor(x / 3), q, 23) < 0.07 && st > 8) s -= 0.05;
+          }
+          put(x, y, s + wallTex("stone", x, y, 21) * 0.15, q >= GH - 2 ? R("furnwall") : R("wall"));
         }
-        // truss under the girder
+        // the lattice under the girder, between the posts
         const tw = 56;
         const ph = (x % (tw * 2)) / tw;
-        const zy = Math.round(g0 + 26 + (ph < 1 ? ph : 2 - ph) * tw);
-        put(x, zy, 0.14);
-        put(x, zy + 1, 0.08);
-        put(x, g0 + 26 + tw, 0.16);
-        put(x, g0 + 27 + tw, 0.08);
+        const zy = Math.round(g0 + GH + (ph < 1 ? ph : 2 - ph) * tw);
+        put(x, zy, 0.18);
+        put(x, zy + 1, 0.1);
+        put(x, g0 + GH + tw, 0.2);
+        put(x, g0 + GH + tw + 1, 0.12, R("furnwall"));
+      }
+      // posts: down from the girder into the drop, lit on the side toward the opening's light, a
+      // knee brace each side, a bolted base plate at the girder
+      for (const wx of o.ribs ?? []) {
+        const cx = X(wx);
+        const lit = cx < o.roomW * 0.6 ? 1 : -1;
+        for (let y = g0; y < o.roomH; y++)
+          for (let k = -5; k <= 5; k++) {
+            let s = 0.19 + (k === 5 * lit ? 0.12 : k === 4 * lit ? 0.05 : k === -5 * lit ? -0.08 : 0);
+            if ((y - g0) % 36 < 2) s += 0.05;
+            // the drop's haze takes the post as it goes down
+            s += Math.min(0.08, ((y - g0) / (o.H * 4)) * 0.08);
+            put(cx + k, y, s, R("wall"));
+          }
+        for (let i = 0; i < 30; i++)
+          for (const side of [-1, 1]) {
+            const x = cx + side * (6 + i), y = g0 + GH + 30 - i;
+            put(x, y, 0.22);
+            put(x, y + 1, 0.14);
+          }
+        for (let q = -8; q <= 8; q++) for (let y = g0 + GH; y < g0 + GH + 4; y++) put(cx + q, y, 0.3 + (y === g0 + GH ? 0.08 : 0));
+      }
+      // cables sagging post to post under the girder
+      const posts = [...(o.ribs ?? [])].map(X).sort((p, q) => p - q);
+      for (let n = 0; n + 1 < posts.length; n++) {
+        const xa = posts[n]! + 6, xb = posts[n + 1]! - 6;
+        if (xb - xa < 40) continue;
+        for (const [dy, sag] of [[GH + 8, 26], [GH + 14, 44]] as [number, number][]) {
+          if ((n + dy) % 3 === 0 && sag > 30) continue;
+          for (let x = xa; x <= xb; x++) {
+            const t = (x - xa) / (xb - xa);
+            const y = Math.round(g0 + dy + Math.sin(t * Math.PI) * sag * (0.8 + hashInt(n, dy, 5) * 0.4));
+            put(x, y, 0.1);
+            if (t > 0.3 && t < 0.7 && x % 2) put(x, y + 1, 0.06);
+          }
+        }
       }
       const r = (k: number): number => hashInt(k, 3, 17);
       for (let k = 0; k < o.roomW / 90; k++) {
         const x = Math.round(k * 90 + r(k) * 60);
         const len = 30 + Math.round(r(k + 99) * 120);
-        for (let y = g0 + 26; y < g0 + 26 + len; y++) (put(x, y, 0.12), put(x + 1, y, 0.06));
-        if (r(k + 7) < 0.3) for (let y = 0; y < 3; y++) for (let q = -1; q < 3; q++) put(x + q, g0 + 26 + len + y, 0.9, R("lamp"), true);
+        for (let y = g0 + GH; y < g0 + GH + len; y++) (put(x, y, 0.14), put(x + 1, y, 0.08));
+        if (r(k + 7) < 0.3) {
+          for (let y = 0; y < 3; y++) for (let q = -1; q < 3; q++) put(x + q, g0 + GH + len + y, 0.9, R("lamp"), true);
+          // its light on the girder's underside and the posts near it
+          pool(bumper(pix, ox + Math.round(span / 2), 0), x, g0 + GH + len - 10, 46, 40, 0.08, 2, k);
+        }
       }
     }
     // the archive block: two storeys of soot-dark brick from the street to the walkway (its roof is
@@ -342,73 +402,107 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
         put(dp + 2, y, 0.1);
         if ((y - top) % 44 === 0) for (let q = -2; q < 5; q++) put(dp + q, y, 0.36);
       }
-      // the doorway, built into the wall (the door prop is only the leaf: pixel/props/hollow/doorway.ts).
-      // The opening is 4 px wider and taller than the leaf on each side, so the reveal's faces show
-      // round it (lit toward the lamp, dark on the far side); cut-stone jambs, a lintel slab, a
-      // relieving arch over it whose tympanum carries the book mark, a worn step
+      // the doorway, built into the wall (the door prop is only the leaf: pixel/props/hollow/doorway.ts,
+      // warmed to the wall's light, its foot clear so it stands on the threshold, its head in the
+      // lintel's shadow). The opening is 6 px wider and taller than the leaf on each side, so the
+      // reveal's faces show round it: the return lit on the near side, dark on the far side and under
+      // the lintel, so the leaf reads as set back in the wall's thickness. Cut-stone jambs, a lintel
+      // slab, a relieving arch whose tympanum is an iron fanlight lit from the archive inside (the
+      // book mark is its hub), a keystone, a worn threshold step with its contact shadow
       const dX = X(o.door);
       const lw = Math.round(o.H * 0.35); // half the leaf (0.7 H)
       const lh = Math.round(o.H * 1.4);
-      const ow = lw + 4, oh = lh + 4;
+      const ow = lw + 6, oh = lh + 6;
       const jw = 16;
       const lintB = o.street - oh, lintT = lintB - 16;
-      const ahw = ow + jw, rise = 30, ring = 18;
+      const ahw = ow + jw, rise = 38, ring = 18;
       const archY = (x: number, r: number, h2: number): number => lintT - Math.sqrt(Math.max(0, 1 - ((x - dX) / r) ** 2)) * h2;
-      // the tympanum: recessed stone under the arch, in shadow at its top
+      // the fanlight: a stone border under the arch, iron spokes from a hub, a ring bar, warm glass
+      // that is brightest low by the hub and falls off toward the arch (soft, not a flat disc)
       for (let y = lintT - rise - 1; y < lintT; y++)
         for (let x = dX - ahw; x < dX + ahw; x++) {
           if (y < archY(x, ahw, rise)) continue;
-          put(x, y, 0.17 + wallTex("stone", x, y, 53) * 0.5 - (y < lintT - rise + 8 ? 0.04 : 0));
+          const inner = y >= archY(x, ahw - 5, rise - 5) && Math.abs(x - dX) < ahw - 5;
+          if (!inner) {
+            put(x, y, 0.3 + wallTex("stone", x, y, 53) * 0.4 + (y > archY(x, ahw, rise) + 2 ? -0.06 : 0.06));
+            continue;
+          }
+          const ang = Math.atan2(lintT - y, x - dX); // 0 .. PI over the half wheel
+          const rad = Math.hypot((x - dX) / (ahw - 5), (lintT - y) / (rise - 5));
+          const spoke = Math.abs(((ang / Math.PI) * 8) % 1 - 0.5) > 0.5 - 0.9 / Math.max(6, Math.hypot(x - dX, lintT - y));
+          const ringBar = Math.abs(rad - 0.62) < 0.05;
+          if (spoke || ringBar) {
+            put(x, y, 0.2 + (y < lintT - 2 && (x - dX) * 0.3 + (lintT - y) * 0.2 > 0 ? 0.05 : 0), R("back"));
+            continue;
+          }
+          const k = Math.max(0, 1 - rad);
+          // a dithered step between the glass's tones, so the falloff has no bands
+          const v = 0.27 + k * 0.4 + ((x + y) % 2 ? 0.03 : -0.03) - (y < lintT - rise + 9 ? 0.06 : 0);
+          glow(x, y, v, R("fan"));
         }
-      // the reveal round the leaf, then the dark opening behind it (seen when the leaf swings)
+      // the reveal round the leaf: under the lintel in deep shadow, the near return lit, the far one
+      // dark; the dark beyond behind the leaf (seen when it swings)
       for (let y = lintB; y < o.street; y++)
         for (let x = dX - ow; x < dX + ow; x++) {
           const inL = x - (dX - ow), inR = dX + ow - 1 - x, inT = y - lintB;
           let s = 0.04;
-          if (inT < 4) s = 0.07 - inT * 0.01;
-          else if (inL < 4) s = 0.24 - inL * 0.04;
-          else if (inR < 4) s = 0.08;
-          put(x, y, s + wallTex("stone", x, y, 55) * 0.3);
+          if (inT < 6) s = 0.03 + (inT === 5 ? 0.02 : 0);
+          else if (inL < 6) s = 0.42 - inL * 0.045 - (inT < 16 ? 0.12 : 0) + wallTex("stone", x, y, 55) * 0.3;
+          else if (inR < 6) s = 0.1 - inR * 0.01;
+          put(x, y, s);
         }
       // jambs: long and short blocks, the arris into the opening lit on the lamp side
-      for (let y = lintB; y < o.street - 6; y++)
+      for (let y = lintB; y < o.street - 8; y++)
         for (const side of [-1, 1]) {
           const k = Math.floor((o.street - y) / 22);
           const wid = jw + (k % 2 ? 8 : 0);
           for (let q = 0; q < wid; q++) {
             const x = side < 0 ? dX - ow - wid + q : dX + ow + q;
             const iy = (o.street - y) % 22;
-            let s = 0.33 + wallTex("stone", x, y, 57) * 0.5;
-            if (iy === 0) s -= 0.12;
+            let s = 0.4 + wallTex("stone", x, y, 57) * 0.5;
+            if (iy === 0) s -= 0.14;
             else if (iy === 21) s += 0.1;
             const arris = side < 0 ? q === wid - 1 : q === 0;
             const outer = side < 0 ? q === 0 : q === wid - 1;
-            if (arris) s += side < 0 ? 0.14 : 0.04;
-            if (outer) s -= 0.08;
+            if (arris) s += side < 0 ? 0.16 : 0.04;
+            if (outer) s -= 0.1;
             put(x, y, s);
           }
         }
       // the lintel: one slab, lit along its top, a shadow under it on the reveal
       for (let y = lintT; y < lintB; y++)
-        for (let x = dX - ahw - 6; x < dX + ahw + 6; x++) put(x, y, 0.35 + (y === lintT ? 0.14 : y === lintT + 1 ? 0.06 : y === lintB - 1 ? -0.1 : 0) + wallTex("stone", x * 3, y, 58) * 0.25 + (x === dX - ahw - 6 ? 0.08 : x === dX + ahw + 5 ? -0.08 : 0));
-      // the relieving arch: voussoirs and a keystone
+        for (let x = dX - ahw - 6; x < dX + ahw + 6; x++) put(x, y, 0.44 + (y === lintT ? 0.14 : y === lintT + 1 ? 0.06 : y === lintB - 1 ? -0.14 : 0) + wallTex("stone", x * 3, y, 58) * 0.25 + (x === dX - ahw - 6 ? 0.08 : x === dX + ahw + 5 ? -0.1 : 0));
+      // the relieving arch: voussoirs and a keystone, two steps brighter than the brick round them
       for (let t = 0; t <= Math.PI; t += 0.002)
         for (let k = 0; k < ring; k++) {
           const x = Math.round(dX - Math.cos(t) * (ahw + k));
           const y = Math.round(lintT - Math.sin(t) * (rise + k * 0.9));
-          const segf = (t / Math.PI) * 7;
-          let s = 0.3 + (Math.floor(segf) % 2) * 0.04 + wallTex("stone", x, y, 59) * 0.4;
+          const segf = (t / Math.PI) * 9;
+          let s = 0.42 + (Math.floor(segf) % 2) * 0.05 + wallTex("stone", x, y, 59) * 0.4 + (t < Math.PI / 2 ? 0.03 : -0.02);
           if (k === 0) s += 0.12;
-          if (k === ring - 1) s -= 0.08;
-          if (Math.abs(segf - Math.round(segf)) < 0.045) s -= 0.1;
+          if (k === 1) s += 0.04;
+          if (k === ring - 1) s -= 0.14;
+          if (Math.abs(segf - Math.round(segf)) < 0.04) s -= 0.14;
           put(x, y, s);
         }
-      for (let y = lintT - rise - ring - 6; y < lintT - rise + 4; y++)
-        for (let x = dX - 11; x < dX + 11; x++) put(x, y, 0.4 + (y === lintT - rise - ring - 6 ? 0.12 : 0) + (x === dX - 11 ? 0.06 : x === dX + 10 ? -0.08 : 0) + wallTex("stone", x, y, 61) * 0.3);
-      // the step: a worn stone slab proud of the street, its nose lit
+      for (let y = lintT - rise - ring - 7; y < lintT - rise + 6; y++)
+        for (let x = dX - 12; x < dX + 12; x++) put(x, y, 0.54 + (y === lintT - rise - ring - 7 ? 0.12 : 0) + (x === dX - 12 ? 0.08 : x === dX + 11 ? -0.14 : 0) + wallTex("stone", x, y, 61) * 0.3);
+      // the arch's shadow on the brick under its extrados, and the soot it has gathered
+      for (let t = 0.05; t <= Math.PI - 0.05; t += 0.004)
+        for (let k = 0; k < 4; k++) bump(Math.round(dX - Math.cos(t) * (ahw + ring + k)), Math.round(lintT - Math.sin(t) * (rise + (ring + k) * 0.9)) + 2, -0.05 + k * 0.012);
+      // the threshold: a worn stone step proud of the street, its nose lit, dished where feet go,
+      // dark at its foot where it meets the street (its contact shadow)
       for (let x = dX - ahw - 14; x < dX + ahw + 14; x++) {
-        const worn = Math.abs(x - dX) < lw ? 1 : 0;
-        for (let q = 0; q < 6 - worn; q++) put(x, o.street - 6 + worn + q, 0.3 + (q === 0 ? 0.16 : q === 1 ? 0.06 : -0.03 * q) + wallTex("stone", x, q, 63) * 0.3);
+        const worn = Math.abs(x - dX) < lw - 2 ? 1 + (Math.abs(x - dX) < lw - 10 ? 1 : 0) : 0;
+        const end = x < dX - ahw - 12 || x > dX + ahw + 11;
+        for (let q = worn; q < 8; q++) {
+          let s = 0.36 + wallTex("stone", x, q, 63) * 0.3 - (q - worn) * 0.025;
+          if (q === worn) s += 0.26;
+          else if (q === worn + 1) s += 0.08;
+          if (q >= 6) s = q === 7 ? 0.08 : 0.16;
+          if (end) s -= 0.08;
+          put(x, o.street - 8 + q, s);
+        }
       }
       // pilasters between the window bays and either side of the doorway: cut stone standing proud
       // of the brick, lit on the side toward the opening, from the plinth to the string course
@@ -503,6 +597,28 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
             if (inner) put(jx + k, y, 0.4 + (jx > cx ? 0.12 : 0) + (iy === 0 ? -0.1 : 0), R("furnwall"));
             else put(jx + k, y, 0.27 + wallTex("stone", jx + k, y, 73) * 0.5 + (iy === 0 ? -0.1 : iy === 25 ? 0.08 : 0) + (jx < cx ? (k === 0 ? -0.06 : 0) : k === 17 ? -0.06 : 0));
           }
+      // under the vault: a cord strung across the niche with offering strips knotted on it (cloth from
+      // the market's awnings, faded), the shrine's thanks; lit from below by the fire, so their
+      // undersides catch the light
+      {
+        const cx0 = n0 + 26, cx1 = fx - 46, cy0 = spring + 18;
+        for (let x = cx0; x <= cx1; x++) {
+          const t = (x - cx0) / (cx1 - cx0);
+          const y = Math.round(cy0 + Math.sin(t * Math.PI) * 26 + t * 6);
+          (put(x, y, 0.42, R("furnwall")), put(x, y + 1, 0.18, R("furnwall")));
+          if (x % 11 === 4 && t > 0.04 && t < 0.96) {
+            const rows = [R("awnr"), R("awng"), R("awnt"), R("awng")];
+            const row = rows[Math.floor(x / 11) % rows.length]!;
+            const len = 14 + Math.round(hashInt(x, 1, 97) * 12);
+            for (let q = 1; q < len; q++)
+              for (let w = 0; w < 4; w++) {
+                const sway = Math.round(Math.sin(q * 0.35 + x) * 0.8);
+                const heat = Math.max(0, 1 - Math.abs(x - fx) / (hw * 1.6));
+                put(x - 1 + w + sway, y + q, 0.42 + (w === 0 ? 0.1 : w === 3 ? -0.1 : 0) + (q > len - 4 ? -0.08 : 0) + heat * 0.22, row);
+              }
+          }
+        }
+      }
       // a keystone carved with the flame
       {
         const ky = archTop - 2;
@@ -533,18 +649,30 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
         for (const wxk of [-0.62, -0.18, 0.26]) {
           const wx = Math.round(cx + hw * wxk);
           if (Math.abs(wx - fx) < 70 || wy - 30 < top + 14) continue;
-          pool(bump, wx, wy - 10, 46, 60, 0.07, 2, wx);
+          // a faint halo on the wall round each (dithered at its edge), then the window: a stone ring
+          // in voussoirs with depth (lit on its upper left, a deep reveal inside on the lower right),
+          // iron mullions with a lit edge, and glass that glows soft from the middle out
+          pool(bump, wx, wy, 52, 52, 0.08, 3, wx);
           for (let y = wy - 30; y <= wy + 30; y++)
             for (let x = wx - 30; x <= wx + 30; x++) {
               const d = Math.hypot(x - wx, y - wy);
               if (d > 30) continue;
+              const lit = (wx - x) + (wy - y); // toward the upper left
               if (d > 22) {
                 const seg = Math.floor(((Math.atan2(y - wy, x - wx) + Math.PI) / (Math.PI * 2)) * 12);
-                put(x, y, 0.3 + (seg % 2) * 0.05 + (y < wy ? 0.06 : -0.04) + (d > 29 ? -0.08 : 0));
-              } else if (Math.abs(x - wx) < 1.5 || Math.abs(y - wy) < 1.5 || Math.abs(d - 11) < 1) put(x, y, 0.26);
-              else put(x, y, 0.9, R(d < 11 ? "win" : "win2"), true);
+                const joint = Math.abs((((Math.atan2(y - wy, x - wx) + Math.PI) / (Math.PI * 2)) * 12) % 1 - 0.5) > 0.44;
+                put(x, y, 0.36 + (seg % 2) * 0.05 + (lit > 0 ? 0.06 : -0.06) + (d > 29 ? -0.1 : d < 23 ? 0.08 : 0) - (joint ? 0.1 : 0) + wallTex("stone", x, y, 88) * 0.3);
+              } else if (d > 19) {
+                // the reveal: the ring's inner face, lit where it faces the light, dark opposite
+                put(x, y, lit < 0 ? 0.32 - (22 - d) * 0.02 : 0.1, lit < 0 ? R("wall") : R("back"));
+              } else if (Math.abs(x - wx) < 1.5 || Math.abs(y - wy) < 1.5 || Math.abs(d - 10) < 1) {
+                const edge = (x - wx === -1 || y - wy === -1 || (d < 10 && d > 9.2)) && lit > -6;
+                put(x, y, edge ? 0.3 : 0.16, R("back"));
+              } else {
+                const k = 1 - d / 19;
+                glow(x, y, 0.3 + k * 0.42 + ((x + y) % 2 ? 0.025 : -0.025) - (lit < -14 ? 0.06 : 0), R("oculus"));
+              }
             }
-          for (let x = wx - 26; x < wx + 26; x++) for (let q = 0; q < 4; q++) put(x, wy + 30 + q, 0.34 + (q === 0 ? 0.12 : 0));
           for (let q = 0; q < 50; q++) for (let x = wx - 14; x < wx + 14; x++) if (hashInt(x, q, 89 + wx) < 0.45 - q / 120) bump(x, wy - 31 - q, -0.05);
         }
       }

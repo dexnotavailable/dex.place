@@ -448,11 +448,11 @@ export const archiveLamp = defineRecipe<{ table: boolean }, { shade: Part; swing
 // rug
 // ---------------------------------------------------------------------------
 
-export const hollowRug = defineRecipe<{ width: number; colour: string }, null>({
+export const hollowRug = defineRecipe<{ width: number; colour: string; shadows: [number, number][] }, null>({
   id: "hollowRug",
   breakage: "never",
   reason: "A worn rug under the reading chair and the lectern: footsteps go soft here (the archive is the quietest room in the world).",
-  defaults: { width: 5, colour: "clothRed" },
+  defaults: { width: 5, colour: "clothRed", shadows: [] },
   build(b, p) {
     const u = (f: number): number => b.u(f);
     const W = u(p.width);
@@ -461,6 +461,19 @@ export const hollowRug = defineRecipe<{ width: number; colour: string }, null>({
     for (let x = 3; x < W + 3; x += 6) r.rect(x, 1, 3, 1, { mat: "clothGold", mode: "paint" });
     for (let x = 0; x < W + 6; x += 2) if (x < 3 || x > W + 2) r.rect(x, 2, 1, 1, { mat: "clothPale", profile: "flat" });
     r.wear({ amount: 0.15, seed: p.seed });
+    // contact shadows on the pile under what stands on it ([centre, width] in H from the rug's centre)
+    const g = r.grid;
+    for (const [dx, wH] of p.shadows) {
+      const cx = (W + 6) / 2 + dx * b.H, hw = (wH * b.H) / 2 + 2;
+      for (let x = Math.floor(cx - hw); x <= cx + hw; x++)
+        for (let y = 0; y < 3; y++) {
+          const i = g.inner(x, y);
+          if (i < 0 || !g.mat[i]) continue;
+          const e = 1 - Math.abs(x - cx) / hw;
+          if (e < 0.12 && (x + y) & 1) continue;
+          g.tone[i] = Math.max(-3, g.tone[i]! - (y < 2 && e > 0.2 ? 2 : 1));
+        }
+    }
     return null;
   },
   initial: "lying",

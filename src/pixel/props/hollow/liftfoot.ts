@@ -594,7 +594,13 @@ export const operatorBooth = defineRecipe<Record<string, never>, { booth: Part }
     // walls: panelled below, a glazed window above, a little roof
     bo.rect(0, u(0.15), W, Hh - u(0.15), { mat: "hollowSeat", profile: "flat", depth: 1, tone: -1, piece: "wall" });
     bo.rect(0, 0, W, u(0.15), { mat: "iron", profile: "bevel", r: 2, depth: 3, piece: "roof" });
-    bo.rect(u(0.1), u(0.35), W - u(0.2), u(0.75), { mat: "glassPale", profile: "flat", z: 2, piece: "glass" });
+    // dusty dark glass with the empty booth behind it, a sheen across it from the tubes (round 1's pale
+    // pane was the brightest, most saturated thing in the room)
+    bo.rect(u(0.1), u(0.35), W - u(0.2), u(0.75), { mat: "hollowGlassDim", profile: "flat", z: 2, piece: "glass" });
+    for (let k = 0; k < 2; k++) {
+      const gx = u(0.2) + k * u(0.55);
+      for (let t = 0; t < u(0.3); t++) bo.rect(gx + t, u(0.4) + Math.round(t * 1.4), 2 - k, 1, { mat: "hollowGlassDim", mode: "paint", tone: 2 });
+    }
     bo.rect(u(0.1), u(0.35) + u(0.37), W - u(0.2), 2, { mat: "iron", profile: "cylH", z: 3, piece: "mullion" });
     bo.rect(Math.round(W / 2) - 1, u(0.35), 2, u(0.75), { mat: "iron", profile: "cylV", z: 3, piece: "mullion" });
     bo.rect(0, u(1.1), W, u(0.07), { mat: "wood", profile: "bevel", r: 1, depth: 2, z: 3, piece: "counter" });

@@ -29,7 +29,7 @@ import { addFlame, matId, puff, stepFlame, type Flame } from "../../kit.ts";
 import { P_ADD, P_DRAG, P_FADE, P_GRAV, P_RISE } from "../../bodies.ts";
 import { hitCentre, type Hit } from "../../hits.ts";
 import { Pendulum, type Rope } from "../../motion.ts";
-import { defineRecipe, type Prop } from "../../prop.ts";
+import { defineRecipe, type Prop, type PropGlow, type PropLight } from "../../prop.ts";
 import type { Part } from "../../part.ts";
 import { steelHit } from "./walkway.ts";
 import { footfall } from "./pulse.ts";
@@ -432,18 +432,28 @@ function setLamp(c: Prop<BoxRefs>, on: number): void {
 // redPipe
 // ---------------------------------------------------------------------------
 
-export const redPipe = defineRecipe<{ length: number; valve: number }, null>({
+export const redPipe = defineRecipe<{ length: number; valve: number; drop: number }, null>({
   id: "redPipe",
   breakage: "heal",
   reason: "The route's red underground: one red pipe runs along the market walkway toward the lift, the way the red line runs along the dock and the red cloth along the causeway.",
-  defaults: { length: 8, valve: 0.35 },
+  defaults: { length: 8, valve: 0.35, drop: 0 },
   cues: ["metal.hit"],
   build(b, p) {
     const u = (f: number): number => b.u(f);
     const L = u(p.length);
     const d = u(0.1);
-    const pipe = b.part("pipe", { w: L, h: d + 6, pivot: [0, (d + 6) >> 1], at: [0, 0], layer: "bg", z: 6 });
-    pipe.rect(0, 3, L, d, { mat: "hollowPipeRed", profile: "cylH", piece: "run" });
+    // drop > 0: both ends bend down into the ground (H from the run's centre to the street) and sit in
+    // bolted floor flanges, so a run along the street starts and ends somewhere instead of in the air
+    const dp = p.drop > 0 ? Math.max(0, u(p.drop) - ((d + 6) >> 1)) : 0;
+    const pipe = b.part("pipe", { w: L, h: d + 6 + dp, pivot: [0, (d + 6) >> 1], at: [0, 0], layer: "bg", z: 6 });
+    pipe.rect(dp ? d : 0, 3, L - (dp ? d * 2 : 0), d, { mat: "hollowPipeRed", profile: "cylH", piece: "run" });
+    if (dp)
+      for (const x of [0, L - d]) {
+        pipe.rect(x, 3 + 2, d, d + dp - 2, { mat: "hollowPipeRed", profile: "cylV", piece: "riser" });
+        pipe.circle(x + d / 2, 3 + d / 2 + 1, d / 2 + 0.5, { mat: "hollowPipeRed", profile: "dome", r: 3, z: 1, piece: "elbow" });
+        pipe.rect(x - 2, d + 6 + dp - 4, d + 4, 4, { mat: "iron", profile: "bevel", r: 1, depth: 2, z: 2, piece: "foot" });
+        pipe.rivets([[x - 1, d + 6 + dp - 2], [x + d, d + 6 + dp - 2]], { mat: "iron", r: 1, z: 3 });
+      }
     // flanges every 1.6 H, brackets every 1.2 H
     for (let x = u(0.8); x < L - 4; x += u(1.6)) pipe.rect(x, 1, 4, d + 4, { mat: "hollowPipeRed", profile: "cylV", z: 2, piece: "flange" });
     for (let x = u(0.4); x < L - 4; x += u(1.2)) pipe.rect(x, 3 + d - 1, 5, 4, { mat: "iron", profile: "bevel", r: 1, depth: 2, z: 3, piece: "bracket" });
@@ -685,6 +695,69 @@ function craneHit(c: Prop<CraneRefs>, hit: Hit): void {
 }
 
 // ---------------------------------------------------------------------------
+// hollowShrineHalo: the Hearth Shrine's lantern, once lit, lights the alcove
+// ---------------------------------------------------------------------------
+
+interface HaloRefs {
+  glows: PropGlow[];
+  light: PropLight;
+  level: number;
+  started: boolean;
+}
+
+/** Glows and a light that rise with the watched shrine lantern: its own flame is small, so on its
+ * own lighting the shrine changed nothing you could see. Slow (about 2 s) so it is a warming, not a
+ * flash; no flicker under reduced motion. Origin: the lantern's foot. */
+export const hollowShrineHalo = defineRecipe<{ watch: string; head: number }, HaloRefs>({
+  id: "hollowShrineHalo",
+  breakage: "never",
+  reason: "Resting at the Hearth Shrine lights its lantern; the alcove has to show it: an amber core in the panes, a halo on the arch's wall and a pool on the floor, rising slowly as the flame catches.",
+  defaults: { watch: "", head: 1.06 },
+  build(b, p) {
+    const u = (f: number): number => b.u(f);
+    const hy = -u(p.head);
+    const glows = [
+      b.glow({ at: [0, hy], colour: [1, 0.72, 0.38], radius: u(0.42), intensity: 0.5, flicker: 0.12 }),
+      b.glow({ at: [0, hy - 2], colour: [1, 0.56, 0.26], radius: u(1.05), intensity: 0.4, flicker: 0.08 }),
+      b.glow({ at: [0, 0], colour: [1, 0.55, 0.24], radius: u(1.3), intensity: 0.38, flat: 0.22, flicker: 0.06 }),
+    ];
+    const light = b.light({ at: [0, hy], colour: [1, 0.62, 0.3], radius: u(3.2), intensity: 0.85, height: u(0.6), flicker: 0.2 });
+    for (const g of glows) g.level = 0;
+    light.level = 0;
+    return { glows, light, level: 0, started: false };
+  },
+  initial: "idle",
+  states: {
+    idle: {
+      update(c, dt) {
+        const r = c.refs;
+        const lantern = c.world.find(String(c.params["watch"] ?? ""));
+        const st = lantern?.state;
+        const lit = st === "lit" || st === "lighting";
+        // already lit when the room loads: no fade, it has been burning all along
+        if (!r.started) {
+          r.started = true;
+          if (st === "lit") r.level = 1;
+        }
+        const target = lit ? 1 : 0;
+        r.level += Math.sign(target - r.level) * Math.min(Math.abs(target - r.level), dt * (lit ? 0.45 : 0.9));
+        const still = c.world.reduced;
+        for (const g of r.glows) {
+          g.level = r.level;
+          if (still) g.flicker = 0;
+        }
+        r.light.level = r.level;
+        if (still) r.light.flicker = 0;
+      },
+    },
+  },
+  demo: {
+    w: 3,
+    script: [{ label: "follows its lantern (none in the demo)", wait: 1 }],
+  },
+});
+
+// ---------------------------------------------------------------------------
 // hearthFire
 // ---------------------------------------------------------------------------
 
@@ -702,20 +775,66 @@ export const hearthFire = defineRecipe<{ width: number }, HearthRefs>({
   build(b, p) {
     const u = (f: number): number => b.u(f);
     const W = u(p.width);
-    const bed = b.part("bed", { w: W, h: u(0.14), pivot: [W >> 1, u(0.14)], at: [0, 0], layer: "bg", z: 3 });
-    // a bed of coals and a few logs
-    for (let x = 0; x < W; x += 3) bed.rect(x, u(0.06) + ((x * 7) % 5 === 0 ? -2 : 0), 3, u(0.08), { mat: (x * 13) % 7 < 3 ? "ember" : "woodDark", profile: "dome", r: 2, piece: "coal" });
-    bed.stroke([u(0.1), u(0.1), W * 0.55, u(0.04)], 5, { mat: "woodDark", profile: "cylV", piece: "log" });
-    bed.stroke([W * 0.4, u(0.05), W - u(0.1), u(0.11)], 5, { mat: "wood", profile: "cylV", piece: "log" });
+    const BH = u(0.3);
+    const bed = b.part("bed", { w: W, h: BH, pivot: [W >> 1, BH], at: [0, 0], layer: "bg", z: 3 });
+    // the grate: two iron fire-dogs with ball finials and a bar between them, standing on the hearth
+    for (const x of [2, W - 6]) {
+      bed.rect(x, BH - u(0.24), 4, u(0.24), { mat: "iron", profile: "cylV", piece: "dog" });
+      bed.circle(x + 2, BH - u(0.24) - 1, 2.5, { mat: "iron", profile: "dome", r: 2, z: 2, piece: "finial" });
+      bed.rect(x - 2, BH - 3, 8, 3, { mat: "iron", profile: "bevel", r: 1, depth: 2, piece: "foot" });
+    }
+    bed.rect(4, BH - u(0.1), W - 8, 3, { mat: "iron", profile: "cylH", z: 1, piece: "bar" });
+    // the ember bed: a low mound of coals glowing through grey ash, hottest in the middle
+    const mid = W / 2;
+    for (let x = 6; x < W - 6; x++) {
+      const t = 1 - Math.abs(x - mid) / (mid - 6);
+      const top = Math.round(BH - 3 - t * u(0.09) - ((x * 7) % 3));
+      for (let y = top; y < BH; y++) {
+        const r = ((x * 2654435761) ^ (y * 40503)) >>> 0;
+        const hot = t > 0.35 && (r % 7) < 4 + Math.round(t * 2);
+        bed.rect(x, y, 1, 1, { mat: hot ? "ember" : "hollowChar", profile: "flat", z: 2, piece: "coal", tone: hot ? (t > 0.7 && (r >> 4) % 3 === 0 ? 1 : 0) : (r >> 6) % 3 === 0 ? 1 : 0 });
+      }
+    }
+    // three logs: one along the back, two crossed over the coals; the front one in its own part in
+    // front of the flames (the fire burns among the logs, not on top of them). Ends charred black,
+    // glowing cracks along their bellies
+    const front = b.part("logs", { w: W, h: BH, pivot: [W >> 1, BH], at: [0, 0], layer: "bg", z: 12 });
+    const logs: [number, number, number, number, number][] = [
+      [u(0.2), BH - u(0.19), W - u(0.22), BH - u(0.2), 5],
+      [W * 0.36, BH - u(0.17), W - u(0.07), BH - u(0.05), 6],
+      [u(0.08), BH - u(0.05), W * 0.62, BH - u(0.15), 7],
+    ];
+    for (const [k, [x0, y0, x1, y1, wd]] of logs.entries()) {
+      const pb = k === 2 ? front : bed;
+      pb.stroke([x0, y0, x1, y1], wd, { mat: k === 0 ? "woodDark" : "wood", profile: "cylV", z: 4 + k, piece: `log${k}` });
+      for (const e of [0, 1]) pb.circle(e ? x1 : x0, e ? y1 : y0, wd / 2, { mat: "hollowChar", profile: "dome", r: 2, z: 6 + k, piece: `log${k}` });
+      const n = Math.round(Math.hypot(x1 - x0, y1 - y0) / 6);
+      for (let i = 1; i < n; i++) {
+        const t = i / n;
+        pb.rect(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t) + Math.floor(wd / 2) - 1, 2 + (i % 2), 1, { mat: "ember", mode: "paint", tone: i % 3 === 0 ? 1 : 0 });
+      }
+      // the log's top side charred
+      for (let i = 0; i < n * 2; i++) {
+        const t = i / (n * 2);
+        if ((i * 7) % 5 < 2) pb.rect(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t) - Math.floor(wd / 2) + 1, 2, 1, { mat: "hollowChar", mode: "paint" });
+      }
+    }
     const flames: Flame[] = [];
-    // a glow that joins the flames into one fire
-    b.glow({ part: "bed", at: [W / 2, 0], colour: [1, 0.5, 0.2], radius: W * 0.62, intensity: 0.45, flat: 0.55, flicker: 0.4 });
-    const n = Math.max(5, Math.round(p.width * 7));
+    // a glow that joins the flames into one fire, and its light thrown forward onto the floor
+    b.glow({ part: "bed", at: [W / 2, BH - u(0.12)], colour: [1, 0.5, 0.2], radius: W * 0.66, intensity: 0.5, flat: 0.6, flicker: 0.4 });
+    b.glow({ part: "bed", at: [W / 2, BH + 2], colour: [1, 0.5, 0.22], radius: u(1.7), intensity: 0.3, flat: 0.22, flicker: 0.25 });
+    // the fire's body: three wide, low flames that join the tongues at the base into one fire
+    for (const [k, t] of [0.28, 0.52, 0.74].entries())
+      flames.push(addFlame(b, { name: `body${k}`, parent: "bed", at: [Math.round(t * W), BH - u(0.08)], size: [0.36, 0.26 + (k === 1 ? 0.08 : 0)], light: 0, glow: 0, colour: [1, 0.55, 0.26], layer: "bg", z: 7 }));
+    // tongues of different heights, tallest a little off-centre, narrow and overlapping
+    const n = Math.max(6, Math.round(p.width * 6));
+    const shape = [0.45, 0.72, 1, 0.82, 0.95, 0.6, 0.38, 0.55];
     for (let k = 0; k < n; k++) {
-      const x = Math.round(((k + 0.5) / n) * W);
-      const big = k % 3 !== 1;
-      const mid = Math.abs(k - (n - 1) / 2) < 1.6;
-      flames.push(addFlame(b, { name: `flame${k}`, parent: "bed", at: [x, u(0.08)], size: mid ? [0.2, 0.5] : big ? [0.17, 0.4] : [0.13, 0.28], light: k === Math.floor(n / 2) ? 3.6 : 0, intensity: 1, glow: mid ? 0.55 : big ? 0.4 : 0, colour: [1, 0.55, 0.26], layer: "bg", z: big ? 6 : 7 }));
+      const t = (k + 0.5) / n;
+      const x = Math.round(u(0.14) + t * (W - u(0.28)) + (k % 2 ? 2 : -2));
+      const hgt = shape[k % shape.length]! * (0.65 + 0.35 * Math.sin(t * Math.PI));
+      const wide = 0.08 + hgt * 0.08;
+      flames.push(addFlame(b, { name: `flame${k}`, parent: "bed", at: [x, BH - u(0.12) - (hgt > 0.7 ? 2 : 0)], size: [wide, 0.2 + hgt * 0.44], light: k === Math.floor(n / 2) ? 4.4 : k === 1 ? 2.2 : 0, intensity: k === Math.floor(n / 2) ? 1.15 : 0.5, glow: hgt > 0.75 ? 0.5 : hgt > 0.5 ? 0.32 : 0, colour: [1, 0.55, 0.26], layer: "bg", z: hgt > 0.7 ? 8 : 9 }));
     }
     return { flames, embers: 0 };
   },

@@ -19,12 +19,16 @@ import type { Part } from "../../part.ts";
 
 defineMaterial("hollowPuddle", { ramp: ["#100a08", "#21150e", "#3e2614", "#8a5426"], t: [0.1, 0.4, 0.86], glint: true, ink: false, behaviour: "splash", hardness: 999, sound: "water", spec: { colour: "#ffd8a0", thr: 0.95 } });
 defineMaterial("hollowPuddleLamp", { ramp: ["#5a3012", "#b0662a", "#f2aa58", "#ffe2a8"], emissive: true, ink: false, behaviour: "splash", hardness: 999, sound: "water" });
+/** A rose neon sign held in the water (the streak takes the sign's colour, not the lamps' amber). */
+defineMaterial("hollowPuddleRose", { ramp: ["#4a1420", "#8e2a3e", "#d65a74", "#ffb0bc"], emissive: true, ink: false, behaviour: "splash", hardness: 999, sound: "water" });
 
 export interface HollowPuddleParams {
   /** Width in H. */
   width: number;
   /** Where lamps hang over it: offsets from its left end in H (each makes a streak). */
   lamps: number[];
+  /** Per lamp: "amber" (a lamp, the default) or "rose" (a neon sign). */
+  tints: string[];
 }
 
 interface Refs {
@@ -33,6 +37,8 @@ interface Refs {
   water: number;
   lamp: number;
   streaks: number[];
+  /** The streak material per streak. */
+  mats: number[];
   dirty: boolean;
   lastStep: number;
 }
@@ -50,14 +56,19 @@ function draw(r: Refs): void {
     const top = e > 0.35 ? (h > 0.5 ? 0 : 1) : 2;
     const broken = Math.abs(slope) > 0.2 || Math.abs(h) > 0.6;
     // a lamp's streak: within 2 px of a lamp column, every row, broken into dashes while it ripples
-    const lampD = r.streaks.reduce((m, sx) => Math.min(m, Math.abs(x - sx)), 99);
+    let lampD = 99, lampM = r.lamp;
+    for (const [k, sx] of r.streaks.entries())
+      if (Math.abs(x - sx) < lampD) {
+        lampD = Math.abs(x - sx);
+        lampM = r.mats[k] ?? r.lamp;
+      }
     for (let y = top; y < 2 + depth; y++) {
       const i = g.inner(x, y);
       if (i < 0) continue;
       const d = y - top;
       const streak = lampD < (d === 0 ? 3 : 2) && !(broken && (y + x) % 2 === 0);
       if (streak) {
-        g.setRaw(i, r.lamp, lampD < 1 ? 1 : 0, 1, 1, F_NOINK, 999);
+        g.setRaw(i, lampM, lampD < 1 ? 1 : 0, 1, 1, F_NOINK, 999);
         continue;
       }
       // the warm dark of the roof on the surface, a lit lip, darker deep down
@@ -72,7 +83,7 @@ export const hollowPuddle = defineRecipe<HollowPuddleParams, Refs>({
   id: "hollowPuddle",
   breakage: "never",
   reason: "Water by the market's steam vents: it holds the lamps over it as broken streaks of light, rings under your steps and splashes when struck.",
-  defaults: { width: 1, lamps: [] },
+  defaults: { width: 1, lamps: [], tints: [] },
   cues: ["water.step", "water.splash"],
   feel: 0.3,
   build(b, p) {
@@ -83,7 +94,8 @@ export const hollowPuddle = defineRecipe<HollowPuddleParams, Refs>({
       ripples: new Ripples(W, 110, 2.2, 0.3),
       water: matId("hollowPuddle"),
       lamp: matId("hollowPuddleLamp"),
-      streaks: p.lamps.map((l) => Math.round(b.u(l))).filter((x) => x >= 0 && x < W),
+      streaks: p.lamps.map((l) => Math.round(b.u(l))),
+      mats: p.lamps.map((_, k) => matId(p.tints[k] === "rose" ? "hollowPuddleRose" : "hollowPuddleLamp")),
       dirty: true,
       lastStep: 0,
     };

@@ -59,8 +59,12 @@ b.prop("gratingWalk", "walk-w", wx, WALK, { length: 220 - wx }, px);
 b.prop("gratingWalk", "walk-e", 221.9, WALK, { length: 239 - 221.9 }, px);
 b.prop("gratingStair", "stair-e", 248, STREET, { rise: 6, dir: -1 }, px);
 // the destructible street: flagstones that crater and heal
-b.prop("hollowFloor", "street-w", X0, STREET, { width: h(32), depth: 1.2, kind: "flagstone" }, px);
-b.prop("hollowFloor", "street-e", X0 + 32, STREET, { width: h(32), depth: 1.2, kind: "flagstone" }, px);
+// (its dressing, below: contact shadows under what stands on it, pools under its lights, the straps
+// where its supports run, drains; added once the props are placed)
+const FLOORS: [string, number][] = [
+  ["street-w", X0],
+  ["street-e", X0 + 32],
+];
 
 // --- stalls (4; one empty), their people, their roofs (optional rooftops 1.8 H up) ---------------
 const stalls: [string, number, string, [string, string], string | null][] = [
@@ -84,6 +88,8 @@ b.prop("barrel", "barrel-e", 240.3, STREET, {}, px);
 
 // --- the Hearth Shrine (shrine 3) in the furnace alcove: lantern, bowl, box, plaque, bench, fire --
 b.prop("shrineLantern", "shrine-3", 212.2, STREET, { n: 3, flag: "shrine:3" }, px);
+// its light on the alcove once it is lit (a slow rise: hollowShrineHalo)
+b.prop("hollowShrineHalo", "shrine-3-halo", 212.2, STREET, { watch: "shrine-3", head: 1.06 }, px);
 b.prop("offeringBowl", "bowl-3", 211.2, STREET, { petals: 2 }, px);
 b.prop("donationBox", "box-3", 213.6, STREET, { dest: "donate" }, px);
 b.prop("donorPlaque", "plaque-3", 214.4, STREET + 0.95, {}, px);
@@ -93,7 +99,9 @@ b.spawn("shrine", 211.4, STREET, 1);
 
 // --- the archive door in the back alley: an ordinary door, a small lamp above, the book mark ----
 // a steel door in the brick and iron of the foundry, not a cottage plank door (it opens the same)
-b.prop("hollowDoor", "archive-door", DOOR, STREET, { kind: "ordinary", frame: "iron", leaf: "iron" }, px);
+// warm: the steel takes the street's amber; sill: it stands on the doorway's threshold step; recess:
+// its head sits in the lintel's shadow (the opening is cut 6 px deeper than the leaf all round)
+b.prop("hollowDoor", "archive-door", DOOR, STREET, { kind: "ordinary", frame: "iron", leaf: "iron", warm: true, sill: 8, recess: 6 }, px);
 b.doors["archive-door"] = { room: "C2", spawn: "door" };
 // the book mark sits in the doorway's tympanum, under the keystone; the lamp hangs from a wall bracket
 // beside the surround (the backdrop builds the doorway into the archive block: _scene/market.ts)
@@ -112,13 +120,16 @@ b.prop("steamVent", "vent-1", 208.4, STREET, { period: 9 }, px);
 b.prop("steamVent", "vent-2", 241.6, STREET, { period: 11, strength: 0.8 }, px);
 // puddles hold the lamps over them as broken streaks (there is no sky down here to hold)
 b.prop("hollowPuddle", "puddle-1", 206.9, STREET, { width: 1.1, lamps: [LANTERNS[1]! - 206.9] }, px);
-b.prop("hollowPuddle", "puddle-2", 242.9, STREET, { width: 1.0, lamps: [0.5] }, px);
+// (what hangs over it is the rose neon on its chains, not a lamp: the streak is rose)
+b.prop("hollowPuddle", "puddle-2", 242.9, STREET, { width: 1.0, lamps: [243.4 - 242.9], tints: ["rose"] }, px);
 b.prop("hollowPuddle", "puddle-door", 230.3, STREET, { width: 1.1, lamps: [DOOR_LAMPS[0]![0] - 230.3] }, px);
 b.prop("junctionBox", "jbox-1", 202.4, STREET + 1.5, { conduit: 4 }, px);
 b.prop("junctionBox", "jbox-2", 222.3, STREET + 1.6, { conduit: 4 }, px);
 b.prop("redPipe", "pipe-w", 201.2, WALK + 0.62, { length: 18.6, valve: 0.4 }, px);
 b.prop("redPipe", "pipe-e", 222.1, WALK + 0.62, { length: 16.7, valve: 0.7 }, px);
-b.prop("redPipe", "pipe-lift", 240.2, STREET + 0.35, { length: 11.8, valve: 0 }, px);
+// along the street toward the lift: it rises out of the street past the barrel and goes back down
+// before the east stair (it used to run on through the stair's bottom treads)
+b.prop("redPipe", "pipe-lift", 240.75, STREET + 0.35, { length: 6.1, valve: 0.5, drop: 0.35 }, px);
 b.prop("jibCrane", "crane", 227.2, STREET, { mast: 8.1, jib: 5.8, dir: -1, drop: 1.2 }, px);
 // cables strung under the walkway in short spans, a chain with a hook hanging over the west end
 for (const [i, [x, dx]] of ([[203.2, 2.6], [223.4, 2.6]] as [number, number][]).entries())
@@ -135,14 +146,48 @@ b.prop("dust", "motes-west", 194, STREET, { kind: "dust", width: 8, height: 4, c
 b.prop("dust", "embers-hearth", 216.8, STREET, { kind: "embers", width: 1.6, height: 1.2, count: 6 }, px);
 
 // --- street lamp posts: toward shrine 3 once shrine 2 is lit, beyond it once shrine 3 is ----------
-const lamps: [string, number, number, number][] = [
-  ["lamp-2-0", 190.4, 2, 0],
-  ["lamp-2-1", 200.6, 2, 1],
-  ["lamp-3-0", 226.0, 3, 0],
-  ["lamp-3-1", 246.0, 3, 1],
+// (lamp-3-1 stood inside the east stair's span, its treads cutting across the post: it now stands
+// clear of the stair, under the walkway's end, its arm out over the crates)
+const lamps: [string, number, number, number, 1 | -1][] = [
+  ["lamp-2-0", 190.4, 2, 0, 1],
+  ["lamp-2-1", 200.6, 2, 1, -1],
+  ["lamp-3-0", 226.0, 3, 0, 1],
+  ["lamp-3-1", 238.7, 3, 1, 1],
 ];
-for (const [id, x, , i] of lamps) b.prop("lampPost", id, x, STREET, { lit: false, arm: i % 2 ? -1 : 1 }, px);
+for (const [id, x, , , arm] of lamps) b.prop("lampPost", id, x, STREET, { lit: false, arm }, px);
 b.prop("hollow-wick", "wick", X0 + 0.1, STREET, { lamps: lamps.map(([id, , n, order]) => ({ id, flag: `shrine:${n}`, order })) }, { engine: "stub" });
+
+// --- the street's dressing: where its supports run (posts under the girder, straps on the ledge's
+// face, under the walkway's columns too), contact shadows under everything that stands on it
+// [x, width] (world H), pools of light under the hearth, the lit stalls, the door's lamps and the
+// paper lanterns [x, radius, strength], drains weeping down the face --------------------------------
+const RIBS = [190.6, 194.8, 198.4, 202.4, 206.6, 210.4, 214.6, 219.9, 222.3, 226.6, 230.4, 234.6, 238.4, 242.4, 246.4, 250.4];
+const SHADOWS: [number, number][] = [
+  ...stalls.map(([, x]) => [x, 2.9] as [number, number]),
+  [194.5, 0.55], [199.3, 0.55], [239.4, 0.6], [240.3, 0.55],
+  [212.2, 0.55], [211.2, 0.45], [213.6, 0.55], [215.9, 1.9], [217.7, 1.5],
+  ...lamps.map(([, x]) => [x + 0.16, 0.4] as [number, number]),
+  [227.2, 0.9], [DOOR, 2.6], [199.9, 0.25], [207.6, 0.25], [192.4, 0.8], [247.6, 0.8],
+  [240.8, 0.2], [246.8, 0.2],
+];
+const POOLS: [number, number, number][] = [
+  [217.7, 2.2, 1], [196.8, 1.3, 0.5], [205.2, 1.3, 0.5], [249.8, 1.3, 0.45],
+  [DOOR, 1.6, 0.6], ...LANTERNS.map((x) => [x, 0.9, 0.3] as [number, number, number]),
+];
+const DRAINS = [196.2, 209.1, 223.7, 236.1, 244.6];
+for (const [id, x0] of FLOORS) {
+  const rel = (x: number): number => x - x0;
+  const inside = (x: number, pad = 0): boolean => x >= x0 - pad && x < x0 + 32 + pad;
+  b.prop("hollowFloor", id, x0, STREET, {
+    width: h(32),
+    depth: 1.2,
+    kind: "flagstone",
+    shadows: SHADOWS.filter(([x, w]) => inside(x, w)).map(([x, w]) => [rel(x), w]),
+    pools: POOLS.filter(([x, r]) => inside(x, r)).map(([x, r, k]) => [rel(x), r, k]),
+    ribs: RIBS.filter((x) => inside(x)).map(rel),
+    drains: DRAINS.filter((x) => inside(x)).map(rel),
+  }, px);
+}
 
 // --- the rooftop bench over the archive, and its view ---------------------------------------------
 b.prop("bench", "bench-roof", 225.2, WALK, { kind: "wood", length: 1.6 }, px);
@@ -194,6 +239,7 @@ export const c1: RoomDef = {
       lanterns: LANTERNS.map((x, i) => [x, WALK - 0.3 - (0.7 + (i % 2) * 0.25) - 0.17] as [number, number]),
       plaque: [214.4, STREET + 0.95],
       hearth: 217.7,
+      ribs: RIBS,
     }),
     vertical: 1,
     weather: false,

@@ -43,7 +43,11 @@ export function liftFootScene(o: LiftFootOpts): SceneDef {
     ...amber.palette,
     tile: ["#0e1213", "#161c1d", "#20282a", "#2c3738", "#3c4a4a", "#52625f", "#6e7e79"],
     plaster: ["#121515", "#1b2020", "#262c2b", "#333a38", "#434b48", "#566058"],
-    stem: ["#040406", "#08080c", "#0e0e14", "#16161e", "#20202a", "#2e2e3a", "#44445a"],
+    // the stem: black steel, but with enough steps that its flutes, bands and the portal read (round 1
+    // it was a black void beside the room)
+    stem: ["#08080c", "#101016", "#1a1a22", "#26262f", "#34343f", "#4a4a5a", "#68687e"],
+    // the portal's frame: the same steel, a little warmer where the room's light reaches it
+    portal: ["#0e0c0e", "#1a1618", "#282224", "#3a3132", "#504442", "#6c5a54", "#8c7468"],
     stemlit: ["#1a1410", "#3a2616", "#6a4020", "#a0622c", "#d08a3c"],
     tube: ["#5a6a68", "#a8bab4", "#e6f4ee"],
     wood: ["#140e0b", "#21160f", "#312116", "#452f1f", "#5e422b"],
@@ -107,7 +111,10 @@ function room(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
         // plaster above, stained where the ceiling leaks, a darker band at chair-back height
         s = 0.27 + (fbm1(x / 70 + y / 110, 3, 3) - 0.5) * 0.08 + (hashInt(x >> 1, y >> 1, 3) - 0.5) * 0.02;
         const leak = fbm1(x / 23, 11, 3);
-        if (leak > 0.62 && y < ceil + 40 + (leak - 0.62) * 400) s -= 0.05;
+        // old water stains run down from the ceiling slab between the tubes (not under them: there
+        // the tubes' light washes the plaster)
+        const lit = o.tubes.some((tx) => Math.abs(x - rx(tx)) < o.H * 1.6);
+        if (!lit && leak > 0.62 && y < ceil + 40 + (leak - 0.62) * 400 && (x ^ y) & 1) s -= 0.03;
         row = R("plaster");
       }
       put(x, y, s, row);
@@ -162,7 +169,11 @@ function room(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
     pool(bump, doorX1 + 20, o.floor - 40, o.H * 1.4, o.H * 1.6, 0.1, 3, 43);
   }
   // cold light pools under the tubes on the plaster
-  for (const tx of o.tubes) pool(bump, rx(tx), ceil + 16, o.H * 1.7, o.H * 1.25, 0.08, 3, Math.round(tx * 7));
+  for (const tx of o.tubes) {
+    // a wash of cold light down the plaster from each tube: brightest right under it, falling off
+    pool(bump, rx(tx), ceil + 6, o.H * 1.5, o.H * 1.9, 0.2, 5, Math.round(tx * 7));
+    pool(bump, rx(tx), ceil + 6, o.H * 0.8, o.H * 0.5, 0.06, 2, Math.round(tx * 9));
+  }
   // a conduit along the ceiling to the tubes, a vent grille, a notice board with pinned papers
   for (let x = 0; x < stemX; x++) (put(x, ceil + 3, 0.36, R("plaster")), put(x, ceil + 4, 0.22, R("plaster")), put(x, ceil + 5, 0.12, R("plaster")));
   {
@@ -194,7 +205,7 @@ function room(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
     const flute = (x - stemX) % 26;
     for (let y = 0; y < H + 8; y++) {
       if (x >= mx0 && x < mx1 && y >= my && y < o.floor) continue; // the shaft: the car shows here
-      let s = 0.13 + 0.26 * round;
+      let s = 0.18 + 0.3 * round;
       let row = R("stem");
       // a cold sheen high on the cylinder where the tubes' light catches it
       if (u > 0.18 && u < 0.3) s += 0.06;
@@ -203,8 +214,9 @@ function room(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
       if (x - stemX < 3) {
         s = 0.62;
         row = R("stemlit");
-      } else if (x - stemX < 16) {
-        s = 0.42 - (x - stemX) * 0.022;
+      } else if (x - stemX < 22) {
+        // the window's amber wraps round the stem's near side, falling off over its curve
+        s = 0.46 - (x - stemX) * 0.018 + ((x - stemX) % 3 === 0 && x - stemX > 14 ? -0.04 : 0);
         row = R("stemlit");
       }
       // collars where it passes through the ceiling and into the floor
@@ -230,27 +242,52 @@ function room(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
     }
     for (const cx of [stemX + 112, stemX + 120]) for (let y = 0; y < o.floor - 22; y++) (put(cx, y, 0.4), put(cx + 1, y, 0.24), put(cx + 2, y, 0.1), (y - ceil) % 60 === 0 && put(cx - 1, y, 0.5));
   }
-  // the portal: a riveted steel frame round the shaft mouth, a lintel with hazard chevrons, a
-  // header plate, a steel sill with the same stripes; the gate (the prop) slides in it
+  // the portal, cut into the stem (DOOR RULE: built in, not stuck on): a riveted steel frame in the
+  // stem's own steel, proud of it with a lit outer arris and a shadow where it stands off the flutes;
+  // the mouth's reveal 8 px deep (its near face lit by the room, the far face and the soffit dark);
+  // the lintel is a beam of the frame with hazard chevrons painted on it (worn at the edges); a
+  // steel sill plate with the same stripes and a contact shadow on the tile
   for (let y = my - pf - 4; y < o.floor; y++)
     for (let x = mx0 - pf; x < mx1 + pf; x++) {
       if (x >= mx0 && x < mx1 && y >= my) continue;
       const lint = y < my;
-      const d = lint ? Math.min(y - (my - pf - 4), my - 1 - y) : Math.min(x - (mx0 - pf), x < mx0 ? mx0 - 1 - x : mx1 + pf - 1 - x, x >= mx1 ? x - mx1 : 99);
-      let s = 0.3 + (d < 2 ? 0.16 : d < 4 ? 0.04 : 0);
-      let row = R("stem");
-      if (lint && d >= 6 && y > my - pf + 4 && y < my - 6) {
-        // hazard chevrons
+      const outer = Math.min(x - (mx0 - pf), mx1 + pf - 1 - x, y - (my - pf - 4));
+      const inner = lint ? my - 1 - y : x < mx0 ? mx0 - 1 - x : x - mx1;
+      let s = 0.4 + (hashInt(x >> 2, y >> 2, 13) - 0.5) * 0.04;
+      let row = R("portal");
+      if (outer === 0) s = 0.62;
+      else if (outer === 1) s = 0.5;
+      else if (outer < 4) s = 0.44;
+      // plate seams and rivet lines down the jambs and along the beam
+      if (!lint && (y - my) % 40 === 0) s -= 0.12;
+      if (!lint && (y - my) % 20 === 10 && (outer === 6 || inner === 6)) s += 0.22;
+      if (lint && x % 16 === 8 && (y === my - pf + 1 || y === my - 4)) s += 0.22;
+      if (lint && outer >= 4 && y > my - pf + 2 && y < my - 6) {
+        // hazard chevrons painted on the beam, chipped at the edges
         const stripe = Math.floor((x - y + 4000) / 10) % 2 === 0;
-        s = stripe ? 0.7 : 0.08;
-        row = stripe ? R("stemlit") : R("stem");
+        const chip = hashInt(x, y, 17) < 0.08;
+        s = stripe && !chip ? 0.66 : 0.12;
+        row = stripe && !chip ? R("stemlit") : R("portal");
       }
-      if (!lint && d >= 4 && (y - my) % 24 === 12 && (x === mx0 - pf + 8 || x === mx1 + pf - 9)) s += 0.3;
-      // the mouth's inner faces: the reveal the gate sits in, lit on the window side
-      if (!lint && ((x >= mx0 - 4 && x < mx0) || (x >= mx1 && x < mx1 + 4))) s = x < mx0 ? 0.42 : 0.12;
+      // the reveal: 8 px deep round the mouth, lit on the room side, dark on the far side and under the beam
+      if (inner < 8) {
+        if (lint) s = 0.1 + inner * 0.012;
+        else if (x < mx0) s = 0.52 - inner * 0.03;
+        else s = 0.1;
+        row = R("portal");
+      }
       put(x, y, s, row);
     }
-  for (let x = mx0 - pf - 6; x < mx1 + pf + 6; x++) for (let q = 0; q < 5; q++) put(x, o.floor - 5 + q, q === 0 ? 0.56 : Math.floor((x + 4000) / 8) % 2 === 0 ? 0.6 : 0.08, q === 0 ? R("stem") : Math.floor((x + 4000) / 8) % 2 === 0 ? R("stemlit") : R("stem"));
+  // the frame's shadow on the stem round it (it stands proud of the flutes)
+  for (let q = 0; q < 8; q++)
+    for (let y = my - pf - 4; y < o.floor; y++) (bump(mx1 + pf + q, y, -0.1 + q * 0.012), q < 4 && bump(mx0 - pf - 1 - q, y, -0.05 + q * 0.012));
+  for (let q = 0; q < 6; q++) for (let x = mx0 - pf; x < mx1 + pf + 8; x++) bump(x, my - pf - 5 - q, -0.04 + q * 0.007);
+  // the sill plate across the mouth, striped like the beam, its foot dark on the tile
+  for (let x = mx0 - pf - 6; x < mx1 + pf + 6; x++)
+    for (let q = 0; q < 6; q++) {
+      const stripe = Math.floor((x + 4000) / 8) % 2 === 0;
+      put(x, o.floor - 6 + q, q === 0 ? 0.62 : q === 5 ? 0.06 : stripe ? 0.6 : 0.12, q === 0 || !stripe || q === 5 ? R("portal") : R("stemlit"));
+    }
   // the arrow sign's shadow and its standoffs on the stem
   {
     const [sx, sy] = o.sign;

@@ -45,3 +45,16 @@ defineMaterial("hollowSeat", { ramp: ["#122024", "#1c3034", "#2a4448", "#3e5e5e"
 defineMaterial("hollowTile", { ramp: ["#161b1c", "#222a2b", "#313c3b", "#465350"], t: T_STONE, behaviour: "crumble", hardness: 100, sound: "stone", debris: 0.3 });
 /** Market goods: tarnished copper pots, a bolt of dyed cloth, bread and roots. */
 defineMaterial("hollowGoods", { ramp: ["#2a1a10", "#4a2e18", "#72482a", "#9a6a3c"], t: T_SOFT, behaviour: "crumble", hardness: 30, sound: "wood", debris: 0.4 });
+/** The archive's steel door in the foundry wall: the same riveted steel, warmed by the street's amber
+ * light (rust-brown shadows, an amber key) so it shares the brick's light instead of reading cold. */
+defineMaterial("hollowDoorSteel", { ramp: ["#1c1210", "#33211a", "#523424", "#7a5236"], t: T_METAL, behaviour: "dent", hardness: 320, sound: "metal", glint: true, spec: { colour: "#d0a070", thr: 0.965 }, bounce: 0.35, debris: 0.05 });
+/** Flagstone in a fire's or a lamp's pool of light (the same stone, warmer and lighter). */
+defineMaterial("hollowStoneLit", { ramp: ["#2a1812", "#45291c", "#6a4128", "#94633a"], t: T_STONE, behaviour: "crumble", hardness: 90, sound: "stone", debris: 0.35, bounce: 0.25 });
+/** Damp grime and a little moss where the street's drains weep down the ledge's face. */
+defineMaterial("hollowMoss", { ramp: ["#0e100c", "#171c12", "#232a18", "#333a20"], t: T_SOFT, behaviour: "crumble", hardness: 60, sound: "stone", debris: 0.2 });
+/** Logs charred black at the ends, the coals between them. */
+defineMaterial("hollowChar", { ramp: ["#0c0808", "#1a1210", "#2a1c16", "#3e2a1e"], t: T_SOFT, behaviour: "splinter", hardness: 50, sound: "wood", debris: 0.2 });
+/** The lift foot's tile where the window's amber falls on it (and its polish holds the window). */
+defineMaterial("hollowTileLit", { ramp: ["#221a14", "#3a2c20", "#5a4430", "#7e6244"], t: T_STONE, behaviour: "crumble", hardness: 100, sound: "stone", debris: 0.3 });
+/** The operator's booth glass: dusty and dark, the empty booth behind it (not a bright pane). */
+defineMaterial("hollowGlassDim", { ramp: ["#0e1618", "#182326", "#24353a", "#3c5458"], t: [0.1, 0.35, 0.9], glint: true, behaviour: "shatter", hardness: 12, sound: "glass", ink: false, spec: { colour: "#a8c4c0", thr: 0.97 }, bounce: 0.3, debris: 0.5 });
