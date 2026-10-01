@@ -75,7 +75,8 @@ export const ribArch = defineRecipe<RibParams, Record<string, never>>({
     spine.cracks(Math.round(ox + Wd * 0.4), Math.round(oy - Pk * 0.95), { n: 3, len: u(0.5), seed: p.seed + 3 });
     spine.wear({ amount: 0.2, seed: p.seed + 4 });
     // near rib tips in front of the player, only at the feet of the arch
-    const near = b.part("near", { w: gw, h: u(1.0), pivot: [ox, u(1.0)], at: [0, 0], layer: "fg", z: 2 });
+    // in front of her, but with no parallax of its own: an fg part drifts off its feet as the camera moves
+    const near = b.part("near", { w: gw, h: u(1.0), pivot: [ox, u(1.0)], at: [0, 0], layer: "fg", parallax: 1, z: 2 });
     for (const [tx, h] of [[0.15, 0.8], [p.span - 0.25, 0.7]] as [number, number][]) {
       near.stroke([ox + u(tx), u(1.0), ox + u(tx) + u(0.18), u(1.0) - u(h) * 0.6, ox + u(tx) + u(0.05), u(1.0) - u(h)], [u(0.09), u(0.06), u(0.03)], { mat: "plainBoneDark" });
     }

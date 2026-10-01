@@ -56,8 +56,9 @@ b.wade(146, 148.5, 1.1);
 x = b.stairs(147.6, 0.8, 1.4, 1);
 b.floor(148.5, 154, 1.6);
 for (const [a, c, y] of B2.ribs) b.ledge(a, c, y);
-b.floor(154, 160, 1.8);
-b.floor(160, 172, 2.0);
+// the 0.2 H step sits just west of the shelter, so its whole footprint stands on one level
+b.floor(154, 159.7, 1.8);
+b.floor(159.7, 172, 2.0);
 const [r0, r1, rt, rb] = B2.shelter.roof;
 b.block(r0, r1, rt, rb);
 b.area({ id: "B3", title: "B3 Bus Shelter", x0: 160, x1: 168, top: 4.9, bottom: 1.9, camera: { mode: "locked", anchor: 0.7 }, audio: { duck: 4 }, roofed: true });

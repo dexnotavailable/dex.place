@@ -23,6 +23,7 @@ import { EXT, Spray, Track, WalkClock, bodyGlsl, camYGlsl, crossing, farRingGlsl
 import { B2, SPAN, geo, type Geo } from "./causeway/geo.ts";
 import { flats } from "./causeway/flats.ts";
 import { buildRoad, buildTor } from "./causeway/road.ts";
+import type { Ramp } from "./causeway/paint.ts";
 
 export const TITLE = "causeway";
 const GHOST_DEPTH = 40;
@@ -72,12 +73,17 @@ export function causeway(inWorld: boolean): SceneDef {
       cloud: ["#5b6179", "#676d87", "#747a94", "#8389a1"],
       haze: ["#8a8c9f", "#9a9cad", "#abacb9", "#bcbcc5", "#cfcdd1"],
       rock: ["#130e0e", "#1e1615", "#2c201d", "#3e2c26", "#563a2f", "#74503d"],
-      stone: ["#141417", "#1f1f23", "#2c2b31", "#3c3b42", "#524f56", "#6f6a70"],
+      // the near ground (road.ts): hue-shifted ramps, violet shadows up to the white sky's lit tops
+      stone: ["#141419", "#1e1e25", "#2a2a32", "#3a3943", "#4d4c55", "#67656c", "#85828a"],
       dark: ["#0c0b0d", "#171417", "#221e21", "#302a2c"],
-      moss: ["#1b1f1a", "#262c23", "#353d2e", "#48523b"],
+      moss: ["#191e19", "#232b21", "#2f392b", "#3e4936", "#515c44", "#697355"],
       earth: ["#131215", "#1d1b1f", "#29262a", "#383438", "#4a4548", "#5f5a5c", "#787271"],
-      lichen: ["#2a2c27", "#3c3f34", "#545845", "#6e7258"],
-      tor: ["#16161a", "#25252b", "#3a3a41", "#54545c", "#6c6b72", "#86848a", "#a19ea2"],
+      lichen: ["#2c2f29", "#3f4336", "#575c46", "#727759", "#8f9270"],
+      ochre: ["#3a2e26", "#5a442f", "#7d603d"],
+      algae: ["#101513", "#171f1a", "#202a22", "#2b362c"],
+      grassc: ["#20241e", "#2d3328", "#3c4334", "#4f5743", "#676e55", "#83886a"],
+      recess: ["#08080b", "#0f0f14", "#18181f", "#2c2c36"],
+      tor: ["#16161b", "#24242b", "#37363f", "#4e4d56", "#67656e", "#837f87", "#a29ea3"],
       ringdark: ["#565b72", "#60667d", "#6b7188", "#777c92"],
       ringlit: ["#9a9cae", "#b4b5c4", "#cdcdd8"],
       spire: ["#0c0d12", "#14151c", "#1d1f28"],
@@ -291,10 +297,11 @@ float sceneLight(vec2 s, float depth) {
         const y0 = g.Y(B2.summit[2] + 0.6);
         const y1 = g.Y(B2.crater.floor - 2.7);
         const pix = new Pix(x1 - x0, y1 - y0);
-        const rows = { stone: R("stone"), dark: R("dark"), moss: R("moss"), earth: R("earth"), lichen: R("lichen"), tor: R("tor") };
+        const rp = (name: string, n: number): Ramp => ({ row: R(name), n });
+        const rows = { stone: rp("stone", 7), moss: rp("moss", 6), earth: rp("earth", 7), lichen: rp("lichen", 5), algae: rp("algae", 4), grass: rp("grassc", 6), recess: rp("recess", 4), tor: rp("tor", 7), ochre: rp("ochre", 3) };
         buildTor(pix, g, x0, y0, rows);
         buildRoad(pix, g, x0, y0, rows);
-        L.push(...splitPix(pix, { name: "road", depth: 1, x: x0, y: y0, reflect: g.Y(B2.flats), reflectFade: 40 * u, dither: 0 }));
+        L.push(...splitPix(pix, { name: "road", depth: 1, x: x0, y: y0, reflect: g.Y(B2.flats), dither: 0 }));
       }
       L.push({ kind: "character", name: "figure", depth: 1, x: g.X(126), ground: g.Y(1.2), rimDir: [-1, -1], height: g.P });
 

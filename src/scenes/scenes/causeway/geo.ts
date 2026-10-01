@@ -26,8 +26,8 @@ export const B2 = {
     [121.1, 134, 1.2],
     [144.3, 146, 1.4],
     [148.5, 154, 1.6],
-    [154, 160, 1.8],
-    [160, 172, 2.0],
+    [154, 159.7, 1.8],
+    [159.7, 172, 2.0],
   ] as [number, number, number][],
   /** Break 1: a single jump (1.1 H), water below. */
   break1: [120, 121.1] as [number, number],

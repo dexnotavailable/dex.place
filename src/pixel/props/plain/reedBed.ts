@@ -128,8 +128,12 @@ export const reedBed = defineRecipe<ReedParams, Refs>({
     for (let k = 0; k < n; k++) {
       const x = Math.round(((k + r() * 0.8) / n) * (W - 1));
       const gy = b.groundRise(x + 0.5, reach);
+      // a bed is a few clumps, tallest in their middles and low at the bed's ends (an organic
+      // silhouette, not a flat-topped hedge); the random draws keep their order
       const clump = vnoise(x / (sh * 0.8), 0.5, p.seed);
-      const h0 = Math.max(4, Math.round(sh * (0.4 + clump * 0.7) * (0.75 + r() * 0.35)));
+      const sub = vnoise(x / Math.max(4, sh * 0.3), 2.5, p.seed + 3);
+      const env = Math.pow(Math.sin((Math.PI * (x + 0.5)) / W), 0.55);
+      const h0 = Math.max(4, Math.round(sh * (0.22 + 0.78 * env) * (0.42 + clump * 0.5 + sub * 0.3) * (0.75 + r() * 0.4)));
       stems.push({
         x, h: h0, h0, lean: 0, v: 0, rest: (r() - 0.5) * 0.35,
         mat: r() < (p.kind === "dry" ? 0.85 : 0.18) ? dry : green,
