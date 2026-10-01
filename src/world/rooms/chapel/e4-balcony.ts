@@ -61,7 +61,8 @@ r.prop("sit-spot", "balcony-look", B.bench, B.deck, {}, { engine: "stub" });
 r.vista(B.vista.x0, B.vista.x1, B.vista.cx, B.vista.cy, 0.07);
 r.px("prayerFlags", "balcony-flags", 480.9, B.deck, { kind: "prayer", span: 2.6, height: 1.9, posts: true });
 r.px("hangingBell", "chapel-bell", B.bell, B.deck + 3.35, { size: "large" });
-r.px("chapelDoor", "sky-door-balcony", B.door, B.deck, { kind: "sky", latch: "near", mark: true, beyond: "none", frame: "stone", flag: "latch:sky-door", bell: "chapel-bell", auto: 0.9 });
+// the leaf only, set back in the opening the backdrop cuts into the cote (outside.ts: reveal, quoins, lintel, threshold)
+r.px("chapelDoor", "sky-door-balcony", B.door, B.deck, { kind: "sky", latch: "near", mark: true, beyond: "none", frame: "stone", flag: "latch:sky-door", bell: "chapel-bell", auto: 0.9, wall: true });
 r.door("sky-door-balcony", { room: "A3", spawn: "sky", flag: "round:done" });
 // ivy down the cote's east jamb beside the door, from under its string course (never in the bell's arch)
 r.px("vines", "vines-cote", B.cote[1] - 0.22, B.deck + 1.7, { width: 0.4, length: 1.1, strands: 4, flowers: true });

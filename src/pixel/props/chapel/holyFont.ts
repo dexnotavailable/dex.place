@@ -1,7 +1,8 @@
 // The porch font (lane R-E; WORLD-PLAN E2: "Font with water: E or a hit makes ripples and a small
 // chime. It reflects the lanterns, and it is the calmest water in the world"). The kit's font with the
 // E the plan gives it: touching the water sends a ring across it and a soft sound, then it settles back
-// to still. Everything else (the bowl, the ripples, hits, the dash wind, mending) is the kit font's.
+// to still. Everything else (the bowl, the ripples, hits, the dash wind, mending) is the kit font's,
+// except that it is not solid: the path passes in front of it.
 
 import { font } from "../font.ts";
 import { defineRecipe, type Prop, type Recipe } from "../../prop.ts";
@@ -26,6 +27,13 @@ export const holyFont = defineRecipe<{ width: number }, unknown>({
   id: "holyFont",
   reason: "The holy-water font at the chapel door (WORLD-PLAN E2): the calmest water in the world; E touches it and a ring spreads across it, a hit splashes it.",
   use: { reach: 0.45, prompt: "touch" },
+  build(b, p) {
+    const refs = (font as AnyRecipe).build(b, p);
+    // you walk past it on the porch's flags, not over it: a solid basin across the path had you climbing
+    // into the holy water (and stood there, half her height above the floor, she read as floating)
+    b.get("font").collide = "none";
+    return refs;
+  },
   initial: "still",
   states: {
     still: {

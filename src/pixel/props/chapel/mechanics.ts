@@ -25,7 +25,8 @@
 //             wall they are set in, once, and keeps it through their mending.
 // naveBench   the kit's pew without its own E, for a spot where the room's
 //             "sit and look" seat (the runtime's sit, holding the camera on
-//             the works) is the thing you use.
+//             the works) is the thing you use; its seat is not a platform,
+//             so you walk past it on the floor instead of standing on it.
 
 import "./materials.ts";
 import { door, type DoorParams } from "../door.ts";
@@ -47,6 +48,12 @@ export interface ChapelDoorParams extends DoorParams {
   auto: number;
   /** A bell (prop id in the same room) that rings once when the latch is released. */
   bell: string;
+  /**
+   * The wall around it is drawn by the room's backdrop (the recess, its orders or lintel, the
+   * reveal, the threshold): the kit's frame is not drawn at all, only the leaf, set back in the
+   * backdrop's opening (the nave's west doors, the balcony's sky door).
+   */
+  wall: boolean;
 }
 
 const D = door.states;
@@ -59,6 +66,15 @@ const D = door.states;
  * the hood and the step around it) and the leaf sits back in the wall's thickness.
  */
 function buildIntoWall(b: PropBuilder, p: ChapelDoorParams): void {
+  if (p.wall) {
+    // the backdrop cut the opening: no frame, no threshold of the kit's, nothing to hit there
+    const fr = b.get("frame");
+    fr.visible = false;
+    fr.hittable = false;
+    // no rim hairline round the leaf: its edge meets the backdrop's dark reveal directly
+    b.get("leaf").outline = 0;
+    return;
+  }
   if (p.frame !== "stone") return;
   const g = b.get("frame").grid;
   const map = new Map<number, number>([
@@ -88,7 +104,7 @@ export const chapelDoor = defineRecipe<ChapelDoorParams, unknown>({
   ...(door as AnyRecipe),
   id: "chapelDoor",
   reason: "The chapel's doors (big, a red ribbon, never locked) and the balcony's red-marked sky door, whose rail released from this side rings the bell and opens the way home to the keeper's loft (S4).",
-  defaults: { ...door.defaults, auto: 0.45, bell: "" },
+  defaults: { ...door.defaults, auto: 0.45, bell: "", wall: false },
   build(b, p) {
     const refs = (door as AnyRecipe).build(b, p);
     buildIntoWall(b, p as ChapelDoorParams);
@@ -188,8 +204,15 @@ export const pathLamp = defineRecipe<typeof lampPost.defaults & PathLampExtra, u
 export const naveBench = defineRecipe<typeof bench.defaults, unknown>({
   ...(bench as AnyRecipe),
   id: "naveBench",
-  reason: "Pews in the Chapel of Light; one of them is the seat to sit and look at the works (the room's sit spot holds the camera on them).",
+  reason: "Pews in the Chapel of Light and the balcony's bench; one of them is the seat to sit and look (the room's sit spot holds the camera on the view). Not stood on: you walk past them on the floor.",
   use: undefined,
+  build(b, p) {
+    const refs = (bench as AnyRecipe).build(b, p);
+    // the seat is not a platform here: standing on a pew seen from its back read as floating in front
+    // of it (and on the balcony it put her behind the balustrade); the sit spot does the sitting
+    b.get("seat").collide = "none";
+    return refs;
+  },
 });
 
 // ---------------------------------------------------------------------------------

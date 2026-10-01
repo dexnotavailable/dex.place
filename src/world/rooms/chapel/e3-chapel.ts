@@ -60,7 +60,8 @@ r.floor(x0, 458, FLOOR, { art: "none", surface: "stone" });
 
 
 // --- the west end: the doors, the rose window over them, its crank, the catalogue ---
-r.px("chapelDoor", "chapel-in", NAVE.door, FLOOR, { kind: "big", latch: "none", frame: "stone", auto: 0.45 });
+// the leaves only: the backdrop cuts the doorway, its orders, hood and threshold into the west wall (chapel.ts)
+r.px("chapelDoor", "chapel-in", NAVE.door, FLOOR, { kind: "big", latch: "none", frame: "stone", auto: 0.45, wall: true });
 r.door("chapel-in", { room: "E2", spawn: "chapel" });
 const roseX = NAVE.door, roseY = FLOOR + NAVE.roseHeight;
 const art = WORKS.map((w) => {

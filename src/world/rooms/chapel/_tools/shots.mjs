@@ -66,7 +66,9 @@ for (const [key, shots] of groups) {
     if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text());
   });
   await page.addInitScript((fl) => {
-    const d = { v: 1, flags: Object.fromEntries(fl.map((k) => [k, true])), rest: null, sound: false, props: {} };
+    // the rose window keeps its own state (prop persistence) beside the flag: an opened save has both
+    const props = fl.includes("rose:open") ? { "rose-window": { open: true }, "rose-crank": { done: true } } : {};
+    const d = { v: 1, flags: Object.fromEntries(fl.map((k) => [k, true])), rest: null, sound: false, props };
     localStorage.setItem("dex.world.v1", JSON.stringify(d));
   }, flags);
   await page.goto(`http://127.0.0.1:${PORT}/world/?manual&mute`, { waitUntil: "load", timeout: 240000 });

@@ -68,6 +68,12 @@ export interface DuskOpts {
   ringR: number;
   /** Screen x of the spire at the room's west end (it slides with depth 30), or null: out of sight. */
   spireX: number | null;
+  /**
+   * In the world: the spire fades out (dithered) as the camera's vertical offset from the reference
+   * framing goes from the first value to the second, so it rises into view as you climb (E4: from the
+   * stair's foot only its top showed through an arch, fading into the haze, like a strip hung there).
+   */
+  spireFade?: [number, number];
   /** Screen x of the lake's sun path at the west end (depth 70). */
   lakeX: number;
   /** Screen x (at the west end, depth 55) of each shrine's lamp on the valley floor, with its number. */
@@ -111,7 +117,9 @@ export function duskPrelude(o: DuskOpts): string {
 float sceneLight(vec2 s, float depth) {
   vec2 d = (s - vec2(${f(o.sun[0])}, ${f(o.sun[1])})) / vec2(${f(640)}, ${f(300)});
   float g = max(0.0, 1.0 - length(d));
-  return floor(g * g * 4.0) / 4.0 * 0.55;
+  // stepped, with dithered seams: hard contour lines here drew ghost ovals on the haze wherever the
+  // sun itself was hidden (E4 under the arches)
+  return stepd(g * g, 5.0, s, 0.9) * 0.55;
 }`;
 }
 
@@ -182,6 +190,7 @@ vec4 layer(vec2 p, vec2 s) {
   float dx = q.x - ${f(x)};
   float hgt = ${f(base)} - q.y;
   if (hgt < 0.0 || abs(dx) > 40.0) return vec4(0.0);
+  ${o.world && o.spireFade ? `if (1.0 - smoothstep(${f(o.spireFade[0])}, ${f(o.spireFade[1])}, uCamY) < bayer4(p) * 0.94 + 0.03) return vec4(0.0);` : ""}
   // a tapering tower with setbacks and a broken crown
   float w = 17.0 - hgt * 0.036 - floor(hgt / 60.0) * 1.5;
   float top = ${f(base - 330)};
@@ -375,7 +384,9 @@ export function duskLayers(ctx: BuildCtx, o: DuskOpts): LayerDef[] {
           ...[0.12, 0.33, 0.52, 0.77, 0.93].map((k, i) => cragProfile({ cx: w * k, top: 10 + (i % 3) * 30, base: 260, left: 40 + i * 6, right: 34 + i * 5, seed: 50 + i, ledges: 3, rough: 0.08 })),
         )
       : rangeProfile({ base: 40, amp: 26, scale: 60, seed: 61, detail: 3, sharp: 0.4 });
-    terrain(pix, { row: R("rock"), top: prof, seed: 43, scale: 26, chunk: 2, light: [-0.85, -0.45], base: 0.3, contrast: 0.55, vertical: 0.4, rim: 0.35, rimDepth: 4, ao: 0.25, fog: (_x, y) => Math.max(0, 0.35 - y / 900) });
+    // ledged rock rather than fissured: under the fog, tall vertical fissures read as rain streaks or a
+    // smeared reflection below the horizon
+    terrain(pix, { row: R("rock"), top: prof, seed: 43, scale: 26, chunk: 2, light: [-0.85, -0.45], base: 0.3, contrast: 0.55, vertical: 0.12, strata: 0.3, rim: 0.35, rimDepth: 4, ao: 0.25, fog: (_x, y) => Math.max(0, 0.35 - y / 900) });
     L.push({ kind: "pix", name: "crags", depth: d, pix, x: -of.x - 4, y: y0 - of.y, fog: o.crags === "deep" ? 0.42 : 0.22 });
     L.push(mist({ name: "crag-mist", depth: d, y0: y0 + 60 - of.y, y1: y0 + 60 + hgt * 0.6 - of.y, sx: 200, sy: 18, drift: -2.5, evolve: 0.04, cover: 0.5, warp: 1.1, levels: 3, alpha: 0.45, edgeDither: 0.3, row: "cloud", tone: 0.15, tonePerLevel: 0.1, tint: 0.45, lightGain: 0.6 }));
   }
