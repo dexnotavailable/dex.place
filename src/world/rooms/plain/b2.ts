@@ -16,6 +16,7 @@ import { h } from "../../config.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { Box } from "../_blockout/_build.ts";
 import { lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 
 const b = new Box({
   id: "B2",
@@ -132,18 +133,23 @@ b.exit("left", "B1", "east", -1, 3).exit("right", "B5", "top", 1, 4);
 
 const built = b.build();
 
+const LIGHT = lighting({
+  ambient: [0.36, 0.35, 0.41],
+  keyDir: [-0.5, -0.62, 0.6],
+  keyColour: [0.62, 0.62, 0.68],
+  rimColour: [0.86, 0.88, 0.98],
+  rimDir: [-0.7, -0.72],
+  rimIntensity: 0.9,
+});
+
 export const b2: RoomDef = {
   ...built,
   terrain: built.terrain.map((t) => ({ ...t, art: "none" as const })),
   backdrop: { scene: causeway(true), vertical: 1, weather: true },
-  lighting: lighting({
-    ambient: [0.36, 0.35, 0.41],
-    keyDir: [-0.5, -0.62, 0.6],
-    keyColour: [0.62, 0.62, 0.68],
-    rimColour: [0.86, 0.88, 0.98],
-    rimDir: [-0.7, -0.72],
-    rimIntensity: 0.9,
-  }),
+  lighting: LIGHT,
+  // one image: the overcast's cool cast over road, tor and props, the far props veiled in the flats'
+  // haze, contact shadows, the lamps' light tinting the stone round them
+  blend: fromLight(LIGHT, { amount: 0.12, haze: 0.32, band: 0.7 }),
   // rain drips off the shelter roof's edges
   ambient: { dust: 14, drips: [[h(B2.shelter.roof[0] - B2.x0), h(B2.top - B2.shelter.roof[3])], [h(B2.shelter.roof[1] - B2.x0), h(B2.top - B2.shelter.roof[3])]] },
   waterline: h(B2.top - B2.flats),

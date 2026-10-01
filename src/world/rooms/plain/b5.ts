@@ -13,6 +13,7 @@ import { B5 } from "../../../scenes/scenes/hollow-mouth/geo.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { Box } from "../_blockout/_build.ts";
 import { lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 
 const b = new Box({
   id: "B5",
@@ -78,17 +79,22 @@ b.exit("left", "B2", "east", 1, 4).exit("right", "C1", "west", -34, -30);
 
 const built = b.build();
 
+const LIGHT = lighting({
+  ambient: [0.3, 0.3, 0.34],
+  keyDir: [-0.4, -0.72, 0.56],
+  keyColour: [0.58, 0.6, 0.66],
+  rimColour: [1, 0.72, 0.44],
+  rimDir: [0.55, 0.83],
+  rimIntensity: 0.8,
+});
+
 export const b5: RoomDef = {
   ...built,
   terrain: built.terrain.map((t) => ({ ...t, art: "none" as const })),
   backdrop: { scene: hollowMouth(true), vertical: 1, weather: true },
-  lighting: lighting({
-    ambient: [0.3, 0.3, 0.34],
-    keyDir: [-0.4, -0.72, 0.56],
-    keyColour: [0.58, 0.6, 0.66],
-    rimColour: [1, 0.72, 0.44],
-    rimDir: [0.55, 0.83],
-    rimIntensity: 0.8,
-  }),
+  lighting: LIGHT,
+  // one image: the cast of the overcast over the headwall and the props, contact shadows, the lamps'
+  // light on the stone; no haze band over the ground (the shaft's wall stands behind it, not sky)
+  blend: fromLight(LIGHT, { amount: 0.1, haze: 0.22, band: 0 }),
   ambient: { dust: 18 },
 };

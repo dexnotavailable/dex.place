@@ -374,6 +374,8 @@ export interface BoulderOpts {
   shade?: (x: number, y: number) => number;
   /** A flat walkable top: rows from the box top that stay lit and level (a shelf), per boulder. */
   flatTop?: (b: Boulder) => number;
+  /** Extra fog (the air between the eye and a face set back), 0..1, per pixel. */
+  fog?: (x: number, y: number) => number;
 }
 
 function sdBox(px: number, py: number, b: Boulder, r: number): number {
@@ -418,7 +420,7 @@ export function boulders(pix: Pix, list: Boulder[], o: BoulderOpts): void {
     const r = Math.min(b.r, (b.x1 - b.x0) / 2, (b.y1 - b.y0) / 2);
     const flat = o.flatTop ? o.flatTop(b) : 0;
     // the face is split into planes by a few joints: each plane its own tone, a crack along each joint
-    const lines = facetLines(b, 1 + Math.floor((b.x1 - b.x0) / 140));
+    const lines = facetLines(b, Math.floor((b.x1 - b.x0) / 170));
     const X0 = Math.max(0, Math.floor(b.x0) - 3),
       X1 = Math.min(pix.w, Math.ceil(b.x1) + 3);
     const Y0 = Math.max(0, Math.floor(b.y0) - 3),
@@ -446,7 +448,8 @@ export function boulders(pix: Pix, list: Boulder[], o: BoulderOpts): void {
           // along the segment (its direction is the normal turned a quarter)
           const along = Math.abs((x - L.px) * -L.b + (y - L.py) * L.a);
           if (along > L.len / 2) continue;
-          const s = L.a * x + L.b * y + L.c;
+          // a joint wanders: its line is jogged by a pixel or two in 2 px steps, never ruler-straight
+          const s = L.a * x + L.b * y + L.c + Math.round((hashInt(x >> 1, y >> 1, b.seed + 61) - 0.5) * 1.6);
           // the stone either side of a joint sits on a slightly different plane, only near the joint
           if (s > 0 && s < 18) plane += 1 << k;
           if (depth > 3 && Math.abs(s) < 0.75) crack = true;
@@ -455,9 +458,9 @@ export function boulders(pix: Pix, list: Boulder[], o: BoulderOpts): void {
         void plane;
         // broad weathering: a soft swell a step either way, its edge broken in 2x2 clusters
         const sw = fbm(Math.floor(x / 2) / 34, Math.floor(y / 2) / 24, b.seed + 2, 2);
-        if (sw < 0.3) i -= 1;
+        if (sw < 0.22) i -= 1;
         // rain runs: a few thin dark streaks down from the top of the face
-        if (depth > o.rim && hashInt(x, 5, b.seed + 9) < 0.035 && y - b.y0 < (b.y1 - b.y0) * (0.2 + 0.5 * hashInt(x, 6, b.seed + 9))) i -= 1;
+        if (depth > o.rim && hashInt(x >> 1, 5, b.seed + 9) < 0.016 && y - b.y0 < (b.y1 - b.y0) * (0.2 + 0.5 * hashInt(x, 6, b.seed + 9))) i -= 1;
         if (onShelf) i += y === b.y0 ? 3 : y === b.y0 + 1 ? 2 : 1;
         else if (depth < o.rim) {
           if (ndl > 0.35) i += depth < 1.5 ? 3 : 2;
@@ -471,23 +474,24 @@ export function boulders(pix: Pix, list: Boulder[], o: BoulderOpts): void {
         // bedding: faint level lines on the broad face
         if (o.bedding && depth > o.rim) {
           const by = (y - b.y0 + Math.round((fbm1(x / 30, b.seed + 3, 2) - 0.5) * 6)) % o.bedding;
-          if (by === 0 && hashInt(x >> 2, y, b.seed + 4) < 0.7) i -= 1;
+          if (by === 0 && hashInt(x >> 3, y, b.seed + 4) < 0.45) i -= 1;
         }
         // rare pits, a lit fleck
         if (hashInt(x >> 1, y, b.seed + 7) < 0.025) i -= 1;
         else if (hashInt(x, y, b.seed + 8) < 0.006) i += 1;
         if (o.shade) i += o.shade(x, y);
+        const fogv = o.fog ? o.fog(x, y) : 0;
         // lichen crusts: in patches on the lit, upper faces, never across a crack
         if (o.lichen && depth > 1.5 && !crack) {
           const top = o.lichen.top !== false ? Math.max(0, 1 - (y - b.y0) / Math.max(8, (b.y1 - b.y0) * 0.55)) : 1;
           const ln = fbm(Math.floor(x / 2) / 5, Math.floor(y / 2) / 4, b.seed + 8, 3);
           if (ln * (0.55 + 0.65 * top) > 1 - o.lichen.amount) {
             const edge = fbm(Math.floor(x / 2) / 5, Math.floor((y - 2) / 2) / 4, b.seed + 8, 3) * (0.55 + 0.65 * top) <= 1 - o.lichen.amount;
-            put(pix, x, y, o.lichen.ramp, Math.min(o.lichen.ramp.n - 1, (edge ? 2 : 1) + (ndl > 0.3 ? 1 : 0)));
+            put(pix, x, y, o.lichen.ramp, Math.min(o.lichen.ramp.n - 1, (edge ? 2 : 1) + (ndl > 0.3 ? 1 : 0)), o.fog ? o.fog(x, y) : 0);
             continue;
           }
         }
-        put(pix, x, y, S, i);
+        put(pix, x, y, S, i, fogv);
       }
     }
   }
