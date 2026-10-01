@@ -10,6 +10,7 @@
 
 import { Spire, LIGHT, RAMP } from "./_build.ts";
 import { liftScene } from "./_scenes/lift.ts";
+import { fromLight } from "../../render/blend.ts";
 
 const d1 = new Spire({
   id: "D1",
@@ -59,10 +60,16 @@ d1.px("warningLight", "beacon-crown", 267.6, 78.8, { mode: "blink", mount: "wall
 // the storm's clock (the rain and the pennant-free shaft share the spire's one gust program)
 d1.prop("spire-storm", "storm", 262.2, 80, { strength: 1 }, { engine: "stub" });
 
-d1.spawn("bottom", 265, -32, 1, { prop: "spire-lift", stop: 0, go: -1 });
+// (the break first: the room's first spawn is where the tools stand to test the car's E, and at the
+// bottom the car leaves on its own 0.6 s after you board, so E is never offered there)
 d1.spawn("break", 266.9, 40, -1, { prop: "spire-lift", stop: 1 });
+d1.spawn("bottom", 265, -32, 1, { prop: "spire-lift", stop: 0, go: -1 });
 d1.spawn("top", 266.9, 76, -1, { prop: "spire-lift", stop: 2 });
 d1.exit("left", "C3", "lift", -33, -30).exit("right", "D2", "lift", 39.5, 42).exit("right", "D3", "lift", 75.5, 78);
+
+// one light over everything (the shaft's cold cast, the lamps' halos); no haze band (the shaft's walls
+// are behind the landings, not sky)
+d1.extra = { blend: { ...fromLight(LIGHT.shaft, { amount: 0.12, band: 0 }), haze: undefined } };
 
 export const ride = d1.build(
   liftScene({ w: d1.W, h: d1.Ht, floor: d1.Y(-32), ground: d1.Y(-4), rockTop: d1.Y(-4.5), rockBottom: d1.Y(-18.5), rainFrom: d1.Y(14), rainFull: d1.Y(30), shaftX: d1.X(265), breakCam: d1.Y(40) - 0.6 * 720 }),

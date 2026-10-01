@@ -23,6 +23,16 @@ export interface DeckParams {
   kind: "catwalk" | "landing" | "arena";
   /** Which end carries the 0.3 H lip ("both": a landing with two open ends). */
   lip: "west" | "east" | "both" | "none";
+  /**
+   * Where the spire's face is, H from the left end, when the walkway's west end hangs out past it
+   * over the void: a cantilever truss under the overhang, shallow at the tip and deepening toward the
+   * face, carries it (it runs on past the deck's own end when the deck stops short of the face).
+   * NaN or unset: no overhang.
+   */
+  cantilever: number;
+  /** Posts down from the underside to the walkway below (H from the left end), and how long they are (H). */
+  posts: number[];
+  postLen: number;
 }
 
 const LIP_H = 0.3;
@@ -41,7 +51,7 @@ export const spireDeck = defineRecipe<DeckParams, { head: number }>({
   id: "spireDeck",
   breakage: "floor",
   reason: "The spire's walkways: iron catwalks on the storm face, the landing at the lift's break, the arena floor; they take her hits as dents, sparks and buckled plate, and mend.",
-  defaults: { width: 640, depth: 0.42, kind: "catwalk", lip: "none" },
+  defaults: { width: 640, depth: 0.42, kind: "catwalk", lip: "none", cantilever: NaN, posts: [], postLen: 1 },
   cues: ["metal.hit", "metal.crater"],
   standard: { w: 8, parts: ["deck"], note: "a catwalk 8 H long; its lip (the gust stop) is 0.3 H" },
   demo: {
@@ -109,6 +119,28 @@ export const spireDeck = defineRecipe<DeckParams, { head: number }>({
       if (p.kind === "arena") {
         // an inlaid band of old brass under the lip, worn
         f.rect(0, top + plate, W, 2, { mat: "bronze", mode: "paint", tone: -1 });
+        if (D > u(1.6)) {
+          // the crown's wall under the arena: a cornice, pilasters, and scuppers spilling the floor's
+          // rain down the face in thin bright threads
+          const cy = top + u(0.95);
+          f.rect(0, cy, W, u(0.14), { mat: "spireIron", profile: "bevel", r: 2, depth: 4, z: 3, piece: "cornice" });
+          f.rect(0, cy, W, 1, { mat: "spireIron", mode: "paint", tone: 1 });
+          f.rect(0, cy + u(0.14), W, 2, { mat: "spireIronDark", mode: "paint", tone: -2 });
+          const pw = u(3.2);
+          for (let x = u(0.6); x < W - u(0.3); x += pw) {
+            f.rect(x, cy + u(0.14), u(0.3), top + D - cy - u(0.14), { mat: "spireIron", profile: "bevel", r: 2, depth: 4, z: 2, piece: "pilaster" });
+            f.rect(x, cy + u(0.14), 1, top + D - cy - u(0.14), { mat: "spireIron", mode: "paint", tone: 1 });
+            f.rect(x + u(0.3), cy + u(0.14), 3, top + D - cy - u(0.14), { mat: "spireIronDark", mode: "paint", tone: -2 });
+            // a scupper midway to the next pilaster, and its thread of water
+            const sx = Math.round(x + pw / 2);
+            if (sx > W - 6) continue;
+            f.rect(sx - 4, cy + u(0.2), 9, u(0.1), { mat: "spireIron", profile: "cylH", z: 4, piece: "scupper" });
+            for (let y = cy + u(0.2) + u(0.1); y < top + D - 2; y++) {
+              const wob = Math.round(Math.sin(y * 0.11 + sx) * 0.8);
+              if ((y + sx) % 7 < 5) f.pixels([[sx + wob, y]], { mat: "spireIron", mode: "paint", tone: 1 });
+            }
+          }
+        }
       }
     }
     f.speckle({ amount: 0.06, seed: p.seed + 5, tone: -1, scale: 2 });
@@ -117,6 +149,40 @@ export const spireDeck = defineRecipe<DeckParams, { head: number }>({
     for (let k = 0; k < Math.max(2, W / 120); k++) {
       const x = Math.floor(b.rand() * W);
       f.rect(x, top + plate, 1, Math.round(D * (0.3 + b.rand() * 0.6)), { mat: "rust", mode: "paint", tone: -1 });
+    }
+    // the cantilever under an overhang: a bottom chord falling from the tip to the face, posts and
+    // diagonals between it and the deck, a heel plate bolted to the face
+    if (Number.isFinite(p.cantilever) && p.cantilever > 0.3) {
+      const fx = u(p.cantilever + 0.35);
+      const k = 0.26;
+      const maxD = u(2.4);
+      const d0 = top + D;
+      const dAt = (x: number): number => Math.round(Math.min(maxD, u(0.12) + (x / fx) * Math.min(maxD, fx * k)));
+      const KH = dAt(fx) + 6;
+      const kn = b.part("knee", { w: fx + 6, h: KH, pivot: [0, 0], at: [0, D], layer: "mid", collide: "none", ground: true, z: -6 });
+      // the chord, lit on top
+      kn.stroke([2, dAt(0), fx, dAt(fx)], 4, { mat: "spireIronDark", profile: "cylH", z: 1, piece: "chord" });
+      // verticals and diagonals every half H
+      const bay = u(0.55);
+      for (let x = bay; x < fx; x += bay) {
+        const y = dAt(x);
+        if (y > 4) kn.rect(Math.round(x), 0, 3, y, { mat: "spireIronDark", profile: "cylV", z: 0, piece: "post" });
+        const xb = Math.min(fx, x + bay);
+        if (dAt(xb) > 4) kn.stroke([x + 1, y - 1, xb, 1], 2, { mat: "spireIronDark", profile: "cylV", z: 0, piece: "web" });
+      }
+      // the heel: a plate against the face, bolted
+      const hy = dAt(fx);
+      kn.rect(fx - 4, 0, 8, hy + 4, { mat: "spireIron", profile: "bevel", r: 1, depth: 2, z: 2, piece: "heel" });
+      kn.rivets([[fx - 2, 4], [fx - 2, Math.max(6, hy - 2)], [fx + 2, Math.round(hy / 2)]], { mat: "spireIron", r: 1 });
+      void d0;
+    }
+    // posts down to the walkway below (the perch stands on the catch ledge)
+    for (const at of p.posts) {
+      const x = Math.round(u(at));
+      const ph = Math.max(4, u(p.postLen) - D);
+      const ps = b.part(`post${x}`, { w: 7, h: ph + 3, pivot: [0, 0], at: [x - 3, D], layer: "mid", collide: "none", ground: true, z: -6 });
+      ps.rect(1, 0, 4, ph, { mat: "spireIronDark", profile: "cylV" });
+      ps.rect(0, ph - 1, 7, 3, { mat: "spireIron", profile: "bevel", r: 1, depth: 1, z: 1 });
     }
     // the lip at the open end, painted with the route's red (its own part: the deck needs no headroom for it)
     const ends = p.lip === "both" ? (["west", "east"] as const) : p.lip === "none" ? [] : [p.lip];

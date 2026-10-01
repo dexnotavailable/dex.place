@@ -25,9 +25,17 @@ export interface ClimbGeo {
   channel: [number, number];
   /** Dry places (room px rects): the alcove under its lintel. */
   dry: [number, number, number, number][];
+  /** The iron bolted to the face (room px x0, y0, x1, y1, reach): catwalks and flights throw their shadow on it. */
+  shadows?: [number, number, number, number, number][];
+  /** Openings built into the face (room px rects): the lift's gate, the alcove. */
+  openings?: [number, number, number, number][];
+  /** Warm light on the face (room px x, y, rx, ry, strength). */
+  pools?: [number, number, number, number, number][];
 }
 
-const FACE_DEPTH = 1.15;
+// The face is the wall the catwalks are bolted to and the alcove and the lift's gate are cut into,
+// so it stands in the room's own plane: nothing slides across it as you climb.
+const FACE_DEPTH = 1;
 
 export function climbScene(geo: ClimbGeo): SceneDef {
   return {
@@ -121,6 +129,10 @@ float sceneLight(vec2 s, float depth) {
             shade: 0.2,
             seed: 21,
             wet: true,
+            lift: 0.12,
+            shadows: (geo.shadows ?? []).map(([x0, y0, x1, y1, r]) => [F.x(x0, FACE_DEPTH), F.y(y0, FACE_DEPTH), F.x(x1, FACE_DEPTH), F.y(y1, FACE_DEPTH), r / FACE_DEPTH]),
+            openings: (geo.openings ?? []).map(([x0, y0, x1, y1]) => [F.x(x0, FACE_DEPTH), F.y(y0, FACE_DEPTH), F.x(x1, FACE_DEPTH), F.y(y1, FACE_DEPTH)]),
+            pools: (geo.pools ?? []).map(([x, y, rx, ry, k]) => [F.x(x, FACE_DEPTH), F.y(y, FACE_DEPTH), rx / FACE_DEPTH, ry / FACE_DEPTH, k]),
           }),
         );
       }

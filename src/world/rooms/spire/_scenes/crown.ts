@@ -85,13 +85,16 @@ function crownPix(W: number, H: number, u: number, base: number, rows: { mono: n
     const top = Math.round(crest[X]!);
     for (let y = Math.max(0, top); y < H; y++) {
       const d = y - top;
-      let s = face[X] ? 0.26 : 0.16;
-      if (d < 2) s = face[X] ? 0.78 : 0.5;
-      else if (d < 4) s = face[X] ? 0.46 : 0.26;
-      // ribs across the fins, following the crown's slope a little
+      let s = face[X] ? 0.3 : 0.2;
+      if (d < 2) s = face[X] ? 0.8 : 0.54;
+      else if (d < 4) s = face[X] ? 0.5 : 0.3;
+      // ribs across the fins, following the crown's slope a little: a dark joint, a lit lip under it
       const r = (y + Math.floor(X * 0.12)) % band;
       if (d > 4 && r === 0) s = 0.08;
-      else if (d > 4 && r === 1) s += 0.12;
+      else if (d > 4 && r < 3) s += 0.14;
+      // plates between the ribs, a seam every few px, the lower half of each a step darker
+      else if (d > 4 && (X + Math.floor(y / band) * 7) % Math.round(17 * u) === 0) s -= 0.08;
+      else if (d > 4 && r > band * 0.6) s -= 0.04;
       pix.set(X, y, s, rows.mono, smooth(base - 60 * u, base + 40 * u, y) * 0.45);
     }
   }

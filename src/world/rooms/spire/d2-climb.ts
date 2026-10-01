@@ -19,6 +19,8 @@
 
 import { Spire, LIGHT, RAMP } from "./_build.ts";
 import { climbScene } from "./_scenes/climb.ts";
+import { SURROUND } from "../../../pixel/props/spire/portal.ts";
+import { fromLight } from "../../render/blend.ts";
 
 const d2 = new Spire({
   id: "D2",
@@ -37,6 +39,18 @@ const d2 = new Spire({
   art: "none",
 });
 const H80 = 80;
+/** What the backdrop's face needs to know about the iron bolted to it (room px): shadows, openings, warm light. */
+const shadows: [number, number, number, number, number][] = [];
+const openings: [number, number, number, number][] = [];
+const pools: [number, number, number, number, number][] = [];
+/** The face's west edge at elevation y (world x): the backdrop's silhouette (edgeBottom 253.5 at the room's foot, edgeTop 257 at its top). */
+const faceX = (y: number): number => 253.5 + ((y - 37.2) / (82.5 - 37.2)) * (257 - 253.5);
+/** How far a walkway starting at x0 hangs out past the face at y (H; NaN: it doesn't). */
+const overhang = (x0: number, y: number): number => (faceX(y) - x0 > 0.5 ? faceX(y) - x0 : NaN);
+/** A shadow under a run of iron from (x0, y0) to (x1, y1) (world), reaching `r` H below it. */
+const shade = (x0: number, y0: number, x1: number, y1: number, r: number): void => {
+  shadows.push([d2.X(x0), d2.Y(y0), d2.X(x1), d2.Y(y1), r * H80]);
+};
 
 // ---------------------------------------------------------------------------------
 // The landing at the break (y 40): where the lift's gate lets you out. Both its ends carry the
@@ -44,7 +58,8 @@ const H80 = 80;
 d2.floor(248, 284, 40, 2.2);
 d2.block(248, 248.22, 40.3, 39.8, { surface: "metal", art: "none" });
 d2.block(283.78, 284, 40.3, 39.8, { surface: "metal", art: "none" });
-d2.px("spireDeck", "landing", 248, 40, { width: 36 * H80, depth: 0.9, kind: "landing", lip: "both" });
+d2.px("spireDeck", "landing", 248, 40, { width: 36 * H80, depth: 0.9, kind: "landing", lip: "both", cantilever: overhang(248, 40) });
+shade(248, 40, 284, 40, 1.5);
 
 /** A flight up from a catwalk at `y`, starting at x, going `dir`: two 0.8 H housings, then 22 steps to y + 6. */
 const flight = (id: string, x: number, y: number, dir: 1 | -1): void => {
@@ -54,12 +69,16 @@ const flight = (id: string, x: number, y: number, dir: 1 | -1): void => {
   d2.block(c, e, y + 1.6, y - 0.15);
   d2.stairs(x + dir * 2.4, y + 1.6, y + 6, dir, y - 0.15);
   d2.px("spireStair", id, x, y, {}, { flip: dir < 0 });
+  // the housings and the stringer throw their shadow on the face
+  shade(Math.min(x, x + dir * 2.4), y + 1.6, Math.max(x, x + dir * 2.4), y + 1.6, 1.85);
+  shade(x + dir * 2.4, y + 1.6, x + dir * 9, y + 6, 0.75);
 };
 
 /** A catwalk: a gust deck (collision and the push) and its iron (spireDeck). */
 const catwalk = (id: string, x0: number, x1: number, y: number, o: { lipWest?: boolean; lipEast?: boolean; stopAt?: number; shelter?: [number, number][] }): void => {
   d2.deck(x0, x1, y, o);
-  d2.px("spireDeck", id, x0, y, { width: (x1 - x0) * H80, depth: 0.42, kind: "catwalk", lip: o.lipEast ? "east" : o.lipWest ? "west" : "none" });
+  d2.px("spireDeck", id, x0, y, { width: (x1 - x0) * H80, depth: 0.42, kind: "catwalk", lip: o.lipEast ? "east" : o.lipWest ? "west" : "none", cantilever: overhang(x0, y) });
+  shade(x0, y, x1, y, 1.0);
 };
 
 flight("flight-40", 272, 40, 1);
@@ -130,18 +149,30 @@ d2.px("counterweight", "counterweight", 284.9, 57, { mode: "hang", cable: 26 });
 // lone perch with a pennant and the view west over the void; a catch ledge 1 H below that reaches
 // under row 52's end (a jump straight back up)
 d2.ledge(247.3, 249.2, 52);
-d2.px("spireDeck", "perch", 247.3, 52, { width: 1.9 * H80, depth: 0.36, kind: "catwalk", lip: "west" });
+d2.px("spireDeck", "perch", 247.3, 52, { width: 1.9 * H80, depth: 0.36, kind: "catwalk", lip: "west", posts: [0.25, 1.65], postLen: 1 });
 d2.block(247.3, 247.52, 52.3, 51.8);
 d2.px("clothHanging", "pennant-lone", 247.9, 52, { kind: "pennant", colour: "red" });
 d2.ledge(247.0, 252.6, 51);
 d2.block(252.38, 252.6, 51.3, 50.8);
-d2.px("spireDeck", "catch", 247.0, 51, { width: 5.6 * H80, depth: 0.3, kind: "catwalk", lip: "east" });
+d2.px("spireDeck", "catch", 247.0, 51, { width: 5.6 * H80, depth: 0.3, kind: "catwalk", lip: "east", cantilever: overhang(247.0, 51) });
+shade(247.0, 51, 252.6, 51, 0.6);
 d2.vista(247.3, 249.2, 252, 55, 0.07, 53.5, 51.7);
 
 d2.spawn("lift", 265.6, 40, -1).spawn("top", 246.8, 76, 1);
 d2.exit("left", "D3", "west", 75.5, 78);
 
+// the lift's gate and the alcove are cut into the face: its plating stops at their surrounds; the
+// alcove's candles spill warm light onto the iron around its mouth
+openings.push([d2.X(267.2 - SURROUND.gate.half), d2.Y(40 + SURROUND.gate.top), d2.X(267.2 + SURROUND.gate.half), d2.Y(40)]);
+openings.push([d2.X(261.6 - 0.72), d2.Y(58 + 3.45 + 0.68), d2.X(270.4 + 0.72), d2.Y(58)]);
+pools.push([d2.X(266), d2.Y(58.9), 6.8 * H80, 3.4 * H80, 0.75]);
+
+// one light over everything: the storm's cold cast and the lamps' halos; no distance veil (the wall
+// and everything on it stand at her depth) and no haze band over the walkways (the wall is right
+// behind them, not sky)
+d2.extra = { blend: { ...fromLight(LIGHT.storm, { amount: 0.14, band: 0 }), haze: undefined } };
+
 export const climb = d2.build(
-  climbScene({ w: d2.W, h: d2.Ht, edgeBottom: d2.X(253.5), edgeTop: d2.X(257), channel: [d2.X(284.3), d2.X(285.5)], dry: [[d2.X(261.8), d2.Y(61.45), d2.X(270.2), d2.Y(57.9)]] }),
+  climbScene({ w: d2.W, h: d2.Ht, edgeBottom: d2.X(253.5), edgeTop: d2.X(257), channel: [d2.X(284.3), d2.X(285.5)], dry: [[d2.X(261.8), d2.Y(61.45), d2.X(270.2), d2.Y(57.9)]], shadows, openings, pools }),
   { hide: ["wx-rain-far", "wx-rain-near"] },
 );

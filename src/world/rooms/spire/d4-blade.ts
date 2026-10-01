@@ -12,6 +12,7 @@
 
 import { Spire, LIGHT, RAMP } from "./_build.ts";
 import { bladeScene } from "./_scenes/blade.ts";
+import { fromLight } from "../../render/blend.ts";
 
 const d4 = new Spire({
   id: "D4",
@@ -62,6 +63,9 @@ d4.trigger(292, 293.5, { flag: "blade:cleared" });
 d4.area({ id: "D4-break", title: "D4 the storm breaks", x0: 292, x1: 317.5, audio: { music: "theme", enter: { at: 48, rise: 5, delay: 2 }, bed: "dusk", cut: { silence: 2, unless: "blade:cleared" } } });
 // once cleared the whole Blade is above the weather: the west part hears the dusk too, and the theme carries on there
 d4.extra = {
+  // one light over everything: the dusk's warm cast, a veil on far iron, a soft band where the blade's
+  // top meets the open sky, the lamps' halos
+  blend: fromLight(LIGHT.dusk, { amount: 0.16, haze: 0.25, band: 0.7 }),
   weatherIf: { flag: "blade:cleared", program: { state: "after", time: "dusk" } },
   audioIf: { flag: "blade:cleared", audio: { bed: "dusk", music: "theme" } },
 };
@@ -81,7 +85,9 @@ for (const [x, w] of [[300.2, 1.4], [307.6, 1.8]] as const) {
     d4.px("grass", `moss-${x}-${k}`, tx, edgeY(tx), { kind: "grass", width: w / n + 0.04, height: 0.16, density: 5 });
   }
 }
-d4.px("grass", "moss-tip", 315.6, 84, { kind: "grass", width: 0.6, height: 0.14, density: 5 });
+// (the tip's moss grows in the lee of the slope's last plate, west of the bench, where the deck is
+// whole under every blade; east of the bench a third of it had nothing to root in)
+d4.px("grass", "moss-tip", 313.05, 84, { kind: "grass", width: 0.6, height: 0.14, density: 5 });
 d4.px("bench", "blade-bench", 314.3, 84, { kind: "stone", length: 1.6 });
 // at the tip, looking out: the view settles so the world below fills the frame
 d4.vista(308, 316, 309.5, 82.8, 0.06);

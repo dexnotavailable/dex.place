@@ -10,6 +10,8 @@ const T_METAL: [number, number, number] = [0.12, 0.34, 0.7];
 
 /** Plate iron: blue-black, a wet sheen. */
 defineMaterial("spireIron", { ramp: ["#0b0e15", "#161b25", "#262e3b", "#3f4a5b"], t: T_METAL, behaviour: "dent", hardness: 320, sound: "metal", glint: true, spec: { colour: "#7f97b8", thr: 0.955 }, bounce: 0.35, debris: 0.05 });
+/** The alcove's plating: the same iron, warmed by years of candle smoke (a browner ramp). */
+defineMaterial("spireIronWarm", { ramp: ["#100c0f", "#21191b", "#362a29", "#54423a"], t: T_METAL, behaviour: "dent", hardness: 320, sound: "metal", glint: true, spec: { colour: "#a08068", thr: 0.96 }, bounce: 0.35, debris: 0.05 });
 /** Girders and undersides. */
 defineMaterial("spireIronDark", { ramp: ["#07090d", "#0e1219", "#181e28", "#283140"], t: T_METAL, behaviour: "dent", hardness: 360, sound: "metal", spec: { colour: "#5a6e8c", thr: 0.97 }, bounce: 0.3, debris: 0.05 });
 /** The route's red, painted on the lips and posts (muted, like the dock's floor line). */

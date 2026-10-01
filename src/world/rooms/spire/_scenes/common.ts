@@ -238,6 +238,62 @@ export interface FaceOpts {
   bounds?: { y0: number; y1: number; x0?: number; x1?: number };
   /** Wet: rain runs down it in thin streaks. */
   wet?: boolean;
+  /**
+   * Contact shadows the room's iron throws on the face (layer px): a segment x0,y0 to x1,y1 (a
+   * catwalk's tread, a flight's stringer) and how far below it the shadow reaches. Light comes from
+   * the planet side, so the shadow sits a few px downwind. Stepped in three bands, dithered edges.
+   */
+  shadows?: [number, number, number, number, number][];
+  /**
+   * Openings built into the face (layer px x0, y0, x1, y1): a doorway's surround, an alcove. The
+   * face's courses butt against them with a dark joint, nothing busy (windows, hatches, running
+   * lights) shows within a margin of them, and they throw a shadow onto the face downwind.
+   */
+  openings?: [number, number, number, number][];
+  /** Warm light spilling onto the face (layer px centre x, y, radii rx, ry, strength 0..1): the alcove's candles, a lamp. Stepped, dithered. */
+  pools?: [number, number, number, number, number][];
+  /** Lifts the plating's base value (the climb's face, the wall you are against, reads a step lighter than the iron in front of it). */
+  lift?: number;
+}
+
+/** GLSL: the face's contact shadow (0..1, stepped) from the room's iron at layer pixel p. */
+function shadowGlsl(segs: [number, number, number, number, number][], side: number): string {
+  if (!segs.length) return "float ironShadow(vec2 p) { return 0.0; }";
+  const off = 5 * side;
+  const body = segs
+    .map(([x0, y0, x1, y1, d]) => {
+      const a = Math.min(x0, x1), b = Math.max(x0, x1);
+      return `  if (q.x >= ${f(a)} && q.x <= ${f(b)}) { float yl = mix(${f(y0)}, ${f(y1)}, (q.x - ${f(x0)}) / ${f(x1 - x0 || 1)}); float d = (p.y - yl) / ${f(d)}; float e = min(q.x - ${f(a)}, ${f(b)} - q.x) / 10.0; if (d >= 0.0 && d < 1.0) s = max(s, (d < 0.45 ? 1.0 : d < 0.78 ? 0.62 : 0.3) * min(1.0, 0.4 + e)); }`;
+    })
+    .join("\n");
+  return `float ironShadow(vec2 p) {
+  vec2 q = p - vec2(${f(off)}, 0.0);
+  float s = 0.0;
+${body}
+  return floor(s * 4.0 + (bayer4(p) - 0.5) * 0.9 + 0.5) / 4.0;
+}`;
+}
+
+/** GLSL: distance outside the nearest opening (negative inside), and the downwind cast shadow of one (0/1). */
+function openingGlsl(ops: [number, number, number, number][], side: number): string {
+  const lines = ops.map(([x0, y0, x1, y1]) => `  { vec2 c = vec2(${f((x0 + x1) / 2)}, ${f((y0 + y1) / 2)}); vec2 h = vec2(${f((x1 - x0) / 2)}, ${f((y1 - y0) / 2)}); vec2 d = abs(p - c) - h; od = min(od, max(d.x, d.y));
+    vec2 sd = abs(p - c - vec2(${f(7 * side)}, 7.0)) - h; if (max(sd.x, sd.y) < 0.0 && max(d.x, d.y) > 0.0) castS = 1.0; }`);
+  return `float openDist(vec2 p, out float castS) {
+  float od = 1e5;
+  castS = 0.0;
+${lines.join("\n")}
+  return od;
+}`;
+}
+
+/** GLSL: the warm spill at p (0..1, stepped in quarters). */
+function poolGlsl(pools: [number, number, number, number, number][]): string {
+  const lines = pools.map(([x, y, rx, ry, k]) => `  w = max(w, ${f(k)} * (1.0 - smoothstep(0.15, 1.0, length((p - vec2(${f(x)}, ${f(y)})) / vec2(${f(rx)}, ${f(ry)})))));`);
+  return `float warmPool(vec2 p) {
+  float w = 0.0;
+${lines.join("\n")}
+  return floor(w * 4.0 + (bayer4(p) - 0.5) * 0.8 + 0.5) / 4.0;
+}`;
 }
 
 /**
@@ -251,6 +307,7 @@ export interface FaceOpts {
 export function spireFace(o: FaceOpts): GlslLayer {
   const e = o.edge;
   const S = e.side;
+  const ops = o.openings ?? [];
   return {
     kind: "glsl",
     name: o.name,
@@ -270,10 +327,17 @@ float faceEdge(float y) {
   if (hash2(vec2(tier, ${f(o.seed + 11)})) > 0.66) x -= max(0.0, 30.0 - fy * 1.1) * ${f(S)};
   return floor(x + 0.5);
 }
+${shadowGlsl(o.shadows ?? [], S)}
+${ops.length ? openingGlsl(ops, S) : "float openDist(vec2 p, out float castS) { castS = 0.0; return 1e5; }"}
+${(o.pools ?? []).length ? poolGlsl(o.pools!) : "float warmPool(vec2 p) { return 0.0; }"}
 vec4 layer(vec2 p, vec2 s) {
   float ex = faceEdge(p.y);
   float into = (p.x - ex) * ${f(S)};
   if (into < 0.0) return vec4(0.0);
+  float castS;
+  float od = openDist(p, castS);
+  // nothing busy right around a doorway or the alcove: the plating runs plain up to its surround
+  bool quiet = od < 26.0;
   float T = ${f(o.tier)};
   float tier = floor(p.y / T);
   float ty = p.y - tier * T;
@@ -282,20 +346,42 @@ vec4 layer(vec2 p, vec2 s) {
   float pc = floor((p.x + pxo) / pw);
   float px = p.x + pxo - pc * pw;
   float ph = hash2(vec2(pc, tier + ${f(o.seed)}));
-  // base: panels a step apart, darker toward each panel's foot
-  float sh = 0.34 + (ph - 0.5) * 0.1 - 0.05 * step(T * 0.7, ty);
+  // base: panels a step apart, lighter near the top where the sky catches them, darker toward the foot
+  float sh = ${f(0.34 + (o.lift ?? 0))} + (ph - 0.5) * 0.12 - 0.05 * step(T * 0.7, ty) + 0.04 * (1.0 - step(T * 0.28, ty));
   bool girdle = mod(tier + ${f(o.seed)}, 4.0) < 1.0;
   float lipH = girdle ? 12.0 : 4.0;
   // tier line: a lit lip (the top of the course below catches the sky), a shadow under it
   if (ty < 1.0) sh = 0.08;
-  else if (ty < lipH) sh = girdle ? (ty < 3.0 ? 0.66 : ty < 6.0 ? 0.48 : 0.4) : (ty < 2.0 ? 0.56 : 0.44);
+  else if (ty < lipH) sh = ${f(o.lift ?? 0)} + (girdle ? (ty < 3.0 ? 0.66 : ty < 6.0 ? 0.48 : 0.4) : (ty < 2.0 ? 0.56 : 0.44));
   else if (ty < lipH + (girdle ? 6.0 : 3.0)) sh = 0.1;
-  // panel seams (not across the lips)
+  // panel seams (not across the lips), each plate bevelled: lit on its top and planet-side edges, dark on the others
   bool body = ty >= lipH + 1.0;
-  if (body && px < 1.0) sh = 0.12;
-  else if (body && px < 2.0) sh += 0.08;
+  // every tier is two courses of plate
+  float mid = floor(lipH + (T - lipH) * 0.52);
+  if (body && abs(ty - mid) < 0.5) sh = 0.12;
+  else if (body && abs(ty - mid - 1.0) < 0.5) sh += 0.07;
+  float po = ty < mid ? 0.0 : pw * 0.5;
+  float px2 = mod(px + po, pw);
+  if (body && px2 < 1.0) sh = 0.12;
+  else if (body && px2 < 2.0) sh += 0.07;
+  else if (body && px2 > pw - 2.0) sh -= 0.05;
+  // the plate's own surface: a faint mottle in a few flat clusters (not noise in every pixel)
+  if (body) sh += 0.022 * (floor(vnoise(vec2(p.x / 9.0, p.y / 6.0) + ph * 9.0) * 2.0) - 0.5);
+  // a row of rivet heads under every lip (lit dot, its own little shadow under it), and down each seam
+  float lipRow = lipH + (girdle ? 9.0 : 6.0);
+  if (body && abs(ty - lipRow) < 0.5 && mod(p.x + tier * 3.0, 8.0) < 1.0) sh = 0.6;
+  else if (body && abs(ty - lipRow - 1.0) < 0.5 && mod(p.x + tier * 3.0, 8.0) < 1.0) sh -= 0.08;
+  else if (body && px >= 3.0 && px < 4.0 && mod(ty, 9.0) < 1.0) sh += 0.12;
+  // weather: old water and rust stains running down from each lip, a few px wide, fading as they fall
+  float sc = floor(p.x / 3.0);
+  float sk = hash2(vec2(sc, tier * 1.7 + ${f(o.seed + 23)}));
+  if (body && sk < 0.22) {
+    float len = 10.0 + sk * 160.0;
+    float st = (ty - lipH) / len;
+    if (st < 1.0) sh -= (st < 0.35 ? 0.05 : st < 0.7 ? 0.035 : 0.02) * step(bayer4(p) * 0.6, 1.0 - st);
+  }
   // a hatch now and then
-  if (body && ph > 0.9 && px > pw * 0.3 && px < pw * 0.3 + 14.0 && ty > T * 0.45 && ty < T * 0.45 + 18.0) {
+  if (!quiet && body && ph > 0.9 && px > pw * 0.3 && px < pw * 0.3 + 14.0 && ty > T * 0.45 && ty < T * 0.45 + 18.0) {
     float hx = px - pw * 0.3, hy = ty - T * 0.45;
     sh = (hx < 1.0 || hy < 1.0) ? 0.5 : (hx > 12.0 || hy > 16.0) ? 0.12 : 0.26;
   }
@@ -303,7 +389,7 @@ vec4 layer(vec2 p, vec2 s) {
   // buttress ribs standing proud: light on the planet side, a cast shadow on the other
   float rw = 14.0;
   float rx = mod(p.x + ${f(o.seed * 7)}, ${f(o.rib)});
-  if (into > 12.0) {
+  if (into > 12.0 && !quiet) {
     float rs = ${f(S)} > 0.0 ? rx : rw - rx;
     if (rx < rw) sh = rs < 2.0 ? 0.7 : rs < 4.0 ? 0.5 : rs < rw - 3.0 ? 0.36 - 0.02 * floor(rs / 4.0) : 0.16;
     else if (rx < rw + 8.0 && ${f(S)} > 0.0) sh -= 0.12;
@@ -330,13 +416,18 @@ vec4 layer(vec2 p, vec2 s) {
     if (cx2 < 3.0 || cx2 > cw - 4.0) sh = cx2 < 1.0 || cx2 > cw - 2.0 ? 0.55 : 0.24;
     if (abs(cx2 - cw * 0.3) < 1.0 || abs(cx2 - cw * 0.7) < 1.0) sh = 0.3;
   }` : ""}
+  // a doorway's surround meets the plating with a dark joint, and throws its shadow downwind
+  if (od > 0.0 && od < 3.0) sh = od < 2.0 ? 0.03 : sh - 0.1;
+  if (castS > 0.5) sh -= 0.14;
+  // the iron bolted to the face (catwalks, flights) throws its shadow on it
+  float shd = ironShadow(p);
   vec3 c;
   float light = flashLight(s) * 0.7 + sceneLight(s, uDepth);
   // lit window slots, grouped in a few panels per tier
   float win = hash2(vec2(pc * 3.0 + 1.0, tier * 7.0 + ${f(o.seed + 9)}));
   float wy0 = floor(T * 0.3);
-  bool isWin = body && win < ${f(o.windows)} && into > 16.0 && ty > wy0 && ty < wy0 + 9.0 && mod(px - pw * 0.25, 7.0) < 3.0 && px > pw * 0.25 && px < pw * 0.25 + (win < ${f(o.windows * 0.4)} ? 24.0 : 10.0);
-  if (isWin) {
+  bool isWin = !quiet && body && win < ${f(o.windows)} && into > 16.0 && ty > wy0 && ty < wy0 + 9.0 && mod(px - pw * 0.25, 7.0) < 3.0 && px > pw * 0.25 && px < pw * 0.25 + (win < ${f(o.windows * 0.4)} ? 24.0 : 10.0);
+  if (isWin && shd < 0.5) {
     float tw = uReduced > 0.5 ? 1.0 : step(0.1, vnoise(vec2(uTime * 0.15 + win * 50.0, win * 13.0)));
     c = pal(win < ${f(o.windows * 0.5)} ? R_WIN : R_WINDIM, tw > 0.5 ? (ty < wy0 + 2.0 ? 2.0 : 1.0) : 0.0);
     return vec4(applyFog(c, uFog * 0.6, 0.0, p, s), 1.0);
@@ -345,11 +436,17 @@ vec4 layer(vec2 p, vec2 s) {
   // rain running down the face: thin bright threads that slide down
   float rc = floor(p.x / 3.0);
   float rh = hash2(vec2(rc, ${f(o.seed + 17)}));
-  if (rh < 0.25 * max(uWx.x, 0.5) && into > 7.0) {
+  if (rh < 0.25 * max(uWx.x, 0.5) && into > 7.0 && shd < 0.75) {
     float ry = mod(p.y - uTime * (34.0 + 40.0 * rh) * (1.0 - 0.6 * uReduced) + rh * 500.0, 80.0 + rh * 70.0);
     if (ry < 12.0 && mod(p.x, 3.0) < 1.0) sh += 0.1 + light * 0.3;
   }` : ""}
+  // in the iron's shadow the face loses its sheen and most of its light
+  sh -= shd * ${f(0.17 + (o.lift ?? 0) * 0.6)};
+  light *= 1.0 - shd * 0.6;
   c = ramp(R_MONO, sh + light * (0.3 + 0.5 * step(0.4, sh)), p, 0.0);
+  // the alcove's candles and the lamps spill warm light onto the plating around them
+  float wp = warmPool(p) * (1.0 - shd * 0.5);
+  if (wp > 0.0) c = mix(c, ramp(R_AMBER, clamp(sh * 0.9 + 0.05, 0.0, 0.6) + wp * 0.15, p, 0.0), wp * 0.5);
   c = applyFog(c, uFog, 0.0, p, s);
   return vec4(c, 1.0);
 }`,
