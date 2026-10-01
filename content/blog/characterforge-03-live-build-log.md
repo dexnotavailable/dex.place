@@ -13,7 +13,7 @@ Only our own renders appear here. No concept art, no other studios' models or st
 <!-- tldr:start -->
 
 > [!NOTE]
-> **TL;DR** — Product 1 (playable character): **32%** · Overall (Products 1 + 2): **17%** · Now: **S3 — Body + head topology** (construction works across lanes (rigs, physics, expressions, zero clipping); the LOOK of face and hair is being rebuilt with data-driven poly modelling (head-construction study, tolerance bands))
+> **TL;DR** — Product 1 (playable character): **32%** · Overall (Products 1 + 2): **17%** · Now: **S3 — Body + head topology** (rebuilding the head from a 252-head pro study, bone arms from generated sculpts, and compiling 2AM's tutorials into step-by-step procedures; gameplay (motion matching + combat kit) and shader kit running in Unreal)
 
 **Roadmap.** S0 to S10 are Product 1, S11 is Product 2.
 
