@@ -53,11 +53,14 @@ b.doors["archive-exit"] = { room: "C1", spawn: "archive" };
 // in shafts (the room's dominant light, from above) and pools on the boards where each lands (the
 // shaft leans 0.7 H east on its way down)
 const WELLS = [229.6, 236.9, 243.1];
+/** Books piled on the boards against the wall (the backdrop draws them; their shadows are here). */
+const PILES = [227.15, 233.45];
 // contact shadows under everything that stands on the boards or the rugs ([x, width], world H): the
 // boards and the rugs darken under each foot, so nothing floats on the floor
 const SHADOWS: [number, number][] = [
   [225.2, 1.2], [228.4, 1.2], [231.2, 1.1], [232.5, 0.5], [234.6, 0.8], [236.4, 0.7], [238.8, 0.6],
   [241.0, 1.8], [243.0, 1.8], [245.0, 1.8], [246.9, 0.8],
+  ...PILES.map((x) => [x, 0.6] as [number, number]),
 ];
 const RUGS: [string, number, number, string][] = [
   ["rug-reading", 231, 5.6, "clothRed"],
@@ -90,6 +93,8 @@ b.prop("candles", "bay-candles", 246.9, FLOOR, { count: 3, layout: "row", stand:
 // dust hangs in the light
 b.prop("dust", "motes-lamp", 230, FLOOR, { kind: "dust", width: 4.5, height: 2.4, count: 22, lit: true }, px);
 b.prop("dust", "motes-bays", 239.5, FLOOR, { kind: "dust", width: 7, height: 3, count: 16, lit: true }, px);
+// dust turning in each well's shaft (it leans east on the way down)
+for (const [i, x] of WELLS.entries()) b.prop("dust", `motes-well-${i}`, x + 0.4, FLOOR, { kind: "dust", width: 0.9, height: 4.6, count: 7, lit: true }, px);
 
 b.spawn("door", 226.1, FLOOR, 1);
 
@@ -128,7 +133,8 @@ export const c2: RoomDef = {
       door: DOOR,
       products: [239.85, 246.15],
       clock: 228.6,
-      ladder: 229.7,
+      ladders: [229.7, 235.45],
+      piles: PILES,
       wells: WELLS,
     }),
     vertical: 1,
@@ -140,6 +146,8 @@ export const c2: RoomDef = {
   // lamp's light into its walls in steps, and the halos cost about 1 ms a frame (d3d11) with five
   // lamps in view, which the room's budget does not have (review/reg-c/round-1, cost.mjs)
   blend: { ...fromLight(LIGHT, { amount: 0.12, haze: 0.2 }), band: undefined, halo: undefined },
-  terrain: dressTerrain(built.terrain, { rug: "none", wood: "wood" }, HOLLOW_RAMP.archive),
+  // the ceiling block draws no art (round 4): the backdrop builds the slab's face, so the light wells can
+  // be cut into it (the terrain's wood hid them and the shafts came out of nothing)
+  terrain: dressTerrain(built.terrain, { rug: "none", wood: "none" }, HOLLOW_RAMP.archive),
   ambient: { dust: 6, moths: false },
 };

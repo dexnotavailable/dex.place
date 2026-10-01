@@ -115,7 +115,9 @@ b.prop("paper", "paper-archive", 233.4, STREET, { count: 3 }, px);
 b.prop("neonGlyph", "neon-1", 199.9, STREET + 3.1, { colour: "rose", count: 3, vertical: true, mount: "pole", pole: 3.1 }, px);
 b.prop("neonGlyph", "neon-2", 207.6, STREET + 3.4, { colour: "teal", count: 4, vertical: false, mount: "pole", pole: 3.4 }, px);
 b.prop("neonGlyph", "neon-3", 227.6, STREET + 3.6, { colour: "amber", count: 3, vertical: true }, px);
-b.prop("neonGlyph", "neon-4", 243.4, STREET + 2.4, { colour: "rose", count: 4, vertical: false, mount: "chains", pole: 0.5 }, px);
+// (neon-4 hangs under the east stair: its chains are cut to the stringer's slope, 6 H of rise over 9 H
+// of run, and clipped into its underside, which is 2.92 H over the street at the sign's x)
+b.prop("neonGlyph", "neon-4", 243.4, STREET + 2.4, { colour: "rose", count: 4, vertical: false, mount: "chains", pole: 0.53, slope: 6 / 9 }, px);
 b.prop("steamVent", "vent-1", 208.4, STREET, { period: 9 }, px);
 b.prop("steamVent", "vent-2", 241.6, STREET, { period: 11, strength: 0.8 }, px);
 // puddles hold the lamps over them as broken streaks (there is no sky down here to hold)
@@ -255,7 +257,9 @@ export const c1: RoomDef = {
   // horizon band (the ground meets a wall here, not sky) and no lamp halos: the backdrop paints each
   // lamp's light into its walls in steps, and the halos cost about 1 ms a frame (d3d11) with five
   // lamps in view, which the room's budget does not have (review/reg-c/round-1, cost.mjs)
-  blend: { ...fromLight(LIGHT, { amount: 0.14, haze: 0.28 }), band: undefined, halo: undefined },
+  // contact shadows half again as strong as the default (round 4: the shrine's bowl, lantern, box and
+  // bench sat on the lit lip of the street with barely a shadow; the hearth's pool washed them out)
+  blend: { ...fromLight(LIGHT, { amount: 0.14, haze: 0.28 }), band: undefined, halo: undefined, shadow: 1.5 },
   terrain: dressTerrain(built.terrain, { stone: "none", grating: "none", wood: "none" }, HOLLOW_RAMP.street),
   ambient: { dust: 10, moths: true },
 };

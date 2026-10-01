@@ -23,6 +23,10 @@ const up = (hh: number): number => FLOOR + hh;
 /** The ceiling's underside, H above the floor (in view at the interior zoom), and the tubes under it. */
 const CEIL = 5.7;
 const TUBES = [254.6, 258.2, 260.5];
+/** The lift queue's stanchions, on the walk line between the dummy and the gate's portal. */
+const QUEUE = [262.78, 263.62];
+/** The long window onto the hollow: world x range, its sill and head above the floor (H). */
+const WINDOW: [number, number, number, number] = [253.6, 258.6, 1.35, 4.55];
 
 const b = new Box({
   id: "C3",
@@ -49,6 +53,7 @@ b.floor(X0, X1, FLOOR, undefined, "tile");
 const SHADOWS: [number, number][] = [
   [255.4, 2.7], [259.4, 2.1], [257.6, 0.75], [253.4, 1.15], [260.9, 0.85], [254.1, 0.5], [262.2, 0.7],
   [268.7, 2.1], [267.6, 0.7], [265.6, 3.2],
+  ...QUEUE.map((x) => [x, 0.3] as [number, number]),
 ];
 b.prop("hollowFloor", "tiles", X0, FLOOR, {
   width: h(X1 - X0),
@@ -58,6 +63,15 @@ b.prop("hollowFloor", "tiles", X0, FLOOR, {
   pools: [[256.1 - X0, 3.2, 0.7], [252.4 - X0, 1.3, 0.6]],
   // the tubes' cold light on the tile under each (round 3: it lands where the cones end)
   washes: TUBES.map((x) => [x - X0, 1.2, 0.55] as [number, number, number]),
+  // the polish holds the window's lit panes (broken vertical streaks, warm) and the tubes' highlights
+  // (round 4: the floor showed only a faint warm patch; this ties the cold room to the amber outside)
+  mirrors: [
+    ...[0, 1, 2, 3].map((i) => {
+      const a = WINDOW[0] + (9 + 104 * i) / 80, b = Math.min(WINDOW[1] - 5 / 80, WINDOW[0] + (5 + 104 * (i + 1)) / 80);
+      return [(a + b) / 2 - X0, (b - a) * 0.86, 0.62, 0] as [number, number, number, number];
+    }),
+    ...TUBES.map((x) => [x - X0, 0.45, 0.9, 1] as [number, number, number, number]),
+  ],
 }, px);
 
 // the lift: its gate (a big door that slides), the car parked in the shaft behind it, the beacon
@@ -113,7 +127,7 @@ export const c3: RoomDef = {
       floor: h(TOP - FLOOR),
       x0: X0,
       H: SCALE.H,
-      window: [253.6, 258.6, 1.35, 4.55],
+      window: WINDOW,
       stem: 261.4,
       shaft: [264.2, 267.0, 4.35],
       ceiling: CEIL,
@@ -122,6 +136,7 @@ export const c3: RoomDef = {
       vent: 259.9,
       notice: 260.15,
       sign: [262.7, 2.4],
+      queue: QUEUE,
     }),
     vertical: 1,
     weather: false,

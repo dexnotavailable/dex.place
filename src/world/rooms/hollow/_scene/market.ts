@@ -925,6 +925,9 @@ function foreground(ctx: BuildCtx, o: MarketOpts, feet: number): LayerDef[] {
     }
     // crate stacks and barrels below the street's edge
     // (none in front of the shrine's alcove: it is the room's focal point)
+    // round 4: every stack stays under the street's slab and its girder (round 3's top crates rose into
+    // the slab's brick courses and read as poking through the walk's underside)
+    const under = Math.round(feet + o.H * 1.2 + 28 + 8);
     const stacksAt = [190.2, 193.6, 197.4, 200.9, 205.1, 208.4, 221.2, 226.0, 229.9, 235.4, 239.1, 243.3, 247.9];
     for (const [i, wx] of stacksAt.entries()) {
       const cx = Math.round(X(wx));
@@ -932,6 +935,7 @@ function foreground(ctx: BuildCtx, o: MarketOpts, feet: number): LayerDef[] {
         // a pair of drums, hoops lit on the side toward the light
         for (let b2 = 0; b2 < 2; b2++) {
           const bw = 64, by0 = Math.round(H + 30 - (b2 + 1) * 82), bx0 = cx - 32 + b2 * 26;
+          if (by0 < under) break;
           for (let yy = by0; yy < by0 + 82; yy++)
             for (let xx = bx0; xx < bx0 + bw; xx++) {
               const u = (xx - bx0) / bw;
@@ -942,23 +946,41 @@ function foreground(ctx: BuildCtx, o: MarketOpts, feet: number): LayerDef[] {
         }
         continue;
       }
-      // crates: two or three boxes, a lit top edge, planks and a cross brace on the face
+      // crates: one to three boxes under the slab, a lit top edge, planks, iron straps with rivets and a
+      // cross brace on the face, in the value of the hazy underside behind them (round 3's were flat
+      // near-black boxes with one diagonal)
       let yb = Math.round(H + 40);
       let bw = 120 + Math.round(hashInt(i, 3, 93) * 40);
       let bx0 = cx - bw / 2;
       const n = 2 + (hashInt(i, 1, 93) > 0.5 ? 1 : 0);
       for (let k = 0; k < n; k++) {
-        const bh = Math.round(bw * 0.7);
-        const y0 = yb - bh;
-        if (y0 < top + 4) break;
+        let bh = Math.round(bw * 0.7);
+        let y0 = yb - bh;
+        // the first box always shows (cut by the frame's foot); a box that would rise into the slab is
+        // left off, or squashed to a low one if there is room for that
+        if (y0 < under) {
+          if (yb - under < 34) break;
+          y0 = under;
+          bh = yb - y0;
+        }
+        const strapAt = [Math.round(bw * 0.18), Math.round(bw * 0.82)];
         for (let yy = y0; yy < yb; yy++)
           for (let xx = Math.round(bx0); xx < bx0 + bw; xx++) {
             const lxx = xx - bx0, lyy = yy - y0;
             const frame = lxx < 5 || lxx > bw - 6 || lyy < 5 || lyy > bh - 6;
             const brace = Math.abs(lxx / bw - lyy / bh) < 0.05;
             const plank = lyy % 14 === 0;
+            const strap = strapAt.some((sx) => Math.abs(lxx - sx) < 3);
+            const rivet = strapAt.some((sx) => lxx === sx) && lyy % 12 === 6;
             const rimEdge = lyy === 0 || (xx < light ? lxx >= bw - 1 : lxx < 1);
-            sil(xx, yy, 0.09 + (frame || brace ? 0.05 : 0) + (plank ? -0.03 : 0), rimEdge && lyy < bh - 4);
+            // each plank its own tone, a dark seam between planks, the frame and the brace standing proud
+            let v = 0.11 + (frame || brace ? 0.07 : 0) + (plank && !frame ? -0.06 : 0) + (hashInt(Math.floor(lyy / 14), k, 97 + i) - 0.5) * 0.05;
+            if (strap) v = 0.2 + (lxx % 2 ? 0.03 : 0);
+            if (rivet) v = 0.34;
+            // the lid's edge catches the street's light spilling over the slab; the top rows step down
+            if (lyy === 1) v = 0.3;
+            else if (lyy === 2) v = 0.22;
+            sil(xx, yy, v, rimEdge && lyy < bh - 4);
           }
         yb = y0;
         bx0 += (hashInt(i, 10 + k, 93) - 0.5) * 30;

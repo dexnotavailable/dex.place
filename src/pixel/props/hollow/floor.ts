@@ -34,6 +34,11 @@ export interface HollowFloorParams {
   /** Washes of a light that does not warm the material (a cold tube): [centre, radius, strength] in H,
    * one or two tone steps lighter on the walk and a little down the face, dithered at each edge. */
   washes: [number, number, number][];
+  /** Reflections in a polished floor (tile): [centre, width, strength, kind] in H. Kind 0: a warm lit
+   * pane (the window) held as a broken vertical streak down the face, warmer near the lip, fading with
+   * depth; kind 1: a cold tube's highlight, a short bright band near the lip. Both break at the grout
+   * (the polish is on the tiles) and are static (nothing animates, so reduced motion is the same). */
+  mirrors: [number, number, number, number][];
 }
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
@@ -52,7 +57,7 @@ export const hollowFloor = defineRecipe<HollowFloorParams, { head: number }>({
   id: "hollowFloor",
   breakage: "floor",
   reason: "The Hollow's ground (the market's worn flagstones, the lift foot's tile, the archive's boards) shows the weight of her hits and heals, so the rooms reset.",
-  defaults: { width: 1280, depth: 1.2, kind: "flagstone", shadows: [], pools: [], ribs: [], drains: [], dress: false, grates: [], washes: [] },
+  defaults: { width: 1280, depth: 1.2, kind: "flagstone", shadows: [], pools: [], ribs: [], drains: [], dress: false, grates: [], washes: [], mirrors: [] },
   build(b, p) {
     const head = 10;
     const depth = b.u(p.depth);
@@ -239,14 +244,48 @@ export const hollowFloor = defineRecipe<HollowFloorParams, { head: number }>({
           if (v > 0.15 + bayer(x, y) * 0.25) shift(at(x, y), v > 0.5 + bayer(x, y) * 0.2 ? 2 : 1);
         }
     }
+    // reflections in the tile's polish (round 4: the window and the tubes were barely held by the floor)
+    for (const [dx, wH, k, kind] of p.mirrors) {
+      const cx = dx * H, hw = (wH * H) / 2;
+      const y1 = head + Math.round(depth * (kind ? 0.6 : 0.9));
+      for (let y = head + 3; y < y1; y++) {
+        const t = (y - head) / (y1 - head);
+        for (let x = Math.floor(cx - hw); x <= cx + hw; x++) {
+          const i = at(x, y);
+          if (i < 0 || g.mat[i] === matId("soot")) continue;
+          // broken: each tile takes the image a little differently, and the streak frays at its sides
+          const tile = (((Math.floor(x / 20) * 73856093) ^ (Math.floor((y - head - 3) / 20) * 19349663) ^ (p.seed * 83492791)) >>> 0) / 4294967296;
+          const side = Math.min(1, (hw - Math.abs(x - cx)) / Math.max(2, hw * 0.25));
+          const v = k * (1 - t) * (0.55 + tile * 0.6) * side;
+          if (v <= 0.12 + bayer(x, y) * 0.3) continue;
+          if (kind) {
+            // the tube's cold image: the tile's highest step, a narrow smear under it
+            if (v > 0.3 + bayer(x, y) * 0.3) g.tone[i] = 3;
+            continue;
+          }
+          if (g.mat[i] === matId("hollowTile")) g.mat[i] = matId("hollowTileLit");
+          if (v > 0.5 + bayer(x, y) * 0.25) shift(i, 1);
+          // the pane's glint: one lit column a third of the way across, where the glass catches the tubes
+          if (Math.abs(x - (cx - hw * 0.35)) < 1 && t < 0.7 && bayer(x, y) < 0.7 - t) shift(i, 2);
+        }
+      }
+    }
     // contact shadows on the lip under whatever stands on it: two dark rows, feathered at the ends
+    // (round 4: a step deeper in the core, and the core keeps its own stone where a pool of light has
+    // warmed the lip, so a prop standing in the hearth's light still sits on a shadow, not on the glow)
     for (const [dx, wH] of p.shadows) {
       const cx = dx * H, hw = (wH * H) / 2 + 2;
       for (let x = Math.floor(cx - hw); x <= cx + hw; x++) {
         const e = 1 - Math.abs(x - cx) / hw; // 0 at the ends
         for (let q = 0; q < 4; q++) {
-          const k = q < 2 ? (e > 0.2 ? 2 : 1) : e > 0.35 && q === 2 ? 1 : 0;
-          if (k && (e > 0.12 || bayer(x, q) < 0.5)) shift(at(x, head + q), -k);
+          const k = q < 2 ? (e > 0.3 ? 3 : e > 0.15 ? 2 : 1) : q === 2 ? (e > 0.3 ? 1 : 0) : e > 0.5 && bayer(x, q) < 0.5 ? 1 : 0;
+          if (!k || (e <= 0.12 && bayer(x, q) >= 0.5)) continue;
+          const i = at(x, head + q);
+          if (i >= 0 && q < 2 && e > 0.3) {
+            if (g.mat[i] === matId("hollowStoneLit")) g.mat[i] = matId("hollowStone");
+            else if (g.mat[i] === matId("hollowTileLit")) g.mat[i] = matId("hollowTile");
+          }
+          shift(i, -k);
         }
       }
     }

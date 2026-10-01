@@ -30,11 +30,13 @@ export interface ArchiveOpts {
   /** World x (H) of arched openings onto the stacks, and of warm lights (x, height above the floor in H, strength 0..1). */
   arches: number[];
   lights: [number, number, number][];
-  /** The door's centre, the product bays' stretch of panelling, the clock's pilaster, the ladder (world x, H). */
+  /** The door's centre, the product bays' stretch of panelling, the clock's pilaster, the ladders (world x, H). */
   door: number;
   products: [number, number];
   clock: number;
-  ladder: number;
+  ladders: number[];
+  /** Books piled on the boards against the wall (world x, H): the mid layer's own clutter. */
+  piles: number[];
   /** Light wells (world x, H): grates in the ceiling under the street's drains, the market's amber
    * falling through them in shafts that lean a little toward the east, and where each lands. */
   wells: number[];
@@ -69,12 +71,14 @@ export function archiveScene(o: ArchiveOpts): SceneDef {
   const base: SceneDef = {
     title: "hollow: the archive",
     palette: PALETTE,
+    // (round 4: the haze a step lighter and greyer in the middle band, so the far stacks sit back in it
+    // instead of sharing the room wall's dark brown)
     fog: {
       stops: [
-        [0, "#0a0706"],
-        [0.3, "#1c120a"],
-        [0.62, "#36220f"],
-        [1, "#0c0806"],
+        [0, "#0c0907"],
+        [0.3, "#251a12"],
+        [0.62, "#4a3624"],
+        [1, "#0e0a08"],
       ],
       bands: 8,
       dither: 0.5,
@@ -95,7 +99,7 @@ function prelude(ctx: BuildCtx, o: ArchiveOpts): string {
   const shafts = o.wells
     .map((wx, i) => {
       const [x0, x1] = wellLine(o, wx, span);
-      return shaftFn({ fn: `well${i}`, from: [x0, ceilS - 4], to: [x1, floorS + 6], w0: o.H * 0.32, w1: o.H * 0.62, streaks: 5, speed: 0.02, fadeStart: 0.78, intensity: 0.85 });
+      return shaftFn({ fn: `well${i}`, from: [x0, ceilS - 2], to: [x1, floorS + 6], w0: o.H * 0.42, w1: o.H * 0.66, streaks: 5, speed: 0.02, fadeStart: 0.78, intensity: 0.85 });
     })
     .join("\n");
   return /* glsl */ `${shafts}
@@ -129,9 +133,10 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
 
   // the stacks, two ranks deep: tall shelving in the dark, books as one-pixel spines,
   // aisles between the ranges with a candle burning far down some of them
+  // (round 4: both ranks a step lighter, the far one most, so they read as air behind the room)
   for (const [d, seed, shade, lit] of [
-    [3.6, 11, 0.16, 0.4],
-    [1.9, 23, 0.2, 0.5],
+    [3.6, 11, 0.24, 0.4],
+    [1.9, 23, 0.25, 0.5],
   ] as [number, number, number, number][]) {
     const { x, w } = wide(d);
     const pix = new Pix(w, H);
@@ -174,7 +179,7 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
       xx += rw + aisle;
     }
     // (round 3: deeper in the warm haze, so the room's own wall stands in front of them by value)
-    L.push({ kind: "pix", name: `stacks-${d}`, depth: d, fog: d > 3 ? 0.74 : 0.5, pix, x, y: 0, twinkle: 0.2, dither: 0.3 });
+    L.push({ kind: "pix", name: `stacks-${d}`, depth: d, fog: d > 3 ? 0.84 : 0.62, pix, x, y: 0, twinkle: 0.2, dither: 0.3 });
   }
 
   // the back wall (depth 1, room-aligned): built-in shelves to the ceiling in bays between oak
@@ -204,12 +209,50 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
       const bay = 150;
       return x % bay < 10;
     };
-    const shelfH = 30;
+    // round 4: the bays no longer repeat one pattern (the critic saw the stacks tile): each bay has its
+    // own shelf pitch and offset, book widths per shelf, leaning books and flat stacks in the gaps, a
+    // volume pulled out now and then (lit face, its shadow on the next spine)
+    const PITCH = [30, 34, 27, 32, 29, 31];
+    const shelfOf = (x: number, y: number): { bay: number; lxb: number; pitch: number; sy: number; shelf: number } => {
+      const bay = Math.floor(x / 150), lxb = x % 150;
+      const pitch = PITCH[((bay % PITCH.length) + PITCH.length) % PITCH.length]!;
+      const v = y - ceilS - 10 + ((bay * 7) % pitch) + pitch * 4;
+      return { bay, lxb, pitch, sy: v % pitch, shelf: Math.floor(v / pitch) };
+    };
+    const bookAt = (lxb: number, shelf: number, bay: number): { idx: number; k: number; pulled: boolean } => {
+      const bw = 2 + Math.floor(hashInt(shelf, bay, 211) * 3);
+      const idx = Math.floor(lxb / bw + hashInt(Math.floor(lxb / 9), shelf, bay) * 2);
+      const k = hashInt(idx, bay, 3 + shelf);
+      return { idx, k, pulled: hashInt(idx, shelf, bay + 77) < 0.05 };
+    };
+    // how much the light wells' shafts fall on a point of the wall (0..1): they lift the shelf faces they cross
+    const beamK = (x: number, y: number): number => {
+      let k = 0;
+      for (const wx of o.wells) {
+        const [a, b2] = wellLine(o, wx, span).map((v) => v + span / 2);
+        const t = (y - ceilS) / (floorS - ceilS);
+        if (t < 0 || t > 1) continue;
+        const c = a! + (b2! - a!) * t, hw = o.H * (0.2 + t * 0.26);
+        k = Math.max(k, 1 - Math.abs(x - c) / hw);
+      }
+      return Math.max(0, k);
+    };
+    const slab = ceilS - Math.round(o.H * 0.5);
     for (let x = -8; x < o.roomW + 8; x++) {
       // masonry above the ceiling
-      for (let y = 0; y < ceilS - 8; y++) put(x, y, 0.17 + wallTex("stone", x, y, 4), R("stone"));
-      // the ceiling: boards, a lit edge (lamplight from below)
-      for (let y = ceilS - 8; y < ceilS; y++) put(x, y, y === ceilS - 1 ? 0.34 : 0.2 + (x % 60 === 0 ? -0.06 : 0));
+      for (let y = 0; y < slab; y++) put(x, y, 0.17 + wallTex("stone", x, y, 4), R("stone"));
+      // the ceiling slab's face (round 4: the terrain draws no art here, so the wells can be cut into it):
+      // an oak header with its grain and joints, a moulded cornice under it, its bead lit from the room
+      for (let y = slab; y < ceilS; y++) {
+        const q = y - slab, n = ceilS - slab;
+        let s: number;
+        if (q < n - 13) s = 0.18 + wallTex("boards", x, y, 9) * 0.4 + (q === 0 ? 0.08 : q === 1 ? 0.03 : 0) + ((x + 4000) % 240 < 3 ? -0.06 : 0);
+        else {
+          const c = q - (n - 13);
+          s = c === 0 ? 0.38 : c < 3 ? 0.27 : c < 8 ? 0.14 + (c - 3) * 0.025 : c < 11 ? 0.3 : c === 11 ? 0.44 : 0.12;
+        }
+        put(x, y, s);
+      }
       // the wall
       for (let y = ceilS; y < floorS; y++) {
         if (inArch(x, y)) continue;
@@ -250,20 +293,39 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
           s = 0.24 + (lx2 === 0 ? 0.1 : lx2 === w2 - 1 ? -0.08 : 0) + ((y - ceilS) % 90 < 2 ? 0.06 : 0) + wallTex("boards", x, y, 8) * 0.4;
         } else {
           // built-in shelves up to the ceiling: books as spines with uneven tops, the shelf lips lit
-          const sy = (y - ceilS - 10) % shelfH;
-          const bay = Math.floor(x / 150);
-          const lxb = x % 150;
-          if (sy < 3) s = sy === 0 ? 0.36 : sy === 1 ? 0.26 : 0.1;
+          const { bay, lxb, pitch: shelfH, sy, shelf } = shelfOf(x, y);
+          const bk = beamK(x, y);
+          if (sy < 3) s = (sy === 0 ? 0.36 : sy === 1 ? 0.26 : 0.1) + (sy < 2 ? bk * 0.16 : 0);
           else {
-            const shelf = Math.floor((y - ceilS) / shelfH);
-            const gap = hashInt(Math.floor(lxb / 40), shelf, bay + 31) < 0.12;
-            const book = Math.floor(lxb / 3 + hashInt(Math.floor(lxb / 9), shelf, bay) * 2);
-            const hgt = shelfH - 5 - Math.floor(hashInt(book, shelf, bay + 9) * 8);
-            if (!gap && sy > shelfH - hgt) {
-              const k = hashInt(book, bay, 3);
+            const seg = Math.floor(lxb / 40), gx = lxb % 40;
+            const gap = hashInt(seg, shelf, bay + 31) < 0.14;
+            const bkk = bookAt(lxb, shelf, bay);
+            const hgt = shelfH - 5 - Math.floor(hashInt(bkk.idx, shelf, bay + 9) * 8);
+            const prev = bookAt(lxb - 1, shelf, bay);
+            const fromFloor = shelfH - sy; // px up from the shelf board
+            if (gap) {
+              // the gap's furniture: two books leaning into it against the last upright, a flat stack
+              // on the board at its far end, dark between
+              const lean = gx - (fromFloor - 1) * 0.55;
+              const flat = gx > 26 && gx < 38 && fromFloor < 2 + Math.floor(hashInt(seg, shelf, bay + 5) * 3) * 3;
+              if (lean >= 0 && lean < 6 && fromFloor < shelfH - 7) {
+                const kk = hashInt(seg, shelf + Math.floor(lean / 3), bay + 41);
+                s = 0.16 + kk * 0.08 + (Math.floor(lean) % 3 === 0 ? -0.05 : 0) + bk * 0.08;
+                row = kk < 0.35 ? R("spine") : kk < 0.65 ? R("spine2") : R("spine3");
+              } else if (flat) {
+                const kk = hashInt(seg, Math.floor(fromFloor / 3), bay + 43);
+                s = 0.18 + kk * 0.08 + (fromFloor % 3 === 2 ? 0.08 : 0) + bk * 0.08;
+                row = kk < 0.4 ? R("spine") : kk < 0.7 ? R("spine3") : R("wood");
+              } else s = 0.05;
+            } else if (sy > shelfH - hgt) {
+              const k = bkk.k;
               s = 0.14 + k * 0.08 + (sy === shelfH - hgt + 1 ? 0.06 : 0) + ((lxb % 3) === 0 ? -0.04 : 0);
               // a gilt band on some spines
               if (k > 0.5 && (sy - (shelfH - hgt)) === 4) s += 0.1;
+              // pulled out: its face nearer the light; the volume beside it takes its shadow
+              if (bkk.pulled) s += 0.12;
+              else if (prev.pulled && prev.idx !== bkk.idx) s -= 0.08;
+              s += bk * 0.1;
               row = k < 0.3 ? R("spine") : k < 0.55 ? R("spine2") : k < 0.7 ? R("spine3") : R("wood");
             } else s = 0.06;
           }
@@ -514,18 +576,66 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
       for (let y = ceilS; y < ceilS + 14; y++) for (let k = -10; k <= 10; k++) put(bx + k, y, y === ceilS + 13 ? 0.16 : k === -10 ? 0.34 : 0.24);
       for (let i = 0; i < 16; i++) for (const side of [-1, 1]) for (let q = 0; q < 3; q++) put(bx + side * (10 + i), ceilS + 14 + (16 - i) - q, q === 0 ? 0.3 : 0.2);
     }
-    // a library ladder on its rail in the first long run of shelves
+    // library ladders on their rail (round 4: a second one, further along, breaks the run of shelving)
     {
       const railY = ceilS + 18;
       for (let x = 0; x < o.roomW; x++) if (!doorBay(x) && !prod(x) && !inArch(x, railY)) (put(x, railY, 0.42), put(x, railY + 1, 0.2));
-      const lx0 = rx(o.ladder);
-      for (let i = 0; i < floorS - railY; i++) {
-        const y = railY + i;
-        const x = Math.round(lx0 + i * 0.22);
-        for (const off of [0, 22]) (put(x + off, y, 0.4), put(x + off + 1, y, 0.24), put(x + off + 2, y, 0.12));
-        if (i % 24 === 12) for (let q = 2; q < 22; q++) (put(x + q, y, 0.36), put(x + q, y + 1, 0.14));
+      for (const [n, lw] of o.ladders.entries()) {
+        const lx0 = rx(lw);
+        const lean = n % 2 ? -0.18 : 0.22;
+        for (let i = 0; i < floorS - railY; i++) {
+          const y = railY + i;
+          const x = Math.round(lx0 + i * lean);
+          for (const off of [0, 22]) (put(x + off, y, 0.4), put(x + off + 1, y, 0.24), put(x + off + 2, y, 0.12));
+          // its shadow on the shelves behind it, a step down and to the right
+          for (const off of [3, 25]) bump(x + off, y, -0.06);
+          if (i % 24 === 12) for (let q = 2; q < 22; q++) (put(x + q, y, 0.36), put(x + q, y + 1, 0.14));
+        }
+        for (let q = -2; q < 26; q++) put(lx0 + q, railY - 2, 0.3);
       }
-      for (let q = -2; q < 26; q++) put(lx0 + q, railY - 2, 0.3);
+    }
+    // a brass label plate on each bay's head (no words: a cartouche and a ruled line)
+    for (let bx = 0; bx < o.roomW; bx += 150) {
+      const cx = bx + 80;
+      if (doorBay(cx) || prod(cx) || inArch(cx, ceilS + 6) || Math.abs(cx - clockX) < 40) continue;
+      for (let y = ceilS + 1; y < ceilS + 9; y++)
+        for (let x = cx - 12; x < cx + 12; x++) {
+          const e = Math.min(x - (cx - 12), cx + 11 - x, y - (ceilS + 1), ceilS + 8 - y);
+          put(x, y, e === 0 ? (y === ceilS + 1 || x === cx - 12 ? 0.62 : 0.2) : y === ceilS + 4 && Math.abs(x - cx) < 8 ? 0.22 : 0.46, R("brass"));
+        }
+    }
+    // books piled on the boards against the wall: the reading room's clutter in the middle layer (round 3
+    // put piles in front of the walk line, straddling it). Lying flat, each a little off the one under
+    // it, spines and page edges, their tops lit by the nearest candle; contact shadows on the boards
+    for (const [n, pw] of o.piles.entries()) {
+      const cx = rx(pw);
+      let yb = floorS;
+      const count = 4 + Math.floor(hashInt(n, 1, 221) * 3);
+      for (let k = 0; k < count; k++) {
+        const bh = 5 + Math.floor(hashInt(n, k, 223) * 4), bw = 30 + Math.floor(hashInt(k, n, 227) * 16) - k * 2;
+        const off = Math.round((hashInt(n + 3, k, 229) - 0.5) * 10);
+        const pick = hashInt(k, n, 233);
+        const edgeOut = pick > 0.72;
+        const row = pick < 0.3 ? R("spine") : pick < 0.5 ? R("spine2") : pick < 0.72 ? R("spine3") : R("paper");
+        const x0 = Math.round(cx + off - bw / 2);
+        for (let y = yb - bh; y < yb; y++)
+          for (let x = x0; x < x0 + bw; x++) {
+            const ly = y - (yb - bh), lq = x - x0;
+            let sv: number;
+            let rr = row;
+            if (edgeOut) {
+              if (ly === 0 || ly === bh - 1) (sv = ly === 0 ? 0.42 : 0.12), (rr = R("spine"));
+              else sv = 0.34 + (ly % 2 ? 0.06 : -0.05);
+            } else {
+              sv = 0.2 + (ly === 0 ? 0.18 : ly === 1 ? 0.06 : ly === bh - 1 ? -0.1 : 0) - (lq < 2 ? 0.06 : 0) + (lq > bw - 3 ? 0.08 : 0);
+              if ((lq === 5 || lq === bw - 6) && ly > 0 && ly < bh - 1) (sv = 0.4), (rr = R("brass"));
+            }
+            put(x, y, sv, rr);
+          }
+        yb -= bh;
+      }
+      // the shadow the pile throws on the wainscot behind it (the candles are low, to its side)
+      for (let y = yb; y < floorS; y++) for (let q = 0; q < 6; q++) bump(cx + 22 + q, y, -0.06 + q * 0.01);
     }
     // a clock on its pilaster, stopped at no particular hour
     {
@@ -555,30 +665,48 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
       if (t < 0.35) continue;
       for (let x = -8; x < o.roomW + 8; x++) if (!inArch(x, y) && ((x ^ y) & 1 || t > 0.5)) bump(x, y, -(t - 0.35) * 0.34);
     }
-    // the light wells: a grate in the ceiling boards (iron bars against the amber above), a lit shaft
-    // of masonry over it up to the street, and the shaft's light on the wall where it passes and lands
+    // the light wells (round 4: the grate was hidden under the ceiling's terrain art, so the shafts came
+    // out of nothing): each is a barred opening cut into the ceiling slab's face, the market's amber
+    // bright behind the bars and brightest at the top, a stone frame with its lit arris, the light
+    // spilling on the slab and the cornice round it, drips hanging under it; the shaft starts at the
+    // opening, lifts the shelf faces it crosses (beamK above) and pools where it lands
+    const glowAt = (x: number, y: number, s: number, row: number): void => pix.set(Math.round(x - ox - Math.round(span / 2)), Math.round(y), s, row, 0, true);
     for (const wx of o.wells) {
       const gx = rx(wx);
       const [lx0, lx1] = wellLine(o, wx, span).map((v) => v + span / 2);
-      for (let y = 0; y < ceilS; y++)
-        for (let x = gx - 22; x < gx + 22; x++) {
-          const e = Math.min(x - (gx - 22), gx + 21 - x);
-          if (y >= ceilS - 8) {
-            // the grate in the ceiling boards: bars and the light between them
-            const bar = (x - gx + 40) % 6 < 2 || e < 2;
-            if (bar) put(x, y, 0.3 + (y === ceilS - 1 ? 0.12 : 0));
-            else put(x, y, 0.9, R("well"), true);
+      const hw = 21, top = slab + 6, bot = ceilS - 2;
+      pool(bump, gx, bot - 4, 64, 26, 0.14, 3, Math.round(wx * 17));
+      for (let y = top - 3; y < bot + 2; y++)
+        for (let x = gx - hw - 3; x < gx + hw + 3; x++) {
+          const inside = y >= top && y < bot && x >= gx - hw && x < gx + hw;
+          if (!inside) {
+            // the frame: cut stone, its inner arris lit by the light coming through, its outer edge dark
+            const inner = (x === gx - hw - 1 || x === gx + hw || y === top - 1 || y === bot) && y >= top - 1;
+            put(x, y, inner ? 0.5 : x === gx - hw - 3 || x === gx + hw + 2 || y === top - 3 ? 0.14 : 0.32 + wallTex("stone", x, y, 12) * 0.3, R("stone"));
             continue;
           }
-          // the shaft through the masonry: its sides lit by the light coming down, brighter toward the street
-          const k = 1 - y / Math.max(1, ceilS - 8);
-          put(x, y, e < 3 ? 0.3 + k * 0.12 : 0.36 + (1 - k) * 0.22 + ((x + y) & 1 ? 0.02 : 0), e < 3 ? R("stone") : R("well"));
+          const lx = x - (gx - hw);
+          const t = (y - top) / (bot - top);
+          if (lx % 7 < 2 || y === top + 9 || y === top + 10) {
+            // iron bars: a lit edge toward the room, dark behind
+            put(x, y, lx % 7 === 0 || y === top + 9 ? 0.34 : 0.12, R("stone"));
+            continue;
+          }
+          // the light behind: brightest high (the street's amber falling in), dithered steps
+          glowAt(x, y, 0.95 - t * 0.32 + ((x + y) & 1 ? 0.02 : -0.02), R("well"));
         }
+      // drips hanging from the cornice under the opening, and a wet streak under each
+      for (let k = 0; k < 4; k++) {
+        const dx = gx - 15 + k * 10 + Math.round(hashInt(k, Math.round(wx), 5) * 5);
+        const len = 1 + Math.floor(hashInt(Math.round(wx), k, 7) * 3);
+        for (let q = 0; q < len; q++) glowAt(dx, ceilS + q, q === len - 1 ? 0.7 : 0.5, R("well"));
+        for (let q = len; q < len + 6; q++) bump(dx, ceilS + q, -0.04);
+      }
       // the light on the wall along the shaft, stepped, and a warm patch on the wainscot where it lands
       for (let i = 0; i < 9; i++) {
         const t = (i + 0.5) / 9;
         const cx = lx0! + (lx1! - lx0!) * t, cy = ceilS + (floorS - ceilS) * t;
-        pool(bump, cx, cy, o.H * (0.3 + t * 0.32), o.H * 0.42, 0.07, 2, Math.round(wx * 10) + i);
+        pool(bump, cx, cy, o.H * (0.3 + t * 0.32), o.H * 0.42, 0.09, 2, Math.round(wx * 10) + i);
       }
       pool(bump, lx1!, floorS - o.H * 0.3, o.H * 0.85, o.H * 0.55, 0.12, 3, Math.round(wx * 13));
     }
@@ -636,34 +764,35 @@ function archiveFore(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
         else put(cx + q, beamB + len + yy, 0.62 - Math.abs(q) * 0.04 + (yy > 14 ? -0.1 : 0), R("well"));
       }
   }
-  // the floor's near edge: piles of books, short (under 0.5 H over the floor line)
-  const piles = [226.4, 230.6, 234.1, 238.3, 242.4, 246.6];
+  // the floor's near edge: piles of books close to the camera (round 4: committed to the front layer.
+  // Round 3's straddled the walk line, their tops in the room's value over the boards: now their feet
+  // are in the frame's foot and their tops stop a few px over the walk line at most; dark and low in
+  // contrast, a hint of each cloth's hue, a warm rim only along the top edge. None in front of the
+  // lectern or the candelabra, so those stand on the boards in full)
+  const piles = [226.9, 230.9, 233.9, 242.1, 246.2];
   for (const [i, wx] of piles.entries()) {
     const cx = Math.round(X(wx));
-    const base = Math.round(floorS + 46);
-    // books lying in a pile, each a little offset: some spine out (cloth, two gilt bands, a lit top
-    // edge), some fore-edge out (the paper block in lines between the boards)
-    let yb = base;
-    const top = floorS - Math.round(o.H * (0.08 + hashInt(i, 1, 7) * 0.4));
+    let yb = Math.round(floorS + 64);
+    const top = floorS - 8 + Math.round(hashInt(i, 1, 7) * 6);
     for (let k = 0; yb > top && k < 30; k++) {
-      const bh = 7 + Math.round(hashInt(i, k, 9) * 5), bw = 50 + Math.round(hashInt(k, i, 11) * 34);
-      const off = Math.round((hashInt(i + 3, k, 13) - 0.5) * 16);
+      const bh = Math.min(yb - top, 7 + Math.round(hashInt(i, k, 9) * 5)), bw = 62 + Math.round(hashInt(k, i, 11) * 30) - k * 4;
+      const off = Math.round((hashInt(i + 3, k, 13) - 0.5) * 30);
       const pick = hashInt(k, i, 15);
-      const row = pick < 0.35 ? R("spine") : pick < 0.6 ? R("spine2") : pick < 0.8 ? R("spine3") : R("paper");
-      const edge = row === R("paper");
+      const row = pick < 0.3 ? R("spine") : pick < 0.5 ? R("spine2") : pick < 0.65 ? R("spine3") : R("fore");
+      const last = yb - bh <= top;
+      // spine toward the camera on most, the page block on some (paper, in the dark)
+      const pages = hashInt(i, k, 17) < 0.3;
       for (let yy = yb - bh; yy < yb; yy++)
         for (let q = Math.round(-bw / 2); q < bw / 2; q++) {
           const ly = yy - (yb - bh), lq = q + bw / 2;
-          let sv: number;
+          let sv = (row === R("fore") ? 0.22 : 0.1) + (ly === bh - 1 ? -0.04 : 0) - (lq < 2 ? 0.03 : 0);
           let rr = row;
-          if (edge) {
-            // boards top and bottom, the pages between in lines
-            if (ly === 0 || ly === bh - 1) (sv = ly === 0 ? 0.36 : 0.1), (rr = R("spine"));
-            else sv = 0.2 + (ly % 2 ? 0.05 : -0.04) - (lq > bw - 4 ? 0.08 : 0);
-          } else {
-            sv = 0.16 + (ly === 0 ? 0.2 : ly === 1 ? 0.06 : ly === bh - 1 ? -0.1 : 0) - (lq < 2 ? 0.06 : 0) + (lq > bw - 3 ? 0.1 : 0);
-            if ((Math.abs(lq - 7) < 1 || Math.abs(lq - (bw - 8)) < 1) && ly > 0 && ly < bh - 1) (sv = 0.32), (rr = R("brass"));
-          }
+          if (pages && ly > 0 && ly < bh - 1) (sv = 0.1 + (ly % 2 ? 0.04 : 0)), (rr = R("paper"));
+          // the end toward the room catches a little of its light
+          if (lq > bw - 3 && ly > 0) sv += 0.08;
+          // a dark line between the books, so the pile reads as books, not one block; a warm rim on top
+          if (ly === 0) (sv = last ? 0.56 : 0.3), (rr = R("fore"));
+          else if (ly === bh - 1) (sv = 0.08), (rr = R("fore"));
           put(cx + off + q, yy, sv, rr);
         }
       yb -= bh;
