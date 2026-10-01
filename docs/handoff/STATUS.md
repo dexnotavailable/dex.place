@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-01T08:38:45.520Z (01/10/2026, 15:38:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-01T09:38:45.495Z (01/10/2026, 16:38:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,11 +12,9 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_cc0765c3-3f0 — last activity 13 min ago
-19 agents: 10 done, 3 running or stopped mid-way, 6 failed.
+### wf_cc0765c3-3f0 — last activity 45 min ago
+21 agents: 12 done, 3 running or stopped mid-way, 6 failed.
 
-- **reg-a:r1** (failed)
-- **reg-b:r1** (failed)
 - **reg-c:r1** (done): Round 1 for region C (C1 Foundry Market, C2 Archive, C3 Lift Foot) is done and committed on claude/wq-reg-c (two commits on top of 06a7263). All three rooms read much better than before, but against the refs they still run darker. That is the main thing left for round 2. **C1 Foundry Market** - The houses behind the street were tiny-windowed skyscraper blocks right behind a street the player can touch. They are now r
 - **reg-d:r1** (done): I reworked D1 to D4 (the spire's lift, climb, Crown and Blade) on branch claude/wq-reg-d, two commits on top of 06a7263. Every audit passes. Doors now sit inside walls and props stand on real structure. The rooms are still darker and less textured than Dex's refs, which is the main gap left. What changed, room by room: - **D2 Outer Climb.** The spire's wall used to be a background layer that slid behind the catwalks 
 - **reg-e:r1** (done): Round 1 for region E (E1 to E4) is done and committed on claude/wq-reg-e as e93551a. It was not pushed. All four rooms got the art rework and pixel pass. I fixed four real bugs along the way, and every audit and the full region walk-through pass on GPU. Screenshots and sheets are in D:/Dex/Temp/claude-wq-reg-e/review/reg-e/round-1/, and I looked at all of them. **Bugs fixed** - **Art thumbnails (E3):** the real artwo
@@ -26,11 +24,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **reg-d:critic:r1** (done): verdict revise · score 5
 - **reg-d:r2** (failed)
 - **reg-e:critic:r1** (done): verdict revise · score 6
-- **reg-e:r2** (running)
+- **reg-e:r2** (done): I've fixed all six round-2 critique items for E1-E4 and committed them as 138aa5c on claude/wq-reg-e (not pushed). The audits, the end-to-end walk-through and the new window/pier check all pass. I looked at every after screenshot and the four sheets before reporting. What changed, critique by critique: 1. **Windows hidden behind piers (E3):** fixed. The aisle windows used to drift with the background as the camera pa
 - **reg-c:critic:r1** (done): verdict revise · score 5.8
 - **reg-c:r2** (running)
+- **reg-e:critic:r2** (done): verdict revise · score 7
+- **reg-e:r3** (running)
 
-### wf_54ca354a-626 — last activity 410 min ago
+### wf_54ca354a-626 — last activity 470 min ago
 5 agents: 3 done, 2 running or stopped mid-way, 0 failed.
 
 - **package** (done): The real rendered Rosace (drive-9 round 2, R2) is packaged as dex.sprite/1 at 80 px and 144 px, all 17 clips plus sit, and committed on claude/rosace-package. Nothing was pushed. I left the level art alone (see openIssues). Scope: the relayed request was about level art, with doors popping out of walls. The task text and namespace are the Rosace package, so I did only that. Level art is not touched. Look used: R2. Co
@@ -39,25 +39,25 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **review-motion-1** (done): verdict pass-with-notes · score 7.5
 - **review-runtime-1** (done): verdict pass-with-notes · score 0.9
 
-### wf_b70fb9cc-c84 — last activity 632 min ago
+### wf_b70fb9cc-c84 — last activity 692 min ago
 3 agents: 0 done, 3 running or stopped mid-way, 0 failed.
 
 - **sys:cam** (running)
 - **sys:layers** (running)
 - **sys:ixr** (running)
 
-### wf_43490aa2-fb3 — last activity 637 min ago
+### wf_43490aa2-fb3 — last activity 697 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **package** (running)
 
-### wf_e8bdf118-24f — last activity 638 min ago
+### wf_e8bdf118-24f — last activity 698 min ago
 2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
 
 - **sys-camera** (running)
 - **sys-layers** (running)
 
-### wf_5cb6279a-9f2 — last activity 842 min ago
+### wf_5cb6279a-9f2 — last activity 902 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:world-load** (done): The World now starts loading with the homepage. Before, it was only mounted from an animation frame after the page's load event. - **Page opened at the top:** the World frame is added as soon as the page is interactive, 13–34 ms after DOMContentLoaded (median). - **Background tab:** the frame is created while the tab is hidden, and the World boots, compiles its shaders and draws a warm-up frame there. Before this cha
@@ -68,20 +68,20 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-world-1** (done): verdict pass-with-notes · score 9
 - **verify-site-1** (done): verdict pass-with-notes · score 9
 
-### wf_1e5499b2-d83 — last activity 2453 min ago
+### wf_1e5499b2-d83 — last activity 2513 min ago
 2 agents: 0 done, 0 running or stopped mid-way, 2 failed.
 
 - **followups** (failed)
 - **verify** (failed)
 
-### wf_5ef68e55-dd7 — last activity 2459 min ago
+### wf_5ef68e55-dd7 — last activity 2519 min ago
 3 agents: 0 done, 0 running or stopped mid-way, 3 failed.
 
 - **cross-lane-fix** (failed)
 - **verify-regions-1** (failed)
 - **verify-release-1** (failed)
 
-### wf_68cebea7-8e1 — last activity 2460 min ago
+### wf_68cebea7-8e1 — last activity 2520 min ago
 40 agents: 40 done, 0 running or stopped mid-way, 0 failed.
 
 - **whole:overall:r3** (done): score 5.5 · prefers ours: no · top fixes: Undo the R3 regression in finish. Blind, the previous round (R2) beat this round (R3) at both 144 and 80 px. Return to R2's lower-key, softer ramps and push further toward textured painted shading with selective or coloured outlines instead of a navy outline on every edge. | Integrate the bust. Right now it is two flat grey-lavender spheres at sleeve value, which is on the never-list. Add an under
@@ -99,7 +99,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **whole:overall:r5** (done): score 5.7 · prefers ours: no · top fixes: Face regressed versus R4: restore the open, bright-eyed default face, pull the dark hair strands off the eyes, trim the crown flyaways to one clean ahoge, and go to a head of 1/6 of height | Pose: replace the walking-stride legs with a true weight-leg contrapposto (feet closer, free knee crossing in front, hip cocked out, hand on hip); the current idle reads as mid-step, not seductive-elegant | Bu
 - **report** (done): I promoted round 2. It is the best round of the five, at 5.78 against the refs' 9, and it beat the old integrated build in two separate blind sets (5.8 vs 5.6, then 5.7 vs 5.2). The canonical build and the stills chain now produce its look by default, and a fresh build plus re-render matches the judged stills pixel for pixel. One thing is missing: the harness blocked writing review/rosace/art/drive9/REPORT.md ("subag
 
-### wf_a38b10a9-aa1 — last activity 2547 min ago
+### wf_a38b10a9-aa1 — last activity 2607 min ago
 13 agents: 13 done, 0 running or stopped mid-way, 0 failed.
 
 - **R-A:critic** (done): verdict pass-with-notes · score 8.4
@@ -116,13 +116,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **I1:build** (done): Lane I1 is built. I played the whole round once from a fresh save and recorded it, and the pacing check is done. The phone and tablet runs and a laptop GPU measurement still need Dex, so the lane is not fully signed off. Nothing is committed. **What I played.** The bot played every region's real rooms with real input (W0's bot only decides which keys to press), from the dock through the lodge and every region, back t
 - **I1:critic** (done): verdict pass-with-notes · score 8
 
-### wf_168f26ae-9f9 — last activity 2566 min ago
+### wf_168f26ae-9f9 — last activity 2626 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **tablet-cap** (done): I picked up the earlier attempt's edits and finished the work. The tablet cap was already in place and still holds. On its own it left the home arrival (/#gallery) at 2.7-3.3 s on tablets, so I added a small preload that only runs for that arrival. Both pages now land at or just under 2.5 s on 768 and 820 tablets. Phones hold or improve, and desktop /#gallery improved. Nothing was committed or pushed. **What changed*
 - **verify** (done): verdict pass-with-notes · score 8.8
 
-### wf_8dbb7c86-4f2 — last activity 2713 min ago
+### wf_8dbb7c86-4f2 — last activity 2773 min ago
 20 agents: 12 done, 2 running or stopped mid-way, 6 failed.
 
 - **P0:critic** (done): verdict blocking · score 7.5 · blocking: The nave rule (sway-only room) is not enforced for grass and vines, so the section 13 item 'the breakage policy in section 4 is enforced' fails, along with the lane's claim of '0 cells lost, 0 tears, 0 cuts across all props in a sway-only room'. In src/pixel/props/plants.ts, grassHit (about line 187) and vineHit (about line 402) cut blades and strands without checking c.keepsCells. Measured in /pr
