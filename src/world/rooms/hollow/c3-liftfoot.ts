@@ -56,6 +56,8 @@ b.prop("hollowFloor", "tiles", X0, FLOOR, {
   kind: "tile",
   shadows: SHADOWS.map(([x, w]) => [x - X0, w]),
   pools: [[256.1 - X0, 3.2, 0.7], [252.4 - X0, 1.3, 0.6]],
+  // the tubes' cold light on the tile under each (round 3: it lands where the cones end)
+  washes: TUBES.map((x) => [x - X0, 1.2, 0.55] as [number, number, number]),
 }, px);
 
 // the lift: its gate (a big door that slides), the car parked in the shaft behind it, the beacon

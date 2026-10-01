@@ -11,7 +11,7 @@
 // lifted like the market (shift.ts), so it stays right if the room changes.
 
 import { Pix, hashInt, mulberry, type BuildCtx, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
-import { f, v2 } from "../../../../scenes/engine/layers.ts";
+import { f, v2, shaft, shaftFn } from "../../../../scenes/engine/layers.ts";
 import { lifted } from "./shift.ts";
 import { putter } from "./grammar.ts";
 import { bumper, pool, wallTex } from "./houses.ts";
@@ -35,6 +35,15 @@ export interface ArchiveOpts {
   products: [number, number];
   clock: number;
   ladder: number;
+  /** Light wells (world x, H): grates in the ceiling under the street's drains, the market's amber
+   * falling through them in shafts that lean a little toward the east, and where each lands. */
+  wells: number[];
+}
+
+/** A light well's shaft: layer x at the ceiling and at the floor (it leans east, with the street's light). */
+function wellLine(o: ArchiveOpts, wx: number, span: number): [number, number] {
+  const x = (wx - o.x0) * o.H - span / 2;
+  return [x, x + o.H * 0.7];
 }
 
 const PALETTE = {
@@ -46,6 +55,10 @@ const PALETTE = {
   stone: ["#0a0808", "#120e0d", "#1b1513", "#261d19", "#342822"],
   candle: ["#6d3f1c", "#c7803a", "#ffd494", "#fff0cc"],
   glass: ["#1a3a26", "#2e6644", "#5aa27a"],
+  // the market's light through the street's grates: amber, a little dusty
+  well: ["#3a2412", "#6e4520", "#a4703a", "#d6a464", "#f2d29a"],
+  // near silhouettes in front of the reading room (the beam over the camera, book piles on the floor)
+  fore: ["#060404", "#0c0807", "#130d0a", "#1c130e", "#2a1c13", "#46301c", "#76502c"],
   standin: ["#07070a", "#101015", "#24232c", "#a29792"],
   paper: ["#1a140e", "#2e2418", "#4a3c28", "#6a583c", "#8c7754", "#ad966c"],
   brass: ["#1c1208", "#3a2610", "#5e4018", "#8a6424", "#b48a3a", "#d6ae5a"],
@@ -78,7 +91,14 @@ export function archiveScene(o: ArchiveOpts): SceneDef {
 function prelude(ctx: BuildCtx, o: ArchiveOpts): string {
   const span = ctx.span;
   const pts = o.lights.map(([wx, hy]) => v2((wx - o.x0) * o.H - span / 2, o.floor - o.ref - hy * o.H));
-  return /* glsl */ `
+  const floorS = o.floor - o.ref, ceilS = o.ceiling - o.ref;
+  const shafts = o.wells
+    .map((wx, i) => {
+      const [x0, x1] = wellLine(o, wx, span);
+      return shaftFn({ fn: `well${i}`, from: [x0, ceilS - 4], to: [x1, floorS + 6], w0: o.H * 0.32, w1: o.H * 0.62, streaks: 5, speed: 0.02, fadeStart: 0.78, intensity: 0.85 });
+    })
+    .join("\n");
+  return /* glsl */ `${shafts}
 const vec2 ALAMPS[${pts.length}] = vec2[${pts.length}](${pts.join(", ")});
 float sceneLight(vec2 s, float depth) {
   float l = 0.0;
@@ -153,7 +173,8 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
       }
       xx += rw + aisle;
     }
-    L.push({ kind: "pix", name: `stacks-${d}`, depth: d, fog: d > 3 ? 0.62 : 0.36, pix, x, y: 0, twinkle: 0.2, dither: 0.3 });
+    // (round 3: deeper in the warm haze, so the room's own wall stands in front of them by value)
+    L.push({ kind: "pix", name: `stacks-${d}`, depth: d, fog: d > 3 ? 0.74 : 0.5, pix, x, y: 0, twinkle: 0.2, dither: 0.3 });
   }
 
   // the back wall (depth 1, room-aligned): built-in shelves to the ceiling in bays between oak
@@ -531,13 +552,122 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
     // pools read as light and the shelves go up into the dark
     for (let y = ceilS; y < floorS; y++) {
       const t = 1 - (y - ceilS) / (floorS - ceilS);
-      if (t < 0.45) continue;
-      for (let x = -8; x < o.roomW + 8; x++) if (!inArch(x, y) && ((x ^ y) & 1 || t > 0.6)) bump(x, y, -(t - 0.45) * 0.18);
+      if (t < 0.35) continue;
+      for (let x = -8; x < o.roomW + 8; x++) if (!inArch(x, y) && ((x ^ y) & 1 || t > 0.5)) bump(x, y, -(t - 0.35) * 0.34);
+    }
+    // the light wells: a grate in the ceiling boards (iron bars against the amber above), a lit shaft
+    // of masonry over it up to the street, and the shaft's light on the wall where it passes and lands
+    for (const wx of o.wells) {
+      const gx = rx(wx);
+      const [lx0, lx1] = wellLine(o, wx, span).map((v) => v + span / 2);
+      for (let y = 0; y < ceilS; y++)
+        for (let x = gx - 22; x < gx + 22; x++) {
+          const e = Math.min(x - (gx - 22), gx + 21 - x);
+          if (y >= ceilS - 8) {
+            // the grate in the ceiling boards: bars and the light between them
+            const bar = (x - gx + 40) % 6 < 2 || e < 2;
+            if (bar) put(x, y, 0.3 + (y === ceilS - 1 ? 0.12 : 0));
+            else put(x, y, 0.9, R("well"), true);
+            continue;
+          }
+          // the shaft through the masonry: its sides lit by the light coming down, brighter toward the street
+          const k = 1 - y / Math.max(1, ceilS - 8);
+          put(x, y, e < 3 ? 0.3 + k * 0.12 : 0.36 + (1 - k) * 0.22 + ((x + y) & 1 ? 0.02 : 0), e < 3 ? R("stone") : R("well"));
+        }
+      // the light on the wall along the shaft, stepped, and a warm patch on the wainscot where it lands
+      for (let i = 0; i < 9; i++) {
+        const t = (i + 0.5) / 9;
+        const cx = lx0! + (lx1! - lx0!) * t, cy = ceilS + (floorS - ceilS) * t;
+        pool(bump, cx, cy, o.H * (0.3 + t * 0.32), o.H * 0.42, 0.07, 2, Math.round(wx * 10) + i);
+      }
+      pool(bump, lx1!, floorS - o.H * 0.3, o.H * 0.85, o.H * 0.55, 0.12, 3, Math.round(wx * 13));
     }
     // occlusion: the floor's edge, the corners under the beams
     for (let q = 0; q < 10; q++) for (let x = -8; x < o.roomW + 8; x++) bump(x, floorS - 1 - q, -0.06 + q * 0.006);
     for (let q = 0; q < 8; q++) for (let x = -8; x < o.roomW + 8; x++) bump(x, ceilS + q, -0.05 + q * 0.006);
     L.push({ kind: "pix", name: "wall", depth: 1, fog: 0, pix, x: ox, y: 0, twinkle: 0, dither: 0 });
   }
+  // the light wells' shafts: stepped additive light in the room's air, in front of the wall (behind the
+  // player and the props: the room's dominant light, from above, the way the refs light a room)
+  for (const [i, wx] of o.wells.entries()) {
+    const [x0, x1] = wellLine(o, wx, span);
+    L.push({ ...shaft({ name: `well-${i}`, depth: 1, fn: `well${i}`, row: "well", steps: 4, alpha: 0.42 }), bounds: { x0: Math.min(x0, x1) - o.H, x1: Math.max(x0, x1) + o.H, y0: ceilS - 6, y1: floorS + 8 } });
+  }
+  L.push(...archiveFore(ctx, o));
   return L;
+}
+
+/**
+ * Near silhouettes in front of the reading room (round 3): the frame's top edge is a carved beam close
+ * to the camera with chain lamps hanging from it; along its foot, piles of books stand on the floor
+ * nearer than the player, short enough to leave her readable. Front pass
+ * (depth < 1): they draw over the world and slide faster than it. Near-black oak with a warm rim.
+ */
+function archiveFore(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
+  const { W, H } = ctx;
+  const span = ctx.span;
+  const R = (n: string): number => ctx.row(n);
+  const d = 0.72;
+  const lx = (roomX: number): number => W / 2 + (roomX - W / 2 - span / 2) / d;
+  const X = (wx: number): number => lx((wx - o.x0) * o.H);
+  const w = Math.ceil(ctx.panWidth(d)) + 300;
+  const x = -Math.ceil((w - W) / 2);
+  const floorS = o.floor - o.ref, ceilS = o.ceiling - o.ref;
+  const pix = new Pix(w, H + 40);
+  const put = putter(pix, x, 0, R("fore"));
+  // the beam: across the whole top, its underside lit by the room, brackets every so often, and a
+  // chain lamp hanging from it here and there (a dark brass cage round a flame)
+  const beamB = Math.max(18, ceilS - 16);
+  for (let xx = x; xx < x + w; xx++) {
+    for (let yy = 0; yy < beamB; yy++) put(xx, yy, 0.2 + (yy === beamB - 1 ? 0.5 : yy === beamB - 2 ? 0.3 : 0) + ((xx >> 3) % 7 === 0 ? -0.04 : 0));
+    const k = (xx - x) % 340;
+    if (k < 26) for (let q = 0; q < 26 - k; q++) put(xx, beamB + q, 0.22 + (q === 26 - k - 1 ? 0.3 : 0));
+  }
+  for (const wx of [228.2, 240.3]) {
+    const cx = Math.round(X(wx));
+    const len = Math.round(o.H * 0.9);
+    for (let yy = beamB; yy < beamB + len; yy++) put(cx + ((yy >> 2) & 1), yy, (yy & 3) === 0 ? 0.5 : 0.26);
+    for (let yy = 0; yy < 22; yy++)
+      for (let q = -9; q <= 9; q++) {
+        const hw = 4 + Math.round(Math.sin((yy / 22) * Math.PI) * 5);
+        if (Math.abs(q) > hw) continue;
+        const cage = Math.abs(q) === hw || yy % 7 === 0;
+        if (cage) put(cx + q, beamB + len + yy, Math.abs(q) === hw && q > 0 ? 0.62 : 0.3);
+        else put(cx + q, beamB + len + yy, 0.62 - Math.abs(q) * 0.04 + (yy > 14 ? -0.1 : 0), R("well"));
+      }
+  }
+  // the floor's near edge: piles of books, short (under 0.5 H over the floor line)
+  const piles = [226.4, 230.6, 234.1, 238.3, 242.4, 246.6];
+  for (const [i, wx] of piles.entries()) {
+    const cx = Math.round(X(wx));
+    const base = Math.round(floorS + 46);
+    // books lying in a pile, each a little offset: some spine out (cloth, two gilt bands, a lit top
+    // edge), some fore-edge out (the paper block in lines between the boards)
+    let yb = base;
+    const top = floorS - Math.round(o.H * (0.08 + hashInt(i, 1, 7) * 0.4));
+    for (let k = 0; yb > top && k < 30; k++) {
+      const bh = 7 + Math.round(hashInt(i, k, 9) * 5), bw = 50 + Math.round(hashInt(k, i, 11) * 34);
+      const off = Math.round((hashInt(i + 3, k, 13) - 0.5) * 16);
+      const pick = hashInt(k, i, 15);
+      const row = pick < 0.35 ? R("spine") : pick < 0.6 ? R("spine2") : pick < 0.8 ? R("spine3") : R("paper");
+      const edge = row === R("paper");
+      for (let yy = yb - bh; yy < yb; yy++)
+        for (let q = Math.round(-bw / 2); q < bw / 2; q++) {
+          const ly = yy - (yb - bh), lq = q + bw / 2;
+          let sv: number;
+          let rr = row;
+          if (edge) {
+            // boards top and bottom, the pages between in lines
+            if (ly === 0 || ly === bh - 1) (sv = ly === 0 ? 0.36 : 0.1), (rr = R("spine"));
+            else sv = 0.2 + (ly % 2 ? 0.05 : -0.04) - (lq > bw - 4 ? 0.08 : 0);
+          } else {
+            sv = 0.16 + (ly === 0 ? 0.2 : ly === 1 ? 0.06 : ly === bh - 1 ? -0.1 : 0) - (lq < 2 ? 0.06 : 0) + (lq > bw - 3 ? 0.1 : 0);
+            if ((Math.abs(lq - 7) < 1 || Math.abs(lq - (bw - 8)) < 1) && ly > 0 && ly < bh - 1) (sv = 0.32), (rr = R("brass"));
+          }
+          put(cx + off + q, yy, sv, rr);
+        }
+      yb -= bh;
+    }
+  }
+  return [{ kind: "pix", name: "fore", depth: d, fog: 0, pix, x, y: 0, twinkle: 0, dither: 0 }];
 }

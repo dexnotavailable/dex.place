@@ -173,7 +173,12 @@ export function houses(pix: Pix, ox: number, oy: number, o: HouseOpts): void {
       for (let q = 0; q < S(4); q++) for (let xx = bx; xx < bx + bw; xx++) bump(xx, y0 + S(7) + q, -0.07 + q * 0.018);
 
       if (k === 0) {
-        // the shop: a fascia, then an open lit counter or a rolled shutter, and a door beside it
+        // the shop (round 3: a proper shuttered storefront at the middle layer's value, lit only by its
+        // own sign lamp; round 2's were flat orange boxes brighter than the street in front of them):
+        // a sign board on brackets with a gooseneck lamp over it, steel guide channels down both sides,
+        // the roller drum's box under the sign, a slatted shutter that falls into shadow away from the
+        // lamp, a bottom bar with a handle and a padlock, a stone kerb; now and then the shutter is up
+        // and a dim shop shows, lit by one bulb
         const fw = Math.round(bw * (0.55 + r() * 0.2));
         const fx = bx + Math.round((bw - fw) * (r() < 0.5 ? 0.15 : 0.7));
         const ftop = y0 + S(12);
@@ -182,48 +187,81 @@ export function houses(pix: Pix, ox: number, oy: number, o: HouseOpts): void {
         for (let yy = ftop; yy < ftop + fh; yy++)
           for (let xx = fx - S(6); xx < fx + fw + S(6); xx++) {
             const edge = yy === ftop || yy === ftop + fh - 1;
-            if (painted) put(xx, yy, edge ? 0.42 : 0.26 + ((xx - fx) % S(14) === 0 ? -0.04 : 0), cloth);
-            else put(xx, yy, sh0 + (edge ? 0.2 : 0.08));
+            const end = xx < fx - S(4) || xx >= fx + fw + S(4);
+            if (painted) put(xx, yy, (edge ? 0.3 : 0.17) + (end ? -0.04 : 0) + ((xx - fx) % S(14) === 0 ? -0.03 : 0) + (yy === ftop + 1 ? 0.06 : 0), cloth);
+            else put(xx, yy, sh0 + (edge ? 0.14 : 0.04) + wallTex("boards", xx - fx, yy, seed + 4, o.scale) * 0.6);
           }
-        // glyph letters on some fascias (they mean nothing)
+        // the board's shadow on the wall under it
+        for (let q = 0; q < S(3); q++) for (let xx = fx - S(5); xx < fx + fw + S(7); xx++) bump(xx, ftop + fh + q, -0.07 + q * 0.02);
+        // glyph letters on some boards (they mean nothing): the shop's sign, its only bright thing
         if (r() < 0.45 && o.signs.length) {
           const row = o.signs[Math.floor(r() * o.signs.length)]!;
           for (let gx = fx + S(8); gx < fx + fw - S(10); gx += S(10))
             for (let q = 0; q < 15; q++) if (hashInt(gx, q, seed) < 0.5) put(gx + (q % 3) * S(2), ftop + S(4) + Math.floor(q / 3) * S(2), 0.9, row, true);
         }
+        // the gooseneck lamp over the board, and its light on the board and the shutter's head
+        const lampX = fx + Math.round(fw / 2);
+        {
+          for (let q = 0; q < S(7); q++) put(lampX - S(4) + Math.round(q * 0.4), ftop - S(7) + q, sh0 + 0.14);
+          for (let q = -S(3); q <= S(3); q++) put(lampX + q, ftop - S(8), sh0 + 0.2);
+          for (let q = -S(2); q <= S(2); q++) put(lampX + q, ftop - S(7), 0.9, o.wins[0]!, true);
+          pool(bump, lampX, ftop + S(6), fw * 0.45, S(16), 0.12, 3, seed + 21);
+        }
         const oTop = ftop + fh + S(4);
-        const open = r() < 0.6;
+        const open = r() < 0.3;
+        const opH = Math.max(1, o.ground - S(3) - oTop);
+        const ch = S(4); // the guide channels
         for (let yy = oTop; yy < o.ground; yy++)
           for (let xx = fx; xx < fx + fw; xx++) {
             const lxp = xx - fx, lyp = yy - oTop;
-            if (lxp < S(3) || fw - lxp <= S(3)) {
-              put(xx, yy, sh0 + (lxp < S(1) || fw - lxp <= S(1) ? 0.14 : 0.04));
+            const fromLamp = Math.min(1, lyp / opH);
+            // the kerb: a stone sill the shutter closes on, its nose lit
+            if (yy >= o.ground - S(3)) {
+              put(xx, yy, sh0 + (yy === o.ground - S(3) ? 0.18 : 0.06));
+              continue;
+            }
+            if (lxp < ch || fw - lxp <= ch) {
+              const inner = lxp < ch ? lxp === ch - 1 : fw - lxp === ch;
+              const outer = lxp === 0 || fw - lxp === 1;
+              put(xx, yy, sh0 + 0.06 + (outer ? 0.08 : 0) + (inner ? -0.08 : 0) - fromLamp * 0.04);
+              continue;
+            }
+            // the roller drum's box across the head
+            if (lyp < S(8)) {
+              const t = lyp / S(8);
+              put(xx, yy, sh0 + 0.04 + Math.sin(t * Math.PI) * 0.08 + (lyp === 0 ? 0.08 : 0) + (lyp === S(8) - 1 ? -0.08 : 0));
               continue;
             }
             if (open) {
-              // a lit room: back shelves with goods, a counter across the front
+              // a dim shop: back shelves with goods in silhouette, a counter, one bulb under the ceiling
               const counter = yy > o.ground - S(34);
               const shelf = !counter && lyp % S(22) < S(2);
               const goods = !counter && !shelf && lyp % S(22) > S(12) && hashInt(Math.floor(lxp / S(5)), Math.floor(lyp / S(22)), seed) < 0.6;
-              if (counter) put(xx, yy, sh0 + 0.05 + (yy === o.ground - S(34) ? 0.24 : 0) + wallTex("boards", lxp, lyp, seed + 5, o.scale));
-              // lit by a lamp under its ceiling: warm high up, falling off toward the counter (a lit
-              // room, not an emissive box), goods in silhouette against it
-              const lampFall = Math.max(0, 1 - lyp / Math.max(1, o.ground - S(34) - oTop));
-              if (shelf) put(xx, yy, 0.1 + lampFall * 0.1, o.shop);
-              else if (goods) put(xx, yy, sh0 - 0.04 + hashInt(Math.floor(lxp / S(5)), 1, seed) * 0.08);
-              else put(xx, yy, 0.16 + Math.floor(lampFall * 4) * 0.065, o.shop);
+              const near = Math.max(0, 1 - Math.hypot((lxp - fw / 2) / (fw * 0.6), lyp / (opH * 0.9)));
+              if (counter) put(xx, yy, sh0 + 0.02 + (yy === o.ground - S(34) ? 0.16 : 0) + Math.floor(near * 2) * 0.03 + wallTex("boards", lxp, lyp, seed + 5, o.scale));
+              else if (shelf) put(xx, yy, 0.12 + near * 0.14, o.shop);
+              else if (goods) put(xx, yy, sh0 - 0.06 + hashInt(Math.floor(lxp / S(5)), 1, seed) * 0.06);
+              else put(xx, yy, 0.04 + Math.floor(near * 4) * 0.05, o.shop);
             } else {
-              // a rolled steel shutter, light leaking under it
-              const slat = lyp % S(5);
-              let s = sh0 + 0.06 + (slat === 0 ? 0.08 : slat === S(5) - 1 ? -0.05 : 0);
-              if (hashInt(Math.floor(lxp / S(3)), Math.floor(lyp / S(5)), seed + 8) < 0.04) s -= 0.06;
-              if (yy >= o.ground - S(2)) put(xx, yy, 0.9, o.shop, true);
-              else put(xx, yy, s);
+              // the slats: a lit top lip and a dark bottom lip each, dents and rust here and there, the
+              // whole shutter going down a step or two away from the lamp
+              const slat = (lyp - S(8)) % S(4);
+              let sv = sh0 + 0.04 + (slat === 0 ? 0.07 : slat === S(4) - 1 ? -0.06 : 0) - Math.floor(fromLamp * 3) * 0.025;
+              if (hashInt(Math.floor(lxp / S(6)), Math.floor((lyp - S(8)) / S(4)), seed + 8) < 0.05) sv -= 0.05;
+              // the bottom bar, its handle and the padlock
+              if (yy >= o.ground - S(9)) sv = sh0 + (yy === o.ground - S(9) ? 0.14 : 0.06);
+              const hx = Math.abs(lxp - fw / 2);
+              if (yy >= o.ground - S(8) && yy < o.ground - S(6) && hx < S(6)) sv = sh0 + 0.22;
+              if (yy >= o.ground - S(6) && yy < o.ground - S(3) && hx < S(2)) sv = sh0 + 0.18;
+              // a thread of light under it where it does not quite meet the kerb
+              if (yy === o.ground - S(4) && hashInt(Math.floor(lxp / S(9)), 1, seed + 2) < 0.5) put(xx, yy, 0.6, o.shop, true);
+              else put(xx, yy, sv);
             }
           }
-        // light from an open shop spills onto the wall and the fascia
-        if (open) pool(bump, fx + fw / 2, o.ground - S(30), fw * 0.75, S(60), 0.12, 3, seed);
-        else pool(bump, fx + fw / 2, o.ground, fw * 0.55, S(14), 0.07, 2, seed);
+        if (open) {
+          for (let q = -S(1); q <= S(1); q++) for (let t = 0; t < S(2); t++) put(fx + Math.round(fw / 2) + q, oTop + S(10) + t, 0.9, o.wins[0]!, true);
+          pool(bump, fx + fw / 2, oTop + S(12), fw * 0.5, S(40), 0.06, 2, seed);
+        }
         // a door in the other bay: recessed, a step, a transom glowing
         const dw = S(30), dh = S(64);
         const dx = fx > bx + bw / 2 ? bx + S(12) : bx + bw - S(12) - dw;

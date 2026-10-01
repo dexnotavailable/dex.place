@@ -28,20 +28,30 @@ export interface HollowDoorParams extends DoorParams {
   sill: number;
   /** Px of the lintel's shadow across the leaf's head (it is set back in the reveal, under the lintel). */
   recess: number;
+  /** Tone steps the whole leaf sits darker than the wall round it (it stands back in the reveal). */
+  shade: number;
+  /** Px of the jambs' shadow down both edges of the leaf (the reveal's inner shadow). */
+  jamb: number;
 }
 
 export const hollowDoor = defineRecipe<HollowDoorParams, DoorRefs>({
   ...(door as unknown as Recipe<HollowDoorParams, DoorRefs>),
   id: "hollowDoor",
   reason: "The Hollow's doors are built into their walls (DOOR RULE): the room's backdrop is the frame, so the prop is only the leaf, the gate or the shutter that moves in it.",
-  defaults: { ...door.defaults, warm: false, sill: 0, recess: 0 } as HollowDoorParams,
+  defaults: { ...door.defaults, warm: false, sill: 0, recess: 0, shade: 0, jamb: 0 } as HollowDoorParams,
   build(b, p) {
     const refs = door.build(b, p);
     // the leaf's design(s): warm the steel, stand it on the threshold, shade its head under the lintel
     const iron = matId("iron"), warm = matId("hollowDoorSteel");
     for (const src of refs.src) {
       const g = src.grid;
-      for (let y = 0; y < g.h; y++)
+      for (let y = 0; y < g.h; y++) {
+        // the leaf's extent on this row (the jambs' shadow falls in from both edges)
+        let l0 = -1, l1 = -1;
+        for (let x = 0; x < g.w; x++) {
+          const i = g.inner(x, y);
+          if (i >= 0 && g.mat[i]) (l0 < 0 && (l0 = x), (l1 = x));
+        }
         for (let x = 0; x < g.w; x++) {
           const i = g.inner(x, y);
           if (i < 0 || !g.mat[i]) continue;
@@ -50,8 +60,28 @@ export const hollowDoor = defineRecipe<HollowDoorParams, DoorRefs>({
             continue;
           }
           if (p.warm && g.mat[i] === iron) g.mat[i] = warm;
-          if (p.recess > 0 && y < p.recess) g.tone[i] = Math.max(-3, g.tone[i]! - (y < p.recess / 2 ? 2 : 1));
+          let k = p.shade;
+          if (p.recess > 0 && y < p.recess) k += y < p.recess / 2 ? 2 : 1;
+          if (p.jamb > 0 && l0 >= 0) {
+            const e = Math.min(x - l0, l1 - x);
+            if (e < p.jamb) k += e < p.jamb / 2 ? 2 : 1;
+          }
+          // the threshold's occlusion: the leaf's foot darkens where it meets the step
+          if (p.sill > 0 && y >= g.h - p.sill - 4) k += 1;
+          if (k) g.tone[i] = Math.max(-3, g.tone[i]! - k);
         }
+      }
+    }
+    // set back in the reveal, the leaf takes no lit outline or rim of its own: the jambs' shadow is its edge
+    if (p.jamb > 0) {
+      try {
+        const leaf = b.get("leaf");
+        leaf.outline = 0;
+        // and no rim light: the street's / the room's rim cannot reach a leaf set back behind its jambs
+        leaf.rim = 0;
+      } catch {
+        // gates and shutters have no leaf
+      }
     }
     for (const name of ["frame", "reveal"]) {
       try {

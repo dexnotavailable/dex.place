@@ -11,6 +11,7 @@
 
 import amber from "../../../../scenes/scenes/amber-hollow.ts";
 import { Pix, fbm1, hashInt, type BuildCtx, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
+import { shaft, shaftFn } from "../../../../scenes/engine/layers.ts";
 import { lifted } from "./shift.ts";
 import { putter } from "./grammar.ts";
 import { bumper, pool, wallTex } from "./houses.ts";
@@ -50,6 +51,10 @@ export function liftFootScene(o: LiftFootOpts): SceneDef {
     portal: ["#0e0c0e", "#1a1618", "#282224", "#3a3132", "#504442", "#6c5a54", "#8c7468"],
     stemlit: ["#1a1410", "#3a2616", "#6a4020", "#a0622c", "#d08a3c"],
     tube: ["#5a6a68", "#a8bab4", "#e6f4ee"],
+    // the near silhouettes (round 3): the queue's stanchions and belts, the duct over the camera
+    fore: ["#050607", "#0a0c0d", "#111415", "#191d1e", "#242a2a", "#3a4242", "#5e6866"],
+    // the station clock's face and the posters' faded paper
+    poster: ["#16130f", "#2a241c", "#423828", "#5e5038", "#7e6c4c", "#a08a62"],
     wood: ["#140e0b", "#21160f", "#312116", "#452f1f", "#5e422b"],
   };
   return lifted(amber, {
@@ -59,8 +64,75 @@ export function liftFootScene(o: LiftFootOpts): SceneDef {
     palette,
     // through the window only the hollow itself: no near structures of the scene's own
     drop: ["gantry", "figure", "foreground", "overhang", "lamp-glow", "foundry", "near-sign", "bridge", "pylon-glow", "smoke-near", "embers-near"],
-    compose: (ctx, ls) => [...ls, ...room(ctx, o)],
+    // the tubes' cold light falling in cones (round 3: the room had no lighting shape; the cones give it
+    // one, against the window's amber)
+    prelude: (ctx) =>
+      (amber.prelude ? amber.prelude(ctx) : "") +
+      o.tubes.map((tx, i) => shaftFn({ fn: `tube${i}`, from: [(tx - o.x0) * o.H - ctx.span / 2, o.floor - o.ceiling * o.H + 10], to: [(tx - o.x0) * o.H - ctx.span / 2, o.floor + 4], w0: o.H * 0.7, w1: o.H * 1.55, streaks: 3, speed: 0.01, fadeStart: 0.82, intensity: 0.75 })).join("\n"),
+    compose: (ctx, ls) => [...ls, ...room(ctx, o), ...cones(ctx, o), ...liftFore(ctx, o)],
   });
+}
+
+/** The tubes' cones of cold light (additive, stepped; behind the props and the player). */
+function cones(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
+  return o.tubes.map((tx, i) => {
+    const x = (tx - o.x0) * o.H - ctx.span / 2;
+    return { ...shaft({ name: `tube-cone-${i}`, depth: 1, fn: `tube${i}`, row: "tube", steps: 3, alpha: 0.18 }), bounds: { x0: x - o.H * 1.8, x1: x + o.H * 1.8, y0: o.floor - o.ceiling * o.H, y1: o.floor + 6 } };
+  });
+}
+
+/**
+ * Near silhouettes (round 3): along the frame's foot, the queue for the lift, stanchions with a sagging
+ * belt between them (the waiting room's story, nearer than the player and short enough to leave her
+ * readable); along its top, a ventilation duct close to the camera, flanged and hung on straps. Front
+ * pass: they draw over the world and slide faster than it. Near-black, cold, rimmed by the tubes.
+ */
+function liftFore(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
+  const { W, H } = ctx;
+  const span = ctx.span;
+  const R = (n: string): number => ctx.row(n);
+  const d = 0.72;
+  const X = (wx: number): number => W / 2 + ((wx - o.x0) * o.H - W / 2 - span / 2) / d;
+  const w = Math.ceil(ctx.panWidth(d)) + 300;
+  const x = -Math.ceil((w - W) / 2);
+  const pix = new Pix(w, H + 80);
+  const put = (xx: number, yy: number, sv: number, row = R("fore")): void => pix.set(Math.round(xx - x), Math.round(yy), sv, row, 0, false);
+  const ceil = o.floor - o.ceiling * o.H;
+  // the duct: across the top, flanges every so often, a lit underside, straps up into the dark
+  const dB = Math.max(24, Math.round(ceil - 34));
+  for (let xx = x; xx < x + w; xx++) {
+    const k = (xx - x) % 220;
+    const flange = k < 6;
+    for (let yy = 0; yy < dB + (flange ? 4 : 0); yy++) put(xx, yy, 0.22 + (yy >= dB - 2 ? 0.34 : 0) + (flange ? 0.08 : 0) + (k === 6 ? -0.08 : 0) + ((yy - dB) % 9 === 0 ? 0.03 : 0));
+    if (k > 100 && k < 104) for (let yy = 0; yy < dB; yy++) put(xx, yy, 0.12);
+  }
+  // the queue: stanchions (a weighted base, a post, a cap) in pairs with a belt sagging between them
+  // (the second pair channels the queue toward the gate; neither crosses in front of it)
+  const posts = [253.9, 256.1, 260.3, 262.3];
+  const tops: [number, number][] = [];
+  for (const wx of posts) {
+    const cx = Math.round(X(wx));
+    const foot = o.floor + 26;
+    const top = Math.round(o.floor - o.H * 0.62);
+    tops.push([cx, top + 8]);
+    for (let yy = top; yy < foot; yy++)
+      for (let q = -3; q <= 3; q++) put(cx + q, yy, 0.24 + (q === 2 ? 0.36 : q === 3 ? 0.18 : q === -3 ? -0.06 : 0) + (yy < top + 6 ? 0.06 : 0));
+    // the cap and the base
+    for (let q = -6; q <= 6; q++) for (let yy = top - 4; yy < top; yy++) put(cx + q, yy, 0.3 + (yy === top - 4 ? 0.3 : 0));
+    for (let yy = foot - 10; yy < foot + 12; yy++) {
+      const hw = 7 + Math.round((yy - foot + 10) * 0.55);
+      for (let q = -hw; q <= hw; q++) put(cx + q, yy, 0.28 + (yy === foot - 10 ? 0.34 : 0) + (q > hw - 3 ? 0.14 : 0) - (yy - foot + 10) * 0.004);
+    }
+  }
+  for (let i = 0; i + 1 < tops.length; i += 2) {
+    const [ax, ay] = tops[i]!, [bx, by] = tops[i + 1]!;
+    for (let xx = ax + 4; xx < bx - 3; xx++) {
+      const t = (xx - ax) / (bx - ax);
+      const yy = Math.round(ay + (by - ay) * t + Math.sin(t * Math.PI) * 22);
+      for (let q = 0; q < 6; q++) put(xx, yy + q, q === 0 ? 0.56 : q === 5 ? 0.16 : 0.34, q > 0 && q < 5 && (xx >> 3) % 2 ? R("poster") : R("fore"));
+    }
+  }
+  return [{ kind: "pix", name: "fore", depth: d, fog: 0, pix, x, y: 0, twinkle: 0, dither: 0 }];
 }
 
 function room(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
@@ -168,10 +240,40 @@ function room(ctx: BuildCtx, o: LiftFootOpts): LayerDef[] {
       }
     pool(bump, doorX1 + 20, o.floor - 40, o.H * 1.4, o.H * 1.6, 0.1, 3, 43);
   }
+  // the station clock over the window (stopped, like the ticket board), in a cast ring on a bracket
+  {
+    const cx = Math.round((winX0 + winX1) / 2), cy = Math.round((ceil + winY0) / 2) + 4;
+    const rr = Math.max(14, Math.min(26, Math.round((winY0 - ceil) / 2) - 8));
+    for (let y = cy - rr - 3; y <= cy + rr + 3; y++)
+      for (let x = cx - rr - 3; x <= cx + rr + 3; x++) {
+        const dd = Math.hypot(x - cx, y - cy);
+        if (dd > rr + 3) continue;
+        if (dd > rr) put(x, y, 0.42 + (x + y < cx + cy ? 0.12 : -0.08), R("stem"));
+        else {
+          const tick = dd > rr - 4 && Math.abs(((Math.atan2(y - cy, x - cx) / (Math.PI * 2)) * 12 + 12) % 1 - 0.5) > 0.42;
+          put(x, y, tick ? 0.12 : 0.62 - dd * 0.006, R("poster"));
+        }
+      }
+    for (let k = 0; k < rr - 4; k++) put(cx + Math.round(k * 0.5), cy - Math.round(k * 0.86), 0.08, R("stem"));
+    for (let k = 0; k < rr - 8; k++) put(cx - Math.round(k * 0.8), cy + Math.round(k * 0.3), 0.08, R("stem"));
+    for (let y = ceil + 4; y < cy - rr - 3; y++) (put(cx, y, 0.4, R("stem")), put(cx + 1, y, 0.2, R("stem")));
+    for (let q = 0; q < 5; q++) for (let x = cx - rr; x < cx + rr + 6; x++) bump(x, cy + rr + 4 + q, -0.06 + q * 0.012);
+  }
+  // the upper wall darker toward the ceiling, so the tubes' light has a shape against it
+  for (let y = ceil; y < wain; y++) {
+    const t = 1 - (y - ceil) / Math.max(1, wain - ceil);
+    if (t < 0.4) continue;
+    for (let x = -8; x < stemX; x++) if (!inWindow(x, y) && !inDoor(x, y) && ((x ^ y) & 1 || t > 0.6)) bump(x, y, -(t - 0.4) * 0.14);
+  }
   // cold light pools under the tubes on the plaster
   for (const tx of o.tubes) {
     // a wash of cold light down the plaster from each tube: brightest right under it, falling off
-    pool(bump, rx(tx), ceil + 6, o.H * 1.5, o.H * 1.9, 0.2, 5, Math.round(tx * 7));
+    pool(bump, rx(tx), ceil + 6, o.H * 1.5, o.H * 1.9, 0.24, 5, Math.round(tx * 7));
+    // and down the wall in the cone's shape, widening toward the floor
+    for (let i = 0; i < 8; i++) {
+      const t = (i + 0.5) / 8;
+      pool(bump, rx(tx), ceil + (o.floor - ceil) * t, o.H * (0.7 + t * 0.8), o.H * 0.5, 0.05, 2, Math.round(tx * 11) + i);
+    }
     pool(bump, rx(tx), ceil + 6, o.H * 0.8, o.H * 0.5, 0.06, 2, Math.round(tx * 9));
   }
   // a conduit along the ceiling to the tubes, a vent grille, a notice board with pinned papers

@@ -47,8 +47,12 @@ b.block(X0, X1, TOP, CEIL, "wood");
 // the door back up to the alley (an ordinary door), the boards, the rug
 // the door is built into the wall: the backdrop's moulded oak case is its frame (_scene/archive.ts)
 const DOOR = 225.2;
-b.prop("hollowDoor", "archive-exit", DOOR, FLOOR, { kind: "ordinary", frame: "timber", sill: 6, recess: 6 }, px);
+b.prop("hollowDoor", "archive-exit", DOOR, FLOOR, { kind: "ordinary", frame: "timber", sill: 6, recess: 6, shade: 1, jamb: 5 }, px);
 b.doors["archive-exit"] = { room: "C1", spawn: "archive" };
+// light wells: grates in the ceiling under the street's drains; the market's amber falls through them
+// in shafts (the room's dominant light, from above) and pools on the boards where each lands (the
+// shaft leans 0.7 H east on its way down)
+const WELLS = [229.6, 236.9, 243.1];
 // contact shadows under everything that stands on the boards or the rugs ([x, width], world H): the
 // boards and the rugs darken under each foot, so nothing floats on the floor
 const SHADOWS: [number, number][] = [
@@ -60,7 +64,7 @@ const RUGS: [string, number, number, string][] = [
   ["rug-lectern", 238.4, 4, "clothIndigo"],
 ];
 const onRug = (x: number): boolean => RUGS.some(([, c, w]) => Math.abs(x - c) < w / 2);
-b.prop("hollowFloor", "boards", X0, FLOOR, { width: h(X1 - X0), depth: 2.2, kind: "boards", shadows: SHADOWS.filter(([x]) => !onRug(x)).map(([x, w]) => [x - X0, w]), pools: [[232.6 - X0, 1.6, 0.5], [238.8 - X0, 1.4, 0.45]] }, px);
+b.prop("hollowFloor", "boards", X0, FLOOR, { width: h(X1 - X0), depth: 2.2, kind: "boards", shadows: SHADOWS.filter(([x]) => !onRug(x)).map(([x, w]) => [x - X0, w]), pools: [[232.6 - X0, 1.6, 0.5], [238.8 - X0, 1.4, 0.45], [234.6 - X0, 0.9, 0.35], [246.9 - X0, 0.9, 0.35], ...WELLS.map((x) => [x + 0.7 - X0, 1.0, 0.6] as [number, number, number])] }, px);
 for (const [id, c, w, colour] of RUGS) b.prop("hollowRug", id, c, FLOOR, { width: w, colour, shadows: SHADOWS.filter(([x]) => Math.abs(x - c) < w / 2).map(([x, sw]) => [x - c, sw]) }, px);
 
 // the reading corner: the archivist in her armchair, the green lamp, a chair for you
@@ -125,6 +129,7 @@ export const c2: RoomDef = {
       products: [239.85, 246.15],
       clock: 228.6,
       ladder: 229.7,
+      wells: WELLS,
     }),
     vertical: 1,
     weather: false,

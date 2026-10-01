@@ -21,7 +21,7 @@ import amber from "../../../../scenes/scenes/amber-hollow.ts";
 import { geo } from "../../../../scenes/scenes/amber-hollow/geo.ts";
 import { buildShip } from "../../../../scenes/scenes/amber-hollow/ship.ts";
 import { prelude as amberPrelude, shipLane } from "../../../../scenes/scenes/amber-hollow/glsl.ts";
-import { Pix, shaftFn, hashInt, fbm1, type BuildCtx, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
+import { Pix, shaftFn, hashInt, fbm1, mulberry, type BuildCtx, type LayerDef, type SceneDef } from "../../../../scenes/engine/index.ts";
 import type { PointSink, PointSystem, SimEnv } from "../../../../scenes/engine/types.ts";
 import { PULSE } from "../../../../pixel/props/hollow/pulse.ts";
 import { lifted } from "./shift.ts";
@@ -97,12 +97,21 @@ export function marketScene(o: MarketOpts): SceneDef {
     awnr: ["#2a0e0e", "#4a1a16", "#6e2a1e", "#94402a"],
     awnt: ["#0e1e1e", "#16302e", "#224844", "#34645c"],
     awng: ["#2a1e0e", "#46321a", "#6a4c26", "#8e6a36"],
-    shop: ["#5a2c10", "#a2521c", "#e08a3a", "#f0a650"],
+    // a lit shop's inside and the thread of light under a shutter: a dim warm brown, its top steps
+    // kept for the light itself (round 2's was a bright orange from its first step)
+    shop: ["#100906", "#1e110a", "#30190d", "#4a2612", "#6e3a18", "#a65a22", "#e0903a"],
     furn: ["#5a1a08", "#a8400e", "#e8761e", "#ffb050", "#ffe6a8"],
     // lit glass seen through iron and stone: the archive's fanlight, the hearth hall's oculi. One
     // step less saturated and darker than the street's windows, so they glow without pulling the eye
     fan: ["#1e140e", "#3a2618", "#5e3e24", "#8a5e36", "#b4824c", "#d4a66a"],
     oculus: ["#22140c", "#422614", "#6a3e1c", "#94582a", "#b87a40", "#d29a5a"],
+    // the drop under the street: the city's underside in the hollow's haze, warm and grey (low
+    // saturation: it is far and it is air), lightest just under the girder where the street's light
+    // spills over, going to dark below
+    underhaze: ["#0c0a09", "#171311", "#221c18", "#2e2620", "#3c3128", "#4e4133", "#62513e"],
+    // the near silhouettes in front of the street (pillars, cables, crates): near-black, warm, with a
+    // rim the lamps give them
+    fore: ["#070505", "#0d0908", "#150e0b", "#1e140f", "#2c1d14", "#4a2e1a", "#7a4a26"],
   };
   const ref = o.ref;
   return lifted(amber, {
@@ -182,7 +191,8 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
         floors: [3, 5],
       });
     }
-    out.push({ kind: "pix", name: "stacks-back", depth: d, fog: 0.34, pix, x, y: oy, twinkle: 0.3, dither: 0.25 });
+    // (round 3: further into the haze; the far row sat at nearly the street's own value)
+    out.push({ kind: "pix", name: "stacks-back", depth: d, fog: 0.5, pix, x, y: oy, twinkle: 0.3, dither: 0.25 });
   }
   // near grit, a few specks between the houses
   out.push({
@@ -221,8 +231,9 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
         floors: [3, 4],
       });
     }
-    out.push({ kind: "pix", name: "stacks", depth: d, fog: 0.12, pix, x, y: oy, twinkle: 0.25, dither: 0.15 });
+    out.push({ kind: "pix", name: "stacks", depth: d, fog: 0.24, pix, x, y: oy, twinkle: 0.25, dither: 0.15 });
   }
+  out.push(underbelly(ctx, o, feet, wide));
 
   // room-aligned (depth 1): the parapet at the open ends, the archive block, the alcove, columns
   {
@@ -440,6 +451,22 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
           const v = 0.27 + k * 0.4 + ((x + y) % 2 ? 0.03 : -0.03) - (y < lintT - rise + 9 ? 0.06 : 0);
           glow(x, y, v, R("fan"));
         }
+      // the archive's mark leaded into the fanlight round the hub (round 2 hung it in front as a
+      // separate glyph box): an open book, its two pages glass, its spine and edges lead
+      {
+        const by = lintT - 2;
+        for (let y = by - 13; y <= by; y++)
+          for (let x = dX - 14; x <= dX + 14; x++) {
+            const ax = Math.abs(x - dX);
+            // each page: a quarter-ellipse sag from the spine, the outer edge curling up
+            const pageTop = by - 11 + Math.round((ax / 14) ** 2 * -2 + (ax < 3 ? 2 : 0));
+            if (y < pageTop) continue;
+            const lead = y === pageTop || ax === 14 || ax === 0 || y === by;
+            if (lead || (ax === 1 && y > pageTop)) put(x, y, 0.16, R("back"));
+            // the pages brighter than the glass round them, with lines of writing across them
+            else glow(x, y, 0.82 - ((y - pageTop) % 3 === 1 && ax > 3 && ax < 12 ? 0.2 : 0), R("fan"));
+          }
+      }
       // the reveal round the leaf: under the lintel in deep shadow, the near return lit, the far one
       // dark; the dark beyond behind the leaf (seen when it swings)
       for (let y = lintB; y < o.street; y++)
@@ -447,7 +474,8 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
           const inL = x - (dX - ow), inR = dX + ow - 1 - x, inT = y - lintB;
           let s = 0.04;
           if (inT < 6) s = 0.03 + (inT === 5 ? 0.02 : 0);
-          else if (inL < 6) s = 0.42 - inL * 0.045 - (inT < 16 ? 0.12 : 0) + wallTex("stone", x, y, 55) * 0.3;
+          // (the near return is lit, but a step under the jambs' face: the lamp reaches it at a slant)
+          else if (inL < 6) s = 0.3 - inL * 0.035 - (inT < 16 ? 0.12 : 0) + wallTex("stone", x, y, 55) * 0.3;
           else if (inR < 6) s = 0.1 - inR * 0.01;
           put(x, y, s);
         }
@@ -497,8 +525,12 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
         const end = x < dX - ahw - 12 || x > dX + ahw + 11;
         for (let q = worn; q < 8; q++) {
           let s = 0.36 + wallTex("stone", x, q, 63) * 0.3 - (q - worn) * 0.025;
-          if (q === worn) s += 0.26;
-          else if (q === worn + 1) s += 0.08;
+          // the nose is lit, except under the leaf and in the reveal: there the opening's shadow and the
+          // leaf's own occlusion sit on the step
+          const shaded = Math.abs(x - dX) < ow + 2;
+          if (q === worn) s += shaded ? -0.06 : 0.26;
+          else if (q === worn + 1) s += shaded ? -0.08 : 0.08;
+          else if (shaded) s -= 0.06;
           if (q >= 6) s = q === 7 ? 0.08 : 0.16;
           if (end) s -= 0.08;
           put(x, o.street - 8 + q, s);
@@ -754,5 +786,243 @@ function near(ctx: BuildCtx, o: MarketOpts): LayerDef[] {
     }
     out.push({ kind: "pix", name: "street-back", depth: 1, fog: 0, pix, x: ox, y: oy, twinkle: 0.15, dither: 0 });
   }
+  out.push(...foreground(ctx, o, feet));
   return out;
 }
+
+/**
+ * The drop under the street (round 3; round 2 showed a patchwork there: the bottoms of both house
+ * rows and the far scene's pockets, hard-edged, with black panels of twinkling dots). One continuous
+ * underside of the city in the hollow's haze: lightest just under the girder where the street's light
+ * spills over the edge, going down into dark; the undercity's blocks in two ranks as low-contrast
+ * silhouettes, their windows in foggy clusters, catwalks and pipes between them, a forge glowing far
+ * below. Its top hides behind the street's slab at every framing the rail camera takes.
+ */
+function underbelly(ctx: BuildCtx, o: MarketOpts, feet: number, wide: (d: number) => { x: number; w: number }): LayerDef {
+  const { H } = ctx;
+  const R = (n: string): number => ctx.row(n);
+  const d = 1.15;
+  const { x, w } = wide(d);
+  const top = Math.round(feet + 40);
+  const ph = Math.round(H + 200 - top);
+  const pix = new Pix(w, ph);
+  const put = putter(pix, x, top, R("underhaze"));
+  const bump = bumper(pix, x, top);
+  const g0 = feet + o.H * 1.2 + 28; // the girder's foot at this framing
+  // the air: a vertical gradient (light spilling over the street's edge, then the dark), stepped and
+  // dithered, with slow horizontal swells
+  for (let yy = top; yy < top + ph; yy++)
+    for (let xx = x; xx < x + w; xx++) {
+      const t = (yy - g0) / (H - g0 + 120);
+      const swell = (fbm1(xx / 260 + yy / 900, 7, 3) - 0.5) * 0.12;
+      const v = 0.42 - Math.max(0, t) * 0.36 + swell + (t < 0 ? 0.04 : 0);
+      const steps = v * 7;
+      const k = Math.floor(steps) + (steps - Math.floor(steps) > bayer(xx, yy) ? 1 : 0);
+      put(xx, yy, Math.max(0.02, k / 7));
+    }
+  // two ranks of the undercity, the far one paler (more air in front of it), the near one darker
+  for (const [rank, base, seed] of [[0, 0.3, 11], [1, 0.16, 29]] as [number, number, number][]) {
+    const r = mulberry(seed);
+    let bx = x - 40;
+    while (bx < x + w) {
+      const bw = Math.round(60 + r() * 130);
+      // tops between the girder's foot and the frame's foot, the near rank lower
+      const by = Math.round(g0 + (rank ? 50 : 14) + r() * (rank ? 80 : 70));
+      const tall = top + ph - by;
+      for (let yy = by; yy < top + ph; yy++)
+        for (let xx = bx; xx < bx + bw; xx++) {
+          const fade = Math.max(0, 1 - (yy - by) / 260); // the haze takes the tops more than the feet
+          let sv = base + fade * (rank ? 0.04 : 0.08) + (xx - bx < 2 ? 0.04 : 0);
+          if (yy === by) sv += 0.05;
+          if ((yy - by) % 34 === 0) sv += 0.025;
+          put(xx, yy, sv - ((yy - top) / ph) * 0.12);
+        }
+      // windows in clusters: a few lit rooms together, dim through the haze, never a field of dots
+      const clusters = 1 + Math.floor(r() * 2);
+      for (let c = 0; c < clusters; c++) {
+        if (r() < 0.25) continue;
+        const cx = bx + 8 + Math.round(r() * Math.max(1, bw - 30)), cy = by + 10 + Math.round(r() * Math.min(60, tall - 40));
+        const n = 3 + Math.floor(r() * 6);
+        for (let k = 0; k < n; k++) {
+          const wx = cx + (k % 3) * 9, wy = cy + Math.floor(k / 3) * 12;
+          if (wx + 4 > bx + bw - 3) continue;
+          const lv = 0.2 + r() * 0.12 - rank * 0.04;
+          for (let q = 0; q < 5; q++) for (let t2 = 0; t2 < 4; t2++) put(wx + t2, wy + q, lv - (q === 0 ? 0.06 : 0), R("win"));
+          pool(bump, wx + 2, wy + 3, 12, 10, 0.04, 2, wx);
+        }
+      }
+      bx += bw + Math.round(r() * 30);
+    }
+    // catwalks and pipes strung between the blocks of this rank
+    for (let k = 0; k < w / 400; k++) {
+      const cy = Math.round(g0 + (rank ? 70 : 30) + r() * 60);
+      const a = x + Math.round(r() * w), len = 120 + Math.round(r() * 260);
+      for (let xx = a; xx < a + len; xx++) {
+        put(xx, cy, base + 0.1);
+        put(xx, cy + 1, base + 0.02);
+        if ((xx - a) % 22 === 0) for (let q = 2; q < 9; q++) put(xx, cy - q, base + 0.05);
+        if (rank) put(xx, cy - 8, base + 0.06);
+      }
+    }
+  }
+  // the forge far below: a warm glow at the bottom in two places, through the haze
+  for (const fxk of [0.22, 0.71]) pool(bump, x + w * fxk, H + 20, 260, 110, 0.14, 4, Math.round(fxk * 100));
+  // the shared haze over all of it: a light veil just under the girder, so the ranks melt into the air
+  for (let yy = top; yy < g0 + 70; yy++) {
+    const k = 1 - Math.max(0, yy - g0) / 70;
+    for (let xx = x; xx < x + w; xx++) if (bayer(xx, yy) < k * 0.9) bump(xx, yy, 0.05 * k);
+  }
+  return { kind: "pix", name: "underbelly", depth: d, fog: 0.3, pix, x, y: top, twinkle: 0, dither: 0.3 };
+}
+
+const BAYER4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+function bayer(px: number, py: number): number {
+  return BAYER4[(py & 3) * 4 + (px & 3)]! / 16;
+}
+
+/**
+ * Near silhouettes in front of the street (round 3: the refs frame their scenes with dark things
+ * close to the camera; these rooms had nothing nearer than the player). Front pass (depth < 1, so
+ * they draw over the world and slide faster than it): along the bottom, crate stacks, barrels and a
+ * pipe run with flanges below the street's edge; along the top, a riveted beam, cables sagging
+ * between hangers, chains with hooks; two steel pillars where she only passes. Near-black, warm,
+ * with a thin rim on the side that faces the street's light. Kept clear of the player's body at the
+ * street framing (the bottom ones stop under the walk line, the top ones in the top fifth).
+ */
+function foreground(ctx: BuildCtx, o: MarketOpts, feet: number): LayerDef[] {
+  const { W, H } = ctx;
+  const span = ctx.span;
+  const R = (n: string): number => ctx.row(n);
+  const d = 0.7;
+  const lx = (roomX: number): number => W / 2 + (roomX - W / 2 - span / 2) / d;
+  const X = (wx: number): number => lx((wx - o.x0) * o.H);
+  const w = Math.ceil(ctx.panWidth(d)) + 400;
+  const x = -Math.ceil((w - W) / 2);
+  const out: LayerDef[] = [];
+  const light = W * 0.62;
+  // ---- the bottom: under the walk line, out of the frame's foot
+  {
+    const top = Math.round(feet + 24);
+    const ph = Math.round(H + 260 - top);
+    const pix = new Pix(w, ph);
+    const put = putter(pix, x, top, R("fore"));
+    // (values on the fore ramp: bodies about 0.3, edges 0.4, the rim 0.72)
+    const sil = (xx: number, yy: number, s: number, lit = false): void => put(xx, yy, lit ? 0.72 : s + 0.18);
+    // a pipe run along the foot of the frame, in lengths that bend down out of view
+    const r = mulberry(91);
+    for (let k = 0; k < w / 700; k++) {
+      const a = x + Math.round(k * 700 + r() * 200), len = 260 + Math.round(r() * 320);
+      const py = Math.round(H - 66 + r() * 24);
+      const rad = 15 + Math.round(r() * 6);
+      for (let xx = a; xx < a + len; xx++) {
+        const fl = (xx - a) % 120 < 6 ? 4 : 0;
+        for (let q = -rad - fl; q <= rad + fl; q++) sil(xx, py + q, 0.12 + (q < -rad * 0.4 ? 0.06 : 0) - Math.abs(q) * 0.004 + (fl ? 0.05 : 0), q === -rad - fl);
+      }
+      // the elbows: each end turns down out of the frame
+      for (const xs of [a - rad * 2, a + len])
+        for (let i = 0; i < rad * 2; i++)
+          for (let yy = py - rad + Math.round(Math.abs(i - rad) * 0.3); yy < top + ph; yy++) sil(xs + i, yy, 0.12 + (i < rad * 0.6 ? 0.04 : 0), yy === py - rad + Math.round(Math.abs(i - rad) * 0.3));
+    }
+    // crate stacks and barrels below the street's edge
+    // (none in front of the shrine's alcove: it is the room's focal point)
+    const stacksAt = [190.2, 193.6, 197.4, 200.9, 205.1, 208.4, 221.2, 226.0, 229.9, 235.4, 239.1, 243.3, 247.9];
+    for (const [i, wx] of stacksAt.entries()) {
+      const cx = Math.round(X(wx));
+      if (hashInt(i, 2, 93) < 0.35) {
+        // a pair of drums, hoops lit on the side toward the light
+        for (let b2 = 0; b2 < 2; b2++) {
+          const bw = 64, by0 = Math.round(H + 30 - (b2 + 1) * 82), bx0 = cx - 32 + b2 * 26;
+          for (let yy = by0; yy < by0 + 82; yy++)
+            for (let xx = bx0; xx < bx0 + bw; xx++) {
+              const u = (xx - bx0) / bw;
+              const hoop = (yy - by0) % 26 < 4;
+              const rim = (xx < light ? xx === bx0 + bw - 1 : xx === bx0) || (yy === by0 && u > 0.15 && u < 0.85);
+              sil(xx, yy, 0.1 + Math.sin(u * Math.PI) * 0.06 + (hoop ? 0.05 : 0), rim);
+            }
+        }
+        continue;
+      }
+      // crates: two or three boxes, a lit top edge, planks and a cross brace on the face
+      let yb = Math.round(H + 40);
+      let bw = 120 + Math.round(hashInt(i, 3, 93) * 40);
+      let bx0 = cx - bw / 2;
+      const n = 2 + (hashInt(i, 1, 93) > 0.5 ? 1 : 0);
+      for (let k = 0; k < n; k++) {
+        const bh = Math.round(bw * 0.7);
+        const y0 = yb - bh;
+        if (y0 < top + 4) break;
+        for (let yy = y0; yy < yb; yy++)
+          for (let xx = Math.round(bx0); xx < bx0 + bw; xx++) {
+            const lxx = xx - bx0, lyy = yy - y0;
+            const frame = lxx < 5 || lxx > bw - 6 || lyy < 5 || lyy > bh - 6;
+            const brace = Math.abs(lxx / bw - lyy / bh) < 0.05;
+            const plank = lyy % 14 === 0;
+            const rimEdge = lyy === 0 || (xx < light ? lxx >= bw - 1 : lxx < 1);
+            sil(xx, yy, 0.09 + (frame || brace ? 0.05 : 0) + (plank ? -0.03 : 0), rimEdge && lyy < bh - 4);
+          }
+        yb = y0;
+        bx0 += (hashInt(i, 10 + k, 93) - 0.5) * 30;
+        bw = Math.round(bw * 0.8);
+      }
+    }
+    // a guard rail along the drop's near edge, in runs with gaps: posts, a top rail and a knee rail
+    for (const [a0, a1] of [[188, 199.5], [202.5, 209.5], [219.5, 232], [234.5, 252]] as [number, number][]) {
+      const xa = Math.round(X(a0)), xb = Math.round(X(a1));
+      const ry = Math.round(feet + 96), ky = ry + 30;
+      for (let xx = xa; xx < xb; xx++) {
+        for (let q = 0; q < 5; q++) sil(xx, ry + q, 0.14 + (q === 1 ? 0.06 : 0) - q * 0.01, q === 0);
+        for (let q = 0; q < 3; q++) sil(xx, ky + q, 0.1, q === 0);
+        if ((xx - xa) % 86 < 6)
+          for (let yy = ry + 5; yy < top + ph; yy++) sil(xx, yy, 0.12 + ((xx - xa) % 86 === (xx < light ? 5 : 0) ? 0.1 : 0), false);
+      }
+    }
+    out.push({ kind: "pix", name: "fore-low", depth: d, fog: 0, pix, x, y: top, twinkle: 0, dither: 0 });
+  }
+  // ---- the top: cables, chains with hooks; and the pillars, full height
+  {
+    const top = -200;
+    const ph = Math.round(H + 460);
+    const pix = new Pix(w, ph);
+    const put = putter(pix, x, top, R("fore"));
+    const r = mulberry(57);
+    for (let k = 0; k < w / 360; k++) {
+      const a = x + Math.round(k * 360 + r() * 140), len = 300 + Math.round(r() * 260);
+      const y0 = Math.round(-10 + r() * 30), sag = 50 + r() * 60;
+      for (let xx = a; xx < a + len; xx++) {
+        const t = (xx - a) / len;
+        const yy = Math.round(y0 + Math.sin(t * Math.PI) * sag);
+        put(xx, yy, 0.3);
+        put(xx, yy + 1, 0.22);
+        put(xx, yy + 2, 0.12);
+      }
+    }
+    for (const wx of [196.5, 219.0, 244.5]) {
+      const cx = Math.round(X(wx));
+      const len = 70 + Math.round(hashInt(Math.round(wx), 3, 5) * 50);
+      for (let yy = top; yy < len; yy++) {
+        const link = yy % 8;
+        put(cx + (link < 4 ? 0 : 1), yy, 0.3);
+        put(cx + (link < 4 ? 1 : 0), yy, link === 0 ? 0.62 : 0.24);
+        put(cx + 2, yy, 0.14);
+      }
+      for (let t = 0; t < Math.PI * 1.4; t += 0.05) for (let q = 0; q < 3; q++) put(Math.round(cx + 2 - Math.cos(t) * (7 + q * 0.5)), Math.round(len + 4 + Math.sin(t) * (7 + q * 0.5)), q === 0 ? 0.62 : 0.3);
+    }
+    // (where she is only passing through: not at a spawn, a door, the shrine or a stall)
+    for (const wx of [202.7, 241.9]) {
+      const cx = Math.round(X(wx));
+      const pw = 64;
+      for (let yy = top; yy < top + ph; yy++)
+        for (let q = -pw / 2; q < pw / 2; q++) {
+          const xx = cx + q;
+          const towardLight = xx < light ? q >= pw / 2 - 2 : q < -pw / 2 + 2;
+          let sv = 0.24 + (Math.abs(q) < 6 ? 0.04 : 0) + (towardLight ? 0 : q * (xx < light ? 0.002 : -0.002));
+          if ((yy + 4000) % 90 < 5) sv += 0.06;
+          if ((yy + 4000) % 90 === 2 && Math.abs(Math.abs(q) - 20) < 2) sv = 0.5;
+          put(xx, yy, towardLight ? 0.66 : sv);
+        }
+    }
+    out.push({ kind: "pix", name: "fore-high", depth: d, fog: 0, pix, x, y: top, twinkle: 0, dither: 0 });
+  }
+  return out;
+}
+

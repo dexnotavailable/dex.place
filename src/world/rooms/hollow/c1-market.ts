@@ -101,11 +101,11 @@ b.spawn("shrine", 211.4, STREET, 1);
 // a steel door in the brick and iron of the foundry, not a cottage plank door (it opens the same)
 // warm: the steel takes the street's amber; sill: it stands on the doorway's threshold step; recess:
 // its head sits in the lintel's shadow (the opening is cut 6 px deeper than the leaf all round)
-b.prop("hollowDoor", "archive-door", DOOR, STREET, { kind: "ordinary", frame: "iron", leaf: "iron", warm: true, sill: 8, recess: 6 }, px);
+// shade / jamb: the leaf a step darker than the stone round it, the jambs' shadow down both edges
+b.prop("hollowDoor", "archive-door", DOOR, STREET, { kind: "ordinary", frame: "iron", leaf: "iron", warm: true, sill: 8, recess: 6, shade: 1, jamb: 5 }, px);
 b.doors["archive-door"] = { room: "C2", spawn: "door" };
-// the book mark sits in the doorway's tympanum, under the keystone; the lamp hangs from a wall bracket
-// beside the surround (the backdrop builds the doorway into the archive block: _scene/market.ts)
-b.prop("neonGlyph", "archive-mark", DOOR, STREET + 1.78, { kind: "book", colour: "amber" }, px);
+// the book mark is leaded into the fanlight itself (round 2 hung a glyph box in front of it); the lamps
+// hang from wall brackets beside the surround (the backdrop builds the doorway in: _scene/market.ts)
 for (const [i, [x, y]] of DOOR_LAMPS.entries()) b.prop("marketLantern", i ? `archive-lamp-${i}` : "archive-lamp", x, y, { kind: "iron", drop: 0.22 }, px);
 b.prop("paper", "paper-archive", 233.4, STREET, { count: 3 }, px);
 
@@ -175,6 +175,10 @@ const POOLS: [number, number, number][] = [
   [DOOR, 1.6, 0.6], ...LANTERNS.map((x) => [x, 0.9, 0.3] as [number, number, number]),
 ];
 const DRAINS = [196.2, 209.1, 223.7, 236.1, 244.6];
+// grates let into the walk (round 3: the lip is dressed: chips, cracks, rubble and moss over its edge)
+const GRATES = [201.6, 220.9, 234.9, 245.7];
+// the lit lamp posts' pools (shrine 2's posts are lit by the time you come down here)
+POOLS.push(...lamps.filter(([, , n]) => n === 2).map(([, x, , , arm]) => [x + arm * 0.5, 1.1, 0.4] as [number, number, number]));
 for (const [id, x0] of FLOORS) {
   const rel = (x: number): number => x - x0;
   const inside = (x: number, pad = 0): boolean => x >= x0 - pad && x < x0 + 32 + pad;
@@ -186,6 +190,8 @@ for (const [id, x0] of FLOORS) {
     pools: POOLS.filter(([x, r]) => inside(x, r)).map(([x, r, k]) => [rel(x), r, k]),
     ribs: RIBS.filter((x) => inside(x)).map(rel),
     drains: DRAINS.filter((x) => inside(x)).map(rel),
+    dress: true,
+    grates: GRATES.filter((x) => inside(x, -0.3)).map(rel),
   }, px);
 }
 
