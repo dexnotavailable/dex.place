@@ -17,7 +17,9 @@ export const NAVE = {
   door: 412.3,
   roseHeight: 5.85,
   roseSize: 2.3,
-  crank: 414.25,
+  // clear of the doors' use zone (it reaches 0.15 H past the old 414.25): standing at the crank once the
+  // shutter is open shows no prompt at all, instead of the doors' prompt up at the rose window's rim
+  crank: 414.65,
   lectern: 416.7,
   piers: [418.9, 424.3, 429.7, 435.1, 440.5, 445.9],
   /** A pier's half-width at its widest (the base and the capital), H. */

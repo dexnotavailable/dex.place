@@ -97,7 +97,9 @@ r.px("grass", "flowers-l6", 374.55, 52.0, { kind: "flowers", width: 0.5, height:
 r.px("grass", "grass-bottom", 394.4, 40, { kind: "flowers", width: 1.0, height: 0.24 });
 // off the rib's arm, west of the bell (never over it)
 r.px("vines", "vines-rib", PATH.rib.x + 0.72, PATH.rib.tipY + 0.2, { width: 0.5, length: 0.8, strands: 4, flowers: true });
-r.px("vines", "vines-fin-2", 364.5 - 1.05, 58.0 + 4.1, { width: 0.8, length: 1.2, strands: 6 });
+// down the fin's west shoulder, rooted just under its crest (pilgrim-path.ts: the crest there is 3.45..3.7 H
+// over the landing), clear of the glass's reveal: never hanging from open sky above the wall
+r.px("vines", "vines-fin-2", 364.5 - 1.2, 58.0 + 3.36, { width: 0.42, length: 1.5, strands: 4 });
 r.px("rubble", "rubble-gap", 335.7, groundAt(335.7), { kind: "stone", width: 0.5, height: 0.2 });
 r.px("moths", "moths-shrine", 356.8, T, { count: 4, reach: 3 });
 r.px("moths", "moths-lamps", 384.7, 46.0, { count: 3, reach: 3 });

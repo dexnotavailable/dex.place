@@ -74,6 +74,19 @@ export interface DuskOpts {
    * stair's foot only its top showed through an arch, fading into the haze, like a strip hung there).
    */
   spireFade?: [number, number];
+  /**
+   * The spire's parallax depth (default 30). E1 sets it far (on the far range, depth 90) so it drifts
+   * little across the long path and never lands in a tangent with the stair's girder or behind the
+   * shrine terrace.
+   */
+  spireDepth?: number;
+  /** Half-width (px, at depth 70) of the water in the valley: the default 310 is a lake; wider is a sea. */
+  lakeReach?: number;
+  /**
+   * Near lights (depth 1: room px x, and "lamp" for flame or "glass" for the sunset through glass) that
+   * lay a broken streak down the water straight under them on screen, so the water shares their light.
+   */
+  nearLights?: [number, "lamp" | "glass"][];
   /** Screen x of the lake's sun path at the west end (depth 70). */
   lakeX: number;
   /** Screen x (at the west end, depth 55) of each shrine's lamp on the valley floor, with its number. */
@@ -347,7 +360,11 @@ vec4 layer(vec2 p, vec2 s) {
 function lakeBody(ctx: BuildCtx, o: DuskOpts, d: number): string {
   const of = offs(ctx, o, d);
   const top = o.horizon + 2;
-  const DEPTH = 34;
+  const DEPTH = 46;
+  const REACH = o.lakeReach ?? 310;
+  const sd = o.spireDepth ?? 30;
+  const hx = Math.round(ctx.span / 2);
+  const lights = o.nearLights ?? [];
   return /* glsl */ `
 ${ringGlsl(ctx, o)}
 ${colossiGlsl(ctx, o, 60)}
@@ -359,14 +376,14 @@ vec4 layer(vec2 p, vec2 s) {
   if (dy < 0.0 || dy > ${f(DEPTH)}) return vec4(0.0);
   // the broken shore: ragged per row pair, a slow wander, shallows dithered out toward the edge
   float rp = floor(dy / 2.0);
-  float reach = 310.0 - dy * 2.4 + (vnoise(vec2(q.x / 23.0, rp * 0.7)) - 0.5) * 56.0 + (hash2(vec2(rp, floor(q.x / 29.0))) - 0.5) * 18.0;
+  float reach = ${f(REACH)} - dy * 2.4 + (vnoise(vec2(q.x / 23.0, rp * 0.7)) - 0.5) * 56.0 + (hash2(vec2(rp, floor(q.x / 29.0))) - 0.5) * 18.0;
   float edge = reach - abs(dx);
   if (edge < 0.0) return vec4(0.0);
-  float keep = clamp(edge / 44.0, 0.0, 1.0) * clamp((${f(DEPTH)} - dy) / 12.0, 0.0, 1.0);
+  float keep = clamp(edge / 44.0, 0.0, 1.0) * clamp((${f(DEPTH)} - dy) / 14.0, 0.0, 1.0);
   if (keep < bayer4(p) * 0.96 + 0.02) return vec4(0.0);
   float tm = uTime * (1.0 - 0.7 * uReduced);
   // the water's body: the sky's colour near the far shore, deeper and violet toward you
-  float shade = 0.36 - dy * 0.005;
+  float shade = 0.36 - dy * 0.004;
   if (dy < 1.0) shade = 0.5;                                   // the far shore's lit line
   else if (dy < 4.0 && mod(q.x + floor(dy) * 7.0, 23.0) < 9.0) shade = 0.18; // the range's dark foot mirrored
   // long slow swells: faint lighter lines drifting across
@@ -376,7 +393,7 @@ vec4 layer(vec2 p, vec2 s) {
   float rip = floor(sin(dy * 1.7 + tm * 1.3 + floor(s.x / 9.0) * 0.5) * (0.5 + dy * 0.07) + 0.5);
   float wl = s.y - dy;                                         // the waterline's row on screen
   float refl = -1.0;                                           // >= 0: a reflected silhouette (its rim share)
-  bool broken = dy > 14.0 && mod(dy, 3.0) > 1.5;               // far from the shore the image breaks into rows
+  bool broken = dy > 16.0 && mod(dy, 3.0) > 1.5;               // far from the shore the image breaks into rows
   if (!broken) {
     vec2 oc = ${qOff(ctx, o, 60)};
     float fc = COL_BASE - oc.y;                                // the walkers' feet on screen
@@ -384,15 +401,18 @@ vec4 layer(vec2 p, vec2 s) {
       vec2 h = colossusAt(vec2(s.x + rip, 2.0 * fc - s.y) + oc);
       if (h.x > 0.5) refl = h.y;
     }
-    ${o.spireX !== null ? `vec2 os = ${qOff(ctx, o, 30)};
+    ${o.spireX !== null ? `vec2 os = ${qOff(ctx, o, sd)};
     float fs = SPIRE_BASE - os.y;
     if (refl < 0.0 && s.y > fs) {
       float sp = spireAt(vec2(s.x + rip, 2.0 * fs - s.y) + os);
       if (sp >= 0.0) refl = sp > 0.4 ? 1.0 : 0.0;
     }` : ""}
+    // the ring: its whole band mirrored about the waterline (the feet that sink into the haze above the
+    // water still stand in it below: the reflection is what shows the ring reaching the sea), its
+    // burning inner rim a warm line in the water
     vec2 m = vec2(s.x + rip, 2.0 * wl - s.y);
-    vec3 r = ringAt(m);
-    if (refl < 0.0 && r.x >= 0.0 && ringCovers(m)) refl = r.x < 0.12 ? 1.0 : 0.0;
+    vec3 rr = ringAt(m);
+    if (refl < 0.0 && rr.x >= 0.0) refl = rr.x < 0.12 ? 1.0 : 0.0;
   }
   if (refl >= 0.0) {
     shade = 0.1 + dy * 0.002;
@@ -411,6 +431,19 @@ vec4 layer(vec2 p, vec2 s) {
     if (on > 0.25 + u * 0.6) shade = u < 0.35 ? 0.98 : u < 0.7 ? 0.85 : 0.7;
   }
   vec3 c = ramp(R_WATER, shade, p, 0.25);
+  // the near lights (the glass, the lamps): a broken streak straight under each on screen, narrow, every
+  // other row, thinning and fading toward you; warm for flame, rose for the sunset glass
+  ${lights
+    .map(
+      ([rx, kind], i) => `{
+    float lx = ${f(rx - hx)} - layerOff(1.0);
+    float lw = ${kind === "glass" ? "5.0" : "2.0"} + dy * 0.12;
+    float lu = abs(s.x - lx - floor(sin(dy * 1.3 + tm * 1.1 + ${f(i)}) * 1.2 + 0.5)) / lw;
+    if (lu < 1.0 && mod(dy, 2.0) < 1.0 && hash2(vec2(floor((s.x + floor(tm * 2.0 + ${f(i * 7)})) / 3.0), row + ${f(i * 13)})) > 0.3 + lu * 0.4 + dy / ${f(DEPTH)} * 0.3)
+      c = ${kind === "glass" ? `mix(ramp(R_WATER, 0.86, p, 0.0), pal(R_GLINT, 1.0), 0.35)` : `pal(R_LAMP, lu < 0.4 && dy < 20.0 ? 2.0 : 1.0)`};
+  }`,
+    )
+    .join("\n  ")}
   // the near water and the shallows take more of the valley haze
   return vec4(applyFog(c, uFog * (refl >= 0.0 ? 0.4 : 0.55), (1.0 - keep) * 0.5 + dy / ${f(DEPTH)} * 0.25, p, s), 1.0);
 }`;
@@ -456,7 +489,7 @@ export function duskLayers(ctx: BuildCtx, o: DuskOpts): LayerDef[] {
     L.push({ kind: "pix", name: "far-range", depth: d, pix, x: -of.x - 4, y: o.horizon - base - of.y, fog: 0.45 });
   }
   if (o.spireX !== null) {
-    const d = 30;
+    const d = o.spireDepth ?? 30;
     L.push({ kind: "glsl", name: "spire", depth: d, fog: 0.6, body: spireBody(ctx, o, d), bounds: { y0: -1e5, y1: 1e5 } });
     L.push(mist({ name: "storm-rags", depth: d, y0: o.horizon - 330 - offs(ctx, o, d).y, y1: o.horizon - 170 - offs(ctx, o, d).y, sx: 120, sy: 26, drift: -6, evolve: 0.07, cover: 0.34, warp: 1.8, levels: 3, alpha: 0.75, edgeDither: 0.3, row: "storm", tone: 0.35, tonePerLevel: 0.2, tint: 0.7, lightGain: 0.8, bounds: { y0: o.horizon - 340 - offs(ctx, o, d).y, y1: o.horizon - 160 - offs(ctx, o, d).y, x0: o.spireX - 200 - offs(ctx, o, d).x, x1: o.spireX + 220 - offs(ctx, o, d).x } }));
   }

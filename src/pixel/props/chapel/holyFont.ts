@@ -4,7 +4,9 @@
 // to still. Everything else (the bowl, the ripples, hits, the dash wind, mending) is the kit font's,
 // except that it is not solid: the path passes in front of it.
 
+import "./materials.ts";
 import { font } from "../font.ts";
+import { resolveMat } from "../../materials.ts";
 import { defineRecipe, type Prop, type Recipe } from "../../prop.ts";
 
 // the kit recipe is extended by spreading it; its refs type is private to its file
@@ -14,6 +16,33 @@ type AnyRecipe = Recipe<any, any>;
 type FontProp = Prop<any>;
 
 const S = (font as AnyRecipe).states;
+
+/**
+ * Re-cut the kit's cool marble in the porch's own light (once, and it is what the stone mends back to):
+ * the chapel's warm limestone, its sunward (west) edge and the lip's top in the low sun's amber, and the
+ * bowl's inner rim dark over the water, which sits a few px down inside the lip instead of over it.
+ */
+function warmStone(c: FontProp): void {
+  if (c.data["warm"]) return;
+  const marble = resolveMat("marble").id;
+  const g = c.part("font").grid;
+  const lipTop = Math.round(c.params.H * 0.06);
+  const first: number[] = [];
+  for (let y = 0; y < g.h; y++) {
+    let fx = -1;
+    for (let x = 0; x < g.w; x++) if (g.mat[g.inner(x, y)]) { fx = x; break; }
+    first.push(fx);
+  }
+  c.paint("font", (x, y, m) => {
+    if (m !== marble) return undefined;
+    const fx = first[y] ?? -1;
+    if (y >= lipTop + 1 && y <= lipTop + 2 && x > 4 && x < g.w - 5) return "fontStoneDark";   // the inner rim
+    if (y === lipTop || (fx >= 0 && x - fx < 2)) return "fontStoneLit";                    // sunward edge and lip
+    return "fontStone";
+  });
+  g.snapshot();
+  c.data["warm"] = true;
+}
 
 /** Disturb the water from its middle outward (a fingertip's ring), and sound it softly. */
 function touch(c: FontProp): void {
@@ -32,12 +61,18 @@ export const holyFont = defineRecipe<{ width: number }, unknown>({
     // you walk past it on the porch's flags, not over it: a solid basin across the path had you climbing
     // into the holy water (and stood there, half her height above the floor, she read as floating)
     b.get("font").collide = "none";
+    // the water sits down inside the bowl (its surface 2 px under the lip's top), not proud of it like a lid
+    b.get("water").y += 5;
     return refs;
   },
   initial: "still",
   states: {
     still: {
       ...S["still"],
+      update(c: FontProp, dt: number) {
+        warmStone(c);
+        S["still"]!.update!(c as never, dt);
+      },
       use: () => "touched",
     },
     // the ring crosses the water, then the font is still again (the same update: ripples, drips, wind)

@@ -327,12 +327,54 @@ vec4 layer(vec2 p, vec2 s) {
       lit = shade > 0.5 ? 0.5 : 0.0;
     }
   }
-  // ================= under the band: hanging ribs and vines =================
+  // ================= under the band: the hull's truss, and vines =================
+  // the segment's frames carried on down as a riveted truss under the band (vertical posts at each node,
+  // diagonals turning in alternate panels, a lower chord, gusset plates at the lower nodes), from the
+  // second flight to the cliff it rests on: a girder that visibly carries the stair, nothing hanging
+  // in mid-air. The top flight is cantilevered from the spire with only its keel; at the break the
+  // truss ends on a whole post each side of the missing panel. Lit on its upper and west edges by the
+  // low sun, its members in the band's shadow where they meet it.
+  if (shade < 0.0 && r.y >= under && !inBay && !torn) {
+    const float TD = 49.6, PW = 100.0;
+    float dy = r.y - under;
+    // the lower run goes on into the cliff: its members end in the rock face (the same edge the cliff draws)
+    float rock = ${f(RX(388.5))} + (r.y - top) * 0.4 + (vnoise(vec2(r.y / 23.0, 1.0)) - 0.5) * 30.0;
+    bool span = (x > 700.0 - 4.0 && x < 1500.0 + 4.0) || (x > 1800.0 - 4.0 && x < rock - 1.0 && r.y > top + 0.5 * P);
+    if (span && dy < TD) {
+      float node = floor(x / PW + 0.5) * PW;
+      float kx = x - node;
+      float pk = floor(x / PW), u = x / PW - pk, v = dy / TD;
+      bool inner = (x > 700.0 && x < 1500.0) || (x > 1800.0 && x < rock);
+      float dg = (mod(pk, 2.0) < 1.0 ? v - u : v - (1.0 - u)) * TD;   // px from the panel's diagonal
+      bool chord = dy >= TD - 7.0;
+      bool gusset = abs(kx) < 9.0 && dy > TD - 15.0;
+      bool post = abs(kx) < 3.5;
+      bool diag = inner && abs(dg) < 2.6 && dy > 2.0;
+      if (chord || gusset || post || diag) {
+        if (chord) {
+          float c = dy - (TD - 7.0);
+          shade = c < 1.5 ? 0.56 : c > 5.5 ? 0.12 : 0.27 + (hash1(floor(x / 40.0)) - 0.5) * 0.04;
+          lit = c < 1.5 ? 0.5 : 0.0;
+          if (c > 2.5 && c < 4.0 && mod(x, 11.0) < 1.0) { shade = 0.5; lit = 0.3; }            // rivets
+        } else if (gusset) {
+          shade = 0.3 - (dy > TD - 9.0 ? 0.0 : 0.04);
+          if (kx < -7.5) { shade = 0.52; lit = 0.45; }
+          if (mod(kx + 9.0, 6.0) < 1.0 && mod(dy, 5.0) < 1.0) { shade = 0.54; lit = 0.3; }      // rivets
+        } else if (post) {
+          shade = kx < -2.0 ? 0.56 : kx > 2.0 ? 0.12 : 0.26;
+          lit = kx < -2.0 ? 0.55 : 0.0;
+        } else {
+          shade = dg < -1.2 ? 0.5 : 0.22;                     // a diagonal: its upper edge catches the sky
+          lit = dg < -1.2 ? 0.4 : 0.0;
+        }
+        // rust weeping down the members from the band's seam; the band's shadow where they meet it
+        if (hash1(floor(x / 2.0) + 7.0) > 0.93 && dy < 14.0 + hash1(floor(x / 2.0)) * 20.0 && lit < 0.25) shade -= 0.06;
+        if (dy < 3.0) { shade = 0.1; lit = 0.0; }
+      }
+    }
+  }
   if (shade < 0.0 && r.y >= under && r.y < under + 1.0 * P) {
     float dy = r.y - under;
-    float u = mod(x + dy * 0.3, 4.8 * P) - 2.4 * P;
-    float w = (0.14 - dy / P * 0.14) * P;
-    if (abs(u) < w) { shade = 0.2 + (u < -w + 2.0 ? 0.32 : 0.0); lit = u < -w + 2.0 ? 0.5 : 0.0; }
     // vines in clusters, swaying a whole pixel at a time
     float tm = uTime * (1.0 - 0.8 * uReduced);
     float sway = floor(sin(tm * 0.7 + x * 0.013) * 1.6 * dy / 40.0 + 0.5);
@@ -569,19 +611,29 @@ interface Opts {
 
 function duskOpts(ctx: BuildCtx, o: Opts): DuskOpts {
   void ctx;
+  const lit = litShrines();
   return {
     camRef: CAM_REF,
     world: o.world,
     horizon: 478,
     sun: [178, 446],
     ringR: 132,
-    spireX: 600,
+    // far out on the range (depth 90), east of the fins: it drifts only 60 px over the whole path, so it
+    // stands in open sky from every landing instead of behind the shrine terrace or under the girder
+    spireX: 960,
+    spireDepth: 90,
     lakeX: 190,
+    // the flooded valley: water from the ring's feet to the far east, holding the sky and the near lights
+    lakeReach: 1500,
+    nearLights: [
+      ...PATH.fins.map(([x]) => [RX(x), "glass"] as [number, "glass"]),
+      ...(lit.includes(5) ? [356.8, 368.75, 378.95, 389.25, 395.2].map((x) => [RX(x), "lamp"] as [number, "lamp"]) : []),
+    ],
     lamps: [[110, 1], [300, 2], [470, 3]],
     colossi: true,
     crags: "deep",
     camRange: [0, ROOM_H - 720],
-    lit: litShrines(),
+    lit,
   };
 }
 

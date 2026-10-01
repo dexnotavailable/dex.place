@@ -68,7 +68,8 @@ r.door("sky-door-balcony", { room: "A3", spawn: "sky", flag: "round:done" });
 r.px("vines", "vines-cote", B.cote[1] - 0.22, B.deck + 1.7, { width: 0.4, length: 1.1, strands: 4, flowers: true });
 r.px("vines", "vines-tower", B.tower[1] - 0.5, 54.5, { width: 0.8, length: 1.6, strands: 6 });
 r.px("grass", "grass-balcony", 479.7, B.deck, { kind: "flowers", width: 0.6, height: 0.2 });
-r.px("hangingLantern", "lantern-cote", B.cote[0] - 0.02, B.deck + 2.6, { kind: "iron", drop: 0.5 });
+// hung from the iron arm the backdrop draws out of a backplate on the cote's face (outside.ts): mounted, not hovering
+r.px("hangingLantern", "lantern-cote", B.cote[0] - 0.34, B.deck + 2.6, { kind: "iron", drop: 0.5 });
 // candles on the landing, where the stair turns
 r.px("candles", "candles-landing", 468.6, 46, { count: 4, stand: "ledge", layout: "row" });
 r.px("moths", "moths-landing", 468.6, 46, { count: 3, reach: 2.5 });
