@@ -146,7 +146,9 @@ b.prop("hollow-wick", "wick", X0 + 0.1, STREET, { lamps: lamps.map(([id, , n, or
 
 // --- the rooftop bench over the archive, and its view ---------------------------------------------
 b.prop("bench", "bench-roof", 225.2, WALK, { kind: "wood", length: 1.6 }, px);
-b.vista(223.4, 227.2, 229.5, WALK + 2.2, 0.06);
+// only up on the walkway: without the height band, standing still on the street under the bench
+// framed the walkway and left her below the bottom of the view
+b.vista(223.4, 227.2, 229.5, WALK + 2.2, 0.06, WALK + 3, WALK - 1);
 
 b.spawn("west", 188.6, STREET, 1).spawn("east", 251.4, STREET, -1).spawn("archive", 232.9, STREET, 1);
 b.exit("left", "B5", "bottom").exit("right", "C3", "west");
@@ -197,9 +199,11 @@ export const c1: RoomDef = {
     weather: false,
   },
   lighting: LIGHT,
-  // one light over everything: a cast toward the lamps, haze on far props, contact shadows, halos
-  // round the lamps; no horizon band (the ground meets a wall here, not sky)
-  blend: { ...fromLight(LIGHT, { amount: 0.14, haze: 0.28, halo: 1 }), band: undefined },
+  // one light over everything: a cast toward the lamps, haze on far props, contact shadows. No
+  // horizon band (the ground meets a wall here, not sky) and no lamp halos: the backdrop paints each
+  // lamp's light into its walls in steps, and the halos cost about 1 ms a frame (d3d11) with five
+  // lamps in view, which the room's budget does not have (review/reg-c/round-1, cost.mjs)
+  blend: { ...fromLight(LIGHT, { amount: 0.14, haze: 0.28 }), band: undefined, halo: undefined },
   terrain: dressTerrain(built.terrain, { stone: "none", grating: "none", wood: "none" }, HOLLOW_RAMP.street),
   ambient: { dust: 10, moths: true },
 };

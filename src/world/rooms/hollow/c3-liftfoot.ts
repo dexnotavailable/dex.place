@@ -113,9 +113,11 @@ export const c3: RoomDef = {
     weather: false,
   },
   lighting: LIGHT,
-  // one light over everything: a cast toward the lamps, haze on far props, contact shadows, halos
-  // round the lamps; no horizon band (the ground meets a wall here, not sky)
-  blend: { ...fromLight(LIGHT, { amount: 0.1, haze: 0.2, halo: 1.3 }), band: undefined },
+  // one light over everything: a cast toward the lamps, haze on far props, contact shadows. No
+  // horizon band (the ground meets a wall here, not sky) and no lamp halos: the backdrop paints each
+  // lamp's light into its walls in steps, and the halos cost about 1 ms a frame (d3d11) with five
+  // lamps in view, which the room's budget does not have (review/reg-c/round-1, cost.mjs)
+  blend: { ...fromLight(LIGHT, { amount: 0.1, haze: 0.2 }), band: undefined, halo: undefined },
   terrain: dressTerrain(built.terrain, { tile: "none" }, HOLLOW_RAMP.tile),
   ambient: { dust: 4, moths: false },
 };

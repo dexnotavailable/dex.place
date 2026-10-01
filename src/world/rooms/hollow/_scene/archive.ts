@@ -218,8 +218,6 @@ function layers(ctx: BuildCtx, o: ArchiveOpts): LayerDef[] {
           } else {
             const edge = lxp < 4 || lxp > pw - 5;
             s = edge ? 0.24 + (lxp === 0 ? 0.1 : 0) : 0.2 + (lxp === 5 ? 0.07 : lxp === pw - 6 ? -0.05 : 0) + ((y - ceilS - 34) % 70 < 3 ? 0.06 : 0);
-            // a little grain in each panel (whole streaks, never single flecks at a band edge)
-            if (hashInt(x >> 2, Math.floor((y - ceilS) / 70), 6) < 0.18 && !edge) s -= 0.03;
           }
         } else if (y < ceilS + 10) s = 0.28 + (y === ceilS + 9 ? -0.1 : 0);
         else if (pilaster(x)) {
