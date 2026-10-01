@@ -46,6 +46,10 @@ export interface NeonGlyphParams {
   count: number;
   vertical: boolean;
   lit: boolean;
+  /** How it is held up: "wall" (standoffs and a shadow on the wall behind), "pole" (a steel post down
+   * to the street, `pole` H from the board's centre to the ground), "chains" (hung, `pole` H up). */
+  mount: "wall" | "pole" | "chains";
+  pole: number;
 }
 
 interface NeonRefs {
@@ -85,7 +89,7 @@ export const neonGlyph = defineRecipe<NeonGlyphParams, NeonRefs>({
   id: "neonGlyph",
   breakage: "never",
   reason: "Glyph signs keep the market awake and give it colour against the amber; they mean nothing, except the small book mark over the archive's door, which is how you find the documentation.",
-  defaults: { kind: "glyphs", colour: "rose", count: 3, vertical: true, lit: true },
+  defaults: { kind: "glyphs", colour: "rose", count: 3, vertical: true, lit: true, mount: "wall", pole: 0 },
   cues: ["neon.buzz", "neon.spark"],
   build(b, p) {
     const s = 2; // font px
@@ -101,6 +105,26 @@ export const neonGlyph = defineRecipe<NeonGlyphParams, NeonRefs>({
       bh = p.vertical ? p.count * (6 * s) + 8 : 6 * s + 8;
     }
     const bd = b.part("board", { w: bw, h: bh, pivot: [bw >> 1, bh >> 1], at: [0, 0], layer: "bg", z: 10 });
+    // what holds it: never a sign floating in the air
+    if (p.mount === "pole" && p.pole > 0) {
+      const len = Math.max(4, b.u(p.pole) - (bh >> 1));
+      const pl = b.part("pole", { w: 14, h: len + 2, pivot: [7, 0], at: [0, bh - (bh >> 1) - 2], layer: "bg", z: 9, hittable: false });
+      pl.rect(5, 0, 4, len, { mat: "iron", profile: "cylV", piece: "post" });
+      for (let y = 6; y < len - 8; y += b.u(0.5)) pl.rect(4, y, 6, 2, { mat: "iron", profile: "bevel", r: 1, depth: 2, z: 1, piece: "band" });
+      pl.rect(3, 0, 8, 4, { mat: "iron", profile: "bevel", r: 1, depth: 2, z: 1, piece: "collar" });
+      pl.rect(0, len - 3, 14, 3, { mat: "iron", profile: "bevel", r: 1, depth: 2, z: 1, piece: "foot" });
+      pl.rivets([[2, len - 2], [11, len - 2]], { mat: "iron", r: 1, z: 2 });
+      pl.speckle({ amount: 0.1, seed: p.seed + 5, tone: -1, mats: ["iron"] });
+    } else if (p.mount === "chains" && p.pole > 0) {
+      const len = Math.max(4, b.u(p.pole) - (bh >> 1));
+      const ch = b.part("chains", { w: bw, h: len, pivot: [bw >> 1, len], at: [0, -(bh >> 1) + 1], layer: "bg", z: 9, hittable: false });
+      for (const x of [3, bw - 5]) for (let y = 0; y < len; y++) ch.rect(x + ((y >> 1) % 2), y, 2, 1, { mat: "iron", profile: "flat", piece: "chain" });
+    } else {
+      // standoffs at the corners and the board's shadow on the wall behind it
+      const sh = b.part("standoff", { w: bw + 4, h: bh + 4, pivot: [(bw >> 1) + 1, (bh >> 1) - 1], at: [0, 0], layer: "bg", z: 8, hittable: false, outline: 0 });
+      sh.rect(0, 0, bw + 4, bh + 4, { mat: "soot", profile: "flat", tone: -1, noInk: true });
+      for (const [x, y] of [[-2, 3], [bw - 1, 3], [-2, bh - 5], [bw - 1, bh - 5]] as [number, number][]) bd.rect(Math.max(0, x), y, 3, 2, { mat: "iron", profile: "bevel", r: 1, depth: 2, z: 1, piece: "stud" });
+    }
     bd.rect(0, 0, bw, bh, { mat: "stoneDark", profile: "bevel", r: 2, depth: 3, piece: "backing" });
     bd.rect(2, 2, bw - 4, bh - 4, { mat: "soot", mode: "paint" });
     bd.rivets([[3, 3], [bw - 4, 3], [3, bh - 4], [bw - 4, bh - 4]], { mat: "iron", r: 1 });

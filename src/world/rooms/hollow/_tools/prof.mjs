@@ -1,7 +1,7 @@
 // R-C: where a room's frame goes (simulation vs render; per pixel prop update time).
 //   node src/world/rooms/hollow/_tools/prof.mjs <room> <x> [--port 24401]
 import { createRequire } from "node:module";
-const require = createRequire(new URL("../../../../../tools/scene-pipeline/package.json", import.meta.url));
+const require = createRequire(process.env.PW_ROOT ?? new URL("../../../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const [room = "C1", xs = "214"] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const i = process.argv.indexOf("--port");

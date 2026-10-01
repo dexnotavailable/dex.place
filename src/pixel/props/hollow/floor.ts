@@ -63,6 +63,24 @@ export const hollowFloor = defineRecipe<HollowFloorParams, { head: number }>({
       }
     }
     f.wear({ amount: 0.1 + p.wear * 0.2, seed: p.seed + 4, region: { x0: 0, y0: head, x1: W - 1, y1: head + 1 } });
+    // the ground's face falls into shadow with depth (ordered dither, a step at a time), so the lit
+    // walking line reads first and the face under it sits back, as in the refs
+    {
+      const g = f.grid;
+      const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+      const y0 = head + Math.round(depth * 0.35);
+      for (let y = y0; y < head + depth; y++) {
+        const t = (y - y0) / Math.max(1, head + depth - y0); // 0..1 down the face
+        for (let x = 0; x < W; x++) {
+          const i = g.inner(x, y);
+          if (i < 0 || !g.mat[i]) continue;
+          const th = BAYER[(y & 3) * 4 + (x & 3)]! / 16;
+          const steps = t * 2.2;
+          const k = Math.floor(steps) + (steps - Math.floor(steps) > th ? 1 : 0);
+          if (k > 0) g.tone[i] = Math.max(-3, g.tone[i]! - k);
+        }
+      }
+    }
     return { head };
   },
   initial: "idle",

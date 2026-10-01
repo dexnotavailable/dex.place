@@ -5,7 +5,7 @@
 import { createRequire } from "node:module";
 import { mkdirSync, rmSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-const require = createRequire(new URL("../../../../../tools/scene-pipeline/package.json", import.meta.url));
+const require = createRequire(process.env.PW_ROOT ?? new URL("../../../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const arg = (n, d) => {
   const i = process.argv.indexOf(`--${n}`);

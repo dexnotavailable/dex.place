@@ -13,6 +13,7 @@ import { h, SCALE } from "../../config.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { Box } from "../_blockout/_build.ts";
 import { lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 import { marketScene } from "./_scene/market.ts";
 import { dressTerrain, HOLLOW_RAMP } from "./_room.ts";
 
@@ -22,6 +23,13 @@ const STREET = -32;
 const WALK = -26;
 const TOP = -20;
 const px = { engine: "pixel" as const };
+/** The archive's door, the bracket lamp beside its surround, the paper lanterns under the walkway. */
+const DOOR = 232;
+const DOOR_LAMPS: [number, number][] = [
+  [230.85, STREET + 2.2],
+  [233.15, STREET + 2.2],
+];
+const LANTERNS = [203.6, 207.4, 224.6, 228.6, 235.6];
 
 const b = new Box({
   id: "C1",
@@ -85,21 +93,27 @@ b.spawn("shrine", 211.4, STREET, 1);
 
 // --- the archive door in the back alley: an ordinary door, a small lamp above, the book mark ----
 // a steel door in the brick and iron of the foundry, not a cottage plank door (it opens the same)
-b.prop("door", "archive-door", 232, STREET, { kind: "ordinary", frame: "iron", leaf: "iron" }, px);
+b.prop("hollowDoor", "archive-door", DOOR, STREET, { kind: "ordinary", frame: "iron", leaf: "iron" }, px);
 b.doors["archive-door"] = { room: "C2", spawn: "door" };
-b.prop("neonGlyph", "archive-mark", 232, STREET + 1.78, { kind: "book", colour: "amber" }, px);
-b.prop("marketLantern", "archive-lamp", 231.2, WALK - 0.3, { kind: "iron", drop: 0.9 }, px);
+// the book mark sits in the doorway's tympanum, under the keystone; the lamp hangs from a wall bracket
+// beside the surround (the backdrop builds the doorway into the archive block: _scene/market.ts)
+b.prop("neonGlyph", "archive-mark", DOOR, STREET + 1.78, { kind: "book", colour: "amber" }, px);
+for (const [i, [x, y]] of DOOR_LAMPS.entries()) b.prop("marketLantern", i ? `archive-lamp-${i}` : "archive-lamp", x, y, { kind: "iron", drop: 0.22 }, px);
 b.prop("paper", "paper-archive", 233.4, STREET, { count: 3 }, px);
 
 // --- the market's working parts: neon, vents, junction boxes, the red pipe, the crane, cables -----
-b.prop("neonGlyph", "neon-1", 199.9, STREET + 3.1, { colour: "rose", count: 3, vertical: true }, px);
-b.prop("neonGlyph", "neon-2", 208.3, STREET + 3.4, { colour: "teal", count: 4, vertical: false }, px);
+// every sign is held by something: posts on the open street, standoffs on the archive's wall, chains
+// under the east stair
+b.prop("neonGlyph", "neon-1", 199.9, STREET + 3.1, { colour: "rose", count: 3, vertical: true, mount: "pole", pole: 3.1 }, px);
+b.prop("neonGlyph", "neon-2", 207.6, STREET + 3.4, { colour: "teal", count: 4, vertical: false, mount: "pole", pole: 3.4 }, px);
 b.prop("neonGlyph", "neon-3", 227.6, STREET + 3.6, { colour: "amber", count: 3, vertical: true }, px);
-b.prop("neonGlyph", "neon-4", 243.4, STREET + 4.2, { colour: "rose", count: 4, vertical: false }, px);
+b.prop("neonGlyph", "neon-4", 243.4, STREET + 2.4, { colour: "rose", count: 4, vertical: false, mount: "chains", pole: 0.5 }, px);
 b.prop("steamVent", "vent-1", 208.4, STREET, { period: 9 }, px);
 b.prop("steamVent", "vent-2", 241.6, STREET, { period: 11, strength: 0.8 }, px);
-b.prop("puddle", "puddle-1", 209.1, STREET, { width: 1.1, sky: "dusk" }, px);
-b.prop("puddle", "puddle-2", 240.8, STREET, { width: 0.9, sky: "dusk" }, px);
+// puddles hold the lamps over them as broken streaks (there is no sky down here to hold)
+b.prop("hollowPuddle", "puddle-1", 206.9, STREET, { width: 1.1, lamps: [LANTERNS[1]! - 206.9] }, px);
+b.prop("hollowPuddle", "puddle-2", 242.9, STREET, { width: 1.0, lamps: [0.5] }, px);
+b.prop("hollowPuddle", "puddle-door", 230.3, STREET, { width: 1.1, lamps: [DOOR_LAMPS[0]![0] - 230.3] }, px);
 b.prop("junctionBox", "jbox-1", 202.4, STREET + 1.5, { conduit: 4 }, px);
 b.prop("junctionBox", "jbox-2", 222.3, STREET + 1.6, { conduit: 4 }, px);
 b.prop("redPipe", "pipe-w", 201.2, WALK + 0.62, { length: 18.6, valve: 0.4 }, px);
@@ -110,7 +124,7 @@ b.prop("jibCrane", "crane", 227.2, STREET, { mast: 8.1, jib: 5.8, dir: -1, drop:
 for (const [i, [x, dx]] of ([[203.2, 2.6], [223.4, 2.6]] as [number, number][]).entries())
   b.prop("hollowCable", `cable-${i}`, x, WALK - 0.35, { kind: "cable", to: [dx, i % 2 ? 0.08 : -0.06], slack: 1.07, swing: 0.45 }, px);
 b.prop("hollowCable", "chain-w", 190.2, TOP - 0.2, { kind: "chain", free: true, length: 3.2, swing: 0.9 }, px);
-for (const [i, x] of [203.6, 207.4, 224.6, 228.6, 235.6].entries()) b.prop("marketLantern", `lantern-${i}`, x, WALK - 0.3, { kind: "paper", drop: 0.7 + (i % 2) * 0.25 }, px);
+for (const [i, x] of LANTERNS.entries()) b.prop("marketLantern", `lantern-${i}`, x, WALK - 0.3, { kind: "paper", drop: 0.7 + (i % 2) * 0.25 }, px);
 
 // --- air: grit from the walkway's underside and the ceiling (in time with the footfalls), motes ----
 b.prop("hollowFootfalls", "footfalls", X0 + 0.2, STREET, { every: 70, length: 30, step: 2.5, offset: 18 }, px);
@@ -137,6 +151,15 @@ b.vista(223.4, 227.2, 229.5, WALK + 2.2, 0.06);
 b.spawn("west", 188.6, STREET, 1).spawn("east", 251.4, STREET, -1).spawn("archive", 232.9, STREET, 1);
 b.exit("left", "B5", "bottom").exit("right", "C3", "west");
 
+const LIGHT = lighting({
+    ambient: [0.3, 0.23, 0.18],
+    keyDir: [0.35, -0.75, 0.55],
+    keyColour: [0.74, 0.54, 0.34],
+    rimColour: [1, 0.68, 0.38],
+    rimDir: [0.6, -0.8],
+    rimIntensity: 0.9,
+  });
+
 const built = b.build();
 const streetY = h(TOP - STREET);
 const ref = streetY - Math.round(0.64 * SCALE.viewH);
@@ -155,22 +178,28 @@ export const c1: RoomDef = {
         [196, 209.6],
         [240.5, X1],
       ],
+      // the row behind also stands across the drop at the west end, in front of the foundry's mass
+      denseBack: [
+        [186, 209.6],
+        [238.5, X1 + 2],
+      ],
       archive: [224, 240.4],
       alcove: [209.4, 219.6],
       columns: [202.4, 219.9, 222.3],
       walkway: WALK,
+      door: DOOR,
+      doorLamps: DOOR_LAMPS,
+      lanterns: LANTERNS.map((x, i) => [x, WALK - 0.3 - (0.7 + (i % 2) * 0.25) - 0.17] as [number, number]),
+      plaque: [214.4, STREET + 0.95],
+      hearth: 217.7,
     }),
     vertical: 1,
     weather: false,
   },
-  lighting: lighting({
-    ambient: [0.3, 0.23, 0.18],
-    keyDir: [0.35, -0.75, 0.55],
-    keyColour: [0.74, 0.54, 0.34],
-    rimColour: [1, 0.68, 0.38],
-    rimDir: [0.6, -0.8],
-    rimIntensity: 0.9,
-  }),
+  lighting: LIGHT,
+  // one light over everything: a cast toward the lamps, haze on far props, contact shadows, halos
+  // round the lamps; no horizon band (the ground meets a wall here, not sky)
+  blend: { ...fromLight(LIGHT, { amount: 0.14, haze: 0.28, halo: 1 }), band: undefined },
   terrain: dressTerrain(built.terrain, { stone: "none", grating: "none", wood: "none" }, HOLLOW_RAMP.street),
   ambient: { dust: 10, moths: true },
 };

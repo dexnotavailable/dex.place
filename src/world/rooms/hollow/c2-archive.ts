@@ -12,6 +12,7 @@ import { h, SCALE } from "../../config.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { Box } from "../_blockout/_build.ts";
 import { lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 import { archiveScene } from "./_scene/archive.ts";
 import { dressTerrain, HOLLOW_RAMP } from "./_room.ts";
 
@@ -44,7 +45,9 @@ b.floor(X0, X1, FLOOR, undefined, "rug");
 b.block(X0, X1, TOP, CEIL, "wood");
 
 // the door back up to the alley (an ordinary door), the boards, the rug
-b.prop("door", "archive-exit", 225.2, FLOOR, { kind: "ordinary", frame: "timber" }, px);
+// the door is built into the wall: the backdrop's moulded oak case is its frame (_scene/archive.ts)
+const DOOR = 225.2;
+b.prop("hollowDoor", "archive-exit", DOOR, FLOOR, { kind: "ordinary", frame: "timber" }, px);
 b.doors["archive-exit"] = { room: "C1", spawn: "archive" };
 b.prop("hollowFloor", "boards", X0, FLOOR, { width: h(X1 - X0), depth: 2.2, kind: "boards" }, px);
 b.prop("hollowRug", "rug-reading", 231, FLOOR, { width: 5.6, colour: "clothRed" }, px);
@@ -76,6 +79,15 @@ b.prop("dust", "motes-bays", 239.5, FLOOR, { kind: "dust", width: 7, height: 3, 
 
 b.spawn("door", 226.1, FLOOR, 1);
 
+const LIGHT = lighting({
+    ambient: [0.24, 0.2, 0.16],
+    keyDir: [0.2, -0.6, 0.75],
+    keyColour: [0.6, 0.48, 0.32],
+    rimColour: [1, 0.8, 0.5],
+    rimDir: [0.7, -0.7],
+    rimIntensity: 0.8,
+  });
+
 const built = b.build();
 const roomH = built.h;
 // the room is shorter than the view: the camera centres it (camera.ts clamp)
@@ -94,24 +106,23 @@ export const c2: RoomDef = {
       H: SCALE.H,
       arches: [227.2, 234.2, 247.2],
       lights: [
-        [232.6, 1.0],
-        [234.6, 0.3],
-        [238.8, 1.4],
-        [246.9, 0.4],
-        [225.2, 1.6],
+        [232.6, 1.0, 1],
+        [234.6, 0.3, 0.35],
+        [238.8, 1.4, 0.8],
+        [246.9, 0.4, 0.35],
       ],
+      door: DOOR,
+      products: [239.85, 246.15],
+      clock: 228.6,
+      ladder: 229.7,
     }),
     vertical: 1,
     weather: false,
   },
-  lighting: lighting({
-    ambient: [0.24, 0.2, 0.16],
-    keyDir: [0.2, -0.6, 0.75],
-    keyColour: [0.6, 0.48, 0.32],
-    rimColour: [1, 0.8, 0.5],
-    rimDir: [0.7, -0.7],
-    rimIntensity: 0.8,
-  }),
+  lighting: LIGHT,
+  // one light over everything: a cast toward the lamps, haze on far props, contact shadows, halos
+  // round the lamps; no horizon band (the ground meets a wall here, not sky)
+  blend: { ...fromLight(LIGHT, { amount: 0.12, haze: 0.2, halo: 1.2 }), band: undefined },
   terrain: dressTerrain(built.terrain, { rug: "none", wood: "wood" }, HOLLOW_RAMP.archive),
   ambient: { dust: 6, moths: false },
 };
