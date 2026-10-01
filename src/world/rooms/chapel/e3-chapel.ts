@@ -14,6 +14,7 @@
 
 import { h } from "../../config.ts";
 import { lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { artRect } from "../../../pixel/props/chapel/artFrame.ts";
 import { RoomBuilder } from "./_room.ts";
@@ -29,6 +30,15 @@ export const WORKS: { art: string; kind: "easel" | "niche"; x: number; w: number
   ...NAVE.niches.map((x, i) => ({ art: `0${i + 6}`, kind: "niche" as const, x, w: i === 0 ? 1.6 : 1.35, h: 2.4, sill: 1.0 })),
 ];
 
+const LIGHT = lighting({
+  ambient: [0.26, 0.22, 0.27],
+  keyDir: [0.55, -0.5, 0.65],
+  keyColour: [0.5, 0.4, 0.42],
+  rimColour: [1, 0.7, 0.62],
+  rimDir: [-0.7, -0.7],
+  rimIntensity: 0.7,
+});
+
 const r = new RoomBuilder({
   id: "E3",
   title: "E3 Chapel of Light",
@@ -40,23 +50,18 @@ const r = new RoomBuilder({
   audio: { music: "theme", fromTop: true, level: 0.6, bed: "chapel", weatherThrough: 0.2, surface: "stone" },
   weather: { interior: true, time: "dusk" },
   neighbours: ["E2", "E4"],
-  lighting: lighting({
-    ambient: [0.26, 0.22, 0.27],
-    keyDir: [0.55, -0.5, 0.65],
-    keyColour: [0.5, 0.4, 0.42],
-    rimColour: [1, 0.7, 0.62],
-    rimDir: [-0.7, -0.7],
-    rimIntensity: 0.7,
-  }),
+  lighting: LIGHT,
   surface: "stone",
 });
 
-// the nave floor (stone flags, lit by the candles and the rose's pools)
-r.floor(x0, 458, FLOOR, { art: "stone", ramp: NAVE.floorRamp, surface: "stone" });
+// the nave floor: drawn by the backdrop (chapel.ts naveBody: polished flags holding the candle light,
+// the footing with its crypt vents), so it is the same stone and light as the walls
+r.floor(x0, 458, FLOOR, { art: "none", surface: "stone" });
 
 
 // --- the west end: the doors, the rose window over them, its crank, the catalogue ---
-r.px("chapelDoor", "chapel-in", NAVE.door, FLOOR, { kind: "big", latch: "none", frame: "stone", auto: 0.45 });
+// the leaves only: the backdrop cuts the doorway, its orders, hood and threshold into the west wall (chapel.ts)
+r.px("chapelDoor", "chapel-in", NAVE.door, FLOOR, { kind: "big", latch: "none", frame: "stone", auto: 0.45, wall: true });
 r.door("chapel-in", { room: "E2", spawn: "chapel" });
 const roseX = NAVE.door, roseY = FLOOR + NAVE.roseHeight;
 const art = WORKS.map((w) => {
@@ -101,4 +106,4 @@ r.px("naveRule", "nave-rule", x0 + 0.2, FLOOR);
 r.spawn("west", NAVE.door + 1.35, FLOOR, 1).spawn("east", 457.4, FLOOR, -1);
 r.exit("right", "E4", "west");
 
-export const e3: RoomDef = r.build({ scene: chapelScene, vertical: 1, weather: false }, { ambient: { dust: 6, moths: false } });
+export const e3: RoomDef = r.build({ scene: chapelScene, vertical: 1, weather: false }, { ambient: { dust: 6, moths: false }, blend: fromLight(LIGHT, { amount: 0.12, haze: 0.2, band: 0, halo: 1.25 }) });

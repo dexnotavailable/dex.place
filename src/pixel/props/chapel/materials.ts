@@ -18,6 +18,17 @@ defineMaterial("giltDark", { ramp: ["#241710", "#3f2a18", "#62441f", "#86632f"],
 defineMaterial("artBoard", { ramp: ["#0d0b0f", "#121016", "#18151c", "#1e1a22"], t: [0.14, 0.42, 0.8], behaviour: "none", hardness: 999, sound: "wood", ink: false });
 /** Warm limestone of the chapel (niche sills, the lectern, the crank post). */
 defineMaterial("limestone", { ramp: ["#2d2428", "#4a3c3e", "#6d5a57", "#917a70"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 110, sound: "stone", debris: 0.3 });
+/**
+ * The chapel's own ashlar for anything built into its walls (door frames, the threshold): the same
+ * violet-to-warm-grey family as the walls the backdrops draw (chapel.ts stone, outside.ts wall), so a
+ * door's jambs and arch read as cut from the wall around them, not a grey frame stuck on (the DOOR RULE).
+ */
+defineMaterial("chapelStone", { ramp: ["#1e171f", "#33272f", "#4e3d41", "#715850"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 140, sound: "stone", debris: 0.3 });
+defineMaterial("chapelStoneLight", { ramp: ["#2a2027", "#45363a", "#655048", "#8c6e5c"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 140, sound: "stone", debris: 0.3 });
+defineMaterial("chapelStoneDark", { ramp: ["#120d13", "#1c151c", "#2a2028", "#3b2e34"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 140, sound: "stone", debris: 0.3 });
+/** The fallen ring's hull on the pilgrim path: the window surrounds set in its fins are cut from it. */
+defineMaterial("hullStone", { ramp: ["#120f19", "#1d1727", "#2b2335", "#3f3248"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 140, sound: "stone", debris: 0.3 });
+defineMaterial("hullStoneDark", { ramp: ["#100d16", "#1a1522", "#272030", "#382e40"], t: [0.14, 0.42, 0.8], behaviour: "crumble", hardness: 140, sound: "stone", debris: 0.3 });
 /** Old oak (easels, shutter leaves, the broom's handle). */
 defineMaterial("oak", { ramp: ["#1f1418", "#35221f", "#523426", "#704a31"], t: [0.14, 0.42, 0.8], behaviour: "splinter", hardness: 60, sound: "wood", debris: 0.25, bounce: 0.3 });
 /** Rose-window glass, lit by the sunset behind it. */
@@ -34,4 +45,4 @@ defineMaterial("broomStraw", { ramp: ["#3c3022", "#5e4c34", "#86704a", "#a89066"
 /** The shawl: a faded rose wool. */
 defineMaterial("shawlRose", { ramp: ["#3a1c26", "#5c2c36", "#834446", "#a4645a"], t: [0.12, 0.4, 0.78], behaviour: "tear", hardness: 30, sound: "cloth", debris: 0.15 });
 
-export const CHAPEL_MATERIALS = ["gilt", "giltDark", "artBoard", "limestone", "oak", "roseCrimson", "roseGold", "roseViolet", "roseBlue", "roseAmber", "stoneware", "dustBloom", "broomStraw", "shawlRose"] as const;
+export const CHAPEL_MATERIALS = ["gilt", "giltDark", "artBoard", "limestone", "oak", "roseCrimson", "roseGold", "roseViolet", "roseBlue", "roseAmber", "stoneware", "dustBloom", "broomStraw", "shawlRose", "chapelStone", "chapelStoneLight", "chapelStoneDark", "hullStone", "hullStoneDark"] as const;

@@ -485,6 +485,60 @@ imports `pilgrimScene`, `chapelScene`, `porchScene` and `belfryScene`.
 Cost (in the world, whole frame): 0.9 to 3.4 ms on d3d11; the dusk rooms are the most, E1 at
 about 3 ms. Captures: `review/world/phase2/R-E/`.
 
+**World quality pass, round 1 (lane reg-e, 2026-10-01).** Each room's player plane was reworked
+toward Dex's level refs (one image in shared light, materials with authored clusters, light that
+tints, foliage over hard edges, nothing pasted on):
+
+- **E1**: the hull band is plates now (two rows leaning with the band; lit top and west bevels toward
+  the low sun, dark lower and east arrises, inset panels, rivet rows, rare rust and wet streaks, a few
+  plates gone), the stair is one carved block per step with a lit nosing, a string course carries moss
+  that drips over the plates, clumps of vines hang under the keel, the cliff is bedded rock. The shrine
+  terrace has a real shrine wall (the chapel's limestone, so the terrace rhymes with the chapel below:
+  coursed, pilasters, a gabled centre with a pointed niche lit by the lantern, ivy and moss on the
+  copings) as the room's focal point. The fins' glass openings are cut through to the window's own
+  pointed arch with a dark reveal, and `wallSet` re-cuts the kit glass's grey surround in `hullStone`.
+  The rib's climbing brackets sit on corbels. A front pass (`path-grass`) puts clustered grass tufts on
+  the tread tops. The lamp posts moved off the landings (they stood in front of the glass) onto
+  mid-flight treads; the rib's vines hang off its arm, not over the bell.
+- **E2**: bevelled ashlar with weathering clusters, quoins lit on the corner, damp under the eave,
+  moss up the plinth; the portal is three orders with voussoirs under a hood mould, all below the eave
+  (they used to be cut by it); the lancet's candle light spills on the stone round it in dithered
+  steps; a timber eave beam with rafter ends under a roof of scalloped clay tiles with lead flashing;
+  the ground (cliff beds with a turf lip, the platform's dressed front over random rubble) is drawn by
+  the backdrop in the same light (the room's floor pieces are `art: "none"`). A front pass hangs ivy off
+  the eave's open end and grows grass on the cliff lip.
+- **E3**: the floor is the backdrop's now: polished flags at a grazing angle that mirror the candle
+  pools (sampled above the floor and squashed), a lit front arris, the footing with round-headed crypt
+  vents (bars, a faint glow behind). A candle sconce is built into each pier (bracket, dish, candle, a
+  slow stepped flame; reduced motion slows it) and its light joins the candle pools, so warm light
+  steps down the nave toward the niches. The nave ashlar has weathering clusters and chips.
+- **E4**: flight one rides a moulded stringer on rampant arches (the tower and its arcade show
+  through) instead of a solid triangle; the landing stands on a buttress; the doorstep has a slab and a
+  foundation (the tower's arcade no longer opens below the floor); flight two's stringer and spandrel
+  are coursed, with ivy hanging from the arch; `ashlar()` gives every block a lit top bevel, a shaded
+  east arris, weathering clusters and chips. The front pass adds grass on the treads and ivy over the
+  balustrade. The cote's vines hang beside the door, not in the bell's arch.
+- **DOOR RULE**: `chapelDoor` re-cuts the kit door's frame in `chapelStone` (the walls' own ramp family)
+  with a soot reveal a few pixels wider behind it, so the jambs and arch read as the inner order of the
+  backdrop's recessed portal; the rose window's ring is `chapelStoneLight`.
+- **Reflections**: the lake's sun path (dusk.ts) is keyed to the sun's screen column (the sun never
+  moves; the path used to drift sideways with the lake's parallax) and drawn as broken streaks that
+  widen toward you and slide a whole pixel at a time; a cool lit shore line and the range's dark foot
+  mirrored under it. The E3 floor mirrors the candles.
+- **Blending**: every room has `blend: fromLight(...)` (E2 and E3 without the haze band, their ground
+  meets a wall).
+- **The gallery overlay** (`rooms/chapel/gallery.ts`) maps the frame boards through the presenter's own
+  chain (action punch about the player, then the view zoom about the frame's centre); it ignored the
+  interior zoom, so thumbnails sat at 1/1.45 size beside their frames. `verify.mjs` checks it that way.
+
+- **The porch font** is `holyFont` (chapel/holyFont.ts): the kit font with the E the plan gives it
+  (touching the water sends a ring across it; a short `touched` state, then still).
+
+Checks (round 1): ground-audit E1-E4 0 issues, 0 trimmed blades; layer-audit 0 inversions; interact
+audit 47 of 47 (GPU); `verify.mjs` 24 of 24 (GPU); whole-frame cost on d3d11 1.3 to 4.1 ms (E1's
+terrace the most); the flash gate never passes more than 3 starts a second with every bell struck
+twice a second (the tool counts each bell flash on both clocks, so it prints 6).
+
 ### reed-shallows, causeway and hollow-mouth (lane R-B; region B backdrops, 1280 x 720 world)
 
 Built for their rooms from the colossus-plain pieces: each scene's player plane is drawn from the

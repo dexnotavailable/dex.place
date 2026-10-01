@@ -11,7 +11,7 @@
 // Writes review/world/phase2/R-E/checks/checks.json and PNGs.
 import { createRequire } from "node:module";
 import { mkdirSync, writeFileSync } from "node:fs";
-const require = createRequire(new URL("../../../../../tools/scene-pipeline/package.json", import.meta.url));
+const require = createRequire(process.env.PW_ROOT ?? new URL("../../../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const arg = (n, d) => {
   const i = process.argv.indexOf(`--${n}`);
@@ -19,7 +19,7 @@ const arg = (n, d) => {
 };
 const PORT = arg("port", process.env.WORLD_PORT ?? "24601");
 const ONLY = new Set(arg("only", "shots,flash,cost").split(","));
-const OUT = "review/world/phase2/R-E/checks";
+const OUT = arg("out", "review/world/phase2/R-E/checks");
 mkdirSync(OUT, { recursive: true });
 
 /** The views: [name, room, x in world H (or a spawn), flags to set first]. */
@@ -161,7 +161,7 @@ if (ONLY.has("flash")) {
 }
 
 if (ONLY.has("cost")) {
-  for (const angle of ["d3d11", "swiftshader"]) {
+  for (const angle of arg("angles", "d3d11,swiftshader").split(",")) {
     const args = [`--use-angle=${angle}`, "--ignore-gpu-blocklist"];
     if (angle === "swiftshader") args.push("--enable-unsafe-swiftshader");
     const b2 = await chromium.launch({ channel: "msedge", args });

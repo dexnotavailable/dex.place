@@ -16,7 +16,7 @@
 // Writes review/world/phase2/R-E/verify/verify.json and PNGs.
 import { createRequire } from "node:module";
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
-const require = createRequire(new URL("../../../../../tools/scene-pipeline/package.json", import.meta.url));
+const require = createRequire(process.env.PW_ROOT ?? new URL("../../../../../tools/scene-pipeline/package.json", import.meta.url));
 const { chromium } = require("playwright-core");
 const arg = (n, d) => {
   const i = process.argv.indexOf(`--${n}`);
@@ -186,7 +186,15 @@ const pin = await ev(() => {
   g.render();
   const canvas = g.r.canvas, pr = g.r.presenter.rect, k = canvas.clientWidth / canvas.width;
   const [cx, cy] = g.camera.view();
-  const top = canvas.height - pr.y - pr.h;
+  // the presenter's mapping (presenter.ts main()): the action punch about the player (Z), then the
+  // view zoom about the frame's centre (V), then the output rect (top-left origin); the frame's size
+  // is the output rect's size over its scale
+  const S = pr.scale, FW = pr.w / S, FH = pr.h / S;
+  const V = Math.max(1, g.camera.viewZoom ?? 1);
+  const steps = g.camera.zoomSteps ?? 0;
+  const Z = Math.max(1, (steps > 0 ? 1 + steps / Math.max(1, Math.round(S)) : 1) * (g.camera.actionZoom ?? 1));
+  const b = g.player.body, fx = b.x - cx, fy = b.y - 80 * 0.55 - cy;
+  const scr = (wx, wy) => [(pr.x + (FW / 2 + (fx + (wx - cx - fx) * Z - FW / 2) * V) * S) * k, (pr.y + (FH / 2 + (fy + (wy - cy - fy) * Z - FH / 2) * V) * S) * k];
   const u = (f) => Math.round(f * 80);
   return window.__chapelArt.report().filter((r) => r.visible).map((r) => {
     const id = r.key.replace("thumb-", "");
@@ -195,11 +203,12 @@ const pin = await ev(() => {
     const x0 = f.x - Math.floor(u(f.params.w) / 2);
     const y1 = f.y - (u(f.params.sill) + u(0.15));
     const y0 = y1 - u(f.params.h);
-    const L = (pr.x + (x0 - cx) * pr.scale) * k, T = (top + (y0 - cy) * pr.scale) * k;
-    return { id, dl: +(r.left - L).toFixed(2), dt: +(r.top - T).toFixed(2), w: +r.width.toFixed(1), h: +r.height.toFixed(1), src: r.src.replace(/^.*\/gallery\//, "") };
+    const [L, T] = scr(x0, y0);
+    const ew = u(f.params.w) * Z * V * S * k, eh = u(f.params.h) * Z * V * S * k;
+    return { id, dl: +(r.left - L).toFixed(2), dt: +(r.top - T).toFixed(2), w: +r.width.toFixed(1), h: +r.height.toFixed(1), dw: +(r.width - ew).toFixed(2), dh: +(r.height - eh).toFixed(2), zoom: +(Z * V).toFixed(3), src: r.src.replace(/^.*\/gallery\//, "") };
   });
 });
-ok("thumbnails sit exactly on their frames' boards at 1080p (1.5x): within half a CSS px, 288 x 162 for a 2.4 x 1.35 H work", pin.length >= 2 && pin.every((p) => Math.abs(p.dl) <= 0.5 && Math.abs(p.dt) <= 0.5 && p.w === 288 && p.h === 162), pin);
+ok("thumbnails sit exactly on their frames' boards at 1080p, through the camera's zoom: within half a CSS px, the board's size", pin.length >= 2 && pin.every((p) => Math.abs(p.dl) <= 0.5 && Math.abs(p.dt) <= 0.5 && Math.abs(p.dw) <= 0.5 && Math.abs(p.dh) <= 0.5), pin);
 await shot("e3-thumbs-1080");
 // frames ignore hits; nothing fractures in the nave
 const ids = ["art-03", "art-04", "pew-429.7", "pew-435.1", "rack-419.9", "censer", "tapestry-0", "candelabra-west"];

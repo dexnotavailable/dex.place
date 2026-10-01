@@ -18,11 +18,21 @@
 // them).
 
 import { lighting } from "../common.ts";
+import { fromLight } from "../../render/blend.ts";
 import type { RoomDef } from "../../room/types.ts";
 import { BELFRY, belfryScene } from "../../../scenes/scenes/chapel/outside.ts";
 import { RoomBuilder } from "./_room.ts";
 
 const B = BELFRY;
+const LIGHT = lighting({
+  ambient: [0.3, 0.25, 0.32],
+  keyDir: [0.7, -0.35, 0.6],
+  keyColour: [0.86, 0.58, 0.46],
+  rimColour: [1, 0.66, 0.5],
+  rimDir: [0.9, -0.4],
+  rimIntensity: 1,
+});
+
 const r = new RoomBuilder({
   id: "E4",
   title: "E4 Bell Stair and Balcony",
@@ -34,14 +44,7 @@ const r = new RoomBuilder({
   audio: { music: "theme", bed: "dusk", weatherThrough: 1, surface: "stone" },
   weather: { state: "after", time: "dusk" },
   neighbours: ["E3", "A3"],
-  lighting: lighting({
-    ambient: [0.3, 0.25, 0.32],
-    keyDir: [0.7, -0.35, 0.6],
-    keyColour: [0.86, 0.58, 0.46],
-    rimColour: [1, 0.66, 0.5],
-    rimDir: [0.9, -0.4],
-    rimIntensity: 1,
-  }),
+  lighting: LIGHT,
   surface: "stone",
 });
 
@@ -58,9 +61,11 @@ r.prop("sit-spot", "balcony-look", B.bench, B.deck, {}, { engine: "stub" });
 r.vista(B.vista.x0, B.vista.x1, B.vista.cx, B.vista.cy, 0.07);
 r.px("prayerFlags", "balcony-flags", 480.9, B.deck, { kind: "prayer", span: 2.6, height: 1.9, posts: true });
 r.px("hangingBell", "chapel-bell", B.bell, B.deck + 3.35, { size: "large" });
-r.px("chapelDoor", "sky-door-balcony", B.door, B.deck, { kind: "sky", latch: "near", mark: true, beyond: "none", frame: "stone", flag: "latch:sky-door", bell: "chapel-bell", auto: 0.9 });
+// the leaf only, set back in the opening the backdrop cuts into the cote (outside.ts: reveal, quoins, lintel, threshold)
+r.px("chapelDoor", "sky-door-balcony", B.door, B.deck, { kind: "sky", latch: "near", mark: true, beyond: "none", frame: "stone", flag: "latch:sky-door", bell: "chapel-bell", auto: 0.9, wall: true });
 r.door("sky-door-balcony", { room: "A3", spawn: "sky", flag: "round:done" });
-r.px("vines", "vines-cote", B.cote[0] + 0.25, B.deck + 4.3, { width: 0.5, length: 1.3, strands: 5, flowers: true });
+// ivy down the cote's east jamb beside the door, from under its string course (never in the bell's arch)
+r.px("vines", "vines-cote", B.cote[1] - 0.22, B.deck + 1.7, { width: 0.4, length: 1.1, strands: 4, flowers: true });
 r.px("vines", "vines-tower", B.tower[1] - 0.5, 54.5, { width: 0.8, length: 1.6, strands: 6 });
 r.px("grass", "grass-balcony", 479.7, B.deck, { kind: "flowers", width: 0.6, height: 0.2 });
 r.px("hangingLantern", "lantern-cote", B.cote[0] - 0.02, B.deck + 2.6, { kind: "iron", drop: 0.5 });
@@ -71,4 +76,4 @@ r.px("moths", "moths-landing", 468.6, 46, { count: 3, reach: 2.5 });
 r.spawn("west", 458.5, B.floor, 1).spawn("balcony", 484.2, B.deck, -1);
 r.exit("left", "E3", "east", 39, 42);
 
-export const e4: RoomDef = r.build({ scene: belfryScene, vertical: 1, weather: true }, { ambient: { dust: 5, moths: true } });
+export const e4: RoomDef = r.build({ scene: belfryScene, vertical: 1, weather: true }, { ambient: { dust: 5, moths: true }, blend: fromLight(LIGHT, { amount: 0.15, haze: 0.3, band: 0.6, halo: 1.1 }) });
