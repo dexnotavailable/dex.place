@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-02T15:18:45.127Z (02/10/2026, 22:18:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-02T16:18:45.057Z (02/10/2026, 23:18:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_9be17a6b-880 — last activity 1533 min ago
+### wf_9be17a6b-880 — last activity 1593 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **finish-b** (done): Region B's interrupted round is finished and committed. The code saved at the WIP checkpoint (78622fa) turned out to be complete. It had no loose ends, broken references or type errors, so nothing needed fixing. It covers: - Stonetop rebuilt as a stepped cairn of cut stone blocks, with ledges on supporting brackets, three capstones, a small cairn on top and fallen blocks at its foot (D:/Dex/Temp/claude-wq-reg-b/src/s
@@ -23,7 +23,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-release-1** (done): verdict pass-with-notes · score 0.9
 - **verify-art-1** (done): verdict pass-with-notes · score 7.3
 
-### wf_ec033edb-845 — last activity 1607 min ago
+### wf_ec033edb-845 — last activity 1667 min ago
 10 agents: 5 done, 5 running or stopped mid-way, 0 failed.
 
 - **sysfix** (done): All three systems fixes are done and committed on claude/wq-sysfix (7579af4). I did not touch the workflow. I have no record of regions A, B or D round 2 being cut off, so I could not answer that question. Nothing here was pushed. 1. Phone side borders: the missed case was the touch rails. When she sat or held a vista on a phone, main.ts passed 76 px black gutters per side to the presenter. That shrank the frame to f
@@ -37,7 +37,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **reg-a:critic:c1** (done): verdict revise · score 6.4
 - **reg-a:c2** (running)
 
-### wf_cc0765c3-3f0 — last activity 1669 min ago
+### wf_cc0765c3-3f0 — last activity 1728 min ago
 28 agents: 20 done, 2 running or stopped mid-way, 6 failed.
 
 - **reg-d:r2** (failed)
@@ -55,7 +55,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-release-1** (running)
 - **verify-art-1** (done): verdict blocking · score 6.2 · blocking: E1 Pilgrim Path (a room this branch reworked) has floating foliage. At the second stained-glass window ruin, the hanging vines start about 80 px above the wall's top edge and hang from open sky (rooms/E1-04.png, crop-E1-net.png, at screen x 1170-1260, y 288). Fix: anchor the vine tops on the wall crest or the arch shoulder, or cut them to start at the wall edge. | D3 Crown has floating props. Wall
 
-### wf_54ca354a-626 — last activity 2250 min ago
+### wf_54ca354a-626 — last activity 2310 min ago
 5 agents: 3 done, 2 running or stopped mid-way, 0 failed.
 
 - **package** (done): The real rendered Rosace (drive-9 round 2, R2) is packaged as dex.sprite/1 at 80 px and 144 px, all 17 clips plus sit, and committed on claude/rosace-package. Nothing was pushed. I left the level art alone (see openIssues). Scope: the relayed request was about level art, with doors popping out of walls. The task text and namespace are the Rosace package, so I did only that. Level art is not touched. Look used: R2. Co
@@ -64,25 +64,25 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **review-motion-1** (done): verdict pass-with-notes · score 7.5
 - **review-runtime-1** (done): verdict pass-with-notes · score 0.9
 
-### wf_b70fb9cc-c84 — last activity 2472 min ago
+### wf_b70fb9cc-c84 — last activity 2532 min ago
 3 agents: 0 done, 3 running or stopped mid-way, 0 failed.
 
 - **sys:cam** (running)
 - **sys:layers** (running)
 - **sys:ixr** (running)
 
-### wf_43490aa2-fb3 — last activity 2477 min ago
+### wf_43490aa2-fb3 — last activity 2537 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **package** (running)
 
-### wf_e8bdf118-24f — last activity 2478 min ago
+### wf_e8bdf118-24f — last activity 2538 min ago
 2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
 
 - **sys-camera** (running)
 - **sys-layers** (running)
 
-### wf_5cb6279a-9f2 — last activity 2682 min ago
+### wf_5cb6279a-9f2 — last activity 2742 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:world-load** (done): The World now starts loading with the homepage. Before, it was only mounted from an animation frame after the page's load event. - **Page opened at the top:** the World frame is added as soon as the page is interactive, 13–34 ms after DOMContentLoaded (median). - **Background tab:** the frame is created while the tab is hidden, and the World boots, compiles its shaders and draws a warm-up frame there. Before this cha
@@ -92,37 +92,6 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate** (done): All four lanes are merged into claude/site-finish-20260930 in D:/Dex/Temp/claude-dexplace-20260930. The final head is c45d68c: 4 merge commits plus the 5 lane commits on top of bd7f65c. The typecheck, build and tests all pass, and a browser smoke test on the merged build shows the 3-minute position reset and the homepage World load working together. Nothing was pushed. What I resolved: - **src/world/main.ts (world-lo
 - **verify-world-1** (done): verdict pass-with-notes · score 9
 - **verify-site-1** (done): verdict pass-with-notes · score 9
-
-### wf_1e5499b2-d83 — last activity 4293 min ago
-2 agents: 0 done, 0 running or stopped mid-way, 2 failed.
-
-- **followups** (failed)
-- **verify** (failed)
-
-### wf_5ef68e55-dd7 — last activity 4299 min ago
-3 agents: 0 done, 0 running or stopped mid-way, 3 failed.
-
-- **cross-lane-fix** (failed)
-- **verify-regions-1** (failed)
-- **verify-release-1** (failed)
-
-### wf_68cebea7-8e1 — last activity 4300 min ago
-40 agents: 40 done, 0 running or stopped mid-way, 0 failed.
-
-- **whole:overall:r3** (done): score 5.5 · prefers ours: no · top fixes: Undo the R3 regression in finish. Blind, the previous round (R2) beat this round (R3) at both 144 and 80 px. Return to R2's lower-key, softer ramps and push further toward textured painted shading with selective or coloured outlines instead of a navy outline on every edge. | Integrate the bust. Right now it is two flat grey-lavender spheres at sleeve value, which is on the never-list. Add an under
-- **whole:r4** (done): Round 4 on the drive9 build is done, and the blind sheets are ready for critics. Nobody has judged them yet, so there is no score. I built the sheets and have seen the key, so the verdicts have to come from critics who haven't. **Figure-pose lane:** nothing new. Its newest poses are still idle_appeal a89be9fabdd7 and back_appeal d65ee47e75d8, its last work file is from 15:54, and there is no REPORT.md. Round 4 uses i
-- **whole:face:r4** (done): score 5.8 · prefers ours: no · top fixes: Q and N1 face overrides: put both eyes on one tilt line, replace the startled O mouth with a closed smirk, and clear the grey sleeve or shoulder mass under the chin. At the moment the attack frames are off-model. | Redesign the eye in the r4_paint overrides. Make it a narrower almond, tilted up, with a 2 px near-black upper-lash block running past the outer corner and an indigo-to-muted-blue iris 
-- **whole:body:r4** (done): score 5.2 · prefers ours: no · top fixes: Bring the constructed hand stamps and the two-hand grip into the drive-9 chain. Right now the glaive floats and the free hand is a blue claw. Show a 4-5 px fist high on the haft, and a hand on the hip with the elbow out. | Take the near forearm off the bust. Move that hand to the collar or hair with a bent wrist and grouped fingers, so the bust curve breaks the silhouette as rev 3.5 requires. | Re
-- **whole:gear:r4** (done): score 5.5 · prefers ours: no · top fixes: Make the grip hand read. It is hidden inside the sleeve in the idle, back and N1 shots of the current build, so the glaive floats. Draw it as its own outlined pass over the sleeve and port control A's two-fist N1 grip. | Free the collar cross: move the idle free hand off the collar (hip or hair). The current build's forearm hides the cross, which control A still shows. | Give the bodice real const
-- **whole:craft:r4** (done): score 5.8 · prefers ours: no · top fixes: Finish ramps: add a 1 px anti-aliased intermediate tone between every shading band, plus a warm core shadow and a cool bounce tone on skin, so bands read as painted gradients instead of toon steps (this is the core gap to the refs; ours measures about 195 colours vs thousands in the refs). | Contour clean-up pass after quantising: remove the stippled orphan light pixels along the tabard and sleeve
-- **whole:overall:r4** (done): score 6 · prefers ours: no · top fixes: Blind, the paint-over was invisible: I could not tell ours (I) from 'under' (E), and it changes only 0.8-8.7% of pixels. Stop pixel paint-over and put the effort into the painted finish: long soft ramps, texture, a lower overall key, light anti-aliasing, and no 32-colour cap. | Restore the gold diadem and veil. Prev (C) was the most original and most priestly read blind, and removing it made her d
-- **whole:r5** (done): Round 5 is built, and the blind sheets are ready for critics. Nobody has scored it yet, so there is no new score. I built two versions this round, compared them side by side and kept one. The other is in the blind set as its own letter, so the critics can overturn my pick. Nothing was committed, and rosace.blend is unchanged (sha256 still 23545647…). The figure-pose lane has no newer pose (its newest are still idle_a
-- **whole:face:r5** (done): score 5 · prefers ours: no · top fixes: Revert R5's head paint-over to R4's (prev) face, which scored best: open eyes with the iris top visible, a tapered 1-2 px lash in place of the black lid slab, a closed 3-4 px soft smile. Keep the half-lid only as a flirt frame. | Enlarge the head to 24-25 px at 144 (about 1/5.75 of height, x1.12-1.15 on the current head) to match the refs' face-appeal ratio. | Rebuild the hair finish: 4-5 hue-shif
-- **whole:body:r5** (done): score 5.6 · prefers ours: no · top fixes: Hands: replace the painted 6x6 fists with the integrated chain's built hand stamps. Give the idle's free hand one readable job (on the cocked hip: elbow out, fingers grouped, wrist bent, bell sleeve hanging from that elbow) so no forearm crosses the bust. | Show the weight leg: split, angle or blow the long white tabard toward the free side so the weight-leg thigh and hip curve break the silhouett
-- **whole:gear:r5** (done): score 5 · prefers ours: no · top fixes: Port the constructed fists and two-hand grip from the integrated chain into the drive-9 build. The key confirms ours only has painted 6x6 lumps, and N1/Q use raw render hands. Add a thumb wedge over the haft, show the wrist clear of the sleeve, put the N1 front hand 24-30 px up the haft, and keep the Q haft out of the pelvis. | Detach and taper the N1 trail so it no longer welds onto the blade as 
-- **whole:craft:r5** (done): score 5.5 · prefers ours: no · top fixes: Make the values low-key. Our 90th-percentile luminance is about 214 against the refs' 170-180: lower and lavender-tint the white tabard and sleeves, keep the brightest values for the face, gem and rim, and let indigo/navy own about half the area. | Add real cast shadows and fold crease lines (bust onto belly, hair onto face, sleeve onto hip, tabard folds). Their absence is why the soft ramps still
-- **whole:overall:r5** (done): score 5.7 · prefers ours: no · top fixes: Face regressed versus R4: restore the open, bright-eyed default face, pull the dark hair strands off the eyes, trim the crown flyaways to one clean ahoge, and go to a head of 1/6 of height | Pose: replace the walking-stride legs with a true weight-leg contrapposto (feet closer, free knee crossing in front, hip cocked out, hand on hip); the current idle reads as mid-step, not seductive-elegant | Bu
-- **report** (done): I promoted round 2. It is the best round of the five, at 5.78 against the refs' 9, and it beat the old integrated build in two separate blind sets (5.8 vs 5.6, then 5.7 vs 5.2). The canonical build and the stills chain now produce its look by default, and a fresh build plus re-render matches the judged stills pixel for pixel. One thing is missing: the harness blocked writing review/rosace/art/drive9/REPORT.md ("subag
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
