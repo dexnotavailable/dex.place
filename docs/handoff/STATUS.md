@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-02T07:58:45.031Z (02/10/2026, 14:58:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-02T08:58:45.106Z (02/10/2026, 15:58:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_9be17a6b-880 — last activity 1093 min ago
+### wf_9be17a6b-880 — last activity 1153 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **finish-b** (done): Region B's interrupted round is finished and committed. The code saved at the WIP checkpoint (78622fa) turned out to be complete. It had no loose ends, broken references or type errors, so nothing needed fixing. It covers: - Stonetop rebuilt as a stepped cairn of cut stone blocks, with ledges on supporting brackets, three capstones, a small cairn on top and fallen blocks at its foot (D:/Dex/Temp/claude-wq-reg-b/src/s
@@ -23,7 +23,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-release-1** (done): verdict pass-with-notes · score 0.9
 - **verify-art-1** (done): verdict pass-with-notes · score 7.3
 
-### wf_ec033edb-845 — last activity 1167 min ago
+### wf_ec033edb-845 — last activity 1227 min ago
 10 agents: 5 done, 5 running or stopped mid-way, 0 failed.
 
 - **sysfix** (done): All three systems fixes are done and committed on claude/wq-sysfix (7579af4). I did not touch the workflow. I have no record of regions A, B or D round 2 being cut off, so I could not answer that question. Nothing here was pushed. 1. Phone side borders: the missed case was the touch rails. When she sat or held a vista on a phone, main.ts passed 76 px black gutters per side to the presenter. That shrank the frame to f
@@ -37,7 +37,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **reg-a:critic:c1** (done): verdict revise · score 6.4
 - **reg-a:c2** (running)
 
-### wf_cc0765c3-3f0 — last activity 1228 min ago
+### wf_cc0765c3-3f0 — last activity 1289 min ago
 28 agents: 20 done, 2 running or stopped mid-way, 6 failed.
 
 - **reg-d:r2** (failed)
@@ -55,7 +55,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-release-1** (running)
 - **verify-art-1** (done): verdict blocking · score 6.2 · blocking: E1 Pilgrim Path (a room this branch reworked) has floating foliage. At the second stained-glass window ruin, the hanging vines start about 80 px above the wall's top edge and hang from open sky (rooms/E1-04.png, crop-E1-net.png, at screen x 1170-1260, y 288). Fix: anchor the vine tops on the wall crest or the arch shoulder, or cut them to start at the wall edge. | D3 Crown has floating props. Wall
 
-### wf_54ca354a-626 — last activity 1810 min ago
+### wf_54ca354a-626 — last activity 1870 min ago
 5 agents: 3 done, 2 running or stopped mid-way, 0 failed.
 
 - **package** (done): The real rendered Rosace (drive-9 round 2, R2) is packaged as dex.sprite/1 at 80 px and 144 px, all 17 clips plus sit, and committed on claude/rosace-package. Nothing was pushed. I left the level art alone (see openIssues). Scope: the relayed request was about level art, with doors popping out of walls. The task text and namespace are the Rosace package, so I did only that. Level art is not touched. Look used: R2. Co
@@ -64,25 +64,25 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **review-motion-1** (done): verdict pass-with-notes · score 7.5
 - **review-runtime-1** (done): verdict pass-with-notes · score 0.9
 
-### wf_b70fb9cc-c84 — last activity 2032 min ago
+### wf_b70fb9cc-c84 — last activity 2092 min ago
 3 agents: 0 done, 3 running or stopped mid-way, 0 failed.
 
 - **sys:cam** (running)
 - **sys:layers** (running)
 - **sys:ixr** (running)
 
-### wf_43490aa2-fb3 — last activity 2037 min ago
+### wf_43490aa2-fb3 — last activity 2097 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **package** (running)
 
-### wf_e8bdf118-24f — last activity 2038 min ago
+### wf_e8bdf118-24f — last activity 2098 min ago
 2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
 
 - **sys-camera** (running)
 - **sys-layers** (running)
 
-### wf_5cb6279a-9f2 — last activity 2242 min ago
+### wf_5cb6279a-9f2 — last activity 2302 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:world-load** (done): The World now starts loading with the homepage. Before, it was only mounted from an animation frame after the page's load event. - **Page opened at the top:** the World frame is added as soon as the page is interactive, 13–34 ms after DOMContentLoaded (median). - **Background tab:** the frame is created while the tab is hidden, and the World boots, compiles its shaders and draws a warm-up frame there. Before this cha
@@ -93,20 +93,20 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-world-1** (done): verdict pass-with-notes · score 9
 - **verify-site-1** (done): verdict pass-with-notes · score 9
 
-### wf_1e5499b2-d83 — last activity 3853 min ago
+### wf_1e5499b2-d83 — last activity 3913 min ago
 2 agents: 0 done, 0 running or stopped mid-way, 2 failed.
 
 - **followups** (failed)
 - **verify** (failed)
 
-### wf_5ef68e55-dd7 — last activity 3859 min ago
+### wf_5ef68e55-dd7 — last activity 3919 min ago
 3 agents: 0 done, 0 running or stopped mid-way, 3 failed.
 
 - **cross-lane-fix** (failed)
 - **verify-regions-1** (failed)
 - **verify-release-1** (failed)
 
-### wf_68cebea7-8e1 — last activity 3860 min ago
+### wf_68cebea7-8e1 — last activity 3920 min ago
 40 agents: 40 done, 0 running or stopped mid-way, 0 failed.
 
 - **whole:overall:r3** (done): score 5.5 · prefers ours: no · top fixes: Undo the R3 regression in finish. Blind, the previous round (R2) beat this round (R3) at both 144 and 80 px. Return to R2's lower-key, softer ramps and push further toward textured painted shading with selective or coloured outlines instead of a navy outline on every edge. | Integrate the bust. Right now it is two flat grey-lavender spheres at sleeve value, which is on the never-list. Add an under
@@ -124,7 +124,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **whole:overall:r5** (done): score 5.7 · prefers ours: no · top fixes: Face regressed versus R4: restore the open, bright-eyed default face, pull the dark hair strands off the eyes, trim the crown flyaways to one clean ahoge, and go to a head of 1/6 of height | Pose: replace the walking-stride legs with a true weight-leg contrapposto (feet closer, free knee crossing in front, hip cocked out, hand on hip); the current idle reads as mid-step, not seductive-elegant | Bu
 - **report** (done): I promoted round 2. It is the best round of the five, at 5.78 against the refs' 9, and it beat the old integrated build in two separate blind sets (5.8 vs 5.6, then 5.7 vs 5.2). The canonical build and the stills chain now produce its look by default, and a fresh build plus re-render matches the judged stills pixel for pixel. One thing is missing: the harness blocked writing review/rosace/art/drive9/REPORT.md ("subag
 
-### wf_a38b10a9-aa1 — last activity 3947 min ago
+### wf_a38b10a9-aa1 — last activity 4007 min ago
 13 agents: 13 done, 0 running or stopped mid-way, 0 failed.
 
 - **R-A:critic** (done): verdict pass-with-notes · score 8.4
