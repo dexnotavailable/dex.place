@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-03T20:48:46.146Z (04/10/2026, 03:48:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-03T21:58:45.326Z (04/10/2026, 04:58:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_9be17a6b-880 — last activity 3304 min ago
+### wf_9be17a6b-880 — last activity 3374 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **finish-b** (done): Region B's interrupted round is finished and committed. The code saved at the WIP checkpoint (78622fa) turned out to be complete. It had no loose ends, broken references or type errors, so nothing needed fixing. It covers: - Stonetop rebuilt as a stepped cairn of cut stone blocks, with ledges on supporting brackets, three capstones, a small cairn on top and fallen blocks at its foot (D:/Dex/Temp/claude-wq-reg-b/src/s
@@ -23,7 +23,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-release-1** (done): verdict pass-with-notes · score 0.9
 - **verify-art-1** (done): verdict pass-with-notes · score 7.3
 
-### wf_ec033edb-845 — last activity 3377 min ago
+### wf_ec033edb-845 — last activity 3447 min ago
 10 agents: 5 done, 5 running or stopped mid-way, 0 failed.
 
 - **sysfix** (done): All three systems fixes are done and committed on claude/wq-sysfix (7579af4). I did not touch the workflow. I have no record of regions A, B or D round 2 being cut off, so I could not answer that question. Nothing here was pushed. 1. Phone side borders: the missed case was the touch rails. When she sat or held a vista on a phone, main.ts passed 76 px black gutters per side to the presenter. That shrank the frame to f
@@ -37,7 +37,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **reg-a:critic:c1** (done): verdict revise · score 6.4
 - **reg-a:c2** (running)
 
-### wf_cc0765c3-3f0 — last activity 3439 min ago
+### wf_cc0765c3-3f0 — last activity 3509 min ago
 28 agents: 20 done, 2 running or stopped mid-way, 6 failed.
 
 - **reg-d:r2** (failed)
@@ -55,7 +55,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-release-1** (running)
 - **verify-art-1** (done): verdict blocking · score 6.2 · blocking: E1 Pilgrim Path (a room this branch reworked) has floating foliage. At the second stained-glass window ruin, the hanging vines start about 80 px above the wall's top edge and hang from open sky (rooms/E1-04.png, crop-E1-net.png, at screen x 1170-1260, y 288). Fix: anchor the vine tops on the wall crest or the arch shoulder, or cut them to start at the wall edge. | D3 Crown has floating props. Wall
 
-### wf_54ca354a-626 — last activity 4020 min ago
+### wf_54ca354a-626 — last activity 4090 min ago
 5 agents: 3 done, 2 running or stopped mid-way, 0 failed.
 
 - **package** (done): The real rendered Rosace (drive-9 round 2, R2) is packaged as dex.sprite/1 at 80 px and 144 px, all 17 clips plus sit, and committed on claude/rosace-package. Nothing was pushed. I left the level art alone (see openIssues). Scope: the relayed request was about level art, with doors popping out of walls. The task text and namespace are the Rosace package, so I did only that. Level art is not touched. Look used: R2. Co
@@ -64,19 +64,19 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **review-motion-1** (done): verdict pass-with-notes · score 7.5
 - **review-runtime-1** (done): verdict pass-with-notes · score 0.9
 
-### wf_b70fb9cc-c84 — last activity 4242 min ago
+### wf_b70fb9cc-c84 — last activity 4312 min ago
 3 agents: 0 done, 3 running or stopped mid-way, 0 failed.
 
 - **sys:cam** (running)
 - **sys:layers** (running)
 - **sys:ixr** (running)
 
-### wf_43490aa2-fb3 — last activity 4247 min ago
+### wf_43490aa2-fb3 — last activity 4317 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **package** (running)
 
-### wf_e8bdf118-24f — last activity 4248 min ago
+### wf_e8bdf118-24f — last activity 4318 min ago
 2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
 
 - **sys-camera** (running)
