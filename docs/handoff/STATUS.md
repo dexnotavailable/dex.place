@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-04T12:28:45.606Z (04/10/2026, 19:28:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-04T13:28:45.589Z (04/10/2026, 20:28:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_9be17a6b-880 — last activity 4244 min ago
+### wf_9be17a6b-880 — last activity 4304 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **finish-b** (done): Region B's interrupted round is finished and committed. The code saved at the WIP checkpoint (78622fa) turned out to be complete. It had no loose ends, broken references or type errors, so nothing needed fixing. It covers: - Stonetop rebuilt as a stepped cairn of cut stone blocks, with ledges on supporting brackets, three capstones, a small cairn on top and fallen blocks at its foot (D:/Dex/Temp/claude-wq-reg-b/src/s
@@ -22,20 +22,6 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate** (done): All six branches merged into claude/world-pass-20261001. Not pushed. There was one conflict, in src/scenes/scenes/causeway.ts, where wq-reg-b and the earlier round both edited the road layer. I kept both changes: wq-reg-b's buildTorFoot call and the earlier reflectFade setting. check and build pass. npm test is 107 of 108: the one failure is a src/site feed test, unrelated to the merges. Both audits come out clean.
 - **verify-release-1** (done): verdict pass-with-notes · score 0.9
 - **verify-art-1** (done): verdict pass-with-notes · score 7.3
-
-### wf_ec033edb-845 — last activity 4317 min ago
-10 agents: 5 done, 5 running or stopped mid-way, 0 failed.
-
-- **sysfix** (done): All three systems fixes are done and committed on claude/wq-sysfix (7579af4). I did not touch the workflow. I have no record of regions A, B or D round 2 being cut off, so I could not answer that question. Nothing here was pushed. 1. Phone side borders: the missed case was the touch rails. When she sat or held a vista on a phone, main.ts passed 76 px black gutters per side to the presenter. That shrank the frame to f
-- **reg-a:c1** (done): On your question: the cut-off happened in the earlier region A run, not on your side. That run hit a usage limit after doing most of the work but before committing anything. Region A had not passed, so I didn't leave it alone: I reviewed the uncommitted work, kept it, finished it, checked it and committed it. I only worked on region A; I didn't look at regions B or D. Region A is now committed on branch claude/wq-reg
-- **reg-b:c1** (done): On your question: I didn't cut anything short on purpose. For region B, the task text says the earlier round-1 attempt died on a usage limit and left unfinished, uncommitted work, which this run picked up. That points to the usage limit, not a choice. I can't confirm what happened to regions A and D or to any "round 2" from this lane. I didn't touch the workflow. Region B round 1 is now done and committed on claude/w
-- **reg-d:c1** (running)
-- **reg-c:c1** (running)
-- **reg-e:c1** (running)
-- **reg-b:critic:c1** (done): verdict revise · score 6.5
-- **reg-b:c2** (running)
-- **reg-a:critic:c1** (done): verdict revise · score 6.4
-- **reg-a:c2** (running)
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
