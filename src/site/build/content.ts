@@ -6,6 +6,7 @@
 //   title: Installing dexClient        (required)
 //   summary: One line for index pages  (optional)
 //   date: 2026-09-29                   (optional, YYYY-MM-DD; never invent one)
+//   sequence: 10                       (blog only, later posts have higher numbers)
 //   order: 1                           (docs only, lower first)
 //   group: dexclient                   (docs only, an id from data/docs.ts)
 //   placeholder: true                  (visible tag, noindex, kept out of the feed)
@@ -161,6 +162,14 @@ export function loadEntries(dir: string, kind: Entry["kind"]): Entry[] {
     if (!meta.title) throw new Error(`${file}: frontmatter needs a title`);
     const date = meta.date || null;
     if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error(`${file}: date must be YYYY-MM-DD`);
+    // Numbered slugs already carry an authored publication sequence, even when
+    // a post's title omits it (for example, characterforge-03-live-build-log).
+    // An explicit sequence also lets unnumbered posts share that same-day order.
+    const sequenceText = kind === "blog" ? meta.sequence ?? /^.+?-(\d+)(?:-|$)/.exec(slug)?.[1] : undefined;
+    const sequence = sequenceText === undefined ? 0 : Number(sequenceText);
+    if (sequenceText !== undefined && (!/^\d+$/.test(sequenceText) || !Number.isSafeInteger(sequence))) {
+      throw new Error(`${file}: sequence must be a non-negative safe integer`);
+    }
     const group = kind === "docs" ? meta.group || null : null;
     if (group && !DOC_GROUPS.some((g) => g.id === group)) {
       throw new Error(`${file}: group "${group}" is not one of ${DOC_GROUPS.map((g) => g.id).join(", ")} (src/site/data/docs.ts)`);
@@ -175,6 +184,7 @@ export function loadEntries(dir: string, kind: Entry["kind"]): Entry[] {
       title: meta.title,
       summary: meta.summary ?? "",
       date,
+      sequence,
       placeholder: meta.placeholder === "true",
       order: meta.order ? Number(meta.order) : 100,
       html,
@@ -185,8 +195,13 @@ export function loadEntries(dir: string, kind: Entry["kind"]): Entry[] {
     // Grouped in data/docs.ts order, then by `order`, then title.
     return entries.sort((a, b) => groupRank(a.group) - groupRank(b.group) || a.order - b.order || a.title.localeCompare(b.title));
   }
-  // Newest first; undated drafts after dated posts.
-  return entries.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "") || a.title.localeCompare(b.title));
+  // Newest first; same-day publication sequence breaks date ties. Undated drafts
+  // stay last and retain their title order. The slug makes remaining ties stable.
+  return entries.sort((a, b) =>
+    (b.date ?? "").localeCompare(a.date ?? "") ||
+    (a.date ? b.sequence - a.sequence : 0) ||
+    a.title.localeCompare(b.title) || a.slug.localeCompare(b.slug),
+  );
 }
 
 /**

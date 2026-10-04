@@ -17,6 +17,8 @@ export interface Entry {
   readonly summary: string;
   /** ISO date (YYYY-MM-DD) from frontmatter, or null. Never invented. */
   readonly date: string | null;
+  /** Blog date tie break: frontmatter `sequence` or the numbered slug; higher first. */
+  readonly sequence: number;
   /** Frontmatter `placeholder: true`: visible tag, noindex, kept out of feeds. */
   readonly placeholder: boolean;
   /** Sort key for docs (frontmatter `order`), lower first. */
