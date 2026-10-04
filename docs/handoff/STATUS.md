@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-04T10:28:44.764Z (04/10/2026, 17:28:44 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-04T11:28:45.172Z (04/10/2026, 18:28:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_9be17a6b-880 — last activity 4123 min ago
+### wf_9be17a6b-880 — last activity 4183 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **finish-b** (done): Region B's interrupted round is finished and committed. The code saved at the WIP checkpoint (78622fa) turned out to be complete. It had no loose ends, broken references or type errors, so nothing needed fixing. It covers: - Stonetop rebuilt as a stepped cairn of cut stone blocks, with ledges on supporting brackets, three capstones, a small cairn on top and fallen blocks at its foot (D:/Dex/Temp/claude-wq-reg-b/src/s
@@ -23,7 +23,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-release-1** (done): verdict pass-with-notes · score 0.9
 - **verify-art-1** (done): verdict pass-with-notes · score 7.3
 
-### wf_ec033edb-845 — last activity 4197 min ago
+### wf_ec033edb-845 — last activity 4257 min ago
 10 agents: 5 done, 5 running or stopped mid-way, 0 failed.
 
 - **sysfix** (done): All three systems fixes are done and committed on claude/wq-sysfix (7579af4). I did not touch the workflow. I have no record of regions A, B or D round 2 being cut off, so I could not answer that question. Nothing here was pushed. 1. Phone side borders: the missed case was the touch rails. When she sat or held a vista on a phone, main.ts passed 76 px black gutters per side to the presenter. That shrank the frame to f
@@ -37,7 +37,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **reg-a:critic:c1** (done): verdict revise · score 6.4
 - **reg-a:c2** (running)
 
-### wf_cc0765c3-3f0 — last activity 4258 min ago
+### wf_cc0765c3-3f0 — last activity 4319 min ago
 28 agents: 20 done, 2 running or stopped mid-way, 6 failed.
 
 - **reg-d:r2** (failed)
