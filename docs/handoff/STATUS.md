@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-04T11:28:45.172Z (04/10/2026, 18:28:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-04T12:28:45.606Z (04/10/2026, 19:28:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_9be17a6b-880 — last activity 4183 min ago
+### wf_9be17a6b-880 — last activity 4244 min ago
 7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
 
 - **finish-b** (done): Region B's interrupted round is finished and committed. The code saved at the WIP checkpoint (78622fa) turned out to be complete. It had no loose ends, broken references or type errors, so nothing needed fixing. It covers: - Stonetop rebuilt as a stepped cairn of cut stone blocks, with ledges on supporting brackets, three capstones, a small cairn on top and fallen blocks at its foot (D:/Dex/Temp/claude-wq-reg-b/src/s
@@ -23,7 +23,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify-release-1** (done): verdict pass-with-notes · score 0.9
 - **verify-art-1** (done): verdict pass-with-notes · score 7.3
 
-### wf_ec033edb-845 — last activity 4257 min ago
+### wf_ec033edb-845 — last activity 4317 min ago
 10 agents: 5 done, 5 running or stopped mid-way, 0 failed.
 
 - **sysfix** (done): All three systems fixes are done and committed on claude/wq-sysfix (7579af4). I did not touch the workflow. I have no record of regions A, B or D round 2 being cut off, so I could not answer that question. Nothing here was pushed. 1. Phone side borders: the missed case was the touch rails. When she sat or held a vista on a phone, main.ts passed 76 px black gutters per side to the presenter. That shrank the frame to f
@@ -36,24 +36,6 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **reg-b:c2** (running)
 - **reg-a:critic:c1** (done): verdict revise · score 6.4
 - **reg-a:c2** (running)
-
-### wf_cc0765c3-3f0 — last activity 4319 min ago
-28 agents: 20 done, 2 running or stopped mid-way, 6 failed.
-
-- **reg-d:r2** (failed)
-- **reg-e:critic:r1** (done): verdict revise · score 6
-- **reg-e:r2** (done): I've fixed all six round-2 critique items for E1-E4 and committed them as 138aa5c on claude/wq-reg-e (not pushed). The audits, the end-to-end walk-through and the new window/pier check all pass. I looked at every after screenshot and the four sheets before reporting. What changed, critique by critique: 1. **Windows hidden behind piers (E3):** fixed. The aisle windows used to drift with the background as the camera pa
-- **reg-c:critic:r1** (done): verdict revise · score 5.8
-- **reg-c:r2** (done): Round 2 for the Hollow region (C1 to C3) is committed as 719208c on claude/wq-reg-c, on top of round 1 (8397682). Every visible critique item is fixed. The critique text was cut off partway through the C2 panels item, so the C2 and C3 work beyond that point is my own call. I looked at the screenshots myself (before and after, plus close-up crops of the door, the fire and the shrine). The grounding and interaction aud
-- **reg-e:critic:r2** (done): verdict revise · score 7
-- **reg-e:r3** (done): Round 3 for region E (E1 to E4) is committed as 57e0bee on claude/wq-reg-e. I didn't push. I could only read the E1 critique items. The critique text was cut off partway through the E1 fog-band item, so the work on E2 to E4 comes from my own review of the round-2 shots. **E1 critique items** - **Walkers and ring:** the colossi now walk behind the ring's band. The ring's two ends fade into the haze at the horizon inst
-- **reg-c:critic:r2** (done): verdict revise · score 6.5
-- **reg-c:r3** (done): Round 3 for the Hollow (C1 to C3) is committed as bd35555 on claude/wq-reg-c. This round reworks each room's values, framing and light rather than adding more props, and it answers every critique item that was readable (the brief cut off partway through C2, and no C3 critique arrived). All three rooms now separate into near, middle and far layers the way the refs do: dark silhouettes close to the camera, a middle lay
-- **reg-e:critic:r3** (done): verdict revise · score 7.6
-- **reg-c:critic:r3** (done): verdict revise · score 7.3
-- **integrate** (done): Both region branches merged into claude/world-pass-20261001 with no conflicts (C then E, two --no-ff merge commits). Head is 50e6192. npm ci, check and build pass. npm test has 1 failure in the site blog-feed test, which this merge did not cause. The interaction and reflection audits pass over all rooms. The grounding audit has 1 edge issue in B2, a room neither region touched. Nothing was pushed and no engine edits 
-- **verify-release-1** (running)
-- **verify-art-1** (done): verdict blocking · score 6.2 · blocking: E1 Pilgrim Path (a room this branch reworked) has floating foliage. At the second stained-glass window ruin, the hanging vines start about 80 px above the wall's top edge and hang from open sky (rooms/E1-04.png, crop-E1-net.png, at screen x 1170-1260, y 288). Fix: anchor the vine tops on the wall crest or the arch shoulder, or cut them to start at the wall edge. | D3 Crown has floating props. Wall
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
