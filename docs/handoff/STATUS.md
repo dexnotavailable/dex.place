@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-04T13:28:45.589Z (04/10/2026, 20:28:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-04T14:38:44.802Z (04/10/2026, 21:38:44 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,17 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_9be17a6b-880 — last activity 4304 min ago
-7 agents: 7 done, 0 running or stopped mid-way, 0 failed.
-
-- **finish-b** (done): Region B's interrupted round is finished and committed. The code saved at the WIP checkpoint (78622fa) turned out to be complete. It had no loose ends, broken references or type errors, so nothing needed fixing. It covers: - Stonetop rebuilt as a stepped cairn of cut stone blocks, with ledges on supporting brackets, three capstones, a small cairn on top and fallen blocks at its foot (D:/Dex/Temp/claude-wq-reg-b/src/s
-- **finish-c** (done): The Hollow round is finished, and the work in the WIP commit turned out to be complete already. I reviewed the WIP diff in b5b48a9 (8 files, +487/-115) against every reg-c:critic:r3 item, and nothing was half-done or broken, so no source changes were needed. Every critique item has its change in that commit: - C1: the crate stacks under the street deck now stay below the slab and have straps, rivets and lit lids. The
-- **finish-d** (done): Region D (the Spire, rooms D1-D4) round is finished and committed. The interrupted WIP commit turned out to hold the whole round, with nothing half-written: it typechecks, and every audit passes. I added no new code. Since that commit was local and never pushed, I reworded it with git commit --amend to "Spire D1-D4: finish round" instead of stacking an empty commit on top. Nothing was pushed, and the capture server o
-- **finish-e** (done): The Chapel round (E1-E4) is finished. The WIP checkpoint af61b76 already held a complete, working version of every change it set out to make. Typecheck, build and both audits passed, and the screenshots looked right, so no code edits were needed. The "Chapel: finish round" commit (ede9295) is therefore empty. Its message records what the round covered and how it was checked. Nothing was pushed. What the round fixed, 
-- **integrate** (done): All six branches merged into claude/world-pass-20261001. Not pushed. There was one conflict, in src/scenes/scenes/causeway.ts, where wq-reg-b and the earlier round both edited the road layer. I kept both changes: wq-reg-b's buildTorFoot call and the earlier reflectFade setting. check and build pass. npm test is 107 of 108: the one failure is a src/site feed test, unrelated to the merges. Both audits come out clean.
-- **verify-release-1** (done): verdict pass-with-notes · score 0.9
-- **verify-art-1** (done): verdict pass-with-notes · score 7.3
-
+_No workflow activity in the last 72 hours._
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
 
