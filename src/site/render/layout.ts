@@ -93,7 +93,10 @@ export function head(meta: PageMeta): string {
     `<meta property="og:title" content="${esc(title)}" />`,
     `<meta property="og:url" content="${esc(url)}" />`,
     `<meta property="og:site_name" content="dex" />`,
-    meta.noindex ? `<meta name="robots" content="noindex" />` : "",
+    meta.noindex || meta.nsfw
+      ? `<meta name="robots" content="${[meta.noindex && "noindex", meta.nsfw && "noimageindex"].filter(Boolean).join(", ")}" />`
+      : "",
+    meta.nsfw ? `<meta name="rating" content="adult" />` : "",
     `<meta name="theme-color" content="#0f1015" />`,
     `<link rel="icon" href="/favicon.svg" type="image/svg+xml" />`,
     `<link rel="alternate" type="application/rss+xml" title="dex blog" href="/blog/feed.xml" />`,

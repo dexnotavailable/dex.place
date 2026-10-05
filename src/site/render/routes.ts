@@ -14,6 +14,7 @@ import { donatePage } from "./donate.ts";
 import type { Entry, PageMeta, Rendered, SiteContent } from "./types.ts";
 import { esc, pad2 } from "./html.ts";
 import { ORIGIN } from "./layout.ts";
+import { findNsfwLeaks } from "./nsfw.ts";
 
 export interface Route {
   /** URL path, always with a trailing slash (or "/404.html"). */
@@ -91,31 +92,69 @@ function entryRoutes(content: SiteContent, entries: readonly Entry[]): { meta: P
       // Docs: "Installing dexClient · dexClient · dex"; posts: "First post · dex".
       title: e.kind === "docs" ? `${e.title} · ${docGroup(e.group).label}` : e.title,
       page: e.kind,
-      description: e.summary || e.title,
+      description: (e.nsfw ? "NSFW. " : "") + (e.summary || e.title),
       noindex: e.placeholder,
+      nsfw: e.nsfw,
     },
     main: () => entryPage(content, e),
   }));
 }
 
+/**
+ * The feed carries no post bodies and no images, only title and summary. An
+ * NSFW post says so in its title, a category and its description, and sends
+ * the reader to the page, where the images are spoiler-blurred.
+ */
+const feedNote = (p: Entry): string =>
+  p.nsfw ? `NSFW: adult content${p.nsfwImages.length ? ", images hidden here" : ""}. View on dex.place: ${ORIGIN}${p.url}` : "";
+
 /** RSS 2.0 for published (non-placeholder, dated) posts. */
 export function blogFeed(content: SiteContent): string {
-  const items = content.posts
-    .filter((p) => !p.placeholder && p.date)
-    .map((p) =>
-      [
-        "<item>",
-        `<title>${esc(p.title)}</title>`,
-        `<link>${ORIGIN}${p.url}</link>`,
-        `<guid>${ORIGIN}${p.url}</guid>`,
-        `<pubDate>${new Date(`${p.date}T00:00:00Z`).toUTCString()}</pubDate>`,
-        p.summary ? `<description>${esc(p.summary)}</description>` : "",
-        "</item>",
-      ].join(""),
-    );
-  return (
+  const posts = content.posts.filter((p) => !p.placeholder && p.date);
+  const items = posts.map((p) => {
+    const description = [feedNote(p), p.summary].filter(Boolean).join(" ");
+    return [
+      "<item>",
+      `<title>${esc(p.nsfw ? `[NSFW] ${p.title}` : p.title)}</title>`,
+      `<link>${ORIGIN}${p.url}</link>`,
+      `<guid>${ORIGIN}${p.url}</guid>`,
+      `<pubDate>${new Date(`${p.date}T00:00:00Z`).toUTCString()}</pubDate>`,
+      p.nsfw ? "<category>NSFW</category>" : "",
+      description ? `<description>${esc(description)}</description>` : "",
+      "</item>",
+    ].join("");
+  });
+  const xml =
     `<?xml version="1.0" encoding="utf-8"?>\n` +
     `<rss version="2.0"><channel><title>dex blog</title><link>${ORIGIN}/blog/</link>` +
-    `<description>Posts from Dex.</description><language>en</language>${items.join("")}</channel></rss>\n`
-  );
+    `<description>Posts from Dex.</description><language>en</language>${items.join("")}</channel></rss>\n`;
+  // Tripwire: if the feed ever carries bodies, an NSFW file URL must not get in.
+  const leaks = findNsfwLeaks(xml, posts.flatMap((p) => p.nsfwImages), false);
+  if (leaks.length) throw new Error(`blog feed would carry NSFW images: ${leaks.join(", ")}`);
+  return xml;
+}
+
+/**
+ * Where an NSFW image file shows up that it must not: any route other than the
+ * post's own page (home, indexes, other posts, the gallery, 404), the post's
+ * own page outside a spoiler (meta tags, link hints), and the feed. Empty when
+ * clean. The build throws on anything here; blog.test.mjs checks it too.
+ */
+export function nsfwLeaks(content: SiteContent): string[] {
+  const entries = [...content.docs, ...content.posts].filter((e) => e.nsfwImages.length);
+  if (!entries.length) return [];
+  const found: string[] = [];
+  for (const route of routes(content)) {
+    const rendered = route.render();
+    const html = `${rendered.head}\n${rendered.body}`;
+    for (const e of entries) {
+      for (const url of findNsfwLeaks(html, e.nsfwImages, route.path === e.url)) found.push(`${route.path} shows ${url}`);
+    }
+  }
+  try {
+    blogFeed(content);
+  } catch (error) {
+    found.push(String((error as Error).message));
+  }
+  return found;
 }

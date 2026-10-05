@@ -145,6 +145,8 @@ html:not(.js) [data-copy] { display: none; }
 /* Placeholder: honest but quiet, so it never competes with the section's one
    bright block. */
 .tag--ph { background: var(--sunk); color: var(--fg-2); border: var(--bw-1) solid var(--line-2); }
+/* NSFW: loud on purpose. Magenta fill, near-black text (passes AA, DESIGN-SYSTEM.md §2). */
+.tag--nsfw { background: var(--magenta); color: var(--on-accent); border: var(--bw-1) solid var(--shadow); }
 
 /* ----------------------------------------------------------- glyph tiles */
 .tile {

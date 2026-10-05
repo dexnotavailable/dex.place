@@ -12,7 +12,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Plugin } from "vite";
-import { blogFeed, routes, type Route } from "../render/routes.ts";
+import { blogFeed, nsfwLeaks, routes, type Route } from "../render/routes.ts";
 import type { Rendered } from "../render/types.ts";
 import { loadContent } from "./content.ts";
 
@@ -137,6 +137,9 @@ export function sitePages(): Plugin {
 
       const source = String(template.source);
       const c = content();
+      // An NSFW image file may appear only inside a spoiler on its own post's page.
+      const leaks = nsfwLeaks(c);
+      if (leaks.length) throw new Error(`NSFW image leak:\n  ${leaks.join("\n  ")}`);
       for (const route of routes(c)) {
         if (route.path === "/") continue;
         this.emitFile({ type: "asset", fileName: route.file, source: stylesheetsFirst(fill(source, route.render(), preload)) });

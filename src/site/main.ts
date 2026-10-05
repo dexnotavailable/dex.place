@@ -10,6 +10,7 @@ import { initFloats } from "./motion/floats.ts";
 import { initKeys } from "./motion/keys.ts";
 import { initScenes } from "./motion/magnet.ts";
 import { initMenu, initNav, initStuck } from "./motion/nav.ts";
+import { initNsfw } from "./motion/nsfw.ts";
 import { initSharpen } from "./motion/piece.ts";
 import { initIdle, initReveal } from "./motion/reveal.ts";
 import { initWorld } from "./motion/world.ts";
@@ -46,6 +47,8 @@ const steps: [string, () => void][] = [
   ["floats", () => initFloats(reduced)],
   ["scenes", () => initScenes(reduced, fine)],
   ["copy", () => initCopy()],
+  // NSFW image spoilers in posts (render/nsfw.ts).
+  ["nsfw", () => initNsfw()],
   ["keys", () => initKeys()],
   // Docs and posts only: contents scroll-spy and heading-link copy, own chunk.
   ["toc", () => {

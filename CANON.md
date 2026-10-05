@@ -104,6 +104,13 @@ References each have one job. Don't blend them into a collage or copy their char
 An archive behind an ordinary door. No puzzle and no prerequisite. Real documentation is
 clearly separate from any lore.
 
+### Blog
+
+Posts from Dex, newest first, with an RSS feed. Devlog posts may contain adult NSFW images
+(Dex, 2026-10-06), always tagged and spoiler-blurred: the post carries an NSFW tag, each
+image is blurred until the viewer opens that one image, and no NSFW image ever appears in the
+feed, a social card or an index card. Adult characters only. How it works: `content/README.md`.
+
 ### Illustrations
 
 Dex's own art. **Display only**: never used as scenery, textures, sprites, backdrops, or as a

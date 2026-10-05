@@ -502,6 +502,54 @@
 .prose hr { margin-block: 2.4em; border: 0; height: 4px; width: 128px; background: linear-gradient(90deg, var(--yellow) 0 25%, var(--magenta) 0 50%, var(--mint) 0 75%, var(--cyan) 0); }
 .prose img { border: var(--bw) solid var(--line-2); }
 
+/* NSFW images (render/nsfw.ts, motion/nsfw.ts): blurred and clipped until the
+   viewer opens that one image. The blur itself is inline on the <img> (the
+   fail-safe if this sheet is missing); here it is scaled so the blurred edge
+   falls outside the clip, covered by a veil with a real button, and lifted
+   when the viewer opens it. width/height stay on the <img>, so nothing moves. */
+.nsfw { display: block; width: fit-content; max-width: 100%; }
+.nsfw__frame {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--sunk);
+  border: var(--bw) solid var(--line-2);
+}
+.prose .nsfw__img { display: block; border: 0; transform: scale(1.4); pointer-events: none; user-select: none; -webkit-user-select: none; }
+.nsfw__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  background: rgb(15 16 21 / 0.45);
+  text-align: center;
+}
+.nsfw__veil .tag { min-height: 28px; padding: 0 12px; font-size: var(--fs-14); }
+.nsfw__nojs { display: none; max-width: 28ch; color: var(--fg); font-size: var(--fs-14); line-height: 1.4; }
+/* No scripts: the key is gone and a note says why. The page's `js` class is dropped after
+   3 s if main.ts has not run yet (render/layout.ts), so `ready` (main.ts finished) also counts. */
+html:not(.js):not(.ready) .nsfw__show { display: none; }
+html:not(.js):not(.ready) .nsfw__nojs { display: block; }
+.nsfw .nsfw__hide { position: absolute; top: var(--s-2); right: var(--s-2); z-index: 2; min-height: 32px; padding: 0 10px; }
+.nsfw:not([data-shown]) .nsfw__hide { display: none; }
+.nsfw[data-shown] .nsfw__veil { display: none; }
+.nsfw[data-shown] .nsfw__img { filter: none !important; transform: none; pointer-events: auto; }
+@media (prefers-reduced-motion: no-preference) {
+  .nsfw__img { transition: filter var(--d-reveal) var(--ease-std), transform var(--d-reveal) var(--ease-std); }
+}
+/* Print keeps it blurred, opened or not. */
+@media print {
+  .nsfw .nsfw__img, .nsfw[data-shown] .nsfw__img { filter: blur(clamp(32px, 4.5vw, 56px)) !important; transform: scale(1.4) !important; }
+  .nsfw[data-shown] .nsfw__veil { display: flex; }
+  .nsfw .nsfw__hide, .nsfw .nsfw__show, .nsfw .nsfw__nojs { display: none !important; }
+}
+
 /* tables scroll in their own region */
 .prose .table {
   overflow-x: auto;

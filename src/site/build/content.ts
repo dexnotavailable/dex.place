@@ -10,6 +10,7 @@
 //   order: 1                           (docs only, lower first)
 //   group: dexclient                   (docs only, an id from data/docs.ts)
 //   placeholder: true                  (visible tag, noindex, kept out of the feed)
+//   nsfw: true                         (visible NSFW tag; adult images, all spoiler-blurred; see render/nsfw.ts)
 
 import fs from "node:fs";
 import path from "node:path";
@@ -18,6 +19,7 @@ import { DOC_GROUPS, groupRank } from "../data/docs.ts";
 import { copyButton, icon } from "../render/glyphs.ts";
 import { esc } from "../render/html.ts";
 import { galleryVariant } from "../render/gallery.ts";
+import { nsfwImageUrls, wrapNsfwImages } from "../render/nsfw.ts";
 import type { Entry, GalleryItem, Heading, SiteContent } from "../render/types.ts";
 import { highlight, langLabel } from "./highlight.ts";
 
@@ -73,7 +75,9 @@ export const readingMinutes = (words: number): number => Math.max(1, Math.round(
  * Markdown to HTML. Headings get ids for deep links; h1 is demoted (the page
  * owns h1). Code blocks get a label bar, a copy button and build-time colours;
  * tables scroll inside their own region; [!NOTE]-style quotes become callouts;
- * links to other sites get rel="noopener".
+ * links to other sites get rel="noopener"; an image titled "nsfw"
+ * (`![alt](file.webp "nsfw")`) or a raw <img data-nsfw> becomes a spoiler
+ * (render/nsfw.ts).
  */
 export function renderMarkdown(body: string): { html: string; headings: Heading[] } {
   const headings: Heading[] = [];
@@ -133,6 +137,13 @@ export function renderMarkdown(body: string): { html: string; headings: Heading[
         );
       },
 
+      // `![alt](file.webp "nsfw")`: the title is the marker, not a tooltip. Other
+      // images fall through to marked's own renderer.
+      image(token: Tokens.Image) {
+        if (!/^nsfw$/i.test((token.title ?? "").trim())) return false;
+        return `<img src="${esc(token.href)}" alt="${esc(token.text)}" data-nsfw>`;
+      },
+
       link(this: Parser, token: Tokens.Link) {
         const inner = this.parser.parseInline(token.tokens);
         const external = /^https?:\/\//.test(token.href) && !token.href.startsWith("https://dex.place");
@@ -148,7 +159,7 @@ export function renderMarkdown(body: string): { html: string; headings: Heading[
     // Wide tables scroll in their own focusable region instead of the page.
     .replaceAll("<table>", `<div class="table" role="region" tabindex="0" aria-label="Table"><table>`)
     .replaceAll("</table>", "</table></div>");
-  return { html, headings };
+  return { html: wrapNsfwImages(html), headings };
 }
 
 export function loadEntries(dir: string, kind: Entry["kind"]): Entry[] {
@@ -175,6 +186,14 @@ export function loadEntries(dir: string, kind: Entry["kind"]): Entry[] {
       throw new Error(`${file}: group "${group}" is not one of ${DOC_GROUPS.map((g) => g.id).join(", ")} (src/site/data/docs.ts)`);
     }
     const { html, headings } = renderMarkdown(body);
+    if (meta.nsfw !== undefined && meta.nsfw !== "true" && meta.nsfw !== "false") {
+      throw new Error(`${file}: nsfw must be true or false`);
+    }
+    const nsfwImages = nsfwImageUrls(html);
+    const nsfw = meta.nsfw === "true";
+    if (nsfwImages.length && !nsfw) {
+      throw new Error(`${file}: has NSFW images, so the frontmatter needs nsfw: true`);
+    }
     return {
       group,
       minutes: readingMinutes(countWords(body)),
@@ -186,6 +205,8 @@ export function loadEntries(dir: string, kind: Entry["kind"]): Entry[] {
       date,
       sequence,
       placeholder: meta.placeholder === "true",
+      nsfw,
+      nsfwImages,
       order: meta.order ? Number(meta.order) : 100,
       html,
       headings,

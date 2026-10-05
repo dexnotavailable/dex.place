@@ -23,6 +23,7 @@ sequence: 10                      optional, blog posts on the same date; higher 
 order: 1                          optional, docs only, lower first
 group: dexclient                  optional, docs only: dexcode, dexclient or dex-place
 placeholder: true                 shows a "Placeholder" tag, adds noindex, keeps it out of the feed
+nsfw: true                        blog posts: shows an NSFW tag, marks the feed item, no image indexing
 ---
 ```
 
@@ -44,6 +45,26 @@ sections get an "On this page" list. Also supported:
 - Tables (they scroll sideways on small screens), `<kbd>` keys, task lists.
 
 `docs/writing-docs.md` shows all of it on one page.
+
+## NSFW posts and images
+
+Devlog posts may carry adult images (Dex, 2026-10-06), always tagged and spoiler-blurred.
+
+- **Tag the post:** `nsfw: true` in the frontmatter. The post page and its blog and home
+  cards show an NSFW tag, the feed item says so in its title, a category and its
+  description, and the page asks search engines not to index images.
+- **Mark each image:** the title is the word `nsfw`: `![alt text](/blog/<slug>/file.webp "nsfw")`.
+  A raw `<img ... data-nsfw>` works the same (the publisher writes that form). Any marked
+  image in a post without `nsfw: true` fails the build.
+- **What the reader gets:** the image is blurred hard and clipped, under an "NSFW" veil with a
+  "Show image" button. Click, Enter or Space opens that one image; "Hide image" closes it.
+  Print keeps it blurred, and so does a page without JavaScript. The real alt text is only
+  set once the image is open. Give the `<img>` its `width` and `height` so the page does not jump.
+- **Never leaked:** an NSFW file must not be a summary, social or meta image, an index
+  thumbnail, a feed image or a link target (an NSFW image inside a link fails the build). The
+  build checks every page and the feed for the file names (`nsfwLeaks` in `render/routes.ts`)
+  and stops if one shows up outside its own post's spoiler.
+- Adult characters only, never any nude image of a child or young-looking body.
 
 ## Gallery
 

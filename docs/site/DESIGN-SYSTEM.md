@@ -622,6 +622,13 @@ the same renderers one heading level up (`downloadsBody(2)`, `donateBody(2)`,
   link, and a stepped yellow flash when a deep link lands.
 - A four-colour reading-progress strip at the top of doc and post pages uses a CSS scroll
   timeline (no JS).
+- **NSFW** (`render/nsfw.ts`, `motion/nsfw.ts`, `.nsfw*` in `docs.css`, `.tag--nsfw`): a post with
+  `nsfw: true` gets a magenta NSFW tag on its header and cards. A marked image (`"nsfw"` title or
+  `data-nsfw`) renders as a spoiler: the image under an inline `blur(clamp(32px, 4.5vw, 56px))` (so it
+  stays blurred even if the stylesheet fails), scaled 1.4x inside a clipped square frame so the blurred
+  edge falls outside, a dark veil with the tag and a yellow "Show image" key, no-JS note, and a small
+  "Hide image" key once open. The unblur eases over `--d-reveal` only when motion is allowed; print
+  stays blurred. The alt text waits in `data-alt` until opened. Rules and leak checks: `content/README.md`.
 - Placeholder rules: `content/README.md`. `content/docs/writing-docs.md` shows every element.
 
 ## 8. Quality bars

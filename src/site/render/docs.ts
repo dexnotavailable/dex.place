@@ -7,6 +7,7 @@ import { DOC_GROUPS, OTHER_GROUP, docGroup, type DocGroup } from "../data/docs.t
 import { floats } from "./floats.ts";
 import { button, icon, pageHead, placeholderTag, sectionHead, strip, tile } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
+import { nsfwTag } from "./nsfw.ts";
 import type { Entry, SiteContent } from "./types.ts";
 
 const plural = (n: number, one: string, many: string): string => `${pad2(n)} ${n === 1 ? one : many}`;
@@ -109,7 +110,7 @@ function postItem(e: Entry, i: number, level: 2 | 3 | 4 = 3): string {
     `<${h} class="bpost__title"><a class="bpost__link" href="${e.url}">${esc(e.title)}</a></${h}>` +
     (e.summary ? `<p class="bpost__sum">${esc(e.summary)}</p>` : "") +
     `</div>` +
-    `<p class="bpost__meta">${e.placeholder ? placeholderTag() : ""}` +
+    `<p class="bpost__meta">${e.nsfw ? nsfwTag() : ""}${e.placeholder ? placeholderTag() : ""}` +
     `<span class="when">${dateText(e)}<span aria-hidden="true"> · </span><span>${e.minutes} min read</span></span></p>` +
     `<span class="bpost__go" aria-hidden="true">${icon("arrow", 3)}</span>` +
     `</li>`
@@ -169,7 +170,7 @@ function olderPosts(rest: readonly Entry[]): string {
     `<span class="bmore__n">${pad2(rest.length)}</span></summary>` +
     `<ol class="bmore__list">` +
     rest
-      .map((p) => `<li><a class="bmore__link" href="${p.url}"><span>${esc(p.title)}</span><span class="bmore__when">${p.date ? dateParts(p.date).long : "Draft"}</span></a></li>`)
+      .map((p) => `<li><a class="bmore__link" href="${p.url}"><span>${p.nsfw ? `${nsfwTag()} ` : ""}${esc(p.title)}</span><span class="bmore__when">${p.date ? dateParts(p.date).long : "Draft"}</span></a></li>`)
       .join("") +
     `</ol></details>`
   );
@@ -259,7 +260,7 @@ export function docPage(content: SiteContent, e: Entry): string {
     `<nav class="dside" aria-label="All docs"><a class="dside__all" href="/docs/">${icon("book", 2)}<span>All docs</span></a>${side}</nav>` +
     `<article class="doc__main">` +
     `<header class="ahead ahead--doc ahead--${group.tone}" data-reveal>` +
-    `<p class="ahead__kicker">${tile(group.icon, group.tone, "s")}<span>${esc(group.label)}</span>${e.placeholder ? placeholderTag() : ""}</p>` +
+    `<p class="ahead__kicker">${tile(group.icon, group.tone, "s")}<span>${esc(group.label)}</span>${e.nsfw ? nsfwTag() : ""}${e.placeholder ? placeholderTag() : ""}</p>` +
     `<h1 class="ahead__title">${esc(e.title)}</h1>` +
     (e.summary ? `<p class="ahead__sum">${esc(e.summary)}</p>` : "") +
     `</header>` +
@@ -296,7 +297,7 @@ export function postPage(content: SiteContent, e: Entry): string {
     `<article class="post">` +
     `<header class="ahead ahead--post ahead--cyan" data-reveal>` +
     `<div class="ahead__row">${e.date ? dateBlock(e) : ""}` +
-    `<p class="ahead__facts">${e.placeholder ? placeholderTag() : ""}<span class="when">${dateText(e)}<span aria-hidden="true"> · </span><span>${e.minutes} min read</span></span></p></div>` +
+    `<p class="ahead__facts">${e.nsfw ? nsfwTag() : ""}${e.placeholder ? placeholderTag() : ""}<span class="when">${dateText(e)}<span aria-hidden="true"> · </span><span>${e.minutes} min read</span></span></p></div>` +
     `<h1 class="ahead__title">${esc(e.title)}</h1>` +
     (e.summary ? `<p class="ahead__sum">${esc(e.summary)}</p>` : "") +
     `</header>` +

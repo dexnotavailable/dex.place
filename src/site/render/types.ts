@@ -21,6 +21,10 @@ export interface Entry {
   readonly sequence: number;
   /** Frontmatter `placeholder: true`: visible tag, noindex, kept out of feeds. */
   readonly placeholder: boolean;
+  /** Frontmatter `nsfw: true`: visible NSFW tag, adult images spoiler-blurred, no image indexing, flagged in the feed. */
+  readonly nsfw: boolean;
+  /** File URLs of the NSFW images in the body (render/nsfw.ts). They may appear only on this entry's own page, inside spoilers. */
+  readonly nsfwImages: readonly string[];
   /** Sort key for docs (frontmatter `order`), lower first. */
   readonly order: number;
   /** Docs only: group id from frontmatter (data/docs.ts), or null. */
@@ -66,6 +70,8 @@ export interface PageMeta {
   readonly description: string;
   readonly page: PageId;
   readonly noindex?: boolean;
+  /** An NSFW post: adds the adult rating and a "no image indexing" robots hint. */
+  readonly nsfw?: boolean;
   /**
    * Markup that closes <head>, after the stylesheet and the head scripts:
    * the home page's /#gallery image preloads (render/gallery.ts
