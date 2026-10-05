@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-05T18:08:45.702Z (06/10/2026, 01:08:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-05T19:08:48.970Z (06/10/2026, 02:08:48 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `cd160ac`
+- live on dex.place: `72d55d6`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
