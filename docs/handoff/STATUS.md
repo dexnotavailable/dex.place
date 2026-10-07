@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-07T16:28:52.210Z (07/10/2026, 23:28:52 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-07T17:28:51.382Z (08/10/2026, 00:28:51 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
