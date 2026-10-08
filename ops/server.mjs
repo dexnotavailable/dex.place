@@ -8,9 +8,10 @@
 // CLI contract (deploy.mjs smoke tests rely on it, keep it stable):
 //   node server.mjs [--port N] [--deploy-root DIR] [--downloads DIR]
 //                   [--log FILE | --no-log] [--root DIST_DIR] [--sha SHA]
-//                   [--sp13-root DIR]
+//                   [--sp13-root DIR] [--coldfront-root DIR]
 //   --root serves one fixed directory instead of following state.json.
 //   --sp13-root is the SP13 WebGL deploy served at /sp13/ (default below).
+//   --coldfront-root is COLDFRONT's public dist served at /coldfront/ (default below).
 //   On success prints one JSON line to stdout: {"event":"listening","port":N,...}
 
 import fs from 'node:fs';
@@ -23,6 +24,7 @@ import { parseArgs } from 'node:util';
 
 export const DEFAULT_DEPLOY_ROOT = 'D:\\Dex\\Servers\\dex.place';
 export const DEFAULT_SP13_ROOT = 'D:\\Dex\\GameDev\\Deploy\\SP13\\WebGL';
+export const DEFAULT_COLDFRONT_ROOT = 'D:\\Dex\\GameDev\\Deploy\\COLDFRONT\\WebGL';
 const LISTEN_HOST = '127.0.0.1';
 const CANONICAL_ORIGIN = 'https://dex.place';
 const REDIRECT_HOSTS = new Set(['www.dex.place']);
@@ -517,6 +519,31 @@ async function routeSp13(ctx, req, res, target, rest, root) {
   await sendFile(req, res, found, { cache, conditional, precompressed: true, cdnCache: true });
 }
 
+// COLDFRONT serves a generated public dist, with isolation for Workers/SAB. The
+// existing path resolver guards every file; unknown assets never fall back to HTML.
+async function routeColdfront(ctx, req, res, target, rest, root) {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+  if (rest.length === 0) {
+    res.statusCode = 308;
+    res.setHeader('Location', `/coldfront/${target.search}`);
+    res.setHeader('Cache-Control', `${CACHE.none}, no-transform`);
+    res.setHeader('Content-Length', 0);
+    res.end();
+    return;
+  }
+  const found = await resolveFile(ctx.coldfrontRoot, rest, true);
+  if (!found) { await notFound(ctx, req, res, root); return; }
+  const ext = path.extname(found.file).toLowerCase();
+  // HTML and JSON (including release metadata) always revalidate. Only generated
+  // assets with a hash suffix get a year; stable worker/font URLs revalidate too.
+  const hashedAsset = rest[0] === 'assets' && /-[A-Za-z0-9_-]{8,}\.[^.]+$/.test(path.basename(found.file));
+  const cache = ext !== '.html' && ext !== '.htm' && ext !== '.json' && hashedAsset
+    ? `${CACHE.immutable}, no-transform`
+    : CACHE.html;
+  await sendFile(req, res, found, { cache, cdnCache: true });
+}
+
 async function route(ctx, req, res) {
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) res.setHeader(name, value);
   if (ctx.closing) res.setHeader('Connection', 'close');
@@ -584,6 +611,11 @@ async function route(ctx, req, res) {
     return;
   }
 
+  if (parsed.segments[0] === 'coldfront') {
+    await routeColdfront(ctx, req, res, target, parsed.segments.slice(1), root);
+    return;
+  }
+
   if (!root) { sendText(req, res, 503, 'no build deployed\n', CACHE.none); return; }
 
   const found = await resolveFile(root, parsed.segments, true);
@@ -614,6 +646,7 @@ export function createOriginServer(options) {
     active,
     downloadsDir: path.resolve(options.downloadsDir),
     sp13Root: path.resolve(options.sp13Root ?? DEFAULT_SP13_ROOT),
+    coldfrontRoot: path.resolve(options.coldfrontRoot ?? DEFAULT_COLDFRONT_ROOT),
     closing: false,
   };
 
@@ -666,6 +699,7 @@ export function parseOptions(argv) {
       root: { type: 'string' },
       sha: { type: 'string' },
       'sp13-root': { type: 'string' },
+      'coldfront-root': { type: 'string' },
     },
     strict: true,
   });
@@ -677,7 +711,8 @@ export function parseOptions(argv) {
   if (!values['no-log']) logFile = values.log ? path.resolve(values.log) : (values.root ? null : path.join(deployRoot, 'logs', 'server.log'));
   // A missing SP13 root is fine: /sp13/* then answers 404.
   const sp13Root = path.resolve(values['sp13-root'] ?? process.env.DEX_SP13_ROOT ?? DEFAULT_SP13_ROOT);
-  return { port, deployRoot, downloadsDir, sp13Root, logFile, root: values.root ?? null, sha: values.sha ?? null };
+  const coldfrontRoot = path.resolve(values['coldfront-root'] ?? process.env.DEX_COLDFRONT_ROOT ?? DEFAULT_COLDFRONT_ROOT);
+  return { port, deployRoot, downloadsDir, sp13Root, coldfrontRoot, logFile, root: values.root ?? null, sha: values.sha ?? null };
 }
 
 export async function main(argv = process.argv.slice(2)) {

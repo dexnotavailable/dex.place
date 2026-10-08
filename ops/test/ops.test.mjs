@@ -13,6 +13,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import zlib from 'node:zlib';
+import { DEFAULT_COLDFRONT_ROOT, parseOptions } from '../server.mjs';
 
 const OPS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SERVER = path.join(OPS, 'server.mjs');
@@ -271,6 +272,36 @@ before(() => {
     [`${player}/Build/legacy.unityweb`]: Buffer.alloc(64, 9),
   });
   fs.symlinkSync(path.join(fixture, 'outside'), path.join(fixture, player, 'escape'), 'junction');
+
+  // COLDFRONT's generated public dist has general static assets, not Unity's allowlist.
+  writeFiles(fixture, {
+    'dist/coldfront/index.html': '<h1>decoy from site build</h1>',
+    'dist/coldfront/site-only.js': 'must not fall through to the site',
+    'coldfront/index.html': '<h1>coldfront</h1>',
+    'coldfront/assets/app-aBcD1234.js': 'boot()',
+    'coldfront/assets/postcard-worker-Xy_12345.js': 'self.onmessage = () => postMessage(1)',
+    'coldfront/assets/display-abc12345.woff2': 'hashed font',
+    'coldfront/assets/display.woff2': 'stable font',
+    'coldfront/assets/stable.js': 'stable()',
+    'coldfront/postcard-worker.js': 'self.onmessage = () => postMessage(2)',
+    'coldfront/engine/module.mjs': 'export const engine = 1',
+    'coldfront/fonts/display.woff': 'woff font',
+    'coldfront/fonts/display.ttf': 'ttf font',
+    'coldfront/fonts/display.otf': 'otf font',
+    'coldfront/textures/snow.ktx2': 'texture',
+    'coldfront/models/postcard.glb': 'model',
+    'coldfront/release.json': '{"release":"r1"}',
+    'coldfront/current.json': '{"current":"r1"}',
+    'coldfront/releases/r1/release.json': '{"release":"r1"}',
+    'coldfront/assets/release-abc12345.json': '{"release":"r1"}',
+    'coldfront/assets/preview-abc12345.html': '<p>preview</p>',
+    'coldfront/sub/index.html': '<p>coldfront sub</p>',
+    'coldfront/.secret-coldfront': `${SECRET}-COLDFRONT-DOT`,
+    'coldfront/.git/config': `${SECRET}-COLDFRONT-GIT`,
+    'coldfront/.private/hidden.txt': `${SECRET}-COLDFRONT-HIDDEN`,
+  });
+  fs.symlinkSync(path.join(fixture, 'outside'), path.join(fixture, 'coldfront', 'escape'), 'junction');
+  fs.symlinkSync(path.join(fixture, 'coldfront', '.private'), path.join(fixture, 'coldfront', 'hidden-alias'), 'junction');
 });
 
 after(async () => {
@@ -290,7 +321,7 @@ describe('server.mjs', () => {
   let srv;
   before(async () => {
     srv = await startServer(['--root', path.join(fixture, 'dist'), '--downloads', path.join(fixture, 'downloads'), '--sha', 'f1x7ure',
-      '--sp13-root', path.join(fixture, 'sp13')]);
+      '--sp13-root', path.join(fixture, 'sp13'), '--coldfront-root', path.join(fixture, 'coldfront')]);
   });
   after(async () => { if (srv) await srv.stop(); });
 
@@ -583,7 +614,7 @@ describe('server.mjs', () => {
       assert.equal(res.headers['cloudflare-cdn-cache-control'], undefined, target);
     }
 
-    // Only /sp13/ responses carry the Cloudflare CDN header.
+    // Ordinary site responses do not carry the Cloudflare CDN header.
     for (const target of ['/', '/data.json', '/assets/app-abc12345.js']) {
       assert.equal((await request(srv.port, { target })).headers['cloudflare-cdn-cache-control'], undefined, target);
     }
@@ -698,6 +729,183 @@ describe('server.mjs', () => {
       const late = await request(other.port, { target: '/sp13/' });
       assert.equal(late.status, 200);
       assert.equal(late.body.toString(), '<h1>late sp13</h1>');
+    } finally {
+      await other.stop();
+    }
+  });
+
+  // ------------------------------------------------------------ /coldfront/
+
+  const assertIsolated = (res, target) => {
+    assert.equal(res.headers['cross-origin-opener-policy'], 'same-origin', target);
+    assert.equal(res.headers['cross-origin-embedder-policy'], 'require-corp', target);
+  };
+  const REVALIDATE_COLD = 'no-cache, no-transform';
+  const IMMUTABLE_COLD = `${IMMUTABLE}, no-transform`;
+
+  test('COLDFRONT root option defaults, environment and CLI precedence', () => {
+    const previous = process.env.DEX_COLDFRONT_ROOT;
+    try {
+      delete process.env.DEX_COLDFRONT_ROOT;
+      assert.equal(parseOptions(['--no-log']).coldfrontRoot, path.resolve(DEFAULT_COLDFRONT_ROOT));
+      process.env.DEX_COLDFRONT_ROOT = path.join(fixture, 'coldfront-env');
+      assert.equal(parseOptions(['--no-log']).coldfrontRoot, path.join(fixture, 'coldfront-env'));
+      assert.equal(parseOptions(['--no-log', '--coldfront-root', path.join(fixture, 'coldfront')]).coldfrontRoot, path.join(fixture, 'coldfront'));
+    } finally {
+      if (previous === undefined) delete process.env.DEX_COLDFRONT_ROOT;
+      else process.env.DEX_COLDFRONT_ROOT = previous;
+    }
+  });
+
+  test('/coldfront redirects 308 with the exact query for GET and HEAD', async () => {
+    for (const method of ['GET', 'HEAD']) {
+      for (const [target, location] of [
+        ['/coldfront', '/coldfront/'],
+        ['/coldfront?gallery&x=two%20words', '/coldfront/?gallery&x=two%20words'],
+        ['/coldfront?', '/coldfront/?'],
+      ]) {
+        const res = await request(srv.port, { method, target });
+        assert.equal(res.status, 308, target);
+        assert.equal(res.headers.location, location, target);
+        assert.equal(res.headers['cache-control'], 'no-store, no-transform', target);
+        assert.equal(res.body.length, 0, target);
+        assertIsolated(res, target);
+      }
+    }
+  });
+
+  test('/coldfront/ GET and HEAD serve index, including gallery query', async () => {
+    for (const target of ['/coldfront/', '/coldfront/index.html', '/coldfront/?gallery', '/coldfront/?gallery=postcards&v=2']) {
+      for (const method of ['GET', 'HEAD']) {
+        const res = await request(srv.port, { method, target });
+        assert.equal(res.status, 200, target);
+        assert.equal(res.headers['content-type'], 'text/html; charset=utf-8', target);
+        assert.equal(res.headers['content-length'], String(Buffer.byteLength('<h1>coldfront</h1>')), target);
+        assert.equal(res.headers['cache-control'], REVALIDATE_COLD, target);
+        assert.equal(res.headers['cloudflare-cdn-cache-control'], REVALIDATE_COLD, target);
+        assert.equal(res.headers['x-content-type-options'], 'nosniff', target);
+        assert.ok(res.headers.etag && res.headers['last-modified'], target);
+        assert.equal(res.body.toString(), method === 'HEAD' ? '' : '<h1>coldfront</h1>', target);
+        assertIsolated(res, target);
+      }
+    }
+    const sub = await request(srv.port, { target: '/coldfront/sub/' });
+    assert.equal(sub.status, 200);
+    assert.equal(sub.body.toString(), '<p>coldfront sub</p>');
+  });
+
+  test('/coldfront/ serves JS, workers, fonts and other built assets with MIME and cache policy', async () => {
+    for (const [relative, type, cache] of [
+      ['assets/app-aBcD1234.js', 'text/javascript; charset=utf-8', IMMUTABLE_COLD],
+      ['assets/postcard-worker-Xy_12345.js', 'text/javascript; charset=utf-8', IMMUTABLE_COLD],
+      ['assets/display-abc12345.woff2', 'font/woff2', IMMUTABLE_COLD],
+      ['assets/display.woff2', 'font/woff2', REVALIDATE_COLD],
+      ['assets/stable.js', 'text/javascript; charset=utf-8', REVALIDATE_COLD],
+      ['postcard-worker.js', 'text/javascript; charset=utf-8', REVALIDATE_COLD],
+      ['engine/module.mjs', 'text/javascript; charset=utf-8', REVALIDATE_COLD],
+      ['fonts/display.woff', 'font/woff', REVALIDATE_COLD],
+      ['fonts/display.ttf', 'font/ttf', REVALIDATE_COLD],
+      ['fonts/display.otf', 'font/otf', REVALIDATE_COLD],
+      ['textures/snow.ktx2', 'image/ktx2', REVALIDATE_COLD],
+      ['models/postcard.glb', 'model/gltf-binary', REVALIDATE_COLD],
+      ['release.json', 'application/json; charset=utf-8', REVALIDATE_COLD],
+      ['current.json', 'application/json; charset=utf-8', REVALIDATE_COLD],
+      ['releases/r1/release.json', 'application/json; charset=utf-8', REVALIDATE_COLD],
+      ['assets/release-abc12345.json', 'application/json; charset=utf-8', REVALIDATE_COLD],
+      ['assets/preview-abc12345.html', 'text/html; charset=utf-8', REVALIDATE_COLD],
+    ]) {
+      const target = `/coldfront/${relative}`;
+      const onDisk = fs.readFileSync(path.join(fixture, 'coldfront', relative));
+      for (const method of ['GET', 'HEAD']) {
+        const res = await request(srv.port, { method, target });
+        assert.equal(res.status, 200, target);
+        assert.equal(res.headers['content-type'], type, target);
+        assert.equal(res.headers['cache-control'], cache, target);
+        assert.equal(res.headers['cloudflare-cdn-cache-control'], cache, target);
+        assert.equal(res.headers['content-length'], String(onDisk.length), target);
+        assert.equal(res.headers['content-encoding'], undefined, target);
+        assert.ok(res.body.equals(method === 'HEAD' ? Buffer.alloc(0) : onDisk), target);
+        assertIsolated(res, target);
+      }
+    }
+  });
+
+  test('/coldfront/ 304 responses keep isolation and Cloudflare cache headers', async () => {
+    for (const target of ['/coldfront/?gallery', '/coldfront/release.json', '/coldfront/assets/app-aBcD1234.js', '/coldfront/assets/postcard-worker-Xy_12345.js', '/coldfront/assets/display-abc12345.woff2']) {
+      const first = await request(srv.port, { target });
+      for (const method of ['GET', 'HEAD']) {
+        for (const headers of [{ 'if-none-match': first.headers.etag }, { 'if-modified-since': first.headers['last-modified'] }]) {
+          const res = await request(srv.port, { method, target, headers });
+          assert.equal(res.status, 304, target);
+          assert.equal(res.body.length, 0, target);
+          assert.equal(res.headers.etag, first.headers.etag, target);
+          assert.equal(res.headers['cache-control'], first.headers['cache-control'], target);
+          assert.equal(res.headers['cloudflare-cdn-cache-control'], first.headers['cache-control'], target);
+          assertIsolated(res, target);
+        }
+      }
+    }
+  });
+
+  test('/coldfront/ unknown files are 404 with no SPA or site-build fallback', async () => {
+    for (const target of ['/coldfront/nope.js', '/coldfront/assets/nope.js', '/coldfront/no-such-page', '/coldfront/site-only.js', '/coldfront/missing/?gallery']) {
+      const res = await request(srv.port, { target });
+      assert.equal(res.status, 404, target);
+      assert.equal(res.body.toString(), '<h1>fixture 404</h1>', target);
+      assertIsolated(res, target);
+    }
+  });
+
+  test('/coldfront/ rejects traversal, dotfiles, symlink escapes, hidden aliases and Windows devices', async () => {
+    for (const target of [
+      '/coldfront/../outside-secret.txt', '/coldfront/%2e%2e/outside-secret.txt',
+      '/coldfront/%2e%2e%2f%2e%2e%2foutside-secret.txt', '/coldfront/%252e%252e/outside-secret.txt',
+      '/coldfront/..%5c..%5coutside-secret.txt', '/coldfront/..\\outside-secret.txt',
+      '/coldfront//index.html', '/coldfront/.secret-coldfront', '/coldfront/%2esecret-coldfront',
+      '/coldfront/.git/config', '/coldfront/%2egit/config', '/coldfront/escape/secret2.txt',
+      '/coldfront/hidden-alias/hidden.txt', '/coldfront/index.html::$DATA', '/coldfront/index.html%3a%3a$DATA',
+      '/coldfront/index.html.', '/coldfront/index.html%20', '/coldfront/index.html%00',
+      '/coldfront/con', '/coldfront/aux.js', '/coldfront/COM1', '/coldfront/lpt%C2%B9',
+    ]) {
+      const res = await request(srv.port, { target });
+      assert.equal(res.status, 404, target);
+      assert.ok(!res.body.toString().includes(SECRET), target);
+    }
+  });
+
+  test('COLDFRONT isolation leaves site, downloads, status and SP13 headers unchanged', async () => {
+    for (const target of ['/', '/assets/app-abc12345.js', '/data.json', '/downloads/setup.exe', '/healthz', '/__deploy', '/sp13/', `${BUILD}/player.wasm.br`, '/nope']) {
+      const first = await request(srv.port, { target });
+      const responses = [first];
+      if (first.headers.etag) responses.push(await request(srv.port, { target, headers: { 'if-none-match': first.headers.etag } }));
+      for (const res of responses) {
+        assert.equal(res.headers['cross-origin-opener-policy'], undefined, target);
+        assert.equal(res.headers['cross-origin-embedder-policy'], undefined, target);
+        assert.equal(res.headers['x-content-type-options'], 'nosniff', target);
+        assert.equal(res.headers['x-frame-options'], 'SAMEORIGIN', target);
+        assert.equal(res.headers['referrer-policy'], 'strict-origin-when-cross-origin', target);
+      }
+    }
+  });
+
+  test('COLDFRONT works in deploy-root mode without a site build, and picks up a missing root later', async () => {
+    const missing = path.join(RUN, 'coldfront-later');
+    const other = await startServer(['--deploy-root', path.join(RUN, 'coldfront-deploy-root'), '--coldfront-root', missing, '--no-log']);
+    try {
+      assert.equal((await request(other.port, { target: '/' })).status, 503);
+      assert.equal((await request(other.port, { target: '/healthz' })).status, 503);
+      assert.equal((await request(other.port, { target: '/coldfront?gallery' })).headers.location, '/coldfront/?gallery');
+      for (const target of ['/coldfront/', '/coldfront/assets/nope.js']) {
+        const res = await request(other.port, { target });
+        assert.equal(res.status, 404, target);
+        assertIsolated(res, target);
+      }
+      writeFiles(missing, { 'index.html': '<h1>late coldfront</h1>' });
+      const late = await request(other.port, { target: '/coldfront/?gallery' });
+      assert.equal(late.status, 200);
+      assert.equal(late.body.toString(), '<h1>late coldfront</h1>');
+      assertIsolated(late, '/coldfront/?gallery');
+      assert.equal((await request(other.port, { target: '/healthz' })).status, 503);
     } finally {
       await other.stop();
     }
