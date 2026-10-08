@@ -94,6 +94,7 @@ is `start-cloudflare-tunnel.ps1` in that folder. Add `-WhatIf` to see the plan f
 | `D:\Dex\Servers\dex.place\cache\npm\` | npm cache for builds. |
 | `D:\Dex\Servers\dex.place\logs\` | Logs (see below). |
 | `D:\Dex\GameDev\Deploy\SP13\WebGL\` | The SP13 WebGL game, served at `/sp13/`. Published by the SP13 pipeline, not by this repo. Not in git. |
+| `D:\Dex\GameDev\Deploy\COLDFRONT\WebGL\` | COLDFRONT's generated public dist, served at `/coldfront/`. Published separately from this repo. Never point this root at a source checkout. Not in git. |
 
 Task Scheduler task `\Dex\Dex Site Origin` runs
 `repo\ops\start-origin.ps1 -KeepAlive` at logon. That supervisor runs the two node
@@ -178,7 +179,10 @@ pushing it.
 (`--root`, `--deploy-root`, `--port`, `--sha`, `--no-log`, `--downloads`, the
 `{"event":"listening"}` line, and `/__deploy` reporting the live `sha`). `--sp13-root`
 (or `DEX_SP13_ROOT`) moves the `/sp13/` folder; the default is the real one. The same goes
-for `deploy.mjs`'s `--once`, `--status`, `--rollback`, `--deploy-root`, `--repo-url`,
+for `--coldfront-root` (or `DEX_COLDFRONT_ROOT`), which moves `/coldfront/` from its
+default `D:\Dex\GameDev\Deploy\COLDFRONT\WebGL`. CLI options take precedence over
+environment variables. The same contract applies to `deploy.mjs`'s `--once`,
+`--status`, `--rollback`, `--deploy-root`, `--repo-url`,
 `--branch` and `--smoke-ports`, which the live puller uses to self-test the next one.
 Keep them working.
 
@@ -202,6 +206,8 @@ Exit codes of `deploy.mjs`: `0` ok or nothing to do, `1` failed, `2` bad argumen
   point outside the served folder.
 - `/sp13/` is Dex's SP13 WebGL game, served from `D:\Dex\GameDev\Deploy\SP13\WebGL`
   exactly like the v2 origin served it (see below).
+- `/coldfront/` serves COLDFRONT's public dist from its separate deploy folder,
+  with cross-origin isolation scoped to that mount (see below).
 
 ### `/sp13/`
 
@@ -225,6 +231,35 @@ The same rules as the v2 origin's `serve-production.mjs`:
   `Cloudflare-CDN-Cache-Control`.
 - If the SP13 folder is missing, `/sp13/*` is a 404 and the rest of the site carries on.
   It is picked up as soon as it exists.
+
+### `/coldfront/`
+
+- `/coldfront` redirects (308, `no-store, no-transform`) to `/coldfront/`, preserving
+  the query. `/coldfront/` serves `index.html`; `/coldfront/?gallery` serves that same
+  index with its query intact for the client.
+- All public built files can be served, including JS/module workers, fonts, models,
+  textures and metadata, with the server's existing MIME types. Directories serve
+  their `index.html`. Unknown files are 404s; there is no SPA fallback or fallthrough
+  to files in the dex.place build. The usual traversal, dotfile, Windows device and
+  symlink checks apply.
+- COLDFRONT responses carry `Cross-Origin-Opener-Policy: same-origin` and
+  `Cross-Origin-Embedder-Policy: require-corp`, including file revalidation responses
+  (304). Other site and SP13 responses keep their existing headers. Workers and
+  other dependencies must meet the browser's isolation requirements.
+- HTML and JSON release metadata revalidate, as do stable worker/font filenames.
+  Generated files under `assets/` with a filename ending in `-<hash>.<extension>`
+  (a hash of at least eight letters, digits, underscores or dashes) are immutable for
+  a year, except HTML and JSON. Publish changed immutable assets under new hashes.
+  Every file response, including 304, adds `no-transform` to prevent Cloudflare body
+  modification and repeats its cache policy as `Cloudflare-CDN-Cache-Control`.
+- A missing COLDFRONT folder gives 404s and is picked up once it exists. The mount
+  works in both fixed `--root` and `--deploy-root` modes, even without an active site
+  build; `/healthz` and `/__deploy` still report only the dex.place build.
+
+The COLDFRONT publisher owns the generated files in that root. Adding this route
+does not publish a COLDFRONT build or change the origin at 127.0.0.1:8088, its
+puller/supervisor, scheduled tasks or tunnel configuration. Server code continues
+to ship through the existing reviewed `main` deployment process.
 
 The v2 origin also ran the website API (`/api/*`: accounts, the Ko-fi webhook, voice).
 That API is retired on purpose, so `/api/*` is a 404 now. Other v2 differences:
