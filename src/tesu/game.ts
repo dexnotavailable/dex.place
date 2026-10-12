@@ -152,7 +152,9 @@ export class TesuGame {
     this.opening = new Opening({
       playerX: () => this.player.body.x,
       freeze: (t) => { this.frozen = Math.max(this.frozen, t); },
-      title: (text, big) => this.titles.show(text, big),
+      // TESU's moment: the palace's gate is pinned at 0.8 of the width, so the title keeps to
+      // the sky between, at most 56% of the frame wide (on narrow screens it shrinks instead)
+      title: (text, big) => this.titles.show(text, big, false, "mid", 0.56),
       setFlag: (f) => this.setFlag(f),
       nextBar: () => this.sound.music.nextBar(),
       cue: (n) => this.cue(n),
