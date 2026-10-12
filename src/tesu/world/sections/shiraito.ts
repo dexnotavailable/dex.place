@@ -62,6 +62,16 @@ export function shiraito(b: WorldBuilder): void {
   ledge(h(148), PATH_TOP_X + h(0.4), h(3.6), true, false);
   b.piece("play", "boardwalk", 0, 0, { pts: along(h(108), h(150), -1) }, { z: 2 });
 
+  // --- the massif's lower body: its east face from under the valley mist down to Hoài Phố's
+  // West Shore, the village's ledge against it, the mill race and the lift's cable beside it.
+  // (Kagami's rock, the opening's look, dissolves into the mist above; this stand-in begins
+  // below the opening's widest frame, so the opening shows only its mist.)
+  b.piece("play", "mass", 0, 0, {
+    top: [h(0), h(90), h(98.2), h(90)],
+    bottom: [h(97), h(92), h(90.4), h(106), h(83), h(120), h(76), h(134), h(72.4), h(160), h(70.4), h(190), h(0), h(190)],
+    rock: "karst", flat: true, deep: 0.66,
+  }, { z: -2 });
+
   // --- the village at the foot: a ledge against the massif's face, over the terraces
   const footY = yOn(DIAG, FOOT_X);
   b.walk([VILLAGE_X0, footY, FOOT_X, footY], { surface: "earth", depth: h(2.4), name: "shiraito-village" });
@@ -81,12 +91,12 @@ export function shiraito(b: WorldBuilder): void {
   b.usable({ id: "old-inn", x0: h(92.4), y0: footY - h(1.5), x1: h(94.0), y1: footY, label: "the old inn", action: { kind: "say", text: "An old inn, its door boarded up. The planks look newer than the door." } });
 
   // --- behind: the great wall of falls reaches back to the massif, rice terraces into the mist.
-  // Its top stands at 72 H, below anything Kagami's frames show of this plane (from the lake
-  // it stays under the frame or behind the massif, never over the water); at the widest frame
-  // it fills the valley under the lake's cliff.
+  // Its top stands at 90 H, below anything the opening's frames show of this plane (from the
+  // lake it stays under the frame, never over the water; at the widest frame the opening's own
+  // valley mist fills the valley under the lake's cliff).
   const r3 = 0.62;
-  b.piece("back", "cliffwall", h(62), h(72), {
-    w: h(50) * r3, h: h(90) * r3, falls: 0.9,
+  b.piece("back", "cliffwall", h(62), h(90), {
+    w: h(50) * r3, h: h(72) * r3, falls: 0.9,
     lip: [0, h(3) * r3, h(20) * r3, h(1.5) * r3, h(50) * r3, h(1.2) * r3],
   }, { z: 1 });
   b.piece("back", "paddies", h(80), footY + h(2.6), { w: 900, steps: 7, rise: 30 }, { z: 3 });

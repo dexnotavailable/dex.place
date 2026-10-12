@@ -24,6 +24,8 @@ export interface MassP {
    * texture, no tufts (for places whose environment owner has not painted them yet).
    */
   flat?: boolean;
+  /** Flat stand-ins: the darkest the deeper steps get (0..1, default 0.9; a tall face stays lighter). */
+  deep?: number;
 }
 
 function topAt(top: number[], x: number): number {
@@ -125,7 +127,7 @@ export const mass = definePainter<MassP>("mass", {
           const depth = ly - ty;
           if (p.flat) {
             // flat value bands only: the top line, a lit band, the body, deeper steps darker
-            const t = depth < 1.4 / d ? 0.1 : depth < 10 ? 0.28 : clamp(0.46 + Math.floor(depth / 140) * 0.08 + shade * 0.25, 0, 0.9);
+            const t = depth < 1.4 / d ? 0.1 : depth < 10 ? 0.28 : clamp(0.46 + Math.floor(depth / 140) * 0.08 + shade * 0.25, 0, p.deep ?? 0.9);
             b.set(x, y, tone(rock, t, x, y, 0));
             continue;
           }

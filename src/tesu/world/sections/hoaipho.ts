@@ -85,7 +85,8 @@ export function hoaipho(b: WorldBuilder): void {
 
   // --- the waterwheel lift: a wheel in the harbour drives the cable up the massif's face
   b.sprite({ id: "lift-wheel", plane: "play", kind: "millwheel", x: LIFT_LOW_X - h(1.6), y: QUAY_Y - h(0.6), p: { r: 70 }, frames: 8, fps: 2 });
-  b.piece("play", "liftcable", 0, 0, { pts: [LIFT_TOP_X, DECK_Y - h(0.2), h(104.4), h(84), h(90.4), h(112), h(76.2), h(141), LIFT_LOW_X, QUAY_Y] }, { z: 2 });
+  // (the cable hangs close down the massif's face: between the face and Shiraito's mill race)
+  b.piece("play", "liftcable", 0, 0, { pts: [LIFT_TOP_X, DECK_Y - h(0.2), h(104.4), h(84), h(88.6), h(112), h(80.4), h(127.5), h(75.6), h(141), LIFT_LOW_X, QUAY_Y] }, { z: 2 });
   b.usable({
     id: "lift-low", x0: LIFT_LOW_X - h(0.8), y0: QUAY_Y - h(1.8), x1: LIFT_LOW_X + h(0.8), y1: QUAY_Y, label: "the waterwheel lift",
     action: { kind: "door", to: "lift-top", opens: "lift:waterwheel" },
