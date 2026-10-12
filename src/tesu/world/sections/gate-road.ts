@@ -8,6 +8,7 @@
 
 import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
+import { threadGroups, type WallP } from "../../art/library/opening/wall.ts";
 import { DIAGONAL, GATE_XS, HALL_DOOR_X, JETTY_X1, LEAP_X, TERRACE_X0, TERRACE_X1, TUNNEL_XS, sampleCurve, yOn } from "./common.ts";
 
 /** The road surface, world px, from the jetty's end to the hall door. */
@@ -38,33 +39,40 @@ export function gateRoad(b: WorldBuilder): void {
   b.walk([leap0, yL, leap1, yL], { surface: "wood", oneWay: true, name: "pilgrims-leap" });
   b.walk(roadC, { surface: "stone", depth: h(2.6), name: "gate-tunnel" });
 
-  // the ridge's rock under the road: a natural band, thicker over the pillars, with a notch
-  // under the leap so the drop is clear
+  // the ridge's rock under the road (art: env-opening): a natural bridge of karst whose
+  // underside arches between the three pillars that carry it, thick where it meets a pillar,
+  // thin at mid-span, with a notch under the leap so the drop is clear
+  const PILLARS = [h(120), h(136), h(152)];
   const under = (x: number): number => {
-    const pill = [h(120), h(136), h(152)].some((px) => Math.abs(x - px) < h(4)) ? h(1.4) : 0;
-    return h(2.4) + pill + h(0.8) * Math.sin(x / h(3.7));
+    let dp = Infinity;
+    for (const px of [...PILLARS, JETTY_X1 - h(4)]) dp = Math.min(dp, Math.abs(x - px));
+    const arch = Math.max(0, dp - h(2.0));
+    return h(1.5) + h(5.5) * Math.exp(-arch / h(1.6)) + h(0.35) * Math.sin(x / h(2.3));
   };
   const band = (pts: number[], x0: number, x1: number): void => {
     const top: number[] = [];
     for (let i = 0; i < pts.length; i += 2) top.push(pts[i]!, pts[i + 1]!);
     const bottom: number[] = [];
-    for (let x = x1; x >= x0; x -= h(1.2)) bottom.push(x, yOn(pts, x) + under(x));
+    for (let x = x1; x >= x0; x -= h(0.6)) bottom.push(x, yOn(pts, x) + under(x));
     bottom.push(x0, yOn(pts, x0) + h(0.8));
-    b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", cap: "moss", capH: 9, tufts: 0.45 }, { z: 0 });
+    b.piece("play", "op.rock", 0, 0, { top, bottom, cap: "path", capH: 9, rough: 12, teeth: 0.7, veg: 0.7, fadeY: h(70), fadeH: h(8) }, { z: 0 });
   };
   band(roadA, JETTY_X1 - h(0.2), leap0);
   band(roadC, leap1, HALL_DOOR_X + h(0.4));
   // the leap's plank (its prayer-flag pole comes with the terrace furniture)
-  b.piece("play", "plank", leap0 - h(0.3), yL, { w: leap1 - leap0 + h(0.6) }, { z: 2 });
+  b.piece("play", "op.plank", leap0 - h(0.3), yL, { w: leap1 - leap0 + h(0.6) }, { z: 2 });
+  // Pilgrims' Leap: a bamboo pole lashed at the plank's end, prayer flags strung back to the rail
+  b.sprite({ id: "leap-flags", plane: "play", kind: "op.flags", x: leap1 + h(0.15), y: yL, p: { h: 150, dx: -h(1.7), dy: 92, n: 8 }, frames: 4, fps: 6 });
 
-  // three karst pillars carry the band, standing on Shiraito's terraces
+  // three karst pillars carry the band, standing on Shiraito's terraces far below; their feet
+  // vanish into the valley's mist
   for (const [x0, x1] of [[h(117.8), h(122.2)], [h(133.8), h(138.2)], [h(149.8), h(154.2)]] as const) {
     const topY = yOn(ROAD, (x0 + x1) / 2) + h(2.0);
     const footY = yOn(DIAG, (x0 + x1) / 2) + h(1.2);
     const w = x1 - x0;
-    const top = [x0 - h(0.6), topY, x0 + w * 0.3, topY - h(0.4), x1 - w * 0.3, topY - h(0.3), x1 + h(0.6), topY];
-    const bottom = [x1 + h(0.2), topY + h(8), x1 + h(0.1), footY - h(6), x1 + h(0.9), footY, x0 - h(1.1), footY, x0 - h(0.3), footY - h(4), x0 + h(0.2), topY + h(10)];
-    b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", cap: "none", tufts: 0, shade: 0.15 }, { z: -1 });
+    const top = [x0 - h(1.2), topY, x0 + w * 0.3, topY - h(0.4), x1 - w * 0.3, topY - h(0.3), x1 + h(1.2), topY];
+    const bottom = [x1 + h(0.5), topY + h(3), x1 + h(0.1), topY + h(8), x1 + h(0.3), footY - h(6), x1 + h(0.9), footY, x0 - h(1.1), footY, x0 - h(0.5), footY - h(4), x0 - h(0.2), topY + h(9), x0 - h(0.7), topY + h(3)];
+    b.piece("play", "op.rock", 0, 0, { top, bottom, cap: "bare", rough: 10, teeth: 0.3, veg: 0.5, shade: 0.25, fadeY: h(72), fadeH: h(9) }, { z: -1 });
   }
 
   // Shiraito's diagonal, laid rough for now (a band on a background cliff): the ground the
@@ -79,23 +87,32 @@ export function gateRoad(b: WorldBuilder): void {
   // its top end meets the Prow Stair, its foot Shiraito's village (sections/shiraito.ts)
   // (below the diagonal is Hoài Phố: sections/hoaipho.ts)
 
-  // behind the band: Shiraito's great wall, its falls pouring off the road's lip (P3)
+  // behind the band: Shiraito's great wall below the road's lip, a hundred thread falls
+  // pouring down it into the valley's mist (P3; art: env-opening)
   const r3 = 0.62;
-  b.piece("back", "cliffwall", h(110.5), h(59.6), {
-    w: h(90) * r3, h: h(90) * r3, falls: 0.9,
-    // (east of the hall its top sinks away under the prow, out of the court's frames)
+  const wallP: WallP = {
+    w: h(90) * r3, h: h(90) * r3, falls: 1.7, fadeY: h(80) * r3, fadeH: h(10) * r3,
+    // (east of the hall its top sinks away under the prow, out of the court's frames; it reaches
+    // down to Shiraito's terraces, the valley's mist lying across it in the opening's frames)
     lip: [0, h(1.2) * r3, h(10) * r3, h(0.4) * r3, h(30) * r3, -h(0.4) * r3, h(50) * r3, 0, h(62) * r3, h(6) * r3, h(75) * r3, h(30) * r3, h(90) * r3, h(60) * r3],
-  }, { z: 2 });
+  };
+  const wall = b.piece("back", "op.wall", h(110.5), h(59.6), wallP as unknown as Record<string, unknown>, { z: 2 });
+  // the threads flow (12 fps over four frames): one sprite per small group of them
+  // (animated over the upper part, where the frames look; lower down the plate's threads go on)
+  threadGroups(wallP, wall.seed, 120).forEach(([from, to], i) => {
+    b.sprite({ id: `shiraito-flow-${i}`, plane: "back", kind: "op.falls", x: h(110.5), y: h(59.6), p: { ...wallP, wallSeed: wall.seed, from, to, flowH: Math.round(h(16) * r3) }, frames: 4, fps: 12 });
+  });
 
-  // mist lies in Shiraito's valley below the road, in front of the wall and behind the pillars
-  b.mist({ x0: h(104), x1: h(200), y: h(84), half: h(9), rate: 0.8, after: "back", density: 0.85 });
-  b.mist({ x0: h(100), x1: h(200), y: h(104), half: h(10), rate: 1, after: "play", density: 0.7 });
+  // mist fills Shiraito's valley below the road: one bank over the wall's foot, one over the
+  // feet of the road's pillars and the plateau's cliff (the masses dissolve into it)
+  b.mist({ x0: h(96), x1: h(200), y: h(73), half: h(6), rate: 0.66, after: "back", density: 0.9 });
+  b.mist({ x0: h(40), x1: h(200), y: h(80), half: h(7), rate: 1, after: "play", density: 0.85 });
 
   // --- the gates: three framed gates, then the tunnel of six with their lintels almost touching
   const gateAt = (x: number, p: Record<string, unknown>): void => {
     const y = yOn(ROAD, x);
-    b.piece("play", "gate", x, y + 2, p, { z: 6 });
-    b.piece("front", "gate", x, y + 2, { ...p, part: "front" }, { z: 1 });
+    b.piece("play", "op.gate", x, y + 2, p, { z: 6 });
+    b.piece("front", "op.gate", x, y + 2, { ...p, part: "front" }, { z: 1 });
   };
   gateAt(GATE_XS[0]!, { kind: "torii", span: h(3.2), h: h(4.7) });
   gateAt(GATE_XS[1]!, { kind: "paifang", span: h(3.4), h: h(5.6) });
@@ -108,13 +125,20 @@ export function gateRoad(b: WorldBuilder): void {
     for (let x = x0; x <= x1; x += h(0.5)) out.push(x, yOn(ROAD, x) + 3);
     return out;
   };
-  b.piece("front", "rail", 0, 0, { pts: railPts(h(110.4), leap0 - h(0.2)), h: 46, every: 62 }, { z: 0 });
-  b.piece("front", "rail", 0, 0, { pts: railPts(leap1 + h(0.2), HALL_DOOR_X - h(2.2)), h: 46, every: 62 }, { z: 0 });
+  b.piece("front", "op.rail", 0, 0, { pts: railPts(h(110.4), leap0 - h(0.2)), h: 46, every: 62 }, { z: 0 });
+  b.piece("front", "op.rail", 0, 0, { pts: railPts(leap1 + h(0.2), HALL_DOOR_X - h(2.2)), h: 46, every: 62 }, { z: 0 });
+  // the viewing terrace (art: env-opening): a paved platform on a cut-stone face built out
+  // over the rock; great cliff pines lean out over the valley from the road's lip (one before
+  // the gates, one between the terrace and the tunnel); bamboo at the forecourt
+  b.piece("play", "op.terrace", TERRACE_X0 - h(0.5), h(59.3), { w: TERRACE_X1 - TERRACE_X0 + h(1), depth: h(1.3) }, { z: 1 });
+  b.piece("play", "op.pine", h(111.6), yOn(ROAD, h(111.6)) + 6, { h: 230, dir: -1 }, { z: 1 });
+  b.piece("play", "op.pine", h(129.9), yOn(ROAD, h(129.9)) + 8, { h: 260, dir: 1 }, { z: 1 });
+  b.sprite({ id: "forecourt-bamboo", plane: "play", kind: "op.bamboo", x: h(143.9), y: yOn(ROAD, h(143.9)) + 2, p: { w: 70, h: 420 }, frames: 4, fps: 4 });
   // the viewing terrace: a stone bench and two water barrels, Zhusha small at the rail
-  b.piece("play", "bench", TERRACE_X0 + h(0.6), h(59.3), { w: h(1.5) }, { z: 3 });
+  b.piece("play", "op.bench", TERRACE_X0 + h(0.6), h(59.3), { w: h(1.5) }, { z: 3 });
   // (the barrels break: cosmetic, back when she has gone; a crate with a jar on it, the support rule's example)
-  b.prop({ id: "terrace-barrel-1", kind: "barrel", p: { h: 40 }, x: TERRACE_X1 - h(1.6), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
-  b.prop({ id: "terrace-barrel-2", kind: "barrel", p: { h: 36 }, x: TERRACE_X1 - h(1.1), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
+  b.prop({ id: "terrace-barrel-1", kind: "op.barrel", p: { h: 40, ladle: true }, x: TERRACE_X1 - h(1.6), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
+  b.prop({ id: "terrace-barrel-2", kind: "op.barrel", p: { h: 36 }, x: TERRACE_X1 - h(1.1), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
   b.prop({ id: "terrace-crate", kind: "crate", p: { w: 40, h: 34 }, x: TERRACE_X1 - h(0.5), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
   b.prop({ id: "terrace-jar", kind: "jar", p: { h: 26, glaze: "celadon" }, x: TERRACE_X1 - h(0.5), y: h(59.3) - 34, cls: "cosmetic", material: "clay", on: "terrace-crate" });
 
