@@ -38,33 +38,38 @@ export function gateRoad(b: WorldBuilder): void {
   b.walk([leap0, yL, leap1, yL], { surface: "wood", oneWay: true, name: "pilgrims-leap" });
   b.walk(roadC, { surface: "stone", depth: h(2.6), name: "gate-tunnel" });
 
-  // the ridge's rock under the road: a natural band, thicker over the pillars, with a notch
-  // under the leap so the drop is clear
+  // the ridge's rock under the road (art: env-opening): a natural bridge of karst whose
+  // underside arches between the three pillars that carry it, thick where it meets a pillar,
+  // thin at mid-span, with a notch under the leap so the drop is clear
+  const PILLARS = [h(120), h(136), h(152)];
   const under = (x: number): number => {
-    const pill = [h(120), h(136), h(152)].some((px) => Math.abs(x - px) < h(4)) ? h(1.4) : 0;
-    return h(2.4) + pill + h(0.8) * Math.sin(x / h(3.7));
+    let dp = Infinity;
+    for (const px of [...PILLARS, JETTY_X1 - h(4)]) dp = Math.min(dp, Math.abs(x - px));
+    const arch = Math.max(0, dp - h(2.0));
+    return h(1.5) + h(5.5) * Math.exp(-arch / h(1.6)) + h(0.35) * Math.sin(x / h(2.3));
   };
   const band = (pts: number[], x0: number, x1: number): void => {
     const top: number[] = [];
     for (let i = 0; i < pts.length; i += 2) top.push(pts[i]!, pts[i + 1]!);
     const bottom: number[] = [];
-    for (let x = x1; x >= x0; x -= h(1.2)) bottom.push(x, yOn(pts, x) + under(x));
+    for (let x = x1; x >= x0; x -= h(0.6)) bottom.push(x, yOn(pts, x) + under(x));
     bottom.push(x0, yOn(pts, x0) + h(0.8));
-    b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", cap: "moss", capH: 9, tufts: 0.45 }, { z: 0 });
+    b.piece("play", "op.rock", 0, 0, { top, bottom, cap: "path", capH: 9, rough: 12, teeth: 0.7, veg: 0.7, fadeY: h(70), fadeH: h(8) }, { z: 0 });
   };
   band(roadA, JETTY_X1 - h(0.2), leap0);
   band(roadC, leap1, HALL_DOOR_X + h(0.4));
   // the leap's plank (its prayer-flag pole comes with the terrace furniture)
   b.piece("play", "plank", leap0 - h(0.3), yL, { w: leap1 - leap0 + h(0.6) }, { z: 2 });
 
-  // three karst pillars carry the band, standing on Shiraito's terraces
+  // three karst pillars carry the band, standing on Shiraito's terraces far below; their feet
+  // vanish into the valley's mist
   for (const [x0, x1] of [[h(117.8), h(122.2)], [h(133.8), h(138.2)], [h(149.8), h(154.2)]] as const) {
     const topY = yOn(ROAD, (x0 + x1) / 2) + h(2.0);
     const footY = yOn(DIAG, (x0 + x1) / 2) + h(1.2);
     const w = x1 - x0;
-    const top = [x0 - h(0.6), topY, x0 + w * 0.3, topY - h(0.4), x1 - w * 0.3, topY - h(0.3), x1 + h(0.6), topY];
-    const bottom = [x1 + h(0.2), topY + h(8), x1 + h(0.1), footY - h(6), x1 + h(0.9), footY, x0 - h(1.1), footY, x0 - h(0.3), footY - h(4), x0 + h(0.2), topY + h(10)];
-    b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", cap: "none", tufts: 0, shade: 0.15 }, { z: -1 });
+    const top = [x0 - h(1.2), topY, x0 + w * 0.3, topY - h(0.4), x1 - w * 0.3, topY - h(0.3), x1 + h(1.2), topY];
+    const bottom = [x1 + h(0.5), topY + h(3), x1 + h(0.1), topY + h(8), x1 + h(0.3), footY - h(6), x1 + h(0.9), footY, x0 - h(1.1), footY, x0 - h(0.5), footY - h(4), x0 - h(0.2), topY + h(9), x0 - h(0.7), topY + h(3)];
+    b.piece("play", "op.rock", 0, 0, { top, bottom, cap: "bare", rough: 10, teeth: 0.3, veg: 0.5, shade: 0.25, fadeY: h(72), fadeH: h(9) }, { z: -1 });
   }
 
   // Shiraito's diagonal, laid rough for now (a band on a background cliff): the ground the
@@ -75,28 +80,30 @@ export function gateRoad(b: WorldBuilder): void {
   b.walk(diag, { surface: "earth", depth: h(4), name: "shiraito" });
   const dBottom: number[] = [];
   for (let i = diag.length - 2; i >= 0; i -= 2) dBottom.push(diag[i]!, diag[i + 1]! + h(3.4) + h(0.6) * Math.sin(diag[i]! / h(5)));
-  b.piece("play", "mass", 0, 0, { top: diag, bottom: dBottom, rock: "karst", cap: "moss", capH: 12, tufts: 0.7 }, { z: -2 });
+  b.piece("play", "op.rock", 0, 0, { top: diag, bottom: dBottom, cap: "grass", capH: 12, rough: 10, veg: 0.6, shade: 0.2, fadeY: h(72), fadeH: h(9) }, { z: -2 });
   // its top end meets the palace cliff (the Prow Stair comes later); its foot is open air
   b.wall({ x: d1, y0: h(40), y1: yOn(DIAG, d1) + h(0.1), reason: "cliff" });
   // below the diagonal, until the harbour exists, is a fall into mist: the talisman tugs her back
   b.void({ x0: h(60), x1: h(200), y: h(136), y1: h(240) });
 
-  // behind the band: Shiraito's great wall, its falls pouring off the road's lip (P3)
+  // behind the band: Shiraito's great wall below the road's lip, a hundred thread falls
+  // pouring down it into the valley's mist (P3; art: env-opening)
   const r3 = 0.62;
-  b.piece("back", "cliffwall", h(110.5), h(59.6), {
-    w: h(90) * r3, h: h(90) * r3, falls: 0.9,
+  b.piece("back", "op.wall", h(110.5), h(59.6), {
+    w: h(90) * r3, h: h(30) * r3, falls: 1.7, fadeY: h(11) * r3, fadeH: h(7) * r3,
     lip: [0, h(1.2) * r3, h(10) * r3, h(0.4) * r3, h(30) * r3, -h(0.4) * r3, h(60) * r3, -h(2) * r3, h(90) * r3, -h(3) * r3],
   }, { z: 2 });
 
-  // mist lies in Shiraito's valley below the road, in front of the wall and behind the pillars
-  b.mist({ x0: h(104), x1: h(200), y: h(84), half: h(9), rate: 0.8, after: "back", density: 0.85 });
-  b.mist({ x0: h(100), x1: h(200), y: h(104), half: h(10), rate: 1, after: "play", density: 0.7 });
+  // mist fills Shiraito's valley below the road: one bank over the wall's foot, one over the
+  // feet of the road's pillars and the plateau's cliff (the masses dissolve into it)
+  b.mist({ x0: h(96), x1: h(200), y: h(73), half: h(6), rate: 0.66, after: "back", density: 0.9 });
+  b.mist({ x0: h(40), x1: h(200), y: h(80), half: h(7), rate: 1, after: "play", density: 0.85 });
 
   // --- the gates: three framed gates, then the tunnel of six with their lintels almost touching
   const gateAt = (x: number, p: Record<string, unknown>): void => {
     const y = yOn(ROAD, x);
-    b.piece("play", "gate", x, y + 2, p, { z: 6 });
-    b.piece("front", "gate", x, y + 2, { ...p, part: "front" }, { z: 1 });
+    b.piece("play", "op.gate", x, y + 2, p, { z: 6 });
+    b.piece("front", "op.gate", x, y + 2, { ...p, part: "front" }, { z: 1 });
   };
   gateAt(GATE_XS[0]!, { kind: "torii", span: h(3.2), h: h(4.7) });
   gateAt(GATE_XS[1]!, { kind: "paifang", span: h(3.4), h: h(5.6) });
