@@ -18,9 +18,11 @@ export interface StairRunP {
   /** The stair's line (local px): from its lower end at the anchor up to the mouth (x1, y1). */
   x1: number;
   y1: number;
-  /** The recess's height above the treads (px); where the foundation's masonry starts (local y). */
+  /** The recess's height above the treads (px); where the foundation's masonry starts (local y,
+   *  the floor line) and how deep it runs (px). */
   head: number;
   masonry: number;
+  found: number;
   /** The grate across the mouth: local x range. */
   grate: [number, number];
 }
@@ -32,29 +34,47 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
   paint(c, p) {
     const slope = p.y1 / p.x1;
     const yAt = (lx: number): number => lx * slope;
+    // the foundation's masonry runs from the floor line (local y = masonry) down `found` px
+    const m0 = p.masonry, m1 = p.masonry + p.found;
+    const PIER = 0.24 * H, BAY = 1.15 * H;
     rect(c, 0, p.y1 - p.head - 4, p.x1, 14, (X, Y, lx, ly) => {
+      if (ly < m0 + 1) return 0; // nothing above the floor line: the mouth opens there
       const ty = yAt(lx);
       const top = ty - p.head;
       if (ly < top - 3 || ly > ty + 12) return 0;
-      const inMasonry = ly < p.masonry;
-      if (ly < top) return mt(M.stone, face(0.95, SIDE, 0, -0.8) * (inMasonry ? 1.0 : 0.85), X, Y, 0.1, 1);
+      const inMasonry = ly < m1;
+      // in the masonry the gallery's outer face is an arcade stepping down with the stair:
+      // piers between arched openings, so the cut reads as built, not hacked through
+      if (inMasonry && ly <= ty) {
+        const k = (((lx % BAY) + BAY) % BAY);
+        const pier = k < PIER;
+        const arch = Math.max(0, (ly - top) / (0.22 * H));
+        const shoulder = !pier && arch < 1 && Math.hypot((k - PIER - (BAY - PIER) / 2) / ((BAY - PIER) / 2), 1 - arch) > 1;
+        if (pier || shoulder || ly < top + 2) {
+          const edge = pier && (k < 2 || k > PIER - 2);
+          return mt(M.stone, face(0.95, SIDE, edge ? (k < 2 ? -0.7 : 0.7) : 0, 0) * (edge ? 0.85 : 0.95), X, Y, 0.1, 1);
+        }
+      }
+      if (ly < top) return mt(M.stone, face(0.95, SIDE, 0, -0.8) * 0.85, X, Y, 0.1, 1);
       if (ly > ty) {
         const k = ((lx % 15) + 15) % 15;
         const nose = ly - ty < 2.5;
         return mt(M.stone, nose ? 0.95 : 0.55 - (k < 2 ? 0.1 : 0) - (ly - ty) * 0.02, X, Y, 0.1, 1);
       }
+      // inside: the back wall lit warm by the lanterns, darker toward the top
       const v = (ly - top) / p.head;
-      const glow = 0.2 + 0.45 * v;
+      const glow = 0.18 + 0.45 * v;
       if (inMasonry) {
-        const course = Math.floor((ly - p.masonry) / 18);
-        const joint = (((ly % 18) + 18) % 18) < 1.2 || ((((lx + (course % 2) * 26) % 52) + 52) % 52) < 1.2;
-        return mt(M.stone, glow * (joint ? 0.6 : 0.85), X, Y, 0.35, 1);
+        const course = Math.floor((ly - m0) / 18);
+        const joint = ((((ly - m0) % 18) + 18) % 18) < 1.2 || ((((lx + (course % 2) * 26) % 52) + 52) % 52) < 1.2;
+        return mt(M.stone, glow * (joint ? 0.45 : 0.62), X, Y, 0.45, 1);
       }
       const n = fbm(lx * 0.06, ly * 0.06, 13, 3);
-      return mt(M.stone, glow * (0.7 + (n - 0.5) * 0.5), X, Y, 0.4, 1);
+      return mt(M.stone, glow * (0.55 + (n - 0.5) * 0.4), X, Y, 0.5, 1);
     });
-    for (let lx = 70; lx < p.x1 - 40; lx += 210) {
+    for (let lx = 70 + 0.57 * H; lx < p.x1 - 40; lx += 2 * 1.15 * H) {
       const cy = yAt(lx) - p.head + 4;
+      if (cy < p.masonry + 2) continue;
       rect(c, lx - 0.5, cy, lx + 0.5, cy + 14, (X, Y) => tn(M.dark, 0.6, X, Y, 0));
       rect(c, lx - 7, cy + 14, lx + 7, cy + 32, (X, Y, x, y) => {
         const q = Math.hypot((x - lx) / 7, (y - cy - 23) / 9);
@@ -123,6 +143,71 @@ export const flags = definePainter<{ w: number; h: number; n: number; frame?: nu
         if (u < -3 || u > 6 || v > 1 - Math.max(0, u) * 0.03) return 0;
         return mt(ramp, 0.85 - Math.cos(v * 4 - ph + k) * 0.12, X, Y, 0.1, 0.8);
       });
+    }
+  },
+});
+
+// ---------------------------------------------------------------------------
+// The spectators' tiers (P3), under the stands sprite's paper spectators (tiers: false): stone
+// steps rising behind the arena, a vermilion rail on each, lacquer posts carrying the lantern
+// strings, the whole on a masonry base that runs down behind the floor. Geometry matches the
+// stands painter (rows 34 px apart, inset 26 per row, first row 20 px up).
+// ---------------------------------------------------------------------------
+export interface TiersP {
+  w: number;
+  rows: number;
+}
+
+export const tiers = definePainter<TiersP>("court.tiers", {
+  bounds(p) {
+    return [-p.w / 2 - 10, -p.rows * 34 - 80, p.w / 2 + 10, 120];
+  },
+  paint(c, p) {
+    const hw = p.w / 2;
+    // the base below the first row: ashlar running down out of sight behind the arena
+    rect(c, -hw, -20, hw, 120, (X, Y, lx, ly) => {
+      const course = Math.floor((ly + 20) / 14);
+      const joint = (((ly + 20) % 14) + 14) % 14 < 1 || ((((lx + (course % 2) * 20) % 40) + 40) % 40) < 1;
+      return mt(M.stone, face(0.9, SIDE) * (joint ? 0.55 : 0.75) - (ly > 0 ? 0.1 : 0), X, Y, 0.1, 1);
+    });
+    for (let r = p.rows - 1; r >= 0; r--) {
+      const top = -r * 34 - 20, inset = r * 26;
+      const x0 = -hw + inset, x1 = hw - inset;
+      // the step's riser and its lit tread nose
+      rect(c, x0, top, x1, top + 34, (X, Y, lx, ly) => {
+        if (ly < top + 3) return mt(M.stone, 1.05, X, Y, 0.0, 1);
+        const k = (((lx - x0) % 46) + 46) % 46;
+        return mt(M.stone, face(0.9, SIDE) * (k < 1 ? 0.55 : 0.78) - (ly - top) / 34 * 0.12, X, Y, 0.1, 1);
+      });
+      // the rail: vermilion, posts every 46 px
+      rect(c, x0, top - 9, x1, top - 1, (X, Y, lx, ly) => {
+        const k = (((lx - x0) % 46) + 46) % 46;
+        if (k < 3) return mt(M.verm, face(0.9, SIDE, -0.5, 0) * 0.85, X, Y, 0.2, 1);
+        return ly < top - 7 ? mt(M.verm, face(0.9, SIDE, 0, -0.8) * 0.95, X, Y, 0.2, 1) : 0;
+      });
+      // the steps' end walls: a carved stone cheek at each end of the row
+      for (const sx of [x0, x1 - 10]) rect(c, sx, top - 4, sx + 10, top + 34, (X, Y, lx) => mt(M.stone, face(0.9, SIDE, lx - sx < 5 ? -0.6 : 0.6, 0) * 0.85, X, Y, 0.1, 1));
+    }
+    // lacquer posts carrying the lantern strings, and the strings themselves sagging between
+    const ptop = -p.rows * 34 - 60;
+    const posts = [-hw + 4, -hw / 3, hw / 3, hw - 4];
+    for (const px of posts) lathe(c, px, ptop, -p.rows * 34 - 20 + 34, () => 2.2, (X, Y, u) => mt(M.lacqDay, cyl(0.92, u, SIDE, 0.2), X, Y, 0.0, 1));
+    for (let i = 0; i + 1 < posts.length; i++) {
+      const a = posts[i]!, b = posts[i + 1]!;
+      const n = Math.ceil((b - a) * c.d);
+      for (let k = 0; k <= n; k++) {
+        const t = k / n;
+        const x = a + (b - a) * t, y = ptop + 4 + 14 * Math.sin(t * Math.PI);
+        c.buf.set(Math.round(c.X(x)), Math.round(c.Y(y)), P.umber[3]!);
+      }
+      for (let k = 1; k < 7; k++) {
+        const t = k / 7;
+        const x = a + (b - a) * t, y = ptop + 4 + 14 * Math.sin(t * Math.PI);
+        rect(c, x - 4, y + 2, x + 4, y + 12, (X, Y, lx, ly) => {
+          const q = Math.hypot((lx - x) / 4, (ly - y - 7) / 5);
+          return q > 1 ? 0 : mt(k % 3 === 0 ? M.paper : M.verm, face(0.95, SIDE, (lx - x) / 4, (ly - y - 7) / 5), X, Y, 0.1, 1);
+        });
+      }
     }
   },
 });

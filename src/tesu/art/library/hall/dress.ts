@@ -7,9 +7,15 @@ import type { WorldBuilder } from "../../../world/build.ts";
 import { PLANES, type Usable, type Walk } from "../../../world/types.ts";
 import { BACK_LANTERNS, HALL, HALL_LANTERNS, HALL_LIGHT, SHAFT } from "./lights.ts";
 import type { Bay } from "./backwall.ts";
+import { yOn } from "../../../world/sections/common.ts";
+import { DIAG } from "../../../world/sections/gate-road.ts";
+
 
 const H = 96;
 const h = (n: number): number => Math.round(n * H);
+
+/** Where the Prow Stair starts at the foot of the palace cliff (shiraito.ts PATH_TOP_X). */
+export const PROW_STAIR_FOOT_X = h(170);
 
 function usable(b: WorldBuilder, id: string): Usable {
   const u = b.def.usables.find((o) => o.id === id);
@@ -218,6 +224,13 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number }): void {
   b.piece("near", "court.nearpine", HOLD - h(6.8), Y + h(4.2), { h: h(4.85), lean: 0.6, seed: 3 }, { z: 3, minLevel: 0.9, reflect: false });
   b.piece("near", "court.nearpine", HOLD + h(6.0), Y + h(4.4), { h: h(5.05), lean: -0.7, seed: 7 }, { z: 3, minLevel: 0.9, reflect: false });
 
+  // --- the spectators' tiers under the stands sprite (which then draws its spectators alone)
+  const stands = b.def.sprites.find((sp) => sp.id === "stands");
+  if (stands) {
+    stands.p = { ...stands.p, tiers: false };
+    b.piece("back", "court.tiers", stands.x, stands.y, { w: Number(stands.p.w), rows: Number(stands.p.rows ?? 3) }, { z: 0, reflect: false });
+  }
+
   // --- festival banners on tall poles among the stands (P3 sprites), each in the wind
   const r3b = PLANES.back.rate;
   [-6.2, -2.4, 1.6, 5.4].forEach((dx, i) => {
@@ -226,11 +239,12 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number }): void {
 
   // --- the Prow Stair's last run up through the rock and the foundation to the mouth, with
   // the grate across the mouth (the stand-in recess stops at 176 H)
-  const stair = b.def.walks.find((w) => w.name === "prow-stair");
-  if (stair) {
-    const [ax, ay, bx, by] = stair.pts as [number, number, number, number];
+  // (the stair's walk is laid by shiraito.ts after the court, so its line is rebuilt here
+  // from the same data; hall.test.mjs checks the two agree)
+  {
+    const ax = PROW_STAIR_FOOT_X, ay = yOn(DIAG, ax), bx = WELL1, by = Y;
     const sx0 = h(176), sy0 = ay + ((by - ay) * (sx0 - ax)) / (bx - ax);
-    b.piece("play", "court.stairrun", sx0, sy0, { x1: bx - sx0, y1: by - sy0, head: 112, masonry: Y - sy0, grate: [WELL0 - sx0 - h(0.1), WELL1 - sx0 + h(0.1)] }, { z: 2 });
+    b.piece("play", "court.stairrun", sx0, sy0, { x1: bx - sx0, y1: by - sy0, head: 112, masonry: Y - sy0, found: h(2.7), grate: [WELL0 - sx0 - h(0.1), WELL1 - sx0 + h(0.1)] }, { z: 2 });
   }
 
   // --- the tip: a bench, the stone rail she cannot pass, and past it the Prow Leap

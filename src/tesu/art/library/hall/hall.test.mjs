@@ -21,6 +21,17 @@ test("the dressing adds no ground, walls or usables (layout stays the builder's)
   assert.ok(w.sprites.some((s) => s.id === "gong"), "the gong sprite exists for the bout's hook");
 });
 
+test("the Prow Stair's dressed last run lies on the stair's walk", () => {
+  const w = buildWorld();
+  const walk = w.walks.find((x) => x.name === "prow-stair");
+  const run = w.pieces.find((p) => p.kind === "court.stairrun");
+  assert.ok(walk && run, "both exist");
+  const [ax, ay, bx, by] = walk.pts;
+  const yAt = (x) => ay + ((by - ay) * (x - ax)) / (bx - ax);
+  assert.ok(Math.abs(run.y - yAt(run.x)) < 1.5, `start ${run.y} vs ${yAt(run.x)}`);
+  assert.ok(Math.abs(run.x + run.p.x1 - bx) < 1.5 && Math.abs(run.y + run.p.y1 - by) < 1.5, "the mouth");
+});
+
 test("gongFrame: at rest before and after the strike, 11 frames of swing", () => {
   assert.equal(gongFrame(null), 0);
   assert.equal(gongFrame(-5), 0);
