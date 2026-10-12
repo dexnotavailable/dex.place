@@ -8,8 +8,8 @@
 // it is a step down into its mouth).
 //
 // The way on down to Hoài Phố (the harbour) comes with that place; until then the open air
-// below is a fall into mist and the talisman tugs her back. Visuals here are stand-ins for
-// the place's owner (art/painters/shiraito.ts).
+// below is a fall into mist and the talisman tugs her back. Visuals here are neutral stand-ins
+// (flat value masses, simple silhouettes) for the place's owner (art/painters/shiraito.ts).
 
 import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
@@ -51,7 +51,7 @@ export function shiraito(b: WorldBuilder): void {
     }
     bottom.push(x0, yOn(DIAG, x0) + (taper0 ? h(0.5) : thick));
     // (drawn over the foot of the Gate Road pillar that stands on it: she walks in front of it)
-    b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", cap: "moss", capH: 12, tufts: 0.7 }, { z: 1 });
+    b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", flat: true }, { z: 1 });
   };
   ledge(FOOT_X - h(0.4), h(110), h(3.4), false, true);
   ledge(h(148), PATH_TOP_X + h(0.4), h(3.6), true, false);
@@ -64,7 +64,7 @@ export function shiraito(b: WorldBuilder): void {
   b.piece("play", "mass", 0, 0, {
     top: [VILLAGE_X0 - h(1.2), footY, FOOT_X + h(0.6), footY],
     bottom: [FOOT_X + h(0.9), footY + h(1.8), FOOT_X - h(2), footY + h(3.2), h(90), footY + h(4.4), h(84), footY + h(6.4), VILLAGE_X0 - h(1.4), footY + h(9)],
-    rock: "karst", cap: "earth", capH: 10, tufts: 0.5,
+    rock: "karst", flat: true,
   }, { z: -1 });
   // the water mill: its house and the wheel turning in the race beside it
   b.piece("play", "hut", h(85.4), footY, { w: 170, h: 150 }, { z: 2 });

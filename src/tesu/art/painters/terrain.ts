@@ -19,6 +19,11 @@ export interface MassP {
   tufts?: number;
   /** Extra darkening of the rock body (0..1), e.g. for masses in shade. */
   shade?: number;
+  /**
+   * A neutral stand-in: flat value bands (a lit top, the body, a darker base), no rock
+   * texture, no tufts (for places whose environment owner has not painted them yet).
+   */
+  flat?: boolean;
 }
 
 function topAt(top: number[], x: number): number {
@@ -118,6 +123,12 @@ export const mass = definePainter<MassP>("mass", {
           const lx = c.lx(x + 0.5), ly = c.ly(y + 0.5);
           const ty = topAt(p.top, lx);
           const depth = ly - ty;
+          if (p.flat) {
+            // flat value bands only: the top line, a lit band, the body, deeper steps darker
+            const t = depth < 1.4 / d ? 0.1 : depth < 10 ? 0.28 : clamp(0.46 + Math.floor(depth / 140) * 0.08 + shade * 0.25, 0, 0.9);
+            b.set(x, y, tone(rock, t, x, y, 0));
+            continue;
+          }
           const topEdge = !sp.inside(x, y - 1);
           const edge = !sp.inside(x - 1, y) || !sp.inside(x + 1, y) || !sp.inside(x, y + 1);
           // the cap: a lit rim, light moss, darker moss, and a ragged hem that drips
@@ -153,7 +164,7 @@ export const mass = definePainter<MassP>("mass", {
       }
     }
     // grass blades and the odd flower above the top line
-    const tufts = (p.tufts ?? 0.6) * (capKind === "moss" ? 1 : 0);
+    const tufts = p.flat ? 0 : (p.tufts ?? 0.6) * (capKind === "moss" ? 1 : 0);
     if (tufts > 0 && d >= 0.25) {
       const x0 = Math.max(b.ox, Math.floor(c.X(p.top[0]!))), x1 = Math.min(b.x1, Math.ceil(c.X(p.top[p.top.length - 2]!)));
       for (let x = x0; x < x1; x++) {
