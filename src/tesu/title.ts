@@ -113,7 +113,9 @@ export class Titles {
       const byH = c.big ? Math.max(5, Math.round(H / 100)) : Math.max(2, Math.round((H * 2) / 720));
       const scale = Math.max(1, Math.min(byH, Math.floor((W * c.maxFrac) / Math.max(1, lay.width))));
       const cap = font.metrics.cap, desc = font.metrics.descent;
-      const w = Math.max(1, lay.width * scale), h = (cap + desc) * scale;
+      // accents (HOÀI PHỐ) rise above the cap line: the card makes room, the caps stay put
+      const up = lay.letters.reduce((m, L) => Math.max(m, L.glyph.up ?? 0), 0);
+      const w = Math.max(1, lay.width * scale), h = (up + cap + desc) * scale;
       const cv = this.canvas;
       if (cv.width !== w || cv.height !== h) {
         cv.width = w;
@@ -121,7 +123,7 @@ export class Titles {
       }
       const g = cv.getContext("2d")!;
       g.clearRect(0, 0, w, h);
-      drawTitle(g, font, text, 0, cap * scale, {
+      drawTitle(g, font, text, 0, (up + cap) * scale, {
         scale, color: c.night ? TITLE_COLOR_NIGHT : TITLE_COLOR_DAY, tracking: c.big ? 2 : 1,
         time: c.t, preset: c.big ? TITLE_BIG : TITLE_PLACE, reducedMotion: this.reducedMotion,
       });
@@ -130,7 +132,7 @@ export class Titles {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, cv);
       // big: dead centre; place names: lower left
       const x0 = c.big ? Math.round((W - w) / 2) : Math.round(W * 0.045);
-      const y0 = c.big ? Math.round((H - cap * scale) / 2) : Math.round(H * 0.88 - h);
+      const y0 = c.big ? Math.round((H - cap * scale) / 2) - up * scale : Math.round(H * 0.88 - h);
       gl.useProgram(this.prog);
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
