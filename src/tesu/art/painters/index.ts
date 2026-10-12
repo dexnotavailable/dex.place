@@ -13,6 +13,7 @@ import "./champions.ts";
 import "./props.ts";
 import "./shiraito.ts";
 import "./lowlands.ts";
+import "./shanshui.ts";
 import "../library/sky/index.ts";
 import "../library/opening/index.ts";
 import "../library/hall/index.ts";

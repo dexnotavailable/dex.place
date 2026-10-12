@@ -248,7 +248,36 @@ export interface Usable {
         opens?: string;
       }
     | { kind: "panel"; panel: string; arg?: string }
-    | { kind: "say"; text: string };
+    | { kind: "say"; text: string }
+    /** Board a ropeway's car at this station: up its cable (1) or down it (-1). */
+    | { kind: "ride"; ride: string; dir: 1 | -1 };
+}
+
+/**
+ * A ropeway (GDK A.3, Shanshui's Silk Line): two cars on one cable, one at each station, that
+ * pass each other on the way. She boards at a station and rides, controls held, to the other
+ * end; the camera follows on the ride's own track (its flag `ride:<id>` is set meanwhile).
+ */
+export interface RideDef {
+  id: string;
+  /** The cable, world px, from the low station to the high one (the car hangs from it). */
+  pts: number[];
+  /** Seconds from station to station. */
+  secs: number;
+  /** The two cars' sprite ids (each is moved along the cable; `<id>:front` too if defined). */
+  cars: [string, string];
+  /** From the cable down to the car's floor, px (where she stands). */
+  hang: number;
+  /** On arriving at the high station: a held Vista (zoom 1/2 on these, ended by moving) and a big title. */
+  top?: {
+    x: number; y: number; anchor: number; secs: number;
+    /** Keep this world x at this share of the frame's width instead of centring x (any screen shape). */
+    pin?: { x: number; at: number };
+    /** The big title, and the most of the frame's width it may take (the rest stays clear of the station). */
+    title?: string; titleFrac?: number;
+    /** The plane the big title is written after (default "back": the forest's ranks stay behind it). */
+    titleAfter?: PlaneId;
+  };
 }
 
 export interface Spawn {
@@ -291,6 +320,7 @@ export interface WorldDef {
   places: Place[];
   usables: Usable[];
   props: PropDef[];
+  rides: RideDef[];
 }
 
 /**

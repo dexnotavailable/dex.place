@@ -9,7 +9,7 @@
 //   east end (cloud drops speed up, so it takes seconds);
 // - the waterwheel lift at the West Shore, up the massif's face to Kagami beside the catch: it
 //   opens from below (the first ride up opens it for good), and from above it says so;
-// - the Silk Line's lower station at the east end (the ropeway to Kumoji comes with Shanshui).
+// - the Silk Line's lower station at the east end: the ropeway up to Kumoji (sections/shanshui.ts).
 //
 // The harbour street runs along the near shore: the West Shore's quay under the massif, a
 // street of stilt houses on posts in the water (Mai's lantern shop, the mirror-polisher's
@@ -97,10 +97,10 @@ export function hoaipho(b: WorldBuilder): void {
     action: { kind: "door", to: "lift-low", needs: "lift:waterwheel", closed: "The lift's cage is chained at the bottom of the cliff. It opens from the harbour." },
   });
 
-  // --- the Silk Line's lower station: the ropeway up to Kumoji comes with Shanshui
-  b.piece("play", "hut", h(202.6), QUAY_Y, { w: 210, h: 170 }, { z: 0 });
-  b.piece("play", "stay", h(203.6), QUAY_Y - h(2.2), { dx: h(14), dy: -h(14) }, { z: 1 });
-  b.usable({ id: "silk-line", x0: h(201.6), y0: QUAY_Y - h(2), x1: h(203.6), y1: QUAY_Y, label: "the Silk Line", action: { kind: "say", text: "The Silk Line's cars hang still. The ropeway up to Kumoji opens later." } });
+  // --- the Silk Line's lower station: its car docks at the quay's east end (the ropeway up to
+  // Kumoji, its cable and cars: sections/shanshui.ts)
+  b.piece("play", "hut", h(202.2), QUAY_Y, { w: 210, h: 170 }, { z: 0 });
+  b.usable({ id: "silk-line", x0: h(203.3), y0: QUAY_Y - h(2), x1: h(205), y1: QUAY_Y, label: "the Silk Line", action: { kind: "ride", ride: "silk-line", dir: 1 } });
 
   b.spawn({ id: "hoai-pho", x: h(96), y: QUAY_Y, facing: 1 });
   b.spawn({ id: "lift-low", x: LIFT_LOW_X + h(0.9), y: QUAY_Y, facing: 1 });

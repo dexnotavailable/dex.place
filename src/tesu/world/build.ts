@@ -2,7 +2,7 @@
 // through one builder, which checks them and fills in each piece's bounds.
 
 import { painter } from "../art/painter.ts";
-import { PLANES, type PropDef, type Usable, type MistBank, type SpriteDef, type Atmos, type CamTrack, type Piece, type Place, type PlaneId, type Spawn, type Surface, type Walk, type Wall, type Water, type Void, type WorldDef } from "./types.ts";
+import { PLANES, type RideDef, type PropDef, type Usable, type MistBank, type SpriteDef, type Atmos, type CamTrack, type Piece, type Place, type PlaneId, type Spawn, type Surface, type Walk, type Wall, type Water, type Void, type WorldDef } from "./types.ts";
 
 export interface PieceOpts {
   z?: number;
@@ -17,7 +17,7 @@ export class WorldBuilder {
   private nextSeed = 1;
 
   constructor(w: number, h: number) {
-    this.def = { w, h, pieces: [], sprites: [], walks: [], walls: [], waters: [], mists: [], voids: [], tracks: [], atmos: [], spawns: [], places: [], usables: [], props: [] };
+    this.def = { w, h, pieces: [], sprites: [], walks: [], walls: [], waters: [], mists: [], voids: [], tracks: [], atmos: [], spawns: [], places: [], usables: [], props: [], rides: [] };
   }
 
   /** A painted piece. x, y: its anchor in 3D world px; p: painter params in its plane's level-1 px. */
@@ -101,6 +101,14 @@ export class WorldBuilder {
 
   place(p: Place): void {
     this.def.places.push(p);
+  }
+
+  /** A ropeway: its cable, its two cars (sprites defined here, front parts too). */
+  ride(r: RideDef): RideDef {
+    if (this.def.rides.some((o) => o.id === r.id)) throw new Error(`ride ${r.id} defined twice`);
+    if (r.pts.length < 4) throw new Error(`ride ${r.id} needs a cable`);
+    this.def.rides.push(r);
+    return r;
   }
 
   finish(): WorldDef {

@@ -258,3 +258,51 @@ test("the Prow Stair's mouth: walked across both ways on its grate, and the stai
   assert.ok(Math.abs(body.y - tip.pts[1]) < 1, `and back to the tip (${(body.x / H).toFixed(1)} H)`);
   assert.ok(w.spawns.some((s) => s.id === "prow-stair-in"), "F at the mouth sets her on the stair");
 });
+
+test("the Silk Line: a car waits at each station, the ride carries her up to Kumoji and back down", async () => {
+  const { Rides, along } = await import("./ride.ts");
+  const w = buildWorld();
+  const c = new Collision(w.walks, w.walls);
+  const def = w.rides.find((r) => r.id === "silk-line");
+  assert.ok(def, "the Silk Line exists");
+  const sprites = new Map(w.sprites.map((s) => [s.id, { ...s }]));
+  const rides = new Rides(w.rides, { sprite: (id) => sprites.get(id) });
+  // each station has its usable, on ground, with a car docked over it
+  const low = w.usables.find((u) => u.id === "silk-line"), top = w.usables.find((u) => u.id === "silk-line-top");
+  assert.deepEqual([low.action.kind, low.action.dir, top.action.kind, top.action.dir], ["ride", 1, "ride", -1]);
+  const [lx, ly] = along(def.pts, 0), [tx, ty] = along(def.pts, 1);
+  const gLow = c.groundBelow(lx, ly + def.hang - 4, false), gTop = c.groundBelow(tx, ty + def.hang - 4, false);
+  assert.equal(gLow?.walk.name, "east-quay", "the low dock is over the east quay");
+  assert.equal(gTop?.walk.name, "kumoji", "the high dock is over Kumoji");
+  assert.ok(Math.abs(gLow.y - (ly + def.hang)) < 2 && Math.abs(gTop.y - (ty + def.hang)) < 2, "the cars' floors are level with the stations");
+  assert.ok(lx >= low.x0 && lx <= low.x1 && tx >= top.x0 && tx <= top.x1, "the docks are inside the stations' usables");
+  // up: board at the low station, ride the whole way, step off on Kumoji
+  const body = { x: lx, y: ly + def.hang, w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
+  assert.ok(rides.board("silk-line", 1, body));
+  let done = null, n = 0, minY = Infinity, mid = null;
+  while (!done && n < 60 * 60) {
+    done = rides.tick(body);
+    rides.world.move(body, 0, 1);
+    minY = Math.min(minY, body.y);
+    if (n === 20 * 60) mid = [rides.carAt("silk-line", 0), rides.carAt("silk-line", 1)];
+    n++;
+  }
+  assert.ok(done && Math.abs(n / 60 - def.secs) < 0.1, `about ${def.secs} s up (${(n / 60).toFixed(1)} s)`);
+  assert.ok(Math.abs(body.x - tx) < 1 && Math.abs(body.y - (ty + def.hang)) < 1, "set down at the top dock");
+  // the two cars pass each other half way
+  assert.ok(Math.hypot(mid[0][0] - mid[1][0], mid[0][1] - mid[1][1]) < 2 * H, "the cars meet midway");
+  body.grounded = false;
+  c.move(body, 0, 2);
+  assert.equal(c.standingOn?.name, "kumoji", "she stands on Kumoji");
+  // on along Kumoji to its gate, never falling
+  for (let i = 0; i < 4000 && body.x < 338 * H; i++) { c.move(body, 4, 0); c.move(body, 0, 2); }
+  assert.ok(body.x > 337 * H && c.standingOn?.name === "kumoji", `Kumoji walks to its gate (${(body.x / H).toFixed(1)} H)`);
+  assert.ok(!w.voids.some((v) => body.x >= v.x0 && body.x <= v.x1 && body.y > v.y && (v.y1 === undefined || body.y < v.y1)), "the road is above the sea of mist's void");
+  // and down again in the car now waiting at the top
+  body.x = tx; body.y = ty + def.hang; body.grounded = true;
+  assert.ok(rides.board("silk-line", -1, body));
+  done = null; n = 0;
+  while (!done && n < 60 * 60) { done = rides.tick(body); rides.world.move(body, 0, 1); n++; }
+  assert.ok(Math.abs(body.x - lx) < 1 && Math.abs(body.y - (ly + def.hang)) < 1, "set down at the low dock");
+  assert.ok(minY < 90 * H, "the ride climbed to Kumoji's height");
+});

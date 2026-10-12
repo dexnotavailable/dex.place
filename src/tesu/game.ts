@@ -21,6 +21,7 @@ import { Camera, framingAt } from "./camera.ts";
 import { Collision } from "./collide.ts";
 import { Court, type Prize } from "./court.ts";
 import { Props } from "./props.ts";
+import { Rides } from "./ride.ts";
 import { Sound } from "./sound.ts";
 import { H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore } from "./plates/store.ts";
@@ -38,7 +39,9 @@ import { isReload, loadSave, resumePlace, writeSave, type TesuSave } from "./sav
 import { PLANES, PLANE_IDS, type Atmos as AtmosDef, type PlaneId, type SpriteDef, type Spawn, type Usable, type Water, type WorldDef } from "./world/types.ts";
 
 /** Flags that live only for this visit (never saved): a bout in progress. */
-const TRANSIENT = new Set(["bout"]);
+const TRANSIENT_FLAGS = new Set(["bout"]);
+/** Flags for this visit only (a bout on, a ride under way): never saved. */
+const TRANSIENT = { has: (f: string): boolean => TRANSIENT_FLAGS.has(f) || f.startsWith("ride:") };
 
 const DAY: Lighting = {
   ambient: [0.64, 0.66, 0.7],
@@ -99,6 +102,8 @@ export class TesuGame {
   readonly court: Court;
   /** Things that break, with weight, and the support rule. */
   readonly props: Props;
+  /** Ropeways (the Silk Line): two cars on a cable, and the ride she is on. */
+  readonly rides: Rides;
   /** Effects, ambience beds and the adaptive score. */
   readonly sound = new Sound();
   /** Also told every score cue (tools). */
@@ -232,6 +237,7 @@ export class TesuGame {
       usables: () => this.world.usables,
       bottom: this.world.h + 4 * H,
     }, this.world.props, (id) => this.spriteById.get(id)!);
+    this.rides = new Rides(this.world.rides, { sprite: (id) => this.spriteById.get(id) });
     const catchS = this.world.spawns.find((s) => s.id === "catch")!;
     const resume = opts.link ? null : resumePlace(this.save, Date.now(), catchS.x, isReload());
     if (resume) this.spawnAt({ id: "resume", x: resume.x, y: resume.y, facing: resume.facing });
@@ -288,7 +294,7 @@ export class TesuGame {
 
   private notePlace(): void {
     const b = this.player.body;
-    if (!b.grounded || this.tug) return;
+    if (!b.grounded || this.tug || this.rides.active) return;
     this.save.place = { x: Math.round(b.x), y: Math.round(b.y), facing: this.player.facing as 1 | -1, at: Date.now() };
     writeSave(this.save);
   }
@@ -313,7 +319,7 @@ export class TesuGame {
   }
 
   /** A held entrance shot (indoors grand): zoom and where it frames, seconds left. */
-  vista: { zoom: number; x: number; y: number; anchor: number; t: number } | null = null;
+  vista: { zoom: number; x: number; y: number; anchor: number; t: number; pin?: { x: number; at: number } } | null = null;
   /** Doors, services and things to inspect within reach (nearest first). */
   near: Usable | null = null;
   /** A scene cut in progress (through a door). */
@@ -332,7 +338,7 @@ export class TesuGame {
     const x = this.opening.holding ? Math.min(this.player.body.x, TERRACE_X1) : this.player.body.x;
     let f = framingAt(this.world.tracks, Math.max(x, this.opening.holding ? TERRACE_X0 + 1 : -Infinity), has, this.player.body.y);
     // an entrance shot: a held vista on first entry, ended early by moving
-    if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor, pin: null, bounds: null };
+    if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.pin ? null : this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor, pin: this.vista.pin ?? null, bounds: null };
     // outdoors the frame never shows past the world's ends (the widest frames on ultra-wide screens)
     if (!f.bounds && this.player.body.y < INTERIOR_Y) f = { ...f, bounds: [0, this.world.w] };
     // the world window waiting for PLAY: a held vista of Kagami with the sky in the middle of
@@ -418,7 +424,7 @@ export class TesuGame {
       this.vista.t -= 1 / 60;
       if (this.vista.t <= 0 || Math.abs(b.vx) > 0.6) this.vista = null;
     }
-    this.near = this.cut || this.tug ? null : this.findNear();
+    this.near = this.cut || this.tug || this.rides.active ? null : this.findNear();
     this.placeNames();
     this.motes.update(1 / 60);
     this.opening.tick(1 / 60);
@@ -436,6 +442,20 @@ export class TesuGame {
     const b = this.player.body;
     const wasGrounded = b.grounded;
     this.collision.holdDown = this.frozen <= 0 && this.input.isDown("down");
+    // on a ropeway: the car carries her, its floor is her ground, nothing else applies
+    if (this.rides.active) {
+      this.frozen = Math.max(this.frozen, 2);
+      const done = this.rides.tick(b);
+      this.player.update(this.inputProxy, this.rides.world as unknown as LabWorld, []);
+      this.court.tick();
+      this.props.tick();
+      this.vfx.update();
+      this.input.tick++;
+      this.fallFrom = null;
+      this.cloudDrop = false;
+      if (done) this.arrive(done.def, done.dir);
+      return;
+    }
     this.player.update(this.inputProxy, this.collision as unknown as LabWorld, []);
     this.court.tick();
     this.props.takeHits(this.player);
@@ -557,6 +577,17 @@ export class TesuGame {
     if (!u || this.cut || this.tug) return;
     // the board waits while a bout is on; leaving through a door ends the bout
     if (this.court.busy && u.action.kind === "panel" && u.action.panel === "board") return;
+    if (u.action.kind === "ride") {
+      if (this.rides.active) return;
+      this.court.cancel();
+      const b = this.player.body;
+      if (!this.rides.board(u.action.ride, u.action.dir, b)) return;
+      this.flags.add(`ride:${u.action.ride}`);
+      this.player.facing = u.action.dir;
+      this.frozen = Math.max(this.frozen, 2);
+      this.feel.sound("lift-start", 1);
+      return;
+    }
     if (u.action.kind === "door") {
       const a = u.action;
       if (a.needs && !this.flags.has(a.needs)) {
@@ -571,6 +602,32 @@ export class TesuGame {
       return;
     }
     this.onUse(u);
+  }
+
+  /**
+   * The car has docked: she stands on the station's ground again. Up at the top the frame holds
+   * a Vista over what she rode through, with its big title (once a visit); moving ends it.
+   */
+  private arrive(def: WorldDef["rides"][number], dir: 1 | -1): void {
+    const b = this.player.body;
+    this.flags.delete(`ride:${def.id}`);
+    b.grounded = false;
+    b.vy = 0;
+    // (from a hair above, so a station's ground a pixel off the car's floor still takes her)
+    b.y -= 4;
+    this.collision.move(b, 0, 8);
+    this.lastSafe = [b.x, b.y];
+    this.frozen = Math.max(this.frozen, 6);
+    this.waitRelease = true;
+    this.feel.sound("lift-dock", 1);
+    if (dir === 1 && def.top) {
+      const t = def.top;
+      this.vista = { zoom: 0.5, x: t.x, y: t.y, anchor: t.anchor, t: t.secs, pin: t.pin };
+      if (t.title && !this.entered.has(`title:${def.id}`)) {
+        this.entered.add(`title:${def.id}`);
+        this.titles.show(t.title, true, false, t.titleAfter ?? "back", t.titleFrac ?? 0.9);
+      }
+    }
   }
 
   /** The usable thing under a frame point (touch: object taps win). */
@@ -914,6 +971,7 @@ export class TesuGame {
       tiles: this.store.stats(), fps: Math.round(this.fps), frame: [this.r.iw, this.r.ih], present: this.r.presenter.rect,
       clip: this.player.clip.clip.id,
       opening: this.opening.state, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
+      ride: this.rides.active ? { id: this.rides.active.def.id, dir: this.rides.active.dir, t: +this.rides.active.t.toFixed(2) } : null, vista: !!this.vista,
       court: this.court.state_(), hp: this.player.hp, ultCd: this.player.ultCd,
       props: this.props.state(), airborne: this.props.airborne(), broken: this.props.broken,
       music: { mood: this.sound.music.mood, layers: this.sound.music.layers, dropped: this.sound.music.dropped, nextBar: +this.sound.music.nextBar().toFixed(2) },
