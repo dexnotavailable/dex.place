@@ -149,6 +149,11 @@ export interface CamTrack {
   /** Only while this flag is set. */
   when?: string;
   keys: CamKey[];
+  /**
+   * The frame's edges never pass these world x (a room's end walls): the camera's centre is
+   * kept half a frame inside them, easing in rather than stopping dead.
+   */
+  bounds?: [number, number];
 }
 
 /** Haze, sky and light for a stretch of the land (blended by x). */

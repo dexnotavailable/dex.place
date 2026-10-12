@@ -139,7 +139,9 @@ export function hall(b: WorldBuilder): void {
   b.spawn({ id: "hall-nook", x: X(24.4), y: FY, facing: 1 });
   b.spawn({ id: "hall-gallery", x: X(12), y: GY, facing: 1 });
   b.place({ id: "hall-of-works", name: "Hall of Works", x0: HALL_X0, x1: HALL_X1, y0: FY - h(20), y1: FY + h(5), title: "place", spawn: "hall-in", vista: FY - h(2.4) });
-  b.track({ id: "hall", x0: HALL_X0 - h(10), x1: HALL_X1 + h(10), y0: FY - h(30), y1: FY + h(10), keys: [
+  // the frame's edges stay inside the hall's end walls (env-hall, approved): at the doors she
+  // walks toward the frame's edge, the usual room convention
+  b.track({ id: "hall", x0: HALL_X0 - h(10), x1: HALL_X1 + h(10), y0: FY - h(30), y1: FY + h(10), bounds: [X(0.4), X(33.6)], keys: [
     { x: HALL_X0, zoom: 1, anchor: 0.8, horizon: 0.42, lead: 0.05 },
     { x: HALL_X1, zoom: 1, anchor: 0.8, horizon: 0.42, lead: 0.05 },
   ] });

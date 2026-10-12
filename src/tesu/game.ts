@@ -331,7 +331,9 @@ export class TesuGame {
     const x = this.opening.holding ? Math.min(this.player.body.x, TERRACE_X1) : this.player.body.x;
     let f = framingAt(this.world.tracks, Math.max(x, this.opening.holding ? TERRACE_X0 + 1 : -Infinity), has, this.player.body.y);
     // an entrance shot: a held vista on first entry, ended early by moving
-    if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor, pin: null };
+    if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor, pin: null, bounds: null };
+    // outdoors the frame never shows past the world's ends (the widest frames on ultra-wide screens)
+    if (!f.bounds && this.player.body.y < INTERIOR_Y) f = { ...f, bounds: [0, this.world.w] };
     // the world window waiting for PLAY: a held vista of Kagami with the sky in the middle of
     // the frame, so TESU (for a visitor who scrolls on past) is written into the sky
     if (this.holding) f = { ...f, zoom: 0.5, anchor: 0.86, horizon: 0.64, lead: 0 };

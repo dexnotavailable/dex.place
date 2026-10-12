@@ -25,11 +25,13 @@ export interface Framing {
   fixY: number | null;
   /** A world x pinned to a fraction of the frame's width (resolved by the camera against its width). */
   pin: { x: number; at: number } | null;
+  /** World x the frame's edges stay within (a room's walls, the world's ends). */
+  bounds: [number, number] | null;
 }
 
 /** Framing from the active tracks at x (tracks blend in over their first and last keys). */
 export function framingAt(tracks: readonly CamTrack[], x: number, flags: (f: string) => boolean, y = 0): Framing {
-  const out: Framing = { ...DEFAULT_KEY, fixX: null, fixY: null, pin: null };
+  const out: Framing = { ...DEFAULT_KEY, fixX: null, fixY: null, pin: null, bounds: null };
   for (const t of tracks) {
     if (x < t.x0 || x > t.x1) continue;
     if ((t.y0 !== undefined && y < t.y0) || (t.y1 !== undefined && y > t.y1)) continue;
@@ -65,6 +67,7 @@ export function framingAt(tracks: readonly CamTrack[], x: number, flags: (f: str
     out.fixX = fx;
     const fy = a.fixY !== undefined && b.fixY !== undefined ? a.fixY + (b.fixY - a.fixY) * u : (u < 0.5 ? a.fixY : b.fixY) ?? null;
     out.fixY = fy;
+    out.bounds = t.bounds ?? null;
     out.pin = a.pin && b.pin
       ? { x: a.pin.x + (b.pin.x - a.pin.x) * u, at: a.pin.at + (b.pin.at - a.pin.at) * u }
       : (u < 0.5 ? a.pin : b.pin) ?? null;
@@ -108,8 +111,17 @@ export class Camera {
     this.anchor = f.anchor;
     this.horizon = f.horizon;
     this.lookX = facing * f.lead * this.W / Math.min(1, this.zoom);
-    this.cx = this.fixedX(f) ?? px + this.lookX;
+    this.cx = this.bounded(this.fixedX(f) ?? px + this.lookX, f);
     this.cy = f.fixY ?? py;
+  }
+
+  /** A camera centre kept half a frame inside the framing's bounds (centred when the room is narrower). */
+  private bounded(x: number, f: Framing): number {
+    if (!f.bounds) return x;
+    const [b0, b1] = f.bounds;
+    const half = this.W / 2 / f.zoom;
+    if (b1 - b0 <= half * 2) return (b0 + b1) / 2;
+    return Math.min(b1 - half, Math.max(b0 + half, x));
   }
 
   /** The framing's fixed camera x, if any (a pin uses the zoom the framing settles at). */
@@ -152,7 +164,8 @@ export class Camera {
     const lead = (f.lead * facing + 0.03 * Math.max(-1, Math.min(1, vx / 3.2))) * this.W / zEff;
     this.lookX += (lead - this.lookX) * 0.035;
     const fixed = this.fixedX(f);
-    const tx = fixed ?? px + this.lookX;
+    // the target is kept inside the bounds; the camera eases toward it, so it slows into a wall
+    const tx = this.bounded(fixed ?? px + this.lookX, f);
     const ty = f.fixY ?? py;
     this.cx += (tx - this.cx) * (fixed !== null ? 0.05 : 0.1);
     // vertical: a dead zone so small hops do not move the frame
