@@ -34,29 +34,34 @@ function lobesOf(p: CloudP, seed: number): Lobe[] {
   return cached(`cu|${seed}|${p.w}|${p.h}`, () => {
     const r = rng(seed + 5);
     const out: Lobe[] = [];
-    // the heap's profile: tallest a little left of centre, a long low tail to the right
-    const peak = -0.12 + (r() - 0.5) * 0.2;
-    const prof = (u: number): number => Math.max(0.18, Math.exp(-Math.pow((u - peak) / 0.3, 2)) * 0.85 + 0.25 * Math.exp(-Math.pow((u - 0.35) / 0.25, 2)));
+    // the heap's profile: three summits of different heights (the tallest left of centre), a
+    // broad low shoulder between them, a long low tail
+    const peaks: [number, number, number][] = [[-0.38 + (r() - 0.5) * 0.1, 1, 0.2], [0.08 + (r() - 0.5) * 0.1, 0.72, 0.17], [0.48 + (r() - 0.5) * 0.1, 0.5, 0.18]];
+    const prof = (u: number): number => {
+      let v = 0.26 * Math.max(0, 1 - Math.pow(Math.abs(u) / 1.05, 4));
+      for (const [c0, hh, wd] of peaks) v = Math.max(v, hh * Math.exp(-Math.pow((u * 2 - c0) / (wd * 2), 2)));
+      return Math.max(0.12, v);
+    };
     // big inner lobes fill the body; many small lobes make the bumpy rim
-    for (let i = 0; i < 26; i++) {
+    for (let i = 0; i < 44; i++) {
       const u = (r() - 0.5) * 1.8;
       const top = p.h * prof(u * 0.5);
       const rr = p.h * (0.16 + 0.16 * r()) * (0.6 + 0.6 * prof(u * 0.5));
-      out.push({ x: u * p.w * 0.27, y: -Math.min(top - rr * 0.6, rr * 0.8 + r() * (top - rr)), r: rr });
+      out.push({ x: u * p.w * 0.4, y: -Math.min(top - rr * 0.6, rr * 0.8 + r() * (top - rr)), r: rr });
     }
-    for (let i = 0; i < 90; i++) {
+    for (let i = 0; i < 50; i++) {
       const u = (r() - 0.5) * 1.9;
-      const top = p.h * prof(u * 0.5);
-      const rr = p.h * (0.06 + 0.09 * r());
+      const top = p.h * prof(u * 0.5) * 0.92;
+      const rr = p.h * (0.1 + 0.1 * r());
       // on the upper outline
-      out.push({ x: u * p.w * 0.27, y: -top + rr * (0.4 + 0.8 * r()), r: rr });
+      out.push({ x: u * p.w * 0.4, y: -top + rr * (0.4 + 0.8 * r()), r: rr });
     }
     return out;
   });
 }
 
 /** The cloud as a mask on a 2 px grid (level-1 px), built once per cloud and frame. */
-interface Mask { x0: number; y0: number; w: number; h: number; m: Uint8Array; light: Float32Array }
+interface Mask { x0: number; y0: number; w: number; h: number; m: Uint8Array; light: Float32Array; dist: Float32Array }
 
 function maskOf(p: CloudP, seed: number, f: number): Mask {
   return cached(`cumask|${seed}|${p.w}|${p.h}|${f}`, () => {
@@ -83,14 +88,46 @@ function maskOf(p: CloudP, seed: number, f: number): Mask {
       }
       light[gy * w + gx] = len;
     }
-    return { x0, y0, w, h, m, light };
+    // soften the light field (no hard shadow lines across the cloud): two box blurs
+    for (let pass = 0; pass < 2; pass++) {
+      const src = light.slice();
+      for (let gy = 0; gy < h; gy++) for (let gx = 0; gx < w; gx++) {
+        if (!m[gy * w + gx]) continue;
+        let sum = 0, n = 0;
+        for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
+          const xx = gx + dx, yy = gy + dy;
+          if (xx < 0 || yy < 0 || xx >= w || yy >= h || !m[yy * w + xx]) continue;
+          sum += src[yy * w + xx]!; n++;
+        }
+        light[gy * w + gx] = sum / Math.max(1, n);
+      }
+    }
+    // distance to the outside (chamfer, in px), for the soft dithered edge all round
+    const dist = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) dist[i] = m[i] ? 1e6 : 0;
+    const D1 = 2, D2 = 2.83;
+    for (let gy = 0; gy < h; gy++) for (let gx = 0; gx < w; gx++) {
+      const i = gy * w + gx;
+      if (!m[i]) continue;
+      let v = dist[i]!;
+      if (gx > 0) v = Math.min(v, dist[i - 1]! + D1); else v = Math.min(v, D1);
+      if (gy > 0) v = Math.min(v, dist[i - w]! + D1); else v = Math.min(v, D1);
+      if (gx > 0 && gy > 0) v = Math.min(v, dist[i - w - 1]! + D2);
+      if (gx < w - 1 && gy > 0) v = Math.min(v, dist[i - w + 1]! + D2);
+      dist[i] = v;
+    }
+    for (let gy = h - 1; gy >= 0; gy--) for (let gx = w - 1; gx >= 0; gx--) {
+      const i = gy * w + gx;
+      if (!m[i]) continue;
+      let v = dist[i]!;
+      if (gx < w - 1) v = Math.min(v, dist[i + 1]! + D1); else v = Math.min(v, D1);
+      if (gy < h - 1) v = Math.min(v, dist[i + w]! + D1); else v = Math.min(v, D1);
+      if (gx < w - 1 && gy < h - 1) v = Math.min(v, dist[i + w + 1]! + D2);
+      if (gx > 0 && gy < h - 1) v = Math.min(v, dist[i + w - 1]! + D2);
+      dist[i] = v;
+    }
+    return { x0, y0, w, h, m, light, dist };
   });
-}
-
-function sample(M: Mask, x: number, y: number): number {
-  const gx = Math.floor((x - M.x0) / 2), gy = Math.floor((y - M.y0) / 2);
-  if (gx < 0 || gy < 0 || gx >= M.w || gy >= M.h || !M.m[gy * M.w + gx]) return -1;
-  return M.light[gy * M.w + gx]!;
 }
 
 function paintCumulus(c: PaintCtx, p: CloudP): void {
@@ -100,29 +137,33 @@ function paintCumulus(c: PaintCtx, p: CloudP): void {
   const X0 = Math.max(b.ox, Math.floor(c.X(-p.w * 0.62))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w * 0.62)));
   const Y0 = Math.max(b.oy, Math.floor(c.Y(-p.h * 1.25))), Y1 = Math.min(b.y1, Math.ceil(c.Y(3)));
   const C = P.cloud;
+  const edgeW = Math.max(5, p.h * 0.05);
+  const baseH = p.h * 0.3;
   for (let y = Y0; y < Y1; y++) {
     const ly = c.ly(y + 0.5);
     for (let x = X0; x < X1; x++) {
       const lx = c.lx(x + 0.5);
-      const len = sample(M, lx, ly);
-      if (len < 0) {
-        if (ly > 0 && ly < 2.5 && sample(M, lx, -1) >= 0 && bayer4(x, y) < 0.35) b.set(x, y, P.range[1]!);
-        continue;
-      }
-      // soft edges: the outermost cells on the shadow side dither out
-      const shadowEdge = sample(M, lx + 2.4, ly + 2.4) < 0 || sample(M, lx, ly + 3) < 0;
-      if (shadowEdge && bayer4(x + f, y) < 0.45) continue;
-      const depth = clamp(len / (p.h * 0.55), 0, 1);
-      const base = clamp((ly + p.h * 0.22) / (p.h * 0.22), 0, 1);
-      // texture: faint lobe-sized mottling, never bubbles
-      const mott = (vnoise1(lx / (p.h * 0.09) + ly / (p.h * 0.07), seed + 3) - 0.5) * 0.1;
-      let t = 0.04 + depth * 0.5 + base * 0.32 + mott;
-      if (len <= 3 && ly < -p.h * 0.15) {
+      const gx = Math.floor((lx - M.x0) / 2), gy = Math.floor((ly - M.y0) / 2);
+      if (gx < 0 || gy < 0 || gx >= M.w || gy >= M.h || !M.m[gy * M.w + gx]) continue;
+      const len = M.light[gy * M.w + gx]!, dist = M.dist[gy * M.w + gx]!;
+      // soft edge all round: the outer few px thin out by ordered dither (wispy, never a line)
+      const wisp = edgeW * (0.6 + 0.8 * vnoise1(lx / 9 + ly / 13, seed + 4 + f));
+      let cover = clamp(dist / wisp, 0, 1);
+      // the base: flatter and thinner, it dissolves toward the bottom (the sky shows through)
+      const up = -ly;
+      if (up < baseH) cover *= 0.35 + 0.65 * clamp(up / baseH, 0, 1);
+      if (bayer4(x + f, y) >= cover) continue;
+      // how deep from the sun, broken up by billows so no shadow edge runs straight
+      const bil = (vnoise1(lx / (p.h * 0.16) + ly / (p.h * 0.21), seed + 6) - 0.5) * p.h * 0.18 + (vnoise1(lx / (p.h * 0.05) - ly / (p.h * 0.07), seed + 7) - 0.5) * p.h * 0.05;
+      const depth = clamp((len + bil) / (p.h * 0.55), 0, 1);
+      const base = clamp(1 - up / baseH, 0, 1);
+      const mott = (vnoise1(lx / (p.h * 0.12) + ly / (p.h * 0.1), seed + 3) - 0.5) * 0.08;
+      // sunlit and thin at the upper left: the warm cream rim
+      if (len <= 3 && up > p.h * 0.35 && dist > 2) {
         b.set(x, y, P.paper[0]!);
         continue;
       }
-      t = clamp(t, 0, 1);
-      // stepped bands, dithered only across a narrow seam between steps
+      let t = clamp(0.06 + depth * 0.42 + base * 0.34 + mott, 0, 1);
       let i = Math.floor(t * 6.99);
       const fr = t * 6.99 - i;
       if (fr > 0.62 || (fr > 0.38 && bayer4(x, y) < (fr - 0.38) / 0.24)) i++;

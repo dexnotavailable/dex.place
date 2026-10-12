@@ -62,6 +62,8 @@ export function kagami(b: WorldBuilder): void {
   // a moored boat beside the jetty, a coil of rope and a bucket on the deck
   // (Kagami is mirror-still: the boat rests without bobbing, its reflection unbroken)
   b.piece("play", "op.boat", h(91.5), LAKE_Y + 2, { w: h(2.6) }, { z: 1 });
+  // its mooring line, slack, from the bow up to the post at h(88)
+  b.piece("play", "op.rope", h(91.5) + 6, LAKE_Y - 22, { dx: h(88) - h(91.5) - 6 + 6, dy: (DECK_Y - 18) - (LAKE_Y - 22), sag: 0.1 }, { z: 2 });
   b.piece("play", "op.coil", CATCH_X + h(2.6), DECK_Y, { r: 12 }, { z: 4 });
   b.prop({ id: "jetty-barrel", kind: "op.bucket", p: { h: 20 }, x: h(97.4), y: DECK_Y, cls: "cosmetic", material: "wood" });
   b.prop({ id: "jetty-crate", kind: "crate", p: { w: 30, h: 26 }, x: h(96.6), y: DECK_Y, cls: "cosmetic", material: "wood" });
