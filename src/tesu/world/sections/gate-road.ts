@@ -70,14 +70,13 @@ export function gateRoad(b: WorldBuilder): void {
   // Shiraito's diagonal, laid rough for now (a band on a background cliff): the ground the
   // leap and the hall's back gallery drop you onto. Its art comes with Shiraito.
   const d0 = h(98), d1 = h(170);
-  const diag: number[] = [];
-  for (let i = 0; i < DIAG.length; i += 2) if (DIAG[i]! >= d0 && DIAG[i]! <= d1) diag.push(DIAG[i]!, DIAG[i + 1]!);
+  // (exactly from d0 to d1, so it meets Shiraito's village at its foot and the Prow Stair at its top)
+  const diag: number[] = [d0, yOn(DIAG, d0)];
+  for (let i = 0; i < DIAG.length; i += 2) if (DIAG[i]! > d0 + 4 && DIAG[i]! < d1 - 4) diag.push(DIAG[i]!, DIAG[i + 1]!);
+  diag.push(d1, yOn(DIAG, d1));
   b.walk(diag, { surface: "earth", depth: h(4), name: "shiraito" });
-  const dBottom: number[] = [];
-  for (let i = diag.length - 2; i >= 0; i -= 2) dBottom.push(diag[i]!, diag[i + 1]! + h(3.4) + h(0.6) * Math.sin(diag[i]! / h(5)));
-  b.piece("play", "mass", 0, 0, { top: diag, bottom: dBottom, rock: "karst", cap: "moss", capH: 12, tufts: 0.7 }, { z: -2 });
-  // its top end meets the palace cliff (the Prow Stair comes later); its foot is open air
-  b.wall({ x: d1, y0: h(40), y1: yOn(DIAG, d1) + h(0.1), reason: "cliff" });
+  // (its rock ledges and plank walks are Shiraito's: sections/shiraito.ts)
+  // its top end meets the Prow Stair, its foot Shiraito's village (sections/shiraito.ts)
   // below the diagonal, until the harbour exists, is a fall into mist: the talisman tugs her back
   b.void({ x0: h(60), x1: h(200), y: h(136), y1: h(240) });
 
