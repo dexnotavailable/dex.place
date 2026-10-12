@@ -127,7 +127,10 @@ function formsOf(p: KarstP, seed: number): Form[] {
       if (k === 0 && p.forms) {
         p.forms.forEach(([x, w, hh, kind], i) => {
           const s = seed + i * 131 + 7;
-          add({ kind: kind ?? pick(hash1(i, s)), cx: x, hw: w / 2, h: hh, by, row: 0, lean: (hash1(i + 5, s) - 0.5) * 0.12, seed: s, fall: hash1(i + 9, s) < (p.falls ?? 0.4) ? 1 : 0 });
+          const kd = kind ?? pick(hash1(i, s));
+          // (pillars the ink-painting way too: tapering, bending, a jagged summit; massifs and
+          // cones keep their broad forested forms)
+          add({ kind: kd, cx: x, hw: w / 2, h: hh, by, row: 0, lean: (hash1(i + 5, s) - 0.5) * (kd === "pillar" ? 0.2 : 0.12), seed: s, fall: hash1(i + 9, s) < (p.falls ?? 0.4) ? 1 : 0 }, kd === "pillar");
         });
         continue;
       }

@@ -55,12 +55,19 @@ export function bankGroups(p: BankP, seed: number): Group[] {
       // size classes in an uneven rhythm: mostly small and medium, the odd big one
       const k = r();
       const size = k < 0.18 ? 2 : k < 0.58 ? 1 : 0;
-      const w = size === 2 ? 220 + r() * 160 : size === 1 ? 100 + r() * 110 : 34 + r() * 50;
+      const w = Math.min(p.w - 30 - x, size === 2 ? 220 + r() * 160 : size === 1 ? 100 + r() * 110 : 34 + r() * 50);
       const t = r();
       const kind: GroupKind = t < reeds ? "reeds" : t < reeds + 0.28 ? "grass" : t < reeds + 0.42 ? "leaves" : "stone";
       out.push({ kind, x, w, size, mound: (size === 2 ? 30 : size === 1 ? 17 : 8) * (0.6 + 0.8 * r()), seed: Math.floor(r() * 1e6) });
       // a gap: sometimes groups touch, sometimes the lip runs open for a while
-      x += w + (r() < 0.3 ? -w * 0.15 : 30 + r() * (size === 2 ? 220 : 140));
+      x += w + (r() < 0.35 ? -w * 0.2 : 20 + r() * (size === 2 ? 130 : 80));
+    }
+    // the ends: a heap of mossy boulders and tall grass where the bank runs out, so it resolves
+    // into something instead of stopping
+    for (const ex of [p.startR ? 20 : -1, p.endR ? p.w - 300 : -1]) {
+      if (ex < 0) continue;
+      out.push({ kind: "stone", x: ex, w: 260, size: 2, mound: 40, seed: Math.floor(r() * 1e6) });
+      out.push({ kind: "grass", x: Math.max(10, ex - 40), w: Math.min(300, p.w - 30 - Math.max(10, ex - 40)), size: 2, mound: 30, seed: Math.floor(r() * 1e6) });
     }
     return out;
   });
@@ -143,7 +150,7 @@ function stone(c: PaintCtx, x: number, R: number, seed: number, lit: boolean): v
 
 export const bank = definePainter<BankP>("op.bank", {
   bounds(p) {
-    return [-12, -110, p.w + 12, p.h + 34];
+    return [-60, -120, p.w + 60, p.h + 34];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
