@@ -272,7 +272,9 @@ export function shell({ meta, main }: ShellOptions): Rendered {
     `</div>` +
     // a section's page opens on the section, not the world above it (once the sheet is in,
     // so the page is tall enough; a reload's own scroll position and a #fragment win)
-    (at ? `<script>(function(){var w=document.querySelector(".world");if(w&&!location.hash&&!scrollY)scrollTo(0,w.offsetHeight)})()</script>` : "") +
+    (at ? `<script>(function(){var w=document.querySelector(".world");if(!w||location.hash)return;` +
+      `if("scrollRestoration" in history)history.scrollRestoration="manual";` +
+      `var go=function(){if(scrollY<w.offsetHeight)scrollTo(0,w.offsetHeight)};go();addEventListener("load",go,{once:true})})()</script>` : "") +
     // Only pages with deferred collage tiles need the arrival script.
     (/\sdata-defer[\s>]/.test(main) ? ARRIVAL : "");
   return { head: head(meta), body };

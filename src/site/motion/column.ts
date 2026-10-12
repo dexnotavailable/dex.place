@@ -139,16 +139,31 @@ export function initColumn(reduced: MediaQueryList): void {
   // --- the address
   const sections = SECTIONS.map(([id, path]) => [document.getElementById(id), path] as const).filter(([el]) => !!el) as [HTMLElement, string][];
   let address = location.pathname;
+  // Following a link from here: the homepage's history entry goes back to "/" first, so the
+  // navigation is an ordinary new entry (a link to the address on show would otherwise be a
+  // replace) and Back returns to the homepage, scrolled where it was.
+  const home = (): void => {
+    if (location.pathname !== "/") history.replaceState(history.state, "", "/" + location.search);
+    address = "/";
+  };
+  document.addEventListener("click", (e) => {
+    if (e.defaultPrevented || e.button !== 0) return;
+    const a = (e.target instanceof Element ? e.target : null)?.closest<HTMLAnchorElement>("a[href]");
+    if (!a || a.hasAttribute("download") || (a.target && a.target !== "_self")) return;
+    const url = new URL(a.href, location.href);
+    if (url.origin !== location.origin) return;
+    // an in-page jump stays on this page (a #fragment of the address on show)
+    if (url.pathname === location.pathname && url.search === location.search && url.hash) return;
+    home();
+  }, true);
+  window.addEventListener("pagehide", () => home());
   const route = (vh: number, pWorld: number, worldTop: number): void => {
     const st = history.state as { gallery?: string } | null;
     if (st && typeof st === "object" && "gallery" in st) return; // the gallery's viewer owns the address
     const mid = window.scrollY + vh / 2;
     let path = "/";
     if (mid >= worldTop && pWorld < 0.5) path = "/tesu/";
-    for (const [el, p] of sections) {
-      const r = el.getBoundingClientRect();
-      if (r.top <= vh / 2 && r.bottom > vh / 2) path = p;
-    }
+    for (const [el, p] of sections) if (el.getBoundingClientRect().top <= vh / 2) path = p;
     if (path !== address) {
       address = path;
       history.replaceState(history.state, "", path);

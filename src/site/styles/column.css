@@ -52,6 +52,10 @@
 .col-fall__walker--a { left: 12%; }
 .col-fall__walker--b { left: 58%; scale: 0.6; transform-origin: bottom; opacity: 0.5; }
 
+/* anything here shown and hidden by the hidden attribute stays hidden (a display rule below
+   would otherwise override it) */
+.col-title [hidden], .world__play[hidden], .col-talisman-btn[hidden], .col-caption[hidden] { display: none !important; }
+
 /* the prompt where the scenery starts */
 .world__play {
   position: absolute; z-index: 2; left: 50%; bottom: 18%; translate: -50% 0;

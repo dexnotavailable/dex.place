@@ -70,11 +70,14 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
     cleanups.push(() => target.removeEventListener(name, fn, options));
   };
   const focus = (): void => {
-    if (paused) return;
+    // asked while paused (the "continue" fall ends as the world comes into view) or still
+    // loading: kept, and done on resume or once playable
     waitingFocus = true;
-    if (!playable) return;
-    win()?.document.getElementById("view")?.focus({ preventScroll: true });
-    waitingFocus = false;
+    if (paused || !playable) return;
+    const view = win()?.document.getElementById("view");
+    if (!view) return;
+    view.focus({ preventScroll: true });
+    if (win()?.document.activeElement === view) waitingFocus = false;
   };
   const configure = (): void => {
     const child = win();
@@ -185,7 +188,7 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
     title: (text) => runtime()?.game.titles.show(text, true),
     holding: () => runtime()?.game.holding ?? true,
     pause: () => { paused = true; waitingFocus = false; sync(); },
-    resume: () => { paused = false; last = performance.now(); sync(); },
+    resume: () => { paused = false; last = performance.now(); sync(); if (waitingFocus) focus(); },
     destroy: () => {
       if (destroyed) return;
       destroyed = true;

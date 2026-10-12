@@ -89,6 +89,11 @@ async function boot(): Promise<void> {
     start: q.get("at") ?? "catch", link: q.has("at") || q.has("x") || q.has("hold"), noOpening: q.has("skip"),
     hold: q.has("hold"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual"),
   });
+  // a mouse press on the world gives it the keyboard (the input's own handler cancels the
+  // browser's default, which would otherwise do that)
+  canvas.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && document.activeElement !== canvas) canvas.focus({ preventScroll: true });
+  }, { capture: true });
   if (embedded) {
     // Page Up and Page Down scroll the page column (to the website and back), as the wheel does
     window.addEventListener("keydown", (e) => {
