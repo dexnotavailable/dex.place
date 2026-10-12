@@ -231,6 +231,16 @@ export class SpriteRenderer {
   }
 
   /** A painted frame of a sprite at a level (painted now if the budget allows, else null). */
+  private bounds = new Map<SpriteDef, { p: Record<string, unknown>; b: [number, number, number, number] }>();
+  /** A painted sprite's bounds in level-1 px around its anchor (kept until its params change). */
+  private boundsOf(def: SpriteDef): [number, number, number, number] {
+    const have = this.bounds.get(def);
+    if (have && have.p === def.p) return have.b;
+    const b = painter(def.kind).bounds({ ...def.p, frame: 0 });
+    this.bounds.set(def, { p: def.p, b });
+    return b;
+  }
+
   private frame(def: SpriteDef, f: number, level: number, force: boolean): Frame | null {
     const key = `${def.id}|${f}|${level}`;
     const have = this.frames.get(key);
@@ -337,7 +347,17 @@ export class SpriteRenderer {
         const pw = Number(def.p.w) * xf.g, ph = Number(def.p.h) * xf.g;
         if (sx + pw < -cam.W * 0.5 || sx - pw > cam.W * 1.5 || sy < -cam.H * 0.5 || sy - ph > cam.H * 1.5) continue;
         fr = this.frame(def, pos.frame, level, force);
-      } else fr = this.frame(def, pos.frame, level, force) ?? this.frame(def, 0, level, true);
+      } else {
+        // a painted sprite well off the frame is not painted at all (its painter's bounds, a
+        // quarter-frame margin): many small animated sprites cost nothing until they come near
+        const [bx0, by0, bx1, by1] = this.boundsOf(def);
+        const g = xf.g, ax = pos.x * rate * g + xf.offX, ay = pos.y * rate * g + xf.offY;
+        const sx0 = pos.flip ? ax - bx1 * g : ax + bx0 * g, sx1 = pos.flip ? ax - bx0 * g : ax + bx1 * g;
+        const mx = cam.W * 0.25, my = cam.H * 0.25;
+        if (sx1 < -mx || sx0 > cam.W + mx) continue;
+        if (mirror === null && (ay + by1 * g < -my || ay + by0 * g > cam.H + my)) continue;
+        fr = this.frame(def, pos.frame, level, force) ?? this.frame(def, 0, level, true);
+      }
       if (!fr) continue;
       const k = xf.g / level;
       const ax = pos.x * rate * xf.g + xf.offX, ay = pos.y * rate * xf.g + xf.offY;
