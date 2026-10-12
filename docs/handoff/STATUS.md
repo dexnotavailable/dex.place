@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-12T05:58:46.442Z (12/10/2026, 12:58:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-12T06:58:46.617Z (12/10/2026, 13:58:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,18 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-_No workflow activity in the last 72 hours._
+### wf_674119c5-6eb — last activity 12 min ago
+5 agents: 4 done, 1 running or stopped mid-way, 0 failed.
+
+- **writer:v1** (done): I've written both files into `D:\Dex\Temp\dexplace-canon-20261012\gdk\v1\`: `GDK.md`, the full design kit in the brief's section order 0 to 10 plus appendices A to E, and `MAP.svg`. The map is valid XML. I rendered it to PNG with headless Edge and checked it by eye: the です shape reads at full size, 
+- **critic:v1** (done): verdict revise · blocking: [object Object] | [object Object] | [object Object] | [object Object] | [object Object] | [object Object] · This is a strong draft, but it needs a revision round before Dex sees it. The です map really does read: rendered with labels stripped, the strokes plus the two isles say です even at thumbnail size. Walking the main route writes the word in stroke order. The hidden truth (bouts are "finishings", the champions want to lose) turns the locked easy arena into the heart of the story. The core is fast: the hall at 1:00 and a 
+- **writer:v2** (done): GDK v2 is written. It fixes all six blocking issues and keeps everything the critic listed as strongest. Both new files parse as valid XML/Markdown checks passed, and I rendered the map to PNG and looked at it: the glyph and labels read.
+
+Files:
+- `D:\Dex\Temp\dexplace-canon-20261012\gdk\v2\GDK.md` 
+- **critic:v2** (done): verdict revise · blocking: [object Object] | [object Object] | [object Object] | [object Object] · Close to ready. All six v1 blockers are actually fixed: private marking with a working public map generator, chained keys, terrain grammar, real early forks, a dex.place SFW build, and the website scroll order with big titles. MAP.svg renders and reads as です when seen whole, and the low ground is open-air. Four small blockers remain, each a quick edit. E and F are swapped against the locked controls. The talisman doe
+- **writer:v3** (running)
+
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
 
