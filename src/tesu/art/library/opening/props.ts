@@ -153,7 +153,7 @@ export interface BarrelP {
 export const barrel = definePainter<BarrelP>("op.barrel", {
   bounds(p) {
     const hh = p.h ?? 40;
-    return [-hh * 0.5, -hh - 10, hh * 0.5, 3];
+    return [-hh * 0.5, -hh * 1.3 - 6, hh * 0.5, 3];
   },
   paint(c, p) {
     const hh = p.h ?? 40, seed = c.seed, d = c.d;

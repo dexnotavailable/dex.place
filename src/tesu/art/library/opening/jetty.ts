@@ -237,3 +237,43 @@ export const post = definePainter<PostP>("op.post", {
     }
   },
 });
+
+export interface PlankP {
+  /** Length, px; anchor at the plank's top-left. */
+  w: number;
+  t?: number;
+}
+
+/** Pilgrims' Leap: one long weathered plank jutting over the drop, lashed down, worn on top. */
+export const plank = definePainter<PlankP>("op.plank", {
+  bounds(p) {
+    return [-4, -2, p.w + 6, (p.t ?? 8) + 16];
+  },
+  paint(c, p) {
+    const b = c.buf, d = c.d, seed = c.seed;
+    const th = p.t ?? 8;
+    const XE = Math.round(c.X(p.w));
+    const X0 = Math.max(b.ox, Math.round(c.X(0))), X1 = Math.min(b.x1, XE);
+    for (let x = X0; x < X1; x++) {
+      const lx = c.lx(x + 0.5);
+      // it sags a little toward its free end
+      const sag = Math.pow(Math.max(0, lx / p.w - 0.4) / 0.6, 2) * 2;
+      const Y0 = Math.round(c.Y(sag)), Y1 = Math.round(c.Y(sag + th));
+      for (let y = Math.max(Y0, b.oy); y < Math.min(Y1, b.y1); y++) {
+        const v = (y - Y0 + 0.5) / Math.max(1, Y1 - Y0);
+        let t = v < 0.15 ? 0.05 : v < 0.6 ? 0.3 : 0.55;
+        if (d >= 0.5 && vnoise(lx / 18, v * 4, seed) > 0.7) t += 0.12;
+        if (x === XE - 1 || y === Y1 - 1) t = 0.92;
+        b.set(x, y, wood(x, y, clamp(t, 0, 1)));
+      }
+    }
+    // rope lashings at its root, and a knot hanging from the outer one
+    for (const fx of [0.08, 0.2]) {
+      const lx = p.w * fx;
+      for (let y = Math.round(c.Y(-1)); y < Math.round(c.Y(th + 3)); y++) {
+        for (let x = Math.round(c.X(lx - 2)); x < Math.round(c.X(lx + 2)); x++) b.set(x, y, ((x + y) & 1) ? P.earth[1]! : P.earth[3]!);
+      }
+    }
+    for (let s = 0; s < 10; s += 0.5 / d) b.set(Math.round(c.X(p.w * 0.2 + 1 + s * 0.2)), Math.round(c.Y(th + 3 + s)), P.earth[2]!);
+  },
+});

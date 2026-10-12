@@ -298,7 +298,7 @@ export interface TowerP {
 export const tower = definePainter<TowerP>("op.tower", {
   bounds(p) {
     const w = p.w ?? 72;
-    return [-w - 60, -p.h - 30, w + 60, 6];
+    return [-w - 60, -p.h - 70, w + 60, 6];
   },
   paint(c, p) {
     const w = p.w ?? 72, half = w / 2, seed = c.seed;

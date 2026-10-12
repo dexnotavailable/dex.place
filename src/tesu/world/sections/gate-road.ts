@@ -60,7 +60,7 @@ export function gateRoad(b: WorldBuilder): void {
   band(roadA, JETTY_X1 - h(0.2), leap0);
   band(roadC, leap1, HALL_DOOR_X + h(0.4));
   // the leap's plank (its prayer-flag pole comes with the terrace furniture)
-  b.piece("play", "plank", leap0 - h(0.3), yL, { w: leap1 - leap0 + h(0.6) }, { z: 2 });
+  b.piece("play", "op.plank", leap0 - h(0.3), yL, { w: leap1 - leap0 + h(0.6) }, { z: 2 });
   // Pilgrims' Leap: a bamboo pole lashed at the plank's end, prayer flags strung back to the rail
   b.sprite({ id: "leap-flags", plane: "play", kind: "op.flags", x: leap1 + h(0.15), y: yL, p: { h: 150, dx: -h(1.7), dy: 92, n: 8 }, frames: 4, fps: 6 });
 

@@ -11,6 +11,7 @@ import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { clamp, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { clump } from "./kit.ts";
+import { needlePad } from "./flora.ts";
 
 export interface IsletP {
   /** Rock width and height above the water, px (0 for none: pilings or reeds only). */
@@ -69,9 +70,7 @@ export function pine(c: PaintCtx, x: number, y: number, H: number, dir: number, 
   // the crown pad at the top, then the side pads: flat layered needle clouds lit from above
   const [tx, ty] = pts[12]!;
   pads.push([tx, ty, H * 0.2]);
-  for (const [px, py, pr] of pads) {
-    clump(c, px, py - pr * 0.15, pr * 1.25, P.pine.slice(0, 4), P.pine.slice(3), 0.3, seed + Math.round(px * 3), 0.42);
-  }
+  for (const [px, py, pr] of pads) needlePad(c, px, py - pr * 0.1, pr * 3, pr * 0.85, seed + Math.round(px * 3));
 }
 
 /** A broadleaf tree: a short trunk under a crown of heaped clumps. */
@@ -149,7 +148,7 @@ function torii(c: PaintCtx, x: number, y: number, H: number): void {
 export const islet = definePainter<IsletP>("op.islet", {
   bounds(p) {
     const tall = (p.on ?? []).some((k) => k === "pine" || k === "tree" || k === "torii") ? p.h + 140 : p.h + 60;
-    return [-p.w / 2 - 90, -tall, p.w / 2 + 90, 6];
+    return [-p.w * 0.9 - 130, -tall, p.w / 2 + 120, 6];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;

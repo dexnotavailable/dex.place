@@ -193,7 +193,8 @@ function roof(c: PaintCtx, x0: number, x1: number, y: number, rh: number, seed: 
 
 export const gate = definePainter<GateP>("op.gate", {
   bounds(p) {
-    const over = p.kind === "paifang" ? 80 : 56;
+    const pw = Math.max(p.pw ?? 0, p.h * 0.056, 20);
+    const over = p.kind === "paifang" ? 80 : pw * 2.4 + 12;
     return [-p.span / 2 - over, -p.h - (p.kind === "paifang" ? 70 : 26), p.span / 2 + over, 8];
   },
   paint(c, p) {

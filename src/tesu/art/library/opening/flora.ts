@@ -54,7 +54,7 @@ export interface PineP {
 /** A great cliff pine: a heavy twisting trunk, arms reaching out level, layered pads of needles. */
 export const pine = definePainter<PineP>("op.pine", {
   bounds(p) {
-    return [-p.h * 1.1, -p.h * 1.08, p.h * 1.1, 14];
+    return [-p.h * 1.35, -p.h * 1.12, p.h * 1.35, p.h * 0.1 + 6];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
@@ -192,7 +192,7 @@ export interface TerraceP {
 /** The viewing terrace: a paved platform on a cut-stone retaining wall built out over the rock. */
 export const terrace = definePainter<TerraceP>("op.terrace", {
   bounds(p) {
-    return [-30, -4, p.w + 30, p.depth + 30];
+    return [-30, -4, p.w + 30, p.depth + 46];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;

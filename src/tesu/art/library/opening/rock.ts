@@ -433,7 +433,7 @@ function paintPlants(c: PaintCtx, B: Built): void {
  * top, smaller ones lower and in front, darker toward the bottom), with a few strands of foliage
  * hanging from its underside over the rock below.
  */
-export function bush(c: PaintCtx, x: number, y: number, r: number, seed: number): void {
+export function bush(c: PaintCtx, x: number, y: number, r: number, seed: number, strands = true): void {
   const d = c.d;
   const n = 3 + Math.floor(hash1(1, seed) * 4);
   const parts: [number, number, number, number][] = [];
@@ -443,9 +443,9 @@ export function bush(c: PaintCtx, x: number, y: number, r: number, seed: number)
     parts.push([x + Math.sin(a) * r * 0.9, y - r * 0.35 + Math.abs(Math.cos(a)) * -r * 0.3 + (i / n) * r * 0.5, rr, i]);
   }
   // hanging foliage first (behind the clumps)
-  if (d >= 0.25) {
-    const strands = Math.floor(r * 0.6 * hash1(9, seed));
-    for (let k = 0; k < strands; k++) {
+  if (d >= 0.25 && strands) {
+    const nStrands = Math.floor(r * 0.6 * hash1(9, seed));
+    for (let k = 0; k < nStrands; k++) {
       const sx = x + (hash1(k + 20, seed) - 0.5) * r * 1.6;
       const len = r * (0.8 + 2.2 * hash1(k + 30, seed));
       for (let s = 0; s < len; s += 1 / d) {

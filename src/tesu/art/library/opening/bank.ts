@@ -11,8 +11,9 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { clamp, fbm1, hash, hash1, rng, tone, vnoise1 } from "../../raster.ts";
+import { clamp, fbm1, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { cached, clump } from "./kit.ts";
+import { bush } from "./rock.ts";
 
 export interface BankP {
   /** The right and left ends round off and fall away over this many px (default 0: straight). */
@@ -28,7 +29,7 @@ export interface BankP {
 }
 
 interface Bit {
-  kind: "stone" | "reed" | "tuft" | "shrub";
+  kind: "stone" | "reed" | "tuft" | "shrub" | "bush";
   x: number;
   /** Size (stone radius, reed height, tuft size, shrub radius). */
   s: number;
@@ -39,8 +40,9 @@ interface Bit {
 function topOf(p: BankP, x: number, seed: number): number {
   // low hummocks everywhere, and every so often a big grassy mound with shrubs on it
   const hum = fbm1(x / 70, seed + 3, 3);
-  const mound = Math.pow(Math.max(0, vnoise1(x / 420, seed + 6) - 0.52) / 0.48, 1.6) * Math.pow(Math.max(0, Math.sin((x / 420) * Math.PI * 2 + seed)), 0.6);
-  let t = 3 + Math.max(0, hum - 0.35) * 30 + mound * 95 + (vnoise1(x / 9, seed + 4) - 0.5) * 3;
+  // a rise where the bank is rich (bushes heap on it), never a smooth dome: noisy at every scale
+  const rise = Math.max(0, vnoise1(x / 380, seed + 6) - 0.55) / 0.45;
+  let t = 3 + Math.max(0, hum - 0.35) * 26 + rise * (22 + 30 * fbm1(x / 40, seed + 7, 3)) + (vnoise1(x / 9, seed + 4) - 0.5) * 3 + (vnoise1(x / 3.5, seed + 8) - 0.5) * 2;
   if (p.cornerR) {
     const k = clamp((x - (p.w - p.cornerR)) / p.cornerR, 0, 1);
     t += k * k * 90 * (0.8 + 0.4 * vnoise1(x / 23, seed + 5));
@@ -58,8 +60,8 @@ function bitsOf(p: BankP, seed: number): Bit[] {
     for (let x = 4; x < p.w - 4; x += 3 + r() * 7) {
       const zone = vnoise1(x / 160, seed + 13);
       const k = r();
-      const high = topOf(p, x, seed) > 30;
-      if (high && k < 0.3) { out.push({ kind: "shrub", x, s: 10 + r() * 18, seed: Math.floor(r() * 1e6) }); continue; }
+      const high = topOf(p, x, seed) > 18;
+      if (high && k < 0.55) { out.push({ kind: "bush", x, s: 9 + r() * 20 * (0.5 + vnoise1(x / 380, seed + 6)), seed: Math.floor(r() * 1e6) }); continue; }
       if (zone > 1 - reeds * 0.9 && k < 0.85 && !high) {
         // a reed bed: its reeds are sprites (they sway); the plate keeps the odd stone and tuft
         if (k < 0.06) out.push({ kind: "stone", x, s: 5 + r() * 8, seed: Math.floor(r() * 1e6) });
@@ -132,12 +134,13 @@ function paintBit(c: PaintCtx, p: BankP, bt: Bit, seed: number): void {
     }
     return;
   }
+  if (bt.kind === "bush") { bush(c, bt.x, base + bt.s * 0.45, bt.s, bt.seed, false); return; }
   clump(c, bt.x, base - bt.s * 0.4, bt.s, P.moss.slice(2, 7), P.pine.slice(3), 0.42, bt.seed, 0.75);
 }
 
 export const bank = definePainter<BankP>("op.bank", {
   bounds(p) {
-    return [-12, -120 - (p.cornerR ? 110 : 0), p.w + 12, p.h + 2];
+    return [-12, -120 - (p.cornerR ? 110 : 0), p.w + 12, p.h + 34];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
@@ -171,18 +174,18 @@ export const bank = definePainter<BankP>("op.bank", {
           t = 0.45 + (below / grassH) * 0.25 + (blade && d >= 0.5 ? -0.12 : 0);
         } else {
           ramp = P.pine;
-          // leaf clusters lit on their upper left, deeper is darker
-          const cx = Math.floor(lx / 7), cy = Math.floor((ly + (cx % 2) * 3.5) / 6);
-          const fx = lx / 7 - cx - 0.5, fy = (ly + (cx % 2) * 3.5) / 6 - cy - 0.5;
-          const lit = -0.62 * fx - 0.78 * fy;
-          t = 0.3 + clamp((below - grassH) / 120, 0, 1) * 0.45 - lit * 0.3 + (hash(cx, cy, seed + 9) - 0.5) * 0.2;
-          if (d >= 0.5 && fx * fx + fy * fy > 0.2 && lit < -0.1) t += 0.18;
-          // big soft masses of shrub and dark hollows between them, so it is never a flat slab
-          t += (fbm1(lx / 60 + ly / 45, seed + 17, 3) - 0.5) * 0.5;
+          // foliage: masses at two scales, each lit on its upper left (the light falls on the
+          // bumps of the noise field), deeper is darker; never a grid
+          const n0 = vnoise(lx / 26, ly / 22, seed + 9);
+          const nA = vnoise(lx / 7, ly / 6, seed + 10), nB = vnoise((lx + 1.2) / 7, (ly + 1.5) / 6, seed + 10);
+          const lit = nB - nA; // brighter where the field rises toward the upper left
+          t = 0.32 + clamp((below - grassH) / 120, 0, 1) * 0.42 + (0.5 - n0) * 0.35 - lit * 1.4;
+          if (d >= 0.5 && hash(x >> 1, y >> 1, seed + 11) < 0.06) t -= 0.18;
+          t += (fbm1(lx / 70 + ly / 50, seed + 17, 3) - 0.5) * 0.4;
           if (ly > foot - 6) t += 0.25;
         }
         // a wet dark lip where the water laps it
-        if (ly > -3 && ly < 2 && below > 2) { ramp = P.pine; t = 0.95; }
+        if (ly > -3 && ly < 2 && below > 2 && top > -6) { ramp = P.pine; t = 0.95; }
         b.set(x, y, tone(ramp, clamp(t, 0, 1), x, y, 0.3));
       }
     }
