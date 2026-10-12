@@ -46,7 +46,7 @@ export function shiraito(b: WorldBuilder): void {
     out.push(x1, yOn(DIAG, x1) + dy);
     return out;
   };
-  const ledge = (x0: number, x1: number, thick: number, taper0: boolean, taper1: boolean): void => {
+  const ledge = (x0: number, x1: number, thick: number, taper0: boolean, taper1: boolean, opening = false): void => {
     const top = along(x0, x1);
     const bottom: number[] = [];
     for (let x = x1; x >= x0; x -= h(1.1)) {
@@ -57,10 +57,19 @@ export function shiraito(b: WorldBuilder): void {
     }
     bottom.push(x0, yOn(DIAG, x0) + (taper0 ? h(0.5) : thick));
     // (drawn over the foot of the Gate Road pillar that stands on it: she walks in front of it)
-    b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", flat: true }, { z: 1 });
+    if (opening) {
+      // the upper ledge shows in the opening's gates and widest frames under the palace: it is
+      // the opening's rock there, sinking into the valley mist as the rest of the opening does.
+      // At play zoom (her own frames on the path) the same rock, same seed, goes on under the
+      // mist, so the ledge she walks on is always drawn.
+      const rock = { top, bottom, cap: "path", capH: 8, rough: 10, teeth: 0.4, veg: 0.6, shade: 0.2 };
+      b.piece("play", "op.rock", 0, 0, { ...rock, fadeY: h(72), fadeH: h(9) }, { z: 1, seed: 31337 });
+      b.piece("play", "op.rock", 0, 0, rock, { z: 0, seed: 31337, minLevel: 0.9 });
+    } else b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", flat: true }, { z: 1 });
   };
+  // (the lower ledge, by the village, is never in the opening's frames: a flat stand-in)
   ledge(FOOT_X - h(0.4), h(110), h(3.4), false, true);
-  ledge(h(148), PATH_TOP_X + h(0.4), h(3.6), true, false);
+  ledge(h(148), PATH_TOP_X + h(0.4), h(3.6), true, false, true);
   b.piece("play", "boardwalk", 0, 0, { pts: along(h(108), h(150), -1) }, { z: 2 });
 
   // --- the massif's lower body: its east face from under the valley mist down to Hoài Phố's
