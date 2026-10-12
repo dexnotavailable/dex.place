@@ -42,7 +42,11 @@ export function court(b: WorldBuilder): void {
   b.walk([STAIRWELL_X1, Y, COURT_X1, Y], { surface: "stone", depth: h(0.6), name: "prize-court-tip" });
   // the hall's east wall and the rail at the tip: hard edges with reasons
   b.wall({ x: COURT_X0 + h(0.15), y0: Y - h(6), y1: Y + h(0.1), reason: "wall" });
-  b.wall({ x: COURT_X1 - h(0.2), y0: Y - h(6), y1: Y + h(0.1), reason: "rail" });
+  // the Prow Leap at the tip (GDK 3.5): a plank with prayer flags out past the rail; off its
+  // end is a long fall with a splash into Hoài Phố's lake (sections/hoaipho.ts)
+  b.walk([COURT_X1 - h(0.1), Y, COURT_X1 + h(1.4), Y], { surface: "wood", oneWay: true, name: "prow-leap" });
+  b.piece("play", "plank", COURT_X1 - h(0.2), Y, { w: h(1.7) }, { z: 3 });
+  b.piece("play", "banners", COURT_X1 + h(0.2), Y - h(2.6), { w: h(1), drop: h(0.9), n: 2 }, { z: 3 });
 
   // the gate back into the hall, the board, Bao's gong tower
   b.piece("play", "courtgate", COURT_X0 + h(0.75), Y, { w: 124, h: 300 }, { z: 3 });
@@ -66,7 +70,7 @@ export function court(b: WorldBuilder): void {
   b.prop({ id: "court-lantern", kind: "paperlantern", p: { r: 15 }, x: h(185.9) + 22, y: Y - 190, cls: "cosmetic", material: "paper", on: "court-post", hangs: true, pieces: 3 });
   // at the tip: a bench and the rail, the land falling away below
   b.piece("play", "bench", h(190.9), Y, { w: 96 }, { z: 4 });
-  b.piece("front", "rail", 0, 0, { pts: [h(191.3), Y + 2, COURT_X1 + h(0.1), Y + 2], h: 50, every: 46 }, { z: 2 });
+  b.piece("front", "rail", 0, 0, { pts: [h(191.2), Y + 2, COURT_X1 - h(0.3), Y + 2], h: 50, every: 46 }, { z: 2 });
 
   // the paper spectators in tiers behind the court (P3); their base runs down out of sight
   b.sprite({ id: "stands", plane: "back", kind: "stands", x: COURT_MID, y: Y, p: { w: 900, rows: 3 }, frames: 4, frame: 0, reflect: false });

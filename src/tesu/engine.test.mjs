@@ -219,3 +219,29 @@ test("Shiraito joins the court both ways: the Prow Stair from the path's top to 
   for (let i = 0; i < 2000 && body.x < tip.pts[0] + 40; i++) { c.move(body, 3, 0); c.move(body, 0, 2); }
   assert.ok(Math.abs(body.y - tip.pts[1]) < 2, `on the court floor at the top (${(body.x / H).toFixed(1)} H, ${(body.y / H).toFixed(2)} H)`);
 });
+
+test("Hoài Phố: the drops land on its ground, the pool's steps lead out, the lift opens from below", () => {
+  const w = buildWorld();
+  const c = new Collision(w.walks, w.walls);
+  const quay = w.walks.find((k) => k.name === "hoai-pho");
+  const pool = w.walks.find((k) => k.name === "splash-pool");
+  const village = w.walks.find((k) => k.name === "shiraito-village");
+  // stepping off the village's west lip falls onto the West Shore
+  const lipX = village.pts[0] - 0.6 * H;
+  const g1 = c.groundBelow(lipX, village.pts[1], false);
+  assert.ok(g1 && g1.walk === quay, `the West Shore under the village's lip (${g1?.walk.name})`);
+  // off the end of the Prow Leap falls into the splash pool
+  const leap = w.walks.find((k) => k.name === "prow-leap");
+  const g2 = c.groundBelow(leap.pts[leap.pts.length - 2] + 0.4 * H, leap.pts[1] + H, false);
+  assert.ok(g2 && g2.walk === pool, `the splash pool under the Prow Leap (${g2?.walk.name})`);
+  // out of the pool by its west steps, walking left
+  const body = { x: pool.pts[0] + 0.5 * H, y: pool.pts[1], w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
+  c.move(body, 0, 1);
+  for (let i = 0; i < 400 && body.x > 186 * H; i++) { c.move(body, -3, 0); c.move(body, 0, 2); }
+  assert.ok(Math.abs(body.y - quay.pts[1]) < 2, `up the steps onto the quay (${(body.x / H).toFixed(1)} H, ${(body.y / H).toFixed(2)} H)`);
+  // the lift: the lower station opens it, the upper one needs it
+  const low = w.usables.find((u) => u.id === "lift-low"), top = w.usables.find((u) => u.id === "lift-top");
+  assert.equal(low.action.opens, "lift:waterwheel");
+  assert.equal(top.action.needs, "lift:waterwheel");
+  assert.ok(w.spawns.some((s) => s.id === "lift-top") && w.spawns.some((s) => s.id === "lift-low"));
+});

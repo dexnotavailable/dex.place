@@ -134,6 +134,7 @@ export class TesuGame {
   private lastSafe: [number, number] = [0, 0];
   private fallFrom: number | null = null;
   cloudDrop = false;
+  private cloudSpeed = 0;
   private levels = new Map<PlaneId, number[]>();
   private lastLevel = new Map<PlaneId, number>();
 
@@ -442,13 +443,22 @@ export class TesuGame {
     this.vfx.update();
     this.input.tick++;
     // falls: no damage anywhere; a long one is a cloud drop
+    // a cloud drop speeds up past her ordinary falling speed (the Prow Leap is a 7 s fall)
+    if (!b.grounded && this.cloudDrop && !this.tug) {
+      this.cloudSpeed = Math.min(this.cloudSpeed + 0.5, 26);
+      this.collision.move(b, 0, this.cloudSpeed);
+    }
     if (b.grounded) {
       if (this.fallFrom !== null && b.y - this.fallFrom > PHYSICS.cloudDrop * H) {
-        this.vfx.spawn("dust.land", { x: b.x, y: b.y, facing: 1 });
+        const wet = this.collision.standingOn?.surface === "water";
+        this.vfx.spawn(wet ? "ring.wide" : "dust.land", { x: b.x, y: b.y, facing: 1 });
+        if (wet) this.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: 1 });
+        this.feel.sound(wet ? "splash" : "land", 1);
         this.camera.shake(3, 10);
       }
       this.fallFrom = null;
       this.cloudDrop = false;
+      this.cloudSpeed = 0;
       if (!this.collision.onOneWay(b) || this.collision.standingOn) this.lastSafe = [b.x, b.y];
     } else {
       if (wasGrounded || this.fallFrom === null) this.fallFrom = this.fallFrom ?? b.y;
@@ -530,6 +540,12 @@ export class TesuGame {
     // the board waits while a bout is on; leaving through a door ends the bout
     if (this.court.busy && u.action.kind === "panel" && u.action.panel === "board") return;
     if (u.action.kind === "door") {
+      const a = u.action;
+      if (a.needs && !this.flags.has(a.needs)) {
+        this.onUse({ ...u, action: { kind: "say", text: a.closed ?? "It does not open from this side." } });
+        return;
+      }
+      if (a.opens) this.setFlag(a.opens, true);
       this.court.cancel();
       const id = u.action.to;
       const to = this.world.spawns.find((sp) => sp.id === id);
@@ -693,13 +709,14 @@ export class TesuGame {
   }
 
   private activeWater(cam: CamState): Water | null {
-    // the water whose near extent is closest to the camera's x
+    // the water nearest the camera: its near extent in x, and its height (Kagami's lake and
+    // Hoài Phố's harbour lie one above the other)
     let best: Water | null = null, d = Infinity;
     for (const w of this.world.waters) {
       const x0 = Math.min(w.x0, w.fx0 ?? w.x0), x1 = Math.max(w.x1, w.fx1 ?? w.x1);
       const span = cam.W / Math.min(1, cam.zoom) / 0.06;
       if (cam.cx + span < x0 || cam.cx - span > x1) continue;
-      const dd = cam.cx < w.x0 ? w.x0 - cam.cx : cam.cx > w.x1 ? cam.cx - w.x1 : 0;
+      const dd = (cam.cx < w.x0 ? w.x0 - cam.cx : cam.cx > w.x1 ? cam.cx - w.x1 : 0) + Math.abs(cam.cy - w.y);
       if (dd < d) { d = dd; best = w; }
     }
     return best;

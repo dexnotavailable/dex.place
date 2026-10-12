@@ -240,7 +240,13 @@ export interface Usable {
   /** What the prompt says (a word, for screen readers and the caption). */
   label: string;
   action:
-    | { kind: "door"; to: string; title?: string }
+    | {
+        kind: "door"; to: string; title?: string;
+        /** A shortcut that opens from one side (GDK B): the flag it needs, what it says until then. */
+        needs?: string; closed?: string;
+        /** Using it sets this flag (the lift's lower station opens the lift for good). */
+        opens?: string;
+      }
     | { kind: "panel"; panel: string; arg?: string }
     | { kind: "say"; text: string };
 }

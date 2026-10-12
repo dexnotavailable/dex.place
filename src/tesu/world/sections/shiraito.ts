@@ -21,7 +21,7 @@ import { FLOOR_Y } from "./palace.ts";
 /** The diagonal's top, where the Prow Stair begins, and its foot, where the village is. */
 export const PATH_TOP_X = h(170);
 export const FOOT_X = h(98);
-export const VILLAGE_X0 = h(79.7);
+export const VILLAGE_X0 = h(82.4);
 
 export function shiraito(b: WorldBuilder): void {
   // --- the Prow Stair: from the path's top up through the palace cliff to the court's floor
@@ -60,15 +60,17 @@ export function shiraito(b: WorldBuilder): void {
   // --- the village at the foot: a ledge against the massif's face, over the terraces
   const footY = yOn(DIAG, FOOT_X);
   b.walk([VILLAGE_X0, footY, FOOT_X, footY], { surface: "earth", depth: h(2.4), name: "shiraito-village" });
-  b.wall({ x: VILLAGE_X0 - h(0.1), y0: footY - h(6), y1: footY + h(0.1), reason: "cliff", from: "right" });
+  // its west end is an open lip over the gap by the massif's face: the mill race pours off it,
+  // and stepping off after it is a cloud drop onto Hoài Phố's West Shore (sections/hoaipho.ts)
+  b.piece("play", "chute", VILLAGE_X0 - h(0.9), footY - h(0.2), { w: 70, h: h(69) }, { z: 1 });
   b.piece("play", "mass", 0, 0, {
-    top: [VILLAGE_X0 - h(1.2), footY, FOOT_X + h(0.6), footY],
-    bottom: [FOOT_X + h(0.9), footY + h(1.8), FOOT_X - h(2), footY + h(3.2), h(90), footY + h(4.4), h(84), footY + h(6.4), VILLAGE_X0 - h(1.4), footY + h(9)],
+    top: [VILLAGE_X0 - h(0.1), footY, FOOT_X + h(0.6), footY],
+    bottom: [FOOT_X + h(0.9), footY + h(1.8), FOOT_X - h(2), footY + h(3.2), h(90), footY + h(4.4), h(85), footY + h(5.4), VILLAGE_X0 + h(0.6), footY + h(4.4), VILLAGE_X0 - h(0.1), footY + h(1.2)],
     rock: "karst", flat: true,
   }, { z: -1 });
   // the water mill: its house and the wheel turning in the race beside it
-  b.piece("play", "hut", h(85.4), footY, { w: 170, h: 150 }, { z: 2 });
-  b.sprite({ id: "shiraito-wheel", plane: "play", kind: "millwheel", x: h(82.9), y: footY - h(0.9), p: { r: 82 }, frames: 8, fps: 3 });
+  b.piece("play", "hut", h(85.9), footY, { w: 170, h: 150 }, { z: 2 });
+  b.sprite({ id: "shiraito-wheel", plane: "play", kind: "millwheel", x: VILLAGE_X0 + h(0.6), y: footY - h(0.9), p: { r: 82 }, frames: 8, fps: 3 });
   b.piece("play", "rack", h(88.2), footY, { w: 184 }, { z: 3 });
   b.piece("play", "hut", h(93.2), footY, { w: 150, h: 130 }, { z: 2 });
   b.usable({ id: "old-inn", x0: h(92.4), y0: footY - h(1.5), x1: h(94.0), y1: footY, label: "the old inn", action: { kind: "say", text: "An old inn, its door boarded up. The planks look newer than the door." } });

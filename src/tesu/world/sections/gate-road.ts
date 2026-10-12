@@ -77,8 +77,7 @@ export function gateRoad(b: WorldBuilder): void {
   b.walk(diag, { surface: "earth", depth: h(4), name: "shiraito" });
   // (its rock ledges and plank walks are Shiraito's: sections/shiraito.ts)
   // its top end meets the Prow Stair, its foot Shiraito's village (sections/shiraito.ts)
-  // below the diagonal, until the harbour exists, is a fall into mist: the talisman tugs her back
-  b.void({ x0: h(60), x1: h(200), y: h(136), y1: h(240) });
+  // (below the diagonal is Hoài Phố: sections/hoaipho.ts)
 
   // behind the band: Shiraito's great wall, its falls pouring off the road's lip (P3)
   const r3 = 0.62;

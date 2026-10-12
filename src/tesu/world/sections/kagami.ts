@@ -101,7 +101,8 @@ export function kagami(b: WorldBuilder): void {
   bg(b, "sky", 700, "isle", { w: 110, h: 96, tower: "drum" }, LAKE_Y - 236 / PLANES.sky.rate, 2);
 
   // every background plane has ground below its line, so the land never shows a gap
-  bg(b, "far", -2600, "plain", { w: 9000, foot: 700, ramp: "range", amp: 4 }, LAKE_Y, -5);
+  // (its foot stops short of the harbour far below, so from Hoài Phố it never shows as a band)
+  bg(b, "far", -2600, "plain", { w: 9000, foot: 560, ramp: "range", amp: 4 }, LAKE_Y, -5);
   bg(b, "mid", -4000, "plain", { w: 21000, foot: 560, ramp: "pine", amp: 8 }, LAKE_Y, -5);
   bg(b, "back", -6000, "plain", { w: 40000, foot: 520, ramp: "pine", amp: 10 }, LAKE_Y, -5);
 

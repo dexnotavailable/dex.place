@@ -172,7 +172,8 @@ export class Camera {
     const dz = 0.55 * H;
     const dy = ty - this.cy;
     if (f.fixY !== null) this.cy += dy * 0.05;
-    else if (Math.abs(dy) > dz) this.cy += (dy - Math.sign(dy) * dz) * 0.12;
+    // (far behind, in a long drop, it catches up harder so she never leaves the frame)
+    else if (Math.abs(dy) > dz) this.cy += (dy - Math.sign(dy) * dz) * (Math.abs(dy) > 3 * H ? 0.3 : 0.12);
     else this.cy += dy * 0.01;
     // shake and punch
     if (this.shakeT > 0) {
