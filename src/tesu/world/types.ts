@@ -278,14 +278,23 @@ export interface Usable {
  */
 export interface RideDef {
   id: string;
-  /** The cable, world px, from the low station to the high one (the car hangs from it). */
+  /** The cable (or the flume's bed), world px, from the first station to the second (the car hangs from it). */
   pts: number[];
   /** Seconds from station to station. */
   secs: number;
-  /** The two cars' sprite ids (each is moved along the cable; `<id>:front` too if defined). */
-  cars: [string, string];
-  /** From the cable down to the car's floor, px (where she stands). */
+  /** The cars' sprite ids (each is moved along the cable; `<id>:front` too if defined): two pass each other, one waits, none for a flume. */
+  cars: string[];
+  /** From the cable down to the car's floor, px (where she stands); 0 for a flume she rides herself. */
   hang: number;
+  /** Rides only from its first station to its second (a flume, a kite); its car waits at the first again after. */
+  oneWay?: boolean;
+  /**
+   * A slide (the bamboo flume): the speed follows the slope (H a second: min on the level, plus
+   * gain for each unit of drop over run), building up and easing off, the whole ride still `secs`.
+   */
+  slide?: { min: number; gain: number };
+  /** On arriving at the second station: a splash (into the basin at the flume's foot). */
+  splash?: boolean;
   /** On arriving at the high station: a held Vista (zoom 1/2 on these, ended by moving) and a big title. */
   top?: {
     x: number; y: number; anchor: number; secs: number;

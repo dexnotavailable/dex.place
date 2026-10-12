@@ -455,7 +455,16 @@ export class TesuGame {
     // on a ropeway: the car carries her, its floor is her ground, nothing else applies
     if (this.rides.active) {
       this.frozen = Math.max(this.frozen, 2);
+      const was = b.x;
       const done = this.rides.tick(b);
+      // on a slide she faces the way the flume runs
+      if (this.rides.active?.def.slide && Math.abs(b.x - was) > 0.2) this.player.facing = b.x > was ? 1 : -1;
+      // a slide's feel: spray kicked up on the steep runs, the frame jolting at the drops
+      if (this.rides.active?.def.slide && this.tick % 6 === 0) {
+        const sl = this.rides.slope();
+        if (sl > 0.25) this.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: this.player.facing });
+        if (sl > 0.8) this.camera.shake(1.5, 6);
+      }
       this.player.update(this.inputProxy, this.rides.world as unknown as LabWorld, []);
       this.court.tick();
       this.props.tick();
@@ -756,7 +765,12 @@ export class TesuGame {
     this.lastSafe = [b.x, b.y];
     this.frozen = Math.max(this.frozen, 6);
     this.waitRelease = true;
-    this.feel.sound("lift-dock", 1);
+    this.feel.sound(def.splash ? "splash" : "lift-dock", 1);
+    if (def.splash) {
+      this.vfx.spawn("ring.wide", { x: b.x, y: b.y, facing: 1 });
+      this.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: this.player.facing });
+      this.camera.shake(3, 12);
+    }
     if (dir === 1 && def.top) {
       const t = def.top;
       this.vista = { zoom: 0.5, x: t.x, y: t.y, anchor: t.anchor, t: t.secs, pin: t.pin };
@@ -809,13 +823,15 @@ export class TesuGame {
   private placeNames(): void {
     const b = this.player.body;
     for (const p of this.world.places) {
-      if (p.title !== "place" || this.entered.has(p.id)) continue;
+      if ((p.title !== "place" && p.title !== "big") || this.entered.has(p.id)) continue;
       if (b.x < p.x0 || b.x > p.x1) continue;
       if ((p.y0 !== undefined && b.y < p.y0) || (p.y1 !== undefined && b.y > p.y1)) continue;
       if (p.y0 === undefined && b.y >= INTERIOR_Y) continue;
       this.entered.add(p.id);
       if (this.opening.active) continue;
-      this.titles.show(p.name, false, b.y >= INTERIOR_Y);
+      // a region's big title (YUEMEN) slams in once a visit, written after the back plane
+      if (p.title === "big") this.titles.show(p.name, true, false, "back", 0.6);
+      else this.titles.show(p.name, false, b.y >= INTERIOR_Y);
     }
   }
 

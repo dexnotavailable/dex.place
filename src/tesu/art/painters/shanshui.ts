@@ -233,3 +233,87 @@ export const lashing = definePainter<LashingP>("lashing", {
     for (let y = -h + 12; y < -12; y += 7) rect(c, -11, y, 11, y + 4, P.earth[2]!);
   },
 });
+
+// --- the bamboo flume -------------------------------------------------------------------------
+
+export interface FlumeP {
+  /** Its bed, world px (absolute; anchor 0, 0), from the mouth down. */
+  pts: number[];
+}
+
+/** A split-bamboo flume: a green trough with a bright water line, on posts every few H. */
+export const flume = definePainter<FlumeP>("flume", {
+  bounds(p) {
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (let i = 0; i < p.pts.length; i += 2) {
+      x0 = Math.min(x0, p.pts[i]!); x1 = Math.max(x1, p.pts[i]!);
+      y0 = Math.min(y0, p.pts[i + 1]!); y1 = Math.max(y1, p.pts[i + 1]!);
+    }
+    return [x0 - 12, y0 - 12, x1 + 12, y1 + 300];
+  },
+  paint(c, p) {
+    const pts = p.pts;
+    for (let i = 2; i < pts.length; i += 2) {
+      const ax = pts[i - 2]!, ay = pts[i - 1]!, bx = pts[i]!, by = pts[i + 1]!;
+      for (const [off, col] of [[2, P.cloud[1]!], [4, P.bamboo[2]!], [6, P.bamboo[2]!], [8, P.bamboo[3]!], [10, P.bamboo[4]!]] as const) {
+        c.buf.line(c.X(ax), c.Y(ay + off), c.X(bx), c.Y(by + off), col);
+      }
+      // posts down from the trough every 6 H or so
+      const len = Math.hypot(bx - ax, by - ay);
+      for (let s = 0; s < len; s += 576) {
+        const u = s / len, x = ax + (bx - ax) * u, y = ay + (by - ay) * u;
+        c.buf.line(c.X(x), c.Y(y + 10), c.X(x), c.Y(y + 290), P.bamboo[4]!);
+      }
+    }
+  },
+});
+
+// --- Yuemen's ring ----------------------------------------------------------------------------
+
+export interface RingP {
+  /** Outer radius and the band's thickness, px; anchor at its centre. */
+  r: number;
+  w: number;
+}
+
+/** A great stone ring in flat values: lit along its top left, shaded toward its lower right. */
+export const ring = definePainter<RingP>("ring", {
+  bounds(p) {
+    return [-p.r - 2, -p.r - 2, p.r + 2, p.r + 2];
+  },
+  paint(c, p) {
+    const r0 = p.r - p.w, r1 = p.r;
+    rect(c, -r1, -r1, r1, r1, (x, y) => {
+      const lx = c.lx(x + 0.5), ly = c.ly(y + 0.5);
+      const d = Math.hypot(lx, ly);
+      if (d < r0 || d > r1) return 0;
+      // the outer and inner rims a step lighter and darker, the light from the upper left
+      if (d > r1 - 3) return P.karst[2]!;
+      if (d < r0 + 3) return P.karst[6]!;
+      const a = (lx + ly) / Math.max(1, d);
+      return a < -0.4 ? P.karst[3]! : a > 0.5 ? P.karst[5]! : P.karst[4]!;
+    });
+  },
+});
+
+// --- a kite for the Kite Line ------------------------------------------------------------------
+
+/** A big paper kite (a diamond with a cross-spar and a tail of bows), its bridle down to her hands. Anchor at the bridle's foot. */
+export const kite = definePainter<Record<string, never>>("kite", {
+  bounds() {
+    return [-70, -220, 70, 4];
+  },
+  paint(c) {
+    const cy = -150, hw = 56, hh = 66;
+    rect(c, -hw, cy - hh, hw, cy + hh, (x, y) => {
+      const lx = c.lx(x + 0.5), ly = c.ly(y + 0.5) - cy;
+      const k = Math.abs(lx) / hw + Math.abs(ly) / hh;
+      if (k > 1) return 0;
+      if (Math.abs(lx) < 2 || Math.abs(ly + 10) < 2) return P.timber[4]!;
+      return lx < 0 ? P.red[2]! : P.paper[1]!;
+    });
+    c.buf.line(c.X(0), c.Y(0), c.X(-20), c.Y(cy), P.lacquer[2]!);
+    c.buf.line(c.X(0), c.Y(0), c.X(20), c.Y(cy), P.lacquer[2]!);
+    for (let i = 0; i < 5; i++) rect(c, 50 + i * 4, cy + hh - 6 + i * 14, 58 + i * 4, cy + hh - 2 + i * 14, P.red[3]!);
+  },
+});

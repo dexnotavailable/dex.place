@@ -87,7 +87,8 @@ export function shanshui(b: WorldBuilder): void {
   // --- Kumoji: the road on its band, from the upper station east
   // (level at the station, where the car docks, then rising gently east)
   const road = [h(261.9), KUMOJI_Y, h(266.5), KUMOJI_Y, h(300), KUMOJI_Y - h(1.2), h(339.6), KUMOJI_Y - h(2.6), KUMOJI_X1, TSUJI_Y];
-  const yAt = rampart(b, road, "kumoji", [[265, 4.4], [279, 3.8], [293, 4.6], [307, 3.6], [321, 4.2], [335, 4], [349, 3.8]]);
+  // (east of 326 H the road passes over Yuemen's ring: a column on the ring and the needle carry it, sections/yuemen.ts)
+  const yAt = rampart(b, road, "kumoji", [[265, 4.4], [279, 3.8], [293, 4.6], [307, 3.6], [321, 4.2]]);
   // the station's edge: a rail where the cars come in from the open air (gone once the
   // Kumo-bashi is down: the bridge carries on from it); the road runs right up to it, so she
   // stops with her feet on the platform
@@ -137,7 +138,9 @@ export function shanshui(b: WorldBuilder): void {
   b.mist({ x0: h(205), x1: h(480), y: h(152), half: h(28), rate: r3, after: "back", density: 0.8 });
   b.mist({ x0: h(206), x1: h(480), y: h(214), half: h(12), rate: 1, after: "play", density: 0.95 });
   // below Kumoji and the forest is the sea of mist: a fall into it is tugged back
-  b.void({ x0: h(206), x1: h(480), y: KUMOJI_Y + h(8), y1: h(240) });
+  // (under Tsuji the ring of Yuemen stands in it: its own void starts below the ring's top, sections/yuemen.ts)
+  b.void({ x0: h(206), x1: h(326), y: KUMOJI_Y + h(8), y1: h(240) });
+  b.void({ x0: h(410), x1: h(480), y: KUMOJI_Y + h(8), y1: h(240) });
 
   b.spawn({ id: "silk-line-top", x: SILK_TOP_X + h(1), y: yAt(SILK_TOP_X + h(1)), facing: 1 });
   b.spawn({ id: "kumoji", x: h(290), y: yAt(h(290)), facing: 1 });

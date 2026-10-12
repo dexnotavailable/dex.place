@@ -457,3 +457,37 @@ test("Tsuji's Chain Stair and the East Pavilion's galleries: zigzag up to the to
   assert.equal(zigzag(pav, 1, top.pts[1], true), null, "up the pavilion's stairs");
   assert.equal(zigzag(pav, -1, w.walks.find((k) => k.name === "pavilion-1").pts[1] - 1, false), null, "and down");
 });
+
+test("the flume from Tsuji to Yuemen and the Kite Line to the Peak: one-way rides that set her down on ground", async () => {
+  const { Rides, along, slideTable } = await import("./ride.ts");
+  const { ringTop, RING_CX, RING_R } = await import("./world/sections/yuemen.ts");
+  const w = buildWorld();
+  const c = new Collision(w.walks, w.walls);
+  const sprites = new Map(w.sprites.map((s) => [s.id, { ...s }]));
+  const rides = new Rides(w.rides, { sprite: (id) => sprites.get(id) }, H);
+  for (const [id, from, to] of [["flume", "tsuji", "yuemen"], ["kite-line", "pavilion-4", "the-peak"]]) {
+    const def = w.rides.find((r) => r.id === id);
+    assert.ok(def && def.oneWay, `${id} is one way`);
+    const [sx, sy] = along(def.pts, 0), [ex, ey] = along(def.pts, 1);
+    assert.equal(c.groundBelow(sx, sy + def.hang - 4, false)?.walk.name, from, `${id} starts over ${from}`);
+    assert.equal(c.groundBelow(ex, ey + def.hang - 4, false)?.walk.name, to, `${id} ends over ${to}`);
+    const body = { x: sx, y: sy + def.hang, w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
+    assert.equal(rides.board(id, -1, body), false, `${id} cannot be ridden back`);
+    assert.ok(rides.board(id, 1, body));
+    let done = null, n = 0;
+    while (!done && n < 4000) { done = rides.tick(body); rides.world.move(body, 0, 1); n++; }
+    assert.ok(done && Math.abs(n / 60 - def.secs) < 0.2, `${id} takes about ${def.secs} s (${(n / 60).toFixed(1)})`);
+    body.grounded = false; body.y -= 4; c.move(body, 0, 8);
+    assert.equal(c.standingOn?.name, to, `set down on ${to}`);
+  }
+  // the flume is a slide: fast on its drops, slow on its runs; it stays above the ring until it lands
+  const fl = w.rides.find((r) => r.id === "flume");
+  const tab = slideTable(fl.pts, fl.secs, fl.slide.min, fl.slide.gain, H);
+  const speeds = [];
+  for (let i = 1; i < tab.t.length; i++) speeds.push((tab.u[i] - tab.u[i - 1]) / (tab.t[i] - tab.t[i - 1]));
+  assert.ok(Math.max(...speeds) / Math.min(...speeds) > 2, "its speed swings with the drops");
+  for (let s = 0; s < 0.97; s += 0.01) {
+    const [x, y] = along(fl.pts, s);
+    if (Math.abs(x - RING_CX) < RING_R) assert.ok(y < ringTop(x) - 1.5 * H, `above the ring at ${(x / H).toFixed(1)} H`);
+  }
+});

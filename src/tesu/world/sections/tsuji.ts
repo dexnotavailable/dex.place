@@ -15,6 +15,7 @@
 import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
 import { KUMOJI_X1, TSUJI_Y, rampart } from "./shanshui.ts";
+import { ringTop } from "./yuemen.ts";
 
 /** Tsuji's street, and where Kumoji goes on east of it. */
 export const TSUJI_X1 = h(410);
@@ -32,8 +33,8 @@ export function tsuji(b: WorldBuilder): void {
   for (const x of [h(383), h(388), h(395), h(401)]) b.piece("play", "hanglantern", x, TSUJI_Y - h(2.5), { drop: 10, r: 13 }, { z: 4 });
   b.usable({ id: "tsuji-shrine", x0: h(386.6), y0: TSUJI_Y - h(1.6), x1: h(388.2), y1: TSUJI_Y, label: "the rest shrine", action: { kind: "say", text: "A rest shrine at the crossroads: a bench, a bell, a bowl of rainwater. You sit a moment and catch your breath." } });
   b.piece("play", "hut", h(387.4), TSUJI_Y, { w: 120, h: 96 }, { z: 1 });
-  b.usable({ id: "tsuji-flume", x0: h(378.8), y0: TSUJI_Y - h(1.4), x1: h(380.4), y1: TSUJI_Y, label: "the flume's mouth", action: { kind: "say", text: "The bamboo flume's mouth, dry. It runs down the vertical toward Yuemen and opens from its far end." } });
-  b.piece("play", "chute", h(379.6), TSUJI_Y + h(0.2), { w: 40, h: h(3) }, { z: -1 });
+  // the bamboo flume's mouth: the way down to Yuemen, one way (sections/yuemen.ts)
+  b.usable({ id: "tsuji-flume", x0: h(378.8), y0: TSUJI_Y - h(1.4), x1: h(380.4), y1: TSUJI_Y, label: "ride the flume down", action: { kind: "ride", ride: "flume", dir: 1 } });
   b.piece("play", "hut", h(405.2), TSUJI_Y, { w: 200, h: 170 }, { z: 0 });
   b.usable({ id: "skywell-lift-top", x0: h(404.2), y0: TSUJI_Y - h(1.8), x1: h(406.2), y1: TSUJI_Y, label: "the Sky Well lift", action: { kind: "say", text: "The Sky Well lift's cage is down at the bottom of the well, chained. It opens from the floor." } });
   b.spawn({ id: "tsuji", x: h(390), y: TSUJI_Y, facing: 1 });
@@ -69,8 +70,8 @@ export function chainFlights(): [number, number, number, number][] {
 }
 
 function chainStair(b: WorldBuilder): void {
-  // the needle: a tall pillar from the sea of mist to the Peak, the street passing in front
-  b.piece("play", "pillar", (NEEDLE_X0 + NEEDLE_X1) / 2, PEAK_Y, { w: NEEDLE_X1 - NEEDLE_X0, h: h(226) - PEAK_Y }, { z: -3 });
+  // the needle: a tall pillar standing on Yuemen's ring up to the Peak, the street passing in front
+  b.piece("play", "pillar", (NEEDLE_X0 + NEEDLE_X1) / 2, PEAK_Y, { w: NEEDLE_X1 - NEEDLE_X0, h: ringTop(NEEDLE_X0) + h(1.5) - PEAK_Y }, { z: -3 });
   const flights = chainFlights();
   flights.forEach(([fx, fy, tx, ty], k) => {
     const pts = fx < tx ? [fx, fy, tx, ty] : [tx, ty, fx, fy];
@@ -90,7 +91,7 @@ function chainStair(b: WorldBuilder): void {
   b.wall({ x: h(366.35), y0: PEAK_Y - h(3), y1: PEAK_Y + h(0.1), reason: "rail", from: "right" });
   b.piece("front", "rail", 0, 0, { pts: [h(366.3), PEAK_Y + 2, h(366.7), PEAK_Y + 2], h: 46, every: 30 }, { z: 1 });
   b.piece("play", "hut", h(367.3), PEAK_Y, { w: 100, h: 84 }, { z: 1 });
-  b.usable({ id: "peak-shrine", x0: h(366.6), y0: PEAK_Y - h(1.4), x1: h(368.0), y1: PEAK_Y, label: "the summit shrine", action: { kind: "say", text: "The summit shrine on the needle: a bell rope, a bowl of coins, the whole land below. A kite post stands beside it, its line not yet strung." } });
+  b.usable({ id: "peak-shrine", x0: h(366.6), y0: PEAK_Y - h(1.4), x1: h(368.0), y1: PEAK_Y, label: "the summit shrine", action: { kind: "say", text: "The summit shrine on the needle: a bell rope, a bowl of coins, the whole land below. Beside it the Kite Line's post, its line strung down to the East Pavilion." } });
   b.spawn({ id: "the-peak", x: h(367.6), y: PEAK_Y, facing: 1 });
   b.place({ id: "the-peak", name: "The Peak", x0: h(366), x1: h(378), y0: h(25), y1: h(36), title: "place", spawn: "the-peak" });
 }
@@ -124,7 +125,22 @@ function eastward(b: WorldBuilder): void {
     b.piece("play", "plank", landing[0]! - h(0.05), landing[1]!, { w: landing[2]! - landing[0]! + h(0.1) }, { z: 2 });
   });
   b.wall({ x: PAV_X0 - h(0.05), y0: floors[2]! - h(3), y1: floors[2]! + h(0.1), reason: "rail", from: "right" });
-  b.usable({ id: "kite-station", x0: PAV_X1 - h(2.6), y0: floors[3]! - h(1.6), x1: PAV_X1 - h(0.4), y1: floors[3]!, label: "the kite station", action: { kind: "say", text: "The kite station. The big kites for the Kite Line to the Peak are packed in their racks; the line opens later." } });
+  // --- the Kite Line: a big kite on its line from the kite station up over the land to the
+  // Peak, one way, about 22 s; it waits at the station again after
+  b.usable({ id: "kite-station", x0: PAV_X1 - h(2.6), y0: floors[3]! - h(1.6), x1: PAV_X1 - h(0.4), y1: floors[3]!, label: "fly the Kite Line", action: { kind: "ride", ride: "kite-line", dir: 1 } });
+  const kh = h(1.1);
+  const kp: number[] = [];
+  const K = [h(461.0), floors[3]! - kh, h(452), h(38), h(410), h(20), h(367.4), PEAK_Y - kh];
+  for (let i = 0; i <= 24; i++) {
+    const t = i / 24, u = 1 - t;
+    kp.push(u * u * u * K[0]! + 3 * u * u * t * K[2]! + 3 * u * t * t * K[4]! + t * t * t * K[6]!, u * u * u * K[1]! + 3 * u * u * t * K[3]! + 3 * u * t * t * K[5]! + t * t * t * K[7]!);
+  }
+  b.sprite({ id: "kite", plane: "play", kind: "kite", x: kp[0]!, y: kp[1]!, p: {}, frames: 1 });
+  b.ride({ id: "kite-line", pts: kp, secs: 22, cars: ["kite"], hang: kh, oneWay: true, top: { x: h(372), y: PEAK_Y, anchor: 0.42, secs: 4 } });
+  b.track({ id: "kite-line", x0: h(362), x1: h(464), y0: h(14), y1: h(62), when: "ride:kite-line", keys: [
+    { x: h(362), zoom: 0.62, anchor: 0.5, horizon: 0.42, lead: -0.06 },
+    { x: h(464), zoom: 0.62, anchor: 0.5, horizon: 0.42, lead: -0.06 },
+  ] });
   b.spawn({ id: "east-pavilion", x: h(446), y: h(71.8), facing: 1 });
   b.place({ id: "east-pavilion", name: "East Pavilion", x0: h(447), x1: PAV_X1, y0: h(50), y1: h(80), title: "place", spawn: "east-pavilion" });
   // framed from low on its bridge: the bridge leads in, the pavilion rises out of the top edge

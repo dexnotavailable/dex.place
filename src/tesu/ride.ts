@@ -41,6 +41,30 @@ export function rideShare(t: number, secs: number): number {
   return 1 - (0.5 * v * r * r) / ta;
 }
 
+/** A slide's timing: the time (s) at which each sampled share of the way is reached. */
+export function slideTable(pts: readonly number[], secs: number, min: number, gain: number, H: number): { t: number[]; u: number[] } {
+  const seg: number[] = [];
+  let len = 0;
+  for (let i = 2; i < pts.length; i += 2) { const l = Math.hypot(pts[i]! - pts[i - 2]!, pts[i + 1]! - pts[i - 1]!); seg.push(l); len += l; }
+  const n = Math.max(2, Math.ceil(len / (H / 4)));
+  const t: number[] = [0], u: number[] = [0];
+  let v = min * H, time = 0;
+  for (let k = 1; k <= n; k++) {
+    // the slope where this step lies (drop over run, downhill positive)
+    let d = (len * (k - 0.5)) / n, i = 0;
+    while (i < seg.length - 1 && d > seg[i]!) { d -= seg[i]!; i++; }
+    const dx = Math.abs(pts[i * 2 + 2]! - pts[i * 2]!), dy = pts[i * 2 + 3]! - pts[i * 2 + 1]!;
+    const want = (min + gain * Math.max(0, dy / Math.max(1, dx))) * H;
+    // speed builds up on a drop and eases off on the level, over a few H
+    v += (want - v) * 0.12;
+    time += len / n / v;
+    t.push(time);
+    u.push(k / n);
+  }
+  const k = secs / time;
+  return { t: t.map((x) => x * k), u };
+}
+
 interface Riding {
   def: RideDef;
   dir: 1 | -1;
@@ -58,10 +82,12 @@ export class Rides {
 
   private readonly defs: readonly RideDef[];
   private readonly host: RideHost;
+  private slides = new Map<string, { t: number[]; u: number[] }>();
 
-  constructor(defs: readonly RideDef[], host: RideHost) {
+  constructor(defs: readonly RideDef[], host: RideHost, H = 96) {
     this.defs = defs;
     this.host = host;
+    for (const d of defs) if (d.slide) this.slides.set(d.id, slideTable(d.pts, d.secs, d.slide.min, d.slide.gain, H));
     for (const d of defs) {
       this.at.set(d.id, 0);
       this.placeCars(d);
@@ -80,6 +106,8 @@ export class Rides {
     if (this.active) return false;
     const def = this.defs.find((r) => r.id === id);
     if (!def) return false;
+    if (def.oneWay && dir !== 1) return false;
+    if (def.oneWay) this.at.set(id, 0);
     const u = this.at.get(id) ?? 0;
     // the car at her station: share 0 at the low end, 1 at the high end
     const here = dir === 1 ? 0 : 1;
@@ -91,8 +119,28 @@ export class Rides {
 
   /** Her car's share of the way up. */
   private share(r: Riding): number {
-    const s = rideShare(r.t, r.def.secs);
+    const tab = this.slides.get(r.def.id);
+    let s: number;
+    if (tab) {
+      // where the slide's timing puts her now
+      const { t, u } = tab;
+      if (r.t >= t[t.length - 1]!) s = 1;
+      else {
+        let i = 1;
+        while (t[i]! < r.t) i++;
+        s = u[i - 1]! + ((u[i]! - u[i - 1]!) * (r.t - t[i - 1]!)) / Math.max(1e-6, t[i]! - t[i - 1]!);
+      }
+    } else s = rideShare(r.t, r.def.secs);
     return r.dir === 1 ? s : 1 - s;
+  }
+
+  /** How steep the way is under her now (drop over run, downhill positive), for the ride's feel. */
+  slope(): number {
+    const r = this.active;
+    if (!r) return 0;
+    const s = this.share(r), e = Math.min(1, s + 0.004);
+    const [x0, y0] = along(r.def.pts, s), [x1, y1] = along(r.def.pts, e);
+    return (y1 - y0) / Math.max(1, Math.abs(x1 - x0));
   }
 
   /** One sim tick of the ride: the cars move, she is carried. Returns the ride when it has arrived. */
@@ -106,6 +154,11 @@ export class Rides {
     this.carry(b);
     if (r.t >= r.def.secs) {
       this.active = null;
+      // a one-way ride's car goes back to wait at its first station
+      if (r.def.oneWay) {
+        this.at.set(r.def.id, 0);
+        this.placeCars(r.def);
+      }
       return r;
     }
     return null;

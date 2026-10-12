@@ -14,6 +14,7 @@ import { shiraito } from "./sections/shiraito.ts";
 import { hoaipho } from "./sections/hoaipho.ts";
 import { shanshui } from "./sections/shanshui.ts";
 import { tsuji } from "./sections/tsuji.ts";
+import { yuemen } from "./sections/yuemen.ts";
 import type { WorldDef } from "./types.ts";
 
 /** About 480 x 240 H (GDK 3.1), plus the interiors' band below it (config INTERIOR_Y). */
@@ -35,6 +36,7 @@ export function buildWorld(): WorldDef {
   hoaipho(b);
   shanshui(b);
   tsuji(b);
+  yuemen(b);
   built = b.finish();
   return built;
 }
