@@ -73,9 +73,12 @@ export function shiraito(b: WorldBuilder): void {
   b.piece("play", "hut", h(93.2), footY, { w: 150, h: 130 }, { z: 2 });
   b.usable({ id: "old-inn", x0: h(92.4), y0: footY - h(1.5), x1: h(94.0), y1: footY, label: "the old inn", action: { kind: "say", text: "An old inn, its door boarded up. The planks look newer than the door." } });
 
-  // --- behind: the great wall of falls reaches back to the massif, rice terraces into the mist
+  // --- behind: the great wall of falls reaches back to the massif, rice terraces into the mist.
+  // Its top stands at 72 H, below anything Kagami's frames show of this plane (from the lake
+  // it stays under the frame or behind the massif, never over the water); at the widest frame
+  // it fills the valley under the lake's cliff.
   const r3 = 0.62;
-  b.piece("back", "cliffwall", h(62), h(59.6), {
+  b.piece("back", "cliffwall", h(62), h(72), {
     w: h(50) * r3, h: h(90) * r3, falls: 0.9,
     lip: [0, h(3) * r3, h(20) * r3, h(1.5) * r3, h(50) * r3, h(1.2) * r3],
   }, { z: 1 });
