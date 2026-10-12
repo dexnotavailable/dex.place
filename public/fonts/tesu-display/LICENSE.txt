@@ -1,0 +1,10 @@
+Tesu Display
+Copyright 2026 Dex (https://dex.place). All rights reserved.
+
+Tesu Display is the dex.place title font. It was drawn from scratch, pixel by
+pixel, for dex.place; it is not traced from or derived from any other font.
+
+The files in this folder (TesuDisplay.woff, atlas.png, atlas.json) and their
+source (src/title-font/glyphs.txt in the dex.place repository) are published so
+the site can use them. They are not licensed for use elsewhere. If you would
+like to use the font, ask Dex.
