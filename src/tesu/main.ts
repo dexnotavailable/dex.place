@@ -4,6 +4,8 @@
 //
 // URL options: ?at=<spawn id> (start somewhere), ?x=<H> (start at x in H), ?debug, ?manual
 // (no real-time loop: drive it from window.__tesu), ?sync (paint plates on the main thread).
+// In the page column (src/tesu/mount.ts) it runs framed: ?embed=site, plus ?hold on "/" (the
+// world window waits for PLAY, which the page calls through window.__tesu.play()).
 
 import "@fontsource/dotgothic16/400.css";
 import { Input, type Action, type KeyMap } from "../lab/engine/input.ts";
@@ -82,7 +84,21 @@ async function boot(): Promise<void> {
   const assets = await loadZhusha(r);
   const input = new Input(canvas, KEYS);
   const touch = new Touch(input, document.getElementById("touch") as HTMLElement, canvas);
-  const game = new TesuGame(r, input, assets, { start: q.get("at") ?? "catch", link: q.has("at") || q.has("x"), noOpening: q.has("skip"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual") });
+  const embedded = q.get("embed") === "site" && window.parent !== window;
+  const game = new TesuGame(r, input, assets, {
+    start: q.get("at") ?? "catch", link: q.has("at") || q.has("x") || q.has("hold"), noOpening: q.has("skip"),
+    hold: q.has("hold"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual"),
+  });
+  if (embedded) {
+    // Page Up and Page Down scroll the page column (to the website and back), as the wheel does
+    window.addEventListener("keydown", (e) => {
+      if (panels.open || !["PageDown", "PageUp"].includes(e.code)) return;
+      e.preventDefault();
+      window.parent.scrollBy({ top: (e.code === "PageDown" ? 0.9 : -0.9) * window.parent.innerHeight, behavior: "smooth" });
+    });
+    // the talisman tab (touch): down to the website
+    touch.setTab(() => window.parent.document.getElementById("site")?.scrollIntoView({ behavior: "smooth" }));
+  }
   if (q.has("x")) game.place(Number(q.get("x")) * H);
   game.debug = q.has("debug");
 
@@ -195,6 +211,9 @@ async function boot(): Promise<void> {
       render: () => game.render(),
       flag: (f: string, on = true) => (on ? game.flags.add(f) : game.flags.delete(f)),
       use: () => game.use(),
+      /** The page column: PLAY (the opening starts at 0:00), and the page's running audio. */
+      play: () => game.play(),
+      audio: (ctx: AudioContext) => game.sound.start(ctx),
       /** The bout: summon a prize's champion, press the finish (as an attack press would). */
       summon: (id: string) => {
         const p = prizeFor(id);

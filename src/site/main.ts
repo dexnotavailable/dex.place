@@ -41,6 +41,14 @@ const steps: [string, () => void][] = [
   ["reveal", () => initReveal()],
   ["idle", () => initIdle()],
   ["world", () => initWorld(reduced)],
+  // "/": the title, the talisman, the fall, PLAY and the address (the page column), own chunk
+  ["column", () => {
+    if (!document.querySelector("[data-col-title]")) return;
+    import("./motion/column.ts").then(
+      (m) => m.initColumn(reduced),
+      failed("column"),
+    );
+  }],
   ["nav", () => initNav()],
   ["stuck", () => initStuck()],
   ["menu", () => initMenu()],

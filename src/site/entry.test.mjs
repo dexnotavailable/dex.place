@@ -37,6 +37,6 @@ test("embed chrome flag applies only to framed world pages; copied URLs stay sta
 });
 
 test("homepage retains a useful direct world route without scripts", () => {
-  assert.match(world(), /class="world__fallback"[^]*href="\/world\/"/);
+  assert.match(world(), /class="world__fallback"[^]*href="\/tesu\/"/);
   assert.match(world(), /href="#site"/);
 });

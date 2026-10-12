@@ -92,3 +92,6 @@ html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
 .panel .steps li { margin: 4px 0; }
 .panel .sum { word-break: break-all; font-size: 13px; }
 .panel.look-board .foot { color: #fff4f1; }
+/* the talisman tab (page column, touch): a small gold paper slip at the bottom centre */
+#touch .tab { left: 50%; bottom: max(6px, env(safe-area-inset-bottom)); width: 26px; height: 46px; margin-left: -13px; border-radius: 2px; border: 2px solid #5a3c06; background: linear-gradient(#f5d25c, #dca82e); }
+#touch .tab::after { content: ""; position: absolute; left: 50%; top: 9px; width: 4px; height: 22px; margin-left: -2px; background: #d8232c; }

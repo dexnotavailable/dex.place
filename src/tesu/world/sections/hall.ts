@@ -119,6 +119,12 @@ export function hall(b: WorldBuilder): void {
   // --- spawns, the place, the camera
   b.spawn({ id: "hall-in", x: X(3.6), y: FY, facing: 1 });
   b.spawn({ id: "hall-court-side", x: X(30.2), y: FY, facing: -1 });
+  // where each website section's link stands her (GDK 3.7): the blog at the Notice Wall, donate
+  // (and support, account) at Hanko's desk, the docs in the reading nook, the gallery upstairs
+  b.spawn({ id: "hall-notice", x: X(6.3), y: FY, facing: 1 });
+  b.spawn({ id: "hall-desk", x: X(11.6), y: FY, facing: 1 });
+  b.spawn({ id: "hall-nook", x: X(24.4), y: FY, facing: 1 });
+  b.spawn({ id: "hall-gallery", x: X(12), y: GY, facing: 1 });
   b.place({ id: "hall-of-works", name: "Hall of Works", x0: HALL_X0, x1: HALL_X1, y0: FY - h(20), y1: FY + h(5), title: "place", spawn: "hall-in", vista: FY - h(2.4) });
   b.track({ id: "hall", x0: HALL_X0 - h(10), x1: HALL_X1 + h(10), y0: FY - h(30), y1: FY + h(10), keys: [
     { x: HALL_X0, zoom: 1, anchor: 0.8, horizon: 0.42, lead: 0.05 },
