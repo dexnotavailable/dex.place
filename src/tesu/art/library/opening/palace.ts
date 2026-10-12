@@ -11,6 +11,7 @@
 // tower's foot; a stay's top; the banners' left hanging point.
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
+import { glyph, row } from "./glyphs.ts";
 import { P } from "../../palette.ts";
 import { bayer4, clamp, hash, hash1, tone, vnoise } from "../../raster.ts";
 
@@ -247,20 +248,22 @@ export const palace = definePainter<PalaceP>("op.palace", {
       const ex = Math.min(u, 1 - u) * 140, ey = Math.min(v, 1 - v) * 34;
       if (ex < 1 || ey < 1) return P.ink[0]!;
       if (ex < 4 || ey < 4) return tone(P.gold, u < 0.4 ? 0.15 : 0.5, x, y, 0.3);
-      if (c.d >= 0.5) {
-        // four gold characters
-        const ch = Math.floor(u * 4), cu = (u * 4) % 1;
-        if (cu > 0.2 && cu < 0.8 && v > 0.22 && v < 0.78 && hash(Math.floor(cu * 5), Math.floor(v * 6), ch + seed) < 0.42) return P.gold[1]!;
-      }
       return tone(P.lacquer, 0.55, x, y, 0.3);
     });
+    // its name in gold, hand-lettered: 墨宮, the Ink Palace (a shadow stroke under the gold)
+    if (c.d >= 0.25) {
+      const gs = 24, gx = dx + dw / 2 - gs - 5, gy = -dh - 67;
+      row(c, "墨宮", gx + 1, gy + 1, gs, P.lacquer[4]!, 0.42, 0.11);
+      row(c, "墨宮", gx, gy, gs, P.gold[1]!, 0.42, 0.11);
+    }
     // the seal: the one red, under the top eave
     const sealX = w / 2;
     fill(c, sealX - 32, g2 + 36, sealX + 32, g2 + 100, (x, y, u, v) => {
       const ex = Math.min(u, 1 - u) * 64, ey = Math.min(v, 1 - v) * 64;
       if (ex < 3 || ey < 3) return P.gold[1]!;
-      const g = c.d >= 0.5 && ((Math.abs(u - 0.5) < 0.06 && v > 0.2 && v < 0.8) || (Math.abs(v - 0.4) < 0.05 && u > 0.25 && u < 0.75) || (Math.abs(v - 0.7) < 0.05 && u > 0.3 && u < 0.7));
-      return g ? P.paper[0]! : tone(P.red, 0.3 + 0.2 * v, x, y, 0.3);
+      // the seal is the emperor's: a carved inner border only (its mark is the title lane's)
+      if (c.d >= 0.5 && (Math.abs(ex - 8) < 1 || Math.abs(ey - 8) < 1) && ex >= 7.5 && ey >= 7.5) return P.red[1]!;
+      return tone(P.red, 0.3 + 0.2 * v, x, y, 0.3);
     });
     // the roofs, top tier first, each lapping over the foot of the storey above
     roof(c, s2 - 140, w - s2 + 140, g2 - 22, r2, 0.42, seed + 11);
@@ -390,7 +393,10 @@ export interface BannersP {
   frame?: number;
 }
 
-/** Festival banners on a rope between the towers: long paper banners with ink glyphs, gold hems. */
+/** The banners' names: the land's places, in its own script (public names only). */
+const NAMES = ["墨宮", "山水", "月門", "天井", "白糸"];
+
+/** Festival banners on a rope between the towers: long paper banners lettered with place names, gold hems. */
 export const banners = definePainter<BannersP>("op.banners", {
   bounds(p) {
     return [-10, -8, p.w + 10, p.drop + p.w * 0.12 + 40];
@@ -422,10 +428,19 @@ export const banners = definePainter<BannersP>("op.banners", {
         if (v > 1 - 0.1 * (1 - hem)) return 0;
         if (u < 0.08 || u > 0.92) return ramp[ramp.length - 1]!;
         if (Math.abs(v - 0.06) < 0.035 || Math.abs(v - 0.86) < 0.025) return tone(P.gold, 0.4, x, y, 0.3);
-        // a column of ink glyphs down the middle of the paper banners, gold on the red ones
-        if (c.d >= 0.5 && Math.abs(u - 0.5) < 0.22 && v > 0.16 && v < 0.8 && hash(Math.floor(u * 5), Math.floor(v * 14), c.seed + i) < 0.4) return red ? P.gold[1]! : P.ink[1]!;
         return tone(ramp, u < 0.3 ? 0.12 : u < 0.7 ? 0.3 : 0.55, x, y, 0.3);
       });
+      // a place name down the banner, hand-lettered: ink on the paper ones, gold on the red
+      if (c.d >= 0.25) {
+        const text = NAMES[i % NAMES.length]!;
+        const gs = Math.min(22, bw * 0.62);
+        let gy = top + 2 + drop * 0.17;
+        for (const ch of text) {
+          const v = (gy + gs / 2 - top - 2) / drop;
+          glyph(c, ch, bx - gs / 2 + swing * v * v, gy, gs, red ? P.gold[1]! : P.ink[1]!, 0.11);
+          gy += gs * 1.3;
+        }
+      }
     }
   },
 });

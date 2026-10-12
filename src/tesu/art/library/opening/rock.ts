@@ -14,7 +14,7 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { Spans, bayer4, clamp, fbm1, hash, hash1, rng, tone, vnoise1 } from "../../raster.ts";
+import { Spans, bayer4, clamp, fbm1, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { boxOf, cached, clump, roughen, spansFor, toAbs, yAt } from "./kit.ts";
 import { face, nextLedge } from "./face.ts";
 
@@ -218,9 +218,13 @@ export function paintRock(c: PaintCtx, p: RockP): void {
           if (p.water !== undefined && ly > p.water - 7 && ly < p.water + 1) t += 0.22;
           if (fog > 0) t = t * (1 - fog * 0.7);
           const mat = F.mat;
-          if (mat === "moss" && rightIn && belowIn) b.set(x, y, tone(P.moss, clamp(t + 0.1, 0, 1), x, y, 0.35));
-          else if (mat === "warm" && t < 0.42 && rightIn && belowIn && leftIn) b.set(x, y, tone(P.stone, clamp(t * 0.9, 0, 1), x, y, 0.35));
-          else b.set(x, y, tone(K, clamp(t, 0, 1), x, y, 0.35));
+          // hard ramp steps, dithered only along a thin seam where two steps meet; a little slow
+          // noise in the tone so no wide area sits on a seam (no checker fields, no moire when
+          // the camera scales the plate between levels)
+          t += (vnoise(lx / 7, ly / 7, seed + 201) - 0.5) * 0.06;
+          if (mat === "moss" && rightIn && belowIn) b.set(x, y, tone(P.moss, clamp(t + 0.1, 0, 1), x, y, 0.12));
+          else if (mat === "warm" && t < 0.42 && rightIn && belowIn && leftIn) b.set(x, y, tone(P.stone, clamp(t * 0.9, 0, 1), x, y, 0.12));
+          else b.set(x, y, tone(K, clamp(t, 0, 1), x, y, 0.12));
         }
       }
     }

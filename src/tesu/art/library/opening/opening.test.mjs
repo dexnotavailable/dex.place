@@ -42,6 +42,7 @@ const CASES = [
   ["op.bamboo", { w: 70, h: 420, frame: 1 }],
   ["op.terrace", { w: 538, depth: 125 }],
   ["op.reeds", { w: 220, h: 70, frame: 2 }],
+  ["op.reeds", { w: 120, h: 60, frame: 5, loop: 8, ox: 900, ground: [0, 6, 12, 18, 20, 18, 14, 10, 6, 4, 2, 0, 0, 0, 0, 0] }],
   ["op.flags", { h: 150, dx: -163, dy: 92, n: 8, frame: 1 }],
 ];
 const LEVELS = [2, 1, 0.5, 0.25, 0.125];

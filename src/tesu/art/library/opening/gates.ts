@@ -11,6 +11,7 @@
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { bayer4, clamp, hash, hash1, tone, vnoise, vnoise1 } from "../../raster.ts";
+import { glyph, hasGlyph } from "./glyphs.ts";
 
 export interface GateP {
   kind?: "torii" | "paifang";
@@ -21,6 +22,8 @@ export interface GateP {
   /** Pillar width at the foot, px (default 18). */
   pw?: number;
   part?: "all" | "front";
+  /** The plaque's glyph (the builder's data); none shows an empty plaque. */
+  glyph?: string;
 }
 
 type Ramp = readonly number[];
@@ -129,23 +132,25 @@ function beam(c: PaintCtx, x0: number, x1: number, y: number, th: number, ramp: 
   }
 }
 
-/** The plaque: black lacquer, a gold rim, a gold glyph (a few strokes; the text comes from data). */
-function plaque(c: PaintCtx, cx: number, y: number, w: number, h: number, seed: number): void {
+/**
+ * The plaque: black lacquer with a gold rim and an incised inner field. Its glyph is the world
+ * builder's data (GDK 9.5, one per gate): drawn when given, otherwise the field stays empty
+ * (never an invented character).
+ */
+function plaque(c: PaintCtx, cx: number, y: number, w: number, h: number, seed: number, ch?: string): void {
   const d = c.d;
   fill(c, cx - w / 2, y, cx + w / 2, y + h, (x, yy, u, v) => {
     const ex = Math.min(u, 1 - u) * w, ey = Math.min(v, 1 - v) * h;
     if (ex < 0.9 / d || ey < 0.9 / d) return P.ink[0]!;
     if (ex < 2.6 || ey < 2.6) return tone(P.gold, u < 0.4 && v < 0.5 ? 0.15 : 0.5, x, yy, 0.3);
-    // the glyph: three gold strokes in the plaque's middle third
-    if (d >= 0.5) {
-      const gx = (u - 0.5) * w, gy = (v - 0.5) * h;
-      const s1 = Math.abs(gx) < 0.9 && Math.abs(gy) < h * 0.3;
-      const s2 = Math.abs(gy + h * 0.12) < 0.8 && Math.abs(gx) < w * 0.22;
-      const s3 = Math.abs(gy - gx * 0.6 - h * 0.12) < 0.8 && gx > 0 && gx < w * 0.22;
-      if (s1 || s2 || s3) return P.gold[1]!;
-    }
-    return tone(P.lacquer, 0.6 + (v > 0.7 ? 0.2 : 0) + (hash(x, yy, seed) < 0.04 ? -0.2 : 0), x, yy, 0.3);
+    // the incised field: a thin dark line inside the rim
+    if (d >= 0.5 && (Math.abs(ex - 4.2) < 0.6 || Math.abs(ey - 4.2) < 0.6) && ex > 3.6 && ey > 3.6) return P.lacquer[4]!;
+    return tone(P.lacquer, 0.6 + (v > 0.7 ? 0.15 : 0) + (hash(x, yy, seed) < 0.03 ? -0.15 : 0), x, yy, 0.3);
   });
+  if (ch && hasGlyph(ch) && d >= 0.25) {
+    const gs = Math.min(w - 8, h * 0.5);
+    glyph(c, ch, cx - gs / 2, y + (h - gs) / 2, gs, P.gold[1]!, 0.12);
+  }
 }
 
 /** A tiled roof seen from the side, eave line at y, x0..x1 at the eave, rising rh to a gold ridge. */
@@ -218,7 +223,7 @@ export const gate = definePainter<GateP>("op.gate", {
       fill(c, -half - 12, -p.h + 90, -half * 0.36 - 4, -p.h + 97, (x, y, u) => (Math.floor(u * 8) % 2 ? tone(P.gold, 0.55, x, y, 0.3) : P.lacquer[3]!));
       fill(c, half * 0.36 + 4, -p.h + 90, half + 12, -p.h + 97, (x, y, u) => (Math.floor(u * 8) % 2 ? tone(P.gold, 0.55, x, y, 0.3) : P.lacquer[3]!));
       beam(c, -half * 0.36 - 10, half * 0.36 + 10, -p.h + 136, 12, P.red, 0.45, 0, 3);
-      plaque(c, 0, -p.h + 100, Math.min(64, half * 0.62), 34, seed + 3);
+      plaque(c, 0, -p.h + 100, Math.min(64, half * 0.62), 34, seed + 3, p.glyph);
       roof(c, -half - 30, -half * 0.36 + 16, -p.h + 66, 34, seed + 5);
       roof(c, half * 0.36 - 16, half + 30, -p.h + 66, 34, seed + 6);
       roof(c, -half * 0.36 - 34, half * 0.36 + 34, -p.h + 30, 46, seed + 7);
@@ -237,7 +242,7 @@ export const gate = definePainter<GateP>("op.gate", {
     // the strut (gakuzuka) from the nuki up to the shimaki, the plaque hung on it
     fill(c, -pw * 0.28, -p.h + capT + shimT - 1, pw * 0.28, nukiY + 1, (x, y, u) => tone(P.red, roundTone(u, 0.45), x, y, 0.3));
     const ph = Math.max(22, (nukiY - (-p.h + capT + shimT)) * 0.82);
-    plaque(c, 0, -p.h + capT + shimT + (nukiY - (-p.h + capT + shimT) - ph) * 0.5, Math.max(18, pw * 1.35), ph, seed + 3);
+    plaque(c, 0, -p.h + capT + shimT + (nukiY - (-p.h + capT + shimT) - ph) * 0.5, Math.max(18, pw * 1.35), ph, seed + 3, p.glyph);
     beam(c, -half - pw * 1.55, half + pw * 1.55, -p.h + capT - 0.5, shimT, P.red, 0.38, capT * 0.6, 3);
     beam(c, -half - pw * 2.3, half + pw * 2.3, -p.h, capT, P.lacquer, 0.4, capT * 1.7, 6);
   },
