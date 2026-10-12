@@ -28,15 +28,26 @@ const X = (o: number): number => HALL_X0 + h(o);
  * Hangs gallery piece i with its frame's centre at x and its lower edge at y: as wide as
  * `w` allows, no taller than `maxH`, in the piece's own proportions.
  */
-function hang(b: WorldBuilder, i: number, x: number, y: number, w: number, maxH = h(1.6)): void {
-  const g = GALLERY_PIECES[i];
-  if (!g) return;
+function frameSize(i: number, w: number, maxH: number): [number, number] {
+  const g = GALLERY_PIECES[i]!;
   let fw = w, fh = (w * g.height) / g.width;
   if (fh > maxH) { fh = maxH; fw = (maxH * g.width) / g.height; }
-  fw = Math.round(fw); fh = Math.round(fh);
+  return [Math.round(fw), Math.round(fh)];
+}
+
+/** The area she uses a frame from (it reaches down to the floor she stands on). */
+function useBox(i: number, x: number, y: number, w: number, maxH: number): { x0: number; y0: number; x1: number; y1: number } {
+  const [fw, fh] = frameSize(i, w, maxH);
+  return { x0: x - Math.max(fw / 2, h(0.5)), y0: y - fh - h(0.3), x1: x + Math.max(fw / 2, h(0.5)), y1: y + h(2.4) };
+}
+
+function hang(b: WorldBuilder, i: number, x: number, y: number, w: number, maxH = h(1.6), use = useBox(i, x, y, w, maxH)): void {
+  const g = GALLERY_PIECES[i];
+  if (!g) return;
+  const [fw, fh] = frameSize(i, w, maxH);
   b.piece("play", "artframe", x - fw / 2, y, { w: fw, h: fh }, { z: 3 });
   b.sprite({ id: `art-${g.id}`, plane: "play", kind: "image", x, y, p: { src: `/gallery/${g.id}-t.webp`, w: fw, h: fh }, frames: 1 });
-  b.usable({ id: `art-frame-${g.id}`, x0: x - Math.max(fw / 2, h(0.5)), y0: y - fh - h(0.3), x1: x + Math.max(fw / 2, h(0.5)), y1: y + h(2.4), label: "look at the piece", action: { kind: "panel", panel: "art", arg: g.id } });
+  b.usable({ id: `art-frame-${g.id}`, ...use, label: "look at the piece", action: { kind: "panel", panel: "art", arg: g.id } });
 }
 
 export function hall(b: WorldBuilder): void {
@@ -96,8 +107,10 @@ export function hall(b: WorldBuilder): void {
   b.sprite({ id: "seo", plane: "play", kind: "seo", x: X(25.6), y: FY, p: {}, frames: 3, fps: 0.7 });
   b.usable({ id: "docs-shelf", x0: X(22.6), y0: FY - h(3.4), x1: X(26.2), y1: FY, label: "the docs shelf", action: { kind: "panel", panel: "docs" } });
   // two of the emperor's pieces between the nook and the great doors
-  hang(b, 6, X(27.4), FY - h(2.0), h(1.5));
-  hang(b, 7, X(29.3), FY - h(2.0), h(1.3));
+  // (env-hall, approved: art-07 on the nook's spandrel panel under the stair, its usable where
+  // it was; art-08 on the great doors' wall just left of the doors)
+  hang(b, 6, X(27.0), FY - h(1.15), h(0.75), h(0.95), useBox(6, X(27.4), FY - h(2.0), h(1.5), h(1.6)));
+  hang(b, 7, X(30.45), FY - h(1.6), h(0.8), h(1.5));
   b.piece("play", "idoor", X(30.9), FY, { w: h(2.5), h: h(4.2) }, { z: 4 });
   b.usable({ id: "great-doors", x0: X(30.9), y0: FY - h(4.2), x1: X(33.4), y1: FY, label: "the great doors", action: { kind: "door", to: "court-gate" } });
   b.sprite({ id: "hall-cat", plane: "play", kind: "cat", x: X(7.4), y: FY - h(0.05), p: {}, frames: 2, fps: 0.6 });
