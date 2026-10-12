@@ -19,10 +19,11 @@ const mixHex = (a: string, b: string, t: number): string => {
   const p = parse(a), q = parse(b);
   return hex([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t, p[2] + (q[2] - p[2]) * t]);
 };
+const mix3 = (a: readonly number[], b: readonly number[], t: number): [number, number, number] => [a[0]! + (b[0]! - a[0]!) * t, a[1]! + (b[1]! - a[1]!) * t, a[2]! + (b[2]! - a[2]!) * t];
 const smooth = (t: number): number => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 
 /** Still water's key when an entry gives none (the colours the renderer always used). */
-export const DEFAULT_WATER = { deep: "#1f5a60", body: "#3f8f8a", shallow: "#bfe0dc", glint: "#fffbe8" };
+export const DEFAULT_WATER: NonNullable<Atmos["water"]> = { deep: "#1f5a60", body: "#3f8f8a", shallow: "#bfe0dc", glint: "#fffbe8" };
 
 /** How much an entry holds at (x, y): 0 outside, 1 inside, a smooth ramp across its edges. */
 export function atmosWeight(e: Atmos, x: number, y: number): number {
@@ -69,7 +70,10 @@ export function mixAtmos(a: Atmos, b: Atmos, t: number): Atmos {
     mist: a.mist + (b.mist - a.mist) * t,
     mistColour: mixHex(a.mistColour, b.mistColour, t),
     sun,
-    water: { deep: mixHex(wa.deep, wb.deep, t), body: mixHex(wa.body, wb.body, t), shallow: mixHex(wa.shallow, wb.shallow, t), glint: mixHex(wa.glint, wb.glint, t) },
+    water: {
+      deep: mixHex(wa.deep, wb.deep, t), body: mixHex(wa.body, wb.body, t), shallow: mixHex(wa.shallow, wb.shallow, t), glint: mixHex(wa.glint, wb.glint, t),
+      mirror: mix3(wa.mirror ?? [1, 1, 1], wb.mirror ?? [1, 1, 1], t),
+    },
     grade: [ga[0] + (gb[0] - ga[0]) * t, ga[1] + (gb[1] - ga[1]) * t, ga[2] + (gb[2] - ga[2]) * t, ga[3] + (gb[3] - ga[3]) * t],
   };
 }

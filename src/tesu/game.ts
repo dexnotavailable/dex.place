@@ -1011,7 +1011,7 @@ export class TesuGame {
         ext: [water.x0, water.x1, water.fx0 ?? water.x0, water.fx1 ?? water.x1],
         depth: [water.near, water.far], rows, time: this.time,
         deep: hexRgb(a.water?.deep ?? "#1f5a60"), body: hexRgb(a.water?.body ?? "#3f8f8a"), shallow: hexRgb(a.water?.shallow ?? "#bfe0dc"),
-        haze: hexRgb(a.haze), glint: hexRgb(a.water?.glint ?? "#fffbe8"), still: water.kind === "lake" ? 1 : 0.4,
+        haze: hexRgb(a.haze), glint: hexRgb(a.water?.glint ?? "#fffbe8"), still: water.kind === "lake" ? 1 : 0.4, mirror: a.water?.mirror ?? [1, 1, 1],
       });
     };
     const mist = (rate: number, strength: number, drift: number): void => {

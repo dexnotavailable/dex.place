@@ -384,15 +384,16 @@ test("atmos: the world's entries switch exactly as before, and a blend width mak
   const { blendAtmos, DEFAULT_WATER } = await import("./atmos-blend.ts");
   const { INTERIOR_Y } = await import("./config.ts");
   const w = buildWorld();
-  // the old hard switch, for comparison
+  // the old hard switch, for comparison, over the world's entries that have no blend width
+  const list0 = w.atmos.filter((e) => !e.blend);
   const old = (x, y) => {
-    const list = w.atmos.filter((e) => (e.y0 === undefined || y >= e.y0) && (e.y1 === undefined || y <= e.y1) && (e.y0 !== undefined || y < INTERIOR_Y));
-    let a = list[0] ?? w.atmos[0];
+    const list = list0.filter((e) => (e.y0 === undefined || y >= e.y0) && (e.y1 === undefined || y <= e.y1) && (e.y0 !== undefined || y < INTERIOR_Y));
+    let a = list[0] ?? list0[0];
     for (const e of list) if (e.x <= x) a = e;
     return a;
   };
   for (let x = 0; x <= 480 * H; x += 7 * H) for (const y of [40 * H, 60 * H, 120 * H, 196 * H, 290 * H]) {
-    const a = old(x, y), b = blendAtmos(w.atmos, x, y, INTERIOR_Y);
+    const a = old(x, y), b = blendAtmos(list0, x, y, INTERIOR_Y);
     assert.deepEqual([b.sky, b.haze, b.mist, b.mistColour, b.sun, b.water, b.grade], [a.sky, a.haze, a.mist, a.mistColour, a.sun, a.water ?? DEFAULT_WATER, a.grade ?? [1, 1, 1, 0]], `same light at ${x / H}, ${y / H} H`);
   }
   // a warmer, darker place laid over with a 20 H blend: no step bigger than a hair along x or y

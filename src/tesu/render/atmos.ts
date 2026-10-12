@@ -115,6 +115,7 @@ uniform vec2 uDepth;      // near rate, far rate
 uniform vec2 uRows;       // draw rows [a, b)
 uniform float uTime;
 uniform vec3 uDeep, uBody, uShallow, uHaze, uGlint;
+uniform vec3 uMirrorTint;             // what it mirrors, multiplied (1: as bright as the sky above)
 uniform float uStill;     // 1 = mirror-still (Kagami), less for a harbour
 out vec4 o;
 void main() {
@@ -152,6 +153,7 @@ void main() {
   vec2 rp = vec2(p.x + dx, p.y + dy);
   rp = clamp(rp, vec2(0.0), uRes - 1.0);
   vec3 refl = texelFetch(uRefl, ivec2(rp.x, uRes.y - 1.0 - rp.y), 0).rgb;
+  refl *= uMirrorTint;
   // the water's own colour: pale at the horizon, deep jade near
   vec3 body = mix(uShallow, uBody, smoothstep(0.0, 0.5, k));
   body = mix(body, uDeep, smoothstep(0.45, 1.1, k));
@@ -197,6 +199,8 @@ export interface WaterDraw {
   shallow: [number, number, number];
   haze: [number, number, number];
   glint: [number, number, number];
+  /** Multiplies the mirrored colour (default [1, 1, 1]). */
+  mirror?: [number, number, number];
   still: number;
 }
 
@@ -276,6 +280,7 @@ export class Atmos {
     gl.uniform3fv(u.uShallow!, d.shallow);
     gl.uniform3fv(u.uHaze!, d.haze);
     gl.uniform3fv(u.uGlint!, d.glint);
+    gl.uniform3fv(u.uMirrorTint!, d.mirror ?? [1, 1, 1]);
     gl.uniform1f(u.uStill!, d.still);
     gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);

@@ -178,7 +178,11 @@ export interface Atmos {
   /** Sun position in the sky as share of the frame (x, y); null for none. */
   sun: [number, number] | null;
   /** Still water's colours under this sky (deep, body, shallow, the sun's glint). */
-  water?: { deep: string; body: string; shallow: string; glint: string };
+  water?: {
+    deep: string; body: string; shallow: string; glint: string;
+    /** Multiplies what the water mirrors (rgb, default [1, 1, 1]): below 1, a darker, glassier mirror. */
+    mirror?: [number, number, number];
+  };
   /** A colour grade on every plane: multiply by rgb (0..1+), by this amount (0..1). */
   grade?: [number, number, number, number];
   /**
