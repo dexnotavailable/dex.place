@@ -1,8 +1,8 @@
 // The dex mark intro: the first thing a visitor sees on a fresh visit to "/".
 //
 // Black, then lowercase "dex" (Daniel Bold, as hand-cleaned pixel art) writes
-// itself stroke by stroke, holds for a breath, and blows away left to right as
-// pixel dust. About 2 seconds; a click, tap or key skips it. With the system's
+// itself stroke by stroke, holds for a breath, and is blown away left to right as
+// pixel dust on a wind straight to the right. About 2 seconds; a click, tap or key skips it. With the system's
 // reduced-motion setting it is a plain fade in and out.
 //
 // It never pads loading: start loading first, call playIntro() alongside, and
@@ -20,18 +20,18 @@ import { MARK_H, MARK_ROWS, MARK_STROKES, MARK_W } from "./mark.ts";
 export const INTRO_TIMING = {
   /** A breath of black before the pen touches down. */
   start: 0.08,
-  /** The four strokes, pen lifts included. */
-  write: 0.72,
+  /** The four strokes, pen lifts included (Dex: a little slower than first cut). */
+  write: 0.9,
   /** Pause between strokes (part of `write`). */
-  lift: 0.045,
+  lift: 0.05,
   /** Fresh ink glows this long before it settles. */
   heat: 0.2,
   /** The finished mark holds. */
-  hold: 0.18,
+  hold: 0.16,
   /** The left-to-right release sweeps across the mark in this time. */
-  sweep: 0.55,
+  sweep: 0.5,
   /** Each dust pixel lives this long (min, max). */
-  dustLife: [0.12, 0.5] as const,
+  dustLife: [0.14, 0.45] as const,
   /** Reduced motion: fade in, hold, fade out. */
   calm: [0.35, 0.8, 0.45] as const,
   /** A skip fades whatever is on screen out this fast. */
@@ -42,6 +42,9 @@ export const INTRO_TIMING = {
 const INK: Rgb = [246, 238, 233];
 const HOT: Rgb = [255, 250, 236];
 const DUST_END: Rgb = [236, 190, 198];
+
+/** The wind's push to the right, art px per second squared. */
+const GUST = 260;
 
 type Rgb = readonly [number, number, number];
 
@@ -138,7 +141,8 @@ function planPixels(): Px[] {
   }
   const written = t - T.lift;
   const sweepAt = written + T.hold;
-  const slant = 0.45;
+  // an upright front: the mark goes strictly left to right (slant > 0 would lead with the top)
+  const slant = 0;
   const span = MARK_W + slant * MARK_H + 4;
 
   const out: Px[] = [];
@@ -168,8 +172,8 @@ function planPixels(): Px[] {
           acc += Math.sqrt(l2);
         }
       });
-      // the brush is about 3 px wide, so ink lands a little ahead of the pen's centre
-      const v = clamp01((along - 1.1) / lens[stroke]!);
+      // the brush is about 4 px wide, so ink lands a little ahead of the pen's centre
+      const v = clamp01((along - 1.4) / lens[stroke]!);
       const inkAt = starts[stroke]! + durs[stroke]! * smoothInv(v);
       const h1 = hash(x, y, 1);
       const h2 = hash(x, y, 2);
@@ -272,13 +276,15 @@ export function playIntro(opts: IntroOptions = {}): IntroHandle {
   /** Dust particle state at time t (art px, relative to the mark's top left). */
   function dustState(p: Px, t: number): { x: number; y: number; vx: number; vy: number; age: number } {
     const a = t - p.dustAt;
-    // one breeze for all of it (up and to the right, picking up speed), a little
-    // spread per pixel, and a slow shared wave so the dust moves as a sheet
-    const vx0 = 14 + 22 * p.h2;
-    const vy0 = -(28 + 30 * p.h3);
-    const x = p.x + vx0 * a + 26 * a * a + 2 * Math.sin(p.y * 0.3 + a * 8) * a;
-    const y = p.y + vy0 * a - 22 * a * a;
-    return { x, y, vx: vx0 + 52 * a, vy: vy0 - 44 * a, age: a };
+    // wind straight to the right, gusting harder as it goes; each pixel a little
+    // faster or slower than its neighbours
+    const vx0 = 80 + 200 * p.h2;
+    const x = p.x + vx0 * a + 0.5 * GUST * a * a;
+    // a slight, erratic flutter up and down that grows in over the first moments
+    const amp = (1.2 + 2 * p.h3) * Math.min(1, a * 7);
+    const w = 14 + 12 * p.h1;
+    const y = p.y + (p.h3 - 0.5) * 8 * a + amp * Math.sin(p.h2 * 37 + a * w);
+    return { x, y, vx: vx0 + GUST * a, vy: (p.h3 - 0.5) * 8 + amp * w * Math.cos(p.h2 * 37 + a * w), age: a };
   }
 
   function put(data: Uint8ClampedArray, bw: number, bh: number, x: number, y: number, c: Rgb, alpha: number): void {
