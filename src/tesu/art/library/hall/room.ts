@@ -8,7 +8,7 @@
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
-import { M, LitField, clamp, cyl, fbm, grain, hash, keep, lathe, lum, mt, poly, rect, tn, vnoise, type At } from "./kit.ts";
+import { M, LitField, clamp, colBase, colLight, cyl, face, fbm, grain, hash, keep, lathe, lum, mt, poly, rect, tn, vnoise, type At } from "./kit.ts";
 
 const H = 96;
 
@@ -22,6 +22,8 @@ export interface FloorP {
   below: number;
   /** Gold caps along the edge (local x). */
   caps: number[];
+  /** Lights doubled in the polished floor: [local x, half width, strength]. */
+  refl?: [number, number, number][];
   at?: At;
 }
 
@@ -62,8 +64,14 @@ export const hallFloor = definePainter<FloorP>("hall.floor", {
       const off = (row % 2) * fw * 0.5;
       const joint = depth - rowTop < 0.025 + row * 0.006 || (((lx + off) % fw) + fw) % fw < 1.2 + row * 0.4;
       const lf2 = lf.get(lx, -20);
-      const gleam = vnoise(lx * 0.03, depth * 2, 9) * 0.15;
-      const lit = lum(lf2) * (0.42 - depth * 0.05) + gleam - (joint ? 0.15 : 0) - (ly < FACE + 4 ? 0.2 : 0);
+      // the polish: each light above doubled as a soft vertical smear, fading as it nears us
+      let refl = 0;
+      for (const rx of p.refl ?? []) {
+        const d = Math.abs(lx - rx[0]) / rx[1];
+        if (d < 1) refl = Math.max(refl, (1 - d * d) * rx[2] * Math.max(0, 1 - depth / 2.6));
+      }
+      const gleam = vnoise(lx * 0.02, depth * 3, 9) * 0.08;
+      const lit = lum(lf2) * (0.3 - depth * 0.05) + refl * (0.75 + 0.25 * vnoise(lx * 0.3, ly * 0.08, 4)) + gleam - (joint ? 0.12 : 0) - (ly < FACE + 4 ? 0.2 : 0);
       return mt(M.stone, lit, X, Y, 0.62, 1, 0.5);
     });
   },
@@ -116,12 +124,12 @@ export const endWall = definePainter<EndWallP>("hall.endwall", {
     // the corner column at the room's end: vermilion, lit by the doors' daylight
     const colR = 0.3 * H;
     const ccx = -s * colR * 0.6;
-    const cside = clamp(lf.get(ccx, -2 * H).dx * 1.6, -1, 1);
-    lathe(c, ccx, -20 * H, 0, (ly) => (ly > -0.9 * H ? colR * 1.22 : colR), (X, Y, u, _lx, ly) => {
-      const l = lf.get(ccx, ly);
+    const { k: ck, side: cside } = colLight(lf, ccx, -8 * H, 0);
+    colBase(c, ccx, colR, 0.9 * H, ck, cside, 13);
+    lathe(c, ccx, -20 * H, 0, () => colR, (X, Y, u, _lx, ly) => {
       const hgt = -ly / H;
-      const n = cyl(l.k, u, cside, 0.1);
-      if (hgt < 0.9) return mt(M.stone, n * 0.85 + (hgt > 0.82 ? 0.15 : 0), X, Y, 0.3, 1);
+      const n = cyl(ck, u, cside, 0.1) - clamp((hgt - 6) / 14, 0, 1) * 0.15;
+      if (hgt < 0.9) return 0;
       const band = (hgt > 1.0 && hgt < 1.2) || (hgt > 6.6 && hgt < 6.8);
       return band ? mt(M.gold, n * 0.9, X, Y, 0.2, 1) : mt(M.verm, n * 0.75, X, Y, 0.25, 1);
     });
@@ -204,10 +212,10 @@ function doorway(c: PaintCtx, p: EndWallP, dx0: number, dx1: number, sr: number,
     if (rd < 0.15 * H * g && rd > 0.11 * H * g && v > ry) return mt(M.gold, lum(l, (u - rx) * 4, 0.3) * 1.0, X, Y, 0.05, 1);
     if (Math.hypot((u - rx) * (dx1 - dx0), (v - ry + 0.04) * dh) < 0.12 * H * g) return mt(M.bronze, lum(l, (u - rx) * 3, (v - ry) * 3) * 1.0, X, Y, 0.1, 1);
     // the lacquer, worn paler round the rings and along the foot, daylight under the leaves
-    const worn = (Math.abs(v - 0.5) < 0.12 ? 0.08 : 0) + (v > 0.92 ? 0.1 : 0);
+    const worn = (Math.abs(v - 0.5) < 0.1 && fbm(lx * 0.08, ly * 0.08, 3, 2) > 0.5 ? 0.06 : 0) + (v > 0.93 ? 0.06 : 0);
     const under = v > 0.985 && p.day > 0 ? 0.6 : 0;
     if (under) return keep(X, Y, 0.6) ? tn(M.paper, 0.2, X, Y, 0) : mt(M.verm, lum(l) * 0.4, X, Y, 0.4, 1);
-    return mt(M.verm, lum(l) * 0.72 + worn + grain(lx, ly, 17) * 0.08, X, Y, 0.25, 1);
+    return mt(M.verm, lum(l) * 0.72 + worn + grain(lx, ly, 17, false) * 0.05, X, Y, 0.25, 1);
   });
   // the stone threshold and a step out onto the walkway
   rect(c, dx0 - sr * 1.1, -0.14 * H, dx1 + sr * 1.1, 0, (X, Y, lx, ly) => {
@@ -225,7 +233,7 @@ function doorway(c: PaintCtx, p: EndWallP, dx0: number, dx1: number, sr: number,
     const off = Math.floor((ly - ty0) / (s * 0.8)) % 2 ? s / 2 : 0;
     const gx2 = (((lx - dx0 + off) % s) + s) % s;
     if (gy < 0.025 * H || gx2 < 0.025 * H) return mt(M.wood, lum(l) * 0.5, X, Y, 0.45, 1);
-    return tn(M.paper, clamp(0.5 + 0.3 * (1 - p.day) + 0.25 * v + (gx < 0 ? 0 : 0), 0, 1), X, Y, 0.55);
+    return tn(M.paper, clamp(0.62 + 0.25 * (1 - p.day) + 0.2 * v + (gx < 0 ? 0 : 0), 0, 1), X, Y, 0.55);
   });
 }
 
@@ -279,12 +287,12 @@ export const gallery = definePainter<GalleryP>("hall.gallery", {
 
 function post(c: PaintCtx, px: number, drop: number, D: number, lf: LitField): void {
   const r = 0.2 * H;
-  const side = clamp(lf.get(px, drop * 0.5).dx * 1.6, -1, 1);
-  lathe(c, px, D - 4, drop, (ly) => (ly > drop - 0.55 * H ? r * 1.35 : r), (X, Y, u, lx, ly) => {
-    const l = lf.get(px, ly);
+  const { k: pk, side } = colLight(lf, px, D, drop);
+  colBaseAt(c, px, drop, r, 0.55 * H, pk, side, 7);
+  lathe(c, px, D - 4, drop, () => r, (X, Y, u, lx, ly) => {
     const fromFloor = (drop - ly) / H;
-    const n = cyl(l.k, u, side, 0.1);
-    if (fromFloor < 0.55) return mt(M.stone, n * 0.85 + (fromFloor > 0.5 ? 0.15 : 0) + (fbm(lx * 0.4, ly * 0.4, 3, 2) > 0.72 ? -0.1 : 0), X, Y, 0.3, 1);
+    const n = cyl(pk, u, side, 0.1);
+    if (fromFloor < 0.55) return 0;
     const band = (fromFloor > 0.6 && fromFloor < 0.74) || ly < D + 0.2 * H;
     if (band) return mt(M.gold, n * 0.9, X, Y, 0.2, 1);
     return mt(M.verm, n * 0.78 - (fromFloor < 1.3 ? vnoise(lx * 0.5, ly * 0.2, 2) * 0.08 : 0), X, Y, 0.25, 1);
@@ -421,8 +429,21 @@ export const stair = definePainter<StairP>("hall.stair", {
         return 0;
       });
     }
-    // the stringer: a deep lacquered board along the slope, gold-edged
+    // the spandrel under the stair: a panelled wall closing the nook (the shelf and the lamp
+    // stand against it; its underside above is the nook's ceiling)
     const D = p.depth;
+    rect(c, 0, D, p.dx, p.dy, (X, Y, lx, ly) => {
+      const under = lx * slope + D + 4;
+      if (ly < under) return 0;
+      const l = lf.get(lx, ly);
+      const fromFloor = p.dy - ly;
+      const board = ((lx % 22) + 22) % 22 < 1.3;
+      const rail = Math.abs(fromFloor - 0.92 * H) < 3;
+      const skirt = fromFloor < 0.32 * H;
+      if (rail) return mt(M.wood, lum(l, 0, fromFloor > 0.92 * H ? 0.6 : -0.8) * 0.9, X, Y, 0.2, 1);
+      if (skirt) return mt(M.lacq, lum(l) * (fromFloor > 0.29 * H ? 1.1 : 0.6), X, Y, 0.1, 1);
+      return mt(M.wood, lum(l) * (board ? 0.45 : 0.7) + grain(lx, ly, 27) * 0.08, X, Y, 0.35, 1);
+    });
     rect(c, -2, 0, p.dx + 2, p.dy + D, (X, Y, lx, ly) => {
       const base = lx * slope; // the treads' line
       const t = ly - base;
@@ -463,66 +484,68 @@ export const pillar = definePainter<PillarP>("hall.pillar", {
     const R = p.r;
     const baseH = 1.05 * H;
     // the carved stone base: a lotus drum, a lion's face in relief, chipped and dusty
-    const bside = clamp(lf.get(0, -0.5 * H).dx * 1.6, -1, 1);
-    lathe(c, 0, -baseH, 0, (ly) => {
-      const t = (ly + baseH) / baseH;
-      return R * (1.3 + 0.12 * Math.sin(t * Math.PI * 1.1) + (t > 0.86 ? 0.14 : 0) + (t < 0.1 ? 0.05 : 0));
-    }, (X, Y, u, lx, ly) => {
-      const l = lf.get(0, ly);
-      const t = (ly + baseH) / baseH;
-      const n = cyl(l.k, u, bside) + (t < 0.08 || (t > 0.86 && t < 0.9) ? 0.12 : 0);
-      // lotus petals round the top, the lion's mask in the middle
-      if (t < 0.32 && Math.sin(u * 7.5) > 0.1) return mt(M.stone, n * 0.85, X, Y, 0.15, 1);
-      const fx = u * 1.3, fy = (t - 0.6) * 3;
-      const face = Math.hypot(fx, fy * 0.9) < 0.55;
-      if (face) {
-        const eyes = Math.hypot(Math.abs(fx) - 0.2, fy + 0.18) < 0.08;
-        const mouth = Math.abs(fy - 0.22) < 0.05 && Math.abs(fx) < 0.25;
-        const mane = Math.hypot(fx, fy * 0.9) > 0.42;
-        if (eyes || mouth) return mt(M.stone, n * 0.35, X, Y, 0.3, 1);
-        if (mane) return mt(M.stone, n * (Math.sin(Math.atan2(fy, fx) * 9) > 0 ? 0.95 : 0.7), X, Y, 0.15, 1);
-        return mt(M.stone, n * 1.05, X, Y, 0.1, 1);
-      }
-      const chip = fbm(lx * 0.25, ly * 0.25, 51, 3) > 0.7 ? -0.18 : 0;
-      return mt(M.stone, n * 0.95 + chip, X, Y, 0.15, 1);
-    });
-    // the shaft: vermilion, gold bands, a lacquer sheen down the side toward the shaft's light
-    const side = clamp(lf.get(0, -3 * H).dx * 1.6, -1, 1);
+    const bl = colLight(lf, 0, -baseH, 0);
+    colBase(c, 0, R, baseH, bl.k, bl.side, 51);
+    const { k: pk, side } = colLight(lf, 0, -p.h, -baseH);
     lathe(c, 0, -p.h, -baseH, () => R, (X, Y, u, lx, ly) => {
-      const l = lf.get(0, ly);
       const hgt = -ly;
-      const n = cyl(l.k, u, side, 0.12);
+      const n = cyl(pk, u, side, 0.12) - clamp((hgt / H - 4) / 14, 0, 1) * 0.12;
       if (hgt > p.beam[0] - p.beam[1] - 4 && hgt < p.beam[0] + 4) return mt(M.gold, n * 0.85 + (Math.sin(lx * 0.6) > 0.3 ? 0.06 : 0), X, Y, 0.2, 1);
       const band = (hgt > 1.15 * H && hgt < 1.32 * H) || (((hgt % (3.2 * H)) + 3.2 * H) % (3.2 * H) < 0.1 * H && hgt > 2 * H);
       if (band) return mt(M.gold, n * 0.9, X, Y, 0.2, 1);
-      const worn = hgt < 2.2 * H ? vnoise(lx * 0.3, ly * 0.1, 29) * 0.1 : 0;
+      const worn = hgt < 2.2 * H ? (fbm(lx * 0.06, ly * 0.04, 29, 2) > 0.6 ? 0.06 : 0) : 0;
       return mt(M.verm, n * 0.78 - worn, X, Y, 0.25, 1);
     });
-    // the map: rolled tight on a red cord wound round the pillar, gold end-caps, a paper tag
-    const my = -1.45 * H;
-    const half = R + 18;
-    rect(c, -half, my - 13, half, my + 13, (X, Y, lx, ly) => {
-      const l = lf.get(lx, ly);
-      const u = lx / half, v = (ly - my) / 13;
-      if (Math.abs(u) > 0.9) return mt(M.gold, lum(l, u * 0.6, v * 0.8) * 1.05, X, Y, 0.05, 1);
-      const roll = lum(l, 0, v * 0.95);
-      const edge = Math.abs(u) > 0.84 && Math.abs(v) < 0.75 ? -0.25 : 0;
-      return mt(M.paper, roll * 0.95 + edge, X, Y, 0.0, 1);
+    // the map: a long roll of paper lashed across the pillar's face at standing height by two
+    // bands of red cord, gold knobs at its ends, a wooden tag and a tassel hanging from the knot
+    const my = -1.5 * H;
+    const rr = 12;
+    const half = R + 26;
+    const mk = Math.max(0.62, lf.get(0, my).k);
+    rect(c, -half - 6, my - rr - 2, half + 6, my + rr + 2, (X, Y, lx, ly) => {
+      const v = (ly - my) / rr;
+      if (Math.abs(v) > 1) return 0;
+      const u = lx / half;
+      // the knobs: turned gold, round ends
+      if (Math.abs(u) > 1) {
+        const kx = Math.sign(u) * (half + 3);
+        return Math.hypot(lx - kx, (ly - my) * 1.2) < 6.5 ? mt(M.gold, cyl(mk, (lx - kx) / 6.5, -1, 0.3) * 1.05 - (v > 0.4 ? 0.2 : 0), X, Y, 0.0, 1) : 0;
+      }
+      // the roll: a paper cylinder lying across, the edge of its last turn showing
+      const turn = Math.abs(v - 0.62) < 0.08 ? -0.18 : 0;
+      const ends = Math.abs(u) > 0.94 ? -0.2 : 0;
+      return mt(M.paper, cyl(mk, v, -1, 0.25) * 1.05 + turn + ends, X, Y, 0.0, 0.85);
     });
-    // the cord: wound round the roll twice, then up the pillar in a spiral to a peg
-    for (const cxu of [-0.35, 0.3]) rect(c, half * cxu - 2, my - 14, half * cxu + 2, my + 14, (X, Y, lx, ly) => mt(M.verm, lum(lf.get(lx, ly), 0, (ly - my) / 14) * 0.9, X, Y, 0.2, 1));
-    for (let i = 0; i < 26; i++) {
-      const t = i / 26;
-      const ly = my - 14 - t * 0.95 * H;
-      const ux = Math.sin(t * Math.PI * 3) * R * 0.95;
-      const front = Math.cos(t * Math.PI * 3) > -0.2;
-      if (!front) continue;
-      rect(c, ux - 1.5, ly - 2, ux + 1.5, ly + 2, (X, Y, lx, lyy) => mt(M.verm, lum(lf.get(lx, lyy)) * 0.95, X, Y, 0.2, 1));
+    // two bands of cord round roll and pillar, knotted at the middle
+    for (const bx of [-R * 0.55, R * 0.55]) {
+      rect(c, bx - 2.5, my - rr - 3, bx + 2.5, my + rr + 3, (X, Y, lx, ly) => {
+        const twist = (((ly - lx * 0.9) % 4) + 4) % 4 < 2;
+        return mt(M.verm, cyl(mk, (ly - my) / (rr + 3), -1) * (twist ? 1 : 0.8), X, Y, 0.1, 1);
+      });
     }
-    // a tassel hanging from the roll's end
-    rect(c, half - 3, my + 10, half - 1, my + 34, (X, Y, lx, ly) => mt(M.verm, lum(lf.get(lx, ly)) * (ly > my + 26 ? 0.6 : 0.85), X, Y, 0.25, 1));
+    rect(c, -4, my - 4, 4, my + 4, (X, Y, lx, ly) => (Math.hypot(lx, ly - my) < 4.5 ? mt(M.verm, face(mk, -1, lx / 5, (ly - my) / 5), X, Y, 0.1, 1) : 0));
+    // the knot's tails, a wooden tag and a tassel
+    for (const [tx, len] of [[-2, 26], [2, 34]] as const) rect(c, tx - 1, my + 3, tx + 1, my + len, (X, Y, _lx, _ly) => mt(M.verm, face(mk, -1) * 0.85, X, Y, 0.2, 1));
+    woodBox(c, -9, my + 26, 3, my + 44, mk);
+    rect(c, 1, my + 34, 3, my + 50, (X, Y) => tn(M.verm, 0.45, X, Y, 0));
+    rect(c, 0, my + 50, 4, my + 58, (X, Y) => tn(M.verm, 0.3, X, Y, 0));
   },
 });
+
+/** A small wooden tag (the map's label: blank). */
+function woodBox(c: PaintCtx, x0: number, y0: number, x1: number, y1: number, k: number): void {
+  rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
+    const u = (lx - x0) / (x1 - x0), v = (ly - y0) / (y1 - y0);
+    const e = Math.min(u, 1 - u, v, 1 - v);
+    return mt(M.wood, face(k, -1, u < 0.15 ? -1 : u > 0.85 ? 1 : 0, v < 0.12 ? -1 : 0) * (e < 0.1 ? 0.7 : 1), X, Y, 0.1, 1);
+  });
+}
+
+/** A column base standing on a floor `fy` px below the local origin. */
+function colBaseAt(c: PaintCtx, cx: number, fy: number, r: number, top: number, k: number, side: number, seed: number): void {
+  const shifted = { ...c, Y: (v: number) => c.Y(v + fy), ly: (v: number) => c.ly(v) - fy };
+  colBase(shifted as PaintCtx, cx, r, top, k, side, seed);
+}
 
 export { P, hash, keep, tn };
 
@@ -550,34 +573,56 @@ export const roof = definePainter<RoofP>("hall.roof", {
   paint(c, p) {
     const lf = new LitField(HALL_LIGHT, p.at, 16);
     const b0 = -p.beam - p.depth, b1 = -p.beam;
+    const sx0 = p.sky[0], sx1 = p.sky[1], sw = sx1 - sx0;
     rect(c, 0, -p.top, p.w, b1, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
       if (ly >= b0) {
-        // the tie beam: painted ends, a gold-edged teal body, a lit underside lip
+        // the long beam: dark lacquer, a gold bead top and bottom, a dim painted cartouche every
+        // bay, a gold scroll at each joint; its underside lip catches the light below
         const v = (ly - b0) / p.depth;
-        if (v > 0.9) return mt(M.gold, lum(l, 0, 0.9) * 0.8, X, Y, 0.25, 1);
-        if (v < 0.08) return mt(M.lacq, lum(l) * 0.3, X, Y, 0.3, 1);
+        if (v > 0.88) return mt(M.gold, lum(l, 0, 0.9) * 0.75, X, Y, 0.3, 1);
+        if (v < 0.07) return mt(M.gold, lum(l, 0, -0.9) * 0.45, X, Y, 0.35, 1);
         const k = ((lx % (4.6 * H)) + 4.6 * H) % (4.6 * H) / (4.6 * H);
-        if (k < 0.12 || k > 0.88) return Math.sin(lx * 0.25 + v * 7) > 0.3 ? mt(M.gold, lum(l) * 0.6, X, Y, 0.3, 1) : mt(M.verm, lum(l) * 0.45, X, Y, 0.35, 1);
-        const cart = Math.abs(k - 0.5) < 0.2 && Math.abs(v - 0.5) < 0.3;
-        if (cart) return Math.abs(Math.abs(k - 0.5) - 0.19) < 0.012 || Math.abs(Math.abs(v - 0.5) - 0.29) < 0.04 ? mt(M.gold, lum(l) * 0.75, X, Y, 0.25, 1) : mt(M.lacq, lum(l) * 0.4, X, Y, 0.3, 1);
-        return tn(P.jade, clamp(0.84 + (1 - lum(l)) * 0.16, 0, 1), X, Y, 0.45);
+        const ek = Math.min(k, 1 - k) * 4.6 * H;
+        if (ek < 0.32 * H) {
+          const f = Math.sin(ek * 0.35 + Math.sin((v - 0.5) * 6) * 2.5);
+          return Math.abs(f) < 0.22 ? mt(M.gold, lum(l) * 0.6, X, Y, 0.35, 1) : mt(M.verm, lum(l) * 0.35, X, Y, 0.4, 1);
+        }
+        const cart = Math.abs(k - 0.5) < 0.17 && Math.abs(v - 0.5) < 0.28;
+        if (cart) {
+          const edge = Math.abs(Math.abs(k - 0.5) - 0.165) < 0.01 || Math.abs(Math.abs(v - 0.5) - 0.27) < 0.04;
+          return edge ? mt(M.gold, lum(l) * 0.65, X, Y, 0.3, 1) : tn(P.jade, clamp(0.86 + (1 - lum(l)) * 0.14, 0, 1), X, Y, 0.45);
+        }
+        return mt(M.lacq, lum(l) * 0.5 + grain(lx, ly, 61, false) * 0.05, X, Y, 0.1, 1);
       }
-      // the skylight: a lattice of light in the dark roof
-      if (lx > p.sky[0] && lx < p.sky[1] && ly < b0 - 0.25 * H) {
-        const u = (lx - p.sky[0]) / (p.sky[1] - p.sky[0]);
-        if (u < 0.06 || u > 0.94) return mt(M.lacq, 0.35, X, Y, 0.3, 1);
-        const s2 = 0.28 * H;
-        const a = (((lx - p.sky[0]) % s2) + s2) % s2, bb = ((((-ly) % s2) + s2) % s2);
-        if (a < 3 || bb < 3) return mt(M.wood, 0.3, X, Y, 0.4, 1);
-        return tn(SKYLIGHT, clamp(0.05 + Math.abs(u - 0.5) * 1.1 + ((-ly - p.beam - p.depth) / H) * 0.15, 0, 1), X, Y, 0.55);
+      // the skylight: a deep well in the roof, its inner walls lit by the day pouring down it,
+      // the lattice at its mouth in silhouette against the brightness
+      const wellDepth = 0.55 * H;
+      if (lx > sx0 - wellDepth * 0.4 && lx < sx1 + wellDepth * 0.4 && ly < b0 - 0.2 * H) {
+        const u = (lx - sx0) / sw;
+        const up = (b0 - 0.2 * H - ly) / H; // how far up the well
+        if (u < 0 || u > 1) {
+          // the well's side walls, lit from the opening, darker going down
+          const side = u < 0 ? -u * sw / (wellDepth * 0.4) : (u - 1) * sw / (wellDepth * 0.4);
+          return mt(M.wood, (1 - side) * (0.35 + 0.4 * clamp(up / 2.5, 0, 1)), X, Y, 0.2, 1);
+        }
+        const s2 = 0.3 * H;
+        const a = (((lx - sx0) % s2) + s2) % s2, bb = ((((-ly) % s2) + s2) % s2);
+        const bar = (a < 2.5 || bb < 2.5) && up < 1.4;
+        if (bar) return mt(M.wood, 0.25 + 0.3 * clamp(up, 0, 1), X, Y, 0.35, 1);
+        const glow = clamp(0.15 + Math.abs(u - 0.5) * 0.9 - up * 0.12, 0, 1);
+        return tn(SKYLIGHT, glow, X, Y, 0.55);
       }
-      // coffers: a grid of dark lacquer frames, faint gold in the panels, very dark
+      // coffers: lacquer frames, each panel holding a faint gold rosette, warmed near the
+      // skylight and the lanterns, darkest far up
       const cs = 0.75 * H;
-      const gx = ((lx % cs) + cs) % cs, gy = ((((-ly) % (0.5 * H)) + 0.5 * H) % (0.5 * H));
-      if (gx < 5 || gy < 4) return mt(M.lacq, lum(l) * 0.35, X, Y, 0.35, 1);
-      const rose = Math.hypot(gx - cs / 2, gy - 0.25 * H) < 6;
-      return rose ? mt(M.gold, lum(l) * 0.55, X, Y, 0.35, 1) : mt(M.lacq, lum(l) * 0.55, X, Y, 0.35, 1);
+      const gx = ((lx % cs) + cs) % cs, gy = ((((-ly) % (0.55 * H)) + 0.55 * H) % (0.55 * H));
+      const near = clamp(1 - Math.abs(lx - (sx0 + sx1) / 2) / (3.2 * H), 0, 1) * 0.35;
+      const lit = lum(l) * 0.5 + near;
+      if (gx < 4 || gy < 4) return mt(M.wood, lit * 0.75, X, Y, 0.35, 1);
+      const rose = Math.hypot(gx - cs / 2, gy - 0.275 * H) < 7;
+      const petal = rose && Math.sin(Math.atan2(gy - 0.275 * H, gx - cs / 2) * 8) > 0;
+      return rose ? mt(M.gold, lit * (petal ? 0.8 : 0.5), X, Y, 0.35, 1) : mt(M.lacq, lit * 0.6, X, Y, 0.2, 1);
     });
   },
 });

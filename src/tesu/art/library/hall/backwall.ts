@@ -12,7 +12,7 @@
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
-import { M, SCREEN, LitField, clamp, cyl, fbm, grain, hash, keep, lathe, lum, mt, rect, tn, vnoise, type At } from "./kit.ts";
+import { M, SCREEN, LitField, clamp, colBase, colLight, cyl, fbm, grain, hash, keep, lathe, lum, mt, rect, tn, vnoise, type At } from "./kit.ts";
 
 /** A bay of the back wall between two columns, in local plane px. */
 export interface Bay {
@@ -499,27 +499,14 @@ function column(c: PaintCtx, p: BackWallP, cx: number, lf: LitField): void {
   const U = p.u;
   const r = 0.36 * U;
   const baseTop = -0.95 * U;
-  // one light side for the whole column (where its lights lie, seen from its middle)
-  const mid = lf.get(cx, -4 * U);
-  const side = clamp(mid.dx * 1.6, -1, 1);
-  // the carved stone base: a drum with a lotus band, wider than the shaft
-  lathe(c, cx, baseTop, 0, (ly) => {
-    const t = (ly - baseTop) / -baseTop;
-    return r * (1.28 + 0.1 * Math.sin(t * Math.PI) + (t > 0.8 ? 0.1 : 0));
-  }, (X, Y, u, lx, ly) => {
-    const l = lf.get(lx, ly);
-    const t = (ly - baseTop) / -baseTop;
-    const petal = t > 0.15 && t < 0.5 && Math.sin(u * 9) > 0.2 ? -0.12 : 0;
-    const chip = fbm(lx * 0.3, ly * 0.3, 41, 2) > 0.74 ? -0.1 : 0;
-    const top = t < 0.08 ? 0.15 : 0;
-    return mt(M.stone, cyl(l.k, u, side) * 0.85 + petal + chip + top, X, Y, 0.3, 1);
-  });
+  // one light for the whole column (its mean over the height), so its bands run straight
+  const { k: ck, side } = colLight(lf, cx, -LINTEL * U, 0);
+  colBase(c, cx, r, -baseTop, ck, side, 41);
   // the shaft: vermilion lacquer, gold bands at each storey line, worn at the foot
   lathe(c, cx, -LINTEL * U, baseTop, () => r, (X, Y, u, lx, ly) => {
-    const l = lf.get(cx, ly);
     const hgt = -ly / U;
     const band = (hgt > 13.6 && hgt < 14.2) || (hgt > 1.0 && hgt < 1.22) || (hgt > 8.72 && hgt < 8.9) || (hgt > 4.94 && hgt < 5.06);
-    const n = cyl(l.k, u, side, 0.12);
+    const n = cyl(ck, u, side, 0.12) - (hgt / 14) * 0.08;
     if (band) return mt(M.gold, n * 0.9, X, Y, 0.2, 1);
     const worn = hgt < 1.6 ? vnoise(lx * 0.4, ly * 0.15, 23) * 0.1 : 0;
     return mt(M.verm, n * 0.78 - worn, X, Y, 0.25, 1);

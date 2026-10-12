@@ -197,6 +197,21 @@ export function bevel(u: number, v: number, bu: number, bv: number): [number, nu
   return [nx, ny];
 }
 
+/**
+ * A column's light: the mean over its height (so its lit and shaded bands run straight down
+ * it, as on a real lacquered column) and the side its light comes from.
+ */
+export function colLight(lf: LitField, x: number, y0: number, y1: number): { k: number; side: number } {
+  let k = 0, dx = 0;
+  const n = 9;
+  for (let i = 0; i < n; i++) {
+    const l = lf.get(x, y0 + ((y1 - y0) * (i + 0.5)) / n);
+    k += l.k;
+    dx += l.dx * l.k;
+  }
+  return { k: k / n, side: clamp((dx / Math.max(1e-6, k)) * 1.6, -1, 1) };
+}
+
 /** Glowing paper (screens, lanterns): cream at the hot middle, amber, then the warm dark. */
 export const SCREEN: Ramp = [P.ember[0]!, P.ember[1]!, P.paper[2]!, P.paper[3]!, P.ember[4]!, P.umber[0]!, P.umber[1]!, P.umber[2]!];
 
@@ -337,3 +352,36 @@ export function keep(X: number, Y: number, a: number): boolean {
 }
 
 export { clamp, hash, vnoise, fbm };
+
+/**
+ * A column's stone base, the classic two parts seen side-on: a square plinth with a chamfered
+ * top edge, and on it an upturned basin carved with a ring of lotus petals that swells out
+ * from the shaft. `top` is the base's height (it stands on y = 0, centred on cx).
+ */
+export function colBase(c: PaintCtx, cx: number, r: number, top: number, k: number, side: number, seed: number): void {
+  const plinthH = top * 0.38, plinthW = r * 1.55;
+  // the plinth
+  rect(c, cx - plinthW, -plinthH, cx + plinthW, 0, (X, Y, lx, ly) => {
+    const u = (lx - cx) / plinthW, v = (ly + plinthH) / plinthH;
+    const chamfer = v < 0.18;
+    const ny = chamfer ? -0.85 : v > 0.9 ? 0.6 : 0;
+    const nx = Math.abs(u) > 0.94 ? Math.sign(u) : 0;
+    const chip = fbm(lx * 0.35, ly * 0.35, seed, 2) > 0.74 ? -0.12 : 0;
+    const dust = v > 0.8 ? -0.06 : 0;
+    return mt(M.stone, face(k, side, nx, ny) * 0.92 + chip + dust, X, Y, 0.2, 1);
+  });
+  // the basin with its lotus petals
+  lathe(c, cx, -top, -plinthH, (ly) => {
+    const t = (ly + top) / (top - plinthH); // 0 at the shaft .. 1 at the plinth
+    return r * (1.02 + 0.42 * Math.sin(Math.min(1, t * 1.15) * Math.PI * 0.5));
+  }, (X, Y, u, lx, ly) => {
+    const t = (ly + top) / (top - plinthH);
+    // petals: rounded lobes round the basin, their tips toward the shaft
+    const lobe = Math.cos(Math.asin(clamp(u, -1, 1)) * 7);
+    const groove = lobe < -0.75 && t > 0.15;
+    const tipLine = Math.abs(t - (0.25 + 0.2 * Math.abs(lobe))) < 0.05;
+    const n = cyl(k, u, side) * (groove ? 0.7 : 1) + (t < 0.12 ? 0.12 : 0) - (tipLine ? 0.1 : 0);
+    const chip = fbm(lx * 0.4, ly * 0.4, seed + 3, 2) > 0.76 ? -0.1 : 0;
+    return mt(M.stone, n * 0.95 + chip, X, Y, 0.2, 1);
+  });
+}

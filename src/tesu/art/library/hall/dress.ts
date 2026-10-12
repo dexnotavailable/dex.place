@@ -36,7 +36,7 @@ export function dressHall(b: WorldBuilder): void {
   const at = (x: number, y: number, rate = 1) => ({ wx: x, wy: y, rate });
 
   // --- light and haze: warm incense haze instead of mist, no sky
-  b.atmos({ x: RX0 - h(20), y0: FY - h(40), y1: FY + h(20), interior: true, sky: ["#120d0e", "#1b1314", "#22181a"], haze: "#5c4130", mist: 0, mistColour: "#6a4c3a", sun: null });
+  b.atmos({ x: RX0 - h(20), y0: FY - h(40), y1: FY + h(20), interior: true, sky: ["#120d0e", "#1b1314", "#22181a"], haze: "#6e4e3a", mist: 0, mistColour: "#6a4c3a", sun: null });
 
   // --- the back wall (P3): long enough for every frame in the room, the entrance shot included
   const bx0 = X(-15), bx1 = X(49);
@@ -60,7 +60,12 @@ export function dressHall(b: WorldBuilder): void {
   b.piece("mid", "hall.deep", dx0, FY, { w: (dx1 - dx0) * r2, u: H * r2, top: h(30) * r2, below: h(4) * r2 }, { z: 0, reflect: false });
 
   // --- the walkway's edge and the stone floor nearer us
-  b.piece("play", "hall.floor", X(-8), FY, { w: h(50), below: h(6), caps: [4, 8.6, 14.1, 18, 23.2, 27.4, 33.6].map((o) => X(o) - X(-8)), at: at(X(-8), FY) }, { z: -2 });
+  const refl: [number, number, number][] = [
+    [SHAFT.x1 - X(-8), h(1.4), 0.55],
+    ...HALL_LANTERNS.filter((l) => l.plane === "play" && l.y < 8).map((l) => [X(l.o) - X(-8), h(0.35) * l.r, 0.32] as [number, number, number]),
+    [X(1.85) - X(-8), h(0.9), 0.18], [X(32.15) - X(-8), h(1.0), 0.22],
+  ];
+  b.piece("play", "hall.floor", X(-8), FY, { w: h(50), below: h(6), caps: [4, 8.6, 14.1, 18, 23.2, 27.4, 33.6].map((o) => X(o) - X(-8)), refl, at: at(X(-8), FY) }, { z: -2 });
 
   // --- the end walls with the doors built into them
   const fd = usable(b, "hall-front-doors"), gd = usable(b, "great-doors");
@@ -76,7 +81,7 @@ export function dressHall(b: WorldBuilder): void {
 
   // --- the stair and its near rail
   const [sx0, sy0, sx1, sy1] = st.pts as [number, number, number, number];
-  b.piece("play", "hall.stair", sx0, sy0, { dx: sx1 - sx0, dy: sy1 - sy0 + h(0.1), depth: 44, at: at(sx0, sy0) }, { z: 4 });
+  b.piece("play", "hall.stair", sx0, sy0, { dx: sx1 - sx0, dy: sy1 - sy0 + h(0.1), depth: 44, at: at(sx0, sy0) }, { z: 2 });
   b.piece("front", "hall.stair", sx0, sy0, { dx: sx1 - sx0, dy: sy1 - sy0 + h(0.1), depth: 44, rail: true, at: at(sx0, sy0) }, { z: 2 });
 
   // --- the services, each standing on the walk line where the builder put it
@@ -106,13 +111,28 @@ export function dressHall(b: WorldBuilder): void {
     if (!s.id.startsWith("art-") || s.kind !== "image") continue;
     const w = Number(s.p.w), hh = Number(s.p.h);
     const up = s.y < FY - h(4);
-    b.piece("play", "hall.frame", s.x, s.y, { w, h: hh, mount: up ? "stand" : "wall", floor: up ? GY - s.y : 0, at: at(s.x, s.y) }, { z: 3 });
+    b.piece("play", "hall.frame", s.x, s.y, { w, h: hh, mount: up ? "stand" : "wall", floor: up ? GY - s.y : 0, at: at(s.x, s.y) }, { z: 4 });
   }
   const th = sv("teahouse");
   b.piece("play", "hall.teahouse", th.x0, GY, { w: th.x1 - th.x0, h: GY - th.y0, at: at(th.x0, GY) }, { z: 4 });
   const ob2 = sv("offering-box-small");
   const b2x = ob2.x0 + h(0.1), b2w = h(0.6), b2h = h(0.62);
   b.piece("play", "hall.offerbox", b2x, GY, { w: b2w, h: b2h, legs: true, rope: (GY - b2h - Math.round(0.32 * H) - 9) - (FY - h(15.5)), at: at(b2x, GY) }, { z: 5 });
+
+  // --- the near front (P5): great near columns in the gaps between services, scale props at
+  // the frame's foot; painted only at play zoom and closer (at the entrance shot they would be
+  // huge)
+  const NEAR_Y = FY + Math.round(0.45 * H);
+  const rN = PLANES.near.rate;
+  for (const o of [-2.6, 8.6, 16.7, 28.8, 36.8]) {
+    b.piece("near", "hall.nearcol", X(o), NEAR_Y, { r: Math.round(0.44 * H), h: 2300, at: at(X(o), NEAR_Y, rN) }, { z: 2, minLevel: 0.9, reflect: false });
+  }
+  const nearProps: [number, string, number][] = [[2.6, "pine", 0.68], [13.4, "teacart", 1.0], [16.95, "broom", 0.8], [24.8, "crates", 1.0], [31.0, "jar", 1.0]];
+  for (const [o, kind, sc] of nearProps) b.piece("near", "hall.nearprop", X(o), NEAR_Y, { kind, s: sc, at: at(X(o), NEAR_Y, rN) }, { z: 3, minLevel: 0.9, reflect: false });
+
+  // --- the back floor's clutter (P3), low, among which the hall's crowd stands
+  const clutterAt: [number, string][] = [[-6.2, "bench"], [-1.2, "jars"], [3.1, "plant"], [7.4, "teatable"], [11.2, "umbrellas"], [14.6, "bench"], [19.2, "jars"], [22.1, "crates"], [26.0, "brazier"], [29.6, "bench"], [33.2, "plant"], [37.4, "jars"], [41.2, "teatable"]];
+  for (const [o, kind] of clutterAt) b.piece("back", "hall.clutter", X(o), FY, { kind, u: U, at: at(X(o), FY, r3) }, { z: 2 });
 
   // --- the roof over the room: the tie beam the lanterns hang from, coffers, the skylight
   const BEAM = h(15.5), BEAM_D = h(0.9);

@@ -475,7 +475,7 @@ export const reqBoard = definePainter<FurnP>("hall.reqboard", {
       const l = lf.get(lx, ly);
       const k = ((lx - 6) % 13 + 13) % 13;
       const gap = k < 1.4;
-      return mt(M.wood, face(l.k, side, k < 3 ? -0.4 : k > 11 ? 0.4 : 0) * (gap ? 0.4 : 0.85) + grain(lx, ly, 9) * 0.1, X, Y, 0.3, 1);
+      return mt(M.wood, face(Math.max(l.k, 0.45), side, k < 3 ? -0.4 : k > 11 ? 0.4 : 0) * (gap ? 0.45 : 1.0) + grain(lx, ly, 9) * 0.1, X, Y, 0.15, 1);
     });
     // a cap rail with gold ends
     woodBox(c, lf, side, -6, by0 - 7, W + 6, by0, M.wood, 11, 0.2, 1, 2);

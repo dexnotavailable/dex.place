@@ -77,7 +77,7 @@ export const HALL_LIGHT: LightEnv = {
     { kind: "point", x: X(1.85), y: FY - h(1.6), r: h(3.2), k: 0.42 },
     { kind: "point", x: X(32.15), y: FY - h(1.8), r: h(3.6), k: 0.5 },
     // the nook's lamp under the stair
-    { kind: "point", x: X(25.2), y: FY - h(1.4), r: h(2.4), k: 0.55 },
+    { kind: "point", x: X(26.65), y: FY - h(1.45), r: h(3.0), k: 0.75 },
   ],
 };
 

@@ -8,3 +8,4 @@ import "./room.ts";
 import "./deep.ts";
 import "./glow.ts";
 import "./furniture.ts";
+import "./near.ts";
