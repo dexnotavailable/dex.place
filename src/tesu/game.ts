@@ -24,9 +24,13 @@ import { TileStore } from "./plates/store.ts";
 import type { ZhushaAssets } from "./player.ts";
 import { Atmos, type MistBand } from "./render/atmos.ts";
 import { Motes } from "./render/motes.ts";
+import { SpriteRenderer } from "./render/sprites.ts";
+import { Opening } from "./opening.ts";
+import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
 import { eyeY, levelFor, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
 import { buildWorld } from "./world/index.ts";
+import { TERRACE_X0, TERRACE_X1 } from "./world/sections/common.ts";
 import { isReload, loadSave, resumePlace, writeSave, type TesuSave } from "./save.ts";
 import { PLANES, PLANE_IDS, type Atmos as AtmosDef, type PlaneId, type Spawn, type Water, type WorldDef } from "./world/types.ts";
 
@@ -60,6 +64,8 @@ export interface TesuOpts {
   start: string;
   /** Started from a link (a place address): no resume, no opening. */
   link: boolean;
+  /** Skip the opening on a fresh start (tools). */
+  noOpening?: boolean;
   manual: boolean;
   sync: boolean;
 }
@@ -71,6 +77,9 @@ export class TesuGame {
   readonly planes: PlaneRenderer;
   readonly store: TileStore;
   readonly atmos: Atmos;
+  readonly sprites: SpriteRenderer;
+  readonly titles: Titles;
+  readonly opening: Opening;
   readonly player: Player;
   readonly vfx: Vfx;
   readonly feel: Feel;
@@ -95,6 +104,7 @@ export class TesuGame {
   private frozen = 0;
   /** Ink-wash fade (0..1) for the void tug-back. */
   fade = 0;
+  private cutFade = 0;
   private tug: { t: number; x: number; y: number } | null = null;
   private lastSafe: [number, number] = [0, 0];
   private fallFrom: number | null = null;
@@ -112,6 +122,15 @@ export class TesuGame {
     this.planes = new PlaneRenderer(gl, maxLayers);
     this.store = new TileStore(this.planes, { sync: opts.sync });
     this.atmos = new Atmos(gl, r.emptyVao);
+    this.sprites = new SpriteRenderer(gl, r.emptyVao);
+    this.titles = new Titles(gl, r.emptyVao);
+    this.opening = new Opening({
+      playerX: () => this.player.body.x,
+      freeze: (t) => { this.frozen = Math.max(this.frozen, t); },
+      title: (text, big) => this.titles.show(text, big),
+      setFlag: (f) => this.setFlag(f),
+      nextBar: () => 2 - (this.time % 2),
+    });
     this.refl = makeTarget(gl, r.iw, r.ih, false);
     r.onFrame = () => {
       gl.deleteFramebuffer(this.refl.fbo);
@@ -130,6 +149,7 @@ export class TesuGame {
     } as unknown as LabCamera;
     this.feel = new Feel(labCam, assets.tuning.feel);
     cam.reducedMotion = this.feel.reducedMotion;
+    this.titles.reducedMotion = this.feel.reducedMotion;
     const services: Services = { vfx: this.vfx, feel: this.feel, camera: labCam };
     // frozen controls read nothing; "down" only means drop-through on one-way ground
     this.inputProxy = new Proxy(input, {
@@ -151,6 +171,10 @@ export class TesuGame {
     if (resume) this.spawnAt({ id: "resume", x: resume.x, y: resume.y, facing: resume.facing });
     else this.spawnAt(this.world.spawns.find((s) => s.id === opts.start) ?? catchS);
     this.startedBy = resume ? "resume" : opts.link ? "link" : "fresh";
+    if (this.startedBy === "fresh" && !opts.noOpening) {
+      this.opening.start();
+      this.camera.snap(this.player.body.x, this.player.body.y, this.framing(), 1);
+    }
   }
 
   readonly startedBy: "fresh" | "resume" | "link" = "fresh";
@@ -194,7 +218,10 @@ export class TesuGame {
   framingOverride: Partial<ReturnType<typeof framingAt>> | null = null;
 
   private framing(): ReturnType<typeof framingAt> {
-    const f = framingAt(this.world.tracks, this.player.body.x, (fl) => this.flags.has(fl));
+    const has = (fl: string): boolean => (fl === "opening" ? this.opening.active : this.flags.has(fl));
+    // the widest frame holds until the drop has landed, wherever she has got to
+    const x = this.opening.holding ? Math.min(this.player.body.x, TERRACE_X1) : this.player.body.x;
+    const f = framingAt(this.world.tracks, Math.max(x, this.opening.holding ? TERRACE_X0 + 1 : -Infinity), has);
     return this.framingOverride ? { ...f, ...this.framingOverride } : f;
   }
 
@@ -236,9 +263,15 @@ export class TesuGame {
     const b = this.player.body;
     this.camera.W = this.r.iw;
     const f = this.framing();
+    const cuts = this.camera.cuts;
     this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
+    // reduced motion: a cut between held frames is a short dithered cross-fade, not a swing
+    if (this.camera.cuts !== cuts && this.tick > 2) this.cutFade = 1;
+    this.cutFade = Math.max(0, this.cutFade - 1 / 12);
     this.tugTick();
     this.motes.update(1 / 60);
+    this.opening.tick(1 / 60);
+    this.titles.update(1 / 60);
     if (this.tick % 60 === 0) this.notePlace();
   }
 
@@ -421,6 +454,7 @@ export class TesuGame {
     const r = this.r, gl = r.gl;
     if (this.manual) this.store.drain();
     else this.store.pump();
+    this.sprites.newFrame();
     this.store.frame++;
     const cam = this.camera.state();
     const W = cam.W, Hf = cam.H;
@@ -432,7 +466,7 @@ export class TesuGame {
     const draws = new Map<PlaneId, PlaneDraw>();
     for (const id of PLANE_IDS) draws.set(id, this.planeQuads(cam, id, 0, Hf, a, !this.manual));
     this.loading = ![...draws.values()].every((d) => d.complete);
-    const z = cam.zoom, zEff = Math.min(1, z), lens = Math.max(1, z);
+    const z = cam.zoom;
     const xfPlay = planeXf(cam, 1);
     const focus: [number, number] = [W / 2, cam.anchor * Hf];
     // the sprite renderer maps x to ((x - camX) - fx) * s + fx: match the play plane exactly
@@ -453,6 +487,7 @@ export class TesuGame {
         if (m >= Hf + 2) continue;
         const pd = this.planeQuads(cam, id, Math.max(-Hf * 3, 2 * m - Hf), m + 1, a, false);
         this.planes.draw(pd.quads, pd.look, W, Hf, m);
+        this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false), cam, pd.look, this.time, m, this.manual);
         if (id === "play") {
           r.begin(camX, camY, DAY, lights);
           r.setTransform(s4, focus, wlPlay);
@@ -470,7 +505,7 @@ export class TesuGame {
     const waterDraw = (rows: [number, number]): void => {
       if (!water) return;
       this.atmos.drawWater(W, Hf, this.refl.color.tex, {
-        hz, eye, wy: water.y, z: zEff, cx: cam.cx, lens, focus,
+        hz, eye, wy: water.y, z, cx: cam.cx, lens: 1, focus,
         ext: [water.x0, water.x1, water.fx0 ?? water.x0, water.fx1 ?? water.x1],
         depth: [water.near, water.far], rows, time: this.time,
         deep: hexRgb("#1f5a60"), body: hexRgb("#3f8f8a"), shallow: hexRgb("#bfe0dc"),
@@ -480,7 +515,7 @@ export class TesuGame {
     const mist = (rate: number, strength: number, drift: number): void => {
       if (!water || a.mist <= 0) return;
       const row = rowOf(cam, rate, water.y);
-      const band: MistBand = { row: row - 4 * Math.max(zEff, 0.3), half: 26 * Math.max(0.45, planeXf(cam, rate).g), density: a.mist * strength, drift };
+      const band: MistBand = { row: row - 4 * Math.max(Math.min(1, z), 0.3), half: 26 * Math.max(0.45, planeXf(cam, rate).g), density: a.mist * strength, drift };
       this.atmos.drawMist(W, Hf, [band], hexRgb(a.mistColour), this.time, cam.cx * rate);
     };
     // the lake is a flat plane: each band of its rows sits between two planes' waterlines,
@@ -520,12 +555,23 @@ export class TesuGame {
       }
       if (id === "near" && z > 1.6) continue;
       this.planes.draw(d.quads, d.look, W, Hf);
+      this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id), cam, d.look, this.time, null, this.manual);
+      // banks of mist lying in valleys at this depth
+      for (const m of this.world.mists) {
+        if (m.after !== id) continue;
+        const xf = planeXf(cam, m.rate);
+        const fx0 = m.x0 * m.rate * xf.g + xf.offX, fx1 = m.x1 * m.rate * xf.g + xf.offX;
+        if (fx1 < 0 || fx0 > W) continue;
+        const row = m.y * m.rate * xf.g + xf.offY;
+        this.atmos.drawMist(W, Hf, [{ row, half: m.half * m.rate * xf.g, density: m.density, drift: 5 }], hexRgb(a.mistColour), this.time, cam.cx * m.rate, [fx0, fx1]);
+      }
       if (id === "back" || id === "near") {
         r.begin(camX, camY, DAY, lights);
         this.motes.draw(r, cam, id === "back" ? 0.6 : 1.3);
         r.flush();
       }
     }
+    this.titles.draw(W, Hf);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     void b;
@@ -534,7 +580,7 @@ export class TesuGame {
       zoom: 1 + this.camera.punch,
       view: 1,
       focus: [W / 2, cam.anchor * Hf],
-      fade: [0.106, 0.098, 0.133, this.loading && this.tick < 2 ? 1 : this.fade],
+      fade: [0.106, 0.098, 0.133, this.loading && this.tick < 2 ? 1 : Math.max(this.fade, this.cutFade * 0.85)],
       bars: 0,
       overlay: false,
     });
@@ -551,6 +597,7 @@ export class TesuGame {
       cam: [Math.round(cam.cx), Math.round(cam.cy)], loading: this.loading, fade: +this.fade.toFixed(2), cloudDrop: this.cloudDrop,
       tiles: this.store.stats(), fps: Math.round(this.fps), frame: [this.r.iw, this.r.ih], present: this.r.presenter.rect,
       clip: this.player.clip.clip.id,
+      opening: this.opening.state, startedBy: this.startedBy,
     };
   }
 

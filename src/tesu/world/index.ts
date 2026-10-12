@@ -7,6 +7,7 @@ import { WorldBuilder } from "./build.ts";
 import { gateRoad } from "./sections/gate-road.ts";
 import { kagami } from "./sections/kagami.ts";
 import { palace } from "./sections/palace.ts";
+import { openingCamera } from "./sections/opening.ts";
 import type { WorldDef } from "./types.ts";
 
 /** About 480 x 240 H (GDK 3.1). */
@@ -21,6 +22,7 @@ export function buildWorld(): WorldDef {
   kagami(b);
   gateRoad(b);
   palace(b);
+  openingCamera(b);
   built = b.finish();
   return built;
 }

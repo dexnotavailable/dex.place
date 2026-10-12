@@ -42,6 +42,16 @@ export function kagami(b: WorldBuilder): void {
   for (const [x, hh, rope] of [[h(52), 30, false], [h(71), 38, true], [h(88), 30, false], [CATCH_X - h(3.4), 44, true], [JETTY_X1 - h(0.4), 34, false]] as const) {
     b.piece("play", "moorPost", x, DECK_Y, { h: hh, down: LAKE_Y - DECK_Y, rope }, { z: 3 });
   }
+  // a moored boat beside the jetty, a coil of rope and a bucket on the deck
+  b.piece("play", "boat", h(91.5), LAKE_Y + 2, { w: h(2.6) }, { z: 1 });
+  b.piece("play", "coil", CATCH_X - h(2.6), DECK_Y, { r: 12 }, { z: 4 });
+  b.piece("play", "barrel", h(97.4), DECK_Y, { h: 22 }, { z: 4 });
+  // reeds in the shallows in front, posts standing in the water nearer still (P5)
+  for (const [x, w, hh] of [[h(46), 260, 90], [h(66), 180, 70], [h(84), 220, 96], [h(104), 260, 110]] as const) {
+    b.piece("near", "reeds", x, LAKE_Y + h(1.1), { w, h: hh }, { z: 1 });
+  }
+  for (const x of [h(58), h(79), h(96.5)]) b.piece("near", "moorPost", x, LAKE_Y - h(0.9), { h: 40, down: h(5), rope: false }, { z: 2 });
+
   b.water({ y: LAKE_Y, x0: LAKE_X0, x1: LAKE_X1, fx0: h(-60), fx1: h(150), near: 1.9, far: 0.06, kind: "lake" });
   // nothing under the lake's surface to walk on: a fall there tugs her back
   b.void({ x0: LAKE_X0, x1: LAKE_X1, y: LAKE_Y + h(0.5), y1: h(66) });
@@ -67,7 +77,7 @@ export function kagami(b: WorldBuilder): void {
 
   // every background plane has ground below its line, so the land never shows a gap
   bg(b, "far", -2600, "plain", { w: 9000, foot: 700, ramp: "range", amp: 4 }, LAKE_Y, -5);
-  bg(b, "mid", -4000, "plain", { w: 21000, foot: 560, ramp: "moss", amp: 8 }, LAKE_Y, -5);
+  bg(b, "mid", -4000, "plain", { w: 21000, foot: 560, ramp: "pine", amp: 8 }, LAKE_Y, -5);
   bg(b, "back", -6000, "plain", { w: 40000, foot: 520, ramp: "pine", amp: 10 }, LAKE_Y, -5);
 
   // P1: the far snow ranges standing on the far shore
@@ -87,6 +97,9 @@ export function kagami(b: WorldBuilder): void {
   const towerX = [-1300, -820, 120, 900, 1700];
   towers.forEach((t, i) => bg(b, "mid", towerX[i]!, "towers", { t, green: 0.75 }, LAKE_Y, i));
   bg(b, "mid", -3000, "ridgeline", { w: 9000, h: 40, pines: 1.5, pineH: 26 }, LAKE_Y, -2);
+
+  // a Walker wading the far shore (the Walker lane's giant replaces this stand-in in its slot)
+  b.sprite({ id: "walker-kagami", plane: "mid", kind: "walker", x: h(84), y: LAKE_Y + h(0.6), p: { frames: 16 }, frames: 16, fps: 4, path: [h(70), h(140)], speed: 82 });
 
   // P3: the near-back shore: pine ridges low over the water
   bg(b, "back", -4200, "ridgeline", { w: 5200, h: 70, pines: 2.5, pineH: 52 }, LAKE_Y, 0);

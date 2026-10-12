@@ -145,3 +145,103 @@ export const plank = definePainter<PlankP>("plank", {
     }
   },
 });
+
+export interface BoatP {
+  /** Hull length, px; the anchor is the waterline at the bow end (left). */
+  w: number;
+}
+
+/** A small moored sampan: a dark timber hull riding on the waterline, a woven half-canopy. */
+export const boat = definePainter<BoatP>("boat", {
+  bounds(p) {
+    return [-8, -54, p.w + 8, 14];
+  },
+  paint(c, p) {
+    const b = c.buf;
+    const w = p.w;
+    // hull: a shallow crescent, its sheer line rising at bow and stern
+    for (let lx = 0; lx <= w; lx += 1 / c.d) {
+      const u = lx / w;
+      const sheer = -14 - 10 * Math.pow(Math.abs(u - 0.5) * 2, 3);
+      const keel = 8 - 6 * Math.pow(Math.abs(u - 0.5) * 2, 2);
+      const X = Math.round(c.X(lx));
+      const Y0 = Math.round(c.Y(sheer)), Y1 = Math.round(c.Y(keel));
+      for (let y = Y0; y < Y1; y++) {
+        const v = (y - Y0) / Math.max(1, Y1 - Y0);
+        let t = v < 0.12 ? 0.08 : v < 0.3 ? 0.55 : 0.75;
+        if (y === Y1 - 1 || u < 0.01 || u > 0.99) t = 0.95;
+        b.set(X, y, tone(P.timber, t, X, y, 0.3));
+      }
+    }
+    // a woven canopy over the middle third
+    const cx0 = w * 0.38, cx1 = w * 0.7;
+    for (let lx = cx0; lx <= cx1; lx += 1 / c.d) {
+      const u = (lx - cx0) / (cx1 - cx0);
+      const top = -14 - 26 * Math.sqrt(Math.max(0, 1 - (u * 2 - 1) ** 2));
+      const X = Math.round(c.X(lx));
+      for (let y = Math.round(c.Y(top)); y < Math.round(c.Y(-14)); y++) {
+        const weave = ((X + y) & 3) === 0;
+        b.set(X, y, weave ? P.earth[3]! : tone(P.earth, u < 0.3 ? 0.15 : 0.45, X, y, 0.3));
+      }
+    }
+  },
+});
+
+export interface CoilP {
+  r?: number;
+}
+
+/** A coil of rope lying on the deck. */
+export const coil = definePainter<CoilP>("coil", {
+  bounds(p) {
+    const r = p.r ?? 12;
+    return [-r - 2, -r * 0.8 - 2, r + 2, 2];
+  },
+  paint(c, p) {
+    const r = p.r ?? 12;
+    for (let k = 0; k < 3; k++) {
+      const rr = r - k * 3;
+      for (let a = Math.PI; a <= Math.PI * 2; a += 0.5 / (rr * c.d)) {
+        const X = Math.round(c.X(Math.cos(a) * rr)), Y = Math.round(c.Y(Math.sin(a) * rr * 0.55 - k * 2));
+        c.buf.set(X, Y, k % 2 ? P.earth[2]! : P.earth[1]!);
+        c.buf.set(X, Y + 1, P.earth[3]!);
+      }
+    }
+  },
+});
+
+export interface ReedsP {
+  /** Width of the bed, px; the anchor is the waterline at its left end. */
+  w: number;
+  /** Tallest reed above the water, px. */
+  h: number;
+}
+
+/** Reeds and cattails standing in the shallows (a near-front plane silhouette). */
+export const reeds = definePainter<ReedsP>("reeds", {
+  bounds(p) {
+    return [-6, -p.h - 10, p.w + 6, 16];
+  },
+  paint(c, p) {
+    const n = Math.round(p.w / 5);
+    for (let i = 0; i < n; i++) {
+      const x0 = ((i + hash(i, 1, c.seed)) / n) * p.w;
+      const hh = p.h * (0.35 + 0.65 * hash(i, 2, c.seed)) * Math.sin(Math.PI * Math.min(1, Math.max(0.15, x0 / p.w)));
+      const lean = (hash(i, 3, c.seed) - 0.4) * 0.35;
+      const col = hash(i, 4, c.seed) < 0.5 ? P.moss[5]! : P.moss[6]!;
+      for (let ly = 12; ly > -hh; ly -= 1 / c.d) {
+        const X = Math.round(c.X(x0 + lean * (12 - ly))), Y = Math.round(c.Y(ly));
+        c.buf.set(X, Y, col);
+      }
+      // a cattail head on some
+      if (hash(i, 5, c.seed) < 0.25 && hh > p.h * 0.5) {
+        const tx = x0 + lean * (12 + hh);
+        for (let ly = -hh + 2; ly < -hh + 12; ly += 1 / c.d) {
+          const X = Math.round(c.X(tx)), Y = Math.round(c.Y(ly));
+          c.buf.set(X, Y, P.timber[4]!);
+          c.buf.set(X + 1, Y, P.timber[5]!);
+        }
+      }
+    }
+  },
+});

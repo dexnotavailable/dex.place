@@ -2,7 +2,7 @@
 // through one builder, which checks them and fills in each piece's bounds.
 
 import { painter } from "../art/painter.ts";
-import { PLANES, type Atmos, type CamTrack, type Piece, type Place, type PlaneId, type Spawn, type Surface, type Walk, type Wall, type Water, type Void, type WorldDef } from "./types.ts";
+import { PLANES, type MistBank, type SpriteDef, type Atmos, type CamTrack, type Piece, type Place, type PlaneId, type Spawn, type Surface, type Walk, type Wall, type Water, type Void, type WorldDef } from "./types.ts";
 
 export interface PieceOpts {
   z?: number;
@@ -16,7 +16,7 @@ export class WorldBuilder {
   private nextSeed = 1;
 
   constructor(w: number, h: number) {
-    this.def = { w, h, pieces: [], walks: [], walls: [], waters: [], voids: [], tracks: [], atmos: [], spawns: [], places: [] };
+    this.def = { w, h, pieces: [], sprites: [], walks: [], walls: [], waters: [], mists: [], voids: [], tracks: [], atmos: [], spawns: [], places: [] };
   }
 
   /** A painted piece. x, y: its anchor in 3D world px; p: painter params in its plane's level-1 px. */
@@ -27,6 +27,14 @@ export class WorldBuilder {
     pc.box = [x * r + b[0], y * r + b[1], x * r + b[2], y * r + b[3]];
     this.def.pieces.push(pc);
     return pc;
+  }
+
+  /** Something that moves on a plane. */
+  sprite(d: Omit<SpriteDef, "seed"> & { seed?: number }): SpriteDef {
+    if (this.def.sprites.some((s) => s.id === d.id)) throw new Error(`sprite ${d.id} defined twice`);
+    const s: SpriteDef = { ...d, seed: d.seed ?? this.nextSeed++ * 7919 };
+    this.def.sprites.push(s);
+    return s;
   }
 
   /** Walkable ground through world px points [x, y, x, y, ...]. */
@@ -50,6 +58,10 @@ export class WorldBuilder {
 
   water(w: Water): void {
     this.def.waters.push(w);
+  }
+
+  mist(m: MistBank): void {
+    this.def.mists.push(m);
   }
 
   void(v: Void): void {

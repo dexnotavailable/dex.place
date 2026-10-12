@@ -80,9 +80,12 @@ uniform int uCount;
 uniform vec3 uColour;
 uniform float uTime;
 uniform float uCamX;      // for drift that stays put on the land
+uniform vec2 uSpan;       // frame x range the mist covers (soft ends)
 out vec4 o;
 void main() {
   vec2 p = floor(vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y));
+  float ends = clamp(min(p.x - uSpan.x, uSpan.y - p.x) / 120.0, 0.0, 1.0);
+  if (ends <= 0.0) discard;
   float a = 0.0;
   for (int i = 0; i < 4; i++) {
     if (i >= uCount) break;
@@ -93,6 +96,7 @@ void main() {
     float n = vnoise(vec2(x / 140.0, p.y / 18.0 + float(i) * 7.0)) * 0.65 + vnoise(vec2(x / 41.0, p.y / 7.0)) * 0.35;
     a = max(a, prof * b.z * (0.45 + 0.9 * n));
   }
+  a *= ends;
   // two to four ordered-dither steps, never smooth alpha
   float s = stepd(clamp(a, 0.0, 1.0), 4.0, p) * 0.75;
   if (s <= 0.0) discard;
@@ -229,7 +233,7 @@ export class Atmos {
     gl.enable(gl.BLEND);
   }
 
-  drawMist(w: number, h: number, bands: MistBand[], colour: number[], time: number, camX: number): void {
+  drawMist(w: number, h: number, bands: MistBand[], colour: number[], time: number, camX: number, span: [number, number] = [-1e6, 1e6]): void {
     if (!bands.length) return;
     const gl = this.gl, u = this.mistU;
     gl.useProgram(this.mist);
@@ -243,6 +247,7 @@ export class Atmos {
     gl.uniform3fv(u.uColour!, colour);
     gl.uniform1f(u.uTime!, time % 4096);
     gl.uniform1f(u.uCamX!, camX % 100000);
+    gl.uniform2fv(u.uSpan!, span);
     gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }

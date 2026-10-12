@@ -87,6 +87,8 @@ export class Camera {
   private lastTargetZoom = 1;
   private lookX = 0;
   reducedMotion = false;
+  /** Count of held-level cuts (reduced motion), so the game can cross-fade them. */
+  cuts = 0;
   /** The zoom the framing asks for (before snapping), for debug. */
   wantZoom = 1;
   /** Whether the frame is at an authored level (plates drawn 1:1). */
@@ -114,11 +116,20 @@ export class Camera {
     this.lastTargetZoom = want;
     this.wantZoom = want;
     if (this.still > 0.25) want = nearestLevel(want);
-    const zTarget = want * (1 - this.closeup) + 2 * this.closeup;
-    // zoom eases in log space; a held framing settles within ~150 ms
-    const lz = Math.log(this.zoom), lt = Math.log(zTarget);
-    const rate = this.still > 0.25 ? 0.2 : 0.09;
-    this.zoom = Math.abs(lt - lz) < 1e-4 ? zTarget : Math.exp(lz + (lt - lz) * rate);
+    let zTarget = want * (1 - this.closeup) + 2 * this.closeup;
+    if (this.reducedMotion) {
+      // no zoom swings: the frame cuts between held levels (the game cross-fades the cut)
+      zTarget = zTarget >= 1.5 ? 2 : zTarget > 0.3 ? 1 : 0.125;
+      if (zTarget !== this.zoom) {
+        this.zoom = zTarget;
+        this.cuts++;
+      }
+    } else {
+      // zoom eases in log space; a held framing settles within ~150 ms
+      const lz = Math.log(this.zoom), lt = Math.log(zTarget);
+      const rate = this.still > 0.25 ? 0.2 : 0.09;
+      this.zoom = Math.abs(lt - lz) < 1e-4 ? zTarget : Math.exp(lz + (lt - lz) * rate);
+    }
     this.atLevel = ZOOMS.some((z) => Math.abs(z - this.zoom) < 1e-4);
     this.anchor += (f.anchor - this.anchor) * 0.06;
     this.horizon += (f.horizon - this.horizon) * 0.06;

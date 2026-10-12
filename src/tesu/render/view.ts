@@ -27,9 +27,14 @@ export interface CamState {
   H: number;
 }
 
-/** A plane's scale on the frame at camera zoom z (dolly below 1, lens above). */
+/**
+ * A plane's scale on the frame at camera zoom z. The camera dollies (moves along its axis):
+ * the play plane scales by z, a plane at scroll rate r by 1 / (1/z + 1/r - 1), so far planes
+ * barely change while she fills or leaves the frame. Planes in front of her (r > 1) use a
+ * lens zoom above play zoom instead (a dolly would pass through them).
+ */
 export function planeScale(rate: number, z: number): number {
-  if (z >= 1) return rate * z;
+  if (z > 1 && rate > 1) return rate * z;
   return 1 / (1 / z + 1 / rate - 1);
 }
 
@@ -67,8 +72,7 @@ export interface PlaneXf {
 
 /** Eye-level world y for a camera state (the row of the horizon in 3D). */
 export function eyeY(c: CamState): number {
-  const zEff = Math.min(1, c.zoom);
-  return c.cy - ((c.anchor - c.horizon) * c.H) / zEff;
+  return c.cy - ((c.anchor - c.horizon) * c.H) / c.zoom;
 }
 
 /**
@@ -76,21 +80,18 @@ export function eyeY(c: CamState): number {
  * 3D point (x, y) is art px (r x, r y) and lands on (r x * g + offX, r y * g + offY).
  */
 export function planeXf(c: CamState, rate: number): PlaneXf {
-  const zEff = Math.min(1, c.zoom);
-  const lens = Math.max(1, c.zoom);
-  const s1 = planeScale(rate, zEff);
+  const s = planeScale(rate, c.zoom);
   const eye = eyeY(c);
   const hz = c.horizon * c.H;
-  // at zEff: x' = (x - cx) * s1 + W/2, y' = (y - eye) * s1 + hz
-  let offX = c.W / 2 - c.cx * s1;
-  let offY = hz - eye * s1;
-  let s = s1;
-  if (lens > 1) {
-    // lens zoom about the anchor point (her feet)
+  let offX = c.W / 2 - c.cx * s;
+  let offY = hz - eye * s;
+  if (c.zoom > 1 && rate > 1) {
+    // near planes take a lens zoom about her feet, matching the play plane there
     const fx = c.W / 2, fy = c.anchor * c.H;
-    offX = fx + (offX - fx) * lens;
-    offY = fy + (offY - fy) * lens;
-    s = s1 * lens;
+    const s1 = rate;
+    const e1 = c.cy - (c.anchor - c.horizon) * c.H;
+    offX = fx + (c.W / 2 - c.cx * s1 - fx) * c.zoom;
+    offY = fy + (hz - e1 * s1 - fy) * c.zoom;
   }
   const g = s / rate;
   // whole-pixel offsets so slow planes never shimmer (exact at whole scales)

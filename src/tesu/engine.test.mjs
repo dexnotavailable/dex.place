@@ -56,12 +56,13 @@ test("solid mass blocks from the side; a wall stops her; a one-way plank drops t
   assert.equal(c.standingOn?.id, 1, "dropped through the plank onto the ground");
 });
 
-test("camera planes: dolly below 1 keeps far planes large, lens above 1 scales all", () => {
+test("camera planes: a dolly keeps far planes steady; planes in front take a lens zoom above 1", () => {
   assert.equal(planeScale(1, 0.5), 0.5);
   assert.ok(Math.abs(planeScale(0.08, 1) - 0.08) < 1e-9);
   assert.ok(planeArtScale(0.08, 0.125) > 0.6, "far ranges stay large in the widest frame");
   assert.ok(planeArtScale(0.62, 0.125) < 0.25);
-  assert.equal(planeScale(0.5, 2), 1);
+  assert.ok(Math.abs(planeScale(0.5, 2) - 2 / 3) < 1e-9, "a dolly in: the middle distance grows a little");
+  assert.ok(Math.abs(planeScale(1.35, 2) - 2.7) < 1e-9, "near planes zoom like a lens");
   const lv = planeLevels(1);
   assert.deepEqual(lv, [2, 1, 0.5, 0.25, 0.125]);
   assert.equal(levelFor(lv, 0.7), 1);

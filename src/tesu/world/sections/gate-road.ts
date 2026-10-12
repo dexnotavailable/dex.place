@@ -83,10 +83,38 @@ export function gateRoad(b: WorldBuilder): void {
 
   // behind the band: Shiraito's great wall, its falls pouring off the road's lip (P3)
   const r3 = 0.62;
-  b.piece("back", "cliffwall", h(106), h(59.6), {
-    w: h(94) * r3, h: h(90) * r3, falls: 2.6,
-    lip: [0, h(1.6) * r3, h(10) * r3, h(0.6) * r3, h(30) * r3, -h(0.4) * r3, h(60) * r3, -h(2) * r3, h(94) * r3, -h(3) * r3],
+  b.piece("back", "cliffwall", h(110.5), h(59.6), {
+    w: h(90) * r3, h: h(90) * r3, falls: 0.9,
+    lip: [0, h(1.2) * r3, h(10) * r3, h(0.4) * r3, h(30) * r3, -h(0.4) * r3, h(60) * r3, -h(2) * r3, h(90) * r3, -h(3) * r3],
   }, { z: 2 });
+
+  // mist lies in Shiraito's valley below the road, in front of the wall and behind the pillars
+  b.mist({ x0: h(104), x1: h(200), y: h(84), half: h(9), rate: 0.8, after: "back", density: 0.85 });
+  b.mist({ x0: h(100), x1: h(200), y: h(104), half: h(10), rate: 1, after: "play", density: 0.7 });
+
+  // --- the gates: three framed gates, then the tunnel of six with their lintels almost touching
+  const gateAt = (x: number, p: Record<string, unknown>): void => {
+    const y = yOn(ROAD, x);
+    b.piece("play", "gate", x, y + 2, p, { z: 6 });
+    b.piece("front", "gate", x, y + 2, { ...p, part: "front" }, { z: 1 });
+  };
+  gateAt(GATE_XS[0]!, { kind: "torii", span: h(3.2), h: h(4.7) });
+  gateAt(GATE_XS[1]!, { kind: "paifang", span: h(3.4), h: h(5.6) });
+  gateAt(GATE_XS[2]!, { kind: "torii", span: h(3.4), h: h(5.0) });
+  for (const x of TUNNEL_XS) gateAt(x, { kind: "torii", span: h(2.1), h: h(3.7), pw: 18 });
+
+  // the road's railing in front of her, everywhere except at Pilgrims' Leap
+  const railPts = (x0: number, x1: number): number[] => {
+    const out: number[] = [];
+    for (let x = x0; x <= x1; x += h(0.5)) out.push(x, yOn(ROAD, x) + 3);
+    return out;
+  };
+  b.piece("front", "rail", 0, 0, { pts: railPts(h(110.4), leap0 - h(0.2)), h: 46, every: 62 }, { z: 0 });
+  b.piece("front", "rail", 0, 0, { pts: railPts(leap1 + h(0.2), HALL_DOOR_X - h(2.2)), h: 46, every: 62 }, { z: 0 });
+  // the viewing terrace: a stone bench and two water barrels, Zhusha small at the rail
+  b.piece("play", "bench", TERRACE_X0 + h(0.6), h(59.3), { w: h(1.5) }, { z: 3 });
+  b.piece("play", "barrel", TERRACE_X1 - h(1.6), h(59.3), { h: 40 }, { z: 3 });
+  b.piece("play", "barrel", TERRACE_X1 - h(1.1), h(59.3), { h: 36 }, { z: 3 });
 
   b.spawn({ id: "gate-road", x: GATE_XS[0]! - h(1.5), y: yOn(ROAD, GATE_XS[0]! - h(1.5)), facing: 1 });
   b.spawn({ id: "terrace", x: (TERRACE_X0 + TERRACE_X1) / 2, y: h(59.3), facing: 1 });

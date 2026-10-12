@@ -37,61 +37,60 @@ function peaksOf(p: RangeP, seed: number): Peak[] {
   return out;
 }
 
-function ridge(peaks: Peak[], x: number, seed: number): { y: number; pk: Peak | null } {
-  let best = 0, pk: Peak | null = null;
-  for (const q of peaks) {
-    const t = 1 - Math.abs(x - q.cx) / q.hw;
-    if (t <= 0) continue;
-    const v = q.h * Math.pow(t, 1.25) * (0.92 + 0.16 * fbm1(x / 37, seed + q.cx, 3));
-    if (v > best) { best = v; pk = q; }
-  }
-  // a low saddle so the range never breaks to the base between peaks
-  const floor = 0.08 * (peaks[0]?.h ?? 0) * (0.6 + 0.8 * fbm1(x / 90, seed + 5, 2));
-  return { y: Math.max(best, floor), pk };
-}
-
 export const range = definePainter<RangeP>("range", {
   bounds(p) {
-    return [-2, -p.h - 4, p.w + 2, 2];
+    return [-p.h * 2, -p.h - 4, p.w + p.h * 2, 2];
   },
   paint(c, p) {
     const b = c.buf, d = c.d;
-    const peaks = peaksOf(p, c.seed);
-    const snowAt = (p.snow ?? 0.62) * p.h;
     const body = p.ramp === "karst" ? P.karst : P.range;
-    const x0 = Math.max(b.ox, Math.floor(c.X(0))), x1 = Math.min(b.x1, Math.ceil(c.X(p.w)));
-    for (let x = x0; x < x1; x++) {
-      const lx = c.lx(x + 0.5);
-      const { y: hh, pk } = ridge(peaks, lx, c.seed);
-      const { y: hl } = ridge(peaks, lx - 1 / d, c.seed);
-      const { y: hr } = ridge(peaks, lx + 1 / d, c.seed);
-      const slope = (hr - hl) / 2; // + means rising to the right: a left-facing, lit flank
-      const lit = pk ? (lx < pk.cx ? 1 : 0) : slope > 0 ? 1 : 0;
-      const topY = Math.ceil(c.Y(-hh));
-      const baseY = Math.floor(c.Y(0));
-      for (let y = Math.max(topY, b.oy); y < Math.min(baseY, b.y1); y++) {
-        const ly = c.ly(y + 0.5);
-        const above = -ly; // px above the base
-        const fromTop = hh - above;
-        // gullies: thin darker streaks running down the flanks
-        const gully = vnoise(lx / 7, above / 60, c.seed + 11);
-        const snowLine = snowAt + (vnoise1(lx / 23, c.seed + 3) - 0.5) * p.h * 0.18 - gully * 14;
-        const outline = y === topY;
-        if (above > snowLine && p.snow !== 1) {
-          let t = lit ? 0.05 + 0.25 * (gully > 0.62 ? 1 : 0) : 0.55 + 0.2 * (gully > 0.6 ? 1 : 0);
-          if (outline) t = lit ? 0 : 0.35;
-          b.set(x, y, tone(P.snow, t, x, y, 0.4));
-          continue;
+    const snowFrac = p.snow ?? 0.62;
+    // peaks back to front: the tallest first, lower (nearer) ones overlap them
+    const peaks = peaksOf(p, c.seed).sort((a, q) => q.h - a.h);
+    peaks.forEach((pk, i) => {
+      const seed = c.seed + i * 131;
+      const heightAt = (lx: number): number => {
+        const t = 1 - Math.abs(lx - pk.cx) / pk.hw;
+        if (t <= 0) return 0;
+        return pk.h * Math.pow(t, 1.2) * (0.94 + 0.12 * fbm1(lx / 31, seed, 3));
+      };
+      const xa = Math.max(b.ox, Math.floor(c.X(pk.cx - pk.hw))), xb = Math.min(b.x1, Math.ceil(c.X(pk.cx + pk.hw)));
+      for (let x = xa; x < xb; x++) {
+        const lx = c.lx(x + 0.5);
+        const hh = heightAt(lx);
+        if (hh <= 0) continue;
+        const topY = Math.ceil(c.Y(-hh));
+        const baseY = Math.floor(c.Y(0));
+        for (let y = Math.max(topY, b.oy); y < Math.min(baseY, b.y1); y++) {
+          const above = -c.ly(y + 0.5);
+          const down = pk.h - above;
+          const spine = pk.cx + down * 0.42 + (vnoise1(above / 17, seed) - 0.5) * 18;
+          const lit = lx < spine;
+          let gully = false;
+          if (d >= 0.25) {
+            const rib = pk.cx - down * 0.55 + (vnoise1(above / 13, seed + 7) - 0.5) * 12;
+            if (Math.abs(lx - rib) < 0.8 / d && down > pk.h * 0.12) gully = true;
+            const gl = pk.cx + down * 1.05 + (vnoise1(above / 11, seed + 9) - 0.5) * 16;
+            if (!lit && Math.abs(lx - gl) < 0.7 / d && down > pk.h * 0.2) gully = true;
+          }
+          const snowLine = pk.h * snowFrac - (vnoise1(lx / 9, seed + 3) - 0.5) * p.h * 0.1 - Math.abs(Math.sin(lx / 11 + seed)) * p.h * 0.07;
+          const outline = y === topY;
+          if (above > snowLine && snowFrac < 1) {
+            let t = lit ? 0.02 : 0.42;
+            if (gully) t += 0.25;
+            if (outline) t = lit ? 0.12 : 0.5;
+            b.set(x, y, tone(P.snow, clamp(t, 0, 1), x, y, 0.3));
+            continue;
+          }
+          let t = lit ? 0.28 : 0.62;
+          if (gully) t += 0.15;
+          const foot = p.h * 0.16;
+          if (above < foot) t -= 0.3 * (1 - above / foot);
+          if (outline) t = lit ? 0.45 : 0.75;
+          b.set(x, y, tone(body, clamp(t, 0, 1), x, y, 0.5));
         }
-        let t = lit ? 0.18 + 0.18 * (fromTop / p.h) : 0.55 + 0.15 * (fromTop / p.h);
-        if (gully > 0.64) t += lit ? 0.18 : 0.12;
-        t += (bayer4(x, y) - 0.5) * 0.06;
-        // the foot of the range dissolves toward the base (mist sits there)
-        if (above < p.h * 0.12) t -= 0.25 * (1 - above / (p.h * 0.12));
-        if (outline) t = lit ? 0.1 : 0.5;
-        b.set(x, y, tone(body, clamp(t, 0, 1), x, y, 0.6));
       }
-    }
+    });
   },
 });
 
@@ -111,52 +110,61 @@ export const towers = definePainter<TowersP>("towers", {
     for (const [x, w, h] of p.t) {
       x0 = Math.min(x0, x - w); x1 = Math.max(x1, x + w); y0 = Math.min(y0, -h);
     }
-    return [x0 - 4, y0 - 8, x1 + 4, 4];
+    return [x0 - 4, y0 - 24, x1 + 4, 4];
   },
   paint(c, p) {
     const b = c.buf, d = c.d;
     const green = p.green ?? 0.7;
-    p.t.forEach(([cx, w, h], i) => {
+    const order = p.t.map((t, i) => ({ t, i })).sort((a, q) => q.t[2] - a.t[2]);
+    for (const { t: [cx0, w, h], i } of order) {
       const seed = c.seed + i * 977;
       const half = w / 2;
-      // width profile: straight sides, a rounded crown, a little waist and bulge
-      const hwAt = (above: number): number => {
+      const lean = (hash(i, 1, seed) - 0.5) * 0.3;
+      // left and right edges wander on their own; the crown is lumpy
+      const centre = (above: number): number => cx0 + lean * above * 0.25 + (vnoise1(above / 47, seed + 2) - 0.5) * half * 0.25;
+      const edgeL = (above: number): number => {
         const u = above / h;
-        const crown = u > 0.82 ? Math.sqrt(Math.max(0, 1 - Math.pow((u - 0.82) / 0.18, 2))) : 1;
-        const wobble = 1 + 0.08 * (vnoise1(above / 31, seed) - 0.5) + 0.05 * Math.sin(u * 7 + i);
-        return half * crown * wobble;
+        const crown = u > 0.74 ? Math.sqrt(Math.max(0, 1 - ((u - 0.74) / 0.26) ** 2)) : 1;
+        return half * crown * (0.9 + 0.22 * vnoise1(above / 19, seed + 3)) * (u < 0.05 ? 1 + (0.05 - u) * 3 : 1);
+      };
+      const edgeR = (above: number): number => {
+        const u = above / h;
+        const crown = u > 0.7 ? Math.sqrt(Math.max(0, 1 - ((u - 0.7) / 0.3) ** 2)) : 1;
+        return half * crown * (0.88 + 0.22 * vnoise1(above / 17, seed + 5)) * (u < 0.05 ? 1 + (0.05 - u) * 3 : 1);
       };
       const yTop = Math.floor(c.Y(-h)), yBase = Math.ceil(c.Y(0));
       for (let y = Math.max(yTop, b.oy); y < Math.min(yBase, b.y1); y++) {
         const above = -c.ly(y + 0.5);
-        const hw = hwAt(above);
-        if (hw <= 0) continue;
-        const lxa = cx - hw, lxb = cx + hw;
-        const xa = Math.max(b.ox, Math.ceil(c.X(lxa) - 0.5)), xb = Math.min(b.x1 - 1, Math.floor(c.X(lxb) - 0.5));
-        const hwUp = hwAt(above + 1.5 / d);
+        if (above > h || above < 0) continue;
+        const m = centre(above), hl = edgeL(above), hr = edgeR(above);
+        if (hl + hr <= 0) continue;
+        const xa = Math.max(b.ox, Math.ceil(c.X(m - hl) - 0.5)), xb = Math.min(b.x1 - 1, Math.floor(c.X(m + hr) - 0.5));
+        const up = above + 1.5 / d;
+        const mU = centre(up), lU = edgeL(up), rU = edgeR(up);
         for (let x = xa; x <= xb; x++) {
           const lx = c.lx(x + 0.5);
-          const u = (lx - cx) / hw; // -1 left edge .. 1 right edge
+          const u = lx < m ? (lx - m) / hl : (lx - m) / hr; // -1 .. 1 across
           const edge = x === xa || x === xb;
-          const topEdge = Math.abs(lx - cx) > hwUp;
-          // green: on the crown and on ledges (bands where noise says so)
-          const ledge = vnoise(lx / 10, above / 9, seed + 5);
-          const crownG = above > h * 0.86 - 10 * vnoise1(lx / 8, seed + 7);
-          const isGreen = green > 0 && (crownG || (ledge > 1 - 0.28 * green && above > h * 0.1));
-          if (isGreen) {
-            const t = topEdge ? 0.15 : 0.35 + 0.4 * (u + 1) / 2 + (hash(x, y, seed) - 0.5) * 0.2;
-            b.set(x, y, tone(P.moss, clamp(edge ? 0.9 : t + 0.15, 0, 1), x, y, 0.5));
+          const topEdge = up > h || lx < mU - lU || lx > mU + rU;
+          // vegetation drapes down from the crown and from ledges
+          const drape = vnoise(lx / 7, above / 26, seed + 9) + (above / h) * 0.55 - 0.15;
+          const ledge = vnoise(lx / 16, above / 7, seed + 11);
+          const veg = green > 0 && (drape > 1.02 - 0.45 * green || ledge > 1 - 0.14 * green);
+          if (veg) {
+            let t = topEdge ? 0.25 : u < -0.2 ? 0.42 : u < 0.45 ? 0.6 : 0.78;
+            if (edge) t = 0.92;
+            b.set(x, y, tone(P.moss, clamp(t + (hash(x >> 1, y >> 1, seed) - 0.5) * 0.14, 0, 1), x, y, 0.45));
             continue;
           }
-          // rock: lit on the left, vertical striations, darker toward the right edge
-          const stri = vnoise(lx / 2.6, above / 40, seed + 9);
-          let t = 0.12 + 0.62 * Math.pow((u + 1) / 2, 1.4) + (stri - 0.5) * 0.28;
-          if (above < h * 0.08) t += 0.15;
-          if (edge) t = u < 0 ? 0.45 : 0.95;
-          b.set(x, y, tone(P.karst, clamp(t, 0, 1), x, y, 0.55));
+          let t = 0.12 + 0.62 * clamp((u + 1) / 2, 0, 1) ** 1.3;
+          const stria = vnoise(lx / 2.4, above / 38, seed + 3);
+          if (d >= 0.25 && stria > 0.7) t += 0.12;
+          if (above < h * 0.07) t += 0.1;
+          if (edge) t = u < 0 ? 0.5 : 0.9;
+          b.set(x, y, tone(P.karst, clamp(t, 0, 1), x, y, 0.5));
         }
       }
-    });
+    }
   },
 });
 
@@ -322,52 +330,58 @@ export const cliffwall = definePainter<CliffWallP>("cliffwall", {
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
-    const per = p.falls ?? 2.2;
-    // falls: x positions with a width and a strength
+    const per = p.falls ?? 1.4;
+    // the falls: where each pours from the lip, its width and how far it holds together
     const r = rng(seed + 5);
     const falls: [number, number, number][] = [];
-    for (let x = 6; x < p.w - 6; ) {
-      x += (100 / per) * (0.35 + 1.3 * r());
-      falls.push([x, 1 + Math.floor(r() * 2.6), 0.55 + 0.45 * r()]);
+    for (let x = 10; x < p.w - 10; ) {
+      x += (100 / per) * (0.4 + 1.2 * r());
+      falls.push([x, 3 + Math.floor(r() * 5), 0.45 + 0.5 * r()]);
     }
     const X0 = Math.max(b.ox, Math.floor(c.X(0))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w)));
     for (let x = X0; x < X1; x++) {
       const lx = c.lx(x + 0.5);
       const top = lipAt(p, lx) + (vnoise1(lx / 13, seed) - 0.5) * 6;
       const Yt = Math.ceil(c.Y(top)), Yb = Math.min(b.y1, Math.ceil(c.Y(p.h)));
-      // the nearest fall and how far from its centre this column is
-      let fall = 0, wet = 0;
-      for (const [fx, fw, fs] of falls) {
-        const dx = Math.abs(lx - fx);
-        if (dx <= fw * 0.5 + 0.5) fall = Math.max(fall, fs);
-        else if (dx < fw + 6) wet = Math.max(wet, 1 - (dx - fw) / 6);
-      }
       for (let y = Math.max(Yt, b.oy); y < Yb; y++) {
         const ly = c.ly(y + 0.5);
         const below = ly - top;
-        if (y === Yt) { b.set(x, y, P.moss[3]!); continue; }
-        if (below < 6 + 4 * vnoise1(lx / 7, seed + 9)) {
-          b.set(x, y, tone(P.moss, 0.35 + 0.4 * (below / 10), x, y, 0.5));
+        if (y === Yt) { b.set(x, y, P.moss[2]!); continue; }
+        // the lip: a moss cap with a ragged hem
+        if (below < 7 + 5 * vnoise1(lx / 6, seed + 9)) {
+          b.set(x, y, tone(P.moss, below < 2 ? 0.25 : 0.55, x, y, 0.3));
           continue;
         }
-        if (fall > 0) {
-          // white thread: brighter at its core, broken by dither as it falls and frays
-          const fray = clamp(below / p.h, 0, 1);
-          const keep = fall * (1 - 0.55 * fray);
-          if (bayer4(x, y) < keep + 0.15) {
-            b.set(x, y, tone(P.cloud, 0.05 + 0.4 * fray + 0.2 * hash(x, Math.floor(y / 3), seed), x, y, 0.5));
-            continue;
+        // a fall here? it sways a little as it drops and frays toward the bottom
+        let fall = 0, rim = false;
+        for (const [fx, fw, fs] of falls) {
+          const sway = Math.sin(below / 61 + fx) * Math.min(2, below / 80);
+          // the stream widens a little as it falls
+          const half = fw / 2 + below * 0.012;
+          const dx = Math.abs(lx - fx - sway);
+          if (dx <= half) {
+            const fray = clamp(below / (p.h * fs), 0, 1);
+            fall = Math.max(fall, 1 - fray * fray);
+            if (dx > half - 1.2 / d) rim = true;
           }
         }
-        const runnel = vnoise(lx / 2.2, ly / 70, seed + 3);
-        const ledge = vnoise(lx / 30, ly / 5, seed + 7);
-        if (ledge > 0.8 && d >= 0.25) {
-          b.set(x, y, tone(P.moss, 0.45 + 0.3 * hash(x, y, seed), x, y, 0.5));
+        if (fall > 0 && bayer4(x, y) < fall + 0.1) {
+          b.set(x, y, rim ? P.cloud[3]! : tone(P.cloud, fall > 0.6 ? 0 : 0.25, x, y, 0.3));
           continue;
         }
-        let t = 0.18 + 0.3 * runnel + 0.25 * clamp(below / p.h, 0, 1) + wet * 0.25;
-        t += (vnoise(lx / 40, ly / 40, seed + 11) - 0.5) * 0.2;
-        b.set(x, y, tone(P.karst, clamp(t, 0, 1), x, y, 0.55));
+        // wet rock: dark, vertically streaked, moss on the ledges
+        const runnel = vnoise(lx / 5, ly / 90, seed + 3);
+        // moss along the bedding ledges: long thin strips, thicker where they catch the light
+        const bed = Math.abs(Math.sin((ly + 30 * vnoise1(lx / 90, seed + 13)) / 21));
+        const ledge = bed < 0.16 && vnoise(lx / 30, ly / 21, seed + 7) > 0.48;
+        if (ledge && d >= 0.25) {
+          b.set(x, y, tone(P.moss, bed < 0.07 ? 0.48 : 0.68, x, y, 0.4));
+          continue;
+        }
+        let t = 0.48 + 0.14 * runnel + 0.14 * clamp(below / p.h, 0, 1);
+        if (bed < 0.24 && !ledge) t += 0.1;
+        t += (vnoise(lx / 60, ly / 50, seed + 11) - 0.5) * 0.14;
+        b.set(x, y, tone(P.karst, clamp(t, 0, 1), x, y, 0.45));
       }
     }
   },

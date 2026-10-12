@@ -74,7 +74,7 @@ async function boot(): Promise<void> {
   const assets = await loadZhusha(r);
   const input = new Input(canvas, KEYS);
   const touch = new Touch(input, document.getElementById("touch") as HTMLElement, canvas);
-  const game = new TesuGame(r, input, assets, { start: q.get("at") ?? "catch", link: q.has("at") || q.has("x"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual") });
+  const game = new TesuGame(r, input, assets, { start: q.get("at") ?? "catch", link: q.has("at") || q.has("x"), noOpening: q.has("skip"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual") });
   if (q.has("x")) game.place(Number(q.get("x")) * H);
   game.debug = q.has("debug");
   input.onToggle = (w) => {

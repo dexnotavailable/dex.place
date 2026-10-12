@@ -150,6 +150,38 @@ export interface Atmos {
   sun: [number, number] | null;
 }
 
+/** Something that moves on a plane: animated frames from a painter (or, later, a render). */
+export interface SpriteDef {
+  id: string;
+  plane: PlaneId;
+  kind: string;
+  /** Anchor in 3D world px (its feet). */
+  x: number;
+  y: number;
+  p: Record<string, unknown>;
+  seed: number;
+  frames?: number;
+  fps?: number;
+  /** Walks back and forth along [x0, x1] (3D px) at `speed` px/s. */
+  path?: [number, number];
+  speed?: number;
+  /** Shows in still water (default true). */
+  reflect?: boolean;
+}
+
+/** A bank of mist lying at a height in a stretch of the land (a valley's), drawn after a plane. */
+export interface MistBank {
+  x0: number;
+  x1: number;
+  /** World y of its middle and its half thickness (3D px). */
+  y: number;
+  half: number;
+  /** The depth it lies at (a plane rate) and the plane it is drawn after. */
+  rate: number;
+  after: PlaneId;
+  density: number;
+}
+
 export interface Spawn {
   id: string;
   x: number;
@@ -173,9 +205,11 @@ export interface WorldDef {
   w: number;
   h: number;
   pieces: Piece[];
+  sprites: SpriteDef[];
   walks: Walk[];
   walls: Wall[];
   waters: Water[];
+  mists: MistBank[];
   voids: Void[];
   tracks: CamTrack[];
   atmos: Atmos[];

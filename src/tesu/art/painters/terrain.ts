@@ -4,7 +4,7 @@
 
 import { definePainter, type PaintCtx } from "../painter.ts";
 import { P } from "../palette.ts";
-import { Spans, bayer4, clamp, fbm, hash, tone, vnoise, vnoise1 } from "../raster.ts";
+import { Spans, bayer4, clamp, fbm1, hash, tone, vnoise1 } from "../raster.ts";
 
 export interface MassP {
   /** Top polyline, level-1 px relative to the anchor, x increasing. */
@@ -44,26 +44,48 @@ function outline(p: MassP): number[] {
 }
 
 /**
- * Rock facets: a stretched cell pattern. Returns [cell shade 0..1, crack 0..1].
- * lx, ly in level-1 px.
+ * Weathered limestone as chunky boulders: a stretched cell pattern where every cell is
+ * shaded like a rounded block in the morning light (lit along its upper-left rim, shadowed
+ * along its lower-right rim, a dark crack between cells). Returns a tone (0 light .. 1
+ * dark) or -1 for a crack. lx, ly in level-1 px.
  */
-function facets(lx: number, ly: number, seed: number, size: number): [number, number] {
-  const sx = size * 1.7, sy = size;
-  const gx = lx / sx, gy = ly / sy;
+function boulders(lx: number, ly: number, seed: number, d: number, depth: number): number {
+  const sx = 104, sy = 50;
+  const wob = (fbm1(lx / 210, seed + 2, 2) - 0.5) * 16;
+  const gx = lx / sx, gy = (ly + wob) / sy;
   const ix = Math.floor(gx), iy = Math.floor(gy);
-  let d1 = 1e9, d2 = 1e9, best = 0;
+  let d1 = 1e9, d2 = 1e9, c1x = 0, c1y = 0, c2x = 0, c2y = 0, id = 0, k1 = 0, k2 = 0;
   for (let j = -1; j <= 1; j++) {
     for (let i = -1; i <= 1; i++) {
       const cx = ix + i, cy = iy + j;
-      const px = cx + 0.15 + 0.7 * hash(cx, cy, seed), py = cy + 0.15 + 0.7 * hash(cx, cy, seed + 17);
-      const dx = (gx - px) * sx, dy = (gy - py) * sy;
-      const d = dx * dx + dy * dy;
-      if (d < d1) { d2 = d1; d1 = d; best = hash(cx, cy, seed + 31); }
-      else if (d < d2) d2 = d;
+      const px = (cx + 0.08 + 0.84 * hash(cx, cy, seed)) * sx, py = (cy + 0.12 + 0.76 * hash(cx, cy, seed + 17)) * sy;
+      const dx = lx - px, dy = ly + wob - py;
+      const dd = dx * dx + dy * dy * 1.8;
+      const kk = cx * 7919 + cy * 104729;
+      if (dd < d1) { d2 = d1; c2x = c1x; c2y = c1y; k2 = k1; d1 = dd; c1x = px; c1y = py; k1 = kk; id = hash(cx, cy, seed + 31); }
+      else if (dd < d2) { d2 = dd; c2x = px; c2y = py; k2 = kk; }
     }
   }
-  const edge = Math.sqrt(d2) - Math.sqrt(d1);
-  return [best, edge < 1.6 ? 1 - edge / 1.6 : 0];
+  // distance to the border between the two nearest cells (along their centre line)
+  const ux = c2x - c1x, uy = (c2y - c1y) * 1.34;
+  const ul = Math.hypot(ux, uy) || 1;
+  const mx = (c1x + c2x) / 2, my = (c1y + c2y) / 2;
+  const edge = ((mx - lx) * ux + (my - (ly + wob)) * uy) / ul;
+  const px = 1 / d;
+  // some borders are weathered away, so cells join into bigger, irregular masses
+  const merged = hash(Math.min(k1, k2), Math.max(k1, k2), seed + 5) < 0.18;
+  if (!merged && d >= 0.25 && edge < px * 0.9) return -1;
+  // which way that border faces: toward the light (up and left) is lit
+  const face = (-0.62 * ux - 0.78 * uy) / ul;
+  let t = 0.2 + 0.16 * id;
+  const rim = Math.max(2.5, 5 * Math.min(1, d)) / Math.max(d, 0.25);
+  if (!merged && edge < rim) t += face > 0.25 ? -0.17 : face < -0.25 ? 0.24 : 0;
+  // water stains: thin darker streaks running down from some cracks
+  if (d >= 0.5 && hash(Math.floor(lx / 3), Math.floor((ly + wob) / sy), seed + 61) < 0.05) t += 0.08;
+  // deeper rock is darker, in steps
+  t += Math.min(0.56, Math.floor(depth / 150) * 0.07);
+  if (d >= 0.5 && hash(Math.floor(lx), Math.floor(ly), seed + 77) < 0.003) t += 0.3;
+  return clamp(t, 0, 1);
 }
 
 export const mass = definePainter<MassP>("mass", {
@@ -83,11 +105,11 @@ export const mass = definePainter<MassP>("mass", {
     const rock = p.rock === "stone" ? P.stone : p.rock === "earth" ? P.earth : P.karst;
     const capKind = p.cap ?? "moss";
     const cap = capKind === "earth" ? P.earth : P.moss;
-    const capH = (p.capH ?? 12) ;
+    const capH = p.capH ?? 16;
     const seed = c.seed;
     const shade = p.shade ?? 0;
-    const fine = d >= 0.5;
     const b = c.buf;
+    const ink = rock[rock.length - 1]!;
     for (let y = Math.max(sp.y0, b.oy); y < Math.min(sp.y1, b.y1); y++) {
       const row = sp.row(y);
       for (let k = 0; k + 1 < row.length; k += 2) {
@@ -96,35 +118,37 @@ export const mass = definePainter<MassP>("mass", {
           const lx = c.lx(x + 0.5), ly = c.ly(y + 0.5);
           const ty = topAt(p.top, lx);
           const depth = ly - ty;
-          const edge = !sp.inside(x - 1, y) || !sp.inside(x + 1, y) || !sp.inside(x, y + 1);
           const topEdge = !sp.inside(x, y - 1);
-          // the cap: moss with a ragged lower edge
-          const capLimit = capKind === "none" ? 0 : capH * (0.75 + 0.5 * vnoise1(lx / 9, seed + 3)) + (fine ? (hash(Math.floor(lx), 0, seed) < 0.12 ? 3 : 0) : 0);
+          const edge = !sp.inside(x - 1, y) || !sp.inside(x + 1, y) || !sp.inside(x, y + 1);
+          // the cap: a lit rim, light moss, darker moss, and a ragged hem that drips
+          // the hem: a scalloped edge with the odd longer tuft hanging over the rock
+          const scal = Math.abs(Math.sin(lx / 7.5 + vnoise1(lx / 23, seed) * 3)) * 3;
+          const tuft = hash(Math.floor(lx / 5), 11, seed) < 0.12 ? 3 + 6 * hash(Math.floor(lx / 5), 13, seed) : 0;
+          const capLimit = capKind === "none" ? 0 : capH * (0.85 + 0.3 * vnoise1(lx / 13, seed + 3)) + scal + tuft;
           if (topEdge) {
-            b.set(x, y, capKind === "none" ? rock[rock.length - 1]! : cap[cap.length - 2]!);
+            b.set(x, y, capKind === "none" ? ink : cap[cap.length - 2]!);
             continue;
           }
           if (depth < capLimit) {
-            // a lit rim one art px under the top, then the cap body darkening downward
-            const rim = depth < 1.5 / d + 0.01 && !topEdge;
-            let t = rim ? 0.05 : 0.22 + 0.45 * (depth / Math.max(1, capLimit)) + 0.18 * (vnoise(lx / 6, ly / 4, seed + 5) - 0.5);
-            if (edge) t = 1;
-            b.set(x, y, tone(cap, clamp(t, 0, 1), x, y, 0.6));
+            const u = depth / Math.max(1, capLimit);
+            let t = depth < 1.4 / d ? 0.04 : u < 0.35 ? 0.2 : u < 0.75 ? 0.42 : 0.62;
+            if (edge || depth > capLimit - 1 / d) t = 0.85;
+            b.set(x, y, tone(cap, t, x, y, 0.25));
             continue;
           }
-          // the rock body: facets, cracks, strata, darker with depth and right under the cap
-          const [cell, crack] = facets(lx, ly, seed, fine ? 26 : 40);
-          const under = depth - capLimit;
-          let t = 0.2 + cell * 0.32;
-          t += clamp(depth / 520, 0, 0.42);
-          if (under < 6) t += 0.28 * (1 - under / 6);
-          const strata = Math.sin((ly + 18 * fbm(lx / 140, 0, seed + 9, 2)) / 23);
-          if (strata > 0.86) t += 0.12;
-          t += (vnoise(lx / 3.5, ly / 3.5, seed + 13) - 0.5) * 0.12;
-          if (fine && crack > 0.55 && hash(Math.floor(lx / 12), Math.floor(ly / 12), seed + 41) < 0.7) t += 0.3 * crack;
-          t += shade * 0.3;
-          if (edge) t = 1;
-          b.set(x, y, tone(rock, clamp(t, 0, 1), x, y, 0.5));
+          if (edge) {
+            b.set(x, y, ink);
+            continue;
+          }
+          let t = boulders(lx, ly, seed, d, depth);
+          if (t < 0) {
+            b.set(x, y, rock[rock.length - 2]!);
+            continue;
+          }
+          // the shadow the cap throws on the rock right under it
+          if (depth - capLimit < 4 / d + 3) t = Math.max(t, 0.6);
+          t = clamp(t + shade * 0.25, 0, 1);
+          b.set(x, y, tone(rock, t, x, y, 0.2));
         }
       }
     }
@@ -135,16 +159,16 @@ export const mass = definePainter<MassP>("mass", {
       for (let x = x0; x < x1; x++) {
         const lx = c.lx(x + 0.5);
         const clump = vnoise1(lx / 18, seed + 61);
-        if (hash(x, 1, seed + 71) > tufts * (0.35 + 0.9 * clump)) continue;
+        if (hash(x, 1, seed + 71) > tufts * (0.25 + 0.9 * clump)) continue;
         const ty = c.Y(topAt(p.top, lx));
         const hgt = Math.max(1, Math.round((1 + hash(x, 2, seed + 73) * 4 * clump) * Math.min(1, d)));
-        const col = hash(x, 3, seed + 79) < 0.5 ? P.moss[3]! : P.moss[4]!;
+        const col = hash(x, 3, seed + 79) < 0.5 ? P.moss[2]! : P.moss[3]!;
         for (let k = 1; k <= hgt; k++) {
           const yy = Math.floor(ty) - k;
           if (b.get(x, yy)) break;
-          b.set(x, yy, k === hgt && hgt > 2 ? P.moss[2]! : col);
+          b.set(x, yy, k === hgt && hgt > 2 ? P.moss[1]! : col);
         }
-        if (d >= 1 && hash(x, 4, seed + 83) < 0.02 * tufts) {
+        if (d >= 1 && hash(x, 4, seed + 83) < 0.025 * tufts) {
           const fy = Math.floor(ty) - hgt - 1;
           b.set(x, fy, hash(x, 5, seed) < 0.5 ? P.paper[0]! : P.violet[1]!);
         }
