@@ -40,6 +40,11 @@ export function court(b: WorldBuilder): void {
   b.piece("play", "courtfloor", STAIRWELL_X1, Y, { w: COURT_X1 - STAIRWELL_X1 + h(0.2), seal: [-h(20), h(0.1)] }, { z: 1 });
   b.walk([COURT_X0, Y, STAIRWELL_X0, Y], { surface: "stone", depth: h(0.6), name: "prize-court" });
   b.walk([STAIRWELL_X1, Y, COURT_X1, Y], { surface: "stone", depth: h(0.6), name: "prize-court-tip" });
+  // the Prow Stair's mouth is bridged by a timber grate (one-way: she walks across it both
+  // ways, walks up the stair under it, and drops through it holding down)
+  b.walk([STAIRWELL_X0 - h(0.05), Y, STAIRWELL_X1 + h(0.05), Y], { surface: "wood", oneWay: true, name: "prow-stair-mouth" });
+  b.piece("play", "plank", STAIRWELL_X0 - h(0.1), Y, { w: STAIRWELL_X1 - STAIRWELL_X0 + h(0.2) }, { z: 2 });
+  b.usable({ id: "prow-stair", x0: STAIRWELL_X0, y0: Y - h(1.6), x1: STAIRWELL_X1, y1: Y, label: "down the Prow Stair", action: { kind: "door", to: "prow-stair-in" } });
   // the hall's east wall and the rail at the tip: hard edges with reasons
   b.wall({ x: COURT_X0 + h(0.15), y0: Y - h(6), y1: Y + h(0.1), reason: "wall" });
   // the Prow Leap at the tip (GDK 3.5): a plank with prayer flags out past the rail; off its
@@ -71,6 +76,9 @@ export function court(b: WorldBuilder): void {
   // at the tip: a bench and the rail, the land falling away below
   b.piece("play", "bench", h(190.9), Y, { w: 96 }, { z: 4 });
   b.piece("front", "rail", 0, 0, { pts: [h(191.2), Y + 2, COURT_X1 - h(0.3), Y + 2], h: 50, every: 46 }, { z: 2 });
+
+  // beyond the tip the land falls away into mist
+  b.mist({ x0: COURT_X1 - h(6), x1: COURT_X1 + h(30), y: Y + h(16), half: h(13), rate: 0.62, after: "back", density: 0.95 });
 
   // the paper spectators in tiers behind the court (P3); their base runs down out of sight
   b.sprite({ id: "stands", plane: "back", kind: "stands", x: COURT_MID, y: Y, p: { w: 900, rows: 3 }, frames: 4, frame: 0, reflect: false });

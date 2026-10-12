@@ -19,6 +19,9 @@ export interface PanelSpec {
   wide?: boolean;
 }
 
+/** The panels' pixel font (151 KB of styles for its many subsets) loads with the first panel. */
+let fontAsked = false;
+
 export class Panels {
   private root: HTMLElement;
   private current: { el: HTMLElement; spec: PanelSpec; closeKey?: string } | null = null;
@@ -40,6 +43,10 @@ export class Panels {
   }
 
   show(spec: PanelSpec, closeKey?: string): void {
+    if (!fontAsked) {
+      fontAsked = true;
+      import("@fontsource/dotgothic16/400.css").catch(() => {});
+    }
     this.close(false);
     this.input.paused = true;
     this.input.releaseAll();

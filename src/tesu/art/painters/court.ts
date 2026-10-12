@@ -320,6 +320,8 @@ export interface StandsP {
   rows?: number;
   /** 0, 1: idle (a little sway), 2: cheering, 3: hushed (leaning in). */
   frame?: number;
+  /** Draw the tiers, trestles and lantern strings too (false: the spectators alone). */
+  tiers?: boolean;
 }
 
 /**
@@ -337,8 +339,9 @@ export const stands = definePainter<StandsP>("stands", {
     const rows = p.rows ?? 3;
     const f = p.frame ?? 0;
     const hw = p.w / 2;
+    const tiers = p.tiers ?? true;
     // the base: timber trestles down out of sight
-    fill(c, -hw, 0, hw, 260, (x, y) => {
+    if (tiers) fill(c, -hw, 0, hw, 260, (x, y) => {
       const lx = c.lx(x + 0.5);
       if (((lx + hw) % 60) < 8) return tone(P.timber, 0.75, x, y, 0.3);
       const ly = c.ly(y + 0.5);
@@ -349,12 +352,14 @@ export const stands = definePainter<StandsP>("stands", {
     for (let r = rows - 1; r >= 0; r--) {
       const top = -r * 34 - 20;
       const inset = r * 26;
-      fill(c, -hw + inset, top, hw - inset, top + 20 + r * 34, (x, y, _u, v) => {
-        if (v < 0.08) return P.timber[1]!;
-        return tone(P.timber, 0.45 + 0.15 * v, x, y, 0.3);
-      });
-      // red rail along each tier's front
-      fill(c, -hw + inset, top - 4, hw - inset, top - 1, () => P.red[3]!);
+      if (tiers) {
+        fill(c, -hw + inset, top, hw - inset, top + 20 + r * 34, (x, y, _u, v) => {
+          if (v < 0.08) return P.timber[1]!;
+          return tone(P.timber, 0.45 + 0.15 * v, x, y, 0.3);
+        });
+        // red rail along each tier's front
+        fill(c, -hw + inset, top - 4, hw - inset, top - 1, () => P.red[3]!);
+      }
       // the spectators on this tier
       const n = Math.floor((p.w - inset * 2) / 22);
       for (let i = 0; i < n; i++) {
@@ -392,7 +397,7 @@ export const stands = definePainter<StandsP>("stands", {
       }
     }
     // strings of small lanterns over the stands
-    for (let lx = -hw + 20; lx < hw - 20; lx += 1 / c.d) {
+    if (tiers) for (let lx = -hw + 20; lx < hw - 20; lx += 1 / c.d) {
       const sag = Math.sin(((lx + hw) / p.w) * Math.PI * 3) * 6;
       const y = -rows * 34 - 58 + Math.abs(sag);
       c.buf.set(Math.round(c.X(lx)), Math.round(c.Y(y)), P.ink[0]!);

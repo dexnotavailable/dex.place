@@ -83,7 +83,8 @@ export function gateRoad(b: WorldBuilder): void {
   const r3 = 0.62;
   b.piece("back", "cliffwall", h(110.5), h(59.6), {
     w: h(90) * r3, h: h(90) * r3, falls: 0.9,
-    lip: [0, h(1.2) * r3, h(10) * r3, h(0.4) * r3, h(30) * r3, -h(0.4) * r3, h(60) * r3, -h(2) * r3, h(90) * r3, -h(3) * r3],
+    // (east of the hall its top sinks away under the prow, out of the court's frames)
+    lip: [0, h(1.2) * r3, h(10) * r3, h(0.4) * r3, h(30) * r3, -h(0.4) * r3, h(50) * r3, 0, h(62) * r3, h(6) * r3, h(75) * r3, h(30) * r3, h(90) * r3, h(60) * r3],
   }, { z: 2 });
 
   // mist lies in Shiraito's valley below the road, in front of the wall and behind the pillars

@@ -7,7 +7,6 @@
 // In the page column (src/tesu/mount.ts) it runs framed: ?embed=site, plus ?hold on "/" (the
 // world window waits for PLAY, which the page calls through window.__tesu.play()).
 
-import "@fontsource/dotgothic16/400.css";
 import { Input, type Action, type KeyMap } from "../lab/engine/input.ts";
 import { ContractError } from "../lab/contracts.ts";
 import { WorldRenderer } from "../world/render/renderer.ts";
