@@ -130,11 +130,16 @@ export function kagami(b: WorldBuilder): void {
     drifting(b, `mid-wisp-${i}`, "mid", "sky.wisp", x, dy, { w, h: th, density: 0.6 }, midWrap, 7, 3));
   bg(b, "mid", -3000, "ridgeline", { w: 9000, h: 40, pines: 1.5, pineH: 26 }, LAKE_Y, -2);
 
-  // a Walker wading the far shore (the Walker lane's giant replaces this stand-in in its slot)
-  // Timed to the Walker lane's retimed wade (Dex: several hundred metres tall): one cycle in
-  // 20 s, moving at the wade's ground speed for its 560 px height (0.03 of 1.9037 units a
-  // second: 8.8 plane px/s, so 31.5 3D px/s on P2) so planted feet stay planted.
-  b.sprite({ id: "walker-kagami", plane: "mid", kind: "walker", x: h(84), y: LAKE_Y + h(0.6), p: { frames: 24 }, frames: 24, fps: 1.2, path: [h(70), h(140)], speed: 31.5 });
+  // The Walker lane's giant, rendered from its rig (art/walker/tools/blender/render_walker.py)
+  // in its retimed wade (Dex: several hundred metres tall, slow and heavy): one cycle in 20 s,
+  // 48 frames (2.4 a second), 560 px tall at play zoom on P2 with a half-size set for the wide
+  // frames. It moves only when its frame changes, 3.82 plane px a frame (the render's ground
+  // speed), so its planted feet stay planted: 9.18 plane px/s, 32.8 3D px/s on P2.
+  b.sprite({
+    id: "walker-kagami", plane: "mid", kind: "frames", x: h(84), y: LAKE_Y + h(0.6),
+    p: { sets: [{ level: 1, base: "/tesu/walker/wade-560/" }, { level: 0.5, base: "/tesu/walker/wade-280/" }] },
+    frames: 48, fps: 2.4, path: [h(70), h(140)], speed: 32.8, stepMove: true,
+  });
 
   // P3: the near-back shore: pine ridges low over the water
   bg(b, "back", -4200, "ridgeline", { w: 5200, h: 70, pines: 2.5, pineH: 52 }, LAKE_Y, 0);

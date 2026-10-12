@@ -202,6 +202,11 @@ export interface SpriteDef {
   reveal?: number;
   /** Flash toward white (0..1), a hit's one-frame flash. */
   white?: number;
+  /**
+   * Moves along its path only when its frame changes (a rendered walk cycle: the feet stay
+   * planted between frames, as the render's ground speed per frame says).
+   */
+  stepMove?: boolean;
 }
 
 /** A bank of mist lying at a height in a stretch of the land (a valley's), drawn after a plane. */

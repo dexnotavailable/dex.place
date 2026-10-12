@@ -717,7 +717,8 @@ export class TesuGame {
     const water = this.activeWater(cam);
     const draws = new Map<PlaneId, PlaneDraw>();
     for (const id of PLANE_IDS) draws.set(id, this.planeQuads(cam, id, 0, Hf, a, !this.manual));
-    this.loading = ![...draws.values()].every((d) => d.complete);
+    // the world shows once its plates are in and its rendered giants have a frame to show
+    this.loading = ![...draws.values()].every((d) => d.complete) || (this.sprites.waiting > 0 && this.tick < 60 * 20);
     const z = cam.zoom;
     const xfPlay = planeXf(cam, 1);
     const focus: [number, number] = [W / 2, cam.anchor * Hf];
