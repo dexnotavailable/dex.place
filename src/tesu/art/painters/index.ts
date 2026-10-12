@@ -8,3 +8,4 @@ import "./walker.ts";
 import "./gates.ts";
 import "./hall.ts";
 import "./folk.ts";
+import "../library/sky/index.ts";

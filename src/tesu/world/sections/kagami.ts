@@ -10,6 +10,12 @@ import type { WorldBuilder } from "../build.ts";
 import { PLANES, type PlaneId } from "../types.ts";
 import { CATCH_X, DECK_Y, JETTY_X0, JETTY_X1, LAKE_X0, LAKE_X1, LAKE_Y } from "./common.ts";
 
+/** A drifting sprite on a background plane, placed by plane px (x, and dy above the lake line), wrapping over plane px. */
+function drifting(b: WorldBuilder, id: string, plane: PlaneId, kind: string, planeX: number, planeDy: number, p: Record<string, unknown>, wrap: [number, number], drift: number, fps: number, frames = 4): void {
+  const r = PLANES[plane].rate;
+  b.sprite({ id, plane, kind, x: planeX / r, y: LAKE_Y + planeDy / r, p, frames, fps, path: [wrap[0] / r, wrap[1] / r], drift, reflect: true });
+}
+
 /** A background piece placed by its plane px (x) and standing on 3D y (the lake by default). */
 export function bg(b: WorldBuilder, plane: PlaneId, planeX: number, kind: string, p: Record<string, unknown>, y3 = LAKE_Y, z = 0): void {
   b.piece(plane, kind, planeX / PLANES[plane].rate, y3, p, { z });
@@ -41,6 +47,10 @@ export function kagami(b: WorldBuilder): void {
   b.piece("play", "jetty", JETTY_X0, DECK_Y, { w: JETTY_X1 - JETTY_X0, water: LAKE_Y - DECK_Y }, { z: 2 });
   for (const [x, hh, rope] of [[h(52), 30, false], [h(71), 38, true], [h(88), 30, false], [CATCH_X - h(3.4), 44, true], [JETTY_X1 - h(0.4), 34, false]] as const) {
     b.piece("play", "moorPost", x, DECK_Y, { h: hh, down: LAKE_Y - DECK_Y, rope }, { z: 3 });
+  }
+  // ripple rings opening round the posts that stand in the lake (env-sky lane)
+  for (const x of [h(52), h(71), h(88), CATCH_X - h(3.4), JETTY_X1 - h(0.4)]) {
+    b.sprite({ id: `ripple-${Math.round(x)}`, plane: "front", kind: "sky.ripple", x, y: LAKE_Y, p: { rx: 26, rings: 3 }, frames: 8, fps: 8, reflect: false });
   }
   // a moored boat beside the jetty, a coil of rope and a bucket on the deck
   b.piece("play", "boat", h(91.5), LAKE_Y + 2, { w: h(2.6) }, { z: 1 });
@@ -75,7 +85,15 @@ export function kagami(b: WorldBuilder): void {
   const clouds: [number, number, number, number][] = [
     [-300, -230, 520, 70], [260, -150, 380, 54], [700, -260, 640, 86], [1180, -120, 420, 60], [1560, -210, 560, 74], [2100, -170, 480, 64],
   ];
-  for (const [x, y, w, hh] of clouds) bg(b, "sky", x, "cloud", { w, h: hh }, LAKE_Y + y / PLANES.sky.rate, -1);
+  // the env-sky lane's clouds, drifting east with the wind: the big slots are banks, the thin
+  // ones strata; two low strata lie just over the far karst (mist layered between sky and land)
+  const skyWrap: [number, number] = [-1700, 2500];
+  clouds.forEach(([x, y, w, hh], i) => {
+    const big = hh >= 64;
+    drifting(b, `sky-cloud-${i}`, "sky", big ? "sky.bank" : "sky.stratus", x, y, big ? { w, h: Math.round(hh * 1.05) } : { w: Math.round(w * 1.3), h: Math.round(hh * 0.3), layers: 2 }, skyWrap, big ? 2 : 3, 2);
+  });
+  drifting(b, "sky-low-0", "sky", "sky.stratus", -260, -70, { w: 900, h: 14, layers: 2 }, skyWrap, 3.5, 2);
+  drifting(b, "sky-low-1", "sky", "sky.stratus", 760, -96, { w: 700, h: 12, layers: 2 }, skyWrap, 3, 2);
   // the two sky isles, Bell and Drum, above and right of the palace: seen from almost everywhere
   bg(b, "sky", 560, "isle", { w: 92, h: 120, tower: "bell" }, LAKE_Y - 300 / PLANES.sky.rate, 2);
   bg(b, "sky", 700, "isle", { w: 110, h: 96, tower: "drum" }, LAKE_Y - 236 / PLANES.sky.rate, 2);
@@ -85,11 +103,15 @@ export function kagami(b: WorldBuilder): void {
   bg(b, "mid", -4000, "plain", { w: 21000, foot: 560, ramp: "pine", amp: 8 }, LAKE_Y, -5);
   bg(b, "back", -6000, "plain", { w: 40000, foot: 520, ramp: "pine", amp: 10 }, LAKE_Y, -5);
 
-  // P1: the far snow ranges standing on the far shore
-  const ranges: [number, number, number, number][] = [
-    [-2400, 1100, 260, 4], [-1400, 980, 250, 4], [-520, 1100, 330, 4], [440, 1180, 300, 5], [1500, 1040, 270, 4], [2400, 1200, 320, 5], [3500, 1100, 280, 4],
+  // P1: the far karst, rows of pale limestone rising out of layered mist (env-sky lane), with
+  // wisps drifting along their feet
+  const ranges: [number, number, number][] = [
+    [-2400, 1100, 260], [-1400, 980, 250], [-520, 1100, 330], [440, 1180, 300], [1500, 1040, 270], [2400, 1200, 320], [3500, 1100, 280],
   ];
-  ranges.forEach(([x, w, hh, peaks], i) => bg(b, "far", x, "range", { w, h: hh, peaks, snow: 0.55 }, LAKE_Y, i));
+  ranges.forEach(([x, w, hh], i) => bg(b, "far", x, "sky.karst", { w, h: Math.round(hh * 0.72), rows: i % 2 ? 2 : 3, look: "far", mist: Math.round(hh * 0.16), green: 0.6 }, LAKE_Y, i));
+  const farWrap: [number, number] = [-900, 2400];
+  ([[-200, -34, 520, 22], [520, -52, 420, 18], [1150, -30, 600, 24]] as const).forEach(([x, dy, w, th], i) =>
+    drifting(b, `far-wisp-${i}`, "far", "sky.wisp", x, dy, { w, h: th, density: 0.65 }, farWrap, 5, 3));
 
   // P2: karst towers along the far shore, jade and white like Wuling's lake
   const towers: [number, number, number][][] = [
@@ -100,7 +122,10 @@ export function kagami(b: WorldBuilder): void {
     [[0, 64, 140], [60, 90, 200], [150, 50, 120]],
   ];
   const towerX = [-1300, -820, 120, 900, 1700];
-  towers.forEach((t, i) => bg(b, "mid", towerX[i]!, "towers", { t, green: 0.75 }, LAKE_Y, i));
+  towers.forEach((t, i) => bg(b, "mid", towerX[i]!, "sky.karst", { w: 0, h: 260, rows: 1, look: "near", towers: t, mist: 30, green: 0.8 }, LAKE_Y, i));
+  const midWrap: [number, number] = [-400, 5400];
+  ([[600, -24, 520, 26], [1900, -40, 460, 22], [3300, -22, 640, 30]] as const).forEach(([x, dy, w, th], i) =>
+    drifting(b, `mid-wisp-${i}`, "mid", "sky.wisp", x, dy, { w, h: th, density: 0.6 }, midWrap, 7, 3));
   bg(b, "mid", -3000, "ridgeline", { w: 9000, h: 40, pines: 1.5, pineH: 26 }, LAKE_Y, -2);
 
   // a Walker wading the far shore (the Walker lane's giant replaces this stand-in in its slot)
