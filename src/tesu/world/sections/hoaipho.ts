@@ -44,9 +44,10 @@ export function hoaipho(b: WorldBuilder): void {
   // below the street and the pool is the lake: a fall into it is tugged back to the quay
   b.void({ x0: h(60), x1: h(212), y: HARBOUR_Y + h(1.8), y1: h(240) });
 
-  // the massif stands on the West Shore's rock; the shore itself; the pool's stone basin
+  // the West Shore's quay at the massif's foot (the massif's face: sections/shiraito.ts); the
+  // pool's stone basin
   b.piece("play", "mass", 0, 0, {
-    top: [h(58), h(189.4), HARBOUR_X0 + h(0.4), h(189.4), HARBOUR_X0 + h(0.6), QUAY_Y, h(100), QUAY_Y],
+    top: [h(58), QUAY_Y, h(100), QUAY_Y],
     bottom: [h(100.4), QUAY_Y + h(0.8), h(90), HARBOUR_Y + h(1.4), h(70), HARBOUR_Y + h(2.4), h(58), HARBOUR_Y + h(3)],
     rock: "earth", flat: true,
   }, { z: 0 });
@@ -107,7 +108,8 @@ export function hoaipho(b: WorldBuilder): void {
   b.place({ id: "hoai-pho", name: "Hoài Phố", x0: HARBOUR_X0, x1: HARBOUR_X1, y0: h(175), y1: h(215), title: "place", spawn: "hoai-pho" });
 
   // --- the frame: play zoom throughout, its edges kept inside the harbour's ends
-  b.track({ id: "hoai-pho", x0: h(60), x1: h(215), y0: h(175), y1: h(215), bounds: [HARBOUR_X0 - h(1.5), HARBOUR_X1 + h(1.5)], keys: [
+  // (west, the frame keeps a few H of the massif's face in view: the harbour's end is its foot)
+  b.track({ id: "hoai-pho", x0: h(60), x1: h(215), y0: h(175), y1: h(215), bounds: [HARBOUR_X0 - h(4), HARBOUR_X1 + h(1.5)], keys: [
     { x: HARBOUR_X0, zoom: 1, anchor: 0.64, horizon: 0.4, lead: 0.06 },
     { x: HARBOUR_X1, zoom: 1, anchor: 0.64, horizon: 0.4, lead: 0.06 },
   ] });
