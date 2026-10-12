@@ -124,8 +124,10 @@ export function dressHall(b: WorldBuilder): void {
   // huge)
   const NEAR_Y = FY + Math.round(0.45 * H);
   const rN = PLANES.near.rate;
-  // (placed where they never cover a service while she stands at it, in either facing)
-  for (const o of [-2.6, 3.8, 16.6, 21.9, 28.8, 36.8]) {
+  // (placed where they never cover a service while she stands at it, in either facing, on
+  // either floor: the Long Gallery's frames run almost unbroken from 3 H to 23 H, so the near
+  // columns stand outside that stretch, and the middle keeps only low near props)
+  for (const o of [-2.6, 28.8, 36.8]) {
     b.piece("near", "hall.nearcol", X(o), NEAR_Y, { r: Math.round(0.44 * H), h: 2300, at: at(X(o), NEAR_Y, rN) }, { z: 2, minLevel: 0.9, reflect: false });
   }
   const nearProps: [number, string, number][] = [[5.6, "pine", 0.55], [13.4, "teacart", 1.0], [17.0, "broom", 0.7], [24.8, "crates", 1.0], [31.0, "jar", 1.0]];
@@ -213,8 +215,8 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number }): void {
   // the prow; their crowns top out just below the floor line, so they never cover her or a
   // service (GDK A.1: P5 never hides what matters). The bout's sides are framed by the hall's
   // wall on the left and the drop on the right.
-  b.piece("near", "court.nearpine", HOLD - h(6.8), Y + h(4.2), { h: h(4.6), lean: 0.6, seed: 3 }, { z: 3, minLevel: 0.9, reflect: false });
-  b.piece("near", "court.nearpine", HOLD + h(6.0), Y + h(4.4), { h: h(4.8), lean: -0.7, seed: 7 }, { z: 3, minLevel: 0.9, reflect: false });
+  b.piece("near", "court.nearpine", HOLD - h(6.8), Y + h(4.2), { h: h(4.85), lean: 0.6, seed: 3 }, { z: 3, minLevel: 0.9, reflect: false });
+  b.piece("near", "court.nearpine", HOLD + h(6.0), Y + h(4.4), { h: h(5.05), lean: -0.7, seed: 7 }, { z: 3, minLevel: 0.9, reflect: false });
 
   // --- festival banners on tall poles among the stands (P3 sprites), each in the wind
   const r3b = PLANES.back.rate;

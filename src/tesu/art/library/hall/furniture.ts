@@ -348,6 +348,15 @@ export const offerBox = definePainter<BoxP>("hall.offerbox", {
       if (mark) return mt(M.verm, face(l.k, side, 0, nyc) * 0.9, X, Y, 0.2, 1);
       return mt(M.paper, face(l.k, side, 0, nyc * 0.9) * 0.95, X, Y, 0.0, 1);
     });
+    // the drum's round ends: lacquer discs with a gold hub (it reads as a wheel on its axle)
+    for (const ex of [2.5, W - 2.5]) {
+      const ecy = (dy0 + dy1) / 2, er = (dy1 - dy0) / 2 + 1;
+      rect(c, ex - 3.5, ecy - er, ex + 3.5, ecy + er, (X, Y, lx, ly) => {
+        const q = Math.hypot((lx - ex) / 3.5, (ly - ecy) / er);
+        if (q > 1) return 0;
+        return q < 0.3 ? mt(M.gold, 0.9, X, Y, 0.0, 1) : mt(M.lacq, face(lf.get(lx, ly).k, side, (lx - ex) / 3.5, (ly - ecy) / er), X, Y, 0.0, 1);
+      });
+    }
     // the crank
     rect(c, W, (dy0 + dy1) / 2 - 1.5, W + 7, (dy0 + dy1) / 2 + 1.5, (X, Y) => tn(M.bronze, 0.35, X, Y, 0));
     rect(c, W + 6, (dy0 + dy1) / 2 - 1, W + 8, (dy0 + dy1) / 2 + 9, (X, Y) => tn(M.bronze, 0.45, X, Y, 0));

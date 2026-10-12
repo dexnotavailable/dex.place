@@ -8,7 +8,7 @@
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
-import { M, LitField, clamp, colBase, colLight, cyl, face, fbm, grain, hash, keep, lathe, lum, mt, poly, rect, tn, vnoise, type At } from "./kit.ts";
+import { M, SCREEN, LitField, clamp, colBase, colLight, cyl, face, fbm, grain, hash, keep, lathe, lum, mt, poly, rect, tn, vnoise, type At } from "./kit.ts";
 
 const H = 96;
 
@@ -193,29 +193,33 @@ function doorway(c: PaintCtx, p: EndWallP, dx0: number, dx1: number, sr: number,
   });
   // the doors themselves: studded leaves (vermilion), gold lion-head rings, daylight in the seam
   const g = p.great ? 1 : 0.85;
+  // one light for the doors (their mean), a little brighter low where the daylight leaks in:
+  // lacquer this big must read as one smooth surface, not a map of the lantern pools
+  const dl = colLight(lf, cx, -dh, 0);
+  const doorK = Math.max(0.55, dl.k);
   rect(c, dx0, -dh, dx1, 0, (X, Y, lx, ly) => {
-    const l = lf.get(lx, ly);
     const u = (lx - dx0) / (dx1 - dx0), v = (ly + dh) / dh;
+    const l = { k: doorK * (0.86 + 0.22 * v), dx: dl.side * 0.6, dy: -0.8 };
     const seam = Math.abs(u - 0.5) < 0.012 + 0.004 * p.day;
-    if (seam) return keep(X, Y, 0.35 + 0.4 * p.day * v) ? tn(M.paper, 0.15 + 0.35 * (1 - v), X, Y, 0.4) : mt(M.verm, lum(l) * 0.3, X, Y, 0.4, 1);
+    if (seam) return keep(X, Y, 0.3 + 0.45 * p.day * v) ? tn(M.paper, 0.15 + 0.35 * (1 - v), X, Y, 0.4) : mt(M.verm, l.k * 0.3, X, Y, 0.4, 1);
     const leaf = u < 0.5 ? u / 0.5 : (u - 0.5) / 0.5;
     const edge = leaf < 0.035 || leaf > 0.965 || v < 0.02;
-    if (edge) return mt(M.verm, lum(l, leaf < 0.5 ? -0.6 : 0.6, 0) * 0.55, X, Y, 0.4, 1);
+    if (edge) return mt(M.verm, face(l.k, dl.side, leaf < 0.5 ? -0.6 : 0.6, 0) * 0.55, X, Y, 0.4, 1);
     // studs in rows
     const sr2 = 0.032 * H * g;
     const gx = ((leaf * (dx1 - dx0) / 2) % (0.3 * H)) - 0.15 * H, gy = ((v * dh) % (0.36 * H)) - 0.18 * H;
     const sd = Math.hypot(gx, gy);
-    if (v > 0.06 && v < 0.94 && leaf > 0.1 && leaf < 0.9 && sd < sr2) return mt(M.gold, lum(l, gx / sr2 * 0.7, gy / sr2 * 0.7) * 0.8, X, Y, 0.2, 1);
+    if (v > 0.06 && v < 0.94 && leaf > 0.1 && leaf < 0.9 && sd < sr2) return mt(M.gold, face(l.k, dl.side, gx / sr2 * 0.7, gy / sr2 * 0.7) * 0.8, X, Y, 0.2, 1);
     // the lion-head rings near the seam
     const rx = u < 0.5 ? 0.43 : 0.57, ry = 0.52;
     const rd = Math.hypot((u - rx) * (dx1 - dx0), (v - ry) * dh);
-    if (rd < 0.15 * H * g && rd > 0.11 * H * g && v > ry) return mt(M.gold, lum(l, (u - rx) * 4, 0.3) * 1.0, X, Y, 0.05, 1);
-    if (Math.hypot((u - rx) * (dx1 - dx0), (v - ry + 0.04) * dh) < 0.12 * H * g) return mt(M.bronze, lum(l, (u - rx) * 3, (v - ry) * 3) * 1.0, X, Y, 0.1, 1);
+    if (rd < 0.15 * H * g && rd > 0.11 * H * g && v > ry) return mt(M.gold, face(l.k, dl.side, (u - rx) * 4, 0.3) * 1.0, X, Y, 0.05, 1);
+    if (Math.hypot((u - rx) * (dx1 - dx0), (v - ry + 0.04) * dh) < 0.12 * H * g) return mt(M.bronze, face(l.k, dl.side, (u - rx) * 3, (v - ry) * 3) * 1.0, X, Y, 0.1, 1);
     // the lacquer, worn paler round the rings and along the foot, daylight under the leaves
     const worn = (Math.abs(v - 0.5) < 0.1 && fbm(lx * 0.08, ly * 0.08, 3, 2) > 0.5 ? 0.06 : 0) + (v > 0.93 ? 0.06 : 0);
     const under = v > 0.985 && p.day > 0 ? 0.6 : 0;
-    if (under) return keep(X, Y, 0.6) ? tn(M.paper, 0.2, X, Y, 0) : mt(M.verm, lum(l) * 0.4, X, Y, 0.4, 1);
-    return mt(M.verm, lum(l) * 0.72 + worn + grain(lx, ly, 17, false) * 0.05, X, Y, 0.25, 1);
+    if (under) return keep(X, Y, 0.6) ? tn(M.paper, 0.2, X, Y, 0) : mt(M.verm, l.k * 0.4, X, Y, 0.4, 1);
+    return mt(M.verm, face(l.k, dl.side) * 0.72 + worn + grain(lx, ly, 17, false) * 0.04, X, Y, 0.25, 1);
   });
   // the stone threshold and a step out onto the walkway
   rect(c, dx0 - sr * 1.1, -0.14 * H, dx1 + sr * 1.1, 0, (X, Y, lx, ly) => {
@@ -228,12 +232,13 @@ function doorway(c: PaintCtx, p: EndWallP, dx0: number, dx1: number, sr: number,
     const l = lf.get(lx, ly);
     const u = (lx - dx0 + sr) / (dx1 - dx0 + 2 * sr), v = (ly - ty0) / (ty1 - ty0);
     if (u < 0.03 || u > 0.97 || v < 0.08 || v > 0.92) return mt(M.wood, lum(l) * 0.8, X, Y, 0.2, 1);
-    const s = 0.16 * H;
-    const gx = (((lx - dx0) % s) + s) % s, gy = (((ly - ty0) % (s * 0.8)) + s * 0.8) % (s * 0.8);
-    const off = Math.floor((ly - ty0) / (s * 0.8)) % 2 ? s / 2 : 0;
-    const gx2 = (((lx - dx0 + off) % s) + s) % s;
-    if (gy < 0.025 * H || gx2 < 0.025 * H) return mt(M.wood, lum(l) * 0.5, X, Y, 0.45, 1);
-    return tn(M.paper, clamp(0.62 + 0.25 * (1 - p.day) + 0.2 * v + (gx < 0 ? 0 : 0), 0, 1), X, Y, 0.55);
+    // a fine fret of dark timber (stepped squares) over paper lit by the day outside
+    const s = 0.2 * H;
+    const gx = (((lx - dx0) % s) + s) % s, gy = (((ly - ty0) % s) + s) % s;
+    const bar = gx < 2 || gy < 2 || (Math.abs(Math.max(Math.abs(gx - s / 2), Math.abs(gy - s / 2)) - s * 0.22) < 1.1);
+    if (bar) return mt(M.wood, lum(l) * 0.35, X, Y, 0.5, 1);
+    const glow = 0.35 * p.day + 0.35 * Math.sin(u * Math.PI);
+    return tn(SCREEN, clamp(0.85 - glow, 0, 1), X, Y, 0.55);
   });
 }
 

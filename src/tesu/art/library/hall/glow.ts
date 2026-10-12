@@ -173,15 +173,10 @@ export const shaft = definePainter<ShaftP>("hall.shaft", {
       const axis = -p.lean * t;
       const half = (p.w * (1 - t) + p.wTop * t) / 2;
       const u = (lx - axis) / half; // -1..1 across
-      if (Math.abs(u) > 1.9) return 0;
+      if (Math.abs(u) > 1) return 0;
       const low = 0.55 + 0.45 * (1 - t);
-      if (Math.abs(u) > 1) {
-        // the lit air round the shaft: a thin warm haze
-        const a = 0.07 * (1.9 - Math.abs(u)) / 0.9 * low * breathe;
-        return keep(X, Y, a) ? P.ember[2]! : 0;
-      }
       // a soft edge, god-ray streaks along the shaft, brighter low where the air is lit
-      const edge = clamp((1 - Math.abs(u)) * 3, 0, 1);
+      const edge = clamp((1 - Math.abs(u)) * 2.2, 0, 1) ** 1.5;
       const streak = 0.62 + 0.38 * Math.sin(u * 7.3 + Math.sin(u * 2.1 + f * 0.4) * 1.5);
       const a = 0.44 * edge * streak * low * breathe;
       if (!keep(X, Y, a)) return 0;

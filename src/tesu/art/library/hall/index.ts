@@ -12,3 +12,4 @@ import "./near.ts";
 import "./court.ts";
 
 export { gongFrame } from "./court.ts";
+export { HALL_MANIFEST, type HallAsset } from "./manifest.ts";
