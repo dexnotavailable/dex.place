@@ -195,7 +195,8 @@ export const ridgeline = definePainter<RidgeP>("ridgeline", {
     const b = c.buf, d = c.d;
     const seed = c.seed;
     const kind = p.kind ?? "pine";
-    const hillAt = (lx: number): number => p.h * (0.35 + 0.65 * fbm1(lx / 160, seed, 3));
+    const taper = (lx: number): number => Math.min(1, lx / (p.w * 0.12), (p.w - lx) / (p.w * 0.12));
+    const hillAt = (lx: number): number => p.h * (0.35 + 0.65 * fbm1(lx / 160, seed, 3)) * Math.max(0, taper(lx));
     const x0 = Math.max(b.ox, Math.floor(c.X(0))), x1 = Math.min(b.x1, Math.ceil(c.X(p.w)));
     // the hill body
     for (let x = x0; x < x1; x++) {
@@ -217,7 +218,8 @@ export const ridgeline = definePainter<RidgeP>("ridgeline", {
       const n = Math.round((p.w / 100) * per);
       for (let i = 0; i < n; i++) {
         const tx = r() * p.w;
-        const th = ph * (0.55 + 0.6 * r());
+        const th = ph * (0.55 + 0.6 * r()) * Math.max(0, Math.min(1, taper(tx) * 1.5 - 0.2));
+        if (th < 6) continue;
         const tSeed = Math.floor(r() * 1e6);
         const baseY = -hillAt(tx) + 2;
         const X0 = Math.floor(c.X(tx - th * 0.4)), X1 = Math.ceil(c.X(tx + th * 0.4));
@@ -366,6 +368,46 @@ export const cliffwall = definePainter<CliffWallP>("cliffwall", {
         let t = 0.18 + 0.3 * runnel + 0.25 * clamp(below / p.h, 0, 1) + wet * 0.25;
         t += (vnoise(lx / 40, ly / 40, seed + 11) - 0.5) * 0.2;
         b.set(x, y, tone(P.karst, clamp(t, 0, 1), x, y, 0.55));
+      }
+    }
+  },
+});
+
+// ---------------------------------------------------------------------------
+// The ground of a background plane: whatever lies at that depth below the horizon (a
+// far plain, a meadow, forest) from its line down past the frame's foot, so the land
+// never shows a gap where there is no water. The lake covers it where the lake is.
+// ---------------------------------------------------------------------------
+export interface PlainP {
+  w: number;
+  /** Depth of the fill below the anchor line, px. */
+  foot: number;
+  /** Ramp: "range" (hazy far plain), "moss" (meadow), "pine" (forest). */
+  ramp?: "range" | "moss" | "pine" | "karst";
+  /** Undulation of the top line, px. */
+  amp?: number;
+}
+
+export const plain = definePainter<PlainP>("plain", {
+  bounds(p) {
+    return [-2, -(p.amp ?? 6) - 4, p.w + 2, p.foot + 2];
+  },
+  paint(c, p) {
+    const b = c.buf;
+    const ramp = p.ramp === "moss" ? P.moss : p.ramp === "pine" ? P.pine : p.ramp === "karst" ? P.karst : P.range;
+    const amp = p.amp ?? 6;
+    const X0 = Math.max(b.ox, Math.floor(c.X(0))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w)));
+    for (let x = X0; x < X1; x++) {
+      const lx = c.lx(x + 0.5);
+      const top = -amp * fbm1(lx / 70, c.seed, 3);
+      const Yt = Math.ceil(c.Y(top)), Yb = Math.min(b.y1, Math.ceil(c.Y(p.foot)));
+      for (let y = Math.max(Yt, b.oy); y < Yb; y++) {
+        const ly = c.ly(y + 0.5);
+        const below = ly - top;
+        // nearer rows (further down the frame) are a little darker and more textured
+        let t = 0.3 + 0.35 * clamp(below / Math.max(1, p.foot), 0, 1) + (vnoise(lx / 11, ly / 5, c.seed + 3) - 0.5) * 0.18;
+        if (y === Yt) t = 0.15;
+        b.set(x, y, tone(ramp, clamp(t, 0, 1), x, y, 0.5));
       }
     }
   },

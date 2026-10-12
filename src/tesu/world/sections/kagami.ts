@@ -65,9 +65,14 @@ export function kagami(b: WorldBuilder): void {
   ];
   for (const [x, y, w, hh] of clouds) bg(b, "sky", x, "cloud", { w, h: hh }, LAKE_Y + y / PLANES.sky.rate, -1);
 
+  // every background plane has ground below its line, so the land never shows a gap
+  bg(b, "far", -2600, "plain", { w: 9000, foot: 700, ramp: "range", amp: 4 }, LAKE_Y, -5);
+  bg(b, "mid", -4000, "plain", { w: 21000, foot: 560, ramp: "moss", amp: 8 }, LAKE_Y, -5);
+  bg(b, "back", -6000, "plain", { w: 40000, foot: 520, ramp: "pine", amp: 10 }, LAKE_Y, -5);
+
   // P1: the far snow ranges standing on the far shore
   const ranges: [number, number, number, number][] = [
-    [-1400, 980, 250, 4], [-520, 1100, 330, 4], [440, 1180, 300, 5], [1500, 1040, 270, 4], [2400, 1200, 320, 5],
+    [-2400, 1100, 260, 4], [-1400, 980, 250, 4], [-520, 1100, 330, 4], [440, 1180, 300, 5], [1500, 1040, 270, 4], [2400, 1200, 320, 5], [3500, 1100, 280, 4],
   ];
   ranges.forEach(([x, w, hh, peaks], i) => bg(b, "far", x, "range", { w, h: hh, peaks, snow: 0.55 }, LAKE_Y, i));
 
@@ -81,9 +86,9 @@ export function kagami(b: WorldBuilder): void {
   ];
   const towerX = [-1300, -820, 120, 900, 1700];
   towers.forEach((t, i) => bg(b, "mid", towerX[i]!, "towers", { t, green: 0.75 }, LAKE_Y, i));
-  bg(b, "mid", -2600, "ridgeline", { w: 6400, h: 40, pines: 1.5, pineH: 26 }, LAKE_Y, -2);
+  bg(b, "mid", -3000, "ridgeline", { w: 9000, h: 40, pines: 1.5, pineH: 26 }, LAKE_Y, -2);
 
   // P3: the near-back shore: pine ridges low over the water
-  bg(b, "back", -2400, "ridgeline", { w: 3100, h: 70, pines: 2.5, pineH: 52 }, LAKE_Y, 0);
-  bg(b, "back", 1250, "ridgeline", { w: 2600, h: 90, pines: 3, pineH: 60 }, LAKE_Y, 1);
+  bg(b, "back", -4200, "ridgeline", { w: 5200, h: 70, pines: 2.5, pineH: 52 }, LAKE_Y, 0);
+  bg(b, "back", 700, "ridgeline", { w: 5000, h: 90, pines: 3, pineH: 60 }, LAKE_Y, 1);
 }

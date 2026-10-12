@@ -128,6 +128,10 @@ void main() {
   float u = clamp((1.0 / r - 1.0 / uDepth.x) / (1.0 / uDepth.y - 1.0 / uDepth.x), 0.0, 1.0);
   float x3 = (q.x - uRes.x * 0.5) / s + uCx;
   float x0 = mix(uExt.x, uExt.z, u), x1 = mix(uExt.y, uExt.w, u);
+  // an irregular shore: coves and points, more of them the further away
+  float span = x1 - x0;
+  x0 += ((vnoise(vec2(u * 24.0, 3.1)) - 0.5) * 0.3 + (vnoise(vec2(u * 85.0, 7.7)) - 0.5) * 0.1) * span * u;
+  x1 += ((vnoise(vec2(u * 21.0, 9.4)) - 0.5) * 0.3 + (vnoise(vec2(u * 77.0, 1.3)) - 0.5) * 0.1) * span * u;
   if (x3 < x0 || x3 > x1) discard;
   // closeness 0 (horizon) .. 1 (at the play plane and nearer)
   float k = clamp(r, 0.0, 1.0);

@@ -23,9 +23,11 @@ import { H, PHYSICS, TILE } from "./config.ts";
 import { TileStore } from "./plates/store.ts";
 import type { ZhushaAssets } from "./player.ts";
 import { Atmos, type MistBand } from "./render/atmos.ts";
+import { Motes } from "./render/motes.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
 import { eyeY, levelFor, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
 import { buildWorld } from "./world/index.ts";
+import { isReload, loadSave, resumePlace, writeSave, type TesuSave } from "./save.ts";
 import { PLANES, PLANE_IDS, type Atmos as AtmosDef, type PlaneId, type Spawn, type Water, type WorldDef } from "./world/types.ts";
 
 const DAY: Lighting = {
@@ -56,6 +58,8 @@ const hexRgb = (h: string): [number, number, number] => rgb(h);
 
 export interface TesuOpts {
   start: string;
+  /** Started from a link (a place address): no resume, no opening. */
+  link: boolean;
   manual: boolean;
   sync: boolean;
 }
@@ -71,6 +75,9 @@ export class TesuGame {
   readonly vfx: Vfx;
   readonly feel: Feel;
   readonly flags = new Set<string>();
+  readonly save: TesuSave;
+  readonly motes = new Motes({ colours: [[1, 0.98, 0.9], [0.95, 0.97, 1], [1, 0.93, 0.7]], count: 46, drift: [7, -3], sway: 9, size: 1 });
+  private closeSprite: ZhushaAssets["closeup"];
   refl: Target;
   debug = false;
   manual = false;
@@ -135,8 +142,33 @@ export class TesuGame {
       },
     });
     this.player = new Player(assets.sprite, assets.tuning.player, services, [0, 0]);
+    this.closeSprite = assets.closeup;
     this.vfx.groundAt = (x, y) => this.collision.groundAt(x, y);
-    this.spawnAt(this.world.spawns.find((s) => s.id === opts.start) ?? this.world.spawns[0]!);
+    this.save = loadSave();
+    for (const f of this.save.flags) this.flags.add(f);
+    const catchS = this.world.spawns.find((s) => s.id === "catch")!;
+    const resume = opts.link ? null : resumePlace(this.save, Date.now(), catchS.x, isReload());
+    if (resume) this.spawnAt({ id: "resume", x: resume.x, y: resume.y, facing: resume.facing });
+    else this.spawnAt(this.world.spawns.find((s) => s.id === opts.start) ?? catchS);
+    this.startedBy = resume ? "resume" : opts.link ? "link" : "fresh";
+  }
+
+  readonly startedBy: "fresh" | "resume" | "link" = "fresh";
+
+  /** Sets a progress flag (kept on this device). */
+  setFlag(f: string, on = true): void {
+    if (on === this.flags.has(f)) return;
+    if (on) this.flags.add(f);
+    else this.flags.delete(f);
+    this.save.flags = [...this.flags];
+    writeSave(this.save);
+  }
+
+  private notePlace(): void {
+    const b = this.player.body;
+    if (!b.grounded || this.tug) return;
+    this.save.place = { x: Math.round(b.x), y: Math.round(b.y), facing: this.player.facing as 1 | -1, at: Date.now() };
+    writeSave(this.save);
   }
 
   spawnAt(s: Spawn): void {
@@ -206,6 +238,8 @@ export class TesuGame {
     const f = this.framing();
     this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
     this.tugTick();
+    this.motes.update(1 / 60);
+    if (this.tick % 60 === 0) this.notePlace();
   }
 
   private simTick(): void {
@@ -269,6 +303,38 @@ export class TesuGame {
   }
 
   // --- drawing ------------------------------------------------------------
+
+  /**
+   * Her sprite. In the close band (zoom near 2) she is drawn from the 192 px render at
+   * native size (the same clip and frame), never as a magnified 96 px sprite.
+   */
+  private drawPlayer(cam: CamState, focus: [number, number], mirror: number | null): void {
+    const r = this.r, p = this.player;
+    if (this.fade >= 1) return;
+    if (cam.zoom < 1.9) {
+      p.draw(r as unknown as LabRenderer);
+      return;
+    }
+    const clip = this.closeSprite.clips.get(p.clip.clip.id);
+    const f = clip?.frames[p.clip.index];
+    const sheet = clip ? this.closeSprite.sheets.get(clip.atlas) : undefined;
+    if (!f || !sheet) {
+      p.draw(r as unknown as LabRenderer);
+      return;
+    }
+    const k = cam.zoom / 2;
+    const [sx, sy, sw, sh] = f.rect;
+    const [px, py] = f.pivot;
+    const xf = planeXf(cam, 1);
+    const fx = p.body.x * xf.s + xf.offX, fy = p.body.y * xf.s + xf.offY;
+    const x = p.facing > 0 ? fx - px * k : fx - (sw - px) * k;
+    let y = fy - py * k;
+    if (mirror !== null) y = 2 * mirror - (fy + (sh - py) * k);
+    r.setTransform();
+    r.sprite({ sheet, sx, sy: mirror !== null ? sy : sy, sw, sh, x: Math.round(x), y: Math.round(y), flip: p.facing < 0, screen: true });
+    r.flush();
+    void focus;
+  }
 
   private atmosAt(x: number): AtmosDef {
     const list = this.world.atmos;
@@ -390,7 +456,7 @@ export class TesuGame {
         if (id === "play") {
           r.begin(camX, camY, DAY, lights);
           r.setTransform(s4, focus, wlPlay);
-          if (this.fade < 1) this.player.draw(r as unknown as LabRenderer);
+          if (cam.zoom < 1.9) this.drawPlayer(cam, focus, wlPlay);
           r.flush();
           r.setTransform();
         }
@@ -443,14 +509,22 @@ export class TesuGame {
         if (s4 !== 1) r.setTransform(s4, focus);
         this.vfx.draw(r as unknown as LabRenderer, "back");
         this.vfx.drawAfterimages(r as unknown as LabRenderer);
-        if (this.fade < 1) this.player.draw(r as unknown as LabRenderer);
+        this.drawPlayer(cam, focus, null);
+        if (s4 !== 1) r.setTransform(s4, focus);
         this.vfx.draw(r as unknown as LabRenderer, "front");
         r.flush();
         r.setTransform();
+        this.motes.draw(r, cam, 1);
+        r.flush();
         waterTo(Hf);
       }
       if (id === "near" && z > 1.6) continue;
       this.planes.draw(d.quads, d.look, W, Hf);
+      if (id === "back" || id === "near") {
+        r.begin(camX, camY, DAY, lights);
+        this.motes.draw(r, cam, id === "back" ? 0.6 : 1.3);
+        r.flush();
+      }
     }
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);

@@ -11,6 +11,7 @@ import { WorldRenderer } from "../world/render/renderer.ts";
 import { H } from "./config.ts";
 import { TesuGame } from "./game.ts";
 import { loadZhusha } from "./player.ts";
+import { Touch } from "./touch.ts";
 
 /**
  * The fixed keys (GDK 5.4, Appendix B): WASD and the arrows both move from the start;
@@ -72,7 +73,8 @@ async function boot(): Promise<void> {
   watchSize(r);
   const assets = await loadZhusha(r);
   const input = new Input(canvas, KEYS);
-  const game = new TesuGame(r, input, assets, { start: q.get("at") ?? "catch", manual: q.has("manual"), sync: q.has("sync") || q.has("manual") });
+  const touch = new Touch(input, document.getElementById("touch") as HTMLElement, canvas);
+  const game = new TesuGame(r, input, assets, { start: q.get("at") ?? "catch", link: q.has("at") || q.has("x"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual") });
   if (q.has("x")) game.place(Number(q.get("x")) * H);
   game.debug = q.has("debug");
   input.onToggle = (w) => {
@@ -84,6 +86,7 @@ async function boot(): Promise<void> {
   const loop = (now: number): void => {
     try {
       game.frame(now);
+      if (touch.shown) touch.cooldowns(game.player.skillCd <= 0, game.player.ultCd <= 0);
       if (game.debug) {
         if (n++ % 6 === 0) debugEl.textContent = game.debugText();
         debugEl.hidden = false;
