@@ -215,8 +215,11 @@ export class Props {
     l.vy = 0;
     l.fallFrom = this.bottomOf(l);
     l.on = null;
-    // whatever stood on this one falls with it
-    for (const o of this.list) if (o.on === l && o.state === "intact") this.startFall(o);
+    // whatever stood on this one falls with it, and so do pieces resting on it
+    for (const o of this.list) {
+      if (o.on === l && o.state === "intact") this.startFall(o);
+      for (const pc of o.pieces) if (pc.on === l) { pc.rest = false; pc.on = null; }
+    }
   }
 
   private bottomOf(l: Live): number {

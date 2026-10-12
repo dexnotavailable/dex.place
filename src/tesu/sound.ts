@@ -73,16 +73,21 @@ export class Sound {
     for (const ev of ["keydown", "pointerdown", "touchend"]) window.addEventListener(ev, go, { capture: true });
   }
 
-  /** The first click, key or tap: the context starts and everything swells in. */
-  start(): void {
+  /**
+   * The first click, key or tap: the context starts and everything swells in. In the page
+   * column the press happens in the page around the world window (PLAY, "continue"), so the
+   * page hands its own running context over (`ctx`).
+   */
+  start(given?: AudioContext): void {
     if (this.ctx) {
       if (this.ctx.state === "suspended") void this.ctx.resume();
       return;
     }
     const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AC) return;
-    const ctx = new AC();
+    if (!given && !AC) return;
+    const ctx = given ?? new AC();
     this.ctx = ctx;
+    if (ctx.state === "suspended") void ctx.resume();
     const a = document.createElement("audio");
     this.ext = a.canPlayType('audio/ogg; codecs="opus"') ? "opus" : "m4a";
     this.master = ctx.createGain();

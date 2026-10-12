@@ -72,6 +72,11 @@ export interface TesuOpts {
   link: boolean;
   /** Skip the opening on a fresh start (tools). */
   noOpening?: boolean;
+  /**
+   * The page column's world window (`/`): show Kagami still, controls held, until the PLAY
+   * press (or the "continue" fall) calls play(), which starts the opening at 0:00.
+   */
+  hold?: boolean;
   manual: boolean;
   sync: boolean;
 }
@@ -147,7 +152,9 @@ export class TesuGame {
     this.opening = new Opening({
       playerX: () => this.player.body.x,
       freeze: (t) => { this.frozen = Math.max(this.frozen, t); },
-      title: (text, big) => this.titles.show(text, big),
+      // TESU's moment: the palace's gate is pinned at 0.8 of the width, so the title keeps to
+      // the sky between, at most 56% of the frame wide (on narrow screens it shrinks instead)
+      title: (text, big) => this.titles.show(text, big, false, "mid", 0.56),
       setFlag: (f) => this.setFlag(f),
       nextBar: () => this.sound.music.nextBar(),
       cue: (n) => this.cue(n),
@@ -228,7 +235,11 @@ export class TesuGame {
     if (resume) this.spawnAt({ id: "resume", x: resume.x, y: resume.y, facing: resume.facing });
     else this.spawnAt(this.world.spawns.find((s) => s.id === opts.start) ?? catchS);
     this.startedBy = resume ? "resume" : opts.link ? "link" : "fresh";
-    if (this.startedBy === "fresh" && !opts.noOpening) {
+    if (opts.hold) {
+      // the world window waits for PLAY: Kagami at the play frame, controls held
+      this.holding = true;
+      this.frozen = 1e9;
+    } else if (this.startedBy === "fresh" && !opts.noOpening) {
       this.opening.start();
       this.camera.snap(this.player.body.x, this.player.body.y, this.framing(), 1);
     }
@@ -320,12 +331,42 @@ export class TesuGame {
     let f = framingAt(this.world.tracks, Math.max(x, this.opening.holding ? TERRACE_X0 + 1 : -Infinity), has, this.player.body.y);
     // an entrance shot: a held vista on first entry, ended early by moving
     if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor, pin: null };
+    // the world window waiting for PLAY: a held vista of Kagami with the sky in the middle of
+    // the frame, so TESU (for a visitor who scrolls on past) is written into the sky
+    if (this.holding) f = { ...f, zoom: 0.5, anchor: 0.86, horizon: 0.64, lead: 0 };
     return this.framingOverride ? { ...f, ...this.framingOverride } : f;
   }
 
   // --- time ---------------------------------------------------------------
 
+  /** The world window is covered by the website: no ticks, no drawing, sound faded down. */
+  away = false;
+  /** Waiting for PLAY in the page column (controls held, Kagami still). */
+  holding = false;
+
+  setAway(away: boolean): void {
+    if (away === this.away) return;
+    this.away = away;
+    this.sound.setVisible(away ? 0 : 1);
+  }
+
+  /** PLAY (or the end of the "continue" fall): the opening starts at 0:00, she has just slapped the talisman on her hat. */
+  play(): void {
+    if (!this.holding) return;
+    this.holding = false;
+    this.frozen = 0;
+    this.spawnAt(this.world.spawns.find((s) => s.id === "catch")!);
+    this.opening.start();
+    this.camera.snap(this.player.body.x, this.player.body.y, this.framing(), 1);
+  }
+
   frame(now: number): void {
+    // covered or out of view: nothing runs, except the drawing that streams in the first plates
+    // (so a world loaded behind the website is ready when she scrolls up to it)
+    if (this.away && !this.loading) {
+      this.last = now;
+      return;
+    }
     const dt = Math.min(100, this.last ? now - this.last : 16.7);
     this.last = now;
     this.fpsN++;
@@ -472,7 +513,9 @@ export class TesuGame {
     let best: Usable | null = null, bd = Infinity;
     for (const u of this.world.usables) {
       if (b.x < u.x0 - reach || b.x > u.x1 + reach || b.y < u.y0 - reach || b.y - b.h > u.y1 + reach) continue;
-      const d = Math.abs(b.x - (u.x0 + u.x1) / 2);
+      // the thing she stands in front of wins over a neighbour whose centre is nearer
+      const edge = b.x < u.x0 ? u.x0 - b.x : b.x > u.x1 ? b.x - u.x1 : 0;
+      const d = edge * 4 + Math.abs(b.x - (u.x0 + u.x1) / 2) * 0.01;
       if (d < bd) { bd = d; best = u; }
     }
     return best;
@@ -674,7 +717,8 @@ export class TesuGame {
     const water = this.activeWater(cam);
     const draws = new Map<PlaneId, PlaneDraw>();
     for (const id of PLANE_IDS) draws.set(id, this.planeQuads(cam, id, 0, Hf, a, !this.manual));
-    this.loading = ![...draws.values()].every((d) => d.complete);
+    // the world shows once its plates are in and its rendered giants have a frame to show
+    this.loading = ![...draws.values()].every((d) => d.complete) || (this.sprites.waiting > 0 && this.tick < 60 * 20);
     const z = cam.zoom;
     const xfPlay = planeXf(cam, 1);
     const focus: [number, number] = [W / 2, cam.anchor * Hf];

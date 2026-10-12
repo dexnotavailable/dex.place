@@ -129,7 +129,9 @@ test("every door leads to a spawn, and the Prize Court stands on ground between 
   assert.ok(gate, "the court's gate spawn");
   for (let x = gate.x; x <= 191.6 * H; x += 8) {
     const g = c.groundBelow(x, gate.y - 2 * H, false);
-    assert.ok(g && Math.abs(g.y - gate.y) < 0.01, `court floor at ${(x / H).toFixed(1)} H`);
+    // the Prow Stair's mouth (186.8 to 189.2 H): the stair is just below the floor there
+    const mouth = x > 186.8 * H && x < 189.2 * H;
+    assert.ok(g && (mouth ? g.y - gate.y < 1.3 * H : Math.abs(g.y - gate.y) < 0.01), `court floor at ${(x / H).toFixed(1)} H`);
   }
   for (const id of ["bao", "stands", "champion", "install-bar", "glint", "champion-hp"]) assert.ok(w.sprites.some((s) => s.id === id), `sprite ${id}`);
 });
@@ -194,4 +196,26 @@ test("pieces: every pixel of a prop belongs to exactly one piece, the same at an
     seen.add(i);
   }
   assert.ok(seen.size >= 3, "a prop really comes apart");
+});
+
+test("Shiraito joins the court both ways: the Prow Stair from the path's top to the court floor, the path down to the village", () => {
+  const w = buildWorld();
+  const c = new Collision(w.walks, w.walls);
+  const stair = w.walks.find((k) => k.name === "prow-stair");
+  assert.ok(stair && stair.stair, "the Prow Stair is a stair");
+  const path = w.walks.find((k) => k.name === "shiraito");
+  const village = w.walks.find((k) => k.name === "shiraito-village");
+  // the stair's foot meets the path's top, its top the court floor
+  assert.ok(Math.abs(stair.pts[0] - path.pts[path.pts.length - 2]) < 1 && Math.abs(stair.pts[1] - path.pts[path.pts.length - 1]) < 1);
+  const tip = w.walks.find((k) => k.name === "prize-court-tip");
+  assert.ok(Math.abs(stair.pts[stair.pts.length - 2] - tip.pts[0]) < 1 && Math.abs(stair.pts[stair.pts.length - 1] - tip.pts[1]) < 1);
+  // the path's foot meets the village
+  assert.ok(Math.abs(village.pts[village.pts.length - 2] - path.pts[0]) < 1 && Math.abs(village.pts[village.pts.length - 1] - path.pts[1]) < 1);
+  // no wall across the way between them
+  for (const wall of w.walls) assert.ok(!(wall.x > path.pts[0] && wall.x < tip.pts[0] && wall.y1 > stair.pts[1] - 96 && wall.y0 < path.pts[1]) || wall.x > 186 * H, `no wall at ${(wall.x / H).toFixed(1)} H`);
+  // a body walked up the stair from its foot ends on the court
+  const body = { x: stair.pts[0] - 20, y: stair.pts[1], w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
+  c.move(body, 0, 1);
+  for (let i = 0; i < 2000 && body.x < tip.pts[0] + 40; i++) { c.move(body, 3, 0); c.move(body, 0, 2); }
+  assert.ok(Math.abs(body.y - tip.pts[1]) < 2, `on the court floor at the top (${(body.x / H).toFixed(1)} H, ${(body.y / H).toFixed(2)} H)`);
 });

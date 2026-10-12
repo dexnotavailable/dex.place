@@ -66,7 +66,106 @@ interface Frame {
   ay: number;
 }
 
+/** A rendered frame set (kind "frames"): files `${base}NN.webp` and `${base}manifest.json`. */
+interface FrameSet {
+  /** Art density of this set (1: the plane's play-zoom density; 0.5 half of it). */
+  level: number;
+  base: string;
+}
+
+interface SetManifest {
+  count: number;
+  w: number;
+  h: number;
+  /** The anchor (the body's centre on the ground row) in the frame. */
+  ax: number;
+  ay: number;
+}
+
+interface Stream {
+  man: SetManifest | null;
+  manLoading: boolean;
+  tex: Map<number, { fr: Frame; used: number }>;
+  pending: Set<number>;
+  failed: boolean;
+}
+
+/** Decoded frames kept on the GPU per set (the rest stay as small files in the browser cache). */
+const STREAM_KEEP = 10;
+
 export class SpriteRenderer {
+  private streams = new Map<string, Stream>();
+  private useTick = 0;
+
+  /**
+   * A rendered frame set's frame (the Walker's wade): fetched and decoded on demand, a few
+   * kept as textures, the nearest one already decoded shown while the next arrives. Picks the
+   * set whose density is the smallest at or above the art scale g.
+   */
+  private streamed(def: SpriteDef, f: number, g: number): { fr: Frame; level: number } | null {
+    const sets = ((def.p.sets as FrameSet[] | undefined) ?? []).slice().sort((a, b) => b.level - a.level);
+    if (!sets.length) return null;
+    let set = sets[0]!;
+    for (const s of sets) if (s.level >= g - 1e-3) set = s;
+    let st = this.streams.get(set.base);
+    if (!st) {
+      st = { man: null, manLoading: false, tex: new Map(), pending: new Set(), failed: false };
+      this.streams.set(set.base, st);
+    }
+    const s = st;
+    if (s.failed) return null;
+    if (!s.man) {
+      if (!s.manLoading) {
+        s.manLoading = true;
+        fetch(`${set.base}manifest.json`).then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`)))).then(
+          (m: SetManifest) => { s.man = m; },
+          () => { s.failed = true; },
+        );
+      }
+      return null;
+    }
+    const n = s.man.count;
+    const want = ((f % n) + n) % n;
+    const load = (i: number): void => {
+      if (s.tex.has(i) || s.pending.has(i)) return;
+      s.pending.add(i);
+      fetch(`${set.base}${String(i).padStart(2, "0")}.webp`)
+        .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`${r.status}`))))
+        .then((b) => createImageBitmap(b))
+        .then((bmp) => {
+          const gl = this.gl;
+          const tex = gl.createTexture()!;
+          gl.bindTexture(gl.TEXTURE_2D, tex);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, bmp);
+          bmp.close();
+          s.tex.set(i, { fr: { tex, w: s.man!.w, h: s.man!.h, ax: s.man!.ax, ay: s.man!.ay }, used: this.useTick });
+          s.pending.delete(i);
+          // keep only the most recently used few on the GPU
+          if (s.tex.size > STREAM_KEEP) {
+            let old = -1, oldUse = Infinity;
+            for (const [k, v] of s.tex) if (v.used < oldUse && k !== want) { old = k; oldUse = v.used; }
+            if (old >= 0) { gl.deleteTexture(s.tex.get(old)!.fr.tex); s.tex.delete(old); }
+          }
+        })
+        .catch(() => { s.pending.delete(i); });
+    };
+    load(want);
+    load((want + 1) % n);
+    this.useTick++;
+    let got = s.tex.get(want);
+    if (!got) {
+      // the nearest earlier frame already decoded stands in for a moment
+      for (let d = 1; d < n && !got; d++) got = s.tex.get(((want - d) % n + n) % n);
+    }
+    if (!got) return null;
+    got.used = this.useTick;
+    return { fr: got.fr, level: set.level };
+  }
   private prog: WebGLProgram;
   private u: Record<string, WebGLUniformLocation>;
   private frames = new Map<string, Frame | null>();
@@ -78,8 +177,14 @@ export class SpriteRenderer {
     this.u = uniforms(gl, this.prog);
   }
 
+  /** Rendered frame sets drawn last frame that had nothing decoded yet (the world waits for them). */
+  waiting = 0;
+  private waitingNow = 0;
+
   newFrame(): void {
     this.paintedThisFrame = 0;
+    this.waiting = this.waitingNow;
+    this.waitingNow = 0;
   }
 
   private images = new Map<string, HTMLImageElement | null>();
@@ -165,6 +270,8 @@ export class SpriteRenderer {
 
   static position(def: SpriteDef, time: number): { x: number; y: number; frame: number; flip: boolean } {
     if (def.frame !== undefined) return { x: def.x, y: def.y, frame: def.frame, flip: !!def.flip };
+    // a rendered cycle moves only when its frame changes, so its planted feet stay planted
+    if (def.stepMove && def.fps) time = Math.floor(time * def.fps) / def.fps;
     let x = def.x;
     let flip = false;
     if (def.drift && def.path) {
@@ -209,9 +316,19 @@ export class SpriteRenderer {
       if (def.hidden) continue;
       const rate = PLANES[def.plane].rate;
       const xf = planeXf(cam, rate);
-      const level = levelFor(planeLevels(rate), xf.g);
+      let level = levelFor(planeLevels(rate), xf.g);
       const pos = SpriteRenderer.position(def, time);
-      const fr = this.frame(def, pos.frame, level, force) ?? (def.kind === "image" ? null : this.frame(def, 0, level, true));
+      let fr: Frame | null;
+      if (def.kind === "frames") {
+        // nothing is fetched or decoded for a giant out of the frame (its reach in level-1 px)
+        const reach = Number(def.p.reach ?? 700) * xf.g;
+        const sx = pos.x * rate * xf.g + xf.offX;
+        if (sx + reach < 0 || sx - reach > cam.W) continue;
+        const got = this.streamed(def, pos.frame, xf.g);
+        fr = got?.fr ?? null;
+        if (got) level = got.level;
+        else this.waitingNow++;
+      } else fr = this.frame(def, pos.frame, level, force) ?? (def.kind === "image" ? null : this.frame(def, 0, level, true));
       if (!fr) continue;
       const k = xf.g / level;
       const ax = pos.x * rate * xf.g + xf.offX, ay = pos.y * rate * xf.g + xf.offY;
