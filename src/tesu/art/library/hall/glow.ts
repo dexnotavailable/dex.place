@@ -9,7 +9,7 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { M, SCREEN, clamp, hash, keep, lathe, rect, tn, type Ramp } from "./kit.ts";
+import { M, SCREEN, clamp, hash, keep, lathe, poly, rect, tn, type Ramp } from "./kit.ts";
 
 // ---------------------------------------------------------------------------
 // Hanging lanterns
@@ -224,6 +224,73 @@ export const dust = definePainter<DustP>("hall.dust", {
       const X = Math.round(c.X(lx)), Y = Math.round(c.Y(ly));
       c.buf.set(X, Y, hash(i, 5, c.seed) > 0.4 ? P.ember[0]! : P.paper[1]!);
       if (hash(i, 6, c.seed) > 0.85 && c.d >= 1) c.buf.set(X + 1, Y, P.ember[1]!);
+    }
+  },
+});
+
+// ---------------------------------------------------------------------------
+// A paper crane taking off from the Crane Desk: it lifts, finds the shaft and rises up it out
+// of the frame toward the skylight, then the desk is quiet a while (frames 0-23 the flight at
+// 8 fps, 24-63 empty: an 8 s loop). Wings beat every other frame, slower as it climbs.
+// ---------------------------------------------------------------------------
+export interface CraneFlightP {
+  /** The rise (px) and the drift left along the shaft (px) over the flight. */
+  rise: number;
+  drift: number;
+  frame?: number;
+}
+
+export const CRANE_FRAMES = 64;
+
+export const craneFlight = definePainter<CraneFlightP>("hall.craneflight", {
+  bounds(p) {
+    return [-p.drift - 24, -p.rise - 24, 40, 6];
+  },
+  paint(c, p) {
+    const f = p.frame ?? 0;
+    if (f >= 24) return;
+    const t = f / 23;
+    // ease out of the desk, then a steady climb with a slow sideways weave
+    const e = t < 0.25 ? (t / 0.25) ** 2 * 0.12 : 0.12 + (t - 0.25) / 0.75 * 0.88;
+    const x = -p.drift * e + Math.sin(t * Math.PI * 3) * 6 * t;
+    const y = -p.rise * e - 4;
+    const up = f % 2 === 0;
+    const s = 1;
+    const body = [x - 6 * s, y, x + 7 * s, y - 2 * s, x + 9 * s, y - 5 * s, x + 4 * s, y - 1 * s, x - 2 * s, y + 1 * s];
+    poly(c, body, (X, Y) => tn(M.paper, 0.05, X, Y, 0));
+    const wing = up
+      ? [x - 2 * s, y - 1 * s, x + 2 * s, y - 1 * s, x - 1 * s, y - 10 * s]
+      : [x - 2 * s, y, x + 2 * s, y, x + 1 * s, y + 7 * s];
+    poly(c, wing, (X, Y) => tn(M.paper, up ? 0.2 : 0.4, X, Y, 0));
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Incense smoke: a thread rising from a censer, wavering, widening and breaking up as it
+// climbs (16 frames at 4 fps, looping)
+// ---------------------------------------------------------------------------
+export interface SmokeP {
+  h: number;
+  frame?: number;
+}
+
+export const smoke = definePainter<SmokeP>("hall.smoke", {
+  bounds(p) {
+    return [-30, -p.h, 30, 2];
+  },
+  paint(c, p) {
+    const f = (p.frame ?? 0) % 16;
+    const ph = (f / 16) * Math.PI * 2;
+    for (let ly = 0; ly > -p.h; ly -= 1 / c.d) {
+      const t = -ly / p.h;
+      const x = Math.sin(t * 7 - ph) * 5 * t + Math.sin(t * 3.1 - ph * 0.5) * 9 * t * t;
+      const w = 0.6 + t * 6;
+      const a = (t < 0.5 ? 0.5 : 0.5 * (1 - (t - 0.5) * 2)) * (0.6 + 0.4 * Math.sin(t * 13 - ph * 2));
+      for (let dx = -w; dx <= w; dx += 1 / c.d) {
+        const X = Math.round(c.X(x + dx)), Y = Math.round(c.Y(ly));
+        const edge = 1 - Math.abs(dx) / (w + 0.01);
+        if (keep(X, Y, a * edge)) c.buf.set(X, Y, t < 0.3 ? P.paper[1]! : P.paper[3]!);
+      }
     }
   },
 });

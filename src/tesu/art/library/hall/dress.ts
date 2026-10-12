@@ -124,10 +124,11 @@ export function dressHall(b: WorldBuilder): void {
   // huge)
   const NEAR_Y = FY + Math.round(0.45 * H);
   const rN = PLANES.near.rate;
-  for (const o of [-2.6, 8.6, 16.7, 28.8, 36.8]) {
+  // (placed where they never cover a service while she stands at it, in either facing)
+  for (const o of [-2.6, 3.8, 16.6, 21.9, 28.8, 36.8]) {
     b.piece("near", "hall.nearcol", X(o), NEAR_Y, { r: Math.round(0.44 * H), h: 2300, at: at(X(o), NEAR_Y, rN) }, { z: 2, minLevel: 0.9, reflect: false });
   }
-  const nearProps: [number, string, number][] = [[2.6, "pine", 0.68], [13.4, "teacart", 1.0], [16.95, "broom", 0.8], [24.8, "crates", 1.0], [31.0, "jar", 1.0]];
+  const nearProps: [number, string, number][] = [[5.6, "pine", 0.55], [13.4, "teacart", 1.0], [17.0, "broom", 0.7], [24.8, "crates", 1.0], [31.0, "jar", 1.0]];
   for (const [o, kind, sc] of nearProps) b.piece("near", "hall.nearprop", X(o), NEAR_Y, { kind, s: sc, at: at(X(o), NEAR_Y, rN) }, { z: 3, minLevel: 0.9, reflect: false });
 
   // --- the back floor's clutter (P3), low, among which the hall's crowd stands
@@ -150,6 +151,14 @@ export function dressHall(b: WorldBuilder): void {
     b.sprite({ id: `hall-lantern-back-${i}`, plane: "back", kind: "hall.lantern", x: X(l.o), y: hook, p: { kind: l.kind, s: l.r * 1.9 * r3, cord: (lanternTop - hook) * r3, phase: (i * 0.61 + 0.2) % 1, lit: 0.85 }, frames: 12, fps: 3, reflect: false });
   });
 
+  // --- life: a paper crane leaves the Crane Desk now and then and rises up the shaft to the
+  // skylight; incense smoke from the brazier by the back wall
+  const deskTop = FY - h(0.95);
+  const craneX = cd.x0 + Math.round((cd.x1 - cd.x0) * 0.3);
+  const rise = deskTop - (FY - BEAM);
+  b.sprite({ id: "hall-crane-flight", plane: "play", kind: "hall.craneflight", x: craneX, y: deskTop, p: { rise, drift: Math.round((SHAFT.x1 - SHAFT.x0) * (rise / h(18))) + (craneX - SHAFT.x1) }, frames: 64, fps: 8, reflect: false });
+  b.sprite({ id: "hall-smoke-brazier", plane: "back", kind: "hall.smoke", x: X(26.0), y: FY - Math.round(0.84 * H), p: { h: Math.round(h(3.2) * r3) }, frames: 16, fps: 4, reflect: false });
+
   // --- the key light: the skylight's shaft, breathing, and the dust turning in it
   const fascia: [number, number] = [GY - FY - 2, GY + Math.round(0.62 * H) - FY + 2];
   const beamGap: [number, number] = [-BEAM - BEAM_D, -BEAM];
@@ -161,6 +170,59 @@ export function dressHall(b: WorldBuilder): void {
 
 /** The Prize Court, dressed. */
 export function dressCourt(b: WorldBuilder, o: { gongX: number }): void {
-  void b;
-  void o;
+  const main = walk(b, "prize-court"), tip = walk(b, "prize-court-tip");
+  const Y = main.pts[1]!;
+  const CX0 = main.pts[0]!, WELL0 = main.pts[2]!, WELL1 = tip.pts[0]!, CX1 = tip.pts[2]!;
+  const r3 = PLANES.back.rate;
+  // the ring's middle (where the seal lies) and the bout's held camera centre (where the near
+  // pillars frame it), both read from the builder's layout
+  const MID = (CX0 + WELL0) / 2 + h(0.4);
+  const bout = b.def.tracks.find((t) => t.id === "bout");
+  const HOLD = bout?.keys[0]?.fixX ?? MID + h(3.7);
+
+  // --- the arena's paved surface with the great seal, receding to the stands (P3)
+  // (on the play plane: the court's camera is fixed, so the band's depth is exact there, and
+  // it covers the stands' trestles where the floor runs in front of them)
+  const band = Math.round((0.68 - 0.36) * 864 * (1 - r3));
+  b.piece("play", "court.floor", CX0, Y, { w: CX1 - CX0 - h(0.3), u: band / 1.05, below: band, seal: [MID - CX0, h(3.3)] }, { z: 0, reflect: false, minLevel: 0.9 });
+
+  // --- the foundation under the floor's front edge, the stairwell's mouth left open
+  const pil: number[] = [];
+  for (let x = CX0 + h(1.3); x < CX1; x += h(2.6)) if (x < WELL0 - h(0.5) || x > WELL1 + h(0.5)) pil.push(x - (CX0 - h(0.3)));
+  b.piece("play", "court.foundation", CX0 - h(0.3), Y, { w: CX1 - CX0 + h(0.5), depth: h(2.7), well: [WELL0 - (CX0 - h(0.3)), WELL1 - (CX0 - h(0.3))], pilasters: pil }, { z: 1 });
+
+  // --- the gatehouse porch against the hall's east wall
+  const cd = usable(b, "court-doors");
+  b.piece("play", "court.gatehouse", cd.x0 - h(0.25), Y, { w: cd.x1 - cd.x0 + h(0.5), h: Y - cd.y0 }, { z: 3 });
+
+  // --- the Prize Board under the newest release's banner
+  const pb = usable(b, "prize-board");
+  b.piece("play", "court.board", (pb.x0 + pb.x1) / 2, Y, { plaques: ["dexclient", "dexcode"] }, { z: 4 });
+
+  // --- Bao's gong tower and the gong (a sprite the bout drives: gongFrame in index.ts)
+  const gongY = h(1.45), gr = Math.round(0.72 * H);
+  b.piece("play", "court.gongtower", o.gongX, Y, { h: h(13), half: h(1.05), gongY }, { z: 3 });
+  const beamUnder = Y - gongY - h(1.32);
+  b.sprite({ id: "gong", plane: "play", kind: "court.gong", x: o.gongX, y: beamUnder, p: { r: gr, cord: (Y - gongY - gr) - beamUnder }, frames: 12, frame: 0, reflect: false });
+
+  // --- lantern pillars behind the ring, newels at the stair's mouth, two near pillars that
+  // stand at the frame's edges in a bout (P5, play zoom only)
+  for (const x of [MID - h(1.7), WELL1 + h(0.9)]) b.piece("play", "court.lanternpillar", x, Y, { h: h(2.2) }, { z: 2 });
+  for (const x of [WELL0 - h(0.2), WELL1 + h(0.2)]) b.piece("play", "court.newel", x, Y, { h: h(0.95) }, { z: 3 });
+  // the near plane frames the bottom corners with cliff pines growing out of the rock under
+  // the prow; their crowns top out just below the floor line, so they never cover her or a
+  // service (GDK A.1: P5 never hides what matters). The bout's sides are framed by the hall's
+  // wall on the left and the drop on the right.
+  b.piece("near", "court.nearpine", HOLD - h(6.8), Y + h(4.2), { h: h(4.6), lean: 0.6, seed: 3 }, { z: 3, minLevel: 0.9, reflect: false });
+  b.piece("near", "court.nearpine", HOLD + h(6.0), Y + h(4.4), { h: h(4.8), lean: -0.7, seed: 7 }, { z: 3, minLevel: 0.9, reflect: false });
+
+  // --- festival banners on tall poles among the stands (P3 sprites), each in the wind
+  const r3b = PLANES.back.rate;
+  [-6.2, -2.4, 1.6, 5.4].forEach((dx, i) => {
+    b.sprite({ id: `court-banner-${i}`, plane: "back", kind: "court.banner", x: HOLD + h(dx), y: Y, p: { h: Math.round(h(5.6) * r3b), w: Math.round(h(0.55) * r3b), drop: Math.round(h(1.7) * r3b), phase: (i * 0.37) % 1 }, frames: 8, fps: 5, reflect: false });
+  });
+
+  // --- the tip: a bench, the stone rail she cannot pass
+  b.piece("play", "court.bench", CX1 - h(1.75), Y, { w: 96 }, { z: 4 });
+  b.piece("front", "court.rail", CX1 - h(1.35), Y, { w: h(1.45), h: Math.round(0.62 * H) }, { z: 2 });
 }
