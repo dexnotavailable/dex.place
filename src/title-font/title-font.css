@@ -1,0 +1,21 @@
+/* Tesu Display, the dex.place title font, for DOM headings. Built from the same
+   pixel grid as the canvas atlas (src/title-font/glyphs.txt).
+   One em is 25 font pixels: keep font-size a whole multiple of 25px (or use
+   --title-px) so every font pixel lands on whole CSS pixels and stays crisp. */
+@font-face {
+  font-family: "Tesu Display";
+  src: url("/fonts/tesu-display/TesuDisplay.woff") format("woff");
+  font-display: swap;
+}
+
+.tesu-title {
+  --title-px: 4; /* CSS pixels per font pixel */
+  font-family: "Tesu Display", "Jersey 15", system-ui, sans-serif;
+  font-size: calc(25px * var(--title-px));
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: calc(1px * var(--title-px)); /* one extra font pixel between letters */
+  text-transform: uppercase;
+  font-synthesis: none;
+  -webkit-font-smoothing: none;
+}
