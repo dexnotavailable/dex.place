@@ -1,7 +1,9 @@
 /* Tesu Display, the dex.place title font, for DOM headings. Built from the same
    pixel grid as the canvas atlas (src/title-font/glyphs.txt).
    One em is 25 font pixels: keep font-size a whole multiple of 25px (or use
-   --title-px) so every font pixel lands on whole CSS pixels and stays crisp. */
+   --title-px) so every font pixel lands on whole CSS pixels and stays crisp.
+   Vietnamese capitals (HOÀI PHỐ) carry accents up to 11 font px (0.44em) above
+   the caps and a dot up to 4 px below; give such a heading that much room. */
 @font-face {
   font-family: "Tesu Display";
   src: url("/fonts/tesu-display/TesuDisplay.woff") format("woff");
