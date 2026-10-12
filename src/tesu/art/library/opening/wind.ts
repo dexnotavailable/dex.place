@@ -18,16 +18,32 @@ export interface ReedsP {
   h: number;
   /** Blades per 10 px (default 3). */
   density?: number;
+  /** The bed's place along the shore, px (so a gust runs on from bed to bed: phase by it). */
+  ox?: number;
+  /** Ground under the bed every 8 px, px above the anchor (the reeds stand on it). */
+  ground?: number[];
+  /** Frames in the loop (default 4). */
+  loop?: number;
   frame?: number;
 }
 
 export const reeds = definePainter<ReedsP>("op.reeds", {
   bounds(p) {
-    return [-8, -p.h - 8, p.w + 10, 4];
+    let g = 0;
+    for (const v of p.ground ?? []) g = Math.max(g, v);
+    return [-8, -p.h - g - 8, p.w + 10, 4];
   },
   paint(c, p) {
     const d = c.d, seed = c.seed;
     const f = p.frame ?? 0;
+    const loop = p.loop ?? 4;
+    const ox = p.ox ?? 0;
+    const groundAt = (x: number): number => {
+      const g = p.ground;
+      if (!g || !g.length) return 0;
+      const k = clamp(x / 8, 0, g.length - 1), i = Math.floor(k), fr = k - i;
+      return (g[i] ?? 0) * (1 - fr) + (g[Math.min(g.length - 1, i + 1)] ?? 0) * fr;
+    };
     const n = Math.round((p.w / 10) * (p.density ?? 3));
     for (let i = 0; i < n; i++) {
       const x0 = hash1(i, seed) * p.w;
@@ -36,21 +52,24 @@ export const reeds = definePainter<ReedsP>("op.reeds", {
       const hh = p.h * (0.3 + 0.7 * hash1(i, seed + 1)) * (0.45 + 0.55 * mid);
       const lean = (hash1(i, seed + 2) - 0.4) * 0.25;
       // sway: the gust passes from left to right (phase by x), amplitude grows with height
-      const ph = (f / 4) * Math.PI * 2 - x0 / 40 + hash1(i, seed + 3) * 1.2;
-      const sway = Math.sin(ph) * Math.min(2, hh / 18);
+      // the gust runs along the shore: phase by the blade's place on the whole bank, so stands
+      // bend one after another; each blade a little early or late
+      const ph = (f / loop) * Math.PI * 2 - (ox + x0) / 55 + hash1(i, seed + 3) * 0.9;
+      const sway = (Math.sin(ph) * 0.8 + Math.sin(ph * 2 + 1) * 0.2) * Math.min(2.4, hh / 16);
+      const g0 = groundAt(x0);
       const dark = hash1(i, seed + 4) < 0.5;
       for (let s = 0; s < hh; s += 0.5 / d) {
         const u = s / hh;
-        const X = Math.round(c.X(x0 + lean * s + sway * u * u)), Y = Math.round(c.Y(2 - s));
+        const X = Math.round(c.X(x0 + lean * s + sway * u * u)), Y = Math.round(c.Y(2 - g0 - s));
         c.buf.set(X, Y, u > 0.8 ? P.moss[3]! : u > 0.45 ? P.moss[dark ? 5 : 4]! : P.moss[dark ? 6 : 5]!);
         if (d >= 1 && u < 0.35) c.buf.set(X + 1, Y, P.moss[6]!);
       }
       // a cattail on some, trailing its stem's sway a little
       if (hash1(i, seed + 5) < 0.18 && hh > p.h * 0.55) {
-        const lag = Math.sin(ph - 0.6) * Math.min(2, hh / 18);
+        const lag = (Math.sin(ph - 0.6) * 0.8 + Math.sin(ph * 2 - 0.2) * 0.2) * Math.min(2.4, hh / 16);
         for (let s = hh * 0.74; s < hh * 0.92; s += 0.5 / d) {
           const u = s / hh;
-          const X = Math.round(c.X(x0 + lean * s + lag * u * u)), Y = Math.round(c.Y(2 - s));
+          const X = Math.round(c.X(x0 + lean * s + lag * u * u)), Y = Math.round(c.Y(2 - g0 - s));
           c.buf.set(X, Y, P.timber[4]!);
           c.buf.set(X + 1, Y, P.timber[5]!);
         }
@@ -61,7 +80,7 @@ export const reeds = definePainter<ReedsP>("op.reeds", {
         const dir = hash1(i, seed + 8) < 0.5 ? -1 : 1;
         for (let s = 0; s < hh * 0.35; s += 0.5 / d) {
           const k = s / (hh * 0.35);
-          c.buf.set(Math.round(c.X(x0 + lean * at + dir * s * 0.8 + sway * 0.5 * k)), Math.round(c.Y(2 - at - s * 0.6 + k * k * hh * 0.18)), P.moss[4]!);
+          c.buf.set(Math.round(c.X(x0 + lean * at + dir * s * 0.8 + sway * 0.5 * k)), Math.round(c.Y(2 - g0 - at - s * 0.6 + k * k * hh * 0.18)), P.moss[4]!);
         }
       }
     }

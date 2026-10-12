@@ -8,7 +8,7 @@
 import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
 import { PLANES, type PlaneId } from "../types.ts";
-import { reedBeds, type BankP } from "../../art/library/opening/bank.ts";
+import { bankTopAt, reedBeds, type BankP } from "../../art/library/opening/bank.ts";
 import { CATCH_X, DECK_Y, JETTY_X0, JETTY_X1, LAKE_X0, LAKE_X1, LAKE_Y } from "./common.ts";
 
 /** A drifting sprite on a background plane, placed by plane px (x, and dy above the lake line), wrapping over plane px. */
@@ -70,11 +70,13 @@ export function kagami(b: WorldBuilder): void {
   b.prop({ id: "jetty-jar", kind: "jar", p: { h: 20, glaze: "clay" }, x: h(96.6), y: DECK_Y - 26, cls: "cosmetic", material: "clay", on: "jetty-crate", pieces: 3 });
   // the lake's near shore (P5; art: env-opening): the bank the surface ends against, low
   // hummocks, reed beds and sunk stones, rising into a rocky corner where the lake meets the lip
-  const bankP: BankP = { w: Math.round(h(72) * PLANES.near.rate), h: 150, endR: 520, startR: 420, reeds: 0.55 };
+  const bankP: BankP = { w: Math.round(h(72) * PLANES.near.rate), h: 150, endR: 520, startR: 420, reeds: 0.45 };
   const bank = b.piece("near", "op.bank", h(38), LAKE_Y, bankP as unknown as Record<string, unknown>, { z: 1, reflect: false });
   // its reed beds sway in the wind (6 fps, a gust running through each bed)
   reedBeds(bankP, bank.seed).forEach(([x, w, hh], i) => {
-    b.sprite({ id: `bank-reeds-${i}`, plane: "near", kind: "op.reeds", x: h(38) + x / PLANES.near.rate, y: LAKE_Y + 1 / PLANES.near.rate, p: { w, h: Math.round(hh) }, frames: 4, fps: 6, reflect: false });
+    const ground: number[] = [];
+    for (let gx = 0; gx <= w; gx += 8) ground.push(Math.max(0, Math.round(bankTopAt(bankP, bank.seed, x + gx) - 3)));
+    b.sprite({ id: `bank-reeds-${i}`, plane: "near", kind: "op.reeds", x: h(38) + x / PLANES.near.rate, y: LAKE_Y + 1 / PLANES.near.rate, p: { w, h: Math.round(hh), ox: Math.round(x), ground, loop: 8 }, frames: 8, fps: 6, reflect: false });
   });
 
   // (near: the surface ends at the near plane's waterline, against the bank above)

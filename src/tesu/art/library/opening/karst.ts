@@ -43,6 +43,12 @@ export interface KarstP {
 }
 
 interface Lobe {
+  /** Painted the ink-painting way (generated rows): tapering, fissured, a jagged summit. */
+  ink?: boolean;
+  /** Taper (share of the width lost by the top), bend (sideways at the top, px), summit depth. */
+  taper?: number;
+  bend?: number;
+  capH?: number;
   /** Offset of its axis from the form's, half width, height above the base, top roundness. */
   dx: number;
   hw: number;
@@ -100,7 +106,20 @@ function formsOf(p: KarstP, seed: number): Form[] {
     const mix = p.mix ?? (look === "far" ? [0.55, 0.35, 0.1] : look === "mid" ? [0.45, 0.35, 0.2] : [0.45, 0.2, 0.35]);
     const pick = (v: number): Landform => (v < mix[0] ? "pillar" : v < mix[0] + mix[1] ? "cone" : "massif");
     const out: Form[] = [];
-    const add = (f: Omit<Form, "lobes">): void => { out.push({ ...f, lobes: lobesOf(f.kind, f.hw, f.h, f.seed) }); };
+    const add = (f: Omit<Form, "lobes">, ink = false): void => {
+      const lobes = lobesOf(f.kind, f.hw, f.h, f.seed);
+      if (ink) {
+        // the ink-painting towers: tapering, bending, a jagged summit, a pair or more fused
+        for (const L of lobes) {
+          L.ink = true;
+          L.taper = f.kind === "cone" ? 0.6 + 0.2 * hash1(1, L.seed) : 0.25 + 0.35 * hash1(1, L.seed);
+          L.bend = (hash1(2, L.seed) - 0.5) * L.hw * 1.4;
+          L.capH = L.h * (0.08 + 0.14 * hash1(3, L.seed));
+          L.hw *= 1.1;
+        }
+      }
+      out.push({ ...f, lobes });
+    };
     for (let k = rows - 1; k >= 0; k--) {
       const r = rng(seed + k * 977 + 13);
       const by = -k * p.h * 0.18;
@@ -108,7 +127,10 @@ function formsOf(p: KarstP, seed: number): Form[] {
       if (k === 0 && p.forms) {
         p.forms.forEach(([x, w, hh, kind], i) => {
           const s = seed + i * 131 + 7;
-          add({ kind: kind ?? pick(hash1(i, s)), cx: x, hw: w / 2, h: hh, by, row: 0, lean: (hash1(i + 5, s) - 0.5) * 0.12, seed: s, fall: hash1(i + 9, s) < (p.falls ?? 0.4) ? 1 : 0 });
+          const kd = kind ?? pick(hash1(i, s));
+          // (pillars the ink-painting way too: tapering, bending, a jagged summit; massifs and
+          // cones keep their broad forested forms)
+          add({ kind: kd, cx: x, hw: w / 2, h: hh, by, row: 0, lean: (hash1(i + 5, s) - 0.5) * (kd === "pillar" ? 0.2 : 0.12), seed: s, fall: hash1(i + 9, s) < (p.falls ?? 0.4) ? 1 : 0 }, kd === "pillar");
         });
         continue;
       }
@@ -120,14 +142,14 @@ function formsOf(p: KarstP, seed: number): Form[] {
         const kind = pick(r());
         const w0 = kind === "massif" ? big * (0.7 + 0.6 * r()) : kind === "cone" ? big * (0.6 + 0.4 * r()) : big * (0.2 + 0.18 * r());
         const s0 = seed + k * 7919 + ci * 131;
-        add({ kind, cx: x + w0 / 2, hw: w0 / 2, h: big, by, row: k, lean: (r() - 0.5) * 0.1, seed: s0, fall: k === 0 && kind !== "cone" && r() < (p.falls ?? (look === "near" ? 0.4 : 0.15)) ? 1 : 0 });
+        add({ kind, cx: x + w0 / 2, hw: w0 / 2, h: big, by, row: k, lean: (r() - 0.5) * 0.16, seed: s0, fall: k === 0 && kind !== "cone" && r() < (p.falls ?? (look === "near" ? 0.4 : 0.15)) ? 1 : 0 }, true);
         const n = Math.floor(r() * 3);
         for (let j = 0; j < n; j++) {
           const kk = pick(r());
           const hh = big * (0.25 + 0.5 * r());
           const ww = kk === "pillar" ? hh * (0.22 + 0.25 * r()) : hh * (0.7 + 0.6 * r());
           const side = r() < 0.5 ? -1 : 1;
-          add({ kind: kk, cx: x + w0 / 2 + side * (w0 * (0.3 + 0.4 * r()) + ww * 0.35), hw: ww / 2, h: hh, by, row: k, lean: (r() - 0.5) * 0.14, seed: s0 + j * 17 + 1, fall: 0 });
+          add({ kind: kk, cx: x + w0 / 2 + side * (w0 * (0.25 + 0.35 * r()) + ww * 0.3), hw: ww / 2, h: hh, by, row: k, lean: (r() - 0.5) * 0.2, seed: s0 + j * 17 + 1, fall: 0 }, true);
         }
         x += w0 * (1.0 + 0.6 * r()) + (r() < 0.55 ? p.h * (0.6 + 1.4 * r()) : p.h * 0.15 * r());
         ci++;
@@ -141,6 +163,18 @@ function formsOf(p: KarstP, seed: number): Form[] {
 /** Half width of a lobe at height a, one side (-1 left, 1 right). */
 function lobeHalf(L: Lobe, a: number, side: -1 | 1): number {
   if (a < 0 || a > L.h) return 0;
+  if (L.ink) {
+    // a tower: tapering as it rises, bulging and pinching, stepping in at ledges, each side its own
+    const u = a / L.h;
+    const s = L.seed + (side > 0 ? 11 : 0);
+    let k = 1 - (L.taper ?? 0.4) * Math.pow(u, 1.2);
+    k *= 0.78 + 0.4 * vnoise1(a / Math.max(8, L.hw * 2.2), s) + 0.1 * (vnoise1(a / 3.5, s + 3) - 0.5);
+    const band = Math.floor(a / Math.max(6, L.h * 0.13));
+    const bh = Math.max(6, L.h * 0.13);
+    if (hash1(band * 2 + (side > 0 ? 1 : 0), s + 31) < 0.4 && a - band * bh > bh * 0.65) k *= 0.82;
+    if (u < 0.12) k *= 1 + (0.12 - u) * 2.5;
+    return L.hw * Math.max(0.12, k);
+  }
   const cap = Math.min(L.h * 0.7, L.hw * L.round);
   const c0 = L.h - cap;
   let k = 1;
@@ -156,8 +190,23 @@ function lobeHalf(L: Lobe, a: number, side: -1 | 1): number {
   return L.hw * k;
 }
 
+/** An ink lobe's summit line at offset x: knobs, a spire or a flat crown, notched by fissures. */
+function inkTop(L: Lobe, x: number): number {
+  const wt = L.hw * (1 - (L.taper ?? 0.4)) * 1.15;
+  const k = Math.abs(x) / Math.max(1, wt);
+  if (k > 1.15) return -1;
+  const e = 0.35 + 0.75 * hash1(1, L.seed + 70);
+  let p = Math.pow(Math.max(0, 1 - Math.min(1, k)), e) * (0.7 + 0.3 * vnoise1(x / Math.max(2, wt * 0.35), L.seed + 71)) + 0.12 * (vnoise1(x / Math.max(1.5, wt * 0.12), L.seed + 72) - 0.5);
+  // a notch where a fissure reaches the top
+  const fx = (hash1(2, L.seed + 73) - 0.5) * wt * 1.2;
+  const nw = Math.max(1.5, wt * 0.12);
+  if (hash1(3, L.seed + 73) < 0.6) p -= 0.35 * Math.max(0, 1 - Math.abs(x - fx) / nw);
+  return L.h - (L.capH ?? L.h * 0.2) * (1 - clamp(p, 0, 1));
+}
+
 /** The lobe's outline height above its axis offset x (for the cap and the crowns). */
 function lobeTopAt(L: Lobe, x: number): number {
+  if (L.ink) return inkTop(L, x);
   const k = Math.abs(x / L.hw);
   if (k > 1) return -1;
   const cap = Math.min(L.h * 0.7, L.hw * L.round);
@@ -165,7 +214,8 @@ function lobeTopAt(L: Lobe, x: number): number {
 }
 
 function axis(f: Form, L: Lobe, a: number): number {
-  return f.cx + L.dx + f.lean * a + (vnoise1(a / 70, L.seed + 9) - 0.5) * L.hw * 0.16;
+  const bend = L.ink ? (L.bend ?? 0) * Math.pow(a / L.h, 2) : 0;
+  return f.cx + L.dx + f.lean * a + bend + (vnoise1(a / 70, L.seed + 9) - 0.5) * L.hw * 0.16;
 }
 
 interface Look {
@@ -236,12 +286,13 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
     const m = axis(f, L, a), hl = lobeHalf(L, a, -1), hr = lobeHalf(L, a, 1);
     if (hl + hr <= 0.3 / d) continue;
     const xL = Math.ceil(c.X(m - hl) - 0.5), xR = Math.floor(c.X(m + hr) - 0.5);
-    const ridge = (vnoise1(a / 40, L.seed + 21) - 0.5) * 0.45 + 0.1;
+    const ridge = L.ink ? 0.25 + (vnoise1(a / 60, L.seed + 21) - 0.5) * 0.3 : (vnoise1(a / 40, L.seed + 21) - 0.5) * 0.45 + 0.1;
     const footK = clamp(1 - a / (f.h * 0.5), 0, 1) * K.foot;
     for (let x = Math.max(xL, b.ox); x <= Math.min(xR, b.x1 - 1); x++) {
       const lx = c.lx(x + 0.5);
       const u = lx < m ? (lx - m) / Math.max(1e-3, hl) : (lx - m) / Math.max(1e-3, hr);
       const below = lobeTopAt(L, lx - m) - a;
+      if (L.ink && below < 0) continue;
       const edgeR = x === xR, edgeL = x === xL;
       if (green > 0 && below < capD * (0.6 + 0.4 * vnoise1(lx / 22, L.seed + 43)) + drape(lx, Math.max(3, L.hw * 0.14), L.seed + 44)) {
         let t = K.vegT + 0.2 * (below / Math.max(1, capD)) + (u > ridge ? 0.18 : -0.05);
@@ -254,6 +305,17 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
         continue;
       }
       let t = u < ridge ? K.lit + 0.1 * clamp((u + 1) / (ridge + 1), 0, 1) : K.shade + 0.1 * clamp((u - ridge) / (1 - ridge), 0, 1);
+      if (L.ink && d >= 0.25) {
+        // fissures: wandering dark lines down from the summit, and the ledges' shadows
+        for (let q = 0; q < 3; q++) {
+          if (hash1(q, L.seed + 80) > 0.75) continue;
+          const fu = (hash1(q, L.seed + 81) - 0.5) * 1.3 + (vnoise1(a / 25 + q * 4, L.seed + 82) - 0.5) * 0.25;
+          const len = L.h * (0.25 + 0.6 * hash1(q, L.seed + 83));
+          if (L.h - a < len && Math.abs(u - fu) * (u < 0 ? hl : hr) < 0.6 / d) t += 0.22;
+        }
+        const bh = Math.max(6, L.h * 0.13);
+        if (((a % bh) + bh) % bh < 1.2 / d && vnoise1(lx / 9, L.seed + 84) > 0.45) t += 0.15;
+      }
       if (edgeR) t += 0.14;
       else if (edgeL && !first) t -= 0.08;
       if (K.detail >= 1 && d >= 0.25) {
@@ -281,13 +343,14 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
     }
   }
   // crowns along the lobe's top: the skyline is lumpy forest, never a clean dome
-  if (green > 0 && L.h > f.h * 0.3) {
-    const step = Math.max(2.5, Math.min(8, L.hw * (K.detail > 0 ? 0.22 : 0.3)));
+  if (green > 0 && L.h > f.h * 0.3 && (!L.ink || hash1(5, L.seed) < 0.75)) {
+    const step = Math.max(2.5, Math.min(8, L.hw * (K.detail > 0 ? 0.22 : 0.3))) * (L.ink ? 0.8 : 1);
     const r = rng(L.seed + 501);
     for (let ox = -L.hw * 1.05; ox < L.hw * 1.05; ox += step * (0.55 + 0.6 * r())) {
       const at = lobeTopAt(L, ox);
       if (at < 0 || (at < L.h * 0.45 && f.kind !== "cone")) continue;
-      const rr = step * (0.55 + 0.6 * r()) * Math.min(1, green + 0.2);
+      if (L.ink && (at < L.h - (L.capH ?? 0) * 0.9 || r() < 0.2)) continue;
+      const rr = step * (0.55 + 0.6 * r()) * Math.min(1, green + 0.2) * (L.ink ? 0.7 : 1);
       const footK = clamp(1 - at / (f.h * 0.5), 0, 1) * K.foot;
       crown(c, axis(f, L, at) + ox, f.by - at + rr * 0.3, rr, K, L.seed + Math.round(ox * 7), footK);
     }
@@ -310,7 +373,7 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
   for (let x = Xa; x < Xb; x++) {
     const lx = c.lx(x + 0.5);
     const ends = Math.pow(clamp(Math.min(lx - x0, x1 - lx) / (mh * 4), 0, 1), 0.7);
-    const tp = mh * (0.4 + 0.42 * fbm1(lx / (mh * 7), seed + 1, 3) + 0.14 * vnoise1(lx / (mh * 1.7), seed + 2)) * ends;
+    const tp = mh * (0.25 + 0.75 * fbm1(lx / (mh * 6), seed + 1, 3) + 0.25 * vnoise1(lx / (mh * 1.7), seed + 2)) * ends;
     const slope = vnoise1(lx / (mh * 1.7) + 0.08, seed + 2) - vnoise1(lx / (mh * 1.7) - 0.08, seed + 2);
     for (let y = Math.max(Yt, b.oy); y < Math.min(Yb, b.y1); y++) {
       const a = by - c.ly(y + 0.5);

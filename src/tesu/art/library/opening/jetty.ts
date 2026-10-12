@@ -35,15 +35,18 @@ export function wood(x: number, y: number, t: number, bleach = true): number {
 
 export function pileXs(p: JettyP, seed: number): number[] {
   return cached(`piles|${seed}|${p.w}|${p.every}`, () => {
-    // irregular spacing, and a pair of piles where two stringer beams meet (every ~480 px)
+    // spacing that wanders like a hand-built jetty: long bays and short ones, a pair of piles
+    // where two stringer beams meet, the odd extra pile driven in later beside an old one
     const every = p.every ?? 104;
     const out: number[] = [];
     let x = 6;
     let i = 0;
     while (x < p.w - 6) {
       out.push(x);
-      if (Math.floor((x + 40) / 480) !== Math.floor(x / 480) && hash1(i, seed + 4) < 0.8) out.push(Math.min(p.w - 6, x + 15));
-      x += every * (0.7 + 0.6 * hash1(i, seed + 3));
+      if (Math.floor((x + 40) / 480) !== Math.floor(x / 480) && hash1(i, seed + 4) < 0.8) out.push(Math.min(p.w - 6, x + 13 + 5 * hash1(i, seed + 6)));
+      else if (hash1(i, seed + 7) < 0.12) out.push(Math.min(p.w - 6, x + 9 + 4 * hash1(i, seed + 8)));
+      const k = hash1(i, seed + 3);
+      x += every * (k < 0.25 ? 0.5 + 0.2 * k : k < 0.8 ? 0.8 + 0.5 * k : 1.3 + 0.5 * k);
       i++;
     }
     out.push(p.w - 6);
@@ -52,12 +55,14 @@ export function pileXs(p: JettyP, seed: number): number[] {
 }
 
 /** A round log standing from y0 to y1 (local px), centre cx, half width hw. Wet near the water. */
-export function log(c: PaintCtx, cx: number, y0: number, y1: number, hw: number, water: number, seed: number, cap = false): void {
+export function log(c: PaintCtx, cx: number, y0: number, y1: number, hw: number, water: number, seed: number, cap = false, lean = 0): void {
   const b = c.buf, d = c.d;
-  const X0 = Math.round(c.X(cx - hw)), X1 = Math.max(X0 + 2, Math.round(c.X(cx + hw)));
   const Y0 = Math.round(c.Y(y0)), Y1 = Math.round(c.Y(y1));
   for (let y = Math.max(Y0, b.oy); y < Math.min(Y1, b.y1); y++) {
     const ly = c.ly(y + 0.5);
+    // a lean: the foot stays in the lakebed, the head tilts (px of lean over the whole log)
+    const sh = lean * ((y1 - ly) / Math.max(1, y1 - y0));
+    const X0 = Math.round(c.X(cx - hw + sh)), X1 = Math.max(X0 + 2, Math.round(c.X(cx + hw + sh)));
     for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
       const u = (x - X0 + 0.5) / (X1 - X0);
       const lx = c.lx(x + 0.5);
@@ -122,10 +127,15 @@ export const jetty = definePainter<JettyP>("op.jetty", {
       const up = posts.get(i) ?? 0;
       const hw = up ? 8 : 7;
       if (!b.touches(Math.floor(c.X(x - hw - 2)), Math.floor(c.Y(-up - 2)), Math.ceil(c.X(x + hw + 2)), Math.ceil(c.Y(p.water + 26)))) return;
-      log(c, x, -up + (up ? 0 : DECK), p.water + 24, hw, p.water, seed + i * 17, up > 0);
+      // each pile leans a little its own way (the head moves, the foot stays put)
+      const lean = (hash1(i, seed + 9) - 0.5) * (up ? 6 : 4);
+      const y0l = -up + (up ? 0 : DECK), y1l = p.water + 24;
+      log(c, x, y0l, y1l, hw, p.water, seed + i * 17, up > 0, lean);
       if (up > 0) {
-        // an iron band near the top and a rope wound round it, one end hanging
+        // an iron band near the top and a rope wound round it, one end hanging (they follow the lean)
+        const at = (yy: number): number => lean * ((y1l - yy) / (y1l - y0l));
         const by = -up + 7;
+        x += at(by);
         for (let x2 = Math.round(c.X(x - hw)); x2 < Math.round(c.X(x + hw)); x2++) {
           for (let y2 = Math.round(c.Y(by)); y2 < Math.round(c.Y(by + 2.5)); y2++) b.set(x2, y2, x2 < c.X(x - hw * 0.3) ? P.ink[1]! : P.ink[0]!);
         }
@@ -218,17 +228,21 @@ export const post = definePainter<PostP>("op.post", {
     return [-12, -p.h - 4, 22, p.down + 28];
   },
   paint(c, p) {
-    log(c, 0, -p.h, p.down + 24, 7, p.down, c.seed, true);
+    const lean = (hash1(1, c.seed) - 0.5) * 7;
+    log(c, 0, -p.h, p.down + 24, 7, p.down, c.seed, true, lean);
     const b = c.buf, d = c.d;
+    const at = (yy: number): number => lean * ((p.down + 24 - yy) / (p.down + 24 + p.h));
     const by = -p.h + 7;
-    for (let x2 = Math.round(c.X(-7)); x2 < Math.round(c.X(7)); x2++) {
-      for (let y2 = Math.round(c.Y(by)); y2 < Math.round(c.Y(by + 2.5)); y2++) b.set(x2, y2, x2 < c.X(-2) ? P.ink[1]! : P.ink[0]!);
+    const bx = at(by);
+    for (let x2 = Math.round(c.X(bx - 7)); x2 < Math.round(c.X(bx + 7)); x2++) {
+      for (let y2 = Math.round(c.Y(by)); y2 < Math.round(c.Y(by + 2.5)); y2++) b.set(x2, y2, x2 < c.X(bx - 2) ? P.ink[1]! : P.ink[0]!);
     }
     if (p.rope && d >= 0.5) {
       const ry = -p.h * 0.45;
+      const rx = at(ry);
       for (let k = 0; k < 4; k++) {
-        for (let x2 = Math.round(c.X(-8)); x2 < Math.round(c.X(8)); x2++) {
-          const Y = Math.round(c.Y(ry + k * 2.6 + (x2 - c.X(-7)) / (c.d * 6)));
+        for (let x2 = Math.round(c.X(rx - 8)); x2 < Math.round(c.X(rx + 8)); x2++) {
+          const Y = Math.round(c.Y(ry + k * 2.6 + (x2 - c.X(rx - 7)) / (c.d * 6)));
           b.set(x2, Y, ((x2 + k) & 1) ? P.earth[1]! : P.earth[2]!);
           b.set(x2, Y + 1, P.earth[3]!);
         }
