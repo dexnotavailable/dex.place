@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-12T18:38:45.719Z (13/10/2026, 01:38:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-12T19:38:47.441Z (13/10/2026, 02:38:47 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `6fb0cc9`
+- live on dex.place: `af6cfc0`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,13 +12,13 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_02fb83bb-9c9 — last activity 665 min ago
+### wf_02fb83bb-9c9 — last activity 725 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v4** (done): I wrote GDK v4 and every DELTA-v4 item is in it. MAP.svg and the builder map both parse as XML, and I rendered both with headless Edge and looked at them; the leak scan passes. The one thing I could not do is collect new reference images: the indoors-grand, indoors-narrow and outdoors-narrow gaps ar
 - **critic:v4** (done): verdict ready · GDK v4 is ready for Dex. Every DELTA-v4 item is done, and no locked canon line is contradicted. That covers the press-started download, the PC-only warning, Yuki downloading dexClient, no dex.place champion, deep links that skip the intro, the URL scheme, the 3-minute reload, the talisman and the scroll, the music, the hunt prize and stall hints with no randomness, F to interact, and state A left open. I regenerated 
 
-### wf_674119c5-6eb — last activity 693 min ago
+### wf_674119c5-6eb — last activity 753 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v1** (done): I've written both files into `D:\Dex\Temp\dexplace-canon-20261012\gdk\v1\`: `GDK.md`, the full design kit in the brief's section order 0 to 10 plus appendices A to E, and `MAP.svg`. The map is valid XML. I rendered it to PNG with headless Edge and checked it by eye: the です shape reads at full size, 
