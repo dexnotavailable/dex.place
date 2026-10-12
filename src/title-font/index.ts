@@ -12,12 +12,14 @@
 export { BIG_TITLE_SCALE, PLACE_TITLE_SCALE, TITLE_CAP } from "./sizes.ts";
 
 export interface TitleGlyph {
-  /** Rect in the atlas image, font pixels. The glyph's top row is the cap line. */
+  /** Rect in the atlas image, font pixels. It starts `up` rows above the cap line. */
   x: number;
   y: number;
   w: number;
   h: number;
-  /** Advance width and left bearing, font pixels. */
+  /** Rows above the cap line (Vietnamese accents); 0 for plain capitals. */
+  up: number;
+  /** Advance width and left bearing, font pixels (the bearing is negative when an accent overhangs a narrow letter). */
   advance: number;
   left: number;
 }
@@ -173,7 +175,9 @@ export function drawTitle(
   const align = opts.align ?? "left";
   const left = Math.round(align === "center" ? x - (layout.width * s) / 2 : align === "right" ? x - layout.width * s : x);
   const top = Math.round(y) - cap * s;
-  const box = { x: left, y: top, w: layout.width * s, h: (cap + font.metrics.descent) * s };
+  // accents (Hoài Phố and the like) rise above the cap line; the box includes them
+  const up = layout.letters.reduce((m, L) => Math.max(m, L.glyph.up), 0);
+  const box = { x: left, y: top - up * s, w: layout.width * s, h: (up + cap + font.metrics.descent) * s };
   const t = opts.time;
 
   let alpha = 1;
@@ -193,7 +197,7 @@ export function drawTitle(
   ctx.globalAlpha *= alpha;
   for (const L of layout.letters) {
     const g = L.glyph;
-    ctx.drawImage(src, g.x, g.y, g.w, g.h, left + L.x * s, top, g.w * s, g.h * s);
+    ctx.drawImage(src, g.x, g.y, g.w, g.h, left + L.x * s, top - g.up * s, g.w * s, g.h * s);
   }
   ctx.restore();
   return box;
