@@ -19,6 +19,7 @@ import { makeTarget, type Target, type WorldRenderer } from "../world/render/ren
 import { rgb } from "./art/palette.ts";
 import { Camera, framingAt } from "./camera.ts";
 import { Collision } from "./collide.ts";
+import { Court, type Prize } from "./court.ts";
 import { H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore } from "./plates/store.ts";
 import type { ZhushaAssets } from "./player.ts";
@@ -32,7 +33,10 @@ import { eyeY, levelFor, planeLevels, planeXf, rowOf, type CamState } from "./re
 import { buildWorld } from "./world/index.ts";
 import { TERRACE_X0, TERRACE_X1 } from "./world/sections/common.ts";
 import { isReload, loadSave, resumePlace, writeSave, type TesuSave } from "./save.ts";
-import { PLANES, PLANE_IDS, type Atmos as AtmosDef, type PlaneId, type Spawn, type Usable, type Water, type WorldDef } from "./world/types.ts";
+import { PLANES, PLANE_IDS, type Atmos as AtmosDef, type PlaneId, type SpriteDef, type Spawn, type Usable, type Water, type WorldDef } from "./world/types.ts";
+
+/** Flags that live only for this visit (never saved): a bout in progress. */
+const TRANSIENT = new Set(["bout"]);
 
 const DAY: Lighting = {
   ambient: [0.64, 0.66, 0.7],
@@ -84,6 +88,13 @@ export class TesuGame {
   readonly vfx: Vfx;
   readonly feel: Feel;
   readonly flags = new Set<string>();
+  /** The Prize Court's bouts (the board picks, the champion, the killing blow's download). */
+  readonly court: Court;
+  /** Music and sound cues for the score (piece 6 wires them to the stems). */
+  onCue: (name: string) => void = () => {};
+  /** A bout won: the note "it's in your downloads" (the page draws it). */
+  onCelebrate: (prize: Prize) => void = () => {};
+  private spriteById = new Map<string, SpriteDef>();
   readonly save: TesuSave;
   readonly motes = new Motes({ colours: [[1, 0.98, 0.9], [0.95, 0.97, 1], [1, 0.93, 0.7]], count: 46, drift: [7, -3], sway: 9, size: 1 });
   private closeSprite: ZhushaAssets["closeup"];
@@ -167,7 +178,7 @@ export class TesuGame {
           }
           return t.axis();
         };
-        if (k === "pressTick") return (a: Action) => (this.frozen > 0 ? undefined : t.pressTick(a));
+        if (k === "pressTick") return (a: Action) => (this.frozen > 0 || (a === "ult" && this.court?.ultLocked) ? undefined : t.pressTick(a));
         const v = Reflect.get(t, k, rcv);
         return typeof v === "function" ? v.bind(t) : v;
       },
@@ -176,7 +187,20 @@ export class TesuGame {
     this.closeSprite = assets.closeup;
     this.vfx.groundAt = (x, y) => this.collision.groundAt(x, y);
     this.save = loadSave();
-    for (const f of this.save.flags) this.flags.add(f);
+    for (const f of this.save.flags) if (!TRANSIENT.has(f)) this.flags.add(f);
+    for (const s of this.world.sprites) this.spriteById.set(s.id, s);
+    this.court = new Court({
+      player: this.player, vfx: this.vfx, feel: this.feel, camera: this.camera,
+      sprite: (id) => {
+        const s = this.spriteById.get(id);
+        if (!s) throw new Error(`no sprite ${id}`);
+        return s;
+      },
+      setFlag: (f, on) => this.setFlag(f, on),
+      freeze: (n) => { this.frozen = Math.max(this.frozen, n); },
+      cue: (n) => this.onCue(n),
+      celebrate: (p) => this.onCelebrate(p),
+    });
     const catchS = this.world.spawns.find((s) => s.id === "catch")!;
     const resume = opts.link ? null : resumePlace(this.save, Date.now(), catchS.x, isReload());
     if (resume) this.spawnAt({ id: "resume", x: resume.x, y: resume.y, facing: resume.facing });
@@ -195,7 +219,8 @@ export class TesuGame {
     if (on === this.flags.has(f)) return;
     if (on) this.flags.add(f);
     else this.flags.delete(f);
-    this.save.flags = [...this.flags];
+    if (TRANSIENT.has(f)) return;
+    this.save.flags = [...this.flags].filter((x) => !TRANSIENT.has(x));
     writeSave(this.save);
   }
 
@@ -317,6 +342,7 @@ export class TesuGame {
     const wasGrounded = b.grounded;
     this.collision.holdDown = this.frozen <= 0 && this.input.isDown("down");
     this.player.update(this.inputProxy, this.collision as unknown as LabWorld, []);
+    this.court.tick();
     this.vfx.update();
     this.input.tick++;
     // falls: no damage anywhere; a long one is a cloud drop
@@ -403,7 +429,10 @@ export class TesuGame {
   /** F, Enter or a tap on the thing: use what is within reach. */
   use(u: Usable | null = this.near): void {
     if (!u || this.cut || this.tug) return;
+    // the board waits while a bout is on; leaving through a door ends the bout
+    if (this.court.busy && u.action.kind === "panel" && u.action.panel === "board") return;
     if (u.action.kind === "door") {
+      this.court.cancel();
       const id = u.action.to;
       const to = this.world.spawns.find((sp) => sp.id === id);
       if (to) this.cut = { t: 0, to, title: u.action.title };
@@ -749,6 +778,7 @@ export class TesuGame {
       tiles: this.store.stats(), fps: Math.round(this.fps), frame: [this.r.iw, this.r.ih], present: this.r.presenter.rect,
       clip: this.player.clip.clip.id,
       opening: this.opening.state, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
+      court: this.court.state_(), hp: this.player.hp, ultCd: this.player.ultCd,
     };
   }
 

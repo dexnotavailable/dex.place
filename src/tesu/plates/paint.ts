@@ -64,6 +64,7 @@ export function paintRegion(idx: PlateIndex, plane: PlaneId, level: number, ox: 
   // a pixel of margin in level-1 px so outlines that look one pixel outside still join
   const m = 2 / level;
   for (const pc of idx.piecesIn(plane, ox / level - m, oy / level - m, (ox + w) / level + m, (oy + h) / level + m)) {
+    if (pc.minLevel !== undefined && level < pc.minLevel - 1e-6) continue;
     const c = ctxFor(buf, level, pc.x * rate, pc.y * rate, pc.seed);
     painter(pc.kind).paint(c, pc.p);
   }

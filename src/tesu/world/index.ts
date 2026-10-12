@@ -9,6 +9,7 @@ import { kagami } from "./sections/kagami.ts";
 import { palace } from "./sections/palace.ts";
 import { openingCamera } from "./sections/opening.ts";
 import { hall } from "./sections/hall.ts";
+import { court } from "./sections/court.ts";
 import type { WorldDef } from "./types.ts";
 
 /** About 480 x 240 H (GDK 3.1), plus the interiors' band below it (config INTERIOR_Y). */
@@ -25,6 +26,7 @@ export function buildWorld(): WorldDef {
   palace(b);
   openingCamera(b);
   hall(b);
+  court(b);
   built = b.finish();
   return built;
 }

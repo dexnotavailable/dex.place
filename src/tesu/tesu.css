@@ -85,3 +85,10 @@ html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
   #panel-layer.on .panel { animation: panel-in 0.12s steps(3) both; }
   @keyframes panel-in { from { transform: translateY(10px); opacity: 0; } }
 }
+/* the Prize Board's plaques and the note after a bout */
+.panel .plaques { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.panel .plaque { border-top: 6px solid var(--gold); }
+.panel .steps { margin: 8px 0; padding-left: 22px; }
+.panel .steps li { margin: 4px 0; }
+.panel .sum { word-break: break-all; font-size: 13px; }
+.panel.look-board .foot { color: #fff4f1; }

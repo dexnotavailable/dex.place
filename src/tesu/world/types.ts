@@ -46,6 +46,8 @@ export interface Piece {
   seed: number;
   /** Shows in still water (default true). */
   reflect?: boolean;
+  /** Painted only at art scales at or above this (a foreground prop that only frames close shots). */
+  minLevel?: number;
   /** Filled in by the world builder: bounds in level-1 plane px. */
   box?: [number, number, number, number];
 }
@@ -192,6 +194,14 @@ export interface SpriteDef {
    * ever turning round; choose a path wider than any frame the plane is seen in.
    */
   drift?: number;
+  /** Driven from code (a bout's champion, Bao): the frame shown, its facing, hidden or not. */
+  frame?: number;
+  flip?: boolean;
+  hidden?: boolean;
+  /** Share of its width shown, left to right on screen (an entrance assembling it); 1 = all. */
+  reveal?: number;
+  /** Flash toward white (0..1), a hit's one-frame flash. */
+  white?: number;
 }
 
 /** A bank of mist lying at a height in a stretch of the land (a valley's), drawn after a plane. */

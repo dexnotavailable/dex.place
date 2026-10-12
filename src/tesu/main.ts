@@ -15,6 +15,8 @@ import { loadZhusha } from "./player.ts";
 import { Touch } from "./touch.ts";
 import { Panels, type PanelSpec } from "./panels/panels.ts";
 import { craneDesk, docsShelf, galleryFrame, hankoDesk, noticeWall, offeringBox, patronsScroll, saySpec } from "./panels/services.ts";
+import { celebrationNote, prizeBoard, startDownload } from "./panels/court.ts";
+import { prizeFor } from "./court.ts";
 import { readSlipInto, slipFor } from "./save.ts";
 import type { Usable } from "./world/types.ts";
 
@@ -103,6 +105,7 @@ async function boot(): Promise<void> {
       case "crane": return craneDesk;
       case "patrons": return patronsScroll;
       case "art": return galleryFrame(a.arg ?? "");
+      case "board": return prizeBoard((p) => game.court.summon(p));
       default: return null;
     }
   };
@@ -110,13 +113,34 @@ async function boot(): Promise<void> {
     const spec = specFor(u);
     if (spec) panels.show(spec);
   };
+  game.onCelebrate = (p) => panels.show(celebrationNote(p));
+  // The killing blow (GDK 5.1): the next attack press on a staggered champion. The download
+  // starts here, inside the input event itself (browsers only allow it from the user's own
+  // input), from the release data's URL; the hit plays after it.
+  let lastDownload: string | null = null;
+  const finish = (): void => {
+    if (panels.open) return;
+    const prize = game.court.finishPress();
+    if (!prize) return;
+    lastDownload = prize.file.href;
+    startDownload(prize.file.href);
+  };
+  const FINISH_KEYS = new Set(["KeyJ", "KeyZ", "KeyQ", "KeyE"]);
   window.addEventListener("keydown", (e) => {
     if (panels.open || e.repeat) return;
+    if (FINISH_KEYS.has(e.code)) finish();
     if (e.code === "KeyF" || e.code === "Enter" || e.code === "NumpadEnter") {
       e.preventDefault();
       game.use();
     }
   });
+  canvas.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && e.button === 0) finish();
+  });
+  // on touch, a tap counts as user input when the finger lifts: the attack (or Q) button's release
+  touch.onRelease = (a) => {
+    if (a === "m1" || a === "skill") finish();
+  };
   touch.onTap = (cx, cy) => {
     if (panels.open) return false;
     const rect = canvas.getBoundingClientRect();
@@ -136,7 +160,7 @@ async function boot(): Promise<void> {
   const loop = (now: number): void => {
     try {
       game.frame(now);
-      if (touch.shown) touch.cooldowns(game.player.skillCd <= 0, game.player.ultCd <= 0);
+      if (touch.shown) touch.cooldowns(game.player.skillCd <= 0, game.player.ultCd <= 0 && !game.court.ultLocked);
       if (game.debug) {
         if (n++ % 6 === 0) debugEl.textContent = game.debugText();
         debugEl.hidden = false;
@@ -171,6 +195,14 @@ async function boot(): Promise<void> {
       render: () => game.render(),
       flag: (f: string, on = true) => (on ? game.flags.add(f) : game.flags.delete(f)),
       use: () => game.use(),
+      /** The bout: summon a prize's champion, press the finish (as an attack press would). */
+      summon: (id: string) => {
+        const p = prizeFor(id);
+        if (p) game.court.summon(p);
+        return !!p;
+      },
+      finish: () => finish(),
+      lastDownload: () => lastDownload,
       panels,
       /** Forces a framing ({zoom, anchor, horizon, lead}); null follows the world's tracks again. */
       frame: (f: Record<string, number> | null) => {

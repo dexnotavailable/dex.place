@@ -129,7 +129,10 @@ export function kagami(b: WorldBuilder): void {
   bg(b, "mid", -3000, "ridgeline", { w: 9000, h: 40, pines: 1.5, pineH: 26 }, LAKE_Y, -2);
 
   // a Walker wading the far shore (the Walker lane's giant replaces this stand-in in its slot)
-  b.sprite({ id: "walker-kagami", plane: "mid", kind: "walker", x: h(84), y: LAKE_Y + h(0.6), p: { frames: 16 }, frames: 16, fps: 4, path: [h(70), h(140)], speed: 82 });
+  // Timed to the Walker lane's retimed wade (Dex: several hundred metres tall): one cycle in
+  // 20 s, moving at the wade's ground speed for its 560 px height (0.03 of 1.9037 units a
+  // second: 8.8 plane px/s, so 31.5 3D px/s on P2) so planted feet stay planted.
+  b.sprite({ id: "walker-kagami", plane: "mid", kind: "walker", x: h(84), y: LAKE_Y + h(0.6), p: { frames: 24 }, frames: 24, fps: 1.2, path: [h(70), h(140)], speed: 31.5 });
 
   // P3: the near-back shore: pine ridges low over the water
   bg(b, "back", -4200, "ridgeline", { w: 5200, h: 70, pines: 2.5, pineH: 52 }, LAKE_Y, 0);

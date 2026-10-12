@@ -8,6 +8,7 @@ export interface PieceOpts {
   z?: number;
   seed?: number;
   reflect?: boolean;
+  minLevel?: number;
 }
 
 export class WorldBuilder {
@@ -21,7 +22,7 @@ export class WorldBuilder {
 
   /** A painted piece. x, y: its anchor in 3D world px; p: painter params in its plane's level-1 px. */
   piece(plane: PlaneId, kind: string, x: number, y: number, p: Record<string, unknown> = {}, o: PieceOpts = {}): Piece {
-    const pc: Piece = { plane, kind, x, y, p, z: o.z ?? 0, seed: o.seed ?? this.nextSeed++ * 7919, reflect: o.reflect };
+    const pc: Piece = { plane, kind, x, y, p, z: o.z ?? 0, seed: o.seed ?? this.nextSeed++ * 7919, reflect: o.reflect, minLevel: o.minLevel };
     const b = painter(kind).bounds(p);
     const r = PLANES[plane].rate;
     pc.box = [x * r + b[0], y * r + b[1], x * r + b[2], y * r + b[3]];

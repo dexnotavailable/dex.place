@@ -16,10 +16,10 @@ export const DOOR_X0 = h(146.2);
 export const DOOR_X1 = h(148.6);
 
 export function palace(b: WorldBuilder): void {
-  // the corner rock: from the forecourt to the prow, down to Shiraito's top
-  // the hall's platform, then the prow: a flat-topped promontory carrying the Prize Court
-  const top = [HALL_DOOR_X - h(3), FLOOR_Y + h(0.5), h(176.5), FLOOR_Y + h(0.5), h(177.5), h(54.2), h(189), h(54.0), h(190.6), h(54.6)];
-  const bottom = [h(191.4), h(56.5), h(191.2), h(60), h(189.6), h(65), h(187.4), h(70), h(184), h(73.5), h(179), Math.max(h(75), yOn(DIAG, h(179)) + h(1)), h(174), Math.max(h(74), yOn(DIAG, h(174)) + h(1)), h(170), yOn(DIAG, h(170)), h(160), h(70), h(150), h(63), HALL_DOOR_X - h(3.4), FLOOR_Y + h(3)];
+  // the corner rock: from the forecourt to the prow, down to Shiraito's top; the hall's
+  // platform, then the prow at the same level, a flat promontory carrying the Prize Court
+  const top = [HALL_DOOR_X - h(3), FLOOR_Y + h(0.5), h(192.4), FLOOR_Y + h(0.5), h(193.3), FLOOR_Y + h(1.3)];
+  const bottom = [h(193.7), FLOOR_Y + h(2.4), h(193.2), h(61.5), h(191.4), h(65.5), h(188.6), h(70), h(184), h(73.5), h(179), Math.max(h(75), yOn(DIAG, h(179)) + h(1)), h(174), Math.max(h(74), yOn(DIAG, h(174)) + h(1)), h(170), yOn(DIAG, h(170)), h(160), h(70), h(150), h(63), HALL_DOOR_X - h(3.4), FLOOR_Y + h(3)];
   b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", cap: "none", tufts: 0, shade: 0.25 }, { z: -1 });
   // the forecourt in front of the doors
   b.walk([HALL_DOOR_X + h(0.4), FLOOR_Y, DOOR_X1 + h(0.4), FLOOR_Y], { surface: "stone", depth: h(3), name: "forecourt" });
@@ -39,7 +39,7 @@ export function palace(b: WorldBuilder): void {
   b.usable({ id: "hall-doors", x0: DOOR_X0, y0: FLOOR_Y - h(3.7), x1: DOOR_X1, y1: FLOOR_Y, label: "go in", action: { kind: "door", to: "hall-in" } });
   // the forecourt ends at the doors: a hard edge with a reason (the hall's wall)
   b.wall({ x: DOOR_X1 + h(0.3), y0: FLOOR_Y - h(6), y1: FLOOR_Y + h(0.1), reason: "wall" });
-  b.place({ id: "ink-palace", name: "Ink Palace", x0: HALL_DOOR_X - h(3), x1: h(192), title: "place", spawn: "hall-door" });
+  b.place({ id: "ink-palace", name: "Ink Palace", x0: HALL_DOOR_X - h(3), x1: HALL_X1, title: "place", spawn: "hall-door" });
 }
 
 function ROAD_PTS(): number[] {

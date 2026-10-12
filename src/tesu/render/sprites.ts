@@ -19,20 +19,25 @@ uniform float uMirror;
 uniform vec2 uSize;     // texture size
 uniform float uFlip;
 out vec2 vUV;
+out float vS;
 const vec2 C[6] = vec2[6](vec2(0,0), vec2(1,0), vec2(1,1), vec2(0,0), vec2(1,1), vec2(0,1));
 void main() {
   vec2 c = C[gl_VertexID];
   vec2 p = mix(uRect.xy, uRect.zw, c);
   if (uMirror >= 0.0) p.y = 2.0 * uMirror - p.y;
   vUV = vec2(uFlip > 0.5 ? 1.0 - c.x : c.x, c.y) * uSize;
+  vS = c.x;
   gl_Position = vec4(p.x / uRes.x * 2.0 - 1.0, 1.0 - p.y / uRes.y * 2.0, 0.0, 1.0);
 }`;
 
 const FS = /* glsl */ `#version 300 es
 precision highp float;
 in vec2 vUV;
+in float vS;
 uniform sampler2D uTex;
 uniform vec2 uSize;
+uniform float uReveal;
+uniform float uWhite;
 uniform vec3 uHaze;
 uniform float uFade;
 uniform vec3 uInk;
@@ -42,11 +47,13 @@ uniform vec2 uRes;
 out vec4 o;
 void main() {
   if (uMirror >= 0.0 && uRes.y - gl_FragCoord.y < uMirror) discard;
+  if (vS > uReveal) discard;
   ivec2 t = clamp(ivec2(floor(vUV)), ivec2(0), ivec2(uSize) - 1);
   vec4 c = texelFetch(uTex, t, 0);
   if (c.a < 0.5) discard;
   vec3 col = mix(c.rgb, uHaze, uFade);
   col = mix(col, uInk, uInkAmt);
+  col = mix(col, vec3(1.0), uWhite);
   o = vec4(col, 1.0);
 }`;
 
@@ -157,6 +164,7 @@ export class SpriteRenderer {
   static driftScale = 1;
 
   static position(def: SpriteDef, time: number): { x: number; y: number; frame: number; flip: boolean } {
+    if (def.frame !== undefined) return { x: def.x, y: def.y, frame: def.frame, flip: !!def.flip };
     let x = def.x;
     let flip = false;
     if (def.drift && def.path) {
@@ -198,6 +206,7 @@ export class SpriteRenderer {
     gl.uniform1f(u.uInkAmt!, look.inkAmt);
     gl.bindVertexArray(this.vao);
     for (const def of defs) {
+      if (def.hidden) continue;
       const rate = PLANES[def.plane].rate;
       const xf = planeXf(cam, rate);
       const level = levelFor(planeLevels(rate), xf.g);
@@ -214,6 +223,8 @@ export class SpriteRenderer {
       gl.uniform1i(u.uTex!, 0);
       gl.uniform2f(u.uSize!, fr.w, fr.h);
       gl.uniform1f(u.uFlip!, pos.flip ? 1 : 0);
+      gl.uniform1f(u.uReveal!, def.reveal ?? 1);
+      gl.uniform1f(u.uWhite!, def.white ?? 0);
       gl.uniform4f(u.uRect!, Math.round(x0), Math.round(y0), Math.round(x0) + Math.round(fr.w * k), Math.round(y0) + Math.round(fr.h * k));
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }

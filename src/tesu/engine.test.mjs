@@ -117,3 +117,31 @@ test("plates: tiles are deterministic and join seamlessly with a one-region pain
     }
   }
 });
+
+test("every door leads to a spawn, and the Prize Court stands on ground between its walls", () => {
+  const w = buildWorld();
+  const c = new Collision(w.walks, w.walls);
+  for (const u of w.usables) {
+    if (u.action.kind !== "door") continue;
+    assert.ok(w.spawns.some((s) => s.id === u.action.to), `door ${u.id} -> ${u.action.to}`);
+  }
+  const gate = w.spawns.find((s) => s.id === "court-gate");
+  assert.ok(gate, "the court's gate spawn");
+  for (let x = gate.x; x <= 191.6 * H; x += 8) {
+    const g = c.groundBelow(x, gate.y - 2 * H, false);
+    assert.ok(g && Math.abs(g.y - gate.y) < 0.01, `court floor at ${(x / H).toFixed(1)} H`);
+  }
+  for (const id of ["bao", "stands", "champion", "install-bar", "glint", "champion-hp"]) assert.ok(w.sprites.some((s) => s.id === id), `sprite ${id}`);
+});
+
+test("prizes come from the downloads data: dexCode's plaque wins dexClient's file", async () => {
+  const { prizeFor } = await import("./court.ts");
+  const { downloads } = await import("../site/data/downloads.ts");
+  const client = downloads.find((d) => d.id === "dexclient");
+  const a = prizeFor("dexclient");
+  assert.equal(a.file.href, client.file.href);
+  const b = prizeFor("dexcode");
+  assert.equal(b.owner.id, "dexclient");
+  assert.equal(b.file.href, client.file.href);
+  assert.equal(prizeFor("nothing"), null);
+});

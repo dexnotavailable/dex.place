@@ -19,6 +19,8 @@ export class Touch {
   shown = false;
   /** A short, still tap at a client point: the game decides whether it hit something usable. */
   onTap: (clientX: number, clientY: number) => boolean = () => false;
+  /** A button let go (the killing blow listens for the attack button's release). */
+  onRelease: (a: Action) => void = () => {};
   private stick: Stick | null = null;
   private knob: HTMLDivElement;
   private base: HTMLDivElement;
@@ -63,6 +65,7 @@ export class Touch {
         e.preventDefault();
         el.classList.remove("on");
         this.input.up(action, id);
+        if (e.type === "pointerup") this.onRelease(action);
       };
       el.addEventListener("pointerdown", down);
       el.addEventListener("pointerup", up);
