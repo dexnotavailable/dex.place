@@ -153,9 +153,21 @@ export class SpriteRenderer {
   }
 
   /** Where a sprite stands now (its 3D x drifts along its path). */
+  /** Drift speed share (reduced motion drifts at a quarter speed). */
+  static driftScale = 1;
+
   static position(def: SpriteDef, time: number): { x: number; y: number; frame: number; flip: boolean } {
     let x = def.x;
     let flip = false;
+    if (def.drift && def.path) {
+      // the wind: always east, wrapping off screen, never turning round
+      const [a, b] = def.path;
+      const span = Math.max(1, b - a);
+      const v = (def.drift * SpriteRenderer.driftScale) / Math.max(1e-3, PLANES[def.plane].rate);
+      x = a + ((((def.x - a + time * v) % span) + span) % span);
+      const frame = SpriteRenderer.driftScale < 1 ? 0 : Math.floor(time * (def.fps ?? 0)) % Math.max(1, def.frames ?? 1);
+      return { x, y: def.y, frame, flip };
+    }
     if (def.path) {
       const [a, b] = def.path;
       const span = b - a;

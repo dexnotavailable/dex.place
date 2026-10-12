@@ -166,6 +166,8 @@ export interface Atmos {
   mistColour: string;
   /** Sun position in the sky as share of the frame (x, y); null for none. */
   sun: [number, number] | null;
+  /** Still water's colours under this sky (deep, body, shallow, the sun's glint). */
+  water?: { deep: string; body: string; shallow: string; glint: string };
 }
 
 /** Something that moves on a plane: animated frames from a painter (or, later, a render). */
@@ -185,6 +187,11 @@ export interface SpriteDef {
   speed?: number;
   /** Shows in still water (default true). */
   reflect?: boolean;
+  /**
+   * Drifts east at this many plane px per second (clouds, mist), wrapping over `path` without
+   * ever turning round; choose a path wider than any frame the plane is seen in.
+   */
+  drift?: number;
 }
 
 /** A bank of mist lying at a height in a stretch of the land (a valley's), drawn after a plane. */

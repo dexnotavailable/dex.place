@@ -153,6 +153,7 @@ export class TesuGame {
     this.feel = new Feel(labCam, assets.tuning.feel);
     cam.reducedMotion = this.feel.reducedMotion;
     this.titles.reducedMotion = this.feel.reducedMotion;
+    SpriteRenderer.driftScale = this.feel.reducedMotion ? 0.25 : 1;
     const services: Services = { vfx: this.vfx, feel: this.feel, camera: labCam };
     // frozen controls read nothing; "down" only means drop-through on one-way ground
     this.inputProxy = new Proxy(input, {
@@ -635,8 +636,8 @@ export class TesuGame {
         hz, eye, wy: water.y, z, cx: cam.cx, lens: 1, focus,
         ext: [water.x0, water.x1, water.fx0 ?? water.x0, water.fx1 ?? water.x1],
         depth: [water.near, water.far], rows, time: this.time,
-        deep: hexRgb("#1f5a60"), body: hexRgb("#3f8f8a"), shallow: hexRgb("#bfe0dc"),
-        haze: hexRgb(a.haze), glint: hexRgb("#fffbe8"), still: water.kind === "lake" ? 1 : 0.4,
+        deep: hexRgb(a.water?.deep ?? "#1f5a60"), body: hexRgb(a.water?.body ?? "#3f8f8a"), shallow: hexRgb(a.water?.shallow ?? "#bfe0dc"),
+        haze: hexRgb(a.haze), glint: hexRgb(a.water?.glint ?? "#fffbe8"), still: water.kind === "lake" ? 1 : 0.4,
       });
     };
     const mist = (rate: number, strength: number, drift: number): void => {

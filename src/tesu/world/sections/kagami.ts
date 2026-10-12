@@ -63,11 +63,13 @@ export function kagami(b: WorldBuilder): void {
   // --- the sky and the land beyond the lake (P0 to P3)
   b.atmos({
     x: 0,
-    sky: ["#7fa7c9", "#cfe0e8", "#eef4f2"],
-    haze: "#e3edee",
-    mist: 0.75,
-    mistColour: "#f1f6f5",
-    sun: [0.22, 0.12],
+    // the morning key (env-sky lane, ART-BIBLE section 3; composited in the opening)
+    sky: ["#8fb6cf", "#d3e6e3", "#edf5ef"],
+    haze: "#dce9e4",
+    mist: 0.8,
+    mistColour: "#f2f7f2",
+    sun: [0.2, 0.11],
+    water: { deep: "#235f60", body: "#4a9a90", shallow: "#c3e2d9", glint: "#fffbe8" },
   });
   // sky plane: y is px above the horizon (the sky barely moves, 0.02 of the camera)
   const clouds: [number, number, number, number][] = [
