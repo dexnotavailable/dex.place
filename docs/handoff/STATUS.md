@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-12T06:58:46.617Z (12/10/2026, 13:58:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-12T08:08:45.579Z (12/10/2026, 15:08:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,8 +12,14 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_674119c5-6eb — last activity 12 min ago
-5 agents: 4 done, 1 running or stopped mid-way, 0 failed.
+### wf_02fb83bb-9c9 — last activity 35 min ago
+2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
+
+- **writer:v4** (done): I wrote GDK v4 and every DELTA-v4 item is in it. MAP.svg and the builder map both parse as XML, and I rendered both with headless Edge and looked at them; the leak scan passes. The one thing I could not do is collect new reference images: the indoors-grand, indoors-narrow and outdoors-narrow gaps ar
+- **critic:v4** (done): verdict ready · GDK v4 is ready for Dex. Every DELTA-v4 item is done, and no locked canon line is contradicted. That covers the press-started download, the PC-only warning, Yuki downloading dexClient, no dex.place champion, deep links that skip the intro, the URL scheme, the 3-minute reload, the talisman and the scroll, the music, the hunt prize and stall hints with no randomness, F to interact, and state A left open. I regenerated 
+
+### wf_674119c5-6eb — last activity 63 min ago
+6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v1** (done): I've written both files into `D:\Dex\Temp\dexplace-canon-20261012\gdk\v1\`: `GDK.md`, the full design kit in the brief's section order 0 to 10 plus appendices A to E, and `MAP.svg`. The map is valid XML. I rendered it to PNG with headless Edge and checked it by eye: the です shape reads at full size, 
 - **critic:v1** (done): verdict revise · blocking: [object Object] | [object Object] | [object Object] | [object Object] | [object Object] | [object Object] · This is a strong draft, but it needs a revision round before Dex sees it. The です map really does read: rendered with labels stripped, the strokes plus the two isles say です even at thumbnail size. Walking the main route writes the word in stroke order. The hidden truth (bouts are "finishings", the champions want to lose) turns the locked easy arena into the heart of the story. The core is fast: the hall at 1:00 and a 
@@ -22,7 +28,11 @@ Each entry is one orchestration run; agents are listed with their latest result.
 Files:
 - `D:\Dex\Temp\dexplace-canon-20261012\gdk\v2\GDK.md` 
 - **critic:v2** (done): verdict revise · blocking: [object Object] | [object Object] | [object Object] | [object Object] · Close to ready. All six v1 blockers are actually fixed: private marking with a working public map generator, chained keys, terrain grammar, real early forks, a dex.place SFW build, and the website scroll order with big titles. MAP.svg renders and reads as です when seen whole, and the low ground is open-air. Four small blockers remain, each a quick edit. E and F are swapped against the locked controls. The talisman doe
-- **writer:v3** (running)
+- **writer:v3** (done): GDK v3 fixes all four blocking issues from the critic, takes 13 of the 15 improvements in full and adapts the rest. Both maps are valid XML and render correctly: the full map reads as です and the builder map as てす. The builder edition passes the leak scan.
+
+**Blocking fixes**
+1. **E and F controls:**
+- **critic:v3** (done): verdict revise · blocking: [object Object] | [object Object] · The design is close to ready, but it misses some newer canon locks. All four v2 blockers are really fixed: E and F are correct everywhere, the talisman carries 朱砂 and "To Zhusha...", Mo fights on the Sky Well floor instead of the arena, and the sealed payload rule plus a generic loader are in place. The builder edition matches the current GDK and its leak scan is clean. MAP.svg renders in headless Edge, reads as です w
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
