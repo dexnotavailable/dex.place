@@ -130,6 +130,12 @@ export class Collision {
 
   /** Holding down: walk past the foot of a stair instead of up it (set by the game each tick). */
   holdDown = false;
+  /**
+   * The stair she last walked down off its foot, and where: on a switchback landing, turning
+   * back the way the stair came does not climb it again (she walks on, down the next flight),
+   * until she has gone a little way off.
+   */
+  private cameDown: { w: Walk; x: number } | null = null;
 
   /** At the foot of a stair, moving toward its rise? */
   private atStairFoot(w: Walk, x: number, dir: number): boolean {
@@ -201,9 +207,13 @@ export class Collision {
           if (w.oneWay && wy < b.y - this.stepUp - EPS) continue;
           if (w.stair && w !== walk && wy < b.y - EPS) {
             // a stair is walked onto from its foot, heading up it (unless she holds down to
-            // pass under it); from anywhere else under it she walks on underneath
-            if (this.atStairFoot(w, nx, dir)) { foot = w; fy = wy; }
-            continue;
+            // pass under it); from anywhere else under it she walks on underneath. The one she
+            // has just come down is plain ground for a moment (other ground there wins).
+            const justDown = this.cameDown?.w === w && Math.abs(nx - this.cameDown.x) < 1.5 * H;
+            if (!justDown) {
+              if (this.atStairFoot(w, nx, dir)) { foot = w; fy = wy; }
+              continue;
+            }
           }
           if (walk && w === walk) { stay = w; sy = wy; }
           if (!best || wy < by) { best = w; by = wy; }
@@ -217,6 +227,8 @@ export class Collision {
             nx = b.x;
             b.vx = 0;
           } else {
+            // walking off the low end of a stair onto other ground: remember it
+            if (walk && walk.stair && best !== walk && by >= (walkY(walk, b.x) ?? by) - EPS) this.cameDown = { w: walk, x: nx };
             b.y = by;
             walk = best;
           }

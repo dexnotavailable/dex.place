@@ -118,12 +118,15 @@ export function kagami(b: WorldBuilder): void {
   // (the far plain's foot stops short of the harbour far below, so from Hoài Phố it never shows)
   bg(b, "far", -2600, "plain", { w: 9000, foot: 560, ramp: "range", amp: 4 }, LAKE_Y, -5);
   // (their tops sit just under the waterline: no line of land along the lake's far shores)
-  bg(b, "mid", -4000, "plain", { w: 21000, foot: 560, ramp: "pine", amp: 0 }, LAKE_Y + 6, -5);
+  // (from about 370 H, behind the palace at the widest frame's edge, it thins away into the
+  // mist: Shanshui's East Pavilion stands over a sea of mist, not the lake's far shore)
+  bg(b, "mid", -4000, "plain", { w: 15300, foot: 560, ramp: "pine", amp: 0, fadeEnd: 1350 }, LAKE_Y + 6, -5);
   // (past the court's tip it thins away into the mist, gone by about 210 H, behind the palace in
   // the opening's widest frame: beyond, Shanshui's pillar forest stands in a sea of mist, with no
   // ground at the lake's height)
   bg(b, "back", -6000, "plain", { w: 18500, foot: 520, ramp: "pine", amp: 0, fadeEnd: 1500 }, LAKE_Y + 6, -5);
-  bg(b, "mid", 2900, "op.sea", { w: 9000, depth: 600, swell: 10, ends: 60 }, LAKE_Y, -4);
+  // (the mid sea runs on to the land's east end: Shanshui's forest and pavilion stand in it)
+  bg(b, "mid", 2900, "op.sea", { w: 11000, depth: 600, swell: 10, ends: 60 }, LAKE_Y, -4);
   bg(b, "back", 6300, "op.sea", { w: 4200, depth: 1400, swell: 16, ends: 80 }, LAKE_Y, -4);
 
   // P1: far karst rows rising out of layered mist, ghostly at this distance (art: env-opening)

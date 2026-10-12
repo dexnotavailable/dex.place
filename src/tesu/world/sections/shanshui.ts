@@ -28,7 +28,32 @@ export const SILK_LOW_X = h(204.1);
 export const SILK_TOP_X = h(262.6);
 /** From the cable down to a car's floor, px. */
 export const SILK_HANG = CAR.hanger + CAR.h;
-const KUMOJI_X1 = h(339.6);
+/** Kumoji's first stretch ends where Tsuji's street begins (sections/tsuji.ts). */
+export const KUMOJI_X1 = h(362);
+/** Tsuji's street level. */
+export const TSUJI_Y = h(74.6);
+
+/**
+ * A stretch of rampart road on pillar tops (Kumoji): the walk, its band of masonry under it
+ * (flat values) and the pillars that carry it down into the sea of mist, at these x (H) and
+ * widths (H).
+ */
+export function rampart(b: WorldBuilder, road: number[], name: string, pillars: [number, number][]): (x: number) => number {
+  b.walk(road, { surface: "stone", depth: h(2.6), name });
+  const x0 = road[0]!, x1 = road[road.length - 2]!;
+  const yAt = (x: number): number => {
+    for (let i = 2; i < road.length; i += 2) if (x <= road[i]! || i === road.length - 2) return road[i - 1]! + ((x - road[i - 2]!) / (road[i]! - road[i - 2]!)) * (road[i + 1]! - road[i - 1]!);
+    return road[1]!;
+  };
+  const bottom: number[] = [];
+  for (let x = x1 + h(0.3); x >= x0 - h(0.3); x -= h(2)) bottom.push(x, yAt(Math.min(x1, Math.max(x0, x))) + h(2.6));
+  b.piece("play", "mass", 0, 0, { top: [x0 - h(0.3), road[1]!, ...road.slice(2, -2), x1 + h(0.3), road[road.length - 1]!], bottom, rock: "stone", flat: true, deep: 0.62 }, { z: -1 });
+  for (const [x, w] of pillars) {
+    const top = yAt(Math.min(x1, Math.max(x0, h(x)))) + h(2.2);
+    b.piece("play", "pillar", h(x), top, { w: h(w), h: h(226) - top }, { z: -2 });
+  }
+  return yAt;
+}
 
 /** A cubic Bezier sampled to a polyline (n segments). */
 function bezier(p: [number, number, number, number, number, number, number, number], n: number): number[] {
@@ -61,32 +86,15 @@ export function shanshui(b: WorldBuilder): void {
 
   // --- Kumoji: the road on its band, from the upper station east
   // (level at the station, where the car docks, then rising gently east)
-  const road = [h(261.9), KUMOJI_Y, h(266.5), KUMOJI_Y, h(300), KUMOJI_Y - h(1.2), KUMOJI_X1, KUMOJI_Y - h(2.6)];
-  b.walk(road, { surface: "stone", depth: h(2.6), name: "kumoji" });
-  const yAt = (x: number): number => {
-    for (let i = 2; i < road.length; i += 2) if (x <= road[i]! || i === road.length - 2) return road[i - 1]! + ((x - road[i - 2]!) / (road[i]! - road[i - 2]!)) * (road[i + 1]! - road[i - 1]!);
-    return road[1]!;
-  };
+  const road = [h(261.9), KUMOJI_Y, h(266.5), KUMOJI_Y, h(300), KUMOJI_Y - h(1.2), h(339.6), KUMOJI_Y - h(2.6), KUMOJI_X1, TSUJI_Y];
+  const yAt = rampart(b, road, "kumoji", [[265, 4.4], [279, 3.8], [293, 4.6], [307, 3.6], [321, 4.2], [335, 4], [349, 3.8]]);
   // the station's edge: a rail where the cars come in from the open air (gone once the
   // Kumo-bashi is down: the bridge carries on from it); the road runs right up to it, so she
   // stops with her feet on the platform
   b.wall({ x: h(261.9), y0: KUMOJI_Y - h(6), y1: KUMOJI_Y + h(2.6), reason: "rail", from: "right", unless: BRIDGE_FLAG });
   b.sprite({ id: "kumoji-west-rail", plane: "front", kind: "rail", x: 0, y: 0, p: { pts: [h(261.5), KUMOJI_Y + 2, h(262.05), KUMOJI_Y + 2], h: 50, every: 46 }, frames: 1, unless: BRIDGE_FLAG });
   b.piece("play", "hut", h(265.6), yAt(h(265.6)), { w: 230, h: 190 }, { z: 0 });
-  // the band: masonry under the road, flat values
-  const bandTop: number[] = [h(261.6), KUMOJI_Y, ...road.slice(2)];
-  const bandBottom: number[] = [];
-  for (let x = KUMOJI_X1 + h(0.4); x >= h(261.4); x -= h(2)) bandBottom.push(x, yAt(Math.min(KUMOJI_X1, Math.max(h(262), x))) + h(2.6));
-  b.piece("play", "mass", 0, 0, { top: bandTop, bottom: bandBottom, rock: "stone", flat: true, deep: 0.62 }, { z: -1 });
-  // the pillars that carry it, standing out of the sea of mist
-  for (const [x, w] of [[h(265), h(4.4)], [h(279), h(3.8)], [h(293), h(4.6)], [h(307), h(3.6)], [h(321), h(4.2)], [h(335), h(4)]] as const) {
-    const top = yAt(Math.min(KUMOJI_X1, x)) + h(2.2);
-    b.piece("play", "pillar", x, top, { w, h: h(226) - top }, { z: -2 });
-  }
-  // the far end: a barred gatehouse until the road goes on to Tsuji
-  b.piece("play", "hut", KUMOJI_X1 - h(1.2), yAt(KUMOJI_X1 - h(1.2)), { w: 250, h: 220 }, { z: 1 });
-  b.wall({ x: KUMOJI_X1 + h(0.05), y0: KUMOJI_Y - h(8), y1: KUMOJI_Y, reason: "gate", from: "left" });
-  b.usable({ id: "kumoji-gate", x0: KUMOJI_X1 - h(2), y0: yAt(KUMOJI_X1) - h(2), x1: KUMOJI_X1, y1: yAt(KUMOJI_X1), label: "the rampart gate", action: { kind: "say", text: "The rampart gate is barred from the far side. The road to Tsuji opens later." } });
+  // (the road goes on east into Tsuji: sections/tsuji.ts)
 
   // --- the pillar forest: ranks on P3 and P2, each paler, the sea of mist between them. Stand-ins
   // in clusters (a broad massif, a tall needle beside a stout one, open mist between groups), not
@@ -104,6 +112,8 @@ export function shanshui(b: WorldBuilder): void {
     [303, 2.8, 82], [306.6, 3.8, 88],
     [320, 2.4, 98], [323.6, 5.2, 106],
     [338, 3.4, 86],
+    // (on east past Tsuji to the pavilion and the land's end)
+    [384, 2.8, 92], [415, 4.2, 96], [431.5, 2.6, 84], [447, 5.4, 104], [468, 3.4, 88], [476, 2.2, 98],
   ];
   const P2: [number, number, number][] = [
     [229, 2.0, 70], [232, 3.0, 76],
@@ -118,6 +128,7 @@ export function shanshui(b: WorldBuilder): void {
     [345, 6.2, 84],
     [358, 2.6, 68], [361.4, 3.2, 72],
     [374, 4.2, 76],
+    [389, 2.4, 70], [402, 5.6, 84], [420, 2.2, 66], [436, 3.0, 74], [452, 6.0, 90], [470, 2.6, 68], [488, 3.4, 78],
   ];
   for (const [x, w, top] of P3) b.piece("back", "pillar", h(x), h(top), { w: Math.round(h(w) * r3), h: Math.round((h(232) - h(top)) * r3), crown: true }, { z: 1 });
   for (const [x, w, top] of P2) b.piece("mid", "pillar", h(x), h(top), { w: Math.round(h(w) * r2), h: Math.round((h(236) - h(top)) * r2), crown: true }, { z: 1 });
@@ -136,7 +147,7 @@ export function shanshui(b: WorldBuilder): void {
   pillarHop(b);
 
   // --- the frames: Kumoji at play, the station end open to the drop; the ride pulls wide
-  b.track({ id: "kumoji", x0: h(256), x1: h(345), y0: h(60), y1: h(100), bounds: [h(240), KUMOJI_X1 + h(2)], keys: [
+  b.track({ id: "kumoji", x0: h(256), x1: KUMOJI_X1, y0: h(60), y1: h(100), bounds: [h(240), h(480)], keys: [
     { x: h(262), zoom: 1, anchor: 0.62, horizon: 0.4, lead: 0.06 },
     { x: KUMOJI_X1, zoom: 1, anchor: 0.62, horizon: 0.4, lead: 0.06 },
   ] });

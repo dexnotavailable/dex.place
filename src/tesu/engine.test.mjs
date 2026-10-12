@@ -321,8 +321,8 @@ test("every wall is a real edge: walking into it from the ground at its foot lea
       const body = { x, y: g.y, w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
       c.move(body, 0, 1);
       for (let i = 0; i < 120; i++) { c.move(body, -side * 3, 0); c.move(body, 0, 2); }
-      // (still on her ground: the ground may slope a little on the way to the wall)
-      if (!body.grounded || Math.abs(body.y - g.y) > 0.5 * H) bad.push(`${wall.reason} at ${(wall.x / H).toFixed(2)} H from the ${side > 0 ? "right" : "left"}: fell to ${(body.y / H).toFixed(1)} H`);
+      // (still on ground, not fallen: the way to the wall may climb, or go down a stair to its landing)
+      if (!body.grounded || body.y - g.y > 2 * H) bad.push(`${wall.reason} at ${(wall.x / H).toFixed(2)} H from the ${side > 0 ? "right" : "left"}: fell to ${(body.y / H).toFixed(1)} H`);
     }
   }
   assert.deepEqual(bad, []);
@@ -415,4 +415,45 @@ test("atmos: the world's entries switch exactly as before, and a blend width mak
     prev = a;
   }
   assert.ok(maxStep <= 12, `gradual along y, across its band's edge (largest step ${maxStep})`);
+});
+
+test("Tsuji's Chain Stair and the East Pavilion's galleries: zigzag up to the top and back down to the street", async () => {
+  const { TSUJI_Y } = await import("./world/sections/shanshui.ts");
+  const { PEAK_Y } = await import("./world/sections/tsuji.ts");
+  const w = buildWorld();
+  const c = new Collision(w.walks, w.walls);
+  // walk one way until stopped by a rail, then the other, until she reaches the height wanted
+  const zigzag = (body, dir, goal, up) => {
+    let stuck = 0;
+    for (let i = 0; i < 20000; i++) {
+      const x = body.x;
+      c.move(body, dir * 3, 0); c.move(body, 0, 2);
+      if (!body.grounded) return `fell at ${(body.x / H).toFixed(1)}, ${(body.y / H).toFixed(1)} H`;
+      if ((up && body.y <= goal + 1) || (!up && body.y >= goal - 1)) return null;
+      if (Math.abs(body.x - x) < 0.01) { if (++stuck > 2) { dir = -dir; stuck = 0; } } else stuck = 0;
+    }
+    return `stuck at ${(body.x / H).toFixed(1)}, ${(body.y / H).toFixed(1)} H`;
+  };
+  // the Chain Stair: hop onto its first step from the street, climb to the Peak, then walk back down
+  const f1 = w.walks.find((k) => k.name === "chain-stair-1");
+  const body = { x: f1.pts[0] + 0.3 * H, y: 0, w: 12, h: 44, vx: 0, vy: 0, grounded: false, dropThrough: 0 };
+  body.y = c.groundBelow(body.x, f1.pts[1] - 0.5 * H, false).y;
+  c.move(body, 0, 1);
+  assert.equal(c.standingOn?.name, "chain-stair-1", "on the first flight (a hop up from the street)");
+  assert.equal(zigzag(body, 1, PEAK_Y, true), null, "up the Chain Stair");
+  for (let i = 0; i < 400 && c.standingOn?.name !== "the-peak"; i++) { c.move(body, -3, 0); c.move(body, 0, 2); }
+  assert.equal(c.standingOn?.name, "the-peak", "out on the Peak");
+  assert.equal(zigzag(body, 1, TSUJI_Y - 0.35 * H, false), null, "and down it again, landing by landing");
+  // the street passes under the first step: walking along Tsuji is not diverted up the needle
+  const street = { x: 364 * H, y: TSUJI_Y, w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
+  c.move(street, 0, 1);
+  for (let i = 0; i < 600 && street.x < 380 * H; i++) { c.move(street, 3, 0); c.move(street, 0, 2); }
+  assert.equal(c.standingOn?.name, "tsuji", "along the street past the needle");
+  // the East Pavilion: from its bridge up the galleries to the kite station, and back down
+  const pav = { x: 455.6 * H - 60, y: 0, w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
+  pav.y = w.walks.find((k) => k.name === "pavilion-1").pts[1];
+  c.move(pav, 0, 1);
+  const top = w.walks.find((k) => k.name === "pavilion-4");
+  assert.equal(zigzag(pav, 1, top.pts[1], true), null, "up the pavilion's stairs");
+  assert.equal(zigzag(pav, -1, w.walks.find((k) => k.name === "pavilion-1").pts[1] - 1, false), null, "and down");
 });
