@@ -11,7 +11,7 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { clamp, fbm1, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
+import { clamp, fbm1, hash, hash1, rng, tone, vnoise1 } from "../../raster.ts";
 import { cached, clump } from "./kit.ts";
 import { bush } from "./rock.ts";
 
@@ -174,14 +174,30 @@ export const bank = definePainter<BankP>("op.bank", {
           t = 0.45 + (below / grassH) * 0.25 + (blade && d >= 0.5 ? -0.12 : 0);
         } else {
           ramp = P.pine;
-          // foliage: masses at two scales, each lit on its upper left (the light falls on the
-          // bumps of the noise field), deeper is darker; never a grid
-          const n0 = vnoise(lx / 26, ly / 22, seed + 9);
-          const nA = vnoise(lx / 7, ly / 6, seed + 10), nB = vnoise((lx + 1.2) / 7, (ly + 1.5) / 6, seed + 10);
-          const lit = nB - nA; // brighter where the field rises toward the upper left
-          t = 0.32 + clamp((below - grassH) / 120, 0, 1) * 0.42 + (0.5 - n0) * 0.35 - lit * 1.4;
-          if (d >= 0.5 && hash(x >> 1, y >> 1, seed + 11) < 0.06) t -= 0.18;
-          t += (fbm1(lx / 70 + ly / 50, seed + 17, 3) - 0.5) * 0.4;
+          // foliage: overlapping leaf clumps (the bank is a dense hedge of shrubs), each lit on
+          // its upper left, a dark hollow where clumps meet; deeper rows smaller and darker
+          const deep = clamp((below - grassH) / 110, 0, 1);
+          const cs = 17;
+          const gy0 = Math.floor(ly / (cs * 0.7));
+          let best = 9, bdx = 0, bdy = 0, bcy = -1e9;
+          for (let jy = gy0 - 2; jy <= gy0 + 1; jy++) {
+            const off = (jy & 1) * 0.5;
+            const gx0 = Math.floor(lx / cs - off);
+            for (let jx = gx0 - 1; jx <= gx0 + 1; jx++) {
+              const ccx = (jx + off + 0.15 + 0.7 * hash(jx, jy, seed + 9)) * cs;
+              const ccy = (jy + 0.15 + 0.7 * hash(jx, jy, seed + 10)) * cs * 0.7;
+              const rr = cs * (0.62 + 0.5 * hash(jx, jy, seed + 11));
+              const dx = lx - ccx, dy = ly - ccy;
+              const q = Math.hypot(dx, dy * 1.15) / rr;
+              // of the clumps covering this point, the lowest (nearest the viewer) is seen
+              if (q < 1 && ccy > bcy) { bcy = ccy; best = q; bdx = dx / rr; bdy = dy / rr; }
+            }
+          }
+          const lit = -0.62 * bdx - 0.78 * bdy;
+          t = 0.36 + deep * 0.36 - lit * 0.26 + Math.min(1, best) * 0.12;
+          if (best > 0.9) t += 0.3;
+          if (d >= 0.5 && best < 0.8 && hash(x >> 1, y, seed + 12) < 0.08) t += lit > 0.2 ? -0.2 : 0.14;
+          t += (fbm1(lx / 90 + ly / 70, seed + 17, 3) - 0.5) * 0.2;
           if (ly > foot - 6) t += 0.25;
         }
         // a wet dark lip where the water laps it

@@ -64,16 +64,35 @@ export function gateRoad(b: WorldBuilder): void {
   // Pilgrims' Leap: a bamboo pole lashed at the plank's end, prayer flags strung back to the rail
   b.sprite({ id: "leap-flags", plane: "play", kind: "op.flags", x: leap1 + h(0.15), y: yL, p: { h: 150, dx: -h(1.7), dy: 92, n: 8 }, frames: 4, fps: 6 });
 
-  // three karst pillars carry the band, standing on Shiraito's terraces far below; their feet
-  // vanish into the valley's mist
-  for (const [x0, x1] of [[h(117.8), h(122.2)], [h(133.8), h(138.2)], [h(149.8), h(154.2)]] as const) {
+  // three karst pillars carry the band, standing on Shiraito's terraces far below: towers, not
+  // columns: each swells and pinches as it goes down, leans a little, has a shoulder or a
+  // second mass fused to its flank, and its foot vanishes into the valley's mist
+  ([[h(117.8), h(122.2), 1], [h(133.8), h(138.2), 2], [h(149.8), h(154.2), 3]] as const).forEach(([x0, x1, k]) => {
     const topY = yOn(ROAD, (x0 + x1) / 2) + h(2.0);
     const footY = yOn(DIAG, (x0 + x1) / 2) + h(1.2);
-    const w = x1 - x0;
-    const top = [x0 - h(1.2), topY, x0 + w * 0.3, topY - h(0.4), x1 - w * 0.3, topY - h(0.3), x1 + h(1.2), topY];
-    const bottom = [x1 + h(0.5), topY + h(3), x1 + h(0.1), topY + h(8), x1 + h(0.3), footY - h(6), x1 + h(0.9), footY, x0 - h(1.1), footY, x0 - h(0.5), footY - h(4), x0 - h(0.2), topY + h(9), x0 - h(0.7), topY + h(3)];
-    b.piece("play", "op.rock", 0, 0, { top, bottom, cap: "bare", rough: 10, teeth: 0.3, veg: 0.5, shade: 0.25, fadeY: h(72), fadeH: h(9) }, { z: -1 });
-  }
+    const cx = (x0 + x1) / 2, half = (x1 - x0) / 2;
+    const lean = (k % 2 ? 1 : -1) * h(0.35);
+    const n = 18;
+    const widthAt = (u: number, side: number): number => {
+      // a waist a third of the way down, a swelling below it, a flared foot; each side its own
+      const w = 1 - 0.22 * Math.exp(-(((u - 0.33) / 0.14) ** 2)) + 0.16 * Math.exp(-(((u - 0.62 - 0.05 * side) / 0.12) ** 2)) + 0.35 * Math.max(0, u - 0.8) / 0.2;
+      return half * w * (1 + 0.07 * Math.sin(u * 17 + k * 2.1 + side * 1.7) + 0.05 * Math.sin(u * 41 + k));
+    };
+    // a fused second mass on one flank in the middle third (the second pillar right, the third left)
+    const shoulder = (u: number): number => (k === 2 ? 1 : k === 3 ? -1 : 0) * h(0.9) * Math.max(0, 1 - Math.abs(u - 0.5) / 0.22);
+    const at = (u: number): [number, number, number] => {
+      const y = topY + h(1.2) + (footY - topY - h(1.2)) * u;
+      const c = cx + lean * Math.sin(u * Math.PI * 0.9);
+      return [c + widthAt(u, 1) + Math.max(0, shoulder(u)), c - widthAt(u, -1) + Math.min(0, shoulder(u)), y];
+    };
+    const top = [x0 - h(1.2), topY, x0 + half * 0.6, topY - h(0.4), x1 - half * 0.6, topY - h(0.3), x1 + h(1.2), topY];
+    // the outline below the top: down the right side, back up the left
+    const outlineBottom: number[] = [x1 + h(0.6), topY + h(0.7)];
+    for (let i = 0; i <= n; i++) { const [r, , y] = at(i / n); outlineBottom.push(r, y); }
+    for (let i = n; i >= 0; i--) { const [, l, y] = at(i / n); outlineBottom.push(l, y); }
+    outlineBottom.push(x0 - h(0.6), topY + h(0.7));
+    b.piece("play", "op.rock", 0, 0, { top, bottom: outlineBottom, cap: "bare", rough: 16, teeth: 0.3, veg: 0.6, shade: 0.25, fadeY: h(72), fadeH: h(9) }, { z: -1 });
+  });
 
   // Shiraito's diagonal, laid rough for now (a band on a background cliff): the ground the
   // leap and the hall's back gallery drop you onto. Its art comes with Shiraito.

@@ -24,8 +24,8 @@ export interface JettyP {
   posts?: [number, number][];
 }
 
-const DECK = 6;
-const STRINGER = 10;
+const DECK = 7;
+const STRINGER = 14;
 
 /** Weathered timber: a tone t (0 lit .. 1 dark), bleached (stone ramp) where lit and dry. */
 export function wood(x: number, y: number, t: number, bleach = true): number {
@@ -35,10 +35,18 @@ export function wood(x: number, y: number, t: number, bleach = true): number {
 
 export function pileXs(p: JettyP, seed: number): number[] {
   return cached(`piles|${seed}|${p.w}|${p.every}`, () => {
-    const every = p.every ?? 140;
-    const n = Math.max(1, Math.round(p.w / every));
+    // irregular spacing, and a pair of piles where two stringer beams meet (every ~480 px)
+    const every = p.every ?? 104;
     const out: number[] = [];
-    for (let i = 0; i <= n; i++) out.push(clamp((i / n) * p.w + (i > 0 && i < n ? (hash1(i, seed + 3) - 0.5) * 18 : 0), 6, p.w - 6));
+    let x = 6;
+    let i = 0;
+    while (x < p.w - 6) {
+      out.push(x);
+      if (Math.floor((x + 40) / 480) !== Math.floor(x / 480) && hash1(i, seed + 4) < 0.8) out.push(Math.min(p.w - 6, x + 15));
+      x += every * (0.7 + 0.6 * hash1(i, seed + 3));
+      i++;
+    }
+    out.push(p.w - 6);
     return out;
   });
 }
@@ -108,16 +116,7 @@ export const jetty = definePainter<JettyP>("op.jetty", {
     const b = c.buf, d = c.d, seed = c.seed;
     const piles = pileXs(p, seed);
     const posts = new Map(p.posts ?? []);
-    // braces first (behind the piles): short knee braces from each pile up to the stringer, and
-    // a low waling across the odd bay just above the water
-    for (let i = 0; i < piles.length; i++) {
-      const x = piles[i]!;
-      if (!b.touches(Math.floor(c.X(x - 40)), Math.floor(c.Y(0)), Math.ceil(c.X(x + 40)), Math.ceil(c.Y(p.water + 4)))) continue;
-      const yTop = DECK + STRINGER - 1, yLow = DECK + STRINGER + 18 + 4 * hash1(i, seed + 4);
-      if (i > 0) beamLine(c, x - 4, yLow, x - 24, yTop, 5, seed + i);
-      if (i < piles.length - 1) beamLine(c, x + 4, yLow, x + 24, yTop, 5, seed + i + 30);
-      if (i < piles.length - 1 && hash1(i, seed + 7) < 0.45) beamLine(c, x - 2, p.water - 11, piles[i + 1]! + 2, p.water - 11, 5, seed + i + 90);
-    }
+    // no braces and no rails: a low deck straight on its piles (it reads as a jetty, not a bridge)
     // the piles (and the mooring posts that stand past the deck)
     piles.forEach((x, i) => {
       const up = posts.get(i) ?? 0;
@@ -275,5 +274,32 @@ export const plank = definePainter<PlankP>("op.plank", {
       }
     }
     for (let s = 0; s < 10; s += 0.5 / d) b.set(Math.round(c.X(p.w * 0.2 + 1 + s * 0.2)), Math.round(c.Y(th + 3 + s)), P.earth[2]!);
+  },
+});
+
+export interface RopeP {
+  /** The far end, px from the anchor; sag as a share of the length (default 0.12). */
+  dx: number;
+  dy: number;
+  sag?: number;
+}
+
+/** A mooring line: a slack rope between two points, lit along its top, fibres at the close band. */
+export const rope = definePainter<RopeP>("op.rope", {
+  bounds(p) {
+    const sag = Math.hypot(p.dx, p.dy) * (p.sag ?? 0.12);
+    return [Math.min(0, p.dx) - 4, Math.min(0, p.dy) - 4, Math.max(0, p.dx) + 4, Math.max(0, p.dy) + sag + 4];
+  },
+  paint(c, p) {
+    const len = Math.hypot(p.dx, p.dy);
+    const sag = len * (p.sag ?? 0.12);
+    const n = Math.max(8, Math.ceil(len * c.d * 1.5));
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const x = p.dx * t, y = p.dy * t + Math.sin(t * Math.PI) * sag;
+      const X = Math.round(c.X(x)), Y = Math.round(c.Y(y));
+      c.buf.set(X, Y, P.earth[c.d >= 1.5 && (X + Y) % 3 === 0 ? 1 : 2]!);
+      if (c.d >= 1) c.buf.set(X, Y + 1, P.earth[4]!);
+    }
   },
 });

@@ -14,8 +14,9 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { bayer4, clamp, fbm1, hash, hash1, rng, tone, vnoise1 } from "../../raster.ts";
+import { Spans, bayer4, clamp, fbm1, hash, hash1, rng, tone, vnoise1 } from "../../raster.ts";
 import { boxOf, cached, clump, roughen, spansFor, toAbs, yAt } from "./kit.ts";
+import { face, nextLedge } from "./face.ts";
 
 export interface RockP {
   /** Top polyline (the walk line where she stands), level-1 local px, x increasing. Kept exact. */
@@ -65,67 +66,6 @@ interface Plant {
   seed: number;
 }
 
-const COL = 22;
-const BED = 150;
-
-/** A 1D partition with irregular cells: the cell index and position in it for coordinate u. */
-function cell(u: number, w: number, jitter: number, seed: number, row: number): { i: number; t: number; w: number } {
-  const i0 = Math.floor(u / w);
-  const edge = (i: number): number => (i + (hash(i, row, seed) - 0.5) * jitter) * w;
-  let i = i0;
-  if (u < edge(i0)) i = i0 - 1;
-  else if (u >= edge(i0 + 1)) i = i0 + 1;
-  const a = edge(i), b2 = edge(i + 1);
-  return { i, t: (u - a) / Math.max(1e-6, b2 - a), w: b2 - a };
-}
-
-interface Seg {
-  /** Buttress index, position across it (0 left .. 1 right) and its width. */
-  i: number; t: number; w: number;
-  /** Ledge segment within the buttress, depth below its ledge, segment height. */
-  j: number; s: number; S: number;
-  /** How far this segment stands out (0..1). */
-  out: number;
-}
-
-/**
- * The face is a row of buttresses (big vertical masses between clefts) that lean a little; each
- * buttress breaks at its own ledges (so neighbours step at different heights, like organ pipes),
- * and every segment between two ledges stands out by its own amount.
- */
-function segAt(lx: number, ly: number, p: RockP, seed: number, di = 0): Seg {
-  const col = p.col ?? COL, bed = p.bed ?? BED;
-  const lean = 0.06 * (hash1(3, seed + 53) - 0.5);
-  const ub = lx + ly * lean + (fbm1(ly / 420, seed + 55, 2) - 0.5) * 18 + (fbm1(ly / 160, seed + 54, 2) - 0.5) * 16;
-  const Bc = cell(ub, col * 4.2, 0.95, seed + 59, 0);
-  const i = Bc.i + di;
-  let t = Bc.t, w = Bc.w;
-  if (di !== 0) { t = di < 0 ? 1 : 0; w = col * 4.2; }
-  const sp = bed * (0.55 + 0.9 * hash1(i, seed + 58));
-  const y = ly + (fbm1(lx / 160, seed + 41 + i, 2) - 0.5) * sp * 0.3 + (vnoise1(lx / 37, seed + 40 + i) - 0.5) * 5 + (hash1(i, seed + 56) - 0.5) * 0.18 * lx + hash1(i, seed + 57) * sp;
-  const L = cell(y, sp, 0.8, seed + 43, i);
-  return { i, t, w, j: L.i, s: L.t * L.w, S: L.w, out: hash(i, L.i, seed + 60) };
-}
-
-interface Face extends Seg {
-  /** The left neighbour stands out further: its shadow falls on this one's left side. */
-  shadowL: number;
-  /** The segment above stands out further (an overhang) by this much. */
-  overhang: number;
-  /** Column inside the segment. */
-  ci: number; ct: number; cw: number;
-}
-
-function faceAt(lx: number, ly: number, p: RockP, seed: number): Face {
-  const col = p.col ?? COL;
-  const S = segAt(lx, ly, p, seed);
-  const L = segAt(lx - S.t * S.w - 1, ly, p, seed);
-  const U = segAt(lx, ly - S.s - 1, p, seed);
-  const uc = S.t * S.w + (hash(S.i, S.j, seed + 61) - 0.5) * 9 + S.s * (hash(S.i, S.j, seed + 69) - 0.5) * 0.14;
-  const Cc = cell(uc, col * (0.6 + 0.7 * hash(S.i, S.j, seed + 62)), 0.7, seed + 63, S.i * 31 + S.j);
-  return { ...S, shadowL: Math.max(0, L.out - S.out), overhang: U.i === S.i ? U.out - S.out : 0, ci: Cc.i, ct: Cc.t, cw: Cc.w };
-}
-
 function build(p: RockP, seed: number): Built {
   const rough = p.rough ?? 10;
   const top = p.top;
@@ -138,6 +78,7 @@ function build(p: RockP, seed: number): Built {
   const box = boxOf(outline);
   const veg = p.veg ?? 0.6;
   const plants: Plant[] = [];
+  const inOutline = new Spans(outline, Math.floor(box[1]) - 2, Math.ceil(box[3]) + 2);
   if (veg > 0) {
     const r = rng(seed + 77);
     const x0 = top[0]!, x1 = top[top.length - 2]!;
@@ -151,20 +92,22 @@ function build(p: RockP, seed: number): Built {
       if (k < 0.34 * veg) plants.push({ kind: "bush", x, y: y + capH * 0.5, r: 5 + r() * 11 * rich, seed: Math.floor(r() * 1e6) });
       else if (k < 0.6) plants.push({ kind: "strand", x, y: y + capH * 0.6, r: 6 + r() * 34 * rich * rich, seed: Math.floor(r() * 1e6) });
     }
-    // ledges: where a segment stands out past the one above it, its top holds soil; plant there
+    // ledges: where the band below a bedding plane stands out, soil collects; plant there
     for (let x = box[0] + 10; x < box[2] - 10; x += 6 + r() * 12) {
       const rich = vnoise1(x / 130, seed + 83);
       if (rich < 0.5 - veg * 0.2) continue;
       const ty = yAt(top, x);
       let y = ty + 20;
       for (let n = 0; n < 30 && y < box[3]; n++) {
-        const S = segAt(x, y, p, seed);
-        const ledge = y - S.s + S.S;
+        const L = nextLedge(x, y, p, seed);
+        if (!L) break;
+        const ledge = L.y;
         y = ledge + 2;
+        if (ledge > box[3] - 6) break;
+        // only on the face itself (not on a ledge line that runs out past the outline)
+        if (!inOutline.inside(Math.floor(x), Math.floor(ledge + 3)) || !inOutline.inside(Math.floor(x), Math.floor(ledge + 12))) continue;
         if (ledge < ty + 18) continue;
         if (p.fadeY !== undefined && ledge > p.fadeY + (p.fadeH ?? 80) * 0.2) break;
-        const below = segAt(x, ledge + 1, p, seed);
-        if (below.out <= S.out + 0.05) continue;
         if (r() > veg * 1.1 * rich) continue;
         const k = r();
         if (k < 0.12 && rich > 0.65) plants.push({ kind: "pine", x, y: ledge, r: 22 + r() * 26, seed: Math.floor(r() * 1e6) });
@@ -176,9 +119,10 @@ function build(p: RockP, seed: number): Built {
   for (const fd of p.forest ?? []) {
     const r = rng(seed + 131 + Math.round(fd));
     for (let x = top[0]! + 20; x < top[top.length - 2]! - 20; x += 5 + r() * 9) {
-      const rich = vnoise1(x / 200, seed + 133 + Math.round(fd));
-      if (rich < 0.3) continue;
-      const fy = fd + (fbm1(x / 240, seed + 93, 2) - 0.5) * 40;
+      // patches of forest on a ledge that wanders up and down the face, never a straight band
+      const rich = vnoise1(x / 160, seed + 133 + Math.round(fd));
+      if (rich < 0.45) continue;
+      const fy = fd + (fbm1(x / 260, seed + 93 + Math.round(fd), 3) - 0.5) * 150 + (vnoise1(x / 60, seed + 94) - 0.5) * 30;
       plants.push({ kind: "bush", x, y: yAt(top, x) + fy, r: (7 + r() * 14) * (0.6 + rich * 0.6), seed: Math.floor(r() * 1e6) });
     }
   }
@@ -187,88 +131,6 @@ function build(p: RockP, seed: number): Built {
 
 function builtFor(p: RockP, seed: number): Built {
   return cached(`rock|${seed}|${JSON.stringify(p).length}|${p.forest?.length}|${p.top.length}|${p.top[0]}|${p.top[1]}|${p.bottom.length}|${p.bottom[0]}|${p.rough}|${p.veg}`, () => build(p, seed));
-}
-
-/** What the face shows at a point: rock (with its tone), moss, or a warm sunlit flank. */
-let faceMat: "rock" | "moss" | "warm" = "rock";
-
-const showB0 = (F: Seg, d: number): boolean => F.w * d > 14;
-
-/** The face's tone at a level-1 point (0 light .. 1 dark); sets faceMat. */
-function faceTone(lx: number, ly: number, depth: number, p: RockP, seed: number, d: number): number {
-  faceMat = "rock";
-  const F = faceAt(lx, ly, p, seed);
-  const px = 1 / Math.max(d, 0.125);
-  const xb = F.t * F.w, xc = F.ct * F.cw;
-  // light falls off below the lip; recessed segments sit in shade; big bays and prows across
-  // the whole mass give the wide frames something to read
-  const macro = fbm1(lx / 700 + 3.1, seed + 90, 3);
-  const bay = clamp((0.42 - macro) * 3, 0, 1), prow = clamp((macro - 0.6) * 3, 0, 1);
-  let t = 0.4 + 0.22 * (1 - Math.exp(-depth / 300)) + (1 - F.out) * 0.14 + (p.shade ?? 0) * 0.3 + bay * 0.16 - prow * 0.1;
-  if (p.giant) {
-    // giant buttresses: a lit flank, a shaded flank, a deep gully between them
-    const G = cell(lx + (fbm1(ly / 500, seed + 91, 2) - 0.5) * p.giant * 0.25, p.giant, 0.6, seed + 92, 0);
-    const gx = G.t * G.w;
-    if (gx < G.w * 0.035 || G.w - gx < G.w * 0.02) t += 0.42;
-    else if (G.t < 0.2) t -= 0.12;
-    else if (G.t > 0.72) t += 0.2 * ((G.t - 0.72) / 0.28);
-    else if (G.t > 0.035 && gx < G.w * 0.08) t += 0.2;
-  }
-  for (const fd of p.forest ?? []) {
-    // the shadow a forested ledge throws on the face below it
-    const fy = fd + (fbm1(lx / 240, seed + 93, 2) - 0.5) * 40;
-    if (depth > fy && depth < fy + 30) t += 0.28 * (1 - (depth - fy) / 30);
-  }
-  // the buttress: a lit left flank, a body, a right flank turning into shade
-  const litB = Math.max(px * 2, F.w * (0.1 + 0.1 * F.out));
-  if (xb < litB && showB0(F, d)) {
-    t -= 0.24;
-    if (F.out > 0.45 && depth < 400) faceMat = "warm";
-  } else if (F.t > 0.6) t += 0.26 * ((F.t - 0.6) / 0.4) ** 1.3;
-  // the top of a segment that stands out is rounded by weather: its corners show the recess
-  const R = Math.min(F.w * 0.22, 5 + 8 * hash(F.i, F.j, seed + 66));
-  if (F.overhang < -0.3 && F.s < R) {
-    const cx = Math.min(xb, F.w - xb);
-    if (cx < R) {
-      const q = (R - cx) / R, v = (R - F.s) / R;
-      if (q * q + v * v > 1) return t + 0.36;
-    }
-    // moss and soil gather on the rounded top, in clumps with a ragged edge and the odd drip
-    const mx = Math.floor(lx / 4);
-    const patch = vnoise1(lx / 26, seed + 68 + F.j) * (0.55 + 0.6 * (p.veg ?? 0.6));
-    const mh = (patch - 0.38) * 14 + (hash1(mx, seed + 67 + F.j) - 0.5) * 3 + (hash1(Math.floor(lx / 2), seed + 70) < 0.06 ? 6 : 0);
-    if (F.s < mh) {
-      faceMat = "moss";
-      return 0.28 + (F.s / Math.max(1, mh)) * 0.4;
-    }
-  }
-  // a cleft between buttresses, and the shadow a more prominent neighbour throws to its right
-  // (at the wide levels only the bigger buttresses keep their clefts; columns drop out)
-  const showB = F.w * d > 14;
-  if (showB && (xb < px * 1.2 || F.w - xb < px * 1.2)) t += 0.5;
-  else if (showB && F.shadowL > 0.12 && xb < F.shadowL * 30 + px) t += 0.32;
-  else if (!showB) t += (F.out - 0.5) * 0.08;
-  // columns: a lit edge and a crevice on their right, broken where columns have fused
-  if (d >= 0.5) {
-    const fused = hash(F.ci, F.i * 7 + F.j, seed + 71) < 0.3;
-    if (!fused && F.cw - xc < px * 0.9) t += 0.22;
-    else if (xc < px * 1.1 && xb > litB) t -= 0.08;
-  }
-  // the ledge on top of this segment: a cast shadow under a real overhang, a lit lip where the
-  // segment stands well out past the one above, otherwise only a faint bedding line
-  if (F.overhang > 0.25) {
-    const sh = 2 + 12 * F.overhang;
-    if (F.s < sh) t += 0.36 * (1 - F.s / (sh + 1)) + 0.12;
-  } else if (F.overhang < -0.15 && F.s < px * 1.3 && d >= 0.25) t -= 0.26;
-  else if (F.s < px * 0.9 && d >= 0.5 && hash(Math.floor(lx / 9), F.j, seed + 77) < 0.7) t += 0.12;
-  // long water stains down from some ledges
-  if (d >= 0.25) {
-    const sx = Math.floor((lx - F.j * 7) / 4);
-    if (hash(sx, F.j * 13 + F.i, seed + 75) < 0.09 && F.s < F.S * (0.3 + 0.7 * hash(sx, F.j, seed + 76))) t += 0.1 + 0.08 * (1 - F.s / F.S);
-  }
-  t += (fbm1(lx / 120 + ly / 200, seed + 81, 3) - 0.5) * 0.14;
-  if (d >= 1 && hash(Math.floor(lx), Math.floor(ly), seed + 85) < 0.012) t += 0.2;
-  return t;
 }
 
 export const rock = definePainter<RockP>("op.rock", {
@@ -346,7 +208,8 @@ export function paintRock(c: PaintCtx, p: RockP): void {
               continue;
             }
           }
-          let t = faceTone(lx, ly, depth, p, seed, d);
+          const F = face(lx, ly, depth, p, seed, d);
+          let t = F.t;
           // edges: the shadow side and the underside go dark, the sunward side catches light
           if (!rightIn || !belowIn) t = Math.max(t + 0.28, 0.78);
           else if (!leftIn || (!above && !inTop)) t -= 0.16;
@@ -354,7 +217,7 @@ export function paintRock(c: PaintCtx, p: RockP): void {
           // a wet band where the rock meets still water
           if (p.water !== undefined && ly > p.water - 7 && ly < p.water + 1) t += 0.22;
           if (fog > 0) t = t * (1 - fog * 0.7);
-          const mat = faceMat;
+          const mat = F.mat;
           if (mat === "moss" && rightIn && belowIn) b.set(x, y, tone(P.moss, clamp(t + 0.1, 0, 1), x, y, 0.35));
           else if (mat === "warm" && t < 0.42 && rightIn && belowIn && leftIn) b.set(x, y, tone(P.stone, clamp(t * 0.9, 0, 1), x, y, 0.35));
           else b.set(x, y, tone(K, clamp(t, 0, 1), x, y, 0.35));
