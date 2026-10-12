@@ -73,3 +73,42 @@ export function resumePlace(d: TesuSave, now: number, catchX: number, reload: bo
   if (!reload || !p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return null;
   return now - p.at <= countdownMs(p, catchX) ? p : null;
 }
+
+// --- Hanko's ledger slip: progress as a short text code, to carry to another device -------
+
+function b64url(s: string): string {
+  return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function unb64url(s: string): string {
+  const pad = s.length % 4 ? "=".repeat(4 - (s.length % 4)) : "";
+  return decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/") + pad)));
+}
+
+function sum(s: string): string {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return (h >>> 0).toString(36).slice(-4).padStart(4, "0");
+}
+
+/** The slip for a save (flags only: a slip carries progress, not where she stands). */
+export function slipFor(d: TesuSave): string {
+  const body = b64url(JSON.stringify({ f: d.flags }));
+  return `TESU1-${body}-${sum(body)}`;
+}
+
+/** Reads a slip into a save, or returns why it can't be read. */
+export function readSlipInto(d: TesuSave, code: string): string | null {
+  const m = /^TESU1-([A-Za-z0-9_-]+)-([0-9a-z]{4})$/.exec(code.trim());
+  if (!m) return "That isn't one of Hanko's slips.";
+  if (sum(m[1]!) !== m[2]) return "The slip is smudged: a letter is wrong somewhere.";
+  try {
+    const v = JSON.parse(unb64url(m[1]!)) as { f?: unknown };
+    if (!Array.isArray(v.f) || !v.f.every((x) => typeof x === "string")) return "The slip is blank.";
+    d.flags = [...new Set([...d.flags, ...(v.f as string[])])];
+    writeSave(d);
+    return null;
+  } catch {
+    return "The slip is smudged.";
+  }
+}

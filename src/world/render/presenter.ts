@@ -132,7 +132,13 @@ export class Presenter {
    * width instead (black top and bottom only), and one wider than the widest frame keeps its
    * pillars. Whole-number scales only when exact; otherwise sharp-bilinear at the exact fit.
    */
-  layout(cw: number, ch: number): void {
+  layout(cw: number, ch: number, whole?: number): void {
+    if (whole) {
+      // whole-number presentation: the frame was sized for this scale
+      const w = FRAME.w * whole, h = FRAME.h * whole;
+      this.rect = { x: Math.floor((cw - w) / 2), y: Math.floor((ch - h) / 2), scale: whole, sharp: false, w, h };
+      return;
+    }
     const left = Math.min(this.leftInset, Math.max(0, cw - 1));
     const right = Math.min(this.rightInset, Math.max(0, cw - left - 1));
     const availW = cw - left - right;

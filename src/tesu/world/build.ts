@@ -2,7 +2,7 @@
 // through one builder, which checks them and fills in each piece's bounds.
 
 import { painter } from "../art/painter.ts";
-import { PLANES, type MistBank, type SpriteDef, type Atmos, type CamTrack, type Piece, type Place, type PlaneId, type Spawn, type Surface, type Walk, type Wall, type Water, type Void, type WorldDef } from "./types.ts";
+import { PLANES, type Usable, type MistBank, type SpriteDef, type Atmos, type CamTrack, type Piece, type Place, type PlaneId, type Spawn, type Surface, type Walk, type Wall, type Water, type Void, type WorldDef } from "./types.ts";
 
 export interface PieceOpts {
   z?: number;
@@ -16,7 +16,7 @@ export class WorldBuilder {
   private nextSeed = 1;
 
   constructor(w: number, h: number) {
-    this.def = { w, h, pieces: [], sprites: [], walks: [], walls: [], waters: [], mists: [], voids: [], tracks: [], atmos: [], spawns: [], places: [] };
+    this.def = { w, h, pieces: [], sprites: [], walks: [], walls: [], waters: [], mists: [], voids: [], tracks: [], atmos: [], spawns: [], places: [], usables: [] };
   }
 
   /** A painted piece. x, y: its anchor in 3D world px; p: painter params in its plane's level-1 px. */
@@ -38,14 +38,15 @@ export class WorldBuilder {
   }
 
   /** Walkable ground through world px points [x, y, x, y, ...]. */
-  walk(pts: number[], o: { surface?: Surface; oneWay?: boolean; depth?: number; name?: string } = {}): Walk {
+  walk(pts: number[], o: { surface?: Surface; oneWay?: boolean; depth?: number; name?: string; stair?: boolean } = {}): Walk {
     const w: Walk = {
       id: this.nextWalk++,
       pts: pts.map((v) => Math.round(v * 100) / 100),
       surface: o.surface ?? "stone",
-      oneWay: o.oneWay ?? false,
+      oneWay: o.oneWay ?? !!o.stair,
       depth: o.depth ?? Infinity,
       name: o.name,
+      stair: o.stair,
     };
     this.def.walks.push(w);
     return w;
@@ -81,6 +82,11 @@ export class WorldBuilder {
   spawn(s: Spawn): void {
     if (this.def.spawns.some((o) => o.id === s.id)) throw new Error(`spawn ${s.id} defined twice`);
     this.def.spawns.push(s);
+  }
+
+  usable(u: Usable): void {
+    if (this.def.usables.some((o) => o.id === u.id)) throw new Error(`usable ${u.id} defined twice`);
+    this.def.usables.push(u);
   }
 
   place(p: Place): void {

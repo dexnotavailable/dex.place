@@ -65,7 +65,14 @@ export class WorldRenderer {
   mode: "near" | "far" = "near";
   /** The frame's size; its width follows the window's shape (config.ts FRAME_W), see layout(). */
   iw: number = FRAME.w;
-  readonly ih = FRAME.h;
+  ih: number = FRAME.h;
+  /**
+   * Whole-number presentation (Tesu): the frame's size follows the window so it is always
+   * shown at an integer scale of at least 1x, with its height kept as close as that allows
+   * to FRAME_TARGET_H. The old world keeps its fixed 864-tall frame (false).
+   */
+  integerFrames = false;
+  frameTargetH = FRAME.h;
   /** Called after the frame's width changes (targets already rebuilt), so others can follow. */
   onFrame: (() => void) | null = null;
   camX = 0;
@@ -174,8 +181,38 @@ export class WorldRenderer {
    */
   layout(): void {
     const cw = this.canvas.width, ch = this.canvas.height;
+    if (this.integerFrames && cw > 0 && ch > 0) {
+      // the whole-number scale that brings the frame's height nearest the target
+      let k = 1, best = Infinity;
+      for (let i = 1; i <= 8; i++) {
+        const d = Math.abs(ch / i - this.frameTargetH);
+        if (d < best) { best = d; k = i; }
+      }
+      this.setFrameSize(Math.max(1, Math.floor(cw / k)), Math.max(1, Math.floor(ch / k)));
+      this.presenter.layout(cw, ch, k);
+      return;
+    }
     if (cw > 0 && ch > 0) this.setFrameWidth(frameWidthFor(cw / ch));
     this.presenter.layout(cw, ch);
+  }
+
+  /** Rebuilds the targets at a new frame size (both dimensions; whole-number presentation). */
+  setFrameSize(w: number, h: number): void {
+    if (w === this.iw && h === this.ih) return;
+    this.flush();
+    const gl = this.gl;
+    for (const t of [this.main, this.over]) {
+      gl.deleteFramebuffer(t.fbo);
+      gl.deleteTexture(t.color.tex);
+    }
+    FRAME.w = w;
+    FRAME.h = h;
+    this.iw = w;
+    this.ih = h;
+    this.main = makeTarget(gl, w, h, true);
+    this.over = makeTarget(gl, w, h, true);
+    this.current = this.main;
+    this.onFrame?.();
   }
 
   /** Rebuilds the world and close-up targets at a new frame width (a window-shape change, never per frame). */

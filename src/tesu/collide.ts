@@ -118,6 +118,21 @@ export class Collision {
     return !!b.grounded && !!this.standingOn && this.standingOn.oneWay;
   }
 
+  /** Holding down: walk past the foot of a stair instead of up it (set by the game each tick). */
+  holdDown = false;
+
+  /** At the foot of a stair, moving toward its rise? */
+  private atStairFoot(w: Walk, x: number, dir: number): boolean {
+    if (this.holdDown) return false;
+    const p = w.pts;
+    const n = p.length;
+    // the foot is the lower end; rising toward the other end
+    const leftLow = p[1]! > p[n - 1]!;
+    const footX = leftLow ? p[0]! : p[n - 2]!;
+    const towardRise = leftLow ? dir > 0 : dir < 0;
+    return towardRise && Math.abs(x - footX) < 0.35 * H;
+  }
+
   /** Would a body with feet at y, at x, overlap solid mass or a wall? */
   private massBlocks(x: number, top: number, bottom: number): boolean {
     for (const w of this.walksAt(x)) {
@@ -164,6 +179,7 @@ export class Collision {
       if (wasGrounded) {
         const rise = Math.max(this.stepUp, PHYSICS.maxSlope * Math.abs(nx - b.x));
         let best: Walk | null = null, by = 0;
+        let stay: Walk | null = null, sy = 0, foot: Walk | null = null, fy = 0;
         for (const w of this.walksAt(nx)) {
           if (this.off.has(w.id)) continue;
           if (w.oneWay && b.dropThrough > 0) continue;
@@ -172,10 +188,18 @@ export class Collision {
           if (wy < b.y - rise - EPS || wy > b.y + this.stepDown + EPS) continue;
           // one-way ground is only stepped onto from at or above it
           if (w.oneWay && wy < b.y - this.stepUp - EPS) continue;
-          // stay on the same walk while it continues; otherwise the highest ground
-          if (walk && best === walk) continue;
-          if ((walk && w === walk) || !best || wy < by) { best = w; by = wy; }
+          if (w.stair && w !== walk && wy < b.y - EPS) {
+            // a stair is walked onto from its foot, heading up it (unless she holds down to
+            // pass under it); from anywhere else under it she walks on underneath
+            if (this.atStairFoot(w, nx, dir)) { foot = w; fy = wy; }
+            continue;
+          }
+          if (walk && w === walk) { stay = w; sy = wy; }
+          if (!best || wy < by) { best = w; by = wy; }
         }
+        // the foot of a stair wins, then staying on the same ground, then the highest
+        if (foot) { best = foot; by = fy; }
+        else if (stay) { best = stay; by = sy; }
         if (best) {
           // stepping onto best: the body must fit (no solid mass above the new feet)
           if (this.massBlocks(nx, by - b.h, by)) {

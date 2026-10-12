@@ -79,7 +79,7 @@ export function gateRoad(b: WorldBuilder): void {
   // its top end meets the palace cliff (the Prow Stair comes later); its foot is open air
   b.wall({ x: d1, y0: h(40), y1: yOn(DIAG, d1) + h(0.1), reason: "cliff" });
   // below the diagonal, until the harbour exists, is a fall into mist: the talisman tugs her back
-  b.void({ x0: h(60), x1: h(200), y: h(136) });
+  b.void({ x0: h(60), x1: h(200), y: h(136), y1: h(240) });
 
   // behind the band: Shiraito's great wall, its falls pouring off the road's lip (P3)
   const r3 = 0.62;

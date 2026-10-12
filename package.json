@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@fontsource-variable/space-grotesk": "5.3.0",
+    "@fontsource/dotgothic16": "5.3.1",
     "@fontsource/jersey-15": "5.3.0",
     "@fontsource/silkscreen": "5.3.0",
     "lean-qr": "2.7.4"

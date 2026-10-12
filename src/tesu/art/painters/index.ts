@@ -6,3 +6,5 @@ import "./timber.ts";
 import "./palace.ts";
 import "./walker.ts";
 import "./gates.ts";
+import "./hall.ts";
+import "./folk.ts";

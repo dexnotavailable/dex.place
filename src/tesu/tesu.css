@@ -21,3 +21,67 @@ html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
 #touch .stick-base { position: absolute; width: 96px; height: 96px; margin: -48px 0 0 -48px; border-radius: 50%; border: 2px solid rgba(27, 25, 34, 0.35); background: rgba(255, 250, 240, 0.16); opacity: 0; transition: opacity 0.12s; }
 #touch .stick-base.on { opacity: 1; }
 #touch .stick-knob { position: absolute; left: 50%; top: 50%; width: 42px; height: 42px; border-radius: 50%; background: rgba(255, 250, 240, 0.55); border: 2px solid rgba(27, 25, 34, 0.45); transform: translate(-50%, -50%); }
+
+/* ---- in-world panels: world objects with real text underneath ---- */
+#panel-layer { position: absolute; inset: 0; display: none; place-items: center; background: rgba(12, 10, 16, 0.42); z-index: 5; }
+#panel-layer.on { display: grid; }
+.panel {
+  --ink: #1b1922; --paper: #fffaf0; --paper2: #f6ecd8; --red: #c9304f; --gold: #f3bd41; --lacquer: #27242d;
+  position: relative; width: min(680px, 92vw); max-height: min(82vh, 760px); display: flex; flex-direction: column;
+  font: 16px/1.5 "DotGothic16", ui-monospace, monospace; color: var(--ink); letter-spacing: 0.01em;
+  background: var(--paper); image-rendering: pixelated;
+  box-shadow: 0 0 0 3px var(--ink), 0 0 0 6px var(--gold), 0 0 0 9px var(--ink), 8px 10px 0 9px rgba(0, 0, 0, 0.35);
+}
+.panel.wide { width: min(1100px, 94vw); }
+.panel header { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--lacquer); color: #fff4f1; }
+.panel header h2 { flex: 1; margin: 0; font: inherit; font-size: 20px; letter-spacing: 0.04em; }
+.panel header .close { width: 34px; height: 34px; border: 0; background: var(--red); color: #fff4f1; font: inherit; font-size: 22px; line-height: 1; cursor: pointer; box-shadow: 0 0 0 2px var(--ink); }
+.panel .body { padding: 14px 18px 18px; overflow: auto; overscroll-behavior: contain; }
+.panel .lede { margin: 0 0 12px; font-size: 17px; }
+.panel h3 { margin: 10px 0 4px; font: inherit; font-size: 17px; color: var(--red); }
+.panel p { margin: 4px 0; }
+.panel .foot { margin-top: 14px; }
+.panel a { color: #1e6cab; }
+.panel .btn { display: inline-block; margin: 6px 6px 0 0; padding: 4px 12px; background: var(--red); color: #fff4f1; text-decoration: none; border: 0; font: inherit; cursor: pointer; box-shadow: 0 0 0 2px var(--ink), 3px 3px 0 2px rgba(0,0,0,0.25); }
+.panel .btn.big { font-size: 18px; padding: 6px 16px; }
+.panel .btn:focus-visible, .panel .chip:focus-visible, .panel .close:focus-visible, .panel a:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.panel .tag { margin-left: 8px; padding: 0 6px; background: var(--ink); color: #fff4f1; font-size: 13px; }
+/* the Notice Wall: a lacquer board with paper notices pinned to it */
+.panel.look-board { background: #3a3240; }
+.panel.look-board .body { color: #fff4f1; }
+.panel.look-board .lede, .panel.look-board .foot a { color: #fff4f1; }
+.panel .notices { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.panel .notice { padding: 10px 12px 12px; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 2px var(--ink), 3px 4px 0 2px rgba(0,0,0,0.3); position: relative; }
+.panel .notice::before { content: ""; position: absolute; top: -5px; left: 50%; width: 8px; height: 8px; margin-left: -4px; background: var(--gold); box-shadow: 0 0 0 2px var(--ink); }
+.panel .notice h3 { margin-top: 2px; color: var(--ink); }
+.panel .notice .meta { font-size: 13px; color: #62576e; }
+/* the docs shelf: rows of books */
+.panel.look-shelf { background: #f1e2c4; }
+.panel .shelf-row { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 6px solid #896741; }
+.panel .books { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.panel .book { padding: 6px 10px; background: var(--paper); box-shadow: 0 0 0 2px var(--ink); border-left: 8px solid var(--red); }
+.panel .book-title { font-size: 17px; color: var(--ink); }
+/* the ledger and the slip */
+.panel.look-ledger, .panel.look-slip { background: repeating-linear-gradient(var(--paper) 0 27px, #e6d8bc 27px 28px); }
+.panel .slip-code { display: block; width: 100%; box-sizing: border-box; margin: 4px 0; padding: 6px 8px; font: inherit; font-size: 14px; background: #fff; border: 0; box-shadow: 0 0 0 2px var(--ink); }
+.panel .msg { min-height: 1.5em; color: var(--red); }
+/* the offering box */
+.panel.look-box { background: #f6ecd8; }
+.panel .give { margin-bottom: 12px; padding: 10px 12px; background: var(--paper); box-shadow: 0 0 0 2px var(--ink); }
+.panel .qr { width: max-content; margin: 8px 0; box-shadow: 0 0 0 2px var(--ink); }
+.panel .qr canvas { display: block; width: 180px; height: 180px; image-rendering: pixelated; }
+.panel .picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.panel .chip { padding: 2px 8px; background: var(--paper2); color: var(--ink); border: 0; font: inherit; font-size: 14px; cursor: pointer; box-shadow: 0 0 0 2px var(--ink); }
+.panel .wheel { padding: 10px 12px; background: repeating-linear-gradient(90deg, #fffaf0 0 18px, #f6ecd8 18px 36px); box-shadow: 0 0 0 2px var(--ink); }
+/* the hanging scroll */
+.panel.look-scroll { background: var(--paper); box-shadow: 0 0 0 3px var(--ink), 0 -12px 0 3px #896741, 0 12px 0 3px #896741, 8px 10px 0 9px rgba(0,0,0,0.35); }
+/* an art frame: the piece, only ever as itself */
+.panel.look-frame { background: #1b1922; }
+.panel.look-frame .body { display: grid; place-items: center; }
+.panel .piece { margin: 0; }
+.panel .piece img { display: block; max-width: 100%; max-height: 66vh; width: auto; height: auto; box-shadow: 0 0 0 4px var(--gold), 0 0 0 8px var(--lacquer); }
+.panel.look-frame .foot a { color: #fff4f1; }
+@media (prefers-reduced-motion: no-preference) {
+  #panel-layer.on .panel { animation: panel-in 0.12s steps(3) both; }
+  @keyframes panel-in { from { transform: translateY(10px); opacity: 0; } }
+}

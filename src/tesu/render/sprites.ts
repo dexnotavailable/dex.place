@@ -75,11 +75,53 @@ export class SpriteRenderer {
     this.paintedThisFrame = 0;
   }
 
+  private images = new Map<string, HTMLImageElement | null>();
+
+  /**
+   * A picture (the gallery's previews): the image fitted into p.w x p.h level-1 px without
+   * cropping, resampled down like the website's smaller copies, then shown as pixels.
+   */
+  private imageFrame(def: SpriteDef, level: number, key: string): Frame | null {
+    const src = String(def.p.src);
+    let img = this.images.get(src);
+    if (img === undefined) {
+      const im = new Image();
+      im.decoding = "async";
+      this.images.set(src, null);
+      im.onload = () => this.images.set(src, im);
+      im.src = src;
+      return null;
+    }
+    if (!img) return null;
+    const bw = Number(def.p.w) * level, bh = Number(def.p.h) * level;
+    const k = Math.min(bw / img.naturalWidth, bh / img.naturalHeight);
+    const w = Math.max(1, Math.round(img.naturalWidth * k)), h = Math.max(1, Math.round(img.naturalHeight * k));
+    const cv = document.createElement("canvas");
+    cv.width = w;
+    cv.height = h;
+    const g = cv.getContext("2d")!;
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = "high";
+    g.drawImage(img, 0, 0, w, h);
+    const gl = this.gl;
+    const tex = gl.createTexture()!;
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, cv);
+    const fr: Frame = { tex, w, h, ax: w / 2, ay: h };
+    this.frames.set(key, fr);
+    return fr;
+  }
+
   /** A painted frame of a sprite at a level (painted now if the budget allows, else null). */
   private frame(def: SpriteDef, f: number, level: number, force: boolean): Frame | null {
     const key = `${def.id}|${f}|${level}`;
     const have = this.frames.get(key);
     if (have !== undefined) return have;
+    if (def.kind === "image") return this.imageFrame(def, level, key);
     if (!force && this.paintedThisFrame >= 1) return null;
     this.paintedThisFrame++;
     const pt = painter(def.kind);
@@ -148,7 +190,7 @@ export class SpriteRenderer {
       const xf = planeXf(cam, rate);
       const level = levelFor(planeLevels(rate), xf.g);
       const pos = SpriteRenderer.position(def, time);
-      const fr = this.frame(def, pos.frame, level, force) ?? this.frame(def, 0, level, true);
+      const fr = this.frame(def, pos.frame, level, force) ?? (def.kind === "image" ? null : this.frame(def, 0, level, true));
       if (!fr) continue;
       const k = xf.g / level;
       const ax = pos.x * rate * xf.g + xf.offX, ay = pos.y * rate * xf.g + xf.offY;

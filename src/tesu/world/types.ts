@@ -64,6 +64,11 @@ export interface Walk {
   oneWay: boolean;
   /** Thickness of the mass under a solid walk, px (Infinity for massif). */
   depth: number;
+  /**
+   * A stair she can walk under: one-way, never stepped onto from other ground while
+   * walking (she hops onto it, or comes down onto it from its top).
+   */
+  stair?: boolean;
   /** Optional name (for spawns, debug, the stroke it belongs to). */
   name?: string;
 }
@@ -129,6 +134,9 @@ export interface CamTrack {
   id: string;
   x0: number;
   x1: number;
+  /** Only within this y band (interiors share x with the land above them). */
+  y0?: number;
+  y1?: number;
   /** Only while this world flag is unset (e.g. the opening's reveal). */
   unless?: string;
   /** Only while this flag is set. */
@@ -139,6 +147,11 @@ export interface CamTrack {
 /** Haze, sky and light for a stretch of the land (blended by x). */
 export interface Atmos {
   x: number;
+  /** Only within this y band (interiors live in a band of their own below the land). */
+  y0?: number;
+  y1?: number;
+  /** An interior: no sky, sun or clouds; warm haze instead of mist. */
+  interior?: boolean;
   /** Sky top, horizon and low colours. */
   sky: [string, string, string];
   /** Haze colour background planes fade toward. */
@@ -182,6 +195,24 @@ export interface MistBank {
   density: number;
 }
 
+/**
+ * Something she can use with F (or Enter, or a tap): a door (a scene cut), a service that
+ * opens an in-world panel, a thing to inspect. Its area is in world px.
+ */
+export interface Usable {
+  id: string;
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  /** What the prompt says (a word, for screen readers and the caption). */
+  label: string;
+  action:
+    | { kind: "door"; to: string; title?: string }
+    | { kind: "panel"; panel: string; arg?: string }
+    | { kind: "say"; text: string };
+}
+
 export interface Spawn {
   id: string;
   x: number;
@@ -195,6 +226,11 @@ export interface Place {
   name: string;
   x0: number;
   x1: number;
+  /** A y band (interiors). */
+  y0?: number;
+  y1?: number;
+  /** Indoors grand: the world y its held Vista entrance shot frames on (her feet row). */
+  vista?: number;
   /** "big" titles (TESU) or small place names. */
   title?: "big" | "place";
   spawn: string;
@@ -215,4 +251,5 @@ export interface WorldDef {
   atmos: Atmos[];
   spawns: Spawn[];
   places: Place[];
+  usables: Usable[];
 }

@@ -8,11 +8,12 @@ import { gateRoad } from "./sections/gate-road.ts";
 import { kagami } from "./sections/kagami.ts";
 import { palace } from "./sections/palace.ts";
 import { openingCamera } from "./sections/opening.ts";
+import { hall } from "./sections/hall.ts";
 import type { WorldDef } from "./types.ts";
 
-/** About 480 x 240 H (GDK 3.1). */
+/** About 480 x 240 H (GDK 3.1), plus the interiors' band below it (config INTERIOR_Y). */
 export const WORLD_W = h(480);
-export const WORLD_H = h(240);
+export const WORLD_H = h(330);
 
 let built: WorldDef | null = null;
 
@@ -23,6 +24,7 @@ export function buildWorld(): WorldDef {
   gateRoad(b);
   palace(b);
   openingCamera(b);
+  hall(b);
   built = b.finish();
   return built;
 }

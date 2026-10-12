@@ -35,6 +35,8 @@ export function palace(b: WorldBuilder): void {
   b.piece("play", "stay", lx + 10, ly - towerH + h(1.1), { dx: -h(2.6), dy: towerH - h(1.1) - h(0.3) }, { z: 8 });
   b.piece("play", "stay", rx + 20, FLOOR_Y - towerH + h(1.1), { dx: h(5), dy: towerH - h(1.1) }, { z: 8 });
   b.piece("play", "banners", lx, ly - towerH + h(2.4), { w: rx - lx, drop: h(2.2), n: 5 }, { z: 9 });
+  // the doors open into the Hall of Works (a scene cut)
+  b.usable({ id: "hall-doors", x0: DOOR_X0, y0: FLOOR_Y - h(3.7), x1: DOOR_X1, y1: FLOOR_Y, label: "go in", action: { kind: "door", to: "hall-in" } });
   // the forecourt ends at the doors: a hard edge with a reason (the hall's wall)
   b.wall({ x: DOOR_X1 + h(0.3), y0: FLOOR_Y - h(6), y1: FLOOR_Y + h(0.1), reason: "wall" });
   b.place({ id: "ink-palace", name: "Ink Palace", x0: HALL_DOOR_X - h(3), x1: h(192), title: "place", spawn: "hall-door" });

@@ -3,7 +3,7 @@
 // authored zoom level when it comes to rest, shakes and punches for hits, and cuts to the
 // close band (2x, the 192 px render) on demand.
 
-import { FRAME_H, ZOOMS, H } from "./config.ts";
+import { FRAME_H, INTERIOR_Y, ZOOMS, H } from "./config.ts";
 import type { CamState } from "./render/view.ts";
 import type { CamKey, CamTrack } from "./world/types.ts";
 
@@ -26,10 +26,13 @@ export interface Framing {
 }
 
 /** Framing from the active tracks at x (tracks blend in over their first and last keys). */
-export function framingAt(tracks: readonly CamTrack[], x: number, flags: (f: string) => boolean): Framing {
+export function framingAt(tracks: readonly CamTrack[], x: number, flags: (f: string) => boolean, y = 0): Framing {
   const out: Framing = { ...DEFAULT_KEY, fixX: null, fixY: null };
   for (const t of tracks) {
     if (x < t.x0 || x > t.x1) continue;
+    if ((t.y0 !== undefined && y < t.y0) || (t.y1 !== undefined && y > t.y1)) continue;
+    // outdoor tracks without a band stay above the interiors' band
+    if (t.y0 === undefined && y > INTERIOR_Y) continue;
     if (t.unless && flags(t.unless)) continue;
     if (t.when && !flags(t.when)) continue;
     const ks = t.keys;
@@ -71,7 +74,7 @@ export class Camera {
   anchor = DEFAULT_KEY.anchor;
   horizon = DEFAULT_KEY.horizon;
   W = 1536;
-  readonly H = FRAME_H;
+  H = FRAME_H;
   /** 0..1 close band (R's dive and stamp, the opening's first frame). */
   closeup = 0;
   private closeTarget = 0;

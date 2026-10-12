@@ -5,6 +5,7 @@
 // URL options: ?at=<spawn id> (start somewhere), ?x=<H> (start at x in H), ?debug, ?manual
 // (no real-time loop: drive it from window.__tesu), ?sync (paint plates on the main thread).
 
+import "@fontsource/dotgothic16/400.css";
 import { Input, type Action, type KeyMap } from "../lab/engine/input.ts";
 import { ContractError } from "../lab/contracts.ts";
 import { WorldRenderer } from "../world/render/renderer.ts";
@@ -12,6 +13,10 @@ import { H } from "./config.ts";
 import { TesuGame } from "./game.ts";
 import { loadZhusha } from "./player.ts";
 import { Touch } from "./touch.ts";
+import { Panels, type PanelSpec } from "./panels/panels.ts";
+import { craneDesk, docsShelf, galleryFrame, hankoDesk, noticeWall, offeringBox, patronsScroll, saySpec } from "./panels/services.ts";
+import { readSlipInto, slipFor } from "./save.ts";
+import type { Usable } from "./world/types.ts";
 
 /**
  * The fixed keys (GDK 5.4, Appendix B): WASD and the arrows both move from the start;
@@ -70,6 +75,7 @@ function watchSize(r: WorldRenderer): void {
 async function boot(): Promise<void> {
   const q = new URLSearchParams(location.search);
   const r = new WorldRenderer(canvas);
+  r.integerFrames = true;
   watchSize(r);
   const assets = await loadZhusha(r);
   const input = new Input(canvas, KEYS);
@@ -77,6 +83,50 @@ async function boot(): Promise<void> {
   const game = new TesuGame(r, input, assets, { start: q.get("at") ?? "catch", link: q.has("at") || q.has("x"), noOpening: q.has("skip"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual") });
   if (q.has("x")) game.place(Number(q.get("x")) * H);
   game.debug = q.has("debug");
+
+  // the hall's services open in-world panels; doors are handled by the game itself
+  const panels = new Panels(input, canvas);
+  const slips = { writeSlip: () => slipFor(game.save), readSlip: (code: string) => {
+    const err = readSlipInto(game.save, code);
+    if (!err) for (const f of game.save.flags) game.flags.add(f);
+    return err;
+  } };
+  const specFor = (u: Usable): PanelSpec | null => {
+    const a = u.action;
+    if (a.kind === "say") return saySpec(u.label.replace(/^the /, "The "), a.text);
+    if (a.kind !== "panel") return null;
+    switch (a.panel) {
+      case "notice": return noticeWall;
+      case "docs": return docsShelf;
+      case "donate": return offeringBox;
+      case "hanko": return hankoDesk(slips);
+      case "crane": return craneDesk;
+      case "patrons": return patronsScroll;
+      case "art": return galleryFrame(a.arg ?? "");
+      default: return null;
+    }
+  };
+  game.onUse = (u) => {
+    const spec = specFor(u);
+    if (spec) panels.show(spec);
+  };
+  window.addEventListener("keydown", (e) => {
+    if (panels.open || e.repeat) return;
+    if (e.code === "KeyF" || e.code === "Enter" || e.code === "NumpadEnter") {
+      e.preventDefault();
+      game.use();
+    }
+  });
+  touch.onTap = (cx, cy) => {
+    if (panels.open) return false;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const pr = r.presenter.rect;
+    const fx = ((cx - rect.left) * dpr - pr.x) / pr.scale, fy = ((cy - rect.top) * dpr - pr.y) / pr.scale;
+    const u = game.usableAt(fx, fy);
+    if (u) game.use(u);
+    return !!u;
+  };
   input.onToggle = (w) => {
     if (w === "debug") game.debug = !game.debug;
   };
@@ -120,6 +170,8 @@ async function boot(): Promise<void> {
       },
       render: () => game.render(),
       flag: (f: string, on = true) => (on ? game.flags.add(f) : game.flags.delete(f)),
+      use: () => game.use(),
+      panels,
       /** Forces a framing ({zoom, anchor, horizon, lead}); null follows the world's tracks again. */
       frame: (f: Record<string, number> | null) => {
         game.framingOverride = f;

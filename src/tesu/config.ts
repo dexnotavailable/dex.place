@@ -32,6 +32,13 @@ export const mu = (n: number): number => Math.round(n * MAP_UNIT * H);
 export const ZOOMS = [2, 1, 0.5, 0.25, 0.125] as const;
 export type Zoom = (typeof ZOOMS)[number];
 
+/**
+ * Interiors (the Hall of Works, shops, the nook) live in a band of the world below the land:
+ * a door is a scene cut, so where they sit does not matter, and below the land nothing
+ * outside can be seen from them. Anything deeper than this y is indoors.
+ */
+export const INTERIOR_Y = 250 * H;
+
 /** Plate tiles: art px per side. */
 export const TILE = 256;
 

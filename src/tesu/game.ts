@@ -19,7 +19,7 @@ import { makeTarget, type Target, type WorldRenderer } from "../world/render/ren
 import { rgb } from "./art/palette.ts";
 import { Camera, framingAt } from "./camera.ts";
 import { Collision } from "./collide.ts";
-import { H, PHYSICS, TILE } from "./config.ts";
+import { H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore } from "./plates/store.ts";
 import type { ZhushaAssets } from "./player.ts";
 import { Atmos, type MistBand } from "./render/atmos.ts";
@@ -32,7 +32,7 @@ import { eyeY, levelFor, planeLevels, planeXf, rowOf, type CamState } from "./re
 import { buildWorld } from "./world/index.ts";
 import { TERRACE_X0, TERRACE_X1 } from "./world/sections/common.ts";
 import { isReload, loadSave, resumePlace, writeSave, type TesuSave } from "./save.ts";
-import { PLANES, PLANE_IDS, type Atmos as AtmosDef, type PlaneId, type Spawn, type Water, type WorldDef } from "./world/types.ts";
+import { PLANES, PLANE_IDS, type Atmos as AtmosDef, type PlaneId, type Spawn, type Usable, type Water, type WorldDef } from "./world/types.ts";
 
 const DAY: Lighting = {
   ambient: [0.64, 0.66, 0.7],
@@ -105,6 +105,9 @@ export class TesuGame {
   /** Ink-wash fade (0..1) for the void tug-back. */
   fade = 0;
   private cutFade = 0;
+  /** After a tug-back, movement keys count only once they have been let go. */
+  private waitRelease = false;
+  private fadeCut = 0;
   private tug: { t: number; x: number; y: number } | null = null;
   private lastSafe: [number, number] = [0, 0];
   private fallFrom: number | null = null;
@@ -155,7 +158,14 @@ export class TesuGame {
     this.inputProxy = new Proxy(input, {
       get: (t, k, rcv) => {
         if (k === "isDown") return (a: Action) => (this.frozen > 0 ? false : a === "down" ? t.isDown(a) && this.collision.onOneWay(this.player.body) : t.isDown(a));
-        if (k === "axis") return () => (this.frozen > 0 ? 0 : t.axis());
+        if (k === "axis") return () => {
+          if (this.frozen > 0) return 0;
+          if (this.waitRelease) {
+            if (t.isDown("left") || t.isDown("right")) return 0;
+            this.waitRelease = false;
+          }
+          return t.axis();
+        };
         if (k === "pressTick") return (a: Action) => (this.frozen > 0 ? undefined : t.pressTick(a));
         const v = Reflect.get(t, k, rcv);
         return typeof v === "function" ? v.bind(t) : v;
@@ -214,6 +224,17 @@ export class TesuGame {
     this.spawnAt({ id: "place", x, y: y ?? g?.y ?? 0, facing: this.player.facing as 1 | -1 });
   }
 
+  /** A held entrance shot (indoors grand): zoom and where it frames, seconds left. */
+  vista: { zoom: number; x: number; y: number; anchor: number; t: number } | null = null;
+  /** Doors, services and things to inspect within reach (nearest first). */
+  near: Usable | null = null;
+  /** A scene cut in progress (through a door). */
+  private cut: { t: number; to: Spawn; title?: string } | null = null;
+  /** What happens when she uses something (panels live in the page, not here). */
+  onUse: (u: Usable) => void = () => {};
+  /** Places already entered this visit (place names show once each). */
+  private entered = new Set<string>();
+
   /** Debug and tools: force a framing (zoom, anchor, horizon), or null to follow the tracks. */
   framingOverride: Partial<ReturnType<typeof framingAt>> | null = null;
 
@@ -221,7 +242,9 @@ export class TesuGame {
     const has = (fl: string): boolean => (fl === "opening" ? this.opening.active : this.flags.has(fl));
     // the widest frame holds until the drop has landed, wherever she has got to
     const x = this.opening.holding ? Math.min(this.player.body.x, TERRACE_X1) : this.player.body.x;
-    const f = framingAt(this.world.tracks, Math.max(x, this.opening.holding ? TERRACE_X0 + 1 : -Infinity), has);
+    let f = framingAt(this.world.tracks, Math.max(x, this.opening.holding ? TERRACE_X0 + 1 : -Infinity), has, this.player.body.y);
+    // an entrance shot: a held vista on first entry, ended early by moving
+    if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor };
     return this.framingOverride ? { ...f, ...this.framingOverride } : f;
   }
 
@@ -262,6 +285,7 @@ export class TesuGame {
     }
     const b = this.player.body;
     this.camera.W = this.r.iw;
+    this.camera.H = this.r.ih;
     const f = this.framing();
     const cuts = this.camera.cuts;
     this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
@@ -269,6 +293,13 @@ export class TesuGame {
     if (this.camera.cuts !== cuts && this.tick > 2) this.cutFade = 1;
     this.cutFade = Math.max(0, this.cutFade - 1 / 12);
     this.tugTick();
+    this.cutTick();
+    if (this.vista) {
+      this.vista.t -= 1 / 60;
+      if (this.vista.t <= 0 || Math.abs(b.vx) > 0.6) this.vista = null;
+    }
+    this.near = this.cut || this.tug ? null : this.findNear();
+    this.placeNames();
     this.motes.update(1 / 60);
     this.opening.tick(1 / 60);
     this.titles.update(1 / 60);
@@ -283,6 +314,7 @@ export class TesuGame {
     if (this.frozen > 0) this.frozen--;
     const b = this.player.body;
     const wasGrounded = b.grounded;
+    this.collision.holdDown = this.frozen <= 0 && this.input.isDown("down");
     this.player.update(this.inputProxy, this.collision as unknown as LabWorld, []);
     this.vfx.update();
     this.input.tick++;
@@ -303,13 +335,28 @@ export class TesuGame {
     if (!this.tug) {
       for (const v of this.world.voids) {
         if (b.x >= v.x0 && b.x <= v.x1 && b.y > v.y && (v.y1 === undefined || b.y < v.y1)) {
-          this.tug = { t: 0, x: this.lastSafe[0], y: this.lastSafe[1] };
+          this.tug = { t: 0, ...this.safeSpot() };
           this.frozen = 9999;
           break;
         }
       }
-      if (b.y > this.world.h + H * 4) this.tug = { t: 0, x: this.lastSafe[0], y: this.lastSafe[1] };
+      if (b.y > this.world.h + H * 4) this.tug = { t: 0, ...this.safeSpot() };
     }
+  }
+
+  /**
+   * Where the tug-back sets her down: the last ground she stood on, a step back from the
+   * edge she left (on the same ground), so she never lands on the lip.
+   */
+  private safeSpot(): { x: number; y: number } {
+    const [x, y] = this.lastSafe;
+    const away = -this.player.facing;
+    for (const step of [0.8, 0.5, 0.25]) {
+      const nx = x + away * step * H;
+      const g = this.collision.groundBelow(nx, y - 0.3 * H);
+      if (g && Math.abs(g.y - y) < 0.4 * H) return { x: nx, y: g.y };
+    }
+    return { x, y };
   }
 
   private tugTick(): void {
@@ -332,6 +379,86 @@ export class TesuGame {
     if (this.tug.t >= 36) {
       this.tug = null;
       this.frozen = 6;
+      // a key still held from before the fall does not walk her straight off again
+      this.waitRelease = true;
+    }
+  }
+
+  // --- using things ---------------------------------------------------------
+
+  /** The nearest usable thing within reach of her (about half an H around its area). */
+  private findNear(): Usable | null {
+    const b = this.player.body;
+    const reach = 0.45 * H;
+    let best: Usable | null = null, bd = Infinity;
+    for (const u of this.world.usables) {
+      if (b.x < u.x0 - reach || b.x > u.x1 + reach || b.y < u.y0 - reach || b.y - b.h > u.y1 + reach) continue;
+      const d = Math.abs(b.x - (u.x0 + u.x1) / 2);
+      if (d < bd) { bd = d; best = u; }
+    }
+    return best;
+  }
+
+  /** F, Enter or a tap on the thing: use what is within reach. */
+  use(u: Usable | null = this.near): void {
+    if (!u || this.cut || this.tug) return;
+    if (u.action.kind === "door") {
+      const id = u.action.to;
+      const to = this.world.spawns.find((sp) => sp.id === id);
+      if (to) this.cut = { t: 0, to, title: u.action.title };
+      return;
+    }
+    this.onUse(u);
+  }
+
+  /** The usable thing under a frame point (touch: object taps win). */
+  usableAt(fx: number, fy: number): Usable | null {
+    const cam = this.camera.state();
+    const xf = planeXf(cam, 1);
+    const x = (fx - xf.offX) / xf.s, y = (fy - xf.offY) / xf.s;
+    const b = this.player.body;
+    for (const u of this.world.usables) {
+      if (x >= u.x0 && x <= u.x1 && y >= u.y0 - H && y <= u.y1 && Math.abs(b.x - (u.x0 + u.x1) / 2) < 4 * H) return u;
+    }
+    return null;
+  }
+
+  /** A door is a scene cut: fade, move, fade back in on the other side (with its entrance shot). */
+  private cutTick(): void {
+    const c = this.cut;
+    if (!c) return;
+    c.t++;
+    this.frozen = Math.max(this.frozen, 2);
+    if (c.t === 16) {
+      this.spawnAt(c.to);
+      if (c.to.y >= INTERIOR_Y && !this.entered.has(`vista:${c.to.id}`)) {
+        // the held Vista entrance shot of an indoors-grand room (about 2.5 s; moving ends it)
+        this.entered.add(`vista:${c.to.id}`);
+        const room = this.world.places.find((p) => c.to.x >= p.x0 && c.to.x <= p.x1 && p.y0 !== undefined && c.to.y >= p.y0);
+        if (room && room.vista !== undefined) {
+          this.vista = { zoom: 0.5, x: (room.x0 + room.x1) / 2, y: room.vista, anchor: 0.82, t: 2.5 };
+          this.camera.snap(this.player.body.x, this.player.body.y, this.framing(), c.to.facing);
+        }
+      }
+    }
+    this.fadeCut = c.t < 16 ? c.t / 16 : Math.max(0, 1 - (c.t - 16) / 18);
+    if (c.t >= 34) {
+      this.cut = null;
+      this.fadeCut = 0;
+    }
+  }
+
+  /** Small place names, once each per visit, as she crosses into a place. */
+  private placeNames(): void {
+    const b = this.player.body;
+    for (const p of this.world.places) {
+      if (p.title !== "place" || this.entered.has(p.id)) continue;
+      if (b.x < p.x0 || b.x > p.x1) continue;
+      if ((p.y0 !== undefined && b.y < p.y0) || (p.y1 !== undefined && b.y > p.y1)) continue;
+      if (p.y0 === undefined && b.y >= INTERIOR_Y) continue;
+      this.entered.add(p.id);
+      if (this.opening.active) continue;
+      this.titles.show(p.name, false, b.y >= INTERIOR_Y);
     }
   }
 
@@ -369,9 +496,9 @@ export class TesuGame {
     void focus;
   }
 
-  private atmosAt(x: number): AtmosDef {
-    const list = this.world.atmos;
-    let a = list[0]!;
+  private atmosAt(x: number, y: number): AtmosDef {
+    const list = this.world.atmos.filter((e) => (e.y0 === undefined || y >= e.y0) && (e.y1 === undefined || y <= e.y1) && (e.y0 !== undefined || y < INTERIOR_Y));
+    let a = list[0] ?? this.world.atmos[0]!;
     for (const e of list) if (e.x <= x) a = e;
     return a;
   }
@@ -458,7 +585,7 @@ export class TesuGame {
     this.store.frame++;
     const cam = this.camera.state();
     const W = cam.W, Hf = cam.H;
-    const a = this.atmosAt(cam.cx);
+    const a = this.atmosAt(cam.cx, cam.cy);
     const hz = cam.horizon * Hf;
     const sunPx: [number, number, number] = a.sun ? [a.sun[0] * W, a.sun[1] * Hf, 9] : [0, 0, 0];
     const sky = [hexRgb(a.sky[0]), hexRgb(a.sky[1]), hexRgb(a.sky[2])];
@@ -571,6 +698,7 @@ export class TesuGame {
         r.flush();
       }
     }
+    this.drawPrompt(cam);
     this.titles.draw(W, Hf);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -580,10 +708,30 @@ export class TesuGame {
       zoom: 1 + this.camera.punch,
       view: 1,
       focus: [W / 2, cam.anchor * Hf],
-      fade: [0.106, 0.098, 0.133, this.loading && this.tick < 2 ? 1 : Math.max(this.fade, this.cutFade * 0.85)],
+      fade: [0.106, 0.098, 0.133, this.loading && this.tick < 2 ? 1 : Math.max(this.fade, this.cutFade * 0.85, this.fadeCut)],
       bars: 0,
       overlay: false,
     });
+  }
+
+  /** The F key cap over the thing within reach (it bobs a little). */
+  private drawPrompt(cam: CamState): void {
+    const u = this.near;
+    if (!u || this.cut) return;
+    const xf = planeXf(cam, 1);
+    const fx = Math.round(((u.x0 + u.x1) / 2) * xf.s + xf.offX);
+    const fy = Math.round(u.y0 * xf.s + xf.offY - 18 + Math.round(Math.sin(this.time * 4) * 1.5));
+    const r = this.r;
+    r.begin(0, 0, DAY, []);
+    const ink: [number, number, number] = [0.106, 0.098, 0.133];
+    const paper: [number, number, number] = [1, 0.98, 0.94];
+    r.rect(fx - 8, fy - 8, 17, 17, ink, 1, 1, true);
+    r.rect(fx - 7, fy - 7, 15, 15, paper, 1, 1, true);
+    r.rect(fx - 6, fy + 5, 13, 2, [0.8, 0.75, 0.66], 1, 1, true);
+    r.rect(fx - 3, fy - 4, 2, 8, ink, 1, 1, true);
+    r.rect(fx - 3, fy - 4, 7, 2, ink, 1, 1, true);
+    r.rect(fx - 3, fy - 1, 5, 2, ink, 1, 1, true);
+    r.flush();
   }
 
   state(): Record<string, unknown> {
@@ -597,7 +745,7 @@ export class TesuGame {
       cam: [Math.round(cam.cx), Math.round(cam.cy)], loading: this.loading, fade: +this.fade.toFixed(2), cloudDrop: this.cloudDrop,
       tiles: this.store.stats(), fps: Math.round(this.fps), frame: [this.r.iw, this.r.ih], present: this.r.presenter.rect,
       clip: this.player.clip.clip.id,
-      opening: this.opening.state, startedBy: this.startedBy,
+      opening: this.opening.state, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
     };
   }
 
