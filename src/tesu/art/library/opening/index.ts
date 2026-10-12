@@ -16,3 +16,4 @@ import "./sky.ts";
 import "./props.ts";
 import "./wind.ts";
 import "./flora.ts";
+export { OPENING_MANIFEST, type OpeningAsset } from "./manifest.ts";
