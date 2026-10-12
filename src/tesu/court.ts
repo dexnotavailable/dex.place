@@ -15,6 +15,7 @@ import { overlap, type WorldBox } from "../lab/game/events.ts";
 import type { Player } from "../lab/game/player.ts";
 import { downloads, type DownloadEntry, type DownloadFile } from "../site/data/downloads.ts";
 import { H } from "./config.ts";
+import { gongFrame } from "./art/library/hall/index.ts";
 import { BAO_X, GONG_X, LION_X, RING_X0, RING_X1 } from "./world/sections/court.ts";
 import type { SpriteDef } from "./world/types.ts";
 
@@ -95,6 +96,8 @@ export class Court {
   private flinch = 0;
   private white = 0;
   private cheer = 0;
+  /** Ticks since Bao last struck the gong (null: the gong hangs still). */
+  private struck: number | null = null;
   private hits = 0;
 
   private host: CourtHost;
@@ -174,6 +177,13 @@ export class Court {
   /** One 60 Hz simulation tick (after her own update). */
   tick(): void {
     this.t++;
+    // the gong swings on each strike and settles (env-hall's gong: gongFrame, 12 frames)
+    if (this.struck !== null) {
+      this.struck++;
+      const f = gongFrame(this.struck);
+      this.host.sprite("gong").frame = f;
+      if (f === 0) this.struck = null;
+    }
     const p = this.host.player;
     const s = this.state;
     if (s === "gong") this.tickGong();
@@ -214,6 +224,8 @@ export class Court {
       this.host.vfx.spawn("ring.wide", { x: GONG_X, y: this.y - 1.45 * H, facing: 1 });
       this.host.feel.sound("gong");
       this.host.cue("music:arena");
+      this.struck = 0;
+      this.host.sprite("gong").frame = gongFrame(0);
     }
     if (this.t >= 30) {
       // the poof: paper scraps, ink and sparks, and the champion starts to install itself

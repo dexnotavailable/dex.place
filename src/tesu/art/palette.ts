@@ -60,6 +60,13 @@ export const P = {
   range: ramp("#e4ecef", "#cfdbe1", "#b7c8d1", "#9fb3bf", "#8aa0ae", "#768e9d", "#62798a"),
   /** Skin for small far figures and NPC stand-ins. */
   skin: ramp("#ffe0cc", "#f4bea2", "#d9947c", "#a9645a"),
+  // --- appended by env-hall (indices of everything above are unchanged) ---
+  /** Lantern-lit paper and warm glow: the hot core to the ember edge (the hall, dusk, night). */
+  ember: ramp("#fff4d6", "#ffe0a3", "#f8bd6c", "#e08c46", "#b5602f"),
+  /** Warm interior shadow: timber and lacquer in lamplight, the hall's dark. */
+  umber: ramp("#7a5a48", "#5e4335", "#47322a", "#352520", "#261a18", "#191213"),
+  /** Bronze: the gong, door fittings, censers. */
+  bronze: ramp("#f7e2a6", "#d8b067", "#ad8443", "#7e5d2e", "#523d22", "#2f2318"),
 } as const;
 
 export type RampName = keyof typeof P;
