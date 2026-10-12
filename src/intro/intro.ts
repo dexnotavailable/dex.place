@@ -1,9 +1,10 @@
 // The dex mark intro: the first thing a visitor sees on a fresh visit to "/".
 //
 // Black, then lowercase "dex" (Daniel Bold, as hand-cleaned pixel art) writes
-// itself stroke by stroke, holds for a breath, and is blown away left to right as
-// pixel dust on a wind straight to the right. About 2 seconds; a click, tap or key skips it. With the system's
-// reduced-motion setting it is a plain fade in and out.
+// itself stroke by stroke, holds long enough to be read, and is blown away left to
+// right as pixel dust on a wind straight to the right. About 3 seconds; a click,
+// tap or key skips it. With the system's reduced-motion setting it is a plain
+// fade in and out.
 //
 // It never pads loading: start loading first, call playIntro() alongside, and
 // let whichever finishes last decide what comes next. The host page provides
@@ -26,8 +27,8 @@ export const INTRO_TIMING = {
   lift: 0.05,
   /** Fresh ink glows this long before it settles. */
   heat: 0.2,
-  /** The finished mark holds. */
-  hold: 0.16,
+  /** The finished mark holds so it can be read (Dex: about a second longer than first cut). */
+  hold: 1.15,
   /** The left-to-right release sweeps across the mark in this time. */
   sweep: 0.5,
   /** Each dust pixel lives this long (min, max). */
@@ -98,7 +99,7 @@ export interface IntroHandle {
   destroy(): void;
 }
 
-interface Px {
+export interface Px {
   x: number;
   y: number;
   /** When the pen reaches it. */
@@ -124,21 +125,40 @@ function hash(x: number, y: number, s: number): number {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
-/** Every ink pixel of the mark with its writing and dusting times. */
-function planPixels(): Px[] {
+/** The pen's timing for one stroke, seconds from the start of the intro. */
+export interface StrokeTiming {
+  start: number;
+  dur: number;
+  /** Path length in art pixels. */
+  len: number;
+}
+
+/**
+ * Half the brush width in art pixels. Every pixel within this distance of a
+ * stretch of the pen's path is inked when the pen passes that stretch, so each
+ * stroke draws solid on its own, crossings and self-overlaps included (the x's
+ * first stroke has its centre before the second stroke crosses it).
+ */
+const BRUSH_R = 2.6;
+/** Ink lands this far ahead of the pen's centre (art px). */
+const BRUSH_LEAD = 1.4;
+
+/** The pen's ease: slow start, fast middle, slow finish. Progress in, progress out. */
+export const penEase = (u: number): number => (u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u));
+
+/** Every ink pixel of the mark with its writing and dusting times (pure; exported for checks). */
+export function planMark(): { pixels: Px[]; strokes: StrokeTiming[]; written: number } {
   const T = INTRO_TIMING;
   const lens = MARK_STROKES.map((s) => s.reduce((acc, p, i) => (i ? acc + Math.hypot(p[0] - s[i - 1]![0], p[1] - s[i - 1]![1]) : 0), 0));
   const total = lens.reduce((a, b) => a + b, 0);
   const drawTime = T.write - T.lift * (MARK_STROKES.length - 1);
-  const starts: number[] = [];
-  const durs: number[] = [];
+  const strokes: StrokeTiming[] = [];
   let t = T.start;
-  for (const len of lens) {
-    const d = Math.max(0.09, (drawTime * len) / total);
-    starts.push(t);
-    durs.push(d);
-    t += d + T.lift;
-  }
+  lens.forEach((len) => {
+    const dur = Math.max(0.09, (drawTime * len) / total);
+    strokes.push({ start: t, dur, len });
+    t += dur + T.lift;
+  });
   const written = t - T.lift;
   const sweepAt = written + T.hold;
   // an upright front: the mark goes strictly left to right (slant > 0 would lead with the top)
@@ -150,31 +170,34 @@ function planPixels(): Px[] {
     const row = MARK_ROWS[y]!;
     for (let x = 0; x < MARK_W; x++) {
       if (row[x] !== "#") continue;
-      // nearest point on the pen's path: which stroke, how far along it
-      let best = Infinity;
-      let stroke = 0;
-      let along = 0;
+      // The earliest moment any stretch of any stroke covers this pixel with the
+      // brush. Checked per segment, so a stroke that crosses itself or another
+      // stroke inks the shared pixels the first time it passes them.
+      let inkAt = Infinity;
+      let nearest = Infinity;
+      let nearestAt = 0;
       MARK_STROKES.forEach((s, si) => {
+        const { start, dur, len } = strokes[si]!;
         let acc = 0;
         for (let i = 1; i < s.length; i++) {
           const [ax, ay] = s[i - 1]!;
           const [bx, by] = s[i]!;
           const dx = bx - ax;
           const dy = by - ay;
-          const l2 = dx * dx + dy * dy;
-          const u = l2 ? clamp01(((x + 0.5 - ax) * dx + (y + 0.5 - ay) * dy) / l2) : 0;
+          const l = Math.hypot(dx, dy);
+          const u = l ? clamp01(((x + 0.5 - ax) * dx + (y + 0.5 - ay) * dy) / (l * l)) : 0;
           const d = Math.hypot(x + 0.5 - (ax + dx * u), y + 0.5 - (ay + dy * u));
-          if (d < best) {
-            best = d;
-            stroke = si;
-            along = acc + u * Math.sqrt(l2);
+          const at = start + dur * smoothInv(clamp01((acc + u * l - BRUSH_LEAD) / len));
+          if (d <= BRUSH_R) inkAt = Math.min(inkAt, at);
+          if (d < nearest) {
+            nearest = d;
+            nearestAt = at;
           }
-          acc += Math.sqrt(l2);
+          acc += l;
         }
       });
-      // the brush is about 4 px wide, so ink lands a little ahead of the pen's centre
-      const v = clamp01((along - 1.4) / lens[stroke]!);
-      const inkAt = starts[stroke]! + durs[stroke]! * smoothInv(v);
+      // a pixel outside every brush (the odd corner) comes with its nearest stroke
+      if (inkAt === Infinity) inkAt = nearestAt;
       const h1 = hash(x, y, 1);
       const h2 = hash(x, y, 2);
       const h3 = hash(x, y, 3);
@@ -185,7 +208,7 @@ function planPixels(): Px[] {
       out.push({ x, y, inkAt, dustAt, life, h1, h2, h3 });
     }
   }
-  return out;
+  return { pixels: out, strokes, written };
 }
 
 /** Device pixels per mark pixel for a w x h device-pixel box. */
@@ -249,7 +272,7 @@ export function playIntro(opts: IntroOptions = {}): IntroHandle {
     oy = Math.floor((bh - MARK_H) / 2 - bh * 0.02);
   }
 
-  const pixels = reduced ? [] : planPixels();
+  const pixels = reduced ? [] : planMark().pixels;
   const lastDust = pixels.reduce((m, p) => Math.max(m, p.dustAt), 0);
   const endAt = reduced ? T.calm[0] + T.calm[1] + T.calm[2] : pixels.reduce((m, p) => Math.max(m, p.dustAt + p.life), 0);
 
