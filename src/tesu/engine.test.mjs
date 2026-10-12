@@ -327,3 +327,55 @@ test("every wall is a real edge: walking into it from the ground at its foot lea
   }
   assert.deepEqual(bad, []);
 });
+
+test("the Kumo-bashi: rolled up until cut from Kumoji, then a deck walked both ways between the court and Kumoji", async () => {
+  const { BRIDGE_FLAG } = await import("./world/sections/shanshui.ts");
+  const w = buildWorld();
+  const c = new Collision(w.walks, w.walls);
+  const bridge = w.walks.find((k) => k.name === "kumo-bashi");
+  assert.ok(bridge && bridge.when === BRIDGE_FLAG && bridge.oneWay, "a one-way deck, gated by the cut");
+  const x0 = bridge.pts[0], x1 = bridge.pts[bridge.pts.length - 2];
+  // before the cut: no deck; off the tip is the Prow Leap's fall
+  assert.equal(c.groundBelow(x0 + 4 * H, bridge.pts[1] - 2, false)?.walk.name === "kumo-bashi", false);
+  // the cut is a permanent prop on the Kumoji side whose breaking sets the flag
+  assert.ok(w.props.some((p) => p.id === "kumo-bashi-lashing" && p.cls === "permanent"));
+  c.gate((f) => f === BRIDGE_FLAG);
+  // from Kumoji's platform west across the deck to the court
+  const body = { x: x1 + 1.5 * H, y: w.walks.find((k) => k.name === "kumoji").pts[1], w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
+  c.move(body, 0, 1);
+  for (let i = 0; i < 4000 && body.x > x0 - 0.8 * H; i++) { c.move(body, -3, 0); c.move(body, 0, 2); }
+  assert.ok(body.grounded && /prize-court|prow-leap|kumo-bashi/.test(c.standingOn?.name ?? ""), `across to the court (${(body.x / H).toFixed(1)} H on ${c.standingOn?.name})`);
+  for (let i = 0; i < 4000 && body.x < x1 + 1 * H; i++) { c.move(body, 3, 0); c.move(body, 0, 2); }
+  assert.equal(c.standingOn?.name, "kumoji", "and back to Kumoji");
+});
+
+test("the Pillar Hop: every gap needs its charms, every charm is in Q's reach, every perch jumps to the next ground", async () => {
+  const { HOP_PILLARS, HOP_CHARMS, bridgeY } = await import("./world/sections/shanshui.ts");
+  const { CHARM_PERCH } = await import("./config.ts");
+  const w = buildWorld();
+  assert.equal(w.charms.length, HOP_CHARMS.length);
+  const court = w.walks.find((k) => k.name === "prow-leap"), kumoji = w.walks.find((k) => k.name === "kumoji");
+  // the grounds in order: the plank's end, the pillars, Kumoji's edge ([left x, right x, y] in px)
+  const grounds = [[court.pts[0], court.pts[2], court.pts[1]], ...HOP_PILLARS.map(([a, b, t]) => [a * H, b * H, t * H]), [kumoji.pts[0], kumoji.pts[2], kumoji.pts[1]]];
+  // the charms between each pair of grounds, by x
+  for (let g = 0; g + 1 < grounds.length; g++) {
+    const [, from, fy] = grounds[g], [to, , ty] = grounds[g + 1];
+    assert.ok(to - from > 4.5 * H, `gap ${g + 1} is past a plain jump (${((to - from) / H).toFixed(1)} H)`);
+    const cs = w.charms.filter((c) => c.x > from && c.x < to).sort((a, b) => a.x - b.x);
+    assert.ok(cs.length >= 1, `gap ${g + 1} has a charm`);
+    // Q's reach from the edge, then from perch to perch
+    let px = from, py = fy;
+    for (const ch of cs) {
+      const dx = ch.x - px, dy = ch.y + CHARM_PERCH - py;
+      assert.ok(dx >= 0.5 * H && dx <= 7 * H && dy >= -4.5 * H && dy <= 4 * H, `charm ${ch.id} in reach (${(dx / H).toFixed(1)}, ${(dy / H).toFixed(1)} H)`);
+      [px, py] = [ch.x, ch.y + CHARM_PERCH];
+    }
+    // from the last perch a jump (with the double jump and the air dash) reaches the next ground
+    assert.ok(to - px <= 3.4 * H && py - ty <= 1.1 * H, `from the last perch to ground ${g + 2} (${((to - px) / H).toFixed(1)} H across, ${((py - ty) / H).toFixed(1)} H up)`);
+  }
+  // the bridge's deck passes over every pillar and charm with room
+  for (const [a, b, t] of HOP_PILLARS) for (const x of [a, b]) assert.ok(t * H - bridgeY(x * H) > 1.5 * H, `deck over pillar at ${x} H`);
+  for (const ch of w.charms) assert.ok(ch.y - bridgeY(ch.x) > 0.3 * H, `deck over ${ch.id}`);
+  // a missed hop falls into the sea of mist (tugged back), never onto ground far below
+  for (const [, b, t] of HOP_PILLARS) assert.ok(w.voids.some((v) => b * H + 2 * H >= v.x0 && b * H + 2 * H <= v.x1 && v.y < 120 * H), `a void under the gap after the pillar at ${b} H`);
+});

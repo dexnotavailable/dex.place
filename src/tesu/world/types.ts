@@ -73,6 +73,8 @@ export interface Walk {
   stair?: boolean;
   /** Optional name (for spawns, debug, the stroke it belongs to). */
   name?: string;
+  /** Ground only while this world flag is set (a rope bridge once dropped across). */
+  when?: string;
 }
 
 /**
@@ -87,6 +89,8 @@ export interface Wall {
   reason: "rail" | "wall" | "cliff" | "gate" | "world-end";
   /** Blocks only bodies coming from this side ("both" by default). */
   from?: "left" | "right" | "both";
+  /** Gone once this world flag is set (the rail a dropped bridge now carries on from). */
+  unless?: string;
 }
 
 /** Still water: a flat surface in 3D, from in front of the play plane to the far shore. */
@@ -203,6 +207,11 @@ export interface SpriteDef {
   frame?: number;
   flip?: boolean;
   hidden?: boolean;
+  /** Shown only once this world flag is set, `delay` ticks after it was set this visit (a bridge dropping across). */
+  when?: string;
+  delay?: number;
+  /** Hidden once this world flag is set (the rolled bridge, once cut loose). */
+  unless?: string;
   /** Share of its width shown, left to right on screen (an entrance assembling it); 1 = all. */
   reveal?: number;
   /** Flash toward white (0..1), a hit's one-frame flash. */
@@ -239,6 +248,8 @@ export interface Usable {
   y1: number;
   /** What the prompt says (a word, for screen readers and the caption). */
   label: string;
+  /** Gone once this world flag is set (what it said no longer holds). */
+  unless?: string;
   action:
     | {
         kind: "door"; to: string; title?: string;
@@ -321,6 +332,19 @@ export interface WorldDef {
   usables: Usable[];
   props: PropDef[];
   rides: RideDef[];
+  charms: CharmDef[];
+}
+
+/**
+ * A paper charm hung over a gap (GDK A.3, the Pillar Hop): Q within reach of one ahead of her
+ * warps her to it, and she hangs from it a moment (a perch: she can jump, dash, or warp on to
+ * the next one). Its sprite (same id) lights while it re-arms.
+ */
+export interface CharmDef {
+  id: string;
+  /** Where she takes hold of it (world px); her feet hang PERCH below. */
+  x: number;
+  y: number;
 }
 
 /**

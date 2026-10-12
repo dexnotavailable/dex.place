@@ -57,10 +57,20 @@ export class Collision {
   maxX = Infinity;
   /** Walks switched off (a rope bridge not dropped yet, a lift elsewhere). */
   off = new Set<number>();
+  /** Walls switched off (a rail a dropped bridge now carries on from). */
+  offWalls = new Set<Wall>();
 
   constructor(walks: readonly Walk[], walls: readonly Wall[]) {
     for (const w of walks) this.addWalk(w);
     for (const w of walls) this.addWall(w);
+    // gated ground starts switched off (the game switches it on with its flag)
+    for (const w of walks) if (w.when) this.off.add(w.id);
+  }
+
+  /** Switches gated walks and walls by the world's flags. */
+  gate(has: (flag: string) => boolean): void {
+    for (const w of this.walks) if (w.when) { if (has(w.when)) this.off.delete(w.id); else this.off.add(w.id); }
+    for (const w of this.walls) if (w.unless) { if (has(w.unless)) this.offWalls.add(w); else this.offWalls.delete(w); }
   }
 
   addWalk(w: Walk): void {
@@ -152,6 +162,7 @@ export class Collision {
       for (const w of this.lb.get(bk) ?? []) {
         if (w.x < a - EPS || w.x > c + EPS) continue;
         if (w.y1 <= top + EPS || w.y0 >= bottom - EPS) continue;
+        if (this.offWalls.has(w)) continue;
         if (w.from === "left" && dir < 0) continue;
         if (w.from === "right" && dir > 0) continue;
         if (!best || (dir > 0 ? w.x < best.x : w.x > best.x)) best = w;

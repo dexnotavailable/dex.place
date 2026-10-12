@@ -135,3 +135,101 @@ export const ropecar = definePainter<CarP>("ropecar", {
     rect(c, -hw, floor - 8, hw, floor, P.timber[5]!);
   },
 });
+
+// --- a paper charm -----------------------------------------------------------------------------
+
+export interface CharmP {
+  /** 0, 1: hanging, swaying a little; 2: lit (just used, re-arming). */
+  frame?: number;
+}
+
+/** A paper charm on a short string: a yellow slip with a red stroke; it glows white-gold when used. Anchor at the string's top. */
+export const charm = definePainter<CharmP>("charm", {
+  bounds() {
+    return [-14, -2, 14, 52];
+  },
+  paint(c, p) {
+    const f = p.frame ?? 0;
+    const sway = f === 1 ? 2 : 0;
+    const lit = f === 2;
+    c.buf.line(c.X(0), c.Y(0), c.X(sway), c.Y(16), P.lacquer[2]!);
+    rect(c, -7 + sway, 16, 7 + sway, 46, lit ? P.gold[0]! : P.paper[1]!);
+    rect(c, -7 + sway, 16, 7 + sway, 18, lit ? P.gold[1]! : P.gold[2]!);
+    rect(c, -2 + sway, 22, 2 + sway, 40, lit ? P.gold[2]! : P.red[3]!);
+    rect(c, -5 + sway, 26, 5 + sway, 28, lit ? P.gold[2]! : P.red[3]!);
+    if (lit) for (const [dx, dy] of [[-11, 30], [11, 24], [-10, 14], [10, 42]] as const) rect(c, dx + sway, dy, dx + sway + 2, dy + 2, P.gold[1]!);
+  },
+});
+
+// --- the Kumo-bashi rope bridge ----------------------------------------------------------------
+
+export interface BridgeP {
+  /** "deck": a stretch of the dropped bridge along pts (world px relative to the anchor); "rolled": the deck lashed up at the Kumoji end. */
+  part: "deck" | "rolled";
+  pts?: number[];
+  /** Rolled: how far east (px) its rope runs to the lashing post, and how high there. */
+  tie?: [number, number];
+}
+
+/** Timber slats on two foot ropes with a hand rope above; rolled up, a bundle of slats hanging from its ropes. */
+export const ropebridge = definePainter<BridgeP>("ropebridge", {
+  bounds(p) {
+    if (p.part === "rolled") return [-60, Math.min(-10, (p.tie?.[1] ?? 0) - 6), Math.max(16, (p.tie?.[0] ?? 0) + 6), 150];
+    const pts = p.pts ?? [0, 0];
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (let i = 0; i < pts.length; i += 2) {
+      x0 = Math.min(x0, pts[i]!); x1 = Math.max(x1, pts[i]!);
+      y0 = Math.min(y0, pts[i + 1]!); y1 = Math.max(y1, pts[i + 1]!);
+    }
+    return [x0 - 4, y0 - 60, x1 + 4, y1 + 16];
+  },
+  paint(c, p) {
+    if (p.part === "rolled") {
+      // tied back to its post, hanging from the platform's edge down over the drop
+      if (p.tie) c.buf.line(c.X(2), c.Y(-4), c.X(p.tie[0]), c.Y(p.tie[1]), P.timber[4]!);
+      c.buf.line(c.X(0), c.Y(0), c.X(-28), c.Y(40), P.timber[4]!);
+      c.buf.line(c.X(4), c.Y(0), c.X(-20), c.Y(40), P.timber[4]!);
+      rect(c, -52, 40, 6, 132, (_x, y) => (Math.floor(c.ly(y + 0.5) / 7) % 2 ? P.timber[2]! : P.timber[3]!));
+      rect(c, -52, 60, 6, 64, P.timber[5]!);
+      rect(c, -52, 108, 6, 112, P.timber[5]!);
+      return;
+    }
+    const pts = p.pts ?? [];
+    for (let i = 2; i < pts.length; i += 2) {
+      const ax = pts[i - 2]!, ay = pts[i - 1]!, bx = pts[i]!, by = pts[i + 1]!;
+      const len = Math.hypot(bx - ax, by - ay);
+      // slats every 9 px across the two foot ropes, the hand rope 48 px above
+      for (let s = 0; s < len; s += 9) {
+        const u = s / len, x = ax + (bx - ax) * u, y = ay + (by - ay) * u;
+        rect(c, x - 3, y - 1, x + 3, y + 5, Math.floor(s / 9) % 3 === 0 ? P.timber[3]! : P.timber[2]!);
+      }
+      c.buf.line(c.X(ax), c.Y(ay + 5), c.X(bx), c.Y(by + 5), P.timber[5]!);
+      c.buf.line(c.X(ax), c.Y(ay - 48), c.X(bx), c.Y(by - 48), P.timber[4]!);
+      // the hangers from hand rope to deck
+      for (let s = 0; s < len; s += 64) {
+        const u = s / len, x = ax + (bx - ax) * u, y = ay + (by - ay) * u;
+        c.buf.line(c.X(x), c.Y(y - 48), c.X(x), c.Y(y), P.timber[4]!);
+      }
+    }
+  },
+});
+
+// --- the lashing post that holds the rolled bridge ---------------------------------------------
+
+export interface LashingP {
+  h?: number;
+}
+
+/** A timber bollard with turns of rope round it (break it and the bridge drops). Anchor at its foot, centre. */
+export const lashing = definePainter<LashingP>("lashing", {
+  bounds(p) {
+    const h = p.h ?? 54;
+    return [-14, -h - 4, 14, 1];
+  },
+  paint(c, p) {
+    const h = p.h ?? 54;
+    rect(c, -8, -h, 8, 0, (x) => (c.lx(x + 0.5) < -3 ? P.timber[2]! : P.timber[3]!));
+    rect(c, -9, -h - 4, 9, -h, P.timber[5]!);
+    for (let y = -h + 12; y < -12; y += 7) rect(c, -11, y, 11, y + 4, P.earth[2]!);
+  },
+});

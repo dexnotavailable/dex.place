@@ -23,7 +23,7 @@ import { Court, type Prize } from "./court.ts";
 import { Props } from "./props.ts";
 import { Rides } from "./ride.ts";
 import { Sound } from "./sound.ts";
-import { H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
+import { CHARM_PERCH, H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore } from "./plates/store.ts";
 import type { ZhushaAssets } from "./player.ts";
 import { Atmos, type MistBand } from "./render/atmos.ts";
@@ -36,10 +36,16 @@ import { eyeY, levelFor, planeLevels, planeXf, rowOf, type CamState } from "./re
 import { buildWorld } from "./world/index.ts";
 import { TERRACE_X0, TERRACE_X1 } from "./world/sections/common.ts";
 import { isReload, loadSave, resumePlace, writeSave, type TesuSave } from "./save.ts";
-import { PLANES, PLANE_IDS, type Atmos as AtmosDef, type PlaneId, type SpriteDef, type Spawn, type Usable, type Water, type WorldDef } from "./world/types.ts";
+import { PLANES, PLANE_IDS, type CharmDef, type Atmos as AtmosDef, type PlaneId, type SpriteDef, type Spawn, type Usable, type Water, type WorldDef } from "./world/types.ts";
 
 /** Flags that live only for this visit (never saved): a bout in progress. */
 const TRANSIENT_FLAGS = new Set(["bout"]);
+/** The Pillar Hop's paper charms: how far below the charm her feet hang, how far ahead Q reaches one, how long a warp, a hold and a re-arm last (ticks). */
+const PERCH = CHARM_PERCH;
+const CHARM_REACH = 7 * H;
+const WARP_T = 10;
+const PERCH_T = 50;
+const CHARM_REARM = 120;
 /** Flags for this visit only (a bout on, a ride under way): never saved. */
 const TRANSIENT = { has: (f: string): boolean => TRANSIENT_FLAGS.has(f) || f.startsWith("ride:") };
 
@@ -210,6 +216,7 @@ export class TesuGame {
     this.save = loadSave();
     for (const f of this.save.flags) if (!TRANSIENT.has(f)) this.flags.add(f);
     for (const s of this.world.sprites) this.spriteById.set(s.id, s);
+    this.gatedSprites = this.world.sprites.filter((s) => s.when || s.unless);
     this.court = new Court({
       player: this.player, vfx: this.vfx, feel: this.feel, camera: this.camera,
       sprite: (id) => {
@@ -258,6 +265,7 @@ export class TesuGame {
   /** Sets a progress flag (kept on this device). */
   setFlag(f: string, on = true): void {
     if (on === this.flags.has(f)) return;
+    if (on) this.flagSince.set(f, this.tick);
     if (on) this.flags.add(f);
     else this.flags.delete(f);
     if (TRANSIENT.has(f)) return;
@@ -424,7 +432,8 @@ export class TesuGame {
       this.vista.t -= 1 / 60;
       if (this.vista.t <= 0 || Math.abs(b.vx) > 0.6) this.vista = null;
     }
-    this.near = this.cut || this.tug || this.rides.active ? null : this.findNear();
+    this.syncGates();
+    this.near = this.cut || this.tug || this.rides.active || this.warp ? null : this.findNear();
     this.placeNames();
     this.motes.update(1 / 60);
     this.opening.tick(1 / 60);
@@ -454,6 +463,19 @@ export class TesuGame {
       this.fallFrom = null;
       this.cloudDrop = false;
       if (done) this.arrive(done.def, done.dir);
+      return;
+    }
+    for (const [id, t] of this.charmT) if (t > 0) this.charmT.set(id, t - 1);
+    // a paper charm: Q with one in reach ahead warps her to it, and she hangs from it a moment
+    if (this.tryCharm() || this.warp || this.perch) {
+      this.charmTick(b);
+      this.court.tick();
+      this.props.takeHits(this.player);
+      this.props.tick();
+      this.vfx.update();
+      this.input.tick++;
+      this.fallFrom = null;
+      this.cloudDrop = false;
       return;
     }
     this.player.update(this.inputProxy, this.collision as unknown as LabWorld, []);
@@ -557,12 +579,126 @@ export class TesuGame {
 
   // --- using things ---------------------------------------------------------
 
+  // --- flags that change the world: a bridge dropped, a rail gone, a sign that no longer holds
+
+  private flagSince = new Map<string, number>();
+  private gatedSprites: SpriteDef[] = [];
+
+  /** Gated ground, walls and sprites follow the flags (ground a second after its flag: the deck's drop). */
+  private syncGates(): void {
+    const settled = (f: string, after: number): boolean => {
+      if (!this.flags.has(f)) return false;
+      const since = this.flagSince.get(f);
+      return since === undefined || this.tick - since >= after;
+    };
+    this.collision.gate((f) => settled(f, 60));
+    for (const s of this.gatedSprites) {
+      const on = !s.when || settled(s.when, s.delay ?? 0);
+      s.hidden = !on || (!!s.unless && this.flags.has(s.unless));
+    }
+    // the charms light while they re-arm, and sway otherwise
+    for (const c of this.world.charms) {
+      const s = this.spriteById.get(c.id);
+      if (s) s.frame = (this.charmT.get(c.id) ?? 0) > 0 ? 2 : Math.floor(this.time * 1.5 + c.x / 97) % 2;
+    }
+  }
+
+  // --- the Pillar Hop's paper charms
+
+  private charmT = new Map<string, number>();
+  private warp: { c: CharmDef; t: number; from: [number, number] } | null = null;
+  private perch: { c: CharmDef; t: number } | null = null;
+  /** Where the charm she holds (or flies to) puts her feet. */
+  private perchAt: [number, number] = [0, 0];
+  private readonly perchWorld = {
+    move: (b: { x: number; y: number; vy: number; grounded: boolean }, dx: number, dy: number): { landed: boolean } => {
+      b.x += dx;
+      const [px, py] = this.perchAt;
+      const was = b.grounded;
+      if (Math.abs(b.x - px) <= 0.45 * H && b.y <= py + 1 && b.y + dy >= py) {
+        b.y = py;
+        b.vy = 0;
+        b.grounded = true;
+        return { landed: !was };
+      }
+      b.y += dy;
+      b.grounded = false;
+      return { landed: false };
+    },
+  };
+
+  /** The armed charm ahead of her within Q's reach, nearest first. */
+  private charmInReach(): CharmDef | null {
+    const b = this.player.body, f = this.player.facing;
+    let best: CharmDef | null = null, bd = Infinity;
+    for (const c of this.world.charms) {
+      if ((this.charmT.get(c.id) ?? 0) > 0 || this.perch?.c === c) continue;
+      const dx = (c.x - b.x) * f, dy = c.y + PERCH - b.y;
+      if (dx < 0.5 * H || dx > CHARM_REACH || dy < -4.5 * H || dy > 4 * H) continue;
+      const d = Math.hypot(dx, dy);
+      if (d < bd) { bd = d; best = c; }
+    }
+    return best;
+  }
+
+  /** Q with a charm in reach: the press is the charm's, not the sword's. */
+  private tryCharm(): boolean {
+    if (this.frozen > 0 || this.warp || this.cut || this.tug) return false;
+    const t = this.input.pressTick("skill");
+    if (t === undefined || this.input.tick - t > 8) return false;
+    const c = this.charmInReach();
+    if (!c) return false;
+    this.input.consume("skill");
+    const b = this.player.body;
+    this.warp = { c, t: 0, from: [b.x, b.y] };
+    this.perch = null;
+    this.charmT.set(c.id, CHARM_REARM);
+    this.vfx.spawn("afterimage.trail", { x: b.x, y: b.y, facing: this.player.facing });
+    this.feel.sound("dash", 1);
+    return true;
+  }
+
+  /** The warp to a charm (a short flight), then the hold: jump, dash, walk off or warp on; it lets go in time. */
+  private charmTick(b: { x: number; y: number; vx: number; vy: number; grounded: boolean }): void {
+    const w = this.warp;
+    if (w) {
+      w.t++;
+      const k = Math.min(1, w.t / WARP_T), e = 1 - (1 - k) * (1 - k);
+      this.perchAt = [w.from[0] + (w.c.x - w.from[0]) * e, w.from[1] + (w.c.y + PERCH - w.from[1]) * e];
+      b.x = this.perchAt[0];
+      b.y = this.perchAt[1];
+      b.vx = b.vy = 0;
+      b.grounded = true;
+      this.frozen = Math.max(this.frozen, 1);
+      this.player.update(this.inputProxy, this.perchWorld as unknown as LabWorld, []);
+      if (k >= 1) {
+        this.warp = null;
+        this.perch = { c: w.c, t: 0 };
+        this.vfx.spawn("ring.halo", { x: w.c.x, y: w.c.y, facing: 1 });
+      }
+      return;
+    }
+    const p = this.perch!;
+    p.t++;
+    this.perchAt = [p.c.x, p.c.y + PERCH];
+    this.player.update(this.inputProxy, this.perchWorld as unknown as LabWorld, []);
+    // off the charm: she jumped, dashed or walked off, or it let go
+    if (!b.grounded || Math.abs(b.x - p.c.x) > 0.45 * H || p.t >= PERCH_T) {
+      this.perch = null;
+      if (p.t >= PERCH_T && b.grounded) {
+        b.grounded = false;
+        b.y += 1;
+      }
+    }
+  }
+
   /** The nearest usable thing within reach of her (about half an H around its area). */
   private findNear(): Usable | null {
     const b = this.player.body;
     const reach = 0.45 * H;
     let best: Usable | null = null, bd = Infinity;
     for (const u of this.world.usables) {
+      if (u.unless && this.flags.has(u.unless)) continue;
       if (b.x < u.x0 - reach || b.x > u.x1 + reach || b.y < u.y0 - reach || b.y - b.h > u.y1 + reach) continue;
       // the thing she stands in front of wins over a neighbour whose centre is nearer
       const edge = b.x < u.x0 ? u.x0 - b.x : b.x > u.x1 ? b.x - u.x1 : 0;
@@ -637,6 +773,7 @@ export class TesuGame {
     const x = (fx - xf.offX) / xf.s, y = (fy - xf.offY) / xf.s;
     const b = this.player.body;
     for (const u of this.world.usables) {
+      if (u.unless && this.flags.has(u.unless)) continue;
       if (x >= u.x0 && x <= u.x1 && y >= u.y0 - H && y <= u.y1 && Math.abs(b.x - (u.x0 + u.x1) / 2) < 4 * H) return u;
     }
     return null;
@@ -971,6 +1108,7 @@ export class TesuGame {
       tiles: this.store.stats(), fps: Math.round(this.fps), frame: [this.r.iw, this.r.ih], present: this.r.presenter.rect,
       clip: this.player.clip.clip.id,
       opening: this.opening.state, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
+      charm: this.warp ? `warp:${this.warp.c.id}` : this.perch ? `perch:${this.perch.c.id}` : null,
       ride: this.rides.active ? { id: this.rides.active.def.id, dir: this.rides.active.dir, t: +this.rides.active.t.toFixed(2) } : null, vista: !!this.vista,
       court: this.court.state_(), hp: this.player.hp, ultCd: this.player.ultCd,
       props: this.props.state(), airborne: this.props.airborne(), broken: this.props.broken,

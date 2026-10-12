@@ -119,9 +119,10 @@ export function kagami(b: WorldBuilder): void {
   bg(b, "far", -2600, "plain", { w: 9000, foot: 560, ramp: "range", amp: 4 }, LAKE_Y, -5);
   // (their tops sit just under the waterline: no line of land along the lake's far shores)
   bg(b, "mid", -4000, "plain", { w: 21000, foot: 560, ramp: "pine", amp: 0 }, LAKE_Y + 6, -5);
-  // (it ends past anything the opening's widest frame sees, about 231 H: beyond, Shanshui's
-  // pillar forest stands in a sea of mist, with no ground at the lake's height)
-  bg(b, "back", -6000, "plain", { w: 19700, foot: 520, ramp: "pine", amp: 0 }, LAKE_Y + 6, -5);
+  // (past the court's tip it thins away into the mist, gone by about 210 H, behind the palace in
+  // the opening's widest frame: beyond, Shanshui's pillar forest stands in a sea of mist, with no
+  // ground at the lake's height)
+  bg(b, "back", -6000, "plain", { w: 18500, foot: 520, ramp: "pine", amp: 0, fadeEnd: 1500 }, LAKE_Y + 6, -5);
   bg(b, "mid", 2900, "op.sea", { w: 9000, depth: 600, swell: 10, ends: 60 }, LAKE_Y, -4);
   bg(b, "back", 6300, "op.sea", { w: 4200, depth: 1400, swell: 16, ends: 80 }, LAKE_Y, -4);
 

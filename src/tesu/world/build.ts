@@ -2,7 +2,7 @@
 // through one builder, which checks them and fills in each piece's bounds.
 
 import { painter } from "../art/painter.ts";
-import { PLANES, type RideDef, type PropDef, type Usable, type MistBank, type SpriteDef, type Atmos, type CamTrack, type Piece, type Place, type PlaneId, type Spawn, type Surface, type Walk, type Wall, type Water, type Void, type WorldDef } from "./types.ts";
+import { PLANES, type CharmDef, type RideDef, type PropDef, type Usable, type MistBank, type SpriteDef, type Atmos, type CamTrack, type Piece, type Place, type PlaneId, type Spawn, type Surface, type Walk, type Wall, type Water, type Void, type WorldDef } from "./types.ts";
 
 export interface PieceOpts {
   z?: number;
@@ -17,7 +17,7 @@ export class WorldBuilder {
   private nextSeed = 1;
 
   constructor(w: number, h: number) {
-    this.def = { w, h, pieces: [], sprites: [], walks: [], walls: [], waters: [], mists: [], voids: [], tracks: [], atmos: [], spawns: [], places: [], usables: [], props: [], rides: [] };
+    this.def = { w, h, pieces: [], sprites: [], walks: [], walls: [], waters: [], mists: [], voids: [], tracks: [], atmos: [], spawns: [], places: [], usables: [], props: [], rides: [], charms: [] };
   }
 
   /** A painted piece. x, y: its anchor in 3D world px; p: painter params in its plane's level-1 px. */
@@ -39,7 +39,7 @@ export class WorldBuilder {
   }
 
   /** Walkable ground through world px points [x, y, x, y, ...]. */
-  walk(pts: number[], o: { surface?: Surface; oneWay?: boolean; depth?: number; name?: string; stair?: boolean } = {}): Walk {
+  walk(pts: number[], o: { surface?: Surface; oneWay?: boolean; depth?: number; name?: string; stair?: boolean; when?: string } = {}): Walk {
     const w: Walk = {
       id: this.nextWalk++,
       pts: pts.map((v) => Math.round(v * 100) / 100),
@@ -48,6 +48,7 @@ export class WorldBuilder {
       depth: o.depth ?? Infinity,
       name: o.name,
       stair: o.stair,
+      when: o.when,
     };
     this.def.walks.push(w);
     return w;
@@ -101,6 +102,13 @@ export class WorldBuilder {
 
   place(p: Place): void {
     this.def.places.push(p);
+  }
+
+  /** A paper charm over a gap (its sprite is defined with the same id). */
+  charm(c: CharmDef): CharmDef {
+    if (this.def.charms.some((o) => o.id === c.id)) throw new Error(`charm ${c.id} defined twice`);
+    this.def.charms.push(c);
+    return c;
   }
 
   /** A ropeway: its cable, its two cars (sprites defined here, front parts too). */

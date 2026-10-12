@@ -11,10 +11,15 @@
 //   barred gate until Tsuji exists; the Kumo-bashi bridge back to the court and the Pillar Hop
 //   come with their own pieces.
 
-import { h } from "../../config.ts";
+import { CHARM_PERCH, h } from "../../config.ts";
 import { CAR } from "../../art/painters/shanshui.ts";
 import type { WorldBuilder } from "../build.ts";
+import { COURT_X1 } from "./court.ts";
 import { QUAY_Y } from "./hoaipho.ts";
+import { FLOOR_Y } from "./palace.ts";
+
+/** The Kumo-bashi's flag: set when the lashing on the Kumoji side is cut (the lashing post broken). */
+export const BRIDGE_FLAG = "broke:kumo-bashi-lashing";
 
 /** Kumoji's level at its west end (the upper station), world px. */
 export const KUMOJI_Y = h(79);
@@ -62,10 +67,11 @@ export function shanshui(b: WorldBuilder): void {
     for (let i = 2; i < road.length; i += 2) if (x <= road[i]! || i === road.length - 2) return road[i - 1]! + ((x - road[i - 2]!) / (road[i]! - road[i - 2]!)) * (road[i + 1]! - road[i - 1]!);
     return road[1]!;
   };
-  // the station's edge: a rail where the cars come in from the open air
-  // (the road runs right up to it, so she stops with her feet on the platform)
-  b.wall({ x: h(261.9), y0: KUMOJI_Y - h(6), y1: KUMOJI_Y + h(2.6), reason: "rail", from: "right" });
-  b.piece("front", "rail", 0, 0, { pts: [h(261.5), KUMOJI_Y + 2, h(262.05), KUMOJI_Y + 2], h: 50, every: 46 }, { z: 2 });
+  // the station's edge: a rail where the cars come in from the open air (gone once the
+  // Kumo-bashi is down: the bridge carries on from it); the road runs right up to it, so she
+  // stops with her feet on the platform
+  b.wall({ x: h(261.9), y0: KUMOJI_Y - h(6), y1: KUMOJI_Y + h(2.6), reason: "rail", from: "right", unless: BRIDGE_FLAG });
+  b.sprite({ id: "kumoji-west-rail", plane: "front", kind: "rail", x: 0, y: 0, p: { pts: [h(261.5), KUMOJI_Y + 2, h(262.05), KUMOJI_Y + 2], h: 50, every: 46 }, frames: 1, unless: BRIDGE_FLAG });
   b.piece("play", "hut", h(265.6), yAt(h(265.6)), { w: 230, h: 190 }, { z: 0 });
   // the band: masonry under the road, flat values
   const bandTop: number[] = [h(261.6), KUMOJI_Y, ...road.slice(2)];
@@ -126,10 +132,18 @@ export function shanshui(b: WorldBuilder): void {
   b.spawn({ id: "kumoji", x: h(290), y: yAt(h(290)), facing: 1 });
   b.place({ id: "kumoji", name: "Kumoji", x0: h(272), x1: KUMOJI_X1, y0: h(60), y1: h(100), title: "place", spawn: "kumoji" });
 
+  kumoBashi(b);
+  pillarHop(b);
+
   // --- the frames: Kumoji at play, the station end open to the drop; the ride pulls wide
   b.track({ id: "kumoji", x0: h(256), x1: h(345), y0: h(60), y1: h(100), bounds: [h(240), KUMOJI_X1 + h(2)], keys: [
     { x: h(262), zoom: 1, anchor: 0.62, horizon: 0.4, lead: 0.06 },
     { x: KUMOJI_X1, zoom: 1, anchor: 0.62, horizon: 0.4, lead: 0.06 },
+  ] });
+  // the gap between the court and Kumoji (the bridge, the Pillar Hop): a little wide, looking ahead and down
+  b.track({ id: "kumo-bashi", x0: COURT_X1 + h(1), x1: h(261.6), y0: h(50), y1: h(92), keys: [
+    { x: COURT_X1 + h(1.5), zoom: 0.85, anchor: 0.42, horizon: 0.42, lead: 0.14 },
+    { x: h(260), zoom: 0.85, anchor: 0.42, horizon: 0.42, lead: 0.14 },
   ] });
   b.track({ id: "silk-line", x0: h(200), x1: h(266), y0: h(60), y1: h(205), when: "ride:silk-line", keys: [
     { x: SILK_LOW_X, zoom: 1, anchor: 0.62, horizon: 0.4, lead: 0 },
@@ -137,4 +151,78 @@ export function shanshui(b: WorldBuilder): void {
     { x: h(240), zoom: 0.62, anchor: 0.55, horizon: 0.46, lead: 0 },
     { x: h(257), zoom: 0.5, anchor: 0.42, horizon: 0.5, lead: 0 },
   ] });
+}
+
+// --- the Kumo-bashi: a rope bridge from the Prize Court's tip to Kumoji (GDK B, a shortcut
+// that opens from its far side). Until it is cut loose it hangs rolled up at Kumoji's west edge,
+// lashed to a post; break the post (an attack) and the deck drops across the gap, Kumoji end
+// first, and lies on as a one-way deck: walked both ways, dropped through anywhere (the Prow
+// Leap is still a drop through it at the tip).
+
+/** The bridge's deck: from the Prow Leap's plank end down across the gap to Kumoji's edge, sagging a little. */
+export const BRIDGE_X0 = COURT_X1 + h(1.4);
+export const BRIDGE_X1 = h(261.9);
+export function bridgeY(x: number): number {
+  const t = Math.max(0, Math.min(1, (x - BRIDGE_X0) / (BRIDGE_X1 - BRIDGE_X0)));
+  return FLOOR_Y + (KUMOJI_Y - FLOOR_Y) * t + h(1.2) * 4 * t * (1 - t);
+}
+
+function kumoBashi(b: WorldBuilder): void {
+  const n = 24;
+  const deck: number[] = [];
+  for (let i = 0; i <= n; i++) {
+    const x = BRIDGE_X0 + ((BRIDGE_X1 - BRIDGE_X0) * i) / n;
+    deck.push(x, bridgeY(x));
+  }
+  b.walk(deck, { surface: "wood", oneWay: true, name: "kumo-bashi", when: BRIDGE_FLAG });
+  // the deck in eight stretches, dropping into place from the Kumoji end
+  for (let k = 0; k < 8; k++) {
+    const pts = deck.slice(k * 6, k * 6 + 8);
+    const ax = pts[0]!, ay = pts[1]!;
+    const local = pts.map((v, i) => (i % 2 === 0 ? v - ax : v - ay));
+    b.sprite({ id: `kumo-bashi-${k}`, plane: "play", kind: "ropebridge", x: ax, y: ay, p: { part: "deck", pts: local }, frames: 1, when: BRIDGE_FLAG, delay: (7 - k) * 7 });
+  }
+  // rolled up at Kumoji's edge, lashed to its post
+  b.sprite({ id: "kumo-bashi-rolled", plane: "play", kind: "ropebridge", x: BRIDGE_X1, y: KUMOJI_Y, p: { part: "rolled", tie: [Math.round(h(263.95) - BRIDGE_X1), -Math.round(h(0.45))] }, frames: 1, unless: BRIDGE_FLAG });
+  b.prop({ id: "kumo-bashi-lashing", kind: "lashing", p: { h: 54 }, x: h(263.95), y: KUMOJI_Y, cls: "permanent", material: "wood", hp: 1, pieces: 4 });
+  // from the court's side, until then: the anchor rings and a frayed end
+  b.usable({ id: "kumo-bashi-anchor", x0: COURT_X1 - h(0.2), y0: FLOOR_Y - h(1.6), x1: BRIDGE_X0, y1: FLOOR_Y, label: "the bridge's anchor", unless: BRIDGE_FLAG, action: { kind: "say", text: "Two anchor rings and a frayed rope end. The Kumo-bashi is rolled up on the far side, at Kumoji." } });
+}
+
+// --- the Pillar Hop: pillar tops across the gap with paper charms strung between them (GDK
+// A.3): Q at a charm ahead warps her to it, she hangs from it a moment, then jumps on (with the
+// double jump and the air dash) or warps to the next. Every gap needs its charms; a miss falls
+// into the sea of mist and the talisman tugs her back to the last pillar.
+
+/** The pillars: [x0, x1, top] in H (each top a little over 2 H under the bridge's deck). */
+export const HOP_PILLARS: [number, number, number][] = [
+  [205.2, 207.6, 64.4], [215.1, 217.5, 68.0], [225.0, 227.4, 71.3], [235.1, 237.5, 74.5], [245.2, 247.6, 77.4],
+];
+/** The charms: [x, where her feet hang] in H, two from the court's tip, one per gap, two to Kumoji. */
+export const HOP_CHARMS: [number, number][] = [
+  [198.6, 60.6], [203.0, 63.6], [212.7, 67.4], [222.6, 70.7], [232.5, 73.9], [242.6, 76.8], [252.8, 78.6], [259.4, 80.0],
+];
+
+function pillarHop(b: WorldBuilder): void {
+  HOP_PILLARS.forEach(([x0, x1, top], i) => {
+    b.walk([h(x0), h(top), h(x1), h(top)], { surface: "stone", depth: h(226) - h(top), name: `hop-${i + 1}` });
+    b.piece("play", "pillar", h((x0 + x1) / 2), h(top), { w: h(x1 - x0), h: h(226) - h(top) }, { z: -2 });
+  });
+  // the charms on lines strung from pillar top to pillar top (from the plank's end, to Kumoji's edge)
+  const tops = HOP_CHARMS.map(([x, feet]) => [h(x), h(feet) - CHARM_PERCH - h(0.4)] as const);
+  HOP_CHARMS.forEach(([x, feet], i) => {
+    b.charm({ id: `charm-${i + 1}`, x: h(x), y: h(feet) - CHARM_PERCH });
+    b.sprite({ id: `charm-${i + 1}`, plane: "play", kind: "charm", x: tops[i]![0], y: tops[i]![1], p: {}, frames: 3, frame: 0 });
+  });
+  const P = HOP_PILLARS.map(([x0, x1, top]) => [h(x0), h(x1), h(top) - h(0.15)] as const);
+  const lines: number[][] = [
+    [BRIDGE_X0, FLOOR_Y - h(0.3), ...tops[0]!, ...tops[1]!, P[0]![0], P[0]![2]],
+    [P[0]![1], P[0]![2], ...tops[2]!, P[1]![0], P[1]![2]],
+    [P[1]![1], P[1]![2], ...tops[3]!, P[2]![0], P[2]![2]],
+    [P[2]![1], P[2]![2], ...tops[4]!, P[3]![0], P[3]![2]],
+    [P[3]![1], P[3]![2], ...tops[5]!, P[4]![0], P[4]![2]],
+    [P[4]![1], P[4]![2], ...tops[6]!, ...tops[7]!, BRIDGE_X1, KUMOJI_Y + h(0.3)],
+  ];
+  for (const pts of lines) b.piece("play", "ropecable", 0, 0, { pts }, { z: 5 });
+  b.spawn({ id: "pillar-hop", x: COURT_X1 + h(1), y: FLOOR_Y, facing: 1 });
 }

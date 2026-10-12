@@ -400,6 +400,8 @@ export interface PlainP {
   ramp?: "range" | "moss" | "pine" | "karst";
   /** Undulation of the top line, px. */
   amp?: number;
+  /** Dissolves into the haze over this many px at its east end (default 0: a plain cut). */
+  fadeEnd?: number;
 }
 
 export const plain = definePainter<PlainP>("plain", {
@@ -421,6 +423,8 @@ export const plain = definePainter<PlainP>("plain", {
         // nearer rows (further down the frame) are a little darker and more textured
         let t = 0.3 + 0.35 * clamp(below / Math.max(1, p.foot), 0, 1) + (vnoise(lx / 11, ly / 5, c.seed + 3) - 0.5) * 0.18;
         if (y === Yt) t = 0.15;
+        // (its east end thins out pixel by pixel into the haze)
+        if (p.fadeEnd && lx > p.w - p.fadeEnd && bayer4(x, y) >= (p.w - lx) / p.fadeEnd) continue;
         b.set(x, y, tone(ramp, clamp(t, 0, 1), x, y, 0.5));
       }
     }

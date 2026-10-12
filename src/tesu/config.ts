@@ -11,6 +11,8 @@
 
 /** Zhusha's height at play zoom, world px. */
 export const H = 96;
+/** A paper charm (the Pillar Hop): how far below where she takes hold of it her feet hang, px. */
+export const CHARM_PERCH = 1.05 * 96;
 /** Her close-up render height (R's dive and stamp, the opening's first frame, the splash card). */
 export const CLOSE_H = 192;
 /** Frame height in art px. 9 H at play zoom. */
