@@ -35,8 +35,7 @@ export function shiraito(b: WorldBuilder): void {
   // (the stand-in recess stops at 176 H: from there env-hall's court masonry carries it)
   const galleryEnd = h(176);
   b.piece("play", "stairgallery", 0, 0, { pts: [PATH_TOP_X, topY, galleryEnd, topY + ((FLOOR_Y - topY) * (galleryEnd - PATH_TOP_X)) / (STAIRWELL_X1 - PATH_TOP_X)], head: 112 }, { z: 2 });
-  // the mouth's balustrade posts, a lantern on each
-  for (const x of [STAIRWELL_X0 - h(0.15), STAIRWELL_X1 + h(0.15)]) b.piece("play", "lanternpillar", x, FLOOR_Y, { h: h(1.1) }, { z: 3 });
+  // (the mouth's newel posts and their lanterns are env-hall's court dressing)
 
   // --- the path: rock ledges at both ends, the steep middle plank walks on brackets bolted
   // back into the cliff, open air beneath (the Band grammar: carried by something you see)

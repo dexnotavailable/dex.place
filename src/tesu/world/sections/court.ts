@@ -13,6 +13,7 @@
 import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
 import { FLOOR_Y } from "./palace.ts";
+import { dressCourt } from "../../art/library/hall/dress.ts";
 
 export const COURT_X0 = h(176.2);
 export const COURT_X1 = h(192.6);
@@ -33,39 +34,24 @@ export const STAIRWELL_X1 = h(189.2);
 
 export function court(b: WorldBuilder): void {
   const Y = FLOOR_Y;
-  // the floor: paving with the great seal lying on it, its face of cut blocks
   // the floor, in two parts either side of the Prow Stair's mouth (thin, so the stair has
-  // headroom beneath it)
-  b.piece("play", "courtfloor", COURT_X0 - h(0.3), Y, { w: STAIRWELL_X0 - COURT_X0 + h(0.3), seal: [COURT_MID - COURT_X0 + h(0.3), h(3.4)] }, { z: 1 });
-  b.piece("play", "courtfloor", STAIRWELL_X1, Y, { w: COURT_X1 - STAIRWELL_X1 + h(0.2), seal: [-h(20), h(0.1)] }, { z: 1 });
+  // headroom beneath it); its look is env-hall's dressing
   b.walk([COURT_X0, Y, STAIRWELL_X0, Y], { surface: "stone", depth: h(0.6), name: "prize-court" });
   b.walk([STAIRWELL_X1, Y, COURT_X1, Y], { surface: "stone", depth: h(0.6), name: "prize-court-tip" });
   // the Prow Stair's mouth is bridged by a timber grate (one-way: she walks across it both
   // ways, walks up the stair under it, and drops through it holding down)
   b.walk([STAIRWELL_X0 - h(0.05), Y, STAIRWELL_X1 + h(0.05), Y], { surface: "wood", oneWay: true, name: "prow-stair-mouth" });
-  b.piece("play", "plank", STAIRWELL_X0 - h(0.1), Y, { w: STAIRWELL_X1 - STAIRWELL_X0 + h(0.2) }, { z: 2 });
   b.usable({ id: "prow-stair", x0: STAIRWELL_X0, y0: Y - h(1.6), x1: STAIRWELL_X1, y1: Y, label: "down the Prow Stair", action: { kind: "door", to: "prow-stair-in" } });
   // the hall's east wall and the rail at the tip: hard edges with reasons
   b.wall({ x: COURT_X0 + h(0.15), y0: Y - h(6), y1: Y + h(0.1), reason: "wall" });
   // the Prow Leap at the tip (GDK 3.5): a plank with prayer flags out past the rail; off its
   // end is a long fall with a splash into Hoài Phố's lake (sections/hoaipho.ts)
   b.walk([COURT_X1 - h(0.1), Y, COURT_X1 + h(1.4), Y], { surface: "wood", oneWay: true, name: "prow-leap" });
-  b.piece("play", "plank", COURT_X1 - h(0.2), Y, { w: h(1.7) }, { z: 3 });
-  b.piece("play", "banners", COURT_X1 + h(0.2), Y - h(2.6), { w: h(1), drop: h(0.9), n: 2 }, { z: 3 });
 
   // the gate back into the hall, the board, Bao's gong tower
-  b.piece("play", "courtgate", COURT_X0 + h(0.75), Y, { w: 124, h: 300 }, { z: 3 });
   b.usable({ id: "court-doors", x0: COURT_X0 + h(0.1), y0: Y - h(3.1), x1: COURT_X0 + h(1.4), y1: Y, label: "the hall", action: { kind: "door", to: "hall-court-side" } });
-  b.piece("play", "prizeboard", BOARD_X, Y, { plaques: ["dexclient", "dexcode"] }, { z: 4 });
   b.usable({ id: "prize-board", x0: BOARD_X - h(1.2), y0: Y - h(2.4), x1: BOARD_X + h(1.2), y1: Y, label: "the Prize Board", action: { kind: "panel", panel: "board" } });
-  b.piece("play", "gongtower", GONG_X, Y, { h: h(12) }, { z: 3 });
   b.sprite({ id: "bao", plane: "play", kind: "bao", x: BAO_X, y: Y, p: {}, frames: 5, frame: 0, flip: true });
-
-  // lantern pillars behind the ring, and two on P5 that stand at the frame's edges in a bout
-  for (const x of [h(184.2), h(187.4), h(190.4)]) b.piece("play", "lanternpillar", x, Y - h(0.12), { h: h(3.1) }, { z: 2 });
-  // (tall, out of the frame at the bottom; painted only for play zoom and closer, so the wide
-  // frames never show them hanging under the prow)
-  for (const x of [COURT_MID - h(6.9), COURT_MID + h(6.9)]) b.piece("near", "lanternpillar", x, Y + h(4), { h: 1150 }, { z: 3, minLevel: 0.9 });
 
   // things that break by the tip: two jars, and a lantern post with its paper lantern hanging
   // from the arm (break the post and the lantern falls: the support rule)
@@ -73,9 +59,6 @@ export function court(b: WorldBuilder): void {
   b.prop({ id: "court-jar-2", kind: "jar", p: { h: 24, glaze: "celadon" }, x: h(190.15), y: Y, cls: "cosmetic", material: "clay", pieces: 3 });
   b.prop({ id: "court-post", kind: "lanternpost", p: { h: 190, arm: 44 }, x: h(185.9) - 22, y: Y, cls: "cosmetic", material: "wood", hp: 2, pieces: 5 });
   b.prop({ id: "court-lantern", kind: "paperlantern", p: { r: 15 }, x: h(185.9) + 22, y: Y - 190, cls: "cosmetic", material: "paper", on: "court-post", hangs: true, pieces: 3 });
-  // at the tip: a bench and the rail, the land falling away below
-  b.piece("play", "bench", h(190.9), Y, { w: 96 }, { z: 4 });
-  b.piece("front", "rail", 0, 0, { pts: [h(191.2), Y + 2, COURT_X1 - h(0.3), Y + 2], h: 50, every: 46 }, { z: 2 });
 
   // beyond the tip the land falls away into mist
   b.mist({ x0: COURT_X1 - h(6), x1: COURT_X1 + h(30), y: Y + h(16), half: h(13), rate: 0.62, after: "back", density: 0.95 });
@@ -101,4 +84,8 @@ export function court(b: WorldBuilder): void {
     { x: COURT_X0, zoom: 1, anchor: 0.68, horizon: 0.36, lead: 0, fixX: COURT_MID },
     { x: COURT_X1, zoom: 1, anchor: 0.68, horizon: 0.36, lead: 0, fixX: COURT_MID },
   ] });
+
+  // --- env-hall's dressing: the court's floor, gatehouse, board, gong tower, pillars, rail and
+  // bench, read from the layout above (art/library/hall)
+  dressCourt(b, { gongX: GONG_X });
 }
