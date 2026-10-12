@@ -1,6 +1,9 @@
-// Titles (GDK 3.9, Dex's note: titles appear suddenly). Big titles (TESU, SHANSHUI ...)
-// and place names slam in on the hit, all at once, bold, then hold and fade; the build-up
-// lives in the music and the camera before them. The face is the title lane's Tesu Display
+// Titles (GDK 3.9, Dex's notes: titles appear suddenly; big titles dead centre, written
+// into the landscape). Big titles (TESU, SHANSHUI ...) and place names slam in on the hit,
+// all at once, bold, then hold and fade; the build-up lives in the music and the camera
+// before them. A big title sits IN the depth stack (drawn after a background plane, so the
+// nearer planes pass in front of it, like a word written into the land), dead centre and
+// big; place names lie over everything, small, lower left. The face is the title lane's Tesu Display
 // (src/title-font): drawn at whole-number scales into a small canvas each frame it shows
 // and laid over the frame. Scarlet over daytime skies, paper white at night.
 
@@ -38,6 +41,8 @@ interface Card {
   big: boolean;
   t: number;
   night: boolean;
+  /** The plane a big title is written after (nearer planes pass in front). */
+  after: string;
 }
 
 export class Titles {
@@ -62,9 +67,9 @@ export class Titles {
   }
 
   /** A big title (TESU, SHANSHUI ...) or a place name, slamming in now. */
-  show(text: string, big: boolean, night = false): void {
+  show(text: string, big: boolean, night = false, after = "mid"): void {
     this.cards = this.cards.filter((c) => c.big !== big);
-    this.cards.push({ text, big, t: 0, night });
+    this.cards.push({ text, big, t: 0, night, after: big ? after : "overlay" });
   }
 
   get showing(): boolean {
@@ -79,13 +84,17 @@ export class Titles {
     });
   }
 
-  /** Draws the cards over the frame (W x H art px): big titles across the sky, place names lower left. */
-  draw(W: number, H: number): void {
+  /**
+   * Draws the cards that belong at this point of the frame: `layer` is a plane id (big titles
+   * written after it) or "overlay" (on top of everything).
+   */
+  draw(W: number, H: number, layer = "overlay"): void {
     if (!this.cards.length || !this.font) return;
     const gl = this.gl, u = this.u;
     const font = this.font;
     for (const c of this.cards) {
-      const scale = c.big ? Math.max(4, Math.round(H / 120)) : Math.max(2, Math.round((H * 2) / 720));
+      if (c.after !== layer) continue;
+      const scale = c.big ? Math.max(5, Math.round(H / 100)) : Math.max(2, Math.round((H * 2) / 720));
       const lay = layoutTitle(font, c.text, c.big ? 2 : 1);
       const cap = font.metrics.cap, desc = font.metrics.descent;
       const w = Math.max(1, lay.width * scale), h = (cap + desc) * scale;
@@ -103,8 +112,9 @@ export class Titles {
       gl.bindTexture(gl.TEXTURE_2D, this.tex);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, cv);
+      // big: dead centre; place names: lower left
       const x0 = c.big ? Math.round((W - w) / 2) : Math.round(W * 0.045);
-      const y0 = c.big ? Math.round(H * 0.17) : Math.round(H * 0.88 - h);
+      const y0 = c.big ? Math.round((H - cap * scale) / 2) : Math.round(H * 0.88 - h);
       gl.useProgram(this.prog);
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);

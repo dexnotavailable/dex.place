@@ -7,7 +7,7 @@ import { FRAME_H, INTERIOR_Y, ZOOMS, H } from "./config.ts";
 import type { CamState } from "./render/view.ts";
 import type { CamKey, CamTrack } from "./world/types.ts";
 
-export const DEFAULT_KEY: Required<Omit<CamKey, "x" | "fixX" | "fixY">> = {
+export const DEFAULT_KEY: Required<Omit<CamKey, "x" | "fixX" | "fixY" | "pin">> = {
   zoom: 1,
   anchor: 0.66,
   horizon: 0.38,
@@ -23,11 +23,13 @@ export interface Framing {
   lead: number;
   fixX: number | null;
   fixY: number | null;
+  /** A world x pinned to a fraction of the frame's width (resolved by the camera against its width). */
+  pin: { x: number; at: number } | null;
 }
 
 /** Framing from the active tracks at x (tracks blend in over their first and last keys). */
 export function framingAt(tracks: readonly CamTrack[], x: number, flags: (f: string) => boolean, y = 0): Framing {
-  const out: Framing = { ...DEFAULT_KEY, fixX: null, fixY: null };
+  const out: Framing = { ...DEFAULT_KEY, fixX: null, fixY: null, pin: null };
   for (const t of tracks) {
     if (x < t.x0 || x > t.x1) continue;
     if ((t.y0 !== undefined && y < t.y0) || (t.y1 !== undefined && y > t.y1)) continue;
@@ -63,6 +65,9 @@ export function framingAt(tracks: readonly CamTrack[], x: number, flags: (f: str
     out.fixX = fx;
     const fy = a.fixY !== undefined && b.fixY !== undefined ? a.fixY + (b.fixY - a.fixY) * u : (u < 0.5 ? a.fixY : b.fixY) ?? null;
     out.fixY = fy;
+    out.pin = a.pin && b.pin
+      ? { x: a.pin.x + (b.pin.x - a.pin.x) * u, at: a.pin.at + (b.pin.at - a.pin.at) * u }
+      : (u < 0.5 ? a.pin : b.pin) ?? null;
   }
   return out;
 }
@@ -103,8 +108,14 @@ export class Camera {
     this.anchor = f.anchor;
     this.horizon = f.horizon;
     this.lookX = facing * f.lead * this.W / Math.min(1, this.zoom);
-    this.cx = f.fixX ?? px + this.lookX;
+    this.cx = this.fixedX(f) ?? px + this.lookX;
     this.cy = f.fixY ?? py;
+  }
+
+  /** The framing's fixed camera x, if any (a pin uses the zoom the framing settles at). */
+  private fixedX(f: Framing): number | null {
+    if (f.pin) return f.pin.x - (f.pin.at - 0.5) * this.W / f.zoom;
+    return f.fixX;
   }
 
   /** One 60 Hz tick. px, py: her feet. */
@@ -140,9 +151,10 @@ export class Camera {
     const zEff = Math.min(1, this.zoom);
     const lead = (f.lead * facing + 0.03 * Math.max(-1, Math.min(1, vx / 3.2))) * this.W / zEff;
     this.lookX += (lead - this.lookX) * 0.035;
-    const tx = f.fixX ?? px + this.lookX;
+    const fixed = this.fixedX(f);
+    const tx = fixed ?? px + this.lookX;
     const ty = f.fixY ?? py;
-    this.cx += (tx - this.cx) * (f.fixX !== null ? 0.05 : 0.1);
+    this.cx += (tx - this.cx) * (fixed !== null ? 0.05 : 0.1);
     // vertical: a dead zone so small hops do not move the frame
     const dz = 0.55 * H;
     const dy = ty - this.cy;

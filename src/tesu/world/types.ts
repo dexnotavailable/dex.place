@@ -128,6 +128,11 @@ export interface CamKey {
   fixX?: number;
   /** Fixed camera feet-row y (world px). */
   fixY?: number;
+  /**
+   * Pin a world x (on the play plane) to a fraction of the frame's width, whatever the
+   * window's shape: a narrow frame crops the far side of the picture, the pinned thing stays put.
+   */
+  pin?: { x: number; at: number };
 }
 
 export interface CamTrack {

@@ -33,8 +33,11 @@ export function openingCamera(b: WorldBuilder): void {
     { x: h(115), zoom: 0.5, anchor: 0.67, horizon: 0.33, lead: 0 },
     { x: h(119), zoom: 1 / 3, anchor: 0.65, horizon: 0.36, lead: 0 },
     { x: h(123), zoom: 0.25, anchor: 0.68, horizon: 0.42, lead: 0 },
-    { x: h(124.8), zoom: 0.125, anchor: 0.71, horizon: 0.5, lead: 0 },
-    { x: h(128.6), zoom: 0.125, anchor: 0.71, horizon: 0.5, lead: 0 },
+    // the widest frame: the lake on the left, the palace on the right (its west gate pinned at
+    // four fifths of the frame's width, so a narrow screen crops the palace's far side, never
+    // the sky the title needs), TESU written into the sky between them, dead centre
+    { x: h(124.8), zoom: 0.125, anchor: 0.71, horizon: 0.5, lead: 0, pin: { x: h(143), at: 0.8 } },
+    { x: h(128.6), zoom: 0.125, anchor: 0.71, horizon: 0.5, lead: 0, pin: { x: h(143), at: 0.8 } },
     { x: h(130.8), zoom: 0.45, anchor: 0.64, horizon: 0.4, lead: 0.03 },
     { x: h(133.6), zoom: 1, anchor: 0.68, horizon: 0.38, lead: 0.07 },
   ] });

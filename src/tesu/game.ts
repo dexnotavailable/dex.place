@@ -244,7 +244,7 @@ export class TesuGame {
     const x = this.opening.holding ? Math.min(this.player.body.x, TERRACE_X1) : this.player.body.x;
     let f = framingAt(this.world.tracks, Math.max(x, this.opening.holding ? TERRACE_X0 + 1 : -Infinity), has, this.player.body.y);
     // an entrance shot: a held vista on first entry, ended early by moving
-    if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor };
+    if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor, pin: null };
     return this.framingOverride ? { ...f, ...this.framingOverride } : f;
   }
 
@@ -692,6 +692,8 @@ export class TesuGame {
         const row = m.y * m.rate * xf.g + xf.offY;
         this.atmos.drawMist(W, Hf, [{ row, half: m.half * m.rate * xf.g, density: m.density, drift: 5 }], hexRgb(a.mistColour), this.time, cam.cx * m.rate, [fx0, fx1]);
       }
+      // a big title written into the landscape after its plane (nearer planes pass in front)
+      this.titles.draw(W, Hf, id);
       if (id === "back" || id === "near") {
         r.begin(camX, camY, DAY, lights);
         this.motes.draw(r, cam, id === "back" ? 0.6 : 1.3);
