@@ -15,8 +15,10 @@ export interface OpeningHost {
   freeze(ticks: number): void;
   title(text: string, big: boolean): void;
   setFlag(f: string): void;
-  /** Seconds until the music's next bar line (the sound lane's clock; 2 s bars until then). */
+  /** Seconds until the music's next bar line (the score's clock, sound.ts). */
   nextBar(): number;
+  /** The score's cues: the calm theme starts, the drop lands. */
+  cue(name: string): void;
 }
 
 export class Opening {
@@ -26,12 +28,17 @@ export class Opening {
   private landedAt = 0;
   reducedMotion = false;
 
-  constructor(private host: OpeningHost) {}
+  private host: OpeningHost;
+
+  constructor(host: OpeningHost) {
+    this.host = host;
+  }
 
   start(): void {
     this.state = "close";
     this.t = 0;
     this.host.freeze(120);
+    this.host.cue("calm:start");
   }
 
   /** The widest frame is held (she may already be in the tunnel at a full dash). */
@@ -62,6 +69,7 @@ export class Opening {
         if (this.t >= this.dropAt) {
           this.state = "drop";
           this.landedAt = this.t;
+          this.host.cue("calm:drop");
           this.host.title("TESU", true);
           this.host.setFlag("title:tesu");
         }

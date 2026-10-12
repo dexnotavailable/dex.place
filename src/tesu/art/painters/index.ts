@@ -10,4 +10,5 @@ import "./hall.ts";
 import "./folk.ts";
 import "./court.ts";
 import "./champions.ts";
+import "./props.ts";
 import "../library/sky/index.ts";

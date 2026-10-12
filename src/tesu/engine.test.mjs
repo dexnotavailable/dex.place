@@ -145,3 +145,53 @@ test("prizes come from the downloads data: dexCode's plaque wins dexClient's fil
   assert.equal(b.file.href, client.file.href);
   assert.equal(prizeFor("nothing"), null);
 });
+
+test("destruction: a broken crate's pieces and the jar it carried all come to rest on real ground", async () => {
+  const { Props } = await import("./props.ts");
+  const w = buildWorld();
+  const col = new Collision(w.walks, w.walls);
+  const sprites = new Map(w.sprites.map((s) => [s.id, { ...s }]));
+  const crate = w.props.find((p) => p.id === "terrace-crate");
+  const jar = w.props.find((p) => p.id === "terrace-jar");
+  assert.equal(jar.on, "terrace-crate");
+  let swing = [{ box: { x: crate.x - 20, y: crate.y - 30, w: 40, h: 30 }, hb: { damage: 10, knockback: [2, -1], hitstop: 4, group: "a", x: 0, y: 0, w: 0, h: 0 } }];
+  const player = { body: { x: crate.x - 60, y: crate.y }, facing: 1, clip: { index: 0, hitGroups: new Map(), hit: false }, hitboxes: () => swing };
+  const noop = () => {};
+  const props = new Props({
+    player, vfx: { spawn: noop }, feel: { freeze: noop, sound: noop }, camera: { shake: noop },
+    ground: (x, y) => col.groundBelow(x, y)?.y ?? null,
+    addSprite: (s) => sprites.set(s.id, s), removeSprite: (id) => sprites.delete(id),
+    setFlag: noop, hasFlag: () => false, usables: () => [], bottom: w.h + 400,
+  }, w.props, (id) => sprites.get(id));
+  props.takeHits(player);
+  swing = [];
+  assert.match(props.state()["terrace-crate"], /^broken/);
+  for (let i = 0; i < 600; i++) props.tick();
+  assert.equal(props.airborne(), 0, "nothing left in the air");
+  // the jar fell with its support: it is no longer standing on the crate's top
+  const js = sprites.get("prop:terrace-jar");
+  const gy = col.groundBelow(js.x, js.y - 60)?.y ?? 0;
+  assert.ok(js.hidden || Math.abs(js.y + 1 - gy) < 1.5, `the jar is on the ground or broken (${js.y} vs ${gy}, ${props.state()["terrace-jar"]})`);
+  // every piece of the crate rests on the ground under it (its pixels' bottom on the ground line)
+  const live = props.list.find((l) => l.d.id === "terrace-crate");
+  assert.ok(live.pieces.length >= 3);
+  for (const pc of live.pieces) {
+    const bottom = live.y + pc.dy + pc.box[3];
+    const cx = live.x + pc.dx + (pc.box[0] + pc.box[2]) / 2;
+    const g = col.groundBelow(cx, bottom - 3)?.y;
+    assert.ok(pc.rest && g !== undefined && Math.abs(bottom - g) < 1.5, `piece ${pc.def.id} rests on the ground (${bottom} vs ${g})`);
+  }
+});
+
+test("pieces: every pixel of a prop belongs to exactly one piece, the same at any density", async () => {
+  const { pieceOf } = await import("./art/painters/props.ts");
+  const b = [-20, -40, 20, 0];
+  const seen = new Set();
+  for (let y = -40; y < 0; y += 2) for (let x = -20; x < 20; x += 2) {
+    const i = pieceOf(x + 0.5, y + 0.5, b, 5, 77);
+    assert.ok(i >= 0 && i < 5);
+    assert.equal(pieceOf(x + 0.5, y + 0.5, b, 5, 77), i);
+    seen.add(i);
+  }
+  assert.ok(seen.size >= 3, "a prop really comes apart");
+});

@@ -20,6 +20,8 @@ import { rgb } from "./art/palette.ts";
 import { Camera, framingAt } from "./camera.ts";
 import { Collision } from "./collide.ts";
 import { Court, type Prize } from "./court.ts";
+import { Props } from "./props.ts";
+import { Sound } from "./sound.ts";
 import { H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore } from "./plates/store.ts";
 import type { ZhushaAssets } from "./player.ts";
@@ -90,7 +92,11 @@ export class TesuGame {
   readonly flags = new Set<string>();
   /** The Prize Court's bouts (the board picks, the champion, the killing blow's download). */
   readonly court: Court;
-  /** Music and sound cues for the score (piece 6 wires them to the stems). */
+  /** Things that break, with weight, and the support rule. */
+  readonly props: Props;
+  /** Effects, ambience beds and the adaptive score. */
+  readonly sound = new Sound();
+  /** Also told every score cue (tools). */
   onCue: (name: string) => void = () => {};
   /** A bout won: the note "it's in your downloads" (the page draws it). */
   onCelebrate: (prize: Prize) => void = () => {};
@@ -143,7 +149,8 @@ export class TesuGame {
       freeze: (t) => { this.frozen = Math.max(this.frozen, t); },
       title: (text, big) => this.titles.show(text, big),
       setFlag: (f) => this.setFlag(f),
-      nextBar: () => 2 - (this.time % 2),
+      nextBar: () => this.sound.music.nextBar(),
+      cue: (n) => this.cue(n),
     });
     this.refl = makeTarget(gl, r.iw, r.ih, false);
     r.onFrame = () => {
@@ -198,9 +205,24 @@ export class TesuGame {
       },
       setFlag: (f, on) => this.setFlag(f, on),
       freeze: (n) => { this.frozen = Math.max(this.frozen, n); },
-      cue: (n) => this.onCue(n),
+      cue: (n) => this.cue(n),
       celebrate: (p) => this.onCelebrate(p),
     });
+    this.feel.onSound = (id, v) => this.sound.sfx(id, v);
+    this.props = new Props({
+      player: this.player, vfx: this.vfx, feel: this.feel, camera: this.camera,
+      ground: (x, y) => this.collision.groundBelow(x, y)?.y ?? null,
+      addSprite: (s) => { this.world.sprites.push(s); this.spriteById.set(s.id, s); },
+      removeSprite: (id) => {
+        const i = this.world.sprites.findIndex((s) => s.id === id);
+        if (i >= 0) this.world.sprites.splice(i, 1);
+        this.spriteById.delete(id);
+      },
+      setFlag: (f, on) => this.setFlag(f, on),
+      hasFlag: (f) => this.flags.has(f),
+      usables: () => this.world.usables,
+      bottom: this.world.h + 4 * H,
+    }, this.world.props, (id) => this.spriteById.get(id)!);
     const catchS = this.world.spawns.find((s) => s.id === "catch")!;
     const resume = opts.link ? null : resumePlace(this.save, Date.now(), catchS.x, isReload());
     if (resume) this.spawnAt({ id: "resume", x: resume.x, y: resume.y, facing: resume.facing });
@@ -222,6 +244,33 @@ export class TesuGame {
     if (TRANSIENT.has(f)) return;
     this.save.flags = [...this.flags].filter((x) => !TRANSIENT.has(x));
     writeSave(this.save);
+  }
+
+  /** A score cue (the opening, the court, the hall). */
+  private cue(name: string): void {
+    this.sound.music.cue(name);
+    this.onCue(name);
+  }
+
+  /**
+   * The score follows her, not a clock: in the opening a drum layer comes in at each mark
+   * (the jetty's last posts, the shore, the three gates); the hall gathers the music into its
+   * quiet; outdoors after the opening the calm landscape form plays; beds follow the place.
+   */
+  private scoreTick(): void {
+    const b = this.player.body;
+    const m = this.sound.music;
+    if (this.opening.active && !m.dropped) {
+      const marks = [103, 108, 115, 119, 123];
+      let n = 0;
+      for (const k of marks) if (b.x >= k * H) n++;
+      if (n > m.layers) this.cue(`calm:layer:${n}`);
+    }
+    if (this.tick % 30 !== 0) return;
+    const inside = b.y >= INTERIOR_Y;
+    this.sound.setBed(inside ? "hall" : b.x < 109 * H ? "lake" : "heights");
+    if (inside && m.mood !== "hall" && m.mood !== "intense") this.cue("music:hall");
+    else if (!inside && !this.opening.active && (m.mood === "off" || m.mood === "hall")) this.cue("music:land");
   }
 
   private notePlace(): void {
@@ -328,6 +377,7 @@ export class TesuGame {
     this.placeNames();
     this.motes.update(1 / 60);
     this.opening.tick(1 / 60);
+    this.scoreTick();
     this.titles.update(1 / 60);
     if (this.tick % 60 === 0) this.notePlace();
   }
@@ -343,6 +393,8 @@ export class TesuGame {
     this.collision.holdDown = this.frozen <= 0 && this.input.isDown("down");
     this.player.update(this.inputProxy, this.collision as unknown as LabWorld, []);
     this.court.tick();
+    this.props.takeHits(this.player);
+    this.props.tick();
     this.vfx.update();
     this.input.tick++;
     // falls: no damage anywhere; a long one is a cloud drop
@@ -779,6 +831,8 @@ export class TesuGame {
       clip: this.player.clip.clip.id,
       opening: this.opening.state, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
       court: this.court.state_(), hp: this.player.hp, ultCd: this.player.ultCd,
+      props: this.props.state(), airborne: this.props.airborne(), broken: this.props.broken,
+      music: { mood: this.sound.music.mood, layers: this.sound.music.layers, dropped: this.sound.music.dropped, nextBar: +this.sound.music.nextBar().toFixed(2) },
     };
   }
 

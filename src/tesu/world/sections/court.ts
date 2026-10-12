@@ -50,6 +50,12 @@ export function court(b: WorldBuilder): void {
   // frames never show them hanging under the prow)
   for (const x of [COURT_MID - h(6.9), COURT_MID + h(6.9)]) b.piece("near", "lanternpillar", x, Y + h(4), { h: 1150 }, { z: 3, minLevel: 0.9 });
 
+  // things that break by the tip: two jars, and a lantern post with its paper lantern hanging
+  // from the arm (break the post and the lantern falls: the support rule)
+  b.prop({ id: "court-jar-1", kind: "jar", p: { h: 30, glaze: "ink" }, x: h(189.2), y: Y, cls: "cosmetic", material: "clay" });
+  b.prop({ id: "court-jar-2", kind: "jar", p: { h: 24, glaze: "celadon" }, x: h(189.55), y: Y, cls: "cosmetic", material: "clay", pieces: 3 });
+  b.prop({ id: "court-post", kind: "lanternpost", p: { h: 190, arm: 44 }, x: h(185.9) - 22, y: Y, cls: "cosmetic", material: "wood", hp: 2, pieces: 5 });
+  b.prop({ id: "court-lantern", kind: "paperlantern", p: { r: 15 }, x: h(185.9) + 22, y: Y - 190, cls: "cosmetic", material: "paper", on: "court-post", hangs: true, pieces: 3 });
   // at the tip: a bench and the rail, the land falling away below
   b.piece("play", "bench", h(190.6), Y, { w: 96 }, { z: 4 });
   b.piece("front", "rail", 0, 0, { pts: [h(191.3), Y + 2, COURT_X1 + h(0.1), Y + 2], h: 50, every: 46 }, { z: 2 });

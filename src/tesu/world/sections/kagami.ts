@@ -55,7 +55,9 @@ export function kagami(b: WorldBuilder): void {
   // a moored boat beside the jetty, a coil of rope and a bucket on the deck
   b.piece("play", "boat", h(91.5), LAKE_Y + 2, { w: h(2.6) }, { z: 1 });
   b.piece("play", "coil", CATCH_X - h(2.6), DECK_Y, { r: 12 }, { z: 4 });
-  b.piece("play", "barrel", h(97.4), DECK_Y, { h: 22 }, { z: 4 });
+  b.prop({ id: "jetty-barrel", kind: "barrel", p: { h: 22 }, x: h(97.4), y: DECK_Y, cls: "cosmetic", material: "wood" });
+  b.prop({ id: "jetty-crate", kind: "crate", p: { w: 30, h: 26 }, x: h(96.6), y: DECK_Y, cls: "cosmetic", material: "wood" });
+  b.prop({ id: "jetty-jar", kind: "jar", p: { h: 20, glaze: "clay" }, x: h(96.6), y: DECK_Y - 26, cls: "cosmetic", material: "clay", on: "jetty-crate", pieces: 3 });
   // reeds in the shallows in front, posts standing in the water nearer still (P5)
   for (const [x, w, hh] of [[h(46), 260, 90], [h(66), 180, 70], [h(84), 220, 96], [h(104), 260, 110]] as const) {
     b.piece("near", "reeds", x, LAKE_Y + h(1.1), { w, h: hh }, { z: 1 });

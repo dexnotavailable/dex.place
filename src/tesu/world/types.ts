@@ -274,4 +274,30 @@ export interface WorldDef {
   spawns: Spawn[];
   places: Place[];
   usables: Usable[];
+  props: PropDef[];
+}
+
+/**
+ * Something that breaks (GDK 5.6, Appendix G): a prop on the play plane drawn by a painter.
+ * Cosmetic props break and come back when she leaves; session ones stay broken until a
+ * reload; permanent ones stay changed on this device; protected ones only go "tink".
+ * The support rule: a prop standing on (or hanging from) another falls when that one goes.
+ */
+export interface PropDef {
+  id: string;
+  kind: string;
+  p: Record<string, unknown>;
+  /** Its anchor (feet, or the hook it hangs from), world px. */
+  x: number;
+  y: number;
+  cls: "cosmetic" | "session" | "permanent" | "protected";
+  material: "wood" | "stone" | "clay" | "paper" | "metal";
+  /** Hits to break (1 by default). */
+  hp?: number;
+  /** The prop it stands on or hangs from. */
+  on?: string;
+  /** Hangs from its anchor (falls as a whole when its support goes). */
+  hangs?: boolean;
+  /** Pieces it breaks into (4 by default). */
+  pieces?: number;
 }

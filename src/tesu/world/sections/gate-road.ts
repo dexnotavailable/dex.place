@@ -113,8 +113,11 @@ export function gateRoad(b: WorldBuilder): void {
   b.piece("front", "rail", 0, 0, { pts: railPts(leap1 + h(0.2), HALL_DOOR_X - h(2.2)), h: 46, every: 62 }, { z: 0 });
   // the viewing terrace: a stone bench and two water barrels, Zhusha small at the rail
   b.piece("play", "bench", TERRACE_X0 + h(0.6), h(59.3), { w: h(1.5) }, { z: 3 });
-  b.piece("play", "barrel", TERRACE_X1 - h(1.6), h(59.3), { h: 40 }, { z: 3 });
-  b.piece("play", "barrel", TERRACE_X1 - h(1.1), h(59.3), { h: 36 }, { z: 3 });
+  // (the barrels break: cosmetic, back when she has gone; a crate with a jar on it, the support rule's example)
+  b.prop({ id: "terrace-barrel-1", kind: "barrel", p: { h: 40 }, x: TERRACE_X1 - h(1.6), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
+  b.prop({ id: "terrace-barrel-2", kind: "barrel", p: { h: 36 }, x: TERRACE_X1 - h(1.1), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
+  b.prop({ id: "terrace-crate", kind: "crate", p: { w: 40, h: 34 }, x: TERRACE_X1 - h(0.5), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
+  b.prop({ id: "terrace-jar", kind: "jar", p: { h: 26, glaze: "celadon" }, x: TERRACE_X1 - h(0.5), y: h(59.3) - 34, cls: "cosmetic", material: "clay", on: "terrace-crate" });
 
   b.spawn({ id: "gate-road", x: GATE_XS[0]! - h(1.5), y: yOn(ROAD, GATE_XS[0]! - h(1.5)), facing: 1 });
   b.spawn({ id: "terrace", x: (TERRACE_X0 + TERRACE_X1) / 2, y: h(59.3), facing: 1 });

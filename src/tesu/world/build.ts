@@ -2,7 +2,7 @@
 // through one builder, which checks them and fills in each piece's bounds.
 
 import { painter } from "../art/painter.ts";
-import { PLANES, type Usable, type MistBank, type SpriteDef, type Atmos, type CamTrack, type Piece, type Place, type PlaneId, type Spawn, type Surface, type Walk, type Wall, type Water, type Void, type WorldDef } from "./types.ts";
+import { PLANES, type PropDef, type Usable, type MistBank, type SpriteDef, type Atmos, type CamTrack, type Piece, type Place, type PlaneId, type Spawn, type Surface, type Walk, type Wall, type Water, type Void, type WorldDef } from "./types.ts";
 
 export interface PieceOpts {
   z?: number;
@@ -17,7 +17,7 @@ export class WorldBuilder {
   private nextSeed = 1;
 
   constructor(w: number, h: number) {
-    this.def = { w, h, pieces: [], sprites: [], walks: [], walls: [], waters: [], mists: [], voids: [], tracks: [], atmos: [], spawns: [], places: [], usables: [] };
+    this.def = { w, h, pieces: [], sprites: [], walks: [], walls: [], waters: [], mists: [], voids: [], tracks: [], atmos: [], spawns: [], places: [], usables: [], props: [] };
   }
 
   /** A painted piece. x, y: its anchor in 3D world px; p: painter params in its plane's level-1 px. */
@@ -88,6 +88,15 @@ export class WorldBuilder {
   usable(u: Usable): void {
     if (this.def.usables.some((o) => o.id === u.id)) throw new Error(`usable ${u.id} defined twice`);
     this.def.usables.push(u);
+  }
+
+  /** Something that breaks (drawn as a sprite on the play plane, driven by the props runtime). */
+  prop(d: PropDef): PropDef {
+    if (this.def.props.some((o) => o.id === d.id)) throw new Error(`prop ${d.id} defined twice`);
+    if (d.on && !this.def.props.some((o) => o.id === d.on)) throw new Error(`prop ${d.id} stands on unknown ${d.on}`);
+    this.def.props.push(d);
+    this.sprite({ id: `prop:${d.id}`, plane: "play", kind: d.kind, x: d.x, y: d.y, p: d.p, frames: 1, frame: 0 });
+    return d;
   }
 
   place(p: Place): void {
