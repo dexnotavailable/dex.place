@@ -74,6 +74,9 @@ export function kagami(b: WorldBuilder): void {
     [-300, -230, 520, 70], [260, -150, 380, 54], [700, -260, 640, 86], [1180, -120, 420, 60], [1560, -210, 560, 74], [2100, -170, 480, 64],
   ];
   for (const [x, y, w, hh] of clouds) bg(b, "sky", x, "cloud", { w, h: hh }, LAKE_Y + y / PLANES.sky.rate, -1);
+  // the two sky isles, Bell and Drum, above and right of the palace: seen from almost everywhere
+  bg(b, "sky", 560, "isle", { w: 92, h: 120, tower: "bell" }, LAKE_Y - 300 / PLANES.sky.rate, 2);
+  bg(b, "sky", 700, "isle", { w: 110, h: 96, tower: "drum" }, LAKE_Y - 236 / PLANES.sky.rate, 2);
 
   // every background plane has ground below its line, so the land never shows a gap
   bg(b, "far", -2600, "plain", { w: 9000, foot: 700, ramp: "range", amp: 4 }, LAKE_Y, -5);

@@ -426,3 +426,65 @@ export const plain = definePainter<PlainP>("plain", {
     }
   },
 });
+
+// ---------------------------------------------------------------------------
+// The sky isles, Bell and Drum: floating rock isles each carrying a tower, backdrop only.
+// ---------------------------------------------------------------------------
+export interface IsleP {
+  /** Width of the isle's top, px; the anchor is the middle of its top. */
+  w: number;
+  /** Depth of the rock below, px. */
+  h: number;
+  tower: "bell" | "drum";
+}
+
+export const isle = definePainter<IsleP>("isle", {
+  bounds(p) {
+    return [-p.w / 2 - 6, -p.w * 0.9, p.w / 2 + 6, p.h + 4];
+  },
+  paint(c, p) {
+    const b = c.buf, seed = c.seed;
+    const half = p.w / 2;
+    // the rock: a ragged inverted cone, lit on the left, a moss top
+    for (let lx = -half; lx <= half; lx += 1 / c.d) {
+      const u = lx / half;
+      const depth = p.h * Math.pow(1 - Math.abs(u), 0.7) * (0.75 + 0.35 * vnoise1(lx / 7, seed)) + 4;
+      const X = Math.round(c.X(lx));
+      const Y0 = Math.round(c.Y(-2 - 3 * vnoise1(lx / 5, seed + 1))), Y1 = Math.round(c.Y(depth));
+      for (let y = Y0; y < Y1; y++) {
+        const ly = c.ly(y + 0.5);
+        if (ly < 5) { b.set(X, y, tone(P.moss, ly < 1.5 ? 0.15 : 0.45, X, y, 0.3)); continue; }
+        let t = 0.25 + 0.45 * clamp((u + 1) / 2, 0, 1) + 0.15 * (ly / p.h) + (vnoise(lx / 4, ly / 9, seed + 3) - 0.5) * 0.2;
+        if (y === Y1 - 1) t = 0.9;
+        b.set(X, y, tone(P.karst, clamp(t, 0, 1), X, y, 0.4));
+      }
+    }
+    // the tower: a tall timber pagoda (the bell) or a squat drum tower
+    const tiers = p.tower === "bell" ? 3 : 2;
+    const tw = p.w * (p.tower === "bell" ? 0.28 : 0.38);
+    let y = 0;
+    for (let i = 0; i < tiers; i++) {
+      const sw = tw * (1 - i * 0.18);
+      const sh = p.w * (p.tower === "bell" ? 0.17 : 0.2);
+      // wall
+      for (let ly = y - sh; ly < y; ly += 1 / c.d) {
+        for (let lx = -sw / 2; lx <= sw / 2; lx += 1 / c.d) {
+          const X = Math.round(c.X(lx)), Y = Math.round(c.Y(ly));
+          const u = (lx + sw / 2) / sw;
+          b.set(X, Y, u < 0.12 || u > 0.88 ? P.red[3]! : tone(P.lacquer, 0.4 + 0.3 * u, X, Y, 0.3));
+        }
+      }
+      // roof
+      const rh = sh * 0.55;
+      for (let ly = y - sh - rh; ly < y - sh + 2; ly += 1 / c.d) {
+        const v = (y - sh - ly) / rh;
+        const rw = sw * (1.5 - 0.9 * v) + (v < 0.2 ? (0.2 - v) * sw * 1.2 : 0);
+        for (let lx = -rw / 2; lx <= rw / 2; lx += 1 / c.d) {
+          const X = Math.round(c.X(lx)), Y = Math.round(c.Y(ly));
+          b.set(X, Y, v > 0.9 ? P.gold[2]! : tone(P.tile, 0.3 + 0.4 * (1 - v), X, Y, 0.3));
+        }
+      }
+      y -= sh + rh * 0.7;
+    }
+  },
+});
