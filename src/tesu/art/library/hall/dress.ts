@@ -247,6 +247,16 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number }): void {
     b.piece("play", "court.stairrun", sx0, sy0, { x1: bx - sx0, y1: by - sy0, head: 112, masonry: Y - sy0, found: h(2.7), grate: [WELL0 - sx0 - h(0.1), WELL1 - sx0 + h(0.1)] }, { z: 2 });
   }
 
+  // --- beyond the tip the land falls away into a sea of mist: a dense bank low on the back
+  // plane's depth, starting east of the stands, so nothing of the far plains shows under it
+  for (const [dy, half, dens] of [[6.6, 2.6, 1], [4.4, 1.6, 1], [2.8, 1.3, 0.75]] as const) {
+    b.mist({ x0: h(193.4), x1: h(260), y: Y + h(dy), half: h(half), rate: PLANES.back.rate, after: "back", density: dens });
+  }
+  // and mist rising up the prow's own cliff, at its depth, over the far lake's waterline
+  for (const [dy, half, dens] of [[3.0, 1.7, 1], [1.7, 0.9, 0.85]] as const) {
+    b.mist({ x0: h(193.9), x1: h(240), y: Y + h(dy), half: h(half), rate: 1, after: "play", density: dens });
+  }
+
   // --- the tip: a bench, the stone rail she cannot pass, and past it the Prow Leap
   const leapW = b.def.walks.find((w) => w.name === "prow-leap");
   const railEnd = leapW ? leapW.pts[0]! - h(0.15) : CX1;
