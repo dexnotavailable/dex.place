@@ -335,7 +335,10 @@ export class Player {
       if (ax !== 0) this.facing = ax;
       // jumping
       if (pend.jump !== null) {
-        if (input.isDown("down") && b.grounded && b.y < -0.5) {
+        // one-way ground: the lab's ledges sit above y 0; a world says so itself
+        const w1 = world as unknown as { onOneWay?: (b: Body) => boolean };
+        const oneWay = typeof w1.onOneWay === "function" ? w1.onOneWay(b) : b.y < -0.5;
+        if (input.isDown("down") && b.grounded && oneWay) {
           b.dropThrough = 10;
           b.grounded = false;
           input.consume("jump");

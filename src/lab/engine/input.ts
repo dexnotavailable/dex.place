@@ -4,7 +4,9 @@
 export const ACTIONS = ["left", "right", "up", "down", "jump", "m1", "m2", "skill", "ult"] as const;
 export type Action = (typeof ACTIONS)[number];
 
-const KEYS: Record<string, Action[]> = {
+export type KeyMap = Record<string, Action[]>;
+
+const KEYS: KeyMap = {
   KeyA: ["left"],
   ArrowLeft: ["left"],
   KeyD: ["right"],
@@ -30,35 +32,46 @@ export class Input {
   tick = 0;
   onToggle: (what: "debug" | "res") => void = () => {};
 
-  constructor(target: HTMLElement) {
+  /** Suspends game keys (an in-world panel is open: it takes Tab, Space, Enter, Esc). */
+  paused = false;
+
+  /**
+   * keys: another key table (the lab's by default, with Z cycling the resolution there).
+   * rightDash: the right mouse button dashes (the lab's habit).
+   */
+  constructor(target: HTMLElement, keys?: KeyMap, opts: { rightDash?: boolean } = {}) {
     for (const a of ACTIONS) this.held.set(a, new Set());
+    const table = keys ?? KEYS;
+    const rightDash = opts.rightDash ?? !keys;
     window.addEventListener("keydown", (e) => {
       if (e.code === "Backquote") {
         if (!e.repeat) this.onToggle("debug");
         e.preventDefault();
         return;
       }
-      if (e.code === "KeyZ") {
+      if (!keys && e.code === "KeyZ") {
         if (!e.repeat) this.onToggle("res");
         e.preventDefault();
         return;
       }
-      const acts = KEYS[e.code];
+      if (this.paused) return;
+      const acts = table[e.code];
       if (!acts) return;
       e.preventDefault();
       if (e.repeat) return;
       for (const a of acts) this.down(a, e.code);
     });
     window.addEventListener("keyup", (e) => {
-      const acts = KEYS[e.code];
+      const acts = table[e.code];
       if (!acts) return;
       for (const a of acts) this.up(a, e.code);
     });
     window.addEventListener("blur", () => this.releaseAll());
     target.addEventListener("pointerdown", (e) => {
       if (e.pointerType !== "mouse") return;
+      if (this.paused) return;
       if (e.button === 0) this.down("m1", "mouse0");
-      if (e.button === 2) this.down("m2", "mouse2");
+      if (e.button === 2 && rightDash) this.down("m2", "mouse2");
       e.preventDefault();
     });
     window.addEventListener("pointerup", (e) => {

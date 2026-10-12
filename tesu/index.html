@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#000000" />
+    <title>Tesu · dex</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/tesu/tesu.css" />
+  </head>
+  <body>
+    <div id="stage">
+      <canvas id="view" tabindex="0" aria-label="Tesu, the world: A and D or the arrow keys walk, Space jumps, J strikes, K dashes, F uses things"></canvas>
+      <pre id="debug" hidden></pre>
+      <div id="touch" hidden></div>
+      <p id="fail" hidden></p>
+    </div>
+    <script type="module" src="/src/tesu/main.ts"></script>
+  </body>
+</html>

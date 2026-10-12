@@ -1,0 +1,96 @@
+// Gate Road (GDK A.3): a short ridge road from Kagami's shore to the hall's forecourt.
+// Three framed gates 4 H apart, the viewing terrace, Pilgrims' Leap, then a tunnel of six
+// close-set gates. Terrain grammar: a band, a thin natural ridge with open air beneath,
+// carried on three karst pillars that stand on Shiraito's terraces far below.
+//
+// This section lays the road, its rock and its pillars; the gates, rails and the terrace
+// furniture are their own pieces (art/painters/gates.ts) placed by the opening.
+
+import { h } from "../../config.ts";
+import type { WorldBuilder } from "../build.ts";
+import { DIAGONAL, GATE_XS, HALL_DOOR_X, JETTY_X1, LEAP_X, TERRACE_X0, TERRACE_X1, TUNNEL_XS, sampleCurve, yOn } from "./common.ts";
+
+/** The road surface, world px, from the jetty's end to the hall door. */
+export const ROAD = [
+  JETTY_X1, h(62.0), h(110.6), h(61.9), h(112.6), h(61.4), GATE_XS[0]!, h(60.85), h(117), h(60.45), GATE_XS[1]!, h(60.1),
+  h(121), h(59.8), GATE_XS[2]!, h(59.5), TERRACE_X0, h(59.3), TERRACE_X1, h(59.3),
+  LEAP_X + h(0.6), h(59.3),
+  TUNNEL_XS[0]!, h(59.15), TUNNEL_XS[1]!, h(58.85), TUNNEL_XS[2]!, h(58.55), TUNNEL_XS[3]!, h(58.25), TUNNEL_XS[4]!, h(57.95), TUNNEL_XS[5]!, h(57.65),
+  h(143.4), h(57.3), HALL_DOOR_X + h(0.4), h(57.2),
+];
+
+/** Shiraito's diagonal (て's long stroke down and left), sampled from the map. */
+export const DIAG = sampleCurve(DIAGONAL, 48);
+
+export function gateRoad(b: WorldBuilder): void {
+  const leap0 = LEAP_X - h(0.6), leap1 = LEAP_X + h(0.6);
+  const roadA: number[] = [], roadC: number[] = [];
+  for (let i = 0; i < ROAD.length; i += 2) {
+    const x = ROAD[i]!, y = ROAD[i + 1]!;
+    if (x < leap0) roadA.push(x, y);
+    if (x > leap1) roadC.push(x, y);
+  }
+  roadA.push(leap0, h(59.3));
+  roadC.unshift(leap1, h(59.3));
+  const yL = h(59.3);
+  // collision: two solid stretches of road, and Pilgrims' Leap as a plank you can drop through
+  b.walk(roadA, { surface: "stone", depth: h(2.6), name: "gate-road" });
+  b.walk([leap0, yL, leap1, yL], { surface: "wood", oneWay: true, name: "pilgrims-leap" });
+  b.walk(roadC, { surface: "stone", depth: h(2.6), name: "gate-tunnel" });
+
+  // the ridge's rock under the road: a natural band, thicker over the pillars, with a notch
+  // under the leap so the drop is clear
+  const under = (x: number): number => {
+    const pill = [h(120), h(136), h(152)].some((px) => Math.abs(x - px) < h(4)) ? h(1.4) : 0;
+    return h(2.4) + pill + h(0.8) * Math.sin(x / h(3.7));
+  };
+  const band = (pts: number[], x0: number, x1: number): void => {
+    const top: number[] = [];
+    for (let i = 0; i < pts.length; i += 2) top.push(pts[i]!, pts[i + 1]!);
+    const bottom: number[] = [];
+    for (let x = x1; x >= x0; x -= h(1.2)) bottom.push(x, yOn(pts, x) + under(x));
+    bottom.push(x0, yOn(pts, x0) + h(0.8));
+    b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", cap: "moss", capH: 9, tufts: 0.45 }, { z: 0 });
+  };
+  band(roadA, JETTY_X1 - h(0.2), leap0);
+  band(roadC, leap1, HALL_DOOR_X + h(0.4));
+  // the leap's plank (its prayer-flag pole comes with the terrace furniture)
+  b.piece("play", "plank", leap0 - h(0.3), yL, { w: leap1 - leap0 + h(0.6) }, { z: 2 });
+
+  // three karst pillars carry the band, standing on Shiraito's terraces
+  for (const [x0, x1] of [[h(117.8), h(122.2)], [h(133.8), h(138.2)], [h(149.8), h(154.2)]] as const) {
+    const topY = yOn(ROAD, (x0 + x1) / 2) + h(2.0);
+    const footY = yOn(DIAG, (x0 + x1) / 2) + h(1.2);
+    const w = x1 - x0;
+    const top = [x0 - h(0.6), topY, x0 + w * 0.3, topY - h(0.4), x1 - w * 0.3, topY - h(0.3), x1 + h(0.6), topY];
+    const bottom = [x1 + h(0.2), topY + h(8), x1 + h(0.1), footY - h(6), x1 + h(0.9), footY, x0 - h(1.1), footY, x0 - h(0.3), footY - h(4), x0 + h(0.2), topY + h(10)];
+    b.piece("play", "mass", 0, 0, { top, bottom, rock: "karst", cap: "none", tufts: 0, shade: 0.15 }, { z: -1 });
+  }
+
+  // Shiraito's diagonal, laid rough for now (a band on a background cliff): the ground the
+  // leap and the hall's back gallery drop you onto. Its art comes with Shiraito.
+  const d0 = h(98), d1 = h(170);
+  const diag: number[] = [];
+  for (let i = 0; i < DIAG.length; i += 2) if (DIAG[i]! >= d0 && DIAG[i]! <= d1) diag.push(DIAG[i]!, DIAG[i + 1]!);
+  b.walk(diag, { surface: "earth", depth: h(4), name: "shiraito" });
+  const dBottom: number[] = [];
+  for (let i = diag.length - 2; i >= 0; i -= 2) dBottom.push(diag[i]!, diag[i + 1]! + h(3.4) + h(0.6) * Math.sin(diag[i]! / h(5)));
+  b.piece("play", "mass", 0, 0, { top: diag, bottom: dBottom, rock: "karst", cap: "moss", capH: 12, tufts: 0.7 }, { z: -2 });
+  // its top end meets the palace cliff (the Prow Stair comes later); its foot is open air
+  b.wall({ x: d1, y0: h(40), y1: yOn(DIAG, d1) + h(0.1), reason: "cliff" });
+  // below the diagonal, until the harbour exists, is a fall into mist: the talisman tugs her back
+  b.void({ x0: h(60), x1: h(200), y: h(136) });
+
+  // behind the band: Shiraito's great wall, its falls pouring off the road's lip (P3)
+  const r3 = 0.62;
+  b.piece("back", "cliffwall", h(106), h(59.6), {
+    w: h(94) * r3, h: h(90) * r3, falls: 2.6,
+    lip: [0, h(1.6) * r3, h(10) * r3, h(0.6) * r3, h(30) * r3, -h(0.4) * r3, h(60) * r3, -h(2) * r3, h(94) * r3, -h(3) * r3],
+  }, { z: 2 });
+
+  b.spawn({ id: "gate-road", x: GATE_XS[0]! - h(1.5), y: yOn(ROAD, GATE_XS[0]! - h(1.5)), facing: 1 });
+  b.spawn({ id: "terrace", x: (TERRACE_X0 + TERRACE_X1) / 2, y: h(59.3), facing: 1 });
+  b.spawn({ id: "hall-door", x: HALL_DOOR_X - h(1.2), y: yOn(ROAD, HALL_DOOR_X - h(1.2)), facing: 1 });
+  b.spawn({ id: "shiraito-top", x: h(150), y: yOn(DIAG, h(150)), facing: -1 });
+  b.place({ id: "gate-road", name: "Gate Road", x0: JETTY_X1, x1: HALL_DOOR_X, title: "place", spawn: "gate-road" });
+}

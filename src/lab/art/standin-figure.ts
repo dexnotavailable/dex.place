@@ -703,6 +703,48 @@ export interface FigureAnchors {
   butt: V;
 }
 
+/**
+ * A different character on the same figure: no halo, extra drawing after the hair (a hat),
+ * and replacement tones for any material, applied only while `withFigureLook` runs.
+ */
+export interface FigureLook {
+  halo: boolean;
+  after?: (b: PixBuf, s: Skeleton, pose: Pose) => void;
+  tones?: Map<Material, string[]>;
+}
+
+let LOOK: FigureLook = { halo: true };
+
+const hexTone = (h: string): RGBi => {
+  const v = parseInt(h.slice(1), 16);
+  return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+};
+
+/** Runs fn with the figure drawn in another look (the default look is restored after). */
+export function withFigureLook<T>(look: FigureLook, fn: () => T): T {
+  const saved = new Map<Material, Material["tones"]>();
+  for (const [m, tones] of look.tones ?? []) {
+    saved.set(m, m.tones);
+    const t = tones.map(hexTone);
+    while (t.length < 5) t.push(t[t.length - 1]!);
+    (m as { tones: Material["tones"] }).tones = t as Material["tones"];
+  }
+  const prev = LOOK;
+  LOOK = look;
+  try {
+    return fn();
+  } finally {
+    LOOK = prev;
+    for (const [m, t] of saved) (m as { tones: Material["tones"] }).tones = t;
+  }
+}
+
+/** Where the halo sits (also when it is not drawn). */
+function haloAt(s: Skeleton, pose: Pose): V {
+  const tilt = pose.head * 0.3 + s.angC * 0.3;
+  return add(s.headC, rot([-2.2 * HS, -12.6 * HS], tilt));
+}
+
 /** Draws the whole figure into b (figure space) and returns anchor points. */
 export function drawFigure(b: PixBuf, pose: Pose): { anchors: FigureAnchors; warnings: string[] } {
   const s = solve(pose);
@@ -711,7 +753,7 @@ export function drawFigure(b: PixBuf, pose: Pose): { anchors: FigureAnchors; war
   const sleeveFlow = pose.sleeve ?? pose.cloth * 0.8;
   const wBack = pose.wBack ?? false;
 
-  const halo = drawHalo(b, s, pose);
+  const halo = LOOK.halo ? drawHalo(b, s, pose) : haloAt(s, pose);
   drawHairBack(b, s, pose);
   if (wBack) drawWeapon(b, s, pose);
   drawArm(b, s.shF, s.elF, s.haF, G.armF, false);
@@ -726,6 +768,7 @@ export function drawFigure(b: PixBuf, pose: Pose): { anchors: FigureAnchors; war
   drawTabard(b, add(s.pelvis, rot([2.5, -7.4], s.angL)), s.angL * 0.6, flowC, liftC, 25, 4.6, G.tabardF, false);
   drawHead(b, s, pose);
   drawHairFront(b, s, pose);
+  LOOK.after?.(b, s, pose);
   if (!wBack) drawWeapon(b, s, pose);
   drawHand(b, s.haF, norm(sub(s.haF, s.elF)), G.handF);
   drawArm(b, s.shN, s.elN, s.haN, G.armN, true);
