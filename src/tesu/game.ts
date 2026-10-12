@@ -513,7 +513,9 @@ export class TesuGame {
     let best: Usable | null = null, bd = Infinity;
     for (const u of this.world.usables) {
       if (b.x < u.x0 - reach || b.x > u.x1 + reach || b.y < u.y0 - reach || b.y - b.h > u.y1 + reach) continue;
-      const d = Math.abs(b.x - (u.x0 + u.x1) / 2);
+      // the thing she stands in front of wins over a neighbour whose centre is nearer
+      const edge = b.x < u.x0 ? u.x0 - b.x : b.x > u.x1 ? b.x - u.x1 : 0;
+      const d = edge * 4 + Math.abs(b.x - (u.x0 + u.x1) / 2) * 0.01;
       if (d < bd) { bd = d; best = u; }
     }
     return best;

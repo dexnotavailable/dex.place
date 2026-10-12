@@ -53,14 +53,16 @@ export function prizeBoard(summon: (p: Prize) => void): PanelSpec {
       for (const e of downloads) {
         const prize = prizeFor(e.id);
         const li = el("li", "notice plaque");
-        li.append(el("h3", "", e.name), facts(e));
-        if (!e.installedBy) for (const n of e.notes) li.append(el("p", "", n));
+        li.append(el("h3", "", e.name));
+        // the main action first, so it shows without scrolling on a short screen
         if (prize) {
           const go = el("button", "btn big", e.installedBy ? `Install (through ${prize.owner.name})` : "Install");
           go.type = "button";
           go.addEventListener("click", () => pick(prize, b, panels, summon));
           li.append(go);
         }
+        li.append(facts(e));
+        if (!e.installedBy) for (const n of e.notes) li.append(el("p", "meta", n));
         list.append(li);
       }
       b.append(list);
