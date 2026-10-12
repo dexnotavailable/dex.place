@@ -306,3 +306,24 @@ test("the Silk Line: a car waits at each station, the ride carries her up to Kum
   assert.ok(Math.abs(body.x - lx) < 1 && Math.abs(body.y - (ly + def.hang)) < 1, "set down at the low dock");
   assert.ok(minY < 90 * H, "the ride climbed to Kumoji's height");
 });
+
+test("every wall is a real edge: walking into it from the ground at its foot leaves her standing", () => {
+  const w = buildWorld();
+  const c = new Collision(w.walks, w.walls);
+  const bad = [];
+  for (const wall of w.walls) {
+    for (const side of [1, -1]) {
+      // side 1: she stands to the right and walks left into it
+      if ((side === 1 && wall.from === "left") || (side === -1 && wall.from === "right")) continue;
+      const x = wall.x + side * 1.5 * H;
+      const g = c.groundBelow(x, wall.y0, false);
+      if (!g || g.y > wall.y1 + 0.3 * H || g.y < wall.y0) continue;
+      const body = { x, y: g.y, w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
+      c.move(body, 0, 1);
+      for (let i = 0; i < 120; i++) { c.move(body, -side * 3, 0); c.move(body, 0, 2); }
+      // (still on her ground: the ground may slope a little on the way to the wall)
+      if (!body.grounded || Math.abs(body.y - g.y) > 0.5 * H) bad.push(`${wall.reason} at ${(wall.x / H).toFixed(2)} H from the ${side > 0 ? "right" : "left"}: fell to ${(body.y / H).toFixed(1)} H`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});

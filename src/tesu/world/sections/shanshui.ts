@@ -56,14 +56,15 @@ export function shanshui(b: WorldBuilder): void {
 
   // --- Kumoji: the road on its band, from the upper station east
   // (level at the station, where the car docks, then rising gently east)
-  const road = [h(262), KUMOJI_Y, h(266.5), KUMOJI_Y, h(300), KUMOJI_Y - h(1.2), KUMOJI_X1, KUMOJI_Y - h(2.6)];
+  const road = [h(261.9), KUMOJI_Y, h(266.5), KUMOJI_Y, h(300), KUMOJI_Y - h(1.2), KUMOJI_X1, KUMOJI_Y - h(2.6)];
   b.walk(road, { surface: "stone", depth: h(2.6), name: "kumoji" });
   const yAt = (x: number): number => {
     for (let i = 2; i < road.length; i += 2) if (x <= road[i]! || i === road.length - 2) return road[i - 1]! + ((x - road[i - 2]!) / (road[i]! - road[i - 2]!)) * (road[i + 1]! - road[i - 1]!);
     return road[1]!;
   };
   // the station's edge: a rail where the cars come in from the open air
-  b.wall({ x: h(261.9), y0: KUMOJI_Y - h(6), y1: KUMOJI_Y + h(0.1), reason: "rail", from: "right" });
+  // (the road runs right up to it, so she stops with her feet on the platform)
+  b.wall({ x: h(261.9), y0: KUMOJI_Y - h(6), y1: KUMOJI_Y + h(2.6), reason: "rail", from: "right" });
   b.piece("front", "rail", 0, 0, { pts: [h(261.5), KUMOJI_Y + 2, h(262.05), KUMOJI_Y + 2], h: 50, every: 46 }, { z: 2 });
   b.piece("play", "hut", h(265.6), yAt(h(265.6)), { w: 230, h: 190 }, { z: 0 });
   // the band: masonry under the road, flat values

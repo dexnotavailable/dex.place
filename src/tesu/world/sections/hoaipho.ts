@@ -34,13 +34,15 @@ const LIFT_TOP_X = JETTY_X1 - h(1.6);
 
 export function hoaipho(b: WorldBuilder): void {
   // --- the ground: the West Shore at the massif's foot, the street, the pool, the east quay
-  b.walk([HARBOUR_X0, QUAY_Y, h(189.4), QUAY_Y], { surface: "wood", depth: h(1), name: "hoai-pho" });
+  // (each end of the street runs right up to its wall, and the walls reach down past the lake
+  // bed: she is stopped at the edge with her feet still on the quay, and never slips past)
+  b.walk([HARBOUR_X0 - h(0.1), QUAY_Y, h(189.4), QUAY_Y], { surface: "wood", depth: h(1), name: "hoai-pho" });
   b.walk([h(189.4), QUAY_Y, POOL_X0 + h(0.3), POOL_Y], { surface: "stone", stair: true, name: "pool-steps-west" });
   b.walk([POOL_X0, POOL_Y, POOL_X1, POOL_Y], { surface: "water", depth: h(1), name: "splash-pool" });
   b.walk([POOL_X1 - h(0.3), POOL_Y, h(198.9), QUAY_Y], { surface: "stone", stair: true, name: "pool-steps-east" });
-  b.walk([h(198.9), QUAY_Y, HARBOUR_X1, QUAY_Y], { surface: "wood", depth: h(1), name: "east-quay" });
-  b.wall({ x: HARBOUR_X0 - h(0.1), y0: QUAY_Y - h(6), y1: QUAY_Y + h(0.1), reason: "cliff", from: "right" });
-  b.wall({ x: HARBOUR_X1 + h(0.1), y0: QUAY_Y - h(6), y1: QUAY_Y + h(0.1), reason: "wall", from: "left" });
+  b.walk([h(198.9), QUAY_Y, HARBOUR_X1 + h(0.1), QUAY_Y], { surface: "wood", depth: h(1), name: "east-quay" });
+  b.wall({ x: HARBOUR_X0 - h(0.1), y0: QUAY_Y - h(6), y1: HARBOUR_Y + h(3), reason: "cliff", from: "right" });
+  b.wall({ x: HARBOUR_X1 + h(0.1), y0: QUAY_Y - h(6), y1: HARBOUR_Y + h(3), reason: "wall", from: "left" });
   // below the street and the pool is the lake: a fall into it is tugged back to the quay
   b.void({ x0: h(60), x1: h(212), y: HARBOUR_Y + h(1.8), y1: h(240) });
 
