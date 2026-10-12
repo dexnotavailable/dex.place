@@ -18,6 +18,7 @@ import { Talisman, TALISMAN_H, TALISMAN_W } from "./talisman.ts";
 
 interface ColumnWorld {
   ready?: Promise<void>;
+  booted?: Promise<void>;
   play?(ctx?: AudioContext): void;
   title?(text: string): void;
   holding?(): boolean;
@@ -88,9 +89,13 @@ export function initColumn(reduced: MediaQueryList): void {
   // --- the world window
   let world: ColumnWorld | null = (window as Window & { __dexWorld?: ColumnWorld }).__dexWorld ?? null;
   let worldReady = false;
+  // "continue" is offered once the world's code runs (its first scene paints during the fall,
+  // and the fall lands only once it is in): slow phones are not kept waiting on the title
+  let worldBooted = false;
   const onWorld = (w: ColumnWorld): void => {
     world = w;
-    void w.ready?.then(() => { worldReady = true; }, () => { worldReady = true; });
+    void w.ready?.then(() => { worldReady = true; worldBooted = true; }, () => { worldReady = true; worldBooted = true; });
+    void w.booted?.then(() => { worldBooted = true; });
   };
   if (world) onWorld(world);
   document.addEventListener("dex:world", (e) => onWorld((e as CustomEvent<ColumnWorld>).detail));
@@ -198,7 +203,11 @@ export function initColumn(reduced: MediaQueryList): void {
       const line = Math.floor((cine.t - 0.5) / 1.2);
       caption.textContent = line >= 0 && line < LINES.length ? LINES[line]! : "";
       caption.classList.toggle("on", line >= 0 && line < LINES.length);
-      if (u >= 1 && cine.t > (reduced.matches ? 0 : 4.2)) {
+      // (the fall lands once the world is in: on a slow phone the last line holds a moment)
+      if (u >= 1 && cine.t > (reduced.matches ? 0 : 4.2) && !worldReady) {
+        caption.textContent = LINES[LINES.length - 1]!;
+        caption.classList.add("on");
+      } else if (u >= 1 && cine.t > (reduced.matches ? 0 : 4.2)) {
         cine = null;
         root.classList.remove("col-cine");
         caption.textContent = "";
@@ -208,11 +217,11 @@ export function initColumn(reduced: MediaQueryList): void {
     }
 
     // the loader: the script lights from the top as the world loads; "continue" once it is in
-    const loading = !worldReady;
+    const loading = !worldBooted;
     const lit = loading ? Math.min(0.9, (now - t0) / 6000) : 1;
     load.hidden = !loading;
     if (!loading && !played && !cine && cont.hidden && sy < vh * 0.5 && introDone) cont.hidden = false;
-    if (playBox) playBox.hidden = played || loading || !world?.holding?.();
+    if (playBox) playBox.hidden = played || !worldReady || !world?.holding?.();
     // a visitor who scrolls on past PLAY gets TESU in the world window (PLAY saves it for the terrace)
     if (!played && !tesuShown && worldReady && pWorld > 0.06) {
       tesuShown = true;

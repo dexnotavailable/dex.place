@@ -24,6 +24,8 @@
 
 export interface WorldHandle {
   readonly ready?: Promise<void>;
+  /** Resolves when the World's code is running (its first scene may still be painting). */
+  readonly booted?: Promise<void>;
   /** Resolves when the World draws its first scene frame (before it is playable). */
   readonly shown?: Promise<void>;
   focus?(): void;

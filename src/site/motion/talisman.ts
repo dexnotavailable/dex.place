@@ -8,7 +8,22 @@
 // The loader lights its script from the top down as the world loads (diegetic: the glyphs
 // on her talisman light up one by one).
 
-import "@fontsource/dotgothic16/400.css";
+// (only the two glyphs of her name, 朱 and 砂, from DotGothic16's subsets: a few KB on the
+// homepage's first load instead of the whole family's stylesheet)
+const zhuUrl = new URL("../../../node_modules/@fontsource/dotgothic16/files/dotgothic16-78-400-normal.woff2", import.meta.url).href;
+const shaUrl = new URL("../../../node_modules/@fontsource/dotgothic16/files/dotgothic16-92-400-normal.woff2", import.meta.url).href;
+
+const NAME_FONT = "Zhusha DotGothic16";
+let nameFont: Promise<unknown> | null = null;
+/** Registers and loads the two subsets that hold 朱 (U+6731) and 砂 (U+7802). */
+function loadNameFont(): Promise<unknown> {
+  if (nameFont) return nameFont;
+  const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
+  if (!fonts || typeof FontFace === "undefined") return (nameFont = Promise.resolve());
+  const faces = [new FontFace(NAME_FONT, `url(${zhuUrl}) format("woff2")`, { unicodeRange: "U+6731" }), new FontFace(NAME_FONT, `url(${shaUrl}) format("woff2")`, { unicodeRange: "U+7802" })];
+  for (const f of faces) fonts.add(f);
+  return (nameFont = Promise.all(faces.map((f) => f.load())));
+}
 
 /** The strip in art pixels (outline included). */
 export const TALISMAN_W = 24;
@@ -40,14 +55,11 @@ export class Talisman {
     this.paint(this.lit, true);
     this.paint(this.dim, false);
     // the name needs its font: repaint once it has loaded
-    const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
-    if (fonts?.load) {
-      void fonts.load('16px "DotGothic16"', "朱砂").then(() => {
-        this.paint(this.lit, true);
-        this.paint(this.dim, false);
-        this.ready = true;
-      }, () => { this.ready = true; });
-    } else this.ready = true;
+    void loadNameFont().then(() => {
+      this.paint(this.lit, true);
+      this.paint(this.dim, false);
+      this.ready = true;
+    }, () => { this.ready = true; });
   }
 
   /** The face, flat: paper, edges, the name, the letter lines, the seal. */
@@ -82,7 +94,7 @@ export class Talisman {
     tmp.height = 34;
     const tg = tmp.getContext("2d")!;
     tg.fillStyle = "#000";
-    tg.font = '16px "DotGothic16", monospace';
+    tg.font = `16px "${NAME_FONT}", monospace`;
     tg.textBaseline = "top";
     tg.fillText("朱", 0, 0);
     tg.fillText("砂", 0, 17);

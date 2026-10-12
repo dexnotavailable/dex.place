@@ -6,6 +6,7 @@
 // world when it closes.
 
 import type { Input } from "../../lab/engine/input.ts";
+import dotGothicCss from "@fontsource/dotgothic16/400.css?url";
 
 export type PanelLook = "ledger" | "board" | "scroll" | "shelf" | "box" | "frame" | "slip";
 
@@ -45,7 +46,11 @@ export class Panels {
   show(spec: PanelSpec, closeKey?: string): void {
     if (!fontAsked) {
       fontAsked = true;
-      import("@fontsource/dotgothic16/400.css").catch(() => {});
+      // the stylesheet as a plain file (no script chunk, nothing else pulled in with it)
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = dotGothicCss;
+      document.head.append(link);
     }
     this.close(false);
     this.input.paused = true;

@@ -133,6 +133,8 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
   const ready = new Promise<void>((resolve, reject) => { markReady = resolve; failReady = reject; });
   let markShown: () => void = () => {};
   const shown = new Promise<void>((resolve) => { markShown = resolve; });
+  let markBooted: () => void = () => {};
+  const booted = new Promise<void>((resolve) => { markBooted = resolve; });
   let drawn = false;
   let settled = false;
   let waited = 0;
@@ -148,6 +150,7 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
     const fail = win()?.document.getElementById("fail");
     if (fail && !fail.hidden) { stop(); failReady(new Error(fail.textContent || "The world failed to load")); return; }
     const rt = runtime();
+    if (rt) markBooted();
     if (rt && !rt.game.loading && !drawn) {
       drawn = true;
       frame.style.opacity = "1";
@@ -183,7 +186,7 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
   };
 
   return {
-    ready, shown, focus,
+    ready, shown, booted, focus,
     play: (ctx) => doPlay(ctx ?? null),
     title: (text) => runtime()?.game.titles.show(text, true),
     holding: () => runtime()?.game.holding ?? true,
