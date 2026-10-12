@@ -393,7 +393,7 @@ export function paintMistBank(c: PaintCtx, x0: number, x1: number, by: number, m
     const crest = Math.sqrt(Math.max(0, 1 - 4 * dxn * dxn));
     const amp = mh * (0.14 + 0.16 * hash(cell, 7, seed));
     const swell = 0.4 + 0.35 * fbm1(lx / (mh * 4), seed + 1, 3);
-    const endFade = clamp(Math.min(lx - x0, x1 - lx) / (mh * 2.5), 0, 1);
+    const endFade = Math.pow(clamp(Math.min(lx - x0, x1 - lx) / (mh * 3.5), 0, 1), 0.7);
     const tp = (mh * swell + amp * crest) * endFade;
     for (let y = Math.max(Yt, b.oy); y < Math.min(Yb, b.y1); y++) {
       const a = by - c.ly(y + 0.5);
@@ -405,6 +405,13 @@ export function paintMistBank(c: PaintCtx, x0: number, x1: number, by: number, m
         if (bayer4(x, y) >= th) continue;
         b.set(x, y, li(1));
         continue;
+      }
+      // the foot of the bank thins out too, so it never sits on the land as a flat slab
+      const foot = Math.max(2 / d, mh * 0.22);
+      if (a < foot) {
+        const k = a / foot;
+        const th = k < 0.34 ? 0.25 : k < 0.67 ? 0.5 : 0.75;
+        if (bayer4(x, y) >= th) continue;
       }
       const under = tp - a;
       let i = 1;
