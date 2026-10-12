@@ -447,6 +447,24 @@ export class TesuGame {
     if (!b.grounded && this.cloudDrop && !this.tug) {
       this.cloudSpeed = Math.min(this.cloudSpeed + 0.5, 26);
       this.collision.move(b, 0, this.cloudSpeed);
+      // in a long drop she only drifts (holding a direction all the way down no longer
+      // carries her far past where she was headed), and over open air she is steered toward
+      // the nearest ground below, so a held key never takes her off the map into the void
+      const cap = 0.35;
+      if (Math.abs(b.vx) > cap) {
+        // (the step she just took at her full air speed is taken back down to the cap)
+        this.collision.move(b, -(b.vx - Math.sign(b.vx) * cap), 0);
+        b.vx = Math.sign(b.vx) * cap;
+      }
+      if (!this.collision.groundBelow(b.x, b.y, false)) {
+        for (let d = 0.25 * H; d <= 10 * H; d += 0.25 * H) {
+          const dir = this.collision.groundBelow(b.x - d, b.y, false) ? -1 : this.collision.groundBelow(b.x + d, b.y, false) ? 1 : 0;
+          if (dir) {
+            this.collision.move(b, dir * Math.min(2.5, d), 0);
+            break;
+          }
+        }
+      }
     }
     if (b.grounded) {
       if (this.fallFrom !== null && b.y - this.fallFrom > PHYSICS.cloudDrop * H) {
