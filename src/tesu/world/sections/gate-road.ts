@@ -78,28 +78,29 @@ export function gateRoad(b: WorldBuilder): void {
   // Shiraito's diagonal, laid rough for now (a band on a background cliff): the ground the
   // leap and the hall's back gallery drop you onto. Its art comes with Shiraito.
   const d0 = h(98), d1 = h(170);
-  const diag: number[] = [];
-  for (let i = 0; i < DIAG.length; i += 2) if (DIAG[i]! >= d0 && DIAG[i]! <= d1) diag.push(DIAG[i]!, DIAG[i + 1]!);
+  // (exactly from d0 to d1, so it meets Shiraito's village at its foot and the Prow Stair at its top)
+  const diag: number[] = [d0, yOn(DIAG, d0)];
+  for (let i = 0; i < DIAG.length; i += 2) if (DIAG[i]! > d0 + 4 && DIAG[i]! < d1 - 4) diag.push(DIAG[i]!, DIAG[i + 1]!);
+  diag.push(d1, yOn(DIAG, d1));
   b.walk(diag, { surface: "earth", depth: h(4), name: "shiraito" });
-  const dBottom: number[] = [];
-  for (let i = diag.length - 2; i >= 0; i -= 2) dBottom.push(diag[i]!, diag[i + 1]! + h(3.4) + h(0.6) * Math.sin(diag[i]! / h(5)));
-  b.piece("play", "op.rock", 0, 0, { top: diag, bottom: dBottom, cap: "grass", capH: 12, rough: 10, veg: 0.6, shade: 0.2, fadeY: h(72), fadeH: h(9) }, { z: -2 });
-  // its top end meets the palace cliff (the Prow Stair comes later); its foot is open air
-  b.wall({ x: d1, y0: h(40), y1: yOn(DIAG, d1) + h(0.1), reason: "cliff" });
-  // below the diagonal, until the harbour exists, is a fall into mist: the talisman tugs her back
-  b.void({ x0: h(60), x1: h(200), y: h(136), y1: h(240) });
+  // (its rock ledges and plank walks are Shiraito's: sections/shiraito.ts)
+  // its top end meets the Prow Stair, its foot Shiraito's village (sections/shiraito.ts)
+  // (below the diagonal is Hoài Phố: sections/hoaipho.ts)
 
   // behind the band: Shiraito's great wall below the road's lip, a hundred thread falls
   // pouring down it into the valley's mist (P3; art: env-opening)
   const r3 = 0.62;
   const wallP: WallP = {
-    w: h(90) * r3, h: h(30) * r3, falls: 1.7, fadeY: h(11) * r3, fadeH: h(7) * r3,
-    lip: [0, h(1.2) * r3, h(10) * r3, h(0.4) * r3, h(30) * r3, -h(0.4) * r3, h(60) * r3, -h(2) * r3, h(90) * r3, -h(3) * r3],
+    w: h(90) * r3, h: h(90) * r3, falls: 1.7, fadeY: h(80) * r3, fadeH: h(10) * r3,
+    // (east of the hall its top sinks away under the prow, out of the court's frames; it reaches
+    // down to Shiraito's terraces, the valley's mist lying across it in the opening's frames)
+    lip: [0, h(1.2) * r3, h(10) * r3, h(0.4) * r3, h(30) * r3, -h(0.4) * r3, h(50) * r3, 0, h(62) * r3, h(6) * r3, h(75) * r3, h(30) * r3, h(90) * r3, h(60) * r3],
   };
   const wall = b.piece("back", "op.wall", h(110.5), h(59.6), wallP as unknown as Record<string, unknown>, { z: 2 });
   // the threads flow (12 fps over four frames): one sprite per small group of them
-  threadGroups(wallP, wall.seed).forEach(([from, to], i) => {
-    b.sprite({ id: `shiraito-flow-${i}`, plane: "back", kind: "op.falls", x: h(110.5), y: h(59.6), p: { ...wallP, wallSeed: wall.seed, from, to }, frames: 4, fps: 12 });
+  // (animated over the upper part, where the frames look; lower down the plate's threads go on)
+  threadGroups(wallP, wall.seed, 120).forEach(([from, to], i) => {
+    b.sprite({ id: `shiraito-flow-${i}`, plane: "back", kind: "op.falls", x: h(110.5), y: h(59.6), p: { ...wallP, wallSeed: wall.seed, from, to, flowH: Math.round(h(16) * r3) }, frames: 4, fps: 12 });
   });
 
   // mist fills Shiraito's valley below the road: one bank over the wall's foot, one over the

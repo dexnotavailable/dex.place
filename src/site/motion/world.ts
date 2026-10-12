@@ -33,7 +33,7 @@ export interface WorldHandle {
 }
 
 interface WorldModule {
-  mount(el: HTMLElement): WorldHandle;
+  mount(el: HTMLElement, opts?: { hold?: boolean; at?: string }): WorldHandle;
 }
 
 export function initWorld(_reduced: MediaQueryList): void {
@@ -81,10 +81,21 @@ export function initWorld(_reduced: MediaQueryList): void {
     land();
   };
 
+  // The world window's place in the column: on "/" the title and the fall come first.
+  const anchor = document.querySelector<HTMLElement>(".world-top");
+  // Out of view below (the title and the fall on "/"): held like a covered world.
+  let below = false;
   const update = (): void => {
     raf = 0;
     const height = world.offsetHeight || window.innerHeight;
-    const p = Math.min(1, Math.max(0, window.scrollY / height));
+    const top = anchor?.offsetTop ?? 0;
+    const p = Math.min(1, Math.max(0, (window.scrollY - top) / height));
+    const nowBelow = window.scrollY + window.innerHeight <= top + 1;
+    if (nowBelow !== below) {
+      below = nowBelow;
+      if (below) handle?.pause();
+      else if (!covered) handle?.resume();
+    }
     const nowCovered = p >= 0.999;
     // Uncovered (at load, or scrolled back up before the idle start): start now.
     if (!nowCovered && !waiting) start();
@@ -97,12 +108,12 @@ export function initWorld(_reduced: MediaQueryList): void {
       const focusedInside = world.contains(document.activeElement);
       covered = nowCovered;
       world.toggleAttribute("data-covered", covered);
-      if (covered) {
+      if (covered || below) {
         handle?.pause();
         // A hidden child canvas must not keep receiving the site's keys.
         if (focusedInside) document.getElementById("main")?.focus({ preventScroll: true });
       }
-      else handle?.resume();
+      else if (!below) handle?.resume();
     }
     land();
   };
@@ -128,7 +139,10 @@ export function initWorld(_reduced: MediaQueryList): void {
     if (location.hash === "#world") toWorld();
   });
 
-  const modules = import.meta.glob<WorldModule>("../../world/mount.ts");
+  // the column's page script (motion/column.ts) asks to go into the world
+  document.addEventListener("dex:toworld", () => toWorld());
+
+  const modules = import.meta.glob<WorldModule>("../../tesu/mount.ts");
   const load = Object.values(modules)[0];
   function start(): void {
     if (!load || started || destroyed) return;
@@ -137,8 +151,11 @@ export function initWorld(_reduced: MediaQueryList): void {
     if (fallback) fallback.hidden = true;
     load().then(async (mod) => {
       if (destroyed) return;
-      handle = mod.mount(stage);
-      if (covered) handle.pause();
+      handle = mod.mount(stage, { hold: !!world?.hasAttribute("data-world-hold"), at: world?.dataset.worldAt });
+      if (covered || below) handle.pause();
+      // the page column (motion/column.ts) drives PLAY and the talisman with it
+      (window as Window & { __dexWorld?: WorldHandle }).__dexWorld = handle;
+      document.dispatchEvent(new CustomEvent("dex:world", { detail: handle }));
       void handle.shown?.then(() => { if (!destroyed) world?.setAttribute("data-world-shown", ""); }, () => {});
       await handle.ready;
       if (destroyed) return;
@@ -164,6 +181,15 @@ export function initWorld(_reduced: MediaQueryList): void {
     waiting = false;
     update();
     if (started || destroyed) return;
+    // a section's page: the world above loads only once the reader heads up toward it
+    if (world.hasAttribute("data-world-at")) {
+      const near = (): void => {
+        const h = world.offsetHeight || window.innerHeight;
+        if (window.scrollY < h * 0.85) { window.removeEventListener("scroll", near); start(); }
+      };
+      window.addEventListener("scroll", near, { passive: true });
+      return;
+    }
     if (typeof requestIdleCallback === "function") requestIdleCallback(start, { timeout: 2000 });
     else setTimeout(start, 1000);
   };

@@ -21,6 +21,25 @@ export class Touch {
   onTap: (clientX: number, clientY: number) => boolean = () => false;
   /** A button let go (the killing blow listens for the attack button's release). */
   onRelease: (a: Action) => void = () => {};
+  /** The talisman tab (only in the page column): down to the website. */
+  private onTab: (() => void) | null = null;
+
+  setTab(go: () => void): void {
+    this.onTab = go;
+    if (this.shown) this.addTab();
+  }
+
+  private addTab(): void {
+    if (!this.onTab || this.root.querySelector(".tab")) return;
+    // the talisman tab at the bottom centre: where both halves of the screen are controls,
+    // this is the way down to the website (GDK 3.8, 6.8)
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "tb tab";
+    tab.setAttribute("aria-label", "To the website");
+    tab.addEventListener("click", () => this.onTab?.());
+    this.root.append(tab);
+  }
   private stick: Stick | null = null;
   private knob: HTMLDivElement;
   private base: HTMLDivElement;
@@ -81,6 +100,7 @@ export class Touch {
     btn("m2", "»", "dash", "dash");
     btn("skill", "Q", "vermilion brush", "kit q");
     btn("ult", "R", "decree of the vermilion seal", "kit r");
+    this.addTab();
   }
 
   private down(e: PointerEvent): void {

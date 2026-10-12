@@ -48,7 +48,7 @@ export function palace(b: WorldBuilder): void {
   b.usable({ id: "hall-doors", x0: DOOR_X0, y0: FLOOR_Y - h(3.7), x1: DOOR_X1, y1: FLOOR_Y, label: "go in", action: { kind: "door", to: "hall-in" } });
   // the forecourt ends at the doors: a hard edge with a reason (the hall's wall)
   b.wall({ x: DOOR_X1 + h(0.3), y0: FLOOR_Y - h(6), y1: FLOOR_Y + h(0.1), reason: "wall" });
-  b.place({ id: "ink-palace", name: "Ink Palace", x0: HALL_DOOR_X - h(3), x1: HALL_X1, title: "place", spawn: "hall-door" });
+  b.place({ id: "ink-palace", name: "Ink Palace", x0: HALL_DOOR_X - h(3), x1: HALL_X1, y0: FLOOR_Y - h(12), y1: FLOOR_Y + h(2), title: "place", spawn: "hall-door" });
 }
 
 function ROAD_PTS(): number[] {

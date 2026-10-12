@@ -36,6 +36,16 @@ void main() {
   o = vec4(c.rgb * c.a, c.a);
 }`;
 
+/** A title's letters the font lacks (tone marks, accents) become their base letters. */
+function forFont(font: TitleFont, text: string): string {
+  let out = "";
+  for (const ch of text.toUpperCase()) {
+    if (ch === " " || font.metrics.glyphs[ch]) out += ch;
+    else out += ch.normalize("NFD").replace(/\p{M}/gu, "");
+  }
+  return out;
+}
+
 interface Card {
   text: string;
   big: boolean;
@@ -43,6 +53,8 @@ interface Card {
   night: boolean;
   /** The plane a big title is written after (nearer planes pass in front). */
   after: string;
+  /** The most of the frame's width it may span (its moment's clear sky). */
+  maxFrac: number;
 }
 
 export class Titles {
@@ -67,9 +79,9 @@ export class Titles {
   }
 
   /** A big title (TESU, SHANSHUI ...) or a place name, slamming in now. */
-  show(text: string, big: boolean, night = false, after = "mid"): void {
+  show(text: string, big: boolean, night = false, after = "mid", maxFrac = 0.9): void {
     this.cards = this.cards.filter((c) => c.big !== big);
-    this.cards.push({ text, big, t: 0, night, after: big ? after : "overlay" });
+    this.cards.push({ text, big, t: 0, night, after: big ? after : "overlay", maxFrac: big ? maxFrac : 0.6 });
   }
 
   get showing(): boolean {
@@ -94,8 +106,12 @@ export class Titles {
     const font = this.font;
     for (const c of this.cards) {
       if (c.after !== layer) continue;
-      const scale = c.big ? Math.max(5, Math.round(H / 100)) : Math.max(2, Math.round((H * 2) / 720));
-      const lay = layoutTitle(font, c.text, c.big ? 2 : 1);
+      const text = forFont(font, c.text);
+      const lay = layoutTitle(font, text, c.big ? 2 : 1);
+      // big titles take their size from the frame's height, but never more than 90% of its
+      // width (a phone or an iPad held upright is narrow); whole-number scales only
+      const byH = c.big ? Math.max(5, Math.round(H / 100)) : Math.max(2, Math.round((H * 2) / 720));
+      const scale = Math.max(1, Math.min(byH, Math.floor((W * c.maxFrac) / Math.max(1, lay.width))));
       const cap = font.metrics.cap, desc = font.metrics.descent;
       const w = Math.max(1, lay.width * scale), h = (cap + desc) * scale;
       const cv = this.canvas;
@@ -105,7 +121,7 @@ export class Titles {
       }
       const g = cv.getContext("2d")!;
       g.clearRect(0, 0, w, h);
-      drawTitle(g, font, c.text, 0, cap * scale, {
+      drawTitle(g, font, text, 0, cap * scale, {
         scale, color: c.night ? TITLE_COLOR_NIGHT : TITLE_COLOR_DAY, tracking: c.big ? 2 : 1,
         time: c.t, preset: c.big ? TITLE_BIG : TITLE_PLACE, reducedMotion: this.reducedMotion,
       });

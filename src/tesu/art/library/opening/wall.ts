@@ -74,7 +74,7 @@ export function threadX(t: Thread, below: number): number {
   return t.x + Math.sin(below / 47 + t.seed) * Math.min(1.6, below / 60) + (vnoise1(below / 90, t.seed) - 0.5) * Math.min(5, below / 30);
 }
 
-export function paintThreads(c: PaintCtx, p: WallP, threads: Thread[], frame = -1): void {
+export function paintThreads(c: PaintCtx, p: WallP, threads: Thread[], frame = -1, flowH = Infinity): void {
   const b = c.buf, d = c.d;
   const lip = lipOf(p);
   const fadeY = p.fadeY ?? p.h * 0.6;
@@ -85,7 +85,7 @@ export function paintThreads(c: PaintCtx, p: WallP, threads: Thread[], frame = -
     const end = top + (fadeY + fadeH - top) * (0.15 + 0.85 * t.life) + 20;
     const reach = t.w + 8;
     if (!b.touches(Math.floor(c.X(t.x - reach)), Math.floor(c.Y(top)), Math.ceil(c.X(t.x + reach)), Math.ceil(c.Y(end)))) continue;
-    const Y0 = Math.max(b.oy, Math.floor(c.Y(top))), Y1 = Math.min(b.y1, Math.ceil(c.Y(end)));
+    const Y0 = Math.max(b.oy, Math.floor(c.Y(top))), Y1 = Math.min(b.y1, Math.ceil(c.Y(Math.min(end, top + flowH))));
     for (let y = Y0; y < Y1; y++) {
       const ly = c.ly(y + 0.5);
       const below = ly - top;
@@ -144,6 +144,8 @@ export const wall = definePainter<WallP>("op.wall", {
 export interface FallsP extends WallP {
   /** The wall piece's seed (the threads are its threads) and the slice of them this sprite shows. */
   wallSeed: number;
+  /** How far below the lip the flow is animated, px (below, the plate's still threads go on). */
+  flowH?: number;
   from: number;
   to: number;
   frame?: number;
@@ -157,10 +159,12 @@ export const falls = definePainter<FallsP>("op.falls", {
     for (const t of T) { x0 = Math.min(x0, t.x - t.w - 12); x1 = Math.max(x1, t.x + t.w + 12); }
     let mn = 0;
     for (let i = 1; i < (p.lip?.length ?? 0); i += 2) mn = Math.min(mn, p.lip![i]!);
-    return [x0, mn - 6, x1, (p.fadeY ?? p.h * 0.6) + (p.fadeH ?? p.h * 0.2) + 24];
+    let mx = 0;
+    for (let i = 1; i < (p.lip?.length ?? 0); i += 2) mx = Math.max(mx, p.lip![i]!);
+    return [x0, mn - 6, x1, Math.min((p.fadeY ?? p.h * 0.6) + (p.fadeH ?? p.h * 0.2) + 24, mx + 12 + (p.flowH ?? Infinity))];
   },
   paint(c, p) {
-    paintThreads(c, p, threadsOf(p, p.wallSeed).slice(p.from, p.to), p.frame ?? 0);
+    paintThreads(c, p, threadsOf(p, p.wallSeed).slice(p.from, p.to), p.frame ?? 0, p.flowH ?? Infinity);
   },
 });
 

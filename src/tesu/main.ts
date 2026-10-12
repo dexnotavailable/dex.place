@@ -4,8 +4,9 @@
 //
 // URL options: ?at=<spawn id> (start somewhere), ?x=<H> (start at x in H), ?debug, ?manual
 // (no real-time loop: drive it from window.__tesu), ?sync (paint plates on the main thread).
+// In the page column (src/tesu/mount.ts) it runs framed: ?embed=site, plus ?hold on "/" (the
+// world window waits for PLAY, which the page calls through window.__tesu.play()).
 
-import "@fontsource/dotgothic16/400.css";
 import { Input, type Action, type KeyMap } from "../lab/engine/input.ts";
 import { ContractError } from "../lab/contracts.ts";
 import { WorldRenderer } from "../world/render/renderer.ts";
@@ -75,14 +76,37 @@ function watchSize(r: WorldRenderer): void {
 }
 
 async function boot(): Promise<void> {
+  // load-time marks (lanes' load test reads them: performance.getEntriesByType("mark"))
+  performance.mark("tesu:boot");
   const q = new URLSearchParams(location.search);
   const r = new WorldRenderer(canvas);
   r.integerFrames = true;
   watchSize(r);
   const assets = await loadZhusha(r);
+  performance.mark("tesu:assets");
   const input = new Input(canvas, KEYS);
   const touch = new Touch(input, document.getElementById("touch") as HTMLElement, canvas);
-  const game = new TesuGame(r, input, assets, { start: q.get("at") ?? "catch", link: q.has("at") || q.has("x"), noOpening: q.has("skip"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual") });
+  const embedded = q.get("embed") === "site" && window.parent !== window;
+  const game = new TesuGame(r, input, assets, {
+    start: q.get("at") ?? "catch", link: q.has("at") || q.has("x") || q.has("hold"), noOpening: q.has("skip"),
+    hold: q.has("hold"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual"),
+  });
+  // a mouse press on the world gives it the keyboard (the input's own handler cancels the
+  // browser's default, which would otherwise do that)
+  canvas.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && document.activeElement !== canvas) canvas.focus({ preventScroll: true });
+  }, { capture: true });
+  if (embedded) {
+    // Page Up and Page Down scroll the page column (to the website and back), as the wheel does
+    window.addEventListener("keydown", (e) => {
+      if (panels.open || !["PageDown", "PageUp"].includes(e.code)) return;
+      e.preventDefault();
+      window.parent.scrollBy({ top: (e.code === "PageDown" ? 0.9 : -0.9) * window.parent.innerHeight, behavior: "smooth" });
+    });
+    // the talisman tab (touch): down to the website
+    touch.setTab(() => window.parent.document.getElementById("site")?.scrollIntoView({ behavior: "smooth" }));
+  }
+  performance.mark("tesu:game");
   if (q.has("x")) game.place(Number(q.get("x")) * H);
   game.debug = q.has("debug");
 
@@ -157,8 +181,10 @@ async function boot(): Promise<void> {
   canvas.focus();
 
   let n = 0;
+  let lastFrame = 0;
   const loop = (now: number): void => {
     try {
+      lastFrame = performance.now();
       game.frame(now);
       if (touch.shown) touch.cooldowns(game.player.skillCd <= 0, game.player.ultCd <= 0 && !game.court.ultLocked);
       if (game.debug) {
@@ -172,6 +198,17 @@ async function boot(): Promise<void> {
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);
+  // A browser stops animation frames in a frame that is out of view (the world window below
+  // the title on "/"): while the world is still loading, a timer keeps its plates streaming so
+  // it is ready when it scrolls into view.
+  const keepLoading = window.setInterval(() => {
+    if (!game.loading) { clearInterval(keepLoading); return; }
+    const now = performance.now();
+    if (now - lastFrame > 120) {
+      lastFrame = now;
+      try { game.frame(now); } catch (e) { clearInterval(keepLoading); showFailure(e, "The world stopped"); }
+    }
+  }, 60);
 
   const src = "auto";
   Object.assign(window, {
@@ -195,6 +232,9 @@ async function boot(): Promise<void> {
       render: () => game.render(),
       flag: (f: string, on = true) => (on ? game.flags.add(f) : game.flags.delete(f)),
       use: () => game.use(),
+      /** The page column: PLAY (the opening starts at 0:00), and the page's running audio. */
+      play: () => game.play(),
+      audio: (ctx: AudioContext) => game.sound.start(ctx),
       /** The bout: summon a prize's champion, press the finish (as an attack press would). */
       summon: (id: string) => {
         const p = prizeFor(id);

@@ -35,6 +35,7 @@ const CUES: Record<string, Cue> = {
   "paper.hit": c("paper-cut", 0.5), "paper.break": c("cloth-tear", 0.55, 1.2),
   "metal.hit": c("metal-hit", 0.55), "metal.break": c("metal-heavy", 0.6),
   debris: c("grit-sift", 0.4, 1.3), thud: c("thud", 0.5), tink: c("clink", 0.7, 1.4),
+  splash: c("splash-1", 0.9), "lift-start": c("lift-start", 0.6), "lift-dock": c("lift-dock", 0.6),
   // the court
   gong: c("bell-chapel", 1, 0.5), poof: c("cloth-flap", 0.7, 0.8), installed: c("confirm", 0.5),
   "lion-windup": c("telegraph", 0.6), "lion-land": c("colossus-footfall", 0.6, 1.6),
@@ -73,16 +74,21 @@ export class Sound {
     for (const ev of ["keydown", "pointerdown", "touchend"]) window.addEventListener(ev, go, { capture: true });
   }
 
-  /** The first click, key or tap: the context starts and everything swells in. */
-  start(): void {
+  /**
+   * The first click, key or tap: the context starts and everything swells in. In the page
+   * column the press happens in the page around the world window (PLAY, "continue"), so the
+   * page hands its own running context over (`ctx`).
+   */
+  start(given?: AudioContext): void {
     if (this.ctx) {
       if (this.ctx.state === "suspended") void this.ctx.resume();
       return;
     }
     const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AC) return;
-    const ctx = new AC();
+    if (!given && !AC) return;
+    const ctx = given ?? new AC();
     this.ctx = ctx;
+    if (ctx.state === "suspended") void ctx.resume();
     const a = document.createElement("audio");
     this.ext = a.canPlayType('audio/ogg; codecs="opus"') ? "opus" : "m4a";
     this.master = ctx.createGain();

@@ -1,0 +1,90 @@
+/* The page column on "/" (GDK 3.8): the title on black, the self-paced fall through the sky,
+   the PLAY prompt in the world window, the talisman over the page, the cinematic bars and the
+   letter's captions. motion/column.ts drives it. */
+
+.col-title {
+  position: relative;
+  height: 100vh; height: 100svh;
+  display: grid;
+  place-items: center;
+  background: #000;
+  color: #f6eee9;
+  overflow: hidden;
+}
+.col-title__name { position: absolute; inset: 0; margin: 0; }
+.col-title__mark { display: none; }
+.col-title__load {
+  position: absolute; bottom: 14vh; width: 100%; margin: 0; text-align: center;
+  font: 400 var(--fs-12) / 1 var(--f-label); letter-spacing: 0.14em; text-transform: lowercase; color: #9a8f96;
+}
+.col-continue {
+  position: absolute; bottom: 12vh; left: 50%; translate: -50% 0;
+  padding: 10px 22px; border: 2px solid #f6eee9; background: transparent; color: #f6eee9;
+  font: 400 var(--fs-14) / 1 var(--f-label); letter-spacing: 0.18em; text-transform: lowercase; cursor: pointer;
+}
+.col-continue:hover, .col-continue:focus-visible { background: #f6eee9; color: #000; outline: none; }
+.col-title__skip { position: absolute; left: 12px; top: 12px; translate: 0 -200%; color: #f6eee9; }
+.col-title__skip:focus { translate: 0 0; }
+
+/* the fall: black into the sky, two far isles and Walker silhouettes in the haze */
+.col-fall {
+  position: relative;
+  height: 220vh; height: 220svh;
+  overflow: hidden;
+  background: linear-gradient(#000 0%, #0d1424 14%, #2b4766 34%, #7fa7c9 58%, #cfe0e8 82%, #edf5ef 100%);
+}
+.col-fall > span { position: absolute; display: block; }
+.col-fall__clouds {
+  inset: 30% 0 0 0;
+  background:
+    radial-gradient(60px 14px at 20% 40%, #f3f7f8 98%, transparent 100%),
+    radial-gradient(90px 18px at 64% 52%, #f3f7f8 98%, transparent 100%),
+    radial-gradient(120px 20px at 38% 74%, #e3ecef 98%, transparent 100%),
+    radial-gradient(80px 16px at 82% 86%, #e3ecef 98%, transparent 100%);
+  image-rendering: pixelated;
+}
+.col-fall__isle { width: 64px; height: 56px; background: #8fa3ad; clip-path: polygon(0 30%, 100% 30%, 70% 100%, 40% 70%); }
+.col-fall__isle::before { content: ""; position: absolute; left: 40%; top: 0; width: 20%; height: 32%; background: #3b4152; }
+.col-fall__isle--a { left: 66%; top: 46%; }
+.col-fall__isle--b { left: 76%; top: 52%; scale: 0.8; }
+.col-fall__walker { bottom: 0; width: 120px; height: 150px; background: #b7c8d1; opacity: 0.7;
+  clip-path: polygon(15% 30%, 85% 30%, 85% 55%, 78% 55%, 74% 100%, 68% 100%, 66% 55%, 34% 55%, 30% 100%, 24% 100%, 22% 55%, 15% 55%); }
+.col-fall__walker--a { left: 12%; }
+.col-fall__walker--b { left: 58%; scale: 0.6; transform-origin: bottom; opacity: 0.5; }
+
+/* anything here shown and hidden by the hidden attribute stays hidden (a display rule below
+   would otherwise override it) */
+.col-title [hidden], .world__play[hidden], .col-talisman-btn[hidden], .col-caption[hidden] { display: none !important; }
+
+/* the prompt where the scenery starts */
+.world__play {
+  position: absolute; z-index: 2; left: 50%; bottom: 18%; translate: -50% 0;
+  display: flex; align-items: center; gap: 14px; padding: 10px 16px;
+  background: rgba(255, 244, 241, 0.92); color: #2b2233; box-shadow: 0 0 0 2px #2b2233, 4px 4px 0 2px rgba(0, 0, 0, 0.25);
+}
+.world__ask { margin: 0; font: 400 var(--fs-14) / 1.3 var(--f-body); }
+.world__playbtn {
+  padding: 8px 18px; border: 0; background: #c9304f; color: #fff4f1; cursor: pointer;
+  font: 400 var(--fs-16, 16px) / 1 var(--f-label); letter-spacing: 0.16em; box-shadow: 0 0 0 2px #2b2233;
+}
+.world__playbtn:focus-visible { outline: 3px solid #ffc857; outline-offset: 2px; }
+
+/* the talisman over the page (drawn in device pixels; never smoothed) */
+.col-talisman { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 40; image-rendering: pixelated; }
+.col-talisman-btn { position: fixed; z-index: 41; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.col-talisman-btn:focus-visible { outline: 3px solid #ffc857; outline-offset: 3px; }
+
+/* the cinematic fall: bars close in, the letter's lines as captions on a paper strip */
+.col-caption {
+  position: fixed; z-index: 42; left: 50%; bottom: 7vh; translate: -50% 0; max-width: min(90vw, 640px);
+  margin: 0; padding: 6px 14px; text-align: center; opacity: 0; transition: opacity 0.3s steps(3);
+  background: #fff4f1; color: #2b2233; box-shadow: 0 0 0 2px #2b2233; font: 400 var(--fs-14) / 1.4 var(--f-body);
+  pointer-events: none;
+}
+.col-caption.on { opacity: 1; }
+html.col-cine::before, html.col-cine::after {
+  content: ""; position: fixed; left: 0; right: 0; height: 11vh; background: #000; z-index: 39;
+}
+html.col-cine::before { top: 0; }
+html.col-cine::after { bottom: 0; }
+html.col-cine .hdr { visibility: hidden; }

@@ -1,0 +1,12 @@
+{
+ "action": "wade",
+ "count": 48,
+ "fps": 2.4,
+ "w": 542,
+ "h": 562,
+ "ax": 292.0,
+ "ay": 562,
+ "heightPx": 560,
+ "groundPxPerFrame": 3.824286772323852,
+ "facing": "right"
+}

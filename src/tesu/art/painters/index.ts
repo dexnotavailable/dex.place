@@ -11,5 +11,7 @@ import "./folk.ts";
 import "./court.ts";
 import "./champions.ts";
 import "./props.ts";
+import "./shiraito.ts";
+import "./lowlands.ts";
 import "../library/sky/index.ts";
 import "../library/opening/index.ts";
