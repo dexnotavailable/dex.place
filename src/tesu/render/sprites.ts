@@ -328,7 +328,13 @@ export class SpriteRenderer {
         fr = got?.fr ?? null;
         if (got) level = got.level;
         else this.waitingNow++;
-      } else fr = this.frame(def, pos.frame, level, force) ?? (def.kind === "image" ? null : this.frame(def, 0, level, true));
+      } else if (def.kind === "image") {
+        // a picture is fetched only once it comes near the frame (the hall's art, far from the start)
+        const sx = pos.x * rate * xf.g + xf.offX, sy = pos.y * rate * xf.g + xf.offY;
+        const pw = Number(def.p.w) * xf.g, ph = Number(def.p.h) * xf.g;
+        if (sx + pw < -cam.W * 0.5 || sx - pw > cam.W * 1.5 || sy < -cam.H * 0.5 || sy - ph > cam.H * 1.5) continue;
+        fr = this.frame(def, pos.frame, level, force);
+      } else fr = this.frame(def, pos.frame, level, force) ?? this.frame(def, 0, level, true);
       if (!fr) continue;
       const k = xf.g / level;
       const ax = pos.x * rate * xf.g + xf.offX, ay = pos.y * rate * xf.g + xf.offY;

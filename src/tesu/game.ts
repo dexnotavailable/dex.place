@@ -199,6 +199,7 @@ export class TesuGame {
     });
     this.player = new Player(assets.sprite, assets.tuning.player, services, [0, 0]);
     this.closeSprite = assets.closeup;
+    void assets.closeupReady.then((s) => { this.closeSprite = s; }, (e: unknown) => console.warn("close-up", e));
     this.vfx.groundAt = (x, y) => this.collision.groundAt(x, y);
     this.save = loadSave();
     for (const f of this.save.flags) if (!TRANSIENT.has(f)) this.flags.add(f);
@@ -718,7 +719,9 @@ export class TesuGame {
     const draws = new Map<PlaneId, PlaneDraw>();
     for (const id of PLANE_IDS) draws.set(id, this.planeQuads(cam, id, 0, Hf, a, !this.manual));
     // the world shows once its plates are in and its rendered giants have a frame to show
+    const wasLoading = this.loading;
     this.loading = ![...draws.values()].every((d) => d.complete) || (this.sprites.waiting > 0 && this.tick < 60 * 20);
+    if (wasLoading && !this.loading) performance.mark("tesu:first-scene");
     const z = cam.zoom;
     const xfPlay = planeXf(cam, 1);
     const focus: [number, number] = [W / 2, cam.anchor * Hf];

@@ -163,6 +163,42 @@ export function bakeScaledStandin(src: ClipSource, k: number, name: string): Sca
     warnings.push(...r.warnings);
     if (key === "idle0") height = r.pivot[1];
   }
+  return finishBake(src, name, images, meta, warnings, height, t0);
+}
+
+/**
+ * The same bake spread over many short slices, so a big one (the 2x close-up) runs behind a
+ * page that is already showing instead of freezing it. `wrap` runs each pose inside the
+ * caller's look (withFigureLook), which only holds during a synchronous call.
+ */
+export async function bakeScaledStandinAsync(src: ClipSource, k: number, name: string, wrap: <T>(fn: () => T) => T, sliceMs = 8): Promise<ScaledBake> {
+  const t0 = performance.now();
+  const keys = new Set<string>();
+  for (const c of src.clips) for (const f of c.frames) keys.add(f.pose);
+  const images: PackedImage[] = [];
+  const meta = new Map<string, { pivot: [number, number]; anchors: Record<string, [number, number]> }>();
+  const warnings: string[] = [];
+  let height = 0;
+  let slice = performance.now();
+  for (const key of keys) {
+    const r = wrap(() => renderPose(key, k));
+    images.push(r.image);
+    meta.set(key, { pivot: r.pivot, anchors: r.anchors });
+    warnings.push(...r.warnings);
+    if (key === "idle0") height = r.pivot[1];
+    if (performance.now() - slice > sliceMs) {
+      await new Promise<void>((res) => setTimeout(res, 0));
+      slice = performance.now();
+    }
+  }
+  return finishBake(src, name, images, meta, warnings, height, t0);
+}
+
+function finishBake(
+  src: ClipSource, name: string, images: PackedImage[],
+  meta: Map<string, { pivot: [number, number]; anchors: Record<string, [number, number]> }>,
+  warnings: string[], height: number, t0: number,
+): ScaledBake {
   const atlas = pack(images, 2048);
   const clips: Clip[] = src.clips.map((c) => ({
     ...c,
