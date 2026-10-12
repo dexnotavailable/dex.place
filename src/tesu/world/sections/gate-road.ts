@@ -8,6 +8,7 @@
 
 import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
+import { threadGroups, type WallP } from "../../art/library/opening/wall.ts";
 import { DIAGONAL, GATE_XS, HALL_DOOR_X, JETTY_X1, LEAP_X, TERRACE_X0, TERRACE_X1, TUNNEL_XS, sampleCurve, yOn } from "./common.ts";
 
 /** The road surface, world px, from the jetty's end to the hall door. */
@@ -60,6 +61,8 @@ export function gateRoad(b: WorldBuilder): void {
   band(roadC, leap1, HALL_DOOR_X + h(0.4));
   // the leap's plank (its prayer-flag pole comes with the terrace furniture)
   b.piece("play", "plank", leap0 - h(0.3), yL, { w: leap1 - leap0 + h(0.6) }, { z: 2 });
+  // Pilgrims' Leap: a bamboo pole lashed at the plank's end, prayer flags strung back to the rail
+  b.sprite({ id: "leap-flags", plane: "play", kind: "op.flags", x: leap1 + h(0.15), y: yL, p: { h: 150, dx: -h(1.7), dy: 92, n: 8 }, frames: 4, fps: 6 });
 
   // three karst pillars carry the band, standing on Shiraito's terraces far below; their feet
   // vanish into the valley's mist
@@ -89,10 +92,15 @@ export function gateRoad(b: WorldBuilder): void {
   // behind the band: Shiraito's great wall below the road's lip, a hundred thread falls
   // pouring down it into the valley's mist (P3; art: env-opening)
   const r3 = 0.62;
-  b.piece("back", "op.wall", h(110.5), h(59.6), {
+  const wallP: WallP = {
     w: h(90) * r3, h: h(30) * r3, falls: 1.7, fadeY: h(11) * r3, fadeH: h(7) * r3,
     lip: [0, h(1.2) * r3, h(10) * r3, h(0.4) * r3, h(30) * r3, -h(0.4) * r3, h(60) * r3, -h(2) * r3, h(90) * r3, -h(3) * r3],
-  }, { z: 2 });
+  };
+  const wall = b.piece("back", "op.wall", h(110.5), h(59.6), wallP as unknown as Record<string, unknown>, { z: 2 });
+  // the threads flow (12 fps over four frames): one sprite per small group of them
+  threadGroups(wallP, wall.seed).forEach(([from, to], i) => {
+    b.sprite({ id: `shiraito-flow-${i}`, plane: "back", kind: "op.falls", x: h(110.5), y: h(59.6), p: { ...wallP, wallSeed: wall.seed, from, to }, frames: 4, fps: 12 });
+  });
 
   // mist fills Shiraito's valley below the road: one bank over the wall's foot, one over the
   // feet of the road's pillars and the plateau's cliff (the masses dissolve into it)
@@ -116,13 +124,20 @@ export function gateRoad(b: WorldBuilder): void {
     for (let x = x0; x <= x1; x += h(0.5)) out.push(x, yOn(ROAD, x) + 3);
     return out;
   };
-  b.piece("front", "rail", 0, 0, { pts: railPts(h(110.4), leap0 - h(0.2)), h: 46, every: 62 }, { z: 0 });
-  b.piece("front", "rail", 0, 0, { pts: railPts(leap1 + h(0.2), HALL_DOOR_X - h(2.2)), h: 46, every: 62 }, { z: 0 });
+  b.piece("front", "op.rail", 0, 0, { pts: railPts(h(110.4), leap0 - h(0.2)), h: 46, every: 62 }, { z: 0 });
+  b.piece("front", "op.rail", 0, 0, { pts: railPts(leap1 + h(0.2), HALL_DOOR_X - h(2.2)), h: 46, every: 62 }, { z: 0 });
+  // the viewing terrace (art: env-opening): a paved platform on a cut-stone face built out
+  // over the rock; great cliff pines lean out over the valley from the road's lip (one before
+  // the gates, one between the terrace and the tunnel); bamboo at the forecourt
+  b.piece("play", "op.terrace", TERRACE_X0 - h(0.5), h(59.3), { w: TERRACE_X1 - TERRACE_X0 + h(1), depth: h(1.3) }, { z: 1 });
+  b.piece("play", "op.pine", h(111.6), yOn(ROAD, h(111.6)) + 6, { h: 230, dir: -1 }, { z: 1 });
+  b.piece("play", "op.pine", h(129.9), yOn(ROAD, h(129.9)) + 8, { h: 260, dir: 1 }, { z: 1 });
+  b.sprite({ id: "forecourt-bamboo", plane: "play", kind: "op.bamboo", x: h(143.9), y: yOn(ROAD, h(143.9)) + 2, p: { w: 70, h: 420 }, frames: 4, fps: 4 });
   // the viewing terrace: a stone bench and two water barrels, Zhusha small at the rail
-  b.piece("play", "bench", TERRACE_X0 + h(0.6), h(59.3), { w: h(1.5) }, { z: 3 });
+  b.piece("play", "op.bench", TERRACE_X0 + h(0.6), h(59.3), { w: h(1.5) }, { z: 3 });
   // (the barrels break: cosmetic, back when she has gone; a crate with a jar on it, the support rule's example)
-  b.prop({ id: "terrace-barrel-1", kind: "barrel", p: { h: 40 }, x: TERRACE_X1 - h(1.6), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
-  b.prop({ id: "terrace-barrel-2", kind: "barrel", p: { h: 36 }, x: TERRACE_X1 - h(1.1), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
+  b.prop({ id: "terrace-barrel-1", kind: "op.barrel", p: { h: 40, ladle: true }, x: TERRACE_X1 - h(1.6), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
+  b.prop({ id: "terrace-barrel-2", kind: "op.barrel", p: { h: 36 }, x: TERRACE_X1 - h(1.1), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
   b.prop({ id: "terrace-crate", kind: "crate", p: { w: 40, h: 34 }, x: TERRACE_X1 - h(0.5), y: h(59.3), cls: "cosmetic", material: "wood", pieces: 5 });
   b.prop({ id: "terrace-jar", kind: "jar", p: { h: 26, glaze: "celadon" }, x: TERRACE_X1 - h(0.5), y: h(59.3) - 34, cls: "cosmetic", material: "clay", on: "terrace-crate" });
 

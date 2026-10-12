@@ -8,6 +8,7 @@
 import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
 import { PLANES, type PlaneId } from "../types.ts";
+import { reedBeds, type BankP } from "../../art/library/opening/bank.ts";
 import { CATCH_X, DECK_Y, JETTY_X0, JETTY_X1, LAKE_X0, LAKE_X1, LAKE_Y } from "./common.ts";
 
 /** A drifting sprite on a background plane, placed by plane px (x, and dy above the lake line), wrapping over plane px. */
@@ -40,6 +41,8 @@ export function kagami(b: WorldBuilder): void {
   b.piece("play", "op.rock", 0, 0, { top, bottom, cap: "grass", capH: 12, rough: 14, teeth: 0.5, veg: 0.75, shade: 0.2, fadeY: h(72), fadeH: h(9), water: h(62.6) - h(0), joinL: h(1), giant: h(13), forest: [h(3.2), h(7.5)] }, { z: 0 });
   // Kagami's spring: the lake drains through the karst and bursts from the cliff below it
   b.piece("play", "op.spring", h(97), h(65.4), { mw: 80, mh: 50, w: 44, drop: h(11) }, { z: 1, reflect: false });
+  // its flow (12 fps over four frames)
+  b.sprite({ id: "kagami-spring-flow", plane: "play", kind: "op.spring", x: h(97), y: h(65.4), p: { mw: 80, mh: 50, w: 44, drop: h(11), fallOnly: true }, frames: 4, fps: 12, reflect: false });
   // collision: the pass and the west shore, then the jetty
   b.walk([h(0), h(59.2), h(5), h(59.0), h(9), h(58.6), h(14), h(58.5), h(19), h(59.0), h(25), h(59.9), h(31), h(60.9), h(36), h(61.6), h(40), h(62.1), h(44.1), h(62.25)],
     { surface: "grass", name: "kagami-west" });
@@ -57,14 +60,20 @@ export function kagami(b: WorldBuilder): void {
     b.sprite({ id: `ripple-${Math.round(x)}`, plane: "front", kind: "sky.ripple", x, y: LAKE_Y, p: { rx: 26, rings: 3 }, frames: 8, fps: 8, reflect: false });
   }
   // a moored boat beside the jetty, a coil of rope and a bucket on the deck
-  b.piece("play", "boat", h(91.5), LAKE_Y + 2, { w: h(2.6) }, { z: 1 });
-  b.piece("play", "coil", CATCH_X - h(2.6), DECK_Y, { r: 12 }, { z: 4 });
-  b.prop({ id: "jetty-barrel", kind: "barrel", p: { h: 22 }, x: h(97.4), y: DECK_Y, cls: "cosmetic", material: "wood" });
+  // (Kagami is mirror-still: the boat rests without bobbing, its reflection unbroken)
+  b.piece("play", "op.boat", h(91.5), LAKE_Y + 2, { w: h(2.6) }, { z: 1 });
+  b.piece("play", "op.coil", CATCH_X - h(2.6), DECK_Y, { r: 12 }, { z: 4 });
+  b.prop({ id: "jetty-barrel", kind: "op.bucket", p: { h: 20 }, x: h(97.4), y: DECK_Y, cls: "cosmetic", material: "wood" });
   b.prop({ id: "jetty-crate", kind: "crate", p: { w: 30, h: 26 }, x: h(96.6), y: DECK_Y, cls: "cosmetic", material: "wood" });
   b.prop({ id: "jetty-jar", kind: "jar", p: { h: 20, glaze: "clay" }, x: h(96.6), y: DECK_Y - 26, cls: "cosmetic", material: "clay", on: "jetty-crate", pieces: 3 });
   // the lake's near shore (P5; art: env-opening): the bank the surface ends against, low
   // hummocks, reed beds and sunk stones, rising into a rocky corner where the lake meets the lip
-  b.piece("near", "op.bank", h(38), LAKE_Y, { w: Math.round(h(72) * PLANES.near.rate), h: 130, cornerR: 700, endR: 520, startR: 420, reeds: 0.55 }, { z: 1, reflect: false });
+  const bankP: BankP = { w: Math.round(h(72) * PLANES.near.rate), h: 150, endR: 520, startR: 420, reeds: 0.55 };
+  const bank = b.piece("near", "op.bank", h(38), LAKE_Y, bankP as unknown as Record<string, unknown>, { z: 1, reflect: false });
+  // its reed beds sway in the wind (6 fps, a gust running through each bed)
+  reedBeds(bankP, bank.seed).forEach(([x, w, hh], i) => {
+    b.sprite({ id: `bank-reeds-${i}`, plane: "near", kind: "op.reeds", x: h(38) + x / PLANES.near.rate, y: LAKE_Y + 1 / PLANES.near.rate, p: { w, h: Math.round(hh) }, frames: 4, fps: 6, reflect: false });
+  });
 
   // (near: the surface ends at the near plane's waterline, against the bank above)
   b.water({ y: LAKE_Y, x0: LAKE_X0, x1: LAKE_X1, fx0: h(-60), fx1: h(150), near: PLANES.near.rate, far: 0.06, kind: "lake" });
@@ -86,22 +95,19 @@ export function kagami(b: WorldBuilder): void {
     sun: [0.2, 0.11],
     water: { deep: "#235f60", body: "#4a9a90", shallow: "#c3e2d9", glint: "#fffbe8" },
   });
-  // sky plane: y is px above the horizon (the sky barely moves, 0.02 of the camera)
-  const clouds: [number, number, number, number][] = [
-    [-300, -230, 520, 70], [260, -150, 380, 54], [700, -260, 640, 86], [1180, -120, 420, 60], [1560, -210, 560, 74], [2100, -170, 480, 64],
-  ];
-  // the env-sky lane's clouds, drifting east with the wind: the big slots are banks, the thin
-  // ones strata; two low strata lie just over the far karst (mist layered between sky and land)
+  // the sky (art: env-opening): one big morning cumulus on the right, the frame's big shape (the
+  // top edge crops it at play zoom), a lower heap under the sun, strata lying over the far karst,
+  // a high streak; all drifting east on the wind. The isles ride in front of the big cloud with a
+  // slow bob. Sky plane y is px above the lake line (the sky barely moves, 0.02 of the camera).
   const skyWrap: [number, number] = [-1700, 2500];
-  clouds.forEach(([x, y, w, hh], i) => {
-    const big = hh >= 64;
-    drifting(b, `sky-cloud-${i}`, "sky", big ? "sky.bank" : "sky.stratus", x, y, big ? { w, h: Math.round(hh * 1.05) } : { w: Math.round(w * 1.3), h: Math.round(hh * 0.3), layers: 2 }, skyWrap, big ? 2 : 3, 2);
-  });
-  drifting(b, "sky-low-0", "sky", "sky.stratus", -260, -70, { w: 900, h: 14, layers: 2 }, skyWrap, 3.5, 2);
-  drifting(b, "sky-low-1", "sky", "sky.stratus", 760, -96, { w: 700, h: 12, layers: 2 }, skyWrap, 3, 2);
+  drifting(b, "sky-cumulus", "sky", "op.cloud", 760, -130, { kind: "cumulus", w: 760, h: 380 }, skyWrap, 1.2, 1);
+  drifting(b, "sky-heap", "sky", "op.cloud", -280, -110, { kind: "cumulus", w: 360, h: 140 }, skyWrap, 1.6, 1);
+  drifting(b, "sky-strata-0", "sky", "op.cloud", -120, -62, { kind: "stratus", w: 1100, h: 8, layers: 2 }, skyWrap, 3, 2);
+  drifting(b, "sky-strata-1", "sky", "op.cloud", 560, -92, { kind: "stratus", w: 900, h: 7, layers: 2 }, skyWrap, 3.5, 2);
+  drifting(b, "sky-high", "sky", "op.cloud", 300, -430, { kind: "stratus", w: 700, h: 5, layers: 1 }, skyWrap, 4, 2);
   // the two sky isles, Bell and Drum, above and right of the palace: seen from almost everywhere
-  bg(b, "sky", 560, "isle", { w: 92, h: 120, tower: "bell" }, LAKE_Y - 300 / PLANES.sky.rate, 2);
-  bg(b, "sky", 700, "isle", { w: 110, h: 96, tower: "drum" }, LAKE_Y - 236 / PLANES.sky.rate, 2);
+  b.sprite({ id: "isle-bell", plane: "sky", kind: "op.isle", x: 560 / PLANES.sky.rate, y: LAKE_Y - 300 / PLANES.sky.rate, p: { w: 92, h: 120, tower: "bell" }, frames: 8, fps: 1, reflect: true });
+  b.sprite({ id: "isle-drum", plane: "sky", kind: "op.isle", x: 700 / PLANES.sky.rate, y: LAKE_Y - 236 / PLANES.sky.rate, p: { w: 110, h: 96, tower: "drum" }, frames: 8, fps: 0.8, reflect: true });
 
   // every background plane has ground below its line, so the land never shows a gap; past the
   // lake's east shore that ground is a sea of mist (the valley and the land beyond the palace)

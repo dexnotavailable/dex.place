@@ -37,13 +37,17 @@ interface Bit {
 
 /** Height of the bank's top above the waterline at x (px, positive up). */
 function topOf(p: BankP, x: number, seed: number): number {
+  // low hummocks everywhere, and every so often a big grassy mound with shrubs on it
   const hum = fbm1(x / 70, seed + 3, 3);
-  let t = 2 + Math.max(0, hum - 0.38) * 26 + (vnoise1(x / 9, seed + 4) - 0.5) * 3;
+  const mound = Math.pow(Math.max(0, vnoise1(x / 420, seed + 6) - 0.52) / 0.48, 1.6) * Math.pow(Math.max(0, Math.sin((x / 420) * Math.PI * 2 + seed)), 0.6);
+  let t = 3 + Math.max(0, hum - 0.35) * 30 + mound * 95 + (vnoise1(x / 9, seed + 4) - 0.5) * 3;
   if (p.cornerR) {
     const k = clamp((x - (p.w - p.cornerR)) / p.cornerR, 0, 1);
     t += k * k * 90 * (0.8 + 0.4 * vnoise1(x / 23, seed + 5));
   }
-  return t;
+  // the ends round down to the waterline
+  const ke = Math.max(p.endR ? clamp((x - (p.w - p.endR * 0.4)) / (p.endR * 0.4), 0, 1) : 0, p.startR ? clamp((p.startR * 0.4 - x) / (p.startR * 0.4), 0, 1) : 0);
+  return t * Math.sqrt(Math.max(0, 1 - ke * ke)) - ke * 4;
 }
 
 function bitsOf(p: BankP, seed: number): Bit[] {
@@ -54,9 +58,11 @@ function bitsOf(p: BankP, seed: number): Bit[] {
     for (let x = 4; x < p.w - 4; x += 3 + r() * 7) {
       const zone = vnoise1(x / 160, seed + 13);
       const k = r();
-      if (zone > 1 - reeds * 0.9 && k < 0.85) {
-        // a reed bed: a few blades each step
-        out.push({ kind: "reed", x, s: 24 + r() * 60 * zone, seed: Math.floor(r() * 1e6) });
+      const high = topOf(p, x, seed) > 30;
+      if (high && k < 0.3) { out.push({ kind: "shrub", x, s: 10 + r() * 18, seed: Math.floor(r() * 1e6) }); continue; }
+      if (zone > 1 - reeds * 0.9 && k < 0.85 && !high) {
+        // a reed bed: its reeds are sprites (they sway); the plate keeps the odd stone and tuft
+        if (k < 0.06) out.push({ kind: "stone", x, s: 5 + r() * 8, seed: Math.floor(r() * 1e6) });
       } else if (k < 0.08) out.push({ kind: "stone", x, s: 6 + r() * 14, seed: Math.floor(r() * 1e6) });
       else if (k < 0.2) out.push({ kind: "tuft", x, s: 5 + r() * 9, seed: Math.floor(r() * 1e6) });
       else if (k < 0.24) out.push({ kind: "shrub", x, s: 8 + r() * 12, seed: Math.floor(r() * 1e6) });
@@ -146,7 +152,7 @@ export const bank = definePainter<BankP>("op.bank", {
       if (p.endR || p.startR) {
         const k = Math.max(p.endR ? clamp((lx - (p.w - p.endR)) / p.endR, 0, 1) : 0, p.startR ? clamp((p.startR - lx) / p.startR, 0, 1) : 0);
         foot = foot * Math.sqrt(Math.max(0, 1 - k * k)) * (0.9 + 0.2 * vnoise1(lx / 11, seed + 15)) + (k > 0 ? (vnoise1(lx / 5, seed + 16) - 0.5) * 10 : 0);
-        if (foot < -top) continue;
+        if (foot <= top + 1) continue;
       }
       const Yt = Math.ceil(c.Y(top)), Yb = Math.min(b.y1, Math.ceil(c.Y(foot)));
       for (let y = Math.max(Yt, b.oy); y < Yb; y++) {
@@ -187,3 +193,23 @@ export const bank = definePainter<BankP>("op.bank", {
     }
   },
 });
+
+/** Where the bank's reed beds are (for the reed sprites): [x, width, height] in its own px. */
+export function reedBeds(p: BankP, seed: number): [number, number, number][] {
+  const out: [number, number, number][] = [];
+  const reeds = p.reeds ?? 0.5;
+  let a = -1;
+  for (let x = 4; x < p.w - 4; x += 6) {
+    const zone = vnoise1(x / 160, seed + 13);
+    const on = zone > 1 - reeds * 0.9 && topOf(p, x, seed) <= 30;
+    if (on && a < 0) a = x;
+    if ((!on || x + 6 >= p.w - 4) && a >= 0) {
+      if (x - a > 30) {
+        // split long beds into pieces of at most 260 px (sprites stay small)
+        for (let s = a; s < x; s += 260) out.push([s, Math.min(260, x - s), 34 + 56 * vnoise1(s / 90, seed + 21)]);
+      }
+      a = -1;
+    }
+  }
+  return out;
+}

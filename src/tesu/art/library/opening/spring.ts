@@ -75,12 +75,15 @@ export const spring = definePainter<SpringP>("op.spring", {
           if (k > 0.55 && bayer4(x + 1, y) < 0.35) b.set(x, y, C[2]!);
           continue;
         }
-        const phase = frame >= 0 ? frame * 5 : 0;
-        const streak = hash(Math.floor(lx * 0.8), Math.floor((ly - phase) / (5 + 3 * hash(Math.floor(lx * 0.8), 1, seed))), seed) < 0.3;
+        // a periodic streak pattern moving one cell per frame: four frames loop seamlessly
+        const col0 = Math.floor(lx * 0.8);
+        const L = 5 + Math.floor(hash(col0, 1, seed) * 3);
+        const ci = ((Math.floor((ly - (frame >= 0 ? frame : 0) * L) / L + hash(col0, 2, seed) * 4) % 4) + 4) % 4;
+        const streak = hash(col0, ci, seed) < 0.3;
         let col: number;
         if (u > 0.55) col = C[3]!;
         else if (u < -0.6) col = P.paper[0]!;
-        else col = streak ? C[2]! : C[0]!;
+        else col = streak ? C[3]! : C[0]!;
         b.set(x, y, col);
       }
     }

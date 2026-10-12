@@ -132,10 +132,18 @@ function storey(c: PaintCtx, x0: number, x1: number, y0: number, y1: number, bay
     const pane = Math.max(5, 7 * Math.min(1.2, H / 400));
     const gx = (lx - x0) / pane, gy = (c.ly(y + 0.5) - y0) / pane;
     const bar = (gx - Math.floor(gx)) < 0.24 || (gy - Math.floor(gy)) < 0.24;
-    if (bar && d >= 0.25) return P.lacquer[3]!;
+    // the eave's shadow falls across the top of the screens
+    const shade = v < 0.3 ? (0.3 - v) / 0.3 : 0;
+    if (bar && d >= 0.25) return P.lacquer[shade > 0.3 ? 4 : 3]!;
     const lit = hash1(i, seed) < warm;
-    if (lit) return tone(P.paper, clamp(0.25 + v * 0.5 + (bayer4(x, y) < 0.3 ? 0.1 : 0), 0, 1), x, y, 0.35);
-    return tone(P.lacquer, 0.3 + v * 0.2, x, y, 0.3);
+    if (lit) {
+      // paper lit from inside: a warm even glow, dimmer under the eave's shadow and at the sides
+      const side = Math.abs(inner - 0.5) * 2;
+      const k = clamp(0.35 + shade * 0.5 + side * side * 0.35 - (v - 0.3) * 0.25, 0, 1);
+      if (k < 0.45) return tone(P.paper, clamp(0.25 + k * 0.8, 0, 1), x, y, 0.35);
+      return tone(P.gold, clamp(0.35 + (k - 0.45) * 1.1, 0, 1), x, y, 0.35);
+    }
+    return tone(P.lacquer, clamp(0.55 + shade * 0.3 + (bayer4(x, y) < 0.15 ? -0.1 : 0), 0, 1), x, y, 0.3);
   });
 }
 
@@ -204,19 +212,35 @@ export const palace = definePainter<PalaceP>("op.palace", {
     });
     fill(c, dx - 26, -dh - 34, dx + dw + 26, -dh - 30, (x, y) => tone(P.gold, 0.35, x, y, 0.3));
     fill(c, dx, -dh - 6, dx + dw, -6, (x, y, u, v) => {
-      const seam = Math.abs(u - 0.5) < 0.035;
-      if (seam) return v > 0.08 ? (bayer4(x, y) < 0.6 ? P.gold[0]! : P.paper[0]!) : P.gold[1]!;
+      // the doors stand a hand's width ajar: warm light pours through the gap
+      const gap = Math.abs(u - 0.5) * dw;
+      if (gap < 2.2) return v > 0.04 ? (bayer4(x, y) < 0.5 + v * 0.3 ? P.paper[0]! : P.gold[0]!) : P.gold[1]!;
+      if (gap < 3.4) return P.gold[2]!;
       const half = u < 0.5 ? u / 0.5 : (u - 0.5) / 0.5;
       const ex = Math.min(half, 1 - half) * (dw / 2), ey = Math.min(v, 1 - v) * dh;
       if (ex < 2 || ey < 2) return P.lacquer[4]!;
-      // panels: four per leaf, raised; gold studs in rows; a ring handle by the seam
-      const pv = (v * 4) % 1, pu = half;
-      if (pv < 0.06 || pv > 0.94 || pu < 0.08 || pu > 0.92) return tone(P.red, 0.75, x, y, 0.3);
-      const sx = (c.lx(x + 0.5) - dx) / 13, sy = (c.ly(y + 0.5) + dh) / 13;
-      if (c.d >= 0.5 && Math.abs(sx - Math.round(sx)) < 0.12 && Math.abs(sy - Math.round(sy)) < 0.12) return P.gold[1]!;
-      const ring = Math.abs(Math.hypot(c.lx(x + 0.5) - (dx + dw * (u < 0.5 ? 0.42 : 0.58)), c.ly(y + 0.5) + dh * 0.5) - 5) < 1.2;
-      if (ring) return P.gold[2]!;
-      return tone(P.red, 0.32 + v * 0.3 + (u < 0.5 ? 0 : 0.08) + (pv < 0.2 ? -0.08 : 0), x, y, 0.35);
+      // the portal roof's shadow over the top of the doors
+      const shade = v < 0.22 ? (0.22 - v) / 0.22 : 0;
+      // studs: nine rows, five across a leaf, small gold domes lit on their upper left
+      const row = (v * 9.6) - 0.8, col = half * 5.6 - 0.8;
+      const ry = (row - Math.round(row)) * (dh / 9.6), rx = (col - Math.round(col)) * (dw / 2 / 5.6);
+      if (c.d >= 0.5 && row > -0.4 && row < 8.4 && col > -0.4 && col < 4.4 && rx * rx + ry * ry < 6.5) return rx + ry < -0.5 ? P.gold[1]! : P.gold[3]!;
+      // a ring handle on each leaf by the gap, a lion mask behind it
+      const hx = dx + dw * (u < 0.5 ? 0.43 : 0.57), hy = -dh * 0.5 - 6;
+      const rr = Math.hypot(c.lx(x + 0.5) - hx, c.ly(y + 0.5) - hy);
+      if (Math.abs(rr - 6) < 1.1) return P.gold[2]!;
+      if (rr < 4) return tone(P.gold, 0.55, x, y, 0.3);
+      // warm light from the gap catching the inner edges of the leaves
+      const spill = Math.max(0, 1 - gap / 30);
+      let t = 0.62 + v * 0.14 + shade * 0.3 - spill * 0.3;
+      if (half > 0.92 || half < 0.06) t += 0.15;
+      return tone(P.red, clamp(t, 0, 1), x, y, 0.35);
+    });
+    // light spilling out across the step and the forecourt in front of the doors
+    fill(c, dx - 30, -6, dx + dw + 30, 4, (x, y, u, v) => {
+      const k = 1 - Math.abs(u - 0.5) * 2;
+      if (bayer4(x, y) > k * k * (1 - v * 0.6) * 0.8) return 0;
+      return k > 0.7 ? P.paper[1]! : P.gold[0]!;
     });
     // the plaque over the portal
     fill(c, dx + dw / 2 - 70, -dh - 72, dx + dw / 2 + 70, -dh - 38, (x, y, u, v) => {

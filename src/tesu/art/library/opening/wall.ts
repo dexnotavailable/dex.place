@@ -93,8 +93,10 @@ export function paintThreads(c: PaintCtx, p: WallP, threads: Thread[], frame = -
       const cx = threadX(t, below);
       const half = Math.max(0.5 / d, t.w / 2 + below * 0.006);
       const xa = Math.floor(c.X(cx - half - 1.2)), xb = Math.ceil(c.X(cx + half + 1.2));
-      // the flow: brighter dashes travelling down (frame shifts them for the sprite overlay)
-      const phase = frame >= 0 ? frame * 4 : 0;
+      // the flow: a periodic pattern of brighter dashes, one cell down per frame, so four frames
+      // loop seamlessly (12 fps); each thread has its own cell size and offset
+      const L = 3 + Math.floor(hash1(t.seed, 3) * 4);
+      const phase = (frame >= 0 ? frame : 0) * L;
       for (let x = Math.max(xa, b.ox); x < Math.min(xb, b.x1); x++) {
         const lx = c.lx(x + 0.5);
         const u = (lx - cx) / half;
@@ -107,11 +109,13 @@ export function paintThreads(c: PaintCtx, p: WallP, threads: Thread[], frame = -
           continue;
         }
         if (bayer4(x, y) >= keep) continue;
-        const dash = hash(Math.floor((ly - phase) / (3 + 4 * hash1(t.seed, 3))), Math.floor(lx), t.seed) < 0.35;
+        const cellI = ((Math.floor((ly - phase) / L + hash1(t.seed, 4) * 4) % 4) + 4) % 4;
+        const dash = hash(cellI, Math.floor(lx * 1.3), t.seed) < 0.5;
+        // flow: bright foam dashes over a cooler body, so the movement reads even when faded
         let col: number;
-        if (u > 0.45 && half * d > 0.9) col = C[3]!;
-        else if (u < -0.5 && half * d > 1.4) col = P.paper[0]!;
-        else col = dash ? C[1]! : C[0]!;
+        if (u > 0.45 && half * d > 0.9) col = dash ? C[2]! : C[4]!;
+        else if (u < -0.5 && half * d > 1.4) col = dash ? P.paper[0]! : C[2]!;
+        else col = dash ? C[0]! : C[3]!;
         b.set(x, y, col);
       }
     }
@@ -136,3 +140,40 @@ export const wall = definePainter<WallP>("op.wall", {
     paintThreads(c, p, threadsOf(p, c.seed));
   },
 });
+
+export interface FallsP extends WallP {
+  /** The wall piece's seed (the threads are its threads) and the slice of them this sprite shows. */
+  wallSeed: number;
+  from: number;
+  to: number;
+  frame?: number;
+}
+
+/** The flow of some of the wall's threads, as an animated sprite over the static plate. */
+export const falls = definePainter<FallsP>("op.falls", {
+  bounds(p) {
+    const T = threadsOf(p, p.wallSeed).slice(p.from, p.to);
+    let x0 = Infinity, x1 = -Infinity;
+    for (const t of T) { x0 = Math.min(x0, t.x - t.w - 12); x1 = Math.max(x1, t.x + t.w + 12); }
+    let mn = 0;
+    for (let i = 1; i < (p.lip?.length ?? 0); i += 2) mn = Math.min(mn, p.lip![i]!);
+    return [x0, mn - 6, x1, (p.fadeY ?? p.h * 0.6) + (p.fadeH ?? p.h * 0.2) + 24];
+  },
+  paint(c, p) {
+    paintThreads(c, p, threadsOf(p, p.wallSeed).slice(p.from, p.to), p.frame ?? 0);
+  },
+});
+
+/** Groups of threads for the flow sprites: [from, to) index ranges, each spanning <= maxW px. */
+export function threadGroups(p: WallP, seed: number, maxW = 60): [number, number][] {
+  const T = threadsOf(p, seed);
+  const out: [number, number][] = [];
+  let a = 0;
+  for (let i = 1; i <= T.length; i++) {
+    if (i === T.length || T[i]!.x - T[a]!.x > maxW) {
+      out.push([a, i]);
+      a = i;
+    }
+  }
+  return out;
+}

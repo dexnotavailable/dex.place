@@ -21,7 +21,7 @@ export function palace(b: WorldBuilder): void {
   // (art: env-opening west of 176 H, the hall's east wall; env-hall east of it: the seam)
   const top = [HALL_DOOR_X - h(3), FLOOR_Y + h(0.5), h(176.4), FLOOR_Y + h(0.5)];
   const bottom = [h(176.8), FLOOR_Y + h(2.4), h(176.6), h(74.6), h(174), Math.max(h(74), yOn(DIAG, h(174)) + h(1)), h(170), yOn(DIAG, h(170)), h(160), h(70), h(150), h(63), HALL_DOOR_X - h(3.4), FLOOR_Y + h(3)];
-  b.piece("play", "op.rock", 0, 0, { top, bottom, cap: "bare", rough: 12, teeth: 0.5, veg: 0.6, shade: 0.3, fadeY: h(72), fadeH: h(9), joinR: h(3) }, { z: -1 });
+  b.piece("play", "op.rock", 0, 0, { top, bottom, cap: "grass", capH: 7, rough: 12, teeth: 0.5, veg: 0.7, shade: 0.3, fadeY: h(72), fadeH: h(9), joinR: h(3) }, { z: -1 });
   // --- env-hall's block: the prow rock east of the seam (176 H) to the tip. Stand-in params in
   // the opening's rock; env-hall restyles or moves this block (lanes/ENV-OPENING-STATE.md).
   {
@@ -43,7 +43,7 @@ export function palace(b: WorldBuilder): void {
   b.piece("play", "op.stay", lx - 20, ly - towerH + h(1.1), { dx: -h(4.4), dy: towerH - h(1.1) - h(0.6) }, { z: 8 });
   b.piece("play", "op.stay", lx + 10, ly - towerH + h(1.1), { dx: -h(2.6), dy: towerH - h(1.1) - h(0.3) }, { z: 8 });
   b.piece("play", "op.stay", rx + 20, FLOOR_Y - towerH + h(1.1), { dx: h(5), dy: towerH - h(1.1) }, { z: 8 });
-  b.piece("play", "op.banners", lx, ly - towerH + h(2.4), { w: rx - lx, drop: h(2.2), n: 5 }, { z: 9 });
+  b.sprite({ id: "hall-banners", plane: "play", kind: "op.banners", x: lx, y: ly - towerH + h(2.4), p: { w: rx - lx, drop: h(2.2), n: 5 }, frames: 4, fps: 6 });
   // the doors open into the Hall of Works (a scene cut)
   b.usable({ id: "hall-doors", x0: DOOR_X0, y0: FLOOR_Y - h(3.7), x1: DOOR_X1, y1: FLOOR_Y, label: "go in", action: { kind: "door", to: "hall-in" } });
   // the forecourt ends at the doors: a hard edge with a reason (the hall's wall)

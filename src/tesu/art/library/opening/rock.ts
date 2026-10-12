@@ -192,7 +192,7 @@ function builtFor(p: RockP, seed: number): Built {
 /** What the face shows at a point: rock (with its tone), moss, or a warm sunlit flank. */
 let faceMat: "rock" | "moss" | "warm" = "rock";
 
-const showB0 = (F: Seg, d: number): boolean => F.w * d > 7;
+const showB0 = (F: Seg, d: number): boolean => F.w * d > 14;
 
 /** The face's tone at a level-1 point (0 light .. 1 dark); sets faceMat. */
 function faceTone(lx: number, ly: number, depth: number, p: RockP, seed: number, d: number): number {
@@ -244,7 +244,7 @@ function faceTone(lx: number, ly: number, depth: number, p: RockP, seed: number,
   }
   // a cleft between buttresses, and the shadow a more prominent neighbour throws to its right
   // (at the wide levels only the bigger buttresses keep their clefts; columns drop out)
-  const showB = F.w * d > 7;
+  const showB = F.w * d > 14;
   if (showB && (xb < px * 1.2 || F.w - xb < px * 1.2)) t += 0.5;
   else if (showB && F.shadowL > 0.12 && xb < F.shadowL * 30 + px) t += 0.32;
   else if (!showB) t += (F.out - 0.5) * 0.08;
