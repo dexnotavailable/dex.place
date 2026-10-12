@@ -44,6 +44,7 @@ uniform vec3 uInk;
 uniform float uInkAmt;
 uniform float uMirror;
 uniform vec2 uRes;
+uniform vec4 uGrade;                  // rgb multiply, amount (the place's light, as on the planes)
 out vec4 o;
 void main() {
   if (uMirror >= 0.0 && uRes.y - gl_FragCoord.y < uMirror) discard;
@@ -51,7 +52,8 @@ void main() {
   ivec2 t = clamp(ivec2(floor(vUV)), ivec2(0), ivec2(uSize) - 1);
   vec4 c = texelFetch(uTex, t, 0);
   if (c.a < 0.5) discard;
-  vec3 col = mix(c.rgb, uHaze, uFade);
+  vec3 col = mix(c.rgb, c.rgb * uGrade.rgb, uGrade.a);
+  col = mix(col, uHaze, uFade);
   col = mix(col, uInk, uInkAmt);
   col = mix(col, vec3(1.0), uWhite);
   o = vec4(col, 1.0);
@@ -308,6 +310,7 @@ export class SpriteRenderer {
     gl.uniform2f(u.uRes!, cam.W, cam.H);
     gl.uniform1f(u.uMirror!, mirror ?? -1);
     gl.uniform3fv(u.uHaze!, look.haze);
+    if (u.uGrade) gl.uniform4fv(u.uGrade, look.grade);
     gl.uniform1f(u.uFade!, look.fade);
     gl.uniform3fv(u.uInk!, look.ink);
     gl.uniform1f(u.uInkAmt!, look.inkAmt);

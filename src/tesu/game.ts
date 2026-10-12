@@ -22,6 +22,7 @@ import { Collision } from "./collide.ts";
 import { Court, type Prize } from "./court.ts";
 import { Props } from "./props.ts";
 import { Rides } from "./ride.ts";
+import { blendAtmos } from "./atmos-blend.ts";
 import { Sound } from "./sound.ts";
 import { CHARM_PERCH, H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore } from "./plates/store.ts";
@@ -852,16 +853,14 @@ export class TesuGame {
     void focus;
   }
 
+  /** The light at a point: neighbouring atmos entries blend across their `blend` widths (atmos-blend.ts). */
   private atmosAt(x: number, y: number): AtmosDef {
-    const list = this.world.atmos.filter((e) => (e.y0 === undefined || y >= e.y0) && (e.y1 === undefined || y <= e.y1) && (e.y0 !== undefined || y < INTERIOR_Y));
-    let a = list[0] ?? this.world.atmos[0]!;
-    for (const e of list) if (e.x <= x) a = e;
-    return a;
+    return blendAtmos(this.world.atmos, x, y, INTERIOR_Y);
   }
 
   private look(id: PlaneId, a: AtmosDef): PlaneLook {
     const sp = PLANES[id];
-    return { haze: hexRgb(a.haze), fade: sp.fade, ink: hexRgb("#1b1922"), inkAmt: sp.ink, grade: [1, 1, 1, 0] };
+    return { haze: hexRgb(a.haze), fade: sp.fade, ink: hexRgb("#1b1922"), inkAmt: sp.ink, grade: a.grade ?? [1, 1, 1, 0] };
   }
 
   /**

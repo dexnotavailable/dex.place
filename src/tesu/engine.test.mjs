@@ -379,3 +379,40 @@ test("the Pillar Hop: every gap needs its charms, every charm is in Q's reach, e
   // a missed hop falls into the sea of mist (tugged back), never onto ground far below
   for (const [, b, t] of HOP_PILLARS) assert.ok(w.voids.some((v) => b * H + 2 * H >= v.x0 && b * H + 2 * H <= v.x1 && v.y < 120 * H), `a void under the gap after the pillar at ${b} H`);
 });
+
+test("atmos: the world's entries switch exactly as before, and a blend width makes a change gradual in x and y", async () => {
+  const { blendAtmos, DEFAULT_WATER } = await import("./atmos-blend.ts");
+  const { INTERIOR_Y } = await import("./config.ts");
+  const w = buildWorld();
+  // the old hard switch, for comparison
+  const old = (x, y) => {
+    const list = w.atmos.filter((e) => (e.y0 === undefined || y >= e.y0) && (e.y1 === undefined || y <= e.y1) && (e.y0 !== undefined || y < INTERIOR_Y));
+    let a = list[0] ?? w.atmos[0];
+    for (const e of list) if (e.x <= x) a = e;
+    return a;
+  };
+  for (let x = 0; x <= 480 * H; x += 7 * H) for (const y of [40 * H, 60 * H, 120 * H, 196 * H, 290 * H]) {
+    const a = old(x, y), b = blendAtmos(w.atmos, x, y, INTERIOR_Y);
+    assert.deepEqual([b.sky, b.haze, b.mist, b.mistColour, b.sun, b.water, b.grade], [a.sky, a.haze, a.mist, a.mistColour, a.sun, a.water ?? DEFAULT_WATER, a.grade ?? [1, 1, 1, 0]], `same light at ${x / H}, ${y / H} H`);
+  }
+  // a warmer, darker place laid over with a 20 H blend: no step bigger than a hair along x or y
+  const A = { x: 0, sky: ["#8fb6cf", "#d3e6e3", "#edf5ef"], haze: "#dfe9e6", mist: 0.4, mistColour: "#eef4f0", sun: [0.2, 0.11] };
+  const B = { x: 100 * H, y0: 150 * H, blend: 20 * H, sky: ["#6a7fa0", "#e8c9a0", "#f0d9b8"], haze: "#c9b8a0", mist: 0.7, mistColour: "#d9cbb8", sun: [0.3, 0.2], water: { deep: "#0f2a33", body: "#1f4a50", shallow: "#6f9a98", glint: "#ffe6b0" }, grade: [1, 0.92, 0.8, 0.3] };
+  const lum = (h) => parseInt(h.slice(1, 3), 16) + parseInt(h.slice(3, 5), 16) + parseInt(h.slice(5, 7), 16);
+  let prev = null, maxStep = 0;
+  for (let x = 80 * H; x <= 120 * H; x += 0.25 * H) {
+    const a = blendAtmos([A, B], x, 170 * H, INTERIOR_Y);
+    if (prev) maxStep = Math.max(maxStep, Math.abs(lum(a.sky[1]) - lum(prev.sky[1])), Math.abs(lum(a.water.deep) - lum(prev.water.deep)));
+    prev = a;
+  }
+  assert.ok(maxStep <= 12, `gradual along x (largest step ${maxStep} over 0.25 H)`);
+  assert.equal(blendAtmos([A, B], 85 * H, 170 * H, INTERIOR_Y).haze, A.haze, "before the blend: the first place");
+  assert.equal(blendAtmos([A, B], 115 * H, 170 * H, INTERIOR_Y).haze, B.haze, "past it: the second");
+  prev = null; maxStep = 0;
+  for (let y = 130 * H; y <= 170 * H; y += 0.25 * H) {
+    const a = blendAtmos([A, B], 120 * H, y, INTERIOR_Y);
+    if (prev) maxStep = Math.max(maxStep, Math.abs(lum(a.haze) - lum(prev.haze)));
+    prev = a;
+  }
+  assert.ok(maxStep <= 12, `gradual along y, across its band's edge (largest step ${maxStep})`);
+});

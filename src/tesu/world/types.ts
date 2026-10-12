@@ -179,6 +179,13 @@ export interface Atmos {
   sun: [number, number] | null;
   /** Still water's colours under this sky (deep, body, shallow, the sun's glint). */
   water?: { deep: string; body: string; shallow: string; glint: string };
+  /** A colour grade on every plane: multiply by rgb (0..1+), by this amount (0..1). */
+  grade?: [number, number, number, number];
+  /**
+   * How gradually this entry takes over from the one before it, px: the change is spread over
+   * this width centred on its x (and on its y band's edges). 0 (the default) switches at once.
+   */
+  blend?: number;
 }
 
 /** Something that moves on a plane: animated frames from a painter (or, later, a render). */
