@@ -129,9 +129,8 @@ test("every door leads to a spawn, and the Prize Court stands on ground between 
   assert.ok(gate, "the court's gate spawn");
   for (let x = gate.x; x <= 191.6 * H; x += 8) {
     const g = c.groundBelow(x, gate.y - 2 * H, false);
-    // the Prow Stair's mouth (186.8 to 189.2 H): the stair is just below the floor there
-    const mouth = x > 186.8 * H && x < 189.2 * H;
-    assert.ok(g && (mouth ? g.y - gate.y < 1.3 * H : Math.abs(g.y - gate.y) < 0.01), `court floor at ${(x / H).toFixed(1)} H`);
+    // (the Prow Stair's mouth is bridged by its grate, so the floor runs all the way)
+    assert.ok(g && Math.abs(g.y - gate.y) < 0.01, `court floor at ${(x / H).toFixed(1)} H`);
   }
   for (const id of ["bao", "stands", "champion", "install-bar", "glint", "champion-hp"]) assert.ok(w.sprites.some((s) => s.id === id), `sprite ${id}`);
 });
@@ -218,4 +217,44 @@ test("Shiraito joins the court both ways: the Prow Stair from the path's top to 
   c.move(body, 0, 1);
   for (let i = 0; i < 2000 && body.x < tip.pts[0] + 40; i++) { c.move(body, 3, 0); c.move(body, 0, 2); }
   assert.ok(Math.abs(body.y - tip.pts[1]) < 2, `on the court floor at the top (${(body.x / H).toFixed(1)} H, ${(body.y / H).toFixed(2)} H)`);
+});
+
+test("Hoài Phố: the drops land on its ground, the pool's steps lead out, the lift opens from below", () => {
+  const w = buildWorld();
+  const c = new Collision(w.walks, w.walls);
+  const quay = w.walks.find((k) => k.name === "hoai-pho");
+  const pool = w.walks.find((k) => k.name === "splash-pool");
+  const village = w.walks.find((k) => k.name === "shiraito-village");
+  // stepping off the village's west lip falls onto the West Shore
+  const lipX = village.pts[0] - 0.6 * H;
+  const g1 = c.groundBelow(lipX, village.pts[1], false);
+  assert.ok(g1 && g1.walk === quay, `the West Shore under the village's lip (${g1?.walk.name})`);
+  // off the end of the Prow Leap falls into the splash pool
+  const leap = w.walks.find((k) => k.name === "prow-leap");
+  const g2 = c.groundBelow(leap.pts[leap.pts.length - 2] + 0.4 * H, leap.pts[1] + H, false);
+  assert.ok(g2 && g2.walk === pool, `the splash pool under the Prow Leap (${g2?.walk.name})`);
+  // out of the pool by its west steps, walking left
+  const body = { x: pool.pts[0] + 0.5 * H, y: pool.pts[1], w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
+  c.move(body, 0, 1);
+  for (let i = 0; i < 400 && body.x > 186 * H; i++) { c.move(body, -3, 0); c.move(body, 0, 2); }
+  assert.ok(Math.abs(body.y - quay.pts[1]) < 2, `up the steps onto the quay (${(body.x / H).toFixed(1)} H, ${(body.y / H).toFixed(2)} H)`);
+  // the lift: the lower station opens it, the upper one needs it
+  const low = w.usables.find((u) => u.id === "lift-low"), top = w.usables.find((u) => u.id === "lift-top");
+  assert.equal(low.action.opens, "lift:waterwheel");
+  assert.equal(top.action.needs, "lift:waterwheel");
+  assert.ok(w.spawns.some((s) => s.id === "lift-top") && w.spawns.some((s) => s.id === "lift-low"));
+});
+
+test("the Prow Stair's mouth: walked across both ways on its grate, and the stair still climbs to the tip", () => {
+  const w = buildWorld();
+  const c = new Collision(w.walks, w.walls);
+  const tip = w.walks.find((k) => k.name === "prize-court-tip");
+  const main = w.walks.find((k) => k.name === "prize-court");
+  const body = { x: tip.pts[0] + 0.6 * H, y: tip.pts[1], w: 12, h: 44, vx: 0, vy: 0, grounded: true, dropThrough: 0 };
+  c.move(body, 0, 1);
+  for (let i = 0; i < 300 && body.x > main.pts[2] - 1.5 * H; i++) { c.move(body, -3, 0); c.move(body, 0, 2); }
+  assert.ok(Math.abs(body.y - main.pts[1]) < 1, `from the tip across to the court (${(body.x / H).toFixed(1)} H, ${(body.y / H).toFixed(2)} H)`);
+  for (let i = 0; i < 300 && body.x < tip.pts[0] + 1 * H; i++) { c.move(body, 3, 0); c.move(body, 0, 2); }
+  assert.ok(Math.abs(body.y - tip.pts[1]) < 1, `and back to the tip (${(body.x / H).toFixed(1)} H)`);
+  assert.ok(w.spawns.some((s) => s.id === "prow-stair-in"), "F at the mouth sets her on the stair");
 });

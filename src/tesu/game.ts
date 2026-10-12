@@ -134,6 +134,7 @@ export class TesuGame {
   private lastSafe: [number, number] = [0, 0];
   private fallFrom: number | null = null;
   cloudDrop = false;
+  private cloudSpeed = 0;
   private levels = new Map<PlaneId, number[]>();
   private lastLevel = new Map<PlaneId, number>();
 
@@ -199,6 +200,7 @@ export class TesuGame {
     });
     this.player = new Player(assets.sprite, assets.tuning.player, services, [0, 0]);
     this.closeSprite = assets.closeup;
+    void assets.closeupReady.then((s) => { this.closeSprite = s; }, (e: unknown) => console.warn("close-up", e));
     this.vfx.groundAt = (x, y) => this.collision.groundAt(x, y);
     this.save = loadSave();
     for (const f of this.save.flags) if (!TRANSIENT.has(f)) this.flags.add(f);
@@ -330,7 +332,9 @@ export class TesuGame {
     const x = this.opening.holding ? Math.min(this.player.body.x, TERRACE_X1) : this.player.body.x;
     let f = framingAt(this.world.tracks, Math.max(x, this.opening.holding ? TERRACE_X0 + 1 : -Infinity), has, this.player.body.y);
     // an entrance shot: a held vista on first entry, ended early by moving
-    if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor, pin: null };
+    if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor, pin: null, bounds: null };
+    // outdoors the frame never shows past the world's ends (the widest frames on ultra-wide screens)
+    if (!f.bounds && this.player.body.y < INTERIOR_Y) f = { ...f, bounds: [0, this.world.w] };
     // the world window waiting for PLAY: a held vista of Kagami with the sky in the middle of
     // the frame, so TESU (for a visitor who scrolls on past) is written into the sky
     if (this.holding) f = { ...f, zoom: 0.5, anchor: 0.86, horizon: 0.64, lead: 0 };
@@ -439,13 +443,22 @@ export class TesuGame {
     this.vfx.update();
     this.input.tick++;
     // falls: no damage anywhere; a long one is a cloud drop
+    // a cloud drop speeds up past her ordinary falling speed (the Prow Leap is a 7 s fall)
+    if (!b.grounded && this.cloudDrop && !this.tug) {
+      this.cloudSpeed = Math.min(this.cloudSpeed + 0.5, 26);
+      this.collision.move(b, 0, this.cloudSpeed);
+    }
     if (b.grounded) {
       if (this.fallFrom !== null && b.y - this.fallFrom > PHYSICS.cloudDrop * H) {
-        this.vfx.spawn("dust.land", { x: b.x, y: b.y, facing: 1 });
+        const wet = this.collision.standingOn?.surface === "water";
+        this.vfx.spawn(wet ? "ring.wide" : "dust.land", { x: b.x, y: b.y, facing: 1 });
+        if (wet) this.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: 1 });
+        this.feel.sound(wet ? "splash" : "land", 1);
         this.camera.shake(3, 10);
       }
       this.fallFrom = null;
       this.cloudDrop = false;
+      this.cloudSpeed = 0;
       if (!this.collision.onOneWay(b) || this.collision.standingOn) this.lastSafe = [b.x, b.y];
     } else {
       if (wasGrounded || this.fallFrom === null) this.fallFrom = this.fallFrom ?? b.y;
@@ -527,6 +540,12 @@ export class TesuGame {
     // the board waits while a bout is on; leaving through a door ends the bout
     if (this.court.busy && u.action.kind === "panel" && u.action.panel === "board") return;
     if (u.action.kind === "door") {
+      const a = u.action;
+      if (a.needs && !this.flags.has(a.needs)) {
+        this.onUse({ ...u, action: { kind: "say", text: a.closed ?? "It does not open from this side." } });
+        return;
+      }
+      if (a.opens) this.setFlag(a.opens, true);
       this.court.cancel();
       const id = u.action.to;
       const to = this.world.spawns.find((sp) => sp.id === id);
@@ -690,13 +709,14 @@ export class TesuGame {
   }
 
   private activeWater(cam: CamState): Water | null {
-    // the water whose near extent is closest to the camera's x
+    // the water nearest the camera: its near extent in x, and its height (Kagami's lake and
+    // Hoài Phố's harbour lie one above the other)
     let best: Water | null = null, d = Infinity;
     for (const w of this.world.waters) {
       const x0 = Math.min(w.x0, w.fx0 ?? w.x0), x1 = Math.max(w.x1, w.fx1 ?? w.x1);
       const span = cam.W / Math.min(1, cam.zoom) / 0.06;
       if (cam.cx + span < x0 || cam.cx - span > x1) continue;
-      const dd = cam.cx < w.x0 ? w.x0 - cam.cx : cam.cx > w.x1 ? cam.cx - w.x1 : 0;
+      const dd = (cam.cx < w.x0 ? w.x0 - cam.cx : cam.cx > w.x1 ? cam.cx - w.x1 : 0) + Math.abs(cam.cy - w.y);
       if (dd < d) { d = dd; best = w; }
     }
     return best;
@@ -718,7 +738,9 @@ export class TesuGame {
     const draws = new Map<PlaneId, PlaneDraw>();
     for (const id of PLANE_IDS) draws.set(id, this.planeQuads(cam, id, 0, Hf, a, !this.manual));
     // the world shows once its plates are in and its rendered giants have a frame to show
+    const wasLoading = this.loading;
     this.loading = ![...draws.values()].every((d) => d.complete) || (this.sprites.waiting > 0 && this.tick < 60 * 20);
+    if (wasLoading && !this.loading) performance.mark("tesu:first-scene");
     const z = cam.zoom;
     const xfPlay = planeXf(cam, 1);
     const focus: [number, number] = [W / 2, cam.anchor * Hf];

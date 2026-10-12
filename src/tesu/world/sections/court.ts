@@ -38,9 +38,15 @@ export function court(b: WorldBuilder): void {
   // headroom beneath it); its look is env-hall's dressing
   b.walk([COURT_X0, Y, STAIRWELL_X0, Y], { surface: "stone", depth: h(0.6), name: "prize-court" });
   b.walk([STAIRWELL_X1, Y, COURT_X1, Y], { surface: "stone", depth: h(0.6), name: "prize-court-tip" });
+  // the Prow Stair's mouth is bridged by a timber grate (one-way: she walks across it both
+  // ways, walks up the stair under it, and drops through it holding down)
+  b.walk([STAIRWELL_X0 - h(0.05), Y, STAIRWELL_X1 + h(0.05), Y], { surface: "wood", oneWay: true, name: "prow-stair-mouth" });
+  b.usable({ id: "prow-stair", x0: STAIRWELL_X0, y0: Y - h(1.6), x1: STAIRWELL_X1, y1: Y, label: "down the Prow Stair", action: { kind: "door", to: "prow-stair-in" } });
   // the hall's east wall and the rail at the tip: hard edges with reasons
   b.wall({ x: COURT_X0 + h(0.15), y0: Y - h(6), y1: Y + h(0.1), reason: "wall" });
-  b.wall({ x: COURT_X1 - h(0.2), y0: Y - h(6), y1: Y + h(0.1), reason: "rail" });
+  // the Prow Leap at the tip (GDK 3.5): a plank with prayer flags out past the rail; off its
+  // end is a long fall with a splash into Hoài Phố's lake (sections/hoaipho.ts)
+  b.walk([COURT_X1 - h(0.1), Y, COURT_X1 + h(1.4), Y], { surface: "wood", oneWay: true, name: "prow-leap" });
 
   // the gate back into the hall, the board, Bao's gong tower
   b.usable({ id: "court-doors", x0: COURT_X0 + h(0.1), y0: Y - h(3.1), x1: COURT_X0 + h(1.4), y1: Y, label: "the hall", action: { kind: "door", to: "hall-court-side" } });
@@ -53,6 +59,9 @@ export function court(b: WorldBuilder): void {
   b.prop({ id: "court-jar-2", kind: "jar", p: { h: 24, glaze: "celadon" }, x: h(190.15), y: Y, cls: "cosmetic", material: "clay", pieces: 3 });
   b.prop({ id: "court-post", kind: "lanternpost", p: { h: 190, arm: 44 }, x: h(185.9) - 22, y: Y, cls: "cosmetic", material: "wood", hp: 2, pieces: 5 });
   b.prop({ id: "court-lantern", kind: "paperlantern", p: { r: 15 }, x: h(185.9) + 22, y: Y - 190, cls: "cosmetic", material: "paper", on: "court-post", hangs: true, pieces: 3 });
+
+  // beyond the tip the land falls away into mist
+  b.mist({ x0: COURT_X1 - h(6), x1: COURT_X1 + h(30), y: Y + h(16), half: h(13), rate: 0.62, after: "back", density: 0.95 });
 
   // the paper spectators in tiers behind the court (P3); their base runs down out of sight
   b.sprite({ id: "stands", plane: "back", kind: "stands", x: COURT_MID, y: Y, p: { w: 900, rows: 3 }, frames: 4, frame: 0, reflect: false });

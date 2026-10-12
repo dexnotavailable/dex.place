@@ -149,6 +149,11 @@ export interface CamTrack {
   /** Only while this flag is set. */
   when?: string;
   keys: CamKey[];
+  /**
+   * The frame's edges never pass these world x (a room's end walls): the camera's centre is
+   * kept half a frame inside them, easing in rather than stopping dead.
+   */
+  bounds?: [number, number];
 }
 
 /** Haze, sky and light for a stretch of the land (blended by x). */
@@ -235,7 +240,13 @@ export interface Usable {
   /** What the prompt says (a word, for screen readers and the caption). */
   label: string;
   action:
-    | { kind: "door"; to: string; title?: string }
+    | {
+        kind: "door"; to: string; title?: string;
+        /** A shortcut that opens from one side (GDK B): the flag it needs, what it says until then. */
+        needs?: string; closed?: string;
+        /** Using it sets this flag (the lift's lower station opens the lift for good). */
+        opens?: string;
+      }
     | { kind: "panel"; panel: string; arg?: string }
     | { kind: "say"; text: string };
 }

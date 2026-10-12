@@ -210,7 +210,7 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number }): void {
   // --- lantern pillars behind the ring, newels at the stair's mouth, two near pillars that
   // stand at the frame's edges in a bout (P5, play zoom only)
   for (const x of [MID - h(1.7), WELL1 + h(0.9)]) b.piece("play", "court.lanternpillar", x, Y, { h: h(2.2) }, { z: 2 });
-  for (const x of [WELL0 - h(0.2), WELL1 + h(0.2)]) b.piece("play", "court.newel", x, Y, { h: h(0.95) }, { z: 3 });
+  for (const x of [WELL0 - h(0.25), WELL1 + h(0.25)]) b.piece("play", "court.newel", x, Y, { h: h(0.95) }, { z: 3 });
   // the near plane frames the bottom corners with cliff pines growing out of the rock under
   // the prow; their crowns top out just below the floor line, so they never cover her or a
   // service (GDK A.1: P5 never hides what matters). The bout's sides are framed by the hall's
@@ -224,7 +224,23 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number }): void {
     b.sprite({ id: `court-banner-${i}`, plane: "back", kind: "court.banner", x: HOLD + h(dx), y: Y, p: { h: Math.round(h(5.6) * r3b), w: Math.round(h(0.55) * r3b), drop: Math.round(h(1.7) * r3b), phase: (i * 0.37) % 1 }, frames: 8, fps: 5, reflect: false });
   });
 
-  // --- the tip: a bench, the stone rail she cannot pass
+  // --- the Prow Stair's last run up through the rock and the foundation to the mouth, with
+  // the grate across the mouth (the stand-in recess stops at 176 H)
+  const stair = b.def.walks.find((w) => w.name === "prow-stair");
+  if (stair) {
+    const [ax, ay, bx, by] = stair.pts as [number, number, number, number];
+    const sx0 = h(176), sy0 = ay + ((by - ay) * (sx0 - ax)) / (bx - ax);
+    b.piece("play", "court.stairrun", sx0, sy0, { x1: bx - sx0, y1: by - sy0, head: 112, masonry: Y - sy0, grate: [WELL0 - sx0 - h(0.1), WELL1 - sx0 + h(0.1)] }, { z: 2 });
+  }
+
+  // --- the tip: a bench, the stone rail she cannot pass, and past it the Prow Leap
+  const leapW = b.def.walks.find((w) => w.name === "prow-leap");
+  const railEnd = leapW ? leapW.pts[0]! - h(0.15) : CX1;
   b.piece("play", "court.bench", CX1 - h(1.75), Y, { w: 96 }, { z: 4 });
-  b.piece("front", "court.rail", CX1 - h(1.35), Y, { w: h(1.45), h: Math.round(0.62 * H) }, { z: 2 });
+  b.piece("front", "court.rail", CX1 - h(1.4), Y, { w: railEnd - (CX1 - h(1.4)), h: Math.round(0.62 * H) }, { z: 2 });
+  if (leapW) {
+    const lx0 = leapW.pts[0]!, lx1 = leapW.pts[leapW.pts.length - 2]!;
+    b.piece("play", "court.leap", lx0 - h(0.1), Y, { w: lx1 - lx0 + h(0.1) }, { z: 3 });
+    b.sprite({ id: "court-flags", plane: "play", kind: "court.flags", x: lx0 + h(0.05), y: Y, p: { w: lx1 - lx0, h: Math.round(1.9 * H), n: 5 }, frames: 8, fps: 5, reflect: false });
+  }
 }

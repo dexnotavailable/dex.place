@@ -181,6 +181,15 @@ export function initWorld(_reduced: MediaQueryList): void {
     waiting = false;
     update();
     if (started || destroyed) return;
+    // a section's page: the world above loads only once the reader heads up toward it
+    if (world.hasAttribute("data-world-at")) {
+      const near = (): void => {
+        const h = world.offsetHeight || window.innerHeight;
+        if (window.scrollY < h * 0.85) { window.removeEventListener("scroll", near); start(); }
+      };
+      window.addEventListener("scroll", near, { passive: true });
+      return;
+    }
     if (typeof requestIdleCallback === "function") requestIdleCallback(start, { timeout: 2000 });
     else setTimeout(start, 1000);
   };

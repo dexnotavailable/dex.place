@@ -10,6 +10,7 @@ import "./glow.ts";
 import "./furniture.ts";
 import "./near.ts";
 import "./court.ts";
+import "./prow.ts";
 
 export { gongFrame } from "./court.ts";
 export { HALL_MANIFEST, type HallAsset } from "./manifest.ts";

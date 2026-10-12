@@ -21,13 +21,15 @@ import type { SpriteSheet } from "../lab/engine/renderer.ts";
 import { PLAYER_CLIPS } from "../lab/game/player.ts";
 import type { WorldRenderer } from "../world/render/renderer.ts";
 import { scaleClipSource } from "../world/player/scale.ts";
-import { bakeScaledStandin, WORLD_CLIPS } from "../world/player/standin.ts";
+import { bakeScaledStandin, bakeScaledStandinAsync, WORLD_CLIPS } from "../world/player/standin.ts";
 import { validateAtlasImages, validateExportPair } from "../world/player/export-validation.ts";
 import { CLOSE_H, H } from "./config.ts";
 
 export interface ZhushaAssets {
   sprite: RuntimeSprite;
+  /** The 192 px close-up; an empty set until `closeupReady` (the stand-in bakes it behind the first scene). */
   closeup: RuntimeSprite;
+  closeupReady: Promise<RuntimeSprite>;
   tuning: Tuning;
   vfx: VfxLibrary;
   heights: { play: number; close: number };
@@ -137,6 +139,24 @@ export async function loadZhusha(r: WorldRenderer): Promise<ZhushaAssets> {
   const [play, close] = await Promise.all([loadExport("zhusha"), loadExport("zhusha-close")]);
   validateExportPair(play, close, [...PLAYER_CLIPS, ...WORLD_CLIPS.map((c) => c.id)]);
   const sprite = play ? await loadSprite(r, play, "zhusha") : bake(1, "Zhusha (stand-in, 96 px)");
-  const closeup = close ? await loadSprite(r, close, "zhusha-close") : bake(CLOSE_H / H, "Zhusha (stand-in, 192 px)");
-  return { sprite, closeup, tuning, vfx, heights, bakeMs: Math.round(performance.now() - t0) };
+  performance.mark("tesu:sprite-1x");
+  // the close-up: an export loads now; the stand-in's 2x bake (the slow one) runs in short
+  // slices after the first scene, and until it lands she is drawn from her 96 px frames
+  let closeupReady: Promise<RuntimeSprite>;
+  let closeup: RuntimeSprite;
+  if (close) {
+    closeup = await loadSprite(r, close, "zhusha-close");
+    closeupReady = Promise.resolve(closeup);
+  } else {
+    closeup = { ...sprite, clips: new Map(), sheets: new Map() };
+    const k = CLOSE_H / H;
+    closeupReady = new Promise<void>((res) => setTimeout(res, 400)).then(async () => {
+      const b = await bakeScaledStandinAsync(scaleClipSource(src, k), k, "Zhusha (stand-in, 192 px)", (fn) => withFigureLook({ halo: false, after: hat, tones: TONES }, fn));
+      heights.close = b.height;
+      performance.mark("tesu:sprite-2x");
+      const sheets = new Map<string, SpriteSheet>([["standin", { albedo: r.texture(b.atlas.albedo), normal: r.texture(b.atlas.normal), keyInfluence: 0.25 }]]);
+      return wrap(b.pkg, sheets, "standin");
+    });
+  }
+  return { sprite, closeup, closeupReady, tuning, vfx, heights, bakeMs: Math.round(performance.now() - t0) };
 }
