@@ -393,112 +393,126 @@ export const headland = definePainter<HeadlandP>("op.headland", {
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
     const X0 = Math.max(b.ox, Math.floor(c.X(-30))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w + 2)));
-    // the ground: the dark floor of the woods, limestone breaking through it in a few outcrops
-    // (columns, lit on their left), stepping down to the water at the east end; under the
-    // waterline the shelving shore toward the camera (only seen west of the water)
+    // (art loop round 2) a wooded shore receding into haze: crowns of very different sizes heaped
+    // down the slope with dark pockets between them, limestone breaking out in a few places, a
+    // shoreline that wanders (wet rock, stones, grass to the water, reeds), the lake's mirror
+    // starting right at it. No grid of blobs, no columns, no ruled waterline.
+    const crowns = cached(`headland-crowns|${seed}|${p.w}|${p.h}`, () => {
+      const r = rng(seed + 120);
+      const out: [number, number, number, number][] = [];
+      // big trees first (they stand up out of the canopy), then medium, then small ones filling
+      for (const [n, r0, r1] of [[34, 18, 34], [150, 9, 17], [280, 4, 9]] as const) {
+        for (let i = 0; i < n; i++) {
+          const x = p.w * 0.9 * r() - 10;
+          const T = headTop(p, Math.max(0, x), seed);
+          if (T === -Infinity || T < 8) continue;
+          // the woods' depth down the slope here: thick in places, thin over the rock in others
+          const depth = (24 + 80 * fbm1(x / 120, seed + 24, 2)) * clamp((0.9 - x / p.w) / 0.14, 0, 1);
+          if (depth < 6) continue;
+          const R = r0 + (r1 - r0) * r() * (0.55 + 0.45 * (1 - x / p.w));
+          // big ones stand up out of the top; the rest heaped down the slope, the small in front
+          const y = r0 > 15 ? -T - R * (0.3 + 0.35 * r()) : -T + Math.pow(r(), r0 < 8 ? 0.7 : 1.3) * depth - R * 0.3;
+          out.push([x, y, R, Math.floor(r() * 1e6)]);
+        }
+      }
+      // far ones first, the low (near) ones last over them
+      return out.sort((a, q) => a[1] + a[2] * 0.5 - (q[1] + q[2] * 0.5));
+    });
+    // the ground under the woods: the dark floor, limestone breaking through it in a few outcrops
+    // (blocks lit on their upper left, a dark crevice under each), stepping down to the water
     for (let x = X0; x < X1; x++) {
       const lx = LX(c, x);
       const T = headTop(p, Math.max(0, lx), seed);
       if (T === -Infinity) continue;
-      const u = lx / p.w;
       const Y0 = Math.max(b.oy, Math.floor(c.Y(-T) - 1)), Y1 = Math.min(b.y1, Math.ceil(c.Y(136)));
       for (let y = Y0; y < Y1; y++) {
         const ly = LY(c, y);
         if (ly < -T) continue;
         let col: number;
         if (ly > 0) {
-          // the beach and the shore coming toward the camera: wandering bands of mud, pebbles
-          // and grass, widening with nearness, dark at the water's edge
-          // (marsh and scrub in patches, reed strokes standing in it; no bands)
+          // the shore toward the camera (only seen west of the water): marsh and scrub in patches
           const m = vnoise(lx / 40, ly / 9, seed + 7) * 0.7 + vnoise(lx / 11, ly / 4, seed + 6) * 0.3;
-          col = ly < 2.5 ? P.karst[7]! : m > 0.62 ? P.moss[5]! : m > 0.42 ? P.moss[6]! : m > 0.3 ? P.pine[2]! : P.earth[5]!;
-          if (hash(Math.floor(lx / 1.5), Math.floor(ly / 5), seed + 8) < 0.12) col = P.moss[4]!;
-        } else if (ly > -(2 + 3 * vnoise1(lx / 7, seed + 9))) col = P.karst[7]!;
-        else {
-          // an outcrop where the rock breaks through (more of them toward the water)
-          const out = vnoise(lx / 46, ly / 34, seed + 11) * 0.7 + vnoise(lx / 15, ly / 12, seed + 12) * 0.3;
-          if (out > 0.68 - 0.08 * u) {
-            const cw = 16 + 16 * hash1(Math.floor(lx / 70), seed + 13);
-            const f = (lx + (vnoise1(ly / 23, seed + 14) - 0.5) * 3) / cw;
-            const q = f - Math.floor(f);
-            col = q < 0.12 ? P.karst[7]! : q < 0.32 ? P.karst[3]! : q > 0.78 ? P.karst[6]! : P.karst[4]!;
-            if (out < 0.72 - 0.08 * u) col = P.moss[5]!;
+          col = m > 0.62 ? P.moss[5]! : m > 0.42 ? P.moss[6]! : m > 0.3 ? P.pine[2]! : P.earth[5]!;
+        } else {
+          // the shoreline: it wanders between wet rock, mud, grass right to the water and stones
+          const kind = vnoise1(lx / 23, seed + 9) * 0.7 + vnoise1(lx / 7, seed + 10) * 0.3;
+          const band = kind < 0.3 ? 1 + 3 * vnoise1(lx / 5, seed + 8) : 0;
+          const s = ly + T;
+          const out = vnoise(lx / 38, ly / 26, seed + 11) * 0.65 + vnoise(lx / 13, ly / 9, seed + 12) * 0.35;
+          if (-ly < band) col = P.karst[7]!;
+          else if (out > 0.77 - 0.06 * (lx / p.w) && s > 2) {
+            // an outcrop: a block lit on its upper left, its face mid, a dark crevice under it
+            const th = 0.77 - 0.06 * (lx / p.w);
+            const e = out - th;
+            const up = vnoise(lx / 38, (ly - 3) / 26, seed + 11) * 0.65 + vnoise(lx / 13, (ly - 3) / 9, seed + 12) * 0.35;
+            const left = vnoise((lx - 3) / 38, ly / 26, seed + 11) * 0.65 + vnoise((lx - 3) / 13, ly / 9, seed + 12) * 0.35;
+            col = up < th ? P.moss[4]! : left < th ? P.karst[4]! : e < 0.03 ? P.karst[7]! : vnoise(lx / 6, ly / 9, seed + 13) > 0.5 ? P.karst[5]! : P.karst[6]!;
+            const dn = vnoise(lx / 38, (ly + 3) / 26, seed + 11) * 0.65 + vnoise(lx / 13, (ly + 3) / 9, seed + 12) * 0.35;
+            if (dn < th) col = P.karst[7]!;
           } else {
             const blob = vnoise(lx / 13, ly / 10, seed + 15);
-            col = blob > 0.78 ? P.moss[6]! : blob > 0.45 ? P.pine[2]! : P.pine[3]!;
+            col = s < 1.5 ? P.moss[4]! : blob > 0.72 ? P.moss[6]! : blob > 0.42 ? P.pine[2]! : P.pine[3]!;
           }
         }
         b.set(x, y, col);
       }
     }
-    // the woods: one canopy over the upper slope, its top a skyline of crowns of very different
-    // sizes, its body leaf clusters each lit on its upper left, darker deeper in; its lower edge
-    // ragged where the outcrops and the dark floor show; the odd pine standing out of it
-    const canopyTop = (x: number): number => {
-      const T = headTop(p, Math.max(0, x), seed);
-      let top = T + 3;
-      // the skyline: the cells' crowns along the top
-      for (let i = -2; i <= 2; i++) {
-        const k = Math.floor(x / 16) + i;
-        const cx = (k + 0.5 + (hash1(k, seed + 27) - 0.5) * 0.8) * 16, R = 7 + 13 * hash1(k, seed + 28) * hash1(k, seed + 29);
-        const q = (x - cx) / R;
-        if (Math.abs(q) < 1) top = Math.max(top, T + 2 + R * 0.9 * Math.sqrt(1 - q * q));
-      }
-      return top;
-    };
-    for (let x = X0; x < X1; x++) {
-      const lx = LX(c, x);
-      const u = lx / p.w;
-      if (u > 0.9 || lx < -30) continue;
-      const fade = clamp((0.9 - u) / 0.12, 0, 1);
-      const T = headTop(p, Math.max(0, lx), seed);
-      const C = canopyTop(lx);
-      const depth = (30 + 70 * fbm1(lx / 120, seed + 24, 2)) * fade + (vnoise1(lx / 8, seed + 25) - 0.5) * 10;
-      if (depth < 3) continue;
-      const Y0 = Math.max(b.oy, Math.floor(c.Y(-C) - 1)), Y1 = Math.min(b.y1, Math.ceil(c.Y(-T + depth)));
-      for (let y = Y0; y < Y1; y++) {
+    // the woods: crowns of very different sizes, each a lumpy mass lit on its upper left with its
+    // own shade lower right; where a crown meets the one behind it, a dark pocket
+    for (const [cx, cy, R, cs] of crowns) {
+      if (lxOut(c, cx, R)) continue;
+      const u = cx / p.w;
+      const Xa = Math.max(b.ox, Math.floor(c.X(cx - R * 1.3))), Xb = Math.min(b.x1, Math.ceil(c.X(cx + R * 1.3)));
+      const Ya = Math.max(b.oy, Math.floor(c.Y(cy - R * 1.2))), Yb = Math.min(b.y1, Math.ceil(c.Y(cy + R * 1.1)));
+      const bump = Math.max(2.2, R * 0.35);
+      for (let y = Ya; y < Yb; y++) {
         const ly = LY(c, y);
-        if (ly < -C || ly > -T + depth || ly > -2) continue;
-        const inD = ly + C;
-        // leaf clusters: crowns of mixed sizes (a weighted cell pattern, never a grid), each lit
-        // on its upper left, a dark gap under its lower right; darker deeper in
-        const L = leafCell(lx, ly, seed + 26);
-        const deep = clamp(inD / (depth + C - T), 0, 1);
-        let t = 0.32 - L.lit * 0.32 + deep * 0.5 + (L.q > 0.82 && L.lit < 0 ? 0.25 : 0);
-        if (inD < 1.5) t -= 0.18;
-        const i = clamp(Math.round(t * 6), 0, 6);
-        // (integration, round 1: a step down from the sunny moss, so the far shore sits back in
-        // the haze with the karst instead of standing out as the brightest green in the frame)
-        b.set(x, y, [P.moss[2]!, P.moss[3]!, P.moss[4]!, P.moss[5]!, P.pine[1]!, P.pine[2]!, P.pine[3]!][i]!);
+        if (ly > -1.5) continue;
+        for (let x = Xa; x < Xb; x++) {
+          const lx = LX(c, x);
+          const dx = lx - cx, dy = (ly - cy) * 1.1;
+          const ang = Math.atan2(dy, dx);
+          const rim = R * (0.78 + 0.26 * vnoise1(ang * (R / bump) * 0.5 + 3, cs) + (d >= 0.5 ? 0.08 * vnoise1(ang * (R / bump) * 1.6, cs + 1) : 0)) * (dy > 0 ? 0.86 : 1);
+          const q = Math.hypot(dx, dy) / rim;
+          if (q > 1) continue;
+          // light: the crown's upper left, and the upper left of each bump of leaves in it
+          const lit = -(0.62 * dx + 0.78 * dy) / rim;
+          const inner = (vnoise(lx / bump + cs * 0.01, ly / bump, cs + 2) - 0.5) * 0.5;
+          let t = 0.56 - lit * 0.42 + inner + q * 0.1 + clamp(u - 0.5, 0, 1) * 0.1;
+          if (q > 0.84 && lit < -0.1) t += 0.28;
+          if (q > 0.9 && lit > 0.35) t -= 0.18;
+          const i = clamp(Math.round(t * 6), 0, 7);
+          b.set(x, y, [P.moss[1]!, P.moss[2]!, P.moss[3]!, P.moss[4]!, P.pine[0]!, P.pine[1]!, P.pine[2]!, P.pine[3]!][i]!);
+        }
       }
     }
     const r = rng(seed + 20);
-    for (let x = 20; x < p.w * 0.8; x += 60 + r() * 160) {
-      const T = canopyTop(x);
+    // a pine or two standing out of the woods
+    for (let x = 40; x < p.w * 0.7; x += 140 + r() * 260) {
+      const T = headTop(p, x, seed);
       const R = 8 + r() * 8;
-      if (d >= 0.3) needlePad(c, x, -T - R * 0.4, R * 2.6, R * 0.7, seed + Math.round(x * 3));
+      if (d >= 0.3 && T > 30) needlePad(c, x, -T - 26 - R * 0.6, R * 2.6, R * 0.7, seed + Math.round(x * 3));
     }
-    // the water's edge at the east end: reeds, a few stones standing out in the lake
-    for (let i = 0; i < 4; i++) {
-      const sx = p.w * (0.84 + 0.2 * r()), R = 2 + r() * 4;
-      for (let oy = -R; oy <= 0.5; oy += 0.5) for (let ox = -R * 1.3; ox <= R * 1.3; ox += 0.5) {
-        if ((ox / (R * 1.3)) ** 2 + (oy / R) ** 2 > 1) continue;
-        dot(c, sx + ox, oy, oy > -1.2 ? P.karst[7]! : ox < -R * 0.3 ? P.karst[3]! : P.karst[5]!);
-      }
-    }
-    // along the whole foot: reed clumps and wet stones in clusters, breaking the waterline
-    for (let x = -20; x < p.w; x += 20 + r() * 70) {
-      const n = 3 + Math.floor(r() * 9), tall = 6 + r() * 16;
+    // the water's edge: reeds and grass in clumps, wet stones standing out in the lake
+    for (let x = -20; x < p.w; x += 24 + r() * r() * 110) {
+      const n = 3 + Math.floor(r() * 10), tall = 5 + r() * 15;
       for (let k = 0; k < n; k++) {
-        const bx = x + (r() - 0.5) * 18, a = (r() - 0.45) * 0.5, bd = (r() - 0.45) * 0.8, l = r() * 0.7, ln = tall * (0.4 + 0.6 * r());
+        const bx = x + (r() - 0.5) * 16, a = (r() - 0.45) * 0.5, bd = (r() - 0.45) * 0.8, l = r() * 0.7, ln = tall * (0.4 + 0.6 * r());
         if (d >= 0.3) grass(c, bx, 0.5, ln, a, bd, l);
       }
-      if (r() < 0.5) {
-        const sx = x + r() * 20, R = 2 + r() * 3.5;
+      if (r() < 0.45) {
+        const sx = x + r() * 24, R = 1.5 + r() * r() * 5;
         for (let oy = -R; oy <= 0.5; oy += 0.5) for (let ox = -R * 1.3; ox <= R * 1.3; ox += 0.5) {
-          if ((ox / (R * 1.3)) ** 2 + (oy / R) ** 2 > 1) continue;
-          dot(c, sx + ox, oy, oy > -1 ? P.karst[7]! : ox < -R * 0.3 ? P.karst[3]! : P.karst[5]!);
+          if ((ox / (R * 1.3)) * (ox / (R * 1.3)) + (oy / R) * (oy / R) > 1) continue;
+          dot(c, sx + ox, oy, oy > -0.8 ? P.karst[8]! : ox < -R * 0.3 ? P.karst[2]! : P.karst[4]!);
         }
+      }
+    }
+    for (let i = 0; i < 4; i++) {
+      const sx = p.w * (0.86 + 0.18 * r()), R = 2 + r() * 4;
+      for (let oy = -R; oy <= 0.5; oy += 0.5) for (let ox = -R * 1.3; ox <= R * 1.3; ox += 0.5) {
+        if ((ox / (R * 1.3)) * (ox / (R * 1.3)) + (oy / R) * (oy / R) > 1) continue;
+        dot(c, sx + ox, oy, oy > -1.2 ? P.karst[7]! : ox < -R * 0.3 ? P.karst[3]! : P.karst[5]!);
       }
     }
     for (let i = 0; i < 70; i++) {
@@ -511,6 +525,11 @@ export const headland = definePainter<HeadlandP>("op.headland", {
   },
 });
 
+/** Is a crown at local x with radius R wholly outside this buffer's columns? */
+function lxOut(c: PaintCtx, cx: number, R: number): boolean {
+  return c.X(cx + R * 1.3) < c.buf.ox || c.X(cx - R * 1.3) > c.buf.x1;
+}
+
 export interface ShoreP {
   /** Length along the shore, px; the anchor is its west end at the waterline. */
   w: number;
@@ -519,48 +538,6 @@ export interface ShoreP {
   walk: number[];
   /** Where the shore runs out under the water (local x). */
   end: number;
-}
-
-/** A rounded ledge of limestone standing in or above the water: a noisy top, lit left, wet foot. */
-function ledgeRock(c: PaintCtx, bx: number, bw: number, bt: number, seed: number): void {
-  const b = c.buf;
-  const X0 = Math.max(b.ox, Math.floor(c.X(bx - 2))), X1 = Math.min(b.x1, Math.ceil(c.X(bx + bw + 2)));
-  const lean = (hash1(1, seed) - 0.5) * 0.5;
-  for (let x = X0; x < X1; x++) {
-    const lx = LX(c, x);
-    const q = (lx - bx) / bw;
-    if (q < 0 || q > 1) continue;
-    // a lopsided rounded top: noise at three scales over a superellipse, steep sides
-    const qq = clamp(q + lean * q * (1 - q), 0, 1);
-    const e = Math.pow(Math.max(0, 1 - Math.pow(Math.abs(qq * 2 - 1), 2.6)), 0.4);
-    const T = bt * e * (0.8 + 0.35 * vnoise1(lx / (bw * 0.3) + 1, seed + 1)) + (vnoise1(lx / 5, seed + 2) - 0.5) * 3 * e + (vnoise1(lx / 1.8, seed + 3) - 0.5) * 1.1;
-    if (T < 1) continue;
-    const Y0 = Math.max(b.oy, Math.floor(c.Y(-T) - 1)), Y1 = Math.min(b.y1, Math.ceil(c.Y(0.5)));
-    for (let y = Y0; y < Y1; y++) {
-      const ly = LY(c, y);
-      if (ly < -T || ly > 0.5) continue;
-      const s = ly + T;
-      const wet = -(2 + 4 * vnoise1(lx / 7, seed + 4));
-      const mossD = (1.4 + 3 * vnoise1(lx / 6, seed + 5)) * (q < 0.6 ? 1.4 : 0.8);
-      let col: number;
-      if (ly > wet) col = ly > -0.6 ? P.karst[8]! : P.karst[7]!;
-      else if (s < mossD) col = s < 1.1 && q < 0.65 ? P.moss[3]! : P.moss[5]!;
-      else {
-        // the top plane lit, the face below it mid, its right flank and the undercut foot dark
-        let k = s < mossD + 2 + 2 * vnoise1(lx / 4, seed + 8) ? 0 : q < 0.14 + 0.1 * (vnoise1(ly / 5, seed + 6) - 0.5) ? 1 : q < 0.68 ? 2 : 3;
-        // fissures down from notches, closing as they go
-        for (let f = 0; f < 3; f++) {
-          if (hash1(f + 5, seed) > 0.7) continue;
-          const fx = bx + bw * (0.15 + 0.7 * hash1(f + 2, seed)) + (vnoise1(ly / 4 + f, seed + 7) - 0.5) * 2.4;
-          if (Math.abs(lx - fx) < 0.6 && s < bt * (0.35 + 0.6 * hash1(f + 9, seed))) k = 4;
-          else if (lx - fx > 0.6 && lx - fx < 1.6 && k > 1 && s < bt * 0.6) k = 1;
-        }
-        if (ly > wet - 3 && k < 3) k++;
-        col = [P.karst[2]!, P.karst[4]!, P.karst[5]!, P.karst[6]!, P.karst[7]!][k]!;
-      }
-      b.set(x, y, col);
-    }
-  }
 }
 
 export const shore = definePainter<ShoreP>("op.shore", {
@@ -615,82 +592,190 @@ export const shore = definePainter<ShoreP>("op.shore", {
       }
     }
     for (const [x, y, R, v] of th) if (v > 0.55) clump(c, x, y, R, P.moss.slice(2, 7), P.pine.slice(1), 0.62 - v * 0.3, seed + Math.round(x * 13 + y * 7), 0.8);
-    // the steps: ledges of limestone going down from under the walk line to the water, each its
-    // own height and width, overlapping, the lower ones wet; the odd slab out in the shallows
-    const blocks: [number, number, number][] = [
-      [e * (0.0 + 0.04 * r()), e * (0.3 + 0.08 * r()), 0.82 + 0.1 * r()],
-      [e * (0.24 + 0.04 * r()), e * (0.16 + 0.06 * r()), 0.95 + 0.1 * r()],
-      [e * (0.36 + 0.04 * r()), e * (0.24 + 0.08 * r()), 0.5 + 0.1 * r()],
-      [e * (0.58 + 0.04 * r()), e * (0.18 + 0.06 * r()), 0.32 + 0.08 * r()],
-      [e * (0.77 + 0.03 * r()), e * (0.12 + 0.05 * r()), 0.18 + 0.05 * r()],
-      [e * (0.95 + 0.04 * r()), e * (0.06 + 0.03 * r()), 0.1],
-    ];
-    for (const [bx, bw, k] of blocks) ledgeRock(c, bx, bw, Math.max(5, walkAt(bx + bw * 0.5) * k), seed + Math.round(bx * 13));
-    // mud and pebbles at the waterline: banks of them where the ledges part, thin elsewhere
-    for (let x = 0; x < e + 60; x += 1.5 + r() * 3) {
-      const dens = vnoise1(x / 31, seed + 9) * 0.8 + vnoise1(x / 9, seed + 10) * 0.2;
-      const R = 1.2 + r() * 3.2 * dens, keepIt = r(), oyB = -r() * 2 * dens;
-      if (keepIt > dens * dens * 1.4) continue;
+    // (art loop round 2) the shelving shore: one body of limestone under the walk line, stepping
+    // down to the water in ledges of their own widths and heights (a lit, mossy tread, a rounded
+    // lip, a riser in shade, a dark undercut under each lip), wet and dark where it meets the water;
+    // mud and pebbles where the last steps go in, stones sunk in the shallows, an old stub, a fallen
+    // trunk with a kink lying down the steps with its shadow on them, grass and ferns on the treads
+    const steps: [number, number][] = [];
+    {
+      let x = e * (0.02 + 0.05 * r());
+      let k = 0.93;
+      while (x < e * 1.02) {
+        steps.push([x, k]);
+        x += e * (0.09 + 0.15 * r() * (1 - 0.4 * (x / e)));
+        k = Math.max(0.3, k - (0.05 + 0.1 * r()));
+      }
+      steps.push([e * 1.12, -0.1]);
+    }
+    const stepOf = (lx: number): number => {
+      let i = 0;
+      while (i + 1 < steps.length && steps[i + 1]![0] <= lx) i++;
+      return i;
+    };
+    // the height of the steps' top at lx (px above the water): a tread, then a rounded lip and riser
+    const stepTop = (lx: number): number => {
+      if (lx < steps[0]![0] || lx > e * 1.12) return -Infinity;
+      const i = stepOf(lx);
+      const [x0, k0] = steps[i]!, [x1, k1] = steps[Math.min(steps.length - 1, i + 1)]!;
+      const wk = walkAt(lx);
+      // the tread sags a little and tilts toward the water; the lip rounds over into the riser
+      const f = (lx - x0) / Math.max(1, x1 - x0);
+      const lip = f > 0.8 ? Math.pow((f - 0.8) / 0.2, 1.8) : 0;
+      const kk = k0 - 0.04 * f + (k1 - k0 + 0.04) * lip;
+      return Math.max(-2, wk * kk + (vnoise1(lx / 13, seed + 51) - 0.5) * 4 + (vnoise1(lx / 4, seed + 52) - 0.5) * 1.6);
+    };
+    {
+      const b = c.buf;
+      const X0 = Math.max(b.ox, Math.floor(c.X(steps[0]![0] - 2))), X1 = Math.min(b.x1, Math.ceil(c.X(e * 1.12)));
+      for (let x = X0; x < X1; x++) {
+        const lx = LX(c, x);
+        const T0 = stepTop(lx);
+        if (T0 === -Infinity) continue;
+        // the grass bank over the steps: from just under the walk line down over the rock, its lower
+        // edge hanging over each lip in a ragged hem (the rock breaks out of the bank below it)
+        const W = walkAt(lx) - 0.5 - 1.2 * vnoise1(lx / 6, seed + 71);
+        const hem = (vnoise1(lx / 5, seed + 72) - 0.3) * 4 + (vnoise1(lx / 2.2, seed + 73) > 0.7 ? 3 : 0);
+        const T = Math.max(T0, W);
+        if (T < 0.5) continue;
+        const sl = (stepTop(lx + 1.5) - stepTop(lx - 1.5)) / 3;
+        const i = stepOf(lx);
+        const fx = (lx - steps[i]![0]) / Math.max(1, steps[Math.min(steps.length - 1, i + 1)]![0] - steps[i]![0]);
+        const fw = 9 + 9 * vnoise1(lx / 50, seed + 59);
+        const Y0 = Math.max(b.oy, Math.floor(c.Y(-T) - 1)), Y1 = Math.min(b.y1, Math.ceil(c.Y(0.6)));
+        for (let y = Y0; y < Y1; y++) {
+          const ly = LY(c, y);
+          if (ly < -T || ly > 0.6) continue;
+          const up = -ly;
+          if (W > T0 && ly < -T0 + hem && up > 3) {
+            // the bank: a lit top, grass going into its own shade, darkest where it hangs over rock
+            const sb = ly + W, bot = -T0 + hem - ly;
+            const mot = vnoise(lx / 13, ly / 6, seed + 74);
+            b.set(x, y, sb < 1.1 ? P.moss[2]! : bot < 1.5 ? P.moss[7]! : bot < 3.5 ? P.moss[6]! : sb < 4 ? P.moss[3]! : mot > 0.6 ? P.moss[4]! : mot > 0.3 ? P.moss[5]! : P.moss[6]!);
+            continue;
+          }
+          const s = ly + T0;
+          // turf on the treads (thick on the level, thin where the top drops), hanging over the lip
+          const turf = sl > -0.45 ? (2 + 4 * vnoise1(lx / 9, seed + 53)) * (vnoise1(lx / 31, seed + 54) > 0.3 ? 1 : 0.35) + (vnoise1(lx / 3.1, seed + 65) > 0.72 ? 4 * vnoise1(lx / 1.6, seed + 66) : 0) : 1;
+          let col: number;
+          if (up < 0.9) col = vnoise1(lx / 6, seed + 67) > 0.78 ? P.jade[3]! : P.karst[8]!;
+          else if (up < 3 + 3 * vnoise1(lx / 7, seed + 55)) col = vnoise1(lx / 5, seed + 56) > 0.7 ? P.moss[6]! : P.karst[8]!;
+          else if (s < turf) col = s < 1.1 ? (sl > 0.1 ? P.moss[2]! : P.moss[3]!) : s < turf * 0.5 ? P.moss[4]! : P.moss[5]!;
+          else {
+            // the body under the treads: the shore's face toward the camera, in its own shade and
+            // mottled (the sun is beyond it); a pale lip only where the rock breaks out under the
+            // turf; a riser (where the top drops) darker; the undercut under each lip darkest;
+            // a fissure here and there, closing as it goes down
+            const mot = vnoise(lx / 17, ly / 11, seed + 68) * 0.7 + vnoise(lx / 5, ly / 4, seed + 69) * 0.3;
+            let k = s < turf + 1.5 && vnoise1(lx / 13, seed + 70) > 0.45 ? 0 : mot > 0.62 ? 1 : mot > 0.38 ? 2 : 3;
+            if (sl < -0.5 || fx > 0.9) k = Math.max(k, 3);
+            if (s > turf + 2 && s < turf + 6 && fx > 0.78 && fx < 0.97) k = 4;
+            const wx = lx + (vnoise1(ly / 6, seed + 58) - 0.5) * 3;
+            const fis = Math.floor(wx / fw), ff = wx / fw - fis;
+            if (hash1(fis, seed + 60) < 0.2 && s > 3 && ff < 0.08 && s < 6 + 14 * hash1(fis, seed + 61)) k = 4;
+            if (up < 7 && k < 4) k++;
+            col = [P.karst[3]!, P.karst[5]!, P.karst[6]!, P.karst[7]!, P.karst[8]!][Math.min(4, k)]!;
+          }
+          b.set(x, y, col);
+        }
+      }
+    }
+    // mud and pebbles where the last steps go in: a spit of wet mud, pebbles heaped on it in clusters
+    for (let x = e * 0.7; x < e * 1.15; x += 1.5 + r() * 3) {
+      const dens = vnoise1(x / 23, seed + 9) * 0.8 + vnoise1(x / 7, seed + 10) * 0.2;
+      if (r() > dens * 1.2) continue;
+      const R = 1.2 + r() * 3 * dens, oyB = -r() * 1.5;
+      const T = Math.max(0, stepTop(x));
       for (let oy = -R; oy <= 0.5; oy += 0.5) for (let ox = -R * 1.3; ox <= R * 1.3; ox += 0.5) {
-        if ((ox / (R * 1.3)) ** 2 + (oy / R) ** 2 > 1) continue;
+        if ((ox / (R * 1.3)) * (ox / (R * 1.3)) + (oy / R) * (oy / R) > 1) continue;
         const lit = (-0.62 * ox) / R - (0.78 * oy) / R;
-        dot(c, x + ox, oy + oyB, oy + oyB > -0.8 ? P.earth[5]! : lit > 0.5 ? P.stone[2]! : lit > -0.2 ? P.stone[4]! : P.stone[5]!);
+        dot(c, x + ox, oy + oyB - T * 0.2, oy + oyB > -0.8 ? P.earth[5]! : lit > 0.5 ? P.stone[2]! : lit > -0.2 ? P.stone[4]! : P.stone[5]!);
       }
     }
-    // stones sunk in the shallows past the end of the steps, in a loose group
-    for (let i = 0; i < 4; i++) {
-      const x = e * (0.9 + 0.35 * r() * r()), R = 2.5 + r() * 5;
+    // stones sunk in the shallows past the steps, in a loose group: wet dark foot, a bright wet line
+    for (let i = 0; i < 5; i++) {
+      const x = e * (1.02 + 0.3 * r() * r()), R = 2 + r() * 5 * (i === 0 ? 1.4 : 1);
       for (let oy = -R * 0.8; oy <= 0.5; oy += 0.5) for (let ox = -R * 1.4; ox <= R * 1.4; ox += 0.5) {
-        if ((ox / (R * 1.4)) ** 2 + (oy / (R * 0.8)) ** 2 > 1) continue;
+        if ((ox / (R * 1.4)) * (ox / (R * 1.4)) + (oy / (R * 0.8)) * (oy / (R * 0.8)) > 1) continue;
         const lit = (-0.62 * ox) / R - (0.78 * oy) / R;
-        dot(c, x + ox, oy, oy > -1.5 ? P.karst[8]! : lit > 0.4 ? P.moss[4]! : P.karst[5]!);
+        dot(c, x + ox, oy, oy > -0.6 ? P.jade[2]! : oy > -1.8 ? P.karst[8]! : lit > 0.45 ? (i % 2 ? P.moss[4]! : P.karst[3]!) : lit > -0.2 ? P.karst[5]! : P.karst[7]!);
       }
     }
-    // the fallen trunk: its root plate torn up on the bank, the trunk lying down over the ledges
-    // into the water, thick, wet and dark where it goes in, moss along its top, a broken limb
-    const tx0 = e * (0.3 + 0.05 * r()), tx1 = e * (0.66 + 0.06 * r());
-    const ty0 = -walkAt(tx0) + 10, ty1 = 3;
-    const trunk: [number, number][] = [];
-    for (let k = 0; k <= 12; k++) {
-      const u = k / 12;
-      // it rests on the ledges: a sag, then a kink where it slid off one
-      trunk.push([tx0 + (tx1 - tx0) * u, ty0 + (ty1 - ty0) * Math.pow(u, 0.8) + (u > 0.55 ? 0 : -Math.sin((u / 0.55) * Math.PI) * 2)]);
+    // an old broken stub standing in the shallows: its split top lit, a wet band at the water
+    {
+      const sx = e * (0.93 + 0.05 * r()), sh = 10 + r() * 6, sw = 2.2;
+      for (let ly = -sh; ly <= 0.5; ly += 0.5) {
+        const v = -ly / sh;
+        for (let o = -sw; o <= sw; o += 0.5) {
+          const jag = -sh + 2.5 * hash1(Math.floor((o + sw) * 1.5), seed + 62);
+          if (ly < jag) continue;
+          const q = o / sw;
+          dot(c, sx + o + v * 1.2, ly, -ly < 1 ? P.jade[2]! : -ly < 3 ? P.pine[5]! : ly - jag < 1.1 ? P.timber[2]! : q < -0.4 ? P.timber[3]! : q < 0.4 ? P.timber[4]! : P.timber[5]!);
+        }
+      }
     }
-    stroke(c, trunk, (u) => 12 - 5 * u, (u, sd) => {
-      if (sd < -0.55) return u > 0.85 ? P.timber[5]! : hash1(Math.floor(u * 60), seed + 6) < 0.4 ? P.moss[4]! : P.timber[3]!;
-      if (sd > 0.5 || u > 0.85) return P.timber[6]!;
+    // the fallen trunk: its root plate torn up on an upper step, the trunk lying down the steps into
+    // the water with a kink where it slid off a lip; bark lit on top, dark below, moss along its top;
+    // its shadow on the steps under it, down and right
+    const tx0 = e * (0.18 + 0.06 * r());
+    const lipI = Math.min(steps.length - 2, stepOf(tx0) + 1);
+    const tk = steps[lipI]![0] - 4, tx1 = Math.min(e * 1.05, tk + e * (0.2 + 0.08 * r()));
+    const ty0 = -stepTop(tx0) - 5, tyk = -stepTop(tk - 6) - 4, ty1 = 2;
+    const trunk: [number, number][] = [];
+    for (let k = 0; k <= 16; k++) {
+      const u = k / 16;
+      const x = u < 0.5 ? tx0 + (tk - tx0) * (u / 0.5) : tk + (tx1 - tk) * ((u - 0.5) / 0.5);
+      const y = u < 0.5 ? ty0 + (tyk - ty0) * Math.pow(u / 0.5, 1.2) : tyk + (ty1 - tyk) * Math.pow((u - 0.5) / 0.5, 0.8);
+      trunk.push([x, y + Math.sin(u * Math.PI * 3) * 0.6]);
+    }
+    for (const [x, y] of trunk) for (let o = 0; o < 4; o += 0.5) if (-(y + 5 + o) < stepTop(x + 3 + o)) dot(c, x + 3 + o, y + 5 + o * 0.5, P.karst[7]!);
+    stroke(c, trunk, (u) => 10 - 4.5 * u, (u, sd) => {
+      if (sd < -0.6) return u > 0.9 ? P.timber[4]! : hash1(Math.floor(u * 70), seed + 6) < 0.45 ? P.moss[3]! : P.timber[2]!;
+      if (sd < -0.2) return hash1(Math.floor(u * 50), seed + 63) < 0.3 ? P.moss[4]! : P.timber[3]!;
+      if (sd > 0.55 || u > 0.92) return P.timber[6]!;
       return hash1(Math.floor(u * 50) + Math.round(sd * 3) * 97, seed + 7) < 0.25 ? P.timber[5]! : P.timber[4]!;
     });
-    // the root plate: a ragged disc of roots and earth standing up from the trunk's end
-    for (let oy = -10; oy <= 3; oy += 0.5) for (let ox = -7; ox <= 3; ox += 0.5) if ((ox + 2) ** 2 / 20 + (oy + 3) ** 2 / 42 < 1) dot(c, tx0 - 3 + ox, ty0 + oy, P.earth[5]!);
-    for (let i = 0; i < 22; i++) {
-      const a = -1.6 + (3.2 * i) / 21 + (r() - 0.5) * 0.2;
-      const len = 8 + r() * 14, bd = (r() - 0.5) * 1.4;
-      stroke(c, bladePath(tx0 - 3, ty0 - 2, len, a, bd), (u) => (u < 0.35 ? 3 : u < 0.7 ? 2 : 1), (u) => (u < 0.4 ? P.earth[5]! : u < 0.75 ? P.timber[5]! : P.timber[4]!));
+    // its wet foot where it goes in
+    for (let o = -4; o <= 4; o += 0.5) dot(c, tx1 + o, 0.5, P.jade[2]!);
+    // the root plate: a ragged disc of roots and earth standing up off the trunk's end
+    for (let oy = -12; oy <= 3; oy += 0.5) for (let ox = -7; ox <= 3; ox += 0.5) {
+      const q = ((ox + 2) * (ox + 2)) / 22 + ((oy + 4) * (oy + 4)) / 50 + (vnoise1(Math.atan2(oy + 4, ox + 2) * 3, seed + 64) - 0.5) * 0.5;
+      if (q < 1) dot(c, tx0 - 3 + ox, ty0 + oy, q > 0.75 || ox < -3 ? P.earth[4]! : P.earth[5]!);
+    }
+    for (let i = 0; i < 18; i++) {
+      const a = -1.7 + (3.4 * i) / 17 + (r() - 0.5) * 0.25;
+      const len = 6 + r() * 14, bd = (r() - 0.5) * 1.6;
+      stroke(c, bladePath(tx0 - 4, ty0 - 4, len, a, bd), (u) => (u < 0.3 ? 2 : 1), (u) => (u < 0.4 ? P.earth[5]! : u < 0.75 ? P.timber[5]! : P.timber[4]!));
     }
     // a broken limb standing up off the trunk
-    const [sx, sy] = trunk[5]!;
-    const ll = 12 + r() * 6;
-    stroke(c, bladePath(sx, sy - 4, ll, 0.35, -0.3), (u) => (u < 0.5 ? 3 : 2), () => P.timber[5]!);
-    // grass and shrubs along the top in clusters, never evenly spaced; ferns on the ledges
-    for (let x = 170; x < e * 0.85; x += 10 + r() * r() * 90) {
+    const [lsx, lsy] = trunk[6]!;
+    stroke(c, bladePath(lsx, lsy - 4, 10 + r() * 6, 0.3, -0.35), (u) => (u < 0.5 ? 3 : 2), (_u, sd) => (sd < 0 ? P.timber[3]! : P.timber[5]!));
+    // grass and shrubs on the treads in clumps of very different sizes, ferns in the risers
+    for (let x = 170; x < e * 0.95; x += 10 + r() * r() * 80) {
       const n = 3 + Math.floor(r() * 8), wx = x + r() * 10;
-      const top = walkAt(wx);
+      const T = Math.max(0, stepTop(wx));
       const kind = r();
-      if (kind < 0.3 && d >= 0.3) {
-        const R = 4 + r() * 7;
-        clump(c, wx, -top - 2, R, P.moss.slice(1, 6), P.pine.slice(1), 0.42, seed + Math.round(wx * 7), 0.75);
+      if (kind < 0.22 && d >= 0.3) {
+        const R = 3 + r() * 6;
+        clump(c, wx, -T - 1, R, P.moss.slice(1, 6), P.pine.slice(1), 0.42, seed + Math.round(wx * 7), 0.75);
       } else {
         for (let k = 0; k < n; k++) {
-          const gx = wx + (r() - 0.5) * 14, ln = 4 + r() * 18, a = (r() - 0.45) * 1.1, bd = (r() - 0.4) * 1.2, l = r();
-          grass(c, gx, -top + 2, ln, a, bd, l);
+          const gx = wx + (r() - 0.5) * 12, ln = 3 + r() * 13, a = (r() - 0.45) * 1.1, bd = (r() - 0.4) * 1.2, l = r();
+          grass(c, gx, -Math.max(0, stepTop(gx)) + 1.5, ln, a, bd, l);
         }
       }
     }
     for (let i = 0; i < 4; i++) {
-      const [bx, bw, k] = blocks[1 + Math.floor(r() * 3)]!;
-      const fx = bx + bw * (0.2 + 0.6 * r()), ln = 8 + r() * 9, a = (r() < 0.5 ? -1 : 1) * (0.5 + 0.4 * r());
-      if (d >= 0.4) fern(c, fx, -walkAt(fx) * k * 0.7, ln, a, seed + 40 + i);
+      const s0 = steps[1 + Math.floor(r() * Math.max(1, steps.length - 3))]!;
+      const fx = s0[0] - 2 - r() * 4, ln = 7 + r() * 9, a = -(0.5 + 0.4 * r());
+      if (d >= 0.4) fern(c, fx, -Math.max(2, stepTop(fx + 2)) * 0.6, ln, a, seed + 40 + i);
+    }
+    // reeds where the shore goes into the water, in two clumps
+    for (const [rx, rw, rh] of [[e * (0.86 + 0.05 * r()), 16, 22], [e * (1.06 + 0.04 * r()), 10, 16]] as const) {
+      for (let k = 0; k < 14; k++) {
+        const bx = rx + (r() - 0.5) * rw, ln = rh * (0.4 + 0.6 * r());
+        if (d >= 0.3) grass(c, bx, 0.5 - Math.max(0, stepTop(bx)) * 0.3, ln, (r() - 0.5) * 0.4, (r() - 0.5) * 0.9, r() * 0.6);
+      }
     }
     // tall grass and reeds in front of the thicket's foot
     for (let i = 0; i < 46; i++) {
@@ -773,34 +858,14 @@ function screeBlock(c: PaintCtx, cx: number, base: number, bw: number, bh: numbe
 
 export const scree = definePainter<ScreeP>("op.scree", {
   bounds(p) {
-    return [-34, -(p.h ?? 26) * 1.5 - 50, p.w + 34, p.deep * 1.2 + 16];
+    return [-40, -(p.h ?? 26) * 1.5 - 50, p.w + 34, p.deep * 1.2 + 16];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
     const H = p.h ?? 26;
-    // the wet scree and mud behind the blocks: from just above the waterline (higher against the
-    // lip at the east end) down to the heap's reach, dark and wet, a few pebbles catching light
-    const X0 = Math.max(b.ox, Math.floor(c.X(0))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w)));
-    for (let x = X0; x < X1; x++) {
-      const lx = LX(c, x);
-      const u = lx / p.w;
-      const top = 2 + H * 0.35 * Math.pow(clamp(u, 0, 1), 1.5) * (0.7 + 0.6 * vnoise1(lx / 23, seed + 11)) + (vnoise1(lx / 6, seed + 12) - 0.5) * 3;
-      const D = screeDeep(p, lx, seed) - 7;
-      if (D < -top + 1) continue;
-      const Y0 = Math.max(b.oy, Math.floor(c.Y(-top) - 1)), Y1 = Math.min(b.y1, Math.ceil(c.Y(D)));
-      for (let y = Y0; y < Y1; y++) {
-        const ly = LY(c, y);
-        if (ly < -top || ly > D) continue;
-        const n = vnoise(lx / 7, ly / 5, seed + 13) * 0.7 + vnoise(lx / 2.5, ly / 2, seed + 14) * 0.3;
-        let col = n > 0.66 ? P.moss[6]! : n > 0.5 ? P.karst[7]! : n > 0.3 ? P.karst[8]! : P.earth[5]!;
-        if (ly + top < 1.2) col = n > 0.5 ? P.moss[5]! : P.moss[6]!;
-        if (hash(Math.floor(lx / 1.5), Math.floor(ly / 1.5), seed + 15) < 0.025) col = P.stone[4]!;
-        b.set(x, y, col);
-      }
-    }
-    // the blocks: two or three big ones low in the frame (near) and toward the lip, then medium
-    // and small ones bunched between them, drawn back (at the waterline) to front; very
-    // different sizes, never a row of cobbles
+    // (art loop round 2) loose debris heaped against the lip, no box: fallen blocks of very
+    // different sizes, smaller stones packed between them, a bleached branch or two lying across,
+    // a tangle of reeds. Where no block stands, only a low shingle of wet stones at the waterline.
     const r = rng(seed + 20);
     const rows: [number, number, number, number][] = [];
     const nBig = 2 + Math.floor(r() * 2);
@@ -809,7 +874,7 @@ export const scree = definePainter<ScreeP>("op.scree", {
       const yb = Math.min(p.deep * (0.45 + 0.5 * r()), screeDeep(p, cx, seed) + 3);
       rows.push([cx, yb, bw, bw * (0.42 + 0.25 * hk)]);
     }
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 10; i++) {
       const cx = p.w * (1.04 * r() - 0.02), ky = r(), sk = r(), hk = r();
       const yb = Math.max(0.5, screeDeep(p, cx, seed) * Math.pow(ky, 0.85));
       const k = clamp(yb / p.deep, 0, 1);
@@ -817,14 +882,66 @@ export const scree = definePainter<ScreeP>("op.scree", {
       rows.push([cx, yb, bw, yb < 5 ? H * (0.25 + 0.75 * Math.pow(clamp(cx / p.w, 0, 1), 1.2)) * (0.45 + 0.55 * hk) : bw * (0.38 + 0.3 * hk)]);
     }
     rows.sort((a, q) => a[1] - q[1]);
-    // (only a block at the heap's front sits in open water: its foot gets the bright wet line)
+    // the heap itself: rubble of small stones of mixed sizes (each lit on its upper left, a dark gap
+    // round it), heaped highest against the lip and running down to a few stones at the west tip;
+    // its top and its west end wander at three scales, and it is the lip's own pale limestone,
+    // so it never reads as a box against the cliff
+    const env = (lx: number): number => {
+      const u = clamp(lx / p.w, 0, 1.2);
+      return 2 + H * 0.85 * Math.pow(u, 1.3) * (0.7 + 0.5 * fbm1(lx / 37, seed + 15, 2)) + (vnoise1(lx / 9, seed + 16) - 0.5) * 5 + (vnoise1(lx / 3.3, seed + 17) - 0.5) * 2;
+    };
+    const X0 = Math.max(b.ox, Math.floor(c.X(-10))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w + 30)));
+    for (let x = X0; x < X1; x++) {
+      const lx = LX(c, x);
+      const top = -env(lx);
+      // (past its east end it runs on up against the lip's foot, thinning out)
+      const D = lx > p.w ? Math.min(screeDeep(p, p.w, seed) - 7, (p.w + 30 - lx) * 2.2) : screeDeep(p, lx, seed) - 7;
+      if (top >= D) continue;
+      const Y0 = Math.max(b.oy, Math.floor(c.Y(top) - 1)), Y1 = Math.min(b.y1, Math.ceil(c.Y(D)));
+      for (let y = Y0; y < Y1; y++) {
+        const ly = LY(c, y);
+        if (ly < top || ly > D) continue;
+        // the stone this point lies in: a jittered cell pattern of mixed sizes (never a grid)
+        const G = 3.5 + 8 * Math.pow(vnoise(lx / 26, ly / 17, seed + 18), 1.6) * (0.6 + 0.6 * clamp(ly / 40, 0, 1));
+        const gx = Math.floor(lx / G), gy = Math.floor(ly / (G * 0.7));
+        let best = 9, bx = 0, by = 0, gap = 0.62;
+        for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
+          const px = (gx + i + 0.5 + (hash(gx + i, gy + j, seed + 19) - 0.5) * 0.8) * G, py = (gy + j + 0.5 + (hash(gx + i, gy + j, seed + 21) - 0.5) * 0.8) * G * 0.7;
+          const q = Math.hypot((lx - px) / G, (ly - py) / (G * 0.7)) * (0.8 + 0.4 * hash(gx + i, gy + j, seed + 22));
+          if (q < best) { best = q; bx = px; by = py; gap = 0.55 + 0.3 * hash(gx + i, gy + j, seed + 23); }
+        }
+        const lit = -(0.62 * (lx - bx) + 0.78 * (ly - by)) / G;
+        const deep = clamp((ly - top) / (D - top + 1), 0, 1);
+        // (moss and grit settle in the upper gaps; the odd stone is mossy all over)
+        if (best > gap && deep < 0.4 && vnoise(lx / 11, ly / 7, seed + 24) > 0.6) { b.set(x, y, P.moss[5]!); continue; }
+        let k = best > gap ? (deep < 0.35 ? 3 : 4) : lit > 0.25 ? 0 : lit > -0.15 ? 1 : 2;
+        if (deep > 0.55 && k < 4) k++;
+        if (ly - top < 1.2 && k < 3) k = 0;
+        b.set(x, y, [P.karst[3]!, P.karst[4]!, P.karst[5]!, P.karst[6]!, P.karst[8]!][k]!);
+      }
+    }
+    // the stones, back (at the waterline) to front
     rows.forEach(([cx, yb, bw, bh], i) => screeBlock(c, cx, yb, bw, bh, seed + 100 + i * 17, yb > screeDeep(p, cx, seed) - 9));
-    // sedge and reeds out of the gaps, and a few lily pads lying on the water off the west tip
-    for (let i = 0; i < 16; i++) {
-      const x = r() * p.w, yb = Math.min(screeDeep(p, x, seed) - 4, r() * p.deep * 0.8);
+    // a bleached branch or two lying across the heap, its shadow under it
+    for (let i = 0; i < 2; i++) {
+      const x0 = p.w * (0.05 + 0.4 * r()), x1 = x0 + 40 + r() * 50, y0 = 4 + r() * p.deep * 0.4, y1 = y0 + (r() - 0.3) * 18;
+      const pts: [number, number][] = [];
+      for (let k = 0; k <= 10; k++) {
+        const u = k / 10;
+        pts.push([x0 + (x1 - x0) * u, y0 + (y1 - y0) * u + Math.sin(u * Math.PI * (1.5 + r())) * 1.5]);
+      }
+      if (d < 0.3) continue;
+      for (const [px, py] of pts) dot(c, px + 1, py + 2.5, P.pine[5]!);
+      stroke(c, pts, (u) => 3.4 - 1.6 * u, (_u, sd) => (sd < -0.3 ? P.paper[3]! : sd < 0.4 ? P.timber[2]! : P.timber[4]!));
+      const [ex, ey] = pts[10]!;
+      stroke(c, bladePath(ex, ey, 6 + r() * 6, 0.9, -0.4), () => 1, () => P.timber[3]!);
+    }
+    // sedge and reeds out of the gaps, a tangle of them toward the west tip
+    for (let i = 0; i < 18; i++) {
+      const x = r() * p.w * (i < 6 ? 0.5 : 1), yb = Math.min(screeDeep(p, x, seed) - 4, r() * p.deep * 0.8);
       const n = 3 + Math.floor(r() * 7), tall = 7 + r() * 20 * (1 - (yb / (p.deep + 1)) * 0.5);
       const blades: [number, number, number, number, number][] = [];
-      for (let k = 0; k < n; k++) blades.push([x + (r() - 0.5) * 9, tall * (0.4 + 0.6 * r()), (r() - 0.5) * 0.9, (r() - 0.45) * 1.2, r() * 0.8]);
+      for (let k = 0; k < n; k++) blades.push([x + (r() - 0.5) * 9, tall * (0.4 + 0.6 * r()), (r() - 0.5) * 1.1, (r() - 0.45) * 1.4, r() * 0.8]);
       if (yb < 0 || d < 0.3) continue;
       for (const [bx, ln, a, bd, l] of blades) grass(c, bx, yb + 0.5, ln, a, bd, l);
     }
