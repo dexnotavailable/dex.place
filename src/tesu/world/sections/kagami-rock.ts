@@ -31,7 +31,7 @@ export function kagamiRock(b: WorldBuilder): void {
   // walk line to the water, mud and pebbles, sunk stones, a fallen trunk (in front of the rock;
   // the walk line itself is the rock's and stays exact)
   const wl = (x: number, y: number): number[] => [x - h(39), LAKE_Y - y];
-  b.piece("play", "op.shore", h(39), LAKE_Y, { w: h(7), end: h(5.6), walk: [...wl(h(31), h(60.9)), ...wl(h(36), h(61.6)), ...wl(h(40), h(62.1)), ...wl(h(44.1), h(62.25)), ...wl(h(46), h(62.6))] }, { z: 1, seed: 7919 * 3010 });
+  b.piece("play", "op.shore", h(39), LAKE_Y, { w: h(8.2), end: h(6.9), walk: [...wl(h(31), h(60.9)), ...wl(h(36), h(61.6)), ...wl(h(40), h(62.1)), ...wl(h(44.1), h(62.25)), ...wl(h(46), h(62.6))] }, { z: 1, seed: 7919 * 3010 });
   // past the water's west end, the far shore (P3): the massif's wooded foot shelving into the lake
   bg(b, "back", 1300, "op.headland", { w: 1100, h: 300 }, LAKE_Y, 1, 7919 * 3011);
   // where the lake runs out against the east lip (front plane, in front of the near water): fallen

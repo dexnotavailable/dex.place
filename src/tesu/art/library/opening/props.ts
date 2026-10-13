@@ -22,12 +22,18 @@ function fill(c: PaintCtx, x0: number, y0: number, x1: number, y1: number, col: 
   }
 }
 
-/** A soft contact shadow on the ground under a prop, from x0 to x1 (dithered, darkest in the middle). */
+/**
+ * A contact shadow on stone ground under a prop from x0 to x1 (round 3): darkest right at the
+ * contact, cast down and to the right (the sun is up and to the left), a step lighter as it
+ * reaches out past the prop's right side; hard steps, no dither field.
+ */
 export function contact(c: PaintCtx, x0: number, x1: number, y = 0): void {
-  fill(c, x0, y - 1, x1, y + 2, (x, yy, u, v) => {
-    const k = 1 - Math.abs(u - 0.5) * 2;
-    if (bayer4(x, yy) > k * (v < 0.5 ? 0.9 : 0.5)) return 0;
-    return P.karst[7]!;
+  const w = x1 - x0, reach = Math.min(10, w * 0.25 + 2);
+  fill(c, x0 + 1, y - 1, x1 + reach, y + 2, (x, _yy, _u, v) => {
+    const lx = c.lx(x + 0.5);
+    const out = (lx - x1) / reach;
+    if (lx < x0 + 1 + v * 3 || out > 1 - v * 0.6) return 0;
+    return v < 0.34 && out < 0 ? P.karst[8]! : out < 0.45 ? P.karst[7]! : P.karst[6]!;
   });
 }
 
@@ -56,7 +62,7 @@ export const rail = definePainter<RailP>("op.rail", {
       x0 = Math.min(x0, p.pts[i]!); x1 = Math.max(x1, p.pts[i]!);
       y0 = Math.min(y0, p.pts[i + 1]!); y1 = Math.max(y1, p.pts[i + 1]!);
     }
-    return [x0 - 10, y0 - (p.h ?? 46) - 14, x1 + 10, y1 + 8];
+    return [x0 - 10, y0 - (p.h ?? 46) - 14, x1 + 16, y1 + 8];
   },
   paint(c, p) {
     const hgt = p.h ?? 46, every = p.every ?? 62, d = c.d, seed = c.seed;
@@ -114,7 +120,7 @@ export interface BenchP {
 /** A stone bench: a thick slab on two carved legs, worn smooth on top, lichen on the legs. */
 export const bench = definePainter<BenchP>("op.bench", {
   bounds(p) {
-    return [-8, -38, p.w + 8, 4];
+    return [-8, -38, p.w + 18, 4];
   },
   paint(c, p) {
     const w = p.w, seed = c.seed;
@@ -153,7 +159,7 @@ export interface BarrelP {
 export const barrel = definePainter<BarrelP>("op.barrel", {
   bounds(p) {
     const hh = p.h ?? 40;
-    return [-hh * 0.5, -hh * 1.3 - 6, hh * 0.5, 3];
+    return [-hh * 0.5, -hh * 1.3 - 6, hh * 0.36 + 16, 4];
   },
   paint(c, p) {
     const hh = p.h ?? 40, seed = c.seed, d = c.d;
@@ -183,6 +189,11 @@ export const barrel = definePainter<BarrelP>("op.barrel", {
 });
 
 
+/** How far a prop's cast shadow reaches past its right side, px (for its width). */
+function shadowReach(w: number): number {
+  return Math.min(14, w * 0.45 + 3);
+}
+
 /**
  * Contact on the deck under a prop: its shadow falling down and to the right over the deck's edge,
  * darkest at the foot (1 to 3 px); with damp, a wet ring darkening the boards round its foot.
@@ -198,14 +209,19 @@ function footShadow(c: PaintCtx, x0: number, x1: number, damp = false): void {
       }
     }
   }
-  for (let y = Math.round(c.Y(0)); y < Math.round(c.Y(2.6)); y++) {
+  // (round 3) the shadow it casts: the sun stands up and to the left beyond the lake, so it falls
+  // toward us and to the right over the deck's lit edge: darkest right under its foot, a wedge
+  // reaching out past its right side, thinning as it goes (hard steps, no dither field)
+  const reach = shadowReach(x1 - x0);
+  for (let y = Math.round(c.Y(0)); y < Math.round(c.Y(3.4)); y++) {
     const ly = c.ly(y + 0.5);
-    const sh = ly * 0.9;
-    for (let x = Math.round(c.X(x0 + 0.5 + sh)); x < Math.round(c.X(x1 + 1.5 + sh)); x++) {
-      const u = (c.lx(x + 0.5) - x0 - sh) / Math.max(1, x1 - x0 + 1);
-      const k = 1 - Math.pow(Math.min(1, Math.abs(u - 0.55) * 2), 3);
-      if (ly > 0.9 && bayer4(x, y) > k * (ly > 1.8 ? 0.35 : 0.75)) continue;
-      b.set(x, y, ly < 0.9 ? P.timber[6]! : P.timber[5]!);
+    const a = x0 + 0.4 + ly * 1.6, z = x1 + reach * (1 - ly / 3.6);
+    for (let x = Math.round(c.X(a)); x < Math.round(c.X(z)); x++) {
+      const lx = c.lx(x + 0.5);
+      const out = (lx - x1) / Math.max(1, reach);
+      // under the foot: the contact, darkest; out past it the cast shadow, a step lighter
+      const col = out < 0 ? (ly < 1.2 ? P.timber[6]! : P.timber[5]!) : out < 0.55 - ly * 0.12 ? P.timber[5]! : P.umber[1]!;
+      b.set(x, y, col);
     }
   }
 }
@@ -240,7 +256,7 @@ export interface CrateP {
 export const crateOp = definePainter<CrateP>("op.crate", {
   bounds(p) {
     const w = p.w ?? 40, h = p.h ?? 36;
-    return [-w / 2 - 2, -h - 4, w / 2 + 4, 3];
+    return [-w / 2 - 2, -h - 4, w / 2 + shadowReach(w) + 2, 4];
   },
   paint(c, p) {
     const w = p.w ?? 40, h = p.h ?? 36, seed = c.seed, d = c.d;
@@ -308,7 +324,7 @@ export interface JarP {
 export const jarOp = definePainter<JarP>("op.jar", {
   bounds(p) {
     const h = p.h ?? 34;
-    return [-h * 0.45 - 2, -h - 5, h * 0.45 + 3, 3];
+    return [-h * 0.45 - 2, -h - 5, Math.max(h * 0.45 + 3, h * 0.42 * 0.6 + shadowReach(h * 0.5) + 2), 4];
   },
   paint(c, p) {
     const h = p.h ?? 34, d = c.d;
@@ -365,7 +381,7 @@ function onMesh(lx: number, ly: number, m: number, d: number): boolean {
  */
 export const net = definePainter<NetP>("op.net", {
   bounds(p) {
-    return [-p.w / 2 - 4, -p.h - 4, p.w / 2 + 8, Math.max(3, (p.drape ?? 0) + 8)];
+    return [-p.w / 2 - 4, -p.h - 4, p.w / 2 + Math.max(8, shadowReach(p.w) + 2), Math.max(4, (p.drape ?? 0) + 8)];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
@@ -439,7 +455,7 @@ export interface BasketP {
  */
 export const basket = definePainter<BasketP>("op.basket", {
   bounds(p) {
-    return [-p.h * 0.75 - 2, -p.h * 1.4, p.h * 0.75 + 4, 3];
+    return [-p.h * 0.75 - 2, -p.h * 1.4, Math.max(p.h * 0.75 + 4, p.h * 0.64 * 0.8 + shadowReach(p.h * 1.02) + 2), 4];
   },
   paint(c, p) {
     const hh = p.h, d = c.d;
@@ -477,7 +493,7 @@ export interface BucketP {
 export const bucket = definePainter<BucketP>("op.bucket", {
   bounds(p) {
     const hh = p.h ?? 20;
-    return [-hh * 0.7, -hh * 1.7, hh * 0.7 + 3, 3];
+    return [-hh * 0.7, -hh * 1.7, Math.max(hh * 0.7 + 3, hh * 0.62 + shadowReach(hh * 1.24) + 2), 4];
   },
   paint(c, p) {
     const hh = p.h ?? 20, d = c.d, seed = c.seed;
@@ -518,7 +534,7 @@ export interface CoilP {
 export const coil = definePainter<CoilP>("op.coil", {
   bounds(p) {
     const r = p.r ?? 12;
-    return [-r - 18, -r - 3, r + 4, Math.max(3, (p.hang ?? 0) + 3)];
+    return [-r - 18, -r - 3, r + shadowReach(2 * r) + 2, Math.max(4, (p.hang ?? 0) + 3)];
   },
   paint(c, p) {
     const r = p.r ?? 12, d = c.d, seed = c.seed;

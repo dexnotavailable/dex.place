@@ -170,12 +170,29 @@ test("op.jetty: boards come in batches (runs of related boards, never alternatin
 });
 
 // (moved from land.test.mjs in round 3: the scree is painter p2's with the rest of the rock)
-test("op.scree: the heap is solid from the waterline down where the lake ends against the lip (no water shows through)", () => {
-  // (integration, round 1) it stands over the place where the water's slices end in front of the
-  // east lip: from 40 px along to its east end, every column is painted from the waterline down
+// (round 3, painter p2: the scree became a chain of fallen blocks standing in the water, so the
+// test asks for what that design promises instead of a solid heap)
+test("op.scree: its blocks cover the band where the lake ends in front of the lip, and leave the water open west of them", () => {
+  // where the lake's end falls in the frames that see it (jetty-6s, play-east: x 0..16 from the
+  // waterline down 70 px), the blocks overlap with no gap; west of them the lake is open
   const p = { w: 140, deep: 82, h: 28 };
   for (const seed of [4242, 7919 * 3020]) {
-    const buf = paintBox("op.scree", p, 1, 40, 0, 90, 46, seed);
-    for (let x = 40; x < 130; x++) for (let y = 0; y < 46; y++) assert.ok(buf.get(x, y) > 0, `hole in the scree at ${x},${y} (seed ${seed})`);
+    const buf = paintBox("op.scree", p, 1, -60, -60, 260, 170, seed);
+    let holes = 0, n = 0;
+    for (let x = 0; x <= 16; x++) for (let y = 0; y <= 70; y++) { n++; if (!buf.get(x, y)) holes++; }
+    assert.ok(holes / n < 0.03, `${holes} of ${n} px open in the lake's end band (seed ${seed})`);
+    let open = 0, m = 0;
+    for (let x = -40; x <= -20; x++) for (let y = 10; y <= 60; y++) { m++; if (!buf.get(x, y)) open++; }
+    assert.ok(open / m > 0.5, `only ${open} of ${m} px of open water west of the blocks (seed ${seed})`);
   }
+});
+
+test("op.scree: every block paints its own reflection below its waterline (the lake does not mirror the front plane there)", () => {
+  const p = { w: 140, deep: 82, h: 28 };
+  const buf = paintBox("op.scree", p, 1, -60, -60, 260, 170, 4242);
+  // the stone standing alone in the open water west of the chain (its waterline 6.6 px down, its
+  // foot 2 px under that): its reflection shows under its foot
+  let below = 0;
+  for (let x = -40; x <= -30; x++) for (let y = 9; y <= 10; y++) if (buf.get(x, y)) below++;
+  assert.ok(below > 6, `no reflection under the stone west of the chain (${below} px)`);
 });
