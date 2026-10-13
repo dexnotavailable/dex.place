@@ -43,7 +43,7 @@ export function kagamiJetty(b: WorldBuilder): void {
 
   // the great pine on the east lip (behind the jetty): rooted on the shelf against the road's
   // rock, its long arm reaching west over the station and the jetty's end
-  b.piece("play", "op.pine", h(108.72), DECK_Y + 46, { h: 530, dir: -1, arm: [570, 0.86], bend: -0.25, armsFrom: 0.8, roots: 0, grip: 22 }, { z: 1, seed: seed() });
+  b.piece("play", "op.pine", h(108.72), DECK_Y + 46, { h: 530, dir: -1, arm: [570, 0.86], bend: -0.25, armsFrom: 0.8, roots: 0, grip: 22, cast: [16, 11] }, { z: 1, seed: seed() });
 
   // the jetty: its plate (the piles; the deck as the lake sees it)
   const jet = b.piece("play", "op.jetty", JETTY_X0, DECK_Y, { ...jp, part: "plate" }, { z: 2 });

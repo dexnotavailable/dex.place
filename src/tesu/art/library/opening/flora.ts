@@ -7,8 +7,10 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { bayer4, clamp, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
+import { IdxBuf, bayer4, clamp, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { contact } from "./props.ts";
+import { LX, LY, dot, grass } from "./bank.ts";
+import { chunkTop, limeChunk, type LimeChunk } from "./face.ts";
 
 export interface PadOpts {
   /**
@@ -170,7 +172,21 @@ export interface PineP {
   /** Roots: how far they spread along the rock and how deep they claw down below the anchor, px. */
   roots?: number;
   grip?: number;
+  /**
+   * (round 3) Its shadow on the rock right behind it: [dx, dy] px, down and to the right (the sun
+   * is up and to the left). It darkens only rock, moss and earth already painted behind it.
+   */
+  cast?: [number, number];
 }
+
+/** One step darker for the rock, moss and earth the pine's shadow falls on (by palette index). */
+const SHADE_OF = ((): Map<number, number> => {
+  const m = new Map<number, number>();
+  for (const [ramp, k] of [[P.karst, 2], [P.moss, 2], [P.earth, 1], [P.stone, 2], [P.pine, 1]] as const) {
+    ramp.forEach((v, i) => m.set(v, ramp[Math.min(ramp.length - 1, i + k)]!));
+  }
+  return m;
+})();
 
 /** Pine bark, lit to dark (round 3: in the timber family): grey-brown plates on the sun's side, warm brown in the fissures and shade. */
 const BARK = [P.earth[3]!, P.timber[4]!, P.timber[5]!, P.umber[3]!, P.timber[6]!];
@@ -239,6 +255,20 @@ export const pine = definePainter<PineP>("op.pine", {
     return [-p.h * 1.35 - reach, -p.h * 1.12 - (reach ? p.h * 0.12 : 0), p.h * 1.35 + reach, Math.max(p.h * 0.1 + 6, grip + 10)];
   },
   paint(c, p) {
+    if (p.cast) {
+      // its shadow first, from a copy of the tree painted into a scratch buffer offset up and to
+      // the left, so it falls only on what is already painted behind it
+      const b0 = c.buf, d0 = c.d;
+      const ox = Math.round(p.cast[0] * d0), oy = Math.round(p.cast[1] * d0);
+      const m = new IdxBuf(b0.w, b0.h, b0.ox - ox, b0.oy - oy, d0);
+      pine.paint({ ...c, buf: m }, { ...p, cast: undefined });
+      for (let y = 0; y < b0.h; y++) for (let x = 0; x < b0.w; x++) {
+        if (!m.px[y * b0.w + x]) continue;
+        const i = y * b0.w + x, v = b0.px[i]!;
+        const dk = SHADE_OF.get(v);
+        if (dk !== undefined) b0.px[i] = dk;
+      }
+    }
     const b = c.buf, d = c.d, seed = c.seed;
     const H = p.h, dir = p.dir ?? 1;
     const bend = p.bend ?? 1;
@@ -505,7 +535,16 @@ export interface TerraceP {
   depth: number;
 }
 
-/** The viewing terrace: a paved platform on a cut-stone retaining wall built out over the rock. */
+/**
+ * The viewing terrace (round 3): a paved platform on a retaining wall of cut stone, built into the
+ * rock it stands on, not pasted on it. The rock under the wall is a run of limestone blocks at
+ * different heights (higher at the ends, where the road's rock rises to meet it); the wall comes
+ * down onto each block's top on a footing course of bigger stones, so its foot steps with the rock;
+ * at both ends the rock rises in front of the wall's end courses. Ashlar in courses of their own
+ * heights, each stone its own length and tone, lit along its top, a shadow joint under it; rain
+ * stains running down from the coping's drips; moss only where water sits (the joints near the foot
+ * and under the coping); rubble, soil, moss and grass where masonry meets rock.
+ */
 export const terrace = definePainter<TerraceP>("op.terrace", {
   bounds(p) {
     return [-30, -4, p.w + 30, p.depth + 46];
@@ -513,48 +552,114 @@ export const terrace = definePainter<TerraceP>("op.terrace", {
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
     const W = p.w, D = p.depth;
-    // the face: ashlar courses, battered (a little wider at the foot), weathered, its foot in moss
-    const X0 = Math.max(b.ox, Math.floor(c.X(-26))), X1 = Math.min(b.x1, Math.ceil(c.X(W + 26)));
+    const r = rng(seed + 9);
+    // the rock under it: blocks of their own widths, their tops stepping (deepest in the middle)
+    const rocks: LimeChunk[] = [];
+    {
+      let x = -24;
+      let i = 0;
+      while (x < W + 20) {
+        const bw = 60 + r() * 110;
+        const mid = clamp(1 - Math.abs((x + bw / 2) / W - 0.5) * 2, 0, 1);
+        const top = 14 + (D - 22) * Math.pow(mid, 0.7) * (0.75 + 0.3 * r());
+        rocks.push({ x0: x, x1: Math.min(W + 26, x + bw), top, foot: Math.min(D + 34, top + 44 + r() * 24), tilt: (r() - 0.5) * 0.06, z: 0.74 + 0.22 * r(), cap: r() < 0.5 ? 2 : 0, shade: -0.12, seed: seed + 40 + i * 7 });
+        x += bw - 2;
+        i++;
+      }
+    }
+    const footAt = (lx: number): number => {
+      let y = D + 40;
+      for (const q of rocks) if (lx >= q.x0 && lx <= q.x1) y = Math.min(y, chunkTop(q, lx));
+      return y;
+    };
+    for (const q of rocks) limeChunk(c, q);
+    // the courses: their own heights, top down from the coping
+    const courses: number[] = [10];
+    while (courses[courses.length - 1]! < D + 40) courses.push(courses[courses.length - 1]! + 10 + Math.floor(r() * 7));
+    const X0 = Math.max(b.ox, Math.floor(c.X(-20))), X1 = Math.min(b.x1, Math.ceil(c.X(W + 20)));
     for (let x = X0; x < X1; x++) {
-      const lx = c.lx(x + 0.5);
-      for (let y = Math.max(b.oy, Math.floor(c.Y(-2))); y < Math.min(b.y1, Math.ceil(c.Y(D + 26))); y++) {
-        const ly = c.ly(y + 0.5);
-        // the face's ends step back into the rock in courses (no box), its foot is ragged
-        const course0 = Math.floor(Math.max(0, ly - 10) / 15);
-        const inset = ly < 10 ? -6 : course0 * 7 + 6 * hash1(course0, seed + 6);
-        const footRag = D * (1 - 0.35 * Math.pow(Math.abs(lx / W - 0.5) * 2, 2)) + 8 * vnoise1(lx / 9, seed + 1) + (hash1(Math.floor(lx / 5), seed + 2) < 0.2 ? 10 : 0);
-        if (lx < inset - 6 || lx > W - inset + 6 || ly > footRag) continue;
-        const bat = -inset + 6;
+      const lx = LX(c, x);
+      const foot = footAt(lx) - 0.5;
+      for (let y = Math.max(b.oy, Math.floor(c.Y(-2))); y < Math.min(b.y1, Math.ceil(c.Y(foot))); y++) {
+        const ly = LY(c, y);
+        if (ly > foot) continue;
+        // the wall's ends: built into the rock, each course stopping at its own place
+        const ci = courses.findIndex((v) => v > ly) - 1;
+        const endL = -14 + (ci >= 0 ? 9 * hash1(ci, seed + 6) : -6), endR = W + 14 - (ci >= 0 ? 9 * hash1(ci, seed + 7) : -6);
+        if (lx < endL || lx > endR) continue;
         if (ly < 1.3 / d) { b.set(x, y, P.stone[0]!); continue; }
-        // the paving's edge: a heavy coping course
+        // the coping: a heavy course of long slabs, its lip lit, a shadow under its overhang
         if (ly < 7) {
-          const k = Math.floor((lx + 3) / 34);
+          const k = Math.floor((lx + 3) / 34 + hash1(Math.floor((lx + 3) / 34), seed + 2) * 0.3);
           const joint = ((lx + 3) % 34 + 34) % 34 < 1.1 / d;
-          b.set(x, y, joint ? P.stone[5]! : tone(P.stone, ly < 3 ? 0.12 : 0.38 + 0.1 * hash1(k, seed), x, y, 0.3));
+          b.set(x, y, joint ? P.stone[5]! : tone(P.stone, ly < 3 ? 0.1 : 0.34 + 0.1 * hash1(k, seed), x, y, 0));
           continue;
         }
-        if (ly < 10) { b.set(x, y, P.stone[5]!); continue; }
-        const course = Math.floor((ly - 10) / 15);
-        const off = (course % 2) * 21;
-        const bx = Math.floor((lx + off) / 42);
-        const joint = ((ly - 10) % 15) < 1.1 / d || (((lx + off) % 42) + 42) % 42 < 1.1 / d;
-        let t = 0.36 + 0.16 * hash(bx, course, seed) + clamp(ly / D, 0, 1) * 0.15;
-        if (joint) t = 0.78;
-        else if (((ly - 10) % 15) < 2.6) t -= 0.12;
-        // edges of the face: a lit west edge, a shaded east edge
-        if (lx < -bat + 2.5) t -= 0.15;
-        if (lx > W + bat - 3) t += 0.25;
-        // stains and moss, more toward the foot
-        if (vnoise(lx / 2.5, ly / 26, seed + 3) > 0.74) t += 0.12;
-        if (vnoise(lx / 8, ly / 5, seed + 4) > 1.05 - ly / D * 0.45) { b.set(x, y, tone(P.moss, 0.45 + ly / D * 0.35, x, y, 0.35)); continue; }
-        b.set(x, y, tone(P.stone, clamp(t, 0, 1), x, y, 0.3));
+        if (ly < 10) { b.set(x, y, ly < 8.2 ? P.stone[6]! : P.stone[5]!); continue; }
+        const c0 = courses[Math.max(0, ci)]!, c1 = courses[Math.max(0, ci) + 1] ?? c0 + 14;
+        const ch = c1 - c0, sy = ly - c0;
+        // a footing course of bigger, rougher stones just above the rock
+        const footing = foot - ly < 12;
+        // the stones in this course: lengths of their own, the joints staggered course to course
+        const len = footing ? 46 : 26 + 30 * hash1(ci, seed + 3);
+        const off = hash1(ci, seed + 4) * len;
+        const si = Math.floor((lx + off) / len + (vnoise1(lx / 40 + ci, seed + 5) - 0.5) * 0.4);
+        const sl = len * (0.75 + 0.5 * hash(si, ci, seed + 8));
+        const sx = ((lx + off) - si * len) / Math.max(1, sl);
+        const vj = sx < 1.1 / (len * d) || sx > 1;
+        const hj = sy < 1.1 / d;
+        const sk = hash(si, ci, seed + 10);
+        let t = 0.34 + 0.2 * sk + clamp(ly / D, 0, 1) * 0.1 + (footing ? 0.08 : 0);
+        if (hj || vj) t = 0.8;
+        else if (sy < 2.2) t -= 0.13;
+        else if (sy > ch - 2.2) t += 0.08;
+        // a chipped corner on the odd stone; its face weathered in long streaks
+        if (!hj && !vj && sk > 0.86 && sy < 3 && sx < 0.08) t = 0.85;
+        if (vnoise(lx / 2.2, ly / 30, seed + 11) > 0.72) t += 0.1;
+        // the ends of the wall turn away from the light: the west end lit, the east in shade
+        if (lx < endL + 3) t -= 0.12;
+        if (lx > endR - 4) t += 0.2;
+        // rain stains down from the coping's drips (a few, thinning as they run)
+        const dx = Math.floor(lx / 23);
+        if (hash1(dx, seed + 12) < 0.3 && Math.abs(lx - (dx * 23 + 11 + 6 * hash1(dx, seed + 13))) < 1.2 * (1 - (ly - 10) / (D * (0.4 + 0.5 * hash1(dx, seed + 14))))) t += 0.12;
+        // moss where water sits: in the joints near the foot, and along the joint under the coping
+        const nearFoot = foot - ly < 18 + 10 * vnoise1(lx / 21, seed + 15);
+        if ((hj || vj) && (nearFoot || ci === 0) && vnoise(lx / 5, ly / 3, seed + 16) > (nearFoot ? 0.38 : 0.6)) { b.set(x, y, P.moss[nearFoot ? 5 : 4]!); continue; }
+        b.set(x, y, tone(P.stone, clamp(t, 0, 1), x, y, 0));
       }
+    }
+    // where masonry meets rock: a wedge of rubble and soil along the foot, moss and grass on it
+    for (let lx = -16; lx < W + 16; lx += 1.6 + r() * 3) {
+      const f = footAt(lx);
+      if (f > D + 39) continue;
+      const R = 1 + r() * 2.6;
+      const py = f - R * 0.5;
+      for (let oy = -R; oy <= 0.6; oy += 0.5) for (let ox = -R * 1.3; ox <= R * 1.3; ox += 0.5) {
+        if ((ox / (R * 1.3)) ** 2 + (oy / R) ** 2 > 1) continue;
+        const lit = (-0.62 * ox - 0.78 * oy) / R;
+        dot(c, lx + ox, py + oy, oy > 0 ? P.earth[5]! : lit > 0.45 ? P.karst[3]! : lit > -0.2 ? P.karst[5]! : P.karst[7]!);
+      }
+      if (r() < 0.4 && d >= 0.3) for (let k = 0; k < 3; k++) grass(c, lx + (r() - 0.5) * 4, f + 0.5, 3 + r() * 6, (r() - 0.5) * 1.1, (r() - 0.4) * 1.2, r());
+    }
+    // the rock rising in front of the wall's ends (it is built into it), soil and a fern in the corner
+    const ends: LimeChunk[] = [
+      { x0: -30, x1: -6, top: 8 + r() * 6, foot: 34 + r() * 10, tilt: 0.12, z: 0.7, cap: 3, seed: seed + 30 },
+      { x0: W + 2, x1: W + 30, top: 6 + r() * 6, foot: 30 + r() * 12, tilt: -0.1, z: 0.45, cap: 3, shade: 0.06, seed: seed + 31 },
+    ];
+    for (const q of ends) limeChunk(c, q);
+    for (const [ex, dir] of [[-6, 1], [W + 2, -1]] as const) {
+      for (let k = 0; k < 8; k++) {
+        const gx = ex + dir * r() * 6;
+        if (d >= 0.3) grass(c, gx, 8 + r() * 14, 4 + r() * 8, dir * (0.2 + 0.5 * r()), dir * 0.6, r());
+      }
+      for (let oy = 0; oy < 10; oy += 0.5) for (let ox = 0; ox < 6 - oy * 0.5; ox += 0.5) dot(c, ex + dir * ox, 12 + oy + 8 * hash1(Math.round(ex), seed + 32), oy < 1 ? P.moss[4]! : P.earth[5]!);
     }
     // a carved drain spout pouring a thin thread down the face
     const sx = W * 0.62;
-    for (let ly = 22; ly < D + 40; ly += 0.5 / d) {
+    const sf = footAt(sx);
+    for (let ly = 22; ly < sf + 40; ly += 0.5 / d) {
       const X = Math.round(c.X(sx + 6 + Math.min(4, (ly - 22) * 0.3))), Y = Math.round(c.Y(ly));
-      if (ly > D && bayer4(X, Y) < (ly - D) / 40) continue;
+      if (ly > sf && bayer4(X, Y) < (ly - sf) / 40) continue;
       b.set(X, Y, P.cloud[ly < 30 ? 1 : 0]!);
     }
     for (let y2 = Math.round(c.Y(18)); y2 < Math.round(c.Y(24)); y2++) for (let x2 = Math.round(c.X(sx - 4)); x2 < Math.round(c.X(sx + 8)); x2++) b.set(x2, y2, tone(P.stone, 0.55, x2, y2, 0.3));

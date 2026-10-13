@@ -313,6 +313,24 @@ export function chunkTop(k: LimeChunk, x: number): number {
   return e < rc ? base + (rc - Math.sqrt(Math.max(0, rc * rc - (rc - e) * (rc - e)))) * 1.2 : base;
 }
 
+/**
+ * Its foot (local y) at x. Standing in the lake it is the waterline's business; out of the water
+ * it wobbles, part of it hangs lower where it broke along a joint, and its corners round off (never
+ * a ruled bottom).
+ */
+export function chunkFoot(k: LimeChunk, x: number): number {
+  if (k.water !== undefined) return k.foot;
+  const w = k.x1 - k.x0;
+  let f = k.foot + wob(x * 1.2, k.seed + 40) * 0.8;
+  if (w > 20) {
+    const nu = 0.3 + 0.4 * hash1(41, k.seed), st = 3 + 6 * hash1(42, k.seed);
+    f += (x - k.x0) / w > nu ? (hash1(43, k.seed) < 0.5 ? st : -st) : 0;
+  }
+  const e = Math.min(x - k.x0, k.x1 - x), rc = Math.min(6, w * 0.15);
+  if (e < rc) f -= rc - Math.sqrt(Math.max(0, rc * rc - (rc - e) * (rc - e)));
+  return Math.max(k.top + 4, f);
+}
+
 /** Its left and right sides at local y (battered in a little toward the top, wobbling). */
 export function chunkSides(k: LimeChunk, y: number): [number, number] {
   const H = Math.max(1, k.foot - k.top);
@@ -323,7 +341,7 @@ export function chunkSides(k: LimeChunk, y: number): [number, number] {
 
 /** Is local (x, y) inside the chunk? */
 export function inChunk(k: LimeChunk, x: number, y: number): boolean {
-  if (y > k.foot) return false;
+  if (y > chunkFoot(k, x)) return false;
   const [a, b] = chunkSides(k, y);
   return x >= a && x <= b && y >= chunkTop(k, x);
 }
@@ -333,7 +351,7 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
   const b = c.buf;
   const X0 = Math.max(b.ox, Math.floor(c.X(k.x0 - 5))), X1 = Math.min(b.x1, Math.ceil(c.X(k.x1 + 5)));
   const ty = k.topAt ? Math.min(k.topAt(k.x0), k.topAt((k.x0 + k.x1) / 2), k.topAt(k.x1)) - 8 : Math.min(k.top, k.top + (k.tilt ?? 0) * (k.x1 - k.x0)) - 4;
-  const Y0 = Math.max(b.oy, Math.floor(c.Y(ty))), Y1 = Math.min(b.y1, Math.ceil(c.Y(k.foot + 1)));
+  const Y0 = Math.max(b.oy, Math.floor(c.Y(ty))), Y1 = Math.min(b.y1, Math.ceil(c.Y(k.foot + 11)));
   if (X0 >= X1 || Y0 >= Y1) return;
   const w = Math.max(1, k.x1 - k.x0);
   const cap = k.cap ?? 0;
@@ -348,8 +366,8 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
     for (let x = X0; x < X1; x++) {
       const lx = LXc(c, x);
       if (lx < sa || lx > sb) continue;
-      const T = chunkTop(k, lx);
-      if (ly < T || ly > k.foot) continue;
+      const T = chunkTop(k, lx), F = chunkFoot(k, lx);
+      if (ly < T || ly > F) continue;
       const s = ly - T, H = Math.max(1, (k.water ?? k.foot) - T);
       const u = (lx - sa) / Math.max(1, sb - sa);
       // under the water: dark and wet (the lake covers most of it)
@@ -359,7 +377,7 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
       const hem = cap > 0 ? cap * (0.55 + 0.7 * vnoise1(lx / 5, s0 + 13)) + (vnoise1(lx / 1.8, s0 + 14) > 0.72 ? 1.8 : 0) : 0;
       if (s < hem) { b.set(x, y, s < 1 ? (u < 0.55 ? P.moss[2]! : P.moss[3]!) : s > hem - 1 ? P.moss[6]! : u > 0.7 ? P.moss[5]! : P.moss[4]!); continue; }
       // its edges: a dark crevice down its right side and along its foot where it meets the next
-      if (sb - lx < 0.9 || (k.water === undefined && k.foot - ly < 0.9)) { b.set(x, y, P.karst[8]!); continue; }
+      if (sb - lx < 0.9 || (k.water === undefined && F - ly < 0.9)) { b.set(x, y, P.karst[8]!); continue; }
       // (the sun stands beyond the lake: a face toward us is in its own shade, its top and its
       // upper-left rim catch the light)
       let t = 0.7 - 0.3 * k.z + (k.shade ?? 0);

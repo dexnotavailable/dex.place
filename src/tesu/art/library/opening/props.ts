@@ -22,12 +22,18 @@ function fill(c: PaintCtx, x0: number, y0: number, x1: number, y1: number, col: 
   }
 }
 
-/** A soft contact shadow on the ground under a prop, from x0 to x1 (dithered, darkest in the middle). */
+/**
+ * A contact shadow on stone ground under a prop from x0 to x1 (round 3): darkest right at the
+ * contact, cast down and to the right (the sun is up and to the left), a step lighter as it
+ * reaches out past the prop's right side; hard steps, no dither field.
+ */
 export function contact(c: PaintCtx, x0: number, x1: number, y = 0): void {
-  fill(c, x0, y - 1, x1, y + 2, (x, yy, u, v) => {
-    const k = 1 - Math.abs(u - 0.5) * 2;
-    if (bayer4(x, yy) > k * (v < 0.5 ? 0.9 : 0.5)) return 0;
-    return P.karst[7]!;
+  const w = x1 - x0, reach = Math.min(10, w * 0.25 + 2);
+  fill(c, x0 + 1, y - 1, x1 + reach, y + 2, (x, _yy, _u, v) => {
+    const lx = c.lx(x + 0.5);
+    const out = (lx - x1) / reach;
+    if (lx < x0 + 1 + v * 3 || out > 1 - v * 0.6) return 0;
+    return v < 0.34 && out < 0 ? P.karst[8]! : out < 0.45 ? P.karst[7]! : P.karst[6]!;
   });
 }
 
@@ -56,7 +62,7 @@ export const rail = definePainter<RailP>("op.rail", {
       x0 = Math.min(x0, p.pts[i]!); x1 = Math.max(x1, p.pts[i]!);
       y0 = Math.min(y0, p.pts[i + 1]!); y1 = Math.max(y1, p.pts[i + 1]!);
     }
-    return [x0 - 10, y0 - (p.h ?? 46) - 14, x1 + 10, y1 + 8];
+    return [x0 - 10, y0 - (p.h ?? 46) - 14, x1 + 16, y1 + 8];
   },
   paint(c, p) {
     const hgt = p.h ?? 46, every = p.every ?? 62, d = c.d, seed = c.seed;
@@ -114,7 +120,7 @@ export interface BenchP {
 /** A stone bench: a thick slab on two carved legs, worn smooth on top, lichen on the legs. */
 export const bench = definePainter<BenchP>("op.bench", {
   bounds(p) {
-    return [-8, -38, p.w + 8, 4];
+    return [-8, -38, p.w + 18, 4];
   },
   paint(c, p) {
     const w = p.w, seed = c.seed;
@@ -153,7 +159,7 @@ export interface BarrelP {
 export const barrel = definePainter<BarrelP>("op.barrel", {
   bounds(p) {
     const hh = p.h ?? 40;
-    return [-hh * 0.5, -hh * 1.3 - 6, hh * 0.5, 3];
+    return [-hh * 0.5, -hh * 1.3 - 6, hh * 0.36 + 16, 4];
   },
   paint(c, p) {
     const hh = p.h ?? 40, seed = c.seed, d = c.d;
