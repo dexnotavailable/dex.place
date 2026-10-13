@@ -23,6 +23,9 @@ import { P } from "../../palette.ts";
 import { bayer4, clamp, fbm, fbm1, hash1, rng, vnoise, vnoise1 } from "../../raster.ts";
 import { cached } from "./kit.ts";
 
+/** The ordered-dither threshold on cells of k art px (two screen px at the catch's 2x). */
+const bay = (x: number, y: number, k: number): number => bayer4(Math.floor(x / k), Math.floor(y / k));
+
 export interface CloudP {
   kind?: "cumulus" | "stratus" | "field";
   /** Width and height of the cloud, px of the sky plane; anchor at the middle of its base. */
@@ -42,35 +45,75 @@ interface Lobe { x: number; y: number; r: number; z: number; root: number; gen?:
 
 /** The heap's lobes: towers on the base, billows on the towers, smaller lobes on every rim. */
 function lobesOf(p: CloudP, seed: number): Lobe[] {
-  return cached(`cu2|${seed}|${p.w}|${p.h}|${p.low ? 1 : 0}`, () => {
+  return cached(`cu4|${seed}|${p.w}|${p.h}|${p.low ? 1 : 0}`, () => {
     const r = rng(seed + 5);
     const W = p.w, H = p.h;
     const out: Lobe[] = [];
-    // towers: sizes very different, the tallest left of centre
-    const n = p.low ? 3 + Math.floor(r() * 2) : 5 + Math.floor(r() * 2);
-    const sizes = p.low ? [1, 0.62, 0.45, 0.38] : [1, 0.7, 0.52, 0.42, 0.34, 0.28];
-    const order = sizes.slice(0, n);
-    // the biggest stands second from the left; the rest fall away to the right in a long tail
-    const slots: number[] = [];
-    for (let i = 0; i < n; i++) slots.push(-0.44 + (0.88 * (i + 0.2 + 0.6 * r())) / n);
-    const place = [order[1]!, order[0]!, ...order.slice(2)];
-    for (let i = 0; i < n; i++) {
-      const s = place[i]!;
-      const rr = H * (p.low ? 0.5 : 0.36) * s * (0.9 + 0.2 * r());
-      const x = slots[i]! * W;
-      const y = -rr * (0.62 + 0.2 * r());
-      const root = out.length;
-      out.push({ x, y, r: rr, z: s * 2 + r() * 0.3, root });
-      if (s > 0.6) out.push({ x: x + (r() - 0.6) * rr * 0.5, y: y - rr * (0.75 + 0.25 * r()), r: rr * (0.74 + 0.14 * r()), z: s * 2 + 1, root });
-      if (s > 0.6) out.push({ x: x + rr * (0.5 + 0.2 * r()), y: y - rr * (0.3 + 0.3 * r()), r: rr * (0.5 + 0.12 * r()), z: s * 2 + 0.6, root });
-      if (s > 0.9 && !p.low) out.push({ x: x + (r() - 0.45) * rr * 0.45, y: y - rr * (1.3 + 0.15 * r()), r: rr * (0.5 + 0.1 * r()), z: s * 2 + 1.6, root });
-    }
-    // low filler lobes along the base so the towers stand on one body
-    const m = Math.round(W / (H * 0.18));
-    for (let i = 0; i < m; i++) {
-      const u = -0.5 + (i + r()) / m;
-      const rr = H * (0.12 + 0.1 * r()) * (1 - Math.abs(u) * 0.8);
-      out.push({ x: u * W, y: -rr * 0.55, r: rr, z: 0.5 + r(), root: out.length });
+    if (p.low) {
+      // towers: sizes very different, the tallest left of centre
+      const n = 3 + Math.floor(r() * 2);
+      const order = [1, 0.62, 0.45, 0.38].slice(0, n);
+      // the biggest stands second from the left; the rest fall away to the right in a long tail
+      const slots: number[] = [];
+      for (let i = 0; i < n; i++) slots.push(-0.44 + (0.88 * (i + 0.2 + 0.6 * r())) / n);
+      const place = [order[1]!, order[0]!, ...order.slice(2)];
+      for (let i = 0; i < n; i++) {
+        const s = place[i]!;
+        const rr = H * 0.5 * s * (0.9 + 0.2 * r());
+        const x = slots[i]! * W;
+        const y = -rr * (0.62 + 0.2 * r());
+        const root = out.length;
+        out.push({ x, y, r: rr, z: s * 2 + r() * 0.3, root });
+        if (s > 0.6) out.push({ x: x + (r() - 0.6) * rr * 0.5, y: y - rr * (0.75 + 0.25 * r()), r: rr * (0.74 + 0.14 * r()), z: s * 2 + 1, root });
+        if (s > 0.6) out.push({ x: x + rr * (0.5 + 0.2 * r()), y: y - rr * (0.3 + 0.3 * r()), r: rr * (0.5 + 0.12 * r()), z: s * 2 + 0.6, root });
+      }
+      // low filler lobes along the base so the towers stand on one body
+      const m = Math.round(W / (H * 0.18));
+      for (let i = 0; i < m; i++) {
+        const u = -0.5 + (i + r()) / m;
+        const rr = H * (0.06 + 0.2 * r() * r()) * (1 - Math.abs(u) * 0.8);
+        out.push({ x: u * W, y: -rr * 0.55, r: rr, z: 0.5 + r(), root: out.length });
+      }
+    } else {
+      // clean clusters with sky between them (Dex's cloud reference): a great tower left of
+      // centre (toward the sun), a lower heap right of it, a stray puff off the end. Each a row
+      // of big billows on its flat base, billows stacked up the tower (smaller as they rise,
+      // leaning toward the sun), billows bulging from its flanks: very different sizes
+      const CL: [number, number, number][] = [[-0.18 + 0.06 * r(), 0.5, 1], [0.27 + 0.05 * r(), 0.3, 0.42 + 0.12 * r()], [0.47, 0.07, 0.17]];
+      CL.forEach(([cu, cw0, ch0], ci) => {
+        if (ci === 2 && r() < 0.35) return;
+        const cw = cw0 * W, ch = ch0 * H, cx = cu * W;
+        const root = out.length;
+        // the base row
+        const nb = ci === 2 ? 2 : 3 + Math.floor(r() * 2);
+        for (let i = 0; i < nb; i++) {
+          const u = -0.5 + (i + 0.25 + 0.5 * r()) / nb;
+          const rr = Math.min(ch * 0.36, cw / nb) * (0.62 + 0.4 * r()) * (1 - Math.abs(u) * 0.35);
+          out.push({ x: cx + u * cw, y: -rr * (0.55 + 0.15 * r()), r: rr, z: 1 + r() * 0.6 + (1 - Math.abs(u)), root });
+        }
+        // shoulders: big billows standing on the base row either side of the tower, of their
+        // own sizes, so the heap is broad and stepped, never a column
+        if (ci < 2) for (const side of [-1, 1]) {
+          if (ci === 1 && r() < 0.5) continue;
+          const rs = ch * (side < 0 ? 0.26 + 0.08 * r() : 0.2 + 0.1 * r());
+          out.push({ x: cx + side * cw * (0.18 + 0.1 * r()), y: -ch * (0.3 + 0.08 * r()), r: rs, z: 2 + r() * 0.4, root });
+        }
+        // the tower: billows stacked up it, smaller as they rise, stepping toward the sun, the
+        // odd billow bulging from a flank (each its own side and size)
+        const ns = ci === 0 ? 3 : ci === 1 ? 1 + Math.floor(r() * 2) : 0;
+        let y = -ch * 0.5, x = cx - cw * 0.04, rr = ch * 0.26;
+        for (let k = 0; k < ns; k++) {
+          out.push({ x: x + (r() - 0.5) * rr * 0.5, y, r: rr * (0.9 + 0.2 * r()), z: 2.6 + k * 0.5 + r() * 0.3, root });
+          if (r() < 0.55) {
+            const side = r() < 0.6 ? -1 : 1;
+            out.push({ x: x + side * rr * (0.7 + 0.25 * r()), y: y + rr * (0.15 + 0.35 * r()), r: rr * (0.35 + 0.3 * r()), z: 2.9 + k * 0.5, root });
+          }
+          y -= rr * (0.85 + 0.25 * r());
+          x -= rr * (0.05 + 0.2 * r());
+          rr *= 0.74 + 0.12 * r();
+          if (-y + rr > ch) break;
+        }
+      });
     }
     // every rim sprouts smaller lobes, twice: cauliflower
     let gen = out.slice();
@@ -78,13 +121,14 @@ function lobesOf(p: CloudP, seed: number): Lobe[] {
       const next: Lobe[] = [];
       for (const L of gen) {
         if (L.r < H * 0.05) continue;
-        const k = 3 + Math.floor(r() * (level ? 4 : 5));
+        // (fewer rim lobes of very different sizes: never a row of like scallops)
+        const k = 2 + Math.floor(r() * (level ? 2 : 3));
         // (a great lobe also sprouts on both flanks, so no side of the heap runs straight)
         const flank = level === 0 && (L.gen ?? 0) === 0 ? 2 : 0;
         for (let j = 0; j < k + flank; j++) {
           // round the upper rim and down both flanks (no straight side), more toward the sun
           const ang = j >= k ? -Math.PI * (j === k ? -0.06 + 0.2 * r() : 0.86 + 0.24 * r()) : -Math.PI * (0.02 + 1.1 * r());
-          const cr = L.r * (level ? 0.2 + 0.25 * r() : 0.24 + 0.32 * r());
+          const cr = L.r * (level ? 0.14 + 0.3 * r() : 0.16 + 0.46 * r() * r() + 0.08 * r());
           const reach = L.r * (0.72 + 0.16 * r());
           const cy = L.y + Math.sin(ang) * reach;
           if (cy - cr > -2 && level) continue;
@@ -100,7 +144,7 @@ function lobesOf(p: CloudP, seed: number): Lobe[] {
 
 /** The flat base, not ruled: it wanders a few px and is lumpy where small lobes sag (y, negative up). */
 function baseAt(p: CloudP, lx: number, seed: number): number {
-  return -p.h * (0.018 + 0.03 * vnoise1(lx / 52, seed + 33) + 0.018 * vnoise1(lx / 14, seed + 34));
+  return -p.h * (0.012 + 0.045 * vnoise1(lx / 95, seed + 35) + 0.025 * vnoise1(lx / 38, seed + 33) + 0.014 * vnoise1(lx / 12, seed + 34));
 }
 
 /** The heap as fields on a 1 px grid (level-1 px), built once per cloud and frame. */
@@ -133,7 +177,7 @@ function blur3(f: Float32Array, w: number, h: number, r: number): void {
 }
 
 function maskOf(p: CloudP, seed: number, f: number): Mask {
-  return cached(`cumask3|${seed}|${p.w}|${p.h}|${p.low ? 1 : 0}|${f}`, () => {
+  return cached(`cumask5|${seed}|${p.w}|${p.h}|${p.low ? 1 : 0}|${f}`, () => {
     const L = lobesOf(p, seed).map((o, i) => ({ ...o, r: o.r * (0.97 + 0.03 * Math.sin(f * 1.57 + i * 1.3)) }));
     const x0 = Math.floor(-p.w * 0.66), y0 = Math.floor(-p.h * 1.6), w = Math.ceil(p.w * 1.32), h = Math.ceil(p.h * 1.6) + 2;
     // the silhouette (every lobe, the small ones included), and the surface the light falls on:
@@ -224,13 +268,13 @@ function maskOf(p: CloudP, seed: number, f: number): Mask {
   });
 }
 
-/** The haze lenses under the base: [x, y, half length, half thickness]. */
+/** The wisps torn off the base, hanging under it: [x, y below the base, half length, half thickness]. */
 function skirtOf(p: CloudP, seed: number): [number, number, number, number][] {
-  return cached(`cuskirt|${seed}|${p.w}|${p.h}`, () => {
+  return cached(`cuskirt2|${seed}|${p.w}|${p.h}`, () => {
     const r = rng(seed + 41);
     const out: [number, number, number, number][] = [];
-    const n = 5 + Math.floor(r() * 4);
-    for (let i = 0; i < n; i++) out.push([(r() - 0.5) * p.w * 0.9, -p.h * (0.005 + 0.05 * r()), p.w * (0.04 + 0.1 * r()), p.h * (0.015 + 0.025 * r())]);
+    const n = 3 + Math.floor(r() * 3);
+    for (let i = 0; i < n; i++) out.push([(r() - 0.5) * p.w * 0.85, p.h * (0.01 + 0.045 * r()), p.w * (0.03 + 0.09 * r()), p.h * (0.008 + 0.014 * r())]);
     return out;
   });
 }
@@ -243,16 +287,20 @@ function skirtOf(p: CloudP, seed: number): [number, number, number, number][] {
  * edge, scraps hanging under it, then haze lenses.
  */
 function paintCumulus(c: PaintCtx, p: CloudP): void {
-  const b = c.buf, seed = c.seed;
+  const b = c.buf, seed = c.seed, kc = Math.max(1, Math.round(c.d));
+  const bd = (x: number, y: number): number => bayer4(Math.floor(x / kc), Math.floor(y / kc));
   const f = (p.frame ?? 0) & 3;
   const M = maskOf(p, seed, f);
   const C = P.cloud, R = P.range;
   const baseH = p.h * (p.low ? 0.3 : 0.2);
   const X0 = Math.max(b.ox, Math.floor(c.X(M.x0))), X1 = Math.min(b.x1, Math.ceil(c.X(M.x0 + M.w)));
-  const Y0 = Math.max(b.oy, Math.floor(c.Y(M.y0))), Y1 = Math.min(b.y1, Math.ceil(c.Y(p.h * 0.06 + 2)));
-  // the steps, light to dark, and where each begins on the tone scale
-  const STEP = [C[0]!, C[1]!, C[2]!, C[3]!, R[1]!, R[2]!];
-  const AT = [0, 0.28, 0.46, 0.6, 0.74, 0.88];
+  const Y0 = Math.max(b.oy, Math.floor(c.Y(M.y0))), Y1 = Math.min(b.y1, Math.ceil(c.Y(p.h * 0.08 + 2)));
+  // the steps, light to dark, and where each begins on the tone scale: warm paper where the
+  // morning sun strikes the tops, the cloud's cool whites in the half light, the range's
+  // blue-grey in the shade and along the underside
+  const STEP = [P.paper[0]!, C[1]!, C[2]!, C[3]!, R[2]!, R[3]!];
+  const AT = [0, 0.27, 0.42, 0.55, 0.69, 0.84];
+  const wisps = skirtOf(p, seed);
   for (let y = Y0; y < Y1; y++) {
     const ly = c.ly(y + 0.5);
     const gy = Math.floor(ly - M.y0);
@@ -260,61 +308,71 @@ function paintCumulus(c: PaintCtx, p: CloudP): void {
       const lx = c.lx(x + 0.5);
       const gx = Math.floor(lx - M.x0);
       const up = -ly;
-      // the haze layer the base sits on: a few long thin lenses, wider than the heap, dithered
       if (gx < 0 || gy < 0 || gx >= M.w || gy >= M.h || M.own[gy * M.w + gx]! < 0) {
-        let cov = 0;
-        for (const S of skirtOf(p, seed)) {
-          // (each lens wanders and swells along its length: never a ruled band)
-          const u = (lx - S[0]) / S[2], v = (ly - S[1] - (vnoise1(lx / 23, seed + 35) - 0.5) * S[3] * 2) / (S[3] * (0.5 + vnoise1(lx / 17, seed + 36)));
-          if (u <= -1 || u >= 1 || v <= -1 || v >= 1) continue;
-          cov = Math.max(cov, (1 - u * u) * (1 - v * v) * (0.55 + 0.6 * vnoise(lx / 24, ly / 3, seed + 32)));
+        // wisps torn off the base: long thin streaks hanging under it, solid in their cores,
+        // one cell of dither at their ends and edges (never a band along the base)
+        for (const [wx, wy, hl, ht] of wisps) {
+          const u = (lx - wx) / hl;
+          if (u <= -1 || u >= 1) continue;
+          const yc = baseAt(p, lx, seed) + wy + (vnoise1(lx / 37, seed + 35 + Math.round(wx)) - 0.5) * ht * 3 - u * u * ht * 1.5;
+          const th = ht * (1 - u * u) * (0.5 + vnoise1(lx / 17, seed + 36 + Math.round(wx)));
+          const v = Math.abs(ly - yc);
+          if (v > th) continue;
+          if ((th - v) * c.d < kc && bd(x + f, y) >= 0.5) break;
+          b.set(x, y, ly < yc ? C[3]! : R[2]!);
+          break;
         }
-        // scraps torn off the base, hanging just under it in the shade
-        const bd = baseAt(p, lx, seed) - ly;
-        if (bd < 0 && bd > -p.h * 0.05 && gx >= 0 && gx < M.w) {
-          const sc = vnoise(lx / 9, ly / 2.5, seed + 37) * vnoise1(lx / 40, seed + 38) - 0.25 + bd / (p.h * 0.1);
-          if (sc > 0.12 && bayer4(x + f, y) < (sc > 0.28 ? 0.5 : 0.25)) { b.set(x, y, R[2]!); continue; }
-        }
-        const th = cov > 0.55 ? 0.5 : cov > 0.32 ? 0.25 : cov > 0.15 ? 0.125 : 0;
-        if (bayer4(x + f, y) < th) b.set(x, y, C[cov > 0.5 ? 2 : 3]!);
         continue;
       }
       const k = gy * M.w + gx;
       const dist = M.dist[k]!;
       const lam = M.lam[k]!;
-      // the base: level, but torn along its edge by holes at two scales, dissolving into the haze
-      const bd = baseAt(p, lx, seed) - ly;
-      const tear = p.h * (0.012 + 0.03 * vnoise1(lx / 11, seed + 39) * vnoise1(lx / 37, seed + 40));
-      if (bd < tear) {
-        const keep = bd / Math.max(1e-3, tear) + (vnoise(lx / 3.5, ly / 1.6, seed + 41) - 0.5) * 0.7;
-        if (keep < 0.15 || bayer4(x + f, y) >= (keep > 0.7 ? 1 : keep > 0.45 ? 0.5 : 0.25)) continue;
+      // the base: flat-ish, but torn along its edge by holes at two scales into wisps
+      const bd0 = baseAt(p, lx, seed) - ly;
+      const tear = p.h * (0.014 + 0.04 * vnoise1(lx / 11, seed + 39) * vnoise1(lx / 37, seed + 40));
+      if (bd0 < tear) {
+        const keep = bd0 / Math.max(1e-3, tear) + (vnoise(lx / 5, ly / 1.6, seed + 41) - 0.5) * 0.8;
+        if (keep < 0.3 || (keep < 0.45 && bd(x + f, y) >= 0.5)) continue;
       }
-      // the shaded outline thins by dither (a soft edge), the lit outline stays crisp
-      if (lam < 0.3 && dist < 2.5 && bayer4(x + f, y) >= dist / 2.8) continue;
-      // the sun-grazed rim: cream, right on the lit outline, broken where small lobes turn away
-      if (dist < 2.2 && lam > 0.62 && up > baseH * 0.8 && vnoise(lx / 6, ly / 6, seed + 42) > 0.25) { b.set(x, y, P.paper[0]!); continue; }
+      // the shaded outline softens by one cell of dither; the lit outline stays crisp
+      if (lam < 0.3 && dist * c.d < kc * 1.2 && bd(x + f, y) >= 0.5) continue;
+      const o = M.lobes[M.own[k]!]!;
+      // the sun-grazed rim: warm paper right on the lit outline, broken where lobes turn away
+      if (dist < 2.2 && lam > 0.6 && up > baseH * 0.8 && vnoise(lx / 6, ly / 6, seed + 42) > 0.25) { b.set(x, y, P.ember[0]!); continue; }
       const deep = clamp(M.light[k]! / (p.h * 0.55), 0, 1);
       const base = clamp(1 - up / baseH, 0, 1);
-      let t = 0.56 - lam * 0.8 + deep * 0.28 + base * base * 0.42;
+      // each lobe its own body (its own ball in the sun, mixed with the heap's big planes), so
+      // the heap reads as separate overlapping billows of different sizes, never one smooth mass
+      // and never soap bubbles
+      const nx = clamp((lx - o.x) / o.r, -1, 1), ny = clamp((ly - o.y) / o.r, -1, 1);
+      const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+      const own = -nx * -0.55 - ny * -0.68 + nz * 0.48;
+      const mixK = (o.gen ?? 0) === 0 ? 0.35 : 0;
+      const lamM = lam * (1 - mixK) + own * mixK;
+      let t = 0.56 - lamM * 0.85 + deep * 0.26 + base * base * 0.45;
       // (the planes' edges wander at the lobes' scale: a cauliflower terminator, never a contour)
-      t += (fbm(lx / 16, ly / 13, seed + 3, 2) - 0.5) * 0.16;
+      t += (fbm(lx / 22, ly / 18, seed + 3, 2) - 0.5) * 0.07;
       t = clamp(t, 0, 0.99);
-      // flat steps; the ordered dither only in a narrow band where two steps meet
+      // flat steps; one cell of dither only in a narrow band where two steps meet
       let i = 0;
       while (i + 1 < AT.length && t >= AT[i + 1]!) i++;
       const next = AT[i + 1] ?? 2;
-      const near = (next - t) / 0.03;
-      if (near < 1 && bayer4(x, y) > near) i = Math.min(STEP.length - 1, i + 1);
-      // each lobe a bump on the mass: lit cap, a crisp crescent of shade on its far side from the
-      // sun (no gradient inside it), and the shade a nearer lobe casts below it where it overhangs
-      const o = M.lobes[M.own[k]!]!;
+      const near = (next - t) / 0.025;
+      if (near < 1 && bd(x, y) > near) i = Math.min(STEP.length - 1, i + 1);
+      // a crisp crescent of shade on a lobe's far side from the sun
       const u = ((lx - o.x) * -0.62 + (ly - o.y) * -0.78) / o.r;
-      if (u < -0.3 - 0.15 * vnoise1(Math.atan2(ly - o.y, lx - o.x) * 3, seed + 44) && i < 5) i++;
+      if ((o.gen ?? 0) > 0 && u < -0.3 - 0.15 * vnoise1(Math.atan2(ly - o.y, lx - o.x) * 3, seed + 44) && i < 4) i++;
       // (in the shade a lobe's sunward cap catches the sky's light: the bumps read there too)
-      else if (i >= 3 && u > 0.35 && (o.gen ?? 0) > 0) i--;
-      const ux = Math.floor(lx - 2.4 - M.x0), uy = Math.floor(ly - 3 - M.y0);
+      else if (i >= 4 && u > 0.35 && (o.gen ?? 0) > 0) i--;
+      // the shade a nearer lobe casts where it overhangs this one (a crease between billows)
+      const ux = Math.floor(lx - 3 - M.x0), uy = Math.floor(ly - 3.6 - M.y0);
       const oi = ux >= 0 && uy >= 0 ? M.own[uy * M.w + ux]! : -1;
-      if (oi >= 0 && oi !== M.own[k]! && M.lobes[oi]!.z > o.z + 0.25 && i >= 1 && i < 4 && M.lobes[oi]!.r > o.r * 0.8) i++;
+      if (oi >= 0 && oi !== M.own[k]! && M.lobes[oi]!.z > o.z + 0.2 && i >= 1 && i < STEP.length - 1 && M.lobes[oi]!.r > o.r * 0.7) i++;
+      // (a small bulge on the shaded side catches the sky's light: never a dark hole in the heap)
+      if ((o.gen ?? 0) > 0 && i > 3) i = 3;
+      // the morning's warmth: the lit faces near the sunward outline take the ember's cream, a
+      // band a few px deep (wider on the big billows), so the tops read warm and the rest cool
+      if (i === 0 && dist < 4 + o.r * 0.12 && lamM > 0.5) { b.set(x, y, P.ember[0]!); continue; }
       b.set(x, y, STEP[i]!);
     }
   }
@@ -343,6 +401,9 @@ function paintStratus(c: PaintCtx, p: CloudP): void {
     }
     return out;
   });
+  const kc = Math.max(1, Math.round(c.d));
+  // (the band's underside a step cooler again, its lowest px)
+  const L1 = p.h * 0.28;
   const X0 = Math.max(b.ox, Math.floor(c.X(-p.w / 2))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w / 2)));
   const top = -p.h * (layers * 1.4 + 1.8);
   const Y0 = Math.max(b.oy, Math.floor(c.Y(top))), Y1 = Math.min(b.y1, Math.ceil(c.Y(p.h * 0.6)));
@@ -362,17 +423,14 @@ function paintStratus(c: PaintCtx, p: CloudP): void {
         if (cov > best) { best = cov; below = ly - mid; }
       }
       if (best <= 0) continue;
-      // mostly a dithered veil, solid only in its thickest cores; the cloud's own texture breaks
-      // it up, so no edge of it runs as a line
+      // torn lobes: solid where the band is thick, one cell of dither on their edges, clear sky
+      // through the tears; the cloud's own texture breaks it up, so no edge of it runs as a line
       const cv = best * (0.65 + 0.7 * vnoise(lx / (p.h * 1.1), ly / (p.h * 0.45), seed + 4));
-      if (cv < 0.72) {
-        const th = cv > 0.5 ? 0.5 : cv > 0.32 ? 0.25 : cv > 0.18 ? 0.125 : 0;
-        if (bayer4(x + f, y) < th) b.set(x, y, C[below > 0 ? 2 : 1]!);
-        continue;
-      }
-      // a core: lit in patches toward the sun, a cooler underside
-      const lit = below < -p.h * 0.3 && vnoise(lx / (p.h * 2), ly / p.h, seed + 5) > 0.55;
-      b.set(x, y, lit ? (lx < 0 ? P.paper[0]! : C[0]!) : below < 0 ? C[1]! : C[2]!);
+      if (cv < 0.56) continue;
+      if (cv < 0.63) { if (bay(x + f, y, kc) < 0.5) b.set(x, y, C[below > 0 ? 3 : 2]!); continue; }
+      // a core: warm where the morning sun strikes its top (toward the sun most), cool below
+      const lit = below < -p.h * 0.25 && vnoise(lx / (p.h * 2), ly / p.h, seed + 5) > 0.45 - (lx < 0 ? 0.15 : 0);
+      b.set(x, y, lit ? (lx < 0 ? P.paper[0]! : P.paper[1]!) : below < 0 ? C[2]! : below < L1 ? C[3]! : P.range[1]!);
     }
   }
   void d;
@@ -380,56 +438,62 @@ function paintStratus(c: PaintCtx, p: CloudP): void {
 
 
 /**
- * A high, thin cloud field (altocumulus with a few cirrus strands): one or two steps off the sky
- * so it gives the upper sky texture without competing with the cumulus. Patches of small
- * rounded cells in loose wavy rows, bigger and denser in a patch's heart, thinning to single
- * dithered cells at its ragged edge; each cell a cool body with a lit upper-left edge and a
- * shaded underside; long thin strands of cirrus combed out by the wind, hooked at their ends.
- * Anchor: the middle of its band's base.
+ * A high, thin cloud band (cirrostratus combed out by the wind), not a field of streaks: one
+ * shaped band per piece, thick in its middle and tapering to frayed ends, its top and bottom
+ * wandering at two scales, with clear sky round it. Its body a step or two off the sky, a few
+ * long fibres of different thickness running along it (a step lighter or cooler), a lit top
+ * edge on the sun side and a cool underside; one cell of dither only on its edges; hooked
+ * strands trailing off its ends. `density` sets how thick the band is. Anchor: the middle of
+ * its box's base.
  */
 function paintField(c: PaintCtx, p: CloudP): void {
-  const b = c.buf, seed = c.seed;
+  const b = c.buf, seed = c.seed, kc = Math.max(1, Math.round(c.d));
   const f = (p.frame ?? 0) & 3;
-  const C = P.cloud, R = P.range;
+  const C = P.cloud;
   const dens = p.density ?? 0.5;
   const X0 = Math.max(b.ox, Math.floor(c.X(-p.w / 2))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w / 2)));
   const Y0 = Math.max(b.oy, Math.floor(c.Y(-p.h))), Y1 = Math.min(b.y1, Math.ceil(c.Y(0)));
-  // the patches: where the field is, and how thick (ragged at three scales, thinning at the band's ends and edges)
-  const patch = (lx: number, ly: number): number => {
-    const u = lx / (p.w / 2), v = (-ly) / p.h;
-    const ends = clamp((1 - Math.abs(u)) * 4, 0, 1) * clamp(Math.min(v, 1 - v) * 5, 0, 1);
-    return ends * (fbm(lx / 150, ly / 46, seed + 1, 3) * 1.25 - 0.62 + dens * 0.55 + 0.25 * (vnoise(lx / 31, ly / 11, seed + 2) - 0.5));
-  };
-  // fibres combed out by the wind: long thin streaks at several lengths, gathered into the
-  // patches, thick and lit along their tops in a patch's heart, frayed to single dithered px at
-  // its edges (no cells, no grid)
-  const cov = (lx: number, ly: number): number => {
-    const wy = ly + Math.sin(lx / 61 + seed) * 2.5 + (vnoise1(lx / 120, seed + 3) - 0.5) * 7;
-    return patch(lx, ly) * 1.7 + (fbm(lx / 85, wy / 3.4, seed + 7, 3) - 0.5) * 1.5 + (vnoise(lx / 22, wy / 1.8, seed + 8) - 0.5) * 0.35;
+  // the band's centre line and half thickness along it
+  const tilt = (hash1(1, seed + 30) - 0.5) * p.h * 0.5;
+  const mid = (lx: number): number => -p.h * 0.5 + tilt * (lx / p.w) + Math.sin(lx / (p.w * 0.23) + seed) * p.h * 0.1 + (vnoise1(lx / 140, seed + 31) - 0.5) * p.h * 0.18;
+  const half = (lx: number): number => {
+    const u = lx / (p.w / 2);
+    if (Math.abs(u) >= 1) return 0;
+    const env = Math.pow(1 - u * u, 0.7) * (0.45 + 0.8 * vnoise1(lx / 170, seed + 32));
+    return p.h * (0.06 + 0.2 * dens) * env;
   };
   for (let y = Y0; y < Y1; y++) {
     const ly = c.ly(y + 0.5);
     for (let x = X0; x < X1; x++) {
       const lx = c.lx(x + 0.5) + f * 0.5;
-      const v = cov(lx, ly);
+      const m = mid(lx), hw = half(lx);
+      // top and bottom wander at two scales; a few tears where the wind has pulled it thin
+      const top = m - hw * (0.8 + 0.5 * vnoise1(lx / 41, seed + 33) + 0.2 * (vnoise1(lx / 9, seed + 34) - 0.5));
+      const bot = m + hw * (0.55 + 0.35 * vnoise1(lx / 53, seed + 35));
       let col = 0;
-      if (v > 0.9) col = cov(lx, ly - 1.6 / c.d) <= 0.9 ? C[2]! : cov(lx, ly + 1.6 / c.d) <= 0.9 ? R[1]! : C[3]!;
-      else if (bayer4(x, y) < (v > 0.66 ? 0.5 : v > 0.46 ? 0.25 : v > 0.3 ? 0.125 : 0)) col = v > 0.66 ? C[3]! : C[4]!;
-      // cirrus strands: long thin threads, curving, hooked up at their east ends
+      // (a tear or two where the wind has pulled it apart: long, never holes)
+      if (hw > 0.5 && ly > top && ly < bot) {
+        const e = Math.min(ly - top, bot - ly) * c.d;
+        if (e < kc && bay(x, y, kc) >= 0.5) continue;
+        // fibres along it: long streaks of different thickness, following its curve
+        const v = (ly - m) / Math.max(1, hw);
+        const fib = vnoise(lx / 90, v * 2.2 + 3, seed + 37) + 0.25 * vnoise(lx / 30, v * 5, seed + 38);
+        // its upper part catching the light, its lower part cooler, fibres between (never a
+        // contour round it)
+        const zv = (ly - top) / Math.max(1, bot - top);
+        col = zv < 0.32 && fib > 0.42 ? C[2]! : zv > 0.74 && fib < 0.75 ? C[4]! : fib > 0.92 ? C[2]! : fib < 0.42 ? C[4]! : C[3]!;
+      }
+      // cirrus strands trailing off its ends: thin threads, curving, hooked up at their east ends
       if (!col) {
         const nS = p.strands ?? 3;
         for (let i = 0; i < nS; i++) {
-          const sx0 = (hash1(i, seed + 20) - 0.5) * p.w * 0.8, len = p.w * (0.18 + 0.2 * hash1(i, seed + 21));
+          const east = hash1(i, seed + 20) < 0.5;
+          const len = p.w * (0.1 + 0.12 * hash1(i, seed + 21));
+          const sx0 = east ? p.w * (0.32 + 0.1 * hash1(i, seed + 26)) : -p.w * (0.42 + 0.06 * hash1(i, seed + 26)) - len * 0.2;
           const u = (lx - sx0) / len;
           if (u < 0 || u > 1) continue;
-          const sy = -p.h * (0.2 + 0.6 * hash1(i, seed + 22)) + Math.sin(u * 3.1 + i) * p.h * 0.06 - Math.pow(u, 4) * p.h * 0.18;
-          for (let k = 0; k < 3; k++) {
-            const off = (k - 1) * (2.5 + 1.5 * hash1(i * 3 + k, seed + 23)) + (vnoise1(lx / 40, seed + 24 + k) - 0.5) * 3;
-            const d = Math.abs(ly - sy - off);
-            const th = 0.6 + 0.5 * Math.sin(u * Math.PI) * (1 - Math.abs(k - 1) * 0.4);
-            if (d < th && bayer4(x, y) < (0.5 - 0.35 * Math.abs(2 * u - 1)) * (vnoise1(lx / 13, seed + 25 + k) > 0.3 ? 1 : 0.4)) { col = C[3]!; break; }
-          }
-          if (col) break;
+          const sy = mid(sx0) + (hash1(i, seed + 22) - 0.5) * p.h * 0.3 + Math.sin(u * 3.1 + i) * p.h * 0.05 - Math.pow(u, 4) * p.h * 0.16;
+          if (Math.abs(ly - sy) < 0.55 + 0.5 * Math.sin(u * Math.PI) && vnoise1(lx / 9, seed + 25 + i) > 0.35) { col = C[3]!; break; }
         }
       }
       if (col) b.set(x, y, col);
@@ -556,7 +620,7 @@ export const isle = definePainter<IsleP>("op.isle", {
         // (flat steps; dither only in a narrow band where two meet)
         const tt = clamp(t, 0, 1) * (R.length - 1);
         const i = Math.floor(tt), fr = tt - i;
-        b.set(x, y, R[Math.min(R.length - 1, i + (fr > 0.62 || (fr > 0.38 && bayer4(x, y) < (fr - 0.38) / 0.24) ? 1 : 0))]!);
+        b.set(x, y, R[Math.min(R.length - 1, i + (fr > 0.62 || (fr > 0.38 && bay(x, y, Math.max(1, Math.round(d))) < (fr - 0.38) / 0.24) ? 1 : 0))]!);
       }
       // moss draping over the lip on the lit side, roots hanging from the underside
       if (lx < p.w * 0.2) {
@@ -567,7 +631,7 @@ export const isle = definePainter<IsleP>("op.isle", {
         const len = 5 + 18 * hash1(Math.floor(lx / 3), seed + 5);
         for (let a = 0; a < len; a += 0.5 / d) {
           const X = Math.floor(c.X(lx + Math.sin(a / 5 + lx) * 0.8)), Y = Math.floor(c.Y(depth - 1 + a));
-          if (a > len * 0.6 && bayer4(X, Y) < 0.5) continue;
+          if (a > len * 0.6 && bay(X, Y, Math.max(1, Math.round(d))) < 0.5) continue;
           b.set(X, Y, R[a < len * 0.5 ? 6 : 5]!);
         }
       }
@@ -580,7 +644,7 @@ export const isle = definePainter<IsleP>("op.isle", {
       const below = ly - lipY;
       const sway = below > 0 ? Math.sin(below / 11) * 0.8 + below * 0.03 : 0;
       const X = Math.round(c.X(fx + 3 + sway)), Y = Math.round(c.Y(ly));
-      if (below > 0 && bayer4(X, Y) > 1 - below / 70) continue;
+      if (below > 0 && bay(X, Y, Math.max(1, Math.round(d))) > 1 - below / 70) continue;
       b.set(X, Y, P.cloud[below > 30 ? 1 : 0]!);
     }
     // the scrap of cloud it frays into
@@ -589,7 +653,7 @@ export const isle = definePainter<IsleP>("op.isle", {
         const u = (c.lx(x + 0.5) - fx - 4) / 22, v = (c.ly(y + 0.5) - lipY - 68) / 8;
         const cov = (1 - u * u - v * v) + (vnoise(c.lx(x + 0.5) / 6, c.ly(y + 0.5) / 3, seed + 9) - 0.5) * 0.9;
         if (cov > 0.55 && v < 0.2) b.set(x, y, v < -0.3 ? P.cloud[1]! : P.cloud[2]!);
-        else if (bayer4(x, y) < (cov > 0.3 ? 0.5 : cov > 0.1 ? 0.25 : 0)) b.set(x, y, P.cloud[2]!);
+        else if (cov > 0.3 && bay(x, y, Math.max(1, Math.round(d))) < 0.5) b.set(x, y, P.cloud[2]!);
       }
     }
     // trees on the top, round the tower's foot: clumps of very different sizes

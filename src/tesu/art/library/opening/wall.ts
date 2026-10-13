@@ -99,15 +99,29 @@ export function threadX(t: Thread, below: number): number {
 /** Ledges a veil strikes on its way down: [depth below the lip, how far it steps out]. */
 function ledgesOf(t: Thread, H: number): [number, number][] {
   const s = t.seed - (t.seed % 97);
-  return cached(`ledges|${s}|${Math.round(H)}`, () => {
+  return cached(`ledges2|${s}|${Math.round(H)}`, () => {
     const out: [number, number][] = [];
     let y = 40 + 60 * hash1(1, s);
     for (let i = 0; y < H && i < 40; i++) {
-      if (hash1(i + 3, s) < 0.6) out.push([y, (hash1(i + 5, s) - 0.4) * 3]);
+      if (hash1(i + 3, s) < 0.6) out.push([y, (hash1(i + 5, s) - 0.45) * 9]);
       y += 50 + 110 * hash1(i + 7, s);
     }
     return out;
   });
+}
+
+/**
+ * Where a veil is at `below` under the lip: how far it has stepped out on the ledges above (an
+ * offset of its own for each drop, never adding up to a drift), its width there (each drop its
+ * own, narrow where it leaves a ledge and spreading as it falls), and how far below the ledge.
+ */
+function dropAt(ledges: [number, number][], below: number, seed: number): [number, number, number] {
+  let k = -1;
+  for (let i = 0; i < ledges.length; i++) if (below >= ledges[i]![0]) k = i;
+  const shift = k < 0 ? 0 : ledges[k]![1];
+  const ds = k < 0 ? below : below - ledges[k]![0];
+  const wk = (k < 0 ? 0.85 : 0.6 + 0.65 * hash1(k + 11, seed)) * (0.72 + 0.28 * Math.min(1, ds / 26));
+  return [shift, wk, ds];
 }
 
 export function paintThreads(c: PaintCtx, p: WallP, threads: Thread[], frame = -1, flowH = Infinity): void {
@@ -137,14 +151,18 @@ export function paintThreads(c: PaintCtx, p: WallP, threads: Thread[], frame = -
       const below = ly - top;
       const k = below / Math.max(1, end - top);
       // where the veil has struck a ledge: a splash band, then it steps out a little
-      let shift = 0, splash = false;
-      for (const [ly0, dx] of ledges) {
-        if (below >= ly0) shift += dx;
+      let splash = false;
+      const [shift, wk] = t.veil !== undefined ? dropAt(ledges, below, t.seed - (t.seed % 97)) : [0, 1];
+      // (a thread of a veil starts a little below the lip, at its own depth: the veil leaves the
+      // lip as one sheet, never a comb of like teeth)
+      if (t.veil !== undefined && below < 3 + 9 * hash1(3, t.seed)) continue;
+      for (const [ly0] of ledges) {
         // (each thread splashes at its own height on the ledge, some not at all)
         const j = (hash1(Math.round(ly0), t.seed) - 0.5) * 4;
         if (below >= ly0 - 1 + j && below < ly0 + j + (1.2 + 2 * hash1(Math.round(ly0), t.seed + 1)) / d && hash1(Math.round(ly0), t.seed + 2) < 0.7) splash = true;
       }
-      const cx = threadX(t, below) + shift;
+      const vc = t.veil !== undefined ? threadX({ ...t, x: t.vx ?? t.x }, below) : 0;
+      const cx = t.veil !== undefined ? vc + (threadX(t, below) - vc) * wk + shift : threadX(t, below);
       const half = Math.max(0.5 / d, t.w / 2 + below * 0.004) * (splash ? 1.6 : 1);
       const xa = Math.floor(c.X(cx - half - 1.2)), xb = Math.ceil(c.X(cx + half + 1.2));
       // the flow: a periodic pattern of brighter dashes, one cell down per frame, so four frames
@@ -159,10 +177,10 @@ export function paintThreads(c: PaintCtx, p: WallP, threads: Thread[], frame = -
         const keep = 1 - clamp((k - 0.5) * 2, 0, 1) * (0.8 + 0.2 * vnoise1(ly / 9, t.seed));
         if (Math.abs(u) > 1) {
           // wet rock right beside the water, a halo of mist where it frays
-          if (k > 0.55 && bayer4(x, y) < 0.18 * (k - 0.55) * 4) b.set(x, y, C[2]!);
+          if (k > 0.55 && bayK(x, y, Math.max(1, Math.round(d))) < 0.18 * (k - 0.55) * 4) b.set(x, y, C[2]!);
           continue;
         }
-        if (bayer4(x, y) >= keep) continue;
+        if (bayK(x, y, Math.max(1, Math.round(d))) >= keep) continue;
         if (splash) { b.set(x, y, Math.abs(u) < 0.7 ? P.paper[0]! : C[1]!); continue; }
         const cellI = ((Math.floor((ly - phase) / L + hash1(t.seed, 4) * 4) % 4) + 4) % 4;
         const dash = hash(cellI, Math.floor(lx * 1.3), t.seed) < 0.5;
@@ -189,12 +207,15 @@ function paintVeilBody(c: PaintCtx, t: Thread, top: number, end: number, ledges:
     const ly = c.ly(y + 0.5);
     const below = ly - top;
     const k = below / Math.max(1, end - top);
-    let shift = 0;
-    for (const [ly0, dx] of ledges) if (below >= ly0) shift += dx;
+    const [shift, wk, ds] = dropAt(ledges, below, t.seed - (t.seed % 97));
     const cx = threadX(lead, below) + shift;
     // the bloom: lower down the veil spreads into spray, wider and thinner the further it falls
     const bloom = clamp((k - 0.5) * 2, 0, 1.4);
-    const half = vw * (1 + 0.25 * k) * (1 + 0.9 * bloom * bloom);
+    // (it leaves the lip narrow, curling over it, then spreads)
+    const lipK = Math.min(1, 0.55 + below / 14);
+    const half = vw * (1 + 0.25 * k) * (1 + 0.9 * bloom * bloom) * wk * lipK;
+    // (a sheet off the lip and off each ledge, breaking into streaks as it falls)
+    const sheet = Math.max(0, 1 - below / 16) + Math.max(0, 1 - ds / 7) * 0.6;
     const X0 = Math.max(b.ox, Math.floor(c.X(Math.max(-38, cx - half)))), X1 = Math.min(b.x1, Math.ceil(c.X(Math.min(w + 38, cx + half))));
     for (let x = X0; x < X1; x++) {
       const lx = c.lx(x + 0.5);
@@ -205,18 +226,18 @@ function paintVeilBody(c: PaintCtx, t: Thread, top: number, end: number, ledges:
       const streak = vnoise(lx / 1.7, ly / 26 - (t.seed % 13), t.seed + 7);
       const cloud = vnoise(lx / 6, ly / 9, t.seed + 8);
       const side = 1 - u * u * (0.6 + 0.8 * vnoise(lx / 3, ly / 14, t.seed + 9));
-      const cov = (bloom > 0 ? 0.45 + 0.4 * bloom * cloud : 0.42 + 0.45 * streak) * side;
+      const cov = ((bloom > 0 ? 0.45 + 0.4 * bloom * cloud : 0.42 + 0.45 * streak) + 0.5 * sheet) * side;
       if (cov > 0.62) {
         // the shaded right edge cooler, foam streaks bright
         const i = u > 0.6 && lx > cx ? 3 : streak > 0.62 ? 0 : streak > 0.4 ? 1 : 2;
         b.set(x, y, C[i]!);
         continue;
       }
-      const th = cov > 0.45 ? 0.5 : cov > 0.3 ? 0.25 : cov > 0.16 ? 0.125 : 0;
-      if (bayer4(x, y) < th) b.set(x, y, bloom > 0.3 && cloud > 0.55 ? C[0]! : C[1]!);
+      // (thin water between the streaks: one step of dither on its cells, at the edges only)
+      const kc = Math.max(1, Math.round(d));
+      if (cov > 0.5 && bayer4(Math.floor(x / kc), Math.floor(y / kc)) < 0.5) b.set(x, y, bloom > 0.3 && cloud > 0.55 ? C[0]! : C[1]!);
     }
   }
-  void d;
 }
 
 export const wall = definePainter<WallP>("op.wall", {
@@ -253,7 +274,7 @@ export const falls = definePainter<FallsP>("op.falls", {
   bounds(p) {
     const T = threadsOf(p, p.wallSeed).slice(p.from, p.to);
     let x0 = Infinity, x1 = -Infinity;
-    for (const t of T) { x0 = Math.min(x0, t.x - t.w - 12); x1 = Math.max(x1, t.x + t.w + 12); }
+    for (const t of T) { x0 = Math.min(x0, t.x - t.w - 20 - (t.vw ?? 0) * 0.3); x1 = Math.max(x1, t.x + t.w + 20 + (t.vw ?? 0) * 0.3); }
     let mn = 0;
     for (let i = 1; i < (p.lip?.length ?? 0); i += 2) mn = Math.min(mn, p.lip![i]!);
     let mx = 0;
@@ -278,21 +299,68 @@ export interface SprayP {
    * with a broken bright waterline, under the spray (the face itself ends on the water there).
    */
   foot?: [number, number];
+  /** Fallen chunks heaped at the foot, [x0, x1]: wet blocks of different sizes standing in the water, foam lapping between. */
+  chunks?: [number, number];
+}
+
+/** One cell of ordered dither (two screen px at the catch's 2x). */
+const bayK = (x: number, y: number, k: number): number => bayer4(Math.floor(x / k), Math.floor(y / k));
+
+/**
+ * A heap of fallen limestone chunks: blocks of very different sizes, hand-wobbly, the nearer
+ * (lower) ones bigger, each with a lit top ledge toward the sun, a wet dark face and a dark
+ * joint where it sits on the next. `top(lx)` is the heap's top, `bot(lx)` its bottom (local y).
+ */
+function rubble(c: PaintCtx, x0: number, x1: number, top: (lx: number) => number, bot: (lx: number) => number, seed: number, wet: (ly: number) => number): void {
+  const b = c.buf, d = c.d, K = Math.max(1, Math.round(d));
+  const X0 = Math.max(b.ox, Math.floor(c.X(x0))), X1 = Math.min(b.x1, Math.ceil(c.X(x1)));
+  for (let x = X0; x < X1; x++) {
+    const lx = c.lx(x + 0.5);
+    const t0 = top(lx), b0 = bot(lx);
+    if (b0 <= t0) continue;
+    for (let y = Math.max(b.oy, Math.floor(c.Y(t0))); y < Math.min(b.y1, Math.ceil(c.Y(b0))); y++) {
+      const ly = c.ly(y + 0.5);
+      // which block: rows of blocks, bigger lower down, each row's joints at their own places
+      const depth = ly - t0;
+      const rowH = 4 + 0.12 * Math.max(0, depth);
+      const dd = depth + 2 * vnoise1(lx / 9, seed + 1);
+      const row = Math.floor(dd / rowH);
+      const inRow = dd - row * rowH;
+      const bw = rowH * (1.3 + 1.6 * hash1(row, seed + 2));
+      const off = hash1(row, seed + 3) * bw;
+      const bi = Math.floor((lx + off) / bw);
+      const inB = (lx + off) - bi * bw;
+      // (the joints: a dark crack between blocks, a lit lip on each block's top)
+      const tone = hash1(bi * 31 + row, seed + 4);
+      let col: number;
+      if (inB < 0.8 / d + 0.3 || inRow > rowH - 0.9 / d - 0.2) col = P.karst[8]!;
+      else if (inRow < 1.1 / d + 0.2 && inB < bw * 0.75) col = tone > 0.5 ? P.karst[4]! : P.karst[5]!;
+      else col = inB < 1.8 / d + 0.4 ? P.karst[5]! : tone > 0.6 ? P.karst[6]! : P.karst[7]!;
+      // wet and darker toward the water; algae in the wettest cracks
+      if (wet(ly) > 0.5 && col !== P.karst[8]) col = vnoise(lx / 2, ly / 4, seed + 5) > 0.7 ? P.moss[6]! : P.karst[7]!;
+      // (its outline: one cell of dither where it meets what is behind it)
+      if ((ly - t0) * d < K && bayK(x, y, K) >= 0.5) continue;
+      b.set(x, y, col);
+    }
+  }
 }
 
 /**
  * Spray rising where falls land in water or mist: over each landing a boil of white water on
  * the surface and a plume above it, flaring as it rises and drifting a little east on the
- * wind, lumpy at three scales, dense and bright low down, thinning by the three dissolve steps
- * to single drops at the top; between the plumes nothing (never a band along the wall). Where a
- * face stands in the water, its wet foot under it. Its frames churn it slowly.
+ * wind, lumpy at three scales, solid where it is dense, one cell of dither only on its edges,
+ * between the plumes nothing (never a band along the wall). Where a face stands in the water,
+ * its wet foot under it, and fallen chunks heaped there with foam lapping between them (the
+ * lake mirrors them all, breaking up the face's flat reflection). Its frames churn it slowly.
  */
 export const spray = definePainter<SprayP>("op.spray", {
   bounds(p) {
-    return [-p.h * 0.8 - 2, -p.h * 1.3 - 2, p.w + p.h * 0.8 + 2, 2];
+    const x1 = Math.max(p.w + p.h * 0.8 + 2, p.chunks ? p.chunks[1] + 10 : 0);
+    const x0 = Math.min(-p.h * 0.8 - 2, p.chunks ? p.chunks[0] - 8 : 0);
+    return [x0, -p.h * 1.3 - 2, x1, 2];
   },
   paint(c, p) {
-    const b = c.buf, seed = c.seed;
+    const b = c.buf, seed = c.seed, d = c.d, K = Math.max(1, Math.round(d));
     const f = (p.frame ?? 0) & 3;
     const C = P.cloud;
     const at = p.at ?? [[p.w * 0.2, p.h * 0.4], [p.w * 0.55, p.h * 0.6], [p.w * 0.85, p.h * 0.35]];
@@ -310,6 +378,31 @@ export const spray = definePainter<SprayP>("op.spray", {
           const a = -c.ly(y + 0.5);
           if (a < 1 / c.d) { b.set(x, y, vnoise1(lx / 2.5, seed + 8) > 0.55 ? C[2]! : P.karst[8]!); continue; }
           b.set(x, y, a < wf * 0.45 ? P.karst[8]! : vnoise(lx / 2, a / 4, seed + 9) > 0.7 ? P.moss[6]! : P.karst[7]!);
+        }
+      }
+    }
+    // fallen chunks standing in the water at the foot, of very different sizes, foam between
+    if (p.chunks) {
+      const [cx0, cx1] = p.chunks;
+      const hgt = (lx: number): number => {
+        // (a few big blocks, more small ones, gaps where the water runs in)
+        const q = lx / 9 + vnoise1(lx / 31, seed + 20) * 2;
+        const cell = Math.floor(q);
+        const v = hash1(cell, seed + 21);
+        if (v < 0.22) return 0;
+        const big = v > 0.8 ? 14 + 6 * hash1(cell, seed + 22) : 4 + 7 * hash1(cell, seed + 22);
+        const fr = q - cell;
+        return big * Math.pow(Math.sin(Math.PI * Math.min(1, Math.max(0, fr * 1.15))), 0.35) * (0.85 + 0.3 * vnoise1(lx / 3, seed + 23));
+      };
+      rubble(c, cx0, cx1, (lx) => -hgt(lx), () => 0.6, seed + 24, (ly) => (ly > -3 ? 1 : 0));
+      // foam lapping round them: lumps on the water, brightest at the chunks' feet
+      for (let x = Math.max(b.ox, Math.floor(c.X(cx0 - 6))); x < Math.min(b.x1, Math.ceil(c.X(cx1 + 8))); x++) {
+        const lx = c.lx(x + 0.5);
+        const fh = (0.6 + 2.6 * vnoise1(lx / 4 + ph, seed + 25)) * (hgt(lx) > 0 ? 0.7 : 1.2);
+        for (let y = Math.max(b.oy, Math.floor(c.Y(-fh))); y < Math.min(b.y1, Math.ceil(c.Y(0.2))); y++) {
+          const a = -c.ly(y + 0.5);
+          if (a > fh - 1 / d && bayK(x, y, K) >= 0.5) continue;
+          b.set(x, y, a > fh * 0.5 ? C[0]! : C[1]!);
         }
       }
     }
@@ -335,9 +428,9 @@ export const spray = definePainter<SprayP>("op.spray", {
         const boil = onBoil > 0 ? top * (0.1 + 0.16 * Math.sqrt(onBoil) * (0.5 + vnoise1(lx / 3 + ph, seed + 5))) : 0;
         if (a < boil && a >= 0) { b.set(x, y, a > boil - 1.5 / c.d ? C[0]! : n > 0 ? C[1]! : C[2]!); continue; }
         const cov = Math.min((1 - a / top) * 1.35, (a - foot) / (p.h * 0.2)) + n * 1.25;
-        if (cov >= 0.85) { b.set(x, y, n > 0.12 ? C[0]! : C[1]!); continue; }
-        const th = cov > 0.6 ? 0.5 : cov > 0.38 ? 0.25 : cov > 0.18 ? 0.125 : 0;
-        if (bayer4(x + f, y) < th) b.set(x, y, a < top * 0.4 ? C[0]! : C[1]!);
+        if (cov >= 0.8) { b.set(x, y, n > 0.12 ? C[0]! : a > top * 0.5 ? C[2]! : C[1]!); continue; }
+        // (its lumps end in one cell of dither: never a dissolve screen)
+        if (cov >= 0.66 && bayK(x + f, y, K) < 0.5) b.set(x, y, a < top * 0.4 ? C[1]! : C[2]!);
       }
     }
   },

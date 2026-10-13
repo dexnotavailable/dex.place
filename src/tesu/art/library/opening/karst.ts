@@ -16,8 +16,22 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P, type Ramp } from "../../palette.ts";
-import { bayer4, clamp, fbm, fbm1, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
+import { bayer4, clamp, fbm, fbm1, hash1, rng, vnoise, vnoise1 } from "../../raster.ts";
 import { cached } from "./kit.ts";
+
+/** The dither cell in art px: one screen px at play zoom, two at the catch's 2x (one density). */
+const cellOf = (d: number): number => Math.max(1, Math.round(d));
+/** The ordered-dither threshold on cells of k art px. */
+const bay = (x: number, y: number, k: number): number => bayer4(Math.floor(x / k), Math.floor(y / k));
+/** A ramp step for t, flat, dithered (on cells of k art px) only in a narrow band where two steps meet. */
+function toneK(ramp: Ramp, t: number, x: number, y: number, k: number, band = 0.14): number {
+  const n = ramp.length;
+  const pos = Math.min(Math.max(t, 0), 1) * (n - 1);
+  let i = Math.floor(pos);
+  const q = (pos - i - (0.5 - band / 2)) / band;
+  if (q >= 1 || (q > 0 && bay(x, y, k) < q)) i++;
+  return ramp[Math.min(n - 1, Math.max(0, i))]!;
+}
 
 export type Landform = "pillar" | "cone" | "massif";
 
@@ -270,16 +284,31 @@ function lookOf(p: KarstP, row: number): Look {
 }
 
 /**
- * One clump of trees (a cauliflower): a main ball with smaller ones bulging from its upper rim,
- * lit on their upper left in a flat step, a crescent of shade on each one's lower right, dark
- * pockets where a nearer bump overhangs another, the clump's underside in shade. Flat steps
- * with a narrow dither band: no ball shading, no outline, no speckle.
+ * The forest's own five steps for a look, light to dark: a lit rim, the canopy, its shade, the
+ * pockets between clumps and the deepest of them. Cooler and greyer than the play plane's
+ * greens (P2 sits far off: decision 2); the far looks stay in the range's blue-grey.
+ */
+function forestOf(K: Look): number[] {
+  if (K.veg === P.range) {
+    const R = P.range, o = Math.round(K.vegT * 3);
+    return [R[Math.min(6, 1 + o)]!, R[Math.min(6, 2 + o)]!, R[Math.min(6, 3 + o)]!, R[Math.min(6, 4 + o)]!, R[Math.min(6, 5 + o)]!];
+  }
+  if (K.veg === P.pine) return [P.pine[0]!, P.pine[1]!, P.pine[2]!, P.pine[3]!, P.pine[4]!];
+  return [P.moss[3]!, P.pine[0]!, P.pine[1]!, P.pine[2]!, P.pine[3]!];
+}
+
+/**
+ * One clump of trees (a cauliflower): a main mass with smaller bumps bulging from its upper rim,
+ * each with a thin lit rim along its sunward (upper left) edge, never a highlight cap; the body
+ * in one flat step; a crescent of shade on its far side from the sun; dark pockets where a
+ * nearer bump overhangs another and under the clump. No outline, no speckle.
  */
 function crown(c: PaintCtx, cx: number, cy: number, r: number, K: Look, seed: number, footK: number): void {
-  const b = c.buf, d = c.d;
+  const b = c.buf, d = c.d, k = cellOf(d);
   const X0 = Math.floor(c.X(cx - r * 1.45)), X1 = Math.ceil(c.X(cx + r * 1.45)), Y0 = Math.floor(c.Y(cy - r * 1.5)), Y1 = Math.ceil(c.Y(cy + r * 0.62));
   if (!b.touches(X0, Y0, X1, Y1)) return;
-  // the bumps: the main ball, then 2 to 5 on its rim (more toward the sun), nearer the eye
+  const V = forestOf(K);
+  // the bumps: the main mass, then 2 to 5 on its rim (more toward the sun), nearer the eye
   const balls: [number, number, number][] = [[0, 0, r]];
   if (r * d >= 2.2) {
     const n = 2 + Math.floor(hash1(1, seed) * (r * d > 5 ? 4 : 2));
@@ -290,44 +319,38 @@ function crown(c: PaintCtx, cx: number, cy: number, r: number, K: Look, seed: nu
       balls.push([Math.cos(ang) * reach, Math.sin(ang) * reach, rr]);
     }
   }
+  const inBall = (i: number, dx: number, dy: number): boolean => {
+    const [bx, by, br] = balls[i]!;
+    const ex = dx - bx, ey = dy - by;
+    const ang = Math.atan2(ey, ex);
+    const rim = br * (0.86 + 0.2 * vnoise1(ang * 2.4 + 10 + i * 3, seed) + (d >= 0.5 ? 0.08 * vnoise1(ang * 7 + 3 + i, seed + 1) : 0));
+    // (the underside rounder and tucked in: it sinks into the canopy, never cut flat)
+    return Math.hypot(ex, ey > 0 ? ey * 1.35 : ey) <= rim;
+  };
+  const front = (dx: number, dy: number): number => {
+    for (let i = balls.length - 1; i >= 0; i--) if (inBall(i, dx, dy)) return i;
+    return -1;
+  };
+  const shift = Math.round(footK * 2);
   for (let y = Math.max(Y0, b.oy); y < Math.min(Y1, b.y1); y++) {
     for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
       const dx = c.lx(x + 0.5) - cx, dy = c.ly(y + 0.5) - cy;
-      // the frontmost bump here (the rim bumps stand in front of the main ball)
-      let hit = -1, hu = 0;
-      for (let i = balls.length - 1; i >= 0; i--) {
-        const [bx, by, br] = balls[i]!;
-        const ex = dx - bx, ey = dy - by;
-        const ang = Math.atan2(ey, ex);
-        const rim = br * (0.86 + 0.2 * vnoise1(ang * 2.4 + 10 + i * 3, seed) + (d >= 0.5 ? 0.08 * vnoise1(ang * 7 + 3 + i, seed + 1) : 0));
-        // (the underside rounder and tucked in: it sinks into the canopy, never cut flat)
-        const q = Math.hypot(ex, ey > 0 ? ey * 1.35 : ey) / rim;
-        if (q > 1) continue;
-        hit = i;
-        // (lit cap and shade crescent are arcs: inside a circle shifted toward the sun, and outside
-        // one shifted less, so their edges curve with the bump, never a straight cut)
-        const lc = Math.hypot(ex + rim * 0.42 * 0.62, ey + rim * 0.42 * 0.78) / (rim * 0.72);
-        const sc = Math.hypot(ex + rim * 0.22 * 0.62, ey + rim * 0.22 * 0.78) / (rim * 0.98);
-        hu = lc < 1 ? 1 : sc > 1 ? -1 : 0;
-        break;
-      }
+      const hit = front(dx, dy);
       if (hit < 0) continue;
-      let t = K.vegT + 0.06;
-      if (hu > 0) t -= 0.16;
-      else if (hu < 0) t += 0.16;
-      // a dark pocket just under and right of a nearer bump
-      if (hit < balls.length - 1) {
-        for (let i = hit + 1; i < balls.length; i++) {
-          const [bx, by, br] = balls[i]!;
-          const ex = dx - bx + 1.6 / d, ey = dy - by + 1.8 / d;
-          if (ex * ex + ey * ey < br * br) { t += 0.26; break; }
-        }
-      }
-      if (hit === 0 && hu <= 0 && dy > -r * 0.2) t += 0.1;
-      t *= 1 - footK;
-      let ramp = K.veg;
-      if (t > 0.62 && K.dark !== K.veg) { ramp = K.dark; t = 0.25 + (t - 0.62) * 1.5; }
-      b.set(x, y, tone(ramp, clamp(t, 0, 1), x, y, 0.15));
+      const br = balls[hit]![2];
+      // the lit rim: this px lies within a px or two of the bump's sunward edge
+      const w = Math.max(1.1 / d, br * 0.2);
+      let i = 1;
+      if (!inBall(hit, dx - w * 0.62, dy - w * 0.78) && front(dx - w * 0.62, dy - w * 0.78) < hit) i = 0;
+      // the shade crescent on its far side
+      else if (!inBall(hit, dx + br * 0.32, dy + br * 0.4)) i = 2;
+      // a dark pocket just under and right of a nearer bump, and under the clump
+      if (i > 0 && hit < balls.length - 1 && front(dx - 1.6 / d, dy - 1.8 / d) > hit) i = 3;
+      if (hit === 0 && i > 0 && dy > r * 0.3) i = Math.max(i, 2);
+      i = Math.max(0, i - shift);
+      // (a narrow dither only where the rim meets the body)
+      if (i === 0 && bay(x, y, k) < 0.25 && w * d > 2.5) i = 1;
+      b.set(x, y, V[i]!);
     }
   }
 }
@@ -355,9 +378,23 @@ function capAt(L: Lobe, lx: number, u: number, capD: number): number {
   return capD * (0.35 + 1.5 * lit) * wander * shade + tongue * (0.5 + 2.2 * lit);
 }
 
+/** A broad lobe's beds: [height of the ledge above the base, its overhang's shadow px, moss on it 0..1]. */
+function bedsOf(L: Lobe): [number, number, number][] {
+  return cached(`beds|${L.seed}|${Math.round(L.h)}`, () => {
+    const out: [number, number, number][] = [];
+    let a = L.h * (0.1 + 0.1 * hash1(1, L.seed + 200));
+    for (let k = 0; k < 14 && a < L.h * 0.9; k++) {
+      out.push([a, 1.4 + 2.6 * hash1(k, L.seed + 201), hash1(k, L.seed + 202)]);
+      // (beds of very different thickness: a few thick, more thin)
+      a += L.h * (hash1(k, L.seed + 204) < 0.3 ? 0.18 + 0.12 * hash1(k, L.seed + 203) : 0.06 + 0.07 * hash1(k, L.seed + 203));
+    }
+    return out;
+  });
+}
+
 /** Paints one lobe of a form: its rock, its forest cap and its crowns. */
 function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first: boolean, veil = 1, wet?: readonly [number, number]): void {
-  const b = c.buf, d = c.d;
+  const b = c.buf, d = c.d, kc = cellOf(d);
   const span = L.hw * 1.4 + Math.abs(f.lean) * L.h + 6;
   const top = f.by - L.h;
   if (!b.touches(Math.floor(c.X(f.cx + L.dx - span - 12)), Math.floor(c.Y(top - 14)), Math.ceil(c.X(f.cx + L.dx + span + 12)), Math.ceil(c.Y(f.by)))) return;
@@ -399,7 +436,7 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
         if (a < wf) {
           // (algae in the wet band: dark green streaks where water runs down)
           const algae = vnoise(lx / 2.2, a / 6, L.seed + 96) > 0.68;
-          b.set(x, y, algae ? tone(P.moss, 0.86, x, y, 0.3) : tone(K.rock, clamp(K.shade + 0.26 + (a < nh + 1.2 ? 0.1 : 0) + (u > ridge ? 0.06 : 0), 0, 1), x, y, 0.3));
+          b.set(x, y, algae ? toneK(P.moss, 0.86, x, y, kc) : toneK(K.rock, clamp(K.shade + 0.26 + (a < nh + 1.2 ? 0.1 : 0) + (u > ridge ? 0.06 : 0), 0, 1), x, y, kc));
           continue;
         }
         // wetter and darker for a while above the band (spray, shade, the mist's shadow), fading
@@ -408,15 +445,26 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
         wetK = Math.pow(clamp(1 - (a - wf) / fh, 0, 1), 1.3);
       }
       if (green > 0 && below < capAt(L, lx, u, capD)) {
-        // (where the canopy opens, a dark pocket of shade under the trees, never bare rock specks)
-        const pocket = !L.ink && below > capD * 0.3 && vnoise(lx / 4.5, a / 3.6, L.seed + 46) > 0.8 - 0.1 * clamp(u, 0, 1);
-        let t = K.vegT + 0.2 * (below / Math.max(1, capD)) + (u > ridge ? 0.18 : -0.05) + (pocket ? 0.32 : 0);
-        if (K.detail > 0 && d >= 0.25) t += L.ink ? (vnoise(lx / 3, a / 2.6, L.seed + 45) - 0.5) * 0.3 : (vnoise(lx / 7, a / 5.5, L.seed + 45) - 0.5) * 0.34 + (vnoise(lx / 2.5, a / 2.2, L.seed + 48) - 0.5) * 0.1;
+        if (!L.ink) {
+          // the canopy under the crowns: one flat step, a step darker on the shade side and in
+          // its depths, big pockets of shade where it opens (never speckle); its lowest px in
+          // the shade it casts on the rock
+          const V = forestOf(K);
+          let i = 1 + (u > ridge ? 1 : 0) + (below > capD * 0.55 ? 1 : 0);
+          if (vnoise(lx / 9, a / 7, L.seed + 46) > 0.72 - 0.08 * clamp(u, 0, 1)) i++;
+          if (capAt(L, lx, u, capD) - below < 1.6 / d) i = Math.max(i, 3);
+          if (edgeR) i++;
+          i = wetForm ? i + Math.round(wetK * 1.5) : i - Math.round(footK * 2);
+          b.set(x, y, V[clamp(i, 0, 4)]!);
+          continue;
+        }
+        let t = K.vegT + 0.2 * (below / Math.max(1, capD)) + (u > ridge ? 0.18 : -0.05);
+        if (K.detail > 0 && d >= 0.25) t += (vnoise(lx / 3, a / 2.6, L.seed + 45) - 0.5) * 0.3;
         if (edgeR) t += 0.15;
         t = wetForm ? t + 0.3 * wetK : t * (1 - footK);
         let ramp = K.veg;
         if (t > 0.62 && K.dark !== K.veg) { ramp = K.dark; t = 0.25 + (t - 0.62) * 1.5; }
-        b.set(x, y, tone(ramp, clamp(t, 0, 1), x, y, 0.4));
+        b.set(x, y, toneK(ramp, clamp(t, 0, 1), x, y, kc, 0.2));
         continue;
       }
       let t = u < ridge ? K.lit + 0.1 * clamp((u + 1) / (ridge + 1), 0, 1) : K.shade + 0.1 * clamp((u - ridge) / (1 - ridge), 0, 1);
@@ -431,21 +479,53 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
         const bh = Math.max(6, L.h * 0.13);
         if (((a % bh) + bh) % bh < 1.2 / d && vnoise1(lx / 9, L.seed + 84) > 0.45) t += 0.15;
       }
+      if (!L.ink && K.detail > 0 && d >= 0.25) {
+        // bedded limestone, simplified for the distance: a few big beds stepping up the face, each
+        // ledge a lit lip over the shadow of its overhang, joints cutting the beds into blocks of
+        // their own tones; green only as a cap on a ledge's top (lit side mostly)
+        const beds = bedsOf(L);
+        let k = -1, ba = 0;
+        for (let q = 0; q < beds.length; q++) {
+          const at = beds[q]![0] + 1.6 * (vnoise1(lx / 18, L.seed + 210 + q) - 0.5);
+          if (at <= a) { k = q; ba = at; }
+        }
+        const nb = k + 1 < beds.length ? beds[k + 1]![0] + 1.6 * (vnoise1(lx / 18, L.seed + 211 + k) - 0.5) : L.h + 99;
+        const open = vnoise1(lx / 13, L.seed + 220 + k) > 0.22;
+        if (k + 1 < beds.length && open && nb - a < beds[k + 1]![1] / Math.max(0.5, d) + 0.6) t += 0.17;
+        else if (k >= 0 && open && a - ba < 1.1 / d) t -= 0.12;
+        // (the ledge's moss cap: a lumpy strip on the ledge's top, broken, mostly on the lit side)
+        if (k >= 0 && green > 0 && beds[k]![2] > 0.3 && a >= ba) {
+          const mh = (1.2 + 2.8 * vnoise1(lx / 5, L.seed + 230 + k)) * (vnoise1(lx / 17, L.seed + 231 + k) > 0.45 - 0.3 * clamp(-u, 0, 1) ? 1 : 0);
+          if (a - ba < mh) {
+            const V = forestOf(K);
+            const ii = (a - ba > mh - 1.1 / d && u < ridge ? 0 : 1) + (u > ridge ? 1 : 0) - Math.round(footK * 2);
+            b.set(x, y, V[clamp(ii, 0, 4)]!);
+            continue;
+          }
+        }
+        // joints: a dark crack with a lit edge on its sunward side; each block its own tone
+        let j = 0;
+        const nj = 1 + Math.floor(hash1(k + 3, L.seed + 240) * 3);
+        for (let q = 0; q < nj; q++) {
+          const ju = -0.85 + 1.7 * hash1(q + k * 7, L.seed + 241) + 0.08 * (vnoise1(a / 9, L.seed + 242 + q) - 0.5);
+          const dx = (u - ju) * (u < 0 ? hl : hr);
+          if (Math.abs(dx) < 0.55 / d) t += 0.2;
+          else if (dx < 0 && dx > -1.6 / d) t -= 0.05;
+          if (u > ju) j++;
+        }
+        t += (hash1(k * 13 + j, L.seed + 243) - 0.5) * 0.1;
+      }
       if (edgeR) t += 0.14;
       else if (edgeL && !first) t -= 0.08;
       if (K.detail >= 1 && d >= 0.25) {
-        if (vnoise(lx / 1.8, a / 34, L.seed + 3) > 0.72) t += 0.09;
-        if (below < capD * 1.6 + 16 && vnoise(lx / 2.2, a / 14, L.seed + 5) > 0.7) t += 0.12;
-        if (green > 0 && vnoise(lx / 9, a / 22, L.seed + 11) > 1.02 - 0.12 * green && vnoise(lx / 40, a / 40, L.seed + 12) > 0.55) {
-          b.set(x, y, tone(K.veg, clamp((K.vegT + 0.2 + (u > ridge ? 0.15 : 0)) * (1 - footK), 0, 1), x, y, 0.4));
-          continue;
-        }
+        // (dark streaks only where water runs down, and the stain under the canopy)
+        if (vnoise(lx / 1.8, a / 34, L.seed + 3) > 0.76) t += 0.08;
+        if (below < capD * 1.6 + 16 && vnoise(lx / 2.2, a / 14, L.seed + 5) > 0.72) t += 0.1;
       }
-      if (K.detail >= 2 && d >= 0.5 && Math.abs(Math.sin((a + 8 * vnoise1(lx / 30, L.seed + 7)) / 13)) < 0.05) t += 0.06;
       // paler toward the foot, where the form rises out of the mist; standing in the lake, darker
       // and wetter toward the water instead
       t = wetForm ? t + 0.34 * wetK : t * (1 - footK);
-      b.set(x, y, tone(K.rock, clamp(t, 0, 1), x, y, 0.45));
+      b.set(x, y, toneK(K.rock, clamp(t, 0, 1), x, y, kc));
     }
     if (f.fall && first && d >= 0.25 && a < L.h * 0.82 && veil <= 1) {
       {
@@ -454,7 +534,7 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
         const fx = fallX + f.lean * a + sway;
         const X0 = Math.round(c.X(fx - half)), X1 = Math.round(c.X(fx + half));
         for (let x = Math.max(X0, b.ox); x <= Math.min(X1, b.x1 - 1); x++) {
-          if ((x === X0 || x === X1) && bayer4(x, y) < 0.5) continue;
+          if ((x === X0 || x === X1) && bay(x, y, cellOf(d)) < 0.5) continue;
           b.set(x, y, x === X1 ? P.cloud[2]! : P.cloud[(Math.floor(c.ly(y) / 3) + x) % 5 === 0 ? 1 : 0]!);
         }
       }
@@ -511,7 +591,7 @@ function footScrub(c: PaintCtx, f: Form, K: Look, wet: readonly [number, number]
       const v = r();
       const big = run > 0.62 ? 1.35 : 1;
       const rr = (v < 0.22 ? 6.5 + 6 * r() : v < 0.6 ? 3.5 + 2.5 * r() : 2 + 1.5 * r()) * big;
-      if (run > 0.47 && r() < 0.85) {
+      if (run > 0.58 && r() < 0.8) {
         // (a second, smaller clump climbing behind a big one: the scrub's top steps; now and then
         // a lone tree standing up out of it)
         if (rr > 5 && r() < 0.6) crown(c, x + rr * (r() - 0.3), f.by - rr * 1.25, rr * 0.6, K2, L.seed + Math.round(x * 17), 0);
@@ -648,7 +728,7 @@ function paintVeil(c: PaintCtx, f: Form, L: Lobe, y: number, a: number, fallX: n
     if (splash && Math.abs(u) > 1) {
       // drops flung out to the sides of the burst, falling back
       const k = (Math.abs(u) - 1) / (reach - 1);
-      if (bayer4(x, y) < 0.35 * (1 - k) && hash1(Math.floor(lx * 2) + Math.floor(a) * 131, f.seed + 66) < 0.5) b.set(x, y, C[1]!);
+      if (bay(x, y, cellOf(d)) < 0.35 * (1 - k) && hash1(Math.floor(lx * 2) + Math.floor(a) * 131, f.seed + 66) < 0.5) b.set(x, y, C[1]!);
       continue;
     }
     if (u < -1 || u > 1) continue;
@@ -656,12 +736,12 @@ function paintVeil(c: PaintCtx, f: Form, L: Lobe, y: number, a: number, fallX: n
     // ragged sides: the edges dither out, more so lower down and in the bloom
     const edge = 1 - Math.abs(u);
     const keepA = clamp(edge * (2.4 - 1.2 * bloom) + 0.15 * (vnoise(lx / 2, a / 5, f.seed + 64) - 0.5), 0, 1);
-    if (bayer4(x, y) >= (bloom > 0 ? keepA * (1 - 0.55 * bloom) : keepA > 0.55 ? 1 : keepA) * (0.3 + 0.7 * lipK)) continue;
+    if (bay(x, y, cellOf(d)) >= (bloom > 0 ? keepA * (1 - 0.55 * bloom) : keepA > 0.55 ? 1 : keepA) * (0.3 + 0.7 * lipK)) continue;
     if (splash) {
       // (the foam's lower edge is lumpy: never a bar across the fall)
       const fe = sh * (0.55 + 0.6 * vnoise1(lx / 2.2, f.seed + 67));
-      if (!crest && ds > fe) { if (bayer4(x, y) < 0.5) b.set(x, y, C[1]!); continue; }
-      if (crest && toNext > (1 + 2.5 * vnoise1(lx / 1.8, f.seed + 69)) / Math.max(0.5, d)) { if (bayer4(x, y) < 0.25) b.set(x, y, C[1]!); continue; }
+      if (!crest && ds > fe) { if (bay(x, y, cellOf(d)) < 0.5) b.set(x, y, C[1]!); continue; }
+      if (crest && toNext > (1 + 2.5 * vnoise1(lx / 1.8, f.seed + 69)) / Math.max(0.5, d)) { if (bay(x, y, cellOf(d)) < 0.25) b.set(x, y, C[1]!); continue; }
       b.set(x, y, Math.abs(u) < 0.75 ? P.paper[0]! : C[1]!);
       continue;
     }
@@ -677,8 +757,6 @@ function paintVeil(c: PaintCtx, f: Form, L: Lobe, y: number, a: number, fallX: n
 /** A landform's foot standing in a mist bank: centre, half width and height (px of the band). */
 export interface MistFoot { x: number; hw: number; h: number }
 
-/** The three dissolve steps of the art bible (50%, 25%, 1 in 8) for a coverage 0..1. */
-const step3 = (cov: number): number => (cov > 0.62 ? 0.5 : cov > 0.38 ? 0.25 : cov > 0.17 ? 0.125 : 0);
 
 /**
  * The bank at lx: its solid core's top and the billowing zone above it (px above the base,
@@ -726,7 +804,7 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
   const Xa = Math.max(b.ox, Math.floor(c.X(x0))), Xb = Math.min(b.x1, Math.ceil(c.X(x1)));
   const Yt = Math.floor(c.Y(by - hi)), Yb = Math.ceil(c.Y(Math.max(by, floor) + 2));
   if (!b.touches(Xa, Yt, Xb, Yb)) return;
-  const C = P.cloud;
+  const C = P.cloud, kc = cellOf(d);
   const li = (i: number): number => C[Math.max(0, Math.min(4, i + lighten))]!;
   const cw = mh * 4.5;
   for (let x = Xa; x < Xb; x++) {
@@ -754,7 +832,10 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
     // it, thinning upward; off the lake it sits on the ground)
     // (in stretches it comes right down onto the water, so no foot shows as one long line)
     const touch = thin > 0 ? clamp((vnoise1(lx / (mh * 1.7), seed + 31) + 0.3 * vnoise1(lx / (mh * 0.4), seed + 32) - 0.74) / 0.2, 0, 1) * clamp(near * 2, 0, 1) : 0;
-    const fl = thin > 0 ? lift * onLake * (1 - touch) : 0;
+    // (on the lake it never sits on the waterline: the rock's wet foot, its bright line and its
+    // reflection show under it, the mist volume above them)
+    const minLift = thin > 0 ? (3.5 + 6 * vnoise1(lx / (mh * 0.8), seed + 33) + 2 * vnoise1(lx / (mh * 0.25), seed + 34)) * onLake : 0;
+    const fl = thin > 0 ? Math.max(minLift, lift * onLake * (1 - touch)) : 0;
     const fray = thin * 0.3 * (1 - 0.8 * touch);
     // (on the water it is torn along its length into lobes, thinner and gappier between the feet)
     const lobe = thin > 0 ? clamp(0.35 + 0.8 * vnoise1(lx / (mh * 1.15), seed + 29) + 0.2 * vnoise1(lx / (mh * 0.4), seed + 30) + 0.2 * near, 0, 1.2) : 1;
@@ -788,10 +869,10 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
       if (thin > 0 && onLake > 0.4) {
         // on the lake it is a veil of haze over the feet, not a body: mostly the three dissolve
         // steps, solid only in its thickest lumps, so the rock and its wet foot read through it
+        // (soft lobes: solid where thick, one cell of dither on their boundary, nothing between)
         const v = cov * (0.62 + 0.38 * lobe);
-        if (v >= 1.12) { b.set(x, y, li(v > 1.3 && a > coreL - 2 / d ? 1 : 2)); continue; }
-        const th = v > 0.86 ? 0.5 : v > 0.56 ? 0.25 : v > 0.3 ? 0.125 : 0;
-        if (bayer4(x, y) < th) b.set(x, y, li(v > 0.7 ? 1 : 2));
+        if (v >= 1.02) { b.set(x, y, li(v > 1.3 && a > coreL - 2 / d ? 1 : v < 1.1 ? 3 : 2)); continue; }
+        if (v >= 0.92 && bay(x, y, kc) < 0.5) b.set(x, y, li(3));
         continue;
       }
       if (cov >= 0.85) {
@@ -814,16 +895,18 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
           // (on the far plane the lake begins a few px above its waterline and mirrors the sky
           // there; the rows under that water are seen only in the water below the line, so they
           // take the sky's own cool value and the two stretches of water meet without a step)
-          if (o.far && low < 4.5 + 1.5 * vnoise1(lx / 9, seed + 25)) { b.set(x, y, bayer4(x, y) < 0.5 ? C[3]! : P.range[1]!); continue; }
-          if (v < 0.35) { b.set(x, y, bayer4(x, y) < 0.5 ? T[0]! : T[1]!); continue; }
-          if (v < 0.6) { b.set(x, y, bayer4(x, y) < 0.5 ? T[2]! : T[3]!); continue; }
-          if (v < 0.85) { b.set(x, y, bayer4(x, y) < (0.85 - v) / 0.25 * 0.75 ? T[2]! : li(2)); continue; }
+          // (flat steps, one cell of dither only where two meet)
+          if (o.far && low < 4.5 + 1.5 * vnoise1(lx / 9, seed + 25)) { b.set(x, y, C[3]!); continue; }
+          if (v < 0.32) { b.set(x, y, v > 0.27 && bay(x, y, kc) < 0.5 ? T[0]! : T[1]!); continue; }
+          if (v < 0.6) { b.set(x, y, v > 0.55 && bay(x, y, kc) < 0.5 ? T[2]! : T[0]!); continue; }
+          if (v < 0.85) { b.set(x, y, v > 0.8 && bay(x, y, kc) < 0.5 ? li(2) : T[2]!); continue; }
         }
         // (lit tops a single step brighter: soft, never white puddles)
         b.set(x, y, lit ? li(1) : li(2));
         continue;
       }
-      if (bayer4(x, y) < step3(cov / 0.85)) b.set(x, y, li(cov > 0.6 ? 1 : 2));
+      // (its billows end in one cell of dither: never a dissolve screen)
+      if (cov >= 0.74 && bay(x, y, kc) < 0.5) b.set(x, y, li(2));
     }
   }
 }

@@ -3,6 +3,8 @@
 // seamless across plate tiles at the camera levels they are used at; animated sprites differ
 // between frames; the wading contact keeps in step with the Walker's stride. (Round 2: the high
 // cloud field, the shroud, the isles, the spray's wet foot, the birds.)
+// (Round 3: no screen door: mist, veils and clouds are solid lobes with one cell of dither on
+// their edges; the catch's 2x reads at one density.)
 //   node --test src/tesu/art/library/opening/backdrop.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -40,6 +42,12 @@ const CASES = [
   ["op.isle", { w: 110, h: 96, tower: "drum" }],
   ["op.isle", { w: 92, h: 120, tower: "bell", frame: 3 }],
   ["op.spray", { w: 120, h: 64, at: [[62, 26]], foot: [-3, 66], frame: 1 }],
+  // round 3: the wall's west foot with fallen chunks and foam, the clustered cumulus at the
+  // postcard's density, a low thin stratus, a thick and a thin high band
+  ["op.spray", { w: 120, h: 84, at: [[30, 15], [62, 26], [98, 17]], foot: [-3, 66], chunks: [6, 78], frame: 2 }],
+  ["op.cloud", { kind: "stratus", w: 980, h: 12, layers: 1, frame: 3 }],
+  ["op.cloud", { kind: "field", w: 900, h: 170, density: 0.85, strands: 2 }],
+  ["op.cloud", { kind: "field", w: 1000, h: 150, density: 0.3, strands: 3, frame: 2 }],
   // egrets crossing the massif, far specks of birds
   ["op.birds", { n: 5, w: 170, h: 70, kind: "egret", size: 6, frame: 3 }],
   ["op.birds", { n: 5, w: 150, h: 50, kind: "speck", size: 2, frame: 7 }],
@@ -120,3 +128,38 @@ test("op.sea: west of bankFrom only the floor below the line is painted", () => 
   for (let y = 2; y < 200; y++) for (let x = 0; x < 300; x++) if (buf.get(x, y)) floor++;
   assert.ok(floor > 300 * 190, "the floor runs solid to the west end");
 });
+
+// Round 3: no screen door. A 1 px ordered checker paints most of its px with no painted
+// neighbour left, right, above or below; solid lobes with one cell of dither on their edges
+// paint few. At the catch's 2x a dither cell is two px, so no px there stands alone at all.
+function isolatedShare(buf) {
+  const { w, h, px } = buf;
+  let n = 0, iso = 0;
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+    if (!px[y * w + x]) continue;
+    n++;
+    if (!px[y * w + x - 1] && !px[y * w + x + 1] && !px[(y - 1) * w + x] && !px[(y + 1) * w + x]) iso++;
+  }
+  return n ? iso / n : 0;
+}
+for (const [kind, p, most] of [
+  ["op.shroud", { frames: 24, frame: 5 }, 0.04],
+  ["op.wade", { sub: 4, frame: 49 }, 0.12],
+  ["op.karst", { w: 0, h: 380, rows: 1, look: "near", forms: [[0, 420, 330, "massif"], [-250, 70, 200, "pillar"], [260, 150, 170, "cone"]], mist: 34, green: 0.85, falls: 0.6, veil: 4, fallOn: [0, 1], wet: [-2633, -104] }, 0.04],
+  ["op.sea", { w: 1400, depth: 300, swell: 10, ends: 60, west: 260, rise: [[330, 210, 330], [80, 35, 200]], torn: 0.55, wetFloor: 70, wetTo: 226 }, 0.04],
+  ["op.cloud", { kind: "cumulus", w: 840, h: 330, frame: 1 }, 0.02],
+  ["op.cloud", { kind: "stratus", w: 760, h: 22, layers: 2, frame: 1 }, 0.08],
+  ["op.cloud", { kind: "field", w: 900, h: 170, density: 0.85, strands: 2 }, 0.08],
+]) {
+  test(`${kind}: no screen door (${JSON.stringify(p).slice(0, 40)})`, () => {
+    const [bx0, by0, bx1, by1] = painter(kind).bounds(p);
+    const one = paintBox(kind, p, 1, Math.floor(bx0), Math.floor(by0), Math.ceil(bx1 - bx0), Math.ceil(by1 - by0));
+    const s1 = isolatedShare(one);
+    assert.ok(s1 <= most, `${kind}: ${(s1 * 100).toFixed(1)}% of its px stand alone at play zoom (a checker)`);
+    if ((bx1 - bx0) * 2 <= 2400) {
+      const two = paintBox(kind, p, 2, Math.floor(bx0 * 2), Math.floor(by0 * 2), Math.ceil((bx1 - bx0) * 2), Math.ceil((by1 - by0) * 2));
+      const s2 = isolatedShare(two);
+      assert.ok(s2 <= 0.01, `${kind}: ${(s2 * 100).toFixed(1)}% of its px stand alone at the catch's 2x (1 px dither)`);
+    }
+  });
+}

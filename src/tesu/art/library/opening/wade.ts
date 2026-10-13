@@ -3,17 +3,24 @@
 // redrawn here. This sprite stands on the same plane (P2), shares its path, speed, stepMove and
 // stride, and is drawn right after it, so it moves in lockstep and knows where each leg is.
 //
-// - Rings: every footfall (a leg entering the water) throws rings that open over about 1.5 s,
-//   eased out, thinning by dither as they widen. Only their far halves are painted (above the
-//   waterline; the nearer water slice covers anything below it) and the lake mirrors them, so
-//   each ring reads whole. A planted leg keeps lapping a faint ring now and then.
-// - The splash: a crown of drops thrown up as the hoof lands, falling back.
-// - The meniscus: water climbs each planted shin and piles up on its leading side.
-// - Wet shins: a darker wet zone up each shin with a bright 1 px water mark at its top, a sheen
-//   down the lit edge, and drips sliding down from the mark.
-// - The wake: a V trailing behind the rearmost leg (its far arm; the lake mirrors the other).
-// - Mist torn round the legs: low wisps lying on the water in front of the shins, parted where
-//   each leg stands and curling off its trailing side, churning slowly.
+// The Walker walks east. Everything below is flat steps of the cloud, jade and range ramps;
+// dither only on the one-cell boundary where two of them meet, never a screen of checker.
+// - Parted water: a lens 1 to 2 px high piled against the leading (east) side of each planted
+//   leg, paler than the lake, and a dark trough under its trailing side.
+// - The wake: a V of two or three broken crest lines trailing west from the legs (their far
+//   arms; the lake mirrors the near ones), the crests staying put on the water as it wades on.
+// - Rings: every footfall throws two or three flattened rings that open and break up over four
+//   to six of its frames, eased out; a boil of white water round the hoof as it lands, and a
+//   crown of beads thrown up. Only the far halves are painted (above the waterline; the nearer
+//   water slice covers anything below it) and the lake mirrors them, so each ring reads whole.
+//   A planted leg laps a faint ring now and then.
+// - Wet shins: the splash wets a shin high, and it dries back down to the wading line over a few
+//   frames, its top wandering; a broken sheen down the lit edge. A lifted hoof's wet band dries
+//   from the top down while it swings.
+// - Drips: water clinging along a lifted sole as beads, and beads 2 to 4 px long falling from it
+//   (eased in by gravity, stretching as they fall), each breaking into a small ring where it lands.
+// - Mist: torn soft lobes drifting back past the legs, in front of them and between them, a
+//   value lift (paler blue-grey) where they cross a leg and a cool white over the pale ground.
 //
 // Frames: the Walker's stride is 24 frames at 2.4 fps; this sprite runs `sub` frames to each of
 // its (9.6 fps by default), so rings and drops move smoothly while the legs stay put. In its
@@ -22,8 +29,9 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { bayer4, clamp, fbm, hash, hash1, vnoise, vnoise1 } from "../../raster.ts";
+import { bayer4, clamp, hash1, rng, vnoise, vnoise1 } from "../../raster.ts";
 import type { WorldBuilder } from "../../../world/build.ts";
+import { cached } from "./kit.ts";
 
 /**
  * The legs where they cross the waterline, per frame of the Walker's 24-frame stride (the 48
@@ -130,242 +138,38 @@ function inLeg(legs: Leg[], lx: number, up: number, pad = 0): boolean {
   return false;
 }
 
-/** 0, 0.125, 0.25 or 0.5: the three dissolve steps for a coverage. */
-const step3 = (cov: number): number => (cov > 0.62 ? 0.5 : cov > 0.38 ? 0.25 : cov > 0.17 ? 0.125 : 0);
+/** The dither cell in art px: one screen px at play zoom, two at the catch's 2x (one density). */
+const cellOf = (d: number): number => Math.max(1, Math.round(d));
+/** The ordered-dither threshold on cells of k art px. */
+const bay = (x: number, y: number, k: number): number => bayer4(Math.floor(x / k), Math.floor(y / k));
 
-/** Sets a level-1 local point (if it is in this buffer). */
+/** A level-1 px square at a level-1 local point (a bead is the same size at every zoom). */
 function dot(c: PaintCtx, x: number, y: number, col: number): void {
-  c.buf.set(Math.floor(c.X(x)), Math.floor(c.Y(y)), col);
+  const X = Math.floor(c.X(x)), Y = Math.floor(c.Y(y)), n = cellOf(c.d);
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) c.buf.set(X + i, Y + j, col);
 }
 
-function paintWade(c: PaintCtx, p: WadeP): void {
-  const b = c.buf, d = c.d, seed = c.seed;
-  const sub = Math.max(1, Math.round(p.sub ?? 4));
-  const fr = Math.max(0, Math.floor(p.frame ?? 0));
-  const f = Math.floor(fr / sub) % STRIDE, s = fr % sub;
-  // continuous time in Walker frames (for rings and drops), and how far back to paint
-  const tt = f + s / sub;
-  const shift = -(s / sub) * STEP;
-  const legs = legsOf(f, shift);
-  const C = P.cloud, J = P.jade;
-  const loop = (fr / (STRIDE * sub)) * Math.PI * 2;
-
-  // --- the wake: from each planted leg's trailing (west) edge a V trails back, its far arm
-  // painted (the lake mirrors it into the near one), broken into crests that slide back and
-  // fade; the rearmost leg's the longest
-  let rear = Infinity;
-  for (const L of legs) rear = Math.min(rear, L.prof[0]![0]);
-  for (const L of legs) {
-    const back = L.prof[0]![0];
-    const main = back === rear;
-    for (const [len, slope, s0] of (main ? [[240, 0.06, 0], [140, 0.03, 7]] : [[110, 0.07, 3]]) as [number, number, number][]) {
-      for (let u = 0; u < len; u += 0.5 / d) {
-        const x = back - 4 - u;
-        const k = u / len;
-        const y = WATER - 1.2 - u * slope - Math.sin(u / 23 + s0 + L.id) * 0.6 * k;
-        // crests every few px, sliding back as the Walker moves on; gaps between groups of them
-        const crest = ((u + tt * STEP * 1.4 + s0) % 11 + 11) % 11;
-        if (crest > 6.5 || vnoise1((u + tt * STEP * 1.4) / 28, seed + L.id + s0) < 0.32) continue;
-        const X = Math.floor(c.X(x)), Y = Math.floor(c.Y(y));
-        if (bayer4(X, Y) >= (1 - k) * (main ? 0.95 : 0.7)) continue;
-        if (inLeg(legs, x, WATER - y, 1)) continue;
-        b.set(X, Y, crest < 2.5 ? C[0]! : C[1]!);
-        if (bayer4(X, Y + 1) < (1 - k) * 0.8) b.set(X, Y + 1, J[3]!);
-      }
-    }
-  }
-
-  // --- rings: two or three from each footfall, opening over about 1.5 s; a planted leg laps
-  for (const L of legs) {
-    const [x0, x1] = L.prof[0]!;
-    const cx = (x0 + x1) / 2, hw = (x1 - x0) / 2;
-    const age = L.age + s / sub;
-    const rings: [number, number][] = [];
-    for (let k = 0; k < 3; k++) rings.push([k * 0.6, 3.6 + k * 0.4]);
-    // (while it stands, two slow rings always lapping out from it)
-    const lap = (age - 4) % 6;
-    for (const [born, life] of rings) {
-      const u = (age - born) / life;
-      if (u < 0 || u >= 1) continue;
-      paintRing(c, legs, cx, hw * 1.05 + (34 + hw * 0.7) * (1 - Math.pow(1 - u, 2.2)), u, seed + L.id * 7 + born * 10, 1);
-    }
-    if (age > 4) for (const o of [0, 3]) {
-      const u = (((lap + o) % 6) + 6) % 6 / 6;
-      paintRing(c, legs, cx, hw * 1.08 + (14 + hw * 0.45) * (1 - Math.pow(1 - u, 2)), u, seed + L.id * 7 + 99 + o, 0.8);
-    }
-  }
-
-  // --- each planted leg: the splash, the meniscus, the wet shin
-  for (const L of legs) {
-    const [x0, x1] = L.prof[0]!;
-    const hw = (x1 - x0) / 2;
-    const age = L.age + s / sub;
-    // the splash: a crown of drops thrown up as it lands, falling back (in front and behind)
-    if (age < 1.6) {
-      const n = Math.round(10 + hw * 0.5);
-      for (let i = 0; i < n; i++) {
-        const side = hash1(i, seed + L.id + 3) < 0.5 ? -1 : 1;
-        const vx = side * (0.3 + 1.1 * hash1(i, seed + L.id + 5)) * (hw * 0.35 + 6);
-        const vy = 14 + 22 * hash1(i, seed + L.id + 7);
-        const tA = age / 1.6;
-        const x = (side < 0 ? x0 : x1) + vx * tA;
-        const up = vy * 4 * tA * (1 - tA);
-        if (up < 0.5) continue;
-        const front = hash1(i, seed + L.id + 9) < 0.5;
-        if (!front && inLeg(legs, x, up)) continue;
-        dot(c, x, WATER - up, tA < 0.5 ? C[0]! : C[1]!);
-      }
-      // the sheet of water skirting the hoof just as it lands
-      if (age < 0.6) {
-        for (let lx = x0 - 6; lx < x1 + 6; lx += 0.5 / d) {
-          const hh = (3 + 5 * vnoise1(lx / 4, seed + L.id)) * (1 - age / 0.6);
-          for (let up = 0; up < hh; up += 0.5 / d) {
-            const X = Math.floor(c.X(lx)), Y = Math.floor(c.Y(WATER - up));
-            if (bayer4(X, Y) < 0.5) b.set(X, Y, up > hh - 1.2 ? C[0]! : C[1]!);
-          }
-        }
-      }
-    }
-    // the water parting round the shin: on its leading (east) side a low smooth mound of water
-    // piled against it with a pale crest; on its trailing side a trough dipping under its back
-    // edge; across the shin itself only a broken bright line where the water laps it (no film)
-    const wob = Math.sin(loop * 3 + L.id) * 0.7;
-    const bh = (3.2 + hw * 0.06) * (1 + 0.15 * Math.sin(loop * 2 + L.id * 1.7)), blen = 16 + hw * 0.4;
-    for (let lx = x1 - 1; lx < x1 + blen; lx += 0.5 / d) {
-      const t = (lx - x1) / blen;
-      const hh = bh * Math.pow(1 - Math.max(0, t), 1.6) + wob * (1 - t) + 0.6 * (vnoise1(lx / 3, seed + L.id + 11) - 0.5);
-      for (let up = 0; up < hh; up += 0.5 / d) {
-        const X = Math.floor(c.X(lx)), Y = Math.floor(c.Y(WATER - up));
-        const top = up > hh - 1 / d;
-        // (the crest broken where it curls, brightest against the shin)
-        if (top) { if (t < 0.55 || hash1(Math.floor(lx), seed + L.id + 12) < 0.55) b.set(X, Y, t < 0.3 ? C[0]! : C[1]!); continue; }
-        b.set(X, Y, up < hh * 0.45 ? J[3]! : J[2]!);
-      }
-    }
-    // the trough behind it: the water drawn down under the back edge, a dark sliver
-    for (let lx = x0 - 12; lx < x0 + 3; lx += 0.5 / d) {
-      const t = (x0 + 3 - lx) / 15;
-      if (bayer4(Math.floor(c.X(lx)), 0) >= 1 - t * 0.5) continue;
-      b.set(Math.floor(c.X(lx)), Math.floor(c.Y(WATER - 0.4)), J[5]!);
-    }
-    // the lapping line across the shin: broken, never a hem of even dashes
-    for (let lx = x0 + 1; lx < x1 - 1; lx += 0.5 / d) {
-      const X = Math.floor(c.X(lx));
-      if (vnoise1(lx / 5 + tt * 0.8, seed + L.id + 14) < 0.45) continue;
-      b.set(X, Math.floor(c.Y(WATER - 0.5 - 1.2 * vnoise1(lx / 9, seed + L.id + 15))), C[2]!);
-    }
-    // the wet shin: darker up to a water mark that wanders and tilts; a sheen down the lit edge
-    const wetH = 12 + 18 * hash1(L.id, seed + 21);
-    const tilt = (hash1(L.id, seed + 25) - 0.5) * 0.12;
-    for (let up = 1.5; up < wetH + 1; up += 0.5 / d) {
-      const e = edgesAt(L, up);
-      if (!e) break;
-      const [a0, a1] = e;
-      const Y = Math.floor(c.Y(WATER - up));
-      for (let lx = a0 + 1; lx < a1 - 1; lx += 0.5 / d) {
-        const X = Math.floor(c.X(lx));
-        const mk = wetH + (lx - a0) * tilt + 6 * (vnoise1(lx / 11, seed + L.id + 13) - 0.5);
-        if (up > mk) continue;
-        // (the mark itself: a dark wet edge, not a pale line)
-        if (up > mk - 1 / d) { b.set(X, Y, P.range[6]!); continue; }
-        if (lx < a0 + 2) { if (bayer4(X, Y) < 0.5) b.set(X, Y, P.range[4]!); continue; }
-        if (up < mk - 3 && vnoise(lx / 1.4, up / 6, seed + L.id + 23) > 0.86) b.set(X, Y, P.range[5]!);
-      }
-    }
-    // drips sliding down from the mark
-    for (let i = 0; i < 3; i++) {
-      const dx = x0 + 3 + (x1 - x0 - 6) * hash1(i, seed + L.id + 31);
-      const ph = ((tt * 1.6 + hash1(i, seed + L.id + 33) * 5) % 5) / 5;
-      dot(c, dx, WATER - (wetH - 1) * (1 - ph), C[2]!);
-    }
-  }
-
-  // --- a hoof lifted clear of the water: water pouring off its sole as it leaves (a sheet,
-  // then streams), then dripping ever less as it swings: beads hanging along the sole, drops
-  // falling (eased in by gravity) and ringing the water where they land
-  for (const [xa, ua, xb, ub, age0] of LIFT[f] ?? []) {
-    const age = age0 + s / sub;
-    const wet = clamp(1 - age / 12, 0, 1);
-    if (wet <= 0) continue;
-    const sole = (k: number): [number, number] => [xa + (xb - xa) * k, ua + (ub - ua) * k];
-    // beads along the sole (they hide its cut edge)
-    for (let k = 0.03; k < 0.98; k += 0.045) {
-      const [sx, su] = sole(k);
-      if (hash1(Math.round(k * 1000), seed + 51) > 0.35 + 0.5 * wet) continue;
-      const blen = 1 + 2 * hash1(Math.round(k * 1000), seed + 52) * wet;
-      for (let q = 0; q < blen; q += 0.5 / d) dot(c, sx, WATER - su + 0.5 + q, q > blen - 1 ? C[0]! : C[1]!);
-    }
-    // streams: as it leaves the water a curtain pouring off most of the sole (it is a hoof
-    // tens of metres wide), then two or three ropes of water thinning as it swings, each
-    // streaked with foam and breaking up as it falls, with a burst of spray where it lands
-    const n = age < 2 ? 4 : age < 6 ? 3 : 2;
-    const span = Math.abs(xb - xa);
-    for (let i = 0; i < n; i++) {
-      const k = age < 2 ? (i + 0.5) / n + (hash1(i, seed + 53 + age0) - 0.5) * 0.12 : 0.12 + 0.76 * hash1(i, seed + 53 + age0);
-      const [sx, su] = sole(k);
-      const half = age < 2 ? span * (0.5 / n) * (1.15 - age * 0.3) : age < 6 ? 1.6 - age * 0.15 : 0;
-      if (half > 0.4) {
-        for (let up = su - 0.5; up > 0; up -= 0.5 / d) {
-          const fall = (su - up) / su;
-          const Y = Math.floor(c.Y(WATER - up));
-          const hw = half * (1 - fall * 0.35) + (up < 5 ? (5 - up) * 0.9 : 0);
-          for (let lx = sx - hw; lx <= sx + hw; lx += 0.5 / d) {
-            const u = (lx - sx) / Math.max(0.5, hw);
-            const X = Math.floor(c.X(lx));
-            // (streaks of foam falling, gaps opening as it breaks up, ragged at the sides)
-            const streak = vnoise(lx / 1.6, up / 5 + tt * 5, seed + 57 + i);
-            if (streak < 0.2 + fall * 0.3 + Math.abs(u) * 0.35) continue;
-            if (Math.abs(u) > 0.7 && bayer4(X, Y) > 0.5) continue;
-            b.set(X, Y, up < 4 ? (bayer4(X, Y) < 0.5 ? C[0]! : C[1]!) : streak > 0.62 ? C[0]! : u > 0.4 ? C[2]! : C[1]!);
-          }
-        }
-      }
-      // drops falling and the rings they leave
-      const nd = age < 4 ? 3 : 1 + Math.round(wet);
-      for (let j = 0; j < nd; j++) {
-        const ph = (((tt * 1.8 + j / nd + hash1(i * 7 + j, seed + 55)) % 1) + 1) % 1;
-        const up = su * (1 - ph * ph);
-        dot(c, sx, WATER - up, C[0]!);
-        if (ph > 0.3) dot(c, sx, WATER - up - 1 / d, C[1]!);
-        if (ph > 0.82) paintRing(c, legs, sx, 2 + (ph - 0.82) * 50, (ph - 0.82) / 0.18, seed + i * 13 + j, 0.8);
-      }
-    }
-  }
-
-  // --- mist torn round the legs: low wisps on the water, parted at each shin, curling off its
-  // trailing side, churning slowly (seamless over the sprite's loop)
-  const X0 = Math.max(b.ox, Math.floor(c.X(-380))), X1 = Math.min(b.x1, Math.ceil(c.X(220)));
-  const Y0 = Math.max(b.oy, Math.floor(c.Y(WATER - 40))), Y1 = Math.min(b.y1, Math.ceil(c.Y(WATER - 1)));
-  for (let y = Y0; y < Y1; y++) {
-    const up = WATER - c.ly(y + 0.5);
-    for (let x = X0; x < X1; x++) {
-      const lx = c.lx(x + 0.5);
-      // lobes along the water, thinning with height, torn by noise that rolls with time
-      const ph = Math.cos(loop) * 0.6, ph2 = Math.sin(loop) * 0.6;
-      const n = fbm(lx / 34 + ph, up / 7 + ph2, seed + 41, 3);
-      let cov = (1 - up / (16 + 22 * vnoise1(lx / 60, seed + 43))) * 1.05 + (n - 0.5) * 1.4;
-      // parted where a leg stands; a curl climbing its trailing (west) edge
-      for (const L of legs) {
-        const e = edgesAt(L, up);
-        if (!e) continue;
-        // (thinner over a shin, never gone: it drifts in front of the legs too)
-        if (lx >= e[0] - 2 && lx < e[1] + 2) cov *= 0.55;
-        const cu = (lx - (e[0] - 6)) / 7, cv = (up - 9 - 3 * Math.sin(loop + L.id)) / 6;
-        if (cu > -1 && cu < 1 && cv > -1 && cv < 1) cov = Math.max(cov, (1 - cu * cu) * (1 - cv * cv) * (0.55 + 0.35 * vnoise(lx / 3, up / 3, seed + 45)));
-      }
-      if (lx < -330 || lx > 180) cov *= clamp(lx < -330 ? (lx + 380) / 50 : (220 - lx) / 40, 0, 1);
-      if (cov > 0.95 && up > 3) { b.set(x, y, cov > 1.1 ? C[1]! : C[2]!); continue; }
-      if (bayer4(x, y) < step3(cov)) b.set(x, y, cov > 0.5 ? C[1]! : C[2]!);
-    }
-  }
+/**
+ * A bead of water `len` px long hanging at (x, up above the water): a glint on its top, a
+ * blue-grey body and a darker tip, so it reads against the pale mist and the dark legs alike.
+ */
+function bead(c: PaintCtx, x: number, up: number, len: number): void {
+  const R = P.range;
+  const n = Math.max(1, Math.round(len));
+  for (let q = 0; q < n; q++) dot(c, x, WATER - up + q, q === 0 && n > 1 ? P.cloud[0]! : q === n - 1 ? R[6]! : R[5]!);
 }
 
-/** The far half of a ring on the water round a leg (above the waterline), behind the leg. */
-function paintRing(c: PaintCtx, legs: Leg[], cx: number, rx: number, u: number, seed: number, strength: number): void {
+/**
+ * The far half of a flattened ring on the water (above the waterline), broken into arcs: `keep`
+ * is the share of its arcs still standing (it breaks up as it opens and fades), never dithered.
+ * A crest over a darker row (the ripple's face mirroring the land): it reads on the pale mist
+ * above the line and, mirrored by the lake, on the water below it. Hidden behind the legs.
+ */
+function paintRing(c: PaintCtx, legs: Leg[], cx: number, rx: number, ry: number, keep: number, seed: number, crest: number, under: number): void {
   const b = c.buf, d = c.d;
-  const ry = Math.max(1.5, rx * 0.17);
-  const keep = (1 - u * u) * strength;
-  const steps = Math.max(32, Math.ceil(rx * d * 5));
+  if (keep <= 0 || rx <= 0.5) return;
+  const steps = Math.max(24, Math.ceil(rx * d * 4));
+  const nArc = 5 + Math.round(rx / 9);
   let lastX = NaN, lastY = NaN;
   for (let k = 0; k <= steps; k++) {
     const a = Math.PI + (k / steps) * Math.PI;
@@ -373,22 +177,311 @@ function paintRing(c: PaintCtx, legs: Leg[], cx: number, rx: number, u: number, 
     const X = Math.floor(c.X(lx)), Y = Math.floor(c.Y(WATER - up));
     if (X === lastX && Y === lastY) continue;
     lastX = X; lastY = Y;
-    // gaps: a ring is never a perfect line on real water
-    if (hash(Math.floor((k / steps) * 13), 1, Math.round(seed)) < 0.2) continue;
-    if (bayer4(X, Y) >= keep) continue;
-    // (it hugs the shin: the arc crossing a leg is the ring's near side catching the light, and
-    // the lake mirrors it in front of the leg's reflection)
-    const over = inLeg(legs, lx, up, 0);
-    // a light crest over a darker face: the face mirrors the darker land behind, so the ring
-    // reads against the pale mist and, mirrored, on the water
-    b.set(X, Y, over ? (u < 0.5 ? P.cloud[2]! : P.range[3]!) : u < 0.4 ? P.cloud[0]! : P.jade[2]!);
-    if (!over && bayer4(X, Y + 1) < keep) b.set(X, Y + 1, u < 0.5 ? P.jade[4]! : P.jade[3]!);
+    // (arcs of their own lengths: a ring is never a perfect line on real water)
+    const arc = Math.floor((k / steps) * nArc + 0.6 * hash1(Math.floor((k / steps) * nArc), seed + 3));
+    if (hash1(arc, seed) >= keep) continue;
+    if (inLeg(legs, lx, up, 0.5)) continue;
+    b.set(X, Y, crest);
+    if (up > 0.6 && !inLeg(legs, lx, up - 1 / d, 0.5)) b.set(X, Y + cellOf(d), under);
+    // (a fresh ring stands a px taller: its crest two cells thick)
+    if (keep > 0.8 && up > 1.6 && !inLeg(legs, lx, up + 1 / d, 0.5)) b.set(X, Y - cellOf(d), crest);
+  }
+}
+
+/** Mist lobes: [drift phase, x, base height above the water, half length, height] (level-1 px, local). */
+function lobesOf(seed: number): [number, number, number, number, number][] {
+  return cached(`wadelobes2|${seed}`, () => {
+    const out: [number, number, number, number, number][] = [];
+    const n = 5;
+    for (let i = 0; i < n; i++) {
+      const v = hash1(i, seed + 63);
+      // (most lie on the water; a few float a little higher; sizes very different)
+      const hi = hash1(i, seed + 62);
+      out.push([
+        (i + 0.6 * hash1(i, seed + 60)) / n,
+        -330 + 520 * ((i * 0.618 + hash1(i, seed + 61) * 0.3) % 1),
+        hi < 0.6 ? 3 + 9 * hi : 12 + 16 * (hi - 0.6) / 0.4,
+        v < 0.3 ? 46 + 34 * hash1(i, seed + 64) : 18 + 22 * hash1(i, seed + 64),
+        (v < 0.3 ? 5 + 4 * hash1(i, seed + 65) : 3 + 3 * hash1(i, seed + 65)) * (hi < 0.6 ? 1 : 0.55),
+      ]);
+    }
+    return out;
+  });
+}
+
+/** A lobe's top at a (-1..1 along it): two or three humps of different widths and heights. */
+function humpAt(a: number, i: number, seed: number): number {
+  let h = 0;
+  const n = 2 + Math.floor(hash1(i, seed + 70) * 2);
+  for (let j = 0; j < n; j++) {
+    const at = -0.6 + 1.2 * ((j + 0.2 + 0.6 * hash1(i * 7 + j, seed + 71)) / n);
+    const w = 0.22 + 0.35 * hash1(i * 7 + j, seed + 72);
+    const hh = 0.45 + 0.55 * hash1(i * 7 + j, seed + 73);
+    const q = (a - at) / w;
+    if (q > -1 && q < 1) h = Math.max(h, hh * Math.sqrt(1 - q * q));
+  }
+  return h;
+}
+
+function paintWade(c: PaintCtx, p: WadeP): void {
+  const b = c.buf, d = c.d, seed = c.seed, K = cellOf(d);
+  const sub = Math.max(1, Math.round(p.sub ?? 4));
+  const fr = Math.max(0, Math.floor(p.frame ?? 0));
+  const f = Math.floor(fr / sub) % STRIDE, s = fr % sub;
+  // continuous time in Walker frames (for rings and drops), and how far back to paint
+  const tt = f + s / sub;
+  const shift = -(s / sub) * STEP;
+  const legs = legsOf(f, shift);
+  const C = P.cloud, J = P.jade, R = P.range;
+  const loop = (fr / (STRIDE * sub)) * Math.PI * 2;
+  // (the water's own px, world-fixed: the crests stay put on the lake while it wades on)
+  const world = tt * STEP;
+
+  // --- the wet shins: wetted high by the footfall's splash, drying back down to the wading line
+  // over a few frames; the top wanders, one cell of dither where wet meets dry; a broken sheen
+  // down the lit (west) edge; darkest right at the water
+  for (const L of legs) {
+    const age = L.age + s / sub;
+    const base = 7 + 5 * hash1(L.id, seed + 21);
+    const splashH = 26 * Math.exp(-age / 2.2);
+    const top = base + splashH * 1.2 + 3;
+    const Y0 = Math.max(b.oy, Math.floor(c.Y(WATER - top))), Y1 = Math.min(b.y1, Math.ceil(c.Y(WATER)));
+    for (let Y = Y0; Y < Y1; Y++) {
+      const up = WATER - c.ly(Y + 0.5);
+      if (up < 0) continue;
+      const e = edgesAt(L, up);
+      if (!e) continue;
+      for (let X = Math.max(b.ox, Math.ceil(c.X(e[0] + 0.6))); X < Math.min(b.x1, Math.floor(c.X(e[1] - 0.6))); X++) {
+        const lx = c.lx(X + 0.5);
+        const mk = base + splashH * (0.5 + 0.7 * vnoise1(lx / 16, seed + L.id + 13)) + 2.5 * (vnoise1(lx / 7, seed + L.id + 17) - 0.5);
+        if (up > mk) continue;
+        if (up > mk - 1.2 && bay(X, Y, K) >= 0.5) continue;
+        if (lx - e[0] < 2.4 && up > 2 && vnoise1((WATER - up) / 3 + lx * 0.3, seed + L.id + 19) > 0.45) { b.set(X, Y, P.karst[6]!); continue; }
+        const foot = 2 + 2.2 * vnoise1(lx / 5, seed + L.id + 18);
+        b.set(X, Y, up < foot ? P.lacquer[4]! : vnoise(lx / 2.2, up / 6, seed + L.id + 23) > 0.7 ? P.karst[8]! : P.lacquer[3]!);
+      }
+    }
+  }
+
+  // --- the wake: from each planted leg's trailing (west) edge a V trails back, its far arm
+  // painted (the lake mirrors it into the near one): two or three broken crest lines, the
+  // longest from the rearmost leg, their dashes of their own lengths, sparser as they fade
+  let rear = Infinity;
+  for (const L of legs) rear = Math.min(rear, L.prof[0]![0]);
+  for (const L of legs) {
+    const back = L.prof[0]![0];
+    const main = back === rear;
+    const arms: [number, number, number][] = main ? [[230, 0.075, 0], [150, 0.042, 7], [90, 0.11, 13]] : [[100, 0.07, 3]];
+    for (const [len, slope, s0] of arms) {
+      let lastX = NaN;
+      for (let u = 0; u < len; u += 0.5 / d) {
+        const x = back - 3 - u;
+        const k = u / len;
+        const y = WATER - 0.8 - u * slope - Math.sin(u / 23 + s0 + L.id) * 0.7 * k;
+        // dashes of 3 to 9 px with gaps, laid on the water (world-fixed), fewer as it fades
+        const w = u + world;
+        const cell = Math.floor(w / 11);
+        const into = w - cell * 11;
+        if (into > 3 + 6 * hash1(cell, seed + s0 + 70)) continue;
+        if (hash1(cell, seed + s0 + 71) > (1 - k) * (main ? 1.05 : 0.8)) continue;
+        const X = Math.floor(c.X(x)), Y = Math.floor(c.Y(y));
+        if (X === lastX) continue;
+        lastX = X;
+        if (inLeg(legs, x, WATER - y, 1)) continue;
+        b.set(X, Y, k < 0.35 ? C[0]! : C[1]!);
+        if (k < 0.75) b.set(X, Y + K, k < 0.4 ? J[3]! : J[2]!);
+      }
+    }
+  }
+
+  // --- rings: two or three from each footfall, opening and breaking up over four to six
+  // frames, eased out; a planted leg laps a faint one every few frames
+  for (const L of legs) {
+    const [x0, x1] = L.prof[0]!;
+    const cx = (x0 + x1) / 2, hw = (x1 - x0) / 2;
+    const age = L.age + s / sub;
+    for (let k = 0; k < 3; k++) {
+      const born = k * 0.7, life = 4.4 + k * 0.7;
+      const u = (age - born) / life;
+      if (u < 0 || u >= 1) continue;
+      const rx = hw * 1.05 + (40 + hw * 1.3) * (1 - Math.pow(1 - u, 2.2));
+      paintRing(c, legs, cx, rx, Math.max(1.5, rx * 0.11), Math.pow(1 - u, 1.1) * (1 - 0.15 * k), seed + L.id * 7 + k * 10, u < 0.35 ? C[0]! : C[1]!, u < 0.45 ? J[4]! : J[3]!);
+    }
+    if (age > 4.5) {
+      const u = (((age - 4.5) % 3.2) + 3.2) % 3.2 / 3.2;
+      const rx = hw * 1.08 + (14 + hw * 0.45) * (1 - Math.pow(1 - u, 2));
+      paintRing(c, legs, cx, rx, Math.max(1.2, rx * 0.1), 0.75 * (1 - u), seed + L.id * 7 + 99 + Math.floor((age - 4.5) / 3.2), C[1]!, J[2]!);
+    }
+  }
+
+  // --- each planted leg: the landing (a boil and a crown of beads), the parted water
+  for (const L of legs) {
+    const [x0, x1] = L.prof[0]!;
+    const hw = (x1 - x0) / 2;
+    const age = L.age + s / sub;
+    if (age < 1.6) {
+      // a crown of beads thrown up as it lands, falling back (some in front of the shin)
+      const n = Math.round(9 + hw * 0.35);
+      const tA = age / 1.6;
+      for (let i = 0; i < n; i++) {
+        const side = hash1(i, seed + L.id + 3) < 0.5 ? -1 : 1;
+        const vx = side * (0.3 + 1.1 * hash1(i, seed + L.id + 5)) * (hw * 0.35 + 6);
+        const vy = 12 + 22 * hash1(i, seed + L.id + 7);
+        const x = (side < 0 ? x0 : x1) + vx * tA;
+        const up = vy * 4 * tA * (1 - tA);
+        if (up < 1) continue;
+        if (hash1(i, seed + L.id + 9) < 0.5 && inLeg(legs, x, up)) continue;
+        bead(c, x, up, tA < 0.5 ? 2 : 3);
+      }
+    }
+    if (age < 2.6) {
+      // the boil: white water heaped round the hoof as it lands, settling (torn, no dither)
+      const k = age / 2.6;
+      for (let lx = x0 - 8; lx < x1 + 10; lx += 0.5 / d) {
+        const hh = (1.2 + 3.8 * vnoise1(lx / 4 + age, seed + L.id) + (lx > x1 ? 1.5 : 0)) * (1 - k) * Math.min(1, (lx - x0 + 9) / 5, (x1 + 11 - lx) / 6);
+        if (hh < 0.6) continue;
+        for (let up = 0; up < hh; up += 0.5 / d) {
+          if (inLeg(legs, lx, up, 0) && up > 1.5) continue;
+          const X = Math.floor(c.X(lx)), Y = Math.floor(c.Y(WATER - up));
+          b.set(X, Y, up > hh - 1.1 ? C[0]! : up < 1 ? J[1]! : C[1]!);
+        }
+      }
+    }
+    // the lens of parted water piled against its leading (east) side: 1 to 2 px, paler than the
+    // lake, tapering away from the shin, a little swell and fall as it wades
+    const lens = 9 + hw * 0.3;
+    const hgt = 2.2 + 0.4 * Math.sin(loop * 3 + L.id);
+    for (let lx = x1 - 0.5; lx < x1 + lens; lx += 0.5 / d) {
+      const t = (lx - x1) / lens;
+      const hh = hgt * Math.pow(1 - Math.max(0, t), 1.15);
+      if (hh < 0.5) continue;
+      const X = Math.floor(c.X(lx));
+      for (let up = 0; up < hh; up += 0.5 / d) {
+        const Y = Math.floor(c.Y(WATER - up));
+        b.set(X, Y, up > hh - 1 ? (t < 0.55 ? C[0]! : C[1]!) : J[1]!);
+      }
+    }
+    // (the water climbing the shin's leading edge a px or two)
+    for (let up = 0; up < 2.5; up += 0.5 / d) {
+      const e = edgesAt(L, up);
+      if (e) dot(c, e[1] - 0.5, WATER - up, up > 1.4 ? C[1]! : C[0]!);
+    }
+    // the trough under its trailing side: a dark sliver, broken where it ends
+    for (let lx = x0 - 11; lx < x0 + 2; lx += 0.5 / d) {
+      const t = (x0 + 2 - lx) / 13;
+      if (t > 0.6 && hash1(Math.floor(lx / 2), seed + L.id + 16) < t) continue;
+      b.set(Math.floor(c.X(lx)), Math.floor(c.Y(WATER - 0.4)), J[5]!);
+    }
+  }
+
+  // --- a hoof lifted clear of the water: its wet band drying from the top down, water clinging
+  // along its sole as beads, and beads falling from it (eased in by gravity, stretching as they
+  // fall), each breaking into a small ring where it lands
+  for (const [xa, ua, xb, ub, age0] of LIFT[f] ?? []) {
+    const age = age0 + s / sub;
+    const wet = clamp(1 - age / 12, 0, 1);
+    if (wet <= 0) continue;
+    const sole = (k: number): [number, number] => [xa + (xb - xa) * k, ua + (ub - ua) * k];
+    // the wet band above the sole (inside the hoof: inset as it rises)
+    const wh = 14 * Math.exp(-age / 3.2);
+    if (wh > 1) {
+      for (let X = Math.max(b.ox, Math.floor(c.X(xa))); X < Math.min(b.x1, Math.ceil(c.X(xb))); X++) {
+        const lx = c.lx(X + 0.5);
+        const su = ua + (ub - ua) * ((lx - xa) / (xb - xa));
+        const mk = wh * (0.55 + 0.7 * vnoise1(lx / 6, seed + 41));
+        for (let Y = Math.floor(c.Y(WATER - su - mk)); Y < Math.floor(c.Y(WATER - su)); Y++) {
+          const a = WATER - c.ly(Y + 0.5) - su;
+          if (a < 0.6) continue;
+          const inset = 1.6 + 0.4 * a;
+          if (lx < xa + inset || lx > xb - inset) continue;
+          if (a > mk - 1.2 && bay(X, Y, K) >= 0.5) continue;
+          b.set(X, Y, lx < xa + inset + 1.6 && a > 1.5 ? P.karst[6]! : a < 2.2 ? P.lacquer[4]! : P.lacquer[3]!);
+        }
+      }
+    }
+    // beads clinging along the sole, fewer as it drains (they hide its cut edge)
+    for (let k = 0.04; k < 0.97; k += 0.035 + 0.07 * hash1(Math.round(k * 1000), seed + 49)) {
+      const kk = Math.round(k * 1000);
+      if (hash1(kk, seed + 51) > 0.2 + 0.55 * wet) continue;
+      const [sx, su] = sole(k + (hash1(kk, seed + 50) - 0.5) * 0.03);
+      bead(c, sx, su - 0.5, 1 + Math.round(2 * hash1(kk, seed + 52) * wet));
+    }
+    // falling beads: streams along the sole, each dropping a bead now and then (often as it
+    // leaves the water, then ever less); several of a stream's beads in flight at once
+    const nS = age < 1.5 ? 7 : age < 4 ? 5 : age < 8 ? 3 : 2;
+    for (let i = 0; i < nS; i++) {
+      const k = age < 1.5 ? (i + 0.5) / nS + (hash1(i, seed + 53 + age0) - 0.5) * 0.12 : 0.1 + 0.8 * hash1(i, seed + 53 + age0);
+      const [sx, su] = sole(k);
+      const fall = 0.35 + su / 110;
+      const per = (age < 1.5 ? 0.4 : 0.7) + 0.4 * hash1(i, seed + 56);
+      const off = hash1(i, seed + 55) * per;
+      const ringT = 0.9;
+      for (let j = 0; j < 4; j++) {
+        const e = ((((tt + off) % per) + per) % per) + j * per;
+        // (no bead from before it left the water)
+        if (e > age + 0.3) break;
+        if (e < fall) {
+          const g = e / fall;
+          const up = su * (1 - g * g);
+          if (up > 0.8) bead(c, sx + (hash1(i * 5 + j, seed + 57) - 0.5) * 1.5, up, 2 + 2 * g);
+          continue;
+        }
+        const le = (e - fall) / ringT;
+        if (le >= 1) continue;
+        // where it lands: a fleck of white, then a small ring opening and breaking up
+        if (le < 0.18) dot(c, sx, WATER - 1, C[0]!);
+        const rx = 1.5 + (7 + su / 14) * Math.pow(le, 0.6);
+        paintRing(c, legs, sx, rx, Math.max(1, rx * 0.18), 1.05 - le * 0.9, seed + i * 13 + j + Math.floor(tt / per) * 7, le < 0.4 ? C[0]! : C[1]!, J[3]!);
+      }
+    }
+  }
+
+  // --- mist: soft lobes lying on the water and drifting back past the legs as it wades on (each
+  // grows and dissolves as it goes, never by checker), in front of the legs and between them:
+  // humped on top, flat below; over a dark leg a paler blue-grey (a value lift), over the pale
+  // ground a cool white; a lit cap along the sunward humps; one cell of dither only where a lobe
+  // meets what is behind it
+  const T = (fr % (STRIDE * sub)) / (STRIDE * sub);
+  const X0 = Math.max(b.ox, Math.floor(c.X(-400))), X1 = Math.min(b.x1, Math.ceil(c.X(230)));
+  const Y0 = Math.max(b.oy, Math.floor(c.Y(WATER - 44))), Y1 = Math.min(b.y1, Math.ceil(c.Y(WATER)));
+  const lobes = lobesOf(seed).map(([p0, x, base, hl, ht], i) => {
+    const u = (T + p0) % 1;
+    const g = Math.pow(Math.sin(Math.PI * u), 0.6);
+    return { cx: x + 40 - 95 * u, base: base + 3 * u, hl: hl * (0.6 + 0.4 * g), ht: ht * g, i, u };
+  });
+  for (let Y = Y0; Y < Y1; Y++) {
+    const up = WATER - c.ly(Y + 0.5);
+    for (let X = X0; X < X1; X++) {
+      const lx = c.lx(X + 0.5);
+      let edge = -1, lit = false;
+      for (const o of lobes) {
+        if (o.ht < 1) continue;
+        const a = (lx - o.cx) / o.hl;
+        if (a <= -1 || a >= 1) continue;
+        const env = 1 - a * a;
+        const topH = o.ht * Math.max(env * 0.3, humpAt(a, o.i, seed)) * (0.85 + 0.3 * vnoise1(lx / 4 + o.i * 3, seed + 66));
+        const botH = Math.min(o.base, 0.6 + o.ht * 0.18 * env * (0.6 + 0.8 * vnoise1(lx / 11 + o.i, seed + 68)));
+        const v = up - o.base;
+        if (v > topH || v < -botH || topH < 0.8) continue;
+        // (torn at its ends)
+        if (Math.abs(a) > 0.6 && vnoise(lx / 5 + o.i * 5, up / 2.5, seed + 69) < (Math.abs(a) - 0.6) * 1.6) continue;
+        edge = Math.min(topH - v, v + botH, (1 - Math.abs(a)) * o.hl * 0.25);
+        lit = v > topH - Math.max(1.2, topH * 0.4) && lx < o.cx + o.hl * 0.25;
+        break;
+      }
+      if (edge < 0) continue;
+      if (edge * d < K * 1.1 && bay(X, Y, K) >= 0.5) continue;
+      const over = inLeg(legs, lx, up, 0);
+      // (over a leg only its thickest part lifts the value: thin lobes there tear open)
+      if (over && edge * d < K * 2.2 && bay(X + 1, Y, K) >= 0.5) continue;
+      b.set(X, Y, over ? R[6]! : lit ? C[2]! : C[3]!);
+    }
   }
 }
 
 export const wade = definePainter<WadeP>("op.wade", {
   bounds() {
-    return [-560, WATER - 64, 260, WATER + 4];
+    return [-560, WATER - 96, 260, WATER + 4];
   },
   paint(c, p) {
     paintWade(c, p);
@@ -404,51 +497,136 @@ export interface ShroudP {
 /**
  * The low cloud the Walker wades through, wrapped round its upper body (it is several hundred
  * metres tall: its back and shoulders stand in the cloud layer). Torn lenses at the height of
- * its back, its barrel and its belly, densest over the shoulders and the bonsai's foot, thinning
- * by the dissolve steps (25 to 50 %) to wisps at their ends, with gaps so its silhouette still
- * reads; they churn slowly and loop. It pushes the giant back in value: it reads as far off.
- * Anchor: the Walker's (the middle of its frames' foot), facing east. Plane px of P2.
+ * its back, its barrel and its belly, each a few billows of very different sizes on a flat-ish
+ * base, with gaps between them so its silhouette still reads, and thin wisps trailing off their
+ * ends. Each billow in flat steps of the cloud ramp: a lit cap toward the sun (upper left), the
+ * body, a cool shaded underside; one cell of dither only where a billow meets what is behind it
+ * (two screen px at the catch's 2x), never a checker veil. They churn slowly and loop. Over its
+ * gold and red it lifts the value: the giant reads as far off. Anchor: the Walker's (the middle
+ * of its frames' foot), facing east. Plane px of P2.
  */
+const SHROUD: [number, number, number, number, number][] = [
+  // [centre x, centre y, half length, half thickness, density]
+  // (round its back, under the bonsai's foot)
+  [-70, -440, 250, 48, 1.1],
+  // (across the flank and the barrel, the ropes)
+  [-80, -300, 220, 30, 0.85],
+  // (round the chest and the bells hanging from the head: the busiest, most saturated part)
+  [225, -300, 85, 40, 1.0],
+  [160, -212, 80, 22, 0.75],
+]
+
+/** The billows: [x, y, rx, ry, lens, z] (the bank of each lens), and its trailing wisps (the same, small and flat). */
+function shroudShape(seed: number): [number, number, number, number, number, number][] {
+  return cached(`shroud3|${seed}`, () => {
+    const r = rng(seed + 81);
+    const out: [number, number, number, number, number, number][] = [];
+    SHROUD.forEach(([cx, cy, hl, ht0, dn], i) => {
+      // (a thick bank: the cloud layer the giant wades through, not a ribbon)
+      const ht = ht0 * 1.45;
+      // a bank of billows along the lens, overlapping, of very different sizes (a few great
+      // ones, more middling, many small), smaller toward its ends, gaps here and there
+      let u = -1 + 0.15 * r();
+      while (u < 1) {
+        const v = r();
+        const end = 1 - 0.55 * Math.abs(u) ** 2;
+        const rx = ht * (v < 0.18 ? 0.95 + 0.5 * r() : v < 0.55 ? 0.5 + 0.3 * r() : 0.22 + 0.22 * r()) * end * Math.min(1.15, dn + 0.1);
+        const x = cx + u * hl;
+        if (r() > 0.1 || v < 0.18) {
+          // (the big ones ride higher; the small ones hang under the bank and tear its lower edge)
+          const y = cy - (rx / ht - 0.55) * ht * 0.5 + (r() - 0.5) * ht * 0.8;
+          out.push([x, y, rx, rx * (0.62 + 0.22 * r()), i, rx / ht + r() * 0.4]);
+        }
+        u += (rx / hl) * (0.55 + 0.6 * r());
+      }
+      // its underside torn: small billows hanging under it at uneven gaps, some of them pulled
+      // out into a short streak
+      const nh = 3 + Math.round(r() * 4 * dn);
+      for (let k = 0; k < nh; k++) {
+        const x = cx + (r() * 2 - 1) * hl * 0.85;
+        const rx = ht * (0.2 + 0.35 * r());
+        out.push([x, cy + ht * (0.45 + 0.4 * r()), rx * (r() < 0.4 ? 2.2 : 1), rx * (0.55 + 0.2 * r()), i, -0.5 + r() * 0.3]);
+      }
+      // wisps trailing off its ends: small flat billows in a row, smaller as they go
+      for (const side of [-1, 1]) {
+        if (r() < 0.55) continue;
+        let x = cx + side * hl * (0.9 + 0.1 * r());
+        let y = cy + ht * (0.1 + 0.3 * r());
+        let rx = ht * (0.35 + 0.2 * r());
+        for (let k = 0; k < 4 && rx > 3; k++) {
+          if (x - rx > -400 && x + rx < 330) out.push([x, y, rx, Math.max(1.6, rx * 0.26), i, -1 + k * 0.1]);
+          x += side * rx * (1.3 + 0.8 * r());
+          y += (r() - 0.4) * 4;
+          rx *= 0.55 + 0.25 * r();
+        }
+      }
+    });
+    return out;
+  });
+}
+
 function paintShroud(c: PaintCtx, p: ShroudP): void {
-  const b = c.buf, seed = c.seed;
+  const b = c.buf, d = c.d, seed = c.seed, K = cellOf(d);
   const n = Math.max(1, p.frames ?? 24);
   const loop = (((p.frame ?? 0) % n) / n) * Math.PI * 2;
   const C = P.cloud;
-  // the lenses: [centre x, centre y, half length, half thickness, density]
-  const L: [number, number, number, number, number][] = [
-    [-90, -438, 250, 50, 1.15],
-    [120, -470, 150, 30, 0.85],
-    [-40, -318, 300, 34, 0.9],
-    [-200, -236, 140, 20, 0.65],
-    [190, -262, 110, 18, 0.6],
-    // (over the head and the bells hanging from it: the busiest, most saturated part)
-    [205, -360, 120, 46, 1.05],
-    [215, -205, 80, 26, 0.8],
-  ];
+  // the billows this frame: swelling and settling a little, drifting a few px and back
+  const B = shroudShape(seed).map(([x, y, rx, ry, i], j) => {
+    const g = 1 + 0.06 * Math.sin(loop + j * 1.9);
+    return { x: x + 2.5 * Math.sin(loop + j * 1.3), y: y + 1.2 * Math.cos(loop + j * 0.7), rx: rx * g, ry: ry * g, i, j };
+  });
   const X0 = Math.max(b.ox, Math.floor(c.X(-400))), X1 = Math.min(b.x1, Math.ceil(c.X(330)));
   const Y0 = Math.max(b.oy, Math.floor(c.Y(-540))), Y1 = Math.min(b.y1, Math.ceil(c.Y(-160)));
-  const ph = Math.cos(loop) * 0.7, ph2 = Math.sin(loop) * 0.7;
-  for (let y = Y0; y < Y1; y++) {
-    const ly = c.ly(y + 0.5);
-    for (let x = X0; x < X1; x++) {
-      const lx = c.lx(x + 0.5);
-      let cov = 0;
-      for (let i = 0; i < L.length; i++) {
-        const [cx, cy, hl, ht, dn] = L[i]!;
-        const u = (lx - cx) / hl;
-        if (u <= -1 || u >= 1) continue;
-        // (each lens wanders and swells along its length, lumpier on top: never a ruled band)
-        const mid = cy + (vnoise1(lx / 70, seed + i * 7) - 0.5) * ht * 1.2;
-        const th = ht * (0.55 + 0.7 * vnoise1(lx / 45 + i, seed + i * 7 + 1));
-        const v = ly < mid ? (mid - ly) / (th * 1.15) : (ly - mid) / (th * 0.8);
-        if (v >= 1.4) continue;
-        const n2 = fbm(lx / 38 + ph, ly / 14 + ph2, seed + i * 7 + 2, 3) - 0.5;
-        cov = Math.max(cov, ((1 - u * u) * (1 - v * v * 0.7) + n2 * 1.3) * dn);
+  if (X1 <= X0 || Y1 <= Y0) return;
+  // the bank as one mass: which lens holds each px (a margin above and below, so the lit band
+  // and the underside are measured the same in every tile)
+  const M = Math.ceil(8 * d) + 2;
+  const mw = X1 - X0 + 2, my0 = Y0 - M, mh = Y1 - Y0 + 2 * M;
+  const own = new Int8Array(mw * mh).fill(-1);
+  for (let yy = 0; yy < mh; yy++) {
+    const ly = c.ly(my0 + yy + 0.5);
+    for (let xx = 0; xx < mw; xx++) {
+      const lx = c.lx(X0 - 1 + xx + 0.5);
+      for (const g of B) {
+        const dx = lx - g.x, dy = ly - g.y;
+        if (Math.abs(dx) > g.rx * 1.2 || Math.abs(dy) > g.ry * 1.3) continue;
+        const ang = Math.atan2(dy, dx);
+        // (the rim lumpy at two scales: cauliflower along the top, torn below)
+        const rim = 1 + 0.18 * (vnoise1(ang * 2.4 + g.j * 3, seed + 82) - 0.5) + 0.1 * (vnoise1(ang * 8 + g.j, seed + 83) - 0.5);
+        if (Math.hypot(dx / g.rx, dy / g.ry) <= rim) { own[yy * mw + xx] = g.i; break; }
       }
-      // (solid only in its thickest cores, over the shoulders; elsewhere the dissolve steps)
-      if (cov > 1.02) { b.set(x, y, cov > 1.15 ? C[1]! : C[2]!); continue; }
-      const th = cov > 0.7 ? 0.5 : cov > 0.45 ? 0.25 : cov > 0.26 ? 0.125 : 0;
-      if (bayer4(x, y) < th) b.set(x, y, cov > 0.6 ? C[1]! : C[2]!);
+    }
+  }
+  const at = (X: number, Y: number): number => {
+    const xx = X - X0 + 1, yy = Y - my0;
+    return xx < 0 || xx >= mw || yy < 0 || yy >= mh ? -1 : own[yy * mw + xx]!;
+  };
+  for (let Y = Y0; Y < Y1; Y++) {
+    const ly = c.ly(Y + 0.5);
+    for (let X = X0; X < X1; X++) {
+      const i = at(X, Y);
+      if (i < 0) continue;
+      const L = SHROUD[i]!;
+      // px to the outside going up and going down (cells of this level)
+      let up = 0, dn = 0;
+      while (up < M - 1 && at(X, Y - up - 1) >= 0) up++;
+      while (dn < M - 1 && at(X, Y + dn + 1) >= 0) dn++;
+      const side = at(X - 1, Y) < 0 || at(X + 1, Y) < 0;
+      // crisp along its lit top; one cell of dither where its shaded sides and torn underside
+      // meet what is behind it
+      if ((dn < K || (side && up >= K)) && bay(X, Y, K) >= 0.5) continue;
+      const lx = c.lx(X + 0.5);
+      // one mass in a few flat steps: a lit band under its lumpy top (thicker toward the sun),
+      // the body a step under the sky's white, the cool underside where it tears
+      const lit = (2 + 2.5 * vnoise1(lx / 14, seed + 88) + (lx < L[0] ? 1.5 : 0)) * d;
+      const low = (2.2 + 2.5 * vnoise1(lx / 11, seed + 89)) * d;
+      let col: number;
+      // (close to the giant's own pale value, so it sinks into the cloud instead of wearing it)
+      // (the sun's white only in patches on the sunward billows: never a contour round it)
+      if (up < lit) col = up < lit * 0.6 && lx < L[0] + L[2] * 0.2 && vnoise1(lx / 9, seed + 91) > 0.45 ? C[1]! : C[2]!;
+      else if (dn < low && (lx > L[0] - L[2] * 0.4 || dn < low * 0.5)) col = C[4]!;
+      else col = ly < L[1] - L[3] * 0.2 + 5 * (vnoise1(lx / 23, seed + 90) - 0.5) ? C[3]! : C[4]!;
+      b.set(X, Y, col);
     }
   }
 }

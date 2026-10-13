@@ -13,7 +13,7 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { bayer4, clamp, fbm, vnoise, vnoise1 } from "../../raster.ts";
+import { bayer4, clamp, fbm, hash1, vnoise, vnoise1 } from "../../raster.ts";
 import { mistBank, type MistFoot } from "./karst.ts";
 
 export interface SeaP {
@@ -65,7 +65,9 @@ function paintFloor(c: PaintCtx, p: SeaP): void {
   const b = c.buf, seed = c.seed;
   const sw = p.swell ?? 14;
   const west = p.floorWest ?? p.west ?? p.ends ?? 120;
-  const C = P.cloud;
+  const C = P.cloud, kc = Math.max(1, Math.round(c.d));
+  // (one cell of dither, two screen px at the catch's 2x, only where two steps meet)
+  const bd = (x: number, y: number): number => bayer4(Math.floor(x / kc), Math.floor(y / kc));
   const rolls = p.rolls ?? 1;
   const X0 = Math.max(b.ox, Math.floor(c.X(0))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w)));
   const Y0 = Math.max(b.oy, Math.floor(c.Y(0))), Y1 = Math.min(b.y1, Math.ceil(c.Y(p.depth)));
@@ -85,8 +87,9 @@ function paintFloor(c: PaintCtx, p: SeaP): void {
       if (open && lx < from) continue;
       // the torn west end: the floor thins out by dither toward it
       if (west > 0 && lx < west) {
-        const k = clamp((lx + (vnoise(lx / (sw * 2.4), ly / (sw * 1.3), seed + 8) - 0.5) * west * 0.6) / west, 0, 1);
-        if (k < 0.92 && bayer4(x, y) >= (k > 0.6 ? 0.75 : k > 0.4 ? 0.5 : k > 0.22 ? 0.25 : k > 0.1 ? 0.125 : 0)) continue;
+        // (a torn edge, never a dissolve screen)
+        const k = clamp((lx + (vnoise(lx / (sw * 2.4), ly / (sw * 1.3), seed + 8) - 0.5) * west * 0.9 + (vnoise(lx / (sw * 0.6), ly / (sw * 0.4), seed + 9) - 0.5) * west * 0.25) / west, 0, 1);
+        if (k < 0.42 || (k < 0.48 && bd(x, y) >= 0.5)) continue;
       }
       const u = lx / (size * 2.6);
       const n0 = fbm(u, t, seed + 20, 3);
@@ -98,7 +101,8 @@ function paintFloor(c: PaintCtx, p: SeaP): void {
       // (in the haze's own cool whites: only the brightest tops reach the sun's white)
       const i = 0.6 + clamp(v, 0, 1) * 2.8;
       const k = Math.floor(i);
-      const col = C[Math.min(4, k + (bayer4(x, y) < i - k ? 1 : 0))]!;
+      const fr = i - k;
+      const col = C[Math.min(4, k + (fr > 0.86 || (fr > 0.72 && bd(x, y) < 0.5) ? 1 : 0))]!;
       if (wf > 0 && ly < wf * (1.3 + 0.5 * vnoise1(lx / (sw * 6), seed + 32))) {
         // the floor's top near the lake: the lake running on under low mist. Its water in the
         // lake's own tone, deepening toward the viewer like the lake beside it, so the shore
@@ -114,11 +118,16 @@ function paintFloor(c: PaintCtx, p: SeaP): void {
           b.set(x, y, at(ly - 1.6 / c.d) <= 0.95 ? C[0]! : at(ly + 1.6 / c.d) <= 0.95 ? C[3]! : C[1]!);
           continue;
         }
-        if (bayer4(x, y) < (m > 0.72 ? 0.5 : m > 0.5 ? 0.25 : m > 0.3 ? 0.125 : 0)) { b.set(x, y, m > 0.72 ? C[1]! : C[2]!); continue; }
+        if (m > 0.84 && bd(x, y) < 0.5) { b.set(x, y, C[2]!); continue; }
         // the water: the lake's tones (each a dithered pair, so on screen it meets the lake beside it)
         const tw = ly / (wf * 1.1) + (vnoise(lx / (sw * 5), ly / (sw * 1.5), seed + 42) - 0.5) * 0.3 + (vnoise(lx / (sw * 1.6), ly / (sw * 0.6), seed + 44) - 0.5) * 0.3;
-        const pair = tw < 0.25 ? [P.jade[2]!, P.karst[3]!] : tw < 0.55 ? [P.jade[3]!, P.karst[3]!] : [P.jade[3]!, P.karst[5]!];
-        b.set(x, y, pair[bayer4(x, y) < 0.5 ? 0 : 1]!);
+        // (the lake's own tones in ripple runs along each row, as the lake beside it breaks
+        // into horizontal ripples: never a checker)
+        const pair = tw < 0.25 ? [P.jade[2]!, P.range[1]!] : tw < 0.55 ? [P.jade[2]!, P.range[2]!] : [P.jade[3]!, P.range[3]!];
+        const row = Math.floor(ly * 1.2);
+        const rl = 5 + 12 * hash1(row, seed + 45);
+        const run = Math.floor((lx + 37 * hash1(row, seed + 46)) / rl);
+        b.set(x, y, pair[hash1(run, seed + 47 + row) < 0.5 ? 0 : 1]!);
         continue;
       }
       b.set(x, y, col);
