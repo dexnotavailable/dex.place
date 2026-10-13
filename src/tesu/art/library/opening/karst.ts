@@ -190,7 +190,7 @@ function formsOf(p: KarstP, seed: number): Form[] {
 }
 
 /** Half width of a lobe at height a, one side (-1 left, 1 right). */
-function lobeHalf(L: Lobe, a: number, side: -1 | 1): number {
+function lobeHalf(L: Lobe, a: number, side: -1 | 1, wet = false): number {
   if (a < 0 || a > L.h) return 0;
   if (L.ink) {
     // a tower: tapering as it rises, bulging and pinching, stepping in at ledges, each side its own
@@ -201,7 +201,7 @@ function lobeHalf(L: Lobe, a: number, side: -1 | 1): number {
     const band = Math.floor(a / Math.max(6, L.h * 0.13));
     const bh = Math.max(6, L.h * 0.13);
     if (hash1(band * 2 + (side > 0 ? 1 : 0), s + 31) < 0.4 && a - band * bh > bh * 0.65) k *= 0.82;
-    if (u < 0.12) k *= 1 + (0.12 - u) * 2.5;
+    if (u < 0.12 && !wet) k *= 1 + (0.12 - u) * 2.5;
     return L.hw * Math.max(0.12, k);
   }
   const cap = Math.min(L.h * 0.7, L.hw * L.round);
@@ -215,7 +215,7 @@ function lobeHalf(L: Lobe, a: number, side: -1 | 1): number {
   // the sides wander in big bulges, waists and small ledges; the top is knobbed, not a dome
   k *= 0.8 + 0.34 * vnoise1(a / Math.max(10, L.hw * 2), s) + 0.08 * (vnoise1(a / 4.5, s + 3) - 0.5);
   if (a > c0) k *= 0.85 + 0.3 * vnoise1(a / Math.max(3, cap * 0.3), s + 5);
-  if (a < L.h * 0.08) k *= 1 + ((L.h * 0.08 - a) / L.h) * 2;
+  if (a < L.h * 0.08 && !wet) k *= 1 + ((L.h * 0.08 - a) / L.h) * 2;
   return L.hw * k;
 }
 
@@ -269,24 +269,65 @@ function lookOf(p: KarstP, row: number): Look {
   return { rock: P.karst, veg: P.moss, dark: P.pine, lit: 0.1, shade: 0.5, vegT: 0.4, detail: 2, foot: 0.3 };
 }
 
-/** One crown of trees on a summit (a small cauliflower clump), lit on its upper left. */
+/**
+ * One clump of trees (a cauliflower): a main ball with smaller ones bulging from its upper rim,
+ * lit on their upper left in a flat step, a crescent of shade on each one's lower right, dark
+ * pockets where a nearer bump overhangs another, the clump's underside in shade. Flat steps
+ * with a narrow dither band: no ball shading, no outline, no speckle.
+ */
 function crown(c: PaintCtx, cx: number, cy: number, r: number, K: Look, seed: number, footK: number): void {
   const b = c.buf, d = c.d;
-  const X0 = Math.floor(c.X(cx - r * 1.3)), X1 = Math.ceil(c.X(cx + r * 1.3)), Y0 = Math.floor(c.Y(cy - r * 1.2)), Y1 = Math.ceil(c.Y(cy + r * 0.6));
+  const X0 = Math.floor(c.X(cx - r * 1.45)), X1 = Math.ceil(c.X(cx + r * 1.45)), Y0 = Math.floor(c.Y(cy - r * 1.5)), Y1 = Math.ceil(c.Y(cy + r * 0.62));
   if (!b.touches(X0, Y0, X1, Y1)) return;
+  // the bumps: the main ball, then 2 to 5 on its rim (more toward the sun), nearer the eye
+  const balls: [number, number, number][] = [[0, 0, r]];
+  if (r * d >= 2.2) {
+    const n = 2 + Math.floor(hash1(1, seed) * (r * d > 5 ? 4 : 2));
+    for (let j = 0; j < n; j++) {
+      const ang = -Math.PI * (0.1 + 0.85 * Math.pow(hash1(j + 2, seed), 0.8));
+      const rr = r * (0.34 + 0.26 * hash1(j + 9, seed));
+      const reach = r * (0.58 + 0.2 * hash1(j + 17, seed));
+      balls.push([Math.cos(ang) * reach, Math.sin(ang) * reach, rr]);
+    }
+  }
   for (let y = Math.max(Y0, b.oy); y < Math.min(Y1, b.y1); y++) {
     for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
       const dx = c.lx(x + 0.5) - cx, dy = c.ly(y + 0.5) - cy;
-      if (dy > r * 0.5) continue;
-      const ang = Math.atan2(dy, dx);
-      const rim = r * (0.8 + 0.28 * vnoise1(ang * 2.2 + 10, seed) + (d >= 0.5 ? 0.12 * vnoise1(ang * 7 + 3, seed + 1) : 0));
-      const q = Math.hypot(dx, dy) / rim;
-      if (q > 1) continue;
-      const lit = (-0.62 * dx - 0.78 * dy) / Math.max(1e-3, rim);
-      let t = (K.vegT + 0.08 - lit * 0.3 + q * 0.12) * (1 - footK);
+      // the frontmost bump here (the rim bumps stand in front of the main ball)
+      let hit = -1, hu = 0;
+      for (let i = balls.length - 1; i >= 0; i--) {
+        const [bx, by, br] = balls[i]!;
+        const ex = dx - bx, ey = dy - by;
+        const ang = Math.atan2(ey, ex);
+        const rim = br * (0.86 + 0.2 * vnoise1(ang * 2.4 + 10 + i * 3, seed) + (d >= 0.5 ? 0.08 * vnoise1(ang * 7 + 3 + i, seed + 1) : 0));
+        // (the underside rounder and tucked in: it sinks into the canopy, never cut flat)
+        const q = Math.hypot(ex, ey > 0 ? ey * 1.35 : ey) / rim;
+        if (q > 1) continue;
+        hit = i;
+        // (lit cap and shade crescent are arcs: inside a circle shifted toward the sun, and outside
+        // one shifted less, so their edges curve with the bump, never a straight cut)
+        const lc = Math.hypot(ex + rim * 0.42 * 0.62, ey + rim * 0.42 * 0.78) / (rim * 0.72);
+        const sc = Math.hypot(ex + rim * 0.22 * 0.62, ey + rim * 0.22 * 0.78) / (rim * 0.98);
+        hu = lc < 1 ? 1 : sc > 1 ? -1 : 0;
+        break;
+      }
+      if (hit < 0) continue;
+      let t = K.vegT + 0.06;
+      if (hu > 0) t -= 0.16;
+      else if (hu < 0) t += 0.16;
+      // a dark pocket just under and right of a nearer bump
+      if (hit < balls.length - 1) {
+        for (let i = hit + 1; i < balls.length; i++) {
+          const [bx, by, br] = balls[i]!;
+          const ex = dx - bx + 1.6 / d, ey = dy - by + 1.8 / d;
+          if (ex * ex + ey * ey < br * br) { t += 0.26; break; }
+        }
+      }
+      if (hit === 0 && hu <= 0 && dy > -r * 0.2) t += 0.1;
+      t *= 1 - footK;
       let ramp = K.veg;
       if (t > 0.62 && K.dark !== K.veg) { ramp = K.dark; t = 0.25 + (t - 0.62) * 1.5; }
-      b.set(x, y, tone(ramp, clamp(t, 0, 1), x, y, 0.4));
+      b.set(x, y, tone(ramp, clamp(t, 0, 1), x, y, 0.15));
     }
   }
 }
@@ -315,7 +356,7 @@ function capAt(L: Lobe, lx: number, u: number, capD: number): number {
 }
 
 /** Paints one lobe of a form: its rock, its forest cap and its crowns. */
-function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first: boolean, veil = 1): void {
+function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first: boolean, veil = 1, wet?: readonly [number, number]): void {
   const b = c.buf, d = c.d;
   const span = L.hw * 1.4 + Math.abs(f.lean) * L.h + 6;
   const top = f.by - L.h;
@@ -323,10 +364,13 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
   const capD = green * (f.kind === "cone" ? L.h * 0.5 : Math.min(L.h * 0.3, L.hw * 1.1));
   const fallX = f.cx + L.dx - L.hw * (0.2 + 0.45 * hash1(2, L.seed));
   const yTop = Math.floor(c.Y(top)) - 1, yBase = Math.ceil(c.Y(f.by));
+  const wetHere = (lx: number): boolean => !!wet && f.by > -0.5 && lx > wet[0] && lx < wet[1];
+  // (standing in the lake its foot does not flare like a pedestal: the water undercuts it)
+  const wetForm = !!wet && f.by > -0.5 && f.cx + L.dx > wet[0] && f.cx + L.dx < wet[1];
   for (let y = Math.max(yTop, b.oy); y < Math.min(yBase, b.y1); y++) {
     const a = f.by - c.ly(y + 0.5);
     if (a < 0 || a > L.h) continue;
-    const m = axis(f, L, a), hl = lobeHalf(L, a, -1), hr = lobeHalf(L, a, 1);
+    const m = axis(f, L, a), hl = lobeHalf(L, a, -1, wetForm), hr = lobeHalf(L, a, 1, wetForm);
     if (hl + hr <= 0.3 / d) continue;
     const xL = Math.ceil(c.X(m - hl) - 0.5), xR = Math.floor(c.X(m + hr) - 0.5);
     const ridge = L.ink ? 0.25 + (vnoise1(a / 60, L.seed + 21) - 0.5) * 0.3 : (vnoise1(a / 40, L.seed + 21) - 0.5) * 0.45 + 0.1;
@@ -337,11 +381,39 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
       const below = lobeTopAt(L, lx - m) - a;
       if (L.ink && below < 0) continue;
       const edgeR = x === xR, edgeL = x === xL;
-      if (green > 0 && below < capAt(L, lx, u, capD) && (L.ink || below < capD * 0.3 || vnoise(lx / 4.5, a / 3.6, L.seed + 46) < 0.8 - 0.1 * clamp(u, 0, 1))) {
-        let t = K.vegT + 0.2 * (below / Math.max(1, capD)) + (u > ridge ? 0.18 : -0.05);
+      // the foot where it stands in the lake (limestone in still water): the water has cut a
+      // notch along the waterline, a dark undercut with the rock overhanging it, set back at
+      // the sides; above it a wet band whose top wanders, darker still in streaks; a broken bright
+      // line where the water laps into the notch. The reflection starts right there.
+      let wetK = 0;
+      if (wetHere(lx)) {
+        const nh = 0.6 + 1.6 * vnoise1(lx / 7, L.seed + 93) + 1.4 * vnoise1(lx / 26, L.seed + 94);
+        const wf = nh + 1.5 + 3.2 * vnoise1(lx / 5, L.seed + 90) + 3.4 * vnoise1(lx / 21, L.seed + 91);
+        if (a < nh) {
+          const inset = 1 + 2.6 * vnoise1(a / 2 + lx / 40, L.seed + 95);
+          if (lx < m - hl + inset || lx > m + hr - inset) continue;
+          if (a < 1 / d && hash1(Math.floor(lx * 1.3), L.seed + 92) < 0.55) { b.set(x, y, P.cloud[2]!); continue; }
+          b.set(x, y, K.rock[K.rock.length - 1]!);
+          continue;
+        }
+        if (a < wf) {
+          // (algae in the wet band: dark green streaks where water runs down)
+          const algae = vnoise(lx / 2.2, a / 6, L.seed + 96) > 0.68;
+          b.set(x, y, algae ? tone(P.moss, 0.86, x, y, 0.3) : tone(K.rock, clamp(K.shade + 0.26 + (a < nh + 1.2 ? 0.1 : 0) + (u > ridge ? 0.06 : 0), 0, 1), x, y, 0.3));
+          continue;
+        }
+        // wetter and darker for a while above the band (spray, shade, the mist's shadow), fading
+        // up the face over a wandering height
+        const fh = Math.min(f.h * 0.3, 40) * (0.7 + 0.6 * vnoise1(lx / 13, L.seed + 97));
+        wetK = Math.pow(clamp(1 - (a - wf) / fh, 0, 1), 1.3);
+      }
+      if (green > 0 && below < capAt(L, lx, u, capD)) {
+        // (where the canopy opens, a dark pocket of shade under the trees, never bare rock specks)
+        const pocket = !L.ink && below > capD * 0.3 && vnoise(lx / 4.5, a / 3.6, L.seed + 46) > 0.8 - 0.1 * clamp(u, 0, 1);
+        let t = K.vegT + 0.2 * (below / Math.max(1, capD)) + (u > ridge ? 0.18 : -0.05) + (pocket ? 0.32 : 0);
         if (K.detail > 0 && d >= 0.25) t += L.ink ? (vnoise(lx / 3, a / 2.6, L.seed + 45) - 0.5) * 0.3 : (vnoise(lx / 7, a / 5.5, L.seed + 45) - 0.5) * 0.34 + (vnoise(lx / 2.5, a / 2.2, L.seed + 48) - 0.5) * 0.1;
         if (edgeR) t += 0.15;
-        t *= 1 - footK;
+        t = wetForm ? t + 0.3 * wetK : t * (1 - footK);
         let ramp = K.veg;
         if (t > 0.62 && K.dark !== K.veg) { ramp = K.dark; t = 0.25 + (t - 0.62) * 1.5; }
         b.set(x, y, tone(ramp, clamp(t, 0, 1), x, y, 0.4));
@@ -364,14 +436,15 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
       if (K.detail >= 1 && d >= 0.25) {
         if (vnoise(lx / 1.8, a / 34, L.seed + 3) > 0.72) t += 0.09;
         if (below < capD * 1.6 + 16 && vnoise(lx / 2.2, a / 14, L.seed + 5) > 0.7) t += 0.12;
-        if (green > 0 && vnoise(lx / 14, a / 3.5, L.seed + 11) > 1.06 - 0.12 * green && vnoise(lx / 40, a / 40, L.seed + 12) > 0.55) {
+        if (green > 0 && vnoise(lx / 9, a / 22, L.seed + 11) > 1.02 - 0.12 * green && vnoise(lx / 40, a / 40, L.seed + 12) > 0.55) {
           b.set(x, y, tone(K.veg, clamp((K.vegT + 0.2 + (u > ridge ? 0.15 : 0)) * (1 - footK), 0, 1), x, y, 0.4));
           continue;
         }
       }
       if (K.detail >= 2 && d >= 0.5 && Math.abs(Math.sin((a + 8 * vnoise1(lx / 30, L.seed + 7)) / 13)) < 0.05) t += 0.06;
-      // paler toward the foot: the form rises out of the mist
-      t *= 1 - footK;
+      // paler toward the foot, where the form rises out of the mist; standing in the lake, darker
+      // and wetter toward the water instead
+      t = wetForm ? t + 0.34 * wetK : t * (1 - footK);
       b.set(x, y, tone(K.rock, clamp(t, 0, 1), x, y, 0.45));
     }
     if (f.fall && first && d >= 0.25 && a < L.h * 0.82 && veil <= 1) {
@@ -406,6 +479,50 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
   }
 }
 
+/** A lone tree on the skyline: a thin leaning trunk standing out of the canopy, a small clump on top. */
+function skyTree(c: PaintCtx, x: number, y: number, hgt: number, K: Look, seed: number): void {
+  const b = c.buf, d = c.d;
+  const lean = (hash1(1, seed) - 0.4) * hgt * 0.3;
+  for (let a = 0; a < hgt * 0.75; a += 0.5 / d) {
+    const X = Math.floor(c.X(x + lean * (a / hgt))), Y = Math.floor(c.Y(y - a));
+    b.set(X, Y, P.pine[5]!);
+    if (a < hgt * 0.3 && d >= 1) b.set(X + 1, Y, P.pine[4]!);
+  }
+  const r = hgt * (0.26 + 0.1 * hash1(2, seed));
+  crown(c, x + lean * 0.8, y - hgt * 0.78, r, K, seed + 3, 0);
+  if (hash1(4, seed) < 0.6) crown(c, x + lean * 0.5 + r * 0.7, y - hgt * 0.55, r * 0.6, K, seed + 5, 0);
+}
+
+/**
+ * Scrub along the foot of a form standing in the lake: low dark clumps of very different sizes
+ * sitting on the waterline in runs with gaps, so the contact is never one long rule of rock.
+ */
+function footScrub(c: PaintCtx, f: Form, K: Look, wet: readonly [number, number]): void {
+  if (f.by < -0.5 || f.cx < wet[0] || f.cx > wet[1]) return;
+  const K2: Look = { ...K, veg: P.moss, dark: P.pine, vegT: 0.66 };
+  const r = rng(f.seed + 777);
+  for (const L of f.lobes) {
+    if (L.h < f.h * 0.25 && r() < 0.5) continue;
+    const m = axis(f, L, 1), x0 = m - lobeHalf(L, 1, -1, true) - 2, x1 = m + lobeHalf(L, 1, 1, true) + 2;
+    let x = x0 + 3 * r();
+    while (x < x1) {
+      // runs of scrub, then bare wet rock coming straight down to the water (a run's own size)
+      const run = vnoise1(x / 26, L.seed + 778) + 0.35 * (vnoise1(x / 7, L.seed + 779) - 0.5);
+      const v = r();
+      const big = run > 0.62 ? 1.35 : 1;
+      const rr = (v < 0.22 ? 6.5 + 6 * r() : v < 0.6 ? 3.5 + 2.5 * r() : 2 + 1.5 * r()) * big;
+      if (run > 0.38 && r() < 0.85) {
+        // (a second, smaller clump climbing behind a big one: the scrub's top steps; now and then
+        // a lone tree standing up out of it)
+        if (rr > 5 && r() < 0.6) crown(c, x + rr * (r() - 0.3), f.by - rr * 1.25, rr * 0.6, K2, L.seed + Math.round(x * 17), 0);
+        if (rr > 7 && r() < 0.35) crown(c, x + rr * 0.2, f.by - rr * 2, rr * 0.45, K2, L.seed + Math.round(x * 19), 0);
+        crown(c, x, f.by - rr * 0.45 + 0.3, rr, K2, L.seed + Math.round(x * 13), 0);
+      }
+      x += rr * (0.65 + 0.8 * r());
+    }
+  }
+}
+
 /**
  * The forest crowning a broad lobe: crowns of very different sizes (a few great ones, more
  * middling, many small) along its top so the skyline is lumpy, never an arch of even beads;
@@ -415,9 +532,10 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
 function broadCrowns(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, capD: number): void {
   const r = rng(L.seed + 501);
   const g = Math.min(1, green + 0.2);
+  // sizes 3x apart and more: a few great clumps, more middling, many small
   const size = (): number => {
     const v = r();
-    return Math.max(2, (v < 0.16 ? L.hw * (0.17 + 0.1 * r()) : v < 0.55 ? L.hw * (0.07 + 0.06 * r()) : L.hw * (0.025 + 0.035 * r())) * g);
+    return Math.max(2, (v < 0.14 ? L.hw * (0.22 + 0.12 * r()) : v < 0.5 ? L.hw * (0.08 + 0.05 * r()) : L.hw * (0.028 + 0.03 * r())) * g);
   };
   // along the top, from the lit shoulder across the summit; sparse and small on the shaded side
   let ox = -L.hw * (0.95 + 0.15 * r());
@@ -429,6 +547,17 @@ function broadCrowns(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, capD
       crown(c, axis(f, L, at) + ox, f.by - at + rr * (0.25 + 0.3 * r()), rr, K, L.seed + Math.round(ox * 7), footK);
     }
     ox += rr * (0.55 + 1.1 * r());
+  }
+  // single trees standing up out of the crown on the skyline: a bare trunk, two or three flat
+  // tiers of needles, lit on the left (at the far planes only where they still read)
+  if (c.d >= 0.25 && L.hw > 18) {
+    const nt = 1 + Math.floor(r() * 3);
+    for (let i = 0; i < nt; i++) {
+      const tx = -L.hw * (0.75 - 1.2 * r());
+      const at = lobeTopAt(L, tx);
+      if (at < L.h * 0.55) continue;
+      skyTree(c, axis(f, L, at) + tx, f.by - at - 1, L.hw * (0.07 + 0.06 * r()) + 4, K, L.seed + 600 + i);
+    }
   }
   // down the lit shoulder: the forest spills over the edge in clumps, smaller as they go
   const c0 = L.h - Math.min(L.h * 0.7, L.hw * L.round);
@@ -456,43 +585,86 @@ function broadCrowns(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, capD
 }
 
 /**
- * A fall as a veil: broad, of its own width, a few strands of foam and cooler water following
- * the face, broken where it strikes a ledge (a bright splash, then a short step out), widening
- * as it falls, and blooming into dithered spray where it reaches the mist at the foot.
+ * A fall as a veil (reference 4's falls): it leaves the lip narrow and curls over it, follows
+ * the face as it leans and bends, and breaks on two or three ledges on the way down. Each drop
+ * between ledges has its own width, narrow where it leaves a ledge and spreading as it falls;
+ * where it strikes a ledge it bursts into a lumpy band of foam a little wider than itself and
+ * flings drops out to the sides, then steps out along the ledge; in one drop it may split round
+ * a rib of rock. Strands of foam over a cooler body, the shaded right edge cooler still. At the
+ * foot it blooms into dithered spray where it meets the mist.
  */
+function veilLedges(f: Form, L: Lobe): number[] {
+  const a0 = L.h * 0.82;
+  const n = 2 + (hash1(70, f.seed) < 0.55 ? 1 : 0);
+  const out: number[] = [];
+  let a = a0;
+  for (let k = 0; k < n; k++) {
+    a -= a0 * (0.17 + 0.17 * hash1(71 + k, f.seed));
+    if (a < L.h * 0.12) break;
+    out.push(a);
+  }
+  return out;
+}
+
 function paintVeil(c: PaintCtx, f: Form, L: Lobe, y: number, a: number, fallX: number, veil: number): void {
   const b = c.buf, d = c.d;
   const a0 = L.h * 0.82;
-  const drop = (a0 - a) / a0;
-  // ledges: every so often the veil strikes one and steps out a little
-  const bh = Math.max(10, L.h * 0.14);
-  const li = Math.floor(a / bh);
-  const inLedge = hash1(li, f.seed + 61) < 0.55 && ((a % bh) + bh) % bh < 2.2 / d;
+  const ledges = veilLedges(f, L);
+  // which drop this row is in, how far it has fallen in it, where it has stepped out to
+  let s = 0;
+  while (s < ledges.length && ledges[s]! > a) s++;
+  const top = s === 0 ? a0 : ledges[s - 1]!;
+  const ds = top - a;
   let shift = 0;
-  for (let k = Math.floor(a0 / bh); k > li; k--) if (hash1(k, f.seed + 61) < 0.55) shift += (hash1(k, f.seed + 62) - 0.35) * L.hw * 0.05;
-  const sway = Math.sin(a / 29 + f.seed) * Math.min(1.6, (L.h - a) / 50);
-  const cx = fallX + f.lean * a + sway + shift;
-  let half = Math.max(0.8 / d, (L.hw * 0.035 + (L.h - a) * 0.004) * veil) * (0.85 + 0.3 * vnoise1(a / 30, f.seed + 63)) * (1 + 0.5 * drop);
+  for (let k = 0; k < s; k++) shift += (hash1(80 + k, f.seed) < 0.5 ? -1 : 1) * L.hw * (0.05 + 0.08 * hash1(84 + k, f.seed));
+  const bend = Math.sin(a / 41 + f.seed) * Math.min(2.4, (a0 - a) / 30) + (vnoise1(a / 70, f.seed + 63) - 0.5) * L.hw * 0.07;
+  const cx = fallX + f.lean * a + bend + shift;
+  const base = Math.max(0.9 / d, L.hw * 0.035 * veil);
+  // each drop its own width: narrow off the ledge, spreading as it falls
+  const wS = base * (0.55 + 0.75 * hash1(90 + s, f.seed)) * (s === 0 ? 0.8 : 1);
+  let half = wS * (0.5 + 0.5 * Math.min(1, ds / 14)) * (1 + ds * 0.005);
   // it leaves the lip narrow and curls over it: no flat top
-  const lipK = clamp((a0 - a) / Math.max(4, L.h * 0.07), 0, 1);
-  half *= 0.3 + 0.7 * Math.sqrt(lipK);
-
-  if (inLedge) half *= 1.35;
-  // the spray bloom at the foot, where the veil meets the mist
+  const lipK = clamp((a0 - a) / Math.max(4, L.h * 0.06), 0, 1);
+  half *= 0.35 + 0.65 * Math.sqrt(lipK);
+  // the burst where it strikes the ledge above (this drop's first rows)
+  const sh = (2.2 + 2 * vnoise1(a, f.seed + 64)) / Math.max(0.5, d);
+  // (and the foam thrown up over the ledge just before it strikes: a lumpy blob, never a bar)
+  const toNext = s < ledges.length ? a - ledges[s]! : Infinity;
+  const crest = toNext < (1.5 + 2.5 * vnoise1(a * 0.7, f.seed + 68)) / Math.max(0.5, d);
+  const splash = (s > 0 && ds < sh) || crest;
+  if (splash) half = Math.max(half, wS) * (crest ? 1.12 : 1.3);
+  // the spray bloom at the foot, where it meets the mist
   const bloomH = Math.max(12, L.h * 0.16);
   const bloom = clamp(1 - a / bloomH, 0, 1);
   half *= 1 + 2.4 * bloom * bloom;
+  // a split round a rib of rock in one drop
+  const split = s > 0 && !splash && hash1(95 + s, f.seed) < 0.4 && ds > sh * 2;
   const C = P.cloud;
-  const X0 = Math.floor(c.X(cx - half)), X1 = Math.ceil(c.X(cx + half));
+  const reach = splash ? 2.3 : 1;
+  const X0 = Math.floor(c.X(cx - half * reach)), X1 = Math.ceil(c.X(cx + half * reach));
   for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
     const lx = c.lx(x + 0.5);
     const u = (lx - cx) / half;
+    if (splash && Math.abs(u) > 1) {
+      // drops flung out to the sides of the burst, falling back
+      const k = (Math.abs(u) - 1) / (reach - 1);
+      if (bayer4(x, y) < 0.35 * (1 - k) && hash1(Math.floor(lx * 2) + Math.floor(a) * 131, f.seed + 66) < 0.5) b.set(x, y, C[1]!);
+      continue;
+    }
     if (u < -1 || u > 1) continue;
-    // ragged sides and spray: the edges dither out, more so lower down and in the bloom
+    if (split && Math.abs(u - 0.1 * Math.sin(a / 9)) < 0.17 + 0.08 * Math.min(1, ds / 20)) continue;
+    // ragged sides: the edges dither out, more so lower down and in the bloom
     const edge = 1 - Math.abs(u);
     const keepA = clamp(edge * (2.4 - 1.2 * bloom) + 0.15 * (vnoise(lx / 2, a / 5, f.seed + 64) - 0.5), 0, 1);
     if (bayer4(x, y) >= (bloom > 0 ? keepA * (1 - 0.55 * bloom) : keepA > 0.55 ? 1 : keepA) * (0.3 + 0.7 * lipK)) continue;
-    if (inLedge) { b.set(x, y, Math.abs(u) < 0.8 ? P.paper[0]! : C[1]!); continue; }
+    if (splash) {
+      // (the foam's lower edge is lumpy: never a bar across the fall)
+      const fe = sh * (0.55 + 0.6 * vnoise1(lx / 2.2, f.seed + 67));
+      if (!crest && ds > fe) { if (bayer4(x, y) < 0.5) b.set(x, y, C[1]!); continue; }
+      if (crest && toNext > (1 + 2.5 * vnoise1(lx / 1.8, f.seed + 69)) / Math.max(0.5, d)) { if (bayer4(x, y) < 0.25) b.set(x, y, C[1]!); continue; }
+      b.set(x, y, Math.abs(u) < 0.75 ? P.paper[0]! : C[1]!);
+      continue;
+    }
     // strands: a few brighter ribbons of foam over a cooler body; the shaded right edge cooler
     const strand = vnoise1(u * 2.6 + a / 90, f.seed + 65) + 0.25 * (vnoise(lx / 1.5, a / 7, f.seed + 66) - 0.5);
     let i = strand > 0.62 ? 0 : strand > 0.4 ? 1 : 2;
@@ -526,8 +698,12 @@ function bankAt(lx: number, x0: number, x1: number, mh: number, seed: number, fe
   // the core lies low and sags in the gaps; the billows above it climb the feet
   const core = Math.max(0, mh * (0.05 + 0.5 * s1 * s1 + 0.3 * (s2 - 0.5) + 0.12 * (s3 - 0.5)) * (0.3 + 0.7 * near) + up * 0.15) * ends;
   const zone = (mh * (0.7 + 1.2 * vnoise1(lx / (mh * 3.3), seed + 6)) * (0.45 + 0.55 * near) + up) * ends;
-  // in the gaps it lifts off the water a little, unevenly (the lake runs on under it)
-  const lift = mh * (0.1 + 0.55 * vnoise1(lx / (mh * 2.1), seed + 8) + 0.45 * vnoise1(lx / (mh * 0.55), seed + 24)) * Math.max(0, 0.75 - near) / 0.75;
+  // where it lies on water its underside floats off the lake everywhere, unevenly at three
+  // scales: a few px at a foot (the rock's wet foot and its waterline show under it), far more
+  // in the gaps (the lake runs on under it, the bank torn into lobes)
+  const n1 = vnoise1(lx / (mh * 2.1), seed + 8), n2 = vnoise1(lx / (mh * 0.55), seed + 24), n3 = vnoise1(lx / (mh * 0.17), seed + 27);
+  const gap = Math.max(0, 0.75 - near) / 0.75;
+  const lift = mh * Math.max(0, -0.04 + 0.12 * n1 + 0.07 * n2 + 0.05 * n3 + gap * (0.12 + 0.55 * n1 + 0.4 * n2));
   return [core, zone, near, lift];
 }
 
@@ -574,22 +750,29 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
       const [wc, wz] = bankAt(wx, x0, x1, mh, seed, feet, o.taper);
       W.push([wx, half, wc + wz * 0.8 + mh * (0.25 + 0.8 * hash1(j, seed + 14)), mh * (0.1 + 0.16 * hash1(j, seed + 15)), 0.3 + 0.35 * hash1(j, seed + 16)]);
     }
+    // (on the water the whole bank floats on its lifted underside: its densest part just above
+    // it, thinning upward; off the lake it sits on the ground)
+    const fl = thin > 0 ? lift * onLake : 0;
+    // (on the water it is torn along its length into lobes, thinner and gappier between the feet)
+    const lobe = thin > 0 ? clamp(0.35 + 0.8 * vnoise1(lx / (mh * 1.15), seed + 29) + 0.2 * vnoise1(lx / (mh * 0.4), seed + 30) + 0.2 * near, 0, 1.2) : 1;
+    const coreL = thin > 0 ? core * clamp(lobe * 1.4 - 0.45, 0, 1.2) : core;
     for (let y = Math.max(Yt, b.oy); y < Math.min(Yb, b.y1); y++) {
-      const a = by - c.ly(y + 0.5);
-      const low = a - (by - floor);
+      const a0 = by - c.ly(y + 0.5);
+      const a = a0 - fl;
+      const low = a0 - (by - floor);
       // density: 1 at the core's top, 0 at the zone's top, broken by billows at two scales
       let cov: number;
-      if (a <= core) cov = 1.2;
+      if (a <= coreL) cov = 1.2;
       else {
-        const g = 1 - (a - core) / Math.max(1e-3, zone);
+        const g = 1 - (a - coreL) / Math.max(1e-3, zone);
         const n = fbm(lx / (mh * 1.7), a / (mh * 0.6), seed + 7, 3) - 0.5 + 0.45 * (vnoise(lx / (mh * 0.55), a / (mh * 0.28), seed + 10) - 0.5);
-        cov = g * 1.0 + n * 1.25;
+        cov = (g * 1.0 + n * 1.25) * (thin > 0 ? 0.4 + 0.6 * lobe : 1);
       }
-      // on the water, in the gaps: the underside lifts and frays too
-      if (thin > 0 && low < lift + thin * 0.5 && near < 0.75) {
-        const k = (low - lift) / Math.max(1e-3, thin * 0.5);
-        const n = fbm(lx / (mh * 1.3), a / (mh * 0.5), seed + 19, 2) - 0.5;
-        cov = Math.min(cov, k + n * 0.9);
+      // on the water: the underside floats and frays into lobes, the lake and the feet under it
+      if (thin > 0 && onLake > 0 && low < fl + thin * 0.3) {
+        const k = (low - fl) / Math.max(1e-3, thin * 0.3);
+        const n = fbm(lx / (mh * 1.3), a0 / (mh * 0.5), seed + 19, 2) - 0.5 + 0.4 * (vnoise(lx / (mh * 0.3), a0 / (mh * 0.2), seed + 28) - 0.5);
+        cov = Math.min(cov, k * 1.2 + n * 1.2);
       }
       for (const [wx, half, wy, th0, dens] of W) {
         const al = (lx - wx) / half;
@@ -598,6 +781,15 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
         const v = (a - yc) / Math.max(1e-3, th);
         if (v <= -1 || v >= 1) continue;
         cov = Math.max(cov, dens * (1 - v * v) * Math.pow(1 - al * al, 0.6) * (0.5 + 0.8 * vnoise(lx / (mh * 0.5), a / (mh * 0.3), seed + 18)));
+      }
+      if (thin > 0 && onLake > 0.4) {
+        // on the lake it is a veil of haze over the feet, not a body: mostly the three dissolve
+        // steps, solid only in its thickest lumps, so the rock and its wet foot read through it
+        const v = cov * (0.62 + 0.38 * lobe);
+        if (v >= 1.12) { b.set(x, y, li(v > 1.3 && a > coreL - 2 / d ? 1 : 2)); continue; }
+        const th = v > 0.86 ? 0.5 : v > 0.56 ? 0.25 : v > 0.3 ? 0.125 : 0;
+        if (bayer4(x, y) < th) b.set(x, y, li(v > 0.7 ? 1 : 2));
+        continue;
       }
       if (cov >= 0.85) {
         // solid: the body, in the haze's own cool white; a lump's sunward top catches the light
@@ -610,7 +802,8 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
         }
         // (rims only in patches, so no lit contour runs along a layer's top)
         if (lit && (lighten > 0 || vnoise(lx / (mh * 2.2), a / mh, seed + 12) < 0.5)) lit = false;
-        if (wetH > 0 && low < wetH) {
+        // (the water's tone at the foot only where the bank still sits on the water: the far plane)
+        if (wetH > 0 && thin <= 0 && low < wetH) {
           const v = low / Math.max(1e-3, wetH) + (vnoise(lx / (mh * 0.4), a / (mh * 0.2), seed + 22) - 0.5) * 0.3;
           // (the lake's own value where it meets the mist: what the water just below shows of
           // the mist, a darker glassy jade, so the two meet without a step; paler going up)
@@ -657,7 +850,8 @@ export const karst = definePainter<KarstP>("op.karst", {
       const row = forms.filter((f) => f.row === k);
       for (const f of row) {
         if (ghost > 0 && f.h < p.h * (0.45 + 0.5 * ghost)) continue;
-        f.lobes.forEach((L, i) => paintLobe(c, f, L, Kg, p.green ?? 0.8, i === 0, p.veil ?? 1));
+        f.lobes.forEach((L, i) => paintLobe(c, f, L, Kg, p.green ?? 0.8, i === 0, p.veil ?? 1, p.look !== "far" ? p.wet : undefined));
+        if (p.wet && p.look !== "far" && (p.green ?? 0.8) > 0 && c.d >= 0.25) footScrub(c, f, Kg, p.wet);
         // (a veil goes over the whole form: the lobes in front of the summit do not cut it)
         if (f.fall && (p.veil ?? 1) > 1 && c.d >= 0.25) {
           const L = f.lobes[0]!;
@@ -673,7 +867,7 @@ export const karst = definePainter<KarstP>("op.karst", {
       const feet: MistFoot[] = row.map((f) => ({ x: f.cx, hw: f.hw, h: f.h }));
       // (the back rows' mist runs down to the front row's base: rows of karst rise out of one
       // body of white, never stacked bands with sky between them)
-      mistBank(c, x0, x1, -k * p.h * 0.18, mh * (1 - 0.12 * k) * (1 + ghost), c.seed + k * 31, k > 0 ? 1 : 0, feet, { floor: 0, thin: k === 0 && p.look !== "far" ? mh * 0.8 : 0, water: p.wet ? (p.look === "far" ? mh * 0.75 : mh * 0.5) : 0, minCore: p.look === "far" && k === 0 ? mh * 0.4 : 0, far: p.look === "far", wetX: p.wet });
+      mistBank(c, x0, x1, -k * p.h * 0.18, mh * (1 - 0.12 * k) * (1 + ghost), c.seed + k * 31, k > 0 ? 1 : 0, feet, { floor: 0, thin: p.look !== "far" ? mh * 0.8 : 0, water: p.wet ? (p.look === "far" ? mh * 0.75 : mh * 0.5) : 0, minCore: p.look === "far" && k === 0 ? mh * 0.4 : 0, far: p.look === "far", wetX: p.wet });
     }
   },
 });

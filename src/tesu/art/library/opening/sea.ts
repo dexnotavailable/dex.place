@@ -47,6 +47,15 @@ export interface SeaP {
   wetFloor?: number;
   /** Where the lake ends at this plane's waterline, px from its west end: east of it no water tone. */
   wetTo?: number;
+  /** Where the lake begins at this plane's waterline (a sea west of the lake's west end), px. */
+  wetFrom?: number;
+  /**
+   * How far past the lake's end the lake runs on under the mist, px (default 340): over that run
+   * the floor's top shows the water torn by ever more mist, so the lake's shore never shows.
+   */
+  veilTo?: number;
+  /** A standing bank above the line (default true; false: only the floor below it). */
+  bank?: boolean;
 }
 
 /** The bank's height scale (its mist band), px. */
@@ -90,15 +99,27 @@ function paintFloor(c: PaintCtx, p: SeaP): void {
       const i = 0.6 + clamp(v, 0, 1) * 2.8;
       const k = Math.floor(i);
       const col = C[Math.min(4, k + (bayer4(x, y) < i - k ? 1 : 0))]!;
-      if (wf > 0 && ly < wf * 1.6) {
-        // near the line: the lake's tone on the lake, its lower edge torn into the billows; past
-        // the lake's end low mist on the shallows, a pale jade thinning out east into the billows
-        const past = (lx - (p.wetTo ?? Infinity)) / (sw * 40) + (vnoise1(ly / (sw * 3), seed + 31) - 0.5) * 0.5;
-        const w = ly / wf + (vnoise(lx / (sw * 3), ly / (sw * 1.2), seed + 30) - 0.5) * 0.7 + (0.5 - n0) * 0.6 + Math.max(0, past) * 0.8;
-        if (past < 0) {
-          if (w < 0.4) { b.set(x, y, bayer4(x, y) < 0.5 ? P.jade[2]! : P.jade[3]!); continue; }
-          if (w < 0.7 || (w < 1 && bayer4(x, y) < (1 - w) / 0.3 * 0.5)) { b.set(x, y, bayer4(x + 1, y) < 0.5 ? P.jade[1]! : P.jade[2]!); continue; }
-        } else if (w < 0.6 || (w < 1 && bayer4(x, y) < (1 - w) / 0.4 * 0.5)) { b.set(x, y, bayer4(x + 1, y) < 0.5 ? P.jade[0]! : C[2]!); continue; }
+      if (wf > 0 && ly < wf * (1.3 + 0.5 * vnoise1(lx / (sw * 6), seed + 32))) {
+        // the floor's top near the lake: the lake running on under low mist. Its water in the
+        // lake's own tone, deepening toward the viewer like the lake beside it, so the shore
+        // the water's edge draws never shows; over it torn lobes of mist lying on the water, ever
+        // more of them the further past the lake's end, until they close into the sea of mist
+        const past = Math.max(0, lx - (p.wetTo ?? Infinity), (p.wetFrom ?? -Infinity) - lx);
+        const dens = clamp(past / (p.veilTo ?? 340), 0, 1);
+        // (no lobe is cut by the line: right under it they thin away, so none of them rules it)
+        const at = (yy: number): number => dens * 1.35 - 0.3 + (fbm(lx / (sw * 5), yy / (sw * 0.9), seed + 40, 3) - 0.5) * 1.6 + (vnoise(lx / (sw * 2.2), yy / (sw * 0.5), seed + 41) - 0.5) * 0.35 - yy / (wf * 6) - 1.2 * (1 - dens * dens) * Math.max(0, 1 - yy / (sw * (0.6 + 0.8 * vnoise1(lx / (sw * 3), seed + 43))));
+        const m = at(ly);
+        if (m > 0.95) {
+          // a lobe: lit along its top, its underside in its own shadow
+          b.set(x, y, at(ly - 1.6 / c.d) <= 0.95 ? C[0]! : at(ly + 1.6 / c.d) <= 0.95 ? C[3]! : C[1]!);
+          continue;
+        }
+        if (bayer4(x, y) < (m > 0.72 ? 0.5 : m > 0.5 ? 0.25 : m > 0.3 ? 0.125 : 0)) { b.set(x, y, m > 0.72 ? C[1]! : C[2]!); continue; }
+        // the water: the lake's tones (each a dithered pair, so on screen it meets the lake beside it)
+        const tw = ly / (wf * 1.1) + (vnoise(lx / (sw * 5), ly / (sw * 1.5), seed + 42) - 0.5) * 0.25;
+        const pair = tw < 0.25 ? [P.jade[2]!, P.karst[3]!] : tw < 0.55 ? [P.jade[3]!, P.karst[3]!] : [P.jade[3]!, P.karst[5]!];
+        b.set(x, y, pair[bayer4(x, y) < 0.5 ? 0 : 1]!);
+        continue;
       }
       b.set(x, y, col);
     }
@@ -112,10 +133,14 @@ export const sea = definePainter<SeaP>("op.sea", {
   },
   paint(c, p) {
     paintFloor(c, p);
+    if (p.bank === false) return;
     const west = p.west ?? p.ends ?? 120;
     const feet: MistFoot[] = (p.rise ?? []).map(([x, hw, h]) => ({ x, hw, h }));
     // the standing bank: its west end sinks over `west` px, its east end over `ends`
     const from = p.bankFrom ?? 0;
-    mistBank(c, from - west * 0.3, p.w, 0, bankH(p), c.seed + 3, 0, feet, { taper: Math.max(west, p.ends ?? 120), torn: p.torn ?? 0.4, water: p.wetFloor ? bankH(p) * 0.5 : 0, wetX: [-1e6, (p.wetTo ?? 1e6) + (p.wetFloor ?? 0) * 3] });
+    // (over the lake, and over the stretch where the lake runs on under the mist, it floats as a
+    // veil of haze; beyond, it stands on the sea's floor)
+    const veilTo = p.veilTo ?? 340;
+    mistBank(c, from - west * 0.3, p.w, 0, bankH(p), c.seed + 3, 0, feet, { taper: Math.max(west, p.ends ?? 120), torn: p.torn ?? 0.4, thin: p.wetFloor ? bankH(p) * 0.8 : 0, wetX: p.wetFloor ? [(p.wetFrom ?? -1e6) - veilTo * 0.8, (p.wetTo ?? 1e6) + veilTo * 0.8] : undefined });
   },
 });

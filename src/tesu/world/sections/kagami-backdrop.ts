@@ -67,6 +67,10 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   drifting(b, "sky-strata-1", "sky", "op.cloud", 620, -70, { kind: "stratus", w: 640, h: 18, layers: 2 }, skyWrap, 3.5, 2);
   // (the high streak read as a contrail or a ruled line across the sky: gone; its seed is kept)
   seedAt(b, seedNow(b) + 1);
+  // a high, thin field of cloud above it all, combed out by the wind: patches of fibres a step
+  // or two off the sky, so the upper sky has quiet texture (the postcard), drifting with the strata
+  ([[-450, -500, 900, 170, 0.45], [650, -560, 1000, 150, 0.5], [1550, -470, 760, 140, 0.4]] as const).forEach(([x, dy, w, hh, dn], i) =>
+    drifting(b, `sky-field-${i}`, "sky", "op.cloud", x, dy, { kind: "field", w, h: hh, density: dn, strands: 2 + i }, skyWrap, 3.2 + i * 0.3, 1, 4, seed1(4 + i)));
   // the two sky isles, Bell and Drum, above and right of the palace: seen from almost everywhere
   // (no reflection: the lake mirrors the sky about the horizon, not the waterline the frames
   // show, so their doubles hung under the mist as a second pair of isles)
@@ -111,7 +115,13 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   for (const [x, forms] of P2) for (const [dx, w, hh] of forms) if (x + dx > MID_SEA - 200) rise.push([x + dx - MID_SEA, w / 2, hh]);
   // (past the lake's east shore at its depth it is low mist on water first: no white plate)
   const MID_LAKE = lakeAt(PLANES.mid.rate), FAR_LAKE = lakeAt(PLANES.far.rate);
+  // (past its ends at this depth the lake runs on under the low mist for a while: the karst
+  // standing there stand in water too, with wet feet)
+  const MID_WET: [number, number] = [MID_LAKE[0] - 200, MID_LAKE[1] + 200];
   bg(b, "mid", MID_SEA, "op.sea", { w: 11000, depth: 600, swell: 10, ends: 60, west: 260, rise, torn: 0.55, wetFloor: 70, wetTo: Math.round(MID_LAKE[1] - MID_SEA) }, LAKE_Y, -4);
+  // past the lake's west end at this depth the mid plain's flat top would show between the lake
+  // and the west shore: the lake runs on west under its low mist instead, ever more torn by it
+  bg(b, "mid", 0, "op.sea", { w: 900, depth: 160, swell: 10, ends: 60, floorWest: 0, wetFloor: 70, wetFrom: Math.round(MID_LAKE[0]), veilTo: 380, bank: false }, LAKE_Y, -4, seed1(3));
   bg(b, "back", 6300, "op.sea", { w: 4200, depth: 1400, swell: 16, ends: 80, west: 160, torn: 0.3, bankFrom: 330, floorWest: 0 }, LAKE_Y, -4);
   // spray blooming where Shiraito's first veil reaches the lake at the wall's foot (P3; the wall
   // itself is Gate Road's piece, from back x 6577; that veil falls at about 6595 to 6645)
@@ -127,8 +137,8 @@ export function kagamiBackdrop(b: WorldBuilder): void {
 
   // P2 (falls on the great faces are veils with a spray bloom where they reach the mist)
   const FALLS: Record<number, number[]> = { 2000: [0], 3230: [0, 1] };
-  P2.forEach(([x, forms], i) => bg(b, "mid", x, "op.karst", { w: 0, h: 380, rows: 1, look: "near", forms, mist: 34, green: 0.85, falls: 0.6, veil: 4, wet: local(MID_LAKE, x), ...(FALLS[x] ? { fallOn: FALLS[x] } : {}) }, LAKE_Y, i));
-  bg(b, "mid", 3500, "op.karst", { w: 2200, h: 300, rows: 2, look: "mid", mist: 40, green: 0.8, wet: local(MID_LAKE, 3500) }, LAKE_Y, -1);
+  P2.forEach(([x, forms], i) => bg(b, "mid", x, "op.karst", { w: 0, h: 380, rows: 1, look: "near", forms, mist: 34, green: 0.85, falls: 0.6, veil: 4, wet: local(MID_WET, x), ...(FALLS[x] ? { fallOn: FALLS[x] } : {}) }, LAKE_Y, i));
+  bg(b, "mid", 3500, "op.karst", { w: 2200, h: 300, rows: 2, look: "mid", mist: 40, green: 0.8, wet: local(MID_WET, 3500) }, LAKE_Y, -1);
   const midWrap: [number, number] = [-400, 5400];
   ([[600, -24, 520, 26], [1900, -40, 460, 22], [3300, -22, 640, 30]] as const).forEach(([x, dy, w, th], i) =>
     drifting(b, `mid-wisp-${i}`, "mid", "sky.wisp", x, dy, { w, h: th, density: 0.6 }, midWrap, 7, 3));

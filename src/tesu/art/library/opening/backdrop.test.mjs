@@ -19,6 +19,9 @@ const CASES = [
   // the seas: a bank climbing feet with a torn west end over a cloud floor; a floor-only west run
   ["op.sea", { w: 1400, depth: 300, swell: 10, ends: 60, west: 260, rise: [[330, 210, 330], [80, 35, 200]], torn: 0.55, wetFloor: 70, wetTo: 226 }],
   ["op.sea", { w: 900, depth: 400, swell: 16, ends: 80, west: 160, torn: 0.3, bankFrom: 330, floorWest: 0 }],
+  // round 2: the lake running on under the mist past its west end (floor only); a high cloud field
+  ["op.sea", { w: 900, depth: 160, swell: 10, ends: 60, floorWest: 0, wetFloor: 70, wetFrom: 597, veilTo: 380, bank: false }],
+  ["op.cloud", { kind: "field", w: 900, h: 170, density: 0.45, strands: 2, frame: 1 }],
   // the cauliflower cumulus, the low heap by the sun, a torn stratus
   ["op.cloud", { kind: "cumulus", w: 840, h: 330, frame: 2 }],
   ["op.cloud", { kind: "cumulus", w: 330, h: 112, low: true }],
