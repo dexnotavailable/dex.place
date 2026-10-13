@@ -7,8 +7,9 @@
 //
 // This file holds the world builder's part (collision, water, void, spawns, the place, the
 // Walker) and calls Kagami's dressing files, owned by the painters of the Kagami art loop:
-// kagami-land.ts (rock, spring, near shore), kagami-islets.ts (the islets), kagami-jetty.ts (the
-// jetty and its made things) and kagami-backdrop.ts (light, water colours, sky, P1 and P2). Each dressing block
+// kagami-rock.ts (the plateau rock, the west shore, the headland, the scree, the spring),
+// kagami-land.ts (the near shore), kagami-islets.ts (the islets), kagami-jetty.ts (the jetty and
+// its made things) and kagami-backdrop.ts (light, water colours, sky, P1 and P2). Each dressing block
 // starts from the seed it had before the split, so a block can add or drop pieces without
 // reseeding another block or any section built after Kagami. New pieces and sprites in a
 // block take explicit seeds.
@@ -18,7 +19,8 @@ import type { WorldBuilder } from "../build.ts";
 import { CATCH_X, DECK_Y, JETTY_X0, JETTY_X1, LAKE_X0, LAKE_X1, LAKE_Y } from "./common.ts";
 import { PLANES } from "../types.ts";
 import { WALKER, seedAt, seedNow } from "./kagami-place.ts";
-import { kagamiLand, kagamiNear } from "./kagami-land.ts";
+import { kagamiNear } from "./kagami-land.ts";
+import { kagamiRock } from "./kagami-rock.ts";
 import { kagamiIslets } from "./kagami-islets.ts";
 import { kagamiJetty } from "./kagami-jetty.ts";
 import { kagamiBackdrop, kagamiWade } from "./kagami-backdrop.ts";
@@ -31,9 +33,9 @@ const BLOCK = { land: 0, jetty: 3, near: 22, backdrop: 44, walker: 73, islets: 7
 export function kagami(b: WorldBuilder): void {
   const s0 = seedNow(b);
 
-  // block 1 (kagami-land.ts): the plateau rock and the spring
+  // block 1 (kagami-rock.ts): the plateau rock and the spring
   seedAt(b, s0 + BLOCK.land);
-  kagamiLand(b);
+  kagamiRock(b);
   // collision: the pass and the west shore, then the jetty
   b.walk([h(0), h(59.2), h(5), h(59.0), h(9), h(58.6), h(14), h(58.5), h(19), h(59.0), h(25), h(59.9), h(31), h(60.9), h(36), h(61.6), h(40), h(62.1), h(44.1), h(62.25)],
     { surface: "grass", name: "kagami-west" });

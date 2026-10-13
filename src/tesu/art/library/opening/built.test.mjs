@@ -168,3 +168,14 @@ test("op.jetty: boards come in batches (runs of related boards, never alternatin
   assert.ok(plan.planks.some((q) => q.gap === 2) && plan.planks.some((q) => q.hang > 0), "open joints and a loose board end");
   assert.ok(plan.bays.some(([, , s]) => s >= 2) && plan.bays.every(([, , s]) => s <= 6.01), "the beam sags 2 to 6 px mid bay");
 });
+
+// (moved from land.test.mjs in round 3: the scree is painter p2's with the rest of the rock)
+test("op.scree: the heap is solid from the waterline down where the lake ends against the lip (no water shows through)", () => {
+  // (integration, round 1) it stands over the place where the water's slices end in front of the
+  // east lip: from 40 px along to its east end, every column is painted from the waterline down
+  const p = { w: 140, deep: 82, h: 28 };
+  for (const seed of [4242, 7919 * 3020]) {
+    const buf = paintBox("op.scree", p, 1, 40, 0, 90, 46, seed);
+    for (let x = 40; x < 130; x++) for (let y = 0; y < 46; y++) assert.ok(buf.get(x, y) > 0, `hole in the scree at ${x},${y} (seed ${seed})`);
+  }
+});
