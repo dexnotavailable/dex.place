@@ -25,7 +25,7 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { bayer4, clamp, fbm1, hash, hash1, rng, vnoise, vnoise1 } from "../../raster.ts";
+import { bayer4, clamp, fbm1, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { cached, clump } from "./kit.ts";
 
 export type MassKind = "reeds" | "boulder" | "hummock" | "lantern" | "crag" | "tuft";
@@ -171,6 +171,13 @@ export function fern(c: PaintCtx, x: number, y: number, len: number, a0: number,
       stroke(c, [[px, py], [(px + ex) / 2, (py + ey) / 2 - ll * 0.08], [ex, ey]], () => 1, (v) => (up && v > 0.4 && hash1(i * 2 + side, seed) < 0.55 ? P.moss[4]! : v > 0.5 ? P.moss[5]! : P.moss[6]!));
     }
   }
+}
+
+/** The bank's deep shade: dark, quieter with depth, big soft shapes (kept for other painters). */
+export function deepCol(lx: number, ly: number, x: number, y: number, seed: number): number {
+  const blob = vnoise(lx / 44, ly / 30, seed + 9) * 0.65 + vnoise(lx / 16, ly / 12, seed + 10) * 0.35;
+  const t = clamp(0.6 + clamp(ly / 60, 0, 1) * 0.4 + (blob - 0.5) * 0.3, 0, 1);
+  return tone(P.pine, 0.55 + t * 0.45, x, y, 0.2);
 }
 
 /** Ordered dither on whole level-1 cells (one density at the close band). */
