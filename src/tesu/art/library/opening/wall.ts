@@ -318,16 +318,57 @@ export const spray = definePainter<SprayP>("op.spray", {
   },
 });
 
-/** Groups of threads for the flow sprites: [from, to) index ranges, each spanning <= maxW px. */
+/**
+ * How many flow groups the wall had when its threads were laid out one by one (before the
+ * veils): the same rng sequence and the same grouping by maxW. Gate Road places one flow sprite
+ * per group without explicit seeds, so the count must not change, or every section built after
+ * it would be reseeded.
+ */
+function legacyGroupCount(p: WallP, seed: number, maxW: number): number {
+  return cached(`legacygroups|${seed}|${p.w}|${p.falls}|${maxW}`, () => {
+    const r = rng(seed + 501);
+    const per = p.falls ?? 1.6;
+    const xs: number[] = [];
+    for (let x = 8; x < p.w - 8;) {
+      const n = 1 + Math.floor(r() * r() * 7);
+      const veil = r() < 0.12;
+      let gx = x;
+      for (let i = 0; i < n; i++) {
+        xs.push(gx);
+        // (width, life and seed drew from the sequence in this order)
+        if (veil && i === 0) r(); else { r(); r(); }
+        if (r() < 0.3) r(); else r();
+        r();
+        gx += 2.5 + r() * 6;
+      }
+      x = gx + (100 / per) * (0.3 + 1.4 * r()) * n * 0.5;
+    }
+    let count = 0, a = 0;
+    for (let i = 1; i <= xs.length; i++) {
+      if (i === xs.length || xs[i]! - xs[a]! > maxW) { count++; a = i; }
+    }
+    return count;
+  });
+}
+
+/**
+ * Groups of threads for the flow sprites: [from, to) index ranges, always as many as the wall
+ * had before its threads were gathered into veils (see legacyGroupCount), split at the widest
+ * gaps so a veil stays in one sprite wherever it can.
+ */
 export function threadGroups(p: WallP, seed: number, maxW = 60): [number, number][] {
   const T = threadsOf(p, seed);
+  const n = legacyGroupCount(p, seed, maxW);
+  if (!T.length) return [];
+  const gaps: number[] = [];
+  for (let i = 1; i < T.length; i++) gaps.push(i);
+  gaps.sort((a, b) => (T[b]!.x - T[b - 1]!.x) - (T[a]!.x - T[a - 1]!.x) || a - b);
+  const cuts = gaps.slice(0, Math.max(0, Math.min(n, T.length) - 1)).sort((a, b) => a - b);
   const out: [number, number][] = [];
   let a = 0;
-  for (let i = 1; i <= T.length; i++) {
-    if (i === T.length || T[i]!.x - T[a]!.x > maxW) {
-      out.push([a, i]);
-      a = i;
-    }
-  }
+  for (const c of cuts) { out.push([a, c]); a = c; }
+  out.push([a, T.length]);
+  // (fewer threads than groups: the last thread's group repeats, painting the same pixels)
+  while (out.length < n) out.push([T.length - 1, T.length]);
   return out;
 }
