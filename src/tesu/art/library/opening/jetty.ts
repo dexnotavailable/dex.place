@@ -445,6 +445,10 @@ function paintDeck(c: PaintCtx, plan: JPlan, seed: number, x0: number, x1: numbe
     // a water stain running down the stringer from this plank's joint
     const stain = !!pk && d >= 1 && hash1(Math.round(pk.x * 3), seed + 41) < 0.22 && Math.abs(lx - (pk.x + pk.w - 0.6)) < 0.55;
     const stainTo = DECK + (bot - DECK) * (0.35 + 0.6 * hash1(Math.round(pk ? pk.x : 0), seed + 42));
+    const joints: number[] = [];
+    for (let i = 1; i < plan.runs.length; i++) if (Math.abs(lx - plan.runs[i]!.x0) <= 6) joints.push(i);
+    const near: number[] = [];
+    for (const bx of plan.bents) if (Math.abs(lx - bx) <= 3) near.push(bx);
     // the plank's own columns (its right edge is the dark joint to the next one)
     const PX0 = pk ? Math.round(c.X(pk.x)) : X0, PX1 = pk ? Math.round(c.X(pk.x + pk.w)) : X1;
     const missing = !pk || pk.kind === MISSING;
@@ -458,9 +462,11 @@ function paintDeck(c: PaintCtx, plan: JPlan, seed: number, x0: number, x1: numbe
         // worn corners: the top corners rounded off
         if (pk.kind === WORN && y === Yt && (x === PX0 || (u > 0.8 && hash1(Math.round(pk.x), seed) < 0.5))) continue;
         if (!lit) {
-          // the plank seen from below, in the deck's shadow: softer and darker than its lit end
-          let t = 0.42 + pk.t * 0.35 + v * 0.12;
-          if (pk.kind === NEWP || run.age) t -= 0.1;
+          // the plank seen from below, in the deck's shadow: softer and darker than its lit end;
+          // where two planks have shrunk apart, a slit of sky shows between them
+          if (x === PX1 - 1 && hash1(Math.round(pk.x * 7), seed + 45) < 0.3) continue;
+          let t = 0.42 + pk.t * 0.35 + v * 0.12 + (run.age ? -0.14 : run.k * 0.12);
+          if (pk.kind === NEWP) t -= 0.1;
           if (x === PX1 - 1) t += 0.25;
           b.set(x, y, wood(x, y, clamp(t, 0, 1), false));
           continue;
@@ -514,10 +520,9 @@ function paintDeck(c: PaintCtx, plan: JPlan, seed: number, x0: number, x1: numbe
         } else if (d >= 0.5 && vnoise(lx / 26, ly / 1.7, seed + 8) > 0.7) t += 0.08;
       }
       // a joint where two runs meet: a butt seam and an iron strap (old to old) or a lashing (to a rebuilt run)
-      for (let i = 1; i < plan.runs.length; i++) {
+      for (const i of joints) {
         const jx = plan.runs[i]!.x0;
         const dj = lx - jx;
-        if (Math.abs(dj) > 6) continue;
         const toNew = plan.runs[i]!.age !== plan.runs[i - 1]!.age;
         if (Math.abs(dj) < 0.55) t = 0.97;
         else if (!toNew && Math.abs(dj) < 3.2) t = dj < -2 ? 0.55 : 0.75;
@@ -532,8 +537,7 @@ function paintDeck(c: PaintCtx, plan: JPlan, seed: number, x0: number, x1: numbe
       }
       if (t < 0) continue;
       // bolts where it bears on a bent, a rust run below (close band)
-      for (const bx of plan.bents) {
-        if (Math.abs(lx - bx) > 3) continue;
+      for (const bx of near) {
         const by = DECK + (bot - DECK) * 0.48;
         if (d >= 0.5 && Math.abs(lx - bx) < 1 && Math.abs(ly - by) < 0.8) t = -2;
         else if (d >= 1.5 && Math.abs(lx - bx) < 0.5 && ly > by + 0.8 && ly < by + 4 && hash(Math.round(bx), 3, seed) < 0.6) t = -3;
