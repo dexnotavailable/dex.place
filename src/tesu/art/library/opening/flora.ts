@@ -1,7 +1,9 @@
-// Trees and terraces that frame Gate Road: great cliff pines growing out of the road's lip and
-// leaning out over the valley (Huangshan pines: a twisting trunk, long flat arms, pads of needles
-// in layers), a bamboo grove by the forecourt that sways, and the viewing terrace itself, a
-// paved platform built out over the rock with a cut-stone retaining face.
+// Trees and terraces that frame Kagami's east lip and Gate Road: great cliff pines growing out of
+// the rock (Huangshan pines: roots clawing over the rock and down into its cracks with soil and
+// moss at the join, a heavy twisting trunk, arms reaching out nearly level, needles in layered
+// masses with ragged tufted tops and dark undersides), a bamboo grove by the forecourt that sways,
+// and the viewing terrace itself, a paved platform built out over the rock with a cut-stone
+// retaining face.
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
@@ -9,118 +11,292 @@ import { bayer4, clamp, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../ra
 import { contact } from "./props.ts";
 
 /**
- * A pad of pine needles seen side-on: a wide flat mass, its top a row of small tufts lit on
- * their upper left, its body streaked with needles, a dark underside fringed with needles
- * hanging down. Wider than tall, never a smooth blob.
+ * A mass of pine needles seen side-on: wider than tall, two or three lobes of different sizes
+ * grown together. Its top is a ragged row of needle fans (each a tuft of needles radiating up,
+ * lit on its upper left), its body dark with needle texture, its underside darker still with
+ * fans of needles pointing down and the odd longer tassel. (cx, cy): the mass's middle; w, h:
+ * its width and depth; dark (0..1) deepens it (a mass in shade, or near the camera).
  */
-export function needlePad(c: PaintCtx, cx: number, cy: number, w: number, h: number, seed: number): void {
+export function needlePad(c: PaintCtx, cx: number, cy: number, w: number, h: number, seed: number, dark = 0): void {
   const b = c.buf, d = c.d;
-  const X0 = Math.floor(c.X(cx - w / 2 - 3)), X1 = Math.ceil(c.X(cx + w / 2 + 3));
-  if (!b.touches(X0, Math.floor(c.Y(cy - h)), X1, Math.ceil(c.Y(cy + h * 0.8)))) return;
-  const tuft = Math.max(2.5, h * 0.42);
-  for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
-    const lx = c.lx(x + 0.5) - cx;
-    const u = lx / (w / 2);
-    if (Math.abs(u) > 1.06) continue;
-    const env = Math.sqrt(Math.max(0, 1 - Math.pow(Math.abs(u), 2.5)));
-    // the top: tufts (half discs) along the width, taller in the middle
-    const ti = Math.floor(lx / tuft + 0.5 + hash1(1, seed)), tf = lx / tuft + 0.5 + hash1(1, seed) - ti - 0.5;
-    const top = -h * 0.55 * env - tuft * 0.55 * Math.sqrt(Math.max(0, 1 - 4 * tf * tf)) * (0.6 + 0.6 * hash1(ti, seed + 2)) * env;
-    // the underside: flatter, needles hanging below it
-    const spike = hash1(Math.floor(lx * 1.2), seed + 3);
-    const bot = h * 0.3 * env + (spike < 0.35 ? h * 0.25 * spike * env : 0);
-    const Yt = Math.ceil(c.Y(cy + top)), Yb = Math.ceil(c.Y(cy + bot));
-    for (let y = Math.max(Yt, b.oy); y < Math.min(Yb, b.y1); y++) {
-      const ly = c.ly(y + 0.5) - cy;
-      const v = (ly - top) / Math.max(1, bot - top);
-      // lit top of each tuft (upper left), body, dark underside
-      let t = v < 0.18 ? (tf < 0.1 ? 0.12 : 0.3) : v < 0.55 ? 0.42 : v < 0.8 ? 0.62 : 0.85;
-      if (d >= 0.5 && hash(Math.floor(lx * 1.5), Math.floor(ly / 2.5), seed + 5) < 0.22) t += 0.14;
-      if (u > 0.55) t += 0.1;
-      const ramp = t > 0.6 ? P.pine.slice(2) : P.pine;
-      const tt = t > 0.6 ? (t - 0.6) / 0.4 : t / 0.6 * 0.7;
-      b.set(x, y, tone(ramp, clamp(tt, 0, 1), x, y, 0.3));
+  const hw = w / 2;
+  if (!b.touches(Math.floor(c.X(cx - hw - h)), Math.floor(c.Y(cy - h * 1.4)), Math.ceil(c.X(cx + hw + h)), Math.ceil(c.Y(cy + h * 1.1)))) return;
+  // lobes: the mass is two or three clumps grown together, never one smooth blob
+  const nl = 2 + Math.floor(hash1(11, seed) * 2.99);
+  const lobes: [number, number, number][] = [];
+  for (let i = 0; i < nl; i++) lobes.push([(hash1(i, seed + 12) - 0.5) * 1.15, 0.34 + hash1(i, seed + 13) * 0.42, 0.45 + hash1(i, seed + 14) * 0.55]);
+  const env = (u: number): number => Math.pow(Math.max(0, 1 - Math.pow(Math.abs(u), 2.4)), 0.5);
+  const lobeAt = (u: number): number => {
+    let l = 0;
+    for (const [uc, wl, hl] of lobes) {
+      const q = (u - uc) / wl;
+      if (Math.abs(q) < 1) l = Math.max(l, hl * Math.pow(1 - q * q, 0.45));
     }
+    return Math.max(l * env(u), env(u) * 0.3);
+  };
+  const topAt = (u: number): number => -h * 0.5 * lobeAt(u);
+  const botAt = (u: number): number => h * 0.2 * Math.max(env(u), 0.2);
+  // a needle stroke from (x, y) at angle a, length L, drooping a little; inner part darker
+  const stroke = (x: number, y: number, a: number, L: number, col: number, inner: number): void => {
+    const ca = Math.cos(a), sa = Math.sin(a);
+    for (let s = 0; s <= L; s += 0.5 / d) {
+      b.set(Math.round(c.X(x + ca * s)), Math.round(c.Y(y + sa * s + s * s * 0.015)), s < L * 0.4 ? inner : col);
+    }
+  };
+  const fan = (x: number, y: number, rf: number, a0: number, a1: number, cols: (a: number) => [number, number], s: number): void => {
+    const k = Math.max(4, Math.min(16, Math.round(rf * d * 1.5)));
+    for (let i = 0; i < k; i++) {
+      const a = a0 + (a1 - a0) * ((i + 0.2 + hash1(i, s) * 0.6) / k);
+      const [col, inner] = cols(a);
+      stroke(x, y, a, rf * (0.65 + 0.5 * hash1(i, s + 1)), col, inner);
+    }
+  };
+  // the core: a dark mass under the fans
+  {
+    const X0 = Math.floor(c.X(cx - hw)), X1 = Math.ceil(c.X(cx + hw));
+    for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
+      const lx = c.lx(x + 0.5) - cx, u = lx / hw;
+      if (Math.abs(u) > 0.97) continue;
+      const top = topAt(u) * 0.82, bot = botAt(u) * 0.85;
+      for (let y = Math.max(Math.ceil(c.Y(cy + top)), b.oy); y < Math.min(Math.ceil(c.Y(cy + bot)), b.y1); y++) {
+        const ly = c.ly(y + 0.5) - cy;
+        const v = (ly - top) / Math.max(0.5, bot - top);
+        let t = 0.5 + v * 0.42 + (u > 0.4 ? 0.1 : 0) + dark;
+        if (d >= 0.5 && hash(Math.floor((lx + ly * 0.8) * 1.3), Math.floor(ly / 1.5), seed + 9) < 0.22) t += 0.14;
+        b.set(x, y, tone(P.pine, clamp(t, 0, 1), x, y, 0.3));
+      }
+    }
+  }
+  const dk = Math.round(dark * 3);
+  const pick = (i: number): number => P.pine[clamp(i + (i > 0 ? dk : 0), 0, 5)]!;
+  // under fans: needles pointing down and out, a few long tassels
+  const sz = Math.max(1.8, h * 0.3);
+  const nU = Math.max(2, Math.round(w / Math.max(3, h * 0.42)));
+  for (let i = 0; i < nU; i++) {
+    const u = -0.92 + (1.84 * (i + 0.3 + hash1(i, seed + 20) * 0.4)) / nU;
+    const rf = sz * (0.7 + 0.6 * hash1(i, seed + 21)) * (hash1(i, seed + 22) < 0.2 ? 1.6 : 1) * (0.5 + 0.5 * env(u));
+    fan(cx + u * hw, cy + botAt(u) * 0.7, rf, 0.35, Math.PI - 0.35, () => [pick(u > 0.3 ? 5 : 4), pick(5)], seed + 300 + i);
+  }
+  // fans inside the mass: needle texture, mid tones
+  if (d >= 0.5) {
+    const nM = Math.round((w * h) / 30);
+    for (let i = 0; i < nM; i++) {
+      const u = (hash1(i, seed + 30) - 0.5) * 1.8;
+      const yy = topAt(u) * 0.6 + (botAt(u) * 0.6 - topAt(u) * 0.6) * hash1(i, seed + 31);
+      const a0 = -Math.PI * (0.9 + 0.2 * hash1(i, seed + 32));
+      fan(cx + u * hw, cy + yy, sz * (0.5 + 0.4 * hash1(i, seed + 33)), a0, a0 + Math.PI * 1.1, (a) => [pick(Math.sin(a) < -0.3 ? 2 : 3 + (u > 0.35 ? 1 : 0)), pick(4)], seed + 500 + i);
+    }
+  }
+  // the top: a ragged row of fans radiating up, lit on the sun's side
+  const nT = Math.max(3, Math.round(w / Math.max(2.4, h * 0.3)));
+  for (let i = 0; i < nT; i++) {
+    const u = -0.95 + (1.9 * (i + 0.2 + hash1(i, seed + 40) * 0.6)) / nT;
+    const e = env(u);
+    const rf = sz * (0.75 + 0.6 * hash1(i, seed + 41)) * (0.55 + 0.45 * Math.sqrt(e));
+    const fy = topAt(u) + rf * 0.45;
+    const sun = u < 0.25;
+    fan(cx + u * hw, cy + fy, rf, -Math.PI + 0.25, -0.25, (a) => {
+      const lit = a < -2.2 ? 0 : a < -1.3 ? 1 : 2;
+      if (lit === 0 && sun && hash1(i, seed + 42) < 0.5) return [P.moss[4]!, pick(2)];
+      return [pick(lit + (sun ? 0 : 1)), pick(lit + 2)];
+    }, seed + 700 + i);
   }
 }
 
 export interface PineP {
-  /** Height of the tree, px; anchor at the root on the lip. */
+  /** Height of the tree, px; anchor at the root on the rock. */
   h: number;
   /** Lean: -1 out to the left, 1 to the right. */
   dir?: number;
+  /** A long arm reaching out toward dir: [length px, share of the trunk's height it leaves from]. */
+  arm?: [number, number];
+  /** How far the trunk swings out toward dir (default 1; negative leans it back). */
+  bend?: number;
+  /** Arms grow from this share of the trunk up (default 0.38). */
+  armsFrom?: number;
+  /** Roots: how far they spread along the rock and how deep they claw down below the anchor, px. */
+  roots?: number;
+  grip?: number;
 }
 
-/** A great cliff pine: a heavy twisting trunk, arms reaching out level, layered pads of needles. */
+/** Pine bark, lit to dark: grey plates on the sun's side, warm brown in the fissures and shade. */
+const BARK = [P.stone[4]!, P.timber[4]!, P.timber[5]!, P.timber[6]!, P.timber[6]!];
+
+/** A twisting limb from (ax, ay) to (bx, by), width w0 tapering to w1, bark lit on its upper side. */
+function limb(c: PaintCtx, pts: [number, number][], w0: number, w1: number, seed: number, root = false): void {
+  const b = c.buf, d = c.d;
+  for (let k = 0; k + 1 < pts.length; k++) {
+    const [ax, ay] = pts[k]!, [bx, by] = pts[k + 1]!;
+    const len = Math.hypot(bx - ax, by - ay);
+    const steps = Math.max(2, Math.ceil(len * d * 1.4));
+    const nx = -(by - ay) / Math.max(1e-6, len), ny = (bx - ax) / Math.max(1e-6, len);
+    for (let s = 0; s <= steps; s++) {
+      const t = s / steps;
+      const u = (k + t) / (pts.length - 1);
+      const w = Math.max(1 / d, w0 + (w1 - w0) * Math.pow(u, 1.4));
+      const px = ax + (bx - ax) * t, py = ay + (by - ay) * t;
+      for (let o = -w / 2; o <= w / 2; o += 0.5 / d) {
+        const q = o / Math.max(0.5, w / 2);
+        // lit on the side facing up and left
+        const up = ny < 0 ? -q : q;
+        let i = up > 0.45 ? 0 : up > -0.2 ? 1 : up > -0.7 ? 2 : 3;
+        if (d >= 0.5 && w * d > 3 && hash(Math.round((px + nx * o) * d / 2), Math.round((py + ny * o) * d / 3), seed) < 0.14) i = Math.min(4, i + 1);
+        if (root) {
+          // roots: earthy, moss in their upper creases
+          if (up > 0.2 && vnoise((px + nx * o) / 2.5, (py + ny * o) / 2, seed + 7) > 0.58) { b.set(Math.round(c.X(px + nx * o)), Math.round(c.Y(py + ny * o)), P.moss[up > 0.6 ? 3 : 5]!); continue; }
+          i = Math.min(4, i + 1);
+        }
+        b.set(Math.round(c.X(px + nx * o)), Math.round(c.Y(py + ny * o)), BARK[i]!);
+      }
+    }
+  }
+}
+
+/** A great cliff pine: roots clawing into the rock, a heavy twisting trunk, arms reaching out nearly level, layered needle masses. */
 export const pine = definePainter<PineP>("op.pine", {
   bounds(p) {
-    return [-p.h * 1.35, -p.h * 1.12, p.h * 1.35, p.h * 0.1 + 6];
+    const reach = p.arm ? p.arm[0] + p.h * 0.3 : 0;
+    const grip = p.grip ?? p.h * 0.12;
+    return [-p.h * 1.35 - reach, -p.h * 1.12 - (reach ? p.h * 0.12 : 0), p.h * 1.35 + reach, Math.max(p.h * 0.1 + 6, grip + 10)];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
     const H = p.h, dir = p.dir ?? 1;
+    const bend = p.bend ?? 1;
     const r = rng(seed);
-    // roots gripping the lip
-    for (let i = 0; i < 6; i++) {
-      const a = (r() - 0.5) * 2.4;
-      const len = H * (0.06 + 0.08 * r());
-      for (let s = 0; s < len; s += 0.5 / d) {
-        const X = Math.round(c.X(Math.sin(a) * s)), Y = Math.round(c.Y(Math.cos(a) * s * 0.5 + s * 0.15));
-        b.set(X, Y, P.timber[s < len * 0.5 ? 4 : 5]!);
-      }
-    }
-    // the trunk: leaves the rock leaning, twists back, splits into arms
+    // the trunk: leaves the rock, twists, splits into arms (a path by height)
     const pts: [number, number][] = [];
     for (let k = 0; k <= 16; k++) {
       const u = k / 16;
-      pts.push([dir * H * (0.35 * Math.sin(u * 2.2) + 0.12 * u) + (vnoise1(u * 5, seed) - 0.5) * H * 0.08, -H * 0.72 * u]);
+      pts.push([dir * H * bend * (0.35 * Math.sin(u * 2.2) + 0.12 * u) + (vnoise1(u * 5, seed) - 0.5) * H * 0.08, -H * 0.72 * u]);
     }
-    const tw = (u: number): number => Math.max(1.5 / d, H * 0.085 * (1 - u * 0.7));
-    for (let k = 0; k < 16; k++) {
-      const [ax, ay] = pts[k]!, [bx, by] = pts[k + 1]!;
-      const steps = Math.max(2, Math.ceil(Math.hypot(bx - ax, by - ay) * d));
-      for (let s = 0; s <= steps; s++) {
-        const t = s / steps;
-        const u = (k + t) / 16;
-        const w = tw(u);
-        const X = c.X(ax + (bx - ax) * t), Y = Math.round(c.Y(ay + (by - ay) * t));
-        for (let o = -w * d / 2; o <= w * d / 2; o += 1) {
-          const q = o / (w * d / 2);
-          // bark: plates and fissures, lit on the left
-          let col = q < -0.45 ? P.timber[2]! : q < 0.25 ? P.timber[3]! : q < 0.7 ? P.timber[4]! : P.timber[5]!;
-          if (d >= 0.5 && hash(Math.round(X + o) >> 1, Y >> 1, seed) < 0.12) col = P.timber[5]!;
-          b.set(Math.round(X + o), Y, col);
+    const tw = (u: number): number => Math.max(1.5 / d, H * (p.arm ? 0.072 : 0.085) * (1 - u * 0.7));
+    const at = (u: number): [number, number] => {
+      const f = clamp(u, 0, 1) * 16, i = Math.min(15, Math.floor(f)), t = f - i;
+      const [ax, ay] = pts[i]!, [bx, by] = pts[i + 1]!;
+      return [ax + (bx - ax) * t, ay + (by - ay) * t];
+    };
+    // roots: thick where they leave the trunk, running out over the rock, then down into its cracks
+    const spread = p.roots ?? H * 0.15, grip = p.grip ?? H * 0.1;
+    const w0 = tw(0);
+    const nr = 4 + Math.floor(r() * 2);
+    for (let i = 0; i < nr; i++) {
+      const side = i % 2 ? -1 : 1;
+      const sx = side * w0 * (0.2 + 0.25 * r());
+      const len = spread * (0.5 + 0.6 * r());
+      const deep = grip * (0.5 + 0.5 * r());
+      const rp: [number, number][] = [];
+      const over = i === 0;
+      for (let k = 0; k <= 8; k++) {
+        const t = k / 8;
+        // crawling out over the rock, arched a little where they cross a bump; one goes over the
+        // edge into a crack
+        const x = sx + side * len * (1 - Math.pow(1 - t, 1.5)) * (over ? 1 : 0.55 + 0.3 * hash1(i, seed + 4));
+        const arch = -Math.sin(t * Math.PI) * w0 * (0.08 + 0.1 * hash1(i, seed + 5));
+        const y = -w0 * 0.05 + arch + (over ? deep * 0.7 * Math.pow(t, 2.6) : t * 1.5) + (vnoise1(t * 4 + i, seed + 3) - 0.5) * 1.2;
+        rp.push([x, y]);
+      }
+      limb(c, rp, w0 * (0.36 + 0.16 * r()), over ? 2 : 3.5, seed + 40 + i, true);
+      // where it goes into the rock: a dark crack
+      const [ex, ey] = rp[rp.length - 1]!;
+      for (let k = 0; k < 6; k += 0.5 / d) b.set(Math.round(c.X(ex + side * k * 0.3)), Math.round(c.Y(ey + k * 0.6)), P.karst[8]!);
+    }
+    // soil and moss where the trunk meets the rock
+    for (let x = Math.round(c.X(-w0 * 1.5)); x < Math.round(c.X(w0 * 1.5)); x++) {
+      const u = c.lx(x + 0.5) / (w0 * 1.5);
+      const top = -w0 * 0.3 * Math.pow(1 - u * u, 1.5) - 1.5 * vnoise1(c.lx(x) / 2, seed + 5);
+      for (let y = Math.round(c.Y(top)); y < Math.round(c.Y(3 + 2 * (1 - u * u))); y++) {
+        const v = (c.ly(y + 0.5) - top) / 5;
+        if (v < 0.4 && vnoise(c.lx(x) / 2.2, c.ly(y) / 2, seed + 6) > 0.45) { b.set(x, y, tone(P.moss, clamp(0.35 + v + (u > 0 ? 0.2 : 0), 0, 1), x, y, 0.35)); continue; }
+        b.set(x, y, tone(P.earth, clamp(0.6 + v * 0.3, 0, 1), x, y, 0.35));
+      }
+    }
+    // the trunk, row by row: tapering, bulging at old knots, bark in plates lit on the left
+    {
+      const Y0 = Math.round(c.Y(-H * 0.72)), Y1 = Math.round(c.Y(2));
+      for (let y = Math.max(Y0, b.oy); y < Math.min(Y1, b.y1); y++) {
+        const ly = c.ly(y + 0.5);
+        const u = clamp(-ly / (H * 0.72), 0, 1);
+        const [mx] = at(u);
+        let half = tw(u) / 2 * (1 + 0.1 * (vnoise1(ly / 9, seed + 7) - 0.5));
+        if (u < 0.07) half *= 1 + ((0.07 - u) / 0.07) * 0.7;
+        const X0 = Math.round(c.X(mx - half)), X1 = Math.round(c.X(mx + half));
+        for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
+          const q = ((x + 0.5 - X0) / Math.max(1, X1 - X0)) * 2 - 1;
+          let i = q < -0.55 ? 0 : q < 0.15 ? 1 : q < 0.65 ? 2 : 3;
+          // bark plates: fissures running up the trunk, warm where a plate has flaked
+          if (d >= 0.5) {
+            const pl = vnoise(c.lx(x + 0.5) / 2.2, ly / 7, seed + 8);
+            if (pl > 0.66) i = Math.min(4, i + 1);
+            else if (pl < 0.2 && q < 0.4) { b.set(x, y, P.timber[q < -0.3 ? 2 : 3]!); continue; }
+          }
+          if (X1 - x === 1) i = 4;
+          // moss on the trunk's lit side near the foot
+          if (u < 0.12 && q < -0.1 && vnoise(c.lx(x) / 2, ly / 2.5, seed + 9) > 0.6) { b.set(x, y, P.moss[q < -0.6 ? 2 : 4]!); continue; }
+          b.set(x, y, BARK[i]!);
         }
       }
     }
-    // arms: from the upper trunk, reaching out nearly level, ending in pads
+    // arms: from the upper trunk, reaching out nearly level, ending in needle masses
     const pads: [number, number, number][] = [];
-    const arms = 4 + Math.floor(r() * 3);
+    const arms = p.arm ? 3 + Math.floor(r() * 2) : 4 + Math.floor(r() * 3);
+    const from = p.armsFrom ?? 0.38;
+    // a great pine's masses stay the size of a cliff pine's: sky shows between them
+    const ps = p.arm ? 0.4 : 1;
     for (let i = 0; i < arms; i++) {
-      const u = 0.38 + 0.62 * (i / (arms - 1));
-      const [ax, ay] = pts[Math.round(u * 16)]!;
+      const u = from + (1 - from) * (i / (arms - 1));
+      const [ax, ay] = at(u);
       const side = i === arms - 1 ? dir : i % 2 ? -dir : dir;
-      const len = H * (0.25 + 0.3 * r()) * (1 - 0.45 * u) * (side === dir ? 1.25 : 0.8);
+      const len = H * (0.25 + 0.3 * r()) * (1 - 0.45 * u) * (side === dir ? 1.25 : 0.8) * (p.arm ? 0.45 : 1);
       const ex = ax + side * len, ey = ay - len * (0.05 + 0.12 * r());
-      const w = Math.max(1 / d, H * 0.022 * (1 - u * 0.5));
-      const steps = Math.max(2, Math.ceil(len * d));
-      for (let s = 0; s <= steps; s++) {
-        const t = s / steps;
-        const X = c.X(ax + (ex - ax) * t), Y = Math.round(c.Y(ay + (ey - ay) * t - Math.sin(t * Math.PI) * len * 0.08));
-        for (let o = -w * d / 2; o <= w * d / 2; o += 1) b.set(Math.round(X), Math.round(Y + o), o < 0 ? P.timber[3]! : P.timber[5]!);
+      const ap: [number, number][] = [];
+      const kink = 0.4 + 0.3 * r();
+      for (let k = 0; k <= 6; k++) {
+        const t = k / 6;
+        ap.push([ax + (ex - ax) * t + (t > kink ? 0 : 0), ay + (ey - ay) * t - Math.sin(t * Math.PI) * len * 0.08 + (vnoise1(t * 3 + i, seed + 11) - 0.5) * len * 0.06]);
       }
-      // a pad at the end and one or two along the arm
-      pads.push([ex, ey - 2, H * (0.12 + 0.05 * r())]);
-      if (len > H * 0.25) pads.push([ax + (ex - ax) * 0.55, ay + (ey - ay) * 0.55 - 3, H * (0.08 + 0.04 * r())]);
+      limb(c, ap, Math.max(1.5, tw(u) * 0.42), 1.2, seed + 60 + i);
+      pads.push([ex, ey - 2, H * (0.12 + 0.05 * r()) * ps]);
+      if (len > H * 0.18 * (p.arm ? 0.5 : 1)) pads.push([ax + (ex - ax) * 0.55, ay + (ey - ay) * 0.55 - 3, H * (0.08 + 0.04 * r()) * ps]);
+    }
+    // the long arm: out over the water, rising a little, its tip drooping, needle masses along it
+    if (p.arm) {
+      const [len, au] = p.arm;
+      const [ax, ay] = at(au);
+      const ap: [number, number][] = [];
+      for (let k = 0; k <= 12; k++) {
+        const t = k / 12;
+        // it leaves the trunk rising, dips at an old break, levels out and droops at the tip
+        const elbow = -Math.exp(-Math.pow((t - 0.32) / 0.1, 2)) * len * 0.03;
+        ap.push([ax + dir * len * t + (vnoise1(t * 7, seed + 13) - 0.5) * len * 0.02, ay - len * 0.06 * Math.sin(Math.min(1, t * 1.6) * Math.PI * 0.5) + len * 0.05 * t * t * t - elbow + (vnoise1(t * 4, seed + 12) - 0.5) * len * 0.05 + (vnoise1(t * 13, seed + 14) - 0.5) * len * 0.015]);
+      }
+      limb(c, ap, tw(au) * 0.8, 4, seed + 80);
+      // side shoots carrying the masses, bigger toward the tip
+      for (const [t0, sz, up] of [[0.4, 0.1, 0.05], [0.6, 0.14, 0.035], [0.76, 0.15, 0.06], [0.9, 0.17, 0.02], [1.0, 0.19, 0.04]] as const) {
+        const f = t0 * 12, i0 = Math.min(11, Math.floor(f)), tt = f - i0;
+        const [px, py] = ap[i0]!, [qx, qy] = ap[i0 + 1]!;
+        const sx = px + (qx - px) * tt, sy = py + (qy - py) * tt;
+        const ox = dir * H * 0.03 * (r() - 0.3), oy = -H * up;
+        if (t0 < 1) limb(c, [[sx, sy], [sx + ox, sy + oy]], 3, 1.2, seed + 90 + Math.round(t0 * 10));
+        pads.push([sx + ox, sy + oy - 2, H * sz * ps * (0.9 + 0.2 * r())]);
+      }
+      // a mass hanging below the tip
+      const [tx, ty] = ap[12]!;
+      pads.push([tx - dir * H * 0.02, ty + H * 0.06, H * 0.12 * ps]);
     }
     const [tx, ty] = pts[16]!;
-    pads.push([tx, ty - 2, H * 0.16]);
-    // pads: wide flat layered clouds of needles, lit on top, a dark underside
-    pads.sort((a, q) => a[1] - q[1]);
-    for (const [px, py, pr] of pads) {
-      needlePad(c, px + pr * 0.2, py + pr * 0.15, pr * 3.4, pr * 0.95, seed + Math.round(px * 3) + 1);
-      needlePad(c, px - pr * 0.25, py - pr * 0.3, pr * 2.6, pr * 0.8, seed + Math.round(px * 3));
-    }
+    pads.push([tx, ty - 2, H * 0.16 * ps]);
+    // the needle masses: lower layers first, each upper layer's dark underside over the one below
+    pads.sort((a, q) => q[1] - a[1]);
+    pads.forEach(([px, py, pr], i) => {
+      const s = seed + Math.round(px * 3) + i * 131;
+      const three = hash1(i, seed + 21) < 0.4;
+      const dk = p.arm ? 0.14 : 0;
+      needlePad(c, px + pr * 0.25, py + pr * 0.2, pr * (3.2 + hash1(i, seed + 22) * 0.6), pr * 0.95, s + 1, dk);
+      needlePad(c, px - pr * 0.3, py - pr * 0.32, pr * (2.3 + hash1(i, seed + 23) * 0.6), pr * 0.8, s, dk);
+      if (three) needlePad(c, px + pr * 0.7 * (hash1(i, seed + 24) - 0.3), py - pr * 0.62, pr * 1.5, pr * 0.62, s + 2, dk);
+    });
+    void bayer4;
   },
 });
 

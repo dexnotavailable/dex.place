@@ -182,27 +182,273 @@ export const barrel = definePainter<BarrelP>("op.barrel", {
   },
 });
 
+
+/** Contact on the deck under a prop: a shadow falling down and to the right of its foot, 1 to 2 px. */
+function footShadow(c: PaintCtx, x0: number, x1: number, damp = false): void {
+  fill(c, x0 + 1, 0, x1 + 2, 2, (x, y, u, v) => {
+    const k = 1 - Math.pow(Math.abs(u - 0.55) * 2, 3);
+    if (v > 0.5 && bayer4(x, y) > k * 0.6) return 0;
+    return damp ? (v < 0.5 ? P.timber[5]! : P.timber[4]!) : P.timber[6]!;
+  });
+}
+
+/** A cord or rope band across a shape: twisted strands, lit on top. */
+function cord(c: PaintCtx, ax: number, ay: number, bx: number, by: number, th: number): void {
+  const d = c.d;
+  const len = Math.hypot(bx - ax, by - ay);
+  const n = Math.max(2, Math.ceil(len * d * 1.5));
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const x = ax + (bx - ax) * t, y = ay + (by - ay) * t;
+    for (let o = 0; o < th; o += 0.5 / d) {
+      const X = Math.round(c.X(x)), Y = Math.round(c.Y(y + o));
+      const tw = ((X + Y * 2) % 3 + 3) % 3;
+      c.buf.set(X, Y, o < th * 0.4 ? P.earth[tw === 0 ? 0 : 1]! : P.earth[tw === 0 ? 2 : 3]!);
+    }
+  }
+}
+
+export interface CrateP {
+  /** Width and height, px; anchor at the bottom centre. */
+  w?: number;
+  h?: number;
+}
+
+/**
+ * A fisher's crate: rough boards of different widths nailed to corner battens, one board split
+ * and chipped, the top edge worn, a rope lashed round it twice with a knot on top, a shadow at
+ * its foot. Cosmetic breakable: anchor at the feet.
+ */
+export const crateOp = definePainter<CrateP>("op.crate", {
+  bounds(p) {
+    const w = p.w ?? 40, h = p.h ?? 36;
+    return [-w / 2 - 2, -h - 4, w / 2 + 4, 3];
+  },
+  paint(c, p) {
+    const w = p.w ?? 40, h = p.h ?? 36, seed = c.seed, d = c.d;
+    footShadow(c, -w / 2, w / 2);
+    // the boards: their own heights and tones
+    const boards: [number, number, number][] = [];
+    let y = 0;
+    let i = 0;
+    while (y < h) {
+      const bh = Math.min(h - y, 5 + hash1(i, seed) * 5);
+      boards.push([y, bh, hash1(i, seed + 1)]);
+      y += bh;
+      i++;
+    }
+    const split = Math.floor(hash1(9, seed) * boards.length);
+    boards.forEach(([by, bh, k], bi) => {
+      fill(c, -w / 2, -by - bh, w / 2, -by, (x, yy, u, v) => {
+        const lx = c.lx(x + 0.5);
+        // a chipped corner on the split board
+        if (bi === split && u > 0.86 && v < 0.5) return 0;
+        let t = 0.3 + k * 0.25 + v * 0.15;
+        if (v < 0.18) t -= 0.15;
+        if (v > 0.82) t = 0.85;
+        if (bi === split && Math.abs(v - 0.45 - (u - 0.5) * 0.15) < 0.12 && u > 0.2) t = 0.95;
+        if (d >= 0.5 && vnoise(lx / 9, c.ly(yy) / 1.2, seed + bi) > 0.7) t += 0.1;
+        if (u > 0.92) t += 0.2;
+        return wood(x, yy, clamp(t, 0, 1), true);
+      });
+    });
+    // corner battens, nailed
+    for (const [bx, sh] of [[-w / 2, 0], [w / 2 - 4, 0.25]] as const) {
+      fill(c, bx, -h, bx + 4, 0, (x, yy, u, v) => {
+        if (v < 0.04 && u > 0.5) return 0;
+        const t = (u < 0.3 ? 0.18 : u > 0.75 ? 0.8 : 0.5) + sh;
+        if (d >= 1 && Math.abs(u - 0.5) < 0.2 && (Math.round(c.ly(yy) + h) % 7) === 3) return P.ink[1]!;
+        return wood(x, yy, clamp(t, 0, 1), false);
+      });
+    }
+    // the rope: twice round, a knot on the top
+    for (const fx of [-0.18, 0.24]) {
+      const x = w * fx;
+      cord(c, x, -h - 1, x + 1, 0.2, 2);
+      for (let yy = Math.round(c.Y(-h - 1)); yy < Math.round(c.Y(0)); yy++) {
+        c.buf.set(Math.round(c.X(x + 1.5)), yy, ((yy & 1) ? P.earth[1] : P.earth[2])!);
+        c.buf.set(Math.round(c.X(x - 0.5)), yy, P.earth[3]!);
+      }
+    }
+    cord(c, -w * 0.18, -h - 1.5, w * 0.24, -h - 1.5, 1.6);
+    const kx = w * 0.04;
+    fill(c, kx - 2.5, -h - 4, kx + 2.5, -h, (_x, _y, u, v) => ((u - 0.5) * (u - 0.5) + (v - 0.6) * (v - 0.6) < 0.2 ? (u < 0.5 ? P.earth[0]! : P.earth[2]!) : 0));
+    for (let s = 0; s < 6; s += 0.5 / d) c.buf.set(Math.round(c.X(kx + 2 + s * 0.4)), Math.round(c.Y(-h + s * 0.9)), P.earth[2]!);
+  },
+});
+
+export interface JarP {
+  h?: number;
+  /** "clay" (terracotta, the default), "celadon" or "ink". */
+  glaze?: string;
+}
+
+/**
+ * A storage jar with a narrow neck, a cloth tied over its mouth, a cord net round its belly for
+ * carrying, worn and dusty at its foot. Cosmetic breakable: anchor at the feet.
+ */
+export const jarOp = definePainter<JarP>("op.jar", {
+  bounds(p) {
+    const h = p.h ?? 34;
+    return [-h * 0.45 - 2, -h - 5, h * 0.45 + 3, 3];
+  },
+  paint(c, p) {
+    const h = p.h ?? 34, d = c.d;
+    const ramp = p.glaze === "ink" ? P.lacquer : p.glaze === "celadon" ? P.jade : P.earth;
+    const r = h * 0.42;
+    footShadow(c, -r * 0.6, r * 0.6);
+    const half = (t: number): number => (t > 0.84 ? r * 0.4 : t > 0.74 ? r * (0.4 + (0.84 - t) * 3) : r * Math.pow(Math.sin(Math.min(1, (t + 0.1) / 0.84) * Math.PI), 0.62));
+    fill(c, -r - 1, -h, r + 1, 0, (x, y, _u, v) => {
+      const ly = c.ly(y + 0.5), lx = c.lx(x + 0.5);
+      const t = -ly / h;
+      const hw = half(t);
+      if (Math.abs(lx) > hw) return 0;
+      // the cloth over its mouth, tied
+      if (t > 0.84) return tone(P.paper, lx < 0 ? 0.15 : 0.45, x, y, 0.3);
+      if (Math.abs(t - 0.82) < 0.03) return P.red[4]!;
+      // the carrying net: a diamond lattice of cord over the belly
+      if (d >= 1 && t < 0.62 && t > 0.08) {
+        const a = (lx / hw) * 3.2 + t * 9, bq = -(lx / hw) * 3.2 + t * 9;
+        if (Math.abs(a - Math.round(a)) < 0.09 || Math.abs(bq - Math.round(bq)) < 0.09) return P.earth[t < 0.3 ? 3 : 2]!;
+      }
+      if (Math.abs(lx) > hw - 1.1) return ramp[ramp.length - 1]!;
+      const lit = (-lx / Math.max(1, hw)) * 0.6 - (v - 0.5) * 0.8;
+      if (p.glaze !== "clay" && p.glaze !== undefined && lit > 0.55 && bayer4(x, y) > 0.3) return P.paper[0]!;
+      let tt = 0.45 - lit * 0.35;
+      // dust and wear toward the foot
+      if (t < 0.12) tt += 0.15;
+      return tone(ramp, clamp(tt, 0.05, 0.95), x, y, 0.35);
+    });
+    // the net's cord gathered at the neck, its tail hanging
+    if (d >= 0.5) for (let s = 0; s < h * 0.35; s += 0.5 / d) c.buf.set(Math.round(c.X(r * 0.35 + s * 0.2)), Math.round(c.Y(-h * 0.78 + s)), P.earth[2]!);
+  },
+});
+
+export interface NetP {
+  /** Width and height of the heap, px; anchor at its foot on the deck, middle. */
+  w: number;
+  h: number;
+  /** Net hanging over the deck's edge, px below the deck top (0: none). */
+  drape?: number;
+}
+
+/**
+ * A heap of fishing net on the deck: lumpy folds of dark mesh with lighter cord catching the
+ * light, cork floats strung along it, a tail of net hanging over the deck's edge. Anchor: its
+ * foot, middle.
+ */
+export const net = definePainter<NetP>("op.net", {
+  bounds(p) {
+    return [-p.w / 2 - 3, -p.h - 3, p.w / 2 + 6, Math.max(3, (p.drape ?? 0) + 3)];
+  },
+  paint(c, p) {
+    const b = c.buf, d = c.d, seed = c.seed;
+    const W = p.w / 2;
+    footShadow(c, -W, W);
+    const X0 = Math.round(c.X(-W - 2)), X1 = Math.round(c.X(W + 2));
+    for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
+      const lx = c.lx(x + 0.5);
+      const u = lx / W;
+      if (Math.abs(u) > 1.05) continue;
+      // folds: lumps at two scales
+      const top = -p.h * Math.pow(Math.max(0, 1 - Math.pow(Math.abs(u), 1.8)), 0.6) * (0.75 + 0.35 * vnoise1(lx / 6, seed)) - 1.2 * vnoise1(lx / 2, seed + 1);
+      for (let y = Math.max(Math.round(c.Y(top)), b.oy); y < Math.min(Math.round(c.Y(0)), b.y1); y++) {
+        const ly = c.ly(y + 0.5);
+        const v = (ly - top) / Math.max(1, -top);
+        // fold shadows: dark creases following the lumps
+        const crease = vnoise(lx / 4, ly / 2.2, seed + 2);
+        let t = 0.5 + v * 0.3 + (u > 0.3 ? 0.15 : 0);
+        if (crease > 0.66) t += 0.25;
+        // the mesh: cord lit where it crosses
+        const mesh = d >= 1 ? ((Math.round(lx * 1.4 + ly * 1.4) & 3) === 0 || (Math.round(lx * 1.4 - ly * 1.4) & 3) === 0) : hash(x, y, seed) < 0.3;
+        if (mesh && t < 0.75) t -= 0.2;
+        b.set(x, y, tone(P.earth, clamp(0.35 + t * 0.6, 0, 1), x, y, 0.3));
+      }
+    }
+    // cork floats along it
+    for (let i = 0; i < 3; i++) {
+      const fx = (-0.6 + i * 0.55 + (hash1(i, seed + 3) - 0.5) * 0.2) * W;
+      const fy = -p.h * Math.pow(Math.max(0, 1 - Math.pow(Math.abs(fx / W), 1.8)), 0.6) * 0.6 + 1;
+      fill(c, fx - 1.6, fy - 1.4, fx + 1.6, fy + 1.2, (_x, _y, uu, vv) => ((uu - 0.5) ** 2 + (vv - 0.5) ** 2 < 0.26 ? (uu < 0.45 && vv < 0.55 ? P.earth[0]! : P.earth[2]!) : 0));
+    }
+    // a tail of net hanging over the deck's edge
+    const dr = p.drape ?? 0;
+    if (dr > 0) {
+      const hx0 = W * 0.15, hx1 = W * 0.85;
+      fill(c, hx0, 0, hx1, dr, (x, y, uu, vv) => {
+        const edge = dr * (0.6 + 0.4 * Math.sin(uu * Math.PI)) - 1.5 * hash1(Math.round(c.lx(x)), seed + 4);
+        if (c.ly(y + 0.5) > edge) return 0;
+        const mesh = d >= 1 ? ((Math.round(c.lx(x) * 1.4 + c.ly(y) * 1.4) & 3) === 0 || (Math.round(c.lx(x) * 1.4 - c.ly(y) * 1.4) & 3) === 0) : (x + y) % 2 === 0;
+        if (!mesh && vv > 0.15) return 0;
+        return tone(P.earth, 0.55 + vv * 0.3, x, y, 0.3);
+      });
+    }
+  },
+});
+
+export interface BasketP {
+  /** Height, px; anchor at its foot, middle. */
+  h: number;
+}
+
+/** A fish basket of woven bamboo: a round belly, a narrow mouth with a lid, a rope handle. */
+export const basket = definePainter<BasketP>("op.basket", {
+  bounds(p) {
+    return [-p.h * 0.5 - 2, -p.h * 1.35, p.h * 0.5 + 3, 3];
+  },
+  paint(c, p) {
+    const hh = p.h, d = c.d;
+    const r = hh * 0.42;
+    footShadow(c, -r * 0.8, r * 0.8);
+    fill(c, -r - 1, -hh, r + 1, 0, (x, y, _u, v) => {
+      const lx = c.lx(x + 0.5), ly = c.ly(y + 0.5);
+      const t = -ly / hh;
+      const half = t > 0.82 ? r * 0.5 : r * Math.pow(Math.sin(Math.min(1, (t + 0.12) / 0.86) * Math.PI), 0.5) * (1 - t * 0.15);
+      if (Math.abs(lx) > half) return 0;
+      const q = lx / half;
+      // the weave: horizontal strands over and under the uprights
+      const row = Math.floor(ly * (d >= 1 ? 1 : 0.5) / 1.6);
+      const colw = Math.floor((q * 5 + 5 + (row & 1) * 0.5));
+      let tt = (q < -0.4 ? 0.15 : q < 0.35 ? 0.35 : 0.6) + ((colw + row) & 1 ? 0.12 : 0);
+      if (t > 0.82) tt = q < 0 ? 0.25 : 0.5;
+      if (Math.abs(q) > 0.88) tt += 0.25;
+      if (v > 0.9) tt += 0.15;
+      return tone(P.earth, clamp(0.1 + tt * 0.8, 0, 1), x, y, 0.3);
+    });
+    // the lid's knob and the rope handle
+    fill(c, -1.5, -hh - 2, 1.5, -hh, () => P.earth[3]!);
+    for (let a = 0.2; a <= Math.PI - 0.2; a += 0.05 / Math.max(1, d)) c.buf.set(Math.round(c.X(Math.cos(a) * r * 0.75)), Math.round(c.Y(-hh * 0.82 - Math.sin(a) * hh * 0.45)), P.earth[2]!);
+  },
+});
+
 export interface BucketP {
   h?: number;
 }
 
-/** A wooden bucket with a rope handle. */
+/** A wooden bucket with a rope handle: staves, two iron hoops, a wet dark ring on the deck under it. */
 export const bucket = definePainter<BucketP>("op.bucket", {
   bounds(p) {
     const hh = p.h ?? 20;
-    return [-hh * 0.7, -hh * 1.7, hh * 0.7, 3];
+    return [-hh * 0.7, -hh * 1.7, hh * 0.7 + 3, 3];
   },
   paint(c, p) {
     const hh = p.h ?? 20, d = c.d, seed = c.seed;
     contact(c, -hh * 0.6, hh * 0.6, 1);
+    footShadow(c, -hh * 0.62, hh * 0.62, true);
     fill(c, -hh * 0.55, -hh, hh * 0.55, 0, (x, y, _u, v) => {
       const half = hh * (0.55 - 0.1 * v);
       const lx = c.lx(x + 0.5);
       if (Math.abs(lx) > half) return 0;
       const u = (lx + half) / (2 * half);
-      if (Math.abs(v - 0.25) < 0.07 || Math.abs(v - 0.78) < 0.07) return u < 0.35 ? P.ink[1]! : P.ink[0]!;
-      const t = (u < 0.2 ? 0.1 : u < 0.6 ? 0.3 : 0.6) + (hash1(Math.floor(u * 5), seed) - 0.5) * 0.1;
-      return wood(x, y, t);
+      if (Math.abs(v - 0.25) < 0.07 || Math.abs(v - 0.78) < 0.07) return u < 0.3 ? P.lacquer[1]! : u > 0.8 ? P.ink[0]! : P.ink[1]!;
+      // staves, each its own tone, seams between
+      const st = Math.floor(u * 6);
+      let t = (u < 0.2 ? 0.1 : u < 0.6 ? 0.3 : 0.6) + (hash1(st, seed) - 0.5) * 0.14;
+      if (d >= 1 && Math.abs(u * 6 - Math.round(u * 6)) < 0.08) t += 0.2;
+      // wet and dark toward the foot
+      if (v > 0.86) t += 0.2;
+      if (v < 0.06) t = 0.02;
+      return wood(x, y, clamp(t, 0, 1), v < 0.8);
     });
     // the handle: a rope arc
     for (let a = 0; a <= Math.PI; a += 0.05 / Math.max(1, d)) {
@@ -213,32 +459,72 @@ export const bucket = definePainter<BucketP>("op.bucket", {
 
 export interface CoilP {
   r?: number;
+  /** Its free end hangs over the deck's edge this far, px (default 0: it trails along the deck). */
+  hang?: number;
 }
 
-/** A coil of rope lying on the deck: loops seen side-on, fibres lit on top, the free end trailing. */
+/**
+ * A coil of rope lying on the deck, seen side-on: a short stack of fat loops (each a twisted band
+ * of strands, lit along its top, a dark gap under it), the top loop's opening a dark slit, its
+ * free end trailing off and over the deck's edge.
+ */
 export const coil = definePainter<CoilP>("op.coil", {
   bounds(p) {
     const r = p.r ?? 12;
-    return [-r - 16, -r - 2, r + 3, 3];
+    return [-r - 18, -r - 3, r + 4, Math.max(3, (p.hang ?? 0) + 3)];
   },
   paint(c, p) {
-    const r = p.r ?? 12, d = c.d;
-    contact(c, -r - 2, r + 2, 1);
-    for (let k = 0; k < 4; k++) {
-      const rr = r * (1 - k * 0.16);
-      const yb = -k * 2.4;
+    const r = p.r ?? 12, d = c.d, seed = c.seed;
+    footShadow(c, -r, r);
+    // a stack of loops of rope, each the same size give or take (a coil, not a mound), each a
+    // fat twisted band whose ends turn round out of sight, a dark crease between loops
+    const loops = 4;
+    const th = r * 0.27;
+    for (let k = 0; k < loops; k++) {
+      const off = (hash1(k, seed) - 0.5) * r * 0.16;
+      const rr = r * (0.94 + 0.08 * hash1(k, seed + 1)) - (k === loops - 1 ? r * 0.06 : 0);
+      const yb = -k * th * 0.92;
       for (let lx = -rr; lx <= rr; lx += 0.5 / d) {
-        const X = Math.round(c.X(lx));
-        const top = yb - Math.sqrt(Math.max(0, 1 - (lx / rr) ** 2)) * rr * 0.3;
-        for (let s = 0; s < 3; s += 0.5 / d) {
-          const Y = Math.round(c.Y(top + s));
-          const twist = ((X + Y + k) % 3) === 0;
-          c.buf.set(X, Y, s < 1 ? P.earth[twist ? 0 : 1]! : P.earth[twist ? 2 : 3]!);
+        const X = Math.round(c.X(lx + off));
+        const q = lx / rr;
+        // the loop's ends round off: its band thins where the rope turns away
+        const e = Math.sqrt(Math.max(0, 1 - Math.pow(Math.abs(q), 6)));
+        const y0 = yb - th * (0.25 + 0.75 * e), y1 = yb - th * 0.08 * (1 - e);
+        for (let s = y0; s < y1; s += 0.5 / d) {
+          const Y = Math.round(c.Y(s));
+          const v = (s - y0) / Math.max(0.5, y1 - y0);
+          // strands: twists slanting across the band, lit on top, a lit left end
+          const tw = ((lx * 1.25 - s * 1.7 + k * 0.9) % 2.6 + 2.6) % 2.6;
+          let i = v < 0.3 ? 0 : v < 0.65 ? 1 : 3;
+          if (d >= 0.5 && tw < 0.8) i += 1;
+          if (q > 0.55) i += 1;
+          if (q < -0.8 && v < 0.6) i = Math.max(0, i - 1);
+          c.buf.set(X, Y, P.earth[Math.min(5, i)]!);
         }
+        if (k > 0 && e > 0.3) c.buf.set(X, Math.round(c.Y(yb - 0.1)), P.earth[5]!);
       }
     }
-    // the free end trailing off to the left along the deck
-    for (let s = 0; s < 16; s += 0.5 / d) c.buf.set(Math.round(c.X(-r - s)), Math.round(c.Y(-1 - Math.sin(s / 3) * 0.8)), P.earth[s % 2 < 1 ? 1 : 2]!);
+    // the free end: out of the top loop, over its side and off along the deck, then over the edge
+    const yt = -(loops - 1) * th * 0.92 - th * 0.6;
+    const pts: [number, number][] = [[-r * 0.3, yt], [-r * 0.9, yt + 0.5], [-r - 2, yt + th * 1.4], [-r - 4, -1.5], [-r - 10, -1], [-r - 16, -1.2]];
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const [ax, ay] = pts[i]!, [bx, by] = pts[i + 1]!;
+      const n = Math.max(2, Math.ceil(Math.hypot(bx - ax, by - ay) * d * 2));
+      for (let j = 0; j <= n; j++) {
+        const t = j / n;
+        const X = Math.round(c.X(ax + (bx - ax) * t)), Y = Math.round(c.Y(ay + (by - ay) * t));
+        c.buf.set(X, Y, P.earth[((X + Y) & 1) ? 1 : 2]!);
+        c.buf.set(X, Y + 1, P.earth[4]!);
+      }
+    }
+    const hang = p.hang ?? 0;
+    for (let s = 0; s < hang; s += 0.5 / d) {
+      const X = Math.round(c.X(-r - 16 - Math.sin(s / hang * 1.4) * 2)), Y = Math.round(c.Y(-0.5 + s));
+      c.buf.set(X, Y, P.earth[(Math.round(s * 2) & 1) ? 1 : 2]!);
+      if (d >= 1) c.buf.set(X + 1, Y, P.earth[4]!);
+    }
+    // a frayed tip
+    if (d >= 1) for (let k = -1; k <= 1; k++) c.buf.set(Math.round(c.X(-r - 16 + k * 0.6)), Math.round(c.Y(hang + 0.8)), P.earth[2]!);
   },
 });
 
@@ -252,14 +538,15 @@ export interface BoatP {
 /**
  * A moored sampan: a long low hull of dark weathered planks with a rising bow and stern, a woven
  * bamboo half-canopy, a pole lying along it; its mooring line runs up to the jetty. The hull
- * bobs a pixel and rocks a touch over the cycle.
+ * bobs a pixel and rocks a touch over the cycle. Its waterline is wet and dark, so its
+ * reflection starts at the hull.
  */
 export const boat = definePainter<BoatP>("op.boat", {
   bounds(p) {
     return [-12, -64, p.w + 12, 18];
   },
   paint(c, p) {
-    const w = p.w, d = c.d, seed = c.seed;
+    const w = p.w, d = c.d;
     const f = p.frame ?? 0;
     const bob = Math.round(Math.sin((f / 8) * Math.PI * 2) * 1);
     const rock = Math.sin((f / 8) * Math.PI * 2 + 1) * 0.012;
@@ -279,8 +566,10 @@ export const boat = definePainter<BoatP>("op.boat", {
         // plank seams following the sheer
         if (d >= 0.5 && Math.abs(((v * 4) % 1) - 0.5) < 0.06 && v > 0.25) t += 0.2;
         if (y === Y1 - 1 || u < 0.01 || u > 0.99) t = 0.95;
-        // wet and darker at the waterline
-        if (c.ly(y + 0.5) - bob > -2) t = Math.min(1, t + 0.25);
+        // wet and dark for a few px above the waterline, slick at the line itself
+        const above = -(c.ly(y + 0.5) - bob);
+        if (above < 4.5) t = Math.min(1, t + 0.3 + (4.5 - Math.max(0, above)) * 0.05);
+        if (above < 1.2 && above > 0.2 && u > 0.08 && u < 0.92 && d >= 0.5) { c.buf.set(X, y, P.jade[5]!); continue; }
         c.buf.set(X, y, wood(X, y, clamp(t, 0, 1), v < 0.12));
       }
     }
@@ -298,6 +587,5 @@ export const boat = definePainter<BoatP>("op.boat", {
     }
     // a pole lying along the gunwale
     for (let lx = w * 0.08; lx < w * 1.05; lx += 0.5 / d) c.buf.set(Math.round(c.X(lx)), Math.round(c.Y(yOf(lx, -12 - (lx - w * 0.08) * 0.04))), P.timber[2]!);
-    void seed;
   },
 });
