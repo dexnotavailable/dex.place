@@ -227,8 +227,10 @@ const rgbOf = (i: number): [number, number, number] => [PAL[i * 4]!, PAL[i * 4 +
  *  near water as it reads on screen (the deep carrying the sky). */
 const INK = [27, 25, 34];
 const MIRROR = [0.58, 0.76, 0.75];
-const DEEP = [29, 85, 88];
-const NEAR = [78, 132, 140];
+// (round-3 integration: p1's glassier lake, deep #528995 and the near water as it now reads on
+// screen, so the painted reflections stay one step under the lake instead of two)
+const DEEP = [82, 137, 149];
+const NEAR = [96, 148, 158];
 const REFL = [
   ...P.jade.slice(2), ...P.pine, ...P.moss.slice(3), ...P.karst.slice(4), ...P.umber.slice(1), ...P.earth.slice(3),
   ...P.range.slice(4), ...P.tile.slice(2), ...P.timber.slice(3),
@@ -263,6 +265,39 @@ function reflOf(col: number, f: number, ink: number): number {
   }
   reflMemo.set(key, best);
   return best;
+}
+
+/**
+ * The bright line where a thing meets the water, as it reads on screen whatever its plane's ink:
+ * the near water's own glassy blue a step lighter (never the jade's saturated cyan, which read
+ * as an outline on the front plane), lighter on the sun side. Set per paint (paintBodies).
+ */
+let lineInk = 0;
+const LINE = [...P.jade, ...P.range, ...P.cloud, ...P.karst.slice(2, 6)] as number[];
+const lineMemo = new Map<number, number>();
+function lineCol(lit: boolean): number {
+  const key = (lit ? 1 : 0) + Math.round(lineInk * 100) * 2;
+  const hit = lineMemo.get(key);
+  if (hit !== undefined) return hit;
+  // (between a dark mass and its dark reflection a pale line stands out hard: keep it a quiet step)
+  const want = lit ? [132, 172, 176] : [112, 156, 162];
+  let best = LINE[0]!, bd = Infinity;
+  for (const q of LINE) {
+    const r = rgbOf(q);
+    const seen = r.map((v, i) => v * (1 - lineInk) + INK[i]! * lineInk);
+    const e = 2 * (seen[0]! - want[0]!) ** 2 + 4 * (seen[1]! - want[1]!) ** 2 + 3 * (seen[2]! - want[2]!) ** 2;
+    if (e < bd) { bd = e; best = q; }
+  }
+  lineMemo.set(key, best);
+  return best;
+}
+/** The bright line's two colours on a plane of ink `ink` (lit, shaded): for tests. */
+export function waterlineCols(ink: number): [number, number] {
+  const was = lineInk;
+  lineInk = ink;
+  const out: [number, number] = [lineCol(true), lineCol(false)];
+  lineInk = was;
+  return out;
 }
 
 /** A reflection's waterline, length and ripples. */
@@ -528,12 +563,13 @@ function rockFill(c: PaintCtx, ks: Chunk[], lx: number, ly: number, x: number, y
     if (!k.wside || ly <= k.wfrom || ly >= k.bot || lx < k.bx0 - e1 || lx > k.bx1 + e1) continue;
     const xs = chunkSide(k, ly, k.wside);
     const out = k.wside < 0 ? xs - lx : lx - xs;
-    if (out > 0 && out <= e1 && inChunk(k, xs - k.wside * 0.6, ly) && vnoise1(ly / 3.4, k.seed + 41) > 0.35) return P.jade[2]!;
+    // (the side the water laps is a wet dark edge: a bright line up a side reads as an outline)
+    if (out > 0 && out <= e1 && inChunk(k, xs - k.wside * 0.6, ly) && vnoise1(ly / 3.4, k.seed + 41) > 0.5) return P.pine[5]!;
   }
   for (const k of ks) {
     if (!k.wet || ly < k.bot || ly >= k.bot + e1) continue;
-    if (!inChunk(k, lx, k.bot - 0.7) || vnoise1(lx / 4.2, k.seed + 40) < 0.3) continue;
-    return lx - chunkSide(k, k.bot - 1, -1) < (k.x1 - k.x0) * 0.6 ? P.jade[1]! : P.jade[2]!;
+    if (!inChunk(k, lx, k.bot - 0.7) || vnoise1(lx / 4.2, k.seed + 40) < 0.45) continue;
+    return lineCol(lx - chunkSide(k, k.bot - 1, -1) < (k.x1 - k.x0) * 0.6);
   }
   return 0;
 }
@@ -710,7 +746,10 @@ function wanderFoot(f: number, amp: number, seed: number): (lx: number) => numbe
   };
 }
 
-const EARTH = [P.earth[3]!, P.earth[4]!, P.earth[5]!, P.umber[3]!, P.umber[4]!, P.pine[5]!, P.umber[5]!];
+// (round-3 integration: a step lighter than p3's, which ended in near-black umber, so a mud bank
+// reads as wet brown earth with its darkest darks only in the undercuts and the wet band, never
+// as a black raft on the water)
+const EARTH = [P.earth[3]!, P.earth[4]!, P.earth[5]!, P.umber[2]!, P.umber[3]!, P.umber[4]!, P.pine[5]!];
 
 function earthCol(c: PaintCtx, e: Earth, lx: number, ly: number, x: number, y: number): number {
   if (lx < e.x0 || lx > e.x1 || ly < e.bot - 400) return 0;
@@ -723,7 +762,7 @@ function earthCol(c: PaintCtx, e: Earth, lx: number, ly: number, x: number, y: n
   const sl = e.top(lx + 2) - e.top(lx - 2);
   if (s < 1) return sl > 0.5 ? P.earth[3]! : P.earth[4]!;
   // under the grass that overhangs its top: deep shade
-  let t = 0.6 + e.wet * 0.22 + (s < 6 + 4 * vnoise1(lx / 7, sd + 3) ? 0.3 : 0) + (vnoise(lx / 22, ly / 9, sd + 4) - 0.5) * 0.2;
+  let t = 0.38 + e.wet * 0.2 + (s < 6 + 4 * vnoise1(lx / 7, sd + 3) ? 0.3 : 0) + (vnoise(lx / 22, ly / 9, sd + 4) - 0.5) * 0.24;
   // mud shelves: a lit lip on each, a dark undercut under it, each wandering along
   for (const h of e.shelves) {
     const dd = ly - (F - h + (vnoise1(lx / 19, sd + 5 + Math.round(h)) - 0.5) * 3);
@@ -735,8 +774,8 @@ function earthCol(c: PaintCtx, e: Earth, lx: number, ly: number, x: number, y: n
     const cx = Math.floor(lx / 5), cy = Math.floor(ly / 4);
     for (let i = -1; i <= 0; i++) for (let j = -1; j <= 0; j++) {
       const h = hash(cx + i, cy + j, sd + 9);
-      if (h > 0.22) continue;
-      const px = (cx + i + 0.5) * 5 + (h - 0.11) * 12, py = (cy + j + 0.5) * 4, pr = 1.2 + 9 * h;
+      if (h > 0.12) continue;
+      const px = (cx + i + 0.5) * 5 + (h - 0.06) * 20, py = (cy + j + 0.5) * 4, pr = 1.2 + 16 * h;
       const dx = (lx - px) / (pr * 1.3), dy = (ly - py) / pr;
       if (dx * dx + dy * dy < 1) return dy < -0.3 && dx < 0.2 ? P.karst[4]! : dy > 0.4 ? P.karst[8]! : P.karst[6]!;
     }
@@ -1017,8 +1056,9 @@ function bankParts(x0: number, x1: number, out: number, wl: number, deep: number
       const sd = seed + 9;
       // the lip of a shelf: where the edge steps out, its top catches the light
       const above = edge(ly - 1.2), dinA = dir > 0 ? above - lx : lx - above;
-      if (dinA < 0 && din < 14) return din < 1.2 ? P.jade[2]! : vnoise1(lx / 5, sd) > 0.4 ? P.earth[3]! : P.earth[4]!;
-      if (din < 1 && vnoise1(ly / 3, sd + 1) > 0.35) return P.jade[2]!;
+      if (dinA < 0 && din < 14) return din < 1.2 && vnoise1(lx / 4, sd + 8) > 0.4 ? lineCol(false) : vnoise1(lx / 5, sd) > 0.4 ? P.earth[3]! : P.earth[4]!;
+      // (its wet inner edge running down toward the camera: dark, never a bright outline)
+      if (din < 1 && vnoise1(ly / 3, sd + 1) > 0.35) return P.pine[5]!;
       if (din < 2.5 + 3 * vnoise1(ly / 6, sd + 2)) return vnoise1(ly / 2.2 + lx / 9, sd + 3) > 0.7 ? P.moss[6]! : vnoise1(lx / 7, sd + 4) > 0.5 ? P.umber[4]! : P.pine[5]!;
       const v = clamp((ly - wl) / Math.max(1, deep - wl), 0, 1);
       const g = vnoise(lx / 19, ly / 8, sd + 5);
@@ -1298,9 +1338,11 @@ function paintPart(c: PaintCtx, q: Part): void {
         const ly = LY(c, y);
         if (ly >= w) {
           // the bright line where it meets the water: 1 px, broken, brightest on the sun side
-          if (!q.noLine && ly < w + e1 && vnoise1(lx / 4.2, ls + 3) > 0.3 && q.fill(c, lx, w - 0.7, x, y)) {
+          // (only along a level contact: where a wandering foot steps, a line would trace the step)
+          const flat = !q.wlAt || Math.abs(q.wlAt(lx + 1.5) - q.wlAt(lx - 1.5)) < 1.1;
+          if (!q.noLine && flat && ly < w + e1 && vnoise1(lx / 4.2, ls + 3) > 0.42 && q.fill(c, lx, w - 0.7, x, y)) {
             const lit = q.fill(c, lx - 4, w - 0.7, x, y) === 0 || vnoise1(lx / 9, ls + 5) > 0.55;
-            b.set(x, y, lit ? P.jade[1]! : P.jade[2]!);
+            b.set(x, y, lineCol(lit));
           }
           if (ly >= w + e1) break;
           continue;
@@ -1316,6 +1358,7 @@ function paintPart(c: PaintCtx, q: Part): void {
 /** The masses' reflections (back to front), then their bodies (back to front). */
 function paintBodies(c: PaintCtx, bodies: Body[], ink: number): void {
   const b = c.buf;
+  lineInk = ink;
   const vis = bodies.filter((B) => b.touches(Math.floor(c.X(B.box[0] - 8)), Math.floor(c.Y(B.box[1] - 8)), Math.ceil(c.X(B.box[2] + 8)), Math.ceil(c.Y(B.box[3]))));
   for (const B of vis) {
     for (const q of B.parts) {
@@ -1486,7 +1529,10 @@ function shallowsOf(p: ShallowsP, seed: number): Body[] {
     }
     if (kind === "rise") {
       // the rise, its crown toward the outer end, that end coming toward the camera off the corner
-      out.push(massOf({ kind: "rise", x: L ? -p.w * 0.15 : p.w * 0.15, w: p.w, h: H, peak: L ? 0.38 : 0.62, bank: 0.62, taper: 0.62 }, seed + 2, p.wl, 0, p.deep));
+      // (round-3 integration: its bank wider and less tapered, run deep enough to leave every
+      // frame by its bottom edge, so the catch's bottom-left corner is the rise's dark bank coming
+      // at the camera, not open water under a strip; at play zoom P5's rise stands over most of it)
+      out.push(massOf({ kind: "rise", x: L ? -p.w * 0.15 : p.w * 0.15, w: p.w, h: H, peak: L ? 0.38 : 0.62, bank: 0.7, taper: 0.45 }, seed + 2, p.wl, 0, p.deep));
       if ((p.wood ?? "log") === "log") {
         // a kinked snag lying out from its inner end into the water
         const sx = L ? p.w * (0.7 + 0.08 * r()) : p.w * (0.22 + 0.08 * r());

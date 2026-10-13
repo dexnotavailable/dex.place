@@ -5,9 +5,9 @@
 // tallest left of centre, toward the sun), the big ones carrying a second billow; every lobe
 // sprouts smaller lobes round its upper rim, and those sprout smaller ones again, so the
 // silhouette is lumpy at three scales, never a triangle or a straight flank. Each lobe is shaded
-// as a ball lit from the upper left (a cream rim where the sun grazes it), a crease of shadow
-// where a nearer lobe overlaps it, deeper shade the further the light has to travel through the
-// heap, and blue-grey (the far range's ramp) along the flat underside, which sits on a thin
+// as a ball lit from the upper left (a cream rim where the sun grazes it), the heap's big planes
+// broken into billows of very different sizes (each its own ball, the lower one in front), most
+// where the light turns, deeper shade the further the light has to travel through the heap, and blue-grey (the far range's ramp) along the flat underside, which sits on a thin
 // layer of haze. Only the shaded rims dither; the lit outline is crisp. Stratus: a torn band of
 // long low lobes of different lengths and heights, lumpy on top, flatter below, tapering and
 // fraying at both ends, broken in places; never a ruled line. `frame` (0..3) churns the lobes a
@@ -148,7 +148,7 @@ function baseAt(p: CloudP, lx: number, seed: number): number {
 }
 
 /** The heap as fields on a 1 px grid (level-1 px), built once per cloud and frame. */
-interface Mask { x0: number; y0: number; w: number; h: number; own: Int16Array; light: Float32Array; dist: Float32Array; lam: Float32Array; lobes: Lobe[] }
+interface Mask { x0: number; y0: number; w: number; h: number; own: Int16Array; light: Float32Array; dist: Float32Array; lam: Float32Array; lobes: Lobe[]; tex: Int16Array; billows: Lobe[] }
 
 /** Three box passes (about a gaussian) of radius r over a w x h field, in place. */
 function blur3(f: Float32Array, w: number, h: number, r: number): void {
@@ -177,7 +177,7 @@ function blur3(f: Float32Array, w: number, h: number, r: number): void {
 }
 
 function maskOf(p: CloudP, seed: number, f: number): Mask {
-  return cached(`cumask5|${seed}|${p.w}|${p.h}|${p.low ? 1 : 0}|${f}`, () => {
+  return cached(`cumask6|${seed}|${p.w}|${p.h}|${p.low ? 1 : 0}|${f}`, () => {
     const L = lobesOf(p, seed).map((o, i) => ({ ...o, r: o.r * (0.97 + 0.03 * Math.sin(f * 1.57 + i * 1.3)) }));
     const x0 = Math.floor(-p.w * 0.66), y0 = Math.floor(-p.h * 1.6), w = Math.ceil(p.w * 1.32), h = Math.ceil(p.h * 1.6) + 2;
     // the silhouette (every lobe, the small ones included), and the surface the light falls on:
@@ -264,7 +264,45 @@ function maskOf(p: CloudP, seed: number, f: number): Mask {
       const nl = Math.hypot(gx, gy, 1);
       lam[i] = (-gx * Lx - gy * Ly + Lz) / nl;
     }
-    return { x0, y0, w, h, own, light, dist, lam, lobes: L };
+    // the billows over the whole heap (Dex's painterly cumulus): small balls of very different
+    // sizes packed over the silhouette, each lower one standing in front of the one above it, so
+    // every part of the heap, the shade included, reads as a crowd of lit tops over shaded
+    // undersides, never a flat plane cut by straight creases (round-3 integration)
+    const billows: Lobe[] = [];
+    const rb = rng(seed + 91);
+    // (sizes very different and grouped: a few great billows, mid ones, small ones mostly up on
+    // the sunlit crown where the heap boils; never a sheet of like scales)
+    const cell = Math.max(6, p.h * 0.12);
+    for (let gy = 0; gy < h; gy += cell * 0.7) {
+      const row = Math.floor(gy / (cell * 0.7));
+      for (let gx = (row % 2) * cell * 0.5; gx < w; gx += cell * (0.75 + 0.6 * rb())) {
+        const jx = gx + (rb() - 0.5) * cell * 0.7, jy = gy + (rb() - 0.5) * cell * 0.5;
+        const ix = Math.floor(jx), iy = Math.floor(jy);
+        if (ix < 0 || iy < 0 || ix >= w || iy >= h || own[iy * w + ix]! < 0) continue;
+        const hi = clamp(1 - (dist[iy * w + ix]! / (cell * 2.2)), 0, 1);
+        const g = rb();
+        const rr = cell * (g < 0.18 ? 1.3 + 0.7 * rb() : g < 0.7 ? 0.6 + 0.45 * rb() : 0.3 + 0.2 * rb()) * (1 - hi * 0.35);
+        billows.push({ x: x0 + jx, y: y0 + jy, r: rr, z: jy / cell + rb() * 0.9, root: 0 });
+      }
+    }
+    const tex = new Int16Array(w * h).fill(-1);
+    const tz = new Float32Array(w * h).fill(-1e9);
+    billows.forEach((o, i) => {
+      const gx0 = Math.max(0, Math.floor(o.x - o.r - x0)), gx1 = Math.min(w - 1, Math.ceil(o.x + o.r - x0));
+      const gy0 = Math.max(0, Math.floor(o.y - o.r - y0)), gy1 = Math.min(h - 1, Math.ceil(o.y + o.r - y0));
+      for (let gy = gy0; gy <= gy1; gy++) for (let gx = gx0; gx <= gx1; gx++) {
+        const k = gy * w + gx;
+        if (own[k]! < 0) continue;
+        const dx = x0 + gx + 0.5 - o.x, dy = y0 + gy + 0.5 - o.y;
+        // (a ball's outline wanders a little: no billow is a compass circle)
+        const rr = o.r * (1 + (vnoise1(Math.atan2(dy, dx) * 2.2 + i, seed + 92) - 0.5) * 0.22);
+        const q = rr * rr - dx * dx - dy * dy;
+        if (q < 0) continue;
+        const z = o.z + Math.sqrt(q) / rr * 0.35;
+        if (z > tz[k]!) { tz[k] = z; tex[k] = i; }
+      }
+    });
+    return { x0, y0, w, h, own, light, dist, lam, lobes: L, tex, billows };
   });
 }
 
@@ -344,11 +382,21 @@ function paintCumulus(c: PaintCtx, p: CloudP): void {
       // each lobe its own body (its own ball in the sun, mixed with the heap's big planes), so
       // the heap reads as separate overlapping billows of different sizes, never one smooth mass
       // and never soap bubbles
-      const nx = clamp((lx - o.x) / o.r, -1, 1), ny = clamp((ly - o.y) / o.r, -1, 1);
-      const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
-      const own = -nx * -0.55 - ny * -0.68 + nz * 0.48;
-      const mixK = (o.gen ?? 0) === 0 ? 0.35 : 0;
-      const lamM = lam * (1 - mixK) + own * mixK;
+      // (round-3 integration: the light is the heap's big planes mixed with the ball of the
+      // billow at this px, so the planes break into billows everywhere; no per-tower seam)
+      const ti = M.tex[k]!;
+      let own = lam;
+      if (ti >= 0) {
+        const bo = M.billows[ti]!;
+        const nx = clamp((lx - bo.x) / bo.r, -1, 1), ny = clamp((ly - bo.y) / bo.r, -1, 1);
+        const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+        // (lit from the upper left: the sun's direction is (-0.55, -0.68, 0.48))
+        own = -nx * 0.55 - ny * 0.68 + nz * 0.48;
+      }
+      // (the billows read most where the light turns, least on the broad sunlit tops and along
+      // the flat base)
+      const bw = (0.2 + 0.36 * Math.exp(-(((lam - 0.32) / 0.32) ** 2))) * (1 - clamp(1 - up / baseH, 0, 1) * 0.7);
+      const lamM = lam * (1 - bw) + own * bw;
       let t = 0.56 - lamM * 0.85 + deep * 0.26 + base * base * 0.45;
       // (the planes' edges wander at the lobes' scale: a cauliflower terminator, never a contour)
       t += (fbm(lx / 22, ly / 18, seed + 3, 2) - 0.5) * 0.07;
@@ -364,10 +412,8 @@ function paintCumulus(c: PaintCtx, p: CloudP): void {
       if ((o.gen ?? 0) > 0 && u < -0.3 - 0.15 * vnoise1(Math.atan2(ly - o.y, lx - o.x) * 3, seed + 44) && i < 4) i++;
       // (in the shade a lobe's sunward cap catches the sky's light: the bumps read there too)
       else if (i >= 4 && u > 0.35 && (o.gen ?? 0) > 0) i--;
-      // the shade a nearer lobe casts where it overhangs this one (a crease between billows)
-      const ux = Math.floor(lx - 3 - M.x0), uy = Math.floor(ly - 3.6 - M.y0);
-      const oi = ux >= 0 && uy >= 0 ? M.own[uy * M.w + ux]! : -1;
-      if (oi >= 0 && oi !== M.own[k]! && M.lobes[oi]!.z > o.z + 0.2 && i >= 1 && i < STEP.length - 1 && M.lobes[oi]!.r > o.r * 0.7) i++;
+      // (the crease a great lobe cast on the one behind it is gone: at that size its arc read as a
+      // straight crack, a facet; the billows' own undersides now carry the shade between them)
       // (a small bulge on the shaded side catches the sky's light: never a dark hole in the heap)
       if ((o.gen ?? 0) > 0 && i > 3) i = 3;
       // the morning's warmth: the lit faces near the sunward outline take the ember's cream, a

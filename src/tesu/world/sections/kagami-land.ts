@@ -48,7 +48,9 @@ export const NEAR_MASSES: MassSpec[] = [
   // water on a mud lump
   { kind: "reeds", x: 7690, w: 220, h: 14, reed: 118, dense: 3.4 },
   // jetty-6s's and play-east's left anchor (0..185, 174..366): a low dark mud bank, short reeds
-  { kind: "mud", x: 8212, w: 186, h: 48, reed: 58, dense: 2.4 },
+  // (round-3 integration: lower, its reeds the taller part, so in pullback and play-catch, where it
+  // stands mid-frame, it reads as a reed bed at the water and not a raft of mud)
+  { kind: "mud", x: 8212, w: 186, h: 30, reed: 70, dense: 3 },
   // the jetty's east landing (jetty-6s 763..1013, play-east 966..1226): low reeds and a stone,
   // under 60 so the landing and its reflection show
   { kind: "reeds", x: 9040, w: 170, h: 18, reed: 54, dense: 2.2, stone: true },
@@ -57,6 +59,11 @@ export const NEAR_MASSES: MassSpec[] = [
   // off the bottom (past the lake's end there is no water at its foot)
   { kind: "shelf", x: 9258, w: 236, h: 100, drop: 1, bank: 1 },
   // 9480..9950: nothing (guard-gate1's natural arch and its falls read to the bottom)
+  // (round-3 integration, last so no mass is reseeded: a low block in front of the east
+  // limestone's water side, running off the bottom, so the lake's end at the cliff foot meets
+  // rock in jetty-6s and play-east instead of a pale wedge of the cliff's face under the water;
+  // under 60, the landing and its reflection show above it)
+  { kind: "shelf", x: 9186, w: 92, h: 40, drop: 1, bank: 1 },
 ];
 
 /** The lake's near shore on P5 and its reed beds (seed block 3). */
@@ -86,7 +93,8 @@ export function kagamiNear(b: WorldBuilder): void {
 function kagamiShallows(b: WorldBuilder): void {
   const corners: [number, ShallowsP, number, [number, number, number, number][]][] = [
     // left: the rise, its tall end off the corner, a snag lying out from it; reeds by its inner end
-    [h(94.7), { w: h(98.1) - h(94.7), wl: 60, deep: 170, side: -1, h: 52, wood: "log" }, 7919 * 3230, [[238, 40, 40, 2.4]]],
+    // (deep 300: its bank leaves the frame by the bottom edge at every zoom, never a cut)
+    [h(94.7), { w: h(98.1) - h(94.7), wl: 60, deep: 300, side: -1, h: 52, wood: "log" }, 7919 * 3230, [[238, 40, 40, 2.4]]],
     // right: the mud spit, one stone, mixed reeds and cattails on it
     [h(103.3), { w: h(105.6) - h(103.3), wl: 96, deep: 170, side: 1, h: 40 }, 7919 * 3234, [[44, 34, 40, 3], [96, 64, 56, 3.4], [178, 30, 30, 2.2]]],
     // under her: the lily bed

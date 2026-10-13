@@ -14,7 +14,7 @@ import "./index.ts";
 import { painter, ctxFor } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { IdxBuf } from "../../raster.ts";
-import { bankTopAt, reedBeds, shallowsTopAt } from "./bank.ts";
+import { bankTopAt, reedBeds, shallowsTopAt, waterlineCols } from "./bank.ts";
 import { NEAR_MASSES } from "../../../world/sections/kagami-land.ts";
 
 const MASSES = [
@@ -44,7 +44,7 @@ const CASES = [
   ["op.shore", { w: 672, end: 538, walk: [-768, 163, -288, 96, 96, 48, 490, 34, 672, 0] }],
   ["op.scree", { w: 140, deep: 82, h: 28 }],
   // (round 3) the catch's near corners and the lily bed under her
-  ["op.shallows", { w: 326, wl: 60, deep: 170, side: -1, h: 52, wood: "log" }],
+  ["op.shallows", { w: 326, wl: 60, deep: 300, side: -1, h: 52, wood: "log" }],
   ["op.shallows", { w: 221, wl: 96, deep: 170, side: 1, h: 40 }],
   ["op.shallows", { w: 235, wl: 62, deep: 170, side: 1, h: 26, wood: "stubs" }],
   ["op.shallows", { w: 53, wl: 52, deep: 144, side: 1, h: 6, kind: "pads" }],
@@ -89,7 +89,9 @@ for (const [kind, p] of CASES) {
   });
 }
 
-const BRIGHT = new Set([P.jade[1], P.jade[2]]);
+// (round-3 integration: the line is the near water's glassy blue a step lighter, matched per plane
+// ink, no longer the jade's cyan)
+const BRIGHT = new Set([...waterlineCols(0.3), ...waterlineCols(0)]);
 
 test("op.bank (round 3): separate masses, nothing painted between them (the lake shows there)", () => {
   const p = { w: 2400, h: 220, masses: MASSES };
@@ -122,14 +124,22 @@ test("op.bank (round 3): a mass standing in the water meets it with a bright lin
   }
 });
 
-test("op.bank (round 3): a bank runs off the bottom (no hole under it), its side lapped by the water", () => {
+test("op.bank (round 3): a bank runs off the bottom (no hole under it), its water side a wet dark edge", () => {
   const m = { kind: "shelf", x: 100, w: 300, h: 100, drop: 1, bank: 1 };
   const p = { w: 600, h: 200, masses: [m] };
   const buf = paintBox("op.bank", p, 1, 0, 0, 600, 200);
   for (const x of [150, 220, 300]) for (let y = 30; y < 199; y++) assert.ok(buf.get(x, y) > 0, `hole in the bank at ${x},${y}`);
   let lap = 0;
-  for (let y = 4; y < 199; y++) for (let x = 60; x < 140; x++) if (buf.get(x, y) === P.jade[2]) lap++;
-  assert.ok(lap > 20, `its water side is not lapped (${lap} px)`);
+  // (the water laps it as a wet dark edge outside its side, never a bright line up the side)
+  const [lit, shade] = waterlineCols(0.3);
+  let up = 0;
+  for (let y = 4; y < 199; y++) for (let x = 60; x < 140; x++) {
+    const v = buf.get(x, y);
+    if (v === P.pine[5]) lap++;
+    if (v === lit || v === shade) up++;
+  }
+  assert.ok(lap > 12, `its water side is not lapped (${lap} px)`);
+  assert.ok(up < 6, `a bright line runs up its side (${up} px)`);
 });
 
 test("op.bank (round 3): no lawn: the near shore paints nothing over most of its length", () => {
@@ -190,7 +200,7 @@ test("op.bank (round 3): reed beds stand on their banks and keep their heights",
 
 test("op.shallows (round 3): the catch's corners, the left dominant, nothing high under her", () => {
   // catch (2x): screen x = (world x - 9123) * 2, row = 792 + 2 * (y below the lake's line)
-  const L = { w: 326, wl: 60, deep: 170, side: -1, h: 52, wood: "log" }, Lx = 9091;
+  const L = { w: 326, wl: 60, deep: 300, side: -1, h: 52, wood: "log" }, Lx = 9091;
   const R = { w: 221, wl: 96, deep: 170, side: 1, h: 40 }, Rx = 9917;
   const D = { w: 53, wl: 52, deep: 144, side: 1, h: 6, kind: "pads" }, Dx = 9576;
   const count = (p, px, seed, x0, x1, y0, y1) => {

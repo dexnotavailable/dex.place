@@ -565,15 +565,18 @@ function shroudShape(seed: number): [number, number, number, number, number, num
   });
 }
 
+/** A lens's centre height (for which billow of a bank stands in front). */
+const L0y = (i: number): number => SHROUD[i]![1];
+
 function paintShroud(c: PaintCtx, p: ShroudP): void {
   const b = c.buf, d = c.d, seed = c.seed, K = cellOf(d);
   const n = Math.max(1, p.frames ?? 24);
   const loop = (((p.frame ?? 0) % n) / n) * Math.PI * 2;
   const C = P.cloud;
   // the billows this frame: swelling and settling a little, drifting a few px and back
-  const B = shroudShape(seed).map(([x, y, rx, ry, i], j) => {
+  const B = shroudShape(seed).map(([x, y, rx, ry, i, z], j) => {
     const g = 1 + 0.06 * Math.sin(loop + j * 1.9);
-    return { x: x + 2.5 * Math.sin(loop + j * 1.3), y: y + 1.2 * Math.cos(loop + j * 0.7), rx: rx * g, ry: ry * g, i, j };
+    return { x: x + 2.5 * Math.sin(loop + j * 1.3), y: y + 1.2 * Math.cos(loop + j * 0.7), rx: rx * g, ry: ry * g, i, j, z };
   });
   const X0 = Math.max(b.ox, Math.floor(c.X(-400))), X1 = Math.min(b.x1, Math.ceil(c.X(330)));
   const Y0 = Math.max(b.oy, Math.floor(c.Y(-540))), Y1 = Math.min(b.y1, Math.ceil(c.Y(-160)));
@@ -583,23 +586,38 @@ function paintShroud(c: PaintCtx, p: ShroudP): void {
   const M = Math.ceil(8 * d) + 2;
   const mw = X1 - X0 + 2, my0 = Y0 - M, mh = Y1 - Y0 + 2 * M;
   const own = new Int8Array(mw * mh).fill(-1);
+  // (round-3 integration: and which billow stands in front there, so each billow is shaded as
+  // its own ball in the sun, the bank a crowd of lit tops over cool undersides like the sky's
+  // cumulus, never a flat grey slab with a pale rim)
+  const ball = new Int16Array(mw * mh).fill(-1);
   for (let yy = 0; yy < mh; yy++) {
     const ly = c.ly(my0 + yy + 0.5);
     for (let xx = 0; xx < mw; xx++) {
       const lx = c.lx(X0 - 1 + xx + 0.5);
+      let bz = -1e9;
       for (const g of B) {
         const dx = lx - g.x, dy = ly - g.y;
         if (Math.abs(dx) > g.rx * 1.2 || Math.abs(dy) > g.ry * 1.3) continue;
         const ang = Math.atan2(dy, dx);
         // (the rim lumpy at two scales: cauliflower along the top, torn below)
         const rim = 1 + 0.18 * (vnoise1(ang * 2.4 + g.j * 3, seed + 82) - 0.5) + 0.1 * (vnoise1(ang * 8 + g.j, seed + 83) - 0.5);
-        if (Math.hypot(dx / g.rx, dy / g.ry) <= rim) { own[yy * mw + xx] = g.i; break; }
+        const q = Math.hypot(dx / g.rx, dy / g.ry);
+        if (q <= rim) {
+          if (own[yy * mw + xx]! < 0) own[yy * mw + xx] = g.i;
+          // (the lower billows of a bank stand in front of the ones above them)
+          const z = g.z + (g.y - L0y(g.i)) / 40 + (1 - q) * 0.3;
+          if (z > bz) { bz = z; ball[yy * mw + xx] = g.j; }
+        }
       }
     }
   }
   const at = (X: number, Y: number): number => {
     const xx = X - X0 + 1, yy = Y - my0;
     return xx < 0 || xx >= mw || yy < 0 || yy >= mh ? -1 : own[yy * mw + xx]!;
+  };
+  const ballAt = (X: number, Y: number): number => {
+    const xx = X - X0 + 1, yy = Y - my0;
+    return xx < 0 || xx >= mw || yy < 0 || yy >= mh ? -1 : ball[yy * mw + xx]!;
   };
   for (let Y = Y0; Y < Y1; Y++) {
     const ly = c.ly(Y + 0.5);
@@ -616,17 +634,28 @@ function paintShroud(c: PaintCtx, p: ShroudP): void {
       // meet what is behind it
       if ((dn < K || (side && up >= K)) && bay(X, Y, K) >= 0.5) continue;
       const lx = c.lx(X + 0.5);
-      // one mass in a few flat steps: a lit band under its lumpy top (thicker toward the sun),
-      // the body a step under the sky's white, the cool underside where it tears
-      const lit = (2 + 2.5 * vnoise1(lx / 14, seed + 88) + (lx < L[0] ? 1.5 : 0)) * d;
-      const low = (2.2 + 2.5 * vnoise1(lx / 11, seed + 89)) * d;
-      let col: number;
-      // (close to the giant's own pale value, so it sinks into the cloud instead of wearing it)
-      // (the sun's white only in patches on the sunward billows: never a contour round it)
-      if (up < lit) col = up < lit * 0.6 && lx < L[0] + L[2] * 0.2 && vnoise1(lx / 9, seed + 91) > 0.45 ? C[1]! : C[2]!;
-      else if (dn < low && (lx > L[0] - L[2] * 0.4 || dn < low * 0.5)) col = C[4]!;
-      else col = ly < L[1] - L[3] * 0.2 + 5 * (vnoise1(lx / 23, seed + 90) - 0.5) ? C[3]! : C[4]!;
-      b.set(X, Y, col);
+      // each billow its own ball lit from the upper left, mixed with the bank's own light (lit
+      // under its lumpy top, cool along its torn underside), in flat steps: the sun's warm cream
+      // on the sunward caps, the cloud's whites, the cool grey in the creases and underneath;
+      // one cell of dither only where two steps meet
+      const g = B[ballAt(X, Y)] ?? B[0]!;
+      const nx = clamp((lx - g.x) / g.rx, -1, 1), ny = clamp((ly - g.y) / g.ry, -1, 1);
+      const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+      const lamb = nx * 0.55 + ny * 0.68 - nz * 0.48;
+      const bankT = clamp(1 - up / (L[3] * 1.4 * d), 0, 1), bankB = clamp(1 - dn / (L[3] * 0.9 * d), 0, 1);
+      let t = 0.42 + lamb * 0.42 - bankT * 0.22 + bankB * 0.3 + (lx > L[0] ? 0.06 : -0.04) + (vnoise(lx / 21, ly / 15, seed + 90) - 0.5) * 0.08;
+      t = clamp(t, 0, 0.999);
+      // (a step under the sky's cumulus: the bank sits in the giant's haze, so its whites are
+      // the cloud's greys and only the sunward caps reach the sky's white)
+      const STEPS = [P.ember[0]!, C[2]!, C[3]!, C[4]!, P.range[2]!];
+      const AT = [0, 0.14, 0.4, 0.66, 0.86];
+      let si = 0;
+      while (si + 1 < AT.length && t >= AT[si + 1]!) si++;
+      const nearT = ((AT[si + 1] ?? 2) - t) / 0.03;
+      if (nearT < 1 && bay(X, Y, K) > nearT) si = Math.min(STEPS.length - 1, si + 1);
+      // (the warm cream only right on the sunward caps of the upper billows)
+      if (si === 0 && !(up < 5 * d && lx < L[0] + L[2] * 0.3)) si = 1;
+      b.set(X, Y, STEPS[si]!);
     }
   }
 }
