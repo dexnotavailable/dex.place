@@ -49,8 +49,18 @@ export function kagami(b: WorldBuilder): void {
   seedAt(b, s0 + BLOCK.near);
   kagamiNear(b);
 
-  // (near: the surface ends at the near plane's waterline, against the bank above)
-  b.water({ y: LAKE_Y, x0: LAKE_X0, x1: LAKE_X1, fx0: h(-60), fx1: h(150), near: PLANES.near.rate, far: 0.06, kind: "lake" });
+  // The surface runs on toward the camera past the near plane's waterline to the frame's bottom
+  // edge (as Hoài Phố's harbour does), so the near shore stands in the water as framing masses
+  // instead of a strip across the whole frame (GDK A.1: no single P5 object wider than about a
+  // quarter of the frame). Its near extent is given at depth LAKE_NEAR on the same line as
+  // before (40 to 109 H at the near plane, -60 to 150 H at depth 0.06), so the lake's ends are
+  // where they were at every depth it already showed; nearer still it narrows a little.
+  const LAKE_NEAR = 3;
+  const toNear = (1 / LAKE_NEAR - 1 / PLANES.near.rate) / (1 / 0.06 - 1 / PLANES.near.rate);
+  b.water({
+    y: LAKE_Y, x0: LAKE_X0 + (h(-60) - LAKE_X0) * toNear, x1: LAKE_X1 + (h(150) - LAKE_X1) * toNear,
+    fx0: h(-60), fx1: h(150), near: LAKE_NEAR, far: 0.06, kind: "lake",
+  });
   // nothing under the lake's surface to walk on: a fall there tugs her back
   b.void({ x0: LAKE_X0, x1: LAKE_X1, y: LAKE_Y + h(0.5), y1: h(66) });
 
