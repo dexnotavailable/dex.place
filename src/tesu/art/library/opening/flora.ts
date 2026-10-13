@@ -172,8 +172,8 @@ export interface PineP {
   grip?: number;
 }
 
-/** Pine bark, lit to dark: grey plates on the sun's side, warm brown in the fissures and shade. */
-const BARK = [P.stone[4]!, P.timber[4]!, P.timber[5]!, P.timber[6]!, P.timber[6]!];
+/** Pine bark, lit to dark (round 3: in the timber family): grey-brown plates on the sun's side, warm brown in the fissures and shade. */
+const BARK = [P.earth[3]!, P.timber[4]!, P.timber[5]!, P.umber[3]!, P.timber[6]!];
 
 /** A twisting limb along pts, width w0 tapering to w1 (taper > 1 keeps it thick longer), bark lit on its upper side. */
 function limb(c: PaintCtx, pts: [number, number][], w0: number, w1: number, seed: number, root = false, taper = 1.4, knots: number[] = []): void {
@@ -188,7 +188,7 @@ function limb(c: PaintCtx, pts: [number, number][], w0: number, w1: number, seed
       const u = (k + t) / (pts.length - 1);
       let w = Math.max(1 / d, w0 + (w1 - w0) * Math.pow(u, taper));
       // knots: the limb swells where an old branch was
-      for (const kn of knots) w *= 1 + 0.32 * Math.exp(-Math.pow((u - kn) * 30, 2));
+      for (const kn of knots) w *= 1 + 0.42 * Math.exp(-Math.pow((u - kn) * 26, 2));
       const px = ax + (bx - ax) * t, py = ay + (by - ay) * t;
       for (let o = -w / 2; o <= w / 2; o += 0.5 / d) {
         const q = o / Math.max(0.5, w / 2);
@@ -216,7 +216,7 @@ function deadStub(c: PaintCtx, x: number, y: number, ang: number, len: number, w
     for (let o = -ww / 2; o <= ww / 2; o += 0.5 / d) {
       if (s > len - 2.2 && hash(Math.round(o * 3), Math.round(s * 2), seed) < 0.45) continue;
       const q = o / Math.max(0.5, ww / 2);
-      b.set(Math.round(c.X(x + ca * s - sa * o)), Math.round(c.Y(y + sa * s + ca * o)), q < -0.2 ? P.stone[2]! : q < 0.4 ? P.stone[3]! : P.stone[5]!);
+      b.set(Math.round(c.X(x + ca * s - sa * o)), Math.round(c.Y(y + sa * s + ca * o)), q < -0.2 ? P.earth[1]! : q < 0.4 ? P.earth[3]! : P.umber[1]!);
     }
   }
 }
@@ -268,6 +268,8 @@ export const pine = definePainter<PineP>("op.pine", {
     // roots: thick where they leave the trunk, running out over the rock, then down into its cracks
     const spread = p.roots ?? H * 0.15, grip = p.grip ?? H * 0.1;
     const w0 = tw(0);
+    // (round 3) roots: 0 when the rock the tree stands on paints the roots gripping it (the
+    // jetty's east landing does), so no disc of roots lies over the rock here
     const nr = 4 + Math.floor(r() * 2);
     for (let i = 0; i < nr; i++) {
       const side = i % 2 ? -1 : 1;
@@ -283,12 +285,14 @@ export const pine = definePainter<PineP>("op.pine", {
         const y = -w0 * 0.05 + arch + (over ? deep * 0.7 * Math.pow(t, 2.6) : t * 1.5) + (vnoise1(t * 4 + i, seed + 3) - 0.5) * 1.2;
         rp.push([x, y]);
       }
-      limb(c, rp, w0 * (0.36 + 0.16 * r()), over ? 2 : 3.5, seed + 40 + i, true);
+      const rw = w0 * (0.36 + 0.16 * r());
+      if (spread <= 0) continue;
+      limb(c, rp, rw, over ? 2 : 3.5, seed + 40 + i, true);
       const [ex, ey] = rp[rp.length - 1]!;
       for (let k = 0; k < 6; k += 0.5 / d) b.set(Math.round(c.X(ex + side * k * 0.3)), Math.round(c.Y(ey + k * 0.6)), P.karst[8]!);
     }
     // soil and moss where the trunk meets the rock
-    for (let x = Math.round(c.X(-w0 * 1.5)); x < Math.round(c.X(w0 * 1.5)); x++) {
+    for (let x = Math.round(c.X(-w0 * 1.5)); spread > 0 && x < Math.round(c.X(w0 * 1.5)); x++) {
       const u = c.lx(x + 0.5) / (w0 * 1.5);
       const top = -w0 * 0.3 * Math.pow(1 - u * u, 1.5) - 1.5 * vnoise1(c.lx(x) / 2, seed + 5);
       for (let y = Math.round(c.Y(top)); y < Math.round(c.Y(3 + 2 * (1 - u * u))); y++) {
@@ -363,7 +367,8 @@ export const pine = definePainter<PineP>("op.pine", {
         const t = k / segs;
         // rising as it leaves, a dip at an old break, level, the tip drooping
         // elbows: each segment bends against the last, the way a limb regrows after each break
-        const slope = -0.16 + 0.4 * t * t + (t > 0.3 && t < 0.45 ? 0.12 : 0) + (k % 2 ? 1 : -1) * (0.07 + 0.09 * hash1(k, seed + 15)) + (hash1(k, seed + 13) - 0.5) * 0.08;
+        // (round 3: sharper elbows, one hard drop where it broke and regrew)
+        const slope = -0.16 + 0.4 * t * t + (t > 0.3 && t < 0.45 ? 0.2 : 0) + (k % 2 ? 1 : -1) * (0.11 + 0.13 * hash1(k, seed + 15)) + (hash1(k, seed + 13) - 0.5) * 0.1;
         const dx = (len / segs) * (0.8 + 0.4 * hash1(k, seed + 14));
         x += dir * dx; y += dx * slope;
         ap.push([x, y]);
@@ -372,6 +377,11 @@ export const pine = definePainter<PineP>("op.pine", {
       for (const t of [0.22 + 0.1 * r(), 0.52 + 0.1 * r()]) {
         const [sx, sy] = along(ap, t);
         deadStub(c, sx, sy - 1, -Math.PI / 2 + dir * (0.25 + 0.4 * r()), 8 + r() * 9, 2.6, seed + 70 + Math.round(t * 100));
+      }
+      // (round 3) a heavier broken limb near the trunk, snapped off short and splintered
+      {
+        const [sx, sy] = along(ap, 0.12 + 0.05 * hash1(1, seed + 78));
+        deadStub(c, sx, sy + 1, Math.PI / 2 - dir * (0.5 + 0.3 * hash1(2, seed + 78)), 10 + hash1(3, seed + 78) * 6, 4.4, seed + 77);
       }
       // a fork near its middle: a second limb rising out of it, carrying masses of its own
       {
@@ -397,13 +407,21 @@ export const pine = definePainter<PineP>("op.pine", {
         const ang = down ? 0.45 + 0.3 * r() : -(0.5 + 0.7 * r());
         const tx = sx + dir * Math.cos(ang) * sl, ty = sy + Math.sin(ang) * sl;
         limb(c, [[sx, sy], [(sx + tx) / 2 + dir * 1, (sy + ty) / 2 - (down ? 0 : 1.5)], [tx, ty]], Math.max(1.6, 3.2 * (1 - t0 * 0.5)), 1.2, seed + 90 + k, false, 0.8);
+        // (round 3) twigs fork: a second, thinner twig from the shoot's middle
+        {
+          const fx = (sx + tx) / 2 + dir * 1, fy = (sy + ty) / 2 - (down ? 0 : 1.5);
+          const fa = ang + (k % 2 ? 0.55 : -0.5);
+          limb(c, [[fx, fy], [fx + dir * Math.cos(fa) * sl * 0.55, fy + Math.sin(fa) * sl * 0.55]], 1.3, 1, seed + 120 + k, false, 0.8);
+        }
         const pr = H * (down ? 0.085 : 0.1 + 0.04 * t0) * ps * nextSize() * big;
         (down ? unders : masses).push({ x: tx + dir * pr * 0.25, y: ty - pr * (down ? 0.05 : 0.4), r: pr, s: seed + 300 + k * 23, dark: down ? 0.22 : 0.12, stem: [tx, ty + 0.5], bounce: 1, under: down });
       });
       // the masses hanging under the arm go behind it
       for (const m of unders) needlePad(c, m.x, m.y, m.r * 2.7, m.r * 0.85, m.s, m.dark, { stem: m.stem, bounce: m.bounce });
       // the arm itself, from the trunk's girth down to a twig, knots along it
-      limb(c, ap, tw(au), 2.2, seed + 80, false, 1.05, [0.18, 0.41, 0.66]);
+      // (round 3: thick where it leaves the trunk, thinning fast then slowly, so it never reads
+      // as a tube; knots swell at the old breaks)
+      limb(c, ap, tw(au) * 1.2, 1.8, seed + 80, false, 0.55, [0.18, 0.41, 0.66]);
       // its tip turns up into the last mass
       const [tx, ty] = ap[segs]!;
       const prT = H * 0.14 * ps * nextSize();

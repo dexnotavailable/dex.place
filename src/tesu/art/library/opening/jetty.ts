@@ -25,6 +25,8 @@ import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { bayer4, clamp, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { cached, yAt } from "./kit.ts";
+import { LX, LY, bladePath, dot, grass, stroke } from "./bank.ts";
+import { chunkTop, limeChunk, type LimeChunk } from "./face.ts";
 
 export interface JettyP {
   /** Deck length, level-1 px. */
@@ -52,10 +54,24 @@ export interface JettyP {
 /** Plank-end height and the stringer's top. */
 const DECK = 7;
 
-/** Weathered timber: a tone t (0 lit .. 1 dark), bleached (stone ramp) where lit and dry. */
-export function wood(x: number, y: number, t: number, bleach = true): number {
-  if (bleach && t < 0.48) return tone(P.stone, clamp(0.12 + t * 1.25, 0, 1), x, y, 0.3);
-  return tone(P.timber, clamp(0.3 + t * 0.7, 0, 1), x, y, 0.35);
+/**
+ * Silvered old timber, lit to dark (art loop round 3: wood is wood). Sun and rain bleach old
+ * lake timber to a pale grey-brown, never to stone: the earth ramp's pale steps where it is lit
+ * and dry, its mid steps in the body, umber in its shade. The stone ramp never touches wood.
+ */
+const SILVER = [P.earth[0]!, P.earth[1]!, P.earth[2]!, P.earth[3]!, P.umber[0]!, P.umber[1]!, P.umber[2]!, P.umber[3]!];
+/** Wet timber at the waterline and below the deck's drip line: dark brown, never black. */
+const WET = [P.timber[4]!, P.umber[1]!, P.timber[5]!, P.umber[3]!, P.timber[6]!];
+
+/** Weathered timber: a tone t (0 lit .. 1 dark), silvered (pale earth and umber) where old and dry, else warm timber. */
+export function wood(x: number, y: number, t: number, bleach = true, band = -1): number {
+  if (bleach) return tone(SILVER, clamp(0.06 + t * 0.94, 0, 1), x, y, band < 0 ? 0.14 : band);
+  return tone(P.timber, clamp(0.28 + t * 0.72, 0, 1), x, y, band < 0 ? 0.16 : band);
+}
+
+/** Wet timber (t 0 just wet .. 1 soaked and in shade). */
+function wetWood(x: number, y: number, t: number): number {
+  return tone(WET, clamp(t, 0, 1), x, y, 0.3);
 }
 
 // --- the plan ---------------------------------------------------------------------------------
@@ -84,7 +100,7 @@ export interface JPile {
 export interface JRun { x0: number; x1: number; depth: number; age: number; drop: number; k: number }
 export interface JPlank {
   x: number; w: number; t: number; kind: number; drop: number; k: number;
-  /** Silvered end grain (stone ramp) or brown timber: one per batch of boards, never alternating. */
+  /** Silvered end grain (pale earth and umber) or brown timber: one per batch of boards, never alternating. */
   bleach?: boolean;
   /** The joint at its right end: 0 tight (a hairline), 1 a dark slit, 2 open (sky shows through). */
   gap?: number;
@@ -276,18 +292,31 @@ export function jettyPlan(p: JettyP, seed: number): JPlan {
       left--;
       const pw = bw0 + r() * (bw1 - bw0);
       const u = r();
-      let kind = u < 0.028 ? MISSING : u < 0.11 ? SPLIT : u < 0.3 ? WORN : 0;
+      // (round 3) one or two boards gone per view, not a gap every few metres
+      let kind = u < 0.011 ? MISSING : u < 0.1 ? SPLIT : u < 0.3 ? WORN : 0;
       if (kind === MISSING && (last === MISSING || px < 60 || px > w - 60 || inGap(px, 20))) kind = WORN;
       const g = r();
+      // (round 3) a board's tone drifts slowly along its batch (the same tree, the same weather),
+      // with only a small step from its neighbour; the odd board stands out
+      const drift = (vnoise1(px / 70, seed + 5) - 0.5) * 0.14;
       planks.push({
-        x: px, w: pw, t: clamp(bt + (r() - 0.5) * 0.14 + (r() < 0.12 ? 0.14 : 0), 0, 0.62), kind, drop: run.drop || r() < (run.age ? 0.05 : 0.16) ? 1 : 0, k: r(),
+        x: px, w: pw, t: clamp(bt + drift + (r() - 0.5) * 0.06 + (r() < 0.08 ? 0.12 : 0), 0, 0.62), kind, drop: run.drop || r() < (run.age ? 0.05 : 0.16) ? 1 : 0, k: r(),
         bleach: bBleach,
-        gap: g < 0.05 && !inGap(px, 20) && px > 40 && px < w - 40 ? 2 : g < 0.3 ? 1 : 0,
+        // joints: a few open, some a dark slit, the rest a hairline or butted tight (no ruled grid)
+        gap: g < 0.03 && !inGap(px, 20) && px > 40 && px < w - 40 ? 2 : g < 0.16 ? 1 : 0,
         th: !run.age && r() < 0.17 ? (r() < 0.55 ? 1 : -1) : 0,
         hang: !run.age && kind !== MISSING && r() < 0.022 && !inGap(px, 30) ? 4 + r() * 6 : 0,
       });
       last = kind;
       px += pw;
+    }
+    // (round 3) the deck sags a pixel over the widest spans: the boards there sit one lower
+    {
+      const wide = bays.filter(([a, b]) => !inGap((a + b) / 2)).sort((q, z) => (z[1] - z[0]) - (q[1] - q[0])).slice(0, 3);
+      for (const pk of planks) {
+        const mid = pk.x + pk.w / 2;
+        for (const [a, b] of wide) if (mid > a + (b - a) * 0.22 && mid < b - (b - a) * 0.22) pk.drop = 1;
+      }
     }
     // sister boards bolted under the old stringer where it split (short, their own depth)
     const sisters: JSister[] = [];
@@ -402,11 +431,14 @@ export function pileLog(c: PaintCtx, pl: JPile, water: number, seed: number, sha
       if (pl.broken) {
         const jag = pl.top + (1 - u) * -3 + (hash(Math.floor(lx * 1.3), 7, seed) - 0.5) * 7 + Math.abs(Math.sin(u * 7 + pl.k * 9)) * 4;
         if (ly < jag) continue;
-        if (ly < jag + 1.2) { b.set(x, y, u < 0.5 ? P.stone[1]! : P.timber[3]!); continue; }
-        if (ly < jag + 3 && u > 0.3 && u < 0.7 && d >= 1) { b.set(x, y, P.timber[5]!); continue; }
+        // the splintered top: pale dry fibres on the lit side, the rotted heart dark brown
+        if (ly < jag + 1.2) { b.set(x, y, u < 0.5 ? P.earth[0]! : P.earth[2]!); continue; }
+        if (ly < jag + 3 && u > 0.3 && u < 0.7 && d >= 1) { b.set(x, y, P.umber[2]!); continue; }
       } else if (ly < pl.top) continue;
       // a cylinder lit from the upper left
-      let t = !wide ? (u < 0.5 ? 0.15 : 0.6) : u < 0.1 ? 0.22 : u < 0.36 ? 0.05 : u < 0.56 ? 0.25 : u < 0.76 ? 0.46 : u < 0.9 ? 0.7 : 0.56;
+      // (round 3) its lit left edge, the highlight just in from it, the body, the core shadow
+      // right of centre, a little reflected light on the far rim
+      let t = !wide ? (u < 0.5 ? 0.12 : 0.6) : u < 0.1 ? 0.1 : u < 0.32 ? 0.02 : u < 0.52 ? 0.24 : u < 0.74 ? 0.45 : u < 0.9 ? 0.72 : 0.56;
       const rim = wide && u >= 0.9;
       t += shade;
       // weathered grain: long checks down the log, the odd knot
@@ -415,12 +447,12 @@ export function pileLog(c: PaintCtx, pl: JPile, water: number, seed: number, sha
       if (pl.age > 0.5) t -= 0.05;
       // the deck's shadow on its upper part (under the deck only: a post above it stands in the sun)
       if (!pl.broken && ly > 0 && ly < DECK + 26) t += 0.14 * clamp((DECK + 26 - ly) / 10, 0, 1);
-      let bleach = pl.age < 0.5 && shade < 0.2;
+      const bleach = pl.age < 0.5 && shade < 0.2;
       // in the lake: dark, slick
       if (hgt < 0.55) {
         // the wet line at the water: bright where the lit side meets the meniscus
         if (hgt > -0.5 && shade < 0.2) { b.set(x, y, u < 0.62 ? P.cloud[1]! : P.jade[1]!); continue; }
-        b.set(x, y, wood(x, y, clamp(0.8 + u * 0.15, 0, 1), false));
+        b.set(x, y, wetWood(x, y, 0.7 + u * 0.3));
         continue;
       }
       if (hgt < pl.wet) {
@@ -433,11 +465,11 @@ export function pileLog(c: PaintCtx, pl: JPile, water: number, seed: number, sha
           continue;
         }
         // slick: the lake's light on the far rim, a sheen down the lit side
+        // (round 3: the wet band is wet brown, dark toward the water, never grey)
         if (rim && shade < 0.2) { b.set(x, y, P.jade[6]!); continue; }
-        if (d >= 1 && wide && u > 0.12 && u < 0.34 && shade < 0.2 && hash(x, y >> 1, seed + 6) < 0.5) { b.set(x, y, P.stone[4]!); continue; }
-        t = 0.52 + u * 0.3 + k * 0.12;
-        bleach = false;
-        if (d >= 1 && hash(x, y, seed + 4) < 0.025) { b.set(x, y, P.stone[3]!); continue; }
+        if (d >= 1 && wide && u > 0.12 && u < 0.3 && shade < 0.2 && vnoise1(ly / 3, seed + 6) > 0.45) { b.set(x, y, P.timber[3]!); continue; }
+        b.set(x, y, wetWood(x, y, 0.08 + u * 0.55 + k * 0.3 + shade));
+        continue;
       } else if (hgt < pl.moss && u > 0.5 - (pl.moss - hgt) * 0.02) {
         // moss climbing the shade side, thinning upward
         const m = vnoise(lx / 2.4, ly / 2.6, seed + 5);
@@ -474,30 +506,42 @@ export function log(c: PaintCtx, cx: number, y0: number, y1: number, hw: number,
 }
 
 /**
- * A post's top, never a flat cut: a weathered dome with a split notched into it, a ragged rotted
- * top gone dark inside, or a dome under a cap of moss. Lit from the upper left.
+ * A post's top, never a flat cut and never a dome (round 3): the old saw cut weathered to a slant
+ * and gone round at its shoulders, split by a check that opens into a V at the top and runs on
+ * down the post as a dark crack; or a ragged rotted top with its heart gone dark; or a ragged top
+ * under a cap of moss. Lit from the upper left.
  */
 function capTop(c: PaintCtx, cx: number, y0: number, hw: number, seed: number): void {
   const b = c.buf, d = c.d;
   const ch = Math.max(2.5, hw * 0.85);
   const style = hash1(5, seed);
   const notch = (hash1(6, seed) - 0.5) * 0.9;
+  const tilt = (hash1(8, seed) - 0.5) * 0.7;
+  const crack = ch * (2.2 + 3 * hash1(9, seed));
   const X0 = Math.round(c.X(cx - hw - 0.6)), X1 = Math.round(c.X(cx + hw + 0.6));
-  for (let y = Math.floor(c.Y(y0 - 1)); y < Math.ceil(c.Y(y0 + ch)); y++) {
+  for (let y = Math.floor(c.Y(y0 - 1)); y < Math.ceil(c.Y(y0 + Math.max(ch, crack))); y++) {
     const ly = c.ly(y + 0.5);
     for (let x = X0; x < X1; x++) {
       const lx = c.lx(x + 0.5) - cx;
       const q = lx / hw;
-      // the top's outline
-      let top = y0 + ch * 0.75 * (1 - Math.sqrt(Math.max(0, 1 - q * q)));
+      // the top's outline: a slanting cut rounded at its shoulders, splintered along it
+      let top = y0 + ch * (0.12 + 0.3 * Math.pow(Math.abs(q), 3) + tilt * q * 0.5) + (vnoise1(lx * 1.4, seed + 7) - 0.5) * ch * 0.22;
       if (style < 0.38) top = y0 + ch * (0.25 + 0.3 * Math.abs(q)) + (hash(Math.floor(lx * Math.max(1, d) * 0.7), 3, seed) - 0.5) * ch * 0.8;
-      else if (style < 0.75 && Math.abs(q - notch) < 0.16 + 0.3 * Math.max(0, (y0 + ch * 0.9 - ly) / ch) * 0.4) top = Math.max(top, y0 + ch * 0.7);
-      if (Math.abs(q) > 1 || ly < top) { if (ly < y0 + ch) b.clear(x, y); continue; }
+      const split = style >= 0.38 && style < 0.82;
+      // the check: a V open at the top, closing to a crack running down the post
+      const sv = (ly - y0) / ch;
+      const open = split && sv < 0.75 && Math.abs(q - notch) < 0.2 * (1 - sv / 0.75) + 0.04;
+      if (ly >= y0 + ch) {
+        if (split && ly < y0 + crack && Math.abs(q - notch - (ly - y0) * 0.02) < 0.5 / (hw * Math.max(1, d)) + 0.02 && Math.abs(q) < 0.9) b.set(x, y, P.umber[3]!);
+        continue;
+      }
+      if (Math.abs(q) > 1 || ly < top || open) { b.clear(x, y); continue; }
       const k = clamp((ly - top) / ch, 0, 1);
-      // its rim catches the sun on the left
-      if (ly - top < 1 / d * 1.05) { b.set(x, y, q < -0.2 ? P.stone[0]! : q < 0.45 ? P.stone[2]! : P.stone[4]!); continue; }
-      if (style < 0.38 && k < 0.45) { b.set(x, y, q < 0 ? P.timber[4]! : P.timber[5]!); continue; }
-      if (style > 0.82 && k < 0.5 && hash(x >> 1, y, seed) < 0.75) { b.set(x, y, P.moss[q < -0.3 ? 2 : q < 0.4 ? 3 : 5]!); continue; }
+      // its rim catches the sun on the left; the far side of the split in shadow
+      if (ly - top < 1 / d * 1.05) { b.set(x, y, q < -0.2 ? P.earth[0]! : q < 0.45 ? P.earth[1]! : P.earth[3]!); continue; }
+      if (split && q > notch && q - notch < 0.32 && sv < 0.9) { b.set(x, y, P.umber[2]!); continue; }
+      if (style < 0.38 && k < 0.45) { b.set(x, y, q < 0 ? P.umber[1]! : P.umber[3]!); continue; }
+      if (style >= 0.82 && k < 0.55 && vnoise(lx * 0.8, ly * 0.9, seed + 3) > 0.3) { b.set(x, y, P.moss[q < -0.3 ? 2 : q < 0.4 ? 3 : 5]!); continue; }
       const lit = -q * 0.5 + (1 - k) * 0.4;
       b.set(x, y, wood(x, y, clamp(0.42 - lit * 0.4, 0, 1)));
     }
@@ -541,7 +585,7 @@ export function beamLine(c: PaintCtx, ax: number, ay: number, bx: number, by: nu
     if (hash1(7 + e, seed) < 0.55) {
       const r = Math.max(0.7, th * 0.24);
       b.disc(c.X(ex), c.Y(ey), Math.max(0.6, r * d), P.timber[6]!);
-      b.set(Math.round(c.X(ex - r * 0.4)), Math.round(c.Y(ey - r * 0.4)), P.stone[2]!);
+      b.set(Math.round(c.X(ex - r * 0.4)), Math.round(c.Y(ey - r * 0.4)), P.earth[1]!);
     } else lashing(c, ex, ey - th * 0.6, th * 0.75, 2);
   }
 }
@@ -554,9 +598,48 @@ function sisterAt(plan: JPlan, x: number): JSister | null {
   return null;
 }
 
-/** A board end's colour: silvered end grain on the stone ramp, or brown timber (never mixed in one board). */
+/** A board end's colour: silvered end grain (pale earth, umber) or brown timber (never mixed in one board). */
 function plankCol(x: number, y: number, t: number, bleach: boolean): number {
-  return bleach ? tone(P.stone, clamp(0.12 + t * 1.25, 0, 1), x, y, 0.3) : tone(P.timber, clamp(0.3 + t * 0.7, 0, 1), x, y, 0.35);
+  // (round 3) hard steps: a board is one clean colour with a lit top and a darker foot, never a
+  // field of dither
+  return bleach ? tone(SILVER, clamp(0.06 + t * 0.94, 0, 1), x, y, 0) : tone(P.timber, clamp(0.28 + t * 0.72, 0, 1), x, y, 0);
+}
+
+/**
+ * The deck as the lake sees it (round 3): one quiet step under the water, never a stone grey. The
+ * mirror tint takes earth[1] to about a step darker than the lake round it; the beam's underside
+ * (nearest the waterline in the reflection) a step firmer.
+ */
+const REFL_BOARD = P.earth[1]!, REFL_BEAM = P.earth[1]!, REFL_FIRM = P.earth[1]!, REFL_DARK = P.earth[2]!;
+
+/**
+ * Where the lake's slow ripples break the deck's reflection into slivers (plate only): seldom at
+ * the beam's underside (the top of the reflection, nearest the waterline), more and more toward
+ * the deck's top (the bottom of the reflection), so the band fades downward in horizontal dashes
+ * (never a dither).
+ */
+function rippleGap(lx: number, ly: number, bot: number, seed: number): boolean {
+  const far = clamp((bot - ly) / 14, 0, 1.2);
+  const row = Math.floor(ly);
+  const n = vnoise(lx / (6 + 7 * hash1(row, seed + 33)) + hash1(row, seed + 34) * 40, ly * 0.9, seed + 31);
+  // (and the whole band thins and thickens slowly along the deck, so it reads as pieces)
+  return n < 0.14 + far * 0.72 + (vnoise1(lx / 120, seed + 35) - 0.5) * 0.5;
+}
+
+/** Is (lx, ly) on a ring crest crossing the reflected deck near bent bx (ring radius R)? 1 crest, -1 a gap, 0 neither. */
+function ringAt(lx: number, ly: number, bx: number, R: number, bot: number, seed: number): number {
+  const dist = Math.abs(lx - bx);
+  if (dist > R) return 0;
+  // the crests: two or three arcs of the ring's near half, crossing the band where the
+  // reflection is broken; between them the band is gone (the lake's sky shows)
+  for (let k = 0; k < 3; k++) {
+    const row = bot - 1.6 - k * 3.6 - (dist / R) * (dist / R) * 2.4;
+    if (Math.abs(ly - row) < 0.55 && dist < R * (1 - k * 0.24) && dist > R * 0.2 && hash1(Math.floor(lx / 3) + k * 31, seed + 63) > 0.22) return 1;
+  }
+  // the band thins toward the ring's middle (a ragged hole, wider at the deck's far rows)
+  const hole = 1 - dist / R;
+  const far = (bot - ly) / 18;
+  return hole * 1.2 + far * 0.45 + (vnoise(lx / 5, ly / 2, seed + 64) - 0.5) * 0.4 > 0.72 ? -1 : 0;
 }
 
 /**
@@ -594,49 +677,56 @@ function paintDeck(c: PaintCtx, p: JettyP, plan: JPlan, seed: number, x0: number
     // a water stain running down the stringer from this plank's joint
     const stain = !!pk && d >= 1 && hash1(Math.round(pk.x * 3), seed + 41) < 0.22 && Math.abs(lx - (pk.x + pk.w - 0.6)) < 0.55;
     const stainTo = DECK + (bot - DECK) * (0.35 + 0.6 * hash1(Math.round(pk ? pk.x : 0), seed + 42));
-    // rings crossing the mirrored deck at a few bents (plate only)
+    // rings crossing the mirrored deck at a few bents (plate only): the reflection breaks there
     let ringX = NaN, ringR = 0;
     if (!lit) {
       for (let i = 0; i < plan.bents.length; i++) {
         const bx = plan.bents[i]!;
-        if (hash1(i, seed + 61) > 0.3) continue;
-        const R = 12 + 16 * hash1(i, seed + 62);
+        if (hash1(i, seed + 61) > 0.45) continue;
+        const R = 18 + 24 * hash1(i, seed + 62);
         if (Math.abs(lx - bx) < R) { ringX = bx; ringR = R; break; }
       }
     }
     for (let y = Math.max(Yt, b.oy); y < Math.min(Ys, b.y1); y++) {
       const ly = c.ly(y + 0.5);
+      if (!lit && ringR > 0 && d >= 0.5) {
+        const rg = ringAt(lx, ly, ringX, ringR, bot, seed);
+        if (rg > 0) { b.set(x, y, P.jade[1]!); continue; }
+        if (rg < 0) { b.clear(x, y); continue; }
+      }
       if (y < Yd) {
         // --- a board's end
         if (missing || open) continue;
         const v = (y - Yt + 0.5) / Math.max(1, Yd - Yt);
         if (!lit) {
-          // as the water sees it: quiet, a soft joint now and then
-          let t = 0.33 + pk.t * 0.12 + (pk.bleach ? 0 : 0.07);
-          if (x === PX1 - 1 && pk.gap === 1) t += 0.1;
-          b.set(x, y, tone(P.stone, clamp(t, 0, 1), x, y, 0.3));
+          // as the water sees it (round 3): one quiet step under the lake; the deck's far rows
+          // (the bottom of the reflection) break into ripple dashes and fade out
+          if (rippleGap(lx, ly, bot, seed)) { b.clear(x, y); continue; }
+          b.set(x, y, x === PX1 - 1 && pk.gap === 1 ? REFL_FIRM : REFL_BOARD);
           continue;
         }
         // worn: the top corners rounded off
         if (pk.kind === WORN && y === Yt && (x === PX0 || (x === PX1 - 1 && pk.k < 0.5))) continue;
         let t = pk.t;
-        if (y === Yt) t -= 0.17;
-        else if (d >= 2 && y === Yt + 1) t -= 0.07;
+        if (y === Yt) t -= 0.3;
+        else if (d >= 2 && y === Yt + 1) t -= 0.08;
         if (v > 0.72) t += 0.07;
         let bleach = pk.bleach !== false;
         if (x === PX1 - 1) {
+          // the joint: a dark slit, a hairline that runs part way down, or butted tight
           if (pk.gap === 1) { t = 0.97; bleach = false; }
-          else if (pk.k > 0.42 && y > Yt) t += 0.16;
+          else if (pk.k > 0.55 && y > Yt && v < 0.3 + pk.k) t += 0.13;
         }
         if (d >= 1) {
           // a split down from the top; short checks; end grain rings and a nail at the close band
           const sx = Math.round(c.X(pk.x + pk.w * (0.3 + 0.4 * pk.k)));
           if (pk.kind === SPLIT && x === sx && v < 0.75 && y > Yt) t += 0.3;
-          else if (y > Yt && hash(x, Math.floor(ly / 2.5), seed + Math.round(pk.x)) < 0.035) t += 0.14;
-          if (d >= 1.5 && pk.k < 0.35) {
-            const cxr = pk.x + pk.w * (0.3 + 0.4 * pk.k), cyr = DECK + 2.5;
-            const rr = Math.hypot(lx - cxr, (ly - cyr) * 1.4);
-            if (((rr * 0.9 + pk.k * 3) % 1) < 0.14) t += 0.08;
+          else if (y > Yt && hash(Math.floor(lx * 1.5), Math.floor(ly / 2.5), seed + Math.round(pk.x)) < 0.035) t += 0.14;
+          // (round 3) at the close band the odd board shows its heart: one dark ring arc
+          if (d >= 1.5 && pk.k < 0.2 && pk.w > 9) {
+            const cxr = pk.x + pk.w * (0.3 + 0.4 * pk.k), cyr = DECK + 4.5;
+            const rr = Math.hypot(lx - cxr, (ly - cyr) * 1.3);
+            if (Math.abs(rr - 2.6) < 0.4 && ly < cyr) t += 0.1;
           }
           // the bevel on its left edge at the close band
           if (d >= 2 && x === PX0 && y > Yt) t -= 0.06;
@@ -647,18 +737,18 @@ function paintDeck(c: PaintCtx, p: JettyP, plan: JPlan, seed: number, x0: number
       if (ly >= bot) {
         // --- a sister board bolted under the beam
         const sv = (ly - bot) / Math.max(0.5, sBot - bot);
-        if (!lit) { b.set(x, y, tone(P.stone, 0.62 + sv * 0.1, x, y, 0.3)); continue; }
+        if (!lit) { b.set(x, y, sv > 0.6 ? REFL_DARK : REFL_FIRM); continue; }
         let t = 0.3 + sv * 0.3;
         if (y === Yb) t = 0.9;
         if (sis && (lx - sis[0] < 1.6 || sis[1] - lx < 1.6)) t += 0.22;
         if (sis && d >= 0.5 && (Math.abs(lx - sis[0] - 4) < 0.7 || Math.abs(sis[1] - lx - 4) < 0.7) && Math.abs(sv - 0.5) < 0.3) { b.set(x, y, P.ink[1]!); continue; }
         if (y === Ys - 1) { b.set(x, y, wet ? P.jade[6]! : P.timber[5]!); continue; }
-        b.set(x, y, wood(x, y, clamp(t, 0, 1), false));
+        b.set(x, y, wood(x, y, clamp(t, 0, 1), false, 0));
         continue;
       }
       // --- the dark lens where the beam has dropped away from the boards
       if (ly < btop) {
-        b.set(x, y, lit ? (missing || open ? P.timber[5]! : P.timber[6]!) : tone(P.stone, 0.6, x, y, 0.3));
+        b.set(x, y, lit ? (missing || open ? P.timber[5]! : P.timber[6]!) : REFL_FIRM);
         continue;
       }
       // --- the stringer
@@ -667,19 +757,11 @@ function paintDeck(c: PaintCtx, p: JettyP, plan: JPlan, seed: number, x0: number
       const under = ly - Math.max(btop, DECK + pth);
       const lens = btop - (DECK + pth) > 0.6;
       if (!lit) {
-        // the beam as the water sees it: a mid step, a little firmer near the waterline
-        let t = 0.47 + v * 0.12 + run.k * 0.04 - (run.age ? 0.05 : 0);
-        if (vnoise(lx / 41, ly / 1.15, seed + 8) > 0.7) t -= 0.07;
-        if (bd < 1.6) t += 0.1;
-        // a ring's crests crossing the mirror under a few bents
-        if (ringR > 0 && d >= 0.5) {
-          const dist = Math.abs(lx - ringX);
-          for (let k = 0; k < 3; k++) {
-            const row = bot - 1.8 - k * 3.4;
-            if (Math.abs(ly - row) < 0.5 * Math.max(1, one) && dist < ringR * (1 - k * 0.28) && dist > ringR * 0.25 * (1 - k * 0.3)) t = -1;
-          }
-        }
-        b.set(x, y, t < 0 ? P.jade[2]! : tone(P.stone, clamp(t, 0, 1), x, y, 0.3));
+        // the beam as the water sees it (round 3): the board step, firmer for its lowest rows (the
+        // top of the reflection, nearest the waterline), the line between them wandering
+        if (rippleGap(lx, ly, bot, seed)) { b.clear(x, y); continue; }
+        const firm = bd < 1.4 + 2.2 * vnoise1(lx / 23, seed + 32) + (run.age ? 0 : 0.8);
+        b.set(x, y, bd < one * 0.99 ? REFL_DARK : firm ? REFL_FIRM : REFL_BEAM);
         continue;
       }
       let t: number;
@@ -692,7 +774,7 @@ function paintDeck(c: PaintCtx, p: JettyP, plan: JPlan, seed: number, x0: number
         if (stain && ly < stainTo) t += 0.2;
         // long grain: streaks along the beam, silvered in an old beam's sunny upper half
         const g = vnoise(lx / 41, ly / 1.15, seed + 8);
-        if (!run.age && d >= 0.5 && g > 0.66 && v < 0.6) { b.set(x, y, tone(P.stone, clamp(0.5 + v * 0.35, 0, 1), x, y, 0.3)); continue; }
+        if (!run.age && d >= 0.5 && g > 0.66 && v < 0.6) { b.set(x, y, wood(x, y, clamp(0.32 + v * 0.3, 0, 1), true, 0)); continue; }
         if (g < 0.2) t += 0.07;
         else if (run.age && g > 0.74) t -= 0.07;
         // checks: long thin cracks along the grain
@@ -730,7 +812,7 @@ function paintDeck(c: PaintCtx, p: JettyP, plan: JPlan, seed: number, x0: number
       }
       if (t === -2) { b.set(x, y, P.ink[1]!); continue; }
       if (t === -3) { b.set(x, y, P.earth[3]!); continue; }
-      b.set(x, y, wood(x, y, clamp(t, 0, 1), false));
+      b.set(x, y, wood(x, y, clamp(t, 0, 1), false, 0));
     }
     // moss and weed hanging from an old beam's underside, here and there
     if (lit && !run.age && !sis && d >= 1 && hash(Math.floor(lx * 1.5), 1, seed + 44) < 0.09) {
@@ -1242,59 +1324,65 @@ export interface LandingP {
   water: number;
   /** Piles standing in the ground here: their x and half widths (mud and stones bank up round their feet). */
   feet?: [number, number][];
-}
-
-/** A rough stone: a lumpy outline, lit up-left, mossy on top. */
-function stone(c: PaintCtx, cx: number, by: number, w: number, h: number, seed: number, moss = 0.5, wet = -1): void {
-  const b = c.buf;
-  const X0 = Math.floor(c.X(cx - w / 2 - 1)), X1 = Math.ceil(c.X(cx + w / 2 + 1));
-  for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
-    const lx = c.lx(x + 0.5) - cx;
-    const u = lx / (w / 2);
-    if (Math.abs(u) > 1) continue;
-    const top = by - h * Math.pow(1 - Math.pow(Math.abs(u), 2.2), 0.55) * (0.85 + 0.3 * vnoise1(lx / 3 + seed, seed));
-    for (let y = Math.max(Math.round(c.Y(top)), b.oy); y < Math.min(Math.round(c.Y(by)), b.y1); y++) {
-      const ly = c.ly(y + 0.5);
-      const v = (ly - top) / Math.max(1, by - top);
-      let t = 0.2 + v * 0.35 + (u > 0.3 ? 0.25 : u < -0.4 ? -0.1 : 0);
-      if (vnoise(lx / 2.5, ly / 2.5, seed + 1) > 0.72) t += 0.12;
-      if (v < 0.35 && vnoise(lx / 3, ly / 2, seed + 2) > 0.62 - moss * 0.3) { b.set(x, y, tone(P.moss, clamp(0.25 + v + (u > 0 ? 0.25 : 0), 0, 1), x, y, 0.35)); continue; }
-      if (wet >= 0 && ly > wet) t += 0.25;
-      b.set(x, y, tone(P.karst, clamp(0.3 + t * 0.7, 0, 1), x, y, 0.3));
-    }
-  }
+  /** (east) A tree standing on the landing's rock: its trunk's foot [x, y] (local), so its roots grip the rock. */
+  roots?: [number, number];
 }
 
 export const landing = definePainter<LandingP>("op.landing", {
   bounds(p) {
-    return p.end === "west" ? [-60, -6, 130, p.water + 14] : [-150, -6, 40, p.water + 26];
+    return p.end === "west" ? [-60, -6, 130, p.water + 14] : [-232, -6, 44, p.water + 26];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
     const water = p.water;
     const g = (x: number): number => yAt(p.ground, x);
-    // mud banked round each pile's foot, wet and dark near the water
-    for (const [fx, hw] of p.feet ?? []) {
-      const gy = g(fx);
-      if (gy > water + 2) continue;
-      for (let x = Math.round(c.X(fx - hw - 7)); x < Math.round(c.X(fx + hw + 7)); x++) {
-        const u = (c.lx(x + 0.5) - fx) / (hw + 7);
-        const mound = (1 - u * u) * 4.5 * (0.7 + 0.3 * vnoise1(c.lx(x) / 2, seed));
-        for (let y = Math.round(c.Y(gy - mound)); y < Math.round(c.Y(gy + 2)); y++) {
-          const ly = c.ly(y + 0.5);
-          const wet = ly > water - 6;
-          b.set(x, y, tone(P.earth, clamp(0.55 + (wet ? 0.3 : 0) + (ly - gy + mound) / 12, 0, 1), x, y, 0.4));
+    // (round 3) every pile that stands in the ground is driven into it: a collar of wet mud
+    // heaped against it (higher on one side), a wet dark band on the log above the mud, a stone
+    // or two at its foot, a bright line where the lake laps the mud
+    const collars = (): void => {
+      for (const [fx, hw] of p.feet ?? []) {
+        const gy = g(fx);
+        if (gy > water + 2) continue;
+        const kk = hash1(Math.round(fx * 3), seed + 70);
+        const wl = hw + 3 + 4 * kk, wr = hw + 3 + 5 * (1 - kk), mh = 2.2 + 3 * hash1(Math.round(fx), seed + 71);
+        for (let x = Math.max(b.ox, Math.round(c.X(fx - wl))); x < Math.min(b.x1, Math.round(c.X(fx + wr))); x++) {
+          const lx = LX(c, x) - fx;
+          const u = lx < 0 ? lx / wl : lx / wr;
+          const mound = mh * Math.pow(Math.max(0, 1 - u * u), 0.8) * (0.75 + 0.5 * vnoise1(LX(c, x) / 2.2, seed + 72));
+          const top = Math.min(gy, water + 0.5) - mound;
+          for (let y = Math.max(b.oy, Math.round(c.Y(top))); y < Math.min(b.y1, Math.round(c.Y(Math.min(gy, water) + 3))); y++) {
+            const ly = LY(c, y);
+            if (ly < top) continue;
+            const s = ly - top;
+            let col: number;
+            if (ly > water + 0.5) col = P.umber[3]!;
+            else if (ly > water - 0.6) col = Math.abs(u) > 0.25 && vnoise1(LX(c, x) / 3, seed + 73) > 0.35 ? P.jade[1]! : P.umber[2]!;
+            else if (s < 0.9) col = u < -0.2 ? P.earth[2]! : P.earth[3]!;
+            else col = Math.abs(u) < 0.35 ? P.umber[2]! : s > 2.5 ? P.earth[5]! : P.earth[4]!;
+            b.set(x, y, col);
+          }
+        }
+        // the log's wet band just above the mud (a darker, slick ring)
+        const wt = Math.min(gy, water) - mh - 1;
+        for (let y = Math.round(c.Y(wt - 2.5 - 2 * kk)); y < Math.round(c.Y(wt + 0.5)); y++) {
+          for (let x = Math.round(c.X(fx - hw * 0.92)); x < Math.round(c.X(fx + hw * 0.92)); x++) {
+            const q = (LX(c, x) - fx) / hw;
+            b.set(x, y, q < -0.55 ? P.timber[4]! : q > 0.45 ? P.umber[3]! : P.umber[2]!);
+          }
+        }
+        if (d >= 0.5) {
+          const sx = fx + (kk < 0.5 ? -hw - 3.5 : hw + 3);
+          limeChunk(c, { x0: sx - 3 - 2 * kk, x1: sx + 3 + 2 * (1 - kk), top: Math.min(gy, water) - 2.5 - 2 * kk, foot: Math.min(gy, water) + 2, z: 0.75, water: gy > water - 3 ? water : undefined, cap: kk > 0.6 ? 1 : 0, seed: seed + Math.round(fx) });
         }
       }
-      stone(c, fx - hw - 4, gy + 1.5, 7 + hash1(Math.round(fx), seed) * 5, 4 + hash1(Math.round(fx), seed + 1) * 3, seed + Math.round(fx), 0.6, water - 2);
-      stone(c, fx + hw + 3, gy + 1.5, 5 + hash1(Math.round(fx), seed + 2) * 4, 3 + hash1(Math.round(fx), seed + 3) * 2, seed + Math.round(fx) + 5, 0.4, water - 2);
-    }
+    };
     if (p.end === "west") {
+      collars();
       // the step down to the grass: a split log laid on two stones, worn pale on top
       const gy = g(-20);
-      stone(c, -29, gy + 2, 11, gy + 2 - 17, seed + 3, 0.7);
-      stone(c, -10, g(-10) + 2, 9, g(-10) + 2 - 18, seed + 7, 0.5);
-      stone(c, -44, g(-44) + 2, 13, 7, seed + 4, 0.9);
+      limeChunk(c, { x0: -35, x1: -22, top: 15.5, foot: gy + 3, z: 0.7, cap: 1.5, seed: seed + 3 });
+      limeChunk(c, { x0: -15, x1: -4, top: 16.5, foot: g(-10) + 3, z: 0.62, seed: seed + 7 });
+      limeChunk(c, { x0: -52, x1: -36, top: g(-44) - 5, foot: g(-44) + 3, z: 0.55, cap: 2.5, seed: seed + 4 });
       for (let y = Math.round(c.Y(11)); y < Math.round(c.Y(18)); y++) {
         const v = (c.ly(y + 0.5) - 11) / 7;
         for (let x = Math.round(c.X(-36 + v * 1.5)); x < Math.round(c.X(-4 - v)); x++) {
@@ -1327,22 +1415,78 @@ export const landing = definePainter<LandingP>("op.landing", {
           for (let s = 0; s < len; s += 0.5 / d) b.set(Math.round(c.X(tx + Math.sin(a) * s)), Math.round(c.Y(ty - Math.cos(a) * s)), s > len * 0.6 ? P.moss[k & 1 ? 2 : 1]! : P.moss[4]!);
         }
       }
-      // a fallen branch half in the water
-      for (let s = 0; s < 34; s += 0.5 / d) {
-        const X = Math.round(c.X(64 + s)), Y = Math.round(c.Y(water - 2.5 + s * 0.06 + Math.sin(s / 5) * 0.6));
-        b.set(X, Y, P.stone[2]!);
-        b.set(X, Y + 1, P.timber[4]!);
-        if (Math.abs(s - 12) < 0.3) for (let k = 0; k < 6; k += 0.5 / d) b.set(Math.round(c.X(76 + k * 0.5)), Math.round(c.Y(water - 3 - k)), P.timber[3]!);
+      // a branch of driftwood half in the water: kinked, tapering, silvered where it dries
+      {
+        const pts: [number, number][] = [];
+        let x = 62, y = water - 3.2;
+        for (let k = 0; k <= 6; k++) {
+          pts.push([x, y]);
+          x += 5 + hash1(k, seed + 9) * 2.5;
+          y += k === 2 ? -1.4 : 0.55 + (hash1(k, seed + 10) - 0.5) * 0.6;
+        }
+        if (d >= 0.3) {
+          stroke(c, pts, (u) => 2.8 - 1.6 * u, (_u, sd) => (sd < -0.3 ? P.earth[1]! : sd < 0.4 ? P.earth[3]! : P.umber[2]!));
+          const [bx, by] = pts[2]!;
+          stroke(c, bladePath(bx, by - 0.5, 6, 0.35, -0.3), () => 1, () => P.earth[2]!);
+        }
       }
       return;
     }
-    // east: the deck's end sits on a crib of rough stones stacked on the rock shelf against the
-    // road's rock; driftwood and mossy stones where the timber meets the rock
-    const cx = -14;
-    const sy = g(cx);
-    const rows = [[cx - 2, sy + 2, 22, 9], [cx + 4, sy - 6, 18, 8], [cx - 3, sy - 13, 20, 8], [cx + 2, sy - 19, 16, 6]] as const;
-    rows.forEach(([x, y, w, h], i) => { if (y - h > DECK + 15) stone(c, x, y, w, h, seed + 20 + i, i === rows.length - 1 ? 0.2 : 0.55, water - 1); });
-    // the landing: a cut stone slab level with the deck, laid from the last plank onto the road's rock
+    // east (round 3): the jetty's end built into the shore. A big chunk under the pine (its roots
+    // grip it), a step of limestone up toward the lip with the deck's end bedded on a timber sill on
+    // it, a low block half sunk in front, mud and pebbles at their feet, the last piles driven in
+    // with their collars, a broken plank and driftwood washed up, reeds at the water
+    const K1: LimeChunk = { x0: -66, x1: -4, top: 44.5, foot: water + 4, tilt: 0.02, z: 0.6, cap: 2.5, water, seed: seed + 20 };
+    const K2: LimeChunk = { x0: -8, x1: 30, top: 25, foot: water + 4, tilt: -0.04, z: 0.86, cap: 2, water, seed: seed + 21 };
+    const K0: LimeChunk = { x0: -108, x1: -78, top: 50.5, foot: water + 4, tilt: 0.06, z: 0.92, cap: 1.5, water, seed: seed + 22 };
+    // mud and pebbles along the shelf at the water's edge
+    {
+      const X0 = Math.max(b.ox, Math.floor(c.X(-200))), X1 = Math.min(b.x1, Math.ceil(c.X(-50)));
+      for (let x = X0; x < X1; x++) {
+        const lx = LX(c, x);
+        const top = Math.max(water - 7, Math.min(g(lx), water)) - 1.5 - 2.5 * vnoise1(lx / 9, seed + 30) - (vnoise1(lx / 3, seed + 31) - 0.5) * 1.2;
+        if (top > water - 0.6) continue;
+        for (let y = Math.max(b.oy, Math.floor(c.Y(top))); y < Math.min(b.y1, Math.ceil(c.Y(water + 2))); y++) {
+          const ly = LY(c, y);
+          if (ly < top) continue;
+          b.set(x, y, ly > water + 0.5 ? P.umber[3]! : ly > water - 0.6 ? (vnoise1(lx / 4, seed + 32) > 0.4 ? P.jade[1]! : P.umber[2]!) : ly - top < 0.9 ? P.earth[3]! : water - ly < 2.2 ? P.umber[2]! : P.earth[4]!);
+        }
+      }
+    }
+    limeChunk(c, K1, [K0]);
+    // the pine's roots gripping the block under it: over its top both ways, then down its sides
+    // into the joints, one into a crack in its top; soil and moss heaped at the trunk's foot
+    if (p.roots && d >= 0.25) {
+      const [rx, ry] = p.roots;
+      const kt = (x: number): number => chunkTop(K1, x) - 0.6;
+      const paths: [number, number][][] = [
+        [[rx - 5, ry - 4], [rx - 14, kt(rx - 14) - 1.2], [K1.x0 + 9, kt(K1.x0 + 9) - 0.6], [K1.x0 + 2, kt(K1.x0 + 2) + 1.5], [K1.x0 - 1, kt(K1.x0) + 9], [K1.x0 - 1.5, water - 3]],
+        [[rx - 3, ry - 3], [rx - 13, kt(rx - 13) - 0.4], [rx - 20, kt(rx - 20) + 3], [rx - 22, kt(rx - 22) + 8]],
+        [[rx + 5, ry - 4], [rx + 12, kt(rx + 12) - 1], [K1.x1 - 3, kt(K1.x1 - 3) - 0.3], [K1.x1 + 0.5, kt(K1.x1) + 6], [K1.x1 + 1, kt(K1.x1) + 14]],
+        [[rx - 1, ry - 2], [rx - 3, kt(rx - 3) + 4], [rx - 6, kt(rx - 6) + 9]],
+      ];
+      paths.forEach((pts, i) => {
+        const w0 = [5.2, 3.4, 4.6, 2.6][i]!;
+        stroke(c, pts, (u) => Math.max(1, w0 * (1 - u * 0.82)), (u, sd) => {
+          const [px, py] = pts[Math.min(pts.length - 1, Math.round(u * (pts.length - 1)))]!;
+          if (sd < -0.35 && u < 0.7 && vnoise(px / 2.5, py / 2, seed + 50 + i) > 0.55) return P.moss[3]!;
+          return sd < -0.35 ? P.earth[3]! : sd < 0.2 ? P.timber[4]! : sd < 0.6 ? P.timber[5]! : P.umber[3]!;
+        });
+      });
+      // the soil and moss at the trunk's foot, heaped on the rock
+      for (let x = Math.round(c.X(rx - 16)); x < Math.round(c.X(rx + 14)); x++) {
+        const lx = LX(c, x), q = (lx - rx) / 15;
+        const hgt = 4 * Math.pow(Math.max(0, 1 - q * q), 1.4) * (0.7 + 0.5 * vnoise1(lx / 3, seed + 55));
+        for (let y = Math.round(c.Y(kt(lx) - hgt)); y < Math.round(c.Y(kt(lx) + 0.8)); y++) {
+          const ly = LY(c, y);
+          b.set(x, y, vnoise(lx / 2.6, ly / 2, seed + 56) > 0.48 ? (ly < kt(lx) - hgt + 1 ? P.moss[3]! : P.moss[5]!) : P.earth[5]!);
+        }
+      }
+    }
+    collars();
+    limeChunk(c, K2);
+    limeChunk(c, K0);
+    // the cut stone slab level with the deck, laid from the last plank onto the road's rock
     for (let y = Math.round(c.Y(0)); y < Math.round(c.Y(9)); y++) {
       const v = c.ly(y + 0.5) / 9;
       for (let x = Math.round(c.X(-2)); x < Math.round(c.X(20 - v * 2)); x++) {
@@ -1354,28 +1498,59 @@ export const landing = definePainter<LandingP>("op.landing", {
         b.set(x, y, tone(P.stone, clamp(t, 0, 1), x, y, 0.3));
       }
     }
-    // a timber sill on the crib carrying the stringer's end
-    for (let y = Math.round(c.Y(DECK + 10.5)); y < Math.round(c.Y(DECK + 16.5)); y++) {
-      for (let x = Math.round(c.X(cx - 14)); x < Math.round(c.X(cx + 12)); x++) {
-        const v = (c.ly(y + 0.5) - DECK - 10.5) / 6;
-        b.set(x, y, wood(x, y, v < 0.25 ? 0.2 : v > 0.8 ? 0.85 : 0.55, false));
+    // the timber sill under the stringer's end, bedded on the step's top, soil and moss at the join
+    const sx0 = -22, sx1 = 10;
+    for (let y = Math.round(c.Y(DECK + 10.5)); y < Math.round(c.Y(DECK + 17)); y++) {
+      for (let x = Math.round(c.X(sx0)); x < Math.round(c.X(sx1)); x++) {
+        const v = (c.ly(y + 0.5) - DECK - 10.5) / 6.5, u = (c.lx(x + 0.5) - sx0) / (sx1 - sx0);
+        b.set(x, y, wood(x, y, v < 0.22 ? 0.18 : v > 0.8 ? 0.85 : u > 0.9 ? 0.75 : 0.5, false));
+      }
+    }
+    for (let x = Math.round(c.X(sx0 - 2)); x < Math.round(c.X(sx1 + 3)); x++) {
+      const lx = LX(c, x);
+      const h0 = 1 + 1.6 * vnoise1(lx / 3, seed + 33);
+      for (let y = Math.round(c.Y(DECK + 17)); y < Math.round(c.Y(DECK + 17 + h0)); y++) b.set(x, y, vnoise1(lx / 4, seed + 34) > 0.5 ? P.moss[5]! : P.earth[4]!);
+    }
+    // a broken plank washed up aslant against the low block, its splintered end in the water
+    {
+      const ax = -128, ay = water - 9, bx = -96, by = water + 0.5;
+      const L = Math.hypot(bx - ax, by - ay);
+      for (let s = 0; s < L; s += 0.5 / d) {
+        const px = ax + (bx - ax) * (s / L), py = ay + (by - ay) * (s / L);
+        for (let o = 0; o < 3.2; o += 0.5 / d) {
+          if (s < 2.5 && hash(Math.round(o * 3), Math.round(s * 2), seed + 35) < 0.5) continue;
+          const yy = py + o;
+          if (yy > water + 0.5) continue;
+          dot(c, px, yy, yy > water - 0.6 ? P.jade[1]! : o < 0.9 ? P.earth[1]! : o < 2.2 ? P.timber[3]! : P.timber[5]!);
+        }
       }
     }
     // driftwood lying along the shelf at the water's edge, silvered, a broken branch up
-    for (let s = 0; s < 52; s += 0.5 / d) {
-      const X = Math.round(c.X(-118 + s)), base = g(-118 + s);
-      const yy = Math.min(base, water) - 2 + Math.sin(s / 9) * 0.8;
-      for (let o = 0; o < 3; o += 0.5 / d) b.set(X, Math.round(c.Y(yy + o)), o < 1 ? P.stone[1]! : o < 2 ? P.stone[3]! : P.timber[5]!);
+    {
+      const pts: [number, number][] = [];
+      let x = -214, y = water - 2.6;
+      for (let k = 0; k <= 7; k++) {
+        pts.push([x, y]);
+        x += 6.5 + hash1(k, seed + 36) * 2;
+        y += (k === 3 ? -0.9 : 0.25) + (hash1(k, seed + 37) - 0.5) * 0.5;
+      }
+      if (d >= 0.3) {
+        stroke(c, pts, (u) => 3 - 1.4 * u, (_u, sd) => (sd < -0.3 ? P.earth[1]! : sd < 0.4 ? P.earth[3]! : P.umber[2]!));
+        const [qx, qy] = pts[3]!;
+        stroke(c, bladePath(qx, qy - 1, 8, 0.4, -0.3), () => 1, () => P.earth[2]!);
+      }
     }
-    for (let k = 0; k < 9; k += 0.5 / d) b.set(Math.round(c.X(-86 + k * 0.45)), Math.round(c.Y(Math.min(g(-86), water) - 3 - k)), P.stone[2]!);
-    // mossy stones along the shelf
-    for (let i = 0; i < 6; i++) {
-      const x = -136 + i * 21 + hash1(i, seed + 30) * 10;
-      const y = g(x);
-      if (y > water + 3) continue;
-      stone(c, x, Math.min(y, water) + 1.5, 6 + hash1(i, seed + 31) * 8, 3 + hash1(i, seed + 32) * 4, seed + 40 + i, 0.7, water - 1);
+    // reeds where the shelf goes into the water, and grass on the block tops
+    for (const [rx, rw, rh, n] of [[-150, 16, 22, 12], [-62, 8, 12, 6]] as const) {
+      for (let k = 0; k < n; k++) {
+        const bx = rx + (hash1(k, seed + 40 + rx) - 0.5) * rw, ln = rh * (0.4 + 0.6 * hash1(k, seed + 41 + rx));
+        if (d >= 0.3) grass(c, bx, water - 0.5, ln, (hash1(k, seed + 42) - 0.5) * 0.4, (hash1(k, seed + 43) - 0.5) * 0.9, hash1(k, seed + 44) * 0.7);
+      }
     }
-    void bayer4;
+    for (let i = 0; i < 7; i++) {
+      const gx = K2.x0 + 3 + hash1(i, seed + 45) * (K2.x1 - K2.x0 - 6);
+      if (d >= 0.3) grass(c, gx, chunkTop(K2, gx) + 1, 3 + hash1(i, seed + 46) * 6, (hash1(i, seed + 47) - 0.45) * 0.9, -0.3, hash1(i, seed + 48));
+    }
   },
 });
 

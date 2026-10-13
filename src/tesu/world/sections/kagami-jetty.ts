@@ -43,7 +43,7 @@ export function kagamiJetty(b: WorldBuilder): void {
 
   // the great pine on the east lip (behind the jetty): rooted on the shelf against the road's
   // rock, its long arm reaching west over the station and the jetty's end
-  b.piece("play", "op.pine", h(108.72), DECK_Y + 46, { h: 530, dir: -1, arm: [570, 0.86], bend: -0.25, armsFrom: 0.8, roots: 64, grip: 22 }, { z: 1, seed: seed() });
+  b.piece("play", "op.pine", h(108.72), DECK_Y + 46, { h: 530, dir: -1, arm: [570, 0.86], bend: -0.25, armsFrom: 0.8, roots: 0, grip: 22 }, { z: 1, seed: seed() });
 
   // the jetty: its plate (the piles; the deck as the lake sees it)
   const jet = b.piece("play", "op.jetty", JETTY_X0, DECK_Y, { ...jp, part: "plate" }, { z: 2 });
@@ -51,7 +51,7 @@ export function kagamiJetty(b: WorldBuilder): void {
   // its landings: a stone step down to the west shore; a stone crib on the east shelf
   const feet = (x0: number, x1: number, dx: number): [number, number][] => plan.piles.filter((q) => !q.back && q.x > x0 && q.x < x1 && q.foot < water + 20).map((q) => [q.x - dx, q.hw]);
   b.piece("play", "op.landing", JETTY_X0, DECK_Y, { end: "west", ground: west, water, feet: feet(-10, 220, 0) }, { z: 3, seed: seed() });
-  b.piece("play", "op.landing", JETTY_X1, DECK_Y, { end: "east", ground: east.map((v, i) => (i % 2 ? v : v - W)), water, feet: feet(W - 200, W, W) }, { z: 3, seed: seed() });
+  b.piece("play", "op.landing", JETTY_X1, DECK_Y, { end: "east", ground: east.map((v, i) => (i % 2 ? v : v - W)), water, feet: feet(W - 200, W, W), roots: [h(108.72) - JETTY_X1, 46] }, { z: 3, seed: seed() });
   // its lit face, in sprites the lake does not mirror
   for (let i = 0, x = -4; x < W; i++, x += 800) {
     b.sprite({ id: `jetty-face-${i}`, plane: "play", kind: "op.jetty", x: JETTY_X0, y: DECK_Y, p: { ...jp, part: "face", from: x, to: Math.min(W, x + 800), plan: jet.seed }, frames: 1, reflect: false, seed: seed() });
