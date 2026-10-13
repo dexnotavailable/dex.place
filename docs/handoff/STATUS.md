@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-13T03:08:46.058Z (13/10/2026, 10:08:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-13T04:18:45.846Z (13/10/2026, 11:18:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c8` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,8 +12,8 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_f62de466-2f9 — last activity 15 min ago
-7 agents: 6 done, 1 running or stopped mid-way, 0 failed.
+### wf_f62de466-2f9 — last activity 7 min ago
+12 agents: 9 done, 3 running or stopped mid-way, 0 failed.
 
 - **director:setup** (done): 
 - **critic:r0** (done): 
@@ -21,15 +21,20 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **paint:p1:r1** (done): The ruled mist lines are gone from all eight frames. Nothing white stands behind the torii any more. The lake is a darker, glassier mirror that runs pale at the far shore to deep jade in front. The postcard has one lobed cumulus in the middle and no contrail. The Walker stands in the water with rings, a meniscus, wet shins, a wake and torn mist, and its reflection starts where it touches the water. The falls are veil
 - **paint:p2:r1** (done): The jetty is now an old, mended, irregular thing whose reflection is a darker, softer band. Both ends are built into the land, the lift's top station stands under its F prompt, the pines are rooted, Kagami's great pine frames catch's top right, and the props sit on the deck with contact. Branch claude/v2-art-kagami-p2: commits 4b5baf9 and 2df371e on top of b6ec56c (fast-forward check said "Already up to date"). Not p
 - **paint:p3:r1** (done): Kagami's land is re-dressed and committed (3375a90). There is no P5 band top, underside, floating slab or rock teeth in any frame now, and the torii no longer sits behind the lift station. The one thing still reading as a band is the dark ground strip between the masses, explained below. NOTE: the harness refused to let me write round-1\p3\REPORT.md (subagents may not write report files), so this summary is the repor
-- **director:integrate:r1** (running)
+- **director:integrate:r1** (done): 
+- **critic:r1** (done): 
+- **director:plan:r2** (done): 
+- **paint:p3:r2** (running)
+- **paint:p2:r2** (running)
+- **paint:p1:r2** (running)
 
-### wf_02fb83bb-9c9 — last activity 1175 min ago
+### wf_02fb83bb-9c9 — last activity 1245 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v4** (done): I wrote GDK v4 and every DELTA-v4 item is in it. MAP.svg and the builder map both parse as XML, and I rendered both with headless Edge and looked at them; the leak scan passes. The one thing I could not do is collect new reference images: the indoors-grand, indoors-narrow and outdoors-narrow gaps ar
 - **critic:v4** (done): verdict ready · GDK v4 is ready for Dex. Every DELTA-v4 item is done, and no locked canon line is contradicted. That covers the press-started download, the PC-only warning, Yuki downloading dexClient, no dex.place champion, deep links that skip the intro, the URL scheme, the 3-minute reload, the talisman and the scroll, the music, the hunt prize and stall hints with no randomness, F to interact, and state A left open. I regenerated 
 
-### wf_674119c5-6eb — last activity 1203 min ago
+### wf_674119c5-6eb — last activity 1273 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v1** (done): I've written both files into `D:\Dex\Temp\dexplace-canon-20261012\gdk\v1\`: `GDK.md`, the full design kit in the brief's section order 0 to 10 plus appendices A to E, and `MAP.svg`. The map is valid XML. I rendered it to PNG with headless Edge and checked it by eye: the です shape reads at full size, 
