@@ -467,7 +467,9 @@ export const headland = definePainter<HeadlandP>("op.headland", {
         let t = 0.32 - L.lit * 0.32 + deep * 0.5 + (L.q > 0.82 && L.lit < 0 ? 0.25 : 0);
         if (inD < 1.5) t -= 0.18;
         const i = clamp(Math.round(t * 6), 0, 6);
-        b.set(x, y, [P.moss[1]!, P.moss[2]!, P.moss[3]!, P.moss[4]!, P.moss[5]!, P.pine[1]!, P.pine[2]!][i]!);
+        // (integration, round 1: a step down from the sunny moss, so the far shore sits back in
+        // the haze with the karst instead of standing out as the brightest green in the frame)
+        b.set(x, y, [P.moss[2]!, P.moss[3]!, P.moss[4]!, P.moss[5]!, P.pine[1]!, P.pine[2]!, P.pine[3]!][i]!);
       }
     }
     const r = rng(seed + 20);
@@ -695,6 +697,145 @@ export const shore = definePainter<ShoreP>("op.shore", {
       const x = 10 + r() * 190;
       const ln = 10 + r() * 34 * (1 - x / 260), a = (r() - 0.5) * 0.7, bd = (r() - 0.4) * 1.4, l = r();
       grass(c, x, -walkAt(x) + 2, ln, a, bd, l * 0.8, ln > 30);
+    }
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Kagami's east end (front plane): op.scree, where the lake runs out against the foot of the
+// east lip (art loop round 1, integration). Limestone blocks fallen from the lip lie heaped in
+// the shallows, the heap spreading toward the camera (down the frame) as the shore turns toward
+// it: the nearer a block, the lower and bigger it is. Each sits in the water on its own wet dark
+// band with a bright wet line at its foot, moss on its top, light from the upper left; wet scree
+// and mud fill the gaps behind them, sedge and reeds grow out of it. It hides the place where the
+// lake's water ends against the rock, and joins the lip to P5's east corner, so the lake never
+// ends in a ruled edge. Drawn in whole level-1 px.
+
+export interface ScreeP {
+  /** Length along the waterline, px (anchor: its west end at the waterline). */
+  w: number;
+  /** How far toward the camera (down the frame) the heap reaches, px (its west tip only a few). */
+  deep: number;
+  /** Height of the tallest blocks above the waterline (against the lip at the east end), px (default 26). */
+  h?: number;
+}
+
+/** The heap's reach below the waterline at local x (its west tip shallow, ragged at three scales). */
+function screeDeep(p: ScreeP, lx: number, seed: number): number {
+  const u = clamp(lx / p.w, 0, 1);
+  const tip = clamp(lx / 34, 0, 1);
+  return p.deep * Math.pow(tip, 0.7) * (0.82 + 0.25 * fbm1(lx / 40, seed + 3, 2)) * (0.9 + 0.1 * u) + (vnoise1(lx / 9, seed + 4) - 0.5) * 6 + (vnoise1(lx / 3, seed + 5) - 0.5) * 2;
+}
+
+/** A fallen block sitting in the water at local base y (its waterline): rounded, lopsided, lit upper left, wet at its foot. */
+function screeBlock(c: PaintCtx, cx: number, base: number, bw: number, bh: number, seed: number, open = true): void {
+  const b = c.buf;
+  const X0 = Math.max(b.ox, Math.floor(c.X(cx - bw / 2 - 1))), X1 = Math.min(b.x1, Math.ceil(c.X(cx + bw / 2 + 1)));
+  if (X0 >= X1) return;
+  const lean = (hash1(1, seed) - 0.5) * 0.7;
+  const wetH = 1.6 + 2.4 * hash1(2, seed);
+  for (let x = X0; x < X1; x++) {
+    const lx = LX(c, x);
+    const q = (lx - (cx - bw / 2)) / bw;
+    if (q < 0 || q > 1) continue;
+    // a lopsided rounded top: noise at three scales over a superellipse
+    const qq = clamp(q + lean * q * (1 - q), 0, 1);
+    const e = Math.pow(Math.max(0, 1 - Math.pow(Math.abs(qq * 2 - 1), 2.3)), 0.42);
+    const T = bh * e * (0.78 + 0.36 * vnoise1(lx / (bw * 0.32) + 3, seed + 3)) + (vnoise1(lx / 4.5, seed + 4) - 0.5) * 2.4 * e + (vnoise1(lx / 1.7, seed + 5) - 0.5) * 0.9;
+    if (T < 1) continue;
+    const Y0 = Math.max(b.oy, Math.floor(c.Y(base - T) - 1)), Y1 = Math.min(b.y1, Math.ceil(c.Y(base + 1.2)));
+    const wet = wetH + (vnoise1(lx / 5, seed + 6) - 0.5) * 2;
+    const mossD = (q < 0.7 ? 1.2 + 2.6 * vnoise1(lx / 6, seed + 7) : 0.6) * (hash1(3, seed) < 0.75 ? 1 : 0);
+    for (let y = Y0; y < Y1; y++) {
+      const ly = LY(c, y);
+      if (ly < base - T || ly > base + 1.2) continue;
+      const s = ly - (base - T);
+      const up = base - ly;
+      let col: number;
+      // the bright wet line where the water laps its foot, then the wet dark band
+      if (up < 0) col = open && q > 0.08 && q < 0.92 ? P.jade[1]! : P.karst[8]!;
+      else if (up < 0.9) col = P.karst[8]!;
+      else if (up < wet) col = q < 0.2 ? P.karst[6]! : P.karst[7]!;
+      else if (s < mossD) col = s < 1 && q < 0.5 ? P.moss[3]! : q < 0.35 ? P.moss[4]! : P.moss[5]!;
+      else {
+        // the top plane lit, the left flank catching the light, the face mid, the right flank
+        // and the undercut above the wet band in shade; a crack down from a notch
+        let k = s < mossD + 1.6 + 1.6 * vnoise1(lx / 4, seed + 8) ? 0 : q < 0.18 + 0.08 * (vnoise1(ly / 5, seed + 9) - 0.5) ? 1 : q < 0.66 ? 2 : 3;
+        if (up < wet + 2 && k < 3) k++;
+        const fx = cx + bw * (hash1(4, seed) - 0.5) * 0.6 + (vnoise1(ly / 3, seed + 10) - 0.5) * 1.6;
+        if (hash1(5, seed) < 0.6 && Math.abs(lx - fx) < 0.6 && s > 1 && up > wet) k = 4;
+        col = [P.karst[3]!, P.karst[4]!, P.karst[5]!, P.karst[6]!, P.karst[7]!][k]!;
+      }
+      b.set(x, y, col);
+    }
+  }
+}
+
+export const scree = definePainter<ScreeP>("op.scree", {
+  bounds(p) {
+    return [-34, -(p.h ?? 26) * 1.5 - 50, p.w + 34, p.deep * 1.2 + 16];
+  },
+  paint(c, p) {
+    const b = c.buf, d = c.d, seed = c.seed;
+    const H = p.h ?? 26;
+    // the wet scree and mud behind the blocks: from just above the waterline (higher against the
+    // lip at the east end) down to the heap's reach, dark and wet, a few pebbles catching light
+    const X0 = Math.max(b.ox, Math.floor(c.X(0))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w)));
+    for (let x = X0; x < X1; x++) {
+      const lx = LX(c, x);
+      const u = lx / p.w;
+      const top = 2 + H * 0.35 * Math.pow(clamp(u, 0, 1), 1.5) * (0.7 + 0.6 * vnoise1(lx / 23, seed + 11)) + (vnoise1(lx / 6, seed + 12) - 0.5) * 3;
+      const D = screeDeep(p, lx, seed) - 7;
+      if (D < -top + 1) continue;
+      const Y0 = Math.max(b.oy, Math.floor(c.Y(-top) - 1)), Y1 = Math.min(b.y1, Math.ceil(c.Y(D)));
+      for (let y = Y0; y < Y1; y++) {
+        const ly = LY(c, y);
+        if (ly < -top || ly > D) continue;
+        const n = vnoise(lx / 7, ly / 5, seed + 13) * 0.7 + vnoise(lx / 2.5, ly / 2, seed + 14) * 0.3;
+        let col = n > 0.66 ? P.moss[6]! : n > 0.5 ? P.karst[7]! : n > 0.3 ? P.karst[8]! : P.earth[5]!;
+        if (ly + top < 1.2) col = n > 0.5 ? P.moss[5]! : P.moss[6]!;
+        if (hash(Math.floor(lx / 1.5), Math.floor(ly / 1.5), seed + 15) < 0.025) col = P.stone[4]!;
+        b.set(x, y, col);
+      }
+    }
+    // the blocks: two or three big ones low in the frame (near) and toward the lip, then medium
+    // and small ones bunched between them, drawn back (at the waterline) to front; very
+    // different sizes, never a row of cobbles
+    const r = rng(seed + 20);
+    const rows: [number, number, number, number][] = [];
+    const nBig = 2 + Math.floor(r() * 2);
+    for (let i = 0; i < nBig; i++) {
+      const cx = p.w * (0.4 + 0.55 * r()), bw = 32 + r() * 24, hk = r();
+      const yb = Math.min(p.deep * (0.45 + 0.5 * r()), screeDeep(p, cx, seed) + 3);
+      rows.push([cx, yb, bw, bw * (0.42 + 0.25 * hk)]);
+    }
+    for (let i = 0; i < 15; i++) {
+      const cx = p.w * (1.04 * r() - 0.02), ky = r(), sk = r(), hk = r();
+      const yb = Math.max(0.5, screeDeep(p, cx, seed) * Math.pow(ky, 0.85));
+      const k = clamp(yb / p.deep, 0, 1);
+      const bw = (7 + 16 * k) * (0.6 + 0.9 * sk);
+      rows.push([cx, yb, bw, yb < 5 ? H * (0.25 + 0.75 * Math.pow(clamp(cx / p.w, 0, 1), 1.2)) * (0.45 + 0.55 * hk) : bw * (0.38 + 0.3 * hk)]);
+    }
+    rows.sort((a, q) => a[1] - q[1]);
+    // (only a block at the heap's front sits in open water: its foot gets the bright wet line)
+    rows.forEach(([cx, yb, bw, bh], i) => screeBlock(c, cx, yb, bw, bh, seed + 100 + i * 17, yb > screeDeep(p, cx, seed) - 9));
+    // sedge and reeds out of the gaps, and a few lily pads lying on the water off the west tip
+    for (let i = 0; i < 16; i++) {
+      const x = r() * p.w, yb = Math.min(screeDeep(p, x, seed) - 4, r() * p.deep * 0.8);
+      const n = 3 + Math.floor(r() * 7), tall = 7 + r() * 20 * (1 - (yb / (p.deep + 1)) * 0.5);
+      const blades: [number, number, number, number, number][] = [];
+      for (let k = 0; k < n; k++) blades.push([x + (r() - 0.5) * 9, tall * (0.4 + 0.6 * r()), (r() - 0.5) * 0.9, (r() - 0.45) * 1.2, r() * 0.8]);
+      if (yb < 0 || d < 0.3) continue;
+      for (const [bx, ln, a, bd, l] of blades) grass(c, bx, yb + 0.5, ln, a, bd, l);
+    }
+    for (let i = 0; i < 4; i++) {
+      const px = -6 - r() * 18, py = 2 + r() * 10, rx = 3 + r() * 5;
+      if (d < 0.25) continue;
+      for (let ox = -rx; ox <= rx; ox += 0.5) {
+        const th = 1.4 * Math.sqrt(Math.max(0, 1 - (ox / rx) ** 2));
+        dot(c, px + ox, py - th * 0.5, Math.abs(ox) < rx * 0.7 ? P.moss[4]! : P.moss[5]!);
+        if (th > 0.7) dot(c, px + ox, py + 0.6, P.moss[6]!);
+      }
     }
   },
 });

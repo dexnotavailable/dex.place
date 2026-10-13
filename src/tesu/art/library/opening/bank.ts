@@ -507,7 +507,9 @@ function rockCol(m: Mass, lx: number, ly: number, top: number, s: number, slope:
   if (ly > 30 && k < 4 && bayer4(x, y) < clamp((ly - 30 - 20 * vnoise1(lx / 21, seed + 48)) / 90, 0, 0.85)) k += 1;
   // a little grain: the odd px a step off
   if (hash(Math.floor(lx / 2), Math.floor(ly / 2), seed + 31) < 0.05 && k > 0 && k < 4) k += hash1(Math.floor(lx), seed + 32) < 0.5 ? -1 : 1;
-  const R = crag ? [P.karst[4]!, P.karst[6]!, P.karst[7]!, P.karst[8]!, P.ink[0]!] : [P.karst[3]!, P.karst[5]!, P.karst[6]!, P.karst[7]!, P.ink[0]!];
+  // (integration, round 1: boulders take the crags' tones, so P5's rocks stay the darkest masses
+  // in the frame instead of a pale stone under her reflection)
+  const R = [P.karst[4]!, P.karst[6]!, P.karst[7]!, P.karst[8]!, P.ink[0]!];
   void top;
   return R[k]!;
 }

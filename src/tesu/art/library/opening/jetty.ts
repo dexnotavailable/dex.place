@@ -462,13 +462,15 @@ function paintDeck(c: PaintCtx, plan: JPlan, seed: number, x0: number, x1: numbe
         // worn corners: the top corners rounded off
         if (pk.kind === WORN && y === Yt && (x === PX0 || (u > 0.8 && hash1(Math.round(pk.x), seed) < 0.5))) continue;
         if (!lit) {
-          // the plank seen from below, in the deck's shadow: softer and darker than its lit end;
-          // where two planks have shrunk apart, a slit of sky shows between them
-          if (x === PX1 - 1 && hash1(Math.round(pk.x * 7), seed + 45) < 0.3) continue;
-          let t = 0.42 + pk.t * 0.35 + v * 0.12 + (run.age ? -0.14 : run.k * 0.12);
+          // the plank's end as the water sees it: the same weathered end grain, a step into the
+          // deck's shade and lit from below by the bright lake (the mirror darkens it again, so
+          // the reflected band reads a step under the water, never a ruled black stripe); where
+          // two planks have shrunk apart, a slit of sky a whole level-1 px wide shows between them
+          if (PX1 - 1 - x < Math.max(1, Math.floor(d)) && hash1(Math.round(pk.x * 7), seed + 45) < 0.3) continue;
+          let t = 0.3 + pk.t * 0.3 + v * 0.1 + (run.age ? -0.06 : run.k * 0.08);
           if (pk.kind === NEWP) t -= 0.1;
           if (x === PX1 - 1) t += 0.25;
-          b.set(x, y, wood(x, y, clamp(t, 0, 1), false));
+          b.set(x, y, wood(x, y, clamp(t, 0, 1), true));
           continue;
         }
         let t: number;
@@ -499,8 +501,9 @@ function paintDeck(c: PaintCtx, plan: JPlan, seed: number, x0: number, x1: numbe
       const v = (ly - DECK) / Math.max(1, bot - DECK);
       let t: number;
       if (!lit) {
-        t = 0.6 + v * 0.14 + run.k * 0.06;
-        if (run.age) t -= 0.12;
+        // (the beam's face as the water sees it: the same face, a step into the deck's shade)
+        t = 0.36 + v * 0.14 + run.k * 0.06;
+        if (run.age) t -= 0.1;
         if (vnoise(lx / 30, ly / 2, seed + 8) > 0.7) t += 0.06;
         b.set(x, y, wood(x, y, clamp(t, 0, 1), false));
         continue;

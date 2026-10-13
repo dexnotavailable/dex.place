@@ -35,6 +35,11 @@ export function kagamiLand(b: WorldBuilder): void {
   b.piece("play", "op.shore", h(39), LAKE_Y, { w: h(7), end: h(5.6), walk: [...wl(h(31), h(60.9)), ...wl(h(36), h(61.6)), ...wl(h(40), h(62.1)), ...wl(h(44.1), h(62.25)), ...wl(h(46), h(62.6))] }, { z: 1, seed: 7919 * 3010 });
   // past the water's west end, the far shore (P3): the massif's wooded foot shelving into the lake
   bg(b, "back", 1300, "op.headland", { w: 1100, h: 300 }, LAKE_Y, 1, 7919 * 3011);
+  // where the lake runs out against the east lip (front plane, in front of the near water): fallen
+  // blocks heaped in the shallows, spreading toward the camera, so the water's end never shows
+  // as a ruled edge in front of the rock (pullback, jetty-6s, play-catch, play-east); P5's east
+  // corner takes over below it
+  b.piece("front", "op.scree", h(109.25), LAKE_Y, { w: 140, deep: 82, h: 28 }, { z: 0, seed: 7919 * 3020 });
   // Kagami's spring: the lake drains through the karst and bursts from the cliff below it
   b.piece("play", "op.spring", h(97), h(65.4), { mw: 80, mh: 50, w: 44, drop: h(11) }, { z: 1, reflect: false });
   // its flow (12 fps over four frames)

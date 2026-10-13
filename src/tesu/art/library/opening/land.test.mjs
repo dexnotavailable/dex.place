@@ -33,6 +33,8 @@ const CASES = [
   ["op.islet", { kind: "torii", w: 96, h: 13 }],
   ["op.headland", { w: 1100, h: 300 }],
   ["op.shore", { w: 672, end: 538, walk: [-768, 163, -288, 96, 96, 48, 490, 34, 672, 0] }],
+  ["op.scree", { w: 140, deep: 82, h: 28 }],
+  ["op.scree", { w: 90, deep: 40 }],
   ["op.reeds", { w: 160, h: 140, density: 3.6, frame: 3, loop: 8, ox: 7440, ground: [0, 8, 16, 22, 24, 22, 18, 14, 10, 8, 6, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0] }],
 ];
 const LEVELS = [2, 1.449, 1, 0.5, 0.25, 0.125];
@@ -105,4 +107,14 @@ test("op.reeds: a dense tall bed's frames move", () => {
   let diff = 0;
   for (let i = 0; i < a.px.length; i++) if (a.px[i] !== b.px[i]) diff++;
   assert.ok(diff > 20, `frames 0 and 2 differ in only ${diff} px`);
+});
+
+test("op.scree: the heap is solid from the waterline down where the lake ends against the lip (no water shows through)", () => {
+  // (integration, round 1) it stands over the place where the water's slices end in front of the
+  // east lip: from 40 px along to its east end, every column is painted from the waterline down
+  const p = { w: 140, deep: 82, h: 28 };
+  for (const seed of [4242, 7919 * 3020]) {
+    const buf = paintBox("op.scree", p, 1, 40, 0, 90, 46, seed);
+    for (let x = 40; x < 130; x++) for (let y = 0; y < 46; y++) assert.ok(buf.get(x, y) > 0, `hole in the scree at ${x},${y} (seed ${seed})`);
+  }
 });
