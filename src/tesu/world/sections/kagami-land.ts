@@ -1,7 +1,8 @@
-// Kagami's near shore (art: the Kagami art loop, painter p3): the lake's near shore on P5 with its
-// reed beds, and the catch's near corners in the shallows (front plane). (The plateau rock, the
-// west shore, the headland, the scree and the spring are in kagami-rock.ts; the islets in the
-// middle distance are in kagami-islets.ts.)
+// Kagami's near shore (art: the Kagami art loop, painter p3): what stands in the water nearest the
+// camera. The near masses on P5 with their reed beds, and the catch's near corners and the lily bed
+// under her in the shallows (front plane). (The plateau rock, the west shore, the headland, the
+// scree and the spring are in kagami-rock.ts; the islets in the middle distance are in
+// kagami-islets.ts.)
 
 import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
@@ -10,85 +11,93 @@ import { bankTopAt, reedBeds, shallowsTopAt, type BankP, type MassSpec, type Sha
 import { LAKE_Y } from "./common.ts";
 
 /**
- * P5, the lake's near shore: the ground at the camera's feet along the whole lake (the lake's
- * surface stops at its waterline, so it runs the full length), and on it the few landforms that
- * frame the bottom of every lake frame: per frame one dominant mass in one corner and a secondary
- * in the other, low wet ground with puddles of sky between. Placed by the shore's own px (0 at
- * 38 H; near-plane px are 1.35 x world px), composed for the key frames: play-west sees
- * 517..2437, play-walker 5183..7103, play-catch 7256..9176, the catch (2x, when the near plane
- * shows there) 7560..8520 with her at 8035, pullback 7789..9214, jetty-6s 8208..10201, play-east
- * 8034..9954, the postcard 5779..10291, Gate Road's first gate (guard-gate1) 8941..10861. Each
- * mass tops out below the deck line on screen. Past 9330 the ground stays low (under 40 px) so
- * Gate Road's arch reads over it, and it runs on to 10950 before falling away into the valley.
- * (seed block 3; explicit seeds 7919 x 3000 on, new ones 7919 x 3200 on)
+ * P5, the lake's near shore, as separate masses standing in the mirror water (the lake runs on to
+ * the bottom edge of every frame; nothing is painted between them). Placed by the shore's own px
+ * (0 at 38 H; at play zoom one px is one screen px; P5's waterline is screen y 963 there) to the
+ * round-3 zone table: per play frame one dominant dark mass in one bottom corner, a smaller one of
+ * another kind in the other, at most two small accents, open water across most of the bottom edge.
+ * The windows: play-west 517..2437, play-walker 5183..7103, play-catch 7256..9176, pullback
+ * 7789..9214 (1.35x), jetty-6s 8208..10201 (0.97x), play-east 8034..9954, the postcard
+ * 5779..10291 (0.43x), guard-gate1 8941..10861. No two frames share a rock.
+ * (seed block 3: the bank keeps its seed 7919 x 3000; its reed beds 7919 x (3200 + i))
  */
 export const NEAR_MASSES: MassSpec[] = [
-  // the west end: the shore turns, limestone dropping away (seen from the pass)
-  { kind: "crag", x: -80, w: 380, h: 120, drop: -1 },
-  // play-west: a grassy rise in the bottom-left corner, limestone in the bottom-right, a reed
-  // clump under her reflection between them
-  { kind: "hummock", x: 470, w: 480, h: 124, peak: 0.3 },
-  { kind: "reeds", x: 1290, w: 130, h: 24, reed: 96, dense: 3.2 },
-  { kind: "boulder", x: 1990, w: 460, h: 104, peak: 0.62 },
-  // along the lake (seen while walking)
-  { kind: "hummock", x: 2900, w: 420, h: 100, peak: 0.6 },
-  { kind: "reeds", x: 3640, w: 170, h: 30, reed: 112, dense: 3.4 },
-  { kind: "boulder", x: 4180, w: 320, h: 112, peak: 0.4 },
-  { kind: "tuft", x: 4700, w: 120, h: 24 },
-  // play-walker: a limestone outcrop in the bottom-left corner, a grass tuft under her
-  // reflection, a tall reed bed on a low mound in the bottom-right (the postcard's dark bushes
-  // left of the rise)
-  { kind: "boulder", x: 5090, w: 480, h: 140, peak: 0.34 },
-  { kind: "tuft", x: 5950, w: 150, h: 30 },
-  { kind: "reeds", x: 6640, w: 440, h: 52, reed: 132, dense: 3.6 },
-  // play-catch's bottom-left corner: the big grassy rise
-  { kind: "hummock", x: 7190, w: 530, h: 132, peak: 0.3 },
-  // a long reed bed: the pull-back's bottom-left corner, under her reflection in play-catch, the
-  // left corner of play-east
-  { kind: "reeds", x: 7790, w: 330, h: 26, reed: 104, dense: 3.2 },
-  // the east corner: fused, leaning limestone rising to 9250, its face dropping away by 9330
-  { kind: "crag", x: 8790, w: 520, h: 150, drop: 1 },
-  // past it the low ground under Gate Road's cliff (guard-gate1 sees its natural arch over
-  // 9370..9950): a low stone in it well clear of the arch, under 40 px
-  { kind: "boulder", x: 10120, w: 150, h: 30, foot: 30, peak: 0.55 },
+  // play-west's bottom-left (0..433): a shelf of limestone chunks stepping down into the water from
+  // its tall end off the frame's left edge, its nearest blocks running off the bottom; its top at
+  // y 829 or lower, so p2's west shore and its reflection read above it
+  { kind: "shelf", x: 470, w: 480, h: 134, drop: 1, bank: 0.3 },
+  // play-west's open water: a lily-pad bed with sedge (her reflection at 1332..1362 stays open)
+  { kind: "pads", x: 1610, w: 120, h: 14 },
+  // play-west's bottom-right (1583..1920): a driftwood snag leaning out of a mud bar
+  { kind: "snag", x: 2150, w: 250, h: 88, lean: 0.55 },
+  { kind: "reeds", x: 2300, w: 120, h: 10, reed: 82, dense: 2.6 },
+  // seen while walking: a reed and cattail bed on a mud bank, then a grassy knoll with a twig
+  { kind: "reeds", x: 3000, w: 250, h: 30, reed: 112, dense: 3 },
+  { kind: "knoll", x: 4120, w: 360, h: 92, peak: 0.55 },
+  // play-walker's bottom-left (0..417): a chunked limestone outcrop standing in the water
+  { kind: "outcrop", x: 5120, w: 455, h: 160 },
+  // play-walker's open water (the Walker's reflection runs here): a lily-pad bed, a half-sunk stone
+  { kind: "pads", x: 5850, w: 80, h: 10 },
+  { kind: "stone", x: 6420, w: 30, h: 15 },
+  // play-walker's bottom-right (1457..1920): a reed and cattail bed on a low mud bank
+  { kind: "reeds", x: 6650, w: 450, h: 46, reed: 138, dense: 3.4, stone: true },
+  // play-catch's bottom-left (0..444): reference 4's big grassy rise, lit blades and a twig breaking
+  // its crown, a warm rim, its earth flank stepping into the water on mud shelves
+  { kind: "rise", x: 7130, w: 570, h: 168, peak: 0.42, bank: 0.42 },
+  // at the rise's inner foot, the pull-back's left (0..149), play-catch 434..654: a reed bed in the
+  // water on a mud lump
+  { kind: "reeds", x: 7690, w: 220, h: 14, reed: 118, dense: 3.4 },
+  // jetty-6s's and play-east's left anchor (0..185, 174..366): a low dark mud bank, short reeds
+  { kind: "mud", x: 8212, w: 186, h: 48, reed: 58, dense: 2.4 },
+  // the jetty's east landing (jetty-6s 763..1013, play-east 966..1226): low reeds and a stone,
+  // under 60 so the landing and its reflection show
+  { kind: "reeds", x: 9040, w: 170, h: 18, reed: 54, dense: 2.2, stone: true },
+  // the east limestone, overlapping Gate Road's cliff foot (jetty-6s 1013..1225, play-east
+  // 1226..1446, guard-gate1 319..539): chunks up to 110 high stepping down to the right, running
+  // off the bottom (past the lake's end there is no water at its foot)
+  { kind: "shelf", x: 9258, w: 236, h: 100, drop: 1, bank: 1 },
+  // 9480..9950: nothing (guard-gate1's natural arch and its falls read to the bottom)
 ];
 
 /** The lake's near shore on P5 and its reed beds (seed block 3). */
 export function kagamiNear(b: WorldBuilder): void {
-  const bankP: BankP = { w: 11400, h: 290, masses: NEAR_MASSES, fall: 10950, low: 9330 };
+  const bankP: BankP = { w: 11400, h: 290, masses: NEAR_MASSES };
   const bank = b.piece("near", "op.bank", h(38), LAKE_Y, bankP as unknown as Record<string, unknown>, { z: 1, reflect: false, seed: 7919 * 3000 });
-  // its reed beds sway in the wind (6 fps over 8 frames, a gust running along the shore)
+  // its reed beds sway in the wind (6 fps over 8 frames, a gust running along the shore); they
+  // paint their own reflections (nothing mirrors P5)
   reedBeds(bankP, bank.seed).forEach(([x, w, hh, dense], i) => {
     const ground: number[] = [];
     for (let gx = 0; gx <= w; gx += 8) ground.push(Math.max(0, Math.round(bankTopAt(bankP, bank.seed, x + gx) - 3)));
-    b.sprite({ id: `bank-reeds-${i}`, plane: "near", kind: "op.reeds", x: h(38) + x / PLANES.near.rate, y: LAKE_Y + 1 / PLANES.near.rate, p: { w: Math.round(w), h: Math.round(hh), density: dense, ox: Math.round(x), ground, loop: 8 }, frames: 8, fps: 6, reflect: false, seed: 7919 * (3200 + i) });
+    b.sprite({ id: `bank-reeds-${i}`, plane: "near", kind: "op.reeds", x: h(38) + x / PLANES.near.rate, y: LAKE_Y + 1 / PLANES.near.rate, p: { w: Math.round(w), h: Math.round(hh), density: dense, ox: Math.round(x), ground, loop: 8, refl: 0.3 }, frames: 8, fps: 6, reflect: false, seed: 7919 * (3200 + i) });
   });
   kagamiShallows(b);
 }
 
 /**
- * The catch's near corners (front plane): the near shore's shallows curving toward the camera, a
- * mud bank running off each bottom corner, a half-sunk boulder, a sunk log or old stubs, lily pads,
- * reeds that sway. The close band does not draw P5, so in the catch these are the near ground; at
- * play zoom they are a layer of shallows between the jetty's reflection and P5. Their tops reach
- * catch row ~860 (LAKE_Y + 36) and nothing of them rises above catch row 1000 between 98.2 and
- * 101.9 H (her calm water). They paint their own reflections (the lake mirrors no front-plane part
- * below its waterline), so neither they nor their reeds are mirrored. (seeds 7919 x 3230 on)
+ * The catch's near corners and the lily bed under her (front plane). The close band does not draw
+ * P5, so in the catch these are the near ground: the left corner the dominant (a grassy rise from
+ * the left edge to about catch x 520, its crown at catch rows 800 to 860, in front of p2's stub
+ * clump at 95.55 H), the right one smaller and of another kind (a mud spit from about catch x 1600,
+ * no higher than row 880, reeds and one stone), and between them, under her, a quiet lily bed (99.7
+ * to 100.4 H, rows 895 to 1080 in the catch, play-catch x 800 to 870) where her reflection is
+ * missing at 2x (E5). At play zoom they are low shallows under P5. They paint their own reflections,
+ * so neither they nor their reeds are mirrored. (seeds 7919 x 3230 on; new ones 7919 x (3300 + n))
  */
 function kagamiShallows(b: WorldBuilder): void {
-  const corners: [number, ShallowsP, [number, number, number, number][]][] = [
-    // left: the bank off the bottom-left corner, reeds on it, the boulder and a sunk log by it
-    [h(95.0), { w: h(97.2) - h(95.0), wl: 64, deep: 170, side: -1, h: 30, wood: "log" }, [[4, 70, 64, 3.6], [96, 34, 44, 3]]],
-    // right: the bank off the bottom-right corner, old broken stubs and the boulder in the water
-    [h(102.6), { w: h(105.05) - h(102.6), wl: 62, deep: 170, side: 1, h: 24, wood: "stubs" }, [[96, 46, 58, 3.2], [146, 86, 88, 3.8]]],
+  const corners: [number, ShallowsP, number, [number, number, number, number][]][] = [
+    // left: the rise, its tall end off the corner, a snag lying out from it; reeds by its inner end
+    [h(94.7), { w: h(98.1) - h(94.7), wl: 60, deep: 170, side: -1, h: 52, wood: "log" }, 7919 * 3230, [[238, 40, 40, 2.4]]],
+    // right: the mud spit, one stone, mixed reeds and cattails on it
+    [h(103.3), { w: h(105.6) - h(103.3), wl: 96, deep: 170, side: 1, h: 40 }, 7919 * 3234, [[44, 34, 40, 3], [96, 64, 56, 3.4], [178, 30, 30, 2.2]]],
+    // under her: the lily bed
+    [h(99.75), { w: h(100.3) - h(99.75), wl: 52, deep: 144, side: 1, h: 6, kind: "pads" }, 7919 * 3300, []],
   ];
-  corners.forEach(([x, p, beds], i) => {
-    const seed = 7919 * (3230 + i * 4);
+  corners.forEach(([x, p, seed, beds], i) => {
     b.piece("front", "op.shallows", x, LAKE_Y, p as unknown as Record<string, unknown>, { z: 1, reflect: false, seed });
     beds.forEach(([bx, bw, bh, dense], k) => {
       const ground: number[] = [];
       for (let gx = 0; gx <= bw; gx += 8) ground.push(Math.round(shallowsTopAt(p, seed, bx + gx)));
-      b.sprite({ id: `shallows-corner-reeds-${i}-${k}`, plane: "front", kind: "op.reeds", x: x + bx, y: LAKE_Y + p.wl, p: { w: bw, h: bh, density: dense, ox: Math.round(x + bx), ground, loop: 8 }, frames: 8, fps: 6, reflect: false, seed: seed + 7919 * (k + 1) });
+      b.sprite({ id: `shallows-corner-reeds-${i}-${k}`, plane: "front", kind: "op.reeds", x: x + bx, y: LAKE_Y + p.wl, p: { w: bw, h: bh, density: dense, ox: Math.round(x + bx), ground, loop: 8, refl: 0 }, frames: 8, fps: 6, reflect: false, seed: seed + 7919 * (k + 1) });
     });
   });
 }

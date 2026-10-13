@@ -318,8 +318,8 @@ function reedPatch(c: PaintCtx, cx: number, w: number, tall: number, n: number, 
   }
 }
 
-/** Pine bark for the islet pines, lit to dark (whole level-1 px). */
-const BARK = [P.stone[3]!, P.stone[5]!, P.timber[4]!, P.timber[5]!, P.timber[6]!];
+/** Pine bark for the islet pines, lit to dark (whole level-1 px): timber, never stone. */
+const BARK = [P.timber[2]!, P.timber[3]!, P.timber[4]!, P.timber[5]!, P.timber[6]!];
 
 /** A point along a polyline at share t (0..1 of its segments). */
 function along(pts: [number, number][], t: number): [number, number] {
@@ -487,6 +487,59 @@ function crag(c: PaintCtx, w: number, h: number, dir: number, seed: number): Lob
   return lobes[0]!;
 }
 
+/**
+ * A low base standing in the water (P3: simpler and cooler than the near shore): an uneven bar of
+ * mud with a broken top, a few small limestone blocks of very different sizes in it (a lit top
+ * ledge with a green cap, the face going into shade on the right), a dark wet band and a broken
+ * bright line where it meets the water; the lake mirrors it from that contact.
+ */
+function isletBase(c: PaintCtx, cx: number, w: number, h: number, nb: number, seed: number): void {
+  const b = c.buf;
+  const r = rng(seed);
+  const half = w / 2;
+  const top = (lx: number): number => {
+    const u = (lx - cx) / half;
+    if (Math.abs(u) >= 1) return -Infinity;
+    const ends = Math.pow(1 - Math.pow(Math.abs(u), 2.2), 0.6);
+    return h * 0.55 * ends * (0.6 + 0.8 * vnoise1(lx / 7, seed + 1)) + (vnoise1(lx / 2.3, seed + 2) - 0.5) * 0.9;
+  };
+  // the blocks: [x0, x1, height, tilt]
+  const blocks: [number, number, number, number][] = [];
+  for (let i = 0; i < nb; i++) {
+    const bw = 4 + r() * w * 0.2, bx = cx + (r() - 0.5) * (w - bw) * 0.9;
+    blocks.push([bx - bw / 2, bx + bw / 2, h * (0.5 + 0.55 * r()) * (i === 0 ? 1 : 0.85), (r() - 0.5) * 0.25]);
+  }
+  blocks.sort((p, q) => p[2] - q[2]);
+  const X0 = Math.max(b.ox, Math.floor(c.X(cx - half - 2))), X1 = Math.min(b.x1, Math.ceil(c.X(cx + half + 2)));
+  const Y0 = Math.max(b.oy, Math.floor(c.Y(-h - 4))), Y1 = Math.min(b.y1, Math.ceil(c.Y(0.6)));
+  for (let x = X0; x < X1; x++) {
+    const lx = LX(c, x);
+    const T = top(lx);
+    for (let y = Y0; y < Y1; y++) {
+      const ly = LY(c, y);
+      let col = 0;
+      // the blocks (the tallest drawn last, in front)
+      for (const [a, z, bh, tl] of blocks) {
+        const bt = -bh + tl * (lx - a) + (vnoise1(lx / 3, seed + 7 + Math.round(a)) - 0.5) * 1.1;
+        const sl = a + (vnoise1(ly / 3.7, seed + 9) - 0.5) * 1.2, sr = z + (vnoise1(ly / 3.3, seed + 10) - 0.5) * 1.2;
+        if (lx < sl || lx > sr || ly < bt || ly > 0.5) continue;
+        const u = (lx - sl) / Math.max(1, sr - sl), s = ly - bt;
+        col = s < 1.1 + 1.4 * vnoise1(lx / 4, seed + 11) ? (u < 0.6 ? P.moss[3]! : P.moss[4]!)
+          : ly > -1.6 ? P.karst[7]!
+          : u < 0.3 ? P.karst[3]! : u < 0.72 ? P.karst[4]! : P.karst[6]!;
+      }
+      if (!col && T > 0.3 && ly >= -T && ly <= 0.5) {
+        const s = ly + T;
+        col = s < 1 ? (vnoise1(lx / 5, seed + 12) > 0.45 ? P.moss[4]! : P.earth[3]!) : ly > -1.4 ? P.karst[8]! : s < 2.6 ? P.moss[5]! : P.earth[4]!;
+      }
+      if (!col) continue;
+      // the bright line at the water, broken
+      if (ly > 0 && vnoise1(lx / 2.6, seed + 13) > 0.55) col = P.jade[2]!;
+      b.set(x, y, col);
+    }
+  }
+}
+
 /** Wet mud heaped round a post's foot: a low dark hump, its lit edge, a stone or two. */
 function mudHump(c: PaintCtx, x: number, hw: number, hh: number, seed: number): void {
   for (let ox = -hw; ox <= hw; ox += 0.5) {
@@ -515,6 +568,9 @@ function paintIslet(c: PaintCtx, p: IsletP): void {
     const xs = [-0.42, -0.33, -0.08, 0.02, 0.1, 0.38];
     const hs = [46, 30, 58, 22, 40, 16];
     const posts = xs.map((u, i) => ({ x: u * w + (hash1(i, seed + 5) - 0.5) * 6, hh: hs[i]! * (0.85 + 0.3 * hash1(i, seed + 6)), wd: 3.5 + 2.5 * hash1(i, seed + 7), lean: (hash1(i, seed + 8) - 0.5) * 3, broken: i === 2 || i === 5 }));
+    // low bases of mud and small blocks under the two groups of posts, the lake between them
+    isletBase(c, w * -0.37, w * 0.32, 9, 3, seed + 60);
+    isletBase(c, w * 0.02, w * 0.38, 11, 4, seed + 61);
     for (const [i, q] of posts.entries()) mudHump(c, q.x, q.wd * 0.9 + 3 + 3 * hash1(i, seed + 9), 1 + 1.6 * hash1(i, seed + 10), seed + 40 + i);
     reedPatch(c, -w * 0.38, w * 0.22, 22, 14, seed + 2);
     reedPatch(c, -w * 0.02, w * 0.16, 18, 9, seed + 3);
@@ -553,8 +609,9 @@ function paintIslet(c: PaintCtx, p: IsletP): void {
   } else {
     // the torii's islet: a low mossy rock and a stone, reeds on both sides, the torii's posts
     // standing in the shallows with wet dark feet
-    paintIsland(c, -w * 0.12, w * 0.75, Math.max(5, h), seed + 1, 0, 1.6);
-    paintIsland(c, w * 0.32, w * 0.22, Math.max(3, h * 0.55), seed + 4, 0.4, 1);
+    // a low base of mud and small limestone blocks, its top broken, a second smaller one by it
+    isletBase(c, -w * 0.14, w * 0.7, Math.max(8, h), 5, seed + 1);
+    isletBase(c, w * 0.34, w * 0.2, Math.max(5, h * 0.6), 2, seed + 4);
     reedPatch(c, -w * 0.48, w * 0.32, 24, 22, seed + 2);
     const H = Math.max(56, h * 4);
     const tx = w * 0.06;
