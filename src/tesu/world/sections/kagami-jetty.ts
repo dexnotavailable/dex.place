@@ -26,6 +26,8 @@ const GATE_FACE = [h(108.8), h(62.8), JETTY_X1, h(62.0)];
 export function kagamiJetty(b: WorldBuilder): void {
   let n = 2000;
   const seed = (): number => 7919 * n++;
+  // seeds for what round 2 adds, after the earlier ones so nothing placed before is reseeded
+  const fresh = (k: number): number => 7919 * (2060 + k);
   const water = LAKE_Y - DECK_Y;
   const W = JETTY_X1 - JETTY_X0;
   // the land under the ends, local to the deck's top-left corner
@@ -37,7 +39,7 @@ export function kagamiJetty(b: WorldBuilder): void {
     if (x >= GATE_FACE[0]!) y = Math.min(y, yOn(GATE_FACE, x));
     east.push(x - JETTY_X0, y - DECK_Y);
   }
-  const jp: JettyP = { w: W, water, west, east, gap: [LIFT_X - 62 - JETTY_X0, LIFT_X + 60 - JETTY_X0] };
+  const jp: JettyP = { w: W, water, west, east, gap: [LIFT_X - 88 - JETTY_X0, LIFT_X + 19 - JETTY_X0] };
 
   // the great pine on the east lip (behind the jetty): rooted on the shelf against the road's
   // rock, its long arm reaching west over the station and the jetty's end
@@ -55,8 +57,13 @@ export function kagamiJetty(b: WorldBuilder): void {
     b.sprite({ id: `jetty-face-${i}`, plane: "play", kind: "op.jetty", x: JETTY_X0, y: DECK_Y, p: { ...jp, part: "face", from: x, to: Math.min(W, x + 800), plan: jet.seed }, frames: 1, reflect: false, seed: seed() });
   }
 
-  // the lift's top station, built into the jetty under its prompt
-  b.sprite({ id: "lift-top-station", plane: "play", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { h: 221, water, cable: [6, -h(0.2)] }, frames: 1, seed: seed() });
+  // the lift's top station, built into the jetty under its prompt: narrow (106.5 to 107.58 H
+  // below its roof), so she stands on the open deck east of it; its pulley turns a notch now and
+  // then and its lantern (west side) flickers, each a sprite of its own
+  const st = { h: 221, water, cable: [6, -h(0.2)] as [number, number] };
+  b.sprite({ id: "lift-top-station", plane: "play", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { ...st, part: "frame" }, frames: 1, seed: seed() });
+  b.sprite({ id: "lift-top-pulley", plane: "play", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { ...st, part: "pulley" }, frames: 32, fps: 8, seed: fresh(0) });
+  b.sprite({ id: "lift-top-lantern", plane: "play", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { ...st, part: "lantern" }, frames: 16, fps: 8, seed: fresh(1) });
 
   // mooring posts standing up past the deck's edge (heights, thickness and ropes their own)
   const posts: [number, number, boolean, number][] = [[h(51.4), 26, false, 6], [h(70.6), 40, true, 7.5], [h(88.1), 30, false, 6], [CATCH_X - h(4.3), 46, true, 7], [h(104.3), 54, true, 6.5]];
@@ -77,7 +84,9 @@ export function kagamiJetty(b: WorldBuilder): void {
   // broken stubs of an older jetty standing alone further out in the lake (P3)
   const back = PLANES.back.rate;
   b.piece("back", "op.stub", 4480 / back, LAKE_Y, { piles: [[0, 22, 3.2, 1.5], [9, 12, 2.6, -1]], lilies: 3, spread: 16 }, { z: 0, seed: seed() });
-  b.piece("back", "op.stub", 5650 / back, LAKE_Y, { piles: [[0, 30, 3.6, -2], [-14, 16, 3, 1], [12, 8, 2.4, 0]], lilies: 4, spread: 22 }, { z: 0, seed: seed() });
+  // (round 2: from back x 5650 to 5560, out of the torii's way and out of her calm water in the
+  // catch: catch x ~390, play-catch ~485, play-walker ~1437)
+  b.piece("back", "op.stub", 5560 / back, LAKE_Y, { piles: [[0, 30, 3.6, -2], [-14, 16, 3, 1], [12, 8, 2.4, 0]], lilies: 4, spread: 22 }, { z: 0, seed: seed() });
   // and one in the shallows just off the jetty by the fisher's corner, in reeds and lily pads
   b.piece("front", "op.stub", h(95.55), LAKE_Y, { piles: [[0, 48, 8, 3], [-27, 21, 5.5, -2], [22, 11, 4.5, 1]], lilies: 9, spread: 58, sedge: [84, 30], shade: 0.18 }, { z: 0, seed: seed() });
   b.sprite({ id: "shallows-reeds-0", plane: "front", kind: "op.reeds", x: h(95.16), y: LAKE_Y + 1, p: { w: 34, h: 42, density: 3.4, ox: 9140 }, frames: 4, fps: 6, seed: seed() });
@@ -85,14 +94,26 @@ export function kagamiJetty(b: WorldBuilder): void {
 
   // a moored boat beside the jetty (Kagami is mirror-still: the boat rests without bobbing, its
   // reflection unbroken) and its slack line up to the post at h(88)
-  b.piece("play", "op.boat", h(91.5), LAKE_Y + 2, { w: h(2.6) }, { z: 1 });
-  b.piece("play", "op.rope", h(91.5) + 6, LAKE_Y - 22, { dx: h(88) - h(91.5) - 6 + 6, dy: (DECK_Y - 18) - (LAKE_Y - 22), sag: 0.1 }, { z: 2 });
+  // (round 2: on the front plane, floating at the waterline in front of the piles rather than
+  // inside them, the lake mirroring it; it lies along the widest bay near the post at 88.1 H)
+  const BOAT_W = h(2.3);
+  const bents = plan.bents.map((q) => JETTY_X0 + q).filter((x) => x > h(88.8) && x < h(93.4));
+  let bay: [number, number] = [h(89.6), h(90.8)];
+  for (let i = 1; i < bents.length; i++) if (bents[i]! - bents[i - 1]! > bay[1] - bay[0]) bay = [bents[i - 1]!, bents[i]!];
+  const boatX = (bay[0] + bay[1]) / 2 - BOAT_W * 0.42;
+  b.piece("front", "op.boat", boatX, LAKE_Y, { w: BOAT_W }, { z: 1, seed: fresh(2) });
+  // its line, slack, from the bow post up to the mooring post at 88.1 H
+  const bowX = boatX + BOAT_W * 0.07, bowY = LAKE_Y - 21;
+  b.piece("front", "op.rope", bowX, bowY, { dx: h(88.1) + 4 - bowX, dy: DECK_Y - 17 - bowY, sag: 0.12 }, { z: 2, seed: fresh(3) });
 
   // the fisher's corner by the catch: a coil of rope, a heap of net, a fish basket, and the
   // builder's crate (a jar on it) and bucket
   b.sprite({ id: "jetty-coil", plane: "play", kind: "op.coil", x: CATCH_X + h(2.6), y: DECK_Y, p: { r: 13, hang: 10 }, frames: 1, seed: seed() });
-  b.sprite({ id: "jetty-net", plane: "play", kind: "op.net", x: h(96.12), y: DECK_Y, p: { w: 30, h: 9, drape: 14 }, frames: 1, seed: seed() });
-  b.sprite({ id: "jetty-basket", plane: "play", kind: "op.basket", x: h(97.86), y: DECK_Y, p: { h: 17 }, frames: 1, seed: seed() });
+  // (round 2: grouped into one corner round the crate, so it reads at play zoom: the net heaped
+  // against the crate's west side and draped over the deck's edge, the creel between the crate
+  // and the bucket)
+  b.sprite({ id: "jetty-net", plane: "play", kind: "op.net", x: h(96.2), y: DECK_Y, p: { w: 38, h: 13, drape: 22 }, frames: 1, seed: seed() });
+  b.sprite({ id: "jetty-basket", plane: "play", kind: "op.basket", x: h(97.12), y: DECK_Y, p: { h: 15 }, frames: 1, seed: seed() });
   b.prop({ id: "jetty-barrel", kind: "op.bucket", p: { h: 20 }, x: h(97.4), y: DECK_Y, cls: "cosmetic", material: "wood" });
   b.prop({ id: "jetty-crate", kind: "op.crate", p: { w: 30, h: 26 }, x: h(96.6), y: DECK_Y, cls: "cosmetic", material: "wood" });
   b.prop({ id: "jetty-jar", kind: "op.jar", p: { h: 20, glaze: "clay" }, x: h(96.6), y: DECK_Y - 26, cls: "cosmetic", material: "clay", on: "jetty-crate", pieces: 3 });

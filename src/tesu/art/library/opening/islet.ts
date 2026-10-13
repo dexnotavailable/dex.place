@@ -12,6 +12,7 @@ import { P } from "../../palette.ts";
 import { clamp, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { clump } from "./kit.ts";
 import { needlePad } from "./flora.ts";
+import { beamLine, pileLog } from "./jetty.ts";
 import { LX, LY, bladePath, dot, fern, grass, stroke } from "./bank.ts";
 
 export interface IsletP {
@@ -317,80 +318,213 @@ function reedPatch(c: PaintCtx, cx: number, w: number, tall: number, n: number, 
   }
 }
 
-/** An old post standing in the water: lit left, dark right, a wet dark foot with algae, a bright wet line. */
-function post(c: PaintCtx, px: number, hh: number, wd: number, lean: number, broken: boolean, seed: number): void {
-  const b = c.buf;
-  const reach = wd + 4 + Math.abs(lean) * hh;
-  const X0 = Math.max(b.ox, Math.floor(c.X(px - reach))), X1 = Math.min(b.x1, Math.ceil(c.X(px + reach)));
-  const Y0 = Math.max(b.oy, Math.floor(c.Y(-hh - 4))), Y1 = Math.min(b.y1, Math.ceil(c.Y(0.5)));
-  const wetH = 3 + 6 * hash1(1, seed), algae = 1 + 3 * hash1(2, seed);
-  for (let y = Y0; y < Y1; y++) {
-    const ly = LY(c, y);
-    if (ly > 0.5) continue;
-    const up = -ly;
-    for (let x = X0; x < X1; x++) {
-      const lx = LX(c, x);
-      const q = (lx - (px + lean * up)) / (wd / 2);
-      if (Math.abs(q) > 1) continue;
-      // the top: rotted round at its corners, or broken into splinters
-      const top = broken ? hh * (0.7 + 0.3 * hash1(Math.floor((q + 1) * 2.5), seed + 3)) : hh - (Math.abs(q) > 0.6 ? 1 : 0);
-      if (up > top) continue;
-      let col: number;
-      if (up < 0.6) col = P.cloud[2]!;
-      else if (up < wetH) col = up < algae ? P.moss[5]! : P.timber[6]!;
-      else if (up > top - 1.2) col = broken ? P.timber[2]! : P.stone[2]!;
-      else col = q < -0.45 ? P.timber[3]! : q < 0.35 ? P.timber[4]! : P.timber[5]!;
-      if (up >= wetH && up < top - 1.2 && hash(Math.floor(lx), Math.floor(up / 3), seed + 4) < 0.08) col = P.timber[5]!;
-      b.set(x, y, col);
-    }
-  }
+/** Pine bark for the islet pines, lit to dark (whole level-1 px). */
+const BARK = [P.stone[3]!, P.stone[5]!, P.timber[4]!, P.timber[5]!, P.timber[6]!];
+
+/** A point along a polyline at share t (0..1 of its segments). */
+function along(pts: [number, number][], t: number): [number, number] {
+  const f = clamp(t, 0, 1) * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(f)), k = f - i;
+  const [ax, ay] = pts[i]!, [bx, by] = pts[i + 1]!;
+  return [ax + (bx - ax) * k, ay + (by - ay) * k];
 }
 
-/** A gnarled pine leaning out over the water: a twisting trunk, arms ending in needle pads. */
-function leaningPine(c: PaintCtx, x: number, y: number, H: number, dir: number, seed: number): void {
+/**
+ * A gnarled pine growing out of an islet's rock and leaning out over the water: roots gripping the
+ * rock, a twisting trunk that thickens hard at its foot, kinked limbs at different heights (more
+ * of them reaching out toward dir), each carrying a needle mass on its own twig, the masses of
+ * very different sizes with sky between them.
+ */
+function islandPine(c: PaintCtx, x: number, y: number, H: number, dir: number, seed: number): void {
   const r = rng(seed);
-  // the trunk: out and up in an S, its tip turning back up
   const pts: [number, number][] = [];
-  const a = 0.5 + 0.25 * r(), bulge = 0.12 + 0.1 * r();
+  const a = 0.5 + 0.2 * r(), bulge = 0.2 + 0.08 * r();
   for (let k = 0; k <= 14; k++) {
     const u = k / 14;
-    pts.push([x + dir * H * (a * Math.sin(u * 1.5) + bulge * Math.sin(u * Math.PI * 2)), y - H * (0.15 * u + 0.75 * u * u)]);
+    pts.push([x + dir * H * (a * Math.sin(u * 1.6) - bulge * Math.sin(u * Math.PI * 1.5)) + (vnoise1(u * 4, seed) - 0.5) * H * 0.06, y - H * (0.3 * u + 0.45 * u * u)]);
   }
-  // arms first (behind the trunk), from its upper half, reaching out level, ending in pads
-  const arms: [number, number, number][] = [];
-  const na = 3 + Math.floor(r() * 2);
-  for (let i = 0; i < na; i++) {
-    const k = 6 + Math.floor((8 * i) / na + r() * 2);
-    const [ax, ay] = pts[Math.min(14, k)]!;
-    const side = i === na - 1 ? dir : r() < 0.7 ? dir : -dir;
-    const len = H * (0.22 + 0.25 * r());
-    const ex = ax + side * len, ey = ay - len * (0.05 + 0.2 * r());
-    stroke(c, [[ax, ay], [(ax + ex) / 2, (ay + ey) / 2 - 2], [ex, ey]], (u) => 2 - u, (u) => (u < 0.5 ? P.timber[4]! : P.timber[5]!));
-    arms.push([ex, ey, H * (0.17 + 0.08 * r())]);
+  const tw = (u: number): number => Math.max(1.4, H * 0.1 * (1 - u * 0.74) * (u < 0.1 ? 1 + ((0.1 - u) / 0.1) * 0.7 : 1));
+  const barkCol = (_u: number, sd: number): number => BARK[sd < -0.45 ? 0 : sd < -0.05 ? 1 : sd < 0.45 ? 2 : sd < 0.8 ? 3 : 4]!;
+  // roots gripping the rock, down over its shoulders into the cracks
+  for (let i = 0; i < 3; i++) {
+    const side = i === 1 ? -dir : dir * (i === 0 ? 1 : -0.4);
+    const L = 4 + 5 * r();
+    stroke(c, [[x, y - 0.5], [x + side * L * 0.55, y + 1 + r()], [x + side * L, y + 3 + 4 * r()]], (u) => Math.max(1, tw(0) * 0.42 * (1 - u * 0.7)), (u, sd) => (sd < -0.2 && u < 0.6 ? P.moss[4]! : BARK[u < 0.5 ? 2 : 3]!));
   }
-  stroke(c, pts, (u) => Math.max(1.5, H * 0.075 * (1 - u * 0.65)), (_u, sd) => (sd < -0.3 ? P.timber[3]! : sd > 0.4 ? P.timber[6]! : P.timber[4]!));
+  // limbs: kinked, tapering, each ending in a mass on its twig
+  const sizes = [0.6, 1.5, 0.85, 1.2, 0.5, 1.35, 0.75];
+  let si = Math.floor(r() * sizes.length);
+  const nb = 5 + Math.floor(r() * 2);
+  const masses: [number, number, number, number, number][] = [];
+  for (let i = 0; i < nb; i++) {
+    const u = clamp(0.3 + 0.62 * (i / (nb - 1)) + (r() - 0.5) * 0.08, 0.25, 0.95);
+    const [bx, by] = along(pts, u);
+    const side = i === nb - 1 ? dir : r() < 0.68 ? dir : -dir;
+    const len = H * (0.16 + 0.22 * r()) * (1 - 0.3 * u) * (side === dir ? 1.25 : 0.8);
+    const k1 = len * (0.4 + 0.2 * r());
+    const lp: [number, number][] = [[bx, by], [bx + side * k1, by - len * (0.06 + 0.12 * r())], [bx + side * len, by - len * (0.1 + 0.16 * r())]];
+    // (a limb reaching left has its lit side on the other hand of the stroke)
+    stroke(c, lp, (q) => Math.max(1, tw(u) * 0.5 * (1 - q * 0.6)), (q, sd) => barkCol(q, side > 0 ? sd : -sd));
+    const [ex, ey] = lp[2]!;
+    const pr = H * 0.13 * sizes[(si++) % sizes.length]!;
+    masses.push([ex + side * pr * 0.3, ey - pr * 0.36, pr, ex - side * pr * 0.25, ey + 0.5]);
+  }
+  // the trunk over its limbs' roots
+  stroke(c, pts, (u) => tw(u), barkCol);
   const [tx, ty] = pts[14]!;
-  arms.push([tx, ty - 2, H * 0.22]);
-  for (const [px, py, pr] of arms) needlePad(c, px, py, pr * 2.6, pr * 0.8, seed + Math.round(px * 7 + py));
+  const prT = H * 0.15 * sizes[(si++) % sizes.length]!;
+  masses.push([tx + dir * prT * 0.2, ty - prT * 0.3, prT, tx, ty + 1]);
+  masses.sort((p, q) => q[1] - p[1]);
+  masses.forEach(([mx, my, pr, sx, sy], i) => needlePad(c, mx, my, pr * (2.5 + 0.8 * hash1(i, seed + 5)), pr * (0.8 + 0.2 * hash1(i, seed + 6)), seed + 100 + i * 37, 0, { stem: [sx, sy], bounce: 0.6 }));
+}
+
+/** One lobe of a limestone crag: its foot's middle, half width there, height, lean (px of x per px up), seed. */
+interface Lobe { x: number; bw: number; ht: number; lean: number; s: number }
+
+/** A lobe's left and right edges at height up above the water (null above it). */
+function lobeEdges(L: Lobe, up: number): [number, number] | null {
+  const v = up / L.ht;
+  const topN = 1 + 0.12 * (vnoise1(L.x * 0.3 + up / 5, L.s + 7) - 0.5);
+  if (v > topN || up < -1) return null;
+  const vv = clamp(v / topN, 0, 1);
+  let half = L.bw * Math.pow(Math.max(0, 1 - Math.pow(vv, 2.3)), 0.42) * (1 - 0.16 * vv);
+  // a skirt of fallen rock where it stands in the water
+  if (up < 4) half += L.bw * 0.14 * (1 - up / 4);
+  const cx = L.x + L.lean * up;
+  const nl = (vnoise1(up / 9, L.s) - 0.5) * L.bw * 0.3 + (vnoise1(up / 3.2, L.s + 1) - 0.5) * 1.4;
+  const nr = (vnoise1(up / 8, L.s + 2) - 0.5) * L.bw * 0.3 + (vnoise1(up / 2.9, L.s + 3) - 0.5) * 1.4;
+  return [cx - half + nl, cx + half + nr];
+}
+
+/**
+ * A limestone crag standing in the lake: two or three leaning lobes of very different widths
+ * fused at their foot, rounded crowns under moss, a bedding ledge or two with grass on it,
+ * fissures that open at the top and close lower down, rain stains under the ledges, lit on its
+ * upper left, a dark wet band and a bright wet line where it meets the water, fallen stones at its
+ * foot. Paints in whole level-1 px. Returns the main lobe for whatever grows on its crown.
+ */
+function crag(c: PaintCtx, w: number, h: number, dir: number, seed: number): Lobe {
+  const b = c.buf;
+  const r = rng(seed);
+  const lean = -dir;
+  const lobes: Lobe[] = [
+    { x: -dir * w * 0.02, bw: w * (0.22 + 0.03 * r()), ht: h, lean: lean * (0.26 + 0.1 * r()), s: seed + 11 },
+    { x: dir * w * (0.24 + 0.04 * r()), bw: w * (0.15 + 0.04 * r()), ht: h * (0.52 + 0.14 * r()), lean: lean * (0.1 + 0.1 * r()), s: seed + 23 },
+    { x: -dir * w * (0.3 + 0.04 * r()), bw: w * (0.09 + 0.03 * r()), ht: h * (0.22 + 0.1 * r()), lean: -lean * 0.12, s: seed + 37 },
+  ];
+  // per lobe: a ledge or two and a fissure or two
+  const ledges = lobes.map((L, i) => [L.ht * (0.3 + 0.26 * hash1(i, seed + 3)), L.ht * (0.62 + 0.2 * hash1(i, seed + 4))].slice(0, i === 0 ? 2 : 1));
+  const shelf: [number, number][] = lobes.map((_, i) => [-0.9 + 0.5 * hash1(i, seed + 18), 0.05 + 0.5 * hash1(i, seed + 19)]);
+  const fissures: [number, number][][] = lobes.map((_, i) => ([[-0.25 + 0.5 * hash1(i, seed + 5), 0.3 + 0.3 * hash1(i, seed + 6)], [0.15 + 0.4 * hash1(i, seed + 7), 0.5 + 0.25 * hash1(i, seed + 8)]] as [number, number][]).slice(0, i === 0 ? 2 : 1));
+  const X0 = Math.max(b.ox, Math.floor(c.X(-w * 0.75))), X1 = Math.min(b.x1, Math.ceil(c.X(w * 0.75)));
+  const Y0 = Math.max(b.oy, Math.floor(c.Y(-h * 1.15))), Y1 = Math.min(b.y1, Math.ceil(c.Y(0.5)));
+  for (let y = Y0; y < Y1; y++) {
+    const ly = LY(c, y), up = -ly;
+    if (up < -0.5) continue;
+    const edges = lobes.map((L) => lobeEdges(L, up));
+    for (let x = X0; x < X1; x++) {
+      const lx = LX(c, x);
+      // the frontmost lobe here (the small ones stand in front of the main tower)
+      let k = -1;
+      for (let i = 0; i < lobes.length; i++) { const e = edges[i]; if (e && lx >= e[0] && lx <= e[1]) k = i; }
+      if (k < 0) continue;
+      const L = lobes[k]!, [el, er] = edges[k]!;
+      const cx = (el + er) / 2, half = Math.max(0.5, (er - el) / 2);
+      const q = (lx - cx) / half, v = up / L.ht;
+      let col: number;
+      // where a front lobe stands against the one behind it: a dark crevice
+      const behind = edges.some((e, i) => i !== k && i < k && e && lx >= e[0] && lx <= e[1]);
+      const crevice = behind && (lx - el < 1.2 || er - lx < 1.2);
+      // the wet band and the wet line at the water
+      const wetH = 1.8 + 2.4 * vnoise1(lx / 6, seed + 9);
+      // (the bright line only where the lit side meets the water, broken by lumps and weed)
+      if (up < 0.6) col = q < 0.1 && vnoise1(lx / 2.2, seed + 10) > 0.38 ? P.cloud[2]! : q < 0.5 && hash1(Math.floor(lx), seed + 12) < 0.4 ? P.jade[3]! : P.karst[8]!;
+      else if (up < wetH) col = q < 0 ? P.karst[7]! : P.karst[8]!;
+      else if (crevice) col = P.karst[8]!;
+      else {
+        // planes lit from the upper left; the crown and the ledges face the sky
+        let t = q < -0.52 ? 0 : q < 0.05 ? 1 : q < 0.55 ? 2 : 3;
+        if (v > 0.84 && q < 0.3) t = Math.max(0, t - 1);
+        if (q > 0.9 && v < 0.45) t = 2;
+        // the lower rock a step darker toward the wet band, damp
+        if (v < 0.22 && t < 3) t++;
+        // limestone mottling: pits and dissolution hollows
+        if (vnoise(lx / 2.6, up / 3.6, seed + 13) > 0.74) t = Math.min(4, t + 1);
+        let ramp = [P.karst[2]!, P.karst[3]!, P.karst[5]!, P.karst[6]!, P.karst[7]!][t]!;
+        // bedding ledges: grass and moss on top, a dark lip under, stains running down below
+        for (const hl of ledges[k]!) {
+          const ly0 = hl + (q - 0.2) * L.bw * 0.12 * dir + (vnoise1(lx / 4, seed + 14) - 0.5) * 1.2;
+          const du = up - ly0;
+          const [s0, s1] = shelf[k]!;
+          if (q < s0 || q > s1 + 0.3) continue;
+          if (du >= 0 && du < 1.6 && q < s1) ramp = du < 0.8 ? P.moss[q < -0.3 ? 3 : 4]! : P.moss[5]!;
+          else if (du < 0 && du > -1.1) ramp = P.karst[6]!;
+          else if (du < -1.1 && du > -6 - 4 * hash1(Math.floor(lx * 0.8), seed + 15) && hash1(Math.floor(lx * 0.8), seed + 16) < 0.3 && q > -0.6) ramp = P.karst[t >= 2 ? 6 : 4]!;
+        }
+        // fissures: open at the top, closing lower down
+        for (const [fq, fv] of fissures[k]!) {
+          const fx = cx + (fq + 0.07 * Math.sin(up / 4 + fq * 9)) * half;
+          const open = clamp((v - fv) / 0.25, 0, 1);
+          if (open > 0 && Math.abs(lx - fx) < 0.45 + open * 0.55) ramp = P.karst[open > 0.6 ? 8 : 7]!;
+        }
+        // moss on the crown, thickest on the lit shoulder
+        const crown = L.ht * (1 + 0.12 * (vnoise1(L.x * 0.3 + up / 5, L.s + 7) - 0.5)) - up;
+        if (crown < 2.5 + 3 * vnoise1(lx / 3, seed + 17) && q < 0.6) ramp = P.moss[crown < 1 && q < 0 ? 2 : q < -0.2 ? 3 : 5]!;
+        col = ramp;
+      }
+      dot(c, lx, ly, col);
+    }
+  }
+  // stones fallen at its foot, half in the water
+  for (let i = 0; i < 3; i++) {
+    const sx = (i === 0 ? -1 : i === 1 ? 1 : -0.4) * w * (0.36 + 0.12 * r()) * (i === 2 ? 0.6 : 1), rx = 2.5 + 3.5 * r(), ry = 1.6 + 1.6 * r();
+    for (let oy = -ry; oy <= 0.5; oy += 0.5) for (let ox = -rx; ox <= rx; ox += 0.5) {
+      const e = (ox / rx) ** 2 + (oy / ry) ** 2;
+      if (e > 1) continue;
+      const lit = -ox / rx * 0.6 - oy / ry * 0.6;
+      dot(c, sx + ox, oy, oy > -0.7 ? P.karst[8]! : lit > 0.4 ? P.karst[2]! : lit > -0.1 ? P.karst[4]! : P.karst[6]!);
+    }
+  }
+  return lobes[0]!;
+}
+
+/** Wet mud heaped round a post's foot: a low dark hump, its lit edge, a stone or two. */
+function mudHump(c: PaintCtx, x: number, hw: number, hh: number, seed: number): void {
+  for (let ox = -hw; ox <= hw; ox += 0.5) {
+    const u = ox / hw;
+    const top = hh * Math.pow(1 - u * u, 0.7) * (0.75 + 0.5 * vnoise1((x + ox) / 2.5, seed));
+    for (let up = 0; up < top; up += 0.5) {
+      const edge = top - up < 0.6;
+      dot(c, x + ox, -up, up < 0.6 ? (u < 0 ? P.jade[3]! : P.karst[8]!) : edge ? (u < 0.2 ? P.earth[3]! : P.earth[4]!) : P.earth[5]!);
+    }
+  }
+  if (hash1(1, seed) < 0.6) {
+    const sx = x + (hash1(2, seed) - 0.5) * hw;
+    dot(c, sx, -hh - 0.2, P.karst[3]!);
+    dot(c, sx + 0.6, -hh - 0.2, P.karst[5]!);
+  }
 }
 
 function paintIslet(c: PaintCtx, p: IsletP): void {
   const seed = c.seed;
   const w = p.w, h = p.h;
   if (p.kind === "piles") {
-    // a ruined pile field: posts of different heights and thickness (a pair, a three, a
-    // straggler), two broken, a beam fallen from them into the water; a mud bar with grass and
-    // reeds at their feet
-    paintIsland(c, -w * 0.05, w * 0.7, Math.max(4, h * 0.25), seed + 1, 0, 1);
-    reedPatch(c, -w * 0.2, w * 0.5, 22, 26, seed + 2);
+    // a ruined pile field standing in the water: posts of different heights and thickness (a
+    // pair, a three, a straggler), two broken, a beam fallen from them into the water; no bar of
+    // land under them, only wet mud heaped at their feet, reeds in clumps and lily pads, the lake
+    // running through between them
     const xs = [-0.42, -0.33, -0.08, 0.02, 0.1, 0.38];
     const hs = [46, 30, 58, 22, 40, 16];
-    xs.forEach((u, i) => post(c, u * w + (hash1(i, seed + 5) - 0.5) * 6, hs[i]! * (0.85 + 0.3 * hash1(i, seed + 6)), 3.5 + 2.5 * hash1(i, seed + 7), (hash1(i, seed + 8) - 0.5) * 0.12, i === 2 || i === 5, seed + 10 + i));
-    // the fallen beam: from the tall broken post's shoulder down into the water
-    const bx0 = -0.08 * w + 2, by0 = -40, bx1 = 0.3 * w, by1 = 1;
-    stroke(c, [[bx0, by0], [(bx0 + bx1) / 2, (by0 + by1) / 2 + 1], [bx1, by1]], () => 3, (_u, sd) => (sd < -0.3 ? P.timber[3]! : sd > 0.4 ? P.timber[6]! : P.timber[5]!));
-    for (let i = 0; i < 10; i++) grass(c, w * (0.26 + 0.12 * hash1(i, seed + 20)), 0.5, 4 + 9 * hash1(i, seed + 21), (hash1(i, seed + 22) - 0.5) * 0.9, 0.3, 0.4);
-    pads(c, 0, w * 0.55, 11, seed + 30);
+    const posts = xs.map((u, i) => ({ x: u * w + (hash1(i, seed + 5) - 0.5) * 6, hh: hs[i]! * (0.85 + 0.3 * hash1(i, seed + 6)), wd: 3.5 + 2.5 * hash1(i, seed + 7), lean: (hash1(i, seed + 8) - 0.5) * 3, broken: i === 2 || i === 5 }));
+    for (const [i, q] of posts.entries()) mudHump(c, q.x, q.wd * 0.9 + 3 + 3 * hash1(i, seed + 9), 1 + 1.6 * hash1(i, seed + 10), seed + 40 + i);
+    reedPatch(c, -w * 0.38, w * 0.22, 22, 14, seed + 2);
+    reedPatch(c, -w * 0.02, w * 0.16, 18, 9, seed + 3);
+    posts.forEach((q, i) => pileLog(c, { x: q.x, hw: q.wd / 2, top: -q.hh, foot: 1, lean: -q.lean, wet: 3 + 4 * hash1(i, seed + 11), moss: 7 + 8 * hash1(i, seed + 12), age: 0, back: false, broken: q.broken, lash: 0, k: hash1(i, seed + 13) }, 0, seed + 10 + i * 7));
+    // the fallen beam: from the tall broken post's shoulder down into the water, its end wet
+    const tall = posts[2]!;
+    beamLine(c, tall.x + 2.5, -tall.hh * 0.7, 0.3 * w, -0.6, 3.4, seed + 30, 0.14);
+    for (let i = 0; i < 6; i++) grass(c, w * (0.27 + 0.08 * hash1(i, seed + 20)), 0.5, 4 + 8 * hash1(i, seed + 21), (hash1(i, seed + 22) - 0.5) * 0.9, 0.3, 0.4);
+    reedPatch(c, w * 0.42, w * 0.12, 14, 6, seed + 4);
+    pads(c, 0, w * 0.55, 13, seed + 30);
   } else if (p.kind === "reedbed") {
     // a reed bed round a little mossy knoll and a small stone lantern
     const kh = Math.max(5, h);
@@ -400,21 +534,21 @@ function paintIslet(c: PaintCtx, p: IsletP): void {
     reedPatch(c, w * 0.32, w * 0.4, 30, 30, seed + 3);
     pads(c, 0, w * 0.5, 14, seed + 30);
   } else if (p.kind === "crag") {
-    // a jagged rock, ferns in its clefts, a twisted pine leaning out from near its top
+    // a leaning limestone crag of fused lobes, ferns in its clefts, a twisted pine growing out of
+    // its crown and leaning out over the water, reeds at its feet
     const dir = p.dir ?? 1;
-    paintIsland(c, 0, w, h, seed + 1, 1, 0.8);
+    reedPatch(c, -dir * w * 0.46, w * 0.3, 20, 16, seed + 3);
+    const L = crag(c, w, h, dir, seed + 1);
     const r = rng(seed + 40);
-    for (let i = 0; i < 4; i++) {
-      const x = (r() - 0.5) * w * 0.7;
-      const T = islandTop(x, w, h, seed + 1, 1);
-      const yy = -T * (0.3 + 0.5 * r()), ln = 7 + r() * 8, a = (r() < 0.5 ? -1 : 1) * (0.4 + 0.5 * r());
-      if (T > 6) fern(c, x, yy, ln, a, seed + 50 + i);
+    for (let i = 0; i < 3; i++) {
+      const up = L.ht * (0.3 + 0.4 * r());
+      const fx = L.x + L.lean * up + (r() - 0.3) * L.bw * 0.8;
+      fern(c, fx, -up, 6 + r() * 7, (r() < 0.5 ? -1 : 1) * (0.4 + 0.5 * r()), seed + 50 + i);
     }
-    const px = -dir * w * 0.12;
-    const pt = islandTop(px, w, h, seed + 1, 1);
-    leaningPine(c, px, -pt + 3, h * 1.25 + 26, dir, seed + 60);
-    clump(c, dir * w * 0.3, -Math.max(2, islandTop(dir * w * 0.3, w, h, seed + 1, 1)) - 2, 6, P.moss.slice(2, 6), P.pine.slice(2), 0.42, seed + 70, 0.75);
-    reedPatch(c, -dir * w * 0.42, w * 0.35, 18, 18, seed + 3);
+    // the pine roots in the crown's lit shoulder
+    const top = L.ht * 0.9;
+    islandPine(c, L.x + L.lean * top + dir * L.bw * 0.15, -top + 1.5, h * 1.0 + 16, dir, seed + 60);
+    reedPatch(c, dir * w * 0.4, w * 0.14, 12, 7, seed + 5);
     pads(c, 0, w * 0.6, 10, seed + 30);
   } else {
     // the torii's islet: a low mossy rock and a stone, reeds on both sides, the torii's posts

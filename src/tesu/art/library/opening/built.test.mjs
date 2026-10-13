@@ -21,6 +21,9 @@ const CASES = [
   ["op.jetty", { ...JETTY, part: "face", from: 300, to: 1100, plan: 4242 }],
   ["op.jetty", { w: 900, water: 58, posts: [[2, 40]] }],
   ["op.station", { h: 221, water: 57.6, cable: [6, -19.2] }],
+  ["op.station", { h: 221, water: 57.6, cable: [6, -19.2], part: "frame" }],
+  ["op.station", { h: 221, water: 57.6, cable: [6, -19.2], part: "pulley", frame: 13 }],
+  ["op.station", { h: 221, water: 57.6, cable: [6, -19.2], part: "lantern", frame: 6 }],
   ["op.landing", { end: "west", ground: WEST, water: 57.6, feet: [[26, 5], [80, 6]] }],
   ["op.landing", { end: "east", ground: [-480, 81.6, -154, 67.2, -10, 43.4, 0, 0], water: 57.6, feet: [[-80, 6], [-36, 5]] }],
   ["op.stub", { piles: [[0, 48, 8, 3], [-27, 21, 5.5, -2], [22, 11, 4.5, 1]], lilies: 9, spread: 58, sedge: [84, 30], shade: 0.18 }],
@@ -30,12 +33,18 @@ const CASES = [
   ["op.jar", { h: 20, glaze: "clay" }],
   ["op.jar", { h: 26, glaze: "celadon" }],
   ["op.net", { w: 30, h: 9, drape: 14 }],
+  ["op.net", { w: 38, h: 13, drape: 22 }],
   ["op.basket", { h: 17 }],
+  ["op.basket", { h: 15 }],
   ["op.bucket", { h: 20 }],
   ["op.coil", { r: 13, hang: 10 }],
   ["op.boat", { w: 250 }],
+  ["op.boat", { w: 220.8 }],
   ["op.pine", { h: 230, dir: -1 }],
   ["op.pine", { h: 530, dir: -1, arm: [570, 0.86], bend: -0.25, armsFrom: 0.8, roots: 64, grip: 22 }],
+  ["op.pine", { h: 260, dir: 1 }],
+  ["op.islet", { kind: "crag", w: 130, h: 70, dir: -1 }],
+  ["op.islet", { kind: "piles", w: 170, h: 12 }],
 ];
 const LEVELS = [2, 1, 0.5, 0.25, 0.125];
 
@@ -120,3 +129,42 @@ for (const [kind, p] of [["op.reeds", { w: 34, h: 42, density: 3.4, ox: 9140 }]]
     assert.ok(diff > 20, `${kind} frames 0 and 1 differ in only ${diff} px`);
   });
 }
+
+// --- round 2 (painter p2): the station's parts move, it stays narrow, the boards come in batches
+
+for (const [part, a, b] of [["pulley", 0, 14], ["lantern", 0, 2]]) {
+  test(`op.station ${part}: its frames move`, () => {
+    const p = { h: 221, water: 57.6, cable: [6, -19.2], part };
+    const [bx0, by0, bx1, by1] = painter("op.station").bounds(p);
+    const x0 = Math.floor(bx0) - 2, y0 = Math.floor(by0) - 2, w = Math.ceil(bx1) - x0 + 4, h = Math.ceil(by1) - y0 + 4;
+    const fa = paintBox("op.station", { ...p, frame: a }, 1, x0, y0, w, h), fb = paintBox("op.station", { ...p, frame: b }, 1, x0, y0, w, h);
+    let diff = 0;
+    for (let i = 0; i < fa.px.length; i++) if (fa.px[i] !== fb.px[i]) diff++;
+    assert.ok(diff > 4, `${part} frames ${a} and ${b} differ in only ${diff} px`);
+  });
+}
+
+test("op.station: nothing below its roof west of 106.5 H or east of 107.58 H (anchor 107.4 H)", () => {
+  for (const part of ["all", "frame", "pulley", "lantern"]) {
+    const p = { h: 221, water: 57.6, cable: [6, -19.2], part };
+    const [bx0, by0, bx1, by1] = painter("op.station").bounds(p);
+    const x0 = Math.floor(bx0) - 2, y0 = Math.floor(by0) - 2, w = Math.ceil(bx1) - x0 + 4, h = Math.ceil(by1) - y0 + 4;
+    const buf = paintBox("op.station", { ...p, frame: 0 }, 1, x0, y0, w, h);
+    // below the roof: under the eaves' rafters (the roof's lowest row is about 171 px above the deck)
+    for (let y = -164; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) {
+      if (!buf.get(x, y)) continue;
+      assert.ok(x >= -86.4 && x < 17.3, `${part}: station pixel at ${x},${y} outside 106.5..107.58 H`);
+    }
+  }
+});
+
+test("op.jetty: boards come in batches (runs of related boards, never alternating board by board)", () => {
+  const plan = jettyPlan({ w: 6240, water: 57.6 }, 7919 * 3);
+  let flips = 0;
+  for (let i = 1; i < plan.planks.length; i++) if (plan.planks[i].bleach !== plan.planks[i - 1].bleach) flips++;
+  assert.ok(flips < plan.planks.length * 0.2, `${flips} silver/brown changes in ${plan.planks.length} boards`);
+  assert.ok(flips > 10, "the batches change now and then");
+  assert.ok(plan.planks.every((q) => q.drop >= 0 && q.drop <= 1), "plank tops within 1 px of the walk line");
+  assert.ok(plan.planks.some((q) => q.gap === 2) && plan.planks.some((q) => q.hang > 0), "open joints and a loose board end");
+  assert.ok(plan.bays.some(([, , s]) => s >= 2) && plan.bays.every(([, , s]) => s <= 6.01), "the beam sags 2 to 6 px mid bay");
+});
