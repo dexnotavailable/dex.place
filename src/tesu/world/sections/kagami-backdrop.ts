@@ -118,8 +118,8 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   const MID_LAKE = lakeAt(PLANES.mid.rate), FAR_LAKE = lakeAt(PLANES.far.rate);
   // (past its ends at this depth the lake runs on under the low mist for a while: the karst
   // standing there stand in water too, with wet feet)
-  const MID_WET: [number, number] = [MID_LAKE[0] - 200, MID_LAKE[1] + 200];
-  bg(b, "mid", MID_SEA, "op.sea", { w: 11000, depth: 600, swell: 10, ends: 60, west: 260, rise, torn: 0.55, wetFloor: 70, wetTo: Math.round(MID_LAKE[1] - MID_SEA) }, LAKE_Y, -4);
+  const MID_WET: [number, number] = [MID_LAKE[0] - 200, MID_LAKE[1] + 480];
+  bg(b, "mid", MID_SEA, "op.sea", { w: 11000, depth: 600, swell: 10, ends: 60, west: 260, rise, torn: 0.55, wetFloor: 70, wetTo: Math.round(MID_LAKE[1] - MID_SEA), veilTo: 480 }, LAKE_Y, -4);
   // past the lake's west end at this depth the mid plain's flat top would show between the lake
   // and the west shore: the lake runs on west under its low mist instead, ever more torn by it
   bg(b, "mid", 0, "op.sea", { w: 900, depth: 160, swell: 10, ends: 60, floorWest: 0, wetFloor: 70, wetFrom: Math.round(MID_LAKE[0]), veilTo: 380, bank: false }, LAKE_Y, -4, seed1(3));
@@ -142,6 +142,11 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   P2.forEach(([x, forms], i) => bg(b, "mid", x, "op.karst", { w: 0, h: 380, rows: 1, look: "near", forms, mist: 34, green: 0.85, falls: 0.6, veil: 4, wet: local(MID_WET, x), ...(FALLS[x] ? { fallOn: FALLS[x] } : {}) }, LAKE_Y, i));
   bg(b, "mid", 3500, "op.karst", { w: 2200, h: 300, rows: 2, look: "mid", mist: 40, green: 0.8, wet: local(MID_WET, 3500) }, LAKE_Y, -1);
   const midWrap: [number, number] = [-400, 5400];
+  // egrets crossing in front of the great massif's crown, and far specks of birds over the far
+  // karst (reference 4's birds over its right massif): drifting east, their wings beating
+  drifting(b, "egrets", "mid", "op.birds", 3090, -255, { n: 5, w: 170, h: 70, kind: "egret", size: 6 }, midWrap, 9, 10, 10, seed1(10));
+  drifting(b, "egrets-pair", "mid", "op.birds", 2860, -150, { n: 2, w: 40, h: 16, kind: "egret", size: 5 }, midWrap, 8, 10, 10, seed1(11));
+  drifting(b, "far-birds", "far", "op.birds", 1100, -140, { n: 5, w: 150, h: 50, kind: "speck", size: 2 }, farWrap, 3, 8, 10, seed1(12));
   ([[600, -24, 520, 26], [1900, -40, 460, 22], [3300, -22, 640, 30]] as const).forEach(([x, dy, w, th], i) =>
     drifting(b, `mid-wisp-${i}`, "mid", "sky.wisp", x, dy, { w, h: th, density: 0.6 }, midWrap, 7, 3));
 }

@@ -752,7 +752,10 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
     }
     // (on the water the whole bank floats on its lifted underside: its densest part just above
     // it, thinning upward; off the lake it sits on the ground)
-    const fl = thin > 0 ? lift * onLake : 0;
+    // (in stretches it comes right down onto the water, so no foot shows as one long line)
+    const touch = thin > 0 ? clamp((vnoise1(lx / (mh * 1.7), seed + 31) + 0.3 * vnoise1(lx / (mh * 0.4), seed + 32) - 0.74) / 0.2, 0, 1) * clamp(near * 2, 0, 1) : 0;
+    const fl = thin > 0 ? lift * onLake * (1 - touch) : 0;
+    const fray = thin * 0.3 * (1 - 0.8 * touch);
     // (on the water it is torn along its length into lobes, thinner and gappier between the feet)
     const lobe = thin > 0 ? clamp(0.35 + 0.8 * vnoise1(lx / (mh * 1.15), seed + 29) + 0.2 * vnoise1(lx / (mh * 0.4), seed + 30) + 0.2 * near, 0, 1.2) : 1;
     const coreL = thin > 0 ? core * clamp(lobe * 1.4 - 0.45, 0, 1.2) : core;
@@ -769,8 +772,8 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
         cov = (g * 1.0 + n * 1.25) * (thin > 0 ? 0.4 + 0.6 * lobe : 1);
       }
       // on the water: the underside floats and frays into lobes, the lake and the feet under it
-      if (thin > 0 && onLake > 0 && low < fl + thin * 0.3) {
-        const k = (low - fl) / Math.max(1e-3, thin * 0.3);
+      if (thin > 0 && onLake > 0 && low < fl + fray) {
+        const k = (low - fl) / Math.max(1e-3, fray);
         const n = fbm(lx / (mh * 1.3), a0 / (mh * 0.5), seed + 19, 2) - 0.5 + 0.4 * (vnoise(lx / (mh * 0.3), a0 / (mh * 0.2), seed + 28) - 0.5);
         cov = Math.min(cov, k * 1.2 + n * 1.2);
       }

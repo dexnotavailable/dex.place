@@ -116,7 +116,7 @@ function paintFloor(c: PaintCtx, p: SeaP): void {
         }
         if (bayer4(x, y) < (m > 0.72 ? 0.5 : m > 0.5 ? 0.25 : m > 0.3 ? 0.125 : 0)) { b.set(x, y, m > 0.72 ? C[1]! : C[2]!); continue; }
         // the water: the lake's tones (each a dithered pair, so on screen it meets the lake beside it)
-        const tw = ly / (wf * 1.1) + (vnoise(lx / (sw * 5), ly / (sw * 1.5), seed + 42) - 0.5) * 0.25;
+        const tw = ly / (wf * 1.1) + (vnoise(lx / (sw * 5), ly / (sw * 1.5), seed + 42) - 0.5) * 0.3 + (vnoise(lx / (sw * 1.6), ly / (sw * 0.6), seed + 44) - 0.5) * 0.3;
         const pair = tw < 0.25 ? [P.jade[2]!, P.karst[3]!] : tw < 0.55 ? [P.jade[3]!, P.karst[3]!] : [P.jade[3]!, P.karst[5]!];
         b.set(x, y, pair[bayer4(x, y) < 0.5 ? 0 : 1]!);
         continue;
@@ -141,6 +141,6 @@ export const sea = definePainter<SeaP>("op.sea", {
     // (over the lake, and over the stretch where the lake runs on under the mist, it floats as a
     // veil of haze; beyond, it stands on the sea's floor)
     const veilTo = p.veilTo ?? 340;
-    mistBank(c, from - west * 0.3, p.w, 0, bankH(p), c.seed + 3, 0, feet, { taper: Math.max(west, p.ends ?? 120), torn: p.torn ?? 0.4, thin: p.wetFloor ? bankH(p) * 0.8 : 0, wetX: p.wetFloor ? [(p.wetFrom ?? -1e6) - veilTo * 0.8, (p.wetTo ?? 1e6) + veilTo * 0.8] : undefined });
+    mistBank(c, from - west * 0.3, p.w, 0, bankH(p), c.seed + 3, 0, feet, { taper: Math.max(west, p.ends ?? 120), torn: p.torn ?? 0.4, thin: p.wetFloor ? bankH(p) * 0.8 : 0, wetX: p.wetFloor ? [(p.wetFrom ?? -1e6) - veilTo * 1.2, (p.wetTo ?? 1e6) + veilTo * 1.2] : undefined });
   },
 });

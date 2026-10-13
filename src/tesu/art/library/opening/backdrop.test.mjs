@@ -1,7 +1,8 @@
 // Kagami's air, distance and mirror (the art loop's painter p1): the new painter kinds and
 // parameters paint something, stay inside their declared bounds, are deterministic, and are
 // seamless across plate tiles at the camera levels they are used at; animated sprites differ
-// between frames; the wading contact keeps in step with the Walker's stride.
+// between frames; the wading contact keeps in step with the Walker's stride. (Round 2: the high
+// cloud field, the shroud, the isles, the spray's wet foot, the birds.)
 //   node --test src/tesu/art/library/opening/backdrop.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -39,6 +40,9 @@ const CASES = [
   ["op.isle", { w: 110, h: 96, tower: "drum" }],
   ["op.isle", { w: 92, h: 120, tower: "bell", frame: 3 }],
   ["op.spray", { w: 120, h: 64, at: [[62, 26]], foot: [-3, 66], frame: 1 }],
+  // egrets crossing the massif, far specks of birds
+  ["op.birds", { n: 5, w: 170, h: 70, kind: "egret", size: 6, frame: 3 }],
+  ["op.birds", { n: 5, w: 150, h: 50, kind: "speck", size: 2, frame: 7 }],
 ];
 const LEVELS = [2, 1, 0.5, 0.25, 0.125];
 
@@ -82,6 +86,7 @@ for (const [kind, p, a, b] of [
   ["op.cloud", { kind: "cumulus", w: 520, h: 240 }, 0, 1],
   ["op.spray", { w: 120, h: 44, at: [[62, 24]] }, 0, 2],
   ["op.shroud", { frames: 24 }, 0, 6],
+  ["op.birds", { n: 5, w: 170, h: 70, kind: "egret", size: 6 }, 0, 2],
   ["op.cloud", { kind: "field", w: 700, h: 150 }, 0, 2],
   ["op.falls", { w: 900, h: 600, falls: 1.7, fadeY: 400, fadeH: 120, lip: [0, 10, 900, -10], wallSeed: 77, from: 0, to: 12 }, 0, 1],
 ]) {
