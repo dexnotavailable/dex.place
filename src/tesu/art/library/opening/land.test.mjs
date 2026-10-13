@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import "./index.ts";
 import { painter, ctxFor } from "../../painter.ts";
 import { IdxBuf } from "../../raster.ts";
-import { bankTopAt, reedBeds } from "./bank.ts";
+import { bankTopAt, reedBeds, shallowsTopAt } from "./bank.ts";
 
 const MASSES = [
   { kind: "crag", x: -80, w: 300, h: 110, drop: -1 },
@@ -34,6 +34,12 @@ const CASES = [
   ["op.headland", { w: 1100, h: 300 }],
   ["op.shore", { w: 672, end: 538, walk: [-768, 163, -288, 96, 96, 48, 490, 34, 672, 0] }],
   ["op.scree", { w: 140, deep: 82, h: 28 }],
+  // (round 2) the catch's near corners: the near shallows, the bank off either corner
+  ["op.shallows", { w: 211, wl: 64, deep: 170, side: -1, h: 30, wood: "log" }],
+  ["op.shallows", { w: 235, wl: 62, deep: 170, side: 1, h: 26, wood: "stubs" }],
+  // (round 2) a shore with the low ground past a point and a fall at its end, a rise with a crown,
+  // a mass standing on the ground
+  ["op.bank", { w: 1400, h: 200, low: 800, fall: 1250, masses: [{ kind: "hummock", x: 100, w: 500, h: 110, peak: 0.3, crown: [0.7, 0.6] }, { kind: "boulder", x: 900, w: 150, h: 30, foot: 24 }] }],
   ["op.scree", { w: 90, deep: 40 }],
   ["op.reeds", { w: 160, h: 140, density: 3.6, frame: 3, loop: 8, ox: 7440, ground: [0, 8, 16, 22, 24, 22, 18, 14, 10, 8, 6, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0] }],
 ];
@@ -87,9 +93,10 @@ test("op.bank: masses are separate (the top dips to the ground between them) and
   const p = { w: 1900, h: 220, masses: MASSES };
   const seed = 4242;
   // a dip between the reeds (540..700) and the boulder (860..1060)
+  // (round 2: the ground between the masses stands 3 to 40 px above the waterline, never on it)
   let low = Infinity;
   for (let x = 700; x < 860; x += 2) low = Math.min(low, bankTopAt(p, seed, x));
-  assert.ok(low < 16, `no gap between masses (lowest top ${low})`);
+  assert.ok(low < 40 && low >= 3, `no gap between masses (lowest top ${low})`);
   let high = 0;
   for (let x = 880; x < 1040; x += 2) high = Math.max(high, bankTopAt(p, seed, x));
   assert.ok(high > 60, `the boulder does not rise (${high})`);
@@ -117,4 +124,47 @@ test("op.scree: the heap is solid from the waterline down where the lake ends ag
     const buf = paintBox("op.scree", p, 1, 40, 0, 90, 46, seed);
     for (let x = 40; x < 130; x++) for (let y = 0; y < 46; y++) assert.ok(buf.get(x, y) > 0, `hole in the scree at ${x},${y} (seed ${seed})`);
   }
+});
+
+test("op.bank (round 2): the ground's top stands 3 to 40 px above the waterline and is never level for long", () => {
+  const p = { w: 6000, h: 290, masses: [] };
+  const seed = 7919 * 3000;
+  const T = [];
+  for (let x = 0; x <= 6000; x++) T.push(bankTopAt(p, seed, x));
+  for (const t of T) assert.ok(t >= 3 && t <= 40, `ground top ${t} outside 3..40`);
+  // along any 120 px it moves by at least 6 px (no ruled waterline)
+  for (let x = 0; x + 120 < T.length; x += 30) {
+    let a = Infinity, b = -Infinity;
+    for (let k = 0; k <= 120; k++) { a = Math.min(a, T[x + k]); b = Math.max(b, T[x + k]); }
+    assert.ok(b - a >= 6, `ground top level from ${x} to ${x + 120} (range ${b - a})`);
+  }
+});
+
+test("op.bank (round 2): past its low point the ground lies low, so what stands behind reads over it", () => {
+  const p = { w: 3000, h: 290, masses: [], low: 1000 };
+  const seed = 7919 * 3000;
+  for (let x = 1200; x < 2900; x += 7) assert.ok(bankTopAt(p, seed, x) <= 20, `ground at ${x} too high (${bankTopAt(p, seed, x)})`);
+});
+
+test("op.bank (round 2): no mass paints a row of saw-teeth or an outline (a rise's body is one form)", () => {
+  // a rise's body below its crown is filled column by column with no holes down to the bank's foot
+  const p = { w: 900, h: 200, masses: [{ kind: "hummock", x: 200, w: 500, h: 120, peak: 0.35 }] };
+  const level = 1;
+  const buf = paintBox("op.bank", p, level, 300, 20, 300, 170);
+  for (let x = 300; x < 600; x++) for (let y = 20; y < 190; y++) assert.ok(buf.get(x, y) > 0, `hole in the rise at ${x},${y}`);
+});
+
+test("op.shallows: dark near corners, open water at the inner end, its reeds stand on its bank", () => {
+  const p = { w: 211, wl: 64, deep: 170, side: -1, h: 30, wood: "log" };
+  const seed = 7919 * 3230;
+  // the bank runs off the bottom at the outer end and rounds down into the water at the inner end
+  assert.ok(shallowsTopAt(p, seed, 10) > 18, `the corner's bank is too low (${shallowsTopAt(p, seed, 10)})`);
+  assert.equal(shallowsTopAt(p, seed, 205), 0);
+  const buf = paintBox("op.shallows", p, 1, -20, 120, 120, 50, seed);
+  let n = 0;
+  for (let i = 0; i < buf.px.length; i++) if (buf.px[i]) n++;
+  assert.ok(n > 0.85 * buf.px.length, `the corner is not solid near the bottom (${n} of ${buf.px.length})`);
+  // the right corner mirrors it
+  const q = { w: 235, wl: 62, deep: 170, side: 1, h: 26, wood: "stubs" };
+  assert.ok(shallowsTopAt(q, seed, 225) > 12 && shallowsTopAt(q, seed, 4) === 0);
 });
