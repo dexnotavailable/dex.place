@@ -25,8 +25,8 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { bayer4, clamp, fbm1, hash1, rng, vnoise, vnoise1 } from "../../raster.ts";
-import { cached } from "./kit.ts";
+import { bayer4, clamp, fbm1, hash, hash1, rng, vnoise, vnoise1 } from "../../raster.ts";
+import { cached, clump } from "./kit.ts";
 
 export type MassKind = "reeds" | "boulder" | "hummock" | "lantern" | "crag" | "tuft";
 
@@ -395,7 +395,7 @@ function faceAt(m: Mass, ly: number): number {
   const wander = (fbm1(ly / 50, s + 91, 3) - 0.5) * 30 + (vnoise1(ly / 11, s + 92) - 0.5) * 8 + (vnoise1(ly / 3.4, s + 93) - 0.5) * 2;
   // the face goes in under its crown (an undercut), then spreads out lower down into its own
   // fallen blocks under the low ground
-  return m.face! + m.drop! * (wander - 12 * Math.sin(clamp(k / 80, 0, 1) * Math.PI) + Math.max(0, k - 90) * 0.45);
+  return m.face! + m.drop! * (wander - 12 * Math.sin(clamp(k / 80, 0, 1) * Math.PI) + Math.max(0, k - 60) * 0.55);
 }
 
 function layoutOf(p: BankP, seed: number): Mass[] {
@@ -612,7 +612,7 @@ function massCol(c: PaintCtx, m: Mass, j: number, lx: number, ly: number, s: num
   const sun = Math.max(0, nx * LIT[0] + ny * LIT[1] + nz * LIT[2]);
   const lam = sun * 0.78 + (0.5 - 0.5 * ny) * 0.32 - 0.16;
   // deeper down (nearer the ground and the camera) the form sinks into the bank's shade
-  let t = (L.rock ? 0.86 : 0.9) - lam * 0.95 + clamp((ly - (m.base ?? 0) - 10) / 220, 0, 0.18) + (m.dark ?? 0);
+  let t = (L.rock ? 0.86 : 0.84) - lam * 0.95 + clamp((ly - (m.base ?? 0) - 10) / 220, 0, 0.18) + (m.dark ?? 0);
   // the steps' edges wander so no tone follows the outline round: grass in tussocks drawn out along
   // the slope; limestone in long vertical stains where water runs down it
   if (L.rock) t += (vnoise(lx / 31, ly / 23, sd + 30) - 0.5) * 0.26 + (vnoise(lx / 9, ly / 8, sd + 31) - 0.5) * 0.08;
@@ -656,6 +656,21 @@ function massCol(c: PaintCtx, m: Mass, j: number, lx: number, ly: number, s: num
     // stains where water runs down from a ledge or the crown: a few channels, each its own width
     const ch = Math.floor((lx + (vnoise1(ly / 17, sd + 34) - 0.5) * 5) / 11);
     if (hash1(ch, sd + 35) < 0.22 && s > 4) t += 0.14 * clamp(1 - (s - 4) / (50 + 60 * hash1(ch, sd + 36)), 0, 1);
+    // karren: rain-cut grooves down from the crown, a few in a group, each its own length (a dark
+    // groove, its left lip lit), dying out down the face
+    const gw = 5 + 3 * vnoise1(ly / 40, sd + 38);
+    const gx = lx + (vnoise1(ly / 9, sd + 39) - 0.5) * 2.2;
+    const gi = Math.floor(gx / gw), gf = gx / gw - gi;
+    const gl = 8 + 26 * hash1(gi, sd + 40);
+    if (vnoise1(gi * 0.31, sd + 41) > 0.55 && hash1(gi, sd + 42) < 0.6 && s > mossD + 1 && s < gl && lam > 0.1) {
+      if (gf < 0.2) return P.karst[6]!;
+      if (gf < 0.36) t -= 0.18;
+    }
+    // pits and lichen on the lit stone, sparse
+    if (lam > 0.25 && s > 3) {
+      const ph = hash(Math.floor(lx / 2), Math.floor(ly / 1.5), sd + 43);
+      if (ph < 0.01) return P.karst[7]!;
+    }
     // a crack or two down from notches in the crown, closing as they go
     for (let f = 0; f < 2; f++) {
       if (hash1(f + 20, sd) > 0.6) continue;
@@ -850,20 +865,44 @@ function paintMassDress(c: PaintCtx, m: Mass, deep: number): void {
       if (T !== -Infinity && lod(i)) grass(c, x, -T + 1.5, len, (r() - 0.5) * 0.6, (r() - 0.5) * 2.2 * (len / 30), r() * 0.6, len > 16);
     }
   } else if (m.kind === "boulder" || m.kind === "crag") {
-    // grass and ferns where its foot meets the ground, a little grass in its fissures
+    // where the rock stands above the ground: its visible ends at the waterline
+    let ra = Infinity, rb = -Infinity;
+    for (let x = m.x0; x <= m.x1; x += 2) if (top(x) > 4) { ra = Math.min(ra, x); rb = Math.max(rb, x); }
+    if (ra === Infinity) return;
+    // grass and ferns where its foot meets the ground (more on the lit side)
     const nf = 2 + Math.floor(r() * 3);
     for (let i = 0; i < nf; i++) {
-      const side = r() < 0.55 ? 1 : -1;
-      const fx = side > 0 ? m.x1 - (m.x1 - m.x0) * (0.12 + 0.2 * r()) : m.x0 + (m.x1 - m.x0) * (0.12 + 0.2 * r());
+      const side = r() < 0.6 ? -1 : 1;
+      const fx = side < 0 ? ra + 4 + r() * 18 : rb - 4 - r() * 18;
       const foot = footLine(m, fx);
-      const fy = foot !== Infinity ? foot : -Math.max(0, top(fx)) * (0.15 + 0.2 * r()) + 6;
+      const fy = foot !== Infinity ? foot : 8 + r() * 20;
       if (d >= 0.4) fern(c, fx, fy, 12 + r() * 20, side * (0.35 + 0.6 * r()), m.seed + 60 + i);
     }
-    for (let i = 0; i < 12; i++) {
-      const x = m.x0 + (m.x1 - m.x0) * r();
+    // on its crown: a shrub or two rooted in the moss and grass in tufts, lit on the sun side;
+    // they break its skyline (never a clean dome)
+    const ns = m.kind === "crag" ? 2 + Math.floor(r() * 2) : r() < 0.6 ? 1 : 0;
+    for (let i = 0; i < ns; i++) {
+      // the flattest place on the crown near a random spot
+      let x = ra + (rb - ra) * (0.15 + 0.6 * r()), best = Infinity;
+      for (let k = -30; k <= 30; k += 3) {
+        const xx = x + k, ss = Math.abs(top(xx + 4) - top(xx - 4)) / 8 - top(xx) * 0.004;
+        if (ss < best) { best = ss; x = xx; }
+      }
+      const T = top(x), sl = (top(x + 4) - top(x - 4)) / 8;
+      if (T < 12 || Math.abs(sl) > 0.8 || d < 0.3) continue;
+      const R = (m.kind === "crag" ? 9 : 6) + r() * 9;
+      clump(c, x, -T - R * 0.35, R, P.moss.slice(1, 6), P.pine.slice(1), 0.5, m.seed + 90 + i * 13, 0.72);
+      clump(c, x + R * (0.6 + 0.4 * r()) * (r() < 0.5 ? -1 : 1), -T - R * 0.15, R * (0.45 + 0.25 * r()), P.moss.slice(2, 7), P.pine.slice(2), 0.58, m.seed + 95 + i * 13, 0.7);
+    }
+    let cx = ra + r() * 10, left = 0;
+    for (let i = 0; i < Math.round((rb - ra) * 0.35); i++) {
+      if (left <= 0) { cx += 6 + r() * r() * 70; left = 2 + Math.floor(r() * 8); }
+      left--;
+      const x = cx + (r() - 0.5) * 8;
       const T = top(x);
-      if (T === -Infinity || T < 8 || r() < 0.5) continue;
-      if (lod(i)) grass(c, x, -T + 1.5, 3 + r() * 9, (r() - 0.5) * 1.1, (r() - 0.4) * 1.1, 0.8);
+      if (T === -Infinity || T < 8) continue;
+      const sl = (top(x + 2) - top(x - 2)) / 4;
+      if (lod(i)) hemBlade(c, x, -T + 1.5, 3 + r() * 9, (r() - 0.45) * 1.1, (r() - 0.4) * 1.1, sl > 0.05 ? 1 : 0);
     }
   }
 }

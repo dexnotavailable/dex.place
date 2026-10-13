@@ -72,12 +72,12 @@ export const NEAR_MASSES: MassSpec[] = [
   { kind: "reeds", x: 3640, w: 170, h: 30, reed: 112, dense: 3.4 },
   { kind: "boulder", x: 4180, w: 320, h: 112, peak: 0.4 },
   { kind: "tuft", x: 4700, w: 120, h: 24 },
-  // play-walker: a limestone outcrop in the bottom-left corner, reeds under her reflection, the
-  // long rise coming in at the bottom-right
+  // play-walker: a limestone outcrop in the bottom-left corner, a grass tuft under her
+  // reflection, a tall reed bed on a low mound in the bottom-right (the postcard's dark bushes
+  // left of the rise)
   { kind: "boulder", x: 5090, w: 480, h: 140, peak: 0.34 },
-  { kind: "reeds", x: 5960, w: 130, h: 26, reed: 100, dense: 3 },
-  // a lower grassy bank: play-walker's bottom-right corner
-  { kind: "hummock", x: 6600, w: 600, h: 66, peak: 0.72 },
+  { kind: "tuft", x: 5950, w: 150, h: 30 },
+  { kind: "reeds", x: 6640, w: 440, h: 52, reed: 132, dense: 3.6 },
   // play-catch's bottom-left corner: the big grassy rise
   { kind: "hummock", x: 7190, w: 530, h: 132, peak: 0.3 },
   // a long reed bed: the pull-back's bottom-left corner, under her reflection in play-catch, the
@@ -115,7 +115,7 @@ export function kagamiNear(b: WorldBuilder): void {
 function kagamiShallows(b: WorldBuilder): void {
   const corners: [number, ShallowsP, [number, number, number, number][]][] = [
     // left: the bank off the bottom-left corner, reeds on it, the boulder and a sunk log by it
-    [h(95.0), { w: h(97.2) - h(95.0), wl: 64, deep: 170, side: -1, h: 30, wood: "log" }, [[4, 70, 78, 3.6], [96, 34, 44, 3]]],
+    [h(95.0), { w: h(97.2) - h(95.0), wl: 64, deep: 170, side: -1, h: 30, wood: "log" }, [[4, 70, 64, 3.6], [96, 34, 44, 3]]],
     // right: the bank off the bottom-right corner, old broken stubs and the boulder in the water
     [h(102.6), { w: h(105.05) - h(102.6), wl: 62, deep: 170, side: 1, h: 24, wood: "stubs" }, [[96, 46, 58, 3.2], [146, 86, 88, 3.8]]],
   ];

@@ -371,8 +371,7 @@ function headTop(p: HeadlandP, lx: number, seed: number): number {
 }
 
 /** The leaf cluster a point falls in: weighted cells of mixed sizes; how lit it is there (-1..1). */
-function leafCell(lx: number, ly: number, seed: number): { lit: number; q: number } {
-  const G = 12;
+function leafCell(lx: number, ly: number, seed: number, G = 12): { lit: number; q: number } {
   const gx = Math.floor(lx / G), gy = Math.floor(ly / G);
   let best = Infinity, bx = 0, by = 0, br = 1;
   for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
@@ -430,9 +429,10 @@ export const headland = definePainter<HeadlandP>("op.headland", {
         if (ly < -T) continue;
         let col: number;
         if (ly > 0) {
-          // the shore toward the camera (only seen west of the water): marsh and scrub in patches
+          // the shore toward the camera (only seen west of the water): marsh and scrub in patches;
+          // its first rows (where the water's edge may show) the same greens as the shore above
           const m = vnoise(lx / 40, ly / 9, seed + 7) * 0.7 + vnoise(lx / 11, ly / 4, seed + 6) * 0.3;
-          col = m > 0.62 ? P.moss[5]! : m > 0.42 ? P.moss[6]! : m > 0.3 ? P.pine[2]! : P.earth[5]!;
+          col = ly < 4 ? (vnoise1(lx / 7, seed + 5) > 0.5 ? P.moss[6]! : P.pine[2]!) : m > 0.62 ? P.moss[5]! : m > 0.42 ? P.moss[6]! : m > 0.3 ? P.pine[2]! : P.earth[5]!;
         } else {
           // the shoreline: it wanders between wet rock, mud, grass right to the water and stones
           const kind = vnoise1(lx / 23, seed + 9) * 0.7 + vnoise1(lx / 7, seed + 10) * 0.3;
@@ -566,7 +566,8 @@ export const shore = definePainter<ShoreP>("op.shore", {
       const H = heapH(x);
       if (H < 6) continue;
       const v = Math.pow(r(), 0.7);
-      const R = 5 + r() * 9 * (1 - v * 0.4);
+      // (clusters of very different sizes: a few big heads, many small)
+      const R = 3 + Math.pow(r(), 2.2) * 19 * (1 - v * 0.3);
       th.push([x, -walkAt(x) - H * v + R * 0.3, R, v]);
     }
     th.sort((q, w) => q[1] - w[1]);
@@ -584,8 +585,9 @@ export const shore = definePainter<ShoreP>("op.shore", {
           const ly = LY(c, y);
           const inD = ly + wk + H;
           if (inD < 0 || ly > -wk + 3) continue;
-          const L = leafCell(lx, ly, seed + 13);
-          const t = 0.42 - (L.lit > 0.35 ? 0.25 : L.lit > -0.2 ? 0 : -0.2) + clamp(inD / 70, 0, 1) * 0.5 + (L.q > 0.85 && L.lit < 0 ? 0.2 : 0);
+          // big masses of leaves and small clusters in them (two sizes of cell, never one grid)
+          const L = leafCell(lx, ly, seed + 13, 26), L2 = leafCell(lx, ly, seed + 14, 8);
+          const t = 0.42 - (L.lit > 0.35 ? 0.22 : L.lit > -0.2 ? 0 : -0.18) - L2.lit * 0.1 + clamp(inD / 70, 0, 1) * 0.5 + (L.q > 0.85 && L.lit < 0 ? 0.24 : 0);
           const i = clamp(Math.round(t * 4), 0, 4);
           b.set(x, y, [P.moss[3]!, P.moss[4]!, P.moss[5]!, P.pine[2]!, P.pine[3]!][i]!);
         }
