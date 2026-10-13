@@ -58,6 +58,11 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   // wind. The isles ride in front of the big cloud's right flank with a slow bob. Sky plane y is
   // px above the lake line (the sky barely moves, 0.02 of the camera).
   const skyWrap: [number, number] = [-1700, 2500];
+  // a high, thin field of cloud far above it all (behind the cumulus), combed out by the wind:
+  // patches of fibres a step or two off the sky, so the upper sky has quiet texture (the
+  // postcard), drifting with the strata
+  ([[-450, -500, 900, 170, 0.45], [650, -560, 1000, 150, 0.5], [1550, -470, 760, 140, 0.4]] as const).forEach(([x, dy, w, hh, dn], i) =>
+    drifting(b, `sky-field-${i}`, "sky", "op.cloud", x, dy, { kind: "field", w, h: hh, density: dn, strands: 2 + i }, skyWrap, 3.2 + i * 0.3, 1, 4, seed1(4 + i)));
   // (the big one does not reflect: the sky mirrors about the horizon, so its flat base would lie
   // across the middle of the lake, behind her at the catch, as a ruled line)
   const rs = PLANES.sky.rate;
@@ -67,10 +72,6 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   drifting(b, "sky-strata-1", "sky", "op.cloud", 620, -70, { kind: "stratus", w: 640, h: 18, layers: 2 }, skyWrap, 3.5, 2);
   // (the high streak read as a contrail or a ruled line across the sky: gone; its seed is kept)
   seedAt(b, seedNow(b) + 1);
-  // a high, thin field of cloud above it all, combed out by the wind: patches of fibres a step
-  // or two off the sky, so the upper sky has quiet texture (the postcard), drifting with the strata
-  ([[-450, -500, 900, 170, 0.45], [650, -560, 1000, 150, 0.5], [1550, -470, 760, 140, 0.4]] as const).forEach(([x, dy, w, hh, dn], i) =>
-    drifting(b, `sky-field-${i}`, "sky", "op.cloud", x, dy, { kind: "field", w, h: hh, density: dn, strands: 2 + i }, skyWrap, 3.2 + i * 0.3, 1, 4, seed1(4 + i)));
   // the two sky isles, Bell and Drum, above and right of the palace: seen from almost everywhere
   // (no reflection: the lake mirrors the sky about the horizon, not the waterline the frames
   // show, so their doubles hung under the mist as a second pair of isles)
@@ -125,7 +126,8 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   bg(b, "back", 6300, "op.sea", { w: 4200, depth: 1400, swell: 16, ends: 80, west: 160, torn: 0.3, bankFrom: 330, floorWest: 0 }, LAKE_Y, -4);
   // spray blooming where Shiraito's first veil reaches the lake at the wall's foot (P3; the wall
   // itself is Gate Road's piece, from back x 6577; that veil falls at about 6595 to 6645)
-  bg(b, "back", 6560, "op.spray", { w: 120, h: 44, at: [[62, 24]] }, LAKE_Y, 3, seed1(2));
+  // (with the wet foot of the wall's west end, which stands in the lake at this depth)
+  bg(b, "back", 6560, "op.spray", { w: 120, h: 64, at: [[62, 26]], foot: [-3, 66] }, LAKE_Y, 3, seed1(2));
 
   // P1: far karst rising out of layered mist, ghostly at this distance (art: env-opening), in
   // three clusters with wide gaps of mist between them; the farthest row all but erased by haze

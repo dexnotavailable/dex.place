@@ -511,7 +511,7 @@ function footScrub(c: PaintCtx, f: Form, K: Look, wet: readonly [number, number]
       const v = r();
       const big = run > 0.62 ? 1.35 : 1;
       const rr = (v < 0.22 ? 6.5 + 6 * r() : v < 0.6 ? 3.5 + 2.5 * r() : 2 + 1.5 * r()) * big;
-      if (run > 0.38 && r() < 0.85) {
+      if (run > 0.47 && r() < 0.85) {
         // (a second, smaller clump climbing behind a big one: the scrub's top steps; now and then
         // a lone tree standing up out of it)
         if (rr > 5 && r() < 0.6) crown(c, x + rr * (r() - 0.3), f.by - rr * 1.25, rr * 0.6, K2, L.seed + Math.round(x * 17), 0);

@@ -30,9 +30,15 @@ const CASES = [
   ["op.wall", { w: 900, h: 600, falls: 1.7, fadeY: 400, fadeH: 120, lip: [0, 10, 300, -6, 900, 40] }],
   // spray where a veil reaches the lake
   ["op.spray", { w: 120, h: 44, at: [[62, 24]], frame: 1 }],
-  // the Walker's wading contact, at a footfall and mid-stride
+  // the Walker's wading contact, at a footfall and mid-stride, and with a hoof lifted (pouring, dripping)
   ["op.wade", { sub: 4, frame: 0 }],
   ["op.wade", { sub: 4, frame: 49 }],
+  ["op.wade", { sub: 4, frame: 41 }],
+  // round 2: the low cloud round the Walker's upper body; the floating isles; spray with a wet foot
+  ["op.shroud", { frames: 24, frame: 5 }],
+  ["op.isle", { w: 110, h: 96, tower: "drum" }],
+  ["op.isle", { w: 92, h: 120, tower: "bell", frame: 3 }],
+  ["op.spray", { w: 120, h: 64, at: [[62, 26]], foot: [-3, 66], frame: 1 }],
 ];
 const LEVELS = [2, 1, 0.5, 0.25, 0.125];
 
@@ -75,6 +81,8 @@ for (const [kind, p, a, b] of [
   ["op.wade", { sub: 4 }, 2, 50],
   ["op.cloud", { kind: "cumulus", w: 520, h: 240 }, 0, 1],
   ["op.spray", { w: 120, h: 44, at: [[62, 24]] }, 0, 2],
+  ["op.shroud", { frames: 24 }, 0, 6],
+  ["op.cloud", { kind: "field", w: 700, h: 150 }, 0, 2],
   ["op.falls", { w: 900, h: 600, falls: 1.7, fadeY: 400, fadeH: 120, lip: [0, 10, 900, -10], wallSeed: 77, from: 0, to: 12 }, 0, 1],
 ]) {
   test(`${kind}: frames ${a} and ${b} move`, () => {
