@@ -815,7 +815,7 @@ function screeDeep(p: ScreeP, lx: number, seed: number): number {
 }
 
 /** A fallen block sitting in the water at local base y (its waterline): rounded, lopsided, lit upper left, wet at its foot. */
-function screeBlock(c: PaintCtx, cx: number, base: number, bw: number, bh: number, seed: number, open = true): void {
+function screeBlock(c: PaintCtx, cx: number, base: number, bw: number, bh: number, seed: number, open = true, bury = false): void {
   const b = c.buf;
   const X0 = Math.max(b.ox, Math.floor(c.X(cx - bw / 2 - 1))), X1 = Math.min(b.x1, Math.ceil(c.X(cx + bw / 2 + 1)));
   if (X0 >= X1) return;
@@ -838,17 +838,27 @@ function screeBlock(c: PaintCtx, cx: number, base: number, bw: number, bh: numbe
       if (ly < base - T || ly > base + 1.2) continue;
       const s = ly - (base - T);
       const up = base - ly;
-      let col: number;
+      let col = -1;
+      if (bury) {
+        // (integration, round 2) a block up in the heap has its foot buried in the rubble (no flat
+        // base, no wet line where there is no water): the rubble shows over it, a dark contact
+        // where the block overhangs it
+        const bur = bh * (0.16 + 0.22 * vnoise1(lx / 7, seed + 11)) + (vnoise1(lx / 2.5, seed + 12) - 0.5) * 1.6;
+        if (up < bur) continue;
+        if (up < bur + 1.1) { b.set(x, y, P.karst[7]!); continue; }
+      }
       // the bright wet line where the water laps its foot, then the wet dark band
-      if (up < 0) col = open && q > 0.08 && q < 0.92 ? P.jade[1]! : P.karst[8]!;
-      else if (up < 0.9) col = P.karst[8]!;
-      else if (up < wet) col = q < 0.2 ? P.karst[6]! : P.karst[7]!;
-      else if (s < mossD) col = s < 1 && q < 0.5 ? P.moss[3]! : q < 0.35 ? P.moss[4]! : P.moss[5]!;
-      else {
+      if (!bury) {
+        if (up < 0) col = open && q > 0.08 && q < 0.92 ? P.jade[1]! : P.karst[8]!;
+        else if (up < 0.9) col = P.karst[8]!;
+        else if (up < wet) col = q < 0.2 ? P.karst[6]! : P.karst[7]!;
+      }
+      if (col < 0 && s < mossD) col = s < 1 && q < 0.5 ? P.moss[3]! : q < 0.35 ? P.moss[4]! : P.moss[5]!;
+      if (col < 0) {
         // the top plane lit, the left flank catching the light, the face mid, the right flank
         // and the undercut above the wet band in shade; a crack down from a notch
         let k = s < mossD + 1.6 + 1.6 * vnoise1(lx / 4, seed + 8) ? 0 : q < 0.18 + 0.08 * (vnoise1(ly / 5, seed + 9) - 0.5) ? 1 : q < 0.66 ? 2 : 3;
-        if (up < wet + 2 && k < 3) k++;
+        if (!bury && up < wet + 2 && k < 3) k++;
         const fx = cx + bw * (hash1(4, seed) - 0.5) * 0.6 + (vnoise1(ly / 3, seed + 10) - 0.5) * 1.6;
         if (hash1(5, seed) < 0.6 && Math.abs(lx - fx) < 0.6 && s > 1 && up > wet) k = 4;
         col = [P.karst[3]!, P.karst[4]!, P.karst[5]!, P.karst[6]!, P.karst[7]!][k]!;
@@ -923,7 +933,12 @@ export const scree = definePainter<ScreeP>("op.scree", {
       }
     }
     // the stones, back (at the waterline) to front
-    rows.forEach(([cx, yb, bw, bh], i) => screeBlock(c, cx, yb, bw, bh, seed + 100 + i * 17, yb > screeDeep(p, cx, seed) - 9));
+    // (integration, round 2) the lake ends at the heap's west tip: only blocks there stand in water
+    // (a wet line); the rest stand in the rubble with their feet buried
+    rows.forEach(([cx, yb, bw, bh], i) => {
+      const wet = cx < p.w * 0.2 && yb > screeDeep(p, cx, seed) - 9;
+      screeBlock(c, cx, yb, bw, bh, seed + 100 + i * 17, wet, !wet && yb > 4);
+    });
     // a bleached branch or two lying across the heap, its shadow under it
     for (let i = 0; i < 2; i++) {
       const x0 = p.w * (0.05 + 0.4 * r()), x1 = x0 + 40 + r() * 50, y0 = 4 + r() * p.deep * 0.4, y1 = y0 + (r() - 0.3) * 18;
