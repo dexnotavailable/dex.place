@@ -1,7 +1,8 @@
 // Kagami's air, distance and mirror (the art loop's painter p1): the new painter kinds and
 // parameters paint something, stay inside their declared bounds, are deterministic, and are
 // seamless across plate tiles at the camera levels they are used at; animated sprites differ
-// between frames; the wading contact keeps in step with the Walker's stride.
+// between frames; the wading contact keeps in step with the Walker's stride. (Round 2: the high
+// cloud field, the shroud, the isles, the spray's wet foot, the birds.)
 //   node --test src/tesu/art/library/opening/backdrop.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -19,6 +20,9 @@ const CASES = [
   // the seas: a bank climbing feet with a torn west end over a cloud floor; a floor-only west run
   ["op.sea", { w: 1400, depth: 300, swell: 10, ends: 60, west: 260, rise: [[330, 210, 330], [80, 35, 200]], torn: 0.55, wetFloor: 70, wetTo: 226 }],
   ["op.sea", { w: 900, depth: 400, swell: 16, ends: 80, west: 160, torn: 0.3, bankFrom: 330, floorWest: 0 }],
+  // round 2: the lake running on under the mist past its west end (floor only); a high cloud field
+  ["op.sea", { w: 900, depth: 160, swell: 10, ends: 60, floorWest: 0, wetFloor: 70, wetFrom: 597, veilTo: 380, bank: false }],
+  ["op.cloud", { kind: "field", w: 900, h: 170, density: 0.45, strands: 2, frame: 1 }],
   // the cauliflower cumulus, the low heap by the sun, a torn stratus
   ["op.cloud", { kind: "cumulus", w: 840, h: 330, frame: 2 }],
   ["op.cloud", { kind: "cumulus", w: 330, h: 112, low: true }],
@@ -27,9 +31,18 @@ const CASES = [
   ["op.wall", { w: 900, h: 600, falls: 1.7, fadeY: 400, fadeH: 120, lip: [0, 10, 300, -6, 900, 40] }],
   // spray where a veil reaches the lake
   ["op.spray", { w: 120, h: 44, at: [[62, 24]], frame: 1 }],
-  // the Walker's wading contact, at a footfall and mid-stride
+  // the Walker's wading contact, at a footfall and mid-stride, and with a hoof lifted (pouring, dripping)
   ["op.wade", { sub: 4, frame: 0 }],
   ["op.wade", { sub: 4, frame: 49 }],
+  ["op.wade", { sub: 4, frame: 41 }],
+  // round 2: the low cloud round the Walker's upper body; the floating isles; spray with a wet foot
+  ["op.shroud", { frames: 24, frame: 5 }],
+  ["op.isle", { w: 110, h: 96, tower: "drum" }],
+  ["op.isle", { w: 92, h: 120, tower: "bell", frame: 3 }],
+  ["op.spray", { w: 120, h: 64, at: [[62, 26]], foot: [-3, 66], frame: 1 }],
+  // egrets crossing the massif, far specks of birds
+  ["op.birds", { n: 5, w: 170, h: 70, kind: "egret", size: 6, frame: 3 }],
+  ["op.birds", { n: 5, w: 150, h: 50, kind: "speck", size: 2, frame: 7 }],
 ];
 const LEVELS = [2, 1, 0.5, 0.25, 0.125];
 
@@ -72,6 +85,9 @@ for (const [kind, p, a, b] of [
   ["op.wade", { sub: 4 }, 2, 50],
   ["op.cloud", { kind: "cumulus", w: 520, h: 240 }, 0, 1],
   ["op.spray", { w: 120, h: 44, at: [[62, 24]] }, 0, 2],
+  ["op.shroud", { frames: 24 }, 0, 6],
+  ["op.birds", { n: 5, w: 170, h: 70, kind: "egret", size: 6 }, 0, 2],
+  ["op.cloud", { kind: "field", w: 700, h: 150 }, 0, 2],
   ["op.falls", { w: 900, h: 600, falls: 1.7, fadeY: 400, fadeH: 120, lip: [0, 10, 900, -10], wallSeed: 77, from: 0, to: 12 }, 0, 1],
 ]) {
   test(`${kind}: frames ${a} and ${b} move`, () => {

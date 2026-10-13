@@ -273,12 +273,19 @@ export interface SprayP {
   at?: [number, number][];
   /** Churn frame (0..3). */
   frame?: number;
+  /**
+   * Where a rock face stands in the water along it, [x0, x1]: there its foot is wet, a dark band
+   * with a broken bright waterline, under the spray (the face itself ends on the water there).
+   */
+  foot?: [number, number];
 }
 
 /**
- * Spray rising where falls land in water or mist: plumes over each landing, lumpy at three
- * scales, dense and bright low down, thinning by the three dissolve steps to single drops at
- * the top, a soft skirt joining the plumes along the water; its frames churn it slowly.
+ * Spray rising where falls land in water or mist: over each landing a boil of white water on
+ * the surface and a plume above it, flaring as it rises and drifting a little east on the
+ * wind, lumpy at three scales, dense and bright low down, thinning by the three dissolve steps
+ * to single drops at the top; between the plumes nothing (never a band along the wall). Where a
+ * face stands in the water, its wet foot under it. Its frames churn it slowly.
  */
 export const spray = definePainter<SprayP>("op.spray", {
   bounds(p) {
@@ -292,11 +299,26 @@ export const spray = definePainter<SprayP>("op.spray", {
     const X0 = Math.max(b.ox, Math.floor(c.X(-p.h * 0.8))), X1 = Math.min(b.x1, Math.ceil(c.X(p.w + p.h * 0.8)));
     const Y0 = Math.max(b.oy, Math.floor(c.Y(-p.h * 1.3))), Y1 = Math.min(b.y1, Math.ceil(c.Y(0)));
     const ph = f * 0.9;
+    // the wet foot of the face standing in the water: a dark band whose top wanders, darker at
+    // the waterline, a bright line broken where the water laps it
+    if (p.foot) {
+      const [fx0, fx1] = p.foot;
+      for (let x = Math.max(b.ox, Math.floor(c.X(fx0))); x < Math.min(b.x1, Math.ceil(c.X(fx1))); x++) {
+        const lx = c.lx(x + 0.5);
+        const wf = (3 + 4 * vnoise1(lx / 6, seed + 6) + 3 * vnoise1(lx / 19, seed + 7)) * Math.min(1, (lx - fx0) / 4 + 0.3);
+        for (let y = Math.max(b.oy, Math.floor(c.Y(-wf))); y < Math.min(b.y1, Math.ceil(c.Y(0))); y++) {
+          const a = -c.ly(y + 0.5);
+          if (a < 1 / c.d) { b.set(x, y, vnoise1(lx / 2.5, seed + 8) > 0.55 ? C[2]! : P.karst[8]!); continue; }
+          b.set(x, y, a < wf * 0.45 ? P.karst[8]! : vnoise(lx / 2, a / 4, seed + 9) > 0.7 ? P.moss[6]! : P.karst[7]!);
+        }
+      }
+    }
     for (let x = X0; x < X1; x++) {
       const lx = c.lx(x + 0.5);
       // a plume over each landing (nothing between them: never a band along the wall)
-      let top = 0;
+      let top = 0, onBoil = 0;
       for (const [ax, hw] of at) {
+        onBoil = Math.max(onBoil, 1 - Math.abs(lx - ax) / (hw * 1.25));
         const u = (lx - ax) / (hw * 1.6 + p.h * 0.3);
         if (u <= -1 || u >= 1) continue;
         top = Math.max(top, p.h * (1 - u * u) ** 1.5 * (0.55 + 0.45 * hash1(Math.round(ax), seed + 2)));
@@ -307,9 +329,12 @@ export const spray = definePainter<SprayP>("op.spray", {
       for (let y = Y0; y < Y1; y++) {
         const a = -c.ly(y + 0.5);
         if (a > top * 1.25) continue;
-        // density: falling with height, broken by billows that churn with the frames
+        // density: falling with height, broken by billows that churn with the frames; the boil
+        // on the water at the landing solid and bright, its own lumpy top
         const n = fbm(lx / (p.h * 0.35) + ph, a / (p.h * 0.25) - ph * 0.5, seed + 3, 3) - 0.5;
-        const cov = Math.min((1 - a / top) * 1.15, (a - foot) / (p.h * 0.2)) + n * 1.2;
+        const boil = onBoil > 0 ? top * (0.1 + 0.16 * Math.sqrt(onBoil) * (0.5 + vnoise1(lx / 3 + ph, seed + 5))) : 0;
+        if (a < boil && a >= 0) { b.set(x, y, a > boil - 1.5 / c.d ? C[0]! : n > 0 ? C[1]! : C[2]!); continue; }
+        const cov = Math.min((1 - a / top) * 1.35, (a - foot) / (p.h * 0.2)) + n * 1.25;
         if (cov >= 0.85) { b.set(x, y, n > 0.12 ? C[0]! : C[1]!); continue; }
         const th = cov > 0.6 ? 0.5 : cov > 0.38 ? 0.25 : cov > 0.18 ? 0.125 : 0;
         if (bayer4(x + f, y) < th) b.set(x, y, a < top * 0.4 ? C[0]! : C[1]!);

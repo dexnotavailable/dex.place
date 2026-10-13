@@ -58,6 +58,33 @@ const LEGS: number[][][] = [
   [[23,-245,-176,-244,-182,-243,-184,-242,-186,-241,-186,-235,-181,-223,-175], [11,25,107,28,100,28,95,28,96,32,94,38,95,47,98]],
 ];
 const UPS = [0, 8, 16, 24, 32, 44, 60];
+/**
+ * The hooves lifted clear of the water, per stride frame (baked from the same frames: the lowest
+ * opaque row over open water in each column): each sole from [x, px above the water] to [x, px
+ * above the water], and how many frames since it left the water. Frames where a swinging hoof
+ * passes in front of a planted leg have no clean sole and are left out.
+ */
+const LIFT: Record<number, [number, number, number, number, number][]> = {
+  0: [[-66, 49, 21, 35, 2]],
+  1: [[-66, 59, 17, 43, 3]],
+  2: [[-63, 65, 13, 50, 4]],
+  3: [[-53, 69, 9, 57, 5]],
+  6: [[81, 56, 108, 55, 8]],
+  7: [[77, 55, 132, 53, 9]],
+  8: [[73, 49, 147, 46, 10]],
+  9: [[69, 39, 153, 38, 11]],
+  10: [[-289, 20, -209, 14, 0], [66, 27, 154, 26, 12]],
+  11: [[-290, 35, -211, 25, 1], [65, 11, 155, 15, 13]],
+  12: [[-291, 48, -213, 35, 2]],
+  13: [[-292, 57, -214, 42, 3]],
+  14: [[-289, 64, -212, 48, 4]],
+  15: [[-279, 67, -215, 55, 5]],
+  19: [[-160, 55, -104, 50, 9]],
+  20: [[-163, 49, -89, 44, 10]],
+  21: [[-162, 39, -83, 36, 11]],
+  22: [[-161, 27, -82, 25, 12], [-63, 21, 27, 15, 0]],
+  23: [[-161, 11, -81, 11, 13], [-65, 37, 24, 25, 1]],
+};
 /** The Walker's stride in frames, its ground px per frame on P2, and the waterline above its anchor. */
 export const STRIDE = 24;
 const STEP = 3.824;
@@ -123,22 +150,26 @@ function paintWade(c: PaintCtx, p: WadeP): void {
   const C = P.cloud, J = P.jade;
   const loop = (fr / (STRIDE * sub)) * Math.PI * 2;
 
-  // --- the wake: a V trailing behind the rearmost leg (its far arms), crests sliding back
+  // --- the wake: from each planted leg's trailing (west) edge a V trails back, its far arm
+  // painted (the lake mirrors it into the near one), broken into crests that slide back and
+  // fade; the rearmost leg's the longest
   let rear = Infinity;
   for (const L of legs) rear = Math.min(rear, L.prof[0]![0]);
-  if (rear < Infinity) {
-    for (const [len, slope, s0] of [[250, 0.06, 0], [150, 0.032, 7]] as const) {
+  for (const L of legs) {
+    const back = L.prof[0]![0];
+    const main = back === rear;
+    for (const [len, slope, s0] of (main ? [[240, 0.06, 0], [140, 0.03, 7]] : [[110, 0.07, 3]]) as [number, number, number][]) {
       for (let u = 0; u < len; u += 0.5 / d) {
-        const x = rear - 3 - u;
+        const x = back - 4 - u;
         const k = u / len;
-        const y = WATER - 1 - u * slope - Math.sin(u / 23 + s0) * 0.6 * k;
-        // crests every few px, sliding back as the Walker moves on
+        const y = WATER - 1.2 - u * slope - Math.sin(u / 23 + s0 + L.id) * 0.6 * k;
+        // crests every few px, sliding back as the Walker moves on; gaps between groups of them
         const crest = ((u + tt * STEP * 1.4 + s0) % 11 + 11) % 11;
-        if (crest > 7) continue;
+        if (crest > 6.5 || vnoise1((u + tt * STEP * 1.4) / 28, seed + L.id + s0) < 0.32) continue;
         const X = Math.floor(c.X(x)), Y = Math.floor(c.Y(y));
-        if (bayer4(X, Y) >= (1 - k) * 0.9) continue;
+        if (bayer4(X, Y) >= (1 - k) * (main ? 0.95 : 0.7)) continue;
         if (inLeg(legs, x, WATER - y, 1)) continue;
-        b.set(X, Y, crest < 3 ? C[0]! : C[1]!);
+        b.set(X, Y, crest < 2.5 ? C[0]! : C[1]!);
         if (bayer4(X, Y + 1) < (1 - k) * 0.8) b.set(X, Y + 1, J[3]!);
       }
     }
@@ -195,25 +226,35 @@ function paintWade(c: PaintCtx, p: WadeP): void {
         }
       }
     }
-    // the meniscus: water climbing the shin, piled up on its leading (east) side
-    const wob = Math.sin(loop * 3 + L.id) * 0.8;
-    for (let lx = x0 - 16; lx < x1 + 26; lx += 0.5 / d) {
-      const on = lx >= x0 && lx < x1;
-      let hh: number;
-      if (on) hh = 3.5 + 2 * vnoise1(lx / 3, seed + L.id + 11);
-      else if (lx >= x1) hh = 8 * Math.pow(1 - (lx - x1) / 26, 1.5) + wob;
-      else hh = 5.5 * Math.pow(1 - (x0 - lx) / 16, 1.4);
+    // the water parting round the shin: on its leading (east) side a low smooth mound of water
+    // piled against it with a pale crest; on its trailing side a trough dipping under its back
+    // edge; across the shin itself only a broken bright line where the water laps it (no film)
+    const wob = Math.sin(loop * 3 + L.id) * 0.7;
+    const bh = (3.2 + hw * 0.06) * (1 + 0.15 * Math.sin(loop * 2 + L.id * 1.7)), blen = 16 + hw * 0.4;
+    for (let lx = x1 - 1; lx < x1 + blen; lx += 0.5 / d) {
+      const t = (lx - x1) / blen;
+      const hh = bh * Math.pow(1 - Math.max(0, t), 1.6) + wob * (1 - t) + 0.6 * (vnoise1(lx / 3, seed + L.id + 11) - 0.5);
       for (let up = 0; up < hh; up += 0.5 / d) {
         const X = Math.floor(c.X(lx)), Y = Math.floor(c.Y(WATER - up));
-        const top = up > hh - 1.1 / d;
-        if (on) {
-          // on the shin: a pale film, brightest at its top edge
-          if (top) b.set(X, Y, C[1]!);
-          else if (bayer4(X, Y) < 0.5) b.set(X, Y, J[2]!);
-        } else b.set(X, Y, top ? C[0]! : up < 1.5 ? J[4]! : up < hh * 0.5 ? J[3]! : J[2]!);
+        const top = up > hh - 1 / d;
+        // (the crest broken where it curls, brightest against the shin)
+        if (top) { if (t < 0.55 || hash1(Math.floor(lx), seed + L.id + 12) < 0.55) b.set(X, Y, t < 0.3 ? C[0]! : C[1]!); continue; }
+        b.set(X, Y, up < hh * 0.45 ? J[3]! : J[2]!);
       }
     }
-    // the wet shin: darker up to the water mark, a sheen down its lit edge, drips
+    // the trough behind it: the water drawn down under the back edge, a dark sliver
+    for (let lx = x0 - 12; lx < x0 + 3; lx += 0.5 / d) {
+      const t = (x0 + 3 - lx) / 15;
+      if (bayer4(Math.floor(c.X(lx)), 0) >= 1 - t * 0.5) continue;
+      b.set(Math.floor(c.X(lx)), Math.floor(c.Y(WATER - 0.4)), J[5]!);
+    }
+    // the lapping line across the shin: broken, never a hem of even dashes
+    for (let lx = x0 + 1; lx < x1 - 1; lx += 0.5 / d) {
+      const X = Math.floor(c.X(lx));
+      if (vnoise1(lx / 5 + tt * 0.8, seed + L.id + 14) < 0.45) continue;
+      b.set(X, Math.floor(c.Y(WATER - 0.5 - 1.2 * vnoise1(lx / 9, seed + L.id + 15))), C[2]!);
+    }
+    // the wet shin: darker up to a water mark that wanders and tilts; a sheen down the lit edge
     const wetH = 12 + 18 * hash1(L.id, seed + 21);
     const tilt = (hash1(L.id, seed + 25) - 0.5) * 0.12;
     for (let up = 1.5; up < wetH + 1; up += 0.5 / d) {
@@ -223,11 +264,10 @@ function paintWade(c: PaintCtx, p: WadeP): void {
       const Y = Math.floor(c.Y(WATER - up));
       for (let lx = a0 + 1; lx < a1 - 1; lx += 0.5 / d) {
         const X = Math.floor(c.X(lx));
-        // the water mark: uneven and tilted, broken in places
-        const mk = wetH + (lx - a0) * tilt + 4 * (vnoise1(lx / 7, seed + L.id + 13) - 0.5);
+        const mk = wetH + (lx - a0) * tilt + 6 * (vnoise1(lx / 11, seed + L.id + 13) - 0.5);
         if (up > mk) continue;
-        if (up > mk - 1 / d) { if (hash(Math.floor(lx / 2), L.id, seed + 15) < 0.6) b.set(X, Y, C[3]!); continue; }
-        // a sheen down the lit (west) edge; the odd wet glint lower down
+        // (the mark itself: a dark wet edge, not a pale line)
+        if (up > mk - 1 / d) { b.set(X, Y, P.range[6]!); continue; }
         if (lx < a0 + 2) { if (bayer4(X, Y) < 0.5) b.set(X, Y, P.range[4]!); continue; }
         if (up < mk - 3 && vnoise(lx / 1.4, up / 6, seed + L.id + 23) > 0.86) b.set(X, Y, P.range[5]!);
       }
@@ -236,14 +276,66 @@ function paintWade(c: PaintCtx, p: WadeP): void {
     for (let i = 0; i < 3; i++) {
       const dx = x0 + 3 + (x1 - x0 - 6) * hash1(i, seed + L.id + 31);
       const ph = ((tt * 1.6 + hash1(i, seed + L.id + 33) * 5) % 5) / 5;
-      dot(c, dx, WATER - (wetH - 1) * (1 - ph), C[1]!);
+      dot(c, dx, WATER - (wetH - 1) * (1 - ph), C[2]!);
+    }
+  }
+
+  // --- a hoof lifted clear of the water: water pouring off its sole as it leaves (a sheet,
+  // then streams), then dripping ever less as it swings: beads hanging along the sole, drops
+  // falling (eased in by gravity) and ringing the water where they land
+  for (const [xa, ua, xb, ub, age0] of LIFT[f] ?? []) {
+    const age = age0 + s / sub;
+    const wet = clamp(1 - age / 12, 0, 1);
+    if (wet <= 0) continue;
+    const sole = (k: number): [number, number] => [xa + (xb - xa) * k, ua + (ub - ua) * k];
+    // beads along the sole (they hide its cut edge)
+    for (let k = 0.03; k < 0.98; k += 0.045) {
+      const [sx, su] = sole(k);
+      if (hash1(Math.round(k * 1000), seed + 51) > 0.35 + 0.5 * wet) continue;
+      const blen = 1 + 2 * hash1(Math.round(k * 1000), seed + 52) * wet;
+      for (let q = 0; q < blen; q += 0.5 / d) dot(c, sx, WATER - su + 0.5 + q, q > blen - 1 ? C[0]! : C[1]!);
+    }
+    // streams: as it leaves the water a curtain pouring off most of the sole (it is a hoof
+    // tens of metres wide), then two or three ropes of water thinning as it swings, each
+    // streaked with foam and breaking up as it falls, with a burst of spray where it lands
+    const n = age < 2 ? 4 : age < 6 ? 3 : 2;
+    const span = Math.abs(xb - xa);
+    for (let i = 0; i < n; i++) {
+      const k = age < 2 ? (i + 0.5) / n + (hash1(i, seed + 53 + age0) - 0.5) * 0.12 : 0.12 + 0.76 * hash1(i, seed + 53 + age0);
+      const [sx, su] = sole(k);
+      const half = age < 2 ? span * (0.5 / n) * (1.15 - age * 0.3) : age < 6 ? 1.6 - age * 0.15 : 0;
+      if (half > 0.4) {
+        for (let up = su - 0.5; up > 0; up -= 0.5 / d) {
+          const fall = (su - up) / su;
+          const Y = Math.floor(c.Y(WATER - up));
+          const hw = half * (1 - fall * 0.35) + (up < 5 ? (5 - up) * 0.9 : 0);
+          for (let lx = sx - hw; lx <= sx + hw; lx += 0.5 / d) {
+            const u = (lx - sx) / Math.max(0.5, hw);
+            const X = Math.floor(c.X(lx));
+            // (streaks of foam falling, gaps opening as it breaks up, ragged at the sides)
+            const streak = vnoise(lx / 1.6, up / 5 + tt * 5, seed + 57 + i);
+            if (streak < 0.2 + fall * 0.3 + Math.abs(u) * 0.35) continue;
+            if (Math.abs(u) > 0.7 && bayer4(X, Y) > 0.5) continue;
+            b.set(X, Y, up < 4 ? (bayer4(X, Y) < 0.5 ? C[0]! : C[1]!) : streak > 0.62 ? C[0]! : u > 0.4 ? C[2]! : C[1]!);
+          }
+        }
+      }
+      // drops falling and the rings they leave
+      const nd = age < 4 ? 3 : 1 + Math.round(wet);
+      for (let j = 0; j < nd; j++) {
+        const ph = (((tt * 1.8 + j / nd + hash1(i * 7 + j, seed + 55)) % 1) + 1) % 1;
+        const up = su * (1 - ph * ph);
+        dot(c, sx, WATER - up, C[0]!);
+        if (ph > 0.3) dot(c, sx, WATER - up - 1 / d, C[1]!);
+        if (ph > 0.82) paintRing(c, legs, sx, 2 + (ph - 0.82) * 50, (ph - 0.82) / 0.18, seed + i * 13 + j, 0.8);
+      }
     }
   }
 
   // --- mist torn round the legs: low wisps on the water, parted at each shin, curling off its
   // trailing side, churning slowly (seamless over the sprite's loop)
   const X0 = Math.max(b.ox, Math.floor(c.X(-380))), X1 = Math.min(b.x1, Math.ceil(c.X(220)));
-  const Y0 = Math.max(b.oy, Math.floor(c.Y(WATER - 26))), Y1 = Math.min(b.y1, Math.ceil(c.Y(WATER - 1)));
+  const Y0 = Math.max(b.oy, Math.floor(c.Y(WATER - 40))), Y1 = Math.min(b.y1, Math.ceil(c.Y(WATER - 1)));
   for (let y = Y0; y < Y1; y++) {
     const up = WATER - c.ly(y + 0.5);
     for (let x = X0; x < X1; x++) {
@@ -251,16 +343,18 @@ function paintWade(c: PaintCtx, p: WadeP): void {
       // lobes along the water, thinning with height, torn by noise that rolls with time
       const ph = Math.cos(loop) * 0.6, ph2 = Math.sin(loop) * 0.6;
       const n = fbm(lx / 34 + ph, up / 7 + ph2, seed + 41, 3);
-      let cov = (1 - up / (10 + 12 * vnoise1(lx / 60, seed + 43))) * 0.9 + (n - 0.5) * 1.3;
+      let cov = (1 - up / (16 + 22 * vnoise1(lx / 60, seed + 43))) * 1.05 + (n - 0.5) * 1.4;
       // parted where a leg stands; a curl climbing its trailing (west) edge
       for (const L of legs) {
         const e = edgesAt(L, up);
         if (!e) continue;
-        if (lx >= e[0] - 2 && lx < e[1] + 2) cov *= 0.15;
+        // (thinner over a shin, never gone: it drifts in front of the legs too)
+        if (lx >= e[0] - 2 && lx < e[1] + 2) cov *= 0.55;
         const cu = (lx - (e[0] - 6)) / 7, cv = (up - 9 - 3 * Math.sin(loop + L.id)) / 6;
         if (cu > -1 && cu < 1 && cv > -1 && cv < 1) cov = Math.max(cov, (1 - cu * cu) * (1 - cv * cv) * (0.55 + 0.35 * vnoise(lx / 3, up / 3, seed + 45)));
       }
       if (lx < -330 || lx > 180) cov *= clamp(lx < -330 ? (lx + 380) / 50 : (220 - lx) / 40, 0, 1);
+      if (cov > 0.95 && up > 3) { b.set(x, y, cov > 1.1 ? C[1]! : C[2]!); continue; }
       if (bayer4(x, y) < step3(cov)) b.set(x, y, cov > 0.5 ? C[1]! : C[2]!);
     }
   }
@@ -301,6 +395,73 @@ export const wade = definePainter<WadeP>("op.wade", {
   },
 });
 
+export interface ShroudP {
+  /** Churn frame (0 .. frames - 1) and how many there are (it loops seamlessly over them). */
+  frame?: number;
+  frames?: number;
+}
+
+/**
+ * The low cloud the Walker wades through, wrapped round its upper body (it is several hundred
+ * metres tall: its back and shoulders stand in the cloud layer). Torn lenses at the height of
+ * its back, its barrel and its belly, densest over the shoulders and the bonsai's foot, thinning
+ * by the dissolve steps (25 to 50 %) to wisps at their ends, with gaps so its silhouette still
+ * reads; they churn slowly and loop. It pushes the giant back in value: it reads as far off.
+ * Anchor: the Walker's (the middle of its frames' foot), facing east. Plane px of P2.
+ */
+function paintShroud(c: PaintCtx, p: ShroudP): void {
+  const b = c.buf, seed = c.seed;
+  const n = Math.max(1, p.frames ?? 24);
+  const loop = (((p.frame ?? 0) % n) / n) * Math.PI * 2;
+  const C = P.cloud;
+  // the lenses: [centre x, centre y, half length, half thickness, density]
+  const L: [number, number, number, number, number][] = [
+    [-90, -438, 250, 50, 1.15],
+    [120, -470, 150, 30, 0.85],
+    [-40, -318, 300, 34, 0.9],
+    [-200, -236, 140, 20, 0.65],
+    [190, -262, 110, 18, 0.6],
+    // (over the head and the bells hanging from it: the busiest, most saturated part)
+    [205, -360, 120, 46, 1.05],
+    [215, -205, 80, 26, 0.8],
+  ];
+  const X0 = Math.max(b.ox, Math.floor(c.X(-400))), X1 = Math.min(b.x1, Math.ceil(c.X(330)));
+  const Y0 = Math.max(b.oy, Math.floor(c.Y(-540))), Y1 = Math.min(b.y1, Math.ceil(c.Y(-160)));
+  const ph = Math.cos(loop) * 0.7, ph2 = Math.sin(loop) * 0.7;
+  for (let y = Y0; y < Y1; y++) {
+    const ly = c.ly(y + 0.5);
+    for (let x = X0; x < X1; x++) {
+      const lx = c.lx(x + 0.5);
+      let cov = 0;
+      for (let i = 0; i < L.length; i++) {
+        const [cx, cy, hl, ht, dn] = L[i]!;
+        const u = (lx - cx) / hl;
+        if (u <= -1 || u >= 1) continue;
+        // (each lens wanders and swells along its length, lumpier on top: never a ruled band)
+        const mid = cy + (vnoise1(lx / 70, seed + i * 7) - 0.5) * ht * 1.2;
+        const th = ht * (0.55 + 0.7 * vnoise1(lx / 45 + i, seed + i * 7 + 1));
+        const v = ly < mid ? (mid - ly) / (th * 1.15) : (ly - mid) / (th * 0.8);
+        if (v >= 1.4) continue;
+        const n2 = fbm(lx / 38 + ph, ly / 14 + ph2, seed + i * 7 + 2, 3) - 0.5;
+        cov = Math.max(cov, ((1 - u * u) * (1 - v * v * 0.7) + n2 * 1.3) * dn);
+      }
+      // (solid only in its thickest cores, over the shoulders; elsewhere the dissolve steps)
+      if (cov > 1.02) { b.set(x, y, cov > 1.15 ? C[1]! : C[2]!); continue; }
+      const th = cov > 0.7 ? 0.5 : cov > 0.45 ? 0.25 : cov > 0.26 ? 0.125 : 0;
+      if (bayer4(x, y) < th) b.set(x, y, cov > 0.6 ? C[1]! : C[2]!);
+    }
+  }
+}
+
+export const shroud = definePainter<ShroudP>("op.shroud", {
+  bounds() {
+    return [-402, -542, 332, -158];
+  },
+  paint(c, p) {
+    paintShroud(c, p);
+  },
+});
+
 /** What the Walker's builder placement needs to follow it: its motion (kagami-place.ts WALKER). */
 export interface WalkerMotion { x: number; y: number; frames: number; fps: number; path: readonly [number, number]; speed: number; stepMove: boolean }
 
@@ -311,4 +472,6 @@ export interface WalkerMotion { x: number; y: number; frames: number; fps: numbe
 export function wadeSprites(b: WorldBuilder, w: WalkerMotion, seed: (n: number) => number): void {
   const sub = 4;
   b.sprite({ id: "walker-wade", plane: "mid", kind: "op.wade", x: w.x, y: w.y, p: { sub }, frames: STRIDE * sub, fps: w.fps * sub, path: [w.path[0], w.path[1]], speed: w.speed, stepMove: w.stepMove, seed: seed(1) });
+  // the low cloud round its upper body, in lockstep (it churns once over a stride)
+  b.sprite({ id: "walker-shroud", plane: "mid", kind: "op.shroud", x: w.x, y: w.y, p: { frames: STRIDE }, frames: STRIDE, fps: w.fps, path: [w.path[0], w.path[1]], speed: w.speed, stepMove: w.stepMove, seed: seed(5) });
 }

@@ -17,4 +17,5 @@ import "./props.ts";
 import "./wind.ts";
 import "./flora.ts";
 import "./wade.ts";
+import "./life.ts";
 export { OPENING_MANIFEST, type OpeningAsset } from "./manifest.ts";
