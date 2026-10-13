@@ -41,14 +41,16 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   // was: every place without a key of its own keeps it (Hoài Phố's harbour far below included)
   b.atmos({ x: 0, ...MORNING, mist: 0.8, water: { deep: "#235f60", body: "#4a9a90", shallow: "#c3e2d9", glint: "#fffbe8" } });
   // Kagami's own (the lake and the pass, above Shiraito and Hoài Phố):
-  // - the shader's mist bands at the far and middle waterlines only veil: the mist's shape is
-  //   painted (the karst's banks, the seas, the wisps), never a ruled band across the frame;
-  // - a mirror: pale and haze-tinted toward the far shore, deep jade in front, what it mirrors a
-  //   step darker and greener than the thing itself (reference 4's glass);
-  // - glint is a stand-in until engine ask E2: the shader still scatters sun glints and ripple
-  //   gaps over the whole lake, so they are toned to the middle of the lake's own value, where
-  //   they barely read; E2 keeps glints only in a sun path near the far shore.
-  b.atmos({ x: 0, y1: h(90), blend: h(4), ...MORNING, mist: 0.38, water: { deep: "#1d5558", body: "#4a958c", shallow: "#c6e4dc", glint: "#7fb0ae", mirror: [0.58, 0.76, 0.75] } });
+  // - no shader mist bands (mist 0): their stepped alpha dithered a 1 px screen door over the
+  //   karst's feet and the Walker's legs; the mist's shape and its value lift are painted (the
+  //   karst's banks, the seas, the wisps, the lobes round the legs);
+  // - a mirror: what it mirrors a step darker and greener than the thing itself (reference 4's
+  //   glass), the mirror tint fixed (p2's and p3's painted reflections match it);
+  // - deep and body within a step of the sky the near water mirrors, so the shader's ripple gaps
+  //   (which show the water's own colour) stop reading as dark dashes now that the lake runs to
+  //   the frame's bottom edge (E6); glint a step above that reflection, so its cells no longer
+  //   stand as pale columns. E2 (no gap term, glints only in a sun path) is still the cure.
+  b.atmos({ x: 0, y1: h(90), blend: h(4), ...MORNING, mist: 0, water: { deep: "#528995", body: "#76a6a6", shallow: "#c6e4dc", glint: "#6a9fa4", mirror: [0.58, 0.76, 0.75] } });
   // (past the lake's east end the world's morning again: Gate Road and on)
   b.atmos({ x: h(111), blend: h(4), ...MORNING, mist: 0.8, water: { deep: "#235f60", body: "#4a9a90", shallow: "#c3e2d9", glint: "#fffbe8" } });
 
@@ -58,10 +60,10 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   // wind. The isles ride in front of the big cloud's right flank with a slow bob. Sky plane y is
   // px above the lake line (the sky barely moves, 0.02 of the camera).
   const skyWrap: [number, number] = [-1700, 2500];
-  // a high, thin field of cloud far above it all (behind the cumulus), combed out by the wind:
-  // patches of fibres a step or two off the sky, so the upper sky has quiet texture (the
+  // high cloud far above it all (behind the cumulus), combed out by the wind: three shaped bands
+  // of very different thickness with clear sky between them, a step or two off the sky (the
   // postcard), drifting with the strata
-  ([[-450, -500, 900, 170, 0.45], [650, -560, 1000, 150, 0.5], [1550, -470, 760, 140, 0.4]] as const).forEach(([x, dy, w, hh, dn], i) =>
+  ([[-450, -500, 900, 170, 0.85], [650, -560, 1000, 150, 0.3], [1550, -470, 760, 140, 0.55]] as const).forEach(([x, dy, w, hh, dn], i) =>
     drifting(b, `sky-field-${i}`, "sky", "op.cloud", x, dy, { kind: "field", w, h: hh, density: dn, strands: 2 + i }, skyWrap, 3.2 + i * 0.3, 1, 4, seed1(4 + i)));
   // (the big one does not reflect: the sky mirrors about the horizon, so its flat base would lie
   // across the middle of the lake, behind her at the catch, as a ruled line)
@@ -70,6 +72,8 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   drifting(b, "sky-heap", "sky", "op.cloud", -380, -96, { kind: "cumulus", w: 330, h: 112, low: true }, skyWrap, 1.6, 1);
   drifting(b, "sky-strata-0", "sky", "op.cloud", -170, -46, { kind: "stratus", w: 760, h: 22, layers: 2 }, skyWrap, 3, 2);
   drifting(b, "sky-strata-1", "sky", "op.cloud", 620, -70, { kind: "stratus", w: 640, h: 18, layers: 2 }, skyWrap, 3.5, 2);
+  // a thin, wispy stratus low in the sky under the cumulus (Dex's cloud reference), warm on top
+  drifting(b, "sky-strata-low", "sky", "op.cloud", 380, -128, { kind: "stratus", w: 980, h: 12, layers: 1 }, skyWrap, 2.6, 2, 4, seed1(20));
   // (the high streak read as a contrail or a ruled line across the sky: gone; its seed is kept)
   seedAt(b, seedNow(b) + 1);
   // the two sky isles, Bell and Drum, above and right of the palace: seen from almost everywhere
@@ -126,8 +130,10 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   bg(b, "back", 6300, "op.sea", { w: 4200, depth: 1400, swell: 16, ends: 80, west: 160, torn: 0.3, bankFrom: 330, floorWest: 0 }, LAKE_Y, -4);
   // spray blooming where Shiraito's first veil reaches the lake at the wall's foot (P3; the wall
   // itself is Gate Road's piece, from back x 6577; that veil falls at about 6595 to 6645)
-  // (with the wet foot of the wall's west end, which stands in the lake at this depth)
-  bg(b, "back", 6560, "op.spray", { w: 120, h: 64, at: [[62, 26]], foot: [-3, 66] }, LAKE_Y, 3, seed1(2));
+  // (with the wet foot of the wall's west end, which stands in the lake at this depth: fallen
+  // chunks heaped there, foam lapping between them, and below the waterline a talus of them
+  // where the lake ends against the foot, so the lake ends on rock and white water)
+  bg(b, "back", 6560, "op.spray", { w: 120, h: 84, at: [[30, 15], [62, 26], [98, 17]], foot: [-3, 66], chunks: [6, 78] }, LAKE_Y, 3, seed1(2));
 
   // P1: far karst rising out of layered mist, ghostly at this distance (art: env-opening), in
   // three clusters with wide gaps of mist between them; the farthest row all but erased by haze
