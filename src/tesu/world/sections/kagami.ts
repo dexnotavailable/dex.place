@@ -6,9 +6,9 @@
 // Terrain grammar: massif. Solid rock to the world floor; the lake sits on it.
 //
 // This file holds the world builder's part (collision, water, void, spawns, the place, the
-// Walker) and calls Kagami's three dressing files, one per painter of the Kagami art loop:
-// kagami-land.ts (rock, spring, near shore, islets), kagami-jetty.ts (the jetty and its made
-// things) and kagami-backdrop.ts (light, water colours, sky, P1 and P2). Each dressing block
+// Walker) and calls Kagami's dressing files, owned by the painters of the Kagami art loop:
+// kagami-land.ts (rock, spring, near shore), kagami-islets.ts (the islets), kagami-jetty.ts (the
+// jetty and its made things) and kagami-backdrop.ts (light, water colours, sky, P1 and P2). Each dressing block
 // starts from the seed it had before the split, so a block can add or drop pieces without
 // reseeding another block or any section built after Kagami. New pieces and sprites in a
 // block take explicit seeds.
@@ -18,7 +18,8 @@ import type { WorldBuilder } from "../build.ts";
 import { CATCH_X, DECK_Y, JETTY_X0, JETTY_X1, LAKE_X0, LAKE_X1, LAKE_Y } from "./common.ts";
 import { PLANES } from "../types.ts";
 import { WALKER, seedAt, seedNow } from "./kagami-place.ts";
-import { kagamiLand, kagamiNear, kagamiIslets } from "./kagami-land.ts";
+import { kagamiLand, kagamiNear } from "./kagami-land.ts";
+import { kagamiIslets } from "./kagami-islets.ts";
 import { kagamiJetty } from "./kagami-jetty.ts";
 import { kagamiBackdrop, kagamiWade } from "./kagami-backdrop.ts";
 
@@ -75,7 +76,7 @@ export function kagami(b: WorldBuilder): void {
   // what follows it on the water (kagami-backdrop.ts; explicit seeds only)
   kagamiWade(b);
 
-  // block 6 (kagami-land.ts): the islets
+  // block 6 (kagami-islets.ts): the islets
   seedAt(b, s0 + BLOCK.islets);
   kagamiIslets(b);
 
