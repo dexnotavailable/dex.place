@@ -51,7 +51,7 @@ export interface Band {
 
 /** Bedding planes wander: warped y. */
 export function warpY(lx: number, ly: number, seed: number): number {
-  return ly + (fbm1(lx / 320, seed + 41, 3) - 0.5) * 46 + (vnoise(lx / 110, ly / 500, seed + 42) - 0.5) * 22 + lx * 0.012;
+  return ly + (fbm1(lx / 320, seed + 41, 3) - 0.5) * 70 + (vnoise(lx / 110, ly / 500, seed + 42) - 0.5) * 30 + (vnoise1(lx / 37, seed + 39) - 0.5) * 6 + lx * 0.012;
 }
 
 /**
@@ -68,8 +68,9 @@ export const thrOf = (d: number): number => (d >= 0.5 ? 0 : d >= 0.25 ? 0.5 : 0.
  */
 export function bandAt(wy: number, bed: number, seed: number, thr = 0, key = 0): Band {
   const edge = (i: number): number => (i + (hash1(i, seed + 43) - 0.5) * 0.8) * bed;
-  // (key: the through-going joint on the left, so a plane only ever ends at a joint)
-  const str = (i: number): number => vnoise1(key * 0.47 + i * 5.31, seed + 66) - (0.2 + 0.3 * hash1(i, seed + 67));
+  // (key: where along the face, slow: a plane runs for a while and pinches out anywhere, its
+  // undercut thinning to nothing, never ending square at a joint)
+  const str = (i: number): number => vnoise1(key + i * 5.31, seed + 66) - (0.2 + 0.3 * hash1(i, seed + 67));
   const has = (i: number): boolean => hash1(i, seed + 44) > 0.12 && hash1(i, seed + 65) >= thr && str(i) > 0;
   let i = Math.floor(wy / bed);
   if (wy < edge(i)) i--;
@@ -165,7 +166,7 @@ export function face(lx: number, ly: number, depth: number, o: FaceOpts, seed: n
   const thr = thrOf(d);
   const cw0 = col * 1.6;
   const J = jointAt(lx, ly, cw0 * 1.9, seed, thr);
-  const B = bandAt(warpY(lx, ly, seed), bed, seed, thr, J.L);
+  const B = bandAt(warpY(lx, ly, seed), bed, seed, thr, lx / 150);
   const s = B.wy - B.y0, S = B.y1 - B.y0;
   // masses: the band's own offset and lean, a slow wander down the band
   const ux = lx + hash1(B.j, seed + 45) * 900 + (hash1(B.j, seed + 55) - 0.5) * 0.2 * s;
@@ -189,8 +190,8 @@ export function face(lx: number, ly: number, depth: number, o: FaceOpts, seed: n
   // the seam on this mass's left: a cleft, a joint or fused
   const seam = hash(M.L, B.j, seed + 49);
   if (seam < 0.22) {
-    const cwid = (2 + 5 * hash(M.L, B.j, seed + 50)) * (0.6 + 0.8 * vnoise1(ly / 23, seed + M.L));
-    if (xIn < cwid) return { t: 0.82 + (xIn < cwid * 0.5 ? 0.12 : 0), mat };
+    const cwid = (2 + 5 * hash(M.L, B.j, seed + 50)) * clamp(vnoise1(ly / 29 + M.L * 0.7, seed + M.L) * 1.9 - 0.35, 0, 1.3);
+    if (xIn < cwid) return { t: 0.84 + (xIn < cwid * 0.5 ? 0.12 : 0), mat };
     if (xIn < cwid + px * 1.5) t -= 0.14; // the lit lip of the cleft's far side
   } else if (seam < 0.8 && d >= 0.5) {
     if (xIn < px * 0.9 && vnoise1(ly / 9 + M.L, seed + 58) > 0.28) t += 0.3;
@@ -200,9 +201,9 @@ export function face(lx: number, ly: number, depth: number, o: FaceOpts, seed: n
     // the lit flank's width wanders down the mass (it catches the light where it bulges)
     const litW = Math.max(px * 1.5, Math.min(14, M.w * (0.05 + 0.12 * out)) * (0.4 + 1.2 * vnoise1(s / 18 + id * 0.37, seed + 60)));
     if (xIn < litW) {
-      t -= 0.18;
+      t -= 0.22;
       if (out > 0.55 && s < Math.min(40, S * 0.5) && depth < 500) mat = "warm";
-    } else if (M.u > 0.6) t += 0.24 * Math.pow((M.u - 0.6) / 0.4, 1.3);
+    } else t += 0.34 * Math.pow(clamp((M.u - 0.35) / 0.65, 0, 1), 1.4) - 0.04;
     if (xR < px * 1.2 && seam >= 0.8) t += 0.08;
   }
   // every mass rounds over at its top: the top few px lit where it stands out, its upper
@@ -232,7 +233,7 @@ export function face(lx: number, ly: number, depth: number, o: FaceOpts, seed: n
     // fine bedding: short wavy lines inside the band
     const y2 = B.wy + (vnoise1(lx / 40, seed + 71) - 0.5) * 5;
     const k = y2 / (13 + 6 * hash1(B.j, seed + 72));
-    if (k - Math.floor(k) < 0.08 && vnoise(lx / 26, k, seed + 73) > 0.56) t += 0.08;
+    if (k - Math.floor(k) < 0.07 && vnoise(lx / 26, k, seed + 73) > 0.72) t += 0.07;
     // water stains running down from the plane above
     // (each stain wanders a little as it runs down, and thins out toward its end)
     const wx = lx + B.j * 7 + (vnoise1(s / 16 + lx * 0.01, seed + 78) - 0.5) * 3;
@@ -244,7 +245,7 @@ export function face(lx: number, ly: number, depth: number, o: FaceOpts, seed: n
   }
   // the odd fluted mass (rillen), near only
   if (d >= 1 && hash1(id, seed + 53) < 0.3 && s < 40 && vnoise(lx / 1.8, s / 30, seed + 74) > 0.7) t += 0.08;
-  t += (fbm1(lx / 120 + ly / 210, seed + 81, 3) - 0.5) * 0.12;
+  t += (fbm1(lx / 120 + ly / 210, seed + 81, 3) - 0.5) * 0.08;
   if (d >= 1 && hash(Math.floor(lx), Math.floor(ly), seed + 85) < 0.01) t += 0.2;
   return { t, mat };
 }
@@ -259,7 +260,8 @@ export function nextLedge(lx: number, ly: number, o: FaceOpts, seed: number): { 
   let y = ly;
   for (let n = 0; n < 4; n++) {
     const wy = warpY(lx, y, seed);
-    const key = jointAt(lx, y, cg, seed, 0).L;
+    const key = lx / 150;
+    void cg;
     const B = bandAt(wy, bed, seed, 0, key);
     const yl = y + (B.y1 - wy);
     const below = bandAt(B.y1 + 0.5, bed, seed, 0, key);

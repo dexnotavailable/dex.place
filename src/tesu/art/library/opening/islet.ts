@@ -12,8 +12,17 @@ import { P } from "../../palette.ts";
 import { clamp, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { clump } from "./kit.ts";
 import { needlePad } from "./flora.ts";
+import { LX, LY, bladePath, dot, fern, grass, stroke } from "./bank.ts";
 
 export interface IsletP {
+  /**
+   * One of Kagami's four islets, each its own place (when set, `on` and `at` are not used):
+   * "piles" a ruined pile field, "reedbed" a reed bed round a small stone lantern, "crag" a
+   * jagged rock with a twisted leaning pine, "torii" the small torii's low mossy islet.
+   */
+  kind?: "piles" | "reedbed" | "crag" | "torii";
+  /** Which way a crag's pine leans out (-1 left, 1 right; default 1). */
+  dir?: number;
   /** Rock width and height above the water, px (0 for none: pilings or reeds only). */
   w: number;
   h: number;
@@ -147,10 +156,19 @@ function torii(c: PaintCtx, x: number, y: number, H: number): void {
 
 export const islet = definePainter<IsletP>("op.islet", {
   bounds(p) {
+    if (p.kind) {
+      const reach = p.kind === "crag" ? 170 : p.kind === "torii" ? 90 : 80;
+      const tall = p.kind === "crag" ? p.h * 2.5 + 110 : p.kind === "torii" ? Math.max(56, p.h * 4) + 30 : p.kind === "piles" ? 120 : Math.max(p.h, 60) + 70;
+      return [-p.w / 2 - reach, -tall, p.w / 2 + reach, 6];
+    }
     const tall = (p.on ?? []).some((k) => k === "pine" || k === "tree" || k === "torii") ? p.h + 140 : p.h + 60;
     return [-p.w * 0.9 - 130, -tall, p.w / 2 + 120, 6];
   },
   paint(c, p) {
+    if (p.kind) {
+      paintIslet(c, p);
+      return;
+    }
     const b = c.buf, d = c.d, seed = c.seed;
     // the rock: a low knob of karst, mossy on top, lit left, a wet dark band at the water
     if (p.w > 0 && p.h > 0) {
@@ -206,3 +224,215 @@ export const islet = definePainter<IsletP>("op.islet", {
     }
   },
 });
+
+// ---------------------------------------------------------------------------
+// Kagami's four islets: each its own place, each meeting the water through wet dark rock, reeds
+// and lily pads, so its reflection reads as an islet and never as floating pads. Drawn in whole
+// level-1 px (one density at the close band). Light from the upper left.
+
+/** A rock's top over [-w/2, w/2]: noise at three scales over a lopsided envelope; jagged adds heads. */
+function islandTop(lx: number, w: number, h: number, seed: number, jag: number): number {
+  const u = lx / (w / 2);
+  if (Math.abs(u) >= 1) return -Infinity;
+  const sk = 0.7 + 0.6 * hash1(1, seed);
+  const uu = u < 0 ? -Math.pow(-u, sk) : Math.pow(u, 2 - sk);
+  const env = Math.pow(Math.max(0, 1 - Math.pow(Math.abs(uu), 2.2)), 0.55);
+  let t = h * env * (0.78 + 0.44 * vnoise1(lx / (w * 0.22) + 2, seed + 2)) + (vnoise1(lx / 5, seed + 3) - 0.5) * 2.4 * env + (vnoise1(lx / 1.7, seed + 4) - 0.5) * 0.9;
+  if (jag > 0) {
+    // jagged: karst heads and notches, steeper sides
+    const f = vnoise1(lx / 7, seed + 5);
+    t += jag * h * (Math.pow(f, 3) * 0.55 - 0.12) * env;
+  }
+  return t - 1.5 * (1 - env);
+}
+
+/** A rock above the water: moss on what faces up, lit on the left, wet and dark at the water. */
+function paintIsland(c: PaintCtx, cx: number, w: number, h: number, seed: number, jag: number, mossy: number): void {
+  const b = c.buf;
+  const X0 = Math.max(b.ox, Math.floor(c.X(cx - w / 2) - 1)), X1 = Math.min(b.x1, Math.ceil(c.X(cx + w / 2) + 1));
+  for (let x = X0; x < X1; x++) {
+    const lx = LX(c, x) - cx;
+    const T = islandTop(lx, w, h, seed, jag);
+    if (T <= 0.3) continue;
+    const sl = (islandTop(lx + 1.5, w, h, seed, jag) - islandTop(lx - 1.5, w, h, seed, jag)) / 3;
+    const lit = isFinite(sl) ? (0.62 * sl + 0.78) / Math.sqrt(1 + sl * sl) : 0.4;
+    const u = lx / (w / 2);
+    const Y0 = Math.max(b.oy, Math.floor(c.Y(-T) - 2)), Y1 = Math.min(b.y1, Math.ceil(c.Y(0.5)));
+    for (let y = Y0; y < Y1; y++) {
+      const ly = LY(c, y);
+      if (ly < -T || ly > 0.5) continue;
+      const s = ly + T;
+      const wet = -(1.8 + 2.8 * vnoise1(lx / 6, seed + 11));
+      const mossD = (1.5 + 5 * mossy * clamp(lit, 0, 1)) * (0.5 + vnoise1(lx / 5, seed + 12)) + (vnoise1(lx / 3.5, seed + 13) > 0.75 ? 4 * mossy : 0);
+      let col: number;
+      if (ly > wet) col = ly > -0.6 ? P.karst[8]! : P.karst[7]!;
+      else if (s < mossD) col = s < 1.1 && lit > 0.7 ? P.moss[2]! : s < mossD * 0.5 && lit > 0.5 ? P.moss[3]! : P.moss[5]!;
+      else {
+        // limestone: the lit flank on the left, shade on the right, the odd fissure
+        let k = u < -0.35 + 0.3 * (vnoise1(ly / 6, seed + 14) - 0.5) ? 1 : u < 0.3 ? 2 : 3;
+        if (s < mossD + 1.2 && lit > 0.75) k = 0;
+        const fx = (lx + (vnoise1(ly / 7, seed + 15) - 0.5) * 3) / (7 + 6 * hash1(2, seed));
+        if (jag > 0 && fx - Math.floor(fx) < 0.1 && s > 3) k = 4;
+        if (ly > wet - 3 && k < 3) k++;
+        col = [P.karst[2]!, P.karst[3]!, P.karst[4]!, P.karst[6]!, P.karst[7]!][k]!;
+      }
+      b.set(x, y, col);
+    }
+  }
+}
+
+/** Lily pads on the still water round an islet: thin lenses in clusters, the odd white flower. */
+function pads(c: PaintCtx, cx: number, spread: number, n: number, seed: number): void {
+  const r = rng(seed);
+  let gx = cx + (r() < 0.5 ? -1 : 1) * spread * 0.6;
+  for (let i = 0; i < n; i++) {
+    // a cluster of three or four, then a jump to the other side
+    if (i % 4 === 0) gx = cx + (r() < 0.5 ? -1 : 1) * spread * (0.5 + 0.6 * r());
+    const x = gx + (r() - 0.5) * 14;
+    const rx = 2.5 + r() * 4.5, fl = r() < 0.15;
+    for (let o = -rx; o <= rx; o += 0.5) {
+      dot(c, x + o, -0.6, Math.abs(o) < rx * 0.6 ? P.moss[3]! : P.moss[4]!);
+      if (Math.abs(o) < rx * 0.7) dot(c, x + o, 0, P.moss[5]!);
+    }
+    if (fl) {
+      dot(c, x, -1.6, P.paper[0]!);
+      dot(c, x + 0.6, -1.6, P.blossom[1]!);
+    }
+  }
+}
+
+/** A reed patch standing in the shallows: thin blades, the odd cattail. */
+function reedPatch(c: PaintCtx, cx: number, w: number, tall: number, n: number, seed: number): void {
+  for (let i = 0; i < n; i++) {
+    const x = cx + (hash1(i, seed) - 0.5) * w;
+    const u = (x - cx) / (w / 2);
+    const len = tall * (0.3 + 0.7 * hash1(i, seed + 1)) * (0.55 + 0.45 * Math.sqrt(Math.max(0, 1 - u * u)));
+    const a0 = (hash1(i, seed + 2) - 0.45) * 0.45, bend = (hash1(i, seed + 3) - 0.45) * 0.9 * (len / 30);
+    grass(c, x, 0.5, len, a0, bend, hash1(i, seed + 4) * 0.8);
+    if (hash1(i, seed + 5) < 0.14 && len > tall * 0.55) {
+      const pts = bladePath(x, 0.5, len * 0.95, a0, bend);
+      const [hx, hy] = pts[Math.floor(pts.length * 0.72)]!;
+      for (let j = 0; j < 4; j++) dot(c, hx + a0 * j, hy - j, j < 3 ? P.timber[4]! : P.timber[3]!);
+    }
+  }
+}
+
+/** An old post standing in the water: lit left, dark right, a wet dark foot with algae, a bright wet line. */
+function post(c: PaintCtx, px: number, hh: number, wd: number, lean: number, broken: boolean, seed: number): void {
+  const b = c.buf;
+  const reach = wd + 4 + Math.abs(lean) * hh;
+  const X0 = Math.max(b.ox, Math.floor(c.X(px - reach))), X1 = Math.min(b.x1, Math.ceil(c.X(px + reach)));
+  const Y0 = Math.max(b.oy, Math.floor(c.Y(-hh - 4))), Y1 = Math.min(b.y1, Math.ceil(c.Y(0.5)));
+  const wetH = 3 + 6 * hash1(1, seed), algae = 1 + 3 * hash1(2, seed);
+  for (let y = Y0; y < Y1; y++) {
+    const ly = LY(c, y);
+    if (ly > 0.5) continue;
+    const up = -ly;
+    for (let x = X0; x < X1; x++) {
+      const lx = LX(c, x);
+      const q = (lx - (px + lean * up)) / (wd / 2);
+      if (Math.abs(q) > 1) continue;
+      // the top: rotted round at its corners, or broken into splinters
+      const top = broken ? hh * (0.7 + 0.3 * hash1(Math.floor((q + 1) * 2.5), seed + 3)) : hh - (Math.abs(q) > 0.6 ? 1 : 0);
+      if (up > top) continue;
+      let col: number;
+      if (up < 0.6) col = P.cloud[2]!;
+      else if (up < wetH) col = up < algae ? P.moss[5]! : P.timber[6]!;
+      else if (up > top - 1.2) col = broken ? P.timber[2]! : P.stone[2]!;
+      else col = q < -0.45 ? P.timber[3]! : q < 0.35 ? P.timber[4]! : P.timber[5]!;
+      if (up >= wetH && up < top - 1.2 && hash(Math.floor(lx), Math.floor(up / 3), seed + 4) < 0.08) col = P.timber[5]!;
+      b.set(x, y, col);
+    }
+  }
+}
+
+/** A gnarled pine leaning out over the water: a twisting trunk, arms ending in needle pads. */
+function leaningPine(c: PaintCtx, x: number, y: number, H: number, dir: number, seed: number): void {
+  const r = rng(seed);
+  // the trunk: out and up in an S, its tip turning back up
+  const pts: [number, number][] = [];
+  const a = 0.5 + 0.25 * r(), bulge = 0.12 + 0.1 * r();
+  for (let k = 0; k <= 14; k++) {
+    const u = k / 14;
+    pts.push([x + dir * H * (a * Math.sin(u * 1.5) + bulge * Math.sin(u * Math.PI * 2)), y - H * (0.15 * u + 0.75 * u * u)]);
+  }
+  // arms first (behind the trunk), from its upper half, reaching out level, ending in pads
+  const arms: [number, number, number][] = [];
+  const na = 3 + Math.floor(r() * 2);
+  for (let i = 0; i < na; i++) {
+    const k = 6 + Math.floor((8 * i) / na + r() * 2);
+    const [ax, ay] = pts[Math.min(14, k)]!;
+    const side = i === na - 1 ? dir : r() < 0.7 ? dir : -dir;
+    const len = H * (0.22 + 0.25 * r());
+    const ex = ax + side * len, ey = ay - len * (0.05 + 0.2 * r());
+    stroke(c, [[ax, ay], [(ax + ex) / 2, (ay + ey) / 2 - 2], [ex, ey]], (u) => 2 - u, (u) => (u < 0.5 ? P.timber[4]! : P.timber[5]!));
+    arms.push([ex, ey, H * (0.17 + 0.08 * r())]);
+  }
+  stroke(c, pts, (u) => Math.max(1.5, H * 0.075 * (1 - u * 0.65)), (_u, sd) => (sd < -0.3 ? P.timber[3]! : sd > 0.4 ? P.timber[6]! : P.timber[4]!));
+  const [tx, ty] = pts[14]!;
+  arms.push([tx, ty - 2, H * 0.22]);
+  for (const [px, py, pr] of arms) needlePad(c, px, py, pr * 2.6, pr * 0.8, seed + Math.round(px * 7 + py));
+}
+
+function paintIslet(c: PaintCtx, p: IsletP): void {
+  const seed = c.seed;
+  const w = p.w, h = p.h;
+  if (p.kind === "piles") {
+    // a ruined pile field: posts of different heights and thickness (a pair, a three, a
+    // straggler), two broken, a beam fallen from them into the water; a mud bar with grass and
+    // reeds at their feet
+    paintIsland(c, -w * 0.05, w * 0.7, Math.max(4, h * 0.25), seed + 1, 0, 1);
+    reedPatch(c, -w * 0.2, w * 0.5, 22, 26, seed + 2);
+    const xs = [-0.42, -0.33, -0.08, 0.02, 0.1, 0.38];
+    const hs = [46, 30, 58, 22, 40, 16];
+    xs.forEach((u, i) => post(c, u * w + (hash1(i, seed + 5) - 0.5) * 6, hs[i]! * (0.85 + 0.3 * hash1(i, seed + 6)), 3.5 + 2.5 * hash1(i, seed + 7), (hash1(i, seed + 8) - 0.5) * 0.12, i === 2 || i === 5, seed + 10 + i));
+    // the fallen beam: from the tall broken post's shoulder down into the water
+    const bx0 = -0.08 * w + 2, by0 = -40, bx1 = 0.3 * w, by1 = 1;
+    stroke(c, [[bx0, by0], [(bx0 + bx1) / 2, (by0 + by1) / 2 + 1], [bx1, by1]], () => 3, (_u, sd) => (sd < -0.3 ? P.timber[3]! : sd > 0.4 ? P.timber[6]! : P.timber[5]!));
+    for (let i = 0; i < 10; i++) grass(c, w * (0.26 + 0.12 * hash1(i, seed + 20)), 0.5, 4 + 9 * hash1(i, seed + 21), (hash1(i, seed + 22) - 0.5) * 0.9, 0.3, 0.4);
+    pads(c, 0, w * 0.55, 11, seed + 30);
+  } else if (p.kind === "reedbed") {
+    // a reed bed round a little mossy knoll and a small stone lantern
+    const kh = Math.max(5, h);
+    paintIsland(c, w * 0.08, w * 0.42, kh, seed + 1, 0, 1.4);
+    reedPatch(c, -w * 0.22, w * 0.55, 34, 46, seed + 2);
+    lantern(c, w * 0.12, -Math.max(0, islandTop(w * 0.04, w * 0.42, kh, seed + 1, 0)) + 1.5, 30);
+    reedPatch(c, w * 0.32, w * 0.4, 30, 30, seed + 3);
+    pads(c, 0, w * 0.5, 14, seed + 30);
+  } else if (p.kind === "crag") {
+    // a jagged rock, ferns in its clefts, a twisted pine leaning out from near its top
+    const dir = p.dir ?? 1;
+    paintIsland(c, 0, w, h, seed + 1, 1, 0.8);
+    const r = rng(seed + 40);
+    for (let i = 0; i < 4; i++) {
+      const x = (r() - 0.5) * w * 0.7;
+      const T = islandTop(x, w, h, seed + 1, 1);
+      const yy = -T * (0.3 + 0.5 * r()), ln = 7 + r() * 8, a = (r() < 0.5 ? -1 : 1) * (0.4 + 0.5 * r());
+      if (T > 6) fern(c, x, yy, ln, a, seed + 50 + i);
+    }
+    const px = -dir * w * 0.12;
+    const pt = islandTop(px, w, h, seed + 1, 1);
+    leaningPine(c, px, -pt + 3, h * 1.25 + 26, dir, seed + 60);
+    clump(c, dir * w * 0.3, -Math.max(2, islandTop(dir * w * 0.3, w, h, seed + 1, 1)) - 2, 6, P.moss.slice(2, 6), P.pine.slice(2), 0.42, seed + 70, 0.75);
+    reedPatch(c, -dir * w * 0.42, w * 0.35, 18, 18, seed + 3);
+    pads(c, 0, w * 0.6, 10, seed + 30);
+  } else {
+    // the torii's islet: a low mossy rock and a stone, reeds on both sides, the torii's posts
+    // standing in the shallows with wet dark feet
+    paintIsland(c, -w * 0.12, w * 0.75, Math.max(5, h), seed + 1, 0, 1.6);
+    paintIsland(c, w * 0.32, w * 0.22, Math.max(3, h * 0.55), seed + 4, 0.4, 1);
+    reedPatch(c, -w * 0.48, w * 0.32, 24, 22, seed + 2);
+    const H = Math.max(56, h * 4);
+    const tx = w * 0.06;
+    torii(c, tx, 1, H);
+    // wet dark feet on the posts, a bright wet line where they meet the water
+    const span = H * 0.62, pw = Math.max(1.5, H * 0.07);
+    for (const sx of [-1, 1]) {
+      const fx = tx + (sx * span) / 2;
+      const wh = 5 + 2 * hash1(sx + 3, seed);
+      for (let o = -pw / 2; o <= pw / 2; o += 0.5) for (let up = 0; up < wh; up += 0.5) dot(c, fx + o, -up, up < 0.6 ? P.cloud[2]! : up < 2.5 ? P.red[5]! : P.red[4]!);
+    }
+    reedPatch(c, w * 0.5, w * 0.3, 20, 16, seed + 3);
+    pads(c, tx, w * 0.6, 12, seed + 30);
+  }
+}
