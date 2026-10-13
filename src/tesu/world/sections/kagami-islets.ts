@@ -21,8 +21,9 @@ export function kagamiIslets(b: WorldBuilder): void {
   // a jagged rock with a twisted pine leaning out over the water (play-walker's right, play-catch's
   // left, cut by the catch's left edge)
   bg(b, "back", 5330, "op.islet", { kind: "crag", w: 110, h: 62, dir: 1 }, LAKE_Y, 2, 7919 * 3102);
-  // the small torii in the shallows: in the catch's right third (x 1325-1411), clear of her; in
-  // jetty-6s (682-742) and play-east (774-834) west of the lift's top station (106.8-108 H),
-  // never behind it
-  bg(b, "back", 6230, "op.islet", { kind: "torii", w: 96, h: 13 }, LAKE_Y, 3, 7919 * 3103);
+  // the small torii in the shallows (round 2: from back x 6230 to 5700): every frame keeps it at
+  // least 60 px clear of her and of the lift's top station (catch x ~557-643, pullback ~378-443,
+  // jetty-6s ~162-222, play-catch ~600-660, play-east ~244-304); anywhere from 5760 to 6450 puts
+  // it behind her or the station in one frame or another
+  bg(b, "back", 5700, "op.islet", { kind: "torii", w: 96, h: 13 }, LAKE_Y, 3, 7919 * 3103);
 }
