@@ -10,6 +10,7 @@
 import { definePainter } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { clamp, hash1, tone } from "../../raster.ts";
+import { dot } from "./bank.ts";
 
 export interface ReedsP {
   /** Width of the bed, px; anchor at the waterline at its left end. */
@@ -31,7 +32,8 @@ export const reeds = definePainter<ReedsP>("op.reeds", {
   bounds(p) {
     let g = 0;
     for (const v of p.ground ?? []) g = Math.max(g, v);
-    return [-8, -p.h - g - 8, p.w + 10, 4];
+    // (a leaf arches out up to a third of the tallest reed's height)
+    return [-8 - p.h * 0.32, -p.h - g - 8, p.w + 10 + p.h * 0.32, 4];
   },
   paint(c, p) {
     const d = c.d, seed = c.seed;
@@ -45,6 +47,11 @@ export const reeds = definePainter<ReedsP>("op.reeds", {
       return (g[i] ?? 0) * (1 - fr) + (g[Math.min(g.length - 1, i + 1)] ?? 0) * fr;
     };
     const n = Math.round((p.w / 10) * (p.density ?? 3));
+    // one density at the close band: whole level-1 px there, as before below it
+    const put = (lx: number, ly: number, col: number): void => {
+      if (d > 1) dot(c, lx, ly, col);
+      else c.buf.set(Math.round(c.X(lx)), Math.round(c.Y(ly)), col);
+    };
     for (let i = 0; i < n; i++) {
       const x0 = hash1(i, seed) * p.w;
       // the bed is fuller in the middle
@@ -60,18 +67,18 @@ export const reeds = definePainter<ReedsP>("op.reeds", {
       const dark = hash1(i, seed + 4) < 0.5;
       for (let s = 0; s < hh; s += 0.5 / d) {
         const u = s / hh;
-        const X = Math.round(c.X(x0 + lean * s + sway * u * u)), Y = Math.round(c.Y(2 - g0 - s));
-        c.buf.set(X, Y, u > 0.8 ? P.moss[3]! : u > 0.45 ? P.moss[dark ? 5 : 4]! : P.moss[dark ? 6 : 5]!);
-        if (d >= 1 && u < 0.35) c.buf.set(X + 1, Y, P.moss[6]!);
+        const lx = x0 + lean * s + sway * u * u, ly = 2 - g0 - s;
+        put(lx, ly, u > 0.8 ? P.moss[3]! : u > 0.45 ? P.moss[dark ? 5 : 4]! : P.moss[dark ? 6 : 5]!);
+        if (d >= 1 && u < 0.35) put(lx + 1 / Math.min(d, 1), ly, P.moss[6]!);
       }
       // a cattail on some, trailing its stem's sway a little
       if (hash1(i, seed + 5) < 0.18 && hh > p.h * 0.55) {
         const lag = (Math.sin(ph - 0.6) * 0.8 + Math.sin(ph * 2 - 0.2) * 0.2) * Math.min(2.4, hh / 16);
         for (let s = hh * 0.74; s < hh * 0.92; s += 0.5 / d) {
           const u = s / hh;
-          const X = Math.round(c.X(x0 + lean * s + lag * u * u)), Y = Math.round(c.Y(2 - g0 - s));
-          c.buf.set(X, Y, P.timber[4]!);
-          c.buf.set(X + 1, Y, P.timber[5]!);
+          const lx = x0 + lean * s + lag * u * u, ly = 2 - g0 - s;
+          put(lx, ly, P.timber[4]!);
+          put(lx + 1 / Math.min(d, 1), ly, P.timber[5]!);
         }
       }
       // the odd leaf blade arching out from the stem
@@ -80,7 +87,7 @@ export const reeds = definePainter<ReedsP>("op.reeds", {
         const dir = hash1(i, seed + 8) < 0.5 ? -1 : 1;
         for (let s = 0; s < hh * 0.35; s += 0.5 / d) {
           const k = s / (hh * 0.35);
-          c.buf.set(Math.round(c.X(x0 + lean * at + dir * s * 0.8 + sway * 0.5 * k)), Math.round(c.Y(2 - g0 - at - s * 0.6 + k * k * hh * 0.18)), P.moss[4]!);
+          put(x0 + lean * at + dir * s * 0.8 + sway * 0.5 * k, 2 - g0 - at - s * 0.6 + k * k * hh * 0.18, P.moss[4]!);
         }
       }
     }
