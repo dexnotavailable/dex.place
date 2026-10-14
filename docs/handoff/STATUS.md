@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-14T11:48:45.040Z (14/10/2026, 18:48:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-14T12:48:45.125Z (14/10/2026, 19:48:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,13 +12,13 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_8865cc19-db1 — last activity 15 min ago
-2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
+### wf_8865cc19-db1 — last activity 3 min ago
+2 agents: 1 done, 1 running or stopped mid-way, 0 failed.
 
-- **sky:r4** (running)
+- **sky:r4** (done): The sky and atmosphere lane is done and committed on claude/v2-art-kagami-p1 in worktree D:\Dex\Temp\dexplace-v2\art-wt\kagami\p1. The four things Dex asked for now show in all eight key frames: one family of clouds with real volume, a clear sun, fog that gives depth, and the Walker moved further back among the clouds. - **Clouds.** All clouds now come from one painter in sky.ts: heaps of overlapping billows lit by t
 - **patch:r4** (running)
 
-### wf_f62de466-2f9 — last activity 28 min ago
+### wf_f62de466-2f9 — last activity 88 min ago
 21 agents: 20 done, 1 running or stopped mid-way, 0 failed.
 
 - **critic:r1** (done): 
@@ -36,13 +36,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **critic:r3** (done): 
 - **director:plan:r4** (running)
 
-### wf_02fb83bb-9c9 — last activity 3135 min ago
+### wf_02fb83bb-9c9 — last activity 3195 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v4** (done): I wrote GDK v4 and every DELTA-v4 item is in it. MAP.svg and the builder map both parse as XML, and I rendered both with headless Edge and looked at them; the leak scan passes. The one thing I could not do is collect new reference images: the indoors-grand, indoors-narrow and outdoors-narrow gaps ar
 - **critic:v4** (done): verdict ready · GDK v4 is ready for Dex. Every DELTA-v4 item is done, and no locked canon line is contradicted. That covers the press-started download, the PC-only warning, Yuki downloading dexClient, no dex.place champion, deep links that skip the intro, the URL scheme, the 3-minute reload, the talisman and the scroll, the music, the hunt prize and stall hints with no randomness, F to interact, and state A left open. I regenerated 
 
-### wf_674119c5-6eb — last activity 3163 min ago
+### wf_674119c5-6eb — last activity 3223 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v1** (done): I've written both files into `D:\Dex\Temp\dexplace-canon-20261012\gdk\v1\`: `GDK.md`, the full design kit in the brief's section order 0 to 10 plus appendices A to E, and `MAP.svg`. The map is valid XML. I rendered it to PNG with headless Edge and checked it by eye: the です shape reads at full size, 
