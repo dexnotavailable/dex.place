@@ -76,7 +76,7 @@ export const P = {
    * bluer, the sky's own cool, so a lost edge melts into it). Its last two steps are
    * the warm bounce from the land and lake in the lowest billows' shade.
    */
-  cumulus: ramp("#fff7ea", "#fde8d6", "#efe7e2", "#dde0e4", "#c9d0d8", "#b4bdc9", "#a0aab8", "#8c97a7", "#c3bfbb", "#aeaaa7"),
+  cumulus: ramp("#fff7ea", "#fde8d6", "#efe7e2", "#dde0e4", "#c9d0d8", "#b4bdc9", "#a0aab8", "#8c97a7", "#c6c2c4", "#b3afb3"),
 } as const;
 
 export type RampName = keyof typeof P;

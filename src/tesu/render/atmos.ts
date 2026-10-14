@@ -333,7 +333,7 @@ void main() {
     float row = floor(phase);
     float along = vnoise(vec2(x3 / 520.0 + row * 3.7 - t * 0.006, row));
     // (each band swells in its middle and tapers to nothing at its ends)
-    float w = (0.025 + 0.04 * hash2(vec2(row, 4.4))) * smoothstep(0.5, 0.75, along);
+    float w = (0.04 + 0.05 * hash2(vec2(row, 4.4))) * smoothstep(0.5, 0.75, along);
     band = step(fract(phase), w) * step(0.4, hash2(vec2(row, 9.1))) * smoothstep(0.45, 0.9, r) * uNear.z;
   }
   float ruff = vnoise(vec2(wx / 60.0 + t * 0.03, r * 9.0));
@@ -379,7 +379,7 @@ void main() {
   float lum = dot(refl, vec3(0.3, 0.55, 0.15));
   if (gl > 0.993 - 0.01 * k * lum && k > 0.15 && (uNear.z <= 0.0 || band > 0.0 || k < 0.6)) c = mix(c, uGlint, 0.8);
   // (round 6) the ripple bands: a lighter, cooler line where the wind roughens the mirror
-  c = mix(c, mix(uShallow, uHaze, 0.5), 0.2 * band);
+  c = mix(c, mix(uShallow, uHaze, 0.5), 0.13 * band * step(0.45, vnoise(vec2(x3 / 30.0 + t * 0.3, pc.y * 0.7))));
   // (round 6) the near water darker and cooler toward the camera, in a few flat steps
   if (uNear.x > 0.0) {
     float nk = smoothstep(1.0, 1.8, r) * uNear.x;
@@ -388,14 +388,14 @@ void main() {
   // haze with distance, stepped (round 6: the farthest rows melt into the haze, the edge wandering,
   // so the lake's far edge never rules a line across the frame)
   float fog = (1.0 - smoothstep(0.03, 0.9, r)) * 0.7;
-  vec3 hz = uHaze;
+  // (into the haze's own value, the sky's at the horizon, over a band of frame rows below the
+  // lake's far edge whose depth wanders along it: never a ruled line or a paler strip)
   if (uNear.w > 0.0) {
-    float melt = uNear.w * smoothstep(0.3, 0.88, u + 0.3 * (vnoise(vec2(x3 / 2400.0, 1.7)) - 0.5) + 0.12 * (vnoise(vec2(x3 / 600.0, 4.2)) - 0.5));
-    // (toward the pale of the mist lying on the far shore, not the haze's middle value)
-    hz = mix(uHaze, vec3(0.94, 0.965, 0.952), 0.55 * smoothstep(0.6, 1.0, melt / max(0.01, uNear.w)));
-    fog = max(fog, melt);
+    float rowFar = uHz + denom / (1.0 / uDepth.y + 1.0 / uZ - 1.0);
+    float reach = 26.0 + 30.0 * vnoise(vec2(x3 / 2400.0, 1.7)) + 12.0 * vnoise(vec2(x3 / 600.0, 4.2));
+    fog = max(fog, uNear.w * (1.0 - smoothstep(0.0, reach, q.y - rowFar)));
   }
-  c = mix(c, hz, stepd(fog, 6.0, pc));
+  c = mix(c, uHaze, stepd(fog, 6.0, pc));
   o = vec4(c, 1.0);
 }`;
 

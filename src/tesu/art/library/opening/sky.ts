@@ -466,6 +466,17 @@ function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
         }
       }
     }
+    // no slivers: a lobe showing only as a 1 px crack between two of its neighbours that agree
+    // takes their lobe (a painted cloud has no hairline fissures)
+    for (let pass = 0; pass < 2; pass++) {
+      for (let gy = 1; gy < h - 1; gy++) for (let gx = 1; gx < w - 1; gx++) {
+        const k = gy * w + gx, o = own[k]!;
+        if (o < 0) continue;
+        const l = own[k - 1]!, r = own[k + 1]!, u = own[k - w]!, d = own[k + w]!;
+        if (l >= 0 && l === r && l !== o) { own[k] = l; NX[k] = (NX[k - 1]! + NX[k + 1]!) / 2; NY[k] = (NY[k - 1]! + NY[k + 1]!) / 2; continue; }
+        if (u >= 0 && u === d && u !== o) { own[k] = u; NX[k] = (NX[k - w]! + NX[k + w]!) / 2; NY[k] = (NY[k - w]! + NY[k + w]!) / 2; }
+      }
+    }
     const dist = chamfer((i) => own[i]! >= 0, w, h);
     const Htot = Math.max(8, -y0);
     // how far the sunlight travels through the cloud to reach each px (on a 2 px grid, blurred):
@@ -521,7 +532,11 @@ function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
         shadeB = (1 - (SUN[0] * ux + SUN[1] * uy + SUN[2] * uz)) / 2;
         upB = Math.max(0, -uy);
       }
-      const deep = 0.45 * deepAt(gx, gy) + 0.55 * (dSum[i]! / Math.max(1, dN[i]!));
+      // (in the light each lobe takes one value of the big shade, so its outline reads; deep in the
+      // shade the big shade runs smooth across them, so their edges are lost)
+      const dp = deepAt(gx, gy);
+      const wl = 0.7 * clamp(1.15 - dp * 1.3, 0, 1);
+      const deep = (1 - wl) * dp + wl * (dSum[i]! / Math.max(1, dN[i]!));
       const py = y0 + gy + 0.5;
       const low = layer ? 0 : clamp(1 - (b.base - py) / Math.max(4, H.h * 0.6), 0, 1);
       // (in the cloud's own shade the lobes merge: lost edges; in the sun each one reads)
@@ -602,7 +617,10 @@ function paintCloud(c: PaintCtx, p: CloudP): void {
       while (i + 1 < CLOUD_AT.length && t >= CLOUD_AT[i + 1]!) i++;
       const near = ((CLOUD_AT[i + 1] ?? 2) - t) / M.seam[k]!;
       if (near < 1 && dith > near) i = Math.min(CLOUD_AT.length - 1, i + 1);
-      if (BOUNCE[i] !== undefined && dith < M.warm[k]!) i = BOUNCE[i]!;
+      // (the bounce in flat patches with a narrow dithered seam: a gradient by its steps, never a
+      // screen door)
+      const wm = M.warm[k]!;
+      if (BOUNCE[i] !== undefined && (wm > 0.66 || (wm > 0.5 && dith < (wm - 0.5) / 0.16))) i = BOUNCE[i]!;
       b.set(x, y, R[i]!);
     }
   }

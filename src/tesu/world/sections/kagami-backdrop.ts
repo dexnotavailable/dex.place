@@ -88,7 +88,7 @@ const WALKER_VEILS: Veil[] = [
  * back's height, its two torn ends showing either side of him, so he stands IN the weather.
  */
 const WALKER_BEHIND: Veil[] = [
-  [520, 330, 214, 14, 0.7, 0.55, 0.5, -0.04],
+  [520, 330, 214, 15, 0.82, 0.55, 0.62, -0.04],
 ];
 const MID_POOLS: [number, number, number][] = [
   // the karst standing in the lake (P2 below): pools at their feet, their size by the karst's
