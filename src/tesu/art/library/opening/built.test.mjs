@@ -51,6 +51,9 @@ const CASES = [
   ["op.islet", { kind: "piles", w: 170, h: 12 }],
   // round 4: a paved road over the rock, its own rock breaking up over its front edge
   ["op.rock", { top: ROAD_TOP, bottom: ROAD_BOTTOM, cap: "path", capH: 9, rough: 12, teeth: 0.7, veg: 0.7 }],
+  // round 6: the station's own fading reflection; a stack of chunks standing in the lake
+  ["op.station", { h: 221, water: 57.6, cable: [6, -19.2], part: "refl" }],
+  ["op.heap", { w: 180, plan: [[0.6, 1.08, 84, 0.3], [0.28, 0.64, 54, 0.4], [0.66, 0.97, 44, 0.78], [-0.1, 0.17, 13, 0.84], [-0.3, -0.16, 7, 0.9]], haze: 0.32, spray: [[0.9, 14, 30]] }],
 ];
 const LEVELS = [2, 1, 0.5, 0.25, 0.125];
 

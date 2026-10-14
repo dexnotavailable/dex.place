@@ -66,6 +66,8 @@ export interface Chunk {
   z: number;
   /** The column's nominal width (its joints' places, without their wander). */
   w: number;
+  /** Its nominal middle (its tilt and how far forward it stands never swim row by row). */
+  xc: number;
 }
 
 const cellW = (o: FaceOpts): number => (o.col ?? 22) * 3;
@@ -111,14 +113,14 @@ function macroZ(x: number, y: number, o: FaceOpts, seed: number): number {
 }
 
 /** The chunk of column [L, xl, xr] (nominal width w) holding depth ly (its own breaks: irregular, tilted, wobbly, some missing). */
-function chunkIn(L: number, w: number, xl: number, xr: number, lx: number, ly: number, o: FaceOpts, seed: number): Chunk {
+function chunkIn(L: number, w: number, xl: number, xr: number, lx: number, ly: number, o: FaceOpts, seed: number, xcIn?: number): Chunk {
   const bed = o.bed ?? 78;
   // a block is roughly as tall as its column is wide, within the bedding's own range
   // (round 4, the critic: "an even grid of rectangles") block heights vary far more, column to column
   const bc = clamp(w * (0.32 + 1.05 * hash1(L, seed + 170)), bed * 0.42, bed * 2.1);
   const y0 = hash1(L, seed + 171) * bc;
   // (the block's nominal middle, so its tilt and how far forward it stands never swim row by row)
-  const xc = jointBase(L, cellW(o), seed) + w / 2;
+  const xc = xcIn ?? jointBase(L, cellW(o), seed) + w / 2;
   const tilt = (hash1(L, seed + 172) - 0.5) * 0.12;
   const brk = (k: number): number => y0 + (k + (hash(L, k, seed + 173) - 0.5) * 0.55) * bc + tilt * (lx - xc) + (vnoise1(lx / 14 + k * 2.9, seed + 174) - 0.5) * 2.6 + (vnoise1(lx / 4 + k * 1.3, seed + 175) - 0.5) * 0.9;
   const has = (k: number): boolean => hash(L, k, seed + 176) > 0.18;
@@ -133,7 +135,7 @@ function chunkIn(L: number, w: number, xl: number, xr: number, lx: number, ly: n
   // (round 4: the face first grouped into a few big masses of light and shade, then block by
   // block; a strong per-block term read as a checkerboard of light and dark tiles)
   const z = clamp(0.5 + (macroZ(xc, (yt + yb) / 2, o, seed) - 0.5) * 1.9 + (hash(L, a, seed + 177) - 0.5) * 0.6, 0, 1);
-  return { L, k: a, xl, xr, yt, yb, z, w };
+  return { L, k: a, xl, xr, yt, yb, z, w, xc };
 }
 
 /** The chunk at a level-1 point, and its neighbours to the left and right at the same depth. */
@@ -156,8 +158,8 @@ export function face(lx: number, ly: number, depth: number, o: FaceOpts, seed: n
   const px = 1 / Math.max(d, 0.125);
   const thr = thrOf(d);
   const { c: C, left: Lc, right: Rc } = chunkAt(lx, ly, o, seed);
-  const above = chunkIn(C.L, C.w, C.xl, C.xr, lx, C.yt - 0.5, o, seed);
-  const below = chunkIn(C.L, C.w, C.xl, C.xr, lx, C.yb + 0.5, o, seed);
+  const above = chunkIn(C.L, C.w, C.xl, C.xr, lx, C.yt - 0.5, o, seed, C.xc);
+  const below = chunkIn(C.L, C.w, C.xl, C.xr, lx, C.yb + 0.5, o, seed, C.xc);
   const w = Math.max(1, C.xr - C.xl), S = Math.max(1, C.yb - C.yt);
   const xIn = lx - C.xl, xR = C.xr - lx, s = ly - C.yt, sb = C.yb - ly;
   const z = C.z;
@@ -212,12 +214,40 @@ export function face(lx: number, ly: number, depth: number, o: FaceOpts, seed: n
     const q = (rc - cornerX) / rc, v = (rc - cornerY) / rc;
     if (q * q + v * v > 1) return { t: Math.max(t + 0.3, 0.76), mat };
   }
+  // (round 6, the critic's P4: "a big blank pale wall with a flat beige band" under the road) a big
+  // block is no single plate: it is broken along a joint and a bedding plane of its own into parts
+  // that stand a little forward or back, each part's own light, a lit edge where a part stands
+  // forward of its neighbour, a shadow where it sits back, a ledge where a lower part steps out
+  if (z > 0.62 && ((w > 120 && S > 70) || (S > 130 && w > 50))) {
+    const jx = w * (0.34 + 0.32 * hash1(id, seed + 211)) + (vnoise1(ly / 9, seed + 212 + C.L) - 0.5) * 3;
+    const jy = S * (0.32 + 0.36 * hash1(id, seed + 213)) + (vnoise1(lx / 11, seed + 214 + C.k) - 0.5) * 3 + (xIn - jx) * (hash1(id, seed + 219) - 0.5) * 0.08;
+    const qx = xIn > jx ? 1 : 0, qy = s > jy ? 1 : 0;
+    const sub = (a: number, q: number): number => (hash(id * 4 + a, q, seed + 215) - 0.5) * 0.8 + (a === 1 ? 0.12 : -0.08) * (hash1(id, seed + 218) < 0.5 ? 1 : -1);
+    const dz = sub(qx, qy);
+    t -= dz * 0.42;
+    // the joint between left and right parts: the right part sitting back takes the left's shadow
+    const dzLR = sub(1, qy) - sub(0, qy);
+    const ex = xIn - jx;
+    if (ex >= 0 && ex < px * 1.1) t = Math.max(t + 0.26, 0.74);
+    else if (dzLR < -0.08 && ex > 0 && ex < 2.5 + -dzLR * 18 + (vnoise1(ly / 6, seed + 216) - 0.5) * 2 + s * 0.03) t = Math.max(t + 0.26, 0.74);
+    else if (dzLR > 0.08 && ex > 0 && ex < px * 2.2) t -= 0.16;
+    // the bedding plane between upper and lower parts
+    const dzUD = sub(qx, 1) - sub(qx, 0);
+    const ey = s - jy;
+    if (ey >= 0 && ey < px * 1.1) t = Math.max(t + 0.24, 0.72);
+    else if (dzUD > 0.08 && ey > 0 && ey < px * 2.4) t -= 0.2;
+    else if (dzUD < -0.08 && ey > 0 && ey < 2.5 + -dzUD * 16) t = Math.max(t + 0.24, 0.72);
+    // the odd crack down a part, where water runs from the joint above it
+    const cx2 = (qx ? jx + (w - jx) * 0.5 : jx * 0.45) + (vnoise1(ly / 8, seed + 217 + qx) - 0.5) * 3;
+    if (d >= 0.5 && hash1(id * 3 + qx, seed + 220) < 0.6 && Math.abs(xIn - cx2) < px * 0.6 && (qy ? ey : s) < S * 0.4) t += 0.22;
+  }
   // the stone's own surface: weathering runs down it in long vertical streaks (never blotches)
   const m = vnoise(lx / 5 + C.k * 7.3, ly / 70 + C.L * 1.7, seed + 206) * 0.7 + vnoise1(lx / 23 + C.k * 3.3, seed + 207) * 0.3;
   if (m > 0.68) t += 0.07;
   else if (m < 0.26) t -= 0.05;
-  // warm light on the sunlit upper part of a block standing forward
-  if (z > 0.7 && t < 0.34 && s < S * 0.5) mat = "warm";
+  // warm light on the sunlit upper part of a block standing forward (round 6: its upper rim only, a
+  // broad warm band across a big block read as a flat beige stripe)
+  if (z > 0.7 && t < 0.34 && s < Math.min(S * 0.5, 16)) mat = "warm";
   // --- water's marks: grooves and stains only where it runs down from a green ledge or the lip
   const wet = dzA < -0.1 || depth < S + 4;
   if (wet && d >= 0.5) {
@@ -258,7 +288,7 @@ export function nextLedge(lx: number, ly: number, o: FaceOpts, seed: number): { 
   let y = ly;
   for (let n = 0; n < 6; n++) {
     const { c } = chunkAt(lx, y, o, seed);
-    const below = chunkIn(c.L, c.w, c.xl, c.xr, lx, c.yb + 0.5, o, seed);
+    const below = chunkIn(c.L, c.w, c.xl, c.xr, lx, c.yb + 0.5, o, seed, c.xc);
     if (below.z < c.z - 0.1 || below.xr - below.xl < 8) { y = c.yb + 0.5; continue; }
     if (c.z < below.z - 0.1) return { y: c.yb, ov: c.z - below.z };
     y = c.yb + 0.5;
@@ -297,6 +327,11 @@ export interface LimeChunk {
   round?: number;
   /** (round 5) How far it stands back in the haze, 0..1 (default 0): paler, its darks lifted. */
   haze?: number;
+  /**
+   * (round 6, the critic's "scree pillows") A slab broken along its bedding: a flat top (no dome,
+   * only a little wobble), and one or two bedding planes across its face.
+   */
+  flat?: boolean;
   seed: number;
 }
 
@@ -308,7 +343,7 @@ export function chunkTop(k: LimeChunk, x: number): number {
   const w = k.x1 - k.x0;
   // (a free block's top is a little domed and lumpy at three scales; a carried walk line is kept)
   const q = (x - k.x0) / Math.max(1, w) * 2 - 1;
-  let base = k.topAt ? k.topAt(x) + Math.min(0, wob(x, k.seed + 3)) * 0.25 : k.top + (k.tilt ?? 0) * (x - k.x0) + wob(x, k.seed + 3) - (1 - q * q) * Math.min(4, w * 0.05);
+  let base = k.topAt ? k.topAt(x) + Math.min(0, wob(x, k.seed + 3)) * 0.25 : k.flat ? k.top + (k.tilt ?? 0) * (x - k.x0) + wob(x, k.seed + 3) * 0.3 : k.top + (k.tilt ?? 0) * (x - k.x0) + wob(x, k.seed + 3) - (1 - q * q) * Math.min(4, w * 0.05);
   // a block broken along a joint: one part of its top stands higher, a short slant between
   if (!k.topAt && w > 14 && hash1(30, k.seed) > 0.35) {
     const nu = 0.28 + 0.44 * hash1(31, k.seed), drop = Math.min(7, (k.foot - k.top) * 0.3) * (0.5 + 0.5 * hash1(32, k.seed));
@@ -365,8 +400,9 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
   const s0 = k.seed;
   // cracks where water runs down from its top: one or two, wobbling, each its own length
   const nCr = w > 18 ? 1 + (hash1(1, s0) < 0.55 ? 1 : 0) : 0;
-  // a bedding split across a tall block, part of the way
-  const bedY = hash1(2, s0) < 0.6 ? 0.35 + 0.3 * hash1(3, s0) : -1;
+  // a bedding split across a tall block, part of the way (a slab: always one, a second lower down)
+  const bedY = k.flat || hash1(2, s0) < 0.6 ? 0.35 + 0.3 * hash1(3, s0) : -1;
+  const bedY2 = k.flat ? 0.7 + 0.15 * hash1(5, s0) : -1;
   for (let y = Y0; y < Y1; y++) {
     const ly = LYc(c, y);
     const [sa, sb] = chunkSides(k, ly);
@@ -382,7 +418,8 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
       // (round 4: the bright line where it meets the water broken into runs, a quiet step, never a
       // ruled cyan line under every block)
       // (round 5: quieter still, runs of it only, a step darker: long cyan dashes read as ruled lines)
-      if (k.water !== undefined && ly > k.water - 0.5) { b.set(x, y, u > 0.08 && u < 0.92 && vnoise1(lx / 3.2, s0 + 19) > 0.62 ? (u < 0.5 ? P.jade[3]! : P.jade[5]!) : P.karst[8]!); continue; }
+      // (round 6: rarer still; a slab's waterline dashes read as a ruled cyan line)
+      if (k.water !== undefined && ly > k.water - 0.5) { b.set(x, y, u > 0.08 && u < 0.92 && vnoise1(lx / 3.2, s0 + 19) > (k.flat ? 0.8 : 0.62) ? (u < 0.5 ? P.jade[3]! : P.jade[5]!) : P.karst[8]!); continue; }
       // the moss on its top ledge: a lit top row, the body, a ragged hem hanging over the stone
       const hem = cap > 0 ? cap * (0.55 + 0.7 * vnoise1(lx / 5, s0 + 13)) + (vnoise1(lx / 1.8, s0 + 14) > 0.72 ? 1.8 : 0) : 0;
       if (s < hem) { b.set(x, y, s < 1 ? (u < 0.55 ? P.moss[2]! : P.moss[3]!) : s > hem - 1 ? P.moss[6]! : u > 0.7 ? P.moss[5]! : P.moss[4]!); continue; }
@@ -401,7 +438,7 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
       // darker toward its foot; the wet zone over the water dark with a film of algae
       t += 0.16 * clamp((s - H * 0.45) / (H * 0.55), 0, 1);
       if (k.water !== undefined) {
-        const wetH = 2.5 + 4 * vnoise1(lx / 6, s0 + 15);
+        const wetH = k.flat ? 1.2 + 2.6 * vnoise1(lx / 6, s0 + 15) : 2.5 + 4 * vnoise1(lx / 6, s0 + 15);
         if (k.water - ly < wetH) {
           if (k.water - ly > wetH - 1.4 && vnoise1(lx / 2.5, s0 + 16) > 0.45) { b.set(x, y, P.moss[6]!); continue; }
           t = Math.max(t + 0.3, 0.84);
@@ -425,10 +462,15 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
           else if (lx - cx > -1.6 && lx - cx < -0.5) t -= 0.1;
         }
       }
-      if (bedY > 0 && H > 14) {
-        const by = T + H * bedY + wob(lx * 0.8, s0 + 25) * 0.6;
-        if (Math.abs(ly - by) < 0.55 && u > 0.08 + 0.3 * hash1(4, s0) && u < 0.95) t = Math.max(t + 0.3, 0.8);
+      if (bedY > 0 && H > (k.flat ? 9 : 14)) {
+        const by = T + H * bedY + wob(lx * 0.8, s0 + 25) * (k.flat ? 0.3 : 0.6);
+        if (Math.abs(ly - by) < 0.55 && u > (k.flat ? 0.03 : 0.08 + 0.3 * hash1(4, s0)) && u < 0.95) t = Math.max(t + 0.3, 0.8);
         else if (ly - by > 0.5 && ly - by < 1.6 && u < 0.9) t -= 0.08;
+      }
+      if (bedY2 > 0 && H > 16) {
+        const by = T + H * bedY2 + wob(lx * 0.7, s0 + 26) * 0.3;
+        if (Math.abs(ly - by) < 0.55 && u > 0.12 + 0.3 * hash1(6, s0) && u < 0.97) t = Math.max(t + 0.26, 0.78);
+        else if (ly - by > 0.5 && ly - by < 1.5 && u < 0.9) t -= 0.06;
       }
       // a nearer chunk's shadow on it, down and to the right
       for (const q of casters) if (!inChunk(q, lx, ly) && inChunk(q, lx - 4, ly - 3)) { t = Math.max(t + 0.3, 0.8); break; }

@@ -47,6 +47,19 @@ export function kagamiRock(b: WorldBuilder): void {
   // the great pine and the road's rock), so the lake's end never shows as a flat polygon with a
   // ruled diagonal against the wall's foot
   b.piece("play", "op.pool", h(107.2), LAKE_Y, { w: h(3.35), h: 186 }, { z: -1, seed: 7919 * 3022 });
+  // (round 6, the critic's P3, catch's right edge, fourth round) at the foot of Shiraito's wall where
+  // it meets the lake (back plane, in front of the wall's west end and behind its falls' spray): a
+  // stack of chunks standing in the water, tall against the wall and stepping down to the west, so
+  // the wall's end is no column with a ruled base and the lake's end no smooth diagonal there
+  bg(b, "back", 6418, "op.heap", {
+    w: 180,
+    plan: [
+      [0.6, 1.08, 84, 0.3], [0.28, 0.64, 54, 0.4], [-0.02, 0.32, 40, 0.36],
+      [0.66, 0.97, 44, 0.78], [0.4, 0.7, 30, 0.86], [0.14, 0.44, 21, 0.9], [-0.1, 0.17, 13, 0.84],
+      [-0.3, -0.16, 7, 0.9],
+    ],
+    haze: 0.32,
+  }, LAKE_Y, 2.5, 7919 * 3024);
   // Kagami's spring: the lake drains through the karst and bursts from the cliff below it
   b.piece("play", "op.spring", h(97), h(65.4), { mw: 80, mh: 50, w: 44, drop: h(11) }, { z: 1, reflect: false });
   // its flow (12 fps over four frames)
