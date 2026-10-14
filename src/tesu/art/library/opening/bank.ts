@@ -83,6 +83,8 @@ export interface MassSpec {
   levels?: [number, number];
   /** (round 6) A rise whose flank is grown over all the way down (no bare earth or mud shelves showing). */
   closed?: boolean;
+  /** (round 6) A rise nearer the camera than the rest, in its own shade: lit only along its rim, 0..1. */
+  shade?: number;
 }
 
 export interface BankP {
@@ -1260,8 +1262,9 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
         if (y < foot(x) - (vnoise1(x / 37, seed + 17) > 0.52 ? 1.5 : 5 + e * 0.07) && !open) {
           // (round 4, the critic: the near corner is ref 04's dark mass lit only along its rim) the
           // crown band catches the sun on its tips, everything under it sinks into shade fast
-          const lit = clamp(0.84 - q * 1.6 - Math.max(0, io) * 0.5 + (r() - 0.5) * 0.15, 0, 1);
-          parts.push(tuftPart({ x, y, rx, ry, lit, dark: clamp(q * 0.95 + Math.max(0, io) * 0.25, 0, 1), seed: seed + 1000 + band * 300 + Math.round(x) }, f, band === 0 && !small));
+          const sh = s.shade ?? 0;
+          const lit = clamp(0.84 - q * 1.6 - Math.max(0, io) * 0.5 + (r() - 0.5) * 0.15 - (band > 0 ? sh : sh * 0.4), 0, 1);
+          parts.push(tuftPart({ x, y, rx, ry, lit, dark: clamp(q * 0.95 + Math.max(0, io) * 0.25 + sh * 0.7, 0, 1), seed: seed + 1000 + band * 300 + Math.round(x) }, f, band === 0 && !small));
         }
       }
       x += rx * (0.72 + 0.45 * r());

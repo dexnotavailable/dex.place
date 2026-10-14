@@ -84,14 +84,16 @@ export const NEAR_MASSES: MassSpec[] = [
   // standing in another's middle:
   // - the pull-back (level 2, zoom 1 to 1.6; P5 is not drawn above 1.6): the rise's east shoulder
   //   coming at the camera in its bottom-left corner (x 0..400 at 1.35x), dark, over the jetty's
-  //   reflection; at play zoom it would stand under her in play-catch, so it is not painted there
-  //   (it has left the frame by the left edge when the camera reaches play zoom)
-  { kind: "rise", x: 7700, w: 400, h: 140, peak: 0.26, bank: 0.6, closed: true, levels: [1.5, 9] },
+  //   reflection; at play zoom it would stand under her in play-catch, so it is not painted there.
+  //   Its east end stops at 3D x ~9640: the reveal track crosses zoom 1 (where the plate level
+  //   switches) between ticks 340 and 350 of the opening (her x 107.3 H, the camera at 10403), when
+  //   it has left the frame by the left edge (at about x -70), so it never pops out
+  { kind: "rise", x: 7540, w: 540, h: 190, peak: 0.36, bank: 0.6, closed: true, shade: 0.4, levels: [1.5, 9] },
   // - the postcard (level 0.43, the vista at 0.5x): its bottom-left corner, a dark rise coming in
   //   from the left edge (its right corner is Gate Road's cliff); the bottom centre stays open
   //   water, her reflection and the jetty's (a shelf in front of the cliff's foot on the right would
   //   cover Gate Road's natural arch in guard-terrace, which sees the near plane at the same density)
-  { kind: "rise", x: 5600, w: 1180, h: 380, peak: 0.1, bank: 0.75, crown: [0.5, 0.5], closed: true, levels: [0, 0.6] },
+  { kind: "rise", x: 5600, w: 1180, h: 380, peak: 0.1, bank: 0.75, crown: [0.5, 0.5], closed: true, shade: 0.3, levels: [0, 0.6] },
 ];
 
 /** The lake's near shore on P5 and its reed beds (seed block 3). */

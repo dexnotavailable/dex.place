@@ -18,7 +18,7 @@ import { Spans, bayer4, clamp, fbm1, hash, hash1, rng, tone, vnoise, vnoise1 } f
 import { boxOf, cached, clump, spansFor, toAbs, yAt } from "./kit.ts";
 import { chunkAt, chunkTop, face, inChunk, limeChunk, nextLedge, type FaceOpts, type LimeChunk } from "./face.ts";
 import { needlePad } from "./flora.ts";
-import { LX, LY, bladePath, dot, grass, stroke } from "./bank.ts";
+import { LX, LY, bladePath, dot, grass, reflOf, stroke } from "./bank.ts";
 import { KERB_DEPTH, kerbAt, kerbGrit, kerbPx, kerbRocks, kerbShade, kerbTop, type KerbRock } from "./kerb.ts";
 
 export interface RockP {
@@ -1106,11 +1106,11 @@ export const scree = definePainter<ScreeP>("op.scree", {
       // corners, a bedding plane or two across each, stacked and offset; one fallen aslant; the
       // nearest the darkest, low and wide
       [0.0, 0.7, 0.03, 1.6, -0.03, 0.42, 0.02],
-      [0.48, 1.06, 0.1, 1.0, 0.03, 0.55, 0.06],
-      [-0.16, 0.42, 0.34, 1.05, 0.12, 0.7, 0.1],
-      [0.3, 1.0, 0.5, 0.8, -0.04, 0.82, 0.14],
-      [-0.22, 0.36, 0.8, 1.2, 0.03, 0.9, 0.2],
-      [0.2, 0.7, 0.95, 0.6, -0.06, 0.94, 0.26],
+      [0.44, 1.06, 0.1, 1.15, 0.03, 0.55, 0.06],
+      [-0.16, 0.46, 0.34, 1.5, 0.12, 0.7, 0.1],
+      [0.26, 1.0, 0.5, 1.25, -0.04, 0.82, 0.14],
+      [-0.22, 0.4, 0.8, 1.55, 0.03, 0.9, 0.2],
+      [0.16, 0.7, 0.95, 0.95, -0.06, 0.94, 0.26],
     ];
     const ks: LimeChunk[] = plan.map(([a, q, bs, hs, tl, z, sh], i) => {
       const base = D * bs, x0 = W * a + (r() - 0.5) * 6, x1 = W * q + (r() - 0.5) * 6;
@@ -1162,7 +1162,7 @@ export const scree = definePainter<ScreeP>("op.scree", {
     function reflect(k: LimeChunk): void {
       const base = k.water!;
       const hgt = Math.max(2, base - k.top);
-      const reach = Math.min(hgt * 0.75, 30);
+      const reach = Math.min(hgt < 12 ? hgt * 0.8 : hgt * 0.55, 20);
       const Y0 = Math.max(b.oy, Math.floor(c.Y(base + 0.5))), Y1 = Math.min(b.y1, Math.ceil(c.Y(base + reach)));
       const X0 = Math.max(b.ox, Math.floor(c.X(k.x0 - 4))), X1 = Math.min(b.x1, Math.ceil(c.X(k.x1 + 4)));
       for (let y = Y0; y < Y1; y++) {
@@ -1179,7 +1179,10 @@ export const scree = definePainter<ScreeP>("op.scree", {
           if (row > 1 && hash1(row, seed + 31) < 0.05 + 0.25 * dn / reach && hash1(Math.floor((lx + 40 * hash1(row, seed + 33)) / 22), seed + row) < 0.8) continue;
           if (dn / reach > 0.55 && hash1(Math.floor((lx + 30 * hash1(Math.floor(dn / 3), seed + 34)) / 20) * 7 + Math.floor(dn / 3), seed + 32) < (dn / reach - 0.55) * 1.8) continue;
           const T = chunkTop(k, sx), s = my - T;
-          const col = dn < 1 ? P.karst[8]! : s < (k.cap ?? 0) ? P.moss[6]! : s < (k.cap ?? 0) + 2 ? P.karst[5]! : dn < 3.5 ? P.karst[7]! : P.karst[6]!;
+          // (round 6: in the lake's own mirrored tint, a step darker, fading toward the near water;
+          // flat grey bands under each slab read as trays)
+          const f = Math.min(3, 1 + Math.floor((dn / reach) * 3));
+          const col = dn < 1 ? P.karst[8]! : reflOf(s < (k.cap ?? 0) ? P.moss[4]! : s < (k.cap ?? 0) + 2 ? P.karst[3]! : P.karst[5]!, f, 0);
           b.set(x, y, col);
         }
       }
@@ -1392,27 +1395,16 @@ export const heap = definePainter<HeapP>("op.heap", {
         }
       }
     }
-    // foam lapping at the front blocks' feet, in short runs (a row of white dashes along every foot
-    // read as a ruled dotted line)
-    for (const k of ks) {
-      if (k.z < 0.6) continue;
-      for (let x = Math.max(b.ox, Math.floor(c.X(k.x0 + 2))); x < Math.min(b.x1, Math.ceil(c.X(k.x1 - 1))); x++) {
-        const lx = LX(c, x);
-        if (vnoise1(lx / 6, seed + 39 + Math.round(k.x0)) < 0.62) continue;
-        const fh = 0.6 + 1.4 * vnoise1(lx / 3.5, seed + 40);
-        for (let y = Math.max(b.oy, Math.floor(c.Y(-fh))); y < Math.min(b.y1, Math.ceil(c.Y(0))); y++) {
-          if (vnoise(lx / 2.4, LY(c, y) / 1.6, seed + 41) < 0.4) continue;
-          b.set(x, y, vnoise1(lx / 6, seed + 42) > 0.5 ? C[1]! : C[2]!);
-        }
-      }
-    }
+    // (no foam along their feet: a row of white dashes at one waterline read as a ruled dotted line;
+    // their wet bands meet the water)
     // grass and a shrub on the ledges
     if (d >= 0.3) for (const k of ks) {
       const rr = rng(k.seed + 5);
-      const n = 1 + Math.floor(rr() * 4);
+      // (tufts of short blades fanning out of the moss, never lone tall stalks)
+      const n = 1 + Math.floor(rr() * 3);
       for (let j = 0; j < n; j++) {
         const gx = k.x0 + (k.x1 - k.x0) * (0.1 + 0.8 * rr());
-        grass(c, gx, chunkTop(k, gx) + 1.2, 3 + rr() * 8, (rr() - 0.5) * 0.8, (rr() - 0.4) * 1.2, rr());
+        for (let q = 0, nq = 3 + Math.floor(rr() * 4); q < nq; q++) grass(c, gx + (rr() - 0.5) * 4, chunkTop(k, gx) + 1.2, 2 + rr() * 4, (rr() - 0.5) * 1.3, (rr() - 0.4) * 1.2, rr());
       }
       if (rr() < 0.35 && k.x1 - k.x0 > 14) bush(c, k.x0 + (k.x1 - k.x0) * (0.2 + 0.6 * rr()), chunkTop(k, (k.x0 + k.x1) / 2) + 1, 3 + rr() * 4, k.seed + 9);
     }

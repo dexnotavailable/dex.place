@@ -418,7 +418,8 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
       // (round 4: the bright line where it meets the water broken into runs, a quiet step, never a
       // ruled cyan line under every block)
       // (round 5: quieter still, runs of it only, a step darker: long cyan dashes read as ruled lines)
-      if (k.water !== undefined && ly > k.water - 0.5) { b.set(x, y, u > 0.08 && u < 0.92 && vnoise1(lx / 3.2, s0 + 19) > 0.62 ? (u < 0.5 ? P.jade[3]! : P.jade[5]!) : P.karst[8]!); continue; }
+      // (round 6: rarer still; a slab's waterline dashes read as a ruled cyan line)
+      if (k.water !== undefined && ly > k.water - 0.5) { b.set(x, y, u > 0.08 && u < 0.92 && vnoise1(lx / 3.2, s0 + 19) > (k.flat ? 0.8 : 0.62) ? (u < 0.5 ? P.jade[3]! : P.jade[5]!) : P.karst[8]!); continue; }
       // the moss on its top ledge: a lit top row, the body, a ragged hem hanging over the stone
       const hem = cap > 0 ? cap * (0.55 + 0.7 * vnoise1(lx / 5, s0 + 13)) + (vnoise1(lx / 1.8, s0 + 14) > 0.72 ? 1.8 : 0) : 0;
       if (s < hem) { b.set(x, y, s < 1 ? (u < 0.55 ? P.moss[2]! : P.moss[3]!) : s > hem - 1 ? P.moss[6]! : u > 0.7 ? P.moss[5]! : P.moss[4]!); continue; }
@@ -437,7 +438,7 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
       // darker toward its foot; the wet zone over the water dark with a film of algae
       t += 0.16 * clamp((s - H * 0.45) / (H * 0.55), 0, 1);
       if (k.water !== undefined) {
-        const wetH = 2.5 + 4 * vnoise1(lx / 6, s0 + 15);
+        const wetH = k.flat ? 1.2 + 2.6 * vnoise1(lx / 6, s0 + 15) : 2.5 + 4 * vnoise1(lx / 6, s0 + 15);
         if (k.water - ly < wetH) {
           if (k.water - ly > wetH - 1.4 && vnoise1(lx / 2.5, s0 + 16) > 0.45) { b.set(x, y, P.moss[6]!); continue; }
           t = Math.max(t + 0.3, 0.84);
