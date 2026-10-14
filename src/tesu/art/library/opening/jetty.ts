@@ -25,7 +25,9 @@ import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { bayer4, clamp, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { cached, yAt } from "./kit.ts";
-import { LX, LY, bladePath, dot, grass, stroke } from "./bank.ts";
+import { LX, LY, bladePath, dot, grass, reflOf, stroke } from "./bank.ts";
+import { IdxBuf } from "../../raster.ts";
+import { ctxFor } from "../../painter.ts";
 import { chunkTop, limeChunk, type LimeChunk } from "./face.ts";
 
 export interface JettyP {
@@ -1105,7 +1107,7 @@ export interface StationP {
    * "pulley": the wheel alone, turning a notch now and then (32 frames at 8 fps); "lantern": the
    * paper lantern alone, its flame flickering and the lantern swaying a pixel (16 frames at 8 fps).
    */
-  part?: "all" | "frame" | "pulley" | "lantern";
+  part?: "all" | "frame" | "pulley" | "lantern" | "refl";
   frame?: number;
 }
 
@@ -1120,6 +1122,41 @@ const ST = {
   /** The pulley: centre x and radius; the lantern's x. */
   px: -2, pr: 13, lx: -63,
 };
+
+/**
+ * (round 6, the critic's P6: "the station's reflection is a full crisp ladder with a crisp roof, as
+ * dark as the station") The station's own reflection, painted (its sprites are not mirrored): the
+ * frame mirrored about the waterline in the lake's reflected colours, its contrast held to the
+ * deck band's, the rows swaying together and a ripple line across it now and then, dissolving in
+ * long runs downward until it is gone before the mirrored roof.
+ */
+function paintStationRefl(c: PaintCtx, p: StationP): void {
+  const b = c.buf, d = c.d, seed = c.seed;
+  const W = p.water, reach = p.h * 0.62;
+  // the frame, painted alone into a buffer of its own at this density
+  const X0 = Math.max(b.ox, Math.floor(c.X(ST.rx0 - 8))), X1 = Math.min(b.x1, Math.ceil(c.X(ST.rx1 + 8)));
+  const Y0 = Math.max(b.oy, Math.floor(c.Y(W))), Y1 = Math.min(b.y1, Math.ceil(c.Y(W + reach)));
+  if (X0 >= X1 || Y0 >= Y1) return;
+  const sy0 = Math.floor(c.Y(W - reach - 2)), sy1 = Math.ceil(c.Y(W + 1));
+  const src = new IdxBuf(X1 - X0 + 8, sy1 - sy0 + 2, X0 - 4, sy0, d);
+  station.paint({ ...ctxFor(src, d, 0, 0, seed), ax: c.ax, ay: c.ay, X: c.X, Y: c.Y, lx: c.lx, ly: c.ly }, { ...p, part: "frame" });
+  for (let y = Y0; y < Y1; y++) {
+    const ly = LY(c, y), dn = ly - W, u = dn / reach;
+    if (dn < 0) continue;
+    const row = Math.floor(dn);
+    // a ripple line of water across it here and there
+    if (row > 1 && hash1(row, seed + 31) < 0.06 + 0.2 * u) continue;
+    const sway = Math.round((vnoise1(dn / 6, seed + 30) - 0.5) * 2 * Math.min(2.5, 0.2 + dn / 12) * d);
+    const my = Math.round(c.Y(W - dn));
+    for (let x = X0; x < X1; x++) {
+      // dissolving in long runs from a third of its length, gone before the roof
+      if (u > 0.3 && hash1(Math.floor((LX(c, x) + 30 * hash1(Math.floor(dn / 3), seed + 34)) / 18) * 7 + Math.floor(dn / 3), seed + 32) < (u - 0.3) * 1.9) continue;
+      const col = src.get(x + sway, my);
+      if (!col) continue;
+      b.set(x, y, reflOf(col, Math.min(3, 1 + Math.floor(u * 3.2)), 0));
+    }
+  }
+}
 
 /** The pulley's notch angle for a frame: still, a notch (with an easing frame), still, another. */
 function pulleyTurn(f: number): number {
@@ -1145,12 +1182,14 @@ export const station = definePainter<StationP>("op.station", {
   bounds(p) {
     if (p.part === "pulley") return [ST.px - ST.pr - 3, -p.h + 66 + 4, ST.px + ST.pr + 3, -p.h + 66 + 48];
     if (p.part === "lantern") return [ST.lx - 11, -p.h + 66 + 4, ST.lx + 11, -p.h + 66 + 46];
+    if (p.part === "refl") return [ST.rx0 - 8, p.water, ST.rx1 + 8, p.water + p.h * 0.62 + 6];
     return [ST.rx0 - 6, -p.h - 14, ST.rx1 + 6, p.water + 30];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
     const H = p.h, water = p.water;
     const part = p.part ?? "all";
+    if (part === "refl") { paintStationRefl(c, p); return; }
     const f = p.frame ?? 0;
     const [cdx, cy] = p.cable ?? [6, -19.2];
     const top = -H + 66, eave = -H + 50;

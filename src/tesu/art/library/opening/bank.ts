@@ -243,7 +243,10 @@ const MIRROR = [0.58, 0.76, 0.75];
 const DEEP = [82, 137, 149];
 // (round 5: the near water as it now reads at play zoom, so a fading reflection stays a step under it
 // instead of turning into a paler green block)
-const NEAR = [80, 136, 154];
+// (round 6: the sky lane's near water darkens and cools toward the camera, about [62, 115, 142] at
+// the bottom rows; reflections fade toward it, so a long one no longer reads a step lighter than
+// the water round it)
+const NEAR = [66, 120, 146];
 // (round 5: no umber and no roof-tile blue-greys among them: a rise's earth mirrored as red-brown
 // ovals, the limestone as a lavender block)
 const REFL = [
@@ -258,7 +261,7 @@ const reflMemo = new Map<number, number>();
  * deep), a step darker, `f` (0..3) steps further toward the near water as it fades; painted so that
  * after the plane's own ink (`ink`) it reads as that.
  */
-function reflOf(col: number, f: number, ink: number): number {
+export function reflOf(col: number, f: number, ink: number): number {
   const key = col * 64 + f * 16 + Math.round(ink * 10);
   const hit = reflMemo.get(key);
   if (hit !== undefined) return hit;
@@ -533,11 +536,11 @@ function chunkCol(c: PaintCtx, ks: Chunk[], i: number, lx: number, ly: number, x
     while (yb <= sw && bi < 40) {
       b0 = yb;
       bi++;
-      yb += bedOf(bi).thin ? 4 + 6 * hash1(bi, sd + 83) : 15 + 28 * hash1(bi, sd + 84);
+      yb += bedOf(bi).thin ? 3 + 7 * hash1(bi, sd + 83) : 14 + 46 * hash1(bi, sd + 84) * hash1(bi, sd + 93);
     }
     if (bi > 0) {
       const me = bedOf(bi), up = bedOf(bi - 1);
-      const full = hash1(bi, sd + 85) < 0.55;
+      const full = hash1(bi, sd + 85) < 0.35;
       const ua = full ? -1 : 0.04 + 0.4 * hash1(bi, sd + 86), ub = full ? 2 : 0.5 + 0.48 * hash1(bi, sd + 88);
       const ds = sw - b0;
       if (u > ua && u < ub) {
@@ -1014,11 +1017,16 @@ function shelfBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] 
     // its tall end: a block at the end, the tallest standing forward of it a third of the way in,
     // a lower one recessed behind that one's far side, a low slab and a small block in the water
     // nearer still; the skyline rises to the crown and falls away both ways
-    [0.0, 0.34 + 0.04 * r(), 0.74 + 0.06 * r(), 0.5, 0, 0.9],
-    [0.54 + 0.03 * r(), 0.8 + 0.04 * r(), 0.46 + 0.08 * r(), 0.6, 4 + 3 * r(), 0.8],
-    [0.28 + 0.03 * r(), 0.58 + 0.03 * r(), 1, 0.26, 6 + 3 * r(), 0.9],
-    [0.7 + 0.03 * r(), 0.92 + 0.03 * r(), 0.22 + 0.05 * r(), 0.08, 14 + 4 * r(), 0.6],
-    [0.87 + 0.02 * r(), 1.0, 0.12 + 0.04 * r(), 0.04, 22 + 5 * r(), 0.5],
+    // (round 6, the critic: "still steps down left to right with evenly striped bedding: give it a
+    // different silhouette, a low front ledge with a taller chunk set back and overlapping") two
+    // depths, not a staircase: the tall chunk set back (recessed, darker, cooler), a second lower
+    // one beside it further back still, a long low ledge standing forward across their feet (its
+    // top lit, green on it), a block and a stone nearer still in the water
+    [0.1 + 0.03 * r(), 0.5 + 0.04 * r(), 1, 0.62, 0, 0.9],
+    [0.47 + 0.03 * r(), 0.74 + 0.04 * r(), 0.56 + 0.08 * r(), 0.72, 2 + 2 * r(), 0.8],
+    [-0.04, 0.8 + 0.04 * r(), 0.34 + 0.05 * r(), 0.1, 12 + 3 * r(), 0.9],
+    [0.66 + 0.03 * r(), 0.9 + 0.03 * r(), 0.17 + 0.04 * r(), 0.05, 20 + 4 * r(), 0.6],
+    [0.9 + 0.02 * r(), 1.0, 0.08 + 0.03 * r(), 0.03, 27 + 5 * r(), 0.5],
   ];
   const ks: Chunk[] = [];
   steps.slice(0, Math.min(steps.length, s.n ?? steps.length)).forEach(([a, b, hk, dep, nearer, cap], i) => {

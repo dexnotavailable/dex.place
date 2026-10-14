@@ -857,9 +857,15 @@ export const isle = definePainter<IsleP>("op.isle", {
     for (const bl of B) if (fx + 3 >= bl.x0 && fx + 3 < bl.x1) lip = Math.max(lip, bl.y1);
     // (round 5, the critic: "ruler-straight 1 px rules") it wavers on the wind, thick where it
     // leaves the lip, then beads into drops further down and breaks into a drift of spray
-    for (let ly = isleTop(p, fx, seed); ly < lip + 70; ly += 0.5 / d) {
-      const below = ly - lip;
-      const sway = below > 0 ? Math.sin(below / 9 + seed) * Math.min(2.2, 0.4 + below * 0.05) + (vnoise1(below / 4, seed + 61) - 0.5) * 1.2 + below * 0.05 : 0;
+    // (round 6, the critic's P11: "still ruled for its first two thirds") it wavers from where it
+    // leaves the spring, clinging to the rock and slipping over its bulges down the side, then
+    // swinging free on the wind below the lip
+    const t0 = isleTop(p, fx, seed);
+    for (let ly = t0; ly < lip + 70; ly += 0.5 / d) {
+      const below = ly - lip, run = ly - t0;
+      const sway = below > 0
+        ? Math.sin(below / 9 + seed) * Math.min(2.2, 0.4 + below * 0.05) + (vnoise1(below / 4, seed + 61) - 0.5) * 1.2 + below * 0.05
+        : Math.sin(run / 6 + seed * 0.7) * Math.min(1.4, 0.3 + run * 0.05) + (vnoise1(run / 3.2, seed + 64) - 0.5) * 1.3;
       const X = Math.round(c.X(fx + 3 + sway)), Y = Math.round(c.Y(ly));
       if (below > 18) {
         // beads: drops strung out with gaps that grow as it falls
@@ -876,20 +882,8 @@ export const isle = definePainter<IsleP>("op.isle", {
       b.set(X, Y, below > 25 ? P.cumulus[2]! : P.cumulus[0]!);
       if (below < 10 && d >= 1) b.set(X + 1, Y, P.cumulus[3]!);
     }
-    // the scrap of cloud it frays into: a small flattened heap in the sky's one cloud family
-    const sx = fx + 4, sy = lip + 64;
-    for (let Y = Math.floor(c.Y(sy - 9)); Y < Math.ceil(c.Y(sy + 1)); Y++) {
-      for (let X = Math.floor(c.X(sx - 24)); X < Math.ceil(c.X(sx + 26)); X++) {
-        const lx = c.lx(X + 0.5) - sx, ly = c.ly(Y + 0.5) - sy;
-        let inside = false, lit = 0;
-        for (const [ox, oy, rr] of [[-10, -3, 7], [2, -5, 8.5], [14, -2.5, 6.5]] as const) {
-          const q = Math.hypot(lx - ox, (ly - oy) * 1.4) / rr;
-          if (q < 1 && ly < 0) { inside = true; lit = Math.max(lit, -(ly - oy) / rr - (lx - ox) / rr * 0.4); }
-        }
-        if (!inside) continue;
-        b.set(X, Y, lit > 0.45 ? P.cumulus[1]! : lit > 0 ? P.cumulus[3]! : P.cumulus[5]!);
-      }
-    }
+    // (round 6, the critic's P11: "each ends in a tiny cotton-puff cloud") no scrap of cloud under it:
+    // it ends in its own drift of spray
     // trees on the top: pines leaning out over the lip, clumps of shrubs round the tower's foot
     const r = rng(seed + 7);
     const tw = p.w * (p.tower === "bell" ? 0.3 : 0.36);

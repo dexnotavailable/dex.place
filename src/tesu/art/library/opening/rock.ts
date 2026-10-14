@@ -899,9 +899,13 @@ export const shore = definePainter<ShoreP>("op.shore", {
     const A2: LimeChunk = { x0: e * 0.145, x1: e * 0.4, top: top(e * 0.3), foot: 6, topAt: (x) => top(x) + 0.6 + Math.max(0, e * 0.17 - x) * 0.3, z: 0.24, cap: 3, water: 0, shade: 0.07, seed: seed + 43 };
     const A3: LimeChunk = { x0: e * 0.395, x1: e * 0.71, top: top(e * 0.5), foot: 6, topAt: (x) => top(x) + 1.2, z: 0.34, cap: 3, water: 0, shade: 0.07, seed: seed + 44 };
     // (round 5, the critic: "loaves on one ruled base") B tips hard toward the water
-    const B: LimeChunk = { x0: e * 0.11, x1: e * 0.22, top: -33 - 4 * r(), foot: 5, tilt: 0.24, z: 0.86, cap: 3, water: 0, seed: seed + 45 };
-    const B2: LimeChunk = { x0: e * 0.235, x1: e * 0.33, top: -19 - 3 * r(), foot: 5, tilt: -0.07, z: 0.7, cap: 2, water: 0, seed: seed + 46 };
-    const C: LimeChunk = { x0: e * 0.53, x1: e * 0.62, top: -13 - 3 * r(), foot: 5, tilt: 0.1, z: 0.96, cap: 2, water: 0, seed: seed + 47 };
+    // (round 6, the critic: "the shore still sits at one level: step it down to the water across at
+    // least 30 px of height") the bank's blocks carry the walk line 35-48 px over the water; in front
+    // of them the steps go down in clear treads: B a step down (about 24 px over the water), B2 and
+    // the slab D lower still (12-16), C and a stone nearly awash
+    const B: LimeChunk = { x0: e * 0.1, x1: e * 0.23, top: -23 - 3 * r(), foot: 5, tilt: 0.12, z: 0.86, cap: 3, water: 0, flat: true, seed: seed + 45 };
+    const B2: LimeChunk = { x0: e * 0.245, x1: e * 0.36, top: -13 - 3 * r(), foot: 5, tilt: -0.05, z: 0.74, cap: 2, water: 0, flat: true, seed: seed + 46 };
+    const C: LimeChunk = { x0: e * 0.55, x1: e * 0.63, top: -7 - 2 * r(), foot: 5, tilt: 0.1, z: 0.96, cap: 1.5, water: 0, seed: seed + 47 };
     // the back blocks first, the nearer ones' shadows on them
     limeChunk(c, A1, [B]);
     limeChunk(c, A2, [B, B2]);
@@ -1078,7 +1082,7 @@ export interface ScreeP {
 
 export const scree = definePainter<ScreeP>("op.scree", {
   bounds(p) {
-    return [-48, -(p.h ?? 26) * 1.5 - 50, p.w + 34, p.deep * 1.2 + 40];
+    return [-64, -(p.h ?? 26) * 1.5 - 50, p.w + 34, p.deep * 1.2 + 40];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
@@ -1097,72 +1101,65 @@ export const scree = definePainter<ScreeP>("op.scree", {
     // frames that see it, so no ruled edge of water against rock shows between them)
     const plan: [number, number, number, number, number, number, number][] = [
       // (round 4, the critic's "scree pillows": blocks of one size and value, each a rounded box)
-      // very different heights, one slab fallen hard aslant, one standing tall, the nearest the
-      // darkest with the strongest contrast; blockier breaks
-      [0.05, 0.62, 0.04, 1.5, -0.1, 0.45, 0],
-      [-0.12, 0.28, 0.22, 0.55, 0.06, 0.66, 0.06],
-      [0.32, 0.95, 0.27, 1.05, 0.36, 0.6, 0.08],
-      [-0.06, 0.4, 0.48, 1.35, 0.05, 0.84, 0.12],
-      [0.42, 1.08, 0.62, 0.6, -0.08, 0.8, 0.16],
-      [-0.2, 0.12, 0.7, 0.8, -0.18, 0.9, 0.2],
-      [-0.14, 0.42, 0.92, 0.45, 0.08, 0.92, 0.26],
+      // (round 6, the critic's P4: "still rounded grey pillows, each with a moss cap and a ruled
+      // waterline") slabs broken off the bedded lip: wider than they are tall, flat tops, sharp
+      // corners, a bedding plane or two across each, stacked and offset; one fallen aslant; the
+      // nearest the darkest, low and wide
+      [0.0, 0.7, 0.03, 1.6, -0.03, 0.42, 0.02],
+      [0.48, 1.06, 0.1, 1.0, 0.03, 0.55, 0.06],
+      [-0.16, 0.42, 0.34, 1.05, 0.12, 0.7, 0.1],
+      [0.3, 1.0, 0.5, 0.8, -0.04, 0.82, 0.14],
+      [-0.22, 0.36, 0.8, 1.2, 0.03, 0.9, 0.2],
+      [0.2, 0.7, 0.95, 0.6, -0.06, 0.94, 0.26],
     ];
     const ks: LimeChunk[] = plan.map(([a, q, bs, hs, tl, z, sh], i) => {
       const base = D * bs, x0 = W * a + (r() - 0.5) * 6, x1 = W * q + (r() - 0.5) * 6;
-      return { x0, x1, top: base - H * hs * (0.85 + 0.3 * r()) - Math.max(0, -tl) * (q - a) * W, foot: base + 3, tilt: tl, z, shade: sh, cap: 1.5 + r() * 2.5, water: base, round: 0.45, seed: seed + 100 + i * 17 };
+      return { x0, x1, top: base - H * hs * (0.9 + 0.2 * r()) - Math.max(0, -tl) * (q - a) * W, foot: base + 3, tilt: tl, z, shade: sh, cap: i % 3 === 1 ? 0 : 1.2 + r() * 2, water: base, round: 0.22, flat: true, seed: seed + 100 + i * 17 };
     });
     // stones half sunk off the west sides, in the open water
     for (const [a, bs, sw, sh] of [[-0.3, 0.08, 13, 5], [-0.27, 0.36, 9, 4], [-0.36, 0.84, 16, 6]] as const) {
       const x0 = W * a + (r() - 0.5) * 4, base = D * bs;
       ks.push({ x0, x1: x0 + sw, top: base - sh, foot: base + 2, tilt: (r() - 0.5) * 0.2, z: 0.8, cap: r() < 0.5 ? 1 : 0, water: base, seed: seed + 200 + Math.round(bs * 100) });
     }
-    // (round 5: "a pale wedge with a ruled side" under the lake's end) behind the blocks, toward the
-    // lip, a heap of wet talus in shadow: small dark blocks and grit sloping down toward the camera,
-    // its west edge stepping out irregularly, so no bare face of the cliff shows between the blocks
+    // (round 5: "a pale wedge with a ruled side" under the lake's end) behind the slabs, toward the
+    // lip, fallen blocks in its shadow
+    // (round 6, the critic's P4: "a tile of dark rounded cells, like fish scales or cobbles, with a ruled
+    // diagonal edge") a few distinct blocks of their own sizes, each on its own waterline, wet at its
+    // foot, stepping down toward the camera, and a scatter of small dark stones between them
+    const tplan: [number, number, number, number, number][] = [
+      // [x0, x1 (shares of w), base (share of deep), height px, tilt]
+      [0.5, 0.84, 0.0, 22, -0.08], [0.78, 1.14, 0.1, 15, 0.1], [0.58, 0.74, 0.19, 9, 0.2],
+      [0.86, 1.08, 0.3, 18, -0.12], [0.66, 0.9, 0.42, 11, 0.06], [0.9, 1.04, 0.55, 7, 0.25],
+    ];
+    const tk: LimeChunk[] = tplan.map(([a2, q2, bs, hh, tl], i) => {
+      const base = D * bs, x0 = W * a2 + (r() - 0.5) * 4, x1 = W * q2 + (r() - 0.5) * 4;
+      return { x0, x1, top: base - hh * (0.85 + 0.3 * r()), foot: base + 3, tilt: tl, z: 0.3 + 0.1 * (i % 2), shade: 0.26, cap: i % 2 === 0 ? 1 + r() * 1.5 : 0, water: base, round: 0.55, seed: seed + 300 + i * 13 };
+    });
+    for (const k of tk) reflect(k);
+    for (let i = 0; i < tk.length; i++) limeChunk(c, tk[i]!, tk.slice(i + 1));
     {
-      const tx0 = W * 0.08;
-      const edge = (ly: number): number => tx0 + W * 0.42 * clamp(1 - ly / (D * 1.05), 0, 1) + (vnoise1(ly / 7, seed + 70) - 0.5) * 10 + (hash1(Math.floor(ly / 6), seed + 71) - 0.5) * 6;
-      const X0 = Math.max(b.ox, Math.floor(c.X(tx0 - 8))), X1 = Math.min(b.x1, Math.ceil(c.X(W + 24)));
-      const Y0 = Math.max(b.oy, Math.floor(c.Y(-6))), Y1 = Math.min(b.y1, Math.ceil(c.Y(D * 1.08)));
+      // small dark stones in the gaps, on the water between the blocks
+      const X0 = Math.max(b.ox, Math.floor(c.X(W * 0.48))), X1 = Math.min(b.x1, Math.ceil(c.X(W * 1.12)));
+      const Y0 = Math.max(b.oy, Math.floor(c.Y(-4))), Y1 = Math.min(b.y1, Math.ceil(c.Y(D * 0.62)));
       for (let y = Y0; y < Y1; y++) {
         const ly = LY(c, y);
-        const ex = edge(ly);
         for (let x = X0; x < X1; x++) {
           const lx = LX(c, x);
-          // (its top a few stones breaking the water, never a ruled line along it)
-          if (ly < 1.5 - 5 * vnoise1(lx / 6, seed + 80) * vnoise1(lx / 17, seed + 81) - 2 * hash1(Math.floor(lx / 4), seed + 82)) continue;
-          // (its east side heaped against the cliff's foot in stones of their own, never a ruled edge)
-          if (lx < ex || lx > W + 6 - W * 0.4 * clamp(ly / D, 0, 1) + (vnoise1(ly / 9, seed + 72) - 0.5) * 20 + (hash1(Math.floor(ly / 5), seed + 79) - 0.5) * 12) continue;
-          // (its foot ends in stones of their own sizes, never a ruled bottom)
-          if (ly > D * 0.9 - 14 * vnoise1(lx / 8, seed + 83) - 6 * hash1(Math.floor(lx / 5), seed + 84)) continue;
-          // rubble: stones of their own sizes heaped together (bigger lower down, toward the camera),
-          // each lit on its upper left, dark in the gaps between them
-          const cs = 5 + 0.05 * ly;
-          const gx = Math.floor(lx / cs), gy = Math.floor(ly / (cs * 0.8));
-          let best = 9, b2 = 9, bdx = 0, bdy = 0, bid = 0;
-          for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
-            const hx = hash1((gx + i) * 4099 + (gy + j) * 131, seed + 74), hy = hash1((gx + i) * 4099 + (gy + j) * 131, seed + 75);
-            const cx = (gx + i + 0.15 + 0.7 * hx) * cs, cy = (gy + j + 0.15 + 0.7 * hy) * cs * 0.8;
-            const rr = cs * (0.6 + 0.35 * hash1((gx + i) * 4099 + (gy + j) * 131, seed + 76));
-            const q = Math.hypot(lx - cx, (ly - cy) * 1.2) / rr;
-            if (q < best) { b2 = best; best = q; bdx = (lx - cx) / rr; bdy = (ly - cy) / rr; bid = (gx + i) * 4099 + (gy + j) * 131; } else if (q < b2) b2 = q;
-          }
-          const tn = hash1(bid, seed + 78);
-          const lit = -0.62 * bdx - 0.78 * bdy;
-          let col: number;
-          if ((b2 - best < 0.14 && best > 0.5) || best > 1.05) col = P.karst[8]!;
-          else if (lit > 0.45) col = tn > 0.5 ? P.karst[4]! : P.karst[5]!;
-          else if (lit < -0.3) col = P.karst[7]!;
-          else col = tn > 0.6 ? P.karst[5]! : P.karst[6]!;
-          if (lx - ex < 2) col = P.karst[8]!;
-          if (col !== P.karst[8] && vnoise(lx / 2.5, ly / 3, seed + 77) > 0.74) col = P.moss[6]!;
-          b.set(x, y, col);
+          if (tk.some((k) => inChunk(k, lx, ly))) continue;
+          const gx = Math.floor(lx / 4), gy = Math.floor(ly / 3);
+          const h0 = hash(gx, gy, seed + 74);
+          if (h0 > 0.09) continue;
+          const cx = (gx + 0.5) * 4, cy = (gy + 0.5) * 3, rr = 1 + 1.6 * hash(gx, gy, seed + 75);
+          const dx = (lx - cx) / rr, dy = (ly - cy) / (rr * 0.7);
+          if (dx * dx + dy * dy > 1) continue;
+          b.set(x, y, dy < -0.3 && dx < 0.3 ? P.karst[5]! : dy > 0.35 ? P.karst[8]! : P.karst[7]!);
         }
       }
     }
     // the reflections first (each block's, below its own waterline, broken by ripples and
     // fading downward), then the blocks back to front over them
-    for (const k of ks) {
+    for (const k of ks) reflect(k);
+    function reflect(k: LimeChunk): void {
       const base = k.water!;
       const hgt = Math.max(2, base - k.top);
       const reach = Math.min(hgt * 0.75, 30);
@@ -1196,7 +1193,7 @@ export const scree = definePainter<ScreeP>("op.scree", {
     });
     // reeds out of the joints and the gaps, a tangle near the west side
     for (let i = 0; i < 9; i++) {
-      const k = ks[Math.floor(r() * 7)]!;
+      const k = ks[Math.floor(r() * 6)]!;
       const x = k.x0 + r() * (k.x1 - k.x0) * 0.5, n = 3 + Math.floor(r() * 6), tall = 8 + r() * 16;
       if (d < 0.3) continue;
       for (let j = 0; j < n; j++) grass(c, x + (r() - 0.5) * 7, k.water! - 0.5, tall * (0.4 + 0.6 * r()), (r() - 0.5) * 0.7, (r() - 0.45) * 1.2, r() * 0.8);
@@ -1256,9 +1253,33 @@ export const pool = definePainter<PoolP>("op.pool", {
       const x0 = W * a + (r() - 0.5) * 6, x1 = W * q + (r() - 0.5) * 6;
       // (standing back toward the wall, in its haze: paler than the jetty and her, so she keeps
       // her darks against it; the back row more than the front)
-      return { x0, x1, top: -H * t * (0.94 + 0.12 * r()), foot: 3, tilt: (r() - 0.5) * 0.14, z, shade: sh, cap: i < 4 ? 2.5 + 3 * r() : 1.5 + 2.5 * r(), water: 0, round: 0.6, haze: i < 4 ? 0.5 : 0.32, seed: seed + 100 + i * 17 };
+      // (round 6, the critic's P4: "the lip chunks the same pale grey as the wall behind them, so the
+      // nearer chunks don't separate") a step darker than the wall, the front row darker still; their
+      // tops and left flanks keep the light
+      return { x0, x1, top: -H * t * (0.94 + 0.12 * r()), foot: 3, tilt: (r() - 0.5) * 0.14, z, shade: sh + (i < 4 ? 0.1 : 0.06), cap: i < 4 ? 2.5 + 3 * r() : 1.5 + 2.5 * r(), water: 0, round: 0.6, haze: i < 4 ? 0.3 : 0.12, seed: seed + 100 + i * 17 };
     });
     const back = ks.slice(0, 4), front = ks.slice(4);
+    // (round 6) each back block's shadow on the wall behind it, down and to the right (the sun is up
+    // and left): a cool band along its right side, ragged, where nothing of the lip stands
+    {
+      const SH = [P.range[4]!, P.range[5]!];
+      for (const k of back) {
+        const ox = 6 + 4 * hash1(1, k.seed), oy = 4 + 3 * hash1(2, k.seed);
+        const X0 = Math.max(b.ox, Math.floor(c.X(k.x0))), X1 = Math.min(b.x1, Math.ceil(c.X(k.x1 + ox + 2)));
+        const Y0 = Math.max(b.oy, Math.floor(c.Y(k.top))), Y1 = Math.min(b.y1, Math.ceil(c.Y(-2)));
+        for (let y = Y0; y < Y1; y++) {
+          const ly = LY(c, y);
+          for (let x = X0; x < X1; x++) {
+            const lx = LX(c, x);
+            if (ks.some((q) => inChunk(q, lx, ly))) continue;
+            const j = (vnoise1(ly / 5, k.seed + 3) - 0.5) * 3;
+            if (!inChunk(k, lx - ox - j, ly - oy)) continue;
+            // (darker in its core, by its block)
+            b.set(x, y, SH[inChunk(k, lx - 2.5, ly - 2) ? 1 : 0]!);
+          }
+        }
+      }
+    }
     // the gully between the crown and the block east of it, where the veil comes down
     const gx0 = Math.max(ks[1]!.x1 - 6, W * 0.47), gx1 = Math.min(ks[2]!.x0 + 6, W * 0.53);
     // the back row (the front row's shadows on it)
@@ -1308,6 +1329,92 @@ export const pool = definePainter<PoolP>("op.pool", {
         grass(c, gx, chunkTop(k, gx) + 1.2, 3 + rr() * 9, (rr() - 0.5) * 0.8, (rr() - 0.4) * 1.2, rr());
       }
       if (rr() < 0.5) bush(c, k.x0 + (k.x1 - k.x0) * (0.2 + 0.6 * rr()), chunkTop(k, (k.x0 + k.x1) / 2) + 1, 4 + rr() * 5, k.seed + 9);
+    }
+  },
+});
+
+// ---------------------------------------------------------------------------
+// (round 6, the critic's P3, catch's right edge, fourth round: "a column with a straight left edge, a
+// ruled base at the water, the shallows ending in one smooth diagonal") op.heap: a stack of chunks
+// standing in the lake (Dex's sketch): blocks of their own sizes and depths, the back row taller,
+// set back in the haze, the front row lower, darker, each casting its shadow on the ones behind,
+// green only on their top ledges, foam lapping at their feet, a stone or two out in the water.
+// Laid by a plan, so one painter serves any foot of a wall or lip.
+
+export interface HeapP {
+  /** Width along the waterline, px (anchor: its west end on the waterline). */
+  w: number;
+  /** Its chunks: [from, to (shares of w), top (px above the water), z (0 back .. 1 forward)]. */
+  plan: [number, number, number, number][];
+  /** How far it stands back in its plane's haze, 0..1 (default 0.3; the front row less). */
+  haze?: number;
+  /** Spray rising off the water: [x (share of w), half width (px), height (px)]. */
+  spray?: [number, number, number][];
+}
+
+export const heap = definePainter<HeapP>("op.heap", {
+  bounds(p) {
+    let x0 = 0, x1 = p.w, t = 10;
+    for (const [a, q, top] of p.plan) { x0 = Math.min(x0, a * p.w); x1 = Math.max(x1, q * p.w); t = Math.max(t, top); }
+    for (const [sx, hw, sh] of p.spray ?? []) { x0 = Math.min(x0, sx * p.w - hw * 1.4); x1 = Math.max(x1, sx * p.w + hw * 1.4); t = Math.max(t, sh); }
+    return [x0 - 30, -t * 1.2 - 24, x1 + 30, 4];
+  },
+  paint(c, p) {
+    const b = c.buf, d = c.d, seed = c.seed;
+    const W = p.w, hz = p.haze ?? 0.3;
+    const r = rng(seed + 3);
+    const C = P.cloud;
+    const K = Math.max(1, Math.round(d));
+    const ks: LimeChunk[] = p.plan.map(([a, q, t, z], i) => {
+      const x0 = W * a + (r() - 0.5) * 4, x1 = W * q + (r() - 0.5) * 4;
+      return { x0, x1, top: -t * (0.94 + 0.12 * r()), foot: 3, tilt: (r() - 0.5) * 0.12, z, shade: z < 0.6 ? 0.08 : 0, cap: z < 0.6 ? 2.5 + 3 * r() : 1.4 + 2.2 * r(), water: 0, round: 0.4, haze: clamp(hz * (1.5 - z), 0, 0.7), seed: seed + 100 + i * 17 };
+    });
+    // back to front by how far forward each stands, each casting on the ones behind it
+    const order = ks.map((_, i) => i).sort((i, j) => ks[i]!.z - ks[j]!.z);
+    order.forEach((i, n) => limeChunk(c, ks[i]!, order.slice(n + 1).map((j) => ks[j]!)));
+    // spray where water falls on them: a lumpy plume, lit on its upper left, one cell of dither at its edge
+    for (const [su, hw, sh] of p.spray ?? []) {
+      const sx = su * W;
+      const X0 = Math.max(b.ox, Math.floor(c.X(sx - hw * 1.3))), X1 = Math.min(b.x1, Math.ceil(c.X(sx + hw * 1.3)));
+      for (let x = X0; x < X1; x++) {
+        const lx = LX(c, x);
+        const u = (lx - sx) / hw;
+        const T = sh * Math.pow(Math.max(0, 1 - u * u), 0.9) * (0.7 + 0.6 * vnoise1(lx / 7, seed + 8)) + 4 * (vnoise1(lx / 3.5, seed + 9) - 0.5);
+        if (T < 1) continue;
+        for (let y = Math.max(b.oy, Math.floor(c.Y(-T))); y < Math.min(b.y1, Math.ceil(c.Y(0))); y++) {
+          const a = -LY(c, y), e = T - a;
+          if (e < 2.2 && bayer4(Math.floor(x / K), Math.floor(y / K)) < 0.5) continue;
+          const cs = 6 + 4 * (a / Math.max(1, T));
+          const qx = lx / cs + vnoise1(a / 8, seed + 10) * 0.7, qy = a / cs + vnoise1(lx / 10, seed + 11) * 0.7;
+          const fx = qx - Math.floor(qx) - 0.5, fy = qy - Math.floor(qy) - 0.5;
+          const lit = -0.62 * fx + 0.78 * fy;
+          b.set(x, y, lit > 0.15 ? C[0]! : lit > -0.15 ? C[1]! : C[2]!);
+        }
+      }
+    }
+    // foam lapping at the front blocks' feet, in short runs (a row of white dashes along every foot
+    // read as a ruled dotted line)
+    for (const k of ks) {
+      if (k.z < 0.6) continue;
+      for (let x = Math.max(b.ox, Math.floor(c.X(k.x0 + 2))); x < Math.min(b.x1, Math.ceil(c.X(k.x1 - 1))); x++) {
+        const lx = LX(c, x);
+        if (vnoise1(lx / 6, seed + 39 + Math.round(k.x0)) < 0.62) continue;
+        const fh = 0.6 + 1.4 * vnoise1(lx / 3.5, seed + 40);
+        for (let y = Math.max(b.oy, Math.floor(c.Y(-fh))); y < Math.min(b.y1, Math.ceil(c.Y(0))); y++) {
+          if (vnoise(lx / 2.4, LY(c, y) / 1.6, seed + 41) < 0.4) continue;
+          b.set(x, y, vnoise1(lx / 6, seed + 42) > 0.5 ? C[1]! : C[2]!);
+        }
+      }
+    }
+    // grass and a shrub on the ledges
+    if (d >= 0.3) for (const k of ks) {
+      const rr = rng(k.seed + 5);
+      const n = 1 + Math.floor(rr() * 4);
+      for (let j = 0; j < n; j++) {
+        const gx = k.x0 + (k.x1 - k.x0) * (0.1 + 0.8 * rr());
+        grass(c, gx, chunkTop(k, gx) + 1.2, 3 + rr() * 8, (rr() - 0.5) * 0.8, (rr() - 0.4) * 1.2, rr());
+      }
+      if (rr() < 0.35 && k.x1 - k.x0 > 14) bush(c, k.x0 + (k.x1 - k.x0) * (0.2 + 0.6 * rr()), chunkTop(k, (k.x0 + k.x1) / 2) + 1, 3 + rr() * 4, k.seed + 9);
     }
   },
 });

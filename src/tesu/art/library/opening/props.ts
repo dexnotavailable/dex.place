@@ -263,14 +263,21 @@ function footShadow(c: PaintCtx, x0: number, x1: number, damp = false): void {
   // toward us and to the right over the deck's lit edge: darkest right under its foot, a wedge
   // reaching out past its right side, thinning as it goes (hard steps, no dither field)
   const reach = shadowReach(x1 - x0);
-  for (let y = Math.round(c.Y(0)); y < Math.round(c.Y(4.4)); y++) {
+  // (round 6, the critic's P7: "still invisible at 1:1": it lay only on the deck's edge-on top, a
+  // dark band the same as the deck's own top line) it falls on down over the plank ends' lit face
+  // below the top: a wedge from the foot, shortening out to the right, so each thing's shadow has
+  // a shape of its own on the boards
+  const DOWN = 8;
+  for (let y = Math.round(c.Y(0)); y < Math.round(c.Y(DOWN)); y++) {
     const ly = c.ly(y + 0.5);
-    const a = x0 + 0.4 + ly * 2.2, z = x1 + reach * (1 - ly / 4.8);
+    const a = x0 + 0.4 + ly * 1.4, z = x1 + reach * (1 - ly / (DOWN + 0.6)) - ly * 0.6;
     for (let x = Math.round(c.X(a)); x < Math.round(c.X(z)); x++) {
       const lx = c.lx(x + 0.5);
       const out = (lx - x1) / Math.max(1, reach);
-      // under the foot: the contact, darkest; out past it the cast shadow, a step lighter
-      const col = out < 0 ? (ly < 1.2 ? P.timber[6]! : P.timber[5]!) : out < 0.55 - ly * 0.12 ? P.timber[5]! : P.umber[1]!;
+      // under the foot: the contact, darkest; out past it the cast shadow, a step lighter, its
+      // far edge one step lighter again
+      const edge = z - lx < 1.5;
+      const col = out < 0 ? (ly < 1.2 ? P.timber[6]! : ly < 3 ? P.timber[5]! : P.umber[1]!) : edge ? P.umber[0]! : out < 0.55 - ly * 0.05 ? P.timber[5]! : P.umber[1]!;
       b.set(x, y, col);
     }
   }
@@ -306,7 +313,7 @@ export interface CrateP {
 export const crateOp = definePainter<CrateP>("op.crate", {
   bounds(p) {
     const w = p.w ?? 40, h = p.h ?? 36;
-    return [-w / 2 - 2, -h - 4, w / 2 + shadowReach(w) + 2, 5];
+    return [-w / 2 - 2, -h - 4, w / 2 + shadowReach(w) + 2, 9];
   },
   paint(c, p) {
     const w = p.w ?? 40, h = p.h ?? 36, seed = c.seed, d = c.d;
@@ -374,7 +381,7 @@ export interface JarP {
 export const jarOp = definePainter<JarP>("op.jar", {
   bounds(p) {
     const h = p.h ?? 34;
-    return [-h * 0.45 - 2, -h - 5, Math.max(h * 0.45 + 3, h * 0.42 * 0.6 + shadowReach(h * 0.5) + 2), 5];
+    return [-h * 0.45 - 2, -h - 5, Math.max(h * 0.45 + 3, h * 0.42 * 0.6 + shadowReach(h * 0.5) + 2), 9];
   },
   paint(c, p) {
     const h = p.h ?? 34, d = c.d;
@@ -431,7 +438,7 @@ function onMesh(lx: number, ly: number, m: number, d: number): boolean {
  */
 export const net = definePainter<NetP>("op.net", {
   bounds(p) {
-    return [-p.w / 2 - 4, -p.h - 4, p.w / 2 + Math.max(8, shadowReach(p.w) + 2), Math.max(4, (p.drape ?? 0) + 8)];
+    return [-p.w / 2 - 4, -p.h - 4, p.w / 2 + Math.max(8, shadowReach(p.w) + 2), Math.max(9, (p.drape ?? 0) + 8)];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
@@ -505,7 +512,7 @@ export interface BasketP {
  */
 export const basket = definePainter<BasketP>("op.basket", {
   bounds(p) {
-    return [-p.h * 0.75 - 2, -p.h * 1.4, Math.max(p.h * 0.75 + 4, p.h * 0.64 * 0.8 + shadowReach(p.h * 1.02) + 2), 5];
+    return [-p.h * 0.75 - 2, -p.h * 1.4, Math.max(p.h * 0.75 + 4, p.h * 0.64 * 0.8 + shadowReach(p.h * 1.02) + 2), 9];
   },
   paint(c, p) {
     const hh = p.h, d = c.d;
@@ -543,7 +550,7 @@ export interface BucketP {
 export const bucket = definePainter<BucketP>("op.bucket", {
   bounds(p) {
     const hh = p.h ?? 20;
-    return [-hh * 0.7, -hh * 1.7, Math.max(hh * 0.7 + 3, hh * 0.62 + shadowReach(hh * 1.24) + 2), 5];
+    return [-hh * 0.7, -hh * 1.7, Math.max(hh * 0.7 + 3, hh * 0.62 + shadowReach(hh * 1.24) + 2), 9];
   },
   paint(c, p) {
     const hh = p.h ?? 20, d = c.d, seed = c.seed;
@@ -584,7 +591,7 @@ export interface CoilP {
 export const coil = definePainter<CoilP>("op.coil", {
   bounds(p) {
     const r = p.r ?? 12;
-    return [-r - 18, -r - 3, r + shadowReach(2 * r) + 2, Math.max(5, (p.hang ?? 0) + 3)];
+    return [-r - 18, -r - 3, r + shadowReach(2 * r) + 2, Math.max(9, (p.hang ?? 0) + 3)];
   },
   paint(c, p) {
     const r = p.r ?? 12, d = c.d, seed = c.seed;

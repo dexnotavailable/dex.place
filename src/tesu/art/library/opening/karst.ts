@@ -16,7 +16,7 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P, type Ramp } from "../../palette.ts";
-import { bayer4, clamp, fbm, fbm1, hash1, rng, vnoise, vnoise1 } from "../../raster.ts";
+import { bayer4, clamp, fbm, fbm1, hash, hash1, rng, vnoise, vnoise1 } from "../../raster.ts";
 import { cached } from "./kit.ts";
 
 /** The dither cell in art px: one screen px at play zoom, two at the catch's 2x (one density). */
@@ -439,7 +439,8 @@ function capAt(L: Lobe, lx: number, u: number, capD: number): number {
 function canopyGap(L: Lobe, lx: number): number {
   if (L.ink || L.hw < 30) return 1;
   const g = vnoise1(lx / Math.max(8, L.hw * 0.16), L.seed + 48) * 0.8 + vnoise1(lx / 5, L.seed + 49) * 0.2;
-  return 0.12 + 0.88 * clamp((g - 0.26) / 0.12, 0, 1);
+  // (round 6: wider gaps, more bare summit rock between the forest's masses)
+  return 0.12 + 0.88 * clamp((g - 0.36) / 0.12, 0, 1);
 }
 
 /** A broad lobe's beds: [height of the ledge above the base, its overhang's shadow px, moss on it 0..1]. */
@@ -597,14 +598,29 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
       b.set(x, y, toneK(K.rock, clamp(t, 0, 1), x, y, kc));
     }
     if (f.fall && first && d >= 0.25 && a < L.h * 0.82 && veil <= 1) {
-      {
-        const sway = Math.sin(a / 23 + f.seed) * Math.min(1.4, (L.h - a) / 60);
-        const half = Math.max(0.6 / d, L.hw * 0.035 + (L.h - a) * 0.004);
+      // (round 6, the critic's P10: "ruled 1 px white thread falls from crown to base") the thread
+      // wavers as it falls, the wind taking it a little one way and the other; lower down it breaks
+      // into runs and drops and is gone into spray before the foot
+      const fallen = (L.h * 0.82 - a) / (L.h * 0.82);
+      const gone = 0.62 + 0.18 * hash1(7, f.seed);
+      if (fallen < gone) {
+        const sway = Math.sin(a / 17 + f.seed) * Math.min(1.8, (L.h - a) / 40) + (vnoise1(a / 9, f.seed + 3) - 0.5) * 2.2 * Math.min(1, fallen * 3);
+        const half = Math.max(0.6 / d, L.hw * 0.035 + (L.h - a) * 0.004) * (1 + fallen * 0.6);
         const fx = fallX + f.lean * a + sway;
         const X0 = Math.round(c.X(fx - half)), X1 = Math.round(c.X(fx + half));
+        const brk = fallen > 0.3 && vnoise1(a / 5 + 7, f.seed + 4) < (fallen - 0.3) * 1.6;
         for (let x = Math.max(X0, b.ox); x <= Math.min(X1, b.x1 - 1); x++) {
-          if ((x === X0 || x === X1) && bay(x, y, cellOf(d)) < 0.5) continue;
+          if (brk) { if (bay(x, y, cellOf(d)) < 0.18) b.set(x, y, P.cloud[1]!); continue; }
+          if ((x === X0 || x === X1) && bay(x, y, cellOf(d)) < 0.5 + fallen * 0.3) continue;
           b.set(x, y, x === X1 ? P.cloud[2]! : P.cloud[(Math.floor(c.ly(y) / 3) + x) % 5 === 0 ? 1 : 0]!);
+        }
+      } else if (fallen < gone + 0.12) {
+        // its last drops and spray, scattered and thinning
+        const fx = fallX + f.lean * a;
+        const sw = L.hw * 0.08 + 2;
+        for (let x = Math.max(Math.round(c.X(fx - sw)), b.ox); x <= Math.min(Math.round(c.X(fx + sw)), b.x1 - 1); x++) {
+          const k = (fallen - gone) / 0.12;
+          if (hash(x, y, f.seed + 9) < 0.16 * (1 - k)) b.set(x, y, P.cloud[1]!);
         }
       }
     }
@@ -615,6 +631,28 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
   }
   // crowns along the lobe's top: the skyline is lumpy forest, never a clean dome
   // (round 5, Dex's crop 20: "round-topped stubs") far off, most towers keep a bare jagged summit
+  // (round 6, the critic's P9: "the far spires' crowns are rows of same-size round beads, like
+  // pebbles or crenellation") a tower keeps its jagged bare summit; on some one or two tufts of trees
+  // stand proud of it at their own places and sizes (a bigger clump with a smaller one tucked
+  // below its side), never a row along the top
+  if (green > 0 && L.ink && K.veg === P.range && L.h > f.h * 0.3) {
+    if (hash1(5, L.seed) < (K.detail === 0 ? 0.3 : 0.7)) {
+      const step = Math.max(2.5, Math.min(8, L.hw * (K.detail > 0 ? 0.22 : 0.3))) * 0.8;
+      const nT = 1 + (hash1(6, L.seed) < 0.4 ? 1 : 0);
+      for (let t = 0; t < nT; t++) {
+        const ox = L.hw * (t === 0 ? -0.35 + 0.5 * hash1(10, L.seed) : 0.2 + 0.4 * hash1(11, L.seed)) * (1 - (L.taper ?? 0.4));
+        const at = lobeTopAt(L, ox);
+        if (at < L.h * 0.55) continue;
+        const rr = step * (t === 0 ? 1.15 + 0.5 * hash1(12, L.seed) : 0.6 + 0.3 * hash1(13, L.seed)) * Math.min(1, green + 0.2);
+        const footK = clamp(1 - at / (f.h * 0.5), 0, 1) * K.foot;
+        const cx = axis(f, L, at) + ox;
+        crown(c, cx, f.by - at + rr * 0.35, rr, K, L.seed + 520 + t * 31, footK);
+        // its smaller neighbour, lower on the side away from the light
+        if (rr * d > 2.2 && hash1(14 + t, L.seed) < 0.7) crown(c, cx + rr * (0.8 + 0.3 * hash1(15 + t, L.seed)), f.by - at + rr * 0.85, rr * 0.55, K, L.seed + 540 + t * 31, footK);
+      }
+    }
+    return;
+  }
   if (green > 0 && L.h > f.h * 0.3 && (!L.ink || hash1(5, L.seed) < (K.detail === 0 ? 0.35 : 0.95))) {
     const step = Math.max(2.5, Math.min(8, L.hw * (K.detail > 0 ? 0.22 : 0.3))) * (L.ink ? 0.8 : 1);
     const r = rng(L.seed + 501);
@@ -723,16 +761,42 @@ function broadCrowns(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, capD
     return Math.max(2, (v < 0.14 ? L.hw * (0.22 + 0.12 * r()) : v < 0.5 ? L.hw * (0.08 + 0.05 * r()) : L.hw * (0.028 + 0.03 * r())) * g);
   };
   // along the top, from the lit shoulder across the summit; sparse and small on the shaded side
-  let ox = -L.hw * (0.95 + 0.15 * r());
-  while (ox < L.hw * 0.98) {
-    const rr = size() * (ox > L.hw * 0.4 ? 0.6 : 1);
+  // (round 6, the critic's P10: "a round broccoli rim of one size") the forest on the summit stands
+  // in a few big masses of its own shapes, each a great head with smaller heads heaped unevenly on
+  // its shoulders and down its sides, bare rock and a lone tree or two in the gaps between them;
+  // only a few small clumps elsewhere
+  const footAt = (at: number): number => clamp(1 - at / (f.h * 0.5), 0, 1) * K.foot;
+  // (far off, in the range's greys, clumps read as beads on the summit: one small mass at most,
+  // the lone trees below carry the forest's silhouette)
+  const far = K.veg === P.range;
+  const nM = far ? (hash1(3, L.seed) < 0.5 ? 1 : 0) : 2 + Math.floor(r() * (L.hw > 60 ? 3 : 2));
+  for (let mi = 0; mi < nM; mi++) {
+    const ox = -L.hw * 0.92 + L.hw * 1.8 * (mi + 0.15 + 0.7 * r()) / nM;
     const at = lobeTopAt(L, ox);
-    const open = canopyGap(L, axis(f, L, at) + ox) < 0.5;
-    if (at >= L.h * (f.kind === "cone" ? 0.2 : 0.4) && !(ox > L.hw * 0.4 && r() < 0.35) && !(open && rr > 2.5)) {
-      const footK = clamp(1 - at / (f.h * 0.5), 0, 1) * K.foot;
-      crown(c, axis(f, L, at) + ox, f.by - at + rr * (0.25 + 0.3 * r()), rr, K, L.seed + Math.round(ox * 7), footK);
+    if (at < L.h * (f.kind === "cone" ? 0.2 : 0.4)) continue;
+    if (canopyGap(L, axis(f, L, at) + ox) < 0.5 && r() < 0.7) continue;
+    const R = Math.max(2.5, L.hw * (0.13 + 0.14 * r()) * g * (ox > L.hw * 0.4 ? 0.65 : 1));
+    const heads: [number, number, number][] = [[0, 0, R]];
+    const nh = 3 + Math.floor(r() * 5);
+    for (let h = 0; h < nh; h++) {
+      const side = r() < 0.55 ? -1 : 1;
+      const k = r();
+      // heaped on its shoulders (higher, smaller) or spilling down a side (lower, middling)
+      heads.push(k < 0.55 ? [side * R * (0.35 + 0.5 * r()), -R * (0.35 + 0.35 * r()), R * (0.3 + 0.3 * r())] : [side * R * (0.75 + 0.5 * r()), R * (0.1 + 0.4 * r()), R * (0.4 + 0.3 * r())]);
     }
-    ox += rr * (0.55 + 1.1 * r());
+    heads.sort((q, w) => w[2] - q[2]);
+    for (const [dx, dy, hr] of heads) {
+      const at2 = lobeTopAt(L, ox + dx);
+      if (at2 < 0) continue;
+      crown(c, axis(f, L, at2) + ox + dx, f.by - Math.max(at, at2) + R * 0.35 + dy, hr, K, L.seed + 520 + mi * 61 + Math.round(dx * 7), footAt(at2));
+    }
+  }
+  for (let i = 0, nS = far ? 0 : 2 + Math.floor(r() * 4); i < nS; i++) {
+    const ox = -L.hw * (0.9 - 1.6 * r());
+    const at = lobeTopAt(L, ox);
+    if (at < L.h * 0.5) continue;
+    const rr = Math.max(1.6, L.hw * (0.03 + 0.04 * r()) * g);
+    crown(c, axis(f, L, at) + ox, f.by - at + rr * 0.4, rr, K, L.seed + 760 + i, footAt(at));
   }
   // single trees standing up out of the crown on the skyline: a bare trunk, two or three flat
   // tiers of needles, lit on the left (at the far planes only where they still read)
@@ -749,7 +813,7 @@ function broadCrowns(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, capD
   }
   // down the lit shoulder: the forest spills over the edge in clumps, smaller as they go
   const c0 = L.h - Math.min(L.h * 0.7, L.hw * L.round);
-  const n = 3 + Math.floor(r() * 5);
+  const n = far ? Math.floor(r() * 2) : 3 + Math.floor(r() * 5);
   let a = c0 + (L.h - c0) * 0.2;
   for (let i = 0; i < n && a > L.h * 0.25; i++) {
     const rr = Math.max(1.6, size() * (1 - i / (n + 2)) * 0.8);
@@ -812,8 +876,11 @@ function paintVeil(c: PaintCtx, f: Form, L: Lobe, y: number, a: number, fallX: n
   const wS = base * (0.55 + 0.75 * hash1(90 + s, f.seed)) * (s === 0 ? 0.8 : 1);
   let half = wS * (0.5 + 0.5 * Math.min(1, ds / 14)) * (1 + ds * 0.005);
   // it leaves the lip narrow and curls over it: no flat top
+  // (round 6, the critic's P10: "the falls start from a pointed, dotted arch, like a bullet tip")
+  // it spills over the lip nearly at its full width, a lit lip of water along the top, out of a
+  // dark notch cut in the rock above it (paintNotch)
   const lipK = clamp((a0 - a) / Math.max(4, L.h * 0.06), 0, 1);
-  half *= 0.35 + 0.65 * Math.sqrt(lipK);
+  half *= 0.78 + 0.22 * Math.sqrt(lipK);
   // the burst where it strikes the ledge above (this drop's first rows)
   const sh = (2.2 + 2 * vnoise1(a, f.seed + 64)) / Math.max(0.5, d);
   // (and the foam thrown up over the ledge just before it strikes: a lumpy blob, never a bar)
@@ -844,7 +911,9 @@ function paintVeil(c: PaintCtx, f: Form, L: Lobe, y: number, a: number, fallX: n
     // ragged sides: the edges dither out, more so lower down and in the bloom
     const edge = 1 - Math.abs(u);
     const keepA = clamp(edge * (2.4 - 1.2 * bloom) + 0.15 * (vnoise(lx / 2, a / 5, f.seed + 64) - 0.5), 0, 1);
-    if (bay(x, y, cellOf(d)) >= (bloom > 0 ? keepA * (1 - 0.55 * bloom) : keepA > 0.55 ? 1 : keepA) * (0.3 + 0.7 * lipK)) continue;
+    if (bay(x, y, cellOf(d)) >= (bloom > 0 ? keepA * (1 - 0.55 * bloom) : keepA > 0.55 ? 1 : keepA) * (0.85 + 0.15 * lipK)) continue;
+    // the spill over the lip: its top rows lit, the water bulging forward over the edge
+    if (s === 0 && a0 - a < 1.6 / Math.max(0.5, d) + 0.8 * vnoise1(lx / 2, f.seed + 70)) { b.set(x, y, Math.abs(u) < 0.8 ? P.paper[0]! : C[1]!); continue; }
     if (splash) {
       // (the foam's lower edge is lumpy: never a bar across the fall)
       const fe = sh * (0.55 + 0.6 * vnoise1(lx / 2.2, f.seed + 67));
@@ -859,6 +928,33 @@ function paintVeil(c: PaintCtx, f: Form, L: Lobe, y: number, a: number, fallX: n
     if (u > 0.55) i = Math.min(4, i + 1);
     if (bloom > 0.4) i = Math.max(0, i - 1);
     b.set(x, y, C[i]!);
+  }
+}
+
+/** The dark notch the water has cut in the lip above a fall: a channel of shade over its spill. */
+function paintNotch(c: PaintCtx, f: Form, L: Lobe, K: Look, fallX: number, veil: number): void {
+  const b = c.buf, d = c.d;
+  const a0 = L.h * 0.82, nh = Math.max(2, L.h * 0.024);
+  const base = Math.max(0.9 / d, L.hw * 0.035 * veil);
+  const wS = base * (0.55 + 0.75 * hash1(90, f.seed)) * 0.8;
+  for (let y = Math.max(b.oy, Math.floor(c.Y(f.by - a0 - nh))); y < Math.min(b.y1, Math.ceil(c.Y(f.by - a0))); y++) {
+    const a = f.by - c.ly(y + 0.5);
+    if (a < a0 || a > a0 + nh) continue;
+    const v = (a - a0) / nh;
+    const bend = Math.sin(a0 / 41 + f.seed) * 0 + (vnoise1(a0 / 70, f.seed + 63) - 0.5) * L.hw * 0.07;
+    const cx = fallX + f.lean * a0 + bend;
+    // a channel cut into the lip, about as wide as the spill, its sides battered in a little
+    const half = wS * 0.95 * (1 - v * 0.3) + 0.5 / d;
+    for (let x = Math.max(b.ox, Math.floor(c.X(cx - half * 1.2))); x < Math.min(b.x1, Math.ceil(c.X(cx + half * 1.2))); x++) {
+      const lx = c.lx(x + 0.5);
+      // (its rim broken and worn, never a cut box)
+      const hw = half * (0.85 + 0.3 * vnoise1(a * 0.9 + lx * 0.13, f.seed + 71));
+      const u = (lx - cx) / hw;
+      if (u < -1 || u > 1) continue;
+      if (v > 0.55 + 0.45 * vnoise1(lx / 1.7, f.seed + 72)) continue;
+      // its shaded inner face darkest on the right; a lit edge on its left
+      b.set(x, y, u < -0.72 ? toneK(K.rock, K.lit + 0.05, x, y, cellOf(d)) : toneK(K.rock, clamp(K.shade + 0.28 + 0.12 * u, 0, 1), x, y, cellOf(d)));
+    }
   }
 }
 
@@ -1058,6 +1154,7 @@ export const karst = definePainter<KarstP>("op.karst", {
           const L = f.lobes[0]!;
           const fallX = f.cx + L.dx - L.hw * (0.2 + 0.45 * hash1(2, L.seed));
           const top = f.by - L.h;
+          paintNotch(c, f, L, Kg, fallX, p.veil ?? 1);
           for (let y = Math.max(c.buf.oy, Math.floor(c.Y(top + L.h * 0.18)) - 1); y < Math.min(c.buf.y1, Math.ceil(c.Y(f.by))); y++) {
             const a = f.by - c.ly(y + 0.5);
             if (a < 0 || a >= L.h * 0.82) continue;

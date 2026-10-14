@@ -41,7 +41,9 @@ export function kagamiJetty(b: WorldBuilder): void {
   }
   // (round 5, the critic: "the deck is one full-width ruler") a few old spans have sagged, each
   // clear of where she stands in the key frames, the props, the posts and the station
-  const jp: JettyP = { w: W, water, west, east, gap: [LIFT_X - 88 - JETTY_X0, LIFT_X + 19 - JETTY_X0], sag: [[880, 3.2], [2240, 2.6], [3420, 3.4], [4660, 2.8]] };
+  // (round 6: and one in the catch's and play-catch's span, the bay between the bucket and her stand,
+  // catch x ~690, play-catch ~690)
+  const jp: JettyP = { w: W, water, west, east, gap: [LIFT_X - 88 - JETTY_X0, LIFT_X + 19 - JETTY_X0], sag: [[880, 3.2], [2240, 2.6], [3420, 3.4], [4660, 2.8], [5244, 3]] };
 
   // the great pine on the east lip (behind the jetty): rooted on the shelf against the road's
   // rock, its long arm reaching west over the station and the jetty's end
@@ -63,9 +65,14 @@ export function kagamiJetty(b: WorldBuilder): void {
   // below its roof), so she stands on the open deck east of it; its pulley turns a notch now and
   // then and its lantern (west side) flickers, each a sprite of its own
   const st = { h: 221, water, cable: [6, -h(0.2)] as [number, number] };
-  b.sprite({ id: "lift-top-station", plane: "play", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { ...st, part: "frame" }, frames: 1, seed: seed() });
-  b.sprite({ id: "lift-top-pulley", plane: "play", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { ...st, part: "pulley" }, frames: 32, fps: 8, seed: fresh(0) });
-  b.sprite({ id: "lift-top-lantern", plane: "play", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { ...st, part: "lantern" }, frames: 16, fps: 8, seed: fresh(1) });
+  // (round 6, the critic's P6: its mirror image was a crisp ladder down to a crisp roof) the lake does
+  // not mirror these: the station paints its own reflection, held to the deck band's contrast and
+  // dissolving before the roof
+  b.sprite({ id: "lift-top-station", plane: "play", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { ...st, part: "frame" }, frames: 1, reflect: false, seed: seed() });
+  b.sprite({ id: "lift-top-pulley", plane: "play", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { ...st, part: "pulley" }, frames: 32, fps: 8, reflect: false, seed: fresh(0) });
+  b.sprite({ id: "lift-top-lantern", plane: "play", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { ...st, part: "lantern" }, frames: 16, fps: 8, reflect: false, seed: fresh(1) });
+  // (on the front plane: drawn after the near water, as the shallows' own reflections are)
+  b.sprite({ id: "lift-top-station-refl", plane: "front", kind: "op.station", x: LIFT_X, y: DECK_Y, p: { ...st, part: "refl" }, frames: 1, reflect: false, seed: fresh(4) });
 
   // mooring posts standing up past the deck's edge (heights, thickness and ropes their own)
   const posts: [number, number, boolean, number][] = [[h(51.4), 26, false, 6], [h(70.6), 40, true, 7.5], [h(88.1), 30, false, 6], [CATCH_X - h(4.3), 46, true, 7], [h(104.3), 54, true, 6.5]];
@@ -110,7 +117,9 @@ export function kagamiJetty(b: WorldBuilder): void {
 
   // the fisher's corner by the catch: a coil of rope, a heap of net, a fish basket, and the
   // builder's crate (a jar on it) and bucket
-  b.sprite({ id: "jetty-coil", plane: "play", kind: "op.coil", x: CATCH_X + h(2.6), y: DECK_Y, p: { r: 13, hang: 10 }, frames: 1, seed: seed() });
+  // (round 6, the critic's P6: its reflection floated under the deck band) not mirrored: the deck's
+  // own reflection stands where its image would be
+  b.sprite({ id: "jetty-coil", plane: "play", kind: "op.coil", x: CATCH_X + h(2.6), y: DECK_Y, p: { r: 13, hang: 10 }, frames: 1, reflect: false, seed: seed() });
   // (round 2: grouped into one corner round the crate, so it reads at play zoom: the net heaped
   // against the crate's west side and draped over the deck's edge, the creel between the crate
   // and the bucket)
