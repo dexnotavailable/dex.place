@@ -19,6 +19,8 @@ import { P } from "../../palette.ts";
 const CASES = [
   // far karst in clusters, the farthest row erased into the haze
   ["op.karst", { w: 1700, h: 230, rows: 3, look: "far", mist: 44, green: 0.7, groups: [[340, 760], [1230, 1660]], haze: 0.7, wet: [640, 1970] }],
+  // (round 6, the sky lane) the far karst in the haze: tapering towers with tree caps, feet in the fog
+  ["op.farkarst", { w: 1700, h: 178, rows: 2, groups: [[340, 760], [920, 1160, 0.62]], haze: 0.6 }],
   // a P2 group with veil falls on chosen forms, its mist climbing their feet and thinning on the water
   ["op.karst", { w: 0, h: 380, rows: 1, look: "near", forms: [[0, 420, 330, "massif"], [-250, 70, 200, "pillar"], [260, 150, 170, "cone"]], mist: 34, green: 0.85, falls: 0.6, veil: 4, fallOn: [0, 1], wet: [-2633, -104] }],
   ["op.karst", { w: 1200, h: 300, rows: 2, look: "mid", mist: 40, green: 0.8, wet: [-2903, -374] }],
@@ -163,6 +165,7 @@ for (const [kind, p, most] of [
   ["op.cloud", { kind: "cumulus", w: 840, h: 330, frame: 1 }, 0.02],
   ["op.cloud", { kind: "stratus", w: 760, h: 22, layers: 2, frame: 1 }, 0.08],
   ["op.cloud", { kind: "field", w: 900, h: 170, density: 0.85, strands: 2 }, 0.08],
+  ["op.farkarst", { w: 1800, h: 170, rows: 2, groups: [[340, 820, 0.95], [1150, 1600]], haze: 0.6 }, 0.02],
 ]) {
   test(`${kind}: no screen door (${JSON.stringify(p).slice(0, 40)})`, () => {
     const [bx0, by0, bx1, by1] = painter(kind).bounds(p);

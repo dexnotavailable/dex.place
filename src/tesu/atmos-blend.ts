@@ -73,12 +73,18 @@ export function mixAtmos(a: Atmos, b: Atmos, t: number): Atmos {
     water: {
       deep: mixHex(wa.deep, wb.deep, t), body: mixHex(wa.body, wb.body, t), shallow: mixHex(wa.shallow, wb.shallow, t), glint: mixHex(wa.glint, wb.glint, t),
       mirror: mix3(wa.mirror ?? [1, 1, 1], wb.mirror ?? [1, 1, 1], t),
+      ...(wa.near || wb.near ? { near: mix4(wa.near ?? [0, 0, 0, 0], wb.near ?? [0, 0, 0, 0], t) } : {}),
     },
     grade: [ga[0] + (gb[0] - ga[0]) * t, ga[1] + (gb[1] - ga[1]) * t, ga[2] + (gb[2] - ga[2]) * t, ga[3] + (gb[3] - ga[3]) * t],
     glow: mixGlow(a.glow, b.glow, t),
     fog: mixFog(a.fog, b.fog, t),
     fades: mixFades(a.fades, b.fades, t),
   };
+}
+
+/** Four numbers across a change of place. */
+function mix4(a: readonly number[], b: readonly number[], t: number): [number, number, number, number] {
+  return [0, 1, 2, 3].map((i) => (a[i] ?? 0) + ((b[i] ?? 0) - (a[i] ?? 0)) * t) as [number, number, number, number];
 }
 
 /** A place's own plane hazes across a change of place (undefined where neither has one: the plane's own). */

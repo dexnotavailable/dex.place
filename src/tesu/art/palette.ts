@@ -72,10 +72,11 @@ export const P = {
    * Sunlit cumulus (Dex's painterly cloud reference): the warm cream where the morning sun
    * strikes a billow's top, a peach lit face, a warm white where it turns from the sun, then
    * neutral cool greys into the shade and the flat cool grey base (values fall step by step; the
-   * hue turns from warm to a near-neutral cool, never violet; round 5). Its last two steps are
+   * hue turns from warm to a near-neutral cool, never violet; round 5; round 6: the shade a touch
+   * bluer, the sky's own cool, so a lost edge melts into it). Its last two steps are
    * the warm bounce from the land and lake in the lowest billows' shade.
    */
-  cumulus: ramp("#fff7ea", "#fde8d6", "#efe7e2", "#dfdfe0", "#cdd1d5", "#b9bfc5", "#a5acb3", "#9098a1", "#c3bfbb", "#aeaaa7"),
+  cumulus: ramp("#fff7ea", "#fde8d6", "#efe7e2", "#dde0e4", "#c9d0d8", "#b4bdc9", "#a0aab8", "#8c97a7", "#c6c2c4", "#b3afb3"),
 } as const;
 
 export type RampName = keyof typeof P;

@@ -182,6 +182,12 @@ export interface Atmos {
     deep: string; body: string; shallow: string; glint: string;
     /** Multiplies what the water mirrors (rgb, default [1, 1, 1]): below 1, a darker, glassier mirror. */
     mirror?: [number, number, number];
+    /**
+     * (round 6) The near water's look, each 0..1 (default none): [darker and cooler toward the
+     * camera, the mirror drawn down in soft streaks under what it mirrors, a few long slow ripple
+     * bands (the ripples' gaps and glints only in them), the far edge melting into the haze].
+     */
+    near?: [number, number, number, number];
   };
   /** A colour grade on every plane: multiply by rgb (0..1+), by this amount (0..1). */
   grade?: [number, number, number, number];
@@ -247,6 +253,20 @@ export interface FogLayer {
    */
   pools?: [number, number, number][];
   cover?: number;
+  /**
+   * (round 6) Veils: torn streamers of the same fog floating in the air above the water (the
+   * weather a far giant wades through): [plane px x (they drift with the fog), half width, height
+   * of their middle above the waterline, thickness, strength 0..1, tear 0 (whole) .. 1 (rags),
+   * how much of their top catches the sun 0..1, slope (rise per px, so none lies level)]. Each
+   * wanders, swells and tears on its own.
+   */
+  veils?: [number, number, number, number, number, number, number, number][];
+  /**
+   * (round 6) Drawn behind its plane instead of over it: a bank of haze lying along the horizon
+   * behind the plane's land (it swells behind the land's clusters by its pools and thins in the
+   * gaps), never over the land's faces.
+   */
+  behind?: boolean;
 }
 
 /** Something that moves on a plane: animated frames from a painter (or, later, a render). */

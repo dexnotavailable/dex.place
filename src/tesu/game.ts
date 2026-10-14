@@ -888,7 +888,10 @@ export class TesuGame {
     const rate = PLANES[id].rate;
     const xf = planeXf(cam, rate);
     const levels = this.levels.get(id)!;
-    const level = levelFor(levels, xf.g);
+    // (round 6, the critic's E3/S9) at the catch's 2x the sky's, far and mid planes' plates sit on
+    // the frame's 2 px art cells like everything near (painted at half the density for it), as
+    // their sprites already do (render/sprites.ts)
+    const level = levelFor(levels, xf.g) / (cam.zoom >= 1.9 && (id === "sky" || id === "far" || id === "mid") ? 2 : 1);
     const quads: TileQuad[] = [];
     let complete = true;
     const add = (lv: number, mark: boolean): void => {
@@ -985,14 +988,15 @@ export class TesuGame {
     // banks of fog lying on the water at a background plane's waterline (the place's `fog`):
     // drawn over that plane and the water at its depth, behind every nearer plane, and mirrored
     // in the lake's reflection target
-    const fogOn = (id: PlaneId, mirrored: boolean): void => {
+    // (round 6: a layer marked `behind` lies behind its plane's land instead, drawn before it)
+    const fogOn = (id: PlaneId, mirrored: boolean, behind = false): void => {
       if (!water || !a.fog) return;
       for (const f of a.fog) {
-        if (f.plane !== id || f.density <= 0) continue;
+        if (f.plane !== id || f.density <= 0 || (f.behind ?? false) !== behind) continue;
         const rate = PLANES[id].rate, xf = planeXf(cam, rate);
         this.atmos.drawFog(W, Hf, {
           wl: rowOf(cam, rate, water.y), g: xf.g, offX: xf.offX, drift: -this.time * (f.drift ?? 1.5),
-          density: f.density, height: f.height, apron: f.apron ?? f.height * 0.5, roll: f.roll ?? 0.6, size: f.size ?? 260, foot: f.foot ?? 0, pools: f.pools, cover: f.cover,
+          density: f.density, height: f.height, apron: f.apron ?? f.height * 0.5, roll: f.roll ?? 0.6, size: f.size ?? 260, foot: f.foot ?? 0, pools: f.pools, cover: f.cover, veils: f.veils,
           cell: cam.zoom >= 1.9 ? 2 : 1, colour: hexRgb(f.colour ?? a.haze), mirrored,
         });
       }
@@ -1009,6 +1013,7 @@ export class TesuGame {
         const m = rowOf(cam, PLANES[id].rate, water.y);
         if (m >= Hf + 2) continue;
         const pd = this.planeQuads(cam, id, Math.max(-Hf * 3, 2 * m - Hf), m + 1, a, false);
+        fogOn(id, true, true);
         this.planes.draw(pd.quads, pd.look, W, Hf, m);
         this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false), cam, pd.look, this.time, m, this.manual);
         fogOn(id, true);
@@ -1034,6 +1039,7 @@ export class TesuGame {
         depth: [water.near, water.far], rows, time: this.time,
         deep: hexRgb(a.water?.deep ?? "#1f5a60"), body: hexRgb(a.water?.body ?? "#3f8f8a"), shallow: hexRgb(a.water?.shallow ?? "#bfe0dc"),
         haze: hexRgb(a.haze), glint: hexRgb(a.water?.glint ?? "#fffbe8"), still: water.kind === "lake" ? 1 : 0.4, mirror: a.water?.mirror ?? [1, 1, 1],
+        cell: a.water?.near && cam.zoom >= 1.9 ? 2 : 1, near: a.water?.near,
       });
     };
     const mist = (rate: number, strength: number, drift: number): void => {
@@ -1084,6 +1090,7 @@ export class TesuGame {
         waterTo(Hf);
       }
       if (id === "near" && z > 1.6) continue;
+      fogOn(id, false, true);
       this.planes.draw(d.quads, d.look, W, Hf);
       this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id), cam, d.look, this.time, null, this.manual);
       // banks of mist lying in valleys at this depth
