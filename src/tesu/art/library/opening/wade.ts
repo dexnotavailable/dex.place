@@ -1,7 +1,9 @@
 // Kagami's wading Walker: what its legs do to the still lake and the mist lying on it (art: the
 // Kagami art loop, painter p1). The Walker itself is the Walker lane's render and is never
-// redrawn here. This sprite stands on the same plane (P2), shares its path, speed, stepMove and
+// redrawn here. This sprite stands on the same plane, shares its path, speed, stepMove and
 // stride, and is drawn right after it, so it moves in lockstep and knows where each leg is.
+// (Round 4, the sky lane: the Walker wades far out on P1 from its half-size set; `scale` draws all
+// of this at that size, and the fog banks lying on the water there take the place of its mist.)
 //
 // The Walker walks east. Everything below is flat steps of the cloud, jade and range ramps;
 // dither only on the one-cell boundary where two of them meet, never a screen of checker.
@@ -29,8 +31,9 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { bayer4, clamp, hash1, rng, vnoise, vnoise1 } from "../../raster.ts";
+import { bayer4, clamp, hash1, vnoise, vnoise1 } from "../../raster.ts";
 import type { WorldBuilder } from "../../../world/build.ts";
+import type { PlaneId } from "../../../world/types.ts";
 import { cached } from "./kit.ts";
 
 /**
@@ -101,6 +104,10 @@ const WATER = -16.13;
 export interface WadeP {
   /** Sprite frames to each Walker frame (default 4). */
   sub?: number;
+  /** The Walker's size against its full-size render (0.5: its half-size set, set far off). */
+  scale?: number;
+  /** The mist lobes round its legs (default true; off where the fog banks lie on the water). */
+  mist?: boolean;
   frame?: number;
 }
 
@@ -436,6 +443,7 @@ function paintWade(c: PaintCtx, p: WadeP): void {
     }
   }
 
+  if (p.mist === false) return;
   // --- mist: soft lobes lying on the water and drifting back past the legs as it wades on (each
   // grows and dissolves as it goes, never by checker), in front of the legs and between them:
   // humped on top, flat below; over a dark leg a paler blue-grey (a value lift), over the pale
@@ -479,198 +487,24 @@ function paintWade(c: PaintCtx, p: WadeP): void {
   }
 }
 
+/** A paint context scaled about the anchor by k (the whole painter drawn at k times its size). */
+function scaled(c: PaintCtx, k: number): PaintCtx {
+  if (k === 1) return c;
+  return { ...c, d: c.d * k, X: (v) => c.X(v * k), Y: (v) => c.Y(v * k), lx: (v) => c.lx(v) / k, ly: (v) => c.ly(v) / k };
+}
+
 export const wade = definePainter<WadeP>("op.wade", {
-  bounds() {
-    return [-560, WATER - 96, 260, WATER + 4];
+  bounds(p) {
+    const k = p.scale ?? 1;
+    return [-560 * k, (WATER - 96) * k, 260 * k, (WATER + 4) * k];
   },
   paint(c, p) {
-    paintWade(c, p);
+    paintWade(scaled(c, p.scale ?? 1), p);
   },
 });
 
-export interface ShroudP {
-  /** Churn frame (0 .. frames - 1) and how many there are (it loops seamlessly over them). */
-  frame?: number;
-  frames?: number;
-}
-
-/**
- * The low cloud the Walker wades through, wrapped round its upper body (it is several hundred
- * metres tall: its back and shoulders stand in the cloud layer). Torn lenses at the height of
- * its back, its barrel and its belly, each a few billows of very different sizes on a flat-ish
- * base, with gaps between them so its silhouette still reads, and thin wisps trailing off their
- * ends. Each billow in flat steps of the cloud ramp: a lit cap toward the sun (upper left), the
- * body, a cool shaded underside; one cell of dither only where a billow meets what is behind it
- * (two screen px at the catch's 2x), never a checker veil. They churn slowly and loop. Over its
- * gold and red it lifts the value: the giant reads as far off. Anchor: the Walker's (the middle
- * of its frames' foot), facing east. Plane px of P2.
- */
-const SHROUD: [number, number, number, number, number][] = [
-  // [centre x, centre y, half length, half thickness, density]
-  // (round its back, under the bonsai's foot)
-  [-70, -440, 250, 48, 1.1],
-  // (across the flank and the barrel, the ropes)
-  [-80, -300, 220, 30, 0.85],
-  // (round the chest and the bells hanging from the head: the busiest, most saturated part)
-  [225, -300, 85, 40, 1.0],
-  [160, -212, 80, 22, 0.75],
-]
-
-/** The billows: [x, y, rx, ry, lens, z] (the bank of each lens), and its trailing wisps (the same, small and flat). */
-function shroudShape(seed: number): [number, number, number, number, number, number][] {
-  return cached(`shroud3|${seed}`, () => {
-    const r = rng(seed + 81);
-    const out: [number, number, number, number, number, number][] = [];
-    SHROUD.forEach(([cx, cy, hl, ht0, dn], i) => {
-      // (a thick bank: the cloud layer the giant wades through, not a ribbon)
-      const ht = ht0 * 1.45;
-      // a bank of billows along the lens, overlapping, of very different sizes (a few great
-      // ones, more middling, many small), smaller toward its ends, gaps here and there
-      let u = -1 + 0.15 * r();
-      while (u < 1) {
-        const v = r();
-        const end = 1 - 0.55 * Math.abs(u) ** 2;
-        const rx = ht * (v < 0.18 ? 0.95 + 0.5 * r() : v < 0.55 ? 0.5 + 0.3 * r() : 0.22 + 0.22 * r()) * end * Math.min(1.15, dn + 0.1);
-        const x = cx + u * hl;
-        if (r() > 0.1 || v < 0.18) {
-          // (the big ones ride higher; the small ones hang under the bank and tear its lower edge)
-          const y = cy - (rx / ht - 0.55) * ht * 0.5 + (r() - 0.5) * ht * 0.8;
-          out.push([x, y, rx, rx * (0.62 + 0.22 * r()), i, rx / ht + r() * 0.4]);
-        }
-        u += (rx / hl) * (0.55 + 0.6 * r());
-      }
-      // its underside torn: small billows hanging under it at uneven gaps, some of them pulled
-      // out into a short streak
-      const nh = 3 + Math.round(r() * 4 * dn);
-      for (let k = 0; k < nh; k++) {
-        const x = cx + (r() * 2 - 1) * hl * 0.85;
-        const rx = ht * (0.2 + 0.35 * r());
-        out.push([x, cy + ht * (0.45 + 0.4 * r()), rx * (r() < 0.4 ? 2.2 : 1), rx * (0.55 + 0.2 * r()), i, -0.5 + r() * 0.3]);
-      }
-      // wisps trailing off its ends: small flat billows in a row, smaller as they go
-      for (const side of [-1, 1]) {
-        if (r() < 0.55) continue;
-        let x = cx + side * hl * (0.9 + 0.1 * r());
-        let y = cy + ht * (0.1 + 0.3 * r());
-        let rx = ht * (0.35 + 0.2 * r());
-        for (let k = 0; k < 4 && rx > 3; k++) {
-          if (x - rx > -400 && x + rx < 330) out.push([x, y, rx, Math.max(1.6, rx * 0.26), i, -1 + k * 0.1]);
-          x += side * rx * (1.3 + 0.8 * r());
-          y += (r() - 0.4) * 4;
-          rx *= 0.55 + 0.25 * r();
-        }
-      }
-    });
-    return out;
-  });
-}
-
-/** A lens's centre height (for which billow of a bank stands in front). */
-const L0y = (i: number): number => SHROUD[i]![1];
-
-function paintShroud(c: PaintCtx, p: ShroudP): void {
-  const b = c.buf, d = c.d, seed = c.seed, K = cellOf(d);
-  const n = Math.max(1, p.frames ?? 24);
-  const loop = (((p.frame ?? 0) % n) / n) * Math.PI * 2;
-  const C = P.cloud;
-  // the billows this frame: swelling and settling a little, drifting a few px and back
-  const B = shroudShape(seed).map(([x, y, rx, ry, i, z], j) => {
-    const g = 1 + 0.06 * Math.sin(loop + j * 1.9);
-    return { x: x + 2.5 * Math.sin(loop + j * 1.3), y: y + 1.2 * Math.cos(loop + j * 0.7), rx: rx * g, ry: ry * g, i, j, z };
-  });
-  const X0 = Math.max(b.ox, Math.floor(c.X(-400))), X1 = Math.min(b.x1, Math.ceil(c.X(330)));
-  const Y0 = Math.max(b.oy, Math.floor(c.Y(-540))), Y1 = Math.min(b.y1, Math.ceil(c.Y(-160)));
-  if (X1 <= X0 || Y1 <= Y0) return;
-  // the bank as one mass: which lens holds each px (a margin above and below, so the lit band
-  // and the underside are measured the same in every tile)
-  const M = Math.ceil(8 * d) + 2;
-  const mw = X1 - X0 + 2, my0 = Y0 - M, mh = Y1 - Y0 + 2 * M;
-  const own = new Int8Array(mw * mh).fill(-1);
-  // (round-3 integration: and which billow stands in front there, so each billow is shaded as
-  // its own ball in the sun, the bank a crowd of lit tops over cool undersides like the sky's
-  // cumulus, never a flat grey slab with a pale rim)
-  const ball = new Int16Array(mw * mh).fill(-1);
-  for (let yy = 0; yy < mh; yy++) {
-    const ly = c.ly(my0 + yy + 0.5);
-    for (let xx = 0; xx < mw; xx++) {
-      const lx = c.lx(X0 - 1 + xx + 0.5);
-      let bz = -1e9;
-      for (const g of B) {
-        const dx = lx - g.x, dy = ly - g.y;
-        if (Math.abs(dx) > g.rx * 1.2 || Math.abs(dy) > g.ry * 1.3) continue;
-        const ang = Math.atan2(dy, dx);
-        // (the rim lumpy at two scales: cauliflower along the top, torn below)
-        const rim = 1 + 0.18 * (vnoise1(ang * 2.4 + g.j * 3, seed + 82) - 0.5) + 0.1 * (vnoise1(ang * 8 + g.j, seed + 83) - 0.5);
-        const q = Math.hypot(dx / g.rx, dy / g.ry);
-        if (q <= rim) {
-          if (own[yy * mw + xx]! < 0) own[yy * mw + xx] = g.i;
-          // (the lower billows of a bank stand in front of the ones above them)
-          const z = g.z + (g.y - L0y(g.i)) / 40 + (1 - q) * 0.3;
-          if (z > bz) { bz = z; ball[yy * mw + xx] = g.j; }
-        }
-      }
-    }
-  }
-  const at = (X: number, Y: number): number => {
-    const xx = X - X0 + 1, yy = Y - my0;
-    return xx < 0 || xx >= mw || yy < 0 || yy >= mh ? -1 : own[yy * mw + xx]!;
-  };
-  const ballAt = (X: number, Y: number): number => {
-    const xx = X - X0 + 1, yy = Y - my0;
-    return xx < 0 || xx >= mw || yy < 0 || yy >= mh ? -1 : ball[yy * mw + xx]!;
-  };
-  for (let Y = Y0; Y < Y1; Y++) {
-    const ly = c.ly(Y + 0.5);
-    for (let X = X0; X < X1; X++) {
-      const i = at(X, Y);
-      if (i < 0) continue;
-      const L = SHROUD[i]!;
-      // px to the outside going up and going down (cells of this level)
-      let up = 0, dn = 0;
-      while (up < M - 1 && at(X, Y - up - 1) >= 0) up++;
-      while (dn < M - 1 && at(X, Y + dn + 1) >= 0) dn++;
-      const side = at(X - 1, Y) < 0 || at(X + 1, Y) < 0;
-      // crisp along its lit top; one cell of dither where its shaded sides and torn underside
-      // meet what is behind it
-      if ((dn < K || (side && up >= K)) && bay(X, Y, K) >= 0.5) continue;
-      const lx = c.lx(X + 0.5);
-      // each billow its own ball lit from the upper left, mixed with the bank's own light (lit
-      // under its lumpy top, cool along its torn underside), in flat steps: the sun's warm cream
-      // on the sunward caps, the cloud's whites, the cool grey in the creases and underneath;
-      // one cell of dither only where two steps meet
-      const g = B[ballAt(X, Y)] ?? B[0]!;
-      const nx = clamp((lx - g.x) / g.rx, -1, 1), ny = clamp((ly - g.y) / g.ry, -1, 1);
-      const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
-      const lamb = nx * 0.55 + ny * 0.68 - nz * 0.48;
-      const bankT = clamp(1 - up / (L[3] * 1.4 * d), 0, 1), bankB = clamp(1 - dn / (L[3] * 0.9 * d), 0, 1);
-      let t = 0.42 + lamb * 0.42 - bankT * 0.22 + bankB * 0.3 + (lx > L[0] ? 0.06 : -0.04) + (vnoise(lx / 21, ly / 15, seed + 90) - 0.5) * 0.08;
-      t = clamp(t, 0, 0.999);
-      // (a step under the sky's cumulus: the bank sits in the giant's haze, so its whites are
-      // the cloud's greys and only the sunward caps reach the sky's white)
-      const STEPS = [P.ember[0]!, C[2]!, C[3]!, C[4]!, P.range[2]!];
-      const AT = [0, 0.14, 0.4, 0.66, 0.86];
-      let si = 0;
-      while (si + 1 < AT.length && t >= AT[si + 1]!) si++;
-      const nearT = ((AT[si + 1] ?? 2) - t) / 0.03;
-      if (nearT < 1 && bay(X, Y, K) > nearT) si = Math.min(STEPS.length - 1, si + 1);
-      // (the warm cream only right on the sunward caps of the upper billows)
-      if (si === 0 && !(up < 5 * d && lx < L[0] + L[2] * 0.3)) si = 1;
-      b.set(X, Y, STEPS[si]!);
-    }
-  }
-}
-
-export const shroud = definePainter<ShroudP>("op.shroud", {
-  bounds() {
-    return [-402, -542, 332, -158];
-  },
-  paint(c, p) {
-    paintShroud(c, p);
-  },
-});
-
-/** What the Walker's builder placement needs to follow it: its motion (kagami-place.ts WALKER). */
-export interface WalkerMotion { x: number; y: number; frames: number; fps: number; path: readonly [number, number]; speed: number; stepMove: boolean }
+/** What the Walker's placement needs to follow it: its plane, motion, size and haze (kagami-place.ts WALKER). */
+export interface WalkerMotion { plane: PlaneId; x: number; y: number; frames: number; fps: number; path: readonly [number, number]; speed: number; stepMove: boolean; scale: number; fade: number }
 
 /**
  * Kagami's wading contact as sprites following the Walker (kagami-backdrop.ts kagamiWade): the
@@ -678,7 +512,8 @@ export interface WalkerMotion { x: number; y: number; frames: number; fps: numbe
  */
 export function wadeSprites(b: WorldBuilder, w: WalkerMotion, seed: (n: number) => number): void {
   const sub = 4;
-  b.sprite({ id: "walker-wade", plane: "mid", kind: "op.wade", x: w.x, y: w.y, p: { sub }, frames: STRIDE * sub, fps: w.fps * sub, path: [w.path[0], w.path[1]], speed: w.speed, stepMove: w.stepMove, seed: seed(1) });
-  // the low cloud round its upper body, in lockstep (it churns once over a stride)
-  b.sprite({ id: "walker-shroud", plane: "mid", kind: "op.shroud", x: w.x, y: w.y, p: { frames: STRIDE }, frames: STRIDE, fps: w.fps, path: [w.path[0], w.path[1]], speed: w.speed, stepMove: w.stepMove, seed: seed(5) });
+  // (far off, the fog banks lie round its legs: no mist lobes of its own)
+  b.sprite({ id: "walker-wade", plane: w.plane, kind: "op.wade", x: w.x, y: w.y, p: { sub, scale: w.scale, mist: w.scale >= 1 }, frames: STRIDE * sub, fps: w.fps * sub, path: [w.path[0], w.path[1]], speed: w.speed, stepMove: w.stepMove, fade: w.fade, seed: seed(1) });
+  // (round 4: the clump of cloud pillows wrapped round its body is gone; the low cloud deck it
+  // wades through is the sky's own cloud family, kagami-backdrop.ts)
 }

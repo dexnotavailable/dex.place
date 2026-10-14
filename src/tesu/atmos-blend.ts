@@ -75,5 +75,27 @@ export function mixAtmos(a: Atmos, b: Atmos, t: number): Atmos {
       mirror: mix3(wa.mirror ?? [1, 1, 1], wb.mirror ?? [1, 1, 1], t),
     },
     grade: [ga[0] + (gb[0] - ga[0]) * t, ga[1] + (gb[1] - ga[1]) * t, ga[2] + (gb[2] - ga[2]) * t, ga[3] + (gb[3] - ga[3]) * t],
+    glow: mixGlow(a.glow, b.glow, t),
+    fog: mixFog(a.fog, b.fog, t),
   };
+}
+
+/** The sun's bloom across a change of place: it fades in or out with t where only one has it. */
+function mixGlow(a: Atmos["glow"], b: Atmos["glow"], t: number): Atmos["glow"] {
+  if (!a && !b) return undefined;
+  const ga = a ?? { ...b!, strength: 0 }, gb = b ?? { ...a!, strength: 0 };
+  return { radius: ga.radius + (gb.radius - ga.radius) * t, strength: ga.strength + (gb.strength - ga.strength) * t, colour: mixHex(ga.colour, gb.colour, t) };
+}
+
+/** Fog banks across a change of place: each plane's bank thins away (or gathers) with t. */
+function mixFog(a: Atmos["fog"], b: Atmos["fog"], t: number): Atmos["fog"] {
+  if (!a?.length && !b?.length) return undefined;
+  const out: NonNullable<Atmos["fog"]> = [];
+  for (const f of a ?? []) {
+    const g = b?.find((x) => x.plane === f.plane);
+    if (!g) { out.push({ ...f, density: f.density * (1 - t) }); continue; }
+    out.push({ ...(t >= 0.5 ? g : f), density: f.density + (g.density - f.density) * t, height: f.height + (g.height - f.height) * t });
+  }
+  for (const g of b ?? []) if (!a?.some((x) => x.plane === g.plane)) out.push({ ...g, density: g.density * t });
+  return out;
 }

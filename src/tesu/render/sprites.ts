@@ -370,6 +370,8 @@ export class SpriteRenderer {
       gl.uniform2f(u.uSize!, fr.w, fr.h);
       gl.uniform1f(u.uFlip!, pos.flip ? 1 : 0);
       gl.uniform1f(u.uReveal!, def.reveal ?? 1);
+      // (a giant set deep in the distance takes its own haze; everything else its plane's)
+      gl.uniform1f(u.uFade!, def.fade ?? look.fade);
       gl.uniform1f(u.uWhite!, def.white ?? 0);
       gl.uniform4f(u.uRect!, Math.round(x0), Math.round(y0), Math.round(x0) + Math.round(fr.w * k), Math.round(y0) + Math.round(fr.h * k));
       gl.drawArrays(gl.TRIANGLES, 0, 6);
