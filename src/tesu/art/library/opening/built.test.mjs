@@ -170,7 +170,10 @@ test("op.jetty: boards come in batches (runs of related boards, never alternatin
   for (let i = 1; i < plan.planks.length; i++) if (plan.planks[i].bleach !== plan.planks[i - 1].bleach) flips++;
   assert.ok(flips < plan.planks.length * 0.2, `${flips} silver/brown changes in ${plan.planks.length} boards`);
   assert.ok(flips > 10, "the batches change now and then");
-  assert.ok(plan.planks.every((q) => q.drop >= 0 && q.drop <= 1), "plank tops within 1 px of the walk line");
+  // (round 5, the critic: "drop or skew one or two planks") the odd board sunk 2 or 3 px or laid askew, the rest within 1 px
+  assert.ok(plan.planks.every((q) => q.drop >= 0 && q.drop <= 3), "plank tops within 3 px of the walk line");
+  const odd = plan.planks.filter((q) => q.drop > 1 || q.skew).length;
+  assert.ok(odd > 0 && odd < plan.planks.length * 0.05, `${odd} boards sunk or askew in ${plan.planks.length}`);
   assert.ok(plan.planks.some((q) => q.gap === 2) && plan.planks.some((q) => q.hang > 0), "open joints and a loose board end");
   assert.ok(plan.bays.some(([, , s]) => s >= 2) && plan.bays.every(([, , s]) => s <= 6.01), "the beam sags 2 to 6 px mid bay");
 });
@@ -204,9 +207,11 @@ test("op.scree: every block paints its own reflection below its waterline (the l
 });
 
 // (round 4, Dex: "the stone textures should have spots and chunks that overlap in front of the
-// paved path") the road is paved, and the rock breaks up over its front edge without ever rising
-// above the walk line
-test("op.rock path: a paved road, the rock's chunks breaking over its front edge, none above the walk line", () => {
+// paved path") the road is paved, and the rock breaks up over its front edge. (Round 5, the critic:
+// "cushions hung off the kerb") the chunks are the cliff rising from below: a few rise past the walk
+// line (in front of the balustrade's post feet), loose stones lie on the road; most of the road's
+// top stays clear
+test("op.rock path: a paved road, the cliff's chunks breaking its front edge, a few rising past the walk line", () => {
   const p = { top: ROAD_TOP, bottom: ROAD_BOTTOM, cap: "path", capH: 9, rough: 12, teeth: 0.7, veg: 0 };
   const buf = paintBox("op.rock", p, 1, -40, -120, 1080, 300, 4242);
   const yAt = (x) => { for (let i = 0; i + 3 < ROAD_TOP.length; i += 2) { const [x0, y0, x1, y1] = ROAD_TOP.slice(i, i + 4); if (x >= x0 && x <= x1) return y0 + ((x - x0) / (x1 - x0)) * (y1 - y0); } return 0; };
@@ -217,9 +222,19 @@ test("op.rock path: a paved road, the rock's chunks breaking over its front edge
     n++;
     if (stone.has(buf.get(x, Math.floor(y + 1.5)))) paved++;
     if (karst.has(buf.get(x, Math.floor(y + 3.5)))) broken++;
-    for (let yy = Math.floor(y) - 6; yy < Math.floor(y) - 1; yy++) if (buf.get(x, yy)) above++;
+    let up = false;
+    for (let yy = Math.floor(y) - 6; yy < Math.floor(y) - 1; yy++) if (buf.get(x, yy)) up = true;
+    if (up) above++;
   }
-  assert.ok(paved / n > 0.45, `the road's top is stone in only ${paved} of ${n} columns`);
-  assert.ok(broken / n > 0.08 && broken / n < 0.6, `rock breaks over the road's edge in ${broken} of ${n} columns (want some, not all)`);
-  assert.equal(above, 0, `${above} px of road or rock painted above the walk line`);
+  assert.ok(paved / n > 0.3, `the road's top is stone in only ${paved} of ${n} columns`);
+  assert.ok(broken / n > 0.08 && broken / n < 0.7, `rock breaks over the road's edge in ${broken} of ${n} columns (want some, not all)`);
+  assert.ok(above > 0 && above / n < 0.3, `rock or stones rise past the walk line in ${above} of ${n} columns (want a few)`);
+});
+
+// (round 5, the critic: "the deck is one full-width ruler") a span given a sag bows down
+test("op.jetty: a sagging span bows the whole deck down between its bents", () => {
+  const plan = jettyPlan({ w: 2400, water: 57.6, sag: [[1200, 3.2]] }, 7919 * 3);
+  assert.equal(plan.sags.length, 1, "one sagging span");
+  const [a, b, amt] = plan.sags[0];
+  assert.ok(a < 1200 && b > 1200 && amt === 3.2, `the span ${a}..${b} holds x 1200`);
 });

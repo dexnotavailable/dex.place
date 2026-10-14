@@ -181,11 +181,30 @@ function formsOf(p: KarstP, seed: number): Form[] {
           if (!g) break;
           if (x < g[0]) x = g[0] + p.h * 0.25 * r();
         }
-        const big = p.h * scale * (0.5 + 0.5 * r());
+        const big = p.h * scale * (look === "mid" || look === "far" ? 0.7 + 0.3 * r() : 0.5 + 0.5 * r());
         const kind = pick(r());
         const w0 = kind === "massif" ? big * (0.7 + 0.6 * r()) : kind === "cone" ? big * (0.6 + 0.4 * r()) : big * (0.2 + 0.18 * r());
         const s0 = seed + k * 7919 + ci * 131;
         add({ kind, cx: x + w0 / 2, hw: w0 / 2, h: big, by, row: k, lean: (r() - 0.5) * 0.16, seed: s0, fall: k === 0 && kind !== "cone" && r() < (p.falls ?? (look === "near" ? 0.4 : 0.15)) ? 1 : 0 }, true);
+        if (look === "mid" || look === "far") {
+          // (round 5, Dex's crop 20, the critic: "about ten same-width round-topped stubs at even
+          // gaps", the far karst behind the gates) a cluster: the dominant tower and two to four lesser ones packed tight round
+          // it, heights 3:1 and more, widths their own, one of them leaning hard away; then a
+          // wide gap of mist of its own size
+          const n = 2 + Math.floor(r() * 3);
+          const lean = Math.floor(r() * n);
+          for (let j = 0; j < n; j++) {
+            const kk = r() < 0.75 ? "pillar" : pick(r());
+            const hh = big * (0.18 + 0.42 * r() * r());
+            const ww = kk === "pillar" ? hh * (0.3 + 0.35 * r()) : hh * (0.7 + 0.6 * r());
+            const side = j % 2 ? 1 : -1;
+            const ln = j === lean ? side * (0.32 + 0.14 * r()) : (r() - 0.5) * 0.14;
+            add({ kind: kk, cx: x + w0 / 2 + side * (w0 * (0.2 + 0.3 * r()) + ww * (0.15 + 0.35 * r()) + (j >> 1) * ww * 0.5), hw: ww / 2, h: hh, by, row: k, lean: ln, seed: s0 + j * 17 + 1, fall: 0 }, true);
+          }
+          x += w0 * (1.3 + 0.8 * r()) + p.h * (r() < 0.75 ? 0.9 + 1.6 * r() : 0.3 * r());
+          ci++;
+          continue;
+        }
         const n = Math.floor(r() * 3);
         for (let j = 0; j < n; j++) {
           const kk = pick(r());
@@ -404,7 +423,18 @@ function capAt(L: Lobe, lx: number, u: number, capD: number): number {
   const lit = Math.pow(clamp((0.3 - u) / 1.25, 0, 1), 1.3);
   const wander = 0.45 + 0.8 * fbm1(lx / Math.max(6, L.hw * 0.45), L.seed + 43, 3);
   const shade = u > 0.35 ? 0.45 + 0.55 * vnoise1(lx / 6, L.seed + 47) : 1;
-  return capD * (0.35 + 1.5 * lit) * wander * shade + tongue * (0.5 + 2.2 * lit);
+  return capD * (0.35 + 1.5 * lit) * wander * shade * canopyGap(L, lx) + tongue * (0.5 + 2.2 * lit) * canopyGap(L, lx);
+}
+
+/**
+ * (round 5, Dex's crop 21, the critic: "the outline is still a rim of same-size round blobs") the
+ * forest on a broad lobe opens in a few gaps where the bare rock of the summit shows through: 1 in
+ * the forest, falling to a thin fringe of scrub in a gap.
+ */
+function canopyGap(L: Lobe, lx: number): number {
+  if (L.ink || L.hw < 30) return 1;
+  const g = vnoise1(lx / Math.max(8, L.hw * 0.16), L.seed + 48) * 0.8 + vnoise1(lx / 5, L.seed + 49) * 0.2;
+  return 0.12 + 0.88 * clamp((g - 0.26) / 0.12, 0, 1);
 }
 
 /** A broad lobe's beds: [height of the ledge above the base, its overhang's shadow px, moss on it 0..1]. */
@@ -426,7 +456,8 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
   const b = c.buf, d = c.d, kc = cellOf(d);
   const span = L.hw * 1.4 + Math.abs(f.lean) * L.h + 6;
   const top = f.by - L.h;
-  if (!b.touches(Math.floor(c.X(f.cx + L.dx - span - 12)), Math.floor(c.Y(top - 14)), Math.ceil(c.X(f.cx + L.dx + span + 12)), Math.ceil(c.Y(f.by)))) return;
+  // (round 5: the trees standing proud of the skyline reach up to 60 px over it)
+  if (!b.touches(Math.floor(c.X(f.cx + L.dx - span - 12)), Math.floor(c.Y(top - 64)), Math.ceil(c.X(f.cx + L.dx + span + 12)), Math.ceil(c.Y(f.by)))) return;
   const capD = green * (f.kind === "cone" ? L.h * 0.5 : Math.min(L.h * 0.3, L.hw * 1.1));
   const fallX = f.cx + L.dx - L.hw * (0.2 + 0.45 * hash1(2, L.seed));
   const yTop = Math.floor(c.Y(top)) - 1, yBase = Math.ceil(c.Y(f.by));
@@ -578,7 +609,8 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
     return;
   }
   // crowns along the lobe's top: the skyline is lumpy forest, never a clean dome
-  if (green > 0 && L.h > f.h * 0.3 && (!L.ink || hash1(5, L.seed) < 0.95)) {
+  // (round 5, Dex's crop 20: "round-topped stubs") far off, most towers keep a bare jagged summit
+  if (green > 0 && L.h > f.h * 0.3 && (!L.ink || hash1(5, L.seed) < (K.detail === 0 ? 0.35 : 0.95))) {
     const step = Math.max(2.5, Math.min(8, L.hw * (K.detail > 0 ? 0.22 : 0.3))) * (L.ink ? 0.8 : 1);
     const r = rng(L.seed + 501);
     for (let ox = -L.hw * 1.05; ox < L.hw * 1.05; ox += step * (0.55 + 0.6 * r())) {
@@ -592,18 +624,53 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
   }
 }
 
-/** A lone tree on the skyline: a thin leaning trunk standing out of the canopy, a small clump on top. */
-function skyTree(c: PaintCtx, x: number, y: number, hgt: number, K: Look, seed: number): void {
+/**
+ * A lone tree standing proud of the canopy on the skyline (round 5: individual silhouettes, never a
+ * rim of blobs): a pine is a leaning trunk carrying two to four flat tiers of needles, each a broad
+ * pad lit along its top, dark beneath, the tiers of different widths (the Huangshan pine's flat
+ * crown); a broadleaf a straighter trunk under a tall rounded crown of a few clumps.
+ */
+function skyTree(c: PaintCtx, x: number, y: number, hgt: number, K: Look, seed: number, pine = true): void {
   const b = c.buf, d = c.d;
-  const lean = (hash1(1, seed) - 0.4) * hgt * 0.3;
-  for (let a = 0; a < hgt * 0.75; a += 0.5 / d) {
-    const X = Math.floor(c.X(x + lean * (a / hgt))), Y = Math.floor(c.Y(y - a));
-    b.set(X, Y, P.pine[5]!);
-    if (a < hgt * 0.3 && d >= 1) b.set(X + 1, Y, P.pine[4]!);
+  const lean = (hash1(1, seed) - 0.4) * hgt * (pine ? 0.45 : 0.2);
+  const V = forestOf(K);
+  const trunk = (a: number): number => x + lean * Math.pow(a / hgt, 1.3);
+  for (let a = 0; a < hgt * (pine ? 0.86 : 0.6); a += 0.5 / d) {
+    const X = Math.floor(c.X(trunk(a))), Y = Math.floor(c.Y(y - a));
+    b.set(X, Y, V[4]!);
+    if (a < hgt * 0.35 && d >= 1) b.set(X + 1, Y, V[3]!);
   }
-  const r = hgt * (0.26 + 0.1 * hash1(2, seed));
-  crown(c, x + lean * 0.8, y - hgt * 0.78, r, K, seed + 3, 0);
-  if (hash1(4, seed) < 0.6) crown(c, x + lean * 0.5 + r * 0.7, y - hgt * 0.55, r * 0.6, K, seed + 5, 0);
+  if (!pine) {
+    const r = hgt * (0.3 + 0.1 * hash1(2, seed));
+    crown(c, trunk(hgt * 0.7), y - hgt * 0.72, r, K, seed + 3, 0);
+    crown(c, trunk(hgt * 0.7) + r * 0.5, y - hgt * 0.92, r * 0.7, K, seed + 5, 0);
+    if (hash1(4, seed) < 0.6) crown(c, trunk(hgt * 0.5) - r * 0.6, y - hgt * 0.56, r * 0.55, K, seed + 7, 0);
+    return;
+  }
+  const nT = 2 + Math.floor(hash1(3, seed) * 3);
+  for (let t = 0; t < nT; t++) {
+    const at = hgt * (0.42 + 0.5 * (t / Math.max(1, nT - 1))) * (0.92 + 0.12 * hash1(10 + t, seed));
+    const side = t === nT - 1 ? 0 : (hash1(20 + t, seed) < 0.5 ? -1 : 1);
+    const pw = hgt * (0.15 + 0.17 * hash1(30 + t, seed)) * (t === nT - 1 ? 1.1 : 1);
+    const ph = Math.max(1.2 / d, pw * (0.26 + 0.1 * hash1(40 + t, seed)));
+    const px = trunk(at) + side * pw * 0.45, py = y - at;
+    // its branch out to the pad
+    if (side !== 0) for (let s2 = 0; s2 < pw * 0.45; s2 += 0.5 / d) b.set(Math.floor(c.X(trunk(at) + side * s2)), Math.floor(c.Y(py + 0.6 - s2 * 0.12)), V[4]!);
+    const X0 = Math.max(b.ox, Math.floor(c.X(px - pw))), X1 = Math.min(b.x1, Math.ceil(c.X(px + pw)));
+    const Y0 = Math.max(b.oy, Math.floor(c.Y(py - ph))), Y1 = Math.min(b.y1, Math.ceil(c.Y(py + ph * 0.6)));
+    for (let yy = Y0; yy < Y1; yy++) {
+      for (let xx = X0; xx < X1; xx++) {
+        const dx = (c.lx(xx + 0.5) - px) / pw, dy = (c.ly(yy + 0.5) - py) / ph;
+        // a flat pad: domed on top, a flatter underside, its ends ragged with tufts
+        const rim = 1 + 0.18 * (vnoise1(dx * 6 + t * 3, seed + 50) - 0.5) * 2;
+        if (dx * dx + (dy < 0 ? dy * dy : dy * dy * 2.4) > rim) continue;
+        let i = dy < -0.45 ? (dx < 0.3 ? 0 : 1) : dy < 0.1 ? 1 : 3;
+        if (dx > 0.55 && dy > -0.3) i = Math.min(4, i + 1);
+        if (d >= 0.5 && hash1(Math.floor(c.lx(xx) * 0.7) * 31 + Math.floor(c.ly(yy) * 0.9), seed + 51) < 0.08) i = Math.min(4, i + 1);
+        b.set(xx, yy, V[i]!);
+      }
+    }
+  }
 }
 
 /**
@@ -655,7 +722,8 @@ function broadCrowns(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, capD
   while (ox < L.hw * 0.98) {
     const rr = size() * (ox > L.hw * 0.4 ? 0.6 : 1);
     const at = lobeTopAt(L, ox);
-    if (at >= L.h * (f.kind === "cone" ? 0.2 : 0.4) && !(ox > L.hw * 0.4 && r() < 0.35)) {
+    const open = canopyGap(L, axis(f, L, at) + ox) < 0.5;
+    if (at >= L.h * (f.kind === "cone" ? 0.2 : 0.4) && !(ox > L.hw * 0.4 && r() < 0.35) && !(open && rr > 2.5)) {
       const footK = clamp(1 - at / (f.h * 0.5), 0, 1) * K.foot;
       crown(c, axis(f, L, at) + ox, f.by - at + rr * (0.25 + 0.3 * r()), rr, K, L.seed + Math.round(ox * 7), footK);
     }
@@ -664,12 +732,14 @@ function broadCrowns(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, capD
   // single trees standing up out of the crown on the skyline: a bare trunk, two or three flat
   // tiers of needles, lit on the left (at the far planes only where they still read)
   if (c.d >= 0.25 && L.hw > 18) {
-    const nt = 1 + Math.floor(r() * 3);
+    // (round 5: more of them, pines and broadleaf, of very different heights, a few in the gaps)
+    const nt = 2 + Math.floor(r() * (L.hw > 60 ? 5 : 3));
     for (let i = 0; i < nt; i++) {
-      const tx = -L.hw * (0.75 - 1.2 * r());
+      const tx = -L.hw * (0.85 - 1.5 * r());
       const at = lobeTopAt(L, tx);
-      if (at < L.h * 0.55) continue;
-      skyTree(c, axis(f, L, at) + tx, f.by - at - 1, L.hw * (0.07 + 0.06 * r()) + 4, K, L.seed + 600 + i);
+      if (at < L.h * 0.5) continue;
+      const tall = r() < 0.3 ? 1.6 : 1;
+      skyTree(c, axis(f, L, at) + tx, f.by - at + 1, (L.hw * (0.06 + 0.07 * r()) + 5) * tall, K, L.seed + 600 + i, r() < 0.7);
     }
   }
   // down the lit shoulder: the forest spills over the edge in clumps, smaller as they go
@@ -960,7 +1030,7 @@ export const karst = definePainter<KarstP>("op.karst", {
       x1 = Math.max(x1, x + w * 1.3);
       top = Math.min(top, -hh);
     }
-    return [x0 - 20, top - 30, x1 + 20, 4];
+    return [x0 - 20, top - 66, x1 + 20, 4];
   },
   paint(c, p) {
     const forms = formsOf(p, c.seed);

@@ -39,7 +39,9 @@ export function kagamiJetty(b: WorldBuilder): void {
     if (x >= GATE_FACE[0]!) y = Math.min(y, yOn(GATE_FACE, x));
     east.push(x - JETTY_X0, y - DECK_Y);
   }
-  const jp: JettyP = { w: W, water, west, east, gap: [LIFT_X - 88 - JETTY_X0, LIFT_X + 19 - JETTY_X0] };
+  // (round 5, the critic: "the deck is one full-width ruler") a few old spans have sagged, each
+  // clear of where she stands in the key frames, the props, the posts and the station
+  const jp: JettyP = { w: W, water, west, east, gap: [LIFT_X - 88 - JETTY_X0, LIFT_X + 19 - JETTY_X0], sag: [[880, 3.2], [2240, 2.6], [3420, 3.4], [4660, 2.8]] };
 
   // the great pine on the east lip (behind the jetty): rooted on the shelf against the road's
   // rock, its long arm reaching west over the station and the jetty's end

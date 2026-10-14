@@ -295,6 +295,8 @@ export interface LimeChunk {
   shade?: number;
   /** (round 4) How round its corners are (default 1; less is a fresher, blockier break). */
   round?: number;
+  /** (round 5) How far it stands back in the haze, 0..1 (default 0): paler, its darks lifted. */
+  haze?: number;
   seed: number;
 }
 
@@ -379,12 +381,13 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
       if (k.water !== undefined && ly > k.water + 0.5) { b.set(x, y, P.karst[8]!); continue; }
       // (round 4: the bright line where it meets the water broken into runs, a quiet step, never a
       // ruled cyan line under every block)
-      if (k.water !== undefined && ly > k.water - 0.5) { b.set(x, y, u > 0.06 && u < 0.94 && vnoise1(lx / 4.5, s0 + 19) > 0.42 ? (u < 0.5 ? P.jade[2]! : P.jade[4]!) : P.karst[8]!); continue; }
+      // (round 5: quieter still, runs of it only, a step darker: long cyan dashes read as ruled lines)
+      if (k.water !== undefined && ly > k.water - 0.5) { b.set(x, y, u > 0.08 && u < 0.92 && vnoise1(lx / 3.2, s0 + 19) > 0.62 ? (u < 0.5 ? P.jade[3]! : P.jade[5]!) : P.karst[8]!); continue; }
       // the moss on its top ledge: a lit top row, the body, a ragged hem hanging over the stone
       const hem = cap > 0 ? cap * (0.55 + 0.7 * vnoise1(lx / 5, s0 + 13)) + (vnoise1(lx / 1.8, s0 + 14) > 0.72 ? 1.8 : 0) : 0;
       if (s < hem) { b.set(x, y, s < 1 ? (u < 0.55 ? P.moss[2]! : P.moss[3]!) : s > hem - 1 ? P.moss[6]! : u > 0.7 ? P.moss[5]! : P.moss[4]!); continue; }
       // its edges: a dark crevice down its right side and along its foot where it meets the next
-      if (sb - lx < 0.9 || (k.water === undefined && F - ly < 0.9)) { b.set(x, y, P.karst[8]!); continue; }
+      if (sb - lx < 0.9 || (k.water === undefined && F - ly < 0.9)) { b.set(x, y, P.karst[8 - Math.round((k.haze ?? 0) * 4)]!); continue; }
       // (the sun stands beyond the lake: a face toward us is in its own shade, its top and its
       // upper-left rim catch the light)
       let t = 0.7 - 0.3 * k.z + (k.shade ?? 0);
@@ -429,7 +432,8 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
       }
       // a nearer chunk's shadow on it, down and to the right
       for (const q of casters) if (!inChunk(q, lx, ly) && inChunk(q, lx - 4, ly - 3)) { t = Math.max(t + 0.3, 0.8); break; }
-      b.set(x, y, tone(P.karst, clamp(0.12 + t * 0.85, 0, 1), x, y, 0));
+      const hz = k.haze ?? 0;
+      b.set(x, y, tone(P.karst, clamp((0.12 + t * 0.85) * (1 - hz * 0.55), 0, 1), x, y, 0));
     }
   }
 }
