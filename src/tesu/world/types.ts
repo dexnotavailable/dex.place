@@ -222,6 +222,11 @@ export interface FogLayer {
   colour?: string;
   /** Drift east, plane px a second (default 1.5). */
   drift?: number;
+  /**
+   * The share of its (rolling) height that lies solid on the water, thinning in steps above it
+   * (default 0: none), so a thing wading in the bank dissolves into it rather than ending on a line.
+   */
+  foot?: number;
 }
 
 /** Something that moves on a plane: animated frames from a painter (or, later, a render). */

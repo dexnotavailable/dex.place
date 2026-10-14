@@ -989,7 +989,7 @@ export class TesuGame {
         const rate = PLANES[id].rate, xf = planeXf(cam, rate);
         this.atmos.drawFog(W, Hf, {
           wl: rowOf(cam, rate, water.y), g: xf.g, offX: xf.offX, drift: -this.time * (f.drift ?? 1.5),
-          density: f.density, height: f.height, apron: f.apron ?? f.height * 0.5, roll: f.roll ?? 0.6, size: f.size ?? 260,
+          density: f.density, height: f.height, apron: f.apron ?? f.height * 0.5, roll: f.roll ?? 0.6, size: f.size ?? 260, foot: f.foot ?? 0,
           cell: cam.zoom >= 1.9 ? 2 : 1, colour: hexRgb(f.colour ?? a.haze), mirrored,
         });
       }

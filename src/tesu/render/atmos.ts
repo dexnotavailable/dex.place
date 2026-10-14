@@ -147,7 +147,7 @@ uniform vec2 uRes;
 uniform float uWl;        // the plane's waterline row (frame px)
 uniform vec3 uXf;         // the plane's art scale g, its x offset (frame px), the drift (art px)
 uniform vec4 uFog;        // density, height, apron (art px), roll
-uniform vec2 uFog2;       // bank size (art px), cell (frame px)
+uniform vec3 uFog2;       // bank size (art px), cell (frame px), foot (share of the height lying solid)
 uniform vec3 uColour;
 uniform float uMirror;    // 1: drawn mirrored about the waterline (the lake's reflection target)
 out vec4 o;
@@ -177,6 +177,11 @@ void main() {
   // billows inside the bank: rolling lumps of thicker fog, so its steps follow the banks' forms
   float bl = vnoise(vec2(px / (S * 0.22), up / (uFog.y * 0.55) + 2.0)) * 0.6 + vnoise(vec2(px / (S * 0.07), up / (uFog.y * 0.2))) * 0.4;
   a = clamp(a * (0.62 + 0.62 * bl), 0.0, 1.0);
+  // the bank's foot (opt-in): solid on the water up to a share of its rolling height, then
+  // thinning in the same flat steps, so what wades in it (the far Walker's legs) dissolves into
+  // the fog instead of ending on the waterline as a ruled cut (the apron is left as it is: a solid
+  // apron would end on a ruled line across the lake)
+  if (uFog2.z > 0.0 && up >= 0.0) a = max(a, clamp(2.0 - up / max(top * uFog2.z, 1.0), 0.0, 1.0));
   // flat steps of translucency (quarters of its density), never smooth, never a screen door
   float s = floor(a * 4.0) / 4.0 * uFog.x;
   if (s <= 0.0) discard;
@@ -308,6 +313,8 @@ export interface FogDraw {
   roll: number;
   size: number;
   cell: number;
+  /** The share of its height lying solid on the water (0, the default: none). */
+  foot?: number;
   colour: [number, number, number];
   mirrored: boolean;
 }
@@ -381,7 +388,7 @@ export class Atmos {
     gl.uniform1f(u.uWl!, d.wl);
     gl.uniform3f(u.uXf!, d.g, d.offX, d.drift % 100000);
     gl.uniform4f(u.uFog!, d.density, d.height, d.apron, d.roll);
-    gl.uniform2f(u.uFog2!, d.size, d.cell);
+    gl.uniform3f(u.uFog2!, d.size, d.cell, d.foot ?? 0);
     gl.uniform3fv(u.uColour!, d.colour);
     gl.uniform1f(u.uMirror!, d.mirrored ? 1 : 0);
     gl.bindVertexArray(this.vao);

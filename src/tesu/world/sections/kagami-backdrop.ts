@@ -44,11 +44,13 @@ const KAGAMI_GLOW = { radius: 0.26, strength: 0.5, colour: "#fff1d8" };
 /**
  * Fog banks lying on the water (round 4): thickest and highest far off, where they wrap the far
  * karst's feet and the Walker's legs, thinner and lower on each nearer plane, none in front of
- * the play plane. Each is drawn after its plane and in the lake's mirror.
+ * the play plane. Each is drawn after its plane and in the lake's mirror. (Round 4 integration:
+ * the far bank lies solid on the water for 0.4 of its height, so the far Walker's legs dissolve
+ * into it instead of ending on the waterline in a ruled cut.)
  */
 const KAGAMI_FOG: FogLayer[] = [
   { plane: "sky", density: 0.45, height: 64, apron: 0, roll: 0.4, size: 520, drift: 0.4, colour: "#e2ece7" },
-  { plane: "far", density: 0.86, height: 82, apron: 24, roll: 0.72, size: 280, drift: 1, colour: "#e6eeea" },
+  { plane: "far", density: 0.86, height: 82, apron: 24, roll: 0.72, size: 280, drift: 1, colour: "#e6eeea", foot: 0.4 },
   { plane: "mid", density: 0.74, height: 64, apron: 34, roll: 0.78, size: 210, drift: 1.8, colour: "#ecf2ee" },
   { plane: "back", density: 0.4, height: 26, apron: 28, roll: 0.8, size: 150, drift: 2.4, colour: "#f0f5f1" },
 ];
@@ -109,8 +111,10 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   // the two sky isles, Bell and Drum, above and right of the palace: seen from almost everywhere
   // (no reflection: the lake mirrors the sky about the horizon, not the waterline the frames
   // show, so their doubles hung under the mist as a second pair of isles)
+  // (round 4 integration: Drum 130 px east and 20 higher, so in play-catch and the pull-back it
+  // floats clear of the great massif's crown instead of standing on it as a pagoda on the summit)
   b.sprite({ id: "isle-bell", plane: "sky", kind: "op.isle", x: 560 / PLANES.sky.rate, y: LAKE_Y - 300 / PLANES.sky.rate, p: { w: 92, h: 120, tower: "bell" }, frames: 8, fps: 1, reflect: false });
-  b.sprite({ id: "isle-drum", plane: "sky", kind: "op.isle", x: 700 / PLANES.sky.rate, y: LAKE_Y - 236 / PLANES.sky.rate, p: { w: 110, h: 96, tower: "drum" }, frames: 8, fps: 0.8, reflect: false });
+  b.sprite({ id: "isle-drum", plane: "sky", kind: "op.isle", x: 830 / PLANES.sky.rate, y: LAKE_Y - 256 / PLANES.sky.rate, p: { w: 110, h: 96, tower: "drum" }, frames: 8, fps: 0.8, reflect: false });
 
   // every background plane has ground below its line, so the land never shows a gap; past the
   // lake's east shore that ground is a sea of mist (the valley and the land beyond the palace)
