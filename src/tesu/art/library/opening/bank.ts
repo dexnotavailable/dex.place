@@ -74,6 +74,15 @@ export interface MassSpec {
   stone?: boolean;
   /** (round 5) A snag lying half sunk in the shallows: no mud bar under it. */
   sunk?: boolean;
+  /**
+   * (round 6, the critic's near framing, E8) Painted only on plates of a density in [min, max]: the
+   * plane's level picks out the camera's band, so a mass can frame only the pull-back (level 2,
+   * zoom 1 to 1.6), only the play frames (level 1) or only the vista (level 0.43, zoom 0.5)
+   * without standing in the frames between. Unset: every level.
+   */
+  levels?: [number, number];
+  /** (round 6) A rise whose flank is grown over all the way down (no bare earth or mud shelves showing). */
+  closed?: boolean;
 }
 
 export interface BankP {
@@ -827,7 +836,9 @@ function earthCol(c: PaintCtx, e: Earth, lx: number, ly: number, x: number, y: n
   // under the grass that overhangs its top: deep shade, the grass's own dark (round 4: a brown
   // band here read as a stripe of mud across the rise)
   if (s < 5 + 4 * vnoise1(lx / 7, sd + 3)) return step(c, [P.moss[7]!, P.pine[4]!, P.pine[5]!], 0.25 + s * 0.08 + (vnoise(lx / 5, ly / 3, sd + 14) - 0.5) * 0.3, x, y);
-  let t = 0.38 + e.wet * 0.2 + (s < 6 + 4 * vnoise1(lx / 7, sd + 3) ? 0.3 : 0) + (vnoise(lx / 22, ly / 9, sd + 4) - 0.5) * 0.24;
+  // (round 6, the critic's "red-brown mud slab": wet peat, a step darker, its mid browns only in
+  // patches where it dries)
+  let t = 0.52 + e.wet * 0.2 + (s < 6 + 4 * vnoise1(lx / 7, sd + 3) ? 0.3 : 0) + (vnoise(lx / 22, ly / 9, sd + 4) - 0.5) * 0.3;
   // mud shelves: a lit lip on each, a dark undercut under it, each wandering along
   for (const h of e.shelves) {
     // (round 4: short shelves that wander, never a stripe across the bank)
@@ -1235,7 +1246,7 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
         const q = dy / Math.max(1, e);
         const y = f - e + dy + (r() - 0.5) * 5 + ry * 0.95;
         const io = inner > 0 ? u - peak : peak - u;
-        const open = band > 0 && io > 0.18 && r() < clamp((q - 0.25) * 1.6 + io, 0, 0.88);
+        const open = band > 0 && io > 0.18 && r() < clamp((q - 0.25) * 1.6 + io, 0, 0.88) && !s.closed;
         // (round 4: in stretches the tussocks come down to the water over the mud, so its foot is
         // never one long band of earth)
         if (y < foot(x) - (vnoise1(x / 37, seed + 17) > 0.52 ? 1.5 : 5 + e * 0.07) && !open) {
@@ -1326,6 +1337,19 @@ function mudBody(s: MassSpec, seed: number, wl: number, deep: number, dark: numb
     if (e > 2 && r() > (dark > 0.8 ? 0.62 : 0.35)) parts.push(tuftPart({ x, y: f - e + ry * 0.75, rx, ry, lit: 0.35 + 0.35 * r(), dark: 0.25 + dark * 0.35, seed: seed + 600 + Math.round(x) }, f, false));
     x += rx * (0.8 + 0.9 * r());
   }
+  // (round 6, the critic's "red-brown mud slab with a ruled bottom") a front row of sedge lower
+  // down its face, darker, hanging toward the water, so the mud shows in gaps between clumps and
+  // the bank's foot is broken by them, never one band
+  if (s.h >= 10) {
+    const rf = rng(seed + 31);
+    let fx = s.x + rf() * 10;
+    while (fx < s.x + s.w) {
+      const e = E(fx);
+      const rx = 3.5 + rf() * (3 + s.h * 0.14), ry = rx * (0.8 + 0.4 * rf());
+      if (e > 3 && rf() > 0.3) parts.push(tuftPart({ x: fx, y: f - e * (0.25 + 0.3 * rf()) + ry * 0.5, rx, ry, lit: 0.2 + 0.25 * rf(), dark: 0.55 + dark * 0.3, seed: seed + 800 + Math.round(fx) }, f, false));
+      fx += rx * (0.9 + 1.1 * rf());
+    }
+  }
   if (s.stone) {
     const u = 0.62 + 0.3 * r(), sw = 12 + r() * 10, ft = f + 3 + r() * 5;
     const k = chunk(s.x + s.w * u - sw / 2, s.x + s.w * u + sw / 2, ft - sw * (0.5 + 0.2 * r()), ft, 0.05, 0.8, seed + 700, (r() - 0.5) * 0.2);
@@ -1381,7 +1405,9 @@ function bodyOf(s: MassSpec, seed: number, wl: number, ink: number, deep: number
     case "stone": return stoneBody(s, seed, wl, deep);
     case "pads": {
       const pd = wl + Math.max(10, s.h * 2.5);
-      const pads: PadSpec = { x0: s.x, w: s.w, wl, deep: pd, sedge: Math.round(3 + s.w / 30), seed, ink, n: Math.round((s.w / 10) * (s.dense ?? 1.1)) + 3 };
+      // (round 6, the critic: "stray reed threads in open water", "pads that read as letters") no
+      // sedge stands alone in front of the pads
+      const pads: PadSpec = { x0: s.x, w: s.w, wl, deep: pd, sedge: 0, seed, ink, n: Math.round((s.w / 10) * (s.dense ?? 1.1)) + 3 };
       return [{ box: [s.x - 14, wl - 30, s.x + s.w + 14, pd + 32], wl: Infinity, noRefl: true, pads }];
     }
     case "lantern": {
@@ -1472,7 +1498,7 @@ function paintPart(c: PaintCtx, q: Part): void {
           // the bright line where it meets the water: 1 px, broken, brightest on the sun side
           // (only along a level contact: where a wandering foot steps, a line would trace the step)
           const flat = !q.wlAt || Math.abs(q.wlAt(lx + 1.5) - q.wlAt(lx - 1.5)) < 1.1;
-          if (!q.noLine && flat && ly < w + e1 && vnoise1(lx / 4.2, ls + 3) > 0.42 && q.fill(c, lx, w - 0.7, x, y)) {
+          if (!q.noLine && flat && ly < w + e1 && vnoise1(lx / 4.2, ls + 3) > 0.62 && q.fill(c, lx, w - 0.7, x, y)) {
             const lit = q.fill(c, lx - 4, w - 0.7, x, y) === 0 || vnoise1(lx / 9, ls + 5) > 0.55;
             b.set(x, y, lineCol(lit));
           }
@@ -1491,7 +1517,7 @@ function paintPart(c: PaintCtx, q: Part): void {
 function paintBodies(c: PaintCtx, bodies: Body[], ink: number): void {
   const b = c.buf;
   lineInk = ink;
-  const vis = bodies.filter((B) => b.touches(Math.floor(c.X(B.box[0] - 8)), Math.floor(c.Y(B.box[1] - 8)), Math.ceil(c.X(B.box[2] + 8)), Math.ceil(c.Y(B.box[3]))));
+  const vis = bodies.filter((B) => (!B.spec.levels || (c.d >= B.spec.levels[0] - 1e-6 && c.d <= B.spec.levels[1] + 1e-6)) && b.touches(Math.floor(c.X(B.box[0] - 8)), Math.floor(c.Y(B.box[1] - 8)), Math.ceil(c.X(B.box[2] + 8)), Math.ceil(c.Y(B.box[3]))));
   for (const B of vis) {
     for (const q of B.parts) {
       if (q.noRefl || q.wl === Infinity) continue;
@@ -1598,9 +1624,12 @@ export const bank = definePainter<BankP>("op.bank", {
   },
 });
 
+/** Is the mass painted at play density (level 1)? */
+const atPlay = (m: MassSpec): boolean => !m.levels || (m.levels[0] <= 1 + 1e-6 && m.levels[1] >= 1 - 1e-6);
+
 /** The reed stands' places, for the reed sprites: [x, width, height, density] in the shore's own px. */
 export function reedBeds(p: BankP, seed: number): [number, number, number, number][] {
-  return layoutOf(p, seed).filter((B) => B.spec.kind === "reeds" || (B.spec.kind === "mud" && B.spec.reed !== undefined)).map((B) => {
+  return layoutOf(p, seed).filter((B) => atPlay(B.spec) && (B.spec.kind === "reeds" || (B.spec.kind === "mud" && B.spec.reed !== undefined))).map((B) => {
     const m = B.spec;
     return [m.x + m.w * 0.06, m.w * 0.88, m.reed ?? Math.round(m.h * 2.2 + 40), m.dense ?? 3] as [number, number, number, number];
   });
@@ -1610,6 +1639,8 @@ export function reedBeds(p: BankP, seed: number): [number, number, number, numbe
 export function bankTopAt(p: BankP, seed: number, x: number): number {
   let t = 0;
   for (const B of layoutOf(p, seed)) {
+    // (a mass not painted at play density carries no reeds: they stand on the water there)
+    if (!atPlay(B.spec)) continue;
     const v = B.tops[Math.floor(x) - Math.floor(B.box[0] + 4)];
     if (v !== undefined && v > t) t = v;
   }
@@ -1645,6 +1676,8 @@ export interface ShallowsP {
   wood?: "log" | "stubs";
   /** "rise" (the default on the left), "spit" (the default on the right) or "pads". */
   kind?: "rise" | "spit" | "pads";
+  /** (round 6) Painted only at plate densities in [min, max] (see MassSpec.levels). */
+  levels?: [number, number];
 }
 
 /** The shallows' bodies: the corner's mass and what stands by it, or the lily bed. */
@@ -1692,6 +1725,7 @@ export const shallows = definePainter<ShallowsP>("op.shallows", {
     return [-p.w * 0.6 - 120, p.wl - H * 1.6 - 120, p.w * 1.6 + 120, p.deep + 4];
   },
   paint(c, p) {
+    if (p.levels && (c.d < p.levels[0] - 1e-6 || c.d > p.levels[1] + 1e-6)) return;
     paintBodies(c, shallowsOf(p, c.seed), 0);
   },
 });

@@ -43,16 +43,24 @@ export const NEAR_MASSES: MassSpec[] = [
   { kind: "reeds", x: 6650, w: 450, h: 46, reed: 138, dense: 3.4, stone: true },
   // play-catch's bottom-left (0..444): reference 4's big grassy rise, lit blades and a twig breaking
   // its crown, a warm rim, its earth flank stepping into the water on mud shelves
-  { kind: "rise", x: 7130, w: 570, h: 168, peak: 0.42, bank: 0.42 },
+  // (round 6, E8: not at the vista's density, so the postcard's darks leave its bottom centre;
+  // its corners are framed by masses of its own, below)
+  { kind: "rise", x: 7130, w: 570, h: 168, peak: 0.42, bank: 0.42, levels: [0.9, 9] },
   // at the rise's inner foot, the pull-back's left (0..149), play-catch 434..654: a reed bed in the
   // water on a mud lump
-  { kind: "reeds", x: 7690, w: 220, h: 14, reed: 118, dense: 3.4 },
+  // (round 6, the critic's "reed bar": barely any mud under it, reeds standing in the shallows at
+  // the rise's foot, part of the corner, not a raft beside it)
+  { kind: "reeds", x: 7690, w: 220, h: 6, reed: 118, dense: 3.4 },
   // jetty-6s's and play-east's left anchor (0..185, 174..366): a low dark mud bank, short reeds
   // (round-3 integration: lower, its reeds the taller part, so in pullback and play-catch, where it
   // stands mid-frame, it reads as a reed bed at the water and not a raft of mud)
   // (round 4: the critic's "mud raft" stamp: the catch's right spit is a mud bank too, so this one
   // is another kind, a pair of half-sunk limestone blocks, its short reeds a bed of their own below)
-  { kind: "stone", x: 8232, w: 58, h: 26 },
+  // (round 6, the critic's P5, "at most one accent a frame": the catch's mud spit on the front plane is
+  // the one accent in pullback, jetty-6s, play-catch and play-east, so this pair of blocks and the
+  // reeds by them (8268) are no longer painted: levels no plate has; kept in the list so no mass after
+  // them is reseeded)
+  { kind: "stone", x: 8232, w: 58, h: 26, levels: [99, 99] },
   // the jetty's east landing (jetty-6s 763..1013, play-east 966..1226): under 60 so the landing
   // and its reflection show (round 5, the critic: "the rafts are the same stamp: at most one a
   // frame, the other accent another kind": the catch's spit is the frame's one mud bank) a lily
@@ -70,7 +78,20 @@ export const NEAR_MASSES: MassSpec[] = [
   { kind: "shelf", x: 9186, w: 92, h: 40, drop: 1, bank: 1 },
   // (round 4, last so no mass is reseeded) the short reeds by the half-sunk blocks at 8232, barely
   // any mud under them: reeds standing in the shallows
-  { kind: "reeds", x: 8268, w: 96, h: 5, reed: 66, dense: 2.6 },
+  { kind: "reeds", x: 8268, w: 96, h: 5, reed: 66, dense: 2.6, levels: [99, 99] },
+  // (round 6, the critic's P1, near framing, open since round 0; last so no mass is reseeded) masses
+  // painted only at one band's density (bank.ts MassSpec.levels), so each frames one view without
+  // standing in another's middle:
+  // - the pull-back (level 2, zoom 1 to 1.6; P5 is not drawn above 1.6): the rise's east shoulder
+  //   coming at the camera in its bottom-left corner (x 0..400 at 1.35x), dark, over the jetty's
+  //   reflection; at play zoom it would stand under her in play-catch, so it is not painted there
+  //   (it has left the frame by the left edge when the camera reaches play zoom)
+  { kind: "rise", x: 7700, w: 400, h: 140, peak: 0.26, bank: 0.6, closed: true, levels: [1.5, 9] },
+  // - the postcard (level 0.43, the vista at 0.5x): its bottom-left corner, a dark rise coming in
+  //   from the left edge (its right corner is Gate Road's cliff); the bottom centre stays open
+  //   water, her reflection and the jetty's (a shelf in front of the cliff's foot on the right would
+  //   cover Gate Road's natural arch in guard-terrace, which sees the near plane at the same density)
+  { kind: "rise", x: 5600, w: 1180, h: 380, peak: 0.1, bank: 0.75, crown: [0.5, 0.5], closed: true, levels: [0, 0.6] },
 ];
 
 /** The lake's near shore on P5 and its reed beds (seed block 3). */
@@ -101,7 +122,8 @@ function kagamiShallows(b: WorldBuilder): void {
   const corners: [number, ShallowsP, number, [number, number, number, number][]][] = [
     // left: the rise, its tall end off the corner, a snag lying out from it; reeds by its inner end
     // (deep 300: its bank leaves the frame by the bottom edge at every zoom, never a cut)
-    [h(94.7), { w: h(98.1) - h(94.7), wl: 60, deep: 300, side: -1, h: 52, wood: "log" }, 7919 * 3230, [[238, 40, 40, 2.4]]],
+    // (round 6, E8: not at the vista's density: there it was the postcard's bottom-centre mound)
+    [h(94.7), { w: h(98.1) - h(94.7), wl: 60, deep: 300, side: -1, h: 52, wood: "log", levels: [0.9, 9] }, 7919 * 3230, [[238, 40, 40, 2.4]]],
     // right: the mud spit, one stone, mixed reeds and cattails on it
     [h(103.3), { w: h(105.6) - h(103.3), wl: 96, deep: 170, side: 1, h: 40 }, 7919 * 3234, [[44, 34, 40, 3], [96, 64, 56, 3.4], [178, 30, 30, 2.2]]],
     // under her: the lily bed

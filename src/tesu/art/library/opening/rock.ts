@@ -208,6 +208,12 @@ function build(p: RockP, seed: number): Built {
     road = { flags, kerbs, rocks };
     // grass in the odd chunk's moss
     for (const q of rocks) if (q.cap > 1.5 && q.kind !== "pebble" && veg > 0 && r() < 0.5) plants.push({ kind: "tuft", x: q.x0 + (q.x1 - q.x0) * (0.25 + 0.5 * r()), y: yAt(top, q.x0) + kerbTop(q, q.x0 + (q.x1 - q.x0) * 0.5) + 1, r: 2 + r() * 3, seed: Math.floor(r() * 1e6) });
+    // (round 6) grass in the joints where a crag meets the road, either side of it
+    if (veg > 0) for (const q of rocks) {
+      if (q.kind !== "crag") continue;
+      const rr = rng(q.seed + 7);
+      for (const ex of [q.x0 + 1.5, q.x1 - 1]) if (rr() < 0.8) plants.push({ kind: "tuft", x: ex + (rr() - 0.5) * 3, y: yAt(top, ex) + 1.5, r: 2.5 + rr() * 3, seed: Math.floor(rr() * 1e6) });
+    }
   }
   for (const fd of p.forest ?? []) {
     const r = rng(seed + 131 + Math.round(fd));
@@ -289,7 +295,12 @@ export function paintRock(c: PaintCtx, p: RockP): void {
             const R = B.road;
             const Q = depth < KERB_DEPTH ? rocksNear(R, lx) : NONE;
             const q = Q.length ? kerbAt(Q, lx, depth) : null;
-            if (q) { b.set(x, y, kerbPx(q, lx, depth, d, x, y)); continue; }
+            if (q) {
+              // (a crag's lower part turns into the face: its tone there)
+              const under = q.kind === "crag" && depth > 18 ? clamp(face(lx, ly, depth, p, seed, d).t + (vnoise(lx / 7, ly / 7, seed + 201) - 0.5) * 0.06, 0, 1) : undefined;
+              b.set(x, y, kerbPx(q, lx, depth, d, x, y, under));
+              continue;
+            }
             // a chunk's shadow on what lies behind it: its cast shadow down and to the right, the
             // contact shadow under its foot
             const sh = Q.length ? kerbShade(Q, lx, depth) : 0;

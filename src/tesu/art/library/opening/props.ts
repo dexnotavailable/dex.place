@@ -9,7 +9,9 @@ import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { bayer4, clamp, hash, hash1, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { wood } from "./jetty.ts";
-import { PINE_GAP, ROAD_PINES, kerbAt, kerbPx, kerbRocks } from "./kerb.ts";
+import { PINE_GAP, ROAD_PINES, kerbAt, kerbPx, kerbRocks, kerbTop } from "./kerb.ts";
+import { clump } from "./kit.ts";
+import { grass } from "./bank.ts";
 
 function fill(c: PaintCtx, x0: number, y0: number, x1: number, y1: number, col: (x: number, y: number, u: number, v: number) => number): void {
   const X0 = Math.round(c.X(x0)), X1 = Math.max(Math.round(c.X(x0)) + 1, Math.round(c.X(x1)));
@@ -133,6 +135,26 @@ export const rail = definePainter<RailP>("op.rail", {
           if (depth > 10) continue;
           if (kerbAt([q], lx, depth) && kerbAt(R, lx, depth) === q) c.buf.set(x, y, kerbPx(q, lx, depth, d, x, y));
         }
+      }
+    }
+    // (round 6) grass on the crags' tops in front of the rail, and a shrub rooted on the odd one
+    // hanging over the posts' feet (ref 01: stone and foliage break in front of the walkway)
+    if (d >= 0.3) for (const q of R) {
+      if (q.kind !== "crag") continue;
+      const w = q.x1 - q.x0;
+      const wyAt = (lx: number): number => railY(pts, lx) - 3 + kerbTop(q, lx);
+      const n = 4 + Math.floor(hash1(1, q.seed + 61) * 6);
+      for (let i = 0; i < n; i++) {
+        const gx = q.x0 + w * (0.12 + 0.76 * hash1(i + 2, q.seed + 62));
+        grass(c, gx, wyAt(gx) + 1.2, 3 + 7 * hash1(i + 3, q.seed + 63), (hash1(i + 4, q.seed + 64) - 0.5) * 0.9, (hash1(i + 5, q.seed + 65) - 0.4) * 1.3, hash1(i + 6, q.seed + 66));
+      }
+      if (hash1(7, q.seed + 67) < 0.5) {
+        const left = hash1(8, q.seed + 67) < 0.5;
+        const bx = left ? q.x0 + w * 0.18 : q.x1 - w * 0.2, by = wyAt(bx) + 1;
+        const rr = 3.5 + 2.5 * hash1(9, q.seed + 67);
+        clump(c, bx + (left ? -rr * 0.6 : rr * 0.6), by - rr * 0.3, rr * 0.8, P.moss.slice(1, 6), P.pine.slice(2), 0.42, q.seed + 70, 0.78);
+        clump(c, bx, by - rr * 0.75, rr, P.moss.slice(1, 6), P.pine.slice(2), 0.34, q.seed + 71, 0.78);
+        clump(c, bx + (left ? rr * 0.8 : -rr * 0.8), by - rr * 0.35, rr * 0.7, P.moss.slice(1, 6), P.pine.slice(2), 0.4, q.seed + 72, 0.78);
       }
     }
   },
