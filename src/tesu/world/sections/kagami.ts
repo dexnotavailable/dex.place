@@ -76,14 +76,15 @@ export function kagami(b: WorldBuilder): void {
 
   // block 5: the Walker lane's giant, rendered from its rig (art/walker/tools/blender/render_walker.py)
   // in its retimed wade (Dex: several hundred metres tall, slow and heavy): one cycle in 20 s,
-  // 48 frames (2.4 a second), 560 px tall at play zoom on P2 with a half-size set for the wide
-  // frames. It moves only when its frame changes, 3.82 plane px a frame (the render's ground
-  // speed), so its planted feet stay planted: 9.18 plane px/s, 32.8 3D px/s on P2.
+  // 48 frames (2.4 a second). Round 4 (the sky lane, Dex: "the walker further back with the
+  // clouds"): it wades far out, on P1 from its 280 px set (kagami-place.ts WALKER). It moves only
+  // when its frame changes, 1.91 plane px a frame (the render's ground speed at that size), so
+  // its planted feet stay planted.
   seedAt(b, s0 + BLOCK.walker);
   b.sprite({
-    id: "walker-kagami", plane: "mid", kind: "frames", x: WALKER.x, y: WALKER.y,
-    p: { sets: WALKER.sets.map((s) => ({ ...s })) },
-    frames: WALKER.frames, fps: WALKER.fps, path: [...WALKER.path], speed: WALKER.speed, stepMove: WALKER.stepMove,
+    id: "walker-kagami", plane: WALKER.plane, kind: "frames", x: WALKER.x, y: WALKER.y,
+    p: { sets: WALKER.sets.map((s) => ({ ...s })), reach: 400 },
+    frames: WALKER.frames, fps: WALKER.fps, path: [...WALKER.path], speed: WALKER.speed, stepMove: WALKER.stepMove, fade: WALKER.fade,
   });
   // what follows it on the water (kagami-backdrop.ts; explicit seeds only)
   kagamiWade(b);

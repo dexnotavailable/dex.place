@@ -27,7 +27,7 @@ import { Sound } from "./sound.ts";
 import { CHARM_PERCH, H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore } from "./plates/store.ts";
 import type { ZhushaAssets } from "./player.ts";
-import { Atmos, type MistBand } from "./render/atmos.ts";
+import { Atmos, type MistBand, type SkyGlow } from "./render/atmos.ts";
 import { Motes } from "./render/motes.ts";
 import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
@@ -959,8 +959,10 @@ export class TesuGame {
     const W = cam.W, Hf = cam.H;
     const a = this.atmosAt(cam.cx, cam.cy);
     const hz = cam.horizon * Hf;
-    const sunPx: [number, number, number] = a.sun ? [a.sun[0] * W, a.sun[1] * Hf, 9] : [0, 0, 0];
+    const sunPx: [number, number, number] = a.sun ? [a.sun[0] * W, a.sun[1] * Hf, a.glow ? 11 : 9] : [0, 0, 0];
     const sky = [hexRgb(a.sky[0]), hexRgb(a.sky[1]), hexRgb(a.sky[2])];
+    // the banded sky and the sun's bloom, where the place has them (cells of two px at the catch's 2x)
+    const glow: SkyGlow | undefined = a.glow && a.glow.strength > 0 ? { radius: a.glow.radius * Hf, strength: a.glow.strength, colour: hexRgb(a.glow.colour), cell: cam.zoom >= 1.9 ? 2 : 1 } : undefined;
     const water = this.activeWater(cam);
     const draws = new Map<PlaneId, PlaneDraw>();
     for (const id of PLANE_IDS) draws.set(id, this.planeQuads(cam, id, 0, Hf, a, !this.manual));
@@ -977,12 +979,28 @@ export class TesuGame {
     const b = this.player.body;
     const lights = this.vfx.pointLights();
 
+    // banks of fog lying on the water at a background plane's waterline (the place's `fog`):
+    // drawn over that plane and the water at its depth, behind every nearer plane, and mirrored
+    // in the lake's reflection target
+    const fogOn = (id: PlaneId, mirrored: boolean): void => {
+      if (!water || !a.fog) return;
+      for (const f of a.fog) {
+        if (f.plane !== id || f.density <= 0) continue;
+        const rate = PLANES[id].rate, xf = planeXf(cam, rate);
+        this.atmos.drawFog(W, Hf, {
+          wl: rowOf(cam, rate, water.y), g: xf.g, offX: xf.offX, drift: -this.time * (f.drift ?? 1.5),
+          density: f.density, height: f.height, apron: f.apron ?? f.height * 0.5, roll: f.roll ?? 0.6, size: f.size ?? 260,
+          cell: cam.zoom >= 1.9 ? 2 : 1, colour: hexRgb(f.colour ?? a.haze), mirrored,
+        });
+      }
+    };
+
     // --- the reflection target
     let wlPlay = Hf;
     if (water) {
       wlPlay = rowOf(cam, 1, water.y);
       r.bindTarget(this.refl, true, [0, 0, 0, 1]);
-      this.atmos.drawSky(W, Hf, hz, sky[0]!, sky[1]!, sky[2]!, sunPx, true);
+      this.atmos.drawSky(W, Hf, hz, sky[0]!, sky[1]!, sky[2]!, sunPx, true, glow);
       for (const id of PLANE_IDS) {
         if (id === "near") continue;
         const m = rowOf(cam, PLANES[id].rate, water.y);
@@ -990,6 +1008,7 @@ export class TesuGame {
         const pd = this.planeQuads(cam, id, Math.max(-Hf * 3, 2 * m - Hf), m + 1, a, false);
         this.planes.draw(pd.quads, pd.look, W, Hf, m);
         this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false), cam, pd.look, this.time, m, this.manual);
+        fogOn(id, true);
         if (id === "play") {
           r.begin(camX, camY, DAY, lights);
           r.setTransform(s4, focus, wlPlay);
@@ -1002,7 +1021,7 @@ export class TesuGame {
 
     // --- the frame
     r.bindTarget(r.main, true, [0, 0, 0, 1]);
-    this.atmos.drawSky(W, Hf, hz, sky[0]!, sky[1]!, sky[2]!, sunPx, false);
+    this.atmos.drawSky(W, Hf, hz, sky[0]!, sky[1]!, sky[2]!, sunPx, false, glow);
     const eye = eyeY(cam);
     const waterDraw = (rows: [number, number]): void => {
       if (!water) return;
@@ -1031,15 +1050,21 @@ export class TesuGame {
     };
     for (const id of PLANE_IDS) {
       const d = draws.get(id)!;
+      if (id === "far") fogOn("sky", false);
       if (id === "mid") {
         waterTo(wl("mid"));
         mist(PLANES.far.rate, 1, 4);
+        fogOn("far", false);
       }
       if (id === "back") {
         waterTo(wl("back"));
         mist(PLANES.mid.rate, 0.75, 7);
+        fogOn("mid", false);
       }
-      if (id === "play") waterTo(wl("play"));
+      if (id === "play") {
+        waterTo(wl("play"));
+        fogOn("back", false);
+      }
       if (id === "front") {
         // her and her effects, then the near water over the play plane's underwater parts
         r.begin(camX, camY, DAY, lights);

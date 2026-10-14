@@ -47,12 +47,45 @@ uniform float uHz;        // horizon row
 uniform vec3 uTop, uMid, uLow;
 uniform vec3 uSun;        // x, y (frame px), radius; radius 0 = none
 uniform float uMirror;    // 1 = drawn mirrored about the horizon (for the reflection)
+uniform vec4 uGlow;       // bloom radius (frame px), strength, style (1 = banded with a bloom), dither cell
+uniform vec3 uGlowCol;
 out vec4 o;
+// v (0..1) in n flat bands; only the last stretch of each band dithers into the next (a seam,
+// never a screen door across the whole band)
+float bandd(float v, float n, vec2 c) {
+  float x = clamp(v, 0.0, 1.0) * n;
+  float fl = floor(x), fr = fract(x);
+  return (fl + step(bayer4(c), (fr - 0.72) / 0.28)) / n;
+}
 void main() {
   vec2 p = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
   if (uMirror > 0.5) {
     if (p.y < uHz) discard;
     p.y = 2.0 * uHz - p.y;
+  }
+  if (uGlow.z > 0.5) {
+    // the morning sky (Kagami's): the gradient in flat bands with dithered seams, deepening up to
+    // the zenith; a warm bloom round the sun in stepped rings; the disc crisp with one bright ring
+    vec2 c = floor(floor(p) / uGlow.w);
+    vec2 q = (c + 0.5) * uGlow.w;
+    float h = clamp((uHz - q.y) / uRes.y, -0.2, 1.4);
+    float t = clamp(h / 0.95, 0.0, 1.0);
+    float lo = clamp(-h / 0.2, 0.0, 1.0);
+    vec3 col = mix(uMid, uTop, bandd(pow(t, 0.62), 12.0, c));
+    col = mix(col, uLow, bandd(lo, 4.0, c));
+    if (uSun.z > 0.0) {
+      float d = length(q - uSun.xy);
+      // a broad faint wash, then tight rings close round the disc (a drawn sun, not a lens halo)
+      float wash = uGlow.y * exp(-d / uGlow.x);
+      col = mix(col, uGlowCol, bandd(min(1.0, wash), 10.0, c) * 0.75);
+      float r = uSun.z;
+      if (d < r * 4.2) col = mix(col, uGlowCol, 0.32);
+      if (d < r * 2.7) col = mix(col, vec3(1.0, 0.97, 0.88), 0.45);
+      if (d < r * 1.65) col = mix(col, vec3(1.0, 0.98, 0.9), 0.7);
+      if (d < r) col = vec3(1.0, 0.99, 0.95);
+    }
+    o = vec4(col, 1.0);
+    return;
   }
   p = floor(p);
   // height above the horizon, 0 at the horizon, 1 a frame height up
@@ -101,6 +134,56 @@ void main() {
   float s = stepd(clamp(a, 0.0, 1.0), 4.0, p) * 0.75;
   if (s <= 0.0) discard;
   o = vec4(uColour * s, s);
+}`;
+
+// Fog lying on the still water at one plane's waterline (a FogLayer): thick on the water, thinning
+// up to a heaped top that rolls at three scales and drifts, a short apron out over the water in
+// front; flat steps of translucency on the art's own cell, never a screen door. Locked to its
+// plane (it parallaxes with the land it wraps).
+const FOG_FS = /* glsl */ `#version 300 es
+precision highp float;
+${LIB}
+uniform vec2 uRes;
+uniform float uWl;        // the plane's waterline row (frame px)
+uniform vec3 uXf;         // the plane's art scale g, its x offset (frame px), the drift (art px)
+uniform vec4 uFog;        // density, height, apron (art px), roll
+uniform vec2 uFog2;       // bank size (art px), cell (frame px)
+uniform vec3 uColour;
+uniform float uMirror;    // 1: drawn mirrored about the waterline (the lake's reflection target)
+out vec4 o;
+void main() {
+  vec2 f = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
+  if (uMirror > 0.5) {
+    if (f.y < uWl) discard;
+    f.y = 2.0 * uWl - f.y;
+  }
+  vec2 c = (floor(f / uFog2.y) + 0.5) * uFog2.y;
+  float g = uXf.x;
+  float px = (c.x - uXf.y) / g + uXf.z;
+  float up = (uWl - c.y) / g;
+  float S = uFog2.x;
+  // the banks' top: heaped at three scales, never level for long
+  float n1 = vnoise(vec2(px / S, 1.3));
+  float n2 = vnoise(vec2(px / (S * 0.36), 4.1));
+  float n3 = vnoise(vec2(px / (S * 0.12), 7.7));
+  float top = uFog.y * mix(1.0, 0.18 + 1.25 * n1 * n1 + 0.4 * n2 + 0.18 * n3, uFog.w);
+  if (up > top || top < 1.0) discard;
+  float a;
+  if (up >= 0.0) a = pow(1.0 - up / top, 0.45);
+  else {
+    if (uFog.z <= 0.0) discard;
+    a = clamp(1.0 + up / uFog.z, 0.0, 1.0);
+  }
+  // billows inside the bank: rolling lumps of thicker fog, so its steps follow the banks' forms
+  float bl = vnoise(vec2(px / (S * 0.22), up / (uFog.y * 0.55) + 2.0)) * 0.6 + vnoise(vec2(px / (S * 0.07), up / (uFog.y * 0.2))) * 0.4;
+  a = clamp(a * (0.62 + 0.62 * bl), 0.0, 1.0);
+  // flat steps of translucency (quarters of its density), never smooth, never a screen door
+  float s = floor(a * 4.0) / 4.0 * uFog.x;
+  if (s <= 0.0) discard;
+  // the bank's upper reach catches the morning sun: a warmer, paler step over the cool body
+  // below it, so each bank reads as a lit volume lying on the water, not a tint
+  vec3 col = up > top * 0.58 ? mix(uColour, vec3(0.99, 0.985, 0.955), 0.65) : uColour;
+  o = vec4(col * s, s);
 }`;
 
 const WATER_FS = /* glsl */ `#version 300 es
@@ -204,6 +287,31 @@ export interface WaterDraw {
   still: number;
 }
 
+/** The sky's banded look and the sun's bloom (an atmos entry's `glow`, in frame px). */
+export interface SkyGlow {
+  radius: number;
+  strength: number;
+  colour: [number, number, number];
+  /** Dither cell, frame px (2 at the catch's 2x). */
+  cell: number;
+}
+
+/** One fog bank to draw: its plane's waterline row and transform, and the layer's look (art px). */
+export interface FogDraw {
+  wl: number;
+  g: number;
+  offX: number;
+  drift: number;
+  density: number;
+  height: number;
+  apron: number;
+  roll: number;
+  size: number;
+  cell: number;
+  colour: [number, number, number];
+  mirrored: boolean;
+}
+
 export class Atmos {
   private sky: WebGLProgram;
   private skyU: Record<string, WebGLUniformLocation>;
@@ -211,6 +319,8 @@ export class Atmos {
   private mistU: Record<string, WebGLUniformLocation>;
   private water: WebGLProgram;
   private waterU: Record<string, WebGLUniformLocation>;
+  private fog: WebGLProgram;
+  private fogU: Record<string, WebGLUniformLocation>;
 
   constructor(private gl: WebGL2RenderingContext, private vao: WebGLVertexArrayObject) {
     this.sky = compile(gl, FULL_VS, SKY_FS, "tesu-sky");
@@ -219,9 +329,11 @@ export class Atmos {
     this.mistU = uniforms(gl, this.mist);
     this.water = compile(gl, FULL_VS, WATER_FS, "tesu-water");
     this.waterU = uniforms(gl, this.water);
+    this.fog = compile(gl, FULL_VS, FOG_FS, "tesu-fog");
+    this.fogU = uniforms(gl, this.fog);
   }
 
-  drawSky(w: number, h: number, hz: number, top: number[], mid: number[], low: number[], sun: [number, number, number], mirrored: boolean): void {
+  drawSky(w: number, h: number, hz: number, top: number[], mid: number[], low: number[], sun: [number, number, number], mirrored: boolean, glow?: SkyGlow): void {
     const gl = this.gl, u = this.skyU;
     gl.useProgram(this.sky);
     gl.disable(gl.BLEND);
@@ -232,6 +344,8 @@ export class Atmos {
     gl.uniform3fv(u.uLow!, low);
     gl.uniform3fv(u.uSun!, sun);
     gl.uniform1f(u.uMirror!, mirrored ? 1 : 0);
+    gl.uniform4f(u.uGlow!, glow ? glow.radius : 0, glow ? glow.strength : 0, glow ? 1 : 0, glow ? glow.cell : 1);
+    gl.uniform3fv(u.uGlowCol!, glow ? glow.colour : [1, 1, 1]);
     gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.enable(gl.BLEND);
@@ -252,6 +366,24 @@ export class Atmos {
     gl.uniform1f(u.uTime!, time % 4096);
     gl.uniform1f(u.uCamX!, camX % 100000);
     gl.uniform2fv(u.uSpan!, span);
+    gl.bindVertexArray(this.vao);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  /** A bank of fog at a plane's waterline (premultiplied over what is drawn). */
+  drawFog(w: number, h: number, d: FogDraw): void {
+    if (d.density <= 0) return;
+    const gl = this.gl, u = this.fogU;
+    gl.useProgram(this.fog);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.uniform2f(u.uRes!, w, h);
+    gl.uniform1f(u.uWl!, d.wl);
+    gl.uniform3f(u.uXf!, d.g, d.offX, d.drift % 100000);
+    gl.uniform4f(u.uFog!, d.density, d.height, d.apron, d.roll);
+    gl.uniform2f(u.uFog2!, d.size, d.cell);
+    gl.uniform3fv(u.uColour!, d.colour);
+    gl.uniform1f(u.uMirror!, d.mirrored ? 1 : 0);
     gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }

@@ -67,6 +67,14 @@ export const P = {
   umber: ramp("#7a5a48", "#5e4335", "#47322a", "#352520", "#261a18", "#191213"),
   /** Bronze: the gong, door fittings, censers. */
   bronze: ramp("#f7e2a6", "#d8b067", "#ad8443", "#7e5d2e", "#523d22", "#2f2318"),
+  // --- appended by the Kagami sky lane, round 4 (indices of everything above are unchanged) ---
+  /**
+   * Sunlit cumulus (Dex's painterly cloud reference): the warm cream where the morning sun
+   * strikes a billow's top, a peach-pink lit face, a lilac white where it turns from the sun,
+   * then lavender greys into the shade and the flat blue-grey base (values fall step by step;
+   * the hue turns from warm to cool). Cool shadows against a warm light.
+   */
+  cumulus: ramp("#fff7ea", "#fde9dc", "#e9e4e8", "#dcd9e4", "#c9c9da", "#b3b7cc", "#9ca3bb", "#878fa9"),
 } as const;
 
 export type RampName = keyof typeof P;

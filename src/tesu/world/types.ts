@@ -190,6 +190,38 @@ export interface Atmos {
    * this width centred on its x (and on its y band's edges). 0 (the default) switches at once.
    */
   blend?: number;
+  /**
+   * The sky's look (Kagami's sky lane, round 4): the gradient in flat bands with narrow dithered
+   * seams (no fine dither across the whole sky), and a broad warm bloom round the sun in stepped
+   * rings: its radius (share of the frame height), strength (0..1) and colour. Absent: the old sky
+   * exactly.
+   */
+  glow?: { radius: number; strength: number; colour: string };
+  /** Banks of fog lying on the water at background planes' waterlines (depth by rendering). */
+  fog?: FogLayer[];
+}
+
+/**
+ * A bank of fog lying on the still water at one plane's waterline, drawn over that plane and the
+ * water at its depth, behind every nearer plane (and in the lake's mirror): thick on the water,
+ * thinning upward to a heaped top that rolls at three scales, in flat steps of translucency (no
+ * screen door). Sizes in px of its plane's art (frame px at play zoom).
+ */
+export interface FogLayer {
+  plane: PlaneId;
+  /** Opacity on the water (0..1). */
+  density: number;
+  /** How high its banks heap above the waterline. */
+  height: number;
+  /** How far it lies out on the water in front of the waterline (default half its height). */
+  apron?: number;
+  /** How much its top heaps and sags, 0 (level) .. 1 (default 0.6); the banks' size (default 260). */
+  roll?: number;
+  size?: number;
+  /** Its colour (default the haze). */
+  colour?: string;
+  /** Drift east, plane px a second (default 1.5). */
+  drift?: number;
 }
 
 /** Something that moves on a plane: animated frames from a painter (or, later, a render). */
@@ -232,6 +264,8 @@ export interface SpriteDef {
    * planted between frames, as the render's ground speed per frame says).
    */
   stepMove?: boolean;
+  /** Its own haze amount (0..1) instead of its plane's (a giant set deep in the distance). */
+  fade?: number;
 }
 
 /** A bank of mist lying at a height in a stretch of the land (a valley's), drawn after a plane. */

@@ -6,7 +6,7 @@
 import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
 import { LAKE_Y } from "./common.ts";
-import { PLANES } from "../types.ts";
+import { PLANES, type FogLayer } from "../types.ts";
 import { WALKER, bg, drifting, seedAt, seedNow } from "./kagami-place.ts";
 import { wadeSprites } from "../../art/library/opening/wade.ts";
 
@@ -34,6 +34,25 @@ const MORNING = {
   sun: [0.2, 0.11] as [number, number],
 };
 
+/**
+ * Kagami's own sky (round 4): a clear zenith blue deepening overhead, a pale warm haze at the
+ * horizon, the low band under it; the sun's bloom warm cream round the one sun at (0.2, 0.11).
+ */
+const KAGAMI_SKY: [string, string, string] = ["#79a8cf", "#d7e7e1", "#eef4ed"];
+const KAGAMI_GLOW = { radius: 0.26, strength: 0.5, colour: "#fff1d8" };
+
+/**
+ * Fog banks lying on the water (round 4): thickest and highest far off, where they wrap the far
+ * karst's feet and the Walker's legs, thinner and lower on each nearer plane, none in front of
+ * the play plane. Each is drawn after its plane and in the lake's mirror.
+ */
+const KAGAMI_FOG: FogLayer[] = [
+  { plane: "sky", density: 0.45, height: 64, apron: 0, roll: 0.4, size: 520, drift: 0.4, colour: "#e2ece7" },
+  { plane: "far", density: 0.86, height: 82, apron: 24, roll: 0.72, size: 280, drift: 1, colour: "#e6eeea" },
+  { plane: "mid", density: 0.74, height: 64, apron: 34, roll: 0.78, size: 210, drift: 1.8, colour: "#ecf2ee" },
+  { plane: "back", density: 0.4, height: 26, apron: 28, roll: 0.8, size: 150, drift: 2.4, colour: "#f0f5f1" },
+];
+
 /** The light, the sky and P1 to P2 (seed block 4). */
 export function kagamiBackdrop(b: WorldBuilder): void {
   // --- the sky and the land beyond the lake (P0 to P3)
@@ -50,32 +69,43 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   //   (which show the water's own colour) stop reading as dark dashes now that the lake runs to
   //   the frame's bottom edge (E6); glint a step above that reflection, so its cells no longer
   //   stand as pale columns. E2 (no gap term, glints only in a sun path) is still the cure.
-  b.atmos({ x: 0, y1: h(90), blend: h(4), ...MORNING, mist: 0, water: { deep: "#528995", body: "#76a6a6", shallow: "#c6e4dc", glint: "#6a9fa4", mirror: [0.58, 0.76, 0.75] } });
+  // - (round 4, the sky lane) the sky deepens to a clear zenith over a pale, warm horizon in
+  //   flat bands, the sun blooms in stepped warm rings, and fog lies on the water at every
+  //   background plane's waterline, thicker with distance (depth by rendering)
+  b.atmos({ x: 0, y1: h(90), blend: h(4), ...MORNING, sky: KAGAMI_SKY, mist: 0, water: { deep: "#528995", body: "#76a6a6", shallow: "#c6e4dc", glint: "#6a9fa4", mirror: [0.58, 0.76, 0.75] }, glow: KAGAMI_GLOW, fog: KAGAMI_FOG });
   // (past the lake's east end the world's morning again: Gate Road and on)
   b.atmos({ x: h(111), blend: h(4), ...MORNING, mist: 0.8, water: { deep: "#235f60", body: "#4a9a90", shallow: "#c3e2d9", glint: "#fffbe8" } });
 
-  // the sky (art: env-opening, re-dressed): one big morning cumulus holding the sky's middle
-  // (where the postcard writes TESU; the top edge crops its base at play zoom), a low heap
-  // keeping the sun company, two torn strata lying over the far karst; all drifting east on the
-  // wind. The isles ride in front of the big cloud's right flank with a slow bob. Sky plane y is
-  // px above the lake line (the sky barely moves, 0.02 of the camera).
+  // the sky (round 4, the sky lane): ONE cloud family (Dex: never four kinds), every cloud a heap of
+  // billows lit by the one sun, varied in size and how much it towers: the great cumulus holding
+  // the postcard's sky (above every play frame's top edge), middling and small heaps across the
+  // play frames' sky (the one beside the sun lit full on its flank), and decks of small flattened
+  // heaps lying low over the far karst (the stratocumulus under the big clouds in Dex's
+  // reference), hazier with distance. All drift east on the wind. Sky plane y is px above the lake
+  // line (the sky barely moves, 0.02 of the camera; the play frames see dy 0 to -312, the
+  // postcard to about -715).
   const skyWrap: [number, number] = [-1700, 2500];
-  // high cloud far above it all (behind the cumulus), combed out by the wind: three shaped bands
-  // of very different thickness with clear sky between them, a step or two off the sky (the
-  // postcard), drifting with the strata
-  ([[-450, -500, 900, 170, 0.85], [650, -560, 1000, 150, 0.3], [1550, -470, 760, 140, 0.55]] as const).forEach(([x, dy, w, hh, dn], i) =>
-    drifting(b, `sky-field-${i}`, "sky", "op.cloud", x, dy, { kind: "field", w, h: hh, density: dn, strands: 2 + i }, skyWrap, 3.2 + i * 0.3, 1, 4, seed1(4 + i)));
-  // (the big one does not reflect: the sky mirrors about the horizon, so its flat base would lie
-  // across the middle of the lake, behind her at the catch, as a ruled line)
   const rs = PLANES.sky.rate;
-  b.sprite({ id: "sky-cumulus", plane: "sky", kind: "op.cloud", x: 250 / rs, y: LAKE_Y - 205 / rs, p: { kind: "cumulus", w: 840, h: 330 }, frames: 4, fps: 1, path: [skyWrap[0] / rs, skyWrap[1] / rs], drift: 1.2, reflect: false });
-  drifting(b, "sky-heap", "sky", "op.cloud", -380, -96, { kind: "cumulus", w: 330, h: 112, low: true }, skyWrap, 1.6, 1);
-  drifting(b, "sky-strata-0", "sky", "op.cloud", -170, -46, { kind: "stratus", w: 760, h: 22, layers: 2 }, skyWrap, 3, 2);
-  drifting(b, "sky-strata-1", "sky", "op.cloud", 620, -70, { kind: "stratus", w: 640, h: 18, layers: 2 }, skyWrap, 3.5, 2);
-  // a thin, wispy stratus low in the sky under the cumulus (Dex's cloud reference), warm on top
-  drifting(b, "sky-strata-low", "sky", "op.cloud", 380, -128, { kind: "stratus", w: 980, h: 12, layers: 1 }, skyWrap, 2.6, 2, 4, seed1(20));
-  // (the high streak read as a contrail or a ruled line across the sky: gone; its seed is kept)
-  seedAt(b, seedNow(b) + 1);
+  // (the big one does not reflect: the sky mirrors about the horizon, so its flat base would lie
+  // across the bottom of the postcard's lake as a ruled line)
+  b.sprite({ id: "sky-cumulus", plane: "sky", kind: "op.cloud", x: 250 / rs, y: LAKE_Y - 330 / rs, p: { kind: "cumulus", w: 760, h: 345, tower: 0.9 }, frames: 4, fps: 1, path: [skyWrap[0] / rs, skyWrap[1] / rs], drift: 1.2, reflect: false, seed: seed1(301) });
+  ([
+    // [id, x, dy, params, drift, seed]
+    // (the heap keeping the sun company, low under it, its top in the sun's full light)
+    ["sky-heap", -520, -36, { kind: "cumulus", w: 290, h: 104, tower: 0.45, haze: 0.2 }, 1.6, 31],
+    // (a cluster at the right: a heap and a smaller one breaking off it)
+    ["sky-heap-e", 985, -196, { kind: "cumulus", w: 250, h: 100, tower: 0.62 }, 1.4, 32],
+    ["sky-heap-e2", 1120, -238, { kind: "cumulus", w: 130, h: 46, tower: 0.4 }, 1.4, 36],
+    // (low over the far karst: a flattened heap in the haze, the stratocumulus of Dex's reference)
+    ["sky-low-1", 430, -58, { kind: "cumulus", w: 330, h: 54, tower: 0.3, haze: 0.3 }, 2.2, 35],
+  ] as const).forEach(([id, x, dy, p, dr, n]) => drifting(b, id, "sky", "op.cloud", x, dy, { ...p }, skyWrap, dr, 1, 4, seed1(n)));
+  // a lone heap high in the postcard's left sky, above every play frame's top edge (no
+  // reflection: the play frames' lake would show the double of a cloud they cannot see)
+  b.sprite({ id: "sky-heap-w", plane: "sky", kind: "op.cloud", x: -560 / rs, y: LAKE_Y - 340 / rs, p: { kind: "cumulus", w: 190, h: 72, tower: 0.45 }, frames: 4, fps: 1, path: [skyWrap[0] / rs, skyWrap[1] / rs], drift: 1.8, reflect: false, seed: seed1(33) });
+  // (seed1(34) was a low heap, dropped)
+  // (the old pieces' seeds are kept: the cumulus, the heap and the two strata used the block's
+  // counter, then the high streak's)
+  seedAt(b, seedNow(b) + 5);
   // the two sky isles, Bell and Drum, above and right of the palace: seen from almost everywhere
   // (no reflection: the lake mirrors the sky about the horizon, not the waterline the frames
   // show, so their doubles hung under the mist as a second pair of isles)
@@ -102,7 +132,9 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   const P2: [number, [number, number, number, "pillar" | "cone" | "massif"][]][] = [
     [700, [[0, 150, 170, "cone"], [110, 50, 210, "pillar"], [170, 90, 120, "cone"], [-90, 40, 140, "pillar"]]],
     [1450, [[0, 46, 230, "pillar"], [50, 40, 160, "pillar"], [-40, 70, 90, "cone"]]],
-    [2000, [[0, 300, 240, "massif"], [-170, 60, 150, "pillar"], [190, 110, 110, "cone"]]],
+    // (round 4: 120 px further west than before, so the far Walker wades clear of its flank in
+    // the key view; still the catch's left frame)
+    [1880, [[0, 300, 240, "massif"], [-170, 60, 150, "pillar"], [190, 110, 110, "cone"]]],
     [2450, [[0, 150, 80, "cone"], [70, 40, 120, "pillar"]]],
     [3230, [[0, 420, 330, "massif"], [-250, 70, 200, "pillar"], [260, 150, 170, "cone"]]],
     [3900, [[0, 60, 300, "pillar"], [90, 50, 240, "pillar"], [170, 70, 340, "pillar"], [260, 40, 200, "pillar"]]],
@@ -137,15 +169,21 @@ export function kagamiBackdrop(b: WorldBuilder): void {
 
   // P1: far karst rising out of layered mist, ghostly at this distance (art: env-opening), in
   // three clusters with wide gaps of mist between them; the farthest row all but erased by haze
-  bg(b, "far", -900, "op.karst", { w: 1700, h: 230, rows: 3, look: "far", mist: 44, green: 0.7, groups: [[340, 760], [1230, 1660]], haze: 0.7, wet: local(FAR_LAKE, -900) }, LAKE_Y, 1);
-  bg(b, "far", 900, "op.karst", { w: 1800, h: 250, rows: 3, look: "far", mist: 48, green: 0.7, groups: [[340, 820], [1150, 1600]], haze: 0.7, wet: local(FAR_LAKE, 900) }, LAKE_Y, 2);
+  bg(b, "far", -900, "op.karst", { w: 1700, h: 230, rows: 3, look: "far", mist: 30, green: 0.7, groups: [[340, 760], [1230, 1660]], haze: 0.7, wet: local(FAR_LAKE, -900) }, LAKE_Y, 1);
+  bg(b, "far", 900, "op.karst", { w: 1800, h: 250, rows: 3, look: "far", mist: 32, green: 0.7, groups: [[340, 820], [1150, 1600]], haze: 0.7, wet: local(FAR_LAKE, 900) }, LAKE_Y, 2);
   const farWrap: [number, number] = [-900, 2400];
-  ([[-200, -34, 520, 22], [520, -52, 420, 18], [1150, -30, 600, 24]] as const).forEach(([x, dy, w, th], i) =>
-    drifting(b, `far-wisp-${i}`, "far", "sky.wisp", x, dy, { w, h: th, density: 0.65 }, farWrap, 5, 3));
+  // (the far wisps, thin streaks of mist, gave way to the fog banks lying on the water; their
+  // seeds are kept)
+  seedAt(b, seedNow(b) + 3);
+  // the low cloud deck far out over the lake, at the far karst's waists and the Walker's chest
+  // (it wades through real weather, the sky's own cloud family, not a clump wrapped round it):
+  // broken heaps of flattened cumulus at one height, drifting east; this layer stands behind
+  // the Walker (kagamiWade lays the one in front of it)
+  FAR_BEHIND.forEach(([id, x, dy, w, hh, tw, n]) => farCloud(b, id, x, dy, { kind: "cumulus", w, h: hh, tower: tw }, n));
 
   // P2 (falls on the great faces are veils with a spray bloom where they reach the mist)
-  const FALLS: Record<number, number[]> = { 2000: [0], 3230: [0, 1] };
-  P2.forEach(([x, forms], i) => bg(b, "mid", x, "op.karst", { w: 0, h: 380, rows: 1, look: "near", forms, mist: 34, green: 0.85, falls: 0.6, veil: 4, wet: local(MID_WET, x), ...(FALLS[x] ? { fallOn: FALLS[x] } : {}) }, LAKE_Y, i));
+  const FALLS: Record<number, number[]> = { 1880: [0], 3230: [0, 1] };
+  P2.forEach(([x, forms], i) => bg(b, "mid", x, "op.karst", { w: 0, h: 380, rows: 1, look: "near", forms, mist: 20, green: 0.85, falls: 0.6, veil: 4, wet: local(MID_WET, x), ...(FALLS[x] ? { fallOn: FALLS[x] } : {}) }, LAKE_Y, i));
   bg(b, "mid", 3500, "op.karst", { w: 2200, h: 300, rows: 2, look: "mid", mist: 40, green: 0.8, wet: local(MID_WET, 3500) }, LAKE_Y, -1);
   const midWrap: [number, number] = [-400, 5400];
   // egrets crossing in front of the great massif's crown, and far specks of birds over the far
@@ -153,8 +191,8 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   drifting(b, "egrets", "mid", "op.birds", 3090, -255, { n: 5, w: 170, h: 70, kind: "egret", size: 6 }, midWrap, 9, 10, 10, seed1(10));
   drifting(b, "egrets-pair", "mid", "op.birds", 2860, -150, { n: 2, w: 40, h: 16, kind: "egret", size: 5 }, midWrap, 8, 10, 10, seed1(11));
   drifting(b, "far-birds", "far", "op.birds", 1100, -140, { n: 5, w: 150, h: 50, kind: "speck", size: 2 }, farWrap, 3, 8, 10, seed1(12));
-  ([[600, -24, 520, 26], [1900, -40, 460, 22], [3300, -22, 640, 30]] as const).forEach(([x, dy, w, th], i) =>
-    drifting(b, `mid-wisp-${i}`, "mid", "sky.wisp", x, dy, { w, h: th, density: 0.6 }, midWrap, 7, 3));
+  // (the mid wisps too: the fog banks lie there now)
+  seedAt(b, seedNow(b) + 3);
 }
 
 /**
@@ -165,4 +203,27 @@ export function kagamiBackdrop(b: WorldBuilder): void {
  */
 export function kagamiWade(b: WorldBuilder): void {
   wadeSprites(b, WALKER, seed1);
+  // the part of the low cloud deck that passes in front of the giant's chest, its back and the
+  // bonsai rising above it, its legs below it in the fog on the water
+  FAR_FRONT.forEach(([id, x, dy, w, hh, tw, n]) => farCloud(b, id, x, dy, { kind: "cumulus", w, h: hh, tower: tw }, n));
+}
+
+/**
+ * The low cloud layer on P1, at the far karst's waists and the Walker's chest: broken heaps of
+ * flattened cumulus at about one height, of very different sizes, with wide gaps of clear air.
+ * [id, far plane x, base above the lake line, width, height, tower, seed]. The Walker wades at
+ * about far x 490 in the key frames, east at 4.6 px a second.
+ */
+const FAR_BEHIND: [string, number, number, number, number, number, number][] = [
+  ["far-cloud-0", 420, -192, 240, 76, 0.5, 40],
+  ["far-cloud-2", 1520, -164, 250, 70, 0.4, 42],
+];
+const FAR_FRONT: [string, number, number, number, number, number, number][] = [
+  ["far-cloud-3", 575, -112, 300, 82, 0.3, 43],
+];
+
+/** A cloud of the low deck on P1, in the haze a step under the Walker's own (explicit seeds). */
+function farCloud(b: WorldBuilder, id: string, x: number, dy: number, p: Record<string, unknown>, n: number): void {
+  const r = PLANES.far.rate;
+  b.sprite({ id, plane: "far", kind: "op.cloud", x: x / r, y: LAKE_Y + dy / r, p, frames: 4, fps: 1, path: [-900 / r, 2400 / r], drift: 0.7, reflect: true, fade: 0.36, seed: seed1(n) });
 }

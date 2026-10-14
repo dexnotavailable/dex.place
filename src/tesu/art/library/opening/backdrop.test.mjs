@@ -5,6 +5,8 @@
 // cloud field, the shroud, the isles, the spray's wet foot, the birds.)
 // (Round 3: no screen door: mist, veils and clouds are solid lobes with one cell of dither on
 // their edges; the catch's 2x reads at one density.)
+// (Round 4, the sky lane: one cloud family, every kind a heap of billows in the cumulus ramp; the
+// Walker set far off with its wake at half size; the clump of pillows round it is gone.)
 //   node --test src/tesu/art/library/opening/backdrop.test.mjs
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -12,6 +14,7 @@ import "./index.ts";
 import { painter, ctxFor } from "../../painter.ts";
 import { IdxBuf } from "../../raster.ts";
 import { STRIDE } from "./wade.ts";
+import { P } from "../../palette.ts";
 
 const CASES = [
   // far karst in clusters, the farthest row erased into the haze
@@ -37,8 +40,7 @@ const CASES = [
   ["op.wade", { sub: 4, frame: 0 }],
   ["op.wade", { sub: 4, frame: 49 }],
   ["op.wade", { sub: 4, frame: 41 }],
-  // round 2: the low cloud round the Walker's upper body; the floating isles; spray with a wet foot
-  ["op.shroud", { frames: 24, frame: 5 }],
+  // round 2: the floating isles; spray with a wet foot
   ["op.isle", { w: 110, h: 96, tower: "drum" }],
   ["op.isle", { w: 92, h: 120, tower: "bell", frame: 3 }],
   ["op.spray", { w: 120, h: 64, at: [[62, 26]], foot: [-3, 66], frame: 1 }],
@@ -48,6 +50,14 @@ const CASES = [
   ["op.cloud", { kind: "stratus", w: 980, h: 12, layers: 1, frame: 3 }],
   ["op.cloud", { kind: "field", w: 900, h: 170, density: 0.85, strands: 2 }],
   ["op.cloud", { kind: "field", w: 1000, h: 150, density: 0.3, strands: 3, frame: 2 }],
+  // round 4: the one cloud family at its sizes (the great heap, a sun companion in the haze, a
+  // small heap, a low flattened one, a deck of small heaps), and the far Walker's wake at half size
+  ["op.cloud", { kind: "cumulus", w: 760, h: 345, tower: 0.9, frame: 1 }],
+  ["op.cloud", { kind: "cumulus", w: 290, h: 104, tower: 0.45, haze: 0.2 }],
+  ["op.cloud", { kind: "cumulus", w: 130, h: 46, tower: 0.4, frame: 3 }],
+  ["op.cloud", { kind: "cumulus", w: 330, h: 54, tower: 0.3, haze: 0.3 }],
+  ["op.cloud", { kind: "deck", w: 600, h: 40, frame: 2 }],
+  ["op.wade", { sub: 4, scale: 0.5, mist: false, frame: 49 }],
   // egrets crossing the massif, far specks of birds
   ["op.birds", { n: 5, w: 170, h: 70, kind: "egret", size: 6, frame: 3 }],
   ["op.birds", { n: 5, w: 150, h: 50, kind: "speck", size: 2, frame: 7 }],
@@ -93,7 +103,7 @@ for (const [kind, p, a, b] of [
   ["op.wade", { sub: 4 }, 2, 50],
   ["op.cloud", { kind: "cumulus", w: 520, h: 240 }, 0, 1],
   ["op.spray", { w: 120, h: 44, at: [[62, 24]] }, 0, 2],
-  ["op.shroud", { frames: 24 }, 0, 6],
+  ["op.wade", { sub: 4, scale: 0.5, mist: false }, 2, 50],
   ["op.birds", { n: 5, w: 170, h: 70, kind: "egret", size: 6 }, 0, 2],
   ["op.cloud", { kind: "field", w: 700, h: 150 }, 0, 2],
   ["op.falls", { w: 900, h: 600, falls: 1.7, fadeY: 400, fadeH: 120, lip: [0, 10, 900, -10], wallSeed: 77, from: 0, to: 12 }, 0, 1],
@@ -143,7 +153,8 @@ function isolatedShare(buf) {
   return n ? iso / n : 0;
 }
 for (const [kind, p, most] of [
-  ["op.shroud", { frames: 24, frame: 5 }, 0.04],
+  ["op.cloud", { kind: "cumulus", w: 130, h: 46, tower: 0.4 }, 0.03],
+  ["op.cloud", { kind: "deck", w: 600, h: 40 }, 0.04],
   ["op.wade", { sub: 4, frame: 49 }, 0.12],
   ["op.karst", { w: 0, h: 380, rows: 1, look: "near", forms: [[0, 420, 330, "massif"], [-250, 70, 200, "pillar"], [260, 150, 170, "cone"]], mist: 34, green: 0.85, falls: 0.6, veil: 4, fallOn: [0, 1], wet: [-2633, -104] }, 0.04],
   ["op.sea", { w: 1400, depth: 300, swell: 10, ends: 60, west: 260, rise: [[330, 210, 330], [80, 35, 200]], torn: 0.55, wetFloor: 70, wetTo: 226 }, 0.04],
@@ -163,3 +174,43 @@ for (const [kind, p, most] of [
     }
   });
 }
+
+// Round 4 (the sky lane): one cloud family. Every kind of cloud paints only the cumulus ramp (warm
+// lit tops, lavender shade, the blue-grey base), never another material or a second look.
+test("op.cloud: every kind is the same family, in the cumulus ramp only", () => {
+  const ramp = new Set(P.cumulus);
+  for (const p of [{ kind: "cumulus", w: 520, h: 240 }, { kind: "cumulus", w: 160, h: 60, tower: 0.3, haze: 0.5 }, { kind: "deck", w: 600, h: 40 }, { kind: "stratus", w: 760, h: 22 }, { kind: "field", w: 900, h: 170 }]) {
+    const [bx0, by0, bx1, by1] = painter("op.cloud").bounds(p);
+    const buf = paintBox("op.cloud", p, 1, Math.floor(bx0), Math.floor(by0), Math.ceil(bx1 - bx0), Math.ceil(by1 - by0));
+    let n = 0;
+    for (const v of buf.px) if (v) { n++; assert.ok(ramp.has(v), `${p.kind} painted index ${v}, outside the cumulus ramp`); }
+    assert.ok(n > 200, `${p.kind} painted only ${n} px`);
+  }
+});
+
+// Its lit tops are warm and its base cool: the sun's side of a heap holds the cream and peach,
+// its lowest rows only the lavender and blue-grey steps.
+test("op.cloud: warm lit tops, cool base", () => {
+  const p = { kind: "cumulus", w: 520, h: 240, tower: 0.8 };
+  const [bx0, by0, bx1, by1] = painter("op.cloud").bounds(p);
+  const x0 = Math.floor(bx0), y0 = Math.floor(by0), w = Math.ceil(bx1 - bx0), h = Math.ceil(by1 - by0);
+  const buf = paintBox("op.cloud", p, 1, x0, y0, w, h);
+  const warm = new Set([P.cumulus[0], P.cumulus[1]]), cool = new Set([P.cumulus[5], P.cumulus[6], P.cumulus[7]]);
+  let warmTop = 0, warmBase = 0, coolBase = 0, base = 0;
+  for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) {
+    const v = buf.get(x, y);
+    if (!v) continue;
+    if (y < -150 && warm.has(v)) warmTop++;
+    if (y > -8) { base++; if (warm.has(v)) warmBase++; if (cool.has(v)) coolBase++; }
+  }
+  assert.ok(warmTop > 300, `only ${warmTop} warm px on its upper part`);
+  assert.ok(base > 100 && warmBase === 0 && coolBase / base > 0.6, `its base is not cool (${coolBase} of ${base} cool, ${warmBase} warm)`);
+});
+
+// The far Walker's wake is the same painting at half its size: it stays inside half the bounds.
+test("op.wade: at half size it paints inside half its bounds", () => {
+  const full = painter("op.wade").bounds({ sub: 4 }), half = painter("op.wade").bounds({ sub: 4, scale: 0.5 });
+  for (let i = 0; i < 4; i++) assert.ok(Math.abs(half[i] - full[i] * 0.5) < 1e-6);
+  const buf = paintBox("op.wade", { sub: 4, scale: 0.5, mist: false, frame: 2 }, 1, Math.floor(half[0]) - 2, Math.floor(half[1]) - 2, Math.ceil(half[2] - half[0]) + 4, Math.ceil(half[3] - half[1]) + 4);
+  assert.ok(buf.px.some((v) => v), "it paints");
+});
