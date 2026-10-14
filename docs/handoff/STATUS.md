@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-14T21:28:44.946Z (15/10/2026, 04:28:44 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-14T22:28:52.091Z (15/10/2026, 05:28:52 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,17 +12,18 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_61997fe3-8a6 — last activity 8 min ago
-6 agents: 2 done, 4 running or stopped mid-way, 0 failed.
+### wf_61997fe3-8a6 — last activity 37 min ago
+7 agents: 2 done, 3 running or stopped mid-way, 2 failed.
 
 - **plan** (running)
 - **anchor** (running)
 - **bones** (running)
 - **plan** (done): Recovered and finished the opening director's planning phase. Before the crash, the director had already written BEATS.json and a storyboard (02:26-02:30), but PLAN.md was never written. The motion bible's catch-and-slap landed afterwards (02:32), so the old timeline no longer matched it. I reconciled the two, wrote the plan, regenerated BEATS.json (v2) and rebuilt the storyboard. v1 is kept in tools\_v1\ and storybo
-- **anchor** (running)
+- **anchor** (failed)
 - **bones** (done): Recovered and finished: the shared pose-figure tool works end to end, and the catch-and-slap is authored, simulated, rendered and cut to Track 1. The last frame lands on the anchor lane's LOCK.json, which arrived during the work at 03:52 (candidate A: hat hand on the brim, near hand at the hip). What survived the crash: the posefig code (rig, geometry, figure, physics, renderer) was there, but nothing had ever render
+- **check** (failed)
 
-### wf_615041c0-3f2 — last activity 68 min ago
+### wf_615041c0-3f2 — last activity 129 min ago
 5 agents: 4 done, 1 running or stopped mid-way, 0 failed.
 
 - **inventory** (done): 
@@ -31,14 +32,14 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **archive** (done): 
 - **install** (done): 
 
-### wf_404079d0-fc4 — last activity 135 min ago
+### wf_404079d0-fc4 — last activity 195 min ago
 3 agents: 0 done, 3 running or stopped mid-way, 0 failed.
 
 - **arch:r7** (running)
 - **water:r7** (running)
 - **patch:r7** (running)
 
-### wf_8865cc19-db1 — last activity 136 min ago
+### wf_8865cc19-db1 — last activity 196 min ago
 14 agents: 12 done, 2 running or stopped mid-way, 0 failed.
 
 - **sky:r4** (done): The sky and atmosphere lane is done and committed on claude/v2-art-kagami-p1 in worktree D:\Dex\Temp\dexplace-v2\art-wt\kagami\p1. The four things Dex asked for now show in all eight key frames: one family of clouds with real volume, a clear sun, fog that gives depth, and the Walker moved further back among the clouds. - **Clouds.** All clouds now come from one painter in sky.ts: heaps of overlapping billows lit by t
@@ -56,7 +57,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **sky:r7** (running)
 - **patch:r7** (running)
 
-### wf_f62de466-2f9 — last activity 608 min ago
+### wf_f62de466-2f9 — last activity 669 min ago
 21 agents: 20 done, 1 running or stopped mid-way, 0 failed.
 
 - **critic:r1** (done): 
@@ -74,13 +75,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **critic:r3** (done): 
 - **director:plan:r4** (running)
 
-### wf_02fb83bb-9c9 — last activity 3715 min ago
+### wf_02fb83bb-9c9 — last activity 3775 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v4** (done): I wrote GDK v4 and every DELTA-v4 item is in it. MAP.svg and the builder map both parse as XML, and I rendered both with headless Edge and looked at them; the leak scan passes. The one thing I could not do is collect new reference images: the indoors-grand, indoors-narrow and outdoors-narrow gaps ar
 - **critic:v4** (done): verdict ready · GDK v4 is ready for Dex. Every DELTA-v4 item is done, and no locked canon line is contradicted. That covers the press-started download, the PC-only warning, Yuki downloading dexClient, no dex.place champion, deep links that skip the intro, the URL scheme, the 3-minute reload, the talisman and the scroll, the music, the hunt prize and stall hints with no randomness, F to interact, and state A left open. I regenerated 
 
-### wf_674119c5-6eb — last activity 3743 min ago
+### wf_674119c5-6eb — last activity 3803 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v1** (done): I've written both files into `D:\Dex\Temp\dexplace-canon-20261012\gdk\v1\`: `GDK.md`, the full design kit in the brief's section order 0 to 10 plus appendices A to E, and `MAP.svg`. The map is valid XML. I rendered it to PNG with headless Edge and checked it by eye: the です shape reads at full size, 
