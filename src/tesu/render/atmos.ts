@@ -169,6 +169,9 @@ uniform vec3 uFog2;       // bank size (art px), cell (frame px), foot (share of
 uniform vec4 uPools[16];  // plane art px x, half width, strength, 0
 uniform int uNPools;
 uniform float uCover;     // the share of the open water between pools its patches cover (1: all)
+uniform vec4 uVeilA[8];   // (round 6) veils: drifting x, half width, height above the line, thickness (art px)
+uniform vec4 uVeilB[8];   //   strength, tear (0 whole .. 1 rags), how far its lit top shows (0..1), slope (rise a px)
+uniform int uNVeils;
 uniform vec3 uColour;
 uniform float uMirror;    // 1: drawn mirrored about the waterline (the lake's reflection target)
 out vec4 o;
@@ -191,6 +194,9 @@ void main() {
   float px = ps + uXf.z;
   float up = (uWl - c.y) / g;
   float S = uFog2.x;
+  // --- the banks lying on the water
+  float aBank = 0.0, aFoot = 0.0;
+  bool litTop = false;
   // where the banks lie (fixed on the land): pools, and torn patches over the open water
   float cov = 1.0;
   if (uNPools > 0 || uCover < 0.999) {
@@ -205,31 +211,70 @@ void main() {
     }
     float open = uCover * smoothstep(0.42, 0.78, vnoise(vec2(ps / (S * 1.6), 9.3)) * 0.75 + vnoise(vec2(px / (S * 0.45), 4.4)) * 0.25);
     cov = max(pool, open);
-    if (cov < 0.04) discard;
   }
-  // the banks' top: heaped at three scales, never level for long; lower where the cover thins
-  float n1 = vnoise(vec2(px / S, 1.3));
-  float n2 = vnoise(vec2(px / (S * 0.36), 4.1));
-  float n3 = vnoise(vec2(px / (S * 0.12), 7.7));
-  float top = uFog.y * mix(1.0, 0.18 + 1.25 * n1 * n1 + 0.4 * n2 + 0.18 * n3, uFog.w) * min(1.25, 0.25 + 0.75 * cov);
-  if (up > top || top < 1.0) discard;
-  float a;
-  if (up >= 0.0) a = pow(1.0 - up / top, 0.45);
-  else {
-    if (uFog.z <= 0.0) discard;
-    a = clamp(1.0 + up / (uFog.z * min(1.0, cov)), 0.0, 1.0);
+  if (cov >= 0.04 && uFog.y > 0.0) {
+    // the banks' top: heaped at three scales, never level for long; lower where the cover thins
+    float n1 = vnoise(vec2(px / S, 1.3));
+    float n2 = vnoise(vec2(px / (S * 0.36), 4.1));
+    float n3 = vnoise(vec2(px / (S * 0.12), 7.7));
+    float top = uFog.y * mix(1.0, 0.18 + 1.25 * n1 * n1 + 0.4 * n2 + 0.18 * n3, uFog.w) * min(1.25, 0.25 + 0.75 * cov);
+    if (up <= top && top >= 1.0) {
+      float a = -1.0;
+      if (up >= 0.0) a = pow(1.0 - up / top, 0.45);
+      // (round 6: its reach out over the water wanders, so the bank's lower edge is never ruled)
+      else if (uFog.z > 0.0) a = clamp(1.0 + up / (uFog.z * min(1.0, cov) * (0.45 + 1.1 * vnoise(vec2(px / (S * 0.55), 6.6)))), 0.0, 1.0);
+      if (a >= 0.0) {
+        // billows inside the bank: rolling lumps of thicker fog, so its steps follow the banks' forms
+        float bl = vnoise(vec2(px / (S * 0.22), up / (uFog.y * 0.55) + 2.0)) * 0.6 + vnoise(vec2(px / (S * 0.07), up / (uFog.y * 0.2))) * 0.4;
+        a = clamp(a * (0.62 + 0.62 * bl) * min(1.0, 0.35 + 0.75 * cov), 0.0, 1.0);
+        // the bank's foot (opt-in): solid on the water up to a share of its rolling height, and
+        // out over the water in front of the line as far (it swallows the line where land meets
+        // water: no ruled foot)
+        // (round 6: nearly opaque, whatever the bank's own density)
+        if (uFog2.z > 0.0) {
+          float fh = max(top * uFog2.z, 1.0);
+          if (up >= 0.0) aFoot = clamp(2.0 - up / fh, 0.0, 1.0) * min(1.0, cov * 1.4);
+          else aFoot = clamp(1.0 + up / max(1.0, uFog.z * 0.8 * min(1.0, cov) * (0.45 + 1.1 * vnoise(vec2(px / (S * 0.4), 8.8)))), 0.0, 1.0) * min(1.0, cov * 1.4);
+        }
+        aBank = a;
+        // the bank's upper reach catches the morning sun
+        litTop = up > top * 0.58;
+      }
+    }
   }
-  // billows inside the bank: rolling lumps of thicker fog, so its steps follow the banks' forms
-  float bl = vnoise(vec2(px / (S * 0.22), up / (uFog.y * 0.55) + 2.0)) * 0.6 + vnoise(vec2(px / (S * 0.07), up / (uFog.y * 0.2))) * 0.4;
-  a = clamp(a * (0.62 + 0.62 * bl) * min(1.0, 0.35 + 0.75 * cov), 0.0, 1.0);
-  // the bank's foot (opt-in): solid on the water up to a share of its rolling height
-  if (uFog2.z > 0.0 && up >= 0.0) a = max(a, clamp(2.0 - up / max(top * uFog2.z, 1.0), 0.0, 1.0));
+  // --- veils: torn streamers of the same fog floating at a height (round 6: the weather the far
+  // Walker wades through), soft-edged, drifting with the fog, each its own shape
+  float aVeil = 0.0;
+  bool litVeil = false;
+  for (int i = 0; i < 8; i++) {
+    if (i >= uNVeils) break;
+    vec4 A = uVeilA[i], B = uVeilB[i];
+    float sd = float(i) * 5.7 + A.x * 0.013;
+    float dx = (px - A.x) / max(1.0, A.y);
+    // its reach tears: the ends wander
+    float reach = 1.0 + 0.4 * (vnoise(vec2(up / max(2.0, A.w * 1.5), sd)) - 0.5);
+    float ex = 1.0 - (dx * dx) / (reach * reach);
+    if (ex <= 0.0) continue;
+    // its centre line wanders up and down along it, its thickness swells and thins
+    float cy = A.z + B.w * (px - A.x) + A.w * 2.2 * (vnoise(vec2(px / max(8.0, A.y * 0.45), sd + 1.0)) - 0.5) + A.w * 0.8 * (vnoise(vec2(px / max(4.0, A.y * 0.12), sd + 3.0)) - 0.5);
+    float th = A.w * (0.55 + 0.9 * vnoise(vec2(px / max(6.0, A.y * 0.3), sd + 2.0)));
+    float dy = (up - cy) / max(1.0, th);
+    if (abs(dy) > 1.6) continue;
+    float prof = exp(-dy * dy * 1.6);
+    // torn: rags and holes at the fog's own scale, drifting
+    float rag = vnoise(vec2(px / max(5.0, A.w * 1.4), up / max(2.0, A.w * 0.7) + sd)) * 0.65 + vnoise(vec2(px / max(3.0, A.w * 0.5), up / max(1.5, A.w * 0.35) + sd * 2.0)) * 0.35;
+    float tear = mix(1.0, smoothstep(0.32, 0.62, rag), B.y);
+    float a = B.x * pow(ex, 0.6) * prof * tear;
+    if (a > aVeil) { aVeil = a; litVeil = dy > (1.0 - B.z) * 0.9; }
+  }
   // flat steps of translucency, their seams dithered on the cell
-  float s = seamd(a, 5.0, cc) * uFog.x;
+  float sB = max(seamd(aBank, 5.0, cc) * uFog.x, seamd(aFoot, 5.0, cc) * 0.95), sV = seamd(aVeil, 5.0, cc);
+  float s = max(sB, sV);
   if (s <= 0.0) discard;
-  // the bank's upper reach catches the morning sun: a warmer, paler step over the cool body
-  // below it, so each bank reads as a lit volume lying on the water, not a tint
-  vec3 col = up > top * 0.58 ? mix(uColour, vec3(0.99, 0.985, 0.955), 0.65) : uColour;
+  bool lit = sV > sB ? litVeil : litTop;
+  // the upper reach catches the morning sun: a warmer, paler step over the cool body below it,
+  // so each bank and veil reads as a lit volume lying in the air, not a tint
+  vec3 col = lit ? mix(uColour, vec3(0.99, 0.985, 0.955), 0.65) : uColour;
   o = vec4(col * s, s);
 }`;
 
@@ -247,13 +292,20 @@ uniform float uTime;
 uniform vec3 uDeep, uBody, uShallow, uHaze, uGlint;
 uniform vec3 uMirrorTint;             // what it mirrors, multiplied (1: as bright as the sky above)
 uniform float uStill;     // 1 = mirror-still (Kagami), less for a harbour
+uniform float uCell;      // (round 6) the art's cell, frame px (2 at the catch's 2x)
+// (round 6) the near water's look, each 0..1 (0: as before): darker and cooler toward the camera,
+// the mirror drawn down in soft streaks under what it mirrors, a few long slow ripple bands (the
+// ripples' gaps and glints only in them), the far edge melting into the haze
+uniform vec4 uNear;
 out vec4 o;
 void main() {
   vec2 f = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
   if (f.y < uRows.x || f.y >= uRows.y) discard;
-  vec2 p = floor(f);
+  // (the art's own cells: at the catch's 2x every step, ripple and dither sits on a 2 px cell)
+  vec2 p = floor(f / uCell) * uCell;
+  vec2 pc = floor(f / uCell);
   // undo the lens zoom, then this row is a depth on a flat lake
-  vec2 q = uFocus + (f - uFocus) / uLens;
+  vec2 q = uFocus + (p + 0.5 * uCell - uFocus) / uLens;
   float denom = uWy - uEye;
   if (denom <= 0.0) discard;
   float s = (q.y - uHz) / denom;
@@ -273,35 +325,77 @@ void main() {
   // world-anchored wave coordinates (px on the water's own surface)
   float wx = x3 / 9.0;
   float t = uTime;
+  // (round 6) a few long slow ripple bands on the near water, wind lines fixed on the water: thin
+  // and long, thicker nearer, broken along their length, only some of the rows where they could lie
+  float band = 0.0;
+  if (uNear.z > 0.0 && r > 0.45) {
+    float phase = s * 4.6 + 0.6 * vnoise(vec2(x3 / 1100.0 + t * 0.005, 2.3)) + 0.3 * vnoise(vec2(x3 / 260.0 - t * 0.008, 7.1)) + 0.08 * vnoise(vec2(x3 / 70.0, 3.3));
+    float row = floor(phase);
+    float along = vnoise(vec2(x3 / 520.0 + row * 3.7 - t * 0.006, row));
+    // (each band swells in its middle and tapers to nothing at its ends)
+    float w = (0.025 + 0.04 * hash2(vec2(row, 4.4))) * smoothstep(0.5, 0.75, along);
+    band = step(fract(phase), w) * step(0.4, hash2(vec2(row, 9.1))) * smoothstep(0.45, 0.9, r) * uNear.z;
+  }
   float ruff = vnoise(vec2(wx / 60.0 + t * 0.03, r * 9.0));
-  ruff = stepd(ruff, 3.0, p) * (1.0 - uStill * 0.6);
-  // ripple shear: whole pixels, bigger toward the viewer
-  float amp = mix(0.4, 3.2, pow(k, 1.3)) * (0.35 + ruff) * (1.2 - uStill * 0.5);
-  float ph = wx * 0.9 + p.y * 0.55 + t * 1.6;
-  float dx = floor(sin(ph) * amp * (0.6 + 0.4 * vnoise(vec2(wx * 0.2, p.y * 0.3))) + 0.5);
-  float dy = floor(sin(ph * 0.5 + 1.7) * amp * 0.25 + 0.5);
+  ruff = stepd(ruff, 3.0, pc) * (1.0 - uStill * 0.6);
+  // ripple shear: whole cells, bigger toward the viewer (in the bands, more)
+  float amp = mix(0.4, 3.2, pow(k, 1.3)) * (0.35 + ruff) * (1.2 - uStill * 0.5) * (1.0 + 0.8 * band);
+  float ph = wx * 0.9 + pc.y * uCell * 0.55 + t * 1.6;
+  float dx = floor(sin(ph) * amp * (0.6 + 0.4 * vnoise(vec2(wx * 0.2, pc.y * uCell * 0.3))) / uCell + 0.5) * uCell;
+  float dy = floor(sin(ph * 0.5 + 1.7) * amp * 0.25 / uCell + 0.5) * uCell;
   vec2 rp = vec2(p.x + dx, p.y + dy);
   rp = clamp(rp, vec2(0.0), uRes - 1.0);
   vec3 refl = texelFetch(uRefl, ivec2(rp.x, uRes.y - 1.0 - rp.y), 0).rgb;
+  // (round 6) the mirror drawn down in soft streaks: what stands over the water stretches its
+  // reflection toward the viewer, darker under the masses, as on the lake in reference 4
+  if (uNear.y > 0.0) {
+    float L = uNear.y * mix(3.0, 30.0, smoothstep(0.35, 1.6, r));
+    vec3 acc = refl;
+    for (int j = 1; j <= 4; j++) {
+      float yy = clamp(rp.y - L * float(j) / 4.0, 0.0, uRes.y - 1.0);
+      acc += texelFetch(uRefl, ivec2(rp.x, uRes.y - 1.0 - yy), 0).rgb;
+    }
+    acc *= 0.2;
+    // (darker wins: the masses' reflections reach down, the sky between does not wash them out)
+    vec3 lo = min(refl, acc);
+    refl = mix(refl, mix(acc, lo, 0.5), 0.75 * uNear.y);
+  }
   refl *= uMirrorTint;
   // the water's own colour: pale at the horizon, deep jade near
   vec3 body = mix(uShallow, uBody, smoothstep(0.0, 0.5, k));
   body = mix(body, uDeep, smoothstep(0.45, 1.1, k));
   // how much it mirrors: nearly all far away, still most of it near (a still lake)
   float rs = mix(0.96, mix(0.55, 0.82, uStill), pow(k, 0.8)) * (1.0 - 0.25 * ruff);
-  // short gaps where a ripple faces the sky
-  float gap = step(0.86 - 0.08 * k, vnoise(vec2(wx * 1.3 + t * 0.4, p.y * 0.9)));
+  // short gaps where a ripple faces the sky (round 6: on the near water only in the ripple bands,
+  // never a sprinkle of dashes over the whole lake)
+  float gap = step(0.86 - 0.08 * k, vnoise(vec2(wx * 1.3 + t * 0.4, pc.y * uCell * 0.9)));
+  if (uNear.z > 0.0) gap *= mix(1.0, band, smoothstep(0.4, 0.8, k));
   rs *= 1.0 - gap * 0.35;
-  float rl = stepd(rs, 5.0, p);
+  float rl = stepd(rs, 5.0, pc);
   vec3 c = mix(body, refl, rl);
   // sun glints on the ripples nearer the viewer
-  float cell = floor(p.x / max(2.0, floor(mix(2.0, 7.0, k))));
-  float gl = hash2(vec2(cell, floor(p.y / max(1.0, floor(k * 2.0 + 1.0))) + floor(t * 0.7 + hash2(vec2(cell, p.y)) * 9.0)));
+  float cell = floor(pc.x * uCell / max(2.0, floor(mix(2.0, 7.0, k))));
+  float gl = hash2(vec2(cell, floor(pc.y * uCell / max(1.0, floor(k * 2.0 + 1.0))) + floor(t * 0.7 + hash2(vec2(cell, pc.y)) * 9.0)));
   float lum = dot(refl, vec3(0.3, 0.55, 0.15));
-  if (gl > 0.993 - 0.01 * k * lum && k > 0.15) c = mix(c, uGlint, 0.8);
-  // haze with distance, stepped
+  if (gl > 0.993 - 0.01 * k * lum && k > 0.15 && (uNear.z <= 0.0 || band > 0.0 || k < 0.6)) c = mix(c, uGlint, 0.8);
+  // (round 6) the ripple bands: a lighter, cooler line where the wind roughens the mirror
+  c = mix(c, mix(uShallow, uHaze, 0.5), 0.2 * band);
+  // (round 6) the near water darker and cooler toward the camera, in a few flat steps
+  if (uNear.x > 0.0) {
+    float nk = smoothstep(1.0, 1.8, r) * uNear.x;
+    c = mix(c, c * vec3(0.66, 0.77, 0.87), stepd(nk, 4.0, pc));
+  }
+  // haze with distance, stepped (round 6: the farthest rows melt into the haze, the edge wandering,
+  // so the lake's far edge never rules a line across the frame)
   float fog = (1.0 - smoothstep(0.03, 0.9, r)) * 0.7;
-  c = mix(c, uHaze, stepd(fog, 6.0, p));
+  vec3 hz = uHaze;
+  if (uNear.w > 0.0) {
+    float melt = uNear.w * smoothstep(0.3, 0.88, u + 0.3 * (vnoise(vec2(x3 / 2400.0, 1.7)) - 0.5) + 0.12 * (vnoise(vec2(x3 / 600.0, 4.2)) - 0.5));
+    // (toward the pale of the mist lying on the far shore, not the haze's middle value)
+    hz = mix(uHaze, vec3(0.94, 0.965, 0.952), 0.55 * smoothstep(0.6, 1.0, melt / max(0.01, uNear.w)));
+    fog = max(fog, melt);
+  }
+  c = mix(c, hz, stepd(fog, 6.0, pc));
   o = vec4(c, 1.0);
 }`;
 
@@ -332,6 +426,10 @@ export interface WaterDraw {
   /** Multiplies the mirrored colour (default [1, 1, 1]). */
   mirror?: [number, number, number];
   still: number;
+  /** (round 6) The art's cell, frame px (2 at the catch's 2x; default 1). */
+  cell?: number;
+  /** (round 6) The near water's look [dark, streaks, bands, far edge melt], each 0..1 (default none). */
+  near?: [number, number, number, number];
 }
 
 /** The sky's banded look and the sun's bloom (an atmos entry's `glow`, in frame px). */
@@ -362,6 +460,8 @@ export interface FogDraw {
   /** Pools [plane art px x, half width, strength] and the open water's cover (round 5). */
   pools?: readonly (readonly [number, number, number])[];
   cover?: number;
+  /** (round 6) Veils floating at a height: [x, half width, height, thickness, strength, tear, lit, slope] (art px). */
+  veils?: readonly (readonly number[])[];
   colour: [number, number, number];
   mirrored: boolean;
 }
@@ -442,6 +542,12 @@ export class Atmos {
     gl.uniform4fv(u.uPools!, arr);
     gl.uniform1i(u.uNPools!, pools.length);
     gl.uniform1f(u.uCover!, d.cover ?? 1);
+    const veils = (d.veils ?? []).slice(0, 8);
+    const va = new Float32Array(32), vb = new Float32Array(32);
+    veils.forEach((v, i) => { va.set([v[0] ?? 0, v[1] ?? 1, v[2] ?? 0, v[3] ?? 1], i * 4); vb.set([v[4] ?? 0.5, v[5] ?? 0.5, v[6] ?? 0.3, v[7] ?? 0], i * 4); });
+    if (u.uVeilA) gl.uniform4fv(u.uVeilA, va);
+    if (u.uVeilB) gl.uniform4fv(u.uVeilB, vb);
+    if (u.uNVeils) gl.uniform1i(u.uNVeils, veils.length);
     gl.uniform3fv(u.uColour!, d.colour);
     gl.uniform1f(u.uMirror!, d.mirrored ? 1 : 0);
     gl.bindVertexArray(this.vao);
@@ -474,6 +580,8 @@ export class Atmos {
     gl.uniform3fv(u.uGlint!, d.glint);
     gl.uniform3fv(u.uMirrorTint!, d.mirror ?? [1, 1, 1]);
     gl.uniform1f(u.uStill!, d.still);
+    if (u.uCell) gl.uniform1f(u.uCell, d.cell ?? 1);
+    if (u.uNear) gl.uniform4fv(u.uNear, d.near ?? [0, 0, 0, 0]);
     gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.enable(gl.BLEND);

@@ -357,9 +357,9 @@ export class SpriteRenderer {
       if (def.hidden) continue;
       const rate = PLANES[def.plane].rate;
       const xf = planeXf(cam, rate);
-      // (round 5) at the catch's 2x the sky's and the far plane's sprites sit on the frame's 2 px
+      // (round 5; round 6: and the mid plane's, like its plates) at the catch's 2x the sky's and the far plane's sprites sit on the frame's 2 px
       // art cells like everything near (painted ones are painted at half the density for it)
-      const snap = cam.zoom >= 1.9 && (def.plane === "sky" || def.plane === "far");
+      const snap = cam.zoom >= 1.9 && (def.plane === "sky" || def.plane === "far" || def.plane === "mid");
       let level = levelFor(planeLevels(rate), xf.g) / (snap && def.kind !== "frames" && def.kind !== "image" ? 2 : 1);
       const pos = SpriteRenderer.position(def, time);
       let fr: Frame | null;

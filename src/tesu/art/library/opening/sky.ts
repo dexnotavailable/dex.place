@@ -1,20 +1,24 @@
 // The opening's sky (P0): morning clouds and the two sky isles. Clouds are authored in code
 // (Dex: clouds, fog, mist and haze are freestyle, never traced).
 //
-// One cloud family (Kagami round 4, the sky lane; Dex: "shouldn't have like 4 different types or
-// shapes"): every cloud, big or small, towering or lying low and flat, is a heap of billows lit by
-// the one sun, after Dex's painterly cumulus reference. Its outline is walked by billows of very
-// different sizes (a few great, more middling, many small), towers and lower domes of their own
-// heights on one low body, the bigger billows sprouting smaller ones round their upper rims
-// (cauliflower); its body packed with billows, each lower one in front of the one above it, so
-// every billow shows its lit top over the shade of the one behind; a flat-ish base scalloped by a
-// few sagging billows; a scrap or two torn off downwind. The light: first the heap's big masses
-// (the sun's side lit, the shade travelling down and right through it, the base darkest), then
-// each billow's own ball on them (crisp lit caps, softer in the shade where the sky lights it), in
-// flat steps of the cumulus ramp: warm cream and peach where the sun strikes, lilac and lavender
-// greys turning away, the blue-grey base. Dither only in a narrow seam where two steps meet and a
-// cell along the shaded outline; the lit outline is crisp. `haze` lifts far clouds toward the half
-// light. `frame` (0..3) swells and settles the billows a little for the drifting sprites.
+// One cloud family (Dex: "shouldn't have like 4 different types or shapes"; round 6: "the clouds
+// should have volume and feel defined"), after Dex's painterly cumulus reference: every cloud is
+// built of LOBES, rounded masses each big enough to carry its own light and shade, overlapping one
+// another, the lower in front of the upper, so every lobe's sunlit top stands crisp against the
+// shaded belly of the one behind it. A heap gathers its lobes into a few heads of very different
+// sizes (the tallest toward the sun) on a flat-ish, scalloped base; the sunlit outline sprouts
+// smaller lobes (cauliflower), the shaded outline stays broad and soft and its edge is lost into
+// the sky by a cell of dither. A low layer is the same lobes drawn out long and flat: broken
+// overlapping strands of stratus in two or three tiers, lit warm along their tops, their ends torn.
+// A wisp is two tiers of such strands, thin and torn.
+//
+// The light: every lobe's own ball in the sun (lit cap, turning face, shaded belly) on the cloud's
+// big shade, the sun's light travelling through the heap from the upper left, so its lower right
+// lies in its own shadow, where the lobes' edges soften and merge; a short contact shade on a lobe
+// just above a nearer one; the warm light thrown up from the land and the lake a soft dithered
+// gradient into the lowest lobes' shade. Flat steps of the cumulus ramp, dither only in a narrow
+// seam where two steps meet. `haze` lifts far clouds toward the half light. `frame` (0..3) swells
+// and settles the lobes a little for the drifting sprites.
 //
 // The isles: two floating islands far off (Bell and Drum) seen side-on: a turf cap on a slab of
 // bedded limestone, the rock under it stacked chunks stepping inward as they hang (Dex's chunk
@@ -33,17 +37,14 @@ const bay = (x: number, y: number, k: number): number => bayer4(Math.floor(x / k
 
 export interface CloudP {
   /**
-   * One cloud family (Dex, round 4: "shouldn't have like 4 different types or shapes"). Every
-   * cloud is built of HEADS of billows lit by the one sun, the same light and the same ramp; its
-   * members differ only in how the heads are gathered (round 5, the critic's S9: vary the members,
-   * never one lens repeated):
-   * - `cumulus`: a few big heads of very different sizes, the tallest left of the middle toward
-   *   the sun, a long lower shoulder downwind, a small head upwind;
+   * One cloud family: every member built of the same lobes in the same light; they differ only
+   * in how the lobes are gathered:
+   * - `cumulus`: a heap of a few heads of very different sizes, the tallest left of the middle
+   *   toward the sun, a long lower shoulder downwind, a small head upwind;
    * - `tower`: one tall narrow head over a couple of small ones at its foot;
-   * - `deck`: a broken band of small flattened heaps low in the sky (stratocumulus);
-   * - `wisp`: two to four thin torn strands of flattened billows at slightly different heights,
-   *   gaps of clear air between them.
-   * The older kinds `stratus` and `field` paint a deck.
+   * - `stratus` (and the older `deck` and `field`): a low layer of broken, overlapping strands in
+   *   two or three tiers, lit warm along their tops (the lower band of Dex's reference);
+   * - `wisp`: two tiers of thin torn strands.
    */
   kind?: "cumulus" | "tower" | "deck" | "wisp" | "stratus" | "field";
   /** Width and height of the cloud, px of its plane; anchor at the middle of its base. */
@@ -53,7 +54,7 @@ export interface CloudP {
   tower?: number;
   /** A low heap (the old flag): a tower of 0.35. */
   low?: boolean;
-  /** For a deck: how many heaps along it (default from its width). */
+  /** For a layer: about how many strands along a tier (default from its width). */
   heaps?: number;
   /** Distance haze, 0..1: far clouds low over the horizon compress toward the half light. */
   haze?: number;
@@ -65,67 +66,38 @@ export interface CloudP {
 }
 
 /**
- * A billow: a ball of cloud seen side-on, [centre, radius, height over width], the head it
- * belongs to, its depth within the head (the lower billows stand in front of the ones above
- * them), the base it is cut off at, a wobble seed (no billow is a compass circle), and whether it
- * is one of the head's big ones (only those keep a crisp edge inside the cloud).
- */
-interface Billow { x: number; y: number; r: number; k: number; head: number; z: number; base: number; s: number; big: boolean }
-
-/**
- * One head of a cloud: its middle, size, how much it towers, where its base lies (y, negative up),
- * its depth among the heads (bigger: in front) and how flat its billows are.
+ * One head of a heap: its middle, size, how much it towers, where its base lies (y, negative up),
+ * its depth among the heads (bigger: in front) and how flat its lobes are.
  */
 interface Head { cx: number; w: number; h: number; tower: number; base: number; z: number; flat: number }
 
-const isDeck = (p: CloudP): boolean => p.kind === "deck" || p.kind === "stratus" || p.kind === "field";
+/**
+ * A lobe: one rounded mass of cloud seen side-on, an ellipse [centre, radii] whose outline
+ * wanders, the head it belongs to, its depth (the lower lobes stand in front of the ones above
+ * them), the base it is cut off at, a wobble seed, and what it is: 0 a body lobe, 1 one walked
+ * along the outline, 2 a cauliflower sprout, 3 a long strand of a layer (its ends torn).
+ */
+interface Lobe { x: number; y: number; rx: number; ry: number; z: number; head: number; s: number; base: number; sub: number; bulge: number }
+
+/** A bulge in the cloud's own px: its centre (y negative up) and radius (-1: none, a layer). */
+type Bulge = [number, number, number];
+
+const isLayer = (p: CloudP): boolean => p.kind === "deck" || p.kind === "stratus" || p.kind === "field" || p.kind === "wisp";
+
+/** The sun's direction (upper left and a little toward the viewer: the frame's sun at (0.2, 0.11)). */
+const SUN = [-0.55, -0.68, 0.48] as const;
 
 function headsOf(p: CloudP, seed: number): Head[] {
   const r = rng(seed + 7);
-  const tower = clamp(p.tower ?? (p.low ? 0.35 : isDeck(p) ? 0.4 : p.kind === "tower" ? 1 : 0.75), 0, 1);
+  const tower = clamp(p.tower ?? (p.low ? 0.35 : p.kind === "tower" ? 1 : 0.75), 0, 1);
   const W = p.w, HH = p.h;
-  if (p.kind === "wisp") {
-    // thin strands torn apart by the wind, overlapping one another at different heights (layers
-    // of stratus shredding), each of its own length and thickness, the ends frayed into scraps
-    const n = 3 + Math.floor(r() * 2);
-    const out: Head[] = [];
-    for (let i = 0; i < n; i++) {
-      const w = W * (0.3 + 0.3 * r());
-      const u = n > 1 ? i / (n - 1) : 0.5;
-      const cx = -W / 2 + w / 2 + (W - w) * clamp(u + (r() - 0.5) * 0.25, 0, 1);
-      out.push({ cx, w, h: HH * (0.5 + 0.5 * r()), tower: 0.1 + 0.25 * r(), base: -HH * (0.1 + 1.3 * r()), z: r() * 0.6, flat: 0.42 + 0.1 * r() });
-    }
-    return out;
-  }
-  if (isDeck(p)) {
-    // a deck: heaps of different widths and heights along a band, a gap between some, others
-    // overlapping, their bases at slightly different heights (never one ruled line)
-    const n = Math.max(2, p.heaps ?? Math.round(W / (HH * 2.8)));
-    const wt: number[] = [];
-    for (let i = 0; i < n; i++) wt.push(0.45 + r() * 1.1 + (i === Math.floor(n * 0.4) ? 0.6 : 0));
-    const gaps: number[] = [];
-    // (mostly touching or overlapping, a gap of clear air here and there: a broken band, never a
-    // dotted line of lenses)
-    for (let i = 0; i < n - 1; i++) gaps.push(r() < 0.7 ? -0.22 - 0.14 * r() : 0.04 + 0.2 * r());
-    const sum = wt.reduce((a, b) => a + b, 0) + gaps.reduce((a, b) => a + b, 0) * 0.6;
-    const unit = W / sum;
-    const out: Head[] = [];
-    let x = -W / 2;
-    for (let i = 0; i < n; i++) {
-      const w = wt[i]! * unit;
-      const hh = HH * (0.62 + 0.38 * r()) * clamp(0.6 + wt[i]! * 0.3, 0.6, 1);
-      out.push({ cx: x + w / 2, w, h: hh, tower: clamp(tower + (r() - 0.5) * 0.3, 0, 1), base: -HH * 0.16 * r(), z: r() * 2, flat: 0.8 + 0.1 * r() });
-      x += w + (gaps[i] ?? 0) * unit * 0.6;
-    }
-    return out;
-  }
-  // a heap: a few big heads of very different sizes, never a row of equal ones
+  // a few big heads of very different sizes, never a row of equal ones
   const aspect = W / HH;
   const out: Head[] = [];
   // the main head (the tower): left of the middle, toward the sun; a narrow cloud is mostly it
   const mw = clamp(0.2 + 0.5 / aspect, 0.3, 0.82) * W * (p.kind === "tower" ? 0.85 : 1);
   const mcx = -W / 2 + mw / 2 + (W - mw) * (0.1 + 0.22 * r());
-  out.push({ cx: mcx, w: mw, h: HH, tower, base: 0, z: 0, flat: 0.95 });
+  out.push({ cx: mcx, w: mw, h: HH, tower, base: 0, z: 0, flat: 0.92 });
   // downwind (east): a long lower shoulder of one to three heads stepping down, each a little in
   // front of the one before it
   let right = mcx + mw * (0.36 + 0.08 * r());
@@ -133,170 +105,240 @@ function headsOf(p: CloudP, seed: number): Head[] {
     const hw = W * (0.21 + 0.14 * r()) * (p.kind === "tower" ? 0.7 : 1);
     const cx = Math.min(W / 2 - hw / 2, right + hw * (0.12 + 0.22 * r()));
     const hh = HH * (0.62 - 0.1 * k) * (0.8 + 0.3 * r()) * (p.kind === "tower" ? 0.5 : 0.72 + 0.28 * (1 - tower));
-    out.push({ cx, w: hw, h: hh, tower: tower * 0.5, base: -HH * 0.03 * r(), z: 1 + k * 0.6, flat: 0.9 });
+    out.push({ cx, w: hw, h: hh, tower: tower * 0.5, base: -HH * 0.03 * r(), z: 1 + k * 0.6, flat: 0.88 });
     right = cx + hw * (0.3 + 0.12 * r());
   }
   // upwind: a smaller head low on the sun's side, in front of the tower's foot
   if (mcx - mw / 2 > -W / 2 + W * 0.04 || aspect > 1.5) {
     const hw = W * (0.15 + 0.09 * r());
     const cx = Math.max(-W / 2 + hw / 2, mcx - mw * 0.4 - hw * 0.12);
-    out.push({ cx, w: hw, h: HH * (0.3 + 0.16 * r()), tower: 0.35, base: 0, z: 1.4, flat: 0.88 });
+    out.push({ cx, w: hw, h: HH * (0.3 + 0.16 * r()), tower: 0.35, base: 0, z: 1.4, flat: 0.86 });
   }
-  // a low head in front of the middle, where the tower meets its shoulder (the lower billows of
+  // a low head in front of the middle, where the tower meets its shoulder (the lower lobes of
   // Dex's reference stand in front of the tower's foot, lit along their tops)
-  if (aspect > 1.7) out.push({ cx: mcx + mw * (0.22 + 0.2 * r()), w: W * (0.15 + 0.08 * r()), h: HH * (0.2 + 0.1 * r()), tower: 0.2, base: 0, z: 2.4, flat: 0.86 });
+  if (aspect > 1.7) out.push({ cx: mcx + mw * (0.22 + 0.2 * r()), w: W * (0.15 + 0.08 * r()), h: HH * (0.2 + 0.1 * r()), tower: 0.2, base: 0, z: 2.4, flat: 0.84 });
   return out;
 }
 
-/** A head's outline: the height of its top over its base at x (px, positive up). */
-function profileOf(H: Head, r: () => number): (x: number) => number {
-  // a few domed towers of very different sizes over a row of lower rounded domes, all on one low
-  // body: never a triangle, a level plateau or a long flat tail
-  const nT = 1 + Math.round(H.tower * 1.4 + r() * 0.8);
-  const towers: [number, number, number][] = [];
-  for (let i = 0; i < nT; i++) {
-    const big = i === 0;
-    towers.push([
-      H.cx + H.w * (big ? -0.12 + 0.24 * r() : (r() < 0.6 ? 0.08 + 0.26 * r() : -0.36 + 0.16 * r())),
-      H.w * (big ? 0.2 + 0.08 * r() : 0.1 + 0.1 * r()),
-      H.h * (big ? 1 : (0.5 + 0.3 * r()) * (0.6 + 0.4 * H.tower)),
-    ]);
+/**
+ * A head's big forms: BULGES, round masses stacked from a crown down each side toward the base
+ * (the tall tower steps down steeply, a low heap spreads), each [x, height of its centre above the
+ * base, radius]; and the head's outline, the union of their upper halves over a low body, so the
+ * silhouette swells in rounded bulges with notches between them (Dex's reference: cauliflower
+ * heads), never a dome, a triangle or a sloping wedge.
+ */
+function bulgesOf(H: Head, r: () => number): { top: (x: number) => number; bulges: [number, number, number][] } {
+  const t = H.tower;
+  const bulges: [number, number, number][] = [];
+  const r0 = Math.min(H.w * 0.3, H.h * (0.24 + 0.14 * (1 - t)));
+  const c0 = H.cx + H.w * (-0.1 + 0.2 * r());
+  bulges.push([c0, H.h - r0, r0]);
+  // (a second crown beside the first on a broad head)
+  if (H.w > H.h * 1.6 && r() < 0.8) {
+    const r1 = r0 * (0.6 + 0.25 * r()), side = r() < 0.6 ? 1 : -1;
+    bulges.push([c0 + side * r0 * (0.9 + 0.4 * r()), H.h - r0 * (0.5 + 0.4 * r()) - r1 * 0.3, r1]);
   }
-  const nD = 2 + Math.round(r() * 1.5);
-  for (let i = 0; i < nD; i++) {
-    const u = -0.8 + (1.6 * (i + 0.2 + 0.6 * r())) / nD;
-    towers.push([H.cx + (u * H.w) / 2, H.w * (0.5 / nD) * (0.75 + 0.6 * r()), H.h * (0.4 + 0.3 * r()) * (1.1 - 0.5 * Math.abs(u))]);
+  const crowns = bulges.slice();
+  for (const [cx0, cy0, cr0] of crowns) {
+    for (const side of [-1, 1]) {
+      let x = cx0, y = cy0, rr = cr0;
+      for (let k = 0; k < 9; k++) {
+        // (a great tower stands on its own stem: its bulges step down nearly straight, as big as the
+        // crown or a little smaller, so its head swells over its foot, never a cone)
+        const stem = t > 0.97;
+        const nr = Math.min(rr * (stem ? 0.78 + 0.3 * r() : 0.82 + 0.38 * r()), H.h * 0.42);
+        x += side * rr * (stem ? 0.05 + 0.3 * r() : (0.4 + 0.4 * r()) * (1.3 - 0.85 * t));
+        y -= rr * (0.5 + 0.35 * r()) * (0.6 + 0.55 * t);
+        if (y < nr * 0.1 || Math.abs(x - H.cx) > H.w / 2 - nr * 0.45) break;
+        bulges.push([x, y, nr]);
+        rr = nr;
+      }
+    }
   }
-  const bodyH = H.h * (0.22 + 0.1 * (1 - H.tower)) * (0.85 + 0.3 * r());
+  const bodyH = H.h * (0.2 + 0.1 * (1 - t)) * (0.85 + 0.3 * r());
   const s = Math.floor(r() * 1e4);
-  return (x: number): number => {
+  const top = (x: number): number => {
     const u = (x - H.cx) / (H.w / 2);
     if (Math.abs(u) >= 1) return 0;
-    // (the ends round off as billowed shoulders over the flat base: never a sloping wedge)
+    // (the ends round off as lobed shoulders over the flat base)
     const env = Math.pow(1 - u ** 6, 0.5);
-    let t = bodyH * env * (0.85 + 0.3 * vnoise1(x / (H.w * 0.18), s));
-    for (const [tx, hw, th] of towers) {
-      const v = (x - tx) / hw;
-      if (Math.abs(v) < 1) t = Math.max(t, th * Math.pow(1 - v * v, 0.42) * Math.pow(env, 0.3));
+    let v = bodyH * env * (0.85 + 0.3 * vnoise1(x / (H.w * 0.18), s));
+    for (const [bx, by, br] of bulges) {
+      const d = x - bx;
+      if (Math.abs(d) < br) v = Math.max(v, (by + Math.sqrt(br * br - d * d)) * Math.pow(env, 0.25));
     }
-    return t;
+    return v;
   };
+  return { top, bulges };
 }
 
-/** How far a cloud's billows may reach either side of its anchor, level-1 px. */
+/** How far a cloud's lobes may reach either side of its anchor, level-1 px. */
 const cloudReach = (p: CloudP): number => p.w * 0.6 + p.h * 0.5;
 
-/** The billows of a cloud (in its own level-1 px, y negative up), built once per cloud. */
-function billowsOf(p: CloudP, seed: number): { B: Billow[]; H: Head[] } {
-  return cached(`cb5|${seed}|${p.kind ?? ""}|${p.w}|${p.h}|${p.tower ?? ""}|${p.low ? 1 : 0}|${p.heaps ?? ""}`, () => {
-    const r = rng(seed + 5);
-    const out: Billow[] = [];
-    const heads = headsOf(p, seed);
-    heads.forEach((H, hi) => {
-      const top = profileOf(H, r);
-      const thin = H.flat < 0.6;
-      // (a small head has fewer, rounder billows: never a speckle of tiny ones)
-      const minR = Math.max(thin ? 2.4 : 3.2, H.h * (thin ? 0.12 : 0.06));
-      const add = (x: number, y: number, rad: number, z: number, big = false): Billow => {
-        const b = { x, y, r: Math.max(minR * 0.6, rad), k: H.flat * (0.86 + 0.2 * r()), head: hi, z, base: H.base, s: Math.floor(r() * 997), big };
-        out.push(b);
-        return b;
-      };
-      const zOf = (y: number): number => ((y - H.base) / Math.max(1, H.h)) * 3 + r() * 0.45;
-      // the outline: billows walked along it (by its length, so the towers' steep flanks carry as
-      // many as their tops), each sitting just inside it; sizes varying four to one and more (a
-      // few great, more middling, many small), never bigger than the height under them allows
-      const pts: [number, number][] = [];
-      for (let x = H.cx - H.w / 2; x <= H.cx + H.w / 2; x += 1) pts.push([x, top(x)]);
-      const rim: Billow[] = [];
-      let acc = 0, want = 0;
-      for (let i = 1; i < pts.length; i++) {
-        const [xa, ta] = pts[i - 1]!, [xb, tb] = pts[i]!;
-        acc += Math.hypot(xb - xa, tb - ta);
-        if (acc < want || tb < 2) continue;
-        const g = r();
-        const bigOne = g < 0.22 && !thin;
-        // (sizes by the head's size, but a great head is carved by more billows, never a few
-        // balloons: four to one between the great and the small)
-        const sc = Math.min(H.h, 60 + H.h * 0.5);
-        let rad = sc * (bigOne ? 0.17 + 0.06 * r() : g < 0.55 ? 0.09 + 0.035 * r() : 0.045 + 0.02 * r()) * (thin ? 1.6 : 1);
-        rad = Math.max(minR, Math.min(rad, tb * 0.5 + 1.5));
-        const tx = xb - xa, ty = -(tb - ta), tl = Math.hypot(tx, ty) || 1;
-        const nx = -ty / tl, ny = tx / tl;
-        const sink = rad * (0.62 + 0.25 * r());
-        const y = H.base - tb + ny * sink;
-        rim.push(add(xb + nx * sink, y, rad, zOf(y), bigOne && rad > sc * 0.15));
-        acc = 0;
-        want = rad * (0.62 + 0.5 * r());
+/** A heap's lobes (in its own level-1 px, y negative up). */
+function heapLobes(p: CloudP, seed: number): { L: Lobe[]; H: Head[]; B: Bulge[] } {
+  const r = rng(seed + 5);
+  const L: Lobe[] = [];
+  const B: Bulge[] = [];
+  const heads = headsOf(p, seed);
+  heads.forEach((H, hi) => {
+    const { top, bulges } = bulgesOf(H, r);
+    const b0 = B.length;
+    for (const [bx, by, br] of bulges) B.push([bx, H.base - by, br]);
+    // (each lobe belongs to the bulge it sits deepest in: it takes that big form's light)
+    const bulgeOf = (x: number, y: number): number => {
+      let best = b0, bd = Infinity;
+      for (let j = b0; j < B.length; j++) {
+        const [bx, by, br] = B[j]!;
+        const d = Math.hypot(x - bx, y - by) / br;
+        if (d < bd) { bd = d; best = j; }
       }
-      // the body: a few big billows filling the head under its outline (their own edges merge
-      // into one mass: only the head's outline and its big billows keep an edge)
-      const cell = Math.max(6, H.h * 0.24);
-      for (let gy = H.base - cell * 0.4; gy > H.base - H.h * 1.05; gy -= cell * (0.62 + 0.2 * r())) {
-        for (let gx = H.cx - H.w / 2 + cell * r() * 0.6; gx < H.cx + H.w / 2; gx += cell * (0.8 + 0.5 * r())) {
-          const t = top(gx);
-          const y = gy + (r() - 0.5) * cell * 0.4;
-          const rad = cell * (0.55 + 0.35 * r());
-          if (H.base - y > t - rad * 0.8 || t < 3) continue;
-          add(gx + (r() - 0.5) * cell * 0.5, y, rad, zOf(y) - 0.6);
+      return best;
+    };
+    // the head's lobe size: a few to a dozen across it, each big enough to carry its own cap of
+    // light and its own shade (never a speckle of bobbles)
+    const R0 = clamp(Math.min(H.h * 0.2, H.w * 0.15), 4, 34);
+    const minR = Math.max(2.8, R0 * 0.26);
+    const zAt = (y: number): number => -((H.base - y) / Math.max(1, H.h)) * 3;
+    const add = (x: number, y: number, rx: number, ry: number, z: number, sub: number): Lobe => {
+      const b = { x, y, rx, ry, z, head: hi, s: Math.floor(r() * 997), base: H.base, sub, bulge: bulgeOf(x, y) };
+      L.push(b);
+      return b;
+    };
+    // the body: rows of lobes from the base up, each row in front of the one above it, smaller
+    // toward the crown
+    for (let y = H.base - R0 * 0.5; H.base - y < H.h * 0.96;) {
+      const hy = H.base - y;
+      const R = R0 * (1.2 - (0.45 * hy) / H.h);
+      for (let x = H.cx - H.w / 2 + R * (0.2 + 0.7 * r()); x < H.cx + H.w / 2; x += R * (1.0 + 0.6 * r())) {
+        if (top(x) - hy < R * 0.55) continue;
+        const rad = R * (0.7 + 0.6 * r());
+        const ly = y + (r() - 0.5) * R * 0.4;
+        add(x + (r() - 0.5) * R * 0.5, ly, rad * (1 + 0.15 * r()), rad * H.flat * (0.9 + 0.1 * r()), zAt(ly) + r() * 0.5, 0);
+      }
+      y -= R * (0.7 + 0.35 * r());
+    }
+    // the outline: lobes walked along it by its length, each sitting just inside it; a few big,
+    // more middling, small ones mostly where it faces the sun; broader on the shaded side
+    const pts: [number, number][] = [];
+    for (let x = H.cx - H.w / 2; x <= H.cx + H.w / 2; x += 1) pts.push([x, top(x)]);
+    const rim: [Lobe, number][] = [];
+    let acc = 0, want = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const [xa, ta] = pts[i - 1]!, [xb, tb] = pts[i]!;
+      acc += Math.hypot(xb - xa, tb - ta);
+      if (acc < want || tb < 2) continue;
+      const tx = xb - xa, ty = -(tb - ta), tl = Math.hypot(tx, ty) || 1;
+      // (the inward normal; the outline faces the sun where the outward one points up and left)
+      const nx = -ty / tl, ny = tx / tl;
+      const facing = -(nx * SUN[0] + ny * SUN[1]);
+      const g = r();
+      let rad = R0 * (g < 0.2 ? 1 + 0.3 * r() : g < 0.6 ? 0.62 + 0.2 * r() : 0.4 + 0.16 * r());
+      if (facing < 0) rad *= 1.25;
+      rad = Math.max(minR, Math.min(rad, tb * 0.5 + 1.5));
+      const sink = rad * (0.6 + 0.2 * r());
+      const ly = H.base - tb + ny * sink;
+      rim.push([add(xb + nx * sink, ly, rad * (1 + 0.15 * r()), rad * H.flat * (0.88 + 0.12 * r()), zAt(ly) + 0.3 + r() * 0.4, 1), facing]);
+      acc = 0;
+      want = rad * (0.75 + 0.45 * r());
+    }
+    // cauliflower: the sunlit outline lobes sprout smaller ones round their upper-left rims, and
+    // the biggest of those sprout again (only where they stay lobes, never single px bobbles)
+    let gen = rim.filter(([b, f]) => f > 0.12 && b.rx > minR * 2).map(([b]) => b);
+    for (let level = 0; level < 2 && gen.length; level++) {
+      const next: Lobe[] = [];
+      for (const b of gen) {
+        const k = 1 + Math.floor(r() * (level ? 1.6 : 2.6));
+        for (let j = 0; j < k; j++) {
+          const ang = -Math.PI * (0.45 + 0.5 * r());
+          const sr = b.rx * (0.34 + 0.18 * r());
+          if (sr < minR * 0.9) continue;
+          const reach = b.rx * (0.68 + 0.14 * r());
+          next.push(add(b.x + Math.cos(ang) * reach, b.y + Math.sin(ang) * reach * H.flat, sr, sr * H.flat * 0.95, b.z + 0.05, 2));
         }
       }
-      // the base: broad, flattened billows along it, their bottoms cut flat by it
-      for (let x = H.cx - H.w / 2 + H.w * 0.03; x < H.cx + H.w / 2;) {
-        const t = top(x);
-        const rad = Math.max(minR, Math.min(H.h * (0.16 + 0.08 * r()), t * 0.55 + 1));
-        if (t > 3) out.push({ x, y: H.base - rad * (0.35 + 0.2 * r()), r: rad * 1.15, k: 0.62 + 0.1 * r(), head: hi, z: -4 + r() * 0.3, base: H.base, s: Math.floor(r() * 997), big: false });
-        x += rad * (0.9 + 0.6 * r());
+      gen = next.filter((b) => b.rx > minR * 2.2 && R0 > 10);
+    }
+    // the base: broad flattened lobes along it, in front, their bottoms cut flat by it
+    for (let x = H.cx - H.w / 2 + H.w * 0.04; x < H.cx + H.w / 2;) {
+      const t = top(x);
+      const rad = Math.max(minR, Math.min(R0 * (0.95 + 0.4 * r()), t * 0.5 + 1));
+      if (t > 3) add(x, H.base - rad * (0.32 + 0.15 * r()), rad * 1.35, rad * 0.62, 0.55 + r() * 0.35, 0);
+      x += rad * (1.1 + 0.8 * r());
+    }
+    // the base is scalloped, never one ruled slab: a few flattened lobes sag a little below it,
+    // more on the shaded (east) half
+    const nSag = Math.round((H.w / H.h) * 0.6 + r() * 1.5);
+    for (let j = 0; j < nSag; j++) {
+      const u = r() < 0.7 ? 0.05 + 0.4 * r() : -0.4 + 0.4 * r();
+      const x = H.cx + u * H.w;
+      if (top(x) < H.h * 0.2) continue;
+      const rad = Math.max(minR, H.h * (0.07 + 0.07 * r()));
+      const sag = rad * (0.25 + 0.3 * r());
+      L.push({ x, y: H.base + sag - rad * 0.55, rx: rad * 1.35, ry: rad * 0.7, z: 0.9 + r() * 0.3, head: hi, s: Math.floor(r() * 997), base: H.base + sag, sub: 0, bulge: bulgeOf(x, H.base) });
+    }
+    // torn off its ends: a scrap or two drifting free downwind (east), smaller as they go
+    for (let j = 0, nF = Math.floor(r() * 2.2); j < nF; j++) {
+      const side = r() < 0.75 ? 1 : -1;
+      let x = H.cx + side * (H.w / 2) * (0.95 + 0.2 * r());
+      let y = H.base - H.h * (0.08 + 0.3 * r());
+      let rad = minR * (1.3 + 1.2 * r());
+      for (let k = 0; k < 2 && rad >= minR && Math.abs(x) + rad * 1.9 < cloudReach(p); k++) {
+        L.push({ x, y, rx: rad * 1.3, ry: rad * 0.65, z: 0.5, head: hi, s: Math.floor(r() * 997), base: y + rad * 0.4, sub: 0, bulge: -1 });
+        x += side * rad * (1.8 + 1.2 * r());
+        y += (r() - 0.3) * rad;
+        rad *= 0.6 + 0.2 * r();
       }
-      // cauliflower: the big outline billows sprout smaller ones round their upper rims (more
-      // toward the sun), and those sprout smaller ones again
-      let gen = rim.filter((b) => b.r > Math.max(minR * 1.6, Math.min(H.h, 60 + H.h * 0.5) * 0.08));
-      for (let level = 0; level < 2; level++) {
-        const next: Billow[] = [];
-        for (const b of gen) {
-          const k = Math.floor(r() * (level ? 2.4 : 3.6));
-          for (let j = 0; j < k; j++) {
-            const ang = -Math.PI * (r() < 0.65 ? 0.55 + 0.4 * r() : 0.1 + 0.4 * r());
-            const sr = b.r * (level ? 0.3 + 0.16 * r() : 0.32 + 0.2 * r());
-            if (sr < minR * 0.8) continue;
-            const reach = b.r * (0.72 + 0.16 * r());
-            next.push(add(b.x + Math.cos(ang) * reach, b.y + Math.sin(ang) * reach * b.k, sr, b.z + 0.05));
-          }
-        }
-        gen = next.filter((b) => b.r > minR * 1.4);
-      }
-      // the base is scalloped, never one ruled slab: a few flattened billows sag a little below
-      // it, more on the shaded (east) half
-      const nSag = thin ? 0 : Math.round((H.w / H.h) * 0.6 + r() * 1.5);
-      for (let j = 0; j < nSag; j++) {
-        const u = r() < 0.7 ? 0.05 + 0.4 * r() : -0.4 + 0.4 * r();
-        const x = H.cx + u * H.w;
-        if (top(x) < H.h * 0.2) continue;
-        const rad = Math.max(minR, H.h * (0.07 + 0.07 * r()));
-        const sag = rad * (0.25 + 0.3 * r());
-        out.push({ x, y: H.base + sag - rad * 0.55, r: rad * 1.3, k: 0.55 + 0.1 * r(), head: hi, z: 0.6 + r() * 0.3, base: H.base + sag, s: Math.floor(r() * 997), big: false });
-      }
-      // torn off its ends: a scrap or two drifting free downwind (east), smaller as they go
-      for (let j = 0, nF = Math.floor(r() * (thin ? 2.6 : 2.2)); j < nF; j++) {
-        const side = r() < 0.75 ? 1 : -1;
-        let x = H.cx + side * (H.w / 2) * (0.95 + 0.2 * r());
-        let y = H.base - H.h * (0.08 + 0.3 * r());
-        let rad = minR * (1.1 + 1.2 * r());
-        for (let k = 0; k < 2 && rad >= minR * 0.8 && Math.abs(x) + rad * 1.9 < cloudReach(p); k++) {
-          out.push({ x, y, r: rad, k: 0.55 + 0.1 * r(), head: hi, z: 0.5, base: y + rad * 0.35, s: Math.floor(r() * 997), big: false });
-          out.push({ x: x + side * rad * 0.7, y: y + rad * 0.15, r: rad * 0.7, k: 0.6, head: hi, z: 0.55, base: y + rad * 0.35, s: Math.floor(r() * 997), big: false });
-          x += side * rad * (1.8 + 1.2 * r());
-          y += (r() - 0.3) * rad;
-          rad *= 0.55 + 0.25 * r();
-        }
-      }
-    });
-    return { B: out, H: heads };
+    }
   });
+  return { L, H: heads, B };
 }
 
-/** A cloud as fields on its level-1 grid: which billow is in front, and the tone there. */
-interface CloudMask { x0: number; y0: number; w: number; h: number; own: Int32Array; t: Float32Array; edge: Uint8Array; warm: Uint8Array }
+/**
+ * A layer's lobes: long strands in two or three tiers, the lower tier in front, overlapping one
+ * another with a gap of clear air here and there, each strand's top lifted by a few low humps
+ * (the lit tops of the stratus in Dex's reference); a wisp is two tiers of thin, torn strands.
+ */
+function layerLobes(p: CloudP, seed: number): { L: Lobe[]; H: Head[]; B: Bulge[] } {
+  const r = rng(seed + 5);
+  const W = p.w, HH = p.h;
+  const wisp = p.kind === "wisp";
+  const L: Lobe[] = [];
+  const tiers = wisp ? 2 : HH > 26 ? 3 : 2;
+  for (let k = 0; k < tiers; k++) {
+    // (tier 0 is the highest and furthest back)
+    const ty = -HH * (0.3 + (0.5 * (tiers - 1 - k)) / Math.max(1, tiers - 1));
+    let x = -W / 2 + W * (0.01 + 0.1 * r()) + (k % 2) * W * 0.06;
+    const end = W / 2 - W * (0.01 + 0.1 * r());
+    while (x < end - W * 0.04) {
+      const len = Math.min(end - x, W * (wisp ? 0.2 + 0.26 * r() : p.heaps ? (0.9 + 0.8 * r()) / p.heaps : 0.1 + 0.16 * r()));
+      const th = HH * (wisp ? 0.14 + 0.1 * r() : 0.1 + 0.12 * r()) * (k === tiers - 1 ? 1.15 : 1);
+      const cx = x + len / 2;
+      const sy = ty + (r() - 0.5) * HH * 0.16;
+      if (len > th * 3) {
+        L.push({ x: cx, y: sy, rx: len / 2, ry: th, z: k + r() * 0.3, head: 0, s: Math.floor(r() * 997), base: sy + th * (0.75 + 0.2 * r()), sub: 3, bulge: -1 });
+        // its humps: low rounded swellings along its top, lit along their tops
+        const nh = wisp ? (r() < 0.35 ? 1 : 0) : Math.floor(r() * 3.4);
+        for (let j = 0; j < nh; j++) {
+          const hx = cx + (r() - 0.5) * len * 0.6;
+          const hr = Math.min(th * (1 + 0.8 * r()), HH * 0.26);
+          L.push({ x: hx, y: sy - th * 0.3 - hr * 0.2, rx: hr * (1.5 + 0.7 * r()), ry: hr * 0.85, z: k + 0.35 + r() * 0.1, head: 0, s: Math.floor(r() * 997), base: sy + th * 0.3, sub: 0, bulge: -1 });
+        }
+      }
+      // (mostly overlapping, a gap of clear air here and there)
+      x += len * (wisp ? 0.8 + 0.5 * r() : 0.62 + 0.3 * r()) + (r() < (wisp ? 0.45 : 0.25) ? len * (0.15 + 0.35 * r()) : 0);
+    }
+  }
+  return { L, H: [{ cx: 0, w: W, h: HH, tower: 0, base: 0, z: 0, flat: 0.5 }], B: [] };
+}
+
+/** The lobes of a cloud (in its own level-1 px, y negative up), built once per cloud. */
+function lobesOf(p: CloudP, seed: number): { L: Lobe[]; H: Head[]; B: Bulge[] } {
+  return cached(`cl6b|${seed}|${p.kind ?? ""}|${p.w}|${p.h}|${p.tower ?? ""}|${p.low ? 1 : 0}|${p.heaps ?? ""}`, () => (isLayer(p) ? layerLobes(p, seed) : heapLobes(p, seed)));
+}
+
+/** A cloud as fields on its level-1 grid: which lobe is in front, its tone, how solid, its warmth. */
+interface CloudMask { x0: number; y0: number; w: number; h: number; own: Int32Array; t: Float32Array; a: Float32Array; warm: Float32Array; seam: Float32Array }
 
 /** Three box passes (about a gaussian) of radius r over a w x h field, in place. */
 function blur3(f: Float32Array, w: number, h: number, r: number): void {
@@ -347,55 +389,58 @@ function chamfer(inside: (i: number) => boolean, w: number, h: number): Float32A
   return dist;
 }
 
-/** The sun's direction (upper left and a little toward the viewer: the frame's sun at (0.2, 0.11)). */
-const SUN = [-0.55, -0.68, 0.48] as const;
-
 function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
-  return cached(`cm5|${seed}|${p.kind ?? ""}|${p.w}|${p.h}|${p.tower ?? ""}|${p.low ? 1 : 0}|${p.heaps ?? ""}|${p.haze ?? 0}|${f}`, () => {
-    // the billows this frame: each swelling and settling a little (the heap churns as it drifts)
-    const { B: B0, H: HD } = billowsOf(p, seed);
-    const B = B0.map((b, i) => ({ ...b, r: b.r * (1 + 0.03 * Math.sin(f * 1.57 + i * 1.7)) }));
+  return cached(`cm6b|${seed}|${p.kind ?? ""}|${p.w}|${p.h}|${p.tower ?? ""}|${p.low ? 1 : 0}|${p.heaps ?? ""}|${p.haze ?? 0}|${f}`, () => {
+    // the lobes this frame: each swelling and settling a little (the heap churns as it drifts)
+    const { L: L0, H: HD, B: BG } = lobesOf(p, seed);
+    const L = L0.map((b, i) => {
+      const k = 1 + 0.03 * Math.sin(f * 1.57 + i * 1.7);
+      return { ...b, rx: b.rx * k, ry: b.ry * k };
+    });
+    const layer = isLayer(p);
     let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
-    for (const b of B) {
-      bx0 = Math.min(bx0, b.x - b.r * 1.2); bx1 = Math.max(bx1, b.x + b.r * 1.2);
-      by0 = Math.min(by0, b.y - b.r * b.k * 1.2); by1 = Math.max(by1, Math.min(b.base + 3, b.y + b.r * b.k * 1.2));
+    for (const b of L) {
+      bx0 = Math.min(bx0, b.x - b.rx * 1.2); bx1 = Math.max(bx1, b.x + b.rx * 1.2);
+      by0 = Math.min(by0, b.y - b.ry * 1.2); by1 = Math.max(by1, Math.min(b.base + 3, b.y + b.ry * 1.2));
     }
     const x0 = Math.floor(bx0) - 2, y0 = Math.floor(by0) - 2;
     const w = Math.ceil(bx1) - x0 + 3, h = Math.ceil(by1) - y0 + 3;
-    const nH = HD.length;
     const own = new Int32Array(w * h).fill(-1);
     const zb = new Float32Array(w * h).fill(-1e9);
-    const NX = new Float32Array(w * h), NY = new Float32Array(w * h);
-    // every head's whole extent (its own dome is shaped by all of it, the parts hidden behind a
-    // nearer head included)
-    const cover: Uint8Array[] = HD.map(() => new Uint8Array(w * h));
-    // (the base is flat-ish: it wanders a px or two, and at the head's scale, never ruled)
+    const NX = new Float32Array(w * h), NY = new Float32Array(w * h), U = new Float32Array(w * h);
+    // (the base is flat-ish: it wanders a px or two, and at the cloud's scale, never ruled)
     const BW = Math.max(6, -by0 * 0.5);
     const baseAt = (x: number, b: number): number => b - 1.4 * vnoise1(x / 23, seed + 33) - 0.9 * vnoise1(x / 7, seed + 34) + (vnoise1(x / BW, seed + 35) - 0.55) * BW * 0.16;
-    B.forEach((b, i) => {
+    L.forEach((b, i) => {
       const hz = HD[b.head]!.z * 100;
-      const cv = cover[b.head]!;
-      const gx0 = Math.max(0, Math.floor(b.x - b.r * 1.2 - x0)), gx1 = Math.min(w - 1, Math.ceil(b.x + b.r * 1.2 - x0));
-      const gy0 = Math.max(0, Math.floor(b.y - b.r * b.k * 1.2 - y0)), gy1 = Math.min(h - 1, Math.ceil(b.y + b.r * b.k * 1.2 - y0));
+      const gx0 = Math.max(0, Math.floor(b.x - b.rx * 1.2 - x0)), gx1 = Math.min(w - 1, Math.ceil(b.x + b.rx * 1.2 - x0));
+      const gy0 = Math.max(0, Math.floor(b.y - b.ry * 1.2 - y0)), gy1 = Math.min(h - 1, Math.ceil(b.y + b.ry * 1.2 - y0));
+      const strand = b.sub === 3;
       for (let gy = gy0; gy <= gy1; gy++) {
         const py = y0 + gy + 0.5;
         for (let gx = gx0; gx <= gx1; gx++) {
           const px = x0 + gx + 0.5;
           if (py > baseAt(px, b.base)) continue;
-          const dx = px - b.x, dy = (py - b.y) / b.k;
+          const dx = (px - b.x) / b.rx, dy = (py - b.y) / b.ry;
           const ang = Math.atan2(dy, dx);
-          const rr = b.r * (1 + 0.12 * (vnoise1(ang * 2.2 + b.s, seed + 41) - 0.5) + 0.07 * (vnoise1(ang * 6.5 + b.s, seed + 42) - 0.5));
+          let rr = 1 + 0.12 * (vnoise1(ang * 2.2 + b.s, seed + 41) - 0.5) + 0.07 * (vnoise1(ang * 6.5 + b.s, seed + 42) - 0.5);
+          if (strand) {
+            // a strand thins toward its ends, and they tear into rags (holes at the cloud's own
+            // scale, never single px)
+            const u = Math.abs(dx);
+            if (u > 0.5 && vnoise((px - b.x) / 5 + b.s, py / 3, seed + 43) > 1.05 - (u - 0.5) * 1.1) continue;
+            rr *= 1 - 0.25 * Math.max(0, u - 0.6);
+          }
           const q = (dx * dx + dy * dy) / (rr * rr);
           if (q > 1) continue;
           const k = gy * w + gx;
-          cv[k] = 1;
           const z = hz + b.z + (1 - q) * 0.04;
-          if (z > zb[k]!) { zb[k] = z; own[k] = i; NX[k] = dx / rr; NY[k] = dy / rr; }
+          if (z > zb[k]!) { zb[k] = z; own[k] = i; NX[k] = dx / rr; NY[k] = dy / rr; U[k] = strand ? Math.abs(dx) : 0; }
         }
       }
     });
-    // no sky through the heap: a hole between billows (sky not reached from outside it) takes
-    // the billow beside it, facing the viewer
+    // no sky through the heap: a hole between lobes (sky not reached from outside it) takes the
+    // lobe beside it, facing the viewer
     {
       const out = new Uint8Array(w * h);
       const q: number[] = [];
@@ -418,32 +463,11 @@ function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
           const n = own[i - 1]! >= 0 ? i - 1 : own[i + 1]! >= 0 ? i + 1 : own[i - w]! >= 0 ? i - w : own[i + w]! >= 0 ? i + w : -1;
           if (n < 0) { left++; continue; }
           own[i] = own[n]!; NX[i] = 0; NY[i] = 0.2;
-          cover[B[own[i]!]!.head]![i] = 1;
         }
       }
     }
     const dist = chamfer((i) => own[i]! >= 0, w, h);
     const Htot = Math.max(8, -y0);
-    // each head's big form: a dome over its whole extent, smoothed, lit by the sun as a few big
-    // turning planes (the billows ride on it); the head's own distance to its outline
-    const LH = new Float32Array(w * h), DH = new Float32Array(w * h);
-    for (let hi = 0; hi < nH; hi++) {
-      const H = HD[hi]!, cv = cover[hi]!;
-      const dh = chamfer((i) => cv[i] === 1, w, h);
-      const R = Math.max(4, H.h * 0.5);
-      const zf = new Float32Array(w * h);
-      for (let i = 0; i < w * h; i++) if (cv[i]) zf[i] = Math.sqrt(Math.min(dh[i]!, R) * R);
-      blur3(zf, w, h, Math.max(1, Math.round(H.h * 0.05)));
-      for (let gy = 1; gy < h - 1; gy++) for (let gx = 1; gx < w - 1; gx++) {
-        const k = gy * w + gx;
-        const o = own[k]!;
-        if (o < 0 || B[o]!.head !== hi) continue;
-        const fx = (zf[k + 1]! - zf[k - 1]!) * 0.5, fy = (zf[k + w]! - zf[k - w]!) * 0.5;
-        const fl = Math.hypot(fx, fy, 1);
-        LH[k] = (-fx * SUN[0] - fy * SUN[1] + SUN[2]) / fl;
-        DH[k] = dh[k]!;
-      }
-    }
     // how far the sunlight travels through the cloud to reach each px (on a 2 px grid, blurred):
     // the heap's lower right lies in its own shade
     const G = 2, gw = Math.ceil(w / G), gh = Math.ceil(h / G);
@@ -459,55 +483,89 @@ function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
       }
       lg[gy * gw + gx] = len;
     }
-    blur3(lg, gw, gh, Math.max(2, Math.round(Htot * 0.025)));
+    blur3(lg, gw, gh, Math.max(2, Math.round(Htot * 0.03)));
     const haze = clamp(p.haze ?? 0, 0, 1);
     const t = new Float32Array(w * h);
-    const edge = new Uint8Array(w * h);
-    const warm = new Uint8Array(w * h);
+    const a = new Float32Array(w * h);
+    const warm = new Float32Array(w * h);
+    // (the depth of shade a heap reaches: a thin layer never goes dark)
+    const reach = layer ? Math.max(6, Htot * 0.9) : Htot * 0.55;
+    const deepAt = (gx: number, gy: number): number => clamp(lg[Math.min(gh - 1, Math.floor(gy / G)) * gw + Math.min(gw - 1, Math.floor(gx / G))]! / reach + (vnoise(gx / (Htot * 0.14 + 4), gy / (Htot * 0.12 + 4), seed + 47) - 0.5) * 0.1, 0, 1);
+    // each lobe is shaded as one form by where it sits in the heap's shade (the painter's way: the
+    // steps of the big shade follow the lobes' outlines, never a smooth airbrushed ramp)
+    const dSum = new Float32Array(L.length), dN = new Float32Array(L.length);
+    for (let gy = 1; gy < h - 1; gy++) for (let gx = 1; gx < w - 1; gx++) {
+      const i = own[gy * w + gx]!;
+      if (i < 0) continue;
+      dSum[i]! += deepAt(gx, gy);
+      dN[i]! += 1;
+    }
     for (let gy = 1; gy < h - 1; gy++) for (let gx = 1; gx < w - 1; gx++) {
       const k = gy * w + gx;
       const i = own[k]!;
       if (i < 0) continue;
-      const b = B[i]!, H = HD[b.head]!;
-      const lamH = LH[k]!;
-      // the billow's own ball in the sun: it shows only on the head's lit outline (its
-      // cauliflower) and, faintly, inside; the head reads as one mass, not a heap of scales
+      const b = L[i]!, H = HD[b.head]!;
+      // the lobe's own ball in the sun: its lit cap, its turning face, its shaded belly
       const nx = NX[k]!, ny = NY[k]!;
       const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
-      const lamB = SUN[0] * nx + SUN[1] * ny + SUN[2] * nz;
-      const rimK = lamH > 0.1 ? clamp(1 - DH[k]! / Math.max(3, H.h * 0.14), 0, 1) : 0;
-      const wB = 0.1 + 0.3 * rimK + (b.big ? 0.08 : 0);
-      const deep = clamp(lg[Math.min(gh - 1, Math.floor(gy / G)) * gw + Math.min(gw - 1, Math.floor(gx / G))]! / (Htot * 0.62) + (vnoise(gx / (Htot * 0.14 + 4), gy / (Htot * 0.12 + 4), seed + 47) - 0.5) * 0.14, 0, 1);
+      const lam = SUN[0] * nx + SUN[1] * ny + SUN[2] * nz;
+      const shadeL = (1 - lam) / 2;
+      // the big form's light: the bulge it belongs to, a ball in the sun
+      let shadeB = shadeL, upB = 0;
+      if (b.bulge >= 0) {
+        const [qx, qy, qr] = BG[b.bulge]!;
+        let ux = (x0 + gx + 0.5 - qx) / qr, uy = (y0 + gy + 0.5 - qy) / qr;
+        const ul = Math.hypot(ux, uy);
+        if (ul > 0.98) { ux *= 0.98 / ul; uy *= 0.98 / ul; }
+        const uz = Math.sqrt(Math.max(0, 1 - ux * ux - uy * uy));
+        shadeB = (1 - (SUN[0] * ux + SUN[1] * uy + SUN[2] * uz)) / 2;
+        upB = Math.max(0, -uy);
+      }
+      const deep = 0.45 * deepAt(gx, gy) + 0.55 * (dSum[i]! / Math.max(1, dN[i]!));
       const py = y0 + gy + 0.5;
-      const low = clamp(1 - (b.base - py) / Math.max(4, H.h * 0.7), 0, 1);
-      let tt = 0.33 - 0.27 * lamH + 0.36 * deep + 0.16 * low * low - wB * lamB * (1 - 0.5 * deep);
-      // a nearer head in front, just below: this head's belly over it lies in its shade (the lit
-      // top of the nearer head stands crisp against it: the cloud's big internal edges)
-      for (let dy = 1; dy <= 6 && gy + dy < h; dy++) {
+      const low = layer ? 0 : clamp(1 - (b.base - py) / Math.max(4, H.h * 0.6), 0, 1);
+      // (in the cloud's own shade the lobes merge: lost edges; in the sun each one reads)
+      const lit = Math.pow(1 - deep, 1.6);
+      // (the tops of the heads in the cloud's shade still take the sky's light: each reads as a form)
+      let tt = 0.02 + (layer ? 0.44 * shadeL : 0.28 * shadeB + 0.2 * shadeL) * (0.38 + 0.62 * lit) + (layer ? 0.3 : 0.52) * deep - 0.1 * upB * deep + 0.12 * low * low + (layer ? 0.1 + 0.2 * Math.max(0, ny) : 0);
+      // a nearer lobe just below: this one's belly over it lies in a short contact shade, so the
+      // nearer lobe's lit top stands crisp against it
+      const dk = Math.max(2, Math.min(6, b.ry * 0.3));
+      const zi = H.z * 100 + b.z;
+      for (let dy = 1; dy <= dk && gy + dy < h; dy++) {
         const j = own[(gy + dy) * w + gx]!;
-        if (j >= 0 && B[j]!.head !== b.head && HD[B[j]!.head]!.z > H.z) { tt += 0.11 * (1 - (dy - 1) / 7); break; }
+        if (j < 0 || j === i) continue;
+        const o = L[j]!;
+        if (HD[o.head]!.z * 100 + o.z > zi + 0.2) { tt += (o.head !== b.head ? 0.12 * (0.3 + 0.7 * lit) : 0.09 * lit) * (1 - (dy - 1) / (dk + 1)); break; }
       }
-      // inside a head, a big billow's rounded top leaves a short shade on the one behind it, only
-      // on the sun's side (a few crisp edges where the light falls; the rest merges)
-      if (lamH > 0.12) {
-        for (let dy = 1; dy <= 3 && gy + dy < h; dy++) {
-          const j = own[(gy + dy) * w + gx]!;
-          if (j >= 0 && j !== i && B[j]!.head === b.head && B[j]!.z > b.z + 0.25) { tt += (B[j]!.big ? 0.12 : 0.05 * rimK) * (1 - (dy - 1) / 4); break; }
-        }
-      }
-      // the flat base: its lowest rows turn into the shade, the last px a step darker again (no
-      // sunlit cream right down to the floor of the cloud)
-      if (py > b.base - 7) tt += 0.13 * (1 - (b.base - py) / 7);
-      if (py > b.base - 2.2) tt += 0.06;
+      // the flat base: its lowest rows turn into the shade (no sunlit cream right down to the
+      // floor of the cloud)
+      if (!layer && py > b.base - 6) tt += 0.1 * (1 - (b.base - py) / 6);
       // distance: low clouds sit in the haze (less contrast, lighter)
       tt = tt * (1 - 0.45 * haze) + 0.16 * haze;
       t[k] = clamp(tt, 0, 0.999);
-      // the warm light thrown up from the land and the lake onto the lowest billows' shade
-      if (low > 0.72 && tt > 0.55 && lamH < 0.3) warm[k] = 1;
-      // the shaded outline softens by a cell of dither; the lit outline stays crisp
-      if (dist[k]! <= 1.01 && lamH < 0.3) edge[k] = 1;
+      // the warm light thrown up from the land and the lake into the lowest lobes' shade: a soft
+      // gradient, strongest at the floor of the cloud and in the deepest shade, fading up
+      warm[k] = layer ? 0 : clamp((low - 0.45) / 0.55, 0, 1) * clamp((tt - 0.5) / 0.2, 0, 1) * (0.4 + 0.6 * clamp(0.2 - lam, 0, 1));
+      // how solid: the shaded outline is lost into the sky by a cell of dither, a strand's ends
+      // thin out; the lit outline stays crisp
+      let al = 1;
+      if (dist[k]! <= 1.01 && lam < 0.12) al = lam < -0.35 ? 0.4 : 0.6;
+      if (U[k]! > 0.8 && dist[k]! <= 2.01) al = Math.min(al, 0.5);
+      // (a strand's underside is soft: its lower outline lost)
+      if (b.sub === 3 && ny > 0.3 && dist[k]! <= 1.01) al = Math.min(al, 0.45);
+      a[k] = al;
     }
-    return { x0, y0, w, h, own, t, edge, warm };
+    // the dither seam where two steps meet: about a px and a half wide whatever the tone's slope
+    // (a slow ramp across a big lobe would otherwise dither a broad screen door)
+    const seam = new Float32Array(w * h);
+    for (let gy = 1; gy < h - 1; gy++) for (let gx = 1; gx < w - 1; gx++) {
+      const k = gy * w + gx;
+      if (own[k]! < 0) continue;
+      const g = Math.max(Math.abs(t[k + 1]! - t[k - 1]!), Math.abs(t[k + w]! - t[k - w]!)) * 0.5;
+      seam[k] = clamp(g * 1.5, 0.003, 0.022);
+    }
+    return { x0, y0, w, h, own, t, a, warm, seam };
   });
 }
 
@@ -519,8 +577,8 @@ const BOUNCE: Record<number, number> = { 5: 8, 6: 9 };
 /**
  * Paints a cloud from its mask: flat steps of the cumulus ramp (the warm cream and peach only
  * where the sun strikes, neutral cool greys turning away, the cool grey base with a warm bounce
- * in its lowest shade), one cell of dither only in a narrow band where two steps meet and along
- * the shaded outline; cells are the level's own.
+ * in its lowest shade), one cell of dither only in a narrow band where two steps meet, on the lost
+ * outline and in the bounce's gradient; cells are the level's own.
  */
 function paintCloud(c: PaintCtx, p: CloudP): void {
   const b = c.buf, kc = Math.max(1, Math.round(c.d));
@@ -538,13 +596,13 @@ function paintCloud(c: PaintCtx, p: CloudP): void {
       const k = gy * M.w + gx;
       if (M.own[k]! < 0) continue;
       const dith = bay(x + f * kc, y, kc);
-      if (M.edge[k] && dith >= 0.5) continue;
+      if (M.a[k]! < 1 && dith >= M.a[k]!) continue;
       const t = M.t[k]!;
       let i = 0;
       while (i + 1 < CLOUD_AT.length && t >= CLOUD_AT[i + 1]!) i++;
-      const near = ((CLOUD_AT[i + 1] ?? 2) - t) / 0.022;
+      const near = ((CLOUD_AT[i + 1] ?? 2) - t) / M.seam[k]!;
       if (near < 1 && dith > near) i = Math.min(CLOUD_AT.length - 1, i + 1);
-      if (M.warm[k] && BOUNCE[i] !== undefined) i = BOUNCE[i]!;
+      if (BOUNCE[i] !== undefined && dith < M.warm[k]!) i = BOUNCE[i]!;
       b.set(x, y, R[i]!);
     }
   }
@@ -553,7 +611,7 @@ function paintCloud(c: PaintCtx, p: CloudP): void {
 export const cloud = definePainter<CloudP>("op.cloud", {
   bounds(p) {
     const hx = cloudReach(p) + 6;
-    const up = p.kind === "wisp" ? 2.4 : isDeck(p) ? 1.65 : 1.45;
+    const up = p.kind === "wisp" ? 2.4 : isLayer(p) ? 1.9 : 1.45;
     return [-hx, -p.h * up - 6, hx, p.h * 0.14 + 8];
   },
   paint(c, p) {
