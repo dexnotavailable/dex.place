@@ -215,8 +215,10 @@ export function kagamiBackdrop(b: WorldBuilder): void {
 
   // P1: far karst rising out of layered mist, ghostly at this distance (art: env-opening), in
   // three clusters with wide gaps of mist between them; the farthest row all but erased by haze
-  bg(b, "far", -900, "op.karst", { w: 1700, h: 230, rows: 3, look: "far", mist: 30, green: 0.7, groups: [[340, 760], [1230, 1660]], haze: 0.7, wet: local(FAR_LAKE, -900) }, LAKE_Y, 1);
-  bg(b, "far", 900, "op.karst", { w: 1800, h: 250, rows: 3, look: "far", mist: 32, green: 0.7, groups: [[340, 820], [1150, 1600]], haze: 0.7, wet: local(FAR_LAKE, 900) }, LAKE_Y, 2);
+  // (round 5 integration: no thread falls this far out: a cluster lead now stands right behind the
+  // re-layered Walker, and its fall ruled a bright 1 px line beside the giant's haunch)
+  bg(b, "far", -900, "op.karst", { w: 1700, h: 230, rows: 3, look: "far", mist: 30, green: 0.7, falls: 0, groups: [[340, 760], [1230, 1660]], haze: 0.7, wet: local(FAR_LAKE, -900) }, LAKE_Y, 1);
+  bg(b, "far", 900, "op.karst", { w: 1800, h: 250, rows: 3, look: "far", mist: 32, green: 0.7, falls: 0, groups: [[340, 820], [1150, 1600]], haze: 0.7, wet: local(FAR_LAKE, 900) }, LAKE_Y, 2);
   const farWrap: [number, number] = [-900, 2400];
   // (the far wisps, thin streaks of mist, gave way to the fog banks lying on the water; their
   // seeds are kept)

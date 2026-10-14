@@ -294,7 +294,12 @@ interface Look {
 
 function lookOf(p: KarstP, row: number): Look {
   const look = p.look ?? "mid";
-  if (look === "far" || (row > 0 && look === "mid")) {
+  // (round 5 integration: the mid look stands BEHIND the near-look landmarks on the same plane, so
+  // its front row takes the range's cool greys too, one step nearer than its back row. With
+  // Kagami's lighter mid haze and the taller cluster leads, its moss-lit crowns had come forward
+  // as bright lime domes over the nearer massifs: a farther layer rendered louder than the one in
+  // front of it)
+  if (look === "far" || look === "mid") {
     const r = look === "far" ? row : row + 1;
     return { rock: P.range, veg: P.range, dark: P.range, lit: 0.2 + r * 0.06, shade: 0.52 - r * 0.07, vegT: 0.66 - r * 0.1, detail: look === "far" ? 0 : 1, foot: 0.6 };
   }
