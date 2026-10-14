@@ -371,78 +371,111 @@ export const pine = definePainter<PineP>("op.pine", {
         }
       }
     } else {
-      const nr = 4 + Math.floor(r() * 2);
-      const roots: { pts: [number, number][]; w: number; side: number; drape: boolean }[] = [];
-      for (let i = 0; i < nr; i++) {
-        const side = i % 2 ? -1 : 1;
-        // each leaves the trunk's foot slanting out and down, then turns down the face as it
-        // hugs it (so together they are the trunk's flare); the inner ones steeper and shorter
-        const drape = i < nr - 1 || hash1(i, seed + 6) < 0.5;
-        const sx = side * w0 * (0.05 + 0.4 * r());
-        const sy = -1 + 3 * r();
-        const a0 = (0.5 + 0.55 * r()) * side;
-        const len = drape ? grip * (1.2 + 1.2 * r()) : spread * (0.5 + 0.4 * r());
-        const pts: [number, number][] = [[sx, sy]];
-        let x = sx, y = sy, a = a0;
-        const n = 12;
-        for (let k = 1; k <= n; k++) {
-          const t = k / n;
-          // drape: turning toward straight down, wandering; a surface root stays near level
-          a = drape ? a * 0.86 + (vnoise1(t * 3 + i * 1.7, seed + 3) - 0.5) * 0.35 : side * (1.35 + (vnoise1(t * 3 + i, seed + 3) - 0.5) * 0.3);
-          x += Math.sin(a) * len / n;
-          y += Math.cos(a) * len / n;
-          pts.push([x, y]);
-        }
-        roots.push({ pts, w: w0 * (drape ? 0.42 + 0.18 * r() : 0.24 + 0.1 * r()), side, drape });
-        // a drape root splits on the face: a thinner one leaves it about halfway down
-        if (drape && hash1(i, seed + 7) < 0.55) {
-          const f = along(pts, 0.45 + 0.2 * hash1(i, seed + 8));
-          const fl = len * (0.3 + 0.25 * hash1(i, seed + 9));
-          const fs = -side * (0.4 + 0.4 * hash1(i, seed + 10));
-          roots.push({ pts: [f, [f[0] + fs * fl * 0.4, f[1] + fl * 0.5], [f[0] + fs * fl * 0.55, f[1] + fl]], w: w0 * 0.18, side: fs > 0 ? 1 : -1, drape: true });
+      // (round 5, the critic: "roots hang as a loose beard") the pine grips a chunk of the cliff's
+      // edge: the block under its foot (a lit top, its face turning into shade, a bedding crack
+      // across it), a lower one beside it on each side, the joints between them dark. Two thick
+      // roots leave the flare, wrap over the block's top and dive down into the joints on either
+      // side; a third drapes a little way down its face into the bedding crack; thin roots track on
+      // down the cracks from where each one goes in. Soil and moss are packed into the flare
+      // between them, grass in it. (Same draws as before, so its arms and masses are unchanged.)
+      for (let i = 0, nr = 4 + Math.floor(r() * 2); i < nr; i++) { r(); r(); r(); r(); r(); }
+      const ks = seed + 501;
+      const A: LimeChunk = { x0: -w0 * 0.72, x1: w0 * (1.1 + 0.3 * hash1(1, ks)), top: 1.5 + 1.5 * hash1(2, ks), foot: 36 + 10 * hash1(3, ks), tilt: 0.1, z: 0.5, cap: 0, round: 0.7, seed: ks };
+      const Bk: LimeChunk = { x0: -w0 * (2.1 + 0.4 * hash1(4, ks)), x1: A.x0 + 3, top: A.top + 6 + 3 * hash1(5, ks), foot: A.foot - 6 - 6 * hash1(6, ks), tilt: -0.05, z: 0.35, cap: 2.2, round: 0.5, seed: ks + 1 };
+      const Ck: LimeChunk = { x0: A.x1 - 3, x1: A.x1 + w0 * (0.9 + 0.5 * hash1(7, ks)), top: A.top + 7 + 4 * hash1(8, ks), foot: A.foot - 2 - 8 * hash1(9, ks), tilt: 0.06, z: 0.45, cap: 1.8, round: 0.5, seed: ks + 2 };
+      limeChunk(c, Bk);
+      limeChunk(c, Ck);
+      limeChunk(c, A, []);
+      // the joints between the blocks: dark, running on down past the lower blocks' tops
+      const jointX = (side: number, ly: number): number => (side < 0 ? A.x0 + 0.6 : A.x1 - 0.6) + (vnoise1(ly / 5 + side, ks + 11) - 0.5) * 1.4;
+      for (const side of [-1, 1]) {
+        const jy0 = A.top + 2, jy1 = A.foot + 6;
+        for (let ly = jy0; ly < jy1; ly += 0.5 / d) {
+          const jx = jointX(side, ly);
+          b.set(Math.round(c.X(jx)), Math.round(c.Y(ly)), P.karst[8]!);
+          if (side < 0) b.set(Math.round(c.X(jx)) + 1, Math.round(c.Y(ly)), P.karst[d >= 1 ? 3 : 5]!);
         }
       }
-      // their shadow on the rock first, down and to the right of each (only where rock, moss or
-      // earth is already painted behind)
+      // the bedding crack across the block
+      const crackY = A.top + (A.foot - A.top) * (0.42 + 0.12 * hash1(10, ks));
+      for (let lx = A.x0 + 2; lx < A.x1 - 2; lx += 0.5 / d) {
+        if ((lx - A.x0) / (A.x1 - A.x0) > 0.78) break;
+        const cy = crackY + (vnoise1(lx / 6, ks + 12) - 0.5) * 2;
+        b.set(Math.round(c.X(lx)), Math.round(c.Y(cy)), P.karst[7]!);
+        b.set(Math.round(c.X(lx)), Math.round(c.Y(cy + 1)), P.karst[3]!);
+      }
+      // the roots, as paths: [points], width at the trunk, and where the end goes in
+      const roots: { pts: [number, number][]; w: number; side: number }[] = [];
+      const topA = (x: number): number => chunkTop(A, x);
+      for (const side of [-1, 1]) {
+        // over the block's top to its edge, then down into the joint beside it
+        const pts: [number, number][] = [];
+        const x0 = side * w0 * (0.18 + 0.1 * hash1(20 + side, ks)), xe = side < 0 ? A.x0 + 1 : A.x1 - 1;
+        for (let k = 0; k <= 7; k++) {
+          const t = k / 7, x = x0 + (xe - x0) * Math.pow(t, 0.85);
+          const arch = Math.sin(t * Math.PI) * 1.4;
+          pts.push([x, Math.min(topA(x), A.top + 2) - 1.2 - arch - (1 - t) * 2]);
+        }
+        const dive = (side < 0 ? Bk.top : Ck.top) + 8 + 6 * hash1(22 + side, ks);
+        const [lx0, ly0] = pts[pts.length - 1]!;
+        for (let k = 1; k <= 5; k++) {
+          const t = k / 5;
+          const ly = ly0 + (dive - ly0) * t;
+          pts.push([lx0 + side * 2.2 * Math.sin(t * Math.PI * 0.5) * (1 - t * 0.6) + (jointX(side, ly) - lx0) * t * t, ly]);
+        }
+        roots.push({ pts, w: w0 * (0.52 + 0.1 * hash1(24 + side, ks)), side });
+      }
+      {
+        // the third, down the block's face into the bedding crack, then along it
+        const sx = w0 * (0.2 + 0.3 * hash1(26, ks));
+        const pts: [number, number][] = [[sx, A.top - 1]];
+        for (let k = 1; k <= 6; k++) {
+          const t = k / 6;
+          pts.push([sx + 3 * Math.sin(t * 2.4) + t * 4, A.top + (crackY - A.top) * t + (vnoise1(t * 3, ks + 27) - 0.5) * 1.5]);
+        }
+        const [ex, ey] = pts[pts.length - 1]!;
+        pts.push([ex + 5, ey + 0.5], [ex + 10, crackY + (vnoise1((ex + 10) / 6, ks + 12) - 0.5) * 2]);
+        roots.push({ pts, w: w0 * 0.3, side: 1 });
+      }
+      // their shadow on the rock first, down and to the right of each
       {
         const b0 = c.buf;
         const ox = Math.max(1, Math.round(2 * d)), oy = Math.max(1, Math.round(2 * d));
         const m = new IdxBuf(b0.w, b0.h, b0.ox - ox, b0.oy - oy, d);
         const mc = { ...c, buf: m };
-        for (const rt of roots) if (rt.drape) limb(mc, rt.pts, rt.w, 1, seed + 1, true, 1.5);
+        for (const rt of roots) limb(mc, rt.pts, rt.w, 1, seed + 1, true, 1.3);
         for (let i = 0; i < m.px.length; i++) {
           if (!m.px[i]) continue;
           const dk = SHADE_OF.get(b0.px[i]!);
           if (dk !== undefined) b0.px[i] = dk;
         }
       }
-      // soil and moss where the trunk meets the rock: a pocket packed between the roots, its top
-      // ragged, a lip of it lying over the edge in tongues with grass (never a lens on a line)
-      const sw = w0 * 1.3;
+      // soil and moss packed into the flare on the block's top, ragged, grass in it
+      const sw = w0 * 1.15;
       for (let x = Math.round(c.X(-sw)); x < Math.round(c.X(sw)); x++) {
         const lx = c.lx(x + 0.5), u = lx / sw;
-        const top = -w0 * 0.22 * Math.pow(Math.max(0, 1 - u * u), 1.4) - 1.6 * vnoise1(lx / 2, seed + 5) + 1.5;
-        const bot = top + 2 + 6 * Math.pow(Math.max(0, 1 - u * u), 0.8) * vnoise1(lx / 3.5, seed + 14);
+        const top = -w0 * 0.2 * Math.pow(Math.max(0, 1 - u * u), 1.4) - 1.6 * vnoise1(lx / 2, seed + 5) + 0.5;
+        const bot = Math.min(topA(lx) + 1.5, top + 2 + 4 * Math.pow(Math.max(0, 1 - u * u), 0.8));
         for (let y = Math.round(c.Y(top)); y < Math.round(c.Y(bot)); y++) {
           const ly = c.ly(y + 0.5), v = (ly - top) / Math.max(1, bot - top);
-          if (v < 0.45 && vnoise(lx / 2.6, ly / 2.2, seed + 16) > 0.38) { b.set(x, y, tone(P.moss, clamp(0.28 + v * 0.6 + (u > 0 ? 0.18 : 0), 0, 1), x, y, 0.35)); continue; }
-          b.set(x, y, tone(P.earth, clamp(0.58 + v * 0.4 + (u > 0.2 ? 0.08 : 0), 0, 1), x, y, 0.35));
+          if (v < 0.5 && vnoise(lx / 2.6, ly / 2.2, seed + 16) > 0.36) { b.set(x, y, tone(P.moss, clamp(0.26 + v * 0.6 + (u > 0 ? 0.18 : 0), 0, 1), x, y, 0.35)); continue; }
+          b.set(x, y, tone(P.earth, clamp(0.56 + v * 0.4 + (u > 0.2 ? 0.08 : 0), 0, 1), x, y, 0.35));
         }
       }
-      for (const rt of roots) limb(c, rt.pts, rt.w, 1, seed + 40 + Math.round(rt.pts[0]![0] * 7), true, rt.drape ? 1.5 : 1.2);
-      // where a root goes into the rock: a dark crack running on from its tip, its left lip lit,
-      // a few threads of moss at the mouth
+      // the roots: thick where they leave the flare, tapering as they go in
+      // (the thick ones lit along their tops like the trunk they flare from)
+      roots.forEach((rt, i) => limb(c, rt.pts, rt.w, i < 2 ? 2 : 1, seed + 40 + i * 13, i >= 2, 0.9));
+      // thin roots tracking on down the joints from where the thick ones go in, and along the crack
       roots.forEach((rt, i) => {
-        if (!rt.drape) return;
         const [ex, ey] = rt.pts[rt.pts.length - 1]!;
-        const cl = 4 + 8 * hash1(i, seed + 8);
-        for (let k = 0; k < cl; k += 0.5 / d) {
-          const cx = ex + rt.side * k * 0.15 + (vnoise1(k / 3 + i, seed + 9) - 0.5) * 1.4;
-          b.set(Math.round(c.X(cx)), Math.round(c.Y(ey + k)), P.karst[8]!);
-          if (k < cl * 0.7) b.set(Math.round(c.X(cx)) - 1, Math.round(c.Y(ey + k)), P.karst[3]!);
+        const len = i < 2 ? 10 + 10 * hash1(30 + i, ks) : 6;
+        for (let k = 0; k < len; k += 0.5 / d) {
+          const ly = ey + (i < 2 ? k : 0.3 * k);
+          const lx = i < 2 ? jointX(rt.side, ly) + (k > len * 0.5 ? rt.side * 0.6 : 0) : ex + k;
+          b.set(Math.round(c.X(lx + (i < 2 ? -rt.side : 0))), Math.round(c.Y(ly)), k < len * 0.4 ? BARK[3]! : BARK[4]!);
         }
       });
-      if (d >= 0.5) for (let k = 0; k < 8; k++) grass(c, (hash1(k, seed + 17) - 0.5) * sw * 1.9, 1 + hash1(k, seed + 18) * 3, 3 + 6 * hash1(k, seed + 19), (hash1(k, seed + 20) - 0.5) * 1.2, (hash1(k, seed + 21) - 0.45) * 1.4, hash1(k, seed + 22));
+      if (d >= 0.5) for (let k = 0; k < 7; k++) grass(c, (hash1(k, seed + 17) - 0.5) * sw * 1.8, -0.5 + hash1(k, seed + 18) * 2, 3 + 6 * hash1(k, seed + 19), (hash1(k, seed + 20) - 0.5) * 1.2, (hash1(k, seed + 21) - 0.45) * 1.4, hash1(k, seed + 22));
     }
     // the needle masses, collected first and painted after the wood (those hanging under a limb
     // before it): sizes vary threefold, each on a twig of its own

@@ -53,9 +53,11 @@ export const NEAR_MASSES: MassSpec[] = [
   // (round 4: the critic's "mud raft" stamp: the catch's right spit is a mud bank too, so this one
   // is another kind, a pair of half-sunk limestone blocks, its short reeds a bed of their own below)
   { kind: "stone", x: 8232, w: 58, h: 26 },
-  // the jetty's east landing (jetty-6s 763..1013, play-east 966..1226): low reeds and a stone,
-  // under 60 so the landing and its reflection show
-  { kind: "reeds", x: 9040, w: 170, h: 18, reed: 54, dense: 2.2, stone: true },
+  // the jetty's east landing (jetty-6s 763..1013, play-east 966..1226): under 60 so the landing
+  // and its reflection show (round 5, the critic: "the rafts are the same stamp: at most one a
+  // frame, the other accent another kind": the catch's spit is the frame's one mud bank) a lily
+  // bed lying on the shallows with a few sedges, clear of her reflection in jetty-6s
+  { kind: "pads", x: 8968, w: 104, h: 12, dense: 1.6 },
   // the east limestone, overlapping Gate Road's cliff foot (jetty-6s 1013..1225, play-east
   // 1226..1446, guard-gate1 319..539): chunks up to 110 high stepping down to the right, running
   // off the bottom (past the lake's end there is no water at its foot)

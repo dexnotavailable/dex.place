@@ -9,6 +9,7 @@ import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { bayer4, clamp, hash, hash1, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { wood } from "./jetty.ts";
+import { PINE_GAP, ROAD_PINES, kerbAt, kerbPx, kerbRocks } from "./kerb.ts";
 
 function fill(c: PaintCtx, x0: number, y0: number, x1: number, y1: number, col: (x: number, y: number, u: number, v: number) => number): void {
   const X0 = Math.round(c.X(x0)), X1 = Math.max(Math.round(c.X(x0)) + 1, Math.round(c.X(x1)));
@@ -62,14 +63,19 @@ export const rail = definePainter<RailP>("op.rail", {
       x0 = Math.min(x0, p.pts[i]!); x1 = Math.max(x1, p.pts[i]!);
       y0 = Math.min(y0, p.pts[i + 1]!); y1 = Math.max(y1, p.pts[i + 1]!);
     }
-    return [x0 - 10, y0 - (p.h ?? 46) - 14, x1 + 16, y1 + 8];
+    return [x0 - 10, y0 - (p.h ?? 46) - 14, x1 + 16, y1 + 12];
   },
   paint(c, p) {
     const hgt = p.h ?? 46, every = p.every ?? 62, d = c.d, seed = c.seed;
     const pts = p.pts;
     const x0 = pts[0]!, x1 = pts[pts.length - 2]!;
+    // (round 5) where a path pine grips the road's edge the balustrade breaks round its trunk:
+    // two posts flank it and the rails end in them
+    const gaps = ROAD_PINES.filter((px) => px > x0 + 20 && px < x1 - 20).map((px) => [px - PINE_GAP, px + PINE_GAP] as const);
+    const inGap = (lx: number): boolean => gaps.some(([a, b]) => lx > a && lx < b);
     // rails first (posts stand in front of their ends): a rounded top rail, a thinner lower rail
     for (let lx = x0; lx <= x1; lx += 0.5 / d) {
+      if (inGap(lx)) continue;
       const g = railY(pts, lx);
       const X = Math.round(c.X(lx));
       if (X < c.buf.ox || X >= c.buf.x1) continue;
@@ -91,8 +97,12 @@ export const rail = definePainter<RailP>("op.rail", {
         for (let y = Y0; y < Y1; y++) c.buf.set(X, y, tone(P.stone, k < 1 ? 0.2 : 0.55, X, y, 0.3));
       }
     }
-    // posts, with their caps and a contact shadow at their foot
-    for (let lx = x0; lx <= x1 + 0.1; lx += every) {
+    // posts, with their caps and a contact shadow at their foot (none just by a pine's trunk; one
+    // each side of it instead)
+    const postXs: number[] = [];
+    for (let lx = x0; lx <= x1 + 0.1; lx += every) if (!gaps.some(([a, b]) => lx > a - 12 && lx < b + 12)) postXs.push(lx);
+    for (const [a, b] of gaps) postXs.push(a - 2, b + 2);
+    for (const lx of postXs) {
       const g = railY(pts, lx);
       const tilt = (hash1(Math.round(lx), seed) - 0.5) * 1.2;
       fill(c, lx - 5, g - hgt - 6, lx + 5, g + 3, (x, y, u, v) => {
@@ -107,6 +117,23 @@ export const rail = definePainter<RailP>("op.rail", {
         return tone(P.stone, clamp(t, 0, 1), x, y, 0.3);
       });
       contact(c, lx - 8, lx + 8, g + 2);
+    }
+    // (round 5) the road's rock (kerb.ts): the chunks rising past the road's front edge stand in
+    // front of the post feet (the rail's ground is 3 px under the road's walk line; only the chunks
+    // inside its run, which the road's rock under it paints too)
+    const R = kerbRocks(x0, x1).filter((q) => q.top < 10 && q.kind !== "pebble" && q.x0 > x0 - 6 && q.x1 < x1 + 6);
+    for (const q of R) {
+      const X0 = Math.max(c.buf.ox, Math.floor(c.X(q.x0 - 2))), X1 = Math.min(c.buf.x1, Math.ceil(c.X(q.x1 + 2)));
+      if (X0 >= X1) continue;
+      const wy = Math.min(railY(pts, q.x0), railY(pts, q.x1)) - 3;
+      const Y0 = Math.max(c.buf.oy, Math.floor(c.Y(wy + q.top - 3))), Y1 = Math.min(c.buf.y1, Math.ceil(c.Y(wy + 14)));
+      for (let y = Y0; y < Y1; y++) {
+        for (let x = X0; x < X1; x++) {
+          const lx = c.lx(x + 0.5), depth = c.ly(y + 0.5) - (railY(pts, lx) - 3);
+          if (depth > 10) continue;
+          if (kerbAt([q], lx, depth) && kerbAt(R, lx, depth) === q) c.buf.set(x, y, kerbPx(q, lx, depth, d, x, y));
+        }
+      }
     }
   },
 });
@@ -191,7 +218,8 @@ export const barrel = definePainter<BarrelP>("op.barrel", {
 
 /** How far a prop's cast shadow reaches past its right side, px (for its width). */
 function shadowReach(w: number): number {
-  return Math.min(14, w * 0.45 + 3);
+  // (round 5, the critic: "1 px lines straight down") a longer wedge, so the cast reads at play zoom
+  return Math.min(22, w * 0.7 + 4);
 }
 
 /**
@@ -213,9 +241,9 @@ function footShadow(c: PaintCtx, x0: number, x1: number, damp = false): void {
   // toward us and to the right over the deck's lit edge: darkest right under its foot, a wedge
   // reaching out past its right side, thinning as it goes (hard steps, no dither field)
   const reach = shadowReach(x1 - x0);
-  for (let y = Math.round(c.Y(0)); y < Math.round(c.Y(3.4)); y++) {
+  for (let y = Math.round(c.Y(0)); y < Math.round(c.Y(4.4)); y++) {
     const ly = c.ly(y + 0.5);
-    const a = x0 + 0.4 + ly * 1.6, z = x1 + reach * (1 - ly / 3.6);
+    const a = x0 + 0.4 + ly * 2.2, z = x1 + reach * (1 - ly / 4.8);
     for (let x = Math.round(c.X(a)); x < Math.round(c.X(z)); x++) {
       const lx = c.lx(x + 0.5);
       const out = (lx - x1) / Math.max(1, reach);
@@ -256,7 +284,7 @@ export interface CrateP {
 export const crateOp = definePainter<CrateP>("op.crate", {
   bounds(p) {
     const w = p.w ?? 40, h = p.h ?? 36;
-    return [-w / 2 - 2, -h - 4, w / 2 + shadowReach(w) + 2, 4];
+    return [-w / 2 - 2, -h - 4, w / 2 + shadowReach(w) + 2, 5];
   },
   paint(c, p) {
     const w = p.w ?? 40, h = p.h ?? 36, seed = c.seed, d = c.d;
@@ -324,7 +352,7 @@ export interface JarP {
 export const jarOp = definePainter<JarP>("op.jar", {
   bounds(p) {
     const h = p.h ?? 34;
-    return [-h * 0.45 - 2, -h - 5, Math.max(h * 0.45 + 3, h * 0.42 * 0.6 + shadowReach(h * 0.5) + 2), 4];
+    return [-h * 0.45 - 2, -h - 5, Math.max(h * 0.45 + 3, h * 0.42 * 0.6 + shadowReach(h * 0.5) + 2), 5];
   },
   paint(c, p) {
     const h = p.h ?? 34, d = c.d;
@@ -455,7 +483,7 @@ export interface BasketP {
  */
 export const basket = definePainter<BasketP>("op.basket", {
   bounds(p) {
-    return [-p.h * 0.75 - 2, -p.h * 1.4, Math.max(p.h * 0.75 + 4, p.h * 0.64 * 0.8 + shadowReach(p.h * 1.02) + 2), 4];
+    return [-p.h * 0.75 - 2, -p.h * 1.4, Math.max(p.h * 0.75 + 4, p.h * 0.64 * 0.8 + shadowReach(p.h * 1.02) + 2), 5];
   },
   paint(c, p) {
     const hh = p.h, d = c.d;
@@ -493,7 +521,7 @@ export interface BucketP {
 export const bucket = definePainter<BucketP>("op.bucket", {
   bounds(p) {
     const hh = p.h ?? 20;
-    return [-hh * 0.7, -hh * 1.7, Math.max(hh * 0.7 + 3, hh * 0.62 + shadowReach(hh * 1.24) + 2), 4];
+    return [-hh * 0.7, -hh * 1.7, Math.max(hh * 0.7 + 3, hh * 0.62 + shadowReach(hh * 1.24) + 2), 5];
   },
   paint(c, p) {
     const hh = p.h ?? 20, d = c.d, seed = c.seed;
@@ -534,7 +562,7 @@ export interface CoilP {
 export const coil = definePainter<CoilP>("op.coil", {
   bounds(p) {
     const r = p.r ?? 12;
-    return [-r - 18, -r - 3, r + shadowReach(2 * r) + 2, Math.max(4, (p.hang ?? 0) + 3)];
+    return [-r - 18, -r - 3, r + shadowReach(2 * r) + 2, Math.max(5, (p.hang ?? 0) + 3)];
   },
   paint(c, p) {
     const r = p.r ?? 12, d = c.d, seed = c.seed;

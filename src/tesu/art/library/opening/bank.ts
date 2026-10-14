@@ -72,6 +72,8 @@ export interface MassSpec {
   twig?: boolean;
   /** A half-sunk stone by a reed bed or a mud bank. */
   stone?: boolean;
+  /** (round 5) A snag lying half sunk in the shallows: no mud bar under it. */
+  sunk?: boolean;
 }
 
 export interface BankP {
@@ -231,9 +233,11 @@ const MIRROR = [0.58, 0.76, 0.75];
 // screen, so the painted reflections stay one step under the lake instead of two)
 const DEEP = [82, 137, 149];
 const NEAR = [96, 148, 158];
+// (round 5: no umber and no roof-tile blue-greys among them: a rise's earth mirrored as red-brown
+// ovals, the limestone as a lavender block)
 const REFL = [
-  ...P.jade.slice(2), ...P.pine, ...P.moss.slice(3), ...P.karst.slice(4), ...P.umber.slice(1), ...P.earth.slice(3),
-  ...P.range.slice(4), ...P.tile.slice(2), ...P.timber.slice(3),
+  ...P.jade.slice(2), ...P.pine, ...P.moss.slice(3), ...P.karst.slice(4), ...P.earth.slice(4),
+  ...P.range.slice(4), ...P.timber.slice(3),
 ] as number[];
 const reflMemo = new Map<number, number>();
 
@@ -248,7 +252,7 @@ function reflOf(col: number, f: number, ink: number): number {
   const hit = reflMemo.get(key);
   if (hit !== undefined) return hit;
   const c = rgbOf(col);
-  const k = [0, 0.28, 0.5, 0.7][clamp(f, 0, 3)]!;
+  const k = [0.16, 0.36, 0.55, 0.72][clamp(f, 0, 3)]!;
   const want: number[] = [];
   for (let i = 0; i < 3; i++) {
     const seen = c[i]! * (1 - 0.3) + INK[i]! * 0.3;
@@ -315,25 +319,23 @@ interface Ripple {
  */
 function ripple(R: Ripple, lx: number, s: number): number {
   if (s < 0) return NaN;
-  // (round 4: the critic's "scanline reflections": every 2 px row shifted on its own and broken
-  // into short dashes read as a venetian blind) one soft mirrored copy: the rows sway together in
-  // a slow wave that grows downward; a few thin ripple lines of water cross it in long broken runs,
-  // more of them further down; near its end it dissolves in long runs, not dashes
+  // (round 5, the critic: "scanline reflections") one soft mirrored copy: the rows sway together
+  // in a slow wave that grows downward; two or three thin ripple lines of water cross it, each
+  // broken into long runs; past the middle of its length it thins out by an ordered dither into
+  // the water, never into dashes
   const fade = clamp(s / R.len, 0, 1.3);
   const row = Math.floor(s);
-  if (row > 2 && hash1(row, R.seed + 71) < 0.03 + fade * 0.2) {
-    const L = 16 + 34 * hash1(row, R.seed + 72);
-    const si = Math.floor((lx + L * hash1(row, R.seed + 73)) / L);
-    if (hash(si, row, R.seed + 74) < 0.8) return NaN;
+  for (let k = 0; k < 3; k++) {
+    if (k === 2 && hash1(5, R.seed + 70) < 0.4) break;
+    const ry = Math.floor(R.len * (0.2 + 0.24 * k + 0.08 * hash1(k, R.seed + 71)));
+    if (row !== ry || ry < 3) continue;
+    const L = 26 + 40 * hash1(k, R.seed + 72);
+    const si = Math.floor((lx + L * hash1(k, R.seed + 73)) / L);
+    if (hash(si, k, R.seed + 74) < 0.62) return NaN;
   }
-  if (fade > 0.55) {
-    const g = Math.floor(s / 3);
-    const L = 18 + 30 * hash1(g, R.seed + 76);
-    const si = Math.floor((lx + L * hash1(g, R.seed + 77)) / L);
-    if (hash(si, g, R.seed + 78) < (fade - 0.55) * 1.5) return NaN;
-  }
-  const amp = Math.min(2.2, 0.15 + s / 16);
-  return Math.round((vnoise1(s / 5.5, R.seed + 75) - 0.5) * 2 * amp + (vnoise1(s / 1.7, R.seed + 79) - 0.5) * 0.9 * Math.min(1, s / 12));
+  if (fade > 0.5 && bayer4(Math.floor(lx), row) < (fade - 0.5) * 1.6) return NaN;
+  const amp = Math.min(1.6, 0.15 + s / 22);
+  return Math.round((vnoise1(s / 6.5, R.seed + 75) - 0.5) * 2 * amp);
 }
 // (round 4: it fades toward the water faster, so where a mass's mirrored top ends there is little
 // left to end: no hard window of water in a long reflection)
@@ -450,9 +452,10 @@ function chunkTop(k: Chunk, lx: number): number {
 function chunkSide(k: Chunk, ly: number, side: number): number {
   const s = k.seed + (side > 0 ? 50 : 0);
   // a side breaks along the joints: short runs with a jog between them
-  const jh = 8 + 9 * hash1(1, s);
+  // (round 5: longer runs, smaller jogs: a sawtooth profile read as noise down a tall column)
+  const jh = 14 + 16 * hash1(1, s);
   const j = Math.floor((ly + 4 * vnoise1(ly / 9, s + 7)) / jh);
-  const jog = (hash1(j, s + 8) - 0.5) * 6;
+  const jog = (hash1(j, s + 8) - 0.5) * 3.4;
   return (side < 0 ? k.x0 : k.x1) - k.lean * (ly - k.top) + side * ((vnoise1(ly / 14, s + 9) - 0.5) * 6 + (vnoise1(ly / 4.3, s + 10) - 0.5) * 1.8 + jog);
 }
 
@@ -502,47 +505,59 @@ function chunkCol(c: PaintCtx, ks: Chunk[], i: number, lx: number, ly: number, x
   }
   if (s < 1.05 && k.dep < 0.75) return u < 0.55 ? P.karst[2]! : P.karst[4]!;
   if (lx - xL < 1.05 && s < H * 0.8 && k.dep < 0.6 && vnoise1(ly / 6, sd + 24) > 0.35) return P.karst[3]!;
-  let t = 0.27 + k.dep * 0.3 + u * 0.3 + clamp(s / 150, 0, 0.14) + (vnoise(lx / 8, ly / 46, sd + 25) - 0.5) * 0.12;
-  // (round 4, Dex: "the columnar stone") a tall block is bedded: it breaks into beds of their own
-  // heights along wobbling bedding planes (some running only part of the way across), each bed a
-  // little forward or back of the one over it (a shadow under an overhang, a lit lip on a step
-  // out), its joints shifting at every bed: stacked blocks, never one column running down the face
+  let t = 0.27 + k.dep * 0.3 + u * 0.3 + clamp(s / 150, 0, 0.14) + (vnoise(lx / 8, ly / 46, sd + 25) - 0.5) * 0.08;
+  // (round 5, the critic: "cinder-block faces: a rectangular crack grid on flat dithered grey")
+  // limestone is bedded: beds of very different thicknesses (a thin one weathered back into a
+  // shadowed band, a thick one standing proud), their planes wavy, running most of the way across
+  // or dying out part way; the few vertical joints run straight down through several beds and stop
+  // at one (never shifting at every bed, so no brick bond); long stains run down the face
   let bi = 0;
-  if (H > 30) {
-    const bh = 24 + 22 * hash1(7, sd);
-    let yb = 8 + hash1(8, sd) * bh * 0.8;
-    const sw = s + (vnoise1(lx / 19, sd + 80) - 0.5) * 4 + (vnoise1(lx / 5, sd + 81) - 0.5) * 1.3 + k.tilt * 0.5 * (lx - k.x0);
-    let b0 = 0;
-    let bE = Infinity;
-    while (yb <= sw && bi < 40) { b0 = yb; yb += bh * (0.7 + 0.8 * hash1(bi, sd + 82)); bi++; }
-    bE = yb;
+  const bedOf = (i: number): { thin: boolean; rec: boolean } => {
+    const thin = hash1(i, sd + 82) < 0.36;
+    return { thin, rec: hash1(i, sd + 87) < (thin ? 0.72 : 0.14) };
+  };
+  if (H > 22) {
+    const sw = s + (vnoise1(lx / 19, sd + 80) - 0.5) * 4 + (vnoise1(lx / 5, sd + 81) - 0.5) * 1.1 + k.tilt * 0.5 * (lx - k.x0);
+    let b0 = 0, yb = 3 + 9 * hash1(6, sd);
+    while (yb <= sw && bi < 40) {
+      b0 = yb;
+      bi++;
+      yb += bedOf(bi).thin ? 4 + 6 * hash1(bi, sd + 83) : 15 + 28 * hash1(bi, sd + 84);
+    }
     if (bi > 0) {
-      const ua = hash1(bi, sd + 83) < 0.35 ? 0.1 + 0.45 * hash1(bi, sd + 84) : -1, ub = hash1(bi, sd + 85) < 0.35 ? 0.45 + 0.45 * hash1(bi, sd + 86) : 2;
-      const recessed = hash1(bi, sd + 87) < 0.4, prevRec = hash1(bi - 1, sd + 87) < 0.4;
+      const me = bedOf(bi), up = bedOf(bi - 1);
+      const full = hash1(bi, sd + 85) < 0.55;
+      const ua = full ? -1 : 0.04 + 0.4 * hash1(bi, sd + 86), ub = full ? 2 : 0.5 + 0.48 * hash1(bi, sd + 88);
       const ds = sw - b0;
       if (u > ua && u < ub) {
-        if (recessed && !prevRec && ds < 2.5 + 3.5 * hash1(bi, sd + 88)) t += 0.3;
-        else if (ds < 0.75 && recessed === prevRec) t += 0.3;
-        else if (!recessed && prevRec && ds < 1.8) t -= 0.18;
+        if (me.rec && !up.rec && ds < 2 + 2.5 * hash1(bi, sd + 89)) t += 0.34;
+        else if (!me.rec && up.rec && ds < 1.3) t -= 0.2;
+        else if (me.rec === up.rec && ds < 0.7) t += 0.28;
+        else if (me.rec === up.rec && ds < 1.7) t -= 0.07;
       }
-      if (recessed) t += 0.1;
+      if (me.rec) t += 0.12;
+      else t += (hash1(bi, sd + 90) - 0.5) * 0.08;
       // its weathered front edge turning under into shade at the bed's foot
-      if (bE - sw < 2.2 && !recessed) t += 0.1;
-      t += (hash1(bi, sd + 89) - 0.5) * 0.08;
+      if (yb - sw < 1.8 && !me.rec && bedOf(bi + 1).rec) t += 0.12;
     }
   }
-  // its planes: which facet, a crack at each joint with a lit lip on the facet beyond it
+  // its planes: which facet, a crack at each joint (through a run of beds) with a lit lip beyond it
   let fi = 0;
   for (let j = 0; j < k.joints.length; j++) {
-    const jx = xL + w * clamp(k.joints[j]! + (bi > 0 ? (hash1(bi * 7 + j, sd + 90) - 0.5) * 0.3 : 0), 0.08, 0.92) + (vnoise1(ly / 7, sd + 60 + j) - 0.5) * 3 + (vnoise1(ly / 2.3, sd + 64 + j) - 0.5) * 0.8;
+    const jx = xL + w * clamp(k.joints[j]!, 0.08, 0.92) + (vnoise1(ly / 13, sd + 60 + j) - 0.5) * 2.4 + (vnoise1(ly / 3.1, sd + 64 + j) - 0.5) * 0.7;
     const dd = lx - jx;
     if (dd >= 0) fi = j + 1;
-    const shown = bi === 0 || hash1(bi * 5 + j, sd + 91) < 0.55;
+    const j0 = Math.floor(hash1(j, sd + 91) * 3), j1 = j0 + 2 + Math.floor(hash1(j, sd + 92) * 5);
+    const shown = H <= 22 || (bi >= j0 && bi <= j1);
     if (Math.abs(dd) < 0.55 && s > 2 && shown) t += 0.38;
-    else if (dd >= 0.55 && dd < 1.6 && s > 2 && shown) t -= 0.14;
+    else if (dd >= 0.55 && dd < 1.6 && s > 2 && shown) t -= 0.12;
   }
-  t += k.turn[fi] ?? 0;
+  t += (k.turn[fi] ?? 0) * 0.8;
   if (k.joints.length === 0 && u > 0.76 + (vnoise1(ly / 8, sd + 26) - 0.5) * 0.18) t += 0.18;
+  // long stains running down the face from the ledges
+  const st = vnoise(lx / 3.3 + sd * 0.013, ly / 40, sd + 95);
+  if (st > 0.7) t += 0.1;
+  else if (st < 0.2) t -= 0.05;
   // moss streaks hanging from the cap where water seeps over the lip
   const mc = Math.floor((lx + 3 * vnoise1(ly / 9, sd + 66)) / 3.5);
   if (k.cap > 0.3 && hash1(mc, sd + 67) < 0.12 && s < capT + 4 + 22 * hash1(mc, sd + 68)) return s < capT + 3 ? P.moss[5]! : P.moss[6]!;
@@ -552,9 +567,12 @@ function chunkCol(c: PaintCtx, ks: Chunk[], i: number, lx: number, ly: number, x
     if (ph < 0.06) return ph < 0.025 ? P.karst[7]! : P.karst[6]!;
   }
   if (s < capT + 1.5 + vnoise1(lx / 5, sd + 27) * 2.5) t += 0.17;
+  // a nearer block's cast shadow on it (down and to the right), the darkest darks in the crevice
+  // right at its edge
   for (let j = i + 1; j < ks.length; j++) {
-    if (inChunk(ks[j]!, lx - 2, ly - 1.5)) { t += 0.36; break; }
-    if (inChunk(ks[j]!, lx - 6, ly - 4.5)) { t += 0.18; break; }
+    if (inChunk(ks[j]!, lx - 1, ly - 0.8)) { t += 0.7; break; }
+    if (inChunk(ks[j]!, lx - 2.5, ly - 1.8)) { t += 0.4; break; }
+    if (inChunk(ks[j]!, lx - 6, ly - 4.5)) { t += 0.2; break; }
   }
   for (let g = 0; g < k.grooves.length; g++) {
     const [gu, gl, gw] = k.grooves[g]!;
@@ -572,7 +590,7 @@ function chunkCol(c: PaintCtx, ks: Chunk[], i: number, lx: number, ly: number, x
     if (dd >= -0.6 && dd < 0.6) t += 0.34;
     else if (dd >= 0.6 && dd < 2.2) t -= 0.1;
   }
-  return step(c, ROCK, t, x, y);
+  return step(c, ROCK, t, x, y, 0.12);
 }
 
 /** A chunk, with its grooves and seam from its seed. */
@@ -979,14 +997,15 @@ function shelfBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] 
   const bank = s.bank ?? 0;
   // the steps: [from, to (share along it from the tall end), height share, depth, foot nearer by, cap]
   const steps: [number, number, number, number, number, number][] = [
-    // (round 4: the critic's "staircase of boxes": not a row stepping down, but a tall block, a
-    // low one in front of its foot, a taller one behind that, a small one nearest: a skyline that
-    // steps up and down, the blocks overlapping in depth)
-    [0.0, 0.34 + 0.05 * r(), 1, 0.55, 0, 0.9],
-    [-0.04, 0.2 + 0.05 * r(), 0.55 + 0.08 * r(), 0.08, 26 + 10 * r(), 0.5],
-    [0.27 + 0.04 * r(), 0.5 + 0.05 * r(), 0.4 + 0.08 * r(), 0.06, 12 + 5 * r(), 0.8],
-    [0.44 + 0.04 * r(), 0.7 + 0.05 * r(), 0.72 + 0.08 * r(), 0.4, 2 + 3 * r(), 0.9],
-    [0.66 + 0.04 * r(), 0.86 + 0.04 * r(), 0.2 + 0.06 * r(), 0.04, 18 + 6 * r(), 0.5],
+    // (round 5, the critic: "still a tall-left, low-right staircase") its crown stands inward of
+    // its tall end: a block at the end, the tallest standing forward of it a third of the way in,
+    // a lower one recessed behind that one's far side, a low slab and a small block in the water
+    // nearer still; the skyline rises to the crown and falls away both ways
+    [0.0, 0.34 + 0.04 * r(), 0.74 + 0.06 * r(), 0.5, 0, 0.9],
+    [0.54 + 0.03 * r(), 0.8 + 0.04 * r(), 0.46 + 0.08 * r(), 0.6, 4 + 3 * r(), 0.8],
+    [0.28 + 0.03 * r(), 0.58 + 0.03 * r(), 1, 0.26, 6 + 3 * r(), 0.9],
+    [0.7 + 0.03 * r(), 0.92 + 0.03 * r(), 0.22 + 0.05 * r(), 0.08, 14 + 4 * r(), 0.6],
+    [0.87 + 0.02 * r(), 1.0, 0.12 + 0.04 * r(), 0.04, 22 + 5 * r(), 0.5],
   ];
   const ks: Chunk[] = [];
   steps.slice(0, Math.min(steps.length, s.n ?? steps.length)).forEach(([a, b, hk, dep, nearer, cap], i) => {
@@ -1027,15 +1046,49 @@ function stackBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] 
     if (bot === Infinity && a < 0.05) { k.wside = wside; k.wfrom = wl; }
     ks.push(k);
   };
-  // the footing beds, wide, the low end's nearer and lower
-  add(-0.02, 0.6 + 0.06 * r(), wl - H * (0.4 + 0.06 * r()), Infinity, 0.5, 0.8, 0, false);
-  add(0.48 + 0.05 * r(), 1.0, wl - H * (0.12 + 0.05 * r()), Infinity, 0.32, 0.9, 1, false);
-  // blocks on them, of very different sizes, stepping down to the low end
-  add(0.02 + 0.03 * r(), 0.3 + 0.05 * r(), wl - H, wl - H * 0.38, 0.6, 1, 2, true);
-  add(0.27 + 0.04 * r(), 0.5 + 0.04 * r(), wl - H * (0.66 + 0.08 * r()), wl - H * 0.36, 0.28, 0.9, 3, true);
-  add(0.56 + 0.04 * r(), 0.72 + 0.05 * r(), wl - H * (0.34 + 0.06 * r()), wl - H * 0.16, 0.18, 0.8, 4, true);
-  // the front block lower down, nearer the camera
-  add(-0.07, 0.24 + 0.06 * r(), wl + 14 + 8 * r(), Infinity, 0.06, 0.6, 5, false);
+  // (round 5, Dex's crop 19, the critic: "organ pipes: near-equal widths, even spacing, flat grass
+  // tops") columns of very different widths (2:1 and more) standing at two depths: the back row
+  // recessed, darker and cooler, the front row standing forward, lit on the left and lighter,
+  // overlapping the back ones with a shadow between; their tops at their own heights; one in front
+  // broken off along a joint, its top a slanted break, its fallen blocks lying at the low end
+  if (s.w < 140) {
+    // a small stack: one broad block, a lower one standing forward of its low end, a fallen
+    // block on that one's ledge
+    add(-0.02, 0.64 + 0.06 * r(), wl - H, Infinity, 0.5, 0.9, 0, false);
+    add(0.5 + 0.05 * r(), 1.0, wl - H * (0.55 + 0.1 * r()), Infinity, 0.1, 0.8, 1, false);
+    const low = ks[1]!;
+    const [fa, fb] = span(0.78 + 0.04 * r(), 0.92);
+    const lt = Math.min(chunkTop(low, fa), chunkTop(low, fb));
+    ks.push(chunk(fa, fb, lt - 2 - (fb - fa) * 0.6, lt + 2, 0.02, 0.4, seed + 10 + 6 * 17, dir * -0.25, 0, Infinity));
+    return rockParts(ks, 1, seed + 3, deep);
+  }
+  // back row: the tall column at the tall end, a broad lower block, running off the bottom
+  add(-0.02, 0.3 + 0.05 * r(), wl - H, Infinity, 0.62, 0.9, 0, false);
+  add(0.4 + 0.04 * r(), 0.9 + 0.04 * r(), wl - H * (0.56 + 0.08 * r()), Infinity, 0.56, 0.8, 1, false);
+  // front row: a footing bed across most of it, standing forward, and blocks stacked on it: a
+  // narrow tall one across the joint between the back ones, one broken off along a joint (its top a
+  // slanted break), its fallen blocks lying on the footing's ledge beyond it
+  // (its low end stays under 30 px over the water: guard-gate1's arch reads to the bottom past it)
+  add(0.17 + 0.03 * r(), 0.97, wl - H * (0.2 + 0.04 * r()), Infinity, 0.18, 0.9, 2, false);
+  const foot = ks[ks.length - 1]!;
+  const on = (a: number, b: number): number => Math.max(chunkTop(foot, span(a, b)[0]), chunkTop(foot, span(a, b)[1])) + 3;
+  {
+    const a = 0.24 + 0.03 * r(), b = a + 0.15 + 0.04 * r();
+    add(a, b, wl - H * (0.76 + 0.08 * r()), on(a, b), 0.1, 0.7, 3, true);
+  }
+  {
+    const a = 0.58 + 0.03 * r(), b = a + 0.12 + 0.03 * r();
+    const [x0, x1] = span(a, b);
+    ks.push(chunk(x0, x1, wl - H * (0.5 + 0.06 * r()), on(a, b), 0.05, 0, seed + 10 + 4 * 17, dir * (0.34 + 0.12 * r()), 0.02, Infinity));
+    const [fa, fb] = span(b + 0.02, b + 0.1 + 0.03 * r());
+    const lt = Math.max(chunkTop(foot, fa), chunkTop(foot, fb));
+    ks.push(chunk(fa, fb, lt - 3 - (fb - fa) * (0.55 + 0.2 * r()), lt + 3, 0.02, 0.5, seed + 10 + 6 * 17, dir * -0.3, 0.12 * dir, Infinity));
+    const [ga, gb] = span(b + 0.14 + 0.03 * r(), b + 0.19 + 0.03 * r());
+    const gt = Math.max(chunkTop(foot, ga), chunkTop(foot, gb));
+    ks.push(chunk(ga, gb, gt - 2 - (gb - ga) * 0.6, gt + 2, 0.04, 0, seed + 10 + 7 * 17, dir * 0.2, 0, Infinity));
+  }
+  // and a low block nearer the camera at the tall end, its water side lapped by the lake
+  add(-0.07, 0.2 + 0.05 * r(), wl + 12 + 8 * r(), Infinity, 0.04, 0.6, 5, false);
   const parts = rockParts(ks, 1, seed + 3, deep);
   // grass in the joints between the beds
   for (let i = 0; i < 3; i++) {
@@ -1053,23 +1106,29 @@ function outcropBody(s: MassSpec, seed: number, wl: number, deep: number): Part[
   const f = wl + (s.foot ?? 0);
   // [from, to, top share, depth, foot nearer by, cap]
   const plan: [number, number, number, number, number, number][] = [
-    // (round 4: unlike play-west's shelf, its skyline peaks left of middle and falls both ways)
-    [0.24 + 0.04 * r(), 0.6 + 0.04 * r(), 0.92 + 0.05 * r(), 0.62, 0, 0.8],
-    [0.02, 0.3 + 0.04 * r(), 0.52 + 0.08 * r(), 0.14, 2, 0.9],
-    [0.5 + 0.03 * r(), 0.78 + 0.04 * r(), 0.64 + 0.08 * r(), 0.3, 3, 0.9],
-    [0.16 + 0.04 * r(), 0.4 + 0.04 * r(), 0.22 + 0.06 * r(), 0.0, 9, 0.5],
-    [0.74 + 0.03 * r(), 0.92, 0.3 + 0.06 * r(), 0.08, 7, 0.6],
+    // (round 5, the critic: "tall-left, low-right staircase, like play-west's") an islet with a
+    // spire: a broad low block, a middling one, a narrow tall pillar right of middle leaning out
+    // over the water, a lower block recessed behind its far side, a small one nearest
+    [0.0, 0.36 + 0.04 * r(), 0.46 + 0.06 * r(), 0.45, 0, 0.9],
+    [0.6 + 0.03 * r(), 0.88 + 0.03 * r(), 0.34 + 0.06 * r(), 0.55, 1, 0.8],
+    [0.3 + 0.03 * r(), 0.54 + 0.03 * r(), 0.66 + 0.06 * r(), 0.24, 3, 0.9],
+    [0.82 + 0.03 * r(), 0.98, 0.18 + 0.05 * r(), 0.05, 10, 0.6],
   ];
   const ks: Chunk[] = [];
   plan.slice(0, s.n ?? plan.length).forEach(([a, b, hk, dep, nearer, cap], i) => {
     const foot = f + nearer;
     ks.push(chunk(at(a), at(b), foot - H * hk, foot, dep, cap, seed + 30 + i * 19, (r() - 0.5) * 0.1, (r() - 0.5) * 0.06));
   });
-  // a block perched on the back block's top, proud of it, stepping the skyline up
+  // the spire: narrow, tall, leaning out over the water to the right, standing forward
+  {
+    const a = 0.5 + 0.03 * r(), b2 = a + 0.13 + 0.03 * r();
+    ks.push(chunk(at(a), at(b2), f + 2 - H, f + 2, 0.16, 1, seed + 140, -0.1 - 0.06 * r(), 0.07 + 0.03 * r()));
+  }
+  // a block perched on the broad one's top, proud of it, stepping the skyline up at the left
   const back = ks[0]!;
-  const pa = 0.42 + 0.06 * r(), pb = pa + 0.12 + 0.05 * r();
+  const pa = 0.06 + 0.05 * r(), pb = pa + 0.14 + 0.05 * r();
   const pTop = Math.min(chunkTop(back, at(pa)), chunkTop(back, at(pb))) + 2;
-  ks.push(chunk(at(pa), at(pb), f - H, pTop + 3, 0.4, 1, seed + 140, (r() - 0.5) * 0.12, 0, f));
+  ks.push(chunk(at(pa), at(pb), pTop - H * (0.16 + 0.05 * r()), pTop + 3, 0.36, 1, seed + 141, (r() - 0.5) * 0.12, 0, f));
   const parts = rockParts(ks, 1, seed + 3, deep);
   parts.push(...rubble(at, [0.0, 0.25], 2, f, seed + 300, deep), ...rubble(at, [0.6, 1.0], 3, f, seed + 310, deep));
   for (let i = 0; i < 3; i++) {
@@ -1113,12 +1172,13 @@ function bankParts(x0: number, x1: number, out: number, wl: number, deep: number
       if (dinA < 0 && din < 14) return din < 1.2 && vnoise1(lx / 4, sd + 8) > 0.4 ? lineCol(false) : vnoise1(lx / 5, sd) > 0.4 ? P.earth[3]! : P.earth[4]!;
       // (its wet inner edge running down toward the camera: dark, never a bright outline)
       if (din < 1 && vnoise1(ly / 3, sd + 1) > 0.35) return P.pine[5]!;
-      if (din < 2.5 + 3 * vnoise1(ly / 6, sd + 2)) return vnoise1(ly / 2.2 + lx / 9, sd + 3) > 0.7 ? P.moss[6]! : vnoise1(lx / 7, sd + 4) > 0.5 ? P.umber[4]! : P.pine[5]!;
+      if (din < 2.5 + 3 * vnoise1(ly / 6, sd + 2)) return vnoise1(ly / 2.2 + lx / 9, sd + 3) > 0.7 ? P.moss[6]! : vnoise1(lx / 7, sd + 4) > 0.5 ? P.earth[5]! : P.pine[5]!;
       const v = clamp((ly - wl) / Math.max(1, deep - wl), 0, 1);
       const g = vnoise(lx / 19, ly / 8, sd + 5);
       const t = 0.3 + v * 0.5 + (g - 0.5) * 0.3 + (din < 10 ? 0.12 : 0);
       // (round 4: bare earth only in small dark patches: brighter umber read as red blobs)
-      return g < 0.22 ? step(c, [P.umber[3]!, P.umber[4]!, P.pine[5]!], t, x, y) : step(c, [P.moss[6]!, P.moss[7]!, P.pine[4]!, P.pine[5]!], t, x, y);
+      // (round 5: the critic's "red ovals": the earth patches dark peat, never red-brown)
+      return g < 0.22 ? step(c, [P.earth[5]!, P.pine[5]!, P.pine[5]!], t, x, y) : step(c, [P.moss[6]!, P.moss[7]!, P.pine[4]!, P.pine[5]!], t, x, y);
     },
   }];
   // dark tussocks on it in rows, darker toward the camera, keeping clear of its wet inner edge
@@ -1294,12 +1354,12 @@ function stoneBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] 
 function snagBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] {
   const r = rng(seed + 1);
   const f = wl + (s.foot ?? 4);
-  const parts = mudBody({ kind: "mud", x: s.x, w: s.w * 0.75, h: Math.min(20, s.h * 0.22), foot: s.foot ?? 4 }, seed + 3, wl, deep, 0.5);
+  const parts = s.sunk ? [] : mudBody({ kind: "mud", x: s.x, w: s.w * 0.75, h: Math.min(20, s.h * 0.22), foot: s.foot ?? 4 }, seed + 3, wl, deep, 0.5);
   const sx = s.x + s.w * (0.18 + 0.1 * r());
   const lean = s.lean ?? 0.75;
   const reach = s.h * Math.abs(Math.sin(lean)) * 1.4 + 30;
   parts.push({ box: [sx - reach, f - s.h - 20, sx + reach, f], wl: f, noLine: true, dress: (pen, d) => snagStrokes(pen, d, sx, f, s.h, lean, seed + 9) });
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < (s.sunk ? 0 : 2); i++) {
     const x = s.x + s.w * (0.05 + 0.6 * r()), ry = 7 + r() * 10;
     parts.push(tuftPart({ x, y: f + 1, rx: 5 + r() * 7, ry, lit: 0.6, dark: 0.15, seed: seed + 20 + i }, f + 1, false));
   }

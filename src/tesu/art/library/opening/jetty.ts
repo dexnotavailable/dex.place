@@ -49,6 +49,12 @@ export interface JettyP {
   to?: number;
   /** The plan's seed (the plate piece's), so a face sprite paints the same jetty. */
   plan?: number;
+  /**
+   * (round 5, the critic: "the deck is one full-width ruler in every frame") spans that have sagged:
+   * [x inside the bay, px at mid bay]. The whole deck there (boards and beam) bows down between its
+   * bents.
+   */
+  sag?: [number, number][];
 }
 
 /** Plank-end height and the stringer's top. */
@@ -100,6 +106,8 @@ export interface JPile {
 export interface JRun { x0: number; x1: number; depth: number; age: number; drop: number; k: number }
 export interface JPlank {
   x: number; w: number; t: number; kind: number; drop: number; k: number;
+  /** (round 5) A board laid askew: its top runs this many px lower at its right end than its left. */
+  skew?: number;
   /** Silvered end grain (pale earth and umber) or brown timber: one per batch of boards, never alternating. */
   bleach?: boolean;
   /** The joint at its right end: 0 tight (a hairline), 1 a dark slit, 2 open (sky shows through). */
@@ -125,6 +133,8 @@ export interface JPlan {
   bays: [number, number, number][];
   /** Sister boards under the stringer. */
   sisters: JSister[];
+  /** (round 5) Spans whose whole deck has sagged: [x0, x1, px at mid bay]. */
+  sags: [number, number, number][];
 }
 
 /** Planks kinds. */
@@ -142,7 +152,7 @@ function groundAt(p: JettyP, x: number): number {
 
 /** The jetty's whole layout for a seed: bents, piles, stringer runs, planks, braces. */
 export function jettyPlan(p: JettyP, seed: number): JPlan {
-  return cached(`jplan|${seed}|${p.w}|${p.water}|${p.every}|${(p.west ?? []).join(",")}|${(p.east ?? []).join(",")}|${(p.gap ?? []).join(",")}`, () => {
+  return cached(`jplan|${seed}|${p.w}|${p.water}|${p.every}|${(p.west ?? []).join(",")}|${(p.east ?? []).join(",")}|${(p.gap ?? []).join(",")}|${(p.sag ?? []).join(";")}`, () => {
     const r = rng((seed ^ 0x5f3759d) >>> 0);
     const w = p.w, water = p.water;
     const every = p.every ?? 118;
@@ -290,7 +300,11 @@ export function jettyPlan(p: JettyP, seed: number): JPlan {
         else { bt = 0.12 + r() * 0.1; bBleach = false; bw0 = 8; bw1 = 11.5; left = 1 + Math.floor(r() * 3); }
       }
       left--;
-      const pw = bw0 + r() * (bw1 - bw0);
+      let pw = bw0 + r() * (bw1 - bw0);
+      // (round 5: the rhythm of the ends broken: now and then a wide old board or a narrow slat)
+      const wv = hash1(Math.round(px * 7), seed + 17);
+      if (wv < 0.05) pw = 16 + 6 * hash1(Math.round(px * 7), seed + 18);
+      else if (wv > 0.95) pw = 4.5 + 1.2 * hash1(Math.round(px * 7), seed + 19);
       const u = r();
       // (round 3) one or two boards gone per view, not a gap every few metres
       let kind = u < 0.011 ? MISSING : u < 0.1 ? SPLIT : u < 0.3 ? WORN : 0;
@@ -307,6 +321,16 @@ export function jettyPlan(p: JettyP, seed: number): JPlan {
         th: !run.age && r() < 0.17 ? (r() < 0.55 ? 1 : -1) : 0,
         hang: !run.age && kind !== MISSING && r() < 0.022 && !inGap(px, 30) ? 4 + r() * 6 : 0,
       });
+      // (round 5) the odd board laid askew or sunk on its beam (drawn by hash, so the other
+      // boards keep their draws)
+      {
+        const sk = hash1(Math.round(px * 5), seed + 21);
+        const pk = planks[planks.length - 1]!;
+        if (kind !== MISSING && !inGap(px, 30) && px > 30 && px < w - 30) {
+          if (sk < 0.022) pk.skew = (hash1(Math.round(px * 5), seed + 22) < 0.5 ? -1 : 1) * (1.4 + 0.8 * hash1(Math.round(px * 5), seed + 23));
+          else if (sk > 0.988) pk.drop = 2 + Math.round(hash1(Math.round(px * 5), seed + 24));
+        }
+      }
       last = kind;
       px += pw;
     }
@@ -325,8 +349,19 @@ export function jettyPlan(p: JettyP, seed: number): JPlan {
       const s0 = a + (b - a) * (0.1 + r() * 0.3);
       sisters.push([s0, Math.min(b - 6, s0 + 38 + r() * 46), 3 + Math.round(r() * 1.6)]);
     }
-    return { piles, bents, runs, planks, braces, heads, bays, sisters };
+    // (round 5) the spans that have sagged, the whole deck bowing between its bents
+    const sags: [number, number, number][] = [];
+    for (const [sx, amt] of p.sag ?? []) {
+      for (let i = 0; i + 1 < bents.length; i++) if (sx > bents[i]! && sx < bents[i + 1]!) sags.push([bents[i]!, bents[i + 1]!, amt]);
+    }
+    return { piles, bents, runs, planks, braces, heads, bays, sisters, sags };
   });
+}
+
+/** (round 5) How far the deck has sagged at x over a sagging span (0 elsewhere). */
+function deckSag(plan: JPlan, x: number): number {
+  for (const [a, b, s] of plan.sags) if (x > a && x < b) return s * Math.pow(Math.sin(Math.PI * (x - a) / (b - a)), 1.2);
+  return 0;
 }
 
 /** Front pile x of each bent (kept for older callers). */
@@ -381,7 +416,7 @@ function kinkAt(plan: JPlan, x: number): number {
 
 /** The stringer's top at x: it has dropped away from the boards mid bay (a dark lens between them). */
 function strTop(plan: JPlan, x: number): number {
-  return DECK + 0.55 * baySag(plan, x) + 0.6 * kinkAt(plan, x);
+  return DECK + 0.55 * baySag(plan, x) + 0.6 * kinkAt(plan, x) + deckSag(plan, x);
 }
 
 /** The stringer's underside at x (it sags between the bents that carry it, rotted, kinked). */
@@ -392,7 +427,7 @@ function strBot(plan: JPlan, x: number): number {
   // an old beam's underside is rotted and splintered in places: a slow wander, lumps, bites
   if (!run.age) y += (vnoise1(x / 23, rs + 3) - 0.5) * 1.6 + (vnoise1(x / 6, rs) - 0.5) * 1.8 - (hash1(Math.floor(x / 4), rs - 6) < 0.06 ? 1.2 : 0);
   else y += (vnoise1(x / 31, rs + 3) - 0.5) * 0.7;
-  return y + kinkAt(plan, x) + baySag(plan, x);
+  return y + kinkAt(plan, x) + baySag(plan, x) + deckSag(plan, x);
 }
 
 // --- piles ------------------------------------------------------------------------------------
@@ -662,8 +697,9 @@ function paintDeck(c: PaintCtx, p: JettyP, plan: JPlan, seed: number, x0: number
     const btop = strTop(plan, lx);
     const sis = sisterAt(plan, lx);
     const sBot = sis ? bot + sis[2] + (vnoise1(lx / 5, seed + 51) - 0.5) * 0.7 : bot;
-    const top = pk ? pk.drop : 0;
-    const pth = pk ? pk.th ?? 0 : 0;
+    const sag = deckSag(plan, lx);
+    const top = pk ? pk.drop + sag + (pk.skew ? pk.skew * clamp((lx - pk.x) / Math.max(1, pk.w), 0, 1) : 0) : sag;
+    const pth = (pk ? pk.th ?? 0 : 0) + sag;
     const Yt = Math.round(c.Y(top)) + inset, Yd = Math.round(c.Y(DECK + pth)), Yb = Math.round(c.Y(bot)), Ys = Math.round(c.Y(sBot)) - inset;
     const PX0 = pk ? Math.round(c.X(pk.x)) : X0, PX1 = pk ? Math.round(c.X(pk.x + pk.w)) : X1;
     const missing = !pk || pk.kind === MISSING;
