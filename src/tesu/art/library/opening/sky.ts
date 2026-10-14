@@ -404,18 +404,18 @@ function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
       const nx = NX[k]!, ny = NY[k]!;
       const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
       const lamB = SUN[0] * nx + SUN[1] * ny + SUN[2] * nz;
-      const deep = clamp(lg[Math.min(gh - 1, Math.floor(gy / G)) * gw + Math.min(gw - 1, Math.floor(gx / G))]! / (Htot * 0.5) + (vnoise(gx / (Htot * 0.12 + 4), gy / (Htot * 0.1 + 4), seed + 47) - 0.5) * 0.18, 0, 1);
+      const deep = clamp(lg[Math.min(gh - 1, Math.floor(gy / G)) * gw + Math.min(gw - 1, Math.floor(gx / G))]! / (Htot * 0.6) + (vnoise(gx / (Htot * 0.12 + 4), gy / (Htot * 0.1 + 4), seed + 47) - 0.5) * 0.18, 0, 1);
       const py = y0 + gy + 0.5;
       const low = clamp(1 - (b.base - py) / (Htot * 0.9), 0, 1);
       // the big masses first (lit upper left, the shade travelling down and right, the base
       // darkest), then each billow's own ball on them: a crisp lit cap over its own soft
       // underside, softer in the shade, where the sky and not the sun lights it
-      let tt = 0.33 - 0.22 * lamG + 0.36 * deep + 0.2 * low * low - 0.22 * lamB * (1 - 0.55 * deep) * (1 - 0.3 * low);
+      let tt = 0.33 - 0.22 * lamG + 0.32 * deep + 0.2 * low * low - 0.22 * lamB * (1 - 0.55 * deep) * (1 - 0.3 * low);
       // the shade a nearer billow's rounded top leaves on the one behind it, just above it (a
       // band a few px deep, never a hairline crack)
       for (let dy = 1; dy <= 4 && gy + dy < h; dy++) {
         const j = own[(gy + dy) * w + gx]!;
-        if (j >= 0 && j !== i && B[j]!.z > b.z + 0.2) { tt += 0.06 * (1 - (dy - 1) / 4) * (1 - 0.6 * low); break; }
+        if (j >= 0 && j !== i && B[j]!.z > b.z + 0.2) { tt += 0.06 * (1 - (dy - 1) / 4) * (1 - 0.6 * low) * (1 - deep); break; }
       }
       // the flat base: its lowest px a step darker
       if (py > b.base - 2.5) tt += 0.07;
