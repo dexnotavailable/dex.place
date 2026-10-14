@@ -141,7 +141,7 @@ function chunkEdge(pts: readonly number[], amp: number, hang: number, keepStart:
         const bi = Math.floor(bp), bf = bp - bi;
         const hA = hash1(bi, seed + 21), hB = hash1(bi + 1, seed + 21);
         const sl = clamp((bf - 0.86) / 0.14, 0, 1);
-        dd += amp * hang * ((hA + (hB - hA) * sl) - 0.45) * 1.7;
+        dd += amp * hang * ((hA + (hB - hA) * sl) - 0.55) * 1.3;
       } else if (Math.abs(nx) > 0.55) {
         // a side: each block steps out or in
         dd += amp * (hash(c.L, c.k, seed + 17) - 0.45) * 1.6;
@@ -224,6 +224,18 @@ function build(p: RockP, seed: number): Built {
       }
       x = gx + 30 + r() * 150;
     }
+    // and spots between them: loose stones fallen against the kerb, alone or in pairs, a few with
+    // a tuft of moss (painted first, so a chunk that overlaps one stands in front of it)
+    const stones: RoadRock[] = [];
+    for (let x = x0 + 8 + r() * 30; x < x1 - 8; x += 26 + r() * 70) {
+      const n = r() < 0.7 ? 1 : 2;
+      for (let k = 0; k < n; k++) {
+        const w = 3 + r() * 5, sx = x + k * (w + 1 + r() * 3);
+        const rise = 2.6 + r() * 3.4;
+        stones.push({ x0: sx, x1: sx + w, rise, foot: rise + 2.5 + w * (0.35 + 0.3 * r()), z: 0.5 + 0.5 * r(), cap: r() < 0.3 ? 1 + r() : 0, seed: Math.floor(r() * 1e6) });
+      }
+    }
+    rocks.unshift(...stones);
     road = { flags, kerbs, rocks };
     // grass on the chunks' moss
     for (const q of rocks) if (q.cap > 0 && veg > 0 && r() < 0.6) plants.push({ kind: "tuft", x: q.x0 + (q.x1 - q.x0) * (0.2 + 0.6 * r()), y: yAt(top, q.x0) + q.rise + 1, r: 2.5 + r() * 3.5, seed: Math.floor(r() * 1e6) });

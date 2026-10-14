@@ -338,9 +338,38 @@ export const pine = definePainter<PineP>("op.pine", {
     // throwing a short shadow on the stone; soil and moss packed between them. So the tree grows
     // out of the rock, never a trunk sliced flat on a line.
     if (!pathPine) {
-      // (the draws the old root loop took, so a pine without roots keeps its arms and masses)
+      // a great pine keeps its round-3 roots (none when the rock paints them: roots 0), drawn the
+      // same way and taking the same draws, so its arms and masses are unchanged
       const nr = 4 + Math.floor(r() * 2);
-      for (let i = 0; i < nr * 4; i++) r();
+      for (let i = 0; i < nr; i++) {
+        const side = i % 2 ? -1 : 1;
+        const sx = side * w0 * (0.2 + 0.25 * r());
+        const len = spread * (0.5 + 0.6 * r());
+        const deep = grip * (0.5 + 0.5 * r());
+        const rp: [number, number][] = [];
+        const over = i === 0;
+        for (let k = 0; k <= 8; k++) {
+          const t = k / 8;
+          const x = sx + side * len * (1 - Math.pow(1 - t, 1.5)) * (over ? 1 : 0.55 + 0.3 * hash1(i, seed + 4));
+          const arch = -Math.sin(t * Math.PI) * w0 * (0.08 + 0.1 * hash1(i, seed + 5));
+          const y = -w0 * 0.05 + arch + (over ? deep * 0.7 * Math.pow(t, 2.6) : t * 1.5) + (vnoise1(t * 4 + i, seed + 3) - 0.5) * 1.2;
+          rp.push([x, y]);
+        }
+        const rw = w0 * (0.36 + 0.16 * r());
+        if (spread <= 0) continue;
+        limb(c, rp, rw, over ? 2 : 3.5, seed + 40 + i, true);
+        const [ex, ey] = rp[rp.length - 1]!;
+        for (let k = 0; k < 6; k += 0.5 / d) b.set(Math.round(c.X(ex + side * k * 0.3)), Math.round(c.Y(ey + k * 0.6)), P.karst[8]!);
+      }
+      for (let x = Math.round(c.X(-w0 * 1.5)); spread > 0 && x < Math.round(c.X(w0 * 1.5)); x++) {
+        const u = c.lx(x + 0.5) / (w0 * 1.5);
+        const top = -w0 * 0.3 * Math.pow(1 - u * u, 1.5) - 1.5 * vnoise1(c.lx(x) / 2, seed + 5);
+        for (let y = Math.round(c.Y(top)); y < Math.round(c.Y(3 + 2 * (1 - u * u))); y++) {
+          const v = (c.ly(y + 0.5) - top) / 5;
+          if (v < 0.4 && vnoise(c.lx(x) / 2.2, c.ly(y) / 2, seed + 6) > 0.45) { b.set(x, y, tone(P.moss, clamp(0.35 + v + (u > 0 ? 0.2 : 0), 0, 1), x, y, 0.35)); continue; }
+          b.set(x, y, tone(P.earth, clamp(0.6 + v * 0.3, 0, 1), x, y, 0.35));
+        }
+      }
     } else {
       const nr = 4 + Math.floor(r() * 2);
       const roots: { pts: [number, number][]; w: number; side: number; drape: boolean }[] = [];
@@ -511,7 +540,9 @@ export const pine = definePainter<PineP>("op.pine", {
       // the arm itself, from the trunk's girth down to a twig, knots along it
       // (round 3: thick where it leaves the trunk, thinning fast then slowly, so it never reads
       // as a tube; knots swell at the old breaks)
-      limb(c, ap, tw(au) * 1.2, 1.8, seed + 80, false, 0.55, [0.18, 0.41, 0.66]);
+      // (round 4, the critic: still "a constant-width tube" where the catch sees its outer half) it
+      // thins steadily along its whole length, still a branch, not a twig, where its hand begins
+      limb(c, ap, tw(au) * 1.25, 2.6, seed + 80, false, 0.95, [0.18, 0.41, 0.66]);
       // its tip turns up into the last mass
       const [tx, ty] = ap[segs]!;
       const prT = H * 0.14 * ps * nextSize();

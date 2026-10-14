@@ -721,6 +721,8 @@ function pagoda(c: PaintCtx, foot: number, w: number, tiers: number, seed: numbe
     fill(-sw / 2, sw / 2, yt, y, (lx, ly) => {
       const u = (lx + sw / 2) / sw, v = (ly - yt) / sh;
       if (u < 0.1 || u > 0.9) return u < 0.1 ? R[4]! : R[6]!;
+      // the eaves' shadow across the top of the wall
+      if (v < 0.2) return u < 0.5 ? R[4]! : R[5]!;
       if (Math.abs(u - 0.5) < 0.16 && v > 0.28 && v < 0.78) return Math.abs(u - 0.5) < 0.03 ? P.gold[3]! : v < 0.4 ? P.gold[0]! : P.gold[1]!;
       if (t > 0 && v > 0.82) return v > 0.92 ? R[6]! : R[3]!;
       return u < 0.3 ? R[1]! : u < 0.7 ? R[2]! : R[3]!;
