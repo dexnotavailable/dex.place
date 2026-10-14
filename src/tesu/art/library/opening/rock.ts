@@ -58,6 +58,39 @@ interface Built {
   outline: number[];
   box: [number, number, number, number];
   plants: Plant[];
+  /** (round 4) A paved road's stones and the rock breaking over its front edge (cap "path"). */
+  road?: Road;
+}
+
+/**
+ * (round 4, Dex: "the stone textures should have spots and chunks that overlap in front of the
+ * paved path") A road over the rock is paved: a course of flagstones whose lit top we see, each its
+ * own length and tone with moss in the odd joint, laid behind a kerb of cut stones of their own
+ * lengths and heights (one sunk, one missing), soil and grass below it. In front of it the rock's
+ * own chunks break up over the road's edge at uneven gaps, alone or in twos and threes, some
+ * rising almost to the walk line, each with its lit rim, moss on its top, a crevice round it and a
+ * shadow down and right on the stones behind: the road runs in and behind the rock, never along a
+ * line on top of it.
+ */
+interface Road {
+  /** Flagstone joints and kerb joints (level-1 x, sorted). */
+  flags: number[];
+  kerbs: number[];
+  /** Rock chunks in front of the road's edge, in paint order (later ones stand in front). */
+  rocks: RoadRock[];
+}
+
+interface RoadRock {
+  x0: number;
+  x1: number;
+  /** Its top's depth below the walk line, and its foot's, px. */
+  rise: number;
+  foot: number;
+  /** 0 back .. 1 forward. */
+  z: number;
+  /** Moss on its top, px (0 bare). */
+  cap: number;
+  seed: number;
 }
 
 interface Plant {
@@ -100,6 +133,15 @@ function chunkEdge(pts: readonly number[], amp: number, hang: number, keepStart:
         // an underside: each column's block hangs to its own depth (deeper the more forward it stands)
         // (centred: some hang lower, some have broken away higher, the outline's mean kept)
         dd += amp * hang * (Math.pow(hash(c.L, c.k, seed + 13), 1.4) - 0.36) * 2.6 * (0.6 + 0.6 * c.z);
+        // (round 4, the critic: "a smooth geometric arch") and inside each column the underside
+        // breaks again into blocks of their own widths, each broken off at its own depth, the step
+        // between two a short slant: a blocky underside like the sketch's, never a drawn arc
+        const bw = 16 + 22 * hash1(Math.floor(ss / 40), seed + 19);
+        const bp = (ss + 30 * vnoise1(ss / 90, seed + 20)) / bw;
+        const bi = Math.floor(bp), bf = bp - bi;
+        const hA = hash1(bi, seed + 21), hB = hash1(bi + 1, seed + 21);
+        const sl = clamp((bf - 0.86) / 0.14, 0, 1);
+        dd += amp * hang * ((hA + (hB - hA) * sl) - 0.55) * 1.3;
       } else if (Math.abs(nx) > 0.55) {
         // a side: each block steps out or in
         dd += amp * (hash(c.L, c.k, seed + 17) - 0.45) * 1.6;
@@ -163,6 +205,41 @@ function build(p: RockP, seed: number): Built {
       }
     }
   }
+  let road: Road | undefined;
+  if ((p.cap ?? "grass") === "path") {
+    const r = rng(seed + 401);
+    const x0 = top[0]!, x1 = top[top.length - 2]!;
+    const flags: number[] = [], kerbs: number[] = [], rocks: RoadRock[] = [];
+    for (let x = x0 - 10; x < x1 + 40; x += 12 + r() * 22) flags.push(x);
+    for (let x = x0 - 6; x < x1 + 50; x += 17 + r() * 30) kerbs.push(x);
+    // the rock in front: groups of one to three chunks, then a gap
+    for (let x = x0 + 14 + r() * 50; x < x1 - 12;) {
+      const n = r() < 0.45 ? 1 : r() < 0.6 ? 2 : 3;
+      let gx = x;
+      for (let k = 0; k < n; k++) {
+        const w = 12 + r() * 22 + (r() < 0.3 ? 10 + r() * 18 : 0);
+        const big = w > 30;
+        rocks.push({ x0: gx, x1: Math.min(x1 - 4, gx + w), rise: big ? 1.2 + r() * 3 : 0.8 + r() * 4, foot: 20 + r() * 22 + (big ? 10 : 0), z: 0.45 + 0.55 * r(), cap: r() < 0.6 ? 1.4 + r() * 2.8 : 0, seed: Math.floor(r() * 1e6) });
+        gx += w * (0.55 + 0.35 * r());
+      }
+      x = gx + 30 + r() * 150;
+    }
+    // and spots between them: loose stones fallen against the kerb, alone or in pairs, a few with
+    // a tuft of moss (painted first, so a chunk that overlaps one stands in front of it)
+    const stones: RoadRock[] = [];
+    for (let x = x0 + 8 + r() * 30; x < x1 - 8; x += 26 + r() * 70) {
+      const n = r() < 0.7 ? 1 : 2;
+      for (let k = 0; k < n; k++) {
+        const w = 3 + r() * 5, sx = x + k * (w + 1 + r() * 3);
+        const rise = 2.6 + r() * 3.4;
+        stones.push({ x0: sx, x1: sx + w, rise, foot: rise + 2.5 + w * (0.35 + 0.3 * r()), z: 0.5 + 0.5 * r(), cap: r() < 0.3 ? 1 + r() : 0, seed: Math.floor(r() * 1e6) });
+      }
+    }
+    rocks.unshift(...stones);
+    road = { flags, kerbs, rocks };
+    // grass on the chunks' moss
+    for (const q of rocks) if (q.cap > 0 && veg > 0 && r() < 0.6) plants.push({ kind: "tuft", x: q.x0 + (q.x1 - q.x0) * (0.2 + 0.6 * r()), y: yAt(top, q.x0) + q.rise + 1, r: 2.5 + r() * 3.5, seed: Math.floor(r() * 1e6) });
+  }
   for (const fd of p.forest ?? []) {
     const r = rng(seed + 131 + Math.round(fd));
     for (let x = top[0]! + 20; x < top[top.length - 2]! - 20; x += 5 + r() * 9) {
@@ -176,12 +253,49 @@ function build(p: RockP, seed: number): Built {
       if (L && Math.abs(L.y - (yAt(top, x) + fy)) < 70) plants.push({ kind: "bush", x, y: L.y + 1, r: rr, seed: sd });
     }
   }
-  return { outline, box, plants };
+  return { outline, box, plants, road };
 }
 
 function builtFor(p: RockP, seed: number): Built {
   return cached(`rock|${seed}|${JSON.stringify(p).length}|${p.forest?.length}|${p.top.length}|${p.top[0]}|${p.top[1]}|${p.bottom.length}|${p.bottom[0]}|${p.rough}|${p.veg}`, () => build(p, seed));
 }
+
+const rwob = (v: number, s: number): number => (vnoise1(v / 7, s) - 0.5) * 1.6 + (vnoise1(v / 2.3, s + 1) - 0.5) * 0.7;
+/** A road rock's top and foot (depth below the walk line) at x; its corners chipped round. */
+function rrTop(q: RoadRock, lx: number): number {
+  const w = Math.max(1, q.x1 - q.x0), e = Math.min(lx - q.x0, q.x1 - lx);
+  const rc = Math.min(4.5, w * 0.3);
+  const corner = e < rc ? (rc - Math.sqrt(Math.max(0, rc * rc - (rc - e) * (rc - e)))) * 1.3 : 0;
+  const u = (lx - q.x0) / w * 2 - 1;
+  return q.rise + rwob(lx, q.seed) + corner - (1 - u * u) * Math.min(1.5, w * 0.04);
+}
+function rrFoot(q: RoadRock, lx: number): number {
+  const w = Math.max(1, q.x1 - q.x0), e = Math.min(lx - q.x0, q.x1 - lx);
+  const rc = Math.min(5, w * 0.3);
+  const corner = e < rc ? (rc - Math.sqrt(Math.max(0, rc * rc - (rc - e) * (rc - e)))) * 1.4 : 0;
+  return q.foot + rwob(lx * 1.3, q.seed + 5) * 1.4 - corner;
+}
+/** The road rock holding (x, depth), the front-most, or null. */
+function inRoadRock(R: Road, lx: number, depth: number): RoadRock | null {
+  let hit: RoadRock | null = null;
+  for (const q of R.rocks) {
+    if (lx < q.x0 || lx > q.x1) continue;
+    if (depth >= rrTop(q, lx) && depth <= rrFoot(q, lx)) hit = q;
+  }
+  return hit;
+}
+/** The joint at or left of x in a sorted list: [its index, it, the next one]. */
+function jointSpan(js: readonly number[], x: number): [number, number, number] {
+  let lo = 0, hi = js.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (js[m]! <= x) lo = m; else hi = m; }
+  return [lo, js[lo]!, js[Math.min(js.length - 1, lo + 1)]!];
+}
+/** One step (or two) darker in the same ramp: a shadow on what is painted. */
+const DARKER = ((): Map<number, number> => {
+  const m = new Map<number, number>();
+  for (const [ramp, k] of [[P.karst, 2], [P.stone, 2], [P.moss, 2], [P.earth, 1], [P.pine, 1]] as const) ramp.forEach((v, i) => m.set(v, ramp[Math.min(ramp.length - 1, i + k)]!));
+  return m;
+})();
 
 export const rock = definePainter<RockP>("op.rock", {
   bounds(p) {
@@ -225,8 +339,36 @@ export function paintRock(c: PaintCtx, p: RockP): void {
           }
           const above = sp.inside(x, y - 1);
           const leftIn = sp.inside(x - 1, y), rightIn = sp.inside(x + 1, y), belowIn = sp.inside(x, y + 1);
+          // (round 4) a paved road: its stones and the rock breaking over its front edge
+          if (inTop && capKind === "path" && B.road) {
+            const R = B.road;
+            const q = inRoadRock(R, lx, depth);
+            if (q) { b.set(x, y, roadRockPx(c, q, lx, depth, x, y)); continue; }
+            const col = roadPx(c, R, lx, depth, x, y, seed);
+            if (col > 0) {
+              // a rock's shadow down and to the right of it, on the stones and the soil
+              const sh = inRoadRock(R, lx - 2.5, depth - 2) || inRoadRock(R, lx - 4, depth - 1);
+              b.set(x, y, sh ? DARKER.get(col) ?? col : col);
+              continue;
+            }
+            if (col < 0) {
+              // below the road: the shadow under its soil, then the rock (a rock's shadow on it too)
+              const under = -col - 1;
+              const sh = !!(inRoadRock(R, lx - 2.5, depth - 2.5) || inRoadRock(R, lx - 4, depth - 1.5));
+              if (under < 3 / Math.max(d, 0.5)) { b.set(x, y, tone(P.earth, 0.82, x, y, 0.3)); continue; }
+              if (under < 8 / Math.max(d, 0.5)) {
+                b.set(x, y, tone(K, clamp(0.7 - under * 0.01 + (p.shade ?? 0) * 0.2 + (sh ? 0.15 : 0), 0, 1), x, y, 0.4));
+                continue;
+              }
+              if (sh) {
+                const F = face(lx, ly, depth, p, seed, d);
+                b.set(x, y, tone(K, clamp(Math.max(F.t + 0.3, 0.72), 0, 1), x, y, 0.12));
+                continue;
+              }
+            }
+          }
           // the lip
-          if (inTop && capKind !== "bare") {
+          if (inTop && capKind !== "bare" && !(capKind === "path" && B.road)) {
             const rich = vnoise1(lx / 70, seed + 6);
             const cl = capH * (0.45 + 0.9 * rich) * (0.75 + 0.5 * vnoise1(lx / 19, seed + 5));
             const hem = cl + (d >= 0.5 ? Math.abs(Math.sin(lx / 2.7 + vnoise1(lx / 9, seed) * 5)) * (1 + 2.5 * rich) : 0);
@@ -279,6 +421,90 @@ export function paintRock(c: PaintCtx, p: RockP): void {
       }
     }
     paintPlants(c, B);
+}
+
+/**
+ * A pixel of the paved road at depth px below the walk line: > 0 a colour; < 0 below the road
+ * (-(depth below its soil) - 1).
+ */
+function roadPx(c: PaintCtx, R: Road, lx: number, depth: number, x: number, y: number, seed: number): number {
+  const d = c.d;
+  const px = 1 / Math.max(d, 0.25);
+  // the flagstones' lit top (a thin strip: we see the road almost edge-on)
+  const surf = 2.4 + 0.9 * vnoise1(lx / 37, seed + 410);
+  const [fi, fa] = jointSpan(R.flags, lx);
+  const fk = hash1(fi, seed + 411);
+  const sunk = fk < 0.18 ? 0.7 : 0;
+  if (depth < surf + sunk) {
+    if (depth < sunk) return 0;
+    if (lx - fa < 0.9 * px && d >= 0.25) return hash1(fi, seed + 412) < 0.35 ? P.moss[4]! : P.stone[5]!;
+    if (depth - sunk < px * 0.9) return fk < 0.5 ? P.stone[0]! : P.stone[1]!;
+    // worn smooth where feet go, a stain here and there
+    const t = 0.2 + 0.18 * fk + 0.25 * ((depth - sunk) / surf) + (vnoise(lx / 6, depth, seed + 413) > 0.7 ? 0.1 : 0);
+    return tone(P.stone, clamp(t, 0, 1), x, y, 0.3);
+  }
+  // the kerb: cut stones of their own lengths and heights, one now and then missing
+  const [ki, ka, kb] = jointSpan(R.kerbs, lx);
+  const kk = hash1(ki, seed + 414);
+  const kH = 3.6 + 2.6 * hash1(ki, seed + 415);
+  const s = depth - surf;
+  const missing = kk < 0.07;
+  if (s < kH && !missing) {
+    const ku = (lx - ka) / Math.max(1, kb - ka);
+    if (lx - ka < 0.9 * px && d >= 0.25) return P.stone[6]!;
+    if (s < px * 0.9) return ku < 0.15 ? P.stone[1]! : P.stone[2]!;
+    if (kH - s < px * 0.9) return P.stone[6]!;
+    // a chipped corner, weathering in streaks, moss where water sits at its foot
+    if (kk > 0.8 && ku > 0.85 && s < 2.5) return P.stone[5]!;
+    if (d >= 0.5 && kH - s < 2.2 && vnoise(lx / 3, s, seed + 416) > 0.62) return P.moss[5]!;
+    let t = 0.4 + 0.16 * kk + 0.1 * (s / kH) + (ku < 0.1 ? -0.12 : ku > 0.8 ? 0.1 : 0);
+    if (vnoise(lx / 2.4, depth / 9, seed + 417) > 0.7) t += 0.1;
+    return tone(P.stone, clamp(t, 0, 1), x, y, 0.2);
+  }
+  // under it: a band of soil and moss, thick in the rich stretches, grass hanging over the rock
+  const rich = vnoise1(lx / 70, seed + 6);
+  const u = s - (missing ? 0 : kH);
+  const m = 1.2 + 4.5 * rich * vnoise1(lx / 13, seed + 418) + (d >= 0.5 ? Math.abs(Math.sin(lx / 2.7 + vnoise1(lx / 9, seed) * 5)) * (0.5 + 2 * rich) : 0);
+  if (u < m) {
+    if (missing && u < 2) return P.earth[4]!;
+    const t = u < 1 && !missing ? 0.55 : 0.32 + 0.45 * (u / m);
+    return u > m - px ? P.moss[6]! : tone(vnoise(lx / 3, u, seed + 419) > 0.55 ? P.moss : P.earth, clamp(t, 0, 1), x, y, 0.3);
+  }
+  return -(u - m) - 1;
+}
+
+/** A pixel of a rock breaking over the road's edge. */
+function roadRockPx(c: PaintCtx, q: RoadRock, lx: number, depth: number, x: number, y: number): number {
+  const d = c.d;
+  const px = 1 / Math.max(d, 0.25);
+  const T = rrTop(q, lx), F = rrFoot(q, lx);
+  const s = depth - T, H = Math.max(1, F - T);
+  const w = Math.max(1, q.x1 - q.x0), u = (lx - q.x0) / w;
+  // its moss cap: a lit top row, the body, a ragged dark hem
+  const hem = q.cap > 0 ? q.cap * (0.6 + 0.7 * vnoise1(lx / 4, q.seed + 3)) : 0;
+  if (s < hem) return s < px ? (u < 0.5 ? P.moss[2]! : P.moss[3]!) : s > hem - px ? P.moss[6]! : u > 0.7 ? P.moss[5]! : P.moss[4]!;
+  // a crevice round its right side and its foot, where it meets the rock behind
+  if (q.x1 - lx < px || F - depth < px) return P.karst[8]!;
+  if (s < hem + px) return q.cap > 0 ? P.karst[5]! : P.karst[1]!;
+  let t = 0.66 - 0.32 * q.z;
+  if (u < 0.12) t -= 0.18;
+  else if (u > 0.55) t += 0.24 * (u - 0.55) / 0.45;
+  t += 0.2 * clamp((s - H * 0.4) / (H * 0.6), 0, 1);
+  // weathering in long streaks down from its top, a cluster of pits, a bedding line part way
+  if (vnoise(lx / 2.6 + q.seed * 0.01, depth / 11, q.seed + 6) > 0.64) t += 0.1;
+  else if (vnoise(lx / 4 + q.seed * 0.01, depth / 16, q.seed + 8) < 0.24) t -= 0.06;
+  if (d >= 0.5 && vnoise(lx / 1.8, depth / 1.8, q.seed + 9) > 0.82 && s > hem + 2) t += 0.16;
+  const bed = H * (0.45 + 0.3 * hash1(3, q.seed)) + rwob(lx, q.seed + 10) * 0.5;
+  if (H > 14 && d >= 0.5 && Math.abs(s - bed) < 0.5 && u > 0.1 + 0.3 * hash1(4, q.seed) && u < 0.95) t = Math.max(t + 0.28, 0.7);
+  // a crack down a wider one, its left lip lit
+  if (w > 16 && d >= 0.5) {
+    const cx = q.x0 + w * (0.35 + 0.35 * hash1(1, q.seed)) + (vnoise1(depth / 3, q.seed + 7) - 0.5) * 1.2;
+    if (s > hem + 1 && s < H * (0.4 + 0.5 * hash1(2, q.seed))) {
+      if (Math.abs(lx - cx) < 0.55) return P.karst[7]!;
+      if (lx - cx > -1.6 && lx - cx < -0.5) t -= 0.1;
+    }
+  }
+  return tone(P.karst, clamp(0.1 + t * 0.85, 0, 1), x, y, 0.1);
 }
 
 function paintPlants(c: PaintCtx, B: Built): void {
@@ -850,17 +1076,20 @@ export const scree = definePainter<ScreeP>("op.scree", {
     // (they overlap down the band where the lake's end falls in front of the lip, x 0..16 at the
     // frames that see it, so no ruled edge of water against rock shows between them)
     const plan: [number, number, number, number, number, number, number][] = [
-      [0.05, 0.62, 0.04, 1.25, -0.1, 0.5, 0],
-      [-0.12, 0.28, 0.22, 0.85, 0.06, 0.66, 0.04],
-      [0.32, 0.95, 0.27, 0.9, 0.2, 0.62, 0.06],
-      [-0.06, 0.55, 0.48, 1.15, 0.05, 0.84, 0.08],
-      [0.5, 1.08, 0.66, 1.2, -0.08, 0.8, 0.12],
-      [-0.2, 0.18, 0.7, 0.95, -0.1, 0.9, 0.1],
-      [-0.14, 0.34, 0.92, 0.9, 0.08, 0.92, 0.14],
+      // (round 4, the critic's "scree pillows": blocks of one size and value, each a rounded box)
+      // very different heights, one slab fallen hard aslant, one standing tall, the nearest the
+      // darkest with the strongest contrast; blockier breaks
+      [0.05, 0.62, 0.04, 1.5, -0.1, 0.45, 0],
+      [-0.12, 0.28, 0.22, 0.55, 0.06, 0.66, 0.06],
+      [0.32, 0.95, 0.27, 1.05, 0.36, 0.6, 0.08],
+      [-0.06, 0.4, 0.48, 1.35, 0.05, 0.84, 0.12],
+      [0.42, 1.08, 0.62, 0.6, -0.08, 0.8, 0.16],
+      [-0.2, 0.12, 0.7, 0.8, -0.18, 0.9, 0.2],
+      [-0.14, 0.42, 0.92, 0.45, 0.08, 0.92, 0.26],
     ];
     const ks: LimeChunk[] = plan.map(([a, q, bs, hs, tl, z, sh], i) => {
       const base = D * bs, x0 = W * a + (r() - 0.5) * 6, x1 = W * q + (r() - 0.5) * 6;
-      return { x0, x1, top: base - H * hs * (0.85 + 0.3 * r()) - Math.max(0, -tl) * (q - a) * W, foot: base + 3, tilt: tl, z, shade: sh, cap: 1.5 + r() * 2.5, water: base, seed: seed + 100 + i * 17 };
+      return { x0, x1, top: base - H * hs * (0.85 + 0.3 * r()) - Math.max(0, -tl) * (q - a) * W, foot: base + 3, tilt: tl, z, shade: sh, cap: 1.5 + r() * 2.5, water: base, round: 0.45, seed: seed + 100 + i * 17 };
     });
     // stones half sunk off the west sides, in the open water
     for (const [a, bs, sw, sh] of [[-0.3, 0.08, 13, 5], [-0.27, 0.36, 9, 4], [-0.36, 0.84, 16, 6]] as const) {
@@ -882,10 +1111,12 @@ export const scree = definePainter<ScreeP>("op.scree", {
         const row = Math.floor(ly);
         for (let x = X0; x < X1; x++) {
           const lx = LX(c, x);
-          // ripples: the mirror image shifts a little row by row and breaks into dashes lower down
-          const sx = lx + (vnoise1(row * 0.7, seed + 30) - 0.5) * Math.min(3, dn * 0.25);
+          // (round 4) one soft mirrored copy: the rows sway together in a slow wave, a ripple line
+          // of water across it here and there, dissolving in long runs near its end
+          const sx = lx + Math.round((vnoise1(dn / 5.5, seed + 30) - 0.5) * 2 * Math.min(2, 0.15 + dn / 14));
           if (!inChunk(k, sx, my)) continue;
-          if (vnoise(lx / 6 + hash1(row, seed + 31) * 30, ly * 0.9, seed + 32) < dn / reach * 0.75 - 0.08) continue;
+          if (row > 1 && hash1(row, seed + 31) < 0.05 + 0.25 * dn / reach && hash1(Math.floor((lx + 40 * hash1(row, seed + 33)) / 22), seed + row) < 0.8) continue;
+          if (dn / reach > 0.55 && hash1(Math.floor((lx + 30 * hash1(Math.floor(dn / 3), seed + 34)) / 20) * 7 + Math.floor(dn / 3), seed + 32) < (dn / reach - 0.55) * 1.8) continue;
           const T = chunkTop(k, sx), s = my - T;
           const col = dn < 1 ? P.karst[8]! : s < (k.cap ?? 0) ? P.moss[6]! : s < (k.cap ?? 0) + 2 ? P.karst[5]! : dn < 3.5 ? P.karst[7]! : P.karst[6]!;
           b.set(x, y, col);

@@ -248,9 +248,26 @@ export const wall = definePainter<WallP>("op.wall", {
   },
   paint(c, p) {
     const lip = lipOf(p);
+    // (round 4, the critic: "a 65 px column with a straight left edge" at the catch's right edge)
+    // its west end breaks back up the face block by block, each block's corner stepping in or
+    // out by its own amount at its own height, so the wall ends in chunks, never a ruled column
+    const west: number[] = [];
+    {
+      const r = rng(c.seed + 77);
+      const ys: number[] = [];
+      for (let yy = lip[1]! + 34 + r() * 24; yy < Math.min(p.h - 20, lip[1]! + 900); yy += 18 + r() * 44) ys.push(yy);
+      let x = -14;
+      for (let i = ys.length - 1; i >= 0; i--) {
+        const nx = -26 + 22 * r();
+        west.push(x, ys[i]! + 2, nx, ys[i]!);
+        x = nx;
+      }
+      // (the top block straight up under the lip's corner)
+      west.push(x, lip[1]! + 30);
+    }
     const rp: RockP = {
       top: lip,
-      bottom: [p.w + 20, lip[lip.length - 1]! + 30, p.w + 10, p.h, -10, p.h, -20, lip[1]! + 30],
+      bottom: [p.w + 20, lip[lip.length - 1]! + 30, p.w + 10, p.h, -10, p.h, ...west, -20, lip[1]! + 30],
       cap: "grass", capH: 7, rough: 8, teeth: 0, veg: p.veg ?? 0.8, shade: 0.1,
       col: p.col ?? 16, bed: p.bed ?? 110, fadeY: p.fadeY ?? p.h * 0.6, fadeH: p.fadeH ?? p.h * 0.2,
     };

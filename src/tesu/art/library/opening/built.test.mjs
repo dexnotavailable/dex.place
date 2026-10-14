@@ -10,10 +10,14 @@ import "./index.ts";
 import { painter, ctxFor } from "../../painter.ts";
 import { IdxBuf } from "../../raster.ts";
 import { jettyPlan } from "./jetty.ts";
+import { P } from "../../palette.ts";
 
 const WEST = [-384, 9.6, -38.4, 24, 96, 72, 384, 81.6];
 const EAST = [1100, 81.6, 1426, 67.2, 1570, 43.4, 1580, 0];
 const JETTY = { w: 1580, water: 57.6, west: WEST, east: EAST, gap: [1364, 1486] };
+// a stretch of Gate Road's band: its top the walk line, climbing to the east
+const ROAD_TOP = [0, 0, 300, -30, 700, -70, 1000, -80];
+const ROAD_BOTTOM = [1000, 60, 700, 140, 300, 160, 0, 70];
 
 const CASES = [
   ["op.jetty", { w: 900, water: 58 }],
@@ -45,6 +49,8 @@ const CASES = [
   ["op.pine", { h: 260, dir: 1 }],
   ["op.islet", { kind: "crag", w: 130, h: 70, dir: -1 }],
   ["op.islet", { kind: "piles", w: 170, h: 12 }],
+  // round 4: a paved road over the rock, its own rock breaking up over its front edge
+  ["op.rock", { top: ROAD_TOP, bottom: ROAD_BOTTOM, cap: "path", capH: 9, rough: 12, teeth: 0.7, veg: 0.7 }],
 ];
 const LEVELS = [2, 1, 0.5, 0.25, 0.125];
 
@@ -195,4 +201,25 @@ test("op.scree: every block paints its own reflection below its waterline (the l
   let below = 0;
   for (let x = -40; x <= -30; x++) for (let y = 9; y <= 10; y++) if (buf.get(x, y)) below++;
   assert.ok(below > 6, `no reflection under the stone west of the chain (${below} px)`);
+});
+
+// (round 4, Dex: "the stone textures should have spots and chunks that overlap in front of the
+// paved path") the road is paved, and the rock breaks up over its front edge without ever rising
+// above the walk line
+test("op.rock path: a paved road, the rock's chunks breaking over its front edge, none above the walk line", () => {
+  const p = { top: ROAD_TOP, bottom: ROAD_BOTTOM, cap: "path", capH: 9, rough: 12, teeth: 0.7, veg: 0 };
+  const buf = paintBox("op.rock", p, 1, -40, -120, 1080, 300, 4242);
+  const yAt = (x) => { for (let i = 0; i + 3 < ROAD_TOP.length; i += 2) { const [x0, y0, x1, y1] = ROAD_TOP.slice(i, i + 4); if (x >= x0 && x <= x1) return y0 + ((x - x0) / (x1 - x0)) * (y1 - y0); } return 0; };
+  const stone = new Set(P.stone), karst = new Set(P.karst);
+  let paved = 0, broken = 0, above = 0, n = 0;
+  for (let x = 20; x < 980; x++) {
+    const y = yAt(x + 0.5);
+    n++;
+    if (stone.has(buf.get(x, Math.floor(y + 1.5)))) paved++;
+    if (karst.has(buf.get(x, Math.floor(y + 3.5)))) broken++;
+    for (let yy = Math.floor(y) - 6; yy < Math.floor(y) - 1; yy++) if (buf.get(x, yy)) above++;
+  }
+  assert.ok(paved / n > 0.45, `the road's top is stone in only ${paved} of ${n} columns`);
+  assert.ok(broken / n > 0.08 && broken / n < 0.6, `rock breaks over the road's edge in ${broken} of ${n} columns (want some, not all)`);
+  assert.equal(above, 0, `${above} px of road or rock painted above the walk line`);
 });
