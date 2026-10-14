@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-14T17:08:45.230Z (15/10/2026, 00:08:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-14T18:08:46.454Z (15/10/2026, 01:08:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,8 +12,13 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_8865cc19-db1 — last activity 37 min ago
-10 agents: 8 done, 2 running or stopped mid-way, 0 failed.
+### wf_615041c0-3f2 — last activity 8 min ago
+1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
+
+- **inventory** (running)
+
+### wf_8865cc19-db1 — last activity 24 min ago
+10 agents: 9 done, 1 running or stopped mid-way, 0 failed.
 
 - **sky:r4** (done): The sky and atmosphere lane is done and committed on claude/v2-art-kagami-p1 in worktree D:\Dex\Temp\dexplace-v2\art-wt\kagami\p1. The four things Dex asked for now show in all eight key frames: one family of clouds with real volume, a clear sun, fog that gives depth, and the Walker moved further back among the clouds. - **Clouds.** All clouds now come from one painter in sky.ts: heaps of overlapping billows lit by t
 - **patch:r4** (done): I patched every spot in Dex's five crops, added the stone chunks and loose stones breaking over the front edge of the paved path, and fixed most of the round-3 critic's cheap or primitive spots that sit in my lane. The work is in two commits on claude/v2-art-kagami-p2 (a7a5e082, 59a1a378). Worktree: D:\Dex\Temp\dexplace-v2\art-wt\kagami\p2. Dex's crops: - **Crop 18, the trunk chopped off at the cliff top.** The path 
@@ -23,10 +28,10 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **patch:r5** (done): I fixed most of the cut-offs, stuck-on pieces and cheap spots Dex and the round-4 critic named. The teal triangle is gone in the frames it was flagged in, rock chunks now break over the road's edge, and the pine roots grip a rock. Three items are left for the orchestrator (listed at the end). Everything is in two commits on claude/v2-art-kagami-p2 (e7cd200d, then 186c6e8f); nothing pushed. Cut-offs and wrong layering
 - **integrate:r5** (done): 
 - **critic:r5** (done): 
-- **sky:r6** (running)
+- **sky:r6** (done): The sky and atmosphere lane for round 6 is done and committed on claude/v2-art-kagami-p1. There are two commits: checkpoint 5c6bd961 and final 11382678, both based on 1ad17c7b. Nothing was pushed. Every item the critic raised for this lane (S1 to S9) has a change behind it. What changed, in plain terms: - **One cloud family with volume (S4, S5).** I rewrote the cloud painter (op.cloud in sky.ts). Every cloud is now b
 - **patch:r6** (running)
 
-### wf_f62de466-2f9 — last activity 348 min ago
+### wf_f62de466-2f9 — last activity 408 min ago
 21 agents: 20 done, 1 running or stopped mid-way, 0 failed.
 
 - **critic:r1** (done): 
@@ -44,13 +49,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **critic:r3** (done): 
 - **director:plan:r4** (running)
 
-### wf_02fb83bb-9c9 — last activity 3455 min ago
+### wf_02fb83bb-9c9 — last activity 3515 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v4** (done): I wrote GDK v4 and every DELTA-v4 item is in it. MAP.svg and the builder map both parse as XML, and I rendered both with headless Edge and looked at them; the leak scan passes. The one thing I could not do is collect new reference images: the indoors-grand, indoors-narrow and outdoors-narrow gaps ar
 - **critic:v4** (done): verdict ready · GDK v4 is ready for Dex. Every DELTA-v4 item is done, and no locked canon line is contradicted. That covers the press-started download, the PC-only warning, Yuki downloading dexClient, no dex.place champion, deep links that skip the intro, the URL scheme, the 3-minute reload, the talisman and the scroll, the music, the hunt prize and stall hints with no randomness, F to interact, and state A left open. I regenerated 
 
-### wf_674119c5-6eb — last activity 3483 min ago
+### wf_674119c5-6eb — last activity 3543 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v1** (done): I've written both files into `D:\Dex\Temp\dexplace-canon-20261012\gdk\v1\`: `GDK.md`, the full design kit in the brief's section order 0 to 10 plus appendices A to E, and `MAP.svg`. The map is valid XML. I rendered it to PNG with headless Edge and checked it by eye: the です shape reads at full size, 
