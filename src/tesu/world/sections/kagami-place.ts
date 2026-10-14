@@ -42,19 +42,26 @@ export function seedNow(b: WorldBuilder): number {
  * that plane's play-zoom density (280 px tall), never redrawn. Its motion keeps the render's
  * ground step (1.912 px a frame at that size) so its planted feet stay planted; it starts right
  * of the sun (frame 0.2, 0.11) in every key frame and walks east, away from it.
+ *
+ * Round 5 (the sky lane): 60 far px further east (x 6000 -> 6750), so with the mid islets moved
+ * (kagami-backdrop.ts P2) its feet land in open fog in every key frame, no islet's crown at them
+ * and no massif's edge along a leg. Its haze thickens down its legs to the water in one dithered
+ * falloff (`fadeFoot`), the fog it wades in, instead of the fog banks' strata across them.
  */
 export const WALKER = {
   plane: "far" as const,
-  x: 6000,
+  x: 6750,
   /** (its hooves stand 8.06 art px under the far waterline, as the render's 16.13 at full size) */
   y: LAKE_Y + 8.06 / PLANES.far.rate,
   frames: 48,
   fps: 2.4,
-  path: [6000, 6000 + 18750] as [number, number],
+  path: [6750, 6750 + 18750] as [number, number],
   speed: (1.912143386161926 * 2.4) / PLANES.far.rate,
   stepMove: true,
   /** Its own haze: further off than the far karst's ghosts would leave it, it still reads as the giant. */
   fade: 0.4,
+  /** Its haze thickening down its legs to the water: over the lower share of its height, to this haze. */
+  fadeFoot: [0.46, 0.8] as [number, number],
   /** The set's scale against its full-size render (the wake painter follows it). */
   scale: 0.5,
   /** Its frame set: 280 px tall at play zoom on P1. */

@@ -84,7 +84,7 @@ export function kagami(b: WorldBuilder): void {
   b.sprite({
     id: "walker-kagami", plane: WALKER.plane, kind: "frames", x: WALKER.x, y: WALKER.y,
     p: { sets: WALKER.sets.map((s) => ({ ...s })), reach: 400 },
-    frames: WALKER.frames, fps: WALKER.fps, path: [...WALKER.path], speed: WALKER.speed, stepMove: WALKER.stepMove, fade: WALKER.fade,
+    frames: WALKER.frames, fps: WALKER.fps, path: [...WALKER.path], speed: WALKER.speed, stepMove: WALKER.stepMove, fade: WALKER.fade, fadeFoot: [...WALKER.fadeFoot],
   });
   // what follows it on the water (kagami-backdrop.ts; explicit seeds only)
   kagamiWade(b);

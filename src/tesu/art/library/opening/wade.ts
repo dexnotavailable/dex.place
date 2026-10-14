@@ -504,7 +504,7 @@ export const wade = definePainter<WadeP>("op.wade", {
 });
 
 /** What the Walker's placement needs to follow it: its plane, motion, size and haze (kagami-place.ts WALKER). */
-export interface WalkerMotion { plane: PlaneId; x: number; y: number; frames: number; fps: number; path: readonly [number, number]; speed: number; stepMove: boolean; scale: number; fade: number }
+export interface WalkerMotion { plane: PlaneId; x: number; y: number; frames: number; fps: number; path: readonly [number, number]; speed: number; stepMove: boolean; scale: number; fade: number; fadeFoot?: readonly [number, number] }
 
 /**
  * Kagami's wading contact as sprites following the Walker (kagami-backdrop.ts kagamiWade): the
@@ -513,7 +513,10 @@ export interface WalkerMotion { plane: PlaneId; x: number; y: number; frames: nu
 export function wadeSprites(b: WorldBuilder, w: WalkerMotion, seed: (n: number) => number): void {
   const sub = 4;
   // (far off, the fog banks lie round its legs: no mist lobes of its own)
-  b.sprite({ id: "walker-wade", plane: w.plane, kind: "op.wade", x: w.x, y: w.y, p: { sub, scale: w.scale, mist: w.scale >= 1 }, frames: STRIDE * sub, fps: w.fps * sub, path: [w.path[0], w.path[1]], speed: w.speed, stepMove: w.stepMove, fade: w.fade, seed: seed(1) });
+  // (round 5: a step deeper in the haze than the Walker's body, a step clearer than its legs at the
+  // water, so the wet shins and the pale disturbance at each leg still read through the fog)
+  const fade = w.fadeFoot ? w.fade + (w.fadeFoot[1] - w.fade) * 0.55 : w.fade;
+  b.sprite({ id: "walker-wade", plane: w.plane, kind: "op.wade", x: w.x, y: w.y, p: { sub, scale: w.scale, mist: w.scale >= 1 }, frames: STRIDE * sub, fps: w.fps * sub, path: [w.path[0], w.path[1]], speed: w.speed, stepMove: w.stepMove, fade, seed: seed(1) });
   // (round 4: the clump of cloud pillows wrapped round its body is gone; the low cloud deck it
   // wades through is the sky's own cloud family, kagami-backdrop.ts)
 }

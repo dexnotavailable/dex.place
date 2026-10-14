@@ -34,12 +34,18 @@ const bay = (x: number, y: number, k: number): number => bayer4(Math.floor(x / k
 export interface CloudP {
   /**
    * One cloud family (Dex, round 4: "shouldn't have like 4 different types or shapes"). Every
-   * cloud is a heap of billows lit by the one sun: `cumulus` is one heap with towers; `deck` is
-   * a band of small flattened heaps lying low in the sky (the stratocumulus under the big clouds
-   * in Dex's reference), the same billows and the same light. The older kinds `stratus` and
-   * `field` paint a deck.
+   * cloud is built of HEADS of billows lit by the one sun, the same light and the same ramp; its
+   * members differ only in how the heads are gathered (round 5, the critic's S9: vary the members,
+   * never one lens repeated):
+   * - `cumulus`: a few big heads of very different sizes, the tallest left of the middle toward
+   *   the sun, a long lower shoulder downwind, a small head upwind;
+   * - `tower`: one tall narrow head over a couple of small ones at its foot;
+   * - `deck`: a broken band of small flattened heaps low in the sky (stratocumulus);
+   * - `wisp`: two to four thin torn strands of flattened billows at slightly different heights,
+   *   gaps of clear air between them.
+   * The older kinds `stratus` and `field` paint a deck.
    */
-  kind?: "cumulus" | "deck" | "stratus" | "field";
+  kind?: "cumulus" | "tower" | "deck" | "wisp" | "stratus" | "field";
   /** Width and height of the cloud, px of its plane; anchor at the middle of its base. */
   w: number;
   h: number;
@@ -59,61 +65,109 @@ export interface CloudP {
 }
 
 /**
- * A billow: a ball of cloud seen side-on, [centre, radius, height over width], its depth (the
- * lower billows of a heap stand in front of the ones above them), the base it is cut off at, and
- * a wobble seed (no billow is a compass circle).
+ * A billow: a ball of cloud seen side-on, [centre, radius, height over width], the head it
+ * belongs to, its depth within the head (the lower billows stand in front of the ones above
+ * them), the base it is cut off at, a wobble seed (no billow is a compass circle), and whether it
+ * is one of the head's big ones (only those keep a crisp edge inside the cloud).
  */
-interface Billow { x: number; y: number; r: number; k: number; z: number; base: number; s: number }
+interface Billow { x: number; y: number; r: number; k: number; head: number; z: number; base: number; s: number; big: boolean }
 
-/** One heap of a cloud: its middle, size, how much it towers and where its base lies (y, negative up). */
-interface Heap { cx: number; w: number; h: number; tower: number; base: number; flat: number }
+/**
+ * One head of a cloud: its middle, size, how much it towers, where its base lies (y, negative up),
+ * its depth among the heads (bigger: in front) and how flat its billows are.
+ */
+interface Head { cx: number; w: number; h: number; tower: number; base: number; z: number; flat: number }
 
-function heapsOf(p: CloudP, seed: number): Heap[] {
-  const deck = p.kind === "deck" || p.kind === "stratus" || p.kind === "field";
-  const tower = clamp(p.tower ?? (p.low ? 0.35 : deck ? 0.4 : 0.75), 0, 1);
-  if (!deck) return [{ cx: 0, w: p.w, h: p.h, tower, base: 0, flat: 0.9 }];
-  // a deck: heaps of different widths and heights along a band, a gap between some, others
-  // overlapping, their bases at slightly different heights (never one ruled line)
+const isDeck = (p: CloudP): boolean => p.kind === "deck" || p.kind === "stratus" || p.kind === "field";
+
+function headsOf(p: CloudP, seed: number): Head[] {
   const r = rng(seed + 7);
-  const n = Math.max(2, p.heaps ?? Math.round(p.w / (p.h * 2.8)));
-  const wt: number[] = [];
-  for (let i = 0; i < n; i++) wt.push(0.45 + r() * 1.1 + (i === Math.floor(n * 0.4) ? 0.6 : 0));
-  const gaps: number[] = [];
-  for (let i = 0; i < n - 1; i++) gaps.push(r() < 0.45 ? -0.18 - 0.12 * r() : 0.04 + 0.28 * r());
-  const sum = wt.reduce((a, b) => a + b, 0) + gaps.reduce((a, b) => a + b, 0) * 0.6;
-  const unit = p.w / sum;
-  const out: Heap[] = [];
-  let x = -p.w / 2;
-  for (let i = 0; i < n; i++) {
-    const w = wt[i]! * unit;
-    const hh = p.h * (0.62 + 0.38 * r()) * clamp(0.6 + wt[i]! * 0.3, 0.6, 1);
-    out.push({ cx: x + w / 2, w, h: hh, tower: clamp(tower + (r() - 0.5) * 0.3, 0, 1), base: -p.h * 0.16 * r(), flat: 0.8 + 0.1 * r() });
-    x += w + (gaps[i] ?? 0) * unit * 0.6;
+  const tower = clamp(p.tower ?? (p.low ? 0.35 : isDeck(p) ? 0.4 : p.kind === "tower" ? 1 : 0.75), 0, 1);
+  const W = p.w, HH = p.h;
+  if (p.kind === "wisp") {
+    // thin strands torn apart by the wind, overlapping one another at different heights (layers
+    // of stratus shredding), each of its own length and thickness, the ends frayed into scraps
+    const n = 3 + Math.floor(r() * 2);
+    const out: Head[] = [];
+    for (let i = 0; i < n; i++) {
+      const w = W * (0.3 + 0.3 * r());
+      const u = n > 1 ? i / (n - 1) : 0.5;
+      const cx = -W / 2 + w / 2 + (W - w) * clamp(u + (r() - 0.5) * 0.25, 0, 1);
+      out.push({ cx, w, h: HH * (0.5 + 0.5 * r()), tower: 0.1 + 0.25 * r(), base: -HH * (0.1 + 1.3 * r()), z: r() * 0.6, flat: 0.42 + 0.1 * r() });
+    }
+    return out;
   }
+  if (isDeck(p)) {
+    // a deck: heaps of different widths and heights along a band, a gap between some, others
+    // overlapping, their bases at slightly different heights (never one ruled line)
+    const n = Math.max(2, p.heaps ?? Math.round(W / (HH * 2.8)));
+    const wt: number[] = [];
+    for (let i = 0; i < n; i++) wt.push(0.45 + r() * 1.1 + (i === Math.floor(n * 0.4) ? 0.6 : 0));
+    const gaps: number[] = [];
+    // (mostly touching or overlapping, a gap of clear air here and there: a broken band, never a
+    // dotted line of lenses)
+    for (let i = 0; i < n - 1; i++) gaps.push(r() < 0.7 ? -0.22 - 0.14 * r() : 0.04 + 0.2 * r());
+    const sum = wt.reduce((a, b) => a + b, 0) + gaps.reduce((a, b) => a + b, 0) * 0.6;
+    const unit = W / sum;
+    const out: Head[] = [];
+    let x = -W / 2;
+    for (let i = 0; i < n; i++) {
+      const w = wt[i]! * unit;
+      const hh = HH * (0.62 + 0.38 * r()) * clamp(0.6 + wt[i]! * 0.3, 0.6, 1);
+      out.push({ cx: x + w / 2, w, h: hh, tower: clamp(tower + (r() - 0.5) * 0.3, 0, 1), base: -HH * 0.16 * r(), z: r() * 2, flat: 0.8 + 0.1 * r() });
+      x += w + (gaps[i] ?? 0) * unit * 0.6;
+    }
+    return out;
+  }
+  // a heap: a few big heads of very different sizes, never a row of equal ones
+  const aspect = W / HH;
+  const out: Head[] = [];
+  // the main head (the tower): left of the middle, toward the sun; a narrow cloud is mostly it
+  const mw = clamp(0.2 + 0.5 / aspect, 0.3, 0.82) * W * (p.kind === "tower" ? 0.85 : 1);
+  const mcx = -W / 2 + mw / 2 + (W - mw) * (0.1 + 0.22 * r());
+  out.push({ cx: mcx, w: mw, h: HH, tower, base: 0, z: 0, flat: 0.95 });
+  // downwind (east): a long lower shoulder of one to three heads stepping down, each a little in
+  // front of the one before it
+  let right = mcx + mw * (0.36 + 0.08 * r());
+  for (let k = 0; k < 3 && right < W / 2 - W * 0.08; k++) {
+    const hw = W * (0.21 + 0.14 * r()) * (p.kind === "tower" ? 0.7 : 1);
+    const cx = Math.min(W / 2 - hw / 2, right + hw * (0.12 + 0.22 * r()));
+    const hh = HH * (0.62 - 0.1 * k) * (0.8 + 0.3 * r()) * (p.kind === "tower" ? 0.5 : 0.72 + 0.28 * (1 - tower));
+    out.push({ cx, w: hw, h: hh, tower: tower * 0.5, base: -HH * 0.03 * r(), z: 1 + k * 0.6, flat: 0.9 });
+    right = cx + hw * (0.3 + 0.12 * r());
+  }
+  // upwind: a smaller head low on the sun's side, in front of the tower's foot
+  if (mcx - mw / 2 > -W / 2 + W * 0.04 || aspect > 1.5) {
+    const hw = W * (0.15 + 0.09 * r());
+    const cx = Math.max(-W / 2 + hw / 2, mcx - mw * 0.4 - hw * 0.12);
+    out.push({ cx, w: hw, h: HH * (0.3 + 0.16 * r()), tower: 0.35, base: 0, z: 1.4, flat: 0.88 });
+  }
+  // a low head in front of the middle, where the tower meets its shoulder (the lower billows of
+  // Dex's reference stand in front of the tower's foot, lit along their tops)
+  if (aspect > 1.7) out.push({ cx: mcx + mw * (0.22 + 0.2 * r()), w: W * (0.15 + 0.08 * r()), h: HH * (0.2 + 0.1 * r()), tower: 0.2, base: 0, z: 2.4, flat: 0.86 });
   return out;
 }
 
-/** A heap's outline: the height of its top over its base at x (px, positive up). */
-function profileOf(H: Heap, r: () => number): (x: number) => number {
-  // a few domed towers of very different sizes (the greatest anywhere from left of the middle to
-  // a little right of it), over a row of lower rounded domes of their own heights and widths
-  // across the heap, all on one low body: never a triangle, a level plateau or a long flat tail
-  const nT = 1 + Math.round(H.tower * 1.6 + r() * 0.9);
+/** A head's outline: the height of its top over its base at x (px, positive up). */
+function profileOf(H: Head, r: () => number): (x: number) => number {
+  // a few domed towers of very different sizes over a row of lower rounded domes, all on one low
+  // body: never a triangle, a level plateau or a long flat tail
+  const nT = 1 + Math.round(H.tower * 1.4 + r() * 0.8);
   const towers: [number, number, number][] = [];
   for (let i = 0; i < nT; i++) {
     const big = i === 0;
     towers.push([
-      H.cx + H.w * (big ? -0.26 + 0.4 * r() : (r() < 0.6 ? 0.08 + 0.3 * r() : -0.4 + 0.18 * r())),
-      H.w * (big ? 0.13 + 0.06 * r() : 0.07 + 0.08 * r()),
-      H.h * (big ? 0.62 + 0.38 * H.tower : (0.38 + 0.3 * r()) * (0.5 + 0.5 * H.tower)),
+      H.cx + H.w * (big ? -0.12 + 0.24 * r() : (r() < 0.6 ? 0.08 + 0.26 * r() : -0.36 + 0.16 * r())),
+      H.w * (big ? 0.2 + 0.08 * r() : 0.1 + 0.1 * r()),
+      H.h * (big ? 1 : (0.5 + 0.3 * r()) * (0.6 + 0.4 * H.tower)),
     ]);
   }
-  const nD = 2 + Math.round((H.w / H.h) * 0.45 + r() * 1.5);
+  const nD = 2 + Math.round(r() * 1.5);
   for (let i = 0; i < nD; i++) {
     const u = -0.8 + (1.6 * (i + 0.2 + 0.6 * r())) / nD;
-    towers.push([H.cx + (u * H.w) / 2, H.w * (0.6 / nD) * (0.75 + 0.6 * r()), H.h * (0.34 + 0.36 * r()) * (1.1 - 0.4 * Math.abs(u))]);
+    towers.push([H.cx + (u * H.w) / 2, H.w * (0.5 / nD) * (0.75 + 0.6 * r()), H.h * (0.4 + 0.3 * r()) * (1.1 - 0.5 * Math.abs(u))]);
   }
-  const bodyH = H.h * (0.18 + 0.1 * (1 - H.tower)) * (0.85 + 0.3 * r());
+  const bodyH = H.h * (0.22 + 0.1 * (1 - H.tower)) * (0.85 + 0.3 * r());
   const s = Math.floor(r() * 1e4);
   return (x: number): number => {
     const u = (x - H.cx) / (H.w / 2);
@@ -123,7 +177,7 @@ function profileOf(H: Heap, r: () => number): (x: number) => number {
     let t = bodyH * env * (0.85 + 0.3 * vnoise1(x / (H.w * 0.18), s));
     for (const [tx, hw, th] of towers) {
       const v = (x - tx) / hw;
-      if (Math.abs(v) < 1) t = Math.max(t, th * Math.pow(1 - v * v, 0.38) * Math.pow(env, 0.25));
+      if (Math.abs(v) < 1) t = Math.max(t, th * Math.pow(1 - v * v, 0.42) * Math.pow(env, 0.3));
     }
     return t;
   };
@@ -133,23 +187,25 @@ function profileOf(H: Heap, r: () => number): (x: number) => number {
 const cloudReach = (p: CloudP): number => p.w * 0.6 + p.h * 0.5;
 
 /** The billows of a cloud (in its own level-1 px, y negative up), built once per cloud. */
-function billowsOf(p: CloudP, seed: number): Billow[] {
-  return cached(`cb3|${seed}|${p.kind ?? ""}|${p.w}|${p.h}|${p.tower ?? ""}|${p.low ? 1 : 0}|${p.heaps ?? ""}`, () => {
+function billowsOf(p: CloudP, seed: number): { B: Billow[]; H: Head[] } {
+  return cached(`cb5|${seed}|${p.kind ?? ""}|${p.w}|${p.h}|${p.tower ?? ""}|${p.low ? 1 : 0}|${p.heaps ?? ""}`, () => {
     const r = rng(seed + 5);
     const out: Billow[] = [];
-    heapsOf(p, seed).forEach((H, hi) => {
+    const heads = headsOf(p, seed);
+    heads.forEach((H, hi) => {
       const top = profileOf(H, r);
-      // (a small heap has fewer, rounder billows: never a speckle of tiny ones)
-      const minR = Math.max(3.2, H.h * 0.07);
-      const sF = clamp(1.6 - H.h / 150, 1, 1.5);
-      const add = (x: number, y: number, rad: number, front = 0): Billow => {
-        const b = { x, y, r: Math.max(minR * 0.6, rad), k: H.flat * (0.86 + 0.2 * r()), z: ((y - H.base) / Math.max(1, H.h)) * 3 + r() * 0.45 + front + hi * 0.07, base: H.base, s: Math.floor(r() * 997) };
+      const thin = H.flat < 0.6;
+      // (a small head has fewer, rounder billows: never a speckle of tiny ones)
+      const minR = Math.max(thin ? 2.4 : 3.2, H.h * (thin ? 0.12 : 0.06));
+      const add = (x: number, y: number, rad: number, z: number, big = false): Billow => {
+        const b = { x, y, r: Math.max(minR * 0.6, rad), k: H.flat * (0.86 + 0.2 * r()), head: hi, z, base: H.base, s: Math.floor(r() * 997), big };
         out.push(b);
         return b;
       };
+      const zOf = (y: number): number => ((y - H.base) / Math.max(1, H.h)) * 3 + r() * 0.45;
       // the outline: billows walked along it (by its length, so the towers' steep flanks carry as
-      // many as their tops), each sitting just inside it; sizes very different (a few great,
-      // more middling, many small), never bigger than the height under them allows
+      // many as their tops), each sitting just inside it; sizes varying four to one and more (a
+      // few great, more middling, many small), never bigger than the height under them allows
       const pts: [number, number][] = [];
       for (let x = H.cx - H.w / 2; x <= H.cx + H.w / 2; x += 1) pts.push([x, top(x)]);
       const rim: Billow[] = [];
@@ -159,93 +215,88 @@ function billowsOf(p: CloudP, seed: number): Billow[] {
         acc += Math.hypot(xb - xa, tb - ta);
         if (acc < want || tb < 2) continue;
         const g = r();
-        let rad = H.h * sF * (g < 0.14 ? 0.15 + 0.06 * r() : g < 0.55 ? 0.09 + 0.04 * r() : 0.05 + 0.03 * r());
+        const bigOne = g < 0.22 && !thin;
+        // (sizes by the head's size, but a great head is carved by more billows, never a few
+        // balloons: four to one between the great and the small)
+        const sc = Math.min(H.h, 60 + H.h * 0.5);
+        let rad = sc * (bigOne ? 0.17 + 0.06 * r() : g < 0.55 ? 0.09 + 0.035 * r() : 0.045 + 0.02 * r()) * (thin ? 1.6 : 1);
         rad = Math.max(minR, Math.min(rad, tb * 0.5 + 1.5));
-        // inward along the outline's normal
         const tx = xb - xa, ty = -(tb - ta), tl = Math.hypot(tx, ty) || 1;
         const nx = -ty / tl, ny = tx / tl;
         const sink = rad * (0.62 + 0.25 * r());
-        rim.push(add(xb + nx * sink, H.base - tb + ny * sink, rad));
+        const y = H.base - tb + ny * sink;
+        rim.push(add(xb + nx * sink, y, rad, zOf(y), bigOne && rad > sc * 0.15));
         acc = 0;
         want = rad * (0.62 + 0.5 * r());
       }
-      // the body: billows packed under the outline down to the base, each lower one standing in
-      // front of the one above it (so every billow shows its lit top over the shade of the one
-      // behind); sizes very different and grouped
-      const cell = Math.max(5, H.h * 0.11);
-      for (let gy = H.base - cell * 0.3; gy > H.base - H.h * 1.05; gy -= cell * (0.6 + 0.2 * r())) {
-        for (let gx = H.cx - H.w / 2 + cell * r() * 0.6; gx < H.cx + H.w / 2; gx += cell * (0.75 + 0.6 * r())) {
+      // the body: a few big billows filling the head under its outline (their own edges merge
+      // into one mass: only the head's outline and its big billows keep an edge)
+      const cell = Math.max(6, H.h * 0.24);
+      for (let gy = H.base - cell * 0.4; gy > H.base - H.h * 1.05; gy -= cell * (0.62 + 0.2 * r())) {
+        for (let gx = H.cx - H.w / 2 + cell * r() * 0.6; gx < H.cx + H.w / 2; gx += cell * (0.8 + 0.5 * r())) {
           const t = top(gx);
           const y = gy + (r() - 0.5) * cell * 0.4;
-          const g = r();
-          // (lower down they grow broader and flatter, melting into the base)
-          const lowF = clamp(1 - (H.base - y) / Math.max(1, H.h * 0.6), 0, 1);
-          const rad = cell * (g < 0.18 ? 0.95 + 0.4 * r() : g < 0.6 ? 0.6 + 0.25 * r() : 0.38 + 0.17 * r()) * (1 + 0.35 * lowF);
-          if (H.base - y > t - rad * 0.7 || t < 3) continue;
-          const bb = add(gx + (r() - 0.5) * cell * 0.5, y, rad);
-          bb.k *= 1 - 0.15 * lowF;
+          const rad = cell * (0.55 + 0.35 * r());
+          if (H.base - y > t - rad * 0.8 || t < 3) continue;
+          add(gx + (r() - 0.5) * cell * 0.5, y, rad, zOf(y) - 0.6);
         }
       }
-      // the base: a row of broad, flattened billows along it, their bottoms cut flat by it, so
-      // the heap stands on one flat-ish floor (no notch of sky under it)
+      // the base: broad, flattened billows along it, their bottoms cut flat by it
       for (let x = H.cx - H.w / 2 + H.w * 0.03; x < H.cx + H.w / 2;) {
         const t = top(x);
-        const rad = Math.max(minR, Math.min(H.h * (0.12 + 0.08 * r()), t * 0.55 + 1));
-        // (behind the body's billows: they only fill what the body leaves open)
-        if (t > 3) out.push({ x, y: H.base - rad * (0.35 + 0.2 * r()), r: rad * 1.15, k: 0.66 + 0.1 * r(), z: -4 + r() * 0.3 + hi * 0.07, base: H.base, s: Math.floor(r() * 997) });
+        const rad = Math.max(minR, Math.min(H.h * (0.16 + 0.08 * r()), t * 0.55 + 1));
+        if (t > 3) out.push({ x, y: H.base - rad * (0.35 + 0.2 * r()), r: rad * 1.15, k: 0.62 + 0.1 * r(), head: hi, z: -4 + r() * 0.3, base: H.base, s: Math.floor(r() * 997), big: false });
         x += rad * (0.9 + 0.6 * r());
       }
-      // cauliflower: the bigger outline billows sprout smaller ones round their upper rims (more
+      // cauliflower: the big outline billows sprout smaller ones round their upper rims (more
       // toward the sun), and those sprout smaller ones again
-      let gen = rim.filter((b) => b.r > Math.max(minR * 1.6, H.h * 0.07));
+      let gen = rim.filter((b) => b.r > Math.max(minR * 1.6, Math.min(H.h, 60 + H.h * 0.5) * 0.08));
       for (let level = 0; level < 2; level++) {
         const next: Billow[] = [];
         for (const b of gen) {
-          const k = Math.floor(r() * (level ? 2.2 : 3.2));
+          const k = Math.floor(r() * (level ? 2.4 : 3.6));
           for (let j = 0; j < k; j++) {
-            const ang = -Math.PI * (r() < 0.6 ? 0.5 + 0.45 * r() : 0.1 + 0.4 * r());
-            const sr = b.r * (level ? 0.32 + 0.18 * r() : 0.34 + 0.22 * r());
+            const ang = -Math.PI * (r() < 0.65 ? 0.55 + 0.4 * r() : 0.1 + 0.4 * r());
+            const sr = b.r * (level ? 0.3 + 0.16 * r() : 0.32 + 0.2 * r());
             if (sr < minR * 0.8) continue;
-            const reach = b.r * (0.7 + 0.16 * r());
-            next.push(add(b.x + Math.cos(ang) * reach, b.y + Math.sin(ang) * reach * b.k, sr));
+            const reach = b.r * (0.72 + 0.16 * r());
+            next.push(add(b.x + Math.cos(ang) * reach, b.y + Math.sin(ang) * reach * b.k, sr, b.z + 0.05));
           }
         }
         gen = next.filter((b) => b.r > minR * 1.4);
       }
       // the base is scalloped, never one ruled slab: a few flattened billows sag a little below
       // it, more on the shaded (east) half
-      const nSag = Math.round((H.w / H.h) * 0.8 + r() * 2);
+      const nSag = thin ? 0 : Math.round((H.w / H.h) * 0.6 + r() * 1.5);
       for (let j = 0; j < nSag; j++) {
         const u = r() < 0.7 ? 0.05 + 0.4 * r() : -0.4 + 0.4 * r();
         const x = H.cx + u * H.w;
         if (top(x) < H.h * 0.2) continue;
-        const rad = Math.max(minR, H.h * (0.06 + 0.07 * r()));
+        const rad = Math.max(minR, H.h * (0.07 + 0.07 * r()));
         const sag = rad * (0.25 + 0.3 * r());
-        out.push({ x, y: H.base + sag - rad * 0.55, r: rad * 1.3, k: 0.55 + 0.1 * r(), z: 0.6 + r() * 0.3 + hi * 0.07, base: H.base + sag, s: Math.floor(r() * 997) });
+        out.push({ x, y: H.base + sag - rad * 0.55, r: rad * 1.3, k: 0.55 + 0.1 * r(), head: hi, z: 0.6 + r() * 0.3, base: H.base + sag, s: Math.floor(r() * 997), big: false });
       }
-      // torn off its ends: a scrap or two drifting free downwind (east), smaller as they go, so
-      // no heap is a closed icon
-      for (let j = 0, nF = Math.floor(r() * 3.2); j < nF; j++) {
-        const side = r() < 0.7 ? 1 : -1;
-        let x = H.cx + side * (H.w / 2) * (0.92 + 0.2 * r());
+      // torn off its ends: a scrap or two drifting free downwind (east), smaller as they go
+      for (let j = 0, nF = Math.floor(r() * (thin ? 2.6 : 2.2)); j < nF; j++) {
+        const side = r() < 0.75 ? 1 : -1;
+        let x = H.cx + side * (H.w / 2) * (0.95 + 0.2 * r());
         let y = H.base - H.h * (0.08 + 0.3 * r());
-        let rad = minR * (1.1 + 1.3 * r());
+        let rad = minR * (1.1 + 1.2 * r());
         for (let k = 0; k < 2 && rad >= minR * 0.8 && Math.abs(x) + rad * 1.9 < cloudReach(p); k++) {
-          // (a scrap is a flattened lump of two billows, never a ball)
-          out.push({ x, y, r: rad, k: 0.58 + 0.1 * r(), z: 0.5 + hi * 0.07, base: y + rad * 0.35, s: Math.floor(r() * 997) });
-          out.push({ x: x + side * rad * 0.7, y: y + rad * 0.15, r: rad * 0.7, k: 0.6, z: 0.55 + hi * 0.07, base: y + rad * 0.35, s: Math.floor(r() * 997) });
+          out.push({ x, y, r: rad, k: 0.55 + 0.1 * r(), head: hi, z: 0.5, base: y + rad * 0.35, s: Math.floor(r() * 997), big: false });
+          out.push({ x: x + side * rad * 0.7, y: y + rad * 0.15, r: rad * 0.7, k: 0.6, head: hi, z: 0.55, base: y + rad * 0.35, s: Math.floor(r() * 997), big: false });
           x += side * rad * (1.8 + 1.2 * r());
           y += (r() - 0.3) * rad;
           rad *= 0.55 + 0.25 * r();
         }
       }
     });
-    return out;
+    return { B: out, H: heads };
   });
 }
 
 /** A cloud as fields on its level-1 grid: which billow is in front, and the tone there. */
-interface CloudMask { x0: number; y0: number; w: number; h: number; own: Int16Array; t: Float32Array; edge: Uint8Array }
+interface CloudMask { x0: number; y0: number; w: number; h: number; own: Int32Array; t: Float32Array; edge: Uint8Array; warm: Uint8Array }
 
 /** Three box passes (about a gaussian) of radius r over a w x h field, in place. */
 function blur3(f: Float32Array, w: number, h: number, r: number): void {
@@ -273,13 +324,37 @@ function blur3(f: Float32Array, w: number, h: number, r: number): void {
   }
 }
 
+/** Chamfer distance to the nearest px outside a mask (0 outside). */
+function chamfer(inside: (i: number) => boolean, w: number, h: number): Float32Array {
+  const dist = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) dist[i] = inside(i) ? 1e6 : 0;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x;
+    if (!dist[i]) continue;
+    let v = Math.min(dist[i]!, x > 0 ? dist[i - 1]! + 1 : 1, y > 0 ? dist[i - w]! + 1 : 1);
+    if (x > 0 && y > 0) v = Math.min(v, dist[i - w - 1]! + 1.41);
+    if (x < w - 1 && y > 0) v = Math.min(v, dist[i - w + 1]! + 1.41);
+    dist[i] = v;
+  }
+  for (let y = h - 1; y >= 0; y--) for (let x = w - 1; x >= 0; x--) {
+    const i = y * w + x;
+    if (!dist[i]) continue;
+    let v = Math.min(dist[i]!, x < w - 1 ? dist[i + 1]! + 1 : 1, y < h - 1 ? dist[i + w]! + 1 : 1);
+    if (x < w - 1 && y < h - 1) v = Math.min(v, dist[i + w + 1]! + 1.41);
+    if (x > 0 && y < h - 1) v = Math.min(v, dist[i + w - 1]! + 1.41);
+    dist[i] = v;
+  }
+  return dist;
+}
+
 /** The sun's direction (upper left and a little toward the viewer: the frame's sun at (0.2, 0.11)). */
 const SUN = [-0.55, -0.68, 0.48] as const;
 
 function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
-  return cached(`cm3|${seed}|${p.kind ?? ""}|${p.w}|${p.h}|${p.tower ?? ""}|${p.low ? 1 : 0}|${p.heaps ?? ""}|${p.haze ?? 0}|${f}`, () => {
+  return cached(`cm5|${seed}|${p.kind ?? ""}|${p.w}|${p.h}|${p.tower ?? ""}|${p.low ? 1 : 0}|${p.heaps ?? ""}|${p.haze ?? 0}|${f}`, () => {
     // the billows this frame: each swelling and settling a little (the heap churns as it drifts)
-    const B = billowsOf(p, seed).map((b, i) => ({ ...b, r: b.r * (1 + 0.03 * Math.sin(f * 1.57 + i * 1.7)) }));
+    const { B: B0, H: HD } = billowsOf(p, seed);
+    const B = B0.map((b, i) => ({ ...b, r: b.r * (1 + 0.03 * Math.sin(f * 1.57 + i * 1.7)) }));
     let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
     for (const b of B) {
       bx0 = Math.min(bx0, b.x - b.r * 1.2); bx1 = Math.max(bx1, b.x + b.r * 1.2);
@@ -287,16 +362,19 @@ function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
     }
     const x0 = Math.floor(bx0) - 2, y0 = Math.floor(by0) - 2;
     const w = Math.ceil(bx1) - x0 + 3, h = Math.ceil(by1) - y0 + 3;
-    const own = new Int16Array(w * h).fill(-1);
+    const nH = HD.length;
+    const own = new Int32Array(w * h).fill(-1);
     const zb = new Float32Array(w * h).fill(-1e9);
     const NX = new Float32Array(w * h), NY = new Float32Array(w * h);
-    // (the base is flat-ish: it wanders a px or two, lumpy where a small billow sags)
-    // (and never ruled: it wanders at the heap's scale too, sagging where a billow hangs low)
+    // every head's whole extent (its own dome is shaped by all of it, the parts hidden behind a
+    // nearer head included)
+    const cover: Uint8Array[] = HD.map(() => new Uint8Array(w * h));
+    // (the base is flat-ish: it wanders a px or two, and at the head's scale, never ruled)
     const BW = Math.max(6, -by0 * 0.5);
-    const baseAt = (x: number, b: number): number => {
-      return b - 1.4 * vnoise1(x / 23, seed + 33) - 0.9 * vnoise1(x / 7, seed + 34) + (vnoise1(x / BW, seed + 35) - 0.55) * BW * 0.16;
-    };
+    const baseAt = (x: number, b: number): number => b - 1.4 * vnoise1(x / 23, seed + 33) - 0.9 * vnoise1(x / 7, seed + 34) + (vnoise1(x / BW, seed + 35) - 0.55) * BW * 0.16;
     B.forEach((b, i) => {
+      const hz = HD[b.head]!.z * 100;
+      const cv = cover[b.head]!;
       const gx0 = Math.max(0, Math.floor(b.x - b.r * 1.2 - x0)), gx1 = Math.min(w - 1, Math.ceil(b.x + b.r * 1.2 - x0));
       const gy0 = Math.max(0, Math.floor(b.y - b.r * b.k * 1.2 - y0)), gy1 = Math.min(h - 1, Math.ceil(b.y + b.r * b.k * 1.2 - y0));
       for (let gy = gy0; gy <= gy1; gy++) {
@@ -310,7 +388,8 @@ function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
           const q = (dx * dx + dy * dy) / (rr * rr);
           if (q > 1) continue;
           const k = gy * w + gx;
-          const z = b.z + (1 - q) * 0.04;
+          cv[k] = 1;
+          const z = hz + b.z + (1 - q) * 0.04;
           if (z > zb[k]!) { zb[k] = z; own[k] = i; NX[k] = dx / rr; NY[k] = dy / rr; }
         }
       }
@@ -339,42 +418,36 @@ function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
           const n = own[i - 1]! >= 0 ? i - 1 : own[i + 1]! >= 0 ? i + 1 : own[i - w]! >= 0 ? i - w : own[i + w]! >= 0 ? i + w : -1;
           if (n < 0) { left++; continue; }
           own[i] = own[n]!; NX[i] = 0; NY[i] = 0.2;
+          cover[B[own[i]!]!.head]![i] = 1;
         }
       }
     }
-    // distance to the outside (chamfer)
-    const dist = new Float32Array(w * h);
-    for (let i = 0; i < w * h; i++) dist[i] = own[i]! >= 0 ? 1e6 : 0;
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      const i = y * w + x;
-      if (!dist[i]) continue;
-      let v = Math.min(dist[i]!, x > 0 ? dist[i - 1]! + 1 : 1, y > 0 ? dist[i - w]! + 1 : 1);
-      if (x > 0 && y > 0) v = Math.min(v, dist[i - w - 1]! + 1.41);
-      if (x < w - 1 && y > 0) v = Math.min(v, dist[i - w + 1]! + 1.41);
-      dist[i] = v;
-    }
-    for (let y = h - 1; y >= 0; y--) for (let x = w - 1; x >= 0; x--) {
-      const i = y * w + x;
-      if (!dist[i]) continue;
-      let v = Math.min(dist[i]!, x < w - 1 ? dist[i + 1]! + 1 : 1, y < h - 1 ? dist[i + w]! + 1 : 1);
-      if (x < w - 1 && y < h - 1) v = Math.min(v, dist[i + w + 1]! + 1.41);
-      if (x > 0 && y < h - 1) v = Math.min(v, dist[i + w - 1]! + 1.41);
-      dist[i] = v;
-    }
+    const dist = chamfer((i) => own[i]! >= 0, w, h);
     const Htot = Math.max(8, -y0);
-    // the heap's big form: a dome over the whole silhouette, smoothed, lit by the sun as a few big
-    // turning planes (the billows ride on it)
-    const R = Htot * 0.42;
-    const zf = new Float32Array(w * h);
-    for (let i = 0; i < w * h; i++) if (own[i]! >= 0) zf[i] = Math.sqrt(Math.min(dist[i]!, R) * R);
-    blur3(zf, w, h, Math.max(1, Math.round(Htot * 0.035)));
+    // each head's big form: a dome over its whole extent, smoothed, lit by the sun as a few big
+    // turning planes (the billows ride on it); the head's own distance to its outline
+    const LH = new Float32Array(w * h), DH = new Float32Array(w * h);
+    for (let hi = 0; hi < nH; hi++) {
+      const H = HD[hi]!, cv = cover[hi]!;
+      const dh = chamfer((i) => cv[i] === 1, w, h);
+      const R = Math.max(4, H.h * 0.5);
+      const zf = new Float32Array(w * h);
+      for (let i = 0; i < w * h; i++) if (cv[i]) zf[i] = Math.sqrt(Math.min(dh[i]!, R) * R);
+      blur3(zf, w, h, Math.max(1, Math.round(H.h * 0.05)));
+      for (let gy = 1; gy < h - 1; gy++) for (let gx = 1; gx < w - 1; gx++) {
+        const k = gy * w + gx;
+        const o = own[k]!;
+        if (o < 0 || B[o]!.head !== hi) continue;
+        const fx = (zf[k + 1]! - zf[k - 1]!) * 0.5, fy = (zf[k + w]! - zf[k - w]!) * 0.5;
+        const fl = Math.hypot(fx, fy, 1);
+        LH[k] = (-fx * SUN[0] - fy * SUN[1] + SUN[2]) / fl;
+        DH[k] = dh[k]!;
+      }
+    }
     // how far the sunlight travels through the cloud to reach each px (on a 2 px grid, blurred):
     // the heap's lower right lies in its own shade
     const G = 2, gw = Math.ceil(w / G), gh = Math.ceil(h / G);
-    const ins = (gx: number, gy: number): boolean => {
-      const x = Math.min(w - 1, gx * G), y = Math.min(h - 1, gy * G);
-      return own[y * w + x]! >= 0;
-    };
+    const ins = (gx: number, gy: number): boolean => own[Math.min(h - 1, gy * G) * w + Math.min(w - 1, gx * G)]! >= 0;
     const lg = new Float32Array(gw * gh);
     for (let gy = 0; gy < gh; gy++) for (let gx = 0; gx < gw; gx++) {
       if (!ins(gx, gy)) continue;
@@ -386,57 +459,68 @@ function cloudMask(p: CloudP, seed: number, f: number): CloudMask {
       }
       lg[gy * gw + gx] = len;
     }
-    // (soft: a tower's shadow on the heap beside it is a soft turning plane, never a ruled diagonal)
-    blur3(lg, gw, gh, Math.max(2, Math.round(Htot * 0.02)));
+    blur3(lg, gw, gh, Math.max(2, Math.round(Htot * 0.025)));
     const haze = clamp(p.haze ?? 0, 0, 1);
     const t = new Float32Array(w * h);
     const edge = new Uint8Array(w * h);
+    const warm = new Uint8Array(w * h);
     for (let gy = 1; gy < h - 1; gy++) for (let gx = 1; gx < w - 1; gx++) {
       const k = gy * w + gx;
       const i = own[k]!;
       if (i < 0) continue;
-      const b = B[i]!;
-      // the big form's light
-      const fx = (zf[k + 1]! - zf[k - 1]!) * 0.5, fy = (zf[k + w]! - zf[k - w]!) * 0.5;
-      const fl = Math.hypot(fx, fy, 1);
-      const lamG = (-fx * SUN[0] - fy * SUN[1] + SUN[2]) / fl;
-      // the billow's own ball in the sun
+      const b = B[i]!, H = HD[b.head]!;
+      const lamH = LH[k]!;
+      // the billow's own ball in the sun: it shows only on the head's lit outline (its
+      // cauliflower) and, faintly, inside; the head reads as one mass, not a heap of scales
       const nx = NX[k]!, ny = NY[k]!;
       const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
       const lamB = SUN[0] * nx + SUN[1] * ny + SUN[2] * nz;
-      const deep = clamp(lg[Math.min(gh - 1, Math.floor(gy / G)) * gw + Math.min(gw - 1, Math.floor(gx / G))]! / (Htot * 0.6) + (vnoise(gx / (Htot * 0.12 + 4), gy / (Htot * 0.1 + 4), seed + 47) - 0.5) * 0.18, 0, 1);
+      const rimK = lamH > 0.1 ? clamp(1 - DH[k]! / Math.max(3, H.h * 0.14), 0, 1) : 0;
+      const wB = 0.1 + 0.3 * rimK + (b.big ? 0.08 : 0);
+      const deep = clamp(lg[Math.min(gh - 1, Math.floor(gy / G)) * gw + Math.min(gw - 1, Math.floor(gx / G))]! / (Htot * 0.62) + (vnoise(gx / (Htot * 0.14 + 4), gy / (Htot * 0.12 + 4), seed + 47) - 0.5) * 0.14, 0, 1);
       const py = y0 + gy + 0.5;
-      const low = clamp(1 - (b.base - py) / (Htot * 0.9), 0, 1);
-      // the big masses first (lit upper left, the shade travelling down and right, the base
-      // darkest), then each billow's own ball on them: a crisp lit cap over its own soft
-      // underside, softer in the shade, where the sky and not the sun lights it
-      let tt = 0.33 - 0.22 * lamG + 0.32 * deep + 0.2 * low * low - 0.22 * lamB * (1 - 0.55 * deep) * (1 - 0.3 * low);
-      // the shade a nearer billow's rounded top leaves on the one behind it, just above it (a
-      // band a few px deep, never a hairline crack)
-      for (let dy = 1; dy <= 4 && gy + dy < h; dy++) {
+      const low = clamp(1 - (b.base - py) / Math.max(4, H.h * 0.7), 0, 1);
+      let tt = 0.33 - 0.27 * lamH + 0.36 * deep + 0.16 * low * low - wB * lamB * (1 - 0.5 * deep);
+      // a nearer head in front, just below: this head's belly over it lies in its shade (the lit
+      // top of the nearer head stands crisp against it: the cloud's big internal edges)
+      for (let dy = 1; dy <= 6 && gy + dy < h; dy++) {
         const j = own[(gy + dy) * w + gx]!;
-        if (j >= 0 && j !== i && B[j]!.z > b.z + 0.2) { tt += 0.06 * (1 - (dy - 1) / 4) * (1 - 0.6 * low) * (1 - deep); break; }
+        if (j >= 0 && B[j]!.head !== b.head && HD[B[j]!.head]!.z > H.z) { tt += 0.11 * (1 - (dy - 1) / 7); break; }
       }
-      // the flat base: its lowest px a step darker
-      if (py > b.base - 2.5) tt += 0.07;
+      // inside a head, a big billow's rounded top leaves a short shade on the one behind it, only
+      // on the sun's side (a few crisp edges where the light falls; the rest merges)
+      if (lamH > 0.12) {
+        for (let dy = 1; dy <= 3 && gy + dy < h; dy++) {
+          const j = own[(gy + dy) * w + gx]!;
+          if (j >= 0 && j !== i && B[j]!.head === b.head && B[j]!.z > b.z + 0.25) { tt += (B[j]!.big ? 0.12 : 0.05 * rimK) * (1 - (dy - 1) / 4); break; }
+        }
+      }
+      // the flat base: its lowest rows turn into the shade, the last px a step darker again (no
+      // sunlit cream right down to the floor of the cloud)
+      if (py > b.base - 7) tt += 0.13 * (1 - (b.base - py) / 7);
+      if (py > b.base - 2.2) tt += 0.06;
       // distance: low clouds sit in the haze (less contrast, lighter)
       tt = tt * (1 - 0.45 * haze) + 0.16 * haze;
       t[k] = clamp(tt, 0, 0.999);
+      // the warm light thrown up from the land and the lake onto the lowest billows' shade
+      if (low > 0.72 && tt > 0.55 && lamH < 0.3) warm[k] = 1;
       // the shaded outline softens by a cell of dither; the lit outline stays crisp
-      if (dist[k]! <= 1.01 && lamG < 0.25) edge[k] = 1;
+      if (dist[k]! <= 1.01 && lamH < 0.3) edge[k] = 1;
     }
-    return { x0, y0, w, h, own, t, edge };
+    return { x0, y0, w, h, own, t, edge, warm };
   });
 }
 
 /** The tone steps, light to dark, and where each begins on the tone scale. */
-const CLOUD_AT = [0, 0.15, 0.25, 0.36, 0.48, 0.6, 0.73, 0.86];
+const CLOUD_AT = [0, 0.14, 0.24, 0.35, 0.47, 0.6, 0.73, 0.86];
+/** The warm bounce in the base's shade: steps 5 and 6 turn to the ramp's two warm greys. */
+const BOUNCE: Record<number, number> = { 5: 8, 6: 9 };
 
 /**
  * Paints a cloud from its mask: flat steps of the cumulus ramp (the warm cream and peach only
- * where the sun strikes, lilac and lavender greys turning away, the blue-grey base), one cell of
- * dither only in a narrow band where two steps meet and along the shaded outline; cells are the
- * level's own (two screen px at the catch's 2x).
+ * where the sun strikes, neutral cool greys turning away, the cool grey base with a warm bounce
+ * in its lowest shade), one cell of dither only in a narrow band where two steps meet and along
+ * the shaded outline; cells are the level's own.
  */
 function paintCloud(c: PaintCtx, p: CloudP): void {
   const b = c.buf, kc = Math.max(1, Math.round(c.d));
@@ -459,7 +543,8 @@ function paintCloud(c: PaintCtx, p: CloudP): void {
       let i = 0;
       while (i + 1 < CLOUD_AT.length && t >= CLOUD_AT[i + 1]!) i++;
       const near = ((CLOUD_AT[i + 1] ?? 2) - t) / 0.022;
-      if (near < 1 && dith > near) i = Math.min(R.length - 1, i + 1);
+      if (near < 1 && dith > near) i = Math.min(CLOUD_AT.length - 1, i + 1);
+      if (M.warm[k] && BOUNCE[i] !== undefined) i = BOUNCE[i]!;
       b.set(x, y, R[i]!);
     }
   }
@@ -467,9 +552,9 @@ function paintCloud(c: PaintCtx, p: CloudP): void {
 
 export const cloud = definePainter<CloudP>("op.cloud", {
   bounds(p) {
-    const deck = p.kind === "deck" || p.kind === "stratus" || p.kind === "field";
     const hx = cloudReach(p) + 6;
-    return [-hx, -p.h * (deck ? 1.65 : 1.45) - 6, hx, p.h * 0.14 + 8];
+    const up = p.kind === "wisp" ? 2.4 : isDeck(p) ? 1.65 : 1.45;
+    return [-hx, -p.h * up - 6, hx, p.h * 0.14 + 8];
   },
   paint(c, p) {
     paintCloud(c, p);

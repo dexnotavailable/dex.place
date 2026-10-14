@@ -45,15 +45,43 @@ uniform float uInkAmt;
 uniform float uMirror;
 uniform vec2 uRes;
 uniform vec4 uGrade;                  // rgb multiply, amount (the place's light, as on the planes)
+uniform vec4 uRectF;                  // the drawn rect, frame px (y down), unmirrored
+uniform float uCell;                  // (round 5) frame px per art cell: 2 at the catch's 2x for sky and far
+uniform vec2 uFoot;                   // (round 5) haze thickening to its foot: share of its height, haze there
+uniform float uFlip;
 out vec4 o;
+float bayer4(vec2 p) {
+  ivec2 i = ivec2(mod(floor(p), 4.0));
+  int k = i.x + i.y * 4;
+  const float m[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+  return (m[k] + 0.5) / 16.0;
+}
 void main() {
   if (uMirror >= 0.0 && uRes.y - gl_FragCoord.y < uMirror) discard;
   if (vS > uReveal) discard;
-  ivec2 t = clamp(ivec2(floor(vUV)), ivec2(0), ivec2(uSize) - 1);
+  vec2 uv = vUV;
+  vec2 cell = floor(vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uCell);
+  if (uCell > 1.5) {
+    // snapped to the frame's art cells: the texel under each cell's centre fills the cell
+    vec2 f = (cell + 0.5) * uCell;
+    if (uMirror >= 0.0) f.y = 2.0 * uMirror - f.y;
+    vec2 k = vec2((f.x - uRectF.x) / (uRectF.z - uRectF.x), (f.y - uRectF.y) / (uRectF.w - uRectF.y));
+    uv = vec2(uFlip > 0.5 ? 1.0 - k.x : k.x, k.y) * uSize;
+  }
+  ivec2 t = clamp(ivec2(floor(uv)), ivec2(0), ivec2(uSize) - 1);
   vec4 c = texelFetch(uTex, t, 0);
   if (c.a < 0.5) discard;
   vec3 col = mix(c.rgb, c.rgb * uGrade.rgb, uGrade.a);
-  col = mix(col, uHaze, uFade);
+  float fade = uFade;
+  if (uFoot.x > 0.0) {
+    // the haze thickening down to its foot: one continuous falloff in fine flat steps, each
+    // step's edge ordered-dithered on the cell (no strata across the legs)
+    float k = clamp(1.0 - (uSize.y - uv.y) / (uSize.y * uFoot.x), 0.0, 1.0);
+    float v = k * k * (3.0 - 2.0 * k) * 12.0;
+    float st = (floor(v) + step(bayer4(cell), fract(v))) / 12.0;
+    fade = mix(uFade, uFoot.y, st);
+  }
+  col = mix(col, uHaze, fade);
   col = mix(col, uInk, uInkAmt);
   col = mix(col, vec3(1.0), uWhite);
   o = vec4(col, 1.0);
@@ -329,7 +357,10 @@ export class SpriteRenderer {
       if (def.hidden) continue;
       const rate = PLANES[def.plane].rate;
       const xf = planeXf(cam, rate);
-      let level = levelFor(planeLevels(rate), xf.g);
+      // (round 5) at the catch's 2x the sky's and the far plane's sprites sit on the frame's 2 px
+      // art cells like everything near (painted ones are painted at half the density for it)
+      const snap = cam.zoom >= 1.9 && (def.plane === "sky" || def.plane === "far");
+      let level = levelFor(planeLevels(rate), xf.g) / (snap && def.kind !== "frames" && def.kind !== "image" ? 2 : 1);
       const pos = SpriteRenderer.position(def, time);
       let fr: Frame | null;
       if (def.kind === "frames") {
@@ -373,7 +404,11 @@ export class SpriteRenderer {
       // (a giant set deep in the distance takes its own haze; everything else its plane's)
       gl.uniform1f(u.uFade!, def.fade ?? look.fade);
       gl.uniform1f(u.uWhite!, def.white ?? 0);
-      gl.uniform4f(u.uRect!, Math.round(x0), Math.round(y0), Math.round(x0) + Math.round(fr.w * k), Math.round(y0) + Math.round(fr.h * k));
+      const rx0 = Math.round(x0), ry0 = Math.round(y0), rx1 = rx0 + Math.round(fr.w * k), ry1 = ry0 + Math.round(fr.h * k);
+      gl.uniform4f(u.uRect!, rx0, ry0, rx1, ry1);
+      if (u.uRectF) gl.uniform4f(u.uRectF, rx0, ry0, rx1, ry1);
+      if (u.uCell) gl.uniform1f(u.uCell, snap ? 2 : 1);
+      if (u.uFoot) gl.uniform2f(u.uFoot, def.fadeFoot?.[0] ?? 0, def.fadeFoot?.[1] ?? 0);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
     gl.enable(gl.BLEND);

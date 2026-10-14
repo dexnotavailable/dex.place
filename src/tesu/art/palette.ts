@@ -70,11 +70,12 @@ export const P = {
   // --- appended by the Kagami sky lane, round 4 (indices of everything above are unchanged) ---
   /**
    * Sunlit cumulus (Dex's painterly cloud reference): the warm cream where the morning sun
-   * strikes a billow's top, a peach-pink lit face, a lilac white where it turns from the sun,
-   * then lavender greys into the shade and the flat blue-grey base (values fall step by step;
-   * the hue turns from warm to cool). Cool shadows against a warm light.
+   * strikes a billow's top, a peach lit face, a warm white where it turns from the sun, then
+   * neutral cool greys into the shade and the flat cool grey base (values fall step by step; the
+   * hue turns from warm to a near-neutral cool, never violet; round 5). Its last two steps are
+   * the warm bounce from the land and lake in the lowest billows' shade.
    */
-  cumulus: ramp("#fff7ea", "#fde9dc", "#e9e4e8", "#dcd9e4", "#c9c9da", "#b3b7cc", "#9ca3bb", "#878fa9"),
+  cumulus: ramp("#fff7ea", "#fde8d6", "#efe7e2", "#dfdfe0", "#cdd1d5", "#b9bfc5", "#a5acb3", "#9098a1", "#c3bfbb", "#aeaaa7"),
 } as const;
 
 export type RampName = keyof typeof P;

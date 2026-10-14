@@ -57,6 +57,23 @@ float bandd(float v, float n, vec2 c) {
   float fl = floor(x), fr = fract(x);
   return (fl + step(bayer4(c), (fr - 0.72) / 0.28)) / n;
 }
+// (round 5) The sun: a small bright core and one smooth bloom falling off from it, a broad warm
+// wash under it; fine flat steps ordered-dithered on the art's own cell (no ring edges anywhere)
+vec3 sunOver(vec3 col, vec2 q, vec2 c) {
+  float r = uSun.z;
+  float d = length(q - uSun.xy);
+  // the broad wash: the sky warming toward the sun
+  float wash = uGlow.y * exp(-d / uGlow.x);
+  col = mix(col, uGlowCol, stepd(clamp(wash, 0.0, 1.0), 40.0, c) * 0.8);
+  // the bloom: bright close round the core, falling off smoothly
+  float e = max(0.0, d - r);
+  float bloom = 0.8 * exp(-e / (r * 1.8)) + 0.3 * exp(-e / (r * 6.0));
+  col = mix(col, vec3(1.0, 0.975, 0.9), stepd(clamp(bloom, 0.0, 1.0), 40.0, c));
+  // the core: crisp, its edge one cell of dither
+  float k = clamp((r - d) / max(1.0, uGlow.w) + 0.5, 0.0, 1.0);
+  if (k > bayer4(c)) col = vec3(1.0, 0.995, 0.965);
+  return col;
+}
 void main() {
   vec2 p = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
   if (uMirror > 0.5) {
@@ -65,25 +82,23 @@ void main() {
   }
   if (uGlow.z > 0.5) {
     // the morning sky (Kagami's): the gradient in flat bands with dithered seams, deepening up to
-    // the zenith; a warm bloom round the sun in stepped rings; the disc crisp with one bright ring
+    // the zenith (style 2, Gate Road's: the plain gradient), and the sun over it
     vec2 c = floor(floor(p) / uGlow.w);
     vec2 q = (c + 0.5) * uGlow.w;
     float h = clamp((uHz - q.y) / uRes.y, -0.2, 1.4);
-    float t = clamp(h / 0.95, 0.0, 1.0);
-    float lo = clamp(-h / 0.2, 0.0, 1.0);
-    vec3 col = mix(uMid, uTop, bandd(pow(t, 0.62), 12.0, c));
-    col = mix(col, uLow, bandd(lo, 4.0, c));
-    if (uSun.z > 0.0) {
-      float d = length(q - uSun.xy);
-      // a broad faint wash, then tight rings close round the disc (a drawn sun, not a lens halo)
-      float wash = uGlow.y * exp(-d / uGlow.x);
-      col = mix(col, uGlowCol, bandd(min(1.0, wash), 10.0, c) * 0.75);
-      float r = uSun.z;
-      if (d < r * 4.2) col = mix(col, uGlowCol, 0.32);
-      if (d < r * 2.7) col = mix(col, vec3(1.0, 0.97, 0.88), 0.45);
-      if (d < r * 1.65) col = mix(col, vec3(1.0, 0.98, 0.9), 0.7);
-      if (d < r) col = vec3(1.0, 0.99, 0.95);
+    vec3 col;
+    if (uGlow.z > 1.5) {
+      float t = clamp(h / 0.9, 0.0, 1.0);
+      float lo = clamp(-h / 0.2, 0.0, 1.0);
+      col = mix(uMid, uTop, stepd(pow(t, 0.75), 9.0, c));
+      col = mix(col, uLow, stepd(lo, 4.0, c));
+    } else {
+      float t = clamp(h / 0.95, 0.0, 1.0);
+      float lo = clamp(-h / 0.2, 0.0, 1.0);
+      col = mix(uMid, uTop, bandd(pow(t, 0.62), 12.0, c));
+      col = mix(col, uLow, bandd(lo, 4.0, c));
     }
+    if (uSun.z > 0.0) col = sunOver(col, q, c);
     o = vec4(col, 1.0);
     return;
   }
@@ -136,10 +151,13 @@ void main() {
   o = vec4(uColour * s, s);
 }`;
 
-// Fog lying on the still water at one plane's waterline (a FogLayer): thick on the water, thinning
-// up to a heaped top that rolls at three scales and drifts, a short apron out over the water in
-// front; flat steps of translucency on the art's own cell, never a screen door. Locked to its
-// plane (it parallaxes with the land it wraps).
+// Fog lying on the still water at one plane's waterline (a FogLayer): thick on the water,
+// thinning up to a heaped top that rolls at three scales and drifts, a short apron out over the
+// water in front; flat steps of translucency on the art's own cell, each step's edge a narrow
+// dithered seam that wanders with the billows (never a ruled stratum, never a screen door).
+// Locked to its plane (it parallaxes with the land it wraps). (Round 5) It lies in pools: thick
+// at the karst's feet, torn patches between them over the open water, clear gaps where the lake
+// mirrors crisply.
 const FOG_FS = /* glsl */ `#version 300 es
 precision highp float;
 ${LIB}
@@ -148,42 +166,66 @@ uniform float uWl;        // the plane's waterline row (frame px)
 uniform vec3 uXf;         // the plane's art scale g, its x offset (frame px), the drift (art px)
 uniform vec4 uFog;        // density, height, apron (art px), roll
 uniform vec3 uFog2;       // bank size (art px), cell (frame px), foot (share of the height lying solid)
+uniform vec4 uPools[16];  // plane art px x, half width, strength, 0
+uniform int uNPools;
+uniform float uCover;     // the share of the open water between pools its patches cover (1: all)
 uniform vec3 uColour;
 uniform float uMirror;    // 1: drawn mirrored about the waterline (the lake's reflection target)
 out vec4 o;
+// v (0..1) in n flat steps; only a narrow seam where two steps meet dithers
+float seamd(float v, float n, vec2 c) {
+  float x = clamp(v, 0.0, 1.0) * n;
+  float fl = floor(x), fr = fract(x);
+  return (fl + step(bayer4(c), (fr - 0.62) / 0.38)) / n;
+}
 void main() {
   vec2 f = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
   if (uMirror > 0.5) {
     if (f.y < uWl) discard;
     f.y = 2.0 * uWl - f.y;
   }
-  vec2 c = (floor(f / uFog2.y) + 0.5) * uFog2.y;
+  vec2 cc = floor(f / uFog2.y);
+  vec2 c = (cc + 0.5) * uFog2.y;
   float g = uXf.x;
-  float px = (c.x - uXf.y) / g + uXf.z;
+  float ps = (c.x - uXf.y) / g;
+  float px = ps + uXf.z;
   float up = (uWl - c.y) / g;
   float S = uFog2.x;
-  // the banks' top: heaped at three scales, never level for long
+  // where the banks lie (fixed on the land): pools, and torn patches over the open water
+  float cov = 1.0;
+  if (uNPools > 0 || uCover < 0.999) {
+    float pool = 0.0;
+    for (int i = 0; i < 16; i++) {
+      if (i >= uNPools) break;
+      vec4 P = uPools[i];
+      float dx = (ps - P.x) / max(1.0, P.y);
+      // (a pool's ends tear: its reach wanders with the drifting fog)
+      dx *= 1.0 + 0.35 * (vnoise(vec2(px / (S * 0.3), float(i) * 3.1)) - 0.5);
+      pool = max(pool, P.z * exp(-dx * dx * 1.8));
+    }
+    float open = uCover * smoothstep(0.42, 0.78, vnoise(vec2(ps / (S * 1.6), 9.3)) * 0.75 + vnoise(vec2(px / (S * 0.45), 4.4)) * 0.25);
+    cov = max(pool, open);
+    if (cov < 0.04) discard;
+  }
+  // the banks' top: heaped at three scales, never level for long; lower where the cover thins
   float n1 = vnoise(vec2(px / S, 1.3));
   float n2 = vnoise(vec2(px / (S * 0.36), 4.1));
   float n3 = vnoise(vec2(px / (S * 0.12), 7.7));
-  float top = uFog.y * mix(1.0, 0.18 + 1.25 * n1 * n1 + 0.4 * n2 + 0.18 * n3, uFog.w);
+  float top = uFog.y * mix(1.0, 0.18 + 1.25 * n1 * n1 + 0.4 * n2 + 0.18 * n3, uFog.w) * min(1.25, 0.25 + 0.75 * cov);
   if (up > top || top < 1.0) discard;
   float a;
   if (up >= 0.0) a = pow(1.0 - up / top, 0.45);
   else {
     if (uFog.z <= 0.0) discard;
-    a = clamp(1.0 + up / uFog.z, 0.0, 1.0);
+    a = clamp(1.0 + up / (uFog.z * min(1.0, cov)), 0.0, 1.0);
   }
   // billows inside the bank: rolling lumps of thicker fog, so its steps follow the banks' forms
   float bl = vnoise(vec2(px / (S * 0.22), up / (uFog.y * 0.55) + 2.0)) * 0.6 + vnoise(vec2(px / (S * 0.07), up / (uFog.y * 0.2))) * 0.4;
-  a = clamp(a * (0.62 + 0.62 * bl), 0.0, 1.0);
-  // the bank's foot (opt-in): solid on the water up to a share of its rolling height, then
-  // thinning in the same flat steps, so what wades in it (the far Walker's legs) dissolves into
-  // the fog instead of ending on the waterline as a ruled cut (the apron is left as it is: a solid
-  // apron would end on a ruled line across the lake)
+  a = clamp(a * (0.62 + 0.62 * bl) * min(1.0, 0.35 + 0.75 * cov), 0.0, 1.0);
+  // the bank's foot (opt-in): solid on the water up to a share of its rolling height
   if (uFog2.z > 0.0 && up >= 0.0) a = max(a, clamp(2.0 - up / max(top * uFog2.z, 1.0), 0.0, 1.0));
-  // flat steps of translucency (quarters of its density), never smooth, never a screen door
-  float s = floor(a * 4.0) / 4.0 * uFog.x;
+  // flat steps of translucency, their seams dithered on the cell
+  float s = seamd(a, 5.0, cc) * uFog.x;
   if (s <= 0.0) discard;
   // the bank's upper reach catches the morning sun: a warmer, paler step over the cool body
   // below it, so each bank reads as a lit volume lying on the water, not a tint
@@ -299,6 +341,8 @@ export interface SkyGlow {
   colour: [number, number, number];
   /** Dither cell, frame px (2 at the catch's 2x). */
   cell: number;
+  /** (round 5) The plain sky gradient, only the sun drawn over it (no flat bands). */
+  plain?: boolean;
 }
 
 /** One fog bank to draw: its plane's waterline row and transform, and the layer's look (art px). */
@@ -315,6 +359,9 @@ export interface FogDraw {
   cell: number;
   /** The share of its height lying solid on the water (0, the default: none). */
   foot?: number;
+  /** Pools [plane art px x, half width, strength] and the open water's cover (round 5). */
+  pools?: readonly (readonly [number, number, number])[];
+  cover?: number;
   colour: [number, number, number];
   mirrored: boolean;
 }
@@ -351,7 +398,7 @@ export class Atmos {
     gl.uniform3fv(u.uLow!, low);
     gl.uniform3fv(u.uSun!, sun);
     gl.uniform1f(u.uMirror!, mirrored ? 1 : 0);
-    gl.uniform4f(u.uGlow!, glow ? glow.radius : 0, glow ? glow.strength : 0, glow ? 1 : 0, glow ? glow.cell : 1);
+    gl.uniform4f(u.uGlow!, glow ? glow.radius : 0, glow ? glow.strength : 0, glow ? (glow.plain ? 2 : 1) : 0, glow ? glow.cell : 1);
     gl.uniform3fv(u.uGlowCol!, glow ? glow.colour : [1, 1, 1]);
     gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -389,6 +436,12 @@ export class Atmos {
     gl.uniform3f(u.uXf!, d.g, d.offX, d.drift % 100000);
     gl.uniform4f(u.uFog!, d.density, d.height, d.apron, d.roll);
     gl.uniform3f(u.uFog2!, d.size, d.cell, d.foot ?? 0);
+    const pools = (d.pools ?? []).slice(0, 16);
+    const arr = new Float32Array(64);
+    pools.forEach((q, i) => arr.set([q[0], q[1], q[2], 0], i * 4));
+    gl.uniform4fv(u.uPools!, arr);
+    gl.uniform1i(u.uNPools!, pools.length);
+    gl.uniform1f(u.uCover!, d.cover ?? 1);
     gl.uniform3fv(u.uColour!, d.colour);
     gl.uniform1f(u.uMirror!, d.mirrored ? 1 : 0);
     gl.bindVertexArray(this.vao);

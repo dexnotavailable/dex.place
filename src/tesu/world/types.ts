@@ -196,9 +196,21 @@ export interface Atmos {
    * rings: its radius (share of the frame height), strength (0..1) and colour. Absent: the old sky
    * exactly.
    */
-  glow?: { radius: number; strength: number; colour: string };
+  glow?: {
+    radius: number; strength: number; colour: string;
+    /**
+     * (round 5) Keep the sky's own gradient (no flat bands) and add only the sun: its small bright
+     * core and smooth bloom (Gate Road's morning, the same sun as Kagami's).
+     */
+    plain?: boolean;
+  };
   /** Banks of fog lying on the water at background planes' waterlines (depth by rendering). */
   fog?: FogLayer[];
+  /**
+   * (round 5) This place's own haze per background plane (0..1), instead of the plane's standard
+   * fade: Kagami's mid plane keeps its darks so far, mid and near read apart by value.
+   */
+  fades?: Partial<Record<PlaneId, number>>;
 }
 
 /**
@@ -227,6 +239,14 @@ export interface FogLayer {
    * (default 0: none), so a thing wading in the bank dissolves into it rather than ending on a line.
    */
   foot?: number;
+  /**
+   * (round 5) Where its banks lie, so it is never one band across the whole lake: pools of fog
+   * [plane px x, half width, strength 0..1.4] (thick at a karst's feet), and between them it
+   * covers this share of the open water in torn patches (0: only the pools; 1, the default: the
+   * whole width, as before). Pools stay put on the land; the fog inside them drifts.
+   */
+  pools?: [number, number, number][];
+  cover?: number;
 }
 
 /** Something that moves on a plane: animated frames from a painter (or, later, a render). */
@@ -271,6 +291,12 @@ export interface SpriteDef {
   stepMove?: boolean;
   /** Its own haze amount (0..1) instead of its plane's (a giant set deep in the distance). */
   fade?: number;
+  /**
+   * (round 5) Its haze thickening toward its foot in one continuous dithered falloff: over this
+   * share of its height from the bottom, up to this haze at the waterline [share, haze] (a giant
+   * wading far off in the fog lying on the water: no strata across its legs).
+   */
+  fadeFoot?: [number, number];
 }
 
 /** A bank of mist lying at a height in a stretch of the land (a valley's), drawn after a plane. */
