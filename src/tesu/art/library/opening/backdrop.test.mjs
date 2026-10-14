@@ -155,6 +155,8 @@ function isolatedShare(buf) {
 for (const [kind, p, most] of [
   ["op.cloud", { kind: "cumulus", w: 130, h: 46, tower: 0.4 }, 0.03],
   ["op.cloud", { kind: "deck", w: 600, h: 40 }, 0.04],
+  ["op.cloud", { kind: "wisp", w: 220, h: 22, frame: 1 }, 0.06],
+  ["op.cloud", { kind: "tower", w: 150, h: 170, tower: 1 }, 0.03],
   ["op.wade", { sub: 4, frame: 49 }, 0.12],
   ["op.karst", { w: 0, h: 380, rows: 1, look: "near", forms: [[0, 420, 330, "massif"], [-250, 70, 200, "pillar"], [260, 150, 170, "cone"]], mist: 34, green: 0.85, falls: 0.6, veil: 4, fallOn: [0, 1], wet: [-2633, -104] }, 0.04],
   ["op.sea", { w: 1400, depth: 300, swell: 10, ends: 60, west: 260, rise: [[330, 210, 330], [80, 35, 200]], torn: 0.55, wetFloor: 70, wetTo: 226 }, 0.04],
@@ -179,7 +181,8 @@ for (const [kind, p, most] of [
 // lit tops, lavender shade, the blue-grey base), never another material or a second look.
 test("op.cloud: every kind is the same family, in the cumulus ramp only", () => {
   const ramp = new Set(P.cumulus);
-  for (const p of [{ kind: "cumulus", w: 520, h: 240 }, { kind: "cumulus", w: 160, h: 60, tower: 0.3, haze: 0.5 }, { kind: "deck", w: 600, h: 40 }, { kind: "stratus", w: 760, h: 22 }, { kind: "field", w: 900, h: 170 }]) {
+  // (round 5: the tower and the torn wisp are members of the same family)
+  for (const p of [{ kind: "cumulus", w: 520, h: 240 }, { kind: "cumulus", w: 160, h: 60, tower: 0.3, haze: 0.5 }, { kind: "deck", w: 600, h: 40 }, { kind: "stratus", w: 760, h: 22 }, { kind: "field", w: 900, h: 170 }, { kind: "tower", w: 150, h: 170, tower: 1 }, { kind: "wisp", w: 220, h: 22 }]) {
     const [bx0, by0, bx1, by1] = painter("op.cloud").bounds(p);
     const buf = paintBox("op.cloud", p, 1, Math.floor(bx0), Math.floor(by0), Math.ceil(bx1 - bx0), Math.ceil(by1 - by0));
     let n = 0;
@@ -188,14 +191,15 @@ test("op.cloud: every kind is the same family, in the cumulus ramp only", () => 
   }
 });
 
-// Its lit tops are warm and its base cool: the sun's side of a heap holds the cream and peach,
-// its lowest rows only the lavender and blue-grey steps.
+// Its lit tops are warm and its base in shade: the sun's side of a heap holds the cream and peach,
+// its lowest rows only the shade steps (round 5: neutral cool greys, and the two warm greys of the
+// bounce from the land and the lake, never the sunlit cream).
 test("op.cloud: warm lit tops, cool base", () => {
   const p = { kind: "cumulus", w: 520, h: 240, tower: 0.8 };
   const [bx0, by0, bx1, by1] = painter("op.cloud").bounds(p);
   const x0 = Math.floor(bx0), y0 = Math.floor(by0), w = Math.ceil(bx1 - bx0), h = Math.ceil(by1 - by0);
   const buf = paintBox("op.cloud", p, 1, x0, y0, w, h);
-  const warm = new Set([P.cumulus[0], P.cumulus[1]]), cool = new Set([P.cumulus[5], P.cumulus[6], P.cumulus[7]]);
+  const warm = new Set([P.cumulus[0], P.cumulus[1]]), cool = new Set([P.cumulus[4], P.cumulus[5], P.cumulus[6], P.cumulus[7], P.cumulus[8], P.cumulus[9]]);
   let warmTop = 0, warmBase = 0, coolBase = 0, base = 0;
   for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) {
     const v = buf.get(x, y);
@@ -204,7 +208,8 @@ test("op.cloud: warm lit tops, cool base", () => {
     if (y > -8) { base++; if (warm.has(v)) warmBase++; if (cool.has(v)) coolBase++; }
   }
   assert.ok(warmTop > 300, `only ${warmTop} warm px on its upper part`);
-  assert.ok(base > 100 && warmBase === 0 && coolBase / base > 0.6, `its base is not cool (${coolBase} of ${base} cool, ${warmBase} warm)`);
+  // (only the sunlit flank of its upwind end may reach down near the floor, a few px)
+  assert.ok(base > 100 && warmBase <= base * 0.03 && coolBase / base > 0.6, `its base is not cool (${coolBase} of ${base} cool, ${warmBase} warm)`);
 });
 
 // The far Walker's wake is the same painting at half its size: it stays inside half the bounds.

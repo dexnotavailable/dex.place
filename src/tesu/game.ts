@@ -876,7 +876,8 @@ export class TesuGame {
 
   private look(id: PlaneId, a: AtmosDef): PlaneLook {
     const sp = PLANES[id];
-    return { haze: hexRgb(a.haze), fade: sp.fade, ink: hexRgb("#1b1922"), inkAmt: sp.ink, grade: a.grade ?? [1, 1, 1, 0] };
+    // (round 5) a place may keep its own haze on a plane (Kagami's mid plane keeps its darks)
+    return { haze: hexRgb(a.haze), fade: a.fades?.[id] ?? sp.fade, ink: hexRgb("#1b1922"), inkAmt: sp.ink, grade: a.grade ?? [1, 1, 1, 0] };
   }
 
   /**
@@ -959,10 +960,12 @@ export class TesuGame {
     const W = cam.W, Hf = cam.H;
     const a = this.atmosAt(cam.cx, cam.cy);
     const hz = cam.horizon * Hf;
-    const sunPx: [number, number, number] = a.sun ? [a.sun[0] * W, a.sun[1] * Hf, a.glow ? 11 : 9] : [0, 0, 0];
+    // (round 5: the glowing sun's core is small and bright, its bloom does the rest; at the catch's 2x
+    // the same size on the frame)
+    const sunPx: [number, number, number] = a.sun ? [a.sun[0] * W, a.sun[1] * Hf, a.glow ? 8 : 9] : [0, 0, 0];
     const sky = [hexRgb(a.sky[0]), hexRgb(a.sky[1]), hexRgb(a.sky[2])];
     // the banded sky and the sun's bloom, where the place has them (cells of two px at the catch's 2x)
-    const glow: SkyGlow | undefined = a.glow && a.glow.strength > 0 ? { radius: a.glow.radius * Hf, strength: a.glow.strength, colour: hexRgb(a.glow.colour), cell: cam.zoom >= 1.9 ? 2 : 1 } : undefined;
+    const glow: SkyGlow | undefined = a.glow && a.glow.strength > 0 ? { radius: a.glow.radius * Hf, strength: a.glow.strength, colour: hexRgb(a.glow.colour), cell: cam.zoom >= 1.9 ? 2 : 1, plain: a.glow.plain } : undefined;
     const water = this.activeWater(cam);
     const draws = new Map<PlaneId, PlaneDraw>();
     for (const id of PLANE_IDS) draws.set(id, this.planeQuads(cam, id, 0, Hf, a, !this.manual));
@@ -989,7 +992,7 @@ export class TesuGame {
         const rate = PLANES[id].rate, xf = planeXf(cam, rate);
         this.atmos.drawFog(W, Hf, {
           wl: rowOf(cam, rate, water.y), g: xf.g, offX: xf.offX, drift: -this.time * (f.drift ?? 1.5),
-          density: f.density, height: f.height, apron: f.apron ?? f.height * 0.5, roll: f.roll ?? 0.6, size: f.size ?? 260, foot: f.foot ?? 0,
+          density: f.density, height: f.height, apron: f.apron ?? f.height * 0.5, roll: f.roll ?? 0.6, size: f.size ?? 260, foot: f.foot ?? 0, pools: f.pools, cover: f.cover,
           cell: cam.zoom >= 1.9 ? 2 : 1, colour: hexRgb(f.colour ?? a.haze), mirrored,
         });
       }

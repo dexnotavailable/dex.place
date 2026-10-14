@@ -873,17 +873,24 @@ export function mistBank(c: PaintCtx, x0: number, x1: number, by: number, mh: nu
     // (on the water it is torn along its length into lobes, thinner and gappier between the feet)
     const lobe = thin > 0 ? clamp(0.35 + 0.8 * vnoise1(lx / (mh * 1.15), seed + 29) + 0.2 * vnoise1(lx / (mh * 0.4), seed + 30) + 0.2 * near, 0, 1.2) : 1;
     const coreL = thin > 0 ? core * clamp(lobe * 1.4 - 0.45, 0, 1.2) : core;
+    // (round 5, the sky lane: a back row's body hanging below its base down to the floor thins
+    // away toward the bank's ends too, its underside rising in a wandering slope, so where two
+    // pieces' banks overlap no ruled vertical end of one stands on the other)
+    const hang = Math.max(0, floor - by) * clamp(Math.pow(clamp(Math.min(lx - x0, x1 - lx) / (o.taper ?? mh * 4), 0, 1), 0.7) * 1.15 + (vnoise1(lx / (mh * 0.9), seed + 35) - 0.5) * 0.3, 0, 1);
+    // (and the whole bank frays out over its last stretch, its end never a ruled vertical)
+    const fray0 = clamp((Math.min(lx - x0, x1 - lx) - mh * (0.4 + 1.6 * vnoise1(lx / (mh * 0.7), seed + 36))) / (mh * 2.5), 0, 1);
     for (let y = Math.max(Yt, b.oy); y < Math.min(Yb, b.y1); y++) {
       const a0 = by - c.ly(y + 0.5);
       const a = a0 - fl;
       const low = a0 - (by - floor);
       // density: 1 at the core's top, 0 at the zone's top, broken by billows at two scales
       let cov: number;
-      if (a <= coreL) cov = 1.2;
+      if ((a0 < 0 && -a0 > hang) || fray0 <= 0) cov = 0;
+      else if (a <= coreL) cov = 1.2 * Math.min(1, fray0 * 1.6 + 0.2 * (vnoise(lx / (mh * 0.5), a0 / (mh * 0.4), seed + 37) - 0.5));
       else {
         const g = 1 - (a - coreL) / Math.max(1e-3, zone);
         const n = fbm(lx / (mh * 1.7), a / (mh * 0.6), seed + 7, 3) - 0.5 + 0.45 * (vnoise(lx / (mh * 0.55), a / (mh * 0.28), seed + 10) - 0.5);
-        cov = (g * 1.0 + n * 1.25) * (thin > 0 ? 0.4 + 0.6 * lobe : 1);
+        cov = (g * 1.0 + n * 1.25) * (thin > 0 ? 0.4 + 0.6 * lobe : 1) * Math.min(1, fray0 * 1.6);
       }
       // on the water: the underside floats and frays into lobes, the lake and the feet under it
       if (thin > 0 && onLake > 0 && low < fl + fray) {

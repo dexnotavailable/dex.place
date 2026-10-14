@@ -418,6 +418,27 @@ test("atmos: the world's entries switch exactly as before, and a blend width mak
   assert.ok(maxStep <= 12, `gradual along y, across its band's edge (largest step ${maxStep})`);
 });
 
+// Round 5 (Kagami's sky lane): a place's own plane hazes (Kagami's mid plane keeps its darks) and
+// its glow's plain flag blend like the rest of its light: a gradual change, the plane's own haze
+// where neither place has one.
+test("atmos: a place's own plane hazes blend gradually into the plane's standard haze", async () => {
+  const { blendAtmos } = await import("./atmos-blend.ts");
+  const { INTERIOR_Y } = await import("./config.ts");
+  const { PLANES } = await import("./world/types.ts");
+  const A = { x: 0, sky: ["#8fb6cf", "#d3e6e3", "#edf5ef"], haze: "#dfe9e6", mist: 0, mistColour: "#eef4f0", sun: [0.2, 0.11], fades: { mid: 0.16 }, glow: { radius: 0.26, strength: 0.5, colour: "#fff1d8" } };
+  const B = { x: 100 * H, blend: 20 * H, sky: ["#8fb6cf", "#d3e6e3", "#edf5ef"], haze: "#dfe9e6", mist: 0.8, mistColour: "#eef4f0", sun: [0.2, 0.11], glow: { radius: 0.26, strength: 0.5, colour: "#fff1d8", plain: true } };
+  assert.equal(blendAtmos([A, B], 50 * H, 60 * H, INTERIOR_Y).fades.mid, 0.16);
+  assert.equal(blendAtmos([A, B], 150 * H, 60 * H, INTERIOR_Y).fades?.mid ?? PLANES.mid.fade, PLANES.mid.fade);
+  assert.equal(blendAtmos([A, B], 150 * H, 60 * H, INTERIOR_Y).glow.plain, true);
+  let prev = null;
+  for (let x = 85 * H; x <= 115 * H; x += 0.5 * H) {
+    const f = blendAtmos([A, B], x, 60 * H, INTERIOR_Y).fades?.mid ?? PLANES.mid.fade;
+    if (prev !== null) assert.ok(f >= prev - 1e-9 && f - prev < 0.02, `gradual at ${x / H} H (${prev} -> ${f})`);
+    prev = f;
+  }
+  assert.equal(blendAtmos([A, B], 50 * H, 60 * H, INTERIOR_Y).fades.far, undefined, "a plane it does not name keeps its own");
+});
+
 test("Tsuji's Chain Stair and the East Pavilion's galleries: zigzag up to the top and back down to the street", async () => {
   const { TSUJI_Y } = await import("./world/sections/shanshui.ts");
   const { PEAK_Y } = await import("./world/sections/tsuji.ts");

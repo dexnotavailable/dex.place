@@ -4,7 +4,7 @@
 // so gradually, over that many px centred on its edges, so a fall, a ride or a walk through a
 // change of light never snaps. Width 0 (the default) is the old hard switch, exactly.
 
-import type { Atmos } from "./world/types.ts";
+import { PLANES, PLANE_IDS, type Atmos } from "./world/types.ts";
 
 type RGB = [number, number, number];
 
@@ -77,14 +77,28 @@ export function mixAtmos(a: Atmos, b: Atmos, t: number): Atmos {
     grade: [ga[0] + (gb[0] - ga[0]) * t, ga[1] + (gb[1] - ga[1]) * t, ga[2] + (gb[2] - ga[2]) * t, ga[3] + (gb[3] - ga[3]) * t],
     glow: mixGlow(a.glow, b.glow, t),
     fog: mixFog(a.fog, b.fog, t),
+    fades: mixFades(a.fades, b.fades, t),
   };
+}
+
+/** A place's own plane hazes across a change of place (undefined where neither has one: the plane's own). */
+function mixFades(a: Atmos["fades"], b: Atmos["fades"], t: number): Atmos["fades"] {
+  if (!a && !b) return undefined;
+  const out: NonNullable<Atmos["fades"]> = {};
+  for (const id of PLANE_IDS) {
+    const va = a?.[id], vb = b?.[id];
+    if (va === undefined && vb === undefined) continue;
+    const pa = va ?? PLANES[id].fade, pb = vb ?? PLANES[id].fade;
+    out[id] = pa + (pb - pa) * t;
+  }
+  return out;
 }
 
 /** The sun's bloom across a change of place: it fades in or out with t where only one has it. */
 function mixGlow(a: Atmos["glow"], b: Atmos["glow"], t: number): Atmos["glow"] {
   if (!a && !b) return undefined;
   const ga = a ?? { ...b!, strength: 0 }, gb = b ?? { ...a!, strength: 0 };
-  return { radius: ga.radius + (gb.radius - ga.radius) * t, strength: ga.strength + (gb.strength - ga.strength) * t, colour: mixHex(ga.colour, gb.colour, t) };
+  return { radius: ga.radius + (gb.radius - ga.radius) * t, strength: ga.strength + (gb.strength - ga.strength) * t, colour: mixHex(ga.colour, gb.colour, t), plain: (t >= 0.5 ? gb : ga).plain };
 }
 
 /** Fog banks across a change of place: each plane's bank thins away (or gathers) with t. */
