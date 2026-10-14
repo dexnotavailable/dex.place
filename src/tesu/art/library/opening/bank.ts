@@ -232,7 +232,9 @@ const MIRROR = [0.58, 0.76, 0.75];
 // (round-3 integration: p1's glassier lake, deep #528995 and the near water as it now reads on
 // screen, so the painted reflections stay one step under the lake instead of two)
 const DEEP = [82, 137, 149];
-const NEAR = [96, 148, 158];
+// (round 5: the near water as it now reads at play zoom, so a fading reflection stays a step under it
+// instead of turning into a paler green block)
+const NEAR = [80, 136, 154];
 // (round 5: no umber and no roof-tile blue-greys among them: a rise's earth mirrored as red-brown
 // ovals, the limestone as a lavender block)
 const REFL = [
@@ -252,7 +254,7 @@ function reflOf(col: number, f: number, ink: number): number {
   const hit = reflMemo.get(key);
   if (hit !== undefined) return hit;
   const c = rgbOf(col);
-  const k = [0.16, 0.36, 0.55, 0.72][clamp(f, 0, 3)]!;
+  const k = [0.1, 0.22, 0.34, 0.46][clamp(f, 0, 3)]!;
   const want: number[] = [];
   for (let i = 0; i < 3; i++) {
     const seen = c[i]! * (1 - 0.3) + INK[i]! * 0.3;
@@ -333,7 +335,7 @@ function ripple(R: Ripple, lx: number, s: number): number {
     const si = Math.floor((lx + L * hash1(k, R.seed + 73)) / L);
     if (hash(si, k, R.seed + 74) < 0.62) return NaN;
   }
-  if (fade > 0.5 && bayer4(Math.floor(lx), row) < (fade - 0.5) * 1.6) return NaN;
+  if (fade > 0.38 && bayer4(Math.floor(lx), row) < (fade - 0.38) * 1.5) return NaN;
   const amp = Math.min(1.6, 0.15 + s / 22);
   return Math.round((vnoise1(s / 6.5, R.seed + 75) - 0.5) * 2 * amp);
 }

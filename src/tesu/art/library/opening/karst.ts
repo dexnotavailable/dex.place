@@ -651,7 +651,7 @@ function skyTree(c: PaintCtx, x: number, y: number, hgt: number, K: Look, seed: 
   for (let t = 0; t < nT; t++) {
     const at = hgt * (0.42 + 0.5 * (t / Math.max(1, nT - 1))) * (0.92 + 0.12 * hash1(10 + t, seed));
     const side = t === nT - 1 ? 0 : (hash1(20 + t, seed) < 0.5 ? -1 : 1);
-    const pw = hgt * (0.2 + 0.24 * hash1(30 + t, seed)) * (t === nT - 1 ? 1.15 : 1);
+    const pw = hgt * (0.15 + 0.17 * hash1(30 + t, seed)) * (t === nT - 1 ? 1.1 : 1);
     const ph = Math.max(1.2 / d, pw * (0.26 + 0.1 * hash1(40 + t, seed)));
     const px = trunk(at) + side * pw * 0.45, py = y - at;
     // its branch out to the pad

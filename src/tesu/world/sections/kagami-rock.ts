@@ -38,7 +38,9 @@ export function kagamiRock(b: WorldBuilder): void {
   // blocks heaped in the shallows, spreading toward the camera, so the water's end never shows
   // as a ruled edge in front of the rock (pullback, jetty-6s, play-catch, play-east); P5's east
   // corner takes over below it
-  b.piece("front", "op.scree", h(109.25), LAKE_Y, { w: 140, deep: 82, h: 28 }, { z: 0, seed: 7919 * 3020 });
+  // (round 5: the chain runs further toward the camera, so the cliff face under the lake's end never
+  // shows as a pale wedge with a ruled side below the blocks)
+  b.piece("front", "op.scree", h(109.25), LAKE_Y, { w: 140, deep: 128, h: 30 }, { z: 0, seed: 7919 * 3020 });
   // (round 5, the critic's "teal triangle", fourth round) the east lip behind the jetty's end: a
   // stack of chunks standing in the lake where it runs out against Shiraito's wall, the wall's
   // first veil pouring down a gully in it into the falls' pool at its foot (behind the station,

@@ -269,7 +269,9 @@ export const wall = definePainter<WallP>("op.wall", {
       top: lip,
       bottom: [p.w + 20, lip[lip.length - 1]! + 30, p.w + 10, p.h, -10, p.h, ...west, -20, lip[1]! + 30],
       cap: "grass", capH: 7, rough: 8, teeth: 0, veg: p.veg ?? 0.8, shade: 0.1,
-      col: p.col ?? 16, bed: p.bed ?? 110, fadeY: p.fadeY ?? p.h * 0.6, fadeH: p.fadeH ?? p.h * 0.2,
+      // (round 5, the critic: "the blank lip face") smaller beds, so the face reads as bedded blocks with
+      // lit ledges and dark joints even through the haze, not one smooth plate
+      col: p.col ?? 14, bed: p.bed ?? 58, fadeY: p.fadeY ?? p.h * 0.6, fadeH: p.fadeH ?? p.h * 0.2,
     };
     paintRock(c, rp);
     paintThreads(c, p, threadsOf(p, c.seed));

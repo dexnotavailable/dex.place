@@ -552,8 +552,11 @@ function blockAt(B: Block[], lx: number, ly: number, seed: number): number {
     // (edges wander at two scales and lean a little; the corners broken off: hand-broken
     // chunks, never ruled boxes)
     const v = (ly - b.y0) / Math.max(1, b.y1 - b.y0);
-    const e = (vnoise1(ly / 3 + b.s, seed + 21) - 0.5) * 1.6 + (vnoise1(ly / 11 + b.s, seed + 24) - 0.5) * 2.4 - b.slant * (b.y1 - b.y0) * v;
-    const e2 = (vnoise1(ly / 3 + b.s + 50, seed + 21) - 0.5) * 1.6 + (vnoise1(ly / 11 + b.s + 50, seed + 24) - 0.5) * 2.4 + b.slant * (b.y1 - b.y0) * v;
+    // (round 5, the critic: "flat-value stacked cubes") each hanging block tapers as it hangs, its
+    // right side drawn in more than its left
+    const tp = b.tier === 0 ? 0 : (b.x1 - b.x0) * (b.tier === 9 ? 0.32 : 0.14) * Math.pow(Math.max(0, v), 1.3);
+    const e = (vnoise1(ly / 3 + b.s, seed + 21) - 0.5) * 1.6 + (vnoise1(ly / 11 + b.s, seed + 24) - 0.5) * 2.4 - b.slant * (b.y1 - b.y0) * v + tp * 0.4;
+    const e2 = (vnoise1(ly / 3 + b.s + 50, seed + 21) - 0.5) * 1.6 + (vnoise1(ly / 11 + b.s + 50, seed + 24) - 0.5) * 2.4 + b.slant * (b.y1 - b.y0) * v + tp * 0.6;
     const f = (vnoise1(lx / 3 + b.s, seed + 22) - 0.5) * 1.4 + (vnoise1(lx / 13 + b.s, seed + 25) - 0.5) * 3;
     if (lx < b.x0 + e || lx >= b.x1 - e2 || ly < b.y0 || ly >= b.y1 + f) continue;
     // (the lower corners chipped away)
@@ -714,7 +717,8 @@ export const isle = definePainter<IsleP>("op.isle", {
         // light: the left face and the top lit, the right and the underside in shade
         // (flat planes, not a gradient: the lit face, the front, the shaded side, in steps)
         const wob = (vnoise1(ly / 5 + bl.s, seed + 26) - 0.5) * 0.12;
-        let t = 0.36 + (u + wob < 0.26 ? -0.16 : u + wob > 0.7 ? 0.17 : 0) + (v > 0.62 ? 0.1 : 0) + 0.04 * Math.min(4, bl.tier);
+        // (round 5: a lit left face, the front turning, a dark right side: never one flat value)
+        let t = 0.34 + (u + wob < 0.22 ? -0.22 : u + wob > 0.66 ? 0.26 : (u - 0.44) * 0.3) + (v > 0.62 ? 0.1 : 0) + 0.04 * Math.min(4, bl.tier);
         // the overhang's shadow: under a block of an upper tier
         if (blockAt(B, lx, ly - 3, seed) >= 0 && B[blockAt(B, lx, ly - 3, seed)]!.tier < bl.tier) t += 0.18;
         // the block's own underside, a step darker
@@ -766,12 +770,26 @@ export const isle = definePainter<IsleP>("op.isle", {
     const fx = p.w * 0.3;
     let lip = 0;
     for (const bl of B) if (fx + 3 >= bl.x0 && fx + 3 < bl.x1) lip = Math.max(lip, bl.y1);
+    // (round 5, the critic: "ruler-straight 1 px rules") it wavers on the wind, thick where it
+    // leaves the lip, then beads into drops further down and breaks into a drift of spray
     for (let ly = isleTop(p, fx, seed); ly < lip + 70; ly += 0.5 / d) {
       const below = ly - lip;
-      const sway = below > 0 ? Math.sin(below / 11) * 0.8 + below * 0.03 : 0;
+      const sway = below > 0 ? Math.sin(below / 9 + seed) * Math.min(2.2, 0.4 + below * 0.05) + (vnoise1(below / 4, seed + 61) - 0.5) * 1.2 + below * 0.05 : 0;
       const X = Math.round(c.X(fx + 3 + sway)), Y = Math.round(c.Y(ly));
-      if (below > 0 && bay(X, Y, K) > 1 - below / 60) continue;
-      b.set(X, Y, below > 25 ? P.cumulus[3]! : P.cumulus[0]!);
+      if (below > 18) {
+        // beads: drops strung out with gaps that grow as it falls
+        const per = 4 + below * 0.08;
+        if ((below % per) > per * (0.65 - below / 160)) continue;
+        if (below > 44) {
+          // spray: drops scattered either side, thinning out
+          if (hash1(Math.floor(below * 2), seed + 62) > 1 - (below - 44) / 30) continue;
+          const off = Math.round((hash1(Math.floor(below * 2), seed + 63) - 0.5) * (below - 40) * 0.25);
+          b.set(X + off * K, Y, P.cumulus[2]!);
+          continue;
+        }
+      }
+      b.set(X, Y, below > 25 ? P.cumulus[2]! : P.cumulus[0]!);
+      if (below < 10 && d >= 1) b.set(X + 1, Y, P.cumulus[3]!);
     }
     // the scrap of cloud it frays into: a small flattened heap in the sky's one cloud family
     const sx = fx + 4, sy = lip + 64;

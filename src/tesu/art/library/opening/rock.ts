@@ -1105,6 +1105,50 @@ export const scree = definePainter<ScreeP>("op.scree", {
       const x0 = W * a + (r() - 0.5) * 4, base = D * bs;
       ks.push({ x0, x1: x0 + sw, top: base - sh, foot: base + 2, tilt: (r() - 0.5) * 0.2, z: 0.8, cap: r() < 0.5 ? 1 : 0, water: base, seed: seed + 200 + Math.round(bs * 100) });
     }
+    // (round 5: "a pale wedge with a ruled side" under the lake's end) behind the blocks, toward the
+    // lip, a heap of wet talus in shadow: small dark blocks and grit sloping down toward the camera,
+    // its west edge stepping out irregularly, so no bare face of the cliff shows between the blocks
+    {
+      const tx0 = W * 0.08;
+      const edge = (ly: number): number => tx0 + W * 0.42 * clamp(1 - ly / (D * 1.05), 0, 1) + (vnoise1(ly / 7, seed + 70) - 0.5) * 10 + (hash1(Math.floor(ly / 6), seed + 71) - 0.5) * 6;
+      const X0 = Math.max(b.ox, Math.floor(c.X(tx0 - 8))), X1 = Math.min(b.x1, Math.ceil(c.X(W + 24)));
+      const Y0 = Math.max(b.oy, Math.floor(c.Y(-6))), Y1 = Math.min(b.y1, Math.ceil(c.Y(D * 1.08)));
+      for (let y = Y0; y < Y1; y++) {
+        const ly = LY(c, y);
+        const ex = edge(ly);
+        for (let x = X0; x < X1; x++) {
+          const lx = LX(c, x);
+          // (its top a few stones breaking the water, never a ruled line along it)
+          if (ly < 1.5 - 5 * vnoise1(lx / 6, seed + 80) * vnoise1(lx / 17, seed + 81) - 2 * hash1(Math.floor(lx / 4), seed + 82)) continue;
+          // (its east side heaped against the cliff's foot in stones of their own, never a ruled edge)
+          if (lx < ex || lx > W + 6 - W * 0.4 * clamp(ly / D, 0, 1) + (vnoise1(ly / 9, seed + 72) - 0.5) * 20 + (hash1(Math.floor(ly / 5), seed + 79) - 0.5) * 12) continue;
+          // (its foot ends in stones of their own sizes, never a ruled bottom)
+          if (ly > D * 0.9 - 14 * vnoise1(lx / 8, seed + 83) - 6 * hash1(Math.floor(lx / 5), seed + 84)) continue;
+          // rubble: stones of their own sizes heaped together (bigger lower down, toward the camera),
+          // each lit on its upper left, dark in the gaps between them
+          const cs = 5 + 0.05 * ly;
+          const gx = Math.floor(lx / cs), gy = Math.floor(ly / (cs * 0.8));
+          let best = 9, b2 = 9, bdx = 0, bdy = 0, bid = 0;
+          for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
+            const hx = hash1((gx + i) * 4099 + (gy + j) * 131, seed + 74), hy = hash1((gx + i) * 4099 + (gy + j) * 131, seed + 75);
+            const cx = (gx + i + 0.15 + 0.7 * hx) * cs, cy = (gy + j + 0.15 + 0.7 * hy) * cs * 0.8;
+            const rr = cs * (0.6 + 0.35 * hash1((gx + i) * 4099 + (gy + j) * 131, seed + 76));
+            const q = Math.hypot(lx - cx, (ly - cy) * 1.2) / rr;
+            if (q < best) { b2 = best; best = q; bdx = (lx - cx) / rr; bdy = (ly - cy) / rr; bid = (gx + i) * 4099 + (gy + j) * 131; } else if (q < b2) b2 = q;
+          }
+          const tn = hash1(bid, seed + 78);
+          const lit = -0.62 * bdx - 0.78 * bdy;
+          let col: number;
+          if ((b2 - best < 0.14 && best > 0.5) || best > 1.05) col = P.karst[8]!;
+          else if (lit > 0.45) col = tn > 0.5 ? P.karst[4]! : P.karst[5]!;
+          else if (lit < -0.3) col = P.karst[7]!;
+          else col = tn > 0.6 ? P.karst[5]! : P.karst[6]!;
+          if (lx - ex < 2) col = P.karst[8]!;
+          if (col !== P.karst[8] && vnoise(lx / 2.5, ly / 3, seed + 77) > 0.74) col = P.moss[6]!;
+          b.set(x, y, col);
+        }
+      }
+    }
     // the reflections first (each block's, below its own waterline, broken by ripples and
     // fading downward), then the blocks back to front over them
     for (const k of ks) {
