@@ -315,15 +315,29 @@ interface Ripple {
  */
 function ripple(R: Ripple, lx: number, s: number): number {
   if (s < 0) return NaN;
-  const row = Math.floor(s / 2);
+  // (round 4: the critic's "scanline reflections": every 2 px row shifted on its own and broken
+  // into short dashes read as a venetian blind) one soft mirrored copy: the rows sway together in
+  // a slow wave that grows downward; a few thin ripple lines of water cross it in long broken runs,
+  // more of them further down; near its end it dissolves in long runs, not dashes
   const fade = clamp(s / R.len, 0, 1.3);
-  if (row > 0 && hash1(row, R.seed + 71) < 0.05 + fade * 0.32) return NaN;
-  const L = 3 + 16 * hash1(row, R.seed + 72);
-  const si = Math.floor((lx + L * hash1(row, R.seed + 73)) / L);
-  if (hash(si, row, R.seed + 74) < Math.pow(fade, 1.25) * 0.94) return NaN;
-  return Math.round((hash1(row, R.seed + 75) - 0.5) * 2 * Math.min(2.5, 0.2 + s / 16));
+  const row = Math.floor(s);
+  if (row > 2 && hash1(row, R.seed + 71) < 0.03 + fade * 0.2) {
+    const L = 16 + 34 * hash1(row, R.seed + 72);
+    const si = Math.floor((lx + L * hash1(row, R.seed + 73)) / L);
+    if (hash(si, row, R.seed + 74) < 0.8) return NaN;
+  }
+  if (fade > 0.55) {
+    const g = Math.floor(s / 3);
+    const L = 18 + 30 * hash1(g, R.seed + 76);
+    const si = Math.floor((lx + L * hash1(g, R.seed + 77)) / L);
+    if (hash(si, g, R.seed + 78) < (fade - 0.55) * 1.5) return NaN;
+  }
+  const amp = Math.min(2.2, 0.15 + s / 16);
+  return Math.round((vnoise1(s / 5.5, R.seed + 75) - 0.5) * 2 * amp + (vnoise1(s / 1.7, R.seed + 79) - 0.5) * 0.9 * Math.min(1, s / 12));
 }
-const fadeOf = (R: Ripple, s: number): number => Math.min(3, Math.floor(clamp(s / R.len, 0, 1) * 3.6));
+// (round 4: it fades toward the water faster, so where a mass's mirrored top ends there is little
+// left to end: no hard window of water in a long reflection)
+const fadeOf = (R: Ripple, s: number): number => Math.min(3, Math.floor(clamp(s / (R.len * 0.62), 0, 1) * 3.6));
 
 /** A pen that puts what it is given mirrored about the waterline, through the ripples. */
 function mirrorPen(c: PaintCtx, R: Ripple): Pen {
@@ -488,15 +502,44 @@ function chunkCol(c: PaintCtx, ks: Chunk[], i: number, lx: number, ly: number, x
   }
   if (s < 1.05 && k.dep < 0.75) return u < 0.55 ? P.karst[2]! : P.karst[4]!;
   if (lx - xL < 1.05 && s < H * 0.8 && k.dep < 0.6 && vnoise1(ly / 6, sd + 24) > 0.35) return P.karst[3]!;
-  let t = 0.27 + k.dep * 0.3 + u * 0.3 + clamp(s / 150, 0, 0.14) + (vnoise(lx / 26, ly / 19, sd + 25) - 0.5) * 0.16;
+  let t = 0.27 + k.dep * 0.3 + u * 0.3 + clamp(s / 150, 0, 0.14) + (vnoise(lx / 8, ly / 46, sd + 25) - 0.5) * 0.12;
+  // (round 4, Dex: "the columnar stone") a tall block is bedded: it breaks into beds of their own
+  // heights along wobbling bedding planes (some running only part of the way across), each bed a
+  // little forward or back of the one over it (a shadow under an overhang, a lit lip on a step
+  // out), its joints shifting at every bed: stacked blocks, never one column running down the face
+  let bi = 0;
+  if (H > 30) {
+    const bh = 24 + 22 * hash1(7, sd);
+    let yb = 8 + hash1(8, sd) * bh * 0.8;
+    const sw = s + (vnoise1(lx / 19, sd + 80) - 0.5) * 4 + (vnoise1(lx / 5, sd + 81) - 0.5) * 1.3 + k.tilt * 0.5 * (lx - k.x0);
+    let b0 = 0;
+    let bE = Infinity;
+    while (yb <= sw && bi < 40) { b0 = yb; yb += bh * (0.7 + 0.8 * hash1(bi, sd + 82)); bi++; }
+    bE = yb;
+    if (bi > 0) {
+      const ua = hash1(bi, sd + 83) < 0.35 ? 0.1 + 0.45 * hash1(bi, sd + 84) : -1, ub = hash1(bi, sd + 85) < 0.35 ? 0.45 + 0.45 * hash1(bi, sd + 86) : 2;
+      const recessed = hash1(bi, sd + 87) < 0.4, prevRec = hash1(bi - 1, sd + 87) < 0.4;
+      const ds = sw - b0;
+      if (u > ua && u < ub) {
+        if (recessed && !prevRec && ds < 2.5 + 3.5 * hash1(bi, sd + 88)) t += 0.3;
+        else if (ds < 0.75 && recessed === prevRec) t += 0.3;
+        else if (!recessed && prevRec && ds < 1.8) t -= 0.18;
+      }
+      if (recessed) t += 0.1;
+      // its weathered front edge turning under into shade at the bed's foot
+      if (bE - sw < 2.2 && !recessed) t += 0.1;
+      t += (hash1(bi, sd + 89) - 0.5) * 0.08;
+    }
+  }
   // its planes: which facet, a crack at each joint with a lit lip on the facet beyond it
   let fi = 0;
   for (let j = 0; j < k.joints.length; j++) {
-    const jx = xL + w * k.joints[j]! + (vnoise1(ly / 7, sd + 60 + j) - 0.5) * 3 + (vnoise1(ly / 2.3, sd + 64 + j) - 0.5) * 0.8;
+    const jx = xL + w * clamp(k.joints[j]! + (bi > 0 ? (hash1(bi * 7 + j, sd + 90) - 0.5) * 0.3 : 0), 0.08, 0.92) + (vnoise1(ly / 7, sd + 60 + j) - 0.5) * 3 + (vnoise1(ly / 2.3, sd + 64 + j) - 0.5) * 0.8;
     const dd = lx - jx;
     if (dd >= 0) fi = j + 1;
-    if (Math.abs(dd) < 0.55 && s > 2) t += 0.38;
-    else if (dd >= 0.55 && dd < 1.6 && s > 2) t -= 0.14;
+    const shown = bi === 0 || hash1(bi * 5 + j, sd + 91) < 0.55;
+    if (Math.abs(dd) < 0.55 && s > 2 && shown) t += 0.38;
+    else if (dd >= 0.55 && dd < 1.6 && s > 2 && shown) t -= 0.14;
   }
   t += k.turn[fi] ?? 0;
   if (k.joints.length === 0 && u > 0.76 + (vnoise1(ly / 8, sd + 26) - 0.5) * 0.18) t += 0.18;
@@ -761,12 +804,15 @@ function earthCol(c: PaintCtx, e: Earth, lx: number, ly: number, x: number, y: n
   if (up < 1.4 + 2.4 * vnoise1(lx / 6, sd + 1)) return vnoise1(lx / 2.6, sd + 2) > 0.66 ? P.moss[6]! : P.pine[5]!;
   const sl = e.top(lx + 2) - e.top(lx - 2);
   if (s < 1) return sl > 0.5 ? P.earth[3]! : P.earth[4]!;
-  // under the grass that overhangs its top: deep shade
+  // under the grass that overhangs its top: deep shade, the grass's own dark (round 4: a brown
+  // band here read as a stripe of mud across the rise)
+  if (s < 5 + 4 * vnoise1(lx / 7, sd + 3)) return step(c, [P.moss[7]!, P.pine[4]!, P.pine[5]!], 0.25 + s * 0.08 + (vnoise(lx / 5, ly / 3, sd + 14) - 0.5) * 0.3, x, y);
   let t = 0.38 + e.wet * 0.2 + (s < 6 + 4 * vnoise1(lx / 7, sd + 3) ? 0.3 : 0) + (vnoise(lx / 22, ly / 9, sd + 4) - 0.5) * 0.24;
   // mud shelves: a lit lip on each, a dark undercut under it, each wandering along
   for (const h of e.shelves) {
-    const dd = ly - (F - h + (vnoise1(lx / 19, sd + 5 + Math.round(h)) - 0.5) * 3);
-    if (dd >= 0 && dd < 1.1 && vnoise1(lx / 11, sd + 6 + Math.round(h)) > 0.35) return sl > -0.6 && vnoise1(lx / 5, sd + 7) > 0.45 ? P.earth[3]! : P.earth[4]!;
+    // (round 4: short shelves that wander, never a stripe across the bank)
+    const dd = ly - (F - h + (vnoise1(lx / 19, sd + 5 + Math.round(h)) - 0.5) * 7 + (vnoise1(lx / 6, sd + 15 + Math.round(h)) - 0.5) * 2.5);
+    if (dd >= 0 && dd < 1.1 && vnoise1(lx / 11, sd + 6 + Math.round(h)) > 0.6) return sl > -0.6 && vnoise1(lx / 5, sd + 7) > 0.45 ? P.earth[3]! : P.earth[4]!;
     if (dd < 0 && dd > -2.4) t += 0.2;
   }
   // pebbles in the mud by the water, in clusters
@@ -874,15 +920,18 @@ function padStrokes(c: PaintCtx, p: PadSpec): void {
   if (d < 0.2) return;
   const pen: Pen = (x, y, k) => dot(c, x, y, k);
   const r = rng(p.seed);
-  const n = p.n;
+  // (round 4: lying at one waterline, a few of them, not a crowd)
+  const n = Math.min(p.n, 3 + Math.round(p.w / 10));
   let gx = p.x0 + p.w * 0.5;
   for (let i = 0; i < n; i++) {
     // in drifts of three or four, then a jump
     if (i % 4 === 0) gx = p.x0 + p.w * (0.1 + 0.8 * r());
+    // (round 4: the critic's "lily-pad ladder": pads float, so side-on they are thin slivers at
+    // one waterline, overlapping in a drift, never lozenges stacked down the water)
     const v = r() * r();
-    const py = p.wl + 2 + v * (p.deep - p.wl - 2);
-    const rx = (4 + r() * 6) * (0.75 + 0.9 * v), th = Math.max(1.4, rx * 0.22);
-    const px = clamp(gx + (r() - 0.5) * 16 * (0.6 + v), p.x0, p.x0 + p.w);
+    const py = p.wl + 1 + v * Math.min(5, (p.deep - p.wl) * 0.06);
+    const rx = (3 + r() * 6) * (0.8 + 0.5 * v), th = Math.max(1, rx * 0.13);
+    const px = clamp(gx + (r() - 0.5) * 22, p.x0, p.x0 + p.w);
     const notch = rx * (0.6 * r() - 0.3);
     for (let ox = -rx; ox <= rx; ox += 0.5) {
       if (Math.abs(ox - notch) < 0.6 && i % 3 !== 1) continue;
@@ -930,11 +979,14 @@ function shelfBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] 
   const bank = s.bank ?? 0;
   // the steps: [from, to (share along it from the tall end), height share, depth, foot nearer by, cap]
   const steps: [number, number, number, number, number, number][] = [
-    [0.0, 0.36 + 0.06 * r(), 1, 0.55, 0, 0.9],
-    [-0.04, 0.22 + 0.05 * r(), 0.62 + 0.08 * r(), 0.08, 26 + 10 * r(), 0.5],
-    [0.32 + 0.04 * r(), 0.58 + 0.05 * r(), 0.76 + 0.1 * r(), 0.28, 2 + 4 * r(), 0.9],
-    [0.54 + 0.04 * r(), 0.78 + 0.04 * r(), 0.48 + 0.08 * r(), 0.14, 9 + 5 * r(), 0.8],
-    [0.75 + 0.03 * r(), 0.93 + 0.04 * r(), 0.24 + 0.06 * r(), 0.04, 16 + 6 * r(), 0.5],
+    // (round 4: the critic's "staircase of boxes": not a row stepping down, but a tall block, a
+    // low one in front of its foot, a taller one behind that, a small one nearest: a skyline that
+    // steps up and down, the blocks overlapping in depth)
+    [0.0, 0.34 + 0.05 * r(), 1, 0.55, 0, 0.9],
+    [-0.04, 0.2 + 0.05 * r(), 0.55 + 0.08 * r(), 0.08, 26 + 10 * r(), 0.5],
+    [0.27 + 0.04 * r(), 0.5 + 0.05 * r(), 0.4 + 0.08 * r(), 0.06, 12 + 5 * r(), 0.8],
+    [0.44 + 0.04 * r(), 0.7 + 0.05 * r(), 0.72 + 0.08 * r(), 0.4, 2 + 3 * r(), 0.9],
+    [0.66 + 0.04 * r(), 0.86 + 0.04 * r(), 0.2 + 0.06 * r(), 0.04, 18 + 6 * r(), 0.5],
   ];
   const ks: Chunk[] = [];
   steps.slice(0, Math.min(steps.length, s.n ?? steps.length)).forEach(([a, b, hk, dep, nearer, cap], i) => {
@@ -1001,11 +1053,12 @@ function outcropBody(s: MassSpec, seed: number, wl: number, deep: number): Part[
   const f = wl + (s.foot ?? 0);
   // [from, to, top share, depth, foot nearer by, cap]
   const plan: [number, number, number, number, number, number][] = [
-    [0.22 + 0.04 * r(), 0.6 + 0.04 * r(), 0.9 + 0.05 * r(), 0.62, 0, 0.8],
-    [0.02, 0.34 + 0.04 * r(), 0.7 + 0.08 * r(), 0.14, 2, 0.9],
-    [0.55 + 0.03 * r(), 0.84 + 0.04 * r(), 0.44 + 0.1 * r(), 0.3, 3, 0.9],
-    [0.13 + 0.04 * r(), 0.33 + 0.04 * r(), 0.24 + 0.06 * r(), 0.0, 9, 0.5],
-    [0.81 + 0.03 * r(), 0.97, 0.16 + 0.05 * r(), 0.08, 7, 0.6],
+    // (round 4: unlike play-west's shelf, its skyline peaks left of middle and falls both ways)
+    [0.24 + 0.04 * r(), 0.6 + 0.04 * r(), 0.92 + 0.05 * r(), 0.62, 0, 0.8],
+    [0.02, 0.3 + 0.04 * r(), 0.52 + 0.08 * r(), 0.14, 2, 0.9],
+    [0.5 + 0.03 * r(), 0.78 + 0.04 * r(), 0.64 + 0.08 * r(), 0.3, 3, 0.9],
+    [0.16 + 0.04 * r(), 0.4 + 0.04 * r(), 0.22 + 0.06 * r(), 0.0, 9, 0.5],
+    [0.74 + 0.03 * r(), 0.92, 0.3 + 0.06 * r(), 0.08, 7, 0.6],
   ];
   const ks: Chunk[] = [];
   plan.slice(0, s.n ?? plan.length).forEach(([a, b, hk, dep, nearer, cap], i) => {
@@ -1038,7 +1091,8 @@ function bankParts(x0: number, x1: number, out: number, wl: number, deep: number
   const edge = (ly: number): number => {
     const v = clamp((ly - wl) / Math.max(1, deep - wl), 0, 1);
     const k = Math.floor((ly - wl + 5 * vnoise1(ly / 13, seed + 1)) / C);
-    const jog = (hash1(k, seed + 2) - 0.5) * reach * 0.2 * rough;
+    // (round 4: small jogs; its edge wanders down, never a stair cut)
+    const jog = (hash1(k, seed + 2) - 0.5) * reach * 0.07 * rough;
     return outer + dir * (reach * (1 - taper * Math.pow(v, 0.8)) + jog * (1 - v * taper) + (vnoise1(ly / 23, seed + 3) - 0.5) * reach * 0.14 * (1 - v * taper) + (vnoise1(ly / 4.6, seed + 4) - 0.5) * 2.5);
   };
   // its outer side wanders too (where it is seen, it is a shore of its own, never a cut)
@@ -1063,12 +1117,14 @@ function bankParts(x0: number, x1: number, out: number, wl: number, deep: number
       const v = clamp((ly - wl) / Math.max(1, deep - wl), 0, 1);
       const g = vnoise(lx / 19, ly / 8, sd + 5);
       const t = 0.3 + v * 0.5 + (g - 0.5) * 0.3 + (din < 10 ? 0.12 : 0);
-      return g < 0.32 ? step(c, [P.umber[2]!, P.umber[3]!, P.umber[4]!, P.pine[5]!], t, x, y) : step(c, [P.moss[6]!, P.moss[7]!, P.pine[4]!, P.pine[5]!], t, x, y);
+      // (round 4: bare earth only in small dark patches: brighter umber read as red blobs)
+      return g < 0.22 ? step(c, [P.umber[3]!, P.umber[4]!, P.pine[5]!], t, x, y) : step(c, [P.moss[6]!, P.moss[7]!, P.pine[4]!, P.pine[5]!], t, x, y);
     },
   }];
   // dark tussocks on it in rows, darker toward the camera, keeping clear of its wet inner edge
   const r = rng(seed + 20);
-  for (let y = wl + 8; y < Math.min(deep, wl + 150); y += 9 + r() * 7) {
+  // (round 4: from its very top, so no band of bare earth runs along it under the crown)
+  for (let y = wl + 3; y < Math.min(deep, wl + 150); y += 9 + r() * 7) {
     const e = edge(y);
     let x = oedge(y) + dir * 6;
     while (dir > 0 ? x < e - 10 : x > e + 10) {
@@ -1099,7 +1155,7 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
     x0: s.x - 4, x1: s.x + s.w + 4, bot: f, foot, wet: 0.3, shelves: [3 + 3 * r(), 9 + 5 * r(), 18 + 8 * r()], seed: seed + 5,
     top: (lx) => {
       const e = E(lx);
-      return e === -Infinity || e < 1 ? Infinity : f - Math.max(1, e - 7 - 8 * vnoise1(lx / 19, seed + 6));
+      return e === -Infinity || e < 1 ? Infinity : f - Math.max(1, e - 7 - 8 * vnoise1(lx / 19, seed + 6) - 7 * vnoise1(lx / 6.5, seed + 16));
     },
   }));
   // tussocks: a crown band along the envelope, then bands lower down, darker, overlapping, down to
@@ -1118,8 +1174,12 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
         const y = f - e + dy + (r() - 0.5) * 5 + ry * 0.95;
         const io = inner > 0 ? u - peak : peak - u;
         const open = band > 0 && io > 0.18 && r() < clamp((q - 0.25) * 1.6 + io, 0, 0.88);
-        if (y < foot(x) - 5 - e * 0.07 && !open) {
-          const lit = clamp(0.98 - q * 1.05 - Math.max(0, io) * 0.45 + (r() - 0.5) * 0.15, 0, 1);
+        // (round 4: in stretches the tussocks come down to the water over the mud, so its foot is
+        // never one long band of earth)
+        if (y < foot(x) - (vnoise1(x / 37, seed + 17) > 0.52 ? 1.5 : 5 + e * 0.07) && !open) {
+          // (round 4, the critic: the near corner is ref 04's dark mass lit only along its rim) the
+          // crown band catches the sun on its tips, everything under it sinks into shade fast
+          const lit = clamp(0.84 - q * 1.6 - Math.max(0, io) * 0.5 + (r() - 0.5) * 0.15, 0, 1);
           parts.push(tuftPart({ x, y, rx, ry, lit, dark: clamp(q * 0.95 + Math.max(0, io) * 0.25, 0, 1), seed: seed + 1000 + band * 300 + Math.round(x) }, f, band === 0 && !small));
         }
       }
@@ -1166,7 +1226,17 @@ function bar(x0: number, w: number, h: number, seed: number): (lx: number) => nu
 function mudBody(s: MassSpec, seed: number, wl: number, deep: number, dark: number): Part[] {
   const r = rng(seed + 1);
   const f = wl + (s.foot ?? 0);
-  const E = bar(s.x, s.w, s.h, seed + 2);
+  // (round 4: the critic's "mud raft": a lens with a flat bottom floating on the water) its ends
+  // break up and sink: lower lumps with water between them, so it rises out of the shallows
+  const E0 = bar(s.x, s.w, s.h, seed + 2);
+  const E = (lx: number): number => {
+    const u = (lx - s.x) / s.w;
+    const e = E0(lx);
+    if (u > 0.2 && u < 0.8) return e;
+    const k = u <= 0.2 ? u / 0.2 : (1 - u) / 0.2;
+    const g = clamp((vnoise1(lx / 6.5, seed + 8) - 0.4 - 0.3 * (1 - k)) / 0.1, 0, 1);
+    return g > 0 ? e * (0.45 + 0.5 * k) * Math.sqrt(g) : -Infinity;
+  };
   const foot = wanderFoot(f, Math.min(10, 3 + s.h * 0.2), seed + 3);
   const parts: Part[] = [];
   parts.push(earthPart({ x0: s.x, x1: s.x + s.w, bot: f, foot, wet: dark, shelves: [2 + 2 * r(), 6 + 4 * r()], seed: seed + 5, top: (lx) => { const e = E(lx); return e < 0.8 ? Infinity : f - e; } }));
@@ -1541,7 +1611,7 @@ function shallowsOf(p: ShallowsP, seed: number): Body[] {
       return out;
     }
     // the spit: a low mud bank off the corner, its inner end a point in the water, one stone
-    out.push(massOf({ kind: "mud", x: L ? -p.w * 0.1 : p.w * 0.1, w: p.w, h: H, foot: 2 }, seed + 2, p.wl, 0, p.deep));
+    out.push(massOf({ kind: "mud", x: L ? -p.w * 0.1 : p.w * 0.1, w: p.w, h: H * 0.6, foot: 2 }, seed + 2, p.wl, 0, p.deep));
     const su = L ? 0.6 + 0.1 * r() : 0.26 + 0.08 * r();
     out.push(massOf({ kind: "stone", x: p.w * su, w: 14 + r() * 6, h: 9 + r() * 4, foot: 9 }, seed + 6, p.wl, 0, p.deep));
     if (p.wood === "stubs") {

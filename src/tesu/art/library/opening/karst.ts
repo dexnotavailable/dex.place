@@ -149,9 +149,9 @@ function formsOf(p: KarstP, seed: number): Form[] {
         // the ink-painting towers: tapering, bending, a jagged summit, a pair or more fused
         for (const L of lobes) {
           L.ink = true;
-          L.taper = f.kind === "cone" ? 0.6 + 0.2 * hash1(1, L.seed) : 0.25 + 0.35 * hash1(1, L.seed);
-          L.bend = (hash1(2, L.seed) - 0.5) * L.hw * 1.4;
-          L.capH = L.h * (0.08 + 0.14 * hash1(3, L.seed));
+          L.taper = f.kind === "cone" ? 0.6 + 0.2 * hash1(1, L.seed) : 0.08 + 0.22 * hash1(1, L.seed);
+          L.bend = (hash1(2, L.seed) - 0.5) * L.hw * 0.6;
+          L.capH = L.h * (0.05 + 0.07 * hash1(3, L.seed));
           L.hw *= 1.1;
         }
       }
@@ -238,7 +238,7 @@ function inkTop(L: Lobe, x: number): number {
   const wt = L.hw * (1 - (L.taper ?? 0.4)) * 1.15;
   const k = Math.abs(x) / Math.max(1, wt);
   if (k > 1.15) return -1;
-  const e = 0.35 + 0.75 * hash1(1, L.seed + 70);
+  const e = 0.6 + 0.8 * hash1(1, L.seed + 70);
   let p = Math.pow(Math.max(0, 1 - Math.min(1, k)), e) * (0.7 + 0.3 * vnoise1(x / Math.max(2, wt * 0.35), L.seed + 71)) + 0.12 * (vnoise1(x / Math.max(1.5, wt * 0.12), L.seed + 72) - 0.5);
   // a notch where a fissure reaches the top
   const fx = (hash1(2, L.seed + 73) - 0.5) * wt * 1.2;
@@ -298,6 +298,30 @@ function forestOf(K: Look): number[] {
 }
 
 /**
+ * (round 4, Dex: "a cloud-like tree canopy") Foliage, not cloud: inside a crown or the canopy the
+ * leaves gather in small clumps on a jittered grid (cell s px), each lit along its upper left and
+ * turning into shade on its lower right, with dark creases where clumps meet. Returns a step offset
+ * for the point: -1 a lit leaf edge, 0 the body, 1 shade, 2 a crease between clumps.
+ */
+function leafy(lx: number, ly: number, s: number, seed: number): number {
+  const sy = s * 0.78;
+  const hh = (a: number, b: number, k: number): number => hash1(a * 4099 + b * 131, k);
+  const gx = Math.floor(lx / s), gy = Math.floor(ly / sy);
+  let best = 9, b2 = 9, bdx = 0, bdy = 0;
+  for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
+    const cx = (gx + i + 0.15 + 0.7 * hh(gx + i, gy + j, seed)) * s;
+    const cy = (gy + j + 0.15 + 0.7 * hh(gx + i, gy + j, seed + 1)) * sy;
+    const rr = s * (0.55 + 0.3 * hh(gx + i, gy + j, seed + 2));
+    const dx = lx - cx, dy = ly - cy;
+    const q = Math.hypot(dx, dy * 1.15) / rr;
+    if (q < best) { b2 = best; best = q; bdx = dx / rr; bdy = dy / rr; } else if (q < b2) b2 = q;
+  }
+  if (b2 - best < 0.16 && best > 0.55) return 2;
+  const lit = -0.62 * bdx - 0.78 * bdy;
+  return lit > 0.5 && best > 0.42 ? -1 : lit < -0.35 && best > 0.4 ? 1 : 0;
+}
+
+/**
  * One clump of trees (a cauliflower): a main mass with smaller bumps bulging from its upper rim,
  * each with a thin lit rim along its sunward (upper left) edge, never a highlight cap; the body
  * in one flat step; a crescent of shade on its far side from the sun; dark pockets where a
@@ -347,6 +371,11 @@ function crown(c: PaintCtx, cx: number, cy: number, r: number, K: Look, seed: nu
       // a dark pocket just under and right of a nearer bump, and under the clump
       if (i > 0 && hit < balls.length - 1 && front(dx - 1.6 / d, dy - 1.8 / d) > hit) i = 3;
       if (hit === 0 && i > 0 && dy > r * 0.3) i = Math.max(i, 2);
+      // (round 4) the leaves in their clumps (near looks, where a clump is big enough to hold them)
+      if (K.detail >= 1 && d >= 0.5 && br * d >= 5 && (i === 1 || i === 2)) {
+        const off = leafy(c.lx(x + 0.5), c.ly(y + 0.5), Math.max(2.6 / d, Math.min(6.5, br * 0.32)), seed + 61);
+        i = clamp(i + (off === 2 ? 2 : off), 0, 3);
+      }
       i = Math.max(0, i - shift);
       // (a narrow dither only where the rim meets the body)
       if (i === 0 && bay(x, y, k) < 0.25 && w * d > 2.5) i = 1;
@@ -410,7 +439,7 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
     const m = axis(f, L, a), hl = lobeHalf(L, a, -1, wetForm), hr = lobeHalf(L, a, 1, wetForm);
     if (hl + hr <= 0.3 / d) continue;
     const xL = Math.ceil(c.X(m - hl) - 0.5), xR = Math.floor(c.X(m + hr) - 0.5);
-    const ridge = L.ink ? 0.25 + (vnoise1(a / 60, L.seed + 21) - 0.5) * 0.3 : (vnoise1(a / 40, L.seed + 21) - 0.5) * 0.45 + 0.1;
+    const ridge = L.ink ? 0.25 + (vnoise1(a / 60, L.seed + 21) - 0.5) * 0.3 + (vnoise1(a / 11, L.seed + 22) - 0.5) * 0.24 : (vnoise1(a / 40, L.seed + 21) - 0.5) * 0.45 + 0.1;
     const footK = clamp(1 - a / (f.h * 0.5), 0, 1) * K.foot;
     for (let x = Math.max(xL, b.ox); x <= Math.min(xR, b.x1 - 1); x++) {
       const lx = c.lx(x + 0.5);
@@ -452,6 +481,10 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
           const V = forestOf(K);
           let i = 1 + (u > ridge ? 1 : 0) + (below > capD * 0.55 ? 1 : 0);
           if (vnoise(lx / 9, a / 7, L.seed + 46) > 0.72 - 0.08 * clamp(u, 0, 1)) i++;
+          if (K.detail >= 1 && d >= 0.5 && i < 3) {
+            const off = leafy(lx, f.by - a, Math.max(2.6 / d, Math.min(6, L.hw * 0.07)), L.seed + 62);
+            i = Math.max(0, i + (off === 2 ? 1 : off));
+          }
           if (capAt(L, lx, u, capD) - below < 1.6 / d) i = Math.max(i, 3);
           if (edgeR) i++;
           i = wetForm ? i + Math.round(wetK * 1.5) : i - Math.round(footK * 2);
@@ -545,13 +578,13 @@ function paintLobe(c: PaintCtx, f: Form, L: Lobe, K: Look, green: number, first:
     return;
   }
   // crowns along the lobe's top: the skyline is lumpy forest, never a clean dome
-  if (green > 0 && L.h > f.h * 0.3 && (!L.ink || hash1(5, L.seed) < 0.75)) {
+  if (green > 0 && L.h > f.h * 0.3 && (!L.ink || hash1(5, L.seed) < 0.95)) {
     const step = Math.max(2.5, Math.min(8, L.hw * (K.detail > 0 ? 0.22 : 0.3))) * (L.ink ? 0.8 : 1);
     const r = rng(L.seed + 501);
     for (let ox = -L.hw * 1.05; ox < L.hw * 1.05; ox += step * (0.55 + 0.6 * r())) {
       const at = lobeTopAt(L, ox);
       if (at < 0 || (at < L.h * 0.45 && f.kind !== "cone")) continue;
-      if (L.ink && (at < L.h - (L.capH ?? 0) * 0.9 || r() < 0.2)) continue;
+      if (L.ink && (at < L.h - (L.capH ?? 0) * 0.9 || r() < 0.1)) continue;
       const rr = step * (0.55 + 0.6 * r()) * Math.min(1, green + 0.2) * (L.ink ? 0.7 : 1);
       const footK = clamp(1 - at / (f.h * 0.5), 0, 1) * K.foot;
       crown(c, axis(f, L, at) + ox, f.by - at + rr * 0.3, rr, K, L.seed + Math.round(ox * 7), footK);

@@ -114,7 +114,8 @@ function macroZ(x: number, y: number, o: FaceOpts, seed: number): number {
 function chunkIn(L: number, w: number, xl: number, xr: number, lx: number, ly: number, o: FaceOpts, seed: number): Chunk {
   const bed = o.bed ?? 78;
   // a block is roughly as tall as its column is wide, within the bedding's own range
-  const bc = clamp(w * (0.5 + 0.7 * hash1(L, seed + 170)), bed * 0.55, bed * 1.7);
+  // (round 4, the critic: "an even grid of rectangles") block heights vary far more, column to column
+  const bc = clamp(w * (0.32 + 1.05 * hash1(L, seed + 170)), bed * 0.42, bed * 2.1);
   const y0 = hash1(L, seed + 171) * bc;
   // (the block's nominal middle, so its tilt and how far forward it stands never swim row by row)
   const xc = jointBase(L, cellW(o), seed) + w / 2;
@@ -129,7 +130,9 @@ function chunkIn(L: number, w: number, xl: number, xr: number, lx: number, ly: n
   let b = k + 1;
   while (!has(b) && b < k + 7) b++;
   const yt = brk(a), yb = brk(b);
-  const z = clamp(0.5 + (macroZ(xc, (yt + yb) / 2, o, seed) - 0.5) * 1.4 + (hash(L, a, seed + 177) - 0.5) * 0.95, 0, 1);
+  // (round 4: the face first grouped into a few big masses of light and shade, then block by
+  // block; a strong per-block term read as a checkerboard of light and dark tiles)
+  const z = clamp(0.5 + (macroZ(xc, (yt + yb) / 2, o, seed) - 0.5) * 1.9 + (hash(L, a, seed + 177) - 0.5) * 0.6, 0, 1);
   return { L, k: a, xl, xr, yt, yb, z, w };
 }
 
@@ -290,6 +293,8 @@ export interface LimeChunk {
   water?: number;
   /** Extra shade, 0..0.4 (in a nearer thing's shadow, or turned away). */
   shade?: number;
+  /** (round 4) How round its corners are (default 1; less is a fresher, blockier break). */
+  round?: number;
   seed: number;
 }
 
@@ -308,7 +313,7 @@ export function chunkTop(k: LimeChunk, x: number): number {
     const f = clamp(((x - k.x0) / w - nu) * w / 2.5 + 0.5, 0, 1);
     base += (hash1(33, k.seed) < 0.5 ? f : 1 - f) * drop;
   }
-  const rc = Math.min(10, w * 0.22, Math.max(1, k.foot - k.top) * 0.4);
+  const rc = Math.min(10, w * 0.22, Math.max(1, k.foot - k.top) * 0.4) * (k.round ?? 1);
   const e = Math.min(x - k.x0, k.x1 - x);
   return e < rc ? base + (rc - Math.sqrt(Math.max(0, rc * rc - (rc - e) * (rc - e)))) * 1.2 : base;
 }
@@ -372,7 +377,9 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
       const u = (lx - sa) / Math.max(1, sb - sa);
       // under the water: dark and wet (the lake covers most of it)
       if (k.water !== undefined && ly > k.water + 0.5) { b.set(x, y, P.karst[8]!); continue; }
-      if (k.water !== undefined && ly > k.water - 0.5) { b.set(x, y, u > 0.06 && u < 0.94 ? (u < 0.6 ? P.jade[1]! : P.jade[3]!) : P.karst[8]!); continue; }
+      // (round 4: the bright line where it meets the water broken into runs, a quiet step, never a
+      // ruled cyan line under every block)
+      if (k.water !== undefined && ly > k.water - 0.5) { b.set(x, y, u > 0.06 && u < 0.94 && vnoise1(lx / 4.5, s0 + 19) > 0.42 ? (u < 0.5 ? P.jade[2]! : P.jade[4]!) : P.karst[8]!); continue; }
       // the moss on its top ledge: a lit top row, the body, a ragged hem hanging over the stone
       const hem = cap > 0 ? cap * (0.55 + 0.7 * vnoise1(lx / 5, s0 + 13)) + (vnoise1(lx / 1.8, s0 + 14) > 0.72 ? 1.8 : 0) : 0;
       if (s < hem) { b.set(x, y, s < 1 ? (u < 0.55 ? P.moss[2]! : P.moss[3]!) : s > hem - 1 ? P.moss[6]! : u > 0.7 ? P.moss[5]! : P.moss[4]!); continue; }

@@ -569,40 +569,72 @@ export interface IsleP {
   frame?: number;
 }
 
-/** The isle's hanging underside: a slab under the top and lobes of torn limestone of very different lengths. */
-interface IsleShape { lobes: [number, number, number][]; slab: number }
+/**
+ * (round 4, Dex's crop of "the floating isle with its pagoda": a pale spike of icicles under a box
+ * tower) The isle is a chunk of bedded karst torn out of the ground, side-on, as Dex's terrain
+ * sketch builds rock: under its turf a slab, then blocks of very different widths, each broken off
+ * at its own depth along the joints, so the underside steps down to its deepest hang left of the
+ * middle and back up to the lips: an inverted, irregular stack of chunks, never a point. Bedding
+ * lines cross it, every block lit on its left and turning into shade, the undersides darkest, the
+ * side of a block hanging lower than its neighbour showing. Roots and creepers hang from the
+ * blocks' feet; a thread of water falls off one lip into a scrap of cloud.
+ */
+interface IsleBlock { x0: number; x1: number; dep: number; tn: number; seed: number }
+interface IsleShape { blocks: IsleBlock[]; slab: number; beds: number[] }
 
 function isleShape(p: IsleP, seed: number): IsleShape {
-  return cached(`isle2|${seed}|${p.w}|${p.h}`, () => {
+  return cached(`isle4|${seed}|${p.w}|${p.h}`, () => {
     const r = rng(seed + 11);
-    const lobes: [number, number, number][] = [];
-    // three hanging masses with gaps between them: the longest left of centre (toward the light),
-    // the others much shorter, one each side, each of its own width
-    const big = Math.floor(r() * 2);
-    for (let i = 0; i < 3; i++) {
-      const u = [-0.4, 0.1, 0.55][i]! + (r() - 0.5) * 0.16;
-      const len = p.h * (i === big ? 0.82 + 0.18 * r() : 0.32 + 0.3 * r());
-      lobes.push([u * p.w * 0.5, len, p.w * (i === big ? 0.2 + 0.06 * r() : 0.13 + 0.08 * r())]);
+    const hw = p.w / 2;
+    const slab = p.h * (0.15 + 0.05 * r());
+    // the deepest hang: left of the middle (toward the light), or a little right of it
+    const peak = r() < 0.6 ? -0.3 + 0.15 * r() : 0.05 + 0.15 * r();
+    const blocks: IsleBlock[] = [];
+    let x = -hw - 1;
+    let last = slab;
+    while (x < hw + 1) {
+      const bw = Math.min(hw + 1 - x, 4 + r() * 10 + (r() < 0.3 ? 5 + r() * 6 : 0));
+      const u = (x + bw / 2) / hw;
+      const span = u < peak ? 1 + peak : 1 - peak;
+      const e = clamp(1 - Math.abs(u - peak) / (span + 0.04), 0, 1);
+      let dep = slab + (p.h - slab) * Math.pow(e, 1.25) * (0.5 + 0.55 * r());
+      // at the lips only a thin slab with a broken edge
+      if (Math.abs(u) > 0.84) dep = slab * (0.45 + 0.6 * r());
+      // a step from its neighbour, never the same depth
+      if (Math.abs(dep - last) < 3) dep += (r() < 0.5 ? -1 : 1) * (3 + 3 * r());
+      dep = Math.max(slab * 0.4, dep);
+      blocks.push({ x0: x, x1: x + bw, dep, tn: (r() - 0.5) * 0.12, seed: Math.floor(r() * 1e6) });
+      last = dep;
+      x += bw;
     }
-    return { lobes, slab: p.h * (0.16 + 0.08 * r()) };
+    // no block hangs far below both its neighbours on its own (a pillar, not a chunk): the deep hang
+    // is two or three blocks together, each stepping from the next
+    for (let pass = 0; pass < 2; pass++) for (let i = 0; i < blocks.length; i++) {
+      const nb = Math.max(blocks[i - 1]?.dep ?? 0, blocks[i + 1]?.dep ?? 0);
+      const B = blocks[i]!;
+      if (B.dep > nb + Math.max(6, (p.h - slab) * 0.22) && B.x1 - B.x0 < 20) B.dep = nb + Math.max(6, (p.h - slab) * 0.22) * (0.6 + 0.4 * hash1(i, seed + 12));
+    }
+    const beds = [slab * (0.45 + 0.2 * r()), slab + (p.h - slab) * (0.22 + 0.1 * r()), slab + (p.h - slab) * (0.5 + 0.15 * r())];
+    return { blocks, slab, beds };
   });
 }
 
-/** How far the rock hangs below the top at lx (0 where there is none). */
+function isleBlock(S: IsleShape, lx: number): number {
+  let lo = 0, hi = S.blocks.length - 1;
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (S.blocks[m]!.x0 <= lx) lo = m; else hi = m - 1; }
+  return lo;
+}
+
+/** How far the rock hangs below the top at lx (0 where there is none): its block's broken foot. */
 function isleUnder(p: IsleP, lx: number, seed: number): number {
   const S = isleShape(p, seed);
-  const u = lx / (p.w / 2);
-  if (Math.abs(u) >= 1) return 0;
-  // the slab: thick in the middle, thinning to a ragged lip at both ends
-  let d = S.slab * Math.pow(1 - u * u, 0.6);
-  for (const [x, len, hw] of S.lobes) {
-    const k = Math.abs(lx - x) / hw;
-    if (k >= 1) continue;
-    // a hanging mass: full where it leaves the slab, rounding off into a knobbed bottom (a bulb
-    // of rock and roots, never a spike)
-    d = Math.max(d, S.slab * 0.5 + len * Math.pow(1 - k * k, 0.85) * (0.84 + 0.24 * vnoise1(lx / 6, seed + 3) + 0.1 * vnoise1(lx / 1.8, seed + 13)));
-  }
-  return d * (0.92 + 0.16 * fbm1(lx / 4, seed + 1, 2));
+  if (Math.abs(lx) >= p.w / 2) return 0;
+  const B = S.blocks[isleBlock(S, lx)]!;
+  const w = B.x1 - B.x0, e = Math.min(lx - B.x0, B.x1 - lx);
+  // its foot: near flat, a little lumpy, the corners chipped round (no spikes)
+  const rc = Math.min(2.5, w * 0.3);
+  const corner = e < rc ? (rc - Math.sqrt(Math.max(0, rc * rc - (rc - e) * (rc - e)))) * 1.2 : 0;
+  return B.dep + (fbm1(lx / 3, B.seed, 2) - 0.5) * 1.6 - corner;
 }
 
 /** The isle's top at lx: a low mound, higher toward the middle (px above its anchor, negative up). */
@@ -611,22 +643,114 @@ function isleTop(p: IsleP, lx: number, seed: number): number {
   return -p.w * 0.1 * (1 - u * u) - 3 * vnoise1(lx / 9, seed + 2) - 1.5 * vnoise1(lx / 3, seed + 12) + 2;
 }
 
-/** A small hazy clump of trees on the isle: bumps lit on their upper left, no outline. */
-function isleClump(c: PaintCtx, cx: number, cy: number, r: number, seed: number): void {
-  const b = c.buf;
-  const R = P.range;
-  const X0 = Math.floor(c.X(cx - r * 1.4)), X1 = Math.ceil(c.X(cx + r * 1.4)), Y0 = Math.floor(c.Y(cy - r * 1.5)), Y1 = Math.ceil(c.Y(cy + r * 0.7));
-  for (let y = Math.max(Y0, b.oy); y < Math.min(Y1, b.y1); y++) {
-    for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
-      const dx = c.lx(x + 0.5) - cx, dy = c.ly(y + 0.5) - cy;
-      const ang = Math.atan2(dy, dx);
-      const rim = r * (0.82 + 0.3 * vnoise1(ang * 2.2 + 5, seed));
-      if (Math.hypot(dx, dy > 0 ? dy * 1.4 : dy) > rim) continue;
-      const lit = Math.hypot(dx + rim * 0.3, dy + rim * 0.38) < rim * 0.7;
-      const shade = Math.hypot(dx + rim * 0.15, dy + rim * 0.2) > rim * 0.95 || dy > r * 0.25;
-      b.set(x, y, lit ? P.pine[0]! : shade ? R[6]! : P.pine[1]!);
+/** Hazy greens for the isle's trees: lit, body, shade (cool, into the range's blue-grey). */
+const ISLE_GREEN = [P.moss[3]!, P.pine[0]!, P.pine[1]!, P.range[5]!, P.range[6]!];
+
+/**
+ * A tree on the isle, small with distance: a broadleaf crown of a few bumps (lit on its upper left,
+ * a dark pocket under it, a trunk showing below), or a cloud pine of two to four flat pads on a
+ * leaning trunk. Never one round blob.
+ */
+function isleTree(c: PaintCtx, cx: number, foot: number, r: number, seed: number, pine: boolean): void {
+  const b = c.buf, d = c.d;
+  const px = (lx: number, ly: number, col: number): void => b.set(Math.floor(c.X(lx)), Math.floor(c.Y(ly)), col);
+  const lean = (hash1(1, seed) - 0.5) * 0.5;
+  const H = pine ? r * 2.6 : r * 1.9;
+  // the trunk
+  for (let s = 0; s < H * (pine ? 0.92 : 0.55); s += 0.5 / d) px(cx + lean * s * (pine ? 0.5 : 0.3), foot - s, s < H * 0.2 ? P.range[6]! : P.timber[4]!);
+  if (pine) {
+    const n = 2 + Math.floor(hash1(2, seed) * 3);
+    for (let i = 0; i < n; i++) {
+      const v = (i + 0.6) / (n + 0.2);
+      const py = foot - H * (0.35 + 0.62 * v), pxc = cx + lean * (foot - py) * 0.5 + (hash1(i + 3, seed) - 0.5) * r * 0.6;
+      const pw = r * (1.25 - 0.55 * v) * (0.8 + 0.4 * hash1(i + 5, seed)), ph = Math.max(1.2, r * 0.42);
+      for (let y = Math.floor(c.Y(py - ph)); y < Math.ceil(c.Y(py + ph * 0.5)); y++) {
+        for (let x = Math.floor(c.X(pxc - pw)); x < Math.ceil(c.X(pxc + pw)); x++) {
+          const dx = (c.lx(x + 0.5) - pxc) / pw, dy = (c.ly(y + 0.5) - py) / ph;
+          if (dx * dx + (dy < 0 ? dy * dy : dy * dy * 3) > 1 + (vnoise1(c.lx(x + 0.5) / 1.6, seed + i) - 0.5) * 0.5) continue;
+          b.set(x, y, dy < -0.45 ? (dx < 0.2 ? ISLE_GREEN[1]! : ISLE_GREEN[2]!) : dy < 0.2 ? ISLE_GREEN[2]! : ISLE_GREEN[3]!);
+        }
+      }
+    }
+    return;
+  }
+  // broadleaf: three to five bumps heaped into one crown, the biggest at the back and top
+  const nb = 3 + Math.floor(hash1(3, seed) * 3);
+  const crownY = foot - H * 0.62;
+  for (let i = 0; i < nb; i++) {
+    const a = (hash1(i + 10, seed) - 0.5) * 2.6;
+    const br = r * (0.42 + 0.3 * hash1(i + 20, seed)) * (i === 0 ? 1.25 : 1);
+    const bx = cx + Math.sin(a) * r * 0.62 + lean * H * 0.3, by = crownY - Math.cos(a) * r * 0.32 + (i / nb) * r * 0.35;
+    for (let y = Math.floor(c.Y(by - br)); y < Math.ceil(c.Y(by + br)); y++) {
+      for (let x = Math.floor(c.X(bx - br)); x < Math.ceil(c.X(bx + br)); x++) {
+        const dx = c.lx(x + 0.5) - bx, dy = c.ly(y + 0.5) - by;
+        const q = Math.hypot(dx, dy * 1.1) / (br * (0.86 + 0.28 * vnoise1(Math.atan2(dy, dx) * 2.4 + i, seed + 30)));
+        if (q > 1) continue;
+        const lit = (-0.62 * dx - 0.78 * dy) / br;
+        b.set(x, y, lit > 0.5 && q > 0.35 ? ISLE_GREEN[0]! : lit > 0.05 ? ISLE_GREEN[1]! : lit > -0.45 ? ISLE_GREEN[2]! : ISLE_GREEN[3]!);
+      }
     }
   }
+}
+
+/**
+ * A pagoda, small with distance and pale in the haze: on a stone plinth, tiers of plastered wall
+ * between dark posts, a warm lit window in each, a balcony rail, and over each tier a roof of dark
+ * tile whose eaves sweep out and turn up at their tips, its ridge and the eaves' edge catching the
+ * sun; a finial with rings on top. `tiers` 3 (the bell tower, slender) or 2 (the drum tower, broad).
+ */
+function pagoda(c: PaintCtx, foot: number, w: number, tiers: number, seed: number): number {
+  const b = c.buf;
+  const R = P.range, T = P.tile;
+  const fill = (x0: number, x1: number, y0: number, y1: number, col: (lx: number, ly: number) => number): void => {
+    for (let y = Math.floor(c.Y(y0)); y < Math.ceil(c.Y(y1)); y++) for (let x = Math.floor(c.X(x0)); x < Math.ceil(c.X(x1)); x++) {
+      const k = col(c.lx(x + 0.5), c.ly(y + 0.5));
+      if (k) b.set(x, y, k);
+    }
+  };
+  // the plinth: two courses of stone, lit on top and on the left
+  const pw = w * 0.62;
+  fill(-pw / 2, pw / 2, foot - 4, foot + 1, (lx, ly) => (ly < foot - 3 ? R[1]! : lx < -pw / 2 + 1.2 ? R[2]! : ly > foot - 1 ? R[5]! : R[3]!));
+  let y = foot - 4;
+  for (let t = 0; t < tiers; t++) {
+    const sw = w * (0.46 - t * 0.07) * (tiers === 2 ? 1.25 : 1);
+    const sh = w * (tiers === 2 ? 0.17 : 0.14) * (1 - t * 0.08);
+    const yt = y - sh;
+    // the wall: posts at its corners, plaster between, lit on the left; a warm window (a lattice
+    // of two lights) in the middle; a balcony rail along its foot on the upper tiers
+    fill(-sw / 2, sw / 2, yt, y, (lx, ly) => {
+      const u = (lx + sw / 2) / sw, v = (ly - yt) / sh;
+      if (u < 0.1 || u > 0.9) return u < 0.1 ? R[4]! : R[6]!;
+      if (Math.abs(u - 0.5) < 0.16 && v > 0.28 && v < 0.78) return Math.abs(u - 0.5) < 0.03 ? P.gold[3]! : v < 0.4 ? P.gold[0]! : P.gold[1]!;
+      if (t > 0 && v > 0.82) return v > 0.92 ? R[6]! : R[3]!;
+      return u < 0.3 ? R[1]! : u < 0.7 ? R[2]! : R[3]!;
+    });
+    // the roof: eaves wider than the wall, the underside sweeping up to the tips, the slope
+    // concave from the ridge, dark tile with the eave's lit edge and a gold ridge
+    const ew = sw * (tiers === 2 ? 1.95 : 1.85) + 2, rh = sh * (t === tiers - 1 ? 0.95 : 0.7);
+    const yb = yt + 0.5;
+    fill(-ew / 2 - 1.5, ew / 2 + 1.5, yb - rh - 2.5, yb + 1, (lx, ly) => {
+      const q = Math.abs(lx) / (ew / 2);
+      if (q > 1.06) return 0;
+      // the eave's underside: level near the wall, turning up hard at the tip
+      const under = yb - Math.pow(Math.max(0, (q - 0.5) / 0.5), 2.4) * rh * 0.95;
+      // the slope: concave, from the ridge (narrow) down to the eave
+      const ridgeW = t === tiers - 1 ? 0.1 : 0.42;
+      const topY = q < ridgeW ? yb - rh : yb - rh + Math.pow((q - ridgeW) / (1 - ridgeW), 0.62) * rh * 0.8 - Math.pow(Math.max(0, (q - 0.8) / 0.26), 2) * rh * 0.85;
+      if (ly < topY - 0.01 || ly > under) return 0;
+      if (ly - topY < 1 / Math.max(c.d, 0.5)) return q < ridgeW + 0.05 ? P.gold[2]! : lx < 0 ? T[1]! : T[2]!;
+      if (under - ly < 1 / Math.max(c.d, 0.5)) return q > 0.9 ? P.gold[2]! : T[1]!;
+      // tile rows running down the slope, lit on the sun side
+      if (Math.round(lx * Math.max(c.d, 0.5)) % 3 === 0 && ly - topY > 1.5) return lx < -ew * 0.15 ? T[3]! : T[4]!;
+      return lx < -ew * 0.15 ? T[2]! : T[3]!;
+    });
+    y = yb - rh * (t === tiers - 1 ? 1 : 0.62);
+  }
+  // the finial: a mast with rings, its tip catching the light
+  const fh = w * 0.16;
+  fill(-0.6, 0.6, y - fh, y + 0.5, (lx, ly) => (Math.round(ly - y) % 3 === 0 ? P.gold[2]! : lx < 0 ? P.gold[1]! : P.gold[3]!));
+  void seed;
+  return y - fh;
 }
 
 export const isle = definePainter<IsleP>("op.isle", {
@@ -640,45 +764,57 @@ export const isle = definePainter<IsleP>("op.isle", {
     const b = c.buf, d = c.d, seed = c.seed;
     const R = P.range;
     const S = isleShape(p, seed);
-    // the rock: a floating limestone island seen side-on. Lit on its upper left, the lobes'
-    // shaded right sides and tips darker, a lit ledge under the top's lip, fissures down it
-    // (a few columns past the buffer's edges too: a root swaying across a tile's edge is painted
-    // the same from both sides)
-    const X0 = Math.max(b.ox - 3, Math.floor(c.X(-p.w / 2))), X1 = Math.min(b.x1 + 3, Math.ceil(c.X(p.w / 2)));
+    const hw = p.w / 2;
+    const one = 1 / Math.max(d, 0.5);
+    // the rock: blocks under a slab, lit from the upper left, in the haze's own values (a few
+    // columns past the buffer's edges too: a root swaying across a tile's edge paints the same)
+    const X0 = Math.max(b.ox - 3, Math.floor(c.X(-hw))), X1 = Math.min(b.x1 + 3, Math.ceil(c.X(hw)));
     for (let x = X0; x < X1; x++) {
       const lx = c.lx(x + 0.5);
       const depth = isleUnder(p, lx, seed);
       if (depth <= 0) continue;
       const top = isleTop(p, lx, seed);
-      // which lobe this column hangs in, and where in it (for its own light and shade)
-      let side = (lx / (p.w / 2)) * 0.5;
-      for (const [lx0, len, hw] of S.lobes) {
-        if (Math.abs(lx - lx0) < hw && S.slab * 0.6 + len * Math.pow(1 - Math.abs(lx - lx0) / hw, 1.4) >= depth * 0.9) side = (lx - lx0) / hw;
-      }
-      const fis = vnoise1(lx / 2.2, seed + 6) > 0.8 && vnoise1(lx / 13, seed + 7) > 0.4;
+      const bi = isleBlock(S, lx);
+      const B = S.blocks[bi]!;
+      const L = S.blocks[bi - 1], Rb = S.blocks[bi + 1];
+      const bw = B.x1 - B.x0, u = (lx - B.x0) / bw;
+      const across = (lx + hw) / p.w;
       for (let y = Math.max(b.oy, Math.floor(c.Y(top))); y < Math.min(b.y1, Math.ceil(c.Y(depth))); y++) {
         const ly = c.ly(y + 0.5);
-        const k = (ly - top) / Math.max(1, depth - top);
-        let t = 0.3 + 0.32 * side + 0.35 * k;
-        if (ly - top < 3) t -= 0.15;
-        if (fis && k > 0.1) t += 0.18;
-        if (ly > depth - 2 / d) t += 0.12;
-        // (flat steps; dither only in a narrow band where two meet)
+        const s = ly - top;
+        let t = 0.2 + 0.26 * across + 0.24 * clamp(s / Math.max(1, depth - top), 0, 1) + B.tn;
+        // the turf's shadow under its lip, then the slab's lit brow
+        if (s < 1.6) t += 0.2;
+        else if (s < 3.2) t -= 0.12;
+        // a block hanging lower than a neighbour shows its side: lit on the left, shaded right
+        if (L && ly > top + L.dep - 1 && u * bw < 1.6) t -= 0.14;
+        if (Rb && ly > top + Rb.dep - 1 && (1 - u) * bw < 2) t += 0.16;
+        // the joints between blocks, below the slab
+        if (s > S.slab * 0.8 && u * bw < one * 0.9 && L && Math.abs(L.dep - B.dep) > 2) t += 0.22;
+        // bedding lines, each with a lit lip under it
+        for (const bd of S.beds) {
+          const by = bd + (vnoise1(lx / 9, seed + 40) - 0.5) * 2;
+          if (Math.abs(s - by) < 0.5 * one) t += 0.2;
+          else if (s - by > 0.5 * one && s - by < 1.6 * one) t -= 0.07;
+        }
+        // its foot: the underside in shadow, the lake's light faint along the very edge
+        if (depth - ly < 2.2 * one) t += 0.16;
+        // weathering in streaks
+        if (d >= 0.5 && vnoise(lx / 2.4, ly / 11, seed + 41) > 0.7) t += 0.07;
         const tt = clamp(t, 0, 1) * (R.length - 1);
         const i = Math.floor(tt), fr = tt - i;
         b.set(x, y, R[Math.min(R.length - 1, i + (fr > 0.62 || (fr > 0.38 && bay(x, y, Math.max(1, Math.round(d))) < (fr - 0.38) / 0.24) ? 1 : 0))]!);
       }
-      // moss draping over the lip on the lit side, roots hanging from the underside
-      if (lx < p.w * 0.2) {
-        const md = (2 + 5 * vnoise1(lx / 4, seed + 8)) * clamp(0.6 - lx / p.w, 0, 1);
-        for (let a = 0; a < md; a += 0.5 / d) b.set(x, Math.floor(c.Y(top + a)), a < md - 1 ? P.karst[5]! : R[5]!);
-      }
-      if (hash1(Math.floor(lx / 3), seed + 4) < 0.14 && d >= 0.5) {
-        const len = 5 + 18 * hash1(Math.floor(lx / 3), seed + 5);
+      // turf over the lip: a green rim, moss draping down the lit side
+      const md = 1.5 + (2 + 4 * vnoise1(lx / 4, seed + 8)) * clamp(0.65 - lx / p.w, 0.15, 1);
+      for (let a = -1; a < md; a += 0.5 / d) b.set(x, Math.floor(c.Y(top + a)), a < 0 ? ISLE_GREEN[1]! : a < md - 1 ? ISLE_GREEN[2]! : ISLE_GREEN[3]!);
+      // roots and creepers hanging from the blocks' feet
+      if (hash1(Math.floor(lx / 2.5), seed + 4) < 0.16 && d >= 0.5) {
+        const len = 4 + 14 * hash1(Math.floor(lx / 2.5), seed + 5);
         for (let a = 0; a < len; a += 0.5 / d) {
           const X = Math.floor(c.X(lx + Math.sin(a / 5 + lx) * 0.8)), Y = Math.floor(c.Y(depth - 1 + a));
           if (a > len * 0.6 && bay(X, Y, Math.max(1, Math.round(d))) < 0.5) continue;
-          b.set(X, Y, R[a < len * 0.5 ? 6 : 5]!);
+          b.set(X, Y, a < len * 0.5 ? R[6]! : hash1(Math.floor(a), seed + Math.floor(lx)) < 0.3 ? ISLE_GREEN[2]! : R[5]!);
         }
       }
     }
@@ -702,40 +838,23 @@ export const isle = definePainter<IsleP>("op.isle", {
         else if (cov > 0.3 && bay(x, y, Math.max(1, Math.round(d))) < 0.5) b.set(x, y, P.cloud[2]!);
       }
     }
-    // trees on the top, round the tower's foot: clumps of very different sizes
+    // trees on the top round the tower's foot: crowns and cloud pines of very different sizes,
+    // the small ones behind, the big ones flanking it
     const r = rng(seed + 7);
     const tw = p.w * (p.tower === "bell" ? 0.22 : 0.32);
-    for (let i = 0; i < Math.round(p.w / 3.2); i++) {
-      const tx = (r() - 0.5) * p.w * 0.92;
+    const trees: [number, number, boolean][] = [];
+    for (let i = 0; i < Math.round(p.w / 6); i++) {
+      const tx = (r() - 0.5) * p.w * 0.9;
       const v = r();
-      const tr = v < 0.25 ? 6 + 4 * r() : v < 0.6 ? 3.5 + 2 * r() : 2 + 1.2 * r();
-      // (behind the tower's foot only the small ones; the big ones flank it)
-      if (Math.abs(tx) < tw * 0.5 && tr > 4) continue;
-      isleClump(c, tx, isleTop(p, tx, seed) - tr * 0.35, tr, seed + i * 17);
+      const tr = v < 0.25 ? 4.5 + 3 * r() : v < 0.6 ? 3 + 1.5 * r() : 1.8 + r();
+      const pine = r() < 0.35;
+      if (Math.abs(tx) < tw * 0.55 && tr > 3) continue;
+      trees.push([tx, tr, pine]);
     }
-    // the tower: lacquer gone pale with distance, lit on its left, gold ridges, a warm window
-    const tiers = p.tower === "bell" ? 3 : 2;
-    let y = isleTop(p, 0, seed) - 1;
-    for (let t = 0; t < tiers; t++) {
-      const sw = tw * (1 - t * 0.2);
-      const sh = p.w * (p.tower === "bell" ? 0.15 : 0.18);
-      for (let yy = Math.floor(c.Y(y - sh)); yy < Math.ceil(c.Y(y)); yy++) {
-        for (let x = Math.floor(c.X(-sw / 2)); x < Math.ceil(c.X(sw / 2)); x++) {
-          const u = (c.lx(x + 0.5) + sw / 2) / sw;
-          const win = Math.abs(u - 0.5) < 0.12 && c.ly(yy + 0.5) > y - sh * 0.7 && c.ly(yy + 0.5) < y - sh * 0.3;
-          b.set(x, yy, win ? P.gold[1]! : R[u < 0.12 ? 3 : u < 0.45 ? 4 : 5]!);
-        }
-      }
-      const rh = sh * 0.6;
-      for (let yy = Math.floor(c.Y(y - sh - rh)); yy < Math.ceil(c.Y(y - sh + 1)); yy++) {
-        const v = (y - sh - c.ly(yy + 0.5)) / rh;
-        const rw = sw * (1.55 - 0.95 * v) + (v < 0.2 ? (0.2 - v) * sw * 1.4 : 0);
-        for (let x = Math.floor(c.X(-rw / 2)); x < Math.ceil(c.X(rw / 2)); x++) {
-          const lx = c.lx(x + 0.5);
-          b.set(x, yy, v > 0.88 ? P.gold[3]! : R[lx < -rw * 0.2 ? 4 : v < 0.25 ? 6 : 5]!);
-        }
-      }
-      y -= sh + rh * 0.65;
-    }
+    trees.sort((a, q) => a[1] - q[1]);
+    const behind = trees.filter(([tx]) => Math.abs(tx) < tw * 0.75), around = trees.filter(([tx]) => Math.abs(tx) >= tw * 0.75);
+    for (const [tx, tr, pine] of behind) isleTree(c, tx, isleTop(p, tx, seed) + 0.5, tr, seed + Math.round(tx * 13), pine);
+    pagoda(c, isleTop(p, 0, seed) - 0.5, p.w, p.tower === "bell" ? 3 : 2, seed);
+    for (const [tx, tr, pine] of around) isleTree(c, tx, isleTop(p, tx, seed) + 0.5, tr, seed + Math.round(tx * 13), pine);
   },
 });

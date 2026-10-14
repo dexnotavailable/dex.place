@@ -252,7 +252,9 @@ export const pine = definePainter<PineP>("op.pine", {
   bounds(p) {
     const reach = p.arm ? p.arm[0] + p.h * 0.3 : 0;
     const grip = p.grip ?? p.h * 0.12;
-    return [-p.h * 1.35 - reach, -p.h * 1.12 - (reach ? p.h * 0.12 : 0), p.h * 1.35 + reach, Math.max(p.h * 0.1 + 6, grip + 10)];
+    // (round 4: a path pine's roots pour down the cliff's face below it)
+    const drape = !p.arm && (p.roots ?? 1) > 0 ? grip * 2.5 + 20 : 0;
+    return [-p.h * 1.35 - reach, -p.h * 1.12 - (reach ? p.h * 0.12 : 0), p.h * 1.35 + reach, Math.max(p.h * 0.1 + 6, grip + 10, drape)];
   },
   paint(c, p) {
     if (p.cast) {
@@ -300,50 +302,24 @@ export const pine = definePainter<PineP>("op.pine", {
     const w0 = tw(0);
     // (round 3) roots: 0 when the rock the tree stands on paints the roots gripping it (the
     // jetty's east landing does), so no disc of roots lies over the rock here
-    const nr = 4 + Math.floor(r() * 2);
-    for (let i = 0; i < nr; i++) {
-      const side = i % 2 ? -1 : 1;
-      const sx = side * w0 * (0.2 + 0.25 * r());
-      const len = spread * (0.5 + 0.6 * r());
-      const deep = grip * (0.5 + 0.5 * r());
-      const rp: [number, number][] = [];
-      const over = i === 0;
-      for (let k = 0; k <= 8; k++) {
-        const t = k / 8;
-        const x = sx + side * len * (1 - Math.pow(1 - t, 1.5)) * (over ? 1 : 0.55 + 0.3 * hash1(i, seed + 4));
-        const arch = -Math.sin(t * Math.PI) * w0 * (0.08 + 0.1 * hash1(i, seed + 5));
-        const y = -w0 * 0.05 + arch + (over ? deep * 0.7 * Math.pow(t, 2.6) : t * 1.5) + (vnoise1(t * 4 + i, seed + 3) - 0.5) * 1.2;
-        rp.push([x, y]);
-      }
-      const rw = w0 * (0.36 + 0.16 * r());
-      if (spread <= 0) continue;
-      limb(c, rp, rw, over ? 2 : 3.5, seed + 40 + i, true);
-      const [ex, ey] = rp[rp.length - 1]!;
-      for (let k = 0; k < 6; k += 0.5 / d) b.set(Math.round(c.X(ex + side * k * 0.3)), Math.round(c.Y(ey + k * 0.6)), P.karst[8]!);
-    }
-    // soil and moss where the trunk meets the rock
-    for (let x = Math.round(c.X(-w0 * 1.5)); spread > 0 && x < Math.round(c.X(w0 * 1.5)); x++) {
-      const u = c.lx(x + 0.5) / (w0 * 1.5);
-      const top = -w0 * 0.3 * Math.pow(1 - u * u, 1.5) - 1.5 * vnoise1(c.lx(x) / 2, seed + 5);
-      for (let y = Math.round(c.Y(top)); y < Math.round(c.Y(3 + 2 * (1 - u * u))); y++) {
-        const v = (c.ly(y + 0.5) - top) / 5;
-        if (v < 0.4 && vnoise(c.lx(x) / 2.2, c.ly(y) / 2, seed + 6) > 0.45) { b.set(x, y, tone(P.moss, clamp(0.35 + v + (u > 0 ? 0.2 : 0), 0, 1), x, y, 0.35)); continue; }
-        b.set(x, y, tone(P.earth, clamp(0.6 + v * 0.3, 0, 1), x, y, 0.35));
-      }
-    }
     // the trunk, row by row: tapering, bulging at old knots, bark in plates lit on the left
+    // (round 4: painted before the roots, so they come out from under it; a path pine's trunk runs
+    // on down into the edge, flaring, its foot ragged where the soil and roots take it)
+    const pathPine = !great && spread > 0;
     {
-      const Y0 = Math.round(c.Y(-H * 0.72)), Y1 = Math.round(c.Y(2));
+      const Y0 = Math.round(c.Y(-H * 0.72)), Y1 = Math.round(c.Y(pathPine ? 9 : 2));
       for (let y = Math.max(Y0, b.oy); y < Math.min(Y1, b.y1); y++) {
         const ly = c.ly(y + 0.5);
         const u = clamp(-ly / (H * 0.72), 0, 1);
         const [mx] = at(u);
         let half = tw(u) / 2 * (1 + 0.1 * (vnoise1(ly / 9, seed + 7) - 0.5));
         if (u < 0.07) half *= 1 + ((0.07 - u) / 0.07) * 0.7;
+        if (pathPine && ly > -6) half *= 1 + 0.5 * clamp((ly + 6) / 14, 0, 1);
         const X0 = Math.round(c.X(mx - half)), X1 = Math.round(c.X(mx + half));
         for (let x = Math.max(X0, b.ox); x < Math.min(X1, b.x1); x++) {
           const q = ((x + 0.5 - X0) / Math.max(1, X1 - X0)) * 2 - 1;
           let i = q < -0.55 ? 0 : q < 0.15 ? 1 : q < 0.65 ? 2 : 3;
+          if (pathPine && ly > 1 + 6 * vnoise1(c.lx(x + 0.5) / 3, seed + 11)) continue;
           if (d >= 0.5) {
             const pl = vnoise(c.lx(x + 0.5) / 2.2, ly / 7, seed + 8);
             if (pl > 0.66) i = Math.min(4, i + 1);
@@ -354,6 +330,90 @@ export const pine = definePainter<PineP>("op.pine", {
           b.set(x, y, BARK[i]!);
         }
       }
+    }
+    // (round 4, Dex: "a tree trunk chopped off at the cliff top") a pine by a path stands on the
+    // cliff's front edge: its trunk flares wide and runs on down past the path into the edge, and
+    // its buttress roots, thick where they leave it, hug the edge a little way and then pour OVER
+    // it and down the face, splitting and tapering to threads that go into the rock's cracks, each
+    // throwing a short shadow on the stone; soil and moss packed between them. So the tree grows
+    // out of the rock, never a trunk sliced flat on a line.
+    if (!pathPine) {
+      // (the draws the old root loop took, so a pine without roots keeps its arms and masses)
+      const nr = 4 + Math.floor(r() * 2);
+      for (let i = 0; i < nr * 4; i++) r();
+    } else {
+      const nr = 4 + Math.floor(r() * 2);
+      const roots: { pts: [number, number][]; w: number; side: number; drape: boolean }[] = [];
+      for (let i = 0; i < nr; i++) {
+        const side = i % 2 ? -1 : 1;
+        // each leaves the trunk's foot slanting out and down, then turns down the face as it
+        // hugs it (so together they are the trunk's flare); the inner ones steeper and shorter
+        const drape = i < nr - 1 || hash1(i, seed + 6) < 0.5;
+        const sx = side * w0 * (0.05 + 0.4 * r());
+        const sy = -1 + 3 * r();
+        const a0 = (0.5 + 0.55 * r()) * side;
+        const len = drape ? grip * (1.2 + 1.2 * r()) : spread * (0.5 + 0.4 * r());
+        const pts: [number, number][] = [[sx, sy]];
+        let x = sx, y = sy, a = a0;
+        const n = 12;
+        for (let k = 1; k <= n; k++) {
+          const t = k / n;
+          // drape: turning toward straight down, wandering; a surface root stays near level
+          a = drape ? a * 0.86 + (vnoise1(t * 3 + i * 1.7, seed + 3) - 0.5) * 0.35 : side * (1.35 + (vnoise1(t * 3 + i, seed + 3) - 0.5) * 0.3);
+          x += Math.sin(a) * len / n;
+          y += Math.cos(a) * len / n;
+          pts.push([x, y]);
+        }
+        roots.push({ pts, w: w0 * (drape ? 0.42 + 0.18 * r() : 0.24 + 0.1 * r()), side, drape });
+        // a drape root splits on the face: a thinner one leaves it about halfway down
+        if (drape && hash1(i, seed + 7) < 0.55) {
+          const f = along(pts, 0.45 + 0.2 * hash1(i, seed + 8));
+          const fl = len * (0.3 + 0.25 * hash1(i, seed + 9));
+          const fs = -side * (0.4 + 0.4 * hash1(i, seed + 10));
+          roots.push({ pts: [f, [f[0] + fs * fl * 0.4, f[1] + fl * 0.5], [f[0] + fs * fl * 0.55, f[1] + fl]], w: w0 * 0.18, side: fs > 0 ? 1 : -1, drape: true });
+        }
+      }
+      // their shadow on the rock first, down and to the right of each (only where rock, moss or
+      // earth is already painted behind)
+      {
+        const b0 = c.buf;
+        const ox = Math.max(1, Math.round(2 * d)), oy = Math.max(1, Math.round(2 * d));
+        const m = new IdxBuf(b0.w, b0.h, b0.ox - ox, b0.oy - oy, d);
+        const mc = { ...c, buf: m };
+        for (const rt of roots) if (rt.drape) limb(mc, rt.pts, rt.w, 1, seed + 1, true, 1.5);
+        for (let i = 0; i < m.px.length; i++) {
+          if (!m.px[i]) continue;
+          const dk = SHADE_OF.get(b0.px[i]!);
+          if (dk !== undefined) b0.px[i] = dk;
+        }
+      }
+      // soil and moss where the trunk meets the rock: a pocket packed between the roots, its top
+      // ragged, a lip of it lying over the edge in tongues with grass (never a lens on a line)
+      const sw = w0 * 1.3;
+      for (let x = Math.round(c.X(-sw)); x < Math.round(c.X(sw)); x++) {
+        const lx = c.lx(x + 0.5), u = lx / sw;
+        const top = -w0 * 0.22 * Math.pow(Math.max(0, 1 - u * u), 1.4) - 1.6 * vnoise1(lx / 2, seed + 5) + 1.5;
+        const bot = top + 2 + 6 * Math.pow(Math.max(0, 1 - u * u), 0.8) * vnoise1(lx / 3.5, seed + 14);
+        for (let y = Math.round(c.Y(top)); y < Math.round(c.Y(bot)); y++) {
+          const ly = c.ly(y + 0.5), v = (ly - top) / Math.max(1, bot - top);
+          if (v < 0.45 && vnoise(lx / 2.6, ly / 2.2, seed + 16) > 0.38) { b.set(x, y, tone(P.moss, clamp(0.28 + v * 0.6 + (u > 0 ? 0.18 : 0), 0, 1), x, y, 0.35)); continue; }
+          b.set(x, y, tone(P.earth, clamp(0.58 + v * 0.4 + (u > 0.2 ? 0.08 : 0), 0, 1), x, y, 0.35));
+        }
+      }
+      for (const rt of roots) limb(c, rt.pts, rt.w, 1, seed + 40 + Math.round(rt.pts[0]![0] * 7), true, rt.drape ? 1.5 : 1.2);
+      // where a root goes into the rock: a dark crack running on from its tip, its left lip lit,
+      // a few threads of moss at the mouth
+      roots.forEach((rt, i) => {
+        if (!rt.drape) return;
+        const [ex, ey] = rt.pts[rt.pts.length - 1]!;
+        const cl = 4 + 8 * hash1(i, seed + 8);
+        for (let k = 0; k < cl; k += 0.5 / d) {
+          const cx = ex + rt.side * k * 0.15 + (vnoise1(k / 3 + i, seed + 9) - 0.5) * 1.4;
+          b.set(Math.round(c.X(cx)), Math.round(c.Y(ey + k)), P.karst[8]!);
+          if (k < cl * 0.7) b.set(Math.round(c.X(cx)) - 1, Math.round(c.Y(ey + k)), P.karst[3]!);
+        }
+      });
+      if (d >= 0.5) for (let k = 0; k < 8; k++) grass(c, (hash1(k, seed + 17) - 0.5) * sw * 1.9, 1 + hash1(k, seed + 18) * 3, 3 + 6 * hash1(k, seed + 19), (hash1(k, seed + 20) - 0.5) * 1.2, (hash1(k, seed + 21) - 0.45) * 1.4, hash1(k, seed + 22));
     }
     // the needle masses, collected first and painted after the wood (those hanging under a limb
     // before it): sizes vary threefold, each on a twig of its own

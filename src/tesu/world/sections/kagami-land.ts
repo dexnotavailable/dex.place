@@ -50,7 +50,9 @@ export const NEAR_MASSES: MassSpec[] = [
   // jetty-6s's and play-east's left anchor (0..185, 174..366): a low dark mud bank, short reeds
   // (round-3 integration: lower, its reeds the taller part, so in pullback and play-catch, where it
   // stands mid-frame, it reads as a reed bed at the water and not a raft of mud)
-  { kind: "mud", x: 8212, w: 186, h: 30, reed: 70, dense: 3 },
+  // (round 4: the critic's "mud raft" stamp: the catch's right spit is a mud bank too, so this one
+  // is another kind, a pair of half-sunk limestone blocks, its short reeds a bed of their own below)
+  { kind: "stone", x: 8232, w: 58, h: 26 },
   // the jetty's east landing (jetty-6s 763..1013, play-east 966..1226): low reeds and a stone,
   // under 60 so the landing and its reflection show
   { kind: "reeds", x: 9040, w: 170, h: 18, reed: 54, dense: 2.2, stone: true },
@@ -64,6 +66,9 @@ export const NEAR_MASSES: MassSpec[] = [
   // rock in jetty-6s and play-east instead of a pale wedge of the cliff's face under the water;
   // under 60, the landing and its reflection show above it)
   { kind: "shelf", x: 9186, w: 92, h: 40, drop: 1, bank: 1 },
+  // (round 4, last so no mass is reseeded) the short reeds by the half-sunk blocks at 8232, barely
+  // any mud under them: reeds standing in the shallows
+  { kind: "reeds", x: 8268, w: 96, h: 5, reed: 66, dense: 2.6 },
 ];
 
 /** The lake's near shore on P5 and its reed beds (seed block 3). */
