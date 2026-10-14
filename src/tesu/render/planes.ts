@@ -39,8 +39,16 @@ uniform float uInkAmt;
 uniform float uMirror;
 uniform vec2 uRes;
 uniform vec4 uGrade;                  // rgb multiply, amount
+uniform float uShow;                  // (round 6) share of the plane shown: an ordered-dither dissolve below 1
 out vec4 o;
+float bayer4(vec2 p) {
+  ivec2 i = ivec2(mod(floor(p), 4.0));
+  int k = i.x + i.y * 4;
+  const float m[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+  return (m[k] + 0.5) / 16.0;
+}
 void main() {
+  if (uShow < 1.0 && bayer4(floor(gl_FragCoord.xy / 2.0)) >= uShow) discard;
   if (uMirror >= 0.0) {
     // only what stands above the waterline shows below it
     float row = uRes.y - gl_FragCoord.y;
@@ -71,6 +79,11 @@ export interface PlaneLook {
   inkAmt: number;
   /** Colour grade (time of day, a storm): multiply rgb by amount. */
   grade: [number, number, number, number];
+  /**
+   * (round 6) The share of the plane shown, 0..1 (default 1): below 1 it dissolves in by an
+   * ordered dither on 2 px cells (the near plane coming into the opening's pull-back).
+   */
+  show?: number;
 }
 
 export class PlaneRenderer {
@@ -156,6 +169,7 @@ export class PlaneRenderer {
     gl.uniform3fv(u.uInk!, look.ink);
     gl.uniform1f(u.uInkAmt!, look.inkAmt);
     gl.uniform4fv(u.uGrade!, look.grade);
+    gl.uniform1f(u.uShow!, look.show ?? 1);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.tiles);
     gl.uniform1i(u.uTiles!, 0);

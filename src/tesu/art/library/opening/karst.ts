@@ -79,6 +79,8 @@ interface Lobe {
   taper?: number;
   bend?: number;
   capH?: number;
+  /** (round 6) A broad range-grey hill: its shoulders broken into knuckles (never one smooth dome). */
+  rough?: boolean;
   /** Offset of its axis from the form's, half width, height above the base, top roundness. */
   dx: number;
   hw: number;
@@ -153,6 +155,10 @@ function formsOf(p: KarstP, seed: number): Form[] {
           L.bend = (hash1(2, L.seed) - 0.5) * L.hw * 0.6;
           L.capH = L.h * (0.05 + 0.07 * hash1(3, L.seed));
           L.hw *= 1.1;
+          // (round 6, the integration: bare of their old bead rims (P9) and with the sky lane's
+          // clouds gone from over them, the range's broad cones read as smooth pale balls behind
+          // the great massif in the pull-back and play-catch)
+          if (f.kind !== "pillar" && look !== "near") L.rough = true;
         }
       }
       out.push({ ...f, lobes });
@@ -234,6 +240,12 @@ function lobeHalf(L: Lobe, a: number, side: -1 | 1, wet = false): number {
     const band = Math.floor(a / Math.max(6, L.h * 0.13));
     const bh = Math.max(6, L.h * 0.13);
     if (hash1(band * 2 + (side > 0 ? 1 : 0), s + 31) < 0.4 && a - band * bh > bh * 0.65) k *= 0.82;
+    if (L.rough) {
+      // a broad hill's shoulders: knuckles of rock and tree clumps of their own sizes, each side
+      // its own, stronger toward the summit, so its skyline breaks instead of arching
+      const kn = vnoise1(a / Math.max(3, L.hw * 0.14), s + 41) + 0.5 * (vnoise1(a / Math.max(2, L.hw * 0.05), s + 43) - 0.5);
+      k *= 0.88 + 0.26 * kn * Math.min(1, u * 1.8);
+    }
     if (u < 0.12 && !wet) k *= 1 + (0.12 - u) * 2.5;
     return L.hw * Math.max(0.12, k);
   }
@@ -263,7 +275,15 @@ function inkTop(L: Lobe, x: number): number {
   const fx = (hash1(2, L.seed + 73) - 0.5) * wt * 1.2;
   const nw = Math.max(1.5, wt * 0.12);
   if (hash1(3, L.seed + 73) < 0.6) p -= 0.35 * Math.max(0, 1 - Math.abs(x - fx) / nw);
-  return L.h - (L.capH ?? L.h * 0.2) * (1 - clamp(p, 0, 1));
+  const top = L.h - (L.capH ?? L.h * 0.2) * (1 - clamp(p, 0, 1));
+  if (!L.rough) return top;
+  // (round 6) a broad range-grey hill's summit knuckled by rounded heads of rock and tree of their
+  // own sizes, the dips between them cut down into it (never one smooth arch)
+  const cw = Math.max(3, wt * (0.2 + 0.1 * hash1(4, L.seed + 74)));
+  const ph = x / cw + 0.6 * vnoise1(x / (cw * 3), L.seed + 75);
+  const fr = ph - Math.floor(ph) - 0.5;
+  const kd = cw * (0.25 + 0.45 * hash1(Math.floor(ph) + 50, L.seed + 76));
+  return top - kd * (1 - Math.sqrt(Math.max(0, 1 - 4 * fr * fr)));
 }
 
 /** The lobe's outline height above its axis offset x (for the cap and the crowns). */

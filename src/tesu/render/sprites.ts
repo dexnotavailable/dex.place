@@ -49,6 +49,7 @@ uniform vec4 uRectF;                  // the drawn rect, frame px (y down), unmi
 uniform float uCell;                  // (round 5) frame px per art cell: 2 at the catch's 2x for sky and far
 uniform vec2 uFoot;                   // (round 5) haze thickening to its foot: share of its height, haze there
 uniform float uFlip;
+uniform float uShow;                  // (round 6) share of the plane shown: an ordered-dither dissolve below 1 (as on the plates)
 out vec4 o;
 float bayer4(vec2 p) {
   ivec2 i = ivec2(mod(floor(p), 4.0));
@@ -57,6 +58,7 @@ float bayer4(vec2 p) {
   return (m[k] + 0.5) / 16.0;
 }
 void main() {
+  if (uShow < 1.0 && bayer4(floor(gl_FragCoord.xy / 2.0)) >= uShow) discard;
   if (uMirror >= 0.0 && uRes.y - gl_FragCoord.y < uMirror) discard;
   if (vS > uReveal) discard;
   vec2 uv = vUV;
@@ -352,6 +354,7 @@ export class SpriteRenderer {
     gl.uniform1f(u.uFade!, look.fade);
     gl.uniform3fv(u.uInk!, look.ink);
     gl.uniform1f(u.uInkAmt!, look.inkAmt);
+    gl.uniform1f(u.uShow!, look.show ?? 1);
     gl.bindVertexArray(this.vao);
     for (const def of defs) {
       if (def.hidden) continue;

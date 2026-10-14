@@ -161,6 +161,15 @@ function paintFar(c: PaintCtx, p: FarKarstP): void {
         // the trees: a cap over the summit and patches on the flanks and ledges, a step darker
         const tc = sky.top[Math.min(sky.top.length - 1, Math.max(0, Math.round(lx - sky.x0)))]!;
         const below = tc - a;
+        // (round 6, the integration: with the sky lane's clouds gone from over them, a broad
+        // sugarloaf's summit read as one smooth pale dome, a ball behind the mid towers) the cap's
+        // skyline knuckled by the crowns of its trees: rounded heads of their own sizes, the dips
+        // between them cut down into the cap
+        const cw = Math.max(2.5, f.bw * (0.26 + 0.14 * hash1(f.s, c.seed + 18)));
+        const cph = (lx - f.cx) / cw + 0.6 * vnoise1(lx / (cw * 3) + f.s, c.seed + 19);
+        const cfr = cph - Math.floor(cph) - 0.5;
+        const kd = cw * (0.3 + 0.4 * hash1(Math.floor(cph) + 500, f.s + c.seed));
+        if (tc > 0 && below < kd * (1 - Math.sqrt(Math.max(0, 1 - 4 * cfr * cfr)))) continue;
         const capD = f.ph * (0.09 + 0.07 * vnoise1(lx / 4 + f.s, c.seed + 14));
         const inCap = tc > 0 && below < capD;
         const veg = inCap || (v > 0.3 && vnoise((lx - f.cx) / 6 + f.s, a / 4.5, c.seed + 16) * (0.6 + 0.5 * vnoise((lx - f.cx) / 15, a / 19 + f.s, c.seed + 17)) > 0.62);

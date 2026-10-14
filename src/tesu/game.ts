@@ -1090,9 +1090,13 @@ export class TesuGame {
         waterTo(Hf);
       }
       if (id === "near" && z > 1.6) continue;
+      // (round 6, the integration) the near plane is not drawn in the close band; coming into the
+      // pull-back it dissolves in over zoom 1.6 to 1.45 (an ordered dither on 2 px cells) instead
+      // of popping in whole in one frame (the pull-back's dark near corner stands in the frame there)
+      const look = id === "near" && z > 1.45 ? { ...d.look, show: (1.6 - z) / 0.15 } : d.look;
       fogOn(id, false, true);
-      this.planes.draw(d.quads, d.look, W, Hf);
-      this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id), cam, d.look, this.time, null, this.manual);
+      this.planes.draw(d.quads, look, W, Hf);
+      this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id), cam, look, this.time, null, this.manual);
       // banks of mist lying in valleys at this depth
       for (const m of this.world.mists) {
         if (m.after !== id) continue;
