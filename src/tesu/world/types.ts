@@ -108,6 +108,32 @@ export interface Water {
   far: number;
   /** Look: "lake" (Kagami's mirror), "harbour", "pool". */
   kind: string;
+  /**
+   * (Kagami round 7, the water lane; visual only) The land in front of the play plane that holds
+   * the water's east end, nearest last. The near water's depths slide past each other at their own
+   * rates, so an end at a 3D x showed as a ruled diagonal of water against the cliff face as she
+   * walked off the jetty. From each hold's land top row (never above the play waterline) down to
+   * the next hold's, the water instead runs on under that land and ends at its column, behind it,
+   * shelving up into shallows before it. Unset: the 3D extent only.
+   */
+  hold?: WaterHold[];
+  /**
+   * (round 7) The shore where land holds it, each 0..1 (default none): [the shallow shelf's
+   * strength, lapping lines on it, the warmth of the stone seen through it, -].
+   */
+  shore?: [number, number, number, number];
+}
+
+/** (Kagami round 7) Land holding a water's east end (Water.hold). */
+export interface WaterHold {
+  /** The land's plane rate. */
+  rate: number;
+  /** 3D x where the water ends, a little inside the land's water side (world px). */
+  x: number;
+  /** The land's top there, 3D px above the surface (its rows start there). */
+  top: number;
+  /** The shallow shelf before it, 3D px at the water's own depth (0: none). */
+  shelf: number;
 }
 
 /** Below `y` within [x0, x1] there is nothing: a fall fades and the hat talisman tugs her back. */

@@ -20,7 +20,7 @@ import { CATCH_X, DECK_Y, JETTY_X0, JETTY_X1, LAKE_X0, LAKE_X1, LAKE_Y } from ".
 import { PLANES } from "../types.ts";
 import { WALKER, seedAt, seedNow } from "./kagami-place.ts";
 import { kagamiNear } from "./kagami-land.ts";
-import { kagamiRock } from "./kagami-rock.ts";
+import { LAKE_HOLD, LAKE_SHORE, kagamiRock } from "./kagami-rock.ts";
 import { kagamiIslets } from "./kagami-islets.ts";
 import { kagamiJetty } from "./kagami-jetty.ts";
 import { kagamiBackdrop, kagamiWade } from "./kagami-backdrop.ts";
@@ -62,6 +62,8 @@ export function kagami(b: WorldBuilder): void {
   b.water({
     y: LAKE_Y, x0: LAKE_X0 + (h(-60) - LAKE_X0) * toNear, x1: LAKE_X1 + (h(150) - LAKE_X1) * toNear,
     fx0: h(-60), fx1: h(150), near: LAKE_NEAR, far: 0.06, kind: "lake",
+    // (round 7, the water lane; visual only) the land in front holding its east end, and the shore there
+    hold: LAKE_HOLD, shore: LAKE_SHORE,
   });
   // nothing under the lake's surface to walk on: a fall there tugs her back
   b.void({ x0: LAKE_X0, x1: LAKE_X1, y: LAKE_Y + h(0.5), y1: h(66) });

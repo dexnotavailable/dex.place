@@ -1083,6 +1083,18 @@ function stackBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] 
     const [fa, fb] = span(0.78 + 0.04 * r(), 0.92);
     const lt = Math.min(chunkTop(low, fa), chunkTop(low, fb));
     ks.push(chunk(fa, fb, lt - 2 - (fb - fa) * 0.6, lt + 2, 0.02, 0.4, seed + 10 + 6 * 17, dir * -0.25, 0, Infinity));
+    // (round 7, the water lane: its water side dropped into the lake as one ruled cliff edge from its
+    // top to the frame's bottom) its foot steps out into the lake toward the camera, block by block
+    // (Dex's sketch: chunks stacking down into the base), each lower one standing further out and
+    // forward, its water side wet; a block fallen off it stands in the shallows at its foot on its own
+    // waterline, so the shore wanders out in steps and the water laps stone at each
+    add(-0.2 - 0.06 * r(), 0.2 + 0.08 * r(), wl + 30 + 8 * r(), Infinity, 0.08, 0.6, 7, false);
+    add(-0.44 - 0.05 * r(), -0.06 + 0.08 * r(), wl + 70 + 14 * r(), Infinity, 0.03, 0.5, 8, false);
+    for (const [a, b2, foot, hgt, i] of [[-0.6, -0.4, 26, 11, 9]] as const) {
+      const [x0, x1] = span(a + 0.03 * r(), b2 + 0.03 * r());
+      const f = wl + foot + 4 * r();
+      ks.push(chunk(x0, x1, f - hgt * (0.85 + 0.3 * r()), f, 0.04, i === 9 ? 0.5 : 0.2, seed + 10 + i * 17, (r() - 0.5) * 0.12, (r() - 0.5) * 0.06));
+    }
     return rockParts(ks, 1, seed + 3, deep);
   }
   // back row: the tall column at the tall end, a broad lower block, running off the bottom

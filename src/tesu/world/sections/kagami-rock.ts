@@ -7,6 +7,27 @@ import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
 import { LAKE_Y } from "./common.ts";
 import { bg } from "./kagami-place.ts";
+import { PLANES, type Water, type WaterHold } from "../types.ts";
+
+/** Where the lake runs out against the east lip, the fallen blocks heaped in its shallows (front plane). */
+export const SCREE = { x: h(109.25), w: 140, deep: 128, h: 30 };
+/** The P5 limestone at the lake's east end (kagami-land.ts NEAR_MASSES, the low block at 9186): near art px of its west side. */
+const EAST_P5_WEST = h(38) * PLANES.near.rate + 9186;
+
+/**
+ * (round 7, the water lane; Dex: "the sudden water cutoff between the wood part at the start and the
+ * path") The land holding the lake's east end in front of the play plane, so the near water runs on
+ * under it and never ends in a ruled line of its own: from the play waterline down to the P5
+ * limestone's top, inside the scree's talus (front plane, the jetty's last piles standing in the
+ * shallows before it); below that, inside the P5 limestone's low block (its west side lapped by the
+ * lake). Visual only: the lake's extent, its void and every walk are untouched.
+ */
+export const LAKE_HOLD: WaterHold[] = [
+  { rate: 1, x: SCREE.x + SCREE.w * 0.8, top: 0, shelf: 150 },
+  { rate: PLANES.near.rate, x: (EAST_P5_WEST + 14) / PLANES.near.rate, top: 40 / PLANES.near.rate, shelf: 34 },
+];
+/** (round 7) The shore's look where the land holds the lake (Water.shore). */
+export const LAKE_SHORE: Water["shore"] = [1, 1, 0.45, 0];
 
 /** The plateau rock and its spring (seed block 1). */
 export function kagamiRock(b: WorldBuilder): void {
@@ -40,7 +61,7 @@ export function kagamiRock(b: WorldBuilder): void {
   // corner takes over below it
   // (round 5: the chain runs further toward the camera, so the cliff face under the lake's end never
   // shows as a pale wedge with a ruled side below the blocks)
-  b.piece("front", "op.scree", h(109.25), LAKE_Y, { w: 140, deep: 128, h: 30 }, { z: 0, seed: 7919 * 3020 });
+  b.piece("front", "op.scree", SCREE.x, LAKE_Y, { w: SCREE.w, deep: SCREE.deep, h: SCREE.h }, { z: 0, seed: 7919 * 3020 });
   // (round 5, the critic's "teal triangle", fourth round) the east lip behind the jetty's end: a
   // stack of chunks standing in the lake where it runs out against Shiraito's wall, the wall's
   // first veil pouring down a gully in it into the falls' pool at its foot (behind the station,

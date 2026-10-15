@@ -12,6 +12,8 @@
 
 import { compile, uniforms } from "../../lab/engine/gl.ts";
 import { FULL_VS } from "../../lab/engine/shaders.ts";
+import type { Water } from "../world/types.ts";
+import { planeXf, rowOf, type CamState } from "./view.ts";
 
 const LIB = /* glsl */ `
 float bayer4(vec2 p) {
@@ -297,6 +299,12 @@ uniform float uCell;      // (round 6) the art's cell, frame px (2 at the catch'
 // the mirror drawn down in soft streaks under what it mirrors, a few long slow ripple bands (the
 // ripples' gaps and glints only in them), the far edge melting into the haze
 uniform vec4 uNear;
+// (round 7, the water lane) land in front of the play plane holding the lake's east end (up to
+// three, nearest last): per hold its frame column (where the water ends, behind the land), its
+// frame rows [from, to), the shallow shelf's width before it (3D px at the water's own depth; 0:
+// no hold); and the shore's look [shelf strength, lapping lines, the shelf's stone warmth, -]
+uniform vec4 uHold[3];
+uniform vec4 uShore;
 out vec4 o;
 void main() {
   vec2 f = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
@@ -319,7 +327,22 @@ void main() {
   float span = x1 - x0;
   x0 += ((vnoise(vec2(u * 24.0, 3.1)) - 0.5) * 0.3 + (vnoise(vec2(u * 85.0, 7.7)) - 0.5) * 0.1) * span * u;
   x1 += ((vnoise(vec2(u * 21.0, 9.4)) - 0.5) * 0.3 + (vnoise(vec2(u * 77.0, 1.3)) - 0.5) * 0.1) * span * u;
-  if (x3 < x0 || x3 > x1) discard;
+  // (round 7) in the rows a land in front holds, the water runs on under that land and ends at the
+  // land's own column, behind it: its end never shows as a line of water against the cliff face
+  // behind (the near water's depths slide past each other, so a 3D end there drew a ruled diagonal)
+  float shelfW = 0.0, dEnd = 1e6;
+  bool held = false;
+  for (int i = 0; i < 3; i++) {
+    vec4 hd = uHold[i];
+    if (hd.y < hd.z && p.y >= hd.y && p.y < hd.z) {
+      held = true;
+      // (how far short of the end, 3D px at this row's own depth)
+      dEnd = (hd.x - q.x) / s;
+      shelfW = hd.w;
+      break;
+    }
+  }
+  if (held ? (dEnd < 0.0 || x3 < x0) : (x3 < x0 || x3 > x1)) discard;
   // closeness 0 (horizon) .. 1 (at the play plane and nearer)
   float k = clamp(r, 0.0, 1.0);
   // world-anchored wave coordinates (px on the water's own surface)
@@ -371,8 +394,31 @@ void main() {
   float gap = step(0.86 - 0.08 * k, vnoise(vec2(wx * 1.3 + t * 0.4, pc.y * uCell * 0.9)));
   if (uNear.z > 0.0) gap *= mix(1.0, band, smoothstep(0.4, 0.8, k));
   rs *= 1.0 - gap * 0.35;
+  // (round 7) the shallows before the land holding the water: the lake bed rising to it, stone seen
+  // through the water, in two steps whose edges wander along the shore (world-anchored: a stretch of
+  // depth, so they hold still on the water while the camera moves), the mirror weaker over them
+  float ledge = 0.0, zz = 600.0 / r, w2 = 0.0;
+  if (shelfW > 0.0) {
+    float w1 = shelfW * (0.22 + 0.3 * vnoise(vec2(zz / 9.0, 3.3)) + 0.08 * vnoise(vec2(zz / 2.5, 5.7)));
+    w2 = shelfW * (0.6 + 0.45 * vnoise(vec2(zz / 14.0, 4.4)) + 0.1 * vnoise(vec2(zz / 3.0, 6.1)));
+    ledge = dEnd < w1 ? 2.0 : dEnd < w2 ? 1.0 : 0.0;
+    rs *= 1.0 - 0.12 * ledge * uShore.x;
+  }
   float rl = stepd(rs, 5.0, pc);
   vec3 c = mix(body, refl, rl);
+  if (ledge > 0.0) {
+    // pale, warm stone seen through the shallows, the inner step paler
+    vec3 stone = mix(uShallow, vec3(0.74, 0.71, 0.58), uShore.z);
+    c = mix(c, stone, uShore.x * (ledge > 1.5 ? 0.3 : 0.14));
+  }
+  // lapping lines: short, thin, broken, drifting in toward the land, on the shelf and a little out
+  if (shelfW > 0.0 && uShore.y > 0.0 && dEnd < w2 * 1.3) {
+    float lr = floor(zz / 1.5);
+    float on = step(0.72, hash2(vec2(lr, 6.7))) * step(fract(zz / 1.5), 0.45);
+    float seg = hash2(vec2(lr * 1.9, floor((dEnd + t * 2.5 + 40.0 * hash2(vec2(lr, 8.1))) / (9.0 + 9.0 * hash2(vec2(lr, 3.9))))));
+    float lap = on * step(0.62, seg) * (1.0 - smoothstep(w2 * 0.5, w2 * 1.3, dEnd));
+    c = mix(c, mix(uShallow, uGlint, 0.4), 0.5 * lap * uShore.y);
+  }
   // sun glints on the ripples nearer the viewer
   float cell = floor(pc.x * uCell / max(2.0, floor(mix(2.0, 7.0, k))));
   float gl = hash2(vec2(cell, floor(pc.y * uCell / max(1.0, floor(k * 2.0 + 1.0))) + floor(t * 0.7 + hash2(vec2(cell, pc.y)) * 9.0)));
@@ -430,6 +476,34 @@ export interface WaterDraw {
   cell?: number;
   /** (round 6) The near water's look [dark, streaks, bands, far edge melt], each 0..1 (default none). */
   near?: [number, number, number, number];
+  /**
+   * (round 7) Land holding the water's east end, from waterHolds(): per hold [frame column of the
+   * end, first frame row, end row, shelf width (3D px)]; up to three.
+   */
+  hold?: [number, number, number, number][];
+  /** (round 7) The shore's look [shelf strength, lapping lines, the shelf's stone warmth, -], each 0..1. */
+  shore?: [number, number, number, number];
+}
+
+/**
+ * (round 7, the water lane) Where land in front of the play plane holds a water's east end
+ * (Water.hold) for this camera: each hold's frame column, and the frame rows it holds, from its
+ * land's top row (never above the play waterline) down to the next hold's. A hold on a plane in
+ * front of the play plane counts only while that plane is drawn (not in the close band, nor while
+ * it dissolves in over zoom 1.6 to 1.45).
+ */
+export function waterHolds(cam: CamState, w: Water): [number, number, number, number][] | undefined {
+  if (!w.hold?.length) return undefined;
+  const wlPlay = rowOf(cam, 1, w.y);
+  const out = w.hold
+    .filter((d) => d.rate <= 1 || cam.zoom <= 1.45)
+    .slice(0, 3)
+    .map((d): [number, number, number, number] => {
+      const t = planeXf(cam, d.rate);
+      return [d.x * d.rate * t.g + t.offX, Math.max(Math.floor(wlPlay), Math.round(rowOf(cam, d.rate, w.y - d.top))), cam.H + 1, d.shelf];
+    });
+  for (let i = 0; i + 1 < out.length; i++) out[i]![2] = Math.max(out[i]![1], out[i + 1]![1]);
+  return out.length ? out : undefined;
 }
 
 /** The sky's banded look and the sun's bloom (an atmos entry's `glow`, in frame px). */
@@ -582,6 +656,12 @@ export class Atmos {
     gl.uniform1f(u.uStill!, d.still);
     if (u.uCell) gl.uniform1f(u.uCell, d.cell ?? 1);
     if (u.uNear) gl.uniform4fv(u.uNear, d.near ?? [0, 0, 0, 0]);
+    if (u.uHold) {
+      const hold = new Float32Array(12);
+      (d.hold ?? []).slice(0, 3).forEach((v, i) => hold.set(v, i * 4));
+      gl.uniform4fv(u.uHold, hold);
+    }
+    if (u.uShore) gl.uniform4fv(u.uShore, d.shore ?? [0, 0, 0, 0]);
     gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.enable(gl.BLEND);
