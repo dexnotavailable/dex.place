@@ -305,6 +305,8 @@ uniform vec4 uNear;
 // no hold); and the shore's look [shelf strength, lapping lines, the shelf's stone warmth, -]
 uniform vec4 uHold[3];
 uniform vec4 uShore;
+// (round 7) the back and mid planes' waterline rows (0: none), for the contact under their land
+uniform vec2 uFeet;
 out vec4 o;
 void main() {
   vec2 f = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
@@ -366,6 +368,22 @@ void main() {
   float ph = wx * 0.9 + pc.y * uCell * 0.55 + t * 1.6;
   float dx = floor(sin(ph) * amp * (0.6 + 0.4 * vnoise(vec2(wx * 0.2, pc.y * uCell * 0.3))) / uCell + 0.5) * uCell;
   float dy = floor(sin(ph * 0.5 + 1.7) * amp * 0.25 / uCell + 0.5) * uCell;
+  // (round 7) the contact: just under a background plane's waterline what stands on it holds its
+  // reflection crisp (the ripples are smallest at the shore), to its own depth along the shore, so
+  // where rock meets the water no ruled line of pale water runs under every block
+  // (only under land: where the mirror there shows the sky or the fog, nothing changes)
+  float foot = 0.0;
+  for (int i = 0; i < 2; i++) {
+    float wlr = i == 0 ? uFeet.x : uFeet.y;
+    float dd = q.y - wlr;
+    float kk = uCell * floor(1.0 + 3.4 * vnoise(vec2(x3 / 7.0, 1.9 + float(i) * 4.0)) + 1.2 * hash2(vec2(floor(x3 / 3.0), 2.7 + float(i))));
+    if (wlr > 0.0 && dd >= 0.0 && dd < kk) foot = 1.0;
+  }
+  if (foot > 0.0) {
+    vec3 m0 = texelFetch(uRefl, ivec2(p.x, uRes.y - 1.0 - p.y), 0).rgb;
+    if (dot(m0, vec3(0.3, 0.55, 0.15)) > 0.42) foot = 0.0;
+  }
+  if (foot > 0.0) { dx = 0.0; dy = 0.0; }
   vec2 rp = vec2(p.x + dx, p.y + dy);
   rp = clamp(rp, vec2(0.0), uRes - 1.0);
   vec3 refl = texelFetch(uRefl, ivec2(rp.x, uRes.y - 1.0 - rp.y), 0).rgb;
@@ -404,7 +422,7 @@ void main() {
     ledge = dEnd < w1 ? 2.0 : dEnd < w2 ? 1.0 : 0.0;
     rs *= 1.0 - 0.12 * ledge * uShore.x;
   }
-  float rl = stepd(rs, 5.0, pc);
+  float rl = foot > 0.0 ? 1.0 : stepd(rs, 5.0, pc);
   vec3 c = mix(body, refl, rl);
   if (ledge > 0.0) {
     // pale, warm stone seen through the shallows, the inner step paler
@@ -441,7 +459,7 @@ void main() {
     float reach = 26.0 + 30.0 * vnoise(vec2(x3 / 2400.0, 1.7)) + 12.0 * vnoise(vec2(x3 / 600.0, 4.2));
     fog = max(fog, uNear.w * (1.0 - smoothstep(0.0, reach, q.y - rowFar)));
   }
-  c = mix(c, uHaze, stepd(fog, 6.0, pc));
+  c = mix(c, uHaze, stepd(fog * (1.0 - 0.6 * foot), 6.0, pc));
   o = vec4(c, 1.0);
 }`;
 
@@ -483,6 +501,8 @@ export interface WaterDraw {
   hold?: [number, number, number, number][];
   /** (round 7) The shore's look [shelf strength, lapping lines, the shelf's stone warmth, -], each 0..1. */
   shore?: [number, number, number, number];
+  /** (round 7) The back and mid planes' waterline rows, for the contact under their land (default none). */
+  feet?: [number, number];
 }
 
 /**
@@ -662,6 +682,7 @@ export class Atmos {
       gl.uniform4fv(u.uHold, hold);
     }
     if (u.uShore) gl.uniform4fv(u.uShore, d.shore ?? [0, 0, 0, 0]);
+    if (u.uFeet) gl.uniform2fv(u.uFeet, d.feet ?? [0, 0]);
     gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.enable(gl.BLEND);

@@ -1246,13 +1246,15 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
   const inner = peak < 0.5 ? 1 : -1;
   const parts: Part[] = [];
   const foot = wanderFoot(f, Math.min(small ? 7 : 13, 3 + s.h * 0.08), seed + 7);
-  parts.push(earthPart({
+  // (round 7, the water lane: the critic's "red-brown mud strip with a white dashed waterline under
+  // every grass rise") no bright line along the mud: its wet dark foot meets the water
+  parts.push({ ...earthPart({
     x0: s.x - 4, x1: s.x + s.w + 4, bot: f, foot, wet: 0.3, shelves: [3 + 3 * r(), 9 + 5 * r(), 18 + 8 * r()], seed: seed + 5,
     top: (lx) => {
       const e = E(lx);
       return e === -Infinity || e < 1 ? Infinity : f - Math.max(1, e - 7 - 8 * vnoise1(lx / 19, seed + 6) - 7 * vnoise1(lx / 6.5, seed + 16));
     },
-  }));
+  }), noLine: true });
   // tussocks: a crown band along the envelope, then bands lower down, darker, overlapping, down to
   // the mud at its foot; the inner flank's lower part thins out so its earth and shelves show
   const base = clamp(s.h / 11, 3.5, small ? 8 : 11);
@@ -1282,6 +1284,22 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
       x += rx * (0.72 + 0.45 * r());
     }
     dy += base * (0.95 + 0.5 * r());
+  }
+  // (round 7, the water lane) the grass comes down over the mud to the water along most of its foot,
+  // low dark tussocks hanging over the waterline and mirrored in it; the wet earth shows only in two
+  // or three short gaps (its own rng: the tussocks above keep their places)
+  {
+    const r2 = rng(seed + 41);
+    let x = s.x + 1;
+    while (x < s.x + s.w - 1) {
+      const rx = base * (0.5 + 0.45 * r2()), ry = rx * (1 + 0.45 * r2()), lit = 0.1 + 0.18 * r2();
+      const gap = vnoise1(x / 43, seed + 43) > 0.7 || vnoise1(x / 11, seed + 44) > 0.86;
+      if (!gap && E(x) > 3) {
+        const fx = foot(x);
+        parts.push({ ...tuftPart({ x, y: fx - 0.5, rx, ry, lit, dark: 0.7 + 0.2 * r2(), seed: seed + 4000 + Math.round(x) }, fx, false), noLine: true });
+      }
+      x += rx * (0.75 + 0.45 * r2());
+    }
   }
   // the twig breaking the crown, a little to the inner side of it
   if (s.twig ?? !small) {
