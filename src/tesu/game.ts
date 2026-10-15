@@ -27,7 +27,7 @@ import { Sound } from "./sound.ts";
 import { CHARM_PERCH, H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore } from "./plates/store.ts";
 import type { ZhushaAssets } from "./player.ts";
-import { Atmos, type MistBand, type SkyGlow } from "./render/atmos.ts";
+import { Atmos, waterHolds, type MistBand, type SkyGlow } from "./render/atmos.ts";
 import { Motes } from "./render/motes.ts";
 import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
@@ -1059,7 +1059,7 @@ export class TesuGame {
         depth: [water.near, water.far], rows, time: this.time,
         deep: hexRgb(a.water?.deep ?? "#1f5a60"), body: hexRgb(a.water?.body ?? "#3f8f8a"), shallow: hexRgb(a.water?.shallow ?? "#bfe0dc"),
         haze: hexRgb(a.haze), glint: hexRgb(a.water?.glint ?? "#fffbe8"), still: water.kind === "lake" ? 1 : 0.4, mirror: a.water?.mirror ?? [1, 1, 1],
-        cell: a.water?.near && cam.zoom >= 1.9 ? 2 : 1, near: a.water?.near,
+        cell: a.water?.near && cam.zoom >= 1.9 ? 2 : 1, near: a.water?.near, hold: waterHolds(cam, water), shore: water.shore, feet: water.shore ? [wl("back"), 0] : undefined,
       });
     };
     const mist = (rate: number, strength: number, drift: number): void => {

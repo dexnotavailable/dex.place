@@ -130,6 +130,10 @@ function kagamiShallows(b: WorldBuilder): void {
     [h(103.3), { w: h(105.6) - h(103.3), wl: 96, deep: 170, side: 1, h: 40 }, 7919 * 3234, [[44, 34, 40, 3], [96, 64, 56, 3.4], [178, 30, 30, 2.2]]],
     // under her: the lily bed
     [h(99.75), { w: h(100.3) - h(99.75), wl: 52, deep: 144, side: 1, h: 6, kind: "pads" }, 7919 * 3300, []],
+    // (round 7, the water lane; last, a seed of its own) play-west's shore stepping down toward the
+    // camera: blocks fallen from its limestone lying in the shallows in front of it, west of the
+    // jetty's first piles (under P5's shelf top there: play-west rows 792 to 829)
+    [h(39.2), { w: h(43.3) - h(39.2), wl: 4, deep: 60, side: -1, h: 22, kind: "ledge" }, 7919 * 3301, []],
   ];
   corners.forEach(([x, p, seed, beds], i) => {
     b.piece("front", "op.shallows", x, LAKE_Y, p as unknown as Record<string, unknown>, { z: 1, reflect: false, seed });

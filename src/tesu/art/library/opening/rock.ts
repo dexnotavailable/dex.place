@@ -16,7 +16,7 @@ import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { Spans, bayer4, clamp, fbm1, hash, hash1, rng, tone, vnoise, vnoise1 } from "../../raster.ts";
 import { boxOf, cached, clump, spansFor, toAbs, yAt } from "./kit.ts";
-import { chunkAt, chunkTop, face, inChunk, limeChunk, nextLedge, type FaceOpts, type LimeChunk } from "./face.ts";
+import { chunkAt, chunkSides, chunkTop, face, inChunk, limeChunk, nextLedge, type FaceOpts, type LimeChunk } from "./face.ts";
 import { needlePad } from "./flora.ts";
 import { LX, LY, bladePath, dot, grass, reflOf, stroke } from "./bank.ts";
 import { KERB_DEPTH, kerbAt, kerbGrit, kerbPx, kerbRocks, kerbShade, kerbTop, type KerbRock } from "./kerb.ts";
@@ -1080,6 +1080,111 @@ export interface ScreeP {
   h?: number;
 }
 
+/**
+ * (round 7, the water lane; Dex: "the sudden water cutoff between the wood part at the start and the
+ * path") The talus the scree's blocks lie in: a bank of fallen stones heaped against the lip's foot,
+ * high against the cliff on its east side and spreading west and toward the camera into the
+ * shallows, its water side stepping in and out in runs of its own lengths. The lake runs on under it
+ * (kagami-rock.ts LAKE_HOLD), so between the blocks the water meets stone, never a ruled end of its
+ * own with the cliff's pale face showing past it.
+ */
+interface Talus {
+  W: number;
+  D: number;
+  seed: number;
+}
+
+/** Its water side (local x) at local y: west of the lip, stepping out toward the camera. */
+function talusLeft(T: Talus, ly: number): number {
+  const s = T.seed;
+  const u = clamp(ly / T.D, 0, 1.2);
+  // runs of 4 to 12 px down the shore, each its own step in or out; a slow wander and a hand wobble
+  const ra = Math.floor((ly + 40) / 4);
+  const ka = ra - (hash1(ra, s + 1) < 0.45 ? 1 : 0) - (hash1(ra, s + 2) < 0.25 ? 1 : 0);
+  const jog = (hash1(ka, s + 3) - 0.5) * 12;
+  return T.W * (0.6 - 0.2 * u) + jog + (vnoise1(ly / 17, s + 4) - 0.5) * 10 + (vnoise1(ly / 3.1, s + 5) - 0.5) * 1.6;
+}
+
+/** Its east side: the heap's front slope falling away from the cliff toward the camera. */
+function talusRight(T: Talus, ly: number): number {
+  const u = clamp(ly / T.D, 0, 1.2);
+  return T.W * (1.16 - 0.26 * u * u) + (vnoise1(ly / 9, T.seed + 6) - 0.5) * 10;
+}
+
+/** Its top (local y): blocks just breaking the water, a low heap against the lip's foot. */
+function talusTop(T: Talus, lx: number): number {
+  const s = T.seed;
+  const e = lx - T.W * 0.95;
+  const heap = e > 0 ? e * (0.3 + 0.2 * vnoise1(lx / 13, s + 7)) : 0;
+  // the skyline breaks into the tops of single blocks
+  const st = Math.floor(lx / 16 + vnoise1(lx / 9, s + 8) * 0.8);
+  return -Math.min(8, heap) - 2.5 * hash1(st, s + 9) * (e > -24 ? 1 : 0.3);
+}
+
+function inTalus(T: Talus, lx: number, ly: number): boolean {
+  if (ly > T.D * 1.12 || ly < talusTop(T, lx)) return false;
+  return lx >= talusLeft(T, ly) && lx <= talusRight(T, ly);
+}
+
+/**
+ * The talus, side-on with the light up and to the left, in the shade of the slabs and the lip: big
+ * blocks of their own sizes (wider than tall: we see them nearly edge-on), dim, only their upper
+ * left rims catching light, deep crevices round them; moss on the odd top; wet and dark with algae
+ * where the lake laps its water side, a broken bright line on the water just off it.
+ */
+function paintTalus(c: PaintCtx, T: Talus): void {
+  const b = c.buf, s = T.seed;
+  const X0 = Math.max(b.ox, Math.floor(c.X(T.W * 0.2 - 16))), X1 = Math.min(b.x1, Math.ceil(c.X(T.W * 1.3)));
+  const Y0 = Math.max(b.oy, Math.floor(c.Y(-22))), Y1 = Math.min(b.y1, Math.ceil(c.Y(T.D * 1.12 + 1)));
+  const SX = 18, SY = 9;
+  for (let y = Y0; y < Y1; y++) {
+    const ly = LY(c, y);
+    const xl = talusLeft(T, ly);
+    for (let x = X0; x < X1; x++) {
+      const lx = LX(c, x);
+      if (!inTalus(T, lx, ly)) {
+        // the lake lapping its water side: a broken line of light on the water, one px off it
+        if (ly > 1 && lx < xl && xl - lx <= 1.05 && vnoise1(ly / 2.3, s + 30) > 0.52) b.set(x, y, ly < T.D * 0.5 ? P.jade[1]! : P.jade[2]!);
+        continue;
+      }
+      // the block this px is on: the nearest of the jittered blocks round it, and how near the next
+      const gx = Math.floor(lx / SX), gy = Math.floor(ly / SY);
+      let d1 = 9, d2 = 9, sid = 0, cx = 0, cy = 0;
+      for (let j = -1; j <= 1; j++) {
+        for (let i = -1; i <= 1; i++) {
+          const qx = gx + i, qy = gy + j;
+          const px = (qx + 0.1 + 0.8 * hash(qx, qy, s + 11)) * SX, py = (qy + 0.1 + 0.8 * hash(qx, qy, s + 12)) * SY;
+          // (blocks of their own sizes: a big one swallows its neighbours' share; boxy, not round)
+          const big = 0.5 + 1.2 * hash(qx, qy, s + 13) * hash(qx, qy, s + 17) + 0.3 * hash(qx, qy, s + 18);
+          const ax = Math.abs(lx - px) / SX, ay = Math.abs(ly - py) / SY;
+          const dd = Math.max(ax, ay * 1.15) * 0.75 + Math.hypot(ax, ay) * 0.25;
+          const dn = dd / big;
+          if (dn < d1) { d2 = d1; d1 = dn; sid = qx * 131 + qy; cx = px; cy = py; }
+          else if (dn < d2) d2 = dn;
+        }
+      }
+      const wet = clamp(1 - (lx - xl) / 8, 0, 1) * (ly > 0 ? 1 : 0.3);
+      const shade = clamp((lx - T.W * 0.9) / (T.W * 0.25), 0, 1);
+      const dx = (lx - cx) / SX, dy = (ly - cy) / SY;
+      // the crevices: dark under and right of each block; on its lit upper left the joint is only its
+      // rim catching the light (so the blocks don't read as a wall of outlined cobbles)
+      if (d2 - d1 < 0.07 + 0.05 * hash1(sid, s + 14)) {
+        if (dy > -0.2 || dx > 0.2) { b.set(x, y, P.karst[8]!); continue; }
+        if (wet < 0.5 && hash1(sid, s + 16) < 0.6) { b.set(x, y, P.karst[5]!); continue; }
+      }
+      const h0 = hash1(sid, s + 15);
+      // moss on the odd top, algae on the wet ones by the water
+      if (dy < -0.3 && h0 < 0.1 + 0.25 * wet) { b.set(x, y, wet > 0.5 ? (dx < 0 ? P.moss[5]! : P.moss[6]!) : dy < -0.42 && dx < 0.1 ? P.moss[4]! : P.moss[5]!); continue; }
+      // (in the slabs' and the lip's shade: dim, a recess behind the lit blocks in front)
+      let t = 0.72 + 0.14 * h0 + 0.12 * (dx * 0.5 + dy * 0.85) + 0.14 * wet + 0.08 * shade;
+      // its upper-left rim catching what light reaches in
+      if (dy < -0.45 && dx < 0.25 && wet < 0.5) t -= 0.24;
+      else if (dx < -0.42 && dy < 0.2 && wet < 0.5) t -= 0.1;
+      b.set(x, y, tone(P.karst, clamp(0.14 + t * 0.8, 0, 1), x, y, 0));
+    }
+  }
+}
+
 export const scree = definePainter<ScreeP>("op.scree", {
   bounds(p) {
     return [-64, -(p.h ?? 26) * 1.5 - 50, p.w + 34, p.deep * 1.2 + 40];
@@ -1135,31 +1240,19 @@ export const scree = definePainter<ScreeP>("op.scree", {
       const base = D * bs, x0 = W * a2 + (r() - 0.5) * 4, x1 = W * q2 + (r() - 0.5) * 4;
       return { x0, x1, top: base - hh * (0.85 + 0.3 * r()), foot: base + 3, tilt: tl, z: 0.3 + 0.1 * (i % 2), shade: 0.26, cap: i % 2 === 0 ? 1 + r() * 1.5 : 0, water: base, round: 0.55, seed: seed + 300 + i * 13 };
     });
+    // (round 7) the talus they lie in, under everything; the blocks standing on it are dry at the
+    // foot (a crevice of shadow there), the ones out in the water keep their wet band and reflection
+    const tal: Talus = { W, D, seed: seed + 900 };
+    paintTalus(c, tal);
+    const dry = new Set([...ks, ...tk].filter((k) => inTalus(tal, (k.x0 + k.x1) / 2, k.water! + 1)));
+    const lay = (k: LimeChunk, casters: LimeChunk[]): void => limeChunk(c, dry.has(k) ? { ...k, water: undefined } : k, casters);
     for (const k of tk) reflect(k);
-    for (let i = 0; i < tk.length; i++) limeChunk(c, tk[i]!, tk.slice(i + 1));
-    {
-      // small dark stones in the gaps, on the water between the blocks
-      const X0 = Math.max(b.ox, Math.floor(c.X(W * 0.48))), X1 = Math.min(b.x1, Math.ceil(c.X(W * 1.12)));
-      const Y0 = Math.max(b.oy, Math.floor(c.Y(-4))), Y1 = Math.min(b.y1, Math.ceil(c.Y(D * 0.62)));
-      for (let y = Y0; y < Y1; y++) {
-        const ly = LY(c, y);
-        for (let x = X0; x < X1; x++) {
-          const lx = LX(c, x);
-          if (tk.some((k) => inChunk(k, lx, ly))) continue;
-          const gx = Math.floor(lx / 4), gy = Math.floor(ly / 3);
-          const h0 = hash(gx, gy, seed + 74);
-          if (h0 > 0.09) continue;
-          const cx = (gx + 0.5) * 4, cy = (gy + 0.5) * 3, rr = 1 + 1.6 * hash(gx, gy, seed + 75);
-          const dx = (lx - cx) / rr, dy = (ly - cy) / (rr * 0.7);
-          if (dx * dx + dy * dy > 1) continue;
-          b.set(x, y, dy < -0.3 && dx < 0.3 ? P.karst[5]! : dy > 0.35 ? P.karst[8]! : P.karst[7]!);
-        }
-      }
-    }
+    for (let i = 0; i < tk.length; i++) lay(tk[i]!, tk.slice(i + 1));
     // the reflections first (each block's, below its own waterline, broken by ripples and
     // fading downward), then the blocks back to front over them
     for (const k of ks) reflect(k);
     function reflect(k: LimeChunk): void {
+      if (dry.has(k)) return;
       const base = k.water!;
       const hgt = Math.max(2, base - k.top);
       const reach = Math.min(hgt < 12 ? hgt * 0.8 : hgt * 0.55, 20);
@@ -1172,10 +1265,15 @@ export const scree = definePainter<ScreeP>("op.scree", {
         const row = Math.floor(ly);
         for (let x = X0; x < X1; x++) {
           const lx = LX(c, x);
+          // (round 7) only on the water: the talus covers it past the shore
+          if (inTalus(tal, lx, ly)) continue;
           // (round 4) one soft mirrored copy: the rows sway together in a slow wave, a ripple line
           // of water across it here and there, dissolving in long runs near its end
           const sx = lx + Math.round((vnoise1(dn / 5.5, seed + 30) - 0.5) * 2 * Math.min(2, 0.15 + dn / 14));
           if (!inChunk(k, sx, my)) continue;
+          // (round 7) its ends dissolve into the lake's own mirror instead of stopping on a ruled line
+          const [sa, sb] = chunkSides(k, my), ed = Math.min(sx - sa, sb - sx);
+          if (ed < 4 && hash(Math.floor(lx), Math.floor(ly), seed + 35) * 4 > ed + 0.5) continue;
           if (row > 1 && hash1(row, seed + 31) < 0.05 + 0.25 * dn / reach && hash1(Math.floor((lx + 40 * hash1(row, seed + 33)) / 22), seed + row) < 0.8) continue;
           if (dn / reach > 0.55 && hash1(Math.floor((lx + 30 * hash1(Math.floor(dn / 3), seed + 34)) / 20) * 7 + Math.floor(dn / 3), seed + 32) < (dn / reach - 0.55) * 1.8) continue;
           const T = chunkTop(k, sx), s = my - T;
@@ -1192,7 +1290,7 @@ export const scree = definePainter<ScreeP>("op.scree", {
     const order = ks.map((_, i) => i).sort((i, j) => ks[i]!.water! - ks[j]!.water!);
     order.forEach((i, n) => {
       const nearer = order.slice(n + 1).map((j) => ks[j]!).filter((q) => q.water! - ks[i]!.water! < 30);
-      limeChunk(c, ks[i]!, nearer);
+      lay(ks[i]!, nearer);
     });
     // reeds out of the joints and the gaps, a tangle near the west side
     for (let i = 0; i < 9; i++) {

@@ -1083,6 +1083,18 @@ function stackBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] 
     const [fa, fb] = span(0.78 + 0.04 * r(), 0.92);
     const lt = Math.min(chunkTop(low, fa), chunkTop(low, fb));
     ks.push(chunk(fa, fb, lt - 2 - (fb - fa) * 0.6, lt + 2, 0.02, 0.4, seed + 10 + 6 * 17, dir * -0.25, 0, Infinity));
+    // (round 7, the water lane: its water side dropped into the lake as one ruled cliff edge from its
+    // top to the frame's bottom) its foot steps out into the lake toward the camera, block by block
+    // (Dex's sketch: chunks stacking down into the base), each lower one standing further out and
+    // forward, its water side wet; a block fallen off it stands in the shallows at its foot on its own
+    // waterline, so the shore wanders out in steps and the water laps stone at each
+    add(-0.2 - 0.06 * r(), 0.2 + 0.08 * r(), wl + 30 + 8 * r(), Infinity, 0.08, 0.6, 7, false);
+    add(-0.44 - 0.05 * r(), -0.06 + 0.08 * r(), wl + 70 + 14 * r(), Infinity, 0.03, 0.5, 8, false);
+    for (const [a, b2, foot, hgt, i] of [[-0.6, -0.4, 26, 11, 9]] as const) {
+      const [x0, x1] = span(a + 0.03 * r(), b2 + 0.03 * r());
+      const f = wl + foot + 4 * r();
+      ks.push(chunk(x0, x1, f - hgt * (0.85 + 0.3 * r()), f, 0.04, i === 9 ? 0.5 : 0.2, seed + 10 + i * 17, (r() - 0.5) * 0.12, (r() - 0.5) * 0.06));
+    }
     return rockParts(ks, 1, seed + 3, deep);
   }
   // back row: the tall column at the tall end, a broad lower block, running off the bottom
@@ -1234,13 +1246,15 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
   const inner = peak < 0.5 ? 1 : -1;
   const parts: Part[] = [];
   const foot = wanderFoot(f, Math.min(small ? 7 : 13, 3 + s.h * 0.08), seed + 7);
-  parts.push(earthPart({
+  // (round 7, the water lane: the critic's "red-brown mud strip with a white dashed waterline under
+  // every grass rise") no bright line along the mud: its wet dark foot meets the water
+  parts.push({ ...earthPart({
     x0: s.x - 4, x1: s.x + s.w + 4, bot: f, foot, wet: 0.3, shelves: [3 + 3 * r(), 9 + 5 * r(), 18 + 8 * r()], seed: seed + 5,
     top: (lx) => {
       const e = E(lx);
       return e === -Infinity || e < 1 ? Infinity : f - Math.max(1, e - 7 - 8 * vnoise1(lx / 19, seed + 6) - 7 * vnoise1(lx / 6.5, seed + 16));
     },
-  }));
+  }), noLine: true });
   // tussocks: a crown band along the envelope, then bands lower down, darker, overlapping, down to
   // the mud at its foot; the inner flank's lower part thins out so its earth and shelves show
   const base = clamp(s.h / 11, 3.5, small ? 8 : 11);
@@ -1270,6 +1284,25 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
       x += rx * (0.72 + 0.45 * r());
     }
     dy += base * (0.95 + 0.5 * r());
+  }
+  // (round 7, the water lane) the grass comes down over the mud to the water along most of its foot,
+  // low dark tussocks hanging over the waterline and mirrored in it, a glint of the water's bright
+  // line under the odd one; the wet earth shows only in two or three short gaps (its own rng: the
+  // tussocks above keep their places)
+  {
+    const r2 = rng(seed + 41);
+    let x = s.x + 1;
+    while (x < s.x + s.w - 1) {
+      const rx = base * (0.5 + 0.45 * r2()), ry = rx * (1 + 0.45 * r2()), lit = 0.1 + 0.18 * r2();
+      const gap = vnoise1(x / 43, seed + 43) > 0.7 || vnoise1(x / 11, seed + 44) > 0.86;
+      if (!gap && E(x) > 3) {
+        const fx = foot(x);
+        // (the water's bright line only under the odd one: under the grass the contact is in shade)
+        const tp = tuftPart({ x, y: fx - 0.5, rx, ry, lit, dark: 0.7 + 0.2 * r2(), seed: seed + 4000 + Math.round(x) }, fx, false);
+        parts.push(hash1(Math.round(x), seed + 45) < 0.3 ? tp : { ...tp, noLine: true });
+      }
+      x += rx * (0.75 + 0.45 * r2());
+    }
   }
   // the twig breaking the crown, a little to the inner side of it
   if (s.twig ?? !small) {
@@ -1685,8 +1718,8 @@ export interface ShallowsP {
   h?: number;
   /** A snag lying from the bank into the water ("log") or old broken stubs ("stubs"). */
   wood?: "log" | "stubs";
-  /** "rise" (the default on the left), "spit" (the default on the right) or "pads". */
-  kind?: "rise" | "spit" | "pads";
+  /** "rise" (the default on the left), "spit" (the default on the right), "pads", or (round 7) "ledge". */
+  kind?: "rise" | "spit" | "pads" | "ledge";
   /** (round 6) Painted only at plate densities in [min, max] (see MassSpec.levels). */
   levels?: [number, number];
 }
@@ -1701,6 +1734,29 @@ function shallowsOf(p: ShallowsP, seed: number): Body[] {
     const out: Body[] = [];
     if (kind === "pads") {
       out.push(massOf({ kind: "pads", x: 0, w: p.w, h: Math.max(8, (p.deep - p.wl) / 2.5), dense: 4.2 }, seed + 1, p.wl, 0, p.deep));
+      return out;
+    }
+    if (kind === "ledge") {
+      // (round 7, the water lane: the critic's "the play-west shore still reads at one level", every
+      // block of it standing on the one waterline) blocks fallen from the shore's limestone lying in
+      // the shallows in front of it, each nearer one lower in the frame and lower-topped, so the shore
+      // steps down toward the camera in front of the play plane's waterline; wet at their feet, each
+      // mirrored on its own waterline, standing forward of the shore and a step darker than its lit
+      // face; open water between them
+      const ks: Chunk[] = [];
+      // [from, to (shares of w), foot nearer by (px), top over the anchor's waterline (share of h),
+      // depth (0 forward)]: each one's top overlaps the foot of the one behind it, never a slab
+      // floating free on the water
+      const plan: [number, number, number, number, number][] = [
+        // (wet from lying in the lake: a step darker than the shore's lit face behind them)
+        [0.0, 0.17, 2, 0.85, 0.62], [0.14, 0.34, 7, 0.52, 0.52], [0.37, 0.49, 3, 0.7, 0.58],
+        [0.46, 0.66, 12, 0.2, 0.46], [0.09, 0.21, 17, 0.06, 0.42], [0.71, 0.8, 20, -0.25, 0.4],
+      ];
+      plan.forEach(([a, b, near, ts, dep], i) => {
+        const x0 = p.w * a + (r() - 0.5) * 8, x1 = p.w * b + (r() - 0.5) * 8, f = p.wl + near + r() * 2;
+        ks.push(chunk(x0, x1, p.wl - H * ts - 2 * r(), f, dep, 0.4 + 0.6 * r(), seed + 60 + i * 17, (r() - 0.5) * 0.12, (r() - 0.5) * 0.06));
+      });
+      out.push(bodyFrom(rockParts(ks, 1, seed + 3, p.deep), seed + 2, p.wl, p.deep, { kind: "outcrop", x: 0, w: p.w, h: H }));
       return out;
     }
     if (kind === "rise") {
