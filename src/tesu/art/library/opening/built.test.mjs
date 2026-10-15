@@ -231,7 +231,9 @@ test("op.rock path: a paved road, the cliff's chunks breaking its front edge, a 
   }
   assert.ok(paved / n > 0.3, `the road's top is stone in only ${paved} of ${n} columns`);
   assert.ok(broken / n > 0.08 && broken / n < 0.7, `rock breaks over the road's edge in ${broken} of ${n} columns (want some, not all)`);
-  assert.ok(above > 0 && above / n < 0.3, `rock or stones rise past the walk line in ${above} of ${n} columns (want a few)`);
+  // (round 7, Dex: "the big ones coming from the stone part below") fewer, bigger blocks: 100-160 px
+  // wide with a step beside them, still clear of most of the road
+  assert.ok(above > 0 && above / n < 0.4, `rock or stones rise past the walk line in ${above} of ${n} columns (want a few)`);
 });
 
 // (round 5, the critic: "the deck is one full-width ruler") a span given a sag bows down

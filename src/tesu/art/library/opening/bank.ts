@@ -104,28 +104,27 @@ export interface BankP {
 }
 
 // ---------------------------------------------------------------------------
-// drawing in whole level-1 px (one density at every level)
+// drawing at the level's own density
 
 /**
- * Local level-1 x of art column x. Above level 1 every art px belongs to a whole level-1 cell
- * (cell k covers art px whose centre lies in [k d, (k + 1) d)) and samples at the cell's centre,
- * so the close band shows the plane at one density.
+ * Local level-1 x of art column x (its centre).
+ *
+ * (round 7, the patch lane; Dex: "a lot of these blocks or assets have different px density or
+ * resolution, which trips me up") Above level 1 these helpers used to paint whole level-1 cells, so
+ * in the catch's 2x close band the bank, the shallows, the reeds, the rock's plants and the jetty's
+ * landing showed on 2 px cells beside the jetty, its props and Zhusha drawn on 1 px. Now every art
+ * px is its own sample at every level: the whole near layer of the close band shares one pixel.
  */
 export function LX(c: PaintCtx, x: number): number {
-  return c.d > 1 ? c.lx((Math.floor((x + 0.5) / c.d) + 0.5) * c.d) : c.lx(x + 0.5);
+  return c.lx(x + 0.5);
 }
 export function LY(c: PaintCtx, y: number): number {
-  return c.d > 1 ? c.ly((Math.floor((y + 0.5) / c.d) + 0.5) * c.d) : c.ly(y + 0.5);
+  return c.ly(y + 0.5);
 }
 
-/** One level-1 px at local (lx, ly): the whole cell's art px above level 1, one art px below it. */
+/** The art px at local (lx, ly), at every level (round 7: above level 1 no longer a whole level-1 cell). */
 export function dot(c: PaintCtx, lx: number, ly: number, col: number): void {
-  const d = c.d;
-  if (d > 1) {
-    const kx = Math.floor(c.X(lx) / d), ky = Math.floor(c.Y(ly) / d);
-    const x0 = Math.ceil(kx * d - 0.5), x1 = Math.ceil((kx + 1) * d - 0.5), y0 = Math.ceil(ky * d - 0.5), y1 = Math.ceil((ky + 1) * d - 0.5);
-    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) c.buf.set(x, y, col);
-  } else c.buf.set(Math.floor(c.X(lx)), Math.floor(c.Y(ly)), col);
+  c.buf.set(Math.floor(c.X(lx)), Math.floor(c.Y(ly)), col);
 }
 
 /** Something that puts one level-1 px: straight onto the plane, or mirrored into a reflection. */
@@ -143,7 +142,13 @@ function strokeP(pen: Pen, d: number, pts: [number, number][], width: (u: number
       const t = i / n, u = (k + t) / (pts.length - 1);
       const x = ax + (bx - ax) * t, y = ay + (by - ay) * t;
       const w = width(u);
-      if (w <= 1.05) { pen(x, y, col(u, 0)); continue; }
+      if (w <= 1.05) {
+        // (round 7) above level 1 a one-px stroke keeps its play-zoom width (two art px at the catch,
+        // edges stepping on the level's own px), so the pull-back never drops it to a broken hairline
+        if (d > 1.5) { pen(x - nx * 0.25, y - ny * 0.25, col(u, 0)); pen(x + nx * 0.25, y + ny * 0.25, col(u, 0)); }
+        else pen(x, y, col(u, 0));
+        continue;
+      }
       for (let o = -w / 2 + 0.5; o <= w / 2 - 0.49; o += 0.5) pen(x + nx * o, y + ny * o, col(u, o / (w / 2)));
     }
   }
@@ -214,9 +219,9 @@ export function deepCol(lx: number, ly: number, x: number, y: number, seed: numb
   return tone(P.pine, 0.55 + t * 0.45, x, y, 0.2);
 }
 
-/** Ordered dither on whole level-1 cells (one density at the close band). */
-function dith(c: PaintCtx, x: number, y: number): number {
-  return c.d > 1 ? bayer4(Math.floor((x + 0.5) / c.d), Math.floor((y + 0.5) / c.d)) : bayer4(x, y);
+/** Ordered dither on the level's own art px (round 7: one density at the close band, 1 px). */
+function dith(_c: PaintCtx, x: number, y: number): number {
+  return bayer4(x, y);
 }
 
 /** A ramp step for t (0 light .. 1 dark), dithered only on a thin seam between two steps. */

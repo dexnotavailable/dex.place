@@ -149,6 +149,9 @@ export class TesuGame {
   private cloudSpeed = 0;
   private levels = new Map<PlaneId, number[]>();
   private lastLevel = new Map<PlaneId, number>();
+  /** (round 7) The frame size the last picture was drawn at; the first scene has been shown. */
+  private drawnAt = "";
+  private shown = false;
 
   constructor(readonly r: WorldRenderer, input: Input, assets: ZhushaAssets, opts: TesuOpts) {
     this.world = buildWorld();
@@ -161,6 +164,9 @@ export class TesuGame {
     this.store = new TileStore(this.planes, { sync: opts.sync });
     this.atmos = new Atmos(gl, r.emptyVao);
     this.sprites = new SpriteRenderer(gl, r.emptyVao);
+    // (round 7, performance) painted sprites' frames are painted by the plate workers (not for
+    // deterministic captures: ?manual paints them on the page, as it paints the plates)
+    if (!opts.manual) this.sprites.async = (job, done) => this.store.paintSprite(job, done);
     this.titles = new Titles(gl, r.emptyVao);
     this.opening = new Opening({
       playerX: () => this.player.body.x,
@@ -404,6 +410,18 @@ export class TesuGame {
         n++;
       }
       if (n >= 6) this.acc = 0;
+      // (round 7, performance) everything that moves moves on ticks, so a frame in which no tick ran
+      // would draw the picture already on screen again: on a 120-240 Hz screen that is two frames in
+      // three (Dex's runs at 180 Hz). They are not drawn (the canvas keeps its picture) unless the
+      // frame changed size; the plates keep streaming, and a tile or sprite frame that lands between
+      // ticks shows with the next one (at most 1/60 s later). (Once the first scene is in: the world
+      // reports itself loading again for a moment whenever a giant's frame set at a new zoom streams in.)
+      const size = `${this.r.iw}x${this.r.ih}`;
+      if (n === 0 && this.shown && size === this.drawnAt) {
+        this.store.pump();
+        return;
+      }
+      this.drawnAt = size;
     }
     this.render();
   }
@@ -911,7 +929,10 @@ export class TesuGame {
     // (round 6, the critic's E3/S9) at the catch's 2x the sky's, far and mid planes' plates sit on
     // the frame's 2 px art cells like everything near (painted at half the density for it), as
     // their sprites already do (render/sprites.ts)
-    const level = levelFor(levels, xf.g) / (cam.zoom >= 1.9 && (id === "sky" || id === "far" || id === "mid") ? 2 : 1);
+    // (round 7, density) and the back plane's: at the catch it stood at 1.45x its play density, so its
+    // art px landed on 1 and 2 px cells in turn (the massif's face and falls a patchwork beside the
+    // lake's 2 px); every plane behind the lake now shares the 2 px cell, the near planes the 1 px
+    const level = levelFor(levels, xf.g) / (cam.zoom >= 1.9 && (id === "sky" || id === "far" || id === "mid" || id === "back") ? 2 : 1);
     const quads: TileQuad[] = [];
     let complete = true;
     const add = (lv: number, mark: boolean): void => {
@@ -996,6 +1017,7 @@ export class TesuGame {
     const wasLoading = this.loading;
     this.loading = ![...draws.values()].every((d) => d.complete) || (this.sprites.waiting > 0 && this.tick < 60 * 20);
     if (wasLoading && !this.loading) performance.mark("tesu:first-scene");
+    if (!this.loading) this.shown = true;
     const z = cam.zoom;
     const xfPlay = planeXf(cam, 1);
     const focus: [number, number] = [W / 2, cam.anchor * Hf];

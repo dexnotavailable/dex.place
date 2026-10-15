@@ -155,11 +155,23 @@ export function chunkAt(lx: number, ly: number, o: FaceOpts, seed: number): { c:
 
 /** What the face shows at a level-1 point; depth is px below the mass's top line. */
 export function face(lx: number, ly: number, depth: number, o: FaceOpts, seed: number, d: number): FaceOut {
-  const px = 1 / Math.max(d, 0.125);
-  const thr = thrOf(d);
   const { c: C, left: Lc, right: Rc } = chunkAt(lx, ly, o, seed);
   const above = chunkIn(C.L, C.w, C.xl, C.xr, lx, C.yt - 0.5, o, seed, C.xc);
   const below = chunkIn(C.L, C.w, C.xl, C.xr, lx, C.yb + 0.5, o, seed, C.xc);
+  return shadeBlock(C, Lc.z, Rc.z, above.z, below.z, lx, ly, depth, o, seed, d);
+}
+
+/**
+ * (round 7) One block of the face rendered at a level-1 point, given how far forward its neighbours
+ * stand (left, right, the block over it, the block under it). face() finds the block and its
+ * neighbours on the face; the road's big crags (kerb.ts) are blocks of their own, rising from the
+ * face past the walk line, rendered by this same model so they carry the face's own texture, strata,
+ * colour and light.
+ */
+export function shadeBlock(C: Chunk, zL: number, zR: number, zA: number, zB: number, lx: number, ly: number, depth: number, o: FaceOpts, seed: number, d: number): FaceOut {
+  const px = 1 / Math.max(d, 0.125);
+  const thr = thrOf(d);
+  const Lc = { z: zL }, Rc = { z: zR }, above = { z: zA }, below = { z: zB };
   const w = Math.max(1, C.xr - C.xl), S = Math.max(1, C.yb - C.yt);
   const xIn = lx - C.xl, xR = C.xr - lx, s = ly - C.yt, sb = C.yb - ly;
   const z = C.z;
@@ -480,9 +492,11 @@ export function limeChunk(c: PaintCtx, k: LimeChunk, casters: LimeChunk[] = []):
   }
 }
 
+// (round 7, density) every art px its own sample at every level: in the catch's 2x close band the
+// shore's, scree's and heap's chunks show on the same 1 px as the jetty (not on 2 px cells beside it)
 function LXc(c: PaintCtx, x: number): number {
-  return c.d > 1 ? c.lx((Math.floor((x + 0.5) / c.d) + 0.5) * c.d) : c.lx(x + 0.5);
+  return c.lx(x + 0.5);
 }
 function LYc(c: PaintCtx, y: number): number {
-  return c.d > 1 ? c.ly((Math.floor((y + 0.5) / c.d) + 0.5) * c.d) : c.ly(y + 0.5);
+  return c.ly(y + 0.5);
 }

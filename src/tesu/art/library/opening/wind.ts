@@ -60,9 +60,11 @@ export const reeds = definePainter<ReedsP>("op.reeds", {
       const k = clamp(x / 8, 0, g.length - 1), i = Math.floor(k), fr = k - i;
       return (g[i] ?? 0) * (1 - fr) + (g[Math.min(g.length - 1, i + 1)] ?? 0) * fr;
     };
-    // one density at the close band: whole level-1 px there, as before below it
+    // (round 7) at the close band a stem keeps its play-zoom width (two art px), placed on the level's
+    // own px (no longer on whole level-1 cells: one pixel density with the jetty beside it)
     const put = (lx: number, ly: number, col: number): void => {
-      if (d > 1) dot(c, lx, ly, col);
+      if (d > 1.5) { dot(c, lx - 0.25, ly, col); dot(c, lx + 0.25, ly, col); }
+      else if (d > 1) dot(c, lx, ly, col);
       else c.buf.set(Math.round(c.X(lx)), Math.round(c.Y(ly)), col);
     };
     const mir = p.refl !== undefined ? reflectionPen(c, 1, p.h * 0.85, seed + 5, p.refl) : null;
