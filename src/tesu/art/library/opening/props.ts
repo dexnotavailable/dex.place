@@ -124,11 +124,14 @@ export const rail = definePainter<RailP>("op.rail", {
     // front of the post feet (the rail's ground is 3 px under the road's walk line; only the chunks
     // inside its run, which the road's rock under it paints too)
     const R = kerbRocks(x0, x1).filter((q) => q.top < 10 && q.kind !== "pebble" && q.x0 > x0 - 6 && q.x1 < x1 + 6);
+    // (round 7: blocks of the face, big ones up to 45 px over the road; margins for their wandering
+    // sides and stepped tops)
     for (const q of R) {
-      const X0 = Math.max(c.buf.ox, Math.floor(c.X(q.x0 - 2))), X1 = Math.min(c.buf.x1, Math.ceil(c.X(q.x1 + 2)));
+      const X0 = Math.max(c.buf.ox, Math.floor(c.X(q.x0 - 9))), X1 = Math.min(c.buf.x1, Math.ceil(c.X(q.x1 + 9)));
       if (X0 >= X1) continue;
-      const wy = Math.min(railY(pts, q.x0), railY(pts, q.x1)) - 3;
-      const Y0 = Math.max(c.buf.oy, Math.floor(c.Y(wy + q.top - 3))), Y1 = Math.min(c.buf.y1, Math.ceil(c.Y(wy + 14)));
+      // (the road climbs across a wide block: its top from the higher end, its bottom from the lower)
+      const wy = Math.min(railY(pts, q.x0 - 9), railY(pts, q.x1 + 9)) - 3, wy1 = Math.max(railY(pts, q.x0 - 9), railY(pts, q.x1 + 9)) - 3;
+      const Y0 = Math.max(c.buf.oy, Math.floor(c.Y(wy + q.top - 8))), Y1 = Math.min(c.buf.y1, Math.ceil(c.Y(wy1 + 14)));
       for (let y = Y0; y < Y1; y++) {
         for (let x = X0; x < X1; x++) {
           const lx = c.lx(x + 0.5), depth = c.ly(y + 0.5) - (railY(pts, lx) - 3);

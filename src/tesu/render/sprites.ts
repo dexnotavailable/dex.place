@@ -4,10 +4,10 @@
 // the level the camera needs (or loaded from a render later) and kept as RGBA textures.
 
 import { compile, uniforms } from "../../lab/engine/gl.ts";
-import { ctxFor, painter } from "../art/painter.ts";
-import { paletteRGBA } from "../art/palette.ts";
-import { IdxBuf } from "../art/raster.ts";
+import { painter } from "../art/painter.ts";
+import type { SpriteDone, SpriteJob } from "../plates/store.ts";
 import { PLANES, type SpriteDef } from "../world/types.ts";
+import { paintSpriteFrame, type SpritePixels } from "./sprite-paint.ts";
 import type { PlaneLook } from "./planes.ts";
 import { levelFor, planeLevels, planeXf, type CamState } from "./view.ts";
 
@@ -96,6 +96,9 @@ interface Frame {
   /** Anchor offset in this frame's px (where the def's 3D point is). */
   ax: number;
   ay: number;
+  /** (round 7) Its frame index and level (a stand-in drawn at its own density while another paints). */
+  f?: number;
+  lv?: number;
 }
 
 /** A rendered frame set (kind "frames"): files `${base}NN.webp` and `${base}manifest.json`. */
@@ -177,6 +180,7 @@ export class SpriteRenderer {
           bmp.close();
           s.tex.set(i, { fr: { tex, w: s.man!.w, h: s.man!.h, ax: s.man!.ax, ay: s.man!.ay }, used: this.useTick });
           s.pending.delete(i);
+          this.landed++;
           // keep only the most recently used few on the GPU
           if (s.tex.size > STREAM_KEEP) {
             let old = -1, oldUse = Infinity;
@@ -201,8 +205,21 @@ export class SpriteRenderer {
   private prog: WebGLProgram;
   private u: Record<string, WebGLUniformLocation>;
   private frames = new Map<string, Frame | null>();
-  private pal = paletteRGBA();
   private paintedThisFrame = 0;
+  /**
+   * (round 7, performance) Paints a frame off the main thread (the plate workers): false when it
+   * cannot. A painted sprite's frame cost the page 1-170 ms on its main thread, and every sprite in
+   * view needed a new one at once whenever the camera's zoom crossed a level (the opening's
+   * pull-back, the postcard): the walk's long frames were all this. Unset for deterministic captures
+   * (?manual) and when there are no workers: frames are then painted here, as before.
+   */
+  async: ((job: SpriteJob, done: (r: SpriteDone | null) => void) => boolean) | null = null;
+  private asking = new Set<string>();
+  private noAsync = new Set<string>();
+  /** A sprite's painted frames (its stand-ins while one it needs is being painted). */
+  private byDef = new Map<string, Frame[]>();
+  /** Frames that arrived from the workers and the frame sets since the page began (tools read it). */
+  landed = 0;
 
   constructor(private gl: WebGL2RenderingContext, private vao: WebGLVertexArrayObject) {
     this.prog = compile(gl, VS, FS, "tesu-sprites");
@@ -276,23 +293,33 @@ export class SpriteRenderer {
     const have = this.frames.get(key);
     if (have !== undefined) return have;
     if (def.kind === "image") return this.imageFrame(def, level, key);
+    if (!force && this.async && !this.noAsync.has(key)) {
+      if (!this.asking.has(key)) {
+        const ok = this.async({ key, kind: def.kind, p: def.p, seed: def.seed, frame: f, level }, (res) => {
+          this.asking.delete(key);
+          if (!res) { this.noAsync.add(key); return; }
+          if (!this.frames.has(key)) this.keep(def, key, this.upload(res, f, level));
+          this.landed++;
+        });
+        if (ok) this.asking.add(key);
+        else this.noAsync.add(key);
+      }
+      if (this.asking.has(key)) return null;
+    }
     if (!force && this.paintedThisFrame >= 1) return null;
     this.paintedThisFrame++;
-    const pt = painter(def.kind);
-    const [x0, y0, x1, y1] = pt.bounds({ ...def.p, frame: f });
-    const ox = Math.floor(x0 * level), oy = Math.floor(y0 * level);
-    const w = Math.max(1, Math.ceil(x1 * level) - ox), h = Math.max(1, Math.ceil(y1 * level) - oy);
-    const buf = new IdxBuf(w, h, ox, oy, level);
-    pt.paint(ctxFor(buf, level, 0, 0, def.seed), { ...def.p, frame: f });
-    const rgba = new Uint8Array(w * h * 4);
-    for (let i = 0; i < w * h; i++) {
-      const c = buf.px[i]!;
-      if (!c) continue;
-      rgba[i * 4] = this.pal[c * 4]!;
-      rgba[i * 4 + 1] = this.pal[c * 4 + 1]!;
-      rgba[i * 4 + 2] = this.pal[c * 4 + 2]!;
-      rgba[i * 4 + 3] = 255;
-    }
+    return this.keep(def, key, this.upload(paintSpriteFrame(def.kind, def.p, def.seed, f, level), f, level));
+  }
+
+  private keep(def: SpriteDef, key: string, fr: Frame): Frame {
+    this.frames.set(key, fr);
+    const a = this.byDef.get(def.id);
+    if (a) a.push(fr);
+    else this.byDef.set(def.id, [fr]);
+    return fr;
+  }
+
+  private upload(px: SpritePixels | SpriteDone, f: number, level: number): Frame {
     const gl = this.gl;
     const tex = gl.createTexture()!;
     gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -300,10 +327,26 @@ export class SpriteRenderer {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, rgba);
-    const fr: Frame = { tex, w, h, ax: -ox, ay: -oy };
-    this.frames.set(key, fr);
-    return fr;
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, px.w, px.h, 0, gl.RGBA, gl.UNSIGNED_BYTE, px.rgba);
+    return { tex, w: px.w, h: px.h, ax: px.ax, ay: px.ay, f, lv: level };
+  }
+
+  /**
+   * (round 7) While a frame is being painted in a worker: the nearest frame of the same sprite already
+   * painted, at this level first (the frame before it in its cycle), else the same frame at the level
+   * nearest this one (drawn at its own density for a moment), else any.
+   */
+  private standIn(def: SpriteDef, f: number, level: number): Frame | null {
+    const a = this.byDef.get(def.id);
+    if (!a?.length) return null;
+    const n = Math.max(1, def.frames ?? 1);
+    let best: Frame | null = null, score = Infinity;
+    for (const fr of a) {
+      const back = ((f - (fr.f ?? 0)) % n + n) % n;
+      const sc = (fr.lv === level ? 0 : 1000 + Math.abs(Math.log((fr.lv ?? level) / level)) * 100) + back;
+      if (sc < score) { score = sc; best = fr; }
+    }
+    return best;
   }
 
   /** Where a sprite stands now (its 3D x drifts along its path). */
@@ -362,7 +405,8 @@ export class SpriteRenderer {
       const xf = planeXf(cam, rate);
       // (round 5; round 6: and the mid plane's, like its plates) at the catch's 2x the sky's and the far plane's sprites sit on the frame's 2 px
       // art cells like everything near (painted ones are painted at half the density for it)
-      const snap = cam.zoom >= 1.9 && (def.plane === "sky" || def.plane === "far" || def.plane === "mid");
+      // (round 7, density: and the back plane's, as its plates)
+      const snap = cam.zoom >= 1.9 && (def.plane === "sky" || def.plane === "far" || def.plane === "mid" || def.plane === "back");
       let level = levelFor(planeLevels(rate), xf.g) / (snap && def.kind !== "frames" && def.kind !== "image" ? 2 : 1);
       const pos = SpriteRenderer.position(def, time);
       let fr: Frame | null;
@@ -390,7 +434,17 @@ export class SpriteRenderer {
         const mx = cam.W * 0.25, my = cam.H * 0.25;
         if (sx1 < -mx || sx0 > cam.W + mx) continue;
         if (mirror === null && (ay + by1 * g < -my || ay + by0 * g > cam.H + my)) continue;
-        fr = this.frame(def, pos.frame, level, force) ?? this.frame(def, 0, level, true);
+        fr = this.frame(def, pos.frame, level, force);
+        if (!fr) {
+          if (force || !this.async) fr = this.frame(def, 0, level, true);
+          else {
+            // (round 7) frame 0 at this level, asked for too, or a stand-in while they paint; a sprite
+            // with nothing painted yet holds the first scene back (like its plates)
+            fr = this.frame(def, 0, level, false) ?? this.standIn(def, pos.frame, level);
+            if (!fr) this.waitingNow++;
+            else if (fr.lv !== undefined) level = fr.lv;
+          }
+        }
       }
       if (!fr) continue;
       const k = xf.g / level;

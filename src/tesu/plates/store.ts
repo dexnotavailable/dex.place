@@ -27,12 +27,37 @@ interface Job {
 
 export const key = (plane: PlaneId, level: number, tx: number, ty: number): string => `${plane}|${level}|${tx}|${ty}`;
 
+/** (round 7) A sprite frame to paint in a worker (render/sprite-paint.ts). */
+export interface SpriteJob {
+  key: string;
+  kind: string;
+  p: Record<string, unknown>;
+  seed: number;
+  frame: number;
+  level: number;
+}
+
+/** A sprite frame painted by a worker (RGBA), or null when it could not be. */
+export interface SpriteDone {
+  rgba: Uint8Array;
+  w: number;
+  h: number;
+  ax: number;
+  ay: number;
+}
+
 export class TileStore {
   private entries = new Map<string, Entry>();
   private free: number[] = [];
   private byLayer: (string | null)[];
   private queue = new Map<string, Job>();
   private workers: { w: Worker; busy: number }[] = [];
+  /** (round 7) Sprite frames waiting for a worker, and those being painted (their callbacks). */
+  private sprQueue: { job: SpriteJob; done: (r: SpriteDone | null) => void }[] = [];
+  private sprWait = new Map<string, (r: SpriteDone | null) => void>();
+  sprInFlight = 0;
+  sprPainted = 0;
+  sprMs = 0;
   private index: PlateIndex | null = null;
   frame = 0;
   painted = 0;
@@ -52,10 +77,20 @@ export class TileStore {
         for (let i = 0; i < n; i++) {
           const w = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
           const slot = { w, busy: 0 };
-          w.onmessage = (e: MessageEvent<{ key: string; px: ArrayBuffer | null; ms: number }>) => {
+          w.onmessage = (e: MessageEvent<{ key: string; px?: ArrayBuffer | null; ms: number; sprite?: true; rgba?: ArrayBuffer | null; w?: number; h?: number; ax?: number; ay?: number }>) => {
             slot.busy--;
+            const d = e.data;
+            if (d.sprite) {
+              this.sprInFlight--;
+              this.sprPainted++;
+              this.sprMs += d.ms;
+              const done = this.sprWait.get(d.key);
+              this.sprWait.delete(d.key);
+              done?.(d.rgba ? { rgba: new Uint8Array(d.rgba), w: d.w!, h: d.h!, ax: d.ax!, ay: d.ay! } : null);
+              return;
+            }
             this.inFlight--;
-            this.finish(e.data.key, e.data.px ? new Uint8Array(e.data.px) : null, e.data.ms);
+            this.finish(d.key, d.px ? new Uint8Array(d.px) : null, d.ms);
           };
           w.onerror = (e) => console.error("plate worker", e.message);
           this.workers.push(slot);
@@ -106,6 +141,16 @@ export class TileStore {
     if (this.entries.has(k)) return;
     this.entries.set(k, { layer: -1, used: this.frame - 1, pri });
     this.queue.set(k, { key: k, plane, level, tx, ty, pri });
+  }
+
+  /**
+   * (round 7, performance) Paints a sprite frame in a worker; done() gets the pixels (or null) on a
+   * later task. False when there are no workers (the caller paints it on the main thread).
+   */
+  paintSprite(job: SpriteJob, done: (r: SpriteDone | null) => void): boolean {
+    if (this.sync || !this.workers.length) return false;
+    this.sprQueue.push({ job, done });
+    return true;
   }
 
   /** Jobs waiting or painting. */
@@ -164,12 +209,38 @@ export class TileStore {
     this.workers = [];
     this.sync = true;
     this.inFlight = 0;
+    // sprite frames asked of them are painted on the main thread instead
+    const waiting = [...this.sprWait.values(), ...this.sprQueue.map((q) => q.done)];
+    this.sprWait.clear();
+    this.sprQueue = [];
+    this.sprInFlight = 0;
+    for (const done of waiting) done(null);
     for (const [k, e] of this.entries) if (e.layer === -1 && !this.queue.has(k)) this.entries.delete(k);
   }
 
   /** Sends queued jobs to idle workers (or paints within a budget on the main thread). */
   pump(budgetMs = 6): void {
     this.watchdog();
+    // (round 7) sprite frames first: one is on screen now, a tile may only be the margin's
+    if (this.sprQueue.length && !this.sync) {
+      for (const slot of this.workers) {
+        while (slot.busy < 2 && this.sprQueue.length) {
+          const { job, done } = this.sprQueue.shift()!;
+          slot.busy++;
+          this.sprInFlight++;
+          this.sprWait.set(job.key, done);
+          try {
+            slot.w.postMessage({ sprite: true, ...job });
+          } catch {
+            // (params a worker cannot be sent: painted on the main thread)
+            slot.busy--;
+            this.sprInFlight--;
+            this.sprWait.delete(job.key);
+            done(null);
+          }
+        }
+      }
+    }
     // drop requests nobody has looked at for a while (the camera moved on)
     for (const [k, j] of this.queue) {
       const e = this.entries.get(k);
@@ -219,7 +290,7 @@ export class TileStore {
       if (e.layer >= 0) used++;
       else if (e.layer === -2) empty++;
     }
-    return `tiles ${used}/${this.byLayer.length} empty ${empty} queue ${this.queue.size} busy ${this.inFlight} painted ${this.painted} (${(this.paintMs / Math.max(1, this.painted)).toFixed(1)} ms) evicted ${this.evicted}`;
+    return `tiles ${used}/${this.byLayer.length} empty ${empty} queue ${this.queue.size} busy ${this.inFlight} painted ${this.painted} (${(this.paintMs / Math.max(1, this.painted)).toFixed(1)} ms) evicted ${this.evicted} sprites ${this.sprPainted} (${(this.sprMs / Math.max(1, this.sprPainted)).toFixed(1)} ms)`;
   }
 }
 

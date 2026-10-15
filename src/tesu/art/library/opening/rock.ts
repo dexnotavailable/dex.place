@@ -19,7 +19,7 @@ import { boxOf, cached, clump, spansFor, toAbs, yAt } from "./kit.ts";
 import { chunkAt, chunkTop, face, inChunk, limeChunk, nextLedge, type FaceOpts, type LimeChunk } from "./face.ts";
 import { needlePad } from "./flora.ts";
 import { LX, LY, bladePath, dot, grass, reflOf, stroke } from "./bank.ts";
-import { KERB_DEPTH, kerbAt, kerbGrit, kerbPx, kerbRocks, kerbShade, kerbTop, type KerbRock } from "./kerb.ts";
+import { KERB_DEPTH, KERB_REACH, kerbAt, kerbGrit, kerbPx, kerbRocks, kerbShade, kerbTop, type KerbRock } from "./kerb.ts";
 
 export interface RockP {
   /** Top polyline (the walk line where she stands), level-1 local px, x increasing. Kept exact. */
@@ -253,8 +253,9 @@ export const rock = definePainter<RockP>("op.rock", {
     const pts = [...p.top, ...p.bottom];
     const [x0, y0, x1, y1] = boxOf(pts);
     const r = (p.rough ?? 10) * 3.4 + 4;
-    // plants hang over the lip and pines lean out of the face
-    return [x0 - r - 30, y0 - 24, x1 + r + 30, y1 + r];
+    // plants hang over the lip and pines lean out of the face (round 7: a road's big crags rise up to
+    // 45 px past its walk line)
+    return [x0 - r - 30, y0 - (p.cap === "path" ? 50 : 24), x1 + r + 30, y1 + r];
   },
   paint(c, p) {
     paintRock(c, p);
@@ -296,9 +297,8 @@ export function paintRock(c: PaintCtx, p: RockP): void {
             const Q = depth < KERB_DEPTH ? rocksNear(R, lx) : NONE;
             const q = Q.length ? kerbAt(Q, lx, depth) : null;
             if (q) {
-              // (a crag's lower part turns into the face: its tone there)
-              const under = q.kind === "crag" && depth > 18 ? clamp(face(lx, ly, depth, p, seed, d).t + (vnoise(lx / 7, ly / 7, seed + 201) - 0.5) * 0.06, 0, 1) : undefined;
-              b.set(x, y, kerbPx(q, lx, depth, d, x, y, under));
+              // (round 7) a block of the face rising past the road (kerb.ts: the face's own block model)
+              b.set(x, y, kerbPx(q, lx, depth, d, x, y));
               continue;
             }
             // a chunk's shadow on what lies behind it: its cast shadow down and to the right, the
@@ -392,7 +392,7 @@ function rocksNear(R: Road, lx: number): KerbRock[] {
   let m = BUCKETS.get(R);
   if (!m) {
     m = new Map();
-    for (const q of R.rocks) for (let i = Math.floor((q.x0 - 12) / 32); i <= Math.floor((q.x1 + 12) / 32); i++) {
+    for (const q of R.rocks) for (let i = Math.floor((q.x0 - 12) / 32); i <= Math.floor((q.x1 + KERB_REACH) / 32); i++) {
       const a = m.get(i);
       if (a) a.push(q); else m.set(i, [q]);
     }
@@ -407,10 +407,12 @@ function paintAboveRoad(c: PaintCtx, p: RockP, R: Road): void {
   const b = c.buf, d = c.d;
   for (const q of R.rocks) {
     if (q.top >= 0) continue;
-    const X0 = Math.max(b.ox, Math.floor(c.X(q.x0 - 2))), X1 = Math.min(b.x1, Math.ceil(c.X(q.x1 + 2)));
+    // (round 7: margins for a big block's leaning, wandering sides and its stepped, tilted top)
+    const X0 = Math.max(b.ox, Math.floor(c.X(q.x0 - 9))), X1 = Math.min(b.x1, Math.ceil(c.X(q.x1 + 9)));
     if (X0 >= X1) continue;
-    const wy = Math.min(yAt(p.top, q.x0), yAt(p.top, q.x1));
-    const Y0 = Math.max(b.oy, Math.floor(c.Y(wy + q.top - 3))), Y1 = Math.min(b.y1, Math.ceil(c.Y(wy + 1)));
+    // (the road climbs across a wide block: its top from the higher end, its bottom from the lower)
+    const wy = Math.min(yAt(p.top, q.x0 - 9), yAt(p.top, q.x1 + 9)), wy1 = Math.max(yAt(p.top, q.x0 - 9), yAt(p.top, q.x1 + 9));
+    const Y0 = Math.max(b.oy, Math.floor(c.Y(wy + q.top - 8))), Y1 = Math.min(b.y1, Math.ceil(c.Y(wy1 + 1)));
     for (let y = Y0; y < Y1; y++) {
       for (let x = X0; x < X1; x++) {
         const lx = c.lx(x + 0.5), depth = c.ly(y + 0.5) - yAt(p.top, lx);
