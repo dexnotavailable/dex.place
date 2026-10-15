@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-15T05:08:46.354Z (15/10/2026, 12:08:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-15T06:08:46.312Z (15/10/2026, 13:08:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,24 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_404079d0-fc4 — last activity 6 min ago
+### wf_a99c5398-03e — last activity 8 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
+
+- **spec** (done): I finished the critic pass on the run and fixed what I found in place: the spec, the rig and the thumbnail. All edits are marked "PILOT CRITIC 2026-10-15" and the report is in pilot-run\SPEC-CHECK.md. As it came to me, the run would have failed Dex's keys gate on three of his fast-fail items before anyone looked at the motion. I scored that version 5.0/10 against the 7.5 pass line. After the fixes it's 6.5. What keep
+- **poses** (running)
+- **pose-text** (done): All 10 keys and accents of the run cycle (R0, R3, R5, R7, R8, R10, R13, R15, R17, R18) are now written as detailed text poses for Qwen-Image 2.1's own edit. They are in pilot-run\poses\POSES-TEXT.md (for reading) and POSES.json (for the key artist). Nothing in them is a figure. I only used the bones as the place to read numbers from: the ground rig's 2D points in _build.json, and the posefig joints and checks for dep
+- **keys-textpose** (running)
+
+### wf_04b33855-f83 — last activity 36 min ago
+5 agents: 3 done, 2 running or stopped mid-way, 0 failed.
+
+- **director:fixes** (done): All four Must-fix items I own (8, 10, 11, 12) and my four Should-fix items are done in PLAN.md, BEATS.json (now revision 2.1) and the storyboard. I left sections 3.5–3.8 and the clip rows alone, because bones v3 replaces them. - **Item 8, one ofuda size.** It is 4 x 10 px on the 96 drawing and 8 x 20 on the 192 everywhere; 5 x 15 is gone. On a 1080p screen that is about 2.5 x 6 px in the opening wide shot (zoom 0.5),
+- **bones:v3** (done): Bones v3 is done, under D:\Dex\Temp\dexplace-v2\lanes\opening\bones (v2 kept whole in _v2). All per-tick frames and all three animatics are re-rendered. Everything ran on the CPU, one render at a time; the GPU and ComfyUI were not touched. The clip now ends on the motion bible's idle I0, built from the clip's own last pose. She stands hip-shot on her near leg, hips and chest turned toward us (37 / 40 deg), the free k
+- **anchor:v2** (done): Anchor v2 is done and proposed. Dex makes the lock call. It is the clip's own last frame (bones D36 = the bible's idle I0): she stands hip-shot with her hips and chest turned toward us. Her near hand rests on the hilt of the full-length broad jian. Her far hand holds the brim's front lip beside the talisman. It sits exactly on the bones' 96 and 192 canvases with the same pivot, so the clip ends on it. LOCK.json v2 an
+- **director:regen+pilot** (running)
+- **anchor:v2** (running)
+
+### wf_404079d0-fc4 — last activity 66 min ago
 8 agents: 5 done, 3 running or stopped mid-way, 0 failed.
 
 - **arch:r7** (done): The architecture lane is done and committed on claude/v2-art-kagami-p1 in two commits, 8d74293d and 1915545b. Every torii now stands side-on, the palace door sits in the middle of its own entrance building, the doors open with easing as she comes near, and the fence is irregular stone posts with a straw rope. Before starting I reviewed the code left in the worktree from before the crash. It drew each torii as a red p
@@ -24,20 +41,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **water:r8** (running)
 - **patch:r8** (running)
 
-### wf_a99c5398-03e — last activity 17 min ago
-2 agents: 1 done, 1 running or stopped mid-way, 0 failed.
-
-- **spec** (done): I finished the critic pass on the run and fixed what I found in place: the spec, the rig and the thumbnail. All edits are marked "PILOT CRITIC 2026-10-15" and the report is in pilot-run\SPEC-CHECK.md. As it came to me, the run would have failed Dex's keys gate on three of his fast-fail items before anyone looked at the motion. I scored that version 5.0/10 against the 7.5 pass line. After the fixes it's 6.5. What keep
-- **poses** (running)
-
-### wf_04b33855-f83 — last activity 35 min ago
-3 agents: 2 done, 1 running or stopped mid-way, 0 failed.
-
-- **director:fixes** (done): All four Must-fix items I own (8, 10, 11, 12) and my four Should-fix items are done in PLAN.md, BEATS.json (now revision 2.1) and the storyboard. I left sections 3.5–3.8 and the clip rows alone, because bones v3 replaces them. - **Item 8, one ofuda size.** It is 4 x 10 px on the 96 drawing and 8 x 20 on the 192 everywhere; 5 x 15 is gone. On a 1080p screen that is about 2.5 x 6 px in the opening wide shot (zoom 0.5),
-- **bones:v3** (done): Bones v3 is done, under D:\Dex\Temp\dexplace-v2\lanes\opening\bones (v2 kept whole in _v2). All per-tick frames and all three animatics are re-rendered. Everything ran on the CPU, one render at a time; the GPU and ComfyUI were not touched. The clip now ends on the motion bible's idle I0, built from the clip's own last pose. She stands hip-shot on her near leg, hips and chest turned toward us (37 / 40 deg), the free k
-- **anchor:v2** (running)
-
-### wf_61997fe3-8a6 — last activity 159 min ago
+### wf_61997fe3-8a6 — last activity 219 min ago
 8 agents: 4 done, 3 running or stopped mid-way, 1 failed.
 
 - **plan** (running)
@@ -49,7 +53,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **check** (failed)
 - **check** (done): I wrote D:\Dex\Temp\dexplace-v2\lanes\opening\CHECK-1.md, my first critic pass on the opening. The timing and the plan are close to ready, the anchor is not ready to lock, and the catch-and-slap needs one more bones pass before any Qwen frame is made. I sent no GPU jobs and changed no lane files. My comparison sheets and crops are in D:\Dex\Temp\dexplace-v2\lanes\opening\_critic1\. **Plan and timing (8/10).** Every b
 
-### wf_615041c0-3f2 — last activity 528 min ago
+### wf_615041c0-3f2 — last activity 588 min ago
 5 agents: 4 done, 1 running or stopped mid-way, 0 failed.
 
 - **inventory** (done): 
@@ -58,7 +62,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **archive** (done): 
 - **install** (done): 
 
-### wf_8865cc19-db1 — last activity 596 min ago
+### wf_8865cc19-db1 — last activity 656 min ago
 14 agents: 12 done, 2 running or stopped mid-way, 0 failed.
 
 - **sky:r4** (done): The sky and atmosphere lane is done and committed on claude/v2-art-kagami-p1 in worktree D:\Dex\Temp\dexplace-v2\art-wt\kagami\p1. The four things Dex asked for now show in all eight key frames: one family of clouds with real volume, a clear sun, fog that gives depth, and the Walker moved further back among the clouds. - **Clouds.** All clouds now come from one painter in sky.ts: heaps of overlapping billows lit by t
@@ -76,7 +80,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **sky:r7** (running)
 - **patch:r7** (running)
 
-### wf_f62de466-2f9 — last activity 1068 min ago
+### wf_f62de466-2f9 — last activity 1128 min ago
 21 agents: 20 done, 1 running or stopped mid-way, 0 failed.
 
 - **critic:r1** (done): 
@@ -94,13 +98,13 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **critic:r3** (done): 
 - **director:plan:r4** (running)
 
-### wf_02fb83bb-9c9 — last activity 4175 min ago
+### wf_02fb83bb-9c9 — last activity 4235 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v4** (done): I wrote GDK v4 and every DELTA-v4 item is in it. MAP.svg and the builder map both parse as XML, and I rendered both with headless Edge and looked at them; the leak scan passes. The one thing I could not do is collect new reference images: the indoors-grand, indoors-narrow and outdoors-narrow gaps ar
 - **critic:v4** (done): verdict ready · GDK v4 is ready for Dex. Every DELTA-v4 item is done, and no locked canon line is contradicted. That covers the press-started download, the PC-only warning, Yuki downloading dexClient, no dex.place champion, deep links that skip the intro, the URL scheme, the 3-minute reload, the talisman and the scroll, the music, the hunt prize and stall hints with no randomness, F to interact, and state A left open. I regenerated 
 
-### wf_674119c5-6eb — last activity 4203 min ago
+### wf_674119c5-6eb — last activity 4263 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v1** (done): I've written both files into `D:\Dex\Temp\dexplace-canon-20261012\gdk\v1\`: `GDK.md`, the full design kit in the brief's section order 0 to 10 plus appendices A to E, and `MAP.svg`. The map is valid XML. I rendered it to PNG with headless Edge and checked it by eye: the です shape reads at full size, 
