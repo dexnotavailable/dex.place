@@ -1286,8 +1286,9 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
     dy += base * (0.95 + 0.5 * r());
   }
   // (round 7, the water lane) the grass comes down over the mud to the water along most of its foot,
-  // low dark tussocks hanging over the waterline and mirrored in it; the wet earth shows only in two
-  // or three short gaps (its own rng: the tussocks above keep their places)
+  // low dark tussocks hanging over the waterline and mirrored in it, a glint of the water's bright
+  // line under the odd one; the wet earth shows only in two or three short gaps (its own rng: the
+  // tussocks above keep their places)
   {
     const r2 = rng(seed + 41);
     let x = s.x + 1;
@@ -1296,7 +1297,9 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
       const gap = vnoise1(x / 43, seed + 43) > 0.7 || vnoise1(x / 11, seed + 44) > 0.86;
       if (!gap && E(x) > 3) {
         const fx = foot(x);
-        parts.push({ ...tuftPart({ x, y: fx - 0.5, rx, ry, lit, dark: 0.7 + 0.2 * r2(), seed: seed + 4000 + Math.round(x) }, fx, false), noLine: true });
+        // (the water's bright line only under the odd one: under the grass the contact is in shade)
+        const tp = tuftPart({ x, y: fx - 0.5, rx, ry, lit, dark: 0.7 + 0.2 * r2(), seed: seed + 4000 + Math.round(x) }, fx, false);
+        parts.push(hash1(Math.round(x), seed + 45) < 0.3 ? tp : { ...tp, noLine: true });
       }
       x += rx * (0.75 + 0.45 * r2());
     }
@@ -1715,8 +1718,8 @@ export interface ShallowsP {
   h?: number;
   /** A snag lying from the bank into the water ("log") or old broken stubs ("stubs"). */
   wood?: "log" | "stubs";
-  /** "rise" (the default on the left), "spit" (the default on the right) or "pads". */
-  kind?: "rise" | "spit" | "pads";
+  /** "rise" (the default on the left), "spit" (the default on the right), "pads", or (round 7) "ledge". */
+  kind?: "rise" | "spit" | "pads" | "ledge";
   /** (round 6) Painted only at plate densities in [min, max] (see MassSpec.levels). */
   levels?: [number, number];
 }
@@ -1731,6 +1734,29 @@ function shallowsOf(p: ShallowsP, seed: number): Body[] {
     const out: Body[] = [];
     if (kind === "pads") {
       out.push(massOf({ kind: "pads", x: 0, w: p.w, h: Math.max(8, (p.deep - p.wl) / 2.5), dense: 4.2 }, seed + 1, p.wl, 0, p.deep));
+      return out;
+    }
+    if (kind === "ledge") {
+      // (round 7, the water lane: the critic's "the play-west shore still reads at one level", every
+      // block of it standing on the one waterline) blocks fallen from the shore's limestone lying in
+      // the shallows in front of it, each nearer one lower in the frame and lower-topped, so the shore
+      // steps down toward the camera in front of the play plane's waterline; wet at their feet, each
+      // mirrored on its own waterline, standing forward of the shore and a step darker than its lit
+      // face; open water between them
+      const ks: Chunk[] = [];
+      // [from, to (shares of w), foot nearer by (px), top over the anchor's waterline (share of h),
+      // depth (0 forward)]: each one's top overlaps the foot of the one behind it, never a slab
+      // floating free on the water
+      const plan: [number, number, number, number, number][] = [
+        // (wet from lying in the lake: a step darker than the shore's lit face behind them)
+        [0.0, 0.17, 2, 0.85, 0.62], [0.14, 0.34, 7, 0.52, 0.52], [0.37, 0.49, 3, 0.7, 0.58],
+        [0.46, 0.66, 12, 0.2, 0.46], [0.09, 0.21, 17, 0.06, 0.42], [0.71, 0.8, 20, -0.25, 0.4],
+      ];
+      plan.forEach(([a, b, near, ts, dep], i) => {
+        const x0 = p.w * a + (r() - 0.5) * 8, x1 = p.w * b + (r() - 0.5) * 8, f = p.wl + near + r() * 2;
+        ks.push(chunk(x0, x1, p.wl - H * ts - 2 * r(), f, dep, 0.4 + 0.6 * r(), seed + 60 + i * 17, (r() - 0.5) * 0.12, (r() - 0.5) * 0.06));
+      });
+      out.push(bodyFrom(rockParts(ks, 1, seed + 3, p.deep), seed + 2, p.wl, p.deep, { kind: "outcrop", x: 0, w: p.w, h: H }));
       return out;
     }
     if (kind === "rise") {

@@ -114,7 +114,9 @@ test("op.bank (round 3): a mass standing in the water meets it with a bright lin
       for (let y = 4; y < 4 + Math.min(40, m.h * 0.6); y++) if (buf.get(x, y)) under++;
       for (let y = -m.h * 0.3; y < -2; y++) if (buf.get(x, y)) above++;
     }
-    assert.ok(bright >= m.w * 0.15, `${m.kind}: no bright waterline (${bright} px)`);
+    // (round 7, the water lane: the critic's "white dashed waterline under every grass rise": a rise's
+    // mud carries none now and the grass hanging to the water is in shade, a glint under the odd tuft)
+    assert.ok(bright >= m.w * (m.kind === "rise" ? 0.02 : 0.15), `${m.kind}: no bright waterline (${bright} px)`);
     assert.ok(under >= m.w * 2, `${m.kind}: no reflection under its waterline (${under} px)`);
     assert.ok(above > 0, `${m.kind}: nothing above the water`);
     // the reflection breaks up and fades: well under its own height, most of it is open water
