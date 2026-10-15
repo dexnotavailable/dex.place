@@ -95,6 +95,14 @@ async function boot(): Promise<void> {
   const game = new TesuGame(r, input, assets, {
     start: q.get("at") ?? "catch", link: q.has("at") || q.has("x") || q.has("hold"), noOpening: q.has("skip"),
     hold: q.has("hold"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual"),
+    // the homepage's world window: between the page's bars while it waits, the whole window from the press
+    landed: embedded ? () => {
+      const host = window.frameElement?.parentElement;
+      if (!host || !host.clientWidth || !host.clientHeight) return null;
+      const dpr = window.devicePixelRatio || 1;
+      const [w, h] = r.frameFor(Math.round(host.clientWidth * dpr), Math.round(host.clientHeight * dpr));
+      return [w, h];
+    } : undefined,
   });
   // the opening's inputs: in the cinematic Esc skips (the chip's key) and any other input shows the chip;
   // the page's conductor owns both, the world only tells it

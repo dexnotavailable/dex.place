@@ -14,6 +14,8 @@ interface Entry {
   layer: number;
   used: number;
   pri: number;
+  /** Asked for by a frame drawing it (get), not only ahead of need (want). */
+  shown?: boolean;
 }
 
 interface Job {
@@ -66,8 +68,22 @@ export class TileStore {
   inFlight = 0;
   /** Paint on the main thread (no workers, or deterministic captures). */
   sync: boolean;
+  /**
+   * (the opening) Tiles its camera will draw again, with the T spans it has them on screen: kept while the
+   * opening's T (keepT) is at or before the end of one of them, so a frame asked for ahead (the widest frame
+   * under TESU) is still there when the camera gets to it. -Infinity: before the press (all kept).
+   */
+  private keepSpan = new Map<string, [number, number][]>();
+  /** Kept tiles that cannot be painted in time once the camera needs them (go last of all). */
+  private firm = new Set<string>();
+  keepT = -Infinity;
+  /** Kept tiles a full store had to let go (the opening's streaming stops asking for them). */
+  lost = new Set<string>();
 
-  constructor(private planes: PlaneRenderer, opts: { workers?: number; sync?: boolean } = {}) {
+  private planes: PlaneRenderer;
+
+  constructor(planes: PlaneRenderer, opts: { workers?: number; sync?: boolean } = {}) {
+    this.planes = planes;
     this.byLayer = new Array(planes.layers).fill(null);
     for (let i = planes.layers - 1; i >= 0; i--) this.free.push(i);
     const n = opts.workers ?? Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1));
@@ -116,13 +132,14 @@ export class TileStore {
     const e = this.entries.get(k);
     if (e) {
       e.used = this.frame;
+      e.shown = true;
       if (e.layer === -1) {
         const j = this.queue.get(k);
         if (j && pri < j.pri) j.pri = pri;
       }
       return e.layer;
     }
-    this.entries.set(k, { layer: -1, used: this.frame, pri });
+    this.entries.set(k, { layer: -1, used: this.frame, pri, shown: true });
     this.queue.set(k, { key: k, plane, level, tx, ty, pri });
     return -1;
   }
@@ -141,6 +158,60 @@ export class TileStore {
     if (this.entries.has(k)) return;
     this.entries.set(k, { layer: -1, used: this.frame - 1, pri });
     this.queue.set(k, { key: k, plane, level, tx, ty, pri });
+  }
+
+  /** A tile's state without touching it: its layer, -1 asked for, -2 empty, undefined unknown. */
+  layerOf(k: string): number | undefined {
+    return this.entries.get(k)?.layer;
+  }
+
+  /** (the opening) Keeps a tile from T `from` to `until` (see keepSpan; a tile may have several spans). */
+  keep(k: string, from: number, until: number, firm = false): void {
+    if (firm) this.firm.add(k);
+    const s = this.keepSpan.get(k);
+    if (!s) {
+      this.keepSpan.set(k, [[from, until]]);
+      return;
+    }
+    if (s.some((v) => v[0] === from && v[1] === until)) return;
+    s.push([from, until]);
+    s.sort((a, b) => a[0] - b[0]);
+  }
+
+  /** (the opening) Lets every kept tile go (the hand-back, or a new plan). */
+  clearKeep(): void {
+    this.keepSpan.clear();
+    this.firm.clear();
+    this.lost.clear();
+    this.keepT = -Infinity;
+  }
+
+  /** Whether a tile is kept now. */
+  isKept(k: string): boolean {
+    return !!this.kept(k);
+  }
+
+  /** The span a tile is kept for now (the first not yet over), or null. */
+  private kept(k: string): [number, number] | null {
+    const s = this.keepSpan.get(k);
+    if (!s) return null;
+    for (const v of s) if (v[1] >= this.keepT) return v;
+    return null;
+  }
+
+  /** Kept tiles that hold a layer now (painted, not empty). */
+  keptLayers(): number {
+    let n = 0;
+    for (const k of this.keepSpan.keys()) {
+      const e = this.entries.get(k);
+      if (e && e.layer >= 0 && this.kept(k)) n++;
+    }
+    return n;
+  }
+
+  /** Painted tiles holding a layer. */
+  get layersUsed(): number {
+    return this.byLayer.length - this.free.length;
   }
 
   /**
@@ -167,10 +238,13 @@ export class TileStore {
       e.layer = -2;
       return;
     }
-    const layer = this.alloc();
+    // a kept tile may take the layer of one kept for later; a tile on screen now, of any kept for later
+    const span = this.kept(k);
+    const layer = this.alloc(span ? span[0] : e.shown && e.used >= this.frame - 2 ? -Infinity : null);
     if (layer < 0) {
       // no room: forget it; it is asked for again when needed
       this.entries.delete(k);
+      if (this.keepSpan.has(k)) this.lost.add(k);
       return;
     }
     this.byLayer[layer] = k;
@@ -178,19 +252,37 @@ export class TileStore {
     this.planes.upload(layer, px);
   }
 
-  private alloc(): number {
+  /**
+   * A layer for a new tile: a free one, else the least recently used painted tile not drawn this frame. Tiles
+   * the opening keeps go last, and only for a tile needed before them (`needFrom`: the T a kept tile is needed
+   * from, -Infinity for one on screen now; null: never); then the one needed latest (a firm one only when no
+   * other will do), never one needed within the next half second.
+   */
+  private alloc(needFrom: number | null = null): number {
     const f = this.free.pop();
     if (f !== undefined) return f;
-    // evict the least recently used painted tile not drawn this frame
-    let worst = -1, age = -1;
+    let worst = -1, age = -1, kWorst = -1, kFrom = -Infinity, fWorst = -1, fFrom = -Infinity;
+    const need = needFrom ?? Infinity;
     for (let i = 0; i < this.byLayer.length; i++) {
       const k = this.byLayer[i];
       if (!k) continue;
       const e = this.entries.get(k);
       if (!e) continue;
       const a = this.frame - e.used;
-      if (a > age && a > 0) { age = a; worst = i; }
+      if (a <= 0) continue;
+      const s = this.keepSpan.size ? this.kept(k) : null;
+      if (s) {
+        if (s[0] > this.keepT + 0.5 && s[0] > need) {
+          if (!this.firm.has(k)) {
+            if (s[0] > kFrom) { kFrom = s[0]; kWorst = i; }
+          } else if (s[0] > fFrom) { fFrom = s[0]; fWorst = i; }
+        }
+        continue;
+      }
+      if (a > age) { age = a; worst = i; }
     }
+    if (worst < 0) worst = kWorst;
+    if (worst < 0) worst = fWorst;
     if (worst < 0) return -1;
     const old = this.byLayer[worst]!;
     this.entries.delete(old);
@@ -221,10 +313,14 @@ export class TileStore {
   /** Sends queued jobs to idle workers (or paints within a budget on the main thread). */
   pump(budgetMs = 6): void {
     this.watchdog();
-    // (round 7) sprite frames first: one is on screen now, a tile may only be the margin's
+    // (round 7) sprite frames first: one is on screen now, a tile may only be the margin's. (The opening's fix
+    // pass, film v0: while tiles wait, sprites take one of a worker's two places, not both: a steady stream of
+    // sprite frames, a giant's frames at each new zoom of a camera move, kept every place full and no tile was
+    // sent for 24 s of the opening on a slow machine.)
     if (this.sprQueue.length && !this.sync) {
+      const most = this.queue.size ? 1 : 2;
       for (const slot of this.workers) {
-        while (slot.busy < 2 && this.sprQueue.length) {
+        while (slot.busy < most && this.sprQueue.length) {
           const { job, done } = this.sprQueue.shift()!;
           slot.busy++;
           this.sprInFlight++;
@@ -244,7 +340,7 @@ export class TileStore {
     // drop requests nobody has looked at for a while (the camera moved on)
     for (const [k, j] of this.queue) {
       const e = this.entries.get(k);
-      if (!e || this.frame - e.used > 90) {
+      if (!e || (this.frame - e.used > 90 && !(this.keepSpan.size && this.kept(k)))) {
         this.queue.delete(k);
         this.entries.delete(k);
       } else j.pri = Math.min(j.pri, e.pri);
@@ -290,7 +386,7 @@ export class TileStore {
       if (e.layer >= 0) used++;
       else if (e.layer === -2) empty++;
     }
-    return `tiles ${used}/${this.byLayer.length} empty ${empty} queue ${this.queue.size} busy ${this.inFlight} painted ${this.painted} (${(this.paintMs / Math.max(1, this.painted)).toFixed(1)} ms) evicted ${this.evicted} sprites ${this.sprPainted} (${(this.sprMs / Math.max(1, this.sprPainted)).toFixed(1)} ms)`;
+    return `tiles ${used}/${this.byLayer.length} empty ${empty} queue ${this.queue.size} busy ${this.inFlight} painted ${this.painted} (${(this.paintMs / Math.max(1, this.painted)).toFixed(1)} ms) evicted ${this.evicted}${this.keepSpan.size ? ` kept ${this.keptLayers()}/${this.keepSpan.size}` : ""} sprites ${this.sprPainted} (${(this.sprMs / Math.max(1, this.sprPainted)).toFixed(1)} ms)`;
   }
 }
 

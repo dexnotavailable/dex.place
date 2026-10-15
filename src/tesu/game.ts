@@ -68,6 +68,18 @@ const DAY: Lighting = {
   lightCap: 1.35,
 };
 
+/** A plate tile of the opening set: first and last T the opening's camera has it on screen; rank: what for (game.ts warmPlan). */
+interface WarmTile {
+  id: PlaneId;
+  lv: number;
+  tx: number;
+  ty: number;
+  k: string;
+  from: number;
+  until: number;
+  rank: number;
+}
+
 interface PlaneDraw {
   quads: TileQuad[];
   look: PlaneLook;
@@ -91,6 +103,11 @@ export interface TesuOpts {
   hold?: boolean;
   manual: boolean;
   sync: boolean;
+  /**
+   * (the homepage) The frame the opening will run at, if not the one drawn now: the world window waits between
+   * the page's bars and is the whole window from the press, so the opening set is planned for that size.
+   */
+  landed?: () => [number, number] | null;
 }
 
 export class TesuGame {
@@ -188,9 +205,11 @@ export class TesuGame {
       },
       titleAt: (t) => this.titles.setTime(true, t),
       sfx: (id, at) => this.sound.sfx(id, 1, at),
+      sfxCancel: () => this.sound.cancelAhead(),
       bed: (k, secs) => this.sound.bedLevel(k, secs),
       framing: (x, opening) => this.trackFraming(x, opening),
       frameW: () => this.r.iw,
+      frameH: () => this.r.ih,
       cut: () => { this.cutFade = 1; },
       cine: (on) => { document.documentElement.classList.toggle("cine", on); },
     });
@@ -203,6 +222,7 @@ export class TesuGame {
     for (const id of PLANE_IDS) this.levels.set(id, planeLevels(PLANES[id].rate));
     this.input = input;
     this.manual = opts.manual;
+    this.landed = opts.landed ?? null;
     this.vfx = new Vfx(assets.vfx);
     const cam = this.camera;
     const labCam = {
@@ -370,9 +390,9 @@ export class TesuGame {
   framingOverride: Partial<ReturnType<typeof framingAt>> | null = null;
 
   /** The world's tracks at x, with the opening's reveal track on or off (the opening's camera reads them). */
-  private trackFraming(x: number, opening: boolean): ReturnType<typeof framingAt> {
+  private trackFraming(x: number, opening: boolean, y = this.groundY(x)): ReturnType<typeof framingAt> {
     const has = (fl: string): boolean => (fl === "opening" ? opening : this.flags.has(fl));
-    return framingAt(this.world.tracks, x, has, this.groundY(x));
+    return framingAt(this.world.tracks, x, has, y);
   }
 
   /** The ground's y under x near her (the jetty, the shore road, the terrace). */
@@ -510,6 +530,7 @@ export class TesuGame {
     this.tick++;
     this.time += 1 / 60;
     this.opening.tick();
+    this.warmStream();
     this.feel.realTick();
     this.vfx.realTick();
     this.simAcc += this.feel.slowFactor;
@@ -758,79 +779,172 @@ export class TesuGame {
     r.flush();
   }
 
-  // --- the opening set's plates: every tile the opening's camera will draw, asked for while the title covers
-  // the world, so "continue" can wait until the 36 seconds can never stall on a plate
+  // --- the opening set's plates: every tile the opening's camera draws on its hands-free path, with the T span
+  // it is on screen. "continue" waits for the ones that cannot be painted in time once the music runs: the widest
+  // frame under TESU first (it lands on drop 2 out of a two-second whip, and holds four seconds), then the drift
+  // from the press to the close band, then TESU's ease back in, as many as the plate store can hold beside the
+  // frame on screen (empty tiles cost nothing). The rest (the walk's reveal, the whip-out) streams in ahead of the
+  // camera while it runs, and the store keeps each tile until the camera is past it (plates/store.ts keep).
 
-  private warm: { list: [PlaneId, number, number, number][]; done: number } | null = null;
+  private warm: { plan: WarmTile[]; gate: number; gateMax: number; done: number; size: string; budget: number } | null = null;
 
   /** Plates of the opening set are still coming in. */
   get warming(): boolean {
-    return !!this.warm && this.warm.done < this.warm.list.length;
+    return !!this.warm && this.warm.done < this.warm.gate;
   }
 
-  /**
-   * Walks the opening's camera along its path (every quarter second) and asks for each tile it will need. The
-   * store holds at most a few hundred tiles, fewer than the whole path's, so the gate ("continue") waits for the
-   * stretches that can never be streamed late: the slow drift to the close band (T 0 to the walk) and the
-   * widest frame with its ease back in; the walk's reveal and the two-second whip-out are asked for after
-   * them and stream in under the cinematic (the renderer draws the level below until a tile lands).
-   */
-  startWarm(): void {
-    if (this.warm) return;
-    const seen = new Set<string>();
-    const W = this.r.iw, Hf = this.r.ih;
+  /** The opening's plan of plates for the frame as it is now (its size and reduced motion). */
+  private landed: (() => [number, number] | null) | null;
+
+  /** The frame the opening runs at (the landed world window on the homepage, else the frame now). */
+  private openingFrame(): [number, number] {
+    return this.landed?.() ?? [this.r.iw, this.r.ih];
+  }
+
+  private warmPlan(): { plan: WarmTile[]; gateMax: number; budget: number } {
+    const [W, Hf] = this.openingFrame();
     const reduced = this.feel.reducedMotion;
-    const tilesOver = (a: number, b: number): [PlaneId, number, number, number][] => {
-      const out: [PlaneId, number, number, number][] = [];
-      for (let T = a; T <= b + 1e-6; T += 0.25) {
-        const x = herXH(T) * H;
-        const shot = cameraAt(T, { x, W, reveal: (v) => this.trackFraming(v, true), world: (v) => this.trackFraming(v, false), reduced });
-        if (!shot) continue;
-        const cam: CamState = { cx: shot.cx, cy: this.groundY(x), zoom: shot.zoom, anchor: shot.anchor, horizon: shot.horizon, W, H: Hf };
-        for (const id of PLANE_IDS) {
-          if (id === "near" && cam.zoom > 1.6) continue;
-          const sp = this.tileSpan(cam, id, this.levelOf(cam, id), 0, Hf);
-          for (let ty = sp.ty0; ty <= sp.ty1; ty++) {
-            for (let tx = sp.tx0; tx <= sp.tx1; tx++) {
-              const k = `${id}|${sp.level}|${tx}|${ty}`;
-              if (seen.has(k)) continue;
-              seen.add(k);
-              out.push([id, sp.level, tx, ty]);
-            }
+    const cam = BEATS.camera, ui = BEATS.ui;
+    // per tile, the runs of T it is on screen (a far plane's tile in the drift may come back in the ease-in)
+    const span = new Map<string, { id: PlaneId; lv: number; tx: number; ty: number; runs: [number, number][] }>();
+    let most = 0;
+    // every quarter second (and the beats' own moments: the widest frame's first tick, the skip's landing)
+    const times: number[] = [];
+    for (let T = 0; T <= ui.handBack + 1e-6; T += 0.25) times.push(T);
+    times.push(cam.widest.from + 0.02, ui.skipTo);
+    times.sort((a, b) => a - b);
+    // the ground along her hands-free path, walked from the catch spot (the ground under x near where she is
+    // then: the terrace is above the shore she starts from, so "the ground below her now" would be the wrong one)
+    const x0 = BEATS.her.catchXH * H, step = H / 4;
+    const spawn = this.world.spawns.find((sp) => sp.id === "catch")!;
+    const prof: number[] = [];
+    let gy = this.collision.groundBelow(x0, spawn.y - 2 * H)?.y ?? spawn.y;
+    for (let x = x0; x <= (BEATS.her.stopXH + 6) * H; x += step) {
+      gy = this.collision.groundBelow(x, gy - 2 * H)?.y ?? gy;
+      prof.push(gy);
+    }
+    const groundAt = (x: number): number => prof[Math.max(0, Math.min(prof.length - 1, Math.round((x - x0) / step)))]!;
+    for (const T of times) {
+      const x = herXH(T) * H;
+      const shot = cameraAt(T, { x, W, H: Hf, reveal: (v) => this.trackFraming(v, true, groundAt(v)), world: (v) => this.trackFraming(v, false, groundAt(v)), reduced });
+      if (!shot) continue;
+      const c: CamState = { cx: shot.cx, cy: groundAt(x), zoom: shot.zoom, anchor: shot.anchor, horizon: shot.horizon, W, H: Hf };
+      let n = 0;
+      for (const id of PLANE_IDS) {
+        if (id === "near" && c.zoom > 1.6) continue;
+        const sp = this.tileSpan(c, id, this.levelOf(c, id), 0, Hf);
+        for (let ty = sp.ty0; ty <= sp.ty1; ty++) {
+          for (let tx = sp.tx0; tx <= sp.tx1; tx++, n++) {
+            const k = `${id}|${sp.level}|${tx}|${ty}`;
+            const t = span.get(k);
+            const run = t?.runs[t.runs.length - 1];
+            if (run && T - run[1] <= 0.25 + 1e-6) run[1] = T;
+            else if (t) t.runs.push([T, T]);
+            else span.set(k, { id, lv: sp.level, tx, ty, runs: [[T, T]] });
           }
         }
       }
-      return out;
-    };
-    const cam = BEATS.camera;
-    const gate = [...tilesOver(0, cam.reveal.from), ...tilesOver(cam.widest.from, BEATS.ui.handBack)];
-    const later = [...tilesOver(cam.reveal.from, cam.whip.from), ...tilesOver(cam.whip.from, cam.widest.from)];
-    // never more than the plate store holds: asking for more would only evict what was just painted
-    const cap = Math.floor(this.planes.layers * 0.8);
-    if (gate.length > cap) gate.length = cap;
-    later.length = Math.max(0, Math.min(later.length, cap - gate.length));
-    gate.forEach(([id, lv, tx, ty], i) => this.store.want(id, lv, tx, ty, 30 + i * 0.001));
-    later.forEach(([id, lv, tx, ty], i) => this.store.want(id, lv, tx, ty, 40 + i * 0.001));
-    this.warm = { list: gate, done: 0 };
-    console.info(`[opening] the opening set: ${gate.length} plate tiles before "continue", ${later.length} more streaming behind (the store holds ${this.planes.layers})`);
+      most = Math.max(most, n);
+    }
+    // what "continue" waits for, in this order: the widest frame, the drift, the skip's landing; then (streamed
+    // while it runs, as the store has room) the whip-out (from the walk on: two seconds are too few to paint it),
+    // the walk and the ease back in (each four seconds ahead: the walk is slow, the ease follows a four-second
+    // hold). One entry per run of a tile.
+    const plan: WarmTile[] = [];
+    for (const [k, t] of span) {
+      for (const [from, until] of t.runs) {
+        const widest = until >= cam.widest.from && from < cam.easeIn.from;
+        const skip = until >= ui.skipTo && from <= ui.skipTo + 0.5;
+        const rank = widest ? 0 : from < cam.reveal.from ? 1 : skip ? 2 : from >= cam.easeIn.from ? 5 : from >= cam.whip.from ? 3 : 4;
+        // (on screen until the next sample)
+        plan.push({ id: t.id, lv: t.lv, tx: t.tx, ty: t.ty, k, from, until: until + 0.25, rank });
+      }
+    }
+    plan.sort((a, b) => a.rank - b.rank || a.from - b.from);
+    const gateMax = plan.findIndex((t) => t.rank > 2);
+    // the store's layers less a frame on screen and its margin (measured: about a fifth to a third of a frame's
+    // tiles hold paint, the rest are empty and cost nothing)
+    const budget = Math.max(64, this.planes.layers - Math.ceil(most * 0.3) - 48);
+    return { plan, gateMax: gateMax < 0 ? plan.length : gateMax, budget };
+  }
+
+  startWarm(): void {
+    const [fw, fh] = this.openingFrame();
+    const size = `${fw}x${fh}${this.feel.reducedMotion ? "r" : ""}`;
+    if (this.warm?.size === size) return;
+    this.store.clearKeep();
+    const p = this.warmPlan();
+    this.warm = { ...p, gate: p.gateMax, done: 0, size };
+    this.warmProgress();
+    const n = (r: number): number => p.plan.filter((t) => t.rank === r).length;
+    console.info(`[opening] the opening set at ${size}: up to ${p.gateMax} plate tiles before "continue" (widest frame ${n(0)}, drift ${n(1)}, skip landing ${n(2)}), ${p.plan.length - p.gateMax} streaming behind (whip ${n(3)}, walk ${n(4)}, ease-in ${n(5)}); the store holds ${this.planes.layers} painted, the opening keeps up to ${p.budget}`);
   }
 
   private warmPump(): void {
     this.store.pump();
   }
 
-  /** The opening set's plates in (0..1). Asks again for any the store has let go. */
+  /**
+   * The opening set's plates in (0..1). Asks (again) for the ones "continue" waits for, in order, while the store
+   * has room to keep them: where it runs out, what "continue" waits for ends (the rest streams in later).
+   */
   warmProgress(): number {
     const w = this.warm;
     if (!w) return 0;
-    let done = 0;
-    w.list.forEach(([id, lv, tx, ty], i) => {
-      if (this.store.peek(id, lv, tx, ty) !== -1) done++;
-      else this.store.want(id, lv, tx, ty, 30 + i * 0.001);
-    });
+    const st = this.store;
+    let room = w.budget - st.keptLayers(), done = 0, i = 0;
+    for (; i < w.gateMax; i++) {
+      const t = w.plan[i]!;
+      const l = st.layerOf(t.k);
+      if (l === -2 || st.lost.has(t.k)) { done++; continue; }
+      // (a kept tile holding paint is already counted in keptLayers; any other takes room)
+      if (!(l !== undefined && l >= 0 && st.isKept(t.k))) {
+        if (room <= 0) break;
+        room--;
+      }
+      st.keep(t.k, t.from, t.until, t.rank === 0);
+      if (l === undefined) st.want(t.id, t.lv, t.tx, t.ty, 30 + i * 0.001);
+      else if (l >= 0) done++;
+    }
+    w.gate = i;
     w.done = done;
-    if (this.away && done < w.list.length) this.store.pump();
-    return w.list.length ? done / w.list.length : 1;
+    if (this.away && done < i) st.pump();
+    return i ? done / i : 1;
+  }
+
+  /**
+   * While the opening runs: the store keeps what the camera still needs (until it is past it) and the plates
+   * ahead are asked for, nearest in T first (the widest frame and the whip-out from the walk on, the rest four
+   * seconds ahead), while the store has room to keep them. After the hand-back the store is the world's again.
+   */
+  private warmStream(): void {
+    const w = this.warm, st = this.store, o = this.opening;
+    if (!w || this.holding) return;
+    if (!o.active) {
+      this.warm = null;
+      st.clearKeep();
+      return;
+    }
+    const T = o.T;
+    st.keepT = T;
+    if (this.tick % 6) return;
+    let room = w.budget - st.keptLayers();
+    // first what is on screen within two seconds, whatever it is for; then by what it is for, each its lead ahead
+    for (const soon of [true, false]) {
+      for (const t of w.plan) {
+        if (t.until < T || st.lost.has(t.k)) continue;
+        const lead = soon ? 2 : t.rank === 0 || t.rank === 3 ? 12 : 4;
+        if (t.from - lead > T) continue;
+        const l = st.layerOf(t.k);
+        if (l === -2) continue;
+        if (!(l !== undefined && l >= 0 && st.isKept(t.k))) {
+          if (room <= 0) break;
+          room--;
+        }
+        st.keep(t.k, t.from, t.until, t.rank === 0 || t.rank === 3);
+        if (l === undefined) st.want(t.id, t.lv, t.tx, t.ty, 30 + Math.max(0, t.from - T));
+      }
+    }
   }
 
   // --- using things ---------------------------------------------------------
@@ -1256,7 +1370,8 @@ export class TesuGame {
     this.loading = ![...draws.values()].every((d) => d.complete) || (this.sprites.waiting > 0 && this.tick < 60 * 20);
     if (wasLoading && !this.loading) performance.mark("tesu:first-scene");
     // the first scene is in: the rest of the opening's plates stream in behind it while it waits for the press
-    if (!this.loading && this.holding && !this.warm) this.startWarm();
+    // (asked again if the frame changes size: the set is the frame's)
+    if (!this.loading && (this.holding || (this.opening.active && this.opening.T < BEATS.ui.handBack))) this.startWarm();
     if (!this.loading) this.shown = true;
     const z = cam.zoom;
     const xfPlay = planeXf(cam, 1);
@@ -1451,7 +1566,7 @@ export class TesuGame {
       tiles: this.store.stats(), fps: Math.round(this.fps), frame: [this.r.iw, this.r.ih], present: this.r.presenter.rect,
       clip: this.player.clip.clip.id,
       opening: this.opening.state, T: +this.opening.T.toFixed(3), autoRun: this.opening.autoRun, holding: this.holding, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
-      warm: this.warm ? `${this.warm.done}/${this.warm.list.length}` : null,
+      warm: this.warm ? `${this.warm.done}/${this.warm.gate} of ${this.warm.gateMax}, ${this.warm.plan.length} planned` : null,
       ofuda: this.ofudaPose ? this.ofudaPose.pts.map((p) => [Math.round(p[0]), Math.round(p[1])]) : null,
       charm: this.warp ? `warp:${this.warp.c.id}` : this.perch ? `perch:${this.perch.c.id}` : null,
       ride: this.rides.active ? { id: this.rides.active.def.id, dir: this.rides.active.dir, t: +this.rides.active.t.toFixed(2) } : null, vista: !!this.vista,

@@ -160,8 +160,28 @@ export class Sound {
       g.gain.value = cue.vol * volume;
       s.connect(g);
       g.connect(this.sfxBus);
-      s.start(Math.max(asked, ctx.currentTime));
+      const t = Math.max(asked, ctx.currentTime);
+      s.start(t);
+      // (the opening) scheduled ahead on the music's clock: a skip can still drop it before it starts
+      if (t > ctx.currentTime + 0.005) {
+        this.ahead.push({ s, t });
+        s.onended = () => { this.ahead = this.ahead.filter((a) => a.s !== s); };
+      }
     });
+  }
+
+  private ahead: { s: AudioBufferSourceNode; t: number }[] = [];
+
+  /** Drops the effects scheduled ahead that have not started yet (the opening's skip). */
+  cancelAhead(): void {
+    const ctx = this.ctx;
+    const now = ctx?.currentTime ?? Infinity;
+    for (const a of this.ahead) {
+      if (a.t > now) {
+        try { a.s.stop(); } catch { /* already stopped */ }
+      }
+    }
+    this.ahead = [];
   }
 
   /** The ambience beds' level (1 = as set), reached over `secs` (the opening's hush ducks them). */

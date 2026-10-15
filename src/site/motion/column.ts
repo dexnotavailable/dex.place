@@ -22,12 +22,16 @@
 //   at "/" while the opening runs, so a reload replays it from the start).
 
 import { Talisman, TALISMAN_H, TALISMAN_W } from "./talisman.ts";
+import { playIntro } from "../../intro/index.ts";
 import { BEATS } from "../../tesu/opening/beats.ts";
 import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "../../tesu/opening/conductor.ts";
 import { pressContinues } from "../../tesu/opening/press.ts";
 import { fallAt } from "../../tesu/opening/timeline.ts";
 import { Track1 } from "../../tesu/opening/track.ts";
 import type { OpeningSet } from "../../tesu/mount.ts";
+
+/** The mark has written, held and blown away by p 3.5 s; past this the waiting room shows without it (s). */
+const MARK_LATE = 6;
 
 interface ColumnWorld {
   ready?: Promise<void>;
@@ -109,14 +113,23 @@ export function initColumn(reduced: MediaQueryList): void {
   // Save-Data, or a 2G-class line: the world waits to be asked (motion/world.ts marks it)
   let asked = !root.hasAttribute("data-world-ask");
 
-  // --- the title: the dex mark writes itself while the world loads
+  // --- the title: the dex mark writes itself while the world loads. It comes in this chunk (the plan's first
+  // payload: no second round trip queued behind the world's downloads), and the waiting room never waits on it
+  // longer than MARK_LATE (film v0: a title left black to p 73 s while the mark's own chunk was stuck)
   let introDone = false;
   let intro: { skip(): void } | null = null;
-  import("../../intro/index.ts").then((m) => {
-    const h = m.playIntro({ parent: title, reducedMotion: reduced.matches, hold: repeat ? BEATS.ui.markHoldReturn : BEATS.ui.markHold });
+  try {
+    const h = playIntro({ parent: title, reducedMotion: reduced.matches, hold: repeat ? BEATS.ui.markHoldReturn : BEATS.ui.markHold });
     intro = h;
-    void h.done.then(() => { introDone = true; });
-  }, () => { introDone = true; });
+    void h.done.then(() => { introDone = true; }, () => { introDone = true; });
+  } catch {
+    introDone = true;
+  }
+  window.setTimeout(() => {
+    if (introDone) return;
+    intro?.skip();
+    introDone = true;
+  }, MARK_LATE * 1000);
 
   // --- the opening set: what the next 36 seconds need, measured (the letter lights by it)
   let progress = 0;

@@ -124,12 +124,171 @@ export function mixShot(a: Shot, b: Shot, t: number): Shot {
 const cam = BEATS.camera;
 const shots = cam.shots;
 
-/** The authored shots before the walk (held frames and moves eased in log zoom). */
+/** The authored shots before the walk (held frames and moves eased in log zoom), as the plan keys them. */
 function authored(T: number): Shot {
   let s: (typeof shots)[number] = shots[0]!;
   for (const k of shots) if (k.from <= T) s = k;
   const u = s.to === null ? 1 : smooth((T - s.from) / (s.to - s.from));
   return { zoom: logLerp(s.zoom[0], s.zoom[1], u), anchor: lerp(s.anchor[0], s.anchor[1], u), horizon: lerp(s.horizon[0], s.horizon[1], u), cx: lerp(s.cx[0], s.cx[1], u) * HPX };
+}
+
+// --- the authored shots at any window ------------------------------------------------------------------
+//
+// The plan composes its shots on a 1536 x 864 frame (PLAN.md section 3: 1.25 screen px per art px at 1x on a
+// 1080p screen). The world draws whole pixels instead (1 art px per screen px at 720p and at 1080p), so a window
+// shows more or less of the world than the plan's frame. Two rules keep the plan's composition at every size:
+//   - her place across the frame is the plan's share: the camera's lead on her scales with the frame's width
+//     (the close band has her at 37.5% of the width on every screen, as section 3.4 says);
+//   - the lazy follow follows the letter: while it is the subject (from bar 1 into the push-in) the frame moves
+//     just enough to keep the bake's letter inside the bars' safe area (the bars are 11% each, plus a margin),
+//     eased (the most it needs within half a second, averaged over a second, so it never chases the tumble).
+//     Before the notice (bar 5) she may slide to the frame's edge or out of it (section 5, portrait phones);
+//     from it on she stays above the bottom bar and inside the sides, and the push-in lands on the plan's
+//     close band exactly. On the plan's frame and larger the letter never needs it: the shots are the keys.
+
+/** The plan's frame width (art px). */
+const REF_W = 1536;
+const SAFE = { bars: BEATS.ui.bars.vh / 100, top: 0.04, hard: 0.012, side: 0.06, feet: 0.015, pad: 3, herHalfH: 0.3 };
+const catchX = her.catchXH * HPX;
+const letter = BEATS.ofuda.letter;
+const bars = BEATS.bars;
+/** The safe follow eases in over bar 1 (the letter enters the sky at T 0.64 by design), is full from the landing (bar 2), and is gone when the push-in lands. */
+const safeIn = [bars[1]!, bars[2]!] as const;
+const safeOut = [shots[shots.length - 1]!.from - 0.6, shots[shots.length - 1]!.from] as const;
+/** From the notice (bar 5) she is kept in frame; the rule tightens over bar 4. */
+const herIn = [bars[4]!, bars[5]!] as const;
+
+/** The letter's box (px at 96 from her pivot) at T, while the bake is the subject; null outside it. */
+export function letterBox(T: number): readonly [number, number, number, number] | null {
+  const u = (T - letter.t0) / letter.dt;
+  const n = letter.box.length;
+  if (u < 0 || u > n - 1) return null;
+  const i = Math.min(n - 2, Math.floor(u)), f = u - i;
+  const a = letter.box[i]!, b = letter.box[i + 1]!;
+  return [lerp(a[0], b[0], f), lerp(a[1], b[1], f), lerp(a[2], b[2], f), lerp(a[3], b[3], f)];
+}
+
+/** An authored shot with the camera's lead on her scaled to the frame's width. */
+function widthShot(s: Shot, W: number): Shot {
+  return { ...s, cx: catchX + (s.cx - catchX) * (W / REF_W) };
+}
+
+/**
+ * How far (frame px) a shot has to move the picture so the letter at T is inside the safe area, and how far it
+ * may move before she leaves hers: [dx, dy, dxMin, dxMax, dyMax] (+x right, +y down).
+ */
+function safeNeed(s: Shot, T: number, W: number, Hf: number): [number, number, number, number, number] {
+  const z = s.zoom;
+  const feet = s.anchor * Hf, herCol = W / 2 + (catchX - s.cx) * z;
+  // her limits, full from the notice
+  const r = smooth((T - herIn[0]) / (herIn[1] - herIn[0]));
+  const half = SAFE.herHalfH * HPX * z;
+  const loose = (1 - r) * (W + Hf);
+  const capY = (1 - SAFE.bars - SAFE.feet) * Hf - feet;
+  const dyMax = capY + loose;
+  const dxMin = SAFE.side * W + half - herCol - loose;
+  const dxMax = (1 - SAFE.side) * W - half - herCol + loose;
+  const box = letterBox(T);
+  if (!box) return [0, 0, dxMin, dxMax, dyMax];
+  const top = feet + box[1] * z - SAFE.pad;
+  const left = W / 2 + (catchX + box[0] - s.cx) * z - SAFE.pad, right = W / 2 + (catchX + box[2] - s.cx) * z + SAFE.pad;
+  // comfortably clear of the top bar if she can stay clear of the bottom one; before the notice the letter wins,
+  // down to just clear of the bar (on a short window she then sits at the frame's foot, or below it)
+  const want = Math.max(0, (SAFE.bars + SAFE.top) * Hf - top), must = Math.max(0, (SAFE.bars + SAFE.hard) * Hf - top);
+  const fit = Math.min(want, Math.max(0, capY));
+  const dy = lerp(Math.max(fit, must), fit, r);
+  const dx = right > (1 - SAFE.side) * W ? (1 - SAFE.side) * W - right : left < SAFE.side * W ? SAFE.side * W - left : 0;
+  return [dx, dy, dxMin, dxMax, dyMax];
+}
+
+const GRID = 1 / 30;
+const EASE = 0.5;
+interface SafeTrack { from: number; dx: Float64Array; dy: Float64Array }
+const safeCache = new Map<string, SafeTrack>();
+
+/** The eased shift for every 1/30 s from bar 1 to the close band, for a frame size. */
+function safeTrack(W: number, Hf: number): SafeTrack {
+  const k = `${W}x${Hf}`;
+  let t = safeCache.get(k);
+  if (t) return t;
+  const from = safeIn[0] - 2 * EASE, to = safeOut[1] + 2 * EASE;
+  const n = Math.ceil((to - from) / GRID) + 1;
+  const nx = new Float64Array(n), px = new Float64Array(n), ny = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const T = from + i * GRID;
+    const [dx, dy] = safeNeed(widthShot(authored(T), W), T, W, Hf);
+    ny[i] = dy;
+    px[i] = Math.max(0, dx);
+    nx[i] = Math.max(0, -dx);
+  }
+  // the most it needs within EASE, then averaged over 2 EASE: never less than it needs, never a jerk
+  const w = Math.round(EASE / GRID);
+  const ease = (a: Float64Array): Float64Array => {
+    const m = new Float64Array(n), o = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      let v = 0;
+      for (let j = Math.max(0, i - w); j <= Math.min(n - 1, i + w); j++) v = Math.max(v, a[j]!);
+      m[i] = v;
+    }
+    for (let i = 0; i < n; i++) {
+      let v = 0, c = 0;
+      for (let j = Math.max(0, i - w); j <= Math.min(n - 1, i + w); j++, c++) v += m[j]!;
+      o[i] = v / c;
+    }
+    return o;
+  };
+  const ey = ease(ny), ep = ease(px), en = ease(nx);
+  const dx = new Float64Array(n);
+  for (let i = 0; i < n; i++) dx[i] = ep[i]! - en[i]!;
+  t = { from, dx, dy: ey };
+  if (safeCache.size > 8) safeCache.clear();
+  safeCache.set(k, t);
+  return t;
+}
+
+/** The safe follow's shift (frame px) at T for a shot, with her limits applied. */
+function safeShift(s: Shot, T: number, W: number, Hf: number): [number, number] {
+  if (T <= safeIn[0] || T >= safeOut[1]) return [0, 0];
+  const t = safeTrack(W, Hf);
+  const u = (T - t.from) / GRID, i = Math.min(t.dx.length - 2, Math.max(0, Math.floor(u))), f = u - i;
+  const wgt = smooth((T - safeIn[0]) / (safeIn[1] - safeIn[0])) * smooth((safeOut[1] - T) / (safeOut[1] - safeOut[0]));
+  let dx = lerp(t.dx[i]!, t.dx[i + 1]!, f) * wgt, dy = lerp(t.dy[i]!, t.dy[i + 1]!, f) * wgt;
+  const [, , dxMin, dxMax, dyMax] = safeNeed(s, T, W, Hf);
+  dy = Math.min(dy, Math.max(0, dyMax));
+  dx = Math.min(Math.max(dx, Math.min(0, dxMin)), Math.max(0, dxMax));
+  return [dx, dy];
+}
+
+/** Moves a shot's picture by (dx, dy) frame px. */
+function shifted(s: Shot, dx: number, dy: number, Hf: number): Shot {
+  if (!dx && !dy) return s;
+  return { zoom: s.zoom, anchor: s.anchor + dy / Hf, horizon: s.horizon + dy / Hf, cx: s.cx - dx / s.zoom };
+}
+
+/** The authored shot at T for a frame W x Hf (Hf unknown: the plan's keys, the lead scaled to the width). */
+export function authoredAt(T: number, W: number, Hf?: number): Shot {
+  const s = widthShot(authored(Math.max(0, T)), W);
+  if (!Hf) return s;
+  const [dx, dy] = safeShift(s, T, W, Hf);
+  return shifted(s, dx, dy, Hf);
+}
+
+/** Reduced motion's held postcard: one shift for the whole hold, the most the letter needs in it (still a held frame). */
+function heldShift(s: Shot, a: number, b: number, W: number, Hf: number): [number, number] {
+  let dy = 0, dxp = 0, dxn = 0, dyMax = Infinity, dxMin = -Infinity, dxMax = Infinity;
+  for (let T = Math.max(a, safeIn[1]); T < b; T += 0.1) {
+    const [dx, ndy] = safeNeed(s, T, W, Hf);
+    dy = Math.max(dy, ndy);
+    dxp = Math.max(dxp, dx);
+    dxn = Math.min(dxn, dx);
+  }
+  // a held frame keeps her in it throughout (the hold runs past the notice)
+  const [, , lo, hi, ym] = safeNeed(s, herIn[1], W, Hf);
+  dyMax = Math.min(dyMax, ym);
+  dxMin = Math.max(dxMin, lo);
+  dxMax = Math.min(dxMax, hi);
+  const dx = dxp + dxn;
+  return [Math.min(Math.max(dx, Math.min(0, dxMin)), Math.max(0, dxMax)), Math.min(dy, Math.max(0, dyMax))];
 }
 
 /** The widest frame (the lake on the left, the palace's west gate pinned at 0.8 of the width). */
@@ -143,6 +302,8 @@ export interface CameraInputs {
   x: number;
   /** The frame's width (frame px). */
   W: number;
+  /** The frame's height (frame px): the safe follow keeps the letter out from under the bars (unknown: the plan's keys). */
+  H?: number;
   /** The world's tracks at x with the opening's reveal on, and with it off (the hand-back's target). */
   reveal: (x: number) => Framed;
   world: (x: number) => Framed;
@@ -162,12 +323,12 @@ export interface CameraInputs {
 export function cameraAt(T: number, k: CameraInputs): Shot | null {
   if (k.reduced) return reducedAt(T, k);
   const { x, W } = k;
-  if (T < cam.reveal.from) return authored(Math.max(0, T));
+  if (T < cam.reveal.from) return authoredAt(T, W, k.H);
   const xBreak = her.xBreakH * HPX;
   if (T < cam.whip.from) {
     const r = shotOf(k.reveal(x), x, W);
     const u = (T - cam.reveal.from) / cam.reveal.blend;
-    return u < 1 ? mixShot(authored(cam.reveal.from), r, smooth(u)) : r;
+    return u < 1 ? mixShot(authoredAt(cam.reveal.from, W, k.H), r, smooth(u)) : r;
   }
   const easeFrom = Math.min(cam.easeIn.from, k.released ?? Infinity);
   if (T < cam.widest.from) {
@@ -191,8 +352,14 @@ function reducedAt(T: number, k: CameraInputs): Shot | null {
   let h: (typeof cam.reduced)[number] = cam.reduced[0]!;
   for (const r of cam.reduced) if (r.from <= T) h = r;
   if (h.zoom === 0.125) return widestShot(k.W);
-  if (h.zoom === 2) return { ...authored(cam.reveal.from), zoom: 2 };
-  if (h.zoom === 0.5 && !h.follow) return authored(0);
+  if (h.zoom === 2) return { ...authoredAt(cam.reveal.from, k.W), zoom: 2 };
+  if (h.zoom === 0.5 && !h.follow) {
+    const s = authoredAt(0, k.W);
+    if (!k.H) return s;
+    const next = cam.reduced.find((r) => r.from > h.from)?.from ?? BEATS.ui.handBack;
+    const [dx, dy] = heldShift(s, h.from, next, k.W, k.H);
+    return shifted(s, dx, dy, k.H);
+  }
   const f = k.reveal(k.x);
   return { zoom: h.zoom, anchor: f.anchor, horizon: f.horizon, cx: k.x + f.lead * k.W };
 }

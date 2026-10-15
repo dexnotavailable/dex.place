@@ -182,18 +182,26 @@ export class WorldRenderer {
   layout(): void {
     const cw = this.canvas.width, ch = this.canvas.height;
     if (this.integerFrames && cw > 0 && ch > 0) {
-      // the whole-number scale that brings the frame's height nearest the target
-      let k = 1, best = Infinity;
-      for (let i = 1; i <= 8; i++) {
-        const d = Math.abs(ch / i - this.frameTargetH);
-        if (d < best) { best = d; k = i; }
-      }
-      this.setFrameSize(Math.max(1, Math.floor(cw / k)), Math.max(1, Math.floor(ch / k)));
+      const [w, h, k] = this.frameFor(cw, ch);
+      this.setFrameSize(w, h);
       this.presenter.layout(cw, ch, k);
       return;
     }
     if (cw > 0 && ch > 0) this.setFrameWidth(frameWidthFor(cw / ch));
     this.presenter.layout(cw, ch);
+  }
+
+  /**
+   * The frame a canvas of cw x ch device px gets with whole-number presentation, and its scale: the
+   * whole-number scale that brings the frame's height nearest the target.
+   */
+  frameFor(cw: number, ch: number): [number, number, number] {
+    let k = 1, best = Infinity;
+    for (let i = 1; i <= 8; i++) {
+      const d = Math.abs(ch / i - this.frameTargetH);
+      if (d < best) { best = d; k = i; }
+    }
+    return [Math.max(1, Math.floor(cw / k)), Math.max(1, Math.floor(ch / k)), k];
   }
 
   /** Rebuilds the targets at a new frame size (both dimensions; whole-number presentation). */

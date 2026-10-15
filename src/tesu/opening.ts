@@ -20,6 +20,9 @@ import { BEATS, beatAt, cameraAt, herPhase, herSpeedH, herXH, reducedHold, windA
 
 export type OpeningState = "off" | "cine" | "free" | "done";
 
+/** How far ahead on the context's clock an effect is scheduled (s). */
+const CUE_LEAD = 0.25;
+
 export interface OpeningHost {
   herX(): number;
   /** Takes her along the ground to x (world px); `jump`: put her down there (a skip). */
@@ -36,10 +39,13 @@ export interface OpeningHost {
   titleAt(t: number): void;
   /** An effect on the beat: `at` is the context time to start it at (null: now). */
   sfx(id: string, at: number | null): void;
+  /** Effects scheduled ahead that have not started yet are dropped (a skip). */
+  sfxCancel(): void;
   /** The ambience bed's level (1 = as set), reached over `secs`. */
   bed(k: number, secs: number): void;
   framing(x: number, opening: boolean): Framed;
   frameW(): number;
+  frameH(): number;
   /** A short cross-fade (a skip, a reduced-motion cut). */
   cut(): void;
   /** The cinematic owns the screen (touch controls hidden) or not. */
@@ -64,6 +70,10 @@ export class Opening {
   private hold = -1;
   private dropTick = 0;
   private quietSince = 0;
+  private quietWall = 0;
+  /** The longest recent wait between frames (s), and when the last frame's first tick ran (ms). */
+  private gap = 1 / 60;
+  private lastWall = 0;
   private readonly host: OpeningHost;
 
   constructor(host: OpeningHost) {
@@ -118,14 +128,10 @@ export class Opening {
       this.epoch = link.epoch;
       h.moveTo(herXH(T) * 96, true);
       h.cut();
+      h.sfxCancel();
       BEATS.sfx.forEach((c, i) => { if (c.T < T) this.fired.add(i); });
     }
-    // effects on their beats, scheduled on the music's own clock
-    BEATS.sfx.forEach((c, i) => {
-      if (this.fired.has(i) || T + 0.15 < c.T) return;
-      this.fired.add(i);
-      if (T - c.T < 0.25) h.sfx(c.id, link.ctxTimeOf(c.T));
-    });
+    this.cues(link, T);
     // the hush ducks the lake bed; the drop brings the ambience back
     if (!this.ducked && T >= BEATS.hush.at && T < BEATS.her.drop1) {
       this.ducked = true;
@@ -151,6 +157,8 @@ export class Opening {
       // the first input takes her over; standing at the overlook, the game's own idle takes her
       if (h.touchedSince(this.dropTick) || herPhase(T) === "stand") {
         this.autoRun = false;
+        // standing: on her mark at the overlook first (the tick that ends the run still moves her)
+        if (herPhase(T) === "stand") h.moveTo(herXH(T) * 96, false);
         h.release(herPhase(T) === "stand" ? 0 : (herSpeedH(T) * 96) / 60);
       }
     }
@@ -167,8 +175,42 @@ export class Opening {
     if (T >= BEATS.ui.handBack) {
       this.state = "done";
       this.quietSince = h.inputTick();
+      this.quietWall = performance.now();
       h.cine(false);
     }
+  }
+
+  /**
+   * The effects on their beats, scheduled on the music's own clock (CHECK-1 item 11's critic, film v0): a cue is
+   * asked for when its moment on the context's render clock is a quarter second away (plus the longest recent
+   * wait between frames), and starts exactly then. The heard T runs behind the render clock by the output's
+   * delay (Bluetooth 0.1 to 0.3 s), so a cue triggered on T itself would be late, or dropped, on such outputs.
+   * Without a running context (the page clock) a cue goes on T, as before.
+   */
+  private cues(link: OpeningLink, T: number): void {
+    const h = this.host;
+    const ctx = link.ctx;
+    const now = ctx && ctx.state === "running" ? ctx.currentTime : null;
+    const wall = performance.now();
+    if (wall - this.lastWall > 4) {
+      if (this.lastWall) this.gap = Math.min(0.5, Math.max(this.gap * 0.9, (wall - this.lastWall) / 1000));
+      this.lastWall = wall;
+    }
+    BEATS.sfx.forEach((c, i) => {
+      if (this.fired.has(i)) return;
+      const at = now === null ? null : link.ctxTimeOf(c.T);
+      if (at !== null && now !== null) {
+        if (at - now > CUE_LEAD + this.gap) return;
+        this.fired.add(i);
+        // the press's own gust is no drum hit: if the first tick comes a little late it plays at once
+        if (now - at > 0.05 && now - at < 0.25 && c.T < 0.5) h.sfx(c.id, null);
+        else if (now - at < 0.25) h.sfx(c.id, at);
+        return;
+      }
+      if (T + 0.15 < c.T) return;
+      this.fired.add(i);
+      if (T - c.T < 0.25) h.sfx(c.id, null);
+    });
   }
 
   private hintTick(): void {
@@ -179,7 +221,8 @@ export class Opening {
       this.state = "off";
       return;
     }
-    this.hint = h.inputTick() - this.quietSince > BEATS.ui.hintAfter * 60;
+    // (on the wall clock: a slow device runs fewer ticks than seconds)
+    this.hint = performance.now() - this.quietWall > BEATS.ui.hintAfter * 1000;
   }
 
   /** In the simulation tick: moves her if the opening drives her (then the player's own update is skipped). */
@@ -196,7 +239,7 @@ export class Opening {
   camera(x: number): Shot | null {
     if (!this.active) return null;
     const h = this.host;
-    return cameraAt(this.T, { x, W: h.frameW(), reveal: (v) => h.framing(v, true), world: (v) => h.framing(v, false), released: this.released, reduced: this.reducedMotion });
+    return cameraAt(this.T, { x, W: h.frameW(), H: h.frameH(), reveal: (v) => h.framing(v, true), world: (v) => h.framing(v, false), released: this.released, reduced: this.reducedMotion });
   }
 
   /** Her step's phase (radians) while she walks or runs, for the talisman's bob; null when she stands. */
