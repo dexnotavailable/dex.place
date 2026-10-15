@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-15T06:08:46.312Z (15/10/2026, 13:08:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-15T07:18:45.487Z (15/10/2026, 14:18:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,15 +12,16 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_a99c5398-03e — last activity 8 min ago
-4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
+### wf_a99c5398-03e — last activity 49 min ago
+5 agents: 3 done, 2 running or stopped mid-way, 0 failed.
 
 - **spec** (done): I finished the critic pass on the run and fixed what I found in place: the spec, the rig and the thumbnail. All edits are marked "PILOT CRITIC 2026-10-15" and the report is in pilot-run\SPEC-CHECK.md. As it came to me, the run would have failed Dex's keys gate on three of his fast-fail items before anyone looked at the motion. I scored that version 5.0/10 against the 7.5 pass line. After the fixes it's 6.5. What keep
 - **poses** (running)
 - **pose-text** (done): All 10 keys and accents of the run cycle (R0, R3, R5, R7, R8, R10, R13, R15, R17, R18) are now written as detailed text poses for Qwen-Image 2.1's own edit. They are in pilot-run\poses\POSES-TEXT.md (for reading) and POSES.json (for the key artist). Nothing in them is a figure. I only used the bones as the place to read numbers from: the ground rig's 2D points in _build.json, and the posefig joints and checks for dep
-- **keys-textpose** (running)
+- **keys-textpose** (done): No run keys are picked yet. The GPU dropped off the bus at about 13:14, during my first round-2 job. nvidia-smi says "GPU is lost. Reboot the system to recover this GPU" and the broker can't restart ComfyUI because CUDA won't start, so every GPU lane is stopped. I did not reboot or change anything. What I got done: 1. **image_1:** the turnaround's right-facing side panel with the hat paper painted out (the opening la
+- **tweens** (running)
 
-### wf_04b33855-f83 — last activity 36 min ago
+### wf_04b33855-f83 — last activity 106 min ago
 5 agents: 3 done, 2 running or stopped mid-way, 0 failed.
 
 - **director:fixes** (done): All four Must-fix items I own (8, 10, 11, 12) and my four Should-fix items are done in PLAN.md, BEATS.json (now revision 2.1) and the storyboard. I left sections 3.5–3.8 and the clip rows alone, because bones v3 replaces them. - **Item 8, one ofuda size.** It is 4 x 10 px on the 96 drawing and 8 x 20 on the 192 everywhere; 5 x 15 is gone. On a 1080p screen that is about 2.5 x 6 px in the opening wide shot (zoom 0.5),
@@ -29,7 +30,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **director:regen+pilot** (running)
 - **anchor:v2** (running)
 
-### wf_404079d0-fc4 — last activity 66 min ago
+### wf_404079d0-fc4 — last activity 136 min ago
 8 agents: 5 done, 3 running or stopped mid-way, 0 failed.
 
 - **arch:r7** (done): The architecture lane is done and committed on claude/v2-art-kagami-p1 in two commits, 8d74293d and 1915545b. Every torii now stands side-on, the palace door sits in the middle of its own entrance building, the doors open with easing as she comes near, and the fence is irregular stone posts with a straw rope. Before starting I reviewed the code left in the worktree from before the crash. It drew each torii as a red p
@@ -41,7 +42,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **water:r8** (running)
 - **patch:r8** (running)
 
-### wf_61997fe3-8a6 — last activity 219 min ago
+### wf_61997fe3-8a6 — last activity 289 min ago
 8 agents: 4 done, 3 running or stopped mid-way, 1 failed.
 
 - **plan** (running)
@@ -53,7 +54,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **check** (failed)
 - **check** (done): I wrote D:\Dex\Temp\dexplace-v2\lanes\opening\CHECK-1.md, my first critic pass on the opening. The timing and the plan are close to ready, the anchor is not ready to lock, and the catch-and-slap needs one more bones pass before any Qwen frame is made. I sent no GPU jobs and changed no lane files. My comparison sheets and crops are in D:\Dex\Temp\dexplace-v2\lanes\opening\_critic1\. **Plan and timing (8/10).** Every b
 
-### wf_615041c0-3f2 — last activity 588 min ago
+### wf_615041c0-3f2 — last activity 658 min ago
 5 agents: 4 done, 1 running or stopped mid-way, 0 failed.
 
 - **inventory** (done): 
@@ -62,7 +63,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **archive** (done): 
 - **install** (done): 
 
-### wf_8865cc19-db1 — last activity 656 min ago
+### wf_8865cc19-db1 — last activity 726 min ago
 14 agents: 12 done, 2 running or stopped mid-way, 0 failed.
 
 - **sky:r4** (done): The sky and atmosphere lane is done and committed on claude/v2-art-kagami-p1 in worktree D:\Dex\Temp\dexplace-v2\art-wt\kagami\p1. The four things Dex asked for now show in all eight key frames: one family of clouds with real volume, a clear sun, fog that gives depth, and the Walker moved further back among the clouds. - **Clouds.** All clouds now come from one painter in sky.ts: heaps of overlapping billows lit by t
@@ -80,7 +81,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **sky:r7** (running)
 - **patch:r7** (running)
 
-### wf_f62de466-2f9 — last activity 1128 min ago
+### wf_f62de466-2f9 — last activity 1198 min ago
 21 agents: 20 done, 1 running or stopped mid-way, 0 failed.
 
 - **critic:r1** (done): 
@@ -98,27 +99,11 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **critic:r3** (done): 
 - **director:plan:r4** (running)
 
-### wf_02fb83bb-9c9 — last activity 4235 min ago
+### wf_02fb83bb-9c9 — last activity 4305 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **writer:v4** (done): I wrote GDK v4 and every DELTA-v4 item is in it. MAP.svg and the builder map both parse as XML, and I rendered both with headless Edge and looked at them; the leak scan passes. The one thing I could not do is collect new reference images: the indoors-grand, indoors-narrow and outdoors-narrow gaps ar
 - **critic:v4** (done): verdict ready · GDK v4 is ready for Dex. Every DELTA-v4 item is done, and no locked canon line is contradicted. That covers the press-started download, the PC-only warning, Yuki downloading dexClient, no dex.place champion, deep links that skip the intro, the URL scheme, the 3-minute reload, the talisman and the scroll, the music, the hunt prize and stall hints with no randomness, F to interact, and state A left open. I regenerated 
-
-### wf_674119c5-6eb — last activity 4263 min ago
-6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
-
-- **writer:v1** (done): I've written both files into `D:\Dex\Temp\dexplace-canon-20261012\gdk\v1\`: `GDK.md`, the full design kit in the brief's section order 0 to 10 plus appendices A to E, and `MAP.svg`. The map is valid XML. I rendered it to PNG with headless Edge and checked it by eye: the です shape reads at full size, 
-- **critic:v1** (done): verdict revise · blocking: [object Object] | [object Object] | [object Object] | [object Object] | [object Object] | [object Object] · This is a strong draft, but it needs a revision round before Dex sees it. The です map really does read: rendered with labels stripped, the strokes plus the two isles say です even at thumbnail size. Walking the main route writes the word in stroke order. The hidden truth (bouts are "finishings", the champions want to lose) turns the locked easy arena into the heart of the story. The core is fast: the hall at 1:00 and a 
-- **writer:v2** (done): GDK v2 is written. It fixes all six blocking issues and keeps everything the critic listed as strongest. Both new files parse as valid XML/Markdown checks passed, and I rendered the map to PNG and looked at it: the glyph and labels read.
-
-Files:
-- `D:\Dex\Temp\dexplace-canon-20261012\gdk\v2\GDK.md` 
-- **critic:v2** (done): verdict revise · blocking: [object Object] | [object Object] | [object Object] | [object Object] · Close to ready. All six v1 blockers are actually fixed: private marking with a working public map generator, chained keys, terrain grammar, real early forks, a dex.place SFW build, and the website scroll order with big titles. MAP.svg renders and reads as です when seen whole, and the low ground is open-air. Four small blockers remain, each a quick edit. E and F are swapped against the locked controls. The talisman doe
-- **writer:v3** (done): GDK v3 fixes all four blocking issues from the critic, takes 13 of the 15 improvements in full and adapts the rest. Both maps are valid XML and render correctly: the full map reads as です and the builder map as てす. The builder edition passes the leak scan.
-
-**Blocking fixes**
-1. **E and F controls:**
-- **critic:v3** (done): verdict revise · blocking: [object Object] | [object Object] · The design is close to ready, but it misses some newer canon locks. All four v2 blockers are really fixed: E and F are correct everywhere, the talisman carries 朱砂 and "To Zhusha...", Mo fights on the Sky Well floor instead of the arena, and the sealed payload rule plus a generic loader are in place. The builder edition matches the current GDK and its leak scan is clean. MAP.svg renders in headless Edge, reads as です w
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
