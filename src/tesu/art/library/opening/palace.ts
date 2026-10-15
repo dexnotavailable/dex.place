@@ -347,7 +347,7 @@ export interface PalaceP {
 
 export const palace = definePainter<PalaceP>("op.palace", {
   bounds(p) {
-    return [-200, -(p.h0 + p.h1 + p.h2 + 820), p.w + 200, 64];
+    return [-280, -(p.h0 + p.h1 + p.h2 + 820), p.w + 200, 64];
   },
   paint(c, p) {
     const w = p.w, seed = c.seed;

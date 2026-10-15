@@ -209,7 +209,7 @@ function pillarPx(c: PaintCtx, u: number, a: number, k: number, X: number, Y: nu
     return tone(P.lacquer, clamp(t, 0, 1), X, Y, 0.3);
   }
   let ramp: readonly number[] = P.red;
-  let t = 0.42 + rt + (o.far ? 0.14 : 0);
+  let t = 0.46 + rt + (o.far ? 0.14 : 0);
   // the beams' shadow falls on the shaft under them, the sun high and west: deeper on the east
   for (const [top, len] of o.shadows) {
     const below = top - a;
@@ -399,11 +399,16 @@ export function torii(c: PaintCtx, x: number, y: number, o: ToriiO): void {
         // the ties: two beams along the road from the leg into the pillar, seen whole from the side
         for (const [ta, th] of [[legH * 0.92, legR * 1.3], [legH * 0.5, legR * 1.1]] as const) {
           const xa = lx < 0 ? x + lx - legR * 1.6 : x + pw * 0.3, xb = lx < 0 ? x - pw * 0.3 : x + lx + legR * 1.6;
+          const len = xb - xa;
           bar(v, xa, xb, zs * half - legR * 0.2, y - ta, th, (u, w, X, Y) => {
-            // the ends past the leg cut square, a darker end grain; lit along the top
-            const endCut = lx < 0 ? u < (legR * 0.6) / (xb - xa) : u > 1 - (legR * 0.6) / (xb - xa);
-            let t = w < 0.18 ? 0.14 : w < 0.7 ? 0.36 : 0.56;
-            if (endCut) t += 0.12;
+            const along = u * len;
+            // the ends past the leg cut square, a darker end grain; lit along the top, the
+            // underside in shade; a wedge driven down beside the main pillar; rain stains
+            const outer = lx < 0 ? along : len - along, inner = lx < 0 ? len - along : along;
+            if (outer < legR * 0.6) return tone(P.red, clamp(0.62 + (far ? 0.1 : 0) + (w < 0.2 ? -0.2 : 0), 0, 1), X, Y, 0.3);
+            if (Math.abs(inner - pw * 0.52) < Math.max(1, legR * 0.2) && w > 0.15) return tone(P.lacquer, 0.55, X, Y, 0.3);
+            let t = w < 0.16 ? 0.06 : w < 0.3 ? 0.28 : w < 0.72 ? 0.42 : 0.62;
+            if (w > 0.3 && vnoise(along / 9, w * 2, seed + Math.round(lx) + 7) > 0.72) t += 0.08;
             if (far) t += 0.12;
             return tone(P.red, clamp(t, 0, 1), X, Y, 0.3);
           });
@@ -681,7 +686,7 @@ function paifang(c: PaintCtx, p: GateP, s: number, pw: number, seed: number): vo
     if (!tall) for (const dir of [-1, 1]) strut(v, 0, zp + (far ? 2 : -2), braceTop, dir * braceD, pw * 0.2, far, seed + i * 13 + dir);
     // the clamp stones: tall blocks either side of the post along the road, their tops rounded
     const ch = Math.max(14, h * 0.1), cw = pw * 1.1;
-    sweep(v, 0, zp - pw * 0.42, zp + pw * 0.42, () => 0, [-cw, cw, -ch - 4, 2], (sx, sy, end, X, Y) => {
+    sweep(v, 0, zp - pw * 0.64, zp + pw * 0.64, () => 0, [-cw, cw, -ch - 4, 2], (sx, sy, end, X, Y) => {
       const ax = Math.abs(sx) / cw;
       const top = -ch * (0.62 + 0.38 * Math.sqrt(Math.max(0, 1 - Math.pow(ax, 2.5)))) - (ax < 0.3 ? 3 : 0);
       if (sy < top) return 0;
@@ -729,7 +734,7 @@ function turnOf(p: GateP, key: number): number {
 }
 
 function pwOf(p: GateP): number {
-  return Math.max(p.pw ?? 0, p.h * (p.kind === "paifang" ? 0.06 : 0.092), 22);
+  return Math.max(p.pw ?? 0, p.h * (p.kind === "paifang" ? 0.072 : 0.092), 22);
 }
 
 /**
