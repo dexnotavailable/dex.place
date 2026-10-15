@@ -30,6 +30,15 @@ const CASES = [
   ["op.stay", { dx: -422, dy: 800 }],
   ["op.banners", { w: 680, drop: 211, n: 5, frame: 2 }],
   ["op.rail", { pts: [0, 0, 300, -20, 600, -30], h: 46, every: 62 }],
+  // round 7: the side-on gates (a ryōbu, its front part, a tunnel gate with its lantern rope), the
+  // fence's stone posts and rope leaving the gates' feet clear, the gate hall's doors half open
+  ["op.gate", { kind: "torii", span: 307, h: 451, legs: true, key: 11040 }],
+  ["op.gate", { kind: "torii", span: 307, h: 451, legs: true, key: 11040, part: "front" }],
+  ["op.gate", { kind: "torii", span: 202, h: 326, pw: 33, key: 12518, garland: [230, -29] }],
+  ["op.gate", { kind: "paifang", span: 326, h: 538, key: 11424, part: "front" }],
+  ["op.rail", { pts: [0, 0, 300, -20, 600, -30], h: 50, every: 56, breaks: [[200, 45], [80, 20]] }],
+  ["op.doors", { w: 230, h: 355, frames: 12, frame: 6 }],
+  ["op.doors", { w: 230, h: 355, frames: 12, frame: 0 }],
   ["op.bench", { w: 144 }],
   ["op.barrel", { h: 40, ladle: true }],
   ["op.bucket", { h: 20 }],
@@ -82,7 +91,7 @@ for (const [kind, p] of CASES) {
   });
 }
 
-for (const [kind, p] of [["op.falls", { w: 600, h: 400, falls: 1.7, fadeY: 240, fadeH: 120, lip: [0, 10, 600, -10], wallSeed: 77, from: 0, to: 4 }], ["op.reeds", { w: 220, h: 70 }], ["op.banners", { w: 680, drop: 211, n: 5 }], ["op.flags", { h: 150, dx: -163, dy: 92 }], ["op.bamboo", { w: 70, h: 420 }], ["op.spring", { mw: 80, mh: 50, w: 44, drop: 500, fallOnly: true }]]) {
+for (const [kind, p] of [["op.falls", { w: 600, h: 400, falls: 1.7, fadeY: 240, fadeH: 120, lip: [0, 10, 600, -10], wallSeed: 77, from: 0, to: 4 }], ["op.reeds", { w: 220, h: 70 }], ["op.banners", { w: 680, drop: 211, n: 5 }], ["op.flags", { h: 150, dx: -163, dy: 92 }], ["op.bamboo", { w: 70, h: 420 }], ["op.spring", { mw: 80, mh: 50, w: 44, drop: 500, fallOnly: true }], ["op.doors", { w: 230, h: 355, frames: 12 }]]) {
   test(`${kind}: its frames move`, () => {
     const [bx0, by0, bx1, by1] = painter(kind).bounds(p);
     const x0 = Math.floor(bx0), y0 = Math.floor(by0), w = Math.ceil(bx1) - x0, h = Math.ceil(by1) - y0;

@@ -14,6 +14,7 @@ import { clump } from "./kit.ts";
 import { needlePad } from "./flora.ts";
 import { beamLine, pileLog } from "./jetty.ts";
 import { LX, LY, bladePath, dot, fern, grass, stroke } from "./bank.ts";
+import { torii as gateTorii } from "./gates.ts";
 
 export interface IsletP {
   /**
@@ -127,32 +128,15 @@ function lantern(c: PaintCtx, x: number, y: number, H: number): void {
   if (hash(Math.round(x), 1, 3) < 2) part(y - H * 1.06, y - H, H * 0.04);
 }
 
-/** A small vermilion torii standing in the shallows. */
-function torii(c: PaintCtx, x: number, y: number, H: number): void {
-  const b = c.buf;
-  const span = H * 0.62;
-  const R = P.red;
-  const rect = (x0: number, y0: number, x1: number, y1: number, ramp: readonly number[], t0: number): void => {
-    const X0 = Math.round(c.X(x0)), X1 = Math.max(Math.round(c.X(x0)) + 1, Math.round(c.X(x1))), Y0 = Math.round(c.Y(y0)), Y1 = Math.round(c.Y(y1));
-    for (let yy = Y0; yy < Y1; yy++) for (let xx = X0; xx < X1; xx++) {
-      const u = (xx - X0 + 0.5) / Math.max(1, X1 - X0);
-      b.set(xx, yy, tone(ramp, clamp(t0 + (u > 0.6 ? 0.25 : u < 0.25 ? -0.1 : 0), 0, 1), xx, yy, 0.3));
-    }
-  };
-  const pw = Math.max(1.5, H * 0.07);
-  rect(x - span / 2 - pw / 2, y - H * 0.86, x - span / 2 + pw / 2, y + 2, R, 0.35);
-  rect(x + span / 2 - pw / 2, y - H * 0.86, x + span / 2 + pw / 2, y + 2, R, 0.35);
-  rect(x - span / 2 - H * 0.12, y - H * 0.74, x + span / 2 + H * 0.12, y - H * 0.68, R, 0.4);
-  // the kasagi: a black-capped lintel sweeping up at the ends
-  for (let lx = -span / 2 - H * 0.22; lx <= span / 2 + H * 0.22; lx += 1 / c.d) {
-    const k = Math.abs(lx) / (span / 2 + H * 0.22);
-    const lift = H * 0.08 * Math.pow(Math.max(0, k - 0.5) / 0.5, 2);
-    const X = Math.round(c.X(x + lx));
-    for (let yy = Math.round(c.Y(y - H - lift)); yy < Math.round(c.Y(y - H * 0.88 - lift)); yy++) {
-      const v = (c.ly(yy + 0.5) - (y - H - lift)) / (H * 0.12);
-      b.set(X, yy, v < 0.35 ? P.lacquer[2]! : tone(R, v > 0.8 ? 0.7 : 0.35, X, yy, 0.3));
-    }
-  }
+/**
+ * A small vermilion torii standing in the shallows, side-on like every torii in the world (round 7,
+ * Dex: "no front view 2 pillars for the toriis"): a ryōbu torii standing in the water, the near post
+ * covering the far one, turned a few degrees so the far one shows as a sliver west of it, braced
+ * fore and aft by its capped legs; the kasagi and the shimaki end-on on top; wet dark feet with a
+ * bright line where they meet the water.
+ */
+function torii(c: PaintCtx, x: number, y: number, H: number, seed: number): void {
+  gateTorii(c, x, y - 1, { span: H * 0.62, h: H, pw: Math.max(2, H * 0.095), s: -0.075, seed, wet: true, small: true, legs: true });
 }
 
 export const islet = definePainter<IsletP>("op.islet", {
@@ -204,7 +188,7 @@ export const islet = definePainter<IsletP>("op.islet", {
       if (k === "pine") pine(c, at, base, 70 + 40 * hash1(1, seed), hash1(2, seed) < 0.5 ? -1 : 1, seed + 11);
       else if (k === "tree") tree(c, at + p.w * 0.15, -rockTop(p, at + p.w * 0.15, seed) + 1, 60 + 30 * hash1(3, seed), seed + 13);
       else if (k === "lantern") lantern(c, at - p.w * 0.22, -rockTop(p, at - p.w * 0.22, seed) + 1, 26);
-      else if (k === "torii") torii(c, at + p.w * 0.5 + 34, 1, 54);
+      else if (k === "torii") torii(c, at + p.w * 0.5 + 34, 1, 54, seed + 17);
       else if (k === "posts") {
         for (let i = 0; i < 4; i++) {
           const px = at - p.w * 0.6 - 18 - i * (12 + 9 * hash1(i, seed));
@@ -615,14 +599,8 @@ function paintIslet(c: PaintCtx, p: IsletP): void {
     reedPatch(c, -w * 0.48, w * 0.32, 24, 22, seed + 2);
     const H = Math.max(56, h * 4);
     const tx = w * 0.06;
-    torii(c, tx, 1, H);
-    // wet dark feet on the posts, a bright wet line where they meet the water
-    const span = H * 0.62, pw = Math.max(1.5, H * 0.07);
-    for (const sx of [-1, 1]) {
-      const fx = tx + (sx * span) / 2;
-      const wh = 5 + 2 * hash1(sx + 3, seed);
-      for (let o = -pw / 2; o <= pw / 2; o += 0.5) for (let up = 0; up < wh; up += 0.5) dot(c, fx + o, -up, up < 0.6 ? P.cloud[2]! : up < 2.5 ? P.red[5]! : P.red[4]!);
-    }
+    // (its posts' wet dark feet and the bright line at the water come with it)
+    torii(c, tx, 1, H, seed + 17);
     reedPatch(c, w * 0.5, w * 0.3, 20, 16, seed + 3);
     pads(c, tx, w * 0.6, 12, seed + 30);
   }

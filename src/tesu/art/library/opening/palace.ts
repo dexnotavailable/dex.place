@@ -2,9 +2,17 @@
 // Works' long face in black lacquer and gold, one red of the seal. Three storeys, each set back
 // on the roof below; deep eaves on rows of gold brackets; black-tiled roofs with gold ridges and
 // up-turned corners; black lacquer columns on stone drums; lattice screens between them, warm
-// paper glowing behind; a recessed portal at the west end with red lacquer doors studded in
-// gold, ajar, warm light at the seam, the plaque above; the stone platform grown into the rock
-// under it (moss and stains at its foot, so the hall stands in the land).
+// paper glowing behind; the stone platform grown into the rock under it (moss and stains at its
+// foot, so the hall stands in the land).
+//
+// Round 7 (the architecture lane; Dex: "no palace would put a front-facing door all the way on
+// the left: either that camera-facing door is in the middle, or it goes flat-ish"): the long hall
+// has no door in its face. The way in is its GATE HALL, a porch building standing out in front of
+// the hall's west end, symmetric about the doors: the doors in its middle bay under a cusped
+// karahafu gable with a gold pendant, a round lattice window glowing in each side bay, lanterns
+// either side, its own roof on a bracket frieze, its podium and steps. The doors themselves are
+// a sprite (op.doors) that swings open as she comes near; this plate holds the lit hall behind
+// them.
 //
 // Also the twin gate towers that flank the way in, their cable stays slanting to the road, and
 // the festival banners strung between them. Anchors: the hall's floor line at its west end; a
@@ -148,6 +156,184 @@ function storey(c: PaintCtx, x0: number, x1: number, y0: number, y1: number, bay
   });
 }
 
+/** A hanging lantern: red paper ribs, gold caps, a warm core; its cord from (x, y0). */
+function lantern(c: PaintCtx, x: number, y0: number, drop: number, r: number): void {
+  fill(c, x - 1, y0, x + 1, y0 + drop, () => P.ink[0]!);
+  const top = y0 + drop, H = r * 2.6;
+  fill(c, x - r, top, x + r, top + H, (xx, y, u, v) => {
+    const k = Math.abs(u - 0.5) * 2;
+    if (v > 0.1 && v < 0.9 && k > Math.sqrt(Math.max(0, 1 - Math.pow(v * 2 - 1, 2))) * 1.03) return 0;
+    if (v < 0.1 || v > 0.9) return k > 0.62 ? 0 : tone(P.gold, u < 0.4 ? 0.3 : 0.6, xx, y, 0.3);
+    if (Math.abs(((v * 6) % 1) - 0.5) < 0.07) return P.red[4]!;
+    // the warm core glows through the paper on the side away from the sun's glare
+    const core = Math.hypot(u - 0.45, (v - 0.5) * 1.2);
+    if (core < 0.2) return tone(P.ember, 0.25 + core * 2, xx, y, 0.3);
+    return tone(P.red, u < 0.3 ? 0.0 : u < 0.62 ? 0.16 : 0.42, xx, y, 0.3);
+  });
+  fill(c, x - 1, top + H, x + 1, top + H + r * 0.9, (xx, y, _u, v) => (v > 0.6 ? tone(P.red, 0.3, xx, y, 0.3) : P.gold[3]!));
+}
+
+/**
+ * The lit hall seen through the open doors (the plate under the door sprite): warm lamplight, the
+ * floor's polished boards catching it in a long pool, two columns and a hanging lamp inside, the
+ * far wall's gold screen; the reveals (the doorway's inner sides) lit warm at their inner edges.
+ */
+function hallBeyond(c: PaintCtx, x0: number, w: number, y1: number, h: number): void {
+  fill(c, x0, y1 - h, x0 + w, y1, (x, y, u, v) => {
+    const lx = c.lx(x + 0.5) - x0, ly = c.ly(y + 0.5) - (y1 - h);
+    // the reveals: the wall's thickness either side, lacquer, warm toward the light
+    const rev = Math.min(u, 1 - u) * w;
+    if (rev < 6) return tone(P.umber, rev < 2 ? 0.95 : 0.55 - v * 0.2, x, y, 0.3);
+    // the floor: polished boards, a bright pool of light down the middle
+    if (v > 0.84) {
+      const pool = 1 - Math.abs(u - 0.5) * 2.2;
+      const t = 0.9 - pool * 0.7 - (v - 0.84) * 0.8;
+      return tone(P.ember, clamp(t, 0, 1), x, y, 0.35);
+    }
+    // two columns inside, dark red against the light
+    for (const cu of [0.22, 0.78]) if (Math.abs(u - cu) * w < 9) return tone(P.umber, Math.abs(u - cu) * w < 3 ? 0.25 : 0.5, x, y, 0.3);
+    // a lamp hanging in the middle, high
+    const lr = Math.hypot(lx - w / 2, ly - h * 0.24);
+    if (lr < 9) return lr < 4 ? P.ember[0]! : tone(P.ember, 0.3 + lr / 20, x, y, 0.3);
+    if (Math.abs(lx - w / 2) < 0.8 && ly < h * 0.24) return P.umber[4]!;
+    // the far wall's gold screen, low; the dark beams above, the light rising from the floor
+    if (v > 0.5 && v <= 0.84 && u > 0.3 && u < 0.7) return tone(P.gold, 0.45 + (v - 0.5) * 0.4 + (bayer4(x, y) < 0.2 ? 0.15 : 0), x, y, 0.3);
+    const t = v < 0.12 ? 0.98 : 0.3 + (1 - v) * 0.6 + Math.abs(u - 0.5) * 0.25;
+    return tone(v < 0.35 ? P.umber : P.ember, clamp(v < 0.35 ? 0.4 + (0.35 - v) * 1.6 : t, 0, 1), x, y, 0.35);
+  });
+}
+
+/**
+ * The gate hall: a porch building standing out in front of the hall, symmetric about the doors
+ * (dx..dx+dw, dh tall, their foot 12 px up on its podium). Black lacquer columns on stone drums,
+ * a round lattice window glowing in each side bay over a lacquer wainscot, the plaque over the
+ * doors, a bracket frieze, its roof, and over the doors a cusped karahafu gable with a gold pendant.
+ */
+function gateHall(c: PaintCtx, dx: number, dw: number, dh: number, seed: number): void {
+  const d = c.d;
+  const gc = dx + dw / 2;
+  const cw = 24, sb = 112;
+  const half = dw / 2 + cw + sb + cw;
+  const x0 = gc - half, x1 = gc + half;
+  const fl = -12, doorTop = fl - dh;
+  const lintel = doorTop - 56, frieze = lintel - 30;
+  // the podium: a low dressed-stone base, its top edge lit, steps up to the doors
+  fill(c, x0 - 16, fl, x1 + 16, 0, (x, y, u, v) => {
+    const lx = c.lx(x + 0.5);
+    if (v < 0.18) return tone(P.stone, u < 0.5 ? 0.05 : 0.2, x, y, 0.3);
+    const joint = (((lx - x0) / 58) % 1 + 1) % 1 < 0.03;
+    return tone(P.stone, clamp(0.36 + v * 0.25 + (joint ? 0.3 : 0) + (u > 0.94 ? 0.2 : 0), 0, 1), x, y, 0.3);
+  });
+  for (const [sy, ext] of [[-6, 34], [0, 54]] as const) {
+    fill(c, dx - ext, sy - 6, dx + dw + ext, sy, (x, y, u, v) => tone(P.stone, v < 0.3 ? 0.04 : u > 0.96 ? 0.6 : 0.34, x, y, 0.3));
+  }
+  // the lit hall beyond the doorway (the door sprite's leaves cover it until they open)
+  hallBeyond(c, dx, dw, fl, dh);
+  // the walls of the side bays: a lacquer wainscot under a gold rail, a dark panel above with a
+  // round window: gold ring, lattice, warm paper glowing behind
+  for (const side of [-1, 1]) {
+    const b0 = side < 0 ? x0 + cw : dx + dw + cw, b1 = b0 + sb;
+    const wc = (b0 + b1) / 2, wy = fl - dh * 0.55, wr = sb * 0.36;
+    fill(c, b0, lintel, b1, fl, (x, y, u) => {
+      const lx = c.lx(x + 0.5), ly = c.ly(y + 0.5);
+      const rr = Math.hypot(lx - wc, ly - wy);
+      if (rr < wr + 4) {
+        if (rr > wr) return tone(P.gold, ly < wy ? 0.25 : 0.6, x, y, 0.3);
+        if (rr > wr - 2.2) return P.lacquer[4]!;
+        const gx = (lx - wc) / 7, gy = (ly - wy) / 7;
+        if (d >= 0.5 && ((gx - Math.floor(gx)) < 0.22 || (gy - Math.floor(gy)) < 0.22)) return P.lacquer[3]!;
+        const k = rr / wr;
+        return k < 0.55 ? tone(P.gold, 0.15 + k * 0.4, x, y, 0.35) : tone(P.paper, clamp(0.2 + (k - 0.55) * 1.4, 0, 1), x, y, 0.35);
+      }
+      const ex = Math.min(u, 1 - u) * sb;
+      if (ly > fl - 100) {
+        if (ly < fl - 96) return tone(P.gold, 0.45, x, y, 0.3);
+        // the wainscot: raised lacquer panels with a gold bead
+        if (ex < 10 || ly > fl - 12) return tone(P.lacquer, 0.55, x, y, 0.3);
+        if (ex < 12 || ly > fl - 15 || ly < fl - 82) return tone(P.gold, 0.6, x, y, 0.3);
+        return tone(P.lacquer, 0.38 + (u > 0.85 ? 0.2 : 0), x, y, 0.3);
+      }
+      // the panel: lacquer, its edges darker, faint vertical boards
+      let t = 0.5 + (ex < 5 ? 0.25 : 0) + (((lx / 14) % 1 + 1) % 1 < 0.08 ? 0.12 : 0);
+      if (ly < lintel + 40) t += 0.12 * (1 - (ly - lintel) / 40);
+      return tone(P.lacquer, clamp(t, 0, 1), x, y, 0.3);
+    });
+  }
+  // the transom over the doors: dark lacquer, the plaque on it
+  fill(c, dx, lintel, dx + dw, doorTop, (x, y, _u, v) => tone(P.lacquer, v > 0.9 ? 0.85 : 0.6, x, y, 0.3));
+  fill(c, gc - 70, doorTop - 46, gc + 70, doorTop - 12, (x, y, u, v) => {
+    const ex = Math.min(u, 1 - u) * 140, ey = Math.min(v, 1 - v) * 34;
+    if (ex < 1 || ey < 1) return P.ink[0]!;
+    if (ex < 4 || ey < 4) return tone(P.gold, u < 0.4 ? 0.15 : 0.5, x, y, 0.3);
+    return tone(P.lacquer, 0.55, x, y, 0.3);
+  });
+  // its name in gold, hand-lettered: 墨宮, the Ink Palace (a shadow stroke under the gold)
+  if (d >= 0.25) {
+    const gs = 24, gx = gc - gs - 5, gy = doorTop - 41;
+    row(c, "墨宮", gx + 1, gy + 1, gs, P.lacquer[4]!, 0.42, 0.11);
+    row(c, "墨宮", gx, gy, gs, P.gold[1]!, 0.42, 0.11);
+  }
+  // the doorframe: a black lacquer surround with a gold inner bead
+  fill(c, dx - 8, doorTop - 8, dx + dw + 8, fl, (x, y) => {
+    const lx = c.lx(x + 0.5), ly = c.ly(y + 0.5);
+    const inX = lx > dx && lx < dx + dw, inY = ly > doorTop;
+    if (inX && inY) return 0;
+    const e = Math.min(Math.abs(lx - dx), Math.abs(lx - dx - dw), Math.abs(ly - doorTop));
+    return e < 2 ? tone(P.gold, 0.5, x, y, 0.3) : tone(P.lacquer, 0.72, x, y, 0.3);
+  });
+  // the lintel, a gold line along it
+  fill(c, x0 - 6, lintel - 14, x1 + 6, lintel, (x, y, _u, v) => (Math.abs(v - 0.45) < 0.12 ? tone(P.gold, 0.4, x, y, 0.3) : tone(P.lacquer, v < 0.2 ? 0.3 : 0.62, x, y, 0.3)));
+  // the columns: black lacquer, gold bands, on stone drums
+  for (const cx of [x0 + cw / 2, dx - cw / 2, dx + dw + cw / 2, x1 - cw / 2]) {
+    fill(c, cx - cw / 2, lintel, cx + cw / 2, fl, (x, y, u, v) => {
+      if (v > 0.95) return tone(P.stone, u < 0.3 ? 0.15 : 0.45, x, y, 0.3);
+      if (Math.abs(v - 0.05) < 0.012 || Math.abs(v - 0.9) < 0.01) return tone(P.gold, u < 0.4 ? 0.2 : 0.55, x, y, 0.3);
+      return tone(P.lacquer, clamp(roundT(u, 0.45), 0, 1), x, y, 0.3);
+    });
+  }
+  // the bracket frieze and the roof
+  brackets(c, x0 - 14, x1 + 14, frieze, 30, 30);
+  const eave = frieze - 4;
+  roof(c, x0 - 96, x1 + 96, eave, 150, 0.3, seed + 1);
+  // the karahafu over the doors: a bargeboard swept up in a cusped bell, gold-trimmed, tile ends
+  // along its top, the gable under it dark with a gold pendant at the crown
+  const kh = dw / 2 + cw + 46, A = 96, band = 15;
+  const bell = (x: number): number => {
+    const u = Math.min(1, Math.abs(x - gc) / kh);
+    return Math.pow(0.5 * (1 + Math.cos(Math.PI * u)), 1.15);
+  };
+  fill(c, gc - kh, eave - A - 12, gc + kh, eave + 8, (x, y) => {
+    const lx = c.lx(x + 0.5), ly = c.ly(y + 0.5);
+    const top = eave + 4 - A * bell(lx);
+    if (ly < top - 7) return 0;
+    if (ly < top) {
+      // tile ends along the curve's top, the roof's tiles behind them
+      const cap = (lx - gc) / 7;
+      const f = cap - Math.floor(cap) - 0.5;
+      return Math.abs(f) < 0.34 ? tone(P.tile, f < 0 ? 0.3 : 0.6, x, y, 0.3) : P.lacquer[4]!;
+    }
+    if (ly < top + band) {
+      const v = (ly - top) / band;
+      if (v < 0.16 || v > 0.84) return tone(P.gold, v < 0.16 ? 0.25 : 0.6, x, y, 0.3);
+      return tone(P.lacquer, lx < gc ? 0.42 : 0.6, x, y, 0.3);
+    }
+    if (ly > eave + 4) return 0;
+    // the gable under the curve: dark, a gold pendant (gegyo) hanging from the crown
+    const px = lx - gc, py = ly - (eave + 4 - A + band);
+    const pw = 26 * (1 - Math.pow(Math.max(0, py) / 38, 1.6));
+    if (py > 0 && py < 38 && Math.abs(px) < pw) {
+      if (Math.abs(px) < 3 && py > 24) return P.red[2]!;
+      return tone(P.gold, px < 0 ? 0.2 : 0.55, x, y, 0.3);
+    }
+    // carved gold scrolls either side of it, low in the gable
+    const sx = Math.abs(px) - kh * 0.42, sy = ly - (eave - 18);
+    if (d >= 0.5 && Math.abs(Math.hypot(sx, sy) - 9) < 1.4 && sy < 4) return tone(P.gold, 0.5, x, y, 0.3);
+    return tone(P.lacquer, 0.78, x, y, 0.3);
+  });
+  // two lanterns hang from the eave either side of the doors
+  if (d >= 0.25) for (const side of [-1, 1]) lantern(c, gc + side * (dw / 2 + cw + sb * 0.5), eave + 2, 30, 15);
+}
+
 export interface PalaceP {
   /** Length of the hall, px; the anchor is the floor line at its west end. */
   w: number;
@@ -161,7 +347,7 @@ export interface PalaceP {
 
 export const palace = definePainter<PalaceP>("op.palace", {
   bounds(p) {
-    return [-200, -(p.h0 + p.h1 + p.h2 + 820), p.w + 200, 64];
+    return [-280, -(p.h0 + p.h1 + p.h2 + 820), p.w + 200, 64];
   },
   paint(c, p) {
     const w = p.w, seed = c.seed;
@@ -188,9 +374,7 @@ export const palace = definePainter<PalaceP>("op.palace", {
       if (vnoise(lx / 2.5, ly / 30, seed + 4) > 0.75) t += 0.1;
       return tone(P.stone, clamp(t, 0, 1), x, y, 0.3);
     });
-    // a step up to the portal
     const [dx, dw, dh] = p.door;
-    fill(c, dx - 40, -6, dx + dw + 40, 0, (x, y, _u, v) => tone(P.stone, v < 0.25 ? 0.05 : 0.45, x, y, 0.3));
     // the storeys, top down (each one's foot is hidden by the roof below it)
     storey(c, s2, w - s2, g2, g2top + 30, 128, seed + 7, 0.6);
     storey(c, s1, w - s1, g1, g1top + 30, 150, seed + 8, 0.5);
@@ -205,57 +389,6 @@ export const palace = definePainter<PalaceP>("op.palace", {
       if (v > 0.85) return P.lacquer[3]!;
       return k < 0.35 ? tone(P.lacquer, 0.45, x, y, 0.3) : 0;
     });
-    // the portal: a deep frame of lacquer and gold, red doors ajar, warm light at the seam
-    fill(c, dx - 26, -dh - 34, dx + dw + 26, -6, (x, y, u, v) => {
-      const ex = Math.min(u, 1 - u) * (dw + 52), ey = v * (dh + 28);
-      if (ex < 26 || ey < 28) return tone(P.lacquer, ex < 3 || ey < 3 ? 0.15 : ex < 6 || ey < 6 ? 0.35 : 0.65, x, y, 0.3);
-      return 0;
-    });
-    fill(c, dx - 26, -dh - 34, dx + dw + 26, -dh - 30, (x, y) => tone(P.gold, 0.35, x, y, 0.3));
-    fill(c, dx, -dh - 6, dx + dw, -6, (x, y, u, v) => {
-      // the doors stand a hand's width ajar: warm light pours through the gap
-      const gap = Math.abs(u - 0.5) * dw;
-      if (gap < 2.2) return v > 0.04 ? (bayer4(x, y) < 0.5 + v * 0.3 ? P.paper[0]! : P.gold[0]!) : P.gold[1]!;
-      if (gap < 3.4) return P.gold[2]!;
-      const half = u < 0.5 ? u / 0.5 : (u - 0.5) / 0.5;
-      const ex = Math.min(half, 1 - half) * (dw / 2), ey = Math.min(v, 1 - v) * dh;
-      if (ex < 2 || ey < 2) return P.lacquer[4]!;
-      // the portal roof's shadow over the top of the doors
-      const shade = v < 0.22 ? (0.22 - v) / 0.22 : 0;
-      // studs: nine rows, five across a leaf, small gold domes lit on their upper left
-      const row = (v * 9.6) - 0.8, col = half * 5.6 - 0.8;
-      const ry = (row - Math.round(row)) * (dh / 9.6), rx = (col - Math.round(col)) * (dw / 2 / 5.6);
-      if (c.d >= 0.5 && row > -0.4 && row < 8.4 && col > -0.4 && col < 4.4 && rx * rx + ry * ry < 6.5) return rx + ry < -0.5 ? P.gold[1]! : P.gold[3]!;
-      // a ring handle on each leaf by the gap, a lion mask behind it
-      const hx = dx + dw * (u < 0.5 ? 0.43 : 0.57), hy = -dh * 0.5 - 6;
-      const rr = Math.hypot(c.lx(x + 0.5) - hx, c.ly(y + 0.5) - hy);
-      if (Math.abs(rr - 6) < 1.1) return P.gold[2]!;
-      if (rr < 4) return tone(P.gold, 0.55, x, y, 0.3);
-      // warm light from the gap catching the inner edges of the leaves
-      const spill = Math.max(0, 1 - gap / 30);
-      let t = 0.62 + v * 0.14 + shade * 0.3 - spill * 0.3;
-      if (half > 0.92 || half < 0.06) t += 0.15;
-      return tone(P.red, clamp(t, 0, 1), x, y, 0.35);
-    });
-    // light spilling out across the step and the forecourt in front of the doors
-    fill(c, dx - 30, -6, dx + dw + 30, 4, (x, y, u, v) => {
-      const k = 1 - Math.abs(u - 0.5) * 2;
-      if (bayer4(x, y) > k * k * (1 - v * 0.6) * 0.8) return 0;
-      return k > 0.7 ? P.paper[1]! : P.gold[0]!;
-    });
-    // the plaque over the portal
-    fill(c, dx + dw / 2 - 70, -dh - 72, dx + dw / 2 + 70, -dh - 38, (x, y, u, v) => {
-      const ex = Math.min(u, 1 - u) * 140, ey = Math.min(v, 1 - v) * 34;
-      if (ex < 1 || ey < 1) return P.ink[0]!;
-      if (ex < 4 || ey < 4) return tone(P.gold, u < 0.4 ? 0.15 : 0.5, x, y, 0.3);
-      return tone(P.lacquer, 0.55, x, y, 0.3);
-    });
-    // its name in gold, hand-lettered: 墨宮, the Ink Palace (a shadow stroke under the gold)
-    if (c.d >= 0.25) {
-      const gs = 24, gx = dx + dw / 2 - gs - 5, gy = -dh - 67;
-      row(c, "墨宮", gx + 1, gy + 1, gs, P.lacquer[4]!, 0.42, 0.11);
-      row(c, "墨宮", gx, gy, gs, P.gold[1]!, 0.42, 0.11);
-    }
     // the seal: the one red, under the top eave
     const sealX = w / 2;
     fill(c, sealX - 32, g2 + 36, sealX + 32, g2 + 100, (x, y, u, v) => {
@@ -269,8 +402,6 @@ export const palace = definePainter<PalaceP>("op.palace", {
     roof(c, s2 - 140, w - s2 + 140, g2 - 22, r2, 0.42, seed + 11);
     roof(c, s1 - 120, w - s1 + 120, g1 - 22, r1, 0.24, seed + 12);
     roof(c, -120, w + 120, g0 - 22, r0, 0.18, seed + 13);
-    // a little roof over the portal
-    roof(c, dx - 60, dx + dw + 60, -dh - 76, 40, 0.25, seed + 14, false);
     // lanterns under the first eave, every other bay: red paper, gold caps, a warm core
     if (c.d >= 0.25) {
       for (let lx = 77; lx < w - 40; lx += 308) {
@@ -284,6 +415,98 @@ export const palace = definePainter<PalaceP>("op.palace", {
         });
       }
     }
+    // the gate hall stands out in front of the hall's west end, the doors in its middle
+    gateHall(c, dx, dw, dh, seed + 20);
+  },
+});
+
+export interface DoorsP {
+  /** The doorway's width and height, px; the anchor is its foot at the west jamb. */
+  w: number;
+  h: number;
+  /** Frames from shut to open; `frame` is the one shown (code-driven: the driver eases it). */
+  frames?: number;
+  frame?: number;
+}
+
+/**
+ * The gate hall's doors (round 7; Dex: "door opening anims should exist"): two leaves of red
+ * lacquer studded in gold, a ring handle on a lion mask by the meeting edge, each hung from its
+ * outer jamb. They swing IN, away from us: a leaf's face narrows as it turns (seen from the side
+ * camera it foreshortens), darkening as it turns out of the light, its meeting edge catching the
+ * lamplight from inside, and the lit hall opens between them; light spills out across the steps
+ * and warms the doorframe. Shut, a thread of light shows at the seam and under the doors. The
+ * frame is chosen by the game from where she stands (visual only).
+ */
+export const doors = definePainter<DoorsP>("op.doors", {
+  bounds(p) {
+    return [-64, -p.h - 10, p.w + 64, 14];
+  },
+  paint(c, p) {
+    const d = c.d;
+    const n = Math.max(2, p.frames ?? 12);
+    const k = clamp((p.frame ?? 0) / (n - 1), 0, 1);
+    const ang = k * 1.38;
+    const lw = p.w / 2, cos = Math.cos(ang), sin = Math.sin(ang);
+    const W = p.w, Hh = p.h;
+    // the leaves
+    for (const side of [-1, 1]) {
+      const hinge = side < 0 ? 0 : W;
+      const span = lw * cos;
+      const xa = side < 0 ? 0 : W - span, xb = side < 0 ? span : W;
+      if (span < 0.4 / d) continue;
+      fill(c, xa, -Hh, xb, 0, (x, y, _u, v) => {
+        const lx = c.lx(x + 0.5);
+        // where this pixel is on the leaf, measured from its hinge in the leaf's own width
+        const sl = (Math.abs(lx - hinge) / Math.max(1e-3, cos)) / lw; // 0 hinge .. 1 meeting edge
+        if (sl > 1.001) return 0;
+        const sw = sl * lw;
+        const ey = Math.min(v, 1 - v) * Hh;
+        // the meeting edge catches the lamplight from inside once it opens
+        if (k > 0.04 && (1 - sl) * lw * cos < 1.6 / d) return tone(P.ember, 0.35 + (1 - k) * 0.3, x, y, 0.3);
+        // a dark frame round each leaf
+        if (sw < 2.5 || lw - sw < 1.8 || ey < 2.5) return P.lacquer[4]!;
+        // the porch roof's shadow over the top of the doors
+        const shade = v < 0.24 ? (0.24 - v) / 0.24 : 0;
+        // studs: nine rows, five across a leaf, small gold domes lit on their upper west
+        const row = v * 9.6 - 0.8, col = (side < 0 ? sl : sl) * 5.6 - 0.8;
+        const ry = (row - Math.round(row)) * (Hh / 9.6), rx = (col - Math.round(col)) * (lw / 5.6) * cos;
+        if (d >= 0.5 && row > -0.4 && row < 8.4 && col > -0.4 && col < 4.4 && (rx * rx) / Math.max(0.2, cos * cos) + ry * ry < 6.5) {
+          return (side < 0 ? rx : -rx) + ry < -0.5 ? P.gold[k > 0.6 ? 2 : 1]! : P.gold[3]!;
+        }
+        // a ring handle on a lion mask by the meeting edge, at mid height
+        const hx = (0.86 - sl) * lw * cos, hy = (v - 0.5) * Hh;
+        const rr = Math.hypot(hx / Math.max(0.25, cos), hy - 3);
+        if (Math.abs(rr - 6) < 1.1) return P.gold[2]!;
+        if (Math.hypot(hx / Math.max(0.25, cos), hy + 3) < 4.5) return tone(P.gold, 0.55, x, y, 0.3);
+        // the lacquer: the leaf darkens as it turns out of the light (and away from us)
+        let t = 0.6 + v * 0.12 + shade * 0.3 + sin * 0.22;
+        if (sl > 0.94) t += 0.12;
+        if (sl < 0.06) t -= 0.06;
+        return tone(P.red, clamp(t, 0, 1), x, y, 0.35);
+      });
+    }
+    // shut: a thread of light at the seam and under the doors
+    if (k < 0.04) {
+      fill(c, W / 2 - 0.6, -Hh + 3, W / 2 + 0.6, 0, (x, y, _u, v) => (bayer4(x, y) < 0.35 + v * 0.5 ? P.gold[1]! : P.ember[2]!));
+      fill(c, 3, -1.2, W - 3, 0, (x, y) => (bayer4(x, y) < 0.6 ? P.ember[1]! : 0));
+      return;
+    }
+    // the doorframe's inner edges warm in the light
+    for (const ex of [-8, W]) fill(c, ex, -Hh - 8, ex + 8, 0, (x, y, u, v) => {
+      const inner = ex < 0 ? 1 - u : u;
+      if (inner > 0.35 || bayer4(x, y) > k * (1 - inner * 2.2) * (0.4 + v * 0.6)) return 0;
+      return inner < 0.15 ? P.ember[2]! : P.ember[3]!;
+    });
+    // light pours out across the steps and the forecourt stones in front of the doors
+    fill(c, -60, 0, W + 60, 13, (x, y, _u, v) => {
+      const lx = c.lx(x + 0.5);
+      const core = 1 - Math.abs(lx - W / 2) / (W / 2 + 60 * k);
+      if (core <= 0) return 0;
+      const a = k * core * (1 - v * 0.55);
+      if (bayer4(x, y) > a * 1.15) return 0;
+      return a > 0.62 ? P.paper[1]! : a > 0.38 ? P.ember[1]! : P.ember[2]!;
+    });
   },
 });
 

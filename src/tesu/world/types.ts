@@ -317,6 +317,13 @@ export interface SpriteDef {
    * wading far off in the fog lying on the water: no strata across its legs).
    */
   fadeFoot?: [number, number];
+  /**
+   * (round 7) A door that opens as she comes near: while her feet are within [x0, x1] (3D px) and
+   * `dy` of its anchor's height, its frame eases from 0 (shut) to its last (open) over `open`
+   * seconds, and back over `close` seconds once she has gone. Visual only: it never touches
+   * collision, the camera or the door's use.
+   */
+  opens?: { x0: number; x1: number; dy?: number; open?: number; close?: number };
 }
 
 /** A bank of mist lying at a height in a stretch of the land (a valley's), drawn after a plane. */

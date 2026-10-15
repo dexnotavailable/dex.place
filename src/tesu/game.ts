@@ -434,6 +434,7 @@ export class TesuGame {
       if (this.vista.t <= 0 || Math.abs(b.vx) > 0.6) this.vista = null;
     }
     this.syncGates();
+    this.doorTick();
     this.near = this.cut || this.tug || this.rides.active || this.warp ? null : this.findNear();
     this.placeNames();
     this.motes.update(1 / 60);
@@ -610,6 +611,25 @@ export class TesuGame {
     for (const c of this.world.charms) {
       const s = this.spriteById.get(c.id);
       if (s) s.frame = (this.charmT.get(c.id) ?? 0) > 0 ? 2 : Math.floor(this.time * 1.5 + c.x / 97) % 2;
+    }
+  }
+
+  // --- doors that open as she comes near (round 7): a sprite's frame, eased; visual only
+
+  private doors: { world: WorldDef; list: SpriteDef[]; t: Map<string, number> } | null = null;
+
+  private doorTick(): void {
+    if (!this.doors || this.doors.world !== this.world) this.doors = { world: this.world, list: this.world.sprites.filter((s) => s.opens), t: new Map() };
+    const b = this.player.body;
+    for (const s of this.doors.list) {
+      const o = s.opens!;
+      const inside = !this.cut && b.x >= o.x0 && b.x <= o.x1 && Math.abs(b.y - s.y) <= (o.dy ?? 2 * H);
+      const was = this.doors.t.get(s.id) ?? 0;
+      const t = inside ? Math.min(1, was + 1 / (60 * (o.open ?? 0.9))) : Math.max(0, was - 1 / (60 * (o.close ?? 1.3)));
+      this.doors.t.set(s.id, t);
+      // ease in and out: the leaves start heavy, swing, and settle
+      const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      s.frame = Math.round(e * (Math.max(1, s.frames ?? 1) - 1));
     }
   }
 

@@ -40,15 +40,17 @@ export function contact(c: PaintCtx, x0: number, x1: number, y = 0): void {
   });
 }
 
-// --- the balustrade --------------------------------------------------------------------------
+// --- the road's fence ------------------------------------------------------------------------
 
 export interface RailP {
-  /** Run of the rail, following the ground: [x, y, ...] relative to the anchor, x increasing. */
+  /** Run of the fence, following the ground: [x, y, ...] relative to the anchor, x increasing. */
   pts: number[];
-  /** Height of the top rail above the ground, px (default 46). */
+  /** Height of a full post above the ground, px (default 46). */
   h?: number;
-  /** Post spacing, px (default 62). */
+  /** Mean post spacing, px (default 62). */
   every?: number;
+  /** Where the gates' near pillars stand: [x, half width]. No post there; the pillar takes the rope. */
+  breaks?: [number, number][];
 }
 
 function railY(pts: number[], lx: number): number {
@@ -57,7 +59,125 @@ function railY(pts: number[], lx: number): number {
   return pts[pts.length - 1]!;
 }
 
-/** A stone balustrade: square posts with vermilion lacquered caps, a top rail and a lower rail. */
+interface FencePost {
+  x: number;
+  /** Width at the foot, height, lean (px across per px up). */
+  w: number;
+  ht: number;
+  lean: number;
+  kind: "post" | "low" | "stump";
+  seed: number;
+  /** Where the rope is tied, px above the ground. */
+  tie: number;
+}
+
+/**
+ * The fence's posts (round 7, Dex: "too uniform; make them look more either stone or something,
+ * more irregular"): rough limestone posts of the road's own rock, each its own width and height,
+ * leaning a little or a lot, the odd squat block and the odd broken stump, spaced unevenly; posts
+ * flank the pines' trunks, and none stands where a gate's near pillar does.
+ */
+function fencePosts(p: RailP): FencePost[] {
+  const hgt = p.h ?? 46, every = p.every ?? 62;
+  const pts = p.pts;
+  const x0 = pts[0]!, x1 = pts[pts.length - 2]!;
+  const pines = ROAD_PINES.filter((px) => px > x0 + 20 && px < x1 - 20).map((px) => [px - PINE_GAP, px + PINE_GAP] as const);
+  const gates = (p.breaks ?? []).map(([gx, hw]) => [gx - hw, gx + hw] as const);
+  const blocked = (x: number, pad: number): boolean => pines.some(([a, b]) => x > a - pad && x < b + pad) || gates.some(([a, b]) => x > a - pad && x < b + pad);
+  const make = (x: number): FencePost => {
+    const k = Math.round(x);
+    const r = (i: number): number => hash1(k * 7 + i, 9137);
+    const roll = r(1);
+    const kind: FencePost["kind"] = roll < 0.13 ? "stump" : roll < 0.3 ? "low" : "post";
+    const ht = kind === "stump" ? hgt * (0.36 + 0.22 * r(2)) : kind === "low" ? hgt * (0.56 + 0.16 * r(2)) : hgt * (0.8 + 0.42 * r(2));
+    const w = kind === "low" ? 15 + 6 * r(3) : 10 + 8 * r(3);
+    const lean = (r(4) - 0.5) * (r(5) < 0.22 ? 0.36 : 0.12);
+    return { x, w, ht, lean, kind, seed: k * 31 + 7, tie: clamp(ht * (0.74 + 0.1 * r(6)), 16, hgt * 0.84) };
+  };
+  const out: FencePost[] = [];
+  for (let x = x0 + 6 + 20 * hash1(Math.round(x0), 9138); x <= x1 - 4;) {
+    if (!blocked(x, 12)) out.push(make(x));
+    x += every * (0.62 + 0.8 * hash1(Math.round(x), 9139));
+  }
+  for (const [a, b] of pines) out.push({ ...make(a - 4), lean: 0.02 }, { ...make(b + 4), lean: -0.02 });
+  return out.filter((q) => q.x >= x0 - 2 && q.x <= x1 + 2).sort((q, u) => q.x - u.x);
+}
+
+/** A rough limestone post's pixel, or 0 outside it: lit west face, shaded east, a mossy top ledge, bedding and cracks. */
+function postPx(c: PaintCtx, q: FencePost, g: number, lx: number, ly: number, X: number, Y: number): number {
+  const a = g - ly;
+  if (a < -2 || a > q.ht + 4) return 0;
+  const k = clamp(a / q.ht, 0, 1);
+  const w = q.w * (1 - 0.14 * k) * (1 + 0.06 * (vnoise1(a / 6, q.seed) - 0.5));
+  const cx = q.x + q.lean * a;
+  const u = (lx - cx + w / 2) / w;
+  if (u < 0 || u > 1) return 0;
+  // the top: a slanted, chipped cap on a post; a jagged break on a stump
+  const slope = (hash1(q.seed, 3) - 0.5) * 0.4 * q.w;
+  let top = q.ht + slope * (u - 0.5) - (Math.min(u, 1 - u) < 0.14 ? (0.14 - Math.min(u, 1 - u)) * 10 : 0);
+  if (q.kind === "stump") top -= 5 * Math.abs(vnoise1(u * 3.2, q.seed + 1) - 0.4) + 3 * (hash1(Math.floor(u * 5), q.seed + 2) - 0.5);
+  if (a > top) return 0;
+  const d = c.d;
+  const fromTop = top - a;
+  // moss on the top ledge only (the terrain's chunks carry theirs the same way), hanging a little
+  const mossDrop = (q.kind === "stump" ? 1.5 : 2.2) + 3 * vnoise1(u * 4 + 2, q.seed + 3);
+  if (fromTop < mossDrop && vnoise1(u * 5, q.seed + 4) > 0.28) {
+    return tone(P.moss, clamp(0.2 + (fromTop < 1.2 / d ? 0 : 0.25) + u * 0.35 + (fromTop > mossDrop - 1.2 ? 0.2 : 0), 0, 1), X, Y, 0.35);
+  }
+  // the faces: the lit west face, the front, the east in shade, a dark edge on the east
+  // (the near plane: darker than the cliff behind it, its lit rim and top edge crisp)
+  let t = u < 0.1 ? 0.12 : u < 0.34 ? 0.36 : u < 0.68 ? 0.5 : u < 0.9 ? 0.64 : 0.8;
+  if (fromTop < 1.4 / d) t = 0.06;
+  // bedding: the limestone's layers, faint, dying out across the post
+  const bed = (a + 5 * vnoise1(u * 2, q.seed + 5)) / 9;
+  if (d >= 0.5 && bed - Math.floor(bed) < 0.12 && vnoise1(u * 3 + bed, q.seed + 6) > 0.45) t += 0.12;
+  // a crack down the post, wandering
+  const cu = 0.3 + 0.4 * hash1(q.seed, 7) + 0.06 * Math.sin(a / 5 + q.seed);
+  if (d >= 0.5 && Math.abs(u - cu) * w < 0.6 && a > q.ht * 0.25 && a < q.ht * 0.85 && hash1(q.seed, 8) < 0.6) t = 0.78;
+  // lichen, and the damp at the foot
+  if (d >= 0.5 && vnoise(lx / 2.2, ly / 2.2, q.seed + 9) > 0.76) return tone(P.moss, 0.35 + u * 0.3, X, Y, 0.35);
+  if (a < 6 * vnoise1(u * 4, q.seed + 10)) t += 0.14;
+  return tone(P.karst, clamp(0.1 + t * 0.9, 0, 1), X, Y, 0.3);
+}
+
+/** A thick straw rope from (ax, ay) to (bx, by) sagging `sag` px: twisted strands, lit along its top. */
+function rope(c: PaintCtx, ax: number, ay: number, bx: number, by: number, sag: number, th: number): void {
+  const d = c.d;
+  const len = Math.hypot(bx - ax, by - ay) + sag;
+  const n = Math.max(2, Math.ceil(len * d * 1.6));
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    const x = ax + (bx - ax) * t, y = ay + (by - ay) * t + sag * 4 * t * (1 - t);
+    const X = Math.round(c.X(x));
+    if (X < c.buf.ox || X >= c.buf.x1) continue;
+    for (let o = 0; o < th; o += 0.5 / d) {
+      const Y = Math.round(c.Y(y + o - th / 2));
+      const tw = (((X + Y) % 4) + 4) % 4;
+      const v = o / th;
+      c.buf.set(X, Y, v < 0.3 ? P.earth[tw < 2 ? 0 : 1]! : v < 0.7 ? P.earth[tw < 2 ? 1 : 2]! : P.earth[tw < 2 ? 3 : 4]!);
+    }
+  }
+}
+
+/** A paper streamer (shide) hanging from the rope: white zigzag folds, the shaded side of each fold greyer. */
+function shide(c: PaintCtx, x: number, y: number, len: number, seed: number): void {
+  const w = 3.2, steps = 4;
+  const sw = (hash1(seed, 1) - 0.5) * 1.6;
+  fill(c, x - w - 2, y, x + w + 2, y + len, (X, Y) => {
+    const lx = c.lx(X + 0.5) - x, ly = c.ly(Y + 0.5) - y;
+    const v = ly / len;
+    const i = Math.floor(v * steps);
+    const off = (i % 2 ? 1 : -1) * w * 0.35 + sw * v;
+    if (Math.abs(lx - off) > w / 2) return 0;
+    return i % 2 ? P.paper[2]! : lx - off < 0 ? P.paper[0]! : P.paper[1]!;
+  });
+}
+
+/**
+ * The road's fence (round 7): rough limestone posts of every height, leaning, the odd stump,
+ * joined by a sagging straw rope tied round each post; a span broken here and there (the rope's
+ * end hanging), paper streamers on the rope by the gates; grass and moss at the feet.
+ */
 export const rail = definePainter<RailP>("op.rail", {
   bounds(p) {
     let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
@@ -65,60 +185,82 @@ export const rail = definePainter<RailP>("op.rail", {
       x0 = Math.min(x0, p.pts[i]!); x1 = Math.max(x1, p.pts[i]!);
       y0 = Math.min(y0, p.pts[i + 1]!); y1 = Math.max(y1, p.pts[i + 1]!);
     }
-    return [x0 - 10, y0 - (p.h ?? 46) - 14, x1 + 16, y1 + 12];
+    return [x0 - 22, y0 - (p.h ?? 46) * 1.2 - 14, x1 + 22, y1 + 12];
   },
   paint(c, p) {
-    const hgt = p.h ?? 46, every = p.every ?? 62, d = c.d, seed = c.seed;
+    const d = c.d;
     const pts = p.pts;
     const x0 = pts[0]!, x1 = pts[pts.length - 2]!;
-    // (round 5) where a path pine grips the road's edge the balustrade breaks round its trunk:
-    // two posts flank it and the rails end in them
+    const posts = fencePosts(p);
     const gaps = ROAD_PINES.filter((px) => px > x0 + 20 && px < x1 - 20).map((px) => [px - PINE_GAP, px + PINE_GAP] as const);
-    const inGap = (lx: number): boolean => gaps.some(([a, b]) => lx > a && lx < b);
-    // rails first (posts stand in front of their ends): a rounded top rail, a thinner lower rail
-    for (let lx = x0; lx <= x1; lx += 0.5 / d) {
-      if (inGap(lx)) continue;
-      const g = railY(pts, lx);
-      const X = Math.round(c.X(lx));
-      if (X < c.buf.ox || X >= c.buf.x1) continue;
-      for (const [off, th] of [[hgt - 2, 7], [hgt * 0.42, 4]] as const) {
-        const Y0 = Math.round(c.Y(g - off)), Y1 = Math.round(c.Y(g - off + th));
-        for (let y = Y0; y < Y1; y++) {
-          const v = (y - Y0 + 0.5) / (Y1 - Y0);
-          let t = v < 0.25 ? 0.08 : v < 0.7 ? 0.32 : 0.62;
-          if (d >= 0.5 && vnoise(lx / 7, off, seed) > 0.7) t += 0.12;
-          // moss where rain sits on the top rail
-          if (off > hgt * 0.5 && v < 0.3 && vnoise1(lx / 9, seed + 3) > 0.7) { c.buf.set(X, y, P.moss[v < 0.12 ? 2 : 4]!); continue; }
-          c.buf.set(X, y, tone(P.stone, clamp(t, 0, 1), X, y, 0.3));
+    const nearGate = (x: number): boolean => (p.breaks ?? []).some(([gx]) => Math.abs(x - gx) < 150);
+    // the rope, post to post (none across a pine's gap), behind the posts it is tied to
+    for (let i = 0; i + 1 < posts.length; i++) {
+      const A = posts[i]!, B = posts[i + 1]!;
+      if (gaps.some(([a, b]) => A.x < b && B.x > a)) continue;
+      const ga = railY(pts, A.x), gb = railY(pts, B.x);
+      const ax = A.x + A.lean * A.tie, ay = ga - A.tie, bx = B.x + B.lean * B.tie, by = gb - B.tie;
+      const span = bx - ax;
+      const sag = span * (0.07 + 0.07 * hash1(Math.round(A.x), 9140));
+      const th = 2.6;
+      if (hash1(Math.round(A.x), 9141) < 0.1 && span > 40) {
+        // broken: the rope's end hangs from the west post, a frayed stub on the east one
+        const len = Math.min(30, span * (0.32 + 0.2 * hash1(Math.round(A.x), 9142)));
+        const n = Math.ceil(len * d * 1.5) + 2;
+        for (let j = 0; j <= n; j++) {
+          const t = j / n;
+          const x = ax + len * 0.55 * t * (1 - 0.6 * t), y = ay + len * (0.25 * t + 0.6 * t * t);
+          for (let o = 0; o < th * (1 - 0.4 * t); o += 0.5 / d) {
+            const X = Math.round(c.X(x + o * 0.3)), Y = Math.round(c.Y(y + o - th / 2));
+            c.buf.set(X, Y, o < th * 0.35 ? P.earth[1]! : P.earth[(X + Y) % 2 ? 2 : 3]!);
+          }
+        }
+        rope(c, bx - 7, by + 2.5, bx, by, 0.5, th);
+        continue;
+      }
+      rope(c, ax, ay, bx, by, sag, th);
+      if (d >= 0.5 && nearGate((ax + bx) / 2)) {
+        const n = 1 + (hash1(Math.round(A.x), 9143) < 0.5 ? 1 : 0);
+        for (let j = 0; j < n; j++) {
+          const t = n === 1 ? 0.5 : 0.32 + 0.36 * j;
+          shide(c, ax + span * t, ay + (by - ay) * t + sag * 4 * t * (1 - t) + 1, 10 + 4 * hash1(j, Math.round(A.x)), Math.round(A.x) + j);
         }
       }
-      // balusters: short stone spindles between the rails, every few px
-      const k = ((lx - x0) % 10 + 10) % 10;
-      if (k < 2.6 && d >= 0.5) {
-        const Y0 = Math.round(c.Y(g - hgt + 5)), Y1 = Math.round(c.Y(g - hgt * 0.42));
-        for (let y = Y0; y < Y1; y++) c.buf.set(X, y, tone(P.stone, k < 1 ? 0.2 : 0.55, X, y, 0.3));
-      }
     }
-    // posts, with their caps and a contact shadow at their foot (none just by a pine's trunk; one
-    // each side of it instead)
-    const postXs: number[] = [];
-    for (let lx = x0; lx <= x1 + 0.1; lx += every) if (!gaps.some(([a, b]) => lx > a - 12 && lx < b + 12)) postXs.push(lx);
-    for (const [a, b] of gaps) postXs.push(a - 2, b + 2);
-    for (const lx of postXs) {
-      const g = railY(pts, lx);
-      const tilt = (hash1(Math.round(lx), seed) - 0.5) * 1.2;
-      fill(c, lx - 5, g - hgt - 6, lx + 5, g + 3, (x, y, u, v) => {
-        const top = v < 0.12;
-        const xs = u + tilt * (v - 1) * 0.02;
-        let t = xs < 0.25 ? 0.12 : xs < 0.7 ? 0.38 : 0.68;
-        if (u > 0.88) t = 0.85;
-        if (top) return tone(P.red, clamp(t + (v < 0.03 ? -0.1 : 0), 0, 1), x, y, 0.3);
-        if (Math.abs(v - 0.13) < 0.02) return P.lacquer[3]!;
-        if (v > 0.9 && vnoise(c.lx(x), c.ly(y) / 2, seed + 5) > 0.5) return tone(P.moss, 0.6, x, y, 0.3);
-        if (d >= 0.5 && hash(x, Math.floor(y / 3), seed + 6) < 0.05) t += 0.15;
-        return tone(P.stone, clamp(t, 0, 1), x, y, 0.3);
-      });
-      contact(c, lx - 8, lx + 8, g + 2);
+    // the posts, each with the rope's turns round it where it is tied, a contact shadow at its foot
+    for (const q of posts) {
+      const g = railY(pts, q.x);
+      const top = g - q.ht - 6, reach = q.w / 2 + Math.abs(q.lean) * q.ht + 2;
+      contact(c, q.x - q.w / 2 - 1, q.x + q.w / 2 + 1, g + 1);
+      const X0 = Math.max(c.buf.ox, Math.floor(c.X(q.x - reach))), X1 = Math.min(c.buf.x1, Math.ceil(c.X(q.x + reach)));
+      const Y0 = Math.max(c.buf.oy, Math.floor(c.Y(top))), Y1 = Math.min(c.buf.y1, Math.ceil(c.Y(g + 3)));
+      for (let Y = Y0; Y < Y1; Y++) {
+        for (let X = X0; X < X1; X++) {
+          const col = postPx(c, q, g + 2, c.lx(X + 0.5), c.ly(Y + 0.5), X, Y);
+          if (col) c.buf.set(X, Y, col);
+        }
+      }
+      // the turns of rope round the post where it is tied
+      {
+        const cx = q.x + q.lean * q.tie, w = q.w * (1 - 0.14 * (q.tie / q.ht));
+        rope(c, cx - w / 2 - 0.5, g - q.tie - 1, cx + w / 2 + 0.5, g - q.tie - 1, 0, 2.2);
+        rope(c, cx - w / 2 - 0.5, g - q.tie + 1.4, cx + w / 2 + 0.5, g - q.tie + 1.4, 0, 2.2);
+      }
+      // grass at the foot, a fallen chip by a stump
+      if (d >= 0.5) {
+        const n = 2 + Math.floor(hash1(q.seed, 11) * 4);
+        for (let i = 0; i < n; i++) {
+          const gx = q.x + (hash1(i, q.seed + 12) - 0.5) * (q.w + 8);
+          grass(c, gx, railY(pts, gx) + 2.5, 3 + 6 * hash1(i, q.seed + 13), (hash1(i, q.seed + 14) - 0.5) * 0.9, (hash1(i, q.seed + 15) - 0.4) * 1.2, hash1(i, q.seed + 16));
+        }
+        if (q.kind === "stump") {
+          const fx = q.x + q.w * 0.9 + 3, fw = q.w * 0.8, fg = railY(pts, fx) + 2;
+          fill(c, fx - fw / 2, fg - 4.5, fx + fw / 2, fg + 1, (X, Y, u, v) => {
+            if (v < 0.35 && Math.min(u, 1 - u) < 0.2 - v * 0.4) return 0;
+            return v < 0.25 ? tone(P.moss, 0.4 + u * 0.3, X, Y, 0.35) : tone(P.karst, u < 0.3 ? 0.35 : u < 0.75 ? 0.5 : 0.65, X, Y, 0.3);
+          });
+        }
+      }
     }
     // (round 5) the road's rock (kerb.ts): the chunks rising past the road's front edge stand in
     // front of the post feet (the rail's ground is 3 px under the road's walk line; only the chunks

@@ -36,15 +36,19 @@ export function palace(b: WorldBuilder): void {
   b.piece("play", "op.palace", HALL_X0, FLOOR_Y, { w: HALL_X1 - HALL_X0, h0: h(5.6), h1: h(4.2), h2: h(3.2), door: [DOOR_X0 - HALL_X0, DOOR_X1 - DOOR_X0, h(3.7)] }, { z: 4 });
   // twin gate towers flank the way in; cable stays slant down to the road; banners between
   const towerH = h(10);
-  const lx = h(143.3), rx = h(150.4);
+  // (round 7: the east tower moved out to stand as far east of the doors as the west one stands
+  // west of them, so the two frame the gate hall symmetrically)
+  const lx = h(143.3), rx = h(151.5);
   const ly = yOn(ROAD_PTS(), lx);
   b.piece("play", "op.tower", lx, ly + 4, { h: towerH, w: 72 }, { z: 7 });
   b.piece("play", "op.tower", rx, FLOOR_Y + 4, { h: towerH, w: 72 }, { z: 7 });
   b.piece("play", "op.stay", lx - 20, ly - towerH + h(1.1), { dx: -h(4.4), dy: towerH - h(1.1) - h(0.6) }, { z: 8 });
   b.piece("play", "op.stay", lx + 10, ly - towerH + h(1.1), { dx: -h(2.6), dy: towerH - h(1.1) - h(0.3) }, { z: 8 });
   b.piece("play", "op.stay", rx + 20, FLOOR_Y - towerH + h(1.1), { dx: h(5), dy: towerH - h(1.1) }, { z: 8 });
-  b.sprite({ id: "hall-banners", plane: "play", kind: "op.banners", x: lx, y: ly - towerH + h(2.4), p: { w: rx - lx, drop: h(2.2), n: 5 }, frames: 4, fps: 6 });
-  // the doors open into the Hall of Works (a scene cut)
+  b.sprite({ id: "hall-banners", plane: "play", kind: "op.banners", x: lx, y: ly - towerH + h(2.4), p: { w: rx - lx, drop: h(2.0), n: 4 }, frames: 4, fps: 6 });
+  // the doors open into the Hall of Works (a scene cut). Their leaves are a sprite that swings
+  // open as she comes onto the forecourt and shuts after she leaves (round 7; visual only)
+  b.sprite({ id: "hall-doors-leaves", plane: "play", kind: "op.doors", x: DOOR_X0, y: FLOOR_Y - 12, p: { w: DOOR_X1 - DOOR_X0, h: h(3.7), frames: 12 }, frames: 12, frame: 0, reflect: false, seed: 4741, opens: { x0: HALL_DOOR_X - h(1.8), x1: DOOR_X1 + h(1), dy: h(1.5) } });
   b.usable({ id: "hall-doors", x0: DOOR_X0, y0: FLOOR_Y - h(3.7), x1: DOOR_X1, y1: FLOOR_Y, label: "go in", action: { kind: "door", to: "hall-in" } });
   // the forecourt ends at the doors: a hard edge with a reason (the hall's wall)
   b.wall({ x: DOOR_X1 + h(0.3), y0: FLOOR_Y - h(6), y1: FLOOR_Y + h(0.1), reason: "wall" });

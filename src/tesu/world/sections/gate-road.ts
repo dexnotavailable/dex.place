@@ -9,6 +9,7 @@
 import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
 import { threadGroups, type WallP } from "../../art/library/opening/wall.ts";
+import { gateFeet, type GateP } from "../../art/library/opening/gates.ts";
 import { DIAGONAL, GATE_XS, HALL_DOOR_X, JETTY_X1, LEAP_X, TERRACE_X0, TERRACE_X1, TUNNEL_XS, sampleCurve, yOn } from "./common.ts";
 
 /** The road surface, world px, from the jetty's end to the hall door. */
@@ -127,25 +128,36 @@ export function gateRoad(b: WorldBuilder): void {
   b.mist({ x0: h(96), x1: h(200), y: h(73), half: h(6), rate: 0.66, after: "back", density: 0.9 });
   b.mist({ x0: h(40), x1: h(200), y: h(80), half: h(7), rate: 1, after: "play", density: 0.85 });
 
-  // --- the gates: three framed gates, then the tunnel of six with their lintels almost touching
-  const gateAt = (x: number, p: Record<string, unknown>): void => {
+  // --- the gates: three framed gates, then the tunnel of six. Seen side-on (they stand across the
+  // road): the near pillar on the front plane, in front of her (round 7; `key` keeps the two
+  // pieces' weathering the same); the first and third ryōbu torii braced fore and aft by legs,
+  // the paifang between them braced by raking struts; the tunnel's six plain and a little lower
+  // (the fence leaves room for every foot the gates stand on: their pillars, legs and struts)
+  const feet: [number, number][] = [];
+  const gateAt = (x: number, p: GateP): void => {
     const y = yOn(ROAD, x);
-    b.piece("play", "op.gate", x, y + 2, p, { z: 6 });
-    b.piece("front", "op.gate", x, y + 2, { ...p, part: "front" }, { z: 1 });
+    b.piece("play", "op.gate", x, y + 2, { ...p, key: x }, { z: 6 });
+    b.piece("front", "op.gate", x, y + 2, { ...p, key: x, part: "front" }, { z: 1 });
+    for (const [dx, hw] of gateFeet(p)) feet.push([x + dx, hw]);
   };
-  gateAt(GATE_XS[0]!, { kind: "torii", span: h(3.2), h: h(4.7) });
+  gateAt(GATE_XS[0]!, { kind: "torii", span: h(3.2), h: h(4.7), legs: true });
   gateAt(GATE_XS[1]!, { kind: "paifang", span: h(3.4), h: h(5.6) });
-  gateAt(GATE_XS[2]!, { kind: "torii", span: h(3.4), h: h(5.0) });
-  for (const x of TUNNEL_XS) gateAt(x, { kind: "torii", span: h(2.1), h: h(3.7), pw: 18 });
+  gateAt(GATE_XS[2]!, { kind: "torii", span: h(3.4), h: h(5.0), legs: true });
+  // (the tunnel's gates tied into one way through by a rope of paper lanterns along the road's middle)
+  TUNNEL_XS.forEach((x, i) => {
+    const next = TUNNEL_XS[i + 1];
+    gateAt(x, { kind: "torii", span: h(2.1), h: h(3.4), pw: 33, ...(next !== undefined ? { garland: [next - x, yOn(ROAD, next) - yOn(ROAD, x)] as [number, number] } : {}) });
+  });
 
-  // the road's railing in front of her, everywhere except at Pilgrims' Leap
+  // the road's fence in front of her (round 7: rough stone posts and a straw rope), everywhere
+  // except at Pilgrims' Leap
   const railPts = (x0: number, x1: number): number[] => {
     const out: number[] = [];
     for (let x = x0; x <= x1; x += h(0.5)) out.push(x, yOn(ROAD, x) + 3);
     return out;
   };
-  b.piece("front", "op.rail", 0, 0, { pts: railPts(h(110.4), leap0 - h(0.2)), h: 46, every: 62 }, { z: 0 });
-  b.piece("front", "op.rail", 0, 0, { pts: railPts(leap1 + h(0.2), HALL_DOOR_X - h(2.2)), h: 46, every: 62 }, { z: 0 });
+  b.piece("front", "op.rail", 0, 0, { pts: railPts(h(110.4), leap0 - h(0.2)), h: 50, every: 56, breaks: feet }, { z: 0 });
+  b.piece("front", "op.rail", 0, 0, { pts: railPts(leap1 + h(0.2), HALL_DOOR_X - h(2.2)), h: 50, every: 56, breaks: feet }, { z: 0 });
   // the viewing terrace (art: env-opening): a paved platform on a cut-stone face built out
   // over the rock; great cliff pines lean out over the valley from the road's lip (one before
   // the gates, one between the terrace and the tunnel); bamboo at the forecourt
