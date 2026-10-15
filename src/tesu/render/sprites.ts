@@ -8,7 +8,7 @@ import { painter } from "../art/painter.ts";
 import type { SpriteDone, SpriteJob } from "../plates/store.ts";
 import { PLANES, type SpriteDef } from "../world/types.ts";
 import { paintSpriteFrame, type SpritePixels } from "./sprite-paint.ts";
-import type { PlaneLook } from "./planes.ts";
+import { SHOW_GLSL, type PlaneLook } from "./planes.ts";
 import { levelFor, planeLevels, planeXf, type CamState } from "./view.ts";
 
 const VS = /* glsl */ `#version 300 es
@@ -49,7 +49,8 @@ uniform vec4 uRectF;                  // the drawn rect, frame px (y down), unmi
 uniform float uCell;                  // (round 5) frame px per art cell: 2 at the catch's 2x for sky and far
 uniform vec2 uFoot;                   // (round 5) haze thickening to its foot: share of its height, haze there
 uniform float uFlip;
-uniform float uShow;                  // (round 6) share of the plane shown: an ordered-dither dissolve below 1 (as on the plates)
+uniform float uShow;                  // (round 6) share of the plane shown: a dissolve below 1 (as on the plates; round 7: in clumps)
+uniform vec3 uShowAt;                 // (round 7) the plane's frame offset and scale (render/planes.ts SHOW_GLSL)
 out vec4 o;
 float bayer4(vec2 p) {
   ivec2 i = ivec2(mod(floor(p), 4.0));
@@ -57,8 +58,9 @@ float bayer4(vec2 p) {
   const float m[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
   return (m[k] + 0.5) / 16.0;
 }
+${SHOW_GLSL}
 void main() {
-  if (uShow < 1.0 && bayer4(floor(gl_FragCoord.xy / 2.0)) >= uShow) discard;
+  if (hiddenByShow()) discard;
   if (uMirror >= 0.0 && uRes.y - gl_FragCoord.y < uMirror) discard;
   if (vS > uReveal) discard;
   vec2 uv = vUV;
@@ -398,6 +400,7 @@ export class SpriteRenderer {
     gl.uniform3fv(u.uInk!, look.ink);
     gl.uniform1f(u.uInkAmt!, look.inkAmt);
     gl.uniform1f(u.uShow!, look.show ?? 1);
+    if (u.uShowAt) gl.uniform3fv(u.uShowAt, look.showAt ?? [0, 0, 1]);
     gl.bindVertexArray(this.vao);
     for (const def of defs) {
       if (def.hidden) continue;

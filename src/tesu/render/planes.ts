@@ -7,6 +7,43 @@ import { compile, uniforms } from "../../lab/engine/gl.ts";
 import { TILE } from "../config.ts";
 import { paletteRGBA } from "../art/palette.ts";
 
+/**
+ * (round 7, the integration) The plane's dissolve below show 1 (the near plane coming into the opening's
+ * pull-back), shared by the plates and the sprites so every pixel of the plane agrees. Round 6 used an
+ * ordered dither on 2 px frame cells: half-way it read as a 50% checker mesh over the lake (the critic's
+ * m-pullback-180). Now the plane rises in from the frame's foot (to half its height) behind a ragged edge
+ * of its own art cells (2 plane px, smooth noise at two sizes), anchored to the plane (uShowAt: its frame
+ * offset and scale) so the edge never swims as the camera moves: the near rise grows up into the frame.
+ * Needs uRes, uShow and uShowAt.
+ */
+export const SHOW_GLSL = /* glsl */ `
+uint showHash(uvec2 v) {
+  v = v * 1664525u + 1013904223u;
+  v.x += v.y * 1664525u; v.y += v.x * 1664525u;
+  v ^= v >> 16u;
+  v.x += v.y * 1664525u; v.y += v.x * 1664525u;
+  v ^= v >> 16u;
+  return v.x;
+}
+float showCell(vec2 c) { return float(showHash(uvec2(ivec2(c) + ivec2(1 << 20)))) / 4294967295.0; }
+float showNoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(showCell(i), showCell(i + vec2(1.0, 0.0)), f.x), mix(showCell(i + vec2(0.0, 1.0)), showCell(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+bool hiddenByShow() {
+  if (uShow >= 1.0) return false;
+  if (uShow <= 0.0) return true;
+  float yDown = uRes.y - gl_FragCoord.y;
+  vec2 q = (vec2(gl_FragCoord.x, yDown) - uShowAt.xy) / max(uShowAt.z, 0.001);
+  vec2 c = floor(q / 2.0);
+  float n = 0.6 * showNoise(c / 7.0) + 0.4 * showNoise(c / 2.4 + 31.0);
+  float v = clamp((uRes.y - yDown) / (0.5 * uRes.y), 0.0, 1.0);
+  float t = 0.84 * v + 0.16 * n;
+  return t >= uShow;
+}
+`;
+
 const VS = /* glsl */ `#version 300 es
 precision highp float;
 layout(location = 0) in vec4 aRect;   // x0, y0, x1, y1 in frame px (y down)
@@ -39,16 +76,12 @@ uniform float uInkAmt;
 uniform float uMirror;
 uniform vec2 uRes;
 uniform vec4 uGrade;                  // rgb multiply, amount
-uniform float uShow;                  // (round 6) share of the plane shown: an ordered-dither dissolve below 1
+uniform float uShow;                  // (round 6) share of the plane shown: a dissolve below 1 (round 7: in clumps)
+uniform vec3 uShowAt;                 // (round 7) the plane's frame offset and scale (the clumps sit on its art)
 out vec4 o;
-float bayer4(vec2 p) {
-  ivec2 i = ivec2(mod(floor(p), 4.0));
-  int k = i.x + i.y * 4;
-  const float m[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
-  return (m[k] + 0.5) / 16.0;
-}
+${SHOW_GLSL}
 void main() {
-  if (uShow < 1.0 && bayer4(floor(gl_FragCoord.xy / 2.0)) >= uShow) discard;
+  if (hiddenByShow()) discard;
   if (uMirror >= 0.0) {
     // only what stands above the waterline shows below it
     float row = uRes.y - gl_FragCoord.y;
@@ -80,10 +113,12 @@ export interface PlaneLook {
   /** Colour grade (time of day, a storm): multiply rgb by amount. */
   grade: [number, number, number, number];
   /**
-   * (round 6) The share of the plane shown, 0..1 (default 1): below 1 it dissolves in by an
-   * ordered dither on 2 px cells (the near plane coming into the opening's pull-back).
+   * (round 6) The share of the plane shown, 0..1 (default 1): below 1 it dissolves in (the near plane
+   * coming into the opening's pull-back; round 7: by clumps of its art cells, SHOW_GLSL).
    */
   show?: number;
+  /** (round 7) With show: the plane's frame offset x, y and scale g (render/view.ts planeXf), the clumps' anchor. */
+  showAt?: [number, number, number];
 }
 
 export class PlaneRenderer {
@@ -170,6 +205,7 @@ export class PlaneRenderer {
     gl.uniform1f(u.uInkAmt!, look.inkAmt);
     gl.uniform4fv(u.uGrade!, look.grade);
     gl.uniform1f(u.uShow!, look.show ?? 1);
+    if (u.uShowAt) gl.uniform3fv(u.uShowAt, look.showAt ?? [0, 0, 1]);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D_ARRAY, this.tiles);
     gl.uniform1i(u.uTiles!, 0);

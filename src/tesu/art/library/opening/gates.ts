@@ -52,6 +52,13 @@ export interface GateP {
   garland?: [number, number];
   /** Detail seed shared by the gate's two pieces (its x), so the front copy matches the play copy. */
   key?: number;
+  /**
+   * (round 7, the integration) The ground's slope west and east of the gate's foot, px down per px
+   * east (the road climbs, so both are negative there): a ryōbu's legs and a paifang's struts stand
+   * on the road where it is, not on the level of the gate's middle (they floated over the road on
+   * the downhill side and sank into it on the uphill side). Default level.
+   */
+  ground?: [number, number];
 }
 
 type Shade = (sx: number, sy: number, end: boolean, X: number, Y: number) => number;
@@ -325,7 +332,12 @@ export interface ToriiO {
   legs?: boolean;
   /** A rope of lanterns from this gate to the next one at [dx, dy] (its foot from this one's). */
   garland?: [number, number];
+  /** (round 7) The ground's slope west and east of the foot (GateP.ground). */
+  ground?: [number, number];
 }
+
+/** The ground under a point dx along the road from a gate's foot, px below it. */
+const groundAt = (ground: [number, number] | undefined, dx: number): number => (ground ? dx * (dx < 0 ? ground[0] : ground[1]) : 0);
 
 /** The torii's parts' sizes, from its pillar diameter. */
 function toriiDims(o: Pick<ToriiO, "span" | "h" | "pw" | "small">) {
@@ -344,13 +356,14 @@ function toriiDims(o: Pick<ToriiO, "span" | "h" | "pw" | "small">) {
 }
 
 /** The box a torii paints, level-1 px around its foot. */
-export function toriiBounds(o: Pick<ToriiO, "span" | "h" | "pw" | "s" | "legs" | "small" | "garland">): [number, number, number, number] {
+export function toriiBounds(o: Pick<ToriiO, "span" | "h" | "pw" | "s" | "legs" | "small" | "garland" | "ground">): [number, number, number, number] {
   const D = toriiDims(o);
   const spread = Math.abs(o.s) * D.LK + D.kW / 2 + 4;
   const legs = o.legs ? D.legD + D.legR * 3.5 + Math.abs(o.s) * D.half + 4 : 0;
   const foot = o.pw * 1.4;
   const w = Math.max(spread, legs, foot + Math.abs(o.s) * D.half + 6);
-  const b: [number, number, number, number] = [-w - 4, -o.h - D.sweepK - D.capH * 0.3 - 6, w + o.pw * 1.4 + 4, 8];
+  const sink = o.legs ? Math.max(0, groundAt(o.ground, -D.legD), groundAt(o.ground, D.legD)) : 0;
+  const b: [number, number, number, number] = [-w - 4, -o.h - D.sweepK - D.capH * 0.3 - 6, w + o.pw * 1.4 + 4, 8 + Math.ceil(sink)];
   if (o.garland) {
     const [gx, gy] = o.garland;
     b[0] = Math.min(b[0], gx - 12);
@@ -395,7 +408,9 @@ export function torii(c: PaintCtx, x: number, y: number, o: ToriiO): void {
       const { legD, legH, legR } = T;
       for (const lx of [-legD, legD]) {
         const ls = sd + 20 + (lx > 0 ? 1 : 0);
-        shaft(v, x + lx, zs * half, y, legH, legR, legR * 0.9, 0, (u, a, k, X, Y) => pillarPx(c, u, a, k, X, Y, { sleeve: sleeve * 0.8, seed: ls, far, shadows: [[legH, legR * 2.2]], wet: o.wet, small: o.small }));
+        // (round 7) its foot on the road where the road is (the cap and the ties stay level)
+        const gl = groundAt(o.ground, lx);
+        shaft(v, x + lx, zs * half, y + gl, legH + gl, legR, legR * 0.9, 0, (u, a, k, X, Y) => pillarPx(c, u, a, k, X, Y, { sleeve: sleeve * 0.8, seed: ls, far, shadows: [[legH + gl, legR * 2.2]], wet: o.wet, small: o.small }));
         // the ties: two beams along the road from the leg into the pillar, seen whole from the side
         for (const [ta, th] of [[legH * 0.92, legR * 1.3], [legH * 0.5, legR * 1.1]] as const) {
           const xa = lx < 0 ? x + lx - legR * 1.6 : x + pw * 0.3, xb = lx < 0 ? x - pw * 0.3 : x + lx + legR * 1.6;
@@ -627,23 +642,26 @@ function brackets(v: View, x: number, z0: number, z1: number, eave: number, reac
   });
 }
 
-/** A raking strut from a post at (x, z) down to the ground at x + dx: a round timber, lacquered, on a small footing stone. */
-function strut(v: View, x: number, z: number, top: number, dx: number, r: number, far: boolean, seed: number): void {
+/**
+ * A raking strut from a post at (x, z) down to the ground at x + dx (gy below the post's foot: round 7,
+ * the road's slope): a round timber, lacquered, on a small footing stone.
+ */
+function strut(v: View, x: number, z: number, top: number, dx: number, r: number, far: boolean, seed: number, gy = 0): void {
   const { c, D, s } = v;
   const xs = x + s * z;
-  const len = Math.hypot(dx, top);
+  const len = Math.hypot(dx, top + gy);
   const n = Math.ceil(len * c.d * 1.5) + 2;
   // along the strut from its foot (t 0) to its head (t 1)
   for (let i = 0; i <= n; i++) {
     const t = i / n;
-    const cx = xs + dx * (1 - t), cy = -top * t;
+    const cx = xs + dx * (1 - t), cy = gy * (1 - t) - top * t;
     // the strut's normal on screen, pointing east: q runs across it from its west side
-    const nx = top / len, ny = -dx / len;
+    const nx = (top + gy) / len, ny = -dx / len;
     const rr = r * (1 - 0.15 * t);
     for (let q = -rr; q <= rr; q += 0.5 / c.d) {
       const X = Math.round(c.X(cx + nx * q)), Y = Math.round(c.Y(cy + ny * q));
       const u = (q + rr) / (2 * rr);
-      const a = -cy;
+      const a = gy - cy;
       let col: number;
       if (a < 9) col = tone(P.lacquer, clamp(0.45 + roundT(u) * 0.8 + (far ? 0.12 : 0), 0, 1), X, Y, 0.3);
       else col = tone(P.red, clamp(0.44 + roundT(u) * (far ? 0.5 : 1) + (far ? 0.24 : 0) + (vnoise(u * 6, a / 30, seed) > 0.72 ? 0.08 : 0), 0, 1), X, Y, 0.3);
@@ -652,10 +670,10 @@ function strut(v: View, x: number, z: number, top: number, dx: number, r: number
   }
   // its footing: a squat stone the strut's foot is socketed into
   const fx = xs + dx, fw = r * 2.4, fh = r * 1.5;
-  const Ya = Math.max(D.Y0, Math.floor(c.Y(-fh))), Yb = Math.min(D.Y0 + D.h, Math.ceil(c.Y(2)));
+  const Ya = Math.max(D.Y0, Math.floor(c.Y(gy - fh))), Yb = Math.min(D.Y0 + D.h, Math.ceil(c.Y(gy + 2)));
   const Xa = Math.max(D.X0, Math.floor(c.X(fx - fw))), Xb = Math.min(D.X0 + D.w, Math.ceil(c.X(fx + fw)));
   for (let Y = Ya; Y < Yb; Y++) for (let X = Xa; X < Xb; X++) {
-    const lx = c.lx(X + 0.5) - fx, ly = c.ly(Y + 0.5);
+    const lx = c.lx(X + 0.5) - fx, ly = c.ly(Y + 0.5) - gy;
     const ax = Math.abs(lx) / fw;
     if (ly < -fh * (1 - Math.pow(ax, 3))) continue;
     let t = lx < -fw * 0.5 ? 0.2 : lx < fw * 0.3 ? 0.38 : 0.6;
@@ -683,7 +701,7 @@ function paifang(c: PaintCtx, p: GateP, s: number, pw: number, seed: number): vo
     const shadows: [number, number][] = [[h - 84 - 18, pw * 0.7], [-top, pw * 0.8]];
     shaft(v, 0, zp, 0, -top, pw * (tall ? 0.56 : 0.5), pw * (tall ? 0.5 : 0.45), 0, (u, a, k, X, Y) => pillarPx(c, u, a, k, X, Y, { sleeve: 16, seed: seed + i * 13, far, shadows }));
     // the outer posts carry the struts (the ones that take the wind)
-    if (!tall) for (const dir of [-1, 1]) strut(v, 0, zp + (far ? 2 : -2), braceTop, dir * braceD, pw * 0.2, far, seed + i * 13 + dir);
+    if (!tall) for (const dir of [-1, 1]) strut(v, 0, zp + (far ? 2 : -2), braceTop, dir * braceD, pw * 0.2, far, seed + i * 13 + dir, groundAt(p.ground, dir * braceD));
     // the clamp stones: tall blocks either side of the post along the road, their tops rounded
     const ch = Math.max(14, h * 0.1), cw = pw * 1.1;
     sweep(v, 0, zp - pw * 0.64, zp + pw * 0.64, () => 0, [-cw, cw, -ch - 4, 2], (sx, sy, end, X, Y) => {
@@ -758,9 +776,10 @@ export const gate = definePainter<GateP>("op.gate", {
     const pw = pwOf(p);
     if (p.kind === "paifang") {
       const reach = Math.max(pw * 2.9 + 0.06 * (p.span / 2 + 34) + 6, p.h * 0.2 + pw * 0.7);
-      return [-reach - 4, -p.h - 52 - 52 * 0.16 * 2.8 - 6, reach + pw * 1.3 + 4, 8];
+      const sink = Math.max(0, groundAt(p.ground, -p.h * 0.2), groundAt(p.ground, p.h * 0.2));
+      return [-reach - 4, -p.h - 52 - 52 * 0.16 * 2.8 - 6, reach + pw * 1.3 + 4, 8 + Math.ceil(sink)];
     }
-    return toriiBounds({ span: p.span, h: p.h, pw, s: Math.max(0.07, Math.abs(p.turn ?? 0)), legs: p.legs, garland: p.garland });
+    return toriiBounds({ span: p.span, h: p.h, pw, s: Math.max(0.07, Math.abs(p.turn ?? 0)), legs: p.legs, garland: p.garland, ground: p.ground });
   },
   paint(c, p) {
     const pw = pwOf(p);
@@ -770,6 +789,6 @@ export const gate = definePainter<GateP>("op.gate", {
       paifang(c, p, s, pw, key);
       return;
     }
-    torii(c, 0, 0, { span: p.span, h: p.h, pw, s, seed: key, part: p.part, legs: p.legs, garland: p.garland });
+    torii(c, 0, 0, { span: p.span, h: p.h, pw, s, seed: key, part: p.part, legs: p.legs, garland: p.garland, ground: p.ground });
   },
 });

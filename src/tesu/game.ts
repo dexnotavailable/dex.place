@@ -1133,9 +1133,12 @@ export class TesuGame {
       }
       if (id === "near" && z > 1.6) continue;
       // (round 6, the integration) the near plane is not drawn in the close band; coming into the
-      // pull-back it dissolves in over zoom 1.6 to 1.45 (an ordered dither on 2 px cells) instead
-      // of popping in whole in one frame (the pull-back's dark near corner stands in the frame there)
-      const look = id === "near" && z > 1.45 ? { ...d.look, show: (1.6 - z) / 0.15 } : d.look;
+      // pull-back it dissolves in over zoom 1.6 to 1.45 instead of popping in whole in one frame (the
+      // pull-back's dark near corner stands in the frame there). (round 7) By clumps of its own art
+      // cells anchored to the plane, the frame's foot first (render/planes.ts SHOW_GLSL), not the
+      // round-6 ordered dither that read as a checker mesh half-way.
+      const nearXf = id === "near" && z > 1.45 ? planeXf(cam, PLANES.near.rate) : null;
+      const look = nearXf ? { ...d.look, show: (1.6 - z) / 0.15, showAt: [nearXf.offX, nearXf.offY, nearXf.g] as [number, number, number] } : d.look;
       fogOn(id, false, true);
       this.planes.draw(d.quads, look, W, Hf);
       this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id), cam, look, this.time, null, this.manual);

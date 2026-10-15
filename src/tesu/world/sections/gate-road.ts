@@ -134,8 +134,12 @@ export function gateRoad(b: WorldBuilder): void {
   // the paifang between them braced by raking struts; the tunnel's six plain and a little lower
   // (the fence leaves room for every foot the gates stand on: their pillars, legs and struts)
   const feet: [number, number][] = [];
-  const gateAt = (x: number, p: GateP): void => {
+  const gateAt = (x: number, p0: GateP): void => {
     const y = yOn(ROAD, x);
+    // (round 7, the integration) the road's slope under its outer feet (a ryōbu's legs, a paifang's
+    // struts), so they stand on the climbing road instead of on the level of the gate's middle
+    const reach = Math.max(1, ...gateFeet(p0).map(([dx]) => Math.abs(dx)));
+    const p: GateP = reach > 1 ? { ...p0, ground: [(y - yOn(ROAD, x - reach)) / reach, (yOn(ROAD, x + reach) - y) / reach] } : p0;
     b.piece("play", "op.gate", x, y + 2, { ...p, key: x }, { z: 6 });
     b.piece("front", "op.gate", x, y + 2, { ...p, key: x, part: "front" }, { z: 1 });
     for (const [dx, hw] of gateFeet(p)) feet.push([x + dx, hw]);

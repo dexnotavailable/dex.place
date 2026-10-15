@@ -91,8 +91,10 @@ const PLACED: readonly (readonly number[])[] = [
   // between the pine and gate 1 (play-east, jetty-6s, guard-gate1): the big one, a low step down on its
   // right (clear of where she starts from a Gate Road link, 113.5 H)
   [112.2, 104, 31, 116, 0.74, 1, 36, 8],
-  // between gates 1 and 2 (guard-gate1, guard-gates): big, a step down on its right
-  [116.75, 128, 28, 104, 0.72, 1, 44, 10],
+  // between gates 1 and 2 (guard-gate1, guard-gates): big. (round 7, the integration) Fitted between
+  // gate 1's east leg (116.3 H) and the paifang's west strut (117.9 H), which now stand on the road
+  // where it is: at 116.75 H, 128 px wide with a step on its right, it stood under the strut's footing.
+  [116.67, 92, 28, 104, 0.72, 0, 0, 0],
   // between gates 2 and 3: small
   [120.3, 62, 12, 52, 0.5, 0, 0, 0],
   // in the tunnel, between its second and third gates: big, no step (the gates close round it)
