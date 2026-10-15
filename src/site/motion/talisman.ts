@@ -139,22 +139,36 @@ export class Talisman {
     }
   }
 
+  /** A poke (the waiting room): the strip jolts and swings back. */
+  poke(): void {
+    for (let i = 1; i < POINTS; i++) this.v[i] = this.v[i]! + (i / (POINTS - 1)) * (Math.random() < 0.5 ? -1 : 1) * 14;
+  }
+
   /**
-   * Draws it with its top centre at (x, y) css px, `k` device px per art px (a whole
+   * Draws it with its top centre at (x, y) device px, `k` device px per art px (a whole
    * number), lit down to `lit` (0..1) of its length. `ctx` draws in device px.
+   * sweep: a gold sweep's row (0..1 down the script; the loader's "everything is in");
+   * flip: its width as it turns over (1 face on, 0 edge on, below 0 the back: the gust).
    */
-  draw(ctx: CanvasRenderingContext2D, x: number, y: number, k: number, lit = 1): void {
+  draw(ctx: CanvasRenderingContext2D, x: number, y: number, k: number, lit = 1, opts: { sweep?: number; flip?: number } = {}): void {
     ctx.imageSmoothingEnabled = false;
     const W = TALISMAN_W, H = TALISMAN_H;
-    const x0 = Math.round(x - (W * k) / 2), y0 = Math.round(y);
+    const flip = opts.flip ?? 1;
+    const w = Math.max(1, Math.round(W * Math.abs(flip)));
+    const x0 = Math.round(x - (w * k) / 2), y0 = Math.round(y);
     const litRows = Math.round(lit * H);
+    const sweepRow = opts.sweep === undefined ? -9 : Math.round(opts.sweep * (H - 1));
     for (let r = 0; r < H; r++) {
       const u = r / (H - 1);
       const f = u * (POINTS - 1);
       const i = Math.min(POINTS - 2, Math.floor(f));
       const off = this.dx[i]! + (this.dx[i + 1]! - this.dx[i]!) * (f - i);
-      const src = r < litRows ? this.lit : this.dim;
-      ctx.drawImage(src, 0, r, W, 1, x0 + Math.round(off) * k, y0 + r * k, W * k, k);
+      const src = flip < 0 || r >= litRows ? this.dim : this.lit;
+      ctx.drawImage(src, 0, r, W, 1, x0 + Math.round(off) * k, y0 + r * k, w * k, k);
+      if (Math.abs(r - sweepRow) <= 1) {
+        ctx.fillStyle = r === sweepRow ? "rgba(255, 246, 200, 0.85)" : "rgba(255, 232, 145, 0.5)";
+        ctx.fillRect(x0 + Math.round(off) * k + k, y0 + r * k, (w - 2) * k, k);
+      }
     }
   }
 }

@@ -3,7 +3,14 @@ html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
 #view { display: block; width: 100%; height: 100%; outline: none; touch-action: none; image-rendering: pixelated; }
 #debug { position: absolute; left: 8px; top: 8px; margin: 0; padding: 6px 8px; font: 11px/1.35 ui-monospace, Consolas, monospace; color: #f4f1ea; background: rgba(12, 10, 16, 0.72); pointer-events: none; white-space: pre; max-width: 46vw; overflow: hidden; }
 #fail { position: absolute; inset: auto 0 40% 0; text-align: center; color: #f4f1ea; font: 14px/1.4 system-ui, sans-serif; }
-#touch { position: absolute; inset: 0; pointer-events: none; }
+#touch { position: absolute; inset: 0; pointer-events: none; transition: opacity 0.4s steps(4); }
+/* the opening's cinematic: touch controls stay hidden; they fade in on the hand-back (drop 1) */
+html.cine #touch { opacity: 0; visibility: hidden; transition: none; }
+/* /tesu/ on its own: "continue" once the opening set is in */
+.press { position: absolute; left: 50%; bottom: 12vh; translate: -50% 0; z-index: 5; padding: 10px 22px; border: 2px solid #f6eee9;
+  background: rgba(0, 0, 0, 0.35); color: #f6eee9; font: 400 14px / 1 ui-monospace, Consolas, monospace; letter-spacing: 0.18em; cursor: pointer; }
+.press:hover, .press:focus-visible { background: #f6eee9; color: #000; outline: none; }
+.press[hidden] { display: none; }
 #touch .tb {
   position: absolute; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none;
   border: 2px solid rgba(27, 25, 34, 0.55); border-radius: 50%;

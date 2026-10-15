@@ -146,8 +146,17 @@ export function initWorld(_reduced: MediaQueryList): void {
 
   const modules = import.meta.glob<WorldModule>("../../tesu/mount.ts");
   const load = Object.values(modules)[0];
+  // Save-Data on, or a 2G-class line, on "/": the world does not start by itself; the title's status offers
+  // it ("the world is big · load it", motion/column.ts) and the site is right below
+  const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  let held = world.hasAttribute("data-world-hold") && (!!conn?.saveData || /(^|-)2g$/.test(conn?.effectiveType ?? ""));
+  if (held) document.documentElement.setAttribute("data-world-ask", "");
+  document.addEventListener("dex:loadworld", () => {
+    held = false;
+    start();
+  });
   function start(): void {
-    if (!load || started || destroyed) return;
+    if (!load || started || destroyed || held) return;
     started = true;
     world?.setAttribute("aria-busy", "true");
     if (fallback) fallback.hidden = true;

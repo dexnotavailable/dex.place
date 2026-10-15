@@ -5,7 +5,9 @@
 // URL options: ?at=<spawn id> (start somewhere), ?x=<H> (start at x in H), ?debug, ?manual
 // (no real-time loop: drive it from window.__tesu), ?sync (paint plates on the main thread).
 // In the page column (src/tesu/mount.ts) it runs framed: ?embed=site, plus ?hold on "/" (the
-// world window waits for PLAY, which the page calls through window.__tesu.play()).
+// world window waits for PLAY or "continue", which the page calls through window.__tesu.play(link) with its
+// opening conductor). On its own and fresh, /tesu/ offers "continue" itself once the opening set is in, and
+// the press runs the same opening (opening/conductor.ts) here. ?skip: no opening.
 
 import { Input, type Action, type KeyMap } from "../lab/engine/input.ts";
 import { ContractError } from "../lab/contracts.ts";
@@ -14,12 +16,15 @@ import { H } from "./config.ts";
 import { TesuGame } from "./game.ts";
 import { loadZhusha } from "./player.ts";
 import { Touch } from "./touch.ts";
+import { planeXf } from "./render/view.ts";
 import { Panels, type PanelSpec } from "./panels/panels.ts";
 import { craneDesk, docsShelf, galleryFrame, hankoDesk, noticeWall, offeringBox, patronsScroll, saySpec } from "./panels/services.ts";
 import { celebrationNote, prizeBoard, startDownload } from "./panels/court.ts";
 import { prizeFor } from "./court.ts";
 import { readSlipInto, slipFor } from "./save.ts";
 import type { Usable } from "./world/types.ts";
+import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "./opening/conductor.ts";
+import { Track1 } from "./opening/track.ts";
 
 /**
  * The fixed keys (GDK 5.4, Appendix B): WASD and the arrows both move from the start;
@@ -91,6 +96,17 @@ async function boot(): Promise<void> {
     start: q.get("at") ?? "catch", link: q.has("at") || q.has("x") || q.has("hold"), noOpening: q.has("skip"),
     hold: q.has("hold"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual"),
   });
+  // the opening's inputs: in the cinematic Esc skips (the chip's key) and any other input shows the chip;
+  // the page's conductor owns both, the world only tells it
+  const link = (): OpeningLink | null => (game.opening.state === "cine" ? game.opening.link : null);
+  window.addEventListener("keydown", (e) => {
+    const l = link();
+    if (!l) return;
+    if (e.key === "Escape") {
+      if (l.skip()) e.preventDefault();
+    } else if (!e.repeat) l.input();
+  }, { capture: true });
+  window.addEventListener("pointerdown", () => link()?.input(), { capture: true });
   // a mouse press on the world gives it the keyboard (the input's own handler cancels the
   // browser's default, which would otherwise do that)
   canvas.addEventListener("pointerdown", (e) => {
@@ -202,13 +218,18 @@ async function boot(): Promise<void> {
   // the title on "/"): while the world is still loading, a timer keeps its plates streaming so
   // it is ready when it scrolls into view.
   const keepLoading = window.setInterval(() => {
-    if (!game.loading) { clearInterval(keepLoading); return; }
+    if (!game.loading && !game.warming) { clearInterval(keepLoading); return; }
     const now = performance.now();
     if (now - lastFrame > 120) {
       lastFrame = now;
       try { game.frame(now); } catch (e) { clearInterval(keepLoading); showFailure(e, "The world stopped"); }
     }
   }, 60);
+
+  let titleIn = false, ofudaIn = false;
+  void game.titles.ready.then((ok) => { titleIn = ok; });
+  void game.ofuda.ready.then((ok) => { ofudaIn = ok; });
+  if (game.awaitingPress && !embedded && !q.has("manual")) standalonePress(game, () => titleIn && ofudaIn);
 
   const src = "auto";
   Object.assign(window, {
@@ -232,9 +253,11 @@ async function boot(): Promise<void> {
       render: () => game.render(),
       flag: (f: string, on = true) => (on ? game.flags.add(f) : game.flags.delete(f)),
       use: () => game.use(),
-      /** The page column: PLAY (the opening starts at 0:00), and the page's running audio. */
-      play: () => game.play(),
+      /** The press (PLAY or "continue"): the opening starts on the link's clock (the page's conductor); no link: silent, on the world's own time (tools). */
+      play: (l?: OpeningLink) => game.play(l),
       audio: (ctx: AudioContext) => game.sound.start(ctx),
+      /** The opening set (what the next 36 s need), for the page's loader: plates along the camera's path, her 192 px drawing, the title face, the talisman. */
+      openingSet: () => ({ plates: game.warmProgress(), close: game.closeReady, font: titleIn, ofuda: ofudaIn, warming: game.warming }),
       /** The bout: summon a prize's champion, press the finish (as an attack press would). */
       summon: (id: string) => {
         const p = prizeFor(id);
@@ -244,12 +267,58 @@ async function boot(): Promise<void> {
       finish: () => finish(),
       lastDownload: () => lastDownload,
       panels,
+      /** Where a world point (px) is on the page (css px in this frame), for checks. */
+      screenOf: (x: number, y: number) => {
+        const xf = planeXf(game.camera.state(), 1);
+        const pr = r.presenter.rect, dpr = window.devicePixelRatio || 1;
+        return [(pr.x + (x * xf.s + xf.offX) * pr.scale) / dpr, (pr.y + (y * xf.s + xf.offY) * pr.scale) / dpr];
+      },
       /** Forces a framing ({zoom, anchor, horizon, lead}); null follows the world's tracks again. */
       frame: (f: Record<string, number> | null) => {
         game.framingOverride = f;
       },
     },
   });
+}
+
+/**
+ * /tesu/ on its own, fresh: Track 1's first piece decodes on a context made now (suspended: nothing sounds
+ * before the press), and "continue" appears once the opening set is in; the press starts the opening here.
+ */
+function standalonePress(game: TesuGame, parts: () => boolean): void {
+  const ctx = makeAudio();
+  const track = ctx ? new Track1(ctx, ctx.destination) : null;
+  let trackIn = !track;
+  void track?.aReady.then(() => { trackIn = true; });
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "press";
+  btn.textContent = "continue";
+  btn.hidden = true;
+  document.getElementById("stage")?.append(btn);
+  let shownAt = Infinity;
+  const go = (): void => {
+    if (!game.awaitingPress || performance.now() - shownAt < 300) return;
+    btn.remove();
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const c = new Conductor(ctx, track, { doc: document, reduced, repeat: readOpeningNote().seen > 0 });
+    c.start();
+    game.play(c);
+    (document.getElementById("view") as HTMLCanvasElement | null)?.focus();
+  };
+  btn.addEventListener("click", go);
+  window.addEventListener("keydown", (e) => {
+    if (!btn.hidden && !e.repeat && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); go(); }
+  });
+  const wait = window.setInterval(() => {
+    if (!game.awaitingPress) { clearInterval(wait); return; }
+    const set = game.warmProgress() >= 1 && game.closeReady && parts() && trackIn;
+    if (set && btn.hidden) {
+      btn.hidden = false;
+      shownAt = performance.now();
+      clearInterval(wait);
+    }
+  }, 150);
 }
 
 function showFailure(e: unknown, lead: string): void {

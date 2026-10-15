@@ -1,6 +1,6 @@
-/* The page column on "/" (GDK 3.8): the title on black, the self-paced fall through the sky,
-   the PLAY prompt in the world window, the talisman over the page, the cinematic bars and the
-   letter's captions. motion/column.ts drives it. */
+/* The page column on "/" (GDK 3.8): the title on black, the waiting room, the self-paced fall through
+   the sky, the PLAY prompt in the world window, the talisman over the page. motion/column.ts drives it;
+   the opening's bars, captions and skip chip bring their own styles (src/tesu/opening/overlay.ts). */
 
 .col-title {
   position: relative;
@@ -14,9 +14,11 @@
 .col-title__name { position: absolute; inset: 0; margin: 0; }
 .col-title__mark { display: none; }
 .col-title__load {
-  position: absolute; bottom: 14vh; width: 100%; margin: 0; text-align: center;
-  font: 400 var(--fs-12) / 1 var(--f-label); letter-spacing: 0.14em; text-transform: lowercase; color: #9a8f96;
+  position: absolute; bottom: 14vh; width: 100%; margin: 0; padding: 0 18px; text-align: center;
+  font: 400 var(--fs-12) / 1.6 var(--f-label); letter-spacing: 0.14em; text-transform: lowercase; color: #9a8f96;
 }
+.col-title__load a, .col-ask { color: #f6eee9; }
+.col-ask { padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; text-decoration: underline; cursor: pointer; }
 .col-continue {
   position: absolute; bottom: 12vh; left: 50%; translate: -50% 0;
   padding: 10px 22px; border: 2px solid #f6eee9; background: transparent; color: #f6eee9;
@@ -54,7 +56,7 @@
 
 /* anything here shown and hidden by the hidden attribute stays hidden (a display rule below
    would otherwise override it) */
-.col-title [hidden], .world__play[hidden], .col-talisman-btn[hidden], .col-caption[hidden] { display: none !important; }
+.col-title [hidden], .world__play[hidden], .col-talisman-btn[hidden] { display: none !important; }
 
 /* the prompt where the scenery starts */
 .world__play {
@@ -74,17 +76,10 @@
 .col-talisman-btn { position: fixed; z-index: 41; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .col-talisman-btn:focus-visible { outline: 3px solid #ffc857; outline-offset: 3px; }
 
-/* the cinematic fall: bars close in, the letter's lines as captions on a paper strip */
-.col-caption {
-  position: fixed; z-index: 42; left: 50%; bottom: 7vh; translate: -50% 0; max-width: min(90vw, 640px);
-  margin: 0; padding: 6px 14px; text-align: center; opacity: 0; transition: opacity 0.3s steps(3);
-  background: #fff4f1; color: #2b2233; box-shadow: 0 0 0 2px #2b2233; font: 400 var(--fs-14) / 1.4 var(--f-body);
-  pointer-events: none;
-}
-.col-caption.on { opacity: 1; }
-html.col-cine::before, html.col-cine::after {
-  content: ""; position: fixed; left: 0; right: 0; height: 11vh; background: #000; z-index: 39;
-}
-html.col-cine::before { top: 0; }
-html.col-cine::after { bottom: 0; }
-html.col-cine .hdr { visibility: hidden; }
+/* the opening: the page is carried through its sky (col-cine), the cinematic owns the frame until drop 1
+   (op-cine), and from the press the opening's own bars stand in for the world window's (they retract on
+   drop 1: she is yours) */
+html.col-cine .hdr, html.op-cine .hdr { visibility: hidden; }
+html.op-run .world__bars { display: none; }
+html.op-run .world__frame { top: 0; height: 100%; }
+html.op-cine .world__cue { visibility: hidden; }

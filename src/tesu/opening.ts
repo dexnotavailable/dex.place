@@ -1,83 +1,214 @@
-// The opening's beats (GDK 3.9, Appendix C), keyed to where she is, never to a clock:
-// 0:00 she has just slapped the talisman on her hat (the close band on her face); control
-// at 0:02; the camera pulls back as she walks (the reveal track in world/sections/opening.ts)
-// and waits when she stands still; stepping onto the viewing terrace arms the drop, the music
-// waits for its next bar line (at most about two seconds), and the widest frame, the drop and
-// TESU land together; the widest frame holds until the drop has landed, then eases back in.
-// A dashing player gets the same order of beats, faster.
+// The opening in the world (the opening lane's PLAN.md and BEATS.json; GDK 3.9): from the press to the
+// hand-back, locked to Track 1 through the heard clock (opening/clock.ts). T is read from the page's
+// conductor every tick; nothing here runs on its own clock, so a slow phone replays ticks instead of
+// drifting, a covered world simply holds, and the skip is a jump in T.
+//
+//   T 0       the press: she stands at the catch spot, bare-hatted; the talisman enters the sky at 0.64
+//   T 4.63    the world window lands (the held postcard); the camera follows the letter down (authored shots)
+//   T 12.61   the catch; 14.60 the slap; 15.43 the anchor (the bones' bake carries the talisman throughout)
+//   T 16.59   she walks on her own, one footfall a beat; the reveal track (keyed to her x) takes the camera
+//   T 24.52   the hush; 27.98 the pickup; 28.47 drop 1: she breaks into her run, control returns, the bars
+//             retract, the camera whips out (time-locked) to the widest frame on 30.45, drop 2, under TESU
+//   T 34.38   TESU fades, the camera eases back in; 36.35 the world's tracks own the frame again
+//
+// Until the gameplay lane's clips exist she holds the current sprite's idle as a still (the catch, the slap,
+// the anchor), slides through the walk at the solved walk speed, and runs with the current run clip after
+// the drop. Hands-free she keeps running and stops on the terrace; the first input takes her over.
 
-import { TERRACE_X0, TERRACE_X1 } from "./world/sections/common.ts";
+import type { OpeningLink } from "./opening/conductor.ts";
+import { BEATS, beatAt, cameraAt, herPhase, herSpeedH, herXH, reducedHold, windAt, type Framed, type Shot } from "./opening/timeline.ts";
 
-export type OpeningState = "off" | "close" | "walk" | "armed" | "drop" | "done";
+export type OpeningState = "off" | "cine" | "free" | "done";
 
 export interface OpeningHost {
-  playerX(): number;
-  freeze(ticks: number): void;
-  title(text: string, big: boolean): void;
-  setFlag(f: string): void;
-  /** Seconds until the music's next bar line (the score's clock, sound.ts). */
-  nextBar(): number;
-  /** The score's cues: the calm theme starts, the drop lands. */
-  cue(name: string): void;
+  herX(): number;
+  /** Takes her along the ground to x (world px); `jump`: put her down there (a skip). */
+  moveTo(x: number, jump: boolean): void;
+  /** A still of the current sprite's idle, or its run playing. */
+  pose(kind: "still" | "run"): void;
+  /** A movement or action input since the given input tick (the player takes over). */
+  touchedSince(tick: number): boolean;
+  inputTick(): number;
+  /** Hands her over to the player at this speed (px per tick, + right). */
+  release(vx: number): void;
+  title(text: string, hold: number, out: number, after: string, maxFrac: number): void;
+  /** The big title's own time, set from T each tick (so it holds two bars of the music, however the frames run). */
+  titleAt(t: number): void;
+  /** An effect on the beat: `at` is the context time to start it at (null: now). */
+  sfx(id: string, at: number | null): void;
+  /** The ambience bed's level (1 = as set), reached over `secs`. */
+  bed(k: number, secs: number): void;
+  framing(x: number, opening: boolean): Framed;
+  frameW(): number;
+  /** A short cross-fade (a skip, a reduced-motion cut). */
+  cut(): void;
+  /** The cinematic owns the screen (touch controls hidden) or not. */
+  cine(on: boolean): void;
 }
 
 export class Opening {
   state: OpeningState = "off";
-  t = 0;
-  private dropAt = 0;
-  private landedAt = 0;
+  link: OpeningLink | null = null;
+  /** T this tick (as heard when the frame shows). */
+  T = 0;
   reducedMotion = false;
-
-  private host: OpeningHost;
+  /** She runs on her own after the drop until the first input. */
+  autoRun = false;
+  /** No input for a while after the hand-back: the "→" tag beside her. */
+  hint = false;
+  private epoch = -1;
+  private fired = new Set<number>();
+  private titled = false;
+  private ducked = false;
+  private released: number | undefined;
+  private hold = -1;
+  private dropTick = 0;
+  private quietSince = 0;
+  private readonly host: OpeningHost;
 
   constructor(host: OpeningHost) {
     this.host = host;
   }
 
-  start(): void {
-    this.state = "close";
-    this.t = 0;
-    this.host.freeze(120);
-    this.host.cue("calm:start");
+  /** The press: T 0 (or wherever the link's clock stands). */
+  start(link: OpeningLink): void {
+    this.link = link;
+    this.state = "cine";
+    this.epoch = link.epoch;
+    this.fired.clear();
+    this.titled = false;
+    this.ducked = false;
+    this.released = undefined;
+    this.autoRun = true;
+    this.hold = -1;
+    this.reducedMotion = this.reducedMotion || link.reduced;
+    this.T = Math.max(0, link.T());
+    this.host.cine(true);
+    this.host.moveTo(herXH(this.T) * 96, true);
   }
 
-  /** The widest frame is held (she may already be in the tunnel at a full dash). */
-  get holding(): boolean {
-    return this.state === "armed" || (this.state === "drop" && this.t - this.landedAt < 1.6);
-  }
-
-  /** The reveal track applies (the opening is running and has not handed back yet). */
+  /** The reveal track applies and place names keep quiet (the opening has not handed back yet). */
   get active(): boolean {
-    return this.state !== "off" && this.state !== "done";
+    return this.state === "cine" || this.state === "free";
   }
 
-  tick(dt: number): void {
-    if (this.state === "off" || this.state === "done") return;
-    this.t += dt;
-    const x = this.host.playerX();
-    switch (this.state) {
-      case "close":
-        if (this.t >= 2) this.state = "walk";
-        break;
-      case "walk":
-        if (x >= TERRACE_X0) {
-          this.state = "armed";
-          this.dropAt = this.t + Math.min(2.2, Math.max(0.05, this.host.nextBar()));
-        }
-        break;
-      case "armed":
-        if (this.t >= this.dropAt) {
-          this.state = "drop";
-          this.landedAt = this.t;
-          this.host.cue("calm:drop");
-          this.host.title("TESU", true);
-          this.host.setFlag("title:tesu");
-        }
-        break;
-      case "drop":
-        // hand back once the drop has landed and she is past the terrace (or after a while)
-        if (this.t - this.landedAt > 1.6 && (x > TERRACE_X1 || this.t - this.landedAt > 6)) this.state = "done";
-        break;
+  /** The opening moves her this tick (the cinematic, or the hands-free run). */
+  get drives(): boolean {
+    return this.state === "cine" || (this.state === "free" && this.autoRun);
+  }
+
+  /** Track 1 is playing: the world's own score waits. */
+  get music(): boolean {
+    return !!this.link?.music;
+  }
+
+  /** Once per 60 Hz tick, before the simulation. */
+  tick(): void {
+    const link = this.link;
+    if (!link || this.state === "off") return;
+    if (this.state === "done") {
+      this.hintTick();
+      return;
     }
+    const T = Math.max(0, link.T(1000 / 60));
+    this.T = T;
+    const h = this.host;
+    if (link.epoch !== this.epoch) {
+      // a skip: she is put down walking at her place for T, the talisman on her hat, the frame cut
+      this.epoch = link.epoch;
+      h.moveTo(herXH(T) * 96, true);
+      h.cut();
+      BEATS.sfx.forEach((c, i) => { if (c.T < T) this.fired.add(i); });
+    }
+    // effects on their beats, scheduled on the music's own clock
+    BEATS.sfx.forEach((c, i) => {
+      if (this.fired.has(i) || T + 0.15 < c.T) return;
+      this.fired.add(i);
+      if (T - c.T < 0.25) h.sfx(c.id, link.ctxTimeOf(c.T));
+    });
+    // the hush ducks the lake bed; the drop brings the ambience back
+    if (!this.ducked && T >= BEATS.hush.at && T < BEATS.her.drop1) {
+      this.ducked = true;
+      h.bed(Math.pow(10, BEATS.hush.duckDb / 20), BEATS.hush.over);
+    }
+    if (this.ducked && T >= BEATS.her.drop1) {
+      this.ducked = false;
+      h.bed(1, 0.5);
+    }
+    const t = BEATS.title;
+    if (!this.titled && T >= t.at && T < t.at + t.hold + t.fade) {
+      this.titled = true;
+      h.title(t.text, t.hold, t.fade, t.after, t.maxWidth);
+    }
+    if (this.titled) h.titleAt(T - t.at);
+    if (this.state === "cine" && T >= BEATS.her.drop1) {
+      // drop 1: control returns on this tick (the bars retract in the page)
+      this.state = "free";
+      this.dropTick = h.inputTick();
+      h.cine(false);
+    }
+    if (this.state === "free" && this.autoRun) {
+      // the first input takes her over; standing at the overlook, the game's own idle takes her
+      if (h.touchedSince(this.dropTick) || herPhase(T) === "stand") {
+        this.autoRun = false;
+        h.release(herPhase(T) === "stand" ? 0 : (herSpeedH(T) * 96) / 60);
+      }
+    }
+    // the widest frame lets go early only if she has run past the tunnel's first gate
+    const cam = BEATS.camera;
+    if (this.released === undefined && T >= cam.widest.from && T < cam.easeIn.from && h.herX() > cam.releaseXH * 96) this.released = T;
+    if (this.reducedMotion) {
+      const n = reducedHold(T);
+      if (n !== this.hold) {
+        if (this.hold >= 0) h.cut();
+        this.hold = n;
+      }
+    }
+    if (T >= BEATS.ui.handBack) {
+      this.state = "done";
+      this.quietSince = h.inputTick();
+      h.cine(false);
+    }
+  }
+
+  private hintTick(): void {
+    const h = this.host;
+    if (h.touchedSince(this.quietSince + 1)) {
+      this.hint = false;
+      this.link = null;
+      this.state = "off";
+      return;
+    }
+    this.hint = h.inputTick() - this.quietSince > BEATS.ui.hintAfter * 60;
+  }
+
+  /** In the simulation tick: moves her if the opening drives her (then the player's own update is skipped). */
+  drive(): boolean {
+    if (!this.drives) return false;
+    const T = this.T;
+    const ph = herPhase(T);
+    this.host.moveTo(herXH(T) * 96, false);
+    this.host.pose(ph === "run" || ph === "skid" ? "run" : "still");
+    return true;
+  }
+
+  /** The frame the opening asks for at her x (world px), or null when the world's tracks have it. */
+  camera(x: number): Shot | null {
+    if (!this.active) return null;
+    const h = this.host;
+    return cameraAt(this.T, { x, W: h.frameW(), reveal: (v) => h.framing(v, true), world: (v) => h.framing(v, false), released: this.released, reduced: this.reducedMotion });
+  }
+
+  /** Her step's phase (radians) while she walks or runs, for the talisman's bob; null when she stands. */
+  bob(): number | null {
+    const T = this.T, ph = herPhase(T);
+    if (ph === "walk") return (2 * Math.PI * (T - BEATS.her.walkFrom)) / beatAt(T);
+    if (ph === "run") return 2 * Math.PI * T * 5;
+    return null;
+  }
+
+  /** The ambient air on the talisman now. */
+  wind(): { base: number; gust: number } {
+    return windAt(this.active ? this.T : 1e9);
   }
 }

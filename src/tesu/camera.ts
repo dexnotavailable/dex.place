@@ -115,6 +115,24 @@ export class Camera {
     this.cy = f.fixY ?? py;
   }
 
+  /**
+   * Puts the frame exactly here (the opening's camera, time-locked to the music: opening/timeline.ts). cx is the
+   * world x at the frame's centre, her feet (py) sit on the anchor row. The next update() eases on from it.
+   */
+  set(s: { zoom: number; anchor: number; horizon: number; cx: number }, px: number, py: number): void {
+    this.zoom = s.zoom;
+    this.anchor = s.anchor;
+    this.horizon = s.horizon;
+    this.cx = s.cx;
+    this.cy = py;
+    this.lookX = s.cx - px;
+    this.wantZoom = s.zoom;
+    this.lastTargetZoom = s.zoom;
+    this.still = 0;
+    this.closeup = this.closeTarget = 0;
+    this.atLevel = ZOOMS.some((z) => Math.abs(z - this.zoom) < 1e-4);
+  }
+
   /** A camera centre kept half a frame inside the framing's bounds (centred when the room is narrower). */
   private bounded(x: number, f: Framing): number {
     if (!f.bounds) return x;

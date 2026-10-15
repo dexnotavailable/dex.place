@@ -1,8 +1,9 @@
 // Zhusha in the player slot. Her own frames come from her lane as dex.sprite/1 exports at
 // /tesu/zhusha/ (96 px) and /tesu/zhusha-close/ (192 px); until they land, the lab's
 // procedural figure stands in, recoloured to her black, scarlet and talisman gold, with a
-// Qing hat a size too big and the talisman at the side of her face. Swapped in place: the
-// exports load instead with no code change.
+// Qing hat a size too big. Her talisman is not baked into the figure: the world draws it live on
+// the hat's tie point (opening/ofuda.ts: the opening's catch puts it there; it is there in all play).
+// Swapped in place: the exports load instead with no code change.
 //
 // The lab's clip data, tuning and effects are authored for a 96 px character, which is
 // exactly H here: nothing is scaled. The close-up bake is 2x (192 px).
@@ -39,7 +40,6 @@ export interface ZhushaAssets {
 // her colours on the stand-in's materials
 const HAT = PAL.add({ tones: ["#0c0b10", "#16141c", "#211e29", "#2e2a39", "#423d52"], line: "#050407", lite: "#16141c" });
 const SCARLET = PAL.add({ tones: ["#6e0c16", "#a4141f", "#d8232c", "#f2433f", "#ff7a6a"], line: "#3a050b", lite: "#6e0c16" });
-const TALISMAN = PAL.add({ tones: ["#b07a12", "#dca82e", "#f5d25c", "#ffe891", "#fff6c8"], line: "#5a3c06", lite: "#8a5c10", bias: 0.3 });
 
 const TONES = new Map([
   [M.cloth, ["#16141c", "#232030", "#322e42", "#433e56", "#5a546f"]],
@@ -52,7 +52,7 @@ const TONES = new Map([
   [M.shaft, ["#3a3f52", "#5d6680", "#8d97b0", "#c4cbdc", "#eef1f8"]],
 ]);
 
-/** The hat: a wide black brim, a domed crown under a scarlet fringe, a gold knob, tilted; the talisman at her face. */
+/** The hat: a wide black brim, a domed crown under a scarlet fringe, a gold knob, tilted (the talisman is drawn live on it). */
 function hat(b: PixBuf, s: Skeleton, pose: Pose): void {
   const h = s.headC;
   const tilt = (pose.head * 0.5 + s.angC * 0.35 - 9) * (Math.PI / 180);
@@ -70,11 +70,6 @@ function hat(b: PixBuf, s: Skeleton, pose: Pose): void {
   // the brim, a size too big
   const [bx, by] = R(0, -6.0);
   b.ellipse(bx, by, 12.4, 2.2, tilt, HAT, g, { round: 0.8 });
-  // the talisman hanging at the side of her face
-  const [t0x, t0y] = R(6.6, -5.0);
-  const [t1x, t1y] = R(7.4, 9.0);
-  b.capsule(t0x, t0y, 1.7, t1x, t1y, 1.7, TALISMAN, g, { round: 0.6 });
-  b.line(t0x + 0.2, t0y + 4, t1x, t1y - 3, SCARLET, g, 0);
 }
 
 function wrap(pkg: SpritePackage, sheets: Map<string, SpriteSheet>, source: RuntimeSprite["source"]): RuntimeSprite {

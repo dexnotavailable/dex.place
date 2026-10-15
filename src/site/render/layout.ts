@@ -185,9 +185,10 @@ export function footer(current: PageId): string {
 }
 
 /**
- * The top of the page column on "/" (GDK 3.8): the title on black (the dex mark, the loader,
- * the talisman with her name, "continue"), then the self-paced fall through the sky to where
- * the scenery starts. The talisman itself is drawn by motion/column.ts over the page.
+ * The top of the page column on "/" (GDK 3.8): the title on black (the dex mark, the waiting room,
+ * the talisman with her name as the loader, "continue"), then the self-paced fall through the sky to
+ * where the scenery starts. The talisman itself is drawn by motion/column.ts over the page; the
+ * opening's bars, captions and skip chip by its conductor (src/tesu/opening/overlay.ts).
  */
 export function columnTop(): string {
   return (
@@ -201,8 +202,7 @@ export function columnTop(): string {
     `<span class="col-fall__sky"></span><span class="col-fall__isle col-fall__isle--a"></span><span class="col-fall__isle col-fall__isle--b"></span>` +
     `<span class="col-fall__walker col-fall__walker--a"></span><span class="col-fall__walker col-fall__walker--b"></span>` +
     `<span class="col-fall__clouds"></span>` +
-    `</div>` +
-    `<p class="col-caption" data-col-caption aria-live="polite"></p>`
+    `</div>`
   );
 }
 

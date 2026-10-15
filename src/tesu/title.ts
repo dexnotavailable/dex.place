@@ -8,7 +8,7 @@
 // and laid over the frame. Scarlet over daytime skies, paper white at night.
 
 import { compile, uniforms } from "../lab/engine/gl.ts";
-import { drawTitle, layoutTitle, loadTitleFont, TITLE_BIG, TITLE_COLOR_DAY, TITLE_COLOR_NIGHT, TITLE_PLACE, type TitleFont } from "../title-font/index.ts";
+import { drawTitle, layoutTitle, loadTitleFont, TITLE_BIG, TITLE_COLOR_DAY, TITLE_COLOR_NIGHT, TITLE_PLACE, type TitleFont, type TitlePreset } from "../title-font/index.ts";
 
 const VS = /* glsl */ `#version 300 es
 precision highp float;
@@ -55,6 +55,10 @@ interface Card {
   after: string;
   /** The most of the frame's width it may span (its moment's clear sky). */
   maxFrac: number;
+  /** Its timing (the preset, or the moment's own: TESU holds two bars of Track 1). */
+  preset: TitlePreset;
+  /** Fades in over this long (reduced motion: no flash, a 0.3 s fade); 0 slams in. */
+  fadeIn: number;
 }
 
 export class Titles {
@@ -62,6 +66,8 @@ export class Titles {
   private u: Record<string, WebGLUniformLocation>;
   private cards: Card[] = [];
   private font: TitleFont | null = null;
+  /** The title face is in (the opening set waits for it). */
+  readonly ready: Promise<boolean>;
   private canvas = document.createElement("canvas");
   private tex: WebGLTexture;
   reducedMotion = false;
@@ -75,13 +81,20 @@ export class Titles {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    loadTitleFont().then((f) => { this.font = f; }, (e: unknown) => console.warn("title font", e));
+    this.ready = loadTitleFont().then((f) => { this.font = f; return true; }, (e: unknown) => { console.warn("title font", e); return false; });
   }
 
   /** A big title (TESU, SHANSHUI ...) or a place name, slamming in now. */
-  show(text: string, big: boolean, night = false, after = "mid", maxFrac = 0.9): void {
+  show(text: string, big: boolean, night = false, after = "mid", maxFrac = 0.9, timing?: { hold: number; out: number; fadeIn?: number }): void {
     this.cards = this.cards.filter((c) => c.big !== big);
-    this.cards.push({ text, big, t: 0, night, after: big ? after : "overlay", maxFrac: big ? maxFrac : 0.6 });
+    const base = big ? TITLE_BIG : TITLE_PLACE;
+    const preset = timing ? { ...base, hold: timing.hold, out: timing.out } : base;
+    this.cards.push({ text, big, t: 0, night, after: big ? after : "overlay", maxFrac: big ? maxFrac : 0.6, preset, fadeIn: timing?.fadeIn ?? 0 });
+  }
+
+  /** Sets a card's own time (the opening locks TESU to the music's clock). */
+  setTime(big: boolean, t: number): void {
+    for (const c of this.cards) if (c.big === big) c.t = t;
   }
 
   get showing(): boolean {
@@ -90,10 +103,7 @@ export class Titles {
 
   update(dt: number): void {
     for (const c of this.cards) c.t += dt;
-    this.cards = this.cards.filter((c) => {
-      const p = c.big ? TITLE_BIG : TITLE_PLACE;
-      return c.t < p.hold + p.out;
-    });
+    this.cards = this.cards.filter((c) => c.t < c.preset.hold + c.preset.out);
   }
 
   /**
@@ -123,10 +133,12 @@ export class Titles {
       }
       const g = cv.getContext("2d")!;
       g.clearRect(0, 0, w, h);
+      g.globalAlpha = c.fadeIn > 0 ? Math.min(1, c.t / c.fadeIn) : 1;
       drawTitle(g, font, text, 0, (up + cap) * scale, {
         scale, color: c.night ? TITLE_COLOR_NIGHT : TITLE_COLOR_DAY, tracking: c.big ? 2 : 1,
-        time: c.t, preset: c.big ? TITLE_BIG : TITLE_PLACE, reducedMotion: this.reducedMotion,
+        time: c.t, preset: c.preset, reducedMotion: this.reducedMotion,
       });
+      g.globalAlpha = 1;
       gl.bindTexture(gl.TEXTURE_2D, this.tex);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, cv);

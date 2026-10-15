@@ -8,6 +8,17 @@
 // page it stands at that section's place (a spawn), so scrolling up finds her there.
 
 import type { WorldHandle } from "../site/motion/world.ts";
+import type { OpeningLink } from "./opening/conductor.ts";
+
+/** What the opening needs in memory before "continue" (main.ts openingSet). */
+export interface OpeningSet {
+  /** Plates along the opening camera's path (0..1). */
+  plates: number;
+  close: boolean;
+  font: boolean;
+  ofuda: boolean;
+  warming: boolean;
+}
 
 interface Runtime {
   game: {
@@ -17,8 +28,9 @@ interface Runtime {
     titles: { show(text: string, big: boolean): void };
   };
   panels: { open: boolean };
-  play(): void;
+  play(link?: OpeningLink): void;
   audio(ctx: AudioContext): void;
+  openingSet?(): OpeningSet;
 }
 type TesuWindow = Window & { __tesu?: Runtime };
 
@@ -30,8 +42,10 @@ export interface TesuMountOptions {
 }
 
 export interface TesuHandle extends WorldHandle {
-  /** PLAY: the opening starts at 0:00; `ctx` is the page's running audio (the press was the page's). */
-  play(ctx?: AudioContext): void;
+  /** The press (PLAY or "continue"): the opening starts on the page's conductor (its clock, its audio). */
+  play(link?: OpeningLink): void;
+  /** The opening set's state (null until the world's code runs). */
+  openingSet(): OpeningSet | null;
   /** A big title in the world window (TESU for a visitor who scrolls on past PLAY). */
   title(text: string): void;
   /** Still waiting for PLAY. */
@@ -60,7 +74,7 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
   let configured = false;
   let playable = false;
   let waitingFocus = false;
-  let pendingPlay: AudioContext | null | undefined;
+  let pendingPlay: OpeningLink | null | undefined;
   const cleanups: (() => void)[] = [];
   const win = (): TesuWindow | null => frame.contentWindow as TesuWindow | null;
   const runtime = (): Runtime | undefined => win()?.__tesu;
@@ -176,18 +190,18 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
   };
   requestAnimationFrame(watch);
 
-  const doPlay = (ctx: AudioContext | null): void => {
+  const doPlay = (link: OpeningLink | null): void => {
     const rt = runtime();
-    if (!rt) { pendingPlay = ctx; return; }
+    if (!rt) { pendingPlay = link; return; }
     pendingPlay = undefined;
-    if (ctx) rt.audio(ctx);
-    rt.play();
+    rt.play(link ?? undefined);
     focus();
   };
 
   return {
     ready, shown, booted, focus,
-    play: (ctx) => doPlay(ctx ?? null),
+    play: (link) => doPlay(link ?? null),
+    openingSet: () => runtime()?.openingSet?.() ?? null,
     title: (text) => runtime()?.game.titles.show(text, true),
     holding: () => runtime()?.game.holding ?? true,
     pause: () => { paused = true; waitingFocus = false; sync(); },

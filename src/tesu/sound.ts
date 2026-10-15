@@ -5,6 +5,8 @@
 //   public/audio/world/ (original synthesis and processed CC0, see its ATTRIBUTION.md) until
 //   the ElevenLabs set replaces them; an id with no file falls back to the lab's synth sounds.
 // - Beds: the ambience per place, cross-faded (the lake, the heights, the hall).
+// - The opening plays Track 1, the picked take, owned by the page's conductor (opening/conductor.ts) on the
+//   page's AudioContext, which this module shares (start(ctx)); the score below waits while it sounds.
 // - Music: the adaptive score. A bar clock always runs (also before the first click, so the
 //   opening can arm the drop on it); a theme is a set of stems that loop together, layers
 //   fading in over a bar as cues arrive; the drop lands on a bar line. Until Dex's Suno stems
@@ -12,7 +14,8 @@
 //   (drum layers, the drop, the arena's drive), so the layering can be judged by ear.
 //
 // Nothing starts abruptly: the first sound of a visit waits for the visitor's first click,
-// key or tap and swells in; every layer fades in over a bar.
+// key or tap and swells in; every layer fades in over a bar. While the world waits for the opening's press it
+// stays silent (the plan's D10: the first sound anyone hears is Track 1's first piano note).
 
 import { Sfx } from "../lab/engine/sfx.ts";
 
@@ -44,6 +47,13 @@ const CUES: Record<string, Cue> = {
   hurt: c("hurt", 0.6), land: c("landing", 0.5), dash: c("whoosh", 0.45, 1.2),
   // doors and panels
   "door-open": c("door-open", 0.5), "panel-open": c("paper-open", 0.45),
+  // the opening (its own ids for the audio lane; stand-ins from the files we have, under the music at -18 to
+  // -10 dB, the slap and the burst on their drum hits: BEATS.json sfx)
+  "op.gust": c("whoosh", 0.3, 0.7), "op.paper-flutter": c("cloth-flap", 0.12, 1.6),
+  "op.catch": c("paper-open", 0.32, 1.1), "op.read": c("paper-open", 0.2, 1.25),
+  "op.slap": c("wood-knock", 0.32), "op.jam": c("cloth-1", 0.25), "op.brim": c("cloth-2", 0.2),
+  "op.hatgrip": c("cloth-2", 0.2, 0.9), "op.inhale": c("whoosh", 0.18, 0.5),
+  "op.burst": c("whoosh", 0.3, 1.1), "op.skid": c("grit-sift", 0.3),
 };
 
 /** Ambience beds by place (files in beds/, opus or m4a). */
@@ -67,6 +77,8 @@ export class Sound {
   private wantBed: string | null = null;
   /** Times each cue played (debug and tests). */
   readonly played = new Map<string, number>();
+  /** Held silent (the world waits for the opening's press): start() does nothing until it is let go. */
+  locked = false;
 
   constructor() {
     this.music = new Music(this);
@@ -80,6 +92,7 @@ export class Sound {
    * page hands its own running context over (`ctx`).
    */
   start(given?: AudioContext): void {
+    if (this.locked) return;
     if (this.ctx) {
       if (this.ctx.state === "suspended") void this.ctx.resume();
       return;
@@ -104,6 +117,7 @@ export class Sound {
     this.music.attach(ctx);
     if (this.wantBed) this.setBed(this.wantBed);
     for (const id of ["wood.break", "clay.break", "debris", "gong", "poof", "tink"]) void this.load(CUES[id]!.file);
+    for (const id of Object.keys(CUES)) if (id.startsWith("op.")) void this.load(CUES[id]!.file);
   }
 
   /** The world scrolls out of view (the page column): its sound fades down, and back. */
@@ -125,8 +139,8 @@ export class Sound {
     return p;
   }
 
-  /** A sound effect by cue id. */
-  sfx(id: string, volume = 1): void {
+  /** A sound effect by cue id; `at`: the context time to start it (on a beat of the music), else now. */
+  sfx(id: string, volume = 1, at: number | null = null): void {
     this.played.set(id, (this.played.get(id) ?? 0) + 1);
     const cue = CUES[id];
     if (!cue) {
@@ -135,10 +149,10 @@ export class Sound {
     }
     const ctx = this.ctx;
     if (!ctx || !this.sfxBus || ctx.state !== "running") return;
-    const asked = ctx.currentTime;
+    const asked = at ?? ctx.currentTime;
     void this.load(cue.file).then((buf) => {
       // late by more than a moment: skip it rather than play it out of time
-      if (!buf || !this.sfxBus || ctx.currentTime - asked > 0.25) return;
+      if (!buf || !this.sfxBus || ctx.currentTime - asked > (at === null ? 0.25 : 0.06)) return;
       const s = ctx.createBufferSource();
       s.buffer = buf;
       s.playbackRate.value = cue.rate * (0.96 + Math.random() * 0.08);
@@ -146,8 +160,18 @@ export class Sound {
       g.gain.value = cue.vol * volume;
       s.connect(g);
       g.connect(this.sfxBus);
-      s.start();
+      s.start(Math.max(asked, ctx.currentTime));
     });
+  }
+
+  /** The ambience beds' level (1 = as set), reached over `secs` (the opening's hush ducks them). */
+  bedLevel(k: number, secs: number): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.bedBus) return;
+    const g = this.bedBus.gain;
+    g.cancelScheduledValues(ctx.currentTime);
+    g.setValueAtTime(g.value, ctx.currentTime);
+    g.linearRampToValueAtTime(0.55 * k, ctx.currentTime + secs);
   }
 
   /** The ambience bed for where she is (cross-faded over 2 s). */
@@ -206,6 +230,8 @@ type Mood = "off" | "calm" | "intense" | "hall";
 export class Music {
   private t0 = performance.now() / 1000;
   mood: Mood = "off";
+  /** Another music is playing (the opening's Track 1): this score waits, silent, until it ends. */
+  held = false;
   layers = 0;
   dropped = false;
   private hush = false;
@@ -312,7 +338,7 @@ export class Music {
   /** The look-ahead scheduler: the placeholder's hits for the next 0.2 s, on the clock's grid. */
   private schedule(): void {
     const ctx = this.ctx;
-    if (!ctx || ctx.state !== "running" || this.mood === "off") return;
+    if (!ctx || ctx.state !== "running" || this.mood === "off" || this.held) return;
     if (this.stemTick()) return;
     const th = this.theme;
     const s16 = 60 / th.bpm / 4;

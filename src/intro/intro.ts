@@ -74,6 +74,8 @@ export interface IntroOptions {
   skippable?: boolean;
   /** Where skip clicks and keys are listened for (default: the window). */
   skipTarget?: EventTarget;
+  /** How long the finished mark holds, s (default INTRO_TIMING.hold; the opening plan: 1.5 first visit, 0.8 return). */
+  hold?: number;
   /** Force reduced motion on or off; default follows the operating system. */
   reducedMotion?: boolean;
   /**
@@ -147,7 +149,7 @@ const BRUSH_LEAD = 1.4;
 export const penEase = (u: number): number => (u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u));
 
 /** Every ink pixel of the mark with its writing and dusting times (pure; exported for checks). */
-export function planMark(): { pixels: Px[]; strokes: StrokeTiming[]; written: number } {
+export function planMark(hold: number = INTRO_TIMING.hold): { pixels: Px[]; strokes: StrokeTiming[]; written: number } {
   const T = INTRO_TIMING;
   const lens = MARK_STROKES.map((s) => s.reduce((acc, p, i) => (i ? acc + Math.hypot(p[0] - s[i - 1]![0], p[1] - s[i - 1]![1]) : 0), 0));
   const total = lens.reduce((a, b) => a + b, 0);
@@ -160,7 +162,7 @@ export function planMark(): { pixels: Px[]; strokes: StrokeTiming[]; written: nu
     t += dur + T.lift;
   });
   const written = t - T.lift;
-  const sweepAt = written + T.hold;
+  const sweepAt = written + hold;
   // an upright front: the mark goes strictly left to right (slant > 0 would lead with the top)
   const slant = 0;
   const span = MARK_W + slant * MARK_H + 4;
@@ -272,7 +274,7 @@ export function playIntro(opts: IntroOptions = {}): IntroHandle {
     oy = Math.floor((bh - MARK_H) / 2 - bh * 0.02);
   }
 
-  const pixels = reduced ? [] : planMark().pixels;
+  const pixels = reduced ? [] : planMark(opts.hold).pixels;
   const lastDust = pixels.reduce((m, p) => Math.max(m, p.dustAt), 0);
   const endAt = reduced ? T.calm[0] + T.calm[1] + T.calm[2] : pixels.reduce((m, p) => Math.max(m, p.dustAt + p.life), 0);
 

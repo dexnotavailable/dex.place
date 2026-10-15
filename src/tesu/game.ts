@@ -31,11 +31,13 @@ import { Atmos, waterHolds, type MistBand, type SkyGlow } from "./render/atmos.t
 import { Motes } from "./render/motes.ts";
 import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
+import { SilentLink, type OpeningLink } from "./opening/conductor.ts";
+import { HAT_TIE, Ofuda, type OfudaPose } from "./opening/ofuda.ts";
+import { BEATS, cameraAt, herXH } from "./opening/timeline.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
 import { eyeY, levelFor, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
 import { buildWorld } from "./world/index.ts";
-import { TERRACE_X0, TERRACE_X1 } from "./world/sections/common.ts";
 import { isReload, loadSave, resumePlace, writeSave, type TesuSave } from "./save.ts";
 import { PLANES, PLANE_IDS, type CharmDef, type Atmos as AtmosDef, type PlaneId, type SpriteDef, type Spawn, type Usable, type Water, type WorldDef } from "./world/types.ts";
 
@@ -84,7 +86,7 @@ export interface TesuOpts {
   noOpening?: boolean;
   /**
    * The page column's world window (`/`): show Kagami still, controls held, until the PLAY
-   * press (or the "continue" fall) calls play(), which starts the opening at 0:00.
+   * press (or "continue") calls play() with the page's conductor, which starts the opening at T 0.
    */
   hold?: boolean;
   manual: boolean;
@@ -169,14 +171,28 @@ export class TesuGame {
     if (!opts.manual) this.sprites.async = (job, done) => this.store.paintSprite(job, done);
     this.titles = new Titles(gl, r.emptyVao);
     this.opening = new Opening({
-      playerX: () => this.player.body.x,
-      freeze: (t) => { this.frozen = Math.max(this.frozen, t); },
+      herX: () => this.player.body.x,
+      moveTo: (x, jump) => this.driveTo(x, jump),
+      pose: (kind) => this.posePlayer(kind),
+      touchedSince: (t) => this.touchedSince(t),
+      inputTick: () => this.input.tick,
+      release: (vx) => {
+        this.player.body.vx = vx;
+        this.frozen = 0;
+      },
       // TESU's moment: the palace's gate is pinned at 0.8 of the width, so the title keeps to
       // the sky between, at most 56% of the frame wide (on narrow screens it shrinks instead)
-      title: (text, big) => this.titles.show(text, big, false, "mid", 0.56),
-      setFlag: (f) => this.setFlag(f),
-      nextBar: () => this.sound.music.nextBar(),
-      cue: (n) => this.cue(n),
+      title: (text, hold, out, after, maxFrac) => {
+        this.titles.show(text, true, false, after, maxFrac, { hold, out, fadeIn: this.feel.reducedMotion ? 0.3 : 0 });
+        this.setFlag("title:tesu");
+      },
+      titleAt: (t) => this.titles.setTime(true, t),
+      sfx: (id, at) => this.sound.sfx(id, 1, at),
+      bed: (k, secs) => this.sound.bedLevel(k, secs),
+      framing: (x, opening) => this.trackFraming(x, opening),
+      frameW: () => this.r.iw,
+      cut: () => { this.cutFade = 1; },
+      cine: (on) => { document.documentElement.classList.toggle("cine", on); },
     });
     this.refl = makeTarget(gl, r.iw, r.ih, false);
     r.onFrame = () => {
@@ -218,7 +234,7 @@ export class TesuGame {
     });
     this.player = new Player(assets.sprite, assets.tuning.player, services, [0, 0]);
     this.closeSprite = assets.closeup;
-    void assets.closeupReady.then((s) => { this.closeSprite = s; }, (e: unknown) => console.warn("close-up", e));
+    void assets.closeupReady.then((s) => { this.closeSprite = s; this.closeReady = true; }, (e: unknown) => console.warn("close-up", e));
     this.vfx.groundAt = (x, y) => this.collision.groundAt(x, y);
     this.save = loadSave();
     for (const f of this.save.flags) if (!TRANSIENT.has(f)) this.flags.add(f);
@@ -257,17 +273,26 @@ export class TesuGame {
     if (resume) this.spawnAt({ id: "resume", x: resume.x, y: resume.y, facing: resume.facing });
     else this.spawnAt(this.world.spawns.find((s) => s.id === opts.start) ?? catchS);
     this.startedBy = resume ? "resume" : opts.link ? "link" : "fresh";
-    if (opts.hold) {
-      // the world window waits for PLAY: Kagami at the play frame, controls held
+    if (opts.hold || (this.startedBy === "fresh" && !opts.noOpening)) {
+      // the world waits for the press (PLAY or "continue" on the homepage, "continue" on /tesu/ itself):
+      // Kagami held at the postcard, bare-hatted, controls held
       this.holding = true;
+      this.awaitingPress = !opts.hold;
       this.frozen = 1e9;
-    } else if (this.startedBy === "fresh" && !opts.noOpening) {
-      this.opening.start();
+      this.sound.locked = true;
       this.camera.snap(this.player.body.x, this.player.body.y, this.framing(), 1);
     }
   }
 
   readonly startedBy: "fresh" | "resume" | "link" = "fresh";
+  /** /tesu/ on its own, fresh: the page shows "continue" and the press starts the opening (main.ts). */
+  awaitingPress = false;
+  /** Zhusha's talisman: the opening's bake, then the live chain on her hat. */
+  readonly ofuda = new Ofuda();
+  private ofudaPose: OfudaPose | null = null;
+  private ofudaX = 0;
+  /** Her 192 px drawing is in (the opening set waits for it). */
+  closeReady = false;
 
   /** Sets a progress flag (kept on this device). */
   setFlag(f: string, on = true): void {
@@ -287,29 +312,26 @@ export class TesuGame {
   }
 
   /**
-   * The score follows her, not a clock: in the opening a drum layer comes in at each mark
-   * (the jetty's last posts, the shore, the three gates); the hall gathers the music into its
-   * quiet; outdoors after the opening the calm landscape form plays; beds follow the place.
+   * The score: the opening plays Track 1 (the page's conductor owns it) and the old synthesized layers wait
+   * while it sounds; then the hall gathers the music into its quiet, outdoors the calm landscape form plays;
+   * beds follow the place.
    */
   private scoreTick(): void {
     const b = this.player.body;
     const m = this.sound.music;
-    if (this.opening.active && !m.dropped) {
-      const marks = [103, 108, 115, 119, 123];
-      let n = 0;
-      for (const k of marks) if (b.x >= k * H) n++;
-      if (n > m.layers) this.cue(`calm:layer:${n}`);
-    }
+    m.held = this.opening.music || this.opening.state === "cine";
     if (this.tick % 30 !== 0) return;
     const inside = b.y >= INTERIOR_Y;
     this.sound.setBed(inside ? "hall" : b.x < 109 * H ? "lake" : "heights");
+    if (m.held) return;
     if (inside && m.mood !== "hall" && m.mood !== "intense") this.cue("music:hall");
     else if (!inside && !this.opening.active && (m.mood === "off" || m.mood === "hall")) this.cue("music:land");
   }
 
   private notePlace(): void {
     const b = this.player.body;
-    if (!b.grounded || this.tug || this.rides.active) return;
+    // (a reload before the opening hands back replays it from its start: no place is noted in it)
+    if (!b.grounded || this.tug || this.rides.active || this.holding || this.opening.active) return;
     this.save.place = { x: Math.round(b.x), y: Math.round(b.y), facing: this.player.facing as 1 | -1, at: Date.now() };
     writeSave(this.save);
   }
@@ -347,18 +369,31 @@ export class TesuGame {
   /** Debug and tools: force a framing (zoom, anchor, horizon), or null to follow the tracks. */
   framingOverride: Partial<ReturnType<typeof framingAt>> | null = null;
 
+  /** The world's tracks at x, with the opening's reveal track on or off (the opening's camera reads them). */
+  private trackFraming(x: number, opening: boolean): ReturnType<typeof framingAt> {
+    const has = (fl: string): boolean => (fl === "opening" ? opening : this.flags.has(fl));
+    return framingAt(this.world.tracks, x, has, this.groundY(x));
+  }
+
+  /** The ground's y under x near her (the jetty, the shore road, the terrace). */
+  private groundY(x: number): number {
+    const b = this.player.body;
+    return this.collision.groundBelow(x, b.y - 2 * H)?.y ?? b.y;
+  }
+
   private framing(): ReturnType<typeof framingAt> {
     const has = (fl: string): boolean => (fl === "opening" ? this.opening.active : this.flags.has(fl));
-    // the widest frame holds until the drop has landed, wherever she has got to
-    const x = this.opening.holding ? Math.min(this.player.body.x, TERRACE_X1) : this.player.body.x;
-    let f = framingAt(this.world.tracks, Math.max(x, this.opening.holding ? TERRACE_X0 + 1 : -Infinity), has, this.player.body.y);
+    let f = framingAt(this.world.tracks, this.player.body.x, has, this.player.body.y);
     // an entrance shot: a held vista on first entry, ended early by moving
     if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.pin ? null : this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor, pin: this.vista.pin ?? null, bounds: null };
     // outdoors the frame never shows past the world's ends (the widest frames on ultra-wide screens)
     if (!f.bounds && this.player.body.y < INTERIOR_Y) f = { ...f, bounds: [0, this.world.w] };
-    // the world window waiting for PLAY: a held vista of Kagami with the sky in the middle of
-    // the frame, so TESU (for a visitor who scrolls on past) is written into the sky
-    if (this.holding) f = { ...f, zoom: 0.5, anchor: 0.86, horizon: 0.64, lead: 0 };
+    // the world window waiting for the press: the opening's first shot, the held postcard of Kagami with the
+    // sky in the middle of the frame (so TESU, for a visitor who scrolls on past, is written into the sky)
+    if (this.holding) {
+      const s0 = BEATS.camera.shots[0]!;
+      f = { ...f, zoom: s0.zoom[0], anchor: s0.anchor[0], horizon: s0.horizon[0], lead: 0, fixX: s0.cx[0] * H, pin: null };
+    }
     return this.framingOverride ? { ...f, ...this.framingOverride } : f;
   }
 
@@ -375,14 +410,57 @@ export class TesuGame {
     this.sound.setVisible(away ? 0 : 1);
   }
 
-  /** PLAY (or the end of the "continue" fall): the opening starts at 0:00, she has just slapped the talisman on her hat. */
-  play(): void {
+  /**
+   * The press (PLAY or "continue"): the opening starts on the link's clock (the page's conductor: Track 1 as
+   * heard). Without one (tools) it runs silent on the world's own simulated time.
+   */
+  play(link?: OpeningLink): void {
     if (!this.holding) return;
     this.holding = false;
+    this.awaitingPress = false;
     this.frozen = 0;
+    this.sound.locked = false;
+    if (link?.ctx) this.sound.start(link.ctx);
     this.spawnAt(this.world.spawns.find((s) => s.id === "catch")!);
-    this.opening.start();
-    this.camera.snap(this.player.body.x, this.player.body.y, this.framing(), 1);
+    this.opening.start(link ?? new SilentLink(() => this.time, this.feel.reducedMotion));
+    const shot = this.opening.camera(this.player.body.x);
+    if (shot) this.camera.set(shot, this.player.body.x, this.player.body.y);
+  }
+
+  // --- the opening drives her (opening.ts): visual and timing only, on the ground the world already has
+
+  /** Along the ground to x; far (a skip) or not yet on the ground: put down there. */
+  private driveTo(x: number, jump: boolean): void {
+    const b = this.player.body;
+    const dx = x - b.x;
+    if (jump || Math.abs(dx) > H) {
+      this.place(x);
+      this.player.facing = 1;
+      return;
+    }
+    if (!b.grounded) this.collision.move(b, 0, 2);
+    if (Math.abs(dx) > 1e-4) this.collision.move(b, dx, 0);
+    if (!b.grounded) {
+      const g = this.collision.groundBelow(b.x, b.y - PHYSICS.stepUp * H);
+      if (g && g.y - b.y < 2 * H) this.collision.move(b, 0, g.y - b.y + 0.5);
+    }
+    b.vx = 0;
+    b.vy = 0;
+    this.player.facing = 1;
+  }
+
+  /** The current sprite as a still of its idle (the opening's holds and slides), or its run playing. */
+  private posePlayer(kind: "still" | "run"): void {
+    const c = this.player.clip;
+    const id = kind === "run" ? "run" : "idle";
+    if (c.clip.id !== id) c.play(this.player.sprite.clips.get(id)!);
+    if (kind === "run") c.step();
+  }
+
+  /** A movement or action input since input tick t (held now, or pressed after it). */
+  private touchedSince(t: number): boolean {
+    const acts = ["left", "right", "up", "down", "jump", "m1", "m2", "skill", "ult"] as const;
+    return acts.some((a) => this.input.isDown(a) || (this.input.pressTick(a) ?? -Infinity) > t);
   }
 
   frame(now: number): void {
@@ -390,6 +468,8 @@ export class TesuGame {
     // (so a world loaded behind the website is ready when she scrolls up to it)
     if (this.away && !this.loading) {
       this.last = now;
+      // (the opening set keeps streaming in while the title covers the world)
+      if (this.warming) this.warmPump();
       return;
     }
     const dt = Math.min(100, this.last ? now - this.last : 16.7);
@@ -429,6 +509,7 @@ export class TesuGame {
   realTick(): void {
     this.tick++;
     this.time += 1 / 60;
+    this.opening.tick();
     this.feel.realTick();
     this.vfx.realTick();
     this.simAcc += this.feel.slowFactor;
@@ -441,7 +522,11 @@ export class TesuGame {
     this.camera.H = this.r.ih;
     const f = this.framing();
     const cuts = this.camera.cuts;
-    this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
+    // the opening's camera is time-locked to the music; then the world's tracks have the frame again
+    const shot = this.opening.camera(b.x);
+    if (shot) this.camera.set(shot, b.x, b.y);
+    else this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
+    this.ofudaTick();
     // reduced motion: a cut between held frames is a short dithered cross-fade, not a swing
     if (this.camera.cuts !== cuts && this.tick > 2) this.cutFade = 1;
     this.cutFade = Math.max(0, this.cutFade - 1 / 12);
@@ -453,10 +538,9 @@ export class TesuGame {
     }
     this.syncGates();
     this.doorTick();
-    this.near = this.cut || this.tug || this.rides.active || this.warp ? null : this.findNear();
+    this.near = this.cut || this.tug || this.rides.active || this.warp || this.opening.state === "cine" || this.holding ? null : this.findNear();
     this.placeNames();
     this.motes.update(1 / 60);
-    this.opening.tick(1 / 60);
     this.scoreTick();
     this.titles.update(1 / 60);
     if (this.tick % 60 === 0) this.notePlace();
@@ -469,6 +553,14 @@ export class TesuGame {
     }
     if (this.frozen > 0) this.frozen--;
     const b = this.player.body;
+    if (this.opening.drive()) {
+      // the cinematic (and the hands-free run after the drop) moves her; her own controls wait
+      this.vfx.update();
+      this.input.tick++;
+      this.fallFrom = null;
+      this.cloudDrop = false;
+      return;
+    }
     const wasGrounded = b.grounded;
     this.collision.holdDown = this.frozen <= 0 && this.input.isDown("down");
     // on a ropeway: the car carries her, its floor is her ground, nothing else applies
@@ -604,6 +696,141 @@ export class TesuGame {
       // a key still held from before the fall does not walk her straight off again
       this.waitRelease = true;
     }
+  }
+
+  // --- the talisman ------------------------------------------------------------
+
+  /** The talisman this tick: none before the press, the bones' bake through the opening, then the live chain on her hat. */
+  private ofudaTick(): void {
+    const b = this.player.body, f = this.player.facing;
+    const speed = (((b.x - this.ofudaX) * 60) / H) * f;
+    this.ofudaX = b.x;
+    if (this.holding) {
+      this.ofudaPose = null;
+      return;
+    }
+    const head = this.player.clip.frame.anchors?.["head"] ?? [0, -0.8 * H];
+    const tie: [number, number] = [b.x + (head[0] + HAT_TIE[0]) * f, b.y + head[1] + HAT_TIE[1]];
+    const o = this.opening, reduced = this.feel.reducedMotion;
+    const [t0, t1] = this.ofuda.span;
+    if (o.active && o.T <= t1) {
+      const pose = o.T < t0 ? null : this.ofuda.bakeAt(o.T, b.x, b.y, tie, reduced);
+      this.ofudaPose = pose;
+      if (pose) this.ofuda.seed(pose, f);
+      return;
+    }
+    const w = o.wind();
+    const bob = o.active ? o.bob() : Math.abs(speed) > 0.3 ? this.time * Math.PI * 2 * Math.min(5, 1 + Math.abs(speed)) : null;
+    this.ofudaPose = this.ofuda.live(tie, f, speed - w.base * f, w.gust, bob, reduced);
+  }
+
+  /** The talisman as pixels at the camera's scale (behind her, or in front). */
+  private drawOfuda(cam: CamState, behind: boolean): void {
+    const p = this.ofudaPose;
+    if (!p || p.behind !== behind || this.fade >= 1) return;
+    const r = this.r, xf = planeXf(cam, 1), o = this.opening;
+    let glint: number | null = null;
+    if (o.active && o.T < this.ofuda.span[1]) {
+      for (const g of BEATS.ofuda.glints) {
+        const u = (o.T - g) / (5 / 12);
+        if (u >= 0 && u < 1) glint = u;
+      }
+    }
+    r.setTransform();
+    this.ofuda.draw(p, (x, y) => [x * xf.s + xf.offX, y * xf.s + xf.offY], xf.s, glint, this.feel.reducedMotion, (x, y, c) => r.rect(x, y, 1, 1, c, 1, 1, true));
+  }
+
+  /** After the hand-back, no input for a while: a small paper tag "->" beside her (gone on the first input). */
+  private drawHint(cam: CamState): void {
+    if (!this.opening.hint) return;
+    const xf = planeXf(cam, 1), b = this.player.body;
+    const fx = Math.round(b.x * xf.s + xf.offX + 0.5 * H * Math.min(1, xf.s) + 8);
+    const fy = Math.round((b.y - 0.62 * H) * xf.s + xf.offY + Math.round(Math.sin(this.time * 4) * 1.5));
+    const r = this.r;
+    const ink: [number, number, number] = [0.106, 0.098, 0.133];
+    r.begin(0, 0, DAY, []);
+    r.rect(fx - 1, fy - 1, 21, 15, ink, 1, 1, true);
+    r.rect(fx, fy, 19, 13, [1, 0.96, 0.94], 1, 1, true);
+    r.rect(fx + 4, fy + 5, 9, 3, ink, 1, 1, true);
+    r.rect(fx + 11, fy + 3, 2, 7, ink, 1, 1, true);
+    r.rect(fx + 13, fy + 4, 1, 5, ink, 1, 1, true);
+    r.rect(fx + 14, fy + 5, 1, 3, ink, 1, 1, true);
+    r.flush();
+  }
+
+  // --- the opening set's plates: every tile the opening's camera will draw, asked for while the title covers
+  // the world, so "continue" can wait until the 36 seconds can never stall on a plate
+
+  private warm: { list: [PlaneId, number, number, number][]; done: number } | null = null;
+
+  /** Plates of the opening set are still coming in. */
+  get warming(): boolean {
+    return !!this.warm && this.warm.done < this.warm.list.length;
+  }
+
+  /**
+   * Walks the opening's camera along its path (every quarter second) and asks for each tile it will need. The
+   * store holds at most a few hundred tiles, fewer than the whole path's, so the gate ("continue") waits for the
+   * stretches that can never be streamed late: the slow drift to the close band (T 0 to the walk) and the
+   * widest frame with its ease back in; the walk's reveal and the two-second whip-out are asked for after
+   * them and stream in under the cinematic (the renderer draws the level below until a tile lands).
+   */
+  startWarm(): void {
+    if (this.warm) return;
+    const seen = new Set<string>();
+    const W = this.r.iw, Hf = this.r.ih;
+    const reduced = this.feel.reducedMotion;
+    const tilesOver = (a: number, b: number): [PlaneId, number, number, number][] => {
+      const out: [PlaneId, number, number, number][] = [];
+      for (let T = a; T <= b + 1e-6; T += 0.25) {
+        const x = herXH(T) * H;
+        const shot = cameraAt(T, { x, W, reveal: (v) => this.trackFraming(v, true), world: (v) => this.trackFraming(v, false), reduced });
+        if (!shot) continue;
+        const cam: CamState = { cx: shot.cx, cy: this.groundY(x), zoom: shot.zoom, anchor: shot.anchor, horizon: shot.horizon, W, H: Hf };
+        for (const id of PLANE_IDS) {
+          if (id === "near" && cam.zoom > 1.6) continue;
+          const sp = this.tileSpan(cam, id, this.levelOf(cam, id), 0, Hf);
+          for (let ty = sp.ty0; ty <= sp.ty1; ty++) {
+            for (let tx = sp.tx0; tx <= sp.tx1; tx++) {
+              const k = `${id}|${sp.level}|${tx}|${ty}`;
+              if (seen.has(k)) continue;
+              seen.add(k);
+              out.push([id, sp.level, tx, ty]);
+            }
+          }
+        }
+      }
+      return out;
+    };
+    const cam = BEATS.camera;
+    const gate = [...tilesOver(0, cam.reveal.from), ...tilesOver(cam.widest.from, BEATS.ui.handBack)];
+    const later = [...tilesOver(cam.reveal.from, cam.whip.from), ...tilesOver(cam.whip.from, cam.widest.from)];
+    // never more than the plate store holds: asking for more would only evict what was just painted
+    const cap = Math.floor(this.planes.layers * 0.8);
+    if (gate.length > cap) gate.length = cap;
+    later.length = Math.max(0, Math.min(later.length, cap - gate.length));
+    gate.forEach(([id, lv, tx, ty], i) => this.store.want(id, lv, tx, ty, 30 + i * 0.001));
+    later.forEach(([id, lv, tx, ty], i) => this.store.want(id, lv, tx, ty, 40 + i * 0.001));
+    this.warm = { list: gate, done: 0 };
+    console.info(`[opening] the opening set: ${gate.length} plate tiles before "continue", ${later.length} more streaming behind (the store holds ${this.planes.layers})`);
+  }
+
+  private warmPump(): void {
+    this.store.pump();
+  }
+
+  /** The opening set's plates in (0..1). Asks again for any the store has let go. */
+  warmProgress(): number {
+    const w = this.warm;
+    if (!w) return 0;
+    let done = 0;
+    w.list.forEach(([id, lv, tx, ty], i) => {
+      if (this.store.peek(id, lv, tx, ty) !== -1) done++;
+      else this.store.want(id, lv, tx, ty, 30 + i * 0.001);
+    });
+    w.done = done;
+    if (this.away && done < w.list.length) this.store.pump();
+    return w.list.length ? done / w.list.length : 1;
   }
 
   // --- using things ---------------------------------------------------------
@@ -758,7 +985,7 @@ export class TesuGame {
 
   /** F, Enter or a tap on the thing: use what is within reach. */
   use(u: Usable | null = this.near): void {
-    if (!u || this.cut || this.tug) return;
+    if (!u || this.cut || this.tug || this.opening.state === "cine" || this.holding) return;
     // the board waits while a bout is on; leaving through a door ends the bout
     if (this.court.busy && u.action.kind === "panel" && u.action.panel === "board") return;
     if (u.action.kind === "ride") {
@@ -922,25 +1149,36 @@ export class TesuGame {
    * Tiles of a plane covering frame rows [ya, yb), at the level for the current zoom.
    * Requests what is missing; draws the last complete level underneath until it lands.
    */
+  /** The plate level a plane is drawn at for this camera. */
+  private levelOf(cam: CamState, id: PlaneId): number {
+    const xf = planeXf(cam, PLANES[id].rate);
+    return levelFor(this.levels.get(id)!, xf.g) / (cam.zoom >= 1.9 && (id === "sky" || id === "far" || id === "mid" || id === "back") ? 2 : 1);
+  }
+
+  /** The tiles of a plane at level lv covering frame rows [ya, yb). */
+  private tileSpan(cam: CamState, id: PlaneId, lv: number, ya: number, yb: number): { level: number; tx0: number; tx1: number; ty0: number; ty1: number } {
+    const xf = planeXf(cam, PLANES[id].rate);
+    const k = xf.g / lv;
+    const ax0 = (0 - xf.offX) / k, ax1 = (cam.W - xf.offX) / k;
+    const ay0 = (ya - xf.offY) / k, ay1 = (yb - xf.offY) / k;
+    return { level: lv, tx0: Math.floor(ax0 / TILE), tx1: Math.floor((ax1 - 1e-6) / TILE), ty0: Math.floor(ay0 / TILE), ty1: Math.floor((ay1 - 1e-6) / TILE) };
+  }
+
   private planeQuads(cam: CamState, id: PlaneId, ya: number, yb: number, a: AtmosDef, prefetch: boolean): PlaneDraw {
     const rate = PLANES[id].rate;
     const xf = planeXf(cam, rate);
-    const levels = this.levels.get(id)!;
     // (round 6, the critic's E3/S9) at the catch's 2x the sky's, far and mid planes' plates sit on
     // the frame's 2 px art cells like everything near (painted at half the density for it), as
     // their sprites already do (render/sprites.ts)
     // (round 7, density) and the back plane's: at the catch it stood at 1.45x its play density, so its
     // art px landed on 1 and 2 px cells in turn (the massif's face and falls a patchwork beside the
     // lake's 2 px); every plane behind the lake now shares the 2 px cell, the near planes the 1 px
-    const level = levelFor(levels, xf.g) / (cam.zoom >= 1.9 && (id === "sky" || id === "far" || id === "mid" || id === "back") ? 2 : 1);
+    const level = this.levelOf(cam, id);
     const quads: TileQuad[] = [];
     let complete = true;
     const add = (lv: number, mark: boolean): void => {
       const k = xf.g / lv;
-      const ax0 = (0 - xf.offX) / k, ax1 = (cam.W - xf.offX) / k;
-      const ay0 = (ya - xf.offY) / k, ay1 = (yb - xf.offY) / k;
-      const tx0 = Math.floor(ax0 / TILE), tx1 = Math.floor((ax1 - 1e-6) / TILE);
-      const ty0 = Math.floor(ay0 / TILE), ty1 = Math.floor((ay1 - 1e-6) / TILE);
+      const { tx0, tx1, ty0, ty1 } = this.tileSpan(cam, id, lv, ya, yb);
       const cxT = (tx0 + tx1) / 2, cyT = (ty0 + ty1) / 2;
       const planePri = id === "play" ? 0 : id === "front" || id === "back" ? 1 : 2;
       for (let ty = ty0; ty <= ty1; ty++) {
@@ -1017,6 +1255,8 @@ export class TesuGame {
     const wasLoading = this.loading;
     this.loading = ![...draws.values()].every((d) => d.complete) || (this.sprites.waiting > 0 && this.tick < 60 * 20);
     if (wasLoading && !this.loading) performance.mark("tesu:first-scene");
+    // the first scene is in: the rest of the opening's plates stream in behind it while it waits for the press
+    if (!this.loading && this.holding && !this.warm) this.startWarm();
     if (!this.loading) this.shown = true;
     const z = cam.zoom;
     const xfPlay = planeXf(cam, 1);
@@ -1122,7 +1362,10 @@ export class TesuGame {
         if (s4 !== 1) r.setTransform(s4, focus);
         this.vfx.draw(r as unknown as LabRenderer, "back");
         this.vfx.drawAfterimages(r as unknown as LabRenderer);
+        this.drawOfuda(cam, true);
+        if (s4 !== 1) r.setTransform(s4, focus);
         this.drawPlayer(cam, focus, null);
+        this.drawOfuda(cam, false);
         if (s4 !== 1) r.setTransform(s4, focus);
         this.vfx.draw(r as unknown as LabRenderer, "front");
         r.flush();
@@ -1160,6 +1403,7 @@ export class TesuGame {
       }
     }
     this.drawPrompt(cam);
+    this.drawHint(cam);
     this.titles.draw(W, Hf);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -1206,7 +1450,9 @@ export class TesuGame {
       cam: [Math.round(cam.cx), Math.round(cam.cy)], loading: this.loading, fade: +this.fade.toFixed(2), cloudDrop: this.cloudDrop,
       tiles: this.store.stats(), fps: Math.round(this.fps), frame: [this.r.iw, this.r.ih], present: this.r.presenter.rect,
       clip: this.player.clip.clip.id,
-      opening: this.opening.state, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
+      opening: this.opening.state, T: +this.opening.T.toFixed(3), autoRun: this.opening.autoRun, holding: this.holding, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
+      warm: this.warm ? `${this.warm.done}/${this.warm.list.length}` : null,
+      ofuda: this.ofudaPose ? this.ofudaPose.pts.map((p) => [Math.round(p[0]), Math.round(p[1])]) : null,
       charm: this.warp ? `warp:${this.warp.c.id}` : this.perch ? `perch:${this.perch.c.id}` : null,
       ride: this.rides.active ? { id: this.rides.active.def.id, dir: this.rides.active.dir, t: +this.rides.active.t.toFixed(2) } : null, vista: !!this.vista,
       court: this.court.state_(), hp: this.player.hp, ultCd: this.player.ultCd,
