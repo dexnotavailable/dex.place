@@ -963,14 +963,14 @@ export class Zhusha {
           this.ult.zx = b.x;
           this.ult.zy = b.y;
           // where the dive lands: ahead if there is ground there (near her own height), else straight down;
-          // with no ground found it stamps at the height she rose from
+          // with no ground found it ends only on a real landing (or the void's tug-back puts her on one)
           const near = (x: number): number | null => {
             const g = world.groundBelow?.(x, this.ult.y0 - 2 * H);
             return g && g.y < this.ult.y0 + 2.5 * H ? g.y : null;
           };
           const ahead = near(b.x + f * U.diveForward * H), here = near(b.x);
           this.ult.fwd = ahead !== null ? U.diveForward * H : 0;
-          this.ult.floor = (ahead ?? here ?? this.ult.y0);
+          this.ult.floor = ahead ?? here ?? Infinity;
         }
         break;
       }
@@ -989,7 +989,7 @@ export class Zhusha {
         this.anim = { role: "nuke", t, hitAt: null, hidden: false, flame: 1 };
         const k = Math.min(1, (t + 1) / U.diveTicks);
         b.vx = t < U.diveTicks ? (f * this.ult.fwd) / U.diveTicks : 0;
-        b.vy = Math.min(pt(10) + pt(70) * k * k, Math.max(0, this.ult.floor - b.y) + 1);
+        b.vy = Math.min(pt(10) + pt(70) * k * k, Number.isFinite(this.ult.floor) ? Math.max(0, this.ult.floor - b.y) + 1 : Infinity);
         const { landed } = world.move(b, b.vx, b.vy);
         this.streak = { x0: this.ult.zx, y0: this.ult.zy - 0.5 * H, x1: b.x, y1: b.y - 0.5 * H, life: 36 };
         if (landed || b.grounded || b.y >= this.ult.floor - 0.5 || t > U.diveTicks + 60) this.impact();

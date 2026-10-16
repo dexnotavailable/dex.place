@@ -173,7 +173,7 @@
     "zenithTicks": 24,
     "diveTicks": 18,
     "diveForward": 1.5,
-    "impactRadius": 30,
+    "impactRadius": 12,
     "impactDmg": 60,
     "impactKb": [14, 12],
     "smokeTicks": 40,
