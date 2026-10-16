@@ -734,13 +734,16 @@ export class Zhusha {
     const at = (fw: number, up: number): SpawnOptions => ({ x: b.x + f * fw * H, y: b.y - up * H, facing: f });
     const ult = this.ultForm;
     const col = ult ? { colour: "#9fe4ff", edge: "#3a8fd8" } : {};
+    // a traced drawing draws its own blade trail: the stand-in crescents step aside (impacts stay)
+    const own = this.move ? this.hasRole(this.move.id, ult) : false;
+    const trail = (id: string, o: SpawnOptions): void => { if (!own) s.vfx.spawn(id, o); };
     switch (h.fx) {
-      case "slash_up": s.vfx.spawn("smear.rise", { ...at(0.3, 0.55), ...col }); break;
-      case "slash_down": s.vfx.spawn("smear.cleave", { ...at(0.25, 0.6), ...col }); break;
-      case "thrust": s.vfx.spawn("streak.thrust", { ...at(0.5, 0.6), ...col }); break;
-      case "thrust_big": s.vfx.spawn("streak.thrust", { ...at(0.7, 0.62), scale: [1.6, 1.3], ...col }); break;
+      case "slash_up": trail("smear.rise", { ...at(0.3, 0.55), ...col }); break;
+      case "slash_down": trail("smear.cleave", { ...at(0.25, 0.6), ...col }); break;
+      case "thrust": trail("streak.thrust", { ...at(0.5, 0.6), ...col }); break;
+      case "thrust_big": trail("streak.thrust", { ...at(0.7, 0.62), scale: [1.6, 1.3], ...col }); break;
       case "chop":
-        s.vfx.spawn("smear.slam", { ...at(0.35, 0.6), ...col });
+        trail("smear.slam", { ...at(0.35, 0.6), ...col });
         if (this.body.grounded) s.vfx.spawn("slam.ground", at(0.9, 0));
         s.feel.sound("slam", 0.9);
         break;
@@ -768,7 +771,7 @@ export class Zhusha {
         s.vfx.spawn("ring.small", at(1.0, 0.6));
         s.feel.sound("hit", 0.8);
         break;
-      default: s.vfx.spawn("smear.cleave", at(0.3, 0.6));
+      default: trail("smear.cleave", at(0.3, 0.6));
     }
     if (h.fx !== "burn" && h.fx !== "shock" && h.fx !== "q_boom") s.feel.sound("swing", 0.6);
   }

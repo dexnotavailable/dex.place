@@ -742,6 +742,11 @@ export class TesuGame {
       if (pose) this.ofuda.seed(pose, f);
       return;
     }
+    // a traced drawing has her hat's talisman drawn in: the live one is the white box's
+    if (this.zdraw.shown(this.player)) {
+      this.ofudaPose = null;
+      return;
+    }
     const w = o.wind();
     const bob = o.active ? o.bob() : Math.abs(speed) > 0.3 ? this.time * Math.PI * 2 * Math.min(5, 1 + Math.abs(speed)) : null;
     this.ofudaPose = this.ofuda.live(tie, f, speed - w.base * f, w.gust, bob, reduced);
