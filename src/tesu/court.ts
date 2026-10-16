@@ -12,7 +12,7 @@
 import type { HitBox } from "../lab/contracts.ts";
 import type { Vfx } from "../lab/engine/vfx.ts";
 import { overlap, type WorldBox } from "../lab/game/events.ts";
-import type { Player } from "../lab/game/player.ts";
+import type { Zhusha as Player } from "./zhusha/controller.ts";
 import { downloads, type DownloadEntry, type DownloadFile } from "../site/data/downloads.ts";
 import { H } from "./config.ts";
 import { gongFrame } from "./art/library/hall/index.ts";

@@ -1,5 +1,5 @@
-// Tesu's runtime: one continuous world. A 60 Hz simulation (the lab's Player on the
-// continuous ground), a camera keyed to where she is, plates streamed where the camera
+// Tesu's runtime: one continuous world. A 60 Hz simulation (Zhusha's controller,
+// zhusha/controller.ts, on the continuous ground), a camera keyed to where she is, plates streamed where the camera
 // looks, and a frame built from the depth stack with still water in the middle of it.
 //
 // Draw order (A.1): sky gradient, P0 sky pieces, P1 far, far mist, the far part of the
@@ -12,9 +12,8 @@ import type { Camera as LabCamera } from "../lab/engine/camera.ts";
 import type { Lighting, Renderer as LabRenderer } from "../lab/engine/renderer.ts";
 import { Vfx } from "../lab/engine/vfx.ts";
 import { Feel } from "../lab/game/feel.ts";
-import { Player } from "../lab/game/player.ts";
-import type { Services } from "../lab/game/events.ts";
-import type { World as LabWorld } from "../lab/game/world.ts";
+import { Zhusha, type MoveWorld } from "./zhusha/controller.ts";
+import { ZhushaDraw } from "./zhusha/draw.ts";
 import { makeTarget, type Target, type WorldRenderer } from "../world/render/renderer.ts";
 import { rgb } from "./art/palette.ts";
 import { Camera, framingAt } from "./camera.ts";
@@ -120,7 +119,9 @@ export class TesuGame {
   readonly sprites: SpriteRenderer;
   readonly titles: Titles;
   readonly opening: Opening;
-  readonly player: Player;
+  readonly player: Zhusha;
+  /** Her drawings (traced pixel art per slot) or the white box. */
+  readonly zdraw: ZhushaDraw;
   readonly vfx: Vfx;
   readonly feel: Feel;
   readonly flags = new Set<string>();
@@ -139,7 +140,6 @@ export class TesuGame {
   private spriteById = new Map<string, SpriteDef>();
   readonly save: TesuSave;
   readonly motes = new Motes({ colours: [[1, 0.98, 0.9], [0.95, 0.97, 1], [1, 0.93, 0.7]], count: 46, drift: [7, -3], sway: 9, size: 1 });
-  private closeSprite: ZhushaAssets["closeup"];
   refl: Target;
   debug = false;
   manual = false;
@@ -230,15 +230,15 @@ export class TesuGame {
       zoom: (s: number) => cam.zoomPunch(s),
       reducedMotion: false,
     } as unknown as LabCamera;
-    this.feel = new Feel(labCam, assets.tuning.feel);
+    this.feel = new Feel(labCam, assets.feel);
     cam.reducedMotion = this.feel.reducedMotion;
     this.titles.reducedMotion = this.feel.reducedMotion;
     SpriteRenderer.driftScale = this.feel.reducedMotion ? 0.25 : 1;
-    const services: Services = { vfx: this.vfx, feel: this.feel, camera: labCam };
     // frozen controls read nothing; "down" only means drop-through on one-way ground
     this.inputProxy = new Proxy(input, {
       get: (t, k, rcv) => {
-        if (k === "isDown") return (a: Action) => (this.frozen > 0 ? false : a === "down" ? t.isDown(a) && this.collision.onOneWay(this.player.body) : t.isDown(a));
+        // (down: drop-through on one-way ground, a fast fall in the air)
+        if (k === "isDown") return (a: Action) => (this.frozen > 0 ? false : a === "down" ? t.isDown(a) && (!this.player.body.grounded || this.collision.onOneWay(this.player.body)) : t.isDown(a));
         if (k === "axis") return () => {
           if (this.frozen > 0) return 0;
           if (this.waitRelease) {
@@ -252,9 +252,9 @@ export class TesuGame {
         return typeof v === "function" ? v.bind(t) : v;
       },
     });
-    this.player = new Player(assets.sprite, assets.tuning.player, services, [0, 0]);
-    this.closeSprite = assets.closeup;
-    void assets.closeupReady.then((s) => { this.closeSprite = s; this.closeReady = true; }, (e: unknown) => console.warn("close-up", e));
+    this.player = new Zhusha({ vfx: this.vfx, feel: this.feel, camera: this.camera }, [0, 0]);
+    this.zdraw = new ZhushaDraw(assets.anims);
+    this.zdraw.bind(this.player);
     this.vfx.groundAt = (x, y) => this.collision.groundAt(x, y);
     this.save = loadSave();
     for (const f of this.save.flags) if (!TRANSIENT.has(f)) this.flags.add(f);
@@ -311,8 +311,8 @@ export class TesuGame {
   readonly ofuda = new Ofuda();
   private ofudaPose: OfudaPose | null = null;
   private ofudaX = 0;
-  /** Her 192 px drawing is in (the opening set waits for it). */
-  closeReady = false;
+  /** Her drawings are in (the opening set waits for them; they load before the world starts). */
+  closeReady = true;
 
   /** Sets a progress flag (kept on this device). */
   setFlag(f: string, on = true): void {
@@ -414,6 +414,8 @@ export class TesuGame {
       const s0 = BEATS.camera.shots[0]!;
       f = { ...f, zoom: s0.zoom[0], anchor: s0.anchor[0], horizon: s0.horizon[0], lead: 0, fixX: s0.cx[0] * H, pin: null };
     }
+    // R's climb: the frame pulls out to hold the whole rise and dive
+    if (this.player.camZoom !== null) f = { ...f, zoom: Math.min(f.zoom, this.player.camZoom) };
     return this.framingOverride ? { ...f, ...this.framingOverride } : f;
   }
 
@@ -469,12 +471,9 @@ export class TesuGame {
     this.player.facing = 1;
   }
 
-  /** The current sprite as a still of its idle (the opening's holds and slides), or its run playing. */
-  private posePlayer(kind: "still" | "run"): void {
-    const c = this.player.clip;
-    const id = kind === "run" ? "run" : "idle";
-    if (c.clip.id !== id) c.play(this.player.sprite.clips.get(id)!);
-    if (kind === "run") c.step();
+  /** Her idle held as a still (the opening's holds), her walk, or her run playing (opening.ts moves her). */
+  private posePlayer(kind: "still" | "walk" | "run"): void {
+    this.player.posed(kind);
   }
 
   /** A movement or action input since input tick t (held now, or pressed after it). */
@@ -597,8 +596,9 @@ export class TesuGame {
         if (sl > 0.25) this.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: this.player.facing });
         if (sl > 0.8) this.camera.shake(1.5, 6);
       }
-      this.player.update(this.inputProxy, this.rides.world as unknown as LabWorld, []);
+      this.player.update(this.inputProxy, this.rides.world as unknown as MoveWorld);
       this.court.tick();
+      this.player.afterHits();
       this.props.tick();
       this.vfx.update();
       this.input.tick++;
@@ -613,6 +613,7 @@ export class TesuGame {
       this.charmTick(b);
       this.court.tick();
       this.props.takeHits(this.player);
+      this.player.afterHits();
       this.props.tick();
       this.vfx.update();
       this.input.tick++;
@@ -620,9 +621,10 @@ export class TesuGame {
       this.cloudDrop = false;
       return;
     }
-    this.player.update(this.inputProxy, this.collision as unknown as LabWorld, []);
+    this.player.update(this.inputProxy, this.collision as unknown as MoveWorld);
     this.court.tick();
     this.props.takeHits(this.player);
+    this.player.afterHits();
     this.props.tick();
     this.vfx.update();
     this.input.tick++;
@@ -730,7 +732,7 @@ export class TesuGame {
       this.ofudaPose = null;
       return;
     }
-    const head = this.player.clip.frame.anchors?.["head"] ?? [0, -0.8 * H];
+    const head = this.zdraw.head(this.player);
     const tie: [number, number] = [b.x + (head[0] + HAT_TIE[0]) * f, b.y + head[1] + HAT_TIE[1]];
     const o = this.opening, reduced = this.feel.reducedMotion;
     const [t0, t1] = this.ofuda.span;
@@ -1059,7 +1061,7 @@ export class TesuGame {
       b.vx = b.vy = 0;
       b.grounded = true;
       this.frozen = Math.max(this.frozen, 1);
-      this.player.update(this.inputProxy, this.perchWorld as unknown as LabWorld, []);
+      this.player.update(this.inputProxy, this.perchWorld as unknown as MoveWorld);
       if (k >= 1) {
         this.warp = null;
         this.perch = { c: w.c, t: 0 };
@@ -1070,7 +1072,7 @@ export class TesuGame {
     const p = this.perch!;
     p.t++;
     this.perchAt = [p.c.x, p.c.y + PERCH];
-    this.player.update(this.inputProxy, this.perchWorld as unknown as LabWorld, []);
+    this.player.update(this.inputProxy, this.perchWorld as unknown as MoveWorld);
     // off the charm: she jumped, dashed or walked off, or it let go
     if (!b.grounded || Math.abs(b.x - p.c.x) > 0.45 * H || p.t >= PERCH_T) {
       this.perch = null;
@@ -1217,34 +1219,14 @@ export class TesuGame {
   // --- drawing ------------------------------------------------------------
 
   /**
-   * Her sprite. In the close band (zoom near 2) she is drawn from the 192 px render at
-   * native size (the same clip and frame), never as a magnified 96 px sprite.
+   * Her: a traced drawing for what she is doing, or the white box (zhusha/draw.ts). In the close band
+   * (zoom near 2) a traced drawing comes from its native 192 px atlas at one art px per frame px.
    */
   private drawPlayer(cam: CamState, focus: [number, number], mirror: number | null): void {
-    const r = this.r, p = this.player;
     if (this.fade >= 1) return;
-    if (cam.zoom < 1.9) {
-      p.draw(r as unknown as LabRenderer);
-      return;
-    }
-    const clip = this.closeSprite.clips.get(p.clip.clip.id);
-    const f = clip?.frames[p.clip.index];
-    const sheet = clip ? this.closeSprite.sheets.get(clip.atlas) : undefined;
-    if (!f || !sheet) {
-      p.draw(r as unknown as LabRenderer);
-      return;
-    }
-    const k = cam.zoom / 2;
-    const [sx, sy, sw, sh] = f.rect;
-    const [px, py] = f.pivot;
-    const xf = planeXf(cam, 1);
-    const fx = p.body.x * xf.s + xf.offX, fy = p.body.y * xf.s + xf.offY;
-    const x = p.facing > 0 ? fx - px * k : fx - (sw - px) * k;
-    let y = fy - py * k;
-    if (mirror !== null) y = 2 * mirror - (fy + (sh - py) * k);
-    r.setTransform();
-    r.sprite({ sheet, sx, sy: mirror !== null ? sy : sy, sw, sh, x: Math.round(x), y: Math.round(y), flip: p.facing < 0, screen: true });
-    r.flush();
+    const xf = planeXf(cam, 1), b = this.player.body;
+    const close = cam.zoom >= 1.9 ? { zoom: cam.zoom, fx: b.x * xf.s + xf.offX, fy: b.y * xf.s + xf.offY, mirror } : null;
+    this.zdraw.draw(this.r, this.player, close);
     void focus;
   }
 
@@ -1564,7 +1546,7 @@ export class TesuGame {
       zoom: +cam.zoom.toFixed(4), wantZoom: +cam.wantZoom.toFixed(4), atLevel: cam.atLevel, anchor: +cam.anchor.toFixed(3), horizon: +cam.horizon.toFixed(3),
       cam: [Math.round(cam.cx), Math.round(cam.cy)], loading: this.loading, fade: +this.fade.toFixed(2), cloudDrop: this.cloudDrop,
       tiles: this.store.stats(), fps: Math.round(this.fps), frame: [this.r.iw, this.r.ih], present: this.r.presenter.rect,
-      clip: this.player.clip.clip.id,
+      clip: this.player.anim.role, zhusha: this.player.debug(), slots: this.zdraw.anims.size,
       opening: this.opening.state, T: +this.opening.T.toFixed(3), autoRun: this.opening.autoRun, holding: this.holding, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
       warm: this.warm ? `${this.warm.done}/${this.warm.gate} of ${this.warm.gateMax}, ${this.warm.plan.length} planned` : null,
       ofuda: this.ofudaPose ? this.ofudaPose.pts.map((p) => [Math.round(p[0]), Math.round(p[1])]) : null,

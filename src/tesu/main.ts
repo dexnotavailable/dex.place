@@ -46,6 +46,7 @@ const KEYS: KeyMap = {
   KeyK: ["m2"],
   KeyX: ["m2"],
   KeyQ: ["skill"],
+  KeyE: ["e"],
   KeyR: ["ult"],
 };
 

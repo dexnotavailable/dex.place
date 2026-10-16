@@ -1,7 +1,7 @@
 // Keyboard, mouse and touch into named actions, with per-tick press
 // buffering so a button tapped a few ticks early still counts.
 
-export const ACTIONS = ["left", "right", "up", "down", "jump", "m1", "m2", "skill", "ult"] as const;
+export const ACTIONS = ["left", "right", "up", "down", "jump", "m1", "m2", "skill", "ult", "e"] as const;
 export type Action = (typeof ACTIONS)[number];
 
 export type KeyMap = Record<string, Action[]>;

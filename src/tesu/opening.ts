@@ -28,7 +28,7 @@ export interface OpeningHost {
   /** Takes her along the ground to x (world px); `jump`: put her down there (a skip). */
   moveTo(x: number, jump: boolean): void;
   /** A still of the current sprite's idle, or its run playing. */
-  pose(kind: "still" | "run"): void;
+  pose(kind: "still" | "walk" | "run"): void;
   /** A movement or action input since the given input tick (the player takes over). */
   touchedSince(tick: number): boolean;
   inputTick(): number;
@@ -231,7 +231,7 @@ export class Opening {
     const T = this.T;
     const ph = herPhase(T);
     this.host.moveTo(herXH(T) * 96, false);
-    this.host.pose(ph === "run" || ph === "skid" ? "run" : "still");
+    this.host.pose(ph === "run" || ph === "skid" ? "run" : ph === "walk" ? "walk" : "still");
     return true;
   }
 

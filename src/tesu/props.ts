@@ -13,7 +13,7 @@
 import type { HitBox } from "../lab/contracts.ts";
 import type { Vfx } from "../lab/engine/vfx.ts";
 import { overlap, type WorldBox } from "../lab/game/events.ts";
-import type { Player } from "../lab/game/player.ts";
+import type { Zhusha as Player } from "./zhusha/controller.ts";
 import { ctxFor, painter } from "./art/painter.ts";
 import { pieceOf } from "./art/painters/props.ts";
 import { IdxBuf } from "./art/raster.ts";
@@ -301,13 +301,14 @@ export class Props {
     pc.def.y = Math.round(l.y + pc.dy);
   }
 
-  /** R's nuke: everything breakable within 6 H goes, and embers drift for a while. */
+  /** R's nuke: everything breakable within its reach (at least 6 H) goes, and embers drift for a while. */
   private nuke(p: Player, hb: HitBox): void {
     const b = p.body;
     if (!this.once(p, hb, this)) return;
+    const rx = Math.max(6 * H, hb.w / 2), ry = Math.max(4 * H, hb.h);
     for (const l of this.list) {
       if (l.state === "broken" || l.d.cls === "protected" || l.d.cls === "permanent") continue;
-      if (Math.abs(l.x - b.x) > 6 * H || Math.abs(l.y - b.y) > 4 * H) continue;
+      if (Math.abs(l.x - b.x) > rx || Math.abs(l.y - b.y) > ry) continue;
       this.breakProp(l, Math.sign(l.x - b.x) || p.facing, 1.6);
     }
     for (const k of [-3, -1.5, 0, 1.5, 3]) this.host.vfx.spawn("embers.gold", { x: b.x + k * H, y: b.y, facing: 1 });

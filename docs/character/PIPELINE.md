@@ -268,6 +268,33 @@ character can get through step 10 and no further.]
 
 **Step 12. Export and runtime.** [proven for the contract; real package not exported yet]
 
+- **Zhusha (v2) in Tesu (2026-10-16) [in progress: the controller and loader proven in the world,
+  headless; traced slots land one by one].** She takes per-slot drops through the sprite contract
+  (`lanes/anim/SPRITE-CONTRACT.md`): `public/assets/zhusha/<slot>/` with `f000.png ...` and an
+  `anim.json` (ticks per drawing at 60/s, `pivot` at the soles, `figure_h` 192, `hits` as drawing
+  indices, `loop`, optional `segments` [apex, contact] for `jump_arc`). Only traced pixel art ships:
+  `src/tesu/zhusha/contract.ts` refuses any `stage` but `"pixel"` and any placeholder `key`, and
+  `src/tesu/zhusha.test.mjs` fails the build's tests if the folder holds anything but a valid
+  slot's drawings (raw H3 renders and the illustrated placeholders stay private, per the Zhusha
+  brief). `src/tesu/zhusha/anims.ts` loads every present slot at start, trims and packs it twice:
+  native (the close band, zoom 2, one art px per frame px) and reduced 2x to her 96 px play size
+  (`reducePixels`: no new colours, the silhouette's edge and darker line colours weighted up, lone
+  pixels kept only where they continue a line; grid anchored on the pivot so drawings don't
+  shimmer). A role with no slot draws the white box (`zhusha/draw.ts`: ink outline, eye, hat; the
+  procedural squash, stretch and lean from `zhusha/controller.ts`). Which slot plays for what, and
+  the ult-form twins, is `src/tesu/zhusha/slots.json` (`transform` forward into the form, reversed
+  for the exit; `uf_idle` the form's idle). Moves are timed by the feel numbers and the clip's
+  first `hits` drawing is retimed to land on the move's first hit tick (`moveToClip`); after a move
+  its clip plays out its wind-down, then its `*_ret` slot. The feel numbers are
+  `src/tesu/zhusha/feel.json` (H units, ticks), started from the scrapped test room's: run 5.6 H/s
+  in 7 ticks, jump 1.7 H in 19 ticks with 1.8x fall gravity, 3 H dash in 16 ticks, hitstop 4/7/11/
+  12/14 by weight, Q's boom on tick 3 over 5.4 x 2.7 H, R = call 30 > flurry 60 (16 cuts) > rise 16 >
+  zenith 24 > dive (lands ahead only on ground) > impact (group `r`: props within 30 H break, the
+  champion to its sliver) > smoke 40 > transform 62 > reveal 24, then the form for 900 ticks. Her
+  collider stays the world's 12 x 44 px (the world's walls and ceilings were built on it). Pitfall:
+  the slot list is read at transform time (`import.meta.glob`), so the dev server needs a restart
+  to see a new slot folder (the test room hit the same: Vite on Windows missed folders created
+  under `public/` after start).
 - Pack albedo and normal atlases and write `public/lab/character/manifest.json`
   (`dex.sprite/1`, section 3.15). Load `/lab/` and press the backquote key for the debug
   overlay.
