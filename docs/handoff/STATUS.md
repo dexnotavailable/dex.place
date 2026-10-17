@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-17T18:48:44.974Z (18/10/2026, 01:48:44 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-17T19:48:44.979Z (18/10/2026, 02:48:44 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,19 +12,19 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_f71b589d-37c — last activity 2778 min ago
+### wf_f71b589d-37c — last activity 2838 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:matanyone2-node** (done): 
 - **build:pixel-step** (done): 
 
-### wf_965a9075-86b — last activity 3038 min ago
+### wf_965a9075-86b — last activity 3098 min ago
 2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
 
 - **loader-art** (running)
 - **engineer** (running)
 
-### wf_6e999b69-205 — last activity 3312 min ago
+### wf_6e999b69-205 — last activity 3372 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **build** (running)
@@ -32,14 +32,14 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **film** (done): The opening's timing is right, but three visible problems need fixing first. Everything is in D:\Dex\Temp\dexplace-v2\lanes\opening\film-v0\ (CRITIC.md is the verdict). It holds film.mp4 (T -2 to 43 at 10 fps with a beat-clock strip; audio track 1 is the Track 1 WAV with T 0 at the press, track 2 is what the browser actually produced), contact sheets per 10 s (film-sheet-00-10s.png to film-sheet-40-43s.png, plus the 
 - **fix** (done): I fixed and re-filmed all three must-fixes from the critic. They are committed as 73abbb57 on claude/v2-opening, not pushed. npm run check and npm test pass (351 tests). The worktree was clean at f708ff0b after the crash, so I resumed from there. No GPU, ComfyUI or broker was used. I ran one headless Edge at a time with the GPU disabled, between 17:17 and 18:35, and no browser or server is left running. 1. TESU now l
 
-### wf_e01d0219-dac — last activity 3386 min ago
+### wf_e01d0219-dac — last activity 3446 min ago
 3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
 
 - **timeline** (done): 
 - **machine** (done): 
 - **research** (done): 
 
-### wf_04b33855-f83 — last activity 3426 min ago
+### wf_04b33855-f83 — last activity 3486 min ago
 7 agents: 5 done, 2 running or stopped mid-way, 0 failed.
 
 - **director:fixes** (done): All four Must-fix items I own (8, 10, 11, 12) and my four Should-fix items are done in PLAN.md, BEATS.json (now revision 2.1) and the storyboard. I left sections 3.5–3.8 and the clip rows alone, because bones v3 replaces them. - **Item 8, one ofuda size.** It is 4 x 10 px on the 96 drawing and 8 x 20 on the 192 everywhere; 5 x 15 is gone. On a 1080p screen that is about 2.5 x 6 px in the opening wide shot (zoom 0.5),
@@ -50,7 +50,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **director:regen+pilot** (done): The text-pose recipe works well enough to run the batch, with two caveats: plan two rounds of wording per key, and the 96 px version needs a hand-drawn head for every new head angle. CHECK-1 item 9 is done (PLAN and BEATS rebuilt from the bones v3 chart), FRAME-RECIPE.md is written, and the 3-drawing pilot is in D:\Dex\Temp\dexplace-v2\lanes\opening\pilot\index.html. **How each drawing gets made.** The bones and the 
 - **check:2** (running)
 
-### wf_a99c5398-03e — last activity 3619 min ago
+### wf_a99c5398-03e — last activity 3679 min ago
 5 agents: 3 done, 2 running or stopped mid-way, 0 failed.
 
 - **spec** (done): I finished the critic pass on the run and fixed what I found in place: the spec, the rig and the thumbnail. All edits are marked "PILOT CRITIC 2026-10-15" and the report is in pilot-run\SPEC-CHECK.md. As it came to me, the run would have failed Dex's keys gate on three of his fast-fail items before anyone looked at the motion. I scored that version 5.0/10 against the 7.5 pass line. After the fixes it's 6.5. What keep
@@ -59,7 +59,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **keys-textpose** (done): No run keys are picked yet. The GPU dropped off the bus at about 13:14, during my first round-2 job. nvidia-smi says "GPU is lost. Reboot the system to recover this GPU" and the broker can't restart ComfyUI because CUDA won't start, so every GPU lane is stopped. I did not reboot or change anything. What I got done: 1. **image_1:** the turnaround's right-facing side panel with the hat paper painted out (the opening la
 - **tweens** (running)
 
-### wf_404079d0-fc4 — last activity 3706 min ago
+### wf_404079d0-fc4 — last activity 3766 min ago
 8 agents: 5 done, 3 running or stopped mid-way, 0 failed.
 
 - **arch:r7** (done): The architecture lane is done and committed on claude/v2-art-kagami-p1 in two commits, 8d74293d and 1915545b. Every torii now stands side-on, the palace door sits in the middle of its own entrance building, the doors open with easing as she comes near, and the fence is irregular stone posts with a straw rope. Before starting I reviewed the code left in the worktree from before the crash. It drew each torii as a red p
@@ -71,7 +71,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **water:r8** (running)
 - **patch:r8** (running)
 
-### wf_61997fe3-8a6 — last activity 3859 min ago
+### wf_61997fe3-8a6 — last activity 3919 min ago
 8 agents: 4 done, 3 running or stopped mid-way, 1 failed.
 
 - **plan** (running)
@@ -83,7 +83,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **check** (failed)
 - **check** (done): I wrote D:\Dex\Temp\dexplace-v2\lanes\opening\CHECK-1.md, my first critic pass on the opening. The timing and the plan are close to ready, the anchor is not ready to lock, and the catch-and-slap needs one more bones pass before any Qwen frame is made. I sent no GPU jobs and changed no lane files. My comparison sheets and crops are in D:\Dex\Temp\dexplace-v2\lanes\opening\_critic1\. **Plan and timing (8/10).** Every b
 
-### wf_615041c0-3f2 — last activity 4228 min ago
+### wf_615041c0-3f2 — last activity 4288 min ago
 5 agents: 4 done, 1 running or stopped mid-way, 0 failed.
 
 - **inventory** (done): 
@@ -91,24 +91,6 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **archive** (running)
 - **archive** (done): 
 - **install** (done): 
-
-### wf_8865cc19-db1 — last activity 4296 min ago
-14 agents: 12 done, 2 running or stopped mid-way, 0 failed.
-
-- **sky:r4** (done): The sky and atmosphere lane is done and committed on claude/v2-art-kagami-p1 in worktree D:\Dex\Temp\dexplace-v2\art-wt\kagami\p1. The four things Dex asked for now show in all eight key frames: one family of clouds with real volume, a clear sun, fog that gives depth, and the Walker moved further back among the clouds. - **Clouds.** All clouds now come from one painter in sky.ts: heaps of overlapping billows lit by t
-- **patch:r4** (done): I patched every spot in Dex's five crops, added the stone chunks and loose stones breaking over the front edge of the paved path, and fixed most of the round-3 critic's cheap or primitive spots that sit in my lane. The work is in two commits on claude/v2-art-kagami-p2 (a7a5e082, 59a1a378). Worktree: D:\Dex\Temp\dexplace-v2\art-wt\kagami\p2. Dex's crops: - **Crop 18, the trunk chopped off at the cliff top.** The path 
-- **integrate:r4** (done): 
-- **critic:r4** (done): 
-- **sky:r5** (done): Round 5 sky lane is finished and committed. I worked through each of the critic's sky notes, S1 to S11. Where each note landed: - **S1, the chest "sash":** the hard-edged cloud across the Walker's chest (far-cloud-3) and the heap behind its back (far-cloud-0) are gone. In their place are three thin, torn wisps at different heights, hazed into the Walker's own air. One passes behind its hind legs and two in front, wit
-- **patch:r5** (done): I fixed most of the cut-offs, stuck-on pieces and cheap spots Dex and the round-4 critic named. The teal triangle is gone in the frames it was flagged in, rock chunks now break over the road's edge, and the pine roots grip a rock. Three items are left for the orchestrator (listed at the end). Everything is in two commits on claude/v2-art-kagami-p2 (e7cd200d, then 186c6e8f); nothing pushed. Cut-offs and wrong layering
-- **integrate:r5** (done): 
-- **critic:r5** (done): 
-- **sky:r6** (done): The sky and atmosphere lane for round 6 is done and committed on claude/v2-art-kagami-p1. There are two commits: checkpoint 5c6bd961 and final 11382678, both based on 1ad17c7b. Nothing was pushed. Every item the critic raised for this lane (S1 to S9) has a change behind it. What changed, in plain terms: - **One cloud family with volume (S4, S5).** I rewrote the cloud painter (op.cloud in sky.ts). Every cloud is now b
-- **patch:r6** (done): The round-6 patch lane is committed on claude/v2-art-kagami-p2 (head 8d69fb53, not pushed). All 12 critique points are addressed except the postcard's bottom-right corner and the jar's reflection. Those two need the orchestrator or the builder. What Dex asked for: - **Stone over the paved path (P2):** most stretches of road now have one big crag of the cliff. Each rises 12-22 px above the road, covering its edge and 
-- **integrate:r6** (done): 
-- **critic:r6** (done): 
-- **sky:r7** (running)
-- **patch:r7** (running)
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
