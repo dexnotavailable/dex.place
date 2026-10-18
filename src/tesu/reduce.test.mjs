@@ -60,6 +60,42 @@ test("reduction: a 1 px line never drops out between levels (down to 2/3 a side)
   }
 });
 
+test("reduction: a 1 px diagonal line never breaks between levels (down to 2/3 a side), at any phase", () => {
+  const W = 40, H = 40;
+  for (const s of [0.9, 0.8, 0.72, 0.67]) {
+    for (let p = 0; p < 4; p++) {
+      const img = Array.from({ length: W * H }, (_, i) => (i % W === Math.floor(i / W) ? 2 : 1));
+      const { out, ow, oh } = reduceImage(img, W, H, s, [p, 0]);
+      // every output row from 4 to the end holds the line somewhere, and it never jumps more than 2 columns a row
+      let last = -1;
+      for (let y = 4; y < oh - 4; y++) {
+        const xs = [];
+        for (let x = 0; x < ow; x++) if (out[y * ow + x] === 2) xs.push(x);
+        assert.ok(xs.length >= 1, `diagonal at scale ${s}, phase ${p}: row ${y} empty`);
+        if (last >= 0) assert.ok(Math.abs(xs[0] - last) <= 2, `diagonal jumps at row ${y}`);
+        last = xs[0];
+      }
+    }
+  }
+});
+
+test("reduction: a small solid shape (a 4 x 4 stud) keeps its size, no growth or holes, at any phase", () => {
+  const W = 30, H = 30;
+  for (const s of [0.9, 0.8, 0.72, 0.6]) {
+    for (let p = 0; p < 5; p++) {
+      const img = Array.from({ length: W * H }, (_, i) => { const x = i % W, y = Math.floor(i / W); return x >= 12 && x < 16 && y >= 12 && y < 16 ? 4 : 2; });
+      const { out, ow, oh } = reduceImage(img, W, H, s, [p, p]);
+      let n = 0, x0 = 99, x1 = -1, y0 = 99, y1 = -1;
+      for (let y = 0; y < oh; y++) for (let x = 0; x < ow; x++) if (out[y * ow + x] === 4) { n++; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      const side = 4 * s;
+      assert.ok(x1 - x0 + 1 <= Math.ceil(side) + 1 && y1 - y0 + 1 <= Math.ceil(side) + 1, `stud at ${s} phase ${p}: ${x1 - x0 + 1} x ${y1 - y0 + 1}, wanted about ${side.toFixed(1)}`);
+      assert.ok(n >= Math.floor(side) ** 2 * 0.6, `stud at ${s} phase ${p}: only ${n} px`);
+      // no hole: every px inside the box but one row/column in is the stud
+      for (let y = y0 + 1; y < y1; y++) for (let x = x0 + 1; x < x1; x++) assert.equal(out[y * ow + x], 4, `a hole at ${x},${y}`);
+    }
+  }
+});
+
 test("reduction: opaque only where opaque art covers a third of the px (silhouettes keep their size)", () => {
   assert.ok(Math.abs(REDUCE_OPAQUE - 1 / 3) < 1e-9);
   // a half-covered footprint of solid art is opaque; a quarter-covered one clear

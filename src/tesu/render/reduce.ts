@@ -3,12 +3,12 @@
 // 1440p screen); wider than play zoom, every layer is REDUCED onto that same grid instead of point-sampled:
 //
 // - each frame px covers a footprint of 1/k art px a side (k = frame px per art px < 1);
-// - it is opaque when its opaque texels cover at least a third of it (so a 1 px rope or pole never drops out at the
-//   in-between scales), else clear;
-// - its colour is the one covering most of it, except that a colour a clear step lighter or darker than the
-//   footprint's background (what covers most of it and of the ring just outside it) counts double, so a 1 px line,
-//   crack, rope or thread survives at every phase (at most 2 px thick) instead of breaking up, and a line that is itself
-//   the main colour of a footprint is never flipped to its ground;
+// - it is opaque when its opaque texels cover half of it, or a third where the opaque part is thin (clear on both
+//   sides of it: a rope or pole never drops out at the in-between scales), else clear;
+// - its colour is the one covering most of it, except that a THIN colour (missing from the ring of texels just outside
+//   the footprint on both sides in one direction: a line, crack, rope, thread or dot) a clear step lighter or darker
+//   than the footprint's background (what covers most of it and of that ring) counts double, so 1 px lines survive at
+//   every phase (at most 2 px thick) while the edges of shapes stay where they are (a stud stays a stud);
 // - it is always one of the texels' own colours (palette-keeping: no blend, no blur, no new colour).
 //
 // Footprints are anchored to the layer's own art grid (the frame px minus the layer's whole-px offset), so a pan moves
@@ -22,13 +22,14 @@ import { compile, uniforms } from "../../lab/engine/gl.ts";
 import { FULL_VS } from "../../lab/engine/shaders.ts";
 import { makeTarget, type Target, type WorldRenderer } from "../../world/render/renderer.ts";
 import type { CamState } from "./view.ts";
-import { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE } from "./grid.ts";
+import { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE, REDUCE_OPAQUE_EDGE } from "./grid.ts";
 
-export { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE };
+export { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE, REDUCE_OPAQUE_EDGE };
 
 /** Shared constants and luma (GLSL). */
 export const REDUCE_CONST_GLSL = /* glsl */ `
 const float RED_OPAQUE = ${REDUCE_OPAQUE.toFixed(6)};
+const float RED_OPAQUE_EDGE = ${REDUCE_OPAQUE_EDGE.toFixed(6)};
 const float RED_FEAT = ${REDUCE_FEATURE.toFixed(6)};
 const float RED_BOOST = ${REDUCE_BOOST.toFixed(6)};
 float redLum(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
@@ -40,7 +41,9 @@ float redLum(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
  * clear, UNKNOWN (a key, or null) for a texel to leave out; LUMA(k) its luma. Needs REDUCE_CONST_GLSL.
  */
 function reduceGlsl(o: { name: string; key: string; args: string; fetch: string; clear: string; unknown: string | null; none: string; luma: string }): string {
+  const K = o.key;
   const skip = o.unknown ? `if (c == ${o.unknown}) continue;` : "";
+  const isClr = (v: string): string => (o.unknown ? `(${v} == ${o.clear} || ${v} == ${o.unknown})` : `${v} == ${o.clear}`);
   const slot = (add: string): string => `
       int m = -1;
       for (int q = 0; q < 24; q++) {
@@ -49,9 +52,19 @@ function reduceGlsl(o: { name: string; key: string; args: string; fetch: string;
       }
       if (m < 0 && n < 24) { m = n; ks[n] = c; ws[n] = 0.0; rs[n] = 0.0; n++; }
       if (m >= 0) ${add}`;
+  // thin: missing from both opposite sides of the ring in one direction (rows, columns or a diagonal)
+  const thin = (c: string): string =>
+    `((${c} != g0 && ${c} != g1 && ${c} != g2 && ${c} != g6 && ${c} != g7 && ${c} != g8) || ` +
+    `(${c} != g0 && ${c} != g3 && ${c} != g6 && ${c} != g2 && ${c} != g5 && ${c} != g8) || ` +
+    `(${c} != g2 && ${c} != g6) || (${c} != g0 && ${c} != g8))`;
+  const opThin =
+    `((${isClr("g0")} && ${isClr("g1")} && ${isClr("g2")} && ${isClr("g6")} && ${isClr("g7")} && ${isClr("g8")}) || ` +
+    `(${isClr("g0")} && ${isClr("g3")} && ${isClr("g6")} && ${isClr("g2")} && ${isClr("g5")} && ${isClr("g8")}) || ` +
+    `(${isClr("g2")} && ${isClr("g6")}) || (${isClr("g0")} && ${isClr("g8")}))`;
+  const ring = (i: number, j: number): string => o.fetch.replace(/\$T/g, `ivec2(floor(vec2(rx[${i}], ry[${j}])))`);
   return /* glsl */ `
-${o.key} ${o.name}(${o.args}, vec2 a0, vec2 a1) {
-  ${o.key} ks[24];
+${K} ${o.name}(${o.args}, vec2 a0, vec2 a1) {
+  ${K} ks[24];
   float ws[24];
   float rs[24];
   int n = 0;
@@ -73,42 +86,50 @@ ${o.key} ${o.name}(${o.args}, vec2 a0, vec2 a1) {
         tc = floor(a0 + (vec2(float(i), float(j)) + 0.5) * span * 0.25);
         w = 1.0;
       }
-      ${o.key} c = ${o.fetch.replace(/\$T/g, "ivec2(tc)")};
+      ${K} c = ${o.fetch.replace(/\$T/g, "ivec2(tc)")};
       ${skip}
       total += w;
       if (c != ${o.clear}) opaque += w;${slot("ws[m] += w;")}
     }
   }
-  if (total <= 0.0 || opaque < total * RED_OPAQUE) return ${o.none};
-  // one opaque colour (most of a picture: flat areas, the inside of a shape): nothing to decide
+  if (total <= 0.0 || opaque <= 0.0) return ${o.none};
+  // one colour all over (flat areas, the inside of a shape): nothing to decide
   if (n == 1) return ks[0];
-  if (n == 2 && (ks[0] == ${o.clear} || ks[1] == ${o.clear})) return ks[0] == ${o.clear} ? ks[1] : ks[0];
-  // the background: most of (its share of the core + its share of 8 samples just outside it)
-  vec3 rx = vec3(a0.x - 0.5, (a0.x + a1.x) * 0.5, a1.x + 0.5), ry = vec3(a0.y - 0.5, (a0.y + a1.y) * 0.5, a1.y + 0.5);
-  for (int j = 0; j < 3; j++) {
-    for (int i = 0; i < 3; i++) {
-      if (i == 1 && j == 1) continue;
-      ${o.key} c = ${o.fetch.replace(/\$T/g, "ivec2(floor(vec2(rx[i], ry[j])))")};
-      ${skip}
-      ringN += 1.0;${slot("rs[m] += 1.0;")}
-    }
+  // the ring, 3 x 3 around it without the middle
+  // (the texels just outside its span: the one before its first, its middle one, the one after its last)
+  vec3 rx = vec3(floor(a0.x) - 1.0, floor((a0.x + a1.x) * 0.5), floor(a1.x - 1e-4) + 1.0);
+  vec3 ry = vec3(floor(a0.y) - 1.0, floor((a0.y + a1.y) * 0.5), floor(a1.y - 1e-4) + 1.0);
+  ${K} g0 = ${ring(0, 0)}, g1 = ${ring(1, 0)}, g2 = ${ring(2, 0)};
+  ${K} g3 = ${ring(0, 1)}, g5 = ${ring(2, 1)};
+  ${K} g6 = ${ring(0, 2)}, g7 = ${ring(1, 2)}, g8 = ${ring(2, 2)};
+  for (int q8 = 0; q8 < 8; q8++) {
+    ${K} c = q8 == 0 ? g0 : q8 == 1 ? g1 : q8 == 2 ? g2 : q8 == 3 ? g3 : q8 == 4 ? g5 : q8 == 5 ? g6 : q8 == 6 ? g7 : g8;
+    ${skip}
+    ringN += 1.0;${slot("rs[m] += 1.0;")}
   }
-  int bg = 0, mn = -1;
+  // clear under a third (the opaque part thin) or under half (an edge)
+  if (opaque < total * (${opThin} ? RED_OPAQUE : RED_OPAQUE_EDGE)) return ${o.none};
+  int bg = 0, mn = -1, solid = 0;
   float bgS = -1.0;
   for (int q = 0; q < 24; q++) {
     if (q >= n) break;
     float sc = ws[q] / total + (ringN > 0.0 ? rs[q] / ringN : 0.0);
     if (sc > bgS) { bgS = sc; bg = q; }
-    if (ks[q] != ${o.clear} && ws[q] > 0.0 && (mn < 0 || ws[q] > ws[mn])) mn = q;
+    if (ks[q] != ${o.clear} && ws[q] > 0.0) {
+      solid++;
+      if (mn < 0 || ws[q] > ws[mn]) mn = q;
+    }
   }
   if (mn < 0) return ${o.none};
+  if (solid == 1) return ks[mn];
   float ref = ks[bg] != ${o.clear} ? ${o.luma.replace(/\$K/g, "ks[bg]")} : ${o.luma.replace(/\$K/g, "ks[mn]")};
   int pick = mn;
   float ps = -1.0;
   for (int q = 0; q < 24; q++) {
     if (q >= n) break;
     if (ks[q] == ${o.clear} || ws[q] <= 0.0) continue;
-    float sc = ws[q] * (abs(${o.luma.replace(/\$K/g, "ks[q]")} - ref) > RED_FEAT ? RED_BOOST : 1.0);
+    ${K} c = ks[q];
+    float sc = ws[q] * (abs(${o.luma.replace(/\$K/g, "c")} - ref) > RED_FEAT && ${thin("c")} ? RED_BOOST : 1.0);
     if (sc > ps) { ps = sc; pick = q; }
   }
   return ks[pick];
