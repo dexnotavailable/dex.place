@@ -14,12 +14,12 @@
   },
   {
    "file": "f001.png",
-   "ticks": 4,
+   "ticks": 10,
    "fig": 128
   },
   {
    "file": "f002.png",
-   "ticks": 6,
+   "ticks": 4,
    "fig": 128
   },
   {
@@ -57,7 +57,7 @@
  "source": "h3-L-jump_arc-A-s3000-9d2eff",
  "notes": "kit v1.3 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f002: blade re-extended above the frame top to full length (tip (338, -488), hw 4), shifted -3 px so her shoes stand on the ground row; f003: shifted -3 px so her shoes stand on the ground row",
  "segments": [
-  2,
+  1,
   3
  ]
 }
