@@ -370,6 +370,8 @@ export class Court {
       this.host.feel.freeze(8);
       this.host.camera.shake(6, 16);
       this.host.feel.sound("finish");
+      // the win: the crowd cheers on the killing blow (approved crowd cheer; the blow itself has no approved sound yet)
+      this.host.feel.sound("cheer");
       this.cheer = 150;
     }
     if (this.t >= 26) this.go("bow");

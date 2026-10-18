@@ -1,10 +1,12 @@
 // Tesu's sound (GDK 3.9, 4, Appendix C; brief: "sound design gets redone"). Three parts:
 //
-// - Effects: every cue id the game emits (her moves, the court, things breaking) maps to a
-//   file with a volume and a rate. The files are the world's audited set in
-//   public/audio/world/ (original synthesis and processed CC0, see its ATTRIBUTION.md) until
-//   the ElevenLabs set replaces them; an id with no file falls back to the lab's synth sounds.
+// - Effects: every cue id the game emits (her moves, the court, things breaking) maps to its files, a volume and a
+//   rate. The court's and the props' breaks, tinks and effects are Dex-approved (public/audio/court/, encoded
+//   pairs; lanes/audio/VETTING.json). The rest is the old generic library (public/audio/world/), not yet vetted:
+//   audio.test.mjs keeps that list from growing. An id with no file falls back to the lab's synth sounds; a cue
+//   with an empty file list is silent (no approved sound yet).
 // - Beds: the ambience per place, cross-faded (the lake, the heights, the hall).
+// - Region themes (region-music.ts): each place's main theme, streamed, after the opening.
 // - The opening plays Track 1, the picked take, owned by the page's conductor (opening/conductor.ts) on the
 //   page's AudioContext, which this module shares (start(ctx)); the score below waits while it sounds.
 // - Music: the adaptive score. A bar clock always runs (also before the first click, so the
@@ -18,31 +20,47 @@
 // stays silent (the plan's D10: the first sound anyone hears is Track 1's first piano note).
 
 import { Sfx } from "../lab/engine/sfx.ts";
+import { RegionMusic } from "./region-music.ts";
 
 const BASE = "/audio/world/";
+const AUDIO = "/audio/";
 
+/**
+ * A cue's files: one is picked per play. "court/<name>" is an encoded pair (.opus or .m4a, whichever the browser
+ * plays); "world/sfx/<name>.wav" is a legacy file. An empty list is a silent cue (no approved sound yet).
+ */
 interface Cue {
-  file: string;
+  files: string[];
   vol: number;
   rate: number;
 }
 
-const c = (file: string, vol = 1, rate = 1): Cue => ({ file: `sfx/${file}.wav`, vol, rate });
+const c = (file: string, vol = 1, rate = 1): Cue => ({ files: [`world/sfx/${file}.wav`], vol, rate });
+const a = (names: string[], vol = 1, rate = 1): Cue => ({ files: names.map((n) => `court/${n}`), vol, rate });
+/** Dex's list has no approved sound for it yet: silent (not a stand-in). */
+const SILENT: Cue = { files: [], vol: 0, rate: 1 };
 
-/** Cue id -> file. Ids not here fall back to the lab's synth sounds (her own moves). */
-const CUES: Record<string, Cue> = {
-  // things breaking (props.ts: `<material>.hit`, `<material>.break`)
-  "wood.hit": c("wood-hit", 0.6), "wood.break": c("wood-break", 0.75),
+/**
+ * Cue id -> files. Ids not here fall back to the lab's synth sounds (her own moves). The court's and the props'
+ * breaks, tinks and effects are Dex-approved (best or ok in lanes/audio/VETTING.json). The rest of the table is
+ * the old generic library, not yet vetted; audio.test.mjs keeps that list from growing.
+ */
+export const CUES: Record<string, Cue> = {
+  // things breaking (props.ts: `<material>.hit`, `<material>.break`). Breaks: approved (wood thick / thin board,
+  // clay, paper: Dex "good but speed up", so the paper break plays at 1.25x)
+  "wood.hit": c("wood-hit", 0.6), "wood.break": a(["wood-break-a", "wood-break-b"], 0.75),
   "stone.hit": c("stone-hit", 0.55), "stone.break": c("stone-break", 0.75),
-  "clay.hit": c("glass-hit", 0.45, 0.7), "clay.break": c("glass-shatter", 0.6, 0.62),
-  "paper.hit": c("paper-cut", 0.5), "paper.break": c("cloth-tear", 0.55, 1.2),
+  "clay.hit": c("glass-hit", 0.45, 0.7), "clay.break": a(["clay-break-a"], 0.6),
+  "paper.hit": c("paper-cut", 0.5), "paper.break": a(["paper-break-b"], 0.55, 1.25),
   "metal.hit": c("metal-hit", 0.55), "metal.break": c("metal-heavy", 0.6),
-  debris: c("grit-sift", 0.4, 1.3), thud: c("thud", 0.5), tink: c("clink", 0.7, 1.4),
+  debris: c("grit-sift", 0.4, 1.3), thud: c("thud", 0.5),
+  // protected things pass the sword with a tink (props.ts): one of the approved bells, at random
+  tink: a(["tink-a", "tink-c", "tink-d"], 0.7),
   splash: c("splash-1", 0.9), "lift-start": c("lift-start", 0.6), "lift-dock": c("lift-dock", 0.6),
-  // the court
-  gong: c("bell-chapel", 1, 0.5), poof: c("cloth-flap", 0.7, 0.8), installed: c("confirm", 0.5),
-  "lion-windup": c("telegraph", 0.6), "lion-land": c("colossus-footfall", 0.6, 1.6),
-  stagger: c("metal-heavy", 0.5, 0.8), finish: c("slash-2", 0.9, 0.85),
+  // the court: the gong at a bout's start, the poof in and out, the crowd on the win (approved)
+  gong: a(["gong-b"], 0.8), poof: a(["poof-c"], 0.6), cheer: a(["crowd-cheer-b"], 0.7),
+  // the court's other moments have no approved sound yet: silent (FOR DEX in the lane notebook)
+  installed: SILENT, "lion-windup": SILENT, "lion-land": SILENT, stagger: SILENT, finish: SILENT,
   // her moves that have a recorded sound
   hurt: c("hurt", 0.6), land: c("landing", 0.5), dash: c("whoosh", 0.45, 1.2),
   // doors and panels
@@ -57,7 +75,7 @@ const CUES: Record<string, Cue> = {
 };
 
 /** Ambience beds by place (files in beds/, opus or m4a). */
-const BEDS: Record<string, string> = {
+export const BEDS: Record<string, string> = {
   lake: "beds/lake",
   heights: "beds/exterior",
   hall: "beds/interior",
@@ -73,6 +91,8 @@ export class Sound {
   private lab = new Sfx();
   private ext = "opus";
   readonly music: Music;
+  /** The places' main themes (streamed; they wait for the opening's hand-back). */
+  readonly regions = new RegionMusic();
   private bed: { id: string; src: AudioBufferSourceNode; gain: GainNode } | null = null;
   private wantBed: string | null = null;
   /** Times each cue played (debug and tests). */
@@ -115,9 +135,19 @@ export class Sound {
       this[k] = g;
     }
     this.music.attach(ctx);
+    this.regions.attach(ctx, this.master!, this.ext);
     if (this.wantBed) this.setBed(this.wantBed);
-    for (const id of ["wood.break", "clay.break", "debris", "gong", "poof", "tink"]) void this.load(CUES[id]!.file);
-    for (const id of Object.keys(CUES)) if (id.startsWith("op.")) void this.load(CUES[id]!.file);
+    for (const id of ["wood.break", "clay.break", "paper.break", "debris", "gong", "poof", "cheer", "tink"]) this.preload(id);
+    for (const id of Object.keys(CUES)) if (id.startsWith("op.")) this.preload(id);
+  }
+
+  private preload(id: string): void {
+    for (const f of CUES[id]!.files) void this.load(this.urlOf(f));
+  }
+
+  /** The URL of a cue file (the encoded pairs take the codec the browser plays). */
+  private urlOf(file: string): string {
+    return file.endsWith(".wav") ? AUDIO + file : `${AUDIO}${file}.${this.ext}`;
   }
 
   /** The world scrolls out of view (the page column): its sound fades down, and back. */
@@ -126,15 +156,15 @@ export class Sound {
     this.master.gain.setTargetAtTime(Math.max(0.0001, 0.9 * k), this.ctx.currentTime, 0.4);
   }
 
-  private load(file: string): Promise<AudioBuffer | null> {
-    let p = this.buffers.get(file);
+  private load(url: string): Promise<AudioBuffer | null> {
+    let p = this.buffers.get(url);
     if (!p) {
       const ctx = this.ctx;
-      p = !ctx ? Promise.resolve(null) : fetch(BASE + file)
+      p = !ctx ? Promise.resolve(null) : fetch(url)
         .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status}`))))
         .then((b) => ctx.decodeAudioData(b))
         .catch(() => null);
-      if (ctx) this.buffers.set(file, p);
+      if (ctx) this.buffers.set(url, p);
     }
     return p;
   }
@@ -147,10 +177,12 @@ export class Sound {
       this.lab.play(id, volume);
       return;
     }
+    if (!cue.files.length) return;
     const ctx = this.ctx;
     if (!ctx || !this.sfxBus || ctx.state !== "running") return;
     const asked = at ?? ctx.currentTime;
-    void this.load(cue.file).then((buf) => {
+    const file = cue.files[Math.floor(Math.random() * cue.files.length)]!;
+    void this.load(this.urlOf(file)).then((buf) => {
       // late by more than a moment: skip it rather than play it out of time
       if (!buf || !this.sfxBus || ctx.currentTime - asked > (at === null ? 0.25 : 0.06)) return;
       const s = ctx.createBufferSource();
@@ -206,7 +238,7 @@ export class Sound {
       this.bed = null;
     }
     if (!id || !BEDS[id]) return;
-    void this.load(`${BEDS[id]}.${this.ext}`).then((buf) => {
+    void this.load(`${BASE}${BEDS[id]}.${this.ext}`).then((buf) => {
       if (!buf || !this.bedBus || this.wantBed !== id || this.bed) return;
       const src = ctx.createBufferSource();
       src.buffer = buf;
@@ -297,8 +329,8 @@ export class Music {
     else if (name.startsWith("calm:layer:")) { if (this.mood === "off") this.mood = "calm"; this.layers = Math.max(this.layers, Number(name.slice(11))); }
     else if (name === "calm:drop") { this.mood = "calm"; this.dropped = true; this.layers = 5; }
     else if (name === "music:arena") { this.mood = "intense"; this.hush = false; }
-    else if (name === "music:hush") this.hush = true;
-    else if (name === "music:resolve") { this.hush = false; this.resolveAt = this.now() + this.nextBar(); }
+    else if (name === "music:hush") { this.hush = true; this.sound.regions.duck(0.4, 0.5); }
+    else if (name === "music:resolve") { this.hush = false; this.resolveAt = this.now() + this.nextBar(); this.sound.regions.duck(1, 1.5); }
     else if (name === "music:hall") { if (this.mood !== "intense") { this.mood = "hall"; } }
     else if (name === "music:land") { if (this.mood !== "intense") { this.mood = "calm"; this.dropped = true; this.layers = 2; } }
   }

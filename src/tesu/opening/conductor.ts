@@ -28,6 +28,8 @@ export interface OpeningLink {
   readonly repeat: boolean;
   /** Track 1 is sounding: the world's own score waits. */
   readonly music: boolean;
+  /** The world's region theme takes over (after the hand-back): Track 1 fades out over `secs` and stays down. */
+  handOver?(secs: number): void;
   /** The context time at which Track 1's time T sounds (for cues on the beat), or null without audio. */
   ctxTimeOf(T: number): number | null;
   /** Esc or the chip: true if it skipped. */
@@ -86,6 +88,8 @@ export class Conductor implements OpeningLink {
   /** Covered by the website (the column says so once the world has landed). */
   private covered = false;
   private hidden = false;
+  /** The region's theme has taken over: Track 1 is faded out for good (the handOver call). */
+  private handedOver = false;
   private pressAt = 0;
   private chipUntil = -Infinity;
   private raf = 0;
@@ -113,7 +117,14 @@ export class Conductor implements OpeningLink {
   }
 
   get music(): boolean {
-    return !!this.track && !this.track.failed && this.clock.mode === "audio" && this.track.playing(this.T());
+    return !!this.track && !this.track.failed && this.clock.mode === "audio" && !this.handedOver && this.track.playing(this.T());
+  }
+
+  /** The region's theme takes over: Track 1 fades out over `secs` and stays out (the music is the theme's now). */
+  handOver(secs: number): void {
+    if (this.handedOver) return;
+    this.handedOver = true;
+    this.track?.level(0, secs);
   }
 
   T(leadMs = 0): number {
@@ -239,7 +250,7 @@ export class Conductor implements OpeningLink {
       else if (ctx) void (hold ? ctx.suspend() : ctx.resume());
     } else if (this.track && ctx) {
       // after the opening Track 1 plays on; covered, it fades down with the world's sound
-      this.track.level(this.covered ? 0 : 0.9, 0.4);
+      this.track.level(this.covered || this.handedOver ? 0 : 0.9, 0.4);
     }
   }
 

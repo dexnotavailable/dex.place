@@ -23,6 +23,7 @@ import { Props } from "./props.ts";
 import { Rides } from "./ride.ts";
 import { blendAtmos } from "./atmos-blend.ts";
 import { Sound } from "./sound.ts";
+import { placeAt, THEME_FADE } from "./region-music.ts";
 import { CHARM_PERCH, H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore } from "./plates/store.ts";
 import type { ZhushaAssets } from "./player.ts";
@@ -339,7 +340,14 @@ export class TesuGame {
   private scoreTick(): void {
     const b = this.player.body;
     const m = this.sound.music;
-    m.held = this.opening.music || this.opening.state === "cine";
+    // the place's main theme (region-music.ts): none while the press waits or the opening's cinema runs; when a
+    // theme starts it takes Track 1 down with it (the conductor's handOver, through the link the game kept)
+    const themes = this.sound.regions;
+    const was = themes.sounding;
+    themes.update(placeAt(this.world.places, b.x, b.y, INTERIOR_Y), this.holding || this.opening.active);
+    if (themes.sounding && !was) this.openingLink?.handOver?.(THEME_FADE);
+    // the placeholder score waits while Track 1 sounds (until a theme takes it down) and while a theme plays
+    m.held = this.opening.state === "cine" || !!this.openingLink?.music || themes.sounding;
     if (this.tick % 30 !== 0) return;
     const inside = b.y >= INTERIOR_Y;
     this.sound.setBed(inside ? "hall" : b.x < 109 * H ? "lake" : "heights");
@@ -425,6 +433,8 @@ export class TesuGame {
   away = false;
   /** Waiting for PLAY in the page column (controls held, Kagami still). */
   holding = false;
+  /** The opening's link, kept after the opening lets go of it (Track 1 can still sound: the theme fades it). */
+  private openingLink: OpeningLink | null = null;
 
   setAway(away: boolean): void {
     if (away === this.away) return;
@@ -443,6 +453,7 @@ export class TesuGame {
     this.frozen = 0;
     this.sound.locked = false;
     if (link?.ctx) this.sound.start(link.ctx);
+    this.openingLink = link ?? null;
     this.spawnAt(this.world.spawns.find((s) => s.id === "catch")!);
     this.opening.start(link ?? new SilentLink(() => this.time, this.feel.reducedMotion));
     const shot = this.opening.camera(this.player.body.x);
@@ -1559,7 +1570,7 @@ export class TesuGame {
       ride: this.rides.active ? { id: this.rides.active.def.id, dir: this.rides.active.dir, t: +this.rides.active.t.toFixed(2) } : null, vista: !!this.vista,
       court: this.court.state_(), hp: this.player.hp, ultCd: this.player.ultCd,
       props: this.props.state(), airborne: this.props.airborne(), broken: this.props.broken,
-      music: { mood: this.sound.music.mood, layers: this.sound.music.layers, dropped: this.sound.music.dropped, nextBar: +this.sound.music.nextBar().toFixed(2) },
+      music: { mood: this.sound.music.mood, layers: this.sound.music.layers, dropped: this.sound.music.dropped, nextBar: +this.sound.music.nextBar().toFixed(2), theme: this.sound.regions.playing },
     };
   }
 
