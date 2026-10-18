@@ -1,4 +1,5 @@
-// The world -> website handoff on the root page.
+// The world -> website handoff on the page column (the game screen at the top of "/" and of each section's
+// page; motion/column.ts runs the loader, the ofuda and the ways in).
 //
 // Sets --world-progress (0..1) on the .world element itself as the site sheet
 // rises over the sticky world: the black cinematic bars recede and the world
@@ -83,9 +84,9 @@ export function initWorld(_reduced: MediaQueryList): void {
     land();
   };
 
-  // The world window's place in the column: on "/" the title and the fall come first.
+  // The game screen's place in the column (the top of the page; the empty anchor above the sticky section).
   const anchor = document.querySelector<HTMLElement>(".world-top");
-  // Out of view below (the title and the fall on "/"): held like a covered world.
+  // Out of view below (nothing comes before the game screen today; kept for a column that adds a top): held.
   let below = false;
   const update = (): void => {
     raf = 0;

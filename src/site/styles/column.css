@@ -1,85 +1,150 @@
-/* The page column on "/" (GDK 3.8): the title on black, the waiting room, the self-paced fall through
-   the sky, the PLAY prompt in the world window, the talisman over the page. motion/column.ts drives it;
-   the opening's bars, captions and skip chip bring their own styles (src/tesu/opening/overlay.ts). */
+/* The page column (Dex 10-16): the game screen at the top (the world behind a black cover, "dex", the loader,
+   "click to continue"), the loader / ofuda drawn over the page, and the jetty at the bottom of the website.
+   motion/column.ts drives it; the opening's bars, captions and skip chip bring their own styles
+   (src/tesu/opening/overlay.ts). */
 
-.col-title {
-  position: relative;
-  height: 100vh; height: 100svh;
-  display: grid;
-  place-items: center;
-  background: #000;
-  color: #f6eee9;
-  overflow: hidden;
-}
-.col-title__name { position: absolute; inset: 0; margin: 0; }
-.col-title__mark { display: none; }
-.col-title__load {
-  position: absolute; bottom: 14vh; width: 100%; margin: 0; padding: 0 18px; text-align: center;
-  font: 400 var(--fs-12) / 1.6 var(--f-label); letter-spacing: 0.14em; text-transform: lowercase; color: #9a8f96;
-}
-.col-title__load a, .col-ask { color: #f6eee9; }
-.col-ask { padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; text-decoration: underline; cursor: pointer; }
-.col-continue {
-  position: absolute; bottom: 12vh; left: 50%; translate: -50% 0;
-  padding: 10px 22px; border: 2px solid #f6eee9; background: transparent; color: #f6eee9;
-  font: 400 var(--fs-14) / 1 var(--f-label); letter-spacing: 0.18em; text-transform: lowercase; cursor: pointer;
-}
-.col-continue:hover, .col-continue:focus-visible { background: #f6eee9; color: #000; outline: none; }
-.col-title__skip { position: absolute; left: 12px; top: 12px; translate: 0 -200%; color: #f6eee9; }
-.col-title__skip:focus { translate: 0 0; }
+/* --------------------------------------------------------------- the game screen */
+.world { background: #000; color: #f6eee9; }
+.world::after { background: #000; }
+/* the world streams in behind a black cover until the visitor goes in */
+.gs-cover { position: absolute; inset: 0; z-index: 2; background: #000; pointer-events: none; transition: opacity 600ms linear, visibility 0s linear 600ms; }
+.world[data-entered] .gs-cover { opacity: 0; visibility: hidden; }
+@media (prefers-reduced-motion: reduce) { .gs-cover { transition: none; } }
+.world__frame { z-index: 1; }
+.world__bars { z-index: 3; }
+.world__cue { z-index: 4; }
+.world[data-entered] .gs-title { pointer-events: none; }
 
-/* the fall: black into the sky, two far isles and Walker silhouettes in the haze */
-.col-fall {
-  position: relative;
-  height: 220vh; height: 220svh;
-  overflow: hidden;
-  background: linear-gradient(#000 0%, #0d1424 14%, #2b4766 34%, #7fa7c9 58%, #cfe0e8 82%, #edf5ef 100%);
+.gs-title { position: absolute; inset: 0; z-index: 3; }
+.gs-title__name { margin: 0; }
+/* without scripts the mark is plain text (the canvas writes it with them) */
+.gs-title__still { position: absolute; left: 50%; top: 40%; translate: -50% -50%; color: #f6eee9; }
+.gs-title__still .mark-px { max-width: 80vw; height: auto; }
+.js .gs-title__still { display: none; }
+.gs-status {
+  position: absolute; left: 0; right: 0; bottom: 13vh; margin: 0; padding: 0 18px; text-align: center;
+  font: 400 var(--fs-14) / 1.6 var(--f-label); letter-spacing: 0.08em; text-transform: lowercase; color: #a69aa3;
 }
-.col-fall > span { position: absolute; display: block; }
-.col-fall__clouds {
-  inset: 30% 0 0 0;
-  background:
-    radial-gradient(60px 14px at 20% 40%, #f3f7f8 98%, transparent 100%),
-    radial-gradient(90px 18px at 64% 52%, #f3f7f8 98%, transparent 100%),
-    radial-gradient(120px 20px at 38% 74%, #e3ecef 98%, transparent 100%),
-    radial-gradient(80px 16px at 82% 86%, #e3ecef 98%, transparent 100%);
-  image-rendering: pixelated;
+.gs-status a, .gs-ask { color: #f6eee9; }
+.gs-ask { padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; text-decoration: underline; cursor: pointer; }
+.gs-continue {
+  position: absolute; left: 50%; top: calc(60% + 64px); translate: -50% 0; white-space: nowrap;
+  min-height: 44px; padding: 8px 18px; border: 0; background: transparent; color: #f6eee9; cursor: pointer;
+  font: 400 var(--fs-16) / 1 var(--f-label); letter-spacing: 0.1em; text-transform: lowercase;
 }
-.col-fall__isle { width: 64px; height: 56px; background: #8fa3ad; clip-path: polygon(0 30%, 100% 30%, 70% 100%, 40% 70%); }
-.col-fall__isle::before { content: ""; position: absolute; left: 40%; top: 0; width: 20%; height: 32%; background: #3b4152; }
-.col-fall__isle--a { left: 66%; top: 46%; }
-.col-fall__isle--b { left: 76%; top: 52%; scale: 0.8; }
-.col-fall__walker { bottom: 0; width: 120px; height: 150px; background: #b7c8d1; opacity: 0.7;
-  clip-path: polygon(15% 30%, 85% 30%, 85% 55%, 78% 55%, 74% 100%, 68% 100%, 66% 55%, 34% 55%, 30% 100%, 24% 100%, 22% 55%, 15% 55%); }
-.col-fall__walker--a { left: 12%; }
-.col-fall__walker--b { left: 58%; scale: 0.6; transform-origin: bottom; opacity: 0.5; }
-
-/* anything here shown and hidden by the hidden attribute stays hidden (a display rule below
-   would otherwise override it) */
-.col-title [hidden], .world__play[hidden], .col-talisman-btn[hidden] { display: none !important; }
-
-/* the prompt where the scenery starts */
-.world__play {
-  position: absolute; z-index: 2; left: 50%; bottom: 18%; translate: -50% 0;
-  display: flex; align-items: center; gap: 14px; padding: 10px 16px;
-  background: rgba(255, 244, 241, 0.92); color: #2b2233; box-shadow: 0 0 0 2px #2b2233, 4px 4px 0 2px rgba(0, 0, 0, 0.25);
+.gs-continue::before, .gs-continue::after { content: "·"; margin: 0 10px; color: #c9304f; }
+.gs-continue:hover, .gs-continue:focus-visible { color: #fff; outline: 2px solid #ffc857; outline-offset: 2px; box-shadow: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .gs-continue:not([hidden]) { animation: gs-breathe 2.4s steps(4, end) infinite; }
 }
-.world__ask { margin: 0; font: 400 var(--fs-14) / 1.3 var(--f-body); }
-.world__playbtn {
-  padding: 8px 18px; border: 0; background: #c9304f; color: #fff4f1; cursor: pointer;
-  font: 400 var(--fs-16, 16px) / 1 var(--f-label); letter-spacing: 0.16em; box-shadow: 0 0 0 2px #2b2233;
-}
-.world__playbtn:focus-visible { outline: 3px solid #ffc857; outline-offset: 2px; }
+@keyframes gs-breathe { 50% { opacity: 0.62; } }
+.gs-title [hidden], .ofuda-btn[hidden], .jetty__go[hidden] { display: none !important; }
 
-/* the talisman over the page (drawn in device pixels; never smoothed) */
-.col-talisman { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 40; image-rendering: pixelated; }
-.col-talisman-btn { position: fixed; z-index: 41; padding: 0; border: 0; background: transparent; cursor: pointer; }
-.col-talisman-btn:focus-visible { outline: 3px solid #ffc857; outline-offset: 3px; }
-
-/* the opening: the page is carried through its sky (col-cine), the cinematic owns the frame until drop 1
-   (op-cine), and from the press the opening's own bars stand in for the world window's (they retract on
-   drop 1: she is yours) */
-html.col-cine .hdr, html.op-cine .hdr { visibility: hidden; }
+/* the opening's own overlay stays on the game screen: scrolled down to the website, it waits out of sight */
+html.gs-away .op { visibility: hidden; }
 html.op-run .world__bars { display: none; }
 html.op-run .world__frame { top: 0; height: 100%; }
 html.op-cine .world__cue { visibility: hidden; }
+
+/* ------------------------------------------------- the loader and the ofuda over the page */
+/* (drawn in device pixels, whole pixels only: never smoothed) */
+.ofuda-layer { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 39; image-rendering: pixelated; }
+.ofuda-btn { position: fixed; z-index: 41; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.ofuda-btn:focus-visible { outline: 3px solid var(--azure); outline-offset: 2px; box-shadow: 0 0 0 5px #fff; }
+
+/* ------------------------------------------------------------- the jetty at the bottom */
+.jetty {
+  position: relative;
+  /* the last screen of the page: the whole scene under the header */
+  min-height: max(420px, calc(100vh - var(--hdr-h)));
+  min-height: max(420px, calc(100svh - var(--hdr-h)));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  overflow: hidden;
+  border-top: var(--bw) solid var(--ink);
+}
+.jetty__scene { position: absolute; inset: 0; image-rendering: pixelated; }
+.jetty__scene canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+/* painted (motion/sky.ts): the website's own sky shows through above the lake */
+.jetty__scene[data-painted] .jetty__sky, .jetty__scene[data-painted] .jetty__lake, .jetty__scene[data-painted] .jetty__deck { display: none; }
+/* the placeholder scene until the world's own jetty scene lands: lake, deck and her */
+.jetty__sky { position: absolute; inset: 0; background: linear-gradient(#8fc3e8 0%, #cfe6f4 55%, #eef6f2 70%); }
+.jetty__lake { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: repeating-linear-gradient(#83ccbf 0 8px, #5ab2a7 8px 10px, #83ccbf 10px 22px); }
+.jetty__deck {
+  position: absolute; left: 0; width: 58%; bottom: 30%; height: 16px;
+  background: repeating-linear-gradient(90deg, #cfad7c 0 22px, #896741 22px 24px, #ad885a 24px 40px, #896741 40px 42px);
+  box-shadow: 0 4px 0 #644a2e;
+}
+.jetty__deck::after {
+  /* the piles */
+  content: ""; position: absolute; left: 0; right: 0; top: 16px; height: calc(30vh * 0.4);
+  background: repeating-linear-gradient(90deg, transparent 0 46px, #644a2e 46px 54px, transparent 54px 118px);
+}
+.jetty__her {
+  /* her placeholder: the white box she is in the game until her art lands, at her height: the red band of her
+     hat and an eye, as in the world (no card shadow) */
+  position: absolute; left: 22%; bottom: calc(30% + 16px); width: 30px; height: 84px;
+  background: #fff; box-shadow: 0 0 0 2px #2b2233;
+  transition: opacity 400ms linear;
+}
+.jetty__her::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7%; background: #ee4c31; }
+.jetty__her::after { content: ""; position: absolute; right: 22%; top: 16%; width: 4px; height: 6px; background: #2b2233; }
+.jetty:not([data-her]) .jetty__her { opacity: 0; }
+/* the ofuda once she has caught it (way 4): a few px on her hat */
+.jetty__hat { position: absolute; left: calc(50% - 4px); top: -2px; width: 8px; height: 20px; background: #eaca92; box-shadow: inset 0 0 0 2px #4e3022, inset 0 -6px 0 2px #ba3036; opacity: 0; }
+.jetty[data-caught] .jetty__hat { opacity: 1; }
+.jetty__paper {
+  position: relative;
+  justify-self: end;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  gap: var(--s-5);
+  width: min(100%, max(360px, 40vw));
+  min-height: 100%;
+  padding: var(--s-9) max(48px, var(--pad)) clamp(64px, 14vh, 140px) clamp(72px, 9vw, 160px);
+  background: linear-gradient(90deg, rgb(255 255 255 / 0) 0, #fff clamp(80px, 12vw, 200px));
+  transition: opacity 1.2s linear;
+}
+.jetty__paper::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: clamp(80px, 12vw, 200px);
+  background-image: var(--scatter-r, none); background-repeat: repeat-y; background-size: var(--scatter-size, 100% auto); pointer-events: none;
+}
+.jetty__ask { margin: 0; font: 400 var(--fs-body) / 1.5 var(--f-body); color: var(--fg-2); }
+.jetty__note { margin: 0; font: 400 var(--fs-body) / 1.5 var(--f-label); color: var(--muted); }
+.jetty__note[hidden] { display: none; }
+/* way 4: the white fade goes away, the whole scene shows */
+.jetty[data-caught] .jetty__paper { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .jetty__paper { transition: none; } }
+.jetty__go {
+  min-height: 48px; padding: 10px 18px;
+  border: var(--bw) solid var(--ink, #2b2233); background: var(--gold, #ffc857); color: var(--ink, #2b2233);
+  box-shadow: 4px 4px 0 var(--ink, #2b2233);
+  font: 400 var(--fs-16) / 1.2 var(--f-label); letter-spacing: 0.04em; text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: transform var(--d-pop) var(--ease-spring), box-shadow var(--d-pop) var(--ease-spring);
+}
+@media (hover: hover) {
+  .jetty__go:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--scarlet, #c9304f); }
+}
+.jetty__go:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
+@media (max-width: 700px), (max-width: 1099px) and (orientation: portrait) {
+  .jetty { min-height: 560px; align-items: start; }
+  .jetty__paper { justify-self: stretch; width: 100%; min-height: auto; padding: var(--s-6) var(--pad) var(--s-8); background: linear-gradient(#fff 70%, rgb(255 255 255 / 0)); }
+  .jetty__paper::before { display: none; }
+  .jetty__deck { width: 80%; }
+  .jetty__her { left: 30%; }
+}
+.world__cue { color: #d9cfd6; }
+/* short screens (a phone on its side): the scene is the screen under the header; the paper is narrower */
+@media (max-height: 520px) {
+  .jetty { min-height: max(300px, calc(100svh - var(--hdr-h))); }
+}
+/* way 4: the cut up to the game screen, a short cover in the sky's colour */
+.page-cut { position: fixed; inset: 0; z-index: 60; background: #cfe5f6; opacity: 0; pointer-events: none; transition: opacity 320ms linear; }
+.page-cut.is-on { opacity: 1; }
+@media (max-width: 1099px) {
+  .jetty__paper { padding-left: clamp(48px, 8vw, 200px); }
+  .jetty__go { white-space: normal; text-align: left; }
+}

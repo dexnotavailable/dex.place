@@ -1,0 +1,415 @@
+/* dex.place v2 (Dex 10-16): the website on plain white over the world. Loaded last: it re-tones the 09-29
+   tokens for white paper and lays the sections out as alternating panels that fade into the world's sky
+   (a gradual gradient plus a sparse scatter of white pixels at the edge). Fonts: the ones we have
+   (Tesu Display for titles, DotGothic16 for text, Departure Mono for small labels once it is in the repo;
+   until then its stack falls back to DotGothic16). Titles stay small.
+
+   Contrast on white (WCAG AA): ink #2b2233 15.6:1, --fg-2 #463c50 10.4:1, --muted #62576e 6.9:1,
+   scarlet #c9304f 5.5:1, azure #1e6cab 5.6:1, the deep text tones of the fills 5.6:1 or more; ink on every
+   fill (gold, sakura, jade, sky) 7.9:1 or more. */
+
+:root {
+  --ink: #2b2233;
+  --scarlet: #c9304f;
+  --azure: #1e6cab;
+  --gold: #ffc857;
+
+  /* ---- surfaces: plain white paper */
+  --bg: #ffffff;
+  --bg-2: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f5f1f4;
+  --sunk: #edf3f8;            /* wells (code, hashes, scenes): a pale sky, never the dark site's void */
+  --line: #e6e0e8;
+  --line-2: #8a8094;
+  --shadow: var(--ink);
+
+  /* ---- text */
+  --fg: var(--ink);
+  --fg-2: #463c50;
+  --muted: #62576e;
+  --on-accent: var(--ink);
+
+  /* ---- accents: fills that ink reads on; their deep tones for text and glyphs on white */
+  --yellow: var(--gold);
+  --mint: #8edcc4;
+  --magenta: #ffadc0;
+  --cyan: #a6d6f4;
+  --yellow-t: #fff4d8;
+  --mint-t: #e4f7f1;
+  --magenta-t: #ffeaf0;
+  --cyan-t: #e8f4fc;
+  --yellow-d: #8a5a00;
+  --mint-d: #0b7258;
+  --magenta-d: var(--scarlet);
+  --cyan-d: var(--azure);
+  --link: var(--azure);
+
+  /* ---- type */
+  --f-title: "Tesu Display", "DotGothic16", system-ui, sans-serif;
+  --f-px: "DotGothic16", ui-monospace, monospace;
+  --f-label: "Departure Mono", "DotGothic16", ui-monospace, monospace;
+  --f-body: "DotGothic16", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* (until Departure Mono is in the repo, code and hashes fall to DotGothic16, not a system monospace) */
+  --f-mono: "Departure Mono", "DotGothic16", ui-monospace, monospace;
+  /* DotGothic16 is drawn on a 16 px grid: every text size sits on it (16 px, headings 32 px), never in between */
+  --fs-12: 1rem;
+  --fs-14: 1rem;
+  --fs-16: 1rem;
+  --fs-body: 1rem;
+  --fs-20: 1rem;
+  --fs-24: 2rem;
+  /* titles: Tesu Display on whole font pixels (one em is 25 font px) */
+  --title-px: 1;
+  --fs-h3: 1.375rem;
+  --fs-h2: calc(25px * var(--title-px));
+  --fs-h1: calc(25px * var(--title-px) * 2);
+  --lh-body: 1.7;
+
+  /* ---- the bands: paper panels over the sky */
+  --band-gap: clamp(112px, 12vw, 192px);
+  --edge-h: clamp(32px, 3.5vw, 48px);
+  --fade-w: clamp(72px, 13vw, 240px);
+  --content-w: min(100vw, 1180px);
+  --wrap: 1084px;
+}
+@media (min-width: 1100px) {
+  :root { --title-px: 2; }
+}
+
+html { color-scheme: light; background: #000; }
+body { background: #000; color: var(--fg); }
+::selection { background: var(--gold); color: var(--ink); }
+:focus-visible { outline-color: var(--azure); box-shadow: 0 0 0 2px #fff; }
+
+/* ------------------------------------------------------------------ the sheet over the world */
+.sheet {
+  background: transparent;
+  background-image: none;
+  isolation: isolate;
+}
+/* the world behind the website: the sky (a world layer; motion/sky.ts paints it, this is its first paint) */
+.sky {
+  position: sticky;
+  top: 0;
+  z-index: -1;
+  height: 100vh;
+  height: 100svh;
+  margin-bottom: -100vh;
+  margin-bottom: -100svh;
+  background: linear-gradient(#2a64a8 0%, #3f82c4 30%, #79b2e2 62%, #c6e2f6 100%);
+  overflow: hidden;
+  pointer-events: none;
+}
+.sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+
+/* ------------------------------------------------------------------ the header on paper */
+.hdr { background: #fff; border-bottom: var(--bw) solid var(--ink); }
+.hdr[data-stuck] { border-bottom-color: var(--ink); }
+.hdr__mark { background: var(--gold); border-color: var(--ink); color: var(--ink); --pop-hi: var(--scarlet); }
+.nav__link { font: 400 var(--fs-16) / 1 var(--f-px); color: var(--fg-2); }
+.nav__link .px { color: var(--muted); }
+@media (hover: hover) {
+  .nav__link:hover .px { color: var(--scarlet); }
+}
+.nav__link[aria-current], .nav__ind { background: var(--gold); border-color: var(--ink); }
+.btn--ink { --btn-bg: var(--ink); --btn-fg: #fff; --btn-edge: var(--ink); --px-a: var(--gold); --pop-hi: var(--scarlet); }
+.menu:popover-open { background: #fff; }
+.menu__top .mark-px { color: var(--ink); margin-left: 4px; }
+/* the pixel "dex" (render/glyphs.ts pixelMark) in the header, the menu and the footer */
+.mark-px { display: block; flex: none; image-rendering: pixelated; }
+.hdr__mark { padding: 0 10px; }
+.hdr__mark .mark-px { translate: 0 1px; }
+.ftr__mark { color: var(--ink); display: inline-block; padding-top: 18px; }
+.menu__link { font: 400 clamp(1.125rem, 5vw, 1.375rem) / 1 var(--f-px); }
+.menu__link[aria-current] { border-color: var(--ink); box-shadow: var(--off) var(--off) 0 var(--gold); }
+.strip { display: none !important; }
+/* the corner slot in the header: the loader and the ofuda settle here (motion/column.ts), right of World on a
+   desktop, left of Menu on narrower screens; it keeps its room so nothing in the header shifts */
+.hdr__slot { flex: none; display: block; width: 44px; height: 48px; margin-left: 6px; }
+.sheet:not(.sheet--column) .hdr__slot { display: none; }
+@media (max-width: 1099px) {
+  .hdr__slot { margin-left: auto; }
+  .hdr__menu { margin-left: 8px; }
+}
+
+/* ------------------------------------------------------------------ the bands */
+/* Each section is a white paper on its side of the page (alternating), dissolving into the world on every side
+   that meets it: its open side (`::after`, the fade the width of --fade-w) and its top and bottom edges
+   (`.band__edge`, --edge-h deep), each a gradient with a scatter of white pixels over it (motion/scatter.ts).
+   Between the papers the sky shows through, never as a ruled bar. A section's own page is one band on the left. */
+.band {
+  --edge: max(0px, (100vw - var(--content-w)) * 0.24);
+  --paper: min(100vw, calc(var(--edge) + var(--content-w)));
+  --fade: rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%;
+  position: relative;
+  padding-block: calc(var(--band-gap) / 2);
+}
+.band::before, .band::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--band-gap) / 2);
+  bottom: calc(var(--band-gap) / 2);
+  pointer-events: none;
+}
+/* the paper */
+.band::before { width: var(--paper); background: #fff; }
+/* its open side: the gradient, and the white pixels over it; it runs on past the paper's top and bottom by the
+   edge fades' depth and tapers there, so the corners dissolve too (never a hard vertical cut) */
+.band::after {
+  top: calc(var(--band-gap) / 2 - var(--edge-h));
+  bottom: calc(var(--band-gap) / 2 - var(--edge-h));
+  width: var(--fade-w);
+  background-image: var(--scatter-l, none), linear-gradient(90deg, #fff 0, var(--fade));
+  background-repeat: repeat-y, no-repeat;
+  background-size: var(--scatter-size, 100% auto), 100% 100%;
+  -webkit-mask-image: linear-gradient(transparent, #000 var(--edge-h), #000 calc(100% - var(--edge-h)), transparent);
+  mask-image: linear-gradient(transparent, #000 var(--edge-h), #000 calc(100% - var(--edge-h)), transparent);
+}
+.band--l::before { left: 0; }
+.band--l::after { left: var(--paper); }
+.band--r::before { right: 0; }
+.band--r::after {
+  right: var(--paper);
+  background-image: var(--scatter-r, none), linear-gradient(270deg, #fff 0, var(--fade));
+}
+/* its top and bottom edges dissolve the same way */
+.band__edge {
+  position: absolute;
+  width: var(--paper);
+  height: var(--edge-h);
+  pointer-events: none;
+  background-repeat: repeat-x, no-repeat;
+  background-size: var(--scatter-edge-size, auto 100%), 100% 100%;
+}
+.band--l > .band__edge { left: 0; }
+.band--r > .band__edge { right: 0; }
+.band__edge--t {
+  top: calc(var(--band-gap) / 2 - var(--edge-h));
+  background-image: var(--scatter-t, none), linear-gradient(0deg, #fff 0, var(--fade));
+  background-position: left bottom, 0 0;
+}
+.band__edge--b {
+  bottom: calc(var(--band-gap) / 2 - var(--edge-h));
+  background-image: var(--scatter-b, none), linear-gradient(180deg, #fff 0, var(--fade));
+  background-position: left top, 0 0;
+}
+.band > .sec, .band > .page { position: relative; z-index: 1; background: transparent; border: 0; }
+.band--l > .sec > .wrap, .band--l > .page > .wrap { margin-left: var(--edge); margin-right: auto; max-width: min(calc(var(--wrap) + var(--pad) * 2), calc(var(--paper) - var(--edge))); }
+.band--r > .sec > .wrap, .band--r > .page > .wrap { margin-right: var(--edge); margin-left: auto; max-width: min(calc(var(--wrap) + var(--pad) * 2), calc(var(--paper) - var(--edge))); }
+.band .sec { padding-block: var(--s-8); }
+.band > .page { padding-block: var(--s-7) var(--s-8); }
+/* laptops: the paper always leaves open sky beside it (at least about 100 px clear past the fade), so the
+   left / right alternation reads (1366: a 1066 px paper, a 123 px fade, about 180 px of sky) */
+@media (min-width: 1100px) {
+  .band {
+    --fade-w: clamp(96px, 9vw, 160px);
+    --paper: min(calc(var(--edge) + var(--content-w)), calc(100vw - max(240px, 22vw)));
+  }
+}
+/* tablets: the paper takes most of the width, a strip of real sky on its open side */
+@media (max-width: 1099px) {
+  .band { --paper: calc(100vw - max(56px, 9vw)); --fade-w: clamp(32px, 6vw, 56px); }
+  .band--l > .sec > .wrap, .band--l > .page > .wrap { margin: 0; max-width: var(--paper); }
+  .band--r > .sec > .wrap, .band--r > .page > .wrap { margin: 0 0 0 auto; max-width: var(--paper); }
+}
+/* phones: the paper runs the full width and dissolves only at its top and bottom, into the sky between */
+@media (max-width: 600px) {
+  .band { --paper: 100vw; }
+  .band::after { display: none; }
+  .band .sec { padding-block: var(--s-7); }
+}
+.sheet--page:not(.sheet--column) { background: #fff; }
+.sheet--page:not(.sheet--column) .sky { display: none; }
+
+/* the project scenes (placeholder art) on a pale sky instead of the dark site's void */
+.scene { --sunk: #e3eff7; --line: #c3d5e3; background: var(--sunk); }
+/* ink-on-ink spots of the dark theme: key cells and tags on ink get white text */
+.spec dt, .pspec dt, .pick--none[aria-pressed="true"] { color: #fff; }
+.qr__tag { background: var(--ink); color: #fff; }
+
+/* the decorative floating shapes of the dark site stay home: the world is the life behind the paper now */
+.floats { display: none !important; }
+
+/* ------------------------------------------------------------------ titles: small, pixel */
+.sh { margin-bottom: var(--s-6); gap: var(--s-3); }
+.sh__kicker { font: 400 var(--fs-12) / 1 var(--f-label); color: var(--muted); letter-spacing: 0.1em; }
+.sh__slash { color: var(--scarlet); }
+.sh__rule { background: var(--line); height: 2px; }
+.sh__title {
+  font: 400 var(--fs-h2) / 1 var(--f-title);
+  letter-spacing: calc(1px * var(--title-px));
+  text-transform: uppercase;
+  text-shadow: none;
+  color: var(--ink);
+  font-synthesis: none;
+  -webkit-font-smoothing: none;
+}
+.phead .sh__title { font-size: var(--fs-h2); }
+.sh__title::after { width: 40px; height: 6px; margin-top: 10px; background: var(--scarlet); box-shadow: none; }
+.sh--mint .sh__title::after { background: var(--mint-d); }
+.sh--cyan .sh__title::after { background: var(--azure); }
+.sh--magenta .sh__title::after { background: var(--scarlet); }
+.sh--yellow .sh__title::after, .sh:not([class*="sh--"]) .sh__title::after { background: var(--gold); box-shadow: 0 0 0 2px var(--ink); }
+.sh__more .px { color: var(--scarlet); }
+.sub { font-family: var(--f-px); }
+h1, h2, h3, h4 { font-weight: 400; }
+
+/* ------------------------------------------------------------------ text-safe accents on white */
+.link:hover, .crumbs a:hover, .ftr__base a:hover { color: var(--azure); text-decoration-color: var(--azure); }
+.chip { font: 400 var(--fs-14) / 1 var(--f-body); }
+.chip--key { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chip--value { background: var(--panel-2); color: var(--ink); }
+.tile--ink { color: var(--gold); }
+.sticker--yellow { color: #e0a522; }
+.sticker--mint { color: #2bb58c; }
+.sticker--magenta { color: #ff6f92; }
+.sticker--cyan { color: #4aa3e0; }
+.dl-state--ready { color: var(--mint-d); }
+.spec__link .px, .dl-notes li::before, .cmd span { color: var(--mint-d); }
+.dlg__caveat .px { color: var(--yellow-d); }
+.amt__unit { color: var(--scarlet); }
+[data-state="amount"] .qr__tag { color: var(--yellow-d); }
+.prose a { color: var(--azure); text-decoration-color: rgb(30 108 171 / 0.4); }
+.prose a:hover { background: var(--cyan-t); }
+.prose ul > li::marker, .prose ol > li::marker { color: var(--scarlet); }
+.prose input[type="checkbox"] { accent-color: var(--azure); }
+.post__end { color: var(--azure); }
+.apager__dir .px { color: var(--scarlet); }
+.t-s { color: var(--mint-d); }
+.t-n { color: var(--yellow-d); }
+.t-v { color: var(--azure); }
+.bpost:hover .bpost__go { color: var(--azure); }
+.toc-list a:hover { text-decoration-color: var(--scarlet); }
+code, kbd, pre { font-family: var(--f-mono); }
+
+/* ------------------------------------------------------------------ the footer */
+.ftr { background: #fff; border-top: var(--bw) solid var(--ink); margin-top: 0; }
+/* on the page column it is a paper on the right, flowing on down into the jetty's white column */
+.band--foot { padding-bottom: 0; }
+.band--foot::before { bottom: 0; }
+.band--foot::after { bottom: 0; -webkit-mask-image: linear-gradient(transparent, #000 var(--edge-h)); mask-image: linear-gradient(transparent, #000 var(--edge-h)); }
+.band--foot > .ftr { position: relative; z-index: 1; background: transparent; border: 0; }
+.band--foot > .band__edge--b { bottom: calc(-1 * var(--edge-h)); z-index: 2; }
+.band--foot > .ftr .wrap { margin-right: var(--edge); margin-left: auto; max-width: min(calc(var(--wrap) + var(--pad) * 2), calc(var(--paper) - var(--edge))); }
+.band--foot .ftr__base { border-top-color: var(--line); }
+.sheet--column .jetty { border-top: 0; }
+/* the header's row lines up with the papers' content (the left papers' start, the right papers' end) */
+@media (min-width: 1100px) {
+  .hdr__in { max-width: calc(100vw - 2 * max(0px, (100vw - var(--content-w)) * 0.24) - 2 * var(--pad)); }
+}
+.ftr__mark { color: var(--ink); }
+.ftr__nav a { font-weight: 400; }
+.ftr__nav a:hover .px { color: var(--scarlet); }
+.ftr__sleepy { color: #e0a522; }
+.ftr__kofi { background: var(--magenta); color: var(--ink); border-color: var(--ink); font-weight: 400; }
+
+/* ------------------------------------------------------------------ the stubs (opens later) */
+.stubs { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s-5); }
+.stub, .stubpage, .commissions {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--s-2);
+  padding: var(--s-5) var(--s-5) var(--s-4);
+  background: #fff;
+  border: var(--bw) solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.stub__title, .commissions__title { display: flex; align-items: center; gap: 10px; margin: 0; padding-right: 40px; font: 400 var(--fs-20) / 1.2 var(--f-px); }
+.stub__link { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-2); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+.stub__link:hover { color: var(--azure); text-decoration-color: var(--azure); }
+.stub__line { margin: 0; color: var(--fg-2); }
+.stub__later { display: inline-flex; align-items: center; gap: 8px; margin: 0; font: 400 var(--fs-12) / 1.4 var(--f-label); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.stub__dot { width: 8px; height: 8px; background: var(--gold); box-shadow: 0 0 0 2px var(--ink); }
+.stubpage { max-width: 640px; margin-bottom: var(--s-7); }
+.stubpage__line { font-size: var(--fs-20); margin: 0; padding-right: 48px; }
+.stubpage__place { display: flex; align-items: center; gap: 10px; margin: var(--s-2) 0 0; color: var(--muted); }
+.stubpage__more { margin: 0 0 var(--s-5); font: 400 var(--fs-20) / 1.2 var(--f-px); }
+.commissions { margin-top: var(--s-7); max-width: 520px; }
+
+/* ------------------------------------------------------------------ Hanko in the corner (placeholder) */
+/* Her drawing drops in as a two-drawing sheet (eyes open | eyes shut) in --hanko-sheet; until her design is
+   greenlit, a little seal with a face stands in. She blinks, nothing else. */
+.hanko {
+  --hanko-sheet: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 16' shape-rendering='crispEdges'%3E%3Cpath fill='%23c9304f' d='M3 2h10v8H3zM19 2h10v8H19z'/%3E%3Cpath fill='%23922037' d='M3 10h10v1H3zM19 10h10v1H19z'/%3E%3Cpath fill='%23ffc857' d='M6 0h4v1H6zM22 0h4v1h-4z'/%3E%3Cpath fill='%232b2233' d='M3 1h10v1H3zM2 2h1v9H2zM13 2h1v9h-1zM3 11h10v1H3zM19 1h10v1H19zM18 2h1v9h-1zM29 2h1v9h-1zM19 11h10v1H19zM5 4h1v2H5zM10 4h1v2h-1zM7 7h2v1H7zM20 5h2v1h-2zM26 5h2v1h-2zM23 7h2v1h-2z'/%3E%3Cpath fill='%23fff' d='M5 4h1v1H5zM10 4h1v1h-1z'/%3E%3Cpath fill='%23ff9fb4' d='M4 7h1v1H4zM11 7h1v1h-1zM20 7h1v1h-1zM27 7h1v1h-1z'/%3E%3C/svg%3E");
+  position: absolute;
+  top: -14px;
+  right: -12px;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  pointer-events: none;
+}
+.hanko__face {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--hanko-sheet) 0 0 / 200% 100% no-repeat;
+  image-rendering: pixelated;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hanko__face { animation: hanko-blink 5.2s steps(1, end) infinite; }
+  .stub:nth-child(2n) .hanko__face { animation-delay: -1.7s; }
+  .stub:nth-child(3n) .hanko__face { animation-delay: -3.1s; }
+}
+@keyframes hanko-blink {
+  0%, 93% { background-position: 0 0; }
+  94%, 97% { background-position: 100% 0; }
+  98%, 100% { background-position: 0 0; }
+}
+@media (max-width: 600px) {
+  .hanko { width: 40px; height: 40px; top: -12px; right: -6px; }
+}
+
+/* callouts in docs and posts: the label in the tone's deep text colour, the bar in its fill */
+.callout__label { color: var(--azure); }
+.callout--mint .callout__label { color: var(--mint-d); }
+.callout--yellow .callout__label { color: var(--yellow-d); }
+.callout--magenta .callout__label { color: var(--scarlet); }
+
+/* DotGothic16 is drawn on a 16 px grid: its headings sit on whole multiples of it (32 px), never huge */
+.pcard__name, .dlf__name, .proj__title, .dhead__name, .ahead__title, .ahead--post .ahead__title, .btools .sub, .dgroup__title { font-size: 2rem; line-height: 1.1; }
+.prose h2 { font-size: 2rem; }
+.prose h3 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.prose code, .prose kbd, code, kbd, pre { font-size: 1em; }
+.sh__kicker, .stub__later { letter-spacing: 0.04em; }
+/* the dark site lifted its titles off the page with a hard ink shadow; on white paper they stand plain */
+.ahead__title, .byear__label, .proj__title, .sh__title, .dlf__name, .pcard__name { text-shadow: none; }
+
+/* Content never waits on a script to show (CRITIQUE-1 B4): on the page column nothing is hidden for a reveal on
+   scroll (the world's loading can hold the page's scripts for seconds, right when a visitor scrolls down early) */
+@media (prefers-reduced-motion: no-preference) {
+  .js .sheet--column [data-reveal]:not(.is-in) { opacity: 1; }
+  .js .sheet--column [data-reveal].is-in, .js .sheet--column [data-reveal].is-in i { animation: none; }
+}
+
+/* the smallest phones (320 px): the download card's key, file line and specs stay inside its border */
+@media (max-width: 380px) {
+  .dlf__body { padding: 18px 14px; }
+  .dlf__cta { display: grid; gap: 10px; min-width: 0; }
+  .dlf__cta .btn--dl { width: 100%; padding-inline: 12px; }
+  .spec { grid-template-columns: max-content minmax(0, 1fr); max-width: 100%; }
+  .spec dd { min-width: 0; overflow-wrap: anywhere; }
+  .dlf__file { min-width: 0; }
+}
+
+/* the donation heads: the address never breaks at its hyphen ("ko-" / "fi.com"), the tile steps down a size */
+.dhead { gap: 14px; }
+.dhead__line { overflow-wrap: normal; word-break: normal; hyphens: none; }
+.kofi .dhead__line { white-space: nowrap; }
+
+/* the paper's top and bottom fades run on over its open side too, tapering there, so a corner dissolves as
+   softly as an edge */
+.band__edge { width: calc(var(--paper) + var(--fade-w)); }
+.band--l > .band__edge {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - var(--fade-w)), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - var(--fade-w)), transparent);
+}
+.band--r > .band__edge {
+  -webkit-mask-image: linear-gradient(270deg, #000 calc(100% - var(--fade-w)), transparent);
+  mask-image: linear-gradient(270deg, #000 calc(100% - var(--fade-w)), transparent);
+}
+@media (max-width: 600px) {
+  .band__edge { width: 100vw; -webkit-mask-image: none; mask-image: none; }
+}

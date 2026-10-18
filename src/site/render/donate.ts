@@ -11,7 +11,7 @@ import { QR_TAG_NONE, QUICK_PICKS, STOPS, TICKS, donateQr, fineText, formatVnd, 
 import { pathsMarkup, type PixelGrid } from "../pixels.ts";
 import { MB_BANK, TRANSFER_NOTE } from "../vietqr.ts";
 import { floats } from "./floats.ts";
-import { copyButton, icon, pageHead, sectionHead, tile } from "./glyphs.ts";
+import { copyButton, hanko, icon, pageHead, sectionHead, tile } from "./glyphs.ts";
 import { esc } from "./html.ts";
 
 type Level = 2 | 3;
@@ -108,6 +108,8 @@ function qrWindow(): string {
 function bankCard(level: Level): string {
   return (
     `<section class="card bank" aria-labelledby="bank-title" data-donate data-state="none" data-reveal style="--i:1">` +
+    // the donation box sits on Hanko's desk (GDK 3.7)
+    hanko() +
     head("bank", "MB Bank", "Bank transfer by QR", `h${level}`, "bank-title") +
     `<div class="bank__grid">` +
     qrWindow() +

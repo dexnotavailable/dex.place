@@ -13,6 +13,7 @@ import { initMenu, initNav, initStuck } from "./motion/nav.ts";
 import { initNsfw } from "./motion/nsfw.ts";
 import { initSharpen } from "./motion/piece.ts";
 import { initIdle, initReveal } from "./motion/reveal.ts";
+import { initScatter } from "./motion/scatter.ts";
 import { initWorld } from "./motion/world.ts";
 
 const root = document.documentElement;
@@ -41,13 +42,24 @@ const steps: [string, () => void][] = [
   ["reveal", () => initReveal()],
   ["idle", () => initIdle()],
   ["world", () => initWorld(reduced)],
-  // "/": the title, the talisman, the fall, PLAY and the address (the page column), own chunk
+  // the page column (the game screen, "dex", the loader and the ofuda, the four ways in), own chunk
   ["column", () => {
-    if (!document.querySelector("[data-col-title]")) return;
+    if (!document.querySelector("[data-gs-title]")) return;
     import("./motion/column.ts").then(
       (m) => m.initColumn(reduced),
       failed("column"),
     );
+  }],
+  // the white paper's pixel edge (styles/v2.css .band)
+  ["scatter", () => initScatter()],
+  // the world behind the website: the sky, painted once the page has loaded, own chunk (and a worker)
+  ["sky", () => {
+    if (!document.querySelector("[data-sky]") || !document.querySelector(".band, .sheet--column")) return;
+    const go = (): void => {
+      import("./motion/sky.ts").then((m) => m.initSky(reduced), failed("sky"));
+    };
+    if (document.readyState === "complete") go();
+    else window.addEventListener("load", go, { once: true });
   }],
   ["nav", () => initNav()],
   ["stuck", () => initStuck()],

@@ -1,5 +1,30 @@
 # dex.place website: design system
 
+## v2 (2026-10-18): white paper over the world (read this first)
+
+Dex, 10-16: "Website just has to look good and fit the theme. For titles they don't have to be huge, just have
+proper pixel fonts." and "The cleanest layout here is an asymmetric-ish one: the world stays animated behind."
+What changed on top of the 09-29 system below (the components, the pop and the grid are kept; `styles/v2.css`
+loads last and re-tones them):
+
+- **The page column:** the game screen at the top (Tesu behind a black cover, "dex" written and staying, the chibi
+  loader landing on the small ofuda, "click to continue"), the website below, the jetty scene at the very bottom.
+  The ofuda is the game's state (`motion/flow.ts` holds Dex's table); four ways in end in one event, `dex:enter`
+  (`motion/column.ts`); today's opening listens in `motion/enter.ts`.
+- **Plain white paper** for every section, alternating left and right (`.band--l` / `.band--r`, render/landing.ts),
+  fading into the world on its open side with a gradient plus a scatter of white pixels (`motion/scatter.ts`).
+  Behind it the world: for now the sky, towering cumulus painted by the world's own cloud painter in a worker
+  (`motion/sky.ts`, `motion/sky-paint.ts`), sliding at a quarter of the scroll; the jetty at the bottom is painted
+  by the world's jetty painter.
+- **Colours:** ink #2b2233 on white; accents as fills that ink reads on (gold, sakura, jade, sky) and their deep
+  tones for text (scarlet #c9304f, azure #1e6cab, `--*-d`). Every text pair passes WCAG AA.
+- **Fonts, the ones we have:** Tesu Display for section titles (uppercase, whole font pixels: 25 px or 50 px),
+  DotGothic16 for everything else (on its 16 px grid for headings: 32 px), Departure Mono first in the label stack
+  once it is in the repo. Titles are small.
+- **Hanko** sits in the corner of cards and panels (`hanko()` in render/glyphs.ts; a blinking placeholder until her
+  design is greenlit; her sheet drops into `--hanko-sheet`).
+- **Stubs** that open later: /support/, /account/, /map/, /forums/ and /gallery/#commissions (render/stubs.ts).
+
 This is how the website under the world looks and moves, and where each piece lives in the
 code. Since 2026-09-29 the site is a **dark pixel site**: a near-black page, square blocks
 with thin hard edges, hard pixel shadows that make things pop out, one loud yellow with

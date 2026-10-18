@@ -21,8 +21,9 @@ const HEAD = "<!--site:head-->";
 const BODY = "<!--site:body-->";
 const PRELOAD = "<!--site:preload-->";
 
-// Latin files of the heading and body fonts are needed on every page; preload them.
-const PRELOAD_FONTS = [/\/jersey-15-latin-400-normal-[\w-]+\.woff2$/, /\/space-grotesk-latin-wght-normal-[\w-]+\.woff2$/];
+// The body font's Latin file is needed on every page; preload it (Tesu Display, the titles' face, is
+// preloaded from public/ by the page head, render/layout.ts).
+const PRELOAD_FONTS = [/\/dotgothic16-latin-400-normal-[\w-]+\.woff2$/];
 
 /**
  * Moves the page's stylesheet links ahead of every script in <head>. Vite

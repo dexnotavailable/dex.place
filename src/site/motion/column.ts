@@ -1,50 +1,41 @@
-// The page column on "/" (GDK 3.7, 3.8; the opening lane's PLAN.md sections 1, 2, 7, 8, 9, 11): the title on
-// black, the waiting room, the press, the fall, the world window, then the website. This script runs the
-// parts that live between the page and the world:
+// The page column (Dex 10-16; roadmap SITE-SCROLL.md): the game screen at the top, the website below it, the
+// jetty scene at the bottom; the ofuda is the game's state (motion/flow.ts holds the table).
 //
-// - the dex mark (the title lane's) writes itself while the world loads behind it: it holds 1.5 s on a first
-//   visit, 0.8 s on a return visit; it never pads the wait;
-// - the waiting room: the letter (the talisman with her name) hangs on black and its script lights from the
-//   top as the OPENING SET loads (the progress bar is the letter itself: the world's code, every plate along
-//   the opening camera's path, her 192 px drawing, the title face, the talisman, Track 1's first piece); when
-//   it is all in, one gold sweep runs down the script and "continue" appears. Not in at 20 s: an honest note
-//   and the way down to the site; the world failing: says so, the site is right below. (The loader's items,
-//   the chibi and the rest, are phase 2: the stage they will stand on pokes like the letter does now.)
-// - "continue" (CHECK-1 item 12): the button, Space or Enter (a fresh press; never on another control), or a
-//   click outside the letter / item stage; a click ON it pokes it, before and after the button shows; for
-//   300 ms after the button appears nothing continues, and a press that began before never does. Esc does
-//   nothing here. Nothing sounds before the press (a first click unlocks audio silently);
-// - the press: the opening's conductor starts Track 1 and the heard clock (src/tesu/opening/); the letter is
-//   snatched up by a gust; the page is carried down through its sky and lands on the world window exactly on
-//   bar 2 (T 4.63), the letter's three lines one per bar in the bottom bar; reduced motion: a cross-fade;
-// - PLAY (the scroll path): the same timeline from T 0, the world already in view;
-// - the address: replaced in place as a section or the world window crosses the middle of the screen (kept
-//   at "/" while the opening runs, so a reload replays it from the start).
+// - On load "dex" writes itself (eased, overlapping letters) and STAYS; under it the chibi loader cycles
+//   (placeholder icons, motion/sprites.ts) while the world streams in behind a black cover. When the world is
+//   in, the cycle lands on the small ofuda (the world's own 8 x 20 drawing) and "click to continue" shows.
+// - Scroll down early and the loader trails down with you and settles in the website's top-right corner; scroll
+//   all the way back up and it goes home. A deep link (/downloads/ ...) lands on its section with it there.
+// - Four ways into the game, all ending in one event, `dex:enter` with the way (motion/enter.ts plays today's
+//   opening from it): 1 "continue" at the top; 2 the corner ofuda (the page goes up, the same cutscene);
+//   3 back up from the website, then "continue"; 4 at the bottom, "experience the world we made": the corner
+//   ofuda drifts right to left down into the jetty scene to her, the white fade clears, then the game.
+// - In game the corner is empty (the ofuda is on her hat) and the jetty has no Zhusha; the game pauses while
+//   the website covers it (motion/world.ts) and carries on when you scroll back up.
+// - "continue" without accidents (src/tesu/opening/press.ts): the button, Space or Enter, or a click anywhere
+//   on the game screen but the loader (a click on the loader pokes it); nothing for 300 ms after it appears.
+// - The address follows the scroll on "/" with no reload and no Back-button pile-up (replaceState only).
 
-import { Talisman, TALISMAN_H, TALISMAN_W } from "./talisman.ts";
-import { playIntro } from "../../intro/index.ts";
+import { playIntro, type IntroHandle } from "../../intro/index.ts";
 import { BEATS } from "../../tesu/opening/beats.ts";
-import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "../../tesu/opening/conductor.ts";
 import { pressContinues } from "../../tesu/opening/press.ts";
-import { fallAt } from "../../tesu/opening/timeline.ts";
-import { Track1 } from "../../tesu/opening/track.ts";
 import type { OpeningSet } from "../../tesu/mount.ts";
-
-/** The mark has written, held and blown away by p 3.5 s; past this the waiting room shows without it (s). */
-const MARK_LATE = 6;
+import { ENTER_EVENT, initOpening, type EnterDetail, type Way } from "./enter.ts";
+import { bottomView, cornerView, driftPoint, topView, trail, trailPoint, type FlowState } from "./flow.ts";
+import { LoaderStage, Paper, PixelPen } from "./paper.ts";
+import { ITEM_SIZE, OFUDA_H } from "./sprites.ts";
 
 interface ColumnWorld {
   ready?: Promise<void>;
   booted?: Promise<void>;
-  play?(link?: OpeningLink): void;
-  title?(text: string): void;
+  play?(link?: unknown): void;
   holding?(): boolean;
   openingSet?(): OpeningSet | null;
+  progress?(): number;
 }
 
 /** Section ids on "/" and their addresses, in page order. */
 const SECTIONS: [string, string][] = [
-  ["projects", "/projects/"],
   ["downloads", "/downloads/"],
   ["gallery", "/gallery/"],
   ["docs", "/docs/"],
@@ -54,248 +45,232 @@ const SECTIONS: [string, string][] = [
 
 /** About how much the world downloads before it can play (the Save-Data note). */
 const WORLD_MB = 6;
+/** Where the mark's middle and the loader's top sit on the game screen (shares of its height). */
+const MARK_Y = 0.4;
+const STAGE_Y = 0.6;
+/** Way 4: the ofuda's drift into the jetty, then the beat before the game (s). */
+const DRIFT_S = 2.4;
+/** The loader items' pixels are this many of the ofuda's (they are icons; the ofuda is the game's own object). */
+const ITEM_SCALE = 2;
+/** After the catch: the white fade clears (1.2 s), then the whole scene holds this long before the game. */
+const CAUGHT_S = 1.2 + 1.6;
+/** The cut up to the game screen: a short cover in the sky's colour, out and back in (s each way). */
+const CUT_S = 0.32;
+
+declare global {
+  interface Window {
+    __dexWorld?: ColumnWorld;
+    /** For checks: the column's state. */
+    __dexFlow?: () => { state: FlowState; cover: number; trail: number; stage: string; shown: string[]; way: Way | null; corner: string };
+  }
+}
 
 export function initColumn(reduced: MediaQueryList): void {
-  const title = document.querySelector<HTMLElement>("[data-col-title]");
-  const fall = document.querySelector<HTMLElement>("[data-col-fall]");
+  const gs = document.querySelector<HTMLElement>(".world[data-world-mount]");
+  const title = document.querySelector<HTMLElement>("[data-gs-title]");
+  const sheet = document.getElementById("site");
+  if (!gs || !title || !sheet) return;
+  const cont = title.querySelector<HTMLButtonElement>("[data-gs-continue]")!;
+  const status = title.querySelector<HTMLElement>("[data-gs-status]")!;
+  const jetty = document.querySelector<HTMLElement>("[data-jetty]");
+  const jettyGo = jetty?.querySelector<HTMLButtonElement>("[data-jetty-go]") ?? null;
+  const her = jetty?.querySelector<HTMLElement>("[data-jetty-her]") ?? null;
+  const jettyNote = jetty?.querySelector<HTMLElement>("[data-jetty-note]") ?? null;
+  const hdr = sheet.querySelector<HTMLElement>(".hdr");
+  const slot = hdr?.querySelector<HTMLElement>("[data-ofuda-slot]") ?? null;
+  // the game screen is sticky (its own offsetTop follows the scroll): measure from the empty anchor above it
   const anchor = document.querySelector<HTMLElement>(".world-top");
-  const worldEl = document.querySelector<HTMLElement>("[data-world-mount]");
-  if (!title || !fall || !anchor || !worldEl) return;
-  const cont = title.querySelector<HTMLButtonElement>("[data-col-continue]")!;
-  const load = title.querySelector<HTMLElement>("[data-col-load]")!;
-  const playBox = worldEl.querySelector<HTMLElement>("[data-world-play]");
-  const playBtn = worldEl.querySelector<HTMLButtonElement>("[data-world-playbtn]");
+  const coverOf = (): number => Math.max(0, Math.min(1, (window.scrollY - (anchor?.offsetTop ?? 0)) / (gs.offsetHeight || innerHeight)));
   const root = document.documentElement;
-  const note = readOpeningNote();
-  const repeat = note.seen > 0;
+  const home = sheet.dataset.page === "home";
   const t0 = performance.now();
 
-  // --- the overlay the talisman is drawn on, and the button that sits over it on the page
+  // --- the overlay the loader and the ofuda are drawn on, and the corner ofuda's button
   const cv = document.createElement("canvas");
-  cv.className = "col-talisman";
+  cv.className = "ofuda-layer";
   cv.setAttribute("aria-hidden", "true");
   document.body.append(cv);
-  const ctx2d = cv.getContext("2d")!;
-  const back = document.createElement("button");
-  back.type = "button";
-  back.className = "col-talisman-btn";
-  back.setAttribute("aria-label", "Back up to the world");
-  back.hidden = true;
-  document.body.append(back);
-  back.addEventListener("click", () => {
-    anchor.scrollIntoView({ behavior: reduced.matches ? "auto" : "smooth" });
-    document.dispatchEvent(new CustomEvent("dex:toworld"));
-  });
-  const talisman = new Talisman();
+  const ctx = cv.getContext("2d")!;
+  const pen = new PixelPen(ctx);
+  const corner = document.createElement("button");
+  corner.type = "button";
+  corner.className = "ofuda-btn";
+  corner.setAttribute("aria-label", "Enter the world (the ofuda)");
+  corner.hidden = true;
+  // way 4's cut up to the game screen
+  const cut = document.createElement("div");
+  cut.className = "page-cut";
+  cut.setAttribute("aria-hidden", "true");
+  document.body.append(cut);
+  // in the tab order right after the header
+  if (hdr) hdr.after(corner);
+  else sheet.prepend(corner);
 
-  // --- Track 1's first piece decodes on the page's context from the start (it stays suspended, and silent,
-  // until a gesture; the first one unlocks it quietly)
-  const audio = makeAudio();
-  const track = audio ? new Track1(audio, audio.destination) : null;
-  let trackIn = !track;
-  void track?.aReady.then(() => { trackIn = true; });
-  const unlock = (): void => { if (audio && audio.state === "suspended") void audio.resume(); };
+  const seed = (Date.now() / 1000) | 0;
+  const stage = new LoaderStage(seed);
+  const paper = new Paper();
 
-  // --- the world window
-  let world: ColumnWorld | null = (window as Window & { __dexWorld?: ColumnWorld }).__dexWorld ?? null;
+  // --- the world and the opening
+  let world: ColumnWorld | null = window.__dexWorld ?? null;
   let worldReady = false;
-  let worldBooted = false;
   let failed: string | null = null;
   const onWorld = (w: ColumnWorld): void => {
     world = w;
-    void w.ready?.then(() => { worldReady = true; worldBooted = true; }, (e: unknown) => {
+    void w.ready?.then(() => { worldReady = true; }, (e: unknown) => {
       failed = e instanceof Error && /WebGL2/.test(e.message) ? "webgl" : "failed";
     });
-    void w.booted?.then(() => { worldBooted = true; });
   };
   if (world) onWorld(world);
   document.addEventListener("dex:world", (e) => onWorld((e as CustomEvent<ColumnWorld>).detail));
+  const opening = initOpening({ reduced, world: () => world });
   // Save-Data, or a 2G-class line: the world waits to be asked (motion/world.ts marks it)
   let asked = !root.hasAttribute("data-world-ask");
 
-  // --- the title: the dex mark writes itself while the world loads. It comes in this chunk (the plan's first
-  // payload: no second round trip queued behind the world's downloads), and the waiting room never waits on it
-  // longer than MARK_LATE (film v0: a title left black to p 73 s while the mark's own chunk was stuck)
-  let introDone = false;
-  let intro: { skip(): void } | null = null;
-  try {
-    const h = playIntro({ parent: title, reducedMotion: reduced.matches, hold: repeat ? BEATS.ui.markHoldReturn : BEATS.ui.markHold });
-    intro = h;
-    void h.done.then(() => { introDone = true; }, () => { introDone = true; });
-  } catch {
-    introDone = true;
-  }
-  window.setTimeout(() => {
-    if (introDone) return;
-    intro?.skip();
-    introDone = true;
-  }, MARK_LATE * 1000);
+  // --- "dex": written once the game screen is in view, and it stays
+  let intro: IntroHandle | null = null;
+  let markDone = false;
+  const startMark = (): void => {
+    if (intro) return;
+    try {
+      intro = playIntro({ parent: title, reducedMotion: reduced.matches, stay: true, y: MARK_Y });
+      void intro.written.then(() => { markDone = true; });
+    } catch {
+      markDone = true;
+    }
+  };
 
-  // --- the opening set: what the next 36 seconds need, measured (the letter lights by it)
-  let progress = 0;
-  let setIn = false;
-  let readyAt = Infinity;
-  let sweepAt = -1;
-  let lastSet = 0;
-  const measure = (now: number): void => {
-    if (now - lastSet < 150) return;
-    lastSet = now;
+  // --- the state
+  let state: FlowState = "loading";
+  let way: Way | null = null;
+  let wentDown = false;
+  /** The gust after the press: the ofuda is snatched up and out of the top (ms start). */
+  let gustAt = -1;
+  /** Way 2: going up to the game screen first. */
+  let climbing: { at: number } | null = null;
+  /** Way 4: the drift into the jetty, then the catch. */
+  let drift: { at: number; from: { x: number; y: number } } | null = null;
+  let caughtAt = -1;
+  const setState = (s: FlowState): void => {
+    if (s === state) return;
+    state = s;
+    root.dataset.flow = s;
+    const b = bottomView(s);
+    jetty?.toggleAttribute("data-her", b.zhusha);
+    if (jettyGo) jettyGo.hidden = !b.button;
+  };
+  root.dataset.flow = state;
+  setState("loading");
+  jetty?.toggleAttribute("data-her", true);
+
+  const isSetIn = (): boolean => {
+    if (!worldReady || !opening.ready()) return false;
+    if (world?.progress) return world.progress() >= 1;
     const s = world?.openingSet?.() ?? null;
-    const parts: [number, number][] = [
-      [0.15, worldBooted ? 1 : 0],
-      [0.5, s ? s.plates : 0],
-      [0.1, s?.close ? 1 : 0],
-      [0.05, s?.font ? 1 : 0],
-      [0.05, s?.ofuda ? 1 : 0],
-      [0.15, trackIn ? 1 : 0],
-    ];
-    const p = parts.reduce((a, [w, v]) => a + w * v, 0);
-    progress = Math.max(progress, Math.min(1, p));
-    if (!setIn && worldReady && s && s.plates >= 1 && s.close && s.font && s.ofuda && trackIn) {
-      setIn = true;
-      progress = 1;
-      sweepAt = now;
-    }
+    return !!s && s.plates >= 1 && s.close && s.font && s.ofuda;
   };
 
-  // --- the press ---------------------------------------------------------------------------------------
-  let conductor: Conductor | null = null;
-  let falling: { from: number; to: number } | null = null;
-  let landed = false;
-  let gustFrom = -1;
-  let played = false;
-  let tesuShown = false;
-
-  // (instant: the page's smooth scrolling would restart its glide every frame and the page would never fall)
-  const scrollNow = (y: number): void => window.scrollTo({ top: y, behavior: "instant" });
-
-  const press = (via: "continue" | "play"): void => {
-    if (conductor) return;
-    unlock();
-    intro?.skip();
+  const enter = (w: Way): void => {
+    if (state !== "loaded") return;
+    way = w;
+    setState("ingame");
+    intro?.release();
+    if (w !== "bottom") {
+      gustAt = performance.now();
+      paper.flip();
+    }
+    gs.setAttribute("data-entered", "");
     cont.hidden = true;
-    load.hidden = true;
-    if (playBox) playBox.hidden = true;
-    played = true;
-    gustFrom = performance.now();
-    const c = new Conductor(audio, track, { doc: document, reduced: reduced.matches, repeat });
-    conductor = c;
-    // (tools and checks read the running opening here)
-    (window as Window & { __dexOpening?: Conductor }).__dexOpening = c;
-    c.start();
-    world?.play?.(c);
-    root.classList.add("op-run", "op-cine");
-    if (via === "continue") {
-      // the page is carried down through its sky; the wheel and swipes wait
-      falling = { from: window.scrollY, to: anchor.offsetTop };
-      root.classList.add("col-cine");
-    } else {
-      landed = true;
-      document.dispatchEvent(new CustomEvent("dex:toworld"));
-    }
-    c.onFrame = (T) => {
-      const land = BEATS.bars[2]!;
-      if (falling) {
-        if (reduced.matches) {
-          // no fall: a 0.3 s cross-fade to the world window at T 0
-          c.overlay.black(T < 0.15 ? Math.max(0, T) / 0.15 : Math.max(0, 1 - (T - 0.15) / 0.15));
-          if (T >= 0.15) scrollNow(falling.to);
-        } else {
-          scrollNow(falling.from + (falling.to - falling.from) * fallAt(T));
-        }
-        if (T >= land || (reduced.matches && T >= 0.3)) {
-          scrollNow(falling.to);
-          c.overlay.black(0);
-          falling = null;
-          landed = true;
-          root.classList.remove("col-cine");
-          document.dispatchEvent(new CustomEvent("dex:toworld"));
-        }
-      }
-      if (T >= BEATS.her.drop1) root.classList.remove("op-cine");
-    };
+    corner.hidden = true;
+    document.dispatchEvent(new CustomEvent<EnterDetail>(ENTER_EVENT, { detail: { way: w } }));
+  };
+  const toTop = (): void => {
+    window.scrollTo({ top: 0, behavior: reduced.matches ? "instant" : "smooth" });
   };
 
-  // --- "continue" and its rules (CHECK-1 item 12)
+  // way 1 and 3: "continue" (CHECK-1 item 12 rules)
   const guard = BEATS.ui.guardMs;
+  let readyAt = Infinity;
   let downAt = -Infinity;
   let downPoke = false;
-  /** The letter's rect on screen (css px): the poke zone (the item stage joins it when the items exist). */
   const pokeRect = { x: 0, y: 0, w: 0, h: 0 };
   const inPoke = (x: number, y: number): boolean => x >= pokeRect.x && x <= pokeRect.x + pokeRect.w && y >= pokeRect.y && y <= pokeRect.y + pokeRect.h;
   const otherControl = (el: Element | null): boolean => !!el && el !== cont && !!el.closest("a, button, input, select, textarea, [role='button']");
-  title.addEventListener("pointerdown", (e) => {
-    unlock();
+  const press = (): void => enter(wentDown ? "top" : "continue");
+  gs.addEventListener("pointerdown", (e) => {
+    opening.unlock();
     downAt = performance.now();
     downPoke = inPoke(e.clientX, e.clientY);
-    if (downPoke && introDone && !conductor) talisman.poke();
+    if (downPoke && state === "loading") stage.poke();
+    if (downPoke && state === "loaded") paper.flip();
   });
-  title.addEventListener("click", (e) => {
-    if (conductor) return;
-    // a click on the letter pokes it, never continues; nor does a press that began before the button (or in its first 300 ms)
-    if (pressContinues({ ready: !cont.hidden, readyAt, guardMs: guard, downAt, onStage: downPoke, onOtherControl: otherControl(e.target as Element | null) })) press("continue");
+  gs.addEventListener("click", (e) => {
+    if (state !== "loaded") return;
+    if (pressContinues({ ready: !cont.hidden, readyAt, guardMs: guard, downAt, onStage: downPoke, onOtherControl: otherControl(e.target as Element | null) })) press();
   });
   document.addEventListener("keydown", (e) => {
-    unlock();
-    if (conductor) return;
+    opening.unlock();
+    if (state !== "loaded" || cont.hidden) return;
     if (!pressContinues({ ready: !cont.hidden, readyAt, guardMs: guard, downAt: performance.now(), onStage: false, onOtherControl: otherControl(document.activeElement), repeat: e.repeat, key: e.key })) return;
     e.preventDefault();
-    press("continue");
+    press();
   });
-  playBtn?.addEventListener("click", () => {
-    anchor.scrollIntoView({ behavior: "auto" });
-    press("play");
-  });
-  // a scroll skips the mark (the visitor has chosen to fall at their own pace)
-  window.addEventListener("scroll", () => { if (!introDone && window.scrollY > 40) intro?.skip(); }, { passive: true });
-  // during the cinematic fall the page is carried; the wheel and swipes wait
-  const hold = (e: Event): void => { if (falling) e.preventDefault(); };
-  window.addEventListener("wheel", hold, { passive: false });
-  window.addEventListener("touchmove", hold, { passive: false });
+  document.addEventListener("pointerdown", () => opening.unlock(), { capture: true, passive: true });
 
-  // --- the status line under the letter
+  // way 2: the corner ofuda
+  corner.addEventListener("click", () => {
+    if (state !== "loaded" || climbing || drift) return;
+    opening.unlock();
+    climbing = { at: performance.now() };
+    toTop();
+  });
+
+  // way 4: "experience the world we made"
+  jettyGo?.addEventListener("click", () => {
+    if (state !== "loaded" || climbing || drift) return;
+    opening.unlock();
+    jettyGo.hidden = true;
+    drift = { at: performance.now(), from: { x: pos.x, y: pos.y } };
+  });
+
+  // --- the status line under the loader
   let statusKey = "";
-  const status = (key: string, html: string): void => {
+  const say = (key: string, html: string): void => {
     if (key === statusKey) return;
     statusKey = key;
-    load.innerHTML = html;
-    const ask = load.querySelector<HTMLButtonElement>("[data-world-ask]");
-    ask?.addEventListener("click", () => {
+    status.innerHTML = html;
+    status.querySelector<HTMLButtonElement>("[data-world-ask]")?.addEventListener("click", () => {
       asked = true;
       root.removeAttribute("data-world-ask");
       document.dispatchEvent(new CustomEvent("dex:loadworld"));
     });
   };
 
-  // --- the address
+  // --- the address (home only)
   const sections = SECTIONS.map(([id, path]) => [document.getElementById(id), path] as const).filter(([el]) => !!el) as [HTMLElement, string][];
   let address = location.pathname;
-  // Following a link from here: the homepage's history entry goes back to "/" first, so the
-  // navigation is an ordinary new entry (a link to the address on show would otherwise be a
-  // replace) and Back returns to the homepage, scrolled where it was.
-  const home = (): void => {
+  const goHome = (): void => {
     if (location.pathname !== "/") history.replaceState(history.state, "", "/" + location.search);
     address = "/";
   };
-  document.addEventListener("click", (e) => {
-    if (e.defaultPrevented || e.button !== 0) return;
-    const a = (e.target instanceof Element ? e.target : null)?.closest<HTMLAnchorElement>("a[href]");
-    if (!a || a.hasAttribute("download") || (a.target && a.target !== "_self")) return;
-    const url = new URL(a.href, location.href);
-    if (url.origin !== location.origin) return;
-    // an in-page jump stays on this page (a #fragment of the address on show)
-    if (url.pathname === location.pathname && url.search === location.search && url.hash) return;
-    home();
-  }, true);
-  window.addEventListener("pagehide", () => home());
-  const route = (vh: number, pWorld: number, worldTop: number): void => {
+  if (home) {
+    // Following a link from here: the homepage's history entry goes back to "/" first, so the navigation is an
+    // ordinary new entry and Back returns to the homepage, scrolled where it was.
+    document.addEventListener("click", (e) => {
+      if (e.defaultPrevented || e.button !== 0) return;
+      const a = (e.target instanceof Element ? e.target : null)?.closest<HTMLAnchorElement>("a[href]");
+      if (!a || a.hasAttribute("download") || (a.target && a.target !== "_self")) return;
+      const url = new URL(a.href, location.href);
+      if (url.origin !== location.origin) return;
+      if (url.pathname === location.pathname && url.search === location.search && url.hash) return;
+      goHome();
+    }, true);
+    window.addEventListener("pagehide", () => goHome());
+  }
+  const route = (vh: number): void => {
+    if (!home) return;
     const st = history.state as { gallery?: string } | null;
     if (st && typeof st === "object" && "gallery" in st) return; // the gallery's viewer owns the address
-    // the opening running: "/" (a reload replays it from the start, from the homepage)
-    if (conductor && !conductor.finished) return;
-    const mid = window.scrollY + vh / 2;
     let path = "/";
-    if (mid >= worldTop && pWorld < 0.5) path = "/tesu/";
     for (const [el, p] of sections) if (el.getBoundingClientRect().top <= vh / 2) path = p;
     if (path !== address) {
       address = path;
@@ -303,10 +278,14 @@ export function initColumn(reduced: MediaQueryList): void {
     }
   };
 
-  // --- the frame loop: the loader, where the talisman is and what it is doing
+  // --- the frame loop
   let last = performance.now();
-  const pos = { x: innerWidth / 2, y: innerHeight * 0.5, seen: 0 };
+  const pos = { x: innerWidth / 2, y: innerHeight * STAGE_Y };
+  let placed = false;
+  let drawn = true;
   const tick = (now: number): void => {
+    // after a stall (the world's loading can hold the page for seconds) it snaps to where it belongs
+    const stalled = now - last > 100;
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     const dpr = window.devicePixelRatio || 1;
@@ -315,133 +294,178 @@ export function initColumn(reduced: MediaQueryList): void {
       cv.width = Math.round(vw * dpr);
       cv.height = Math.round(vh * dpr);
     }
-    const worldTop = anchor.offsetTop;
-    const worldH = worldEl.offsetHeight || vh;
-    const sy = window.scrollY;
-    const pWorld = Math.max(0, Math.min(1, (sy - worldTop) / worldH));
+    const gsH = gs.offsetHeight || vh;
+    const cover = coverOf();
     const p = (now - t0) / 1000;
-    // the website covering the world: before the hand-back the world and the music pause together; after
-    // it Track 1 fades down with the world's sound
-    if (conductor && landed) conductor.setCovered(pWorld >= 0.999);
+    if (cover < 0.98) startMark();
+    root.classList.toggle("gs-away", cover > 0.5);
+    opening.covered(cover >= 0.999);
 
-    // the loader
-    if (!conductor) {
-      measure(now);
+    // loading -> loaded
+    if (state === "loading" && !failed && isSetIn()) {
+      setState("loaded");
+      stage.land();
+    }
+    if (state === "loading") {
       if (failed) {
-        status(failed, failed === "webgl"
+        say(failed, failed === "webgl"
           ? `the world needs a newer browser · <a href="#site">visit the site ↓</a>`
           : `the world couldn't load · <a href="#site">you can still use the site ↓</a>`);
       } else if (!asked) {
-        status("ask", `the world is big (about ${WORLD_MB} MB) · <button type="button" class="col-ask" data-world-ask>load it</button>`);
-      } else if (!setIn && p >= BEATS.ui.slowAt) {
-        status("slow", `still loading the world · <a href="#site">you can visit the site meanwhile ↓</a>`);
-      } else if (!setIn) {
-        status("loading", "loading the world");
+        say("ask", `the world is big (about ${WORLD_MB} MB) · <button type="button" class="gs-ask" data-world-ask>load it</button>`);
+      } else if (p >= BEATS.ui.slowAt) {
+        say("slow", `still loading the world · <a href="#site">you can visit the site meanwhile ↓</a>`);
+      } else {
+        say("loading", "loading the world");
       }
-      const showCont = setIn && !failed && introDone && sy < vh * 0.5;
-      if (showCont && cont.hidden) {
-        cont.hidden = false;
-        readyAt = now;
-      } else if (!showCont && !cont.hidden) {
-        cont.hidden = true;
-        readyAt = Infinity;
-      }
-      load.hidden = !cont.hidden || !introDone;
-      if (playBox) playBox.hidden = !setIn || !!failed || !world?.holding?.();
-    }
-    // a visitor who scrolls on past PLAY gets TESU in the world window (PLAY saves it for the terrace)
-    if (!played && !tesuShown && worldReady && pWorld > 0.06) {
-      tesuShown = true;
-      world?.title?.("TESU");
     }
 
-    // where the talisman wants to be
-    // whole device pixels per art pixel: big on the title, a step smaller down the page
-    const onSite = pWorld > 0.12;
-    const k = Math.max(2, Math.round((vh * dpr) / 300) - (onSite ? 1 : 0));
+    // the pixel scale: the ofuda at about the size it is in the game (16 x 40 css px on a desktop)
+    const k = Math.max(2, Math.round((vh * dpr) / 540));
     const kc = k / dpr;
-    const pageMargin = Math.max(20, (TALISMAN_W * kc) / 2 + 10);
-    let tx = vw / 2, ty = vh * 0.46, show = true, flutter = 0.6, wind = 0.2;
-    let flip = 1;
-    const fallFrom = vh * 0.3, landAt = worldTop - vh * 0.1;
-    if (gustFrom >= 0) {
-      // the press: a gust snatches it up, it flips twice and flies out of the top (0.9 s); then it is the world's
-      const u = (now - gustFrom) / 900;
-      if (u < 1) {
-        tx = vw / 2 + vw * 0.06 * u;
-        ty = vh * 0.46 - (vh * 0.46 + TALISMAN_H * kc) * u * u * 1.15;
-        flip = reduced.matches ? 1 : Math.cos(u * Math.PI * 4);
-        flutter = 1;
-        wind = 1.2;
-        pos.x = tx;
-        pos.y = ty;
-      } else if (played && pWorld > 0.12 && conductor?.finished) {
-        tx = vw - pageMargin; ty = vh * 0.3; flutter = 0.8; wind = -0.4;
-      } else show = false;
-    } else if (pWorld > 0.12) {
-      tx = vw - pageMargin; ty = vh * 0.3; flutter = 0.8; wind = -0.4;
-    } else if (sy < fallFrom) {
-      // on the title: the waiting room's letter, hanging, once the mark has gone
-      show = introDone;
-      flutter = 0.35;
-    } else if (sy < landAt - vh * 0.5) {
-      // falling with you through the sky, drifting on the wind
-      tx = vw * (0.5 + 0.16 * Math.sin(sy / 520 + now / 2600));
-      ty = vh * 0.4;
-      flutter = 1;
-      wind = 0.6 * Math.sin(sy / 300);
-    } else {
-      // landing where the scenery starts, beside the prompt
-      const f = Math.max(0, Math.min(1, (sy - (landAt - vh * 0.5)) / (vh * 0.5)));
-      const r = (playBox && !playBox.hidden ? playBox : playBtn)?.getBoundingClientRect();
-      const lx = r && r.width ? r.left - TALISMAN_W * kc * 0.8 : vw * 0.4;
-      const ly = r && r.height ? r.top + r.height / 2 - TALISMAN_H * kc * 0.15 : vh * 0.6;
-      const fx = vw * (0.5 + 0.16 * Math.sin(sy / 520 + now / 2600)), fy = vh * 0.4;
-      tx = fx + (lx - fx) * f;
-      ty = fy + (ly - fy) * f;
-      flutter = 1 - 0.75 * f;
-      wind = 0.3 * (1 - f);
+    if (cover > 0.9) wentDown = true;
+
+    // where it wants to be
+    const homeAt = { x: vw / 2, y: Math.round(gs.getBoundingClientRect().top + gsH * STAGE_Y) };
+    // the website's corner: the slot in the header (right of World, or left of Menu), the thing centred in it;
+    // never lower than home (it rides up with the website as it comes up)
+    const f = trail(cover);
+    const inSlot = f > 0.55;
+    const tall = (stage.phase !== "item" ? OFUDA_H : ITEM_SIZE) * kc;
+    const sr = slot?.getBoundingClientRect();
+    const cornerAt = sr && sr.width
+      ? { x: sr.left + sr.width / 2, y: Math.min(sr.top + (sr.height - tall) / 2, homeAt.y) }
+      : { x: (document.documentElement.clientWidth || vw) - 30, y: Math.min(homeAt.y, 78) };
+    let target = trailPoint(f, homeAt, cornerAt, vw);
+    let wind = 0, flutter = 0.35, show = true;
+    if (f > 0.02 && f < 0.98) { flutter = 1; wind = -40; }
+    // settled in the corner it hangs like a tag, barely stirring
+    else if (f >= 0.98) { flutter = 0.25; wind = -4; }
+
+    // way 2: up to the game screen, then the same cutscene
+    if (climbing) {
+      if (window.scrollY <= 2 || now - climbing.at > 1800) {
+        climbing = null;
+        if (window.scrollY > 2) window.scrollTo({ top: 0, behavior: "instant" });
+        enter("corner");
+      }
     }
-    // it eases where it is going (it is paper on the wind, not a cursor)
-    const ease = reduced.matches || (gustFrom >= 0 && now - gustFrom < 900) ? 1 : 1 - Math.pow(0.002, dt);
-    pos.x += (tx - pos.x) * ease;
-    pos.y += (ty - pos.y) * ease;
-    pos.seen += ((show ? 1 : 0) - pos.seen) * (reduced.matches ? 1 : 1 - Math.pow(0.01, dt));
-    if (gustFrom >= 0 && !show) pos.seen = 0;
-    talisman.step(dt, wind, flutter, reduced.matches);
-    ctx2d.clearRect(0, 0, cv.width, cv.height);
-    // its rect on screen: the poke zone on the title
-    pokeRect.x = pos.x - (TALISMAN_W * kc) / 2 - 8;
-    pokeRect.y = pos.y - (TALISMAN_H * kc) / 2 - 8;
-    pokeRect.w = TALISMAN_W * kc + 16;
-    pokeRect.h = pos.seen > 0.5 ? TALISMAN_H * kc + 16 : 0;
-    if (pos.seen > 0.02) {
-      ctx2d.globalAlpha = Math.min(1, pos.seen * 1.2) * (failed ? 0.45 : 1);
-      const lit = gustFrom >= 0 || played ? 1 : progress;
-      const sweep = sweepAt >= 0 && now - sweepAt < 700 ? (now - sweepAt) / 700 : undefined;
-      talisman.draw(ctx2d, pos.x * dpr, (pos.y - (TALISMAN_H * kc) / 2) * dpr, k, lit, { sweep, flip });
-      if (gustFrom >= 0 && now - gustFrom < 900 && !reduced.matches) {
-        // the gust's wind streaks
-        ctx2d.fillStyle = "rgba(246, 238, 233, 0.7)";
-        for (let i = 0; i < 4; i++) {
-          const sx = (pos.x + (i - 1.5) * TALISMAN_W * kc * 0.7) * dpr;
-          const sy2 = (pos.y + ((now - gustFrom) * 0.9 + i * 60) % (vh * 0.6) - vh * 0.1) * dpr;
-          ctx2d.fillRect(Math.round(sx / k) * k, Math.round(sy2 / k) * k, k, k * (6 + i * 3));
+    // way 4: the drift into the jetty, the catch, then the game
+    if (drift && her) {
+      const r = her.getBoundingClientRect();
+      const to = { x: r.left + r.width / 2, y: r.top - OFUDA_H * kc * 0.5 };
+      const u = reduced.matches ? 1 : Math.min(1, (now - drift.at) / (DRIFT_S * 1000));
+      target = driftPoint(u, drift.from, to);
+      wind = -120 * (1 - u);
+      flutter = 1;
+      if (u >= 1 && caughtAt < 0) {
+        caughtAt = now;
+        jetty?.setAttribute("data-caught", "");
+      }
+      if (caughtAt >= 0) {
+        show = false;
+        if (now - caughtAt > (reduced.matches ? 0 : CAUGHT_S * 1000)) {
+          drift = null;
+          climbing = null;
+          // up to the game screen in one cut under a short cover (never a long ride back through the website),
+          // and the game starts from the catch's way in
+          if (reduced.matches) {
+            window.scrollTo({ top: 0, behavior: "instant" });
+            enter("bottom");
+          } else {
+            cut.classList.add("is-on");
+            window.setTimeout(() => {
+              window.scrollTo({ top: 0, behavior: "instant" });
+              enter("bottom");
+              cut.classList.remove("is-on");
+            }, CUT_S * 1000);
+          }
         }
       }
-      ctx2d.globalAlpha = 1;
     }
-    // on the page it is a button back up to the world
-    const onPage = show && pWorld > 0.12 && (!conductor || conductor.finished);
-    back.hidden = !onPage;
-    if (onPage) {
-      back.style.left = `${pos.x - (TALISMAN_W * kc) / 2}px`;
-      back.style.top = `${pos.y - (TALISMAN_H * kc) / 2}px`;
-      back.style.width = `${TALISMAN_W * kc}px`;
-      back.style.height = `${TALISMAN_H * kc}px`;
+
+    // after the press: the gust takes it up and out of the top
+    if (gustAt >= 0) {
+      const u = (now - gustAt) / 900;
+      if (u < 1 && !reduced.matches) {
+        target = { x: homeAt.x + vw * 0.06 * u, y: homeAt.y - (homeAt.y + 60) * u * u * 1.15 };
+        wind = 140;
+        flutter = 1;
+      } else show = false;
+    } else if (state === "ingame") show = false;
+
+    // it eases toward where it is going (paper on the wind, not a cursor); after a stall it is simply there
+    if (!placed || reduced.matches || stalled) {
+      pos.x = target.x;
+      pos.y = target.y;
+      if (placed && stalled && stage.phase !== "item") paper.place(target.x, target.y + stage.ofudaLift() * kc, kc);
+      placed = true;
+    } else {
+      const ease = gustAt >= 0 || drift ? 1 - Math.pow(0.00002, dt) : 1 - Math.pow(0.004, dt);
+      pos.x += (target.x - pos.x) * ease;
+      pos.y += (target.y - pos.y) * ease;
     }
-    route(vh, pWorld, worldTop);
+
+    // the loader and the ofuda
+    // (in game, once the gust has gone, the layer is cleared once and left alone)
+    const idle = state === "ingame" && !show;
+    if (!idle || drawn) ctx.clearRect(0, 0, cv.width, cv.height);
+    drawn = !idle;
+    pen.reset();
+    const asking = !asked || !!failed;
+    // the loader items are icons: twice the ofuda's pixel size on the game screen (the ofuda itself stays at about
+    // game size); in the header's corner they come down to its size so they fit inside the header
+    const itemScale = inSlot ? 1 : ITEM_SCALE;
+    if (!asking || state !== "loading") stage.step(dt, pos.x, pos.y, kc * itemScale, reduced.matches);
+    const landed = stage.phase !== "item";
+    const lift = stage.ofudaLift() * kc;
+    if (landed) paper.step(dt, pos.x, pos.y + lift, kc, { wind, flutter }, reduced.matches);
+    pen.alpha = failed ? 0.4 : 1;
+    if (show && !asking) {
+      if (landed) paper.draw(pen, k, dpr);
+      stage.draw(pen, pos.x, pos.y, k * itemScale, dpr, reduced.matches);
+    }
+
+    // the poke zone (on the game screen only)
+    const sz = Math.max(ITEM_SIZE * ITEM_SCALE, OFUDA_H) * kc;
+    pokeRect.x = pos.x - sz / 2 - 10;
+    pokeRect.y = pos.y - 10;
+    pokeRect.w = sz + 20;
+    pokeRect.h = cover < 0.5 && show ? sz + 20 : 0;
+
+    // the game screen's own bits
+    const top = topView(state);
+    const showCont = top.cont && way === null && !drift && caughtAt < 0 && stage.phase === "done" && markDone && cover < 0.4 && !climbing;
+    if (showCont && cont.hidden) {
+      cont.hidden = false;
+      readyAt = now;
+    } else if (!showCont && !cont.hidden) {
+      cont.hidden = true;
+      readyAt = Infinity;
+    }
+    status.hidden = state !== "loading";
+    if (jettyNote) jettyNote.hidden = state !== "loading";
+
+    // the corner ofuda is a way in (way 2) once it has settled there
+    const inCorner = cornerView(state) === "ofuda" && f >= 0.98 && landed && !climbing && !drift && show;
+    corner.hidden = !inCorner;
+    if (inCorner) {
+      // the button covers the slot (a steady target), kept inside the screen
+      const b = sr && sr.width ? { x0: sr.left, y0: sr.top, x1: sr.right, y1: sr.bottom } : paper.bounds();
+      const x0 = Math.max(0, Math.round(b.x0 - 4)), y0 = Math.max(0, Math.round(b.y0 - 2));
+      corner.style.left = `${x0}px`;
+      corner.style.top = `${y0}px`;
+      corner.style.width = `${Math.min(vw - x0, Math.round(b.x1 - b.x0 + 8))}px`;
+      corner.style.height = `${Math.round(b.y1 - b.y0 + 4)}px`;
+    }
+
+    route(vh);
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
+
+  window.__dexFlow = () => ({
+    state, cover: coverOf(), trail: trail(coverOf()),
+    stage: stage.phase, shown: stage.shown(), way, corner: cornerView(state),
+  });
 }

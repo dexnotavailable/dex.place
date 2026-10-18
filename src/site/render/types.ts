@@ -61,7 +61,7 @@ export interface SiteContent {
   readonly gallery: readonly GalleryItem[];
 }
 
-export type PageId = "home" | "projects" | "downloads" | "gallery" | "docs" | "blog" | "donate" | "notfound";
+export type PageId = "home" | "projects" | "downloads" | "gallery" | "docs" | "blog" | "donate" | "notfound" | "more";
 
 export interface PageMeta {
   readonly path: string;
