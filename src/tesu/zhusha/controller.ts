@@ -514,7 +514,7 @@ export class Zhusha {
     if (!b.grounded) role = "jump";
     else if (this.landT < 10 && this.lastLand >= FEEL.land.squashFrom && Math.abs(b.vx) < this.runSpeed * 0.5) role = "jump";
     else if (Math.abs(b.vx) > this.runSpeed * 0.3 && ax !== 0) role = "run";
-    else if (this.stopT < 40) role = "run_stop";
+    else if (this.stopT < 40 && this.hasRole("run_stop", this.ultForm)) role = "run_stop"; // Dex 10-19: run_stop is out (no slot), the run cuts to idle
     else role = "idle";
     // a finished move's drawing plays out its wind-down (then its return to rest) while she stands
     if (role === "idle" && (TAILS[a.role] !== undefined || RETURNS.has(a.role))) {

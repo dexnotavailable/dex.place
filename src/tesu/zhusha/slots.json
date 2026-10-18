@@ -1,10 +1,10 @@
 {
-  "about": "Which sprite-contract slot plays for each thing Zhusha does in Tesu (lanes/anim/SPRITE-CONTRACT.md). normal = her base form, ult = the form after R. A role whose slot has no anim.json in public/assets/zhusha/ (or null) draws the white box. hold = a non-loop clip keeps its last drawing; reverse = played backwards. Dropped by Dex: run_start, e_hold, uf_run_start, uf_run_stop (the run's own ending is run_stop).",
+  "about": "Which sprite-contract slot plays for each thing Zhusha does in Tesu (lanes/anim/SPRITE-CONTRACT.md). normal = her base form, ult = the form after R. A role whose slot has no anim.json in public/assets/zhusha/ (or null) draws the white box. hold = a non-loop clip keeps its last drawing; reverse = played backwards. Dropped by Dex: run_start, e_hold, uf_run_start, uf_run_stop, and run_stop (10-19: the run cuts straight to idle).",
   "roles": {
     "idle":      { "normal": "idle",      "ult": "uf_idle", "hold": true },
     "walk":      { "normal": "walk",      "ult": null },
     "run":       { "normal": "run",       "ult": "uf_run" },
-    "run_stop":  { "normal": "run_stop",  "ult": null },
+    "run_stop":  { "normal": null,        "ult": null },
     "jump":      { "normal": "jump_arc",  "ult": "uf_jump_arc" },
     "dash":      { "normal": "dash",      "ult": "uf_dash" },
     "m1_1":      { "normal": "m1_1",      "ult": "uf_m1_1" },
