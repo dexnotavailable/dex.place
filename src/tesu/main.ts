@@ -26,6 +26,7 @@ import type { Usable } from "./world/types.ts";
 import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "./opening/conductor.ts";
 import { Track1 } from "./opening/track.ts";
 import { startPlateWorkers } from "./plates/store.ts";
+import bake from "virtual:tesu-bake";
 import { adoptWorld } from "./world/index.ts";
 
 /**
@@ -102,7 +103,8 @@ async function boot(): Promise<void> {
   // (engine 10-18) the plate workers first: worker 0 builds the world and hands it over (plates/store.ts), so this
   // thread, which the website's "dex" shares, never builds it; meanwhile the renderer and her drawings get ready here
   const sync = q.has("sync") || q.has("manual");
-  const pool = sync ? null : startPlateWorkers();
+  // (engine, perf) the build's bake: tiles the opening needs, painted at build time (plates/bake.ts); none in dev
+  const pool = sync ? null : startPlateWorkers(undefined, bake.index || bake.world ? { ...bake, check: q.has("bakecheck") } : null);
   await yieldTask();
   const r = new WorldRenderer(canvas);
   r.integerFrames = true;

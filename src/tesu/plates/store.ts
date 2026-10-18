@@ -6,6 +6,7 @@
 import { TILE } from "../config.ts";
 import type { PlaneRenderer } from "../render/planes.ts";
 import type { PlaneId, WorldDef } from "../world/types.ts";
+import { worldFromJson, type BakeInfo } from "./bake.ts";
 import { PlateIndex, paintTile } from "./paint.ts";
 import { buildWorld } from "../world/index.ts";
 
@@ -59,13 +60,27 @@ export interface PlatePool {
   world: Promise<WorldDef | null>;
 }
 
-export function startPlateWorkers(n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1))): PlatePool {
+export function startPlateWorkers(n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1)), bake: BakeInfo | null = null): PlatePool {
   const workers: Worker[] = [];
   try {
     if (typeof Worker === "undefined") throw new Error("no workers");
-    for (let i = 0; i < n; i++) workers.push(new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }));
+    for (let i = 0; i < n; i++) {
+      const w = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+      // (engine, perf) where the build's baked tiles and world are (plates/bake.ts)
+      if (bake?.index || bake?.world) w.postMessage({ bake });
+      workers.push(w);
+    }
   } catch {
     return { workers: [], world: Promise.resolve(null) };
+  }
+  // (engine, perf) the baked world: fetched and parsed here (a few ms), no worker build to wait for
+  if (bake?.world) {
+    const url = bake.world;
+    const world = fetch(url).then((r) => (r.ok ? r.text() : Promise.reject(new Error(`${r.status}`)))).then((t) => {
+      performance.mark("tesu:world-built");
+      return worldFromJson(t);
+    }).catch(() => null);
+    return { workers, world };
   }
   const w0 = workers[0]!;
   const world = new Promise<WorldDef | null>((resolve) => {
@@ -97,6 +112,9 @@ export class TileStore {
   private sprQueue: { job: SpriteJob; done: (r: SpriteDone | null) => void }[] = [];
   private sprWait = new Map<string, (r: SpriteDone | null) => void>();
   sprInFlight = 0;
+  /** (engine, perf) The bake check (?bakecheck): baked tiles equal to the painted ones, and different. */
+  bakeSame = 0;
+  bakeDiff = 0;
   sprPainted = 0;
   sprMs = 0;
   private index: PlateIndex | null = null;
@@ -133,7 +151,7 @@ export class TileStore {
         for (let i = 0; i < (spawned ? spawned.length : n); i++) {
           const w = spawned ? spawned[i]! : new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
           const slot = { w, busy: 0 };
-          w.onmessage = (e: MessageEvent<{ key: string; px?: ArrayBuffer | null; ms: number; sprite?: true; rgba?: ArrayBuffer | null; w?: number; h?: number; ax?: number; ay?: number }>) => {
+          w.onmessage = (e: MessageEvent<{ key: string; px?: ArrayBuffer | null; ms: number; chk?: number; sprite?: true; rgba?: ArrayBuffer | null; w?: number; h?: number; ax?: number; ay?: number }>) => {
             const d = e.data;
             // (the world handed over at boot: startPlateWorkers' own message)
             if (d && "world" in d) return;
@@ -148,6 +166,7 @@ export class TileStore {
               return;
             }
             this.inFlight--;
+            if (d.chk) { if (d.chk > 0) this.bakeSame++; else this.bakeDiff++; }
             this.finish(d.key, d.px ? new Uint8Array(d.px) : null, d.ms);
           };
           w.onerror = (e) => console.error("plate worker", e.message);
@@ -428,7 +447,7 @@ export class TileStore {
       if (e.layer >= 0) used++;
       else if (e.layer === -2) empty++;
     }
-    return `tiles ${used}/${this.byLayer.length} empty ${empty} queue ${this.queue.size} busy ${this.inFlight} painted ${this.painted} (${(this.paintMs / Math.max(1, this.painted)).toFixed(1)} ms) evicted ${this.evicted}${this.keepSpan.size ? ` kept ${this.keptLayers()}/${this.keepSpan.size}` : ""} sprites ${this.sprPainted} (${(this.sprMs / Math.max(1, this.sprPainted)).toFixed(1)} ms)`;
+    return `tiles ${used}/${this.byLayer.length} empty ${empty} queue ${this.queue.size} busy ${this.inFlight} painted ${this.painted} (${(this.paintMs / Math.max(1, this.painted)).toFixed(1)} ms) evicted ${this.evicted}${this.keepSpan.size ? ` kept ${this.keptLayers()}/${this.keepSpan.size}` : ""} sprites ${this.sprPainted} (${(this.sprMs / Math.max(1, this.sprPainted)).toFixed(1)} ms)${this.bakeSame + this.bakeDiff ? ` baked-check ${this.bakeSame} same ${this.bakeDiff} different` : ""}`;
   }
 }
 
