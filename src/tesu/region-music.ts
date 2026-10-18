@@ -121,7 +121,13 @@ export class RegionMusic {
     const src = ctx.createMediaElementSource(el);
     const fade = ctx.createGain();
     fade.gain.setValueAtTime(0, now);
-    fade.gain.linearRampToValueAtTime(1, now + THEME_FADE);
+    // the fade-in starts when the stream is really playing (a slow load must not arrive at full level)
+    el.addEventListener("playing", () => {
+      const t = ctx.currentTime;
+      fade.gain.cancelScheduledValues(t);
+      fade.gain.setValueAtTime(0, t);
+      fade.gain.linearRampToValueAtTime(1, t + THEME_FADE);
+    }, { once: true });
     src.connect(fade);
     fade.connect(out);
     this.on = { id, file: theme.file, play: { el, src, fade } };
