@@ -379,3 +379,13 @@ code, kbd, pre { font-family: var(--f-mono); }
   .js .sheet--column [data-reveal]:not(.is-in) { opacity: 1; }
   .js .sheet--column [data-reveal].is-in, .js .sheet--column [data-reveal].is-in i { animation: none; }
 }
+
+/* the smallest phones (320 px): the download card's key, file line and specs stay inside its border */
+@media (max-width: 380px) {
+  .dlf__body { padding: 18px 14px; }
+  .dlf__cta { display: grid; gap: 10px; min-width: 0; }
+  .dlf__cta .btn--dl { width: 100%; padding-inline: 12px; }
+  .spec { grid-template-columns: max-content minmax(0, 1fr); max-width: 100%; }
+  .spec dd { min-width: 0; overflow-wrap: anywhere; }
+  .dlf__file { min-width: 0; }
+}
