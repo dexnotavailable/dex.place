@@ -6,8 +6,9 @@
 //
 //   <dir>        default: ../lanes/anim/moves/<slot>/final/ beside this worktree (frames + anim.json)
 //   --dry        check only, change nothing
-//   --local      copy into the game for a local look only: no tests, no commit, and git is told to ignore the folder
-//                (.git/info/exclude) so it cannot be committed by accident; undo with --remove
+//   --local      copy into the game for a look on the dev server only: no tests, no commit, slots.json untouched; its
+//                anim.json is stamped "local", which the contract refuses everywhere but the dev server's loader (the
+//                tests, the build and a production load all refuse it); undo with --remove
 //   --remove     take a --local slot back out (moved aside, never deleted)
 //   --no-verify  skip check / test / build (never use before a commit that goes to the coordinator)
 //
@@ -17,7 +18,7 @@
 // runs `npm run check`, `npm test` and `npm run build`, and commits those paths on the current branch. It never pushes
 // and never merges (the coordinator does), and it refuses to commit on main.
 import { execFileSync, spawnSync } from "node:child_process";
-import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { checkMove, ensureRole } from "./slotin-lib.mjs";
@@ -37,7 +38,6 @@ const rel = `public/assets/zhusha/${slot}`;
 const slotsPath = join(REPO, "src", "tesu", "zhusha", "slots.json");
 const asideRoot = existsSync(resolve(REPO, "../lanes/zhusha")) ? resolve(REPO, "../lanes/zhusha/_moved-aside") : join(tmpdir(), "zhusha-moved-aside");
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-const exclude = resolve(REPO, git("rev-parse", "--git-path", "info/exclude"));
 
 /** Moves a folder aside (never deletes); returns where it went. */
 function aside(dir, why) {
@@ -53,14 +53,13 @@ function aside(dir, why) {
   return to;
 }
 
-const excluded = () => (existsSync(exclude) ? readFileSync(exclude, "utf8").split(/\r?\n/).includes(`/${rel}/`) : false);
-
 if (flag("--remove")) {
   if (!existsSync(dest)) fail(`${rel} is not there`);
-  const tracked = git("ls-files", rel);
-  if (tracked) fail(`${rel} is committed; take it out with git (revert the slot-in commit), not --remove`);
+  if (git("ls-files", rel)) fail(`${rel} is committed; take it out with git (revert the slot-in commit), not --remove`);
+  let stamped = false;
+  try { stamped = !!JSON.parse(readFileSync(join(dest, "anim.json"), "utf8")).local; } catch { /* no anim.json */ }
+  if (!stamped) fail(`${rel} is not a --local drop`);
   const to = aside(dest, "local");
-  if (excluded()) writeFileSync(exclude, readFileSync(exclude, "utf8").split(/\r?\n/).filter((l) => l !== `/${rel}/`).join("\n"));
   out(`removed the local ${slot} (moved aside to ${to})`);
   process.exit(0);
 }
@@ -86,12 +85,14 @@ for (const f of res.files) cpSync(join(from, f), join(dest, f));
 const slotsText = readFileSync(slotsPath, "utf8");
 const slots = JSON.parse(slotsText);
 const added = ensureRole(slots, slot);
-if (added) writeFileSync(slotsPath, `${JSON.stringify(slots, null, 2)}\n`);
-out(`copied ${res.files.length} files into ${rel}${before ? ` (the previous drop moved aside to ${before})` : ""}${added ? `; slots.json: new role "${added}"` : ""}`);
+if (added && !local) writeFileSync(slotsPath, `${JSON.stringify(slots, null, 2)}\n`);
+out(`copied ${res.files.length} files into ${rel}${before ? ` (the previous drop moved aside to ${before})` : ""}${added && !local ? `; slots.json: new role "${added}"` : ""}`);
 
 if (local) {
-  if (!excluded()) appendFileSync(exclude, `\n/${rel}/\n`);
-  out(`LOCAL ONLY: ${rel} is ignored by git (info/exclude). Look at it, then: node tools/zhusha/slot-in.mjs ${slot} --remove`);
+  const aj = join(dest, "anim.json");
+  writeFileSync(aj, `${JSON.stringify({ ...JSON.parse(readFileSync(aj, "utf8")), local: "LOCAL ONLY: a look on the dev server; never commit (slot-in --remove)" }, null, 1)}\n`);
+  if (added) out(`note: no role plays ${slot} yet (slots.json untouched for a local look)`);
+  out(`LOCAL ONLY: ${rel} is stamped "local" (only the dev server shows it; tests, build and production refuse it). Then: node tools/zhusha/slot-in.mjs ${slot} --remove`);
   process.exit(0);
 }
 

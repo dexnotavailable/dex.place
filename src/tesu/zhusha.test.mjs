@@ -37,6 +37,12 @@ test("zhusha contract: a 128 px move validates; placeholders, other sizes and ba
   assert.throws(() => validateAnim(good({ pivot: [1] }), "m1_1"), AnimError);
 });
 
+test("zhusha contract: a slot-in --local drop passes only on the dev server's loader, never the tests, build or production", () => {
+  const local = good({ local: "LOCAL ONLY" });
+  assert.throws(() => validateAnim(local, "m1_1"), /local-only drop/);
+  assert.ok(validateAnim(local, "m1_1", { allowLocal: true }));
+});
+
 test("zhusha contract: a drawing's measured figure must be 128 px (within 2)", () => {
   const fr = (fig) => good({ frames: [{ file: "f000.png", ticks: 2, fig: 128 }, { file: "f001.png", ticks: 3, fig }] });
   assert.ok(validateAnim(fr(127), "m1_1"));

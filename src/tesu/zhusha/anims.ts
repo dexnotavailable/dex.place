@@ -124,7 +124,8 @@ class Packer {
 export async function loadSlot(r: WorldRenderer, base: string, id: string): Promise<Slot> {
   const res = await fetch(`${base}${id}/anim.json`, { cache: "no-cache" });
   if (!res.ok) throw new Error(`${id}: anim.json HTTP ${res.status}`);
-  const def = validateAnim(await res.json(), id);
+  // a slot-in --local drop shows on the dev server only
+  const def = validateAnim(await res.json(), id, { allowLocal: import.meta.env.DEV });
   const [pvx, pvy] = [Math.round(def.pivot[0]), Math.round(def.pivot[1])];
   const imgs = await Promise.all(def.frames.map((f) => loadImage(`${base}${id}/${f.file}`)));
   const { starts, total } = timeline(def.frames);

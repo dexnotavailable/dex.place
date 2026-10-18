@@ -84,7 +84,10 @@ export class NpcDraw {
     r.flush();
   }
 
-  /** The white box: horizontal slices (a lean shears it in whole pixels), ink outline, the eye on its facing side. */
+  /**
+   * The white box, built like hers (zhusha/draw.ts): the paper is the body, w x h from its feet up; the ink outline
+   * lies 2 px outside it; horizontal slices so a lean shears it in whole pixels; the eye on its facing side.
+   */
   private box(r: WorldRenderer, def: SpriteDef, e: CastEntry, x: number, y: number, frame: number, facing: 1 | -1, opacity: number): void {
     const { w, h, lean } = npcBox(e, BODY_H, frame);
     const o = 2, n = 8, sh = h / n;
@@ -93,20 +96,20 @@ export class NpcDraw {
     const left = x - w / 2 - o, reveal = Math.max(0, Math.min(1, def.reveal ?? 1));
     const right = left + (w + 2 * o) * reveal;
     if (right <= left) return;
-    const span = (x0: number, x1: number, yy: number, hh: number, c: RGB): void => {
-      const a = x0, b = Math.min(x1, right);
-      if (b > a) r.rect(Math.round(a), Math.round(yy), Math.round(b) - Math.round(a), Math.max(1, Math.round(hh)), c, 1, opacity);
+    const span = (x0: number, x1: number, y0: number, y1: number, c: RGB): void => {
+      const a = Math.round(x0), b = Math.round(Math.min(x1, right)), t = Math.round(y0), u = Math.round(y1);
+      if (b > a && u > t) r.rect(a, t, b - a, u - t, c, 1, opacity);
     };
-    for (let i = 0; i < n; i++) {
-      const dx = Math.round(lean * facing * sh * (i + 0.5));
-      const y0 = y - sh * (i + 1), y1 = y - sh * i;
-      const top = Math.round(y0), bot = Math.round(y1);
-      span(x - w / 2 - o + dx, x + w / 2 + o + dx, top, bot - top, INK);
-      span(x - w / 2 + dx, x + w / 2 + dx, top + (i === n - 1 ? o : 0), bot - top - (i === n - 1 ? o : 0) - (i === 0 ? o : 0), fill);
-    }
+    const shift = (k: number): number => Math.round(lean * facing * k);
+    // ink: the slices one outline wider, and a band under the feet and over the head
+    for (let i = 0; i < n; i++) span(x - w / 2 - o + shift(sh * (i + 0.5)), x + w / 2 + o + shift(sh * (i + 0.5)), y - sh * (i + 1), y - sh * i, INK);
+    span(x - w / 2 - o, x + w / 2 + o, y, y + o, INK);
+    span(x - w / 2 - o + shift(h), x + w / 2 + o + shift(h), y - h - o, y - h, INK);
+    // the paper
+    for (let i = 0; i < n; i++) span(x - w / 2 + shift(sh * (i + 0.5)), x + w / 2 + shift(sh * (i + 0.5)), y - sh * (i + 1), y - sh * i, fill);
     // the eye, near the front of the box on the side it faces
     const ew = Math.max(2, Math.round(0.05 * BODY_H)), eh = Math.max(2, Math.round(0.04 * BODY_H));
-    const ex = x + facing * (w / 2 - Math.max(4, 0.09 * BODY_H)) + Math.round(lean * facing * h * 0.82) - ew / 2;
-    span(ex, ex + ew, y - h * 0.82 - eh / 2, eh, INK);
+    const ex = x + facing * (w / 2 - Math.max(4, 0.09 * BODY_H)) + shift(h * 0.82) - ew / 2;
+    span(ex, ex + ew, y - h * 0.82 - eh / 2, y - h * 0.82 + eh / 2, INK);
   }
 }

@@ -65,14 +65,19 @@ export class AnimError extends Error {}
 const FILE = /^f\d{3}\.png$/;
 const isInt = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v);
 
-/** Checks an anim.json against the contract; throws AnimError naming every problem. */
-export function validateAnim(json: unknown, slot: string): AnimDef {
+/**
+ * Checks an anim.json against the contract; throws AnimError naming every problem. A drop stamped "local"
+ * (tools/zhusha/slot-in.mjs --local: a look on the dev server) passes only with allowLocal (the dev server's
+ * loader), so it can never pass the tests, the build or a production load.
+ */
+export function validateAnim(json: unknown, slot: string, opts: { allowLocal?: boolean } = {}): AnimDef {
   const bad: string[] = [];
   const o = json as Record<string, unknown>;
   if (!o || typeof o !== "object") throw new AnimError(`${slot}: anim.json is not an object`);
   if (o.id !== slot) bad.push(`id "${String(o.id)}" is not the folder's slot "${slot}"`);
   if (o.stage !== "pixel") bad.push(`stage "${String(o.stage)}": only finished pixel art ("pixel") ships`);
   if ("key" in o) bad.push(`has a background "key": placeholders never ship`);
+  if ("local" in o && !opts.allowLocal) bad.push(`a local-only drop (slot-in --local): never ships; take it out with slot-in --remove`);
   const frames = o.frames;
   if (!Array.isArray(frames) || frames.length === 0) bad.push("no frames");
   else {
