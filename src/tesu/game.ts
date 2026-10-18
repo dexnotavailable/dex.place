@@ -14,6 +14,7 @@ import { Vfx } from "../lab/engine/vfx.ts";
 import { Feel } from "../lab/game/feel.ts";
 import { Zhusha, type MoveWorld } from "./zhusha/controller.ts";
 import { ZhushaDraw } from "./zhusha/draw.ts";
+import { NpcDraw } from "./cast/npcs.ts";
 import { makeTarget, type Target, type WorldRenderer } from "../world/render/renderer.ts";
 import { rgb } from "./art/palette.ts";
 import { Camera, framingAt } from "./camera.ts";
@@ -122,6 +123,8 @@ export class TesuGame {
   readonly player: Zhusha;
   /** Her drawings (traced pixel art per slot) or the white box. */
   readonly zdraw: ZhushaDraw;
+  /** The cast: white boxes at her drawn height until their 128 px art lands (cast/npcs.ts draws them, not the sprite renderer). */
+  readonly npcs: NpcDraw;
   readonly vfx: Vfx;
   readonly feel: Feel;
   readonly flags = new Set<string>();
@@ -255,6 +258,7 @@ export class TesuGame {
     this.player = new Zhusha({ vfx: this.vfx, feel: this.feel, camera: this.camera }, [0, 0]);
     this.zdraw = new ZhushaDraw(assets.anims);
     this.zdraw.bind(this.player);
+    this.npcs = new NpcDraw(assets.cast, this.world.sprites);
     this.vfx.groundAt = (x, y) => this.collision.groundAt(x, y);
     this.save = loadSave();
     for (const f of this.save.flags) if (!TRANSIENT.has(f)) this.flags.add(f);
@@ -1365,6 +1369,13 @@ export class TesuGame {
     const camX = (focus[0] * (1 - s4) - xfPlay.offX) / s4, camY = (focus[1] * (1 - s4) - xfPlay.offY) / s4;
     const b = this.player.body;
     const lights = this.vfx.pointLights();
+    // the cast's boxes (or art) on the play plane, where their sprites stood in the depth order
+    const npcs = (mirror: number | null): void => {
+      r.begin(camX, camY, DAY, lights);
+      r.setTransform(s4, focus, mirror);
+      this.npcs.draw(r, { s: s4, focus, mirror }, this.time, mirror !== null);
+      r.setTransform();
+    };
 
     // banks of fog lying on the water at a background plane's waterline (the place's `fog`):
     // drawn over that plane and the water at its depth, behind every nearer plane, and mirrored
@@ -1396,7 +1407,8 @@ export class TesuGame {
         const pd = this.planeQuads(cam, id, Math.max(-Hf * 3, 2 * m - Hf), m + 1, a, false);
         fogOn(id, true, true);
         this.planes.draw(pd.quads, pd.look, W, Hf, m);
-        this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false), cam, pd.look, this.time, m, this.manual);
+        if (id === "play") npcs(m);
+        this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false && !this.npcs.has(sp)), cam, pd.look, this.time, m, this.manual);
         fogOn(id, true);
         if (id === "play") {
           r.begin(camX, camY, DAY, lights);
@@ -1483,7 +1495,8 @@ export class TesuGame {
       const look = nearXf ? { ...d.look, show: (1.6 - z) / 0.15, showAt: [nearXf.offX, nearXf.offY, nearXf.g] as [number, number, number] } : d.look;
       fogOn(id, false, true);
       this.planes.draw(d.quads, look, W, Hf);
-      this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id), cam, look, this.time, null, this.manual);
+      if (id === "play") npcs(null);
+      this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && !this.npcs.has(sp)), cam, look, this.time, null, this.manual);
       // banks of mist lying in valleys at this depth
       for (const m of this.world.mists) {
         if (m.after !== id) continue;
