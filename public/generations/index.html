@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>generations</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #121216; color: #e8e4dc; font: 14px/1.4 system-ui, sans-serif; }
+  header { position: sticky; top: 0; z-index: 2; background: #121216ee; padding: 10px 14px; border-bottom: 1px solid #2a2a33; }
+  header b { color: #e8be5c; }
+  #meta { color: #9a96a0; font-size: 12px; }
+  main { padding: 10px 14px 60px; }
+  section { margin: 18px 0 26px; }
+  h2 { margin: 0 0 4px; font-size: 16px; color: #e8be5c; }
+  .note { color: #9a96a0; font-size: 12px; margin-bottom: 8px; white-space: pre-wrap; }
+  .row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+  figure { margin: 0; flex: 0 0 auto; width: min(42vw, 230px); }
+  figure img { width: 100%; aspect-ratio: 4 / 7; object-fit: contain; background: #1d1d24; border-radius: 6px; cursor: zoom-in; display: block; }
+  figure .ph { width: 100%; aspect-ratio: 4 / 7; background: #1d1d24; border-radius: 6px; display: grid; place-items: center; color: #5d5a64; }
+  figcaption { font-size: 12px; color: #b7b2bb; margin-top: 3px; }
+  #lb { position: fixed; inset: 0; background: #000e; display: none; z-index: 9; overflow: auto; }
+  #lb img { display: block; max-width: 100%; margin: 0 auto; }
+  #lb.on { display: block; }
+</style>
+</head>
+<body>
+<header><b>generations</b> <span id="meta">loading...</span></header>
+<main id="list"></main>
+<div id="lb"><img alt=""></div>
+<script>
+(function () {
+  var BASE = '/downloads/generations/';
+  var list = document.getElementById('list'), meta = document.getElementById('meta');
+  var lb = document.getElementById('lb'), lbImg = lb.querySelector('img');
+  lb.addEventListener('click', function () { lb.className = ''; lbImg.removeAttribute('src'); });
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }
+  function tile(src, cap) {
+    var f = el('figure');
+    if (src) {
+      var i = el('img'); i.loading = 'lazy'; i.alt = cap; i.src = BASE + src;
+      i.addEventListener('click', function () { lbImg.src = i.src; lb.className = 'on'; });
+      f.appendChild(i);
+    } else { f.appendChild(el('div', 'ph', 'rendering...')); }
+    f.appendChild(el('figcaption', '', cap));
+    return f;
+  }
+  function render(m) {
+    meta.textContent = (m.items || []).length + ' characters - updated ' + (m.updated || '?');
+    list.textContent = '';
+    (m.items || []).forEach(function (it) {
+      var s = el('section');
+      s.appendChild(el('h2', '', it.name));
+      if (it.note) s.appendChild(el('div', 'note', it.note));
+      var r = el('div', 'row');
+      (it.images || []).forEach(function (im) { r.appendChild(tile(im.src, im.cap)); });
+      s.appendChild(r);
+      list.appendChild(s);
+    });
+  }
+  function load() {
+    fetch(BASE + 'manifest.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(render)
+      .catch(function (e) { meta.textContent = 'nothing yet (' + e.message + ')'; });
+  }
+  load();
+  setInterval(function () { if (!lb.className) load(); }, 60000);
+})();
+</script>
+</body>
+</html>
