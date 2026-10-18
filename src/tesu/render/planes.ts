@@ -8,7 +8,7 @@
 import { compile, uniforms } from "../../lab/engine/gl.ts";
 import { TILE } from "../config.ts";
 import { paletteRGBA } from "../art/palette.ts";
-import { REDUCE_CONST_GLSL } from "./reduce.ts";
+import { REDUCE_CONST_GLSL, REDUCE_INDEX_GLSL } from "./reduce.ts";
 
 /**
  * (round 7, the integration) The plane's dissolve below show 1 (the near plane coming into the opening's
@@ -104,60 +104,8 @@ int tileIdx(ivec2 t) {
   return int(texelFetch(uTiles, ivec3(t, int(L + 0.5)), 0).r * 255.0 + 0.5);
 }
 vec3 palC(int i) { return texelFetch(uPal, ivec2(i, 0), 0).rgb; }
-// (engine 10-18) the plate reduced onto the frame's grid (render/reduce.ts): the footprint [a0, a0 + 1/k) of this
-// frame px, opaque by coverage, the colour covering most of it, a feature colour counting double. 0 = clear.
-int reduceIdx(vec2 a0, float inv) {
-  int ids[16];
-  float ws[16];
-  int n = 0;
-  float total = 0.0, opaque = 0.0;
-  vec2 a1 = a0 + inv;
-  bool exact = inv <= 3.0;
-  vec2 b = floor(a0);
-  for (int j = 0; j < 4; j++) {
-    for (int i = 0; i < 4; i++) {
-      vec2 tc;
-      float w;
-      if (exact) {
-        vec2 cell = b + vec2(float(i), float(j));
-        vec2 d = min(a1, cell + 1.0) - max(a0, cell);
-        if (d.x <= 0.0 || d.y <= 0.0) continue;
-        w = d.x * d.y;
-        tc = cell;
-      } else {
-        tc = floor(a0 + (vec2(float(i), float(j)) + 0.5) * inv * 0.25);
-        w = 1.0;
-      }
-      int id = tileIdx(ivec2(tc));
-      if (id < 0) continue;
-      total += w;
-      if (id == 0) continue;
-      opaque += w;
-      int m = -1;
-      for (int q = 0; q < 16; q++) {
-        if (q >= n) break;
-        if (ids[q] == id) { m = q; break; }
-      }
-      if (m >= 0) ws[m] += w;
-      else { ids[n] = id; ws[n] = w; n++; }
-    }
-  }
-  if (n == 0 || opaque < total * RED_OPAQUE) return 0;
-  int best = 0;
-  for (int q = 1; q < 16; q++) {
-    if (q >= n) break;
-    if (ws[q] > ws[best]) best = q;
-  }
-  float lm = redLum(palC(ids[best]));
-  int pick = best;
-  float ps = ws[best];
-  for (int q = 0; q < 16; q++) {
-    if (q >= n) break;
-    float s = ws[q] * (abs(redLum(palC(ids[q])) - lm) > RED_FEAT ? 2.0 : 1.0);
-    if (s > ps) { ps = s; pick = q; }
-  }
-  return ids[pick];
-}
+// (engine 10-18) the plate reduced onto the frame's grid (render/reduce.ts, the rule in grid.ts): 0 = clear
+${REDUCE_INDEX_GLSL}
 void main() {
   if (hiddenByShow()) discard;
   float row = uRes.y - gl_FragCoord.y;
@@ -177,7 +125,7 @@ void main() {
     // reduced: the footprint anchored to the plane's art grid (whole-px offsets: a pan never changes the picture)
     vec2 a0 = (vec2(px, floor(cy)) - vOff) / k - vA.xy;
     if (a0.x < 0.0 || a0.y < 0.0 || a0.x >= float(T) || a0.y >= float(T)) discard;
-    idx = reduceIdx(a0, 1.0 / k);
+    idx = reduceIdx(0, a0, a0 + 1.0 / k);
   }
   if (idx == 0) discard;
   vec3 c = palC(idx);

@@ -5,8 +5,10 @@
 // - each frame px covers a footprint of 1/k art px a side (k = frame px per art px < 1);
 // - it is opaque when its opaque texels cover at least a third of it (so a 1 px rope or pole never drops out at the
 //   in-between scales), else clear;
-// - its colour is the one covering most of it, except that a colour a clear step lighter or darker than that main
-//   colour (an outline, a crack, a highlight) counts double, so thin lines survive instead of breaking up;
+// - its colour is the one covering most of it, except that a colour a clear step lighter or darker than the
+//   footprint's background (what covers most of it and of the ring just outside it) counts double, so a 1 px line,
+//   crack, rope or thread survives at every phase (at most 2 px thick) instead of breaking up, and a line that is itself
+//   the main colour of a footprint is never flipped to its ground;
 // - it is always one of the texels' own colours (palette-keeping: no blend, no blur, no new colour).
 //
 // Footprints are anchored to the layer's own art grid (the frame px minus the layer's whole-px offset), so a pan moves
@@ -20,31 +22,40 @@ import { compile, uniforms } from "../../lab/engine/gl.ts";
 import { FULL_VS } from "../../lab/engine/shaders.ts";
 import { makeTarget, type Target, type WorldRenderer } from "../../world/render/renderer.ts";
 import type { CamState } from "./view.ts";
+import { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE } from "./grid.ts";
 
-/** Opaque when the opaque texels cover at least this share of the footprint. */
-export const REDUCE_OPAQUE = 1 / 3;
-/** A colour this much lighter or darker (luma, 0..1) than the footprint's main colour is a feature and counts double. */
-export const REDUCE_FEATURE = 0.11;
+export { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE };
 
 /** Shared constants and luma (GLSL). */
 export const REDUCE_CONST_GLSL = /* glsl */ `
 const float RED_OPAQUE = ${REDUCE_OPAQUE.toFixed(6)};
 const float RED_FEAT = ${REDUCE_FEATURE.toFixed(6)};
+const float RED_BOOST = ${REDUCE_BOOST.toFixed(6)};
 float redLum(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
 `;
 
 /**
- * The reduction of an RGBA texture over the footprint [a0, a1) in texel units (rows as stored): exact area weights
- * when it spans at most 3 texels a side (4 touched), else a 4 x 4 grid of samples. `clearA`: clear below alpha 0.5
- * (painted frames); otherwise clear only where all four channels are 0 (a premultiplied layer with additive light).
- * Returns the picked texel, or vec4(-1) when the footprint is clear. Needs REDUCE_CONST_GLSL.
+ * The reduction rule in GLSL, the same steps as its CPU reference (grid.ts reduceFootprint): `KEY NAME(ARGS, vec2 a0,
+ * vec2 a1)` -> the picked key, or NONE when the footprint is clear. FETCH(ivec2 t) gives a texel's key, CLEAR for
+ * clear, UNKNOWN (a key, or null) for a texel to leave out; LUMA(k) its luma. Needs REDUCE_CONST_GLSL.
  */
-export const REDUCE_RGBA_GLSL = /* glsl */ `
-vec4 reduceRGBA(sampler2D tex, ivec2 size, vec2 a0, vec2 a1, bool clearA) {
-  vec4 cs[16];
-  float ws[16];
+function reduceGlsl(o: { name: string; key: string; args: string; fetch: string; clear: string; unknown: string | null; none: string; luma: string }): string {
+  const skip = o.unknown ? `if (c == ${o.unknown}) continue;` : "";
+  const slot = (add: string): string => `
+      int m = -1;
+      for (int q = 0; q < 24; q++) {
+        if (q >= n) break;
+        if (ks[q] == c) { m = q; break; }
+      }
+      if (m < 0 && n < 24) { m = n; ks[n] = c; ws[n] = 0.0; rs[n] = 0.0; n++; }
+      if (m >= 0) ${add}`;
+  return /* glsl */ `
+${o.key} ${o.name}(${o.args}, vec2 a0, vec2 a1) {
+  ${o.key} ks[24];
+  float ws[24];
+  float rs[24];
   int n = 0;
-  float total = 0.0, opaque = 0.0;
+  float total = 0.0, opaque = 0.0, ringN = 0.0;
   vec2 span = a1 - a0;
   bool exact = max(span.x, span.y) <= 3.0;
   vec2 b = floor(a0);
@@ -62,38 +73,67 @@ vec4 reduceRGBA(sampler2D tex, ivec2 size, vec2 a0, vec2 a1, bool clearA) {
         tc = floor(a0 + (vec2(float(i), float(j)) + 0.5) * span * 0.25);
         w = 1.0;
       }
+      ${o.key} c = ${o.fetch.replace(/\$T/g, "ivec2(tc)")};
+      ${skip}
       total += w;
-      ivec2 it = ivec2(tc);
-      if (it.x < 0 || it.y < 0 || it.x >= size.x || it.y >= size.y) continue;
-      vec4 c = texelFetch(tex, it, 0);
-      if (clearA ? c.a < 0.5 : max(max(c.r, c.g), max(c.b, c.a)) < 0.002) continue;
-      opaque += w;
-      int m = -1;
-      for (int q = 0; q < 16; q++) {
-        if (q >= n) break;
-        if (cs[q] == c) { m = q; break; }
-      }
-      if (m >= 0) ws[m] += w;
-      else { cs[n] = c; ws[n] = w; n++; }
+      if (c != ${o.clear}) opaque += w;${slot("ws[m] += w;")}
     }
   }
-  if (n == 0 || opaque < total * RED_OPAQUE) return vec4(-1.0);
-  int best = 0;
-  for (int q = 1; q < 16; q++) {
-    if (q >= n) break;
-    if (ws[q] > ws[best]) best = q;
+  if (total <= 0.0 || opaque < total * RED_OPAQUE) return ${o.none};
+  // the background: most of (its share of the core + its share of 8 samples just outside it)
+  vec3 rx = vec3(a0.x - 0.5, (a0.x + a1.x) * 0.5, a1.x + 0.5), ry = vec3(a0.y - 0.5, (a0.y + a1.y) * 0.5, a1.y + 0.5);
+  for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < 3; i++) {
+      if (i == 1 && j == 1) continue;
+      ${o.key} c = ${o.fetch.replace(/\$T/g, "ivec2(floor(vec2(rx[i], ry[j])))")};
+      ${skip}
+      ringN += 1.0;${slot("rs[m] += 1.0;")}
+    }
   }
-  float lm = redLum(cs[best].rgb);
-  int pick = best;
-  float ps = ws[best];
-  for (int q = 0; q < 16; q++) {
+  int bg = 0, mn = -1;
+  float bgS = -1.0;
+  for (int q = 0; q < 24; q++) {
     if (q >= n) break;
-    float s = ws[q] * (abs(redLum(cs[q].rgb) - lm) > RED_FEAT ? 2.0 : 1.0);
-    if (s > ps) { ps = s; pick = q; }
+    float sc = ws[q] / total + (ringN > 0.0 ? rs[q] / ringN : 0.0);
+    if (sc > bgS) { bgS = sc; bg = q; }
+    if (ks[q] != ${o.clear} && ws[q] > 0.0 && (mn < 0 || ws[q] > ws[mn])) mn = q;
   }
-  return cs[pick];
+  if (mn < 0) return ${o.none};
+  float ref = ks[bg] != ${o.clear} ? ${o.luma.replace(/\$K/g, "ks[bg]")} : ${o.luma.replace(/\$K/g, "ks[mn]")};
+  int pick = mn;
+  float ps = -1.0;
+  for (int q = 0; q < 24; q++) {
+    if (q >= n) break;
+    if (ks[q] == ${o.clear} || ws[q] <= 0.0) continue;
+    float sc = ws[q] * (abs(${o.luma.replace(/\$K/g, "ks[q]")} - ref) > RED_FEAT ? RED_BOOST : 1.0);
+    if (sc > ps) { ps = sc; pick = q; }
+  }
+  return ks[pick];
 }
 `;
+}
+
+/**
+ * The reduction of an RGBA texture over the footprint [a0, a1) in texel units (rows as stored): exact area weights
+ * when it spans at most 3 texels a side (4 touched), else a 4 x 4 grid of samples. `clearA`: clear below alpha 0.5
+ * (painted frames); otherwise clear only where all four channels are 0 (a premultiplied layer with additive light).
+ * Texels outside the texture are clear. Returns the picked texel, or vec4(-1) when the footprint is clear.
+ * Needs REDUCE_CONST_GLSL.
+ */
+export const REDUCE_RGBA_GLSL = /* glsl */ `
+vec4 redFetchRGBA(sampler2D tex, ivec2 size, ivec2 t, bool clearA) {
+  if (t.x < 0 || t.y < 0 || t.x >= size.x || t.y >= size.y) return vec4(0.0);
+  vec4 c = texelFetch(tex, t, 0);
+  if (clearA ? c.a < 0.5 : max(max(c.r, c.g), max(c.b, c.a)) < 0.002) return vec4(0.0);
+  return c;
+}
+${reduceGlsl({ name: "reduceRGBA", key: "vec4", args: "sampler2D tex, ivec2 size, bool clearA", fetch: "redFetchRGBA(tex, size, $T, clearA)", clear: "vec4(0.0)", unknown: null, none: "vec4(-1.0)", luma: "redLum($K.rgb)" })}`;
+
+/**
+ * The reduction of a plate (palette indices; planes.ts supplies `int tileIdx(ivec2)`, -1 for a texel not painted yet,
+ * and `vec3 palC(int)`): the picked index, 0 when clear. Needs REDUCE_CONST_GLSL.
+ */
+export const REDUCE_INDEX_GLSL = reduceGlsl({ name: "reduceIdx", key: "int", args: "int unused", fetch: "tileIdx($T)", clear: "0", unknown: "-1", none: "0", luma: "redLum(palC($K))" });
 
 const COMPOSITE_FS = /* glsl */ `#version 300 es
 precision highp float;
@@ -117,7 +157,7 @@ void main() {
   vec2 a0 = (vec2(px, py) - uMap.xy) * inv + vec2(uMap.w, uPhaseY);
   // (a render target's rows are stored bottom up)
   float h = float(uSize.y);
-  vec4 c = reduceRGBA(uTex, uSize, vec2(a0.x, h - a0.y - inv), vec2(a0.x + inv, h - a0.y), false);
+  vec4 c = reduceRGBA(uTex, uSize, false, vec2(a0.x, h - a0.y - inv), vec2(a0.x + inv, h - a0.y));
   if (c.r < 0.0) discard;
   o = c;
 }`;
@@ -138,7 +178,12 @@ export class ActorLayer {
   h = 0;
   private saved: [number, number] = [0, 0];
 
-  constructor(private gl: WebGL2RenderingContext, private vao: WebGLVertexArrayObject) {
+  private gl: WebGL2RenderingContext;
+  private vao: WebGLVertexArrayObject;
+
+  constructor(gl: WebGL2RenderingContext, vao: WebGLVertexArrayObject) {
+    this.gl = gl;
+    this.vao = vao;
     this.prog = compile(gl, FULL_VS, COMPOSITE_FS, "tesu-actor-reduce");
     this.u = uniforms(gl, this.prog);
   }

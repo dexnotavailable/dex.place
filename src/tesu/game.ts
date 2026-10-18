@@ -17,6 +17,7 @@ import { ZhushaDraw } from "./zhusha/draw.ts";
 import { NpcDraw } from "./cast/npcs.ts";
 import { makeTarget, type PointLight, type Target, type WorldRenderer } from "../world/render/renderer.ts";
 import { ActorLayer } from "./render/reduce.ts";
+import { ScreenActors, screenCam } from "./render/actors.ts";
 import { rgb } from "./art/palette.ts";
 import { Camera, framingAt } from "./camera.ts";
 import { Collision } from "./collide.ts";
@@ -121,6 +122,8 @@ export class TesuGame {
   readonly sprites: SpriteRenderer;
   /** (engine 10-18) Her, her effects and the talisman at play density, reduced onto the frame when zoomed out. */
   readonly actors: ActorLayer;
+  /** (engine 10-18) Her drawing at screen resolution at play zoom and closer (render/actors.ts). */
+  readonly screen: ScreenActors;
   readonly titles: Titles;
   readonly opening: Opening;
   readonly player: Zhusha;
@@ -190,6 +193,7 @@ export class TesuGame {
     this.atmos = new Atmos(gl, r.emptyVao);
     this.sprites = new SpriteRenderer(gl, r.emptyVao);
     this.actors = new ActorLayer(gl, r.emptyVao);
+    this.screen = new ScreenActors(gl, r.emptyVao);
     // (round 7, performance) painted sprites' frames are painted by the plate workers (not for
     // deterministic captures: ?manual paints them on the page, as it paints the plates)
     if (!opts.manual) this.sprites.async = (job, done) => this.store.paintSprite(job, done);
@@ -1241,6 +1245,69 @@ export class TesuGame {
   }
 
   /**
+   * (engine 10-18) What moves on the play plane, one step of it, in depth order: "back" (her effects behind her, the
+   * talisman behind), "art" (her drawing; worker 6: the NPCs), "front" (the talisman in front, her effects in front).
+   * `c` and `focus` are the camera of the grid it lands on (the frame, the screen-res layer or the zoomed-out actor
+   * buffer, see drawActors): planeXf(c, 1) is the play plane's transform there. The renderer's begin() is done.
+   */
+  private actorsPass(step: "back" | "art" | "front", c: CamState, focus: [number, number]): void {
+    const r = this.r, s = planeXf(c, 1).s;
+    if (step === "back") {
+      if (s !== 1) r.setTransform(s, focus);
+      this.vfx.draw(r as unknown as LabRenderer, "back");
+      this.vfx.drawAfterimages(r as unknown as LabRenderer);
+      this.drawOfuda(c, true);
+    } else if (step === "art") {
+      if (s !== 1) r.setTransform(s, focus);
+      this.drawPlayer(c, focus, null);
+    } else {
+      this.drawOfuda(c, false);
+      if (s !== 1) r.setTransform(s, focus);
+      this.vfx.draw(r as unknown as LabRenderer, "front");
+    }
+    r.flush();
+    r.setTransform();
+  }
+
+  /** (engine 10-18) The actors in the lake's reflection target (world res): her drawing (worker 6: the NPCs). */
+  private reflActors(c: CamState, focus: [number, number], mirror: number | null): void {
+    this.drawPlayer(c, focus, mirror);
+  }
+
+  /**
+   * (engine 10-18) The actors in the frame pass. Zoomed out (zoom < 1): reduced onto the frame's grid like the world
+   * (reducedActors). At play zoom and closer, on a screen shown at a whole scale k >= 2: her drawing at screen res on
+   * its own layer, her effects and the talisman on the world grid (render/actors.ts); everything drawn after this
+   * then goes to the front target, composited over the actors by the presenter. Else straight onto the frame.
+   */
+  private drawActors(cam: CamState, focus: [number, number], lights: PointLight[]): void {
+    const r = this.r, xf = planeXf(cam, 1);
+    const steps = ["back", "art", "front"] as const;
+    // the renderer maps x to ((x - camX) - fx) * s + fx: match the play plane exactly
+    const camOf = (s: number, offX: number, offY: number, f: [number, number]): [number, number] => [(f[0] * (1 - s) - offX) / s, (f[1] * (1 - s) - offY) / s];
+    const [camX, camY] = camOf(xf.s, xf.offX, xf.offY, focus);
+    if (ActorLayer.wants(cam.zoom)) {
+      this.reducedActors(cam, r.main, lights, null, (c) => { for (const st of steps) this.actorsPass(st, c, [c.W / 2, c.anchor * c.H]); });
+      r.begin(camX, camY, DAY, lights);
+      return;
+    }
+    const k = r.presenter.rect.scale;
+    if (!ScreenActors.wants(k)) {
+      r.begin(camX, camY, DAY, lights);
+      for (const st of steps) this.actorsPass(st, cam, focus);
+      return;
+    }
+    const sc = screenCam(cam, xf, k), fs: [number, number] = [focus[0] * k, focus[1] * k];
+    const [sx, sy] = camOf(xf.s * k, xf.offX * k, xf.offY * k, fs);
+    this.screen.begin(r, cam.W, cam.H, k);
+    this.screen.world(r, () => { r.begin(camX, camY, DAY, lights); this.actorsPass("back", cam, focus); });
+    this.screen.art(r, () => { r.begin(sx, sy, DAY, lights); this.actorsPass("art", sc, fs); });
+    this.screen.world(r, () => { r.begin(camX, camY, DAY, lights); this.actorsPass("front", cam, focus); });
+    this.screen.end(r);
+    r.begin(camX, camY, DAY, lights);
+  }
+
+  /**
    * (engine 10-18) Wider than play zoom, what moves on the play plane (her, her effects, the talisman) is drawn at
    * play density into the actor layer (`draw` gets the layer's camera, scale 1), then reduced onto `target` on the
    * frame's grid, the reduction anchored to her feet (render/reduce.ts). `mirror`: the reflection's waterline row.
@@ -1438,12 +1505,12 @@ export class TesuGame {
         this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false && !this.npcs.has(sp)), cam, pd.look, this.time, m, this.manual);
         fogOn(id, true);
         if (id === "play" && ActorLayer.wants(cam.zoom)) {
-          // (engine 10-18) zoomed out: her reflection is her reduced drawing, mirrored
-          this.reducedActors(cam, this.refl, lights, wlPlay, (c) => this.drawPlayer(c, [c.W / 2, c.anchor * c.H], null));
+          // (engine 10-18) zoomed out: the reflection is the actors' reduced drawing, mirrored
+          this.reducedActors(cam, this.refl, lights, wlPlay, (c) => this.reflActors(c, [c.W / 2, c.anchor * c.H], null));
         } else if (id === "play") {
           r.begin(camX, camY, DAY, lights);
           r.setTransform(s4, focus, wlPlay);
-          if (cam.zoom < 1.9) this.drawPlayer(cam, focus, wlPlay);
+          if (cam.zoom < 1.9) this.reflActors(cam, focus, wlPlay);
           r.flush();
           r.setTransform();
         }
@@ -1497,33 +1564,10 @@ export class TesuGame {
         waterTo(wl("play"));
         fogOn("back", false);
       }
-      if (id === "front" && ActorLayer.wants(z)) {
-        // (engine 10-18) zoomed out: her, her effects and the talisman reduced onto the frame's grid like the world
-        this.reducedActors(cam, r.main, lights, null, (c) => {
-          this.vfx.draw(r as unknown as LabRenderer, "back");
-          this.vfx.drawAfterimages(r as unknown as LabRenderer);
-          this.drawOfuda(c, true);
-          this.drawPlayer(c, [c.W / 2, c.anchor * c.H], null);
-          this.drawOfuda(c, false);
-          this.vfx.draw(r as unknown as LabRenderer, "front");
-        });
-        r.setTransform();
-        this.motes.draw(r, cam, 1);
-        r.flush();
-        waterTo(Hf);
-      } else if (id === "front") {
-        // her and her effects, then the near water over the play plane's underwater parts
-        r.begin(camX, camY, DAY, lights);
-        if (s4 !== 1) r.setTransform(s4, focus);
-        this.vfx.draw(r as unknown as LabRenderer, "back");
-        this.vfx.drawAfterimages(r as unknown as LabRenderer);
-        this.drawOfuda(cam, true);
-        if (s4 !== 1) r.setTransform(s4, focus);
-        this.drawPlayer(cam, focus, null);
-        this.drawOfuda(cam, false);
-        if (s4 !== 1) r.setTransform(s4, focus);
-        this.vfx.draw(r as unknown as LabRenderer, "front");
-        r.flush();
+      if (id === "front") {
+        // her and her effects (on the frame, on the screen-res layer, or reduced when zoomed out: drawActors), then
+        // the near water over the play plane's underwater parts
+        this.drawActors(cam, focus, lights);
         r.setTransform();
         this.motes.draw(r, cam, 1);
         r.flush();
@@ -1572,6 +1616,7 @@ export class TesuGame {
       fade: [0.106, 0.098, 0.133, this.loading && this.tick < 2 ? 1 : Math.max(this.fade, this.cutFade * 0.85, this.fadeCut)],
       bars: 0,
       overlay: false,
+      layers: this.screen.take(),
     });
   }
 

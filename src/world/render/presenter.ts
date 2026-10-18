@@ -32,6 +32,12 @@ export interface PresentOpts {
   bars: number;
   /** Draw the close-up overlay over the zoomed world. */
   overlay: boolean;
+  /**
+   * (Tesu, engine 10-18) The actors at screen resolution: `actor` (premultiplied, the frame x k) over the world target,
+   * then `front` (premultiplied, frame res) over them, before the zoom's sampling, impact, fade and bars apply to all
+   * three (src/tesu/render/actors.ts). Absent: the world target alone, as before.
+   */
+  layers?: { actor: Target; front: Target; k: number } | null;
 }
 
 const PRESENT_FS = /* glsl */ `#version 300 es
@@ -46,6 +52,9 @@ uniform float uView;  // view zoom about the frame's centre
 uniform int uImpact;
 uniform vec4 uFade;
 uniform float uBars;
+uniform sampler2D uActor;  // (Tesu) the actors at screen res (the frame x uLayers.y), premultiplied
+uniform sampler2D uFront;  // (Tesu) what stands in front of them, frame res, premultiplied
+uniform vec2 uLayers;      // on, the actor layer's scale (screen px per frame px)
 out vec4 o;
 float bayer4(vec2 p) {
   ivec2 i = ivec2(mod(floor(p), 4.0));
@@ -86,6 +95,15 @@ void main() {
   // whole-number effective scale: plain nearest; otherwise sharp-bilinear
   bool sharp = abs(sc - floor(sc + 0.5)) > 1e-3;
   vec3 c = samp(uScene, q, sc, sharp).rgb;
+  if (uLayers.x > 0.5) {
+    // the actors' own px under this screen px (through the same zoom), then what stands in front of them
+    float K = uLayers.y;
+    vec2 aq = clamp(floor(q * K), vec2(0.0), uIRes * K - 1.0);
+    vec4 a = texelFetch(uActor, ivec2(aq.x, uIRes.y * K - 1.0 - aq.y), 0);
+    c = a.rgb + c * (1.0 - a.a);
+    vec4 f = samp(uFront, q, sc, sharp);
+    c = f.rgb + c * (1.0 - f.a);
+  }
   vec2 art = floor(q);
   if (uZoom.w > 0.5) {
     float so = S * uView;
@@ -178,6 +196,17 @@ export class Presenter {
     gl.uniform1i(u.uImpact!, o.impact);
     gl.uniform4fv(u.uFade!, o.fade);
     gl.uniform1f(u.uBars!, o.bars);
+    const L = o.layers;
+    if (u.uLayers) gl.uniform2f(u.uLayers, L ? 1 : 0, L ? L.k : 1);
+    if (L) {
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, L.actor.color.tex);
+      gl.activeTexture(gl.TEXTURE3);
+      gl.bindTexture(gl.TEXTURE_2D, L.front.color.tex);
+      gl.activeTexture(gl.TEXTURE0);
+    }
+    if (u.uActor) gl.uniform1i(u.uActor, L ? 2 : 0);
+    if (u.uFront) gl.uniform1i(u.uFront, L ? 3 : 0);
     gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.enable(gl.BLEND);

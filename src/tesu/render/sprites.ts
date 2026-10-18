@@ -84,7 +84,7 @@ void main() {
     float cy = uMirror >= 0.0 ? 2.0 * uMirror - row : row;
     vec2 a0 = (vec2(floor(gl_FragCoord.x), floor(cy)) - uRectF.xy) * inv;
     if (uFlip > 0.5) a0.x = uSize.x - a0.x - inv.x;
-    c = reduceRGBA(uTex, ivec2(uSize), a0, a0 + inv, true);
+    c = reduceRGBA(uTex, ivec2(uSize), true, a0, a0 + inv);
     if (c.r < 0.0) discard;
     uv = a0 + inv * 0.5;
   } else {
