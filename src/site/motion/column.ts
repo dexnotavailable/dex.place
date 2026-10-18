@@ -273,6 +273,7 @@ export function initColumn(reduced: MediaQueryList): void {
   let last = performance.now();
   const pos = { x: innerWidth / 2, y: innerHeight * STAGE_Y };
   let placed = false;
+  let drawn = true;
   const tick = (now: number): void => {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
@@ -390,7 +391,10 @@ export function initColumn(reduced: MediaQueryList): void {
     }
 
     // the loader and the ofuda
-    ctx.clearRect(0, 0, cv.width, cv.height);
+    // (in game, once the gust has gone, the layer is cleared once and left alone)
+    const idle = state === "ingame" && !show;
+    if (!idle || drawn) ctx.clearRect(0, 0, cv.width, cv.height);
+    drawn = !idle;
     pen.reset();
     const asking = !asked || !!failed;
     // the loader items are icons: twice the ofuda's pixel size (the ofuda itself stays at about game size)
