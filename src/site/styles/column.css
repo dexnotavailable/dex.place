@@ -91,8 +91,8 @@ html.op-cine .world__cue { visibility: hidden; }
 .jetty__her::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7%; background: #ee4c31; }
 .jetty__her::after { content: ""; position: absolute; right: 22%; top: 16%; width: 4px; height: 6px; background: #2b2233; }
 .jetty:not([data-her]) .jetty__her { opacity: 0; }
-/* the ofuda once she has caught it (way 4): a few px on her hat */
-.jetty__hat { position: absolute; left: calc(50% - 4px); top: -2px; width: 8px; height: 20px; background: #eaca92; box-shadow: inset 0 0 0 2px #4e3022, inset 0 -6px 0 2px #ba3036; opacity: 0; }
+/* the ofuda once she has caught it (way 4): a few px on her hat (its own drawing, public/site/loader/ofuda.png) */
+.jetty__hat { position: absolute; left: calc(50% - 6px); top: -2px; width: 12px; height: 30px; background: url("/site/loader/ofuda.png") 0 0 / 100% 100% no-repeat; image-rendering: pixelated; opacity: 0; }
 .jetty[data-caught] .jetty__hat { opacity: 1; }
 .jetty__paper {
   position: relative;
