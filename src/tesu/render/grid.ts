@@ -57,6 +57,8 @@ export function reduceFootprint(get: (x: number, y: number) => number, luma: (ke
     }
   }
   if (!total || opaque < total * REDUCE_OPAQUE) return 0;
+  const solid = keys.filter((k) => k !== 0);
+  if (solid.length === 1) return solid[0]!;
   const xs = [a0[0] - 0.5, (a0[0] + a1[0]) / 2, a1[0] + 0.5], ys = [a0[1] - 0.5, (a0[1] + a1[1]) / 2, a1[1] + 0.5];
   for (let j = 0; j < 3; j++) {
     for (let i = 0; i < 3; i++) {

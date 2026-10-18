@@ -1260,7 +1260,12 @@ export class TesuGame {
       this.vfx.drawAfterimages(r as unknown as LabRenderer);
       this.drawOfuda(c, true);
     } else if (step === "art") {
+      // the cast's boxes (or art), then her: the characters stand in front of the play plane's props (engine 10-18:
+      // with her on whichever grid she is drawn, so every character's pixels match hers)
+      r.setTransform(s, focus);
+      this.npcs.draw(r, { s, focus, mirror: null }, this.time, false);
       if (s !== 1) r.setTransform(s, focus);
+      else r.setTransform();
       this.drawPlayer(c, focus, null);
     } else {
       this.drawOfuda(c, false);
@@ -1272,7 +1277,11 @@ export class TesuGame {
   }
 
   /** (engine 10-18) The actors in the lake's reflection target (world res): her drawing (worker 6: the NPCs). */
-  private reflActors(c: CamState, focus: [number, number], mirror: number | null): void {
+  private reflActors(c: CamState, focus: [number, number], mirror: number | null, reflection = true): void {
+    const s = planeXf(c, 1).s;
+    this.r.setTransform(s, focus, mirror);
+    this.npcs.draw(this.r, { s, focus, mirror }, this.time, reflection);
+    this.r.setTransform(s, focus, mirror);
     this.drawPlayer(c, focus, mirror);
   }
 
@@ -1467,10 +1476,10 @@ export class TesuGame {
           const m = rowOf(cam, PLANES[id].rate, water.y);
           if (m >= Hf + 2) continue;
           const pd = this.planeQuads(cam, id, Math.max(-Hf * 3, 2 * m - Hf), m + 1, a, false);
-          this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false), cam, pd.look, this.time, m, false, true);
+          this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false && !this.npcs.has(sp)), cam, pd.look, this.time, m, false, true);
         }
       }
-      for (const id of PLANE_IDS) this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id), cam, draws.get(id)!.look, this.time, null, false, true);
+      for (const id of PLANE_IDS) this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && !this.npcs.has(sp)), cam, draws.get(id)!.look, this.time, null, false, true);
       return;
     }
     const z = cam.zoom;
@@ -1481,13 +1490,6 @@ export class TesuGame {
     const camX = (focus[0] * (1 - s4) - xfPlay.offX) / s4, camY = (focus[1] * (1 - s4) - xfPlay.offY) / s4;
     const b = this.player.body;
     const lights = this.vfx.pointLights();
-    // the cast's boxes (or art) on the play plane, where their sprites stood in the depth order
-    const npcs = (mirror: number | null): void => {
-      r.begin(camX, camY, DAY, lights);
-      r.setTransform(s4, focus, mirror);
-      this.npcs.draw(r, { s: s4, focus, mirror }, this.time, mirror !== null);
-      r.setTransform();
-    };
 
     // banks of fog lying on the water at a background plane's waterline (the place's `fog`):
     // drawn over that plane and the water at its depth, behind every nearer plane, and mirrored
@@ -1519,7 +1521,6 @@ export class TesuGame {
         const pd = this.planeQuads(cam, id, Math.max(-Hf * 3, 2 * m - Hf), m + 1, a, false);
         fogOn(id, true, true);
         this.planes.draw(pd.quads, pd.look, W, Hf, m);
-        if (id === "play") npcs(m);
         this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false && !this.npcs.has(sp)), cam, pd.look, this.time, m, this.manual);
         fogOn(id, true);
         if (id === "play" && ActorLayer.wants(cam.zoom)) {
@@ -1601,7 +1602,6 @@ export class TesuGame {
       const look = nearXf ? { ...d.look, show: (1.6 - z) / 0.15, showAt: [nearXf.offX, nearXf.offY, nearXf.g] as [number, number, number] } : d.look;
       fogOn(id, false, true);
       this.planes.draw(d.quads, look, W, Hf);
-      if (id === "play") npcs(null);
       this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && !this.npcs.has(sp)), cam, look, this.time, null, this.manual);
       // banks of mist lying in valleys at this depth
       for (const m of this.world.mists) {

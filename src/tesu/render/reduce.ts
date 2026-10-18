@@ -80,6 +80,9 @@ ${o.key} ${o.name}(${o.args}, vec2 a0, vec2 a1) {
     }
   }
   if (total <= 0.0 || opaque < total * RED_OPAQUE) return ${o.none};
+  // one opaque colour (most of a picture: flat areas, the inside of a shape): nothing to decide
+  if (n == 1) return ks[0];
+  if (n == 2 && (ks[0] == ${o.clear} || ks[1] == ${o.clear})) return ks[0] == ${o.clear} ? ks[1] : ks[0];
   // the background: most of (its share of the core + its share of 8 samples just outside it)
   vec3 rx = vec3(a0.x - 0.5, (a0.x + a1.x) * 0.5, a1.x + 0.5), ry = vec3(a0.y - 0.5, (a0.y + a1.y) * 0.5, a1.y + 0.5);
   for (int j = 0; j < 3; j++) {
