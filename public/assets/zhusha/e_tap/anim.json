@@ -1,0 +1,108 @@
+{
+ "id": "e_tap",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  156,
+  157
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f002.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f003.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f004.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f005.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f006.png",
+   "ticks": 5,
+   "fig": 128
+  },
+  {
+   "file": "f007.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f008.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f009.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f010.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f011.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f012.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f013.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f014.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f015.png",
+   "ticks": 5,
+   "fig": 128
+  },
+  {
+   "file": "f016.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f017.png",
+   "ticks": 8,
+   "fig": 128
+  }
+ ],
+ "loop": false,
+ "hits": [
+  3,
+  9
+ ],
+ "source": "h3-L-e_tap-A-s3000-2ae34b",
+ "notes": "kit v1.3 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f002: the effect cut by the frame edge continued as a soft falloff (40 px); f003: the effect cut by the frame edge continued as a soft falloff (40 px); f004: the blade tip re-extended past the left edge (41 px, hw 2), the effect cut by the frame edge continued as a soft falloff (40 px); f005: the blade tip re-extended past the left edge (41 px, hw 4), the effect cut by the frame edge continued as a soft falloff (40 px); f006: the blade tip re-extended past the left edge (40 px, hw 4); f007: the blade tip re-extended past the left edge (40 px, hw 4); f008: the blade tip re-extended past the left edge (41 px, hw 9), the effect cut by the frame edge continued as a soft falloff (40 px), 6 px of H3's floor shadow streak removed; f009: the blade tip re-extended past the left edge (41 px, hw 8), the effect cut by the frame edge continued as a soft falloff (40 px), 3 px of H3's floor shadow streak removed; f010: the effect cut by the frame edge continued as a soft falloff (40 px); f011: the effect cut by the frame edge continued as a soft falloff (40 px), 1 px of H3's floor shadow streak removed; f012: the effect cut by the frame edge continued as a soft falloff (40 px), 4 px of H3's floor shadow streak removed; f013: 2 px of H3's floor shadow streak removed; f014: 1 px of H3's floor shadow streak removed; f015: 1 px of H3's floor shadow streak removed; f016: 44 px of H3's floor shadow streak removed"
+}
