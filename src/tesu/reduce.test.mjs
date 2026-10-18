@@ -91,3 +91,22 @@ test("screen-res actors: the layer's camera is the frame's play transform times 
     }
   }
 });
+
+test("loading: the world is plain data, so a plate worker can hand it to the page (structured clone, no class, no function)", async () => {
+  const { buildWorld } = await import("./world/index.ts");
+  const w = buildWorld();
+  const seen = new Set();
+  const bad = [];
+  const walk = (v, path) => {
+    if (typeof v === "function") { bad.push(`${path}: a function`); return; }
+    if (v === null || typeof v !== "object" || seen.has(v)) return;
+    seen.add(v);
+    const p = Object.getPrototypeOf(v);
+    if (!(p === Object.prototype || p === Array.prototype || p === null || ArrayBuffer.isView(v) || v instanceof Map || v instanceof Set)) bad.push(`${path}: a ${p?.constructor?.name}`);
+    if (v instanceof Map) { for (const [, x] of v) walk(x, `${path}[map]`); return; }
+    for (const k of Object.keys(v)) walk(v[k], `${path}.${k}`);
+  };
+  walk(w, "world");
+  assert.deepEqual(bad.slice(0, 5), [], "WorldDef must stay plain data (plates/store.ts startPlateWorkers hands it over)");
+  assert.deepEqual(structuredClone(w), w);
+});

@@ -1315,6 +1315,27 @@ follows a point 40 px above the player's feet and holds it at 64% of the view he
   designed** [owner: lab engine lane].
 - Shake at most 4 px and pans at most 8 px per frame (3.13) apply to every character.
 
+### 3.17 Where a character's pixels land in Tesu (the engine lane, 2026-10-18) [proven in code and headless shots]
+
+Tesu renders the world at world resolution: one frame px is one world px at play zoom, shown at a whole scale k
+(k = 2 on a 1440p screen: one world px = 2 screen px; k = 1 at 1080p). Characters are 128 px art drawn at H x
+charScale (1.1 x 96 = 105.6 world px, `zhusha/feel.json`), i.e. 0.825 world px per art px.
+
+| Camera | Where her drawing (and the cast's) lands | Code |
+|---|---|---|
+| Play zoom and the close band, k >= 2 | A screen-res layer (frame x k): every art px shows, unevenly, ~1.65 screen px each at k = 2 (3.3 in the close band); quads snapped to whole screen px from a snapped pivot, so the uneven pattern is fixed per drawing | `src/tesu/render/actors.ts`, `game.ts` `drawActors` |
+| Play zoom, k = 1 | The frame itself: nearest neighbour drops about one art row in six (105.6 rows for 128) | same |
+| Wider than play zoom (zoom < 1) | Drawn at play density into an actor buffer, then reduced onto the world's grid like the world: palette-keeping, opaque where a third of the px is covered, a colour contrasting with the footprint's background counts double so 1 px lines survive; the grid is anchored to her feet, so she moves by whole px without boiling | `src/tesu/render/reduce.ts`, `grid.ts` |
+
+- Effects (slashes, dust, afterimages) and the talisman stay on the world grid at every zoom (drawn world-res, nearest
+  x k into the layer), so only the drawings have finer pixels. [proven]
+- The cast (`src/tesu/cast/npcs.ts`) is drawn in the same pass as her (`actorsPass("art")`), in front of the play
+  plane's props, on the same grid as hers at every zoom. [proven]
+- Pitfall: never draw a character from `this.camera.state()`; draw from the `view` / camera the pass hands you
+  (`planeXf(c, 1)`), or it lands on the wrong grid in two of the three cases above.
+- Pitfall: at zoom 1 -> 0.99 her pixels step from screen-res to the world grid (the 10-17 default; a FOR DEX item in
+  the engine notebook proposes holding screen-res down to ~0.6).
+
 ---
 
 ## 4. File layout and licensing
