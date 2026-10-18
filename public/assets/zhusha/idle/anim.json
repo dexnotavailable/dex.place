@@ -1,0 +1,94 @@
+{
+ "id": "idle",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  40,
+  146
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 18,
+   "fig": 128
+  },
+  {
+   "file": "f001.png",
+   "ticks": 12,
+   "fig": 128
+  },
+  {
+   "file": "f002.png",
+   "ticks": 12,
+   "fig": 128
+  },
+  {
+   "file": "f003.png",
+   "ticks": 13,
+   "fig": 128
+  },
+  {
+   "file": "f004.png",
+   "ticks": 12,
+   "fig": 128
+  },
+  {
+   "file": "f005.png",
+   "ticks": 17,
+   "fig": 128
+  },
+  {
+   "file": "f006.png",
+   "ticks": 20,
+   "fig": 128
+  },
+  {
+   "file": "f007.png",
+   "ticks": 13,
+   "fig": 128
+  },
+  {
+   "file": "f008.png",
+   "ticks": 8,
+   "fig": 128
+  },
+  {
+   "file": "f009.png",
+   "ticks": 8,
+   "fig": 128
+  },
+  {
+   "file": "f010.png",
+   "ticks": 8,
+   "fig": 128
+  },
+  {
+   "file": "f011.png",
+   "ticks": 12,
+   "fig": 128
+  },
+  {
+   "file": "f012.png",
+   "ticks": 17,
+   "fig": 128
+  },
+  {
+   "file": "f013.png",
+   "ticks": 17,
+   "fig": 128
+  },
+  {
+   "file": "f014.png",
+   "ticks": 23,
+   "fig": 128
+  },
+  {
+   "file": "f015.png",
+   "ticks": 23,
+   "fig": 128
+  }
+ ],
+ "loop": true,
+ "source": "h3-R-idle-B-s1001-dfe3e3",
+ "notes": "kit v1.2 (2b punchy, no burn @ 128, master palette 256). No content cut by the frame beyond soft glow fringes (edge fades). Timing 0.6x (Dex 10-18: a plain forward loop of the whole take, slowed to 0.6x; no idle_variant). | Worker 3 POLISH (2026-10-18): THE shared blade (w3lib.canon_blade) in all 16; f009-f013 a designed glyph flare (glyphs flare white, tapered aura with upward wisps in flat bands, floor glow ellipse on the ground row, f013 breaking up); her left tail as 3 tapering locks on H3's sweep with a cool sheen band; strays and ghost skin between the strands removed; face cleaned + canon eye; plain loop at 0.6x (Dex). See w3/CHANGES.md."
+}
