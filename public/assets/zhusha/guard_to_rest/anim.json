@@ -1,0 +1,89 @@
+{
+ "id": "guard_to_rest",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  107,
+  154
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f005.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f007.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f008.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f009.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f010.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f011.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f012.png",
+   "ticks": 5,
+   "fig": 128
+  },
+  {
+   "file": "f013.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f014.png",
+   "ticks": 8,
+   "fig": 128
+  }
+ ],
+ "loop": false,
+ "source": "h3-F-guard_to_rest-C-s2001-91d731",
+ "notes": "kit v1.3 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f003: the effect cut by the frame edge continued as a soft falloff (40 px); f004: the effect cut by the frame edge continued as a soft falloff (40 px); f005: the effect cut by the frame edge continued as a soft falloff (40 px); f006: the effect cut by the frame edge continued as a soft falloff (40 px); f007: the effect cut by the frame edge continued as a soft falloff (40 px); f008: the effect cut by the frame edge continued as a soft falloff (40 px); f009: the effect cut by the frame edge continued as a soft falloff (40 px); f010: the effect cut by the frame edge continued as a soft falloff (40 px)"
+}
