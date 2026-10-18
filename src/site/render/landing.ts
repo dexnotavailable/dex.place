@@ -109,7 +109,7 @@ export const band = (side: "l" | "r", html: string, scene = "sky"): string =>
   `<div class="band band--${side}">${html}<div class="band__win" data-window="${scene}" aria-hidden="true"></div></div>`;
 
 /** Which place of the world each section's window looks onto (motion/windows.ts SCENES). */
-export const SECTION_SCENES = ["sky", "palace", "isles", "lake", "pine", "deck"] as const;
+export const SECTION_SCENES = ["sky", "palace", "isles", "lake", "pine", "door"] as const;
 
 export function landing(content: SiteContent): string {
   const parts = [projectsSection(), downloadsSection(), gallerySection(content), docsSection(content), donateSection(), moreSection()];

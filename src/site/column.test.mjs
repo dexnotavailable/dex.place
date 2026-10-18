@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { INTRO_TIMING, penEase, planMark } from "../intro/intro.ts";
 import { bottomView, cornerView, driftPoint, topView, trail, trailPoint } from "./motion/flow.ts";
-import { scatterCell, scatterSvg } from "./motion/scatter.ts";
+import { scatterCell, scatterSvg, sheetEdgeSvg } from "./motion/scatter.ts";
 import { COLUMN_PAGES, jettySection, shell, world } from "./render/layout.ts";
 import { landing } from "./render/landing.ts";
 import { routes } from "./render/routes.ts";
@@ -229,23 +229,66 @@ test("windows into the world (Dex 10-18): white page, a window beside each secti
   bands.forEach((m, i) => assert.equal(m[1], i % 2 ? "r" : "l", "alternating sides"));
   const scenes = bands.map((m) => m[2]);
   assert.equal(new Set(scenes).size, scenes.length, `each window a different place (${scenes})`);
-  // every place is one the windows know how to paint
-  return import("./motion/windows.ts").then(({ SCENES }) => {
+  // every place is one the windows know how to paint, each in its own light
+  return import("./motion/windows.ts").then(({ SCENES, edgeMask }) => {
     for (const s of scenes) assert.ok(SCENES[s], s);
     for (const [id, sc] of Object.entries(SCENES)) {
       assert.ok(sc.pieces.length >= 3, `${id}: a composed place`);
       assert.ok(sc.pieces.every((p) => p.kind.startsWith("op.") && p.fit > 0 && p.fit <= 1), `${id}: the world's own painters, fitted`);
     }
-    // the dissolving edge: the white's pixels on all four sides of a window (tiles for each side)
+    const lights = Object.values(SCENES).map((sc) => JSON.stringify(sc.sky));
+    assert.equal(new Set(lights).size, lights.length, "a different light in every window");
+    // the places are different places: no two windows share their main painter (the tallest piece)
+    const main = Object.values(SCENES).map((sc) => [...sc.pieces].sort((a, b) => b.fit - a.fit)[0].kind + (sc.walker ? "+walker" : ""));
+    assert.equal(new Set(main).size, main.length, `${main}`);
+    assert.ok(SCENES.sky.walker, "the sky window has Tesu's landmark in it (the Walker)");
+    // the dissolving edge, drawn into the window: the outermost pixel all round solid white (no colour line framing
+    // the hole), white thinning into the world, and seeded so no two windows (or sides) are the same
+    const W = 80, H = 60, D = 12;
+    const m = edgeMask(W, H, D, 1);
+    const a = (x, y) => m[(y * W + x) * 4 + 3];
+    for (let x = 0; x < W; x++) assert.ok(a(x, 0) === 255 && a(x, H - 1) === 255, `top/bottom row solid at ${x}`);
+    for (let y = 0; y < H; y++) assert.ok(a(0, y) === 255 && a(W - 1, y) === 255, `left/right column solid at ${y}`);
+    assert.equal(a(W >> 1, H >> 1), 0, "the middle is the world");
+    const col = (k) => Array.from({ length: H - 2 * D }, (_, i) => a(k, D + i)).reduce((p, q) => p + q, 0);
+    assert.ok(col(1) > col(5) && col(5) > col(D - 1), "white thinning into the world");
+    const lit = (mask, side) => Array.from({ length: H - 2 * D }, (_, i) => {
+      const y = D + i;
+      return Array.from({ length: D }, (_, k) => (mask[(y * W + (side ? W - 1 - k : k)) * 4 + 3] === 255 ? 1 : 0)).join("");
+    }).join("|");
+    assert.notEqual(lit(m, 0), lit(edgeMask(W, H, D, 2), 0), "seeded per window");
+    assert.notEqual(lit(m, 0), lit(m, 1), "seeded per side");
+    assert.deepEqual(edgeMask(W, H, D, 1), m, "deterministic");
     const css = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
-    assert.match(css, /\.band__win::after \{[^}]*var\(--scatter-l[^}]*var\(--scatter-r[^}]*var\(--scatter-b[^}]*var\(--scatter-t/);
-    assert.match(css, /\.band__win::before \{[^}]*linear-gradient\(90deg[^}]*linear-gradient\(270deg[^}]*linear-gradient\(180deg[^}]*linear-gradient\(0deg/);
+    assert.doesNotMatch(css, /\.band__win::(before|after)/, "the edge is in the window, not a tiled overlay");
+    assert.match(css, /\.band__win \{[^}]*background: #fff;/, "white behind the window until it paints (no coloured line)");
     assert.match(css, /\.sheet--column \{ background: #fff; \}/);
-    // the scatter: dense at the white, thinning into the world, for each side
-    const ys = (svg) => [...svg.matchAll(/M\d+ (\d+)h/g)].map((m) => +m[1]);
-    const mean = (a) => a.reduce((p, q) => p + q, 0) / a.length;
-    assert.ok(mean(ys(scatterSvg(12, 96, 4, "t"))) > 6 && mean(ys(scatterSvg(12, 96, 4, "b"))) < 6);
   });
+});
+
+test("every page that is not the page column is plain white (its sheet carries the white over the black html)", () => {
+  const css = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
+  assert.match(css, /\.sheet--page:not\(\.sheet--column\) \{ background: #fff; \}/);
+  const meta = (page, path) => ({ path, title: page, page, description: "" });
+  for (const [page, path] of [["docs", "/docs/some-doc/"], ["blog", "/blog/a-post/"], ["404", "/404"]]) {
+    const { body } = shell({ meta: meta(page, path), main: "<p>x</p>" });
+    assert.match(body, /<div class="sheet sheet--page" id="site"/, `${path}: a deep page's sheet`);
+    assert.doesNotMatch(body, /sheet--column/, `${path}: not the column (so the white rule applies)`);
+  }
+});
+
+test("the white page's top edge: a two-tone ordered dither, white at the page thinning to none, one image the page's width", () => {
+  const svg = sheetEdgeSvg(320, 14, 4);
+  assert.match(svg, /^<svg [^>]*width="1280" height="56"[^]*fill="#fff"/);
+  assert.doesNotMatch(svg, /opacity|fill="(?!#fff)/, "two tones: white or nothing");
+  const rows = Array(14).fill(0);
+  for (const [, x, y, n] of svg.matchAll(/M(\d+) (\d+)h(\d+)/g)) rows[+y] += +n;
+  // (an ordered dither: each run of four rows holds the whole threshold matrix, so every four-row window is denser
+  // than the one above it)
+  const win4 = (y) => rows[y] + rows[y + 1] + rows[y + 2] + rows[y + 3];
+  for (let y = 1; y + 3 < 14; y++) assert.ok(win4(y) >= win4(y - 1), `denser toward the page (rows ${y}..${y + 3})`);
+  assert.ok(rows[0] < 320 * 0.1 && rows[13] > 320 * 0.9);
+  assert.equal(sheetEdgeSvg(320, 14, 4), svg, "deterministic");
 });
 
 test("the corner is a slot in the header (right of World, left of Menu); the marks are the pixel dex", async () => {

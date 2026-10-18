@@ -1,25 +1,15 @@
-// Paints pieces of the world for the website off the main thread: the world's own painters (src/tesu/art/library/
-// opening: clouds, the floating isles, the far karst, the palace, a pine, the torii islet, a boat, egrets, reeds, the
-// jetty), into indexed buffers turned into RGBA with the world's palette. Runs as a module worker (motion/windows.ts,
-// motion/sky.ts); each message paints one piece and posts its pixels back.
+// Paints pieces of the world for the website off the main thread: the world's own painters, into indexed buffers
+// turned into RGBA with the world's palette. The workers are small entries (paint-sky.ts, paint-palace.ts,
+// paint-kagami.ts) that import only the painters their places use, then serve(); a page starts one only when a
+// window that needs it comes near (motion/painters.ts), so nothing heavy loads up front.
 
 import { IdxBuf } from "../../tesu/art/raster.ts";
 import { ctxFor, painter } from "../../tesu/art/painter.ts";
 import { paletteRGBA } from "../../tesu/art/palette.ts";
-// (the modules that define the painters the website uses; importing them registers them)
-import "../../tesu/art/library/opening/sky.ts";
-import "../../tesu/art/library/opening/jetty.ts";
-import "../../tesu/art/library/opening/haze.ts";
-import "../../tesu/art/library/opening/palace.ts";
-import "../../tesu/art/library/opening/flora.ts";
-import "../../tesu/art/library/opening/islet.ts";
-import "../../tesu/art/library/opening/props.ts";
-import "../../tesu/art/library/opening/life.ts";
-import "../../tesu/art/library/opening/wind.ts";
 
 export interface CloudJob {
   id: number;
-  /** The painter (default the cloud); "jetty" is kept for the jetty's own job. */
+  /** The painter (default the cloud). */
   kind?: string;
   p: Record<string, unknown>;
   seed: number;
@@ -42,8 +32,7 @@ export interface CloudDone {
 const pal = paletteRGBA();
 
 export function paintCloud(job: CloudJob): CloudDone {
-  const kind = job.kind === "jetty" ? "op.jetty" : job.kind ?? "op.cloud";
-  const pt = painter(kind);
+  const pt = painter(job.kind ?? "op.cloud");
   const [x0, y0, x1, y1] = pt.bounds(job.p);
   const d = job.fitH ? job.fitH / Math.max(1, y1 - y0) : job.d ?? 1;
   const w = Math.max(1, Math.ceil((x1 - x0) * d)), h = Math.max(1, Math.ceil((y1 - y0) * d));
@@ -61,8 +50,8 @@ export function paintCloud(job: CloudJob): CloudDone {
   return { id: job.id, w, h, ax: Math.round(-x0 * d), ay: Math.round(-y0 * d), rgba };
 }
 
-// as a worker: one job in, one piece out (a page that imports this file has a document and skips it)
-if (typeof document === "undefined") {
+/** Answers paint jobs (a worker entry calls this once its painters are imported). */
+export function serve(): void {
   const scope = globalThis as unknown as { onmessage: ((e: MessageEvent<CloudJob>) => void) | null; postMessage(m: unknown, t: Transferable[]): void };
   scope.onmessage = (e) => {
     const done = paintCloud(e.data);

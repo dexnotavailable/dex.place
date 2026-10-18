@@ -1,9 +1,11 @@
 // The world on the website (Dex 10-18: the page is white, with windows punched into it that look into the world):
 // the windows beside the sections (motion/windows.ts) and the jetty at the bottom of the page, every piece painted by
-// the world's own painters in one worker (motion/sky-paint.ts). Whole pixels only: one art px is `k` device px.
+// the world's own painters in the worker its place needs (motion/painters.ts). Whole pixels only: one art px is `k`
+// device px.
 
+import { painterWorker } from "./painters.ts";
 import { POOL, rampIndex, skyRamp } from "./sky-plan.ts";
-import type { CloudDone, CloudJob } from "./sky-paint.ts";
+import type { CloudDone, CloudJob } from "./paint-core.ts";
 import { initWindows } from "./windows.ts";
 
 /**
@@ -12,7 +14,7 @@ import { initWindows } from "./windows.ts";
  * sky (the backdrop shows through). She stands on it as the white box every character is until her art lands
  * (`[data-jetty-her]`, placed here at her height on the deck). Static: drawn again only when the size changes.
  */
-export function initJetty(worker: () => Worker): void {
+export function initJetty(): void {
   const scene = document.querySelector<HTMLElement>("[data-jetty-scene]");
   const her = scene?.querySelector<HTMLElement>("[data-jetty-her]");
   if (!scene || !her) return;
@@ -25,37 +27,34 @@ export function initJetty(worker: () => Worker): void {
   // its own sky now (the page behind it is white): a dithered ramp and three heaps of the world's cloud
   const clouds: ({ img: HTMLCanvasElement; ax: number; ay: number } | null)[] = [null, null, null];
   const CLOUDS = [[2, 0.2, 0.55], [0, 0.62, 0.62], [7, 0.45, 0.7]] as const;
-  const w = worker();
-  w.addEventListener("message", (e: MessageEvent<CloudDone>) => {
-    const i = -10 - e.data.id;
-    if (i < 0 || i >= CLOUDS.length) return;
-    const d = e.data;
-    const img = document.createElement("canvas");
-    img.width = d.w;
-    img.height = d.h;
-    img.getContext("2d")!.putImageData(new ImageData(d.rgba as Uint8ClampedArray<ArrayBuffer>, d.w, d.h), 0, 0);
-    clouds[i] = { img, ax: d.ax, ay: d.ay };
-    draw();
-  });
-  CLOUDS.forEach(([pool, , ], i) => {
-    const { use: _use, ...p } = POOL[pool]!;
-    w.postMessage({ id: -10 - i, p, seed: 31 + i * 5, d: 0.9 } satisfies CloudJob);
-  });
   const sky = skyRamp(20).slice(6);
   const JETTY = { w: 560, water: 34, posts: [[0, 14], [4, 10]] as [number, number][], sag: [[150, 2], [330, 3]] as [number, number][] };
-  const listen = (e: MessageEvent<CloudDone>): void => {
-    if (e.data.id !== -1) return;
-    const d = e.data;
+  const toCanvas = (d: CloudDone): { img: HTMLCanvasElement; ax: number; ay: number } => {
     const img = document.createElement("canvas");
     img.width = d.w;
     img.height = d.h;
     img.getContext("2d")!.putImageData(new ImageData(d.rgba as Uint8ClampedArray<ArrayBuffer>, d.w, d.h), 0, 0);
-    art = { img, ax: d.ax, ay: d.ay };
-    w.removeEventListener("message", listen);
-    draw();
+    return { img, ax: d.ax, ay: d.ay };
   };
-  w.addEventListener("message", listen);
-  w.postMessage({ id: -1, kind: "jetty", p: JETTY, seed: 5 } satisfies CloudJob);
+  // Kagami's painters start only when the jetty comes near; its own jobs go first (the jetty, then its clouds)
+  let started = false;
+  const start = (): void => {
+    if (started) return;
+    started = true;
+    const w = painterWorker("kagami");
+    w.addEventListener("message", (e: MessageEvent<CloudDone>) => {
+      const id = e.data.id;
+      if (id === -1) art = toCanvas(e.data);
+      else if (id <= -10 && id > -10 - CLOUDS.length) clouds[-10 - id] = toCanvas(e.data);
+      else return;
+      draw();
+    });
+    w.postMessage({ id: -1, kind: "op.jetty", p: JETTY, seed: 5 } satisfies CloudJob);
+    CLOUDS.forEach(([pool], i) => {
+      const { use: _use, ...p } = POOL[pool]!;
+      w.postMessage({ id: -10 - i, p, seed: 31 + i * 5, d: 0.9 } satisfies CloudJob);
+    });
+  };
   const LAKE = ["#dbf2eb", "#b0e2d4", "#83ccbf", "#5ab2a7", "#3f918c"];
   const draw = (): void => {
     const dpr = window.devicePixelRatio || 1;
@@ -135,6 +134,12 @@ export function initJetty(worker: () => Worker): void {
     her.style.bottom = "auto";
   };
   draw();
+  if (typeof IntersectionObserver === "function") {
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { io.disconnect(); start(); }
+    }, { rootMargin: "50% 0px" });
+    io.observe(scene);
+  } else start();
   let t = 0;
   window.addEventListener("resize", () => {
     clearTimeout(t);
@@ -146,11 +151,9 @@ export function initJetty(worker: () => Worker): void {
 const HER_W = 28;
 const HER_H = 104;
 
-/** The world's pieces on the website: the windows and the jetty, one painter worker between them. */
+/** The world's pieces on the website: the windows and the jetty, each painted only when it comes near. */
 export function initSky(reduced: MediaQueryList): void {
   if (typeof Worker === "undefined") return;
-  let worker: Worker | null = null;
-  const getWorker = (): Worker => (worker ??= new Worker(new URL("./sky-paint.ts", import.meta.url), { type: "module" }));
-  initWindows(reduced, getWorker);
-  initJetty(getWorker);
+  initWindows(reduced);
+  initJetty();
 }

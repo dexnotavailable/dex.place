@@ -194,8 +194,8 @@ export function footer(current: PageId): string {
  */
 /** The place a section's own page looks onto, through its window (motion/windows.ts SCENES). */
 const PAGE_SCENES: Readonly<Record<string, string>> = {
-  "/downloads/": "palace", "/gallery/": "isles", "/docs/": "lake", "/blog/": "pine", "/donate/": "deck",
-  "/projects/": "sky", "/support/": "isles", "/account/": "palace", "/map/": "lake", "/forums/": "pine",
+  "/downloads/": "palace", "/gallery/": "isles", "/docs/": "lake", "/blog/": "pine", "/donate/": "door",
+  "/projects/": "sky", "/support/": "door", "/account/": "palace", "/map/": "lake", "/forums/": "pine",
 };
 
 export const COLUMN_PAGES: readonly string[] = ["/", "/downloads/", "/gallery/", "/docs/", "/blog/", "/donate/", "/projects/", "/support/", "/account/", "/map/", "/forums/"];
