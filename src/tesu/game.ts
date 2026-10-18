@@ -37,7 +37,7 @@ import { Opening } from "./opening.ts";
 import { SilentLink, type OpeningLink } from "./opening/conductor.ts";
 import { WorldPaper, type PaperPose } from "./opening/paper.ts";
 import { BEATS, CLIP_END, HANDOFF_T, cameraAt, herXH, keysAt, paperAirAt, paperBlendAt, paperScreenAt, startT } from "./opening/timeline.ts";
-import { fallVeils } from "./opening/sky.ts";
+import { Veils, fallVeils } from "./opening/sky.ts";
 import { ART_PX } from "./zhusha/controller.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
@@ -130,6 +130,8 @@ export class TesuGame {
   /** (engine 10-18) Her drawing at screen resolution at play zoom and closer (render/actors.ts). */
   readonly screen: ScreenActors;
   readonly titles: Titles;
+  /** The opening's fog layers on the lens (opening/sky.ts). */
+  readonly veils: Veils;
   readonly opening: Opening;
   readonly player: Zhusha;
   /** Her drawings (traced pixel art per slot) or the white box. */
@@ -203,6 +205,7 @@ export class TesuGame {
     // deterministic captures: ?manual paints them on the page, as it paints the plates)
     if (!opts.manual) this.sprites.async = (job, done) => this.store.paintSprite(job, done);
     this.titles = new Titles(gl, r.emptyVao);
+    this.veils = new Veils(gl, r.emptyVao);
     this.opening = new Opening({
       herX: () => this.player.body.x,
       moveTo: (x, jump) => this.driveTo(x, jump),
@@ -563,6 +566,7 @@ export class TesuGame {
     this.time += 1 / 60;
     this.opening.tick();
     this.warmStream();
+    this.warmFall();
     this.feel.realTick();
     this.vfx.realTick();
     this.simAcc += this.feel.slowFactor;
@@ -926,6 +930,30 @@ export class TesuGame {
     // tiles hold paint, the rest are empty and cost nothing)
     const budget = Math.max(64, this.planes.layers - Math.ceil(most * 0.3) - 48);
     return { plan, gateMax: gateMax < 0 ? plan.length : gateMax, budget };
+  }
+
+  /**
+   * The fall's clouds (world/sections/opening-sky.ts) are sprites, painted on demand: while the world waits for the
+   * press (behind "dex"), their drawings are asked for at the level the fall shows them, one moment of the fall every
+   * third of a second, so none pops in on the way down.
+   */
+  private fallWarm = { i: 0, defs: null as SpriteDef[] | null };
+  private warmFall(): void {
+    if (!this.holding || this.loading || this.tick % 20) return;
+    const w = this.fallWarm;
+    w.defs ??= this.world.sprites.filter((s) => s.id.startsWith("fall-"));
+    const moments = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5];
+    if (w.i >= moments.length * 4 || !w.defs.length) return;
+    const T = moments[Math.floor(w.i / 4)]!, frame = w.i % 4;
+    w.i++;
+    const [W, Hf] = this.openingFrame();
+    const s = keysAt(T, BEATS.her.catchXH * H, W, Hf);
+    const cam: CamState = { cx: s.cx, cy: BEATS.her.deckYH * H, zoom: s.zoom, anchor: s.anchor, horizon: s.horizon, W, H: Hf };
+    const a = this.atmosAt(cam.cx, cam.cy);
+    for (const id of PLANE_IDS) {
+      const defs = w.defs.filter((d) => d.plane === id);
+      if (defs.length) this.sprites.draw(defs, cam, this.look(id, a), frame + 0.01, null, false, true);
+    }
   }
 
   startWarm(): void {
@@ -1662,9 +1690,7 @@ export class TesuGame {
       }
     }
     // the opening's fall: fog layers in front of the camera, sweeping up past it as it comes down (opening/sky.ts)
-    if (this.opening.active && this.opening.T < BEATS.her.walkFrom) {
-      for (const v of fallVeils(this.opening.T, W, Hf, this.opening.way, this.feel.reducedMotion)) this.atmos.drawMist(W, Hf, v.bands, v.colour, this.time, cam.cx * v.rate);
-    }
+    if (this.opening.active && this.opening.T < BEATS.her.walkFrom) this.veils.draw(W, Hf, fallVeils(this.opening.T, W, Hf, this.opening.way, this.feel.reducedMotion));
     this.drawPrompt(cam);
     this.drawHint(cam);
     this.titles.draw(W, Hf);

@@ -46,12 +46,18 @@ interface FallCloud {
 }
 
 /**
+ * The far planes' haze is the land's (Kagami's is a lake green): a cloud keeps its own whites, only a breath of it
+ * (its distance is the painter's own `haze`, toward the half light).
+ */
+const FADE: Partial<Record<PlaneId, number>> = { sky: 0, far: 0.06, mid: 0.03, back: 0.04 };
+
+/**
  * The fall's clouds, top to bottom. The paper's flight (beats.ts ofuda.path) keeps to the middle of the frame, so the
  * big masses pass beside it; the front bank crosses it about bar 2 (the thick fog layer on the lens goes with it).
  */
 export const FALL_CLOUDS: readonly FallCloud[] = [
   // high and far: barely rising (the depth the rest is measured against)
-  { id: "fall-wisp-high", plane: "far", T: 0.9, fx: 0.24, fy: 0.3, p: { kind: "wisp", w: 460, h: 42, haze: 0.25 } },
+  { id: "fall-strand-high", plane: "far", T: 0.9, fx: 0.3, fy: 0.24, p: { kind: "stratus", w: 560, h: 40, haze: 0.3 } },
   { id: "fall-far-heap", plane: "far", T: 3.4, fx: 0.86, fy: 0.66, p: { kind: "cumulus", w: 330, h: 120, tower: 0.55, haze: 0.4 } },
   // middling: drifting up past
   { id: "fall-mid-tower", plane: "mid", T: 2.4, fx: 0.12, fy: 0.84, p: { kind: "tower", w: 210, h: 250, tower: 1, haze: 0.15 } },
@@ -65,14 +71,15 @@ export const FALL_CLOUDS: readonly FallCloud[] = [
   { id: "fall-play-heap", plane: "play", T: 3.6, fx: 0.8, fy: 0.68, p: { kind: "cumulus", w: 280, h: 130, tower: 0.55 } },
   { id: "fall-play-heap-b", plane: "play", T: 7.4, fx: 0.18, fy: 0.66, p: { kind: "cumulus", w: 320, h: 140, tower: 0.5 } },
   { id: "fall-front-bank", plane: "front", T: 5.5, fx: 0.52, fy: 0.64, p: { kind: "cumulus", w: 500, h: 180, tower: 0.45 } },
-  // near the lens: rushing past
-  { id: "fall-near-wisp", plane: "near", T: 2.0, fx: 0.08, fy: 0.42, p: { kind: "wisp", w: 520, h: 52 } },
-  { id: "fall-near-mass", plane: "near", T: 8.0, fx: 0.86, fy: 1.02, p: { kind: "cumulus", w: 560, h: 210, tower: 0.4 } },
+  // in front of the paper, early and late (the near plane inks its art darker: the clouds stay in the one light, so
+  // the lens's own rush is the fog layers', opening/sky.ts)
+  { id: "fall-front-strand", plane: "front", T: 2.2, fx: 0.1, fy: 0.46, p: { kind: "stratus", w: 480, h: 50 } },
+  { id: "fall-front-mass", plane: "front", T: 7.6, fx: 0.86, fy: 0.9, p: { kind: "cumulus", w: 520, h: 200, tower: 0.4 } },
 ];
 
 export function openingSky(b: WorldBuilder): void {
   FALL_CLOUDS.forEach((c, i) => {
     const [x, y] = fallPoint(c.T, c.plane, c.fx, c.fy);
-    b.sprite({ id: c.id, plane: c.plane, kind: "op.cloud", x, y, p: { ...c.p }, frames: 4, fps: 1, reflect: false, seed: 7919 * (9100 + i) });
+    b.sprite({ id: c.id, plane: c.plane, kind: "op.cloud", x, y, p: { ...c.p }, frames: 4, fps: 1, reflect: false, fade: FADE[c.plane], seed: 7919 * (9100 + i) });
   });
 }
