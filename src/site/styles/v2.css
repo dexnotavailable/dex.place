@@ -154,8 +154,11 @@ body { background: #000; color: var(--fg); }
 }
 /* the paper */
 .band::before { width: var(--paper); background: #fff; }
-/* its open side: the gradient, and the white pixels over it; its ends taper into the top and bottom fades */
+/* its open side: the gradient, and the white pixels over it; it runs on past the paper's top and bottom by the
+   edge fades' depth and tapers there, so the corners dissolve too (never a hard vertical cut) */
 .band::after {
+  top: calc(var(--band-gap) / 2 - var(--edge-h));
+  bottom: calc(var(--band-gap) / 2 - var(--edge-h));
   width: var(--fade-w);
   background-image: var(--scatter-l, none), linear-gradient(90deg, #fff 0, var(--fade));
   background-repeat: repeat-y, no-repeat;
@@ -284,7 +287,8 @@ code, kbd, pre { font-family: var(--f-mono); }
 .ftr { background: #fff; border-top: var(--bw) solid var(--ink); margin-top: 0; }
 /* on the page column it is a paper on the right, flowing on down into the jetty's white column */
 .band--foot { padding-bottom: 0; }
-.band--foot::before, .band--foot::after { bottom: 0; -webkit-mask-image: linear-gradient(transparent, #000 var(--edge-h)); mask-image: linear-gradient(transparent, #000 var(--edge-h)); }
+.band--foot::before { bottom: 0; }
+.band--foot::after { bottom: 0; -webkit-mask-image: linear-gradient(transparent, #000 var(--edge-h)); mask-image: linear-gradient(transparent, #000 var(--edge-h)); }
 .band--foot > .ftr { position: relative; z-index: 1; background: transparent; border: 0; }
 .band--foot > .band__edge--b { bottom: calc(-1 * var(--edge-h)); z-index: 2; }
 .band--foot > .ftr .wrap { margin-right: var(--edge); margin-left: auto; max-width: min(calc(var(--wrap) + var(--pad) * 2), calc(var(--paper) - var(--edge))); }
@@ -388,4 +392,24 @@ code, kbd, pre { font-family: var(--f-mono); }
   .spec { grid-template-columns: max-content minmax(0, 1fr); max-width: 100%; }
   .spec dd { min-width: 0; overflow-wrap: anywhere; }
   .dlf__file { min-width: 0; }
+}
+
+/* the donation heads: the address never breaks at its hyphen ("ko-" / "fi.com"), the tile steps down a size */
+.dhead { gap: 14px; }
+.dhead__line { overflow-wrap: normal; word-break: normal; hyphens: none; }
+.kofi .dhead__line { white-space: nowrap; }
+
+/* the paper's top and bottom fades run on over its open side too, tapering there, so a corner dissolves as
+   softly as an edge */
+.band__edge { width: calc(var(--paper) + var(--fade-w)); }
+.band--l > .band__edge {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - var(--fade-w)), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - var(--fade-w)), transparent);
+}
+.band--r > .band__edge {
+  -webkit-mask-image: linear-gradient(270deg, #000 calc(100% - var(--fade-w)), transparent);
+  mask-image: linear-gradient(270deg, #000 calc(100% - var(--fade-w)), transparent);
+}
+@media (max-width: 600px) {
+  .band__edge { width: 100vw; -webkit-mask-image: none; mask-image: none; }
 }
