@@ -1,0 +1,64 @@
+{
+ "id": "m1_2_ret",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  70,
+  164
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f002.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f003.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f004.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f006.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f007.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f008.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f009.png",
+   "ticks": 8,
+   "fig": 128
+  }
+ ],
+ "loop": false,
+ "source": "h3-L-m1_2_ret-A-s3000-95ee90",
+ "notes": "kit v1.3 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f000: 68 px of H3's floor shadow streak removed; f001: 28 px of H3's floor shadow streak removed; f002: 11 px of H3's floor shadow streak removed; f003: 36 px of H3's floor shadow streak removed; f005: the hilt re-extended above the frame top to the pommel (46 px, top (721, -44)), 1 px of H3's floor shadow streak removed; f006: the hilt re-extended above the frame top to the pommel (69 px, top (648, -66))"
+}
