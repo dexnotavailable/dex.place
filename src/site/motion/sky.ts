@@ -93,8 +93,12 @@ export function initJetty(worker: () => Worker): void {
     cv.style.height = `${(H * k) / dpr}px`;
     ctx.clearRect(0, 0, W, H);
     // the lake: the lower part of the scene, bands from the pale horizon down into the jade
-    const narrow = r.width < 700;
-    const horizon = Math.round(H * 0.7);
+    // where the white paper leaves the scene open: beside it (wide screens) or below it (stacked)
+    const paper = scene.parentElement?.querySelector<HTMLElement>(".jetty__paper")?.getBoundingClientRect();
+    const stacked = !paper || paper.width >= r.width * 0.9;
+    const open = stacked ? W : Math.max(40, Math.floor(((paper.left - r.left) * dpr) / k));
+    // (a short scene still has room above the deck for her)
+    const horizon = Math.min(H - 12, Math.max(Math.round(H * 0.7), HER_H + JETTY.water + 14));
     for (let y = horizon; y < H; y++) {
       const u = (y - horizon) / Math.max(1, H - horizon);
       ctx.fillStyle = LAKE[Math.min(LAKE.length - 1, Math.floor(Math.pow(u, 0.8) * LAKE.length))]!;
@@ -113,8 +117,8 @@ export function initJetty(worker: () => Worker): void {
     if (!art) return;
     // the jetty: from the left edge, its deck a few px above the waterline
     const deckY = horizon - JETTY.water;
-    // (narrow screens: the jetty runs in from the left and ends past the middle)
-    const x0 = narrow ? Math.round(W * 0.7) - JETTY.w : -12;
+    // it runs in from the left and ends past the middle of the open part
+    const x0 = Math.min(-12, Math.round(open * 0.78) - JETTY.w);
     // its reflection: the jetty upside down in the still water, darker, broken by the ripples
     ctx.save();
     ctx.globalAlpha = 0.28;
@@ -127,7 +131,7 @@ export function initJetty(worker: () => Worker): void {
     ctx.drawImage(art.img, x0 - art.ax, deckY - art.ay);
     // she stands on the deck, at her height (the white box until her art lands)
     const css = k / dpr;
-    const deckX = narrow ? Math.round(W * 0.34) : x0 + JETTY.w * 0.42;
+    const deckX = Math.max(x0 + JETTY.w * 0.1, Math.min(x0 + JETTY.w * 0.9, Math.round(open * 0.35)));
     her.style.left = `${Math.round(deckX * css)}px`;
     her.style.top = `${Math.round((deckY - HER_H) * css)}px`;
     her.style.width = `${Math.round(HER_W * css)}px`;

@@ -305,3 +305,16 @@ code, kbd, pre { font-family: var(--f-mono); }
 @media (max-width: 600px) {
   .hanko { width: 40px; height: 40px; top: -12px; right: -6px; }
 }
+
+/* callouts in docs and posts: the label in the tone's deep text colour, the bar in its fill */
+.callout__label { color: var(--azure); }
+.callout--mint .callout__label { color: var(--mint-d); }
+.callout--yellow .callout__label { color: var(--yellow-d); }
+.callout--magenta .callout__label { color: var(--scarlet); }
+
+/* DotGothic16 is drawn on a 16 px grid: its headings sit on whole multiples of it (32 px), never huge */
+.pcard__name, .dlf__name, .proj__title, .dhead__name, .ahead__title, .ahead--post .ahead__title, .btools .sub { font-size: 2rem; line-height: 1.1; }
+.prose h2 { font-size: 2rem; }
+.prose h3 { font-size: 1.5rem; }
+/* the dark site lifted its titles off the page with a hard ink shadow; on white paper they stand plain */
+.ahead__title, .byear__label, .proj__title, .sh__title, .dlf__name, .pcard__name { text-shadow: none; }
