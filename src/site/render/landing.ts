@@ -102,16 +102,18 @@ function projectsSection(): string {
 }
 
 /**
- * The website's sections on a white paper over the world (Dex 10-16): alternating left and right, the paper
- * fading into the sky on its open side (styles/v2.css `.band`).
+ * A section on the white beside a window into the world (Dex 10-18): the window right of the content, then left,
+ * alternating; each onto a different place (styles/v2.css `.band`, motion/windows.ts).
  */
-export const band = (side: "l" | "r", html: string): string =>
-  `<div class="band band--${side}"><i class="band__edge band__edge--t" aria-hidden="true"></i>${html}` +
-  `<i class="band__edge band__edge--b" aria-hidden="true"></i></div>`;
+export const band = (side: "l" | "r", html: string, scene = "sky"): string =>
+  `<div class="band band--${side}">${html}<div class="band__win" data-window="${scene}" aria-hidden="true"></div></div>`;
+
+/** Which place of the world each section's window looks onto (motion/windows.ts SCENES). */
+export const SECTION_SCENES = ["sky", "palace", "isles", "lake", "pine", "deck"] as const;
 
 export function landing(content: SiteContent): string {
   const parts = [projectsSection(), downloadsSection(), gallerySection(content), docsSection(content), donateSection(), moreSection()];
-  return parts.map((html, i) => band(i % 2 ? "r" : "l", html)).join("");
+  return parts.map((html, i) => band(i % 2 ? "r" : "l", html, SECTION_SCENES[i % SECTION_SCENES.length])).join("");
 }
 
 // ----------------------------------------------------------- /projects/

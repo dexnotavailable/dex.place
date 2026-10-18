@@ -67,9 +67,13 @@
   --lh-body: 1.7;
 
   /* ---- the bands: paper panels over the sky */
-  --band-gap: clamp(112px, 12vw, 192px);
-  --edge-h: clamp(32px, 3.5vw, 48px);
-  --fade-w: clamp(72px, 13vw, 240px);
+  /* the windows into the world: their width beside the content, the gap, the depth of their dissolving edge */
+  --band-max: 1440px;
+  --win-w: clamp(300px, 30vw, 540px);
+  --win-gap: clamp(32px, 4.5vw, 80px);
+  --win-fade: clamp(28px, 4vw, 56px);
+  --fade-soft: rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%;
+  --fade-soft-w: rgb(255 255 255 / 0.86) calc(var(--win-fade) * 0.18), rgb(255 255 255 / 0.4) calc(var(--win-fade) * 0.46), rgb(255 255 255 / 0) calc(var(--win-fade) * 0.78);
   --content-w: min(100vw, 1180px);
   --wrap: 1084px;
 }
@@ -88,20 +92,23 @@ body { background: #000; color: var(--fg); }
   background-image: none;
   isolation: isolate;
 }
-/* the world behind the website: the sky (a world layer; motion/sky.ts paints it, this is its first paint) */
-.sky {
-  position: sticky;
-  top: 0;
-  z-index: -1;
-  height: 100vh;
-  height: 100svh;
-  margin-bottom: -100vh;
-  margin-bottom: -100svh;
-  background: linear-gradient(#2a64a8 0%, #3f82c4 30%, #79b2e2 62%, #c6e2f6 100%);
-  overflow: hidden;
+/* the page is plain white (Dex 10-18: "we start with the whole background white, then punch in some windows into
+   the world"); its top edge dissolves into the game screen above it as it comes up, like every window's edge */
+.sheet--column { background: #fff; }
+.sheet--column::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: var(--win-fade);
   pointer-events: none;
+  background-image: var(--scatter-t, none), linear-gradient(0deg, #fff 0, var(--fade-soft));
+  background-repeat: repeat-x, no-repeat;
+  background-position: left bottom, 0 0;
+  background-size: var(--scatter-edge-size, auto 100%), 100% 100%;
 }
-.sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.sky { display: none; }
 
 /* ------------------------------------------------------------------ the header on paper */
 .hdr { background: #fff; border-bottom: var(--bw) solid var(--ink); }
@@ -133,94 +140,54 @@ body { background: #000; color: var(--fg); }
   .hdr__menu { margin-left: 8px; }
 }
 
-/* ------------------------------------------------------------------ the bands */
-/* Each section is a white paper on its side of the page (alternating), dissolving into the world on every side
-   that meets it: its open side (`::after`, the fade the width of --fade-w) and its top and bottom edges
-   (`.band__edge`, --edge-h deep), each a gradient with a scatter of white pixels over it (motion/scatter.ts).
-   Between the papers the sky shows through, never as a ruled bar. A section's own page is one band on the left. */
+/* ------------------------------------------------------------------ the windows */
+/* Each section sits on the white beside a window into the world (render/landing.ts band: the window right of the
+   content, then left, alternating), each onto a different place (motion/windows.ts paints them). The window's edge
+   dissolves into the white on every side: a gradient and a scatter of white pixels (motion/scatter.ts). On a
+   desktop the window stays in view while its section scrolls by; on narrower screens it is a band above the
+   section. A section's own page is one such band. */
 .band {
-  --edge: max(0px, (100vw - var(--content-w)) * 0.24);
-  --paper: min(100vw, calc(var(--edge) + var(--content-w)));
-  --fade: rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%;
   position: relative;
-  padding-block: calc(var(--band-gap) / 2);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--win-w);
+  gap: var(--win-gap);
+  align-items: start;
+  max-width: calc(var(--band-max) + var(--pad) * 2);
+  margin-inline: auto;
+  padding: var(--s-8) var(--pad);
 }
-.band::before, .band::after {
-  content: "";
-  position: absolute;
-  top: calc(var(--band-gap) / 2);
-  bottom: calc(var(--band-gap) / 2);
-  pointer-events: none;
+.band--r { grid-template-columns: var(--win-w) minmax(0, 1fr); }
+.band--r > .band__win { order: -1; }
+.band > .sec, .band > .page { position: relative; min-width: 0; padding-block: 0; background: transparent; border: 0; }
+.band > .sec > .wrap, .band > .page > .wrap { max-width: none; margin: 0; padding-inline: 0; }
+.band__win {
+  position: sticky;
+  top: calc(var(--hdr-h) + 28px);
+  height: min(calc(var(--win-w) * 1.2), calc(100vh - var(--hdr-h) - 56px), 680px);
+  overflow: hidden;
+  background: linear-gradient(#5d9bd6, #d6eaf8);
 }
-/* the paper */
-.band::before { width: var(--paper); background: #fff; }
-/* its open side: the gradient, and the white pixels over it; it runs on past the paper's top and bottom by the
-   edge fades' depth and tapers there, so the corners dissolve too (never a hard vertical cut) */
-.band::after {
-  top: calc(var(--band-gap) / 2 - var(--edge-h));
-  bottom: calc(var(--band-gap) / 2 - var(--edge-h));
-  width: var(--fade-w);
-  background-image: var(--scatter-l, none), linear-gradient(90deg, #fff 0, var(--fade));
-  background-repeat: repeat-y, no-repeat;
-  background-size: var(--scatter-size, 100% auto), 100% 100%;
-  -webkit-mask-image: linear-gradient(transparent, #000 var(--edge-h), #000 calc(100% - var(--edge-h)), transparent);
-  mask-image: linear-gradient(transparent, #000 var(--edge-h), #000 calc(100% - var(--edge-h)), transparent);
+.band__win canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+/* its edge: the white dissolving into it, a gradient and a scatter of white pixels, on all four sides */
+.band__win::before, .band__win::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.band__win::before {
+  background:
+    linear-gradient(90deg, #fff 0, var(--fade-soft-w)),
+    linear-gradient(270deg, #fff 0, var(--fade-soft-w)),
+    linear-gradient(180deg, #fff 0, var(--fade-soft-w)),
+    linear-gradient(0deg, #fff 0, var(--fade-soft-w));
 }
-.band--l::before { left: 0; }
-.band--l::after { left: var(--paper); }
-.band--r::before { right: 0; }
-.band--r::after {
-  right: var(--paper);
-  background-image: var(--scatter-r, none), linear-gradient(270deg, #fff 0, var(--fade));
+.band__win::after {
+  background-image: var(--scatter-l, none), var(--scatter-r, none), var(--scatter-b, none), var(--scatter-t, none);
+  background-repeat: repeat-y, repeat-y, repeat-x, repeat-x;
+  background-position: left top, right top, left top, left bottom;
+  background-size: var(--scatter-size, auto), var(--scatter-size, auto), var(--scatter-edge-size, auto), var(--scatter-edge-size, auto);
 }
-/* its top and bottom edges dissolve the same way */
-.band__edge {
-  position: absolute;
-  width: var(--paper);
-  height: var(--edge-h);
-  pointer-events: none;
-  background-repeat: repeat-x, no-repeat;
-  background-size: var(--scatter-edge-size, auto 100%), 100% 100%;
-}
-.band--l > .band__edge { left: 0; }
-.band--r > .band__edge { right: 0; }
-.band__edge--t {
-  top: calc(var(--band-gap) / 2 - var(--edge-h));
-  background-image: var(--scatter-t, none), linear-gradient(0deg, #fff 0, var(--fade));
-  background-position: left bottom, 0 0;
-}
-.band__edge--b {
-  bottom: calc(var(--band-gap) / 2 - var(--edge-h));
-  background-image: var(--scatter-b, none), linear-gradient(180deg, #fff 0, var(--fade));
-  background-position: left top, 0 0;
-}
-.band > .sec, .band > .page { position: relative; z-index: 1; background: transparent; border: 0; }
-.band--l > .sec > .wrap, .band--l > .page > .wrap { margin-left: var(--edge); margin-right: auto; max-width: min(calc(var(--wrap) + var(--pad) * 2), calc(var(--paper) - var(--edge))); }
-.band--r > .sec > .wrap, .band--r > .page > .wrap { margin-right: var(--edge); margin-left: auto; max-width: min(calc(var(--wrap) + var(--pad) * 2), calc(var(--paper) - var(--edge))); }
-.band .sec { padding-block: var(--s-8); }
-.band > .page { padding-block: var(--s-7) var(--s-8); }
-/* laptops: the paper always leaves open sky beside it (at least about 100 px clear past the fade), so the
-   left / right alternation reads (1366: a 1066 px paper, a 123 px fade, about 180 px of sky) */
-@media (min-width: 1100px) {
-  .band {
-    --fade-w: clamp(96px, 9vw, 160px);
-    --paper: min(calc(var(--edge) + var(--content-w)), calc(100vw - max(240px, 22vw)));
-  }
-}
-/* tablets: the paper takes most of the width, a strip of real sky on its open side */
 @media (max-width: 1099px) {
-  .band { --paper: calc(100vw - max(56px, 9vw)); --fade-w: clamp(32px, 6vw, 56px); }
-  .band--l > .sec > .wrap, .band--l > .page > .wrap { margin: 0; max-width: var(--paper); }
-  .band--r > .sec > .wrap, .band--r > .page > .wrap { margin: 0 0 0 auto; max-width: var(--paper); }
+  .band, .band--r { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); padding-block: var(--s-7); }
+  /* the window opens above its section */
+  .band__win, .band--r > .band__win { order: -1; position: relative; top: 0; height: clamp(170px, 42vw, 320px); }
 }
-/* phones: the paper runs the full width and dissolves only at its top and bottom, into the sky between */
-@media (max-width: 600px) {
-  .band { --paper: 100vw; }
-  .band::after { display: none; }
-  .band .sec { padding-block: var(--s-7); }
-}
-.sheet--page:not(.sheet--column) { background: #fff; }
-.sheet--page:not(.sheet--column) .sky { display: none; }
 
 /* the project scenes (placeholder art) on a pale sky instead of the dark site's void */
 .scene { --sunk: #e3eff7; --line: #c3d5e3; background: var(--sunk); }
@@ -285,18 +252,24 @@ code, kbd, pre { font-family: var(--f-mono); }
 
 /* ------------------------------------------------------------------ the footer */
 .ftr { background: #fff; border-top: var(--bw) solid var(--ink); margin-top: 0; }
-/* on the page column it is a paper on the right, flowing on down into the jetty's white column */
-.band--foot { padding-bottom: 0; }
-.band--foot::before { bottom: 0; }
-.band--foot::after { bottom: 0; -webkit-mask-image: linear-gradient(transparent, #000 var(--edge-h)); mask-image: linear-gradient(transparent, #000 var(--edge-h)); }
-.band--foot > .ftr { position: relative; z-index: 1; background: transparent; border: 0; }
-.band--foot > .band__edge--b { bottom: calc(-1 * var(--edge-h)); z-index: 2; }
-.band--foot > .ftr .wrap { margin-right: var(--edge); margin-left: auto; max-width: min(calc(var(--wrap) + var(--pad) * 2), calc(var(--paper) - var(--edge))); }
-.band--foot .ftr__base { border-top-color: var(--line); }
 .sheet--column .jetty { border-top: 0; }
+/* the jetty is the last window: its scene dissolves into the white above it and beside its column */
+.jetty__scene::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--win-fade);
+  z-index: 1;
+  pointer-events: none;
+  background-image: var(--scatter-b, none), linear-gradient(180deg, #fff 0, var(--fade-soft));
+  background-repeat: repeat-x, no-repeat;
+  background-size: var(--scatter-edge-size, auto 100%), 100% 100%;
+}
 /* the header's row lines up with the papers' content (the left papers' start, the right papers' end) */
 @media (min-width: 1100px) {
-  .hdr__in { max-width: calc(100vw - 2 * max(0px, (100vw - var(--content-w)) * 0.24) - 2 * var(--pad)); }
+  .hdr__in { max-width: var(--band-max); }
 }
 .ftr__mark { color: var(--ink); }
 .ftr__nav a { font-weight: 400; }
@@ -397,19 +370,5 @@ code, kbd, pre { font-family: var(--f-mono); }
 /* the donation heads: the address never breaks at its hyphen ("ko-" / "fi.com"), the tile steps down a size */
 .dhead { gap: 14px; }
 .dhead__line { overflow-wrap: normal; word-break: normal; hyphens: none; }
-.kofi .dhead__line { white-space: nowrap; }
+.dhead__line { overflow-wrap: normal; }
 
-/* the paper's top and bottom fades run on over its open side too, tapering there, so a corner dissolves as
-   softly as an edge */
-.band__edge { width: calc(var(--paper) + var(--fade-w)); }
-.band--l > .band__edge {
-  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - var(--fade-w)), transparent);
-  mask-image: linear-gradient(90deg, #000 calc(100% - var(--fade-w)), transparent);
-}
-.band--r > .band__edge {
-  -webkit-mask-image: linear-gradient(270deg, #000 calc(100% - var(--fade-w)), transparent);
-  mask-image: linear-gradient(270deg, #000 calc(100% - var(--fade-w)), transparent);
-}
-@media (max-width: 600px) {
-  .band__edge { width: 100vw; -webkit-mask-image: none; mask-image: none; }
-}

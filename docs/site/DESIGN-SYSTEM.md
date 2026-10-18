@@ -11,11 +11,14 @@ loads last and re-tones them):
   loader landing on the small ofuda, "click to continue"), the website below, the jetty scene at the very bottom.
   The ofuda is the game's state (`motion/flow.ts` holds Dex's table); four ways in end in one event, `dex:enter`
   (`motion/column.ts`); today's opening listens in `motion/enter.ts`.
-- **Plain white paper** for every section, alternating left and right (`.band--l` / `.band--r`, render/landing.ts),
-  fading into the world on its open side with a gradient plus a scatter of white pixels (`motion/scatter.ts`).
-  Behind it the world: for now the sky, towering cumulus painted by the world's own cloud painter in a worker
-  (`motion/sky.ts`, `motion/sky-paint.ts`), sliding at a quarter of the scroll; the jetty at the bottom is painted
-  by the world's jetty painter.
+- **A white page with windows into the world** (Dex 10-18: "we start with the whole background white, then punch in
+  some windows into the world, each window showing something different"): beside each section a window, right of the
+  content then left (`.band--l` / `.band--r`, render/landing.ts), each onto a different place (the sky, the palace,
+  the floating isles, Kagami's lake, a pine over the karst, the sea of clouds; `motion/windows.ts`), composed from
+  the world's own painters in a worker (`motion/sky-paint.ts`) and living a little (drift, bob, ripples). Each
+  window's edge dissolves into the white on every side: a gradient plus a scatter of white pixels
+  (`motion/scatter.ts`). On a desktop the window stays in view beside its section; narrower, it opens above it. The
+  jetty at the bottom is the last window, painted by the world's jetty painter under its own sky.
 - **Colours:** ink #2b2233 on white; accents as fills that ink reads on (gold, sakura, jade, sky) and their deep
   tones for text (scarlet #c9304f, azure #1e6cab, `--*-d`). Every text pair passes WCAG AA.
 - **Fonts, the ones we have:** Tesu Display for section titles (uppercase, whole font pixels: 25 px or 50 px),

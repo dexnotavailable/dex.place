@@ -192,6 +192,12 @@ export function footer(current: PageId): string {
  * bottom. "/" and each section's own page (a deep link lands on its section, the game screen above it, as if
  * the visitor had scrolled down early). Entries, posts and pieces are plain pages.
  */
+/** The place a section's own page looks onto, through its window (motion/windows.ts SCENES). */
+const PAGE_SCENES: Readonly<Record<string, string>> = {
+  "/downloads/": "palace", "/gallery/": "isles", "/docs/": "lake", "/blog/": "pine", "/donate/": "deck",
+  "/projects/": "sky", "/support/": "isles", "/account/": "palace", "/map/": "lake", "/forums/": "pine",
+};
+
 export const COLUMN_PAGES: readonly string[] = ["/", "/downloads/", "/gallery/", "/docs/", "/blog/", "/donate/", "/projects/", "/support/", "/account/", "/map/", "/forums/"];
 
 /** The world place a section stands for (a spawn in src/tesu/world/sections; GDK 3.7). */
@@ -272,13 +278,10 @@ export function shell({ meta, main }: ShellOptions): Rendered {
   const body =
     top +
     `<div class="${cx("sheet", home ? "sheet--home" : "sheet--page", column && "sheet--column")}" id="site" data-page="${meta.page}">` +
-    `<div class="sky" data-sky aria-hidden="true"></div>` +
     header(meta.page) +
     // a section's own page is one paper band, on the left (render/landing.ts band)
-    `<main id="main" class="main" tabindex="-1">${column && !home ? band("l", main) : main}</main>` +
-    // on the page column the footer is a paper on the right that runs on down into the jetty's white column
-    (column ? `<div class="band band--r band--foot"><i class="band__edge band__edge--t" aria-hidden="true"></i>${footer(meta.page)}` +
-      `<i class="band__edge band__edge--b" aria-hidden="true"></i></div>` : footer(meta.page)) +
+    `<main id="main" class="main" tabindex="-1">${column && !home ? band("l", main, PAGE_SCENES[meta.path] ?? "sky") : main}</main>` +
+    footer(meta.page) +
     // the bottom of the page is the world again: the jetty, where she starts
     (column ? jettySection() : "") +
     `</div>` +

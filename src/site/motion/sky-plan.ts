@@ -1,10 +1,6 @@
-// Where the website's sky puts its clouds and what colour it is, pure (motion/sky.ts draws it; checks read it).
-//
-// The critic's first pass (CRITIQUE-1 B1): clouds spread along one long stretch left most gaps between the papers
-// as flat blue bars. Now the clouds belong to the page: every paper's open side gets heaps all along it (about
-// three to a screen), every gap between papers gets a low heap or a deck whose tops show between them, and the
-// jetty's sky gets its own. The colour is a ramp of many steps, each step's lower edge an ordered dither into the
-// next, so no gap is ever one flat colour.
+// The website's sky, pure (motion/windows.ts and motion/sky.ts draw it; checks read it): a ramp of many steps, each
+// step's lower edge an ordered dither into the next (pixel-art banding, never a ruled line), and the clouds the jetty
+// paints from.
 
 import type { CloudP } from "../../tesu/art/library/opening/sky.ts";
 
@@ -53,78 +49,3 @@ export const POOL: readonly (CloudP & { use: "heap" | "low" | "thin" })[] = [
   { kind: "wisp", w: 220, h: 26, use: "thin" },
   { kind: "wisp", w: 280, h: 30, use: "thin" },
 ];
-
-/** A stretch of page where the sky shows: a paper's open side, a gap between papers, the jetty's sky. */
-export interface SkyRegion {
-  kind: "side" | "gap" | "jetty";
-  /** Page coordinates, css px. */
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-}
-
-export interface CloudPlace {
-  /** Index into POOL. */
-  pool: number;
-  /** The cloud's anchor (the middle of its base), page css px. */
-  x: number;
-  y: number;
-  /** For its slow sway. */
-  phase: number;
-}
-
-function rng(seed: number): () => number {
-  let s = (seed >>> 0) || 1;
-  return () => {
-    s ^= s << 13; s >>>= 0;
-    s ^= s >>> 17;
-    s ^= s << 5; s >>>= 0;
-    return s / 4294967296;
-  };
-}
-
-const pick = (r: () => number, use: "heap" | "low" | "thin"): number => {
-  const ids = POOL.map((c, i) => (c.use === use ? i : -1)).filter((i) => i >= 0);
-  return ids[Math.floor(r() * ids.length)]!;
-};
-
-/**
- * The clouds for a page: about three heaps per screen height along every open side (anchored inside it, so the
- * heads stand in the open sky beside the paper), a low heap or a deck under every gap (its tops show between the
- * papers), a wisp now and then, and heaps over the jetty's open sky. `vh`: the screen height, css px.
- */
-export function placeClouds(regions: readonly SkyRegion[], vh: number, seed = 1): CloudPlace[] {
-  const r = rng(seed);
-  const out: CloudPlace[] = [];
-  for (const g of regions) {
-    const h = g.bottom - g.top, w = g.right - g.left;
-    if (h <= 0 || w <= 0) continue;
-    if (g.kind === "side") {
-      if (w < 90) continue;
-      const n = Math.max(1, Math.round(h / (vh * 0.34)));
-      for (let j = 0; j < n; j++) {
-        out.push({
-          pool: pick(r, "heap"),
-          x: g.left + w * (0.35 + 0.3 * r()),
-          y: g.top + (h * (j + 0.55 + 0.3 * (r() - 0.5))) / n,
-          phase: r() * 6.28,
-        });
-        if (r() < 0.3) out.push({ pool: pick(r, "thin"), x: g.left + w * r(), y: g.top + (h * (j + r())) / n, phase: r() * 6.28 });
-      }
-    } else if (g.kind === "gap") {
-      // its base below the gap, so the heads fill it; one or two across the width
-      const n = w > 900 ? 2 : 1;
-      for (let j = 0; j < n; j++) {
-        out.push({ pool: pick(r, "low"), x: g.left + (w * (j + 0.3 + 0.4 * r())) / n, y: g.bottom + h * 0.35, phase: r() * 6.28 });
-      }
-      if (r() < 0.5) out.push({ pool: pick(r, "thin"), x: g.left + w * r(), y: g.top + h * (0.3 + 0.3 * r()), phase: r() * 6.28 });
-    } else {
-      // the jetty's sky: heaps along the open part, the horizon a deck
-      const n = Math.max(2, Math.round(w / 420));
-      for (let j = 0; j < n; j++) out.push({ pool: pick(r, "heap"), x: g.left + (w * (j + 0.5)) / n, y: g.top + h * (0.55 + 0.25 * r()), phase: r() * 6.28 });
-      out.push({ pool: 7, x: g.left + w * 0.5, y: g.bottom, phase: r() * 6.28 });
-    }
-  }
-  return out;
-}

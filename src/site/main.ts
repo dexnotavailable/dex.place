@@ -52,9 +52,10 @@ const steps: [string, () => void][] = [
   }],
   // the white paper's pixel edge (styles/v2.css .band)
   ["scatter", () => initScatter()],
-  // the world behind the website: the sky, painted once the page has loaded, own chunk (and a worker)
+  // the windows into the world beside the sections and the jetty at the bottom, painted once the page has loaded,
+  // own chunk (and a worker)
   ["sky", () => {
-    if (!document.querySelector("[data-sky]") || !document.querySelector(".band, .sheet--column")) return;
+    if (!document.querySelector("[data-window], [data-jetty]")) return;
     const go = (): void => {
       import("./motion/sky.ts").then((m) => m.initSky(reduced), failed("sky"));
     };

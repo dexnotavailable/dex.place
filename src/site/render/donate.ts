@@ -53,7 +53,8 @@ function head(ic: "heart" | "bank", name: string, line: string, tag: "span" | "h
   return (
     `<span class="dhead">${tile(ic, "magenta", "l")}` +
     `<span class="dhead__text"><${tag} class="dhead__name"${id ? ` id="${id}"` : ""}>${esc(name)}</${tag}>` +
-    `<span class="dhead__line">${esc(line)}</span></span></span>`
+    // (an address may break after its slashes, never at the hyphen in "ko-fi")
+    `<span class="dhead__line">${esc(line).replaceAll("/", "/<wbr>")}</span></span></span>`
   );
 }
 
