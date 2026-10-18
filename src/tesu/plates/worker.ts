@@ -9,10 +9,18 @@ import type { PlaneId } from "../world/types.ts";
 let idx: PlateIndex | null = null;
 
 interface TileMsg { key: string; plane: PlaneId; level: number; tx: number; ty: number }
+interface WorldMsg { world: true }
 interface SpriteMsg { sprite: true; key: string; kind: string; p: Record<string, unknown>; seed: number; frame: number; level: number }
 
-self.onmessage = (e: MessageEvent<TileMsg | SpriteMsg>) => {
+self.onmessage = (e: MessageEvent<TileMsg | SpriteMsg | WorldMsg>) => {
   const m = e.data;
+  if ("world" in m) {
+    // (engine 10-18) the page asks for the world this worker builds anyway, so it never builds it on its own thread
+    const t0 = performance.now();
+    if (!idx) idx = new PlateIndex(buildWorld());
+    (self as unknown as Worker).postMessage({ world: buildWorld(), ms: performance.now() - t0 });
+    return;
+  }
   if ("sprite" in m) {
     const t0 = performance.now();
     try {

@@ -23,6 +23,14 @@ export const WORLD_H = h(330);
 
 let built: WorldDef | null = null;
 
+/**
+ * (engine 10-18, loading) The world as a plate worker built it (plates/store.ts startPlateWorkers): the page adopts
+ * it instead of building it on its own thread. The same code built it; it is plain data (structured clone).
+ */
+export function adoptWorld(def: WorldDef): void {
+  if (!built) built = def;
+}
+
 export function buildWorld(): WorldDef {
   if (built) return built;
   const b = new WorldBuilder(WORLD_W, WORLD_H);

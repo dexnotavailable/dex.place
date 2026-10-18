@@ -5,7 +5,7 @@
 
 import { TILE } from "../config.ts";
 import type { PlaneRenderer } from "../render/planes.ts";
-import type { PlaneId } from "../world/types.ts";
+import type { PlaneId, WorldDef } from "../world/types.ts";
 import { PlateIndex, paintTile } from "./paint.ts";
 import { buildWorld } from "../world/index.ts";
 
@@ -48,6 +48,45 @@ export interface SpriteDone {
   ay: number;
 }
 
+/**
+ * (engine 10-18, loading) The plate workers, started first thing at boot: worker 0 builds the world (it must anyway,
+ * to paint) and hands it to the page, which then never builds it on its own thread (~0.35 s in one task on a desktop
+ * CPU, over a second on a phone, on the same thread as the website's "dex" when the world is framed in the page).
+ * `world` resolves null when there are no workers or worker 0 fails (the page builds it then).
+ */
+export interface PlatePool {
+  workers: Worker[];
+  world: Promise<WorldDef | null>;
+}
+
+export function startPlateWorkers(n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1))): PlatePool {
+  const workers: Worker[] = [];
+  try {
+    if (typeof Worker === "undefined") throw new Error("no workers");
+    for (let i = 0; i < n; i++) workers.push(new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }));
+  } catch {
+    return { workers: [], world: Promise.resolve(null) };
+  }
+  const w0 = workers[0]!;
+  const world = new Promise<WorldDef | null>((resolve) => {
+    const done = (def: WorldDef | null): void => {
+      w0.removeEventListener("message", onMsg);
+      w0.removeEventListener("error", onErr);
+      resolve(def);
+    };
+    const onMsg = (e: MessageEvent<{ world?: WorldDef; ms?: number }>): void => {
+      if (!e.data || !("world" in e.data)) return;
+      performance.mark("tesu:world-built");
+      done(e.data.world ?? null);
+    };
+    const onErr = (): void => done(null);
+    w0.addEventListener("message", onMsg);
+    w0.addEventListener("error", onErr);
+    w0.postMessage({ world: true });
+  });
+  return { workers, world };
+}
+
 export class TileStore {
   private entries = new Map<string, Entry>();
   private free: number[] = [];
@@ -82,7 +121,7 @@ export class TileStore {
 
   private planes: PlaneRenderer;
 
-  constructor(planes: PlaneRenderer, opts: { workers?: number; sync?: boolean } = {}) {
+  constructor(planes: PlaneRenderer, opts: { workers?: number; sync?: boolean; pool?: PlatePool | null } = {}) {
     this.planes = planes;
     this.byLayer = new Array(planes.layers).fill(null);
     for (let i = planes.layers - 1; i >= 0; i--) this.free.push(i);
@@ -90,12 +129,15 @@ export class TileStore {
     this.sync = !!opts.sync || typeof Worker === "undefined";
     if (!this.sync) {
       try {
-        for (let i = 0; i < n; i++) {
-          const w = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+        const spawned = opts.pool?.workers.length ? opts.pool.workers : null;
+        for (let i = 0; i < (spawned ? spawned.length : n); i++) {
+          const w = spawned ? spawned[i]! : new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
           const slot = { w, busy: 0 };
           w.onmessage = (e: MessageEvent<{ key: string; px?: ArrayBuffer | null; ms: number; sprite?: true; rgba?: ArrayBuffer | null; w?: number; h?: number; ax?: number; ay?: number }>) => {
-            slot.busy--;
             const d = e.data;
+            // (the world handed over at boot: startPlateWorkers' own message)
+            if (d && "world" in d) return;
+            slot.busy--;
             if (d.sprite) {
               this.sprInFlight--;
               this.sprPainted++;

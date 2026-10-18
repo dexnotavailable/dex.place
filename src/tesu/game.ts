@@ -27,7 +27,7 @@ import { Rides } from "./ride.ts";
 import { blendAtmos } from "./atmos-blend.ts";
 import { Sound } from "./sound.ts";
 import { CHARM_PERCH, H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
-import { TileStore } from "./plates/store.ts";
+import { TileStore, type PlatePool } from "./plates/store.ts";
 import type { ZhushaAssets } from "./player.ts";
 import { Atmos, waterHolds, type MistBand, type SkyGlow } from "./render/atmos.ts";
 import { Motes } from "./render/motes.ts";
@@ -105,6 +105,8 @@ export interface TesuOpts {
   hold?: boolean;
   manual: boolean;
   sync: boolean;
+  /** (engine 10-18) The plate workers started at boot (main.ts), which handed over the world. */
+  pool?: PlatePool | null;
   /**
    * (the homepage) The frame the opening will run at, if not the one drawn now: the world window waits between
    * the page's bars and is the whole window from the press, so the opening set is planned for that size.
@@ -189,7 +191,7 @@ export class TesuGame {
     const gl = r.gl;
     const maxLayers = Math.min(gl.getParameter(gl.MAX_ARRAY_TEXTURE_LAYERS) as number, 768);
     this.planes = new PlaneRenderer(gl, maxLayers);
-    this.store = new TileStore(this.planes, { sync: opts.sync });
+    this.store = new TileStore(this.planes, { sync: opts.sync, pool: opts.pool });
     this.atmos = new Atmos(gl, r.emptyVao);
     this.sprites = new SpriteRenderer(gl, r.emptyVao);
     this.actors = new ActorLayer(gl, r.emptyVao);
@@ -1455,6 +1457,22 @@ export class TesuGame {
     // (asked again if the frame changes size: the set is the frame's)
     if (!this.loading && (this.holding || (this.opening.active && this.opening.T < BEATS.ui.handBack))) this.startWarm();
     if (!this.loading) this.shown = true;
+    // (engine 10-18, loading) until the first scene is in, a frame only asks for what it needs (plates, the reflection's
+    // rows, sprite frames) and draws nothing: the world is not shown while it loads, and a drawn frame there cost the
+    // page's thread and GPU a whole scene per animation frame, beside the website's "dex"
+    if (this.loading && !this.shown && !this.manual) {
+      if (water) {
+        for (const id of PLANE_IDS) {
+          if (id === "near") continue;
+          const m = rowOf(cam, PLANES[id].rate, water.y);
+          if (m >= Hf + 2) continue;
+          const pd = this.planeQuads(cam, id, Math.max(-Hf * 3, 2 * m - Hf), m + 1, a, false);
+          this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false), cam, pd.look, this.time, m, false, true);
+        }
+      }
+      for (const id of PLANE_IDS) this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id), cam, draws.get(id)!.look, this.time, null, false, true);
+      return;
+    }
     const z = cam.zoom;
     const xfPlay = planeXf(cam, 1);
     const focus: [number, number] = [W / 2, cam.anchor * Hf];
