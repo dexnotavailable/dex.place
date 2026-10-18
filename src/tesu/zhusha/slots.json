@@ -25,7 +25,8 @@
     "r_flurry":  { "normal": "r_flurry",  "ult": null },
     "transform": { "normal": "transform", "ult": "transform" },
     "r_reveal":  { "normal": "r_reveal",  "ult": "r_reveal" },
-    "uf_exit":   { "normal": "transform", "ult": "transform", "reverse": true }
+    "uf_exit":   { "normal": "transform", "ult": "transform", "reverse": true },
+    "opening_ofuda": { "normal": "opening_ofuda", "ult": null }
   },
   "jumpArc": {
     "about": "jump_arc is one clip from takeoff to the settle. The game plays its rise while she rises, holds its apex/fall drawings while she falls, and plays the rest after touchdown. Fractions of the clip; an anim.json may override them with \"segments\": [apex, contact] as frame indices.",
