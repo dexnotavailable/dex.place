@@ -135,7 +135,7 @@ test("every column page has the game screen on top and the jetty at the bottom; 
     assert.match(body, /<button class="gs-continue" type="button" data-gs-continue hidden>click to continue<\/button>/, path);
     assert.match(body, /role="status">loading the world</, path);
     assert.ok(body.indexOf("data-jetty") > body.indexOf('class="ftr"'), `${path}: the jetty is the bottom of the page`);
-    assert.match(body, /class="sky" data-sky aria-hidden="true"/, path);
+    assert.doesNotMatch(body, /data-sky/, `${path}: no sky behind the page (it is white, with windows)`);
     if (path !== "/") assert.match(body, /scrollTo\(0,w\.offsetHeight\)/, `${path} lands on its section`);
   }
   const doc = shell({ meta: meta("docs", "/docs/some-doc/"), main: "<p>x</p>" }).body;
@@ -196,25 +196,6 @@ test("Hanko sits in the corner of every stub card and panel, decorative, as one 
 
 // ------------------------------------------------------------------------------- critique 1 (B1-B3, S1, S3)
 
-test("the sky between the papers: heaps along every open side, a low heap under every gap, the jetty's own", async () => {
-  const { placeClouds, POOL } = await import("./motion/sky-plan.ts");
-  const vh = 768;
-  const regions = [
-    { kind: "side", top: 1000, bottom: 1000 + vh * 3, left: 1100, right: 1366 },
-    { kind: "gap", top: 3400, bottom: 3560, left: 0, right: 1366 },
-    { kind: "jetty", top: 9000, bottom: 9500, left: 0, right: 800 },
-  ];
-  const c = placeClouds(regions, vh, 3);
-  const heaps = c.filter((p) => p.y >= 1000 && p.y <= 1000 + vh * 3 && POOL[p.pool].use === "heap");
-  assert.ok(heaps.length >= 8, `about three heaps a screen along the side (${heaps.length})`);
-  assert.ok(heaps.every((p) => p.x >= 1100 && p.x <= 1366), "anchored in the open sky");
-  const gap = c.filter((p) => POOL[p.pool].use === "low" && p.y > 3560 && p.y < 3700);
-  assert.ok(gap.length >= 1, "a low heap whose heads fill the gap");
-  assert.ok(c.filter((p) => p.y > 9000 && p.y <= 9500).length >= 2, "the jetty's sky has its own heaps");
-  assert.deepEqual(placeClouds(regions, vh, 3), c, "deterministic");
-  // a strip too narrow to show a cloud gets none (phones: the gaps carry the sky)
-  assert.equal(placeClouds([{ kind: "side", top: 0, bottom: 2000, left: 0, right: 40 }], vh).length, 0);
-});
 
 test("the sky's colour: many steps, each step's lower edge an ordered dither into the next, never a ruled line", async () => {
   const { rampIndex, skyRamp } = await import("./motion/sky-plan.ts");
@@ -241,19 +222,30 @@ test("the sky's colour: many steps, each step's lower edge an ordered dither int
   assert.ok(dithered > rows * 0.2, `the step edges dither (${dithered} rows)`);
 });
 
-test("the paper dissolves on every side that meets the sky: tiles for the open sides, the top and the bottom", () => {
-  assert.match(scatterSvg(30, 96, 4, "l"), /width="120" height="384"/);
-  assert.match(scatterSvg(12, 96, 4, "t"), /width="384" height="48"/);
-  const first = (s) => s.match(/M(\d+) (\d+)h/).slice(1).map(Number);
-  // the top edge's pixels sit dense at its bottom (the paper), the bottom edge's at its top
-  const ys = (s) => [...s.matchAll(/M\d+ (\d+)h/g)].map((m) => +m[1]);
-  const mean = (a) => a.reduce((p, q) => p + q, 0) / a.length;
-  assert.ok(mean(ys(scatterSvg(12, 96, 4, "t"))) > 6, "top edge: dense near the paper below");
-  assert.ok(mean(ys(scatterSvg(12, 96, 4, "b"))) < 6, "bottom edge: dense near the paper above");
-  void first;
+test("windows into the world (Dex 10-18): white page, a window beside each section, alternating, each a different place, its edge dissolving on every side", () => {
   const html = landing(content);
-  assert.equal((html.match(/band__edge--t/g) ?? []).length, (html.match(/class="band band--/g) ?? []).length);
-  assert.equal((html.match(/band__edge--b/g) ?? []).length, (html.match(/class="band band--/g) ?? []).length);
+  const bands = [...html.matchAll(/<div class="band band--([lr])">[^]*?<div class="band__win" data-window="([a-z]+)" aria-hidden="true"><\/div><\/div>/g)];
+  assert.ok(bands.length >= 6, `${bands.length} windows`);
+  bands.forEach((m, i) => assert.equal(m[1], i % 2 ? "r" : "l", "alternating sides"));
+  const scenes = bands.map((m) => m[2]);
+  assert.equal(new Set(scenes).size, scenes.length, `each window a different place (${scenes})`);
+  // every place is one the windows know how to paint
+  return import("./motion/windows.ts").then(({ SCENES }) => {
+    for (const s of scenes) assert.ok(SCENES[s], s);
+    for (const [id, sc] of Object.entries(SCENES)) {
+      assert.ok(sc.pieces.length >= 3, `${id}: a composed place`);
+      assert.ok(sc.pieces.every((p) => p.kind.startsWith("op.") && p.fit > 0 && p.fit <= 1), `${id}: the world's own painters, fitted`);
+    }
+    // the dissolving edge: the white's pixels on all four sides of a window (tiles for each side)
+    const css = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
+    assert.match(css, /\.band__win::after \{[^}]*var\(--scatter-l[^}]*var\(--scatter-r[^}]*var\(--scatter-b[^}]*var\(--scatter-t/);
+    assert.match(css, /\.band__win::before \{[^}]*linear-gradient\(90deg[^}]*linear-gradient\(270deg[^}]*linear-gradient\(180deg[^}]*linear-gradient\(0deg/);
+    assert.match(css, /\.sheet--column \{ background: #fff; \}/);
+    // the scatter: dense at the white, thinning into the world, for each side
+    const ys = (svg) => [...svg.matchAll(/M\d+ (\d+)h/g)].map((m) => +m[1]);
+    const mean = (a) => a.reduce((p, q) => p + q, 0) / a.length;
+    assert.ok(mean(ys(scatterSvg(12, 96, 4, "t"))) > 6 && mean(ys(scatterSvg(12, 96, 4, "b"))) < 6);
+  });
 });
 
 test("the corner is a slot in the header (right of World, left of Menu); the marks are the pixel dex", async () => {
@@ -262,9 +254,9 @@ test("the corner is a slot in the header (right of World, left of Menu); the mar
   assert.match(h, /hdr__world[^]*<span class="hdr__slot" data-ofuda-slot aria-hidden="true"><\/span>[^]*hdr__menu/);
   assert.match(h, /<a class="hdr__mark pop" href="#site"><svg class="mark-px" viewBox="0 0 74 36"/);
   assert.doesNotMatch(h + footer("home"), /<span class="mark">/, "no handwriting-font dex left");
-  // a section's page is one paper on the left, with its edges
+  // a section's own page is one band: its content beside a window onto its place
   const page = shell({ meta: { path: "/downloads/", title: "D", page: "downloads", description: "" }, main: '<div class="page">x</div>' }).body;
-  assert.match(page, /<main id="main" class="main" tabindex="-1"><div class="band band--l"><i class="band__edge band__edge--t"/);
+  assert.match(page, /<main id="main" class="main" tabindex="-1"><div class="band band--l"><div class="page">x<\/div><div class="band__win" data-window="palace"/);
 });
 
 test("the jetty's column: the question, the way in, and an honest line while the world loads", () => {

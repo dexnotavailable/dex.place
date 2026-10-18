@@ -54,28 +54,25 @@ const SPAN = 96;
 
 export function initScatter(): void {
   const sheet = document.getElementById("site");
-  const side = document.querySelector<HTMLElement>(".band");
-  const edge = document.querySelector<HTMLElement>(".band__edge");
-  if (!sheet || (!side && !edge)) return;
+  if (!sheet || !document.querySelector(".band__win, .jetty, .sheet--column")) return;
   let key = "";
   const draw = (): void => {
     const vw = innerWidth;
-    // the paper's pixels match the page's pixel scale: 4 css px on a desktop, 3 on smaller screens
+    // the pixels match the page's pixel scale: 4 css px on a desktop, 3 on smaller screens; the fade's depth is the
+    // windows' --win-fade (styles/v2.css: clamp(28px, 4vw, 56px))
     const cell = vw >= 1100 ? 4 : 3;
-    const sideW = side ? parseFloat(getComputedStyle(side, "::after").width) || 0 : 0;
-    const edgeH = edge ? parseFloat(getComputedStyle(edge).height) || 0 : 0;
-    const across = Math.max(4, Math.round((sideW || 120) / cell));
-    const down = Math.max(4, Math.round((edgeH || 40) / cell));
-    const next = `${across}:${down}:${cell}`;
+    const fade = Math.min(56, Math.max(28, vw * 0.04));
+    const depth = Math.max(4, Math.round(fade / cell));
+    const next = `${depth}:${cell}`;
     if (next === key) return;
     key = next;
     const url = (svg: string): string => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-    sheet.style.setProperty("--scatter-l", url(scatterSvg(across, SPAN, cell, "l")));
-    sheet.style.setProperty("--scatter-r", url(scatterSvg(across, SPAN, cell, "r")));
-    sheet.style.setProperty("--scatter-size", `${across * cell}px ${SPAN * cell}px`);
-    sheet.style.setProperty("--scatter-t", url(scatterSvg(down, SPAN, cell, "t")));
-    sheet.style.setProperty("--scatter-b", url(scatterSvg(down, SPAN, cell, "b")));
-    sheet.style.setProperty("--scatter-edge-size", `${SPAN * cell}px ${down * cell}px`);
+    sheet.style.setProperty("--scatter-l", url(scatterSvg(depth, SPAN, cell, "l")));
+    sheet.style.setProperty("--scatter-r", url(scatterSvg(depth, SPAN, cell, "r")));
+    sheet.style.setProperty("--scatter-size", `${depth * cell}px ${SPAN * cell}px`);
+    sheet.style.setProperty("--scatter-t", url(scatterSvg(depth, SPAN, cell, "t")));
+    sheet.style.setProperty("--scatter-b", url(scatterSvg(depth, SPAN, cell, "b")));
+    sheet.style.setProperty("--scatter-edge-size", `${SPAN * cell}px ${depth * cell}px`);
   };
   draw();
   let t = 0;
