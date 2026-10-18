@@ -2,14 +2,16 @@
 //
 // The website's side (motion/column.ts) ends at `dex:enter` with which way the visitor came in
 // ("continue" at the top, the corner ofuda, back up from the website, or the jetty at the bottom). This file
-// is the opening's side of that seam, kept small and separate so the opening director can take it over: today
-// it plays the opening as built (src/tesu/opening/: the conductor, Track 1, the heard clock, the bars and the
-// captions) from T 0 in the game screen, the world already in view (the old PLAY path: no page fall).
+// is the opening's side of that seam (the opening director's): it plays the opening (src/tesu/opening/: the
+// conductor, Track 1, the heard clock, the bars and the captions) in the game screen. Ways 1-3 play the fall from
+// T 0 (the paper the press's gust took falls back down through the sky to her); way 4, which already drifted the
+// ofuda into the jetty scene, starts on bar 6 at the jetty, the paper coming in from the right to her catch.
 //
 // It also owns the opening's audio before the press: the AudioContext is made at once (suspended, silent) so
 // Track 1's first piece decodes while the world loads, and any gesture on the page wakes it quietly.
 
 import { BEATS } from "../../tesu/opening/beats.ts";
+import { startT } from "../../tesu/opening/timeline.ts";
 import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "../../tesu/opening/conductor.ts";
 import { Track1 } from "../../tesu/opening/track.ts";
 
@@ -49,7 +51,7 @@ export function initOpening(opts: { reduced: MediaQueryList; world: () => Playab
     if (conductor) return;
     const way = (e as CustomEvent<EnterDetail>).detail?.way ?? "continue";
     if (audio && audio.state === "suspended") void audio.resume();
-    const c = new Conductor(audio, track, { doc: document, reduced: opts.reduced.matches, repeat: readOpeningNote().seen > 0 });
+    const c = new Conductor(audio, track, { doc: document, reduced: opts.reduced.matches, repeat: readOpeningNote().seen > 0, way });
     conductor = c;
     // (tools and checks read the running opening and the way in here)
     Object.assign(window, { __dexOpening: c, __dexWay: way });
@@ -59,6 +61,7 @@ export function initOpening(opts: { reduced: MediaQueryList; world: () => Playab
     c.onFrame = (T) => {
       if (T >= BEATS.her.drop1) root.classList.remove("op-cine");
     };
+    void startT;
     // the keyboard goes into the world (motion/world.ts)
     document.dispatchEvent(new CustomEvent("dex:toworld"));
   });

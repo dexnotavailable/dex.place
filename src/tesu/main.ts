@@ -260,9 +260,10 @@ async function boot(): Promise<void> {
     }
   }, 60);
 
-  let titleIn = false, ofudaIn = false;
+  let titleIn = false;
+  // (the ofuda is the loader lane's paper, its sprite in code: nothing to fetch)
+  const ofudaIn = true;
   void game.titles.ready.then((ok) => { titleIn = ok; });
-  void game.ofuda.ready.then((ok) => { ofudaIn = ok; });
   if (game.awaitingPress && !embedded && !q.has("manual")) standalonePress(game, () => titleIn && ofudaIn);
 
   const src = "auto";
@@ -288,9 +289,9 @@ async function boot(): Promise<void> {
       flag: (f: string, on = true) => (on ? game.flags.add(f) : game.flags.delete(f)),
       use: () => game.use(),
       /** The press (PLAY or "continue"): the opening starts on the link's clock (the page's conductor); no link: silent, on the world's own time (tools). */
-      play: (l?: OpeningLink) => game.play(l),
+      play: (l?: OpeningLink, way?: "continue" | "corner" | "top" | "bottom") => game.play(l, l?.way ?? way),
       audio: (ctx: AudioContext) => game.sound.start(ctx),
-      /** The opening set (what the next 36 s need), for the page's loader: plates along the camera's path, her 192 px drawing, the title face, the talisman. */
+      /** The opening set (what the opening needs), for the page's loader: plates along the camera's path, her drawings, the title face, the ofuda. */
       openingSet: () => ({ plates: game.warmProgress(), close: game.closeReady, font: titleIn, ofuda: ofudaIn, warming: game.warming }),
       /** The bout: summon a prize's champion, press the finish (as an attack press would). */
       summon: (id: string) => {

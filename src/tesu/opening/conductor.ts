@@ -15,7 +15,7 @@
 import { HeardClock, onGrid } from "./clock.ts";
 import { Overlay } from "./overlay.ts";
 import { Track1 } from "./track.ts";
-import { BEATS, barsAt, captionAt } from "./timeline.ts";
+import { BEATS, barsAt, captionAt, startT, type Way } from "./timeline.ts";
 
 /** What the world's frame reads (the conductor, or a silent stand-in for tools). */
 export interface OpeningLink {
@@ -26,6 +26,8 @@ export interface OpeningLink {
   readonly reduced: boolean;
   /** Seen before (the short mark, the chip from T 0.5). */
   readonly repeat: boolean;
+  /** How the visitor came in (the website's four ways): ways 1-3 play the fall from T 0, way 4 the jetty's catch from bar 6. */
+  readonly way?: Way;
   /** Track 1 is sounding: the world's own score waits. */
   readonly music: boolean;
   /** The world's region theme takes over (after the hand-back): Track 1 fades out over `secs` and stays down. */
@@ -82,6 +84,9 @@ export class Conductor implements OpeningLink {
   readonly overlay: Overlay;
   readonly reduced: boolean;
   readonly repeat: boolean;
+  readonly way: Way;
+  /** Where the music and the picture start (T): 0, or bar 6 for way 4. */
+  readonly from: number;
   started = false;
   finished = false;
   skipped = false;
@@ -100,11 +105,13 @@ export class Conductor implements OpeningLink {
   /** Told each frame with T (the page's fall rides on it). */
   onFrame: (T: number) => void = () => {};
 
-  constructor(ctx: AudioContext | null, track: Track1 | null, opts: { doc: Document; reduced: boolean; repeat: boolean }) {
+  constructor(ctx: AudioContext | null, track: Track1 | null, opts: { doc: Document; reduced: boolean; repeat: boolean; way?: Way }) {
     this.ctx = ctx;
     this.track = track;
     this.reduced = opts.reduced;
     this.repeat = opts.repeat;
+    this.way = opts.way ?? "continue";
+    this.from = startT(this.way);
     this.win = opts.doc.defaultView ?? window;
     this.clock = new HeardClock(ctx);
     this.overlay = new Overlay(opts.doc, { reduced: opts.reduced, barVh: BEATS.ui.bars.vh });
@@ -128,14 +135,14 @@ export class Conductor implements OpeningLink {
   }
 
   T(leadMs = 0): number {
-    return this.started ? this.clock.T(leadMs) : 0;
+    return this.started ? this.clock.T(leadMs) : this.from;
   }
 
   ctxTimeOf(T: number): number | null {
     return this.clock.mode === "audio" && this.ctx ? this.clock.ctxTimeOf(T) : null;
   }
 
-  /** The press, inside its gesture: Track 1 starts at +0.05 s on the sample grid, and that moment is T 0. */
+  /** The press, inside its gesture: Track 1 starts at +0.05 s on the sample grid, and that moment is T 0 (way 4: bar 6). */
   start(): void {
     if (this.started) return;
     this.started = true;
@@ -146,18 +153,18 @@ export class Conductor implements OpeningLink {
     if (ctx && track?.a && !track.failed) {
       if (ctx.state !== "running") void ctx.resume();
       const t0 = onGrid(ctx.currentTime + 0.05, ctx.sampleRate);
-      track.play(t0, 0);
-      this.clock.anchor(t0, 0);
+      track.play(t0, this.from);
+      this.clock.anchor(t0, this.from);
       void track.loadB();
       // the context refuses to run: the page clock, and a chip to allow sound
       this.win.setTimeout(() => {
         if (ctx.state === "running" || this.finished || this.clock.mode === "page") return;
-        this.clock.usePage((performance.now() - this.pressAt) / 1000 - 0.05);
+        this.clock.usePage(this.from + (performance.now() - this.pressAt) / 1000 - 0.05);
         this.overlay.soundShown(true);
       }, 200);
     } else {
       // no music (no audio at all, or Track 1 failed): silent, on the page clock, captions on time
-      this.clock.usePage(-0.05);
+      this.clock.usePage(this.from - 0.05);
     }
     this.overlay.show(true);
     const doc = this.overlay.root.ownerDocument;
@@ -256,7 +263,7 @@ export class Conductor implements OpeningLink {
 
   private frame(): void {
     const T = this.T(1000 / 60);
-    this.overlay.bars(barsAt(T, this.reduced));
+    this.overlay.bars(barsAt(T, this.reduced, this.from));
     this.overlay.caption(captionAt(T));
     const drop = BEATS.her.drop1;
     const chip = !this.skipped && T < drop && (this.repeat ? T >= BEATS.ui.chipFrom : performance.now() < this.chipUntil);
@@ -291,13 +298,15 @@ export class SilentLink implements OpeningLink {
   readonly reduced: boolean;
   readonly repeat = false;
   readonly music = false;
+  readonly way: Way;
   private base = 0;
   private readonly time: () => number;
 
-  constructor(time: () => number, reduced = false) {
+  constructor(time: () => number, reduced = false, way: Way = "continue") {
     this.time = time;
     this.reduced = reduced;
-    this.base = time();
+    this.way = way;
+    this.base = time() - startT(way);
   }
 
   T(): number {
