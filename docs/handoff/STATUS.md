@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-18T09:58:45.234Z (18/10/2026, 16:58:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-18T10:58:46.419Z (18/10/2026, 17:58:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,32 +12,25 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_f71b589d-37c — last activity 3688 min ago
+### wf_f71b589d-37c — last activity 3748 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:matanyone2-node** (done): 
 - **build:pixel-step** (done): 
 
-### wf_965a9075-86b — last activity 3948 min ago
+### wf_965a9075-86b — last activity 4008 min ago
 2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
 
 - **loader-art** (running)
 - **engineer** (running)
 
-### wf_6e999b69-205 — last activity 4222 min ago
+### wf_6e999b69-205 — last activity 4282 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **build** (running)
 - **build** (done): The opening now plays from the first byte to the hand-back, using placeholder art and locked to Track 1. It is committed as f708ff0b on claude/v2-opening (not pushed). Kagami round 7 was already in: the branch HEAD was 6be18e23 before I started, so no merge was needed. What a visitor gets on "/": - **The mark:** "dex" holds 1.5 s (0.8 s on return visits). - **Waiting room:** black screen with the letter. Its script l
 - **film** (done): The opening's timing is right, but three visible problems need fixing first. Everything is in D:\Dex\Temp\dexplace-v2\lanes\opening\film-v0\ (CRITIC.md is the verdict). It holds film.mp4 (T -2 to 43 at 10 fps with a beat-clock strip; audio track 1 is the Track 1 WAV with T 0 at the press, track 2 is what the browser actually produced), contact sheets per 10 s (film-sheet-00-10s.png to film-sheet-40-43s.png, plus the 
 - **fix** (done): I fixed and re-filmed all three must-fixes from the critic. They are committed as 73abbb57 on claude/v2-opening, not pushed. npm run check and npm test pass (351 tests). The worktree was clean at f708ff0b after the crash, so I resumed from there. No GPU, ComfyUI or broker was used. I ran one headless Edge at a time with the GPU disabled, between 17:17 and 18:35, and no browser or server is left running. 1. TESU now l
-
-### wf_e01d0219-dac — last activity 4296 min ago
-3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
-
-- **timeline** (done): 
-- **machine** (done): 
-- **research** (done): 
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
