@@ -64,7 +64,8 @@ html.op-cine .world__cue { visibility: hidden; }
   overflow: hidden;
   border-top: var(--bw) solid var(--ink);
 }
-.jetty__scene { position: absolute; inset: 0; image-rendering: pixelated; }
+/* (clipped to its box: its canvas is whole device pixels and would otherwise show a sliver past the page's edge) */
+.jetty__scene { position: absolute; inset: 0; overflow: hidden; image-rendering: pixelated; }
 .jetty__scene canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
 /* painted (motion/sky.ts): the website's own sky shows through above the lake */
 .jetty__scene[data-painted] .jetty__sky, .jetty__scene[data-painted] .jetty__lake, .jetty__scene[data-painted] .jetty__deck { display: none; }
@@ -104,13 +105,17 @@ html.op-cine .world__cue { visibility: hidden; }
   gap: var(--s-5);
   width: min(100%, max(360px, 40vw));
   min-height: 100%;
-  padding: var(--s-9) max(48px, var(--pad)) clamp(64px, 14vh, 140px) clamp(72px, 9vw, 160px);
-  background: linear-gradient(90deg, rgb(255 255 255 / 0) 0, #fff clamp(80px, 12vw, 200px));
+  padding: var(--s-9) max(48px, var(--pad)) clamp(64px, 14vh, 140px) calc(var(--win-fade) + clamp(24px, 4vw, 96px));
+  /* white from the end of its one dissolving edge (::before) on, overlapping it by 2 px so no sliver of the scene
+     shows between them at a fractional width */
+  background: linear-gradient(90deg, rgb(255 255 255 / 0) calc(var(--win-fade) - 2px), #fff calc(var(--win-fade) - 2px));
   transition: opacity 1.2s linear;
 }
 .jetty__paper::before {
-  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: clamp(80px, 12vw, 200px);
-  background-image: var(--scatter-r, none); background-repeat: repeat-y; background-size: var(--scatter-size, 100% auto); pointer-events: none;
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: var(--win-fade); pointer-events: none;
+  background-image: var(--scatter-r, none), linear-gradient(270deg, #fff 0, var(--fade-soft));
+  background-repeat: repeat-y, no-repeat;
+  background-size: var(--scatter-size, auto), 100% 100%;
 }
 .jetty__ask { margin: 0; font: 400 var(--fs-body) / 1.5 var(--f-body); color: var(--fg-2); }
 .jetty__note { margin: 0; font: 400 var(--fs-body) / 1.5 var(--f-label); color: var(--muted); }
@@ -131,20 +136,31 @@ html.op-cine .world__cue { visibility: hidden; }
 .jetty__go:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
 @media (max-width: 700px), (max-width: 1099px) and (orientation: portrait) {
   .jetty { min-height: 560px; align-items: start; }
-  .jetty__paper { justify-self: stretch; width: 100%; min-height: auto; padding: var(--s-6) var(--pad) var(--s-8); background: linear-gradient(#fff 70%, rgb(255 255 255 / 0)); }
-  .jetty__paper::before { display: none; }
+  /* stacked: the paper on top, white edge to edge, its bottom edge dissolving into the scene below: the same white
+     gradient and pixels as a window's edge */
+  .jetty__paper { justify-self: stretch; width: 100%; min-height: auto; padding: var(--s-6) var(--pad) var(--s-6); background: #fff; }
+  .jetty__paper::before {
+    top: 100%; bottom: auto; right: 0; width: auto; height: var(--win-fade);
+    background-image: var(--scatter-b, none), linear-gradient(180deg, #fff 0, var(--fade-soft));
+    background-repeat: repeat-x, no-repeat;
+    background-size: var(--scatter-edge-size, auto), 100% 100%;
+  }
   .jetty__deck { width: 80%; }
   .jetty__her { left: 30%; }
 }
-.world__cue { color: #d9cfd6; }
+/* the "Site" cue sits clear of the website's dissolving top edge, which rises from the screen's bottom */
+.world__cue { color: #d9cfd6; bottom: calc(var(--sheet-edge-h, 40px) + 18px); translate: -50% 0; }
 /* short screens (a phone on its side): the scene is the screen under the header; the paper is narrower */
 @media (max-height: 520px) {
   .jetty { min-height: max(300px, calc(100svh - var(--hdr-h))); }
 }
-/* way 4: the cut up to the game screen, a short cover in the sky's colour */
-.page-cut { position: fixed; inset: 0; z-index: 60; background: #cfe5f6; opacity: 0; pointer-events: none; transition: opacity 320ms linear; }
+/* way 4: the cut up to the game screen, a short white cover */
+.page-cut { position: fixed; inset: 0; z-index: 60; background: #fff; opacity: 0; pointer-events: none; transition: opacity 320ms linear; }
 .page-cut.is-on { opacity: 1; }
 @media (max-width: 1099px) {
-  .jetty__paper { padding-left: clamp(48px, 8vw, 200px); }
+  .jetty__paper { padding-left: calc(var(--win-fade) + 16px); }
   .jetty__go { white-space: normal; text-align: left; }
+}
+@media (max-width: 700px), (max-width: 1099px) and (orientation: portrait) {
+  .jetty__paper { padding-left: var(--pad); }
 }

@@ -73,7 +73,6 @@
   --win-gap: clamp(32px, 4.5vw, 80px);
   --win-fade: clamp(28px, 4vw, 56px);
   --fade-soft: rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%;
-  --fade-soft-w: rgb(255 255 255 / 0.86) calc(var(--win-fade) * 0.18), rgb(255 255 255 / 0.4) calc(var(--win-fade) * 0.46), rgb(255 255 255 / 0) calc(var(--win-fade) * 0.78);
   --content-w: min(100vw, 1180px);
   --wrap: 1084px;
 }
@@ -95,20 +94,26 @@ body { background: #000; color: var(--fg); }
 /* the page is plain white (Dex 10-18: "we start with the whole background white, then punch in some windows into
    the world"); its top edge dissolves into the game screen above it as it comes up, like every window's edge */
 .sheet--column { background: #fff; }
+/* every page that is not the page column is plain white too (its sheet carries the white; html and body stay black
+   behind the game screen) */
+.sheet--page:not(.sheet--column) { background: #fff; }
+/* (and a short one, a 404, is white to the screen's foot, not black under its footer) */
+.sheet--page:not(.sheet--column) { min-height: 100vh; min-height: 100dvh; }
+/* (a clean two-tone dissolve, white pixels straight onto the game screen's black: an ordered dither drawn once for the
+   page's width, motion/scatter.ts --sheet-edge; no grey, no repeating stamp) */
 .sheet--column::before {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
   bottom: 100%;
-  height: var(--win-fade);
+  height: var(--sheet-edge-h, 0px);
   pointer-events: none;
-  background-image: var(--scatter-t, none), linear-gradient(0deg, #fff 0, var(--fade-soft));
-  background-repeat: repeat-x, no-repeat;
-  background-position: left bottom, 0 0;
-  background-size: var(--scatter-edge-size, auto 100%), 100% 100%;
+  background-image: var(--sheet-edge, none);
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: var(--sheet-edge-size, 100% 100%);
 }
-.sky { display: none; }
 
 /* ------------------------------------------------------------------ the header on paper */
 .hdr { background: #fff; border-bottom: var(--bw) solid var(--ink); }
@@ -165,24 +170,9 @@ body { background: #000; color: var(--fg); }
   top: calc(var(--hdr-h) + 28px);
   height: min(calc(var(--win-w) * 1.2), calc(100vh - var(--hdr-h) - 56px), 680px);
   overflow: hidden;
-  background: linear-gradient(#5d9bd6, #d6eaf8);
+  background: #fff;
 }
 .band__win canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
-/* its edge: the white dissolving into it, a gradient and a scatter of white pixels, on all four sides */
-.band__win::before, .band__win::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.band__win::before {
-  background:
-    linear-gradient(90deg, #fff 0, var(--fade-soft-w)),
-    linear-gradient(270deg, #fff 0, var(--fade-soft-w)),
-    linear-gradient(180deg, #fff 0, var(--fade-soft-w)),
-    linear-gradient(0deg, #fff 0, var(--fade-soft-w));
-}
-.band__win::after {
-  background-image: var(--scatter-l, none), var(--scatter-r, none), var(--scatter-b, none), var(--scatter-t, none);
-  background-repeat: repeat-y, repeat-y, repeat-x, repeat-x;
-  background-position: left top, right top, left top, left bottom;
-  background-size: var(--scatter-size, auto), var(--scatter-size, auto), var(--scatter-edge-size, auto), var(--scatter-edge-size, auto);
-}
 @media (max-width: 1099px) {
   .band, .band--r { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); padding-block: var(--s-7); }
   /* the window opens above its section */
@@ -370,5 +360,4 @@ code, kbd, pre { font-family: var(--f-mono); }
 /* the donation heads: the address never breaks at its hyphen ("ko-" / "fi.com"), the tile steps down a size */
 .dhead { gap: 14px; }
 .dhead__line { overflow-wrap: normal; word-break: normal; hyphens: none; }
-.dhead__line { overflow-wrap: normal; }
 

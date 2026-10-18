@@ -1,10 +1,9 @@
-// The edge of the website's white paper (Dex 10-16): "a gradual gradient plus sparse white pixels". The
-// gradient is CSS (styles/v2.css `.band::after` on the open side, `.band__edge` on the top and bottom); this
-// draws the pixels over it: a scatter of white squares, dense where the paper ends and thinning out into the
-// sky, on whole css pixels, as SVG tiles that repeat along the edge. Four tiles, one per direction the paper
-// dissolves in: `--scatter-l` (paper on the left of the fade), `--scatter-r` (mirrored), `--scatter-t` (paper
-// below: the paper's top edge), `--scatter-b` (paper above: its bottom edge). Written on the sheet (#site), not
-// <html>; drawn again when the fade's size changes.
+// Where the website's white meets the world (Dex 10-16: "a gradual gradient plus sparse white pixels"). The pure
+// pieces: scatterCell (the sparse white pixels, dense at the white, thinning into the world), used by the windows'
+// own edges (motion/windows.ts edgeMask) and by the SVG tiles here; sheetEdge, the white page's top edge rising out of
+// the black game screen as a clean two-tone ordered dither (no grey, no repeating stamp). initScatter writes on the
+// sheet (#site, not <html>): `--scatter-r` / `--scatter-b` (the jetty's column and its top edge) and `--sheet-edge`,
+// drawn again when the width changes.
 
 /** Is the cell at (x, y) of a fade `cols` deep white? x = 0 is the paper's edge. Pure (for checks). */
 export function scatterCell(x: number, y: number, cols: number): boolean {
@@ -51,28 +50,54 @@ export function scatterSvg(depth: number, span: number, cell: number, side: Fade
 }
 
 const SPAN = 96;
+const BAYER4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+
+/**
+ * The white page's top edge on the black game screen: `cols` x `rows` cells, white below thinning to none at the top
+ * on an ordered (Bayer) dither, so the dissolve is two clean tones with no noise and no repeat across the page.
+ */
+export function sheetEdgeSvg(cols: number, rows: number, cell: number): string {
+  let d = "";
+  for (let y = 0; y < rows; y++) {
+    const density = (y + 0.5) / rows; // 0 at the top (black) .. 1 at the bottom (the white page)
+    for (let x = 0; x < cols;) {
+      if ((BAYER4[(y & 3) * 4 + (x & 3)]! + 1) / 17 >= density) { x++; continue; }
+      let n = 1;
+      while (x + n < cols && (BAYER4[(y & 3) * 4 + ((x + n) & 3)]! + 1) / 17 < density) n++;
+      d += `M${x} ${y}h${n}v1h-${n}z`;
+      x += n;
+    }
+  }
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${cols * cell}" height="${rows * cell}" viewBox="0 0 ${cols} ${rows}" shape-rendering="crispEdges">` +
+    `<path fill="#fff" d="${d}"/></svg>`
+  );
+}
 
 export function initScatter(): void {
   const sheet = document.getElementById("site");
   if (!sheet || !document.querySelector(".band__win, .jetty, .sheet--column")) return;
   let key = "";
   const draw = (): void => {
-    const vw = innerWidth;
+    const vw = document.documentElement.clientWidth || innerWidth;
     // the pixels match the page's pixel scale: 4 css px on a desktop, 3 on smaller screens; the fade's depth is the
     // windows' --win-fade (styles/v2.css: clamp(28px, 4vw, 56px))
     const cell = vw >= 1100 ? 4 : 3;
-    const fade = Math.min(56, Math.max(28, vw * 0.04));
+    const fade = Math.min(56, Math.max(28, innerWidth * 0.04));
     const depth = Math.max(4, Math.round(fade / cell));
-    const next = `${depth}:${cell}`;
+    const next = `${depth}:${cell}:${vw}`;
     if (next === key) return;
     key = next;
     const url = (svg: string): string => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-    sheet.style.setProperty("--scatter-l", url(scatterSvg(depth, SPAN, cell, "l")));
     sheet.style.setProperty("--scatter-r", url(scatterSvg(depth, SPAN, cell, "r")));
     sheet.style.setProperty("--scatter-size", `${depth * cell}px ${SPAN * cell}px`);
-    sheet.style.setProperty("--scatter-t", url(scatterSvg(depth, SPAN, cell, "t")));
     sheet.style.setProperty("--scatter-b", url(scatterSvg(depth, SPAN, cell, "b")));
     sheet.style.setProperty("--scatter-edge-size", `${SPAN * cell}px ${depth * cell}px`);
+    // the sheet's top edge: one image the page's width, never repeated
+    const cols = Math.ceil(vw / cell);
+    sheet.style.setProperty("--sheet-edge", url(sheetEdgeSvg(cols, depth, cell)));
+    sheet.style.setProperty("--sheet-edge-size", `${cols * cell}px ${depth * cell}px`);
+    sheet.style.setProperty("--sheet-edge-h", `${depth * cell}px`);
   };
   draw();
   let t = 0;
