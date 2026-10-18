@@ -19,7 +19,7 @@
   --bg-2: #ffffff;
   --panel: #ffffff;
   --panel-2: #f5f1f4;
-  --sunk: #0d0c12;
+  --sunk: #edf3f8;            /* wells (code, hashes, scenes): a pale sky, never the dark site's void */
   --line: #e6e0e8;
   --line-2: #8a8094;
   --shadow: var(--ink);
@@ -181,6 +181,9 @@ body { background: #000; color: var(--fg); }
 
 /* the project scenes (placeholder art) on a pale sky instead of the dark site's void */
 .scene { --sunk: #e3eff7; --line: #c3d5e3; background: var(--sunk); }
+/* ink-on-ink spots of the dark theme: key cells and tags on ink get white text */
+.spec dt, .pspec dt, .pick--none[aria-pressed="true"] { color: #fff; }
+.qr__tag { background: var(--ink); color: #fff; }
 
 /* the decorative floating shapes of the dark site stay home: the world is the life behind the paper now */
 .floats { display: none !important; }
@@ -199,7 +202,7 @@ body { background: #000; color: var(--fg); }
   font-synthesis: none;
   -webkit-font-smoothing: none;
 }
-.phead .sh__title { font-size: var(--fs-h1); letter-spacing: calc(2px * var(--title-px)); }
+.phead .sh__title { font-size: var(--fs-h2); }
 .sh__title::after { width: 40px; height: 6px; margin-top: 10px; background: var(--scarlet); box-shadow: none; }
 .sh--mint .sh__title::after { background: var(--mint-d); }
 .sh--cyan .sh__title::after { background: var(--azure); }

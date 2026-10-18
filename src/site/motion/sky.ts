@@ -49,6 +49,103 @@ export function skyPlan(scale: number): Placed[] {
   ];
 }
 
+/**
+ * The bottom of the website (Dex 10-16: "the jetty scene, on the left"): Kagami's jetty painted by the world's
+ * own jetty painter on a still lake of the world's jade, its reflection broken by ripples, under the website's
+ * sky (the backdrop shows through). She stands on it as the white box every character is until her art lands
+ * (`[data-jetty-her]`, placed here at her height on the deck). Static: drawn again only when the size changes.
+ */
+export function initJetty(worker: () => Worker): void {
+  const scene = document.querySelector<HTMLElement>("[data-jetty-scene]");
+  const her = scene?.querySelector<HTMLElement>("[data-jetty-her]");
+  if (!scene || !her) return;
+  scene.setAttribute("data-painted", "");
+  const cv = document.createElement("canvas");
+  scene.prepend(cv);
+  const ctx = cv.getContext("2d");
+  if (!ctx) return;
+  let art: { img: HTMLCanvasElement; ax: number; ay: number } | null = null;
+  const w = worker();
+  const JETTY = { w: 560, water: 34, posts: [[0, 14], [4, 10]] as [number, number][], sag: [[150, 2], [330, 3]] as [number, number][] };
+  const listen = (e: MessageEvent<CloudDone>): void => {
+    if (e.data.id !== -1) return;
+    const d = e.data;
+    const img = document.createElement("canvas");
+    img.width = d.w;
+    img.height = d.h;
+    img.getContext("2d")!.putImageData(new ImageData(d.rgba as Uint8ClampedArray<ArrayBuffer>, d.w, d.h), 0, 0);
+    art = { img, ax: d.ax, ay: d.ay };
+    w.removeEventListener("message", listen);
+    draw();
+  };
+  w.addEventListener("message", listen);
+  w.postMessage({ id: -1, kind: "jetty", p: JETTY, seed: 5 } satisfies CloudJob);
+  const LAKE = ["#dbf2eb", "#b0e2d4", "#83ccbf", "#5ab2a7", "#3f918c"];
+  const draw = (): void => {
+    const dpr = window.devicePixelRatio || 1;
+    const r = scene.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const k = Math.max(1, Math.round(2 * dpr));
+    const W = Math.ceil((r.width * dpr) / k), H = Math.ceil((r.height * dpr) / k);
+    cv.width = W;
+    cv.height = H;
+    cv.style.width = `${(W * k) / dpr}px`;
+    cv.style.height = `${(H * k) / dpr}px`;
+    ctx.clearRect(0, 0, W, H);
+    // the lake: the lower part of the scene, bands from the pale horizon down into the jade
+    const narrow = r.width < 700;
+    const horizon = Math.round(H * 0.7);
+    for (let y = horizon; y < H; y++) {
+      const u = (y - horizon) / Math.max(1, H - horizon);
+      ctx.fillStyle = LAKE[Math.min(LAKE.length - 1, Math.floor(Math.pow(u, 0.8) * LAKE.length))]!;
+      ctx.fillRect(0, y, W, 1);
+    }
+    // ripple dashes, a few per row, sparser near the horizon
+    let seed = 7;
+    const rnd = (): number => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    for (let y = horizon + 3; y < H; y += 3) {
+      const n = Math.round((W / 60) * (0.4 + (y - horizon) / (H - horizon)));
+      for (let i = 0; i < n; i++) {
+        ctx.fillStyle = rnd() < 0.5 ? "#dbf2eb" : "#3f918c";
+        ctx.fillRect(Math.floor(rnd() * W), y, 2 + Math.floor(rnd() * 6), 1);
+      }
+    }
+    if (!art) return;
+    // the jetty: from the left edge, its deck a few px above the waterline
+    const deckY = horizon - JETTY.water;
+    // (narrow screens: the jetty runs in from the left and ends past the middle)
+    const x0 = narrow ? Math.round(W * 0.7) - JETTY.w : -12;
+    // its reflection: the jetty upside down in the still water, darker, broken by the ripples
+    ctx.save();
+    ctx.globalAlpha = 0.28;
+    for (let y = 0; y < art.img.height; y++) {
+      const ry = 2 * horizon - (deckY - art.ay + y) - 1;
+      if (ry < horizon || ry >= H || y % 4 === 3) continue;
+      ctx.drawImage(art.img, 0, y, art.img.width, 1, x0 - art.ax + ((y >> 2) % 2), ry, art.img.width, 1);
+    }
+    ctx.restore();
+    ctx.drawImage(art.img, x0 - art.ax, deckY - art.ay);
+    // she stands on the deck, at her height (the white box until her art lands)
+    const css = k / dpr;
+    const deckX = narrow ? Math.round(W * 0.34) : x0 + JETTY.w * 0.42;
+    her.style.left = `${Math.round(deckX * css)}px`;
+    her.style.top = `${Math.round((deckY - HER_H) * css)}px`;
+    her.style.width = `${Math.round(HER_W * css)}px`;
+    her.style.height = `${Math.round(HER_H * css)}px`;
+    her.style.bottom = "auto";
+  };
+  draw();
+  let t = 0;
+  window.addEventListener("resize", () => {
+    clearTimeout(t);
+    t = window.setTimeout(draw, 150);
+  });
+}
+
+/** Her placeholder box, art px (about her height at play zoom: 128 px art drawn ~1.65x on the world's 2 px grid). */
+const HER_W = 28;
+const HER_H = 104;
+
 export function initSky(reduced: MediaQueryList): void {
   const sky = document.querySelector<HTMLElement>("[data-sky]");
   const sheet = document.getElementById("site");
@@ -61,16 +158,20 @@ export function initSky(reduced: MediaQueryList): void {
   let planScale = -1;
   let worker: Worker | null = null;
   const t0 = performance.now();
+  const getWorker = (): Worker => (worker ??= new Worker(new URL("./sky-paint.ts", import.meta.url), { type: "module" }));
+  initJetty(getWorker);
+  let generation = 0;
 
   const paint = (scale: number): void => {
     if (Math.abs(scale - planScale) < 0.08) return;
     planScale = scale;
     plan = skyPlan(scale);
-    worker?.terminate();
-    worker = new Worker(new URL("./sky-paint.ts", import.meta.url), { type: "module" });
-    worker.onmessage = (e: MessageEvent<CloudDone>) => {
+    const gen = ++generation;
+    const mine = plan;
+    getWorker().addEventListener("message", (e: MessageEvent<CloudDone>) => {
       const d = e.data;
-      const pl = plan[d.id];
+      if (gen !== generation || d.id < 0) return;
+      const pl = mine[d.id];
       if (!pl) return;
       const img = document.createElement("canvas");
       img.width = d.w;
@@ -81,8 +182,8 @@ export function initSky(reduced: MediaQueryList): void {
       pl.ay = d.ay;
       pl.shownAt = performance.now();
       dirty = true;
-    };
-    plan.forEach((pl, id) => worker!.postMessage({ id, p: pl.p, seed: pl.seed } satisfies CloudJob));
+    });
+    plan.forEach((pl, id) => getWorker().postMessage({ id, p: pl.p, seed: pl.seed } satisfies CloudJob));
   };
 
   let dirty = true;

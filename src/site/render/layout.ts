@@ -211,7 +211,8 @@ export function worldPlaceOf(path: string): string | null {
  * sticky section: a sticky element always counts as "in view", so a link to it would never scroll back up.
  * The world waits for the press (`data-world-hold`); src/tesu/mount.ts frames it.
  */
-export function world(_opts: { at?: string | null; hold?: boolean } = {}): string {
+export function world(opts: { h1?: boolean } = {}): string {
+  const tag = opts.h1 ? "h1" : "p";
   return (
     `<div id="world" class="world-top"></div>` +
     `<section class="world" data-world-mount data-world-hold tabindex="-1" aria-label="The world">` +
@@ -222,7 +223,8 @@ export function world(_opts: { at?: string | null; hold?: boolean } = {}): strin
     `</div>` +
     `<div class="gs-cover" aria-hidden="true"></div>` +
     `<div class="gs-title" data-gs-title>` +
-    `<p class="gs-title__name"><span class="sr">dex</span><span class="gs-title__still mark" aria-hidden="true">dex</span></p>` +
+    // "dex" is the home page's h1 (a section's page has its own)
+    `<${tag} class="gs-title__name"><span class="sr">dex</span><span class="gs-title__still mark" aria-hidden="true">dex</span></${tag}>` +
     `<p class="gs-status" data-gs-status role="status">loading the world</p>` +
     `<button class="gs-continue" type="button" data-gs-continue hidden>click to continue</button>` +
     `<noscript><p class="gs-status">The world needs JavaScript. <a href="#site">Visit the site</a>.</p></noscript>` +
@@ -263,7 +265,7 @@ export interface ShellOptions {
 export function shell({ meta, main }: ShellOptions): Rendered {
   const home = meta.page === "home";
   const column = COLUMN_PAGES.includes(meta.path);
-  const top = column ? world() : `<a class="skip" href="#main">Skip to content</a>`;
+  const top = column ? world({ h1: home }) : `<a class="skip" href="#main">Skip to content</a>`;
   const body =
     top +
     `<div class="${cx("sheet", home ? "sheet--home" : "sheet--page", column && "sheet--column")}" id="site" data-page="${meta.page}">` +

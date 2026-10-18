@@ -73,6 +73,7 @@ export function initColumn(reduced: MediaQueryList): void {
   const jettyGo = jetty?.querySelector<HTMLButtonElement>("[data-jetty-go]") ?? null;
   const her = jetty?.querySelector<HTMLElement>("[data-jetty-her]") ?? null;
   const hdr = sheet.querySelector<HTMLElement>(".hdr");
+  const menuBtn = hdr?.querySelector<HTMLElement>(".hdr__menu") ?? null;
   // the game screen is sticky (its own offsetTop follows the scroll): measure from the empty anchor above it
   const anchor = document.querySelector<HTMLElement>(".world-top");
   const coverOf = (): number => Math.max(0, Math.min(1, (window.scrollY - (anchor?.offsetTop ?? 0)) / (gs.offsetHeight || innerHeight)));
@@ -315,9 +316,14 @@ export function initColumn(reduced: MediaQueryList): void {
     // where it wants to be
     const homeAt = { x: vw / 2, y: Math.round(gs.getBoundingClientRect().top + gsH * STAGE_Y) };
     const pad = Math.max(16, Math.min(48, vw * 0.045));
-    const hdrBottom = hdr ? Math.max(0, hdr.getBoundingClientRect().bottom) : 0;
-    // just under the header once it is up; never lower than home (it rides up with the website)
-    const cornerAt = { x: vw - pad - (OFUDA_W * kc) / 2 - 6, y: Math.min(hdrBottom + 14, homeAt.y) };
+    const hr = hdr?.getBoundingClientRect();
+    const menuR = menuBtn && menuBtn.offsetParent !== null ? menuBtn.getBoundingClientRect() : null;
+    // the website's top-right corner: just under the header's right end, or (narrow screens, where the paper
+    // takes the width) in the header itself, beside the Menu key; never lower than home (it rides up with the
+    // website as it comes up)
+    const cornerAt = menuR && hr
+      ? { x: menuR.left - 20 - (OFUDA_W * kc) / 2, y: Math.min(hr.top + Math.max(4, (hr.height - OFUDA_H * kc) / 2), homeAt.y) }
+      : { x: vw - pad - (OFUDA_W * kc) / 2 - 6, y: Math.min((hr ? Math.max(0, hr.bottom) : 0) + 14, homeAt.y) };
     const f = trail(cover);
     let target = trailPoint(f, homeAt, cornerAt, vw);
     let wind = 0, flutter = 0.35, show = true;
