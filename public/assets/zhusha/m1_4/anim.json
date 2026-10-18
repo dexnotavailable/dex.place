@@ -1,0 +1,82 @@
+{
+ "id": "m1_4",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  67,
+  154
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f003.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f004.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f006.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f007.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f008.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f009.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f010.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f011.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f012.png",
+   "ticks": 8,
+   "fig": 128
+  }
+ ],
+ "loop": false,
+ "hits": [
+  3
+ ],
+ "source": "h3-L-m1_4-B-s3001-9394e0",
+ "notes": "kit v1.2 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f001: shifted +1 px so her shoes stand on the ground row; f002: the effect cut by the frame edge continued as a soft falloff (40 px); f003: the effect cut by the frame edge continued as a soft falloff (40 px); f004: the effect cut by the frame edge continued as a soft falloff (30 px), shifted -1 px so her shoes stand on the ground row; f005: the effect cut by the frame edge continued as a soft falloff (30 px); f006: the effect cut by the frame edge continued as a soft falloff (30 px), shifted +1 px so her shoes stand on the ground row; f007: shifted -2 px so her shoes stand on the ground row"
+}
