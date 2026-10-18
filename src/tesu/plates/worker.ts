@@ -97,3 +97,5 @@ self.onmessage = (e: MessageEvent<TileMsg | SpriteMsg | WorldMsg | BakeMsg>) => 
   }
   void tile(m);
 };
+// (engine, perf) up: the page's watchdog only gives up on workers that never start
+post({ alive: true });

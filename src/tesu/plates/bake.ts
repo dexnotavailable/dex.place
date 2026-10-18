@@ -7,9 +7,11 @@
 // Pure: Node (the bake) and the browser (the plate workers) share it.
 
 import { Collision } from "../collide.ts";
-import { TILE } from "../config.ts";
+import { H, TILE } from "../config.ts";
 import { PLANE_IDS, type PlaneId, type WorldDef } from "../world/types.ts";
-import { openingTiles, planeLevelTable } from "./span.ts";
+import { levelOfPlane, openingTiles, planeLevelTable, tileSpanOf } from "./span.ts";
+import { DEFAULT_KEY, framingAt } from "../camera.ts";
+import type { CamState } from "../render/view.ts";
 
 /**
  * Frame sizes the opening set is baked for (the frame follows the window: 1080p at 1x, 1440p and 4K at 2x and 3x,
@@ -34,7 +36,39 @@ export interface BakeInfo {
   check?: boolean;
 }
 
-/** The tile keys the opening draws at the bake's frame sizes (and reduced motion at the first), with a ring around. */
+/**
+ * The core rooms a visitor walks into next (Dex 10-16: "the palace and core functions"): the Hall of Works (with its
+ * entrance vista at 1/2) and the Prize Court, walked end to end at their tracks' framing.
+ */
+export const BAKE_ROOMS: readonly string[] = ["hall-of-works", "prize-court"];
+
+function roomTiles(world: WorldDef, collision: Collision, levels: Map<PlaneId, number[]>, add: (id: PlaneId, lv: number, tx: number, ty: number) => void): void {
+  for (const pid of BAKE_ROOMS) {
+    const room = world.places.find((pl) => pl.id === pid);
+    if (!room) continue;
+    const spawn = world.spawns.find((sp) => sp.id === room.spawn);
+    for (const [W, Hf] of BAKE_SIZES.slice(0, 2)) {
+      const cams: CamState[] = [];
+      let gy = spawn?.y ?? room.y0 ?? 0;
+      for (let x = room.x0; x <= room.x1; x += H / 2) {
+        gy = collision.groundBelow(x, gy - 2 * H)?.y ?? gy;
+        const f = framingAt(world.tracks, x, () => false, gy);
+        for (const lead of [-1, 0, 1]) cams.push({ cx: x + lead * f.lead * W / Math.min(1, f.zoom), cy: gy, zoom: f.zoom, anchor: f.anchor, horizon: f.horizon, W, H: Hf });
+      }
+      // the held entrance shot of an indoors-grand room (game.ts cutTick: zoom 1/2 on the room's middle)
+      if (room.vista !== undefined) cams.push({ cx: (room.x0 + room.x1) / 2, cy: room.vista, zoom: 0.5, anchor: 0.82, horizon: DEFAULT_KEY.horizon, W, H: Hf });
+      for (const c of cams) {
+        for (const id of PLANE_IDS) {
+          if (id === "near" && c.zoom > 1.6) continue;
+          const sp = tileSpanOf(c, id, levelOfPlane(c, id, levels.get(id)!), 0, Hf);
+          for (let ty = sp.ty0; ty <= sp.ty1; ty++) for (let tx = sp.tx0; tx <= sp.tx1; tx++) add(id, sp.level, tx, ty);
+        }
+      }
+    }
+  }
+}
+
+/** The tile keys the opening draws at the bake's frame sizes (and reduced motion at the first) and the core rooms', with a ring around. */
 export function bakeKeys(world: WorldDef): string[] {
   const collision = new Collision(world.walks, world.walls);
   collision.minX = 0;
@@ -49,6 +83,9 @@ export function bakeKeys(world: WorldDef): string[] {
         for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) keys.add(`${t.id}|${t.lv}|${t.tx + dx}|${t.ty + dy}`);
       }
     }
+  });
+  roomTiles(world, collision, levels, (id, lv, tx, ty) => {
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) keys.add(`${id}|${lv}|${tx + dx}|${ty + dy}`);
   });
   return [...keys].sort();
 }

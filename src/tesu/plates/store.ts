@@ -58,6 +58,8 @@ export interface SpriteDone {
 export interface PlatePool {
   workers: Worker[];
   world: Promise<WorldDef | null>;
+  /** (engine, perf) A worker has said it is up (it may say so before the store listens). */
+  up: { alive: boolean };
 }
 
 export function startPlateWorkers(n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1)), bake: BakeInfo | null = null): PlatePool {
@@ -71,8 +73,10 @@ export function startPlateWorkers(n = Math.max(1, Math.min(4, (navigator.hardwar
       workers.push(w);
     }
   } catch {
-    return { workers: [], world: Promise.resolve(null) };
+    return { workers: [], world: Promise.resolve(null), up: { alive: false } };
   }
+  const up = { alive: false };
+  for (const w of workers) w.addEventListener("message", (e: MessageEvent<{ alive?: boolean }>) => { if (e.data?.alive) up.alive = true; });
   // (engine, perf) the baked world: fetched and parsed here (a few ms), no worker build to wait for
   if (bake?.world) {
     const url = bake.world;
@@ -80,7 +84,7 @@ export function startPlateWorkers(n = Math.max(1, Math.min(4, (navigator.hardwar
       performance.mark("tesu:world-built");
       return worldFromJson(t);
     }).catch(() => null);
-    return { workers, world };
+    return { workers, world, up };
   }
   const w0 = workers[0]!;
   const world = new Promise<WorldDef | null>((resolve) => {
@@ -99,7 +103,7 @@ export function startPlateWorkers(n = Math.max(1, Math.min(4, (navigator.hardwar
     w0.addEventListener("error", onErr);
     w0.postMessage({ world: true });
   });
-  return { workers, world };
+  return { workers, world, up };
 }
 
 export class TileStore {
@@ -112,6 +116,8 @@ export class TileStore {
   private sprQueue: { job: SpriteJob; done: (r: SpriteDone | null) => void }[] = [];
   private sprWait = new Map<string, (r: SpriteDone | null) => void>();
   sprInFlight = 0;
+  /** (engine, perf) A worker has said it is up. */
+  private up: { alive: boolean } = { alive: false };
   /** (engine, perf) The bake check (?bakecheck): baked tiles equal to the painted ones, and different. */
   bakeSame = 0;
   bakeDiff = 0;
@@ -148,13 +154,15 @@ export class TileStore {
     if (!this.sync) {
       try {
         const spawned = opts.pool?.workers.length ? opts.pool.workers : null;
+        if (opts.pool) this.up = opts.pool.up;
         for (let i = 0; i < (spawned ? spawned.length : n); i++) {
           const w = spawned ? spawned[i]! : new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
           const slot = { w, busy: 0 };
           w.onmessage = (e: MessageEvent<{ key: string; px?: ArrayBuffer | null; ms: number; chk?: number; sprite?: true; rgba?: ArrayBuffer | null; w?: number; h?: number; ax?: number; ay?: number }>) => {
             const d = e.data;
-            // (the world handed over at boot: startPlateWorkers' own message)
+            // (the world handed over at boot: startPlateWorkers' own message; a worker saying it is up)
             if (d && "world" in d) return;
+            if (d && "alive" in d) return;
             slot.busy--;
             if (d.sprite) {
               this.sprInFlight--;
@@ -168,6 +176,9 @@ export class TileStore {
             this.inFlight--;
             if (d.chk) { if (d.chk > 0) this.bakeSame++; else this.bakeDiff++; }
             this.finish(d.key, d.px ? new Uint8Array(d.px) : null, d.ms);
+            // (engine, perf) the worker that answered gets the next job now, not at the next frame: a slow or
+            // throttled frame (a weak GPU, a frame out of view) no longer leaves the workers idle between frames
+            this.feed(slot);
           };
           w.onerror = (e) => console.error("plate worker", e.message);
           this.workers.push(slot);
@@ -356,7 +367,9 @@ export class TileStore {
 
   /** Workers that never answer (a blocked module worker) hand over to the main thread. */
   private watchdog(): void {
-    if (this.sync || !this.firstSend || this.painted > 0 || performance.now() - this.firstSend < 4000) return;
+    // (engine, perf) a worker that is up but still fetching or painting is not a dead one: with the bake the first
+    // tile can wait on its pack over a slow line, so only workers that never started count
+    if (this.sync || !this.firstSend || this.painted > 0 || this.up.alive || performance.now() - this.firstSend < 4000) return;
     console.warn("plate workers did not answer; painting on the main thread");
     for (const s of this.workers) s.w.terminate();
     this.workers = [];
@@ -369,6 +382,20 @@ export class TileStore {
     this.sprInFlight = 0;
     for (const done of waiting) done(null);
     for (const [k, e] of this.entries) if (e.layer === -1 && !this.queue.has(k)) this.entries.delete(k);
+  }
+
+  /** (engine, perf) One worker's next job: the queued tile with the best priority (a scan, no sort). */
+  private feed(slot: { w: Worker; busy: number }): void {
+    if (this.sync || slot.busy >= 2 || !this.queue.size || this.sprQueue.length) return;
+    let best: Job | null = null;
+    for (const j of this.queue.values()) if (!best || j.pri < best.pri) best = j;
+    if (!best) return;
+    const e = this.entries.get(best.key);
+    if (!e) { this.queue.delete(best.key); return; }
+    this.queue.delete(best.key);
+    slot.busy++;
+    this.inFlight++;
+    slot.w.postMessage({ key: best.key, plane: best.plane, level: best.level, tx: best.tx, ty: best.ty });
   }
 
   /** Sends queued jobs to idle workers (or paints within a budget on the main thread). */
