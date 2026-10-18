@@ -6,6 +6,28 @@
 import { pixelSvg, type IconName } from "../pixels.ts";
 import type { Tone } from "../data/projects.ts";
 import { cx, esc, pad2 } from "./html.ts";
+import { MARK_H, MARK_ROWS, MARK_W } from "../../intro/mark.ts";
+
+/**
+ * The "dex" mark as the pixel drawing the page opens on (src/intro/mark.ts, its finished strokes), not the
+ * smooth handwriting font: an SVG of whole cells, `scale` css px a cell. Decorative; say "dex" beside it.
+ */
+export function pixelMark(scale = 1, className = "mark-px"): string {
+  let d = "";
+  MARK_ROWS.forEach((row, y) => {
+    for (let x = 0; x < row.length;) {
+      if (row[x] !== "#") { x++; continue; }
+      let n = 1;
+      while (row[x + n] === "#") n++;
+      d += `M${x} ${y}h${n}v1h-${n}z`;
+      x += n;
+    }
+  });
+  return (
+    `<svg class="${className}" viewBox="0 0 ${MARK_W} ${MARK_H}" width="${MARK_W * scale}" height="${MARK_H * scale}" ` +
+    `shape-rendering="crispEdges" aria-hidden="true" focusable="false"><path fill="currentColor" d="${d}"/></svg>`
+  );
+}
 
 export function icon(name: IconName, scale = 2, className?: string): string {
   return pixelSvg(name, { scale, ...(className ? { className } : {}) });

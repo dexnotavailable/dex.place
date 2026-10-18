@@ -23,7 +23,7 @@ import type { OpeningSet } from "../../tesu/mount.ts";
 import { ENTER_EVENT, initOpening, type EnterDetail, type Way } from "./enter.ts";
 import { bottomView, cornerView, driftPoint, topView, trail, trailPoint, type FlowState } from "./flow.ts";
 import { LoaderStage, Paper, PixelPen } from "./paper.ts";
-import { ITEM_SIZE, OFUDA_H, OFUDA_W } from "./sprites.ts";
+import { ITEM_SIZE, OFUDA_H } from "./sprites.ts";
 
 interface ColumnWorld {
   ready?: Promise<void>;
@@ -52,7 +52,10 @@ const STAGE_Y = 0.6;
 const DRIFT_S = 2.4;
 /** The loader items' pixels are this many of the ofuda's (they are icons; the ofuda is the game's own object). */
 const ITEM_SCALE = 2;
-const CAUGHT_S = 1.3;
+/** After the catch: the white fade clears (1.2 s), then the whole scene holds this long before the game. */
+const CAUGHT_S = 1.2 + 1.6;
+/** The cut up to the game screen: a short cover in the sky's colour, out and back in (s each way). */
+const CUT_S = 0.32;
 
 declare global {
   interface Window {
@@ -72,8 +75,9 @@ export function initColumn(reduced: MediaQueryList): void {
   const jetty = document.querySelector<HTMLElement>("[data-jetty]");
   const jettyGo = jetty?.querySelector<HTMLButtonElement>("[data-jetty-go]") ?? null;
   const her = jetty?.querySelector<HTMLElement>("[data-jetty-her]") ?? null;
+  const jettyNote = jetty?.querySelector<HTMLElement>("[data-jetty-note]") ?? null;
   const hdr = sheet.querySelector<HTMLElement>(".hdr");
-  const menuBtn = hdr?.querySelector<HTMLElement>(".hdr__menu") ?? null;
+  const slot = hdr?.querySelector<HTMLElement>("[data-ofuda-slot]") ?? null;
   // the game screen is sticky (its own offsetTop follows the scroll): measure from the empty anchor above it
   const anchor = document.querySelector<HTMLElement>(".world-top");
   const coverOf = (): number => Math.max(0, Math.min(1, (window.scrollY - (anchor?.offsetTop ?? 0)) / (gs.offsetHeight || innerHeight)));
@@ -93,6 +97,11 @@ export function initColumn(reduced: MediaQueryList): void {
   corner.className = "ofuda-btn";
   corner.setAttribute("aria-label", "Enter the world (the ofuda)");
   corner.hidden = true;
+  // way 4's cut up to the game screen
+  const cut = document.createElement("div");
+  cut.className = "page-cut";
+  cut.setAttribute("aria-hidden", "true");
+  document.body.append(cut);
   // in the tab order right after the header
   if (hdr) hdr.after(corner);
   else sheet.prepend(corner);
@@ -275,6 +284,8 @@ export function initColumn(reduced: MediaQueryList): void {
   let placed = false;
   let drawn = true;
   const tick = (now: number): void => {
+    // after a stall (the world's loading can hold the page for seconds) it snaps to where it belongs
+    const stalled = now - last > 100;
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     const dpr = window.devicePixelRatio || 1;
@@ -316,19 +327,20 @@ export function initColumn(reduced: MediaQueryList): void {
 
     // where it wants to be
     const homeAt = { x: vw / 2, y: Math.round(gs.getBoundingClientRect().top + gsH * STAGE_Y) };
-    const hr = hdr?.getBoundingClientRect();
-    const menuR = menuBtn && menuBtn.offsetParent !== null ? menuBtn.getBoundingClientRect() : null;
-    // the website's top-right corner: just under the header, in the page's right margin, or (narrow screens, where the paper
-    // takes the width) in the header itself, beside the Menu key; never lower than home (it rides up with the
-    // website as it comes up)
-    const cornerAt = menuR && hr
-      ? { x: menuR.left - 20 - (OFUDA_W * kc) / 2, y: Math.min(hr.top + Math.max(4, (hr.height - OFUDA_H * kc) / 2), homeAt.y) }
-      : { x: (document.documentElement.clientWidth || vw) - 30, y: Math.min((hr ? Math.max(0, hr.bottom) : 0) + 14, homeAt.y) };
+    // the website's corner: the slot in the header (right of World, or left of Menu), the thing centred in it;
+    // never lower than home (it rides up with the website as it comes up)
     const f = trail(cover);
+    const inSlot = f > 0.55;
+    const tall = (stage.phase !== "item" ? OFUDA_H : ITEM_SIZE) * kc;
+    const sr = slot?.getBoundingClientRect();
+    const cornerAt = sr && sr.width
+      ? { x: sr.left + sr.width / 2, y: Math.min(sr.top + (sr.height - tall) / 2, homeAt.y) }
+      : { x: (document.documentElement.clientWidth || vw) - 30, y: Math.min(homeAt.y, 78) };
     let target = trailPoint(f, homeAt, cornerAt, vw);
     let wind = 0, flutter = 0.35, show = true;
     if (f > 0.02 && f < 0.98) { flutter = 1; wind = -40; }
-    else if (f >= 0.98) { flutter = 0.5; wind = -15; }
+    // settled in the corner it hangs like a tag, barely stirring
+    else if (f >= 0.98) { flutter = 0.25; wind = -4; }
 
     // way 2: up to the game screen, then the same cutscene
     if (climbing) {
@@ -354,16 +366,20 @@ export function initColumn(reduced: MediaQueryList): void {
         show = false;
         if (now - caughtAt > (reduced.matches ? 0 : CAUGHT_S * 1000)) {
           drift = null;
-          toTop();
           climbing = null;
-          // the game screen comes into view, then the game starts from the catch's way in
-          const go = (): void => {
-            if (window.scrollY <= 2 || performance.now() - caughtAt > 4000) {
-              if (window.scrollY > 2) window.scrollTo({ top: 0, behavior: "instant" });
+          // up to the game screen in one cut under a short cover (never a long ride back through the website),
+          // and the game starts from the catch's way in
+          if (reduced.matches) {
+            window.scrollTo({ top: 0, behavior: "instant" });
+            enter("bottom");
+          } else {
+            cut.classList.add("is-on");
+            window.setTimeout(() => {
+              window.scrollTo({ top: 0, behavior: "instant" });
               enter("bottom");
-            } else requestAnimationFrame(go);
-          };
-          requestAnimationFrame(go);
+              cut.classList.remove("is-on");
+            }, CUT_S * 1000);
+          }
         }
       }
     }
@@ -378,10 +394,11 @@ export function initColumn(reduced: MediaQueryList): void {
       } else show = false;
     } else if (state === "ingame") show = false;
 
-    // it eases toward where it is going (paper on the wind, not a cursor)
-    if (!placed || reduced.matches) {
+    // it eases toward where it is going (paper on the wind, not a cursor); after a stall it is simply there
+    if (!placed || reduced.matches || stalled) {
       pos.x = target.x;
       pos.y = target.y;
+      if (placed && stalled && stage.phase !== "item") paper.place(target.x, target.y + stage.ofudaLift() * kc, kc);
       placed = true;
     } else {
       const ease = gustAt >= 0 || drift ? 1 - Math.pow(0.00002, dt) : 1 - Math.pow(0.004, dt);
@@ -396,15 +413,17 @@ export function initColumn(reduced: MediaQueryList): void {
     drawn = !idle;
     pen.reset();
     const asking = !asked || !!failed;
-    // the loader items are icons: twice the ofuda's pixel size (the ofuda itself stays at about game size)
-    if (!asking || state !== "loading") stage.step(dt, pos.x, pos.y, kc * ITEM_SCALE, reduced.matches);
+    // the loader items are icons: twice the ofuda's pixel size on the game screen (the ofuda itself stays at about
+    // game size); in the header's corner they come down to its size so they fit inside the header
+    const itemScale = inSlot ? 1 : ITEM_SCALE;
+    if (!asking || state !== "loading") stage.step(dt, pos.x, pos.y, kc * itemScale, reduced.matches);
     const landed = stage.phase !== "item";
     const lift = stage.ofudaLift() * kc;
     if (landed) paper.step(dt, pos.x, pos.y + lift, kc, { wind, flutter }, reduced.matches);
     pen.alpha = failed ? 0.4 : 1;
     if (show && !asking) {
       if (landed) paper.draw(pen, k, dpr);
-      stage.draw(pen, pos.x, pos.y, k * ITEM_SCALE, dpr, reduced.matches);
+      stage.draw(pen, pos.x, pos.y, k * itemScale, dpr, reduced.matches);
     }
 
     // the poke zone (on the game screen only)
@@ -416,7 +435,7 @@ export function initColumn(reduced: MediaQueryList): void {
 
     // the game screen's own bits
     const top = topView(state);
-    const showCont = top.cont && stage.phase === "done" && markDone && cover < 0.4 && !climbing;
+    const showCont = top.cont && way === null && !drift && caughtAt < 0 && stage.phase === "done" && markDone && cover < 0.4 && !climbing;
     if (showCont && cont.hidden) {
       cont.hidden = false;
       readyAt = now;
@@ -425,16 +444,19 @@ export function initColumn(reduced: MediaQueryList): void {
       readyAt = Infinity;
     }
     status.hidden = state !== "loading";
+    if (jettyNote) jettyNote.hidden = state !== "loading";
 
     // the corner ofuda is a way in (way 2) once it has settled there
     const inCorner = cornerView(state) === "ofuda" && f >= 0.98 && landed && !climbing && !drift && show;
     corner.hidden = !inCorner;
     if (inCorner) {
-      const b = paper.bounds();
-      corner.style.left = `${Math.round(b.x0 - 8)}px`;
-      corner.style.top = `${Math.round(b.y0 - 6)}px`;
-      corner.style.width = `${Math.round(b.x1 - b.x0 + 16)}px`;
-      corner.style.height = `${Math.round(b.y1 - b.y0 + 12)}px`;
+      // the button covers the slot (a steady target), kept inside the screen
+      const b = sr && sr.width ? { x0: sr.left, y0: sr.top, x1: sr.right, y1: sr.bottom } : paper.bounds();
+      const x0 = Math.max(0, Math.round(b.x0 - 4)), y0 = Math.max(0, Math.round(b.y0 - 2));
+      corner.style.left = `${x0}px`;
+      corner.style.top = `${y0}px`;
+      corner.style.width = `${Math.min(vw - x0, Math.round(b.x1 - b.x0 + 8))}px`;
+      corner.style.height = `${Math.round(b.y1 - b.y0 + 4)}px`;
     }
 
     route(vh);

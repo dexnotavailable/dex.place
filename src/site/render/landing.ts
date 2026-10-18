@@ -105,7 +105,9 @@ function projectsSection(): string {
  * The website's sections on a white paper over the world (Dex 10-16): alternating left and right, the paper
  * fading into the sky on its open side (styles/v2.css `.band`).
  */
-export const band = (side: "l" | "r", html: string): string => `<div class="band band--${side}">${html}</div>`;
+export const band = (side: "l" | "r", html: string): string =>
+  `<div class="band band--${side}"><i class="band__edge band__edge--t" aria-hidden="true"></i>${html}` +
+  `<i class="band__edge band__edge--b" aria-hidden="true"></i></div>`;
 
 export function landing(content: SiteContent): string {
   const parts = [projectsSection(), downloadsSection(), gallerySection(content), docsSection(content), donateSection(), moreSection()];

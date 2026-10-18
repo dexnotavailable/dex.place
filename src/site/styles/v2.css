@@ -50,7 +50,15 @@
   --f-px: "DotGothic16", ui-monospace, monospace;
   --f-label: "Departure Mono", "DotGothic16", ui-monospace, monospace;
   --f-body: "DotGothic16", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --f-mono: "Departure Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+  /* (until Departure Mono is in the repo, code and hashes fall to DotGothic16, not a system monospace) */
+  --f-mono: "Departure Mono", "DotGothic16", ui-monospace, monospace;
+  /* DotGothic16 is drawn on a 16 px grid: every text size sits on it (16 px, headings 32 px), never in between */
+  --fs-12: 1rem;
+  --fs-14: 1rem;
+  --fs-16: 1rem;
+  --fs-body: 1rem;
+  --fs-20: 1rem;
+  --fs-24: 2rem;
   /* titles: Tesu Display on whole font pixels (one em is 25 font px) */
   --title-px: 1;
   --fs-h3: 1.375rem;
@@ -59,7 +67,8 @@
   --lh-body: 1.7;
 
   /* ---- the bands: paper panels over the sky */
-  --band-gap: clamp(56px, 9vw, 128px);
+  --band-gap: clamp(112px, 12vw, 192px);
+  --edge-h: clamp(32px, 3.5vw, 48px);
   --fade-w: clamp(72px, 13vw, 240px);
   --content-w: min(100vw, 1180px);
   --wrap: 1084px;
@@ -106,17 +115,33 @@ body { background: #000; color: var(--fg); }
 .nav__link[aria-current], .nav__ind { background: var(--gold); border-color: var(--ink); }
 .btn--ink { --btn-bg: var(--ink); --btn-fg: #fff; --btn-edge: var(--ink); --px-a: var(--gold); --pop-hi: var(--scarlet); }
 .menu:popover-open { background: #fff; }
-.menu__top .mark { color: var(--ink); }
+.menu__top .mark-px { color: var(--ink); margin-left: 4px; }
+/* the pixel "dex" (render/glyphs.ts pixelMark) in the header, the menu and the footer */
+.mark-px { display: block; flex: none; image-rendering: pixelated; }
+.hdr__mark { padding: 0 10px; }
+.hdr__mark .mark-px { translate: 0 1px; }
+.ftr__mark { color: var(--ink); display: inline-block; padding-top: 18px; }
 .menu__link { font: 400 clamp(1.125rem, 5vw, 1.375rem) / 1 var(--f-px); }
 .menu__link[aria-current] { border-color: var(--ink); box-shadow: var(--off) var(--off) 0 var(--gold); }
 .strip { display: none !important; }
+/* the corner slot in the header: the loader and the ofuda settle here (motion/column.ts), right of World on a
+   desktop, left of Menu on narrower screens; it keeps its room so nothing in the header shifts */
+.hdr__slot { flex: none; display: block; width: 44px; height: 48px; margin-left: 6px; }
+.sheet:not(.sheet--column) .hdr__slot { display: none; }
+@media (max-width: 1099px) {
+  .hdr__slot { margin-left: auto; }
+  .hdr__menu { margin-left: 8px; }
+}
 
 /* ------------------------------------------------------------------ the bands */
-/* Each section is a white paper on its side of the page (alternating), fading into the sky on its open side.
-   Between bands the sky shows through. */
+/* Each section is a white paper on its side of the page (alternating), dissolving into the world on every side
+   that meets it: its open side (`::after`, the fade the width of --fade-w) and its top and bottom edges
+   (`.band__edge`, --edge-h deep), each a gradient with a scatter of white pixels over it (motion/scatter.ts).
+   Between the papers the sky shows through, never as a ruled bar. A section's own page is one band on the left. */
 .band {
   --edge: max(0px, (100vw - var(--content-w)) * 0.24);
   --paper: min(100vw, calc(var(--edge) + var(--content-w)));
+  --fade: rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%;
   position: relative;
   padding-block: calc(var(--band-gap) / 2);
 }
@@ -129,55 +154,70 @@ body { background: #000; color: var(--fg); }
 }
 /* the paper */
 .band::before { width: var(--paper); background: #fff; }
-/* its edge: the gradient, and the scatter of white pixels over it (motion/sky.ts draws --scatter-l / -r) */
+/* its open side: the gradient, and the white pixels over it; its ends taper into the top and bottom fades */
 .band::after {
   width: var(--fade-w);
-  background-image: var(--scatter-l, none), linear-gradient(90deg, #fff 0, rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%);
+  background-image: var(--scatter-l, none), linear-gradient(90deg, #fff 0, var(--fade));
   background-repeat: repeat-y, no-repeat;
   background-size: var(--scatter-size, 100% auto), 100% 100%;
+  -webkit-mask-image: linear-gradient(transparent, #000 var(--edge-h), #000 calc(100% - var(--edge-h)), transparent);
+  mask-image: linear-gradient(transparent, #000 var(--edge-h), #000 calc(100% - var(--edge-h)), transparent);
 }
 .band--l::before { left: 0; }
 .band--l::after { left: var(--paper); }
 .band--r::before { right: 0; }
 .band--r::after {
   right: var(--paper);
-  background-image: var(--scatter-r, none), linear-gradient(270deg, #fff 0, rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%);
+  background-image: var(--scatter-r, none), linear-gradient(270deg, #fff 0, var(--fade));
 }
-.band > .sec { position: relative; z-index: 1; background: transparent; border: 0; }
-.band--l > .sec > .wrap { margin-left: var(--edge); margin-right: auto; }
-.band--r > .sec > .wrap { margin-right: var(--edge); margin-left: auto; }
+/* its top and bottom edges dissolve the same way */
+.band__edge {
+  position: absolute;
+  width: var(--paper);
+  height: var(--edge-h);
+  pointer-events: none;
+  background-repeat: repeat-x, no-repeat;
+  background-size: var(--scatter-edge-size, auto 100%), 100% 100%;
+}
+.band--l > .band__edge { left: 0; }
+.band--r > .band__edge { right: 0; }
+.band__edge--t {
+  top: calc(var(--band-gap) / 2 - var(--edge-h));
+  background-image: var(--scatter-t, none), linear-gradient(0deg, #fff 0, var(--fade));
+  background-position: left bottom, 0 0;
+}
+.band__edge--b {
+  bottom: calc(var(--band-gap) / 2 - var(--edge-h));
+  background-image: var(--scatter-b, none), linear-gradient(180deg, #fff 0, var(--fade));
+  background-position: left top, 0 0;
+}
+.band > .sec, .band > .page { position: relative; z-index: 1; background: transparent; border: 0; }
+.band--l > .sec > .wrap, .band--l > .page > .wrap { margin-left: var(--edge); margin-right: auto; max-width: min(calc(var(--wrap) + var(--pad) * 2), calc(var(--paper) - var(--edge))); }
+.band--r > .sec > .wrap, .band--r > .page > .wrap { margin-right: var(--edge); margin-left: auto; max-width: min(calc(var(--wrap) + var(--pad) * 2), calc(var(--paper) - var(--edge))); }
 .band .sec { padding-block: var(--s-8); }
-/* narrow screens: the paper takes the width but leaves a strip of sky on its open side */
+.band > .page { padding-block: var(--s-7) var(--s-8); }
+/* laptops: the paper always leaves open sky beside it (at least about 100 px clear past the fade), so the
+   left / right alternation reads (1366: a 1066 px paper, a 123 px fade, about 180 px of sky) */
+@media (min-width: 1100px) {
+  .band {
+    --fade-w: clamp(96px, 9vw, 160px);
+    --paper: min(calc(var(--edge) + var(--content-w)), calc(100vw - max(240px, 22vw)));
+  }
+}
+/* tablets: the paper takes most of the width, a strip of real sky on its open side */
 @media (max-width: 1099px) {
-  .band { --paper: calc(100vw - var(--fade-w) * 0.45); --fade-w: clamp(40px, 9vw, 72px); }
-  .band--l > .sec > .wrap { margin: 0; max-width: calc(var(--paper) - 4px); }
-  .band--r > .sec > .wrap { margin: 0 0 0 auto; max-width: calc(var(--paper) - 4px); }
+  .band { --paper: calc(100vw - max(56px, 9vw)); --fade-w: clamp(32px, 6vw, 56px); }
+  .band--l > .sec > .wrap, .band--l > .page > .wrap { margin: 0; max-width: var(--paper); }
+  .band--r > .sec > .wrap, .band--r > .page > .wrap { margin: 0 0 0 auto; max-width: var(--paper); }
 }
+/* phones: the paper runs the full width and dissolves only at its top and bottom, into the sky between */
 @media (max-width: 600px) {
-  .band { --paper: calc(100vw - 14px); --fade-w: 14px; }
+  .band { --paper: 100vw; }
+  .band::after { display: none; }
   .band .sec { padding-block: var(--s-7); }
-}
-
-/* a section page (/downloads/ ...) is one band, the paper on the left */
-.sheet--page .main > .page, .sheet--column .main > .page {
-  position: relative;
-  margin-block: calc(var(--band-gap) / 2);
-  padding-block: var(--s-7) var(--s-8);
-  background: #fff;
 }
 .sheet--page:not(.sheet--column) { background: #fff; }
 .sheet--page:not(.sheet--column) .sky { display: none; }
-.sheet--column .main > .page { width: min(100vw, calc(max(0px, (100vw - var(--content-w)) * 0.24) + var(--content-w))); }
-.sheet--column .main > .page::after {
-  content: ""; position: absolute; top: 0; bottom: 0; left: 100%; width: var(--fade-w); pointer-events: none;
-  background-image: var(--scatter-l, none), linear-gradient(90deg, #fff 0, rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%);
-  background-repeat: repeat-y, no-repeat; background-size: var(--scatter-size, 100% auto), 100% 100%;
-}
-.sheet--column .main > .page > .wrap { margin-left: max(0px, (100vw - var(--content-w)) * 0.24); margin-right: 0; }
-@media (max-width: 1099px) {
-  .sheet--column .main > .page { width: calc(100vw - 14px); }
-  .sheet--column .main > .page::after { width: 14px; }
-}
 
 /* the project scenes (placeholder art) on a pale sky instead of the dark site's void */
 .scene { --sunk: #e3eff7; --line: #c3d5e3; background: var(--sunk); }
@@ -224,7 +264,7 @@ h1, h2, h3, h4 { font-weight: 400; }
 .sticker--cyan { color: #4aa3e0; }
 .dl-state--ready { color: var(--mint-d); }
 .spec__link .px, .dl-notes li::before, .cmd span { color: var(--mint-d); }
-.dlg__caveat .px, .dlf-st--c .sticker { color: var(--yellow-d); }
+.dlg__caveat .px { color: var(--yellow-d); }
 .amt__unit { color: var(--scarlet); }
 [data-state="amount"] .qr__tag { color: var(--yellow-d); }
 .prose a { color: var(--azure); text-decoration-color: rgb(30 108 171 / 0.4); }
@@ -242,6 +282,18 @@ code, kbd, pre { font-family: var(--f-mono); }
 
 /* ------------------------------------------------------------------ the footer */
 .ftr { background: #fff; border-top: var(--bw) solid var(--ink); margin-top: 0; }
+/* on the page column it is a paper on the right, flowing on down into the jetty's white column */
+.band--foot { padding-bottom: 0; }
+.band--foot::before, .band--foot::after { bottom: 0; -webkit-mask-image: linear-gradient(transparent, #000 var(--edge-h)); mask-image: linear-gradient(transparent, #000 var(--edge-h)); }
+.band--foot > .ftr { position: relative; z-index: 1; background: transparent; border: 0; }
+.band--foot > .band__edge--b { bottom: calc(-1 * var(--edge-h)); z-index: 2; }
+.band--foot > .ftr .wrap { margin-right: var(--edge); margin-left: auto; max-width: min(calc(var(--wrap) + var(--pad) * 2), calc(var(--paper) - var(--edge))); }
+.band--foot .ftr__base { border-top-color: var(--line); }
+.sheet--column .jetty { border-top: 0; }
+/* the header's row lines up with the papers' content (the left papers' start, the right papers' end) */
+@media (min-width: 1100px) {
+  .hdr__in { max-width: calc(100vw - 2 * max(0px, (100vw - var(--content-w)) * 0.24) - 2 * var(--pad)); }
+}
 .ftr__mark { color: var(--ink); }
 .ftr__nav a { font-weight: 400; }
 .ftr__nav a:hover .px { color: var(--scarlet); }
@@ -313,8 +365,17 @@ code, kbd, pre { font-family: var(--f-mono); }
 .callout--magenta .callout__label { color: var(--scarlet); }
 
 /* DotGothic16 is drawn on a 16 px grid: its headings sit on whole multiples of it (32 px), never huge */
-.pcard__name, .dlf__name, .proj__title, .dhead__name, .ahead__title, .ahead--post .ahead__title, .btools .sub { font-size: 2rem; line-height: 1.1; }
+.pcard__name, .dlf__name, .proj__title, .dhead__name, .ahead__title, .ahead--post .ahead__title, .btools .sub, .dgroup__title { font-size: 2rem; line-height: 1.1; }
 .prose h2 { font-size: 2rem; }
-.prose h3 { font-size: 1.5rem; }
+.prose h3 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.prose code, .prose kbd, code, kbd, pre { font-size: 1em; }
+.sh__kicker, .stub__later { letter-spacing: 0.04em; }
 /* the dark site lifted its titles off the page with a hard ink shadow; on white paper they stand plain */
 .ahead__title, .byear__label, .proj__title, .sh__title, .dlf__name, .pcard__name { text-shadow: none; }
+
+/* Content never waits on a script to show (CRITIQUE-1 B4): on the page column nothing is hidden for a reveal on
+   scroll (the world's loading can hold the page's scripts for seconds, right when a visitor scrolls down early) */
+@media (prefers-reduced-motion: no-preference) {
+  .js .sheet--column [data-reveal]:not(.is-in) { opacity: 1; }
+  .js .sheet--column [data-reveal].is-in, .js .sheet--column [data-reveal].is-in i { animation: none; }
+}

@@ -1,53 +1,16 @@
 // The world behind the website (Dex 10-16): "the world stays animated behind". A world layer under the white
-// paper: for now the sky (the tall sky art comes from the sky owner later), a large vertical stretch from deep
-// blue at the top of the website to pale blue at the jetty, with towering cumulus painted by the world's own
-// cloud painter (motion/sky-paint.ts, in a worker), drifting slowly, the whole stretch sliding by a little
-// slower than the page (a quarter of the scroll). Whole pixels only: one art px is `k` device px.
-// Reduced motion: no drift and no slide. Only drawn while the website is on screen.
+// paper: for now the sky (the tall sky art comes from the sky owner later): deep blue at the top of the website to
+// pale blue at the jetty, in dithered pixel steps, with towering cumulus painted by the world's own cloud painter
+// (motion/sky-paint.ts, in a worker) and placed where the sky shows (motion/sky-plan.ts): along every paper's
+// open side, under every gap, over the jetty. The clouds ride with the page a little slower than it (depth) and
+// sway slowly. Whole pixels only: one art px is `k` device px. Reduced motion: no sway, no lag. Only drawn while
+// the website is on screen.
 
-import type { CloudP } from "../../tesu/art/library/opening/sky.ts";
+import { POOL, placeClouds, rampIndex, skyRamp, type CloudPlace, type SkyRegion } from "./sky-plan.ts";
 import type { CloudDone, CloudJob } from "./sky-paint.ts";
 
-/** The sky's colours from the top of the stretch to the bottom (a stepped ramp: pixel-art bands). */
-const RAMP: [number, number, number][] = [
-  [31, 86, 156], [38, 98, 168], [46, 110, 180], [56, 123, 192], [68, 136, 202], [82, 149, 211], [98, 162, 219],
-  [115, 175, 226], [132, 187, 232], [150, 198, 237], [168, 209, 241], [186, 219, 244], [203, 228, 247], [218, 236, 249],
-];
-
-/** The slide: the stretch moves at this share of the page's scroll. */
-const PARALLAX = 0.25;
-
-interface Placed {
-  /** Where along the stretch (0 top .. 1 bottom) its base sits, and across (0 left .. 1 right). */
-  at: number;
-  x: number;
-  p: CloudP;
-  seed: number;
-  /** Drift, art px a second. */
-  v: number;
-  img?: HTMLCanvasElement;
-  ax?: number;
-  ay?: number;
-  shownAt?: number;
-}
-
-/** The clouds along the stretch: towering heaps on the open side of each panel, a low deck near the bottom. */
-export function skyPlan(scale: number): Placed[] {
-  const c = (at: number, x: number, p: CloudP, seed: number, v: number): Placed => ({
-    at, x, seed, v,
-    p: { ...p, w: Math.round(p.w * scale), h: Math.round(p.h * scale) },
-  });
-  return [
-    c(0.16, 0.86, { kind: "tower", w: 230, h: 300 }, 11, 2.2),
-    c(0.2, 0.08, { kind: "wisp", w: 220, h: 26 }, 12, 4),
-    c(0.36, 0.12, { kind: "cumulus", w: 420, h: 210 }, 13, 2.6),
-    c(0.5, 0.9, { kind: "cumulus", w: 360, h: 190, tower: 0.9 }, 14, 2.4),
-    c(0.66, 0.1, { kind: "tower", w: 240, h: 280 }, 15, 2),
-    c(0.74, 0.7, { kind: "wisp", w: 260, h: 30 }, 16, 4.4),
-    c(0.86, 0.88, { kind: "cumulus", w: 460, h: 170, tower: 0.55 }, 17, 2.8),
-    c(1.0, 0.3, { kind: "stratus", w: 900, h: 60 }, 18, 1.4),
-  ];
-}
+/** How much slower than the page the clouds ride (0: with it). */
+const LAG = 0.15;
 
 /**
  * The bottom of the website (Dex 10-16: "the jetty scene, on the left"): Kagami's jetty painted by the world's
@@ -150,6 +113,41 @@ export function initJetty(worker: () => Worker): void {
 const HER_W = 28;
 const HER_H = 104;
 
+/** Where the sky shows on this page, from the layout: papers' open sides, the gaps between papers, the jetty. */
+export function skyRegions(sheet: HTMLElement): SkyRegion[] {
+  const out: SkyRegion[] = [];
+  const vw = document.documentElement.clientWidth || innerWidth;
+  const y0 = window.scrollY;
+  const papers: { top: number; bottom: number }[] = [];
+  for (const el of sheet.querySelectorAll<HTMLElement>(".band")) {
+    const r = el.getBoundingClientRect();
+    const cs = getComputedStyle(el, "::before");
+    const paperW = parseFloat(cs.width) || vw;
+    const fade = parseFloat(getComputedStyle(el, "::after").width) || 0;
+    const top = r.top + y0 + (parseFloat(cs.top) || 0), bottom = top + (parseFloat(cs.height) || r.height);
+    papers.push({ top, bottom });
+    const open = el.classList.contains("band--r") ? { left: 0, right: vw - paperW - fade * 0.6 } : { left: paperW + fade * 0.6, right: vw };
+    out.push({ kind: "side", top, bottom, ...open });
+  }
+  const jetty = sheet.querySelector<HTMLElement>("[data-jetty]");
+  const jp = jetty?.querySelector<HTMLElement>(".jetty__paper");
+  if (jetty) {
+    const r = jetty.getBoundingClientRect();
+    const pr = jp?.getBoundingClientRect();
+    const stacked = !pr || pr.width >= r.width * 0.9;
+    out.push({ kind: "jetty", top: r.top + y0 + (stacked && pr ? pr.height : 0), bottom: r.top + y0 + r.height * 0.62, left: 0, right: stacked || !pr ? vw : pr.left });
+  }
+  // the gaps: from the top of the website (under the header) down between the papers
+  const hdr = sheet.querySelector<HTMLElement>(".hdr");
+  let above = hdr ? hdr.getBoundingClientRect().bottom + y0 : sheet.getBoundingClientRect().top + y0;
+  papers.sort((p, q) => p.top - q.top);
+  for (const p of papers) {
+    if (p.top - above > 24) out.push({ kind: "gap", top: above, bottom: p.top, left: 0, right: vw });
+    above = Math.max(above, p.bottom);
+  }
+  return out;
+}
+
 export function initSky(reduced: MediaQueryList): void {
   const sky = document.querySelector<HTMLElement>("[data-sky]");
   const sheet = document.getElementById("site");
@@ -158,46 +156,88 @@ export function initSky(reduced: MediaQueryList): void {
   sky.append(cv);
   const ctx = cv.getContext("2d");
   if (!ctx) return;
-  let plan: Placed[] = [];
-  let planScale = -1;
   let worker: Worker | null = null;
   const t0 = performance.now();
+  let dirty = true;
+  let lastDraw = 0;
   const getWorker = (): Worker => (worker ??= new Worker(new URL("./sky-paint.ts", import.meta.url), { type: "module" }));
   initJetty(getWorker);
-  let generation = 0;
 
+  // the painted pool, at the scale the screen wants
+  interface Art { img: HTMLCanvasElement; ax: number; ay: number; at: number }
+  let pool: (Art | null)[] = [];
+  let poolScale = -1;
+  let generation = 0;
   const paint = (scale: number): void => {
-    if (Math.abs(scale - planScale) < 0.08) return;
-    planScale = scale;
-    plan = skyPlan(scale);
+    if (Math.abs(scale - poolScale) < 0.08) return;
+    poolScale = scale;
     const gen = ++generation;
-    const mine = plan;
+    const mine: (Art | null)[] = POOL.map(() => null);
+    pool = mine;
     getWorker().addEventListener("message", (e: MessageEvent<CloudDone>) => {
       const d = e.data;
-      if (gen !== generation || d.id < 0) return;
-      const pl = mine[d.id];
-      if (!pl) return;
+      if (gen !== generation || d.id < 0 || d.id >= 1000) return;
       const img = document.createElement("canvas");
       img.width = d.w;
       img.height = d.h;
       img.getContext("2d")!.putImageData(new ImageData(d.rgba as Uint8ClampedArray<ArrayBuffer>, d.w, d.h), 0, 0);
-      pl.img = img;
-      pl.ax = d.ax;
-      pl.ay = d.ay;
-      pl.shownAt = performance.now();
+      mine[d.id] = { img, ax: d.ax, ay: d.ay, at: performance.now() };
       dirty = true;
     });
-    plan.forEach((pl, id) => getWorker().postMessage({ id, p: pl.p, seed: pl.seed } satisfies CloudJob));
+    POOL.forEach(({ use: _use, ...p }, id) => {
+      const job: CloudJob = { id, p: { ...p, w: Math.round(p.w * scale), h: Math.round(p.h * scale) }, seed: 11 + id * 7 };
+      getWorker().postMessage(job);
+    });
   };
 
-  let dirty = true;
-  let lastDraw = 0;
+  // where the clouds go: from the layout, again whenever it changes
+  let places: CloudPlace[] = [];
+  const plan = (): void => {
+    places = placeClouds(skyRegions(sheet), innerHeight, 3);
+    dirty = true;
+  };
+  let planT = 0;
+  const replan = (): void => {
+    clearTimeout(planT);
+    planT = window.setTimeout(plan, 120);
+  };
+  if (typeof ResizeObserver === "function") new ResizeObserver(replan).observe(sheet);
+  void document.fonts?.ready.then(replan);
+  plan();
+
+  // the sky's colour: a dithered ramp, a little over two screens of it from the top of the website to the bottom
+  const ramp = skyRamp(28);
+  let grad: HTMLCanvasElement | null = null;
+  const gradient = (W: number, H: number): HTMLCanvasElement => {
+    const G = Math.round(H * 2.2);
+    if (grad && grad.width === W && grad.height === G) return grad;
+    const c = document.createElement("canvas");
+    c.width = W;
+    c.height = G;
+    const g = c.getContext("2d")!;
+    const img = g.createImageData(W, G);
+    for (let y = 0; y < G; y++) {
+      for (let x = 0; x < W; x++) {
+        const col = ramp[rampIndex(x, y, G, ramp.length)]!;
+        const i = (y * W + x) * 4;
+        img.data[i] = col[0];
+        img.data[i + 1] = col[1];
+        img.data[i + 2] = col[2];
+        img.data[i + 3] = 255;
+      }
+    }
+    g.putImageData(img, 0, 0);
+    grad = c;
+    return c;
+  };
+
   const draw = (now: number): void => {
     const dpr = window.devicePixelRatio || 1;
     const vw = innerWidth, vh = innerHeight;
     const r = sheet.getBoundingClientRect();
     if (r.top >= vh || r.bottom <= 0) return;
     const k = Math.max(1, Math.round(2 * dpr));
+    const css = k / dpr;
     const W = Math.ceil((vw * dpr) / k), H = Math.ceil((vh * dpr) / k);
     if (cv.width !== W || cv.height !== H) {
       cv.width = W;
@@ -207,31 +247,26 @@ export function initSky(reduced: MediaQueryList): void {
       cv.style.height = `${(H * k) / dpr}px`;
     }
     paint(Math.min(1, Math.max(0.45, W / 900)));
-    // the stretch: one window high plus a quarter of the scroll through the website
-    const travel = Math.max(0, sheet.offsetHeight - vh);
-    const scrolled = Math.min(travel, Math.max(0, -r.top));
-    const slide = reduced.matches ? 0 : PARALLAX;
-    const total = H + (travel * slide * dpr) / k;
-    const off = (scrolled * slide * dpr) / k;
-    // the sky's bands
-    for (let y = 0; y < H; y++) {
-      const u = Math.min(1, Math.max(0, (y + off) / total));
-      const c = RAMP[Math.min(RAMP.length - 1, Math.floor(u * RAMP.length))]!;
-      ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
-      ctx.fillRect(0, y, W, 1);
-    }
+    // the colour: the window slides down the ramp as the page goes down the website
+    const g = gradient(W, H);
+    const travel = Math.max(1, sheet.offsetHeight - vh);
+    const progress = Math.min(1, Math.max(0, -r.top / travel));
+    ctx.drawImage(g, 0, -Math.round(progress * (g.height - H)));
     // the clouds
     const t = reduced.matches ? 0 : (now - t0) / 1000;
+    const sy = window.scrollY;
     ctx.imageSmoothingEnabled = false;
-    for (const pl of plan) {
-      if (!pl.img) continue;
-      const span = W + pl.img.width;
-      const x0 = pl.x * W - pl.ax! + pl.v * t;
-      const x = (((x0 + pl.img.width) % span) + span) % span - pl.img.width;
-      const y = pl.at * total - off - pl.ay!;
-      if (y > H || y + pl.img.height < 0) continue;
-      ctx.globalAlpha = reduced.matches ? 1 : Math.min(1, (now - (pl.shownAt ?? 0)) / 600);
-      ctx.drawImage(pl.img, Math.round(x), Math.round(y));
+    for (const pl of places) {
+      const art = pool[pl.pool];
+      if (!art) continue;
+      // on screen (css px): with the page, lagging a little away from the middle of the screen (depth)
+      let y = pl.y - sy;
+      if (!reduced.matches) y += (vh / 2 - y) * LAG;
+      const x = pl.x + (reduced.matches ? 0 : Math.sin(t * 0.05 + pl.phase) * 10 * css);
+      const ax = Math.round(x / css) - art.ax, ay = Math.round(y / css) - art.ay;
+      if (ay > H || ay + art.img.height < 0 || ax > W || ax + art.img.width < 0) continue;
+      ctx.globalAlpha = reduced.matches ? 1 : Math.min(1, (now - art.at) / 600);
+      ctx.drawImage(art.img, ax, ay);
     }
     ctx.globalAlpha = 1;
     lastDraw = now;
@@ -239,11 +274,11 @@ export function initSky(reduced: MediaQueryList): void {
   };
 
   const tick = (now: number): void => {
-    // drift moves a whole art px about every 0.4 s: redraw then, or when the page moves
-    if (dirty || (!reduced.matches && now - lastDraw > 400) || plan.some((p) => p.shownAt && now - p.shownAt < 700)) draw(now);
+    // the sway moves a whole art px every few tenths of a second: redraw then, or when the page moves
+    if (dirty || (!reduced.matches && now - lastDraw > 250) || pool.some((a) => a && now - a.at < 700)) draw(now);
     requestAnimationFrame(tick);
   };
   window.addEventListener("scroll", () => { dirty = true; }, { passive: true });
-  window.addEventListener("resize", () => { dirty = true; });
+  window.addEventListener("resize", () => { dirty = true; grad = null; replan(); });
   requestAnimationFrame(tick);
 }

@@ -18,7 +18,8 @@
 .gs-title { position: absolute; inset: 0; z-index: 3; }
 .gs-title__name { margin: 0; }
 /* without scripts the mark is plain text (the canvas writes it with them) */
-.gs-title__still { position: absolute; left: 0; right: 0; top: 40%; translate: 0 -50%; text-align: center; font-size: clamp(96px, 16vw, 220px); color: #f6eee9; }
+.gs-title__still { position: absolute; left: 50%; top: 40%; translate: -50% -50%; color: #f6eee9; }
+.gs-title__still .mark-px { max-width: 80vw; height: auto; }
 .js .gs-title__still { display: none; }
 .gs-status {
   position: absolute; left: 0; right: 0; bottom: 13vh; margin: 0; padding: 0 18px; text-align: center;
@@ -81,11 +82,14 @@ html.op-cine .world__cue { visibility: hidden; }
   background: repeating-linear-gradient(90deg, transparent 0 46px, #644a2e 46px 54px, transparent 54px 118px);
 }
 .jetty__her {
-  /* her placeholder: the plain white box every character is until her art lands, at her height */
+  /* her placeholder: the white box she is in the game until her art lands, at her height: the red band of her
+     hat and an eye, as in the world (no card shadow) */
   position: absolute; left: 22%; bottom: calc(30% + 16px); width: 30px; height: 84px;
-  background: #fff; box-shadow: 0 0 0 2px var(--ink, #2b2233), 4px 4px 0 2px rgb(43 34 51 / 0.25);
+  background: #fff; box-shadow: 0 0 0 2px #2b2233;
   transition: opacity 400ms linear;
 }
+.jetty__her::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7%; background: #ee4c31; }
+.jetty__her::after { content: ""; position: absolute; right: 22%; top: 16%; width: 4px; height: 6px; background: #2b2233; }
 .jetty:not([data-her]) .jetty__her { opacity: 0; }
 /* the ofuda once she has caught it (way 4): a few px on her hat */
 .jetty__hat { position: absolute; left: calc(50% - 4px); top: -2px; width: 8px; height: 20px; background: #eaca92; box-shadow: inset 0 0 0 2px #4e3022, inset 0 -6px 0 2px #ba3036; opacity: 0; }
@@ -95,11 +99,12 @@ html.op-cine .world__cue { visibility: hidden; }
   justify-self: end;
   display: grid;
   align-content: center;
-  justify-items: start;
-  gap: var(--s-4);
-  width: min(100%, max(320px, 34vw));
+  justify-items: center;
+  text-align: center;
+  gap: var(--s-5);
+  width: min(100%, max(360px, 40vw));
   min-height: 100%;
-  padding: var(--s-9) var(--pad) clamp(64px, 14vh, 140px) clamp(80px, 12vw, 200px);
+  padding: var(--s-9) max(48px, var(--pad)) clamp(64px, 14vh, 140px) clamp(72px, 9vw, 160px);
   background: linear-gradient(90deg, rgb(255 255 255 / 0) 0, #fff clamp(80px, 12vw, 200px));
   transition: opacity 1.2s linear;
 }
@@ -107,6 +112,9 @@ html.op-cine .world__cue { visibility: hidden; }
   content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: clamp(80px, 12vw, 200px);
   background-image: var(--scatter-r, none); background-repeat: repeat-y; background-size: var(--scatter-size, 100% auto); pointer-events: none;
 }
+.jetty__ask { margin: 0; font: 400 var(--fs-body) / 1.5 var(--f-body); color: var(--fg-2); }
+.jetty__note { margin: 0; font: 400 var(--fs-body) / 1.5 var(--f-label); color: var(--muted); }
+.jetty__note[hidden] { display: none; }
 /* way 4: the white fade goes away, the whole scene shows */
 .jetty[data-caught] .jetty__paper { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .jetty__paper { transition: none; } }
@@ -133,6 +141,9 @@ html.op-cine .world__cue { visibility: hidden; }
 @media (max-height: 520px) {
   .jetty { min-height: max(300px, calc(100svh - var(--hdr-h))); }
 }
+/* way 4: the cut up to the game screen, a short cover in the sky's colour */
+.page-cut { position: fixed; inset: 0; z-index: 60; background: #cfe5f6; opacity: 0; pointer-events: none; transition: opacity 320ms linear; }
+.page-cut.is-on { opacity: 1; }
 @media (max-width: 1099px) {
   .jetty__paper { padding-left: clamp(48px, 8vw, 200px); }
   .jetty__go { white-space: normal; text-align: left; }

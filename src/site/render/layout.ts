@@ -1,8 +1,9 @@
 // The shell every page shares: <head> extras, header with nav, footer, and on
 // the root page the world mount with its cinematic bars (DESIGN-SYSTEM.md §4).
 
+import { band } from "./landing.ts";
 import { KOFI_URL, NAV, navHref, type NavItem } from "../data/nav.ts";
-import { button, icon, strip, tile } from "./glyphs.ts";
+import { button, icon, pixelMark, strip, tile } from "./glyphs.ts";
 import { cx, esc } from "./html.ts";
 import type { PageId, PageMeta, Rendered } from "./types.ts";
 
@@ -100,7 +101,6 @@ export function head(meta: PageMeta): string {
     `<meta name="theme-color" content="#000000" />`,
     `<link rel="icon" href="/favicon.svg" type="image/svg+xml" />`,
     `<link rel="alternate" type="application/rss+xml" title="dex blog" href="/blog/feed.xml" />`,
-    `<link rel="preload" href="/fonts/Daniel-Regular.otf" as="font" type="font/otf" crossorigin />`,
     `<link rel="preload" href="/fonts/tesu-display/TesuDisplay.woff" as="font" type="font/woff" crossorigin />`,
     `<!--site:preload-->`,
     EMBED_FLAG,
@@ -138,16 +138,18 @@ export function header(current: PageId): string {
   return (
     `<header class="hdr" data-hdr>` +
     `<div class="hdr__in">` +
-    `<a class="hdr__mark pop" href="${onHome ? "#site" : "/"}"><span class="mark">dex</span><span class="sr">home</span></a>` +
+    `<a class="hdr__mark pop" href="${onHome ? "#site" : "/"}">${pixelMark(1)}<span class="sr">dex, home</span></a>` +
     `<nav class="nav" aria-label="Sections"><ul class="nav__list" data-nav>` +
     NAV.map((item) => navLink(item, current, "bar")).join("") +
     `</ul><span class="nav__ind" aria-hidden="true" data-nav-ind></span></nav>` +
     button({ href: worldHref, label: "World", icon: "up", iconFirst: true, tone: "ink", size: "s", className: "hdr__world" }) +
+    // the website's corner: where the loader and the ofuda settle (motion/column.ts draws them over it)
+    `<span class="hdr__slot" data-ofuda-slot aria-hidden="true"></span>` +
     `<button class="btn btn--paper btn--s hdr__menu" type="button" popovertarget="menu">` +
     `<span class="btn__ic">${icon("menu", 2)}</span><span class="btn__label">Menu</span></button>` +
     `</div>` +
     `<div class="menu" id="menu" popover aria-label="Menu">` +
-    `<div class="menu__top"><span class="mark" aria-hidden="true">dex</span>` +
+    `<div class="menu__top">${pixelMark(1)}` +
     `<button class="btn btn--paper btn--s btn--icon" type="button" popovertarget="menu" popovertargetaction="hide" aria-label="Close menu" autofocus>` +
     `<span class="btn__ic">${icon("close", 3)}</span></button></div>` +
     `<nav aria-label="Sections (menu)"><ul class="menu__list">` +
@@ -171,16 +173,16 @@ export function footer(current: PageId): string {
     `<footer class="ftr">` +
     strip("ftr__strip", false) +
     `<div class="ftr__in wrap">` +
-    `<a class="ftr__mark" href="${onHome ? "#site" : "/"}"><span class="mark">dex</span><span class="sr">home</span></a>` +
+    `<a class="ftr__mark" href="${onHome ? "#site" : "/"}">${pixelMark(2)}<span class="sr">dex, home</span></a>` +
     `<nav class="ftr__nav" aria-label="Footer"><ul>${links}` +
     `<li><a href="${onHome ? "#world" : "/#world"}">${icon("up", 2)}<span>World</span></a></li></ul></nav>` +
     `<div class="ftr__side">` +
     `<a class="ftr__kofi pop" href="${KOFI_URL}" rel="noopener">${icon("heart", 2)}<span>Ko-fi</span>${icon("external", 2)}</a>` +
     `<span class="ftr__sleepy" aria-hidden="true">${icon("sleepy", 3)}</span>` +
     `</div></div>` +
-    `<div class="ftr__base wrap"><p>Type: <a href="/fonts/Daniel-license.txt">Daniel</a> by Daniel Midgley, ` +
-    `<a href="/fonts/tesu-display/LICENSE.txt">Tesu Display</a> (ours) and ` +
-    `<a href="/fonts/OFL-DotGothic16.txt">DotGothic16</a> by Fontworks (SIL OFL).</p></div>` +
+    `<div class="ftr__base wrap"><p>Type: <a href="/fonts/tesu-display/LICENSE.txt">Tesu Display</a> (ours) and ` +
+    `<a href="/fonts/OFL-DotGothic16.txt">DotGothic16</a> by Fontworks (SIL OFL). ` +
+    `The dex mark is drawn by hand from <a href="/fonts/Daniel-license.txt">Daniel</a> by Daniel Midgley.</p></div>` +
     `</footer>`
   );
 }
@@ -224,7 +226,7 @@ export function world(opts: { h1?: boolean } = {}): string {
     `<div class="gs-cover" aria-hidden="true"></div>` +
     `<div class="gs-title" data-gs-title>` +
     // "dex" is the home page's h1 (a section's page has its own)
-    `<${tag} class="gs-title__name"><span class="sr">dex</span><span class="gs-title__still mark" aria-hidden="true">dex</span></${tag}>` +
+    `<${tag} class="gs-title__name"><span class="sr">dex</span><span class="gs-title__still">${pixelMark(4)}</span></${tag}>` +
     `<p class="gs-status" data-gs-status role="status">loading the world</p>` +
     `<button class="gs-continue" type="button" data-gs-continue hidden>click to continue</button>` +
     `<noscript><p class="gs-status">The world needs JavaScript. <a href="#site">Visit the site</a>.</p></noscript>` +
@@ -248,7 +250,8 @@ export function jettySection(): string {
     `<span class="jetty__her" data-jetty-her><i class="jetty__hat"></i></span>` +
     `</div>` +
     `<div class="jetty__paper">` +
-    `<h2 class="sr" id="jetty-title">The world</h2>` +
+    `<h2 class="jetty__ask" id="jetty-title">want to explore the world we made?</h2>` +
+    `<p class="jetty__note" data-jetty-note>the world is still loading</p>` +
     `<button class="jetty__go" type="button" data-jetty-go hidden>experience the world we made</button>` +
     `<noscript><a class="jetty__go" href="/tesu/">experience the world we made</a></noscript>` +
     `</div>` +
@@ -271,8 +274,11 @@ export function shell({ meta, main }: ShellOptions): Rendered {
     `<div class="${cx("sheet", home ? "sheet--home" : "sheet--page", column && "sheet--column")}" id="site" data-page="${meta.page}">` +
     `<div class="sky" data-sky aria-hidden="true"></div>` +
     header(meta.page) +
-    `<main id="main" class="main" tabindex="-1">${main}</main>` +
-    footer(meta.page) +
+    // a section's own page is one paper band, on the left (render/landing.ts band)
+    `<main id="main" class="main" tabindex="-1">${column && !home ? band("l", main) : main}</main>` +
+    // on the page column the footer is a paper on the right that runs on down into the jetty's white column
+    (column ? `<div class="band band--r band--foot"><i class="band__edge band__edge--t" aria-hidden="true"></i>${footer(meta.page)}` +
+      `<i class="band__edge band__edge--b" aria-hidden="true"></i></div>` : footer(meta.page)) +
     // the bottom of the page is the world again: the jetty, where she starts
     (column ? jettySection() : "") +
     `</div>` +

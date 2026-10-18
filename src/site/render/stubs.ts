@@ -31,11 +31,11 @@ export const STUBS: readonly Stub[] = [
 
 const later = `<p class="stub__later"><span class="stub__dot" aria-hidden="true"></span>Opens later</p>`;
 
-function stubCard(s: Stub, level: 2 | 3): string {
+function stubCard(s: Stub, level: 2 | 3, withHanko = false): string {
   const h = `h${level}`;
   return (
     `<li class="stub" id="${s.id === "commissions" ? "commissions-card" : `stub-${s.id}`}">` +
-    hanko() +
+    (withHanko ? hanko() : "") +
     `<${h} class="stub__title">${tile(s.icon, s.tone, "s")}<a class="stub__link" href="${s.href}">${esc(s.title)}</a></${h}>` +
     `<p class="stub__line">${esc(s.line)}</p>` +
     later +
@@ -49,7 +49,8 @@ export function moreSection(): string {
     `<section class="sec sec--more" id="more" aria-labelledby="more-title">` +
     `<div class="wrap">` +
     sectionHead({ id: "more-title", kicker: "more", title: "Opens later", tone: "cyan", icon: "plus" }) +
-    `<ul class="stubs">${STUBS.map((s) => stubCard(s, 3)).join("")}</ul>` +
+    // Hanko on the first card only: one mascot to a section, not a pattern
+    `<ul class="stubs">${STUBS.map((s, i) => stubCard(s, 3, i === 0)).join("")}</ul>` +
     `</div></section>`
   );
 }
