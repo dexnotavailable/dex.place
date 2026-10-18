@@ -11,6 +11,7 @@ import { projectHref, projects } from "../data/projects.ts";
 import { blogIndex, docsIndex, entryPage } from "./docs.ts";
 import { docGroup } from "../data/docs.ts";
 import { donatePage } from "./donate.ts";
+import { STUBS, stubPage } from "./stubs.ts";
 import type { Entry, PageMeta, Rendered, SiteContent } from "./types.ts";
 import { esc, pad2 } from "./html.ts";
 import { ORIGIN } from "./layout.ts";
@@ -75,6 +76,11 @@ export function routes(content: SiteContent): Route[] {
       meta: { path: "/donate/", title: "Donate", page: "donate", description: "Support Dex through Ko-fi or an MB Bank transfer (VietQR)." },
       main: donatePage,
     },
+    // the services that open later: honest stubs at their own addresses (render/stubs.ts)
+    ...(["support", "account", "map", "forums"] as const).map((id) => ({
+      meta: { path: `/${id}/`, title: STUBS.find((s) => s.id === id)!.title, page: "more" as const, description: `${STUBS.find((s) => s.id === id)!.title}: opens later.` },
+      main: () => stubPage(id),
+    })),
   ];
   const out: Route[] = list.map(({ meta, main }) => ({ path: meta.path, file: fileFor(meta.path), render: page(meta, main) }));
   out.push({

@@ -97,10 +97,11 @@ export function head(meta: PageMeta): string {
       ? `<meta name="robots" content="${[meta.noindex && "noindex", meta.nsfw && "noimageindex"].filter(Boolean).join(", ")}" />`
       : "",
     meta.nsfw ? `<meta name="rating" content="adult" />` : "",
-    `<meta name="theme-color" content="#0f1015" />`,
+    `<meta name="theme-color" content="#000000" />`,
     `<link rel="icon" href="/favicon.svg" type="image/svg+xml" />`,
     `<link rel="alternate" type="application/rss+xml" title="dex blog" href="/blog/feed.xml" />`,
     `<link rel="preload" href="/fonts/Daniel-Regular.otf" as="font" type="font/otf" crossorigin />`,
+    `<link rel="preload" href="/fonts/tesu-display/TesuDisplay.woff" as="font" type="font/woff" crossorigin />`,
     `<!--site:preload-->`,
     EMBED_FLAG,
     JS_FLAG,
@@ -128,7 +129,7 @@ function navLink(item: NavItem, current: PageId, variant: "bar" | "menu"): strin
 
 /** Which nav section a page belongs to. */
 function sectionOf(page: PageId): NavItem["id"] | null {
-  return page === "home" || page === "notfound" ? null : page;
+  return page === "home" || page === "notfound" || page === "more" ? null : page;
 }
 
 export function header(current: PageId): string {
@@ -178,35 +179,20 @@ export function footer(current: PageId): string {
     `<span class="ftr__sleepy" aria-hidden="true">${icon("sleepy", 3)}</span>` +
     `</div></div>` +
     `<div class="ftr__base wrap"><p>Type: <a href="/fonts/Daniel-license.txt">Daniel</a> by Daniel Midgley, ` +
-    `<a href="/fonts/OFL-Jersey15.txt">Jersey 15</a>, <a href="/fonts/OFL-SpaceGrotesk.txt">Space Grotesk</a> and ` +
-    `<a href="/fonts/OFL-Silkscreen.txt">Silkscreen</a> (SIL OFL).</p></div>` +
+    `<a href="/fonts/tesu-display/LICENSE.txt">Tesu Display</a> (ours) and ` +
+    `<a href="/fonts/OFL-DotGothic16.txt">DotGothic16</a> by Fontworks (SIL OFL).</p></div>` +
     `</footer>`
   );
 }
 
 /**
- * The top of the page column on "/" (GDK 3.8): the title on black (the dex mark, the waiting room,
- * the talisman with her name as the loader, "continue"), then the self-paced fall through the sky to
- * where the scenery starts. The talisman itself is drawn by motion/column.ts over the page; the
- * opening's bars, captions and skip chip by its conductor (src/tesu/opening/overlay.ts).
+ * The pages that carry the page column (Dex 10-16): the game screen at the top, the website, the jetty at the
+ * bottom. "/" and each section's own page (a deep link lands on its section, the game screen above it, as if
+ * the visitor had scrolled down early). Entries, posts and pieces are plain pages.
  */
-export function columnTop(): string {
-  return (
-    `<section class="col-title" data-col-title aria-label="dex">` +
-    `<div class="col-title__name"><canvas class="col-title__mark" data-col-mark aria-hidden="true"></canvas></div>` +
-    `<p class="col-title__load" data-col-load role="status">loading the world</p>` +
-    `<button class="col-continue" type="button" data-col-continue hidden>continue</button>` +
-    `<a class="col-title__skip" href="#site">Skip to the site</a>` +
-    `</section>` +
-    `<div class="col-fall" data-col-fall aria-hidden="true">` +
-    `<span class="col-fall__sky"></span><span class="col-fall__isle col-fall__isle--a"></span><span class="col-fall__isle col-fall__isle--b"></span>` +
-    `<span class="col-fall__walker col-fall__walker--a"></span><span class="col-fall__walker col-fall__walker--b"></span>` +
-    `<span class="col-fall__clouds"></span>` +
-    `</div>`
-  );
-}
+export const COLUMN_PAGES: readonly string[] = ["/", "/downloads/", "/gallery/", "/docs/", "/blog/", "/donate/", "/projects/", "/support/", "/account/", "/map/", "/forums/"];
 
-/** The world place a section page stands her at (a spawn in src/tesu/world/sections). */
+/** The world place a section stands for (a spawn in src/tesu/world/sections; GDK 3.7). */
 export function worldPlaceOf(path: string): string | null {
   const at: Record<string, string> = {
     "/downloads/": "court-gate",
@@ -218,31 +204,52 @@ export function worldPlaceOf(path: string): string | null {
   return at[path] ?? null;
 }
 
-/** Top of a page with the world above it: the mount point for Tesu (src/tesu/mount.ts).
- *  The #world target is an empty anchor at the world window's offset, not the sticky
- *  section: a sticky element always counts as "in view", so a link to it would
- *  never scroll back up. motion/world.ts moves focus into the section.
- *  On "/" it waits for PLAY; on a section's page it stands her at that section's place. */
-export function world(opts: { at?: string | null; hold?: boolean } = {}): string {
-  const data = opts.hold ? ` data-world-hold` : opts.at ? ` data-world-at="${esc(opts.at)}"` : "";
+/**
+ * The game screen (Dex 10-16): Tesu at the top of the page, behind a black cover until the visitor goes in.
+ * On it, "dex" (drawn by src/intro, it stays), the loader and the small ofuda (drawn by motion/column.ts over
+ * the page), the status, "click to continue". The #world target is an empty anchor at its top, not the
+ * sticky section: a sticky element always counts as "in view", so a link to it would never scroll back up.
+ * The world waits for the press (`data-world-hold`); src/tesu/mount.ts frames it.
+ */
+export function world(_opts: { at?: string | null; hold?: boolean } = {}): string {
   return (
     `<div id="world" class="world-top"></div>` +
-    `<section class="world" data-world-mount${data} tabindex="-1" aria-label="World">` +
-    `<a class="skip" href="#site">Skip to site</a>` +
+    `<section class="world" data-world-mount data-world-hold tabindex="-1" aria-label="The world">` +
+    `<a class="skip" href="#site">Skip to the site</a>` +
     `<div class="world__stage" data-world-stage>` +
-    // Still frame drawn in code; the world module replaces it when it mounts.
-    `<div class="world__still" aria-hidden="true"><span class="world__stars"></span><span class="world__ring"></span>` +
-    `<span class="world__ground"></span><span class="world__floor"></span></div>` +
     `<div class="world__fallback">${button({ href: "/tesu/", label: "World", icon: "up", iconFirst: true, tone: "ink", size: "s" })}</div>` +
     `<p class="world__hint" data-world-failure role="status" hidden></p>` +
-    `<noscript><p class="world__hint">The world needs JavaScript. <a href="#site">Visit the site</a>.</p></noscript>` +
     `</div>` +
-    (opts.hold
-      ? `<div class="world__play" data-world-play hidden><p class="world__ask">want to explore the world we made?</p>` +
-        `<button class="world__playbtn" type="button" data-world-playbtn>PLAY</button></div>`
-      : "") +
+    `<div class="gs-cover" aria-hidden="true"></div>` +
+    `<div class="gs-title" data-gs-title>` +
+    `<p class="gs-title__name"><span class="sr">dex</span><span class="gs-title__still mark" aria-hidden="true">dex</span></p>` +
+    `<p class="gs-status" data-gs-status role="status">loading the world</p>` +
+    `<button class="gs-continue" type="button" data-gs-continue hidden>click to continue</button>` +
+    `<noscript><p class="gs-status">The world needs JavaScript. <a href="#site">Visit the site</a>.</p></noscript>` +
+    `</div>` +
     `<div class="world__bars" aria-hidden="true"><span class="world__bar world__bar--top"></span><span class="world__bar world__bar--bottom"></span></div>` +
     `<a class="world__cue" href="#site"><span>Site</span>${icon("arrow-down", 2)}</a>` +
+    `</section>`
+  );
+}
+
+/**
+ * The bottom of the website: the jetty scene on the left (Kagami's jetty, where she starts; placeholder art
+ * until the world's scene lands), Zhusha on it, and "experience the world we made" once the world is in
+ * (way 4: the corner ofuda drifts into the scene to her). In game she is out in the world: no Zhusha, no button.
+ */
+export function jettySection(): string {
+  return (
+    `<section class="jetty" data-jetty data-her aria-labelledby="jetty-title">` +
+    `<div class="jetty__scene" data-jetty-scene aria-hidden="true">` +
+    `<span class="jetty__sky"></span><span class="jetty__lake"></span><span class="jetty__deck"></span>` +
+    `<span class="jetty__her" data-jetty-her><i class="jetty__hat"></i></span>` +
+    `</div>` +
+    `<div class="jetty__paper">` +
+    `<h2 class="sr" id="jetty-title">The world</h2>` +
+    `<button class="jetty__go" type="button" data-jetty-go hidden>experience the world we made</button>` +
+    `<noscript><a class="jetty__go" href="/tesu/">experience the world we made</a></noscript>` +
+    `</div>` +
     `</section>`
   );
 }
@@ -255,24 +262,21 @@ export interface ShellOptions {
 /** Assembles head + body for one page. */
 export function shell({ meta, main }: ShellOptions): Rendered {
   const home = meta.page === "home";
-  // a section's own page (a deep link) has the world above it, standing her at the section's place
-  const at = home ? null : worldPlaceOf(meta.path);
-  const top = home
-    ? columnTop() + world({ hold: true })
-    : at
-      ? world({ at }) + `<a class="skip" href="#main">Skip to content</a>`
-      : `<a class="skip" href="#main">Skip to content</a>`;
+  const column = COLUMN_PAGES.includes(meta.path);
+  const top = column ? world() : `<a class="skip" href="#main">Skip to content</a>`;
   const body =
     top +
-    `<div class="${cx("sheet", home ? "sheet--home" : "sheet--page")}" id="site" data-page="${meta.page}">` +
-    strip("sheet__top", false) +
+    `<div class="${cx("sheet", home ? "sheet--home" : "sheet--page", column && "sheet--column")}" id="site" data-page="${meta.page}">` +
+    `<div class="sky" data-sky aria-hidden="true"></div>` +
     header(meta.page) +
     `<main id="main" class="main" tabindex="-1">${main}</main>` +
     footer(meta.page) +
+    // the bottom of the page is the world again: the jetty, where she starts
+    (column ? jettySection() : "") +
     `</div>` +
-    // a section's page opens on the section, not the world above it (once the sheet is in,
-    // so the page is tall enough; a reload's own scroll position and a #fragment win)
-    (at ? `<script>(function(){var w=document.querySelector(".world");if(!w||location.hash)return;` +
+    // a section's page opens on the section, not the game screen above it (once the sheet is in, so the page
+    // is tall enough; a reload's own scroll position and a #fragment win)
+    (column && !home ? `<script>(function(){var w=document.querySelector(".world");if(!w||location.hash)return;` +
       `if("scrollRestoration" in history)history.scrollRestoration="manual";` +
       `var go=function(){if(scrollY<w.offsetHeight)scrollTo(0,w.offsetHeight)};go();addEventListener("load",go,{once:true})})()</script>` : "") +
     // Only pages with deferred collage tiles need the arrival script.

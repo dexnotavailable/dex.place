@@ -11,6 +11,7 @@
 //
 // Display only: Dex's art never appears outside the gallery and its piece pages.
 
+import { commissionsBlock } from "./stubs.ts";
 import { collage, imageWidth, rowChrome, type LayoutName, type Slot } from "../collage.ts";
 import { floats } from "./floats.ts";
 import { button, counter, icon, pageHead, sectionHead } from "./glyphs.ts";
@@ -681,6 +682,7 @@ export function gallerySection(content: SiteContent): string {
     `<div class="wrap">` +
     sectionHead({ id: "gallery-title", kicker: "gallery", title: "Gallery", tone: "yellow", icon: "frame", aside: `${pad2(n)} pieces`, more: { href: "/gallery/", label: "Gallery page" } }) +
     collageBlock(content, false) +
+    commissionsBlock(3) +
     `</div></section>`
   );
 }
@@ -693,6 +695,7 @@ export function galleryPage(content: SiteContent): string {
     `<div class="wrap">` +
     pageHead({ kicker: "gallery", title: "Gallery", tone: "yellow", icon: "frame", aside: `${pad2(g.length)} pieces` }) +
     collageBlock(content, true) +
+    commissionsBlock(2) +
     `</div></div>`
   );
 }

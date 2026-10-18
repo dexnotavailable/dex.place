@@ -131,3 +131,11 @@ export function pageHead(o: PageHeadOptions): string {
     `</div>`
   );
 }
+
+/**
+ * Hanko in the corner of a card or panel (Dex 10-16: "they go in the corner. They can blink, no need to move").
+ * Her design is not greenlit yet, so this is a PLACEHOLDER (a little seal with a face, styles/v2.css): the slot
+ * is built for her art to drop in as a two-drawing sheet (eyes open, eyes shut) in `--hanko-sheet`, blinking
+ * only, still with reduced motion. Decorative.
+ */
+export const hanko = (): string => `<span class="hanko" data-hanko aria-hidden="true"><i class="hanko__face"></i></span>`;

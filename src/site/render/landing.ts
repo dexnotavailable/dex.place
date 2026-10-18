@@ -15,6 +15,7 @@ import { donateSection } from "./donate.ts";
 import { downloadsSection } from "./downloads.ts";
 import { floats } from "./floats.ts";
 import { gallerySection } from "./gallery.ts";
+import { moreSection } from "./stubs.ts";
 import { button, chip, counter, pageHead, sectionHead, strip, tile, type ButtonOptions } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import type { SiteContent } from "./types.ts";
@@ -89,24 +90,26 @@ const cards = (list: readonly Project[], level: 2 | 3, here: "home" | "page", cl
 
 // ------------------------------------------------------------------ home
 
-/** The first section: the mark (the page's h1), the head, one card per project. */
+/** The first section of the website: the head, one card per project. (The page's h1, "dex", is on the game screen.) */
 function projectsSection(): string {
   return (
     `<section class="sec sec--projects" id="projects" aria-labelledby="projects-title">` +
-    floats("home-projects", { tone: "yellow", count: 3, glyph: "sparkle" }) +
     `<div class="wrap">` +
-    `<div class="intro">` +
-    `<div class="intro__mark" data-reveal="pop-block"><h1 class="mark">dex</h1></div>` +
-    `<div class="intro__side">` +
     sectionHead({ id: "projects-title", kicker: "projects", title: "Projects", tone: "yellow", icon: "grid", aside: `${pad2(projects.length)} items`, more: { href: "/projects/", label: "Projects page" } }) +
-    `</div></div>` +
     cards(projects, 3, "home") +
     `</div></section>`
   );
 }
 
+/**
+ * The website's sections on a white paper over the world (Dex 10-16): alternating left and right, the paper
+ * fading into the sky on its open side (styles/v2.css `.band`).
+ */
+export const band = (side: "l" | "r", html: string): string => `<div class="band band--${side}">${html}</div>`;
+
 export function landing(content: SiteContent): string {
-  return projectsSection() + downloadsSection() + gallerySection(content) + docsSection(content) + donateSection();
+  const parts = [projectsSection(), downloadsSection(), gallerySection(content), docsSection(content), donateSection(), moreSection()];
+  return parts.map((html, i) => band(i % 2 ? "r" : "l", html)).join("");
 }
 
 // ----------------------------------------------------------- /projects/

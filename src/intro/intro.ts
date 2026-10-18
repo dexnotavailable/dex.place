@@ -1,10 +1,15 @@
 // The dex mark intro: the first thing a visitor sees on a fresh visit to "/".
 //
 // Black, then lowercase "dex" (Daniel Bold, as hand-cleaned pixel art) writes
-// itself stroke by stroke, holds long enough to be read, and is blown away left to
-// right as pixel dust on a wind straight to the right. About 3 seconds; a click,
-// tap or key skips it. With the system's reduced-motion setting it is a plain
-// fade in and out.
+// itself letter by letter, each pen stroke eased in and out and each letter
+// starting before the one before it has finished (Dex, 10-16: "a little more
+// easing to the drawing, and the letters sort of start drawing before the
+// previous one finishes"), holds long enough to be read, and is blown away left
+// to right as pixel dust on a wind straight to the right. A click, tap or key
+// skips it. With the system's reduced-motion setting it is a plain fade in and out.
+//
+// `stay` (the homepage since 10-16): the mark is written and STAYS, no fade;
+// `release()` later blows it away with the same dust (the press: "continue").
 //
 // It never pads loading: start loading first, call playIntro() alongside, and
 // let whichever finishes last decide what comes next. The host page provides
@@ -21,10 +26,14 @@ import { MARK_H, MARK_ROWS, MARK_STROKES, MARK_W } from "./mark.ts";
 export const INTRO_TIMING = {
   /** A breath of black before the pen touches down. */
   start: 0.08,
-  /** The four strokes, pen lifts included (Dex: a little slower than first cut). */
-  write: 0.9,
-  /** Pause between strokes (part of `write`). */
-  lift: 0.05,
+  /** Each stroke's pen time: a base plus so much per art px of path (d 0.62 s, e 0.51, x 0.31 + 0.33). */
+  strokeBase: 0.16,
+  strokePerPx: 0.0066,
+  /**
+   * The next stroke's pen touches down when the one before is this far through its time, so the
+   * letters overlap (Dex 10-16). The whole mark is written in about 1.3 s.
+   */
+  handoff: 0.62,
   /** Fresh ink glows this long before it settles. */
   heat: 0.2,
   /** The finished mark holds so it can be read (Dex: about a second longer than first cut). */
@@ -76,6 +85,10 @@ export interface IntroOptions {
   skipTarget?: EventTarget;
   /** How long the finished mark holds, s (default INTRO_TIMING.hold; the opening plan: 1.5 first visit, 0.8 return). */
   hold?: number;
+  /** The mark stays once written (no dust, no skip) until `release()` (default false). */
+  stay?: boolean;
+  /** Where the mark's middle sits, as a share of the box height (default 0.48). */
+  y?: number;
   /** Force reduced motion on or off; default follows the operating system. */
   reducedMotion?: boolean;
   /**
@@ -96,6 +109,12 @@ export interface IntroHandle {
   readonly canvas: HTMLCanvasElement;
   /** Resolves when the beat is over (played, skipped or handed off). */
   readonly done: Promise<IntroResult>;
+  /** Resolves when the whole mark is written (at once with reduced motion). */
+  readonly written: Promise<void>;
+  /** The mark's box on the page, css px. */
+  box(): { x: number; y: number; w: number; h: number };
+  /** A staying mark: blow it away now, with the same left-to-right dust (reduced motion: a fade). */
+  release(): void;
   skip(): void;
   /** Stop at once and remove the canvas (no result beyond `done` resolving as skipped). */
   destroy(): void;
@@ -106,8 +125,10 @@ export interface Px {
   y: number;
   /** When the pen reaches it. */
   inkAt: number;
-  /** When it lets go as dust. */
+  /** When it lets go as dust (Infinity while a staying mark holds). */
   dustAt: number;
+  /** Where the release front reaches it, 0..1 of the sweep (left to right). */
+  front: number;
   life: number;
   /** Per-pixel random numbers in [0, 1). */
   h1: number;
@@ -115,8 +136,8 @@ export interface Px {
   h3: number;
 }
 
-// inverse of the pen's ease (2u^2 up to the middle, mirrored after): progress -> time
-const smoothInv = (v: number): number => (v <= 0.5 ? Math.sqrt(v / 2) : 1 - Math.sqrt((1 - v) / 2));
+// inverse of the pen's ease (4u^3 up to the middle, mirrored after): progress -> time
+const smoothInv = (v: number): number => (v <= 0.5 ? Math.cbrt(v / 4) : 1 - Math.cbrt(2 * (1 - v)) / 2);
 const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
 const mix = (a: Rgb, b: Rgb, t: number): Rgb => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 
@@ -145,23 +166,23 @@ const BRUSH_R = 2.6;
 /** Ink lands this far ahead of the pen's centre (art px). */
 const BRUSH_LEAD = 1.4;
 
-/** The pen's ease: slow start, fast middle, slow finish. Progress in, progress out. */
-export const penEase = (u: number): number => (u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u));
+/** The pen's ease (cubic in and out): a slow start, a fast middle, a slow finish. Progress in, progress out. */
+export const penEase = (u: number): number => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(2 - 2 * u, 3) / 2);
 
 /** Every ink pixel of the mark with its writing and dusting times (pure; exported for checks). */
 export function planMark(hold: number = INTRO_TIMING.hold): { pixels: Px[]; strokes: StrokeTiming[]; written: number } {
   const T = INTRO_TIMING;
   const lens = MARK_STROKES.map((s) => s.reduce((acc, p, i) => (i ? acc + Math.hypot(p[0] - s[i - 1]![0], p[1] - s[i - 1]![1]) : 0), 0));
-  const total = lens.reduce((a, b) => a + b, 0);
-  const drawTime = T.write - T.lift * (MARK_STROKES.length - 1);
   const strokes: StrokeTiming[] = [];
   let t = T.start;
+  let written = 0;
   lens.forEach((len) => {
-    const dur = Math.max(0.09, (drawTime * len) / total);
+    const dur = T.strokeBase + T.strokePerPx * len;
     strokes.push({ start: t, dur, len });
-    t += dur + T.lift;
+    written = Math.max(written, t + dur);
+    // the next letter starts before this one has finished
+    t += dur * T.handoff;
   });
-  const written = t - T.lift;
   const sweepAt = written + hold;
   // an upright front: the mark goes strictly left to right (slant > 0 would lead with the top)
   const slant = 0;
@@ -207,7 +228,7 @@ export function planMark(hold: number = INTRO_TIMING.hold): { pixels: Px[]; stro
       const dustAt = sweepAt + T.sweep * clamp01(front);
       // most dust is brief and a few motes travel: the trail thins out instead of clouding
       const life = T.dustLife[0] + (T.dustLife[1] - T.dustLife[0]) * Math.pow(hash(x, y, 4), 1.4);
-      out.push({ x, y, inkAt, dustAt, life, h1, h2, h3 });
+      out.push({ x, y, inkAt, dustAt, front: clamp01(front), life, h1, h2, h3 });
     }
   }
   return { pixels: out, strokes, written };
@@ -269,14 +290,23 @@ export function playIntro(opts: IntroOptions = {}): IntroHandle {
       art.height = bh;
       img = actx.createImageData(bw, bh);
     }
-    // centred, nudged a touch above the middle like a title card
+    // centred, nudged a touch above the middle like a title card (or where the host asks)
     ox = Math.floor((bw - MARK_W) / 2);
-    oy = Math.floor((bh - MARK_H) / 2 - bh * 0.02);
+    oy = Math.floor(bh * (opts.y ?? 0.48) - MARK_H / 2);
   }
 
-  const pixels = reduced ? [] : planMark(opts.hold).pixels;
-  const lastDust = pixels.reduce((m, p) => Math.max(m, p.dustAt), 0);
-  const endAt = reduced ? T.calm[0] + T.calm[1] + T.calm[2] : pixels.reduce((m, p) => Math.max(m, p.dustAt + p.life), 0);
+  const stay = !!opts.stay;
+  const plan = reduced ? null : planMark(stay ? Infinity : opts.hold);
+  const pixels = plan ? plan.pixels : [];
+  const writtenAt = plan ? plan.written : T.calm[0];
+  let lastDust = pixels.reduce((m, p) => Math.max(m, p.dustAt), 0);
+  let endAt = reduced ? (stay ? Infinity : T.calm[0] + T.calm[1] + T.calm[2]) : pixels.reduce((m, p) => Math.max(m, p.dustAt + p.life), 0);
+  /** Reduced motion: when the calm fade-out starts (a staying mark: on release). */
+  let calmOutAt = stay ? Infinity : T.calm[0] + T.calm[1];
+  let released = false;
+  let markWritten!: () => void;
+  const written = new Promise<void>((res) => (markWritten = res));
+  let isWritten = false;
 
   let resolve!: (r: IntroResult) => void;
   const done = new Promise<IntroResult>((res) => (resolve = res));
@@ -290,10 +320,11 @@ export function playIntro(opts: IntroOptions = {}): IntroHandle {
   function finish(skipped: boolean): void {
     if (finished) return;
     finished = true;
+    if (!isWritten) { isWritten = true; markWritten(); }
     cancelAnimationFrame(raf);
     skipTarget.removeEventListener("pointerdown", onSkip, true);
     skipTarget.removeEventListener("keydown", onSkip, true);
-    removeEventListener("resize", fit);
+    removeEventListener("resize", refit);
     canvas.remove();
     resolve({ skipped, reducedMotion: reduced, handedOff });
   }
@@ -332,8 +363,8 @@ export function playIntro(opts: IntroOptions = {}): IntroHandle {
     data.fill(0);
 
     if (reduced) {
-      const [fi, ho, fo] = T.calm;
-      const a = t < fi ? t / fi : t < fi + ho ? 1 : 1 - (t - fi - ho) / fo;
+      const [fi, , fo] = T.calm;
+      const a = t < fi ? t / fi : t < calmOutAt ? 1 : 1 - (t - calmOutAt) / fo;
       for (let y = 0; y < MARK_H; y++) {
         const row = MARK_ROWS[y]!;
         for (let x = 0; x < MARK_W; x++) if (row[x] === "#") put(data, bw, bh, ox + x, oy + y, INK, clamp01(a));
@@ -383,14 +414,23 @@ export function playIntro(opts: IntroOptions = {}): IntroHandle {
     }
   }
 
+  let tNow = 0;
+  /** A staying mark that is written and not released only redraws on resize (no busy frames). */
+  let idle = false;
   function frame(now: number): void {
     if (finished) return;
     if (t0 < 0) t0 = now;
     const t = (now - t0) / 1000;
+    tNow = t;
+    if (!isWritten && t >= writtenAt + T.heat) { isWritten = true; markWritten(); }
     if (!reduced && !dustOffered && t >= lastDust) offerDust(t);
     draw(t);
     if (handedOff || t >= endAt) {
       finish(false);
+      return;
+    }
+    if (stay && !released && isWritten) {
+      idle = true;
       return;
     }
     raf = requestAnimationFrame(frame);
@@ -402,6 +442,34 @@ export function playIntro(opts: IntroOptions = {}): IntroHandle {
     skip();
   }
 
+  /** A staying mark lets go now: the same sweep and dust as the timed one. */
+  function release(): void {
+    if (finished || !stay || released) return;
+    released = true;
+    const at = Math.max(tNow, writtenAt);
+    if (reduced) {
+      calmOutAt = at;
+      endAt = at + T.calm[2];
+    } else {
+      for (const p of pixels) p.dustAt = at + T.sweep * p.front;
+      lastDust = pixels.reduce((m, p) => Math.max(m, p.dustAt), 0);
+      endAt = pixels.reduce((m, p) => Math.max(m, p.dustAt + p.life), 0);
+    }
+    if (idle) {
+      idle = false;
+      // the clock carries on from where the mark stood
+      t0 = performance.now() - at * 1000;
+      raf = requestAnimationFrame(frame);
+    }
+  }
+
+  function box(): { x: number; y: number; w: number; h: number } {
+    const r = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const css = k / dpr;
+    return { x: r.left + ox * css, y: r.top + oy * css, w: MARK_W * css, h: MARK_H * css };
+  }
+
   let skipping = false;
   function skip(): void {
     if (finished || skipping) return;
@@ -411,8 +479,13 @@ export function playIntro(opts: IntroOptions = {}): IntroHandle {
   }
 
   fit();
-  addEventListener("resize", fit);
-  if (opts.skippable !== false) {
+  // a staying mark that stands still redraws itself after a resize
+  const refit = (): void => {
+    fit();
+    if (idle) draw(tNow);
+  };
+  addEventListener("resize", refit);
+  if (opts.skippable !== false && !stay) {
     skipTarget.addEventListener("pointerdown", onSkip, true);
     skipTarget.addEventListener("keydown", onSkip, true);
   }
@@ -421,6 +494,9 @@ export function playIntro(opts: IntroOptions = {}): IntroHandle {
   return {
     canvas,
     done,
+    written,
+    box,
+    release,
     skip,
     destroy: () => finish(true),
   };

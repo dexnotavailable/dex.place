@@ -1,0 +1,304 @@
+/* dex.place v2 (Dex 10-16): the website on plain white over the world. Loaded last: it re-tones the 09-29
+   tokens for white paper and lays the sections out as alternating panels that fade into the world's sky
+   (a gradual gradient plus a sparse scatter of white pixels at the edge). Fonts: the ones we have
+   (Tesu Display for titles, DotGothic16 for text, Departure Mono for small labels once it is in the repo;
+   until then its stack falls back to DotGothic16). Titles stay small.
+
+   Contrast on white (WCAG AA): ink #2b2233 15.6:1, --fg-2 #463c50 10.4:1, --muted #62576e 6.9:1,
+   scarlet #c9304f 5.5:1, azure #1e6cab 5.6:1, the deep text tones of the fills 5.6:1 or more; ink on every
+   fill (gold, sakura, jade, sky) 7.9:1 or more. */
+
+:root {
+  --ink: #2b2233;
+  --scarlet: #c9304f;
+  --azure: #1e6cab;
+  --gold: #ffc857;
+
+  /* ---- surfaces: plain white paper */
+  --bg: #ffffff;
+  --bg-2: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #f5f1f4;
+  --sunk: #0d0c12;
+  --line: #e6e0e8;
+  --line-2: #8a8094;
+  --shadow: var(--ink);
+
+  /* ---- text */
+  --fg: var(--ink);
+  --fg-2: #463c50;
+  --muted: #62576e;
+  --on-accent: var(--ink);
+
+  /* ---- accents: fills that ink reads on; their deep tones for text and glyphs on white */
+  --yellow: var(--gold);
+  --mint: #8edcc4;
+  --magenta: #ffadc0;
+  --cyan: #a6d6f4;
+  --yellow-t: #fff4d8;
+  --mint-t: #e4f7f1;
+  --magenta-t: #ffeaf0;
+  --cyan-t: #e8f4fc;
+  --yellow-d: #8a5a00;
+  --mint-d: #0b7258;
+  --magenta-d: var(--scarlet);
+  --cyan-d: var(--azure);
+  --link: var(--azure);
+
+  /* ---- type */
+  --f-title: "Tesu Display", "DotGothic16", system-ui, sans-serif;
+  --f-px: "DotGothic16", ui-monospace, monospace;
+  --f-label: "Departure Mono", "DotGothic16", ui-monospace, monospace;
+  --f-body: "DotGothic16", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "Departure Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+  /* titles: Tesu Display on whole font pixels (one em is 25 font px) */
+  --title-px: 1;
+  --fs-h3: 1.375rem;
+  --fs-h2: calc(25px * var(--title-px));
+  --fs-h1: calc(25px * var(--title-px) * 2);
+  --lh-body: 1.7;
+
+  /* ---- the bands: paper panels over the sky */
+  --band-gap: clamp(56px, 9vw, 128px);
+  --fade-w: clamp(72px, 13vw, 240px);
+  --content-w: min(100vw, 1180px);
+  --wrap: 1084px;
+}
+@media (min-width: 1100px) {
+  :root { --title-px: 2; }
+}
+
+html { color-scheme: light; background: #000; }
+body { background: #000; color: var(--fg); }
+::selection { background: var(--gold); color: var(--ink); }
+:focus-visible { outline-color: var(--azure); box-shadow: 0 0 0 2px #fff; }
+
+/* ------------------------------------------------------------------ the sheet over the world */
+.sheet {
+  background: transparent;
+  background-image: none;
+  isolation: isolate;
+}
+/* the world behind the website: the sky (a world layer; motion/sky.ts paints it, this is its first paint) */
+.sky {
+  position: sticky;
+  top: 0;
+  z-index: -1;
+  height: 100vh;
+  height: 100svh;
+  margin-bottom: -100vh;
+  margin-bottom: -100svh;
+  background: linear-gradient(#2a64a8 0%, #3f82c4 30%, #79b2e2 62%, #c6e2f6 100%);
+  overflow: hidden;
+  pointer-events: none;
+}
+.sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+
+/* ------------------------------------------------------------------ the header on paper */
+.hdr { background: #fff; border-bottom: var(--bw) solid var(--ink); }
+.hdr[data-stuck] { border-bottom-color: var(--ink); }
+.hdr__mark { background: var(--gold); border-color: var(--ink); color: var(--ink); --pop-hi: var(--scarlet); }
+.nav__link { font: 400 var(--fs-16) / 1 var(--f-px); color: var(--fg-2); }
+.nav__link .px { color: var(--muted); }
+@media (hover: hover) {
+  .nav__link:hover .px { color: var(--scarlet); }
+}
+.nav__link[aria-current], .nav__ind { background: var(--gold); border-color: var(--ink); }
+.btn--ink { --btn-bg: var(--ink); --btn-fg: #fff; --btn-edge: var(--ink); --px-a: var(--gold); --pop-hi: var(--scarlet); }
+.menu:popover-open { background: #fff; }
+.menu__top .mark { color: var(--ink); }
+.menu__link { font: 400 clamp(1.125rem, 5vw, 1.375rem) / 1 var(--f-px); }
+.menu__link[aria-current] { border-color: var(--ink); box-shadow: var(--off) var(--off) 0 var(--gold); }
+.strip { display: none !important; }
+
+/* ------------------------------------------------------------------ the bands */
+/* Each section is a white paper on its side of the page (alternating), fading into the sky on its open side.
+   Between bands the sky shows through. */
+.band {
+  --edge: max(0px, (100vw - var(--content-w)) * 0.24);
+  --paper: min(100vw, calc(var(--edge) + var(--content-w)));
+  position: relative;
+  padding-block: calc(var(--band-gap) / 2);
+}
+.band::before, .band::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--band-gap) / 2);
+  bottom: calc(var(--band-gap) / 2);
+  pointer-events: none;
+}
+/* the paper */
+.band::before { width: var(--paper); background: #fff; }
+/* its edge: the gradient, and the scatter of white pixels over it (motion/sky.ts draws --scatter-l / -r) */
+.band::after {
+  width: var(--fade-w);
+  background-image: var(--scatter-l, none), linear-gradient(90deg, #fff 0, rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%);
+  background-repeat: repeat-y, no-repeat;
+  background-size: var(--scatter-size, 100% auto), 100% 100%;
+}
+.band--l::before { left: 0; }
+.band--l::after { left: var(--paper); }
+.band--r::before { right: 0; }
+.band--r::after {
+  right: var(--paper);
+  background-image: var(--scatter-r, none), linear-gradient(270deg, #fff 0, rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%);
+}
+.band > .sec { position: relative; z-index: 1; background: transparent; border: 0; }
+.band--l > .sec > .wrap { margin-left: var(--edge); margin-right: auto; }
+.band--r > .sec > .wrap { margin-right: var(--edge); margin-left: auto; }
+.band .sec { padding-block: var(--s-8); }
+/* narrow screens: the paper takes the width but leaves a strip of sky on its open side */
+@media (max-width: 1099px) {
+  .band { --paper: calc(100vw - var(--fade-w) * 0.45); --fade-w: clamp(40px, 9vw, 72px); }
+  .band--l > .sec > .wrap { margin: 0; max-width: calc(var(--paper) - 4px); }
+  .band--r > .sec > .wrap { margin: 0 0 0 auto; max-width: calc(var(--paper) - 4px); }
+}
+@media (max-width: 600px) {
+  .band { --paper: calc(100vw - 14px); --fade-w: 14px; }
+  .band .sec { padding-block: var(--s-7); }
+}
+
+/* a section page (/downloads/ ...) is one band, the paper on the left */
+.sheet--page .main > .page, .sheet--column .main > .page {
+  position: relative;
+  margin-block: calc(var(--band-gap) / 2);
+  padding-block: var(--s-7) var(--s-8);
+  background: #fff;
+}
+.sheet--page:not(.sheet--column) { background: #fff; }
+.sheet--page:not(.sheet--column) .sky { display: none; }
+.sheet--column .main > .page { width: min(100vw, calc(max(0px, (100vw - var(--content-w)) * 0.24) + var(--content-w))); }
+.sheet--column .main > .page::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 100%; width: var(--fade-w); pointer-events: none;
+  background-image: var(--scatter-l, none), linear-gradient(90deg, #fff 0, rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%);
+  background-repeat: repeat-y, no-repeat; background-size: var(--scatter-size, 100% auto), 100% 100%;
+}
+.sheet--column .main > .page > .wrap { margin-left: max(0px, (100vw - var(--content-w)) * 0.24); margin-right: 0; }
+@media (max-width: 1099px) {
+  .sheet--column .main > .page { width: calc(100vw - 14px); }
+  .sheet--column .main > .page::after { width: 14px; }
+}
+
+/* the project scenes (placeholder art) on a pale sky instead of the dark site's void */
+.scene { --sunk: #e3eff7; --line: #c3d5e3; background: var(--sunk); }
+
+/* the decorative floating shapes of the dark site stay home: the world is the life behind the paper now */
+.floats { display: none !important; }
+
+/* ------------------------------------------------------------------ titles: small, pixel */
+.sh { margin-bottom: var(--s-6); gap: var(--s-3); }
+.sh__kicker { font: 400 var(--fs-12) / 1 var(--f-label); color: var(--muted); letter-spacing: 0.1em; }
+.sh__slash { color: var(--scarlet); }
+.sh__rule { background: var(--line); height: 2px; }
+.sh__title {
+  font: 400 var(--fs-h2) / 1 var(--f-title);
+  letter-spacing: calc(1px * var(--title-px));
+  text-transform: uppercase;
+  text-shadow: none;
+  color: var(--ink);
+  font-synthesis: none;
+  -webkit-font-smoothing: none;
+}
+.phead .sh__title { font-size: var(--fs-h1); letter-spacing: calc(2px * var(--title-px)); }
+.sh__title::after { width: 40px; height: 6px; margin-top: 10px; background: var(--scarlet); box-shadow: none; }
+.sh--mint .sh__title::after { background: var(--mint-d); }
+.sh--cyan .sh__title::after { background: var(--azure); }
+.sh--magenta .sh__title::after { background: var(--scarlet); }
+.sh--yellow .sh__title::after, .sh:not([class*="sh--"]) .sh__title::after { background: var(--gold); box-shadow: 0 0 0 2px var(--ink); }
+.sh__more .px { color: var(--scarlet); }
+.sub { font-family: var(--f-px); }
+h1, h2, h3, h4 { font-weight: 400; }
+
+/* ------------------------------------------------------------------ text-safe accents on white */
+.link:hover, .crumbs a:hover, .ftr__base a:hover { color: var(--azure); text-decoration-color: var(--azure); }
+.chip { font: 400 var(--fs-14) / 1 var(--f-body); }
+.chip--key { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chip--value { background: var(--panel-2); color: var(--ink); }
+.tile--ink { color: var(--gold); }
+.sticker--yellow { color: #e0a522; }
+.sticker--mint { color: #2bb58c; }
+.sticker--magenta { color: #ff6f92; }
+.sticker--cyan { color: #4aa3e0; }
+.dl-state--ready { color: var(--mint-d); }
+.spec__link .px, .dl-notes li::before, .cmd span { color: var(--mint-d); }
+.dlg__caveat .px, .dlf-st--c .sticker { color: var(--yellow-d); }
+.amt__unit { color: var(--scarlet); }
+[data-state="amount"] .qr__tag { color: var(--yellow-d); }
+.prose a { color: var(--azure); text-decoration-color: rgb(30 108 171 / 0.4); }
+.prose a:hover { background: var(--cyan-t); }
+.prose ul > li::marker, .prose ol > li::marker { color: var(--scarlet); }
+.prose input[type="checkbox"] { accent-color: var(--azure); }
+.post__end { color: var(--azure); }
+.apager__dir .px { color: var(--scarlet); }
+.t-s { color: var(--mint-d); }
+.t-n { color: var(--yellow-d); }
+.t-v { color: var(--azure); }
+.bpost:hover .bpost__go { color: var(--azure); }
+.toc-list a:hover { text-decoration-color: var(--scarlet); }
+code, kbd, pre { font-family: var(--f-mono); }
+
+/* ------------------------------------------------------------------ the footer */
+.ftr { background: #fff; border-top: var(--bw) solid var(--ink); margin-top: 0; }
+.ftr__mark { color: var(--ink); }
+.ftr__nav a { font-weight: 400; }
+.ftr__nav a:hover .px { color: var(--scarlet); }
+.ftr__sleepy { color: #e0a522; }
+.ftr__kofi { background: var(--magenta); color: var(--ink); border-color: var(--ink); font-weight: 400; }
+
+/* ------------------------------------------------------------------ the stubs (opens later) */
+.stubs { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s-5); }
+.stub, .stubpage, .commissions {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--s-2);
+  padding: var(--s-5) var(--s-5) var(--s-4);
+  background: #fff;
+  border: var(--bw) solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.stub__title, .commissions__title { display: flex; align-items: center; gap: 10px; margin: 0; padding-right: 40px; font: 400 var(--fs-20) / 1.2 var(--f-px); }
+.stub__link { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-2); text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+.stub__link:hover { color: var(--azure); text-decoration-color: var(--azure); }
+.stub__line { margin: 0; color: var(--fg-2); }
+.stub__later { display: inline-flex; align-items: center; gap: 8px; margin: 0; font: 400 var(--fs-12) / 1.4 var(--f-label); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.stub__dot { width: 8px; height: 8px; background: var(--gold); box-shadow: 0 0 0 2px var(--ink); }
+.stubpage { max-width: 640px; margin-bottom: var(--s-7); }
+.stubpage__line { font-size: var(--fs-20); margin: 0; padding-right: 48px; }
+.stubpage__place { display: flex; align-items: center; gap: 10px; margin: var(--s-2) 0 0; color: var(--muted); }
+.stubpage__more { margin: 0 0 var(--s-5); font: 400 var(--fs-20) / 1.2 var(--f-px); }
+.commissions { margin-top: var(--s-7); max-width: 520px; }
+
+/* ------------------------------------------------------------------ Hanko in the corner (placeholder) */
+/* Her drawing drops in as a two-drawing sheet (eyes open | eyes shut) in --hanko-sheet; until her design is
+   greenlit, a little seal with a face stands in. She blinks, nothing else. */
+.hanko {
+  --hanko-sheet: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 16' shape-rendering='crispEdges'%3E%3Cpath fill='%23c9304f' d='M3 2h10v8H3zM19 2h10v8H19z'/%3E%3Cpath fill='%23922037' d='M3 10h10v1H3zM19 10h10v1H19z'/%3E%3Cpath fill='%23ffc857' d='M6 0h4v1H6zM22 0h4v1h-4z'/%3E%3Cpath fill='%232b2233' d='M3 1h10v1H3zM2 2h1v9H2zM13 2h1v9h-1zM3 11h10v1H3zM19 1h10v1H19zM18 2h1v9h-1zM29 2h1v9h-1zM19 11h10v1H19zM5 4h1v2H5zM10 4h1v2h-1zM7 7h2v1H7zM20 5h2v1h-2zM26 5h2v1h-2zM23 7h2v1h-2z'/%3E%3Cpath fill='%23fff' d='M5 4h1v1H5zM10 4h1v1h-1z'/%3E%3Cpath fill='%23ff9fb4' d='M4 7h1v1H4zM11 7h1v1h-1zM20 7h1v1h-1zM27 7h1v1h-1z'/%3E%3C/svg%3E");
+  position: absolute;
+  top: -14px;
+  right: -12px;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  pointer-events: none;
+}
+.hanko__face {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--hanko-sheet) 0 0 / 200% 100% no-repeat;
+  image-rendering: pixelated;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hanko__face { animation: hanko-blink 5.2s steps(1, end) infinite; }
+  .stub:nth-child(2n) .hanko__face { animation-delay: -1.7s; }
+  .stub:nth-child(3n) .hanko__face { animation-delay: -3.1s; }
+}
+@keyframes hanko-blink {
+  0%, 93% { background-position: 0 0; }
+  94%, 97% { background-position: 100% 0; }
+  98%, 100% { background-position: 0 0; }
+}
+@media (max-width: 600px) {
+  .hanko { width: 40px; height: 40px; top: -12px; right: -6px; }
+}

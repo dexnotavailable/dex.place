@@ -1,9 +1,9 @@
 /* The website layer's stylesheet. Fonts are self-hosted: Vite copies the
    @fontsource files into /assets/ (hashed); no runtime network requests. Only
-   the subsets a page actually uses are downloaded (unicode-range). */
-@import "@fontsource/jersey-15/400.css";
-@import "@fontsource-variable/space-grotesk/wght.css";
-@import "@fontsource/silkscreen/400.css";
+   the subsets a page actually uses are downloaded (unicode-range). v2 (10-18):
+   the fonts we have, DotGothic16 and Tesu Display (v2.css re-tones it all). */
+@import "@fontsource/dotgothic16/400.css";
+@import "../../title-font/title-font.css";
 
 @import "./tokens.css";
 @import "./base.css";
@@ -19,3 +19,4 @@
 @import "./gallery.css";
 @import "./embed.css";
 @import "./column.css";
+@import "./v2.css";
