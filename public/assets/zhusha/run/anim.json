@@ -1,0 +1,54 @@
+{
+ "id": "run",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  74,
+  121
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 5,
+   "fig": 128
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f003.png",
+   "ticks": 5,
+   "fig": 128
+  },
+  {
+   "file": "f004.png",
+   "ticks": 5,
+   "fig": 128
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f007.png",
+   "ticks": 5,
+   "fig": 128
+  }
+ ],
+ "loop": true,
+ "source": "h3-L-run-A-s3000-fdcb74",
+ "notes": "kit v1.2 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f000: 3 px of loose background ghosts dropped | Worker 3 POLISH (2026-10-18): THE shared blade over her shoulder toned by this take's light (pale glass top, dark rune band below, straight 123 lower edge, clean point; sat cyan < 1.2 %); tails from H3's own silhouette as continuous glossy locks; the hem's cast shadow. See w3/CHANGES.md."
+}
