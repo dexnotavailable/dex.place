@@ -3,10 +3,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkDrawing, checkMove, ensureRole, readPng, underH3, writePng } from "../../tools/zhusha/slotin-lib.mjs";
+import { addRoleText, checkDrawing, checkMove, ensureRole, readPng, underH3, writePng } from "../../tools/zhusha/slotin-lib.mjs";
 
 const TOOL = join(import.meta.dirname, "../../tools/zhusha/slot-in.mjs");
 
@@ -91,4 +91,14 @@ test("slot-in: the command checks a move dry (exit 0) and refuses a bad one (exi
   const no = spawnSync(process.execPath, [TOOL, "m1_1", "--from", bad, "--dry"], { encoding: "utf8" });
   assert.equal(no.status, 2);
   assert.match(no.stderr, /REFUSED .*figure_h 192/);
+});
+
+test("slot-in: a new role is one added line in slots.json, the file's layout kept", () => {
+  const text = readFileSync(join(import.meta.dirname, "zhusha/slots.json"), "utf8");
+  const out = addRoleText(text, "opening_ofuda", { normal: "opening_ofuda", ult: null });
+  const a = text.split(/\r?\n/), b = out.split(/\r?\n/);
+  assert.equal(b.length, a.length + 1);
+  assert.deepEqual(JSON.parse(out).roles.opening_ofuda, { normal: "opening_ofuda", ult: null });
+  assert.deepEqual(JSON.parse(out).jumpArc, JSON.parse(text).jumpArc);
+  assert.ok(b.filter((l) => !a.includes(l)).length <= 2, "one new line, one comma added");
 });

@@ -21,7 +21,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { checkMove, ensureRole } from "./slotin-lib.mjs";
+import { addRoleText, checkMove, ensureRole } from "./slotin-lib.mjs";
 
 const REPO = resolve(import.meta.dirname, "../..");
 const argv = process.argv.slice(2);
@@ -85,7 +85,7 @@ for (const f of res.files) cpSync(join(from, f), join(dest, f));
 const slotsText = readFileSync(slotsPath, "utf8");
 const slots = JSON.parse(slotsText);
 const added = ensureRole(slots, slot);
-if (added && !local) writeFileSync(slotsPath, `${JSON.stringify(slots, null, 2)}\n`);
+if (added && !local) writeFileSync(slotsPath, addRoleText(slotsText, added, slots.roles[added]));
 out(`copied ${res.files.length} files into ${rel}${before ? ` (the previous drop moved aside to ${before})` : ""}${added && !local ? `; slots.json: new role "${added}"` : ""}`);
 
 if (local) {
@@ -105,7 +105,7 @@ const undo = (why) => {
 if (!flag("--no-verify")) {
   for (const s of ["check", "test", "build"]) {
     out(`npm run ${s} ...`);
-    const r = spawnSync("npm", ["run", s], { cwd: REPO, stdio: ["ignore", "pipe", "pipe"], encoding: "utf8", shell: process.platform === "win32" });
+    const r = spawnSync(`npm run ${s}`, { cwd: REPO, stdio: ["ignore", "pipe", "pipe"], encoding: "utf8", shell: true });
     if (r.status !== 0) {
       process.stderr.write(`${(r.stdout ?? "").slice(-3000)}\n${(r.stderr ?? "").slice(-3000)}\n`);
       undo(`npm run ${s} failed`);

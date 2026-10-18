@@ -173,3 +173,28 @@ export function ensureRole(slots, slot) {
   slots.roles[slot] = { normal: ult ? null : slot, ult: ult ? slot : null };
   return slot;
 }
+
+/**
+ * slots.json's text with a role line added for `slot` (in the file's one-line, hand-aligned style), so the diff is one
+ * line; falls back to a full rewrite only if the file's shape is not the expected one. Returns the new text.
+ */
+export function addRoleText(text, slot, role) {
+  const want = JSON.parse(text);
+  want.roles[slot] = role;
+  const line = `    ${JSON.stringify(slot)}: ${JSON.stringify(role).replace(/^\{/, "{ ").replace(/\}$/, " }").replace(/,"/g, ", \"").replace(/":/g, "\": ")},`;
+  const at = text.indexOf('"roles"');
+  const open = at >= 0 ? text.indexOf("{", at) : -1;
+  let depth = 0, close = -1;
+  for (let i = open; open >= 0 && i < text.length; i++) {
+    if (text[i] === "{") depth++;
+    else if (text[i] === "}" && --depth === 0) { close = i; break; }
+  }
+  if (close > 0) {
+    const body = text.slice(0, close).replace(/\s*$/, "");
+    const out = `${body},\n${line.slice(0, -1)}\n  ${text.slice(close)}`;
+    try {
+      if (JSON.stringify(JSON.parse(out)) === JSON.stringify(want)) return out;
+    } catch { /* fall through */ }
+  }
+  return `${JSON.stringify(want, null, 2)}\n`;
+}
