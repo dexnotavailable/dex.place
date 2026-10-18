@@ -1,0 +1,72 @@
+{
+ "id": "m1_1",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  104,
+  209
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f002.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f004.png",
+   "ticks": 1,
+   "fig": 128
+  },
+  {
+   "file": "f005.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2,
+   "fig": 128
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f008.png",
+   "ticks": 4,
+   "fig": 128
+  },
+  {
+   "file": "f009.png",
+   "ticks": 5,
+   "fig": 128
+  },
+  {
+   "file": "f010.png",
+   "ticks": 6,
+   "fig": 128
+  }
+ ],
+ "loop": false,
+ "hits": [
+  5
+ ],
+ "source": "h3-L-m1_1-A-s3003-90764d",
+ "notes": "kit v1 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f001: pommel cap closed (+10 px); f002: blade point re-extended to y 792 (hw 18); f003: crescent glow continued past the right and bottom edges; f004: crescent's outer glow continued past the right edge; f005: crescent head extended over the top to the blade tip (98075 px); blade to full reach, tip (945,-127); f006: crescent head extended over the top to the blade tip (179633 px); blade tip (594,-51); f007: crescent top arc continued from its head and its tail over the top; f008: crescent top arc continued from its head and its tail over the top; f009: crescent top arc continued from its head and its tail over the top | Worker 2 ROUND 2 (2026-10-18, Dex's rule: keep H3's sword, effects as rich as H3, no grey edges; CRITIQUE-1 checklist): H3's blade cleaned (straight tapered outline, dark teal body + glowing runes, lit / dark ruler edges, glowing tip, crossguard f000/f001, its own glow); crescents with H3's volume on the one tip path, head peeled off the blade, 5 tone bands + H3's streak texture, dithered falloff; f003/f004 H3's comet / lune re-toned crisp; f008 the darker thinner copy, f009 a smoke hook; H3's sparks at H3's places; face / shoe / hair / ground kept; grey edge pixels 0. See w2\\CHANGES.md and W2CHECK.md. | Worker 3 POLISH (2026-10-18, CRITIQUE-2 + Dex's rules): THE shared blade design (w3lib.canon_blade); every trail is the whole blade's sweep (outer edge = tip path, inner edge near the hilt), flat tone bands, no dither, D01 near-white head block; f009 hook replaced by a smoke remnant clear of the point; sparks lengthened; hair pass from H3's own silhouette with one cool sheen band; face cleaned (canon eye); chest trim; front / back shoes. See w3\\CHANGES.md."
+}
