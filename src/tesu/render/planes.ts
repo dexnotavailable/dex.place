@@ -1,11 +1,14 @@
 // Draws plate tiles: one instanced draw per plane. Tiles live in one R8 texture array
 // (palette indices, 64 KB a tile), so the whole visible land costs a few draws and a
 // small fraction of the memory RGBA plates would. The palette and the plane's haze are
-// applied in the shader; sampling is always exact nearest (texelFetch).
+// applied in the shader; sampling is exact (texelFetch): one texel per frame px at a level
+// or magnified, and between levels (zoomed out) the palette-keeping reduction of the
+// texels each frame px covers (render/reduce.ts), across the tile's edges into its neighbours.
 
 import { compile, uniforms } from "../../lab/engine/gl.ts";
 import { TILE } from "../config.ts";
 import { paletteRGBA } from "../art/palette.ts";
+import { REDUCE_CONST_GLSL, REDUCE_INDEX_GLSL } from "./reduce.ts";
 
 /**
  * (round 7, the integration) The plane's dissolve below show 1 (the near plane coming into the opening's
@@ -47,26 +50,34 @@ bool hiddenByShow() {
 const VS = /* glsl */ `#version 300 es
 precision highp float;
 layout(location = 0) in vec4 aRect;   // x0, y0, x1, y1 in frame px (y down)
-layout(location = 1) in float aLayer;
+layout(location = 1) in vec4 aLayers; // this tile's layer, then its right, lower and lower-right neighbours' (-1 not painted, -2 empty)
+layout(location = 2) in vec4 aArt;    // the tile's origin in its level's art px (x, y), k = frame px per art px, 0
+layout(location = 3) in vec2 aOff;    // the plane's whole-px frame offset
 uniform vec2 uRes;
 uniform float uMirror;                // frame row to mirror about, or -1
-out vec2 vUV;
-flat out float vLayer;
+flat out vec4 vL;
+flat out vec4 vA;
+flat out vec2 vOff;
 const vec2 C[6] = vec2[6](vec2(0,0), vec2(1,0), vec2(1,1), vec2(0,0), vec2(1,1), vec2(0,1));
 void main() {
   vec2 c = C[gl_VertexID];
-  vec2 p = mix(aRect.xy, aRect.zw, c);
+  vec4 r = aRect;
+  // reduced (k < 1): a frame px belongs to the tile its footprint starts in, which can lie up to a px past the quad
+  if (aArt.z < 0.999) r += vec4(-1.0, -1.0, 1.0, 1.0);
+  vec2 p = mix(r.xy, r.zw, c);
   if (uMirror >= 0.0) p.y = 2.0 * uMirror - p.y;
-  vUV = c * float(${TILE});
-  vLayer = aLayer;
+  vL = aLayers;
+  vA = aArt;
+  vOff = aOff;
   gl_Position = vec4(p.x / uRes.x * 2.0 - 1.0, 1.0 - p.y / uRes.y * 2.0, 0.0, 1.0);
 }`;
 
 const FS = /* glsl */ `#version 300 es
 precision highp float;
 precision highp sampler2DArray;
-in vec2 vUV;
-flat in float vLayer;
+flat in vec4 vL;
+flat in vec4 vA;
+flat in vec2 vOff;
 uniform sampler2DArray uTiles;
 uniform sampler2D uPal;
 uniform vec3 uHaze;
@@ -80,17 +91,44 @@ uniform float uShow;                  // (round 6) share of the plane shown: a d
 uniform vec3 uShowAt;                 // (round 7) the plane's frame offset and scale (the clumps sit on its art)
 out vec4 o;
 ${SHOW_GLSL}
+${REDUCE_CONST_GLSL}
+const int T = ${TILE};
+// palette index at texel t of this tile; t may run past its right / lower edge into the neighbours. -1: not painted.
+int tileIdx(ivec2 t) {
+  float L = vL.x;
+  if (t.x >= T && t.y >= T) { L = vL.w; t -= ivec2(T); }
+  else if (t.x >= T) { L = vL.y; t.x -= T; }
+  else if (t.y >= T) { L = vL.z; t.y -= T; }
+  if (L < -1.5) return 0;
+  if (L < -0.5) return -1;
+  return int(texelFetch(uTiles, ivec3(t, int(L + 0.5)), 0).r * 255.0 + 0.5);
+}
+vec3 palC(int i) { return texelFetch(uPal, ivec2(i, 0), 0).rgb; }
+// (engine 10-18) the plate reduced onto the frame's grid (render/reduce.ts, the rule in grid.ts): 0 = clear
+${REDUCE_INDEX_GLSL}
 void main() {
   if (hiddenByShow()) discard;
-  if (uMirror >= 0.0) {
-    // only what stands above the waterline shows below it
-    float row = uRes.y - gl_FragCoord.y;
-    if (row < uMirror) discard;
+  float row = uRes.y - gl_FragCoord.y;
+  // only what stands above the waterline shows below it
+  if (uMirror >= 0.0 && row < uMirror) discard;
+  // the row of the plane this frame px shows (y down; mirrored about the waterline in the reflection)
+  float cy = uMirror >= 0.0 ? 2.0 * uMirror - row : row;
+  float px = floor(gl_FragCoord.x);
+  float k = vA.z;
+  int idx;
+  if (k >= 0.999) {
+    // at a level or magnified: the texel under the px's centre, as always
+    vec2 uv = (vec2(px + 0.5, cy) - vOff) / k - vA.xy;
+    ivec2 t = clamp(ivec2(floor(uv)), ivec2(0), ivec2(T - 1));
+    idx = int(texelFetch(uTiles, ivec3(t, int(vL.x + 0.5)), 0).r * 255.0 + 0.5);
+  } else {
+    // reduced: the footprint anchored to the plane's art grid (whole-px offsets: a pan never changes the picture)
+    vec2 a0 = (vec2(px, floor(cy)) - vOff) / k - vA.xy;
+    if (a0.x < 0.0 || a0.y < 0.0 || a0.x >= float(T) || a0.y >= float(T)) discard;
+    idx = reduceIdx(0, a0, a0 + 1.0 / k);
   }
-  ivec2 t = clamp(ivec2(floor(vUV)), ivec2(0), ivec2(${TILE - 1}));
-  float idx = texelFetch(uTiles, ivec3(t, int(vLayer + 0.5)), 0).r * 255.0;
-  if (idx < 0.5) discard;
-  vec3 c = texelFetch(uPal, ivec2(int(idx + 0.5), 0), 0).rgb;
+  if (idx == 0) discard;
+  vec3 c = palC(idx);
   c = mix(c, c * uGrade.rgb, uGrade.a);
   c = mix(c, uHaze, uFade);
   c = mix(c, uInk, uInkAmt);
@@ -103,6 +141,18 @@ export interface TileQuad {
   x1: number;
   y1: number;
   layer: number;
+  /**
+   * (engine 10-18, the reduction) The tile's origin in its level's art px, k (frame px per art px), the plane's
+   * whole-px offset, and the layers of its right, lower and lower-right neighbours (-1 not painted, -2 empty), which
+   * a reduced footprint can reach into. Defaults: derived from the rect, no neighbours.
+   */
+  ax?: number;
+  ay?: number;
+  k?: number;
+  off?: [number, number];
+  right?: number;
+  down?: number;
+  diag?: number;
 }
 
 export interface PlaneLook {
@@ -131,8 +181,12 @@ export class PlaneRenderer {
   private vao: WebGLVertexArrayObject;
   private rectBuf: WebGLBuffer;
   private layerBuf: WebGLBuffer;
+  private artBuf: WebGLBuffer;
+  private offBuf: WebGLBuffer;
   private rects: Float32Array;
   private lays: Float32Array;
+  private arts: Float32Array;
+  private offs: Float32Array;
   drawCalls = 0;
 
   constructor(gl: WebGL2RenderingContext, layers: number) {
@@ -154,7 +208,9 @@ export class PlaneRenderer {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, paletteRGBA());
     const max = 4096;
     this.rects = new Float32Array(max * 4);
-    this.lays = new Float32Array(max);
+    this.lays = new Float32Array(max * 4);
+    this.arts = new Float32Array(max * 4);
+    this.offs = new Float32Array(max * 2);
     this.vao = gl.createVertexArray()!;
     gl.bindVertexArray(this.vao);
     this.rectBuf = gl.createBuffer()!;
@@ -167,8 +223,20 @@ export class PlaneRenderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.layerBuf);
     gl.bufferData(gl.ARRAY_BUFFER, this.lays.byteLength, gl.DYNAMIC_DRAW);
     gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 1, gl.FLOAT, false, 4, 0);
+    gl.vertexAttribPointer(1, 4, gl.FLOAT, false, 16, 0);
     gl.vertexAttribDivisor(1, 1);
+    this.artBuf = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.artBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, this.arts.byteLength, gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(2);
+    gl.vertexAttribPointer(2, 4, gl.FLOAT, false, 16, 0);
+    gl.vertexAttribDivisor(2, 1);
+    this.offBuf = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.offBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, this.offs.byteLength, gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(3);
+    gl.vertexAttribPointer(3, 2, gl.FLOAT, false, 8, 0);
+    gl.vertexAttribDivisor(3, 1);
     gl.bindVertexArray(null);
   }
 
@@ -185,14 +253,25 @@ export class PlaneRenderer {
   draw(quads: readonly TileQuad[], look: PlaneLook, w: number, h: number, mirror: number | null = null): void {
     if (!quads.length) return;
     const gl = this.gl;
-    const n = Math.min(quads.length, this.lays.length);
+    const n = Math.min(quads.length, this.offs.length / 2);
     for (let i = 0; i < n; i++) {
       const q = quads[i]!;
       this.rects[i * 4] = q.x0;
       this.rects[i * 4 + 1] = q.y0;
       this.rects[i * 4 + 2] = q.x1;
       this.rects[i * 4 + 3] = q.y1;
-      this.lays[i] = q.layer;
+      this.lays[i * 4] = q.layer;
+      this.lays[i * 4 + 1] = q.right ?? -1;
+      this.lays[i * 4 + 2] = q.down ?? -1;
+      this.lays[i * 4 + 3] = q.diag ?? -1;
+      const k = q.k ?? (q.x1 - q.x0) / TILE;
+      const off = q.off ?? [0, 0];
+      this.arts[i * 4] = q.ax ?? (q.x0 - off[0]) / k;
+      this.arts[i * 4 + 1] = q.ay ?? (q.y0 - off[1]) / k;
+      this.arts[i * 4 + 2] = k;
+      this.arts[i * 4 + 3] = 0;
+      this.offs[i * 2] = off[0];
+      this.offs[i * 2 + 1] = off[1];
     }
     gl.useProgram(this.prog);
     gl.disable(gl.BLEND);
@@ -216,7 +295,11 @@ export class PlaneRenderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.rectBuf);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.rects, 0, n * 4);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.layerBuf);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.lays, 0, n);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.lays, 0, n * 4);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.artBuf);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.arts, 0, n * 4);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.offBuf);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.offs, 0, n * 2);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, n);
     gl.bindVertexArray(null);
     gl.activeTexture(gl.TEXTURE0);

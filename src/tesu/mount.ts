@@ -50,6 +50,12 @@ export interface TesuHandle extends WorldHandle {
   title(text: string): void;
   /** Still waiting for PLAY. */
   holding(): boolean;
+  /**
+   * (engine 10-18) How far the world has loaded, 0..1, never going back: ~0.05 once its frame starts loading, ~0.15
+   * when its code runs, ~0.4 when its first scene is drawn, then the opening set's share; 1 when it is playable AND the
+   * opening set is in (when the loader may land on the ofuda).
+   */
+  progress(): number;
 }
 
 export function tesuFrameUrl(opts: TesuMountOptions): string {
@@ -68,7 +74,22 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
   frame.tabIndex = -1;
   frame.setAttribute("data-world-frame", "");
   frame.setAttribute("allow", "autoplay");
-  frame.src = tesuFrameUrl(opts);
+  // (engine 10-18, loading) the frame starts loading once the page has loaded and has a quiet moment, so "dex" and
+  // the website get the line and the thread first; the world's own boot then works in short slices (main.ts)
+  let started = false;
+  const begin = (): void => {
+    if (started || destroyed) return;
+    started = true;
+    waited = 0;
+    last = performance.now();
+    frame.src = tesuFrameUrl(opts);
+  };
+  const idle = (): void => {
+    if (typeof requestIdleCallback === "function") requestIdleCallback(begin, { timeout: 600 });
+    else setTimeout(begin, 100);
+  };
+  if (document.readyState === "complete") idle();
+  else window.addEventListener("load", idle, { once: true });
   let paused = false;
   let destroyed = false;
   let configured = false;
@@ -157,7 +178,7 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
   const check = (): void => {
     if (destroyed || settled) return;
     const now = performance.now();
-    if (!paused && document.visibilityState === "visible") waited += now - last;
+    if (started && !paused && document.visibilityState === "visible") waited += now - last;
     last = now;
     configure();
     sync();
@@ -198,8 +219,23 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
     focus();
   };
 
+  let progressed = 0;
+  const progress = (): number => {
+    let p = started ? 0.05 : 0;
+    const rt = runtime();
+    if (rt) p = 0.15;
+    if (drawn) p = 0.4;
+    const set = rt?.openingSet?.();
+    if (drawn && set) {
+      const share = Math.min(1, set.plates) * 0.7 + (set.close ? 0.1 : 0) + (set.font ? 0.1 : 0) + (set.ofuda ? 0.1 : 0);
+      p = playable && share >= 1 ? 1 : 0.4 + 0.59 * share;
+    } else if (playable && !set) p = 1;
+    progressed = Math.max(progressed, p);
+    return progressed;
+  };
+
   return {
-    ready, shown, booted, focus,
+    ready, shown, booted, focus, progress,
     play: (link) => doPlay(link ?? null),
     openingSet: () => runtime()?.openingSet?.() ?? null,
     title: (text) => runtime()?.game.titles.show(text, true),

@@ -25,6 +25,8 @@ import { readSlipInto, slipFor } from "./save.ts";
 import type { Usable } from "./world/types.ts";
 import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "./opening/conductor.ts";
 import { Track1 } from "./opening/track.ts";
+import { startPlateWorkers } from "./plates/store.ts";
+import { adoptWorld } from "./world/index.ts";
 
 /**
  * The fixed keys (GDK 5.4, Appendix B): WASD and the arrows both move from the start;
@@ -81,21 +83,44 @@ function watchSize(r: WorldRenderer): void {
   window.addEventListener("resize", fallback);
 }
 
+/**
+ * (engine 10-18, loading) Hands the thread back for a moment (a message, not a timer: not throttled in a frame out of
+ * view), so the page's own frames ("dex", the loader) keep drawing between the world's boot steps.
+ */
+function yieldTask(): Promise<void> {
+  return new Promise((resolve) => {
+    const c = new MessageChannel();
+    c.port1.onmessage = () => resolve();
+    c.port2.postMessage(0);
+  });
+}
+
 async function boot(): Promise<void> {
   // load-time marks (lanes' load test reads them: performance.getEntriesByType("mark"))
   performance.mark("tesu:boot");
   const q = new URLSearchParams(location.search);
+  // (engine 10-18) the plate workers first: worker 0 builds the world and hands it over (plates/store.ts), so this
+  // thread, which the website's "dex" shares, never builds it; meanwhile the renderer and her drawings get ready here
+  const sync = q.has("sync") || q.has("manual");
+  const pool = sync ? null : startPlateWorkers();
+  await yieldTask();
   const r = new WorldRenderer(canvas);
   r.integerFrames = true;
   watchSize(r);
+  performance.mark("tesu:gl");
+  await yieldTask();
   const assets = await loadZhusha(r);
   performance.mark("tesu:assets");
+  const def = pool ? await pool.world : null;
+  if (def) adoptWorld(def);
+  performance.mark("tesu:world");
+  await yieldTask();
   const input = new Input(canvas, KEYS);
   const touch = new Touch(input, document.getElementById("touch") as HTMLElement, canvas);
   const embedded = q.get("embed") === "site" && window.parent !== window;
   const game = new TesuGame(r, input, assets, {
     start: q.get("at") ?? "catch", link: q.has("at") || q.has("x") || q.has("hold"), noOpening: q.has("skip"),
-    hold: q.has("hold"), manual: q.has("manual"), sync: q.has("sync") || q.has("manual"),
+    hold: q.has("hold"), manual: q.has("manual"), sync, pool,
     // the homepage's world window: between the page's bars while it waits, the whole window from the press
     landed: embedded ? () => {
       const host = window.frameElement?.parentElement;

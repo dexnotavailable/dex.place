@@ -142,13 +142,15 @@ void main() {
     vec4 b = uBands[i];
     float d = (p.y - b.x) / b.y;
     float prof = exp(-d * d * 1.6);
-    float x = (p.x + uCamX * (0.08 + 0.1 * float(i)) + uTime * b.w);
+    // (engine 10-18) the field moves by whole px (a sub-px scroll re-dithers every step: it boiled on a pan)
+    float x = p.x + floor(uCamX * (0.08 + 0.1 * float(i)) + uTime * b.w + 0.5);
     float n = vnoise(vec2(x / 140.0, p.y / 18.0 + float(i) * 7.0)) * 0.65 + vnoise(vec2(x / 41.0, p.y / 7.0)) * 0.35;
     a = max(a, prof * b.z * (0.45 + 0.9 * n));
   }
   a *= ends;
-  // two to four ordered-dither steps, never smooth alpha
-  float s = stepd(clamp(a, 0.0, 1.0), 4.0, p) * 0.75;
+  // two to four ordered-dither steps, never smooth alpha (the dither rides on the first band's field)
+  vec2 dp = p + vec2(floor(uCamX * 0.08 + uTime * uBands[0].w + 0.5), -floor(uBands[0].x));
+  float s = stepd(clamp(a, 0.0, 1.0), 4.0, dp) * 0.75;
   if (s <= 0.0) discard;
   o = vec4(uColour * s, s);
 }`;
@@ -270,7 +272,9 @@ void main() {
     if (a > aVeil) { aVeil = a; litVeil = dy > (1.0 - B.z) * 0.9; }
   }
   // flat steps of translucency, their seams dithered on the cell
-  float sB = max(seamd(aBank, 5.0, cc) * uFog.x, seamd(aFoot, 5.0, cc) * 0.95), sV = seamd(aVeil, 5.0, cc);
+  // (engine 10-18) the seams' dither rides on the fog (its plane's whole-px offset and its drift), not the screen
+  vec2 dc = cc - floor(vec2(uXf.y - uXf.z * g, uWl) / uFog2.y + 0.5);
+  float sB = max(seamd(aBank, 5.0, dc) * uFog.x, seamd(aFoot, 5.0, dc) * 0.95), sV = seamd(aVeil, 5.0, dc);
   float s = max(sB, sV);
   if (s <= 0.0) discard;
   bool lit = sV > sB ? litVeil : litTop;
@@ -323,7 +327,9 @@ void main() {
   float r = 1.0 / (1.0 / s - 1.0 / uZ + 1.0);
   if (r <= 0.0 || r > uDepth.x || r < uDepth.y) discard;
   float u = clamp((1.0 / r - 1.0 / uDepth.x) / (1.0 / uDepth.y - 1.0 / uDepth.x), 0.0, 1.0);
-  float x3 = (q.x - uRes.x * 0.5) / s + uCx;
+  // (engine 10-18) each row is a depth with its own scale s: its offset is whole px, as a plane's, so a pan moves
+  // it by whole px instead of re-sampling its ripples at a new sub-px phase
+  float x3 = (q.x - floor(uRes.x * 0.5 - uCx * s + 0.5)) / s;
   float x0 = mix(uExt.x, uExt.z, u), x1 = mix(uExt.y, uExt.w, u);
   // an irregular shore: coves and points, more of them the further away
   float span = x1 - x0;
@@ -627,7 +633,9 @@ export class Atmos {
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.uniform2f(u.uRes!, w, h);
     gl.uniform1f(u.uWl!, d.wl);
-    gl.uniform3f(u.uXf!, d.g, d.offX, d.drift % 100000);
+    // (engine 10-18) the drift in whole frame px of the plane, so the fog moves by whole px
+    const drift = d.g > 0 ? Math.round((d.drift % 100000) * d.g) / d.g : d.drift % 100000;
+    gl.uniform3f(u.uXf!, d.g, d.offX, drift);
     gl.uniform4f(u.uFog!, d.density, d.height, d.apron, d.roll);
     gl.uniform3f(u.uFog2!, d.size, d.cell, d.foot ?? 0);
     const pools = (d.pools ?? []).slice(0, 16);

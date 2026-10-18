@@ -9,6 +9,7 @@ import type { SpriteDone, SpriteJob } from "../plates/store.ts";
 import { PLANES, type SpriteDef } from "../world/types.ts";
 import { paintSpriteFrame, type SpritePixels } from "./sprite-paint.ts";
 import { SHOW_GLSL, type PlaneLook } from "./planes.ts";
+import { REDUCE_CONST_GLSL, REDUCE_RGBA_GLSL } from "./reduce.ts";
 import { levelFor, planeLevels, planeXf, type CamState } from "./view.ts";
 
 const VS = /* glsl */ `#version 300 es
@@ -59,6 +60,8 @@ float bayer4(vec2 p) {
   return (m[k] + 0.5) / 16.0;
 }
 ${SHOW_GLSL}
+${REDUCE_CONST_GLSL}
+${REDUCE_RGBA_GLSL}
 void main() {
   if (hiddenByShow()) discard;
   if (uMirror >= 0.0 && uRes.y - gl_FragCoord.y < uMirror) discard;
@@ -72,9 +75,23 @@ void main() {
     vec2 k = vec2((f.x - uRectF.x) / (uRectF.z - uRectF.x), (f.y - uRectF.y) / (uRectF.w - uRectF.y));
     uv = vec2(uFlip > 0.5 ? 1.0 - k.x : k.x, k.y) * uSize;
   }
-  ivec2 t = clamp(ivec2(floor(uv)), ivec2(0), ivec2(uSize) - 1);
-  vec4 c = texelFetch(uTex, t, 0);
-  if (c.a < 0.5) discard;
+  vec4 c;
+  vec2 inv = uSize / max(uRectF.zw - uRectF.xy, vec2(1.0));
+  if (uCell <= 1.5 && inv.x > 1.001) {
+    // (engine 10-18) drawn smaller than its own density (zoomed out between levels, or a set at a coarser level):
+    // the palette-keeping reduction of the texels each frame px covers (render/reduce.ts), anchored to the drawn rect
+    float row = uRes.y - gl_FragCoord.y;
+    float cy = uMirror >= 0.0 ? 2.0 * uMirror - row : row;
+    vec2 a0 = (vec2(floor(gl_FragCoord.x), floor(cy)) - uRectF.xy) * inv;
+    if (uFlip > 0.5) a0.x = uSize.x - a0.x - inv.x;
+    c = reduceRGBA(uTex, ivec2(uSize), true, a0, a0 + inv);
+    if (c.r < 0.0) discard;
+    uv = a0 + inv * 0.5;
+  } else {
+    ivec2 t = clamp(ivec2(floor(uv)), ivec2(0), ivec2(uSize) - 1);
+    c = texelFetch(uTex, t, 0);
+    if (c.a < 0.5) discard;
+  }
   vec3 col = mix(c.rgb, c.rgb * uGrade.rgb, uGrade.a);
   float fade = uFade;
   if (uFoot.x > 0.0) {
@@ -82,7 +99,9 @@ void main() {
     // step's edge ordered-dithered on the cell (no strata across the legs)
     float k = clamp(1.0 - (uSize.y - uv.y) / (uSize.y * uFoot.x), 0.0, 1.0);
     float v = k * k * (3.0 - 2.0 * k) * 12.0;
-    float st = (floor(v) + step(bayer4(cell), fract(v))) / 12.0;
+    // (engine 10-18) the dither rides on the sprite (its rect's whole-px origin), not the screen: it moves with it
+    vec2 dcell = floor((vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) - uRectF.xy) / max(uCell, 1.0));
+    float st = (floor(v) + step(bayer4(dcell), fract(v))) / 12.0;
     fade = mix(uFade, uFoot.y, st);
   }
   col = mix(col, uHaze, fade);
@@ -387,69 +406,21 @@ export class SpriteRenderer {
   }
 
   /** Draws the sprites of one plane (mirrored about `mirror` for the reflection target). */
-  draw(defs: readonly SpriteDef[], cam: CamState, look: PlaneLook, time: number, mirror: number | null, force = false): void {
+  /**
+   * `dry` (engine 10-18, loading): only ask for what the frame needs (frames painted, sets fetched) and count what it
+   * still waits on, drawing nothing: the world loading out of sight costs no drawing.
+   */
+  draw(defs: readonly SpriteDef[], cam: CamState, look: PlaneLook, time: number, mirror: number | null, force = false, dry = false): void {
     if (!defs.length) return;
     const gl = this.gl, u = this.u;
-    gl.useProgram(this.prog);
-    gl.disable(gl.BLEND);
-    gl.uniform2f(u.uRes!, cam.W, cam.H);
-    gl.uniform1f(u.uMirror!, mirror ?? -1);
-    gl.uniform3fv(u.uHaze!, look.haze);
-    if (u.uGrade) gl.uniform4fv(u.uGrade, look.grade);
-    gl.uniform1f(u.uFade!, look.fade);
-    gl.uniform3fv(u.uInk!, look.ink);
-    gl.uniform1f(u.uInkAmt!, look.inkAmt);
-    gl.uniform1f(u.uShow!, look.show ?? 1);
-    if (u.uShowAt) gl.uniform3fv(u.uShowAt, look.showAt ?? [0, 0, 1]);
-    gl.bindVertexArray(this.vao);
+    if (!dry) this.bindFor(cam, look, mirror);
     for (const def of defs) {
       if (def.hidden) continue;
       const rate = PLANES[def.plane].rate;
       const xf = planeXf(cam, rate);
-      // (round 5; round 6: and the mid plane's, like its plates) at the catch's 2x the sky's and the far plane's sprites sit on the frame's 2 px
-      // art cells like everything near (painted ones are painted at half the density for it)
-      // (round 7, density: and the back plane's, as its plates)
-      const snap = cam.zoom >= 1.9 && (def.plane === "sky" || def.plane === "far" || def.plane === "mid" || def.plane === "back");
-      let level = levelFor(planeLevels(rate), xf.g) / (snap && def.kind !== "frames" && def.kind !== "image" ? 2 : 1);
-      const pos = SpriteRenderer.position(def, time);
-      let fr: Frame | null;
-      if (def.kind === "frames") {
-        // nothing is fetched or decoded for a giant out of the frame (its reach in level-1 px)
-        const reach = Number(def.p.reach ?? 700) * xf.g;
-        const sx = pos.x * rate * xf.g + xf.offX;
-        if (sx + reach < 0 || sx - reach > cam.W) continue;
-        const got = this.streamed(def, pos.frame, xf.g);
-        fr = got?.fr ?? null;
-        if (got) level = got.level;
-        else this.waitingNow++;
-      } else if (def.kind === "image") {
-        // a picture is fetched only once it comes near the frame (the hall's art, far from the start)
-        const sx = pos.x * rate * xf.g + xf.offX, sy = pos.y * rate * xf.g + xf.offY;
-        const pw = Number(def.p.w) * xf.g, ph = Number(def.p.h) * xf.g;
-        if (sx + pw < -cam.W * 0.5 || sx - pw > cam.W * 1.5 || sy < -cam.H * 0.5 || sy - ph > cam.H * 1.5) continue;
-        fr = this.frame(def, pos.frame, level, force);
-      } else {
-        // a painted sprite well off the frame is not painted at all (its painter's bounds, a
-        // quarter-frame margin): many small animated sprites cost nothing until they come near
-        const [bx0, by0, bx1, by1] = this.boundsOf(def);
-        const g = xf.g, ax = pos.x * rate * g + xf.offX, ay = pos.y * rate * g + xf.offY;
-        const sx0 = pos.flip ? ax - bx1 * g : ax + bx0 * g, sx1 = pos.flip ? ax - bx0 * g : ax + bx1 * g;
-        const mx = cam.W * 0.25, my = cam.H * 0.25;
-        if (sx1 < -mx || sx0 > cam.W + mx) continue;
-        if (mirror === null && (ay + by1 * g < -my || ay + by0 * g > cam.H + my)) continue;
-        fr = this.frame(def, pos.frame, level, force);
-        if (!fr) {
-          if (force || !this.async) fr = this.frame(def, 0, level, true);
-          else {
-            // (round 7) frame 0 at this level, asked for too, or a stand-in while they paint; a sprite
-            // with nothing painted yet holds the first scene back (like its plates)
-            fr = this.frame(def, 0, level, false) ?? this.standIn(def, pos.frame, level);
-            if (!fr) this.waitingNow++;
-            else if (fr.lv !== undefined) level = fr.lv;
-          }
-        }
-      }
-      if (!fr) continue;
+      const got = this.frameFor(def, cam, xf, time, mirror, force);
+      if (!got || dry) continue;
+      const { fr, level, pos, snap } = got;
       const k = xf.g / level;
       const ax = pos.x * rate * xf.g + xf.offX, ay = pos.y * rate * xf.g + xf.offY;
       const x0 = ax - (pos.flip ? fr.w - fr.ax : fr.ax) * k, y0 = ay - fr.ay * k;
@@ -471,7 +442,76 @@ export class SpriteRenderer {
       if (u.uFoot) gl.uniform2f(u.uFoot, def.fadeFoot?.[0] ?? 0, def.fadeFoot?.[1] ?? 0);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
+    if (dry) return;
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+  }
+
+  private bindFor(cam: CamState, look: PlaneLook, mirror: number | null): void {
+    const gl = this.gl, u = this.u;
+    gl.useProgram(this.prog);
+    gl.disable(gl.BLEND);
+    gl.uniform2f(u.uRes!, cam.W, cam.H);
+    gl.uniform1f(u.uMirror!, mirror ?? -1);
+    gl.uniform3fv(u.uHaze!, look.haze);
+    if (u.uGrade) gl.uniform4fv(u.uGrade, look.grade);
+    gl.uniform1f(u.uFade!, look.fade);
+    gl.uniform3fv(u.uInk!, look.ink);
+    gl.uniform1f(u.uInkAmt!, look.inkAmt);
+    gl.uniform1f(u.uShow!, look.show ?? 1);
+    if (u.uShowAt) gl.uniform3fv(u.uShowAt, look.showAt ?? [0, 0, 1]);
+    gl.bindVertexArray(this.vao);
+  }
+
+  /** The frame a sprite shows now (asked for, painted or fetched as needed), or null (counted as waiting). */
+  private frameFor(def: SpriteDef, cam: CamState, xf: ReturnType<typeof planeXf>, time: number, mirror: number | null, force: boolean): { fr: Frame; level: number; pos: ReturnType<typeof SpriteRenderer.position>; snap: boolean } | null {
+    const rate = PLANES[def.plane].rate;
+    {
+      // (round 5; round 6: and the mid plane's, like its plates) at the catch's 2x the sky's and the far plane's sprites sit on the frame's 2 px
+      // art cells like everything near (painted ones are painted at half the density for it)
+      // (round 7, density: and the back plane's, as its plates)
+      const snap = cam.zoom >= 1.9 && (def.plane === "sky" || def.plane === "far" || def.plane === "mid" || def.plane === "back");
+      let level = levelFor(planeLevels(rate), xf.g) / (snap && def.kind !== "frames" && def.kind !== "image" ? 2 : 1);
+      const pos = SpriteRenderer.position(def, time);
+      let fr: Frame | null;
+      if (def.kind === "frames") {
+        // nothing is fetched or decoded for a giant out of the frame (its reach in level-1 px)
+        const reach = Number(def.p.reach ?? 700) * xf.g;
+        const sx = pos.x * rate * xf.g + xf.offX;
+        if (sx + reach < 0 || sx - reach > cam.W) return null;
+        const got = this.streamed(def, pos.frame, xf.g);
+        fr = got?.fr ?? null;
+        if (got) level = got.level;
+        else this.waitingNow++;
+      } else if (def.kind === "image") {
+        // a picture is fetched only once it comes near the frame (the hall's art, far from the start)
+        const sx = pos.x * rate * xf.g + xf.offX, sy = pos.y * rate * xf.g + xf.offY;
+        const pw = Number(def.p.w) * xf.g, ph = Number(def.p.h) * xf.g;
+        if (sx + pw < -cam.W * 0.5 || sx - pw > cam.W * 1.5 || sy < -cam.H * 0.5 || sy - ph > cam.H * 1.5) return null;
+        fr = this.frame(def, pos.frame, level, force);
+      } else {
+        // a painted sprite well off the frame is not painted at all (its painter's bounds, a
+        // quarter-frame margin): many small animated sprites cost nothing until they come near
+        const [bx0, by0, bx1, by1] = this.boundsOf(def);
+        const g = xf.g, ax = pos.x * rate * g + xf.offX, ay = pos.y * rate * g + xf.offY;
+        const sx0 = pos.flip ? ax - bx1 * g : ax + bx0 * g, sx1 = pos.flip ? ax - bx0 * g : ax + bx1 * g;
+        const mx = cam.W * 0.25, my = cam.H * 0.25;
+        if (sx1 < -mx || sx0 > cam.W + mx) return null;
+        if (mirror === null && (ay + by1 * g < -my || ay + by0 * g > cam.H + my)) return null;
+        fr = this.frame(def, pos.frame, level, force);
+        if (!fr) {
+          if (force || !this.async) fr = this.frame(def, 0, level, true);
+          else {
+            // (round 7) frame 0 at this level, asked for too, or a stand-in while they paint; a sprite
+            // with nothing painted yet holds the first scene back (like its plates)
+            fr = this.frame(def, 0, level, false) ?? this.standIn(def, pos.frame, level);
+            if (!fr) this.waitingNow++;
+            else if (fr.lv !== undefined) level = fr.lv;
+          }
+        }
+      }
+      if (!fr) return null;
+      return { fr, level, pos, snap };
+    }
   }
 }
