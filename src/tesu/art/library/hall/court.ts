@@ -390,14 +390,9 @@ export interface GongP {
   frame?: number;
 }
 
-export const GONG_FRAMES = 12;
-
-/** The gong's frame for ticks (60/s) since the strike (negative or none: at rest). */
-export function gongFrame(ticks: number | null): number {
-  if (ticks === null || ticks < 0) return 0;
-  const f = 1 + Math.floor(ticks / 5);
-  return f < GONG_FRAMES ? f : 0;
-}
+// (GONG_FRAMES and gongFrame live in gong.ts, so the court's game code reads them without the hall's painters)
+import { GONG_FRAMES } from "./gong.ts";
+export { GONG_FRAMES, gongFrame } from "./gong.ts";
 
 export const gong = definePainter<GongP>("court.gong", {
   bounds(p) {

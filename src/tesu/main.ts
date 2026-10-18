@@ -27,7 +27,8 @@ import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "./openi
 import { Track1 } from "./opening/track.ts";
 import { startPlateWorkers } from "./plates/store.ts";
 import bake from "virtual:tesu-bake";
-import { adoptWorld } from "./world/index.ts";
+import { adoptWorld } from "./world/current.ts";
+import { SpriteRenderer } from "./render/sprites.ts";
 
 /**
  * The fixed keys (GDK 5.4, Appendix B): WASD and the arrows both move from the start;
@@ -115,6 +116,14 @@ async function boot(): Promise<void> {
   performance.mark("tesu:assets");
   const def = pool ? await pool.world : null;
   if (def) adoptWorld(def);
+  else {
+    // (engine, perf) no bake and no worker to hand it over (?manual, ?sync, no workers): built here, which also
+    // loads the world's painters on this page; otherwise the page never loads them (the workers paint)
+    (await import("./world/index.ts")).buildWorld();
+  }
+  const bounds = pool ? await pool.bounds : null;
+  if (bounds) for (const [id, b] of Object.entries(bounds)) SpriteRenderer.bootBounds.set(id, b);
+  if (sync || !pool?.workers.length) await SpriteRenderer.loadPainters();
   performance.mark("tesu:world");
   await yieldTask();
   const input = new Input(canvas, KEYS);

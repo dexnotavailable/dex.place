@@ -7,6 +7,7 @@
 import { buildWorld } from "../world/index.ts";
 import { PlateIndex, paintTile } from "./paint.ts";
 import { paintSpriteFrame } from "../render/sprite-paint.ts";
+import { hasPainter, painter } from "../art/painter.ts";
 import { inflateTile, worldFromJson, type BakeIndex, type BakeInfo } from "./bake.ts";
 import type { PlaneId, WorldDef } from "../world/types.ts";
 
@@ -19,6 +20,7 @@ const post = (m: unknown, t?: Transferable[]): void => (self as unknown as Worke
 
 interface TileMsg { key: string; plane: PlaneId; level: number; tx: number; ty: number }
 interface WorldMsg { world: true }
+interface BoundsMsg { bounds: true }
 interface BakeMsg { bake: BakeInfo | null }
 interface SpriteMsg { sprite: true; key: string; kind: string; p: Record<string, unknown>; seed: number; frame: number; level: number }
 
@@ -70,12 +72,24 @@ async function tile(m: TileMsg): Promise<void> {
   else post({ key, px: null, ms, chk });
 }
 
-self.onmessage = (e: MessageEvent<TileMsg | SpriteMsg | WorldMsg | BakeMsg>) => {
+self.onmessage = (e: MessageEvent<TileMsg | SpriteMsg | WorldMsg | BakeMsg | BoundsMsg>) => {
   const m = e.data;
   if ("bake" in m) {
     bake = m.bake;
     bakeIndex = bake?.index ? fetchText(bake.index).then((t) => (t ? (JSON.parse(t) as BakeIndex) : null)) : null;
     bakedWorld = bake?.world ? fetchText(bake.world).then((t) => (t ? worldFromJson(t) : null)) : null;
+    return;
+  }
+  if ("bounds" in m) {
+    // (engine, perf) the world's painted sprites' bounds, for the page, which does not load the painters
+    void plateIndex().then((ix) => {
+      const out: Record<string, [number, number, number, number]> = {};
+      for (const s of ix.world.sprites) {
+        if (s.kind === "frames" || s.kind === "image" || !hasPainter(s.kind)) continue;
+        try { out[s.id] = painter(s.kind).bounds({ ...s.p, frame: 0 }); } catch { /* the page then draws it uncut */ }
+      }
+      post({ spriteBounds: out });
+    });
     return;
   }
   if ("world" in m) {

@@ -41,7 +41,7 @@ import { BEATS } from "./opening/timeline.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
 import { eyeY, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
-import { buildWorld } from "./world/index.ts";
+import { currentWorld } from "./world/current.ts";
 import { isReload, loadSave, resumePlace, writeSave, type TesuSave } from "./save.ts";
 import { PLANES, PLANE_IDS, type CharmDef, type Atmos as AtmosDef, type PlaneId, type SpriteDef, type Spawn, type Usable, type Water, type WorldDef } from "./world/types.ts";
 
@@ -186,7 +186,8 @@ export class TesuGame {
   private shown = false;
 
   constructor(readonly r: WorldRenderer, input: Input, assets: ZhushaAssets, opts: TesuOpts) {
-    this.world = buildWorld();
+    // (engine, perf) adopted at boot (main.ts): the bake's, a worker's, or built there when neither
+    this.world = currentWorld();
     this.collision = new Collision(this.world.walks, this.world.walls);
     this.collision.minX = 0;
     this.collision.maxX = this.world.w;
