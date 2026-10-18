@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-18T17:28:45.166Z (19/10/2026, 00:28:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-18T18:28:45.098Z (19/10/2026, 01:28:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `6a88188`
+- live on dex.place: `7699ee8`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_f71b589d-37c — last activity 4138 min ago
+### wf_f71b589d-37c — last activity 4198 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:matanyone2-node** (done): 
