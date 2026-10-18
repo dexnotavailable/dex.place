@@ -1,14 +1,44 @@
 // Zhusha's sprite contract (lanes/anim/SPRITE-CONTRACT.md), the parts with no browser in them:
-// what an anim.json must say, how long each drawing holds, and the 2x reduction from the traced
-// 192 px figure to her 96 px play size. The loader (anims.ts) and the tests use these.
+// what an anim.json must say, how long each drawing holds, and the marks a drawing can carry
+// (apex, active, root motion, cancel windows) turned into clip ticks. The loader (anims.ts), the
+// controller (timing.ts), the slot-in tool (tools/zhusha/slot-in.mjs) and the tests use these.
 //
-// Only traced pixel art ships: an anim.json whose stage is not "pixel", or that still carries a
-// placeholder's background key, is refused here, so an illustrated placeholder or a raw render
-// can never reach the public build through this folder.
+// One size (Dex 10-18): every character is 128 px art, skull to sole. The game draws it with
+// nearest-neighbour scaling at her drawn height (feel.json charScale); there is no second set.
+//
+// Only finished pixel art ships: an anim.json whose stage is not "pixel", that still carries a
+// placeholder's background key, or whose figure is not 128 px is refused here, so an illustrated
+// placeholder or a raw render can never reach the public build through this folder.
+
+/** Every character's art height, skull to sole, art px (Dex 10-18: "let's roll with 128"). */
+export const FIGURE_H = 128;
+/** How far a drawing's measured figure (`fig`) may be off FIGURE_H, art px. */
+export const FIG_TOL = 2;
+
+/** What a drawing can be cancelled into from this drawing on (to the end of the move). */
+export const CANCELS = ["chain", "cancel", "hit", "move"] as const;
+export type Cancel = (typeof CANCELS)[number];
 
 export interface AnimFrame {
   file: string;
   ticks: number;
+  /** Her measured height skull to sole in this drawing (the kit's pose model), art px: 128 when sized right. */
+  fig?: number;
+  /** The apex of the movement (jump_arc: the top of the rise). */
+  apex?: boolean;
+  /** Damage is live during this drawing; a run of equal values is one hit (numbers split hits that touch). */
+  active?: boolean | number;
+  /** Forward movement from the legs during this drawing, art px (negative: backward). */
+  root?: number;
+  /** Windows that open on this drawing and stay open to the end of the move. */
+  cancel?: Cancel[];
+}
+
+export interface IdleVariant {
+  /** The base loop: drawings base[0]..base[1], played forward and back. */
+  base: [number, number];
+  /** After this many base loops (picked at random in [min, max]) one full play-through of the take. */
+  every: [number, number];
 }
 
 export interface AnimDef {
@@ -18,12 +48,14 @@ export interface AnimDef {
   loop?: boolean;
   /** The pixel in the frame where her soles meet the ground, hips centred above it. */
   pivot: [number, number];
-  /** Her height skull to sole in frame px (192 for every traced move). */
+  /** Her height skull to sole in frame px: FIGURE_H for every drawing. */
   figure_h: number;
-  /** Frame indices where a hit lands. */
+  /** Frame indices where a hit lands (the retime lane's marks; `active` supersedes when present). */
   hits?: number[];
-  /** jump_arc: [apex, contact] as frame indices. */
+  /** jump_arc: [apex, contact] as frame indices (a drawing's `apex` mark supersedes the first). */
   segments?: [number, number];
+  /** idle / uf_idle: the base loop and how often the whole take plays through. */
+  idle_variant?: IdleVariant;
   source?: string;
   notes?: string;
 }
@@ -31,6 +63,7 @@ export interface AnimDef {
 export class AnimError extends Error {}
 
 const FILE = /^f\d{3}\.png$/;
+const isInt = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v);
 
 /** Checks an anim.json against the contract; throws AnimError naming every problem. */
 export function validateAnim(json: unknown, slot: string): AnimDef {
@@ -38,30 +71,42 @@ export function validateAnim(json: unknown, slot: string): AnimDef {
   const o = json as Record<string, unknown>;
   if (!o || typeof o !== "object") throw new AnimError(`${slot}: anim.json is not an object`);
   if (o.id !== slot) bad.push(`id "${String(o.id)}" is not the folder's slot "${slot}"`);
-  if (o.stage !== "pixel") bad.push(`stage "${String(o.stage)}": only traced pixel art ("pixel") ships`);
+  if (o.stage !== "pixel") bad.push(`stage "${String(o.stage)}": only finished pixel art ("pixel") ships`);
   if ("key" in o) bad.push(`has a background "key": placeholders never ship`);
   const frames = o.frames;
   if (!Array.isArray(frames) || frames.length === 0) bad.push("no frames");
   else {
     frames.forEach((f: unknown, i: number) => {
       const fr = f as Record<string, unknown>;
-      if (!fr || typeof fr.file !== "string" || !FILE.test(fr.file)) bad.push(`frame ${i}: file must be fNNN.png`);
-      if (!fr || typeof fr.ticks !== "number" || !Number.isInteger(fr.ticks) || fr.ticks < 1) bad.push(`frame ${i}: ticks must be a whole number >= 1`);
+      if (!fr || typeof fr !== "object") { bad.push(`frame ${i}: not an object`); return; }
+      if (typeof fr.file !== "string" || !FILE.test(fr.file)) bad.push(`frame ${i}: file must be fNNN.png`);
+      if (!isInt(fr.ticks) || fr.ticks < 1) bad.push(`frame ${i}: ticks must be a whole number >= 1`);
+      if (fr.fig !== undefined && (typeof fr.fig !== "number" || Math.abs(fr.fig - FIGURE_H) > FIG_TOL)) bad.push(`frame ${i}: figure ${String(fr.fig)} px, not ${FIGURE_H}`);
+      if (fr.apex !== undefined && typeof fr.apex !== "boolean") bad.push(`frame ${i}: apex must be true or false`);
+      if (fr.active !== undefined && typeof fr.active !== "boolean" && !(isInt(fr.active) && fr.active >= 0)) bad.push(`frame ${i}: active must be true, false or a hit number`);
+      if (fr.root !== undefined && (typeof fr.root !== "number" || !Number.isFinite(fr.root) || Math.abs(fr.root) > FIGURE_H)) bad.push(`frame ${i}: root must be art px (|root| <= ${FIGURE_H})`);
+      if (fr.cancel !== undefined && (!Array.isArray(fr.cancel) || !fr.cancel.every((c) => (CANCELS as readonly string[]).includes(c as string)))) bad.push(`frame ${i}: cancel must list ${CANCELS.join(" / ")}`);
     });
   }
   const pv = o.pivot;
   if (!Array.isArray(pv) || pv.length !== 2 || !pv.every((v) => typeof v === "number" && Number.isFinite(v))) bad.push("pivot must be [x, y]");
-  if (typeof o.figure_h !== "number" || !(o.figure_h > 0)) bad.push("figure_h must be a positive number");
+  if (o.figure_h !== FIGURE_H) bad.push(`figure_h ${String(o.figure_h)}: every character is ${FIGURE_H} px skull to sole`);
   const n = Array.isArray(frames) ? frames.length : 0;
-  if (o.hits !== undefined && (!Array.isArray(o.hits) || !o.hits.every((h) => Number.isInteger(h) && h >= 0 && h < n))) bad.push("hits must be frame indices");
-  if (o.segments !== undefined && (!Array.isArray(o.segments) || o.segments.length !== 2 || !o.segments.every((h) => Number.isInteger(h) && h >= 0 && h < n))) bad.push("segments must be [apex, contact] frame indices");
+  if (o.hits !== undefined && (!Array.isArray(o.hits) || !o.hits.every((h) => isInt(h) && h >= 0 && h < n))) bad.push("hits must be frame indices");
+  if (o.segments !== undefined && (!Array.isArray(o.segments) || o.segments.length !== 2 || !o.segments.every((h) => isInt(h) && h >= 0 && h < n))) bad.push("segments must be [apex, contact] frame indices");
   if (o.loop !== undefined && typeof o.loop !== "boolean") bad.push("loop must be true or false");
+  if (o.idle_variant !== undefined) {
+    const v = o.idle_variant as Record<string, unknown> | null;
+    const b = v?.base, e = v?.every;
+    if (!Array.isArray(b) || b.length !== 2 || !isInt(b[0]) || !isInt(b[1]) || b[0] < 0 || b[1] <= b[0] || b[1] >= n) bad.push("idle_variant.base must be [first, last] drawings, first < last < the frame count");
+    if (!Array.isArray(e) || e.length !== 2 || !isInt(e[0]) || !isInt(e[1]) || e[0] < 1 || e[1] < e[0] || e[1] > 99) bad.push("idle_variant.every must be [min, max] base loops, 1 <= min <= max <= 99");
+  }
   if (bad.length) throw new AnimError(`${slot}: ${bad.join("; ")}`);
   return o as unknown as AnimDef;
 }
 
 /** Each drawing's first tick, and the clip's length in ticks. */
-export function timeline(frames: readonly AnimFrame[]): { starts: number[]; total: number } {
+export function timeline(frames: readonly { ticks: number }[]): { starts: number[]; total: number } {
   const starts: number[] = [];
   let t = 0;
   for (const f of frames) {
@@ -95,76 +140,78 @@ export function moveToClip(t: number, moveHitAt: number | null, clipHitAt: numbe
   return clipHitAt + (t - moveHitAt);
 }
 
-const luma = (d: Uint8ClampedArray | Uint8Array, i: number): number => 0.299 * d[i]! + 0.587 * d[i + 1]! + 0.114 * d[i + 2]!;
+/** A drawing's marks as clip ticks (null where the clip carries none: the controller keeps feel.json's numbers). */
+export interface ArtMarks {
+  total: number;
+  /** The apex drawing's first tick. */
+  apex: number | null;
+  /** Hit windows from runs of active drawings: first tick and length. */
+  active: { at: number; len: number }[] | null;
+  /** Cumulative forward art px at each drawing boundary (length frames + 1), spread evenly over each drawing's ticks. */
+  root: number[] | null;
+  /** First tick of the first drawing opening each window. */
+  cancel: Partial<Record<Cancel, number>> | null;
+  /** Ticks where the marked `hits` drawings start (the retime lane's marks). */
+  hitTicks: number[];
+}
 
-/**
- * k x k reduction of pixel art (k = 2: the traced 192 px figure to her 96 px play size) with no new
- * colours: a block is opaque when at least half of it is, or when its one opaque pixel continues a
- * line into a neighbouring block (thin blades and diagonals stay unbroken, lone specks go); its colour
- * is one of its own pixels, the most common, with the silhouette's edge and darker line colours
- * weighted up so the outline survives. (ox, oy): where the k grid starts in the source.
- */
-export function reducePixels(
-  src: Uint8ClampedArray | Uint8Array, sw: number, sh: number, k: number, ox = 0, oy = 0,
-): { data: Uint8ClampedArray<ArrayBuffer>; w: number; h: number } {
-  const w = Math.ceil((sw + ox) / k), h = Math.ceil((sh + oy) / k);
-  const out = new Uint8ClampedArray(new ArrayBuffer(w * h * 4));
-  const op = (x: number, y: number): boolean => x >= 0 && y >= 0 && x < sw && y < sh && src[(y * sw + x) * 4 + 3]! >= 128;
-  const cols: number[] = [], score: number[] = [];
-  for (let by = 0; by < h; by++) {
-    for (let bx = 0; bx < w; bx++) {
-      const x0 = bx * k - ox, y0 = by * k - oy;
-      cols.length = 0;
-      score.length = 0;
-      let count = 0, lumSum = 0, single = -1;
-      for (let y = y0; y < y0 + k; y++) {
-        for (let x = x0; x < x0 + k; x++) {
-          if (!op(x, y)) continue;
-          count++;
-          const i = (y * sw + x) * 4;
-          lumSum += luma(src, i);
-          single = i;
-        }
-      }
-      if (count === 0) continue;
-      let keep = count * 2 >= k * k;
-      if (!keep && count === 1) {
-        // a lone pixel stays when it continues a line out of this block
-        const sx = (single / 4) % sw, sy = Math.floor(single / 4 / sw);
-        for (let dy = -1; dy <= 1 && !keep; dy++) {
-          for (let dx = -1; dx <= 1 && !keep; dx++) {
-            const nx = sx + dx, ny = sy + dy;
-            if ((dx || dy) && (nx < x0 || nx >= x0 + k || ny < y0 || ny >= y0 + k) && op(nx, ny)) keep = true;
-          }
-        }
-      }
-      if (!keep) continue;
-      const mean = lumSum / count;
-      for (let y = y0; y < y0 + k; y++) {
-        for (let x = x0; x < x0 + k; x++) {
-          if (!op(x, y)) continue;
-          const i = (y * sw + x) * 4;
-          const c = (src[i]! << 16) | (src[i + 1]! << 8) | src[i + 2]!;
-          const edge = !op(x - 1, y) || !op(x + 1, y) || !op(x, y - 1) || !op(x, y + 1);
-          const dark = luma(src, i) < mean - 30;
-          const s = 1 + (edge ? 1.5 : 0) + (dark ? 0.75 : 0);
-          const j = cols.indexOf(c);
-          if (j < 0) {
-            cols.push(c);
-            score.push(s);
-          } else score[j]! += s;
-        }
-      }
-      let best = 0;
-      for (let j = 1; j < cols.length; j++) if (score[j]! > score[best]!) best = j;
-      const c = cols[best]!, o = (by * w + bx) * 4;
-      out[o] = (c >> 16) & 255;
-      out[o + 1] = (c >> 8) & 255;
-      out[o + 2] = c & 255;
-      out[o + 3] = 255;
-    }
+export function artMarks(def: Pick<AnimDef, "frames" | "hits" | "segments">): ArtMarks {
+  const { starts, total } = timeline(def.frames);
+  const fr = def.frames;
+  const apexI = fr.findIndex((f) => f.apex === true);
+  const apex = apexI >= 0 ? starts[apexI]! : def.segments ? starts[def.segments[0]]! : null;
+  let active: { at: number; len: number }[] | null = null;
+  if (fr.some((f) => f.active !== undefined && f.active !== false)) {
+    active = [];
+    let prev: boolean | number | undefined = undefined;
+    fr.forEach((f, i) => {
+      const v = f.active === false ? undefined : f.active;
+      if (v === undefined) { prev = undefined; return; }
+      if (prev !== undefined && prev === v) active![active!.length - 1]!.len += f.ticks;
+      else active!.push({ at: starts[i]!, len: f.ticks });
+      prev = v;
+    });
   }
-  return { data: out, w, h };
+  let root: number[] | null = null;
+  if (fr.some((f) => f.root !== undefined)) {
+    root = [0];
+    for (const f of fr) root.push(root[root.length - 1]! + (f.root ?? 0));
+  }
+  let cancel: Partial<Record<Cancel, number>> | null = null;
+  fr.forEach((f, i) => {
+    for (const c of f.cancel ?? []) {
+      cancel ??= {};
+      if (cancel[c] === undefined) cancel[c] = starts[i]!;
+    }
+  });
+  const hitTicks = (def.hits ?? []).map((h) => starts[h]!).sort((a, b) => a - b);
+  return { total, apex, active, root, cancel, hitTicks };
+}
+
+/** Forward art px covered by clip tick c (root motion spread evenly over each drawing's ticks). */
+export function rootAt(frames: readonly { ticks: number }[], cum: readonly number[], c: number): number {
+  if (c <= 0) return 0;
+  let t = 0;
+  for (let i = 0; i < frames.length; i++) {
+    const k = frames[i]!.ticks;
+    if (c < t + k) return cum[i]! + ((cum[i + 1]! - cum[i]!) * (c - t)) / k;
+    t += k;
+  }
+  return cum[cum.length - 1]!;
+}
+
+/** The clip tick at which root motion has covered d art px (a looping cycle: d is taken modulo its stride). */
+export function clipAtRoot(frames: readonly { ticks: number }[], cum: readonly number[], d: number): number {
+  const stride = cum[cum.length - 1]!;
+  if (!(Math.abs(stride) > 1e-9)) return 0;
+  const want = ((d % stride) + stride) % stride;
+  let t = 0;
+  for (let i = 0; i < frames.length; i++) {
+    const k = frames[i]!.ticks, a = cum[i]!, b = cum[i + 1]!;
+    if ((want >= a && want < b) || (want <= a && want > b)) return t + (k * (want - a)) / (b - a);
+    t += k;
+  }
+  return t;
 }
 
 /** The opaque box of an RGBA frame (alpha >= 128), or null when it is empty. */

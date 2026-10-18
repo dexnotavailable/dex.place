@@ -1224,15 +1224,12 @@ export class TesuGame {
   // --- drawing ------------------------------------------------------------
 
   /**
-   * Her: a traced drawing for what she is doing, or the white box (zhusha/draw.ts). In the close band
-   * (zoom near 2) a traced drawing comes from its native 192 px atlas at one art px per frame px.
+   * Her: a drawing for what she is doing, or the white box (zhusha/draw.ts), at her drawn height
+   * (128 px art, feel.json charScale) on the play plane's transform at every zoom.
    */
   private drawPlayer(cam: CamState, focus: [number, number], mirror: number | null): void {
     if (this.fade >= 1) return;
-    const xf = planeXf(cam, 1), b = this.player.body;
-    const close = cam.zoom >= 1.9 ? { zoom: cam.zoom, fx: b.x * xf.s + xf.offX, fy: b.y * xf.s + xf.offY, mirror } : null;
-    this.zdraw.draw(this.r, this.player, close);
-    void focus;
+    this.zdraw.draw(this.r, this.player, { s: planeXf(cam, 1).s, focus, mirror });
   }
 
   /** The light at a point: neighbouring atmos entries blend across their `blend` widths (atmos-blend.ts). */

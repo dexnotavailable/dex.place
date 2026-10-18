@@ -1,14 +1,20 @@
-// Drawing Zhusha: a role's traced pixel art when its slot exists (anims.ts), else the white box
+// Drawing Zhusha: a role's pixel art when its slot exists (anims.ts), else the white box
 // (Dex: "until traced pixel art exists for a move she is a white bounding box for that move";
 // the procedural squash, stretch and lean live in controller.ts). Also her R's flame and line,
 // and the dash's afterimages.
+//
+// One path at every zoom (Dex 10-18): 128 px art drawn nearest-neighbour at her drawn height,
+// H x charScale (feel.json), on the play plane's transform, so the close band shows the same
+// drawing larger. The white box stands at the same drawn height.
 
 import type { RGB } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { H } from "../config.ts";
-import { SLOTS, type AnimSet, type Slot } from "./anims.ts";
-import { drawingIndex, moveToClip } from "./contract.ts";
-import { FEEL, type AnimState, type Zhusha } from "./controller.ts";
+import { drawArt, SLOTS, type AnimSet, type Slot } from "./anims.ts";
+import { clipAtRoot, drawingIndex, moveToClip } from "./contract.ts";
+import { ART_PX, BODY_H, FEEL, type AnimState, type Zhusha } from "./controller.ts";
+import { IdlePlayer, seeded } from "./idle.ts";
+import type { PlayView } from "./units.ts";
 
 const hex = (s: string): RGB => [parseInt(s.slice(1, 3), 16) / 255, parseInt(s.slice(3, 5), 16) / 255, parseInt(s.slice(5, 7), 16) / 255];
 const INK = hex("#1b1922"), PAPER = hex("#fbf8f1"), HURT = hex("#ffd2c8"), VERM = hex("#d8232c"), GOLD = hex("#f5d25c");
@@ -25,14 +31,18 @@ export interface Shown {
 
 export class ZhushaDraw {
   readonly anims: AnimSet;
+  /** The idle variant player per idle slot, and how many idles have started (each draws a fresh seed). */
+  private idle = new Map<string, { player: IdlePlayer; lastT: number }>();
+  private idleSerial = 0;
 
   constructor(anims: AnimSet) {
     this.anims = anims;
   }
 
-  /** Lets the controller ask whether a drawing exists for a role and whether its clip has played out. */
+  /** Lets the controller ask whether a drawing exists for a role, its marks, and whether its clip has played out. */
   bind(z: Zhusha): void {
     z.hasRole = (role, ult) => !!this.anims.forRole(role, ult);
+    z.clipOf = (role, ult) => this.anims.forRole(role, ult)?.slot.def ?? null;
     z.clipDone = (a, ult) => {
       const r = this.anims.forRole(a.role, ult);
       if (!r) return true;
@@ -44,7 +54,9 @@ export class ZhushaDraw {
   private clipTime(a: AnimState, slot: Slot, z: Zhusha): number {
     const U = FEEL.ult;
     const fit = (len: number): number => (a.t / Math.max(1, len)) * slot.total;
-    if (MOVES.has(a.role)) return moveToClip(a.t, a.hitAt, slot.hitTicks[0] ?? null);
+    if (MOVES.has(a.role)) return moveToClip(a.t, a.hitAt, a.clipHitAt !== undefined ? a.clipHitAt : (slot.hitTicks[0] ?? null));
+    // a walk / run cycle with root motion plays by the distance covered: her feet stay planted at any speed
+    if ((a.role === "run" || a.role === "walk") && slot.marks.root) return clipAtRoot(slot.def.frames, slot.marks.root, (a.dist ?? 0) / ART_PX);
     switch (a.role) {
       case "r_call": return fit(U.callTicks);
       case "r_flurry": return fit(U.flurryTicks);
@@ -53,7 +65,8 @@ export class ZhushaDraw {
       case "uf_exit": return fit(U.exitTicks);
       case "jump": {
         const segs = slot.def.segments;
-        const apex = segs ? slot.starts[segs[0]]! : SLOTS.jumpArc.apex * slot.total;
+        // the apex drawing (a drawing's `apex` mark, else segments[0], else slots.json's share)
+        const apex = slot.marks.apex ?? SLOTS.jumpArc.apex * slot.total;
         const contact = segs ? slot.starts[segs[1]]! : SLOTS.jumpArc.contact * slot.total;
         const j = z.jumpPhase();
         if (j.phase === "rise") return Math.min(apex, j.t);
@@ -73,27 +86,40 @@ export class ZhushaDraw {
     const slot = r.slot;
     let t = this.clipTime(a, slot, z);
     if (r.def.reverse) t = slot.total - 1 - t;
-    const loop = slot.loop && !MOVES.has(a.role) && !r.def.hold;
+    if (a.role === "idle" && slot.def.idle_variant) return { slot, index: this.idleIndex(slot, t) };
+    const loop = (slot.loop || (a.role === "run" || a.role === "walk") && !!slot.marks.root) && !MOVES.has(a.role) && !r.def.hold;
     return { slot, index: drawingIndex(slot.starts, slot.total, t, loop) };
+  }
+
+  /** The idle variant player (idle.ts): the base loop forward and back, now and then the whole take. */
+  private idleIndex(slot: Slot, t: number): number {
+    let s = this.idle.get(slot.id);
+    if (!s || t < s.lastT) {
+      // a new idle: a fresh (deterministic) seed so the variety differs from one rest to the next
+      s = { player: new IdlePlayer(slot.def.frames.map((f) => f.ticks), slot.def.idle_variant!, seeded(0x5eed + this.idleSerial++ * 7919)), lastT: t };
+      this.idle.set(slot.id, s);
+    }
+    s.lastT = t;
+    return s.player.at(t).index;
   }
 
   /** Her head from the soles (world px, facing right) for the hat's talisman. */
   head(z: Zhusha): [number, number] {
     const s = this.shown(z);
     const h = s?.slot.drawings[s.index]?.head;
-    return h ?? z.headFromBox();
+    return h ? [h[0] * ART_PX, h[1] * ART_PX] : z.headFromBox();
   }
 
   /**
-   * Draws her in world space (the renderer's camera transform and mirror apply). In the close band
-   * (zoom near 2) a traced drawing is drawn from its native 192 px atlas at one art px per frame px.
+   * Draws her in world space on the play plane's transform for this pass (`view`: its scale, focus and
+   * mirror, as game.ts set it). A drawing is drawn at H x charScale at every zoom (anims.ts drawArt).
    */
-  draw(r: WorldRenderer, z: Zhusha, close: { zoom: number; fx: number; fy: number; mirror: number | null } | null): void {
-    this.figure(r, z, close);
+  draw(r: WorldRenderer, z: Zhusha, view: PlayView): void {
+    this.figure(r, z, view);
     if (z.smoke) this.cloud(r, z.smoke);
   }
 
-  private figure(r: WorldRenderer, z: Zhusha, close: { zoom: number; fx: number; fy: number; mirror: number | null } | null): void {
+  private figure(r: WorldRenderer, z: Zhusha, view: PlayView): void {
     const b = z.body;
     if (z.ink >= 1) return;
     const opacity = z.ink > 0 ? 1 - z.ink : z.invuln > 0 && z.state === "free" && Math.floor(z.invuln / 4) % 2 === 0 ? 0.55 : 1;
@@ -108,25 +134,8 @@ export class ZhushaDraw {
       if (!z.anim.hidden) this.box(r, z, opacity);
       return;
     }
-    const d = s.slot.drawings[s.index]!;
     const tint: [number, number, number, number] | undefined = z.flash > 0 ? [1, 0.35, 0.4, z.flash > 5 ? 0.8 : 0.4] : undefined;
-    const flip = z.facing < 0;
-    if (close && close.zoom >= 1.9) {
-      const k = close.zoom / 2;
-      const sheet = s.slot.native[d.nSheet]!;
-      const [sx, sy, sw, sh] = d.n;
-      const x = flip ? close.fx - (d.nOff[0] + sw) * k : close.fx + d.nOff[0] * k;
-      let y = close.fy + d.nOff[1] * k;
-      if (close.mirror !== null) y = 2 * close.mirror - (close.fy + (d.nOff[1] + sh) * k);
-      r.setTransform();
-      r.sprite({ sheet, sx, sy, sw, sh, x: Math.round(x), y: Math.round(y), flip, screen: true, lit: 0, tint, opacity });
-      r.flush();
-      return;
-    }
-    const sheet = s.slot.play[d.pSheet]!;
-    const [sx, sy, sw, sh] = d.p;
-    const x = flip ? b.x - (d.pOff[0] + sw) : b.x + d.pOff[0];
-    r.sprite({ sheet, sx, sy, sw, sh, x: Math.round(x), y: Math.round(b.y + d.pOff[1]), flip, lit: 0, tint, opacity });
+    drawArt(r, view, s.slot, s.index, b.x, b.y, z.facing < 0, ART_PX, { tint, opacity });
   }
 
   /** A solid quad centred at (x, y), w x h, rotated. */
@@ -144,7 +153,7 @@ export class ZhushaDraw {
    */
   private box(r: WorldRenderer, z: Zhusha, opacity: number): void {
     const b = z.body, p = z.pose, f = z.facing;
-    const w = FEEL.body.boxW * H * p.sx.v, h = H * p.sy.v;
+    const w = FEEL.body.boxW * BODY_H * p.sx.v, h = BODY_H * p.sy.v;
     const lean = p.lean.v, rot = p.rot.v, oy = p.oy.v;
     const form = z.ultForm || (z.state === "ult" && (z.ultPhase === "transform" || z.ultPhase === "reveal"));
     const cx = b.x, cyFeet = b.y + oy;
@@ -202,10 +211,10 @@ export class ZhushaDraw {
     // the hat: a wide black brim, a vermilion crown, a gold knob
     {
       const [x, y] = at(0, h + o + 2);
-      this.quad(r, x, y, w * 1.75, Math.max(3, H * 0.05), rot, INK, opacity);
-      const [x2, y2] = at(-f * w * 0.04, h + o + 2 + H * 0.06);
-      this.quad(r, x2, y2, w * 0.8, Math.max(4, H * 0.08), rot, VERM, opacity);
-      const [x3, y3] = at(-f * w * 0.04, h + o + 2 + H * 0.12);
+      this.quad(r, x, y, w * 1.75, Math.max(3, BODY_H * 0.05), rot, INK, opacity);
+      const [x2, y2] = at(-f * w * 0.04, h + o + 2 + BODY_H * 0.06);
+      this.quad(r, x2, y2, w * 0.8, Math.max(4, BODY_H * 0.08), rot, VERM, opacity);
+      const [x3, y3] = at(-f * w * 0.04, h + o + 2 + BODY_H * 0.12);
       this.quad(r, x3, y3, 4, 3, rot, GOLD, opacity);
     }
   }
@@ -213,7 +222,7 @@ export class ZhushaDraw {
   /** R's flame (rising, at the zenith, diving): a tapered column of fire in hard bands. */
   private flame(r: WorldRenderer, z: Zhusha): void {
     const b = z.body, p = z.pose, k = z.anim.flame;
-    const w = FEEL.body.boxW * H * 1.1 * p.sx.v, h = H * p.sy.v;
+    const w = FEEL.body.boxW * BODY_H * 1.1 * p.sx.v, h = BODY_H * p.sy.v;
     const flick = (i: number): number => Math.sin(z.t * 0.9 + i * 1.7) * 2;
     const n = 10;
     for (let i = 0; i < n; i++) {
@@ -262,7 +271,7 @@ export class ZhushaDraw {
 
   /** An afterimage: the box's outline in azure, dithering away. */
   private ghost(r: WorldRenderer, x: number, y: number, lean: number, life: number, ult: boolean): void {
-    const w = FEEL.body.boxW * H, h = H, n = 6, sh = h / n;
+    const w = FEEL.body.boxW * BODY_H, h = BODY_H, n = 6, sh = h / n;
     const c = ult ? AZURE : AZURE_DEEP;
     for (let i = 0; i < n; i++) {
       const ly = sh * (i + 0.5);
