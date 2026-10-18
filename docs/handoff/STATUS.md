@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-18T06:38:55.360Z (18/10/2026, 13:38:55 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-18T07:48:46.317Z (18/10/2026, 14:48:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,19 +12,19 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_f71b589d-37c — last activity 3488 min ago
+### wf_f71b589d-37c — last activity 3558 min ago
 2 agents: 2 done, 0 running or stopped mid-way, 0 failed.
 
 - **build:matanyone2-node** (done): 
 - **build:pixel-step** (done): 
 
-### wf_965a9075-86b — last activity 3748 min ago
+### wf_965a9075-86b — last activity 3818 min ago
 2 agents: 0 done, 2 running or stopped mid-way, 0 failed.
 
 - **loader-art** (running)
 - **engineer** (running)
 
-### wf_6e999b69-205 — last activity 4022 min ago
+### wf_6e999b69-205 — last activity 4092 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **build** (running)
@@ -32,14 +32,14 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **film** (done): The opening's timing is right, but three visible problems need fixing first. Everything is in D:\Dex\Temp\dexplace-v2\lanes\opening\film-v0\ (CRITIC.md is the verdict). It holds film.mp4 (T -2 to 43 at 10 fps with a beat-clock strip; audio track 1 is the Track 1 WAV with T 0 at the press, track 2 is what the browser actually produced), contact sheets per 10 s (film-sheet-00-10s.png to film-sheet-40-43s.png, plus the 
 - **fix** (done): I fixed and re-filmed all three must-fixes from the critic. They are committed as 73abbb57 on claude/v2-opening, not pushed. npm run check and npm test pass (351 tests). The worktree was clean at f708ff0b after the crash, so I resumed from there. No GPU, ComfyUI or broker was used. I ran one headless Edge at a time with the GPU disabled, between 17:17 and 18:35, and no browser or server is left running. 1. TESU now l
 
-### wf_e01d0219-dac — last activity 4096 min ago
+### wf_e01d0219-dac — last activity 4166 min ago
 3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
 
 - **timeline** (done): 
 - **machine** (done): 
 - **research** (done): 
 
-### wf_04b33855-f83 — last activity 4136 min ago
+### wf_04b33855-f83 — last activity 4206 min ago
 7 agents: 5 done, 2 running or stopped mid-way, 0 failed.
 
 - **director:fixes** (done): All four Must-fix items I own (8, 10, 11, 12) and my four Should-fix items are done in PLAN.md, BEATS.json (now revision 2.1) and the storyboard. I left sections 3.5–3.8 and the clip rows alone, because bones v3 replaces them. - **Item 8, one ofuda size.** It is 4 x 10 px on the 96 drawing and 8 x 20 on the 192 everywhere; 5 x 15 is gone. On a 1080p screen that is about 2.5 x 6 px in the opening wide shot (zoom 0.5),
