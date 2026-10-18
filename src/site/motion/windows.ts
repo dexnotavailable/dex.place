@@ -46,8 +46,9 @@ export interface Scene {
   pieces: ScenePiece[];
   /** A lake from this height down (share of the window), its colours top to bottom. */
   water?: { y: number; tones: Rgb[] };
-  /** A band of mist (white, dithered) at this height, this deep (shares), drawn before piece `before`. */
-  mist?: { y: number; h: number; before: number };
+  /** A band of mist (white, dithered) at this height, this deep (shares), drawn before piece `before`; `dens` its
+   *  thickest (0..1, 0.75 if not given). */
+  mist?: { y: number; h: number; before: number; dens?: number };
   /** The Walker (the world's own frame, public/tesu/walker), far off in the haze: height share, anchor, haze. */
   walker?: { fit: number; x: number; y: number; haze: number; before: number };
 }
@@ -127,7 +128,7 @@ export const SCENES: Readonly<Record<SceneId, Scene>> = {
   door: {
     entry: "palace",
     sky: MIST,
-    mist: { y: 0.82, h: 0.16, before: 4 },
+    mist: { y: 0.84, h: 0.14, before: 4, dens: 0.3 },
     pieces: [
       { kind: "op.cloud", p: { kind: "stratus", w: 640, h: 50 }, fit: 0.14, x: 0.5, y: 0.34, sway: 6, speed: 0.03, seed: 61, haze: 0.4 },
       { kind: "op.tower", p: { h: 420, w: 60 }, fit: 0.86, x: 0.13, y: 1.0 },
@@ -356,7 +357,7 @@ export function initWindows(reduced: MediaQueryList): void {
     const g = c.getContext("2d")!;
     const img = g.createImageData(c.width, c.height);
     for (let y = 0; y < c.height; y++) {
-      const dens = Math.sin(((y + 0.5) / c.height) * Math.PI) * 0.75;
+      const dens = Math.sin(((y + 0.5) / c.height) * Math.PI) * (m.dens ?? 0.75);
       for (let x = 0; x < c.width; x++) {
         const xx = x % (W + MIST_SLIDE);
         if (hash(xx, y + y0, 3) < dens * (0.55 + 0.45 * hash(Math.floor(xx / 9), Math.floor((y + y0) / 3), 5))) {
@@ -427,27 +428,25 @@ export function initWindows(reduced: MediaQueryList): void {
     wins.push({ el, index, cv, ctx, scene, W: 0, H: 0, k: 0, paintedH: 0, back: null, edge: null, mist: null, art: [], walker: null, visible: false, seen: false, gen: 0, dirty: true });
   });
 
-  // --- the loop: a few frames a second while a window is on screen; none at all when none is
-  let raf = 0, last = 0;
+  // --- the loop: a frame every 160 ms while a window is on screen (a timer, not a frame callback every frame); none at
+  // all when none is
+  let timer = 0;
   const t0 = performance.now();
-  const tick = (now: number): void => {
-    raf = 0;
+  const tick = (): void => {
+    timer = 0;
     const live = wins.filter((w) => w.visible);
     if (!live.length) return;
-    if (now - last > 160) {
-      last = now;
-      const t = (now - t0) / 1000;
-      for (const win of live) {
-        if (reduced.matches && !win.dirty) continue;
-        win.dirty = false;
-        draw(win, t);
-      }
+    const t = (performance.now() - t0) / 1000;
+    for (const win of live) {
+      if (reduced.matches && !win.dirty) continue;
+      win.dirty = false;
+      draw(win, t);
     }
     // reduced motion: once everything has arrived there is nothing left to draw
-    if (!reduced.matches || live.some((w) => w.dirty)) raf = requestAnimationFrame(tick);
+    if (!reduced.matches) timer = window.setTimeout(tick, 160);
   };
   const kick = (): void => {
-    if (!raf) raf = requestAnimationFrame(tick);
+    if (!timer) timer = window.setTimeout(tick, 0);
   };
 
   // a window paints the first time it comes near (half a screen ahead), and animates only while on screen

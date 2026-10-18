@@ -3,7 +3,7 @@
 // the world's own painters in the worker its place needs (motion/painters.ts). Whole pixels only: one art px is `k`
 // device px.
 
-import { painterWorker } from "./painters.ts";
+import { painterWorker, warmPainters } from "./painters.ts";
 import { POOL, rampIndex, skyRamp } from "./sky-plan.ts";
 import type { CloudDone, CloudJob } from "./paint-core.ts";
 import { initWindows } from "./windows.ts";
@@ -80,11 +80,15 @@ export function initJetty(): void {
     ctx.putImageData(skyImg, 0, 0);
     // the lake: the lower part of the scene, bands from the pale horizon down into the jade
     // where the white paper leaves the scene open: beside it (wide screens) or below it (stacked)
-    const paper = scene.parentElement?.querySelector<HTMLElement>(".jetty__paper")?.getBoundingClientRect();
+    const paperEl = scene.parentElement?.querySelector<HTMLElement>(".jetty__paper");
+    const paper = paperEl?.getBoundingClientRect();
     const stacked = !paper || paper.width >= r.width * 0.9;
     const open = stacked ? W : Math.max(40, Math.floor(((paper.left - r.left) * dpr) / k));
+    // stacked, the white question sits over the scene's top: her head stays below its bottom edge and its dissolve
+    const fade = paperEl ? parseFloat(getComputedStyle(paperEl, "::before").height) || 0 : 0;
+    const clear = stacked && paper ? Math.ceil(((paper.bottom - r.top + fade) * dpr) / k) + 4 : 0;
     // (a short scene still has room above the deck for her)
-    const horizon = Math.min(H - 12, Math.max(Math.round(H * 0.7), HER_H + JETTY.water + 14));
+    const horizon = Math.min(H - 12, Math.max(Math.round(H * 0.7), clear + HER_H + JETTY.water + 14));
     if (horizon > sh) {
       const last = sky[sky.length - 1]!;
       ctx.fillStyle = `rgb(${last[0]},${last[1]},${last[2]})`;
@@ -156,4 +160,5 @@ export function initSky(reduced: MediaQueryList): void {
   if (typeof Worker === "undefined") return;
   initWindows(reduced);
   initJetty();
+  warmPainters();
 }

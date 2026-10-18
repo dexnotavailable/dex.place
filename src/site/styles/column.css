@@ -135,7 +135,8 @@ html.op-cine .world__cue { visibility: hidden; }
 }
 .jetty__go:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); }
 @media (max-width: 700px), (max-width: 1099px) and (orientation: portrait) {
-  .jetty { min-height: 560px; align-items: start; }
+  /* tall enough for the question, its dissolve, then her standing on the deck below them, and the lake */
+  .jetty { min-height: 700px; align-items: start; }
   /* stacked: the paper on top, white edge to edge, its bottom edge dissolving into the scene below: the same white
      gradient and pixels as a window's edge */
   .jetty__paper { justify-self: stretch; width: 100%; min-height: auto; padding: var(--s-6) var(--pad) var(--s-6); background: #fff; }

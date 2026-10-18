@@ -1,5 +1,7 @@
-// The painter workers, started only when a place that needs one comes near (one each, shared by every window and the
-// jetty). The worker URLs are written out so the build bundles each entry with just its painters.
+// The painter workers (one each, shared by every window and the jetty). Started once the page is idle after its first
+// paint, so a jump down the page never finds a window still waiting for its painters; with the browser's data saver on,
+// only when a place that needs one comes near. The worker URLs are written out so the build bundles each entry with just
+// its painters.
 
 export type PainterEntry = "sky" | "palace" | "kagami";
 
@@ -14,4 +16,16 @@ export function painterWorker(e: PainterEntry): Worker {
         : new Worker(new URL("./paint-kagami.ts", import.meta.url), { type: "module" });
   workers[e] = w;
   return w;
+}
+
+/** Start every painter worker after the first paint, when the page is idle (never before it has painted). */
+export function warmPainters(): void {
+  if ((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) return;
+  const idle = (f: () => void): void => {
+    if (typeof requestIdleCallback === "function") requestIdleCallback(f, { timeout: 3000 });
+    else setTimeout(f, 200);
+  };
+  requestAnimationFrame(() => setTimeout(() => idle(() => {
+    for (const e of ["sky", "palace", "kagami"] as const) painterWorker(e);
+  }), 0));
 }
