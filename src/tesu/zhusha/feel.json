@@ -1,5 +1,11 @@
 {
-  "about": "How Zhusha moves and hits in Tesu. H = her height skull to sole (96 world px at play zoom). Distances and boxes in H, speeds in H/s, times in ticks (60 a second). Boxes are [forward, up, width, height] from her soles, mirrored when she faces left. Started from the test room's numbers (Dex liked its energy; its code is scrapped): see docs/character/PIPELINE.md, step 12.",
+  "about": "How Zhusha moves and hits in Tesu. H = her height skull to sole at play zoom (96 world px). Distances and boxes in H, speeds in H/s unless named mps (metres per second), times in ticks (60 a second). Boxes are [forward, up, width, height] from her soles, mirrored when she faces left; they follow her drawn body (x charScale). Started from the test room's numbers (Dex liked its energy; its code is scrapped): see docs/character/PIPELINE.md, step 12.",
+  "charScale": 1.1,
+  "charScaleAbout": "Dex 10-18: \"maybe make her slightly bigger, like 10%\". Her drawn height = H x charScale (128 px art drawn nearest-neighbour at that height: 1.65 screen px per art px when 1 world px = 2 screen px). Her art, white box, hurtbox and attack boxes follow it; her speeds, jumps, dashes and lunges do not. Every NPC placeholder box stands at this drawn height too.",
+  "units": {
+    "about": "The world's metre: one H (her height) is 1.77 m (docs/character/PIPELINE.md 2.1; ZHUSHA.md). Speeds given in m/s become H/s through this, never through charScale.",
+    "metresPerH": 1.77
+  },
   "body": {
     "collider": [12, 44],
     "boxW": 0.36,
@@ -8,7 +14,9 @@
     "hp": 100
   },
   "run": {
-    "speed": 5.6,
+    "mps": 9,
+    "ultMps": 11,
+    "mpsAbout": "Dex 10-16: normal run 9 m/s, the ult form 11 m/s (5.08 / 6.21 H/s at 1.77 m per H). Was 5.6 H/s for both.",
     "accelTicks": 7,
     "stopTicks": 8,
     "turnTicks": 4,

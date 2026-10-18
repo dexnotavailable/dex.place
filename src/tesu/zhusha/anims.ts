@@ -1,15 +1,15 @@
-// Zhusha's drawings in Tesu: every slot that has an anim.json in public/assets/zhusha/<slot>/
-// (lanes/anim/SPRITE-CONTRACT.md) is loaded at start, trimmed and packed into atlases twice:
-// at its traced size (192 px figure: the close band, zoom 2, one art px per frame px) and reduced
-// 2x to her 96 px play size (contract.ts reducePixels: no new colours, the outline kept). A role
-// whose slot is missing draws the white box (draw.ts). Data-driven: a new traced move is a new
-// folder, no code change.
+// Character drawings in Tesu through the sprite contract (lanes/anim/SPRITE-CONTRACT.md): every slot that
+// has an anim.json under public/assets/zhusha/<slot>/ (her) or public/assets/cast/<who>/<slot>/ (the cast,
+// src/tesu/cast/) is loaded at start, trimmed and packed into one atlas, and drawn with nearest-neighbour
+// scaling at her drawn height (feel.json charScale) at every camera zoom: 128 px art, one path, no second
+// set (Dex 10-18). A role whose slot is missing draws the white box (draw.ts). Data-driven: a new move is a
+// new folder, no code change.
 
 import slotsRaw from "./slots.json?raw";
 import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
-import { H } from "../config.ts";
-import { headOf, opaqueBox, reducePixels, timeline, validateAnim, type AnimDef } from "./contract.ts";
+import { artMarks, headOf, opaqueBox, timeline, validateAnim, type AnimDef, type ArtMarks } from "./contract.ts";
+import { artTransform, type PlayView } from "./units.ts";
 
 /** Slots present at build time, from public/assets/zhusha/<slot>/anim.json (a missing one is never fetched). */
 export const PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/zhusha/*/anim.json"))
@@ -35,18 +35,14 @@ interface SlotsFile {
 export const SLOTS = JSON.parse(slotsRaw) as SlotsFile;
 
 export interface Drawing {
-  /** Atlas pages (native, play). */
-  nSheet: number;
-  pSheet: number;
-  /** Rect in the native atlas, and its top-left from the pivot (frame px). */
-  n: [number, number, number, number];
-  nOff: [number, number];
-  /** Rect in the play atlas, and its top-left from the pivot (play px = world px at play zoom). */
-  p: [number, number, number, number];
-  pOff: [number, number];
+  /** Atlas page. */
+  sheet: number;
+  /** Rect in the atlas, and its top-left from the pivot (art px). */
+  r: [number, number, number, number];
+  off: [number, number];
   ticks: number;
   start: number;
-  /** Her head from the soles (world px at play scale, facing right), for the hat's talisman. */
+  /** The head from the soles (art px, facing right), for the hat's talisman. */
   head: [number, number] | null;
 }
 
@@ -57,10 +53,11 @@ export interface Slot {
   total: number;
   starts: number[];
   drawings: Drawing[];
-  native: SpriteSheet[];
-  play: SpriteSheet[];
+  sheets: SpriteSheet[];
   /** Ticks into the clip where each marked hit drawing starts. */
   hitTicks: number[];
+  /** The drawings' marks as clip ticks (apex, active, root motion, cancel windows). */
+  marks: ArtMarks;
 }
 
 export class AnimSet {
@@ -123,15 +120,16 @@ class Packer {
   }
 }
 
-async function loadSlot(r: WorldRenderer, id: string): Promise<Slot> {
-  const res = await fetch(`${BASE}${id}/anim.json`, { cache: "no-cache" });
+/** Loads one slot from `${base}${id}/` (anim.json + its drawings), validated against the contract. */
+export async function loadSlot(r: WorldRenderer, base: string, id: string): Promise<Slot> {
+  const res = await fetch(`${base}${id}/anim.json`, { cache: "no-cache" });
   if (!res.ok) throw new Error(`${id}: anim.json HTTP ${res.status}`);
-  const def = validateAnim(await res.json(), id);
-  const k = Math.max(1, Math.round(def.figure_h / H));
+  // a slot-in --local drop shows on the dev server only
+  const def = validateAnim(await res.json(), id, { allowLocal: import.meta.env.DEV });
   const [pvx, pvy] = [Math.round(def.pivot[0]), Math.round(def.pivot[1])];
-  const imgs = await Promise.all(def.frames.map((f) => loadImage(`${BASE}${id}/${f.file}`)));
+  const imgs = await Promise.all(def.frames.map((f) => loadImage(`${base}${id}/${f.file}`)));
   const { starts, total } = timeline(def.frames);
-  const nat = new Packer(), ply = new Packer();
+  const pack = new Packer();
   const scratch = document.createElement("canvas");
   const sg = scratch.getContext("2d", { willReadFrequently: true })!;
   const drawings: Drawing[] = [];
@@ -142,52 +140,59 @@ async function loadSlot(r: WorldRenderer, id: string): Promise<Slot> {
     sg.clearRect(0, 0, w, h);
     sg.drawImage(img, 0, 0);
     const data = sg.getImageData(0, 0, w, h).data;
-    const box = opaqueBox(data, w, h) ?? [pvx, pvy, pvx + 1, pvy + 1];
-    const [x0, y0, x1, y1] = box;
+    const [x0, y0, x1, y1] = opaqueBox(data, w, h) ?? [pvx, pvy, pvx + 1, pvy + 1];
     const bw = x1 - x0, bh = y1 - y0;
-    // native: the trimmed drawing as traced
-    const [page, ax, ay] = nat.place(bw, bh);
-    nat.pages[page]!.g.drawImage(img, x0, y0, bw, bh, ax, ay, bw, bh);
-    // play: reduced k x k on a grid anchored to the pivot (no shimmer between drawings)
-    const ox = (((x0 - pvx) % k) + k) % k, oy = (((y0 - pvy) % k) + k) % k;
-    const crop = sg.getImageData(x0, y0, bw, bh).data;
-    const red = reducePixels(crop, bw, bh, k, ox, oy);
-    const [ppage, px, py] = ply.place(red.w, red.h);
-    ply.pages[ppage]!.g.putImageData(new ImageData(red.data, red.w, red.h), px, py);
+    const [page, ax, ay] = pack.place(bw, bh);
+    pack.pages[page]!.g.drawImage(img, x0, y0, bw, bh, ax, ay, bw, bh);
     const hd = headOf(data, w, h, pvx, def.figure_h);
-    const sc = H / def.figure_h;
     drawings.push({
-      nSheet: page,
-      pSheet: ppage,
-      n: [ax, ay, bw, bh],
-      nOff: [x0 - pvx, y0 - pvy],
-      p: [px, py, red.w, red.h],
-      pOff: [Math.round((x0 - ox - pvx) / k), Math.round((y0 - oy - pvy) / k)],
+      sheet: page,
+      r: [ax, ay, bw, bh],
+      off: [x0 - pvx, y0 - pvy],
       ticks: def.frames[i]!.ticks,
       start: starts[i]!,
-      head: hd ? [(hd[0] - pvx) * sc, (hd[1] - pvy) * sc] : null,
+      head: hd ? [hd[0] - pvx, hd[1] - pvy] : null,
     });
   });
-  const sheet = (c: HTMLCanvasElement): SpriteSheet => ({ albedo: r.texture(c), normal: r.flatNormal, keyInfluence: 0 });
+  const marks = artMarks(def);
   return {
     id, def, loop: !!def.loop, total, starts, drawings,
-    native: nat.pages.map((p) => sheet(p.canvas)),
-    play: ply.pages.map((p) => sheet(p.canvas)),
-    hitTicks: (def.hits ?? []).map((h) => starts[h]!).sort((a, b) => a - b),
+    sheets: pack.pages.map((p) => ({ albedo: r.texture(p.canvas), normal: r.flatNormal, keyInfluence: 0 })),
+    hitTicks: marks.hitTicks,
+    marks,
   };
 }
 
-/** Loads every present slot; a slot that fails its contract is reported and left as the white box. */
+/** Loads every present slot of hers; a slot that fails its contract is reported and left as the white box. */
 export async function loadAnims(r: WorldRenderer): Promise<AnimSet> {
   const slots = new Map<string, Slot>();
   const failed: string[] = [];
   await Promise.all(PRESENT.map(async (id) => {
     try {
-      slots.set(id, await loadSlot(r, id));
+      slots.set(id, await loadSlot(r, BASE, id));
     } catch (e) {
       failed.push(id);
       console.warn(`zhusha: slot ${id} left as the white box:`, e instanceof Error ? e.message : e);
     }
   }));
   return new AnimSet(slots, failed);
+}
+
+/**
+ * Draws drawing `index` of a slot with its pivot at world (x, y), at `a` world px per art px (units.ts artPx),
+ * nearest-neighbour, on the play plane's transform for this pass; leaves that transform set again.
+ */
+export function drawArt(
+  r: WorldRenderer, view: PlayView, slot: Slot, index: number, x: number, y: number, flip: boolean, a: number,
+  o: { tint?: [number, number, number, number]; opacity?: number } = {},
+): void {
+  const d = slot.drawings[index];
+  const sheet = d ? slot.sheets[d.sheet] : undefined;
+  if (!d || !sheet) return;
+  const xf = artTransform(view, r.camX, r.camY, x, y, a);
+  const [sx, sy, sw, sh] = d.r;
+  r.setTransform(xf.z, xf.focus, view.mirror);
+  const dx = flip ? xf.q[0] - (d.off[0] + sw) : xf.q[0] + d.off[0];
+  r.sprite({ sheet, sx, sy, sw, sh, x: dx, y: xf.q[1] + d.off[1], flip, lit: 0, tint: o.tint, opacity: o.opacity });
+  r.setTransform(view.s, view.focus, view.mirror);
 }

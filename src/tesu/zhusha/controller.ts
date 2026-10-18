@@ -4,7 +4,10 @@
 // Every number is in feel.json (H units and ticks); the test room's numbers were the start (its
 // code is scrapped). Her drawings come through the sprite contract (anims.ts): this file only
 // decides which role plays and where in it she is (`anim`); draw.ts draws a slot's drawing or,
-// with no traced pixel art for that role yet, the white box with the squash and lean kept here.
+// with no pixel art for that role yet, the white box with the squash and lean kept here.
+// A drawing's marks (apex, active, root motion, cancel windows) override feel.json's numbers for
+// its move when present (timing.ts). Her body (drawn height, hurtbox, attack boxes) is H x charScale;
+// her movement is in H and m/s, untouched by charScale (units.ts).
 //
 // The world (game.ts, court.ts, props.ts) talks to her through the same surface the lab's
 // Player had: body, facing, hp, dead, ultCd, skillCd, checkpoint, update(), hit(),
@@ -17,41 +20,15 @@ import type { SpawnOptions } from "../../lab/engine/vfx.ts";
 import type { WorldBox } from "../../lab/game/events.ts";
 import type { Body } from "../collide.ts";
 import { H } from "../config.ts";
-
-type Weight = "light" | "medium" | "heavy" | "q" | "ult";
-
-interface HitDef {
-  at: number;
-  len: number;
-  box: [number, number, number, number];
-  anchor?: "start";
-  dmg: number;
-  weight: Weight;
-  kb: [number, number];
-  fx: string;
-}
-
-interface MoveDef {
-  ticks: number;
-  hits: HitDef[];
-  lunge?: { at: number; dist: number; ticks: number }[];
-  chainFrom?: number;
-  cancelFrom: number;
-  hitCancelFrom?: number;
-  moveFrom: number;
-  airGravity?: number;
-  hop?: number;
-  plunge?: number;
-  warp?: number;
-  warpTicks?: number;
-  airHang?: number;
-  recoil?: [number, number, number];
-  cooldown?: number;
-}
+import type { AnimDef } from "./contract.ts";
+import { resolveMove, type HitDef, type MoveDef, type ResolvedMove, type Weight } from "./timing.ts";
+import { artPx, checkUnits, drawnH, runHps } from "./units.ts";
 
 export interface FeelFile {
+  charScale: number;
+  units: { metresPerH: number };
   body: { collider: [number, number]; boxW: number; hurtW: number; hurtH: number; hp: number };
-  run: { speed: number; accelTicks: number; stopTicks: number; turnTicks: number; airAccelTicks: number; airStopTicks: number; stopAnimFrom: number };
+  run: { mps: number; ultMps: number; accelTicks: number; stopTicks: number; turnTicks: number; airAccelTicks: number; airStopTicks: number; stopAnimFrom: number };
   jump: { height: number; riseTicks: number; fallGravity: number; maxFall: number; cut: number; hangSpeed: number; hangGravity: number; coyote: number; buffer: number; airJumps: number; airJumpHeight: number; fastFall: number; fastFallMax: number };
   land: { squashFrom: number; heavyFrom: number; heavyShake: number };
   dash: { distance: number; ticks: number; rampTicks: number; curve: number; iframes: number; cooldown: number; airDashes: number; attackFrom: number; jumpCarry: number; keepRun: number };
@@ -74,9 +51,14 @@ export interface FeelFile {
 }
 
 export const FEEL = JSON.parse(feelRaw) as FeelFile;
+checkUnits(FEEL);
 
 /** H per second to world px per tick. */
 const pt = (hps: number): number => (hps * H) / 60;
+/** Her drawn body, world px (H x charScale): the box, the art, the hurtbox, the attack boxes. */
+export const BODY_H = drawnH(FEEL, H);
+/** World px per art px (128 px art at her drawn height). */
+export const ART_PX = artPx(FEEL, H);
 
 /** What the world gives her each tick: movement against its ground (collide.ts, a ride's car, a charm). */
 export interface MoveWorld {
@@ -109,6 +91,10 @@ export interface AnimState {
   t: number;
   /** For moves: the move's first hit tick (the clip's hit drawing is timed to land on it). */
   hitAt: number | null;
+  /** For moves: the clip tick that shows on hitAt (undefined: the clip's own first marked hit). */
+  clipHitAt?: number | null;
+  /** World px travelled in this role (walk / run cycles with root motion are played by distance: no foot sliding). */
+  dist?: number;
   /** Hidden (R's flurry: she is the cuts; the smoke). */
   hidden: boolean;
   /** R's flame / line (the box is drawn as one). */
@@ -167,9 +153,11 @@ export class Zhusha {
   /** Set by the drawing side (anims.ts): has this anim's clip played out (true with no drawing)? Does a role have one? */
   clipDone: (a: AnimState, ult: boolean) => boolean = () => true;
   hasRole: (role: string, ult: boolean) => boolean = () => false;
+  /** The drawing's anim.json for a role (its marks time the move), null for the white box. */
+  clipOf: (role: string, ult: boolean) => AnimDef | null = () => null;
 
   private host: ZhushaHost;
-  private move: { id: string; def: MoveDef; startX: number; startY: number; dir: 1 | -1; fxDone: Set<number>; landed: boolean } | null = null;
+  private move: { id: string; def: ResolvedMove; startX: number; startY: number; dir: 1 | -1; fxDone: Set<number>; landed: boolean } | null = null;
   private moveStart = -9999;
   private chainIdx = -1;
   private chainEnd = -9999;
@@ -193,6 +181,7 @@ export class Zhusha {
   private lastHits = 0;
   private ult: { x0: number; y0: number; zx: number; zy: number; cut: number; fwd: number; floor: number } = { x0: 0, y0: 0, zx: 0, zy: 0, cut: 0, fwd: 0, floor: 0 };
   private formSerial = 0;
+  private poseX: number | null = null;
 
   constructor(host: ZhushaHost, spawn: [number, number] = [0, 0]) {
     this.host = host;
@@ -219,8 +208,9 @@ export class Zhusha {
 
   // --- the world's view of her ------------------------------------------------
 
+  /** Run speed, world px per tick: 9 m/s, 11 m/s in the ult form (feel.json run.mps / ultMps). */
   get runSpeed(): number {
-    return pt(FEEL.run.speed);
+    return pt(runHps(FEEL, this.ultForm));
   }
 
   get ultForm(): boolean {
@@ -235,7 +225,7 @@ export class Zhusha {
 
   hurtboxes(): WorldBox[] {
     if (this.dead > 0 || this.anim.hidden) return [];
-    const b = this.body, w = FEEL.body.hurtW * H, h = FEEL.body.hurtH * H;
+    const b = this.body, w = FEEL.body.hurtW * BODY_H, h = FEEL.body.hurtH * BODY_H;
     return [{ x: b.x - w / 2, y: b.y - h, w, h }];
   }
 
@@ -263,8 +253,9 @@ export class Zhusha {
     const f = h.anchor === "start" ? m.dir : this.facing;
     const ox = h.anchor === "start" ? m.startX : this.body.x;
     const oy = h.anchor === "start" ? m.startY : this.body.y;
-    const x = f > 0 ? ox + fw * H : ox - (fw + w) * H;
-    const box = { x, y: oy - (up + hh) * H, w: w * H, h: hh * H };
+    const K = BODY_H;
+    const x = f > 0 ? ox + fw * K : ox - (fw + w) * K;
+    const box = { x, y: oy - (up + hh) * K, w: w * K, h: hh * K };
     const W = FEEL.weights[h.weight];
     const hb: HitBox = {
       ...box,
@@ -286,13 +277,14 @@ export class Zhusha {
       const cut = Math.floor(this.t / per);
       if (cut >= U.flurryCuts || this.t - cut * per >= 2) return [];
       const f = this.facing;
-      const x = f > 0 ? this.ult.x0 + 0.1 * H : this.ult.x0 - (0.1 + U.flurryReach) * H;
-      const box = { x, y: this.ult.y0 - 1.5 * H, w: U.flurryReach * H, h: 1.5 * H };
+      const K = BODY_H;
+      const x = f > 0 ? this.ult.x0 + 0.1 * K : this.ult.x0 - (0.1 + U.flurryReach) * K;
+      const box = { x, y: this.ult.y0 - 1.5 * K, w: U.flurryReach * K, h: 1.5 * K };
       return [{ box, hb: { ...box, damage: U.flurryDmg, knockback: [pt(0.6), -pt(0.4)], hitstop: 2, group: `r-cut-${cut}`, hitVfx: "hit.light" } }];
     }
     if (this.ultPhase === "smoke" && this.t < 2) {
-      const R = U.impactRadius * H;
-      const box = { x: b.x - R, y: b.y - 6 * H, w: 2 * R, h: 7 * H };
+      const R = U.impactRadius * BODY_H;
+      const box = { x: b.x - R, y: b.y - 6 * BODY_H, w: 2 * R, h: 7 * BODY_H };
       return [{ box, hb: { ...box, damage: U.impactDmg, knockback: [pt(U.impactKb[0]), -pt(U.impactKb[1])], hitstop: FEEL.weights.ult.hitstop, group: "r", heavy: true, hitVfx: "hit.heavy" } }];
     }
     return [];
@@ -301,8 +293,8 @@ export class Zhusha {
   /** Her head from the soles (world px, facing right): the box's top; draw.ts swaps in a drawing's own. */
   headFromBox(): [number, number] {
     const lean = this.pose.lean.v;
-    const h = H * this.pose.sy.v;
-    return [lean * h, -h - 0.03 * H + this.pose.oy.v];
+    const h = BODY_H * this.pose.sy.v;
+    return [lean * h, -h - 0.03 * BODY_H + this.pose.oy.v];
   }
 
   // --- taking hits ------------------------------------------------------------
@@ -491,7 +483,7 @@ export class Zhusha {
     }
     if (b.vy >= 0) this.cutDone = true;
     this.gravityStep(input);
-    const before = b.vx;
+    const before = b.vx, x0 = b.x;
     this.moveBody(world);
     this.jumpT++;
     this.fallT = !b.grounded && b.vy > 0 ? this.fallT + 1 : 0;
@@ -501,7 +493,7 @@ export class Zhusha {
     else if (ax !== 0 || !b.grounded) this.stopT = 99;
     else this.stopT++;
     this.wasRunning = running && ax !== 0;
-    this.locomotionAnim(ax);
+    this.locomotionAnim(ax, Math.abs(b.x - x0));
   }
 
   private jump(height: number): void {
@@ -516,7 +508,7 @@ export class Zhusha {
     this.pose.sx.v = 0.86;
   }
 
-  private locomotionAnim(ax: number): void {
+  private locomotionAnim(ax: number, moved = 0): void {
     const b = this.body, a = this.anim;
     let role: string;
     if (!b.grounded) role = "jump";
@@ -540,8 +532,11 @@ export class Zhusha {
       a.role = role;
       a.t = role === "jump" && b.grounded ? -1 : 0;
       a.hitAt = null;
+      a.clipHitAt = undefined;
+      a.dist = 0;
     }
     a.t++;
+    a.dist = (a.dist ?? 0) + moved;
     a.hidden = false;
     a.flame = 0;
     if (b.grounded) this.landT++;
@@ -619,8 +614,9 @@ export class Zhusha {
   // --- attacks, Q and E -----------------------------------------------------
 
   private startMove(id: string, input: Input): void {
-    const def = FEEL.moves[id];
-    if (!def) return;
+    const feel = FEEL.moves[id];
+    if (!feel) return;
+    const def = resolveMove(feel, this.clipOf(id, this.ultForm), ART_PX);
     const ax = input.axis();
     if (ax !== 0) this.facing = ax as 1 | -1;
     const b = this.body;
@@ -634,7 +630,7 @@ export class Zhusha {
     if (mi >= 0) this.chainIdx = mi;
     if (id === "skill_q") this.skillCd = def.cooldown ?? 0;
     if (id === "e_tap") this.eCd = def.cooldown ?? 0;
-    this.anim = { role: id, t: 0, hitAt: def.hits[0]?.at ?? null, hidden: false, flame: 0 };
+    this.anim = { role: id, t: 0, hitAt: def.hits[0]?.at ?? null, clipHitAt: def.clipHitAt, hidden: false, flame: 0 };
     // the finisher hops into its flip on the ground; from the air it plunges
     if (def.hop && b.grounded) {
       const g = ((2 * FEEL.jump.height * H) / (FEEL.jump.riseTicks * FEEL.jump.riseTicks)) * (def.airGravity ?? 1);
@@ -689,7 +685,14 @@ export class Zhusha {
     // motion
     let lungeV = 0;
     for (const l of def.lunge ?? []) if (t >= l.at && t < l.at + l.ticks) lungeV = (l.dist * H) / l.ticks;
-    if (m.id === "skill_q") {
+    // the drawing's root motion: she moves as her legs do (along the move's direction), replacing the lunges
+    const rootV = def.root ? (def.root[t] ?? 0) : null;
+    if (rootV !== null && !(m.id === "skill_q" && t <= (def.warpTicks ?? 3))) {
+      b.vx = m.dir * rootV;
+      if (connected && b.vx * m.dir > 0) b.vx *= 0.3;
+      if (m.id === "skill_q" && !b.grounded && t < (def.airHang ?? 0)) b.vy = 0;
+      else this.gravityStep(input, def.airGravity ?? 1);
+    } else if (m.id === "skill_q") {
       // the warp: 2.5 H in 3 ticks, then a dead stop; in the air she hangs a moment
       const wt = def.warpTicks ?? 3;
       if (t <= wt) {
@@ -731,7 +734,7 @@ export class Zhusha {
 
   private swingFx(h: HitDef, m: { startX: number; startY: number; dir: 1 | -1 }): void {
     const s = this.host, b = this.body, f = this.facing;
-    const at = (fw: number, up: number): SpawnOptions => ({ x: b.x + f * fw * H, y: b.y - up * H, facing: f });
+    const at = (fw: number, up: number): SpawnOptions => ({ x: b.x + f * fw * BODY_H, y: b.y - up * BODY_H, facing: f });
     const ult = this.ultForm;
     const col = ult ? { colour: "#9fe4ff", edge: "#3a8fd8" } : {};
     // a traced drawing draws its own blade trail: the stand-in crescents step aside (impacts stay)
@@ -1077,8 +1080,10 @@ export class Zhusha {
   /** The opening's poses: a held still, her walk, her run (opening.ts moves her; only the drawing here). */
   posed(kind: "still" | "walk" | "run"): void {
     const role = kind === "still" ? "idle" : kind;
-    if (this.anim.role !== role) this.anim = { role, t: 0, hitAt: null, hidden: false, flame: 0 };
+    if (this.anim.role !== role) this.anim = { role, t: 0, hitAt: null, hidden: false, flame: 0, dist: 0 };
     if (kind !== "still") this.anim.t++;
+    this.anim.dist = (this.anim.dist ?? 0) + (this.poseX === null ? 0 : Math.abs(this.body.x - this.poseX));
+    this.poseX = this.body.x;
     this.state = "free";
     this.tickPose();
   }

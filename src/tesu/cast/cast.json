@@ -1,0 +1,33 @@
+{
+  "about": "Every character the world draws besides Zhusha, until its 128 px art exists (Dex 10-18: \"white placeholder boxes at player height\"): a plain white box standing at her drawn height (zhusha/feel.json charScale), drawn by src/tesu/cast/npcs.ts in place of the world sprite with the same id. w = the box's width in her drawn heights (people: her own box's 0.36). who = the cast folder its art slots into, public/assets/cast/<who>/<slot>/, through the same sprite contract as hers (128 px, lanes/anim/SPRITE-CONTRACT.md); roles = which slot each of the sprite's frames plays (\"*\" for every frame not listed); with no slot the box stays. poses = an optional squash (sx, sy) or lean per frame so what the code drives still reads (the Lion's wind-up before its pounce). Left as drawn (not cast, or not at her scale): the hall cat, the paper spectators in the court's stands (back plane), the Walker (its own lane).",
+  "npcs": {
+    "bao": {
+      "who": "bao",
+      "name": "Herald Bao",
+      "w": 0.36,
+      "roles": {},
+      "poses": { "2": { "sy": 1.05 }, "3": { "sy": 0.94, "lean": 0.1 }, "4": { "lean": -0.06 } }
+    },
+    "champion": {
+      "who": "lion",
+      "name": "the Lion, dexClient's champion (to become a dragon)",
+      "w": 3.27,
+      "roles": {},
+      "poses": { "3": { "sy": 0.84, "sx": 1.04 }, "4": { "sy": 1.06, "lean": 0.16 }, "5": { "lean": -0.12 }, "6": { "sy": 0.9, "lean": -0.08 }, "7": { "sy": 0.72 }, "8": { "sy": 0.32 } }
+    },
+    "hanko": {
+      "who": "hanko",
+      "name": "Hanko, at the front desk (her anchor is the desk top)",
+      "w": 0.36,
+      "roles": {},
+      "poses": { "2": { "sy": 1.03 }, "3": { "sy": 0.97 } }
+    },
+    "seo": {
+      "who": "seo",
+      "name": "Archivist Seo",
+      "w": 0.36,
+      "roles": {},
+      "poses": {}
+    }
+  }
+}
