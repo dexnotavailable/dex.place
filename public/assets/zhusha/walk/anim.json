@@ -1,0 +1,54 @@
+{
+ "id": "walk",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  48,
+  139
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 8,
+   "fig": 128
+  },
+  {
+   "file": "f001.png",
+   "ticks": 7,
+   "fig": 128
+  },
+  {
+   "file": "f002.png",
+   "ticks": 10,
+   "fig": 128
+  },
+  {
+   "file": "f003.png",
+   "ticks": 10,
+   "fig": 128
+  },
+  {
+   "file": "f004.png",
+   "ticks": 10,
+   "fig": 128
+  },
+  {
+   "file": "f005.png",
+   "ticks": 8,
+   "fig": 128
+  },
+  {
+   "file": "f006.png",
+   "ticks": 10,
+   "fig": 128
+  },
+  {
+   "file": "f007.png",
+   "ticks": 9,
+   "fig": 128
+  }
+ ],
+ "loop": true,
+ "source": "h3-L-walk-A-s3000-03e07f",
+ "notes": "kit v1.2 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f000: 914 px of loose background ghosts dropped; f001: 624 px of loose background ghosts dropped; f002: 121 px of loose background ghosts dropped; f003: 76 px of loose background ghosts dropped; f004: 953 px of loose background ghosts dropped; f005: 1517 px of loose background ghosts dropped; f006: 823 px of loose background ghosts dropped; f007: 106 px of loose background ghosts dropped | Worker 3 POLISH (2026-10-18): THE shared blade (w3lib.canon_blade) on each drawing's line, point on the ground row; the two tails redrawn below the shoulders as two glossy tapering tails 1 px apart (hair.comb_tails); face: no gold glint (H3 hides the eye), a 2 px lash + blush on worker 1's cleaned face; strays gone. See w3/CHANGES.md."
+}
