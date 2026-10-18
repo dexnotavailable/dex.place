@@ -15,7 +15,8 @@ import { Feel } from "../lab/game/feel.ts";
 import { Zhusha, type MoveWorld } from "./zhusha/controller.ts";
 import { ZhushaDraw } from "./zhusha/draw.ts";
 import { NpcDraw } from "./cast/npcs.ts";
-import { makeTarget, type Target, type WorldRenderer } from "../world/render/renderer.ts";
+import { makeTarget, type PointLight, type Target, type WorldRenderer } from "../world/render/renderer.ts";
+import { ActorLayer } from "./render/reduce.ts";
 import { rgb } from "./art/palette.ts";
 import { Camera, framingAt } from "./camera.ts";
 import { Collision } from "./collide.ts";
@@ -118,6 +119,8 @@ export class TesuGame {
   readonly store: TileStore;
   readonly atmos: Atmos;
   readonly sprites: SpriteRenderer;
+  /** (engine 10-18) Her, her effects and the talisman at play density, reduced onto the frame when zoomed out. */
+  readonly actors: ActorLayer;
   readonly titles: Titles;
   readonly opening: Opening;
   readonly player: Zhusha;
@@ -186,6 +189,7 @@ export class TesuGame {
     this.store = new TileStore(this.planes, { sync: opts.sync });
     this.atmos = new Atmos(gl, r.emptyVao);
     this.sprites = new SpriteRenderer(gl, r.emptyVao);
+    this.actors = new ActorLayer(gl, r.emptyVao);
     // (round 7, performance) painted sprites' frames are painted by the plate workers (not for
     // deterministic captures: ?manual paints them on the page, as it paints the plates)
     if (!opts.manual) this.sprites.async = (job, done) => this.store.paintSprite(job, done);
@@ -1236,6 +1240,22 @@ export class TesuGame {
     this.zdraw.draw(this.r, this.player, { s: planeXf(cam, 1).s, focus, mirror });
   }
 
+  /**
+   * (engine 10-18) Wider than play zoom, what moves on the play plane (her, her effects, the talisman) is drawn at
+   * play density into the actor layer (`draw` gets the layer's camera, scale 1), then reduced onto `target` on the
+   * frame's grid, the reduction anchored to her feet (render/reduce.ts). `mirror`: the reflection's waterline row.
+   */
+  private reducedActors(cam: CamState, target: Target, lights: PointLight[], mirror: number | null, draw: (c: CamState) => void): void {
+    const r = this.r, xf = planeXf(cam, 1), b = this.player.body;
+    const view = { cx: (cam.W / 2 - xf.offX) / xf.s, cy: (cam.H / 2 - xf.offY) / xf.s };
+    const c = this.actors.begin(r, cam, view, [b.x, b.y - H]);
+    r.begin(this.actors.x0, this.actors.y0, DAY, lights);
+    draw(c);
+    this.actors.end(r);
+    r.bindTarget(target, false);
+    this.actors.composite(cam.W, cam.H, xf, [b.x, b.y], mirror);
+  }
+
   /** The light at a point: neighbouring atmos entries blend across their `blend` widths (atmos-blend.ts). */
   private atmosAt(x: number, y: number): AtmosDef {
     return blendAtmos(this.world.atmos, x, y, INTERIOR_Y);
@@ -1289,7 +1309,14 @@ export class TesuGame {
           const layer = mark ? this.store.get(id, lv, tx, ty, pri) : this.peek(id, lv, tx, ty);
           if (layer === -1 && mark) complete = false;
           if (layer < 0) continue;
-          quads.push({ x0: tx * TILE * k + xf.offX, y0: ty * TILE * k + xf.offY, x1: (tx + 1) * TILE * k + xf.offX, y1: (ty + 1) * TILE * k + xf.offY, layer });
+          // (engine 10-18) zoomed out between levels the plate is reduced onto the frame's grid, a footprint reaching
+          // into the right / lower neighbours (render/reduce.ts)
+          const red = k < 0.999;
+          quads.push({
+            x0: tx * TILE * k + xf.offX, y0: ty * TILE * k + xf.offY, x1: (tx + 1) * TILE * k + xf.offX, y1: (ty + 1) * TILE * k + xf.offY, layer,
+            ax: tx * TILE, ay: ty * TILE, k, off: [xf.offX, xf.offY],
+            right: red ? this.peek(id, lv, tx + 1, ty) : -1, down: red ? this.peek(id, lv, tx, ty + 1) : -1, diag: red ? this.peek(id, lv, tx + 1, ty + 1) : -1,
+          });
         }
       }
       if (prefetch && mark) {
@@ -1410,7 +1437,10 @@ export class TesuGame {
         if (id === "play") npcs(m);
         this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false && !this.npcs.has(sp)), cam, pd.look, this.time, m, this.manual);
         fogOn(id, true);
-        if (id === "play") {
+        if (id === "play" && ActorLayer.wants(cam.zoom)) {
+          // (engine 10-18) zoomed out: her reflection is her reduced drawing, mirrored
+          this.reducedActors(cam, this.refl, lights, wlPlay, (c) => this.drawPlayer(c, [c.W / 2, c.anchor * c.H], null));
+        } else if (id === "play") {
           r.begin(camX, camY, DAY, lights);
           r.setTransform(s4, focus, wlPlay);
           if (cam.zoom < 1.9) this.drawPlayer(cam, focus, wlPlay);
@@ -1467,7 +1497,21 @@ export class TesuGame {
         waterTo(wl("play"));
         fogOn("back", false);
       }
-      if (id === "front") {
+      if (id === "front" && ActorLayer.wants(z)) {
+        // (engine 10-18) zoomed out: her, her effects and the talisman reduced onto the frame's grid like the world
+        this.reducedActors(cam, r.main, lights, null, (c) => {
+          this.vfx.draw(r as unknown as LabRenderer, "back");
+          this.vfx.drawAfterimages(r as unknown as LabRenderer);
+          this.drawOfuda(c, true);
+          this.drawPlayer(c, [c.W / 2, c.anchor * c.H], null);
+          this.drawOfuda(c, false);
+          this.vfx.draw(r as unknown as LabRenderer, "front");
+        });
+        r.setTransform();
+        this.motes.draw(r, cam, 1);
+        r.flush();
+        waterTo(Hf);
+      } else if (id === "front") {
         // her and her effects, then the near water over the play plane's underwater parts
         r.begin(camX, camY, DAY, lights);
         if (s4 !== 1) r.setTransform(s4, focus);

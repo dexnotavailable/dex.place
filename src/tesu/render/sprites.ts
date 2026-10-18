@@ -9,6 +9,7 @@ import type { SpriteDone, SpriteJob } from "../plates/store.ts";
 import { PLANES, type SpriteDef } from "../world/types.ts";
 import { paintSpriteFrame, type SpritePixels } from "./sprite-paint.ts";
 import { SHOW_GLSL, type PlaneLook } from "./planes.ts";
+import { REDUCE_CONST_GLSL, REDUCE_RGBA_GLSL } from "./reduce.ts";
 import { levelFor, planeLevels, planeXf, type CamState } from "./view.ts";
 
 const VS = /* glsl */ `#version 300 es
@@ -59,6 +60,8 @@ float bayer4(vec2 p) {
   return (m[k] + 0.5) / 16.0;
 }
 ${SHOW_GLSL}
+${REDUCE_CONST_GLSL}
+${REDUCE_RGBA_GLSL}
 void main() {
   if (hiddenByShow()) discard;
   if (uMirror >= 0.0 && uRes.y - gl_FragCoord.y < uMirror) discard;
@@ -72,9 +75,23 @@ void main() {
     vec2 k = vec2((f.x - uRectF.x) / (uRectF.z - uRectF.x), (f.y - uRectF.y) / (uRectF.w - uRectF.y));
     uv = vec2(uFlip > 0.5 ? 1.0 - k.x : k.x, k.y) * uSize;
   }
-  ivec2 t = clamp(ivec2(floor(uv)), ivec2(0), ivec2(uSize) - 1);
-  vec4 c = texelFetch(uTex, t, 0);
-  if (c.a < 0.5) discard;
+  vec4 c;
+  vec2 inv = uSize / max(uRectF.zw - uRectF.xy, vec2(1.0));
+  if (uCell <= 1.5 && inv.x > 1.001) {
+    // (engine 10-18) drawn smaller than its own density (zoomed out between levels, or a set at a coarser level):
+    // the palette-keeping reduction of the texels each frame px covers (render/reduce.ts), anchored to the drawn rect
+    float row = uRes.y - gl_FragCoord.y;
+    float cy = uMirror >= 0.0 ? 2.0 * uMirror - row : row;
+    vec2 a0 = (vec2(floor(gl_FragCoord.x), floor(cy)) - uRectF.xy) * inv;
+    if (uFlip > 0.5) a0.x = uSize.x - a0.x - inv.x;
+    c = reduceRGBA(uTex, ivec2(uSize), a0, a0 + inv, true);
+    if (c.r < 0.0) discard;
+    uv = a0 + inv * 0.5;
+  } else {
+    ivec2 t = clamp(ivec2(floor(uv)), ivec2(0), ivec2(uSize) - 1);
+    c = texelFetch(uTex, t, 0);
+    if (c.a < 0.5) discard;
+  }
   vec3 col = mix(c.rgb, c.rgb * uGrade.rgb, uGrade.a);
   float fade = uFade;
   if (uFoot.x > 0.0) {
