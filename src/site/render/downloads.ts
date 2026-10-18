@@ -8,7 +8,7 @@
 import { downloads, formatBytes, type DownloadEntry, type DownloadFile } from "../data/downloads.ts";
 import { projects } from "../data/projects.ts";
 import { floats } from "./floats.ts";
-import { button, copyButton, icon, pageHead, sectionHead, sticker, tile } from "./glyphs.ts";
+import { button, copyButton, hanko, icon, pageHead, sectionHead, sticker, tile } from "./glyphs.ts";
 import { esc, pad2 } from "./html.ts";
 
 type Level = 2 | 3;
@@ -45,6 +45,7 @@ function published(d: DownloadEntry, f: DownloadFile, level: Level): string {
   const short = `${f.sha256.slice(0, 8)}…${f.sha256.slice(-6)}`;
   return (
     `<article class="dlf" id="${d.id}" aria-labelledby="${d.id}-name" data-reveal="pop-block">` +
+    hanko() +
     fileArt(f) +
     `<div class="dlf__body">` +
     // Phones: the big drawn file is dropped and this small tile heads the

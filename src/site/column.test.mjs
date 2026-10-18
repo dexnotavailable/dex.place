@@ -15,6 +15,8 @@ import { landing } from "./render/landing.ts";
 import { routes } from "./render/routes.ts";
 import { STUBS, commissionsBlock, moreSection, stubPage } from "./render/stubs.ts";
 import { hanko } from "./render/glyphs.ts";
+import { downloadsSection } from "./render/downloads.ts";
+import { donateSection } from "./render/donate.ts";
 
 const content = { docs: [], posts: [], gallery: [] };
 
@@ -273,6 +275,9 @@ test("Hanko sits in the corner of every stub card and panel, decorative, as one 
   assert.equal(hanko(), '<span class="hanko" data-hanko aria-hidden="true"><i class="hanko__face"></i></span>');
   assert.equal((moreSection().match(/data-hanko/g) ?? []).length, STUBS.length);
   assert.match(stubPage("account"), /data-hanko/);
+  // and on the real panels: the published download, and the donation box (it sits on her desk)
+  assert.match(downloadsSection(), /<article class="dlf"[^>]*>(<span class="hanko")/);
+  assert.match(donateSection(), /<section class="card bank"[^>]*>(<span class="hanko")/);
   const css = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
   assert.match(css, /--hanko-sheet: url\(/);
   assert.match(css, /@keyframes hanko-blink/);
