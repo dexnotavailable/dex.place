@@ -65,8 +65,8 @@ test("slot-in: refuses what looks like an H3 render", () => {
   no(drawing(768, 1344), /H3 frame's size/);
   no(drawing(140, 170, { cols: 400 }), /more than 256 colours/);
   no(Buffer.from("not a png at all"), /not a PNG/);
-  assert.ok(underH3("D:/Dex/Temp/dexplace-v2/lanes/anim/gen-method/mass/h3/takes/m1_1"));
-  assert.ok(!underH3("D:/Dex/Temp/dexplace-v2/lanes/anim/moves/m1_1/final"));
+  assert.ok(underH3("/work/lanes/anim/gen-method/mass/h3/takes/m1_1"));
+  assert.ok(!underH3("/work/lanes/anim/moves/m1_1/final"));
   const r = checkMove("m1_1", move({}, [{ file: "f000.png", ticks: 4, fig: 128, png: drawing(120, 160, { opaque: true }) }]));
   assert.equal(r.ok, false);
 });
