@@ -97,7 +97,8 @@ export function initScatter(): void {
     const cols = Math.ceil(vw / cell);
     sheet.style.setProperty("--sheet-edge", url(sheetEdgeSvg(cols, depth, cell)));
     sheet.style.setProperty("--sheet-edge-size", `${cols * cell}px ${depth * cell}px`);
-    sheet.style.setProperty("--sheet-edge-h", `${depth * cell}px`);
+    // (and on the game screen, outside the sheet, so its "Site" cue keeps clear of the edge too; never on <html>)
+    for (const el of [sheet, document.querySelector<HTMLElement>(".world")]) el?.style.setProperty("--sheet-edge-h", `${depth * cell}px`);
   };
   draw();
   let t = 0;

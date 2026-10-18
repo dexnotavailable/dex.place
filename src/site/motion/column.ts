@@ -53,7 +53,7 @@ const DRIFT_S = 2.4;
 
 /** After the catch: the white fade clears (1.2 s), then the whole scene holds this long before the game. */
 const CAUGHT_S = 1.2 + 1.6;
-/** The cut up to the game screen: a short cover in the sky's colour, out and back in (s each way). */
+/** The cut up to the game screen: a short white cover, out and back in (s each way). */
 const CUT_S = 0.32;
 
 declare global {
