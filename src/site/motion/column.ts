@@ -1,9 +1,10 @@
 // The page column (Dex 10-16; roadmap SITE-SCROLL.md): the game screen at the top, the website below it, the
 // jetty scene at the bottom; the ofuda is the game's state (motion/flow.ts holds the table).
 //
-// - On load "dex" writes itself (eased, overlapping letters) and STAYS; under it the chibi loader cycles
-//   (placeholder icons, motion/sprites.ts) while the world streams in behind a black cover. When the world is
-//   in, the cycle lands on the small ofuda (the world's own 8 x 20 drawing) and "click to continue" shows.
+// - On load "dex" writes itself (eased, overlapping letters) and STAYS; under it the pixel loader runs (Dex 10-18:
+//   "a smooth pixelized loading pixel graphic, then it forms into the ofuda"; motion/pixel-loader.ts) while the world
+//   streams in behind a black cover. When the world is in, it gathers into the small ofuda, which from then on is a
+//   real piece of paper (PaperOfuda), and "click to continue" shows.
 // - Scroll down early and the loader trails down with you and settles in the website's top-right corner; scroll
 //   all the way back up and it goes home. A deep link (/downloads/ ...) lands on its section with it there.
 // - Four ways into the game, all ending in one event, `dex:enter` with the way (motion/enter.ts plays today's
@@ -22,8 +23,7 @@ import { pressContinues } from "../../tesu/opening/press.ts";
 import type { OpeningSet } from "../../tesu/mount.ts";
 import { ENTER_EVENT, initOpening, type EnterDetail, type Way } from "./enter.ts";
 import { bottomView, cornerView, driftPoint, topView, trail, trailPoint, type FlowState } from "./flow.ts";
-import { LoaderStage, Paper, PixelPen } from "./paper.ts";
-import { ITEM_SIZE, OFUDA_H } from "./sprites.ts";
+import { BOX_H, BOX_W, OFUDA_H, PaperOfuda, TIE, createPixelLoader } from "./pixel-loader.ts";
 
 interface ColumnWorld {
   ready?: Promise<void>;
@@ -50,8 +50,7 @@ const MARK_Y = 0.4;
 const STAGE_Y = 0.6;
 /** Way 4: the ofuda's drift into the jetty, then the beat before the game (s). */
 const DRIFT_S = 2.4;
-/** The loader items' pixels are this many of the ofuda's (they are icons; the ofuda is the game's own object). */
-const ITEM_SCALE = 2;
+
 /** After the catch: the white fade clears (1.2 s), then the whole scene holds this long before the game. */
 const CAUGHT_S = 1.2 + 1.6;
 /** The cut up to the game screen: a short cover in the sky's colour, out and back in (s each way). */
@@ -91,7 +90,6 @@ export function initColumn(reduced: MediaQueryList): void {
   cv.setAttribute("aria-hidden", "true");
   document.body.append(cv);
   const ctx = cv.getContext("2d")!;
-  const pen = new PixelPen(ctx);
   const corner = document.createElement("button");
   corner.type = "button";
   corner.className = "ofuda-btn";
@@ -107,8 +105,15 @@ export function initColumn(reduced: MediaQueryList): void {
   else sheet.prepend(corner);
 
   const seed = (Date.now() / 1000) | 0;
-  const stage = new LoaderStage(seed);
-  const paper = new Paper();
+  // the pixel loader under "dex" (its box drawn on the overlay from this loop), and once it has gathered into the
+  // ofuda, the paper alone in page space (art px = css px / kc), carried to the corner, the jetty or away
+  const loader = createPixelLoader({ reduced, seed });
+  let paper: PaperOfuda | null = null;
+  /** The loader has gathered into the ofuda (landOnOfuda resolved) and the page's paper has taken over. */
+  let landed = false;
+  let landing = false;
+  /** A poke on the ofuda: a puff of air (ms). */
+  let pokeAt = -Infinity;
 
   // --- the world and the opening
   let world: ColumnWorld | null = window.__dexWorld ?? null;
@@ -164,7 +169,9 @@ export function initColumn(reduced: MediaQueryList): void {
 
   const isSetIn = (): boolean => {
     if (!worldReady || !opening.ready()) return false;
-    if (world?.progress) return world.progress() >= 1;
+    if (world?.progress && world.progress() >= 1) return true;
+    // the opening set itself: progress() can stop a hair short of 1 (0.7 + 0.1 + 0.1 + 0.1 is 0.9999999999999999 in
+    // floating point, so it tops out at 0.99), and then the loader would never land
     const s = world?.openingSet?.() ?? null;
     return !!s && s.plates >= 1 && s.close && s.font && s.ofuda;
   };
@@ -174,10 +181,7 @@ export function initColumn(reduced: MediaQueryList): void {
     way = w;
     setState("ingame");
     intro?.release();
-    if (w !== "bottom") {
-      gustAt = performance.now();
-      paper.flip();
-    }
+    if (w !== "bottom") gustAt = performance.now();
     gs.setAttribute("data-entered", "");
     cont.hidden = true;
     corner.hidden = true;
@@ -200,8 +204,7 @@ export function initColumn(reduced: MediaQueryList): void {
     opening.unlock();
     downAt = performance.now();
     downPoke = inPoke(e.clientX, e.clientY);
-    if (downPoke && state === "loading") stage.poke();
-    if (downPoke && state === "loaded") paper.flip();
+    if (downPoke && landed) pokeAt = performance.now();
   });
   gs.addEventListener("click", (e) => {
     if (state !== "loaded") return;
@@ -283,6 +286,7 @@ export function initColumn(reduced: MediaQueryList): void {
   const pos = { x: innerWidth / 2, y: innerHeight * STAGE_Y };
   let placed = false;
   let drawn = true;
+  let paperFresh = false;
   const tick = (now: number): void => {
     // after a stall (the world's loading can hold the page for seconds) it snaps to where it belongs
     const stalled = now - last > 100;
@@ -304,7 +308,8 @@ export function initColumn(reduced: MediaQueryList): void {
     // loading -> loaded
     if (state === "loading" && !failed && isSetIn()) {
       setState("loaded");
-      stage.land();
+      landing = true;
+      void loader.landOnOfuda().then(() => { landing = false; landed = true; paperFresh = true; });
     }
     if (state === "loading") {
       if (failed) {
@@ -320,7 +325,8 @@ export function initColumn(reduced: MediaQueryList): void {
       }
     }
 
-    // the pixel scale: the ofuda at about the size it is in the game (16 x 40 css px on a desktop)
+    // the pixel scale: the ofuda at about the size it is in the game (12 x 30 css px on a desktop); the loader's box
+    // at the same scale on the game screen, at half of it (whole device px) in the header's slot
     const k = Math.max(2, Math.round((vh * dpr) / 540));
     const kc = k / dpr;
     if (cover > 0.9) wentDown = true;
@@ -331,16 +337,21 @@ export function initColumn(reduced: MediaQueryList): void {
     // never lower than home (it rides up with the website as it comes up)
     const f = trail(cover);
     const inSlot = f > 0.55;
-    const tall = (stage.phase !== "item" ? OFUDA_H : ITEM_SIZE) * kc;
+    const kL = landed || !inSlot ? k : Math.max(1, Math.round(k / 2));
+    const kcL = kL / dpr;
+    // (positions are the ofuda's tie: the middle of its top edge; the box is drawn round it)
     const sr = slot?.getBoundingClientRect();
     const cornerAt = sr && sr.width
-      ? { x: sr.left + sr.width / 2, y: Math.min(sr.top + (sr.height - tall) / 2, homeAt.y) }
+      ? {
+        x: sr.left + sr.width / 2,
+        y: Math.min(landed ? sr.top + (sr.height - OFUDA_H * kc) / 2 : sr.top + sr.height / 2 - (BOX_H / 2 - TIE.y) * kcL, homeAt.y),
+      }
       : { x: (document.documentElement.clientWidth || vw) - 30, y: Math.min(homeAt.y, 78) };
     let target = trailPoint(f, homeAt, cornerAt, vw);
-    let wind = 0, flutter = 0.35, show = true;
-    if (f > 0.02 && f < 0.98) { flutter = 1; wind = -40; }
-    // settled in the corner it hangs like a tag, barely stirring
-    else if (f >= 0.98) { flutter = 0.25; wind = -4; }
+    // the air the paper hangs in: the loader's own breeze at home, a headwind while it trails, a still corner
+    let wind = 6, gust = 0.4, show = true;
+    if (f > 0.02 && f < 0.98) { wind = -40; gust = 1; }
+    else if (f >= 0.98) { wind = 4; gust = 0.3; }
 
     // way 2: up to the game screen, then the same cutscene
     if (climbing) {
@@ -353,11 +364,11 @@ export function initColumn(reduced: MediaQueryList): void {
     // way 4: the drift into the jetty, the catch, then the game
     if (drift && her) {
       const r = her.getBoundingClientRect();
-      const to = { x: r.left + r.width / 2, y: r.top - OFUDA_H * kc * 0.5 };
+      const to = { x: r.left + r.width / 2, y: r.top - 2 };
       const u = reduced.matches ? 1 : Math.min(1, (now - drift.at) / (DRIFT_S * 1000));
       target = driftPoint(u, drift.from, to);
       wind = -120 * (1 - u);
-      flutter = 1;
+      gust = 1;
       if (u >= 1 && caughtAt < 0) {
         caughtAt = now;
         jetty?.setAttribute("data-caught", "");
@@ -390,7 +401,7 @@ export function initColumn(reduced: MediaQueryList): void {
       if (u < 1 && !reduced.matches) {
         target = { x: homeAt.x + vw * 0.06 * u, y: homeAt.y - (homeAt.y + 60) * u * u * 1.15 };
         wind = 140;
-        flutter = 1;
+        gust = 1;
       } else show = false;
     } else if (state === "ingame") show = false;
 
@@ -398,7 +409,7 @@ export function initColumn(reduced: MediaQueryList): void {
     if (!placed || reduced.matches || stalled) {
       pos.x = target.x;
       pos.y = target.y;
-      if (placed && stalled && stage.phase !== "item") paper.place(target.x, target.y + stage.ofudaLift() * kc, kc);
+      if (placed && stalled && paper) { paper.moveTie(target.x / kc, target.y / kc); paper.reset(); }
       placed = true;
     } else {
       const ease = gustAt >= 0 || drift ? 1 - Math.pow(0.00002, dt) : 1 - Math.pow(0.004, dt);
@@ -411,31 +422,41 @@ export function initColumn(reduced: MediaQueryList): void {
     const idle = state === "ingame" && !show;
     if (!idle || drawn) ctx.clearRect(0, 0, cv.width, cv.height);
     drawn = !idle;
-    pen.reset();
     const asking = !asked || !!failed;
-    // the loader items are icons: twice the ofuda's pixel size on the game screen (the ofuda itself stays at about
-    // game size); in the header's corner they come down to its size so they fit inside the header
-    const itemScale = inSlot ? 1 : ITEM_SCALE;
-    if (!asking || state !== "loading") stage.step(dt, pos.x, pos.y, kc * itemScale, reduced.matches);
-    const landed = stage.phase !== "item";
-    const lift = stage.ofudaLift() * kc;
-    if (landed) paper.step(dt, pos.x, pos.y + lift, kc, { wind, flutter }, reduced.matches);
-    pen.alpha = failed ? 0.4 : 1;
-    if (show && !asking) {
-      if (landed) paper.draw(pen, k, dpr);
-      stage.draw(pen, pos.x, pos.y, k * itemScale, dpr, reduced.matches);
+    ctx.globalAlpha = failed ? 0.4 : 1;
+    if (!landed) {
+      // the loader (gathering into the ofuda once the world is in), its tie at `pos`
+      if (!asking || state !== "loading") loader.tick(dt);
+      if (show && (!asking || landing)) {
+        loader.drawTo(ctx, Math.round((pos.x - TIE.x * kcL) * dpr / kL) * kL, Math.round((pos.y - TIE.y * kcL) * dpr / kL) * kL, kL);
+      }
+    } else {
+      // the paper alone, from where the loader's paper hangs at the landing (at rest then: no jump)
+      if (!paper || paperFresh) {
+        paper = new PaperOfuda({ tie: { x: pos.x / kc, y: pos.y / kc }, seed });
+        paperFresh = false;
+      }
+      paper.wind.x = wind;
+      paper.wind.y = gustAt >= 0 ? -60 : 0;
+      paper.gust = Math.max(gust, 1.4 * Math.max(0, 1 - (now - pokeAt) / 600));
+      paper.moveTie(pos.x / kc, pos.y / kc);
+      // reduced motion: it never moves (it hangs straight from its tie)
+      if (reduced.matches) paper.reset();
+      else paper.step(dt);
+      if (show) paper.drawTo(ctx, 0, 0, k);
     }
+    ctx.globalAlpha = 1;
 
     // the poke zone (on the game screen only)
-    const sz = Math.max(ITEM_SIZE * ITEM_SCALE, OFUDA_H) * kc;
-    pokeRect.x = pos.x - sz / 2 - 10;
-    pokeRect.y = pos.y - 10;
-    pokeRect.w = sz + 20;
-    pokeRect.h = cover < 0.5 && show ? sz + 20 : 0;
+    const szW = (landed ? 16 : BOX_W) * kc, szH = (landed ? OFUDA_H + 6 : BOX_H) * kc;
+    pokeRect.x = pos.x - szW / 2 - 10;
+    pokeRect.y = pos.y - (landed ? 0 : TIE.y * kc) - 10;
+    pokeRect.w = szW + 20;
+    pokeRect.h = cover < 0.5 && show ? szH + 20 : 0;
 
     // the game screen's own bits
     const top = topView(state);
-    const showCont = top.cont && way === null && !drift && caughtAt < 0 && stage.phase === "done" && markDone && cover < 0.4 && !climbing;
+    const showCont = top.cont && way === null && !drift && caughtAt < 0 && landed && markDone && cover < 0.4 && !climbing;
     if (showCont && cont.hidden) {
       cont.hidden = false;
       readyAt = now;
@@ -451,7 +472,7 @@ export function initColumn(reduced: MediaQueryList): void {
     corner.hidden = !inCorner;
     if (inCorner) {
       // the button covers the slot (a steady target), kept inside the screen
-      const b = sr && sr.width ? { x0: sr.left, y0: sr.top, x1: sr.right, y1: sr.bottom } : paper.bounds();
+      const b = sr && sr.width ? { x0: sr.left, y0: sr.top, x1: sr.right, y1: sr.bottom } : { x0: pos.x - 12, y0: pos.y - 4, x1: pos.x + 12, y1: pos.y + OFUDA_H * kc + 4 };
       const x0 = Math.max(0, Math.round(b.x0 - 4)), y0 = Math.max(0, Math.round(b.y0 - 2));
       corner.style.left = `${x0}px`;
       corner.style.top = `${y0}px`;
@@ -466,6 +487,7 @@ export function initColumn(reduced: MediaQueryList): void {
 
   window.__dexFlow = () => ({
     state, cover: coverOf(), trail: trail(coverOf()),
-    stage: stage.phase, shown: stage.shown(), way, corner: cornerView(state),
+    // ("done" once the paper has taken over: the checks' word for landed)
+    stage: landed ? "done" : loader.phase, shown: [], way, corner: cornerView(state),
   });
 }

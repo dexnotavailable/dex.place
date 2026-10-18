@@ -4,11 +4,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { inflateSync } from "node:zlib";
 import { INTRO_TIMING, penEase, planMark } from "../intro/intro.ts";
 import { bottomView, cornerView, driftPoint, topView, trail, trailPoint } from "./motion/flow.ts";
-import { ITEMS, ITEM_SIZE, OFUDA_BACK, OFUDA_FRONT, OFUDA_H, OFUDA_W, PAL, roster, validateRows } from "./motion/sprites.ts";
-import { ITEM_TIME, LoaderStage, Paper, PixelPen } from "./motion/paper.ts";
 import { scatterCell, scatterSvg } from "./motion/scatter.ts";
 import { COLUMN_PAGES, jettySection, shell, world } from "./render/layout.ts";
 import { landing } from "./render/landing.ts";
@@ -91,109 +88,20 @@ test("the trail: home at the top, in the corner before the game screen is half c
   assert.ok(m.x < from.x && m.x > to.x && m.y > from.y && m.y < to.y);
 });
 
-// ----------------------------------------------------------------------------------------- the loader's art
+// ------------------------------------------------------------------------------------------------ the loader
 
-/** RGBA pixels of a non-interlaced 8-bit RGBA PNG. */
-function readPng(file) {
-  const b = readFileSync(file);
-  const w = b.readUInt32BE(16), h = b.readUInt32BE(20);
-  assert.equal(b[24], 8);
-  assert.equal(b[25], 6);
-  const idat = [];
-  for (let o = 8; o < b.length;) {
-    const len = b.readUInt32BE(o), type = b.toString("latin1", o + 4, o + 8);
-    if (type === "IDAT") idat.push(b.subarray(o + 8, o + 8 + len));
-    o += 12 + len;
-  }
-  const raw = inflateSync(Buffer.concat(idat));
-  const px = new Uint8Array(w * h * 4), stride = w * 4;
-  for (let y = 0; y < h; y++) {
-    const f = raw[y * (stride + 1)];
-    for (let x = 0; x < stride; x++) {
-      const v = raw[y * (stride + 1) + 1 + x];
-      const a = x >= 4 ? px[y * stride + x - 4] : 0, up = y ? px[(y - 1) * stride + x] : 0, c = x >= 4 && y ? px[(y - 1) * stride + x - 4] : 0;
-      const pa = Math.abs(up - c), pb = Math.abs(a - c), pc = Math.abs(a + up - 2 * c);
-      const pred = f === 0 ? 0 : f === 1 ? a : f === 2 ? up : f === 3 ? (a + up) >> 1 : pa <= pb && pa <= pc ? a : pb <= pc ? up : c;
-      px[y * stride + x] = (v + pred) & 255;
-    }
-  }
-  return { w, h, px };
-}
-
-test("the small ofuda is the world's own drawing, pixel for pixel (one object from the loader to her hat)", () => {
-  for (const [rows, file] of [[OFUDA_FRONT, "ofuda-front-192.png"], [OFUDA_BACK, "ofuda-back-192.png"]]) {
-    validateRows(file, rows, OFUDA_W, OFUDA_H);
-    const png = readPng(new URL(`../../public/tesu/opening/${file}`, import.meta.url));
-    assert.equal(png.w, OFUDA_W);
-    assert.equal(png.h, OFUDA_H);
-    for (let y = 0; y < OFUDA_H; y++) {
-      for (let x = 0; x < OFUDA_W; x++) {
-        const i = (y * OFUDA_W + x) * 4;
-        const ch = rows[y][x];
-        if (png.px[i + 3] === 0) { assert.equal(ch, ".", `${file} ${x},${y} empty`); continue; }
-        assert.deepEqual([...PAL[ch]], [png.px[i], png.px[i + 1], png.px[i + 2]], `${file} ${x},${y}`);
-      }
-    }
-  }
-});
-
-test("the loader items: one well-formed placeholder per item of the roster, every one outlined", () => {
-  for (const it of Object.values(ITEMS)) {
-    validateRows(it.id, it.rows, ITEM_SIZE, ITEM_SIZE);
-    assert.ok(it.rows.join("").includes("k"), `${it.id} has an outline`);
-  }
-});
-
-test("the cycle: chibi Zhusha first, her sword second, the four others shuffled, the Walker now and then", () => {
-  const r = roster(7, 4);
-  assert.equal(r[0], "zhusha");
-  assert.equal(r[1], "sword");
-  const round = r.slice(2, r.indexOf("zhusha", 2));
-  for (const id of ["lantern", "seal", "crane", "ingot"]) assert.ok(round.includes(id), id);
-  assert.deepEqual(roster(7, 4), r, "deterministic per seed");
-  let walkers = 0, rounds = 0;
-  for (let s = 1; s <= 400; s++) {
-    const x = roster(s, 1);
-    rounds++;
-    if (x.includes("walker")) walkers++;
-  }
-  assert.ok(walkers / rounds > 0.06 && walkers / rounds < 0.22, `walker rate ${walkers / rounds}`);
-});
-
-test("the loader stage: items cycle while loading; when loading ends the item leaves and the ofuda lands", () => {
-  const s = new LoaderStage(3);
-  const step = (sec) => { for (let t = 0; t < sec; t += 1 / 60) s.step(1 / 60, 500, 400, 2, false); };
-  step(ITEM_TIME.enter + ITEM_TIME.stay + ITEM_TIME.exit);
-  assert.deepEqual(s.shown().slice(0, 2), ["zhusha", "sword"], "moved on to the sword");
-  assert.equal(s.phase, "item");
-  s.land();
-  step(ITEM_TIME.minStay + ITEM_TIME.enter + ITEM_TIME.exit);
-  assert.equal(s.phase === "ofuda" || s.phase === "done", true);
-  step(ITEM_TIME.ofudaDrop + 0.1);
-  assert.equal(s.phase, "done");
-  assert.equal(s.ofudaLift(), 0);
-  // reduced motion: no dust, the ofuda simply takes the item's place
-  const r = new LoaderStage(3);
-  r.land();
-  for (let t = 0; t < 3; t += 1 / 60) r.step(1 / 60, 0, 0, 2, true);
-  assert.equal(r.phase, "done");
-});
-
-test("the ofuda draws whole pixels: 8 x 20 hanging straight at rest, its back when it twists", () => {
-  const rects = [];
-  const ctx = { fillStyle: "", fillRect: (x, y, w, h) => rects.push([x, y, w, h]) };
-  const p = new Paper();
-  p.place(100, 100, 2);
-  p.step(1 / 60, 100, 100, 2, { wind: 0, flutter: 0 }, true);
-  p.draw(new PixelPen(ctx), 2, 1);
-  assert.equal(rects.length, OFUDA_W * OFUDA_H);
-  assert.ok(rects.every(([x, y, w, h]) => w === 2 && h === 2 && x % 2 === 0 && y % 2 === 0), "on the pixel grid");
-  // with wind and time it moves and stays on the grid
-  rects.length = 0;
-  for (let i = 0; i < 120; i++) p.step(1 / 60, 100 + i, 100, 2, { wind: 80, flutter: 1 }, false);
-  p.draw(new PixelPen(ctx), 2, 1);
-  assert.ok(rects.length >= OFUDA_H, "still drawn");
-  assert.ok(rects.every(([x, y]) => x % 2 === 0 && y % 2 === 0));
+test("the page runs the pixel loader (Dex 10-18), not the chibi placeholders: it gathers into the ofuda on the world's word, then the paper takes over", () => {
+  const src = readFileSync(new URL("./motion/column.ts", import.meta.url), "utf8");
+  assert.match(src, /import \{[^}]*createPixelLoader[^}]*\} from "\.\/pixel-loader\.ts"/);
+  assert.match(src, /import \{[^}]*PaperOfuda[^}]*\} from "\.\/pixel-loader\.ts"/);
+  assert.doesNotMatch(src, /sprites\.ts|LoaderStage|\.\/paper\.ts/);
+  // loading -> loaded: the loader lands on the ofuda; the page's paper starts where it hangs
+  assert.match(src, /setState\("loaded"\);[^]*loader\.landOnOfuda\(\)/);
+  assert.match(src, /new PaperOfuda\(\{ tie: \{ x: pos\.x \/ kc, y: pos\.y \/ kc \}/);
+  // reduced motion: the paper never moves (it hangs straight from its tie)
+  assert.match(src, /if \(reduced\.matches\) paper\.reset\(\);\s*else paper\.step\(dt\);/);
+  // the one event out stays
+  assert.match(src, /new CustomEvent<EnterDetail>\(ENTER_EVENT, \{ detail: \{ way: w \} \}\)/);
 });
 
 // ------------------------------------------------------------------------------------------- the paper's edge
@@ -363,4 +271,12 @@ test("the jetty's column: the question, the way in, and an honest line while the
   const j = jettySection();
   assert.match(j, /<h2 class="jetty__ask" id="jetty-title">want to explore the world we made\?<\/h2>/);
   assert.match(j, /<p class="jetty__note" data-jetty-note>the world is still loading<\/p>/);
+});
+
+test("the loader lands when the opening set is in, even when the world's progress() stops a hair short of 1", () => {
+  const src = readFileSync(new URL("./motion/column.ts", import.meta.url), "utf8");
+  // progress() >= 1 is a way in, never the only one (it tops out at 0.99 when 0.7 + 0.1 + 0.1 + 0.1 rounds down)
+  assert.match(src, /if \(world\?\.progress && world\.progress\(\) >= 1\) return true;/);
+  assert.match(src, /return !!s && s\.plates >= 1 && s\.close && s\.font && s\.ofuda;/);
+  assert.notEqual(0.7 + 0.1 + 0.1 + 0.1, 1);
 });
