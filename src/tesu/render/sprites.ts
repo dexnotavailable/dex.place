@@ -99,7 +99,9 @@ void main() {
     // step's edge ordered-dithered on the cell (no strata across the legs)
     float k = clamp(1.0 - (uSize.y - uv.y) / (uSize.y * uFoot.x), 0.0, 1.0);
     float v = k * k * (3.0 - 2.0 * k) * 12.0;
-    float st = (floor(v) + step(bayer4(cell), fract(v))) / 12.0;
+    // (engine 10-18) the dither rides on the sprite (its rect's whole-px origin), not the screen: it moves with it
+    vec2 dcell = floor((vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) - uRectF.xy) / max(uCell, 1.0));
+    float st = (floor(v) + step(bayer4(dcell), fract(v))) / 12.0;
     fade = mix(uFade, uFoot.y, st);
   }
   col = mix(col, uHaze, fade);
