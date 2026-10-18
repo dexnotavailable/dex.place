@@ -14,27 +14,27 @@
   },
   {
    "file": "f001.png",
-   "ticks": 6,
-   "fig": 128
-  },
-  {
-   "file": "f002.png",
-   "ticks": 3,
-   "fig": 128
-  },
-  {
-   "file": "f003.png",
    "ticks": 4,
    "fig": 128
   },
   {
+   "file": "f002.png",
+   "ticks": 6,
+   "fig": 128
+  },
+  {
+   "file": "f003.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
    "file": "f004.png",
-   "ticks": 5,
+   "ticks": 4,
    "fig": 128
   },
   {
    "file": "f005.png",
-   "ticks": 3,
+   "ticks": 5,
    "fig": 128
   },
   {
@@ -44,15 +44,20 @@
   },
   {
    "file": "f007.png",
+   "ticks": 3,
+   "fig": 128
+  },
+  {
+   "file": "f008.png",
    "ticks": 5,
    "fig": 128
   }
  ],
  "loop": false,
  "source": "h3-L-jump_arc-A-s3000-9d2eff",
- "notes": "kit v1.2 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f001: blade re-extended above the frame top to full length (tip (338, -488), hw 4), shifted -3 px so her shoes stand on the ground row; f002: shifted -3 px so her shoes stand on the ground row",
+ "notes": "kit v1.3 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f002: blade re-extended above the frame top to full length (tip (338, -488), hw 4), shifted -3 px so her shoes stand on the ground row; f003: shifted -3 px so her shoes stand on the ground row",
  "segments": [
-  1,
-  2
+  2,
+  3
  ]
 }
