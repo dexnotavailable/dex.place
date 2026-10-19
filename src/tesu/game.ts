@@ -37,9 +37,9 @@ import { Atmos, waterHolds, type MistBand, type SkyGlow } from "./render/atmos.t
 import { Motes } from "./render/motes.ts";
 import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
-import { SilentLink, type OpeningLink } from "./opening/conductor.ts";
+import { SilentLink, type OpeningLink, type PaperFrom } from "./opening/conductor.ts";
 import { WorldPaper, type PaperPose } from "./opening/paper.ts";
-import { BEATS, CLIP_END, HANDOFF_T, ceilingRow, keysAt, paperAirAt, paperBlendAt, paperScreenAt, setStartZoom, startT } from "./opening/timeline.ts";
+import { BEATS, CLIP_END, HANDOFF_T, ceilingRow, keysAt, paperAirAt, paperBlendAt, paperScreenAt, setStartZoom, smooth, startT } from "./opening/timeline.ts";
 import { Veils, fallVeils } from "./opening/sky.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
@@ -492,6 +492,10 @@ export class TesuGame {
     this.sound.locked = false;
     if (link?.ctx) this.sound.start(link.ctx);
     this.openingLink = link ?? null;
+    // (rev 5) the website's ofuda at the press: the world takes it over where it hangs, at its size and pose
+    this.paperFrom = link?.paperFrom ?? null;
+    this.pageK = this.paperFrom?.k ?? null;
+    this.paperShown = false;
     this.spawnAt(this.world.spawns.find((s) => s.id === "catch")!);
     this.opening.start(link ?? new SilentLink(() => this.time, this.feel.reducedMotion, way));
     const shot = this.opening.camera(this.player.body.x);
@@ -818,8 +822,40 @@ export class TesuGame {
       const ho = BEATS.her.clip.handoff;
       const hx = b.x + ho[0] * ART_PX * f, hy = b.y + ho[1] * ART_PX;
       const k = paperBlendAt(T, o.way);
-      if (this.paper.mode !== "fall") this.paper.startFall();
-      this.paperPose = this.paper.fall(wx + (hx - wx) * k, wy + (hy - wy) * k, paperAirAt(T, o.way));
+      const fresh = this.paper.mode !== "fall";
+      if (fresh) {
+        this.paper.startFall(this.paperFrom?.nodes);
+        this.paperOff = [0, 0];
+      }
+      // where the page's paper hangs, against the flight's first point: an offset that fades out as it falls (measured
+      // until it drops, so the world window's own layout for the opening, a frame or two late, is the one it sits in)
+      {
+        const pf = this.paperFrom;
+        if (pf && (fresh || T < 0.3)) {
+          const dpr = window.devicePixelRatio || 1, pr = this.r.presenter.rect, s0 = this.paper.middleOf(pf.nodes);
+          // the page's viewport to this frame (the world window's place on the page, as laid out for the opening)
+          const fe = (window.frameElement as HTMLElement | null)?.getBoundingClientRect() ?? { left: 0, top: 0 };
+          const fx = ((pf.x - fe.left) * dpr - pr.x) / pr.scale + s0[0] * (pf.k / pr.scale);
+          const fy = ((pf.y - fe.top) * dpr - pr.y) / pr.scale + s0[1] * (pf.k / pr.scale);
+          const p0 = paperScreenAt(startT(o.way), o.way) ?? sp;
+          this.paperOff = [fx - p0[0] * cam.W, fy - p0[1] * cam.H];
+        }
+      }
+      const fade = 1 - smooth(T / 1.2);
+      const wxo = wx + (this.paperOff[0] * fade) / xf.s, wyo = wy + (this.paperOff[1] * fade) / xf.s;
+      // a speck in the vast frame: from there it is the whole paper (the clip's own size and colours)
+      if (T >= BEATS.ofuda.stripAt) this.paper.toWhole();
+      // the last of it: steered onto the clip's paper in the hand-off drawing, so the drawing takes it over in place
+      const band = BEATS.her.clip.band, steerFrom = HANDOFF_T - BEATS.ofuda.steer;
+      // (on it a tick before the drawing takes over: that tick shows exactly the drawing's paper, drawn by us)
+      const u = T <= steerFrom ? 0 : Math.min(1, (T - steerFrom) / (HANDOFF_T - 1 / 60 - steerFrom)) ** 2;
+      const nodes = band.map((n) => [b.x + n[0] * ART_PX * f, b.y + n[1] * ART_PX] as [number, number]);
+      this.paperPose = this.paper.fall(wxo + (hx - wxo) * k, wyo + (hy - wyo) * k, paperAirAt(T, o.way), 1 / 60, { nodes, u });
+      // the page draws its own paper over this one until the world has drawn it once (column.ts)
+      if (!this.paperShown) {
+        this.paperShown = true;
+        try { window.parent?.document.dispatchEvent(new Event("dex:paperworld")); } catch { /* no page around */ }
+      }
       return;
     }
     if (o.active && T < CLIP_END) {
@@ -847,6 +883,11 @@ export class TesuGame {
   }
   /** The page's own figure, when it sent one with the press. */
   pageK: number | null = null;
+  /** The website's ofuda at the press (conductor.ts PaperFrom), and its offset from the flight's first point (frame px). */
+  private paperFrom: PaperFrom | null = null;
+  private paperOff: [number, number] = [0, 0];
+  /** The world has drawn the paper since the press (the page stops drawing its own then). */
+  private paperShown = false;
 
   /**
    * The black loading screen as a slab above everything (beats.ts ceiling): drawn over the world where the camera is

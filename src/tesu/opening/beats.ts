@@ -115,7 +115,14 @@ export const BEATS = {
    /** The drawings' first ticks as drawn (anim.json), so the clip shows drawing i at its own tick. */
    "starts": [0, 8, 12, 17, 23, 29, 35, 41, 47, 55, 65, 75, 83, 91, 99, 108, 117, 131],
    /** The paper in f001 (art px from her soles, facing right): where the world's paper hands over to the drawing. */
-   "handoff": [36.9, -135],
+   "handoff": [39.52, -136.2],
+   /**
+    * The clip's own paper in the hand-off drawing (f001; read-only, measured by lanes/opening/f19/band.py): 6 rows x 2
+    * edges (its front to the eye) from its deep-gold end (the tie) to its cream end, art px from her soles facing right. The world's paper is
+    * steered onto it in the fall's last `ofuda.steer` s, so f001 takes over a paper already in its place, angle, size,
+    * shape and face (Dex 10-19: "you can't tell it went from a procedurally generated one to the one made by us").
+    */
+   "band": [[31.93, -130.19], [30.07, -132.81], [34.91, -131.18], [33.18, -133.6], [38.93, -133.19], [37.07, -135.81], [42.21, -135.39], [40.21, -138.19], [45.07, -138.29], [43.07, -141.1], [46.88, -141.16], [45.49, -143.11]],
    /** The paper's last world drawing is the tick before f001; from f001 to the slap it is the drawing's. */
    "handoffDrawing": 1,
    /** The hat stays jammed over her face (f010 held) until line 6's push mark, then she pushes it up (f011 on). */
@@ -182,6 +189,10 @@ export const BEATS = {
   "enters": 0,
   /** Sun glints on the paper as it turns (a 4-point star, five drawings). */
   "glints": [1.25, 3.95, 10.42, 15.7],
+  /** From here the falling paper is the whole paper (a speck in the vast frame: its look changes where none can tell). */
+  "stripAt": 3.2,
+  /** The fall's last seconds: steered onto the clip's paper in the hand-off drawing (her.clip.band). */
+  "steer": 0.7,
   "hush": 24.52,
   "inhale": 27,
   /**

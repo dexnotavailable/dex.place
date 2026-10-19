@@ -21,7 +21,10 @@
 // and stops on the terrace; the first input takes her over.
 
 import type { OpeningLink } from "./opening/conductor.ts";
-import { BEATS, cameraAt, clipAt, herPhase, herSpeedH, herXH, reducedHold, startT, windAt, type Framed, type Shot, type Way } from "./opening/timeline.ts";
+import { BEATS, VOICE, cameraAt, clipAt, herPhase, herSpeedH, herXH, reducedHold, startT, windAt, type Framed, type Shot, type Way } from "./opening/timeline.ts";
+
+/** Her lines' cues (beats.ts voice): way 4 plays none of them. */
+const VOICE_CUES = new Set(VOICE.map((v) => v.cue));
 
 export type OpeningState = "off" | "cine" | "free" | "done";
 
@@ -212,6 +215,8 @@ export class Opening {
     }
     BEATS.sfx.forEach((c, i) => {
       if (this.fired.has(i)) return;
+      // way 4 (the website's jetty): no voice lines (Dex 10-19)
+      if (this.way === "bottom" && VOICE_CUES.has(c.id)) { this.fired.add(i); return; }
       const at = now === null ? null : link.ctxTimeOf(c.T);
       if (at !== null && now !== null) {
         if (at - now > CUE_LEAD + this.gap) return;

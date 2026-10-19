@@ -40,6 +40,18 @@ export interface OpeningLink {
   input(): void;
   /** The page's AudioContext (the world's sound shares it), or null. */
   readonly ctx: AudioContext | null;
+  /**
+   * The website's ofuda at the press (rev 5: it drops out of the black where the loader left it): its tie in css px of
+   * the page's viewport, the page's device px per art px, and its 12 nodes (x, y, z art px) from the tie.
+   */
+  readonly paperFrom?: PaperFrom | null;
+}
+
+export interface PaperFrom {
+  x: number;
+  y: number;
+  k: number;
+  nodes: number[];
 }
 
 const SAVE = "tesu.opening";
@@ -105,9 +117,12 @@ export class Conductor implements OpeningLink {
   /** Told each frame with T (the page's fall rides on it). */
   onFrame: (T: number) => void = () => {};
 
-  constructor(ctx: AudioContext | null, track: Track1 | null, opts: { doc: Document; reduced: boolean; repeat: boolean; way?: Way }) {
+  readonly paperFrom: PaperFrom | null;
+
+  constructor(ctx: AudioContext | null, track: Track1 | null, opts: { doc: Document; reduced: boolean; repeat: boolean; way?: Way; paperFrom?: PaperFrom | null }) {
     this.ctx = ctx;
     this.track = track;
+    this.paperFrom = opts.paperFrom ?? null;
     this.reduced = opts.reduced;
     this.repeat = opts.repeat;
     this.way = opts.way ?? "continue";
@@ -121,6 +136,7 @@ export class Conductor implements OpeningLink {
 
   /** Her lines are the game's sound cues (beats.ts voice, booked in sfx); Track 1 dips under each one still to speak. */
   private duckUnderVoice(at: number, from: number): void {
+    if (this.way === "bottom") return;
     const V = BEATS.voice;
     this.track?.duck(at, VOICE.filter((v) => v.to > from).map((v) => [at + Math.max(0, v.from - from), at + (v.to - from)] as [number, number]), V.duckDb, V.ramp);
   }
@@ -273,7 +289,8 @@ export class Conductor implements OpeningLink {
   private frame(): void {
     const T = this.T(1000 / 60);
     this.overlay.bars(barsAt(T, this.reduced, this.from));
-    this.overlay.subtitle(subtitleAt(T));
+    // (way 4, from the website's jetty: no voice lines, Dex 10-19)
+    this.overlay.subtitle(this.way === "bottom" ? null : subtitleAt(T));
     const drop = BEATS.her.drop1;
     const chip = !this.skipped && T < drop && (this.repeat ? T >= BEATS.ui.chipFrom : performance.now() < this.chipUntil);
     this.overlay.chipShown(chip);

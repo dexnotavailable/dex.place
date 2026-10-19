@@ -99,9 +99,13 @@ test("the page runs the pixel loader (Dex 10-18), not the chibi placeholders: it
   assert.match(src, /setState\("loaded"\);[^]*loader\.landOnOfuda\(\)/);
   assert.match(src, /new PaperOfuda\(\{ tie: \{ x: pos\.x \/ kc, y: pos\.y \/ kc \}/);
   // reduced motion: the paper never moves (it hangs straight from its tie)
-  assert.match(src, /if \(reduced\.matches\) paper\.reset\(\);\s*else paper\.step\(dt\);/);
+  assert.match(src, /if \(reduced\.matches\) paper\.reset\(\);[^]*?else if \(handAt < 0\) paper\.step\(dt\);/);
   // the one event out stays
-  assert.match(src, /new CustomEvent<EnterDetail>\(ENTER_EVENT, \{ detail: \{ way: w \} \}\)/);
+  // rev 5: the press hands the page's paper to the world (where it hangs, its size and pose), no gust, no fade
+  assert.match(src, /new CustomEvent<EnterDetail>\(ENTER_EVENT, \{ detail: \{ way: w, paper: from \} \}\)/);
+  assert.doesNotMatch(src, /gustAt/);
+  const css = readFileSync(new URL("./styles/column.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /\.gs-cover \{[^}]*transition/, "the black goes at once (the world's first frame is the same black)");
 });
 
 // ------------------------------------------------------------------------------------------- the paper's edge

@@ -411,3 +411,42 @@ test("the plate store keeps the opening's tiles until the camera is past them (m
   store.clearKeep();
   assert.equal(store.keptLayers(), 0);
 });
+
+test("rev 5, the ofuda's two jobs: the hat paper's own colours with no line art or lettering, steered onto the clip's paper at the hand-off", async () => {
+  const { STRIP, WorldPaper } = await import("./opening/paper.ts");
+  const { COLORS, OFUDA_TEXTURE, EDGE_INDEX } = await import("../site/motion/pixel-loader.ts");
+  // (a) its colours: the hat ofuda's own (the loader's exact crop) plus the clip paper's deep gold and cream, nothing else;
+  // no dark edge colour anywhere (no line art), no lettering (no ink or red)
+  const hat = new Set([...OFUDA_TEXTURE.front].filter(Boolean).map((c) => COLORS[c].join()));
+  const extra = new Set(["157,108,54", "243,198,145"]);
+  for (const c of STRIP.front) if (c) assert.ok(hat.has(COLORS[c].join()) || extra.has(COLORS[c].join()), `strip colour ${COLORS[c]}`);
+  assert.ok(![...STRIP.front, ...OFUDA_TEXTURE.front].includes(EDGE_INDEX), "no line art");
+  assert.equal(STRIP.w, 5);
+  assert.equal(STRIP.h, 20);
+  // (b) the hand-off: the band is the clip paper measured in f001 (12 nodes about its centre), and in the fall's last tick
+  // the world's paper lies exactly on it, flat to the eye
+  const band = BEATS.her.clip.band;
+  assert.equal(band.length, 12);
+  const mid = band.reduce((a, n) => [a[0] + n[0] / 12, a[1] + n[1] / 12], [0, 0]);
+  near(mid[0], BEATS.her.clip.handoff[0], 0.6, "the band about the hand-off point (x)");
+  near(mid[1], BEATS.her.clip.handoff[1], 0.6, "the band about the hand-off point (y)");
+  const wp = new WorldPaper(0.66);
+  wp.startFall();
+  for (let i = 0; i < 200; i++) wp.fall(0, 0, { x: -18, gust: 0.5 });
+  wp.toWhole();
+  const nodes = band.map((n) => [100 + n[0] * 0.66, 200 + n[1] * 0.66]);
+  const pose = wp.fall(100 + BEATS.her.clip.handoff[0] * 0.66, 200 + BEATS.her.clip.handoff[1] * 0.66, { x: -18, gust: 0.5 }, 1 / 60, { nodes, u: 1 });
+  pose.pts.forEach((q, i) => { near(q[0], nodes[i][0], 1e-9); near(q[1], nodes[i][1], 1e-9); near(q[2], 0, 1e-9); });
+  assert.equal(pose.tex, STRIP, "the whole paper by then");
+  assert.ok(BEATS.ofuda.stripAt > 2.6 && BEATS.ofuda.stripAt < 4.6, "it changes look in the vast frame, a speck");
+});
+
+test("rev 5, the black: the slab above everything, the paper hanging where the loader left it, the camera out of it on bar 0", () => {
+  const C = BEATS.ceiling.altH;
+  assert.ok(C > 40, "the slab far above the world");
+  const k0 = BEATS.camera.keys[0];
+  assert.equal(k0.zoom, 0, "at the page's own scale");
+  assert.ok(k0.alt > C, "the frame starts inside the black");
+  const plunged = BEATS.camera.keys.find((k) => Math.abs(k.T - BEATS.bars[0]) < 0.01);
+  assert.ok(plunged && plunged.alt < C, "out of it on bar 0");
+});
