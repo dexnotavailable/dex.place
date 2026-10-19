@@ -12,9 +12,8 @@
 //   (STEP_FRAMES, read off the run and walk art).
 // - Her sounds come as the combat lane's cues (move, phase, tier, form: soundForCue): the press's windup, the swing on
 //   each hit's first tick, the hit by the tier that connected, the booms (m1_4's slam, the Q, the E, the R).
-// - Her voice (VOICE, Dex-approved takes; voiceForCue): kiai on her swings now and then, a battle cry on the chain's last
-//   hit, the jump, the dash, the hurt, the knockdown, the defeat, the respawn, the Q and E calls, the R call and the
-//   transform in the ult register; through the voice bus (mix.ts: EQ, compression, saturation, the space's reverb,
+// - Her voice (VOICE, Dex-approved takes; voiceForCue): none on the attack chain (Dex 10-19); the jump, the dash, the
+//   hurt, the knockdown, the defeat, the respawn, the Q and E calls, the R call and her ult line on the R's reveal; through the voice bus (mix.ts: EQ, compression, saturation, the space's reverb,
 //   pan), the music ducking under it.
 // - Beds: the ambience per place, cross-faded (the lake, the heights, the hall).
 // - Region themes (region-music.ts): each place's main theme, streamed, after the opening.
@@ -174,9 +173,8 @@ export interface VoiceMoment {
 }
 
 export const VOICE: Readonly<Record<string, VoiceMoment>> = {
-  kiai: { normal: ["n-kiai-1", "n-kiai-2", "n-kiai-3"], ult: ["u-kiai-2", "u-kiai-3", "redo-u-kiai1-2", "redo-u-kiai1-3", "redo-u-kiai1-4"], chance: 0.4, gap: 0.6, prio: false },
-  // the chain's last hit (m1_4): a battle cry (Dex 10-19: "trying to destroy stuff", not pain)
-  finisher: { normal: ["redo-n-kiai4-1", "redo-n-kiai4-2", "redo-n-yell-1", "redo-n-yell-3"], ult: ["redo-u-kiai1-2", "redo-u-kiai1-3", "redo-u-kiai1-4"], chance: 0.85, gap: 0.3, prio: false },
+  // (no voice on the attack chain, m1_1-m1_4 in either form: Dex 10-19 "remove voicelines during the attack chain";
+  // the chain's kiai and battle-cry takes stay encoded in public/audio/voice, unused)
   jump: { normal: ["n-jump"], ult: ["n-jump"], chance: 0.3, gap: 0.8, prio: false },
   dash: { normal: ["n-dash"], ult: ["n-dash"], chance: 0.35, gap: 0.8, prio: false },
   hurt: { normal: ["n-hurt-1", "n-hurt-2"], ult: ["u-hurt", "u-grunt"], chance: 1, gap: 0.5, prio: true },
@@ -227,25 +225,26 @@ export function soundForCue(c: Pick<HerCue, "id" | "phase" | "tier">): string {
 
 /**
  * The voice moment a cue of hers is (pure): the Q's and the E's presses call, the R's call and ult line on their
- * beats (r.call, r.ultline), the form's ghost strikes may kiai; a chain hit's swing may kiai,
- * the chain's last hit (m1_4) cries out; the dash and the jumps now and then; the hurt (a heavy one: the knockdown).
- * The R's flurry and dive say nothing (the ult sequence has its own voice: the call, the transform).
+ * beats (r.call, r.ultline); the dash and the jumps now and then; the hurt (a heavy one: the knockdown). The attack
+ * chain says nothing, in either form (Dex 10-19: "remove voicelines during the attack chain"), nor do the R's flurry
+ * and dive (the R has its own voice: the call, the ult line).
  */
 export function voiceForCue(c: Pick<HerCue, "id" | "move" | "phase" | "tier">): string | null {
-  // the R speaks on its own beats: the call, and her ult line on the reveal; the form's ghost strikes may kiai
+  // the R speaks on its own beats: the call, and her ult line on the reveal
   if (c.id === "r.call") return "r";
   if (c.id === "r.ultline") return "ultline";
-  if (c.id === "uf.slash") return "kiai";
-  if (/^(r|uf)\./.test(c.id)) return null;
+  if (/^(r|uf)\./.test(c.id) || isChain(c.move)) return null;
   switch (c.phase) {
     case "windup": return c.move === "skill_q" ? "q" : c.move === "e_tap" ? "e" : null;
-    case "swing":
-      if (c.id !== "swing" || c.move === "r") return null;
-      return /m1_4$/.test(c.move) ? "finisher" : /m1_[123]$/.test(c.move) ? "kiai" : null;
     case "move": return c.id === "dash" ? "dash" : c.id === "jump" || c.id === "djump" ? "jump" : null;
     case "hurt": return c.tier === "heavy" ? "knockdown" : "hurt";
     default: return null;
   }
+}
+
+/** The attack chain, in either form (m1_1-m1_4 and their tails / returns; the ult form's "uf" strikes). */
+export function isChain(move: string): boolean {
+  return /^(uf_)?m1_\d/.test(move) || move === "uf";
 }
 
 /**
