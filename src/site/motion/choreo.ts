@@ -156,6 +156,16 @@ export function initChoreo(fine: MediaQueryList): void {
     const sheet = document.querySelector<HTMLElement>(".sheet--home");
     if (bar && sheet) {
       gsap.fromTo(bar, { scaleX: 0 }, { scaleX: 1, ease: "none", scrollTrigger: { trigger: sheet, start: "top top", end: "bottom bottom", scrub: true } });
+      // ...in the tone of the section you are in (its strip past 40% of the screen); read once, set on a change only
+      bands.forEach((b, i) => {
+        const tone = getComputedStyle(b.el).getPropertyValue("--tone").trim();
+        if (!tone) return;
+        ScrollTrigger.create({
+          trigger: b.el, start: "top 40%",
+          onEnter: () => { bar.style.backgroundColor = tone; },
+          onLeaveBack: () => { bar.style.backgroundColor = i ? getComputedStyle(bands[i - 1]!.el).getPropertyValue("--tone").trim() : ""; },
+        });
+      });
     }
 
     // --- the footer: the last strip
@@ -237,6 +247,7 @@ export function initChoreo(fine: MediaQueryList): void {
       document.removeEventListener(SLIDEBACK_EVENT, onSlideBack);
       for (const b of bands) b.settle(true);
       foot?.destroy();
+      if (bar) bar.style.backgroundColor = "";
       if (lenis) { lenis.destroy(); useSmooth(null); }
       root.removeAttribute("data-choreo");
     };
@@ -262,11 +273,14 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number): Ban
   // its underline and the rule draw from the band's side, the key follows
   const headTl = gsap.timeline({ paused: true });
   if (head) {
-    const kicker = head.querySelector(".sh__kicker"), line = head.querySelector(".sh__txt"), ul = head.querySelector(".sh__ul");
+    const kicker = head.querySelector(".sh__kicker"), line = head.querySelector<HTMLElement>(".sh__txt"), ul = head.querySelector(".sh__ul");
     const rule = head.querySelector(".sh__rule"), more = head.querySelector(".sh__more");
     const origin = s < 0 ? "0% 50%" : "100% 50%";
+    const chars = line ? splitChars(line) : [];
     if (kicker) headTl.from(kicker, { x: -s * 24, autoAlpha: 0, duration: 0.6 * T, ease: "power3.out" }, 0);
-    if (line) headTl.from(line, { yPercent: 110, duration: 0.8 * T, ease: "expo.out" }, 0.06 * T);
+    // the title's letters rise in its line mask, rippling from the band's side (3.1: 22 ms apart)
+    if (chars.length) headTl.from(chars, { yPercent: 110, duration: 0.8 * T, ease: "expo.out", stagger: { each: 0.022, from: s < 0 ? "start" : "end" } }, 0.06 * T);
+    else if (line) headTl.from(line, { yPercent: 110, duration: 0.8 * T, ease: "expo.out" }, 0.06 * T);
     if (ul) headTl.from(ul, { scaleX: 0, transformOrigin: origin, duration: 0.6 * T, ease: "expo.out" }, 0.3 * T);
     if (rule) headTl.from(rule, { scaleX: 0, transformOrigin: origin, duration: 0.9 * T, ease: "expo.inOut" }, 0.15 * T);
     if (more) headTl.from(more, { x: -s * 24, autoAlpha: 0, duration: 0.6 * T, ease: "power3.out" }, 0.3 * T);
@@ -458,6 +472,35 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number): Ban
   // focus inside settles it (playing out what is left)
   el.addEventListener("focusin", () => { b.settle(); });
   return b;
+}
+
+/** A strip title's words as letters (each its own box, so each can rise in the line mask), the words kept whole for
+ *  line breaks; the title is read once, from a copy for screen readers. Only while the choreography runs. */
+function splitChars(line: HTMLElement): HTMLElement[] {
+  const text = line.textContent ?? "";
+  if (!text.trim() || line.querySelector(".sh__ch")) return Array.from(line.querySelectorAll<HTMLElement>(".sh__ch"));
+  const read = document.createElement("span");
+  read.className = "sr";
+  read.textContent = text;
+  const shown = document.createElement("span");
+  shown.setAttribute("aria-hidden", "true");
+  const chars: HTMLElement[] = [];
+  for (const part of text.split(/(\s+)/)) {
+    if (!part) continue;
+    if (/^\s+$/.test(part)) { shown.append(" "); continue; }
+    const word = document.createElement("span");
+    word.className = "sh__w";
+    for (const c of part) {
+      const ch = document.createElement("span");
+      ch.className = "sh__ch";
+      ch.textContent = c;
+      word.append(ch);
+      chars.push(ch);
+    }
+    shown.append(word);
+  }
+  line.replaceChildren(read, shown);
+  return chars;
 }
 
 /** The footer, the last strip (3.2): its paper rises over the pine (the last band's place reaches under it while the

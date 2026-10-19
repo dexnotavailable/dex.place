@@ -7,8 +7,9 @@
 .band--l .band__strip-paper, .band--l .band__paper { transform-origin: 0% 50%; }
 .band--r .band__strip-paper, .band--r .band__paper { transform-origin: 100% 50%; }
 
-/* the header's scroll progress: a 2 px scarlet line across its foot (scaled by the script on the home page) */
-.hdr__progress { position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: var(--scarlet); transform: scaleX(0); transform-origin: 0% 50%; pointer-events: none; }
+/* the header's scroll progress: a 2 px line across its foot (scaled by the script on the home page), scarlet, then in
+   the tone of the section you are in */
+.hdr__progress { position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: var(--scarlet); transform: scaleX(0); transform-origin: 0% 50%; pointer-events: none; transition: background-color 0.45s var(--ease-std); }
 
 /* alive at rest (4.1): the shades lift a little on the wind (the paper itself never moves; translate only, so the
    script's transform and opacity on them are left alone), a light runs down each spine; paused off screen */

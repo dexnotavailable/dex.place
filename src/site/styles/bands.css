@@ -178,6 +178,8 @@
 /* the title's words in a line mask (the motion raises them inside it); its underline a mark of its own */
 .sh__line { display: block; overflow-y: clip; }
 .sh__txt { display: block; }
+.sh__w, .sh__ch { display: inline-block; }
+.sh__w { white-space: nowrap; }
 .sh--strip .sh__title::after { display: none; }
 .sh__ul { display: block; width: 48px; height: 8px; margin-top: 10px; background: var(--tone); }
 /* desktop, the right-docked bands (downloads, docs): the head starts where its panel's content does (the zig-zag runs
