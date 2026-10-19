@@ -288,6 +288,62 @@ test("every page that is not the page column is plain white (its sheet carries t
   }
 });
 
+test("\"dex\" writes itself on a quiet thread: the world, the windows and the opening's audio start after it (Dex 10-19)", async () => {
+  // "when it draws 'dex' at the start it lags": the world's frame boots on the page's own thread
+  const world = readFileSync(new URL("./motion/world.ts", import.meta.url), "utf8");
+  assert.match(world, /afterMark\(\)\.then\(load\)/, "the world's code loads after the mark");
+  assert.match(world, /prefetchWorld\(\);\s*afterMark\(\)\.then\(load\)/, "its files come down meanwhile (network only)");
+  const main = readFileSync(new URL("./main.ts", import.meta.url), "utf8");
+  assert.match(main, /afterMark\(\)\.then\(\(\) => import\("\.\/motion\/sky\.ts"\)\)/, "the windows after the mark");
+  const enter = readFileSync(new URL("./motion/enter.ts", import.meta.url), "utf8");
+  assert.match(enter, /void afterMark\(\)\.then\(wake\)/, "the opening's audio after the mark");
+  const col = readFileSync(new URL("./motion/column.ts", import.meta.url), "utf8");
+  assert.match(col, /markStart\(\);\s*intro = playIntro/);
+  assert.match(col, /intro\.written\.then\(\(\) => \{ markDone = true; quietDone\(\); \}\)/);
+  assert.match(col, /else if \(!intro\) quietDone\(\);/, "covered at the start: nothing waits for a mark");
+  // the wait itself: resolves on the mark, at once without a game screen, and never hangs
+  const listeners = {};
+  let title = {};
+  globalThis.document = {
+    documentElement: { setAttribute() {} },
+    querySelector: () => title,
+    addEventListener: (n, f) => { (listeners[n] ??= []).push(f); },
+    dispatchEvent: (e) => { for (const f of listeners[e.type] ?? []) f(e); return true; },
+  };
+  globalThis.window ??= globalThis;
+  globalThis.CustomEvent ??= class extends Event {};
+  const q = await import("./motion/quiet.ts");
+  let done = false;
+  const w = q.afterMark().then(() => { done = true; });
+  await new Promise((r) => setTimeout(r, 5));
+  assert.equal(done, false, "waits while the mark draws");
+  q.markStart();
+  q.markDone();
+  await w;
+  assert.equal(done, true, "goes once it is written");
+  q.resetMark();
+  title = null;
+  await q.afterMark(); // no game screen: at once
+  title = {};
+  q.resetMark();
+  const t0 = Date.now();
+  q.markStart();
+  await q.afterMark();
+  assert.ok(Date.now() - t0 >= q.DRAW_WAIT_MS - 50 && Date.now() - t0 < q.MARK_WAIT_MS, "a started mark that never says: the draw's wait");
+  q.resetMark();
+  delete globalThis.document;
+});
+
+test("mid-game on the website: the opening's words hide with its bars (no caption over the page; Dex 10-16)", () => {
+  // the page hides the opening's layer while the website covers the game screen (column.css html.gs-away .op); a
+  // shown caption must inherit that, never force itself visible
+  const col = readFileSync(new URL("./styles/column.css", import.meta.url), "utf8");
+  assert.match(col, /html\.gs-away \.op \{ visibility: hidden; \}/);
+  const ov = readFileSync(new URL("../tesu/opening/overlay.ts", import.meta.url), "utf8");
+  assert.match(ov, /\.op-cap\.on \{ visibility: inherit; \}/);
+  assert.doesNotMatch(ov, /visibility: visible/);
+});
+
 test("the \"dex\" screen is black to its bottom edge: no band where the white page meets it (Dex 10-19)", () => {
   // "there's a white fade at the bottom which imo looks bad": the white page's top edge is clean, below the fold
   const v2 = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
@@ -308,6 +364,36 @@ test("the corner is a slot in the header (right of World, left of Menu); the mar
   // a section's own page is one band: its content beside a window onto its place
   const page = shell({ meta: { path: "/downloads/", title: "D", page: "downloads", description: "" }, main: '<div class="page">x</div>' }).body;
   assert.match(page, /<main id="main" class="main" tabindex="-1"><div class="band band--l"><div class="page">x<\/div><div class="band__win" data-window="palace"/);
+});
+
+test("Zhusha on the jetty is her own drawing at her play scale, the ofuda landing exactly on the one on her hat (no white box)", async () => {
+  const { FIGURE, HER_ART, HOLDING, IDLE_PIVOT, WAITING, ofudaOnHat } = await import("./motion/her.ts");
+  const { OFUDA_H, OFUDA_IN_IDLE, OFUDA_W } = await import("./motion/pixel-loader.ts");
+  const { FIGURE_H } = await import("../tesu/zhusha/contract.ts");
+  const { H } = await import("../tesu/config.ts");
+  const feel = JSON.parse(readFileSync(new URL("../tesu/zhusha/feel.json", import.meta.url), "utf8"));
+  // the same numbers the game draws her with (mirrored so the page's bundle carries none of the engine)
+  assert.equal(FIGURE, FIGURE_H);
+  assert.equal(HER_ART, (H * feel.charScale) / FIGURE_H);
+  // her idle is in the game's assets: a plain loop, pivot at her soles
+  const idle = JSON.parse(readFileSync(new URL("../../public/assets/zhusha/idle/anim.json", import.meta.url), "utf8"));
+  assert.equal(idle.figure_h, 128);
+  assert.ok(idle.frames.length >= 1 && idle.pivot.length === 2 && !idle.idle_variant);
+  assert.deepEqual([...IDLE_PIVOT], idle.pivot);
+  // she waits bare-hatted (the paperless loop when the game has it, else the idle) and then holds it (the idle, whose
+  // hat carries the ofuda, cut from it at OFUDA_IN_IDLE): the page's paper lands on that place, the same size
+  assert.equal(WAITING.at(-1), HOLDING);
+  assert.equal(HOLDING, "/assets/zhusha/idle/");
+  assert.equal(idle.frames[0].file, OFUDA_IN_IDLE.file);
+  assert.deepEqual(ofudaOnHat(idle.pivot), { x: OFUDA_IN_IDLE.x - idle.pivot[0], y: OFUDA_IN_IDLE.y - idle.pivot[1], w: OFUDA_W, h: OFUDA_H });
+  // the stand-in is gone from the page: no white box, no drawn hat band or eye, no second ofuda drawn over hers
+  const css = readFileSync(new URL("./styles/column.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /\.jetty__her \{[^}]*background: #fff/);
+  assert.doesNotMatch(css, /\.jetty__her::(before|after)/);
+  assert.doesNotMatch(css, /\.jetty__hat \{[^}]*background/);
+  // the drift lands on the ofuda's place on her hat (motion/sky.ts places .jetty__hat there)
+  const col = readFileSync(new URL("./motion/column.ts", import.meta.url), "utf8");
+  assert.match(col, /her\.querySelector\("\.jetty__hat"\)/);
 });
 
 test("the jetty's column: the question, the way in, and an honest line while the world loads", () => {
