@@ -631,7 +631,9 @@ test("combat wind-ups (Dex 10-19): in both forms the first live drawing lands on
       n++;
       const r = resolveMove(feel, def, A, { derived: D[slot], windRate: FEEL.windDown.rate });
       const { starts, total } = timeline(def.frames);
-      const first = D[slot].hits[0].first, mark = Math.min(...def.hits);
+      // the derived hit the move fires first (feel.json artHits: e_tap fires on its second, the ofuda's vanish)
+      const k = feel.artHits?.[0] ?? 0;
+      const first = D[slot].hits[k].first, mark = [...def.hits].sort((x, y) => x - y)[k];
       const at = r.hits[0].at;
       const shown = (t) => drawingIndex(starts, total, moveToClip(windClock(t, r.wind), at, r.clipHitAt), false);
       assert.equal(shown(at), first, `${slot}: the first live drawing shows on the hit tick`);
@@ -642,4 +644,65 @@ test("combat wind-ups (Dex 10-19): in both forms the first live drawing lands on
     }
   }
   assert.ok(n >= 8, `${n} slots checked`);
+});
+
+test("combat E (Dex 10-20): the shot lands on the drawing where the ofuda vanishes; the whip-out before it is the wind-up", async () => {
+  const Zhusha = await loadZ();
+  const { timeline, drawingIndex, moveToClip } = await import("./zhusha/contract.ts");
+  const def = liveAnim("e_tap");
+  const { starts, total } = timeline(def.frames);
+  const D = JSON.parse(readFileSync(join(import.meta.dirname, "zhusha/derived.json"), "utf8")).slots.e_tap;
+  // the vanish: the paper hanging in front of her (f005-f007) is gone in the drawing the shot is on
+  const vanish = D.hits[FEEL.moves.e_tap.artHits[0]].first;
+  assert.equal(vanish, 8);
+  const h = host();
+  const cues = [], frozen = [];
+  h.feel.freeze = (n) => frozen.push(n);
+  const z = new Zhusha(h, [0, 0]);
+  z.clipOf = liveClip;
+  z.onCue = (c) => cues.push({ ...c, t: z.t });
+  const inp = new FakeInput();
+  step(z, inp, 5);
+  inp.press("e");
+  step(z, inp);
+  const rows = [];
+  for (let i = 0; i < 40 && z.state === "move"; i++) {
+    const x0 = z.body.x;
+    step(z, inp);
+    rows.push({ t: z.t, d: drawingIndex(starts, total, moveToClip(windClock(z.t, z.anim.wind), z.anim.hitAt, z.anim.clipHitAt), false), v: z.body.x - x0, beam: z.hitboxes().some(({ hb }) => hb.brk?.area), live: z.hitboxes().length > 0 });
+  }
+  const shot = rows.find((r) => r.live);
+  assert.equal(shot.t, FEEL.moves.e_tap.hits[0].at, "the shot on feel's hit tick");
+  assert.equal(shot.d, vanish, "on the vanish drawing");
+  assert.ok(shot.beam, "the beam's reach goes out with it");
+  // before it only the wind-up (her feet's own small step, never the recoil's kick); the recoil after the shot
+  assert.ok(rows.filter((r) => r.t < shot.t).every((r) => !r.live && Math.abs(r.v) < 4 && r.d < vanish), "before it: the wind-up only");
+  assert.ok(rows.filter((r) => r.t > shot.t + 1 && r.t < shot.t + 8).every((r) => r.v < -4), "the recoil after the shot");
+  const boom = cues.find((c) => c.phase === "boom");
+  assert.equal(boom.t, shot.t, "the discharge cue on the shot");
+  assert.equal(cues.filter((c) => c.move === "e_tap" && c.phase !== "windup").filter((c) => c.t < shot.t).length, 0);
+  // one hit only (the burst at f003 is the throw)
+  assert.equal(rows.filter((r, i) => r.live && !(rows[i - 1]?.live)).length, 1);
+});
+
+test("combat ult-form E (Dex 10-20): removed for now: E does nothing in the form; the flag brings it back", async () => {
+  const Zhusha = await loadZ();
+  const z = new Zhusha(host(), [0, 0]);
+  z.clipOf = liveClip;
+  z.form = 5000;
+  const inp = new FakeInput();
+  step(z, inp, 5);
+  inp.press("e");
+  step(z, inp, 20);
+  assert.notEqual(z.lastAction, "e_tap");
+  assert.equal(z.state, "free");
+  assert.equal(z.eCd, 0, "no cooldown either");
+  assert.equal(inp.pressTick("e"), undefined, "the press is dropped, not kept for later");
+  assert.equal(z.eLive, false, "the finish blow ignores E too");
+  // the form ends: E is back
+  z.form = 0;
+  inp.press("e");
+  step(z, inp);
+  assert.equal(z.lastAction, "e_tap");
+  assert.equal(FEEL.ult.e, false);
 });
