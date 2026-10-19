@@ -1270,11 +1270,13 @@ export class TesuGame {
   }
 
   /**
-   * (engine 10-18) The actors in the frame pass. Zoomed out (zoom < 1), or where her art px would be under one frame
-   * px (a 1080p screen, lane C 10-19): reduced onto the frame's grid (reducedActors). At play zoom and closer, on a
-   * screen shown at a whole scale k >= 2: her drawing at screen res on its own layer, her effects and the talisman on
-   * the world grid (render/actors.ts); everything drawn after this then goes to the front target, composited over the
-   * actors by the presenter. Else straight onto the frame.
+   * (engine 10-18) The actors in the frame pass. On a screen shown at a whole scale k >= 2 they get their own
+   * screen-res layer (render/actors.ts; everything drawn after them goes to the front target, composited over them by
+   * the presenter): at play zoom and closer her drawing at screen res, her effects and the talisman on the world grid;
+   * zoomed out (lane C 10-19, Dex: "below zoom 1 she and her effects reduce onto HER pixel size, never the world's
+   * 2 px grid") all of them reduced from her art density onto that screen-res layer. At k = 1 (1080p) the screen is
+   * the frame: reduced onto it zoomed out or where her art px would be under one px (reducedActors), else drawn
+   * straight onto it.
    */
   private drawActors(cam: CamState, focus: [number, number], lights: PointLight[]): void {
     const r = this.r, xf = planeXf(cam, 1);
@@ -1283,8 +1285,17 @@ export class TesuGame {
     const camOf = (s: number, offX: number, offY: number, f: [number, number]): [number, number] => [(f[0] * (1 - s) - offX) / s, (f[1] * (1 - s) - offY) / s];
     const [camX, camY] = camOf(xf.s, xf.offX, xf.offY, focus);
     const k = r.presenter.rect.scale;
-    if (ActorLayer.wants(cam.zoom) || (!ScreenActors.wants(k) && this.reduceActors(xf.s, cam.zoom))) {
-      this.reducedActors(cam, r.main, lights, null, (c) => { for (const st of steps) this.actorsPass(st, c, [c.W / 2, c.anchor * c.H]); });
+    const all = (c: CamState): void => { for (const st of steps) this.actorsPass(st, c, [c.W / 2, c.anchor * c.H]); };
+    if (ScreenActors.wants(k) && ActorLayer.wants(cam.zoom)) {
+      // zoomed out on a 2x+ screen: reduced onto her own (screen-res) grid
+      this.screen.begin(r, cam.W, cam.H, k);
+      this.reducedActors(cam, null, lights, null, all);
+      this.screen.end(r);
+      r.begin(camX, camY, DAY, lights);
+      return;
+    }
+    if (!ScreenActors.wants(k) && this.reduceActors(xf.s, cam.zoom)) {
+      this.reducedActors(cam, r.main, lights, null, all);
       r.begin(camX, camY, DAY, lights);
       return;
     }
@@ -1306,10 +1317,11 @@ export class TesuGame {
   /**
    * (engine 10-18) Wider than play zoom (or where her art px would be under one frame px), what moves on the play plane
    * (her, her effects, the talisman) is drawn at her art density into the actor layer (lane C 10-19: one layer px per
-   * art px; `draw` gets the layer's camera), then reduced onto `target` on the frame's grid, the reduction anchored to
-   * her feet (render/reduce.ts). `mirror`: the reflection's waterline row.
+   * art px; `draw` gets the layer's camera), then reduced onto `target` on the frame's grid, or (target null) onto the
+   * screen-res actor layer begun for this frame (her own grid, k x the frame's), the reduction anchored to her feet
+   * (render/reduce.ts). `mirror`: the reflection's waterline row.
    */
-  private reducedActors(cam: CamState, target: Target, lights: PointLight[], mirror: number | null, draw: (c: CamState) => void): void {
+  private reducedActors(cam: CamState, target: Target | null, lights: PointLight[], mirror: number | null, draw: (c: CamState) => void): void {
     const r = this.r, xf = planeXf(cam, 1), b = this.player.body;
     const view = { cx: (cam.W / 2 - xf.offX) / xf.s, cy: (cam.H / 2 - xf.offY) / xf.s };
     const c = this.actors.begin(r, cam, view, [b.x, b.y - H], Math.max(1, 1 / ART_PX));
@@ -1318,8 +1330,13 @@ export class TesuGame {
     r.begin((f[0] * (1 - lx.s) - lx.offX) / lx.s, (f[1] * (1 - lx.s) - lx.offY) / lx.s, DAY, lights);
     draw(c);
     this.actors.end(r);
-    r.bindTarget(target, false);
-    this.actors.composite(cam.W, cam.H, xf, [b.x, b.y], mirror);
+    if (target) {
+      r.bindTarget(target, false);
+      this.actors.composite(cam.W, cam.H, xf, [b.x, b.y], mirror);
+      return;
+    }
+    const k = r.presenter.rect.scale;
+    this.screen.reduced(r, () => this.actors.composite(cam.W * k, cam.H * k, { s: xf.s * k, offX: xf.offX * k, offY: xf.offY * k }, [b.x, b.y], null));
   }
 
   /** The light at a point: neighbouring atmos entries blend across their `blend` widths (atmos-blend.ts). */
