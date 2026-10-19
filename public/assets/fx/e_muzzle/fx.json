@@ -1,0 +1,49 @@
+{
+ "id": "e_muzzle",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  120,
+  252
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2
+  },
+  {
+   "file": "f004.png",
+   "ticks": 3
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3
+  },
+  {
+   "file": "f006.png",
+   "ticks": 3
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3
+  }
+ ],
+ "loop": false,
+ "with": [],
+ "notes": "E (round 2): the blast at her palm (+57 / -82 from her soles): a torn white core, an unequal spike cone with ink spikes off the axis, ONE edge-on shock front breaking into strands, recoil dust rolling back, her spirit smoke. Fires on e_tap f008 (tick 29). Pivot = her soles at the cast; facing right."
+}
