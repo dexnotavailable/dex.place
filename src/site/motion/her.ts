@@ -1,9 +1,13 @@
-// Zhusha on the page's jetty (Dex 10-19: her real drawings are in the game): her idle, the game's own drawings
-// (public/assets/zhusha/idle: anim.json + fNNN.png, lanes/anim/SPRITE-CONTRACT.md), drawn nearest-neighbour at her
+// Zhusha on the page's jetty (Dex 10-19: her real drawings are in the game): the game's own drawings
+// (public/assets/zhusha/<move>: anim.json + fNNN.png, lanes/anim/SPRITE-CONTRACT.md), drawn nearest-neighbour at her
 // play scale, facing right as she does when the game starts. Loaded only when the jetty comes near (motion/sky.ts);
 // reduced motion loads and draws the first drawing only, still.
+//
+// Before the catch she waits bare-hatted (her paperless breathing loop, idle_nopaper, once it is in the game; her idle
+// until then); once the ofuda has drifted onto her hat she is her idle, whose hat carries it: the same pixels as the
+// page's ofuda (motion/pixel-loader.ts, cut from that drawing at OFUDA_IN_IDLE), so the paper lands exactly on itself.
 
-import { headOf } from "../../tesu/zhusha/contract.ts";
+import { OFUDA_H, OFUDA_IN_IDLE, OFUDA_W } from "./pixel-loader.ts";
 
 /** Her art: 128 px skull to sole (tesu/zhusha/contract.ts FIGURE_H). */
 export const FIGURE = 128;
@@ -12,8 +16,11 @@ export const FIGURE = 128;
  * over her 128 px art. The jetty's scene px are world px at play zoom (2 css px each), so this is scene px too.
  */
 export const HER_ART = (96 * 1.1) / FIGURE;
-/** The tie on her hat from the top of her head, world px, facing right (tesu/opening/ofuda.ts HAT_TIE). */
-export const HAT_TIE: readonly [number, number] = [2, -7];
+/** Her drawings: bare-hatted while she waits (the paperless loop, else the idle), and the idle (the ofuda on her hat). */
+export const WAITING = ["/assets/zhusha/idle_nopaper/", "/assets/zhusha/idle/"] as const;
+export const HOLDING = "/assets/zhusha/idle/";
+/** Her idle's pivot (public/assets/zhusha/idle/anim.json), until its drawings are in. */
+export const IDLE_PIVOT: readonly [number, number] = [40, 146];
 
 export interface Her {
   frames: HTMLImageElement[];
@@ -24,13 +31,19 @@ export interface Her {
   h: number;
   /** Where her soles meet the ground, art px. */
   pivot: [number, number];
-  /** The tie on her hat, art px in the drawing (from the first drawing's head, as the game finds it). */
-  tie: [number, number];
 }
 
 interface AnimJson {
   pivot: [number, number];
   frames: { file: string; ticks: number }[];
+}
+
+/**
+ * The ofuda on her hat in her idle, from her soles (art px): its box (top-left, size) in the drawing that holds it,
+ * `pivot` that drawing's pivot. The page's paper lands with its tie (the box's top middle) here.
+ */
+export function ofudaOnHat(pivot: readonly [number, number] = IDLE_PIVOT): { x: number; y: number; w: number; h: number } {
+  return { x: OFUDA_IN_IDLE.x - pivot[0], y: OFUDA_IN_IDLE.y - pivot[1], w: OFUDA_W, h: OFUDA_H };
 }
 
 const load = (src: string): Promise<HTMLImageElement> =>
@@ -41,23 +54,26 @@ const load = (src: string): Promise<HTMLImageElement> =>
     img.src = src;
   });
 
-/** Her idle drawings (only the first with `still`), or null if they cannot be had. */
-export async function loadHer(still: boolean, base = "/assets/zhusha/idle/"): Promise<Her | null> {
+/** One move's drawings (only the first with `still`), or null if they cannot be had. */
+export async function loadHer(still: boolean, base: string = HOLDING): Promise<Her | null> {
   try {
-    const def = (await (await fetch(base + "anim.json")).json()) as AnimJson;
+    const res = await fetch(base + "anim.json");
+    if (!res.ok) return null;
+    const def = (await res.json()) as AnimJson;
     const use = still ? def.frames.slice(0, 1) : def.frames;
     const frames = await Promise.all(use.map((f) => load(base + f.file)));
     const f0 = frames[0]!;
-    const w = f0.naturalWidth, h = f0.naturalHeight;
-    const c = document.createElement("canvas");
-    c.width = w;
-    c.height = h;
-    const g = c.getContext("2d", { willReadFrequently: true })!;
-    g.drawImage(f0, 0, 0);
-    const head = headOf(g.getImageData(0, 0, w, h).data, w, h, def.pivot[0], FIGURE) ?? [def.pivot[0], 0];
-    const tie: [number, number] = [head[0] + HAT_TIE[0] / HER_ART, head[1] + HAT_TIE[1] / HER_ART];
-    return { frames, ticks: use.map((f) => Math.max(1, f.ticks)), w, h, pivot: def.pivot, tie };
+    return { frames, ticks: use.map((f) => Math.max(1, f.ticks)), w: f0.naturalWidth, h: f0.naturalHeight, pivot: def.pivot };
   } catch {
     return null;
   }
+}
+
+/** The first of `bases` that loads (her waiting loop, falling back to her idle). */
+export async function loadFirst(still: boolean, bases: readonly string[]): Promise<{ her: Her; base: string } | null> {
+  for (const base of bases) {
+    const her = await loadHer(still, base);
+    if (her) return { her, base };
+  }
+  return null;
 }
