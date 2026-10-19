@@ -289,10 +289,11 @@ test("ult: the storm's hits never stop the frame (R owns its weight: only the nu
 test("ult form: M1 warps her around a foe (ahead, across facing back, above, back off) and summons ghost blades that strike on the ghost hit", async () => {
   const Zhusha = await loadZ();
   const log = [];
-  const z = new Zhusha(host(log), [0, 0]);
-  const inp = new FakeInput(), w = flat();
   const foe = { x: 4 * H, y: 0 };
-  z.uf.foe = () => foe;
+  const h = host(log);
+  h.foes = () => [{ x: foe.x - 0.4 * H, y: foe.y - 1.2 * H, w: 0.8 * H, h: 1.2 * H }];
+  const z = new Zhusha(h, [0, 0]);
+  const inp = new FakeInput(), w = flat();
   z.form = 5000;
   step(z, inp, w, 5);
   const spots = [];

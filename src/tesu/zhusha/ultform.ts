@@ -7,6 +7,7 @@
 // at 60%): this file places and times them, ultdraw.ts draws the stand-ins, the damage stays the controller's.
 // Numbers: ult.json `form`.
 
+import type { WorldBox } from "../../lab/game/events.ts";
 import { H } from "../config.ts";
 import type { MoveWorld, Zhusha } from "./controller.ts";
 import { say, ULT, type UltCtx } from "./ult.ts";
@@ -37,6 +38,8 @@ export interface FormCtx {
   bodyH: number;
   ghost(life: number): void;
   cue: UltCtx["cue"];
+  /** Her foes' bodies now (the controller's host.foes: the court's champion while a bout is on). */
+  foes(): WorldBox[];
 }
 
 export class UltForm {
@@ -46,8 +49,6 @@ export class UltForm {
   flashes: Flash[] = [];
   /** The chain's target: a foe, or the point ahead she is cutting toward. */
   target: { x: number; y: number; foe: boolean } | null = null;
-  /** The foe she could warp to (game.ts: the court's champion while a bout runs), null for none. */
-  foe: () => { x: number; y: number } | null = () => null;
   private pending: { x: number; y: number; face: 1 | -1; air: boolean; foe: boolean } | null = null;
   private cues: { at: number; key: string; v: number }[] = [];
 
@@ -63,8 +64,12 @@ export class UltForm {
   begin(c: FormCtx, step: number, hits: readonly number[], ghostDelay: number): void {
     const F = ULT.form, z = c.z, b = z.body, f = z.facing;
     const S = F.steps[Math.max(0, Math.min(F.steps.length - 1, step))]!;
-    const foe = this.foe();
-    const near = foe && Math.abs(foe.x - b.x) <= F.reach * H ? foe : null;
+    // the nearest foe in reach, by its feet
+    let near: { x: number; y: number } | null = null;
+    for (const fb of c.foes()) {
+      const fx = fb.x + fb.w / 2, fy = fb.y + fb.h;
+      if (Math.abs(fx - b.x) <= F.reach * H && (!near || Math.abs(fx - b.x) < Math.abs(near.x - b.x))) near = { x: fx, y: fy };
+    }
     let x: number, y: number, face: 1 | -1;
     if (near) {
       // around the foe: d points from her to it; `at` < 0 is her side of it, > 0 the far side (she turns back to it)

@@ -717,8 +717,9 @@ export class Zhusha {
     if (ax !== 0) this.facing = ax as 1 | -1;
     const b = this.body;
     // m1_3 locks onto a foe in reach (Dex 10-19): she turns to it and her lunge is aimed to stop at striking distance
+    // (in the ult form her chain warps instead: ultform.ts places her around the foe)
     let lock: { x0: number; travel: number; foe: boolean; fx: number } | null = null;
-    if (def.lock) {
+    if (def.lock && !this.ultForm) {
       const foes = this.host.foes?.() ?? [];
       const L = lockTarget(b.x, b.y, this.facing, foes, def.lock, BODY_H);
       const f = foes[L.foe];
@@ -1093,6 +1094,7 @@ export class Zhusha {
       feel: { impactRadius: U.impactRadius, impactDmg: U.impactDmg, impactKb: U.impactKb, flurryDmg: U.flurryDmg, hitstop: FEEL.weights.ult.hitstop },
       shake: (k) => this.shake(k),
       ghost: (n) => this.ghost(n),
+      foes: () => this.host.foes?.() ?? [],
       cue: (id, v, phase, move) => this.cue(id, v, move, phase, move === "r" ? "ult" : "heavy"),
       release: (input, world) => {
         this.ultPhase = null;
