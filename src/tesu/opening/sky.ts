@@ -6,20 +6,25 @@
 // What it draws, all from one pass that reads a copy of the frame under it:
 // - The lens fog (VEILS): layers of cloud lying in the camera's own space, each at its own depth, so they move as the
 //   world does (they swell as the camera pushes in on them and rise past as it comes down; the nearer, the faster and
-//   the bigger), drifting west on the east wind and churning inside (two noises of the same fog sliding past each
-//   other: its holes open and close). The camera flies INTO the thick one on the push-in: the whole frame behind it
-//   lifts toward the fog's own value (thick billows, thin patches, a few big torn holes), then it tears open as the
-//   camera comes out of it. Its light is the sun's: a warm white on the sun's side, the clouds' own cool blue in its
-//   shade, the sky's blue brightened where it is thin (never grey). Its translucency is a few flat steps whose edges
-//   are clusters on the frame's own two-px grid (no blur of the world behind, no grain, no ordered dither).
-// - The wind made visible (W2-6): ribbons of air (a long tapered stroke drawn on and wiped off along its own path, a
-//   gentle wave and a curl at its head, as an anime wind line is drawn), sweeping west in the gusts; a few leaves
-//   blown up from Kagami's trees tumbling across in them (two greens, lit on the sun's side); the fog's west edges
-//   dragged out by the wind. All keyed to the paper's own gust envelope (beats.ts ofuda.gusts: lane F's, read only),
-//   so the strongest wind lines up with the kink in its path.
+//   the bigger), drifting west on the east wind. Each is a soft milky body (thick and thin at a large scale) torn by a
+//   few big holes stretched along the wind; the tear field slides west and churns, so the holes open, stream and
+//   close. The camera flies INTO the thick one on the push-in: it sweeps in already big, the whole frame behind it lifts
+//   toward its value (ref 04's milky depth: the clouds behind keep their forms, faded), its tears closed while the
+//   camera nears it and widening into streaks as the camera comes out of it. Its light is the sun's: a warm white
+//   toward the sun and high, the clouds' cool blue away from it and low (a thin film over the deep sky is the sky's
+//   own light, never grey). The lift is smooth (no blur of the world behind, no grain, no dither); the holes' and the
+//   rim's torn edges thin in a few clean steps on the frame's own pixels. Over a cloud a tear opens less (a slit of
+//   crisp cloud reads as a scan line).
+// - The wind made visible (W2-6): wisps of cloud torn off and streaming west (a soft tapered body, lit along its upper
+//   side, hooking over at its head, thinner over a cloud's body so it reads as torn off that cloud's edge), sweeping
+//   west in the gusts; a few leaves blown up from Kagami's trees tumbling across in them (two greens, lit on the sun's
+//   side); the fog's west edges dragged out by the wind. All keyed to the paper's own gust envelope (beats.ts
+//   ofuda.gusts: lane F's, read only), so the strongest wind lines up with the kink in its path.
 // - The plunge (W2-11): as the camera drops out of the black slab (bar 0) and falls, streaks of air rush up past the
 //   lens at full strength on the hit frame itself, dying as the fall slows into the vast frame (which stays clean).
-// - The paper stays readable: the fog opens a torn hole round it, and no ribbon, leaf or streak comes near it.
+// - Under the deck (W2-8): a fan of warm rays from the deck's gap round the sun, only through open air, pooling
+//   brighter where they land on the mist.
+// - The paper stays readable: the fog opens a torn hole round it, and no wisp, leaf or streak comes near it.
 // Pixel fog in the world's manner (DEX-EYE 6-7: authored in code; no image generation for fog, Dex 10-12).
 
 import { compile, uniforms } from "../../lab/engine/gl.ts";
@@ -53,6 +58,8 @@ export interface Veil {
   pan: number;
   drift: number;
   tone: "lit" | "base";
+  /** Its tears: the share of it that is torn open (0.25: a few holes; 0.45: more hole than fog). */
+  tear: number;
 }
 
 /**
@@ -62,10 +69,10 @@ export interface Veil {
  * down (8.6-10.6) the deck's near fringe rises past the lens; the break-out under the deck is clear.
  */
 export const VEILS: readonly Veil[] = [
-  { T: 6.05, speed: 0.7, half: 0.34, density: 0.62, w: 0.62, fx: 0.62, fy: 0.5, depth: 0.32, through: 0.3, pan: 0.12, drift: 40, tone: "lit" },
-  { T: 6.95, speed: 0.6, half: 0.62, density: 0.95, w: 0.8, fx: 0.44, fy: 0.48, depth: 0.2, through: 0.9, pan: 0.12, drift: 46, tone: "lit" },
-  { T: 7.5, speed: 0.7, half: 0.26, density: 0.7, w: 0.5, fx: 0.18, fy: 0.62, depth: 0.42, through: 0, pan: 0.2, drift: 60, tone: "lit" },
-  { T: 9.45, speed: 0.8, half: 0.22, density: 0.8, w: 0.9, fx: 0.42, fy: 0.55, depth: 0.42, through: 0, pan: 1, drift: 34, tone: "base" },
+  { T: 6.05, speed: 0.7, half: 0.34, density: 0.62, w: 0.62, fx: 0.62, fy: 0.5, depth: 0.32, through: 0.3, pan: 0.12, drift: 40, tone: "lit", tear: 0.42 },
+  { T: 6.95, speed: 0.6, half: 0.95, density: 0.95, w: 1.15, fx: 0.44, fy: 0.48, depth: 0.2, through: 0.9, pan: 0.12, drift: 46, tone: "lit", tear: 0.3 },
+  { T: 7.5, speed: 0.7, half: 0.3, density: 0.85, w: 0.5, fx: 0.18, fy: 0.62, depth: 0.42, through: 0, pan: 0.2, drift: 60, tone: "lit", tear: 0.32 },
+  { T: 9.45, speed: 0.8, half: 0.22, density: 0.8, w: 0.9, fx: 0.42, fy: 0.55, depth: 0.42, through: 0, pan: 1, drift: 34, tone: "base", tear: 0.34 },
 ];
 
 /** A fog layer on the frame now: its middle (frame px), scale (frame px per layer px), strength; its half sizes
@@ -83,6 +90,7 @@ export interface VeilDraw {
   churn: number;
   gust: number;
   out: number;
+  tear: number;
 }
 
 const GUSTS = BEATS.ofuda.gusts;
@@ -156,9 +164,12 @@ export function fallVeils(T: number, W: number, Hf: number, way: Way, reduced: b
       // approaching it swells from far away; inside, a slow swell; it tears open over the last part of the way out
       s = (1 / (v.depth + Math.max(D, 0))) * (1 + 0.7 * inside);
       sk = (1 / v.depth) * 1.35;
-      alpha = smooth(1.6, 0.35, D);
-      outN = smooth(0.3, 1, inside);
-      alpha *= 1 - smooth(0.55, 1, inside);
+      // (it sweeps in big, already near: a far, small fog bank would read as one blurred blob)
+      alpha = smooth(0.6, 0.1, D);
+      // (deepest at its key: it tears open over the second half of the way out, then thins away; while the camera
+      // nears it, it is a whole bank, its tears closed: they open as the camera reaches it)
+      outN = inside > 0 ? smooth(0.5, 1, inside) : -0.7 * smooth(0.0, 0.45, D);
+      alpha *= 1 - smooth(0.72, 1, inside);
     } else {
       // beside the camera: it nears and goes as the camera's distance to it changes (never through it)
       const p = key.iz - v.depth;
@@ -179,7 +190,7 @@ export function fallVeils(T: number, W: number, Hf: number, way: Way, reduced: b
       cy: fNow[1] + (my - fKey[1]) * g + panY,
       g, alpha: alpha * v.density,
       hw: v.w * W, hh: v.half * Hf, seed: i * 17.3 + 3.1, tone: v.tone === "base" ? 1 : 0,
-      churn: T - v.T, gust: gustAt(T), out: outN,
+      churn: T - v.T, gust: gustAt(T), out: outN, tear: v.tear,
     });
   });
   return out;
@@ -225,7 +236,9 @@ export function fallRibbons(T: number, W: number, Hf: number, paper: readonly [n
     const phi = r(5) * 6.283;
     const lift = (0.05 + 0.08 * r(6));
     const curlDir = r(7) < 0.7 ? -1 : 1;
-    const r0 = (13 + 9 * r(8)) * scale;
+    const r0 = (20 + 12 * r(8)) * scale;
+    // (a wisp of cloud: its body this thick behind the head, a hair at its tail)
+    const thick = (10 + 10 * r(13)) * scale;
     // where it starts (its east end): round where the paper was when it set off, never through it
     const [px, py] = focusAt(t0 + 0.3, W, Hf);
     let x0 = px + (0.06 + 0.32 * r(9)) * W * (vast ? 0.5 : 1);
@@ -258,8 +271,9 @@ export function fallRibbons(T: number, W: number, Hf: number, paper: readonly [n
       // the turning sense that carries on along the body's direction
       const sg = (-v0y * tx + v0x * ty) > 0 ? 1 : -1;
       const q = (s - curlFrom) / (1 - curlFrom);
-      const ang = sg * q * 5.6;
-      const rr = 1 - 0.62 * q;
+      // (half a turn: a wisp hooking over, never a spiral)
+      const ang = sg * q * 2.4;
+      const rr = 1 - 0.35 * q;
       const ca = Math.cos(ang), sa = Math.sin(ang);
       return [cxp + (v0x * ca - v0y * sa) * rr, cyp + (v0x * sa + v0y * ca) * rr];
     };
@@ -272,8 +286,8 @@ export function fallRibbons(T: number, W: number, Hf: number, paper: readonly [n
       const s = tail + (head - tail) * v;
       const [x, y] = at(s);
       // thick behind the head, a hair at the tail, thinner round the curl
-      let wd = (1 + 1.7 * smooth(0.08, 0.6, v) * (1 - 0.45 * smooth(0.85, 1, v))) * (s > curlFrom ? 0.75 : 1) * (vast ? 0.75 : 1);
-      let a = (0.22 + 0.6 * smooth(0, 0.65, v)) * fade;
+      let wd = (1.5 + thick * smooth(0.05, 0.62, v) * (1 - 0.55 * smooth(0.82, 1, v))) * (s > curlFrom ? 0.6 : 1) * (vast ? 0.6 : 1);
+      let a = (0.3 + 0.55 * smooth(0, 0.6, v)) * fade;
       if (paper) {
         const d = Math.hypot(x - paper[0], y - paper[1]);
         a *= smooth(28, 56, d);
@@ -400,8 +414,9 @@ export function fallAir(T: number, W: number, Hf: number, way: Way, reduced: boo
  * behind it (it reads by its lit, heaped top), thicker low, brighter on the sun's side.
  * - `bank`: a mist bank on the far water behind the far karsts: a heaped, torn top, thick in its body, thin at its
  *   foot, so the lake's far edge meets Kagami's own waterline mist there (never a bank cut by the water's edge).
- * - `band`: a band of mist floating between two planes (its top heaped and lit, its underside flatter and cooler,
- *   torn into lengths with clear air between them), lifted off the water.
+ * - `band`: mist floating between two planes, in lengths with clear air between them: each length heaps up in its
+ *   middle (heaps carrying smaller heaps, lit along the top) and thins out at its ends, its body thinning downward into
+ *   the air (no ruled underside), lifted off the water. Soft: no dither, no grain.
  * - `ribbon`: a thin torn ribbon low over the water, drifting west (at the catch: a last breath of the fall's air on
  *   the far water, there until she walks).
  * - `air`: the mid-air haze under the deck at the orchestra (0.3 of the frame above the horizon row).
@@ -409,11 +424,11 @@ export function fallAir(T: number, W: number, Hf: number, way: Way, reduced: boo
  */
 export const HAZE: readonly { kind: "bank" | "band" | "ribbon" | "air"; before: PlaneId; rate: number; from: number; to: number; out?: number; lift: number; height: number; density: number; drift: number; seed: number }[] = [
   { kind: "bank", before: "far", rate: 0.06, from: 9.3, to: 13.4, lift: 4, height: 300, density: 0.85, drift: 6, seed: 3.7 },
-  { kind: "band", before: "mid", rate: 0.16, from: 9.4, to: 14.4, lift: 58, height: 84, density: 0.62, drift: 10, seed: 12.9 },
+  { kind: "band", before: "mid", rate: 0.16, from: 9.4, to: 14.4, lift: 58, height: 120, density: 0.66, drift: 10, seed: 12.9 },
   { kind: "band", before: "back", rate: 0.42, from: 9.5, to: 12.0, out: 1.2, lift: 64, height: 60, density: 0.62, drift: 15, seed: 31.3 },
   { kind: "ribbon", before: "mid", rate: 0.2, from: 9.5, to: 14.6, lift: 13, height: 34, density: 0.72, drift: 13, seed: 9.1 },
   { kind: "ribbon", before: "mid", rate: 0.12, from: 14.2, to: BEATS.her.walkFrom, out: 1.6, lift: 7, height: 48, density: 0.92, drift: 9, seed: 21.4 },
-  { kind: "air", before: "play", rate: 1, from: 11.2, to: 14.8, lift: 0, height: 0.18, density: 0.42, drift: 9, seed: 17.3 },
+  { kind: "air", before: "play", rate: 1, from: 11.2, to: 14.8, lift: 0, height: 0.18, density: 0.34, drift: 9, seed: 17.3 },
 ];
 
 /** A haze layer on the frame now: its foot row, height (px), density, x offset; seed, kind (0 bank, 1 ribbon, 2 air,
@@ -484,67 +499,60 @@ float fbm(vec2 p) {
 void main() {
   vec2 p = floor(vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y));
   float A = 0.0, lit = 0.0;
-  vec2 anc = vec2(0.0);
   for (int i = 0; i < 6; i++) {
     if (i >= uHN) break;
     vec4 h = uH[i], hk = uH2[i];
     float x = p.x + h.w;
     float d = 0.0, l = 0.0;
     if (hk.y < 0.5) {
-      // the bank: a heaped, torn top (big heaps carrying smaller ones), thickest in its body; thin at its foot, so the
-      // lake's far edge meets Kagami's own waterline mist there, never a bright bank cut by the water's straight edge
-      float heap = 0.6 * fbm(vec2(x / 260.0, hk.x)) + 0.4 * fbm(vec2(x / 90.0, hk.x + 3.0));
-      float top = h.x - h.y * (0.35 + 0.85 * heap);
+      // the bank: mist pooled on the far water, its top heaped (big heaps carrying smaller ones) and lit, thick in its
+      // body, thinning toward its foot so the lake's far edge meets Kagami's own waterline mist (never a cut)
+      float heap = 0.52 * fbm(vec2(x / 260.0, hk.x)) + 0.34 * fbm(vec2(x / 85.0, hk.x + 3.0)) + 0.14 * vn(vec2(x / 40.0, hk.x + 6.0));
+      float top = h.x - h.y * (0.3 + 0.9 * heap);
+      float len = smoothstep(0.3, 0.46, fbm(vec2(x / 520.0, hk.x + 11.0)));
       float u = (p.y - top) / max(1.0, h.x - top);
-      float tear = fbm(vec2(x / 70.0, (p.y - h.x) / 14.0) + hk.x * 2.0);
-      float foot = 0.2 + 0.8 * smoothstep(0.0, h.y * 0.35, h.x - p.y + 10.0 * (tear - 0.5));
-      d = smoothstep(-0.12, 0.45, u + (tear - 0.5) * 0.5) * foot * step(p.y, h.x + 2.0);
-      l = 1.0 - smoothstep(0.0, 0.5, u);
+      d = smoothstep(-0.03, 0.12, u) * (1.0 - 0.55 * smoothstep(0.55, 1.05, u)) * step(p.y, h.x + 2.0) * mix(0.55, 1.0, len);
+      l = 1.0 - smoothstep(0.0, 0.45, u);
     } else if (hk.y < 1.5) {
-      // the ribbon: thin, torn into lengths with gaps of clear air
+      // the ribbon: a thin length of mist low over the water, riding up and down along its length, torn into lengths
       float n = fbm(vec2(x / 170.0, hk.x));
-      float hw = h.y * 0.5 * (0.3 + 0.9 * n);
-      // it rides up and down along its length (never a ruled line), in lengths with clear air between them
-      float c = h.x - h.y * 0.5 + h.y * 0.9 * (fbm(vec2(x / 260.0, hk.x + 5.0)) - 0.5);
+      float hw = h.y * 0.5 * (0.35 + 0.8 * n);
+      float c = h.x - h.y * 0.5 + h.y * 0.8 * (fbm(vec2(x / 260.0, hk.x + 5.0)) - 0.5);
       float e = 1.0 - abs(p.y - c) / max(1.0, hw);
-      float st = fbm(vec2(x / 46.0, (p.y - c) / 3.0) + hk.x);
-      d = smoothstep(0.0, 0.55, e + (st - 0.5) * 0.6) * smoothstep(0.46, 0.62, n);
-      l = 1.0 - smoothstep(-0.5, 0.5, (p.y - c) / max(1.0, hw));
+      d = smoothstep(0.0, 0.5, e) * smoothstep(0.44, 0.6, n);
+      l = 1.0 - smoothstep(-0.6, 0.6, (p.y - c) / max(1.0, hw));
     } else if (hk.y < 2.5) {
-      // the air: a soft haze lying under the deck, thickest at its middle row, its top and foot torn
+      // the air: a soft haze lying under the deck, thickest at its middle row
       float u = (p.y - h.x) / h.y;
-      float n = fbm(vec2(x / 320.0, p.y / 70.0) + hk.x);
-      d = exp(-u * u * 2.2) * (0.55 + 0.7 * n);
+      float n = fbm(vec2(x / 420.0, p.y / 170.0) + hk.x);
+      d = exp(-u * u * 2.2) * (0.55 + 0.7 * n) * smoothstep(0.32, 0.6, fbm(vec2(x / 560.0, hk.x + 2.0)));
       l = 1.0 - smoothstep(-1.0, 1.0, u);
     } else {
-      // the band: floating between planes, its top heaped (big heaps carrying small), its underside flatter, torn into
-      // lengths with clear air between them; lit along its top, cooler underneath
-      float heap = 0.6 * fbm(vec2(x / 230.0, hk.x)) + 0.4 * fbm(vec2(x / 70.0, hk.x + 3.0));
-      float mid = h.x - h.y * 0.45 + h.y * 0.35 * (fbm(vec2(x / 520.0, hk.x + 5.0)) - 0.5);
-      float top = mid - h.y * (0.2 + 0.7 * heap);
-      float bot = mid + h.y * (0.18 + 0.22 * fbm(vec2(x / 150.0, hk.x + 8.0)));
-      float len = smoothstep(0.38, 0.5, fbm(vec2(x / 380.0, hk.x + 11.0)));
-      float tear = fbm(vec2(x / 90.0, p.y / 9.0) + hk.x * 2.0);
+      // the band: mist floating between planes, its top heaped and lit (big heaps carrying small ones), its body
+      // thinning downward into the air (no ruled underside), in lengths with clear air between them
+      // (heaps carrying smaller heaps carrying smaller ones: never a wave of one length)
+      float heap = smoothstep(0.15, 0.9, 0.52 * fbm(vec2(x / 300.0, hk.x)) + 0.34 * fbm(vec2(x / 95.0, hk.x + 3.0)) + 0.14 * vn(vec2(x / 40.0, hk.x + 6.0)));
+      float mid = h.x - h.y * 0.45 + h.y * 0.4 * (fbm(vec2(x / 520.0, hk.x + 5.0)) - 0.5);
+      float len = smoothstep(0.4, 0.58, fbm(vec2(x / 420.0, hk.x + 11.0)));
+      // (a length heaps up in its middle and thins out at its ends: never a band of one height)
+      float top = mid - h.y * (0.1 + 0.85 * heap) * (0.35 + 0.65 * len);
+      float bot = mid + h.y * (0.45 + 0.35 * fbm(vec2(x / 150.0, hk.x + 8.0)));
       float inT = (p.y - top) / max(1.0, bot - top);
-      d = step(0.0, inT) * step(inT, 1.0 + 0.12 * (tear - 0.5)) * len * (0.75 + 0.25 * smoothstep(0.0, 0.3, inT));
-      d *= smoothstep(-0.05, 0.25, (bot - p.y) / max(1.0, bot - top) + 0.4 * (tear - 0.5));
-      l = 1.0 - smoothstep(0.0, 0.7, inT);
+      d = smoothstep(-0.02, 0.1, inT) * (1.0 - smoothstep(0.35, 1.0, inT)) * len;
+      l = 1.0 - smoothstep(0.0, 0.6, inT);
     }
     d = clamp(d, 0.0, 1.0) * h.z;
-    if (d > A) { A = d; lit = l; anc = vec2(h.w, 0.0); }
+    if (d > A) { A = d; lit = l; }
   }
   if (A <= 0.004) discard;
-  // fine steps, their edges clustered noise riding on the drift (no ordered dither, no outline ring)
-  vec2 ac = vec2(p.x + anc.x, p.y);
-  float t = clamp(0.5 + 0.7 * (vn(ac / 4.0) - 0.5) + 0.25 * (vn(ac / 11.0 + 3.0) - 0.5), 0.02, 0.98);
-  float a = floor(A * 0.88 * 8.0 + t) / 8.0;
-  if (a <= 0.0) discard;
+  // soft (no dither, no grain): mist is the one thing here with lost edges
+  float a = A * 0.88;
   // Kagami's mist family, a little whiter than the hazy air behind it so each layer reads by its lit top: a milky
   // white-cyan body, its underside cooler, warm-lit along its top, brighter on the sun's side (where light falls)
   float sunSide = 1.0 - smoothstep(0.0, uRes.x * 0.9, abs(p.x - uSun.x));
   vec3 body = vec3(0.915, 0.945, 0.94), shade = vec3(0.845, 0.9, 0.915), top = vec3(1.0, 0.975, 0.93);
-  float lq = floor(lit * 3.0 + t) / 3.0;
-  vec3 c = mix(mix(shade, body, step(0.33, lq)), top, step(0.99, lq) * (0.55 + 0.45 * sunSide));
+  vec3 c = mix(shade, body, smoothstep(0.1, 0.5, lit));
+  c = mix(c, top, smoothstep(0.75, 0.98, lit) * (0.55 + 0.45 * sunSide));
   c = min(c + vec3(0.025, 0.02, 0.01) * sunSide, vec3(1.0));
   o = vec4(c * a, a);
 }`;
@@ -557,7 +565,7 @@ uniform sampler2D uSky;   // (fall loop r1, integration) the frame with only the
 uniform float uSkyOn;     // 1 when uSky holds this frame's sky
 uniform vec4 uL0[6];      // a fog layer: its middle (frame px), scale (frame px per layer px), strength
 uniform vec4 uL1[6];      // its half sizes (layer px), seed, tone (0 lit, 1 base)
-uniform vec4 uL2[6];      // the churn's clock (s), the gust (0..1), how far through it the camera is (0..1), 0
+uniform vec4 uL2[6];      // the churn's clock (s), the gust (0..1), how far through it the camera is (0..1), its tears
 uniform int uN;
 uniform vec4 uPaper;      // x, y, on, 0
 uniform vec4 uSun;        // x, y
@@ -591,10 +599,6 @@ float fbm3(vec2 p) {
   }
   return s / 0.875;
 }
-// two octaves: the billows' broad forms (their light is read from these: broad lit sides, never a mottle)
-float fbm2(vec2 p) {
-  return (0.5 * vn(p) + 0.25 * vn(p * 2.03 + vec2(17.1, 9.7))) / 0.75;
-}
 vec3 src(vec2 p) {
   vec2 q = clamp(p, vec2(0.0), uRes - 1.0);
   return texelFetch(uSrc, ivec2(int(q.x), int(uRes.y - 1.0 - q.y)), 0).rgb;
@@ -607,14 +611,14 @@ vec3 skySrc(vec2 p) {
 // deck's body or a karst) and only where the way back up toward the sun leaves the frame through open air (a gap in
 // the deck); a long run of something drawn over the sky on that way (the deck's body, a karst, an isle) shades it.
 // Thin haze changes the sky by less than the threshold; short crossings are forgiven.
-float shaftLit(vec2 p, vec2 dir) {
+float shaftLit(vec2 p, vec2 dir, bool onMist) {
   if (uSkyOn < 0.5) return 1.0;
   vec3 d0 = abs(src(p) - skySrc(p));
-  if (max(d0.r, max(d0.g, d0.b)) > 0.1) return 0.0;
+  if (!onMist && max(d0.r, max(d0.g, d0.b)) > 0.1) return 0.0;
   float runB = 0.0, best = 0.0;
   for (int k = 1; k < 48; k++) {
     vec2 q = p - dir * (float(k) * 14.0);
-    if (q.y < 0.0) break;
+    if (q.y < 0.0 || dot(q - uSun.xy, dir) < 0.0) break;
     vec3 d = abs(src(q) - skySrc(q));
     runB = max(d.r, max(d.g, d.b)) > 0.1 ? runB + 1.0 : 0.0;
     best = max(best, runB);
@@ -623,64 +627,57 @@ float shaftLit(vec2 p, vec2 dir) {
   return 1.0 - smoothstep(2.0, 5.0, best);
 }
 
-// --- the fog: each layer is a few veils of cloud laid over one another, each a flat translucent shape with a torn,
-// billowing pixel edge (the clouds' own family, thinned: lit along its sun-side edge, cooler along its underside), so
-// the fog builds up in clean layers where they overlap and the sky shows where none lies (its torn holes). A painter's
-// fog, never a gradient, never grain. q: layer px from its middle (frame px at the layer's T).
-// the layer's mass: where its veils may lie (a soft outline torn at its own scale; its west side trailing in the gusts)
-float massOf(vec2 q, int i) {
+// --- the fog (round 2, session b): each layer is a soft milky body (thick and thin at a large scale, inside a torn
+// envelope) torn by a few big holes stretched along the wind, their rims thinning in a few steps; it lifts the whole
+// frame behind it toward its own value (ref 04's milky depth). The tear field slides west and churns (its warp drifts),
+// so the holes open, stream and close; as the camera comes out of a layer its tears widen until it is gone.
+// The tear field at layer px q (below the layer's threshold: a hole).
+float tearOf(vec2 q, int i) {
   vec4 b = uL1[i], c = uL2[i];
   float sd = b.z;
-  float L = clamp(min(b.x, b.y) * 0.8, 120.0, 520.0);
-  vec2 wq = q / (L * 0.85) + vec2(sd, sd * 0.37) + vec2(c.x * 0.05, 0.0);
-  vec2 w = vec2(fbm3(wq), fbm3(wq + vec2(5.2, 1.9))) - 0.5;
-  vec2 qe = q + w * L * 1.1;
-  float west = smoothstep(0.25, -0.9, qe.x / b.x);
-  float ex = qe.x / (b.x * mix(1.0, 1.45 + 0.7 * c.y, west));
-  float ey = qe.y / b.y;
-  return 1.0 - ex * ex - ey * ey;
-}
-// veil k of layer i at q: > 0 inside (its billowing edge where it crosses 0)
-float veilOf(vec2 q, int i, int k, float mass) {
-  vec4 b = uL1[i], c = uL2[i];
-  float fk = float(k);
-  float sc = 300.0 * (k == 0 ? 1.15 : (k == 1 ? 0.85 : (k == 2 ? 0.66 : 1.0)));
-  // each veil a little nearer or farther than the next (they swell at different rates) and sliding west at its own
-  // speed, so they pass over one another and the holes between them open and close
-  vec2 qk = q / (1.0 + 0.07 * (fk - 1.5) * clamp(log(uL0[i].z), -2.0, 2.0));
-  qk.x += c.x * (14.0 + 16.0 * fk) * (1.0 + 1.5 * c.y);
-  // (the gusts drag it out along the wind: its forms stretch west-east)
-  vec2 v = vec2(qk.x / (sc * 1.9 * (1.0 + 1.3 * c.y)), qk.y / sc) + vec2(b.z * (1.3 + fk), b.z * 0.7 + fk * 3.1);
-  vec2 w = vec2(fbm3(v * 0.7 + 3.3), fbm3(v * 0.7 + 8.1)) - 0.5;
-  vec2 vw = v + w * 0.9;
-  vw += (vec2(vn(vw * 3.1 + 2.2), vn(vw * 3.1 + 6.6)) - 0.5) * 0.22;
-  float f = (fbm3(vw) * 0.875 + 0.1 * (vn(vw * 4.3 + 23.0) - 0.5)) / 0.875;
-  return f - 0.5 + 0.55 * (mass - 0.25) - 0.22 * c.z;
+  // (the gusts drag it out along the wind)
+  vec2 u = vec2(q.x / (560.0 * (1.0 + 1.0 * c.y)) + sd * 1.3 + c.x * 0.05, q.y / 170.0 + sd * 0.7);
+  vec2 w = vec2(fbm3(u * 0.6 + vec2(3.3 + c.x * 0.035, 1.1)), fbm3(u * 0.6 + vec2(8.1 - c.x * 0.03, 4.4))) - 0.5;
+  u += w * vec2(1.1, 0.8);
+  float f = fbm3(u);
+  // its torn rims drawn out into fibres along the wind
+  f += 0.08 * (vn(vec2(q.x / 90.0 + sd, q.y / 9.0)) - 0.5) + 0.035 * (vn(vec2(q.x / 26.0, q.y / 6.0 + sd)) - 0.5);
+  return f;
 }
 
 // the plunge's streaks, the wind's ribbons and the leaves: drawn over the fog (they are nearer still)
 vec4 ribbonAt(vec2 p) {
-  float best = 0.0;
+  // a wisp of cloud torn off and streaming west: a dense core, its edges thinning in two steps, its upper side lit
+  // (warm white), its underside in the clouds' cool shade
+  float best = 0.0, side = 0.0;
   for (int r = 0; r < 5; r++) {
     if (r >= uNR) break;
     // its box first (most pixels are far from every ribbon)
     vec2 lo = vec2(1e5), hi = vec2(-1e5);
     for (int j = 0; j < 24; j += 2) { lo = min(lo, uRib[r * 24 + j].xy); hi = max(hi, uRib[r * 24 + j].xy); }
     lo = min(lo, uRib[r * 24 + 23].xy); hi = max(hi, uRib[r * 24 + 23].xy);
-    if (p.x < lo.x - 24.0 || p.x > hi.x + 24.0 || p.y < lo.y - 24.0 || p.y > hi.y + 24.0) continue;
+    if (p.x < lo.x - 30.0 || p.x > hi.x + 30.0 || p.y < lo.y - 30.0 || p.y > hi.y + 30.0) continue;
     for (int j = 0; j < 23; j++) {
       vec4 a = uRib[r * 24 + j], b = uRib[r * 24 + j + 1];
       vec2 ab = b.xy - a.xy;
       float t = clamp(dot(p - a.xy, ab) / max(dot(ab, ab), 1e-3), 0.0, 1.0);
-      float d = length(p - a.xy - ab * t);
+      vec2 off = p - a.xy - ab * t;
+      float d = length(off);
       float w = mix(a.z, b.z, t) * 0.5;
+      if (d > w + 0.5) continue;
       float al = mix(a.w, b.w, t);
-      // a hard core and one softer px beside it (a drawn line, not a blur)
-      float cov = d < w + 0.25 ? 1.0 : (d < w + 1.1 ? 0.38 : 0.0);
-      best = max(best, cov * al);
+      // (its edges torn along its length: a fibre noise along the stroke)
+      float u = d / max(w, 0.5) + 0.25 * (vn(vec2(dot(p, normalize(ab + 1e-4)) / 7.0, float(r) * 3.1)) - 0.5);
+      float cov = u < 0.45 ? 1.0 : (u < 0.78 ? 0.55 : (u < 1.0 ? 0.25 : 0.0));
+      if (cov * al > best) {
+        best = cov * al;
+        // which side: up on the frame is lit
+        side = w > 2.0 ? clamp(-off.y / w, -1.0, 1.0) : 0.0;
+      }
     }
   }
-  return vec4(vec3(0.985, 0.98, 0.965), best);
+  vec3 col = side > 0.35 ? vec3(1.0, 0.982, 0.95) : (side < -0.35 ? vec3(0.8, 0.85, 0.92) : vec3(0.93, 0.94, 0.955));
+  return vec4(col, best);
 }
 
 void main() {
@@ -690,99 +687,85 @@ void main() {
   bool touched = false;
   vec3 bg = src(px);
 
-  // --- the fog: a milky lift over the whole of each layer's mass (its few big torn holes thinner), and veil over veil
-  // on it, each a faint flat sheet with a crisp torn pixel edge, so the fog builds up in clean layers where they
-  // overlap; the paper keeps a thinner patch round it
-  // (a hole of its own: a torn edge, crisp like the veils', long along the wind; right at the paper a smaller one)
-  vec2 tp = toP / vec2(230.0, 72.0);
-  float rag = (fbm3(px / 46.0 + 7.7) - 0.5) * 1.3 + (vn(px / 9.0 + 1.1) - 0.5) * 0.25;
-  float tear = uPaper.z > 0.5 ? step(dot(tp, tp) + rag, 0.62) : 0.0;
-  float clear = uPaper.z > 0.5 ? (paperD + (vn(px / 4.0 + 3.7) - 0.5) * 4.0 < 7.0 ? 1.0 : 0.0) : 0.0;
-  float keep = 1.0, baseW = 0.0, wsum = 0.0, lightS = 0.0;
-  vec2 anchor = vec2(0.0);
-  float amax = 0.0;
+  // --- the fog: layer over layer (premultiplied), each a milky body with its torn holes
+  vec2 pq = toP / vec2(150.0, 70.0);
+  float nearP = uPaper.z > 0.5 ? exp(-dot(pq, pq)) : 0.0;
+  float keep = 1.0;
+  vec3 acc = vec3(0.0);
+  float dsun = length(px - uSun.xy) / uRes.x;
+  float overSky = 1.0;
+  if (uSkyOn > 0.5) {
+    vec3 dd = abs(bg - skySrc(px));
+    overSky = 1.0 - smoothstep(0.06, 0.16, max(dd.r, max(dd.g, dd.b)));
+  }
   for (int i = 0; i < 6; i++) {
     if (i >= uN) break;
     vec4 l0 = uL0[i], b = uL1[i], c = uL2[i];
     vec2 q = (px - l0.xy) / l0.z;
-    if (abs(q.x) > b.x * 2.6 || abs(q.y) > b.y * 2.4) continue;
-    float mass = massOf(q, i);
-    if (mass < -0.9) continue;
-    // the lift: steps of the mass (its outline torn), lower in its holes (few, big, long along the wind; they open
-    // as the camera comes out of it)
-    vec2 hq = vec2(q.x / (1.7 * 330.0), q.y / 330.0) + vec2(b.z * 2.1 - c.x * 0.14, b.z * 1.1 + c.x * 0.04) + 5.0;
-    float hn = fbm3(hq + 0.35 * (vec2(fbm3(hq * 1.9 + 4.4), fbm3(hq * 1.9 + 9.2)) - 0.5));
-    float th = 0.3 + 0.3 * c.z;
-    vec2 fp = px - l0.xy;
-    // (its rim torn at the frame's own scale too, whatever the layer's swell)
-    hn += 0.028 * (vn(fp / vec2(18.0, 11.0) + 9.9) - 0.5);
-    float hole = step(hn, th);
-    vec2 mq = vec2(q.x / 1.6, q.y) / 150.0 + b.z * 3.0;
-    float m = mass + (fbm3(mq + 0.5 * (vec2(vn(mq * 2.3 + 1.0), vn(mq * 2.3 + 7.0)) - 0.5)) - 0.5) * 1.5;
-    m += 0.14 * (vn(fp / vec2(22.0, 13.0) + 4.4) - 0.5);
-    float lift = (m > 0.4 ? 0.48 : (m > -0.05 ? 0.27 : 0.0)) * (1.0 - 0.72 * hole);
-    float a = 1.0 - (1.0 - lift * l0.w);
-    float k1 = 1.0 - a;
-    for (int k = 0; k < 2; k++) {
-      // (its edge torn at the frame's own scale too, whatever the layer's swell: lumps and tongues of a few px)
-      float fk = float(k);
-      float f = veilOf(q, i, k, mass) + 0.05 * (vn(fp / vec2(16.0, 10.0) + fk * 5.3) - 0.5);
-      if (f <= 0.0) continue;
-      // a veil's own light: a touch brighter along its sun-side edge
-      k1 *= 1.0 - l0.w * (k == 0 ? 0.24 : 0.2) * (1.0 - 0.6 * hole);
-    }
-    a = 1.0 - k1;
-    a *= 1.0 - 0.7 * clear;
-    if (a <= 0.003) continue;
+    // (its west side dragged out by the gusts)
+    vec2 qe = vec2(q.x / (q.x < 0.0 ? 1.0 + 0.7 * c.y : 1.0), q.y);
+    float er = length(qe / b.xy);
+    if (er > 1.3) continue;
+    // its envelope: a soft outline torn at its own scale (its rim far outside the frame while the camera is inside it)
+    // (its rim torn like its holes: drawn out along the wind, a soft fringe of two steps)
+    float rim = er + 0.3 * (fbm3(qe / vec2(420.0, 200.0) + b.z) - 0.5) + 0.05 * (vn(vec2(q.x / 70.0, q.y / 7.0) + b.z) - 0.5);
+    float env = floor(smoothstep(1.0, 0.86, rim) * 3.0 + 0.5) / 3.0 * mix(0.55, 1.0, smoothstep(1.0, 0.6, rim));
+    if (env <= 0.0) continue;
+    // thick and thin at a large scale
+    float body = fbm3(vec2(q.x / 520.0 + b.z * 2.1 + c.x * 0.02, q.y / 312.0 + b.z));
+    float D = env * mix(0.72, 0.93, smoothstep(0.3, 0.7, body)) * l0.w;
+    // the holes: few, big, stretched along the wind; wider as the camera comes out of it; a torn opening round the
+    // paper (the threshold raised there, so the opening follows the tears: never a porthole)
+    float th = c.w + 0.3 * c.z + 0.16 * nearP;
+    float hole = smoothstep(th + 0.05, th - 0.015, tearOf(q, i));
+    hole = floor(hole * 3.0 + 0.5) / 3.0;
+    // (over a cloud a tear opens less: a slit of crisp cloud through the fog reads as a scan line)
+    float a = D * (1.0 - (0.45 + 0.37 * overSky) * hole);
+    if (a <= 0.002) continue;
+    // its light: a warm white toward the sun and high, the clouds' cool blue away from it, low and where it is thick;
+    // the deck's fringe (tone 1) in its cooler base
+    float warm = clamp(1.0 - dsun * 1.1, 0.0, 1.0) * 0.8 + 0.2 * (1.0 - px.y / uRes.y) - 0.25 * smoothstep(0.5, 0.85, body);
+    warm = mix(warm, warm * 0.55, b.w);
+    warm = clamp(warm, 0.0, 1.0);
+    vec3 col = mix(vec3(0.788, 0.839, 0.91), vec3(0.984, 0.969, 0.941), warm);
+    acc = col * a + acc * (1.0 - a);
     keep *= 1.0 - a;
-    // the light of the mass: lit on its sun side (upper left), cool in its own shade (lower right, broad)
-    float ml = clamp(0.5 + 0.9 * (massOf(q + normalize(uSun.xy - px + vec2(0.001)) * 120.0 / l0.z, i) - mass) * -1.0, 0.0, 1.0);
-    lightS += ml * a;
-    wsum += a;
-    baseW += b.w * a;
-    if (a > amax) { amax = a; anchor = l0.xy; }
   }
-  float D = 1.0 - keep;
-  if (D > 0.003) {
-    float base = baseW / max(wsum, 1e-4);
-    float sunNear = 1.0 - smoothstep(0.0, uRes.x * 0.9, length(px - uSun.xy));
-    float light = clamp(0.25 * (lightS / max(wsum, 1e-4)) + 0.62 * sunNear + 0.12 - 0.22 * (px.y / uRes.y), 0.0, 1.0);
-    // round the paper the fog lies in its own shade (a cooler, deeper patch of it: the bright paper reads on it)
-    if (tear > 0.5) light = min(light, 0.2);
-    vec2 ap = px - anchor;
-    float lq = floor(light * 4.0 + 0.5 + 0.2 * (vn(ap / 8.0) - 0.5) + 0.3 * (vn(ap / 23.0 + 5.0) - 0.5)) / 4.0;
-    vec3 c4 = mix(vec3(1.0, 0.978, 0.945), vec3(0.95, 0.962, 0.978), base);
-    vec3 c3 = mix(vec3(0.935, 0.955, 0.98), vec3(0.87, 0.905, 0.955), base);
-    vec3 c2 = mix(vec3(0.85, 0.905, 0.965), vec3(0.77, 0.84, 0.93), base);
-    vec3 c1 = mix(vec3(0.74, 0.835, 0.935), vec3(0.65, 0.76, 0.89), base);
-    vec3 fog = lq >= 1.0 ? c4 : (lq >= 0.75 ? c3 : (lq >= 0.5 ? c2 : c1));
-    // a film this thin over the deep sky is the sky's own light scattered (a luminous cerulean, never grey)
-    vec3 glow = min(bg * vec3(1.04, 1.08, 1.06) + vec3(0.3, 0.33, 0.29), vec3(1.0));
-    fog = mix(glow, fog, smoothstep(0.1, 0.24, D));
-    bg = mix(bg, fog, D);
+  float Dt = 1.0 - keep;
+  if (Dt > 0.004) {
+    vec3 fog = acc / max(Dt, 1e-4);
+    // a film this thin over the deep sky is the sky's own light scattered (a cerulean, never grey)
+    vec3 glow = min(bg * vec3(1.02, 1.04, 1.03) + vec3(0.07, 0.08, 0.07), vec3(1.0));
+    fog = mix(glow, fog, smoothstep(0.05, 0.22, Dt));
+    bg = mix(bg, fog, Dt);
     touched = true;
   }
 
-  // --- the light shafts under the deck: warm and faint, slanting down-right from its gaps on the sun's side
+  // --- the light shafts under the deck: a fan of warm rays of varied width from the deck's gap round the sun, down
+  // and to the right, only through open air (the deck's body, the karsts and the isles shade them); where a ray lands
+  // on the mist it pools brighter (ref 01's light breaking through onto the valley's mist)
   if (uShaft.x > 0.003) {
-    vec2 dir = normalize(vec2(0.42, 1.0));
-    vec2 perp = vec2(dir.y, -dir.x);
-    vec2 r = px - vec2(uSun.x + 0.04 * uRes.x, uRes.y * 0.06);
-    float along = dot(r, dir), across = dot(r, perp);
-    if (along > 0.0) {
-      float sh = smoothstep(0.56, 0.8, vn(vec2(across / 52.0, 3.0))) * (0.55 + 0.45 * vn(vec2(across / 14.0, 7.0)));
-      float fade = exp(-along / (uRes.y * 0.7)) * smoothstep(0.0, 140.0, along) * (1.0 - smoothstep(0.2, 0.55, abs(across) / uRes.x));
-      float a = uShaft.x * 0.16 * sh * fade * smoothstep(40.0, 90.0, paperD);
-      if (uSkyOn > 0.5) {
-        float beam = (0.5 + 0.5 * smoothstep(0.35, 0.75, vn(vec2(across / 52.0, 3.0)))) * (0.6 + 0.4 * vn(vec2(across / 14.0, 7.0)));
-        float drop = exp(-max(0.0, px.y - uRes.y * 0.1) / (uRes.y * 0.6)) * smoothstep(0.0, 140.0, along);
-        a = uShaft.x * 0.22 * beam * drop * smoothstep(40.0, 90.0, paperD);
-        if (a > 0.004) a *= shaftLit(px, dir);
+    vec2 r = px - uSun.xy;
+    float dist = length(r);
+    vec2 dir = r / max(dist, 1.0);
+    // 0: straight down; +: toward the right
+    float ang = atan(dir.x, dir.y);
+    float cone = 1.0 - smoothstep(0.32, 0.62, abs(ang - 0.36));
+    if (cone > 0.0 && dist > 60.0) {
+      float beam = smoothstep(0.4, 0.78, vn(vec2(ang * 30.0, 3.0))) * (0.5 + 0.5 * vn(vec2(ang * 110.0, 7.0)));
+      float drop = exp(-dist / (uRes.y * 0.8)) * smoothstep(60.0, 240.0, dist);
+      float a = uShaft.x * 0.3 * beam * drop * cone * smoothstep(40.0, 90.0, paperD);
+      if (uSkyOn > 0.5 && a > 0.003) {
+        vec3 c0 = src(px);
+        float lum = dot(c0, vec3(0.299, 0.587, 0.114));
+        float sat = max(c0.r, max(c0.g, c0.b)) - min(c0.r, min(c0.g, c0.b));
+        float mist = smoothstep(0.78, 0.84, lum) * (1.0 - smoothstep(0.1, 0.15, sat)) * smoothstep(uRes.y * 0.36, uRes.y * 0.6, px.y);
+        vec3 d0 = abs(c0 - skySrc(px));
+        float air = 1.0 - smoothstep(0.08, 0.12, max(d0.r, max(d0.g, d0.b)));
+        a *= shaftLit(px, dir, true) * max(air, mist) * (1.0 + 1.3 * mist);
       }
-      float t = clamp(0.5 + 0.8 * (vn(px / 2.6 + 19.0) - 0.5), 0.05, 0.95);
-      float aq = floor(a * 30.0 + t) / 30.0;
-      if (aq > 0.0) {
-        bg = mix(bg, vec3(1.0, 0.95, 0.82), aq);
+      if (a > 0.003) {
+        bg = mix(bg, vec3(1.0, 0.95, 0.82), min(a, 0.45));
         touched = true;
       }
     }
@@ -811,7 +794,8 @@ void main() {
   // --- the wind's ribbons
   if (uNR > 0) {
     vec4 rb = ribbonAt(px);
-    float aq = floor(rb.a * 5.0 + 0.45) / 5.0;
+    // (over a cloud's body a wisp thins: it reads as torn off that cloud's edge, at its depth)
+    float aq = floor(rb.a * mix(0.3, 1.0, overSky) * 8.0 + 0.45) / 8.0;
     if (aq > 0.0) {
       bg = mix(bg, rb.rgb, aq);
       touched = true;
@@ -985,7 +969,7 @@ export class Veils {
     vs.forEach((v, i) => {
       L0.set([v.cx, v.cy, Math.max(1e-3, v.g), v.alpha], i * 4);
       L1.set([Math.max(1, v.hw), Math.max(1, v.hh), v.seed, v.tone], i * 4);
-      L2.set([v.churn, v.gust, v.out, 0], i * 4);
+      L2.set([v.churn, v.gust, v.out, v.tear], i * 4);
     });
     if (u.uL0) gl.uniform4fv(u.uL0, L0);
     if (u.uL1) gl.uniform4fv(u.uL1, L1);

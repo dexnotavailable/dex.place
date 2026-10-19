@@ -238,10 +238,12 @@ test("the fall's clouds: each where the camera sees it (on Dex's 1920 x 1080 fra
       }
     }
   }
-  // the fog layers on the lens: only in the fall, never on way 4 or with reduced motion
-  assert.ok(fallVeils(5.5, 1280, 720, "continue", false).length > 0);
-  assert.equal(fallVeils(5.5, 1280, 720, "bottom", false).length, 0);
-  assert.equal(fallVeils(5.5, 1280, 720, "continue", true).length, 0);
+  // the fog layers on the lens: only in the fall (the camera inside the thick one at 6.95 s), never on way 4 or with
+  // reduced motion, and none in the vast frame (1.6-4.6 s: the world below stays clean)
+  assert.ok(fallVeils(6.95, 1280, 720, "continue", false).length > 0);
+  assert.equal(fallVeils(6.95, 1280, 720, "bottom", false).length, 0);
+  assert.equal(fallVeils(6.95, 1280, 720, "continue", true).length, 0);
+  for (const T of [1.6, 2.94, 4.6]) assert.equal(fallVeils(T, 1920, 1080, "continue", false).length, 0, `a fog layer in the vast frame at ${T}`);
 });
 
 test("the fall's sky: deep while high, eased into the place's own sky under the deck, gone by the break-out", () => {
