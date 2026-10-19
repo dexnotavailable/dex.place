@@ -1,79 +1,32 @@
 {
  "v": 2,
  "size": [
-  160,
-  240
+  941,
+  1400
  ],
  "focus": [
-  78,
-  110
+  440,
+  290
  ],
- "pixelated": true,
  "parts": [
   {
-   "id": "sky",
-   "src": "sky.webp",
+   "id": "art",
+   "src": "art.webp",
    "box": [
     0,
     0,
-    160,
-    240
-   ],
-   "depth": 0
-  },
-  {
-   "id": "cloud",
-   "src": "cloud.webp",
-   "box": [
-    96,
-    39,
-    64,
-    50
-   ],
-   "depth": 0.2,
-   "motion": [
-    {
-     "kind": "bob",
-     "dx": 3,
-     "dy": 0,
-     "period": 10,
-     "phase": 0.6
-    }
-   ]
-  },
-  {
-   "id": "spires",
-   "src": "spires.webp",
-   "box": [
-    23,
-    140,
-    137,
-    33
+    941,
+    1400
    ],
    "depth": 0.5,
    "motion": [
     {
      "kind": "bob",
      "dx": 0,
-     "dy": 1,
-     "period": 6.8,
-     "phase": 0.1
+     "dy": 4,
+     "period": 8,
+     "phase": 0
     }
-   ]
-  },
-  {
-   "id": "subject",
-   "src": "subject.webp",
-   "box": [
-    29,
-    86,
-    95,
-    133
-   ],
-   "depth": 0.85,
-   "pivot": [
-    76,
-    219
    ]
   }
  ]
