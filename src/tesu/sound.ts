@@ -172,7 +172,8 @@ export interface HerState {
  * the dash, the hurt.
  */
 export function voiceFor(id: string, info: { first: boolean; role: string; state: string }): string | null {
-  if (id === "swing") return info.first ? (info.role === "e_tap" ? "e" : null) : "kiai";
+  // (the R's flurry swings during the ult sequence: no kiai, the cinematic has its own voice)
+  if (id === "swing") return info.first ? (info.role === "e_tap" ? "e" : null) : info.state === "ult" ? null : "kiai";
   if (id === "charge") return info.state === "ult" ? null : "q";
   if (id === "jump" || id === "djump") return "jump";
   if (id === "dash") return info.state === "ult" ? null : "dash";
