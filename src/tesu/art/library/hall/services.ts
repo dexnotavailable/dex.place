@@ -11,6 +11,7 @@ import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT, HALL_LIGHT_NO_GATE } from "./lights.ts";
 import { M, SCREEN, LitField, bevel, clamp, cord, cyl, face, fbm, grain, hash, keep, lathe, mt, poly, rect, tn, vnoise, type At, type Ramp } from "./kit.ts";
+import { cashCoin, cloudScroll, coinStack, crossedBlades, openBook, plumCrest, sealStamp, text, textWidth } from "./signs.ts";
 
 const H = 96;
 
@@ -61,26 +62,8 @@ function iceEdge(x: number, y: number, g: number, seed: number): number {
   return (d2 - d1) / 2;
 }
 
-/** Brush strokes that read as script (never real text): a row of glyphs in the box, strokes of `col`. */
-function glyphs(c: PaintCtx, x0: number, y0: number, x1: number, y1: number, n: number, seed: number, col: (X: number, Y: number) => number, vertical = false): void {
-  const len = vertical ? y1 - y0 : x1 - x0;
-  const cell = len / n;
-  for (let i = 0; i < n; i++) {
-    const a0 = (vertical ? y0 : x0) + i * cell;
-    const gx0 = vertical ? x0 : a0 + cell * 0.12, gx1 = vertical ? x1 : a0 + cell * 0.88;
-    const gy0 = vertical ? a0 + cell * 0.12 : y0, gy1 = vertical ? a0 + cell * 0.88 : y1;
-    const gw = gx1 - gx0, gh = gy1 - gy0;
-    rect(c, gx0, gy0, gx1, gy1, (X, Y, lx, ly) => {
-      const u = (lx - gx0) / gw, v = (ly - gy0) / gh;
-      const r1 = hash(i, 1, seed), r2 = hash(i, 2, seed), r3 = hash(i, 3, seed);
-      const hz = Math.abs(v - (0.2 + 0.25 * r1)) < 0.09 || (r2 > 0.4 && Math.abs(v - 0.72) < 0.09);
-      const vt = Math.abs(u - (0.35 + 0.3 * r3)) < 0.1 && v > 0.1;
-      const dg = r1 > 0.55 && Math.abs(u - v * 0.9 - 0.05) < 0.09 && v > 0.35;
-      const dt = r3 > 0.7 && Math.hypot(u - 0.8, v - 0.35) < 0.12;
-      return hz || vt || dg || dt ? col(X, Y) : 0;
-    });
-  }
-}
+// (round 2, W1-2: the pseudo-script glyphs are gone; every sign is real pixel characters or a wordless mark,
+// signs.ts)
 
 // ===========================================================================
 // The Prize Court gate: a moon gate in the back wall's middle bay
@@ -314,7 +297,14 @@ export const gate = definePainter<GateP>("hall.gate", {
       if (e < 4) return mt(M.lacq, face(l.k, 0) * 0.3, X, Y, 0.3, 1);
       return mt(M.verm, face(Math.max(0.5, l.k), 0) * 0.72 + grain(lx, ly, 91, false) * 0.05, X, Y, 0.2, 1);
     });
-    glyphs(c, -pw + 10, py0 + 7, pw - 10, py1 - 7, 3, 93, (X, Y) => tn(M.gold, 0.15, X, Y, 0));
+    // (round 2, W1-2) wordless: crossed blades in a gold ring (the arena) between two gold cloud scrolls
+    {
+      const pcy = (py0 + py1) / 2, pr = Math.min(15, (py1 - py0) / 2 - 3);
+      const goldC = (X: number, Y: number): number => tn(M.gold, 0.12, X, Y, 0);
+      crossedBlades(c, 0, pcy, pr, (X, Y, _lx, ly) => tn(M.gold, ly < pcy ? 0.05 : 0.3, X, Y, 0), (X, Y) => tn(M.lacq, 0.55, X, Y, 0), (X, Y) => tn(M.verm, 0.66, X, Y, 0));
+      cloudScroll(c, -pw + 20, pcy, 6, 1, pw - 26 - pr, goldC);
+      cloudScroll(c, pw - 20, pcy, 6, -1, pw - 26 - pr, goldC);
+    }
     const cw = R + RING + 0.72 * H;
     const beam0 = py0 - 0.16 * H, beam1 = py0 - 3;
     // the corbels under the beam's ends: curled brackets out of the wall
@@ -446,7 +436,12 @@ export const desk = definePainter<DeskP>("hall.desk", {
       if (e < 2) return mt(M.gold, face(l.k, side, 0, ly - sy0 < 2 ? -0.8 : 0.3) * 0.9, X, Y, 0.05, 1);
       return mt(M.wood, face(l.k, side) * 0.55 + grain(lx, ly, 43, false) * 0.08, X, Y, 0.35, 1);
     });
-    glyphs(c, sx0 + 8, sy0 + 5, sx1 - 8, sy1 - 5, 2, 45, (X, Y) => tn(M.gold, 0.2, X, Y, 0));
+    // (round 2, W1-2) wordless: the open register with a brush laid across it, and Hanko's red seal
+    {
+      const scy = (sy0 + sy1) / 2, mid = (sx0 + sx1) / 2;
+      openBook(c, mid - 36, scy - 9, 32, (X, Y) => tn(M.paper, 0.12, X, Y, 0), (X, Y) => tn(M.gold, 0.5, X, Y, 0), (X, Y) => tn(M.ink, 0.1, X, Y, 0));
+      sealStamp(c, mid + 10, scy - 8, 16, (X, Y) => tn(P.red, 0.32, X, Y, 0), (X, Y) => tn(M.paper, 0.1, X, Y, 0));
+    }
 
     // --- the counter: plinth, a front lighter than the wall, the top board with a lit lip and a dark edge band
     contact(c, 0, W, 0.85);
@@ -460,27 +455,28 @@ export const desk = definePainter<DeskP>("hall.desk", {
       const stile = pu < 0.05 || pu > 0.95 || u < 0.02 || u > 0.98;
       const rail = v < 0.1 || v > 0.9;
       const inset = !stile && !rail && (Math.abs(pu - 0.12) < 0.012 || Math.abs(pu - 0.88) < 0.012 || Math.abs(v - 0.22) < 0.03 || Math.abs(v - 0.8) < 0.03);
-      const shade = v < 0.16 ? 0.28 : 0;
-      if (inset) return mt(M.gold, face(l.k, side) * 0.75 - shade, X, Y, 0.15, 1);
-      if (stile || rail) return mt(M.wood, face(l.k, side, stile ? (pu < 0.5 ? -0.5 : 0.5) : 0, 0) * 0.68 - shade, X, Y, 0.25, 1);
-      return mt(M.wood, face(l.k, side) * 0.86 - shade + grain(lx, ly, 47) * 0.08 - (v > 0.82 ? 0.05 : 0), X, Y, 0.15, 1);
+      // (round 2, W1-5) the front a light honey timber, a clear step lighter than the wall and the notice board, so
+      // the desk reads as the desk in its own frame; the lamp's light still moves it
+      const shade = v < 0.16 ? 0.22 : 0;
+      const lk = (face(l.k, side) - 0.35) * 0.55;
+      if (inset) return mt(M.gold, 0.7 + lk - shade, X, Y, 0.1, 1);
+      if (stile || rail) return mt(M.wood, 0.58 + lk + (stile ? (pu < 0.5 ? -0.06 : 0.06) : 0) - shade, X, Y, 0.1, 1);
+      return mt(M.wood, 0.76 + lk - shade + grain(lx, ly, 47) * 0.07 - (v > 0.82 ? 0.05 : 0), X, Y, 0.1, 1);
     });
-    // the hall's crest on the middle panel, gold, raised
+    // the hall's crest on the middle panel, gold, raised (round 2: the plum blossom of the door's plaque)
     const scx = W / 2, scy = (-T + TOPD - 0.09 * H) / 2, sr = Math.min(W * 0.07, (T - TOPD) * 0.3);
-    rect(c, scx - sr - 1, scy - sr - 1, scx + sr + 1, scy + sr + 1, (X, Y, lx, ly) => {
-      const dx = lx - scx, dy = ly - scy, d = Math.hypot(dx, dy) / sr;
-      if (d > 1) return 0;
-      const a = Math.atan2(dy, dx);
-      const on = d > 0.8 || d < 0.6 * (0.55 + 0.45 * Math.abs(Math.cos(a * 2.5)));
-      return on ? mt(M.gold, face(lf.get(lx, ly).k, side, dx / sr, dy / sr) * 0.95, X, Y, 0.05, 1) : 0;
-    });
+    plumCrest(c, Math.round(scx), Math.round(scy), Math.max(7, Math.round(sr)),
+      (X, Y, lx, ly) => mt(M.gold, face(lf.get(lx, ly).k, side, (lx - scx) / sr, (ly - scy) / sr) * 0.95, X, Y, 0.05, 1),
+      (X, Y) => mt(M.wood, 0.42, X, Y, 0.1, 1),
+      (X, Y) => mt(M.gold, 1.05, X, Y, 0.05, 1));
     // the top board: overhanging, a bright lip along its whole length, its front edge a darker band
     rect(c, -6, -T, W + 6, -T + TOPD, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
       const v = ly + T;
       const endCap = lx < -3 || lx > W + 3;
       if (v < 2) return mt(M.wood, face(Math.max(l.k, 0.55), side, 0, -1) * 1.3, X, Y, 0.0, 1);
-      if (v < 3) return mt(M.wood, face(l.k, side, 0, -0.4) * 0.95, X, Y, 0.05, 1);
+      // (round 2, W1-5) a brass strip along the top board's front edge, catching the lamp
+      if (v < 4.5) return mt(M.gold, 0.62 + (face(l.k, side, 0, -0.4) - 0.35) * 0.6 + (v < 3 ? 0.12 : 0), X, Y, 0.0, 1);
       return mt(M.lacq, face(l.k, side, endCap ? (lx < 0 ? -0.7 : 0.7) : 0, 0.3) * 0.62 + grain(lx, ly, 49, false) * 0.05, X, Y, 0.0, 1);
     });
     for (const fx of [-6, W + 6]) fitting(c, lf, side, fx, -T, fx < 0 ? 1 : -1, 1, 6);
@@ -573,12 +569,182 @@ export interface DonationP {
   at?: At;
 }
 
+/**
+ * (round 2, W1-4) The main offering box as an offering chest on its own stage: a low stone plinth, the chest
+ * wider than it is tall (a heavy rim, the slatted top band, the brass slit plate with its clear slit on the
+ * front, a cash-coin crest, iron-dark corners), and over it a small frame of two slim posts and a tiled
+ * crossbeam with a hanging sign (a gold cash coin) and its own lamp on a bracket off the west post. The
+ * anchor is the chest's west end on the floor; w is the chest's width, h its top above the floor.
+ */
+function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
+  const W = p.w, TOP = p.h;
+  const side = sideOf(lf, W / 2, -TOP / 2);
+  const v = (l: { k: number }, base: number, nx = 0, ny = 0): number => base + (face(l.k, side, nx, ny) - 0.35) * 0.6;
+  const PL = Math.round(0.11 * H); // the plinth's height
+  const px0 = -0.1 * H, px1 = W + 0.1 * H; // the frame's posts
+  const postTop = -1.56 * H;
+  contact(c, px0 - 8, px1 + 8, 0.9);
+
+  // --- the frame: two slim lacquer posts on stone feet, a crossbeam with a little tiled cap
+  for (const fx of [px0, px1]) {
+    box(c, lf, side, fx - 6, -PL - 4, fx + 6, -PL + 1, M.stone, 3, 0.2, 1, 2, 0.02);
+    rect(c, fx - 3, postTop, fx + 3, -PL - 4, (X, Y, lx, ly) => {
+      const l = lf.get(lx, ly);
+      const u = (lx - fx) / 3;
+      return mt(M.verm, v(l, 0.5, u * 0.8, 0) + (u * side > 0.5 ? 0.12 : u * side < -0.5 ? -0.1 : 0), X, Y, 0.2, 1);
+    });
+  }
+  const bm0 = postTop - 6, bm1 = postTop + 4;
+  rect(c, px0 - 12, bm0, px1 + 12, bm1, (X, Y, lx, ly) => {
+    const l = lf.get(lx, ly);
+    const e = ly - bm0;
+    const end = lx < px0 - 8 || lx > px1 + 8;
+    if (e < 1.5) return mt(M.wood, v(l, 0.85, 0, -1), X, Y, 0.0, 1);
+    if (end) return mt(M.gold, v(l, 0.6, lx < 0 ? -0.6 : 0.6, 0), X, Y, 0.1, 1);
+    return mt(M.lacq, v(l, 0.55) + grain(lx, ly, 97, false) * 0.05, X, Y, 0.0, 1);
+  });
+  poly(c, [px0 - 20, bm0 + 1, px0 - 14, bm0 - 6, (px0 + px1) / 2, bm0 - 0.17 * H, px1 + 14, bm0 - 6, px1 + 20, bm0 + 1, px1 + 12, bm0 + 2, px0 - 12, bm0 + 2], (X, Y, lx, ly) => {
+    const l = lf.get(lx, ly);
+    const k = ((((lx - px0) % 6) + 6) % 6) / 6;
+    return mt(M.tile, face(l.k, side, (k - 0.5) * 1.2, -0.4) * (0.5 + 0.35 * Math.sin(k * Math.PI)) + (ly > bm0 - 1 ? -0.1 : 0), X, Y, 0.1, 1);
+  });
+
+  // --- the hanging sign under the beam: dark lacquer in a gold frame, a big gold cash coin on it
+  {
+    const sw = 0.5 * H, sh = 0.32 * H, sx0 = W / 2 - sw / 2, sy0 = bm1 + 0.16 * H, sy1 = sy0 + sh;
+    for (const kx of [sx0 + 6, sx0 + sw - 6]) cord(c, kx, bm1, kx, sy0, 0, (X, Y) => tn(M.verm, 0.45, X, Y, 0));
+    rect(c, sx0, sy0, sx0 + sw, sy1, (X, Y, lx, ly) => {
+      const l = lf.get(lx, ly);
+      const e = Math.min(lx - sx0, sx0 + sw - lx, ly - sy0, sy1 - ly);
+      if (e < 2) return mt(M.gold, v(l, 0.62, 0, ly - sy0 < 2 ? -0.8 : 0.3), X, Y, 0.05, 1);
+      return mt(M.lacq, v(l, 0.42) + grain(lx, ly, 99, false) * 0.05, X, Y, 0.0, 1);
+    });
+    cashCoin(c, W / 2, (sy0 + sy1) / 2, sh * 0.34, (X, Y) => tn(M.gold, 0.18, X, Y, 0), (X, Y) => tn(M.gold, 0.55, X, Y, 0), (X, Y) => tn(M.gold, 0.0, X, Y, 0));
+  }
+
+  // --- its own lamp: an iron bracket off the west post, a small paper lantern hanging from it, lit
+  {
+    const ax = px0 - 0.26 * H, ay = -1.22 * H;
+    rect(c, ax, ay - 2, px0 - 3, ay + 1, (X, Y) => tn(M.lacq, 0.55, X, Y, 0));
+    poly(c, [px0 - 3, ay + 1, px0 - 3, ay + 12, px0 - 14, ay + 1], (X, Y, lx, ly) => (Math.abs((lx - px0 + 3) + (ly - ay - 1)) < 1.6 || lx > px0 - 4.5 ? tn(M.lacq, 0.55, X, Y, 0) : 0));
+    const lx0 = ax - 7, lx1 = ax + 7, l0 = ay + 6, l1 = ay + 0.24 * H;
+    cord(c, ax, ay + 1, ax, l0, 0, (X, Y) => tn(M.lacq, 0.6, X, Y, 0));
+    rect(c, lx0, l0, lx1, l1, (X, Y, lx, ly) => {
+      const u = (lx - lx0) / (lx1 - lx0), vv = (ly - l0) / (l1 - l0);
+      const round = Math.abs(u - 0.5) < 0.5 - Math.abs(vv - 0.5) * 0.28;
+      if (!round) return 0;
+      if (vv < 0.1 || vv > 0.9) return mt(M.lacq, 0.45, X, Y, 0.1, 1);
+      if (Math.abs(vv - 0.5) < 0.04 || Math.abs(u - 0.5) < 0.04) return tn(P.red, 0.4, X, Y, 0);
+      return tn(SCREEN, clamp(0.02 + Math.abs(u - 0.5) * 0.9 + Math.abs(vv - 0.5) * 0.4, 0, 1), X, Y, 0.45);
+    });
+    rect(c, ax - 1, l1, ax + 1, l1 + 6, (X, Y) => tn(P.red, 0.35, X, Y, 0));
+  }
+
+  // --- the plinth: one low stone block with a chamfered top edge, chipped, a step wider than the chest
+  rect(c, -0.08 * H, -PL, W + 0.08 * H, 0, (X, Y, lx, ly) => {
+    const l = lf.get(lx, ly);
+    const vv = (ly + PL) / PL;
+    const nx = lx < -0.08 * H + 3 ? -0.8 : lx > W + 0.08 * H - 3 ? 0.8 : 0;
+    const chip = fbm(lx * 0.35, ly * 0.35, 101, 2) > 0.72 ? 0.12 : 0;
+    const joint = Math.abs(lx - W * 0.38) < 0.7 && vv > 0.25;
+    return mt(M.stone, v(l, vv < 0.2 ? 0.72 : 0.5, nx, vv < 0.2 ? -0.9 : 0) - chip - (joint ? 0.15 : 0) - (vv > 0.85 ? 0.08 : 0), X, Y, 0.15, 1);
+  });
+
+  // --- the chest: body, corners, crest, the slit plate, the slatted band, the heavy rim
+  const b1 = -PL, rim = Math.round(0.07 * H), slats = Math.round(0.09 * H);
+  const r0 = -TOP, r1 = r0 + rim, s1 = r1 + slats;
+  rect(c, 0, s1, W, b1, (X, Y, lx, ly) => {
+    const l = lf.get(lx, ly);
+    const u = lx / W, vv = (ly - s1) / (b1 - s1);
+    const [nx, ny] = bevel(u, vv, 3 / W, 3 / (b1 - s1));
+    // the front's two boards with a seam, the grain running across
+    const seam = Math.abs(vv - 0.55) < 0.03;
+    // dark weathered timber, so the brass slit plate and the coin crest stand out on it
+    return mt(M.wood, v(l, seam ? 0.22 : 0.42, nx, ny) + grain(lx, ly, 103, false) * 0.08 - vv * 0.06, X, Y, 0.2, 1);
+  });
+  // iron-dark corner brackets and studs
+  for (const [fx, fy, sx, sy] of [[0, s1, 1, 1], [W, s1, -1, 1], [0, b1, 1, -1], [W, b1, -1, -1]] as const) {
+    rect(c, Math.min(fx, fx + sx * 9), Math.min(fy, fy + sy * 9), Math.max(fx, fx + sx * 9), Math.max(fy, fy + sy * 9), (X, Y, lx, ly) => {
+      const dx = Math.abs(lx - fx), dy = Math.abs(ly - fy);
+      if (dx > 2.6 && dy > 2.6) return 0;
+      const stud = (Math.abs(dx - 6) < 1 && dy < 2) || (Math.abs(dy - 6) < 1 && dx < 2);
+      return stud ? tn(M.gold, 0.2, X, Y, 0) : mt(M.lacq, v(lf.get(lx, ly), 0.3, sx * -0.3, sy * 0.3), X, Y, 0.0, 1);
+    });
+  }
+  // the crest on the lower board: a gold cash coin
+  cashCoin(c, W / 2, s1 + (b1 - s1) * 0.68, Math.min(7, (b1 - s1) * 0.22), (X, Y) => tn(M.gold, 0.22, X, Y, 0), (X, Y) => tn(M.gold, 0.6, X, Y, 0), (X, Y) => tn(M.gold, 0.02, X, Y, 0));
+  // the slit plate: a brass plate across the upper board, its top edge catching the light, the slit black
+  {
+    const slW = Math.round(W * 0.5), slY = s1 + 7;
+    const ex0 = W / 2 - slW / 2 - 6, ex1 = W / 2 + slW / 2 + 6, ey0 = s1 + 2, ey1 = s1 + 13;
+    rect(c, ex0, ey0, ex1, ey1, (X, Y, lx, ly) => {
+      const l = lf.get(lx, ly);
+      const u = (lx - ex0) / (ex1 - ex0), vv = (ly - ey0) / (ey1 - ey0);
+      const rivet = Math.abs(vv - 0.5) < 0.16 && (Math.abs(u - 0.05) < 0.025 || Math.abs(u - 0.95) < 0.025);
+      if (rivet) return tn(M.gold, 0.6, X, Y, 0);
+      if (ly < ey0 + 1) return mt(M.gold, v(l, 0.95, 0, -0.9), X, Y, 0.0, 1);
+      if (ly > ey1 - 1.2) return mt(M.gold, v(l, 0.35, 0, 0.8), X, Y, 0.0, 1);
+      return mt(M.gold, v(l, 0.72, (u - 0.5) * 0.6, 0), X, Y, 0.0, 1);
+    });
+    rect(c, W / 2 - slW / 2, slY - 1, W / 2 + slW / 2, slY, (X, Y) => tn(M.gold, 0.0, X, Y, 0));
+    rect(c, W / 2 - slW / 2, slY, W / 2 + slW / 2, slY + 3, () => P.ink[0]!);
+    // a coin going into the slit: its upper half still out, glinting
+    const cx = W / 2 + 6, cr = 3.6;
+    rect(c, cx - cr, slY - cr, cx + cr, slY, (X, Y, lx, ly) => {
+      const d = Math.hypot(lx - cx, ly - slY) / cr;
+      if (d > 1) return 0;
+      return d > 0.75 ? tn(M.gold, 0.5, X, Y, 0) : lx < cx && ly < slY - 1.5 ? tn(M.gold, 0.0, X, Y, 0) : tn(M.gold, 0.22, X, Y, 0);
+    });
+  }
+  // the slatted band over the plate: the top's slats seen end-on, dark gaps between them
+  rect(c, 1, r1, W - 1, s1, (X, Y, lx, ly) => {
+    const l = lf.get(lx, ly);
+    const k = ((lx - 1) % 7 + 7) % 7;
+    const gap = k > 4.5;
+    if (ly > s1 - 1.2) return mt(M.lacq, v(l, 0.2), X, Y, 0.0, 1);
+    if (gap) return mt(M.lacq, v(l, 0.12), X, Y, 0.0, 1);
+    return mt(M.wood, v(l, k < 1 ? 0.78 : 0.6, k < 1 ? -0.5 : 0.3, 0), X, Y, 0.1, 1);
+  });
+  // the heavy rim: overhanging, a bright top lip, gold end caps, a dark underside line
+  rect(c, -4, r0, W + 4, r1, (X, Y, lx, ly) => {
+    const l = lf.get(lx, ly);
+    const vv = ly - r0;
+    const cap = lx < 1 || lx > W - 1;
+    if (vv < 1.5) return mt(M.wood, v(l, 1.0, 0, -1), X, Y, 0.0, 1);
+    if (r1 - ly < 1.5) return mt(M.lacq, v(l, 0.18, 0, 0.8), X, Y, 0.0, 1);
+    if (cap) return mt(M.gold, v(l, 0.62, lx < 0 ? -0.6 : 0.6, 0), X, Y, 0.05, 1);
+    return mt(M.verm, v(l, 0.5) + grain(lx, ly, 105, false) * 0.05, X, Y, 0.15, 1);
+  });
+
+  // --- offerings on the plinth: coins scattered and a short stack, a mandarin on a dish
+  const py = -PL;
+  for (const [ox, oy] of [[-5, 0], [-2, 0], [W + 2, 0], [W + 5, -1]] as const) {
+    rect(c, ox - 2, py + oy - 1.5, ox + 2, py + oy, (X, Y, lx) => (lx < ox ? tn(M.gold, 0.12, X, Y, 0) : tn(M.gold, 0.42, X, Y, 0)));
+  }
+  coinStack(c, W + 0.02 * H, py, 5, 3, (X, Y) => tn(M.gold, 0.25, X, Y, 0), (X, Y) => tn(M.gold, 0.6, X, Y, 0), (X, Y) => tn(M.gold, 0.0, X, Y, 0));
+  rect(c, -0.075 * H, py - 2, -0.075 * H + 11, py, (X, Y) => tn(P.paper, 0.45, X, Y, 0));
+  {
+    const mx = -0.075 * H + 5.5, my = py - 5.5;
+    rect(c, mx - 4, my - 4, mx + 4, my + 4, (X, Y, lx, ly) => {
+      const d = Math.hypot((lx - mx) / 3.6, (ly - my) / 3.4);
+      if (d > 1) return 0;
+      if (ly < my - 2.5 && Math.abs(lx - mx) < 1) return tn(P.moss, 0.4, X, Y, 0);
+      return tn(P.ember, clamp(0.62 + (lx - mx) / 3.6 * 0.15 + (ly - my) / 3.4 * 0.12, 0, 1), X, Y, 0.3);
+    });
+  }
+}
+
 export const donation = definePainter<DonationP>("hall.donation", {
   bounds(p) {
+    if (p.main && !p.ped) return [-0.5 * H, -1.85 * H, p.w + 0.35 * H, 6];
     return [-0.3 * H, -(p.ped ?? 0) - p.h - 0.55 * H, p.w + 0.3 * H, 6];
   },
   paint(c, p) {
     const lf = new LitField(HALL_LIGHT, p.at, 6);
+    if (p.main && !p.ped) {
+      offeringStage(c, lf, p);
+      return;
+    }
     const W = p.w, Hb = p.h, ped = p.ped ?? 0;
     const side = sideOf(lf, W / 2, -ped - Hb / 2);
     const base = -ped;
@@ -649,7 +815,8 @@ export const donation = definePainter<DonationP>("hall.donation", {
         if (e < 1.5) return mt(M.wood, face(l.k, side) * 0.7, X, Y, 0.2, 1);
         return mt(M.paper, face(Math.max(0.6, l.k), side) * 1.05, X, Y, 0.0, 0.8);
       });
-      glyphs(c, qx0 + 3, qy0 + 3, qx1 - 3, qy1 - 5, 2, 53, (X, Y) => tn(P.red, 0.35, X, Y, 0), true);
+      // (round 2, W1-2) wordless: a cash coin in red ink
+      cashCoin(c, (qx0 + qx1) / 2, (qy0 + qy1 - 2) / 2, Math.min((qx1 - qx0) / 2 - 2.5, 5), (X, Y) => tn(P.red, 0.4, X, Y, 0), (X, Y) => tn(P.red, 0.6, X, Y, 0));
       const lx0 = W - 12, lx1 = W - 2, l0 = qy1 - 0.19 * H, l1 = qy1 - 2;
       rect(c, lx0, l0, lx1, l1, (X, Y, lx, ly) => {
         const u = (lx - lx0) / (lx1 - lx0), v = (ly - l0) / (l1 - l0);
@@ -717,16 +884,12 @@ export const ranking = definePainter<{ w: number; h: number; at?: At }>("hall.ra
       return mt(M.verm, face(l.k, side) * 0.82 + grain(lx, ly, 59, false) * 0.05, X, Y, 0.1, 1);
     });
     {
+      // (round 2, W1-2) wordless: a big gold cash coin (the sponsors' gifts) between two gold cloud scrolls
       const ccx = W / 2, ccy = (hy0 + hy1) / 2, cr = headH * 0.36;
-      rect(c, ccx - cr, ccy - cr, ccx + cr, ccy + cr, (X, Y, lx, ly) => {
-        const dx = lx - ccx, dy = ly - ccy, d = Math.hypot(dx, dy) / cr;
-        if (d > 1) return 0;
-        const a = Math.atan2(dy, dx);
-        const petal = d < 0.75 * (0.5 + 0.5 * Math.abs(Math.cos(a * 2.5)));
-        return d > 0.82 || petal ? mt(M.gold, face(lf.get(lx, ly).k, side, dx / cr, dy / cr) * 1.05, X, Y, 0.0, 1) : mt(M.verm, 0.4, X, Y, 0.3, 1);
-      });
-      glyphs(c, hx0 + 7, hy0 + 7, ccx - cr - 4, hy1 - 7, 2, 61, (X, Y) => tn(M.gold, 0.15, X, Y, 0));
-      glyphs(c, ccx + cr + 4, hy0 + 7, hx1 - 7, hy1 - 7, 2, 63, (X, Y) => tn(M.gold, 0.15, X, Y, 0));
+      cashCoin(c, ccx, ccy, cr, (X, Y) => tn(M.gold, 0.15, X, Y, 0), (X, Y) => tn(M.gold, 0.5, X, Y, 0), (X, Y) => tn(M.gold, 0.0, X, Y, 0));
+      const goldC = (X: number, Y: number): number => tn(M.gold, 0.15, X, Y, 0);
+      cloudScroll(c, hx0 + 14, ccy, 5, 1, ccx - cr - 6 - (hx0 + 14), goldC);
+      cloudScroll(c, hx1 - 14, ccy, 5, -1, hx1 - 14 - (ccx + cr + 6), goldC);
     }
     // its small tiled cap with turned-up eaves
     {
@@ -757,15 +920,23 @@ export const ranking = definePainter<{ w: number; h: number; at?: At }>("hall.ra
         const k = face(Math.max(l.k, metal ? 0.5 : 0.35), side, nx, ny) * (lip ? 1.25 : 1) + (metal ? Math.sin(u * 9 + v * 3) * 0.04 : grain(lx, ly, 65 + i, false) * 0.1);
         return mt(ramp, k, X, Y, 0.0, metal ? 0.85 : 0.9);
       });
-      // the rank's medallion at the left, the name as strokes of its length
-      const mx = tx0 + th * 0.55, my = (y0 + y1) / 2, mr = th * 0.32;
-      rect(c, mx - mr, my - mr, mx + mr, my + mr, (X, Y, lx, ly) => {
-        const d = Math.hypot(lx - mx, ly - my) / mr;
-        if (d > 1) return 0;
-        return d > 0.65 ? tn(M.lacq, 0.55, X, Y, 0) : tn(i === 0 ? P.red : M.lacq, i === 0 ? 0.3 : 0.4, X, Y, 0);
-      });
-      const n = Math.max(2, Math.round((tw - th * 1.2) / (th * 0.95)));
-      glyphs(c, mx + mr + 3, y0 + th * 0.2, tx1 - 4, y1 - th * 0.2, n, 67 + i * 3, (X, Y) => tn(metal ? M.lacq : M.ink, metal ? 0.55 : 0.2, X, Y, 0));
+      // (round 2, W1-2) the rank's numeral at the left (bold for the top three), then the gift as stacks of
+      // coins on a dark inset, more and taller the higher the rank (no names until the first real sponsor)
+      const my = (y0 + y1) / 2;
+      const bold = i < 3, nh = bold ? 9 : 7, nw = bold ? 6 : 5;
+      const ink = (X: number, Y: number): number => (metal ? tn(M.lacq, 0.6, X, Y, 0) : tn(M.ink, 0.1, X, Y, 0));
+      const nx0 = tx0 + (bold ? 5 : 4), ny0 = Math.round(my - nh / 2);
+      text(c, nx0, ny0, String(i + 1), ink, { bold, shadow: metal ? (X, Y) => tn(ramp, 0.02, X, Y, 0) : undefined });
+      const ix0 = nx0 + nw + 4, ix1 = tx1 - 4, iy0 = y0 + 3, iy1 = y1 - 3;
+      rect(c, ix0, iy0, ix1, iy1, (X, Y, lx, ly) => (ly < iy0 + 1 ? tn(M.lacq, 0.85, X, Y, 0) : ly > iy1 - 1 ? tn(ramp, 0.0, X, Y, 0) : mt(M.lacq, face(lf.get(lx, ly).k, side) * 0.45, X, Y, 0.2, 1)));
+      const tallest = Math.max(1, Math.floor((iy1 - iy0 - 2) / 2));
+      const heights = [[7, 6, 7, 5, 6, 4, 5, 3], [4, 5, 3, 4, 3, 2], [4, 3, 4, 2, 3], [3, 2, 3, 2], [2, 3, 1], [2, 1, 2]][i]!;
+      let sx = ix0 + 3;
+      for (const hgt of heights) {
+        if (sx + 6 > ix1 - 2) break;
+        coinStack(c, sx, iy1 - 1, 6, Math.min(tallest, hgt), (X, Y) => tn(M.gold, 0.22, X, Y, 0), (X, Y) => tn(M.gold, 0.62, X, Y, 0), (X, Y) => tn(M.gold, 0.0, X, Y, 0));
+        sx += 8;
+      }
       if (i === 0) {
         // the first one's red tassels
         for (const tx of [tx0 - 1, tx1 + 1]) rect(c, tx - 1, my - 1, tx + 1, my + 12, (X, Y, _lx, ly) => tn(M.verm, ly > my + 7 ? 0.45 : 0.3, X, Y, 0));
@@ -805,11 +976,27 @@ export const map = definePainter<{ w: number; at?: At }>("hall.map", {
       if (e < 3) return mt(M.wood, face(l.k, side, lx < 3 ? -0.6 : lx > W - 3 ? 0.6 : 0, ly < by0 + 3 ? -0.6 : 0.5) * 0.8, X, Y, 0.2, 1);
       return tn(P.jade, clamp(0.78 - l.k * 0.25, 0, 1), X, Y, 0.4);
     });
-    // the map itself
+    // the map itself (round 2, W1-3: Tesu, not a treasure map): Kagami's water on the west with the jetty, the
+    // gate road climbing east to the Ink Palace on its rock with the court on its prow (a "you are here" pin),
+    // Shiraito's falls down the palace's cliff into Hoai Pho's lake, the ranges east as ink ridgelines with
+    // the Peak's needle, the title and a compass
     const mx0 = 7, mx1 = W - 7, my0 = by0 + 6, my1 = by1 - 6;
     const mw = mx1 - mx0, mh = my1 - my0;
     const U = (u: number): number => mx0 + u * mw, V = (v: number): number => my0 + v * mh;
-    const coast = (v: number, lx: number): number => 0.24 + 0.05 * Math.sin(v * 7.5 + 0.6) + 0.04 * (vnoise(v * 9, lx * 0.01, 75) - 0.5) - (v > 0.82 ? (v - 0.82) * 1.2 : 0);
+    const coast = (v: number, lx: number): number => 0.22 + 0.045 * Math.sin(v * 7.5 + 0.6) + 0.035 * (vnoise(v * 9, lx * 0.01, 75) - 0.5) + (v > 0.8 ? (v - 0.8) * 0.5 : 0);
+    // the ranges east: three ridgelines, nearer ones darker; each ridge a run of peaks with a wash under it
+    const ridges: [number, number, number, number][] = [[0.64, 0.97, 0.36, 0.24], [0.66, 0.98, 0.5, 0.17], [0.72, 0.99, 0.62, 0.11]];
+    const ridgeY = (r: number, u: number): number => {
+      const [r0, r1, base, amp] = ridges[r]!;
+      // peaks of uneven heights with full shoulders (a triangle wave bowed outward, a broken crest), falling away
+      // at the range's ends: crags, not tent canopies
+      const t = u * 17 / Math.PI + r * 0.54;
+      const tri = 1 - Math.abs(((t % 1) + 1) % 1 * 2 - 1);
+      const pk = (Math.pow(tri, 0.7) + 0.12 * (vnoise(u * 60, r, 83) - 0.5)) * (0.45 + 0.55 * Math.abs(Math.sin(t * 0.91 + r * 2.1)));
+      const ends = Math.min(1, (u - r0) / 0.05, (r1 - u) / 0.05);
+      return base - amp * pk * Math.max(0, ends);
+    };
+    const cliffU0 = 0.55, cliffU1 = 0.6;
     rect(c, mx0, my0, mx1, my1, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
       const u = (lx - mx0) / mw, v = (ly - my0) / mh;
@@ -817,38 +1004,59 @@ export const map = definePainter<{ w: number; at?: At }>("hall.map", {
       const age = fbm(u * 4, v * 3, 77, 3) - 0.5;
       const vig = Math.max(0, Math.max(Math.abs(u - 0.5) - 0.38, Math.abs(v - 0.5) - 0.34)) * 2.2;
       const cu = coast(v, lx);
-      // the sea: a jade wash, wave ticks, deeper off the coast
+      // the water: a jade wash, wave ticks, deeper off the shore
       if (u < cu) {
-        const shore = cu - u < 0.012;
-        if (shore) return tn(P.jade, 0.62, X, Y, 0);
+        if (cu - u < 0.012) return tn(P.jade, 0.62, X, Y, 0);
         const tick = Math.abs(Math.sin(lx * 0.9 + Math.floor(ly / 4) * 1.7)) > 0.93 && (Math.floor(ly) % 4 === 0);
         return tn(P.jade, clamp(0.12 + (cu - u) * 0.9 + (tick ? 0.18 : 0) + vig - (lit - 0.55) * 0.3, 0, 1), X, Y, 0.4);
       }
-      // the lake (Hoai Pho)
-      const ld = Math.hypot((u - 0.6) / 0.12, (v - 0.78) / 0.13);
-      if (ld < 1) return ld > 0.84 ? tn(P.blue, 0.55, X, Y, 0) : tn(P.blue, clamp(0.12 + ld * 0.12, 0, 1), X, Y, 0.4);
+      // Hoai Pho's lake under the palace's prow
+      const ld = Math.hypot((u - 0.66) / 0.09, (v - 0.8) / 0.12);
+      if (ld < 1) return ld > 0.82 ? tn(P.blue, 0.55, X, Y, 0) : tn(P.blue, clamp(0.1 + ld * 0.14, 0, 1), X, Y, 0.4);
+      // the palace's cliff: a dark ink wash with vertical strokes, from the rock down to the lake
+      if (u > cliffU0 && u < cliffU1 && v > 0.36 && v < 0.74) {
+        const stroke = Math.abs(Math.sin(lx * 1.3)) > 0.86;
+        return tn(M.ink, clamp(0.25 + (stroke ? 0.2 : 0) + (v - 0.36) * 0.4, 0, 1), X, Y, 0.3);
+      }
+      // the ridges, ink-painting style: the nearest range first, so its body hides the ranges behind it; each an
+      // ink line along the crest, a wash darkest under the crest that fades into the paper downhill (mist at the
+      // feet), the east-facing slopes a step darker; the far ranges paler
+      for (let r = ridges.length - 1; r >= 0; r--) {
+        const [r0, r1] = ridges[r]!;
+        if (u < r0 || u > r1) continue;
+        const ry = ridgeY(r, u), dy = v - ry;
+        if (dy < 0) continue;
+        if (dy < 0.022) {
+          const tip = ridgeY(r, u - 0.012) > ry + 0.01 && ridgeY(r, u + 0.012) > ry + 0.01;
+          return tip && r < 2 ? tn(P.snow, 0.1, X, Y, 0) : tn(M.ink, 0.12 + r * 0.22, X, Y, 0);
+        }
+        const depth = 0.17 - r * 0.02, fall = dy / depth;
+        if (fall < 1) {
+          const shadeSide = ridgeY(r, u + 0.01) < ry;
+          // texture strokes down the shade side (the brush's dry hairs), the wash thinning into dither below
+          const hair = shadeSide && Math.abs(Math.sin(lx * 1.7 + ly * 0.35)) > 0.8 && fall < 0.75;
+          if (fall > 0.55 && !keep(X, Y, (1 - fall) / 0.45)) break;
+          return tn(P.range, clamp(0.08 + r * 0.12 + (shadeSide ? 0.22 : 0) + (hair ? 0.14 : 0) - fall * 0.1, 0, 1), X, Y, 0.35);
+        }
+        break; // the body below the wash: paper, and it hides the ranges behind
+      }
       // the land: aged paper, a hint of green low
-      const green = vnoise(u * 5, v * 5, 79) > 0.62 && v > 0.55;
+      const green = vnoise(u * 5, v * 5, 79) > 0.62 && v > 0.62;
       return green ? tn(P.moss, clamp(0.25 + vig, 0, 1), X, Y, 0.4) : mt(M.paper, lit * (1.0 - vig) + age * 0.18, X, Y, 0.0, 0.85);
     });
-    // mountains: little inked peaks in two ranges, the palace's cliff the tallest
-    const peaks: [number, number, number][] = [[0.42, 0.32, 0.09], [0.5, 0.27, 0.12], [0.57, 0.33, 0.08], [0.66, 0.42, 0.07], [0.83, 0.42, 0.1], [0.92, 0.47, 0.08], [0.36, 0.22, 0.07]];
-    for (const [pu, pv, ph] of peaks) {
-      const px = U(pu), py = V(pv), hh = ph * mh * 2.2, hw = hh * 0.85;
-      poly(c, [px - hw, py, px, py - hh, px + hw, py], (X, Y, lx, ly) => {
-        const shade = lx > px ? 0.35 : 0.08;
-        const ridge = Math.abs(lx - px) < 0.7 || ly > py - 1;
-        return ridge ? tn(M.ink, 0.25, X, Y, 0) : tn(P.timber, 0.15 + shade + (ly - py + hh) / hh * 0.1, X, Y, 0.4);
-      });
+    // the Peak: a tall thin needle in the near range
+    {
+      const nx = U(0.86), ny = V(ridgeY(0, 0.86));
+      poly(c, [nx - 2.5, ny + 2, nx - 0.8, ny - 0.14 * mh, nx + 0.8, ny - 0.14 * mh, nx + 2.5, ny + 2], (X, Y, lx) => (lx > nx ? tn(P.range, 0.75, X, Y, 0) : tn(P.range, 0.35, X, Y, 0)));
     }
-    // forest dots
-    for (let i = 0; i < 26; i++) {
-      const fu = 0.3 + hash(i, 1, 81) * 0.6, fv = 0.48 + hash(i, 2, 81) * 0.42;
-      if (Math.hypot((fu - 0.6) / 0.14, (fv - 0.78) / 0.15) < 1 || fu < coast(fv, 0) + 0.03) continue;
+    // forest dots on the low land
+    for (let i = 0; i < 24; i++) {
+      const fu = 0.28 + hash(i, 1, 81) * 0.36, fv = 0.5 + hash(i, 2, 81) * 0.42;
+      if (Math.hypot((fu - 0.66) / 0.11, (fv - 0.8) / 0.14) < 1 || fu < coast(fv, 0) + 0.03 || (fu > cliffU0 - 0.02 && fv < 0.76)) continue;
       const x = U(fu), y = V(fv);
       rect(c, x - 1, y - 1, x + 1, y + 1, (X, Y) => tn(P.moss, 0.55, X, Y, 0));
     }
-    // routes: dashed ink between the places; the gate road in red, dashed, from the jetty to the palace
+    // routes: dashed ink; the gate road in red from the jetty up to the palace
     const path = (pts: [number, number][], col: (X: number, Y: number) => number, dash: number): void => {
       let acc = 0;
       for (let i = 0; i + 1 < pts.length; i++) {
@@ -864,31 +1072,43 @@ export const map = definePainter<{ w: number; at?: At }>("hall.map", {
         }
       }
     };
-    path([[0.62, 0.9], [0.66, 0.72], [0.88, 0.58], [0.82, 0.26]], (X, Y) => tn(M.ink, 0.3, X, Y, 0), 2);
-    path([[0.27, 0.64], [0.38, 0.82], [0.5, 0.8]], (X, Y) => tn(M.ink, 0.3, X, Y, 0), 2);
-    path([[0.27, 0.64], [0.34, 0.6], [0.4, 0.5], [0.5, 0.47], [0.58, 0.4], [0.66, 0.32], [0.74, 0.25]], (X, Y) => tn(P.red, 0.25, X, Y, 0), 3);
-    // the jetty into the sea, Shiraito's falls by the cliff
-    rect(c, U(0.19), V(0.64) - 0.5, U(0.27), V(0.64) + 1, (X, Y) => tn(P.timber, 0.6, X, Y, 0));
-    rect(c, U(0.9) - 0.5, V(0.49), U(0.9) + 1, V(0.6), (X, Y) => tn(P.blue, 0.2, X, Y, 0));
-    // the palace: a small roof mark on its cliff, lit (a warm halo), the court a gold dot at its east end
+    path([[0.66, 0.68], [0.72, 0.62], [0.8, 0.66], [0.9, 0.56]], (X, Y) => tn(M.ink, 0.3, X, Y, 0), 2);
+    path([[0.27, 0.6], [0.33, 0.56], [0.38, 0.47], [0.44, 0.42], [0.49, 0.34]], (X, Y) => tn(P.red, 0.2, X, Y, 0), 3);
+    // the jetty into the water, a boat beside it
+    rect(c, U(0.13), V(0.6) - 0.5, U(0.25), V(0.6) + 1, (X, Y) => tn(P.timber, 0.55, X, Y, 0));
+    for (const pu of [0.15, 0.19, 0.23]) rect(c, U(pu), V(0.6) + 1, U(pu) + 1, V(0.6) + 3, (X, Y) => tn(P.timber, 0.75, X, Y, 0));
+    poly(c, [U(0.13) - 1, V(0.68), U(0.18) + 1, V(0.68), U(0.17), V(0.71), U(0.14), V(0.71)], (X, Y) => tn(P.timber, 0.6, X, Y, 0));
+    // Shiraito's falls: a white thread down the cliff, a little spray at the lake
+    rect(c, U(0.585) - 0.5, V(0.38), U(0.585) + 1, V(0.72), (X, Y, _lx, ly) => tn(P.snow, (Math.floor(ly) % 5 === 0) ? 0.25 : 0.0, X, Y, 0));
+    rect(c, U(0.585) - 2, V(0.72), U(0.585) + 3, V(0.72) + 2, (X, Y) => (keep(X, Y, 0.6) ? P.snow[1]! : 0));
+    // the Ink Palace on its rock: a grey rock under a red-roofed hall, the court a gold disc on its prow, and
+    // the "you are here" pin over the hall (this hall)
     {
-      const px = U(0.77), py = V(0.24);
-      rect(c, px - 9, py - 9, px + 9, py + 7, (X, Y, lx, ly) => {
-        const d = Math.hypot(lx - px, (ly - py) * 1.2) / 9;
-        return d < 1 && d > 0.55 && keep(X, Y, (1 - d) * 0.9) ? P.gold[1]! : 0;
+      const px = U(0.51), py = V(0.33);
+      poly(c, [px - 10, py + 3, px - 6, py - 1, px + 12, py - 1, U(cliffU1) + 1, py + 2, U(cliffU1), V(0.4), px - 7, py + 7], (X, Y, _lx, ly) => tn(P.stone, ly > py + 3 ? 0.65 : 0.45, X, Y, 0));
+      poly(c, [px - 8, py - 1, px - 5, py - 5, px + 7, py - 5, px + 10, py - 1], (X, Y) => tn(P.red, 0.3, X, Y, 0));
+      rect(c, px - 5, py - 1, px + 7, py + 2, (X, Y, lx) => tn(P.red, Math.abs(lx - px - 1) < 1 ? 0.55 : 0.15, X, Y, 0));
+      const cx = U(0.605), cy = V(0.37);
+      rect(c, cx - 3, cy - 2, cx + 3, cy + 2, (X, Y, lx, ly) => (Math.hypot((lx - cx) / 3, (ly - cy) / 2) < 1 ? tn(M.gold, Math.hypot(lx - cx, ly - cy) < 1.5 ? 0.0 : 0.3, X, Y, 0) : 0));
+      // the pin: a red head with a white eye, its point on the hall
+      const hx = px + 1, hy = py - 13;
+      rect(c, hx - 4, hy - 4, hx + 4, py - 5, (X, Y, lx, ly) => {
+        const d = Math.hypot(lx - hx, ly - hy);
+        if (d < 1.6) return tn(P.snow, 0.0, X, Y, 0);
+        if (d < 3.8) return tn(P.red, lx < hx && ly < hy ? 0.05 : 0.3, X, Y, 0);
+        const t = (ly - hy) / (py - 5 - hy);
+        return ly > hy && Math.abs(lx - hx) < 3.2 * (1 - t) ? tn(P.red, 0.45, X, Y, 0) : 0;
       });
-      poly(c, [px - 6, py - 1, px - 3, py - 4, px + 3, py - 4, px + 6, py - 1], (X, Y) => tn(P.red, 0.3, X, Y, 0));
-      rect(c, px - 3, py - 1, px + 3, py + 3, (X, Y, lx) => tn(P.red, Math.abs(lx - px) < 1 ? 0.55 : 0.15, X, Y, 0));
-      rect(c, U(0.86) - 1.5, V(0.25) - 1.5, U(0.86) + 1.5, V(0.25) + 1.5, (X, Y) => tn(M.gold, 0.05, X, Y, 0));
     }
-    // the title cartouche on the sea, a compass rose in the corner
+    // the title cartouche on the water ("TESU" in ink on paper, a red border), a compass rose in the corner
     {
-      const tx0 = U(0.03), tx1 = U(0.2), ty0 = V(0.06), ty1 = V(0.2);
+      const tw = textWidth("TESU");
+      const tx0 = U(0.03), ty0 = V(0.07), tx1 = tx0 + tw + 6, ty1 = ty0 + 11;
       rect(c, tx0, ty0, tx1, ty1, (X, Y, lx, ly) => {
         const e = Math.min(lx - tx0, tx1 - lx, ly - ty0, ty1 - ly);
         return e < 1 ? tn(P.red, 0.35, X, Y, 0) : mt(M.paper, 0.95, X, Y, 0.0, 0.8);
       });
-      glyphs(c, tx0 + 2, ty0 + 2, tx1 - 2, ty1 - 2, 2, 83, (X, Y) => tn(M.ink, 0.1, X, Y, 0));
+      text(c, tx0 + 3, ty0 + 2, "TESU", (X, Y) => tn(M.ink, 0.05, X, Y, 0));
       const cx = U(0.93), cyy = V(0.86), cr = 6;
       rect(c, cx - cr, cyy - cr, cx + cr, cyy + cr, (X, Y, lx, ly) => {
         const dx = lx - cx, dy = ly - cyy;
@@ -927,10 +1147,10 @@ export const nook = definePainter<NookP>("hall.nook", {
       const band = Math.floor((lx - r0) / 7) % 3;
       return tn(band === 0 ? P.red : band === 1 ? P.blue : P.gold, ly < -2 ? 0.35 : 0.6, X, Y, 0.3);
     });
-    // books stacked on the floor at the bench's left end
+    // books stacked on the floor under the side table (round 2: the lamp stands at the bench's left end now)
     {
-      const sx = b0 - 0.27 * H;
-      const books: [number, number, Ramp][] = [[22, 6, P.blue], [19, 5, M.verm], [20, 5, P.moss], [16, 4, M.paper]];
+      const sx = (t0 + t1) / 2;
+      const books: [number, number, Ramp][] = [[22, 5, P.blue], [18, 4, M.verm]];
       let y = -3;
       books.forEach(([w, th, ramp], i) => {
         const x0 = sx + (i % 2) * 2 - w / 2;
@@ -1009,7 +1229,15 @@ export const artScreen = definePainter<{ w: number; h: number; leaves: number; a
       const l = lf.get(lx, ly);
       const k = ((lx % lw) + lw) % lw;
       if (k < 1.5 || k > lw - 1.5) return mt(M.lacq, face(l.k, side) * 0.45, X, Y, 0.2, 1);
-      const e = Math.min(k - 1.5, lw - 1.5 - k, ly + Ht - 7, -skirt - ly);
+      // (round 2) the art hangs high now: each leaf's lower part is a cracked-ice lattice panel under a gold rail
+      const dado = -skirt - Math.min(0.85 * H, Ht * 0.32);
+      if (ly > dado) {
+        if (ly < dado + 2) return mt(M.gold, face(l.k, side, 0, ly < dado + 1 ? -0.8 : 0.4) * 0.75, X, Y, 0.2, 1);
+        const ice = iceEdge(lx, ly, 13, 107);
+        if (ice < 1.1) return mt(M.wood, face(l.k, side) * 0.55, X, Y, 0.3, 1);
+        return mt(M.lacq, face(l.k, side) * 0.22, X, Y, 0.3, 1);
+      }
+      const e = Math.min(k - 1.5, lw - 1.5 - k, ly + Ht - 7, dado - ly);
       if (Math.abs(e - 4) < 0.6) return mt(M.gold, face(l.k, side) * 0.55, X, Y, 0.3, 1);
       const weave = vnoise(lx * 0.4, ly * 0.08, 95) * 0.06;
       return mt(M.verm, face(l.k, side) * 0.42 + weave, X, Y, 0.35, 1);

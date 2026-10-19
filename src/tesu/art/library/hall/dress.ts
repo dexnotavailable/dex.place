@@ -111,13 +111,28 @@ export function dressHall(b: WorldBuilder): void {
 
   // --- the Long Gallery: its beam on posts, the balustrade (no pillar through it any more: the map
   // stands on its own stand now)
-  b.piece("play", "hall.gallery", GX0, GY, { w: GX1 - GX0 + h(0.6), depth: D, posts: postsO.map((o) => X(o) - GX0), drop: FY - GY, pillar: [-h(50), 0], at: at(GX0, GY) }, { z: 2 });
-  b.piece("front", "hall.balustrade", GX0 + h(0.2), GY, { w: GX1 - GX0 - h(0.4), h: Math.round(0.64 * H), at: at(GX0 + h(0.2), GY) }, { z: 1 });
+  // (round 2) the beam ends over the bay's east post (it carries nothing past it: the stair comes down there)
+  b.piece("play", "hall.gallery", GX0, GY, { w: X(23.8) - GX0, depth: D, posts: postsO.map((o) => X(o) - GX0), drop: FY - GY, pillar: [-h(50), 0], at: at(GX0, GY) }, { z: 2 });
+  // (round 2) the balustrade stops at the stair's head newel
+  const sx0 = st.pts[0]!, sy0 = st.pts[1]!;
+  b.piece("front", "hall.balustrade", GX0 + h(0.2), GY, { w: sx0 - h(0.12) - (GX0 + h(0.2)), h: Math.round(0.64 * H), at: at(GX0 + h(0.2), GY) }, { z: 1 });
 
-  // --- the stair and its near rail
-  const [sx0, sy0, sx1, sy1] = st.pts as [number, number, number, number];
-  b.piece("play", "hall.stair", sx0, sy0, { dx: sx1 - sx0, dy: sy1 - sy0 + h(0.1), depth: 44, at: at(sx0, sy0) }, { z: 2 });
-  b.piece("front", "hall.stair", sx0, sy0, { dx: sx1 - sx0, dy: sy1 - sy0 + h(0.1), depth: 44, rail: true, at: at(sx0, sy0) }, { z: 2 });
+  // --- the stair (round 2, W1-1): two flights and a landing on posts read from the walk; under it the bay's post
+  // and a stair post with knee braces, stepped shelves over the docs shelf, the nook under the landing, a
+  // cupboard and crates in the low end; the handrail and balusters on the front plane
+  const ds0 = sv("docs-shelf");
+  const stairP = {
+    pts: st.pts.map((v, i) => (i % 2 === 0 ? v - sx0 : v - sy0)),
+    floor: FY - sy0,
+    wall0: X(23.6) + h(0.19) - sx0,
+    posts: [X(24.22) - sx0],
+    shelf: [ds0.x0 - sx0, ds0.x0 + h(1.75) - sx0, h(1.9)] as [number, number, number],
+    cupboard: [X(28.3) - sx0, X(29.55) - sx0] as [number, number],
+    crates: [X(29.65) - sx0, X(30.6) - sx0] as [number, number],
+    at: at(sx0, sy0),
+  };
+  b.piece("play", "hall.stair", sx0, sy0, stairP, { z: 2 });
+  b.piece("front", "hall.stair", sx0, sy0, { ...stairP, rail: true }, { z: 2 });
 
   // --- the services, each standing on the walk line where the builder put it
   const nw = sv("notice-wall");
@@ -125,8 +140,10 @@ export function dressHall(b: WorldBuilder): void {
   const pa = sv("patrons");
   b.piece("play", "hall.ranking", pa.x0, FY, { w: pa.x1 - pa.x0, h: FY - pa.y0, at: at(pa.x0, FY) }, { z: 4 });
   const ob = sv("offering-box");
-  const boxX0 = ob.x0 + h(0.15), boxW = Math.round(0.55 * H);
-  b.piece("play", "hall.donation", boxX0, FY, { w: boxW, h: Math.round(0.56 * H), main: true, at: at(boxX0, FY) }, { z: 6 });
+  // (round 2, W1-4) an offering chest wider than tall on a stone plinth, its top at 0.53 H (0.6 of her height),
+  // under a small frame with a hanging sign and its own lamp on a bracket (services.ts offeringStage)
+  const boxX0 = ob.x0 - h(0.02), boxW = Math.round(0.84 * H);
+  b.piece("play", "hall.donation", boxX0, FY, { w: boxW, h: Math.round(0.53 * H), main: true, at: at(boxX0, FY) }, { z: 6 });
   const hk = sv("hanko-desk");
   const hanko = b.def.sprites.find((s) => s.id === "hanko");
   const deskTop = hanko ? FY - hanko.y + 4 : Math.round(0.57 * H);
@@ -136,9 +153,10 @@ export function dressHall(b: WorldBuilder): void {
   // the reading nook: the docs shelf (no taller than 2 H), the standing lamp, the bench and the table
   const ds = sv("docs-shelf");
   b.piece("play", "hall.shelf", ds.x0, FY, { w: h(1.75), h: h(1.9), at: at(ds.x0, FY) }, { z: 3 });
-  b.piece("play", "hall.lamp", ds.x0 + h(1.92), FY, { w: Math.round(0.26 * H), h: Math.round(1.3 * H), at: at(ds.x0 + h(1.92), FY) }, { z: 5 });
-  const nookX = ds.x0 + h(2.12);
-  b.piece("play", "hall.nook", nookX, FY, { bench: [0, h(0.8)], table: [h(0.88), h(1.33)], at: at(nookX, FY) }, { z: 4 });
+  // (round 2) the lamp, the bench and the table between the landing's two posts (26.18 and 27.31 H)
+  b.piece("play", "hall.lamp", ds.x0 + h(2.05), FY, { w: Math.round(0.26 * H), h: Math.round(1.3 * H), at: at(ds.x0 + h(2.05), FY) }, { z: 5 });
+  const nookX = ds.x0 + h(2.21);
+  b.piece("play", "hall.nook", nookX, FY, { bench: [0, h(0.64)], table: [h(0.89), h(1.34)], at: at(nookX, FY) }, { z: 4 });
   const cd = sv("crane-desk");
   b.piece("play", "hall.cranedesk", cd.x0, FY, { w: cd.x1 - cd.x0, h: Math.round(0.6 * H), at: at(cd.x0, FY) }, { z: 5 });
   // the art: on the display screens upstairs, on the stair's spandrel in the nook
@@ -306,7 +324,8 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number; ring?: [number, 
 
   // --- Bao's gong tower and the gong (a sprite the bout drives: gongFrame in index.ts)
   const gongY = h(1.45), gr = Math.round(0.72 * H);
-  b.piece("play", "court.gongtower", o.gongX, Y, { h: h(13), half: h(1.05), gongY }, { z: 3 });
+  // (round 2, W1-7) a shorter tower with a crown: whole in court-arrive and court-bout (its finial ~7.2 H up)
+  b.piece("play", "court.gongtower", o.gongX, Y, { h: h(6.3), half: h(1.05), gongY, crown: true, storey: 1.55 }, { z: 3 });
   const beamUnder = Y - gongY - h(1.32);
   b.sprite({ id: "gong", plane: "play", kind: "court.gong", x: o.gongX, y: beamUnder, p: { r: gr, cord: (Y - gongY - gr) - beamUnder }, frames: 12, frame: 0, reflect: false });
 
@@ -387,15 +406,16 @@ function courtCasters(b: WorldBuilder, CX0: number, Y: number, o: { gongX: numbe
   // the Prize Board: legs, the board, its roof, the banner on its poles
   const pb = usable(b, "prize-board");
   const bx = (pb.x0 + pb.x1) / 2;
-  box(bx - h(1.0), bx - h(0.89), 0, h(1.97));
-  box(bx + h(0.9), bx + h(1.01), 0, h(1.97));
-  box(bx - h(1.0), bx + h(1.01), h(0.24), h(0.28));
-  box(bx - h(1.1), bx + h(1.1), h(0.72), h(2.17));
-  box(bx - h(1.4), bx + h(1.4), h(2.17), h(2.36));
-  box(bx - h(1.2), bx + h(1.2), h(2.36), h(2.58));
-  rod(bx - h(1.12), 8, 0, h(4.6));
-  rod(bx + h(1.06), 8, 0, h(4.6));
-  box(bx - h(0.95), bx + h(0.95), h(2.55), h(4.45));
+  // (round 2, W1-8) the bigger board under its header and the smaller banner
+  box(bx - h(1.1), bx - h(0.99), 0, h(2.04));
+  box(bx + h(1.0), bx + h(1.11), 0, h(2.04));
+  box(bx - h(1.1), bx + h(1.11), h(0.24), h(0.28));
+  box(bx - h(1.2), bx + h(1.2), h(0.62), h(2.24));
+  box(bx - h(1.32), bx + h(1.32), h(2.24), h(2.6));
+  box(bx - h(1.57), bx + h(1.57), h(2.6), h(3.02));
+  rod(bx - h(0.98), 8, 0, h(4.12));
+  rod(bx + h(0.92), 8, 0, h(4.12));
+  box(bx - h(0.76), bx + h(0.76), h(3.1), h(3.97));
   // Bao's gong tower: posts on stone bases, the beam and the brace, the gong on its cords, the tower
   const gx = o.gongX, half = h(1.05), r = Math.round(0.17 * H), gy = h(1.45);
   for (const s of [-1, 1]) {
@@ -406,7 +426,9 @@ function courtCasters(b: WorldBuilder, CX0: number, Y: number, o: { gongX: numbe
   }
   box(gx - half - h(0.3), gx + half + h(0.3), gy + h(1.32), gy + h(1.58));
   box(gx - half - h(0.3), gx + half + h(0.3), h(0.95), h(1.09));
-  box(gx - half * 0.62, gx + half * 0.62, gy + h(1.58), h(13));
+  box(gx - half * 0.62, gx + half * 0.62, gy + h(1.58), h(6.3));
+  box(gx - half * 0.62 - h(0.6), gx + half * 0.62 + h(0.6), h(6.24), h(6.5));
+  box(gx - h(0.3), gx + h(0.3), h(6.5), h(6.85));
   cs.push({ disc: [gx - CX0, gy, Math.round(0.72 * H)] });
   // the stone lantern pillars and the newels at the stair's mouth
   for (const x of [o.mid - h(1.7), o.well1 + h(0.9)]) {

@@ -6,6 +6,7 @@ import { painter, ctxFor } from "../../painter.ts";
 import { IdxBuf } from "../../raster.ts";
 import { HALL_MANIFEST, gongFrame } from "./index.ts";
 import { existsSync } from "node:fs";
+import { PHYSICS } from "../../../config.ts";
 import { fileURLToPath } from "node:url";
 
 test("every manifest asset is a registered painter and is placed in the world", () => {
@@ -107,4 +108,23 @@ test("the court's ring is drawn side-on (no seal on the floor) and the bout fram
   const bout = w.tracks.find((t) => t.id === "bout");
   const mid = ring.x + ring.p.w / 2;
   assert.ok(Math.abs(bout.keys[0].fixX - mid) < 2, `the bout holds on the ring's middle (${bout.keys[0].fixX} vs ${mid})`);
+});
+
+test("the hall's stair (round 2): two flights and a level landing, each flight walkable; the dressed stair follows the walk", () => {
+  const w = buildWorld();
+  const st = w.walks.find((x) => x.name === "hall-stair");
+  assert.ok(st && st.pts.length === 8, "head, landing's two ends, foot");
+  const p = st.pts;
+  assert.equal(p[3], p[5], "the landing is level");
+  for (let i = 0; i + 3 < p.length; i += 2) {
+    const slope = Math.abs(p[i + 3] - p[i + 1]) / (p[i + 2] - p[i]);
+    assert.ok(slope <= PHYSICS.maxSlope, `segment ${i / 2}: slope ${slope.toFixed(3)} > ${PHYSICS.maxSlope}`);
+  }
+  const piece = w.pieces.find((x) => x.kind === "hall.stair" && !x.p.rail);
+  assert.ok(piece, "the stair is dressed");
+  assert.deepEqual(piece.p.pts.map((v, i) => v + (i % 2 === 0 ? piece.x : piece.y)), p, "the dressed stair is the walk");
+  // the reading nook's bench stands under the landing, clear of its two posts
+  const nook = w.pieces.find((x) => x.kind === "hall.nook");
+  const b0 = nook.x + nook.p.bench[0], b1 = nook.x + nook.p.bench[1];
+  assert.ok(b0 > p[2] + 14 && b1 < p[4] - 14, `bench ${b0}-${b1} under the landing ${p[2]}-${p[4]}`);
 });
