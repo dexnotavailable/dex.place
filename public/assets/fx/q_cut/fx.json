@@ -1,0 +1,54 @@
+{
+ "id": "q_cut",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  219,
+  936
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3
+  },
+  {
+   "file": "f006.png",
+   "ticks": 3
+  }
+ ],
+ "loop": false,
+ "with": [
+  "q_shock",
+  "q_gash",
+  "q_debris",
+  "q_ignite",
+  "q_boom_1",
+  "q_boom_2",
+  "q_boom_3",
+  "q_fire"
+ ],
+ "notes": "Q (round 2): the one cut. d0 impact frame (a torn black field round the line, the crescent white, the razor line), then a real arc crescent (both edges bow up; 240 px fat near her blade, a hairline 3150 px out) that flies off through the trails' death stages. Pivot = her soles at the cast; facing right. Parts: q_shock, q_gash, q_debris, q_ignite, q_boom_1, q_boom_2, q_boom_3, q_fire"
+}
