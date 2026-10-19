@@ -333,6 +333,16 @@ test("\"dex\" writes itself on a quiet thread: the world, the windows and the op
   delete globalThis.document;
 });
 
+test("mid-game on the website: the opening's words hide with its bars (no caption over the page; Dex 10-16)", () => {
+  // the page hides the opening's layer while the website covers the game screen (column.css html.gs-away .op); a
+  // shown caption must inherit that, never force itself visible
+  const col = readFileSync(new URL("./styles/column.css", import.meta.url), "utf8");
+  assert.match(col, /html\.gs-away \.op \{ visibility: hidden; \}/);
+  const ov = readFileSync(new URL("../tesu/opening/overlay.ts", import.meta.url), "utf8");
+  assert.match(ov, /\.op-cap\.on \{ visibility: inherit; \}/);
+  assert.doesNotMatch(ov, /visibility: visible/);
+});
+
 test("the \"dex\" screen is black to its bottom edge: no band where the white page meets it (Dex 10-19)", () => {
   // "there's a white fade at the bottom which imo looks bad": the white page's top edge is clean, below the fold
   const v2 = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
