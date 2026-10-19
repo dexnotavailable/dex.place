@@ -39,7 +39,7 @@ import { Opening } from "./opening.ts";
 import { SilentLink, type OpeningLink } from "./opening/conductor.ts";
 import { WorldPaper, type PaperPose } from "./opening/paper.ts";
 import { BEATS, CLIP_END, HANDOFF_T, keysAt, paperAirAt, paperBlendAt, paperScreenAt, startT } from "./opening/timeline.ts";
-import { Veils, fallVeils } from "./opening/sky.ts";
+import { Veils, fallAir, fallHaze } from "./opening/sky.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
 import { eyeY, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
@@ -1675,6 +1675,8 @@ export class TesuGame {
         r.flush();
         waterTo(Hf);
       }
+      // (fall loop r1) the fall's haze at its depth: the bank behind the far karsts, the ribbon, the air under the deck
+      if (this.opening.active && this.opening.T < BEATS.her.walkFrom) this.veils.haze(W, Hf, fallHaze(this.opening.T, this.opening.way, this.feel.reducedMotion, id, cam, water ? water.y : null), sunPx);
       if (id === "near" && z > 1.6) continue;
       // (round 6, the integration) the near plane is not drawn in the close band; coming into the
       // pull-back it dissolves in over zoom 1.6 to 1.45 instead of popping in whole in one frame (the
@@ -1704,7 +1706,13 @@ export class TesuGame {
       }
     }
     // the opening's fall: fog layers in front of the camera, sweeping up past it as it comes down (opening/sky.ts)
-    if (this.opening.active && this.opening.T < BEATS.her.walkFrom) this.veils.draw(W, Hf, fallVeils(this.opening.T, W, Hf, this.opening.way, this.feel.reducedMotion));
+    // (fall loop r1) the pass reads the frame under it (the paper's point keeps a hole of sky round it; the sun lights it)
+    if (this.opening.active && this.opening.T < BEATS.her.walkFrom) {
+      r.flush();
+      const pp = this.paperPose, pxf = planeXf(cam, 1);
+      const paper: [number, number] | null = pp ? [((pp.pts[0]![0] + pp.pts[11]![0]) / 2) * pxf.s + pxf.offX, ((pp.pts[0]![1] + pp.pts[11]![1]) / 2) * pxf.s + pxf.offY] : null;
+      this.veils.draw(r.main, W, Hf, fallAir(this.opening.T, W, Hf, this.opening.way, this.feel.reducedMotion, paper, sunPx));
+    }
     this.drawPrompt(cam);
     this.drawHint(cam);
     this.titles.draw(W, Hf);
