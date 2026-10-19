@@ -295,6 +295,8 @@ export class TesuGame {
       celebrate: (p) => this.onCelebrate(p),
     });
     this.feel.onSound = (id, v) => this.sound.sfx(id, v);
+    // R plays the FX loop's effects when they are in (zhusha/ult.ts; its stand-ins draw until then)
+    this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o) };
     this.props = new Props({
       player: this.player, vfx: this.vfx, feel: this.feel, camera: this.camera,
       ground: (x, y) => this.collision.groundBelow(x, y)?.y ?? null,
@@ -578,8 +580,16 @@ export class TesuGame {
     const cuts = this.camera.cuts;
     // the opening's camera is time-locked to the music; then the world's tracks have the frame again
     const shot = this.opening.camera(b.x);
+    const cine = shot ? null : this.player.r.shot;
     if (shot) this.camera.set(shot, b.x, b.y);
-    else this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
+    else if (cine) {
+      // R's shots (zhusha/ult.ts): placed exactly each tick (its own cuts and moves), shake and punch still run
+      const cf = { ...f, zoom: cine.zoom, anchor: cine.anchor, lead: 0, fixX: cine.x, fixY: cine.y, pin: null };
+      this.camera.snap(cine.x, cine.y, cf, this.player.facing);
+      this.camera.update(cine.x, cine.y, this.player.facing, 0, cf);
+      // reduced motion: its cuts cross-fade like the camera's own
+      if (cine.cut && this.feel.reducedMotion) this.cutFade = 1;
+    } else this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
     this.ofudaTick();
     // reduced motion: a cut between held frames is a short dithered cross-fade, not a swing
     if (this.camera.cuts !== cuts && this.tick > 2) this.cutFade = 1;
@@ -592,7 +602,7 @@ export class TesuGame {
     }
     this.syncGates();
     this.doorTick();
-    this.near = this.cut || this.tug || this.rides.active || this.warp || this.opening.state === "cine" || this.holding ? null : this.findNear();
+    this.near = this.cut || this.tug || this.rides.active || this.warp || this.opening.state === "cine" || this.holding || this.player.r.active ? null : this.findNear();
     this.placeNames();
     this.motes.update(1 / 60);
     this.scoreTick();
@@ -1659,7 +1669,7 @@ export class TesuGame {
       view: 1,
       focus: [W / 2, cam.anchor * Hf],
       fade: [0.106, 0.098, 0.133, this.loading && this.tick < 2 ? 1 : Math.max(this.fade, this.cutFade * 0.85, this.fadeCut)],
-      bars: 0,
+      bars: this.player.r.bars,
       overlay: false,
       layers: this.screen.take(),
     });
