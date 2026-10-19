@@ -1,0 +1,108 @@
+{
+ "id": "uf_jump_arc",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  75,
+  163
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 11
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 12
+  },
+  {
+   "file": "f002.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 16
+  },
+  {
+   "file": "f003.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 19
+  },
+  {
+   "file": "f004.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 22
+  },
+  {
+   "file": "f005.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 25
+  },
+  {
+   "file": "f006.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 27
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 29
+  },
+  {
+   "file": "f008.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 31
+  },
+  {
+   "file": "f009.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 34
+  },
+  {
+   "file": "f010.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 37
+  },
+  {
+   "file": "f011.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 40
+  },
+  {
+   "file": "f012.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 43
+  },
+  {
+   "file": "f013.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 46
+  },
+  {
+   "file": "f014.png",
+   "ticks": 6,
+   "fig": 128,
+   "src": 52
+  }
+ ],
+ "loop": false,
+ "source": "h3-L-uf_jump_arc-D-s3003-d9a21e",
+ "notes": "kit v1.6 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f001: the effect cut by the frame edge continued as a soft falloff (40 px); f002: set +41 px so her lowest shoe is on the ground row (in the air: the game's arc lifts her); 1926 px of the take-off ring left on the floor below her dropped; f003: set +48 px so her lowest shoe is on the ground row (in the air: the game's arc lifts her); 98 px of the take-off ring left on the floor below her dropped; f004: set +43 px so her lowest shoe is on the ground row (in the air: the game's arc lifts her); 7 px of the take-off ring left on the floor below her dropped; f005: set +26 px so her lowest shoe is on the ground row (in the air: the game's arc lifts her); f006: set -8 px so her lowest shoe is on the ground row (in the air: the game's arc lifts her); f007: set -8 px so her lowest shoe is on the ground row (the landing, H3's camera still tilted); f008: the effect cut by the frame edge continued as a soft falloff (40 px), carried 2 px up (the hang: the last full drawing held along her trajectory); f009: the effect cut by the frame edge continued as a soft falloff (40 px); f010: the effect cut by the frame edge continued as a soft falloff (30 px)",
+ "segments": [
+  4,
+  7
+ ]
+}
