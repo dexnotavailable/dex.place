@@ -146,7 +146,8 @@ export function donatePage(): string {
   return (
     `<div class="page page--donate">` +
     `<div class="wrap">` +
-    pageHead({ kicker: "donate", title: "Donate", tone: "magenta", icon: "heart", aside: "Ko-fi · MB Bank" }) +
+    // the one fact a donor needs before giving (content/docs/about-dex-place.md, "Donating")
+    pageHead({ kicker: "donate", title: "Donate", tone: "magenta", icon: "heart", aside: "Ko-fi · MB Bank", lead: "Donating never unlocks anything: every file and every part of the world is the same whether you donate or not." }) +
     donateBody(2) +
     `</div></div>`
   );
