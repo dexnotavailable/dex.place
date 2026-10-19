@@ -4,8 +4,8 @@
 // scroll-spy and anchor copying.
 
 import { DOC_GROUPS, OTHER_GROUP, docGroup, type DocGroup } from "../data/docs.ts";
-import { floats } from "./floats.ts";
-import { button, icon, pageHead, placeholderTag, sectionHead, strip, tile } from "./glyphs.ts";
+import { DEEP_PLACES, deepBand, deepHead } from "./deep.ts";
+import { button, hanko, icon, pageHead, placeholderTag, sectionHead, tile } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import { nsfwTag } from "./nsfw.ts";
 import type { Entry, SiteContent } from "./types.ts";
@@ -90,7 +90,6 @@ function docGroups(content: SiteContent, level: 2 | 3 | 4): string {
 export function docsIndex(content: SiteContent): string {
   return (
     `<div class="page page--docs">` +
-    floats("docs", { tone: "cyan", count: 3, glyph: "sparkle" }) +
     `<div class="wrap">` +
     pageHead({ kicker: "documentation", title: "Docs", tone: "cyan", icon: "book", aside: plural(content.docs.length, "page", "pages") }) +
     docGroups(content, 2) +
@@ -147,7 +146,6 @@ export function blogIndex(content: SiteContent): string {
     : `<p class="empty">Nothing here yet.</p>`;
   return (
     `<div class="page page--blog">` +
-    floats("blog", { tone: "cyan", count: 2, span: 0.35, glyph: "star" }) +
     `<div class="wrap">` +
     pageHead({ kicker: "blog", title: "Blog", tone: "cyan", icon: "page", aside: plural(posts.length, "post", "posts") }) +
     `<div class="btools"><p class="btools__order">Newest first</p>` +
@@ -187,7 +185,6 @@ export function docsSection(content: SiteContent): string {
   const more = posts.length - latest.length;
   return (
     `<section class="sec sec--docs" id="docs" aria-labelledby="docs-title">` +
-    floats("home-docs", { tone: "cyan", count: 2, glyph: "star" }) +
     `<div class="wrap">` +
     sectionHead({ id: "docs-title", kicker: "docs · blog", title: "Docs & blog", tone: "cyan", icon: "book", more: { href: "/docs/", label: "Docs page" } }) +
     `<div class="dpart">` +
@@ -250,20 +247,25 @@ export function docPage(content: SiteContent, e: Entry): string {
   const group = docGroup(e.group);
   const toc = tocList(e);
   const side = docSidebar(content, e);
+  const tags = (e.nsfw ? nsfwTag() : "") + (e.placeholder ? placeholderTag() : "");
   return (
     readbar() +
     `<div class="page page--doc">` +
     `<div class="wrap wrap--doc">` +
-    `<nav class="crumbs" aria-label="Breadcrumb"><a href="/docs/">Docs</a><span aria-hidden="true">/</span>` +
-    `<span>${esc(group.label)}</span><span aria-hidden="true">/</span><span aria-current="page">${esc(e.title)}</span></nav>` +
+    // the head (render/deep.ts): the way back as the kicker, the title, its line, a window onto Kagami's lake
+    deepHead({
+      tone: group.tone,
+      icon: group.icon,
+      crumbs: [{ label: "Docs", href: "/docs/" }, { label: group.label, href: `/docs/#g-${group.id}` }],
+      aside: `${e.minutes} min read`,
+      title: esc(e.title),
+      ...(tags ? { before: `<p class="dh__tags">${tags}</p>` } : {}),
+      ...(e.summary ? { sum: e.summary } : {}),
+      place: DEEP_PLACES.doc,
+    }) +
     `<div class="${cx("doc", toc && "doc--toc")}">` +
     `<nav class="dside" aria-label="All docs"><a class="dside__all" href="/docs/">${icon("book", 2)}<span>All docs</span></a>${side}</nav>` +
-    `<article class="doc__main">` +
-    `<header class="ahead ahead--doc ahead--${group.tone}" data-reveal>` +
-    `<p class="ahead__kicker">${tile(group.icon, group.tone, "s")}<span>${esc(group.label)}</span>${e.nsfw ? nsfwTag() : ""}${e.placeholder ? placeholderTag() : ""}</p>` +
-    `<h1 class="ahead__title">${esc(e.title)}</h1>` +
-    (e.summary ? `<p class="ahead__sum">${esc(e.summary)}</p>` : "") +
-    `</header>` +
+    `<article class="doc__main" aria-labelledby="page-title">` +
     // Narrow screens: both navigators fold into disclosures above the text.
     `<div class="jumps">` +
     `<details class="jump jump--docs"><summary class="jump__sum pop">${icon("book", 2)}<span>All docs</span>${icon("arrow-down", 2, "jump__chev")}</summary>` +
@@ -288,24 +290,34 @@ export function postPage(content: SiteContent, e: Entry): string {
   // Newest first, so the previous item in the list is the newer post.
   const newer = list[at - 1];
   const older = list[at + 1];
+  const tags = (e.nsfw ? nsfwTag() : "") + (e.placeholder ? placeholderTag() : "");
   return (
     readbar() +
     `<div class="page page--post">` +
-    floats(`post-${e.slug}`, { tone: "cyan", count: 2, span: 0.4, glyph: "sparkle" }) +
     `<div class="wrap">` +
-    `<nav class="crumbs crumbs--post" aria-label="Breadcrumb"><a href="/blog/">Blog</a><span aria-hidden="true">/</span><span aria-current="page">${esc(e.title)}</span></nav>` +
-    `<article class="post">` +
-    `<header class="ahead ahead--post ahead--cyan" data-reveal>` +
-    `<div class="ahead__row">${e.date ? dateBlock(e) : ""}` +
-    `<p class="ahead__facts">${e.nsfw ? nsfwTag() : ""}${e.placeholder ? placeholderTag() : ""}<span class="when">${dateText(e)}<span aria-hidden="true"> · </span><span>${e.minutes} min read</span></span></p></div>` +
-    `<h1 class="ahead__title">${esc(e.title)}</h1>` +
-    (e.summary ? `<p class="ahead__sum">${esc(e.summary)}</p>` : "") +
-    `</header>` +
-    `<div class="prose">${e.html}</div>` +
-    `<div class="post__end" aria-hidden="true">${icon("sparkle", 3)}${strip("post__strip")}</div>` +
-    `</article>` +
-    `<nav class="apager apager--post" aria-label="More posts">${pagerLink(newer, "prev", "Newer")}${pagerLink(older, "next", "Older")}</nav>` +
-    `<p class="post__back">${button({ href: "/blog/", label: "All posts", icon: "arrow-left", iconFirst: true, size: "m" })}</p>` +
+    // the post beside a window onto the pine at dusk (render/deep.ts): the way back as the kicker, the date, the
+    // title, its line, the text, the way on
+    deepBand(
+      deepHead({
+        tone: "cyan",
+        icon: "page",
+        crumbs: [{ label: "Blog", href: "/blog/" }],
+        aside: `${e.minutes} min read`,
+        title: esc(e.title),
+        before: `<div class="dh__date">${e.date ? dateBlock(e) : ""}<p class="dh__facts">${tags}<span class="when">${dateText(e)}</span></p></div>`,
+        ...(e.summary ? { sum: e.summary } : {}),
+        place: DEEP_PLACES.post,
+        noWindow: true,
+      }) +
+      `<article class="post" aria-labelledby="page-title">` +
+      `<div class="prose">${e.html}</div>` +
+      // the end of a post: Hanko signs it off (one mascot to a page)
+      `<div class="post__end" aria-hidden="true"><span class="post__rule"></span>${icon("sparkle", 3, "post__fin")}<span class="post__rule"></span>${hanko()}</div>` +
+      `</article>` +
+      `<nav class="apager apager--post" aria-label="More posts">${pagerLink(newer, "prev", "Newer")}${pagerLink(older, "next", "Older")}</nav>` +
+      `<p class="post__back">${button({ href: "/blog/", label: "All posts", icon: "arrow-left", iconFirst: true, size: "m" })}</p>`,
+      DEEP_PLACES.post,
+    ) +
     `</div></div>`
   );
 }

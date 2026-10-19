@@ -10,7 +10,6 @@ import { KOFI_URL } from "../data/nav.ts";
 import { QR_TAG_NONE, QUICK_PICKS, STOPS, TICKS, donateQr, fineText, formatVnd, shortVnd, trackPos } from "../donate.ts";
 import { pathsMarkup, type PixelGrid } from "../pixels.ts";
 import { MB_BANK, TRANSFER_NOTE } from "../vietqr.ts";
-import { floats } from "./floats.ts";
 import { copyButton, hanko, icon, pageHead, sectionHead, tile } from "./glyphs.ts";
 import { esc } from "./html.ts";
 
@@ -136,7 +135,6 @@ export function donateBody(level: Level): string {
 export function donateSection(): string {
   return (
     `<section class="sec sec--donate" id="donate" aria-labelledby="donate-title">` +
-    floats("home-donate", { tone: "magenta", count: 2, glyph: "heart" }) +
     `<div class="wrap">` +
     sectionHead({ id: "donate-title", kicker: "donate", title: "Donate", tone: "magenta", icon: "heart", aside: "Ko-fi · MB Bank", more: { href: "/donate/", label: "Donate page" } }) +
     donateBody(3) +
@@ -147,7 +145,6 @@ export function donateSection(): string {
 export function donatePage(): string {
   return (
     `<div class="page page--donate">` +
-    floats("donate", { tone: "magenta", count: 3, glyph: "heart" }) +
     `<div class="wrap">` +
     pageHead({ kicker: "donate", title: "Donate", tone: "magenta", icon: "heart", aside: "Ko-fi · MB Bank" }) +
     donateBody(2) +

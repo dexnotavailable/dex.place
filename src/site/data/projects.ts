@@ -6,8 +6,9 @@
 //   dex.place CANON.md ("What it is for", "Shape")
 // Download state is not repeated here: it is read from data/downloads.ts, so a
 // new build only needs updating in one place.
-// Imagery is a placeholder scene drawn in code (render/art.ts), flagged with
-// `placeholder: true` so it is easy to find and replace. Never Dex's art here.
+// Imagery: each project's card art (Dex 10-19: splash art filling the whole card, in layers that pan; Yuki for
+// dexCode, Bao for dexClient, Zhusha for dex.place, made by the card-art lane) in public/site/cards/<id>/ (0.png the back,
+// n-1 the front). Until it lands, stand-ins painted by the world's own painters (`standin: true`). Never Dex's art here.
 
 import type { IconName } from "../pixels.ts";
 
@@ -30,10 +31,19 @@ export interface Project {
   /** The project's doc on this site. */
   readonly docs: { readonly href: string; readonly label: string };
   readonly tone: Tone;
-  /** Which code-drawn placeholder scene to show (render/art.ts). */
-  readonly art: "terminal" | "installer" | "site";
-  readonly placeholder: true;
+  /** The card art (render/cardart.ts): its size in art px and how many layers, back first. */
+  readonly art: CardArt;
 }
+
+export interface CardArt {
+  readonly w: number;
+  readonly h: number;
+  readonly layers: number;
+  /** Still the stand-in, until the card-art lane's splash art replaces it. */
+  readonly standin: boolean;
+}
+
+const STANDIN: CardArt = { w: 160, h: 240, layers: 3, standin: true };
 
 export const projectHref = (p: Project): string => `/projects/${p.id}/`;
 
@@ -50,8 +60,7 @@ export const projects: readonly Project[] = [
     ],
     docs: { href: "/docs/dexcode/", label: "dexCode docs" },
     tone: "yellow",
-    art: "terminal",
-    placeholder: true,
+    art: STANDIN,
   },
   {
     id: "dexclient",
@@ -65,8 +74,7 @@ export const projects: readonly Project[] = [
     ],
     docs: { href: "/docs/installing-dexclient/", label: "Installing dexClient" },
     tone: "mint",
-    art: "installer",
-    placeholder: true,
+    art: STANDIN,
   },
   {
     id: "dex-place",
@@ -79,7 +87,6 @@ export const projects: readonly Project[] = [
     ],
     docs: { href: "/docs/about-dex-place/", label: "About dex.place" },
     tone: "magenta",
-    art: "site",
-    placeholder: true,
+    art: STANDIN,
   },
 ];

@@ -1,22 +1,27 @@
-// The opening in the world (the opening lane's PLAN.md and BEATS.json; GDK 3.9): from the press to the
-// hand-back, locked to Track 1 through the heard clock (opening/clock.ts). T is read from the page's
-// conductor every tick; nothing here runs on its own clock, so a slow phone replays ticks instead of
-// drifting, a covered world simply holds, and the skip is a jump in T.
+// The opening in the world (chart: opening/beats.ts, revision 4), from the press to the hand-back, locked to Track 1
+// through the heard clock (opening/clock.ts). T is read from the page's conductor every tick; nothing here runs on
+// its own clock, so a slow phone replays ticks instead of drifting, a covered world simply holds, and the skip is a
+// jump in T.
 //
-//   T 0       the press: she stands at the catch spot, bare-hatted; the talisman enters the sky at 0.64
-//   T 4.63    the world window lands (the held postcard); the camera follows the letter down (authored shots)
-//   T 12.61   the catch; 14.60 the slap; 15.43 the anchor (the bones' bake carries the talisman throughout)
-//   T 16.59   she walks on her own, one footfall a beat; the reveal track (keyed to her x) takes the camera
-//   T 24.52   the hush; 27.98 the pickup; 28.47 drop 1: she breaks into her run, control returns, the bars
-//             retract, the camera whips out (time-locked) to the widest frame on 30.45, drop 2, under TESU
-//   T 34.38   TESU fades, the camera eases back in; 36.35 the world's tracks own the frame again
+//   T 0       the press: the camera is high in the sky over Kagami; the paper the gust took from the page falls
+//             back in from the top (0.9) and comes down on the east wind through the clouds and the fog, the
+//             camera with it (ways 1-3; way 4, from the website's jetty, starts on bar 6 on her, the paper coming
+//             in from the right)
+//   T 12.61   bar 6, the orchestra: under the clouds, the postcard of Kagami, the paper a speck over the jetty
+//   T 14.60   the push-in to the close band; 17.89 the paper becomes the catch's drawing (f001)
+//   T 18.57   bar 9: the SLAP (f007), the hat jams, the ofuda takes hold, she pushes the brim up and settles
+//   T 20.56   she walks on her own; the camera pulls back over the lake
+//   T 24.52   the hush; 27.98 the pickup; 28.47 drop 1: she breaks into her run, control returns, the bars retract
+//   T 30.45   the crash: the camera whips out (time-locked) to the widest frame
+//   T 32.42   0:32, TESU on the widest frame (the music lifts into it); 36.35 it fades, the camera eases back in;
+//             38.31 the world's tracks own the frame again
 //
-// Until the gameplay lane's clips exist she holds the current sprite's idle as a still (the catch, the slap,
-// the anchor), slides through the walk at the solved walk speed, and runs with the current run clip after
-// the drop. Hands-free she keeps running and stops on the terrace; the first input takes her over.
+// Until the gameplay lane's clips are slotted she holds the waiting drawing (the catch's f000, bare-hatted), plays
+// the catch, and is the white box after it (the idle, the walk, the run: slots.json). Hands-free she keeps running
+// and stops on the terrace; the first input takes her over.
 
 import type { OpeningLink } from "./opening/conductor.ts";
-import { BEATS, beatAt, cameraAt, herPhase, herSpeedH, herXH, reducedHold, windAt, type Framed, type Shot } from "./opening/timeline.ts";
+import { BEATS, cameraAt, clipAt, herPhase, herSpeedH, herXH, reducedHold, startT, windAt, type Framed, type Shot, type Way } from "./opening/timeline.ts";
 
 export type OpeningState = "off" | "cine" | "free" | "done";
 
@@ -27,8 +32,8 @@ export interface OpeningHost {
   herX(): number;
   /** Takes her along the ground to x (world px); `jump`: put her down there (a skip). */
   moveTo(x: number, jump: boolean): void;
-  /** A still of the current sprite's idle, or its run playing. */
-  pose(kind: "still" | "walk" | "run"): void;
+  /** The catch's drawing at its clip tick (`clip`), the idle held, her walk, or her run playing. */
+  pose(kind: "clip" | "still" | "walk" | "run", tick?: number): void;
   /** A movement or action input since the given input tick (the player takes over). */
   touchedSince(tick: number): boolean;
   inputTick(): number;
@@ -43,7 +48,8 @@ export interface OpeningHost {
   sfxCancel(): void;
   /** The ambience bed's level (1 = as set), reached over `secs`. */
   bed(k: number, secs: number): void;
-  framing(x: number, opening: boolean): Framed;
+  /** The world's own framing at x (the hand-back's target). */
+  framing(x: number): Framed;
   frameW(): number;
   frameH(): number;
   /** A short cross-fade (a skip, a reduced-motion cut). */
@@ -57,11 +63,15 @@ export class Opening {
   link: OpeningLink | null = null;
   /** T this tick (as heard when the frame shows). */
   T = 0;
+  /** How the visitor came in (ways 1-3 the fall; 4 the jetty's catch). */
+  way: Way = "continue";
   reducedMotion = false;
   /** She runs on her own after the drop until the first input. */
   autoRun = false;
   /** No input for a while after the hand-back: the "→" tag beside her. */
   hint = false;
+  /** Bumped when T jumps (a skip): the paper re-places itself. */
+  jumps = 0;
   private epoch = -1;
   private fired = new Set<number>();
   private titled = false;
@@ -80,9 +90,10 @@ export class Opening {
     this.host = host;
   }
 
-  /** The press: T 0 (or wherever the link's clock stands). */
+  /** The press: T 0, or bar 6 for way 4 (or wherever the link's clock stands). */
   start(link: OpeningLink): void {
     this.link = link;
+    this.way = link.way ?? "continue";
     this.state = "cine";
     this.epoch = link.epoch;
     this.fired.clear();
@@ -92,17 +103,19 @@ export class Opening {
     this.autoRun = true;
     this.hold = -1;
     this.reducedMotion = this.reducedMotion || link.reduced;
-    this.T = Math.max(0, link.T());
+    this.T = Math.max(startT(this.way), link.T());
+    // the cues before where it starts are past
+    BEATS.sfx.forEach((c, i) => { if (c.T < this.T - 0.01) this.fired.add(i); });
     this.host.cine(true);
     this.host.moveTo(herXH(this.T) * 96, true);
   }
 
-  /** The reveal track applies and place names keep quiet (the opening has not handed back yet). */
+  /** The opening has the camera and quiets the place names (it has not handed back yet). */
   get active(): boolean {
     return this.state === "cine" || this.state === "free";
   }
 
-  /** The opening moves her this tick (the cinematic, or the hands-free run). */
+  /** The opening moves her this tick (the cinematic, or the hands-free run after the drop). */
   get drives(): boolean {
     return this.state === "cine" || (this.state === "free" && this.autoRun);
   }
@@ -120,12 +133,13 @@ export class Opening {
       this.hintTick();
       return;
     }
-    const T = Math.max(0, link.T(1000 / 60));
+    const T = Math.max(startT(this.way), link.T(1000 / 60));
     this.T = T;
     const h = this.host;
     if (link.epoch !== this.epoch) {
-      // a skip: she is put down walking at her place for T, the talisman on her hat, the frame cut
+      // a skip: she is put down walking at her place for T, the ofuda on her hat, the frame cut
       this.epoch = link.epoch;
+      this.jumps++;
       h.moveTo(herXH(T) * 96, true);
       h.cut();
       h.sfxCancel();
@@ -181,11 +195,11 @@ export class Opening {
   }
 
   /**
-   * The effects on their beats, scheduled on the music's own clock (CHECK-1 item 11's critic, film v0): a cue is
-   * asked for when its moment on the context's render clock is a quarter second away (plus the longest recent
-   * wait between frames), and starts exactly then. The heard T runs behind the render clock by the output's
-   * delay (Bluetooth 0.1 to 0.3 s), so a cue triggered on T itself would be late, or dropped, on such outputs.
-   * Without a running context (the page clock) a cue goes on T, as before.
+   * The effects on their beats, scheduled on the music's own clock: a cue is asked for when its moment on the
+   * context's render clock is a quarter second away (plus the longest recent wait between frames), and starts
+   * exactly then. The heard T runs behind the render clock by the output's delay (Bluetooth 0.1 to 0.3 s), so a cue
+   * triggered on T itself would be late, or dropped, on such outputs. Without a running context (the page clock) a
+   * cue goes on T.
    */
   private cues(link: OpeningLink, T: number): void {
     const h = this.host;
@@ -231,7 +245,9 @@ export class Opening {
     const T = this.T;
     const ph = herPhase(T);
     this.host.moveTo(herXH(T) * 96, false);
-    this.host.pose(ph === "run" || ph === "skid" ? "run" : ph === "walk" ? "walk" : "still");
+    const c = clipAt(T);
+    if (c) this.host.pose("clip", c.tick);
+    else this.host.pose(ph === "run" || ph === "skid" ? "run" : ph === "walk" ? "walk" : "still");
     return true;
   }
 
@@ -239,18 +255,18 @@ export class Opening {
   camera(x: number): Shot | null {
     if (!this.active) return null;
     const h = this.host;
-    return cameraAt(this.T, { x, W: h.frameW(), H: h.frameH(), reveal: (v) => h.framing(v, true), world: (v) => h.framing(v, false), released: this.released, reduced: this.reducedMotion });
+    return cameraAt(this.T, { x, W: h.frameW(), H: h.frameH(), world: (v) => h.framing(v), released: this.released, reduced: this.reducedMotion, way: this.way });
   }
 
-  /** Her step's phase (radians) while she walks or runs, for the talisman's bob; null when she stands. */
+  /** Her step's phase (radians) while she walks or runs, for the ofuda's bob; null when she stands. */
   bob(): number | null {
     const T = this.T, ph = herPhase(T);
-    if (ph === "walk") return (2 * Math.PI * (T - BEATS.her.walkFrom)) / beatAt(T);
+    if (ph === "walk") return 2 * Math.PI * (T - BEATS.her.walkFrom) * 2;
     if (ph === "run") return 2 * Math.PI * T * 5;
     return null;
   }
 
-  /** The ambient air on the talisman now. */
+  /** The ambient air on the ofuda on her hat now. */
   wind(): { base: number; gust: number } {
     return windAt(this.active ? this.T : 1e9);
   }

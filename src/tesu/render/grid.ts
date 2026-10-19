@@ -104,6 +104,45 @@ export function reduceFootprint(get: (x: number, y: number) => number, luma: (ke
 }
 
 /**
+ * (lane C 10-19) The actor layer's size and density for a frame of W x H at a zoom (render/reduce.ts ActorLayer):
+ * allocated at twice the frame a side at her art density `artD` (capped by the GPU's `max`; fixed per frame size, so a
+ * moving zoom never reallocates it). Density d: her art density when the view fits in the layer at it (nothing of her
+ * dropped); else the density that just covers the view if that is still 1 or more (everything on screen drawn: the
+ * cast, the talisman, effects at the edges); else (very wide) her art density centred on her (`onView` false: what is
+ * further than about a frame from her is left out, as before 10-19).
+ */
+export function actorLayerPlan(W: number, H: number, zoom: number, artD: number, max: number): { w: number; h: number; d: number; onView: boolean } {
+  const w = Math.min(max, Math.ceil(2 * W * artD)), h = Math.min(max, Math.ceil(2 * H * artD));
+  const cover = Math.min(artD, w / (W / zoom), h / (H / zoom));
+  if (cover >= Math.min(1, artD)) return { w, h, d: cover, onView: true };
+  return { w, h, d: artD, onView: false };
+}
+
+/**
+ * (lane C 10-19) How the actor layer (render/reduce.ts ActorLayer) lands on a destination grid. The layer holds the
+ * play plane at `lay` (scale D layer px per world px: her art density, 1 layer px = 1 of her art px, so nothing of her
+ * is dropped drawing into it; whole-px offsets); the destination grid (the frame, or a screen-res layer) shows the play
+ * plane at `dst`. Destination px n reads the layer's footprint [n * inv + c, (n + 1) * inv + c) a side, inv = D / s,
+ * phased so that her anchor (her feet, world px) starts a footprint: her drawing keeps its pixels while she or the
+ * camera moves. `rect`: the destination px [x0, y0, x1, y1) the layer covers (w x h layer px).
+ */
+export function actorMap(lay: { s: number; offX: number; offY: number }, dst: { s: number; offX: number; offY: number }, w: number, h: number, anchor: [number, number]): { inv: number; cx: number; cy: number; rect: [number, number, number, number] } {
+  const inv = lay.s / dst.s;
+  const ax = Math.round(anchor[0]), ay = Math.round(anchor[1]);
+  // her anchor's layer px (where the renderer puts a whole world px drawn at the layer's transform) and the first
+  // destination px at or right of / below it
+  const lx = Math.round(ax * lay.s + lay.offX), ly = Math.round(ay * lay.s + lay.offY);
+  const nx = Math.ceil(ax * dst.s + dst.offX - 1e-6), ny = Math.ceil(ay * dst.s + dst.offY - 1e-6);
+  const cx = lx - (nx - dst.offX) * inv, cy = ly - (ny - dst.offY) * inv;
+  // layer px L = (n - off) * inv + c  <->  n = (L - c) / inv + off
+  const rect: [number, number, number, number] = [
+    Math.floor(-cx / inv + dst.offX), Math.floor(-cy / inv + dst.offY),
+    Math.ceil((w - cx) / inv + dst.offX), Math.ceil((h - cy) / inv + dst.offY),
+  ];
+  return { inv, cx, cy, rect };
+}
+
+/**
  * The camera that draws the play plane at k times the frame's transform (same whole-px offsets x k, so a drawing in
  * the layer lands exactly on the frame's px x k): planeXf(screenCam(cam, xf, k), 1) = { s: s k, offX: offX k, offY: offY k }.
  */

@@ -12,7 +12,8 @@ import type { Camera as LabCamera } from "../lab/engine/camera.ts";
 import type { Lighting, Renderer as LabRenderer } from "../lab/engine/renderer.ts";
 import { Vfx } from "../lab/engine/vfx.ts";
 import { Feel } from "../lab/game/feel.ts";
-import { Zhusha, type MoveWorld } from "./zhusha/controller.ts";
+import { ART_PX, Zhusha, type MoveWorld } from "./zhusha/controller.ts";
+import { Fx } from "./fx/fx.ts";
 import { ZhushaDraw } from "./zhusha/draw.ts";
 import { NpcDraw } from "./cast/npcs.ts";
 import { makeTarget, type PointLight, type Target, type WorldRenderer } from "../world/render/renderer.ts";
@@ -29,18 +30,20 @@ import { Sound } from "./sound.ts";
 import { placeAt, THEME_FADE } from "./region-music.ts";
 import { CHARM_PERCH, H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore, type PlatePool } from "./plates/store.ts";
+import { levelOfPlane, openingTiles, tileSpanOf } from "./plates/span.ts";
 import type { ZhushaAssets } from "./player.ts";
 import { Atmos, waterHolds, type MistBand, type SkyGlow } from "./render/atmos.ts";
 import { Motes } from "./render/motes.ts";
 import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
 import { SilentLink, type OpeningLink } from "./opening/conductor.ts";
-import { HAT_TIE, Ofuda, type OfudaPose } from "./opening/ofuda.ts";
-import { BEATS, cameraAt, herXH } from "./opening/timeline.ts";
+import { WorldPaper, type PaperPose } from "./opening/paper.ts";
+import { BEATS, CLIP_END, HANDOFF_T, keysAt, paperAirAt, paperBlendAt, paperScreenAt, startT } from "./opening/timeline.ts";
+import { Veils, fallVeils } from "./opening/sky.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
-import { eyeY, levelFor, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
-import { buildWorld } from "./world/index.ts";
+import { eyeY, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
+import { currentWorld } from "./world/current.ts";
 import { isReload, loadSave, resumePlace, writeSave, type TesuSave } from "./save.ts";
 import { PLANES, PLANE_IDS, type CharmDef, type Atmos as AtmosDef, type PlaneId, type SpriteDef, type Spawn, type Usable, type Water, type WorldDef } from "./world/types.ts";
 
@@ -128,6 +131,8 @@ export class TesuGame {
   /** (engine 10-18) Her drawing at screen resolution at play zoom and closer (render/actors.ts). */
   readonly screen: ScreenActors;
   readonly titles: Titles;
+  /** The opening's fog layers on the lens (opening/sky.ts). */
+  readonly veils: Veils;
   readonly opening: Opening;
   readonly player: Zhusha;
   /** Her drawings (traced pixel art per slot) or the white box. */
@@ -135,6 +140,9 @@ export class TesuGame {
   /** The cast: white boxes at her drawn height until their 128 px art lands (cast/npcs.ts draws them, not the sprite renderer). */
   readonly npcs: NpcDraw;
   readonly vfx: Vfx;
+  /** (lane C 10-19) World effects as pixel sprite animations (fx/fx.ts, lanes/engine/EFFECTS-CONTRACT.md): main.ts
+   * loads them at start; play one with `game.fx.play(id, { x, y, facing })`. */
+  fx: Fx = Fx.none();
   readonly feel: Feel;
   readonly flags = new Set<string>();
   /** The Prize Court's bouts (the board picks, the champion, the killing blow's download). */
@@ -185,7 +193,8 @@ export class TesuGame {
   private shown = false;
 
   constructor(readonly r: WorldRenderer, input: Input, assets: ZhushaAssets, opts: TesuOpts) {
-    this.world = buildWorld();
+    // (engine, perf) adopted at boot (main.ts): the bake's, a worker's, or built there when neither
+    this.world = currentWorld();
     this.collision = new Collision(this.world.walks, this.world.walls);
     this.collision.minX = 0;
     this.collision.maxX = this.world.w;
@@ -201,10 +210,11 @@ export class TesuGame {
     // deterministic captures: ?manual paints them on the page, as it paints the plates)
     if (!opts.manual) this.sprites.async = (job, done) => this.store.paintSprite(job, done);
     this.titles = new Titles(gl, r.emptyVao);
+    this.veils = new Veils(gl, r.emptyVao);
     this.opening = new Opening({
       herX: () => this.player.body.x,
       moveTo: (x, jump) => this.driveTo(x, jump),
-      pose: (kind) => this.posePlayer(kind),
+      pose: (kind, tick) => this.posePlayer(kind, tick),
       touchedSince: (t) => this.touchedSince(t),
       inputTick: () => this.input.tick,
       release: (vx) => {
@@ -221,7 +231,7 @@ export class TesuGame {
       sfx: (id, at) => this.sound.sfx(id, 1, at),
       sfxCancel: () => this.sound.cancelAhead(),
       bed: (k, secs) => this.sound.bedLevel(k, secs),
-      framing: (x, opening) => this.trackFraming(x, opening),
+      framing: (x) => this.trackFraming(x, false),
       frameW: () => this.r.iw,
       frameH: () => this.r.ih,
       cut: () => { this.cutFade = 1; },
@@ -322,10 +332,10 @@ export class TesuGame {
   readonly startedBy: "fresh" | "resume" | "link" = "fresh";
   /** /tesu/ on its own, fresh: the page shows "continue" and the press starts the opening (main.ts). */
   awaitingPress = false;
-  /** Zhusha's talisman: the opening's bake, then the live chain on her hat. */
-  readonly ofuda = new Ofuda();
-  private ofudaPose: OfudaPose | null = null;
-  private ofudaX = 0;
+  /** The ofuda (the loader lane's PaperOfuda, her sprite's paper): falling in the opening, then on her hat (the white box's). */
+  readonly paper = new WorldPaper(ART_PX);
+  private paperPose: PaperPose | null = null;
+  private paperX = 0;
   /** Her drawings are in (the opening set waits for them; they load before the world starts). */
   closeReady = true;
 
@@ -430,14 +440,16 @@ export class TesuGame {
     if (this.vista) f = { ...f, zoom: this.vista.zoom, fixX: this.vista.pin ? null : this.vista.x, fixY: this.vista.y, anchor: this.vista.anchor, pin: this.vista.pin ?? null, bounds: null };
     // outdoors the frame never shows past the world's ends (the widest frames on ultra-wide screens)
     if (!f.bounds && this.player.body.y < INTERIOR_Y) f = { ...f, bounds: [0, this.world.w] };
-    // the world window waiting for the press: the opening's first shot, the held postcard of Kagami with the
-    // sky in the middle of the frame (so TESU, for a visitor who scrolls on past, is written into the sky)
+    // the world window waiting for the press: the opening's first frame, high in the sky over Kagami (behind
+    // the website's "dex"), where the fall starts
     if (this.holding) {
-      const s0 = BEATS.camera.shots[0]!;
-      f = { ...f, zoom: s0.zoom[0], anchor: s0.anchor[0], horizon: s0.horizon[0], lead: 0, fixX: s0.cx[0] * H, pin: null };
+      const s0 = keysAt(0, this.player.body.x, this.r.iw, this.r.ih);
+      f = { ...f, zoom: s0.zoom, anchor: s0.anchor, horizon: s0.horizon, lead: 0, fixX: s0.cx, fixY: null, pin: null, bounds: null };
     }
     // R's climb: the frame pulls out to hold the whole rise and dive
     if (this.player.camZoom !== null) f = { ...f, zoom: Math.min(f.zoom, this.player.camZoom) };
+    // the Q's pull-out holds the exploded area in frame (zhusha/controller.ts camAt)
+    if (this.player.camAt !== null) f = { ...f, fixX: this.player.camAt, pin: null };
     return this.framingOverride ? { ...f, ...this.framingOverride } : f;
   }
 
@@ -460,7 +472,7 @@ export class TesuGame {
    * The press (PLAY or "continue"): the opening starts on the link's clock (the page's conductor: Track 1 as
    * heard). Without one (tools) it runs silent on the world's own simulated time.
    */
-  play(link?: OpeningLink): void {
+  play(link?: OpeningLink, way: "continue" | "corner" | "top" | "bottom" = "continue"): void {
     if (!this.holding) return;
     this.holding = false;
     this.awaitingPress = false;
@@ -469,7 +481,7 @@ export class TesuGame {
     if (link?.ctx) this.sound.start(link.ctx);
     this.openingLink = link ?? null;
     this.spawnAt(this.world.spawns.find((s) => s.id === "catch")!);
-    this.opening.start(link ?? new SilentLink(() => this.time, this.feel.reducedMotion));
+    this.opening.start(link ?? new SilentLink(() => this.time, this.feel.reducedMotion, way));
     const shot = this.opening.camera(this.player.body.x);
     if (shot) this.camera.set(shot, this.player.body.x, this.player.body.y);
   }
@@ -496,9 +508,15 @@ export class TesuGame {
     this.player.facing = 1;
   }
 
-  /** Her idle held as a still (the opening's holds), her walk, or her run playing (opening.ts moves her). */
-  private posePlayer(kind: "still" | "walk" | "run"): void {
-    this.player.posed(kind);
+  /** The catch's drawing at its clip tick, her idle held as a still, her walk, or her run playing (opening.ts moves her). */
+  private posePlayer(kind: "clip" | "still" | "walk" | "run", tick = 0): void {
+    if (kind !== "clip") {
+      this.player.posed(kind);
+      return;
+    }
+    // the catch (opening_ofuda): the opening sets the clip's tick from the music; it holds still between
+    this.player.posed("still");
+    this.player.anim = { role: BEATS.her.clip.slot, t: tick, hitAt: null, hidden: false, flame: 0, dist: 0 };
   }
 
   /** A movement or action input since input tick t (held now, or pressed after it). */
@@ -555,6 +573,7 @@ export class TesuGame {
     this.time += 1 / 60;
     this.opening.tick();
     this.warmStream();
+    this.warmFall();
     this.feel.realTick();
     this.vfx.realTick();
     this.simAcc += this.feel.slowFactor;
@@ -571,7 +590,7 @@ export class TesuGame {
     const shot = this.opening.camera(b.x);
     if (shot) this.camera.set(shot, b.x, b.y);
     else this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
-    this.ofudaTick();
+    this.paperTick();
     // reduced motion: a cut between held frames is a short dithered cross-fade, not a swing
     if (this.camera.cuts !== cuts && this.tick > 2) this.cutFade = 1;
     this.cutFade = Math.max(0, this.cutFade - 1 / 12);
@@ -596,6 +615,7 @@ export class TesuGame {
       this.feel.hitstop--;
       return;
     }
+    this.fx.tick();
     if (this.frozen > 0) this.frozen--;
     const b = this.player.body;
     if (this.opening.drive()) {
@@ -746,51 +766,71 @@ export class TesuGame {
     }
   }
 
-  // --- the talisman ------------------------------------------------------------
+  // --- the ofuda ---------------------------------------------------------------
 
-  /** The talisman this tick: none before the press, the bones' bake through the opening, then the live chain on her hat. */
-  private ofudaTick(): void {
+  /** The hat's tie from the drawn frame's head anchor (world px at 96, facing right). */
+  private static readonly HAT_TIE: [number, number] = [2, -7];
+
+  /**
+   * The ofuda this tick: none before the press; falling through the opening's sky (its flight on the frame, drawn on
+   * to her hand-off point); the catch's drawing has it from f001 to the clip's end; then on her hat, live, while she is
+   * the white box (a traced drawing has its own).
+   */
+  private paperTick(): void {
     const b = this.player.body, f = this.player.facing;
-    const speed = (((b.x - this.ofudaX) * 60) / H) * f;
-    this.ofudaX = b.x;
+    const speed = (((b.x - this.paperX) * 60) / H) * f;
+    this.paperX = b.x;
+    const o = this.opening, reduced = this.feel.reducedMotion;
     if (this.holding) {
-      this.ofudaPose = null;
+      this.paperPose = null;
+      this.paper.off();
+      return;
+    }
+    const T = o.T;
+    if (o.active && T < HANDOFF_T) {
+      const sp = paperScreenAt(T, o.way);
+      if (!sp || T < startT(o.way)) { this.paperPose = null; this.paper.off(); return; }
+      const cam = this.camera.state(), xf = planeXf(cam, 1);
+      // its place on the frame, as a world point on the play plane, drawn on to the paper in the catch's f001
+      const wx = (sp[0] * cam.W - xf.offX) / xf.s, wy = (sp[1] * cam.H - xf.offY) / xf.s;
+      const ho = BEATS.her.clip.handoff;
+      const hx = b.x + ho[0] * ART_PX * f, hy = b.y + ho[1] * ART_PX;
+      const k = paperBlendAt(T, o.way);
+      if (this.paper.mode !== "fall") this.paper.startFall();
+      this.paperPose = this.paper.fall(wx + (hx - wx) * k, wy + (hy - wy) * k, paperAirAt(T, o.way));
+      return;
+    }
+    if (o.active && T < CLIP_END) {
+      this.paperPose = null;
+      this.paper.off();
+      return;
+    }
+    // a traced drawing has her hat's paper drawn in: the live one is the white box's
+    if (this.zdraw.shown(this.player)) {
+      this.paperPose = null;
+      this.paper.off();
       return;
     }
     const head = this.zdraw.head(this.player);
-    const tie: [number, number] = [b.x + (head[0] + HAT_TIE[0]) * f, b.y + head[1] + HAT_TIE[1]];
-    const o = this.opening, reduced = this.feel.reducedMotion;
-    const [t0, t1] = this.ofuda.span;
-    if (o.active && o.T <= t1) {
-      const pose = o.T < t0 ? null : this.ofuda.bakeAt(o.T, b.x, b.y, tie, reduced);
-      this.ofudaPose = pose;
-      if (pose) this.ofuda.seed(pose, f);
-      return;
-    }
-    // a traced drawing has her hat's talisman drawn in: the live one is the white box's
-    if (this.zdraw.shown(this.player)) {
-      this.ofudaPose = null;
-      return;
-    }
+    const tie = TesuGame.HAT_TIE;
     const w = o.wind();
-    const bob = o.active ? o.bob() : Math.abs(speed) > 0.3 ? this.time * Math.PI * 2 * Math.min(5, 1 + Math.abs(speed)) : null;
-    this.ofudaPose = this.ofuda.live(tie, f, speed - w.base * f, w.gust, bob, reduced);
+    this.paperPose = this.paper.hat(b.x + (head[0] + tie[0]) * f, b.y + head[1] + tie[1], f, speed - w.base * f, w.gust, reduced);
   }
 
-  /** The talisman as pixels at the camera's scale (behind her, or in front). */
+  /** The ofuda as pixels at the camera's scale (in front of her: it hangs at the front of her hat, or falls). */
   private drawOfuda(cam: CamState, behind: boolean): void {
-    const p = this.ofudaPose;
-    if (!p || p.behind !== behind || this.fade >= 1) return;
+    const p = this.paperPose;
+    if (!p || behind || this.fade >= 1) return;
     const r = this.r, xf = planeXf(cam, 1), o = this.opening;
     let glint: number | null = null;
-    if (o.active && o.T < this.ofuda.span[1]) {
+    if (o.active && o.T < HANDOFF_T) {
       for (const g of BEATS.ofuda.glints) {
         const u = (o.T - g) / (5 / 12);
         if (u >= 0 && u < 1) glint = u;
       }
     }
     r.setTransform();
-    this.ofuda.draw(p, (x, y) => [x * xf.s + xf.offX, y * xf.s + xf.offY], xf.s, glint, this.feel.reducedMotion, (x, y, c) => r.rect(x, y, 1, 1, c, 1, 1, true));
+    WorldPaper.draw(p, (x, y) => [x * xf.s + xf.offX, y * xf.s + xf.offY], glint, this.feel.reducedMotion, (x, y, c) => r.rect(x, y, 1, 1, c, 1, 1, true));
   }
 
   /** After the hand-back, no input for a while: a small paper tag "->" beside her (gone on the first input). */
@@ -836,48 +876,10 @@ export class TesuGame {
   private warmPlan(): { plan: WarmTile[]; gateMax: number; budget: number } {
     const [W, Hf] = this.openingFrame();
     const reduced = this.feel.reducedMotion;
-    const cam = BEATS.camera, ui = BEATS.ui;
-    // per tile, the runs of T it is on screen (a far plane's tile in the drift may come back in the ease-in)
-    const span = new Map<string, { id: PlaneId; lv: number; tx: number; ty: number; runs: [number, number][] }>();
-    let most = 0;
-    // every quarter second (and the beats' own moments: the widest frame's first tick, the skip's landing)
-    const times: number[] = [];
-    for (let T = 0; T <= ui.handBack + 1e-6; T += 0.25) times.push(T);
-    times.push(cam.widest.from + 0.02, ui.skipTo);
-    times.sort((a, b) => a - b);
-    // the ground along her hands-free path, walked from the catch spot (the ground under x near where she is
-    // then: the terrace is above the shore she starts from, so "the ground below her now" would be the wrong one)
-    const x0 = BEATS.her.catchXH * H, step = H / 4;
-    const spawn = this.world.spawns.find((sp) => sp.id === "catch")!;
-    const prof: number[] = [];
-    let gy = this.collision.groundBelow(x0, spawn.y - 2 * H)?.y ?? spawn.y;
-    for (let x = x0; x <= (BEATS.her.stopXH + 6) * H; x += step) {
-      gy = this.collision.groundBelow(x, gy - 2 * H)?.y ?? gy;
-      prof.push(gy);
-    }
-    const groundAt = (x: number): number => prof[Math.max(0, Math.min(prof.length - 1, Math.round((x - x0) / step)))]!;
-    for (const T of times) {
-      const x = herXH(T) * H;
-      const shot = cameraAt(T, { x, W, H: Hf, reveal: (v) => this.trackFraming(v, true, groundAt(v)), world: (v) => this.trackFraming(v, false, groundAt(v)), reduced });
-      if (!shot) continue;
-      const c: CamState = { cx: shot.cx, cy: groundAt(x), zoom: shot.zoom, anchor: shot.anchor, horizon: shot.horizon, W, H: Hf };
-      let n = 0;
-      for (const id of PLANE_IDS) {
-        if (id === "near" && c.zoom > 1.6) continue;
-        const sp = this.tileSpan(c, id, this.levelOf(c, id), 0, Hf);
-        for (let ty = sp.ty0; ty <= sp.ty1; ty++) {
-          for (let tx = sp.tx0; tx <= sp.tx1; tx++, n++) {
-            const k = `${id}|${sp.level}|${tx}|${ty}`;
-            const t = span.get(k);
-            const run = t?.runs[t.runs.length - 1];
-            if (run && T - run[1] <= 0.25 + 1e-6) run[1] = T;
-            else if (t) t.runs.push([T, T]);
-            else span.set(k, { id, lv: sp.level, tx, ty, runs: [[T, T]] });
-          }
-        }
-      }
-      most = Math.max(most, n);
-    }
+    const cam = BEATS.camera, ui = BEATS.ui, walkFrom = BEATS.her.walkFrom;
+    // per tile, the runs of T it is on screen (a far plane's tile in the drift may come back in the ease-in);
+    // (engine, perf) shared with the build's bake (plates/span.ts), so both name the same tiles
+    const { span, most } = openingTiles(this.world, this.collision, W, Hf, reduced, this.levels, (f) => this.flags.has(f));
     // what "continue" waits for, in this order: the widest frame, the drift, the skip's landing; then (streamed
     // while it runs, as the store has room) the whip-out (from the walk on: two seconds are too few to paint it),
     // the walk and the ease back in (each four seconds ahead: the walk is slow, the ease follows a four-second
@@ -887,7 +889,7 @@ export class TesuGame {
       for (const [from, until] of t.runs) {
         const widest = until >= cam.widest.from && from < cam.easeIn.from;
         const skip = until >= ui.skipTo && from <= ui.skipTo + 0.5;
-        const rank = widest ? 0 : from < cam.reveal.from ? 1 : skip ? 2 : from >= cam.easeIn.from ? 5 : from >= cam.whip.from ? 3 : 4;
+        const rank = widest ? 0 : from < walkFrom ? 1 : skip ? 2 : from >= cam.easeIn.from ? 5 : from >= cam.whip.from ? 3 : 4;
         // (on screen until the next sample)
         plan.push({ id: t.id, lv: t.lv, tx: t.tx, ty: t.ty, k, from, until: until + 0.25, rank });
       }
@@ -898,6 +900,30 @@ export class TesuGame {
     // tiles hold paint, the rest are empty and cost nothing)
     const budget = Math.max(64, this.planes.layers - Math.ceil(most * 0.3) - 48);
     return { plan, gateMax: gateMax < 0 ? plan.length : gateMax, budget };
+  }
+
+  /**
+   * The fall's clouds (world/sections/opening-sky.ts) are sprites, painted on demand: while the world waits for the
+   * press (behind "dex"), their drawings are asked for at the level the fall shows them, one moment of the fall every
+   * third of a second, so none pops in on the way down.
+   */
+  private fallWarm = { i: 0, defs: null as SpriteDef[] | null };
+  private warmFall(): void {
+    if (!this.holding || this.loading || this.tick % 20) return;
+    const w = this.fallWarm;
+    w.defs ??= this.world.sprites.filter((s) => s.id.startsWith("fall-"));
+    const moments = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5];
+    if (w.i >= moments.length * 4 || !w.defs.length) return;
+    const T = moments[Math.floor(w.i / 4)]!, frame = w.i % 4;
+    w.i++;
+    const [W, Hf] = this.openingFrame();
+    const s = keysAt(T, BEATS.her.catchXH * H, W, Hf);
+    const cam: CamState = { cx: s.cx, cy: BEATS.her.deckYH * H, zoom: s.zoom, anchor: s.anchor, horizon: s.horizon, W, H: Hf };
+    const a = this.atmosAt(cam.cx, cam.cy);
+    for (const id of PLANE_IDS) {
+      const defs = w.defs.filter((d) => d.plane === id);
+      if (defs.length) this.sprites.draw(defs, cam, this.look(id, a), frame + 0.01, null, false, true);
+    }
   }
 
   startWarm(): void {
@@ -1263,44 +1289,74 @@ export class TesuGame {
    * `c` and `focus` are the camera of the grid it lands on (the frame, the screen-res layer or the zoomed-out actor
    * buffer, see drawActors): planeXf(c, 1) is the play plane's transform there. The renderer's begin() is done.
    */
-  private actorsPass(step: "back" | "art" | "front", c: CamState, focus: [number, number]): void {
+  private actorsPass(step: "back" | "art" | "front", c: CamState, focus: [number, number], split = false): void {
     const r = this.r, s = planeXf(c, 1).s;
+    // (lane C 10-19) `split`: the screen-res layer's passes, where the sprite effects go with her drawing (her art px
+    // at screen res, EFFECTS-CONTRACT.md) instead of with the world-grid back / front steps
     if (step === "back") {
       if (s !== 1) r.setTransform(s, focus);
+      if (!split) this.drawFx(c, focus, "back");
       this.vfx.draw(r as unknown as LabRenderer, "back");
       this.vfx.drawAfterimages(r as unknown as LabRenderer);
       this.drawOfuda(c, true);
     } else if (step === "art") {
       // the cast's boxes (or art), then her: the characters stand in front of the play plane's props (engine 10-18:
       // with her on whichever grid she is drawn, so every character's pixels match hers)
+      if (split) this.drawFx(c, focus, "back");
       r.setTransform(s, focus);
       this.npcs.draw(r, { s, focus, mirror: null }, this.time, false);
       if (s !== 1) r.setTransform(s, focus);
       else r.setTransform();
       this.drawPlayer(c, focus, null);
+      if (split) this.drawFx(c, focus, "front");
     } else {
       this.drawOfuda(c, false);
       if (s !== 1) r.setTransform(s, focus);
+      if (!split) this.drawFx(c, focus, "front");
       this.vfx.draw(r as unknown as LabRenderer, "front");
     }
     r.flush();
     r.setTransform();
   }
 
+  /** (lane C 10-19) The sprite effects of a layer on the play plane's transform of `c` (her art px, her pivot snap). */
+  private drawFx(c: CamState, focus: [number, number], layer: "back" | "front", mirror: number | null = null): void {
+    if (!this.fx.clock.live.length) return;
+    const b = this.player.body, s = planeXf(c, 1).s;
+    this.r.setTransform(s, focus, mirror);
+    this.fx.draw(this.r, { s, focus, mirror }, layer, ART_PX, { x: b.x, y: b.y, facing: this.player.facing }, mirror !== null);
+    this.r.flush();
+  }
+
   /** (engine 10-18) The actors in the lake's reflection target (world res): her drawing (worker 6: the NPCs). */
   private reflActors(c: CamState, focus: [number, number], mirror: number | null, reflection = true): void {
     const s = planeXf(c, 1).s;
+    this.drawFx(c, focus, "back", mirror);
     this.r.setTransform(s, focus, mirror);
     this.npcs.draw(this.r, { s, focus, mirror }, this.time, reflection);
     this.r.setTransform(s, focus, mirror);
     this.drawPlayer(c, focus, mirror);
+    this.drawFx(c, focus, "front", mirror);
+    this.r.setTransform(s, focus, mirror);
   }
 
   /**
-   * (engine 10-18) The actors in the frame pass. Zoomed out (zoom < 1): reduced onto the frame's grid like the world
-   * (reducedActors). At play zoom and closer, on a screen shown at a whole scale k >= 2: her drawing at screen res on
-   * its own layer, her effects and the talisman on the world grid (render/actors.ts); everything drawn after this
-   * then goes to the front target, composited over the actors by the presenter. Else straight onto the frame.
+   * (lane C 10-19) Whether her drawing goes through the reduction (reducedActors) on a grid that shows the play plane
+   * at scale s: zoomed out, or where one of her art px would land under one px of that grid (her 0.88 size on a 1080p
+   * screen: 0.66 px), so she is reduced with the feature-keeping rule instead of nearest-neighbour dropping rows.
+   */
+  private reduceActors(s: number, zoom: number): boolean {
+    return ActorLayer.wants(zoom) || s * ART_PX < 1 - 1e-6;
+  }
+
+  /**
+   * (engine 10-18) The actors in the frame pass. On a screen shown at a whole scale k >= 2 they get their own
+   * screen-res layer (render/actors.ts; everything drawn after them goes to the front target, composited over them by
+   * the presenter): at play zoom and closer her drawing at screen res, her effects and the talisman on the world grid;
+   * zoomed out (lane C 10-19, Dex: "below zoom 1 she and her effects reduce onto HER pixel size, never the world's
+   * 2 px grid") all of them reduced from her art density onto that screen-res layer. At k = 1 (1080p) the screen is
+   * the frame: reduced onto it zoomed out or where her art px would be under one px (reducedActors), else drawn
+   * straight onto it.
    */
   private drawActors(cam: CamState, focus: [number, number], lights: PointLight[]): void {
     const r = this.r, xf = planeXf(cam, 1);
@@ -1308,12 +1364,21 @@ export class TesuGame {
     // the renderer maps x to ((x - camX) - fx) * s + fx: match the play plane exactly
     const camOf = (s: number, offX: number, offY: number, f: [number, number]): [number, number] => [(f[0] * (1 - s) - offX) / s, (f[1] * (1 - s) - offY) / s];
     const [camX, camY] = camOf(xf.s, xf.offX, xf.offY, focus);
-    if (ActorLayer.wants(cam.zoom)) {
-      this.reducedActors(cam, r.main, lights, null, (c) => { for (const st of steps) this.actorsPass(st, c, [c.W / 2, c.anchor * c.H]); });
+    const k = r.presenter.rect.scale;
+    const all = (c: CamState): void => { for (const st of steps) this.actorsPass(st, c, [c.W / 2, c.anchor * c.H]); };
+    if (ScreenActors.wants(k) && ActorLayer.wants(cam.zoom)) {
+      // zoomed out on a 2x+ screen: reduced onto her own (screen-res) grid
+      this.screen.begin(r, cam.W, cam.H, k);
+      this.reducedActors(cam, null, lights, null, all);
+      this.screen.end(r);
       r.begin(camX, camY, DAY, lights);
       return;
     }
-    const k = r.presenter.rect.scale;
+    if (!ScreenActors.wants(k) && this.reduceActors(xf.s, cam.zoom)) {
+      this.reducedActors(cam, r.main, lights, null, all);
+      r.begin(camX, camY, DAY, lights);
+      return;
+    }
     if (!ScreenActors.wants(k)) {
       r.begin(camX, camY, DAY, lights);
       for (const st of steps) this.actorsPass(st, cam, focus);
@@ -1322,27 +1387,36 @@ export class TesuGame {
     const sc = screenCam(cam, xf, k), fs: [number, number] = [focus[0] * k, focus[1] * k];
     const [sx, sy] = camOf(xf.s * k, xf.offX * k, xf.offY * k, fs);
     this.screen.begin(r, cam.W, cam.H, k);
-    this.screen.world(r, () => { r.begin(camX, camY, DAY, lights); this.actorsPass("back", cam, focus); });
-    this.screen.art(r, () => { r.begin(sx, sy, DAY, lights); this.actorsPass("art", sc, fs); });
-    this.screen.world(r, () => { r.begin(camX, camY, DAY, lights); this.actorsPass("front", cam, focus); });
+    this.screen.world(r, () => { r.begin(camX, camY, DAY, lights); this.actorsPass("back", cam, focus, true); });
+    this.screen.art(r, () => { r.begin(sx, sy, DAY, lights); this.actorsPass("art", sc, fs, true); });
+    this.screen.world(r, () => { r.begin(camX, camY, DAY, lights); this.actorsPass("front", cam, focus, true); });
     this.screen.end(r);
     r.begin(camX, camY, DAY, lights);
   }
 
   /**
-   * (engine 10-18) Wider than play zoom, what moves on the play plane (her, her effects, the talisman) is drawn at
-   * play density into the actor layer (`draw` gets the layer's camera, scale 1), then reduced onto `target` on the
-   * frame's grid, the reduction anchored to her feet (render/reduce.ts). `mirror`: the reflection's waterline row.
+   * (engine 10-18) Wider than play zoom (or where her art px would be under one frame px), what moves on the play plane
+   * (her, her effects, the talisman) is drawn at her art density into the actor layer (lane C 10-19: one layer px per
+   * art px; `draw` gets the layer's camera), then reduced onto `target` on the frame's grid, or (target null) onto the
+   * screen-res actor layer begun for this frame (her own grid, k x the frame's), the reduction anchored to her feet
+   * (render/reduce.ts). `mirror`: the reflection's waterline row.
    */
-  private reducedActors(cam: CamState, target: Target, lights: PointLight[], mirror: number | null, draw: (c: CamState) => void): void {
+  private reducedActors(cam: CamState, target: Target | null, lights: PointLight[], mirror: number | null, draw: (c: CamState) => void): void {
     const r = this.r, xf = planeXf(cam, 1), b = this.player.body;
     const view = { cx: (cam.W / 2 - xf.offX) / xf.s, cy: (cam.H / 2 - xf.offY) / xf.s };
-    const c = this.actors.begin(r, cam, view, [b.x, b.y - H]);
-    r.begin(this.actors.x0, this.actors.y0, DAY, lights);
+    const c = this.actors.begin(r, cam, view, [b.x, b.y - H], Math.max(1, 1 / ART_PX));
+    // the renderer maps x to ((x - camX) - f) * s + f: match the layer's play-plane transform about the pass's focus
+    const lx = this.actors.xf, f: [number, number] = [c.W / 2, c.anchor * c.H];
+    r.begin((f[0] * (1 - lx.s) - lx.offX) / lx.s, (f[1] * (1 - lx.s) - lx.offY) / lx.s, DAY, lights);
     draw(c);
     this.actors.end(r);
-    r.bindTarget(target, false);
-    this.actors.composite(cam.W, cam.H, xf, [b.x, b.y], mirror);
+    if (target) {
+      r.bindTarget(target, false);
+      this.actors.composite(cam.W, cam.H, xf, [b.x, b.y], mirror);
+      return;
+    }
+    const k = r.presenter.rect.scale;
+    this.screen.reduced(r, () => this.actors.composite(cam.W * k, cam.H * k, { s: xf.s * k, offX: xf.offX * k, offY: xf.offY * k }, [b.x, b.y], null));
   }
 
   /** The light at a point: neighbouring atmos entries blend across their `blend` widths (atmos-blend.ts). */
@@ -1362,17 +1436,12 @@ export class TesuGame {
    */
   /** The plate level a plane is drawn at for this camera. */
   private levelOf(cam: CamState, id: PlaneId): number {
-    const xf = planeXf(cam, PLANES[id].rate);
-    return levelFor(this.levels.get(id)!, xf.g) / (cam.zoom >= 1.9 && (id === "sky" || id === "far" || id === "mid" || id === "back") ? 2 : 1);
+    return levelOfPlane(cam, id, this.levels.get(id)!);
   }
 
   /** The tiles of a plane at level lv covering frame rows [ya, yb). */
   private tileSpan(cam: CamState, id: PlaneId, lv: number, ya: number, yb: number): { level: number; tx0: number; tx1: number; ty0: number; ty1: number } {
-    const xf = planeXf(cam, PLANES[id].rate);
-    const k = xf.g / lv;
-    const ax0 = (0 - xf.offX) / k, ax1 = (cam.W - xf.offX) / k;
-    const ay0 = (ya - xf.offY) / k, ay1 = (yb - xf.offY) / k;
-    return { level: lv, tx0: Math.floor(ax0 / TILE), tx1: Math.floor((ax1 - 1e-6) / TILE), ty0: Math.floor(ay0 / TILE), ty1: Math.floor((ay1 - 1e-6) / TILE) };
+    return tileSpanOf(cam, id, lv, ya, yb);
   }
 
   private planeQuads(cam: CamState, id: PlaneId, ya: number, yb: number, a: AtmosDef, prefetch: boolean): PlaneDraw {
@@ -1534,8 +1603,9 @@ export class TesuGame {
         this.planes.draw(pd.quads, pd.look, W, Hf, m);
         this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false && !this.npcs.has(sp)), cam, pd.look, this.time, m, this.manual);
         fogOn(id, true);
-        if (id === "play" && ActorLayer.wants(cam.zoom)) {
-          // (engine 10-18) zoomed out: the reflection is the actors' reduced drawing, mirrored
+        if (id === "play" && this.reduceActors(planeXf(cam, 1).s, cam.zoom)) {
+          // (engine 10-18) zoomed out (lane C 10-19: or her art px under one world px): the reflection is the actors'
+          // reduced drawing, mirrored
           this.reducedActors(cam, this.refl, lights, wlPlay, (c) => this.reflActors(c, [c.W / 2, c.anchor * c.H], null));
         } else if (id === "play") {
           r.begin(camX, camY, DAY, lights);
@@ -1549,7 +1619,9 @@ export class TesuGame {
 
     // --- the frame
     r.bindTarget(r.main, true, [0, 0, 0, 1]);
-    this.atmos.drawSky(W, Hf, hz, sky[0]!, sky[1]!, sky[2]!, sunPx, false, glow);
+    // (the opening's fall) high in the sky the eye-level row lies below the frame: the sky keeps its gradient over
+    // the frame (deep above, paler toward the haze below), never one flat fill
+    this.atmos.drawSky(W, Hf, Math.min(hz, Hf * 1.04), sky[0]!, sky[1]!, sky[2]!, sunPx, false, glow);
     const eye = eyeY(cam);
     const waterDraw = (rows: [number, number]): void => {
       if (!water) return;
@@ -1631,6 +1703,8 @@ export class TesuGame {
         r.flush();
       }
     }
+    // the opening's fall: fog layers in front of the camera, sweeping up past it as it comes down (opening/sky.ts)
+    if (this.opening.active && this.opening.T < BEATS.her.walkFrom) this.veils.draw(W, Hf, fallVeils(this.opening.T, W, Hf, this.opening.way, this.feel.reducedMotion));
     this.drawPrompt(cam);
     this.drawHint(cam);
     this.titles.draw(W, Hf);
@@ -1682,7 +1756,7 @@ export class TesuGame {
       clip: this.player.anim.role, zhusha: this.player.debug(), slots: this.zdraw.anims.size,
       opening: this.opening.state, T: +this.opening.T.toFixed(3), autoRun: this.opening.autoRun, holding: this.holding, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
       warm: this.warm ? `${this.warm.done}/${this.warm.gate} of ${this.warm.gateMax}, ${this.warm.plan.length} planned` : null,
-      ofuda: this.ofudaPose ? this.ofudaPose.pts.map((p) => [Math.round(p[0]), Math.round(p[1])]) : null,
+      ofuda: this.paperPose ? [Math.round((this.paperPose.pts[0]![0] + this.paperPose.pts[11]![0]) / 2), Math.round((this.paperPose.pts[0]![1] + this.paperPose.pts[11]![1]) / 2)] : null, paper: this.paper.mode,
       charm: this.warp ? `warp:${this.warp.c.id}` : this.perch ? `perch:${this.perch.c.id}` : null,
       ride: this.rides.active ? { id: this.rides.active.def.id, dir: this.rides.active.dir, t: +this.rides.active.t.toFixed(2) } : null, vista: !!this.vista,
       court: this.court.state_(), hp: this.player.hp, ultCd: this.player.ultCd,

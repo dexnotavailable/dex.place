@@ -2,7 +2,7 @@
 // rule) and the screen-res actor layer's camera (render/actors.ts).
 import test from "node:test";
 import assert from "node:assert/strict";
-import { reduceFootprint, REDUCE_OPAQUE, screenCam } from "./render/grid.ts";
+import { actorLayerPlan, actorMap, reduceFootprint, REDUCE_OPAQUE, screenCam } from "./render/grid.ts";
 import { planeXf } from "./render/view.ts";
 
 // keys: 0 clear, 1 light ground, 2 dark line, 3 rope, 4..9 a texture's colours
@@ -126,6 +126,63 @@ test("screen-res actors: the layer's camera is the frame's play transform times 
       assert.equal(sx.offY, xf.offY * k);
     }
   }
+});
+
+// (lane C 10-19) the actor layer at her art density (render/reduce.ts ActorLayer, grid.ts actorMap)
+test("actor layer: at her art density her anchor starts a footprint, footprints are d / s a side, and d = 1 is the 10-18 mapping", () => {
+  const W = 1920, Hh = 1080, w = 3840, h = 2160;
+  for (const d of [1, 1 / 0.66]) {
+    for (const [zoom, cx, ax, ay] of [[1, 9700, 9733, 8400], [0.72, 17800, 17811.4, 9017.6], [0.25, 12000, 12007, 8888]]) {
+      const cam = { cx, cy: 8300, zoom, anchor: 0.67, horizon: 0.3, W, H: Hh };
+      const dst = planeXf(cam, 1);
+      // the layer as ActorLayer.begin sets it: centred on (vx, vy), its own play transform at scale d
+      const x0 = Math.floor(ax - w / (2 * d)), y0 = Math.floor(ay - h / (2 * d));
+      const lay = planeXf({ cx: w / (2 * d) + x0, cy: (0.5 * h) / d + y0, zoom: d, anchor: 0.5, horizon: 0.5, W: w, H: h }, 1);
+      assert.ok(Math.abs(lay.s - d) < 1e-12);
+      const m = actorMap(lay, dst, w, h, [ax, ay]);
+      assert.ok(Math.abs(m.inv - d / dst.s) < 1e-12, "a footprint is d / s layer px a side");
+      // her anchor's layer px is where the first destination px at or past it starts reading
+      const lx = Math.round(Math.round(ax) * d + lay.offX), ly = Math.round(Math.round(ay) * d + lay.offY);
+      const nx = Math.ceil(Math.round(ax) * dst.s + dst.offX - 1e-6), ny = Math.ceil(Math.round(ay) * dst.s + dst.offY - 1e-6);
+      assert.ok(Math.abs((nx - dst.offX) * m.inv + m.cx - lx) < 1e-6 && Math.abs((ny - dst.offY) * m.inv + m.cy - ly) < 1e-6);
+      // the rect covers the layer's px [0, w) x [0, h) and no more than a px past them
+      const [fx0, fy0, fx1, fy1] = m.rect;
+      assert.ok((fx0 - dst.offX) * m.inv + m.cx <= 0 && (fx0 + 1 - dst.offX) * m.inv + m.cx > 0);
+      assert.ok((fx1 - dst.offX) * m.inv + m.cx >= w && (fx1 - 1 - dst.offX) * m.inv + m.cx < w);
+      assert.ok((fy0 - dst.offY) * m.inv + m.cy <= 0 && (fy1 - dst.offY) * m.inv + m.cy >= h);
+      if (d === 1) {
+        // the 10-18 formula: phase = a - (n* - off) / s, layer = (n - off) / s + phase - x0
+        const phX = Math.round(ax) - (nx - dst.offX) / dst.s;
+        assert.ok(Math.abs(m.cx - (phX - x0)) < 1e-6);
+      }
+    }
+  }
+});
+
+test("actor layer plan: her art density where the view fits, else the view covered at 1 or more, else on her", () => {
+  const artD = 1 / 0.66;
+  for (const [W, H] of [[1280, 720], [1920, 1080]]) {
+    for (let zoom = 1.5; zoom >= 0.1; zoom *= 0.93) {
+      const p = actorLayerPlan(W, H, zoom, artD, 4096);
+      assert.ok(p.w <= 4096 && p.h <= 4096);
+      // fixed per frame size: a moving zoom never reallocates the layer
+      assert.deepEqual([p.w, p.h], [actorLayerPlan(W, H, 1, artD, 4096).w, actorLayerPlan(W, H, 1, artD, 4096).h]);
+      assert.ok(p.d <= artD + 1e-12);
+      if (p.onView) {
+        assert.ok(p.d >= 1 - 1e-12, `${W} at ${zoom.toFixed(3)}: density ${p.d}`);
+        assert.ok((W / zoom) * p.d <= p.w + 1e-6 && (H / zoom) * p.d <= p.h + 1e-6, "the whole view is in the layer");
+      } else {
+        assert.equal(p.d, artD);
+        assert.ok((W / zoom) * 1 > p.w, "only when not even density 1 would cover the view");
+      }
+    }
+  }
+  // at play zoom on a 1080p screen and down to 1/2 on 1280 x 720 (the court's vista): art density, the whole view
+  assert.deepEqual([actorLayerPlan(1920, 1080, 1, artD, 4096).onView, actorLayerPlan(1920, 1080, 1, artD, 4096).d], [true, artD]);
+  assert.deepEqual([actorLayerPlan(1280, 720, 0.5, artD, 4096).onView, actorLayerPlan(1280, 720, 0.5, artD, 4096).d], [true, artD]);
+  // a 1080p screen at 1/2: the view covered at a lower density
+  const p = actorLayerPlan(1920, 1080, 0.5, artD, 4096);
+  assert.ok(p.onView && p.d < artD && p.d >= 1);
 });
 
 test("loading: the world is plain data, so a plate worker can hand it to the page (structured clone, no class, no function)", async () => {

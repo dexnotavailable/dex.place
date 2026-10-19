@@ -1,5 +1,5 @@
 {
-  "about": "Which sprite-contract slot plays for each thing Zhusha does in Tesu (lanes/anim/SPRITE-CONTRACT.md). normal = her base form, ult = the form after R. A role whose slot has no anim.json in public/assets/zhusha/ (or null) draws the white box. hold = a non-loop clip keeps its last drawing; reverse = played backwards. Dropped by Dex: run_start, e_hold, uf_run_start, uf_run_stop, and run_stop (10-19: the run cuts straight to idle).",
+  "about": "Which sprite-contract slot plays for each thing Zhusha does in Tesu (lanes/anim/SPRITE-CONTRACT.md). normal = her base form, ult = the form after R. A role whose slot has no anim.json in public/assets/zhusha/ (or null) draws the white box. hold = a non-loop clip keeps its last drawing; reverse = played backwards. In the ult form a role whose ult slot is null or not slotted yet plays its normal slot (roles.ts), so no role ever draws the white box; three are mapped on purpose (10-19): the form's E is e_tap, its m1_4 return uf_m1_3_tail, its knockdown ko_trip. Dropped by Dex: run_start, e_hold, uf_run_start, uf_run_stop, and run_stop (10-19: the run cuts straight to idle).",
   "roles": {
     "idle":      { "normal": "idle",      "ult": "uf_idle", "hold": true },
     "walk":      { "normal": "walk",      "ult": null },
@@ -14,18 +14,19 @@
     "m1_1_ret":  { "normal": "m1_1_ret",  "ult": "uf_m1_1_tail" },
     "m1_2_ret":  { "normal": "m1_2_ret",  "ult": "uf_m1_2_tail" },
     "m1_3_ret":  { "normal": "m1_3_ret",  "ult": "uf_m1_3_tail" },
-    "m1_4_ret":  { "normal": "guard_to_rest", "ult": null },
+    "m1_4_ret":  { "normal": "guard_to_rest", "ult": "uf_m1_3_tail" },
     "skill_q":   { "normal": "skill_q",   "ult": "uf_skill_q" },
-    "e_tap":     { "normal": "e_tap",     "ult": null },
+    "e_tap":     { "normal": "e_tap",     "ult": "e_tap" },
     "hurt":      { "normal": "hurt",      "ult": "uf_hurt" },
-    "knockdown": { "normal": "ko_trip",   "ult": null },
+    "knockdown": { "normal": "ko_trip",   "ult": "ko_trip" },
     "defeat":    { "normal": "defeat",    "ult": "uf_defeat" },
     "respawn":   { "normal": "respawn",   "ult": null },
     "r_call":    { "normal": "r_call",    "ult": null },
     "r_flurry":  { "normal": "r_flurry",  "ult": null },
     "transform": { "normal": "transform", "ult": "transform" },
     "r_reveal":  { "normal": "r_reveal",  "ult": "r_reveal" },
-    "uf_exit":   { "normal": "transform", "ult": "transform", "reverse": true }
+    "uf_exit":   { "normal": "transform", "ult": "transform", "reverse": true },
+    "opening_ofuda": { "normal": "opening_ofuda", "ult": null }
   },
   "jumpArc": {
     "about": "jump_arc is one clip from takeoff to the settle. The game plays its rise while she rises, holds its apex/fall drawings while she falls, and plays the rest after touchdown. Fractions of the clip; an anim.json may override them with \"segments\": [apex, contact] as frame indices.",

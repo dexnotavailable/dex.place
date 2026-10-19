@@ -1,6 +1,6 @@
 // What the opening lays over the page (or over the world when /tesu/ runs it on its own): the cinematic
-// bars (11% of the height each, in over 0.3 s in steps; out at drop 1 over 0.25 s), the letter's three lines
-// as captions on a paper strip in the bottom bar, the skip chip in the bottom bar ("skip · esc", touch:
+// bars (11% of the height each, in over 0.3 s in steps; out at drop 1 over 0.25 s), her lines' subtitles
+// (Japanese over English) on a paper strip in the bottom bar, the skip chip in the bottom bar ("skip · esc", touch:
 // "skip", at least 44 px to tap; it leaves WITH the bottom bar and is then removed from the page), and the
 // "tap for sound" chip. Reduced motion: the bars fade instead of sliding. It brings its own styles, so it
 // works in any document.
@@ -12,7 +12,10 @@ const CSS = `
 .op-bot { bottom: 0; display: flex; align-items: center; justify-content: center; }
 .op-cap { margin: 0 auto; max-width: min(88vw, 640px); padding: 6px 14px; text-align: center; background: #fff4f1; color: #2b2233;
   box-shadow: 0 0 0 2px #2b2233; font: 400 15px / 1.4 var(--f-body, "Space Grotesk Variable", system-ui, sans-serif); visibility: hidden; }
-.op-cap.on { visibility: visible; }
+.op-cap.on { visibility: inherit; }
+.op-jp, .op-en { display: block; }
+.op-jp { font-size: clamp(12px, 3.4vw, 16px); line-height: 1.45; }
+.op-en { font-size: clamp(11px, 3vw, 13px); line-height: 1.35; opacity: 0.86; }
 .op-chip, .op-sound { position: absolute; top: 50%; translate: 0 -50%; min-height: 44px; min-width: 44px; padding: 0 14px; border: 0; cursor: pointer;
   pointer-events: auto; background: #fff4f1; color: #2b2233; box-shadow: 0 0 0 2px #2b2233, 3px 3px 0 2px rgba(0, 0, 0, 0.35);
   font: 400 13px / 1 var(--f-label, "Silkscreen", ui-monospace, monospace); letter-spacing: 0.08em; text-transform: lowercase; }
@@ -28,6 +31,8 @@ export class Overlay {
   private top: HTMLDivElement;
   private bot: HTMLDivElement;
   private cap: HTMLParagraphElement;
+  private jp: HTMLSpanElement;
+  private en: HTMLSpanElement;
   readonly chip: HTMLButtonElement;
   readonly sound: HTMLButtonElement;
   readonly fade: HTMLDivElement;
@@ -57,6 +62,11 @@ export class Overlay {
     this.bot = el("div", "op-bar op-bot");
     this.cap = el("p", "op-cap");
     this.cap.setAttribute("aria-live", "polite");
+    this.jp = el("span", "op-jp");
+    this.jp.lang = "ja";
+    this.en = el("span", "op-en");
+    this.en.lang = "en";
+    this.cap.append(this.jp, this.en);
     this.chip = el("button", "op-chip");
     this.chip.type = "button";
     const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
@@ -105,11 +115,16 @@ export class Overlay {
     this.sound.remove();
   }
 
-  caption(text: string | null): void {
-    if (text === this.shownCap) return;
-    this.shownCap = text;
-    if (text) this.cap.textContent = text;
-    this.cap.classList.toggle("on", !!text);
+  /** The line being spoken (Japanese over the English), or none. */
+  subtitle(line: { jp: string; en: string } | null): void {
+    const key = line ? `${line.jp}|${line.en}` : null;
+    if (key === this.shownCap) return;
+    this.shownCap = key;
+    if (line) {
+      this.jp.textContent = line.jp;
+      this.en.textContent = line.en;
+    }
+    this.cap.classList.toggle("on", !!line);
   }
 
   chipShown(on: boolean): void {

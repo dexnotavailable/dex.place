@@ -15,22 +15,9 @@ import type { WorldBuilder } from "../build.ts";
 import { FLOOR_Y } from "./palace.ts";
 import { dressCourt } from "../../art/library/hall/dress.ts";
 
-export const COURT_X0 = h(176.2);
-export const COURT_X1 = h(192.6);
-/** Where things stand on the court (world px). */
-export const BOARD_X = h(178.8);
-export const BAO_X = h(180.5);
-export const GONG_X = h(182.2);
-export const LION_X = h(187.6);
-/** The court's middle, where the camera holds during a bout. */
-export const COURT_MID = h(185.6);
-/** The ring she and the champion move in. */
-export const RING_X0 = h(177.4);
-export const RING_X1 = h(186.6);
-/** The Prow Stair's mouth: an opening in the court floor near the tip (GDK A.4), the stair
- *  running down under the court and the palace cliff to the top of Shiraito's path. */
-export const STAIRWELL_X0 = h(186.8);
-export const STAIRWELL_X1 = h(189.2);
+// (the numbers live in court-marks.ts, so the court's game code reads them without this section and the hall's art)
+import { BAO_X, BOARD_X, COURT_MID, COURT_X0, COURT_X1, GONG_X, LION_X, RING_X0, RING_X1, STAIRWELL_X0, STAIRWELL_X1 } from "./court-marks.ts";
+export { BAO_X, BOARD_X, COURT_MID, COURT_X0, COURT_X1, GONG_X, LION_X, RING_X0, RING_X1, STAIRWELL_X0, STAIRWELL_X1 };
 
 export function court(b: WorldBuilder): void {
   const Y = FLOOR_Y;

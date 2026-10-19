@@ -9,7 +9,6 @@
 @import "./base.css";
 @import "./components.css";
 @import "./shell.css";
-@import "./floats.css";
 @import "./motion.css";
 @import "./pages.css";
 @import "./landing.css";
@@ -20,3 +19,4 @@
 @import "./embed.css";
 @import "./column.css";
 @import "./v2.css";
+@import "./pages-v2.css";

@@ -25,8 +25,14 @@ import { readSlipInto, slipFor } from "./save.ts";
 import type { Usable } from "./world/types.ts";
 import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "./opening/conductor.ts";
 import { Track1 } from "./opening/track.ts";
+import { voiceFor } from "./opening/voice.ts";
+import { VOICE_FILES } from "./opening/voice-files.ts";
 import { startPlateWorkers } from "./plates/store.ts";
-import { adoptWorld } from "./world/index.ts";
+import bake from "virtual:tesu-bake";
+import { adoptWorld, currentWorld } from "./world/current.ts";
+import { SpriteRenderer } from "./render/sprites.ts";
+import { hasPainter } from "./art/painter.ts";
+import { Fx } from "./fx/fx.ts";
 
 /**
  * The fixed keys (GDK 5.4, Appendix B): WASD and the arrows both move from the start;
@@ -102,7 +108,11 @@ async function boot(): Promise<void> {
   // (engine 10-18) the plate workers first: worker 0 builds the world and hands it over (plates/store.ts), so this
   // thread, which the website's "dex" shares, never builds it; meanwhile the renderer and her drawings get ready here
   const sync = q.has("sync") || q.has("manual");
-  const pool = sync ? null : startPlateWorkers();
+  // (engine, perf) the build's bake: tiles the opening needs, painted at build time (plates/bake.ts); none in dev
+  const pool = sync ? null : startPlateWorkers(undefined, bake.index || bake.world ? { ...bake, check: q.has("bakecheck") } : null);
+  // (engine, perf 10-19) the breakable props measure and break on this page (props.ts calls their painters): their
+  // painters load now, alongside the rest of boot (art/page-painters.ts); ?manual / ?sync build the whole world here
+  const propPainters = sync ? null : import("./art/page-painters.ts");
   await yieldTask();
   const r = new WorldRenderer(canvas);
   r.integerFrames = true;
@@ -113,6 +123,17 @@ async function boot(): Promise<void> {
   performance.mark("tesu:assets");
   const def = pool ? await pool.world : null;
   if (def) adoptWorld(def);
+  else {
+    // (engine, perf) no bake and no worker to hand it over (?manual, ?sync, no workers): built here, which also
+    // loads the world's painters on this page; otherwise the page never loads them (the workers paint)
+    (await import("./world/index.ts")).buildWorld();
+  }
+  if (propPainters) await propPainters;
+  // a prop of any other library: every painter (correct, only slower to start)
+  if (currentWorld().props.some((p) => !hasPainter(p.kind))) await import("./world/index.ts");
+  const bounds = pool ? await pool.bounds : null;
+  if (bounds) for (const [id, b] of Object.entries(bounds)) SpriteRenderer.bootBounds.set(id, b);
+  if (sync || !pool?.workers.length) await SpriteRenderer.loadPainters();
   performance.mark("tesu:world");
   await yieldTask();
   const input = new Input(canvas, KEYS);
@@ -130,6 +151,8 @@ async function boot(): Promise<void> {
       return [w, h];
     } : undefined,
   });
+  // (lane C 10-19) the world's sprite effects (public/assets/fx, EFFECTS-CONTRACT.md): loaded beside the game's start
+  void Fx.load(r).then((fx) => { game.fx = fx; });
   // the opening's inputs: in the cinematic Esc skips (the chip's key) and any other input shows the chip;
   // the page's conductor owns both, the world only tells it
   const link = (): OpeningLink | null => (game.opening.state === "cine" ? game.opening.link : null);
@@ -260,9 +283,10 @@ async function boot(): Promise<void> {
     }
   }, 60);
 
-  let titleIn = false, ofudaIn = false;
+  let titleIn = false;
+  // (the ofuda is the loader lane's paper, its sprite in code: nothing to fetch)
+  const ofudaIn = true;
   void game.titles.ready.then((ok) => { titleIn = ok; });
-  void game.ofuda.ready.then((ok) => { ofudaIn = ok; });
   if (game.awaitingPress && !embedded && !q.has("manual")) standalonePress(game, () => titleIn && ofudaIn);
 
   const src = "auto";
@@ -288,9 +312,9 @@ async function boot(): Promise<void> {
       flag: (f: string, on = true) => (on ? game.flags.add(f) : game.flags.delete(f)),
       use: () => game.use(),
       /** The press (PLAY or "continue"): the opening starts on the link's clock (the page's conductor); no link: silent, on the world's own time (tools). */
-      play: (l?: OpeningLink) => game.play(l),
+      play: (l?: OpeningLink, way?: "continue" | "corner" | "top" | "bottom") => game.play(l, l?.way ?? way),
       audio: (ctx: AudioContext) => game.sound.start(ctx),
-      /** The opening set (what the next 36 s need), for the page's loader: plates along the camera's path, her 192 px drawing, the title face, the talisman. */
+      /** The opening set (what the opening needs), for the page's loader: plates along the camera's path, her drawings, the title face, the ofuda. */
       openingSet: () => ({ plates: game.warmProgress(), close: game.closeReady, font: titleIn, ofuda: ofudaIn, warming: game.warming }),
       /** The bout: summon a prize's champion, press the finish (as an attack press would). */
       summon: (id: string) => {
@@ -322,6 +346,7 @@ async function boot(): Promise<void> {
 function standalonePress(game: TesuGame, parts: () => boolean): void {
   const ctx = makeAudio();
   const track = ctx ? new Track1(ctx, ctx.destination) : null;
+  const voice = ctx ? voiceFor(ctx, VOICE_FILES) : null;
   let trackIn = !track;
   void track?.aReady.then(() => { trackIn = true; });
   const btn = document.createElement("button");
@@ -335,7 +360,7 @@ function standalonePress(game: TesuGame, parts: () => boolean): void {
     if (!game.awaitingPress || performance.now() - shownAt < 300) return;
     btn.remove();
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const c = new Conductor(ctx, track, { doc: document, reduced, repeat: readOpeningNote().seen > 0 });
+    const c = new Conductor(ctx, track, { doc: document, reduced, repeat: readOpeningNote().seen > 0, voice });
     c.start();
     game.play(c);
     (document.getElementById("view") as HTMLCanvasElement | null)?.focus();

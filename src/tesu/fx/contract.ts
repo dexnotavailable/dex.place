@@ -1,0 +1,248 @@
+// World effects as pixel sprite animations (lane C 10-19; lanes/engine/EFFECTS-CONTRACT.md is the spec B / B2 / E
+// build to). The pure part, no browser: fx.json's rules and the player's clock (which effects live, which drawing each
+// shows, where), so Node tests run it. fx/fx.ts loads the drawings and draws them.
+
+/** Drawn at her art px: one effect px = one of her 128 px art px. */
+export const FX_PX = 1;
+/**
+ * A drawing at most this size (art px; 10-19 v2: raised for the huge R letter, the dive's nuke). The loader cuts every
+ * drawing into FX_CELL cells, drops the empty ones, trims each to what is painted and stores a cell repeated anywhere
+ * in the effect once, so one drawing bigger than an atlas page plays as one (same clock, aligned to the art px) and a
+ * sparse or slowly building effect costs what is painted, not its canvas.
+ */
+export const FX_MAX_W = 4096;
+export const FX_MAX_H = 4096;
+export const FX_CELL = 128;
+/** Per effect: stored px after the cells (GPU: 4 bytes each), and PNG bytes (the slot-in checks the bytes). */
+export const FX_MAX_STORED = 16_000_000;
+export const FX_MAX_BYTES = 8_000_000;
+/** Effects alive at once (the oldest one-shot goes first). */
+export const FX_MAX_LIVE = 64;
+
+export type FxLayer = "back" | "front";
+export type FxAttach = "world" | "her";
+
+export interface FxFrame {
+  file: string;
+  ticks: number;
+  /** This drawing's pivot moved by (dx, dy) art px. */
+  off?: [number, number];
+  /** Whole-drawing opacity (fades only). */
+  opacity?: number;
+}
+
+export interface FxDef {
+  id: string;
+  stage: "pixel";
+  px: 1;
+  /** The drawing px placed on the spawn point. */
+  pivot: [number, number];
+  layer: FxLayer;
+  attach: FxAttach;
+  reflect: boolean;
+  frames: FxFrame[];
+  loop: boolean;
+  /** Effects that start with this one, at the same point, facing and clock (one effect authored in parts). */
+  with: string[];
+  notes?: string;
+}
+
+export class FxError extends Error {}
+
+const ID = /^[a-z0-9_]+$/;
+const FILE = /^f\d{3}\.png$/;
+const num = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+
+/** Checks an fx.json against the contract; throws an FxError naming every problem. */
+export function validateFx(json: unknown, id: string): FxDef {
+  const o = json as Record<string, unknown>;
+  if (!o || typeof o !== "object") throw new FxError(`${id}: fx.json is not an object`);
+  const bad: string[] = [];
+  if (!ID.test(id)) bad.push(`the folder "${id}" is not a valid id (lowercase, digits, _)`);
+  if (o.id !== id) bad.push(`id "${String(o.id)}" is not the folder's "${id}"`);
+  if (o.stage !== "pixel") bad.push(`stage "${String(o.stage)}": only finished pixel art ("pixel") ships`);
+  if (o.px !== FX_PX) bad.push(`px ${String(o.px)}: effects are drawn at her art px (px 1)`);
+  const pv = o.pivot as unknown[];
+  if (!Array.isArray(pv) || pv.length !== 2 || !pv.every((v) => num(v) && Number.isInteger(v))) bad.push("pivot must be [x, y] in whole drawing px");
+  const layer = o.layer ?? "front";
+  if (layer !== "back" && layer !== "front") bad.push(`layer "${String(layer)}": "back" or "front"`);
+  const attach = o.attach ?? "world";
+  if (attach !== "world" && attach !== "her") bad.push(`attach "${String(attach)}": "world" or "her"`);
+  if ("reflect" in o && typeof o.reflect !== "boolean") bad.push("reflect must be true or false");
+  if ("loop" in o && typeof o.loop !== "boolean") bad.push("loop must be true or false");
+  const wth = o.with ?? [];
+  if (!Array.isArray(wth) || !wth.every((v) => typeof v === "string" && ID.test(v) && v !== id)) bad.push("with must be a list of other effects' ids");
+  const frames = o.frames;
+  if (!Array.isArray(frames) || frames.length === 0) bad.push("no frames");
+  else {
+    frames.forEach((f: unknown, i: number) => {
+      const fr = f as Record<string, unknown>;
+      if (!fr || typeof fr !== "object") { bad.push(`frames[${i}] is not an object`); return; }
+      if (typeof fr.file !== "string" || !FILE.test(fr.file)) bad.push(`frames[${i}].file "${String(fr.file)}": fNNN.png`);
+      if (!num(fr.ticks) || !Number.isInteger(fr.ticks) || fr.ticks < 1) bad.push(`frames[${i}].ticks must be a whole number >= 1`);
+      if ("off" in fr) {
+        const of = fr.off as unknown[];
+        if (!Array.isArray(of) || of.length !== 2 || !of.every((v) => num(v) && Number.isInteger(v))) bad.push(`frames[${i}].off must be [dx, dy] whole art px`);
+      }
+      if ("opacity" in fr && (!num(fr.opacity) || fr.opacity < 0 || fr.opacity > 1)) bad.push(`frames[${i}].opacity must be in [0, 1]`);
+    });
+  }
+  if (bad.length) throw new FxError(`${id}: ${bad.join("; ")}`);
+  return {
+    id, stage: "pixel", px: 1, pivot: [pv[0] as number, pv[1] as number], layer: layer as FxLayer, attach: attach as FxAttach,
+    reflect: o.reflect !== false, frames: (frames as FxFrame[]).map((f) => ({ ...f })), loop: o.loop === true, with: [...(wth as string[])],
+    ...(typeof o.notes === "string" ? { notes: o.notes } : {}),
+  };
+}
+
+/** Checks a drawing's size and pixels: at most FX_MAX_W x FX_MAX_H, alpha 0 or 255 only. Returns the problems. */
+export function checkFxDrawing(rgba: Uint8Array | Uint8ClampedArray, w: number, h: number, name: string): string[] {
+  const bad: string[] = [];
+  if (w > FX_MAX_W || h > FX_MAX_H) bad.push(`${name}: ${w} x ${h} is over ${FX_MAX_W} x ${FX_MAX_H}`);
+  let soft = 0;
+  for (let i = 3; i < rgba.length; i += 4) if (rgba[i] !== 0 && rgba[i] !== 255) soft++;
+  if (soft) bad.push(`${name}: ${soft} half-transparent px (alpha 0 or 255 only; draw translucency as a dither)`);
+  return bad;
+}
+
+/** One stored cell of a drawing: where it sits in the drawing, its trimmed size, and its pixels' key (dedupe). */
+export interface FxCell {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  key: string;
+  px: Uint8Array;
+}
+
+/**
+ * Cuts a drawing (RGBA, w x h) into `cell`-px cells, leaves out the empty ones and trims each to its painted box.
+ * Each cell's `key` is the same for the same pixels (with its size), so an effect stores a repeated cell once.
+ */
+export function fxCells(rgba: Uint8Array | Uint8ClampedArray, w: number, h: number, cell = FX_CELL): FxCell[] {
+  const out: FxCell[] = [];
+  for (let cy = 0; cy < h; cy += cell) {
+    for (let cx = 0; cx < w; cx += cell) {
+      const ex = Math.min(w, cx + cell), ey = Math.min(h, cy + cell);
+      let x0 = ex, y0 = ey, x1 = -1, y1 = -1;
+      for (let y = cy; y < ey; y++) {
+        for (let x = cx; x < ex; x++) {
+          if (rgba[(y * w + x) * 4 + 3]! < 128) continue;
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+      if (x1 < 0) continue;
+      const cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+      const px = new Uint8Array(cw * ch * 4);
+      for (let y = 0; y < ch; y++) px.set(rgba.subarray(((y0 + y) * w + x0) * 4, ((y0 + y) * w + x0 + cw) * 4), y * cw * 4);
+      // FNV-1a over the pixels (+ the size): a key for dedupe (the loader compares the bytes before sharing)
+      let a = 0x811c9dc5 ^ cw, b = 0x01000193 ^ ch;
+      for (let i = 0; i < px.length; i++) { a = Math.imul(a ^ px[i]!, 0x01000193); b = Math.imul(b ^ px[i]!, 0x5bd1e995); }
+      out.push({ x: x0, y: y0, w: cw, h: ch, key: `${cw}x${ch}:${(a >>> 0).toString(36)}:${(b >>> 0).toString(36)}`, px });
+    }
+  }
+  return out;
+}
+
+/** What the game asks for when it plays an effect (EFFECTS-CONTRACT.md "How the game plays one"). */
+export interface FxSpawn {
+  /** World px; ignored for attach "her" (her soles). */
+  x?: number;
+  y?: number;
+  facing?: number;
+  attach?: FxAttach;
+  layer?: FxLayer;
+  /** Ticks before it starts. */
+  delay?: number;
+}
+
+export interface FxLive {
+  def: FxDef;
+  x: number;
+  y: number;
+  facing: number;
+  attach: FxAttach;
+  layer: FxLayer;
+  /** Ticks since it started (negative while delayed). */
+  t: number;
+  serial: number;
+  stopped: boolean;
+}
+
+export interface FxHandle {
+  stop(): void;
+  readonly alive: boolean;
+}
+
+const DEAD: FxHandle = { stop: () => {}, alive: false };
+
+/** The drawing an effect shows t ticks in (null when a one-shot is done). Loops wrap. */
+export function fxFrameAt(def: FxDef, t: number): number | null {
+  if (t < 0) return null;
+  const total = def.frames.reduce((a, f) => a + f.ticks, 0);
+  if (t >= total) {
+    if (!def.loop) return null;
+    t %= total;
+  }
+  for (let i = 0, at = 0; i < def.frames.length; i++) {
+    at += def.frames[i]!.ticks;
+    if (t < at) return i;
+  }
+  return def.frames.length - 1;
+}
+
+/** The effects alive and their clock (60 ticks a second, stopped by hitstop with the rest of the game). */
+export class FxClock {
+  readonly live: FxLive[] = [];
+  private serial = 0;
+  private warned = new Set<string>();
+
+  readonly defs: ReadonlyMap<string, FxDef>;
+
+  constructor(defs: ReadonlyMap<string, FxDef>) {
+    this.defs = defs;
+  }
+
+  has(id: string): boolean {
+    return this.defs.has(id);
+  }
+
+  play(id: string, o: FxSpawn = {}, depth = 0): FxHandle {
+    const def = this.defs.get(id);
+    if (!def) {
+      if (!this.warned.has(id)) { this.warned.add(id); console.warn(`fx: no effect called ${id} (public/assets/fx/${id}/)`); }
+      return DEAD;
+    }
+    if (this.live.length >= FX_MAX_LIVE) {
+      const i = this.live.findIndex((e) => !e.def.loop);
+      this.live.splice(i >= 0 ? i : 0, 1);
+    }
+    const e: FxLive = {
+      def, x: o.x ?? 0, y: o.y ?? 0, facing: (o.facing ?? 1) < 0 ? -1 : 1, attach: o.attach ?? def.attach, layer: o.layer ?? def.layer,
+      t: -Math.max(0, Math.round(o.delay ?? 0)), serial: this.serial++, stopped: false,
+    };
+    this.live.push(e);
+    // its parts start with it: the same point, facing, delay (so the same clock); stopping it stops them
+    const parts = depth < 4 ? def.with.map((p) => this.play(p, { ...o, layer: undefined }, depth + 1)) : [];
+    return {
+      stop: () => { e.stopped = true; for (const p of parts) p.stop(); },
+      get alive() { return !e.stopped && fxFrameAt(e.def, Math.max(0, e.t)) !== null; },
+    };
+  }
+
+  /** One tick: every effect ages; finished one-shots and stopped ones go. */
+  tick(): void {
+    for (const e of this.live) e.t++;
+    for (let i = this.live.length - 1; i >= 0; i--) {
+      const e = this.live[i]!;
+      if (e.stopped || (e.t >= 0 && fxFrameAt(e.def, e.t) === null)) this.live.splice(i, 1);
+    }
+  }
+
+  clear(): void {
+    this.live.length = 0;
+  }
+}

@@ -4,10 +4,10 @@
 // the level the camera needs (or loaded from a render later) and kept as RGBA textures.
 
 import { compile, uniforms } from "../../lab/engine/gl.ts";
-import { painter } from "../art/painter.ts";
+import { hasPainter, painter } from "../art/painter.ts";
 import type { SpriteDone, SpriteJob } from "../plates/store.ts";
 import { PLANES, type SpriteDef } from "../world/types.ts";
-import { paintSpriteFrame, type SpritePixels } from "./sprite-paint.ts";
+import type { SpritePixels } from "./sprite-paint.ts";
 import { SHOW_GLSL, type PlaneLook } from "./planes.ts";
 import { REDUCE_CONST_GLSL, REDUCE_RGBA_GLSL } from "./reduce.ts";
 import { levelFor, planeLevels, planeXf, type CamState } from "./view.ts";
@@ -298,13 +298,26 @@ export class SpriteRenderer {
     return fr;
   }
 
+  /**
+   * (engine, perf) The page does not load the world's painters (plates/worker.ts paints): the world's painted
+   * sprites' bounds come from a worker at boot (main.ts, by sprite id), and a frame painted on the page (?manual,
+   * no workers, a frame a worker could not paint) uses painters loaded on demand (paintSync).
+   */
+  static bootBounds = new Map<string, [number, number, number, number]>();
+  static paintSync: ((kind: string, p: Record<string, unknown>, seed: number, f: number, level: number) => SpritePixels) | null = null;
+  private static loadingPainters: Promise<void> | null = null;
+  static loadPainters(): Promise<void> {
+    return (SpriteRenderer.loadingPainters ??= import("./sprite-paint.ts").then((m) => { SpriteRenderer.paintSync = m.paintSpriteFrame; }));
+  }
+
   /** A painted frame of a sprite at a level (painted now if the budget allows, else null). */
   private bounds = new Map<SpriteDef, { p: Record<string, unknown>; b: [number, number, number, number] }>();
   /** A painted sprite's bounds in level-1 px around its anchor (kept until its params change). */
   private boundsOf(def: SpriteDef): [number, number, number, number] {
     const have = this.bounds.get(def);
     if (have && have.p === def.p) return have.b;
-    const b = painter(def.kind).bounds({ ...def.p, frame: 0 });
+    // its painter here (the props', or all of them once loaded), else the boot's bounds, else no culling
+    const b = hasPainter(def.kind) ? painter(def.kind).bounds({ ...def.p, frame: 0 }) : SpriteRenderer.bootBounds.get(def.id) ?? [-1e6, -1e6, 1e6, 1e6];
     this.bounds.set(def, { p: def.p, b });
     return b;
   }
@@ -327,9 +340,15 @@ export class SpriteRenderer {
       }
       if (this.asking.has(key)) return null;
     }
+    const paint = SpriteRenderer.paintSync;
+    if (!paint) {
+      // (the painters load first: the frame waits for them, as a worker's frame would)
+      void SpriteRenderer.loadPainters();
+      return null;
+    }
     if (!force && this.paintedThisFrame >= 1) return null;
     this.paintedThisFrame++;
-    return this.keep(def, key, this.upload(paintSpriteFrame(def.kind, def.p, def.seed, f, level), f, level));
+    return this.keep(def, key, this.upload(paint(def.kind, def.p, def.seed, f, level), f, level));
   }
 
   private keep(def: SpriteDef, key: string, fr: Frame): Frame {

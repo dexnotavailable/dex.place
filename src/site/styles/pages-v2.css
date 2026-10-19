@@ -1,0 +1,295 @@
+/* The deep pages (lane P, 10-19): docs, posts, gallery pieces, project pages, the 404 and the stubs, brought onto the
+   home page's white paper and kit (v2.css): the kicker line, the pixel titles with their tone bar, ink edges with hard
+   shadows, and windows into the world. Loaded after v2.css. Contrast on white (WCAG AA) as in v2.css; the code
+   colours below are checked on the code well (#edf3f8; pages.test.mjs): ink 13.6:1, muted 6.0:1, scarlet 4.7:1,
+   azure 5.0:1, jade 5.3:1, amber 5.3:1, violet 7.4:1. */
+
+/* ------------------------------------------------------------------ nothing waits on a script */
+/* A deep page is read top to bottom and often opened from a shared link: its text, keys and cards are there at once,
+   never hidden until a reveal on scroll (the page column already does this, v2.css; CRITIQUE-1 B4). */
+@media (prefers-reduced-motion: no-preference) {
+  .js .sheet--page [data-reveal]:not(.is-in) { opacity: 1; }
+  .js .sheet--page [data-reveal].is-in, .js .sheet--page [data-reveal].is-in i { animation: none; }
+}
+
+/* ------------------------------------------------------------------ the deep head (render/deep.ts) */
+.dh {
+  --tone: var(--gold);
+  --tone-d: var(--gold);
+  --tone-ring: 0 0 0 2px var(--ink);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 38%, 470px);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: stretch;
+  padding-top: var(--s-7);
+  margin-bottom: var(--s-8);
+}
+.dh--mint { --tone: var(--mint); --tone-d: var(--mint-d); --tone-ring: none; }
+.dh--cyan { --tone: var(--cyan); --tone-d: var(--azure); --tone-ring: none; }
+.dh--magenta { --tone: var(--magenta); --tone-d: var(--scarlet); --tone-ring: none; }
+.dh__text { display: grid; align-content: center; justify-items: start; gap: 18px; min-width: 0; padding-block: 8px; }
+
+/* the kicker: tone tile, //, the way back, a rule, a real count (the home section heads' line) */
+.dh__kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  font: 400 var(--fs-12) / 1.2 var(--f-label);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dh__kicker .tile { flex: none; }
+.dh__slash { flex: none; color: var(--scarlet); }
+.dh__crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; }
+.dh__crumbs > * { flex: none; }
+.dh__crumbs a { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: var(--line-2); text-underline-offset: 0.3em; }
+.dh__crumbs a:hover { color: var(--azure); text-decoration-color: var(--azure); }
+.dh__sep { color: var(--line-2); }
+.dh__rule { flex: 1 1 24px; min-width: 24px; height: 2px; background: var(--line); }
+.dh__aside { flex: none; white-space: nowrap; }
+
+.dh__title {
+  max-width: 100%;
+  font: 400 2rem / 1.25 var(--f-px);
+  color: var(--ink);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+/* the tone bar under the title, as under the home sections' titles */
+.dh__title::after { content: ""; display: block; width: 40px; height: 6px; margin-top: 14px; background: var(--tone-d); box-shadow: var(--tone-ring); }
+.dh__title--display {
+  max-width: none;
+  font: 400 var(--fs-h2) / 1 var(--f-title);
+  letter-spacing: calc(1px * var(--title-px));
+  text-transform: uppercase;
+  font-synthesis: none;
+  -webkit-font-smoothing: none;
+}
+.dh__sum { max-width: 60ch; margin: 0; color: var(--fg-2); line-height: 1.7; }
+.dh__tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.dh__date { display: flex; align-items: center; gap: 16px; }
+.dh__facts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0; color: var(--fg-2); }
+
+/* the window: a hole in the paper onto the world (motion/windows.ts draws the place and its torn edge into it) */
+.dh__side { position: relative; min-width: 0; display: grid; }
+.dh__win {
+  position: relative;
+  min-height: 240px;
+  max-height: 340px;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+.dh__win canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+.dh__side .hanko { top: -4px; right: -2px; }
+
+@media (max-width: 900px) {
+  /* phones and narrow tablets: the window opens above the head, nearly edge to edge, as on the home page */
+  .dh { grid-template-columns: minmax(0, 1fr); gap: var(--s-5); padding-top: var(--s-4); margin-bottom: var(--s-7); }
+  .dh__side { order: -1; margin-inline: calc(8px - var(--pad)); }
+  .dh__win { min-height: 0; max-height: none; height: clamp(150px, 44vw, 260px); }
+  .dh__side .hanko { top: auto; bottom: -14px; right: 12px; }
+  .dh__text { padding-block: 0; }
+}
+@media (max-width: 560px) {
+  .dh__kicker { flex-wrap: wrap; row-gap: 8px; }
+  .dh__rule { display: none; }
+  .dh__aside { margin-left: auto; }
+  .dh__title { line-height: 1.3; }
+  .dh__title--display { font-size: calc(25px * var(--title-px)); }
+}
+
+/* long titles on a phone: 24 px (DotGothic16 keeps to its 16 px grid on a 1x screen; on a 2x phone 24 css px are
+   whole device pixels of its grid's 1.5) */
+@media (max-width: 560px) and (min-resolution: 2dppx) {
+  .dh__title:not(.dh__title--display) { font-size: 1.5rem; }
+}
+
+/* ------------------------------------------------------------------ doc pages */
+.doc { margin-top: 0; }
+.dside, .dtoc { top: calc(var(--hdr-h) + 28px); }
+.dside__label { font-weight: 400; }
+.dside__link[aria-current="page"] { background: var(--gold); border-color: var(--ink); box-shadow: 2px 2px 0 var(--ink); color: var(--ink); font-weight: 400; }
+.toc-list a[aria-current] { font-weight: 400; }
+.dtoc__ind, .dtoc[data-ready] .dtoc__ind::before { background: var(--gold); }
+.dtoc__ind { border-color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.toc-list a:hover { text-decoration-color: var(--scarlet); }
+.jump[open] .jump__sum { background: var(--gold); border-color: var(--ink); }
+.apager__link { border-color: var(--ink); box-shadow: var(--off-s) var(--off-s) 0 var(--ink); }
+.apager__title { font-weight: 400; }
+
+/* ------------------------------------------------------------------ a reading page beside its window (posts) */
+.page--post > .wrap { max-width: calc(1400px + var(--pad) * 2); }
+.dband {
+  display: grid;
+  grid-template-columns: minmax(0, 760px) minmax(300px, 1fr);
+  gap: clamp(32px, 4vw, 64px);
+  align-items: start;
+}
+.dband__main { min-width: 0; }
+.dband__side { position: sticky; top: calc(var(--hdr-h) + 28px); padding-top: var(--s-7); }
+.dh__win--tall { height: min(calc(100vh - var(--hdr-h) - 56px - var(--s-7)), 700px); min-height: 320px; max-height: none; }
+.dband .dh { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 1099px) {
+  .dband { grid-template-columns: minmax(0, 1fr); gap: 0; max-width: 760px; margin-inline: auto; }
+  .dband__side { order: -1; position: relative; top: 0; padding-top: var(--s-4); margin-inline: calc(8px - var(--pad)); }
+  .dh__win--tall { height: clamp(150px, 44vw, 300px); min-height: 0; }
+}
+
+/* ------------------------------------------------------------------ post pages */
+.post, .apager--post, .post__back { max-width: 760px; }
+.post__end { position: relative; display: flex; align-items: center; gap: 14px; margin-top: var(--s-8); color: var(--scarlet); }
+.post__rule { flex: 1; height: 2px; background: var(--line); }
+.post__end .hanko { position: relative; top: auto; right: auto; flex: none; width: 40px; height: 40px; margin-left: 6px; }
+.dh__date .dblock { background: var(--cyan); border-color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+
+/* ------------------------------------------------------------------ reading: prose on white */
+/* the reading-progress line at the top of the screen: scarlet, then gold (not the dark site's four pastels) */
+.readbar { height: 3px; }
+.readbar i { background: var(--scarlet); }
+.readbar i:nth-child(2) { background: var(--gold); }
+.readbar i:nth-child(3) { background: var(--azure); }
+.prose h2 { border-top-color: var(--line); }
+.prose blockquote { border-left-color: var(--scarlet); }
+/* a section break: three pixels in her colours, not the dark site's strip */
+.prose hr {
+  width: 36px;
+  height: 6px;
+  margin-inline: auto;
+  background: linear-gradient(90deg, var(--scarlet) 0 6px, transparent 6px 15px, var(--gold) 15px 21px, transparent 21px 30px, var(--azure) 30px);
+}
+.prose img { border-color: var(--ink); }
+.prose .table { border-color: var(--ink); box-shadow: var(--off-s) var(--off-s) 0 var(--ink); }
+.prose th { border-bottom-color: var(--ink); }
+.callout { border-color: var(--line); }
+
+/* code: ink on the pale well (the dark site's light text was nearly invisible on it) */
+.prose .code { border-color: var(--ink); box-shadow: var(--off) var(--off) 0 var(--ink); }
+.code__bar { background: #fff; border-bottom: var(--bw-1) solid var(--line); }
+.code__dots i { background: var(--scarlet); }
+.code__dots i:nth-child(2) { background: var(--gold); }
+.code__dots i:nth-child(3) { background: var(--azure); }
+.prose .code pre { color: var(--ink); }
+.t-c { color: var(--muted); }
+.t-s { color: var(--mint-d); }
+.t-n { color: var(--yellow-d); }
+.t-k { color: var(--scarlet); }
+.t-v { color: var(--azure); }
+.t-f { color: #5a3a9e; }
+.t-p { color: var(--muted); }
+
+/* ------------------------------------------------------------------ the 404 */
+.page--nf { padding-bottom: var(--s-8); }
+.page--nf .dh { margin-bottom: 0; }
+.page--nf .dh__win { max-height: 420px; }
+.nf__links { gap: 12px; margin-top: 6px; }
+
+/* ------------------------------------------------------------------ gallery pieces */
+/* Dex's art is the page: the frame and the keys around it stay quiet. The frame keeps its 13 px mat and 2 px edge
+   (render/gallery.ts pieceSizes counts them); its edge is ink and it stands on a gold block outlined in ink. */
+.piece__top { margin: var(--s-6) 0 var(--s-5); }
+.piece__count { font: 400 25px / 1 var(--f-title); letter-spacing: 1px; color: var(--muted); font-synthesis: none; -webkit-font-smoothing: none; }
+.piece__count b { color: var(--ink); }
+.piece__frame { background: #fff; border-color: var(--ink); box-shadow: 10px 10px 0 var(--gold), 10px 10px 0 2px var(--ink); }
+.piece__img { background-color: var(--panel-2); }
+.piece__pager { margin-top: var(--s-7); }
+.film__link { border-color: var(--line-2); box-shadow: 2px 2px 0 var(--ink); opacity: 0.72; }
+.film__link.is-here { border-color: var(--scarlet); box-shadow: 3px 6px 0 var(--ink); }
+.piece__keys {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: var(--s-5) 0 0;
+  font: 400 var(--fs-12) / 1.4 var(--f-label);
+  color: var(--muted);
+}
+.piece__keys span + kbd { margin-left: 16px; }
+.piece__keys kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 26px;
+  padding: 0 6px;
+  background: #fff;
+  border: var(--bw) solid var(--ink);
+  border-bottom-width: 4px;
+  color: var(--ink);
+  font: inherit;
+}
+@media (hover: hover) and (pointer: fine) {
+  .piece__keys { display: flex; }
+}
+@media (max-width: 699px) {
+  .piece__frame { box-shadow: 6px 6px 0 var(--gold), 6px 6px 0 2px var(--ink); }
+}
+
+/* ------------------------------------------------------------------ the stubs' own pages (opens later) */
+.stubpage { --tone-t: var(--cyan-t); max-width: 680px; gap: 12px; padding: var(--s-6) var(--s-6) var(--s-5); box-shadow: var(--off-l) var(--off-l) 0 var(--ink); }
+.stubpage--yellow { --tone-t: var(--yellow-t); }
+.stubpage--mint { --tone-t: var(--mint-t); }
+.stubpage--magenta { --tone-t: var(--magenta-t); }
+.stubpage__line { font: 400 2rem / 1.25 var(--f-px); padding-right: 56px; text-wrap: balance; }
+.stubpage__until {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  margin: var(--s-3) calc(var(--s-6) * -1) calc(var(--s-5) * -1);
+  padding: var(--s-5) var(--s-6);
+  background: var(--tone-t);
+  border-top: var(--bw) solid var(--ink);
+}
+.stubpage__label { margin: 0; font: 400 var(--fs-12) / 1 var(--f-label); letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.stubpage__now { margin: 0; max-width: 52ch; color: var(--fg); }
+.stubpage__until .btn { margin-top: 4px; }
+.stubpage__more {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: var(--s-8) 0 var(--s-5);
+  font: 400 var(--fs-12) / 1 var(--f-label);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.stubpage__slash { color: var(--scarlet); }
+.stubpage__rule { flex: 1; height: 2px; background: var(--line); }
+@media (max-width: 600px) {
+  .stubpage { padding: var(--s-5) var(--s-4) var(--s-4); }
+  .stubpage__line { font-size: 1rem; line-height: 1.6; padding-right: 40px; }
+  .stubpage__until { margin: var(--s-3) calc(var(--s-4) * -1) calc(var(--s-4) * -1); padding: var(--s-4); }
+}
+
+/* ------------------------------------------------------------------ the downloads page */
+/* its content column sits beside a window (the band), so the steps count their own room, not the screen's: four
+   across only when each has a card's width, two in a column beside a window, one on a phone */
+.page--downloads { container: dlpage / inline-size; }
+@container dlpage (max-width: 900px) {
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container dlpage (max-width: 520px) {
+  .steps { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .step { grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; padding: 16px; }
+  .step .tile { grid-row: span 2; }
+  .step__title { margin-top: 0; padding-right: 32px; }
+  .step__no { top: 16px; right: 16px; }
+}
+
+/* ------------------------------------------------------------------ a project's own page */
+/* the head speaks the deep pages' kit: the kicker with the way back, the tone bar under the name as under every
+   deep title (the art and cards are lane G's) */
+.proj__head .dh__kicker .counter { font: inherit; }
+.proj__title::after { width: 40px; height: 6px; background: var(--tone-d, var(--gold)); box-shadow: var(--tone-ring, 0 0 0 2px var(--ink)); }
+.proj { --tone-d: var(--gold); --tone-ring: 0 0 0 2px var(--ink); padding-top: var(--s-7); }
+.proj--mint { --tone-d: var(--mint-d); --tone-ring: none; }
+.proj--magenta { --tone-d: var(--scarlet); --tone-ring: none; }
+.proj--cyan { --tone-d: var(--azure); --tone-ring: none; }
+@media (max-width: 900px) {
+  /* phones: the picture shorter, so the name and the one action are on the first screen with it */
+  .proj { padding-top: var(--s-5); gap: var(--s-5); }
+  .proj__art { aspect-ratio: 4 / 3; }
+}

@@ -9,7 +9,9 @@
 //   ever heard;
 // - every start lands on the sample grid (t0 is on it, and the cut points are whole samples);
 // - B late (not decoded by T 39): A fades out over its last bar and B comes in on the first bar line after
-//   it is ready, with a one-beat fade-in (the opening has ended by then).
+//   it is ready, with a one-beat fade-in (the opening has ended by then);
+// - Dex's lift (vetting, 10-16): "Have the volume increase at 0:32, not too sudden but enough for the drop to hit
+//   way harder": its own gain stage rises by the chart's dB over a beat and a bit into 0:32 and stays up.
 
 import { BEATS } from "./beats.ts";
 import { beatAt, nextBarLine } from "./timeline.ts";
@@ -25,6 +27,10 @@ interface Voice {
 
 export class Track1 {
   readonly out: GainNode;
+  /** Dex's lift into 0:32 (its own stage, so the dips and covers on `out` never undo it). */
+  readonly lift: GainNode;
+  /** Under her voice the music dips a little (its own stage: voice.ts books it with the lines). */
+  readonly ducker: GainNode;
   a: AudioBuffer | null = null;
   b: AudioBuffer | null = null;
   readonly ext: "opus" | "m4a";
@@ -45,6 +51,10 @@ export class Track1 {
     this.out = ctx.createGain();
     this.out.gain.value = level;
     this.out.connect(dest);
+    this.ducker = ctx.createGain();
+    this.ducker.connect(this.out);
+    this.lift = ctx.createGain();
+    this.lift.connect(this.ducker);
     const probe = typeof document !== "undefined" ? document.createElement("audio") : null;
     this.ext = probe?.canPlayType('audio/ogg; codecs="opus"') ? "opus" : "m4a";
     this.aReady = this.fetch(0).then((buf) => {
@@ -92,7 +102,7 @@ export class Track1 {
     const gain = this.ctx.createGain();
     gain.gain.value = g;
     src.connect(gain);
-    gain.connect(this.out);
+    gain.connect(this.lift);
     const v = { src, gain };
     this.voices.push(v);
     src.onended = () => {
@@ -106,6 +116,7 @@ export class Track1 {
   play(at: number, from: number): void {
     this.stop(at);
     this.sched = { at, from };
+    this.liftFrom(at, from);
     this.bPlaced = false;
     this.late = false;
     const half = S.fade / 2;
@@ -121,6 +132,20 @@ export class Track1 {
       this.aVoice = v;
     }
     this.placeB();
+  }
+
+  /** The lift's gain for a start at context time `at` from track time `from`: flat, then the rise into 0:32. */
+  private liftFrom(at: number, from: number): void {
+    const L = S.lift, g = this.lift.gain, up = Math.pow(10, L.db / 20);
+    g.cancelScheduledValues(0);
+    if (from >= L.to) {
+      g.setValueAtTime(up, at);
+      return;
+    }
+    const a = at + Math.max(0, L.from - from), b = at + (L.to - from);
+    g.setValueAtTime(from > L.from ? 1 + (up - 1) * ((from - L.from) / (L.to - L.from)) : 1, at);
+    if (a > at) g.setValueAtTime(1, a);
+    g.linearRampToValueAtTime(up, b);
   }
 
   /** Schedules piece B into the join (or, late, onto the next bar line) once it is decoded. */
@@ -181,6 +206,30 @@ export class Track1 {
     this.voices = [];
     this.aVoice = null;
     this.sched = null;
+  }
+
+  /**
+   * The voice's dips from context time `from` on: the music `db` down over each window (context times, in order),
+   * ramping in and out over `ramp` s; whatever was booked after `from` is replaced (an empty list: back to full).
+   */
+  duck(from: number, windows: readonly (readonly [number, number])[], db: number, ramp: number): void {
+    const g = this.ducker.gain, low = Math.pow(10, db / 20);
+    g.cancelScheduledValues(from);
+    g.setValueAtTime(1, from);
+    // windows closer than two ramps stay down between them (one dip, not a flutter)
+    const merged: [number, number][] = [];
+    for (const [a, b] of windows) {
+      const m = merged[merged.length - 1];
+      if (m && a - ramp <= m[1] + ramp) m[1] = Math.max(m[1], b);
+      else merged.push([a, b]);
+    }
+    for (const [a, b] of merged) {
+      const down = Math.max(from, a - ramp);
+      g.setValueAtTime(1, down);
+      g.linearRampToValueAtTime(low, Math.max(down + 0.005, a));
+      g.setValueAtTime(low, Math.max(down + 0.005, b));
+      g.linearRampToValueAtTime(1, Math.max(down + 0.01, b + ramp));
+    }
   }
 
   /** The music's level: `to` over `secs` (a dip, a cover). */

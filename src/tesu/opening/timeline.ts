@@ -1,8 +1,8 @@
 // The opening's timeline as pure functions of T (Track 1's time as heard, seconds from the press): where
-// Zhusha is, what the camera frames, which caption shows, how far the bars are in. Everything comes from
-// BEATS (beats.ts, compiled from the opening lane's BEATS.json), so a new chart drops in by re-running
-// tools/opening/compile.mjs. Shared by the page (the fall, captions, bars) and the world (the camera, her,
-// the talisman); no DOM, no GL, so node's tests read it directly.
+// Zhusha is and which drawing of the catch she shows, what the camera frames, where the falling ofuda is on
+// the frame, which caption shows, how far the bars are in. Everything comes from BEATS (beats.ts, the chart),
+// so a new chart drops in there. Shared by the page (captions, bars) and the world (the camera, her, the
+// paper); no DOM, no GL, so node's tests read it directly.
 
 import { BEATS } from "./beats.ts";
 
@@ -10,6 +10,9 @@ export { BEATS };
 
 /** World px per H (config.ts; repeated so this module needs nothing from the engine). */
 const HPX = 96;
+
+/** How the visitor came in (the website's four ways; motion/enter.ts). Ways 1-3 play the fall; 4 the jetty's catch. */
+export type Way = "continue" | "corner" | "top" | "bottom";
 
 export const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
 export const smooth = (u: number): number => {
@@ -36,12 +39,42 @@ export function beatAt(T: number): number {
   return (bars[bars.length - 1]! - bars[bars.length - 2]!) / 4;
 }
 
+/** Where the opening starts for a way in: T 0 (the fall), or bar 6 for the jetty's way (way 4). */
+export function startT(way: Way): number {
+  return way === "bottom" ? BEATS.camera.bottom.from : 0;
+}
+
+// --- a monotone curve through keys (Fritsch-Carlson): no overshoot, flat where keys repeat ---------------
+
+/** Value at t on the monotone cubic through (ts[i], vs[i]). */
+export function monotone(ts: readonly number[], vs: readonly number[], t: number): number {
+  const n = ts.length;
+  if (t <= ts[0]!) return vs[0]!;
+  if (t >= ts[n - 1]!) return vs[n - 1]!;
+  let i = 0;
+  while (i < n - 2 && t >= ts[i + 1]!) i++;
+  const d = (k: number): number => (vs[k + 1]! - vs[k]!) / (ts[k + 1]! - ts[k]!);
+  const m = (k: number): number => {
+    if (k === 0) return d(0);
+    if (k === n - 1) return d(n - 2);
+    const a = d(k - 1), b = d(k);
+    if (a * b <= 0) return 0;
+    // the harmonic mean, weighted by the spans (keeps it monotone)
+    const ha = ts[k]! - ts[k - 1]!, hb = ts[k + 1]! - ts[k]!;
+    const w1 = 2 * hb + ha, w2 = hb + 2 * ha;
+    return (w1 + w2) / (w1 / a + w2 / b);
+  };
+  const h = ts[i + 1]! - ts[i]!, u = (t - ts[i]!) / h;
+  const h00 = 2 * u ** 3 - 3 * u * u + 1, h10 = u ** 3 - 2 * u * u + u, h01 = -2 * u ** 3 + 3 * u * u, h11 = u ** 3 - u * u;
+  return h00 * vs[i]! + h10 * h * m(i) + h01 * vs[i + 1]! + h11 * h * m(i + 1);
+}
+
 // --- her path, hands-free -----------------------------------------------------------------------------
 
 export type HerPhase = "hold" | "walk" | "break" | "run" | "skid" | "stand";
 
 const her = BEATS.her;
-/** The walk is solved, not set: from the walk's start at the catch to the pickup's mark (the plan's 1.1 H/s). */
+/** The walk is solved, not set: from the walk's start at the catch to the pickup's mark. */
 const walkSpeed = (her.xPickupH - her.catchXH) / (her.pickup - her.walkFrom);
 const runFrom = her.drop1 + her.runAccel.s;
 const xRun = (T: number): number => her.xBreakH + her.runAccel.h + her.runHPerS * (T - runFrom);
@@ -71,7 +104,7 @@ export function herXH(T: number): number {
       return xRun(T);
     }
     case "skid": {
-      // a cubic from full speed to standing at the overlook (monotone: the plan's numbers keep it so)
+      // a cubic from full speed to standing at the overlook (monotone)
       const d = her.stop - her.skid, u = (T - her.skid) / d;
       const x0 = xRun(her.skid), x1 = her.stopXH, v0 = her.runHPerS * d;
       const h00 = 2 * u ** 3 - 3 * u * u + 1, h10 = u ** 3 - 2 * u * u + u, h01 = -2 * u ** 3 + 3 * u * u;
@@ -86,6 +119,38 @@ export function herSpeedH(T: number): number {
   const e = 1 / 240;
   return (herXH(T + e) - herXH(T - e)) / (2 * e);
 }
+
+// --- the catch: worker 1's opening_ofuda, retimed so the slap (f007) lands on bar 9 -----------------------
+
+const clip = her.clip;
+/** T at which each drawing of the catch starts (f000 is held from the start until f001). */
+export const CLIP_AT: readonly number[] = (() => {
+  // whole ticks from the slap's drawing (f007), so it lands on the slap exactly; the jam (f`jamDrawing`) holds until
+  // line 6's push mark, and the push-up (the next drawing on) plays from there in its own ticks
+  const slapI = 7, jamI = clip.jamDrawing;
+  const tick: number[] = [0];
+  for (let i = 1; i < clip.ticks.length; i++) tick.push(tick[i - 1]! + clip.ticks[i]!);
+  const at: number[] = [-Infinity];
+  for (let i = 1; i <= clip.ticks.length; i++) {
+    if (i <= jamI) at.push(i === slapI ? clip.slap : clip.slap + (tick[i - 1]! - tick[slapI - 1]!) / 60);
+    else at.push(Math.max(clip.push, at[jamI]! + clip.ticks[jamI]! / 60) + (tick[i - 1]! - tick[jamI]!) / 60);
+  }
+  return at;
+})();
+
+/** When the catch's last drawing is done (then the idle). */
+export const CLIP_END = CLIP_AT[CLIP_AT.length - 1]!;
+
+/** The catch's drawing at T and the clip tick that shows it (anim.json's own), or null once it has played. */
+export function clipAt(T: number): { index: number; tick: number } | null {
+  if (T >= CLIP_END) return null;
+  let i = 0;
+  while (i < clip.ticks.length - 1 && T >= CLIP_AT[i + 1]!) i++;
+  return { index: i, tick: clip.starts[i]! };
+}
+
+/** T at which the paper becomes the drawing's (f001): before it the world draws it. */
+export const HANDOFF_T = CLIP_AT[clip.handoffDrawing]!;
 
 // --- the camera ---------------------------------------------------------------------------------------
 
@@ -122,173 +187,31 @@ export function mixShot(a: Shot, b: Shot, t: number): Shot {
 }
 
 const cam = BEATS.camera;
-const shots = cam.shots;
 
-/** The authored shots before the walk (held frames and moves eased in log zoom), as the plan keys them. */
-function authored(T: number): Shot {
-  let s: (typeof shots)[number] = shots[0]!;
-  for (const k of shots) if (k.from <= T) s = k;
-  const u = s.to === null ? 1 : smooth((T - s.from) / (s.to - s.from));
-  return { zoom: logLerp(s.zoom[0], s.zoom[1], u), anchor: lerp(s.anchor[0], s.anchor[1], u), horizon: lerp(s.horizon[0], s.horizon[1], u), cx: lerp(s.cx[0], s.cx[1], u) * HPX };
-}
+interface Key { T: number; zoom: number; anchor: number; horizon: number; alt: number; cx: number; follow: boolean }
 
-// --- the authored shots at any window ------------------------------------------------------------------
-//
-// The plan composes its shots on a 1536 x 864 frame (PLAN.md section 3: 1.25 screen px per art px at 1x on a
-// 1080p screen). The world draws whole pixels instead (1 art px per screen px at 720p and at 1080p), so a window
-// shows more or less of the world than the plan's frame. Two rules keep the plan's composition at every size:
-//   - her place across the frame is the plan's share: the camera's lead on her scales with the frame's width
-//     (the close band has her at 37.5% of the width on every screen, as section 3.4 says);
-//   - the lazy follow follows the letter: while it is the subject (from bar 1 into the push-in) the frame moves
-//     just enough to keep the bake's letter inside the bars' safe area (the bars are 11% each, plus a margin),
-//     eased (the most it needs within half a second, averaged over a second, so it never chases the tumble).
-//     Before the notice (bar 5) she may slide to the frame's edge or out of it (section 5, portrait phones);
-//     from it on she stays above the bottom bar and inside the sides, and the push-in lands on the plan's
-//     close band exactly. On the plan's frame and larger the letter never needs it: the shots are the keys.
-
-/** The plan's frame width (art px). */
-const REF_W = 1536;
-const SAFE = { bars: BEATS.ui.bars.vh / 100, top: 0.04, hard: 0.012, side: 0.06, feet: 0.015, pad: 3, herHalfH: 0.3 };
-const catchX = her.catchXH * HPX;
-const letter = BEATS.ofuda.letter;
-const bars = BEATS.bars;
-/** The safe follow eases in over bar 1 (the letter enters the sky at T 0.64 by design), is full from the landing (bar 2), and is gone when the push-in lands. */
-const safeIn = [bars[1]!, bars[2]!] as const;
-const safeOut = [shots[shots.length - 1]!.from - 0.6, shots[shots.length - 1]!.from] as const;
-/** From the notice (bar 5) she is kept in frame; the rule tightens over bar 4. */
-const herIn = [bars[4]!, bars[5]!] as const;
-
-/** The letter's box (px at 96 from her pivot) at T, while the bake is the subject; null outside it. */
-export function letterBox(T: number): readonly [number, number, number, number] | null {
-  const u = (T - letter.t0) / letter.dt;
-  const n = letter.box.length;
-  if (u < 0 || u > n - 1) return null;
-  const i = Math.min(n - 2, Math.floor(u)), f = u - i;
-  const a = letter.box[i]!, b = letter.box[i + 1]!;
-  return [lerp(a[0], b[0], f), lerp(a[1], b[1], f), lerp(a[2], b[2], f), lerp(a[3], b[3], f)];
-}
-
-/** An authored shot with the camera's lead on her scaled to the frame's width. */
-function widthShot(s: Shot, W: number): Shot {
-  return { ...s, cx: catchX + (s.cx - catchX) * (W / REF_W) };
+/** The keys a way plays: ways 1-3 the fall; way 4 its own opening keys, then the shared ones after them. */
+function keysFor(way: Way): readonly Key[] {
+  if (way !== "bottom") return cam.keys;
+  const b = cam.bottom.keys, last = b[b.length - 1]!.T;
+  return [...b, ...cam.keys.filter((k) => k.T > last)];
 }
 
 /**
- * How far (frame px) a shot has to move the picture so the letter at T is inside the safe area, and how far it
- * may move before she leaves hers: [dx, dy, dxMin, dxMax, dyMax] (+x right, +y down).
+ * The authored shot at T, for her at x (px) on a frame W x Hf. `alt` lifts the frame's middle that many H above
+ * her feet (the fall: her feet far below the frame); `follow` keys put the centre at her x plus their cx.
  */
-function safeNeed(s: Shot, T: number, W: number, Hf: number): [number, number, number, number, number] {
-  const z = s.zoom;
-  const feet = s.anchor * Hf, herCol = W / 2 + (catchX - s.cx) * z;
-  // her limits, full from the notice
-  const r = smooth((T - herIn[0]) / (herIn[1] - herIn[0]));
-  const half = SAFE.herHalfH * HPX * z;
-  const loose = (1 - r) * (W + Hf);
-  const capY = (1 - SAFE.bars - SAFE.feet) * Hf - feet;
-  const dyMax = capY + loose;
-  const dxMin = SAFE.side * W + half - herCol - loose;
-  const dxMax = (1 - SAFE.side) * W - half - herCol + loose;
-  const box = letterBox(T);
-  if (!box) return [0, 0, dxMin, dxMax, dyMax];
-  const top = feet + box[1] * z - SAFE.pad;
-  const left = W / 2 + (catchX + box[0] - s.cx) * z - SAFE.pad, right = W / 2 + (catchX + box[2] - s.cx) * z + SAFE.pad;
-  // comfortably clear of the top bar if she can stay clear of the bottom one; before the notice the letter wins,
-  // down to just clear of the bar (on a short window she then sits at the frame's foot, or below it)
-  const want = Math.max(0, (SAFE.bars + SAFE.top) * Hf - top), must = Math.max(0, (SAFE.bars + SAFE.hard) * Hf - top);
-  const fit = Math.min(want, Math.max(0, capY));
-  const dy = lerp(Math.max(fit, must), fit, r);
-  const dx = right > (1 - SAFE.side) * W ? (1 - SAFE.side) * W - right : left < SAFE.side * W ? SAFE.side * W - left : 0;
-  return [dx, dy, dxMin, dxMax, dyMax];
-}
-
-const GRID = 1 / 30;
-const EASE = 0.5;
-interface SafeTrack { from: number; dx: Float64Array; dy: Float64Array }
-const safeCache = new Map<string, SafeTrack>();
-
-/** The eased shift for every 1/30 s from bar 1 to the close band, for a frame size. */
-function safeTrack(W: number, Hf: number): SafeTrack {
-  const k = `${W}x${Hf}`;
-  let t = safeCache.get(k);
-  if (t) return t;
-  const from = safeIn[0] - 2 * EASE, to = safeOut[1] + 2 * EASE;
-  const n = Math.ceil((to - from) / GRID) + 1;
-  const nx = new Float64Array(n), px = new Float64Array(n), ny = new Float64Array(n);
-  for (let i = 0; i < n; i++) {
-    const T = from + i * GRID;
-    const [dx, dy] = safeNeed(widthShot(authored(T), W), T, W, Hf);
-    ny[i] = dy;
-    px[i] = Math.max(0, dx);
-    nx[i] = Math.max(0, -dx);
-  }
-  // the most it needs within EASE, then averaged over 2 EASE: never less than it needs, never a jerk
-  const w = Math.round(EASE / GRID);
-  const ease = (a: Float64Array): Float64Array => {
-    const m = new Float64Array(n), o = new Float64Array(n);
-    for (let i = 0; i < n; i++) {
-      let v = 0;
-      for (let j = Math.max(0, i - w); j <= Math.min(n - 1, i + w); j++) v = Math.max(v, a[j]!);
-      m[i] = v;
-    }
-    for (let i = 0; i < n; i++) {
-      let v = 0, c = 0;
-      for (let j = Math.max(0, i - w); j <= Math.min(n - 1, i + w); j++, c++) v += m[j]!;
-      o[i] = v / c;
-    }
-    return o;
-  };
-  const ey = ease(ny), ep = ease(px), en = ease(nx);
-  const dx = new Float64Array(n);
-  for (let i = 0; i < n; i++) dx[i] = ep[i]! - en[i]!;
-  t = { from, dx, dy: ey };
-  if (safeCache.size > 8) safeCache.clear();
-  safeCache.set(k, t);
-  return t;
-}
-
-/** The safe follow's shift (frame px) at T for a shot, with her limits applied. */
-function safeShift(s: Shot, T: number, W: number, Hf: number): [number, number] {
-  if (T <= safeIn[0] || T >= safeOut[1]) return [0, 0];
-  const t = safeTrack(W, Hf);
-  const u = (T - t.from) / GRID, i = Math.min(t.dx.length - 2, Math.max(0, Math.floor(u))), f = u - i;
-  const wgt = smooth((T - safeIn[0]) / (safeIn[1] - safeIn[0])) * smooth((safeOut[1] - T) / (safeOut[1] - safeOut[0]));
-  let dx = lerp(t.dx[i]!, t.dx[i + 1]!, f) * wgt, dy = lerp(t.dy[i]!, t.dy[i + 1]!, f) * wgt;
-  const [, , dxMin, dxMax, dyMax] = safeNeed(s, T, W, Hf);
-  dy = Math.min(dy, Math.max(0, dyMax));
-  dx = Math.min(Math.max(dx, Math.min(0, dxMin)), Math.max(0, dxMax));
-  return [dx, dy];
-}
-
-/** Moves a shot's picture by (dx, dy) frame px. */
-function shifted(s: Shot, dx: number, dy: number, Hf: number): Shot {
-  if (!dx && !dy) return s;
-  return { zoom: s.zoom, anchor: s.anchor + dy / Hf, horizon: s.horizon + dy / Hf, cx: s.cx - dx / s.zoom };
-}
-
-/** The authored shot at T for a frame W x Hf (Hf unknown: the plan's keys, the lead scaled to the width). */
-export function authoredAt(T: number, W: number, Hf?: number): Shot {
-  const s = widthShot(authored(Math.max(0, T)), W);
-  if (!Hf) return s;
-  const [dx, dy] = safeShift(s, T, W, Hf);
-  return shifted(s, dx, dy, Hf);
-}
-
-/** Reduced motion's held postcard: one shift for the whole hold, the most the letter needs in it (still a held frame). */
-function heldShift(s: Shot, a: number, b: number, W: number, Hf: number): [number, number] {
-  let dy = 0, dxp = 0, dxn = 0, dyMax = Infinity, dxMin = -Infinity, dxMax = Infinity;
-  for (let T = Math.max(a, safeIn[1]); T < b; T += 0.1) {
-    const [dx, ndy] = safeNeed(s, T, W, Hf);
-    dy = Math.max(dy, ndy);
-    dxp = Math.max(dxp, dx);
-    dxn = Math.min(dxn, dx);
-  }
-  // a held frame keeps her in it throughout (the hold runs past the notice)
-  const [, , lo, hi, ym] = safeNeed(s, herIn[1], W, Hf);
-  dyMax = Math.min(dyMax, ym);
-  dxMin = Math.max(dxMin, lo);
-  dxMax = Math.min(dxMax, hi);
-  const dx = dxp + dxn;
-  return [Math.min(Math.max(dx, Math.min(0, dxMin)), Math.max(0, dxMax)), Math.min(dy, Math.max(0, dyMax))];
+export function keysAt(T: number, x: number, W: number, Hf: number, way: Way = "continue"): Shot {
+  void W;
+  const ks = keysFor(way);
+  const ts = ks.map((k) => k.T);
+  const ch = (f: (k: Key) => number): number => monotone(ts, ks.map(f), T);
+  const zoom = Math.exp(ch((k) => Math.log(k.zoom)));
+  const alt = ch((k) => k.alt);
+  const cxH = ch((k) => (k.follow ? x / HPX + k.cx : k.cx));
+  // the fall: the frame's middle `alt` H above her feet (her feet's row below the frame's foot)
+  const anchor = ch((k) => k.anchor) + (alt * HPX * zoom) / Hf;
+  return { zoom, anchor, horizon: ch((k) => k.horizon), cx: cxH * HPX };
 }
 
 /** The widest frame (the lake on the left, the palace's west gate pinned at 0.8 of the width). */
@@ -300,45 +223,41 @@ export function widestShot(W: number): Shot {
 export interface CameraInputs {
   /** Her world x now (px). */
   x: number;
-  /** The frame's width (frame px). */
+  /** The frame's size (frame px). */
   W: number;
-  /** The frame's height (frame px): the safe follow keeps the letter out from under the bars (unknown: the plan's keys). */
-  H?: number;
-  /** The world's tracks at x with the opening's reveal on, and with it off (the hand-back's target). */
-  reveal: (x: number) => Framed;
+  H: number;
+  /** The world's framing at x (the hand-back's target). */
   world: (x: number) => Framed;
   /** T at which the widest frame was let go early (she ran past the tunnel's first gate), if it was. */
   released?: number;
   reduced?: boolean;
+  way?: Way;
 }
 
 /**
  * The camera at T, or null once the opening has handed the frame back to the world's tracks.
- *   to the walk:   authored shots on T (the postcard, the lazy follow, the push-in, the close band)
- *   the walk:      the reveal track keyed to her x, blended in over one beat
- *   drop 1:        the whip-out, time-locked: zoom eased in log space (u^2.2), a hard stop on the crash
- *   drop 2:        the widest frame, pinned, to TESU's fade (or until she passes the tunnel's first gate)
+ *   to the crash:  the authored keys (the fall, the break-out over Kagami, the push-in, the close band, the walk,
+ *                  following her run from drop 1)
+ *   the crash:     the whip-out, time-locked: zoom eased in log space (u^2.2), from where the keys stood at its
+ *                  start (her hands-free place) to the widest frame on 0:32
+ *   0:32:          the widest frame, pinned, under TESU (until it fades, or until she passes the tunnel's first gate)
  *   then:          eased back in to the world's own framing at her x, which owns the frame at the hand-back
  */
 export function cameraAt(T: number, k: CameraInputs): Shot | null {
   if (k.reduced) return reducedAt(T, k);
-  const { x, W } = k;
-  if (T < cam.reveal.from) return authoredAt(T, W, k.H);
-  const xBreak = her.xBreakH * HPX;
-  if (T < cam.whip.from) {
-    const r = shotOf(k.reveal(x), x, W);
-    const u = (T - cam.reveal.from) / cam.reveal.blend;
-    return u < 1 ? mixShot(authoredAt(cam.reveal.from, W, k.H), r, smooth(u)) : r;
-  }
+  const { x, W, H: Hf } = k;
+  const way = k.way ?? "continue";
+  const w = cam.whip;
+  if (T < w.from) return keysAt(T, x, W, Hf, way);
   const easeFrom = Math.min(cam.easeIn.from, k.released ?? Infinity);
   if (T < cam.widest.from) {
-    // the whip starts where the reveal stood at the break (time-locked: the same frame whatever she does)
-    const f0 = k.reveal(xBreak);
-    const e = clamp01((T - cam.whip.from) / (cam.whip.to - cam.whip.from)) ** cam.whip.exp;
-    const zoom = logLerp(f0.zoom, cam.whip.toZoom, e);
-    const follow = x + f0.lead * (W / Math.min(1, zoom));
+    const f0 = keysAt(w.from, herXH(w.from) * HPX, W, Hf, way);
+    const e = clamp01((T - w.from) / (w.to - w.from)) ** w.exp;
+    const zoom = logLerp(f0.zoom, w.toZoom, e);
+    const lead = f0.cx - herXH(w.from) * HPX;
+    const follow = x + lead * (f0.zoom / zoom) ** 0.5;
     const pin = cam.widest.pin.xH * HPX - (cam.widest.pin.at - 0.5) * (W / zoom);
-    return { zoom, anchor: lerp(f0.anchor, cam.whip.anchor[1], e), horizon: lerp(f0.horizon, cam.whip.horizon[1], e), cx: lerp(follow, pin, e) };
+    return { zoom, anchor: lerp(f0.anchor, w.anchor[1], e), horizon: lerp(f0.horizon, w.horizon[1], e), cx: lerp(follow, pin, e) };
   }
   if (T < easeFrom) return widestShot(W);
   const end = easeFrom + (cam.easeIn.to - cam.easeIn.from);
@@ -349,19 +268,11 @@ export function cameraAt(T: number, k: CameraInputs): Shot | null {
 /** Reduced motion: held frames, cut (the game cross-fades each cut) on the plan's beats. */
 function reducedAt(T: number, k: CameraInputs): Shot | null {
   if (T >= BEATS.ui.handBack) return null;
-  let h: (typeof cam.reduced)[number] = cam.reduced[0]!;
-  for (const r of cam.reduced) if (r.from <= T) h = r;
-  if (h.zoom === 0.125) return widestShot(k.W);
-  if (h.zoom === 2) return { ...authoredAt(cam.reveal.from, k.W), zoom: 2 };
-  if (h.zoom === 0.5 && !h.follow) {
-    const s = authoredAt(0, k.W);
-    if (!k.H) return s;
-    const next = cam.reduced.find((r) => r.from > h.from)?.from ?? BEATS.ui.handBack;
-    const [dx, dy] = heldShift(s, h.from, next, k.W, k.H);
-    return shifted(s, dx, dy, k.H);
-  }
-  const f = k.reveal(k.x);
-  return { zoom: h.zoom, anchor: f.anchor, horizon: f.horizon, cx: k.x + f.lead * k.W };
+  const h = cam.reduced[reducedHold(T)]!;
+  if (h.hold === "widest") return widestShot(k.W);
+  if (h.hold === "follow") return keysAt(h.T, k.x, k.W, k.H, "continue");
+  // a held key: her at the catch spot (she has not moved yet in these)
+  return keysAt(h.T, her.catchXH * HPX, k.W, k.H, k.way ?? "continue");
 }
 
 /** Which reduced-motion hold T is in (a change is a cut). */
@@ -371,51 +282,137 @@ export function reducedHold(T: number): number {
   return n;
 }
 
+// --- the falling ofuda: where it is on the frame --------------------------------------------------------
+
+const of = BEATS.ofuda;
+
+/**
+ * The paper's place on the frame at T (shares of the width and height) before it is drawn on to her: the keyed
+ * flight, a pendulum sway (falling paper rocks side to side), the east wind's gusts. Null before it enters.
+ */
+export function paperScreenAt(T: number, way: Way = "continue"): [number, number] | null {
+  const path = way === "bottom" ? of.pathBottom : of.path;
+  if (T < path[0]!.T) return null;
+  const ts = path.map((p) => p.T);
+  let fx = monotone(ts, path.map((p) => p.fx), T);
+  let fy = monotone(ts, path.map((p) => p.fy), T);
+  // past the last key it keeps its last velocity a while (the blend to her takes it from there)
+  const last = path[path.length - 1]!;
+  if (T > last.T) {
+    const e = 0.05, a = monotone(ts, path.map((p) => p.fx), last.T - e), b = monotone(ts, path.map((p) => p.fy), last.T - e);
+    fx += ((last.fx - a) / e) * (T - last.T);
+    fy += ((last.fy - b) / e) * (T - last.T);
+  }
+  const sw = of.sway;
+  if (way !== "bottom" && T < sw.until) {
+    const fade = smooth((sw.until - T) / 1.5) * smooth((T - path[0]!.T) / 1.2);
+    fx += sw.amp * Math.sin((2 * Math.PI * (T - path[0]!.T)) / sw.period) * fade;
+    // a rocking paper sinks a little at each end of its swing
+    fy += sw.amp * 0.35 * Math.cos((4 * Math.PI * (T - path[0]!.T)) / sw.period) * fade;
+  }
+  if (way !== "bottom") {
+    for (const g of of.gusts) {
+      const u = (T - g.T) / g.dur;
+      if (u <= 0 || u >= 1) continue;
+      const b = Math.sin(Math.PI * u) ** 2;
+      fx += g.dx * b;
+      fy += g.dy * b;
+    }
+  }
+  return [fx, fy];
+}
+
+/** How far (0..1) the paper is drawn on from its frame place to her hand-off point. */
+export function paperBlendAt(T: number, way: Way = "continue"): number {
+  const [a, b] = way === "bottom" ? of.blendBottom : of.blend;
+  return smooth((T - a) / (b - a));
+}
+
+/** The air on the falling paper at T (art px / s, its own sim's wind): the east wind, gustier in the gusts. */
+export function paperAirAt(T: number, way: Way = "continue"): { x: number; gust: number } {
+  let x = -18, gust = 0.55;
+  if (way !== "bottom") {
+    for (const g of of.gusts) {
+      const u = (T - g.T) / g.dur;
+      if (u > 0 && u < 1) {
+        const b = Math.sin(Math.PI * u);
+        x -= 70 * b;
+        gust += 0.4 * b;
+      }
+    }
+  } else x = -45;
+  // it slows into her hands: the air calms over the blend
+  const calm = paperBlendAt(T, way);
+  return { x: x * (1 - 0.7 * calm), gust: gust * (1 - 0.6 * calm) };
+}
+
 // --- words and bars -----------------------------------------------------------------------------------
 
-/** The caption showing at T, if any. */
-export function captionAt(T: number): string | null {
-  for (const c of BEATS.captions) if (T >= c.from && T < c.to) return c.text;
+/** One line of her voice: when its file starts and its speech (T), its subtitle (Japanese, English). */
+export interface VoiceLine {
+  n: number;
+  at: number;
+  len: number;
+  from: number;
+  to: number;
+  jp: string;
+  en: string;
+}
+
+/** Her lines on T (the chart's `voice`). */
+export const VOICE: readonly VoiceLine[] = BEATS.voice.lines.map((l) => ({
+  n: l.n, at: l.at, len: l.len, from: l.at + l.speech[0], to: l.at + l.speech[1], jp: l.jp, en: l.en,
+}));
+
+/** A subtitle shows from just before its line speaks to a moment after (never over the next line). */
+export const SUB_LEAD = 0.1, SUB_TAIL = 0.45;
+
+/** The subtitle showing at T, if any: the line being spoken. */
+export function subtitleAt(T: number): VoiceLine | null {
+  for (let i = 0; i < VOICE.length; i++) {
+    const v = VOICE[i]!, next = VOICE[i + 1];
+    const end = Math.min(v.to + SUB_TAIL, next ? next.from - SUB_LEAD - 0.02 : Infinity);
+    if (T >= v.from - SUB_LEAD && T < end) return v;
+  }
   return null;
 }
 
-/** How far the cinematic bars are in (0..1), stepped as the plan asks (three steps in, two out). */
-export function barsAt(T: number, reduced = false): number {
+/** The caption showing at T, if any (the subtitle's English; tools and older checks). */
+export function captionAt(T: number): string | null {
+  return subtitleAt(T)?.en ?? null;
+  return null;
+}
+
+/** How far the cinematic bars are in (0..1), stepped (three steps in, two out). */
+export function barsAt(T: number, reduced = false, from = 0): number {
   const b = BEATS.ui.bars;
   const drop = her.drop1;
-  if (T < 0) return 0;
+  if (T < from) return 0;
   if (T < drop) {
-    const u = clamp01(T / b.in);
+    const u = clamp01((T - from) / b.in);
     return reduced ? u : Math.max(0, Math.ceil(u * 3 - 1e-9) / 3);
   }
   const u = clamp01((T - drop) / b.out);
   return reduced ? 1 - u : 1 - Math.max(0, Math.ceil(u * 2 - 1e-9) / 2);
 }
 
-/** The page fall's progress (0 at the press, 1 on bar 2 where the world window lands), eased in and out. */
-export function fallAt(T: number): number {
-  const land = BEATS.bars[2]!;
-  const u = clamp01(T / land);
-  return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
-}
-
-// --- the talisman's air ---------------------------------------------------------------------------------
+// --- the air on her hat ---------------------------------------------------------------------------------
 
 /**
- * The ambient wind on the talisman at T (H/s along x, + toward the palace side is negative: the east wind
- * blows right to left), and how gusty it is (0..1): gusty until the hush, dying over a second into it,
- * the inhale swelling from nothing into the drop, a breeze after.
+ * The ambient wind on the ofuda on her hat at T (H/s along x; the east wind blows right to left, so negative),
+ * and how gusty it is (0..1): gusty until the hush, dying over a second into it, the inhale swelling from nothing
+ * into the drop, a breeze after.
  */
 export function windAt(T: number): { base: number; gust: number } {
-  const o = BEATS.ofuda, hush = BEATS.hush;
-  if (T < o.hush) return { base: -0.35, gust: 1 };
-  if (T < o.hush + hush.over) {
-    const u = 1 - (T - o.hush) / hush.over;
+  const hush = BEATS.hush;
+  if (T < of.hush) return { base: -0.35, gust: 1 };
+  if (T < of.hush + hush.over) {
+    const u = 1 - (T - of.hush) / hush.over;
     return { base: -0.35 * u, gust: u };
   }
-  if (T < o.inhale) return { base: 0, gust: 0 };
+  if (T < of.inhale) return { base: 0, gust: 0 };
   if (T < her.drop1) {
-    const u = (T - o.inhale) / (her.drop1 - o.inhale);
+    const u = (T - of.inhale) / (her.drop1 - of.inhale);
     return { base: -0.6 * u * u, gust: 0.6 * u };
   }
   return { base: -0.25, gust: 0.5 };

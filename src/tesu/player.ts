@@ -2,7 +2,7 @@
 // (lanes/anim/SPRITE-CONTRACT.md) from public/assets/zhusha/<slot>/, one folder per move, loaded
 // by zhusha/anims.ts. A move with no traced drawing yet is the white box (zhusha/draw.ts). Her
 // controller and its numbers are zhusha/controller.ts and zhusha/feel.json. Her talisman is not
-// part of any drawing: the world draws it live on her hat (opening/ofuda.ts).
+// part of any drawing: the world draws it live on her hat (opening/paper.ts).
 //
 // The procedural stand-in figure and the lab's clip package that used to stand in for her are
 // retired here (Dex, Oct 16: the white box until the traced art lands, slot by slot).

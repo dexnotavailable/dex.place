@@ -33,11 +33,6 @@ export function icon(name: IconName, scale = 2, className?: string): string {
   return pixelSvg(name, { scale, ...(className ? { className } : {}) });
 }
 
-/** The four-colour pixel strip (yellow, magenta, mint, cyan). Decorative. */
-export function strip(className?: string, reveal = true): string {
-  return `<span class="${cx("strip", className)}" aria-hidden="true"${reveal ? ' data-reveal="strip"' : ""}><i></i><i></i><i></i><i></i></span>`;
-}
-
 /** Fraction counter, e.g. 03 / 09. */
 export function counter(n: number, total: number, className?: string): string {
   return `<span class="${cx("counter", className)}"><b>${pad2(n)}</b><span aria-hidden="true"> / </span><span class="sr"> of </span>${pad2(total)}</span>`;

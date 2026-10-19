@@ -5,11 +5,23 @@
 // set (Dex 10-18). A role whose slot is missing draws the white box (draw.ts). Data-driven: a new move is a
 // new folder, no code change.
 
-import slotsRaw from "./slots.json?raw";
 import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { artMarks, headOf, opaqueBox, timeline, validateAnim, type AnimDef, type ArtMarks } from "./contract.ts";
+import { slotFor, SLOTS, type RoleDef } from "./roles.ts";
 import { artTransform, type PlayView } from "./units.ts";
+import ART from "virtual:tesu-art";
+
+/**
+ * (lane C 10-19) The query that versions a drawing folder's files ("/assets/zhusha/idle" -> "?v=<content hash>"): the
+ * server and Cloudflare keep /assets/ for a year, so a changed drawing needs a new URL. Empty on the dev server.
+ */
+export function artQuery(dir: string): string {
+  const v = ART[dir.replace(/\/+$/, "")];
+  return v ? `?v=${v}` : "";
+}
+
+export { SLOTS, type RoleDef };
 
 /** Slots present at build time, from public/assets/zhusha/<slot>/anim.json (a missing one is never fetched). */
 export const PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/zhusha/*/anim.json"))
@@ -19,20 +31,6 @@ export const PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/zh
 
 export const BASE = "/assets/zhusha/";
 const ATLAS = 2048;
-
-export interface RoleDef {
-  normal: string | null;
-  ult: string | null;
-  hold?: boolean;
-  reverse?: boolean;
-}
-
-interface SlotsFile {
-  roles: Record<string, RoleDef>;
-  jumpArc: { apex: number; contact: number };
-}
-
-export const SLOTS = JSON.parse(slotsRaw) as SlotsFile;
 
 export interface Drawing {
   /** Atlas page. */
@@ -69,13 +67,12 @@ export class AnimSet {
     this.failed = failed;
   }
 
-  /** The slot a role plays in this form (null: the white box). */
+  /** The slot a role plays in this form (roles.ts: the form's own, else its normal drawing; null: the white box). */
   forRole(role: string, ult: boolean): { slot: Slot; def: RoleDef } | null {
     const def = SLOTS.roles[role];
-    if (!def) return null;
-    const id = ult ? def.ult : def.normal;
+    const id = def ? slotFor(role, ult, (s) => this.slots.has(s)) : null;
     const slot = id ? this.slots.get(id) : undefined;
-    return slot ? { slot, def } : null;
+    return def && slot ? { slot, def } : null;
   }
 
   get size(): number {
@@ -122,12 +119,14 @@ class Packer {
 
 /** Loads one slot from `${base}${id}/` (anim.json + its drawings), validated against the contract. */
 export async function loadSlot(r: WorldRenderer, base: string, id: string): Promise<Slot> {
-  const res = await fetch(`${base}${id}/anim.json`, { cache: "no-cache" });
+  const q = artQuery(`${base}${id}`);
+  // versioned (immutable, cacheable) in a build; fresh from the dev server
+  const res = await fetch(`${base}${id}/anim.json${q}`, q ? {} : { cache: "no-cache" });
   if (!res.ok) throw new Error(`${id}: anim.json HTTP ${res.status}`);
   // a slot-in --local drop shows on the dev server only
   const def = validateAnim(await res.json(), id, { allowLocal: import.meta.env.DEV });
   const [pvx, pvy] = [Math.round(def.pivot[0]), Math.round(def.pivot[1])];
-  const imgs = await Promise.all(def.frames.map((f) => loadImage(`${base}${id}/${f.file}`)));
+  const imgs = await Promise.all(def.frames.map((f) => loadImage(`${base}${id}/${f.file}${q}`)));
   const { starts, total } = timeline(def.frames);
   const pack = new Packer();
   const scratch = document.createElement("canvas");
