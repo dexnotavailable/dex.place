@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T07:29:43.691Z (19/10/2026, 14:29:43 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T08:39:51.079Z (19/10/2026, 15:39:51 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_93dbdace-3fa — last activity 4 min ago
+### wf_93dbdace-3fa — last activity 74 min ago
 4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -20,17 +20,17 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r1** (running)
 - **w2:r1** (running)
 
-### wf_5cebc05c-deb — last activity 4 min ago
+### wf_5cebc05c-deb — last activity 74 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **setup** (running)
 
-### wf_286da28b-ad1 — last activity 4 min ago
+### wf_286da28b-ad1 — last activity 74 min ago
 1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
 
 - **setup** (running)
 
-### wf_6eb91aef-0bd — last activity 13 min ago
+### wf_6eb91aef-0bd — last activity 83 min ago
 4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
