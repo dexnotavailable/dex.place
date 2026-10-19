@@ -5,6 +5,7 @@
 
 import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
+import { artQuery } from "../zhusha/anims.ts";
 import { opaqueBox } from "../zhusha/contract.ts";
 import { artTransform, type PlayView } from "../zhusha/units.ts";
 import { FxClock, FX_MAX_AREA, fxFrameAt, validateFx, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
@@ -42,10 +43,12 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 async function loadFx(r: WorldRenderer, id: string): Promise<FxLoaded> {
-  const res = await fetch(`${FX_BASE}${id}/fx.json`, { cache: "no-cache" });
+  // versioned by content in a build (the server keeps /assets/ for a year), fresh from the dev server
+  const q = artQuery(`${FX_BASE}${id}`);
+  const res = await fetch(`${FX_BASE}${id}/fx.json${q}`, q ? {} : { cache: "no-cache" });
   if (!res.ok) throw new Error(`${id}: fx.json HTTP ${res.status}`);
   const def = validateFx(await res.json(), id);
-  const imgs = await Promise.all(def.frames.map((f) => loadImage(`${FX_BASE}${id}/${f.file}`)));
+  const imgs = await Promise.all(def.frames.map((f) => loadImage(`${FX_BASE}${id}/${f.file}${q}`)));
   const pages: { canvas: HTMLCanvasElement; g: CanvasRenderingContext2D }[] = [];
   let x = 0, y = 0, row = 0, area = 0;
   const place = (w: number, h: number): [number, number, number] => {
