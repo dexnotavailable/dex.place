@@ -45,7 +45,7 @@ export interface UltFile {
     call: { zoomIn: number; zoom: number; zoomFire: number; anchor: number; ahead: number; craneUp: number };
     flurry: {
       chase: { zoom: number; k: number; damp: number; vmax: number; follow: number; giveUp: number; settle: number; zoomEase: number; anchorEase: number };
-      pullFrom: number; peak: number; zoomEnd: number; anchor: number;
+      snap: { at: number; ticks: number; over: number; settle: number }; zoomEnd: number; anchor: number;
     };
     dive: { zoom: number; anchor: number; up: number };
     impact: { zoom: number; anchor: number };
@@ -317,6 +317,8 @@ export class UltDirector {
   private from: Shot | null = null;
   /** The flurry's camera: a lagging spring after her (position, velocity), its zoom and anchor row. */
   private chase: { x: number; y: number; vx: number; vy: number; tx: number; ty: number; zoom: number; anchor: number } | null = null;
+  /** Where the flurry's snap out to the whole letter starts (the chase's last shot). */
+  private snapFrom: Omit<Shot, "cut"> | null = null;
   /** The phase that starts on the next tick. */
   private next: UltPhase | null = null;
 
@@ -394,7 +396,10 @@ export class UltDirector {
     // one cut only: the cut-in on the press; from there one continuous camera (Dex 10-19: no cut to the flurry)
     this.cutNext = p === "call";
     this.from = this.lastShot;
-    if (p === "flurry") this.chase = null;
+    if (p === "flurry") {
+      this.chase = null;
+      this.snapFrom = null;
+    }
   }
 
   /** One tick of R. Returns false once control is back (the controller is free again). */
@@ -701,8 +706,8 @@ export class UltDirector {
         break;
       }
       case "flurry": {
-        // no cut (Dex 10-19): from the call the camera tries to follow her; she is too fast, it gives up; then it pulls out
-        // wide as the letter fills in, the whole of it in frame at its peak
+        // no cut (Dex 10-19): from the call the camera tries to follow her (through most of the storm, Dex 10-20); she is too
+        // fast, it gives up; then it SNAPS out to the whole letter as the letter completes (Dex 10-20: "sudden")
         const A = C.flurry, S = A.chase, ts = t - K.storm;
         const a = this.from ?? { x: st.x0, y: st.y0, zoom: C.call.zoom, anchor: C.call.anchor };
         const ch = (this.chase ??= { x: a.x, y: a.y, vx: 0, vy: 0, tx: a.x, ty: a.y, zoom: a.zoom, anchor: a.anchor });
@@ -725,10 +730,20 @@ export class UltDirector {
         ch.x += ch.vx;
         ch.y += ch.vy;
         ch.anchor += (A.anchor - ch.anchor) * S.anchorEase;
-        // the pull-out: from where it gave up to the whole letter, there at the storm's peak
-        const peak = Math.max(A.pullFrom + 1, (L.flurry - K.storm) * A.peak);
-        const u = smooth((ts - A.pullFrom) / (peak - A.pullFrom));
-        shot = { x: lerp(ch.x, st.gx, u), y: lerp(ch.y, mid, u), zoom: zlerp(ch.zoom, A.zoomEnd, u), anchor: lerp(ch.anchor, A.anchor, u), cut: false };
+        const Sn = A.snap;
+        if (ts < Sn.at) shot = { x: ch.x, y: ch.y, zoom: ch.zoom, anchor: ch.anchor, cut: false };
+        else {
+          // the snap: a whip out to the whole letter in a few ticks, past it a touch, then settling on it
+          const s0 = (this.snapFrom ??= { x: ch.x, y: ch.y, zoom: ch.zoom, anchor: ch.anchor });
+          const wide = A.zoomEnd * Sn.over;
+          if (ts < Sn.at + Sn.ticks) {
+            const k = 1 - Math.pow(1 - (ts - Sn.at + 1) / Sn.ticks, 3);
+            shot = { x: lerp(s0.x, st.gx, k), y: lerp(s0.y, mid, k), zoom: zlerp(s0.zoom, wide, k), anchor: lerp(s0.anchor, A.anchor, k), cut: false };
+          } else {
+            const k = smooth((ts - Sn.at - Sn.ticks + 1) / Sn.settle);
+            shot = { x: st.gx, y: mid, zoom: zlerp(wide, A.zoomEnd, k), anchor: A.anchor, cut: false };
+          }
+        }
         break;
       }
       case "hold":

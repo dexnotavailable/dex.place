@@ -79,7 +79,7 @@
     "visibleFrom": 0
   },
   "camera": {
-    "about": "The shots: world x at the frame's centre, world y on the anchor row (the anchor is that row's share of the frame's height). Zooms stay within the painted levels (2 = the close band) so the world stays crisp; the letter's pull-out goes down to 0.55 and the nuke's to 0.4 (the FX v2 loop's framing) (lane C 10-19: below 1 she and her effects reduce onto her own grid). The call: a cut-in close on her, pushing in to the BOOM, craning up with the fire, settling as she coils. The flurry (Dex 10-19: no cut; \"from her call the camera tries to follow her - she moves too fast, it sorta gives up, then zooms out as the R is filled\"): one continuous camera from the call: it chases her as she launches (a lagging spring after where she is, the newest slash: it accelerates, whips, overshoots, easing out of the close band to `chase.zoom`), gives up `chase.giveUp` ticks into the storm (it coasts and settles where it lost her), then from `pullFrom` pulls out wide onto the whole letter, there at `peak` of the storm. The stop: dead still. The dive: a push down after her onto the crater. The impact: the pull-out on the nuke. The aftermath: held wide on the wreck (a barely moving frame), then a slow push toward her as the smoke clears. The reveal: back in on her. Reduced motion: held framings, cuts between them (2 for the call, 1 for the rest), no moves.",
+    "about": "The shots: world x at the frame's centre, world y on the anchor row (the anchor is that row's share of the frame's height). Zooms stay within the painted levels (2 = the close band) so the world stays crisp; the letter's pull-out goes down to 0.55 and the nuke's to 0.4 (the FX v2 loop's framing) (lane C 10-19: below 1 she and her effects reduce onto her own grid). The call: a cut-in close on her, pushing in to the BOOM, craning up with the fire, settling as she coils. The flurry (Dex 10-19: no cut; \"from her call the camera tries to follow her - she moves too fast, it sorta gives up, then zooms out as the R is filled\"): one continuous camera from the call: it chases her as she launches (a lagging spring after where she is, the newest slash: it accelerates, whips, overshoots, easing out of the close band to `chase.zoom`), keeps hunting her through most of the storm (Dex 10-20: \"follow her a little longer\"), gives up `chase.giveUp` ticks into it and coasts to a stop where it lost her; then (Dex 10-20: \"the zoom out to the whole letter should be sudden\") at storm tick `snap.at` it SNAPS out to the whole letter in `snap.ticks` ticks (a whip, overshooting to `snap.over` of the wide zoom) and settles back over `snap.settle` ticks, landing as the closing sweeps complete the letter. The stop: dead still. The dive: a push down after her onto the crater. The impact: the pull-out on the nuke. The aftermath: held wide on the wreck (a barely moving frame), then a slow push toward her as the smoke clears. The reveal: back in on her. Reduced motion: held framings, cuts between them (2 for the call, 1 for the rest), no moves.",
     "bars": 0.11,
     "barsIn": 8,
     "barsOut": 14,
@@ -98,13 +98,17 @@
         "damp": 0.93,
         "vmax": 0.5,
         "follow": 0.3,
-        "giveUp": 44,
+        "giveUp": 150,
         "settle": 0.86,
         "zoomEase": 0.04,
         "anchorEase": 0.06
       },
-      "pullFrom": 66,
-      "peak": 0.9,
+      "snap": {
+        "at": 177,
+        "ticks": 6,
+        "over": 0.94,
+        "settle": 8
+      },
       "zoomEnd": 0.55,
       "anchor": 0.5
     },
