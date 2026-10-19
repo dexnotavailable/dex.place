@@ -566,7 +566,8 @@ export const roof = definePainter<RoofP>("hall.roof", {
         const a = (((lx - sx0) % s2) + s2) % s2, bb = ((((-ly) % s2) + s2) % s2);
         const bar = (a < 2.5 || bb < 2.5) && up < 1.4;
         if (bar) return mt(M.wood, 0.25 + 0.3 * clamp(up, 0, 1), X, Y, 0.35, 1);
-        const glow = clamp(0.15 + Math.abs(u - 0.5) * 0.9 - up * 0.12, 0, 1);
+        // (round 1: held a step below the court gate's daylight, the room's key now)
+        const glow = clamp(0.5 + Math.abs(u - 0.5) * 0.6 - up * 0.08, 0, 1);
         return tn(SKYLIGHT, glow, X, Y, 0.55);
       }
       // coffers: lacquer frames, each panel holding a faint gold rosette, warmed near the
