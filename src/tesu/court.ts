@@ -12,7 +12,7 @@
 import type { HitBox } from "../lab/contracts.ts";
 import type { Vfx } from "../lab/engine/vfx.ts";
 import { overlap, type WorldBox } from "../lab/game/events.ts";
-import type { Zhusha as Player } from "./zhusha/controller.ts";
+import type { Zhusha as Player, ZHit } from "./zhusha/controller.ts";
 import { downloads, type DownloadEntry, type DownloadFile } from "../site/data/downloads.ts";
 import { H } from "./config.ts";
 import { gongFrame } from "./art/library/hall/gong.ts";
@@ -318,6 +318,8 @@ export class Court {
     if (!hits.length) return;
     const box = this.bodyBox();
     for (const { box: hb, hb: h } of hits) {
+      // a reach that only breaks props (damage 0) never touches the champion
+      if (h.damage <= 0 && h.group !== "r") continue;
       // R's nuke covers the whole court (the seal stamps the ring), wherever the champion is
       const ov = h.group === "r" ? { x: box.x + box.w * 0.3, y: box.y + box.h * 0.3, w: box.w * 0.4, h: box.h * 0.4 } : overlap(hb, box);
       if (!ov) continue;
@@ -340,10 +342,13 @@ export class Court {
     this.hp = h.group === "r" ? floor : Math.max(floor, this.hp - h.damage);
     this.hits++;
     this.white = 2;
-    this.flinch = 10;
+    // heavier hits read heavier (Dex 10-19): a longer flinch, and it is shoved back by the blow's weight (the Q's and
+    // the E's reach shove it hardest)
+    const reach = !!(h as ZHit).brk?.reach;
+    this.flinch = h.heavy || reach ? 16 : 10;
     this.cheer = Math.max(this.cheer, 30);
     this.host.feel.freeze(h.hitstop);
-    if (this.ai.phase !== "leap") this.x += dir * Math.min(10, Math.abs(h.knockback[0]) * 2);
+    if (this.ai.phase !== "leap") this.x += dir * Math.min(reach ? 40 : h.heavy ? 26 : 10, Math.abs(h.knockback[0]) * 2);
     if (this.hp <= floor) {
       this.go("stagger");
       this.ai.phase = "walk";

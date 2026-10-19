@@ -153,11 +153,11 @@ test("zhusha timing: with no drawing a move is exactly feel.json's; with marks t
   assert.deepEqual(plain.hits, feel.hits);
   assert.equal(plain.cancelFrom, feel.cancelFrom);
   assert.equal(plain.root, null);
-  assert.deepEqual(plain.fromArt, { hits: false, root: false, cancel: false });
+  assert.deepEqual(plain.fromArt, { hits: false, root: false, cancel: false, derived: false });
 
   const a = 0.825;
   const r = resolveMove(feel, { frames: SWING }, a);
-  assert.deepEqual(r.fromArt, { hits: true, root: true, cancel: true });
+  assert.deepEqual(r.fromArt, { hits: true, root: true, cancel: true, derived: false });
   assert.deepEqual(r.hits.map((h) => [h.at, h.len]), [[5, 6], [11, 3]]);
   // the hits keep feel.json's boxes, damage and weight (the second run reuses the last feel hit)
   assert.deepEqual(r.hits[0].box, feel.hits[0].box);

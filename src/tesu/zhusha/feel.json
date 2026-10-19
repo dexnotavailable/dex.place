@@ -71,10 +71,28 @@
   },
   "shakePx": 12,
   "hitstopCap": 14,
+  "windDown": {
+    "about": "Dex 10-16: \"the wind-down = after the attack is finished has to go back to idle slower\". After a move's last hit its drawing (the follow-through, then its return to rest) plays at this rate (0.72: each drawing holds ~1.4x as long), while the windup stays squeezed onto the hit tick. Only the drawing slows: the move's windows (chain, cancel, move) are unchanged and any input takes her out of it. A move may set its own windDown / windFrom.",
+    "rate": 0.72
+  },
+  "q": {
+    "about": "The Q as a jumpscare (Dex 10-15): input to BOOM in 3 ticks (skill_q's hit), then the frame holds on the boom (hold ticks, with or without a target) with a flash, and the camera pulls out to camZoom over the exploded area (centred on the blast's reach, drifting with her) for camTicks, letting go early if she goes camLeave H from it.",
+    "hold": 7,
+    "flash": 2,
+    "camZoom": 0.55,
+    "camTicks": 90,
+    "camLeave": 12
+  },
+  "e": {
+    "about": "The E (Dex 10-19: Misaka's railgun): the tap holds the frame a beat (hold, flash), the beam's reach destroys everything in front (e_tap's break), and she is kicked back (e_tap.recoil: from tick, speed H/s, ticks) with dust off her heels every skidEvery ticks.",
+    "hold": 5,
+    "flash": 1,
+    "skidEvery": 3
+  },
   "moves": {
     "m1_1": {
       "ticks": 24,
-      "hits": [{ "at": 5, "len": 3, "box": [0, 0.05, 1.35, 1.05], "dmg": 9, "weight": "light", "kb": [2.6, 1.4], "fx": "slash_up" }],
+      "hits": [{ "at": 5, "len": 3, "box": [0, 0.05, 1.35, 1.05], "dmg": 9, "weight": "light", "kb": [2.6, 1.4], "fx": "slash_up", "break": { "force": 0.9 } }],
       "lunge": [{ "at": 1, "dist": 0.45, "ticks": 5 }],
       "chainFrom": 8,
       "cancelFrom": 11,
@@ -84,7 +102,7 @@
     },
     "m1_2": {
       "ticks": 27,
-      "hits": [{ "at": 7, "len": 3, "box": [-0.25, 0, 1.75, 1.2], "dmg": 11, "weight": "medium", "kb": [3.6, 0.6], "fx": "slash_down" }],
+      "hits": [{ "at": 7, "len": 3, "box": [-0.25, 0, 1.75, 1.2], "dmg": 11, "weight": "medium", "kb": [3.6, 0.6], "fx": "slash_down", "break": { "force": 1.1 } }],
       "lunge": [{ "at": 2, "dist": 0.4, "ticks": 5 }],
       "chainFrom": 10,
       "cancelFrom": 13,
@@ -97,13 +115,10 @@
       "hits": [
         { "at": 5, "len": 2, "box": [0.15, 0.42, 1.6, 0.34], "dmg": 5, "weight": "light", "kb": [1.2, 0.3], "fx": "thrust" },
         { "at": 10, "len": 2, "box": [0.15, 0.48, 1.6, 0.34], "dmg": 5, "weight": "light", "kb": [1.2, 0.3], "fx": "thrust" },
-        { "at": 15, "len": 3, "box": [0.15, 0.44, 2.1, 0.38], "dmg": 9, "weight": "medium", "kb": [5.2, 1.2], "fx": "thrust_big" }
+        { "at": 15, "len": 3, "box": [0.15, 0.44, 2.1, 0.38], "dmg": 9, "weight": "medium", "kb": [5.2, 1.2], "fx": "thrust_big", "break": { "force": 1.3, "lift": 0.6 } }
       ],
-      "lunge": [
-        { "at": 3, "dist": 0.28, "ticks": 3 },
-        { "at": 8, "dist": 0.28, "ticks": 3 },
-        { "at": 13, "dist": 0.55, "ticks": 4 }
-      ],
+      "recoil": [7, 3, 18],
+      "recoilAbout": "Dex 10-19: m1_3 recoils her back. From the first thrust she slides back ~0.47 H (55 art px) over 18 ticks, easing out, dust off her heels: the H3 take itself slides her back ~50 art px over its thrusts (lane A's root.json for m1_3).",
       "chainFrom": 17,
       "cancelFrom": 19,
       "hitCancelFrom": 17,
@@ -113,10 +128,11 @@
     "m1_4": {
       "ticks": 40,
       "hits": [
-        { "at": 13, "len": 3, "box": [0, -0.05, 1.75, 1.35], "dmg": 20, "weight": "heavy", "kb": [6.5, 7], "fx": "chop" },
+        { "at": 13, "len": 3, "box": [0, -0.05, 1.75, 1.35], "dmg": 20, "weight": "heavy", "kb": [6.5, 7], "fx": "chop", "break": { "force": 1.5, "lift": 1.4 } },
         { "at": 15, "len": 2, "box": [0, 0, 2.8, 0.35], "dmg": 6, "weight": "medium", "kb": [4, 3], "fx": "shock" }
       ],
-      "lunge": [{ "at": 2, "dist": 0.9, "ticks": 10 }],
+      "inPlace": true,
+      "inPlaceAbout": "Dex 10-19: m1_4 keeps her in place: no lunge, her run-in momentum stopped; the hop stays (lane A's jump method lets the move carry her up).",
       "hop": 0.55,
       "plunge": 26,
       "chainFrom": 99,
@@ -130,10 +146,11 @@
       "warp": 2.5,
       "warpTicks": 3,
       "hits": [
-        { "at": 3, "len": 2, "box": [-0.8, -0.1, 5.4, 2.7], "anchor": "start", "dmg": 30, "weight": "q", "kb": [8, 5.5], "fx": "q_boom" },
+        { "at": 3, "len": 2, "box": [-0.8, -0.1, 5.4, 2.7], "anchor": "start", "dmg": 30, "weight": "q", "kb": [8, 5.5], "fx": "q_boom", "break": { "force": 2.2, "lift": 1.3, "reach": [-0.6, -0.3, 11, 4.5], "wave": 0.9, "damages": true } },
         { "at": 14, "len": 2, "box": [-0.5, -0.1, 4.8, 1.8], "anchor": "start", "dmg": 6, "weight": "light", "kb": [1.5, 3], "fx": "burn" },
         { "at": 24, "len": 2, "box": [-0.5, -0.1, 4.8, 1.8], "anchor": "start", "dmg": 6, "weight": "light", "kb": [1.5, 3], "fx": "burn" }
       ],
+      "breakAbout": "Dex 10-15 / 10-19: the Q obliterates everything in its direction over a big area. Its reach (drawn H from where she pressed: 11 H ahead, 4.5 H tall) breaks every breakable in it whatever its HP and hurts the champion; the destruction travels out at 0.9 H a tick (11 H in ~12 ticks), pieces thrown hard and high.",
       "airHang": 16,
       "cancelFrom": 24,
       "hitCancelFrom": 20,
@@ -142,8 +159,13 @@
     },
     "e_tap": {
       "ticks": 38,
-      "hits": [{ "at": 8, "len": 3, "box": [0.1, 0.15, 1.6, 0.95], "dmg": 14, "weight": "heavy", "kb": [10, 3], "fx": "palm" }],
-      "recoil": [8, 11, 12],
+      "hits": [
+        { "at": 8, "len": 3, "box": [0.1, 0.15, 1.6, 0.95], "dmg": 14, "weight": "heavy", "kb": [10, 3], "fx": "rail", "break": { "force": 2.6, "lift": 0.45, "reach": [0.3, -0.05, 15, 1.5], "wave": 3, "damages": true } },
+        { "at": 32, "len": 3, "box": [0.6, 0, 1.2, 1.6], "dmg": 8, "weight": "medium", "kb": [6, 4], "fx": "pillar", "break": { "force": 1.4, "lift": 1.6 } }
+      ],
+      "hitsAbout": "Hit 1 is the tap (the railgun's discharge, drawing f003's burst); hit 2 the pillar that erupts after (f009). The tap's reach is the beam: 15 drawn H ahead, from the ground to 1.45 H, destroying everything in front almost at once (3 H a tick) and flat along it.",
+      "recoil": [9, 12, 14],
+      "recoilAbout": "Dex 10-19: she recoils back on the tap: from the tick after it (the frame holds on the discharge first) she is kicked back at 12 H/s easing out over 14 ticks (~1.5 H), dust off her heels.",
       "cancelFrom": 22,
       "hitCancelFrom": 15,
       "moveFrom": 28,
@@ -151,16 +173,23 @@
     }
   },
   "hurt": {
+    "about": "Dex 10-19: damage reactions read and feel heavy: the frame stops longer on her (freeze; heavyFreeze for a knockdown), a red burst, the frame kicked; knocked back low and long, she skids (friction per tick on the ground) with dust off her heels.",
     "stun": 22,
-    "kb": [3.2, 2.6],
+    "kb": [3.6, 1.8],
     "iframes": 50,
-    "heavyFrom": 25
+    "heavyFrom": 25,
+    "freeze": 7,
+    "heavyFreeze": 12,
+    "friction": 0.88
   },
   "knockdown": {
+    "about": "Thrown, she lands hard: a stop, a jolt, dust, one low bounce (bounce H/s), then she slides to a stop (friction) and lies until she gets up.",
     "ticks": 74,
     "kb": [5.5, 6.5],
     "getUpFrom": 46,
-    "iframes": 40
+    "iframes": 40,
+    "bounce": 3,
+    "friction": 0.86
   },
   "defeat": {
     "ticks": 111,
