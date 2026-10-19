@@ -3,7 +3,7 @@
 
 import { band } from "./landing.ts";
 import { KOFI_URL, NAV, navHref, type NavItem } from "../data/nav.ts";
-import { button, icon, pixelMark, strip, tile } from "./glyphs.ts";
+import { button, icon, pixelMark, tile } from "./glyphs.ts";
 import { cx, esc } from "./html.ts";
 import type { PageId, PageMeta, Rendered } from "./types.ts";
 
@@ -158,7 +158,6 @@ export function header(current: PageId): string {
     `<div class="menu__foot">${button({ href: worldHref, label: "World", icon: "up", iconFirst: true, tone: "ink", size: "m" })}` +
     (onHome ? "" : button({ href: "/", label: "Home", icon: "arrow", size: "m" })) +
     `</div>` +
-    strip("menu__strip", false) +
     `</div>` +
     `</header>`
   );
@@ -171,7 +170,6 @@ export function footer(current: PageId): string {
   ).join("");
   return (
     `<footer class="ftr">` +
-    strip("ftr__strip", false) +
     `<div class="ftr__in wrap">` +
     `<a class="ftr__mark" href="${onHome ? "#site" : "/"}">${pixelMark(2)}<span class="sr">dex, home</span></a>` +
     `<nav class="ftr__nav" aria-label="Footer"><ul>${links}` +

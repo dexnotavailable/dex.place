@@ -252,7 +252,6 @@
 .menu__link[aria-current] { border-color: var(--yellow); box-shadow: var(--off) var(--off) 0 var(--yellow); }
 .menu__arrow { margin-left: auto; color: var(--muted); }
 .menu__foot { display: flex; flex-wrap: wrap; gap: 12px; margin-top: auto; }
-.menu__strip { display: flex; width: 100%; }
 @media (prefers-reduced-motion: no-preference) {
   .menu:popover-open { transition: opacity 160ms linear, translate 320ms var(--ease-out); }
   @starting-style {
@@ -276,7 +275,6 @@
   border-top: var(--bw) solid var(--line);
   color: var(--fg);
 }
-.ftr__strip { display: flex; width: 100%; height: 4px; }
 .ftr__in {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;

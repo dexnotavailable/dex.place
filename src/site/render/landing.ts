@@ -15,7 +15,7 @@ import { donateSection } from "./donate.ts";
 import { downloadsSection } from "./downloads.ts";
 import { gallerySection } from "./gallery.ts";
 import { moreSection } from "./stubs.ts";
-import { button, chip, counter, pageHead, sectionHead, strip, tile, type ButtonOptions } from "./glyphs.ts";
+import { button, chip, counter, pageHead, sectionHead, tile, type ButtonOptions } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import type { SiteContent } from "./types.ts";
 
@@ -194,7 +194,6 @@ export function projectPage(p: Project): string {
     `<ul class="facts">${p.facts.map((f, i) =>
       `<li class="fact" data-reveal style="--i:${i}">${tile(f.icon, i === 0 ? p.tone : "paper", "m")}<p>${esc(f.text)}</p></li>`,
     ).join("")}</ul>` +
-    strip("facts__strip") +
     `</section>` +
     getIt(p) +
     `</div>` +

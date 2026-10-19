@@ -125,7 +125,6 @@ body { background: #000; color: var(--fg); }
 .ftr__mark { color: var(--ink); display: inline-block; padding-top: 18px; }
 .menu__link { font: 400 clamp(1.125rem, 5vw, 1.375rem) / 1 var(--f-px); }
 .menu__link[aria-current] { border-color: var(--ink); box-shadow: var(--off) var(--off) 0 var(--gold); }
-.strip { display: none !important; }
 /* the corner slot in the header: the loader and the ofuda settle here (motion/column.ts), right of World on a
    desktop, left of Menu on narrower screens; it keeps its room so nothing in the header shifts */
 .hdr__slot { flex: none; display: block; width: 44px; height: 48px; margin-left: 6px; }

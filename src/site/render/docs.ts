@@ -4,7 +4,7 @@
 // scroll-spy and anchor copying.
 
 import { DOC_GROUPS, OTHER_GROUP, docGroup, type DocGroup } from "../data/docs.ts";
-import { button, icon, pageHead, placeholderTag, sectionHead, strip, tile } from "./glyphs.ts";
+import { button, icon, pageHead, placeholderTag, sectionHead, tile } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import { nsfwTag } from "./nsfw.ts";
 import type { Entry, SiteContent } from "./types.ts";
@@ -297,7 +297,7 @@ export function postPage(content: SiteContent, e: Entry): string {
     (e.summary ? `<p class="ahead__sum">${esc(e.summary)}</p>` : "") +
     `</header>` +
     `<div class="prose">${e.html}</div>` +
-    `<div class="post__end" aria-hidden="true">${icon("sparkle", 3)}${strip("post__strip")}</div>` +
+    `<div class="post__end" aria-hidden="true">${icon("sparkle", 3)}</div>` +
     `</article>` +
     `<nav class="apager apager--post" aria-label="More posts">${pagerLink(newer, "prev", "Newer")}${pagerLink(older, "next", "Older")}</nav>` +
     `<p class="post__back">${button({ href: "/blog/", label: "All posts", icon: "arrow-left", iconFirst: true, size: "m" })}</p>` +
