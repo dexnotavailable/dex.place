@@ -1,8 +1,8 @@
-// R as a cut-in cinematic and the ult form's warps (lane U, zhusha/ult.ts, ultform.ts): the beats from the press to
+// R as a cut-in cinematic and the ult form (lane U, zhusha/ult.ts, ultform.ts): the beats from the press to
 // control back (the white box and the drawings' own lengths), the slash storm carving the huge letter (she is gone in
 // it), the stop, the dive straight down onto the floor, the camera's shots (cuts only where planned, moves continuous,
 // the stop dead still, reduced motion held), the sound cues on the beats, the letterbox, control back on any input after
-// the nuke, and the form's warps and ghost blades.
+// the nuke, and the form (its chain moves her as the normal chain does; its ghost blades).
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -286,67 +286,81 @@ test("ult: the storm's hits never stop the frame (R owns its weight: only the nu
   assert.equal(freezes.length, 1, "the nuke's one freeze");
 });
 
-test("ult form: M1 warps her around a foe (ahead, across facing back, above, back off) and summons ghost blades that strike on the ghost hit", async () => {
+/** Plays the M1 chain (a press as each chain window opens) and records her per tick; `form` puts her in the ult form. */
+async function chain(form, foes = null) {
+  const Zhusha = await loadZ();
+  const h = host();
+  if (foes) h.foes = () => foes;
+  const z = new Zhusha(h, [0, 0]);
+  const inp = new FakeInput(), w = flat();
+  if (form) z.form = 5000;
+  step(z, inp, w, 5);
+  const xs = [], acts = [];
+  for (let k = 0; k < 4; k++) {
+    inp.press("m1");
+    for (let i = 0; i < 45; i++) {
+      step(z, inp, w);
+      xs.push(z.body.x);
+      if (i > 2 && z.lastAction === `m1_${k + 1}` && (k === 3 ? i > 40 : z.t >= (FEEL.moves[`m1_${k + 1}`].chainFrom ?? 8))) break;
+    }
+    acts.push(z.lastAction);
+  }
+  return { z, xs, acts };
+}
+
+test("ult form: the M1 chain moves her as the normal chain does (Dex: no teleports in the chain), lock-on and all", async () => {
+  const N = await chain(false), U = await chain(true);
+  assert.deepEqual(U.acts, ["m1_1", "m1_2", "m1_3", "m1_4"]);
+  assert.deepEqual(U.xs, N.xs, "the same steps, lunges and recoils, tick for tick");
+  for (let i = 1; i < U.xs.length; i++) assert.ok(Math.abs(U.xs[i] - U.xs[i - 1]) < 0.5 * H, `no blink: ${U.xs[i - 1]} -> ${U.xs[i]}`);
+  // m1_3's lock-on works in the form too: with a foe 2.5 H ahead her lunge stops at striking distance, as in the normal form
+  const foe = [{ x: 2.5 * H, y: -1.0 * H, w: 0.8 * H, h: 1.0 * H }];
+  const Nf = await chain(false, foe), Uf = await chain(true, foe);
+  assert.deepEqual(Uf.xs, Nf.xs, "the lock-on lunge, the same");
+  assert.ok(Uf.xs.some((x, i) => i > 0 && x !== U.xs[i]), "the foe changes her path (she locks onto it)");
+});
+
+test("ult form: each hit summons ghost blades around her that strike through the foe in front (else where the swing lands) as the ghost hit lands", async () => {
+  const F = ULT.form;
   const Zhusha = await loadZ();
   const log = [];
-  const foe = { x: 4 * H, y: 0 };
   const h = host(log);
-  h.foes = () => [{ x: foe.x - 0.4 * H, y: foe.y - 1.2 * H, w: 0.8 * H, h: 1.2 * H }];
+  const foe = { x: 2.2 * H, y: -1.0 * H, w: 0.8 * H, h: 1.0 * H };
+  let foes = [foe];
+  h.foes = () => foes;
   const z = new Zhusha(h, [0, 0]);
   const inp = new FakeInput(), w = flat();
   z.form = 5000;
   step(z, inp, w, 5);
-  const spots = [];
-  for (let k = 0; k < 4; k++) {
-    inp.press("m1");
-    step(z, inp, w);
-    spots.push({ x: z.body.x, y: z.body.y, facing: z.facing, act: z.lastAction });
-    // the chain window
-    step(z, inp, w, k === 3 ? 1 : (FEEL.moves[`m1_${k + 1}`].chainFrom ?? 10) - 1);
-  }
-  const S = ULT.form.steps;
-  assert.deepEqual(spots.map((s) => s.act), ["m1_1", "m1_2", "m1_3", "m1_4"]);
-  assert.ok(Math.abs(spots[0].x - (foe.x + S[0].at * H)) < 1, `ahead of it: ${spots[0].x}`);
-  assert.ok(spots[1].x > foe.x && spots[1].facing === -1, "across it, facing back");
-  assert.ok(spots[2].y < -H, "above it");
-  // the finisher: backed off on the side she is on, facing it
-  const side = Math.sign(spots[2].x - foe.x);
-  assert.ok(Math.sign(spots[3].x - foe.x) === side && Math.abs(spots[3].x - foe.x) > 1.5 * H && spots[3].facing === -side, "backed off for the finisher");
-  assert.ok(log.includes(ULT.cues.warp));
-  // blades: summoned before the hit, striking ghostDelay after it, through the foe
-  const bl = z.uf.blades;
-  assert.ok(bl.length > 0);
-  assert.ok(bl.every((b) => b.born < b.at && b.at < b.end));
-  const cy = foe.y - 0.55 * (FEEL.charScale * H);
-  assert.ok(bl.every((b) => Math.abs((b.x0 + b.x1) / 2 - foe.x) < 1.2 * H && b.y0 < cy), "from above, through the foe");
-});
-
-test("ult form: with no foe in reach the warps carry her forward; walls stop a warp", async () => {
-  const Zhusha = await loadZ();
-  const z = new Zhusha(host(), [0, 0]);
-  const inp = new FakeInput(), w = flat(2 * H);
-  z.form = 5000;
-  step(z, inp, w, 5);
   inp.press("m1");
   step(z, inp, w);
-  assert.ok(Math.abs(z.body.x - ULT.form.free[0] * H) < 1, `forward ${z.body.x}`);
-  step(z, inp, w, FEEL.moves.m1_1.chainFrom - 1);
+  const t0 = z.uf.clock - 1, hit = FEEL.moves.m1_1.hits[0].at, gd = FEEL.ult.ghostDelay;
+  let bl = [];
+  for (let i = 0; i < 20 && !bl.length; i++) { step(z, inp, w); bl = [...z.uf.blades]; }
+  assert.equal(bl.length, F.blades[0], "m1_1: one blade");
+  const b = bl[0], bodyH = FEEL.charScale * H, chest = z.body.y - 0.6 * bodyH;
+  assert.equal(b.born, t0 + hit - F.summon, "summoned a moment before the hit");
+  assert.equal(b.at, t0 + hit + gd, "it strikes as the ghost hit lands");
+  assert.ok((b.x0 - z.body.x) * z.facing <= 0.2 * H && b.y0 < chest, "from behind / above her shoulders");
+  // it flies through the foe's middle
+  const cx = foe.x + foe.w / 2, cy = foe.y + foe.h * 0.45;
+  const cross = Math.abs((b.x1 - b.x0) * (cy - b.y0) - (b.y1 - b.y0) * (cx - b.x0)) / Math.hypot(b.x1 - b.x0, b.y1 - b.y0);
+  assert.ok(cross < 2, `through the foe: ${cross}`);
+  assert.ok(log.includes(ULT.cues.blade), "the summon cue");
+  // no foe: the next volleys strike where her swing lands, in front of her
+  foes = [];
+  for (let i = 0; i < 40; i++) step(z, inp, w);
   inp.press("m1");
-  step(z, inp, w);
-  assert.ok(z.body.x <= 2 * H - 6, "stopped at the wall");
-  // never off a ledge: with the ground ending 2 H out, a warp from 1.5 H shortens to stay on it
-  const z3 = new Zhusha(host(), [1.5 * H, 0]);
-  const i3 = new FakeInput(), w3 = { ...flat(), groundBelow: (x) => (x < 2 * H ? { y: 0 } : null) };
-  z3.form = 5000;
-  step(z3, i3, w3, 5);
-  i3.press("m1");
-  step(z3, i3, w3);
-  assert.ok(z3.body.x > 1.5 * H && z3.body.x < 2 * H, `kept on the ground: ${z3.body.x / H} H`);
-  // the normal form never warps
+  let more = [];
+  for (let i = 0; i < 30 && !more.length; i++) { step(z, inp, w); more = z.uf.blades.filter((x) => x.born > b.born); }
+  assert.ok(more.length > 0);
+  assert.equal(z.uf.target.foe, false);
+  assert.ok((z.uf.target.x - z.body.x) * z.facing > 0.8 * H, "ahead of her");
+  // the normal form summons none
   const n = new Zhusha(host(), [0, 0]);
   const i2 = new FakeInput();
   step(n, i2, flat(), 5);
   i2.press("m1");
-  step(n, i2, flat());
-  assert.ok(Math.abs(n.body.x) < 0.3 * H);
+  step(n, i2, flat(), 20);
+  assert.equal(n.uf.blades.length, 0);
 });

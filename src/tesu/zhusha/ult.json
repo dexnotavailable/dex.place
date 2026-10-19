@@ -1,5 +1,5 @@
 {
-  "about": "R as a cut-in cinematic and the ult form's warps (lane U, 10-19). Dex 10-16 / 10-19: the call at its original speed; then during the flurry she disappears: she BECOMES the slashes that slash the letter into existence (hundreds of them, each carving a piece, ~3 s or more; the letter ABSOLUTELY HUGE, a nuke; it matches her R line 一筆――天を断つ: 断 or 天); the slashes stop a moment (a beat of stillness); then she dives straight down from above, a vertical blur, and destroys everything: a nuke (a white / orange / red first flash engulfed by her blue flames, a huge eruption); the dust clears on the ult form; control back after the nuke. The form stands still-ish on one frame, then warps position to position summoning ghost blades. Ticks at 60 a second, distances in H (96 world px; she is 0.88 H). feel.json's ult block keeps the gameplay numbers (impact radius / damage / knockback, the form's length, cooldown, damage multiplier, the ghost hit); its R timings (callTicks .. revealTicks, riseTicks, zoomOut) are superseded by this file. ult.ts reads it; ultdraw.ts draws the stand-ins (clearly temporary until the FX v2 loop's effects, lanes/fx/v2/built/, and lane A's r_* drawings land).",
+  "about": "R as a cut-in cinematic and the ult form's ghost blades (lane U, 10-19). Dex 10-16 / 10-19: the call at its original speed; then during the flurry she disappears: she BECOMES the slashes that slash the letter into existence (hundreds of them, each carving a piece, ~3 s or more; the letter ABSOLUTELY HUGE, a nuke; it matches her R line 一筆――天を断つ: 断 or 天); the slashes stop a moment (a beat of stillness); then she dives straight down from above, a vertical blur, and destroys everything: a nuke (a white / orange / red first flash engulfed by her blue flames, a huge eruption); the dust clears on the ult form; control back after the nuke. The form stands still-ish on one frame and summons ghost blades; its chain moves her as the normal chain does (Dex: no teleports in the chain). Ticks at 60 a second, distances in H (96 world px; she is 0.88 H). feel.json's ult block keeps the gameplay numbers (impact radius / damage / knockback, the form's length, cooldown, damage multiplier, the ghost hit); its R timings (callTicks .. revealTicks, riseTicks, zoomOut) are superseded by this file. ult.ts reads it; ultdraw.ts draws the stand-ins (clearly temporary until the FX v2 loop's effects, lanes/fx/v2/built/, and lane A's r_* drawings land).",
   "clips": {
     "about": "Length of the call and the reveal when their drawing is not in yet (the white box plays the same timeline); with a drawing they last exactly their clip, played 1:1 (the call at its original speed). From lane A's picks (lanes/anim/moves/<slot>/make.py). r_flurry plays only up to the storm beat (she crouches, bursts into ash, gone); the rest of the flurry is the slashes.",
     "r_call": 114,
@@ -132,7 +132,7 @@
     "impact": 3
   },
   "cues": {
-    "about": "Sound cue ids for lane D (sound.ts maps an id to its files; an id with no file is silent), fired on these beats: press (the cut-in), line (her R call, normal register: 一筆――天を断つ), boom (the bass hit as the fire line ignites), fire (the curtain's roar), draw (the sword), vanish (she bursts into ash), slash (every 6th slash of the storm: a dense roll, not hundreds of files), last (the closing cut: a bass hit), hush (the stop: dead silence, everything ducks out until dive), dive (the dive's whoosh), impact (the nuke: the biggest bass hit), rumble (the eruption's long tail), reveal (the dust clears), lineUlt (her ult-register line on the reveal pose); the form: warp, blade (a ghost blade summoned), cut (it strikes).",
+    "about": "Sound cue ids for lane D (sound.ts maps an id to its files; an id with no file is silent), fired on these beats: press (the cut-in), line (her R call, normal register: 一筆――天を断つ), boom (the bass hit as the fire line ignites), fire (the curtain's roar), draw (the sword), vanish (she bursts into ash), slash (every 6th slash of the storm: a dense roll, not hundreds of files), last (the closing cut: a bass hit), hush (the stop: dead silence, everything ducks out until dive), dive (the dive's whoosh), impact (the nuke: the biggest bass hit), rumble (the eruption's long tail), reveal (the dust clears), lineUlt (her ult-register line on the reveal pose); the form: blade (a ghost blade summoned), cut (it strikes).",
     "press": "r.press",
     "line": "r.call",
     "boom": "r.boom",
@@ -147,52 +147,24 @@
     "rumble": "r.rumble",
     "reveal": "r.reveal",
     "lineUlt": "r.ultline",
-    "warp": "uf.warp",
     "blade": "uf.blade",
     "cut": "uf.slash"
   },
   "form": {
-    "about": "The ult form (Dex 10-19): a killing machine standing still-ish on one frame (uf_idle holds one drawing), then warping position to position, summoning ghost blades. Each M1 of the form's chain warps her (a blink: gone here, there) to a spot around the target before it swings: [ahead of the target (H, toward her side), up (H)], `cross` = the other side of it (she turns back to it). The target is a foe within reach ahead (the court's champion), else a point ahead that moves on with her. Ghost blades: per chain step, how many, summoned `summon` ticks before the hit and striking `ghostDelay` (feel.json) after it, through the target.",
-    "reach": 7,
-    "ahead": 1.8,
-    "steps": [
-      {
-        "at": -1.0,
-        "up": 0,
-        "cross": false,
-        "blades": 1
-      },
-      {
-        "at": 1.0,
-        "up": 0,
-        "cross": true,
-        "blades": 2
-      },
-      {
-        "at": -0.7,
-        "up": 1.5,
-        "cross": false,
-        "blades": 3
-      },
-      {
-        "at": -1.8,
-        "up": 0,
-        "cross": false,
-        "blades": 5
-      }
-    ],
-    "free": [
-      1.3,
-      1.5,
-      1.4,
-      1.8
+    "about": "The ult form (Dex 10-19): a killing machine standing still-ish on one frame (uf_idle holds one drawing), summoning ghost blades; Dex after playing it: \"the ult form doesn't need to TP her during the attack chain, just make the movement make sense\": the chain moves her as the normal chain does (controller.ts: the uf drawings' planted foot, the lunges, m1_3's lock-on). Ghost blades per chain step (`blades`), summoned around her (behind and above her shoulders, `ring` H out) `summon` ticks before each hit and striking `ghostDelay` (feel.json) after it, through the nearest foe in `reach` H in front of her (its middle), else through the point `ahead` H in front of her where the swing lands; each takes `strike` ticks and fades over `fade`.",
+    "reach": 4,
+    "ahead": 1.2,
+    "blades": [
+      1,
+      2,
+      3,
+      5
     ],
     "summon": 5,
     "strike": 4,
     "fade": 8,
     "bladeLen": 1.05,
-    "ring": 1.35,
-    "flash": 8
+    "ring": 1.0
   },
   "fx": {
     "about": "The FX v2 loop's effects (lanes/fx/v2/PLAN.md ids, played through game.fx.play when the game has them; until then the stand-ins in ultdraw.ts draw): callFire (her blue fire carpet, from the BOOM until she vanishes, at her feet), letter (the flurry: the letter carved by the slashes and the hold, at the letter's foot, never mirrored), dive (her line through the letter), nuke (at the crater), clear (the smoke clearing off her ult form).",
