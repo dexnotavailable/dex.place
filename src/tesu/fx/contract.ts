@@ -4,12 +4,18 @@
 
 /** Drawn at her art px: one effect px = one of her 128 px art px. */
 export const FX_PX = 1;
-/** A drawing at most this size (art px). */
-export const FX_MAX_W = 2048;
-export const FX_MAX_H = 1024;
-/** Per effect: opaque-box px over all its drawings, and PNG bytes (the slot-in checks the bytes). */
-export const FX_MAX_AREA = 6_000_000;
-export const FX_MAX_BYTES = 2_000_000;
+/**
+ * A drawing at most this size (art px; 10-19 v2: raised for the huge R letter, the dive's nuke). The loader cuts every
+ * drawing into FX_CELL cells, drops the empty ones, trims each to what is painted and stores a cell repeated anywhere
+ * in the effect once, so one drawing bigger than an atlas page plays as one (same clock, aligned to the art px) and a
+ * sparse or slowly building effect costs what is painted, not its canvas.
+ */
+export const FX_MAX_W = 4096;
+export const FX_MAX_H = 4096;
+export const FX_CELL = 128;
+/** Per effect: stored px after the cells (GPU: 4 bytes each), and PNG bytes (the slot-in checks the bytes). */
+export const FX_MAX_STORED = 16_000_000;
+export const FX_MAX_BYTES = 8_000_000;
 /** Effects alive at once (the oldest one-shot goes first). */
 export const FX_MAX_LIVE = 64;
 
@@ -36,6 +42,8 @@ export interface FxDef {
   reflect: boolean;
   frames: FxFrame[];
   loop: boolean;
+  /** Effects that start with this one, at the same point, facing and clock (one effect authored in parts). */
+  with: string[];
   notes?: string;
 }
 
@@ -62,6 +70,8 @@ export function validateFx(json: unknown, id: string): FxDef {
   if (attach !== "world" && attach !== "her") bad.push(`attach "${String(attach)}": "world" or "her"`);
   if ("reflect" in o && typeof o.reflect !== "boolean") bad.push("reflect must be true or false");
   if ("loop" in o && typeof o.loop !== "boolean") bad.push("loop must be true or false");
+  const wth = o.with ?? [];
+  if (!Array.isArray(wth) || !wth.every((v) => typeof v === "string" && ID.test(v) && v !== id)) bad.push("with must be a list of other effects' ids");
   const frames = o.frames;
   if (!Array.isArray(frames) || frames.length === 0) bad.push("no frames");
   else {
@@ -80,7 +90,7 @@ export function validateFx(json: unknown, id: string): FxDef {
   if (bad.length) throw new FxError(`${id}: ${bad.join("; ")}`);
   return {
     id, stage: "pixel", px: 1, pivot: [pv[0] as number, pv[1] as number], layer: layer as FxLayer, attach: attach as FxAttach,
-    reflect: o.reflect !== false, frames: (frames as FxFrame[]).map((f) => ({ ...f })), loop: o.loop === true,
+    reflect: o.reflect !== false, frames: (frames as FxFrame[]).map((f) => ({ ...f })), loop: o.loop === true, with: [...(wth as string[])],
     ...(typeof o.notes === "string" ? { notes: o.notes } : {}),
   };
 }
@@ -93,6 +103,48 @@ export function checkFxDrawing(rgba: Uint8Array | Uint8ClampedArray, w: number, 
   for (let i = 3; i < rgba.length; i += 4) if (rgba[i] !== 0 && rgba[i] !== 255) soft++;
   if (soft) bad.push(`${name}: ${soft} half-transparent px (alpha 0 or 255 only; draw translucency as a dither)`);
   return bad;
+}
+
+/** One stored cell of a drawing: where it sits in the drawing, its trimmed size, and its pixels' key (dedupe). */
+export interface FxCell {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  key: string;
+  px: Uint8Array;
+}
+
+/**
+ * Cuts a drawing (RGBA, w x h) into `cell`-px cells, leaves out the empty ones and trims each to its painted box.
+ * Each cell's `key` is the same for the same pixels (with its size), so an effect stores a repeated cell once.
+ */
+export function fxCells(rgba: Uint8Array | Uint8ClampedArray, w: number, h: number, cell = FX_CELL): FxCell[] {
+  const out: FxCell[] = [];
+  for (let cy = 0; cy < h; cy += cell) {
+    for (let cx = 0; cx < w; cx += cell) {
+      const ex = Math.min(w, cx + cell), ey = Math.min(h, cy + cell);
+      let x0 = ex, y0 = ey, x1 = -1, y1 = -1;
+      for (let y = cy; y < ey; y++) {
+        for (let x = cx; x < ex; x++) {
+          if (rgba[(y * w + x) * 4 + 3]! < 128) continue;
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+      if (x1 < 0) continue;
+      const cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+      const px = new Uint8Array(cw * ch * 4);
+      for (let y = 0; y < ch; y++) px.set(rgba.subarray(((y0 + y) * w + x0) * 4, ((y0 + y) * w + x0 + cw) * 4), y * cw * 4);
+      // FNV-1a over the pixels (+ the size): a key for dedupe (the loader compares the bytes before sharing)
+      let a = 0x811c9dc5 ^ cw, b = 0x01000193 ^ ch;
+      for (let i = 0; i < px.length; i++) { a = Math.imul(a ^ px[i]!, 0x01000193); b = Math.imul(b ^ px[i]!, 0x5bd1e995); }
+      out.push({ x: x0, y: y0, w: cw, h: ch, key: `${cw}x${ch}:${(a >>> 0).toString(36)}:${(b >>> 0).toString(36)}`, px });
+    }
+  }
+  return out;
 }
 
 /** What the game asks for when it plays an effect (EFFECTS-CONTRACT.md "How the game plays one"). */
@@ -158,7 +210,7 @@ export class FxClock {
     return this.defs.has(id);
   }
 
-  play(id: string, o: FxSpawn = {}): FxHandle {
+  play(id: string, o: FxSpawn = {}, depth = 0): FxHandle {
     const def = this.defs.get(id);
     if (!def) {
       if (!this.warned.has(id)) { this.warned.add(id); console.warn(`fx: no effect called ${id} (public/assets/fx/${id}/)`); }
@@ -173,7 +225,12 @@ export class FxClock {
       t: -Math.max(0, Math.round(o.delay ?? 0)), serial: this.serial++, stopped: false,
     };
     this.live.push(e);
-    return { stop: () => { e.stopped = true; }, get alive() { return !e.stopped && fxFrameAt(e.def, Math.max(0, e.t)) !== null; } };
+    // its parts start with it: the same point, facing, delay (so the same clock); stopping it stops them
+    const parts = depth < 4 ? def.with.map((p) => this.play(p, { ...o, layer: undefined }, depth + 1)) : [];
+    return {
+      stop: () => { e.stopped = true; for (const p of parts) p.stop(); },
+      get alive() { return !e.stopped && fxFrameAt(e.def, Math.max(0, e.t)) !== null; },
+    };
   }
 
   /** One tick: every effect ages; finished one-shots and stopped ones go. */

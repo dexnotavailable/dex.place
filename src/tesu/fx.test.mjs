@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { checkFxDrawing, FX_MAX_LIVE, FxClock, fxFrameAt, validateFx } from "./fx/contract.ts";
+import { checkFxDrawing, fxCells, FX_CELL, FX_MAX_LIVE, FxClock, fxFrameAt, validateFx } from "./fx/contract.ts";
 
 const good = (o = {}) => ({
   id: "spark", stage: "pixel", px: 1, pivot: [12, 20], layer: "front", attach: "world",
@@ -46,7 +46,39 @@ test("fx contract: drawings are hard pixels within the size limit", () => {
   assert.deepEqual(checkFxDrawing(px, 4, 4, "f000.png"), []);
   px[3] = 128;
   assert.match(checkFxDrawing(px, 4, 4, "f000.png")[0], /half-transparent/);
-  assert.match(checkFxDrawing(new Uint8Array(0), 4096, 10, "f001.png")[0], /over 2048 x 1024/);
+  assert.deepEqual(checkFxDrawing(new Uint8Array(0), 4096, 4096, "f001.png"), [], "4096 a side is allowed (10-19 v2)");
+  assert.match(checkFxDrawing(new Uint8Array(0), 5000, 10, "f001.png")[0], /over 4096 x 4096/);
+});
+
+test("fx cells: a big sparse drawing stores only its painted cells, trimmed; a repeated cell has one key", () => {
+  const W = 3000, H = 1200, px = new Uint8Array(W * H * 4);
+  const dot = (x, y, c) => { const i = (y * W + x) * 4; px[i] = c; px[i + 1] = 2; px[i + 2] = 3; px[i + 3] = 255; };
+  // two identical 3 x 2 strokes in different cells, one different stroke, the rest empty
+  for (const [ox, oy] of [[10, 10], [10 + 5 * FX_CELL, 3 * FX_CELL + 10]]) for (let y = 0; y < 2; y++) for (let x = 0; x < 3; x++) dot(ox + x, oy + y, 200);
+  dot(2999, 1199, 7);
+  const cells = fxCells(px, W, H);
+  assert.equal(cells.length, 3);
+  const [a, b, c] = cells;
+  assert.deepEqual([a.x, a.y, a.w, a.h], [10, 10, 3, 2], "trimmed to the stroke");
+  assert.equal(a.key, b.key, "the same pixels: stored once");
+  assert.notEqual(a.key, c.key);
+  assert.deepEqual([c.x, c.y, c.w, c.h], [2999, 1199, 1, 1]);
+  assert.equal(cells.reduce((n, q) => n + q.w * q.h, 0), 13, "13 stored px for a 3000 x 1200 canvas");
+});
+
+test("fx parts: an effect's `with` parts start with it (same point, facing, delay, clock) and stop with it", () => {
+  const core = validateFx(good({ id: "q_core", with: ["q_smoke"] }), "q_core");
+  const smoke = validateFx(good({ id: "q_smoke", loop: true, layer: "back" }), "q_smoke");
+  assert.throws(() => validateFx(good({ id: "q_core", with: ["q_core"] }), "q_core"), /with/);
+  const c = new FxClock(new Map([["q_core", core], ["q_smoke", smoke]]));
+  const h = c.play("q_core", { x: 5, y: 6, facing: -1, delay: 3 });
+  assert.equal(c.live.length, 2);
+  const [p0, p1] = c.live;
+  assert.deepEqual([p1.def.id, p1.x, p1.y, p1.facing, p1.t, p1.layer], ["q_smoke", 5, 6, -1, p0.t, "back"]);
+  for (let i = 0; i < 4; i++) { c.tick(); assert.equal(c.live[0].t, c.live[1].t, "one clock"); }
+  h.stop();
+  c.tick();
+  assert.equal(c.live.length, 0, "the looping part stopped with it");
 });
 
 test("fx clock: a one-shot shows each drawing for its ticks, then is gone; a delay holds it back", () => {
