@@ -81,12 +81,13 @@ export const P = {
   /**
    * The fall's cumulus (the opening's sky, Dex's cloud and sky refs): the same family as `cumulus`, with the whole
    * value range of the refs. 0-2 the sunlit crown (cream, the peach rim, warm white), 3-8 the turn into the shade,
-   * the sky's blue bounced into it, 9-10 the deep recesses between billows and under overhangs (luminance about
-   * 115 and 100), 11-12 the light thrown up into the lowest shade from the cloud deck below.
+   * the sky's blue bounced into it (round 1c: shifted toward the sky ref's cyan-blue shade, out of lavender), 9-10
+   * the deep recesses between billows and under overhangs (luminance about 115 and 98), 11-12 the light thrown up
+   * into the lowest shade from the cloud deck below.
    */
-  fallcu: ramp("#fffaf0", "#fde3cc", "#f5eee8", "#e2e9f0", "#cddbe8", "#b5c9de", "#9cb5d2", "#84a1c5", "#6e8eb8", "#5a7aa9", "#486899", "#a8c4da", "#91b2cf"),
+  fallcu: ramp("#fffaf0", "#fde3cc", "#f5eee8", "#dfe9ef", "#c6dae6", "#a9c6dc", "#8db3d1", "#74a0c4", "#5c8db8", "#497aa8", "#386797", "#a5c8da", "#8db7cf"),
   /** Far cumulus, compressed toward the sky (luminance about 235 down to 185): lit, turning, shade, deepest. */
-  fallfar: ramp("#f1f5f7", "#e2ebf2", "#d0dfea", "#bfd2e3", "#adc5dc"),
+  fallfar: ramp("#eef5f7", "#deebf1", "#cbe0ea", "#b8d3e2", "#a5c7db"),
   /** The sky's own blues, pale to deep: the lost edges of the shaded side and the haze at a far cloud's foot. */
   fallsky: ramp("#dbe9ef", "#bdd8e7", "#9ec5df", "#7dafd5", "#5692c6", "#3374b2"),
 } as const;

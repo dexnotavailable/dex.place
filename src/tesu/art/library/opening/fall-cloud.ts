@@ -43,11 +43,18 @@ export interface FallCloudP {
   tilt?: number;
   /** For a deck: the gaps right through it, [x share -0.5..0.5, width share] each. */
   gaps?: [number, number][];
+  /**
+   * For a deck seen only from under it (far off over the lake, receding toward the horizon): no heads on its top,
+   * a flatter body, its top lost in its own haze and its base lit from below.
+   */
+  under?: boolean;
   frame?: number;
 }
 
 /** The sun (upper left, a little toward the viewer): the same as op.cloud's. */
-const SUN = [-0.55, -0.68, 0.48] as const;
+const SUN = [-0.5, -0.6, 0.62] as const;
+/** How much of a heap's light is its whole form (the rest its billows' and lobes'). */
+const MASS_W = 0.68;
 
 /**
  * A billow: a big round form of the cloud: its centre (y negative up), radius, depth (bigger: nearer) and how flat it
@@ -63,44 +70,114 @@ interface Lobe { x: number; y: number; rx: number; ry: number; z: number; form: 
 const isLayer = (p: FallCloudP): boolean => p.kind === "streak" || p.kind === "wisp";
 /** Its distance (a high wisp is pale and soft unless told otherwise). */
 const farOf = (p: FallCloudP): number => clamp(p.far ?? (p.kind === "wisp" ? 0.6 : 0), 0, 1);
+/** How deep the torn rags under a heap's or a deck's base may hang, px of its plane. */
+const fringeOf = (p: FallCloudP): number => (isLayer(p) ? 0 : Math.round(clamp(p.h * (p.kind === "deck" ? 0.06 : 0.05), 3, p.kind === "deck" ? 18 : 34)));
 
 // ---------------------------------------------------------------------------------------------------------------
 // The forms
 
-/** A great tower: it widens and leans as it climbs, its shoulders stepping out, the crown spreading. */
+/**
+ * A great tower: a broad column that widens and leans as it climbs, packed with billows of very different sizes side by
+ * side and overlapping (never one ball per row: a stack of balls), its sun side stepping out in shoulders, its crown a
+ * spreading cauliflower head led by a dominant billow toward the sun, its foot spreading.
+ */
 function towerForms(p: FallCloudP, r: () => number): Form[] {
   const W = p.w, HH = p.h, lean = p.lean ?? -0.1;
   const out: Form[] = [];
-  // the column's half width at a height share u (0 the crown .. 1 the foot): widest under the crown, narrowing down
-  // the column, flaring again where its foot spreads into the deck; its middle leans
-  const hwAt = (u: number): number => (W / 2) * (0.82 - 0.4 * Math.pow(u, 0.9) + 0.55 * Math.max(0, u - 0.8) / 0.2);
+  // the column's half width at a height share u (0 the crown .. 1 the foot): broad under the crown, a little narrower
+  // down the column, flaring where its foot spreads; its middle leans
+  const hwAt = (u: number): number => (W / 2) * (0.8 - 0.2 * u + 0.4 * Math.max(0, u - 0.8) / 0.2);
   const cxAt = (u: number): number => -lean * HH * (u - 0.5);
-  // billows of very different sizes scattered up the column (staggered, never stacked in rows), the lower nearer;
-  // the sun's side (west) stepping out in shoulders
-  const n = Math.round(HH / (W * 0.09));
-  for (let k = 0; k < n; k++) {
-    const u = (k + r()) / n;
-    const hw = hwAt(u);
-    const g = r();
-    const R = hw * (g < 0.25 ? 0.62 + 0.15 * r() : g < 0.7 ? 0.42 + 0.12 * r() : 0.26 + 0.1 * r());
-    const side = r() < 0.58 ? -1 : 1;
-    const x = cxAt(u) + side * (hw - R) * Math.pow(r(), 0.7);
-    const y = -HH + HH * u * 0.94 + R * 0.6;
-    out.push({ x, y, r: R, z: 1 + u * 2 + r() * 0.4 });
-  }
-  // the crown: a dominant head toward the sun rising clear of the column, and smaller ones spreading off it
-  const hw0 = hwAt(0.05);
-  const R0 = hw0 * (0.7 + 0.1 * r());
-  out.push({ x: cxAt(0) - hw0 * (0.15 + 0.15 * r()), y: -HH + R0 * 0.55, r: R0, z: 0.6 });
-  for (let j = 0, nc = 2 + Math.floor(r() * 2); j < nc; j++) {
+  // the crown: a dominant head toward the sun rising clear of the column, smaller heads spreading off it
+  const hw0 = hwAt(0.04);
+  const R0 = hw0 * (0.44 + 0.06 * r());
+  const crownY = -HH + R0 * 0.62;
+  out.push({ x: cxAt(0) - hw0 * (0.25 + 0.12 * r()), y: crownY, r: R0, z: 0.6 });
+  for (let j = 0, nc = 4 + Math.floor(r() * 3); j < nc; j++) {
     const side = j % 2 ? -1 : 1;
-    const R = R0 * (0.36 + 0.2 * r());
-    out.push({ x: cxAt(0) + side * hw0 * (0.55 + 0.3 * r()), y: -HH + R0 * (0.7 + 0.5 * r()), r: R, z: 0.7 + j * 0.15 });
+    const R = R0 * (0.42 + 0.3 * r());
+    out.push({ x: cxAt(0) - hw0 * 0.1 + side * hw0 * (0.3 + 0.55 * r()), y: crownY + R0 * (0.05 + 0.7 * r()), r: R, z: 0.7 + j * 0.12 });
+  }
+  // the column: rows of billows across its width (2-4 a row, sizes 1:2.5), each row overlapping the one above by
+  // most of a radius, the rows staggered
+  let y = crownY + R0 * 0.75;
+  let row = 0;
+  while (y < -HH * 0.02) {
+    const u = clamp((y + HH) / HH, 0, 1);
+    const hw = hwAt(u), cx = cxAt(u);
+    const sizes: number[] = [];
+    let span = 0;
+    while (span < hw * 2.05) {
+      const g = r();
+      const R = hw * (g < 0.3 ? 0.5 + 0.12 * r() : g < 0.75 ? 0.34 + 0.1 * r() : 0.2 + 0.08 * r());
+      sizes.push(R);
+      span += R * 1.45;
+    }
+    // (a shoulder: now and then the sun side's billow swells and steps out)
+    const shoulder = r() < 0.4;
+    // (each row's ends wander in and out: the silhouette steps, never a ruled side)
+    let x = cx - hw + sizes[0]! * (shoulder ? 0.55 : 0.85) + (row % 2 ? hw * 0.08 : 0) + (r() - 0.5) * hw * 0.3;
+    const end = cx + hw * (0.8 + 0.35 * r());
+    let maxR = 0;
+    sizes.forEach((R0b, k) => {
+      const R = k === 0 && shoulder ? R0b * 1.25 : R0b;
+      const yy = y + (r() - 0.5) * R * 0.5;
+      if (x - R * 0.3 < end) out.push({ x, y: yy, r: R, z: 1 + u * 2.4 + r() * 0.5 });
+      x += R * (1.1 + 0.35 * r());
+      maxR = Math.max(maxR, R);
+    });
+    y += maxR * (0.55 + 0.25 * r());
+    row++;
   }
   return out;
 }
 
-/** A heap: a few heads of very different sizes (the tallest toward the sun), each of billows stepping down from its crown. */
+/**
+ * One head of a heap: a crown of a few billows (the biggest toward the sun) and under it rows of billows packed across
+ * the head's width down to the base, sizes 1:2.5 side by side and overlapping, the rows staggered, the ends of each row
+ * wandering in and out (never a chain of shrinking balls, never a row of equal ones along the base).
+ */
+function packHead(out: Form[], r: () => number, cx: number, top: number, hwTop: number, hwFoot: number, lean: number, z0: number): void {
+  const HH = -top;
+  const hwAt = (u: number): number => hwTop + (hwFoot - hwTop) * u;
+  const cxAt = (u: number): number => cx - lean * HH * (u - 0.5);
+  const R0 = Math.min(hwTop * (0.4 + 0.1 * r()), HH * 0.38);
+  const cy = top + R0 * 0.72;
+  out.push({ x: cxAt(0) - hwTop * (0.1 + 0.2 * r()), y: cy, r: R0, z: z0 });
+  for (let j = 0, nc = 2 + Math.floor(r() * 3); j < nc; j++) {
+    const side = j % 2 ? -1 : 1;
+    const R = R0 * (0.36 + 0.24 * r());
+    out.push({ x: cxAt(0) + side * hwTop * (0.35 + 0.5 * r()), y: cy + R0 * (0.2 + 0.5 * r()), r: R, z: z0 + 0.1 + j * 0.1 });
+  }
+  let y = cy + R0 * (0.6 + 0.2 * r());
+  let row = 0;
+  const minR = Math.max(4, HH * 0.06);
+  while (y < -minR * 0.6) {
+    const u = clamp((y - top) / HH, 0, 1);
+    const hw = hwAt(u), c = cxAt(u);
+    const cap = HH * (0.2 + 0.18 * (1 - u));
+    const sizes: number[] = [];
+    let span = 0;
+    while (span < hw * 2.05) {
+      const g = r();
+      const R = Math.max(minR, Math.min(cap, hw * (g < 0.3 ? 0.5 + 0.12 * r() : g < 0.75 ? 0.34 + 0.1 * r() : 0.2 + 0.08 * r())));
+      sizes.push(R);
+      span += R * 1.45;
+    }
+    let x = c - hw + sizes[0]! * 0.8 + (row % 2 ? hw * 0.06 : 0) + (r() - 0.5) * hw * 0.25;
+    const end = c + hw * (0.8 + 0.3 * r());
+    let maxR = 0;
+    for (const R of sizes) {
+      if (x - R * 0.3 < end) out.push({ x, y: Math.min(y + (r() - 0.5) * R * 0.5, -R * 0.3), r: R, z: z0 + 1 + u * 2.4 + r() * 0.5 });
+      x += R * (1.1 + 0.35 * r());
+      maxR = Math.max(maxR, R);
+    }
+    y += maxR * (0.55 + 0.25 * r());
+    row++;
+  }
+}
+
+/** A heap: a few heads of very different sizes (the tallest toward the sun), each a crown over packed billows. */
 function heapForms(p: FallCloudP, r: () => number): Form[] {
   const tower = clamp(p.tower ?? 0.6, 0, 1);
   const W = p.w, HH = p.h, aspect = W / HH;
@@ -120,82 +197,59 @@ function heapForms(p: FallCloudP, r: () => number): Form[] {
     heads.push({ cx: Math.max(-W / 2 + hw / 2, mcx - mw * 0.42 - hw * 0.1), w: hw, h: HH * (0.28 + 0.16 * r()), z: 1.4 });
   }
   const out: Form[] = [];
-  for (const H of heads) {
-    // the crown, and a second beside it on a broad head
-    const r0 = Math.min(H.w * 0.34, H.h * (0.3 + 0.12 * (1 - tower)));
-    const c0 = H.cx + H.w * (-0.12 + 0.18 * r());
-    const crowns: Form[] = [{ x: c0, y: -H.h + r0, r: r0, z: H.z }];
-    if (H.w > H.h * 1.4 && r() < 0.8) {
-      const r1 = r0 * (0.55 + 0.25 * r()), side = r() < 0.6 ? 1 : -1;
-      crowns.push({ x: c0 + side * r0 * (0.95 + 0.35 * r()), y: -H.h + r0 * (1.4 + 0.4 * r()), r: r1, z: H.z + 0.1 });
-    }
-    out.push(...crowns);
-    // billows stepping down each side to the base, each a little nearer than the one above it
-    for (const c of crowns) {
-      for (const side of [-1, 1]) {
-        let x = c.x, y = c.y, rr = c.r;
-        for (let k = 0; k < 8; k++) {
-          const nr = rr * (0.7 + 0.32 * r());
-          x += side * rr * (0.45 + 0.35 * r()) * (1.25 - 0.7 * tower);
-          y += rr * (0.45 + 0.35 * r()) * (0.6 + 0.5 * tower);
-          if (y > -nr * 0.25 || Math.abs(x - H.cx) > H.w / 2 - nr * 0.4) break;
-          out.push({ x, y, r: nr, z: c.z + 0.15 * (k + 1) });
-          rr = nr;
-        }
-      }
-    }
-    // the body under them down to the base: broad low billows in front
-    for (let x = H.cx - H.w * 0.42; x < H.cx + H.w * 0.42;) {
-      const rr = Math.min(H.h * (0.22 + 0.1 * r()), H.w * 0.2);
-      out.push({ x, y: -rr * (0.75 + 0.2 * r()), r: rr, z: H.z + 1.5 + r() * 0.3 });
-      x += rr * (1.1 + 0.6 * r());
-    }
-  }
+  for (const H of heads) packHead(out, r, H.cx, -H.h, H.w * (0.3 + 0.1 * tower), H.w * 0.5, 0.04 * (r() - 0.6), H.z);
   return out;
 }
 
-/** Is x (cloud px) in one of a deck's gaps at height y? The gap's walls wander (torn, never a ruled shaft). */
-function inGap(p: FallCloudP, x: number, y: number, seed: number): boolean {
+/**
+ * Is x (cloud px) in one of a deck's gaps at height y, widened by `pad` px? The gap's walls wander (torn, never a
+ * ruled shaft); it opens wider toward the deck's base.
+ */
+function inGap(p: FallCloudP, x: number, y: number, seed: number, pad = 0): boolean {
   for (const [gx, gw] of p.gaps ?? []) {
-    const hw = (gw * p.w) / 2 * (0.75 + 0.5 * vnoise1(y / 23 + gx * 50, seed + 71) + 0.25 * (vnoise1(y / 7, seed + 72) - 0.5));
+    const flare = 1 + 0.6 * clamp(y / p.h + 0.6, 0, 1);
+    const hw = (gw * p.w) / 2 * flare * (0.75 + 0.5 * vnoise1(y / 23 + gx * 50, seed + 71)) + pad;
     if (Math.abs(x - gx * p.w) < hw) return true;
   }
   return false;
 }
 
 /**
- * A deck: a long layer of flattened billows, thinner toward its torn ends; its top an uneven skyline (stretches of low
- * rolls, then a cluster of heads of very different sizes rising out of it, never a row of equal domes); masses
- * hanging from its base here and there.
+ * A deck: a long layer whose thickness wanders, thinner toward its torn ends; its body billows of very different
+ * sizes in two or three loose tiers (the lower nearer), never one row of equal rolls; its top an uneven skyline
+ * (stretches of low rolls, then a cluster of heads of very different sizes rising out of it); its base torn by the
+ * mask's fringe. Gaps go right through it: no billow stands in one, so their walls are the billows' own round sides.
  */
 function deckForms(p: FallCloudP, r: () => number, seed: number): Form[] {
   const W = p.w, HH = p.h;
   const out: Form[] = [];
-  const thick = (x: number): number => HH * (1 - 0.65 * Math.pow(Math.min(1, Math.abs(x) / (W / 2)), 2.5)) * (0.75 + 0.5 * vnoise1(x / (HH * 3), seed + 73));
-  // the body: long flat billows along its middle, overlapping end to end
-  for (let x = -W / 2 + HH * 0.4; x < W / 2 - HH * 0.4;) {
-    const th = thick(x);
-    const R = th * (0.75 + 0.5 * r());
-    const q = 0.38 + 0.14 * r();
-    if (!inGap(p, x, -th * 0.4, seed)) out.push({ x, y: -th * 0.42, r: R, z: 1.5 + r() * 0.3, q });
-    x += R * (0.7 + 0.5 * r());
+  const thick = (x: number): number => HH * (1 - 0.65 * Math.pow(Math.min(1, Math.abs(x) / (W / 2)), 2.5)) * (0.9 + 0.2 * vnoise1(x / (HH * 3), seed + 73));
+  // the body: tiers of billows, each walk along the layer with sizes 1:3 and uneven steps
+  // (the lowest tier sits on the base: its billows reach below it and are cut flat-ish and torn by it, packed close,
+  // so the underside is one base, never a row of rounded dark bottoms)
+  const tiers = [[0.7, 0.6, 0], [0.45, 1.3, 0], [0, 2.0, 1]] as const;
+  for (const [at, z, low] of tiers) {
+    for (let x = -W / 2 + HH * (0.3 + 0.5 * r()); x < W / 2 - HH * 0.3;) {
+      const th = thick(x);
+      const g = r();
+      const R = th * (g < 0.2 ? 0.4 + 0.08 * r() : g < 0.6 ? 0.28 + 0.1 * r() : 0.18 + 0.07 * r());
+      const q = p.under ? 0.4 + 0.15 * r() : 0.6 + 0.2 * r();
+      const y = low ? HH * 0.1 - R * q * (0.35 + 0.2 * r()) : -th * (at + (r() - 0.5) * 0.16);
+      if (!inGap(p, x, y, seed, R * 0.85) && (low || r() < 0.9)) out.push({ x, y, r: R, z: z + r() * 0.4, q });
+      x += R * (low ? 0.6 + 0.4 * r() : 0.8 + 0.9 * r());
+    }
   }
   // the tops: where the layer heaps up (a slow noise along it), heads of very different sizes; elsewhere only low rolls
-  for (let x = -W / 2 + HH * 0.6; x < W / 2 - HH * 0.6;) {
+  for (let x = -W / 2 + HH * 0.6; x < W / 2 - HH * 0.6 && !p.under;) {
     const th = thick(x);
     const heap = Math.pow(vnoise1(x / (HH * 2.2), seed + 74), 1.6);
     const g = r();
-    const R = th * (g < 0.25 ? 0.2 + 0.1 * r() : 0.12 + 0.08 * r()) * (1 + 2.2 * heap);
-    const q = 0.75 + 0.2 * r();
-    const y = -th * (0.66 + 0.1 * r()) - R * q * (0.15 + 0.5 * heap);
-    if (!inGap(p, x, y, seed)) out.push({ x, y, r: R, z: 1 + r() * 0.4, q });
-    x += R * (0.8 + 1.1 * r()) + th * 0.08 * r();
-  }
-  // masses hanging from its base here and there, flattened
-  for (let x = -W / 2 + HH * 0.6; x < W / 2 - HH * 0.6;) {
-    const R = HH * (0.12 + 0.2 * r());
-    if (r() < 0.5 && !inGap(p, x, 0, seed)) out.push({ x, y: R * (0.05 + 0.2 * r()), r: R, z: 2.2 + r() * 0.3, q: 0.45 + 0.15 * r() });
-    x += R * (1.2 + 2 * r());
+    // (round 1c: sizes 1:3:9 along the layer, the big heads where it heaps, small ones and low stretches between)
+    const R = th * (g < 0.2 ? 0.2 + 0.1 * r() : g < 0.6 ? 0.1 + 0.06 * r() : 0.05 + 0.04 * r()) * (1 + 1.6 * heap);
+    const q = 0.78 + 0.2 * r();
+    const y = -th * (0.72 + 0.1 * r()) - R * q * (0.15 + 0.5 * heap);
+    if (!inGap(p, x, y, seed, R)) out.push({ x, y, r: R, z: 0.4 + r() * 0.4, q });
+    x += R * (0.8 + 1.4 * r()) + th * 0.1 * r();
   }
   return out;
 }
@@ -219,6 +273,27 @@ function heapLobes(p: FallCloudP, seed: number): { L: Lobe[]; F: Form[] } {
   const F = p.kind === "tower" ? towerForms(p, r) : p.kind === "deck" ? deckForms(p, r, seed) : heapForms(p, r);
   const far = clamp(p.far ?? 0, 0, 1);
   const deck = p.kind === "deck";
+  // (round 1b) a big billow is itself a cauliflower: a few billows of a third to a half its size swell from its
+  // upper, sunward half (in front of it), so a crown never reads as one bald dome
+  // (round 1c: a deck's heads too, the ones standing in its sunlit top: bald domes in a row were the gust's fault)
+  if (!deck || !p.under) {
+    const grainPx = clamp(Math.min(p.w, p.h) * 0.032, 6, 30) * (1 + 0.8 * far);
+    const n0 = F.length;
+    // (only the crowns: billows whose tops stand in the cloud's upper reach; the body below stays quiet, its billows
+    // big and soft, the detail where the light is)
+    let top = 0;
+    for (const f of F) top = Math.min(top, f.y - f.r * (f.q ?? 1));
+    for (let i = 0; i < n0; i++) {
+      const f = F[i]!;
+      if (f.r < grainPx * 3.2 || f.y - f.r * (f.q ?? 1) > top + p.h * (deck ? 0.42 : 0.3)) continue;
+      for (let j = 0, n = 2 + Math.floor(r() * 2); j < n; j++) {
+        const a = -Math.PI / 2 + (r() - 0.62) * 2.4;
+        const cr = f.r * (0.3 + 0.18 * r());
+        const d = f.r - cr * (0.95 + 0.3 * r());
+        F.push({ x: f.x + Math.cos(a) * d, y: Math.min(f.y + Math.sin(a) * d * (f.q ?? 1), -cr * 0.4), r: cr, z: f.z + 0.05 + 0.02 * j, q: f.q });
+      }
+    }
+  }
   const L: Lobe[] = [];
   const minR = Math.max(2.6, Math.min(p.w, p.h) * 0.006) * (1 + far);
   F.forEach((f, fi) => {
@@ -234,7 +309,6 @@ function heapLobes(p: FallCloudP, seed: number): { L: Lobe[]; F: Form[] } {
         const x = gx + (r() - 0.5) * rho * 0.5, y = gy + (r() - 0.5) * rho * 0.4;
         const d = Math.hypot((x - f.x) / f.r, (y - f.y) / (f.r * fq));
         if (d > 1 - (rho * 0.45) / (f.r * fq) || y > (deck ? p.h * 0.2 : -rho * 0.2)) continue;
-        if (deck && inGap(p, x, y, seed)) continue;
         const g = r();
         const sideSun = ((x - f.x) * SUN[0] + (y - f.y) * SUN[1]) / f.r;
         const rad = rho * (g < 0.2 ? 1.15 + 0.3 * r() : g < 0.7 ? 0.75 + 0.3 * r() : 0.5 + 0.2 * r()) * (sideSun < -0.2 ? 1.45 : 1);
@@ -251,7 +325,6 @@ function heapLobes(p: FallCloudP, seed: number): { L: Lobe[]; F: Form[] } {
       const a = (i / steps) * 2 * Math.PI + r() * 0.1;
       const ex = f.x + Math.cos(a) * f.r, ey = f.y + Math.sin(a) * f.r * fq;
       if (ey > (deck ? p.h * 0.2 : -minR) || inOther(F, fi, ex, ey, 0.96)) continue;
-      if (deck && inGap(p, ex, ey, seed)) continue;
       const enx0 = Math.cos(a) * fq, eny0 = Math.sin(a), enl = Math.hypot(enx0, eny0) || 1;
       const enx = enx0 / enl, eny = eny0 / enl;
       const facing = -(enx * SUN[0] + eny * SUN[1]);
@@ -284,19 +357,6 @@ function heapLobes(p: FallCloudP, seed: number): { L: Lobe[]; F: Form[] } {
       }
     }
   });
-  // torn off the shaded end: a scrap or two drifting free downwind (west on the east wind: no, the heap's own
-  // downwind is its shaded lower east), smaller as they go
-  for (let j = 0, nF = Math.floor(r() * 2.4); j < nF; j++) {
-    const side = r() < 0.7 ? 1 : -1;
-    let x = side * p.w * (0.42 + 0.08 * r()), y = -p.h * (0.05 + 0.18 * r());
-    let rad = Math.max(minR * 1.5, p.h * (0.025 + 0.02 * r()));
-    for (let k = 0; k < 3 && rad >= minR; k++) {
-      L.push({ x, y, rx: rad * 1.5, ry: rad * 0.6, z: 5, form: -1, s: Math.floor(r() * 997), sub: 0 });
-      x += side * rad * (2 + 1.2 * r());
-      y += (r() - 0.4) * rad;
-      rad *= 0.6 + 0.2 * r();
-    }
-  }
   return { L, F };
 }
 
@@ -317,7 +377,8 @@ function streakLobes(p: FallCloudP, seed: number): { L: Lobe[]; F: Form[] } {
     const g = r();
     const len = W * (g < 0.25 ? 0.65 + 0.3 * r() : g < 0.7 ? 0.32 + 0.2 * r() : 0.15 + 0.1 * r());
     const cx = (r() - 0.5) * (W - len) * 0.95;
-    const cy = -HH * (0.2 + 0.65 * r());
+    // (each streak its own tier, with sky between them: never a tangle of scraps)
+    const cy = -HH * (0.2 + 0.65 * ((n - i - 0.5) / n + (r() - 0.5) * 0.25 / n));
     const th = Math.max(1.5, HH * (wisp ? 0.07 + 0.07 * r() : 0.08 + 0.08 * r()) * (0.7 + 0.5 * (len / W)));
     const bend = (r() - 0.5) * th * (wisp ? 5 : 1.2);
     for (let x = cx - len / 2; x < cx + len / 2;) {
@@ -343,7 +404,7 @@ function streakLobes(p: FallCloudP, seed: number): { L: Lobe[]; F: Form[] } {
 }
 
 function lobesOf(p: FallCloudP, seed: number): { L: Lobe[]; F: Form[] } {
-  return cached(`fc1|${seed}|${p.kind}|${p.w}|${p.h}|${p.tower ?? ""}|${p.far ?? ""}|${p.lean ?? ""}|${p.count ?? ""}|${JSON.stringify(p.gaps ?? [])}`, () =>
+  return cached(`fc2|${seed}|${p.kind}|${p.w}|${p.h}|${p.tower ?? ""}|${p.far ?? ""}|${p.lean ?? ""}|${p.count ?? ""}|${p.tilt ?? ""}|${p.under ? 1 : 0}|${JSON.stringify(p.gaps ?? [])}`, () =>
     isLayer(p) ? streakLobes(p, seed) : heapLobes(p, seed));
 }
 
@@ -403,11 +464,11 @@ function chamfer(inside: (i: number) => boolean, w: number, h: number, open = fa
 /** A cloud as fields on its level-1 grid: the palette index of each px (0: sky) and how wide its seam is. */
 interface CloudMask { x0: number; y0: number; w: number; h: number; t: Float32Array; kind: Uint8Array; seam: Float32Array }
 
-/** Pixel kinds of the mask: 0 sky, 1 body (tone t on the ramp), 2 lost edge, 3 lit rim, 4 bounce, 5 haze foot. */
-const SKY = 0, BODY = 1, EDGE = 2, RIM = 3, BOUNCED = 4, FOOT = 5;
+/** Pixel kinds of the mask: 0 sky, 1 body (tone t on the ramp), 2 lost edge, 3 lit rim, 4 bounce, 5 haze foot, 6 the lost edge's inner px. */
+const SKY = 0, BODY = 1, EDGE = 2, RIM = 3, BOUNCED = 4, FOOT = 5, EDGE2 = 6;
 
 function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
-  return cached(`fm1|${seed}|${p.kind}|${p.w}|${p.h}|${p.tower ?? ""}|${p.far ?? ""}|${p.lean ?? ""}|${p.count ?? ""}|${p.tilt ?? ""}|${JSON.stringify(p.gaps ?? [])}|${f}`, () => {
+  return cached(`fm2|${seed}|${p.kind}|${p.w}|${p.h}|${p.tower ?? ""}|${p.far ?? ""}|${p.lean ?? ""}|${p.count ?? ""}|${p.tilt ?? ""}|${p.under ? 1 : 0}|${p.sky ?? ""}|${JSON.stringify(p.gaps ?? [])}|${f}`, () => {
     const { L: L0, F } = lobesOf(p, seed);
     const deck = p.kind === "deck";
     const layer = isLayer(p);
@@ -424,18 +485,22 @@ function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
       by0 = Math.min(by0, b.y - b.ry * 1.25 + (layer ? Math.min(0, tilt * (b.x - b.rx)) : 0) - (layer ? Math.abs(tilt) * b.rx : 0));
       by1 = Math.max(by1, b.y + b.ry * 1.25 + (layer ? Math.abs(tilt) * b.rx : 0));
     }
-    if (!layer) by1 = Math.min(by1, deck ? p.h * 0.24 : 4);
+    // (room under the base for its torn fringe)
+    const FR = fringeOf(p);
+    if (!layer) by1 = Math.min(by1, deck ? p.h * 0.24 : 4) + FR;
     const x0 = Math.floor(bx0) - 6, y0 = Math.floor(by0) - 6;
     const w = Math.ceil(bx1) - x0 + 7, h = Math.ceil(by1) - y0 + 7;
     const own = new Int32Array(w * h).fill(-1);
     const zb = new Float32Array(w * h).fill(-1e9);
     const NX = new Float32Array(w * h), NY = new Float32Array(w * h), U = new Float32Array(w * h);
     // the base: flat-ish at the cloud's scale, torn: it wanders, sags in rounded scallops and notches up between them
-    const S = Math.max(8, p.h * 0.05), SX = Math.max(S, p.w * 0.012);
+    const S = Math.max(8, p.h * (deck ? 0.09 : 0.05)), SX = Math.max(S, p.w * (deck ? 0.008 : 0.012));
+    // (round 1b: no notches: the base hangs in a few rounded sags; the torn part is the fringe of rags under it)
     const baseAt = (x: number): number => {
-      const sag = Math.pow(Math.max(0, vnoise1(x / (SX * 3.2), seed + 35) - 0.45), 2) * S * 6;
-      const notch = Math.pow(Math.max(0, vnoise1(x / (SX * 1.6), seed + 36) - 0.55), 2) * S * 8;
-      return sag - notch - 1.2 * vnoise1(x / 6, seed + 34) + (vnoise1(x / (S * 9), seed + 33) - 0.5) * S * 0.5;
+      const sag = Math.pow(Math.max(0, vnoise1(x / (SX * 2.6), seed + 35) - 0.5), 1.6) * S * 3.2;
+      // (round 1c: and a slow swell along a long base, so a wide heap's foot is never one ruled line)
+      return sag + (vnoise1(x / (SX * 5), seed + 36) - 0.5) * S * 0.8 + (vnoise1(x / 6, seed + 34) - 0.5) * 1.4 + (vnoise1(x / (S * 9), seed + 33) - 0.5) * S * 0.5 +
+        (vnoise1(x / Math.max(60, p.w * 0.13), seed + 37) - 0.5) * Math.min(S * 2.2, p.w * 0.03);
     };
     // (the base once per column)
     const baseCol = new Float32Array(w);
@@ -567,6 +632,30 @@ function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
         if (u >= 0 && u === d && u !== o) { own[k] = u; zb[k] = zb[k - w]!; NX[k] = (NX[k - w]! + NX[k + w]!) / 2; NY[k] = (NY[k - w]! + NY[k + w]!) / 2; }
       }
     }
+    // the base torn, not ruled: rags of very different widths hanging under it (a slow noise along it, elongated
+    // sideways), each joined to the base above it and thinning as it hangs; they take the base's own lobe
+    if (!layer && FR > 0) {
+      const tops = new Int32Array(w).fill(-1);
+      for (let gx = 0; gx < w; gx++) for (let gy = h - 1; gy >= 0; gy--) if (own[gy * w + gx] !== -1) { tops[gx] = gy; break; }
+      for (let gx = 1; gx < w - 1; gx++) {
+        const yb = tops[gx]!;
+        if (yb < 0) continue;
+        const px = x0 + gx + 0.5;
+        // (how ragged this stretch of the base is: some stretches hang long rags, others barely fray)
+        const reachK = 0.25 + 0.75 * Math.pow(vnoise1(px / (FR * 6 + 20), seed + 93), 1.3);
+        const src = yb * w + gx;
+        for (let d = 1; d <= FR && yb + d < h - 1; d++) {
+          const py = y0 + yb + d + 0.5;
+          // (a deck's rags are torn sideways, wisps trailing under its base, never a comb of one-px columns)
+          const v = deck
+            ? 0.75 * vnoise(px / (12 + FR * 1.2), py / 3.2, seed + 91) + 0.25 * vnoise(px / 5, py / 2.2, seed + 92)
+            : 0.65 * vnoise(px / (4 + FR * 0.45), py / 2.4, seed + 91) + 0.35 * vnoise(px / 2.6, py / 1.6, seed + 92);
+          if (v < 0.28 + 0.72 * (d / (FR * reachK + 1))) break;
+          const k = (yb + d) * w + gx;
+          own[k] = own[src]!; zb[k] = zb[src]!; NX[k] = NX[src]! * 0.5; NY[k] = 0.85;
+        }
+      }
+    }
     // a streak is one band, not a row of ovals: its light runs across its whole thickness, column by column (lit along
     // its lumpy top, cool along its underside), whatever lobes built it
     if (layer) {
@@ -582,6 +671,39 @@ function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
             NY[y * w + gx] = (v * 2 - 1) * 0.92;
           }
           gy = e;
+        }
+      }
+    }
+    // (round 1c) a deck's column tops, smoothed along the layer: how deep each px lies in the layer, from its sunlit
+    // skyline down to its base (a head's own column does not make a seam in the underside's light)
+    const colTop = new Float32Array(w);
+    if (deck) {
+      const raw = new Float32Array(w);
+      let last = -1;
+      for (let gx = 0; gx < w; gx++) {
+        let t = -1;
+        for (let gy = 0; gy < h; gy++) if (own[gy * w + gx] !== -1) { t = gy; break; }
+        raw[gx] = t >= 0 ? y0 + t : last >= 0 ? last : y0 + h * 0.3;
+        if (t >= 0) last = raw[gx]!;
+      }
+      const R = Math.max(4, Math.round(p.h * 0.45));
+      let acc = 0;
+      for (let x = -R; x <= R; x++) acc += raw[Math.min(w - 1, Math.max(0, x))]!;
+      for (let gx = 0; gx < w; gx++) {
+        colTop[gx] = acc / (2 * R + 1);
+        acc += raw[Math.min(w - 1, gx + R + 1)]! - raw[Math.max(0, gx - R)]!;
+      }
+    }
+    // (a deck: how far each px lies above the sky under it, so the lowest lip of every hanging mass and rag takes the
+    // light thrown up from below, following the torn outline)
+    const below = new Uint16Array(deck ? w * h : 0);
+    if (deck) {
+      for (let gx = 0; gx < w; gx++) {
+        let run = 0;
+        for (let gy = h - 1; gy >= 0; gy--) {
+          const k = gy * w + gx;
+          run = own[k] === -1 ? 0 : Math.min(60000, run + 1);
+          below[k] = run;
         }
       }
     }
@@ -617,6 +739,21 @@ function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
       }
     }
     blur3(lg, gw, gh, Math.max(2, Math.round(Htot * 0.025)));
+    // (round 1b) the whole cloud's own form: its silhouette swollen into one big soft mass, lit on its sun side, its
+    // far side and its underside in shade, so the billows read as parts of one heap, never a stack of balls
+    const RM = layer ? 0 : clamp(deck ? p.h * 0.5 : Math.min(p.w, p.h) * 0.17, 6, 96);
+    const mg = new Float32Array(gw * gh);
+    if (RM > 0) {
+      for (let i = 0; i < gw * gh; i++) { const cx = i % gw; mg[i] = ins(cx, (i - cx) / gw) ? 1 : 0; }
+      blur3(mg, gw, gh, Math.max(1, Math.round(RM / G / 1.7)));
+    }
+    const massN = (gx: number, gy: number): [number, number, number] => {
+      const cx = Math.min(gw - 2, Math.max(1, Math.floor(gx / G))), cy = Math.min(gh - 2, Math.max(1, Math.floor(gy / G)));
+      const dx = (mg[cy * gw + cx + 1]! - mg[cy * gw + cx - 1]!) / (2 * G), dy = (mg[(cy + 1) * gw + cx]! - mg[(cy - 1) * gw + cx]!) / (2 * G);
+      const kk = RM * 2.2;
+      const nx = -dx * kk, ny = -dy * kk, l = Math.hypot(nx, ny, 1);
+      return [nx / l, ny / l, 1 / l];
+    };
     const reach = layer ? Math.max(6, Htot * 0.9) : deck ? Htot * 0.6 : Math.min(Htot * 0.55, p.w * 0.5);
     const deepAt = (gx: number, gy: number): number =>
       clamp(lg[Math.min(gh - 1, Math.floor(gy / G)) * gw + Math.min(gw - 1, Math.floor(gx / G))]! / reach + (vnoise(gx / (Htot * 0.12 + 4), gy / (Htot * 0.1 + 4), seed + 47) - 0.5) * 0.05, 0, 1);
@@ -666,6 +803,12 @@ function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
       blur3(aoG, aw, ah, 1);
     }
     const aoAt = (gx: number, gy: number): number => aoG[Math.min(ah - 1, Math.floor(gy / AG)) * aw + Math.min(aw - 1, Math.floor(gx / AG))]!;
+    // (a deck's underside: its recesses soft and broad, never a crack along each billow's edge)
+    // (round 1c: and in a heap's own shade too: there a recess is a soft pocket of deeper blue, never a dark line
+    // round every billow: the turtle-shell the stronger shade drew on the tower's lower body)
+    const aoS = layer ? aoG : Float32Array.from(aoG);
+    if (!layer) blur3(aoS, aw, ah, Math.max(2, Math.round((aoR / AG) * (deck ? 1 : 0.7))));
+    const aoSoftAt = (gx: number, gy: number): number => aoS[Math.min(ah - 1, Math.floor(gy / AG)) * aw + Math.min(aw - 1, Math.floor(gx / AG))]!;
     const t = new Float32Array(w * h);
     const kind = new Uint8Array(w * h);
     const sky = clamp(p.sky ?? 0.5, 0, 1);
@@ -678,7 +821,7 @@ function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
       const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
       const lamL = L3[0] * nx + L3[1] * ny + L3[2] * nz;
       // the billow's own light (its big form, a ball)
-      let lamF = lamL, up = 0;
+      let lamF = lamL, up = 0, fby = 0, fbz = 1;
       const fo = b && b.form >= 0 ? F[b.form] : undefined;
       if (fo) {
         let ux = (x0 + gx + 0.5 - fo.x) / fo.r, uy = (y0 + gy + 0.5 - fo.y) / (fo.r * (fo.q ?? 1));
@@ -687,6 +830,7 @@ function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
         const uz = Math.sqrt(Math.max(0, 1 - ux * ux - uy * uy));
         lamF = L3[0] * ux + L3[1] * uy + L3[2] * uz;
         up = Math.max(0, -uy);
+        fby = uy; fbz = uz;
       }
       const deep = deepAt(gx, gy);
       let ao = 0, contact = 0;
@@ -707,18 +851,69 @@ function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
       if (layer) {
         // a streak: each of its lobes a flattened ball in the sun: lit warm along its top, cool on its underside
         tt = 0.02 + 0.5 * Math.pow((1 - lamL) / 2, 1.2) + 0.16 * Math.max(0, ny) + 0.12 * deep + 0.1 * contact;
-        if (p.kind === "wisp") tt = 0.1 + tt * 0.6;
+        if (p.kind === "wisp") tt = 0.17 + tt * 0.75;
       } else {
         const shF = (1 - lamF) / 2, shL = (1 - lamL) / 2;
-        // the billow's own ball in the sun first, the lobes' only a ripple on it; the heap's self-shade and its lower
-        // body cooler; the recesses behind nearer billows deepest
+        const [mx, my, mz] = massN(gx, gy);
+        const shM = (1 - (L3[0] * mx + L3[1] * my + L3[2] * mz)) / 2;
+        // the whole heap's form in the sun first, each billow's ball on it, the lobes only a ripple; the heap's
+        // self-shade and its lower body cooler; the recesses behind nearer billows deepest
+        // (where the whole form turns from the sun, its billows sink into its shade; where it faces the sun they keep
+        // their own balls of light)
+        const ms = clamp((shM - 0.2) / 0.36, 0, 1);
+        // (a deck: its billows read along its tops; down in the layer they melt into one broad soft underside, rolled
+        // only by a slow swell, never a row of hanging balls)
+        const dsh = deck ? (p.under ? 0.85 : clamp((py + p.h * 0.8) / (p.h * 0.6), 0, 1)) : 0;
+        let sh = deck
+          ? (1 - dsh) * (0.5 * shF + 0.2 * shL + 0.3 * shM) + dsh * (0.12 * shF + 0.08 * shL + 0.8 * shM) + (vnoise((x0 + gx) / (p.h * 1.3), py / (p.h * 0.3), seed + 77) - 0.5) * 0.2 * dsh
+          : 0.68 * shF + 0.32 * shL;
+        sh += (1 - sh) * MASS_W * ms * ms * (3 - 2 * ms);
+        // (round 1c) deep in the heap's own shade the billows' balls flatten toward one shade: the shadow side reads
+        // as one big shape with soft lobes in it (the refs), never a field of lit bubbles
+        if (!deck) {
+          const dS = deep * deep * (3 - 2 * deep);
+          sh = sh * (1 - 0.5 * dS) + 0.6 * 0.5 * dS;
+        }
         const low = clamp(1 + py / Math.max(8, p.h * 0.9), 0, 1);
-        let tf = 0.03 + 0.66 * Math.pow(shF, 1.25) + 0.05 * (shL - 0.3) + 0.26 * deep + (p.kind === "tower" ? 0.2 * Math.pow(low, 1.4) : 0.12 * low * low) - 0.06 * up;
+        let tf = 0.02 + 0.62 * Math.pow(sh, 1.25) + (deck ? 0.17 : 0.34) * deep * deep * (3 - 2 * deep) + (p.kind === "tower" ? 0.2 * Math.pow(low, 1.4) : 0.12 * low * low) - 0.06 * up;
         // the terminator: a clear turn from light to shade on each billow (anime: the light reads as shapes)
         tf = tf < 0.3 ? tf * 0.8 : tf < 0.4 ? 0.24 + (tf - 0.3) * 2.2 : 0.46 + (tf - 0.4) * 1.0;
-        tt = tf + 0.36 * ao * (0.45 + 0.55 * clamp(tf * 2, 0, 1)) + 0.07 * contact * clamp(1.4 - tf * 1.8, 0, 1);
+        // (a deck's underside: its billows melted together, so their recesses fade with depth into it)
+        const aoK = 1 - 0.75 * dsh;
+        const dS2 = deck ? 0 : deep * deep * (3 - 2 * deep);
+        const aoE = ao * (1 - dS2) + aoSoftAt(gx, gy) * dS2 * 0.75;
+        tt = tf + 0.36 * aoE * aoK * (0.45 + 0.55 * clamp(tf * 2, 0, 1)) + 0.07 * contact * aoK * (1 - 0.7 * dS2) * clamp(1.4 - tf * 1.8, 0, 1);
         // a deck lies in its own shade below its sunlit tops: darker down into the layer, its base the darkest
-        if (deck) tt += 0.34 * clamp((py + p.h * 0.55) / (p.h * 0.7), 0, 1);
+        // (round 1b) ... and its underside, seen from under it, takes the light thrown up from the lake and the haze:
+        // the last stretch above the base lifts again, unevenly (folds stay dark), so the base is a soft lit
+        // underside, never a flat dark band
+        if (deck) {
+          // (round 1c) the underside, what the camera sees overhead at the break-out (ref 01's ceiling): below its
+          // sunlit heads the layer is one broad soft mass in its own cool shade, deepest a little above its base,
+          // rolled by long soft folds (never a row of hanging balls, never one flat dark plate); its lowest stretch
+          // and the bottoms of the masses hanging from it take the light thrown up from the lake and the haze
+          const top = colTop[gx]!, base = baseCol[gx]!;
+          const v = clamp((py - top) / Math.max(8, base - top), 0, 1.3);
+          // (a far deck seen only from under it: all underside, its top lost in its own haze)
+          const wU = p.under ? 1 : clamp((v - 0.06) / 0.22, 0, 1);
+          const wUs = wU * wU * (3 - 2 * wU);
+          const fx = x0 + gx;
+          // (soft masses at the layer's own scale, warped so no fold runs ruled along the layer)
+          const warp = vnoise(fx / (p.h * 0.55), py / (p.h * 0.45), seed + 80) - 0.5;
+          const blob = vnoise(fx / (p.h * 0.95) + warp * 1.1, py / (p.h * 0.3) + warp * 0.5, seed + 78);
+          const blob2 = vnoise(fx / (p.h * 0.32) - warp * 0.8, py / (p.h * 0.13), seed + 79);
+          const deepV = clamp((v - 0.2) / 0.45, 0, 1);
+          const nearBase = clamp((v - 0.6) / 0.4, 0, 1.3);
+          // (the lip: a few px up from the sky under it, lit from below, wider where a mass hangs low)
+          const lipW = p.h * (0.05 + 0.05 * blob) + 2;
+          const lip = clamp(1 - (below[k]! - 1) / lipW, 0, 1);
+          // (each hanging billow lit from below on its lower half: the light off the lake, cool and soft)
+          const lamB = Math.max(0, 0.85 * fby + 0.35 * fbz - 0.2);
+          let tu = (p.under ? 0.47 : 0.51) + 0.15 * deepV * deepV * (3 - 2 * deepV) - 0.06 * nearBase - 0.22 * lamB * clamp(v * 1.6 - 0.3, 0, 1);
+          tu += (blob - 0.5) * 0.09 + (blob2 - 0.5) * 0.04 + 0.22 * aoSoftAt(gx, gy) - 0.16 * lip * lip * (0.6 + 0.4 * nearBase);
+          if (p.under) tu -= 0.05;
+          tt = tt * (1 - wUs) + tu * wUs;
+        }
       }
       // distance: far clouds compress toward the sky
       tt = tt * (1 - 0.5 * far);
@@ -727,21 +922,26 @@ function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
       {
         // the outline: crisp and rimmed warm where it faces the sun, lost toward the sky where it turns away
         const facing = -(nx * L3[0] + ny * L3[1]);
-        if (dist[k]! <= 1.01) kd = (facing < -0.05 || tt > 0.42) && !(deck && ny > -0.1) ? EDGE : tt < 0.3 ? RIM : BODY;
-        else if (dist[k]! <= 2.01 && far > 0.45 && facing < 0.2) kd = EDGE;
+        if (dist[k]! <= 1.01) kd = facing < -0.05 || tt > 0.42 ? EDGE : tt < 0.3 ? RIM : BODY;
+        // (an under deck's upper outline: lost toward the sky two px deep, never a lit lumpy rim)
+        if (deck && p.under && dist[k]! <= 2.01 && ny < 0.2) kd = dist[k]! <= 1.01 ? EDGE : EDGE2;
+        else if (dist[k]! <= 2.01 && far > 0.45 && facing < 0.2) kd = EDGE2;
         // the light thrown up into the lowest shade (from the deck below)
         // (only on the cloud's own underside, a few px in from its lower outline: never a sprinkle through the body)
         if (kd === BODY && !layer && tt > 0.5 && ny > 0.35 && py > -p.h * (deck ? 0.2 : 0.35) && lamL < 0 && dist[k]! <= 5 && own[k + w * 3] === -1) kd = BOUNCED;
-        // a far cloud's foot lost in the haze
+        // a far cloud's foot lost in the haze: its palest step, thinning toward the base in small torn clusters (never
+        // a checker against the sky)
         if (far > 0.3 && !layer && !deck) {
           const fh = p.h * (0.12 + 0.25 * far);
-          const fz = (py + fh) / fh + (vnoise1((x0 + gx) / 11, seed + 61) - 0.5) * 0.5;
-          if (fz > 0.92) kd = SKY;
-          else if (fz > 0.4) kd = FOOT;
+          const fz = (py + fh) / fh + (vnoise((x0 + gx) / 23, py / 9, seed + 61) - 0.5) * 0.35;
+          if (fz > 0.4) {
+            const thin = clamp((fz - 0.4) / 0.55, 0, 1);
+            kd = vnoise((x0 + gx) / 7, py / 2.6, seed + 62) * 0.7 + vnoise((x0 + gx) / 2.5, py / 1.7, seed + 63) * 0.3 < thin ? SKY : FOOT;
+          }
         }
         if (layer && U[k]! > 0.85) kd = EDGE;
         // (a wisp's edges are soft all round: two px of the sky's own pale blue)
-        if (p.kind === "wisp" && dist[k]! <= 2.01) kd = EDGE;
+        if (p.kind === "wisp" && dist[k]! <= 2.01) kd = dist[k]! <= 1.01 ? EDGE : EDGE2;
       }
       void sky;
       kind[k] = kd;
@@ -761,8 +961,19 @@ function cloudMask(p: FallCloudP, seed: number, f: number): CloudMask {
 // ---------------------------------------------------------------------------------------------------------------
 // Painting
 
-/** The near ramp's steps (fallcu 0-10), light to dark, and where each begins on the tone scale. */
-const NEAR_AT = [0, 0.115, 0.135, 0.24, 0.33, 0.42, 0.5, 0.58, 0.66, 0.75, 0.86];
+/**
+ * The near ramp's body steps, light to dark (fallcu indices: the peach 1 is the lit rim's alone, never a body step: as
+ * a step it drew a peach contour round every lit patch), and where each begins on the tone scale.
+ */
+const NEAR_IDX = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const NEAR_AT = [0, 0.1, 0.22, 0.32, 0.42, 0.5, 0.58, 0.66, 0.75, 0.86];
+/**
+ * A high wisp's steps (round 1c): the sky's own pale blues (fallsky 0-3), never the cumulus' cream: thin cirrus is
+ * the deep sky lit through, its core the palest, its edges going back into the blue (on the deep sky an opaque white
+ * streak read as a scratch).
+ */
+const WISP_IDX = [0, 1, 2, 3];
+const WISP_AT = [0, 0.2, 0.3, 0.42];
 /** The far ramp's steps (fallfar 0-4). */
 const FAR_AT = [0, 0.14, 0.26, 0.36, 0.44];
 
@@ -779,13 +990,11 @@ function paintFallCloud(c: PaintCtx, p: FallCloudP): void {
   const f = (p.frame ?? 0) & 3;
   const M = cloudMask(p, c.seed, f);
   const far = farOf(p);
-  const sky = clamp(p.sky ?? 0.5, 0, 1);
   const useFar = far >= 0.5;
-  const R = useFar ? P.fallfar : P.fallcu;
-  const AT = useFar ? FAR_AT : NEAR_AT;
-  // the lost edge takes a step of the sky's own blue (pale low, deep high)
-  const edgeSky = P.fallsky[clamp(Math.round(sky * (useFar ? 2.5 : 4.2)), 0, 5)]!;
-  const footSky = P.fallsky[clamp(Math.round(sky * 2), 0, 5)]!;
+  const wisp = p.kind === "wisp";
+  const R0 = wisp ? P.fallsky : useFar ? P.fallfar : P.fallcu;
+  const R = wisp ? WISP_IDX.map((i) => R0[i]!) : useFar ? R0 : NEAR_IDX.map((i) => R0[i]!);
+  const AT = wisp ? WISP_AT : useFar ? FAR_AT : NEAR_AT;
   const X0 = Math.max(b.ox, Math.floor(c.X(M.x0))), X1 = Math.min(b.x1, Math.ceil(c.X(M.x0 + M.w)));
   const Y0 = Math.max(b.oy, Math.floor(c.Y(M.y0))), Y1 = Math.min(b.y1, Math.ceil(c.Y(M.y0 + M.h)));
   for (let y = Y0; y < Y1; y++) {
@@ -799,13 +1008,19 @@ function paintFallCloud(c: PaintCtx, p: FallCloudP): void {
       if (!kd) continue;
       const dith = bayer4(Math.floor((x + f * kc) / kc), Math.floor(y / kc));
       const t = M.t[k]!;
-      if (kd === EDGE) { b.set(x, y, edgeSky); continue; }
-      if (kd === FOOT) {
-        // the foot in the haze: the far ramp's lightest, then the sky's own pale blue, a cell of dither between
-        b.set(x, y, dith < 0.5 ? P.fallfar[0]! : footSky);
+      // the lost edge: the cloud's own tone, broken in small clusters (soft toward the sky, never a pale ring)
+      if (kd === EDGE || kd === EDGE2) {
+        const n = vnoise((M.x0 + gx) / 1.7, (M.y0 + gy) / 1.7, c.seed + 97);
+        if (n < (kd === EDGE ? 0.52 : 0.22)) continue;
+        b.set(x, y, R[stepOf(AT, t, M.seam[k]!, dith)]!);
         continue;
       }
-      if (kd === RIM) { b.set(x, y, useFar ? R[0]! : P.fallcu[1]!); continue; }
+      if (kd === FOOT) {
+        // the foot in the haze: the far ramp's palest (the mask has already torn it toward the sky)
+        b.set(x, y, P.fallfar[t > 0.3 ? 1 : 0]!);
+        continue;
+      }
+      if (kd === RIM) { b.set(x, y, useFar || wisp ? R[0]! : P.fallcu[1]!); continue; }
       if (kd === BOUNCED && !useFar) {
         b.set(x, y, t > 0.7 ? P.fallcu[12]! : P.fallcu[11]!);
         continue;
@@ -822,10 +1037,10 @@ const reachOf = (p: FallCloudP): number =>
 export const fallCloud = definePainter<FallCloudP>("op.fallcloud", {
   bounds(p) {
     const hx = reachOf(p);
-    if (p.kind === "deck") return [-hx, -p.h * 1.8 - 12, hx, p.h * 0.3 + 12];
+    if (p.kind === "deck") return [-hx, -p.h * 1.8 - 12, hx, p.h * 0.4 + 12];
     if (isLayer(p)) return [-hx, -p.h * 1.3 - Math.abs(p.tilt ?? 0.035) * p.w - 8, hx, p.h * 0.3 + Math.abs(p.tilt ?? 0.035) * p.w + 8];
-    if (p.kind === "tower") return [-hx, -p.h * 1.25 - p.w * 0.05 - 12, hx, 12];
-    return [-hx, -p.h * 1.25 - 12, hx, 12];
+    if (p.kind === "tower") return [-hx, -p.h * 1.25 - p.w * 0.05 - 12, hx, 12 + fringeOf(p)];
+    return [-hx, -p.h * 1.25 - 12, hx, 12 + fringeOf(p)];
   },
   paint(c, p) {
     paintFallCloud(c, p);
