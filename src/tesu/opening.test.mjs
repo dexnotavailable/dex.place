@@ -32,28 +32,32 @@ test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift
   near(BEATS.her.drop1, BEATS.bars[14], 1e-9, "drop 1");
   near(BEATS.camera.whip.from, BEATS.bars[15], 0.001, "the whip on the crash");
   near(BEATS.camera.whip.to, BEATS.title.at, 0.001, "the whip lands on 0:32");
-  // her voice (Dex's takes, 10-19): lines 1-5 speak in the calm and are done before the slap, one at a time; line 6
-  // (the joke) after the slap, from under the jammed hat; the hat comes up on its push mark
-  const v = VOICE;
+  // her voice (Dex's takes, 10-19; the shorter wording): lines 1-5 speak in the calm, one at a time with a breath
+  // between; line 6 (the joke) is set up before the slap and the slap lands in its pause; the hat comes up on its えへへ
+  const v = VOICE, slap = BEATS.her.clip.slap;
   assert.equal(v.length, 6);
   assert.ok(v[0].from >= 0.2, "line 1 after the press's gust");
-  for (let i = 0; i < 5; i++) {
-    assert.ok(v[i].to <= BEATS.her.clip.slap - 0.15, `line ${i + 1} done before the slap`);
-    if (i) assert.ok(v[i].from >= v[i - 1].to + 0.1, `line ${i + 1} after line ${i}, a breath between`);
-  }
-  assert.ok(v[5].from > BEATS.her.clip.slap + 0.2 && v[5].from < BEATS.her.clip.slap + 0.6, "line 6 right after the slap lands");
+  for (let i = 1; i < 6; i++) assert.ok(v[i].from >= v[i - 1].to + 0.3, `line ${i + 1} after line ${i}, a breath between`);
+  assert.ok(v[4].to < slap - 2, "lines 1-5 well before the slap");
+  const six = v[5], setup = six.parts[0], punch = six.parts[1];
+  assert.ok(setup.to < slap && punch.from > slap + 0.5, "the slap lands in line 6's pause, the punch after it");
+  assert.ok(setup.to <= slap - 0.2, "a beat between the set-up and the slap");
   const l6 = BEATS.voice.lines[5];
-  near(BEATS.her.clip.push, l6.at + l6.push, 1e-6, "the push-up on line 6's mark");
-  for (const l of BEATS.voice.lines) assert.ok(l.speech[0] >= 0 && l.speech[1] <= l.len && l.jp && l.en, `line ${l.n}`);
-  assert.ok(!v.some((x) => /Emperor|letter|court/i.test(x.en)), "the old letter is gone");
-  // the subtitle: the line being spoken (Japanese + English), nothing between lines' words for long, none at the press
-  assert.equal(subtitleAt(0), null);
-  for (const x of v) {
-    assert.equal(subtitleAt((x.from + x.to) / 2)?.n, x.n, `line ${x.n}'s subtitle while it speaks`);
-    assert.equal(subtitleAt(x.from)?.n, x.n);
+  near(BEATS.her.clip.push, l6.at + l6.push, 1e-6, "the push-up on the えへへ");
+  assert.ok(BEATS.her.clip.push > punch.from, "the hat still jammed through the punch");
+  // every line is the game's own cue, booked on the music's clock at its start; the files play whole
+  for (const l of BEATS.voice.lines) {
+    assert.ok(BEATS.sfx.some((c) => c.id === l.cue && Math.abs(c.T - l.at) < 1e-9), `line ${l.n} booked (${l.cue})`);
+    assert.ok(l.speech[0] >= 0 && l.speech[1] <= l.len && l.parts.every((p) => p.jp && p.en && p.from >= 0 && p.to <= l.len), `line ${l.n}`);
   }
-  assert.equal(subtitleAt(v[5].to + 1), null);
-  assert.equal(captionAt(3), v[0].en);
+  assert.ok(!v.some((x) => x.parts.some((p) => /Emperor|letter|court/i.test(p.en))), "the old letter is gone");
+  // the subtitles: the words being spoken (Japanese + English), none at the press, the punch hidden until it is said
+  assert.equal(subtitleAt(0), null);
+  for (const x of v) for (const p of x.parts) assert.deepEqual(subtitleAt((p.from + p.to) / 2), { n: x.n, jp: p.jp, en: p.en });
+  assert.equal(subtitleAt(slap)?.en, setup.en, "the set-up hangs on screen through the slap");
+  assert.equal(subtitleAt(punch.from)?.en, punch.en, "then the punch replaces it");
+  assert.equal(subtitleAt(six.to + 1), null);
+  assert.equal(captionAt(1), v[0].parts[0].en);
 });
 
 test("her path: further back (left), the solved walk, the run at the game's own speed, she stops on the terrace", () => {

@@ -348,31 +348,38 @@ export function paperAirAt(T: number, way: Way = "continue"): { x: number; gust:
 
 // --- words and bars -----------------------------------------------------------------------------------
 
-/** One line of her voice: when its file starts and its speech (T), its subtitle (Japanese, English). */
+/** One line of her voice: when its file starts and its speech (T), its subtitles (Japanese, English; T). */
 export interface VoiceLine {
   n: number;
+  cue: string;
   at: number;
   len: number;
   from: number;
   to: number;
-  jp: string;
-  en: string;
+  parts: { from: number; to: number; jp: string; en: string }[];
 }
 
 /** Her lines on T (the chart's `voice`). */
 export const VOICE: readonly VoiceLine[] = BEATS.voice.lines.map((l) => ({
-  n: l.n, at: l.at, len: l.len, from: l.at + l.speech[0], to: l.at + l.speech[1], jp: l.jp, en: l.en,
+  n: l.n, cue: l.cue, at: l.at, len: l.len, from: l.at + l.speech[0], to: l.at + l.speech[1],
+  parts: l.parts.map((p) => ({ from: l.at + p.from, to: l.at + p.to, jp: p.jp, en: p.en })),
 }));
 
-/** A subtitle shows from just before its line speaks to a moment after (never over the next line). */
+/** A subtitle shows from just before its words to a moment after them (never over the next one). */
 export const SUB_LEAD = 0.1, SUB_TAIL = 0.45;
 
-/** The subtitle showing at T, if any: the line being spoken. */
-export function subtitleAt(T: number): VoiceLine | null {
-  for (let i = 0; i < VOICE.length; i++) {
-    const v = VOICE[i]!, next = VOICE[i + 1];
-    const end = Math.min(v.to + SUB_TAIL, next ? next.from - SUB_LEAD - 0.02 : Infinity);
-    if (T >= v.from - SUB_LEAD && T < end) return v;
+/** Every subtitle in order: the line it belongs to and its words. */
+const SUBS = VOICE.flatMap((v) => v.parts.map((p) => ({ n: v.n, ...p })));
+
+/**
+ * The subtitle showing at T, if any: the words being spoken (Japanese, English) and their line. Inside one line its
+ * words hold through its pauses until the next words take over (line 6's set-up hangs there through the slap).
+ */
+export function subtitleAt(T: number): { n: number; jp: string; en: string } | null {
+  for (let i = 0; i < SUBS.length; i++) {
+    const p = SUBS[i]!, next = SUBS[i + 1];
+    const end = next && next.n === p.n ? next.from - SUB_LEAD : Math.min(p.to + SUB_TAIL, next ? next.from - SUB_LEAD - 0.02 : Infinity);
+    if (T >= p.from - SUB_LEAD && T < end) return { n: p.n, jp: p.jp, en: p.en };
   }
   return null;
 }
