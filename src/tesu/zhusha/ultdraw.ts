@@ -44,6 +44,15 @@ function puff(r: WorldRenderer, x: number, y: number, R: number, t: number, seed
   });
 }
 
+/** A flash of light (added, not painted): core / main / a dithered edge that falls off to nothing. */
+function puffLight(r: WorldRenderer, x: number, y: number, R: number, t: number, core: RGB, main: RGB, edge: RGB): void {
+  if (R < 2) return;
+  r.vfx({
+    type: 6, t, seed: 0, over: 0, p0: [R, R, 0.85, 0], p1: [0, 0, 0, 0], core, main, edge,
+    x: Math.round(x), y: Math.round(y), rot: 0, sx: 1, sy: 1, ext: [-R - 2, -R - 2, R + 2, R + 2],
+  });
+}
+
 const clamp01 = (u: number): number => Math.max(0, Math.min(1, u));
 const easeOut = (u: number): number => { const k = clamp01(u); return 1 - (1 - k) * (1 - k); };
 const rnd = (i: number): number => { const a = Math.sin(i * 91.7 + 3.1) * 43758.5453; return a - Math.floor(a); };
@@ -68,34 +77,35 @@ function letter(r: WorldRenderer, z: Zhusha): void {
   if (!st || !d.active || d.cut === 0 || d.phase === "impact" || d.phase === "reveal") return;
   const strokes = letterStrokes(), T = d.stormT, peel = d.peel;
   const th = Math.max(6, Math.round(st.size * ULT.letter.thick));
+  // each carved piece as segments (overlapping its neighbours so a stroke reads whole), how far it has shattered
+  const parts: { pts: [number, number][]; op: number; hot: boolean; i: number }[] = [];
   for (let i = 0; i < d.cut; i++) {
     const sl = d.slashes[i]!;
     if (!sl.carves) continue;
     const s = strokes[sl.stroke]!;
-    const pts = [sl.u0, (sl.u0 + sl.u1) / 2, sl.u1].map((u) => letterAt(st, ...along(s, u)));
+    const u0 = Math.max(0, sl.u0 - 0.03), u1 = Math.min(1, sl.u1 + 0.03);
+    const pts = [u0, (u0 + u1) / 2, u1].map((u) => letterAt(st, ...along(s, u)));
     // in the dive the letter breaks apart from her line outward: pieces jolt, fall and are gone
-    const mx = pts[1]![0];
-    const k = peel > 0 ? clamp01(peel * 2.2 - Math.abs(mx - st.zx) / (st.size * 0.55)) : 0;
+    const k = peel > 0 ? clamp01(peel * 2.2 - Math.abs(pts[1]![0] - st.zx) / (st.size * 0.55)) : 0;
     if (k >= 1) continue;
     const jx = k > 0 ? (rnd(i) - 0.5) * 40 * k : 0, jy = k * k * 120;
-    const op = 1 - k;
-    const age = T - sl.at;
-    const hot = age < 3;
-    const flick = Math.sin(T * 0.6 + i * 1.3) > 0.2;
-    for (let j = 0; j < 2; j++) {
-      const [x0, y0] = pts[j]!, [x1, y1] = pts[j + 1]!;
-      if (!hot) seg(r, x0 + jx, y0 + jy, x1 + jx, y1 + jy, th + (flick ? 10 : 7), AZURE, 0.7 * op);
-      seg(r, x0 + jx, y0 + jy, x1 + jx, y1 + jy, th + 3, hot ? AZURE_CORE : VERM_DARK, op);
-      seg(r, x0 + jx, y0 + jy, x1 + jx, y1 + jy, th, hot ? WHITE : VERM, op);
-      if (!hot) seg(r, x0 + jx, y0 + jy, x1 + jx, y1 + jy, Math.max(2, th * 0.22), AZURE_CORE, 0.55 * op);
-    }
+    parts.push({ pts: pts.map(([x, y]) => [x + jx, y + jy] as [number, number]), op: 1 - k, hot: T - sl.at < 3, i });
   }
+  const each = (fn: (x0: number, y0: number, x1: number, y1: number, p: (typeof parts)[number]) => void): void => {
+    for (const p of parts) for (let j = 0; j < 2; j++) fn(p.pts[j]![0], p.pts[j]![1], p.pts[j + 1]![0], p.pts[j + 1]![1], p);
+  };
+  // in passes, so the strokes read as whole strokes: her fire, the dark rim, the ink, the fire's core
+  each((x0, y0, x1, y1, p) => { if (!p.hot) seg(r, x0, y0, x1, y1, th + (Math.sin(T * 0.6 + p.i * 1.3) > 0.2 ? 12 : 8), AZURE, 0.7 * p.op); });
+  each((x0, y0, x1, y1, p) => seg(r, x0, y0, x1, y1, th + 4, p.hot ? AZURE_CORE : VERM_DARK, p.op));
+  each((x0, y0, x1, y1, p) => seg(r, x0, y0, x1, y1, th, p.hot ? WHITE : VERM, p.op));
+  each((x0, y0, x1, y1, p) => { if (!p.hot) seg(r, x0, y0, x1, y1, Math.max(2, th * 0.2), AZURE_CORE, 0.5 * p.op); });
 }
 
 /** The storm's live slashes: white-hot streaks crossing the piece they carve, from every direction, gone in a few ticks. */
 function slashes(r: WorldRenderer, z: Zhusha): void {
   const d = z.r, st = d.stage;
-  if (!st || d.phase !== "flurry" || d.stormT < 0) return;
+  // (into the stop: the closing cut fades out over its first ticks)
+  if (!st || (d.phase !== "flurry" && d.phase !== "hold") || d.stormT < 0) return;
   const strokes = letterStrokes(), T = d.stormT, life = ULT.letter.slashLife, scale = st.size / (7 * H);
   for (let i = d.cut - 1; i >= 0; i--) {
     const sl = d.slashes[i]!;
@@ -153,7 +163,7 @@ function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: num
   // the first flash: white at the heart, orange, a red rim, swelling and gone as her flames take it
   if (t < I.flash + 6) {
     const u = t / (I.flash + 6), R = (1.5 + 4.5 * easeOut(t / I.flash)) * H * (1 - 0.5 * clamp01((t - I.flash) / 6));
-    puff(r, sm.x, sm.y - 1.6 * H, R, 0.05 + 0.6 * u, 1, WHITE, ORANGE, VERM);
+    puffLight(r, sm.x, sm.y - 1.6 * H, R, 0.05 + 0.6 * u, WHITE, ORANGE, VERM);
   }
   // her blue flames: tongues rise around the crater, engulf the flash, then burn down
   const fl = t < 4 ? 0 : t < 14 ? (t - 4) / 10 : Math.max(0, 1 - (t - 14) / (I.ticks + clear - 14));

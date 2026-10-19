@@ -154,14 +154,14 @@ test("ult: the camera has a shot every tick of R; hard cuts only at the press an
     assert.ok(zr < 1.13, `zoom step ${a.zoom} -> ${b.zoom} at ${r[i].phase}`);
     assert.ok(Math.abs(b.x - a.x) < 0.8 * H && Math.abs(b.y - a.y) < 1.2 * H, `frame step at ${r[i].phase}: ${a.x},${a.y} -> ${b.x},${b.y}`);
   }
-  for (const t of r) assert.ok(t.shot.zoom >= 0.4 && t.shot.zoom <= 2 + 1e-9, `zoom ${t.shot.zoom} within the painted levels`);
+  for (const t of r) assert.ok(t.shot.zoom >= 0.35 && t.shot.zoom <= 2 + 1e-9, `zoom ${t.shot.zoom} within the painted levels`);
   assert.ok(r[0].shot.zoom >= ULT.camera.call.zoomIn - 1e-9, "the cut-in is close on her");
   const fl = r.filter((t) => t.phase === "flurry");
   assert.ok(fl[fl.length - 1].shot.zoom <= ULT.camera.flurry.zoomEnd + 1e-6, "pulled out on the whole letter");
   const hold = r.filter((t) => t.phase === "hold");
   assert.ok(hold.every((t) => t.shot.x === hold[0].shot.x && t.shot.y === hold[0].shot.y && t.shot.zoom === hold[0].shot.zoom), "the stop: dead still");
   const imp = r.filter((t) => t.phase === "impact");
-  assert.ok(imp[imp.length - 1].shot.zoom < 0.5, "the pull-out on the nuke");
+  assert.ok(imp[imp.length - 1].shot.zoom < 0.42, "the pull-out on the nuke");
   // after control is back the world's framing has the camera again
   assert.equal(ticks[ticks.length - 1].shot, null);
 });

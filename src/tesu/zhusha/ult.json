@@ -50,7 +50,7 @@
   "letter": {
     "about": "The letter she carves (a stand-in for the FX v2 loop's): which character (断 or 天, Dex 10-19; strokes in ult.ts LETTERS), its box (`size` H square, its bottom `low` H above the floor, its near edge `ahead` H in front of her), the slash storm (`slashes` cuts over `ticks`, each carving a piece of a stroke; `pieces` of them carve new pieces, the rest re-cut; the last one the long closing cut), the brush's thickness (a share of the box), how far above the letter's top she hangs before the dive. Never mirrored: facing left it moves to her left, the strokes stay as written.",
     "char": "断",
-    "size": 7,
+    "size": 9,
     "low": 0.8,
     "ahead": 1.0,
     "ticks": 200,
@@ -85,7 +85,7 @@
     "visibleFrom": 6
   },
   "camera": {
-    "about": "The shots: world x at the frame's centre, world y on the anchor row (the anchor is that row's share of the frame's height). Zooms stay within the painted levels (2 = the close band) so the world stays crisp; the letter's pull-out goes down to 0.5 and the nuke's to 0.42 (lane C 10-19: below 1 she and her effects reduce onto her own grid). The call: a cut-in close on her, pushing in to the BOOM, craning up with the fire, settling as she coils. The flurry: a hard cut wide onto the letter, pulling out as it is carved. The stop: dead still. The dive: a push down after her onto the crater. The impact: the pull-out on the nuke. The reveal: back in on her. Reduced motion: hard cuts between held levels (2 for the call, 1 for the rest), no moves.",
+    "about": "The shots: world x at the frame's centre, world y on the anchor row (the anchor is that row's share of the frame's height). Zooms stay within the painted levels (2 = the close band) so the world stays crisp; the letter's pull-out goes down to 0.42 and the nuke's to 0.36 (lane C 10-19: below 1 she and her effects reduce onto her own grid). The call: a cut-in close on her, pushing in to the BOOM, craning up with the fire, settling as she coils. The flurry: a hard cut wide onto the letter, pulling out as it is carved. The stop: dead still. The dive: a push down after her onto the crater. The impact: the pull-out on the nuke. The reveal: back in on her. Reduced motion: hard cuts between held levels (2 for the call, 1 for the rest), no moves.",
     "bars": 0.11,
     "barsIn": 8,
     "barsOut": 14,
@@ -98,17 +98,17 @@
       "craneUp": 0.3
     },
     "flurry": {
-      "zoom": 0.62,
-      "zoomEnd": 0.5,
+      "zoom": 0.55,
+      "zoomEnd": 0.42,
       "anchor": 0.5
     },
     "dive": {
-      "zoom": 0.6,
+      "zoom": 0.5,
       "anchor": 0.66,
-      "up": 2.2
+      "up": 2.8
     },
     "impact": {
-      "zoom": 0.42,
+      "zoom": 0.36,
       "anchor": 0.7
     },
     "reveal": {
