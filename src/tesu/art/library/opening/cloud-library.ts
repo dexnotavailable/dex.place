@@ -18,7 +18,7 @@ export interface CloudEntry {
 export const CLOUD_LIGHT = {"sun": [-0.672, -0.733, -0.102], "from": "upper left", "flip": false} as const;
 
 export const CLOUDS: Readonly<Record<string, CloudEntry>> = {
-  "cu-tower-a": { what: "great tower", w: 1365, h: 1271, ax: 557.0, ay: 1199.0, sets: [{ level: 1.0, base: "/tesu/clouds/cu-tower-a/l100/" }, { level: 0.5, base: "/tesu/clouds/cu-tower-a/l50/" }, { level: 0.25, base: "/tesu/clouds/cu-tower-a/l25/" }] },
+  "cu-tower-a": { what: "great tower", w: 1365, h: 1214, ax: 557.0, ay: 1199.0, sets: [{ level: 1.0, base: "/tesu/clouds/cu-tower-a/l100/" }, { level: 0.5, base: "/tesu/clouds/cu-tower-a/l50/" }, { level: 0.25, base: "/tesu/clouds/cu-tower-a/l25/" }] },
   "cu-tower-b": { what: "tower", w: 1019, h: 999, ax: 418.0, ay: 931.0, sets: [{ level: 1.0, base: "/tesu/clouds/cu-tower-b/l100/" }, { level: 0.5, base: "/tesu/clouds/cu-tower-b/l50/" }, { level: 0.25, base: "/tesu/clouds/cu-tower-b/l25/" }] },
   "cu-heap-a": { what: "heap", w: 1137, h: 496, ax: 521.0, ay: 475.0, sets: [{ level: 1.0, base: "/tesu/clouds/cu-heap-a/l100/" }, { level: 0.5, base: "/tesu/clouds/cu-heap-a/l50/" }, { level: 0.25, base: "/tesu/clouds/cu-heap-a/l25/" }] },
   "cu-heap-b": { what: "broad heap", w: 1540, h: 469, ax: 703.0, ay: 443.0, sets: [{ level: 1.0, base: "/tesu/clouds/cu-heap-b/l100/" }, { level: 0.5, base: "/tesu/clouds/cu-heap-b/l50/" }, { level: 0.25, base: "/tesu/clouds/cu-heap-b/l25/" }] },

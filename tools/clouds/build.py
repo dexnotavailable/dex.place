@@ -39,7 +39,9 @@ DECKS = [0.05, 0.07, 0.05, 0.06, 0.08, 0.12, 0.15, 0.15, 0.13, 0.08, 0.06]
 # id: (kind, seed, form args, look, share, far, what it is)
 LIB = {
     # towers: the sky ref's great cumulus (the vast frame's hero, the far towers past the deck)
-    "cu-tower-a": ("heap", 31, dict(w=780, h=1150, turrets=3, lead=-0.3, belly=0.24, lean=-0.04), LOOK, LIT, 0.0, "great tower"),
+    # (round 2 integration: the great tower takes no rags. Its torn fringe drew as horizontal stripes ending on a
+    # vertical cut under the deck's chunks (the vast frame, the break-out); its wavy, torn floor alone reads as a base)
+    "cu-tower-a": ("heap", 31, dict(w=780, h=1150, turrets=3, lead=-0.3, belly=0.24, lean=-0.04), dict(LOOK, rags=False), LIT, 0.0, "great tower"),
     "cu-tower-b": ("heap", 44, dict(w=640, h=860, turrets=3, lead=0.1, belly=0.28, lean=-0.03), LOOK, LIT, 0.0, "tower"),
     # heaps: the middle sizes
     "cu-heap-a": ("heap", 8, dict(w=900, h=420, front_cells=0.6, cell_space=0.75), LOOK, LIT, 0.0, "heap"),
