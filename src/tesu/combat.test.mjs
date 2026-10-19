@@ -618,3 +618,28 @@ test("combat dash: no white-box afterimages over her drawing (they read as blue 
   assert.equal(run(true), 0);
   assert.ok(run(false) > 0);
 });
+
+test("combat wind-ups (Dex 10-19): in both forms the first live drawing lands on feel.json's first hit tick, within a few ticks of its BOOM; nothing before it freezes or crawls", async () => {
+  const { timeline, drawingIndex, moveToClip } = await import("./zhusha/contract.ts");
+  const D = JSON.parse(readFileSync(join(import.meta.dirname, "zhusha/derived.json"), "utf8")).slots;
+  const A = (96 * FEEL.charScale) / 128;
+  let n = 0;
+  for (const [role, feel] of Object.entries(FEEL.moves)) {
+    for (const slot of [ROLES[role]?.normal, ROLES[role]?.ult]) {
+      const def = slot && liveAnim(slot);
+      if (!def || !D[slot] || !(def.hits ?? []).length) continue;
+      n++;
+      const r = resolveMove(feel, def, A, { derived: D[slot], windRate: FEEL.windDown.rate });
+      const { starts, total } = timeline(def.frames);
+      const first = D[slot].hits[0].first, mark = Math.min(...def.hits);
+      const at = r.hits[0].at;
+      const shown = (t) => drawingIndex(starts, total, moveToClip(windClock(t, r.wind), at, r.clipHitAt), false);
+      assert.equal(shown(at), first, `${slot}: the first live drawing shows on the hit tick`);
+      assert.ok(first <= mark && starts[mark] - starts[first] <= DERIVE.lead, `${slot}: the live window starts within ${DERIVE.lead} ticks of the BOOM (f${first} vs f${mark})`);
+      // the wind-up is squeezed onto the hit tick (or near 1:1), never stretched: no drawing held longer than it is drawn
+      assert.ok(r.clipHitAt / at >= 0.85, `${slot}: wind-up ${r.clipHitAt} clip ticks over ${at} move ticks`);
+      for (let t = 1; t <= at; t++) assert.ok(shown(t) >= shown(t - 1), `${slot}: tick ${t} goes back`);
+    }
+  }
+  assert.ok(n >= 8, `${n} slots checked`);
+});
