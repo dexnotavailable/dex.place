@@ -347,10 +347,11 @@ export class Zhusha {
       const w = w0 * reach;
       out.push(make({ x: f > 0 ? ox + fw * K : ox - (fw + w) * K, y: oy - (up + hh) * K, w: w * K, h: hh * K }));
     }
+    // the reach is a world effect (the Q's blast, the E's beam): world H, whatever her drawn size (charScale)
     const R = h.break?.reach;
     if (R && first) {
       const [fw, up, w, hh] = R;
-      const r = make({ x: f > 0 ? ox + fw * K : ox - (fw + w) * K, y: oy - (up + hh) * K, w: w * K, h: hh * K });
+      const r = make({ x: f > 0 ? ox + fw * H : ox - (fw + w) * H, y: oy - (up + hh) * H, w: w * H, h: hh * H });
       r.hb.brk = { ...r.hb.brk!, area: true };
       // a reach that only breaks never hurts (the champion takes the hit's own boxes); one that hurts shares the hit's
       // group, so a target in both is hit once
@@ -876,7 +877,7 @@ export class Zhusha {
         s.camera.zoomPunch(1);
         // the pull-out: centred on the blast's reach (its middle), held, then back to her framing
         const r = h.break?.reach;
-        const mid = r ? (r[0] + r[2] / 2) * BODY_H : 4 * H;
+        const mid = r ? (r[0] + r[2] / 2) * H : 4 * H;
         this.qCam = { x: m.startX + m.dir * mid, x0: b.x, t: Q.camTicks };
         break;
       }
@@ -886,8 +887,8 @@ export class Zhusha {
         // kicked back (feel.json e_tap.recoil). The beam is a stand-in streak along its reach until lane B2's lands.
         const E = FEEL.e;
         const r = h.break?.reach;
-        const len = r ? r[2] * BODY_H : 8 * H;
-        s.vfx.spawn("streak.thrust", { x: b.x + f * (0.6 * BODY_H + len / 2), y: b.y - 0.6 * BODY_H, facing: f, scale: [len / 168, 1.6], colour: "#8fdcff", edge: "#2a6fb8" });
+        const len = r ? r[2] * H : 8 * H;
+        s.vfx.spawn("streak.thrust", { x: b.x + f * ((r?.[0] ?? 0.3) * H + len / 2), y: b.y - 0.6 * BODY_H, facing: f, scale: [len / 168, 1.6], colour: "#8fdcff", edge: "#2a6fb8" });
         s.vfx.spawn("burst.hit", at(0.7, 0.6));
         s.vfx.spawn("sparks.hit", at(0.8, 0.6));
         s.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: -f });

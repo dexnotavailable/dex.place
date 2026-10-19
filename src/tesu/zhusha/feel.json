@@ -146,11 +146,11 @@
       "warp": 2.5,
       "warpTicks": 3,
       "hits": [
-        { "at": 3, "len": 2, "box": [-0.8, -0.1, 5.4, 2.7], "anchor": "start", "dmg": 30, "weight": "q", "kb": [8, 5.5], "fx": "q_boom", "break": { "force": 2.2, "lift": 1.3, "reach": [-0.6, -0.3, 11, 4.5], "wave": 0.9, "damages": true } },
+        { "at": 3, "len": 2, "box": [-0.8, -0.1, 5.4, 2.7], "anchor": "start", "dmg": 30, "weight": "q", "kb": [8, 5.5], "fx": "q_boom", "break": { "force": 2.2, "lift": 1.3, "reach": [-0.66, -0.33, 12.1, 4.95], "wave": 0.9, "damages": true } },
         { "at": 14, "len": 2, "box": [-0.5, -0.1, 4.8, 1.8], "anchor": "start", "dmg": 6, "weight": "light", "kb": [1.5, 3], "fx": "burn" },
         { "at": 24, "len": 2, "box": [-0.5, -0.1, 4.8, 1.8], "anchor": "start", "dmg": 6, "weight": "light", "kb": [1.5, 3], "fx": "burn" }
       ],
-      "breakAbout": "Dex 10-15 / 10-19: the Q obliterates everything in its direction over a big area. Its reach (drawn H from where she pressed: 11 H ahead, 4.5 H tall) breaks every breakable in it whatever its HP and hurts the champion; the destruction travels out at 0.9 H a tick (11 H in ~12 ticks), pieces thrown hard and high.",
+      "breakAbout": "Dex 10-15 / 10-19: the Q obliterates everything in its direction over a big area. Its reach (world H from where she pressed, NOT x charScale: a world effect keeps its size when she is drawn smaller; 12.1 H ahead, 4.95 H tall) breaks every breakable in it whatever its HP and hurts the champion; the destruction travels out at 0.9 H a tick (12 H in ~13 ticks), pieces thrown hard and high.",
       "airHang": 16,
       "cancelFrom": 24,
       "hitCancelFrom": 20,
@@ -160,10 +160,10 @@
     "e_tap": {
       "ticks": 38,
       "hits": [
-        { "at": 8, "len": 3, "box": [0.1, 0.15, 1.6, 0.95], "dmg": 14, "weight": "heavy", "kb": [10, 3], "fx": "rail", "break": { "force": 2.6, "lift": 0.45, "reach": [0.3, -0.05, 15, 1.5], "wave": 3, "damages": true } },
+        { "at": 8, "len": 3, "box": [0.1, 0.15, 1.6, 0.95], "dmg": 14, "weight": "heavy", "kb": [10, 3], "fx": "rail", "break": { "force": 2.6, "lift": 0.45, "reach": [0.33, -0.05, 16.5, 1.65], "wave": 3, "damages": true } },
         { "at": 32, "len": 3, "box": [0.6, 0, 1.2, 1.6], "dmg": 8, "weight": "medium", "kb": [6, 4], "fx": "pillar", "break": { "force": 1.4, "lift": 1.6 } }
       ],
-      "hitsAbout": "Hit 1 is the tap (the railgun's discharge, drawing f003's burst); hit 2 the pillar that erupts after (f009). The tap's reach is the beam: 15 drawn H ahead, from the ground to 1.45 H, destroying everything in front almost at once (3 H a tick) and flat along it.",
+      "hitsAbout": "Hit 1 is the tap (the railgun's discharge, drawing f003's burst); hit 2 the pillar that erupts after (f009). The tap's reach is the beam (world H, not x charScale): 16.5 H ahead from 0.33 H in front of her, from the ground to 1.6 H, destroying everything in front almost at once (3 H a tick) and flat along it.",
       "recoil": [9, 12, 14],
       "recoilAbout": "Dex 10-19: she recoils back on the tap: from the tick after it (the frame holds on the discharge first) she is kicked back at 12 H/s easing out over 14 ticks (~1.5 H), dust off her heels.",
       "cancelFrom": 22,
