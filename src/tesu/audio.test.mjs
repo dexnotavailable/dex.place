@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { BEDS, CUES, DOUBLED, Footsteps, STEP_FRAMES, STEP_TAKES, SURFACES, Sound, VOICE, voiceFor, voiceForState } from "./sound.ts";
+import { BEDS, CUES, DOUBLED, Footsteps, STEP_FRAMES, STEP_TAKES, SURFACES, Sound, VOICE, pickTake, voiceFor, voiceForState } from "./sound.ts";
 import { SPACES, spaceFor } from "./mix.ts";
 import { REGION_THEMES, placeAt } from "./region-music.ts";
 import { BEATS } from "./opening/beats.ts";
@@ -142,6 +142,11 @@ test("her voice: Dex-approved takes, on the right moments, the ult register with
   assert.equal(voiceFor("swing", { ...at, first: true }), null, "the windup is silent");
   assert.equal(voiceFor("swing", { ...at, first: true, role: "e_tap" }), "e");
   assert.equal(voiceFor("swing", { ...at, state: "ult" }), null, "the R's flurry: no kiai");
+  assert.equal(voiceFor("swing", { ...at, role: "m1_4" }), "finisher", "the chain's last hit: a battle cry");
+  // variants rotate: never the same take twice in a row
+  let last;
+  for (let i = 0; i < 40; i++) { const t = pickTake(VOICE.finisher.normal, last, Math.random); assert.notEqual(t, last); last = t; }
+  assert.equal(pickTake(["only"], "only", Math.random), "only");
   assert.equal(voiceFor("charge", at), "q");
   assert.equal(voiceFor("charge", { ...at, state: "ult" }), null, "the R's charge: its call phase speaks");
   assert.equal(voiceFor("hurt", at), "hurt");
@@ -204,8 +209,9 @@ test("every audio file the code references is approved, a new take for Dex's ear
         if (!approved(name)) legacy.add(name);
       } else if (f.startsWith("court/")) {
         assert.ok(approved(`${basename(f)}.wav`), `${f} is approved`);
-      } else if (/^opening\/line\d$/.test(f)) {
-        assert.ok(voiceOk(`op-${basename(f)}-b`), `${f}: Dex's pick`);
+      } else if (/^opening\/(line|tight)\d$/.test(f)) {
+        const take = { line6: "redo-op-line6-5" }[basename(f)] ?? `op-${basename(f)}-b`;
+        assert.ok(voiceOk(take), `${f} (${take}): Dex's pick`);
       } else fresh.add(f);
       if (!f.endsWith(".wav")) {
         for (const ext of ["opus", "m4a"]) assert.ok(existsSync(join(AUDIO, `${f}.${ext}`)), `${f}.${ext} exists`);
