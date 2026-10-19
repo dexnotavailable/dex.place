@@ -211,7 +211,7 @@ def grow(rng, prims, *, spacing, radius, keep, inset=0.45, blend=0.32, vs=4.0, j
 # forms (level-1 px; the anchor (0, 0) is the middle of the base)
 
 
-def heap(rng, w, h, *, turrets=None, lead=-0.22, depth=0.75, belly=0.36, cells=1.0, sprouts=1.0, lean=0.0, cell_px=None, sprout_px=None, crowns=1.0, look_k=0.16, front_cells=0.35, cell_space=0.8, cauli=False, florets=1.0, floret_px=None, tw=None, gaps=(), rolls=0.0, roll_px=None, taper=0.0, cut=True, roll_drop=0.0):
+def heap(rng, w, h, *, turrets=None, lead=-0.22, depth=0.75, belly=0.36, cells=1.0, sprouts=1.0, lean=0.0, cell_px=None, sprout_px=None, crowns=1.0, look_k=0.16, front_cells=0.35, cell_space=0.8, cauli=False, florets=1.0, floret_px=None, tw=None, gaps=(), rolls=0.0, roll_px=None, taper=0.0, cut=True, roll_drop=0.0, carve=()):
     """A cumulus heap (tall and narrow: a tower): an envelope of billows (a flat-ish belly of lying billows, turrets
     of billows rising from it, the tallest a little sunward, crowns of smaller billows on each), cells grown over its
     surface (denser up and sunward), sprouts grown along the lit top (three scales)."""
@@ -320,7 +320,8 @@ def heap(rng, w, h, *, turrets=None, lead=-0.22, depth=0.75, belly=0.36, cells=1
         return np.clip(edge * up * 1.6, 0, 1) * florets
 
     Fl = grow(rng, EC + D, spacing=fl_px * 1.0, radius=fl_px, keep=keep_florets, inset=0.45, blend=0.2, vs=max(1.5, fl_px / 2.5)) if florets > 0 else []
-    return {"prims": EC + D + Fl, "base": 0.0, "w": w, "h": h, "hmax": hmax, "cut": cut}
+    # (carve: torn gaps cut right through the finished form, x share and width share, their walls wandering)
+    return {"prims": EC + D + Fl, "base": 0.0, "w": w, "h": h, "hmax": hmax, "cut": cut, "carve": [(gx * w, gw * w) for gx, gw in carve]}
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -574,6 +575,77 @@ def streaks(rng, w, h, *, pieces=3, tilt=-0.035, seed=1, ramp=None, steps=(1, 2,
     return rgba
 
 
+def wisps(rng, w, h, *, pieces=2, seed=1, ramp=None, tilt=-0.03, kind="cirrus", alphas=(0.3, 0.55, 0.82, 1.0), thick=(0.5, 1.0), hook=0.35, breaks=0.42):
+    """Wisps (round 2, the critique's W1-5: "fewer, tapered, broken, west-sheared strokes of varied thickness, lit on top
+    and fading at the ends; no rim"). 2D, painted. Each stroke streams WEST on the east wind: a dense head at its east
+    end (lit on top), a long body thinning west into combed fibres that fray and break, its tail hooked by the shear;
+    translucent in flat steps (alpha `alphas`, thin to dense: no blur, no dither), so a thin wisp is the sky's own blue
+    lifted and only the dense head reads white. kind "cirrus": fine fibres, high; "stratus": a thicker low band with
+    small lumpy heads along its lit top and a cool, lost underside. Returns RGBA (partial alpha in steps)."""
+    nz = Noise(seed * 7 + 3)
+    W, H = int(w), int(h)
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    dens = np.zeros((H, W), np.float32)
+    up = np.zeros((H, W), np.float32)  # where in its stroke's thickness a px is (-1 top .. 1 bottom), of the densest stroke
+    fib = kind == "cirrus"
+    for i in range(pieces):
+        L = W * (0.45 + 0.4 * rng.random()) if i == 0 else W * (0.22 + 0.35 * rng.random())
+        x1 = W - 2 - rng.random() * W * (0.05 if i == 0 else 0.45)
+        x0 = max(1.0, x1 - L)
+        L = x1 - x0
+        y1 = H * (0.3 + 0.4 * rng.random())
+        t0 = H * 0.5 * (thick[0] + (thick[1] - thick[0]) * rng.random()) * (1.0 if i == 0 else 0.7)
+        u = np.clip((xx - x0) / max(L, 1), 0, 1)  # 0 the west tail .. 1 the east head
+        inside = (xx >= x0 - 2) & (xx <= x1 + 2)
+        # the centre line: the tilt, a gentle meander, the tail hooked by the shear (up or down)
+        hk = (hook * (1 if rng.random() < 0.6 else -1)) * H * 0.5
+        yc = y1 + tilt * (xx - x1) + hk * (1 - u) ** 2.2 + (nz.fbm(xx / 160.0 + i * 3.3, np.full_like(xx, 1.7 * i), oct=2) - 0.5) * H * 0.18
+        # the thickness: swells fast behind the head, tapers long toward the tail (and quickly at the head's own end)
+        # (the head's end ragged: tufts of its own, never a clean rounded tip)
+        rag = (nz.fbm(yy / 2.6 + i * 13.0, xx / 30.0 + i, oct=2) - 0.5) * 2.4
+        prof = np.clip(u / 0.7, 0, 1) ** 0.9 * np.clip((1 - u) / 0.12 + rag, 0, 1) ** 0.5
+        prof = prof * (0.75 + 0.5 * nz.fbm(xx / 70.0 + i * 5.1, np.full_like(xx, 3.0 + i), oct=2))
+        t = np.maximum(t0 * prof, 0.4)
+        c = (yy - yc) / t  # -1 top .. 1 bottom
+        lump = nz.fbm(xx / (9.0 if fib else 14.0) + i * 4.4, np.full_like(xx, 8.0 + i), oct=2) - 0.5
+        ce = np.where(c < 0, c / (1 + (0.6 if fib else 0.9) * lump), c * 1.15)
+        core = np.clip(1 - np.abs(ce) ** 1.4, 0, 1)
+        if fib:
+            # fibres combed along the stroke (long in x, a px or two across), only inside its envelope, stronger
+            # toward the tail where the core thins away
+            f = nz.fbm(xx / 140.0 + i * 2.1, (yy - yc) / 1.4 + i * 7.7, oct=2)
+            env = np.clip(1.0 - np.abs(c) / 1.9, 0, 1)
+            d = core * (0.35 + 0.65 * u ** 0.7) + (f - 0.5) * (1.6 - 0.8 * u) * env - (1 - env) * 0.6
+        else:
+            f = nz.fbm(xx / 60.0 + i * 2.1, (yy - yc) / 2.2 + i * 7.7, oct=3)
+            d = core * (0.6 + 0.4 * u) + (f - 0.5) * 0.7
+        # torn breaks along it (the stroke breaks into lengths, more toward the tail)
+        br = nz.fbm(xx / 55.0 + i * 9.9, np.full_like(xx, 5.5 + 2 * i), oct=2)
+        d = d - np.clip((breaks + 0.25 * (1 - u)) - br, 0, 1) * 2.2
+        d = np.where(inside, d, 0)
+        better = d > dens
+        dens = np.where(better, d, dens)
+        up = np.where(better, np.clip(c, -1, 1), up)
+    # density steps (thin -> dense), binary alpha (the engine draws sprites crisp: no partial alpha). The thinnest
+    # fibres are left out; a thin wisp is a pale cool blue (over the deep sky a lighter blue, over the pale sky lost),
+    # the dense head white and warm on top
+    th = (0.3, 0.5, 0.72)
+    lv = np.full((H, W), -1, np.int16)
+    for k, tk in enumerate(th):
+        lv[dens > tk] = k
+    lv = majority(lv)
+    n2 = nz.fbm(xx / 9.0, yy / 4.0 + 40, oct=2) - 0.5
+    n3 = nz.fbm(xx / 40.0, yy / 6.0 + 70, oct=2) - 0.5
+    ci = np.where(lv == 0, 5, np.where(lv == 1, np.where(up < 0.2 + n2 * 0.5, 3, 4), np.where(up < -0.1 + n3 * 1.2, 1, 2))).astype(np.int16)
+    ci = np.where((lv == 2) & (up < -0.45 + n3 * 0.6), 0 if not fib else 1, ci)
+    cols = np.array(ramp, np.uint8)
+    rgba = np.zeros((H, W, 4), np.uint8)
+    m = lv >= 0
+    rgba[m, :3] = cols[ci[m]]
+    rgba[m, 3] = 255
+    return rgba
+
+
 def hash01(G, salt):
     """A well-mixed hash of integer lattice points -> [0, 1) (splitmix64)."""
     with np.errstate(over="ignore"):
@@ -771,6 +843,13 @@ def render(form, *, level=1.0, seed=1, look=None, pad=8):
         np.maximum(occ, np.clip(ex / sss, 0, 1) * fall, out=occ)
         tt += 1.0 if tt < 10 * L else 2.0
     direct = np.clip((ndl + wrap) / (1 + wrap), 0, 1) * Tsun * (1 - look.get("ss", 0.75) * occ)
+    if look.get("under"):
+        # (a thick layer) its lower part lies in the shadow of the body above it: the direct light fades below the
+        # crowns' line (u0 .. u1 shares of the form's height from its base, down to `floor`)
+        u0, u1, fl = look["under"]
+        hh = form.get("h", 400) * L
+        u = np.clip((-py / hh - u0) / max(u1 - u0, 1e-3), 0, 1)
+        direct = direct * (fl + (1 - fl) * u * u * (3 - 2 * u))
     # occlusion from the field (crevices)
     ao = np.zeros(len(Pt), np.float32)
     for dd, wgt in ((3, 0.45), (7, 0.3), (14, 0.25)):
@@ -929,6 +1008,6 @@ def sky_bg(W, H, top=(20, 96, 160), bot=(150, 200, 222)):
 def over(bg, rgba, x, y):
     h, w = rgba.shape[:2]
     sub = bg[y:y + h, x:x + w]
-    a = rgba[:sub.shape[0], :sub.shape[1], 3:4] > 127
-    sub[:] = np.where(a, rgba[:sub.shape[0], :sub.shape[1], :3], sub)
+    a = rgba[:sub.shape[0], :sub.shape[1], 3:4].astype(np.float32) / 255.0
+    sub[:] = (rgba[:sub.shape[0], :sub.shape[1], :3] * a + sub * (1 - a) + 0.5).astype(np.uint8)
     return bg

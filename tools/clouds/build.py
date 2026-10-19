@@ -27,10 +27,14 @@ TS = os.path.join(ROOT, "src", "tesu", "art", "library", "opening", "cloud-libra
 LEVELS = (1.0, 0.5, 0.25)
 
 LOOK = {"ao": 0.4, "kr": 0.45, "form": 0.9, "form_px": 10, "lumps": 0.6, "rim_gap": 3, "rim_px": 2.5, "base_wave": 30, "base_tear": 10}
-DECK = dict(LOOK, vs=2.5, kb=0.06, form_px=12, sun=[-0.62, -0.62, -0.45], kbelly=0.0, rags=False)
+# (round 2b) the deck's sun is higher and further behind it: its crowns lit from above (the gust's hero), the body
+# under them in their shadow (a thick layer: the light cannot get through), the cells' cast shadows short and soft (no
+# vertical combs); under its crowns the layer's lower half lies in its own shadow (`under`: no lit tier of bellies
+# reads as a crown from below at the break-out)
+DECK = dict(LOOK, vs=2.5, kb=0.05, form_px=12, sun=[-0.5, -0.75, -0.45], kbelly=0.0, rags=False, sigma=0.05, reach=500, ss=0.4, ss_len=24, under=(0.42, 0.62, 0.3))
 # the shares of the steps (lightest first): a sunlit heap; a deck chunk (more of it is belly); a far heap
 LIT = cl.SHARE
-DECKS = [0.08, 0.12, 0.06, 0.06, 0.07, 0.12, 0.14, 0.13, 0.1, 0.07, 0.05]
+DECKS = [0.05, 0.07, 0.05, 0.06, 0.08, 0.12, 0.15, 0.15, 0.13, 0.08, 0.06]
 
 # id: (kind, seed, form args, look, share, far, what it is)
 LIB = {
@@ -53,17 +57,24 @@ LIB = {
     # the deck: chunks with crowns, a thick body and rolls hanging along an undulating base
     # (a chunk is about 430 px of its plane tall: at the gust its crowns cross the lower frame under the paper, at
     # the break-out its crowns are hidden above the top bar and its belly is overhead)
-    "deck-w": ("heap", 5, dict(w=900, h=480, belly=0.5, tw=[(-0.34, 0.8, 0.13), (-0.12, 1.0, 0.15), (0.12, 0.86, 0.13), (0.34, 0.78, 0.12)], rolls=1.0, roll_px=36, cut=False, roll_drop=0.6), DECK, DECKS, 0.0, "deck chunk"),
-    "deck-m": ("heap", 9, dict(w=760, h=400, belly=0.5, tw=[(-0.32, 0.86, 0.15), (-0.08, 1.0, 0.17), (0.2, 0.76, 0.13), (0.38, 0.74, 0.11)], rolls=1.0, roll_px=34, cut=False, roll_drop=0.6), DECK, DECKS, 0.0, "deck chunk (the gust's hero crown)"),
-    "deck-e1": ("heap", 13, dict(w=1000, h=520, belly=0.5, tw=[(-0.36, 0.8, 0.11), (-0.16, 0.9, 0.13), (0.05, 1.0, 0.15), (0.27, 0.84, 0.13), (0.4, 0.76, 0.1)], rolls=1.0, roll_px=36, cut=False, roll_drop=0.6), DECK, DECKS, 0.0, "deck chunk"),
-    "deck-e2": ("heap", 29, dict(w=1150, h=500, belly=0.5, tw=[(-0.38, 0.8, 0.11), (-0.18, 0.95, 0.14), (0.02, 0.8, 0.12), (0.2, 0.9, 0.13), (0.38, 0.76, 0.11)], rolls=1.0, roll_px=36, cut=False, roll_drop=0.6), DECK, DECKS, 0.0, "deck chunk"),
+    # (round 2b: the deck is a CEILING on the back plane: tall flat-ish crowns (0.84-1.0 of h) so that at the
+    # break-out and the postcard every crown sits above the top bar and only the bellies show, while at the gust the
+    # crowns lie under the paper; four chunks with torn gaps between them, one round the sun, one the paper falls
+    # through)
+    "deck-w": ("heap", 5, dict(w=1100, h=380, belly=0.5, tw=[(-0.38, 0.9, 0.09), (-0.2, 1.0, 0.1), (-0.02, 0.92, 0.1), (0.17, 0.97, 0.1), (0.36, 0.88, 0.09)], rolls=1.0, roll_px=34, cut=False, roll_drop=0.45), DECK, DECKS, 0.0, "deck chunk (west, by the sun's gap)"),
+    "deck-m": ("heap", 9, dict(w=520, h=400, belly=0.45, tw=[(-0.3, 0.92, 0.15), (0.0, 1.0, 0.17), (0.3, 0.9, 0.15)], rolls=1.0, roll_px=34, cut=False, roll_drop=0.6), DECK, DECKS, 0.0, "deck chunk (hanging low between the sun's gap and the paper's)"),
+    "deck-e1": ("heap", 13, dict(w=1000, h=380, belly=0.5, tw=[(-0.36, 0.9, 0.1), (-0.16, 0.97, 0.11), (0.04, 1.0, 0.11), (0.23, 0.92, 0.1), (0.4, 0.88, 0.08)], rolls=1.0, roll_px=36, cut=False, roll_drop=0.45), DECK, DECKS, 0.0, "deck chunk (the gust's hero crown east of the paper)"),
+    "deck-e2": ("heap", 29, dict(w=1300, h=360, belly=0.5, tw=[(-0.4, 0.88, 0.08), (-0.24, 1.0, 0.1), (-0.07, 0.9, 0.09), (0.1, 0.96, 0.1), (0.27, 0.9, 0.09), (0.41, 0.86, 0.08)], rolls=1.0, roll_px=36, cut=False, roll_drop=0.4), DECK, DECKS, 0.0, "deck chunk (east)"),
     "deck-mid-a": ("heap", 17, dict(w=1800, h=300, belly=0.62, tw=[(-0.4, 0.5, 0.06), (-0.27, 0.8, 0.08), (-0.12, 0.55, 0.06), (0.03, 0.66, 0.07), (0.2, 1.0, 0.09), (0.36, 0.6, 0.07)], rolls=1.0, roll_px=30, cut=False, roll_drop=0.5, taper=0.1), DECK, DECKS, 0.25, "deck band, middle distance"),
     "deck-far-a": ("heap", 19, dict(w=2200, h=170, belly=0.7, tw=[(-0.42, 0.6, 0.05), (-0.28, 0.9, 0.06), (-0.1, 0.55, 0.05), (0.06, 0.75, 0.05), (0.24, 1.0, 0.07), (0.4, 0.65, 0.05)], taper=0.12, rolls=0.8, roll_px=18, cut=False, roll_drop=0.4), DECK, DECKS, 0.55, "deck band, far"),
     # streaks: low stratus and high cirrus (painted strokes)
-    "st-a": ("streaks", 3, dict(w=900, h=60, pieces=3), None, None, 0.0, "low stratus"),
-    "st-b": ("streaks", 5, dict(w=600, h=44, pieces=2), None, None, 0.0, "low stratus"),
-    "ci-a": ("streaks", 7, dict(w=800, h=80, pieces=5, fiber=1.0, thick=(0.12, 0.35), steps=(0, 1, 2, 3, 5), tilt=-0.08), None, None, 0.45, "high cirrus"),
-    "ci-b": ("streaks", 11, dict(w=560, h=64, pieces=4, fiber=1.0, thick=(0.12, 0.3), steps=(0, 1, 2, 3, 5), tilt=-0.07), None, None, 0.5, "high cirrus"),
+    # (round 2, W1-5: tapered, broken, west-sheared translucent strokes: fibrous cirrus high, lumpy stratus low)
+    "st-a": ("wisps", 3, dict(w=900, h=56, pieces=2, kind="stratus", thick=(0.6, 1.0), hook=0.15, breaks=0.4, alphas=(0.35, 0.6, 0.88, 1.0)), None, None, 0.0, "low stratus"),
+    "st-b": ("wisps", 5, dict(w=600, h=44, pieces=2, kind="stratus", thick=(0.6, 1.0), hook=0.15, breaks=0.4, alphas=(0.35, 0.6, 0.88, 1.0)), None, None, 0.0, "low stratus"),
+    "st-c": ("wisps", 13, dict(w=1100, h=64, pieces=3, kind="stratus", thick=(0.5, 1.0), hook=0.12, breaks=0.45, alphas=(0.35, 0.6, 0.88, 1.0)), None, None, 0.2, "low stratus, far"),
+    "ci-a": ("wisps", 7, dict(w=800, h=90, pieces=2, kind="cirrus"), None, None, 0.45, "high cirrus"),
+    "ci-b": ("wisps", 11, dict(w=560, h=70, pieces=2, kind="cirrus"), None, None, 0.5, "high cirrus"),
+    "ci-c": ("wisps", 23, dict(w=700, h=80, pieces=3, kind="cirrus"), None, None, 0.45, "high cirrus"),
 }
 
 
@@ -83,10 +94,10 @@ def build_one(cid):
     t0 = time.time()
     ramp = ramp_of(far)
     out = {"id": cid, "kind": kind, "what": what, "sets": []}
-    if kind == "streaks":
+    if kind in ("streaks", "wisps"):
         a = dict(args)
         w, h = a.pop("w"), a.pop("h")
-        rgba = cl.streaks(np.random.default_rng(seed), w, h, seed=seed, ramp=ramp, **a)
+        rgba = getattr(cl, kind)(np.random.default_rng(seed), w, h, seed=seed, ramp=ramp, **a)
         rgba, x0, y0 = crop(rgba)
         # anchor: the middle of its box's foot (as the heaps)
         levels = [(1.0, rgba, w / 2 - x0, h - y0)]

@@ -47,6 +47,12 @@ export interface FallCloud {
   fy: number;
   /** Which cloud of the library (cloud-library.ts). */
   cloud: keyof typeof CLOUDS & string;
+  /**
+   * Composed low, in the play sky by design (the deck overhead at the break-out; the far heaps and stratus toward the
+   * horizon): hidden outside the fall (game.ts syncFall), so only the close band the fall hands off to (the catch, the
+   * walk) must never see it.
+   */
+  low?: boolean;
 }
 
 /** A library cloud's bounds round its anchor (level-1 px of its plane): [x0, y0, x1, y1]. */
@@ -62,23 +68,25 @@ export function cloudBounds(id: string): [number, number, number, number] {
  */
 export const FALL_CLOUDS: readonly FallCloud[] = [
   // --- the VAST FRAME (2.94 s, zoom 0.17): the sky over the whole world. The sun upper left over open sky and high
-  // cirrus combed west; a great tower rising on the right past the palace, its sun side lit; the deck's heaps lying
-  // across the middle below the paper, with a gap where the world shows through, its crowns low under the paper's
-  // column (F's ASK 1), the world below them in the clear.
-  // --- the drop out of the black and the pull-out (0.64-1.6 s): high wisps rushing by the frame as the sky hits, a
-  // small heap far below that settles into the vast frame's empty middle as its depth
-  { id: "fall-wisp-hi-a", plane: "far", T: 1.0, fx: 0.3, fy: 0.55, cloud: "ci-a" },
-  { id: "fall-wisp-hi-b", plane: "far", T: 1.0, fx: 0.76, fy: 0.74, cloud: "ci-b" },
-  { id: "fall-puff-mid", plane: "mid", T: 1.0, fx: 0.8, fy: 0.84, cloud: "cu-puff-a" },
-  { id: "fall-cirrus-a", plane: "far", T: 2.94, fx: 0.55, fy: 0.25, cloud: "ci-a" },
-  { id: "fall-cirrus-b", plane: "far", T: 2.94, fx: 0.24, fy: 0.34, cloud: "ci-b" },
+  // cirrus combed west; a great tower rising on the right past the palace, its sun side lit; the deck (on the back
+  // plane, below) lying low over the world toward the horizon, so the paper's column is open sky (F's ASK 1) and the
+  // tower's foot is lost behind the deck.
+  // --- the drop out of the black and the pull-out (0.64-1.6 s): high wisps rushing by the frame as the sky hits
+  { id: "fall-wisp-hi-a", plane: "far", T: 1.0, fx: 0.3, fy: 0.5, cloud: "ci-a" },
+  { id: "fall-wisp-hi-b", plane: "far", T: 1.0, fx: 0.78, fy: 0.72, cloud: "ci-c" },
+  { id: "fall-cirrus-b", plane: "far", T: 2.94, fx: 0.92, fy: 0.2, cloud: "ci-b" },
   { id: "fall-tower", plane: "mid", T: 2.94, fx: 0.8, fy: 0.6, cloud: "cu-tower-a" },
-  // --- the deck (the gust 8.2 s -> the break-out 10.6 s -> the postcard 12.6 s): chunks side by side on the mid
-  // plane, composed for the break-out (their bellies overhead, the crowns above the bar; a gap on the sun's side);
-  // at the gust their crowns cross the lower frame under the paper (deck-m's crown its hero)
-  { id: "fall-deck-w", plane: "mid", T: 10.617, fx: -0.278, fy: 0.37, cloud: "deck-w" },
-  { id: "fall-deck-e", plane: "mid", T: 10.617, fx: 0.935, fy: 0.36, cloud: "deck-e1" },
-  { id: "fall-deck-m", plane: "mid", T: 10.617, fx: 0.422, fy: 0.39, cloud: "deck-m" },
+  // --- the deck (round 2b): a CEILING on the BACK plane (it rises past the paper faster than the mid plane, so at
+  // the gust its crowns lie under the paper while at the break-out and the postcard its crowns are above the top bar
+  // and only its underside shows). Composed for the break-out (10.617 s, art 0.72): four chunks overlapping, their
+  // bases undulating (the rolls' feet y ~400-480), torn gaps between them: G1 round the sun (x ~170-340: the sun in it
+  // or at its west edge from the break-out to the postcard) and G2 the paper falls through (x ~950-1040: at the gust
+  // 7.0-9.6 s the paper drops into the valley between two crowns, sky behind it, never a lit crown: W1-9). Later = in
+  // front: the lowest last.
+  { id: "fall-deck-e2", plane: "back", T: 10.617, fx: 2420 / 1920, fy: 318 / 1080, cloud: "deck-e2", low: true },
+  { id: "fall-deck-e", plane: "back", T: 10.617, fx: 1468 / 1920, fy: 343 / 1080, cloud: "deck-e1", low: true },
+  { id: "fall-deck-w", plane: "back", T: 10.617, fx: -420 / 1920, fy: 361 / 1080, cloud: "deck-w", low: true },
+  { id: "fall-deck-m", plane: "back", T: 10.617, fx: 592 / 1920, fy: 400 / 1080, cloud: "deck-m", low: true },
 ];
 
 export function openingSky(b: WorldBuilder): void {

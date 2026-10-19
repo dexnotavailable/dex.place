@@ -229,8 +229,9 @@ test("the fall's clouds: each where the camera sees it (on Dex's 1920 x 1080 fra
         // (the fall loop, round 1c) the deck and its receding layers, composed for the break-out and the postcard
         // (the camera down at the hold's own height; W1-8 / W1-9: the deck overhead, its underside receding into
         // the middle sky), lie in the play sky by design: they are hidden outside the fall (game.ts syncFall), so
-        // only the close band they hand off to (the catch, the walk) must not see them
-        if (c.T >= 10 && zoom < 2) continue;
+        // only the close band they hand off to (the catch, the walk) must not see them (round 2: and every cloud
+        // marked `low`, composed toward the horizon for the vast frame)
+        if ((c.T >= 10 || c.low) && zoom < 2) continue;
         const pc = { cx: x, cy: BEATS.her.deckYH * H, zoom, anchor, horizon, W, H: Hf };
         const pxf = planeXf(pc, r);
         const foot = (y * r + low) * pxf.g + pxf.offY;
