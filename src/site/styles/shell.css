@@ -35,9 +35,6 @@
   .js .world__stage { scale: calc(1 - var(--world-progress) * 0.06); }
   .js .world::after { opacity: calc(var(--world-progress) * 0.7); }
 }
-/* Still frame drawn in code until the world module mounts (no art). */
-.world__still { position: absolute; inset: 0; }
-.world[data-world-ready] .world__still { display: none; }
 .world__fallback { position: absolute; inset: 50% auto auto 50%; translate: -50% -50%; z-index: 1; }
 .world[data-world-ready] .world__fallback { display: none; }
 .world__hint { position: absolute; top: calc(50% + 44px); width: 100%; padding: 0 18px; text-align: center; font: var(--fs-14) / 1.5 var(--f-body); }
@@ -53,32 +50,6 @@
   pointer-events: none;
 }
 .world[data-world-ready] .world__frame { opacity: 1; pointer-events: auto; }
-.world__stars {
-  position: absolute;
-  left: 0; top: 0;
-  width: 2px; height: 2px;
-  background: #fff;
-  opacity: 0.6;
-  box-shadow:
-    8vw 20vh #fff, 17vw 33vh #8a8f9c, 23vw 15vh #fff, 31vw 26vh #5d6170, 38vw 21vh #fff, 44vw 38vh #8a8f9c,
-    52vw 17vh #fff, 58vw 30vh #5d6170, 64vw 13vh #fff, 71vw 35vh #8a8f9c, 77vw 24vh #fff, 83vw 16vh #5d6170,
-    89vw 31vh #fff, 94vw 20vh #8a8f9c, 12vw 44vh #5d6170, 27vw 49vh #8a8f9c, 61vw 46vh #5d6170, 86vw 47vh #8a8f9c;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .world__stars { animation: twinkle 5.3s steps(2, end) infinite; }
-}
-@keyframes twinkle { 50% { opacity: 0.35; } }
-/* The distant ring is the one curve on the site: it is the world's, not the UI's. */
-.world__ring {
-  position: absolute;
-  width: 150vmax; aspect-ratio: 1;
-  right: -88vmax; top: -104vmax;
-  border: 2px solid #22242d;
-  border-radius: 50%;
-}
-.world__ground { position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: #0e0f15; }
-.world__floor { position: absolute; left: 50%; right: 0; bottom: 30%; height: 2px; background: #6b2a2a; }
-
 .world__bars { position: absolute; inset: 0; z-index: var(--z-world-bars); pointer-events: none; }
 .world__bar { position: absolute; left: 0; right: 0; height: var(--bar); background: #000; }
 .world__bar--top { top: 0; transform-origin: 50% 0; }

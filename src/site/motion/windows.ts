@@ -13,7 +13,6 @@
 
 import { painterWorker, type PainterEntry } from "./painters.ts";
 import { rampIndex } from "./sky-plan.ts";
-import { scatterCell } from "./scatter.ts";
 import type { CloudDone, CloudJob } from "./paint-core.ts";
 
 export type SceneId = "sky" | "palace" | "isles" | "lake" | "pine" | "door";
@@ -51,7 +50,12 @@ export interface Scene {
   mist?: { y: number; h: number; before: number; dens?: number };
   /** The Walker (the world's own frame, public/tesu/walker), far off in the haze: height share, anchor, haze. */
   walker?: { fit: number; x: number; y: number; haze: number; before: number };
+  /** The same place framed for a wide window (wider than WIDE : 1, across the page): its own pieces (and mist). */
+  wide?: Pick<Scene, "pieces"> & Partial<Pick<Scene, "mist" | "water" | "walker">>;
 }
+
+/** A window this much wider than tall shows its place's wide framing (the windows across the page). */
+export const WIDE = 1.8;
 
 // the world's light, through the day (its painters are lit for the morning key; these are the skies they stand in)
 const NOON: Rgb[] = [[30, 84, 156], [56, 122, 192], [104, 166, 222], [168, 208, 240], [214, 234, 249]];
@@ -87,6 +91,18 @@ export const SCENES: Readonly<Record<SceneId, Scene>> = {
       { kind: "op.palace", p: { w: 1200, h0: 537, h1: 403, h2: 307, door: [500, 200, 355] }, fit: 0.8, x: 0.22, y: 0.97 },
       { kind: "op.tower", p: { h: 420, w: 60 }, fit: 0.66, x: 0.08, y: 1.01 },
     ],
+    // across the page: the palace between its gate towers, the karst ranges all along the dawn horizon
+    wide: {
+      pieces: [
+        { kind: "op.cloud", p: { kind: "wisp", w: 280, h: 30 }, fit: 0.06, x: 0.62, y: 0.2, sway: 10, speed: 0.06, seed: 13 },
+        { kind: "op.cloud", p: { kind: "cumulus", w: 340, h: 180, tower: 0.9 }, fit: 0.42, x: 0.84, y: 0.6, sway: 5, speed: 0.04, seed: 11 },
+        { kind: "op.farkarst", p: { w: 900, h: 178, rows: 2, groups: [[80, 380], [480, 860, 0.62]], haze: 0.6 }, fit: 0.24, x: 0.24, y: 0.8 },
+        { kind: "op.farkarst", p: { w: 900, h: 170, rows: 2, groups: [[60, 420], [560, 880]], haze: 0.6 }, fit: 0.2, x: 0.72, y: 0.82 },
+        { kind: "op.palace", p: { w: 1200, h0: 537, h1: 403, h2: 307, door: [500, 200, 355] }, fit: 0.84, x: 0.4, y: 0.99 },
+        { kind: "op.tower", p: { h: 420, w: 60 }, fit: 0.7, x: 0.2, y: 1.02 },
+        { kind: "op.tower", p: { h: 420, w: 60 }, fit: 0.62, x: 0.62, y: 1.02 },
+      ],
+    },
   },
   // the floating isles at noon
   isles: {
@@ -112,6 +128,20 @@ export const SCENES: Readonly<Record<SceneId, Scene>> = {
       { kind: "op.boat", p: { w: 70 }, fit: 0.1, x: 0.24, y: 0.86, bob: 1, speed: 1.1, seed: 41 },
       { kind: "op.birds", p: { n: 3, w: 90, h: 30, kind: "egret", size: 5 }, fit: 0.08, x: 0.4, y: 0.34, cross: 4, seed: 43 },
     ],
+    // across the page: the whole lake, karst along its far shore, the torii islet off-centre, a boat crossing
+    wide: {
+      water: { y: 0.66, tones: LAKE },
+      pieces: [
+        { kind: "op.cloud", p: { kind: "cumulus", w: 460, h: 150, tower: 0.45 }, fit: 0.32, x: 0.18, y: 0.52, sway: 6, speed: 0.04, seed: 37 },
+        { kind: "op.cloud", p: { kind: "cumulus", w: 300, h: 150, tower: 0.6 }, fit: 0.26, x: 0.8, y: 0.5, sway: 5, speed: 0.05, seed: 39 },
+        { kind: "op.cloud", p: { kind: "wisp", w: 280, h: 30 }, fit: 0.05, x: 0.5, y: 0.18, sway: 8, speed: 0.06, seed: 35 },
+        { kind: "op.farkarst", p: { w: 900, h: 170, rows: 2, groups: [[60, 420], [560, 880]], haze: 0.6 }, fit: 0.2, x: 0.26, y: 0.665 },
+        { kind: "op.farkarst", p: { w: 900, h: 178, rows: 2, groups: [[120, 460], [560, 860, 0.7]], haze: 0.6 }, fit: 0.24, x: 0.74, y: 0.665 },
+        { kind: "op.islet", p: { kind: "torii", w: 96, h: 13 }, fit: 0.28, x: 0.6, y: 0.74 },
+        { kind: "op.boat", p: { w: 70 }, fit: 0.1, x: 0.3, y: 0.88, bob: 1, speed: 1.1, cross: 3, seed: 41 },
+        { kind: "op.birds", p: { n: 3, w: 90, h: 30, kind: "egret", size: 5 }, fit: 0.08, x: 0.4, y: 0.34, cross: 4, seed: 43 },
+      ],
+    },
   },
   // a pine over the karst, the mist in the valleys, at dusk
   pine: {
@@ -136,6 +166,20 @@ export const SCENES: Readonly<Record<SceneId, Scene>> = {
       { kind: "op.doors", p: { w: 200, h: 355 }, fit: 0.6, x: 0.28, y: 1.0 },
       { kind: "op.banners", p: { w: 300, drop: 120, n: 4 }, fit: 0.3, x: 0.2, y: 0.12, sway: 1, speed: 0.2 },
     ],
+    // across the page: the doors between their towers in the middle, the karst going grey into the mist both sides
+    wide: {
+      mist: { y: 0.8, h: 0.18, before: 4, dens: 0.4 },
+      pieces: [
+        { kind: "op.cloud", p: { kind: "stratus", w: 640, h: 50 }, fit: 0.12, x: 0.3, y: 0.3, sway: 6, speed: 0.03, seed: 61, haze: 0.4 },
+        { kind: "op.cloud", p: { kind: "stratus", w: 640, h: 50 }, fit: 0.1, x: 0.78, y: 0.42, sway: 5, speed: 0.025, seed: 63, haze: 0.5 },
+        { kind: "op.farkarst", p: { w: 900, h: 178, rows: 2, groups: [[80, 380], [480, 860, 0.62]], haze: 0.8 }, fit: 0.3, x: 0.16, y: 0.86 },
+        { kind: "op.farkarst", p: { w: 900, h: 170, rows: 2, groups: [[60, 420], [560, 880]], haze: 0.8 }, fit: 0.26, x: 0.86, y: 0.86 },
+        { kind: "op.tower", p: { h: 420, w: 60 }, fit: 0.86, x: 0.38, y: 1.0 },
+        { kind: "op.tower", p: { h: 420, w: 60 }, fit: 0.86, x: 0.62, y: 1.0 },
+        { kind: "op.doors", p: { w: 200, h: 355 }, fit: 0.6, x: 0.44, y: 1.0 },
+        { kind: "op.banners", p: { w: 300, drop: 120, n: 4 }, fit: 0.3, x: 0.4, y: 0.12, sway: 1, speed: 0.2 },
+      ],
+    },
   },
 };
 
@@ -157,27 +201,58 @@ const hash = (a: number, b: number, s = 0): number => {
 };
 
 /**
- * The dissolving edge of a window, W x H art px, `depth` deep: white, stepped (1, 0.86, 0.4, 0 across the depth) under
- * a scatter of white pixels dense at the white and thinning into the world, each side seeded on its own (`seed`). The
- * outermost pixel all round is solid white, so no colour line can frame the hole. Pure (checks read it): RGBA bytes.
+ * The window's edge: a hole torn in the white paper by hand (Dex 10-19: "patches of the world punched into a white
+ * page"; not a stamped speckle frame). W x H art px; the paper (white) all round a hole whose outline wanders: a slow
+ * swell and a few smaller bites along it, the corners rounded each its own way, the line itself jagged a pixel or two;
+ * at the tear the paper's fibres show, a thin fringe of white pixels thinning into the world (the dissolve Dex asked for
+ * on 10-16, kept to the torn edge). Seeded per window, so no two holes are alike. The outermost pixel all round is
+ * paper, so no colour line can frame the hole. Pure (checks read it): RGBA bytes, white with alpha 255 or nothing.
  */
-export function edgeMask(W: number, H: number, depth: number, seed: number): Uint8ClampedArray {
+export function holeMask(W: number, H: number, seed: number): Uint8ClampedArray {
   const out = new Uint8ClampedArray(W * H * 4);
-  const step = (u: number): number => (u < 0.18 ? 1 - (u / 0.18) * 0.14 : u < 0.46 ? 0.86 - ((u - 0.18) / 0.28) * 0.46 : u < 0.78 ? 0.4 - ((u - 0.46) / 0.32) * 0.4 : 0);
+  const s = Math.min(W, H);
+  const r = (i: number): number => hash(seed * 31 + i, seed * 17 + 3, 11);
+  // the paper's margin before the tear, the swell of the outline, the fibre fringe's depth (art px)
+  const inset = Math.max(2, Math.round(s * 0.03));
+  const amp = Math.max(1.5, s * 0.034);
+  const fringe = Math.max(2, Math.round(s * 0.014));
+  // the outline's wander: a few waves around the hole (whole numbers of them, so it closes), random phases
+  const waves = [[2, 0.5], [3, 0.36], [5, 0.24], [8, 0.15], [13, 0.09], [21, 0.06]] as const;
+  const ph = waves.map((_, i) => r(i) * Math.PI * 2);
+  const norm = waves.reduce((m, [, a]) => m + a, 0);
+  // each corner its own roundness
+  const rad = [0, 1, 2, 3].map((i) => s * (0.05 + 0.1 * r(10 + i)));
+  const cx = W / 2, cy = H / 2;
+  // the jag: along the outline every couple of pixels the tear steps in or out by a pixel
+  const per = 2 * (W + H);
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      // which side is nearest, and how far in
-      const dl = x, dr = W - 1 - x, dt = y, db = H - 1 - y;
-      const d = Math.min(dl, dr, dt, db);
-      if (d >= depth) continue;
-      const side = d === dl ? 0 : d === dr ? 1 : d === dt ? 2 : 3;
-      const along = side < 2 ? y : x;
-      let a = d === 0 ? 1 : step(d / depth);
-      if (a < 1 && scatterCell(d, along + side * 7919 + seed * 104729, depth)) a = 1;
-      if (a <= 0) continue;
+      const dx = Math.min(x + 0.5, W - x - 0.5), dy = Math.min(y + 0.5, H - y - 0.5);
+      const q = (x < cx ? 0 : 1) + (y < cy ? 0 : 2);
+      const rq = rad[q]!;
+      // distance in from the paper's edge, the corners rounded
+      const d = dx < rq && dy < rq ? rq - Math.hypot(rq - dx, rq - dy) : Math.min(dx, dy);
+      if (d > inset + amp * 2 + fringe + 2) continue;
+      const th = Math.atan2((y + 0.5 - cy) / H, (x + 0.5 - cx) / W);
+      let n = 0;
+      for (let i = 0; i < waves.length; i++) n += waves[i]![1] * Math.sin(waves[i]![0] * th + ph[i]!);
+      const along = Math.floor(((th + Math.PI) / (Math.PI * 2)) * per);
+      const jag = hash(along >> 1, seed, 5) < 0.3 ? 1 : 0;
+      const edge = inset + amp * (1 + n / norm) + jag;
+      let white = d < edge;
+      let alpha = 255;
+      if (!white && d < edge + fringe + 3) {
+        // the paper's fibres at the tear: short hairs reaching into the world, thicker in places along the edge, a
+        // few loose flecks; and a breath of white just inside it (the light through the torn paper's edge)
+        const out1 = d - edge;
+        const clump = hash(Math.floor(along / 14), seed, 31);
+        const hair = hash(along, seed, 23) < 0.06 + 0.3 * clump ? 1 + Math.floor(hash(along, seed, 29) * (fringe + 1)) : 0;
+        white = out1 < hair || hash(x, y, seed + 13) < 0.05 * Math.max(0, 1 - out1 / (fringe + 1));
+        if (!white && out1 < 3) { white = true; alpha = out1 < 1 ? 110 : out1 < 2 ? 56 : 24; }
+      }
+      if (!white) continue;
       const i = (y * W + x) * 4;
-      out[i] = 255; out[i + 1] = 255; out[i + 2] = 255;
-      out[i + 3] = Math.round(a * 255);
+      out[i] = 255; out[i + 1] = 255; out[i + 2] = 255; out[i + 3] = alpha;
     }
   }
   return out;
@@ -185,11 +260,20 @@ export function edgeMask(W: number, H: number, depth: number, seed: number): Uin
 
 interface Art { img: HTMLCanvasElement; ax: number; ay: number }
 
+/** The place as a window of W x H art px shows it: its wide framing in a window across the page. Pure. */
+export function framed(base: Scene, W: number, H: number): Scene {
+  if (!base.wide || W / Math.max(1, H) <= WIDE) return base;
+  const { wide } = base;
+  return { ...base, pieces: wide.pieces, mist: wide.mist, water: wide.water ?? base.water, walker: wide.walker };
+}
+
 interface Win {
   el: HTMLElement;
   index: number;
   cv: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
+  /** The place, and how this window frames it now (its wide framing when it is wide). */
+  base: Scene;
   scene: Scene;
   W: number;
   H: number;
@@ -255,6 +339,14 @@ export function initWindows(reduced: MediaQueryList): void {
     return { W: Math.ceil((r.width * dpr) / k), H: Math.ceil((r.height * dpr) / k), k, dpr };
   };
   const apply = (win: Win, m: { W: number; H: number; k: number; dpr: number }): void => {
+    const scene = framed(win.base, m.W, m.H);
+    if (scene !== win.scene) {
+      // the window changed shape enough to frame its place the other way: paint it again
+      win.scene = scene;
+      win.paintedH = 0;
+      win.back = win.mist = null;
+      win.walker = null;
+    }
     if (m.W !== win.W || m.H !== win.H || m.k !== win.k) {
       win.W = m.W;
       win.H = m.H;
@@ -333,13 +425,10 @@ export function initWindows(reduced: MediaQueryList): void {
   const edge = (win: Win): HTMLCanvasElement => {
     if (win.edge) return win.edge;
     const { W, H } = win;
-    const dpr = window.devicePixelRatio || 1;
-    // the white's depth: the window's --win-fade (styles/v2.css clamp(28px, 4vw, 56px)) in art px
-    const depth = Math.max(6, Math.round(Math.min(56, Math.max(28, innerWidth * 0.04)) / (win.k / dpr)));
     const c = document.createElement("canvas");
     c.width = W;
     c.height = H;
-    c.getContext("2d")!.putImageData(new ImageData(edgeMask(W, H, Math.min(depth, Math.floor(Math.min(W, H) / 3)), win.index + 1) as Uint8ClampedArray<ArrayBuffer>, W, H), 0, 0);
+    c.getContext("2d")!.putImageData(new ImageData(holeMask(W, H, win.index + 1) as Uint8ClampedArray<ArrayBuffer>, W, H), 0, 0);
     win.edge = c;
     return c;
   };
@@ -425,7 +514,7 @@ export function initWindows(reduced: MediaQueryList): void {
     el.prepend(cv);
     const ctx = cv.getContext("2d");
     if (!ctx) return;
-    wins.push({ el, index, cv, ctx, scene, W: 0, H: 0, k: 0, paintedH: 0, back: null, edge: null, mist: null, art: [], walker: null, visible: false, seen: false, gen: 0, dirty: true });
+    wins.push({ el, index, cv, ctx, base: scene, scene, W: 0, H: 0, k: 0, paintedH: 0, back: null, edge: null, mist: null, art: [], walker: null, visible: false, seen: false, gen: 0, dirty: true });
   });
 
   // --- the loop: a frame every 160 ms while a window is on screen (a timer, not a frame callback every frame); none at

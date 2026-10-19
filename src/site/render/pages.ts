@@ -3,13 +3,11 @@
 // gallery.ts, docs and blog in docs.ts, donate in donate.ts.
 
 import { NAV } from "../data/nav.ts";
-import { floats } from "./floats.ts";
 import { button, pageHead } from "./glyphs.ts";
 
 export function notFoundPage(): string {
   return (
     `<div class="page">` +
-    floats("notfound", { count: 2, glyph: "sparkle" }) +
     `<div class="wrap">` +
     pageHead({ kicker: "404", title: "Not found", tone: "yellow", icon: "warn" }) +
     `<ul class="nf__links">${[{ href: "/", label: "Home", icon: "arrow" as const }, ...NAV.map((n) => ({ href: n.page, label: n.label, icon: n.icon }))]

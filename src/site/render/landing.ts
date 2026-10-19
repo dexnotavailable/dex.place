@@ -13,7 +13,6 @@ import { artTag, projectArt } from "./art.ts";
 import { docsSection } from "./docs.ts";
 import { donateSection } from "./donate.ts";
 import { downloadsSection } from "./downloads.ts";
-import { floats } from "./floats.ts";
 import { gallerySection } from "./gallery.ts";
 import { moreSection } from "./stubs.ts";
 import { button, chip, counter, pageHead, sectionHead, strip, tile, type ButtonOptions } from "./glyphs.ts";
@@ -102,18 +101,28 @@ function projectsSection(): string {
 }
 
 /**
- * A section on the white beside a window into the world (Dex 10-18): the window right of the content, then left,
- * alternating; each onto a different place (styles/v2.css `.band`, motion/windows.ts).
+ * A section on the white with a window into the world (Dex 10-18: "patches of the world punched into a white page";
+ * 10-19: the windows felt tiny, the world dominates): "l" the content left of a tall window that fills the rest of the
+ * screen's width, "r" mirrored, "w" a wide window spanning the page above the section. Each onto a different place
+ * (styles/v2.css `.band`, motion/windows.ts).
  */
-export const band = (side: "l" | "r", html: string, scene = "sky"): string =>
-  `<div class="band band--${side}">${html}<div class="band__win" data-window="${scene}" aria-hidden="true"></div></div>`;
+export type BandKind = "l" | "r" | "w";
+export const band = (kind: BandKind, html: string, scene = "sky"): string =>
+  `<div class="band band--${kind}">${html}<div class="band__win" data-window="${scene}" aria-hidden="true"></div></div>`;
 
 /** Which place of the world each section's window looks onto (motion/windows.ts SCENES). */
 export const SECTION_SCENES = ["sky", "palace", "isles", "lake", "pine", "door"] as const;
 
+/**
+ * How the home page's sections meet the world, in order: a tall window beside the content, then a wide one across
+ * the page, the tall ones alternating sides (projects | downloads across | gallery | docs across | donate | more
+ * across: "opens later" under the hall's door).
+ */
+export const SECTION_BANDS: readonly BandKind[] = ["l", "w", "r", "w", "l", "w"];
+
 export function landing(content: SiteContent): string {
   const parts = [projectsSection(), downloadsSection(), gallerySection(content), docsSection(content), donateSection(), moreSection()];
-  return parts.map((html, i) => band(i % 2 ? "r" : "l", html, SECTION_SCENES[i % SECTION_SCENES.length])).join("");
+  return parts.map((html, i) => band(SECTION_BANDS[i % SECTION_BANDS.length]!, html, SECTION_SCENES[i % SECTION_SCENES.length])).join("");
 }
 
 // ----------------------------------------------------------- /projects/
@@ -121,7 +130,6 @@ export function landing(content: SiteContent): string {
 export function projectsIndex(): string {
   return (
     `<div class="page page--projects">` +
-    floats("projects", { tone: "yellow", count: 3, glyph: "sparkle" }) +
     `<div class="wrap">` +
     pageHead({ kicker: "projects", title: "Projects", tone: "yellow", icon: "grid", aside: `${pad2(projects.length)} items` }) +
     cards(projects, 2, "page") +
@@ -167,7 +175,6 @@ export function projectPage(p: Project): string {
   const at = projects.indexOf(p);
   return (
     `<div class="page page--project">` +
-    floats(`project-${p.id}`, { tone: p.tone, count: 3, glyph: "star" }) +
     `<div class="wrap">` +
     `<nav class="crumbs" aria-label="Breadcrumb"><a href="/projects/">Projects</a><span aria-hidden="true">/</span><span aria-current="page">${esc(p.name)}</span></nav>` +
     `<header class="proj proj--${p.tone}">` +

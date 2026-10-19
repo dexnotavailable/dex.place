@@ -7,7 +7,6 @@
 
 import { downloads, formatBytes, type DownloadEntry, type DownloadFile } from "../data/downloads.ts";
 import { projects } from "../data/projects.ts";
-import { floats } from "./floats.ts";
 import { button, copyButton, hanko, icon, pageHead, sectionHead, sticker, tile } from "./glyphs.ts";
 import { esc, pad2 } from "./html.ts";
 
@@ -152,7 +151,6 @@ export function downloadsBody(level: Level): string {
 export function downloadsSection(): string {
   return (
     `<section class="sec sec--downloads" id="downloads" aria-labelledby="downloads-title">` +
-    floats("home-downloads", { tone: "mint", count: 2, glyph: "plus" }) +
     `<div class="wrap">` +
     sectionHead({ id: "downloads-title", kicker: "downloads", title: "Downloads", tone: "mint", icon: "download", aside: filesCount(), more: { href: "/downloads/", label: "Downloads page" } }) +
     downloadsBody(3) +
@@ -163,7 +161,6 @@ export function downloadsSection(): string {
 export function downloadsPage(): string {
   return (
     `<div class="page page--downloads">` +
-    floats("downloads", { tone: "mint", count: 3, glyph: "plus" }) +
     `<div class="wrap">` +
     pageHead({ kicker: "downloads", title: "Downloads", tone: "mint", icon: "download", aside: filesCount() }) +
     downloadsBody(2) +

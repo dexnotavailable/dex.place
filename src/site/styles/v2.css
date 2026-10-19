@@ -68,8 +68,12 @@
 
   /* ---- the bands: paper panels over the sky */
   /* the windows into the world: their width beside the content, the gap, the depth of their dissolving edge */
-  --band-max: 1440px;
-  --win-w: clamp(300px, 30vw, 540px);
+  /* a tall window takes the screen's width that the content's reading column (760 px) leaves, up to 1080 px; a wide
+     one spans the page up to 1840 px */
+  --win-w: clamp(400px, calc(100vw - var(--pad) * 2 - var(--win-gap) - var(--col)), 1080px);
+  --win-max-w: 1840px;
+  /* the content's reading column beside a tall window */
+  --col: 760px;
   --win-gap: clamp(32px, 4.5vw, 80px);
   --win-fade: clamp(28px, 4vw, 56px);
   --fade-soft: rgb(255 255 255 / 0.86) 18%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 78%;
@@ -132,47 +136,59 @@ body { background: #000; color: var(--fg); }
 }
 
 /* ------------------------------------------------------------------ the windows */
-/* Each section sits on the white beside a window into the world (render/landing.ts band: the window right of the
-   content, then left, alternating), each onto a different place (motion/windows.ts paints them). The window's edge
-   dissolves into the white on every side: a gradient and a scatter of white pixels (motion/scatter.ts). On a
-   desktop the window stays in view while its section scrolls by; on narrower screens it is a band above the
-   section. A section's own page is one such band. */
+/* Each section sits on the white with a window into the world (render/landing.ts band), each onto a different place
+   (motion/windows.ts paints them, its edge a hole torn in the paper). Dex 10-19: the windows felt tiny, so the world
+   takes the room: on a desktop a tall window beside the content fills the rest of the screen's width and stays in
+   view while its section scrolls by ("l" content left, "r" mirrored); between them a wide window spans the page above
+   its section ("w"). The content keeps a reading column (--col). On narrower screens every window is a tall band
+   above its section. A section's own page is one such band. */
 .band {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--win-w);
+  grid-template-columns: minmax(0, var(--col)) var(--win-w);
+  justify-content: center;
   gap: var(--win-gap);
   align-items: start;
-  max-width: calc(var(--band-max) + var(--pad) * 2);
-  margin-inline: auto;
   padding: var(--s-8) var(--pad);
 }
-.band--r { grid-template-columns: var(--win-w) minmax(0, 1fr); }
+.band--r { grid-template-columns: var(--win-w) minmax(0, var(--col)); }
 .band--r > .band__win { order: -1; }
 .band > .sec, .band > .page { position: relative; min-width: 0; padding-block: 0; background: transparent; border: 0; }
 .band > .sec > .wrap, .band > .page > .wrap { max-width: none; margin: 0; padding-inline: 0; }
 .band__win {
   position: sticky;
-  top: calc(var(--hdr-h) + 28px);
-  height: min(calc(var(--win-w) * 1.2), calc(100vh - var(--hdr-h) - 56px), 680px);
+  top: calc(var(--hdr-h) + 20px);
+  height: clamp(420px, calc(100vh - var(--hdr-h) - 40px), 1100px);
+  height: clamp(420px, calc(100svh - var(--hdr-h) - 40px), 1100px);
   overflow: hidden;
   background: #fff;
 }
 .band__win canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
-@media (max-width: 1099px) {
-  .band, .band--r { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); padding-block: var(--s-7); }
-  /* the window opens above its section */
-  .band__win, .band--r > .band__win { order: -1; position: relative; top: 0; height: clamp(170px, 42vw, 320px); }
+/* across the page: the window first, as wide as the page, then the section in a wider column under it */
+.band--w {
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch;
+  gap: var(--s-7);
+  max-width: calc(var(--win-max-w) + var(--pad) * 2);
+  margin-inline: auto;
 }
-
+.band--w > .band__win { order: -1; position: relative; top: 0; height: clamp(300px, 64vh, 760px); height: clamp(300px, 64svh, 760px); }
+.band--w > .sec, .band--w > .page { justify-self: center; width: min(100%, var(--wrap)); }
+@media (max-width: 1099px) {
+  .band, .band--r, .band--w { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); padding-block: var(--s-7); }
+  /* the window opens above its section, nearly the screen's width */
+  .band__win, .band--r > .band__win, .band--w > .band__win {
+    order: -1; position: relative; top: 0; margin-inline: calc(var(--pad) * -0.5);
+    height: clamp(240px, 72vw, 560px);
+  }
+  .band--w > .band__win { height: clamp(240px, 64vw, 520px); }
+}
 /* the project scenes (placeholder art) on a pale sky instead of the dark site's void */
 .scene { --sunk: #e3eff7; --line: #c3d5e3; background: var(--sunk); }
 /* ink-on-ink spots of the dark theme: key cells and tags on ink get white text */
 .spec dt, .pspec dt, .pick--none[aria-pressed="true"] { color: #fff; }
 .qr__tag { background: var(--ink); color: #fff; }
 
-/* the decorative floating shapes of the dark site stay home: the world is the life behind the paper now */
-.floats { display: none !important; }
 
 /* ------------------------------------------------------------------ titles: small, pixel */
 .sh { margin-bottom: var(--s-6); gap: var(--s-3); }
@@ -245,7 +261,7 @@ code, kbd, pre { font-family: var(--f-mono); }
 }
 /* the header's row lines up with the papers' content (the left papers' start, the right papers' end) */
 @media (min-width: 1100px) {
-  .hdr__in { max-width: var(--band-max); }
+  .hdr__in { max-width: calc(var(--col) + var(--win-gap) + 1080px); }
 }
 .ftr__mark { color: var(--ink); }
 .ftr__nav a { font-weight: 400; }
