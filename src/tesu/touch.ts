@@ -66,12 +66,14 @@ export class Touch {
     this.shown = true;
     this.root.hidden = false;
     this.root.append(this.base);
-    const btn = (action: Action, label: string, aria: string, cls: string): void => {
+    const btn = (action: Action, label: string, aria: string, cls: string, caption: string): void => {
       const el = document.createElement("button");
       el.type = "button";
       el.className = `tb ${cls}`;
       el.textContent = label;
       el.setAttribute("aria-label", aria);
+      // a small caption under it (Dex 10-19: the controls named on touch too)
+      el.dataset.label = caption;
       const id = `touch-${action}`;
       const down = (e: PointerEvent): void => {
         e.preventDefault();
@@ -95,11 +97,11 @@ export class Touch {
       });
       this.root.append(el);
     };
-    btn("m1", "⚔", "attack", "attack");
-    btn("jump", "▲", "jump", "jump");
-    btn("m2", "»", "dash", "dash");
-    btn("skill", "Q", "vermilion brush", "kit q");
-    btn("ult", "R", "decree of the vermilion seal", "kit r");
+    btn("m1", "⚔", "attack", "attack", "attack");
+    btn("jump", "▲", "jump", "jump", "jump");
+    btn("m2", "»", "dash", "dash", "dash");
+    btn("skill", "Q", "vermilion brush", "kit q", "skill");
+    btn("ult", "R", "decree of the vermilion seal", "kit r", "ult");
     this.addTab();
   }
 

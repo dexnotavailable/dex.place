@@ -21,7 +21,7 @@ import type { SpawnOptions } from "../../lab/engine/vfx.ts";
 import type { WorldBox } from "../../lab/game/events.ts";
 import type { Body } from "../collide.ts";
 import { H } from "../config.ts";
-import type { AnimDef } from "./contract.ts";
+import { timeline, type AnimDef } from "./contract.ts";
 import type { DerivedSlot, Rect } from "./derive.ts";
 import { lockEase, lockTarget, resolveMove, windClock, type BreakDef, type HitDef, type MoveDef, type ResolvedMove, type Weight } from "./timing.ts";
 import { UltDirector, type UltCtx, type UltPhase } from "./ult.ts";
@@ -35,7 +35,11 @@ export interface FeelFile {
   run: { mps: number; ultMps: number; accelTicks: number; stopTicks: number; turnTicks: number; airAccelTicks: number; airStopTicks: number; stopAnimFrom: number };
   jump: { height: number; riseTicks: number; fallGravity: number; maxFall: number; cut: number; hangSpeed: number; hangGravity: number; coyote: number; buffer: number; airJumps: number; airJumpHeight: number; fastFall: number; fastFallMax: number };
   land: { squashFrom: number; heavyFrom: number; heavyShake: number };
-  dash: { distance: number; ticks: number; rampTicks: number; curve: number; iframes: number; cooldown: number; airDashes: number; attackFrom: number; jumpCarry: number; keepRun: number };
+  dash: {
+    distance: number; ticks: number; rampTicks: number; curve: number; iframes: number; cooldown: number; airDashes: number; attackFrom: number; jumpCarry: number; keepRun: number;
+    airHold: number; airGravity: number; skidFrom: number; skidDustEvery: number;
+    clips: Record<string, { keys: Record<string, number>; skid: number }>;
+  };
   buffer: { attack: number; skill: number; dash: number; chainGrace: number };
   weights: Record<Weight, { hitstop: number; shake: number; punch: number; flash: number }>;
   shakePx: number;
@@ -159,7 +163,7 @@ interface Ghost { x: number; y: number; lean: number; life: number; max: number;
 const M1 = ["m1_1", "m1_2", "m1_3", "m1_4"] as const;
 /** A move's return-to-rest role (slots.json), played after its own clip ends while she stands. */
 const TAILS: Record<string, string | null> = { m1_1: "m1_1_ret", m1_2: "m1_2_ret", m1_3: "m1_3_ret", m1_4: "m1_4_ret", skill_q: null, e_tap: null };
-const RETURNS = new Set(["m1_1_ret", "m1_2_ret", "m1_3_ret", "m1_4_ret", "run_stop"]);
+const RETURNS = new Set(["m1_1_ret", "m1_2_ret", "m1_3_ret", "m1_4_ret", "run_stop", "dash"]);
 
 export class Zhusha {
   readonly body: Body;
@@ -660,16 +664,46 @@ export class Zhusha {
     this.body.vy = 0;
     this.lastAction = "dash";
     this.anim = { role: "dash", t: 0, hitAt: null, hidden: false, flame: 0 };
+    this.dashSkid = false;
     this.host.vfx.spawn("dash.speed", { x: this.body.x, y: this.body.y, facing: this.facing });
     this.cue("dash", 1, "dash", "move", "light");
     this.pose.sx.v = 1.3;
     this.pose.sy.v = 0.82;
   }
 
+  /** The dash's skid has started (its dust and cue fire once). */
+  private dashSkid = false;
+
+  /**
+   * The dash's drawing on the dash's clock (Dex 10-14: "a ground burst ... then a skid or plant to stop"): feel.json
+   * dash.clips names, per slot, the dash tick each key drawing lands on (the burst on the speed's peak, the heel skid
+   * as it bleeds off; the ult form's streak, then gone while she flies, reforming as she slows); between keys the clip
+   * is stretched or squeezed, after the last it plays 1:1 (on into the tail while she stands). In the air the skid
+   * drawings never show (she holds the glide). With no keys for the slot: 1:1.
+   */
+  dashClip(t: number, grounded: boolean): number {
+    const clip = this.clipOf("dash", this.ultForm);
+    const k = clip ? FEEL.dash.clips[clip.id] : undefined;
+    if (!clip || !k) return t;
+    const { starts } = timeline(clip.frames);
+    const pts: [number, number][] = [[0, 0]];
+    for (const [i, tick] of Object.entries(k.keys)) if (starts[+i] !== undefined) pts.push([tick, starts[+i]!]);
+    pts.sort((a, b) => a[0] - b[0]);
+    const last = pts[pts.length - 1]!;
+    let c = last[1] + (t - last[0]);
+    for (let j = 1; j < pts.length; j++) {
+      const [t0, c0] = pts[j - 1]!, [t1, c1] = pts[j]!;
+      if (t <= t1) { c = c0 + ((c1 - c0) * (t - t0)) / Math.max(1e-9, t1 - t0); break; }
+    }
+    const skidAt = starts[k.skid];
+    if (!grounded && skidAt !== undefined) c = Math.min(c, skidAt - 0.01);
+    return c;
+  }
+
   private tickDash(input: Input, world: MoveWorld): void {
     const D = FEEL.dash, B = FEEL.buffer, b = this.body;
     const i = this.t - 1;
-    this.anim.t++;
+    this.anim.t = this.dashClip(this.t, b.grounded);
     if (this.t % 3 === 0) this.ghost(10);
     // out of the dash: R any time; attack, Q, E from attackFrom; a jump keeps most of its speed
     if (this.tryUlt(input, world)) return;
@@ -701,8 +735,19 @@ export class Zhusha {
       return;
     }
     b.vx = this.dashDir * this.dashProfile[i]!;
-    // on the ground she stays on it (slopes); in the air she holds her height
-    b.vy = b.grounded ? 2 : 0;
+    const peak = Math.max(...this.dashProfile);
+    if (b.grounded) {
+      // the burst: dust off the driving foot; the skid: her heels bite as the speed bleeds off (Dex 10-14)
+      if (i === D.rampTicks) this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: -this.dashDir });
+      if (this.dashProfile[i]! < D.skidFrom * peak) {
+        if (!this.dashSkid) { this.dashSkid = true; this.cue("skid", 0.7, "dash", "move", "light"); }
+        if (i % D.skidDustEvery === 0) this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: this.dashDir });
+      }
+      // on the ground she stays on it (slopes)
+      b.vy = 2;
+    } else if (this.t <= D.airHold) b.vy = 0;
+    // the air dash is a burst, not flight: after the hold, gravity comes back (gently) and she arcs into the fall
+    else this.gravityStep(input, D.airGravity);
     this.moveBody(world);
   }
 
@@ -975,6 +1020,9 @@ export class Zhusha {
   }
 
   private ghost(life: number): void {
+    // the afterimage is the white box's outline: with her drawing playing it reads as a blue rectangle (a primitive,
+    // Dex 10-19), so it is only left for roles still drawn as the box (a drawn afterimage is the effects lane's)
+    if (this.hasRole(this.anim.role, this.ultForm)) return;
     const b = this.body;
     this.ghosts.push({ x: b.x, y: b.y, lean: this.pose.lean.v, life, max: life, ult: this.ultForm });
   }

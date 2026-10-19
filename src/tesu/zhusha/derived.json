@@ -1,6 +1,22 @@
 {
   "about": "Derived from the drawings by tools/zhusha/derive.mjs (src/tesu/zhusha/derive.ts); never edit by hand, re-run the tool after a slot-in. Per attack slot and drawing: the energy in front of her (area, how much is new: sweep), whether it is an active drawing, the hit boxes over it ([x0, y0, x1, y1] art px from the pivot, facing right, y negative up), how far her planted foot says she moved (root, art px), her ground contacts (feet).",
   "slots": {
+    "dash": {
+      "slot": "dash", "hash": "bfcbe7df", "ticks": [2,3,4,5,5,3,3,3,3,3],
+      "hits": [],
+      "frames": [
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":0,"feet":[[-26,-19],[15,21]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":2,"feet":[[-31,-23],[14,18]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":0,"feet":[[-48,-42],[-2,4]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":0,"feet":[[27,35]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":-11.5,"feet":[[-57,-55],[38,47]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":0,"feet":[[22,29]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":7.5,"feet":[[14,22]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":1.5,"feet":[[10,23]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":1,"feet":[[1,7],[11,20]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":4,"feet":[[-18,-10],[9,14]]}
+      ]
+    },
     "e_tap": {
       "slot": "e_tap", "hash": "2baedcce", "ticks": [2,2,3,6,3,4,5,4,2,6,4,4,4,4,4,5,6,8],
       "hits": [{"first":3,"last":5,"at":7,"len":13},{"first":8,"last":11,"at":29,"len":16}],
@@ -122,6 +138,28 @@
         {"area":4288,"sweep":4288,"active":true,"rects":[[72,-160,104,-152],[64,-152,128,-144],[56,-144,128,-136],[48,-136,128,-128],[40,-128,128,-120],[48,-120,128,-112],[56,-112,128,-104],[64,-104,128,-88],[72,-88,128,-80],[88,-80,120,-72]],"root":0.5,"feet":[[-17,-11],[7,14]]},
         {"area":489,"sweep":489,"active":false,"rects":[],"root":-2,"feet":[[-15,-9],[13,19]]},
         {"area":105,"sweep":105,"active":false,"rects":[],"root":0,"feet":[[-15,-7],[13,19]]}
+      ]
+    },
+    "uf_dash": {
+      "slot": "uf_dash", "hash": "b3bedc2d", "ticks": [2,2,2,3,2,3,5,5,5,4,3,2,2,2,3,5],
+      "hits": [{"first":2,"last":3,"at":4,"len":5},{"first":7,"last":8,"at":19,"len":10}],
+      "frames": [
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":0,"feet":[[-49,-42],[50,57]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":0,"feet":[[-78,-71],[31,40]]},
+        {"area":1484,"sweep":1484,"active":true,"rects":[[0,-72,24,-64],[0,-64,112,-56],[0,-56,120,-48],[0,-48,8,-40],[16,-48,112,-40]],"root":2.5,"feet":[[-80,-74],[20,34]]},
+        {"area":3099,"sweep":907,"active":true,"rects":[[0,-72,32,-64],[40,-72,112,-64],[0,-64,120,-56],[0,-56,128,-48],[0,-48,120,-40],[40,-40,112,-32]],"root":0,"feet":[[-80,-74],[21,34]]},
+        {"area":2206,"sweep":0,"active":false,"rects":[],"root":0,"feet":[]},
+        {"area":161,"sweep":0,"active":false,"rects":[],"root":0,"feet":[]},
+        {"area":285,"sweep":274,"active":false,"rects":[],"root":-3,"feet":[[-75,-73],[22,24],[28,33]]},
+        {"area":1147,"sweep":702,"active":true,"rects":[[24,-88,56,-80],[0,-80,16,-72],[24,-80,64,-72],[0,-72,64,-64],[0,-64,24,-56],[32,-64,64,-56],[8,-56,56,-48],[8,-48,40,-40],[16,-40,40,-32],[0,-32,40,-24],[24,-24,32,-16]],"root":-3.5,"feet":[[-44,-41],[-21,-13],[29,39]]},
+        {"area":1167,"sweep":429,"active":true,"rects":[[24,-80,40,-72],[16,-72,56,-64],[0,-64,56,-48],[0,-48,16,-40],[24,-48,56,-40],[0,-40,8,-32],[16,-40,40,-32],[0,-24,40,-16],[0,-16,8,-8],[24,-16,32,8]],"root":0,"feet":[[-154,-145],[-50,-48],[-18,-16],[18,25]]},
+        {"area":927,"sweep":182,"active":false,"rects":[],"root":-2,"feet":[[-83,-76],[22,25]]},
+        {"area":119,"sweep":0,"active":false,"rects":[],"root":-0.5,"feet":[[-85,-79],[21,27]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":-2,"feet":[[-83,-77],[22,31]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":0,"feet":[[-63,-59]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":0,"feet":[[-38,-32],[42,46]]},
+        {"area":0,"sweep":0,"active":false,"rects":[],"root":0,"feet":[[-26,-18]]},
+        {"area":25,"sweep":25,"active":false,"rects":[],"root":-9,"feet":[[-17,-9],[14,17]]}
       ]
     },
     "uf_m1_1": {

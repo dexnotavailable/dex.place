@@ -462,6 +462,11 @@ export class TesuGame {
   away = false;
   /** Waiting for PLAY in the page column (controls held, Kagami still). */
   holding = false;
+
+  /** She is in the player's hands: no press awaited, the opening handed her back (or never ran: a ?at= start). */
+  get playable(): boolean {
+    return !this.holding && !this.awaitingPress && (this.opening.state === "off" || this.opening.state === "done");
+  }
   /** The opening's link, kept after the opening lets go of it (Track 1 can still sound: the theme fades it). */
   private openingLink: OpeningLink | null = null;
 
