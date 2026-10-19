@@ -30,3 +30,17 @@ test("split: the page's static imports never reach the world's art libraries, pa
   assert.deepEqual(bad, []);
   assert.ok(seen.size > 30, `walked ${seen.size} modules`);
 });
+
+// (lane C 10-19) props.ts measures and breaks the world's props on the page (painter(kind) in its constructor): the
+// built page failed to start ("no painter called op.bucket") until main.ts loaded art/page-painters.ts. Every prop's
+// painter must come from what the page loads before the game starts (else main.ts falls back to every painter).
+test("split: every prop's painter is among the ones the page loads before the game starts", async () => {
+  const { painterKinds } = await import("./art/painter.ts");
+  await import("./art/page-painters.ts");
+  const page = new Set(painterKinds());
+  const { buildWorld } = await import("./world/index.ts");
+  const missing = [...new Set(buildWorld().props.map((p) => p.kind))].filter((k) => !page.has(k));
+  assert.deepEqual(missing, []);
+  const main = readFileSync(resolve(here, "main.ts"), "utf8");
+  assert.match(main, /import\("\.\/art\/page-painters\.ts"\)/);
+});

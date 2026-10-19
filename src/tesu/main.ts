@@ -27,8 +27,9 @@ import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "./openi
 import { Track1 } from "./opening/track.ts";
 import { startPlateWorkers } from "./plates/store.ts";
 import bake from "virtual:tesu-bake";
-import { adoptWorld } from "./world/current.ts";
+import { adoptWorld, currentWorld } from "./world/current.ts";
 import { SpriteRenderer } from "./render/sprites.ts";
+import { hasPainter } from "./art/painter.ts";
 
 /**
  * The fixed keys (GDK 5.4, Appendix B): WASD and the arrows both move from the start;
@@ -106,6 +107,9 @@ async function boot(): Promise<void> {
   const sync = q.has("sync") || q.has("manual");
   // (engine, perf) the build's bake: tiles the opening needs, painted at build time (plates/bake.ts); none in dev
   const pool = sync ? null : startPlateWorkers(undefined, bake.index || bake.world ? { ...bake, check: q.has("bakecheck") } : null);
+  // (engine, perf 10-19) the breakable props measure and break on this page (props.ts calls their painters): their
+  // painters load now, alongside the rest of boot (art/page-painters.ts); ?manual / ?sync build the whole world here
+  const propPainters = sync ? null : import("./art/page-painters.ts");
   await yieldTask();
   const r = new WorldRenderer(canvas);
   r.integerFrames = true;
@@ -121,6 +125,9 @@ async function boot(): Promise<void> {
     // loads the world's painters on this page; otherwise the page never loads them (the workers paint)
     (await import("./world/index.ts")).buildWorld();
   }
+  if (propPainters) await propPainters;
+  // a prop of any other library: every painter (correct, only slower to start)
+  if (currentWorld().props.some((p) => !hasPainter(p.kind))) await import("./world/index.ts");
   const bounds = pool ? await pool.bounds : null;
   if (bounds) for (const [id, b] of Object.entries(bounds)) SpriteRenderer.bootBounds.set(id, b);
   if (sync || !pool?.workers.length) await SpriteRenderer.loadPainters();
