@@ -943,7 +943,14 @@ export class TesuGame {
     this.fallDefs ??= this.world.sprites.filter((s) => s.id.startsWith("fall-"));
     const on = this.opening.active && this.opening.T < BEATS.her.walkFrom;
     for (const d of this.fallDefs) d.hidden = !on;
+    // (the fall loop, round 1c: PENDING the Kagami loop's agreement, lanes\art\fall\ASKS.txt; one block to revert)
+    // Kagami's sky-plane cumulus (kagami-backdrop.ts) would hang under the fall's deck in the old side-on style, a
+    // second cloud family in the break-out and the postcard: hidden while the opening falls (the deck is the sky
+    // there); by the walk the close band has left them above the frame, so they are back unseen.
+    this.kagamiSkyDefs ??= this.world.sprites.filter((s) => s.plane === "sky" && s.kind === "op.cloud");
+    for (const d of this.kagamiSkyDefs) d.hidden = on;
   }
+  private kagamiSkyDefs: SpriteDef[] | null = null;
 
   startWarm(): void {
     const [fw, fh] = this.openingFrame();
