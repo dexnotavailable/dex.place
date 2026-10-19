@@ -363,8 +363,9 @@ export function initColumn(reduced: MediaQueryList): void {
     }
     // way 4: the drift into the jetty, the catch, then the game
     if (drift && her) {
-      const r = her.getBoundingClientRect();
-      const to = { x: r.left + r.width / 2, y: r.top - 2 };
+      // onto the tie on her hat (motion/sky.ts places .jetty__hat there from her idle drawing; the ofuda's top on it)
+      const r = (her.querySelector(".jetty__hat") ?? her).getBoundingClientRect();
+      const to = { x: r.left + r.width / 2, y: r.top };
       const u = reduced.matches ? 1 : Math.min(1, (now - drift.at) / (DRIFT_S * 1000));
       target = driftPoint(u, drift.from, to);
       wind = -120 * (1 - u);

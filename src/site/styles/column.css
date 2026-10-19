@@ -83,14 +83,12 @@ html.op-cine .world__cue { visibility: hidden; }
   background: repeating-linear-gradient(90deg, transparent 0 46px, #644a2e 46px 54px, transparent 54px 118px);
 }
 .jetty__her {
-  /* her placeholder: the white box she is in the game until her art lands, at her height: the red band of her
-     hat and an eye, as in the world (no card shadow) */
+  /* Zhusha: her own idle drawings, on a canvas at whole device pixels (motion/sky.ts, motion/her.ts); nothing shows
+     until they are in */
   position: absolute; left: 22%; bottom: calc(30% + 16px); width: 30px; height: 84px;
-  background: #fff; box-shadow: 0 0 0 2px #2b2233;
   transition: opacity 400ms linear;
 }
-.jetty__her::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7%; background: #ee4c31; }
-.jetty__her::after { content: ""; position: absolute; right: 22%; top: 16%; width: 4px; height: 6px; background: #2b2233; }
+.jetty__her canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
 .jetty:not([data-her]) .jetty__her { opacity: 0; }
 /* the ofuda once she has caught it (way 4): a few px on her hat (its own drawing, public/site/loader/ofuda.png) */
 .jetty__hat { position: absolute; left: calc(50% - 6px); top: -2px; width: 12px; height: 30px; background: url("/site/loader/ofuda.png") 0 0 / 100% 100% no-repeat; image-rendering: pixelated; opacity: 0; }
