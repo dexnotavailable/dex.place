@@ -118,8 +118,10 @@ export const CUES: Record<string, Cue> = {
   "op.slap": opening(["slap"], 0.6), "op.jam": opening(["jam"], 0.4), "op.brim": opening(["brim"], 0.3),
   "op.hatgrip": opening(["hatgrip"], 0.3), "op.inhale": SILENT,
   "op.burst": opening(["burst"], 0.5), "op.skid": opening(["skid"], 0.45),
-  // the opening's voice lines (Dex's picks, lanes/opening/VOICE-CUES.md): the opening lane books them on the music
-  ...Object.fromEntries([1, 2, 3, 4, 5].map((i) => [`op.line${i}`, opening([`line${i}`], 1)])),
+  // the opening's voice lines (Dex's picks, lanes/opening/VOICE-CUES.md): the opening lane books them on the music.
+  // op.line1-5 the soft takes as worded, op.tight1-5 the shorter wording (both approved; F picks), op.line6 the joke
+  ...Object.fromEntries([1, 2, 3, 4, 5, 6].map((i) => [`op.line${i}`, opening([`line${i}`], 1)])),
+  ...Object.fromEntries([1, 2, 3, 4, 5].map((i) => [`op.tight${i}`, opening([`tight${i}`], 1)])),
 };
 
 /** The hit's weight comes as its volume (the controller's afterHits: light 0.6, heavier 1): heavier hits sound heavy. */
@@ -144,7 +146,9 @@ export interface VoiceMoment {
 }
 
 export const VOICE: Readonly<Record<string, VoiceMoment>> = {
-  kiai: { normal: ["n-kiai-1", "n-kiai-2", "n-kiai-3"], ult: ["u-kiai-2", "u-kiai-3"], chance: 0.4, gap: 0.6, prio: false },
+  kiai: { normal: ["n-kiai-1", "n-kiai-2", "n-kiai-3"], ult: ["u-kiai-2", "u-kiai-3", "redo-u-kiai1-2", "redo-u-kiai1-3", "redo-u-kiai1-4"], chance: 0.4, gap: 0.6, prio: false },
+  // the chain's last hit (m1_4): a battle cry (Dex 10-19: "trying to destroy stuff", not pain)
+  finisher: { normal: ["redo-n-kiai4-1", "redo-n-kiai4-2", "redo-n-yell-1", "redo-n-yell-3"], ult: ["redo-u-kiai1-2", "redo-u-kiai1-3", "redo-u-kiai1-4"], chance: 0.85, gap: 0.3, prio: false },
   jump: { normal: ["n-jump"], ult: ["n-jump"], chance: 0.3, gap: 0.8, prio: false },
   dash: { normal: ["n-dash"], ult: ["n-dash"], chance: 0.35, gap: 0.8, prio: false },
   hurt: { normal: ["n-hurt-1", "n-hurt-2"], ult: ["u-hurt", "u-grunt"], chance: 1, gap: 0.5, prio: true },
@@ -157,7 +161,13 @@ export const VOICE: Readonly<Record<string, VoiceMoment>> = {
   transform: { normal: ["u-transform"], ult: ["u-transform"], chance: 1, gap: 0, prio: true, register: "ult", sub: "sub.drop" },
 };
 /** Ult-register takes with a baked octave-down double (voice/<take>-dbl), mixed low under them for weight. */
-export const DOUBLED = ["u-grunt", "u-hurt", "u-kiai-2", "u-kiai-3", "u-r-call-1", "u-r-call-2", "u-transform"];
+export const DOUBLED = ["u-grunt", "u-hurt", "u-kiai-2", "u-kiai-3", "u-r-call-1", "u-r-call-2", "u-transform", "redo-u-kiai1-2", "redo-u-kiai1-3", "redo-u-kiai1-4"];
+
+/** A take for a moment, never the one it used last (Dex: "rotate variants so repeats don't sound identical"). */
+export function pickTake(takes: readonly string[], last: string | undefined, rnd: () => number): string {
+  const pool = takes.length > 1 ? takes.filter((t) => t !== last) : takes;
+  return pool[Math.floor(rnd() * pool.length)]!;
+}
 
 /** Her state as the voice follows it (once per frame). */
 export interface HerState {
@@ -173,7 +183,7 @@ export interface HerState {
  */
 export function voiceFor(id: string, info: { first: boolean; role: string; state: string }): string | null {
   // (the R's flurry swings during the ult sequence: no kiai, the cinematic has its own voice)
-  if (id === "swing") return info.first ? (info.role === "e_tap" ? "e" : null) : info.state === "ult" ? null : "kiai";
+  if (id === "swing") return info.first ? (info.role === "e_tap" ? "e" : null) : info.state === "ult" ? null : info.role === "m1_4" || info.role === "uf_m1_4" ? "finisher" : "kiai";
   if (id === "charge") return info.state === "ult" ? null : "q";
   if (id === "jump" || id === "djump") return "jump";
   if (id === "dash") return info.state === "ult" ? null : "dash";
@@ -249,6 +259,7 @@ export class Sound {
   private voiceUntil = 0;
   private lastVoice = -1e9;
   private her: HerState | null = null;
+  private lastTake = new Map<string, string>();
   private space: Space = "open";
   /** A / B (Dex): `?mix=dry` plays every sound with the mix's effects off. */
   mix: MixMode = typeof location !== "undefined" && new URLSearchParams(location.search).get("mix") === "dry" ? "dry" : "full";
@@ -302,14 +313,20 @@ export class Sound {
       bus.setIrs(Object.fromEntries(got) as Partial<Record<Space | "ult", AudioBuffer | null>>);
     });
     if (this.wantBed) this.setBed(this.wantBed);
-    // her moves and the court's first: the sounds that land on a hit must be decoded before it
-    for (const id of Object.keys(CUES)) if (/^(swing|windup|hit|slam|dash|jump|djump|land|hurt|step\.|op\.)/.test(id)) this.preload(id);
-    for (const id of ["wood.break", "clay.break", "paper.break", "gong", "poof", "cheer", "tink"]) this.preload(id);
-    for (const v of Object.values(VOICE)) for (const t of [...v.normal, ...v.ult]) void this.load(this.urlOf(`voice/${t}`));
-  }
-
-  private preload(id: string): void {
-    for (const f of CUES[id]!.files) void this.load(this.urlOf(f));
+    // decoded in order of need, a batch at a time (all at once, the first hits would wait behind the voice lines):
+    // her strikes and their layers, the opening's sounds, her steps and moves, the voice, then the world's
+    const ids = Object.keys(CUES);
+    const files = (re: RegExp): string[] => ids.filter((id) => re.test(id)).flatMap((id) => CUES[id]!.files.map((f) => this.urlOf(f)));
+    const batches = [
+      files(/^(swing|windup|hit|slam)/),
+      files(/^op\./),
+      files(/^(step\.|dash|jump|djump|land|hurt)/),
+      Object.values(VOICE).flatMap((v) => [...v.normal, ...v.ult]).map((t) => this.urlOf(`voice/${t}`)),
+      files(/^(wood|clay|paper)\.break$|^(gong|poof|cheer|tink)$/),
+    ];
+    void (async () => {
+      for (const b of batches) await Promise.all([...new Set(b)].map((u) => this.load(u)));
+    })();
   }
 
   /** The URL of a cue file (the encoded pairs take the codec the browser plays). */
@@ -417,7 +434,8 @@ export class Sound {
     if (rnd() >= m.chance) return;
     const reg = m.register ?? (ult ? "ult" : "normal");
     const takes = reg === "ult" ? m.ult : m.normal;
-    const take = takes[Math.floor(rnd() * takes.length)]!;
+    const take = pickTake(takes, this.lastTake.get(kind), rnd);
+    this.lastTake.set(kind, take);
     this.lastVoice = now;
     this.played.set(`voice:${take}`, (this.played.get(`voice:${take}`) ?? 0) + 1);
     if (m.sub) this.sfx(m.sub, 1);
