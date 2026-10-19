@@ -182,12 +182,13 @@ export function projectPage(p: Project): string {
   return (
     `<div class="page page--project">` +
     `<div class="wrap">` +
-    `<nav class="crumbs" aria-label="Breadcrumb"><a href="/projects/">Projects</a><span aria-hidden="true">/</span><span aria-current="page">${esc(p.name)}</span></nav>` +
     `<header class="proj proj--${p.tone}">` +
     `<div class="proj__art" data-reveal="pop-block">${cardArt(p)}</div>` +
     `<div class="proj__head">` +
-    `<p class="sh__kicker" data-reveal><span class="sh__slash" aria-hidden="true">//</span><span>project</span>` +
-    `<span class="sh__rule" aria-hidden="true"></span>${counter(at + 1, projects.length, "sh__aside")}</p>` +
+    // the deep pages' kicker (render/deep.ts): the way back as breadcrumbs, the project's place among the three
+    `<div class="dh__kicker">${tile("grid", p.tone, "s")}<span class="dh__slash" aria-hidden="true">//</span>` +
+    `<nav class="dh__crumbs" aria-label="Breadcrumb"><a href="/projects/">Projects</a></nav>` +
+    `<span class="dh__rule" aria-hidden="true"></span>${counter(at + 1, projects.length, "dh__aside")}</div>` +
     `<h1 class="proj__title" data-reveal="pop-block">${esc(p.name)}</h1>` +
     `<p class="proj__line" data-reveal style="--i:1">${esc(p.line)}</p>` +
     `<div data-reveal style="--i:2">${chipsOf(p)}</div>` +

@@ -21,6 +21,8 @@ export function painterWorker(e: PainterEntry): Worker {
 /** Start every painter worker after the first paint, when the page is idle (never before it has painted). */
 export function warmPainters(): void {
   if ((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) return;
+  // only the page column jumps between windows onto every place; a deep page's one window starts its own painter
+  if (!document.querySelector(".sheet--column")) return;
   const idle = (f: () => void): void => {
     if (typeof requestIdleCallback === "function") requestIdleCallback(f, { timeout: 3000 });
     else setTimeout(f, 200);
