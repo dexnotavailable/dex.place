@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T06:28:45.774Z (19/10/2026, 13:28:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T07:29:43.691Z (19/10/2026, 14:29:43 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `e1d33db`
+- live on dex.place: `337e8e6`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,7 +12,32 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-_No workflow activity in the last 72 hours._
+### wf_93dbdace-3fa — last activity 4 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (running)
+- **w2:r1** (running)
+
+### wf_5cebc05c-deb — last activity 4 min ago
+1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
+
+- **setup** (running)
+
+### wf_286da28b-ad1 — last activity 4 min ago
+1 agents: 0 done, 1 running or stopped mid-way, 0 failed.
+
+- **setup** (running)
+
+### wf_6eb91aef-0bd — last activity 13 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (running)
+- **w2:r1** (running)
+
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
 
