@@ -148,91 +148,122 @@ export const gate = definePainter<GateP>("hall.gate", {
       return mt(M.lacq, face(l.k, 0) * 0.62 + mot * 0.12, X, Y, 0.0, 1, 0.6);
     });
 
-    // --- the view: the Prize Court in daylight (the brightest thing in the hall)
-    const horizon = CY + R * 0.18;
+    // --- the view: the Prize Court in daylight (the brightest thing in the hall). Painted back to front:
+    // the sky with the sun's warmth low on the left, cumulus lit from the upper left, two ranges of karst in
+    // the haze, the court's paving, its stepped stands with a crowd, banners, the gong tower casting its shadow
+    const horizon = CY + R * 0.22;
     const groundY = -SILL;
+    const floorBack = groundY - R * 0.2;
+    const sunX = -R * 0.55, sunY = CY - R * 0.35;
     rect(c, -R, CY - R, R, groundY, (X, Y, lx, ly) => {
       if (!inOpen(lx, ly)) return 0;
-      const v = (ly - (CY - R)) / (2 * R); // 0 top .. 1 bottom
-      // the sky: pale blue high, white-gold toward the horizon, a cloud mass on the left
-      let col = tn(DAY_SKY, clamp(0.75 - (ly - (CY - R)) / (horizon - (CY - R)) * 0.75, 0, 1), X, Y, 0.6);
-      const cl = fbm(lx * 0.018 + 3, ly * 0.04, 81, 4) + (lx < 0 ? 0.12 : -0.05) - Math.max(0, (horizon - ly) / R - 0.9) * 0.4;
-      if (cl > 0.6 && ly < horizon - 8) col = tn(P.cumulus, clamp(0.05 + (ly - (CY - R)) / (2 * R) * 0.5 + (cl > 0.7 ? 0 : 0.2), 0, 1), X, Y, 0.5);
-      // far karst peaks in the haze
-      const peak = horizon - 6 - (Math.abs(Math.sin(lx * 0.021 + 1.3)) * 0.55 + vnoise(lx * 0.05, 1, 83) * 0.45) * R * 0.42;
-      if (ly > peak) col = tn(HAZE, clamp(0.25 + (ly - peak) / (R * 0.5) * 0.4, 0, 1), X, Y, 0.5);
-      // the nearer ridge, a little darker and cooler
-      const ridge = horizon + 4 - (vnoise(lx * 0.03, 7, 85) * 0.7 + Math.sin(lx * 0.012) * 0.3) * R * 0.2;
-      if (ly > ridge) col = tn(HAZE, clamp(0.55 + (ly - ridge) / (R * 0.3) * 0.3, 0, 1), X, Y, 0.5);
-      void v;
-      return col;
+      const t = clamp((ly - (CY - R)) / (horizon - (CY - R)), 0, 1); // 0 top .. 1 horizon
+      const sun = Math.max(0, 1 - Math.hypot(lx - sunX, (ly - sunY) * 1.3) / (R * 0.9));
+      return tn(DAY_SKY, clamp(0.78 - t * 0.68 - sun * 0.35, 0, 1), X, Y, 0.6);
     });
-    // the court beyond the gate: the stands' tiers with a crowd, festival banners, the gong tower
-    const tierTop = horizon + R * 0.1, standsX0 = -R * 0.95, standsX1 = R * 0.35;
-    rect(c, standsX0, tierTop, standsX1, groundY, (X, Y, lx, ly) => {
-      if (!inOpen(lx, ly)) return 0;
-      // stepped tiers rising to the left, warm stone in the sun, a shadow under each step's nose
-      const t = (lx - standsX0) / (standsX1 - standsX0);
-      const rows = 4;
-      const top = tierTop + t * (groundY - tierTop) * 0.55;
-      if (ly < top) return 0;
-      const k = (ly - top) / (groundY - top);
-      const row = Math.floor(k * rows), f = k * rows - row;
-      // the crowd: tiny varied figures sitting on each row
-      const cw = 4 + Math.floor(hash(Math.floor(lx / 4), row, 87) * 2);
-      const slot = Math.floor(lx / cw);
-      const hsh = hash(slot, row, 89);
-      if (f < 0.55 && hsh > 0.18) {
-        const hu = (lx - slot * cw) / cw;
-        const head = f < 0.22 && Math.abs(hu - 0.5) < 0.3;
-        const body = f >= 0.22 && Math.abs(hu - 0.5) < 0.42;
-        const ramps: Ramp[] = [P.red, P.blue, P.jade, P.gold, P.violet, P.paper, P.timber];
-        if (head) return tn(hsh > 0.85 ? P.gold : P.lacquer, 0.35, X, Y, 0);
-        if (body) return tn(ramps[Math.floor(hsh * 7) % 7]!, 0.35 + (row / rows) * 0.25, X, Y, 0.4);
-      }
-      const nose = f > 0.82;
-      return tn(P.stone, nose ? 0.62 : 0.3 + row * 0.04, X, Y, 0.4);
-    });
-    // banners on tall poles, rippling
-    for (const [bx, bh, ramp, ph] of [[-R * 0.62, R * 1.05, P.red, 0.3], [-R * 0.18, R * 1.25, P.gold, 1.7], [R * 0.2, R * 0.95, P.red, 2.6]] as const) {
-      const top = groundY - bh;
-      rect(c, bx - 1, top, bx + 1, groundY, (X, Y, lx, ly) => (inOpen(lx, ly) ? tn(P.timber, 0.55, X, Y, 0) : 0));
-      rect(c, bx + 1, top + 3, bx + 13, top + bh * 0.48, (X, Y, lx, ly) => {
+    // cumulus: lobes of circles, lit tops, grey-blue undersides, flat bases toward the horizon
+    const clouds: [number, number, number][] = [[-0.5, -0.42, 0.34], [-0.18, -0.5, 0.26], [0.32, -0.28, 0.22], [0.62, -0.36, 0.16]];
+    for (const [cu, cv, cs] of clouds) {
+      const cx = cu * R, cyy = CY + cv * R, rr = cs * R;
+      rect(c, cx - rr * 2.2, cyy - rr * 1.3, cx + rr * 2.2, cyy + rr * 0.55, (X, Y, lx, ly) => {
         if (!inOpen(lx, ly)) return 0;
-        const v = (ly - top - 3) / (bh * 0.45);
-        const wave = Math.sin(v * 7 + ph) * 1.6 * v;
-        const u = lx - bx - 1 - wave;
-        if (u < 0 || u > 11 - v * 2) return 0;
-        const tail = v > 0.92 && Math.abs(u - 5) > 2.5;
-        if (tail) return 0;
-        return tn(ramp, 0.2 + (u > 8 ? 0.25 : 0) + (Math.sin(v * 7 + ph) > 0.6 ? -0.15 : 0.05), X, Y, 0.4);
+        if (ly > cyy + rr * 0.45) return 0; // the flat base
+        let inside = false, top = 1;
+        for (const [ox, oy, orr] of [[-1.2, 0.15, 0.62], [-0.5, -0.35, 0.82], [0.35, -0.15, 0.95], [1.15, 0.12, 0.6], [0.0, 0.2, 0.8]] as const) {
+          const d = Math.hypot(lx - (cx + ox * rr), ly - (cyy + oy * rr)) / (orr * rr);
+          if (d < 1) { inside = true; top = Math.min(top, (ly - (cyy + oy * rr - orr * rr)) / (2 * orr * rr)); }
+        }
+        if (!inside) return 0;
+        const lit = top < 0.35 ? 0.0 : top < 0.6 ? 0.25 : 0.5;
+        return tn(P.cumulus, clamp(lit + (lx - cx) / rr * 0.05 + (ly > cyy + rr * 0.25 ? 0.2 : 0), 0, 1), X, Y, 0.5);
       });
     }
-    // the gong tower on the right: two red posts, a tiled roof with upturned eaves, the gong between
-    {
-      const tx = R * 0.6, tw = R * 0.24, troof = groundY - R * 1.55;
-      for (const px of [tx - tw, tx + tw]) {
-        rect(c, px - 3, troof + 8, px + 3, groundY, (X, Y, lx, ly) => (inOpen(lx, ly) ? tn(P.red, lx < px - 0.5 ? 0.25 : 0.55, X, Y, 0.3) : 0));
+    // two ranges of karst in the haze: steep peaks, the far one palest
+    for (const [ry, amp, f, seed, t0] of [[horizon - 4, 0.55, 0.05, 85, 0.2], [horizon + 6, 0.3, 0.075, 87, 0.45]] as const) {
+      rect(c, -R, CY - R, R, groundY, (X, Y, lx, ly) => {
+        if (!inOpen(lx, ly)) return 0;
+        const k = lx * f + seed + Math.sin(lx * f * 0.37 + seed) * 1.3;
+        const peak = Math.pow(Math.abs(Math.sin(k)), 2.4) * (0.45 + 0.55 * vnoise(lx * f * 0.5, 2, seed)) + vnoise(lx * 0.09, 1, seed) * 0.22;
+        const top = ry - peak * amp * R;
+        if (ly < top) return 0;
+        return tn(HAZE, clamp(t0 + (ly - top) / (R * 0.6) * 0.3 + (Math.sin(k) > 0 ? 0.06 : 0), 0, 1), X, Y, 0.5);
+      });
+    }
+    // the court's paving, warm stone in the sun, receding to the stands
+    rect(c, -R, floorBack, R, groundY, (X, Y, lx, ly) => {
+      if (!inOpen(lx, ly)) return 0;
+      const v = (ly - floorBack) / (groundY - floorBack);
+      const joint = Math.abs(((v * 3) % 1)) < 0.12 || (((lx + Math.floor(v * 3) * 9) % 23) + 23) % 23 < 1;
+      return tn(P.stone, 0.08 + v * 0.18 + (joint ? 0.14 : 0), X, Y, 0.4);
+    });
+    // the stands: stepped tiers rising to the left, a crowd of tiny figures on each, the step's shadow under its nose
+    const rowH = 7, rows = 6, standX1 = R * 0.28;
+    rect(c, -R, floorBack - rows * rowH, standX1, floorBack, (X, Y, lx, ly) => {
+      if (!inOpen(lx, ly)) return 0;
+      const row = Math.floor((floorBack - ly) / rowH); // 0 lowest
+      const rowEnd = standX1 - row * R * 0.14;
+      if (lx > rowEnd) return 0;
+      const f = ((floorBack - ly) % rowH) / rowH; // 0 at the row's foot .. 1 at its top
+      const cw = 4;
+      const slot = Math.floor((lx + 400) / cw);
+      const hsh = hash(slot, row, 89);
+      const hu = ((lx + 400) % cw) / cw;
+      if (row < rows - 1 && hsh > 0.22 && f > 0.25) {
+        const ramps: Ramp[] = [P.red, P.blue, P.jade, P.gold, P.violet, P.paper, P.timber];
+        if (f > 0.8 && Math.abs(hu - 0.5) < 0.3) return tn(hsh > 0.9 ? P.gold : P.lacquer, 0.4, X, Y, 0);
+        if (f <= 0.8 && Math.abs(hu - 0.5) < 0.42) return tn(ramps[Math.floor(hsh * 7) % 7]!, 0.3 + row * 0.05, X, Y, 0.4);
       }
-      for (const by of [troof + R * 0.55, groundY - R * 0.35]) rect(c, tx - tw - 3, by, tx + tw + 3, by + 4, (X, Y, lx, ly) => (inOpen(lx, ly) ? tn(P.red, 0.45, X, Y, 0.3) : 0));
-      poly(c, [tx - tw - 18, troof + 10, tx - tw - 8, troof + 4, tx, troof - 6, tx + tw + 8, troof + 4, tx + tw + 18, troof + 10, tx + tw + 6, troof + 9, tx - tw - 6, troof + 9], (X, Y, lx, ly) => (inOpen(lx, ly) ? tn(P.tile, ly < troof + 3 ? 0.25 : 0.5, X, Y, 0.3) : 0));
-      const gcy = troof + R * 0.95, gr = R * 0.17;
-      rect(c, tx - 1, troof + R * 0.55 + 4, tx + 1, gcy - gr, (X, Y, lx, ly) => (inOpen(lx, ly) ? tn(P.lacquer, 0.3, X, Y, 0) : 0));
+      return tn(P.stone, f < 0.2 ? 0.55 : 0.22 + row * 0.03, X, Y, 0.4);
+    });
+    // a few people on the court itself: dark warm silhouettes against the bright paving
+    for (const [px, ph, ramp] of [[R * 0.08, 11, P.red], [R * 0.16, 9, P.blue], [-R * 0.05, 10, P.timber], [R * 0.36, 12, P.lacquer]] as const) {
+      rect(c, px - 2, groundY - ph, px + 2, groundY, (X, Y, lx, ly) => {
+        if (!inOpen(lx, ly)) return 0;
+        const v = (ly - groundY + ph) / ph;
+        if (v < 0.25) return Math.abs(lx - px) < 1.6 ? tn(P.lacquer, 0.5, X, Y, 0) : 0;
+        return tn(ramp, 0.5 + v * 0.2, X, Y, 0);
+      });
+    }
+    // banners on tall poles, rippling
+    for (const [bx, bh, ramp, ph] of [[-R * 0.66, R * 0.95, P.red, 0.3], [-R * 0.3, R * 1.15, P.gold, 1.7], [R * 0.06, R * 0.9, P.red, 2.6]] as const) {
+      const top = floorBack - bh;
+      rect(c, bx - 1, top, bx + 1, floorBack, (X, Y, lx, ly) => (inOpen(lx, ly) ? tn(P.timber, lx < bx ? 0.4 : 0.65, X, Y, 0) : 0));
+      rect(c, bx + 1, top + 3, bx + 14, top + bh * 0.5, (X, Y, lx, ly) => {
+        if (!inOpen(lx, ly)) return 0;
+        const v = (ly - top - 3) / (bh * 0.47);
+        const wave = Math.sin(v * 6 + ph) * 1.8 * v;
+        const u = lx - bx - 1 - wave;
+        if (u < 0 || u > 12 - v * 2) return 0;
+        if (v > 0.93 && Math.abs(u - 5.5) > 3) return 0;
+        const edge = u > 10.5 - v * 2;
+        return tn(edge ? P.gold : ramp, edge ? 0.3 : 0.18 + (Math.sin(v * 6 + ph) > 0.5 ? 0.22 : 0.05), X, Y, 0.4);
+      });
+    }
+    // the gong tower on the right: two posts lit on their left, beams, a tiled roof with turned-up eaves cut
+    // by the ring, the gong hanging between, the tower's shadow falling down-right across the paving
+    {
+      const tx = R * 0.6, tw = R * 0.22, troof = floorBack - R * 1.35;
+      rect(c, tx + tw + 4, floorBack + 2, tx + tw + 0.5 * R, groundY, (X, Y, lx, ly) => (inOpen(lx, ly) && keep(X, Y, 0.55) ? tn(P.stone, 0.62, X, Y, 0) : 0));
+      for (const px of [tx - tw, tx + tw]) {
+        rect(c, px - 4, troof + 10, px + 4, floorBack + 3, (X, Y, lx, ly) => (inOpen(lx, ly) ? tn(P.red, lx < px - 1.5 ? 0.15 : lx < px + 1.5 ? 0.35 : 0.6, X, Y, 0.3) : 0));
+        rect(c, px - 6, floorBack - 2, px + 6, floorBack + 3, (X, Y, lx, ly) => (inOpen(lx, ly) ? tn(P.stone, lx < px ? 0.2 : 0.45, X, Y, 0) : 0));
+      }
+      for (const by of [troof + R * 0.42, troof + R * 0.52]) rect(c, tx - tw - 5, by, tx + tw + 5, by + 4, (X, Y, lx, ly) => (inOpen(lx, ly) ? tn(P.red, ly < by + 1.5 ? 0.25 : 0.5, X, Y, 0.3) : 0));
+      poly(c, [tx - tw - 24, troof + 14, tx - tw - 12, troof + 6, tx, troof - 8, tx + tw + 12, troof + 6, tx + tw + 24, troof + 14, tx + tw + 8, troof + 12, tx - tw - 8, troof + 12], (X, Y, lx, ly) => {
+        if (!inOpen(lx, ly)) return 0;
+        const k = ((((lx + 200) % 6) + 6) % 6) / 6;
+        return tn(P.tile, (ly < troof + 2 ? 0.15 : 0.35) + (k < 0.2 ? 0.15 : 0) + (lx > tx ? 0.1 : 0), X, Y, 0.3);
+      });
+      const gcy = troof + R * 0.88, gr = R * 0.16;
+      rect(c, tx - 1, troof + R * 0.52 + 4, tx + 1, gcy - gr, (X, Y, lx, ly) => (inOpen(lx, ly) ? tn(P.lacquer, 0.3, X, Y, 0) : 0));
       rect(c, tx - gr, gcy - gr, tx + gr, gcy + gr, (X, Y, lx, ly) => {
         if (!inOpen(lx, ly)) return 0;
         const d = Math.hypot(lx - tx, ly - gcy) / gr;
         if (d > 1) return 0;
-        return tn(P.bronze, d < 0.25 ? 0.2 : d > 0.8 ? 0.55 : 0.3 + (lx - tx) / gr * 0.2, X, Y, 0.4);
+        const hl = Math.hypot(lx - tx + gr * 0.35, ly - gcy + gr * 0.35) / gr < 0.25;
+        return tn(P.bronze, hl ? 0.0 : d < 0.22 ? 0.25 : d > 0.82 ? 0.6 : 0.35 + (lx - tx) / gr * 0.15, X, Y, 0.4);
       });
-      // its shadow falling down-right on the court
-      rect(c, tx + tw + 3, groundY - 5, tx + tw + 26, groundY, (X, Y, lx, ly) => (inOpen(lx, ly) && keep(X, Y, 0.5) ? tn(P.stone, 0.7, X, Y, 0) : 0));
     }
-    // the court's paving at the sill: warm stone in the sun
-    rect(c, -R, groundY - 5, R, groundY, (X, Y, lx, ly) => {
-      if (!inOpen(lx, ly)) return 0;
-      const joint = (((lx % 23) + 23) % 23) < 1;
-      return tn(P.stone, (ly < groundY - 4 ? 0.12 : 0.28) + (joint ? 0.15 : 0), X, Y, 0.4);
-    });
 
     // --- the gate's reveal: the wall's thickness seen inside the ring, shadowed under its head, the
     // daylight catching its lower curve
@@ -281,7 +312,7 @@ export const gate = definePainter<GateP>("hall.gate", {
       const e = Math.min(pw - Math.abs(lx), ly - py0, py1 - ly);
       if (e < 2) return mt(M.gold, face(l.k, 0, 0, ly - py0 < 2 ? -0.8 : 0.4) * 0.95, X, Y, 0.05, 1);
       if (e < 4) return mt(M.lacq, face(l.k, 0) * 0.3, X, Y, 0.3, 1);
-      return mt(M.verm, face(l.k, 0) * 0.62 + grain(lx, ly, 91, false) * 0.05, X, Y, 0.3, 1);
+      return mt(M.verm, face(Math.max(0.5, l.k), 0) * 0.72 + grain(lx, ly, 91, false) * 0.05, X, Y, 0.2, 1);
     });
     glyphs(c, -pw + 10, py0 + 7, pw - 10, py1 - 7, 3, 93, (X, Y) => tn(M.gold, 0.15, X, Y, 0));
     const cw = R + RING + 0.72 * H;

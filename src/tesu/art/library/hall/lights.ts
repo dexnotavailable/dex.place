@@ -65,8 +65,8 @@ function lanternLights(list: HallLantern[], reach: number): PointLight[] {
  *  light pouring out of it (lights.ts is placement; the painters render it). */
 export const GATE_LIGHTS: Light[] = [
   // (a "shaft" with no beam to speak of: only its pool on the floor, which lights the walkway's lip, the floor
-  // and whatever stands in front of the gate)
-  { kind: "shaft", x0: X(GATE_O), y0: FY - h(1), x1: X(GATE_O), y1: FY, w: 2, k: 1.35, pool: h(2.7) },
+  // and whatever stands in front of the gate; its beam is a hair-thin line far off along the floor)
+  { kind: "shaft", x0: X(GATE_O) - h(60), y0: FY - 1, x1: X(GATE_O), y1: FY, w: 2, k: 1.35, pool: h(2.7) },
   { kind: "point", x: X(GATE_O), y: FY - h(1.0), r: h(3.2), k: 0.8 },
 ];
 
