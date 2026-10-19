@@ -103,6 +103,16 @@
 [data-scene="isles"] { --sky: rgb(30 84 156), rgb(104 166 222) 50%, rgb(214 234 249); }
 [data-scene="lake"] { --sky: rgb(40 92 164), rgb(138 188 228) 50%, rgb(244 230 204); }
 [data-scene="pine"] { --sky: rgb(52 62 120), rgb(212 132 148) 55%, rgb(254 214 160); }
+/* phones: the place is sticky in its band instead of fixed (DESIGN-1019 2.3's fallback: measured on a Pixel 7 profile,
+   fixed layers cost a long frame on every touch scroll; sticky ones cost what the old page did). Its band's world
+   reaches under the next strip itself (a sticky place cannot leave its box), so a change of place still happens under
+   white. */
+@media (max-width: 699px) {
+  .band__world { bottom: calc(-1 * var(--strip-h)); clip-path: inset(var(--strip-h) 0 0 0); }
+  .sheet .band.sec:first-child > .band__world { clip-path: inset(0); }
+  .sheet .band.sec:last-child > .band__world { bottom: 0; clip-path: inset(var(--strip-h) 0 0 0); }
+  .band__scene { position: sticky; left: auto; right: auto; top: 0; width: 100%; height: 100lvh; }
+}
 /* reduced motion: the place scrolls with its band (a fixed backdrop is itself a parallax) */
 @media (prefers-reduced-motion: reduce) {
   .band__scene { position: absolute; inset: 0; height: auto; }

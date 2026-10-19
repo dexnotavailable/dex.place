@@ -89,17 +89,32 @@ const steps: [string, () => void][] = [
     if (cardFinish !== "pixel" || !document.querySelector("[data-rig]")) return;
     import("./motion/cardrig.ts").then((m) => m.initCardRigs(reduced, fine), failed("cardrig"));
   }],
-  // the page's stage (motion/stage.ts: the smooth wheel, the entrances, the lean; GSAP + ScrollTrigger + Lenis), own
-  // chunk, once the "dex" mark has written itself and the page is idle; never with reduced motion, Save-Data or in an
-  // embed (the page is all there without it)
-  ["stage", () => {
-    const saveData = (navigator as { connection?: { saveData?: boolean } }).connection?.saveData === true;
-    if (reduced.matches || saveData || root.dataset.embed) return;
+  // the home page's choreography (motion/choreo.ts: the bands' paper, the content, the cards' deck, the speed; GSAP +
+  // ScrollTrigger), own chunk, on the home page only and never with reduced motion (the page is all there without it).
+  // It comes with the first of: the page loaded, "dex" written and the page idle; the first sign of a scroll; at once
+  // when the page opens with the website already in view (lanes/motion/DESIGN-1019.md 6.1).
+  ["choreo", () => {
+    if (reduced.matches || root.dataset.embed || !document.querySelector(".band__strip")) return;
+    let started = false;
+    const start = (): void => {
+      if (started) return;
+      started = true;
+      intents.forEach((t) => window.removeEventListener(t, start));
+      import("./motion/choreo.ts").then((m) => m.initChoreo(fine), failed("choreo"));
+    };
+    const intents = ["wheel", "touchstart", "keydown"] as const;
+    intents.forEach((t) => window.addEventListener(t, start, { once: true, passive: true }));
+    const sheet = document.getElementById("site");
+    if (sheet && sheet.getBoundingClientRect().top < innerHeight) start();
     const idle = (): Promise<void> => new Promise((done) => {
-      if ("requestIdleCallback" in window) requestIdleCallback(() => done(), { timeout: 1200 });
+      if ("requestIdleCallback" in window) requestIdleCallback(() => done(), { timeout: 1500 });
       else setTimeout(done, 200);
     });
-    afterMark().then(idle).then(() => import("./motion/stage.ts")).then((m) => m.initStage(fine), failed("stage"));
+    const loaded = new Promise<void>((done) => {
+      if (document.readyState === "complete") done();
+      else window.addEventListener("load", () => done(), { once: true });
+    });
+    void loaded.then(afterMark).then(idle).then(start);
   }],
   ["copy", () => initCopy()],
   // NSFW image spoilers in posts (render/nsfw.ts).

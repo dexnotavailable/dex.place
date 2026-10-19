@@ -138,6 +138,7 @@ export function header(current: PageId): string {
   const worldHref = onHome ? "#world" : "/#world";
   return (
     `<header class="hdr" data-hdr>` +
+    `<i class="hdr__progress" aria-hidden="true"></i>` +
     `<div class="hdr__in">` +
     `<a class="hdr__mark pop" href="${onHome ? "#site" : "/"}">${pixelMark(1)}<span class="sr">dex, home</span></a>` +
     `<nav class="nav" aria-label="Sections"><ul class="nav__list" data-nav>` +
