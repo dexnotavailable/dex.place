@@ -60,6 +60,33 @@ checkUnits(FEEL);
 /** What tools/zhusha/derive.mjs read off her attack drawings (hit boxes, live drawings, planted-foot movement), by slot. */
 export const DERIVED = (JSON.parse(derivedRaw) as { slots: Record<string, DerivedSlot> }).slots;
 
+/**
+ * A sound cue from her, for the audio lane to layer on (Dex 10-19: voice and hits mixed AAA-style). `id` is the cue
+ * name feel.sound always got (swing, hit, slam, dash, jump, djump, land, hurt, charge, wave, rise, ult; new: skid);
+ * the rest says what made it. Fired on the derived frames: a move's hit ticks are its drawings' live drawings.
+ */
+export interface Cue {
+  id: string;
+  volume: number;
+  /** The move or action: m1_1..m1_4, skill_q, e_tap, r (the ult), dash, jump, djump, land, hurt, knockdown. */
+  move: string;
+  /** windup (the press), swing (a hit's first tick), hit (it connected), boom (Q / E / R detonation, m1_4's slam),
+   *  land, recoil (the kick back), move (dash, jump), hurt (she is hit), rise / reveal (R's beats). */
+  phase: "windup" | "swing" | "hit" | "boom" | "land" | "recoil" | "move" | "hurt" | "rise" | "reveal";
+  /** How big: light chain hit .. R. */
+  tier: Weight;
+  /** 0..1 from the tier (light .3, medium .5, heavy .7, q .9, ult 1). */
+  intensity: number;
+  /** In the ult form (the far more powerful register, Dex 10-16). */
+  ult: boolean;
+  /** Which hit of the move (0 first), when it is one. */
+  hit?: number;
+  /** The game tick (input.tick). */
+  tick: number;
+}
+
+const INTENSITY: Record<Weight, number> = { light: 0.3, medium: 0.5, heavy: 0.7, q: 0.9, ult: 1 };
+
 /** A hit as props.ts and court.ts take it, plus what it breaks (its origin and direction for a travelling wave). */
 export interface ZHit extends HitBox {
   /** ox, dir: where the hit came from and which way (a wave travels out from ox); area: this box is the hit's reach. */
@@ -172,6 +199,10 @@ export class Zhusha {
   hasRole: (role: string, ult: boolean) => boolean = () => false;
   /** The drawing's anim.json for a role (its marks time the move), null for the white box. */
   clipOf: (role: string, ult: boolean) => AnimDef | null = () => null;
+  /** Every sound cue with what made it (the audio lane listens here; feel.sound still gets id + volume). */
+  onCue: ((c: Cue) => void) | null = null;
+  /** The last cues (debug, tests, captures). */
+  readonly cueLog: Cue[] = [];
 
   private host: ZhushaHost;
   /** The move playing: `carry` is her speed along it that is not her planted foot's (a lunge's or recoil's, momentum). */
@@ -368,7 +399,7 @@ export class Zhusha {
     const s = this.host;
     this.hp = Math.max(0, this.hp - damage);
     this.flash = 10;
-    s.feel.sound("hurt");
+    this.cue("hurt", 1, "hurt", "hurt", damage >= FEEL.hurt.heavyFrom ? "heavy" : "light");
     s.vfx.spawn("hit.player", { x: this.body.x, y: this.body.y - 0.5 * H, facing: dir });
     if (this.hp <= 0) {
       this.startDefeat(dir);
@@ -493,11 +524,10 @@ export class Zhusha {
     if (hs >= L.heavyFrom) {
       this.shake(L.heavyShake + 0.1);
       s.vfx.spawn("dust.land", { x: this.body.x, y: this.body.y, facing: 1 });
-      s.vfx.spawn("ring.dust", { x: this.body.x, y: this.body.y, facing: 1 });
-      s.feel.sound("land", 1);
+      this.cue("land", 1, "land", "land", "medium");
     } else if (hs >= L.squashFrom) {
       s.vfx.spawn("dust.land", { x: this.body.x, y: this.body.y, facing: 1, scale: 0.6 });
-      s.feel.sound("land", 0.5);
+      this.cue("land", 0.5, "land", "land", "light");
     }
     this.fallSpeed = 0;
   }
@@ -540,13 +570,13 @@ export class Zhusha {
         input.consume("jump");
         this.jump(J.height);
         this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: this.facing });
-        this.host.feel.sound("jump", 0.8);
+        this.cue("jump", 0.8, "jump", "move", "light");
       } else if (this.airJumps > 0) {
         input.consume("jump");
         this.jump(J.airJumpHeight);
         this.airJumps--;
         this.host.vfx.spawn("jump.double", { x: b.x, y: b.y, facing: this.facing });
-        this.host.feel.sound("djump", 0.8);
+        this.cue("djump", 0.8, "djump", "move", "light");
       }
     }
     if (!this.cutDone && b.vy < 0 && !input.isDown("jump")) {
@@ -640,7 +670,7 @@ export class Zhusha {
     this.lastAction = "dash";
     this.anim = { role: "dash", t: 0, hitAt: null, hidden: false, flame: 0 };
     this.host.vfx.spawn("dash.speed", { x: this.body.x, y: this.body.y, facing: this.facing });
-    this.host.feel.sound("dash", 1);
+    this.cue("dash", 1, "dash", "move", "light");
     this.pose.sx.v = 1.3;
     this.pose.sy.v = 0.82;
   }
@@ -666,7 +696,7 @@ export class Zhusha {
       this.jump(air ? FEEL.jump.airJumpHeight : FEEL.jump.height);
       if (air) this.airJumps--;
       b.vx = this.dashDir * carry;
-      this.host.feel.sound("jump", 0.8);
+      this.cue("jump", 0.8, "jump", "move", "light");
       this.moveBody(world);
       this.locomotionAnim(this.dashDir);
       return;
@@ -713,7 +743,7 @@ export class Zhusha {
       b.grounded = false;
     }
     if (!b.grounded && !def.hop && b.vy > 0) b.vy *= 0.3;
-    this.host.feel.sound(id === "skill_q" ? "charge" : "swing", 0.7);
+    this.cue(id === "skill_q" ? "charge" : "swing", 0.7, id, "windup", def.hits[0]?.weight ?? "light");
   }
 
   private tickMove(input: Input, world: MoveWorld): void {
@@ -726,7 +756,7 @@ export class Zhusha {
     def.hits.forEach((h, i) => {
       if (t === h.at && !m.fxDone.has(i)) {
         m.fxDone.add(i);
-        this.swingFx(h, m);
+        this.swingFx(h, m, i);
       }
     });
     // windows
@@ -774,8 +804,9 @@ export class Zhusha {
     else if (def.inPlace || def.rootFrom === "marks") m.carry = 0;
     else if (push !== null) m.carry = push;
     else m.carry *= m.id === "skill_q" ? (b.grounded ? 0.6 : 0.85) : b.grounded ? 0.7 : 0.92;
-    // the recoil's skid: dust under her feet while she slides back on the ground
+    // the recoil's skid: dust under her feet while she slides back on the ground (and a cue as it starts)
     if (rc && push !== null && push < 0 && b.grounded && (t - rc[0]) % FEEL.e.skidEvery === 0) this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: -m.dir });
+    if (rc && t === rc[0]) this.cue("skid", 0.8, m.id, "recoil", def.hits[0]?.weight ?? "medium");
     const along = rootV + m.carry;
     b.vx = m.dir * (connected && along > 0 ? along * 0.3 : along);
     if (m.id === "skill_q" && !b.grounded && t < (def.airHang ?? 0)) b.vy = 0;
@@ -800,7 +831,7 @@ export class Zhusha {
     this.setState("free");
   }
 
-  private swingFx(h: HitDef, m: { startX: number; startY: number; dir: 1 | -1 }): void {
+  private swingFx(h: HitDef, m: { id: string; startX: number; startY: number; dir: 1 | -1 }, i: number): void {
     const s = this.host, b = this.body, f = this.facing;
     const at = (fw: number, up: number): SpawnOptions => ({ x: b.x + f * fw * BODY_H, y: b.y - up * BODY_H, facing: f });
     const ult = this.ultForm;
@@ -815,11 +846,15 @@ export class Zhusha {
       case "thrust_big": trail("streak.thrust", { ...at(0.7, 0.62), scale: [1.6, 1.3], ...col }); break;
       case "chop":
         trail("smear.slam", { ...at(0.35, 0.6), ...col });
-        if (this.body.grounded) s.vfx.spawn("slam.ground", at(0.9, 0));
-        s.feel.sound("slam", 0.9);
+        // side-on (Dex 10-19: no destructive rings on the ground): the ground bursts up where the blade bites
+        if (this.body.grounded) {
+          s.vfx.spawn("debris.stone", at(0.9, 0));
+          s.vfx.spawn("dust.land", at(0.9, 0));
+        }
+        this.cue("slam", 0.9, m.id, "boom", h.weight, i);
         break;
       case "shock":
-        s.vfx.spawn("ring.dust", at(1.2, 0));
+        s.vfx.spawn("dust.land", at(1.2, 0));
         s.vfx.spawn("cracks", at(1.0, 0));
         this.shake(0.3);
         break;
@@ -834,7 +869,7 @@ export class Zhusha {
         s.vfx.spawn("streak.markRed", { x: cx, y: m.startY - 0.55 * H, facing: m.dir, scale: [3, 1.4] });
         s.vfx.spawn("debris.stone", { x: cx, y: m.startY - 0.2 * H, facing: m.dir, scale: 1.4 });
         s.vfx.spawn("smoke.dark", { x: cx + m.dir * 0.8 * H, y: m.startY - 0.4 * H, facing: m.dir, scale: 1.6 });
-        s.feel.sound("wave", 1);
+        this.cue("wave", 1, m.id, "boom", h.weight, i);
         s.feel.freeze(Q.hold);
         if (Q.flash > 0) s.feel.impactFrame("invert", Q.flash);
         this.shake(0.7);
@@ -860,17 +895,17 @@ export class Zhusha {
         if (E.flash > 0) s.feel.impactFrame("invert", E.flash);
         this.shake(0.45);
         s.camera.zoomPunch(1);
-        s.feel.sound("hit", 1);
+        this.cue("hit", 1, m.id, "boom", h.weight, i);
         break;
       }
       case "pillar":
         s.vfx.spawn("sparks.hit", at(0.9, 0.5));
         this.shake(0.3);
-        s.feel.sound("hit", 0.7);
+        this.cue("hit", 0.7, m.id, "swing", h.weight, i);
         break;
       default: trail("smear.cleave", at(0.3, 0.6));
     }
-    if (h.fx !== "burn" && h.fx !== "shock" && h.fx !== "q_boom" && h.fx !== "rail" && h.fx !== "pillar") s.feel.sound("swing", 0.6);
+    if (h.fx !== "burn" && h.fx !== "shock" && h.fx !== "q_boom" && h.fx !== "rail" && h.fx !== "pillar") this.cue("swing", 0.6, m.id, "swing", h.weight, i);
   }
 
   /** After the world took her hits this tick (props.ts, court.ts): the weight of whatever connected. */
@@ -892,7 +927,18 @@ export class Zhusha {
     this.shake(W.shake);
     if (W.punch > 0) s.camera.zoomPunch(W.punch);
     if (W.flash > 0) s.feel.impactFrame("invert", W.flash);
-    s.feel.sound("hit", w === "light" ? 0.6 : 1);
+    const hi = m ? m.def.hits.findIndex((h) => this.t >= h.at && this.t < h.at + h.len + FEEL.ult.ghostDelay) : -1;
+    this.cue("hit", w === "light" ? 0.6 : 1, this.state === "ult" ? "r" : m?.id ?? "?", "hit", w, hi >= 0 ? hi : undefined);
+  }
+
+  /** A sound cue: the old feel.sound(id, volume), plus the cue with what made it for the audio lane. */
+  private cue(id: string, volume: number, move: string, phase: Cue["phase"], tier: Weight, hit?: number): void {
+    this.host.feel.sound(id, volume);
+    const c: Cue = { id, volume, move, phase, tier, intensity: INTENSITY[tier], ult: this.ultForm, tick: this.tick };
+    if (hit !== undefined) c.hit = hit;
+    this.cueLog.push(c);
+    if (this.cueLog.length > 64) this.cueLog.shift();
+    this.onCue?.(c);
   }
 
   /** Trauma 0..1: the frame moves by trauma squared. */
@@ -939,7 +985,7 @@ export class Zhusha {
       this.host.feel.freeze(4);
       this.shake(0.4);
       this.host.vfx.spawn("dust.land", { x: b.x, y: b.y, facing: 1 });
-      this.host.feel.sound("land", 1);
+      this.cue("land", 1, "knockdown", "land", "heavy");
     }
     const any = input.axis() !== 0 || input.pressTick("jump") !== undefined || input.pressTick("m1") !== undefined;
     if (this.t >= K.ticks || (this.t >= K.getUpFrom && any && b.grounded)) {
@@ -1013,7 +1059,7 @@ export class Zhusha {
     b.vy = 0;
     this.anim = { role: "r_call", t: 0, hitAt: null, hidden: false, flame: 0 };
     s.vfx.spawn("r.call", { x: b.x, y: b.y, facing: this.facing });
-    s.feel.sound("charge", 1);
+    this.cue("charge", 1, "r", "windup", "ult");
     s.camera.zoomPunch(1);
   }
 
@@ -1036,7 +1082,7 @@ export class Zhusha {
           this.ult.x0 = b.x;
           this.ult.y0 = b.y;
           s.vfx.spawn("burst.red", { x: b.x, y: b.y - 0.5 * H, facing: f });
-          s.feel.sound("dash", 1);
+          this.cue("dash", 1, "r", "swing", "ult");
         }
         break;
       }
@@ -1054,12 +1100,12 @@ export class Zhusha {
           s.vfx.spawn("streak.markRed", { x, y, facing: f, rotation: (u - 0.5) * 2.4, scale: [3.2, 2] });
           if (cut % 2 === 0) s.vfx.spawn("streak.mark", { x: x + f * 0.2 * H, y: y - 0.2 * H, facing: f, rotation: (v - 0.5) * 2.8, scale: [2.2, 1.4] });
           if (cut === U.flurryCuts - 1) s.vfx.spawn("flash.gold", { x: this.ult.x0 + f * 0.9 * H, y: this.ult.y0 - 0.8 * H, facing: f, scale: 1.6 });
-          if (cut % 4 === 0) s.feel.sound("swing", 0.5);
+          if (cut % 4 === 0) this.cue("swing", 0.5, "r", "swing", "light", cut);
         }
         if (t >= U.flurryTicks) {
           this.nextPhase("rise");
           s.vfx.spawn("pillar", { x: b.x, y: b.y, facing: f });
-          s.feel.sound("rise", 1);
+          this.cue("rise", 1, "r", "rise", "ult");
           this.ultZoom = U.zoomOut;
         }
         break;
@@ -1093,7 +1139,7 @@ export class Zhusha {
         b.vx = b.vy = 0;
         if (t >= U.zenithTicks) {
           this.nextPhase("dive");
-          s.feel.sound("dash", 1);
+          this.cue("dash", 1, "r", "swing", "ult");
         }
         break;
       }
@@ -1125,7 +1171,7 @@ export class Zhusha {
           this.formSerial++;
           this.airDashes = U.airDashes;
           s.vfx.spawn("ring.halo", { x: b.x, y: b.y - 0.5 * H, facing: f, scale: 1.6 });
-          s.feel.sound("ult", 0.7);
+          this.cue("ult", 0.7, "r", "reveal", "ult");
         }
         break;
       }
@@ -1160,8 +1206,8 @@ export class Zhusha {
     s.vfx.spawn("pillar.ult", { x: b.x, y: b.y, facing: 1 });
     s.vfx.spawn("cracks.ult", { x: b.x, y: b.y, facing: 1 });
     s.vfx.spawn("burst.ult", { x: b.x, y: b.y - 0.5 * H, facing: 1 });
-    s.feel.sound("ult", 1);
-    s.feel.sound("slam", 1);
+    this.cue("ult", 1, "r", "boom", "ult");
+    this.cue("slam", 1, "r", "land", "ult");
   }
 
   private startExit(): void {

@@ -347,3 +347,47 @@ test("combat destruction: the m1 chain breaks what it touches; the Q obliterates
   const e = run("e", [mk("e1", 3), mk("e2", 12), mk("e3", -2)]);
   assert.ok("e1" in e && "e2" in e && !("e3" in e), JSON.stringify(e));
 });
+
+test("combat cues: every sound keeps its old name and says move, phase, tier and form; hits fire on the drawing's live ticks", async () => {
+  const Zhusha = await loadZ();
+  const heard = [];
+  const h = host();
+  h.feel.sound = (id, v) => heard.push(id);
+  const z = new Zhusha(h, [0, 0]);
+  z.clipOf = liveClip;
+  const cues = [];
+  z.onCue = (c) => cues.push({ ...c, t: z.t });
+  const inp = new FakeInput();
+  step(z, inp, 5);
+  inp.press("m1");
+  step(z, inp);
+  for (let i = 0; i < 30 && z.state === "move"; i++) step(z, inp);
+  const w = cues.find((c) => c.phase === "windup");
+  assert.deepEqual([w.id, w.move, w.tier, w.ult], ["swing", "m1_1", "light", false]);
+  const sw = cues.find((c) => c.phase === "swing");
+  assert.equal(sw.move, "m1_1");
+  assert.equal(sw.t, FEEL.moves.m1_1.hits[0].at, "the swing cue on the hit tick the drawing is fitted to");
+  assert.equal(sw.hit, 0);
+  assert.deepEqual(heard, cues.map((c) => c.id), "feel.sound hears every cue by its old name");
+  // the Q: a charge windup, then the boom at q intensity; the E: the boom, then the recoil's skid; the form says so
+  const q = new Zhusha(host(), [0, 0]);
+  const qc = [];
+  q.onCue = (c) => qc.push(c);
+  const i2 = new FakeInput();
+  step(q, i2, 5);
+  q.form = 5000;
+  i2.press("skill");
+  step(q, i2, 12);
+  assert.deepEqual(qc.map((c) => [c.id, c.phase]).slice(0, 2), [["charge", "windup"], ["wave", "boom"]]);
+  assert.equal(qc[1].intensity, 0.9);
+  assert.ok(qc.every((c) => c.ult));
+  const e = new Zhusha(host(), [0, 0]);
+  e.clipOf = liveClip;
+  const ec = [];
+  e.onCue = (c) => ec.push(c);
+  const i3 = new FakeInput();
+  step(e, i3, 5);
+  i3.press("e");
+  step(e, i3, 20);
+  assert.deepEqual(ec.filter((c) => c.phase !== "windup").map((c) => [c.id, c.phase]).slice(0, 2), [["hit", "boom"], ["skid", "recoil"]]);
+});
