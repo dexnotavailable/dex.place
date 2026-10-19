@@ -12,7 +12,7 @@ const CSS = `
 .op-bot { bottom: 0; display: flex; align-items: center; justify-content: center; }
 .op-cap { margin: 0 auto; max-width: min(88vw, 640px); padding: 6px 14px; text-align: center; background: #fff4f1; color: #2b2233;
   box-shadow: 0 0 0 2px #2b2233; font: 400 15px / 1.4 var(--f-body, "Space Grotesk Variable", system-ui, sans-serif); visibility: hidden; }
-.op-cap.on { visibility: visible; }
+.op-cap.on { visibility: inherit; }
 .op-jp, .op-en { display: block; }
 .op-jp { font-size: clamp(12px, 3.4vw, 16px); line-height: 1.45; }
 .op-en { font-size: clamp(11px, 3vw, 13px); line-height: 1.35; opacity: 0.86; }
