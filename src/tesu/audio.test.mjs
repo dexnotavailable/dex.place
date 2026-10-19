@@ -35,7 +35,7 @@ const COURT_EVENTS = {
   tink: ["tink-a", "tink-c", "tink-d"],
 };
 /** Moments with no sound yet: silent on purpose (the court: FOR DEX; her Q / E / R: wave 2, on the combat lane's timing). */
-const SILENT = ["installed", "lion-windup", "lion-land", "stagger", "finish", "charge", "rise", "op.inhale"];
+const SILENT = ["installed", "lion-windup", "lion-land", "stagger", "finish", "charge", "rise", "op.inhale", "r.call", "r.hush", "r.ultline"];
 /**
  * Her cues, the combat lane's cue table (lanes/combat/NOTEBOOK.md "Sound cues"; controller.ts Cue): id, move, phase,
  * tier -> the sound and the voice moment they play here.
@@ -54,7 +54,6 @@ const CUE_TABLE = [
   ["hit", "e_tap", "swing", "heavy", "hit.heavy", null],
   ["hit", "m1_1", "hit", "light", "hit", null],
   ["hit", "m1_3", "hit", "medium", "hit.heavy", null],
-  ["hit", "r", "hit", "ult", "hit.heavy", null],
   ["skid", "m1_3", "recoil", "medium", "skid", null],
   ["dash", "dash", "move", "light", "dash", "dash"],
   ["jump", "jump", "move", "light", "jump", "jump"],
@@ -63,13 +62,25 @@ const CUE_TABLE = [
   ["land", "knockdown", "land", "heavy", "land", null],
   ["hurt", "hurt", "hurt", "light", "hurt", "hurt"],
   ["hurt", "hurt", "hurt", "heavy", "hurt", "knockdown"],
-  ["charge", "r", "windup", "ult", "charge", "r"],
-  ["dash", "r", "swing", "ult", "dash", null],
-  ["swing", "r", "swing", "light", "swing", null],
-  ["rise", "r", "rise", "ult", "rise", null],
-  ["ult", "r", "boom", "ult", "ult", null],
-  ["slam", "r", "land", "ult", "slam", null],
-  ["ult", "r", "reveal", "ult", "ult", null],
+  // the R (lane U's cinematic: zhusha/ult.json "cues", phases in ult.ts PHASES) and the ult form
+  ["r.press", "r", "windup", "ult", "r.press", null],
+  ["r.call", "r", "windup", "ult", "r.call", "r"],
+  ["r.boom", "r", "boom", "ult", "r.boom", null],
+  ["r.fire", "r", "windup", "ult", "r.fire", null],
+  ["r.draw", "r", "windup", "ult", "r.draw", null],
+  ["r.vanish", "r", "move", "ult", "r.vanish", null],
+  ["r.slash", "r", "swing", "ult", "r.slash", null],
+  ["r.last", "r", "boom", "ult", "r.last", null],
+  ["r.hush", "r", "rise", "ult", "r.hush", null],
+  ["r.dive", "r", "move", "ult", "r.dive", null],
+  ["r.impact", "r", "boom", "ult", "r.impact", null],
+  ["r.rumble", "r", "land", "ult", "r.rumble", null],
+  ["r.reveal", "r", "reveal", "ult", "r.reveal", null],
+  ["r.ultline", "r", "reveal", "ult", "r.ultline", "ultline"],
+  ["hit", "r", "hit", "ult", "hit.heavy", null],
+  ["uf.warp", "uf", "move", "heavy", "uf.warp", null],
+  ["uf.blade", "uf", "windup", "heavy", "uf.blade", null],
+  ["uf.slash", "uf", "hit", "heavy", "uf.slash", "kiai"],
 ];
 /** The legacy library files the code still references, none vetted yet (FOR DEX). This list may only shrink. */
 const LEGACY = [
@@ -81,7 +92,7 @@ const NEW_TAKES = [
   "her/swing-a", "her/swing-b", "her/swing-d", "her/swing-e", "her/windup-a", "her/hit-c", "her/hit-d", "her/hit-heavy-a", "her/hit-heavy-b",
   "her/slam-a", "her/dash-a", "her/dash-b", "her/jump-a", "her/djump-a", "her/land-a", "her/land-b", "her/hurt-d",
   "her/body-a", "her/body-b", "her/tail-a", "her/tail-b", "her/sub-boom-a", "her/sub-boom-b", "her/sub-drop-a",
-  "her/q-boom-a", "her/q-boom-b",
+  "her/q-boom-a", "her/q-boom-b", "her/r-fire-a", "her/r-draw-a", "her/r-dive-a",
   ...SURFACES.flatMap((m) => Array.from({ length: STEP_TAKES }, (_, i) => `steps/${m}-${i + 1}`)),
   "opening/gust", "opening/flutter", "opening/catch", "opening/read", "opening/slap", "opening/jam", "opening/brim",
   "opening/hatgrip", "opening/burst", "opening/skid",
@@ -135,6 +146,9 @@ test("every cue the game emits is in the table: her cues (the combat cue table) 
   const said = new Set([...ctl.matchAll(/\bcue\(\s*(?:[^,()]*\?\s*)?"([\w.]+)"/g)].map((m) => m[1]));
   assert.ok(said.size >= 10, `the controller's cue ids: ${[...said].join(", ")}`);
   for (const id of said) assert.ok(CUE_TABLE.some((r) => r[0] === id), `her cue ${id} is in the cue table here`);
+  // the R's and the form's cue ids (lane U's ult.json): every one is in the table here
+  const ult = JSON.parse(readFileSync(new URL("./zhusha/ult.json", import.meta.url), "utf8")).cues;
+  for (const [k, id] of Object.entries(ult)) if (k !== "about") assert.ok(CUE_TABLE.some((r) => r[0] === id), `R cue ${id} (${k}) is in the cue table here`);
   // the opening's booked effects (BEATS.json sfx)
   for (const sfx of BEATS.sfx) {
     assert.ok(sfx.id in CUES, `opening cue ${sfx.id}`);
@@ -169,7 +183,7 @@ test("every sound she makes in a fight is decoded at the start (in one of the pr
   const snd = readFileSync(new URL("./sound.ts", import.meta.url), "utf8");
   const res = [...snd.slice(snd.indexOf("const batches = ["), snd.indexOf("void (async () => {")).matchAll(/files\((\/.+\/)\)/g)].map((m) => eval(m[1]));
   assert.ok(res.length >= 4, "the batches");
-  for (const id of ["swing", "windup", "hit", "hit.heavy", "hit.body", "hit.tail", "hit.sub", "slam", "wave", "ult", "sub.drop", "sub.boom", "dash", "skid", "jump", "djump", "land", "hurt", "step.wood", "op.slap", "op.line1"]) {
+  for (const id of ["swing", "windup", "hit", "hit.heavy", "hit.body", "hit.tail", "hit.sub", "slam", "wave", "ult", "sub.drop", "sub.boom", "dash", "skid", "jump", "djump", "land", "hurt", "step.wood", "op.slap", "op.line1", "r.impact", "r.slash", "uf.slash"]) {
     assert.ok(res.some((r) => r.test(id)), `${id} is preloaded`);
   }
 });
@@ -196,10 +210,8 @@ test("her voice: Dex-approved takes, on the right moments, the ult register with
   assert.equal(voiceForState(st("hurt"), st("dead")), "defeat");
   assert.equal(voiceForState(st("dead"), st("free")), "respawn");
   assert.equal(voiceForState(st("free"), st("ult", "call")), null, "the R's call comes with its cue");
-  assert.equal(voiceForState(st("ult", "smoke"), st("ult", "transform")), "transform");
   assert.equal(voiceForState(st("ult", "call"), st("ult", "call")), null);
-  assert.equal(VOICE.r.register, "ult");
-  assert.equal(VOICE.transform.register, "ult");
+  assert.equal(VOICE.ultline.register, "ult", "her line on the R's reveal: the ult register");
 });
 
 test("the mix: a baked reverb per space (and the ult's), the space by place, nothing synthesized", () => {

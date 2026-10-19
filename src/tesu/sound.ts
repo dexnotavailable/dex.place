@@ -109,9 +109,31 @@ export const CUES: Record<string, Cue> = {
   ult: her(["sub-boom-a", "sub-boom-b"], 0.9, 1, { duck: -8 }),
   "sub.drop": her(["sub-drop-a"], 0.7),
   "sub.boom": her(["sub-boom-a", "sub-boom-b"], 0.8),
-  // the Q's and the R's starts (charge), the R's rise: their sounds wait for the combat lane's timing (wave 2); the
-  // calls are her voice (VOICE)
+  // the Q's press (charge) and the old R's rise: no sound of their own yet (the Q's call is her voice)
   charge: SILENT, rise: SILENT,
+  // the R (lane U's cinematic, zhusha/ult.json "cues"; on its beats through the combat lane's cue()): the cut-in's
+  // whoosh, her call (her voice), the BOOM of the fire line (a sub hit), the curtain's roar, the sword drawn, she
+  // bursts into ash, the slash storm's roll (every 10th of ~450 slashes) and its closing sweeps, the last cut's bass
+  // hit, the stop (r.hush: everything ducks to silence until the dive), the dive, the nuke (the biggest hit: the blast,
+  // a sub boom, everything else ducked), its rumble, the dust clearing, her ult line (her voice)
+  "r.press": her(["dash-a", "dash-b"], 0.8),
+  "r.call": SILENT,
+  "r.boom": her(["sub-boom-a", "sub-boom-b"], 0.9, 1, { duck: -6 }),
+  "r.fire": her(["r-fire-a"], 0.75),
+  "r.draw": her(["r-draw-a"], 0.7),
+  "r.vanish": court(["poof-c"], 0.8),
+  "r.slash": her(["swing-a", "swing-b", "swing-d", "swing-e"], 0.55),
+  "r.last": her(["hit-heavy-a", "hit-heavy-b"], 0.95, 1, { with: ["hit.sub"] }),
+  "r.hush": SILENT,
+  "r.dive": her(["r-dive-a"], 0.9),
+  "r.impact": her(["q-boom-a", "q-boom-b"], 1, 1, { with: ["sub.boom"], duck: -12 }),
+  "r.rumble": her(["sub-drop-a"], 0.8, 1, { with: ["debris"] }),
+  "r.reveal": opening(["gust"], 0.4),
+  "r.ultline": SILENT,
+  // the ult form: each warp's blink, a ghost blade summoned, its strike
+  "uf.warp": her(["djump-a"], 0.45),
+  "uf.blade": court(["tink-a", "tink-c", "tink-d"], 0.35),
+  "uf.slash": her(["swing-a", "swing-b", "swing-d", "swing-e"], 0.6, 1, { with: ["hit.tail"] }),
   // footsteps by the ground under her (step.<surface>)
   ...Object.fromEntries(SURFACES.map((m) => [`step.${m}`, stepCue(m, m === "water" ? 0.5 : 0.42)])),
   // doors and panels
@@ -163,8 +185,9 @@ export const VOICE: Readonly<Record<string, VoiceMoment>> = {
   respawn: { normal: ["n-respawn"], ult: ["n-respawn"], chance: 1, gap: 0.3, prio: true },
   q: { normal: ["n-q-call"], ult: ["n-q-call"], chance: 1, gap: 0.3, prio: true },
   e: { normal: ["n-e-call"], ult: ["n-e-call"], chance: 1, gap: 0.3, prio: true },
-  r: { normal: ["u-r-call-1", "u-r-call-2"], ult: ["u-r-call-1", "u-r-call-2"], chance: 1, gap: 0, prio: true, register: "ult", sub: "sub.boom" },
-  transform: { normal: ["u-transform"], ult: ["u-transform"], chance: 1, gap: 0, prio: true, register: "ult", sub: "sub.drop" },
+  // the R's call (lane U: in her normal register; from the ult form, the ult takes), then her ult line on the reveal
+  r: { normal: ["n-r-call"], ult: ["u-r-call-1", "u-r-call-2"], chance: 1, gap: 0, prio: true },
+  ultline: { normal: ["u-transform"], ult: ["u-transform"], chance: 1, gap: 0, prio: true, register: "ult", sub: "sub.drop" },
 };
 /** Ult-register takes with a baked octave-down double (voice/<take>-dbl), mixed low under them for weight. */
 export const DOUBLED = ["u-grunt", "u-hurt", "u-kiai-2", "u-kiai-3", "u-r-call-1", "u-r-call-2", "u-transform", "redo-u-kiai1-2", "redo-u-kiai1-3", "redo-u-kiai1-4"];
@@ -192,6 +215,8 @@ export type HerCue = Pick<ZhushaCue, "id" | "volume" | "move" | "phase" | "tier"
  * slam, wave, ult, dash, jump, djump, land, hurt, rise).
  */
 export function soundForCue(c: Pick<HerCue, "id" | "phase" | "tier">): string {
+  // the R's and the ult form's own ids (r.*, uf.*) play their own sound, whatever their phase
+  if (/^(r|uf)\./.test(c.id)) return c.id;
   if (c.id === "hit") return c.tier === "light" ? "hit" : "hit.heavy";
   switch (c.phase) {
     case "windup": return c.id === "charge" ? "charge" : "windup";
@@ -201,13 +226,19 @@ export function soundForCue(c: Pick<HerCue, "id" | "phase" | "tier">): string {
 }
 
 /**
- * The voice moment a cue of hers is (pure): the Q's, the E's and the R's presses call; a chain hit's swing may kiai,
+ * The voice moment a cue of hers is (pure): the Q's and the E's presses call, the R's call and ult line on their
+ * beats (r.call, r.ultline), the form's ghost strikes may kiai; a chain hit's swing may kiai,
  * the chain's last hit (m1_4) cries out; the dash and the jumps now and then; the hurt (a heavy one: the knockdown).
  * The R's flurry and dive say nothing (the ult sequence has its own voice: the call, the transform).
  */
 export function voiceForCue(c: Pick<HerCue, "id" | "move" | "phase" | "tier">): string | null {
+  // the R speaks on its own beats: the call, and her ult line on the reveal; the form's ghost strikes may kiai
+  if (c.id === "r.call") return "r";
+  if (c.id === "r.ultline") return "ultline";
+  if (c.id === "uf.slash") return "kiai";
+  if (/^(r|uf)\./.test(c.id)) return null;
   switch (c.phase) {
-    case "windup": return c.move === "skill_q" ? "q" : c.move === "e_tap" ? "e" : c.move === "r" ? "r" : null;
+    case "windup": return c.move === "skill_q" ? "q" : c.move === "e_tap" ? "e" : null;
     case "swing":
       if (c.id !== "swing" || c.move === "r") return null;
       return /m1_4$/.test(c.move) ? "finisher" : /m1_[123]$/.test(c.move) ? "kiai" : null;
@@ -218,16 +249,13 @@ export function voiceForCue(c: Pick<HerCue, "id" | "move" | "phase" | "tier">): 
 }
 
 /**
- * The moment a change of her state is (pure), for what the cues do not carry: defeated, back up, the transform. (The
- * knockdown and the R's call come with their cues.)
+ * The moment a change of her state is (pure), for what the cues do not carry: defeated, back up. (The knockdown, the
+ * R's call and its ult line come with their cues.)
  */
 export function voiceForState(prev: HerState | null, now: HerState): string | null {
-  if (!prev) return null;
-  if (now.state !== prev.state) {
-    if (now.state === "dead") return "defeat";
-    if (prev.state === "dead") return "respawn";
-  }
-  if (now.state === "ult" && now.phase !== prev.phase && now.phase === "transform") return "transform";
+  if (!prev || now.state === prev.state) return null;
+  if (now.state === "dead") return "defeat";
+  if (prev.state === "dead") return "respawn";
   return null;
 }
 
@@ -344,7 +372,7 @@ export class Sound {
     const ids = Object.keys(CUES);
     const files = (re: RegExp): string[] => ids.filter((id) => re.test(id)).flatMap((id) => CUES[id]!.files.map((f) => this.urlOf(f)));
     const batches = [
-      files(/^(swing|windup|hit|slam|wave|ult|sub\.)/),
+      files(/^(swing|windup|hit|slam|wave|ult|sub\.|r\.|uf\.)/),
       files(/^op\./),
       files(/^(step\.|dash|skid|jump|djump|land|hurt)/),
       Object.values(VOICE).flatMap((v) => [...v.normal, ...v.ult]).map((t) => this.urlOf(`voice/${t}`)),
@@ -448,9 +476,20 @@ export class Sound {
   herCue(c: HerCue): void {
     const i = this.held.findIndex((h) => h.id === c.id);
     if (i >= 0) this.held.splice(i, 1);
+    // the R's stop: everything ducks to silence until the dive (30 ticks)
+    if (c.id === "r.hush") this.hush(0.5);
     this.sfx(soundForCue(c), c.volume);
     const v = voiceForCue(c);
     if (v) this.voice(v, c.ult);
+  }
+
+  /** Dead silence for `secs` (the R's stop): the music, the beds and the effects duck out, then come back fast. */
+  hush(secs: number): void {
+    const ctx = this.ctx;
+    if (!ctx || this.mix === "dry") return;
+    const t = ctx.currentTime;
+    this.musicDuck?.duck(-60, t, t + secs, 0.08, 0.3);
+    this.sfxDuck?.duck(-60, t, t + secs - 0.05, 0.06, 0.04);
   }
 
   /** Once per frame: her state (the voice's knockdown, defeat, respawn, R call, transform), the space, her pan. */
