@@ -12,7 +12,7 @@ import type { Camera as LabCamera } from "../lab/engine/camera.ts";
 import type { Lighting, Renderer as LabRenderer } from "../lab/engine/renderer.ts";
 import { Vfx } from "../lab/engine/vfx.ts";
 import { Feel } from "../lab/game/feel.ts";
-import { Zhusha, type MoveWorld } from "./zhusha/controller.ts";
+import { ART_PX, Zhusha, type MoveWorld } from "./zhusha/controller.ts";
 import { ZhushaDraw } from "./zhusha/draw.ts";
 import { NpcDraw } from "./cast/npcs.ts";
 import { makeTarget, type PointLight, type Target, type WorldRenderer } from "../world/render/renderer.ts";
@@ -1353,10 +1353,20 @@ export class TesuGame {
   }
 
   /**
-   * (engine 10-18) The actors in the frame pass. Zoomed out (zoom < 1): reduced onto the frame's grid like the world
-   * (reducedActors). At play zoom and closer, on a screen shown at a whole scale k >= 2: her drawing at screen res on
-   * its own layer, her effects and the talisman on the world grid (render/actors.ts); everything drawn after this
-   * then goes to the front target, composited over the actors by the presenter. Else straight onto the frame.
+   * (lane C 10-19) Whether her drawing goes through the reduction (reducedActors) on a grid that shows the play plane
+   * at scale s: zoomed out, or where one of her art px would land under one px of that grid (her 0.88 size on a 1080p
+   * screen: 0.66 px), so she is reduced with the feature-keeping rule instead of nearest-neighbour dropping rows.
+   */
+  private reduceActors(s: number, zoom: number): boolean {
+    return ActorLayer.wants(zoom) || s * ART_PX < 1 - 1e-6;
+  }
+
+  /**
+   * (engine 10-18) The actors in the frame pass. Zoomed out (zoom < 1), or where her art px would be under one frame
+   * px (a 1080p screen, lane C 10-19): reduced onto the frame's grid (reducedActors). At play zoom and closer, on a
+   * screen shown at a whole scale k >= 2: her drawing at screen res on its own layer, her effects and the talisman on
+   * the world grid (render/actors.ts); everything drawn after this then goes to the front target, composited over the
+   * actors by the presenter. Else straight onto the frame.
    */
   private drawActors(cam: CamState, focus: [number, number], lights: PointLight[]): void {
     const r = this.r, xf = planeXf(cam, 1);
@@ -1364,12 +1374,12 @@ export class TesuGame {
     // the renderer maps x to ((x - camX) - fx) * s + fx: match the play plane exactly
     const camOf = (s: number, offX: number, offY: number, f: [number, number]): [number, number] => [(f[0] * (1 - s) - offX) / s, (f[1] * (1 - s) - offY) / s];
     const [camX, camY] = camOf(xf.s, xf.offX, xf.offY, focus);
-    if (ActorLayer.wants(cam.zoom)) {
+    const k = r.presenter.rect.scale;
+    if (ActorLayer.wants(cam.zoom) || (!ScreenActors.wants(k) && this.reduceActors(xf.s, cam.zoom))) {
       this.reducedActors(cam, r.main, lights, null, (c) => { for (const st of steps) this.actorsPass(st, c, [c.W / 2, c.anchor * c.H]); });
       r.begin(camX, camY, DAY, lights);
       return;
     }
-    const k = r.presenter.rect.scale;
     if (!ScreenActors.wants(k)) {
       r.begin(camX, camY, DAY, lights);
       for (const st of steps) this.actorsPass(st, cam, focus);
@@ -1386,15 +1396,18 @@ export class TesuGame {
   }
 
   /**
-   * (engine 10-18) Wider than play zoom, what moves on the play plane (her, her effects, the talisman) is drawn at
-   * play density into the actor layer (`draw` gets the layer's camera, scale 1), then reduced onto `target` on the
-   * frame's grid, the reduction anchored to her feet (render/reduce.ts). `mirror`: the reflection's waterline row.
+   * (engine 10-18) Wider than play zoom (or where her art px would be under one frame px), what moves on the play plane
+   * (her, her effects, the talisman) is drawn at her art density into the actor layer (lane C 10-19: one layer px per
+   * art px; `draw` gets the layer's camera), then reduced onto `target` on the frame's grid, the reduction anchored to
+   * her feet (render/reduce.ts). `mirror`: the reflection's waterline row.
    */
   private reducedActors(cam: CamState, target: Target, lights: PointLight[], mirror: number | null, draw: (c: CamState) => void): void {
     const r = this.r, xf = planeXf(cam, 1), b = this.player.body;
     const view = { cx: (cam.W / 2 - xf.offX) / xf.s, cy: (cam.H / 2 - xf.offY) / xf.s };
-    const c = this.actors.begin(r, cam, view, [b.x, b.y - H]);
-    r.begin(this.actors.x0, this.actors.y0, DAY, lights);
+    const c = this.actors.begin(r, cam, view, [b.x, b.y - H], Math.max(1, 1 / ART_PX));
+    // the renderer maps x to ((x - camX) - f) * s + f: match the layer's play-plane transform about the pass's focus
+    const lx = this.actors.xf, f: [number, number] = [c.W / 2, c.anchor * c.H];
+    r.begin((f[0] * (1 - lx.s) - lx.offX) / lx.s, (f[1] * (1 - lx.s) - lx.offY) / lx.s, DAY, lights);
     draw(c);
     this.actors.end(r);
     r.bindTarget(target, false);
@@ -1590,8 +1603,9 @@ export class TesuGame {
         this.planes.draw(pd.quads, pd.look, W, Hf, m);
         this.sprites.draw(this.world.sprites.filter((sp) => sp.plane === id && sp.reflect !== false && !this.npcs.has(sp)), cam, pd.look, this.time, m, this.manual);
         fogOn(id, true);
-        if (id === "play" && ActorLayer.wants(cam.zoom)) {
-          // (engine 10-18) zoomed out: the reflection is the actors' reduced drawing, mirrored
+        if (id === "play" && this.reduceActors(planeXf(cam, 1).s, cam.zoom)) {
+          // (engine 10-18) zoomed out (lane C 10-19: or her art px under one world px): the reflection is the actors'
+          // reduced drawing, mirrored
           this.reducedActors(cam, this.refl, lights, wlPlay, (c) => this.reflActors(c, [c.W / 2, c.anchor * c.H], null));
         } else if (id === "play") {
           r.begin(camX, camY, DAY, lights);
