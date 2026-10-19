@@ -10,7 +10,8 @@ import { Opening } from "./opening.ts";
 import { TileStore } from "./plates/store.ts";
 import { HeardClock, onGrid } from "./opening/clock.ts";
 import { pressContinues } from "./opening/press.ts";
-import { FALL_CLOUDS, fallPoint } from "./world/sections/opening-sky.ts";
+import { FALL_CLOUDS, REF, fallPoint } from "./world/sections/opening-sky.ts";
+import { fallSkyOf, fallSkyShare } from "./opening/fall-sky.ts";
 import { PLANES } from "./world/types.ts";
 import { planeXf } from "./render/view.ts";
 import { fallVeils } from "./opening/sky.ts";
@@ -198,27 +199,52 @@ test("the paper: it falls back in from the top, keeps clear of the bars and the 
   assert.ok(paperScreenAt(14, "continue")[0] < paperScreenAt(1.2, "continue")[0] + 0.02);
 });
 
-test("the fall's clouds: each where the camera sees it, and none in any play frame", () => {
+test("the fall's clouds: each where the camera sees it (on Dex's 1920 x 1080 frame), and none in any play frame", async () => {
+  await import("./art/library/opening/fall-cloud.ts");
+  const { painter } = await import("./art/painter.ts");
   for (const c of FALL_CLOUDS) {
     const [x, y] = fallPoint(c.T, c.plane, c.fx, c.fy);
-    const s = keysAt(c.T, BEATS.her.catchXH * H, 1280, 720);
-    const cam = { cx: s.cx, cy: BEATS.her.deckYH * H, zoom: s.zoom, anchor: s.anchor, horizon: s.horizon, W: 1280, H: 720 };
+    const s = keysAt(c.T, BEATS.her.catchXH * H, REF.W, REF.H);
+    const cam = { cx: s.cx, cy: BEATS.her.deckYH * H, zoom: s.zoom, anchor: s.anchor, horizon: s.horizon, W: REF.W, H: REF.H };
     const r = PLANES[c.plane].rate, xf = planeXf(cam, r);
     // (planeXf rounds its offsets to whole px)
-    near((x * r * xf.g + xf.offX) / 1280, c.fx, 0.002, `${c.id} across`);
-    near((y * r * xf.g + xf.offY) / 720, c.fy, 0.002, `${c.id} down`);
-    // the play frames at Kagami (zoom 1, the close band 2x, a vista 0.5): the cloud's base is above their top edge
-    for (const [zoom, anchor, horizon] of [[1, 0.66, 0.38], [2, 0.66, 0.27], [0.5, 0.74, 0.4]]) {
-      const pc = { cx: x, cy: BEATS.her.deckYH * H, zoom, anchor, horizon, W: 1280, H: 720 };
-      const pxf = planeXf(pc, r);
-      const base = y * r * pxf.g + pxf.offY;
-      assert.ok(base < 0, `${c.id} shows in a play frame at zoom ${zoom} (its base at row ${base.toFixed(0)})`);
+    near((x * r * xf.g + xf.offX) / REF.W, c.fx, 0.002, `${c.id} across`);
+    near((y * r * xf.g + xf.offY) / REF.H, c.fy, 0.002, `${c.id} down`);
+    // the play frames at Kagami (zoom 1, the close band 2x, a vista 0.5 at 1280 x 720; at 1920 x 1080 zoom 1 and 2):
+    // the whole cloud (its painter's bounds, a deck's hanging masses too) is above their top edge. (They are hidden
+    // outside the fall anyway, game.ts syncFall; the deck the camera breaks out under sits low enough to show at the
+    // top of a 1080p vista at 0.5, which never shows them.)
+    const low = painter("op.fallcloud").bounds(c.p)[3];
+    for (const [W, Hf] of [[1280, 720], [1920, 1080]]) {
+      for (const [zoom, anchor, horizon] of [[1, 0.66, 0.38], [2, 0.66, 0.27], [0.5, 0.74, 0.4]]) {
+        if (W > 1280 && zoom < 1) continue;
+        const pc = { cx: x, cy: BEATS.her.deckYH * H, zoom, anchor, horizon, W, H: Hf };
+        const pxf = planeXf(pc, r);
+        const foot = (y * r + low) * pxf.g + pxf.offY;
+        assert.ok(foot < 0, `${c.id} shows in a ${W}x${Hf} play frame at zoom ${zoom} (its foot at row ${foot.toFixed(0)})`);
+      }
     }
   }
   // the fog layers on the lens: only in the fall, never on way 4 or with reduced motion
   assert.ok(fallVeils(5.5, 1280, 720, "continue", false).length > 0);
   assert.equal(fallVeils(5.5, 1280, 720, "bottom", false).length, 0);
   assert.equal(fallVeils(5.5, 1280, 720, "continue", true).length, 0);
+});
+
+test("the fall's sky: deep while high, eased into the place's own sky under the deck, gone by the break-out", () => {
+  assert.equal(fallSkyShare(32), 1);
+  assert.equal(fallSkyShare(18), 1);
+  assert.equal(fallSkyShare(8), 0);
+  assert.equal(fallSkyShare(5), 0);
+  for (let l = 8; l < 18; l += 0.5) assert.ok(fallSkyShare(l + 0.5) >= fallSkyShare(l), "never shallower going up");
+  const top = [0.47, 0.66, 0.81], mid = [0.84, 0.9, 0.88], low = [0.93, 0.96, 0.93];
+  const hi = fallSkyOf(32, 1500, top, mid, low, [0, 0, 0], [280, 0.5, 0], [1, 1, 1]);
+  const lo = fallSkyOf(7, 900, top, mid, low, [0, 0, 0], [280, 0.5, 0], [1, 1, 1]);
+  // high up the zenith is the deep cobalt of Dex's sky ref, far deeper than the morning's
+  assert.ok(hi.cols[3 + 2] < 0.75 && hi.cols[3] < 0.1, `deep overhead: ${[...hi.cols.slice(3, 6)].map((v) => v.toFixed(2))}`);
+  // under the deck the stops are the place's own sky (nothing drawn: share 0)
+  assert.equal(lo.share, 0);
+  for (let i = 0; i < 3; i++) near(lo.cols[3 + i], top[i] + (mid[i] - top[i]) * (1 - Math.pow(Math.min(1, 1.3 / 0.95), 0.62)), 1e-6, "the place's zenith");
 });
 
 test("small pieces: the monotone curve never overshoots, mixShot in log space, a pin by the frame's width, the bars", () => {

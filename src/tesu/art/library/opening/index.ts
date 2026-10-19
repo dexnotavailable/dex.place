@@ -13,6 +13,7 @@ import "./jetty.ts";
 import "./gates.ts";
 import "./palace.ts";
 import "./sky.ts";
+import "./fall-cloud.ts";
 import "./haze.ts";
 import "./props.ts";
 import "./wind.ts";

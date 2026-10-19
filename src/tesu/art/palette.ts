@@ -77,6 +77,18 @@ export const P = {
    * the warm bounce from the land and lake in the lowest billows' shade.
    */
   cumulus: ramp("#fff7ea", "#fde8d6", "#efe7e2", "#dde0e4", "#c9d0d8", "#b4bdc9", "#a0aab8", "#8c97a7", "#c6c2c4", "#b3afb3"),
+  // --- appended by the fall loop, round 1 (indices of everything above are unchanged) ---
+  /**
+   * The fall's cumulus (the opening's sky, Dex's cloud and sky refs): the same family as `cumulus`, with the whole
+   * value range of the refs. 0-2 the sunlit crown (cream, the peach rim, warm white), 3-8 the turn into the shade,
+   * the sky's blue bounced into it, 9-10 the deep recesses between billows and under overhangs (luminance about
+   * 115 and 100), 11-12 the light thrown up into the lowest shade from the cloud deck below.
+   */
+  fallcu: ramp("#fffaf0", "#fde3cc", "#f5eee8", "#e2e9f0", "#cddbe8", "#b5c9de", "#9cb5d2", "#84a1c5", "#6e8eb8", "#5a7aa9", "#486899", "#a8c4da", "#91b2cf"),
+  /** Far cumulus, compressed toward the sky (luminance about 235 down to 185): lit, turning, shade, deepest. */
+  fallfar: ramp("#f1f5f7", "#e2ebf2", "#d0dfea", "#bfd2e3", "#adc5dc"),
+  /** The sky's own blues, pale to deep: the lost edges of the shaded side and the haze at a far cloud's foot. */
+  fallsky: ramp("#dbe9ef", "#bdd8e7", "#9ec5df", "#7dafd5", "#5692c6", "#3374b2"),
 } as const;
 
 export type RampName = keyof typeof P;

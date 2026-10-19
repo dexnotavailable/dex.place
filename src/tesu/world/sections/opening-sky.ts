@@ -1,16 +1,18 @@
-// The sky the opening falls through (the opening director, 10-18; Dex 10-16: "author every part of the scenery the
-// camera passes: clouds, front fog layers on the camera, wind affecting the ofuda's path"). The camera starts high
-// over Kagami (opening/beats.ts camera keys: the frame's middle 34 H above her) and comes down with the paper through
-// layers of cloud at every depth, so the fall reads by parallax: far heaps barely rising, middling ones drifting up
-// past, a bank at the paper's own depth it goes behind, near masses rushing past the lens, the cloud deck's base seen
-// from under it as the camera breaks out over the lake. (The fog layers on the lens itself are opening/sky.ts.)
+// The sky the opening falls through (the opening director, 10-18; the fall loop, round 1. Dex 10-16: "author every
+// part of the scenery the camera passes: clouds, front fog layers on the camera, wind affecting the ofuda's path").
+// The camera starts high over Kagami (opening/beats.ts camera keys: the frame's middle 34 H above her) and comes down
+// with the paper past cloud at every depth, so the fall reads by parallax: far tops barely rising, a great tower and
+// middling heaps drifting up past, a bank at the paper's own depth, the cloud deck it falls through, and the deck's
+// base seen from under it as the camera breaks out over the lake. (The fog layers on the lens itself are
+// opening/sky.ts; the sky's deep gradient, opening/fall-sky.ts.)
 //
-// One cloud family (Dex: never four kinds): the sky lane's op.cloud painter, the same lobes and light as Kagami's
-// great cumulus. Each cloud is placed by WHEN and WHERE the opening's camera sees it (on the reference frame, 1280 x
-// 720): its 3D place is solved from the camera's keys, so a change of the camera moves the clouds with it. They sit
-// high above every play frame (12 H and more over the lake), so the game itself never sees them; the widest frame
-// under TESU shows a few, small, high in its sky. Static (the camera's own motion is the movement), their lobes
-// swelling and settling (4 drawings). Placed last with explicit seeds: nothing else in the world is reseeded.
+// One cloud family (Dex: never four kinds): the fall's variant of the sky lane's painter (op.fallcloud: the same lobes
+// and light as Kagami's great cumulus, with the refs' whole value range), distance by rendering (`far`: value toward
+// the sky, cooler, softer, fewer lobes, the foot lost in the haze). Each cloud is placed by WHEN and WHERE the
+// camera sees it, composed on Dex's 1920 x 1080 frame (REF; at 1280 x 720 the framing tightens round the middle): its
+// 3D place is solved from the camera's keys, so a change of the camera moves the clouds with it. They sit high
+// above every play frame (12 H and more over the lake), so the game itself never sees them. Static (the camera's own
+// motion is the movement; one drawing each). Placed last with explicit seeds: nothing else in the world is reseeded.
 
 import { H } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
@@ -18,13 +20,14 @@ import { PLANES, type PlaneId } from "../types.ts";
 import { BEATS, keysAt } from "../../opening/timeline.ts";
 import { planeScale } from "../../render/view.ts";
 import { DECK_Y } from "./common.ts";
+import type { FallCloudP } from "../../art/library/opening/fall-cloud.ts";
 
-/** The reference frame the placements are composed on. */
-const REF = { W: 1280, H: 720 } as const;
+/** The frame the placements are composed on (Dex plays at 1920 x 1080, one art px per screen px). */
+export const REF = { W: 1920, H: 1080 } as const;
 
 /**
- * The 3D point on a plane that the opening's camera shows at frame point (fx, fy) (shares) at T: the cloud's base
- * middle lands there.
+ * The 3D point on a plane that the opening's camera shows at frame point (fx, fy) (shares of REF) at T: the cloud's
+ * base middle lands there.
  */
 export function fallPoint(T: number, plane: PlaneId, fx: number, fy: number): [number, number] {
   const herX = BEATS.her.catchXH * H;
@@ -35,51 +38,49 @@ export function fallPoint(T: number, plane: PlaneId, fx: number, fy: number): [n
   return [(fx * REF.W - REF.W / 2) / s + s0.cx, (fy * REF.H - hz) / s + eye];
 }
 
-interface FallCloud {
+export interface FallCloud {
   id: string;
   plane: PlaneId;
-  /** When the camera sees its base middle at (fx, fy). */
+  /** When the camera sees its base middle at (fx, fy) (shares of the 1920 x 1080 frame). */
   T: number;
   fx: number;
   fy: number;
-  p: { kind: "cumulus" | "tower" | "stratus" | "wisp"; w: number; h: number; tower?: number; haze?: number };
+  p: FallCloudP;
 }
 
 /**
- * The far planes' haze is the land's (Kagami's is a lake green): a cloud keeps its own whites, only a breath of it
- * (its distance is the painter's own `haze`, toward the half light).
- */
-const FADE: Partial<Record<PlaneId, number>> = { sky: 0, far: 0.06, mid: 0.03, back: 0.04 };
-
-/**
- * The fall's clouds, top to bottom. The paper's flight (beats.ts ofuda.path) keeps to the middle of the frame, so the
- * big masses pass beside it; the front bank crosses it about bar 2 (the thick fog layer on the lens goes with it).
+ * The fall's clouds, by the key frame they are composed for (lanes\art\fall\KEYFRAMES.md). The paper's flight
+ * (beats.ts ofuda.path) keeps to the middle of the frame (x 670-1240, y 200-460 on screen), so the big masses pass
+ * beside and below it, never across it, and the sky behind it stays a clean deep blue (its value gap).
  */
 export const FALL_CLOUDS: readonly FallCloud[] = [
-  // high and far: barely rising (the depth the rest is measured against)
-  { id: "fall-strand-high", plane: "far", T: 0.9, fx: 0.3, fy: 0.24, p: { kind: "stratus", w: 560, h: 40, haze: 0.3 } },
-  { id: "fall-far-heap", plane: "far", T: 3.4, fx: 0.86, fy: 0.66, p: { kind: "cumulus", w: 330, h: 120, tower: 0.55, haze: 0.4 } },
-  // middling: drifting up past
-  { id: "fall-mid-tower", plane: "mid", T: 2.4, fx: 0.12, fy: 0.84, p: { kind: "tower", w: 210, h: 250, tower: 1, haze: 0.15 } },
-  { id: "fall-mid-heap", plane: "mid", T: 6.4, fx: 0.88, fy: 0.74, p: { kind: "cumulus", w: 400, h: 160, tower: 0.7, haze: 0.1 } },
-  { id: "fall-back-heap", plane: "back", T: 4.2, fx: 0.26, fy: 0.9, p: { kind: "cumulus", w: 360, h: 150, tower: 0.6 } },
-  { id: "fall-back-low", plane: "back", T: 8.4, fx: 0.7, fy: 0.62, p: { kind: "cumulus", w: 300, h: 110, tower: 0.4 } },
-  // the cloud deck's base, seen from under it as the camera breaks out over the lake
-  { id: "fall-deck-a", plane: "mid", T: 10.2, fx: 0.3, fy: 0.24, p: { kind: "stratus", w: 760, h: 64, haze: 0.2 } },
-  { id: "fall-deck-b", plane: "back", T: 9.8, fx: 0.78, fy: 0.2, p: { kind: "stratus", w: 640, h: 56 } },
-  // at the paper's own depth: one behind it, one it passes behind (the front plane draws after her and the paper)
-  { id: "fall-play-heap", plane: "play", T: 3.6, fx: 0.8, fy: 0.68, p: { kind: "cumulus", w: 280, h: 130, tower: 0.55 } },
-  { id: "fall-play-heap-b", plane: "play", T: 7.4, fx: 0.18, fy: 0.66, p: { kind: "cumulus", w: 320, h: 140, tower: 0.5 } },
-  { id: "fall-front-bank", plane: "front", T: 5.5, fx: 0.52, fy: 0.64, p: { kind: "cumulus", w: 500, h: 180, tower: 0.45 } },
-  // in front of the paper, early and late (the near plane inks its art darker: the clouds stay in the one light, so
-  // the lens's own rush is the fog layers', opening/sky.ts)
-  { id: "fall-front-strand", plane: "front", T: 2.2, fx: 0.1, fy: 0.46, p: { kind: "stratus", w: 480, h: 50 } },
-  { id: "fall-front-mass", plane: "front", T: 7.6, fx: 0.86, fy: 0.9, p: { kind: "cumulus", w: 520, h: 200, tower: 0.4 } },
+  // --- open (1.9 s, 32 H up): the sky ref's picture. One great tower rising from below on the left, cut by the left
+  // edge and the bottom bar, its crown under the sun; a lower, hazier mass bottom-right; far tops along the haze
+  // between them; two high wisps on one tilt; the paper's path from the top right in clear deep blue.
+  { id: "fall-tower", plane: "back", T: 1.9, fx: 0.17, fy: 1.5, p: { kind: "tower", w: 1000, h: 1180, lean: -0.1, sky: 0.8 } },
+  { id: "fall-mass-se", plane: "mid", T: 1.9, fx: 0.86, fy: 0.93, p: { kind: "cumulus", w: 860, h: 360, tower: 0.55, far: 0.3, sky: 0.35 } },
+  { id: "fall-far-a", plane: "far", T: 1.9, fx: 0.44, fy: 0.87, p: { kind: "cumulus", w: 280, h: 86, tower: 0.45, far: 0.85, sky: 0.15 } },
+  { id: "fall-far-b", plane: "far", T: 1.9, fx: 0.585, fy: 0.9, p: { kind: "cumulus", w: 190, h: 58, tower: 0.4, far: 0.9, sky: 0.12 } },
+  { id: "fall-far-c", plane: "far", T: 1.9, fx: 0.67, fy: 0.85, p: { kind: "cumulus", w: 150, h: 48, tower: 0.5, far: 0.9, sky: 0.15 } },
+  { id: "fall-wisp-a", plane: "far", T: 1.9, fx: 0.4, fy: 0.27, p: { kind: "wisp", w: 620, h: 70, sky: 1, count: 3 } },
+  { id: "fall-wisp-b", plane: "far", T: 1.9, fx: 0.83, fy: 0.36, p: { kind: "wisp", w: 460, h: 60, sky: 0.9, count: 2 } },
+  { id: "fall-streak-low", plane: "mid", T: 1.9, fx: 0.6, fy: 0.97, p: { kind: "streak", w: 600, h: 70, far: 0.2, sky: 0.25, count: 3 } },
+  // --- bank (4.6 s, 24.5 H): the wall at the paper's own depth, its crown rising under the paper, the paper falling
+  // past its shaded body (a cool shade behind the bright paper), cut by the bottom bar; a middling heap left
+  { id: "fall-bank", plane: "play", T: 4.63, fx: 0.6, fy: 1.12, p: { kind: "cumulus", w: 1500, h: 560, tower: 0.55, sky: 0.5 } },
+  // --- gust (8.2 s, 15 H, in the weather): the deck the paper falls toward crosses the lower frame, its lumpy tops
+  // lit; a great heap on the right rising out of it; the paper over the great tower's shaded foot
+  { id: "fall-heap-e", plane: "back", T: 8.2, fx: 0.86, fy: 0.5, p: { kind: "cumulus", w: 900, h: 400, tower: 0.62, sky: 0.55 } },
+  // --- breakout (10.6 s, 7 H, under the deck): its base overhead, receding toward the horizon (the nearer layer
+  // thicker and darker across the top, the farther lower, thinner, hazier), the gap the paper came down through
+  { id: "fall-deck-far", plane: "far", T: 10.617, fx: 0.5, fy: 0.3, p: { kind: "deck", w: 2300, h: 110, far: 0.7, sky: 0.1 } },
+  { id: "fall-deck-mid", plane: "mid", T: 10.617, fx: 0.5, fy: 0.245, p: { kind: "deck", w: 2500, h: 200, far: 0.35, sky: 0.15, gaps: [[0.36, 0.05]] } },
+  { id: "fall-deck", plane: "back", T: 10.617, fx: 0.5, fy: 0.175, p: { kind: "deck", w: 3100, h: 230, sky: 0.3, gaps: [[0.28, 0.06], [-0.32, 0.05]] } },
 ];
 
 export function openingSky(b: WorldBuilder): void {
   FALL_CLOUDS.forEach((c, i) => {
     const [x, y] = fallPoint(c.T, c.plane, c.fx, c.fy);
-    b.sprite({ id: c.id, plane: c.plane, kind: "op.cloud", x, y, p: { ...c.p }, frames: 4, fps: 1, reflect: false, fade: FADE[c.plane], seed: 7919 * (9100 + i) });
+    b.sprite({ id: c.id, plane: c.plane, kind: "op.fallcloud", x, y, p: { ...c.p }, frames: 1, fps: 1, reflect: false, fade: 0, seed: 7919 * (9100 + i) });
   });
 }

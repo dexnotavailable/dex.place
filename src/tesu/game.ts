@@ -38,8 +38,9 @@ import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
 import { SilentLink, type OpeningLink } from "./opening/conductor.ts";
 import { WorldPaper, type PaperPose } from "./opening/paper.ts";
-import { BEATS, CLIP_END, HANDOFF_T, keysAt, paperAirAt, paperBlendAt, paperScreenAt, startT } from "./opening/timeline.ts";
+import { BEATS, CLIP_END, HANDOFF_T, barsAt, keysAt, paperAirAt, paperBlendAt, paperScreenAt, startT } from "./opening/timeline.ts";
 import { Veils, fallVeils } from "./opening/sky.ts";
+import { FallSky, fallSkyOf } from "./opening/fall-sky.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
 import { eyeY, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
@@ -133,6 +134,8 @@ export class TesuGame {
   readonly titles: Titles;
   /** The opening's fog layers on the lens (opening/sky.ts). */
   readonly veils: Veils;
+  /** (the fall loop) the deep sky the opening falls through, eased into the place's own sky under the deck */
+  readonly fallSky: FallSky;
   readonly opening: Opening;
   readonly player: Zhusha;
   /** Her drawings (traced pixel art per slot) or the white box. */
@@ -211,6 +214,7 @@ export class TesuGame {
     if (!opts.manual) this.sprites.async = (job, done) => this.store.paintSprite(job, done);
     this.titles = new Titles(gl, r.emptyVao);
     this.veils = new Veils(gl, r.emptyVao);
+    this.fallSky = new FallSky(gl, r.emptyVao);
     this.opening = new Opening({
       herX: () => this.player.body.x,
       moveTo: (x, jump) => this.driveTo(x, jump),
@@ -601,6 +605,7 @@ export class TesuGame {
       if (this.vista.t <= 0 || Math.abs(b.vx) > 0.6) this.vista = null;
     }
     this.syncGates();
+    this.syncFall();
     this.doorTick();
     this.near = this.cut || this.tug || this.rides.active || this.warp || this.opening.state === "cine" || this.holding ? null : this.findNear();
     this.placeNames();
@@ -912,6 +917,8 @@ export class TesuGame {
     if (!this.holding || this.loading || this.tick % 20) return;
     const w = this.fallWarm;
     w.defs ??= this.world.sprites.filter((s) => s.id.startsWith("fall-"));
+    // (the fall loop) they are hidden outside the fall (syncFall): warmed all the same
+    for (const d of w.defs) d.hidden = false;
     const moments = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5];
     if (w.i >= moments.length * 4 || !w.defs.length) return;
     const T = moments[Math.floor(w.i / 4)]!, frame = w.i % 4;
@@ -924,6 +931,18 @@ export class TesuGame {
       const defs = w.defs.filter((d) => d.plane === id);
       if (defs.length) this.sprites.draw(defs, cam, this.look(id, a), frame + 0.01, null, false, true);
     }
+    this.syncFall();
+  }
+
+  /**
+   * (the fall loop, round 1) The fall's clouds are the fall's alone: shown while the opening falls (to her walk, when
+   * the close band has long left them above the frame), never in the game, the hold, the TESU zoom-out or a window.
+   */
+  private fallDefs: SpriteDef[] | null = null;
+  private syncFall(): void {
+    this.fallDefs ??= this.world.sprites.filter((s) => s.id.startsWith("fall-"));
+    const on = this.opening.active && this.opening.T < BEATS.her.walkFrom;
+    for (const d of this.fallDefs) d.hidden = !on;
   }
 
   startWarm(): void {
@@ -1532,6 +1551,12 @@ export class TesuGame {
     // (round 5: the glowing sun's core is small and bright, its bloom does the rest; at the catch's 2x
     // the same size on the frame)
     const sunPx: [number, number, number] = a.sun ? [a.sun[0] * W, a.sun[1] * Hf, a.glow ? 8 : 9] : [0, 0, 0];
+    // (the fall loop, round 1) under the opening's black bars the sun keeps its place in the frame the player sees,
+    // never sliced by the top bar: as far down the visible frame as it sits in the whole one
+    if (a.sun && this.opening.active) {
+      const bar = barsAt(this.opening.T, this.feel.reducedMotion, startT(this.opening.way)) * (BEATS.ui.bars.vh / 100) * Hf;
+      sunPx[1] = bar + a.sun[1] * (Hf - 2 * bar);
+    }
     const sky = [hexRgb(a.sky[0]), hexRgb(a.sky[1]), hexRgb(a.sky[2])];
     // the banded sky and the sun's bloom, where the place has them (cells of two px at the catch's 2x)
     const glow: SkyGlow | undefined = a.glow && a.glow.strength > 0 ? { radius: a.glow.radius * Hf, strength: a.glow.strength, colour: hexRgb(a.glow.colour), cell: cam.zoom >= 1.9 ? 2 : 1, plain: a.glow.plain } : undefined;
@@ -1622,6 +1647,12 @@ export class TesuGame {
     // (the opening's fall) high in the sky the eye-level row lies below the frame: the sky keeps its gradient over
     // the frame (deep above, paler toward the haze below), never one flat fill
     this.atmos.drawSky(W, Hf, Math.min(hz, Hf * 1.04), sky[0]!, sky[1]!, sky[2]!, sunPx, false, glow);
+    // (the fall loop) the deep sky of the fall over it while the camera is high (its altitude: the frame's middle
+    // above her feet), easing into this sky as it comes down through the deck
+    if (this.opening.active && this.opening.T < BEATS.her.walkFrom) {
+      const lift = ((cam.anchor - 0.5) * Hf) / cam.zoom / H;
+      this.fallSky.draw(W, Hf, fallSkyOf(lift, hz, sky[0]!, sky[1]!, sky[2]!, sunPx, glow ? [glow.radius, glow.strength, 0] : [Hf * 0.26, 0.5, 0], glow?.colour ?? [1, 0.945, 0.847]));
+    }
     const eye = eyeY(cam);
     const waterDraw = (rows: [number, number]): void => {
       if (!water) return;
