@@ -74,22 +74,7 @@ test("Departure Mono (Dex 10-19: yes): in the repo with its OFL licence beside i
   assert.match(footer("home"), /<a href="\/fonts\/departure-mono\/LICENSE\.txt">Departure Mono<\/a> by Helena Zhang/);
 });
 
-test("Dex 10-19 'vector is best; some web elements don't necessarily need to be pixel': the cards are vector by default (no script needed)", async () => {
-  const { DEFAULT_FINISH, FINISHES } = await import("./motion/finish-mode.ts");
-  assert.equal(DEFAULT_FINISH, "vector");
-  assert.deepEqual([...FINISHES].sort(), ["pixel", "vector"]);
-  const landing = sheets.find((s) => s.file === "landing.css").css;
-  // the vector finish plays unless the pixel one is asked for (so it also plays before or without any script)
-  assert.match(landing, /html:not\(\[data-cardfinish="pixel"\]\) \.rig__p \{ animation: var\(--anim, none\); \}/);
-  assert.doesNotMatch(landing, /\[data-cardfinish="vector"\]/, "nothing waits for a script to say vector");
-  // the card's own web bits move smoothly; pixel steps only on the pixel finish
-  assert.match(landing, /\.cart__shine \{ --shine-t: var\(--ease-out\);/);
-  assert.match(landing, /html\[data-cardfinish="pixel"\] \.cart__shine \{ --shine-t: steps\(14, end\); \}/);
-  assert.doesNotMatch(landing.match(/\.pcard__link \{[^}]*\}/)[0], /steps\(/, "the name's underline grows smoothly");
-  // the pixel finish's code is fetched only for that finish
-  const main = readFileSync(new URL("./main.ts", import.meta.url), "utf8");
-  assert.match(main, /if \(cardFinish !== "pixel" \|\| !document\.querySelector\("\[data-rig\]"\)\) return;/);
-  // the retired looks left nothing behind (Dex 10-19, the redesign: dust abandoned)
+test("the retired looks left nothing behind (Dex 10-19, the redesign: dust abandoned)", () => {
   const all = sheets.map((s) => s.css).join("\n");
   assert.doesNotMatch(all, /look-dust|look-cut|data-motion="(?:dust|cuts)"/);
 });

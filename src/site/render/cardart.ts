@@ -10,8 +10,8 @@
 //   pixel finish draws them onto the site's pixel grid (motion/cardrig.ts).
 // - the plain layers (until a card has its rig): public/site/cards/<id>/0.png (back) .. n-1.png (front), all one size,
 //   each blown up by a whole number of pixels (CSS round(), no script).
-// Both pan: with the pointer on a desktop (motion/magnet.ts moves every [data-depth] layer of a [data-tilt-scene]),
-// with the scroll everywhere (a CSS view timeline) and in a slow drift on touch screens; a shine sweeps across.
+// Both pan with the scroll everywhere (a CSS view timeline) and in a slow drift on touch screens; a shine sweeps across.
+// The pointer's tilt and depth are the card's own (motion/pcard.ts, lane K), not motion/magnet.ts's.
 // Reduced motion: all of it still.
 
 import { readFileSync } from "node:fs";
@@ -75,7 +75,7 @@ function rigArt(p: Project, rig: RigV2, className?: string): string {
       `<img class="rig__p" src="/site/cards/${p.id}/${esc(part.src)}" alt="" loading="lazy" decoding="async" data-part="${esc(part.id)}" style="${style}"></div>`;
   }
   return (
-    `<div class="cart cart--rig${rig.pixelated ? " cart--px" : ""}${className ? ` ${className}` : ""}" data-tilt-scene data-rig="/site/cards/${p.id}/" aria-hidden="true" ` +
+    `<div class="cart cart--rig${rig.pixelated ? " cart--px" : ""}${className ? ` ${className}` : ""}" data-rig="/site/cards/${p.id}/" aria-hidden="true" ` +
     `style="--aw:${W};--ah:${H};--fx:${+(fx / W).toFixed(4)};--fy:${+(fy / H).toFixed(4)}">` +
     `<div class="rig__box">${layers}</div><span class="cart__shine"></span></div>`
   );
@@ -93,7 +93,7 @@ export function cardArt(p: Project, className?: string): string {
       `loading="lazy" decoding="async" style="--pd:${d * 5}">`;
   }
   return (
-    `<div class="cart${className ? ` ${className}` : ""}" data-tilt-scene aria-hidden="true" style="--aw:${w};--ah:${h}">` +
+    `<div class="cart${className ? ` ${className}` : ""}" aria-hidden="true" style="--aw:${w};--ah:${h}">` +
     `${imgs}<span class="cart__shine"></span></div>`
   );
 }
