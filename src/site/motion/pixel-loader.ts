@@ -13,8 +13,10 @@
 //   its tie (or released to drift). Every frame it is drawn back onto the pixel grid: each facet rasterised with the
 //   sprite as its texture (nearest texel, never smoothed), its back mirrored and darker, lit by how the facet faces
 //   the light (a step or two along her paper ramp), and a 1 px spine so it never vanishes edge-on.
-// - The ofuda's pixels are her processed 128 px sprite's (lanes/anim/moves/opening_ofuda/final/f017.png, the paper on
-//   her hat brim, straightened; public/site/loader/ofuda.png), so it is the same object that drifts to her.
+// - The ofuda is the paper on her hat, exact to the pixel (Dex 10-19: "whatever is on her hat right now, that's the
+//   ofuda for the opening and the website and everything, exact down to the pixel"): cut from her idle's first drawing
+//   (public/assets/zhusha/idle/f000.png at OFUDA_IN_IDLE; public/site/loader/ofuda.png = lanes/ship/ofuda/ofuda.png),
+//   nothing added. Facing you flat it draws exactly those pixels; turned, its texels step darker or lighter.
 // - Reduced motion: a static ofuda, nothing moves.
 //
 // The page:
@@ -38,57 +40,87 @@ const CYAN_HEX = ["143a44", "1c5464", "2b8288", "3db2bb", "80c7d2", "b7f7ff", "e
 const EDGE_HEX = "402c1f";
 const WHITE_HEX = "fff8f9";
 
+/** The ofuda's own colours, exact (from her idle's hat; dark -> light). */
+const OFUDA_HEX = ["be6139", "b16e60", "af7a43", "b18351", "bf854c", "ba8e5b", "c88d53", "c79561", "ca9376", "d09b62",
+  "d6a36d", "dca287", "deac78", "e7b782", "f5b898", "f4e0a8", "ffdac7", "ffe6da", "fff0ed"];
+/** Each ofuda colour in light steps (the paper turned toward or away from the light, its back): -6..+4, 0 = exact. */
+const LMIN = -6, LMAX = 4, NL = LMAX - LMIN + 1;
+const lightStep = (c: [number, number, number], s: number): [number, number, number] => {
+  if (s <= 0) return c.map((v) => Math.round(v * 0.9 ** -s)) as [number, number, number];
+  const m = 1 - 0.82 ** s, warm = [255, 250, 240];
+  return c.map((v, i) => Math.round(v + (warm[i]! - v) * m)) as [number, number, number];
+};
+
 const hex = (h: string): [number, number, number] => [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 
 /** Palette index -> [r, g, b]; 0 is empty. */
 export const COLORS: readonly (readonly [number, number, number])[] = [
   [0, 0, 0], hex(EDGE_HEX), ...PAPER_HEX.map(hex), ...RED_HEX.map(hex), ...CYAN_HEX.map(hex), hex(WHITE_HEX),
+  ...OFUDA_HEX.flatMap((h) => Array.from({ length: NL }, (_, l) => lightStep(hex(h), l + LMIN))),
 ];
 const EDGE = 1;
 const P0 = 2, PN = PAPER_HEX.length;
 const R0 = P0 + PN, RN = RED_HEX.length;
 const C0 = R0 + RN, CN = CYAN_HEX.length;
 const WHITE = C0 + CN;
+const O0 = WHITE + 1, ON = OFUDA_HEX.length;
 const isPaper = (c: number): boolean => c >= P0 && c < P0 + PN;
-const paperShift = (c: number, s: number): number => (isPaper(c) ? P0 + Math.max(0, Math.min(PN - 1, c - P0 + s)) : c);
+const isOfuda = (c: number): boolean => c >= O0 && c < O0 + ON * NL;
+/** The ofuda colour `i` (into OFUDA_HEX) at light step `s` (0 = exact). */
+const ofudaAt = (i: number, s: number): number => O0 + i * NL + Math.max(LMIN, Math.min(LMAX, s)) - LMIN;
+/** A paper pixel `s` light steps lighter (+) or darker (-): the ofuda's own colours step on their own ladders, the
+ *  loader's paper ramp along itself; anything else stays. */
+export const paperShift = (c: number, s: number): number => {
+  if (isOfuda(c)) {
+    const j = c - O0, i = Math.floor(j / NL);
+    return ofudaAt(i, (j % NL) + LMIN + s);
+  }
+  return isPaper(c) ? P0 + Math.max(0, Math.min(PN - 1, c - P0 + s)) : c;
+};
+/** Paper (the ofuda's texels or the loader's paper ramp), not its edge, the ribbons or the white. */
+export const isPaperColor = (c: number): boolean => isPaper(c) || isOfuda(c);
+/** The paper's edge brown (the 1 px spine seen edge-on) and a mid paper. */
+export const EDGE_INDEX = EDGE;
+export const MID_PAPER = P0 + 6;
 
 // ------------------------------------------------------------------------------------------------ the ofuda
 
-/** The ofuda (6 x 15): 'k' its edge, '0'-'C' the paper ramp. Lifted from her processed sprite (see the header). */
+/** The ofuda (7 x 13), exact: '.' empty, 'a'.. its colours (OFUDA_HEX). Cut from her idle's first drawing (the
+ *  paper on her hat; see the header): lanes/opening/f19/cut_ofuda.py, ofuda_ts.py. */
 export const OFUDA_ROWS: readonly string[] = [
-  ".kkkk.",
-  "k5266k",
-  "k5367k",
-  "k5488k",
-  "k6569k",
-  "k6659k",
-  "k666Ak",
-  "k68AAk",
-  "k75AAk",
-  "k87AAk",
-  "k869Ak",
-  "k79BAk",
-  "k99BBk",
-  "kAACBk",
-  ".kkkk.",
+  "..decgg",
+  "..deahf",
+  "..cgajh",
+  "..dgcjk",
+  "..fjekf",
+  "..jein.",
+  "..keqn.",
+  ".fmlne.",
+  ".mnnr..",
+  ".noqp..",
+  "mnlr...",
+  ".nsr...",
+  ".qrb...",
 ];
-export const OFUDA_W = 6;
-export const OFUDA_H = 15;
-const KEYS = "0123456789ABC";
+export const OFUDA_W = 7;
+export const OFUDA_H = 13;
+/** Where it was cut: its top-left on her idle's first drawing (public/assets/zhusha/idle/f000.png, art px). */
+export const OFUDA_IN_IDLE = { file: "f000.png", x: 39, y: 12 } as const;
+const KEYS = "abcdefghijklmnopqrstuvwxyz";
 
 function texture(rows: readonly string[]): Uint8Array {
   const t = new Uint8Array(OFUDA_W * OFUDA_H);
   rows.forEach((r, y) => {
     for (let x = 0; x < OFUDA_W; x++) {
       const ch = r[x]!;
-      t[y * OFUDA_W + x] = ch === "." ? 0 : ch === "k" ? EDGE : P0 + KEYS.indexOf(ch);
+      t[y * OFUDA_W + x] = ch === "." ? 0 : ofudaAt(KEYS.indexOf(ch), 0);
     }
   });
   return t;
 }
 /** Front texels (palette indices). */
 export const OFUDA_FRONT = texture(OFUDA_ROWS);
-/** The back as seen: mirrored, two paper steps darker (the paper's other side, in shadow). */
+/** The back as seen: mirrored, two light steps darker (the paper's other side, in shadow). */
 export const OFUDA_BACK = (() => {
   const t = new Uint8Array(OFUDA_W * OFUDA_H);
   for (let y = 0; y < OFUDA_H; y++) for (let x = 0; x < OFUDA_W; x++) t[y * OFUDA_W + x] = paperShift(OFUDA_FRONT[y * OFUDA_W + (OFUDA_W - 1 - x)]!, -2);
@@ -348,7 +380,11 @@ export class PaperOfuda {
 
   /** Its pixels now, in its own box: palette indices, w x h, at (x0, y0) art px. */
   render(): { x0: number; y0: number; w: number; h: number; idx: Uint8Array } {
-    const p = this.p;
+    // drawn on a grid that keeps the sprite's texels whole: its top-left corner snapped to a whole art px (a shift of
+    // under half a pixel; the sim is untouched), so hanging flat it is exactly the sprite
+    const p = this.p.slice();
+    const snapX = Math.round(p[0]!) - p[0]!, snapY = Math.round(p[1]!) - p[1]!;
+    for (let i = 0; i < NODES; i++) { p[i * 3] = p[i * 3]! + snapX; p[i * 3 + 1] = p[i * 3 + 1]! + snapY; }
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (let i = 0; i < NODES; i++) {
       x0 = Math.min(x0, p[i * 3]!); x1 = Math.max(x1, p[i * 3]!);
@@ -378,8 +414,8 @@ export class PaperOfuda {
     for (const r of order) {
       const a = r * 2, b = a + 1, c = a + 2, d = a + 3;
       const va = r / SEG, vc = (r + 1) / SEG;
-      this.tri(a, b, d, [0, va], [1, va], [1, vc], put);
-      this.tri(a, d, c, [0, va], [1, vc], [0, vc], put);
+      this.tri(p, a, b, d, [0, va], [1, va], [1, vc], put);
+      this.tri(p, a, d, c, [0, va], [1, vc], [0, vc], put);
     }
     return { x0: bx, y0: by, w, h, idx };
   }
@@ -391,9 +427,8 @@ export class PaperOfuda {
     return z;
   }
 
-  private tri(i: number, j: number, k: number, ti: number[], tj: number[], tk: number[],
+  private tri(p: Float64Array, i: number, j: number, k: number, ti: number[], tj: number[], tk: number[],
     put: (x: number, y: number, c: number) => void): void {
-    const p = this.p;
     const ax = p[i * 3]!, ay = p[i * 3 + 1]!, bx = p[j * 3]!, by = p[j * 3 + 1]!, cx = p[k * 3]!, cy = p[k * 3 + 1]!;
     const area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
     if (Math.abs(area) < 1e-6) return;
@@ -456,8 +491,8 @@ function line(x0: number, y0: number, x1: number, y1: number, put: (x: number, y
 /** The loader's canvas, in art px (the ofuda's pixel size). */
 export const BOX_W = 36;
 export const BOX_H = 36;
-/** The ofuda's tie in the box (its top edge's middle); it lands at (TIE.x - 3, TIE.y). */
-export const TIE = { x: 18, y: 10 } as const;
+/** The ofuda's tie in the box (its top edge's middle); it lands at (TIE.x - OFUDA_W / 2, TIE.y), whole art px. */
+export const TIE = { x: 18.5, y: 10 } as const;
 const OX = TIE.x - OFUDA_W / 2, OY = TIE.y;
 /** The ribbons' centre. */
 const CX = 18, CY = 17.5;

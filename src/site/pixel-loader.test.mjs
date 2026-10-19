@@ -5,8 +5,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
 import {
-  BOX_H, BOX_W, COLORS, LoaderCore, OFUDA_BACK, OFUDA_FRONT, OFUDA_H, OFUDA_ROWS, OFUDA_W, PaperOfuda, TIE, TIMING,
-  createPixelLoader, toRGBA,
+  BOX_H, BOX_W, COLORS, LoaderCore, OFUDA_BACK, OFUDA_FRONT, OFUDA_H, OFUDA_IN_IDLE, OFUDA_ROWS, OFUDA_W, PaperOfuda, TIE,
+  TIMING, createPixelLoader, paperShift, toRGBA,
 } from "./motion/pixel-loader.ts";
 
 /** RGBA pixels of a non-interlaced 8-bit RGBA PNG. */
@@ -60,35 +60,40 @@ const run = async (core, seconds, dt = 1 / 60, each) => {
 
 // ------------------------------------------------------------------------------------------------ the sprite
 
-test("the ofuda is one small sprite (6 x 15), the same pixels as public/site/loader/ofuda.png (front | back)", () => {
+test("the ofuda is the paper on her hat in her idle, exact to the pixel: the idle's crop = ofuda.png = the sprite (Dex 10-19)", () => {
+  // "whatever is on her hat right now, that's the ofuda for the opening and the website and everything, exact down to
+  // the pixel": cut from public/assets/zhusha/idle/f000.png at OFUDA_IN_IDLE (lanes/ship/ofuda/ofuda.png for lane A)
   assert.equal(OFUDA_ROWS.length, OFUDA_H);
-  assert.ok(OFUDA_ROWS.every((r) => r.length === OFUDA_W && /^[.k0-9A-C]+$/.test(r)));
+  assert.ok(OFUDA_ROWS.every((r) => r.length === OFUDA_W && /^[.a-z]+$/.test(r)));
   const png = readPng(new URL("../../public/site/loader/ofuda.png", import.meta.url));
-  assert.equal(png.w, OFUDA_W * 2);
-  assert.equal(png.h, OFUDA_H);
-  for (const [tex, ox] of [[OFUDA_FRONT, 0], [OFUDA_BACK, OFUDA_W]]) {
-    for (let y = 0; y < OFUDA_H; y++) for (let x = 0; x < OFUDA_W; x++) {
-      const c = tex[y * OFUDA_W + x], i = (y * png.w + ox + x) * 4;
-      if (!c) { assert.equal(png.px[i + 3], 0, `${x},${y} empty`); continue; }
-      assert.equal(png.px[i + 3], 255);
-      assert.deepEqual([png.px[i], png.px[i + 1], png.px[i + 2]], [...COLORS[c]], `${ox ? "back" : "front"} ${x},${y}`);
-    }
+  const idle = readPng(new URL(`../../public/assets/zhusha/idle/${OFUDA_IN_IDLE.file}`, import.meta.url));
+  assert.deepEqual([png.w, png.h], [OFUDA_W, OFUDA_H]);
+  let paper = 0;
+  for (let y = 0; y < OFUDA_H; y++) for (let x = 0; x < OFUDA_W; x++) {
+    const c = OFUDA_FRONT[y * OFUDA_W + x], i = (y * png.w + x) * 4;
+    const j = ((OFUDA_IN_IDLE.y + y) * idle.w + OFUDA_IN_IDLE.x + x) * 4;
+    if (!c) { assert.equal(png.px[i + 3], 0, `${x},${y} empty`); continue; }
+    paper++;
+    assert.equal(png.px[i + 3], 255);
+    assert.deepEqual([png.px[i], png.px[i + 1], png.px[i + 2]], [...COLORS[c]], `ofuda.png ${x},${y}`);
+    assert.equal(idle.px[j + 3], 255, `idle ${x},${y} opaque`);
+    assert.deepEqual([idle.px[j], idle.px[j + 1], idle.px[j + 2]], [...COLORS[c]], `the idle's hat ${x},${y}`);
   }
+  assert.equal(paper, 56);
 });
 
-test("the ofuda reads as paper: a dark edge all round, a gold body, its back darker than its face", () => {
-  const edge = OFUDA_FRONT[1 * OFUDA_W];
-  for (let y = 1; y < OFUDA_H - 1; y++) {
-    assert.equal(OFUDA_FRONT[y * OFUDA_W], edge, `left edge row ${y}`);
-    assert.equal(OFUDA_FRONT[y * OFUDA_W + OFUDA_W - 1], edge, `right edge row ${y}`);
+test("the ofuda: nothing added (only her hat's own colours, no outline), its back darker, turned it steps darker or lighter", () => {
+  const hat = new Set();
+  OFUDA_FRONT.forEach((c) => { if (c) hat.add(COLORS[c].join()); });
+  assert.equal(hat.size, 19, "her hat's paper has 19 colours");
+  const mean = (t) => { let s = 0, n = 0; t.forEach((c) => { if (c) { s += lum(c); n++; } }); return s / n; };
+  assert.ok(mean(OFUDA_BACK) < mean(OFUDA_FRONT) - 5, "the back is darker");
+  for (const c of OFUDA_FRONT) {
+    if (!c) continue;
+    assert.equal(paperShift(c, 0), c);
+    for (let s = -6; s < 4; s++) assert.ok(lum(paperShift(c, s)) <= lum(paperShift(c, s + 1)) + 1e-9, `step ${s} -> ${s + 1}`);
+    assert.ok(lum(paperShift(c, -2)) < lum(c) && lum(paperShift(c, 2)) > lum(c), "darker and lighter");
   }
-  const body = (t) => {
-    const v = [];
-    for (let y = 1; y < OFUDA_H - 1; y++) for (let x = 1; x < OFUDA_W - 1; x++) v.push(lum(t[y * OFUDA_W + x]));
-    return v.reduce((a, b) => a + b, 0) / v.length;
-  };
-  assert.ok(body(OFUDA_FRONT) > lum(edge) + 60, "the paper is much lighter than its edge");
-  assert.ok(body(OFUDA_BACK) < body(OFUDA_FRONT) - 5, "the back is darker");
 });
 
 // ------------------------------------------------------------------------------------------------ the loader
@@ -225,7 +230,7 @@ const linkLengthsOk = (paper) => {
   const P = paper.p, d = (a, b) => Math.hypot(P[a * 3] - P[b * 3], P[a * 3 + 1] - P[b * 3 + 1], P[a * 3 + 2] - P[b * 3 + 2]);
   for (let r = 0; r <= 5; r++) {
     assert.ok(Math.abs(d(r * 2, r * 2 + 1) - OFUDA_W) < 0.6, `width at row ${r}: ${d(r * 2, r * 2 + 1)}`);
-    if (r < 5) for (const c of [0, 1]) assert.ok(Math.abs(d(r * 2 + c, r * 2 + 2 + c) - 3) < 0.45, `length row ${r}`);
+    if (r < 5) for (const c of [0, 1]) assert.ok(Math.abs(d(r * 2 + c, r * 2 + 2 + c) - OFUDA_H / 5) < 0.15 * OFUDA_H / 5, `length row ${r}`);
   }
 };
 
@@ -236,7 +241,7 @@ test("paper: still air and no gusts -> it hangs as the sprite, exactly", () => {
   const r = paper.render();
   for (let y = 0; y < OFUDA_H; y++) for (let x = 0; x < OFUDA_W; x++) {
     const c = OFUDA_FRONT[y * OFUDA_W + x];
-    const X = 10 - 3 + x - r.x0, Y = 4 + y - r.y0;
+    const X = Math.round(10 - OFUDA_W / 2) + x - r.x0, Y = 4 + y - r.y0;
     assert.equal(r.idx[Y * r.w + X], c, `${x},${y}`);
   }
   let n = 0;
@@ -279,9 +284,10 @@ test("paper: held by its top edge (on the brim) the edge stays put while the res
   paper.wind.x = 40;
   paper.gust = 1;
   for (let i = 0; i < 240; i++) paper.step(1 / 60);
-  assert.deepEqual([...paper.p.slice(0, 6)].map((v) => +v.toFixed(6)), [17, 5, 0, 23, 5, 0]);
-  // the bottom corners have left their resting places (rest: x 17 / 23, y 20, z 0)
-  const moved = Math.hypot(paper.p[30] - 17, paper.p[31] - 20, paper.p[32]) + Math.hypot(paper.p[33] - 23, paper.p[34] - 20, paper.p[35]);
+  const L = 20 - OFUDA_W / 2, R = 20 + OFUDA_W / 2, foot = 5 + OFUDA_H;
+  assert.deepEqual([...paper.p.slice(0, 6)].map((v) => +v.toFixed(6)), [L, 5, 0, R, 5, 0]);
+  // the bottom corners have left their resting places (rest: x L / R, y foot, z 0)
+  const moved = Math.hypot(paper.p[30] - L, paper.p[31] - foot, paper.p[32]) + Math.hypot(paper.p[33] - R, paper.p[34] - foot, paper.p[35]);
   assert.ok(moved > 2, `the foot flutters (${moved.toFixed(1)})`);
 });
 
