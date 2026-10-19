@@ -136,9 +136,13 @@ export class Opening {
       this.hintTick();
       return;
     }
-    const T = Math.max(startT(this.way), link.T(1000 / 60));
+    const T = Math.max(startT(this.way), link.T(1000 / 60)), was = this.T;
     this.T = T;
     const h = this.host;
+    if (link.epoch !== this.epoch && Math.abs(T - was) < 0.25) {
+      // the clock re-anchored where it already read (the music's own start on its clock, way 4's bar 6): no skip
+      this.epoch = link.epoch;
+    }
     if (link.epoch !== this.epoch) {
       // a skip: she is put down walking at her place for T, the ofuda on her hat, the frame cut
       this.epoch = link.epoch;

@@ -311,6 +311,8 @@ async function boot(): Promise<void> {
         const pr = r.presenter.rect, dpr = window.devicePixelRatio || 1;
         return [(pr.x + (x * xf.s + xf.offX) * pr.scale) / dpr, (pr.y + (y * xf.s + xf.offY) * pr.scale) / dpr];
       },
+      /** (way 4) What the held world shows: the slab (top) or the jetty's window, her at frame point (fx, fy). */
+      holdFor: (way: "top" | "bottom", fx?: number, fy?: number, artCss?: number) => game.setHold(way, fx, fy, artCss),
       /** Forces a framing ({zoom, anchor, horizon, lead}); null follows the world's tracks again. */
       frame: (f: Record<string, number> | null) => {
         game.framingOverride = f;
