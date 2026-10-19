@@ -15,7 +15,7 @@ const CSS = `
 .op-cap.on { visibility: inherit; }
 .op-chip, .op-sound { position: absolute; top: 50%; translate: 0 -50%; min-height: 44px; min-width: 44px; padding: 0 14px; border: 0; cursor: pointer;
   pointer-events: auto; background: #fff4f1; color: #2b2233; box-shadow: 0 0 0 2px #2b2233, 3px 3px 0 2px rgba(0, 0, 0, 0.35);
-  font: 400 13px / 1 var(--f-label, "Silkscreen", ui-monospace, monospace); letter-spacing: 0.08em; text-transform: lowercase; }
+  font: 400 16px / 1 var(--f-label, "Silkscreen", ui-monospace, monospace); letter-spacing: 0.08em; text-transform: lowercase; }
 .op-chip { right: max(16px, env(safe-area-inset-right)); }
 .op-sound { left: max(16px, env(safe-area-inset-left)); }
 .op-chip:focus-visible, .op-sound:focus-visible { outline: 3px solid #ffc857; outline-offset: 2px; }

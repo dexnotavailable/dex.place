@@ -48,3 +48,25 @@ test("per-frame motion values are never written as custom properties on :root", 
     assert.doesNotMatch(ts, /documentElement\.style\.setProperty|root\.style\.setProperty/, `${f} writes on <html>`);
   }
 });
+
+test("Departure Mono (Dex 10-19: yes): in the repo with its OFL licence beside it, on its own 11 px grid, credited", async () => {
+  const { existsSync, statSync } = await import("node:fs");
+  const dir = new URL("../../public/fonts/departure-mono/", import.meta.url);
+  const font = new URL("DepartureMono-Regular.woff2", dir);
+  assert.ok(existsSync(font) && statSync(font).size > 10000, "the woff2 is in");
+  const lic = readFileSync(new URL("LICENSE.txt", dir), "utf8");
+  assert.match(lic, /SIL Open Font License, Version 1\.1/);
+  assert.match(lic, /Helena Zhang/);
+  const v2 = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
+  const face = v2.match(/@font-face \{[^}]*font-family: "Departure Mono";[^}]*\}/)?.[0] ?? "";
+  assert.match(face, /src: url\("\/fonts\/departure-mono\/DepartureMono-Regular\.woff2"\) format\("woff2"\)/);
+  // drawn on 11 px, the site's text on 16 px: scaled 11 / 16 so its font pixels land on whole screen pixels
+  assert.match(face, /size-adjust: 68\.75%/);
+  assert.equal(11 / 16, 0.6875);
+  // the stacks name it first for labels and code; code never shrinks off its grid or gets a fake bold
+  assert.match(v2, /--f-label: "Departure Mono"/);
+  assert.match(v2, /--f-mono: "Departure Mono"/);
+  assert.match(v2, /code, kbd, pre, \.prose code, \.prose kbd, \.verify__line code \{ font-size: 1em; font-synthesis: none; \}/);
+  const { footer } = await import("./render/layout.ts");
+  assert.match(footer("home"), /<a href="\/fonts\/departure-mono\/LICENSE\.txt">Departure Mono<\/a> by Helena Zhang/);
+});

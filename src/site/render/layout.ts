@@ -179,7 +179,8 @@ export function footer(current: PageId): string {
     `<span class="ftr__sleepy" aria-hidden="true">${icon("sleepy", 3)}</span>` +
     `</div></div>` +
     `<div class="ftr__base wrap"><p>Type: <a href="/fonts/tesu-display/LICENSE.txt">Tesu Display</a> (ours) and ` +
-    `<a href="/fonts/OFL-DotGothic16.txt">DotGothic16</a> by Fontworks (SIL OFL). ` +
+    `<a href="/fonts/OFL-DotGothic16.txt">DotGothic16</a> by Fontworks and ` +
+    `<a href="/fonts/departure-mono/LICENSE.txt">Departure Mono</a> by Helena Zhang (SIL OFL). ` +
     `The dex mark is drawn by hand from <a href="/fonts/Daniel-license.txt">Daniel</a> by Daniel Midgley.</p></div>` +
     `</footer>`
   );
