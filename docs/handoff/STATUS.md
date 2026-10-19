@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T17:28:47.361Z (20/10/2026, 00:28:47 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T18:38:45.286Z (20/10/2026, 01:38:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_93dbdace-3fa — last activity 56 min ago
+### wf_93dbdace-3fa — last activity 1 min ago
 8 agents: 7 done, 1 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -24,15 +24,15 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r2** (running)
 - **w2:r2** (done): Worker 2, round 2 is committed as e046ba15 on claude/v2-art-vista-p2. Most of the critique is answered. The main open items are the terrace's bottom-left seam (W2-11, which isn't a W2 piece) and the lake's ruled near edge (lane C's water shader). **Changes:** - **Near cliffs (W2-6).** A new face model (chunks.ts) builds Dex's chunk sketch literally: blocks of different sizes overlapping at different depths, so no led
 
-### wf_286da28b-ad1 — last activity 194 min ago
-4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
+### wf_286da28b-ad1 — last activity 1 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
 - **critic:r0** (done): 
 - **w1:r1** (running)
-- **w2:r1** (done): Worker 2's round-1 work (fog, wind, the camera's near layers) is committed on claude/v2-art-fall-p2 as b30b4942. An earlier session had built most of it and stopped before committing, so I judged its render (round-1\w2\full-a) at real size beside refs 04 and the sky ref, fixed what was wrong, re-rendered, and committed. What the fall now has (W2-1 to W2-9): - Lens fog on top of everything, nearer than the paper. Each
+- **w2:r1** (running): Worker 2's round-1 work (fog, wind, the camera's near layers) is committed on claude/v2-art-fall-p2 as b30b4942. An earlier session had built most of it and stopped before committing, so I judged its render (round-1\w2\full-a) at real size beside refs 04 and the sky ref, fixed what was wrong, re-rendered, and committed. What the fall now has (W2-1 to W2-9): - Lens fog on top of everything, nearer than the paper. Each
 
-### wf_6eb91aef-0bd — last activity 204 min ago
+### wf_6eb91aef-0bd — last activity 273 min ago
 8 agents: 7 done, 1 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -44,7 +44,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r2** (done): Worker 1's round 2 is committed. Eight of the nine critique items are in; W1-9 (the arcade stair under the court) is written up as a request for whoever owns that walk in shiraito.ts. This run picked up after a usage stop. The earlier session had made most of the edits but not committed them. I rendered all 8 frames at real size on port 24621, fixed what still looked wrong, then committed. What each item got: - **W1-
 - **w2:r2** (running)
 
-### wf_5cebc05c-deb — last activity 223 min ago
+### wf_5cebc05c-deb — last activity 293 min ago
 4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
