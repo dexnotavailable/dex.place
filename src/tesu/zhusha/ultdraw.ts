@@ -3,8 +3,9 @@
 // lanes/engine/EFFECTS-CONTRACT.md) and lane A's r_* drawings land. They show where, how big and when: the letter carved
 // piece by piece by the slash storm (each slash a white-hot streak; each piece it carves white-hot, cooling to vermilion
 // ink with her blue fire along it), shattering as she dives through it; her dive's vertical blur and its line; the nuke
-// (the white / orange / red first flash, her blue flames engulfing it, the column, the ground thrown up, the dust that
-// clears outward, off her: it hides the change, never her form after); the ghost blades.
+// (the white / orange / red first flash, her blue flames engulfing it, the column, the ground thrown up; the wreck
+// burning out under the smoke, which clears slowly, outward, off her: it hides the change, never her form after); the
+// ghost blades.
 // Side-on and flat (Dex 10-19: no rings on the ground). The letter is never mirrored: it is drawn in world space as
 // written, wherever her facing put it.
 
@@ -154,29 +155,57 @@ export function drawDiveBlur(r: WorldRenderer, z: Zhusha, bodyH: number): void {
 }
 
 /**
- * The nuke: the first flash (white / orange / red), her blue flames engulfing it and burning down, the column of light
- * where the point went in, the ground thrown up, the dust and smoke rolling out, then clearing outward off her.
+ * The nuke and its aftermath (Dex 10-19: stay on the destruction; the smoke takes a while to clear): the first flash
+ * (white / orange / red), her blue flames engulfing it, the column of light where the point went in, the ground thrown
+ * up; then the wreck (rubble settled across the crater, embers rising, her flames burning out across it) under a dense
+ * pall of smoke and dust, which clears slowly (outward and up, the middle first) so she is revealed as it thins.
  */
 function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: number }): void {
-  const I = ULT.impact, clear = ULT.reveal.clear;
-  const t = sm.t;
+  const I = ULT.impact, A = ULT.aftermath;
+  const t = sm.t, Th = I.ticks + A.hold, Tc = Th + A.clear;
   // the first flash: white at the heart, orange, a red rim, swelling and gone as her flames take it
   if (t < I.flash + 6) {
     const u = t / (I.flash + 6), R = (1.5 + 4.5 * easeOut(t / I.flash)) * H * (1 - 0.5 * clamp01((t - I.flash) / 6));
     puffLight(r, sm.x, sm.y - 1.6 * H, R, 0.05 + 0.6 * u, WHITE, ORANGE, VERM);
   }
-  // her blue flames: tongues rise around the crater, engulf the flash, then burn down
-  const fl = t < 4 ? 0 : t < 14 ? (t - 4) / 10 : Math.max(0, 1 - (t - 14) / (I.ticks + clear - 14));
+  // the wreck: rubble settled across the crater (from when the thrown slabs come down), fading as the smoke clears
+  const wreck = t < 30 ? 0 : t < 40 ? (t - 30) / 10 : 1 - clamp01((t - (Tc - 40)) / 40);
+  if (wreck > 0) {
+    for (let i = 0; i < 26; i++) {
+      const x = sm.x + (rnd(i + 80) - 0.5) * 12 * H * (0.3 + 0.7 * rnd(i + 81));
+      const s = (0.12 + rnd(i + 82) * 0.3) * H;
+      quad(r, x, sm.y - s * 0.3, s, s * 0.6, (rnd(i + 83) - 0.5) * 1.2, ROCK, wreck);
+      quad(r, x - 1, sm.y - s * 0.45, s * 0.5, s * 0.25, (rnd(i + 83) - 0.5) * 1.2, ROCK_LITE, wreck);
+    }
+  }
+  // her blue flames: tongues rise around the crater, engulf the flash, then spread across the wreck and burn out
+  const fl = t < 4 ? 0 : t < 14 ? (t - 4) / 10 : Math.max(0, 1 - (t - 14) / (Th + A.clear * 0.35 - 14));
   if (fl > 0) {
-    for (let i = 0; i < 18; i++) {
-      const ox = (rnd(i) - 0.5) * 6.5 * H, hh = (2.5 + rnd(i + 5) * 6) * H * fl * (0.8 + 0.2 * Math.sin(t * 0.7 + i));
-      const w = (0.35 + rnd(i + 9) * 0.45) * H;
+    const spread = 1 + 1.3 * clamp01((t - 14) / Math.max(1, Th - 14));
+    for (let i = 0; i < 22; i++) {
+      const ox = (rnd(i) - 0.5) * 6.5 * H * spread;
+      // the far ones die first: a fire burning out from its edges in
+      const life = fl * (1 - 0.5 * Math.abs(ox) / (6.5 * H * spread));
+      const hh = (1 + rnd(i + 5) * 5.5) * H * life * (0.75 + 0.25 * Math.sin(t * 0.7 + i));
+      if (hh < 6) continue;
+      const w = (0.3 + rnd(i + 9) * 0.4) * H;
       for (let k = 0; k < 4; k++) {
         const y = sm.y - (k + 0.5) * (hh / 4), ww = w * (1 - k * 0.22) + Math.sin(t * 0.9 + i * 2 + k) * 4;
-        quad(r, sm.x + ox + Math.sin(t * 0.5 + i + k) * 6, y, ww + 8, hh / 4 + 2, 0, AZURE_DEEP, 0.85);
-        quad(r, sm.x + ox + Math.sin(t * 0.5 + i + k) * 6, y, ww, hh / 4 + 2, 0, AZURE, 0.9);
-        quad(r, sm.x + ox + Math.sin(t * 0.5 + i + k) * 6, y, ww * 0.4, hh / 4 + 2, 0, AZURE_CORE, 0.9);
+        const x = sm.x + ox + Math.sin(t * 0.5 + i + k) * 6;
+        quad(r, x, y, ww + 8, hh / 4 + 2, 0, AZURE_DEEP, 0.85);
+        quad(r, x, y, ww, hh / 4 + 2, 0, AZURE, 0.9);
+        quad(r, x, y, ww * 0.4, hh / 4 + 2, 0, AZURE_CORE, 0.9);
       }
+    }
+  }
+  // embers rising off the wreck, thinning as it burns out
+  if (t > 10 && t < Tc) {
+    const n = Math.round(40 * Math.max(0.15, fl));
+    for (let i = 0; i < n; i++) {
+      const cyc = 90 + rnd(i + 120) * 60, ph = ((t + rnd(i + 121) * cyc) % cyc) / cyc;
+      const x = sm.x + (rnd(i + 122) - 0.5) * 11 * H + Math.sin(t * 0.05 + i) * 10;
+      const y = sm.y - ph * 5 * H;
+      quad(r, x, y, 3, 3, 0, i % 3 ? AZURE : ORANGE, 1 - ph);
     }
   }
   // the column of light where the point went in (narrowing, gone as the dust peaks)
@@ -198,21 +227,33 @@ function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: num
       quad(r, x - 1, y - 1, s * 0.6, s * 0.3, t * 0.2 * side + i, ROCK_LITE, 1);
     }
   }
-  // the dust and smoke: a column rolls up into a cap, a skirt rolls out along the ground; after the impact it all
-  // drifts outward, off her, and thins to nothing over the reveal's first `clear` ticks
-  const grow = easeOut(t / I.ticks), out = Math.max(0, (t - I.ticks) / clear);
+  // the smoke and dust: a column rolls up into a cap, a skirt rolls out along the ground; it hangs over the wreck (a
+  // slow billow), then clears over `clear` ticks: drifting outward and up, the middle first, gone before the reveal
+  // ends (it hides the change, never her form after)
+  const grow = easeOut(t / I.ticks), hang = clamp01((t - I.ticks) / Math.max(1, A.hold));
+  const out = clamp01((t - Th) / A.clear);
   if (out >= 1) return;
   const ps: [number, number, number][] = [];
   for (let i = 0; i < 12; i++) ps.push([(rnd(i) - 0.5) * 1.8 * H, (0.4 + i * 0.5) * H * grow, (0.7 + rnd(i + 2) * 0.5) * H]);
   if (t > 6) for (let i = 0; i < 8; i++) ps.push([(i - 3.5) * 0.8 * H, 6 * H * grow + (rnd(i + 20) - 0.5) * 0.6 * H, (0.8 + rnd(i + 21) * 0.5) * H * Math.min(1, (t - 6) / 10)]);
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 14; i++) {
     const side = i % 2 ? 1 : -1;
-    ps.push([side * (1 + Math.floor(i / 2) * 0.9) * H * (0.4 + 0.6 * grow), 0.4 * H, (0.55 + rnd(i + 40) * 0.3) * H]);
+    ps.push([side * (1 + Math.floor(i / 2) * 0.9) * H * (0.4 + 0.6 * grow + 0.4 * hang), 0.4 * H, (0.55 + rnd(i + 40) * 0.3) * H * (1 + 0.3 * hang)]);
   }
+  // the core: dense puffs right where she stands, the last of the smoke to go (they go as she is revealed)
+  for (let i = 0; i < 4; i++) ps.push([(i - 1.5) * 0.3 * H, (0.3 + 0.3 * i) * H * grow, 0.6 * H * grow]);
   ps.forEach(([hx, hy, R0], i) => {
     const side = hx < 0 ? -1 : 1;
-    const R = R0 * (1 + 0.25 * out) * (1 - out);
-    puff(r, sm.x + hx + side * out * (2 + rnd(i + 60) * 2) * H, sm.y - hy - out * 0.8 * H, R, 0.08 + 0.5 * out, i, DUST_LITE, DUST, DUST_DARK);
+    // the nearer the middle, the sooner it goes: the middle is gone at aftermath.coreGone, just after she steps out of it
+    // (revealFrom); the edges drift off over the rest of the clear
+    const near = 1 - clamp01(Math.abs(hx) / (6 * H));
+    const o = clamp01(out * (1 + (1 / A.coreGone - 1) * near));
+    const billow = 1 + 0.06 * Math.sin(t * 0.04 + i) + 0.15 * hang;
+    // (a puff keeps its body until late in its clear, then goes: no empty middle before she is there)
+    const R = R0 * billow * (1 + 0.25 * o) * (1 - o * o * o);
+    // it drifts off slowly at first, then away (o squared): the middle stays covered until it goes
+    const go = o * o;
+    puff(r, sm.x + hx + side * go * (2 + rnd(i + 60) * 2) * H, sm.y - hy - hang * 0.4 * H - go * 1.2 * H, R, 0.08 + 0.5 * o, i, DUST_LITE, DUST, DUST_DARK);
   });
 }
 
