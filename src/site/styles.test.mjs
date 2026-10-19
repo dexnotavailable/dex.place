@@ -96,3 +96,12 @@ test("the home's places stay fixed: nothing above a fixed scene takes a transfor
   assert.match(bands, /clip-path: inset\(var\(--strip-h\) 0 calc\(-1 \* var\(--strip-h\)\) 0\)/, "a change of place always happens under a strip");
   assert.match(bands, /@media \(prefers-reduced-motion: reduce\) \{\s*\.band__scene \{ position: absolute;/, "reduced motion: the places scroll with the page");
 });
+
+test("the bands never widen the page (K's ask, 10-20: a phone's cards slide in from 60% of the screen's width): overflow-x clip on every band, never hidden / auto / scroll (that would make the band a scroll container and unstick its place)", () => {
+  const bands = sheets.find((s) => s.file === "bands.css").css;
+  assert.match(bands, /\.sheet \.band\.sec \{[^}]*overflow-x: clip;/);
+  const all = sheets.map((s) => s.css.replace(/\/\*[\s\S]*?\*\//g, "")).join("\n");
+  for (const m of all.matchAll(/([^{}]*\.band(?![\w-])[^{}]*)\{([^{}]*)\}/g)) {
+    assert.doesNotMatch(m[2], /overflow(?:-[xy])?\s*:\s*(?:hidden|auto|scroll)/, `${m[1].trim()}: a band must not scroll`);
+  }
+});
