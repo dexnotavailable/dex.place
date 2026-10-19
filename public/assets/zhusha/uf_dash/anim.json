@@ -1,0 +1,110 @@
+{
+ "id": "uf_dash",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  161,
+  152
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 14
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 16
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 18
+  },
+  {
+   "file": "f003.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 19
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 22
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 24
+  },
+  {
+   "file": "f006.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 27
+  },
+  {
+   "file": "f007.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 30
+  },
+  {
+   "file": "f008.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 33
+  },
+  {
+   "file": "f009.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 36
+  },
+  {
+   "file": "f010.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 39
+  },
+  {
+   "file": "f011.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 41
+  },
+  {
+   "file": "f012.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 43
+  },
+  {
+   "file": "f013.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 45
+  },
+  {
+   "file": "f014.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 47
+  },
+  {
+   "file": "f015.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 52
+  }
+ ],
+ "loop": false,
+ "source": "h3-L-uf_dash-A-s3000-305b59",
+ "notes": "kit v1.7 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f000: 2 px of H3's grey-green contact shadow on the floor removed; f001: 55 px of H3's grey-green contact shadow on the floor removed, shifted -1 px so her shoes stand on the ground row; f002: the effect cut by the frame edge continued as a soft falloff (40 px), 66 px of H3's grey-green contact shadow on the floor removed; f003: the effect cut by the frame edge continued as a soft falloff (40 px), 77 px of H3's grey-green contact shadow on the floor removed; f004: the effect cut by the frame edge continued as a soft falloff (40 px); f005: the effect cut by the frame edge continued as a soft falloff (40 px); f006: the effect cut by the frame edge continued as a soft falloff (40 px), 4 px of H3's grey-green contact shadow on the floor removed, shifted +3 px so her shoes stand on the ground row; f007: the effect cut by the frame edge continued as a soft falloff (40 px), 2 px of H3's grey-green contact shadow on the floor removed; f008: the effect cut by the frame edge continued as a soft falloff (40 px), 3 px of H3's grey-green contact shadow on the floor removed, shifted +10 px so her shoes stand on the ground row; f009: the effect cut by the frame edge continued as a soft falloff (40 px), 53 px of H3's grey-green contact shadow on the floor removed, shifted +5 px so her shoes stand on the ground row; f010: the effect cut by the frame edge continued as a soft falloff (40 px), 37 px of H3's grey-green contact shadow on the floor removed, shifted +3 px so her shoes stand on the ground row; f011: the effect cut by the frame edge continued as a soft falloff (40 px), 25 px of H3's grey-green contact shadow on the floor removed, shifted +2 px so her shoes stand on the ground row; f012: 18 px of H3's grey-green contact shadow on the floor removed; f013: 2 px of H3's grey-green contact shadow on the floor removed, shifted +1 px so her shoes stand on the ground row; f015: 5 px of H3's grey-green contact shadow on the floor removed"
+}
