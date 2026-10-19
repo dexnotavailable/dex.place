@@ -1,0 +1,196 @@
+{
+  "about": "R as a cut-in cinematic and the ult form's warps (lane U, 10-19). Dex 10-16 / 10-19: the call at its original speed; then during the flurry she disappears: she BECOMES the slashes that slash the letter into existence (hundreds of them, each carving a piece, ~3 s or more; the letter ABSOLUTELY HUGE, a nuke; it matches her R line 一筆――天を断つ: 断 or 天); the slashes stop a moment (a beat of stillness); then she dives straight down from above, a vertical blur, and destroys everything: a nuke (a white / orange / red first flash engulfed by her blue flames, a huge eruption); the dust clears on the ult form; control back after the nuke. The form stands still-ish on one frame, then warps position to position summoning ghost blades. Ticks at 60 a second, distances in H (96 world px; she is 0.88 H). feel.json's ult block keeps the gameplay numbers (impact radius / damage / knockback, the form's length, cooldown, damage multiplier, the ghost hit); its R timings (callTicks .. revealTicks, riseTicks, zoomOut) are superseded by this file. ult.ts reads it; ultdraw.ts draws the stand-ins (clearly temporary until the FX v2 loop's effects, lanes/fx/v2/built/, and lane A's r_* drawings land).",
+  "clips": {
+    "about": "Length of the call and the reveal when their drawing is not in yet (the white box plays the same timeline); with a drawing they last exactly their clip, played 1:1 (the call at its original speed). From lane A's picks (lanes/anim/moves/<slot>/make.py). r_flurry plays only up to the storm beat (she crouches, bursts into ash, gone); the rest of the flurry is the slashes.",
+    "r_call": 114,
+    "r_flurry": 79,
+    "r_reveal": 80
+  },
+  "beats": {
+    "about": "Moments inside the clips as [source frame of the H3 take, clip tick]: anim.json frames carry `src` (kit v1.4) and the beat lands on the first drawing at or past it; without src the clip tick scales with the clip's length.",
+    "call": {
+      "line": [
+        7,
+        7
+      ],
+      "boom": [
+        10,
+        14
+      ],
+      "fire": [
+        22,
+        37
+      ],
+      "draw": [
+        36,
+        72
+      ],
+      "coil": [
+        41,
+        85
+      ]
+    },
+    "flurry": {
+      "vanish": [
+        5,
+        2
+      ],
+      "storm": [
+        8,
+        8
+      ]
+    },
+    "reveal": {
+      "pose": [
+        19,
+        24
+      ]
+    }
+  },
+  "letter": {
+    "about": "The letter she carves (a stand-in for the FX v2 loop's): which character (断 or 天, Dex 10-19; strokes in ult.ts LETTERS), its box (`size` H square, its bottom `low` H above the floor, its near edge `ahead` H in front of her), the slash storm (`slashes` cuts over `ticks`, each carving a piece of a stroke; `pieces` of them carve new pieces, the rest re-cut; the last one the long closing cut), the brush's thickness (a share of the box), how far above the letter's top she hangs before the dive. Never mirrored: facing left it moves to her left, the strokes stay as written.",
+    "char": "断",
+    "size": 7,
+    "low": 0.8,
+    "ahead": 1.0,
+    "ticks": 200,
+    "slashes": 260,
+    "pieces": 0.6,
+    "slashLife": 4,
+    "slashLen": [
+      1.4,
+      3.2
+    ],
+    "thick": 0.075,
+    "zenithAbove": 1.3,
+    "wallMargin": 0.6
+  },
+  "hold": 36,
+  "dive": {
+    "ticks": 12,
+    "cap": 60,
+    "flipFrom": 0.75,
+    "lineLife": 30
+  },
+  "impact": {
+    "ticks": 40,
+    "flash": 8,
+    "slowmo": 0.45,
+    "slowmoTicks": 30,
+    "invert": 3,
+    "punch": 3
+  },
+  "reveal": {
+    "clear": 26,
+    "visibleFrom": 6
+  },
+  "camera": {
+    "about": "The shots: world x at the frame's centre, world y on the anchor row (the anchor is that row's share of the frame's height). Zooms stay within the painted levels (2 = the close band) so the world stays crisp; the letter's pull-out goes down to 0.5 and the nuke's to 0.42 (lane C 10-19: below 1 she and her effects reduce onto her own grid). The call: a cut-in close on her, pushing in to the BOOM, craning up with the fire, settling as she coils. The flurry: a hard cut wide onto the letter, pulling out as it is carved. The stop: dead still. The dive: a push down after her onto the crater. The impact: the pull-out on the nuke. The reveal: back in on her. Reduced motion: hard cuts between held levels (2 for the call, 1 for the rest), no moves.",
+    "bars": 0.11,
+    "barsIn": 8,
+    "barsOut": 14,
+    "call": {
+      "zoomIn": 1.7,
+      "zoom": 2,
+      "zoomFire": 1.8,
+      "anchor": 0.82,
+      "ahead": 0.12,
+      "craneUp": 0.3
+    },
+    "flurry": {
+      "zoom": 0.62,
+      "zoomEnd": 0.5,
+      "anchor": 0.5
+    },
+    "dive": {
+      "zoom": 0.6,
+      "anchor": 0.66,
+      "up": 2.2
+    },
+    "impact": {
+      "zoom": 0.42,
+      "anchor": 0.7
+    },
+    "reveal": {
+      "zoom": 1.15,
+      "anchor": 0.72,
+      "ticks": 60
+    }
+  },
+  "shake": {
+    "boom": 0.5,
+    "slash": 0.12,
+    "last": 0.5,
+    "dive": 0.25,
+    "impact": 1
+  },
+  "punch": {
+    "press": 1,
+    "boom": 2,
+    "last": 1,
+    "impact": 3
+  },
+  "cues": {
+    "about": "Sound cue ids for lane D (sound.ts maps an id to its files; an id with no file is silent), fired on these beats: press (the cut-in), line (her R call, normal register: 一筆――天を断つ), boom (the bass hit as the fire line ignites), fire (the curtain's roar), draw (the sword), vanish (she bursts into ash), slash (every 6th slash of the storm: a dense roll, not hundreds of files), last (the closing cut: a bass hit), hush (the stop: dead silence, everything ducks out until dive), dive (the dive's whoosh), impact (the nuke: the biggest bass hit), rumble (the eruption's long tail), reveal (the dust clears), lineUlt (her ult-register line on the reveal pose); the form: warp, blade (a ghost blade summoned), cut (it strikes).",
+    "press": "r.press",
+    "line": "r.call",
+    "boom": "r.boom",
+    "fire": "r.fire",
+    "draw": "r.draw",
+    "vanish": "r.vanish",
+    "slash": "r.slash",
+    "last": "r.last",
+    "hush": "r.hush",
+    "dive": "r.dive",
+    "impact": "r.impact",
+    "rumble": "r.rumble",
+    "reveal": "r.reveal",
+    "lineUlt": "r.ultline",
+    "warp": "uf.warp",
+    "blade": "uf.blade",
+    "cut": "uf.slash"
+  },
+  "form": {
+    "about": "The ult form (Dex 10-19): a killing machine standing still-ish on one frame (uf_idle holds one drawing), then warping position to position, summoning ghost blades. Each M1 of the form's chain warps her (a blink: gone here, there) to a spot around the target before it swings: [ahead of the target (H, toward her side), up (H)], `cross` = the other side of it (she turns back to it). The target is a foe within reach ahead (the court's champion), else a point ahead that moves on with her. Ghost blades: per chain step, how many, summoned `summon` ticks before the hit and striking `ghostDelay` (feel.json) after it, through the target.",
+    "reach": 7,
+    "ahead": 1.8,
+    "steps": [
+      {
+        "at": -1.0,
+        "up": 0,
+        "cross": false,
+        "blades": 1
+      },
+      {
+        "at": 1.0,
+        "up": 0,
+        "cross": true,
+        "blades": 2
+      },
+      {
+        "at": -0.7,
+        "up": 1.5,
+        "cross": false,
+        "blades": 3
+      },
+      {
+        "at": -1.8,
+        "up": 0,
+        "cross": false,
+        "blades": 5
+      }
+    ],
+    "free": [
+      1.3,
+      1.5,
+      1.4,
+      1.8
+    ],
+    "summon": 5,
+    "strike": 4,
+    "fade": 8,
+    "bladeLen": 1.05,
+    "ring": 1.35,
+    "flash": 8
+  }
+}
