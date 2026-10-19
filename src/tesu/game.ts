@@ -277,7 +277,8 @@ export class TesuGame {
         return typeof v === "function" ? v.bind(t) : v;
       },
     });
-    this.player = new Zhusha({ vfx: this.vfx, feel: this.feel, camera: this.camera }, [0, 0]);
+    // foes: what m1_3 locks onto (the court's champion while a bout is on; read when she lunges)
+    this.player = new Zhusha({ vfx: this.vfx, feel: this.feel, camera: this.camera, foes: () => this.court?.foes() ?? [] }, [0, 0]);
     this.zdraw = new ZhushaDraw(assets.anims);
     this.zdraw.bind(this.player);
     this.npcs = new NpcDraw(assets.cast, this.world.sprites);

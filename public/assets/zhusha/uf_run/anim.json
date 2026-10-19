@@ -1,0 +1,62 @@
+{
+ "id": "uf_run",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  142,
+  141
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 70
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 71
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 72
+  },
+  {
+   "file": "f003.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 74
+  },
+  {
+   "file": "f004.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 76
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 77
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 78
+  },
+  {
+   "file": "f007.png",
+   "ticks": 7,
+   "fig": 128,
+   "src": 80
+  }
+ ],
+ "loop": true,
+ "source": "h3-L-uf_run-A-s3000-4375c9",
+ "notes": "kit v1.6 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f000: 39 px of H3's floor shadow streak removed, 34 px of loose background ghosts dropped; f001: 27 px of H3's floor shadow streak removed, 42 px of loose background ghosts dropped, 2 px of H3's grey-green contact shadow under the shoe removed; f002: 48 px of loose background ghosts dropped, 33 px of H3's grey-green contact shadow under the shoe removed, shifted -2 px so her shoes stand on the ground row; f003: 63 px of H3's floor shadow streak removed, 37 px of loose background ghosts dropped, 6 px of H3's grey-green contact shadow under the shoe removed; f004: 29 px of H3's floor shadow streak removed, 44 px of loose background ghosts dropped; f005: 42 px of H3's floor shadow streak removed, 50 px of loose background ghosts dropped; f006: 49 px of H3's floor shadow streak removed, 41 px of loose background ghosts dropped, 2 px of H3's grey-green contact shadow under the shoe removed; f007: 69 px of H3's floor shadow streak removed, 38 px of loose background ghosts dropped, 2 px of H3's grey-green contact shadow under the shoe removed"
+}

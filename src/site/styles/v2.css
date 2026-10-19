@@ -1,12 +1,25 @@
 /* dex.place v2 (Dex 10-16): the website on plain white over the world. Loaded last: it re-tones the 09-29
    tokens for white paper and lays the sections out as alternating panels that fade into the world's sky
    (a gradual gradient plus a sparse scatter of white pixels at the edge). Fonts: the ones we have
-   (Tesu Display for titles, DotGothic16 for text, Departure Mono for small labels once it is in the repo;
-   until then its stack falls back to DotGothic16). Titles stay small.
+   (Tesu Display for titles, DotGothic16 for text, Departure Mono for small labels, code and hashes: Dex 10-19
+   "yes, anything that looks good"). Titles stay small.
 
    Contrast on white (WCAG AA): ink #2b2233 15.6:1, --fg-2 #463c50 10.4:1, --muted #62576e 6.9:1,
    scarlet #c9304f 5.5:1, azure #1e6cab 5.6:1, the deep text tones of the fills 5.6:1 or more; ink on every
    fill (gold, sakura, jade, sky) 7.9:1 or more. */
+
+/* Departure Mono (Helena Zhang, SIL OFL 1.1: /fonts/departure-mono/LICENSE.txt), v1.500, unmodified. It is drawn on
+   an 11 px grid; the site's text sits on DotGothic16's 16 px grid, so its glyphs are scaled to 11/16 (size-adjust):
+   at the site's 16 px a label is drawn at 11 px, every font pixel on a whole screen pixel (a 32 px one at 22). It has
+   one weight: never a synthesized bold (below). */
+@font-face {
+  font-family: "Departure Mono";
+  src: url("/fonts/departure-mono/DepartureMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 68.75%;
+}
 
 :root {
   --ink: #2b2233;
@@ -50,7 +63,6 @@
   --f-px: "DotGothic16", ui-monospace, monospace;
   --f-label: "Departure Mono", "DotGothic16", ui-monospace, monospace;
   --f-body: "DotGothic16", system-ui, -apple-system, "Segoe UI", sans-serif;
-  /* (until Departure Mono is in the repo, code and hashes fall to DotGothic16, not a system monospace) */
   --f-mono: "Departure Mono", "DotGothic16", ui-monospace, monospace;
   /* DotGothic16 is drawn on a 16 px grid: every text size sits on it (16 px, headings 32 px), never in between */
   --fs-12: 1rem;
@@ -238,6 +250,10 @@ h1, h2, h3, h4 { font-weight: 400; }
 .bpost:hover .bpost__go { color: var(--azure); }
 .toc-list a:hover { text-decoration-color: var(--scarlet); }
 code, kbd, pre { font-family: var(--f-mono); }
+/* Departure Mono only on its grid: code and list markers at the text's own size (not 0.86-0.95 em), never a fake bold */
+code, kbd, pre, .prose code, .prose kbd, .verify__line code { font-size: 1em; font-synthesis: none; }
+.prose ol > li::marker { font-size: 1em; }
+.dlf__file code, .spec__link code, .cmd { font-synthesis: none; }
 
 /* ------------------------------------------------------------------ the footer */
 .ftr { background: #fff; border-top: var(--bw) solid var(--ink); margin-top: 0; }
