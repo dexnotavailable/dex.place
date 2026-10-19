@@ -251,7 +251,7 @@ export function fallRibbons(T: number, W: number, Hf: number, paper: readonly [n
     const head = Math.min(1, smooth(0, 0.62, u) * 1.0);
     const tail = smooth(0.32, 1, u);
     if (head - tail < 0.02) continue;
-    const curlFrom = 0.8;
+    const curlFrom = 0.86;
     const at = (s: number): [number, number] => {
       const sm = Math.min(s, curlFrom);
       const x = x0 - sm * L;
@@ -271,9 +271,9 @@ export function fallRibbons(T: number, W: number, Hf: number, paper: readonly [n
       // the turning sense that carries on along the body's direction
       const sg = (-v0y * tx + v0x * ty) > 0 ? 1 : -1;
       const q = (s - curlFrom) / (1 - curlFrom);
-      // (half a turn: a wisp hooking over, never a spiral)
-      const ang = sg * q * 2.4;
-      const rr = 1 - 0.35 * q;
+      // (a flick over at its head, never a hook or a spiral)
+      const ang = sg * q * 1.5;
+      const rr = 1 - 0.2 * q;
       const ca = Math.cos(ang), sa = Math.sin(ang);
       return [cxp + (v0x * ca - v0y * sa) * rr, cyp + (v0x * sa + v0y * ca) * rr];
     };
@@ -708,7 +708,7 @@ void main() {
     if (er > 1.3) continue;
     // its envelope: a soft outline torn at its own scale (its rim far outside the frame while the camera is inside it)
     // (its rim torn like its holes: drawn out along the wind, a soft fringe of two steps)
-    float rim = er + 0.3 * (fbm3(qe / vec2(420.0, 200.0) + b.z) - 0.5) + 0.05 * (vn(vec2(q.x / 70.0, q.y / 7.0) + b.z) - 0.5);
+    float rim = er + 0.4 * (fbm3(qe / vec2(380.0, 170.0) + b.z) - 0.5) + 0.06 * (vn(vec2(q.x / 70.0, q.y / 7.0) + b.z) - 0.5);
     float env = floor(smoothstep(1.0, 0.86, rim) * 3.0 + 0.5) / 3.0 * mix(0.55, 1.0, smoothstep(1.0, 0.6, rim));
     if (env <= 0.0) continue;
     // thick and thin at a large scale
@@ -716,11 +716,12 @@ void main() {
     float D = env * mix(0.72, 0.93, smoothstep(0.3, 0.7, body)) * l0.w;
     // the holes: few, big, stretched along the wind; wider as the camera comes out of it; a torn opening round the
     // paper (the threshold raised there, so the opening follows the tears: never a porthole)
-    float th = c.w + 0.3 * c.z + 0.16 * nearP;
+    // (toward its rim it tears more: its edge breaks into streaks along the wind, never one long smooth arc)
+    float th = c.w + 0.3 * c.z + 0.16 * nearP + 0.22 * smoothstep(0.55, 0.95, rim);
     float hole = smoothstep(th + 0.05, th - 0.015, tearOf(q, i));
     hole = floor(hole * 3.0 + 0.5) / 3.0;
     // (over a cloud a tear opens less: a slit of crisp cloud through the fog reads as a scan line)
-    float a = D * (1.0 - (0.45 + 0.37 * overSky) * hole);
+    float a = D * (1.0 - (0.28 + 0.54 * overSky) * hole);
     if (a <= 0.002) continue;
     // its light: a warm white toward the sun and high, the clouds' cool blue away from it, low and where it is thick;
     // the deck's fringe (tone 1) in its cooler base
