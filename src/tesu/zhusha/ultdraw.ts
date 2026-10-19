@@ -247,7 +247,8 @@ function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: num
     const near = 1 - clamp01(Math.abs(hx) / (6 * H));
     const o = clamp01(out * (1 + (1 / A.revealFrom - 1) * near));
     const billow = 1 + 0.06 * Math.sin(t * 0.04 + i) + 0.15 * hang;
-    const R = R0 * billow * (1 + 0.25 * o) * (1 - o);
+    // (a puff keeps its body until late in its clear, then goes: no empty middle before she is there)
+    const R = R0 * billow * (1 + 0.25 * o) * (1 - o * o * o);
     puff(r, sm.x + hx + side * o * (2 + rnd(i + 60) * 2) * H, sm.y - hy - hang * 0.4 * H - o * 1.2 * H, R, 0.08 + 0.5 * o, i, DUST_LITE, DUST, DUST_DARK);
   });
 }
