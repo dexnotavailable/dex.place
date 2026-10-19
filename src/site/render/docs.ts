@@ -4,8 +4,7 @@
 // scroll-spy and anchor copying.
 
 import { DOC_GROUPS, OTHER_GROUP, docGroup, type DocGroup } from "../data/docs.ts";
-import { floats } from "./floats.ts";
-import { button, icon, pageHead, placeholderTag, sectionHead, strip, tile } from "./glyphs.ts";
+import { button, icon, pageHead, placeholderTag, sectionHead, tile } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import { nsfwTag } from "./nsfw.ts";
 import type { Entry, SiteContent } from "./types.ts";
@@ -90,7 +89,6 @@ function docGroups(content: SiteContent, level: 2 | 3 | 4): string {
 export function docsIndex(content: SiteContent): string {
   return (
     `<div class="page page--docs">` +
-    floats("docs", { tone: "cyan", count: 3, glyph: "sparkle" }) +
     `<div class="wrap">` +
     pageHead({ kicker: "documentation", title: "Docs", tone: "cyan", icon: "book", aside: plural(content.docs.length, "page", "pages") }) +
     docGroups(content, 2) +
@@ -147,7 +145,6 @@ export function blogIndex(content: SiteContent): string {
     : `<p class="empty">Nothing here yet.</p>`;
   return (
     `<div class="page page--blog">` +
-    floats("blog", { tone: "cyan", count: 2, span: 0.35, glyph: "star" }) +
     `<div class="wrap">` +
     pageHead({ kicker: "blog", title: "Blog", tone: "cyan", icon: "page", aside: plural(posts.length, "post", "posts") }) +
     `<div class="btools"><p class="btools__order">Newest first</p>` +
@@ -187,7 +184,6 @@ export function docsSection(content: SiteContent): string {
   const more = posts.length - latest.length;
   return (
     `<section class="sec sec--docs" id="docs" aria-labelledby="docs-title">` +
-    floats("home-docs", { tone: "cyan", count: 2, glyph: "star" }) +
     `<div class="wrap">` +
     sectionHead({ id: "docs-title", kicker: "docs · blog", title: "Docs & blog", tone: "cyan", icon: "book", more: { href: "/docs/", label: "Docs page" } }) +
     `<div class="dpart">` +
@@ -291,7 +287,6 @@ export function postPage(content: SiteContent, e: Entry): string {
   return (
     readbar() +
     `<div class="page page--post">` +
-    floats(`post-${e.slug}`, { tone: "cyan", count: 2, span: 0.4, glyph: "sparkle" }) +
     `<div class="wrap">` +
     `<nav class="crumbs crumbs--post" aria-label="Breadcrumb"><a href="/blog/">Blog</a><span aria-hidden="true">/</span><span aria-current="page">${esc(e.title)}</span></nav>` +
     `<article class="post">` +
@@ -302,7 +297,7 @@ export function postPage(content: SiteContent, e: Entry): string {
     (e.summary ? `<p class="ahead__sum">${esc(e.summary)}</p>` : "") +
     `</header>` +
     `<div class="prose">${e.html}</div>` +
-    `<div class="post__end" aria-hidden="true">${icon("sparkle", 3)}${strip("post__strip")}</div>` +
+    `<div class="post__end" aria-hidden="true">${icon("sparkle", 3)}</div>` +
     `</article>` +
     `<nav class="apager apager--post" aria-label="More posts">${pagerLink(newer, "prev", "Newer")}${pagerLink(older, "next", "Older")}</nav>` +
     `<p class="post__back">${button({ href: "/blog/", label: "All posts", icon: "arrow-left", iconFirst: true, size: "m" })}</p>` +

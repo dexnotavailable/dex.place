@@ -13,7 +13,6 @@
 
 import { commissionsBlock } from "./stubs.ts";
 import { collage, imageWidth, rowChrome, type LayoutName, type Slot } from "../collage.ts";
-import { floats } from "./floats.ts";
 import { button, counter, icon, pageHead, sectionHead } from "./glyphs.ts";
 import { esc, pad2 } from "./html.ts";
 import type { GalleryItem, SiteContent } from "./types.ts";
@@ -678,7 +677,6 @@ export function gallerySection(content: SiteContent): string {
   const n = content.gallery.length;
   return (
     `<section class="sec sec--gallery" id="gallery" aria-labelledby="gallery-title">` +
-    floats("home-gallery", { tone: "yellow", count: 2, glyph: "sparkle" }) +
     `<div class="wrap">` +
     sectionHead({ id: "gallery-title", kicker: "gallery", title: "Gallery", tone: "yellow", icon: "frame", aside: `${pad2(n)} pieces`, more: { href: "/gallery/", label: "Gallery page" } }) +
     collageBlock(content, false) +
@@ -691,7 +689,6 @@ export function galleryPage(content: SiteContent): string {
   const g = content.gallery;
   return (
     `<div class="page page--gallery">` +
-    floats("gallery", { tone: "yellow", count: 2, glyph: "sparkle" }) +
     `<div class="wrap">` +
     pageHead({ kicker: "gallery", title: "Gallery", tone: "yellow", icon: "frame", aside: `${pad2(g.length)} pieces` }) +
     collageBlock(content, true) +

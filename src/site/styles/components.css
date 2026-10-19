@@ -183,12 +183,7 @@ html:not(.js) [data-copy] { display: none; }
 .sticker--magenta { color: var(--magenta); --px-b: var(--yellow); }
 .sticker--cyan { color: var(--cyan); }
 
-/* ------------------------------------------------ four-colour strip, counter */
-.strip { display: inline-flex; width: 128px; height: 4px; flex: none; }
-.strip i { flex: 1; background: var(--yellow); transform-origin: left center; }
-.strip i:nth-child(2) { background: var(--magenta); }
-.strip i:nth-child(3) { background: var(--mint); }
-.strip i:nth-child(4) { background: var(--cyan); }
+/* ------------------------------------------------ counter */
 
 .counter { font: 400 var(--fs-14) / 1 var(--f-label); letter-spacing: 0.06em; color: var(--muted); white-space: nowrap; }
 .counter b { font-weight: 400; color: var(--fg); }

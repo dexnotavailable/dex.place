@@ -24,18 +24,12 @@
       rv-fade 140ms linear backwards,
       rv-block var(--d-spring) var(--ease-spring) backwards;
   }
-  .js [data-reveal="strip"].is-in { animation: none; }
-  .js [data-reveal="strip"].is-in i { animation: rv-strip 320ms steps(4, end) 160ms backwards; }
-  .js [data-reveal="strip"].is-in i:nth-child(2) { animation-delay: 220ms; }
-  .js [data-reveal="strip"].is-in i:nth-child(3) { animation-delay: 280ms; }
-  .js [data-reveal="strip"].is-in i:nth-child(4) { animation-delay: 340ms; }
 }
 
 @keyframes rv-fade { from { opacity: 0; } }
 @keyframes rv-up { from { translate: 0 16px; } }
 @keyframes rv-pop { from { scale: 0.7; } }
 @keyframes rv-block { from { translate: 6px 6px; } }
-@keyframes rv-strip { from { scale: 0 1; } }
 
 /* Reduced motion: no movement anywhere; state changes stay instant. */
 @media (prefers-reduced-motion: reduce) {
