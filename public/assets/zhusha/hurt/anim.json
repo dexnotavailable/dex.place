@@ -1,0 +1,104 @@
+{
+ "id": "hurt",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  147,
+  150
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 14
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 16
+  },
+  {
+   "file": "f002.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 18
+  },
+  {
+   "file": "f003.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 22
+  },
+  {
+   "file": "f004.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 26
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 29
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 30
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 31
+  },
+  {
+   "file": "f008.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 34
+  },
+  {
+   "file": "f009.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 38
+  },
+  {
+   "file": "f010.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 42
+  },
+  {
+   "file": "f011.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 44
+  },
+  {
+   "file": "f012.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 46
+  },
+  {
+   "file": "f013.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 49
+  },
+  {
+   "file": "f014.png",
+   "ticks": 6,
+   "fig": 128,
+   "src": 60
+  }
+ ],
+ "loop": false,
+ "source": "h3-L-hurt-A-s3000-075d76",
+ "notes": "kit v1.4 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f000: the effect cut by the frame edge continued as a soft falloff (40 px), 2 px of H3's floor shadow streak removed, shifted +2 px so her shoes stand on the ground row; f001: the effect cut by the frame edge continued as a soft falloff (40 px), shifted +6 px so her shoes stand on the ground row; f002: the effect cut by the frame edge continued as a soft falloff (40 px), 1 px of H3's floor shadow streak removed; f003: the blade tip re-extended past the left edge (46 px, hw 0); f004: the blade tip re-extended past the left edge (47 px, hw 12), shifted +5 px so her shoes stand on the ground row; f005: the blade tip re-extended past the left edge (45 px, hw 13); f006: the blade tip re-extended past the left edge (26 px, hw 6), shifted -1 px so her shoes stand on the ground row; f008: 11 px of H3's floor shadow streak removed, shifted -1 px so her shoes stand on the ground row; f009: 11 px of H3's floor shadow streak removed, shifted -1 px so her shoes stand on the ground row; f010: shifted -1 px so her shoes stand on the ground row; f011: 1 px of H3's floor shadow streak removed; f012: shifted +2 px so her shoes stand on the ground row"
+}
