@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T20:48:48.945Z (20/10/2026, 03:48:48 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T21:58:45.443Z (20/10/2026, 04:58:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `701b485`
+- live on dex.place: `535bad9`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,7 +12,24 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_286da28b-ad1 — last activity 34 min ago
+### wf_93dbdace-3fa — last activity 2 min ago
+13 agents: 12 done, 1 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
+- **w2:r1** (done): Picked up round 1 for worker 2 after the stop and committed a second pass on claude/v2-art-vista-p2 (910b9ba9). The first worker-2 commit (6b902308) was already on the branch, and the scene branch had not moved. Running `checkout -B claude/v2-art-vista-p2 claude/v2-art-vista` would have thrown that commit away, so I skipped the reset and built on top of it. What changed: - **Bug fix in the rock painter (strata.ts).**
+- **integrate:r1** (done): 
+- **critic:r1** (done): 
+- **w1:r2** (done): Worker 1's round-2 sky, clouds and atmosphere work is committed as c20a903e on claude/v2-art-vista-p1. All 17 frames render without errors. The cliffs are still round 1's, because W2's chunk rock isn't on this branch. This run picked up the previous W1 session's uncommitted work-in-progress (the usage stop had interrupted it) and finished it. The `checkout -B` was a no-op because the branch was already on 09e1fe5c, s
+- **w2:r2** (done): Worker 2, round 2 is committed as e046ba15 on claude/v2-art-vista-p2. Most of the critique is answered. The main open items are the terrace's bottom-left seam (W2-11, which isn't a W2 piece) and the lake's ruled near edge (lane C's water shader). **Changes:** - **Near cliffs (W2-6).** A new face model (chunks.ts) builds Dex's chunk sketch literally: blocks of different sizes overlapping at different depths, so no led
+- **integrate:r2** (done): 
+- **critic:r2** (done): 
+- **w1:r3** (done): Worker 1, round 3 is committed on claude/v2-art-vista-p1: three commits on ea2af6ed (719d40c0, cf6bb417, 269f6b9f; head 269f6b9f). Most of the critique is answered. Two items are only partly fixed because of camera geometry: the films' 1280 frame gets a whole heap but a modest one (W1-2), and play-forecourt still has no cumulus (W1-6). The fall check exposed two problems that belong to other lanes. What changed, by c
+- **w2:r3** (done): Worker 2, round 3 is done and committed on claude/v2-art-vista-p2 in two commits, 59186ae5 then 313d90e2, both on top of ea2af6ed. Depth now reads the right way round: the near rock is darker and holds the strongest contrast, and the far wall is paler and cooler. I worked through all 13 critique points; most are fixed, and the rest belong to other lanes or are blocked (listed below). Measured brightness (median) move
+- **integrate:r3** (running)
+
+### wf_286da28b-ad1 — last activity 2 min ago
 8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -22,9 +39,9 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r1** (done): 
 - **critic:r1** (done): 
 - **w1:r2** (running)
-- **w2:r2** (running)
+- **w2:r2** (running): Round 2, worker 2 is committed on rev 5's camera. The frame is now inside the cloud at lens-fog, the wind shows up in the gusts, and the vast frame stays clean. I committed my own merge of rev 5 because worker 1's merge was still uncommitted. The resolution is identical to theirs, so the two branches integrate cleanly. What changed, by critique item: - **W2-1 / W2-7, the lens fog.** The fog layers now sit in the came
 
-### wf_23467958-71d — last activity 34 min ago
+### wf_23467958-71d — last activity 104 min ago
 10 agents: 7 done, 3 running or stopped mid-way, 0 failed.
 
 - **toolkit** (done): # Card-art toolkit (lanes\cardart\tools\pipe)
@@ -45,23 +62,7 @@ Shared by the three card pipelines (PIPELINE-1020.md). Python: `D:\Dex\AI\Tools\
 - **Lines:bao** (running)
 - **Lines:yuki** (running)
 
-### wf_93dbdace-3fa — last activity 53 min ago
-12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
-- **w2:r1** (done): Picked up round 1 for worker 2 after the stop and committed a second pass on claude/v2-art-vista-p2 (910b9ba9). The first worker-2 commit (6b902308) was already on the branch, and the scene branch had not moved. Running `checkout -B claude/v2-art-vista-p2 claude/v2-art-vista` would have thrown that commit away, so I skipped the reset and built on top of it. What changed: - **Bug fix in the rock painter (strata.ts).**
-- **integrate:r1** (done): 
-- **critic:r1** (done): 
-- **w1:r2** (done): Worker 1's round-2 sky, clouds and atmosphere work is committed as c20a903e on claude/v2-art-vista-p1. All 17 frames render without errors. The cliffs are still round 1's, because W2's chunk rock isn't on this branch. This run picked up the previous W1 session's uncommitted work-in-progress (the usage stop had interrupted it) and finished it. The `checkout -B` was a no-op because the branch was already on 09e1fe5c, s
-- **w2:r2** (done): Worker 2, round 2 is committed as e046ba15 on claude/v2-art-vista-p2. Most of the critique is answered. The main open items are the terrace's bottom-left seam (W2-11, which isn't a W2 piece) and the lake's ruled near edge (lane C's water shader). **Changes:** - **Near cliffs (W2-6).** A new face model (chunks.ts) builds Dex's chunk sketch literally: blocks of different sizes overlapping at different depths, so no led
-- **integrate:r2** (done): 
-- **critic:r2** (done): 
-- **w1:r3** (running)
-- **w2:r3** (running)
-
-### wf_6eb91aef-0bd — last activity 404 min ago
+### wf_6eb91aef-0bd — last activity 473 min ago
 8 agents: 7 done, 1 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -73,7 +74,7 @@ Shared by the three card pipelines (PIPELINE-1020.md). Python: `D:\Dex\AI\Tools\
 - **w1:r2** (done): Worker 1's round 2 is committed. Eight of the nine critique items are in; W1-9 (the arcade stair under the court) is written up as a request for whoever owns that walk in shiraito.ts. This run picked up after a usage stop. The earlier session had made most of the edits but not committed them. I rendered all 8 frames at real size on port 24621, fixed what still looked wrong, then committed. What each item got: - **W1-
 - **w2:r2** (running)
 
-### wf_5cebc05c-deb — last activity 423 min ago
+### wf_5cebc05c-deb — last activity 493 min ago
 4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
