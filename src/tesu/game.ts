@@ -438,6 +438,8 @@ export class TesuGame {
     }
     // R's climb: the frame pulls out to hold the whole rise and dive
     if (this.player.camZoom !== null) f = { ...f, zoom: Math.min(f.zoom, this.player.camZoom) };
+    // the Q's pull-out holds the exploded area in frame (zhusha/controller.ts camAt)
+    if (this.player.camAt !== null) f = { ...f, fixX: this.player.camAt, pin: null };
     return this.framingOverride ? { ...f, ...this.framingOverride } : f;
   }
 

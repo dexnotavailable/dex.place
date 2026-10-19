@@ -9,11 +9,17 @@
 // session props stay broken until a reload; permanent ones stay changed on this device (a
 // saved flag); protected things (the service objects and the people) only go "tink".
 // R's nuke breaks everything breakable within 6 H and leaves embers.
+//
+// How far each of her hits destroys (Dex 10-19), from the hit's break (feel.json): a sword hit breaks what its boxes
+// touch, one HP at a time, its pieces thrown by its force (the m1 chain stays local); the Q and the E carry a reach: every
+// cosmetic or session prop in it goes at once whatever its HP, the destruction travelling out from where she struck
+// (the Q's wave across a big area in its direction, the E's beam almost at once along a band in front), pieces thrown
+// hard (the Q high, the E flat along the beam).
 
 import type { HitBox } from "../lab/contracts.ts";
 import type { Vfx } from "../lab/engine/vfx.ts";
 import { overlap, type WorldBox } from "../lab/game/events.ts";
-import type { Zhusha as Player } from "./zhusha/controller.ts";
+import type { Zhusha as Player, ZHit } from "./zhusha/controller.ts";
 import { ctxFor, painter } from "./art/painter.ts";
 import { pieceOf } from "./art/painters/props.ts";
 import { IdxBuf } from "./art/raster.ts";
@@ -79,6 +85,9 @@ export class Props {
   private host: PropsHost;
   /** Debug and tests. */
   broken = 0;
+  /** Breaks on their way (a Q / E wave reaching a prop a few ticks after the blow), by tick. */
+  private pending: { l: Live; at: number; dir: number; force: number; lift: number }[] = [];
+  private clock = 0;
 
   constructor(host: PropsHost, defs: readonly PropDef[], sprite: (id: string) => SpriteDef) {
     this.host = host;
@@ -96,6 +105,12 @@ export class Props {
   /** One simulation tick: falling props and pieces, flashes, and props coming back. */
   tick(): void {
     const b = this.host.player.body;
+    this.clock++;
+    if (this.pending.length) {
+      const due = this.pending.filter((q) => q.at <= this.clock);
+      this.pending = this.pending.filter((q) => q.at > this.clock);
+      for (const q of due) if (q.l.state === "intact" || q.l.state === "falling") this.breakProp(q.l, q.dir, q.force, q.lift, true);
+    }
     for (const l of this.list) {
       if (l.flash > 0 && --l.flash === 0) l.sprite.white = 0;
       if (l.state === "falling") this.fall(l);
@@ -115,12 +130,18 @@ export class Props {
     if (!hits.length) return;
     for (const { box, hb } of hits) {
       if (hb.group === "r") this.nuke(p, hb);
+      const brk = (hb as ZHit).brk;
       for (const l of this.list) {
         if (l.state === "broken") continue;
         const ov = overlap(box, this.boxOf(l));
-        if (!ov || !this.once(p, hb, l)) continue;
-        this.hit(l, hb, p.facing, ov);
+        if (!ov) continue;
+        // a reach (the Q, the E) obliterates what is breakable in it: never the protected or the permanent ones
+        if (brk?.area && (l.d.cls === "protected" || l.d.cls === "permanent")) continue;
+        if (!this.once(p, hb, l)) continue;
+        if (brk?.reach && l.d.cls !== "protected") this.obliterate(l, brk);
+        else this.hit(l, hb, p.facing, ov);
       }
+      if (brk?.area) continue;
       for (const u of this.host.usables()) {
         if (u.action.kind !== "panel" && u.action.kind !== "say") continue;
         const ov = overlap(box, { x: u.x0, y: u.y0, w: u.x1 - u.x0, h: u.y1 - u.y0 });
@@ -164,19 +185,35 @@ export class Props {
       this.host.camera.shake(1.5, 6);
       return;
     }
-    this.breakProp(l, dir, hb.heavy ? 1.5 : 1);
+    const brk = (hb as ZHit).brk;
+    this.breakProp(l, dir, brk?.force ?? (hb.heavy ? 1.5 : 1), brk?.lift ?? 1);
   }
 
-  /** It comes apart into its own pieces, which fly from the blow and fall. */
-  private breakProp(l: Live, dir: number, force = 1): void {
+  /**
+   * The Q's / E's destruction reaching a prop: it goes whatever its HP, when the wave gets there (distance from where
+   * she struck / the wave's speed), thrown away from her, harder the closer it stood.
+   */
+  private obliterate(l: Live, brk: NonNullable<ZHit["brk"]>): void {
+    const [x0, , x1] = l.bounds;
+    const d = Math.abs(l.x + (x0 + x1) / 2 - brk.ox);
+    const len = Math.max(H, (brk.reach?.[2] ?? 6) * H);
+    const delay = brk.wave ? Math.floor(d / (brk.wave * H)) : 0;
+    const force = (brk.force ?? 2) * (1 - 0.4 * Math.min(1, d / len));
+    const q = { l, at: this.clock + delay, dir: brk.dir, force, lift: brk.lift ?? 1 };
+    if (delay <= 0) this.breakProp(l, q.dir, q.force, q.lift, false);
+    else this.pending.push(q);
+  }
+
+  /** It comes apart into its own pieces, which fly from the blow and fall (lift: their upward share; quiet: part of a wave). */
+  private breakProp(l: Live, dir: number, force = 1, lift = 1, quiet = false): void {
     l.state = "broken";
     l.sprite.hidden = true;
     l.sprite.white = 0;
     this.broken++;
     const m = l.d.material;
     const base = this.bottomOf(l);
-    this.host.feel.sound(`${m}.break`);
-    this.host.camera.shake(2.5 * force, 10);
+    this.host.feel.sound(`${m}.break`, quiet ? 0.6 : 1);
+    if (!quiet) this.host.camera.shake(Math.min(6, 2.5 * force), 10);
     this.host.vfx.spawn("dust.kick", { x: l.x, y: base, facing: dir });
     this.host.vfx.spawn(m === "paper" ? "feathers" : m === "metal" ? "sparks.heavy" : "debris.stone", { x: l.x, y: (l.y + this.boxOf(l).y + base) / 2, facing: dir });
     if (l.d.cls === "permanent") this.host.setFlag(`broke:${l.d.id}`, true);
@@ -199,7 +236,7 @@ export class Props {
       l.pieces.push({
         def, dx: 0, dy: 0,
         vx: (dir * (0.8 + 1.6 * r1) + side * 1.6) * force,
-        vy: -(1.6 + 3 * r2) * force,
+        vy: -(1.6 + 3 * r2) * force * lift,
         box, rest: false, on: null, bounced: 0,
       });
     });
