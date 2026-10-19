@@ -602,3 +602,19 @@ test("combat controls: Shift dashes (K and X still do); the controls card lists 
   // H is free for "hold H": no game key on it
   assert.equal(KEYS.KeyH, undefined);
 });
+
+test("combat dash: no white-box afterimages over her drawing (they read as blue rectangles); the box keeps them", async () => {
+  const Zhusha = await loadZ();
+  const run = (drawn) => {
+    const z = new Zhusha(host(), [0, 0]);
+    if (drawn) { z.clipOf = liveClip; z.hasRole = (r) => r === "dash"; }
+    const inp = new FakeInput();
+    step(z, inp, 5);
+    inp.press("m2");
+    let most = 0;
+    for (let i = 0; i < 16; i++) { step(z, inp); most = Math.max(most, z.ghosts.length); }
+    return most;
+  };
+  assert.equal(run(true), 0);
+  assert.ok(run(false) > 0);
+});

@@ -1020,6 +1020,9 @@ export class Zhusha {
   }
 
   private ghost(life: number): void {
+    // the afterimage is the white box's outline: with her drawing playing it reads as a blue rectangle (a primitive,
+    // Dex 10-19), so it is only left for roles still drawn as the box (a drawn afterimage is the effects lane's)
+    if (this.hasRole(this.anim.role, this.ultForm)) return;
     const b = this.body;
     this.ghosts.push({ x: b.x, y: b.y, lean: this.pose.lean.v, life, max: life, ult: this.ultForm });
   }
