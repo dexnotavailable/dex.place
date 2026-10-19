@@ -1,0 +1,212 @@
+{
+ "id": "r_call",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  140,
+  158
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 4
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 5
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 6
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 7
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 8
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 9
+  },
+  {
+   "file": "f006.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 10
+  },
+  {
+   "file": "f007.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 11
+  },
+  {
+   "file": "f008.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 12
+  },
+  {
+   "file": "f009.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 13
+  },
+  {
+   "file": "f010.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 14
+  },
+  {
+   "file": "f011.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 15
+  },
+  {
+   "file": "f012.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 16
+  },
+  {
+   "file": "f013.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 18
+  },
+  {
+   "file": "f014.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 20
+  },
+  {
+   "file": "f015.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 22
+  },
+  {
+   "file": "f016.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 24
+  },
+  {
+   "file": "f017.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 26
+  },
+  {
+   "file": "f018.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 28
+  },
+  {
+   "file": "f019.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 30
+  },
+  {
+   "file": "f020.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 32
+  },
+  {
+   "file": "f021.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 34
+  },
+  {
+   "file": "f022.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 36
+  },
+  {
+   "file": "f023.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 37
+  },
+  {
+   "file": "f024.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 38
+  },
+  {
+   "file": "f025.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 39
+  },
+  {
+   "file": "f026.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 40
+  },
+  {
+   "file": "f027.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 41
+  },
+  {
+   "file": "f028.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 42
+  },
+  {
+   "file": "f029.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 45
+  },
+  {
+   "file": "f030.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 48
+  },
+  {
+   "file": "f031.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 51
+  },
+  {
+   "file": "f032.png",
+   "ticks": 6,
+   "fig": 128,
+   "src": 55
+  }
+ ],
+ "loop": false,
+ "source": "h3-L-r_call-B-s3001-b282bf",
+ "notes": "kit v1.8 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f004: the effect cut by the frame edge continued as a soft falloff (40 px); f005: the effect cut by the frame edge continued as a soft falloff (40 px); f006: the effect cut by the frame edge continued as a soft falloff (40 px); f007: the effect cut by the frame edge continued as a soft falloff (40 px); f008: the effect cut by the frame edge continued as a soft falloff (40 px); f009: the effect cut by the frame edge continued as a soft falloff (40 px); f010: the effect cut by the frame edge continued as a soft falloff (40 px); f011: the effect cut by the frame edge continued as a soft falloff (40 px); f012: the effect cut by the frame edge continued as a soft falloff (40 px); f013: the effect cut by the frame edge continued as a soft falloff (40 px); f014: the effect cut by the frame edge continued as a soft falloff (40 px); f015: the effect cut by the frame edge continued as a soft falloff (40 px); f016: the effect cut by the frame edge continued as a soft falloff (40 px); f017: the effect cut by the frame edge continued as a soft falloff (40 px); f018: the effect cut by the frame edge continued as a soft falloff (40 px); f019: the effect cut by the frame edge continued as a soft falloff (40 px); f020: the effect cut by the frame edge continued as a soft falloff (40 px); f021: the effect cut by the frame edge continued as a soft falloff (40 px); f022: the effect cut by the frame edge continued as a soft falloff (40 px); f023: the effect cut by the frame edge continued as a soft falloff (40 px); f024: the effect cut by the frame edge continued as a soft falloff (40 px); f025: the effect cut by the frame edge continued as a soft falloff (40 px); f026: the effect cut by the frame edge continued as a soft falloff (40 px); f027: the effect cut by the frame edge continued as a soft falloff (40 px); f028: the effect cut by the frame edge continued as a soft falloff (40 px); f029: the effect cut by the frame edge continued as a soft falloff (40 px); f030: the effect cut by the frame edge continued as a soft falloff (40 px); f031: the effect cut by the frame edge continued as a soft falloff (40 px); f032: the effect cut by the frame edge continued as a soft falloff (40 px)"
+}

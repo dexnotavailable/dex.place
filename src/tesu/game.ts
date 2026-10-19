@@ -299,12 +299,12 @@ export class TesuGame {
       cue: (n) => this.cue(n),
       celebrate: (p) => this.onCelebrate(p),
     });
-    // her move says "swing" on its first tick (the windup) and again on its hit tick (swingFx): the blade's swing
-    // sounds on the hit, the first tick plays the windup; her voice joins on some of them (sound.ts herSound)
-    this.feel.onSound = (id, v) => {
-      const p = this.player;
-      this.sound.herSound(id, v, { first: p.state === "move" && p.anim.t === 0, role: p.anim.role, state: p.state, ult: p.ultForm });
-    };
+    // sounds by id (props, the court, the world) wait for the tick's end; her cues (move, phase, tier) claim theirs and
+    // play her mapped sound and voice (sound.ts heard / herCue / flush)
+    this.feel.onSound = (id, v) => this.sound.heard(id, v);
+    this.player.onCue = (c) => this.sound.herCue(c);
+    // R plays the FX loop's effects when they are in (zhusha/ult.ts; its stand-ins draw until then)
+    this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o) };
     this.props = new Props({
       player: this.player, vfx: this.vfx, feel: this.feel, camera: this.camera,
       ground: (x, y) => this.collision.groundBelow(x, y)?.y ?? null,
@@ -375,6 +375,7 @@ export class TesuGame {
     const was = themes.sounding;
     themes.update(placeAt(this.world.places, b.x, b.y, INTERIOR_Y), this.holding || this.opening.active);
     if (themes.sounding && !was) this.openingLink?.handOver?.(THEME_FADE);
+    this.sound.flush();
     const shown = this.zdraw.shown(this.player);
     this.sound.footstep(shown?.slot.id ?? null, shown?.index ?? 0, b.grounded && !this.rides.active, this.collision.lastSurface);
     // her voice follows her state, the space she is in (its reverb) and her place on screen (its pan)
@@ -465,6 +466,11 @@ export class TesuGame {
   away = false;
   /** Waiting for PLAY in the page column (controls held, Kagami still). */
   holding = false;
+
+  /** She is in the player's hands: no press awaited, the opening handed her back (or never ran: a ?at= start). */
+  get playable(): boolean {
+    return !this.holding && !this.awaitingPress && (this.opening.state === "off" || this.opening.state === "done");
+  }
   /** The opening's link, kept after the opening lets go of it (Track 1 can still sound: the theme fades it). */
   private openingLink: OpeningLink | null = null;
 
@@ -594,8 +600,16 @@ export class TesuGame {
     const cuts = this.camera.cuts;
     // the opening's camera is time-locked to the music; then the world's tracks have the frame again
     const shot = this.opening.camera(b.x);
+    const cine = shot ? null : this.player.r.shot;
     if (shot) this.camera.set(shot, b.x, b.y);
-    else this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
+    else if (cine) {
+      // R's shots (zhusha/ult.ts): placed exactly each tick (its own cuts and moves), shake and punch still run
+      const cf = { ...f, zoom: cine.zoom, anchor: cine.anchor, lead: 0, fixX: cine.x, fixY: cine.y, pin: null };
+      this.camera.snap(cine.x, cine.y, cf, this.player.facing);
+      this.camera.update(cine.x, cine.y, this.player.facing, 0, cf);
+      // reduced motion: its cuts cross-fade like the camera's own
+      if (cine.cut && this.feel.reducedMotion) this.cutFade = 1;
+    } else this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
     this.paperTick();
     // reduced motion: a cut between held frames is a short dithered cross-fade, not a swing
     if (this.camera.cuts !== cuts && this.tick > 2) this.cutFade = 1;
@@ -608,7 +622,7 @@ export class TesuGame {
     }
     this.syncGates();
     this.doorTick();
-    this.near = this.cut || this.tug || this.rides.active || this.warp || this.opening.state === "cine" || this.holding ? null : this.findNear();
+    this.near = this.cut || this.tug || this.rides.active || this.warp || this.opening.state === "cine" || this.holding || this.player.r.active ? null : this.findNear();
     this.placeNames();
     this.motes.update(1 / 60);
     this.scoreTick();
@@ -1723,7 +1737,7 @@ export class TesuGame {
       view: 1,
       focus: [W / 2, cam.anchor * Hf],
       fade: [0.106, 0.098, 0.133, this.loading && this.tick < 2 ? 1 : Math.max(this.fade, this.cutFade * 0.85, this.fadeCut)],
-      bars: 0,
+      bars: this.player.r.bars,
       overlay: false,
       layers: this.screen.take(),
     });

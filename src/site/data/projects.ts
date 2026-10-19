@@ -41,6 +41,8 @@ export interface CardArt {
   readonly layers: number;
   /** Still the stand-in, until the card-art lane's splash art replaces it. */
   readonly standin: boolean;
+  /** A rig is in (card.svg + rig.json beside the layers): the card plays it (motion/cardrig.ts). */
+  readonly rig?: boolean;
 }
 
 const STANDIN: CardArt = { w: 160, h: 240, layers: 3, standin: true };
@@ -87,6 +89,6 @@ export const projects: readonly Project[] = [
     ],
     docs: { href: "/docs/about-dex-place/", label: "About dex.place" },
     tone: "magenta",
-    art: STANDIN,
+    art: { ...STANDIN, rig: true },
   },
 ];

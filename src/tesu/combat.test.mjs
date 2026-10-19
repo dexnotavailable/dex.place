@@ -101,9 +101,11 @@ test("combat derive: an active drawing is new energy in front of her; its boxes 
 test("combat derive: on the live attacks every hit has boxes in front of her, one hit per marked BOOM, and m1_1's boxes move", () => {
   const D = JSON.parse(readFileSync(join(import.meta.dirname, "zhusha/derived.json"), "utf8")).slots;
   assert.ok(Object.keys(D).length >= 1);
+  const attacks = new Set(Object.keys(FEEL.moves).flatMap((r) => [ROLES[r]?.normal, ROLES[r]?.ult]).filter(Boolean));
   for (const [slot, s] of Object.entries(D)) {
     const def = liveAnim(slot);
     assert.ok(def, `${slot} is slotted`);
+    if (!attacks.has(slot)) continue;
     assert.equal(s.hits.length, Math.max(1, (def.hits ?? []).length), slot);
     for (const h of s.hits) {
       const boxes = [];
@@ -473,4 +475,146 @@ test("combat m1_3 lock-on: she homes onto a foe in reach and stops at striking d
   assert.deepEqual(lockTarget(0, 0, 1, [], L, K), { travel: L.dist * K, dir: 1, foe: -1 });
   assert.equal(lockTarget(0, 0, 1, [foeAt(2 * K), foeAt(1.2 * K)], L, K).foe, 1);
   assert.equal(lockTarget(0, 0, 1, [{ x: K, y: -8 * K, w: 100, h: K }], L, K).foe, -1, "a foe far above is not level with her");
+});
+
+// --- the dash (Dex 10-14: "a ground burst: a low, powerful lunge with the feet near or on the ground ... then a skid or plant to stop; only the air dash leaves the ground") ---
+
+test("combat dash: a ground burst that stays on the ground, peaks on the burst drawing, skids its heels to a stop, then rises; breaks nothing", async () => {
+  const Zhusha = await loadZ();
+  const { timeline, drawingIndex } = await import("./zhusha/contract.ts");
+  const D = JSON.parse(readFileSync(join(import.meta.dirname, "zhusha/derived.json"), "utf8")).slots;
+  // what the drawings say: a foot on the ground in every dash drawing; the ult form's dash has none while she is a streak
+  assert.ok(D.dash.frames.every((f) => f.feet.length), "every dash drawing touches the ground");
+  if (D.uf_dash) assert.ok(D.uf_dash.frames.slice(4, 6).every((f) => !f.feet.length), "uf_dash f004-f005: gone");
+  const def = liveAnim("dash");
+  const { starts, total } = timeline(def.frames);
+  const h = host();
+  const fx = [];
+  h.vfx.spawn = (id) => fx.push(id);
+  const z = new Zhusha(h, [0, 0]);
+  z.clipOf = liveClip;
+  z.hasRole = (r) => ["dash", "idle", "run"].includes(r);
+  z.clipDone = (a) => a.role !== "dash" || a.t >= total - 1;
+  const cues = [];
+  z.onCue = (c) => cues.push({ ...c, t: z.t, state: z.state });
+  const inp = new FakeInput();
+  step(z, inp, 5);
+  inp.press("m2");
+  const rows = [];
+  for (let i = 0; i < 60; i++) {
+    const x0 = z.body.x;
+    step(z, inp);
+    rows.push({ t: z.t, state: z.state, y: z.body.y, v: z.body.x - x0, role: z.anim.role, d: drawingIndex(starts, total, z.anim.t, false), ifr: z.iframes, hb: z.hitboxes().length });
+  }
+  // the press tick (she takes the crouch), then the dash's ticks
+  const dash = rows.filter((r) => r.state === "dash");
+  assert.equal(dash.length, FEEL.dash.ticks + 1);
+  assert.ok(dash.every((r) => r.y === 0), "on the ground all the way");
+  const dist = dash.reduce((a, r) => a + r.v, 0) / H;
+  assert.ok(Math.abs(dist - FEEL.dash.distance) < 0.15, `${dist} H`);
+  const peak = dash.reduce((a, r) => (r.v > a.v ? r : a));
+  assert.equal(dash.find((r) => r.t === peak.t).d, 1, "full speed on the burst drawing (f001)");
+  const k = FEEL.dash.clips.dash.keys;
+  assert.equal(dash.find((r) => r.t === k["5"]).d, 5, "the heel skid (f005) as the speed bleeds off");
+  assert.ok(dash.filter((r) => r.d >= 5).every((r) => r.v < FEEL.dash.skidFrom * peak.v + 1e-9), "no skid drawing at speed");
+  assert.equal(cues.filter((c) => c.id === "skid" && c.move === "dash").length, 1);
+  assert.ok(fx.filter((id) => id === "dust.kick").length >= 3, "dust off the burst and the skid");
+  // i-frames early, then none; no hit boxes: the dash breaks nothing
+  assert.ok(dash.slice(0, FEEL.dash.iframes - 1).every((r) => r.ifr) && !dash[dash.length - 1].ifr);
+  assert.ok(rows.every((r) => r.hb === 0));
+  // standing after it: the rest of the clip (the skid, the rise to the idle) plays out, then the idle
+  const after = rows.filter((r) => r.state === "free");
+  const tail = after.filter((r) => r.role === "dash").map((r) => r.d);
+  assert.ok(tail.includes(7) && tail.includes(9), `the rise plays: ${tail}`);
+  assert.equal(after[after.length - 1].role, "idle");
+  // holding on: she runs on out of it (no stop)
+  const z2 = new Zhusha(host(), [0, 0]);
+  z2.clipOf = liveClip;
+  z2.hasRole = z.hasRole;
+  z2.clipDone = z.clipDone;
+  const i2 = new FakeInput();
+  step(z2, i2, 5);
+  i2.press("m2");
+  i2.down.add("right");
+  step(z2, i2, FEEL.dash.ticks + 3);
+  assert.equal(z2.anim.role, "run");
+});
+
+test("combat air dash: a burst, not flight: level for a moment, then it arcs into the fall; never rises, never shows the skid", async () => {
+  const Zhusha = await loadZ();
+  const { timeline, drawingIndex } = await import("./zhusha/contract.ts");
+  const def = liveAnim("dash");
+  const { starts, total } = timeline(def.frames);
+  const z = new Zhusha(host(), [0, 0]);
+  z.clipOf = liveClip;
+  const inp = new FakeInput();
+  step(z, inp, 5);
+  inp.press("jump");
+  inp.down.add("jump");
+  step(z, inp, 14);
+  inp.press("m2");
+  const rows = [];
+  for (let i = 0; i < 30; i++) { const y0 = z.body.y; step(z, inp); rows.push({ state: z.state, t: z.t, dy: z.body.y - y0, y: z.body.y, d: drawingIndex(starts, total, z.anim.t, false), role: z.anim.role }); }
+  const air = rows.filter((r) => r.state === "dash");
+  assert.equal(air.length, FEEL.dash.ticks + 1);
+  assert.ok(air.every((r) => r.y < 0), "in the air");
+  assert.ok(air.filter((r) => r.t <= FEEL.dash.airHold).every((r) => Math.abs(r.dy) < 1e-9), "level while it bursts");
+  assert.ok(air.every((r) => r.dy >= 0), "never rises (no Superman)");
+  assert.ok(air[air.length - 1].dy > 0, "arcs into the fall");
+  assert.ok(air.every((r) => r.d < FEEL.dash.clips.dash.skid), "no skid drawings in the air");
+  assert.equal(rows.find((r) => r.state === "free").role, "jump");
+});
+
+test("combat ult dash: she is gone (the streak) while she covers the distance, and reforms as she slows", async () => {
+  const Zhusha = await loadZ();
+  const { timeline, drawingIndex } = await import("./zhusha/contract.ts");
+  const def = liveAnim("uf_dash");
+  if (!def) return;
+  const { starts, total } = timeline(def.frames);
+  const z = new Zhusha(host(), [0, 0]);
+  z.clipOf = liveClip;
+  z.form = 5000;
+  const inp = new FakeInput();
+  step(z, inp, 5);
+  inp.press("m2");
+  const rows = [];
+  for (let i = 0; i < FEEL.dash.ticks; i++) { const x0 = z.body.x; step(z, inp); rows.push({ t: z.t, v: z.body.x - x0, d: drawingIndex(starts, total, z.anim.t, false) }); }
+  const gone = rows.filter((r) => r.d === 4 || r.d === 5);
+  const total_ = rows.reduce((a, r) => a + r.v, 0);
+  assert.ok(gone.reduce((a, r) => a + r.v, 0) > 0.4 * total_, "most of the way covered while she is a streak");
+  assert.ok(rows.filter((r) => r.t >= FEEL.dash.clips.uf_dash.keys["6"]).every((r) => r.d >= 6), "she reforms as she slows");
+});
+
+test("combat controls: Shift dashes (K and X still do); the controls card lists every key from the game's own map", async () => {
+  const { KEYS } = await import("./keys.ts");
+  const { controlRows, capOf } = await import("./controls.ts");
+  for (const k of ["ShiftLeft", "ShiftRight", "KeyK", "KeyX"]) assert.deepEqual(KEYS[k], ["m2"], k);
+  const rows = Object.fromEntries(controlRows(KEYS).map((r) => [r.what, r.caps]));
+  assert.deepEqual(rows.dash, ["Shift", "K", "X"]);
+  assert.deepEqual(rows.move, ["A", "D", "←", "→"]);
+  assert.deepEqual(rows.jump, ["W", "Space", "↑"]);
+  assert.deepEqual(rows.attack, ["J", "Z", "click"]);
+  assert.deepEqual([rows.skill, rows.ofuda, rows.ult, rows.use], [["Q"], ["E"], ["R"], ["F"]]);
+  // every action the keys can do is on the card (up / down only steer)
+  const listed = new Set(["left", "right", "jump", "m1", "m2", "skill", "e", "ult"]);
+  for (const acts of Object.values(KEYS)) for (const a of acts) assert.ok(listed.has(a) || a === "up" || a === "down", a);
+  assert.equal(capOf("ArrowUp"), "↑");
+  // H is free for "hold H": no game key on it
+  assert.equal(KEYS.KeyH, undefined);
+});
+
+test("combat dash: no white-box afterimages over her drawing (they read as blue rectangles); the box keeps them", async () => {
+  const Zhusha = await loadZ();
+  const run = (drawn) => {
+    const z = new Zhusha(host(), [0, 0]);
+    if (drawn) { z.clipOf = liveClip; z.hasRole = (r) => r === "dash"; }
+    const inp = new FakeInput();
+    step(z, inp, 5);
+    inp.press("m2");
+    let most = 0;
+    for (let i = 0; i < 16; i++) { step(z, inp); most = Math.max(most, z.ghosts.length); }
+    return most;
+  };
+  assert.equal(run(true), 0);
+  assert.ok(run(false) > 0);
 });

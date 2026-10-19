@@ -10,9 +10,11 @@
 // - Her sounds land on her drawings: the swing on the move's hit tick (the anim.json `hits` drawing; the controller's
 //   swingFx), the hit when the blade connects, footsteps by ground material on the drawings where a foot lands
 //   (STEP_FRAMES, read off the run and walk art).
-// - Her voice (VOICE, Dex-approved takes): kiai on her swings now and then, the jump, the dash, the hurt, the knockdown,
-//   the defeat, the respawn, the Q and E calls, the R call and the transform in the ult register; through the voice bus
-//   (mix.ts: EQ, compression, saturation, the space's reverb, pan), the music ducking under it.
+// - Her sounds come as the combat lane's cues (move, phase, tier, form: soundForCue): the press's windup, the swing on
+//   each hit's first tick, the hit by the tier that connected, the booms (m1_4's slam, the Q, the E, the R).
+// - Her voice (VOICE, Dex-approved takes; voiceForCue): none on the attack chain (Dex 10-19); the jump, the dash, the
+//   hurt, the knockdown, the defeat, the respawn, the Q and E calls, the R's call (none on its reveal, Dex 10-19); through the voice bus (mix.ts: EQ, compression, saturation, the space's reverb,
+//   pan), the music ducking under it.
 // - Beds: the ambience per place, cross-faded (the lake, the heights, the hall).
 // - Region themes (region-music.ts): each place's main theme, streamed, after the opening.
 // - The opening plays Track 1, owned by the page's conductor (opening/conductor.ts) on the page's AudioContext, which
@@ -24,6 +26,7 @@
 
 import { Ducker, masterLimiter, SPACES, VOICE_MIX, VoiceBus, type Space } from "./mix.ts";
 import { RegionMusic } from "./region-music.ts";
+import type { Cue as ZhushaCue } from "./zhusha/controller.ts";
 
 const AUDIO = "/audio/";
 
@@ -93,6 +96,8 @@ export const CUES: Record<string, Cue> = {
   "hit.sub": her(["sub-boom-a", "sub-boom-b"], 0.35),
   slam: her(["slam-a"], 0.8, 1, { with: ["hit.body", "hit.sub"] }),
   dash: her(["dash-a", "dash-b"], 0.6),
+  // the recoil (the m1_3 and E kick back): the boots skid
+  skid: opening(["skid"], 0.35),
   jump: her(["jump-a"], 0.5), djump: her(["djump-a"], 0.5),
   land: her(["land-a", "land-b"], 0.55),
   hurt: her(["hurt-d"], 0.7),
@@ -103,9 +108,31 @@ export const CUES: Record<string, Cue> = {
   ult: her(["sub-boom-a", "sub-boom-b"], 0.9, 1, { duck: -8 }),
   "sub.drop": her(["sub-drop-a"], 0.7),
   "sub.boom": her(["sub-boom-a", "sub-boom-b"], 0.8),
-  // the Q's and the R's starts (charge), the R's rise: their sounds wait for the combat lane's timing (wave 2); the
-  // calls are her voice (VOICE)
+  // the Q's press (charge) and the old R's rise: no sound of their own yet (the Q's call is her voice)
   charge: SILENT, rise: SILENT,
+  // the R (lane U's cinematic, zhusha/ult.json "cues"; on its beats through the combat lane's cue()): the cut-in's
+  // whoosh, her call (her voice), the BOOM of the fire line (a sub hit), the curtain's roar, the sword drawn, she
+  // bursts into ash, the slash storm's roll (every 10th of ~450 slashes) and its closing sweeps, the last cut's bass
+  // hit, the stop (r.hush: everything ducks to silence until the dive), the dive, the nuke (the biggest hit: the blast,
+  // a sub boom, everything else ducked), its rumble, the dust clearing; no line on the reveal (Dex 10-19: "no need for
+  // the reveal voice line"; r.ultline stays a silent id)
+  "r.press": her(["dash-a", "dash-b"], 0.8),
+  "r.call": SILENT,
+  "r.boom": her(["sub-boom-a", "sub-boom-b"], 0.9, 1, { duck: -6 }),
+  "r.fire": her(["r-fire-a"], 0.75),
+  "r.draw": her(["r-draw-a"], 0.7),
+  "r.vanish": court(["poof-c"], 0.8),
+  "r.slash": her(["swing-a", "swing-b", "swing-d", "swing-e"], 0.55),
+  "r.last": her(["hit-heavy-a", "hit-heavy-b"], 0.95, 1, { with: ["hit.sub"] }),
+  "r.hush": SILENT,
+  "r.dive": her(["r-dive-a"], 0.9),
+  "r.impact": her(["q-boom-a", "q-boom-b"], 1, 1, { with: ["sub.boom"], duck: -12 }),
+  "r.rumble": her(["sub-drop-a"], 0.8, 1, { with: ["debris"] }),
+  "r.reveal": opening(["gust"], 0.4),
+  "r.ultline": SILENT,
+  // the ult form: a ghost blade summoned, its strike (lane U removed the warps and their uf.warp cue)
+  "uf.blade": court(["tink-a", "tink-c", "tink-d"], 0.35),
+  "uf.slash": her(["swing-a", "swing-b", "swing-d", "swing-e"], 0.6, 1, { with: ["hit.tail"] }),
   // footsteps by the ground under her (step.<surface>)
   ...Object.fromEntries(SURFACES.map((m) => [`step.${m}`, stepCue(m, m === "water" ? 0.5 : 0.42)])),
   // doors and panels
@@ -146,9 +173,8 @@ export interface VoiceMoment {
 }
 
 export const VOICE: Readonly<Record<string, VoiceMoment>> = {
-  kiai: { normal: ["n-kiai-1", "n-kiai-2", "n-kiai-3"], ult: ["u-kiai-2", "u-kiai-3", "redo-u-kiai1-2", "redo-u-kiai1-3", "redo-u-kiai1-4"], chance: 0.4, gap: 0.6, prio: false },
-  // the chain's last hit (m1_4): a battle cry (Dex 10-19: "trying to destroy stuff", not pain)
-  finisher: { normal: ["redo-n-kiai4-1", "redo-n-kiai4-2", "redo-n-yell-1", "redo-n-yell-3"], ult: ["redo-u-kiai1-2", "redo-u-kiai1-3", "redo-u-kiai1-4"], chance: 0.85, gap: 0.3, prio: false },
+  // (no voice on the attack chain, m1_1-m1_4 in either form: Dex 10-19 "remove voicelines during the attack chain";
+  // the chain's kiai and battle-cry takes stay encoded in public/audio/voice, unused)
   jump: { normal: ["n-jump"], ult: ["n-jump"], chance: 0.3, gap: 0.8, prio: false },
   dash: { normal: ["n-dash"], ult: ["n-dash"], chance: 0.35, gap: 0.8, prio: false },
   hurt: { normal: ["n-hurt-1", "n-hurt-2"], ult: ["u-hurt", "u-grunt"], chance: 1, gap: 0.5, prio: true },
@@ -157,8 +183,8 @@ export const VOICE: Readonly<Record<string, VoiceMoment>> = {
   respawn: { normal: ["n-respawn"], ult: ["n-respawn"], chance: 1, gap: 0.3, prio: true },
   q: { normal: ["n-q-call"], ult: ["n-q-call"], chance: 1, gap: 0.3, prio: true },
   e: { normal: ["n-e-call"], ult: ["n-e-call"], chance: 1, gap: 0.3, prio: true },
-  r: { normal: ["u-r-call-1", "u-r-call-2"], ult: ["u-r-call-1", "u-r-call-2"], chance: 1, gap: 0, prio: true, register: "ult", sub: "sub.boom" },
-  transform: { normal: ["u-transform"], ult: ["u-transform"], chance: 1, gap: 0, prio: true, register: "ult", sub: "sub.drop" },
+  // the R's call (lane U: in her normal register; from the ult form, the ult takes); nothing on the reveal (Dex 10-19)
+  r: { normal: ["n-r-call"], ult: ["u-r-call-1", "u-r-call-2"], chance: 1, gap: 0, prio: true },
 };
 /** Ult-register takes with a baked octave-down double (voice/<take>-dbl), mixed low under them for weight. */
 export const DOUBLED = ["u-grunt", "u-hurt", "u-kiai-2", "u-kiai-3", "u-r-call-1", "u-r-call-2", "u-transform", "redo-u-kiai1-2", "redo-u-kiai1-3", "redo-u-kiai1-4"];
@@ -176,33 +202,57 @@ export interface HerState {
   ult: boolean;
 }
 
+/** Her cue as the combat lane's controller reports it (controller.ts `Cue`; lanes/combat/NOTEBOOK.md, its cue table). */
+export type HerCue = Pick<ZhushaCue, "id" | "volume" | "move" | "phase" | "tier" | "ult" | "hit">;
+
 /**
- * Which voice moment a game event is (pure, for tests): the move's first tick says "swing" (the windup; the E's tap
- * calls), "charge" starts the Q (the R's charge is its call phase, below), the hit tick's swing may kiai, the jump,
- * the dash, the hurt.
+ * The sound a cue of hers plays (pure, for tests), by the combat lane's cue table: the press (windup) is the windup
+ * rustle (the Q's charge: its own, silent until wave 2), a hit sounds by its tier (light: the light slice; medium and
+ * up: the heavy one: the E's discharge and pillar are heavy), the recoil a skid; the rest by id (swing,
+ * slam, wave, ult, dash, jump, djump, land, hurt, rise).
  */
-export function voiceFor(id: string, info: { first: boolean; role: string; state: string }): string | null {
-  // (the R's flurry swings during the ult sequence: no kiai, the cinematic has its own voice)
-  if (id === "swing") return info.first ? (info.role === "e_tap" ? "e" : null) : info.state === "ult" ? null : info.role === "m1_4" || info.role === "uf_m1_4" ? "finisher" : "kiai";
-  if (id === "charge") return info.state === "ult" ? null : "q";
-  if (id === "jump" || id === "djump") return "jump";
-  if (id === "dash") return info.state === "ult" ? null : "dash";
-  if (id === "hurt") return "hurt";
-  return null;
+export function soundForCue(c: Pick<HerCue, "id" | "phase" | "tier">): string {
+  // the R's and the ult form's own ids (r.*, uf.*) play their own sound, whatever their phase
+  if (/^(r|uf)\./.test(c.id)) return c.id;
+  if (c.id === "hit") return c.tier === "light" ? "hit" : "hit.heavy";
+  switch (c.phase) {
+    case "windup": return c.id === "charge" ? "charge" : "windup";
+    case "recoil": return "skid";
+    default: return c.id;
+  }
 }
 
-/** The moment a change of her state is (pure): knocked down, defeated, back up, the R's call, the transform. */
+/**
+ * The voice moment a cue of hers is (pure): the Q's and the E's presses call, the R's call on its beat (r.call; no
+ * line on its reveal, Dex 10-19); the dash and the jumps now and then; the hurt (a heavy one: the knockdown). The attack
+ * chain says nothing, in either form (Dex 10-19: "remove voicelines during the attack chain"), nor do the R's flurry
+ * and dive (the R has its own voice: the call).
+ */
+export function voiceForCue(c: Pick<HerCue, "id" | "move" | "phase" | "tier">): string | null {
+  // the R speaks once, on its call
+  if (c.id === "r.call") return "r";
+  if (/^(r|uf)\./.test(c.id) || isChain(c.move)) return null;
+  switch (c.phase) {
+    case "windup": return c.move === "skill_q" ? "q" : c.move === "e_tap" ? "e" : null;
+    case "move": return c.id === "dash" ? "dash" : c.id === "jump" || c.id === "djump" ? "jump" : null;
+    case "hurt": return c.tier === "heavy" ? "knockdown" : "hurt";
+    default: return null;
+  }
+}
+
+/** The attack chain, in either form (m1_1-m1_4 and their tails / returns; the ult form's "uf" strikes). */
+export function isChain(move: string): boolean {
+  return /^(uf_)?m1_\d/.test(move) || move === "uf";
+}
+
+/**
+ * The moment a change of her state is (pure), for what the cues do not carry: defeated, back up. (The knockdown, the
+ * R's call comes with its cue.)
+ */
 export function voiceForState(prev: HerState | null, now: HerState): string | null {
-  if (!prev) return null;
-  if (now.state !== prev.state) {
-    if (now.state === "down") return "knockdown";
-    if (now.state === "dead") return "defeat";
-    if (prev.state === "dead") return "respawn";
-  }
-  if (now.state === "ult" && now.phase !== prev.phase) {
-    if (now.phase === "call") return "r";
-    if (now.phase === "transform") return "transform";
-  }
+  if (!prev || now.state === prev.state) return null;
+  if (now.state === "dead") return "defeat";
+  if (prev.state === "dead") return "respawn";
   return null;
 }
 
@@ -314,13 +364,14 @@ export class Sound {
     });
     if (this.wantBed) this.setBed(this.wantBed);
     // decoded in order of need, a batch at a time (all at once, the first hits would wait behind the voice lines):
-    // her strikes and their layers, the opening's sounds, her steps and moves, the voice, then the world's
+    // her strikes, their layers and the big hits, the opening's sounds, her steps and moves, the voice, then the
+    // world's. (A cue missing from every batch loads on first use and may come too late for its first play.)
     const ids = Object.keys(CUES);
     const files = (re: RegExp): string[] => ids.filter((id) => re.test(id)).flatMap((id) => CUES[id]!.files.map((f) => this.urlOf(f)));
     const batches = [
-      files(/^(swing|windup|hit|slam)/),
+      files(/^(swing|windup|hit|slam|wave|ult|sub\.|r\.|uf\.)/),
       files(/^op\./),
-      files(/^(step\.|dash|jump|djump|land|hurt)/),
+      files(/^(step\.|dash|skid|jump|djump|land|hurt)/),
       Object.values(VOICE).flatMap((v) => [...v.normal, ...v.ult]).map((t) => this.urlOf(`voice/${t}`)),
       files(/^(wood|clay|paper)\.break$|^(gong|poof|cheer|tink)$/),
     ];
@@ -402,13 +453,40 @@ export class Sound {
   }
 
   /**
-   * Her sound for a game event (feel.sound through game.ts): the effect, and her voice when the moment calls for it.
-   * `first`: the move's first tick (its "swing" is the windup).
+   * A game sound by its plain id (feel.sound): held until the end of the tick. Her controller says each of her
+   * sounds twice, by id (feel.sound) and as a cue with its move, phase and tier (player.onCue, right after): the cue
+   * claims its id here and plays her mapped sound, so it never doubles; the rest (props, the court, the world) play at
+   * flush(), in the same frame.
    */
-  herSound(id: string, volume: number, info: { first: boolean; role: string; state: string; ult: boolean }): void {
-    this.sfx(id === "swing" && info.first ? "windup" : id, volume);
-    const v = voiceFor(id, info);
-    if (v) this.voice(v, info.ult);
+  heard(id: string, volume: number): void {
+    this.held.push({ id, volume });
+  }
+
+  private held: { id: string; volume: number }[] = [];
+
+  /** Plays what the world said this tick (game.ts, once per frame). */
+  flush(): void {
+    for (const h of this.held.splice(0)) this.sfx(h.id, h.volume);
+  }
+
+  /** Her cue (player.onCue): the sound its phase and tier call for, and her voice when the moment calls for it. */
+  herCue(c: HerCue): void {
+    const i = this.held.findIndex((h) => h.id === c.id);
+    if (i >= 0) this.held.splice(i, 1);
+    // the R's stop: everything ducks to silence until the dive (30 ticks)
+    if (c.id === "r.hush") this.hush(0.5);
+    this.sfx(soundForCue(c), c.volume);
+    const v = voiceForCue(c);
+    if (v) this.voice(v, c.ult);
+  }
+
+  /** Dead silence for `secs` (the R's stop): the music, the beds and the effects duck out, then come back fast. */
+  hush(secs: number): void {
+    const ctx = this.ctx;
+    if (!ctx || this.mix === "dry") return;
+    const t = ctx.currentTime;
+    this.musicDuck?.duck(-60, t, t + secs, 0.08, 0.3);
+    this.sfxDuck?.duck(-60, t, t + secs - 0.05, 0.06, 0.04);
   }
 
   /** Once per frame: her state (the voice's knockdown, defeat, respawn, R call, transform), the space, her pan. */

@@ -376,3 +376,31 @@ code, kbd, pre, .prose code, .prose kbd, .verify__line code { font-size: 1em; fo
 .dhead { gap: 14px; }
 .dhead__line { overflow-wrap: normal; word-break: normal; hyphens: none; }
 
+
+/* ------------------------------------------------------------------ the looks (motion/looks.ts, html[data-motion]) */
+/* Content is never hidden waiting for a script: "dust" runs on the scroll itself (a view timeline, CSS only; without
+   it the blocks are simply there), "cuts" only adds a landing to a block already in place. Reduced motion: none. */
+@media (prefers-reduced-motion: no-preference) {
+  /* dust: the world's windows blow open as pixel dust (motion/looks.ts); the page's own blocks are web type and
+     controls, so they stay crisp (Dex 10-19: "some web elements don't necessarily need to be pixel") and simply drift
+     in on the mark's wind, fading up as they scroll in */
+  @supports (animation-timeline: view()) {
+    html[data-motion="dust"] :is(.band > .sec > .wrap, .band > .page > .wrap) > * {
+      animation: look-dust linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 85%;
+    }
+  }
+  /* cuts: a block lands in three frames on twos: low, past, home */
+  html[data-motion="cuts"] .is-cut { animation: look-cut 250ms steps(1, end) both; }
+}
+@keyframes look-dust {
+  from { opacity: 0; translate: -10px 0; animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1); }
+  to { opacity: 1; translate: 0 0; }
+}
+@keyframes look-cut { 0% { translate: 0 28px; } 33.3% { translate: 0 -4px; } 66.6%, 100% { translate: 0 0; } }
+/* cuts on a desktop: the scroll settles on a section like a shot */
+@media (min-width: 1100px) and (prefers-reduced-motion: no-preference) {
+  html[data-motion="cuts"] { scroll-snap-type: y proximity; }
+  html[data-motion="cuts"] .band { scroll-snap-align: start; scroll-margin-top: var(--hdr-h); }
+}

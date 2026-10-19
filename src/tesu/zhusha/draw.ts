@@ -1,7 +1,7 @@
 // Drawing Zhusha: a role's pixel art when its slot exists (anims.ts), else the white box
 // (Dex: "until traced pixel art exists for a move she is a white bounding box for that move";
-// the procedural squash, stretch and lean live in controller.ts). Also her R's flame and line,
-// and the dash's afterimages.
+// the procedural squash, stretch and lean live in controller.ts), and the dash's afterimages. R's and
+// the ult form's stand-ins (the letter, the dive, the smoke, the ghost blades) are ultdraw.ts's.
 //
 // One path at every zoom (Dex 10-18): 128 px art drawn nearest-neighbour at her drawn height,
 // H x charScale (feel.json), on the play plane's transform, so the close band shows the same
@@ -9,17 +9,16 @@
 
 import type { RGB } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
-import { H } from "../config.ts";
 import { drawArt, SLOTS, type AnimSet, type Slot } from "./anims.ts";
 import { clipAtRoot, drawingIndex, moveToClip } from "./contract.ts";
 import { ART_PX, BODY_H, FEEL, type AnimState, type Zhusha } from "./controller.ts";
 import { IdlePlayer, seeded } from "./idle.ts";
+import { drawDiveBlur, drawUltBack, drawUltFront } from "./ultdraw.ts";
 import type { PlayView } from "./units.ts";
 
 const hex = (s: string): RGB => [parseInt(s.slice(1, 3), 16) / 255, parseInt(s.slice(3, 5), 16) / 255, parseInt(s.slice(5, 7), 16) / 255];
 const INK = hex("#1b1922"), PAPER = hex("#fbf8f1"), HURT = hex("#ffd2c8"), VERM = hex("#d8232c"), GOLD = hex("#f5d25c");
-const SMOKE_LITE = hex("#a39cab"), SMOKE = hex("#6b6372"), SMOKE_DARK = hex("#3b3440");
-const AZURE = hex("#6fc8ff"), AZURE_DEEP = hex("#2a6fb8"), FLAME = hex("#ffb347"), FLAME_CORE = hex("#fff4c8"), FLAME_EDGE = hex("#e2542a");
+const AZURE = hex("#6fc8ff"), AZURE_DEEP = hex("#2a6fb8");
 
 /**
  * (lane C 10-19, Dex: "the run cycle a tad faster") Her run's playback rate, both forms, when it plays by time (no
@@ -56,7 +55,7 @@ export class ZhushaDraw {
     };
   }
 
-  /** The clip's tick for this anim state (moves retimed to their hit, R's beats fitted to their length, jump_arc in phases). */
+  /** The clip's tick for this anim state (moves retimed to their hit, jump_arc in phases; R's clips play 1:1, ult.ts times them). */
   private clipTime(a: AnimState, slot: Slot, z: Zhusha): number {
     const U = FEEL.ult;
     const fit = (len: number): number => (a.t / Math.max(1, len)) * slot.total;
@@ -65,10 +64,6 @@ export class ZhushaDraw {
     if ((a.role === "run" || a.role === "walk") && slot.marks.root) return clipAtRoot(slot.def.frames, slot.marks.root, (a.dist ?? 0) / ART_PX);
     switch (a.role) {
       case "run": return a.t * RUN_RATE;
-      case "r_call": return fit(U.callTicks);
-      case "r_flurry": return fit(U.flurryTicks);
-      case "transform": return fit(U.transformTicks);
-      case "r_reveal": return fit(U.revealTicks);
       case "uf_exit": return fit(U.exitTicks);
       case "jump": {
         const segs = slot.def.segments;
@@ -87,12 +82,14 @@ export class ZhushaDraw {
   /** The drawing she shows now, or null for the white box. */
   shown(z: Zhusha): Shown | null {
     const a = z.anim;
-    if (a.hidden && a.role !== "r_flurry") return null;
+    if (a.hidden) return null;
     const r = this.anims.forRole(a.role, z.ultForm || a.role === "uf_exit");
     if (!r) return null;
     const slot = r.slot;
     let t = this.clipTime(a, slot, z);
     if (r.def.reverse) t = slot.total - 1 - t;
+    // the ult form stands still-ish on one drawing (Dex 10-19; ultform.ts)
+    if (a.role === "idle" && z.ultForm) return { slot, index: z.uf.idleIndex() };
     if (a.role === "idle" && slot.def.idle_variant) return { slot, index: this.idleIndex(slot, t) };
     const loop = (slot.loop || (a.role === "run" || a.role === "walk") && !!slot.marks.root) && !MOVES.has(a.role) && !r.def.hold;
     return { slot, index: drawingIndex(slot.starts, slot.total, t, loop) };
@@ -122,8 +119,9 @@ export class ZhushaDraw {
    * mirror, as game.ts set it). A drawing is drawn at H x charScale at every zoom (anims.ts drawArt).
    */
   draw(r: WorldRenderer, z: Zhusha, view: PlayView): void {
+    drawUltBack(r, z);
     this.figure(r, z, view);
-    if (z.smoke) this.cloud(r, z.smoke);
+    drawUltFront(r, z);
   }
 
   private figure(r: WorldRenderer, z: Zhusha, view: PlayView): void {
@@ -131,10 +129,10 @@ export class ZhushaDraw {
     if (z.ink >= 1) return;
     const opacity = z.ink > 0 ? 1 - z.ink : z.invuln > 0 && z.state === "free" && Math.floor(z.invuln / 4) % 2 === 0 ? 0.55 : 1;
     for (const g of z.ghosts) this.ghost(r, g.x, g.y, g.lean, g.life / g.max, g.ult);
-    if (z.streak) this.streak(r, z);
-    if (z.anim.flame > 0.05) {
-      this.flame(r, z);
-      if (z.anim.flame >= 1) return;
+    // R's dive: she is a vertical blur (ultdraw.ts)
+    if (z.anim.flame >= 1) {
+      drawDiveBlur(r, z, BODY_H);
+      return;
     }
     const s = this.shown(z);
     if (!s) {
@@ -162,7 +160,7 @@ export class ZhushaDraw {
     const b = z.body, p = z.pose, f = z.facing;
     const w = FEEL.body.boxW * BODY_H * p.sx.v, h = BODY_H * p.sy.v;
     const lean = p.lean.v, rot = p.rot.v, oy = p.oy.v;
-    const form = z.ultForm || (z.state === "ult" && (z.ultPhase === "transform" || z.ultPhase === "reveal"));
+    const form = z.ultForm || (z.state === "ult" && z.ultPhase === "reveal");
     const cx = b.x, cyFeet = b.y + oy;
     // a local point (x right of her centre, y up from her soles) to world: shear by the lean, rotate about the box's middle
     const mid = h / 2;
@@ -224,56 +222,6 @@ export class ZhushaDraw {
       const [x3, y3] = at(-f * w * 0.04, h + o + 2 + BODY_H * 0.12);
       this.quad(r, x3, y3, 4, 3, rot, GOLD, opacity);
     }
-  }
-
-  /** R's flame (rising, at the zenith, diving): a tapered column of fire in hard bands. */
-  private flame(r: WorldRenderer, z: Zhusha): void {
-    const b = z.body, p = z.pose, k = z.anim.flame;
-    const w = FEEL.body.boxW * BODY_H * 1.1 * p.sx.v, h = BODY_H * p.sy.v;
-    const flick = (i: number): number => Math.sin(z.t * 0.9 + i * 1.7) * 2;
-    const n = 10;
-    for (let i = 0; i < n; i++) {
-      const u = (i + 0.5) / n;
-      const ww = w * (1 - u * 0.75) + flick(i);
-      const y = b.y - u * h;
-      this.quad(r, b.x + flick(i + 3) * 0.5, y, ww + 6, h / n + 1, 0, FLAME_EDGE, k);
-      this.quad(r, b.x + flick(i + 3) * 0.5, y, ww, h / n + 1, 0, FLAME, k);
-      this.quad(r, b.x + flick(i + 3) * 0.5, y, ww * 0.45, h / n + 1, 0, FLAME_CORE, k);
-    }
-  }
-
-  /** R's smoke: banded puffs rolling out from where she landed, thinning into the transform. */
-  private cloud(r: WorldRenderer, sm: { x: number; y: number; t: number; life: number }): void {
-    const u = sm.t / sm.life;
-    const n = 11;
-    for (let i = 0; i < n; i++) {
-      const a = Math.sin(i * 91.7) * 43758.5453, c = Math.sin(i * 27.3) * 12345.678;
-      const ra = a - Math.floor(a), rc = c - Math.floor(c);
-      const spread = 0.35 + 0.9 * Math.min(1, u * 2.2);
-      const x = sm.x + (ra - 0.5) * 2.4 * H * spread;
-      const y = sm.y - (0.15 + rc * 1.1) * H * (0.6 + 0.4 * spread) - u * 0.3 * H;
-      const R1 = (0.38 + rc * 0.3) * H * (0.8 + 0.5 * Math.min(1, u * 3));
-      r.vfx({
-        type: 6, t: Math.min(1, u * 1.15), seed: i, over: 1,
-        p0: [R1 * 0.7, R1, 0.85, 0], p1: [0, 0, 0, 0],
-        core: SMOKE_LITE, main: SMOKE, edge: SMOKE_DARK,
-        x: Math.round(x), y: Math.round(y), rot: 0, sx: 1, sy: 1, ext: [-R1 - 2, -R1 - 2, R1 + 2, R1 + 2],
-      });
-    }
-  }
-
-  /** The dive's line from the zenith to her, thinning as it fades. */
-  private streak(r: WorldRenderer, z: Zhusha): void {
-    const s = z.streak!;
-    const dx = s.x1 - s.x0, dy = s.y1 - s.y0;
-    const len = Math.hypot(dx, dy);
-    if (len < 2) return;
-    const rot = Math.atan2(dy, dx);
-    const life = s.life / 36;
-    const th = Math.max(2, 14 * life);
-    const cx = (s.x0 + s.x1) / 2, cy = (s.y0 + s.y1) / 2;
-    this.quad(r, cx, cy, len, th + 4, rot, AZURE, Math.min(1, life * 1.4));
-    this.quad(r, cx, cy, len, th, rot, FLAME_CORE, Math.min(1, life * 1.4));
   }
 
   /** An afterimage: the box's outline in azure, dithering away. */

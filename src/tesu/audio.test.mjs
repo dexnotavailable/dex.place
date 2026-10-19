@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { BEDS, CUES, DOUBLED, Footsteps, STEP_FRAMES, STEP_TAKES, SURFACES, Sound, VOICE, pickTake, voiceFor, voiceForState } from "./sound.ts";
+import { BEDS, CUES, DOUBLED, Footsteps, STEP_FRAMES, STEP_TAKES, SURFACES, Sound, VOICE, isChain, pickTake, soundForCue, voiceForCue, voiceForState } from "./sound.ts";
 import { SPACES, spaceFor } from "./mix.ts";
 import { REGION_THEMES, placeAt } from "./region-music.ts";
 import { BEATS } from "./opening/beats.ts";
@@ -35,7 +35,52 @@ const COURT_EVENTS = {
   tink: ["tink-a", "tink-c", "tink-d"],
 };
 /** Moments with no sound yet: silent on purpose (the court: FOR DEX; her Q / E / R: wave 2, on the combat lane's timing). */
-const SILENT = ["installed", "lion-windup", "lion-land", "stagger", "finish", "charge", "rise", "op.inhale"];
+const SILENT = ["installed", "lion-windup", "lion-land", "stagger", "finish", "charge", "rise", "op.inhale", "r.call", "r.hush", "r.ultline"];
+/**
+ * Her cues, the combat lane's cue table (lanes/combat/NOTEBOOK.md "Sound cues"; controller.ts Cue): id, move, phase,
+ * tier -> the sound and the voice moment they play here.
+ */
+const CUE_TABLE = [
+  // [id, move, phase, tier, sound, voice]
+  ["swing", "m1_1", "windup", "light", "windup", null],
+  ["swing", "e_tap", "windup", "heavy", "windup", "e"],
+  ["charge", "skill_q", "windup", "q", "charge", "q"],
+  ["swing", "m1_2", "swing", "light", "swing", null],
+  ["swing", "m1_3", "swing", "medium", "swing", null],
+  ["swing", "m1_4", "swing", "heavy", "swing", null],
+  ["slam", "m1_4", "boom", "heavy", "slam", null],
+  ["wave", "skill_q", "boom", "q", "wave", null],
+  ["hit", "e_tap", "boom", "heavy", "hit.heavy", null],
+  ["hit", "e_tap", "swing", "heavy", "hit.heavy", null],
+  ["hit", "m1_1", "hit", "light", "hit", null],
+  ["hit", "m1_3", "hit", "medium", "hit.heavy", null],
+  ["skid", "m1_3", "recoil", "medium", "skid", null],
+  ["dash", "dash", "move", "light", "dash", "dash"],
+  ["jump", "jump", "move", "light", "jump", "jump"],
+  ["djump", "djump", "move", "light", "djump", "jump"],
+  ["land", "land", "land", "light", "land", null],
+  ["land", "knockdown", "land", "heavy", "land", null],
+  ["hurt", "hurt", "hurt", "light", "hurt", "hurt"],
+  ["hurt", "hurt", "hurt", "heavy", "hurt", "knockdown"],
+  // the R (lane U's cinematic: zhusha/ult.json "cues", phases in ult.ts PHASES) and the ult form
+  ["r.press", "r", "windup", "ult", "r.press", null],
+  ["r.call", "r", "windup", "ult", "r.call", "r"],
+  ["r.boom", "r", "boom", "ult", "r.boom", null],
+  ["r.fire", "r", "windup", "ult", "r.fire", null],
+  ["r.draw", "r", "windup", "ult", "r.draw", null],
+  ["r.vanish", "r", "move", "ult", "r.vanish", null],
+  ["r.slash", "r", "swing", "ult", "r.slash", null],
+  ["r.last", "r", "boom", "ult", "r.last", null],
+  ["r.hush", "r", "rise", "ult", "r.hush", null],
+  ["r.dive", "r", "move", "ult", "r.dive", null],
+  ["r.impact", "r", "boom", "ult", "r.impact", null],
+  ["r.rumble", "r", "land", "ult", "r.rumble", null],
+  ["r.reveal", "r", "reveal", "ult", "r.reveal", null],
+  ["r.ultline", "r", "reveal", "ult", "r.ultline", null],
+  ["hit", "r", "hit", "ult", "hit.heavy", null],
+  ["uf.blade", "uf", "windup", "heavy", "uf.blade", null],
+  ["uf.slash", "uf", "hit", "heavy", "uf.slash", null],
+];
 /** The legacy library files the code still references, none vetted yet (FOR DEX). This list may only shrink. */
 const LEGACY = [
   "door-open.wav", "glass-hit.wav", "metal-heavy.wav", "metal-hit.wav", "stone-break.wav", "stone-hit.wav", "thud.wav",
@@ -46,7 +91,7 @@ const NEW_TAKES = [
   "her/swing-a", "her/swing-b", "her/swing-d", "her/swing-e", "her/windup-a", "her/hit-c", "her/hit-d", "her/hit-heavy-a", "her/hit-heavy-b",
   "her/slam-a", "her/dash-a", "her/dash-b", "her/jump-a", "her/djump-a", "her/land-a", "her/land-b", "her/hurt-d",
   "her/body-a", "her/body-b", "her/tail-a", "her/tail-b", "her/sub-boom-a", "her/sub-boom-b", "her/sub-drop-a",
-  "her/q-boom-a", "her/q-boom-b",
+  "her/q-boom-a", "her/q-boom-b", "her/r-fire-a", "her/r-draw-a", "her/r-dive-a",
   ...SURFACES.flatMap((m) => Array.from({ length: STEP_TAKES }, (_, i) => `steps/${m}-${i + 1}`)),
   "opening/gust", "opening/flutter", "opening/catch", "opening/read", "opening/slap", "opening/jam", "opening/brim",
   "opening/hatgrip", "opening/burst", "opening/skid",
@@ -84,37 +129,45 @@ test("nothing in the game synthesizes sound: no oscillators, no lab synth, no pl
   assert.ok(!/class Music\b|createBiquadFilter|createBuffer\(/.test(sound), "sound.ts has no score of its own");
 });
 
-test("every cue the game emits is in the table: a sound, or silent on purpose", () => {
+test("every cue the game emits is in the table: her cues (the combat cue table) and the world's sounds by id", () => {
+  // the world's sounds by id (props, the court, game.ts: feel.sound literals); her controller speaks in cues
   const all = new Set();
-  for (const f of sources()) for (const id of emitted(readFileSync(f, "utf8"))) all.add(id);
-  for (const id of ["swing", "hit", "dash", "jump", "djump", "land", "hurt", "slam", "gong", "cheer", "tink", "wood.break"]) {
-    assert.ok(all.has(id), `the scan finds ${id}`);
-  }
+  for (const f of sources()) if (!f.endsWith("controller.ts")) for (const id of emitted(readFileSync(f, "utf8"))) all.add(id);
+  for (const id of ["gong", "cheer", "tink", "wood.break", "splash"]) assert.ok(all.has(id), `the scan finds ${id}`);
+  for (const [id, , , , sound] of CUE_TABLE) { all.add(id); all.add(sound); }
   for (const id of all) {
     assert.ok(id in CUES, `cue ${id} is in the table`);
     if (!SILENT.includes(id)) assert.ok(CUES[id].files.length > 0, `cue ${id} has a sound`);
   }
   for (const id of SILENT) assert.deepEqual(CUES[id].files, [], `silent cue ${id}`);
+  // every cue id her controller says is one the table above knows (its ids are the combat lane's stable names)
+  const ctl = readFileSync(new URL("./zhusha/controller.ts", import.meta.url), "utf8");
+  const said = new Set([...ctl.matchAll(/\bcue\(\s*(?:[^,()]*\?\s*)?"([\w.]+)"/g)].map((m) => m[1]));
+  assert.ok(said.size >= 10, `the controller's cue ids: ${[...said].join(", ")}`);
+  for (const id of said) assert.ok(CUE_TABLE.some((r) => r[0] === id), `her cue ${id} is in the cue table here`);
+  // the R's and the form's cue ids (lane U's ult.json): every one is in the table here
+  const ult = JSON.parse(readFileSync(new URL("./zhusha/ult.json", import.meta.url), "utf8")).cues;
+  for (const [k, id] of Object.entries(ult)) if (k !== "about") assert.ok(CUE_TABLE.some((r) => r[0] === id), `R cue ${id} (${k}) is in the cue table here`);
   // the opening's booked effects (BEATS.json sfx)
-  for (const s of BEATS.sfx) {
-    assert.ok(s.id in CUES, `opening cue ${s.id}`);
-    if (!SILENT.includes(s.id)) assert.ok(CUES[s.id].files.every((f) => f.startsWith("opening/")), `opening cue ${s.id} plays the opening's own sound`);
+  for (const sfx of BEATS.sfx) {
+    assert.ok(sfx.id in CUES, `opening cue ${sfx.id}`);
+    if (!SILENT.includes(sfx.id)) assert.ok(CUES[sfx.id].files.every((f) => f.startsWith("opening/")), `opening cue ${sfx.id} plays the opening's own sound`);
   }
 });
 
-test("her sounds: the swing on the hit tick, the windup on the move's first tick, heavier hits sound heavy", () => {
-  const ctl = readFileSync(new URL("./zhusha/controller.ts", import.meta.url), "utf8");
-  // swingFx runs on each hit's tick (t === h.at), and says "swing" there
-  assert.match(ctl, /if \(t === h\.at && !m\.fxDone\.has\(i\)\)[\s\S]{0,80}this\.swingFx\(h, m\)/);
-  const fx = ctl.slice(ctl.indexOf("private swingFx("), ctl.indexOf("afterHits(): void"));
-  assert.match(fx, /feel\.sound\("swing"/);
+test("her sounds by the cue table: the windup on the press, the swing on the hit, the hit by its tier, the booms", () => {
+  for (const [id, move, phase, tier, sound, voice] of CUE_TABLE) {
+    const c = { id, move, phase, tier };
+    assert.equal(soundForCue(c), sound, `${id} / ${move} / ${phase} / ${tier} plays ${sound}`);
+    assert.equal(voiceForCue(c), voice, `${id} / ${move} / ${phase} / ${tier} says ${voice}`);
+  }
+  // game.ts: her cues go to the sound, the world's ids wait for the tick's end (a cue claims its id: no doubles)
   const game = readFileSync(new URL("./game.ts", import.meta.url), "utf8");
-  assert.match(game, /herSound\(id, v, \{ first: p\.state === "move" && p\.anim\.t === 0, role: p\.anim\.role, state: p\.state, ult: p\.ultForm \}\)/);
-  const snd = readFileSync(new URL("./sound.ts", import.meta.url), "utf8");
-  assert.match(snd, /this\.sfx\(id === "swing" && info\.first \? "windup" : id, volume\)/);
+  assert.match(game, /this\.player\.onCue = \(c\) => this\.sound\.herCue\(c\)/);
+  assert.match(game, /this\.feel\.onSound = \(id, v\) => this\.sound\.heard\(id, v\)/);
+  assert.match(game, /this\.sound\.flush\(\)/);
   assert.equal(Sound.resolve("hit", 0.6), "hit");
   assert.equal(Sound.resolve("hit", 1), "hit.heavy");
-  assert.equal(Sound.resolve("swing", 1), "swing");
   for (const id of ["swing", "windup", "hit", "hit.heavy", "slam", "dash", "land", "hurt"]) {
     assert.ok(CUES[id].files.every((f) => f.startsWith("her/")), `${id} is one of her own sounds`);
   }
@@ -123,6 +176,36 @@ test("her sounds: the swing on the hit tick, the windup on the move's first tick
   assert.deepEqual(CUES["hit.heavy"].with, ["hit.body", "hit.tail", "hit.sub"]);
   for (const c of Object.values(CUES)) for (const w of c.with ?? []) assert.ok(CUES[w] && !CUES[w].with, `layer ${w} exists and has no layers of its own`);
   assert.ok(CUES.wave.duck < 0 && CUES.wave.with.includes("sub.drop"), "the Q's blast: a sub drop under it, the rest ducked");
+});
+
+test("no voice on the attack chain, in either form (Dex 10-19: remove voicelines during the attack chain)", () => {
+  const chain = ["m1_1", "m1_2", "m1_3", "m1_4", "uf_m1_1", "uf_m1_2", "uf_m1_3", "uf_m1_4", "m1_1_ret", "uf_m1_1_tail", "uf"];
+  const cues = [["swing", "windup"], ["swing", "swing"], ["hit", "hit"], ["hit", "swing"], ["slam", "boom"], ["skid", "recoil"], ["land", "land"],
+    ["uf.slash", "hit"], ["uf.blade", "windup"]];
+  for (const move of chain) {
+    assert.ok(isChain(move), `${move} is the chain`);
+    for (const [id, phase] of cues) for (const tier of ["light", "medium", "heavy", "ult"]) {
+      assert.equal(voiceForCue({ id, move, phase, tier }), null, `${id} / ${move} / ${phase} / ${tier}: no voice`);
+    }
+  }
+  for (const id of Object.keys(VOICE)) assert.ok(!["kiai", "finisher"].includes(id), `no chain voice moment (${id})`);
+  // the voice that stays: the Q / E / R calls, hurt, knockdown; dash and jump (not the chain); none on the R's reveal
+  assert.equal(voiceForCue({ id: "charge", move: "skill_q", phase: "windup", tier: "q" }), "q");
+  assert.equal(voiceForCue({ id: "swing", move: "e_tap", phase: "windup", tier: "heavy" }), "e");
+  assert.equal(voiceForCue({ id: "r.call", move: "r", phase: "windup", tier: "ult" }), "r");
+  assert.equal(voiceForCue({ id: "r.ultline", move: "r", phase: "reveal", tier: "ult" }), null, "Dex 10-19: no need for the reveal voice line");
+  assert.equal(CUES["r.ultline"].files.length, 0);
+  assert.equal(voiceForCue({ id: "hurt", move: "hurt", phase: "hurt", tier: "heavy" }), "knockdown");
+  for (const move of ["skill_q", "e_tap", "r", "dash", "jump"]) assert.ok(!isChain(move), `${move} is not the chain`);
+});
+
+test("every sound she makes in a fight is decoded at the start (in one of the preload batches)", () => {
+  const snd = readFileSync(new URL("./sound.ts", import.meta.url), "utf8");
+  const res = [...snd.slice(snd.indexOf("const batches = ["), snd.indexOf("void (async () => {")).matchAll(/files\((\/.+\/)\)/g)].map((m) => eval(m[1]));
+  assert.ok(res.length >= 4, "the batches");
+  for (const id of ["swing", "windup", "hit", "hit.heavy", "hit.body", "hit.tail", "hit.sub", "slam", "wave", "ult", "sub.drop", "sub.boom", "dash", "skid", "jump", "djump", "land", "hurt", "step.wood", "op.slap", "op.line1", "r.impact", "r.slash", "uf.slash"]) {
+    assert.ok(res.some((r) => r.test(id)), `${id} is preloaded`);
+  }
 });
 
 test("her voice: Dex-approved takes, on the right moments, the ult register with its double and sub hits", () => {
@@ -137,29 +220,19 @@ test("her voice: Dex-approved takes, on the right moments, the ult register with
   for (const take of Object.keys(vetting.voice)) if (vetting.voice[take] === "bad") {
     for (const m of Object.values(VOICE)) assert.ok(![...m.normal, ...m.ult].includes(take), `${take} (bad) is never used`);
   }
-  const at = { first: false, role: "m1_1", state: "move" };
-  assert.equal(voiceFor("swing", at), "kiai");
-  assert.equal(voiceFor("swing", { ...at, first: true }), null, "the windup is silent");
-  assert.equal(voiceFor("swing", { ...at, first: true, role: "e_tap" }), "e");
-  assert.equal(voiceFor("swing", { ...at, state: "ult" }), null, "the R's flurry: no kiai");
-  assert.equal(voiceFor("swing", { ...at, role: "m1_4" }), "finisher", "the chain's last hit: a battle cry");
+  for (const [, , , , , voice] of CUE_TABLE) if (voice) assert.ok(VOICE[voice], `voice moment ${voice}`);
   // variants rotate: never the same take twice in a row
   let last;
-  for (let i = 0; i < 40; i++) { const t = pickTake(VOICE.finisher.normal, last, Math.random); assert.notEqual(t, last); last = t; }
+  for (let i = 0; i < 40; i++) { const t = pickTake(VOICE.hurt.normal, last, Math.random); assert.notEqual(t, last); last = t; }
   assert.equal(pickTake(["only"], "only", Math.random), "only");
-  assert.equal(voiceFor("charge", at), "q");
-  assert.equal(voiceFor("charge", { ...at, state: "ult" }), null, "the R's charge: its call phase speaks");
-  assert.equal(voiceFor("hurt", at), "hurt");
-  assert.equal(voiceFor("wood.break", at), null);
   const st = (state, phase = null) => ({ state, phase, ult: false });
-  assert.equal(voiceForState(st("free"), st("down")), "knockdown");
+  assert.equal(voiceForState(st("free"), st("down")), null, "the knockdown comes with its cue");
   assert.equal(voiceForState(st("hurt"), st("dead")), "defeat");
   assert.equal(voiceForState(st("dead"), st("free")), "respawn");
-  assert.equal(voiceForState(st("free"), st("ult", "call")), "r");
-  assert.equal(voiceForState(st("ult", "smoke"), st("ult", "transform")), "transform");
+  assert.equal(voiceForState(st("free"), st("ult", "call")), null, "the R's call comes with its cue");
   assert.equal(voiceForState(st("ult", "call"), st("ult", "call")), null);
-  assert.equal(VOICE.r.register, "ult");
-  assert.equal(VOICE.transform.register, "ult");
+  assert.ok(!("ultline" in VOICE), "no voice moment on the R's reveal (Dex 10-19)");
+  assert.ok(!("uf.warp" in CUES), "lane U removed the warps' cue");
 });
 
 test("the mix: a baked reverb per space (and the ult's), the space by place, nothing synthesized", () => {

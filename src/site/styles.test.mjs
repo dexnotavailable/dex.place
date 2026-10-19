@@ -27,11 +27,14 @@ test("every animation name used has a matching @keyframes", () => {
   const missing = [];
   for (const { file, css } of sheets) {
     for (const [, name] of css.matchAll(/(?:^|[;{\s])animation:\s*([a-z][\w-]*)/g)) {
-      if (["none", "inherit", "initial", "unset"].includes(name)) continue;
+      // (a var(): the names come from the page, e.g. the card rigs' --anim, render/cardart.ts motionCss; checked below)
+      if (["none", "inherit", "initial", "unset", "var"].includes(name)) continue;
       if (!defined.has(name)) missing.push(`${file}: ${name}`);
     }
   }
   assert.deepEqual(missing, []);
+  // the rigs' motions only ever name keyframes that exist
+  for (const name of ["rig-sway", "rig-breathe", "rig-bob", "rig-glow", "rig-flicker", "rig-drift", "rig-drift-fade"]) assert.ok(defined.has(name), name);
 });
 
 test("per-frame motion values are never written as custom properties on :root", () => {
@@ -69,4 +72,26 @@ test("Departure Mono (Dex 10-19: yes): in the repo with its OFL licence beside i
   assert.match(v2, /code, kbd, pre, \.prose code, \.prose kbd, \.verify__line code \{ font-size: 1em; font-synthesis: none; \}/);
   const { footer } = await import("./render/layout.ts");
   assert.match(footer("home"), /<a href="\/fonts\/departure-mono\/LICENSE\.txt">Departure Mono<\/a> by Helena Zhang/);
+});
+
+test("Dex 10-19 'vector is best; some web elements don't necessarily need to be pixel': the cards are vector by default (no script needed), the page's own blocks are never pixel-masked", async () => {
+  const { DEFAULT_FINISH, FINISHES } = await import("./motion/finish-mode.ts");
+  assert.equal(DEFAULT_FINISH, "vector");
+  assert.deepEqual([...FINISHES].sort(), ["pixel", "vector"]);
+  const landing = sheets.find((s) => s.file === "landing.css").css;
+  // the vector finish plays unless the pixel one is asked for (so it also plays before or without any script)
+  assert.match(landing, /html:not\(\[data-cardfinish="pixel"\]\) \.rig__p \{ animation: var\(--anim, none\); \}/);
+  assert.doesNotMatch(landing, /\[data-cardfinish="vector"\]/, "nothing waits for a script to say vector");
+  // the card's own web bits move smoothly; pixel steps only on the pixel finish
+  assert.match(landing, /\.cart__shine \{ --shine-t: var\(--ease-out\);/);
+  assert.match(landing, /html\[data-cardfinish="pixel"\] \.cart__shine \{ --shine-t: steps\(14, end\); \}/);
+  assert.doesNotMatch(landing.match(/\.pcard__link \{[^}]*\}/)[0], /steps\(/, "the name's underline grows smoothly");
+  // the pixel finish's code is fetched only for that finish
+  const main = readFileSync(new URL("./main.ts", import.meta.url), "utf8");
+  assert.match(main, /if \(cardFinish !== "pixel" \|\| !document\.querySelector\("\[data-rig\]"\)\) return;/);
+  // the dust look: the world's windows keep their pixel dust (motion/looks.ts); text and controls arrive crisp
+  const all = sheets.map((s) => s.css).join("\n");
+  const dust = all.match(/@keyframes look-dust \{[\s\S]*?\n\}/)[0];
+  assert.doesNotMatch(dust, /mask/, "no dither mask over the page's blocks");
+  assert.match(dust, /opacity: 0/);
 });

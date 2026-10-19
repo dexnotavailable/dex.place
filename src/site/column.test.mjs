@@ -409,3 +409,34 @@ test("the loader lands when the opening set is in, even when the world's progres
   assert.match(src, /return !!s && s\.plates >= 1 && s\.close && s\.font && s\.ofuda;/);
   assert.notEqual(0.7 + 0.1 + 0.1 + 0.1, 1);
 });
+
+test("the looks (Dex 10-19 'the motion feels cheap', then 'probably dust'): dust ships; depth by nearness, a tear that opens as the window rises, unchanged frames skipped", async () => {
+  const { DEFAULT_LOOK, LOOKS } = await import("./motion/look-mode.ts");
+  const { LOOK, diorama } = await import("./motion/looks.ts");
+  const { holeMask, tearField } = await import("./motion/windows.ts");
+  assert.equal(DEFAULT_LOOK, "dust");
+  assert.deepEqual([...LOOKS].sort(), Object.keys(LOOK).sort(), "every look the switch knows exists");
+  const st = (top, bandTop, bandH = 900) => ({ W: 300, H: 240, index: 0, top, bottom: top + 240, bandTop, bandBottom: bandTop + bandH, vh: 800, arrived: -1 });
+  const piece = (kind, extra = {}) => ({ kind, p: {}, fit: 0.5, x: 0.5, y: 0.5, ...extra });
+  // the scroll is the camera: near things move further than far ones, and the other way as the band goes up
+  const low = st(500, 600), high = st(-200, -100);
+  const dy = (s, pc) => diorama.offset(s, pc, 0, 0)[1];
+  assert.ok(Math.abs(dy(low, piece("op.pine"))) > Math.abs(dy(low, piece("op.farkarst"))), "the pine moves more than the far karst");
+  assert.ok(dy(low, piece("op.tower")) > 0 && dy(high, piece("op.tower")) < 0, "near things ride from low to high as the page scrolls");
+  assert.ok(Math.abs(diorama.backOffset(low, 0)[1]) <= 12, "the sky moves no further than its margin");
+  for (const s of [low, high]) for (const v of diorama.offset(s, piece("op.palace"), 0, 0)) assert.equal(v, Math.round(v), "whole pixels");
+  // the tear: shut-ish while the window is at the screen's foot, open by the time it is near the top
+  const foot = diorama.coverKey(st(790, 790), 0), mid = diorama.coverKey(st(560, 560), 0), up = diorama.coverKey(st(300, 300), 0);
+  assert.ok(foot > mid && mid > up && up === 0, `the tear opens as it rises (${foot} > ${mid} > ${up})`);
+  const out = new Uint8ClampedArray(300 * 240 * 4);
+  assert.equal(diorama.cover(st(300, 300), () => tearField(300, 240, 1), out, 0), false, "open: nothing over the window");
+  assert.equal(diorama.cover(st(700, 700), () => tearField(300, 240, 1), out, 0), true);
+  // the growing tear is the finished hole's own outline: inside the finished tear the field is the world, outside paper
+  const f = tearField(160, 120, 1), m = holeMask(160, 120, 1);
+  let agree = 0, n = 0;
+  for (let i = 0; i < f.length; i++) {
+    if (m[i * 4 + 3] === 255) { n++; if (f[i] < 4) agree++; }
+  }
+  assert.ok(agree / n > 0.9, `paper in the mask is paper in the field (${agree}/${n})`);
+  assert.ok(f[60 * 160 + 80] > 4 * 30, "the middle is far inside the tear");
+});
