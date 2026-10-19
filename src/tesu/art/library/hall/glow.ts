@@ -150,6 +150,12 @@ export interface ShaftP {
   wTop: number;
   /** Bands it passes behind (local y from the foot, negative: [top, bottom]) where nothing is drawn. */
   gaps?: [number, number][];
+  /** (round 2) Drawn only above this local y: below it the play plane fills the shaft's path (the gate's
+   *  bay) and the room's light lifts it in the shaft's body (hall-light.ts). */
+  from?: number;
+  /** (round 2) Boxes on the play plane in the shaft's path [x0, y0, x1, y1] (local): lifted there too, so
+   *  nothing is drawn over them (the art's display screens upstairs). */
+  skip?: [number, number, number, number][];
   frame?: number;
 }
 
@@ -158,46 +164,33 @@ export const shaft = definePainter<ShaftP>("hall.shaft", {
     return [-p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, 2];
   },
   paint(c, p) {
-    // (hall loop round 1) not a stipple: a few god rays of different widths and lengths down the
-    // shaft's slant, the lit air between them a sparse drift of glinting dust (thick in the core,
-    // thinning outward: the shaft's soft bands), and a clean edge ray each side. What the shaft
-    // passes through is lit a step by the room's light (hall-light.ts); this is only the lit air.
+    // (hall loop round 2, W2-4: the 1 px streaks read as rain) where the shaft crosses open air in front
+    // of the far wall (upstairs, between the art's screens) its light is a few long, wide, faint rays
+    // slanting down from the well, each fading out at its own length, their edges wandering slowly; they
+    // breathe a px wider and narrower over the loop. Everywhere the play plane lies behind it, the room's
+    // light lifts what is there in the shaft's whole body instead (hall-light.ts), so nothing is drawn.
     const f = p.frame ?? 0;
     const breathe = Math.sin((f / 8) * Math.PI * 2);
-    const rays: [number, number, number][] = [];
-    for (let i = 0; i < 5; i++) rays.push([-0.7 + (1.4 * (i + hash(i, 1, c.seed))) / 5, 0.6 + 1.6 * hash(i, 2, c.seed), hash(i, 3, c.seed)]);
-    rect(c, -p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, 0, (_X, _Y, lx, ly) => {
+    const from = p.from ?? 0;
+    const rays: [number, number, number, number][] = [[-0.5, 9, 0.42, 1], [0.02, 15, 0.5, 0], [0.5, 7, 0.36, 1]];
+    rect(c, -p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, Math.min(0, from), (_X, _Y, lx, ly) => {
       if (p.gaps && p.gaps.some((g) => ly > g[0] && ly < g[1])) return 0;
+      if (p.skip && p.skip.some((b) => lx > b[0] && lx < b[2] && ly > b[1] && ly < b[3])) return 0;
       const t = -ly / p.h; // 0 at the foot .. 1 at the top
       const axis = -p.lean * t;
       const half = (p.w * (1 - t) + p.wTop * t) / 2;
       const s = lx - axis;
-      const u = s / half;
-      const au = Math.abs(u);
-      if (au > 1.02) return 0;
-      const low = 1 - t * 0.55;
-      // the clean edge each side
-      if (Math.abs(au - 0.98) * half < 0.55 && vnoise(u < 0 ? 3 : 7, ly * 0.03 + f * 0.2, 11) > 0.3) return P.paper[2]!;
-      // two or three god rays in the core, long dashes drifting as it breathes
-      for (const [ru, rw, rs] of rays) {
-        if (Math.abs(ru) > 0.5) continue;
-        if (Math.abs(s - ru * half) < rw / 2 / Math.max(1, c.d) + 0.25) {
-          const n = vnoise(rs * 17, ly * 0.009 + f * 0.12, 13) + breathe * 0.05; // long runs, not rain-like dashes
-          if (n > 0.56) return n > 0.74 && low > 0.65 ? P.paper[1]! : P.paper[2]!;
+      for (const [ru, rw, end, warm] of rays) {
+        if (t < end) continue;
+        const wob = (vnoise(ly * 0.012, ru * 13, 41) - 0.5) * 1.5;
+        const w = (rw + breathe * 0.8) * (0.4 + 0.6 * clamp((t - end) / 0.25, 0, 1));
+        const e = Math.abs(s - ru * half - wob) - w / 2;
+        if (e < 0) {
+          // each ray brighter in its middle, its sides a step dimmer
+          const inner = e < -2.2;
+          if (t < end + 0.08) return P.dusk[2]!;
+          return inner ? (warm ? P.mauve[0]! : P.dusk[0]!) : P.dusk[1]!;
         }
-      }
-      // the lit air (integration, round 1: no ordered dot screen, it read as a grid at real size): fine
-      // streaks along the shaft's slant, many in the core and fewer outward (the shaft's soft bands),
-      // each a long unbroken run that fades in and out down the length, in the dim amber of the paper.
-      // What the shaft passes through on the play plane is lit a step by hall-light.ts (the air remap).
-      const sa = s * c.d; // in this level's art px, so a streak is one art px wide at every density
-      const lane = Math.floor(sa / 3);
-      const lh = hash(lane, 21, c.seed);
-      const dens = au < 0.42 ? 0.34 : au < 0.76 ? 0.16 : 0.06;
-      if (lh < dens * (low > 0.7 ? 1 : 0.6 + low * 0.5) && ((sa % 3) + 3) % 3 < 1) {
-        const run = vnoise(lane * 7.3, ly * 0.012 + f * 0.1, 17);
-        // dim: the body of the shaft is the air remap under it; these only give it grain along the light
-        if (run > 0.55) return au < 0.42 ? (run > 0.75 && low > 0.6 ? P.paper[3]! : P.paper[4]!) : P.dusk[0]!;
       }
       return 0;
     });

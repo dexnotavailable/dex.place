@@ -67,21 +67,24 @@ export const hallFloor = definePainter<FloorP>("hall.floor", {
       const off = (row % 2) * fw * 0.5 + hash(row, 1, 17) * fw * 0.3;
       const joint = depth - rowTop < 0.025 + row * 0.006 || (((lx + off) % fw) + fw) % fw < 1.2 + row * 0.4;
       const lf2 = lf.get(lx, -20);
-      // (hall loop round 1) the polish doubles every light above as a clean streak straight down,
-      // broken by the floor's ripples into dashes, fading as it nears us: warm under the lanterns
-      // and lamps, pale under the daylight; painted in whole colours (no dithered ghost)
+      // (hall loop round 2, W2-5: the round-1 dashes read as ripples on water) the lacquered stone doubles
+      // every light above as a soft vertical smear straight down that fades fast, a little streaked down
+      // its length (the polish), cut by the joints between the flags: warm under the lanterns and lamps;
+      // under the gate, the court's warm paving first and its pale sky below it
       let best = 0, day = false;
       for (const rx of p.refl ?? []) {
-        const w = rx[1] * (rx[2] >= 0.5 ? 0.42 + depth * 0.1 : 0.22 + depth * 0.06);
+        const isDay = rx[2] >= 0.5;
+        const w = rx[1] * (isDay ? 0.4 : 0.26) * (1 + depth * 0.15);
         const d = Math.abs(lx - rx[0]) / w;
         if (d >= 1) continue;
-        const ripple = vnoise(lx * 0.04, ly * 0.22, 5) > 0.36 ? 1 : 0.25;
-        const v = (1 - d * d) * rx[2] * Math.max(0, 1 - depth / (rx[2] >= 0.5 ? 3 : 2)) * ripple;
-        if (v > best) { best = v; day = rx[2] >= 0.5; }
+        const fade = Math.max(0, 1 - depth / (isDay ? 1.45 : 1.0));
+        const streak = 0.7 + 0.55 * vnoise(lx * 0.3, depth * 0.5, 5);
+        const v = (1 - d * d) * rx[2] * fade * fade * streak;
+        if (v > best) { best = v; day = isDay; }
       }
-      if (best > 0.09 && !joint) {
-        const ramp = day ? REFL_DAY : REFL_WARM;
-        const i = best > 0.42 ? 0 : best > 0.26 ? 1 : best > 0.16 ? 2 : 3;
+      if (best > 0.08 && !joint) {
+        const ramp = day ? (depth < 0.32 ? REFL_DAY : REFL_SKY) : REFL_WARM;
+        const i = best > 0.5 ? 0 : best > 0.3 ? 1 : best > 0.17 ? 2 : 3;
         return ramp[i]!;
       }
       const gleam = vnoise(lx * 0.02, depth * 3, 9) * 0.08;
@@ -94,6 +97,7 @@ export const hallFloor = definePainter<FloorP>("hall.floor", {
 /** The polish's reflections: of the lanterns and lamps (warm), of the daylight (pale). */
 const REFL_WARM = [P.ember[3]!, P.ember[4]!, P.umber[0]!, P.umber[1]!] as const;
 const REFL_DAY = [P.paper[2]!, P.stone[3]!, P.stone[4]!, P.stone[5]!] as const;
+const REFL_SKY = [P.cloud[3]!, P.range[3]!, P.range[5]!, P.tile[3]!] as const;
 
 // ---------------------------------------------------------------------------
 // The end walls: a door wall right behind the walk line, built into the room's thick end
@@ -605,87 +609,3 @@ function colBaseAt(c: PaintCtx, cx: number, fy: number, r: number, top: number, 
 }
 
 export { P, hash, keep, tn };
-
-// ---------------------------------------------------------------------------
-// The roof over the play plane: the great tie beam the lanterns hang from, the dark coffers
-// above it and the skylight the shaft comes down through (only ever seen at the top edge of
-// the entrance shot; at play zoom it is always above the frame)
-// ---------------------------------------------------------------------------
-export interface RoofP {
-  w: number;
-  /** The beam's underside above the floor and its depth (px). */
-  beam: number;
-  depth: number;
-  /** The skylight: local x range. */
-  sky: [number, number];
-  /** How far up it is painted (px above the floor). */
-  top: number;
-  at?: At;
-}
-
-export const roof = definePainter<RoofP>("hall.roof", {
-  bounds(p) {
-    return [0, -p.top, p.w, -p.beam + 4];
-  },
-  paint(c, p) {
-    const lf = new LitField(HALL_LIGHT, p.at, 16);
-    const b0 = -p.beam - p.depth, b1 = -p.beam;
-    const sx0 = p.sky[0], sx1 = p.sky[1], sw = sx1 - sx0;
-    rect(c, 0, -p.top, p.w, b1, (X, Y, lx, ly) => {
-      const l = lf.get(lx, ly);
-      if (ly >= b0) {
-        // the long beam: dark lacquer, a gold bead top and bottom, a dim painted cartouche every
-        // bay, a gold scroll at each joint; its underside lip catches the light below
-        const v = (ly - b0) / p.depth;
-        if (v > 0.88) return mt(M.gold, lum(l, 0, 0.9) * 0.75, X, Y, 0.3, 1);
-        if (v < 0.07) return mt(M.gold, lum(l, 0, -0.9) * 0.45, X, Y, 0.35, 1);
-        const k = ((lx % (4.6 * H)) + 4.6 * H) % (4.6 * H) / (4.6 * H);
-        const ek = Math.min(k, 1 - k) * 4.6 * H;
-        if (ek < 0.32 * H) {
-          const f = Math.sin(ek * 0.35 + Math.sin((v - 0.5) * 6) * 2.5);
-          return Math.abs(f) < 0.22 ? mt(M.gold, lum(l) * 0.6, X, Y, 0.35, 1) : mt(M.verm, lum(l) * 0.35, X, Y, 0.4, 1);
-        }
-        const cart = Math.abs(k - 0.5) < 0.17 && Math.abs(v - 0.5) < 0.28;
-        if (cart) {
-          const edge = Math.abs(Math.abs(k - 0.5) - 0.165) < 0.01 || Math.abs(Math.abs(v - 0.5) - 0.27) < 0.04;
-          return edge ? mt(M.gold, lum(l) * 0.65, X, Y, 0.3, 1) : tn(P.jade, clamp(0.86 + (1 - lum(l)) * 0.14, 0, 1), X, Y, 0.45);
-        }
-        return mt(M.lacq, lum(l) * 0.5 + grain(lx, ly, 61, false) * 0.05, X, Y, 0.1, 1);
-      }
-      // the skylight: a deep well in the roof, its inner walls lit by the day pouring down it,
-      // the lattice at its mouth in silhouette against the brightness
-      const wellDepth = 0.55 * H;
-      if (lx > sx0 - wellDepth * 0.4 && lx < sx1 + wellDepth * 0.4 && ly < b0 - 0.2 * H && ly > b0 - 2.4 * H) {
-        const u = (lx - sx0) / sw;
-        const up = (b0 - 0.2 * H - ly) / H; // how far up the well
-        if (u < 0 || u > 1) {
-          // the well's side walls, lit from the opening, darker going down
-          const side = u < 0 ? -u * sw / (wellDepth * 0.4) : (u - 1) * sw / (wellDepth * 0.4);
-          return mt(M.wood, (1 - side) * (0.35 + 0.4 * clamp(up / 2.5, 0, 1)), X, Y, 0.2, 1);
-        }
-        const s2 = 0.3 * H;
-        const a = (((lx - sx0) % s2) + s2) % s2, bb = ((((-ly) % s2) + s2) % s2);
-        const bar = (a < 2.5 || bb < 2.5) && up < 1.4;
-        if (bar) return mt(M.wood, 0.25 + 0.3 * clamp(up, 0, 1), X, Y, 0.35, 1);
-        // (round 1: held a step below the court gate's daylight, the room's key now)
-        const glow = clamp(0.25 + Math.abs(u - 0.5) * 0.6 - up * 0.06, 0, 1);
-        return tn(SKYLIGHT_DIM, glow, X, Y, 0.55);
-      }
-      // coffers: lacquer frames, each panel holding a faint gold rosette, warmed near the
-      // skylight and the lanterns, darkest far up
-      const cs = 0.75 * H;
-      const gx = ((lx % cs) + cs) % cs, gy = ((((-ly) % (0.55 * H)) + 0.55 * H) % (0.55 * H));
-      const near = clamp(1 - Math.abs(lx - (sx0 + sx1) / 2) / (3.2 * H), 0, 1) * 0.35;
-      // the roof falls into the dark the higher it goes (round 1, L10: no flat band at the frame's top)
-      const far = clamp(((b0 - ly) / H - 1.2) / 5, 0, 1);
-      const lit = (lum(l) * 0.5 + near) * (1 - far * 0.8);
-      if (gx < 4 || gy < 4) return mt(M.wood, lit * 0.75, X, Y, 0.35, 1);
-      const rose = Math.hypot(gx - cs / 2, gy - 0.275 * H) < 7;
-      const petal = rose && Math.sin(Math.atan2(gy - 0.275 * H, gx - cs / 2) * 8) > 0;
-      return rose ? mt(M.gold, lit * (petal ? 0.8 : 0.5), X, Y, 0.35, 1) : mt(M.lacq, lit * 0.6, X, Y, 0.2, 1);
-    });
-  },
-});
-
-/** The skylight's paper held below the court gate's daylight (round 1: the gate is the room's key). */
-const SKYLIGHT_DIM = [P.paper[2]!, P.paper[3]!, P.ember[4]!, P.paper[4]!, P.umber[0]!] as const;

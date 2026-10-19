@@ -104,6 +104,64 @@ export function lut(kind: Tint, steps: number): Uint8Array {
   return t;
 }
 
+const LUMA: number[] = [];
+function luma(i: number): number {
+  if (!LUMA.length) for (let k = 0; k < 256; k++) {
+    const v = parseInt(hexOf(k).slice(1), 16);
+    LUMA.push(0.2126 * ((v >> 16) & 255) + 0.7152 * ((v >> 8) & 255) + 0.0722 * (v & 255));
+  }
+  return LUMA[i]!;
+}
+
+/**
+ * A light's pool landing where the shell is sunk into the dusk (shade steps of night, lift steps of
+ * lamplight): the pool brings back the surface's own warm colour and lifts it (the net of the two on
+ * the surface's colour), but never comes out darker than the dusk round it (round 1's dark disc behind
+ * a lantern: the warm lacquer under the dusk is darker than the dusk); then the lamplight is laid over
+ * the dusk instead.
+ */
+export function poolLut(shade: number, lift: number): Uint8Array | null {
+  if (shade <= 0 && lift <= 0) return null;
+  if (lift <= 0) return lut("night", shade);
+  if (shade <= 0) return lut("warm", lift);
+  const key = `pool${shade}|${lift}`;
+  let t = LUTS.get(key);
+  if (t) return t;
+  t = new Uint8Array(256);
+  const night = lut("night", shade), warm = lut("warm", lift);
+  const net = lift - shade;
+  const onOwn = net > 0 ? lut("warm", net) : net < 0 ? lut("night", -net) : null;
+  for (let i = 1; i < 256; i++) {
+    const sh = night[i]!;
+    const a = onOwn ? onOwn[i]! : i;
+    const b = warm[sh]!;
+    const want = luma(sh) + 5 * lift;
+    t[i] = luma(a) >= want ? a : luma(b) > luma(sh) ? b : sh;
+  }
+  LUTS.set(key, t);
+  return t;
+}
+
+/**
+ * Remaps applied one after another (a night shade, then a lamp's warmth on the shaded colour): a pool
+ * landing on a wall already sunk into the dusk lifts the dusk, never brings back the wall's own brown.
+ */
+export function lutChain(...steps: [Tint, number][]): Uint8Array | null {
+  const live = steps.filter(([, n]) => n > 0);
+  if (!live.length) return null;
+  const key = live.map(([k, n]) => `${k}${n}`).join(">");
+  let t = LUTS.get(key);
+  if (t) return t;
+  t = new Uint8Array(256);
+  for (let i = 0; i < 256; i++) {
+    let v = i;
+    for (const [k, n] of live) v = v ? lut(k, n)[v]! : 0;
+    t[i] = v;
+  }
+  LUTS.set(key, t);
+  return t;
+}
+
 /**
  * Re-colours what is painted in a local rectangle: fn says, per pixel, which remap to apply (or
  * null to leave it). Nothing new is painted where the buffer is empty.
