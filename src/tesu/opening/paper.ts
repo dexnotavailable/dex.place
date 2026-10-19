@@ -1,25 +1,83 @@
 // The ofuda in the world (Dex 10-18: "for the ofuda we just yoink it from the official processed Zhusha, then simulate
-// it and animate it like real paper"; 10-16: "the corner ofuda literally becomes the ofuda on her hat"). ONE object
-// from the website's loader to her hat: the loader lane's PaperOfuda (src/site/motion/pixel-loader.ts: a 3D verlet
-// strip, bend, twist, air drag with a leading-edge push, gusts) with its sprite (7 x 13 art px: the paper on her hat in
-// her idle, exact to the pixel, Dex 10-19; public/site/loader/ofuda.png), at her drawing's own pixel size (ART_PX world
-// px per art px: "a few px everywhere, basically the gameplay size").
+// it and animate it like real paper"; 10-19 18:34Z: its two jobs, (a) look like the ofuda on her hat in the catch clip:
+// its colours, no line art, no lettering; (b) hand off into that clip so "you can't tell it went from a procedurally
+// generated one to the one made and processed by us"). ONE object from the website's loader to her hat: the loader
+// lane's PaperOfuda (src/site/motion/pixel-loader.ts: a 3D verlet strip, bend, twist, air drag with a leading-edge
+// push, gusts) at her drawing's own pixel size (ART_PX world px per art px).
 //
-// - The fall (the opening, ways 1-3; way 4 from the right): the paper falls free in its own simulation, in the east
-//   wind and its gusts, and is carried along the opening's flight (timeline.ts paperScreenAt: where it is on the frame
-//   as the camera comes down through the sky). Its own drift is kept only as the quick part (the rocking side-slip of
-//   falling paper); the slow part is the flight's. From the blend it is drawn on to her hand-off point, the paper in
-//   the catch's f001, and from f001 the drawing has it (game.ts hides this one).
-// - On her hat (after the catch, while she is the white box: a traced drawing has its own): held by its tie on the
-//   box's hat, in the air she moves through and the wind.
+// - Its looks: at the press it IS the loader's ofuda (the exact hat crop, 7 x 13: the page hands it over in the black
+//   without a change); from `stripAt` (a gold speck in the vast frame, where no look can be told) it is the whole
+//   paper (5 x 20 art px in the hat paper's own colours: its gold top that hides under the brim, its pale tip), the
+//   size and colours of the clip's own drifting paper.
+// - The fall: it falls free in its own simulation, in the east wind and its gusts, carried along the opening's flight
+//   (timeline.ts paperScreenAt). Its own drift is kept only as the quick part (the rocking side-slip of falling paper).
+//   From the blend it is drawn on to her hand-off point, and in the last of it steered onto the clip's paper in the
+//   hand-off drawing (beats.ts her.clip.band: that drawing's paper measured as 6 x 2 nodes, read-only), so the drawing
+//   takes over a paper already in its place, angle, size and shape; from that drawing on the drawing has it.
+// - On her hat (while she is the white box: a traced drawing has its own): held by its tie in her airflow.
 //
 // Drawn as pixels on the play plane's grid at the camera's scale (never a smoothly scaled picture): each facet
-// rasterised with the sprite's texels (nearest), its back mirrored and darker, lit by how it faces the light.
+// rasterised with its texels (nearest), its back mirrored and darker, lit by how it faces the light. No line art: seen
+// edge-on it is a line of its own gold.
 
 import {
-  COLORS, EDGE_INDEX as EDGE, MID_PAPER, OFUDA_BACK, OFUDA_FRONT, OFUDA_H, OFUDA_W, PaperOfuda, isPaperColor as isPaper,
-  paperShift as shiftPaper,
+  COLORS, MID_PAPER, OFUDA_TEXTURE, PaperOfuda, paperShift as shiftPaper, paperTexture, type PaperTexture,
 } from "../../site/motion/pixel-loader.ts";
+
+/**
+ * The whole paper (5 x 20 art px, its tie at the top): the hat paper's own colours, its deep gold top (under the brim
+ * on her hat) to its pale tip, the clip's two end tones (X deep gold, Y cream); no line art, no lettering.
+ */
+export const STRIP = paperTexture([
+  "dXddd",
+  "ddede",
+  "deeed",
+  "eehee",
+  "ehghe",
+  "hgghg",
+  "ghjgh",
+  "gjkjg",
+  "jkkkj",
+  "kkmkk",
+  "kmmmk",
+  "mmnmm",
+  "mnnnm",
+  "nnYnn",
+  "nYYYn",
+  "YYYYY",
+  "YYYYY",
+  "nYYYn",
+  "YYYYY",
+  "nYYYY",
+]);
+
+/**
+ * The whole paper as the clip draws it up close: the same, with the mid-gold flecks the clip's paper has through its
+ * lighter part (f001). The fall's last 0.3 s dissolve into it, texel by texel, so the drawing's busier paper takes
+ * over from one that already has its grain (the coordinator 10-20: subtle; the drawings untouched).
+ */
+export const STRIP_CLIP = paperTexture([
+  "dXddd",
+  "ddede",
+  "deeed",
+  "eehee",
+  "ehghe",
+  "hgghg",
+  "ghjgh",
+  "gjkjg",
+  "jkkkj",
+  "khmkk",
+  "kmhmk",
+  "mjnmm",
+  "mnhnm",
+  "nkYhn",
+  "nYhYn",
+  "YYkYY",
+  "YhYYY",
+  "nYYkn",
+  "YkYYY",
+  "nYYYY",
+]);
 
 type RGB = [number, number, number];
 
@@ -32,6 +90,8 @@ const LIGHT = (() => {
   return v.map((c) => c / n) as [number, number, number];
 })();
 const SEG = 5;
+/** The least size it is drawn at, frame px per art px (see draw). */
+const KMIN = 0.42;
 
 export type PaperMode = "off" | "fall" | "hat";
 
@@ -39,10 +99,17 @@ export type PaperMode = "off" | "fall" | "hat";
 export interface PaperPose {
   /** 12 nodes: rows of two (left, right edge) from the tie down. */
   pts: [number, number, number][];
+  /** Its texels (the loader's crop, or the whole paper). */
+  tex: PaperTexture;
+  /** Dissolving into another look: `to`, a share of its texels (0..1), chosen by a fixed per-texel order. */
+  into?: { to: PaperTexture; share: number };
 }
 
 export class WorldPaper {
-  readonly sim: PaperOfuda;
+  /** The loader's ofuda (7 x 13) and the whole paper (5 x 20): one is falling at a time. */
+  private readonly crop: PaperOfuda;
+  private readonly whole: PaperOfuda;
+  sim: PaperOfuda;
   mode: PaperMode = "off";
   /** The slow part of its own drift, removed (art px; a level and its trend): the flight carries it, not its sim. */
   private slow = [0, 0];
@@ -53,25 +120,51 @@ export class WorldPaper {
 
   constructor(artPx: number, seed = 11) {
     this.artPx = artPx;
-    this.sim = new PaperOfuda({ tie: { x: 0, y: 0 }, seed });
+    this.crop = new PaperOfuda({ tie: { x: 0, y: 0 }, seed });
+    this.whole = new PaperOfuda({ tie: { x: 0, y: 0 }, seed: seed + 1, size: { w: STRIP.w, h: STRIP.h } });
+    this.sim = this.crop;
   }
 
-  /** The fall begins: a fresh paper, tumbling free (as the gust left it, tilted). */
-  startFall(): void {
+  /** Its texels now. */
+  get tex(): PaperTexture {
+    return this.sim === this.whole ? STRIP : OFUDA_TEXTURE;
+  }
+
+  /** Falling, it becomes the whole paper (a speck then: the look changes where it cannot be told), turning as it was. */
+  toWhole(): void {
+    if (this.sim === this.whole || this.mode !== "fall") return;
+    const a = this.crop.p, b = this.whole;
+    // the old paper's direction (tie to foot) and its middle carry over
+    const tx = (a[0]! + a[3]!) / 2, ty = (a[1]! + a[4]!) / 2, fx = (a[30]! + a[33]!) / 2, fy = (a[31]! + a[34]!) / 2;
+    const c = this.centroid();
+    const ang = Math.atan2(fy - ty, fx - tx) - Math.PI / 2;
+    b.reset();
+    b.hold = "point";
+    b.gravity = this.crop.gravity;
+    const p = b.p, cs = Math.cos(ang), sn = Math.sin(ang), mid = STRIP.h / 2;
+    for (let i = 0; i < 12; i++) {
+      const x = p[i * 3]!, y = p[i * 3 + 1]! - mid;
+      p[i * 3] = c[0] + x * cs - y * sn;
+      p[i * 3 + 1] = c[1] + x * sn + y * cs;
+    }
+    b.pin();
+    b.release();
+    this.sim = b;
+    this.slow = this.centroid();
+  }
+
+  /**
+   * The fall begins: a fresh paper let go where it hung (rev 5: from the page's loader, in the black slab), upright
+   * and still, so it starts as the page drew it; its own air sets it rocking as it drops.
+   */
+  startFall(nodes?: readonly number[]): void {
+    this.sim = this.crop;
     const s = this.sim;
     s.reset();
     s.hold = "point";
-    s.pinned = false;
     s.gravity = 150;
-    // as the gust left it: tilted, a little turned (so it rocks from the first drawing)
-    const p = s.p;
-    for (let i = 0; i < 12; i++) {
-      const x = p[i * 3]!, y = p[i * 3 + 1]!;
-      const a = 1.15, c = Math.cos(a), sn = Math.sin(a);
-      p[i * 3] = x * c - y * sn;
-      p[i * 3 + 1] = x * sn + y * c;
-      p[i * 3 + 2] = (i % 2 ? 1.2 : -1.2);
-    }
+    // (rev 5) the website's paper as it hung at the press (art px from its tie): the same pose, still
+    if (nodes && nodes.length === s.p.length) s.p.set(nodes);
     s.pin();
     s.release();
     this.mode = "fall";
@@ -83,6 +176,7 @@ export class WorldPaper {
   /** On her hat: held by its tie (the drawing's paper becomes this one when she is the white box). */
   toHat(): void {
     if (this.mode === "hat") return;
+    this.sim = this.crop;
     const s = this.sim;
     s.moveTie(0, 0);
     s.reset();
@@ -96,6 +190,14 @@ export class WorldPaper {
     this.mode = "off";
   }
 
+  /** The middle of a pose given as nodes (x, y, z art px from its tie). */
+  middleOf(nodes: readonly number[]): [number, number] {
+    let x = 0, y = 0;
+    const n = nodes.length / 3;
+    for (let i = 0; i < n; i++) { x += nodes[i * 3]!; y += nodes[i * 3 + 1]!; }
+    return [x / n, y / n];
+  }
+
   private centroid(): [number, number] {
     const p = this.sim.p;
     let x = 0, y = 0;
@@ -107,7 +209,7 @@ export class WorldPaper {
    * One tick of the fall: its own air (art px / s; the east wind is negative) and gustiness, then its pose with its
    * middle at (wx, wy) world px plus the quick part of its own drift.
    */
-  fall(wx: number, wy: number, air: { x: number; gust: number }, dt = 1 / 60): PaperPose {
+  fall(wx: number, wy: number, air: { x: number; gust: number }, dt = 1 / 60, steer?: { nodes: readonly (readonly [number, number])[]; u: number; grain?: number }): PaperPose {
     if (!this.seeded || this.mode !== "fall") this.startFall();
     const s = this.sim;
     s.wind.x = air.x;
@@ -126,7 +228,19 @@ export class WorldPaper {
       this.slow[i] = lvl;
     }
     const qx = Math.max(-6, Math.min(6, c[0] - this.slow[0]!)), qy = Math.max(-4, Math.min(4, c[1] - this.slow[1]!));
-    return this.pose(wx, wy, c[0] - qx, c[1] - qy, 1);
+    const pose = this.pose(wx, wy, c[0] - qx, c[1] - qy, 1);
+    // the last of the fall: steered onto the clip's paper in the hand-off drawing (world px nodes), flat to the eye
+    if (steer && steer.u > 0) {
+      const u = Math.min(1, steer.u);
+      pose.pts.forEach((q, i) => {
+        const t = steer.nodes[i]!;
+        q[0] += (t[0] - q[0]) * u;
+        q[1] += (t[1] - q[1]) * u;
+        q[2] *= 1 - u;
+      });
+      if (steer.grain && pose.tex === STRIP) pose.into = { to: STRIP_CLIP, share: Math.min(1, steer.grain) };
+    }
+    return pose;
   }
 
   /**
@@ -151,7 +265,7 @@ export class WorldPaper {
     const p = this.sim.p, a = this.artPx;
     const pts: [number, number, number][] = [];
     for (let i = 0; i < 12; i++) pts.push([wx + (p[i * 3]! - ox) * a * facing, wy + (p[i * 3 + 1]! - oy) * a, p[i * 3 + 2]! * facing]);
-    return { pts };
+    return { pts, tex: this.tex };
   }
 
   /**
@@ -161,33 +275,31 @@ export class WorldPaper {
   static draw(pose: PaperPose, toFrame: (x: number, y: number) => [number, number], glint: number | null, reduced: boolean, put: (x: number, y: number, c: RGB) => void): void {
     const F = pose.pts.map((q) => { const f = toFrame(q[0], q[1]); return [f[0], f[1], q[2]] as [number, number, number]; });
     // how many frame px an art px is here (small: a few frame px, its shaded side darkened so it reads as paper)
-    const len = Math.hypot(F[10]![0] + F[11]![0] - F[0]![0] - F[1]![0], F[10]![1] + F[11]![1] - F[0]![1] - F[1]![1]) / 2;
-    const k = len / OFUDA_H;
+    const len0 = Math.hypot(F[10]![0] + F[11]![0] - F[0]![0] - F[1]![0], F[10]![1] + F[11]![1] - F[0]![1] - F[1]![1]) / 2;
+    // the camera's widest frames (the vast reveal) would shrink it under a pixel: it never draws smaller than a
+    // speck of KMIN frame px per art px (about 3 x 5 px), scaled about its middle, so the eye can follow it
+    const T = pose.tex;
+    if (len0 > 0 && len0 / T.h < KMIN) {
+      const m = F.reduce<[number, number]>((a, q) => [a[0] + q[0] / F.length, a[1] + q[1] / F.length], [0, 0]);
+      const g = (KMIN * T.h) / len0;
+      for (const q of F) { q[0] = m[0] + (q[0] - m[0]) * g; q[1] = m[1] + (q[1] - m[1]) * g; }
+    }
+    const k = Math.max(KMIN, len0 / T.h);
     const out = new Map<number, number>();
     const set = (x: number, y: number, c: number): void => { out.set((y + 32768) * 65536 + x + 32768, c); };
-    // the spine: a 1 px line down its middle, so edge-on it is still a line of paper
+    // the spine: a 1 px line of its own gold down its middle, so edge-on it is still a line of paper (no dark line art)
     let px = NaN, py = NaN;
     for (let r = 0; r <= SEG; r++) {
       const mx = Math.floor((F[r * 2]![0] + F[r * 2 + 1]![0]) / 2), my = Math.floor((F[r * 2]![1] + F[r * 2 + 1]![1]) / 2);
-      if (!Number.isNaN(px)) line(px, py, mx, my, (x, y) => set(x, y, k < 1.4 ? MID_PAPER : EDGE));
+      if (!Number.isNaN(px)) line(px, py, mx, my, (x, y) => set(x, y, MID_PAPER));
       px = mx; py = my;
     }
     const order = Array.from({ length: SEG }, (_, r) => r).sort((ra, rb) => zOf(F, ra) - zOf(F, rb));
     for (const r of order) {
       const a = r * 2, b = a + 1, c = a + 2, d = a + 3;
       const va = r / SEG, vc = (r + 1) / SEG;
-      tri(F, a, b, d, [0, va], [1, va], [1, vc], k, set);
-      tri(F, a, d, c, [0, va], [1, vc], [0, vc], k, set);
-    }
-    if (k < 1.4) {
-      // small: its own paper a step darker on its shaded side (bottom / right), so it reads against the sky
-      const dark: [number, number][] = [];
-      for (const [key, c] of out) {
-        if (!isPaper(c)) continue;
-        const x = (key % 65536) - 32768, y = Math.floor(key / 65536) - 32768;
-        if (!out.has((y + 1 + 32768) * 65536 + x + 32768) || !out.has((y + 32768) * 65536 + x + 1 + 32768)) dark.push([x, y]);
-      }
-      for (const [x, y] of dark) set(x, y, shiftPaper(out.get((y + 32768) * 65536 + x + 32768)!, -2));
+      tri(F, a, b, d, [0, va], [1, va], [1, vc], k, T, set, pose.into);
+      tri(F, a, d, c, [0, va], [1, vc], [0, vc], k, T, set, pose.into);
     }
     if (glint !== null) {
       // a 4-point star on the paper: 1 px core, arms growing and shrinking over five drawings
@@ -212,7 +324,7 @@ function zOf(F: [number, number, number][], r: number): number {
 }
 
 /** One facet triangle in frame px, textured from the sprite (nearest texel). */
-function tri(F: [number, number, number][], i: number, j: number, k: number, ti: number[], tj: number[], tk: number[], scale: number, put: (x: number, y: number, c: number) => void): void {
+function tri(F: [number, number, number][], i: number, j: number, k: number, ti: number[], tj: number[], tk: number[], scale: number, T: PaperTexture, put: (x: number, y: number, c: number) => void, into?: { to: PaperTexture; share: number }): void {
   const [ax, ay, az] = F[i]!, [bx, by, bz] = F[j]!, [cx, cy, cz] = F[k]!;
   const area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
   if (Math.abs(area) < 1e-6) return;
@@ -225,7 +337,7 @@ function tri(F: [number, number, number][], i: number, j: number, k: number, ti:
   if (nz < 0) { nx = -nx; ny = -ny; nz = -nz; }
   const lit = nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2] - LIGHT[2];
   const shift = Math.max(-4, Math.min(1, Math.round(lit * 7)));
-  const tex = front ? OFUDA_FRONT : OFUDA_BACK;
+  const tex = front ? T.front : T.back;
   const minX = Math.floor(Math.min(ax, bx, cx)), maxX = Math.ceil(Math.max(ax, bx, cx));
   const minY = Math.floor(Math.min(ay, by, cy)), maxY = Math.ceil(Math.max(ay, by, cy));
   const eps = 1e-7;
@@ -238,13 +350,22 @@ function tri(F: [number, number, number][], i: number, j: number, k: number, ti:
       if (w0 < -eps || w1 < -eps || w2 < -eps) continue;
       const u = w0 * ti[0]! + w1 * tj[0]! + w2 * tk[0]!;
       const v = w0 * ti[1]! + w1 * tj[1]! + w2 * tk[1]!;
-      let tx = Math.min(OFUDA_W - 1, Math.max(0, Math.floor(u * OFUDA_W)));
-      const ty = Math.min(OFUDA_H - 1, Math.max(0, Math.floor(v * OFUDA_H)));
-      if (!front) tx = OFUDA_W - 1 - tx;
-      const c = tex[ty * OFUDA_W + tx]!;
+      let tx = Math.min(T.w - 1, Math.max(0, Math.floor(u * T.w)));
+      const ty = Math.min(T.h - 1, Math.max(0, Math.floor(v * T.h)));
+      if (!front) tx = T.w - 1 - tx;
+      let c = tex[ty * T.w + tx]!;
+      // dissolving into the other look: this texel has turned once the share passes its own fixed threshold
+      if (into && into.to.w === T.w && into.to.h === T.h && texelOrder(tx, ty) < into.share) c = (front ? into.to.front : into.to.back)[ty * T.w + tx]!;
       if (c) put(x, y, shiftPaper(c, shift));
     }
   }
+}
+
+/** A fixed order for a texel to turn in a dissolve (0..1), the same on every frame. */
+function texelOrder(x: number, y: number): number {
+  let h = Math.imul(x * 374761393 + y * 668265263 + 1442695041, 3266489917) >>> 0;
+  h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0;
+  return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
 }
 
 function line(x0: number, y0: number, x1: number, y1: number, put: (x: number, y: number) => void): void {

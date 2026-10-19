@@ -29,6 +29,8 @@ export const REF = { W: 1920, H: 1080 } as const;
  * The 3D point on a plane that the opening's camera shows at frame point (fx, fy) (shares of REF) at T: the cloud's
  * base middle lands there.
  */
+// (rev 5, 10-20: the first 6.6 s are now the drop out of the black and the vast frame; the fall loop composes
+// its clouds for that camera (lanes/art/fall/ASKS.txt))
 export function fallPoint(T: number, plane: PlaneId, fx: number, fy: number): [number, number] {
   const herX = BEATS.her.catchXH * H;
   const s0 = keysAt(T, herX, REF.W, REF.H);

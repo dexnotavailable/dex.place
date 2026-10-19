@@ -87,11 +87,32 @@ function docGroups(content: SiteContent, level: 2 | 3 | 4): string {
   );
 }
 
+/**
+ * The doc a newcomer wants first, shown above the catalogue on /docs/: installing dexClient (CANON's wayfinding puts
+ * downloads first, and dexClient is how dexCode gets onto a PC). Its own title and summary; no card if it is gone.
+ */
+export const START_DOC = "installing-dexclient";
+
+function startHere(content: SiteContent): string {
+  const d = content.docs.find((x) => x.slug === START_DOC);
+  if (!d) return "";
+  const g = docGroup(d.group);
+  return (
+    `<a class="dstart dstart--${g.tone}" href="${d.url}">` +
+    tile(g.icon, g.tone, "m") +
+    `<span class="dstart__text"><span class="dstart__label">Start here</span>` +
+    `<span class="dstart__title">${esc(d.title)}</span>` +
+    (d.summary ? `<span class="dstart__sum">${esc(d.summary)}</span>` : "") +
+    `</span>${icon("arrow", 3, "dstart__go")}</a>`
+  );
+}
+
 export function docsIndex(content: SiteContent): string {
   return (
     `<div class="page page--docs">` +
     `<div class="wrap">` +
     pageHead({ kicker: "documentation", title: "Docs", tone: "cyan", icon: "book", aside: plural(content.docs.length, "page", "pages") }) +
+    startHere(content) +
     docGroups(content, 2) +
     `</div></div>`
   );
@@ -131,19 +152,38 @@ export function postsByYear(posts: readonly Entry[]): { label: string; id: strin
   return out;
 }
 
+/**
+ * The newest post as the blog page's lead card (lane P, 10-19): its date, reading time and tags, the title, the whole
+ * summary and a key to read it; the whole card is the link (the title's link stretches over it). Hanko on its corner.
+ */
+function featuredPost(e: Entry): string {
+  return (
+    `<article class="bfeat" aria-labelledby="bfeat-title">` +
+    hanko() +
+    `<p class="bfeat__top"><span class="bfeat__new">Newest</span>` +
+    `<span class="when">${dateText(e)}<span aria-hidden="true"> · </span><span>${e.minutes} min read</span></span></p>` +
+    `<h2 class="bfeat__title" id="bfeat-title"><a class="bfeat__link" href="${e.url}">${esc(e.title)}</a></h2>` +
+    (e.nsfw || e.placeholder ? `<p class="bfeat__tags">${e.nsfw ? nsfwTag() : ""}${e.placeholder ? placeholderTag() : ""}</p>` : "") +
+    (e.summary ? `<p class="bfeat__sum">${esc(e.summary)}</p>` : "") +
+    `<span class="btn btn--cyan btn--m bfeat__go" aria-hidden="true"><span class="btn__label">Read the post</span><span class="btn__ic">${icon("arrow", 2)}</span></span>` +
+    `</article>`
+  );
+}
+
 export function blogIndex(content: SiteContent): string {
   const posts = content.posts;
-  const years = postsByYear(posts);
-  const list = years.length
-    ? years
-        .map((y) =>
-          `<section class="byear" aria-labelledby="${y.id}">` +
-          `<h2 class="byear__label" id="${y.id}" data-reveal="pop">${esc(y.label)}</h2>` +
-          `<ol class="bposts">${y.posts.map((p, i) => postItem(p, i)).join("")}</ol>` +
-          `</section>`,
-        )
-        .join("")
-    : `<p class="empty">Nothing here yet.</p>`;
+  const [newest, ...rest] = posts;
+  const years = postsByYear(rest);
+  const list = years
+    .map((y) =>
+      `<section class="byear" aria-labelledby="${y.id}">` +
+      // the year as the home sections' kicker line: //, the year, a rule, its count
+      `<h2 class="byear__label" id="${y.id}"><span class="byear__slash" aria-hidden="true">//</span><span>${esc(y.label)}</span>` +
+      `<span class="byear__rule" aria-hidden="true"></span><span class="byear__n">${plural(y.posts.length, "post", "posts")}</span></h2>` +
+      `<ol class="bposts">${y.posts.map((p, i) => postItem(p, i)).join("")}</ol>` +
+      `</section>`,
+    )
+    .join("");
   return (
     `<div class="page page--blog">` +
     `<div class="wrap">` +
@@ -151,7 +191,7 @@ export function blogIndex(content: SiteContent): string {
     `<div class="btools"><p class="btools__order">Newest first</p>` +
     button({ href: "/blog/feed.xml", label: "RSS feed", icon: "rss", iconFirst: true, size: "s", tone: "paper" }) +
     `</div>` +
-    list +
+    (newest ? featuredPost(newest) + list : `<p class="empty">Nothing here yet.</p>`) +
     `</div></div>`
   );
 }

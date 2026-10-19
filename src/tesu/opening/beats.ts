@@ -40,20 +40,30 @@ export const BEATS = {
    * The authored camera to the walk, as keys on T (a monotone curve through them per channel, so it never
    * overshoots and eases where keys repeat): zoom (log), anchor (her feet row), horizon (eye-level row), alt (H:
    * how far above her feet the frame's middle is lifted; the fall's height), cx (H; `follow`: added to her x).
-   * Before the press the world holds on the first key (the high sky behind "dex").
+   * Before the press the world holds on the first key: inside the black slab (`ceiling`), behind "dex".
+   * Rev 5 (Dex 10-19 18:34Z): the black loading screen is a slab above everything; the press drops the paper out of
+   * it: zoom 0 = the page's own scale for the paper (her ofuda as the loader drew it; game.ts startZoom), the camera
+   * plunges out of the slab on bar 0 and pulls straight out to the vast frame on bar 1 (the whole world far below),
+   * holds it through the first lines, then pushes in on the paper and falls with it through the clouds (rev 4 from
+   * bar 3 on). One continuous shot, no cut.
    */
   "keys": [
-   { "T": 0, "zoom": 1, "anchor": 0.5, "horizon": 1.45, "alt": 34, "cx": 97.4, "follow": false },
-   { "T": 0.641, "zoom": 1, "anchor": 0.5, "horizon": 1.45, "alt": 34, "cx": 97.4, "follow": false },
-   { "T": 4.631, "zoom": 0.94, "anchor": 0.5, "horizon": 1.36, "alt": 24.5, "cx": 95.4, "follow": false },
+   { "T": 0, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 68.2, "cx": 97.4, "follow": false },
+   { "T": 0.3, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 68.2, "cx": 97.4, "follow": false },
+   { "T": 0.641, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 63.4, "cx": 97.2, "follow": false },
+   { "T": 1.15, "zoom": 0.85, "anchor": 0.6, "horizon": 1.2, "alt": 38, "cx": 96, "follow": false },
+   { "T": 1.9, "zoom": 0.3, "anchor": 0.82, "horizon": 0.86, "alt": 6, "cx": 94.5, "follow": false },
+   { "T": 2.636, "zoom": 0.17, "anchor": 0.86, "horizon": 0.8, "alt": 0, "cx": 92, "follow": false },
+   { "T": 4.631, "zoom": 0.2, "anchor": 0.86, "horizon": 0.8, "alt": 0, "cx": 91.5, "follow": false },
+   { "T": 7.6, "zoom": 0.74, "anchor": 0.5, "horizon": 1.3, "alt": 18, "cx": 93.4, "follow": false },
    { "T": 8.622, "zoom": 0.84, "anchor": 0.5, "horizon": 1.18, "alt": 13.5, "cx": 92.9, "follow": false },
    { "T": 10.616, "zoom": 0.62, "anchor": 0.62, "horizon": 0.86, "alt": 5, "cx": 89.9, "follow": false },
    { "T": 12.609, "zoom": 0.5, "anchor": 0.8, "horizon": 0.64, "alt": 0, "cx": 88, "follow": false },
    { "T": 14.6, "zoom": 0.52, "anchor": 0.8, "horizon": 0.63, "alt": 0, "cx": 87.6, "follow": false },
    { "T": 16.589, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
-   { "T": 21.528, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
-   { "T": 23.2, "zoom": 1.1, "anchor": 0.66, "horizon": 0.28, "alt": 0, "cx": 1.3, "follow": true },
-   { "T": 24.52, "zoom": 0.82, "anchor": 0.68, "horizon": 0.3, "alt": 0, "cx": 1.8, "follow": true },
+   { "T": 22.658, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
+   { "T": 24.2, "zoom": 1.1, "anchor": 0.66, "horizon": 0.28, "alt": 0, "cx": 1.3, "follow": true },
+   { "T": 25.6, "zoom": 0.82, "anchor": 0.68, "horizon": 0.3, "alt": 0, "cx": 1.8, "follow": true },
    { "T": 28.472, "zoom": 0.76, "anchor": 0.68, "horizon": 0.31, "alt": 0, "cx": 2.2, "follow": true },
    { "T": 30.4464, "zoom": 0.62, "anchor": 0.68, "horizon": 0.33, "alt": 0, "cx": 3.4, "follow": true }
   ],
@@ -78,14 +88,19 @@ export const BEATS = {
   "releaseXH": 130.4,
   /** Reduced motion: held frames, cut (cross-faded) on these beats. `key`: the authored key it holds. */
   "reduced": [
-   { "from": 0, "hold": "sky", "T": 0.641 },
+   { "from": 0, "hold": "sky", "T": 2.636 },
    { "from": 8.622, "hold": "postcard", "T": 12.609 },
    { "from": 16.589, "hold": "close", "T": 16.589 },
-   { "from": 21.528, "hold": "follow", "T": 24.52 },
+   { "from": 22.658, "hold": "follow", "T": 25.6 },
    { "from": 32.4176, "hold": "widest", "T": 32.4176 },
-   { "from": 36.3508, "hold": "follow", "T": 24.52 }
+   { "from": 36.3508, "hold": "follow", "T": 25.6 }
   ]
  },
+ /**
+  * The black loading screen as a slab above everything (Dex 10-19: "as if the black loading screen existed above
+  * everything"): pure black above `altH` H over her feet. The paper hangs in it at the press and falls out of it.
+  */
+ "ceiling": { "altH": 66 },
  "her": {
   /** Dex 10-15: "start further back (left) to fit the running distance": 13.6 H west of the old catch (100), clear
    *  of the jetty's mooring posts (88.1 and 95.7: she stands still at the catch and at the pickup). */
@@ -100,49 +115,59 @@ export const BEATS = {
    /** The drawings' first ticks as drawn (anim.json), so the clip shows drawing i at its own tick. */
    "starts": [0, 8, 12, 17, 23, 29, 35, 41, 47, 55, 65, 75, 83, 91, 99, 108, 117, 131],
    /** The paper in f001 (art px from her soles, facing right): where the world's paper hands over to the drawing. */
-   "handoff": [36.9, -135],
+   "handoff": [39.52, -136.2],
+   /**
+    * The clip's own paper in the hand-off drawing (f001; read-only, measured by lanes/opening/f19/band.py): 6 rows x 2
+    * edges (its front to the eye) from its deep-gold end (the tie) to its cream end, art px from her soles facing right. The world's paper is
+    * steered onto it in the fall's last `ofuda.steer` s, so f001 takes over a paper already in its place, angle, size,
+    * shape and face (Dex 10-19: "you can't tell it went from a procedurally generated one to the one made by us").
+    */
+   "band": [[31.93, -130.19], [30.07, -132.81], [34.91, -131.18], [33.18, -133.6], [38.93, -133.19], [37.07, -135.81], [42.21, -135.39], [40.21, -138.19], [45.07, -138.29], [43.07, -141.1], [46.88, -141.16], [45.49, -143.11]],
    /** The paper's last world drawing is the tick before f001; from f001 to the slap it is the drawing's. */
    "handoffDrawing": 1,
    /** The hat stays jammed over her face (f010 held) until line 6's push mark, then she pushes it up (f011 on). */
    "jamDrawing": 10,
-   "push": 20.495
+   "push": 21.625
   },
-  /** After the push-up has played out (the clip's end + a breath): she walks on her own to the pickup. */
-  "walkFrom": 21.698,
+  /** After the push-up has played out (the clip's end + a breath): she walks on her own to the pickup (1.2 H/s). */
+  "walkFrom": 22.828,
   "walkHPerS": 1.1,
   "pickup": 27.979,
-  "xPickupH": 94.564,
+  "xPickupH": 92.581,
   "drop1": 28.4724,
-  "xBreakH": 94.6,
+  "xBreakH": 92.617,
   /** Her run as the game has it (feel.json: 9 m/s = 5.085 H/s), so the hand-back keeps her speed. */
   "runHPerS": 5.085,
   "runAccel": { "s": 0.233, "h": 0.592 },
-  "skid": 34.751,
-  "stop": 34.951,
+  "skid": 35.142,
+  "stop": 35.342,
   "stopXH": 126.3,
-  "gates": [32.6008, 33.3874, 34.1741]
+  "gates": [32.9907, 33.7774, 34.564]
  },
  /**
-  * Her voice (Dex picked the takes by ear, 10-19: lanes/opening/VOICE-CUES.md; ElevenLabs "Mitsuki", Japanese) with a
-  * subtitle for each line while it plays (Japanese + English). Lines 1-5 in the calm: line 1's speech from 0.25 s
-  * (the press's gust), line 5 done by 18.40, equal gaps; line 6 (the joke) after the slap, from under the jammed
-  * hat, the hat pushed up on its `push` mark. `at` = T the file starts; `speech` = the voice inside the file (s);
-  * `len` = the file (never cut: it plays to its end). Laid out by lanes/opening/f19/voice_layout.py from the takes.
+  * Her voice (Dex 10-19: the takes he picked; the shorter wording, approved, fits the calm: lanes/opening/VOICE-CUES.md),
+  * lane D's encodes played as the game's own sound cues (`cue`, booked on the music's clock in `sfx` below at `at`),
+  * with a subtitle while each line speaks (Japanese + English). Lines 1-5 in the calm (line 1 from 0.35 s, equal gaps);
+  * line 6, the joke, is set up before the slap and the slap lands in its pause ("……まあ、私はたいてい、" … SLAP …
+  * "顔で受け止めるんだけど。えへへ"): the hat stays jammed over her face through the punch and comes up on the えへへ
+  * (`push`). `at` = T the file starts; `speech` = its voice inside the file, `len` the file (played whole, never cut);
+  * `parts` = its subtitles, in-file times. Laid out by lanes/opening/f19 (voice_layout, the encodes' measured times).
   */
  "voice": {
-  /** The music ducks this much under a line's speech (in and out over `ramp` s): her voice over the build. */
-  "duckDb": -3,
+  /** Track 1 dips this much under a line's speech (in and out over `ramp` s; the conductor's own gain stage). */
+  "duckDb": -4,
   "ramp": 0.25,
   "lines": [
-   { "n": 1, "take": "op-line1-b", "at": 0.13, "len": 4.32, "speech": [0.12, 4.02], "jp": "風が何を運んでくるかなんて、誰にも選べない。", "en": "No one gets to choose what the wind brings." },
-   { "n": 2, "take": "op-line2-b", "at": 4.182, "len": 5.36, "speech": [0.12, 5.0], "jp": "幸運。悪い知らせ。……知らない人の洗濯物。", "en": "Good luck. Bad news. …A stranger's laundry." },
-   { "n": 3, "take": "op-line3-b", "at": 9.235, "len": 2.32, "speech": [0.1, 2.08], "jp": "ときどき――名前。", "en": "Sometimes — a name." },
-   { "n": 4, "take": "op-line4-b", "at": 11.387, "len": 3.36, "speech": [0.08, 3.1], "jp": "選べるのは、それを掴むかどうかだけ。", "en": "All you get to choose is whether you catch it." },
-   { "n": 5, "take": "op-line5-b", "at": 14.5, "len": 4.16, "speech": [0.14, 3.9], "jp": "掴んだなら、それはもう、あなたが背負うもの。", "en": "Once you've caught it, it's yours to carry." },
-   { "n": 6, "take": "op-line6-b", "at": 18.715, "len": 5.2, "speech": [0.16, 4.9], "push": 1.78, "jp": "……まあ、私はたいてい、顔で受け止めるんだけど。", "en": "…Well, I usually catch it with my face." }
-  ],
-  /** The files (lane D encodes the approved takes): voice-<n>.opus, .m4a for Safari. */
-  "dir": "/audio/opening/"
+   { "n": 1, "cue": "op.tight1", "at": 0.35, "len": 2.767, "speech": [0, 2.52], "parts": [{ "from": 0, "to": 2.52, "jp": "風が運ぶものは、選べない。", "en": "What the wind brings, you can't choose." }] },
+   { "n": 2, "cue": "op.tight2", "at": 3.226, "len": 4.344, "speech": [0, 3.96], "parts": [{ "from": 0, "to": 3.96, "jp": "幸運。凶報。誰かの洗濯物。", "en": "Good luck. Bad news. Somebody's laundry." }] },
+   { "n": 3, "cue": "op.tight3", "at": 7.542, "len": 2.204, "speech": [0, 1.86], "parts": [{ "from": 0, "to": 1.86, "jp": "ときどき――名前。", "en": "Sometimes — a name." }] },
+   { "n": 4, "cue": "op.tight4", "at": 9.759, "len": 2.828, "speech": [0, 2.56], "parts": [{ "from": 0, "to": 2.56, "jp": "選べるのは、掴むかどうかだけ。", "en": "All you choose is whether to catch it." }] },
+   { "n": 5, "cue": "op.tight5", "at": 12.675, "len": 2.973, "speech": [0, 2.64], "parts": [{ "from": 0, "to": 2.64, "jp": "掴んだら、もう君が背負うもの。", "en": "Catch it, and it's yours to carry." }] },
+   { "n": 6, "cue": "op.line6", "at": 15.765, "len": 6.657, "speech": [0, 6.4], "push": 5.86, "parts": [
+    { "from": 0, "to": 2.46, "jp": "……まあ、私はたいてい、……", "en": "…Well, I usually…" },
+    { "from": 4.02, "to": 6.4, "jp": "顔で受け止めるんだけど。えへへ。", "en": "catch it with my face. Ehehe." }
+   ] }
+  ]
  },
  "title": { "text": "TESU", "at": 32.4176, "hold": 3.9332, "fade": 0.6, "maxWidth": 0.56, "after": "mid" },
  "ui": {
@@ -160,10 +185,14 @@ export const BEATS = {
   "guardMs": 300
  },
  "ofuda": {
-  /** The page's paper is snatched up out of the top by the press's gust (site, 0.9 s); it falls back in here. */
-  "enters": 0.9,
+  /** Rev 5: the paper is the world's from the press on (it hangs where the page's loader left it, in the black). */
+  "enters": 0,
   /** Sun glints on the paper as it turns (a 4-point star, five drawings). */
-  "glints": [3.95, 10.42, 15.7],
+  "glints": [1.25, 3.95, 10.42, 15.7],
+  /** From here the falling paper is the whole paper (a speck in the vast frame: its look changes where none can tell). */
+  "stripAt": 3.2,
+  /** The fall's last seconds: steered onto the clip's paper in the hand-off drawing (her.clip.band). */
+  "steer": 0.7,
   "hush": 24.52,
   "inhale": 27,
   /**
@@ -172,9 +201,11 @@ export const BEATS = {
    * it is drawn on to her hand-off point in the world.
    */
   "path": [
-   { "T": 0.9, "fx": 0.68, "fy": -0.05 },
-   { "T": 2.636, "fx": 0.6, "fy": 0.3 },
-   { "T": 4.631, "fx": 0.53, "fy": 0.38 },
+   { "T": 0, "fx": 0.5, "fy": 0.6 },
+   { "T": 0.641, "fx": 0.5, "fy": 0.66 },
+   { "T": 1.6, "fx": 0.5, "fy": 0.5 },
+   { "T": 2.636, "fx": 0.51, "fy": 0.44 },
+   { "T": 4.631, "fx": 0.5, "fy": 0.4 },
    { "T": 6.626, "fx": 0.47, "fy": 0.42 },
    { "T": 8.622, "fx": 0.45, "fy": 0.4 },
    { "T": 10.616, "fx": 0.5, "fy": 0.33 },
@@ -203,11 +234,18 @@ export const BEATS = {
   { "T": 17.8917, "id": "op.catch" },
   { "T": 18.5748, "id": "op.slap" },
   { "T": 18.69, "id": "op.jam" },
-  { "T": 20.495, "id": "op.brim" },
+  { "T": 21.625, "id": "op.brim" },
   { "T": 27, "id": "op.inhale" },
   { "T": 27.979, "id": "op.hatgrip" },
   { "T": 28.4724, "id": "op.burst" },
-  { "T": 34.751, "id": "op.skid" }
+  { "T": 35.142, "id": "op.skid" },
+  // her lines (the voice above: each at its `at`)
+  { "T": 0.35, "id": "op.tight1" },
+  { "T": 3.226, "id": "op.tight2" },
+  { "T": 7.542, "id": "op.tight3" },
+  { "T": 9.759, "id": "op.tight4" },
+  { "T": 12.675, "id": "op.tight5" },
+  { "T": 15.765, "id": "op.line6" }
  ]
 } as const;
 

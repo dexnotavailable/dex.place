@@ -30,7 +30,10 @@ export interface Project {
   readonly facts: readonly ProjectFact[];
   /** The project's doc on this site. */
   readonly docs: { readonly href: string; readonly label: string };
+  /** The hero accent of its card (lane K, DESIGN-1019 5.2): Yuki cyan, Bao gold, Zhusha sakura. Existing tokens. */
   readonly tone: Tone;
+  /** The character on its card (Dex: dexCode = Yuki, dexClient = Bao, dex.place = Zhusha). */
+  readonly hero: string;
   /** The card art (render/cardart.ts): its size in art px and how many layers, back first. */
   readonly art: CardArt;
 }
@@ -41,6 +44,9 @@ export interface CardArt {
   readonly layers: number;
   /** Still the stand-in, until the card-art lane's splash art replaces it. */
   readonly standin: boolean;
+  /** A rig is in (rig.json + one webp per part, lanes\motion\NOTEBOOK.md ASKS 00): the card plays it. Until lane H's
+   *  art lands, the stand-ins are rigs too (lanes\cards\tools\standin_rig.py cuts the plain layers into parts). */
+  readonly rig?: boolean;
 }
 
 const STANDIN: CardArt = { w: 160, h: 240, layers: 3, standin: true };
@@ -59,8 +65,9 @@ export const projects: readonly Project[] = [
       { icon: "blob", text: "Yuki is its companion, in one continuous thread." },
     ],
     docs: { href: "/docs/dexcode/", label: "dexCode docs" },
-    tone: "yellow",
-    art: STANDIN,
+    tone: "cyan",
+    hero: "Yuki",
+    art: { ...STANDIN, rig: true },
   },
   {
     id: "dexclient",
@@ -73,8 +80,9 @@ export const projects: readonly Project[] = [
       { icon: "external", text: "Models download from where their makers publish them, such as Hugging Face." },
     ],
     docs: { href: "/docs/installing-dexclient/", label: "Installing dexClient" },
-    tone: "mint",
-    art: STANDIN,
+    tone: "yellow",
+    hero: "Bao",
+    art: { ...STANDIN, rig: true },
   },
   {
     id: "dex-place",
@@ -87,6 +95,7 @@ export const projects: readonly Project[] = [
     ],
     docs: { href: "/docs/about-dex-place/", label: "About dex.place" },
     tone: "magenta",
-    art: STANDIN,
+    hero: "Zhusha",
+    art: { ...STANDIN, rig: true },
   },
 ];

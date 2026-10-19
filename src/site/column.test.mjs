@@ -99,9 +99,13 @@ test("the page runs the pixel loader (Dex 10-18), not the chibi placeholders: it
   assert.match(src, /setState\("loaded"\);[^]*loader\.landOnOfuda\(\)/);
   assert.match(src, /new PaperOfuda\(\{ tie: \{ x: pos\.x \/ kc, y: pos\.y \/ kc \}/);
   // reduced motion: the paper never moves (it hangs straight from its tie)
-  assert.match(src, /if \(reduced\.matches\) paper\.reset\(\);\s*else paper\.step\(dt\);/);
+  assert.match(src, /if \(reduced\.matches\) paper\.reset\(\);[^]*?else if \(handAt < 0\) paper\.step\(dt\);/);
   // the one event out stays
-  assert.match(src, /new CustomEvent<EnterDetail>\(ENTER_EVENT, \{ detail: \{ way: w \} \}\)/);
+  // rev 5: the press hands the page's paper to the world (where it hangs, its size and pose), no gust, no fade
+  assert.match(src, /new CustomEvent<EnterDetail>\(ENTER_EVENT, \{ detail: \{ way: w, paper: from \} \}\)/);
+  assert.doesNotMatch(src, /gustAt/);
+  const css = readFileSync(new URL("./styles/column.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /\.gs-cover \{[^}]*transition/, "the black goes at once (the world's first frame is the same black)");
 });
 
 // ------------------------------------------------------------------------------------------- the paper's edge
@@ -153,15 +157,36 @@ test("the jetty: Zhusha there, the way in hidden until the world is in, a plain 
   assert.match(j, /<noscript><a class="jetty__go" href="\/tesu\/">experience the world we made<\/a><\/noscript>/);
 });
 
-test("home: the sections with their windows, a tall one beside (alternating sides) then a wide one across, then the stubs", () => {
+test("home (Dex 10-19, the redesign, DESIGN-1019 2.2 / 2.3): five bands L R L R L, each over its own place, a strip and a panel of paper, a stitch, the fore; the stubs fold into the footer", async () => {
+  const { HOME_BANDS, splitSection } = await import("./render/landing.ts");
   const html = landing(content);
-  const kinds = [...html.matchAll(/<div class="band band--([lrw])">/g)].map((m) => m[1]);
-  assert.ok(kinds.length >= 6);
-  // tall and wide take turns; the tall ones alternate sides
-  kinds.forEach((k, i) => assert.equal(k === "w", i % 2 === 1, `band ${i}: ${k}`));
-  const tall = kinds.filter((k) => k !== "w");
-  tall.forEach((k, i) => assert.equal(k, i % 2 ? "r" : "l"));
-  assert.ok(html.indexOf('id="more"') > html.indexOf('id="donate"'));
+  const bands = [...html.matchAll(/<section class="band band--([lr]) band--([a-z]+) sec sec--\2" id="\2" aria-labelledby="\2-title" data-scene="([a-z]+)" style="--band-i:(\d);--tone:var\(--[a-z]+\)">/g)];
+  assert.deepEqual(bands.map((m) => m[2]), ["projects", "downloads", "gallery", "docs", "donate"]);
+  assert.deepEqual(bands.map((m) => m[1]), ["l", "r", "l", "r", "l"], "the paper alternates sides");
+  assert.deepEqual(bands.map((m) => m[3]), ["sky", "palace", "isles", "lake", "pine"]);
+  assert.equal(HOME_BANDS.length, bands.length);
+  for (const [i, m] of bands.entries()) {
+    const at = m.index;
+    const band = html.slice(at, html.indexOf("</section>", html.lastIndexOf('<div class="band__fore"', html.indexOf("band__fore", at))) + 10);
+    // the world behind, fixed, framed open on the other side, with no torn edge; the strip; the panel; the fore
+    const open = m[1] === "l" ? "r" : "l";
+    assert.match(band, new RegExp(`^<section[^>]*><div class="band__world" aria-hidden="true"><div class="band__scene" data-window="${m[3]}" data-side="${open}" data-edge="none" data-watch="band"></div></div><div class="band__site"><div class="band__strip"><i class="band__strip-paper"></i><i class="band__strip-shade"></i><div class="band__in"><header class="sh sh--strip `));
+    assert.match(band, new RegExp(`<span class="sh__index" aria-hidden="true">0${i + 1}/05<i class="sh__caret">_</i></span>`));
+    assert.match(band, /<div class="band__panel"><i class="band__paper"><b class="band__spine"><\/b><\/i><i class="band__shade"><\/i><div class="wrap">/);
+    assert.match(band, new RegExp(`<div class="band__fore" data-window="${m[3]}" data-fore data-watch="band" aria-hidden="true"></div></section>$`));
+    // one thing hangs off the paper (the projects' cards do it themselves)
+    const hook = HOME_BANDS[i].stitch;
+    assert.equal((band.match(/ data-stitch/g) ?? []).length, hook && band.includes(hook) ? 1 : 0, `${m[2]}: one stitch (when it has the thing)`);
+    // the head is the strip's, the content the panel's; the phones' "page" key at the panel's top
+    assert.ok(band.indexOf('class="band__panel"') > band.indexOf(`id="${m[2]}-title"`));
+    assert.match(band, /<p class="band__more"><a [^>]*class="[^"]*band__more-key/);
+  }
+  assert.throws(() => splitSection("<div>not a section</div>"));
+  // the old "more" section is the footer's chip row (/#more lands on it)
+  assert.doesNotMatch(html, /sec--more|class="stubs"/);
+  const page = shell({ meta: { path: "/", title: "dex", page: "home", description: "" }, main: html }).body;
+  assert.ok(page.indexOf('id="more"') > page.indexOf('<footer class="ftr">'), "#more is in the footer");
+  for (const s of STUBS) assert.ok(page.includes(`<a class="ftr__chip" href="${s.href}">`), s.id);
   // the page's h1 is "dex" on the game screen, not a second big mark on the website
   assert.doesNotMatch(html, /<h1/);
 });
@@ -225,12 +250,11 @@ test("the sky's colour: many steps, each step's lower edge an ordered dither int
   assert.ok(dithered > rows * 0.2, `the step edges dither (${dithered} rows)`);
 });
 
-test("windows into the world (Dex 10-18, bigger 10-19): white page, a window with each section, each a different place, its edge a hole torn in the paper", () => {
+test("the world behind the website (the home's places; a section's own page keeps its window with a hole torn in the paper)", () => {
   const html = landing(content);
-  const bands = [...html.matchAll(/<div class="band band--([lrw])">[^]*?<div class="band__win" data-window="([a-z]+)" aria-hidden="true"><\/div><\/div>/g)];
-  assert.ok(bands.length >= 6, `${bands.length} windows`);
-  const scenes = bands.map((m) => m[2]);
-  assert.equal(new Set(scenes).size, scenes.length, `each window a different place (${scenes})`);
+  const scenes = [...html.matchAll(/<div class="band__scene" data-window="([a-z]+)"/g)].map((m) => m[1]);
+  assert.equal(scenes.length, 5);
+  assert.equal(new Set(scenes).size, scenes.length, `each band a different place (${scenes})`);
   // every place is one the windows know how to paint, each in its own light
   return import("./motion/windows.ts").then(({ SCENES, holeMask, framed, WIDE }) => {
     for (const s of scenes) assert.ok(SCENES[s], s);
@@ -239,11 +263,6 @@ test("windows into the world (Dex 10-18, bigger 10-19): white page, a window wit
         assert.ok(!pieces.length || pieces.length >= 3, `${id}: a composed place`);
         assert.ok(pieces.every((p) => p.kind.startsWith("op.") && p.fit > 0 && p.fit <= 1), `${id}: the world's own painters, fitted`);
       }
-    }
-    // the windows across the page frame their place wide; a tall window keeps its own framing
-    for (const [i, m] of bands.entries()) {
-      const sc = SCENES[m[2]];
-      if (m[1] === "w") assert.ok(sc.wide, `band ${i} (${m[2]}) is across the page: its place has a wide framing`);
     }
     const lake = SCENES.lake;
     assert.equal(framed(lake, 300, 300), lake, "a square window: the place as composed");
@@ -271,8 +290,8 @@ test("windows into the world (Dex 10-18, bigger 10-19): white page, a window wit
     assert.notDeepEqual(holeMask(W, H, 2), m, "seeded per window");
     assert.deepEqual(holeMask(W, H, 1), m, "deterministic");
     const css = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
-    assert.doesNotMatch(css, /\.band__win::(before|after)/, "the edge is in the window, not a tiled overlay");
-    assert.match(css, /\.band__win \{[^}]*background: #fff;/, "white behind the window until it paints (no coloured line)");
+    assert.doesNotMatch(css, /\.pband__win::(before|after)/, "the edge is in the window, not a tiled overlay");
+    assert.match(css, /\.pband__win \{[^}]*background: #fff;/, "white behind the window until it paints (no coloured line)");
     assert.match(css, /\.sheet--column \{ background: #fff; \}/);
   });
 });
@@ -292,6 +311,7 @@ test("\"dex\" writes itself on a quiet thread: the world, the windows and the op
   // "when it draws 'dex' at the start it lags": the world's frame boots on the page's own thread
   const world = readFileSync(new URL("./motion/world.ts", import.meta.url), "utf8");
   assert.match(world, /afterMark\(\)\.then\(load\)/, "the world's code loads after the mark");
+  assert.match(world, /prefetchWorld\(\);\s*afterMark\(\)\.then\(load\)/, "its files come down meanwhile (network only)");
   const main = readFileSync(new URL("./main.ts", import.meta.url), "utf8");
   assert.match(main, /afterMark\(\)\.then\(\(\) => import\("\.\/motion\/sky\.ts"\)\)/, "the windows after the mark");
   const enter = readFileSync(new URL("./motion/enter.ts", import.meta.url), "utf8");
@@ -362,7 +382,7 @@ test("the corner is a slot in the header (right of World, left of Menu); the mar
   assert.doesNotMatch(h + footer("home"), /<span class="mark">/, "no handwriting-font dex left");
   // a section's own page is one band: its content beside a window onto its place
   const page = shell({ meta: { path: "/downloads/", title: "D", page: "downloads", description: "" }, main: '<div class="page">x</div>' }).body;
-  assert.match(page, /<main id="main" class="main" tabindex="-1"><div class="band band--l"><div class="page">x<\/div><div class="band__win" data-window="palace"/);
+  assert.match(page, /<main id="main" class="main" tabindex="-1"><div class="pband pband--l"><div class="page">x<\/div><div class="pband__win" data-window="palace"/);
 });
 
 test("Zhusha on the jetty is her own drawing at her play scale, the ofuda landing exactly on the one on her hat (no white box)", async () => {
@@ -407,4 +427,38 @@ test("the loader lands when the opening set is in, even when the world's progres
   assert.match(src, /if \(world\?\.progress && world\.progress\(\) >= 1\) return true;/);
   assert.match(src, /return !!s && s\.plates >= 1 && s\.close && s\.font && s\.ofuda;/);
   assert.notEqual(0.7 + 0.1 + 0.1 + 0.1, 1);
+});
+
+test("the world's looks (Dex 10-19, the redesign: 'as you scroll down the world is already there'): depth ships, dust and cuts are gone, the tear stays behind ?motion=diorama; depth by nearness, unchanged frames skipped", async () => {
+  const { DEFAULT_LOOK, LOOKS } = await import("./motion/look-mode.ts");
+  const { LOOK, depth, diorama } = await import("./motion/looks.ts");
+  const { holeMask, tearField } = await import("./motion/windows.ts");
+  assert.equal(DEFAULT_LOOK, "depth");
+  assert.deepEqual([...LOOKS].sort(), ["depth", "diorama"]);
+  assert.equal(depth.cover, undefined, "depth: nothing covers the world, it is already there");
+  assert.equal(depth.offset, diorama.offset, "the same depth either way");
+  assert.deepEqual([...LOOKS].sort(), Object.keys(LOOK).sort(), "every look the switch knows exists");
+  const st = (top, bandTop, bandH = 900) => ({ W: 300, H: 240, index: 0, top, bottom: top + 240, bandTop, bandBottom: bandTop + bandH, vh: 800, arrived: -1 });
+  const piece = (kind, extra = {}) => ({ kind, p: {}, fit: 0.5, x: 0.5, y: 0.5, ...extra });
+  // the scroll is the camera: near things move further than far ones, and the other way as the band goes up
+  const low = st(500, 600), high = st(-200, -100);
+  const dy = (s, pc) => diorama.offset(s, pc, 0, 0)[1];
+  assert.ok(Math.abs(dy(low, piece("op.pine"))) > Math.abs(dy(low, piece("op.farkarst"))), "the pine moves more than the far karst");
+  assert.ok(dy(low, piece("op.tower")) > 0 && dy(high, piece("op.tower")) < 0, "near things ride from low to high as the page scrolls");
+  assert.ok(Math.abs(diorama.backOffset(low, 0)[1]) <= 12, "the sky moves no further than its margin");
+  for (const s of [low, high]) for (const v of diorama.offset(s, piece("op.palace"), 0, 0)) assert.equal(v, Math.round(v), "whole pixels");
+  // the tear: shut-ish while the window is at the screen's foot, open by the time it is near the top
+  const foot = diorama.coverKey(st(790, 790), 0), mid = diorama.coverKey(st(560, 560), 0), up = diorama.coverKey(st(300, 300), 0);
+  assert.ok(foot > mid && mid > up && up === 0, `the tear opens as it rises (${foot} > ${mid} > ${up})`);
+  const out = new Uint8ClampedArray(300 * 240 * 4);
+  assert.equal(diorama.cover(st(300, 300), () => tearField(300, 240, 1), out, 0), false, "open: nothing over the window");
+  assert.equal(diorama.cover(st(700, 700), () => tearField(300, 240, 1), out, 0), true);
+  // the growing tear is the finished hole's own outline: inside the finished tear the field is the world, outside paper
+  const f = tearField(160, 120, 1), m = holeMask(160, 120, 1);
+  let agree = 0, n = 0;
+  for (let i = 0; i < f.length; i++) {
+    if (m[i * 4 + 3] === 255) { n++; if (f[i] < 4) agree++; }
+  }
+  assert.ok(agree / n > 0.9, `paper in the mask is paper in the field (${agree}/${n})`);
+  assert.ok(f[60 * 160 + 80] > 4 * 30, "the middle is far inside the tear");
 });

@@ -7,9 +7,10 @@
 .world { background: #000; color: #f6eee9; }
 .world::after { background: #000; }
 /* the world streams in behind a black cover until the visitor goes in */
-.gs-cover { position: absolute; inset: 0; z-index: 2; background: #000; pointer-events: none; transition: opacity 600ms linear, visibility 0s linear 600ms; }
-.world[data-entered] .gs-cover { opacity: 0; visibility: hidden; }
-@media (prefers-reduced-motion: reduce) { .gs-cover { transition: none; } }
+/* the black loading screen: at the press it goes at once, no fade (Dex 10-19: "it just fades to the world" was the
+   problem): the world's own first frame is the same black, a slab the ofuda drops out of (tesu/opening beats.ts ceiling) */
+.gs-cover { position: absolute; inset: 0; z-index: 2; background: #000; pointer-events: none; }
+.world[data-entered] .gs-cover { visibility: hidden; }
 .world__frame { z-index: 1; }
 .world__bars { z-index: 3; }
 .world__cue { z-index: 4; }

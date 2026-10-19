@@ -1,6 +1,6 @@
 // Zhusha's combat (lane E, 10-19; PLAN-10-19.md, Dex's attack notes): what her attack drawings say (derived.json: live
 // drawings, hit boxes that move with the slash, her planted foot), the chain's movement (m1_1 and m1_2 forward, m1_3
-// recoils back, m1_4 in place), the slower wind-down, the Q (BOOM in a few ticks, a hold, the camera pulled out over
+// a long lunge that locks onto a foe, m1_4 in place), the slower wind-down, the Q (BOOM in a few ticks, a hold, the camera pulled out over
 // the exploded area), the E (a beam far in front, the recoil on the tap), heavier damage reactions, and how far each hit
 // destroys (props.ts).
 import test from "node:test";
@@ -101,9 +101,11 @@ test("combat derive: an active drawing is new energy in front of her; its boxes 
 test("combat derive: on the live attacks every hit has boxes in front of her, one hit per marked BOOM, and m1_1's boxes move", () => {
   const D = JSON.parse(readFileSync(join(import.meta.dirname, "zhusha/derived.json"), "utf8")).slots;
   assert.ok(Object.keys(D).length >= 1);
+  const attacks = new Set(Object.keys(FEEL.moves).flatMap((r) => [ROLES[r]?.normal, ROLES[r]?.ult]).filter(Boolean));
   for (const [slot, s] of Object.entries(D)) {
     const def = liveAnim(slot);
     assert.ok(def, `${slot} is slotted`);
+    if (!attacks.has(slot)) continue;
     assert.equal(s.hits.length, Math.max(1, (def.hits ?? []).length), slot);
     for (const h of s.hits) {
       const boxes = [];
@@ -156,15 +158,16 @@ function runMove(Zhusha, id, clipOf = null, settle = 40) {
   return z;
 }
 
-test("combat chain (Dex 10-19): m1_1 and m1_2 push her forward, m1_3 recoils her back, m1_4 keeps her in place", async () => {
+test("combat chain (Dex 10-19): m1_1 and m1_2 push her forward, m1_3 lunges one to two of her heights, m1_4 keeps her in place", async () => {
   const Zhusha = await loadZ();
+  const K = H * FEEL.charScale;
   for (const clipOf of [null, liveClip]) {
     const tag = clipOf ? "with the drawings" : "white box";
-    const [a, b, c, d] = ["m1_1", "m1_2", "m1_3", "m1_4"].map((id) => runMove(Zhusha, id, clipOf).body.x / H);
-    assert.ok(a > 0.3, `${tag}: m1_1 ${a} H`);
-    assert.ok(b > 0.3, `${tag}: m1_2 ${b} H`);
-    assert.ok(c < -0.35, `${tag}: m1_3 ${c} H`);
-    assert.ok(Math.abs(d) < 0.1, `${tag}: m1_4 ${d} H`);
+    const [a, b, c, d] = ["m1_1", "m1_2", "m1_3", "m1_4"].map((id) => runMove(Zhusha, id, clipOf).body.x);
+    assert.ok(a > 0.3 * H, `${tag}: m1_1 ${a / H} H`);
+    assert.ok(b > 0.3 * H, `${tag}: m1_2 ${b / H} H`);
+    assert.ok(c > 1 * K && c < 2 * K, `${tag}: m1_3 ${c / K} of her heights`);
+    assert.ok(Math.abs(d) < 0.1 * H, `${tag}: m1_4 ${d / H} H`);
   }
   // m1_4 out of a run: her momentum stops with it
   const z = new Zhusha(host(), [0, 0]);
@@ -415,4 +418,228 @@ test("combat roles: every role she can reach, in either form, resolves to a draw
   assert.equal(slotFor("m1_4_ret", true, (s) => s === "guard_to_rest"), "guard_to_rest");
   // run_stop is out: no drawing, ever
   assert.deepEqual(slotChoices("run_stop", false), []);
+});
+
+// --- m1_3 locks onto a foe (Dex 10-19: "a forward lunge, like a body height or two forward, and lock onto the enemy") ---
+
+test("combat m1_3 lock-on: she homes onto a foe in reach and stops at striking distance (its thrusts land), never into it", async () => {
+  const Zhusha = await loadZ();
+  const { lockTarget } = await import("./zhusha/timing.ts");
+  const K = H * FEEL.charScale, L = FEEL.moves.m1_3.lock;
+  const foeAt = (near, w = 120) => ({ x: near, y: -1.6 * K, w, h: 1.6 * K });
+  /** m1_3 from rest at x 0 with foes (boxes, or a function of the tick for a moving one). */
+  const lunge = (foes, clipOf = liveClip, facing = 1) => {
+    const h = host();
+    let tick = 0;
+    h.foes = () => (typeof foes === "function" ? foes(tick) : foes);
+    const z = new Zhusha(h, [0, 0]);
+    if (clipOf) z.clipOf = clipOf;
+    z.facing = facing;
+    const inp = new FakeInput();
+    step(z, inp, 5);
+    z.chainIdx = 1; z.chainEnd = inp.tick;
+    inp.press("m1");
+    step(z, inp);
+    assert.equal(z.lastAction, "m1_3");
+    let hitFoe = false;
+    for (let i = 0; i < 60 && z.state === "move"; i++) {
+      tick++;
+      step(z, inp);
+      const fs = h.foes();
+      for (const { box } of z.hitboxes()) for (const f of fs) if (box.x < f.x + f.w && box.x + box.w > f.x && box.y < f.y + f.h && box.y + box.h > f.y) hitFoe = true;
+    }
+    return { z, hitFoe };
+  };
+  // a foe 1.8 of her heights ahead: she ends with its edge `strike` ahead, and her thrusts reach it
+  for (const clipOf of [null, liveClip]) {
+    const { z, hitFoe } = lunge([foeAt(1.8 * K)], clipOf);
+    assert.ok(Math.abs(1.8 * K - z.body.x - L.strike * K) < 3, `stopped ${(1.8 * K - z.body.x) / K} heights short (want ${L.strike})`);
+    assert.ok(hitFoe, "the thrusts land on it");
+  }
+  // already at striking distance or closer: no lunge into it
+  assert.ok(Math.abs(lunge([foeAt(0.3 * K)]).z.body.x) < 3);
+  // far out of reach: no lock, the plain lunge
+  const far = lunge([foeAt(6 * K)]).z.body.x;
+  assert.ok(far > 1 * K && far < 2 * K, `${far / K}`);
+  // a foe on the move is followed: it backs off during the lunge, she still stops at striking distance (within maxDist)
+  const moving = (t) => [foeAt(1.2 * K + Math.min(t, 6) * 6)];
+  const m = lunge(moving).z.body.x;
+  assert.ok(Math.abs(moving(99)[0].x - m - L.strike * K) < 3, `moving: ${(moving(99)[0].x - m) / K}`);
+  // never past maxDist, however far ahead (inside range) the foe stands
+  assert.ok(lunge([foeAt((L.range - 0.1) * K)]).z.body.x <= L.maxDist * K + 3);
+  // a foe right behind her: she turns to face it and lunges at it
+  const back = lunge([{ x: -0.8 * K - 120, y: -1.6 * K, w: 120, h: 1.6 * K }]).z;
+  assert.equal(back.facing, -1);
+  assert.ok(back.body.x <= 0);
+  // the pure aim: front first, the nearest, level with her only
+  assert.deepEqual(lockTarget(0, 0, 1, [], L, K), { travel: L.dist * K, dir: 1, foe: -1 });
+  assert.equal(lockTarget(0, 0, 1, [foeAt(2 * K), foeAt(1.2 * K)], L, K).foe, 1);
+  assert.equal(lockTarget(0, 0, 1, [{ x: K, y: -8 * K, w: 100, h: K }], L, K).foe, -1, "a foe far above is not level with her");
+});
+
+// --- the dash (Dex 10-14: "a ground burst: a low, powerful lunge with the feet near or on the ground ... then a skid or plant to stop; only the air dash leaves the ground") ---
+
+test("combat dash: a ground burst that stays on the ground, peaks on the burst drawing, skids its heels to a stop, then rises; breaks nothing", async () => {
+  const Zhusha = await loadZ();
+  const { timeline, drawingIndex } = await import("./zhusha/contract.ts");
+  const D = JSON.parse(readFileSync(join(import.meta.dirname, "zhusha/derived.json"), "utf8")).slots;
+  // what the drawings say: a foot on the ground in every dash drawing; the ult form's dash has none while she is a streak
+  assert.ok(D.dash.frames.every((f) => f.feet.length), "every dash drawing touches the ground");
+  if (D.uf_dash) assert.ok(D.uf_dash.frames.slice(4, 6).every((f) => !f.feet.length), "uf_dash f004-f005: gone");
+  const def = liveAnim("dash");
+  const { starts, total } = timeline(def.frames);
+  const h = host();
+  const fx = [];
+  h.vfx.spawn = (id) => fx.push(id);
+  const z = new Zhusha(h, [0, 0]);
+  z.clipOf = liveClip;
+  z.hasRole = (r) => ["dash", "idle", "run"].includes(r);
+  z.clipDone = (a) => a.role !== "dash" || a.t >= total - 1;
+  const cues = [];
+  z.onCue = (c) => cues.push({ ...c, t: z.t, state: z.state });
+  const inp = new FakeInput();
+  step(z, inp, 5);
+  inp.press("m2");
+  const rows = [];
+  for (let i = 0; i < 60; i++) {
+    const x0 = z.body.x;
+    step(z, inp);
+    rows.push({ t: z.t, state: z.state, y: z.body.y, v: z.body.x - x0, role: z.anim.role, d: drawingIndex(starts, total, z.anim.t, false), ifr: z.iframes, hb: z.hitboxes().length });
+  }
+  // the press tick (she takes the crouch), then the dash's ticks
+  const dash = rows.filter((r) => r.state === "dash");
+  assert.equal(dash.length, FEEL.dash.ticks + 1);
+  assert.ok(dash.every((r) => r.y === 0), "on the ground all the way");
+  const dist = dash.reduce((a, r) => a + r.v, 0) / H;
+  assert.ok(Math.abs(dist - FEEL.dash.distance) < 0.15, `${dist} H`);
+  const peak = dash.reduce((a, r) => (r.v > a.v ? r : a));
+  assert.equal(dash.find((r) => r.t === peak.t).d, 1, "full speed on the burst drawing (f001)");
+  const k = FEEL.dash.clips.dash.keys;
+  assert.equal(dash.find((r) => r.t === k["5"]).d, 5, "the heel skid (f005) as the speed bleeds off");
+  assert.ok(dash.filter((r) => r.d >= 5).every((r) => r.v < FEEL.dash.skidFrom * peak.v + 1e-9), "no skid drawing at speed");
+  assert.equal(cues.filter((c) => c.id === "skid" && c.move === "dash").length, 1);
+  assert.ok(fx.filter((id) => id === "dust.kick").length >= 3, "dust off the burst and the skid");
+  // i-frames early, then none; no hit boxes: the dash breaks nothing
+  assert.ok(dash.slice(0, FEEL.dash.iframes - 1).every((r) => r.ifr) && !dash[dash.length - 1].ifr);
+  assert.ok(rows.every((r) => r.hb === 0));
+  // standing after it: the rest of the clip (the skid, the rise to the idle) plays out, then the idle
+  const after = rows.filter((r) => r.state === "free");
+  const tail = after.filter((r) => r.role === "dash").map((r) => r.d);
+  assert.ok(tail.includes(7) && tail.includes(9), `the rise plays: ${tail}`);
+  assert.equal(after[after.length - 1].role, "idle");
+  // holding on: she runs on out of it (no stop)
+  const z2 = new Zhusha(host(), [0, 0]);
+  z2.clipOf = liveClip;
+  z2.hasRole = z.hasRole;
+  z2.clipDone = z.clipDone;
+  const i2 = new FakeInput();
+  step(z2, i2, 5);
+  i2.press("m2");
+  i2.down.add("right");
+  step(z2, i2, FEEL.dash.ticks + 3);
+  assert.equal(z2.anim.role, "run");
+});
+
+test("combat air dash: a burst, not flight: level for a moment, then it arcs into the fall; never rises, never shows the skid", async () => {
+  const Zhusha = await loadZ();
+  const { timeline, drawingIndex } = await import("./zhusha/contract.ts");
+  const def = liveAnim("dash");
+  const { starts, total } = timeline(def.frames);
+  const z = new Zhusha(host(), [0, 0]);
+  z.clipOf = liveClip;
+  const inp = new FakeInput();
+  step(z, inp, 5);
+  inp.press("jump");
+  inp.down.add("jump");
+  step(z, inp, 14);
+  inp.press("m2");
+  const rows = [];
+  for (let i = 0; i < 30; i++) { const y0 = z.body.y; step(z, inp); rows.push({ state: z.state, t: z.t, dy: z.body.y - y0, y: z.body.y, d: drawingIndex(starts, total, z.anim.t, false), role: z.anim.role }); }
+  const air = rows.filter((r) => r.state === "dash");
+  assert.equal(air.length, FEEL.dash.ticks + 1);
+  assert.ok(air.every((r) => r.y < 0), "in the air");
+  assert.ok(air.filter((r) => r.t <= FEEL.dash.airHold).every((r) => Math.abs(r.dy) < 1e-9), "level while it bursts");
+  assert.ok(air.every((r) => r.dy >= 0), "never rises (no Superman)");
+  assert.ok(air[air.length - 1].dy > 0, "arcs into the fall");
+  assert.ok(air.every((r) => r.d < FEEL.dash.clips.dash.skid), "no skid drawings in the air");
+  assert.equal(rows.find((r) => r.state === "free").role, "jump");
+});
+
+test("combat ult dash: she is gone (the streak) while she covers the distance, and reforms as she slows", async () => {
+  const Zhusha = await loadZ();
+  const { timeline, drawingIndex } = await import("./zhusha/contract.ts");
+  const def = liveAnim("uf_dash");
+  if (!def) return;
+  const { starts, total } = timeline(def.frames);
+  const z = new Zhusha(host(), [0, 0]);
+  z.clipOf = liveClip;
+  z.form = 5000;
+  const inp = new FakeInput();
+  step(z, inp, 5);
+  inp.press("m2");
+  const rows = [];
+  for (let i = 0; i < FEEL.dash.ticks; i++) { const x0 = z.body.x; step(z, inp); rows.push({ t: z.t, v: z.body.x - x0, d: drawingIndex(starts, total, z.anim.t, false) }); }
+  const gone = rows.filter((r) => r.d === 4 || r.d === 5);
+  const total_ = rows.reduce((a, r) => a + r.v, 0);
+  assert.ok(gone.reduce((a, r) => a + r.v, 0) > 0.4 * total_, "most of the way covered while she is a streak");
+  assert.ok(rows.filter((r) => r.t >= FEEL.dash.clips.uf_dash.keys["6"]).every((r) => r.d >= 6), "she reforms as she slows");
+});
+
+test("combat controls: Shift dashes (K and X still do); the controls card lists every key from the game's own map", async () => {
+  const { KEYS } = await import("./keys.ts");
+  const { controlRows, capOf } = await import("./controls.ts");
+  for (const k of ["ShiftLeft", "ShiftRight", "KeyK", "KeyX"]) assert.deepEqual(KEYS[k], ["m2"], k);
+  const rows = Object.fromEntries(controlRows(KEYS).map((r) => [r.what, r.caps]));
+  assert.deepEqual(rows.dash, ["Shift", "K", "X"]);
+  assert.deepEqual(rows.move, ["A", "D", "←", "→"]);
+  assert.deepEqual(rows.jump, ["W", "Space", "↑"]);
+  assert.deepEqual(rows.attack, ["J", "Z", "click"]);
+  assert.deepEqual([rows.skill, rows.ofuda, rows.ult, rows.use], [["Q"], ["E"], ["R"], ["F"]]);
+  // every action the keys can do is on the card (up / down only steer)
+  const listed = new Set(["left", "right", "jump", "m1", "m2", "skill", "e", "ult"]);
+  for (const acts of Object.values(KEYS)) for (const a of acts) assert.ok(listed.has(a) || a === "up" || a === "down", a);
+  assert.equal(capOf("ArrowUp"), "↑");
+  // H is free for "hold H": no game key on it
+  assert.equal(KEYS.KeyH, undefined);
+});
+
+test("combat dash: no white-box afterimages over her drawing (they read as blue rectangles); the box keeps them", async () => {
+  const Zhusha = await loadZ();
+  const run = (drawn) => {
+    const z = new Zhusha(host(), [0, 0]);
+    if (drawn) { z.clipOf = liveClip; z.hasRole = (r) => r === "dash"; }
+    const inp = new FakeInput();
+    step(z, inp, 5);
+    inp.press("m2");
+    let most = 0;
+    for (let i = 0; i < 16; i++) { step(z, inp); most = Math.max(most, z.ghosts.length); }
+    return most;
+  };
+  assert.equal(run(true), 0);
+  assert.ok(run(false) > 0);
+});
+
+test("combat wind-ups (Dex 10-19): in both forms the first live drawing lands on feel.json's first hit tick, within a few ticks of its BOOM; nothing before it freezes or crawls", async () => {
+  const { timeline, drawingIndex, moveToClip } = await import("./zhusha/contract.ts");
+  const D = JSON.parse(readFileSync(join(import.meta.dirname, "zhusha/derived.json"), "utf8")).slots;
+  const A = (96 * FEEL.charScale) / 128;
+  let n = 0;
+  for (const [role, feel] of Object.entries(FEEL.moves)) {
+    for (const slot of [ROLES[role]?.normal, ROLES[role]?.ult]) {
+      const def = slot && liveAnim(slot);
+      if (!def || !D[slot] || !(def.hits ?? []).length) continue;
+      n++;
+      const r = resolveMove(feel, def, A, { derived: D[slot], windRate: FEEL.windDown.rate });
+      const { starts, total } = timeline(def.frames);
+      const first = D[slot].hits[0].first, mark = Math.min(...def.hits);
+      const at = r.hits[0].at;
+      const shown = (t) => drawingIndex(starts, total, moveToClip(windClock(t, r.wind), at, r.clipHitAt), false);
+      assert.equal(shown(at), first, `${slot}: the first live drawing shows on the hit tick`);
+      assert.ok(first <= mark && starts[mark] - starts[first] <= DERIVE.lead, `${slot}: the live window starts within ${DERIVE.lead} ticks of the BOOM (f${first} vs f${mark})`);
+      // the wind-up is squeezed onto the hit tick (or near 1:1), never stretched: no drawing held longer than it is drawn
+      assert.ok(r.clipHitAt / at >= 0.85, `${slot}: wind-up ${r.clipHitAt} clip ticks over ${at} move ticks`);
+      for (let t = 1; t <= at; t++) assert.ok(shown(t) >= shown(t - 1), `${slot}: tick ${t} goes back`);
+    }
+  }
+  assert.ok(n >= 8, `${n} slots checked`);
 });

@@ -1,0 +1,88 @@
+{
+ "v": 2,
+ "size": [
+  160,
+  240
+ ],
+ "focus": [
+  96,
+  70
+ ],
+ "pixelated": true,
+ "parts": [
+  {
+   "id": "sky",
+   "src": "sky.webp",
+   "box": [
+    0,
+    0,
+    160,
+    240
+   ],
+   "depth": 0
+  },
+  {
+   "id": "cloud",
+   "src": "cloud.webp",
+   "box": [
+    65,
+    57,
+    95,
+    45
+   ],
+   "depth": 0.2,
+   "motion": [
+    {
+     "kind": "bob",
+     "dx": 3,
+     "dy": 0,
+     "period": 9,
+     "phase": 0.2
+    }
+   ]
+  },
+  {
+   "id": "spires",
+   "src": "spires.webp",
+   "box": [
+    43,
+    131,
+    117,
+    37
+   ],
+   "depth": 0.5,
+   "motion": [
+    {
+     "kind": "bob",
+     "dx": 0,
+     "dy": 1,
+     "period": 6.2,
+     "phase": 0.5
+    }
+   ]
+  },
+  {
+   "id": "subject",
+   "src": "subject.webp",
+   "box": [
+    0,
+    90,
+    131,
+    107
+   ],
+   "depth": 0.85,
+   "pivot": [
+    65,
+    197
+   ],
+   "motion": [
+    {
+     "kind": "sway",
+     "deg": 1.2,
+     "period": 5.4,
+     "phase": 0
+    }
+   ]
+  }
+ ]
+}

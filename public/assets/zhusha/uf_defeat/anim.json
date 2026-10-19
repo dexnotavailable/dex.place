@@ -1,0 +1,116 @@
+{
+ "id": "uf_defeat",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  91,
+  145
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 20
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 22
+  },
+  {
+   "file": "f002.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 24
+  },
+  {
+   "file": "f003.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 26
+  },
+  {
+   "file": "f004.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 28
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 31
+  },
+  {
+   "file": "f006.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 34
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 37
+  },
+  {
+   "file": "f008.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 43
+  },
+  {
+   "file": "f009.png",
+   "ticks": 8,
+   "fig": 128,
+   "src": 46
+  },
+  {
+   "file": "f010.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 61
+  },
+  {
+   "file": "f011.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 64
+  },
+  {
+   "file": "f012.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 67
+  },
+  {
+   "file": "f013.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 70
+  },
+  {
+   "file": "f014.png",
+   "ticks": 6,
+   "fig": 128,
+   "src": 73
+  },
+  {
+   "file": "f015.png",
+   "ticks": 10,
+   "fig": 128,
+   "src": 85
+  },
+  {
+   "file": "f016.png",
+   "ticks": 12,
+   "fig": 128,
+   "src": 110
+  }
+ ],
+ "loop": false,
+ "source": "h3-L-uf_defeat-A-s3000-c35e99",
+ "notes": "kit v1.8 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f000: 2 px of H3's floor shadow streak removed; f001: the effect cut by the frame edge continued as a soft falloff (40 px), 90 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -1 px so her shoes stand on the ground row; f002: the effect cut by the frame edge continued as a soft falloff (40 px), 540 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -3 px so her shoes stand on the ground row; f003: the effect cut by the frame edge continued as a soft falloff (40 px), 789 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -3 px so her shoes stand on the ground row; f004: the effect cut by the frame edge continued as a soft falloff (40 px), 1400 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f005: 1 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f006: 1 px of H3's floor shadow streak removed, 1 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -2 px so her shoes stand on the ground row; f007: the blade tip re-extended past the right edge (130 px, hw 20), shifted -2 px so her shoes stand on the ground row; f008: 1 px of H3's floor shadow streak removed, shifted +3 px so her shoes stand on the ground row; f009: 15 px of H3's floor shadow streak removed; f010: 33 px of H3's floor shadow streak removed; f011: 23 px of H3's floor shadow streak removed; f012: 23 px of H3's floor shadow streak removed, 2 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f013: 44 px of H3's floor shadow streak removed, 2 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted +5 px so her shoes stand on the ground row; f014: 38 px of H3's floor shadow streak removed, shifted +5 px so her shoes stand on the ground row; f015: 24 px of H3's floor shadow streak removed, 4 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f016: 41 px of H3's floor shadow streak removed; f012: 2 px of floor specks under / at her shoes dropped; f015: 1 px of floor specks under / at her shoes dropped; f016: 8 px of floor specks under / at her shoes dropped"
+}

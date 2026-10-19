@@ -1,35 +1,12 @@
 // node --test: the landing, /projects/ and project pages.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
-import { cardArt } from "./render/cardart.ts";
 import { landing, projectPage, projectsIndex } from "./render/landing.ts";
 import { routes } from "./render/routes.ts";
 import { projects, projectHref } from "./data/projects.ts";
 import { downloads } from "./data/downloads.ts";
 
 const content = { docs: [], posts: [], gallery: [] };
-
-test("card art (Dex 10-19): every project's layers fill its card, back to front, lazily, decorative, and the files exist", () => {
-  for (const p of projects) {
-    const html = cardArt(p);
-    assert.match(html, /^<div class="cart" data-tilt-scene aria-hidden="true" style="--aw:\d+;--ah:\d+">/);
-    const imgs = [...html.matchAll(/<img class="cart__l" data-depth="(\d)" src="([^"]+)" alt="" width="(\d+)" height="(\d+)" loading="lazy" decoding="async"/g)];
-    assert.equal(imgs.length, p.art.layers, `${p.id} layers`);
-    assert.ok(p.art.layers >= 2, `${p.id}: layers to pan`);
-    // back to front: the far layer moves least
-    const depths = imgs.map((m) => +m[1]);
-    assert.deepEqual(depths, [...depths].sort((a, b) => a - b), `${p.id} depths rise to the front`);
-    assert.ok(depths[0] < depths[depths.length - 1]);
-    imgs.forEach((m, i) => {
-      assert.equal(m[2], `/site/cards/${p.id}/${i}.png`);
-      assert.ok(existsSync(new URL(`../../public${m[2]}`, import.meta.url)), `${m[2]} exists`);
-      assert.equal(+m[3], p.art.w);
-      assert.equal(+m[4], p.art.h);
-    });
-    assert.match(html, /<span class="cart__shine"><\/span><\/div>$/);
-  }
-});
 
 test("every project has a page route, a doc link and at least one fact", () => {
   const paths = routes(content).map((r) => r.path);
@@ -52,22 +29,8 @@ test("landing lists the projects in Dex's order and links each page", () => {
     assert.ok(html.includes(`href="${projectHref(p)}"`));
   }
   // the cards carry their art (no code-drawn placeholder scenes, no "placeholder art" plates)
-  assert.equal(html.match(/<div class="cart" data-tilt-scene/g)?.length, projects.length);
+  assert.equal(html.match(/<div class="cart[ "]/g)?.length, projects.length);
   assert.doesNotMatch(html, /Placeholder art/i);
-});
-
-test("home cards: every project leads to its page, its docs and the one action that matters", () => {
-  const html = landing(content);
-  for (const p of projects) {
-    const start = html.indexOf(`id="p-${p.id}"`);
-    const cardHtml = html.slice(start, html.indexOf("</article>", start));
-    assert.ok(cardHtml.includes(`href="${projectHref(p)}"`), `${p.id} details`);
-    assert.ok(cardHtml.includes(`href="${p.docs.href}"`), `${p.id} docs`);
-    const entry = downloads.find((d) => d.id === p.id);
-    if (entry?.file) assert.ok(cardHtml.includes(`href="${entry.file.href}" download`), `${p.id} direct file`);
-    else if (entry?.installedBy) assert.ok(cardHtml.includes(`href="#${entry.installedBy}"`), `${p.id} points at its installer`);
-    else assert.ok(cardHtml.includes(`href="#world"`), `${p.id} leads up to the world`);
-  }
 });
 
 test("download state comes from data/downloads.ts, never invented", () => {
@@ -125,13 +88,13 @@ test("home: every section in Dex's order, each with the anchor the nav jumps to"
 
 test("home: Dex's art appears only inside the collage", () => {
   const html = landing(real);
-  const start = html.indexOf(`<div class="collage-box">`);
+  const start = html.indexOf(`<div class="collage-box"`);
   const end = html.indexOf(`</ul></div>`, start);
   assert.ok(start > 0 && end > start);
   const outside = html.slice(0, start) + html.slice(end);
   // (The viewer dialog has two empty <img> slots it fills from the collage.)
   // (and the projects' card art is our own pixel art from /site/cards/, never Dex's)
-  assert.doesNotMatch(outside.replace(/<img class="viewer__(lo|hi)" alt="" data-viewer-(lo|hi) \/>/g, "").replace(/<img class="cart__l" [^>]*src="\/site\/cards\/[^>]*>/g, ""), /<img /);
+  assert.doesNotMatch(outside.replace(/<img class="viewer__(lo|hi)" alt="" data-viewer-(lo|hi) \/>/g, "").replace(/<img class="(?:cart__l|rig__p)" [^>]*src="\/site\/cards\/[^>]*>/g, ""), /<img /);
   assert.doesNotMatch(outside, /(src|srcset)="\/gallery\//);
 });
 

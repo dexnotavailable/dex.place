@@ -1,6 +1,7 @@
 // node --test: build-plugin HTML fixes and the shell's inline scripts.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { stylesheetsFirst } from "./plugin.ts";
 import { ARRIVAL, head, shell } from "../render/layout.ts";
 
@@ -47,4 +48,17 @@ test("the arrival script ships only on pages with deferred collage tiles", () =>
   assert.match(ARRIVAL, /top=t\?.*:y0,/);
   assert.match(ARRIVAL, /querySelectorAll\("img\[fetchpriority=high\]"\)/);
   assert.match(ARRIVAL, /if\(s\[2\]<most\*0\.97\)\{el\.setAttribute\("data-defer","lead"\);return\}i\.setAttribute\("fetchpriority","high"\)/);
+});
+
+test("the build refuses dev-server paths (/@fs/): a font or chunk only the dev server could serve never ships", async () => {
+  const { sitePages } = await import("./plugin.ts");
+  const plugin = sitePages();
+  const ctx = { error: (m) => { throw new Error(m); } };
+  const ok = { "assets/main.css": { type: "asset", fileName: "assets/main.css", source: "@font-face{src:url(/assets/f-1.woff2)}" }, "assets/a.js": { type: "chunk", fileName: "assets/a.js", code: "x()" } };
+  assert.doesNotThrow(() => plugin.writeBundle.call(ctx, {}, ok));
+  const bad = { ...ok, "assets/400.css": { type: "asset", fileName: "assets/400.css", source: "@font-face{src:url(/@fs/D:/x/node_modules/f.woff2)}" } };
+  assert.throws(() => plugin.writeBundle.call(ctx, {}, bad), /assets\/400\.css/);
+  // and the stylesheet carries no fonts inside it (vite.config.ts: fonts are files, fetched by unicode-range)
+  const cfg = readFileSync(new URL("../../../vite.config.ts", import.meta.url), "utf8");
+  assert.match(cfg, /assetsInlineLimit: \(file: string\) => \(\/\\.\(woff2\?\|ttf\|otf\)\$\/\.test\(file\) \? false : undefined\)/);
 });

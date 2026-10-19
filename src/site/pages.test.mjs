@@ -152,3 +152,25 @@ test("placeholder posts are hidden (Dex 10-19): files kept, no page, no link fro
   const oldest = content.posts.at(-1);
   assert.doesNotMatch(render(oldest.url), /rel="next"/);
 });
+
+test("/blog/: the newest post leads as a card, every other post follows in order under its year, each linked once", () => {
+  const html = render("/blog/");
+  const [newest, ...rest] = content.posts;
+  const card = html.indexOf('<article class="bfeat"');
+  assert.ok(card > 0 && html.indexOf(`href="${newest.url}"`) > card, "the newest post's link is in the lead card");
+  assert.equal(html.split(`href="${newest.url}"`).length - 1, 1, "the newest post is linked once (the card is its link)");
+  const at = rest.map((p) => html.indexOf(`href="${p.url}"`));
+  assert.ok(at.every((x, i) => x > html.indexOf('class="bfeat"') && (!i || x > at[i - 1])), "the rest in order, after the card");
+  assert.equal((html.match(/data-hanko/g) ?? []).length, 1, "one Hanko");
+});
+
+test("/docs/ starts a newcomer at installing dexClient; /donate/ says what a donation does not change", async () => {
+  const { START_DOC } = await import("./render/docs.ts");
+  const start = content.docs.find((d) => d.slug === START_DOC);
+  assert.ok(start, "the start doc exists");
+  assert.match(render("/docs/"), new RegExp(`<a class="dstart[^"]*" href="${start.url}">`));
+  assert.match(render("/donate/"), /Donating never unlocks anything/);
+  // the same words as the site's own doc (never a new promise)
+  const fs = await import("node:fs");
+  assert.match(fs.readFileSync(path.join(ROOT, "content/docs/about-dex-place.md"), "utf8"), /Donating never unlocks anything\. Every file and every part of the world is the same whether you donate or not\./);
+});

@@ -190,11 +190,31 @@ const cam = BEATS.camera;
 
 interface Key { T: number; zoom: number; anchor: number; horizon: number; alt: number; cx: number; follow: boolean }
 
+/**
+ * The paper's start scale: a key with zoom 0 is "the page's own": the zoom at which her ofuda (in the world, at her
+ * drawing's pixel size) is exactly as big on screen as the page's loader drew it, so the press hands it over without a
+ * jump (game.ts sets it each tick from the screen; 1 until then).
+ */
+let startZoom = 1;
+export function setStartZoom(z: number): void {
+  if (Number.isFinite(z) && z > 0) startZoom = z;
+}
+export function getStartZoom(): number {
+  return startZoom;
+}
+
 /** The keys a way plays: ways 1-3 the fall; way 4 its own opening keys, then the shared ones after them. */
 function keysFor(way: Way): readonly Key[] {
-  if (way !== "bottom") return cam.keys;
-  const b = cam.bottom.keys, last = b[b.length - 1]!.T;
-  return [...b, ...cam.keys.filter((k) => k.T > last)];
+  const ks: readonly Key[] = way !== "bottom" ? cam.keys : (() => {
+    const b = cam.bottom.keys, last = b[b.length - 1]!.T;
+    return [...b, ...cam.keys.filter((k) => k.T > last)];
+  })();
+  return ks.some((k) => k.zoom === 0) ? ks.map((k) => (k.zoom === 0 ? { ...k, zoom: startZoom } : k)) : ks;
+}
+
+/** The black slab's bottom edge on the frame (row px from the top) for a camera, or -1 when it is above the frame. */
+export function ceilingRow(feetY: number, s: number, offY: number): number {
+  return (feetY - BEATS.ceiling.altH * HPX) * s + offY;
 }
 
 /**
@@ -348,31 +368,38 @@ export function paperAirAt(T: number, way: Way = "continue"): { x: number; gust:
 
 // --- words and bars -----------------------------------------------------------------------------------
 
-/** One line of her voice: when its file starts and its speech (T), its subtitle (Japanese, English). */
+/** One line of her voice: when its file starts and its speech (T), its subtitles (Japanese, English; T). */
 export interface VoiceLine {
   n: number;
+  cue: string;
   at: number;
   len: number;
   from: number;
   to: number;
-  jp: string;
-  en: string;
+  parts: { from: number; to: number; jp: string; en: string }[];
 }
 
 /** Her lines on T (the chart's `voice`). */
 export const VOICE: readonly VoiceLine[] = BEATS.voice.lines.map((l) => ({
-  n: l.n, at: l.at, len: l.len, from: l.at + l.speech[0], to: l.at + l.speech[1], jp: l.jp, en: l.en,
+  n: l.n, cue: l.cue, at: l.at, len: l.len, from: l.at + l.speech[0], to: l.at + l.speech[1],
+  parts: l.parts.map((p) => ({ from: l.at + p.from, to: l.at + p.to, jp: p.jp, en: p.en })),
 }));
 
-/** A subtitle shows from just before its line speaks to a moment after (never over the next line). */
+/** A subtitle shows from just before its words to a moment after them (never over the next one). */
 export const SUB_LEAD = 0.1, SUB_TAIL = 0.45;
 
-/** The subtitle showing at T, if any: the line being spoken. */
-export function subtitleAt(T: number): VoiceLine | null {
-  for (let i = 0; i < VOICE.length; i++) {
-    const v = VOICE[i]!, next = VOICE[i + 1];
-    const end = Math.min(v.to + SUB_TAIL, next ? next.from - SUB_LEAD - 0.02 : Infinity);
-    if (T >= v.from - SUB_LEAD && T < end) return v;
+/** Every subtitle in order: the line it belongs to and its words. */
+const SUBS = VOICE.flatMap((v) => v.parts.map((p) => ({ n: v.n, ...p })));
+
+/**
+ * The subtitle showing at T, if any: the words being spoken (Japanese, English) and their line. Inside one line its
+ * words hold through its pauses until the next words take over (line 6's set-up hangs there through the slap).
+ */
+export function subtitleAt(T: number): { n: number; jp: string; en: string } | null {
+  for (let i = 0; i < SUBS.length; i++) {
+    const p = SUBS[i]!, next = SUBS[i + 1];
+    const end = next && next.n === p.n ? next.from - SUB_LEAD : Math.min(p.to + SUB_TAIL, next ? next.from - SUB_LEAD - 0.02 : Infinity);
+    if (T >= p.from - SUB_LEAD && T < end) return { n: p.n, jp: p.jp, en: p.en };
   }
   return null;
 }

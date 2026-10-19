@@ -293,3 +293,186 @@
   .proj { padding-top: var(--s-5); gap: var(--s-5); }
   .proj__art { aspect-ratio: 4 / 3; }
 }
+
+/* ================================================================== the section pages' own bodies (lane P, 10-19) */
+/* Each sits in its band beside a window (render/layout.ts): a reading column ~760 px wide on a laptop, the full
+   width on a phone. Their rows count that column's room, not the screen's. */
+
+/* ------------------------------------------------------------------ /blog/ */
+/* the newest post as a lead card; the rest as index rows under a kicker line per year */
+.page--blog { container: blogpage / inline-size; }
+.bfeat {
+  --pop-grow: 1.01;
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  margin: 0 0 var(--s-7);
+  padding: 0 var(--s-6) var(--s-6);
+  background: #fff;
+  border: var(--bw) solid var(--ink);
+  box-shadow: var(--off-l) var(--off-l) 0 var(--ink);
+  transition: transform var(--d-pop) var(--ease-spring), box-shadow var(--d-pop) var(--ease-spring);
+}
+.bfeat__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  justify-self: stretch;
+  margin: 0 calc(var(--s-6) * -1);
+  padding: 12px var(--s-6);
+  padding-right: 64px;
+  background: var(--cyan-t);
+  border-bottom: var(--bw) solid var(--ink);
+  font: 400 var(--fs-12) / 1.4 var(--f-label);
+  color: var(--fg-2);
+}
+.bfeat__new { padding: 3px 8px; background: var(--ink); color: #fff; letter-spacing: 0.04em; text-transform: uppercase; }
+.bfeat__title { margin: 8px 0 0; font: 400 2rem / 1.25 var(--f-px); text-wrap: balance; }
+.bfeat__title::after { content: ""; display: block; width: 40px; height: 6px; margin-top: 14px; background: var(--azure); }
+.bfeat__link { color: var(--ink); text-decoration: none; }
+/* the whole card is the link */
+.bfeat__link::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.bfeat__link:focus-visible { outline: none; box-shadow: none; }
+.bfeat:has(.bfeat__link:focus-visible) { outline: var(--bw) solid var(--azure); outline-offset: 4px; }
+.bfeat__tags { display: flex; gap: 8px; margin: 0; }
+.bfeat__sum { margin: 0; max-width: 62ch; color: var(--fg-2); }
+.bfeat__go { margin-top: 6px; pointer-events: none; }
+.bfeat .hanko { top: -14px; right: -12px; z-index: 2; }
+@media (hover: hover) {
+  .bfeat:hover { transform: translate(-2px, -2px) scale(var(--pop-grow)); box-shadow: 8px 8px 0 var(--azure); }
+  .bfeat:hover .bfeat__go { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+}
+.bfeat:active { transform: translate(2px, 2px) scale(0.99); box-shadow: 0 0 0 var(--ink); transition-duration: var(--d-press); }
+
+/* a year: the kicker line (//, the year, a rule, its count) over its rows */
+.page--blog .byear { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); padding-block: 0 var(--s-6); border-top: 0; }
+.page--blog .byear__label {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 400 var(--fs-12) / 1 var(--f-label);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-shadow: none;
+}
+.page--blog .byear__label::after { display: none; }
+.byear__slash { color: var(--scarlet); }
+.byear__label > span:nth-child(2) { color: var(--ink); }
+.byear__rule { flex: 1; height: 2px; background: var(--line); }
+/* a row: the date, the title and its summary (two lines), the facts under them, the arrow */
+.page--blog .bpost {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "date main go" "date meta go";
+  gap: 6px 18px;
+  align-items: start;
+  padding: 14px 16px 14px 14px;
+  border-color: var(--line-2);
+  box-shadow: var(--off-s) var(--off-s) 0 var(--ink);
+}
+.page--blog .bpost .dblock { grid-area: date; width: 56px; height: 56px; border-color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.page--blog .bpost .dblock__d { font-size: 1.5rem; }
+.page--blog .bpost__main { grid-area: main; }
+.page--blog .bpost__title { font: 400 1rem / 1.5 var(--f-px); color: var(--ink); }
+.page--blog .bpost__sum {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  max-width: none;
+  margin-top: 2px;
+  color: var(--muted);
+}
+.page--blog .bpost__meta { grid-area: meta; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px 12px; text-align: left; }
+.page--blog .bpost__go { grid-area: go; display: block; align-self: center; }
+@media (hover: hover) {
+  .page--blog .bpost:hover { border-color: var(--ink); background: #fff; box-shadow: 5px 5px 0 var(--azure); }
+  .page--blog .bpost:hover .bpost__go { color: var(--azure); }
+}
+@container blogpage (max-width: 560px) {
+  .bfeat { padding: 0 var(--s-4) var(--s-5); }
+  .bfeat__top { margin: 0 calc(var(--s-4) * -1); padding: 10px var(--s-4); padding-right: 56px; }
+  .page--blog .bpost { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "date main" "date meta"; gap: 4px 14px; padding: 12px; }
+  .page--blog .bpost__go { display: none; }
+}
+@media (max-width: 560px) and (min-resolution: 2dppx) {
+  .bfeat__title { font-size: 1.5rem; }
+}
+
+/* ------------------------------------------------------------------ the section pages' heads */
+/* in a band the window already stands above the head on a phone: no second gap above the kicker */
+@media (max-width: 1099px) {
+  .pband > .page > .wrap > .phead:first-child { padding-top: 0; }
+}
+.pband > .page .phead__lead { max-width: 52ch; font-size: 1rem; line-height: 1.7; margin: calc(var(--s-5) * -1) 0 var(--s-6); }
+
+/* ------------------------------------------------------------------ /docs/ */
+.page--docs { container: docspage / inline-size; }
+/* where a newcomer starts: one wide key above the catalogue */
+.dstart {
+  --tone-t: var(--mint-t);
+  --pop-off: var(--off);
+  --pop-hi: var(--mint-d);
+  --pop-grow: 1.01;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 0 0 var(--s-6);
+  padding: 18px 20px;
+  background: var(--tone-t);
+  border: var(--bw) solid var(--ink);
+  box-shadow: var(--pop-off) var(--pop-off) 0 var(--ink);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform var(--d-pop) var(--ease-spring), box-shadow var(--d-pop) var(--ease-spring);
+}
+.dstart--yellow { --tone-t: var(--yellow-t); --pop-hi: var(--gold); }
+.dstart--cyan { --tone-t: var(--cyan-t); --pop-hi: var(--azure); }
+.dstart--magenta { --tone-t: var(--magenta-t); --pop-hi: var(--scarlet); }
+.dstart__text { flex: 1; display: grid; gap: 4px; min-width: 0; }
+.dstart__label { font: 400 var(--fs-12) / 1.2 var(--f-label); letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.dstart__title { font: 400 2rem / 1.2 var(--f-px); }
+.dstart__sum { color: var(--fg-2); }
+.dstart__go { flex: none; transition: translate var(--d-pop) steps(2, end); }
+@media (hover: hover) {
+  .dstart:hover { transform: translate(-2px, -2px) scale(var(--pop-grow)); box-shadow: calc(var(--pop-off) + 2px) calc(var(--pop-off) + 2px) 0 var(--pop-hi); }
+  .dstart:hover .dstart__go { translate: 4px 0; }
+}
+.dstart:focus-visible { transform: translate(-2px, -2px); box-shadow: calc(var(--pop-off) + 2px) calc(var(--pop-off) + 2px) 0 var(--pop-hi), 0 0 0 2px #fff; }
+.dstart:active { transform: translate(2px, 2px) scale(0.99); box-shadow: 0 0 0 var(--ink); transition-duration: var(--d-press); }
+/* the catalogue in the band's column: the group cell narrower, the docs given the room; stacked when it is narrow */
+.page--docs .dcat { border-color: var(--ink); box-shadow: var(--off) var(--off) 0 var(--ink); }
+@container docspage (max-width: 860px) {
+  .dgroup { grid-template-columns: 196px minmax(0, 1fr); }
+  .dgroup__head { padding: 16px 14px; }
+}
+@container docspage (max-width: 560px) {
+  .dgroup { grid-template-columns: minmax(0, 1fr); }
+  .dgroup__head { grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; padding: 14px; border-right: 0; border-bottom: var(--bw-1) solid var(--line); }
+  .dgroup__head .tile { grid-row: auto; }
+  .dgroup__title { align-self: center; }
+  .dstart { align-items: flex-start; padding: 16px; gap: 14px; }
+  .dstart__title { font-size: 1rem; line-height: 1.5; }
+  .dstart__go { display: none; }
+}
+
+/* ------------------------------------------------------------------ /donate/ */
+/* beside the window the column is too narrow for two cards side by side: Ko-fi becomes one wide row (its name, its
+   cup, its key), the bank card gets the whole width for the QR beside its amounts */
+.page--donate { container: donatepage / inline-size; }
+@container donatepage (max-width: 980px) {
+  .donate { grid-template-columns: minmax(0, 1fr); }
+  .kofi { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 18px 24px; }
+  .kofi__stage { display: grid; flex: none; width: 132px; min-height: 0; height: 104px; }
+  .kofi__stage::after { top: calc(50% + 34px); }
+  .kofi__cup { width: 80px; height: 64px; margin-top: 16px; }
+  .kofi__cta { width: auto; }
+}
+@container donatepage (max-width: 560px) {
+  .kofi { grid-template-columns: minmax(0, 1fr) auto; }
+  .kofi__stage { grid-row: span 2; grid-column: 2; }
+  .kofi__cta { grid-column: 1; width: 100%; }
+}

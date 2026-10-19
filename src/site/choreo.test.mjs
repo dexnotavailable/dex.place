@@ -1,0 +1,100 @@
+// node --test: the home page's choreography (Dex 10-19, the redesign; lanes/motion/DESIGN-1019.md 3, 4, 6).
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const src = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
+
+test("choreo plan: strips whip in from their side and land square; panels follow; nothing goes back while you read", async () => {
+  const P = await import("./motion/choreo-plan.ts");
+  for (const s of [-1, 1]) {
+    const a = P.stripPose(0, s), z = P.stripPose(1, s);
+    assert.equal(Math.sign(a.xPercent), s, "the strip starts off its own side");
+    assert.ok(Math.abs(a.xPercent) >= 100, "wholly off");
+    assert.equal(Math.sign(a.skewX), -s, "sheared against its travel");
+    assert.deepEqual([z.xPercent, z.skewX, z.shade], [0, 0, 1], "lands square, its shade cast");
+    const pa = P.panelPose(0, s), pz = P.panelPose(1, s);
+    assert.equal(Math.sign(pa.xPercent), s);
+    assert.deepEqual([pz.xPercent, pz.shade, pz.shadeX], [0, 1, 0]);
+    // a stitch comes from the world side (the other side from its paper)
+    assert.equal(Math.sign(P.stitchFrom(s, 1000).x), -s);
+  }
+  // fast off the mark, long soft landing: half way through the strip's range it is nearly in
+  assert.ok(Math.abs(P.stripPose(0.5, -1).xPercent) < 5);
+  // latched: follows on the way in, never back
+  assert.equal(P.latch(0.4, 0.2), 0.4);
+  assert.equal(P.latch(0.4, 0.7), 0.7);
+  assert.equal(P.latch(0, 1.4), 1);
+  // the content waits for the paper; the spine draws once it is in
+  assert.ok(P.CONTENT_GATE >= 0.8 && P.CONTENT_GATE < 1);
+  assert.ok(P.SPINE_AT > P.CONTENT_GATE);
+  // the strip is fully in exactly as the change of place under it comes into view
+  assert.equal(P.STRIP_START, "top bottom");
+  assert.equal(P.stripEnd(116), "top bottom-=116");
+  assert.equal(P.panelEnd(false), "top 45%");
+  assert.equal(P.panelEnd(true), "top 62%");
+  // arm time: only bands wholly below the screen are set back
+  assert.equal(P.isBelow(900, 800), true);
+  assert.equal(P.isBelow(300, 800), false);
+  // content variants
+  assert.deepEqual(P.contentFrom("rise", -1), { y: 40, autoAlpha: 0 });
+  assert.deepEqual(P.contentFrom("side", 1), { x: 48, autoAlpha: 0 });
+  // the scroll's speed: -1..1, 0 at rest; the fore rides faster than the paper
+  assert.equal(P.speedOf(0), 0);
+  assert.equal(P.speedOf(400), 1);
+  assert.equal(P.speedOf(-20), -0.5);
+  assert.equal(P.speedOf(Number.NaN), 0);
+  assert.equal(P.foreY(0), 60);
+  assert.equal(P.foreY(1), -120);
+  assert.equal(P.foreY(1, true), -60);
+});
+
+test("choreo wiring: home only, never with reduced motion, lazy (load + mark + idle, a scroll intent, or the website already in view); one event name with lane F; Lenis waits for G3", () => {
+  const main = src("./main.ts");
+  assert.match(main, /if \(reduced\.matches \|\| root\.dataset\.embed \|\| !document\.querySelector\("\.band__strip"\)\) return;/);
+  assert.match(main, /const intents = \["wheel", "touchstart", "keydown"\] as const;/);
+  assert.match(main, /void loaded\.then\(afterMark\)\.then\(idle\)\.then\(start\);/);
+  assert.match(main, /import\("\.\/motion\/choreo\.ts"\)/);
+  assert.doesNotMatch(main, /from "gsap|from "lenis/, "the libraries never land in the main bundle");
+  const choreo = src("./motion/choreo.ts");
+  assert.equal(choreo.match(/WAY_IN_EVENT = "([^"]+)"/)[1], src("./motion/enter.ts").match(/ENTER_EVENT = "([^"]+)"/)[1]);
+  assert.doesNotMatch(choreo, /from "\.\/enter\.ts"/, "the opening's audio never rides in the choreo chunk");
+  assert.match(choreo, /mm\.add\("\(prefers-reduced-motion: no-preference\)"/);
+  assert.match(choreo, /const lenis = fine\.matches && \/\[\?&\]smooth=lenis\/\.test\(location\.search\) \? smoothWheel\(root\) : null;/, "Lenis waits for lane F's OK (G3)");
+  assert.match(choreo, /prevent: \(node\) => node\.matches\("dialog, \[popover\], iframe, \.world, \[data-lenis-prevent\]"\)/);
+  // the cards: K's deck through its contract only (G never reaches inside the li)
+  assert.match(choreo, /m\.initCards\(list, \{ reduced: false, fine: fine\.matches, velocity: \(\) => speed\.n \}\)/);
+  for (const call of ["d.settle()", "d.prime()", "d.entrance({ side: \"l\" }).play()", "d.reset()", "d.live(st.isActive)"]) assert.ok(choreo.includes(call), call);
+  assert.doesNotMatch(choreo, /\.pcard__|\.cart\b/, "nothing inside a card");
+  // nothing GSAP set is left on a thing once it has landed; no layout read in the ticker
+  assert.match(choreo, /clearProps: CLEAR/);
+  const tick = choreo.slice(choreo.indexOf("const tick = ()"), choreo.indexOf("gsap.ticker.add(tick)"));
+  assert.doesNotMatch(tick, /getBoundingClientRect|offsetHeight|offsetTop|clientWidth/);
+});
+
+test("scroller: plain window.scrollTo until a smooth wheel registers, then every jump goes through it", async () => {
+  const calls = [];
+  globalThis.window = { scrollY: 100, scrollTo: (o) => calls.push(["native", o]) };
+  const { scroller, useSmooth } = await import("./motion/scroller.ts");
+  scroller.to(0, { immediate: true });
+  scroller.to(500);
+  assert.deepEqual(calls, [["native", { top: 0, behavior: "instant" }], ["native", { top: 500, behavior: "smooth" }]]);
+  useSmooth({ scrollTo: (t, o) => calls.push(["smooth", t, o.force]), stop: () => calls.push(["stop"]), start: () => calls.push(["start"]) });
+  scroller.to(0);
+  scroller.stop();
+  scroller.start();
+  assert.deepEqual(calls.slice(2), [["smooth", 0, true], ["stop"], ["start"]]);
+  useSmooth(null);
+  delete globalThis.window;
+});
+
+test("choreo CSS: breathing adds to the transform (never replaces it, never touches the shades' opacity), rests off screen, stops with reduced motion; nothing hidden by CSS", () => {
+  const css = src("./styles/choreo.css");
+  const frames = [...css.matchAll(/@keyframes [\w-]+ \{([^}]*\}[^}]*)\}/g)].map((m) => m[1]).join(" ");
+  assert.doesNotMatch(frames, /transform:|opacity:/, "translate / background only");
+  assert.match(css, /@media \(prefers-reduced-motion: no-preference\) \{\n  \.band__shade/);
+  assert.match(css, /\.is-off \.band__shade/);
+  assert.doesNotMatch(css, /(opacity: 0|visibility: hidden|display: none)/, "the CSS never hides anything");
+  assert.match(src("./styles/site.css"), /@import "\.\/choreo\.css";/);
+  assert.match(src("./render/layout.ts"), /<i class="hdr__progress" aria-hidden="true"><\/i>/);
+});

@@ -33,28 +33,32 @@ test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift
   near(BEATS.her.drop1, BEATS.bars[14], 1e-9, "drop 1");
   near(BEATS.camera.whip.from, BEATS.bars[15], 0.001, "the whip on the crash");
   near(BEATS.camera.whip.to, BEATS.title.at, 0.001, "the whip lands on 0:32");
-  // her voice (Dex's takes, 10-19): lines 1-5 speak in the calm and are done before the slap, one at a time; line 6
-  // (the joke) after the slap, from under the jammed hat; the hat comes up on its push mark
-  const v = VOICE;
+  // her voice (Dex's takes, 10-19; the shorter wording): lines 1-5 speak in the calm, one at a time with a breath
+  // between; line 6 (the joke) is set up before the slap and the slap lands in its pause; the hat comes up on its えへへ
+  const v = VOICE, slap = BEATS.her.clip.slap;
   assert.equal(v.length, 6);
   assert.ok(v[0].from >= 0.2, "line 1 after the press's gust");
-  for (let i = 0; i < 5; i++) {
-    assert.ok(v[i].to <= BEATS.her.clip.slap - 0.15, `line ${i + 1} done before the slap`);
-    if (i) assert.ok(v[i].from >= v[i - 1].to + 0.1, `line ${i + 1} after line ${i}, a breath between`);
-  }
-  assert.ok(v[5].from > BEATS.her.clip.slap + 0.2 && v[5].from < BEATS.her.clip.slap + 0.6, "line 6 right after the slap lands");
+  for (let i = 1; i < 6; i++) assert.ok(v[i].from >= v[i - 1].to + 0.3, `line ${i + 1} after line ${i}, a breath between`);
+  assert.ok(v[4].to < slap - 2, "lines 1-5 well before the slap");
+  const six = v[5], setup = six.parts[0], punch = six.parts[1];
+  assert.ok(setup.to < slap && punch.from > slap + 0.5, "the slap lands in line 6's pause, the punch after it");
+  assert.ok(setup.to <= slap - 0.2, "a beat between the set-up and the slap");
   const l6 = BEATS.voice.lines[5];
-  near(BEATS.her.clip.push, l6.at + l6.push, 1e-6, "the push-up on line 6's mark");
-  for (const l of BEATS.voice.lines) assert.ok(l.speech[0] >= 0 && l.speech[1] <= l.len && l.jp && l.en, `line ${l.n}`);
-  assert.ok(!v.some((x) => /Emperor|letter|court/i.test(x.en)), "the old letter is gone");
-  // the subtitle: the line being spoken (Japanese + English), nothing between lines' words for long, none at the press
-  assert.equal(subtitleAt(0), null);
-  for (const x of v) {
-    assert.equal(subtitleAt((x.from + x.to) / 2)?.n, x.n, `line ${x.n}'s subtitle while it speaks`);
-    assert.equal(subtitleAt(x.from)?.n, x.n);
+  near(BEATS.her.clip.push, l6.at + l6.push, 1e-6, "the push-up on the えへへ");
+  assert.ok(BEATS.her.clip.push > punch.from, "the hat still jammed through the punch");
+  // every line is the game's own cue, booked on the music's clock at its start; the files play whole
+  for (const l of BEATS.voice.lines) {
+    assert.ok(BEATS.sfx.some((c) => c.id === l.cue && Math.abs(c.T - l.at) < 1e-9), `line ${l.n} booked (${l.cue})`);
+    assert.ok(l.speech[0] >= 0 && l.speech[1] <= l.len && l.parts.every((p) => p.jp && p.en && p.from >= 0 && p.to <= l.len), `line ${l.n}`);
   }
-  assert.equal(subtitleAt(v[5].to + 1), null);
-  assert.equal(captionAt(3), v[0].en);
+  assert.ok(!v.some((x) => x.parts.some((p) => /Emperor|letter|court/i.test(p.en))), "the old letter is gone");
+  // the subtitles: the words being spoken (Japanese + English), none at the press, the punch hidden until it is said
+  assert.equal(subtitleAt(0), null);
+  for (const x of v) for (const p of x.parts) assert.deepEqual(subtitleAt((p.from + p.to) / 2), { n: x.n, jp: p.jp, en: p.en });
+  assert.equal(subtitleAt(slap)?.en, setup.en, "the set-up hangs on screen through the slap");
+  assert.equal(subtitleAt(punch.from)?.en, punch.en, "then the punch replaces it");
+  assert.equal(subtitleAt(six.to + 1), null);
+  assert.equal(captionAt(1), v[0].parts[0].en);
 });
 
 test("her path: further back (left), the solved walk, the run at the game's own speed, she stops on the terrace", () => {
@@ -136,7 +140,11 @@ test("the camera never jumps, for every way in and every window: a tick apart it
           const dz = Math.abs(Math.log(s.zoom / prev.zoom));
           const dy = Math.abs(s.anchor - prev.anchor) * h, dx = Math.abs(s.cx - prev.cx) * s.zoom;
           assert.ok(dz < 0.06, `${way} ${w}x${h} T ${T.toFixed(3)}: zoom jumped ${dz.toFixed(3)}`);
-          assert.ok(dy < h * 0.035 && dx < w * 0.035, `${way} ${w}x${h} T ${T.toFixed(3)}: the frame moved ${dx.toFixed(1)}, ${dy.toFixed(1)} px in one tick`);
+          // (rev 5: the plunge out of the black slab and the pull-out to the vast frame, 0.3-1.7 s, are fast on purpose:
+          // smooth, never a cut)
+          const plunge = way !== "bottom" && T > 0.3 && T < 2;
+          const lim = plunge ? 0.3 : 0.035;
+          assert.ok(dy < h * lim && dx < w * lim, `${way} ${w}x${h} T ${T.toFixed(3)}: the frame moved ${dx.toFixed(1)}, ${dy.toFixed(1)} px in one tick`);
         }
         prev = s;
       }
@@ -175,7 +183,8 @@ test("the camera, reduced motion: held frames, cut on their beats", () => {
     prev = k;
   }
   assert.ok(holds.length <= BEATS.camera.reduced.length, `held frames only (${holds.length} changes at ${holds.map((t) => t.toFixed(1)).join(", ")})`);
-  assert.ok(r(1).horizon > 1, "the sky");
+  // (rev 5) reduced motion opens on the vast frame: the whole world far below, still
+  near(r(1).zoom, 0.17, 1e-3, "the vast frame");
   near(r(10).zoom, 0.5, 1e-3, "the postcard");
   near(r(18).zoom, 2, 1e-3, "the close band");
   assert.equal(r(33).zoom, 0.125);
@@ -186,7 +195,8 @@ test("the paper: it falls back in from the top, keeps clear of the bars and the 
   for (const way of ["continue", "bottom"]) {
     const t0 = way === "bottom" ? startT("bottom") : BEATS.ofuda.enters;
     assert.equal(paperScreenAt(t0 - 0.01, way), null, `${way}: not before it enters`);
-    if (way === "continue") assert.ok(paperScreenAt(t0, way)[1] < 0, "in from above the top");
+    // rev 5: it hangs where the page's loader left it (under "dex", 0.6 down the screen) and drops from there
+    if (way === "continue") assert.deepEqual(paperScreenAt(t0, way), [0.5, 0.6], "where the loader left it");
     for (let T = t0 + 1.7; T < HANDOFF_T; T += 1 / 30) {
       const [fx, fy] = paperScreenAt(T, way);
       if (paperBlendAt(T, way) > 0) continue;
@@ -196,7 +206,7 @@ test("the paper: it falls back in from the top, keeps clear of the bars and the 
     near(paperBlendAt(HANDOFF_T, way), 1, 1e-6, `${way}: on her hand-off point when the drawing takes it`);
   }
   // the east wind: it drifts right to left over the fall
-  assert.ok(paperScreenAt(14, "continue")[0] < paperScreenAt(1.2, "continue")[0] + 0.02);
+  assert.ok(paperScreenAt(14, "continue")[0] < paperScreenAt(1.2, "continue")[0] + 0.07);
 });
 
 test("the fall's clouds: each where the camera sees it (on Dex's 1920 x 1080 frame), and none in any play frame", async () => {
@@ -432,4 +442,50 @@ test("the plate store keeps the opening's tiles until the camera is past them (m
   assert.ok(store.layerOf(A) >= 0, "A (needed from T 10) stays");
   store.clearKeep();
   assert.equal(store.keptLayers(), 0);
+});
+
+test("rev 5, the ofuda's two jobs: the hat paper's own colours with no line art or lettering, steered onto the clip's paper at the hand-off", async () => {
+  const { STRIP, WorldPaper } = await import("./opening/paper.ts");
+  const { COLORS, OFUDA_TEXTURE, EDGE_INDEX } = await import("../site/motion/pixel-loader.ts");
+  // (a) its colours: the hat ofuda's own (the loader's exact crop) plus the clip paper's deep gold and cream, nothing else;
+  // no dark edge colour anywhere (no line art), no lettering (no ink or red)
+  const hat = new Set([...OFUDA_TEXTURE.front].filter(Boolean).map((c) => COLORS[c].join()));
+  const extra = new Set(["157,108,54", "243,198,145"]);
+  for (const c of STRIP.front) if (c) assert.ok(hat.has(COLORS[c].join()) || extra.has(COLORS[c].join()), `strip colour ${COLORS[c]}`);
+  assert.ok(![...STRIP.front, ...OFUDA_TEXTURE.front].includes(EDGE_INDEX), "no line art");
+  assert.equal(STRIP.w, 5);
+  assert.equal(STRIP.h, 20);
+  // (b) the hand-off: the band is the clip paper measured in f001 (12 nodes about its centre), and in the fall's last tick
+  // the world's paper lies exactly on it, flat to the eye
+  const band = BEATS.her.clip.band;
+  assert.equal(band.length, 12);
+  const mid = band.reduce((a, n) => [a[0] + n[0] / 12, a[1] + n[1] / 12], [0, 0]);
+  near(mid[0], BEATS.her.clip.handoff[0], 0.6, "the band about the hand-off point (x)");
+  near(mid[1], BEATS.her.clip.handoff[1], 0.6, "the band about the hand-off point (y)");
+  const wp = new WorldPaper(0.66);
+  wp.startFall();
+  for (let i = 0; i < 200; i++) wp.fall(0, 0, { x: -18, gust: 0.5 });
+  wp.toWhole();
+  const nodes = band.map((n) => [100 + n[0] * 0.66, 200 + n[1] * 0.66]);
+  const pose = wp.fall(100 + BEATS.her.clip.handoff[0] * 0.66, 200 + BEATS.her.clip.handoff[1] * 0.66, { x: -18, gust: 0.5 }, 1 / 60, { nodes, u: 1 });
+  pose.pts.forEach((q, i) => { near(q[0], nodes[i][0], 1e-9); near(q[1], nodes[i][1], 1e-9); near(q[2], 0, 1e-9); });
+  assert.equal(pose.tex, STRIP, "the whole paper by then");
+  // the clip paper's grain over the last 0.3 s: the same colours, a few flecks; texel by texel
+  const { STRIP_CLIP } = await import("./opening/paper.ts");
+  for (const c of STRIP_CLIP.front) if (c) assert.ok(hat.has(COLORS[c].join()) || extra.has(COLORS[c].join()), `grain colour ${COLORS[c]}`);
+  const differ = [...STRIP.front].filter((c, i) => c !== STRIP_CLIP.front[i]).length;
+  assert.ok(differ > 5 && differ < 20, `subtle: ${differ} of 100 texels`);
+  const g = wp.fall(0, 0, { x: -18, gust: 0.5 }, 1 / 60, { nodes, u: 1, grain: 0.5 });
+  assert.equal(g.into?.to, STRIP_CLIP);
+  assert.ok(BEATS.ofuda.stripAt > 2.6 && BEATS.ofuda.stripAt < 4.6, "it changes look in the vast frame, a speck");
+});
+
+test("rev 5, the black: the slab above everything, the paper hanging where the loader left it, the camera out of it on bar 0", () => {
+  const C = BEATS.ceiling.altH;
+  assert.ok(C > 40, "the slab far above the world");
+  const k0 = BEATS.camera.keys[0];
+  assert.equal(k0.zoom, 0, "at the page's own scale");
+  assert.ok(k0.alt > C, "the frame starts inside the black");
+  const plunged = BEATS.camera.keys.find((k) => Math.abs(k.T - BEATS.bars[0]) < 0.01);
+  assert.ok(plunged && plunged.alt < C, "out of it on bar 0");
 });
