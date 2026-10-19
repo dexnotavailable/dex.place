@@ -1,0 +1,189 @@
+{
+ "id": "e_hit",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  391,
+  412
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2
+  },
+  {
+   "file": "f005.png",
+   "ticks": 2
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2
+  },
+  {
+   "file": "f007.png",
+   "ticks": 2
+  },
+  {
+   "file": "f008.png",
+   "ticks": 2
+  },
+  {
+   "file": "f009.png",
+   "ticks": 2
+  },
+  {
+   "file": "f010.png",
+   "ticks": 2
+  },
+  {
+   "file": "f011.png",
+   "ticks": 2
+  },
+  {
+   "file": "f012.png",
+   "ticks": 2
+  },
+  {
+   "file": "f013.png",
+   "ticks": 2
+  },
+  {
+   "file": "f014.png",
+   "ticks": 2
+  },
+  {
+   "file": "f015.png",
+   "ticks": 2
+  },
+  {
+   "file": "f016.png",
+   "ticks": 2
+  },
+  {
+   "file": "f017.png",
+   "ticks": 2
+  },
+  {
+   "file": "f018.png",
+   "ticks": 2
+  },
+  {
+   "file": "f019.png",
+   "ticks": 2
+  },
+  {
+   "file": "f020.png",
+   "ticks": 2
+  },
+  {
+   "file": "f021.png",
+   "ticks": 2
+  },
+  {
+   "file": "f022.png",
+   "ticks": 2
+  },
+  {
+   "file": "f023.png",
+   "ticks": 2
+  },
+  {
+   "file": "f024.png",
+   "ticks": 2
+  },
+  {
+   "file": "f025.png",
+   "ticks": 2
+  },
+  {
+   "file": "f026.png",
+   "ticks": 2
+  },
+  {
+   "file": "f027.png",
+   "ticks": 2
+  },
+  {
+   "file": "f028.png",
+   "ticks": 2
+  },
+  {
+   "file": "f029.png",
+   "ticks": 2
+  },
+  {
+   "file": "f030.png",
+   "ticks": 2
+  },
+  {
+   "file": "f031.png",
+   "ticks": 2
+  },
+  {
+   "file": "f032.png",
+   "ticks": 2
+  },
+  {
+   "file": "f033.png",
+   "ticks": 2
+  },
+  {
+   "file": "f034.png",
+   "ticks": 2
+  },
+  {
+   "file": "f035.png",
+   "ticks": 2
+  },
+  {
+   "file": "f036.png",
+   "ticks": 2
+  },
+  {
+   "file": "f037.png",
+   "ticks": 2
+  },
+  {
+   "file": "f038.png",
+   "ticks": 2
+  },
+  {
+   "file": "f039.png",
+   "ticks": 2
+  },
+  {
+   "file": "f040.png",
+   "ticks": 2
+  },
+  {
+   "file": "f041.png",
+   "ticks": 2
+  },
+  {
+   "file": "f042.png",
+   "ticks": 2
+  }
+ ],
+ "loop": false,
+ "with": [],
+ "notes": "E (round 2): a target on the shot's line (pivot = the hit point, at her palm height; the shot travels right): a red-flash exit blast, then the sim worker's explosion with shards blown out of the exit side, the world's fire, then her blue fire"
+}
