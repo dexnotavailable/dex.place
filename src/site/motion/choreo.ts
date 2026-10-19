@@ -20,7 +20,8 @@ import {
   CONTENT_GATE, PANEL_START, PHONE_TIME, SPINE_AT, STRIP_START, contentFrom, foreY, isBelow, latch, panelEnd, panelPose,
   speedOf, stitchFrom, stripEnd, stripPose, type Side, type Variant,
 } from "./choreo-plan.ts";
-import { useSmooth } from "./scroller.ts";
+import { scroller, useSmooth } from "./scroller.ts";
+import { SLIDEBACK_EVENT, SLIDEOFF_EVENT } from "./slideoff.ts";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -173,6 +174,21 @@ export function initChoreo(fine: MediaQueryList): void {
     void document.fonts?.ready.then(refresh);
     document.addEventListener(WAY_IN_EVENT, refresh);
 
+    // way 4 (lane F): the page holds still while the website is slid off; back at its top afterwards, every band is
+    // set up again as on a fresh load (motion/slideoff.ts moves the surfaces themselves)
+    const onSlideOff = (): void => scroller.stop();
+    const onSlideBack = (): void => {
+      scroller.start();
+      const vh = innerHeight;
+      for (const b of bands) {
+        if (isBelow(b.el.getBoundingClientRect().top, vh)) b.reset();
+        else b.settle();
+      }
+      ScrollTrigger.refresh();
+    };
+    document.addEventListener(SLIDEOFF_EVENT, onSlideOff);
+    document.addEventListener(SLIDEBACK_EVENT, onSlideBack);
+
     return () => {
       deckGone = true;
       (deck as import("./pcard.ts").CardDeck | null)?.destroy();
@@ -183,6 +199,8 @@ export function initChoreo(fine: MediaQueryList): void {
       document.removeEventListener("click", onClick, true);
       window.removeEventListener("hashchange", onHash);
       document.removeEventListener(WAY_IN_EVENT, refresh);
+      document.removeEventListener(SLIDEOFF_EVENT, onSlideOff);
+      document.removeEventListener(SLIDEBACK_EVENT, onSlideBack);
       for (const b of bands) b.settle();
       if (lenis) { lenis.destroy(); useSmooth(null); }
       root.removeAttribute("data-choreo");

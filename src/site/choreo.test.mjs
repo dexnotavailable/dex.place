@@ -98,3 +98,37 @@ test("choreo CSS: breathing adds to the transform (never replaces it, never touc
   assert.match(src("./styles/site.css"), /@import "\.\/choreo\.css";/);
   assert.match(src("./render/layout.ts"), /<i class="hdr__progress" aria-hidden="true"><\/i>/);
 });
+
+test("way 4's slide-off (lane F's ask): every surface leaves the screen away from the window, the window and the world untouched; back at once; the bands re-armed", async () => {
+  const { awayFrom, SURFACES, SLIDEOFF_EVENT, SLIDEBACK_EVENT } = await import("./motion/slideoff.ts");
+  assert.equal(SLIDEOFF_EVENT, "dex:slideoff");
+  assert.equal(SLIDEBACK_EVENT, "dex:slideback");
+  const vw = 1366, vh = 768;
+  const win = { left: 0, top: 300, width: 900, height: 468 };
+  const box = (left, top, width, height) => ({ left, top, width, height });
+  // the header above the window goes up, past the screen's top
+  const [hx, hy] = awayFrom(box(0, 0, 1366, 64), win, vw, vh);
+  assert.ok(hx === 0 && hy <= -64);
+  // the jetty's paper beside (right of) the window goes right, past the screen's edge
+  const [px, py] = awayFrom(box(900, 300, 466, 468), win, vw, vh);
+  assert.ok(px >= vw - 900 && py === 0);
+  // overlapping the window: the way its centre leans (right here)
+  const [ox] = awayFrom(box(820, 320, 546, 400), win, vw, vh);
+  assert.ok(ox >= vw - 820);
+  // below goes down; left goes left
+  assert.ok(awayFrom(box(0, 780, 400, 100), { left: 0, top: 0, width: 1366, height: 700 }, vw, vh)[1] >= vh - 780);
+  assert.ok(awayFrom(box(0, 300, 200, 100), { left: 400, top: 0, width: 966, height: 768 }, vw, vh)[0] <= -200);
+  // what slides: the website's surfaces only (never F's window or the world)
+  assert.doesNotMatch(SURFACES, /jetty__scene|\.world|data-jetty-scene/);
+  const src = readFileSync(new URL("./motion/slideoff.ts", import.meta.url), "utf8");
+  assert.match(src, /\.filter\(\(el\) => !el\.closest\("\[data-jetty-scene\], \.world"\) && !el\.querySelector\("\[data-jetty-scene\], \.world"\)\)/);
+  assert.match(src, /el\.animate\(\[\{ translate: "0 0" \}/, "translate: it adds to GSAP's transforms");
+  // wired on the home page (the jetty), in the main bundle (works without the choreography and with reduced motion)
+  assert.match(src_("./main.ts"), /\["slideoff", \(\) => \{ if \(document\.querySelector\("\[data-jetty-scene\]"\)\) initSlideoff\(reduced\); \}\]/);
+  // the choreography holds the page still meanwhile and re-arms its bands after
+  const choreo = src_("./motion/choreo.ts");
+  assert.match(choreo, /document\.addEventListener\(SLIDEOFF_EVENT, onSlideOff\);/);
+  assert.match(choreo, /document\.addEventListener\(SLIDEBACK_EVENT, onSlideBack\);/);
+  assert.match(choreo, /if \(isBelow\(b\.el\.getBoundingClientRect\(\)\.top, vh\)\) b\.reset\(\);/);
+});
+const src_ = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
