@@ -196,6 +196,8 @@ export interface PaperOptions {
   seed?: number;
   /** Its size, art px (default: the ofuda's, OFUDA_W x OFUDA_H). The world's fall uses the whole paper (opening/paper.ts). */
   size?: { w: number; h: number };
+  /** How stiff it is against bending and twisting (1: the loader's paper; the world's fall, seen up close, more). */
+  stiff?: number;
 }
 
 const SEG = 5; // facets down the paper
@@ -252,7 +254,7 @@ export class PaperOfuda {
     this.W = o.size?.w ?? OFUDA_W;
     this.H = o.size?.h ?? OFUDA_H;
     this.L = this.H / SEG;
-    const W = this.W, L = this.L;
+    const W = this.W, L = this.L, sb = o.stiff ?? 1;
     const id = (r: number, c: number): number => r * 2 + c;
     for (let r = 0; r <= SEG; r++) {
       this.links.push([id(r, 0), id(r, 1), W, 1]);
@@ -263,9 +265,9 @@ export class PaperOfuda {
       }
       if (r < SEG - 1) {
         // bending along its length (paper springs back a little) and against twisting
-        this.links.push([id(r, 0), id(r + 2, 0), 2 * L, 0.035], [id(r, 1), id(r + 2, 1), 2 * L, 0.035]);
+        this.links.push([id(r, 0), id(r + 2, 0), 2 * L, Math.min(1, 0.035 * sb)], [id(r, 1), id(r + 2, 1), 2 * L, Math.min(1, 0.035 * sb)]);
         const d2 = Math.hypot(W, 2 * L);
-        this.links.push([id(r, 0), id(r + 2, 1), d2, 0.02], [id(r, 1), id(r + 2, 0), d2, 0.02]);
+        this.links.push([id(r, 0), id(r + 2, 1), d2, Math.min(1, 0.02 * sb)], [id(r, 1), id(r + 2, 0), d2, Math.min(1, 0.02 * sb)]);
       }
     }
     this.reset();
@@ -390,6 +392,22 @@ export class PaperOfuda {
         }
       }
       if (this.pinned) this.holdTie();
+    }
+  }
+
+  /**
+   * Turns it a share `k` of the way back to face the viewer (its depth relief, twist and tilt out of the screen,
+   * undone a little; its velocity untouched, so it is a turn, not a push): falling free it rocks and turns, mostly
+   * showing its face.
+   */
+  faceViewer(k: number): void {
+    const p = this.p, q = this.q;
+    let zm = 0;
+    for (let i = 0; i < NODES; i++) zm += p[i * 3 + 2]! / NODES;
+    for (let i = 0; i < NODES; i++) {
+      const d = (zm - p[i * 3 + 2]!) * k;
+      p[i * 3 + 2] = p[i * 3 + 2]! + d;
+      q[i * 3 + 2] = q[i * 3 + 2]! + d;
     }
   }
 

@@ -51,16 +51,18 @@ export const BEATS = {
    { "T": 0, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 68.2, "cx": 97.4, "follow": false },
    { "T": 0.3, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 68.2, "cx": 97.4, "follow": false },
    { "T": 0.641, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 63.4, "cx": 97.2, "follow": false },
-   { "T": 1.15, "zoom": 0.85, "anchor": 0.6, "horizon": 1.2, "alt": 38, "cx": 96, "follow": false },
-   { "T": 1.9, "zoom": 0.3, "anchor": 0.82, "horizon": 0.86, "alt": 6, "cx": 94.5, "follow": false },
-   { "T": 2.636, "zoom": 0.17, "anchor": 0.86, "horizon": 0.8, "alt": 0, "cx": 92, "follow": false },
-   { "T": 4.631, "zoom": 0.2, "anchor": 0.86, "horizon": 0.8, "alt": 0, "cx": 91.5, "follow": false },
-   { "T": 7.6, "zoom": 0.74, "anchor": 0.5, "horizon": 1.3, "alt": 18, "cx": 93.4, "follow": false },
-   { "T": 8.622, "zoom": 0.84, "anchor": 0.5, "horizon": 1.18, "alt": 13.5, "cx": 92.9, "follow": false },
-   { "T": 10.616, "zoom": 0.62, "anchor": 0.62, "horizon": 0.86, "alt": 5, "cx": 89.9, "follow": false },
-   { "T": 12.609, "zoom": 0.5, "anchor": 0.8, "horizon": 0.64, "alt": 0, "cx": 88, "follow": false },
-   { "T": 14.6, "zoom": 0.52, "anchor": 0.8, "horizon": 0.63, "alt": 0, "cx": 87.6, "follow": false },
-   { "T": 16.589, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
+   { "T": 0.95, "zoom": 1, "anchor": 0.5, "horizon": 1.3, "alt": 57, "cx": 100, "follow": false },
+   { "T": 1.35, "zoom": 0.16, "anchor": 0.9, "horizon": 0.84, "alt": 0, "cx": 104, "follow": false },
+   { "T": 1.8, "zoom": 0.5, "anchor": 0.5, "horizon": 1.45, "alt": 58, "cx": 108, "follow": false },
+   { "T": 2.5, "zoom": 4, "anchor": 0.5, "horizon": 1.45, "alt": 52, "cx": 110, "follow": false },
+   { "T": 4.631, "zoom": 4, "anchor": 0.5, "horizon": 1.4, "alt": 44.5, "cx": 106.5, "follow": false },
+   { "T": 6.626, "zoom": 4, "anchor": 0.5, "horizon": 1.35, "alt": 37, "cx": 103, "follow": false },
+   { "T": 8.622, "zoom": 4, "anchor": 0.5, "horizon": 1.25, "alt": 29.5, "cx": 99.5, "follow": false },
+   { "T": 10.616, "zoom": 4, "anchor": 0.5, "horizon": 1.1, "alt": 22, "cx": 96, "follow": false },
+   { "T": 12.609, "zoom": 4, "anchor": 0.5, "horizon": 0.85, "alt": 14.5, "cx": 92.5, "follow": false },
+   { "T": 14.6, "zoom": 3.5, "anchor": 0.55, "horizon": 0.55, "alt": 7.2, "cx": 89.5, "follow": false },
+   { "T": 16.589, "zoom": 4, "anchor": 0.74, "horizon": 0.27, "alt": 0, "cx": 87.2, "follow": false },
+   { "T": 21.6, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
    { "T": 22.658, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
    { "T": 24.2, "zoom": 1.1, "anchor": 0.66, "horizon": 0.28, "alt": 0, "cx": 1.3, "follow": true },
    { "T": 25.6, "zoom": 0.82, "anchor": 0.68, "horizon": 0.3, "alt": 0, "cx": 1.8, "follow": true },
@@ -88,8 +90,8 @@ export const BEATS = {
   "releaseXH": 130.4,
   /** Reduced motion: held frames, cut (cross-faded) on these beats. `key`: the authored key it holds. */
   "reduced": [
-   { "from": 0, "hold": "sky", "T": 2.636 },
-   { "from": 8.622, "hold": "postcard", "T": 12.609 },
+   { "from": 0, "hold": "sky", "T": 1.35 },
+   { "from": 8.622, "hold": "postcard", "T": 12.609, "key": { "zoom": 0.5, "anchor": 0.8, "horizon": 0.64, "cx": 88 } },
    { "from": 16.589, "hold": "close", "T": 16.589 },
    { "from": 22.658, "hold": "follow", "T": 25.6 },
    { "from": 32.4176, "hold": "widest", "T": 32.4176 },
@@ -188,11 +190,23 @@ export const BEATS = {
   /** Rev 5: the paper is the world's from the press on (it hangs where the page's loader left it, in the black). */
   "enters": 0,
   /** Sun glints on the paper as it turns (a 4-point star, five drawings). */
-  "glints": [1.25, 3.95, 10.42, 15.7],
-  /** From here the falling paper is the whole paper (a speck in the vast frame: its look changes where none can tell). */
-  "stripAt": 3.2,
+  "glints": [1.35, 3.95, 10.42, 15.7],
+  /**
+   * From here the falling paper turns into the whole paper over `stripFor` s (its shape and its texels, one into the
+   * other), as it drops out of the black and comes at the lens.
+   */
+  "stripAt": 0.45,
+  "stripFor": 0.5,
+  /**
+   * Dex 10-20: "following the ofuda closely". Near the lens it is drawn `h` of the frame's height long, whatever the
+   * world's zoom: [T, how near (0..1)], eased between. It comes at the lens as it drops out of the black, rides the
+   * whole fall there, and leaves it for her plane before the steer (her drawing's own size at the hand-off).
+   */
+  "lens": { "h": 0.2, "keys": [[0.3, 0], [1.1, 1], [15.4, 1], [17.5, 0]] },
   /** The fall's last seconds: steered onto the clip's paper in the hand-off drawing (her.clip.band). */
   "steer": 0.7,
+  /** ... and over its last `turn` s before that it turns to lie the way the clip's paper lies (no fold at the steer). */
+  "turn": 1.6,
   "hush": 24.52,
   "inhale": 27,
   /**
@@ -203,14 +217,14 @@ export const BEATS = {
   "path": [
    { "T": 0, "fx": 0.5, "fy": 0.6 },
    { "T": 0.641, "fx": 0.5, "fy": 0.66 },
-   { "T": 1.6, "fx": 0.5, "fy": 0.5 },
-   { "T": 2.636, "fx": 0.51, "fy": 0.44 },
-   { "T": 4.631, "fx": 0.5, "fy": 0.4 },
-   { "T": 6.626, "fx": 0.47, "fy": 0.42 },
-   { "T": 8.622, "fx": 0.45, "fy": 0.4 },
-   { "T": 10.616, "fx": 0.5, "fy": 0.33 },
-   { "T": 12.609, "fx": 0.57, "fy": 0.34 },
-   { "T": 14.6, "fx": 0.55, "fy": 0.5 }
+   { "T": 1.35, "fx": 0.5, "fy": 0.36 },
+   { "T": 2.5, "fx": 0.5, "fy": 0.45 },
+   { "T": 4.631, "fx": 0.49, "fy": 0.44 },
+   { "T": 6.626, "fx": 0.51, "fy": 0.46 },
+   { "T": 8.622, "fx": 0.48, "fy": 0.44 },
+   { "T": 10.616, "fx": 0.5, "fy": 0.45 },
+   { "T": 12.609, "fx": 0.52, "fy": 0.44 },
+   { "T": 14.6, "fx": 0.55, "fy": 0.46 }
   ],
   "sway": { "amp": 0.022, "period": 2.6, "until": 15.4 },
   "gusts": [

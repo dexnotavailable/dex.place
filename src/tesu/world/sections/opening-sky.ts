@@ -59,23 +59,23 @@ const FADE: Partial<Record<PlaneId, number>> = { sky: 0, far: 0.06, mid: 0.03, b
  */
 export const FALL_CLOUDS: readonly FallCloud[] = [
   // high and far: barely rising (the depth the rest is measured against)
-  { id: "fall-strand-high", plane: "far", T: 7.0, fx: 0.3, fy: 0.24, p: { kind: "stratus", w: 560, h: 40, haze: 0.3 } },
-  { id: "fall-far-heap", plane: "far", T: 7.3, fx: 0.86, fy: 0.66, p: { kind: "cumulus", w: 330, h: 120, tower: 0.55, haze: 0.4 } },
+  { id: "fall-strand-high", plane: "far", T: 3.0, fx: 0.3, fy: 0.24, p: { kind: "stratus", w: 560, h: 40, haze: 0.3 } },
+  { id: "fall-far-heap", plane: "far", T: 4.2, fx: 0.86, fy: 0.66, p: { kind: "cumulus", w: 330, h: 120, tower: 0.55, haze: 0.4 } },
   // middling: drifting up past
-  { id: "fall-mid-tower", plane: "mid", T: 7.2, fx: 0.12, fy: 0.84, p: { kind: "tower", w: 210, h: 250, tower: 1, haze: 0.15 } },
-  { id: "fall-mid-heap", plane: "mid", T: 7.8, fx: 0.88, fy: 0.74, p: { kind: "cumulus", w: 400, h: 160, tower: 0.7, haze: 0.1 } },
-  { id: "fall-back-heap", plane: "back", T: 7.6, fx: 0.26, fy: 0.9, p: { kind: "cumulus", w: 360, h: 150, tower: 0.6 } },
+  { id: "fall-mid-tower", plane: "mid", T: 5.2, fx: 0.12, fy: 0.84, p: { kind: "tower", w: 210, h: 250, tower: 1, haze: 0.15 } },
+  { id: "fall-mid-heap", plane: "mid", T: 9.6, fx: 0.88, fy: 0.74, p: { kind: "cumulus", w: 400, h: 160, tower: 0.7, haze: 0.1 } },
+  { id: "fall-back-heap", plane: "back", T: 8.6, fx: 0.26, fy: 0.9, p: { kind: "cumulus", w: 360, h: 150, tower: 0.6 } },
   { id: "fall-back-low", plane: "back", T: 8.4, fx: 0.7, fy: 0.62, p: { kind: "cumulus", w: 300, h: 110, tower: 0.4 } },
   // the cloud deck's base, seen from under it as the camera breaks out over the lake
   { id: "fall-deck-a", plane: "mid", T: 10.2, fx: 0.3, fy: 0.24, p: { kind: "stratus", w: 760, h: 64, haze: 0.2 } },
   { id: "fall-deck-b", plane: "back", T: 9.8, fx: 0.78, fy: 0.2, p: { kind: "stratus", w: 640, h: 56 } },
   // at the paper's own depth: one behind it, one it passes behind (the front plane draws after her and the paper)
-  { id: "fall-play-heap", plane: "play", T: 7.4, fx: 0.8, fy: 0.68, p: { kind: "cumulus", w: 280, h: 130, tower: 0.55 } },
+  { id: "fall-play-heap", plane: "play", T: 6.2, fx: 0.8, fy: 0.68, p: { kind: "cumulus", w: 280, h: 130, tower: 0.55 } },
   { id: "fall-play-heap-b", plane: "play", T: 7.4, fx: 0.18, fy: 0.66, p: { kind: "cumulus", w: 320, h: 140, tower: 0.5 } },
   { id: "fall-front-bank", plane: "front", T: 7.5, fx: 0.52, fy: 0.64, p: { kind: "cumulus", w: 500, h: 180, tower: 0.45 } },
   // in front of the paper, early and late (the near plane inks its art darker: the clouds stay in the one light, so
   // the lens's own rush is the fog layers', opening/sky.ts)
-  { id: "fall-front-strand", plane: "front", T: 7.1, fx: 0.1, fy: 0.46, p: { kind: "stratus", w: 480, h: 50 } },
+  { id: "fall-front-strand", plane: "front", T: 3.8, fx: 0.1, fy: 0.46, p: { kind: "stratus", w: 480, h: 50 } },
   { id: "fall-front-mass", plane: "front", T: 7.6, fx: 0.86, fy: 0.9, p: { kind: "cumulus", w: 520, h: 200, tower: 0.4 } },
 ];
 

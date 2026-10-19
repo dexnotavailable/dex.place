@@ -39,7 +39,7 @@ import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
 import { SilentLink, type OpeningLink, type PaperFrom } from "./opening/conductor.ts";
 import { WorldPaper, type PaperPose } from "./opening/paper.ts";
-import { BEATS, CLIP_END, HANDOFF_T, ceilingRow, clamp01, keysAt, paperAirAt, paperBlendAt, paperScreenAt, setStartZoom, smooth, startT } from "./opening/timeline.ts";
+import { BEATS, CLIP_END, HANDOFF_T, ceilingRow, clamp01, keysAt, paperAirAt, paperBlendAt, paperLensAt, paperScreenAt, setStartZoom, smooth, startT } from "./opening/timeline.ts";
 import { Veils, fallVeils } from "./opening/sky.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
@@ -843,8 +843,11 @@ export class TesuGame {
       }
       const fade = 1 - smooth(T / 1.2);
       const wxo = wx + (this.paperOff[0] * fade) / xf.s, wyo = wy + (this.paperOff[1] * fade) / xf.s;
-      // a speck in the vast frame: from there it is the whole paper (the clip's own size and colours)
-      if (T >= BEATS.ofuda.stripAt) this.paper.toWhole();
+      // dropping out of the black it turns into the whole paper (the clip's own size and colours)
+      if (T >= BEATS.ofuda.stripAt) {
+        this.paper.toWhole();
+        this.paper.turn((T - BEATS.ofuda.stripAt) / BEATS.ofuda.stripFor);
+      }
       // the last of it: steered onto the clip's paper in the hand-off drawing, so the drawing takes it over in place
       const band = BEATS.her.clip.band, steerFrom = HANDOFF_T - BEATS.ofuda.steer;
       // (on it a tick before the drawing takes over: that tick shows exactly the drawing's paper, drawn by us)
@@ -852,7 +855,9 @@ export class TesuGame {
       const nodes = band.map((n) => [b.x + n[0] * ART_PX * f, b.y + n[1] * ART_PX] as [number, number]);
       // and over its last 0.3 s it takes on the clip paper's grain (texel by texel), so the drawing's busier paper follows
       const grain = clamp01((T - (HANDOFF_T - 0.3)) / (0.3 - 1 / 60));
-      this.paperPose = this.paper.fall(wxo + (hx - wxo) * k, wyo + (hy - wyo) * k, paperAirAt(T, o.way), 1 / 60, { nodes, u, grain });
+      // and before the steer it turns to lie the clip paper's way
+      const turn = smooth((T - (HANDOFF_T - BEATS.ofuda.turn)) / (BEATS.ofuda.turn - BEATS.ofuda.steer / 2));
+      this.paperPose = this.paper.fall(wxo + (hx - wxo) * k, wyo + (hy - wyo) * k, paperAirAt(T, o.way), 1 / 60, { nodes, u, grain, turn });
       // the page draws its own paper over this one until the world has drawn it once (column.ts)
       if (!this.paperShown) {
         this.paperShown = true;
@@ -905,23 +910,45 @@ export class TesuGame {
     r.begin(0, 0, DAY, []);
     r.rect(0, 0, cam.W, Math.min(cam.H, row), [0, 0, 0], 1, 1, true);
     r.flush();
-    this.drawOfuda(cam, false);
+    this.drawOfuda(cam, false, true);
   }
 
-  /** The ofuda as pixels at the camera's scale (in front of her: it hangs at the front of her hat, or falls). */
-  private drawOfuda(cam: CamState, behind: boolean): void {
+  /** How near the lens the falling paper is now (opening/timeline.ts paperLensAt; reduced motion: never). */
+  private paperLens(): number {
+    const o = this.opening;
+    return o.active && o.T < HANDOFF_T && !this.feel.reducedMotion ? paperLensAt(o.T, o.way) : 0;
+  }
+
+  /** (the lens) Near the camera the falling paper is in front of every plane (the fog in front of the camera passes over it). */
+  private drawLensOfuda(cam: CamState): void {
+    if (this.paperLens() <= 0) return;
+    this.r.begin(0, 0, DAY, []);
+    this.drawOfuda(cam, false, true);
+    this.r.flush();
+  }
+
+  /**
+   * The ofuda as pixels at the camera's scale (in front of her: it hangs at the front of her hat, or falls). `top`:
+   * the call over every plane (near the lens, and over the black slab); the play plane's own call skips it then.
+   */
+  private drawOfuda(cam: CamState, behind: boolean, top = false): void {
     const p = this.paperPose;
     if (!p || behind || this.fade >= 1) return;
+    if (!top && this.paperLens() > 0) return;
     const r = this.r, xf = planeXf(cam, 1), o = this.opening;
     let glint: number | null = null;
+    let lens: { h: number; w: number } | undefined;
     if (o.active && o.T < HANDOFF_T) {
       for (const g of BEATS.ofuda.glints) {
         const u = (o.T - g) / (5 / 12);
         if (u >= 0 && u < 1) glint = u;
       }
+      // the camera rides with it: near the lens through the fall (reduced motion: its own size, no zoom on it)
+      const w = this.paperLens();
+      if (w > 0) lens = { h: BEATS.ofuda.lens.h * cam.H, w };
     }
     r.setTransform();
-    WorldPaper.draw(p, (x, y) => [x * xf.s + xf.offX, y * xf.s + xf.offY], glint, this.feel.reducedMotion, (x, y, c) => r.rect(x, y, 1, 1, c, 1, 1, true));
+    WorldPaper.draw(p, (x, y) => [x * xf.s + xf.offX, y * xf.s + xf.offY], glint, this.feel.reducedMotion, (x, y, c, s) => r.rect(x, y, s, s, c, 1, 1, true), lens);
   }
 
   /** After the hand-back, no input for a while: a small paper tag "->" beside her (gone on the first input). */
@@ -1795,6 +1822,7 @@ export class TesuGame {
       }
     }
     // the opening's fall: fog layers in front of the camera, sweeping up past it as it comes down (opening/sky.ts)
+    this.drawLensOfuda(cam);
     if (this.opening.active && this.opening.T < BEATS.her.walkFrom) this.veils.draw(W, Hf, fallVeils(this.opening.T, W, Hf, this.opening.way, this.feel.reducedMotion));
     this.drawCeiling(cam);
     this.drawPrompt(cam);
