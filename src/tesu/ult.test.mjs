@@ -333,6 +333,14 @@ test("ult form: with no foe in reach the warps carry her forward; walls stop a w
   inp.press("m1");
   step(z, inp, w);
   assert.ok(z.body.x <= 2 * H - 6, "stopped at the wall");
+  // never off a ledge: with the ground ending 2 H out, a warp from 1.5 H shortens to stay on it
+  const z3 = new Zhusha(host(), [1.5 * H, 0]);
+  const i3 = new FakeInput(), w3 = { ...flat(), groundBelow: (x) => (x < 2 * H ? { y: 0 } : null) };
+  z3.form = 5000;
+  step(z3, i3, w3, 5);
+  i3.press("m1");
+  step(z3, i3, w3);
+  assert.ok(z3.body.x > 1.5 * H && z3.body.x < 2 * H, `kept on the ground: ${z3.body.x / H} H`);
   // the normal form never warps
   const n = new Zhusha(host(), [0, 0]);
   const i2 = new FakeInput();

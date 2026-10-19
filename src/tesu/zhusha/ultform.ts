@@ -48,7 +48,7 @@ export class UltForm {
   target: { x: number; y: number; foe: boolean } | null = null;
   /** The foe she could warp to (game.ts: the court's champion while a bout runs), null for none. */
   foe: () => { x: number; y: number } | null = () => null;
-  private pending: { x: number; y: number; face: 1 | -1; air: boolean } | null = null;
+  private pending: { x: number; y: number; face: 1 | -1; air: boolean; foe: boolean } | null = null;
   private cues: { at: number; key: string; v: number }[] = [];
 
   /** The drawing uf_idle holds (Dex 10-19: still-ish on one frame; r_reveal hands off to its first). */
@@ -81,7 +81,7 @@ export class UltForm {
       face = f;
       this.target = { x: x + f * (F.ahead - 1) * H, y: b.y, foe: false };
     }
-    this.pending = { x, y, face, air: S.up > 0 };
+    this.pending = { x, y, face, air: S.up > 0, foe: !!near };
     // the blades: summoned before each hit, striking as its ghost lands, through the target's middle
     const T = this.target, n = S.blades, cx = T.x, cy = T.y - 0.55 * c.bodyH;
     const side = face;
@@ -105,6 +105,12 @@ export class UltForm {
     if (p) {
       this.pending = null;
       const b = c.z.body;
+      // with no foe she never blinks off a ledge: the warp shortens to where there is ground near her height, or stays
+      if (!p.foe && world.groundBelow) {
+        const ok = (x: number): boolean => { const g = world.groundBelow!(x, b.y - 2 * H); return !!g && g.y < b.y + 1.5 * H; };
+        const k = [1, 0.66, 0.33].find((f) => ok(b.x + (p.x - b.x) * f));
+        p.x = k === undefined ? b.x : b.x + (p.x - b.x) * k;
+      }
       this.flashes.push({ x: b.x, y: b.y, at: this.clock, out: true });
       c.ghost(14);
       world.move(b, p.x - b.x, 0);
