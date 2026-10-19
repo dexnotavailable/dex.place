@@ -107,7 +107,7 @@ export function dressHall(b: WorldBuilder): void {
   // --- the middle bay: its wall with the moon gate, between the two posts that frame it
   b.piece("play", "hall.gate", gateX, FY, { l: bayL - gateX, r: bayR - gateX, top: FY - soffit, rad: Math.round(1.6 * H), cy: Math.round(1.62 * H), at: at(gateX, FY) }, { z: 1 });
   // (hall loop round 1) the bay's wall sinks into the cool dusk round the lit opening (hall-light.ts)
-  b.piece("play", "hall.bayshade", gateX, FY, { l: bayL - gateX, r: bayR - gateX, top: FY - soffit, rad: Math.round(1.6 * H), cy: Math.round(1.62 * H) }, { z: 1.5, reflect: false });
+  b.piece("play", "hall.bayshade", gateX, FY, { l: bayL - gateX, r: bayR - gateX, top: FY - soffit, rad: Math.round(1.6 * H), cy: Math.round(1.62 * H), at: at(gateX, FY) }, { z: 1.5, reflect: false });
 
   // --- the Long Gallery: its beam on posts, the balustrade (no pillar through it any more: the map
   // stands on its own stand now)

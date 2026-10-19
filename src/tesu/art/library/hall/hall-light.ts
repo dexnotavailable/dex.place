@@ -74,6 +74,7 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
     const warm = [null, lut("warm", 1), lut("warm", 2), lut("warm", 3)] as const;
     const night = [null, lut("night", 1), lut("night", 2), lut("night", 3)] as const;
     const sun = [null, lut("sun", 1), lut("sun", 2), lut("sun", 3)] as const;
+    const air = lut("air", 1);
     const FY = p.floor;
     // the shaft's slant: x of its axis at a world y
     const shaftAx = (wy: number): number => SHAFT.x1 + (SHAFT.x0 - SHAFT.x1) * clamp((FY - wy) / (FY - SHAFT.y0), 0, 1);
@@ -121,6 +122,9 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
       let shade = 0;
       if (wy < FY - 10.6 * H) shade = 1;
       if (wy < FY - 13.2 * H) shade = 2;
+      // the roof over the tie beam: the coffers and rafters fall away into the dark
+      // (the skylight's well stays as bright as the day in it)
+      if (wy < FY - 16.1 * H - (p.play ? 0 : 0.5 * H)) shade = p.play && Math.abs(wx - SHAFT.x0) < 1.35 * H ? 0 : 3;
       if (wx < p.ends[0] - 0.2 * H || wx > p.ends[1] + 0.2 * H) shade = Math.max(shade, wy < FY - 2.2 * H ? 2 : 1);
       let v = 0;
       for (const q of wallPools) {
@@ -135,7 +139,7 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
       if (p.play && wy > SHAFT.y0 && wy < FY) {
         const half = SHAFT.w / 2;
         const d = Math.abs(wx - shaftAx(wy)) / half;
-        if (d < 1 + jit * 0.5) return sun[1]!;
+        if (d < 1 + jit * 0.5) return air;
       }
       lift -= shade;
       if (lift > 0) return warm[Math.min(3, lift)]!;
@@ -162,6 +166,8 @@ export interface BayShadeP {
   top: number;
   rad: number;
   cy: number;
+  /** Where the gate stands (world px), so the service lamps in front of the wall can pool on it. */
+  at?: At;
 }
 
 export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
@@ -169,13 +175,31 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
     return [p.l, -p.top, p.r, 0];
   },
   paint(c, p) {
-    const one = lut("night", 1), two = lut("night", 2);
+    const one = lut("night", 1), two = lut("night", 2), warm1 = lut("warm", 1), warm2 = lut("warm", 2);
     const clear = p.rad + 0.55 * H;
+    // the service lamps standing in front of this wall (the desk's, the map's): their pools land on it
+    const lamps: Pool[] = [];
+    if (p.at) {
+      const gx = p.at.wx, fy = p.at.wy;
+      for (const L of HALL_LIGHT.lights) {
+        if (L.kind !== "point" || fy - L.y > 3 * H) continue;
+        const lx = L.x - gx;
+        if (lx < p.l - H || lx > p.r + H || Math.abs(lx) < p.rad + 0.5 * H) continue;
+        lamps.push({ x: lx, y: L.y - fy, r: 1.45 * H, k: L.k });
+      }
+    }
     tint(c, p.l, -p.top, p.r, -6, (X, Y, lx, ly) => {
       const d = Math.hypot(lx, ly + p.cy);
       const j = (vnoise(lx * 0.05, ly * 0.05, 19) - 0.5) * 0.12 * H + (hash(X, Y, 23) - 0.5) * 2;
-      if (d + j < clear) return null;
-      return d + j > clear + 1.6 * H && ly < -p.cy ? two : one;
+      let v = 0;
+      for (const q of lamps) {
+        const f = 1 - ((lx - q.x) ** 2 + (ly - q.y) ** 2 * 1.2) / (q.r * q.r);
+        if (f > 0) v += q.k * f * f;
+      }
+      const lift = v + j / H * 0.4 > 0.5 ? 2 : v + j / H * 0.4 > 0.2 ? 1 : 0;
+      const shade = d + j < clear ? 0 : d + j > clear + 1.6 * H && ly < -p.cy ? 2 : 1;
+      const net = lift - shade;
+      return net >= 2 ? warm2 : net === 1 ? warm1 : net === -1 ? one : net <= -2 ? two : null;
     });
   },
 });

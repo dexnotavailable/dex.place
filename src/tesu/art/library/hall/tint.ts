@@ -71,6 +71,8 @@ const MOVES = {
   warm: { dL: 8.5, da: 2.6, db: 7.5, chroma: 1.08, hue: 1.2 },
   /** Daylight landing (the skylight, the court door): lighter, a touch warm, less chroma. */
   sun: { dL: 10, da: 0.8, db: 4, chroma: 0.95, hue: 1.2 },
+  /** Lit air (the skylight's shaft passing through): lighter, the surface's own hue kept, flatter. */
+  air: { dL: 8, da: 0, db: 1, chroma: 0.82, hue: 1.4 },
   /** Air between us and a far row (the court's back tiers): lighter, cooler, flatter. */
   haze: { dL: 7, da: -0.5, db: -2.5, chroma: 0.78, hue: 1.1 },
 } as const satisfies Record<string, Move>;

@@ -177,19 +177,19 @@ export const shaft = definePainter<ShaftP>("hall.shaft", {
       if (au > 1.02) return 0;
       const low = 1 - t * 0.55;
       // the clean edge each side
-      if (Math.abs(au - 0.98) * half < 0.55 && vnoise(u < 0 ? 3 : 7, ly * 0.03 + f * 0.2, 11) > 0.3) return P.ember[2]!;
+      if (Math.abs(au - 0.98) * half < 0.55 && vnoise(u < 0 ? 3 : 7, ly * 0.03 + f * 0.2, 11) > 0.3) return P.paper[2]!;
       // two or three god rays in the core, long dashes drifting as it breathes
       for (const [ru, rw, rs] of rays) {
         if (Math.abs(ru) > 0.5) continue;
         if (Math.abs(s - ru * half) < rw / 2 / Math.max(1, c.d) + 0.25) {
           const n = vnoise(rs * 17, ly * 0.022 + f * 0.18, 13) + breathe * 0.05;
-          if (n > 0.52) return n > 0.7 && low > 0.65 ? P.ember[1]! : P.ember[2]!;
+          if (n > 0.56) return n > 0.74 && low > 0.65 ? P.paper[1]! : P.paper[2]!;
         }
       }
       // the lit air in three soft bands, each a step of coverage with a clean border between them,
       // in amber close to the hall's own warm values (a glow, not a screen)
-      const cov = (au < 0.42 ? 0.25 : au < 0.76 ? 0.125 : 0.0625) * (low > 0.7 ? 1 : 0.5 + low * 0.7);
-      if (keep(X, Y, cov)) return au < 0.42 ? P.ember[2]! : P.ember[3]!;
+      const cov = (au < 0.42 ? 0.1875 : au < 0.76 ? 0.094 : 0.047) * (low > 0.7 ? 1 : 0.5 + low * 0.7);
+      if (keep(X, Y, cov)) return au < 0.42 && low > 0.6 ? P.paper[2]! : P.paper[3]!;
       return 0;
     });
   },
