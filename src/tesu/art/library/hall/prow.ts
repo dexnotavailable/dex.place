@@ -36,22 +36,45 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
     const yAt = (lx: number): number => lx * slope;
     // the foundation's masonry runs from the floor line (local y = masonry) down `found` px
     const m0 = p.masonry, m1 = p.masonry + p.found;
-    const PIER = 0.24 * H, BAY = 1.15 * H;
+    const PIER = 0.24 * H;
+    // (round 1, L15: no ruled arcade) the bays: uneven, a landing block a third of the way down where the
+    // arcade stops for a solid stretch with a small window, the piers thicker low down where they carry more
+    const bays: [number, number, boolean][] = []; // [x0, x1, solid landing block]
+    const landAt = ((m0 + m1) / 2) / slope; // the middle of the run's stretch through the masonry
+    for (let x = 0, i = 0; x < p.x1; i++) {
+      const landing = x <= landAt && x + 1.2 * H > landAt;
+      const w = landing ? 1.5 * H : (0.85 + 0.6 * ((Math.sin(i * 2.3 + 0.7) + 1) / 2)) * H;
+      bays.push([x, x + w, landing]);
+      x += w;
+    }
+    const bayAt = (lx: number): [number, number, boolean] => bays.find((b) => lx >= b[0] && lx < b[1]) ?? bays[bays.length - 1]!;
     rect(c, 0, p.y1 - p.head - 4, p.x1, 14, (X, Y, lx, ly) => {
       if (ly < m0 + 1) return 0; // nothing above the floor line: the mouth opens there
       const ty = yAt(lx);
-      const top = ty - p.head;
-      if (ly < top - 3 || ly > ty + 12) return 0;
+      // in the rock the cut's head is rough-hewn, never a ruled line
+      const rough = ty - p.head > m1 ? (fbm(lx * 0.03, 3.1, 17, 3) - 0.5) * 0.5 * H + Math.abs(Math.sin(lx * 0.045)) * 0.12 * H : 0;
+      const top = ty - p.head + rough;
+      if (ly < top - 3 || ly > ty + 12 + (rough > 0 ? rough * 0.4 : 0)) return 0;
       const inMasonry = ly < m1;
       // in the masonry the gallery's outer face is an arcade stepping down with the stair:
       // piers between arched openings, so the cut reads as built, not hacked through
       if (inMasonry && ly <= ty) {
-        const k = (((lx % BAY) + BAY) % BAY);
-        const pier = k < PIER;
+        const [b0, b1, solid] = bayAt(lx);
+        const k = lx - b0, BAY = b1 - b0;
+        const pw = PIER * (1 + (ly - m0) / Math.max(1, p.found) * 0.5);
+        if (solid) {
+          // the landing's solid stretch: coursed stone, a small barred window lit from inside
+          const wx = (b0 + b1) / 2, wy = top + p.head * 0.45;
+          if (Math.abs(lx - wx) < 0.16 * H && Math.abs(ly - wy) < 0.2 * H) return Math.abs(((lx - wx + 100) % 6) - 3) < 1 ? mt(M.stone, 0.3, X, Y, 0.4, 1) : tn(M.glow, 0.45, X, Y, 0.4);
+          const course = Math.floor((ly - m0) / 16);
+          const joint = ((((ly - m0) % 16) + 16) % 16) < 1.2 || ((((lx + (course % 2) * 22) % 44) + 44) % 44) < 1.2;
+          return mt(M.stone, face(0.95, SIDE, k < 2 ? -0.7 : BAY - k < 2 ? 0.7 : 0, 0) * (joint ? 0.7 : 0.92), X, Y, 0.1, 1);
+        }
+        const pier = k < pw;
         const arch = Math.max(0, (ly - top) / (0.22 * H));
-        const shoulder = !pier && arch < 1 && Math.hypot((k - PIER - (BAY - PIER) / 2) / ((BAY - PIER) / 2), 1 - arch) > 1;
+        const shoulder = !pier && arch < 1 && Math.hypot((k - pw - (BAY - pw) / 2) / ((BAY - pw) / 2), 1 - arch) > 1;
         if (pier || shoulder || ly < top + 2) {
-          const edge = pier && (k < 2 || k > PIER - 2);
+          const edge = pier && (k < 2 || k > pw - 2);
           return mt(M.stone, face(0.95, SIDE, edge ? (k < 2 ? -0.7 : 0.7) : 0, 0) * (edge ? 0.85 : 0.95), X, Y, 0.1, 1);
         }
       }

@@ -9,6 +9,7 @@ import "./deep.ts";
 import "./glow.ts";
 import "./furniture.ts";
 import "./near.ts";
+import "./services.ts";
 import "./court.ts";
 import "./prow.ts";
 
