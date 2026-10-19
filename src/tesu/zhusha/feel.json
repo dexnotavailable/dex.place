@@ -54,7 +54,16 @@
     "airDashes": 1,
     "attackFrom": 5,
     "jumpCarry": 0.85,
-    "keepRun": 1
+    "keepRun": 1,
+    "about": "Dex 10-14 (DEX-EYE 33): \"a dash is a ground burst: a low, powerful lunge with the feet near or on the ground, knees bent, the body angled forward but not laid flat, one leg driving behind, then a skid or plant to stop; only the air dash leaves the ground\". The drawings do it (every dash drawing has a foot on the ground, derived.json); the game keeps her on the ground, bursts to full speed by rampTicks (dust off the driving foot), and once the speed falls under skidFrom of its peak her heels skid (dust every skidDustEvery ticks, a skid cue). clips: per slot, the dash tick each key drawing lands on (dash: the burst f001 on the peak, the heel skid f005 as it bleeds off; uf_dash: the streak f002, gone f004 while she flies, reforming f006 as she slows); after the last key the clip runs 1:1, on into the rise while she stands (any input takes her out). The air dash holds her height airHold ticks, then gravity at airGravity: a burst that dies into a fall, never a hover or Superman; it never shows the skid drawings.",
+    "airHold": 10,
+    "airGravity": 0.5,
+    "skidFrom": 0.45,
+    "skidDustEvery": 2,
+    "clips": {
+      "dash": { "keys": { "1": 2, "5": 13 }, "skid": 5 },
+      "uf_dash": { "keys": { "2": 2, "4": 4, "6": 10 }, "skid": 10 }
+    }
   },
   "buffer": {
     "attack": 12,

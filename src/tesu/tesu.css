@@ -102,3 +102,29 @@ html.cine #touch { opacity: 0; visibility: hidden; transition: none; }
 /* the talisman tab (page column, touch): a small gold paper slip at the bottom centre */
 #touch .tab { left: 50%; bottom: max(6px, env(safe-area-inset-bottom)); width: 26px; height: 46px; margin-left: -13px; border-radius: 2px; border: 2px solid #5a3c06; background: linear-gradient(#f5d25c, #dca82e); }
 #touch .tab::after { content: ""; position: absolute; left: 50%; top: 9px; width: 4px; height: 22px; margin-left: -2px; background: #d8232c; }
+
+/* the controls card (controls.ts): the first time she is playable, then on H or the "?"; the look of "continue" */
+.controls { position: absolute; left: max(14px, env(safe-area-inset-left)); top: max(14px, env(safe-area-inset-top)); z-index: 4;
+  padding: 10px 14px 9px; border: 2px solid #f6eee9; background: rgba(0, 0, 0, 0.55); color: #f6eee9;
+  font: 400 12px / 1 ui-monospace, Consolas, monospace; letter-spacing: 0.08em; pointer-events: none;
+  opacity: 0; visibility: hidden; transition: opacity 0.5s steps(4), visibility 0s 0.5s; }
+.controls.on { opacity: 1; visibility: visible; transition: opacity 0.2s steps(2), visibility 0s; }
+.controls ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: auto auto; gap: 6px 14px; align-items: center; }
+.controls li { display: contents; }
+.controls .keys { display: flex; gap: 3px; justify-content: flex-end; }
+.controls kbd { display: inline-block; min-width: 1.4em; padding: 3px 4px 2px; border: 1px solid #f6eee9; box-shadow: 0 2px 0 #f6eee9;
+  font: inherit; text-align: center; letter-spacing: 0; }
+.controls .what { text-transform: uppercase; letter-spacing: 0.16em; }
+.controls .again { margin: 9px 0 0; font-size: 11px; opacity: 0.75; }
+.controls .again kbd { min-width: 0; padding: 1px 3px 0; box-shadow: none; }
+.controls-q { position: absolute; left: max(14px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom)); z-index: 4;
+  width: 26px; height: 26px; padding: 0; border: 2px solid #f6eee9; background: rgba(0, 0, 0, 0.35); color: #f6eee9;
+  font: 400 13px / 1 ui-monospace, Consolas, monospace; cursor: pointer; opacity: 0.6; }
+.controls-q:hover, .controls-q:focus-visible, .controls-q.on { background: #f6eee9; color: #000; opacity: 1; outline: none; }
+.controls-q[hidden] { display: none; }
+html.cine .controls, html.cine .controls-q { visibility: hidden; }
+@media (prefers-reduced-motion: reduce) { .controls, .controls.on { transition: none; } }
+/* touch: each button's name under it */
+#touch .tb[data-label]::after { content: attr(data-label); position: absolute; top: calc(100% + 3px); left: 50%; translate: -50% 0;
+  font: 600 9px / 1 ui-monospace, Consolas, monospace; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap;
+  color: rgba(255, 250, 240, 0.85); text-shadow: 0 1px 0 rgba(27, 25, 34, 0.9); pointer-events: none; }
