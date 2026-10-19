@@ -288,6 +288,51 @@ test("every page that is not the page column is plain white (its sheet carries t
   }
 });
 
+test("\"dex\" writes itself on a quiet thread: the world, the windows and the opening's audio start after it (Dex 10-19)", async () => {
+  // "when it draws 'dex' at the start it lags": the world's frame boots on the page's own thread
+  const world = readFileSync(new URL("./motion/world.ts", import.meta.url), "utf8");
+  assert.match(world, /afterMark\(\)\.then\(load\)/, "the world's code loads after the mark");
+  const main = readFileSync(new URL("./main.ts", import.meta.url), "utf8");
+  assert.match(main, /afterMark\(\)\.then\(\(\) => import\("\.\/motion\/sky\.ts"\)\)/, "the windows after the mark");
+  const enter = readFileSync(new URL("./motion/enter.ts", import.meta.url), "utf8");
+  assert.match(enter, /void afterMark\(\)\.then\(wake\)/, "the opening's audio after the mark");
+  const col = readFileSync(new URL("./motion/column.ts", import.meta.url), "utf8");
+  assert.match(col, /markStart\(\);\s*intro = playIntro/);
+  assert.match(col, /intro\.written\.then\(\(\) => \{ markDone = true; quietDone\(\); \}\)/);
+  assert.match(col, /else if \(!intro\) quietDone\(\);/, "covered at the start: nothing waits for a mark");
+  // the wait itself: resolves on the mark, at once without a game screen, and never hangs
+  const listeners = {};
+  let title = {};
+  globalThis.document = {
+    documentElement: { setAttribute() {} },
+    querySelector: () => title,
+    addEventListener: (n, f) => { (listeners[n] ??= []).push(f); },
+    dispatchEvent: (e) => { for (const f of listeners[e.type] ?? []) f(e); return true; },
+  };
+  globalThis.window ??= globalThis;
+  globalThis.CustomEvent ??= class extends Event {};
+  const q = await import("./motion/quiet.ts");
+  let done = false;
+  const w = q.afterMark().then(() => { done = true; });
+  await new Promise((r) => setTimeout(r, 5));
+  assert.equal(done, false, "waits while the mark draws");
+  q.markStart();
+  q.markDone();
+  await w;
+  assert.equal(done, true, "goes once it is written");
+  q.resetMark();
+  title = null;
+  await q.afterMark(); // no game screen: at once
+  title = {};
+  q.resetMark();
+  const t0 = Date.now();
+  q.markStart();
+  await q.afterMark();
+  assert.ok(Date.now() - t0 >= q.DRAW_WAIT_MS - 50 && Date.now() - t0 < q.MARK_WAIT_MS, "a started mark that never says: the draw's wait");
+  q.resetMark();
+  delete globalThis.document;
+});
+
 test("the \"dex\" screen is black to its bottom edge: no band where the white page meets it (Dex 10-19)", () => {
   // "there's a white fade at the bottom which imo looks bad": the white page's top edge is clean, below the fold
   const v2 = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
