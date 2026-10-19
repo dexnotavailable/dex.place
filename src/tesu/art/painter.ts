@@ -46,6 +46,11 @@ export function definePainter<P>(kind: string, p: Painter<P>): Painter<P> {
   return p;
 }
 
+/** Whether a painter of this kind is loaded here (the page loads few: engine, perf). */
+export function hasPainter(kind: string): boolean {
+  return REGISTRY.has(kind);
+}
+
 export function painter(kind: string): Painter<any> {
   const p = REGISTRY.get(kind);
   if (!p) throw new Error(`no painter called ${kind}`);

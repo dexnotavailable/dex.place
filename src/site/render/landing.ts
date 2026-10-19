@@ -9,14 +9,13 @@
 
 import { downloads, formatBytes, type DownloadFile } from "../data/downloads.ts";
 import { projectHref, projects, type Project } from "../data/projects.ts";
-import { artTag, projectArt } from "./art.ts";
+import { cardArt } from "./cardart.ts";
 import { docsSection } from "./docs.ts";
 import { donateSection } from "./donate.ts";
 import { downloadsSection } from "./downloads.ts";
-import { floats } from "./floats.ts";
 import { gallerySection } from "./gallery.ts";
 import { moreSection } from "./stubs.ts";
-import { button, chip, counter, pageHead, sectionHead, strip, tile, type ButtonOptions } from "./glyphs.ts";
+import { button, chip, counter, icon, pageHead, sectionHead, tile, type ButtonOptions } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import type { SiteContent } from "./types.ts";
 
@@ -26,13 +25,17 @@ import type { SiteContent } from "./types.ts";
 const fileOf = (p: Project): DownloadFile | null => downloads.find((d) => d.id === p.id)?.file ?? null;
 const hasDownloadEntry = (p: Project): boolean => downloads.some((d) => d.id === p.id);
 
-/** Short state chips: platform, then version and size, or "no download". */
-function chipsOf(p: Project): string {
+/** The download's state as chips: version and size, or "no download". */
+function stateChips(p: Project): string[] {
   const f = fileOf(p);
-  const state = f
+  return f
     ? [chip(`v${f.version}`, "value"), chip(formatBytes(f.bytes), "value")]
     : hasDownloadEntry(p) ? [chip("No public download yet", "value")] : [];
-  return `<p class="chips">${[chip(p.platform, "key"), ...state].join("")}</p>`;
+}
+
+/** Short state chips: platform, then version and size, or "no download". */
+function chipsOf(p: Project): string {
+  return `<p class="chips">${[chip(p.platform, "key"), ...stateChips(p)].join("")}</p>`;
 }
 
 /** The one action that matters most for each project. */
@@ -58,30 +61,32 @@ function primaryAction(p: Project, size: "m" | "l", here: "home" | "page"): Butt
 }
 
 // -------------------------------------------------------------------- cards
-// One card per project: the scene, the facts, and three ways on (the one
-// action that matters, the project page, its docs). The card pops as a whole
+// One card per project: its splash art over the whole card (render/cardart.ts: layers that pan, a shine), the
+// platform and the download's state at the top, and at its foot on a calm band the name (the way to the project's page),
+// the line, the one action that matters and its docs. The card pops as a whole
 // (DESIGN-SYSTEM.md §3); its keys pop on their own.
 
 function card(p: Project, i: number, level: 2 | 3, here: "home" | "page"): string {
   const h = `h${level}`;
   const href = projectHref(p);
+  // (the name and the art already lead to the project's page)
+  const small = (label: string, ic: "book", to: string): string =>
+    `<a class="btn btn--paper btn--s btn--icon" href="${esc(to)}" aria-label="${esc(`${p.name} ${label.toLowerCase()}`)}" title="${label}"><span class="btn__ic">${icon(ic, 2)}</span></a>`;
   return (
     `<li class="pcards__it" data-reveal style="--i:${Math.min(i, 5)}">` +
     `<article class="${cx("pcard", `pcard--${p.tone}`)}" id="p-${p.id}" aria-labelledby="p-${p.id}-name">` +
     // The art is a pointer shortcut to the project page; keyboard and screen
     // readers get the same link once, on the name.
-    `<div class="pcard__art"><a class="pcard__hit" href="${href}" tabindex="-1" aria-hidden="true">${projectArt(p)}</a>${artTag(p)}</div>` +
-    `<div class="pcard__body">` +
-    `<p class="pcard__top"><span class="pcard__no" aria-hidden="true">${pad2(projects.indexOf(p) + 1)}</span><span class="pcard__rule" aria-hidden="true"></span></p>` +
+    `<a class="pcard__hit" href="${href}" tabindex="-1" aria-hidden="true">${cardArt(p)}</a>` +
+    `<div class="pcard__top"><span class="pcard__no" aria-hidden="true">${pad2(projects.indexOf(p) + 1)}</span>` +
+    `<p class="pcard__tags">${[chip(p.platform, "key"), ...stateChips(p)].join("")}</p></div>` +
+    `<div class="pcard__info">` +
     `<${h} class="pcard__name" id="p-${p.id}-name"><a class="pcard__link" href="${href}">${esc(p.name)}</a></${h}>` +
     `<p class="pcard__line">${esc(p.line)}</p>` +
-    chipsOf(p) +
-    `</div>` +
     `<div class="pcard__acts">` +
     button({ ...primaryAction(p, "m", here), className: "pcard__main" }) +
-    button({ href, label: "Details", icon: "arrow", size: "s", ariaLabel: `${p.name} details` }) +
-    button({ href: p.docs.href, label: "Docs", icon: "book", size: "s", ariaLabel: `${p.name} docs` }) +
-    `</div></article></li>`
+    small("Docs", "book", p.docs.href) +
+    `</div></div></article></li>`
   );
 }
 
@@ -102,18 +107,28 @@ function projectsSection(): string {
 }
 
 /**
- * A section on the white beside a window into the world (Dex 10-18): the window right of the content, then left,
- * alternating; each onto a different place (styles/v2.css `.band`, motion/windows.ts).
+ * A section on the white with a window into the world (Dex 10-18: "patches of the world punched into a white page";
+ * 10-19: the windows felt tiny, the world dominates): "l" the content left of a tall window that fills the rest of the
+ * screen's width, "r" mirrored, "w" a wide window spanning the page above the section. Each onto a different place
+ * (styles/v2.css `.band`, motion/windows.ts).
  */
-export const band = (side: "l" | "r", html: string, scene = "sky"): string =>
-  `<div class="band band--${side}">${html}<div class="band__win" data-window="${scene}" aria-hidden="true"></div></div>`;
+export type BandKind = "l" | "r" | "w";
+export const band = (kind: BandKind, html: string, scene = "sky"): string =>
+  `<div class="band band--${kind}">${html}<div class="band__win" data-window="${scene}" aria-hidden="true"></div></div>`;
 
 /** Which place of the world each section's window looks onto (motion/windows.ts SCENES). */
 export const SECTION_SCENES = ["sky", "palace", "isles", "lake", "pine", "door"] as const;
 
+/**
+ * How the home page's sections meet the world, in order: a tall window beside the content, then a wide one across
+ * the page, the tall ones alternating sides (projects | downloads across | gallery | docs across | donate | more
+ * across: "opens later" under the hall's door).
+ */
+export const SECTION_BANDS: readonly BandKind[] = ["l", "w", "r", "w", "l", "w"];
+
 export function landing(content: SiteContent): string {
   const parts = [projectsSection(), downloadsSection(), gallerySection(content), docsSection(content), donateSection(), moreSection()];
-  return parts.map((html, i) => band(i % 2 ? "r" : "l", html, SECTION_SCENES[i % SECTION_SCENES.length])).join("");
+  return parts.map((html, i) => band(SECTION_BANDS[i % SECTION_BANDS.length]!, html, SECTION_SCENES[i % SECTION_SCENES.length])).join("");
 }
 
 // ----------------------------------------------------------- /projects/
@@ -121,7 +136,6 @@ export function landing(content: SiteContent): string {
 export function projectsIndex(): string {
   return (
     `<div class="page page--projects">` +
-    floats("projects", { tone: "yellow", count: 3, glyph: "sparkle" }) +
     `<div class="wrap">` +
     pageHead({ kicker: "projects", title: "Projects", tone: "yellow", icon: "grid", aside: `${pad2(projects.length)} items` }) +
     cards(projects, 2, "page") +
@@ -167,14 +181,14 @@ export function projectPage(p: Project): string {
   const at = projects.indexOf(p);
   return (
     `<div class="page page--project">` +
-    floats(`project-${p.id}`, { tone: p.tone, count: 3, glyph: "star" }) +
     `<div class="wrap">` +
-    `<nav class="crumbs" aria-label="Breadcrumb"><a href="/projects/">Projects</a><span aria-hidden="true">/</span><span aria-current="page">${esc(p.name)}</span></nav>` +
     `<header class="proj proj--${p.tone}">` +
-    `<div class="proj__art" data-reveal="pop-block">${projectArt(p, "hero")}${artTag(p)}</div>` +
+    `<div class="proj__art" data-reveal="pop-block">${cardArt(p)}</div>` +
     `<div class="proj__head">` +
-    `<p class="sh__kicker" data-reveal><span class="sh__slash" aria-hidden="true">//</span><span>project</span>` +
-    `<span class="sh__rule" aria-hidden="true"></span>${counter(at + 1, projects.length, "sh__aside")}</p>` +
+    // the deep pages' kicker (render/deep.ts): the way back as breadcrumbs, the project's place among the three
+    `<div class="dh__kicker">${tile("grid", p.tone, "s")}<span class="dh__slash" aria-hidden="true">//</span>` +
+    `<nav class="dh__crumbs" aria-label="Breadcrumb"><a href="/projects/">Projects</a></nav>` +
+    `<span class="dh__rule" aria-hidden="true"></span>${counter(at + 1, projects.length, "dh__aside")}</div>` +
     `<h1 class="proj__title" data-reveal="pop-block">${esc(p.name)}</h1>` +
     `<p class="proj__line" data-reveal style="--i:1">${esc(p.line)}</p>` +
     `<div data-reveal style="--i:2">${chipsOf(p)}</div>` +
@@ -187,7 +201,6 @@ export function projectPage(p: Project): string {
     `<ul class="facts">${p.facts.map((f, i) =>
       `<li class="fact" data-reveal style="--i:${i}">${tile(f.icon, i === 0 ? p.tone : "paper", "m")}<p>${esc(f.text)}</p></li>`,
     ).join("")}</ul>` +
-    strip("facts__strip") +
     `</section>` +
     getIt(p) +
     `</div>` +

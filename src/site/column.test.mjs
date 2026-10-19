@@ -153,11 +153,14 @@ test("the jetty: Zhusha there, the way in hidden until the world is in, a plain 
   assert.match(j, /<noscript><a class="jetty__go" href="\/tesu\/">experience the world we made<\/a><\/noscript>/);
 });
 
-test("home: the sections on papers alternating left and right, then the stubs", () => {
+test("home: the sections with their windows, a tall one beside (alternating sides) then a wide one across, then the stubs", () => {
   const html = landing(content);
-  const sides = [...html.matchAll(/<div class="band band--([lr])">/g)].map((m) => m[1]);
-  assert.ok(sides.length >= 6);
-  sides.forEach((s, i) => assert.equal(s, i % 2 ? "r" : "l"));
+  const kinds = [...html.matchAll(/<div class="band band--([lrw])">/g)].map((m) => m[1]);
+  assert.ok(kinds.length >= 6);
+  // tall and wide take turns; the tall ones alternate sides
+  kinds.forEach((k, i) => assert.equal(k === "w", i % 2 === 1, `band ${i}: ${k}`));
+  const tall = kinds.filter((k) => k !== "w");
+  tall.forEach((k, i) => assert.equal(k, i % 2 ? "r" : "l"));
   assert.ok(html.indexOf('id="more"') > html.indexOf('id="donate"'));
   // the page's h1 is "dex" on the game screen, not a second big mark on the website
   assert.doesNotMatch(html, /<h1/);
@@ -222,43 +225,51 @@ test("the sky's colour: many steps, each step's lower edge an ordered dither int
   assert.ok(dithered > rows * 0.2, `the step edges dither (${dithered} rows)`);
 });
 
-test("windows into the world (Dex 10-18): white page, a window beside each section, alternating, each a different place, its edge dissolving on every side", () => {
+test("windows into the world (Dex 10-18, bigger 10-19): white page, a window with each section, each a different place, its edge a hole torn in the paper", () => {
   const html = landing(content);
-  const bands = [...html.matchAll(/<div class="band band--([lr])">[^]*?<div class="band__win" data-window="([a-z]+)" aria-hidden="true"><\/div><\/div>/g)];
+  const bands = [...html.matchAll(/<div class="band band--([lrw])">[^]*?<div class="band__win" data-window="([a-z]+)" aria-hidden="true"><\/div><\/div>/g)];
   assert.ok(bands.length >= 6, `${bands.length} windows`);
-  bands.forEach((m, i) => assert.equal(m[1], i % 2 ? "r" : "l", "alternating sides"));
   const scenes = bands.map((m) => m[2]);
   assert.equal(new Set(scenes).size, scenes.length, `each window a different place (${scenes})`);
   // every place is one the windows know how to paint, each in its own light
-  return import("./motion/windows.ts").then(({ SCENES, edgeMask }) => {
+  return import("./motion/windows.ts").then(({ SCENES, holeMask, framed, WIDE }) => {
     for (const s of scenes) assert.ok(SCENES[s], s);
     for (const [id, sc] of Object.entries(SCENES)) {
-      assert.ok(sc.pieces.length >= 3, `${id}: a composed place`);
-      assert.ok(sc.pieces.every((p) => p.kind.startsWith("op.") && p.fit > 0 && p.fit <= 1), `${id}: the world's own painters, fitted`);
+      for (const pieces of [sc.pieces, sc.wide?.pieces ?? []]) {
+        assert.ok(!pieces.length || pieces.length >= 3, `${id}: a composed place`);
+        assert.ok(pieces.every((p) => p.kind.startsWith("op.") && p.fit > 0 && p.fit <= 1), `${id}: the world's own painters, fitted`);
+      }
     }
+    // the windows across the page frame their place wide; a tall window keeps its own framing
+    for (const [i, m] of bands.entries()) {
+      const sc = SCENES[m[2]];
+      if (m[1] === "w") assert.ok(sc.wide, `band ${i} (${m[2]}) is across the page: its place has a wide framing`);
+    }
+    const lake = SCENES.lake;
+    assert.equal(framed(lake, 300, 300), lake, "a square window: the place as composed");
+    assert.equal(framed(lake, 300 * WIDE + 30, 300).pieces, lake.wide.pieces, "a wide window: its wide framing");
     const lights = Object.values(SCENES).map((sc) => JSON.stringify(sc.sky));
     assert.equal(new Set(lights).size, lights.length, "a different light in every window");
     // the places are different places: no two windows share their main painter (the tallest piece)
     const main = Object.values(SCENES).map((sc) => [...sc.pieces].sort((a, b) => b.fit - a.fit)[0].kind + (sc.walker ? "+walker" : ""));
     assert.equal(new Set(main).size, main.length, `${main}`);
     assert.ok(SCENES.sky.walker, "the sky window has Tesu's landmark in it (the Walker)");
-    // the dissolving edge, drawn into the window: the outermost pixel all round solid white (no colour line framing
-    // the hole), white thinning into the world, and seeded so no two windows (or sides) are the same
-    const W = 80, H = 60, D = 12;
-    const m = edgeMask(W, H, D, 1);
+    // the edge, drawn into the window: paper all round (no colour line framing the hole), the world in the middle,
+    // the tear's line wandering (not a straight frame), white or a breath of white only (no grey), seeded per window
+    const W = 160, H = 120;
+    const m = holeMask(W, H, 1);
     const a = (x, y) => m[(y * W + x) * 4 + 3];
-    for (let x = 0; x < W; x++) assert.ok(a(x, 0) === 255 && a(x, H - 1) === 255, `top/bottom row solid at ${x}`);
-    for (let y = 0; y < H; y++) assert.ok(a(0, y) === 255 && a(W - 1, y) === 255, `left/right column solid at ${y}`);
+    for (let x = 0; x < W; x++) assert.ok(a(x, 0) === 255 && a(x, H - 1) === 255, `top/bottom row paper at ${x}`);
+    for (let y = 0; y < H; y++) assert.ok(a(0, y) === 255 && a(W - 1, y) === 255, `left/right column paper at ${y}`);
     assert.equal(a(W >> 1, H >> 1), 0, "the middle is the world");
-    const col = (k) => Array.from({ length: H - 2 * D }, (_, i) => a(k, D + i)).reduce((p, q) => p + q, 0);
-    assert.ok(col(1) > col(5) && col(5) > col(D - 1), "white thinning into the world");
-    const lit = (mask, side) => Array.from({ length: H - 2 * D }, (_, i) => {
-      const y = D + i;
-      return Array.from({ length: D }, (_, k) => (mask[(y * W + (side ? W - 1 - k : k)) * 4 + 3] === 255 ? 1 : 0)).join("");
-    }).join("|");
-    assert.notEqual(lit(m, 0), lit(edgeMask(W, H, D, 2), 0), "seeded per window");
-    assert.notEqual(lit(m, 0), lit(m, 1), "seeded per side");
-    assert.deepEqual(edgeMask(W, H, D, 1), m, "deterministic");
+    for (let i = 0; i < m.length; i += 4) {
+      if (m[i + 3]) assert.ok(m[i] === 255 && m[i + 1] === 255 && m[i + 2] === 255, "only white on the edge");
+    }
+    // where the paper ends along the top edge, column by column: it wanders by several pixels
+    const tear = Array.from({ length: W - 40 }, (_, i) => { let y = 0; while (y < H / 2 && a(20 + i, y) === 255) y++; return y; });
+    assert.ok(Math.max(...tear) - Math.min(...tear) >= 4, `the tear wanders (${Math.min(...tear)}..${Math.max(...tear)})`);
+    assert.notDeepEqual(holeMask(W, H, 2), m, "seeded per window");
+    assert.deepEqual(holeMask(W, H, 1), m, "deterministic");
     const css = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
     assert.doesNotMatch(css, /\.band__win::(before|after)/, "the edge is in the window, not a tiled overlay");
     assert.match(css, /\.band__win \{[^}]*background: #fff;/, "white behind the window until it paints (no coloured line)");

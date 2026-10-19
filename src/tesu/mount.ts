@@ -58,6 +58,22 @@ export interface TesuHandle extends WorldHandle {
   progress(): number;
 }
 
+/**
+ * (engine) The loader's progress for a world in this state, 0..1: ~0.05 once its frame loads, 0.15 when its code
+ * runs, 0.4 when its first scene is drawn, then the opening set's share up to 0.99, and exactly 1 when it is playable
+ * with the whole set in. (Counted in tenths: 0.7 + 0.1 + 0.1 + 0.1 in floating point is 0.9999999999999999.)
+ */
+export function progressValue(s: { started: boolean; booted: boolean; drawn: boolean; playable: boolean; set: OpeningSet | null }): number {
+  let p = s.started ? 0.05 : 0;
+  if (s.booted) p = 0.15;
+  if (s.drawn) p = 0.4;
+  if (s.drawn && s.set) {
+    const tenths = Math.min(1, Math.max(0, s.set.plates)) * 7 + (s.set.close ? 1 : 0) + (s.set.font ? 1 : 0) + (s.set.ofuda ? 1 : 0);
+    p = s.playable && tenths >= 10 - 1e-9 ? 1 : Math.min(0.99, 0.4 + 0.059 * tenths);
+  } else if (s.playable && !s.set) p = 1;
+  return p;
+}
+
 export function tesuFrameUrl(opts: TesuMountOptions): string {
   const url = new URL("/tesu/", location.href);
   url.searchParams.set("embed", "site");
@@ -221,15 +237,7 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
 
   let progressed = 0;
   const progress = (): number => {
-    let p = started ? 0.05 : 0;
-    const rt = runtime();
-    if (rt) p = 0.15;
-    if (drawn) p = 0.4;
-    const set = rt?.openingSet?.();
-    if (drawn && set) {
-      const share = Math.min(1, set.plates) * 0.7 + (set.close ? 0.1 : 0) + (set.font ? 0.1 : 0) + (set.ofuda ? 0.1 : 0);
-      p = playable && share >= 1 ? 1 : 0.4 + 0.59 * share;
-    } else if (playable && !set) p = 1;
+    const p = progressValue({ started, booted: !!runtime(), drawn, playable, set: runtime()?.openingSet?.() ?? null });
     progressed = Math.max(progressed, p);
     return progressed;
   };

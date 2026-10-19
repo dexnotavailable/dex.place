@@ -15,12 +15,14 @@
 // It checks the move against the contract (slotin-lib.mjs: stage "pixel", 128 px, a measured 128 px figure in every
 // drawing, nothing that looks like an H3 render), copies the drawings + anim.json into public/assets/zhusha/<slot>/
 // (an older drop is moved aside, the folder replaced whole), adds a role to slots.json if no role plays the slot yet,
-// runs `npm run check`, `npm test` and `npm run build`, and commits those paths on the current branch. It never pushes
+// re-derives the attacks' hit boxes and movement from the drawings (tools/zhusha/derive.mjs -> derived.json), runs
+// `npm run check`, `npm test` and `npm run build`, and commits those paths on the current branch. It never pushes
 // and never merges (the coordinator does), and it refuses to commit on main.
 import { execFileSync, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { derivedFor, derivedText } from "./derive-lib.mjs";
 import { addRoleText, checkMove, ensureRole } from "./slotin-lib.mjs";
 
 const REPO = resolve(import.meta.dirname, "../..");
@@ -36,6 +38,7 @@ const git = (...a) => execFileSync("git", a, { cwd: REPO, encoding: "utf8" }).tr
 const dest = join(REPO, "public", "assets", "zhusha", slot);
 const rel = `public/assets/zhusha/${slot}`;
 const slotsPath = join(REPO, "src", "tesu", "zhusha", "slots.json");
+const derivedPath = join(REPO, "src", "tesu", "zhusha", "derived.json");
 const asideRoot = existsSync(resolve(REPO, "../lanes/zhusha")) ? resolve(REPO, "../lanes/zhusha/_moved-aside") : join(tmpdir(), "zhusha-moved-aside");
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 
@@ -96,10 +99,16 @@ if (local) {
   process.exit(0);
 }
 
+// the attacks' hit boxes, live drawings and planted-foot movement, read off the drawings as they now are
+const derivedOld = existsSync(derivedPath) ? readFileSync(derivedPath, "utf8") : null;
+writeFileSync(derivedPath, derivedText(derivedFor(REPO)));
+out("derived.json re-derived from the drawings");
+
 const undo = (why) => {
   aside(dest, "refused");
   if (before) renameSync(before, dest);
   if (added) writeFileSync(slotsPath, slotsText);
+  if (derivedOld !== null) writeFileSync(derivedPath, derivedOld);
   fail(`${why}: the copy is undone (the refused drop moved aside)`, 1);
 };
 if (!flag("--no-verify")) {
@@ -112,9 +121,9 @@ if (!flag("--no-verify")) {
     }
   }
 }
-git("add", "-A", "--", rel, "src/tesu/zhusha/slots.json");
+git("add", "-A", "--", rel, "src/tesu/zhusha/slots.json", "src/tesu/zhusha/derived.json");
 const msg = `Zhusha: ${slot} slotted in (${res.def.frames.length} drawings at 128 px${res.def.source ? `, from ${res.def.source}` : ""})\n\n` +
   `By tools/zhusha/slot-in.mjs from ${from.replace(/\\/g, "/")}: contract, check, test and build passed.\n\n` +
   `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`;
-execFileSync("git", ["commit", "-q", "-m", msg, "--", rel, "src/tesu/zhusha/slots.json"], { cwd: REPO, stdio: "inherit" });
+execFileSync("git", ["commit", "-q", "-m", msg, "--", rel, "src/tesu/zhusha/slots.json", "src/tesu/zhusha/derived.json"], { cwd: REPO, stdio: "inherit" });
 out(`committed ${git("rev-parse", "--short", "HEAD")} on ${branch} (not pushed: the coordinator merges)`);

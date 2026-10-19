@@ -6,7 +6,6 @@ import "./styles/site.css";
 import { initCopy } from "./motion/copy.ts";
 import { initDefer } from "./motion/defer.ts";
 import { initEmbed } from "./motion/embed.ts";
-import { initFloats } from "./motion/floats.ts";
 import { initKeys } from "./motion/keys.ts";
 import { initScenes } from "./motion/magnet.ts";
 import { initMenu, initNav, initStuck } from "./motion/nav.ts";
@@ -66,7 +65,6 @@ const steps: [string, () => void][] = [
   ["nav", () => initNav()],
   ["stuck", () => initStuck()],
   ["menu", () => initMenu()],
-  ["floats", () => initFloats(reduced)],
   ["scenes", () => initScenes(reduced, fine)],
   ["copy", () => initCopy()],
   // NSFW image spoilers in posts (render/nsfw.ts).

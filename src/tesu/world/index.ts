@@ -17,6 +17,7 @@ import { tsuji } from "./sections/tsuji.ts";
 import { yuemen } from "./sections/yuemen.ts";
 import { openingSky } from "./sections/opening-sky.ts";
 import type { WorldDef } from "./types.ts";
+import { adoptWorld } from "./current.ts";
 
 /** About 480 x 240 H (GDK 3.1), plus the interiors' band below it (config INTERIOR_Y). */
 export const WORLD_W = h(480);
@@ -24,14 +25,9 @@ export const WORLD_H = h(330);
 
 let built: WorldDef | null = null;
 
-/**
- * (engine 10-18, loading) The world as a plate worker built it (plates/store.ts startPlateWorkers): the page adopts
- * it instead of building it on its own thread. The same code built it; it is plain data (structured clone).
- */
-export function adoptWorld(def: WorldDef): void {
-  if (!built) built = def;
-}
+export { adoptWorld } from "./current.ts";
 
+/** The whole land, built (once); it also becomes the world the page runs when none was adopted (world/current.ts). */
 export function buildWorld(): WorldDef {
   if (built) return built;
   const b = new WorldBuilder(WORLD_W, WORLD_H);
@@ -49,5 +45,6 @@ export function buildWorld(): WorldDef {
   // (last, explicit seeds: the opening's fall adds clouds without reseeding anything placed before)
   openingSky(b);
   built = b.finish();
+  adoptWorld(built);
   return built;
 }

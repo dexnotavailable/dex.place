@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { sitePages, TEMPLATE } from "./src/site/build/plugin.ts";
+import { tesuBake } from "./src/tesu/plates/bake-plugin.ts";
 
 const page = (path: string): string => fileURLToPath(new URL(path, import.meta.url));
 
@@ -9,7 +10,7 @@ export default defineConfig({
   appType: "mpa",
   // The website layer: prerenders /, /downloads/, /gallery/, /docs/, /blog/,
   // /donate/ and 404.html from src/site (see docs/site/DESIGN-SYSTEM.md).
-  plugins: [sitePages()],
+  plugins: [sitePages(), tesuBake()],
   build: {
     outDir: "dist",
     emptyOutDir: true,
