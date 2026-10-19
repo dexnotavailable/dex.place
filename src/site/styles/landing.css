@@ -37,8 +37,8 @@
 /* ================================================================= cards
    One card per project (render/landing.ts card()), Dex 10-19: its splash art fills the whole card (render/cardart.ts
    .cart: layers that pan with the pointer, the scroll and, on touch screens, a slow drift; a shine sweeps across), the
-   number, the platform and the download's state at its top, and at its foot on a calm ink band the name, the line,
-   the one action that matters and the docs. The card pops as a whole: it lifts 2px, grows 1% and its shadow steps out in the project's tone; the keys
+   number and the platform at its top (little over the art: faces sit high), and at its foot on a calm ink band the name,
+   the download's state, the line, the one action that matters and the docs. The card pops as a whole: it lifts 2px, grows 1% and its shadow steps out in the project's tone; the keys
    inside pop on their own. Three across from 700px (two for "Other projects"), one per row below. */
 .pcards { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-6); }
 @media (min-width: 700px) {
@@ -116,6 +116,7 @@
 }
 .pcard__link:hover, .pcard__link:focus-visible { background-size: 100% 4px; }
 .pcard__line { margin: 0; font-size: var(--fs-body); line-height: 1.4; color: #ece5f0; max-width: 34ch; }
+.pcard__state { margin: -4px 0 0; font: 400 var(--fs-12) / 1.2 var(--f-label); letter-spacing: 0.06em; color: #fff; }
 
 /* the one action that matters, then the docs as a small key */
 .pcard__acts { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; width: 100%; margin-top: 4px; }
@@ -191,14 +192,26 @@
 /* the world's ink key on the ink band: a white edge so it reads as a key */
 .pcard .btn--ink { --btn-edge: #fff; }
 
-/* ---- the rigged art (motion/cardrig.ts: card.svg + rig.json), over the PNG layers once it is ready. Pixel finish:
-   one canvas on the site's grid (2 css px an art px). Vector finish: a layer per part, moved by CSS. */
-.rig__px { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
-.rig__box { position: absolute; }
+/* ---- the rigged art (render/cardart.ts .cart--rig: the card-art lane's parts as webp layers + rig.json). The art box
+   covers the card with room to pan, the face focus centred across and ~30% down (clamped to the frame, so a head near
+   the frame's top stays in on the 4:5 phone crop too); the parts sit in it by their boxes. Vector finish: the parts move
+   by CSS (--anim, from the rig's motions). Pixel finish: motion/cardrig.ts draws them on the site's pixel grid. */
+.cart--rig .rig__box {
+  --w: max(100cqw + 28px, (100cqh + 28px) * var(--aw) / var(--ah));
+  --h: calc(var(--w) * var(--ah) / var(--aw));
+  position: absolute;
+  width: var(--w);
+  height: var(--h);
+  left: clamp(100cqw + 14px - var(--w), 50cqw - var(--fx) * var(--w), -14px);
+  top: clamp(100cqh + 14px - var(--h), 30cqh - var(--fy) * var(--h), -14px);
+}
 .rig__l { position: absolute; inset: 0; transition: translate 700ms var(--ease-out); }
-.rig__p { position: absolute; }
-.cart[data-rigged] > .cart__l { visibility: hidden; }
+.rig__p { position: absolute; max-width: none; }
+.cart--px .rig__p { image-rendering: pixelated; }
+.rig__px { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.cart[data-rigged="pixel"] > .rig__box { visibility: hidden; }
 @media (prefers-reduced-motion: no-preference) {
+  html[data-cardfinish="vector"] .rig__p { animation: var(--anim, none); }
   @supports (animation-timeline: view()) {
     .rig__l { animation: cart-scroll linear both; animation-timeline: --pcard; }
   }
