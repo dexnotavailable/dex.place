@@ -9,7 +9,8 @@
 //   sequence: 10                       (blog only, later posts have higher numbers)
 //   order: 1                           (docs only, lower first)
 //   group: dexclient                   (docs only, an id from data/docs.ts)
-//   placeholder: true                  (visible tag, noindex, kept out of the feed)
+//   placeholder: true                  (docs: visible tag, noindex, kept out of the feed;
+//                                       posts: a stand-in, never published, see loadContent)
 //   nsfw: true                         (visible NSFW tag; adult images, all spoiler-blurred; see render/nsfw.ts)
 
 import fs from "node:fs";
@@ -272,7 +273,10 @@ export function loadContent(root: string): SiteContent {
   const dir = path.join(root, "content");
   return {
     docs: loadEntries(path.join(dir, "docs"), "docs"),
-    posts: loadEntries(path.join(dir, "blog"), "blog"),
+    // A placeholder post is a stand-in, not a post (Dex 10-19: "hide them"): its file stays in content/blog, but it is
+    // never published: no page, no row on the blog or the home page, no newer / older link from a real post, nothing
+    // in the feed. Set `placeholder: false` (or drop the line) when it is written.
+    posts: loadEntries(path.join(dir, "blog"), "blog").filter((p) => !p.placeholder),
     gallery: loadGallery(path.join(dir, "gallery", "manifest.json"), path.join(root, "public")),
   };
 }
