@@ -1,5 +1,5 @@
 {
- "v": 1,
+ "v": 2,
  "size": [
   160,
   240
@@ -8,23 +8,28 @@
   88,
   75
  ],
- "parts": {
-  "sky": {
+ "pixelated": true,
+ "parts": [
+  {
+   "id": "sky",
+   "src": "sky.webp",
+   "box": [
+    0,
+    0,
+    160,
+    240
+   ],
    "depth": 0
   },
-  "cloud-high": {
-   "depth": 0.25,
-   "motion": [
-    {
-     "kind": "bob",
-     "dx": 2,
-     "dy": 0,
-     "period": 6,
-     "phase": 0
-    }
-   ]
-  },
-  "isle": {
+  {
+   "id": "isle",
+   "src": "isle.webp",
+   "box": [
+    101,
+    66,
+    28,
+    62
+   ],
    "depth": 0.45,
    "motion": [
     {
@@ -36,7 +41,15 @@
     }
    ]
   },
-  "cloud-low": {
+  {
+   "id": "cloud-low",
+   "src": "cloud-low.webp",
+   "box": [
+    30,
+    154,
+    94,
+    34
+   ],
    "depth": 0.6,
    "motion": [
     {
@@ -48,10 +61,26 @@
     }
    ]
   },
-  "legs": {
+  {
+   "id": "legs",
+   "src": "legs.webp",
+   "box": [
+    73,
+    149,
+    35,
+    48
+   ],
    "depth": 0.85
   },
-  "upper": {
+  {
+   "id": "upper",
+   "src": "upper.webp",
+   "box": [
+    58,
+    53,
+    54,
+    96
+   ],
    "depth": 0.85,
    "pivot": [
     88,
@@ -66,7 +95,15 @@
     }
    ]
   },
-  "blade": {
+  {
+   "id": "blade",
+   "src": "blade.webp",
+   "box": [
+    85,
+    102,
+    22,
+    89
+   ],
    "depth": 0.9,
    "motion": [
     {
@@ -78,7 +115,15 @@
     }
    ]
   },
-  "fx-sparks": {
+  {
+   "id": "fx-sparks",
+   "src": "fx-sparks.webp",
+   "box": [
+    68,
+    109,
+    35,
+    75
+   ],
    "depth": 1,
    "motion": [
     {
@@ -91,5 +136,5 @@
     }
    ]
   }
- }
+ ]
 }

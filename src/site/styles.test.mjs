@@ -27,11 +27,14 @@ test("every animation name used has a matching @keyframes", () => {
   const missing = [];
   for (const { file, css } of sheets) {
     for (const [, name] of css.matchAll(/(?:^|[;{\s])animation:\s*([a-z][\w-]*)/g)) {
-      if (["none", "inherit", "initial", "unset"].includes(name)) continue;
+      // (a var(): the names come from the page, e.g. the card rigs' --anim, render/cardart.ts motionCss; checked below)
+      if (["none", "inherit", "initial", "unset", "var"].includes(name)) continue;
       if (!defined.has(name)) missing.push(`${file}: ${name}`);
     }
   }
   assert.deepEqual(missing, []);
+  // the rigs' motions only ever name keyframes that exist
+  for (const name of ["rig-sway", "rig-breathe", "rig-bob", "rig-glow", "rig-flicker", "rig-drift", "rig-drift-fade"]) assert.ok(defined.has(name), name);
 });
 
 test("per-frame motion values are never written as custom properties on :root", () => {
