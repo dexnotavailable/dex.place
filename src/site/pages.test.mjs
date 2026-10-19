@@ -131,3 +131,24 @@ test("a project's own page: the deep pages' kicker leads back to /projects/ and 
     assert.doesNotMatch(html, /class="crumbs"/, `${r.path}: no second breadcrumb row`);
   }
 });
+
+test("placeholder posts are hidden (Dex 10-19): files kept, no page, no link from any page, not in the feed", async () => {
+  const fs = await import("node:fs");
+  const { parseFrontmatter } = await import("./build/content.ts");
+  const { blogFeed } = await import("./render/routes.ts");
+  const dir = path.join(ROOT, "content", "blog");
+  const hidden = fs.readdirSync(dir).filter((f) => f.endsWith(".md"))
+    .filter((f) => parseFrontmatter(fs.readFileSync(path.join(dir, f), "utf8"), f).meta.placeholder === "true")
+    .map((f) => `/blog/${f.replace(/\.md$/, "")}/`);
+  assert.ok(hidden.includes("/blog/first-post/") && hidden.includes("/blog/second-post/"), "the files stay on disk");
+  assert.ok(content.posts.length > 0 && content.posts.every((p) => !p.placeholder));
+  const feed = blogFeed(content);
+  for (const url of hidden) {
+    assert.ok(!list.some((r) => r.path === url), `${url} has no page`);
+    for (const r of list) assert.ok(!r.render().body.includes(`href="${url}"`), `${r.path} links ${url}`);
+    assert.ok(!feed.includes(url), `the feed lists ${url}`);
+  }
+  // the oldest real post is the end of the line: no "Older" link past it
+  const oldest = content.posts.at(-1);
+  assert.doesNotMatch(render(oldest.url), /rel="next"/);
+});
