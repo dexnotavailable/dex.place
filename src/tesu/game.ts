@@ -295,12 +295,10 @@ export class TesuGame {
       cue: (n) => this.cue(n),
       celebrate: (p) => this.onCelebrate(p),
     });
-    // her move says "swing" on its first tick (the windup) and again on its hit tick (swingFx): the blade's swing
-    // sounds on the hit, the first tick plays the windup; her voice joins on some of them (sound.ts herSound)
-    this.feel.onSound = (id, v) => {
-      const p = this.player;
-      this.sound.herSound(id, v, { first: p.state === "move" && p.anim.t === 0, role: p.anim.role, state: p.state, ult: p.ultForm });
-    };
+    // sounds by id (props, the court, the world) wait for the tick's end; her cues (move, phase, tier) claim theirs and
+    // play her mapped sound and voice (sound.ts heard / herCue / flush)
+    this.feel.onSound = (id, v) => this.sound.heard(id, v);
+    this.player.onCue = (c) => this.sound.herCue(c);
     // R plays the FX loop's effects when they are in (zhusha/ult.ts; its stand-ins draw until then)
     this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o) };
     this.props = new Props({
@@ -373,6 +371,7 @@ export class TesuGame {
     const was = themes.sounding;
     themes.update(placeAt(this.world.places, b.x, b.y, INTERIOR_Y), this.holding || this.opening.active);
     if (themes.sounding && !was) this.openingLink?.handOver?.(THEME_FADE);
+    this.sound.flush();
     const shown = this.zdraw.shown(this.player);
     this.sound.footstep(shown?.slot.id ?? null, shown?.index ?? 0, b.grounded && !this.rides.active, this.collision.lastSurface);
     // her voice follows her state, the space she is in (its reverb) and her place on screen (its pan)
