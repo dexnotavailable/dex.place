@@ -314,11 +314,12 @@ export class Sound {
     });
     if (this.wantBed) this.setBed(this.wantBed);
     // decoded in order of need, a batch at a time (all at once, the first hits would wait behind the voice lines):
-    // her strikes and their layers, the opening's sounds, her steps and moves, the voice, then the world's
+    // her strikes, their layers and the big hits, the opening's sounds, her steps and moves, the voice, then the
+    // world's. (A cue missing from every batch loads on first use and may come too late for its first play.)
     const ids = Object.keys(CUES);
     const files = (re: RegExp): string[] => ids.filter((id) => re.test(id)).flatMap((id) => CUES[id]!.files.map((f) => this.urlOf(f)));
     const batches = [
-      files(/^(swing|windup|hit|slam)/),
+      files(/^(swing|windup|hit|slam|wave|ult|sub\.)/),
       files(/^op\./),
       files(/^(step\.|dash|jump|djump|land|hurt)/),
       Object.values(VOICE).flatMap((v) => [...v.normal, ...v.ult]).map((t) => this.urlOf(`voice/${t}`)),

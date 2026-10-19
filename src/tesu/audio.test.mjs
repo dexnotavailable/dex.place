@@ -125,6 +125,15 @@ test("her sounds: the swing on the hit tick, the windup on the move's first tick
   assert.ok(CUES.wave.duck < 0 && CUES.wave.with.includes("sub.drop"), "the Q's blast: a sub drop under it, the rest ducked");
 });
 
+test("every sound she makes in a fight is decoded at the start (in one of the preload batches)", () => {
+  const snd = readFileSync(new URL("./sound.ts", import.meta.url), "utf8");
+  const res = [...snd.slice(snd.indexOf("const batches = ["), snd.indexOf("void (async () => {")).matchAll(/files\((\/.+\/)\)/g)].map((m) => eval(m[1]));
+  assert.ok(res.length >= 4, "the batches");
+  for (const id of ["swing", "windup", "hit", "hit.heavy", "hit.body", "hit.tail", "hit.sub", "slam", "wave", "ult", "sub.drop", "sub.boom", "dash", "jump", "djump", "land", "hurt", "step.wood", "op.slap", "op.line1"]) {
+    assert.ok(res.some((r) => r.test(id)), `${id} is preloaded`);
+  }
+});
+
 test("her voice: Dex-approved takes, on the right moments, the ult register with its double and sub hits", () => {
   for (const [kind, m] of Object.entries(VOICE)) {
     for (const take of [...m.normal, ...m.ult]) {
