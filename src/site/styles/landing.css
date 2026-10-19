@@ -112,7 +112,7 @@
   background-size: 0 4px;
   background-position: 0 100%;
   background-repeat: no-repeat;
-  transition: background-size var(--d-spring) steps(6, end);
+  transition: background-size var(--d-spring) var(--ease-out);
 }
 .pcard__link:hover, .pcard__link:focus-visible { background-size: 100% 4px; }
 .pcard__line { margin: 0; font-size: var(--fs-body); line-height: 1.4; color: #ece5f0; max-width: 34ch; }
@@ -142,9 +142,10 @@
   image-rendering: pixelated;
   transition: translate 700ms var(--ease-out);
 }
-/* the shine: a bright band and a thin one, swept across on hover, focus and each time the card comes into view, in
-   pixel steps */
-.cart__shine { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+/* the shine: a bright band and a thin one, swept across on hover, focus and each time the card comes into view;
+   smooth on the vector finish (the default), in pixel steps on the pixel one */
+.cart__shine { --shine-t: var(--ease-out); position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+html[data-cardfinish="pixel"] .cart__shine { --shine-t: steps(14, end); }
 .cart__shine::before {
   content: "";
   position: absolute;
@@ -157,9 +158,9 @@
   transform: translateX(-120%) skewX(-16deg);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .cart.is-vis .cart__shine::before { animation: cart-shine 1.1s steps(14, end) 0.3s 1 both; }
+  .cart.is-vis .cart__shine::before { animation: cart-shine 1.1s var(--shine-t) 0.3s 1 both; }
   @media (hover: hover) {
-    .pcard:hover .cart__shine::before, .pcard:focus-within .cart__shine::before { animation: cart-shine-again 0.9s steps(12, end) 1 both; }
+    .pcard:hover .cart__shine::before, .pcard:focus-within .cart__shine::before { animation: cart-shine-again 0.9s var(--shine-t) 1 both; }
   }
   /* the layers ride the scroll (a view timeline: no script), back least, front most */
   @supports (animation-timeline: view()) {
@@ -177,7 +178,7 @@
 @keyframes cart-shine { from { transform: translateX(-120%) skewX(-16deg); } to { transform: translateX(220%) skewX(-16deg); } }
 @keyframes cart-shine-again { from { transform: translateX(-120%) skewX(-16deg); } to { transform: translateX(220%) skewX(-16deg); } }
 @keyframes cart-shine-idle {
-  0% { transform: translateX(-120%) skewX(-16deg); animation-timing-function: steps(14, end); }
+  0% { transform: translateX(-120%) skewX(-16deg); animation-timing-function: var(--shine-t); }
   14% { transform: translateX(220%) skewX(-16deg); }
   100% { transform: translateX(220%) skewX(-16deg); }
 }
@@ -194,8 +195,9 @@
 
 /* ---- the rigged art (render/cardart.ts .cart--rig: the card-art lane's parts as webp layers + rig.json). The art box
    covers the card with room to pan, the face focus centred across and ~30% down (clamped to the frame, so a head near
-   the frame's top stays in on the 4:5 phone crop too); the parts sit in it by their boxes. Vector finish: the parts move
-   by CSS (--anim, from the rig's motions). Pixel finish: motion/cardrig.ts draws them on the site's pixel grid. */
+   the frame's top stays in on the 4:5 phone crop too); the parts sit in it by their boxes. Vector finish (the default,
+   also with no script): the parts move by CSS (--anim, from the rig's motions). Pixel finish (?finish=pixel):
+   motion/cardrig.ts draws them on the site's pixel grid. */
 .cart--rig .rig__box {
   --w: max(100cqw + 28px, (100cqh + 28px) * var(--aw) / var(--ah));
   --h: calc(var(--w) * var(--ah) / var(--aw));
@@ -211,7 +213,7 @@
 .rig__px { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
 .cart[data-rigged="pixel"] > .rig__box { visibility: hidden; }
 @media (prefers-reduced-motion: no-preference) {
-  html[data-cardfinish="vector"] .rig__p { animation: var(--anim, none); }
+  html:not([data-cardfinish="pixel"]) .rig__p { animation: var(--anim, none); }
   @supports (animation-timeline: view()) {
     .rig__l { animation: cart-scroll linear both; animation-timeline: --pcard; }
   }

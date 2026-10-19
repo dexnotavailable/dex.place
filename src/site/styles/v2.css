@@ -380,30 +380,23 @@ code, kbd, pre, .prose code, .prose kbd, .verify__line code { font-size: 1em; fo
 /* ------------------------------------------------------------------ the looks (motion/looks.ts, html[data-motion]) */
 /* Content is never hidden waiting for a script: "dust" runs on the scroll itself (a view timeline, CSS only; without
    it the blocks are simply there), "cuts" only adds a landing to a block already in place. Reduced motion: none. */
-:root {
-  --dither-25: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1h-1zM2 0h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1z'/%3E%3C/svg%3E");
-  --dither-50: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1h-1zM2 0h1v1h-1zM1 1h1v1h-1zM3 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM1 3h1v1h-1zM3 3h1v1h-1z'/%3E%3C/svg%3E");
-  --dither-75: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM1 1h1v1h-1zM3 1h1v1h-1zM0 2h1v1h-1zM1 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM1 3h1v1h-1zM3 3h1v1h-1z'/%3E%3C/svg%3E");
-}
 @media (prefers-reduced-motion: no-preference) {
-  /* dust: each block of a section comes in through four ordered-dither steps, drifting in on the mark's wind */
+  /* dust: the world's windows blow open as pixel dust (motion/looks.ts); the page's own blocks are web type and
+     controls, so they stay crisp (Dex 10-19: "some web elements don't necessarily need to be pixel") and simply drift
+     in on the mark's wind, fading up as they scroll in */
   @supports (animation-timeline: view()) {
     html[data-motion="dust"] :is(.band > .sec > .wrap, .band > .page > .wrap) > * {
       animation: look-dust linear both;
       animation-timeline: view();
       animation-range: entry 5% entry 85%;
-      -webkit-mask-size: 4px 4px;
-      mask-size: 4px 4px;
     }
   }
   /* cuts: a block lands in three frames on twos: low, past, home */
   html[data-motion="cuts"] .is-cut { animation: look-cut 250ms steps(1, end) both; }
 }
 @keyframes look-dust {
-  0%, 24.9% { -webkit-mask-image: var(--dither-25); mask-image: var(--dither-25); translate: -6px 0; }
-  25%, 49.9% { -webkit-mask-image: var(--dither-50); mask-image: var(--dither-50); translate: -4px 0; }
-  50%, 74.9% { -webkit-mask-image: var(--dither-75); mask-image: var(--dither-75); translate: -2px 0; }
-  75%, 100% { -webkit-mask-image: none; mask-image: none; translate: 0 0; }
+  from { opacity: 0; translate: -10px 0; animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1); }
+  to { opacity: 1; translate: 0 0; }
 }
 @keyframes look-cut { 0% { translate: 0 28px; } 33.3% { translate: 0 -4px; } 66.6%, 100% { translate: 0 0; } }
 /* cuts on a desktop: the scroll settles on a section like a shot */

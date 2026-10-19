@@ -410,11 +410,11 @@ test("the loader lands when the opening set is in, even when the world's progres
   assert.notEqual(0.7 + 0.1 + 0.1 + 0.1, 1);
 });
 
-test("the looks (Dex 10-19 'the motion feels cheap'): diorama ships; depth by nearness, a tear that opens as the window rises, unchanged frames skipped", async () => {
+test("the looks (Dex 10-19 'the motion feels cheap', then 'probably dust'): dust ships; depth by nearness, a tear that opens as the window rises, unchanged frames skipped", async () => {
   const { DEFAULT_LOOK, LOOKS } = await import("./motion/look-mode.ts");
   const { LOOK, diorama } = await import("./motion/looks.ts");
   const { holeMask, tearField } = await import("./motion/windows.ts");
-  assert.equal(DEFAULT_LOOK, "diorama");
+  assert.equal(DEFAULT_LOOK, "dust");
   assert.deepEqual([...LOOKS].sort(), Object.keys(LOOK).sort(), "every look the switch knows exists");
   const st = (top, bandTop, bandH = 900) => ({ W: 300, H: 240, index: 0, top, bottom: top + 240, bandTop, bandBottom: bandTop + bandH, vh: 800, arrived: -1 });
   const piece = (kind, extra = {}) => ({ kind, p: {}, fit: 0.5, x: 0.5, y: 0.5, ...extra });

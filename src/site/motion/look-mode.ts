@@ -5,7 +5,7 @@
 export type Look = "diorama" | "dust" | "cuts";
 export const LOOKS: readonly Look[] = ["diorama", "dust", "cuts"];
 /** The look the site ships with (the other two stay one ?motion= away, for comparing). */
-export const DEFAULT_LOOK: Look = "diorama";
+export const DEFAULT_LOOK: Look = "dust"; // Dex 10-19: "probably dust"
 
 /** The look this page shows; sets html[data-motion]. */
 export function lookOfPage(): Look {

@@ -2,8 +2,9 @@
 // as a webp layer with a rig.json (format: lanes\motion\NOTEBOOK.md ASKS 00); render/cardart.ts puts the layers on the
 // page as plain <img> in an art box placed by CSS from the rig's face focus.
 //
-// Two finishes (Dex chooses; ?finish=pixel|vector keeps one for the visit, html[data-cardfinish]):
-// - vector: the layers themselves, moved by CSS animations from the rig's motions (the compositor; nothing here a frame).
+// Two finishes (motion/finish-mode.ts; ?finish=pixel|vector keeps one for the visit, html[data-cardfinish]):
+// - vector (the default, Dex 10-19 "vector is best"): the layers themselves, moved by CSS animations from the rig's
+//   motions (the compositor; this chunk is not even fetched).
 // - pixel: every layer drawn once onto the site's pixel grid (2 css px an art px, hard edges), then the card is one
 //   small canvas composited on twos (12 fps) while it is on screen, and only when something moved a whole pixel: the
 //   parts sway, breathe, bob, glow and drift in whole pixels, and pan by their depth with the pointer (desktop), the
@@ -11,24 +12,6 @@
 // Reduced motion: still.
 
 import { normaliseRig, type RigMotion as Motion, type RigPartV2, type RigV2 as Rig } from "./rig-read.ts";
-
-export type Finish = "pixel" | "vector";
-const FINISHES: readonly Finish[] = ["pixel", "vector"];
-
-/** The finish this page shows: ?finish=<finish> (kept for the visit), else pixel. Sets html[data-cardfinish]. */
-export function finishOfPage(): Finish {
-  let f: Finish = "pixel";
-  try {
-    const q = new URLSearchParams(location.search).get("finish");
-    if (q && (FINISHES as readonly string[]).includes(q)) sessionStorage.setItem("dex-finish", q);
-    const kept = sessionStorage.getItem("dex-finish");
-    if (kept && (FINISHES as readonly string[]).includes(kept)) f = kept as Finish;
-  } catch {
-    // (storage blocked: the default)
-  }
-  document.documentElement.dataset.cardfinish = f;
-  return f;
-}
 
 export interface Pose { rot: number; sx: number; sy: number; dx: number; dy: number; alpha: number }
 
@@ -70,8 +53,7 @@ export function coverOf(rig: Pick<Rig, "size" | "focus">, cw: number, ch: number
 interface Part { rig: RigPartV2; img: HTMLCanvasElement }
 
 export function initCardRigs(reduced: MediaQueryList, fine: MediaQueryList): void {
-  const finish = finishOfPage();
-  if (finish !== "pixel") return; // vector: CSS plays the layers
+  if (document.documentElement.dataset.cardfinish !== "pixel") return; // vector: CSS plays the layers
   const arts = Array.from(document.querySelectorAll<HTMLElement>(".cart--rig[data-rig]"));
   if (!arts.length || typeof IntersectionObserver !== "function") return;
   const io = new IntersectionObserver((entries) => {

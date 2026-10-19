@@ -1,16 +1,16 @@
 // How the website moves (Dex 10-19: "the motion feels cheap: experiment and transform what we have further"). Three
 // looks, one live at a time (html[data-motion], set by main.ts from ?motion= or the default), each a whole language:
 //
-// - "diorama": the world has depth and the scroll is the camera. Inside every window the near things move more than
-//   the far ones as the page scrolls (the sky barely, the karst a little, the palace, the pine and the towers most),
-//   in whole pixels; a window's hole tears open as it rises into view (and closes again if you go back before it
-//   has); the content on the paper stays still: the paper is flat, the world behind it is deep.
-// - "dust": the "dex" mark's dust is the site's language. A window is white paper until it comes into view, then the
-//   paper blows away left to right as pixel dust on the mark's wind; the sections' blocks arrive in four ordered-dither
-//   steps as they scroll in (CSS, styles/v2.css).
-// - "cuts": anime limited animation, shots and holds. A window blinks open in three frames on twos (an ink slit, half,
-//   whole), then its camera pans slowly across the place and holds; the sections' blocks land in three frames with an
-//   overshoot; on a desktop the scroll settles on each section like a shot (proximity snapping).
+// - "diorama" (?motion=diorama): the world has depth and the scroll is the camera. Inside every window the near
+//   things move more than the far ones as the page scrolls (the sky barely, the karst a little, the palace, the pine
+//   and the towers most), in whole pixels; a window's hole tears open as it rises into view (and closes again if you go
+//   back before it has); the content on the paper stays still: the paper is flat, the world behind it is deep.
+// - "dust" (ships, Dex 10-19 "probably dust"): the "dex" mark's dust is the site's language. A window is white paper
+//   until it comes into view, then the paper blows away left to right as pixel dust on the mark's wind; the sections'
+//   blocks (web type and controls: kept crisp, not pixel) drift in on the same wind, fading up (CSS, styles/v2.css).
+// - "cuts" (?motion=cuts): anime limited animation, shots and holds. A window blinks open in three frames on twos (an
+//   ink slit, half, whole), then its camera pans slowly across the place and holds; the sections' blocks land in three
+//   frames with an overshoot; on a desktop the scroll settles on each section like a shot (proximity snapping).
 //
 // Every look: reduced motion = still (windows drawn once, nothing arrives, nothing pans); content never waits on a
 // script (a block is always visible; the looks only add motion as it comes).
