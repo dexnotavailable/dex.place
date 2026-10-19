@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T13:08:45.297Z (19/10/2026, 20:08:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T14:11:27.476Z (19/10/2026, 21:11:27 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `8a65974`
+- live on dex.place: `84b2e67`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,32 +12,8 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_93dbdace-3fa — last activity 118 min ago
-4 agents: 3 done, 0 running or stopped mid-way, 1 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (failed)
-- **w2:r1** (done): Round 1 worker 2 is committed. The biggest problem, the tile-grid cliffs, is gone in tesu, tesu-720, ease-in and the play frames. The gates now read as torii seen from the side. The lake no longer shows as a tray from 1/4 zoom out, and the palace stands whole in the 1280 film frame. What changed: - **Cliffs (W2-1, W2-8, W2-12):** a new face model, `strata.ts`, used when an `op.rock` piece names a style. The face is b
-
-### wf_5cebc05c-deb — last activity 118 min ago
-4 agents: 2 done, 0 running or stopped mid-way, 2 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (failed)
-- **w2:r1** (failed)
-
-### wf_286da28b-ad1 — last activity 119 min ago
-4 agents: 2 done, 0 running or stopped mid-way, 2 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (failed)
-- **w2:r1** (failed)
-
-### wf_6eb91aef-0bd — last activity 120 min ago
-8 agents: 6 done, 0 running or stopped mid-way, 2 failed.
+### wf_6eb91aef-0bd — last activity 6 min ago
+8 agents: 7 done, 1 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
 - **critic:r0** (done): 
@@ -45,8 +21,32 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w2:r1** (done): The W2 rendering round is committed on claude/v2-art-hall-p2. I merged W1's layout commits (8325bc28 and 571362d4) into the branch, so HEAD f1903e58 is W1's layout plus my rendering. A full 8-frame render under the heavy lock (round-1\w2\final\) passes every placement check, has 0 page errors, and all 9 of Dex's layout asks come back yes. Core technique: tint.ts. Each plane paints into one buffer per tile, so a piece
 - **integrate:r1** (done): 
 - **critic:r1** (done): 
-- **w1:r2** (failed)
-- **w2:r2** (failed)
+- **w1:r2** (done): Worker 1's round 2 is committed. Eight of the nine critique items are in; W1-9 (the arcade stair under the court) is written up as a request for whoever owns that walk in shiraito.ts. This run picked up after a usage stop. The earlier session had made most of the edits but not committed them. I rendered all 8 frames at real size on port 24621, fixed what still looked wrong, then committed. What each item got: - **W1-
+- **w2:r2** (running)
+
+### wf_5cebc05c-deb — last activity 26 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (running)
+- **w2:r1** (running)
+
+### wf_286da28b-ad1 — last activity 26 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (running)
+- **w2:r1** (running)
+
+### wf_93dbdace-3fa — last activity 26 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (running)
+- **w2:r1** (running): Round 1 worker 2 is committed. The biggest problem, the tile-grid cliffs, is gone in tesu, tesu-720, ease-in and the play frames. The gates now read as torii seen from the side. The lake no longer shows as a tray from 1/4 zoom out, and the palace stands whole in the 1280 film frame. What changed: - **Cliffs (W2-1, W2-8, W2-12):** a new face model, `strata.ts`, used when an `op.rock` piece names a style. The face is b
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
