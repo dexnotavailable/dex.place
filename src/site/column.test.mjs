@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { INTRO_TIMING, penEase, planMark } from "../intro/intro.ts";
 import { bottomView, cornerView, driftPoint, topView, trail, trailPoint } from "./motion/flow.ts";
-import { scatterCell, scatterSvg, sheetEdgeSvg } from "./motion/scatter.ts";
+import { scatterCell, scatterSvg } from "./motion/scatter.ts";
 import { COLUMN_PAGES, jettySection, shell, world } from "./render/layout.ts";
 import { landing } from "./render/landing.ts";
 import { routes } from "./render/routes.ts";
@@ -277,18 +277,60 @@ test("every page that is not the page column is plain white (its sheet carries t
   }
 });
 
-test("the white page's top edge: a two-tone ordered dither, white at the page thinning to none, one image the page's width", () => {
-  const svg = sheetEdgeSvg(320, 14, 4);
-  assert.match(svg, /^<svg [^>]*width="1280" height="56"[^]*fill="#fff"/);
-  assert.doesNotMatch(svg, /opacity|fill="(?!#fff)/, "two tones: white or nothing");
-  const rows = Array(14).fill(0);
-  for (const [, x, y, n] of svg.matchAll(/M(\d+) (\d+)h(\d+)/g)) rows[+y] += +n;
-  // (an ordered dither: each run of four rows holds the whole threshold matrix, so every four-row window is denser
-  // than the one above it)
-  const win4 = (y) => rows[y] + rows[y + 1] + rows[y + 2] + rows[y + 3];
-  for (let y = 1; y + 3 < 14; y++) assert.ok(win4(y) >= win4(y - 1), `denser toward the page (rows ${y}..${y + 3})`);
-  assert.ok(rows[0] < 320 * 0.1 && rows[13] > 320 * 0.9);
-  assert.equal(sheetEdgeSvg(320, 14, 4), svg, "deterministic");
+test("\"dex\" writes itself on a quiet thread: the world, the windows and the opening's audio start after it (Dex 10-19)", async () => {
+  // "when it draws 'dex' at the start it lags": the world's frame boots on the page's own thread
+  const world = readFileSync(new URL("./motion/world.ts", import.meta.url), "utf8");
+  assert.match(world, /afterMark\(\)\.then\(load\)/, "the world's code loads after the mark");
+  const main = readFileSync(new URL("./main.ts", import.meta.url), "utf8");
+  assert.match(main, /afterMark\(\)\.then\(\(\) => import\("\.\/motion\/sky\.ts"\)\)/, "the windows after the mark");
+  const enter = readFileSync(new URL("./motion/enter.ts", import.meta.url), "utf8");
+  assert.match(enter, /void afterMark\(\)\.then\(wake\)/, "the opening's audio after the mark");
+  const col = readFileSync(new URL("./motion/column.ts", import.meta.url), "utf8");
+  assert.match(col, /markStart\(\);\s*intro = playIntro/);
+  assert.match(col, /intro\.written\.then\(\(\) => \{ markDone = true; quietDone\(\); \}\)/);
+  assert.match(col, /else if \(!intro\) quietDone\(\);/, "covered at the start: nothing waits for a mark");
+  // the wait itself: resolves on the mark, at once without a game screen, and never hangs
+  const listeners = {};
+  let title = {};
+  globalThis.document = {
+    documentElement: { setAttribute() {} },
+    querySelector: () => title,
+    addEventListener: (n, f) => { (listeners[n] ??= []).push(f); },
+    dispatchEvent: (e) => { for (const f of listeners[e.type] ?? []) f(e); return true; },
+  };
+  globalThis.window ??= globalThis;
+  globalThis.CustomEvent ??= class extends Event {};
+  const q = await import("./motion/quiet.ts");
+  let done = false;
+  const w = q.afterMark().then(() => { done = true; });
+  await new Promise((r) => setTimeout(r, 5));
+  assert.equal(done, false, "waits while the mark draws");
+  q.markStart();
+  q.markDone();
+  await w;
+  assert.equal(done, true, "goes once it is written");
+  q.resetMark();
+  title = null;
+  await q.afterMark(); // no game screen: at once
+  title = {};
+  q.resetMark();
+  const t0 = Date.now();
+  q.markStart();
+  await q.afterMark();
+  assert.ok(Date.now() - t0 >= q.DRAW_WAIT_MS - 50 && Date.now() - t0 < q.MARK_WAIT_MS, "a started mark that never says: the draw's wait");
+  q.resetMark();
+  delete globalThis.document;
+});
+
+test("the \"dex\" screen is black to its bottom edge: no band where the white page meets it (Dex 10-19)", () => {
+  // "there's a white fade at the bottom which imo looks bad": the white page's top edge is clean, below the fold
+  const v2 = readFileSync(new URL("./styles/v2.css", import.meta.url), "utf8");
+  const col = readFileSync(new URL("./styles/column.css", import.meta.url), "utf8");
+  const sc = readFileSync(new URL("./motion/scatter.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(v2, /\.sheet--column::before/, "nothing drawn above the sheet's top edge");
+  assert.doesNotMatch(v2 + col + sc, /--sheet-edge/, "no edge band, its size or its height left anywhere");
+  // the "Site" cue keeps its place near the screen's foot without the band's height
+  assert.match(col, /\.world__cue \{[^}]*bottom: calc\(clamp\(28px, 4vw, 56px\) \+ 18px\)/);
 });
 
 test("the corner is a slot in the header (right of World, left of Menu); the marks are the pixel dex", async () => {
