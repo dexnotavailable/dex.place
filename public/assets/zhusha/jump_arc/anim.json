@@ -3,61 +3,118 @@
  "stage": "pixel",
  "figure_h": 128,
  "pivot": [
-  133,
-  248
+  86,
+  177
  ],
  "frames": [
   {
    "file": "f000.png",
    "ticks": 3,
-   "fig": 128
+   "fig": 128,
+   "src": 13
   },
   {
    "file": "f001.png",
-   "ticks": 10,
-   "fig": 128
+   "ticks": 2,
+   "fig": 128,
+   "src": 14
   },
   {
    "file": "f002.png",
-   "ticks": 4,
-   "fig": 128
+   "ticks": 2,
+   "fig": 128,
+   "src": 16
   },
   {
    "file": "f003.png",
    "ticks": 3,
-   "fig": 128
+   "fig": 128,
+   "src": 19
   },
   {
    "file": "f004.png",
    "ticks": 4,
-   "fig": 128
+   "fig": 128,
+   "src": 23
   },
   {
    "file": "f005.png",
-   "ticks": 5,
-   "fig": 128
+   "ticks": 3,
+   "fig": 128,
+   "src": 27
   },
   {
    "file": "f006.png",
    "ticks": 3,
-   "fig": 128
+   "fig": 128,
+   "src": 29
   },
   {
    "file": "f007.png",
-   "ticks": 3,
-   "fig": 128
+   "ticks": 2,
+   "fig": 128,
+   "src": 30
   },
   {
    "file": "f008.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 31
+  },
+  {
+   "file": "f009.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 33
+  },
+  {
+   "file": "f010.png",
    "ticks": 5,
-   "fig": 128
+   "fig": 128,
+   "src": 36
+  },
+  {
+   "file": "f011.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 39
+  },
+  {
+   "file": "f012.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 42
+  },
+  {
+   "file": "f013.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 45
+  },
+  {
+   "file": "f014.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 48
+  },
+  {
+   "file": "f015.png",
+   "ticks": 6,
+   "fig": 128,
+   "src": 52
+  },
+  {
+   "file": "f016.png",
+   "ticks": 6,
+   "fig": 128,
+   "src": 56
   }
  ],
  "loop": false,
- "source": "h3-L-jump_arc-A-s3000-9d2eff",
- "notes": "kit v1.3 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended (worker 1): f002: blade re-extended above the frame top to full length (tip (338, -488), hw 4), shifted -3 px so her shoes stand on the ground row; f003: shifted -3 px so her shoes stand on the ground row",
+ "source": "h3-J-jump_arc-A2H-w50-s3000-ae4e5e-r3",
+ "notes": "kit v1.9 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f001: in the air: set +35 px so her lowest shoe is on the ground row (the game's arc lifts her); f002: in the air: set +57 px so her lowest shoe is on the ground row (the game's arc lifts her); f003: in the air: set +78 px so her lowest shoe is on the ground row (the game's arc lifts her); f004: in the air: set +89 px so her lowest shoe is on the ground row (the game's arc lifts her); f005: in the air: set +82 px so her lowest shoe is on the ground row (the game's arc lifts her); f006: in the air: set +61 px so her lowest shoe is on the ground row (the game's arc lifts her); f007: in the air: set +39 px so her lowest shoe is on the ground row (the game's arc lifts her); f011: 1 px of H3's floor shadow streak removed; f012: 4 px of H3's floor shadow streak removed; f000: ofuda stamp skipped (paper cover 0.0: covered / moving); f001: ofuda stamp skipped (paper cover 0.0: covered / moving); f002: ofuda stamp skipped (paper cover 0.0: covered / moving); f003: ofuda stamp skipped (paper cover 0.0: covered / moving); f004: ofuda stamp skipped (paper cover 0.0: covered / moving); f005: ofuda stamp skipped (paper cover 0.0: covered / moving); f006: ofuda stamp skipped (paper cover 0.244: covered / moving); f007: ofuda stamp skipped (paper cover 0.0: covered / moving); f008: ofuda stamp skipped (paper cover 0.0: covered / moving); f009: ofuda stamp skipped (paper cover 0.0: covered / moving); f010: ofuda stamp skipped (paper cover 0.0: covered / moving); f011: ofuda stamp skipped (paper cover 0.0: covered / moving); f012: ofuda stamp skipped (paper cover 0.0: covered / moving); f013: ofuda stamp skipped (paper cover 0.585: covered / moving); f014: ofuda stamp skipped (paper cover 0.537: covered / moving); f015: the one ofuda stamped at [0, -135] (51 px changed); f016: the one ofuda stamped at [-1, -135] (54 px changed)",
  "segments": [
-  1,
-  3
+  4,
+  8
  ]
 }
