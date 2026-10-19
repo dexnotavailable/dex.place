@@ -1,0 +1,122 @@
+{
+ "id": "defeat",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  98,
+  145
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 16
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 20
+  },
+  {
+   "file": "f002.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 24
+  },
+  {
+   "file": "f003.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 27
+  },
+  {
+   "file": "f004.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 30
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 33
+  },
+  {
+   "file": "f006.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 36
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 39
+  },
+  {
+   "file": "f008.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 40
+  },
+  {
+   "file": "f009.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 47
+  },
+  {
+   "file": "f010.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 49
+  },
+  {
+   "file": "f011.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 63
+  },
+  {
+   "file": "f012.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 66
+  },
+  {
+   "file": "f013.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 69
+  },
+  {
+   "file": "f014.png",
+   "ticks": 5,
+   "fig": 128,
+   "src": 72
+  },
+  {
+   "file": "f015.png",
+   "ticks": 8,
+   "fig": 128,
+   "src": 78
+  },
+  {
+   "file": "f016.png",
+   "ticks": 10,
+   "fig": 128,
+   "src": 90
+  },
+  {
+   "file": "f017.png",
+   "ticks": 12,
+   "fig": 128,
+   "src": 110
+  }
+ ],
+ "loop": false,
+ "source": "h3-L-defeat-A-s3000-0cf844",
+ "notes": "kit v1.5 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f003: shifted -3 px so her shoes stand on the ground row; f004: shifted -3 px so her shoes stand on the ground row; f009: the blade re-extended past the right edge (176 px, hw 8), shifted -1 px so her shoes stand on the ground row; f010: the blade re-extended past the right edge (233 px, hw 6); f011: the blade re-extended past the right edge (359 px, hw 6); f012: the blade re-extended past the right edge (359 px, hw 6); f013: the blade re-extended past the right edge (359 px, hw 6); f014: the blade re-extended past the right edge (359 px, hw 6); f015: the blade re-extended past the right edge (359 px, hw 4); f016: the blade re-extended past the right edge (359 px, hw 6); f017: the blade re-extended past the right edge (359 px, hw 4)"
+}
