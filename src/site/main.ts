@@ -74,6 +74,15 @@ const steps: [string, () => void][] = [
   ["stuck", () => initStuck()],
   ["menu", () => initMenu()],
   ["scenes", () => initScenes(reduced, fine)],
+  // the project cards' own motion (motion/pcard.ts, lane K) on the pages without the home's choreography (/projects/,
+  // a project's page: "Other projects"), own chunk; on the home page the choreography drives the deck
+  ["cards", () => {
+    const lists = document.querySelectorAll<HTMLElement>('[data-pcards="page"]');
+    if (!lists.length) return;
+    import("./motion/pcard.ts").then((m) => {
+      for (const ul of lists) m.initCards(ul, { reduced: reduced.matches, fine: fine.matches }).settle();
+    }, failed("cards"));
+  }],
   // the project cards' rigged art in the pixel finish (render/cardart.ts data-rig), own chunk, loaded only for that
   // finish and when a card has a rig (the default vector finish is CSS)
   ["cardrig", () => {
