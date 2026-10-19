@@ -302,25 +302,32 @@ test("the corner is a slot in the header (right of World, left of Menu); the mar
   assert.match(page, /<main id="main" class="main" tabindex="-1"><div class="band band--l"><div class="page">x<\/div><div class="band__win" data-window="palace"/);
 });
 
-test("Zhusha on the jetty is her own idle drawing at her play scale, the ofuda landing on her hat's tie (no white box)", async () => {
-  const { FIGURE, HER_ART, HAT_TIE } = await import("./motion/her.ts");
+test("Zhusha on the jetty is her own drawing at her play scale, the ofuda landing exactly on the one on her hat (no white box)", async () => {
+  const { FIGURE, HER_ART, HOLDING, IDLE_PIVOT, WAITING, ofudaOnHat } = await import("./motion/her.ts");
+  const { OFUDA_H, OFUDA_IN_IDLE, OFUDA_W } = await import("./motion/pixel-loader.ts");
   const { FIGURE_H } = await import("../tesu/zhusha/contract.ts");
   const { H } = await import("../tesu/config.ts");
-  const { HAT_TIE: ENGINE_TIE } = await import("../tesu/opening/ofuda.ts");
   const feel = JSON.parse(readFileSync(new URL("../tesu/zhusha/feel.json", import.meta.url), "utf8"));
   // the same numbers the game draws her with (mirrored so the page's bundle carries none of the engine)
   assert.equal(FIGURE, FIGURE_H);
   assert.equal(HER_ART, (H * feel.charScale) / FIGURE_H);
-  assert.deepEqual([...HAT_TIE], [...ENGINE_TIE]);
   // her idle is in the game's assets: a plain loop, pivot at her soles
   const idle = JSON.parse(readFileSync(new URL("../../public/assets/zhusha/idle/anim.json", import.meta.url), "utf8"));
   assert.equal(idle.figure_h, 128);
   assert.ok(idle.frames.length >= 1 && idle.pivot.length === 2 && !idle.idle_variant);
-  // the stand-in is gone from the page: no white box, no drawn hat band or eye
+  assert.deepEqual([...IDLE_PIVOT], idle.pivot);
+  // she waits bare-hatted (the paperless loop when the game has it, else the idle) and then holds it (the idle, whose
+  // hat carries the ofuda, cut from it at OFUDA_IN_IDLE): the page's paper lands on that place, the same size
+  assert.equal(WAITING.at(-1), HOLDING);
+  assert.equal(HOLDING, "/assets/zhusha/idle/");
+  assert.equal(idle.frames[0].file, OFUDA_IN_IDLE.file);
+  assert.deepEqual(ofudaOnHat(idle.pivot), { x: OFUDA_IN_IDLE.x - idle.pivot[0], y: OFUDA_IN_IDLE.y - idle.pivot[1], w: OFUDA_W, h: OFUDA_H });
+  // the stand-in is gone from the page: no white box, no drawn hat band or eye, no second ofuda drawn over hers
   const css = readFileSync(new URL("./styles/column.css", import.meta.url), "utf8");
   assert.doesNotMatch(css, /\.jetty__her \{[^}]*background: #fff/);
   assert.doesNotMatch(css, /\.jetty__her::(before|after)/);
-  // the drift lands on the hat's tie (motion/sky.ts places .jetty__hat there)
+  assert.doesNotMatch(css, /\.jetty__hat \{[^}]*background/);
+  // the drift lands on the ofuda's place on her hat (motion/sky.ts places .jetty__hat there)
   const col = readFileSync(new URL("./motion/column.ts", import.meta.url), "utf8");
   assert.match(col, /her\.querySelector\("\.jetty__hat"\)/);
 });

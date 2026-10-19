@@ -1,9 +1,9 @@
 // The ofuda in the world (Dex 10-18: "for the ofuda we just yoink it from the official processed Zhusha, then simulate
 // it and animate it like real paper"; 10-16: "the corner ofuda literally becomes the ofuda on her hat"). ONE object
 // from the website's loader to her hat: the loader lane's PaperOfuda (src/site/motion/pixel-loader.ts: a 3D verlet
-// strip, bend, twist, air drag with a leading-edge push, gusts) with its sprite (6 x 15 art px lifted from her processed
-// 128 px drawing, public/site/loader/ofuda.png), at her drawing's own pixel size (ART_PX world px per art px: "a few px
-// everywhere, basically the gameplay size").
+// strip, bend, twist, air drag with a leading-edge push, gusts) with its sprite (7 x 13 art px: the paper on her hat in
+// her idle, exact to the pixel, Dex 10-19; public/site/loader/ofuda.png), at her drawing's own pixel size (ART_PX world
+// px per art px: "a few px everywhere, basically the gameplay size").
 //
 // - The fall (the opening, ways 1-3; way 4 from the right): the paper falls free in its own simulation, in the east
 //   wind and its gusts, and is carried along the opening's flight (timeline.ts paperScreenAt: where it is on the frame
@@ -16,14 +16,13 @@
 // Drawn as pixels on the play plane's grid at the camera's scale (never a smoothly scaled picture): each facet
 // rasterised with the sprite's texels (nearest), its back mirrored and darker, lit by how it faces the light.
 
-import { COLORS, OFUDA_BACK, OFUDA_FRONT, OFUDA_H, OFUDA_W, PaperOfuda } from "../../site/motion/pixel-loader.ts";
+import {
+  COLORS, EDGE_INDEX as EDGE, MID_PAPER, OFUDA_BACK, OFUDA_FRONT, OFUDA_H, OFUDA_W, PaperOfuda, isPaperColor as isPaper,
+  paperShift as shiftPaper,
+} from "../../site/motion/pixel-loader.ts";
 
 type RGB = [number, number, number];
 
-/** Palette layout of the loader's COLORS: 1 the paper's edge brown, 2.. its paper ramp (13 steps, dark to light). */
-const EDGE = 1, P0 = 2, PN = 13;
-const isPaper = (c: number): boolean => c >= P0 && c < P0 + PN;
-const shiftPaper = (c: number, s: number): number => (isPaper(c) ? P0 + Math.max(0, Math.min(PN - 1, c - P0 + s)) : c);
 const RGB01: RGB[] = COLORS.map((c) => [c[0] / 255, c[1] / 255, c[2] / 255]);
 const GLINT_CORE: RGB = [1, 0.965, 0.784], GLINT_ARM: RGB = [1, 0.91, 0.57];
 /** The light, from the upper left and in front (the loader's). */
@@ -161,7 +160,7 @@ export class WorldPaper {
    */
   static draw(pose: PaperPose, toFrame: (x: number, y: number) => [number, number], glint: number | null, reduced: boolean, put: (x: number, y: number, c: RGB) => void): void {
     const F = pose.pts.map((q) => { const f = toFrame(q[0], q[1]); return [f[0], f[1], q[2]] as [number, number, number]; });
-    // how many frame px an art px is here: below about one, the sprite's edge texels would be all that shows
+    // how many frame px an art px is here (small: a few frame px, its shaded side darkened so it reads as paper)
     const len = Math.hypot(F[10]![0] + F[11]![0] - F[0]![0] - F[1]![0], F[10]![1] + F[11]![1] - F[0]![1] - F[1]![1]) / 2;
     const k = len / OFUDA_H;
     const out = new Map<number, number>();
@@ -170,7 +169,7 @@ export class WorldPaper {
     let px = NaN, py = NaN;
     for (let r = 0; r <= SEG; r++) {
       const mx = Math.floor((F[r * 2]![0] + F[r * 2 + 1]![0]) / 2), my = Math.floor((F[r * 2]![1] + F[r * 2 + 1]![1]) / 2);
-      if (!Number.isNaN(px)) line(px, py, mx, my, (x, y) => set(x, y, k < 1.4 ? P0 + 6 : EDGE));
+      if (!Number.isNaN(px)) line(px, py, mx, my, (x, y) => set(x, y, k < 1.4 ? MID_PAPER : EDGE));
       px = mx; py = my;
     }
     const order = Array.from({ length: SEG }, (_, r) => r).sort((ra, rb) => zOf(F, ra) - zOf(F, rb));
@@ -181,7 +180,7 @@ export class WorldPaper {
       tri(F, a, d, c, [0, va], [1, vc], [0, vc], k, set);
     }
     if (k < 1.4) {
-      // small: the sprite's 1 px edge would swallow it; its paper shows instead, with the darkest paper on its shaded side
+      // small: its own paper a step darker on its shaded side (bottom / right), so it reads against the sky
       const dark: [number, number][] = [];
       for (const [key, c] of out) {
         if (!isPaper(c)) continue;
@@ -212,7 +211,7 @@ function zOf(F: [number, number, number][], r: number): number {
   return z;
 }
 
-/** One facet triangle in frame px, textured from the sprite (nearest texel); small (k < 1.4): its inner texels only. */
+/** One facet triangle in frame px, textured from the sprite (nearest texel). */
 function tri(F: [number, number, number][], i: number, j: number, k: number, ti: number[], tj: number[], tk: number[], scale: number, put: (x: number, y: number, c: number) => void): void {
   const [ax, ay, az] = F[i]!, [bx, by, bz] = F[j]!, [cx, cy, cz] = F[k]!;
   const area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
@@ -227,7 +226,6 @@ function tri(F: [number, number, number][], i: number, j: number, k: number, ti:
   const lit = nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2] - LIGHT[2];
   const shift = Math.max(-4, Math.min(1, Math.round(lit * 7)));
   const tex = front ? OFUDA_FRONT : OFUDA_BACK;
-  const small = scale < 1.4;
   const minX = Math.floor(Math.min(ax, bx, cx)), maxX = Math.ceil(Math.max(ax, bx, cx));
   const minY = Math.floor(Math.min(ay, by, cy)), maxY = Math.ceil(Math.max(ay, by, cy));
   const eps = 1e-7;
@@ -238,15 +236,13 @@ function tri(F: [number, number, number][], i: number, j: number, k: number, ti:
       const w1 = ((cx - sx) * (ay - sy) - (cy - sy) * (ax - sx)) / area;
       const w2 = 1 - w0 - w1;
       if (w0 < -eps || w1 < -eps || w2 < -eps) continue;
-      let u = w0 * ti[0]! + w1 * tj[0]! + w2 * tk[0]!;
-      let v = w0 * ti[1]! + w1 * tj[1]! + w2 * tk[1]!;
-      if (small) { u = (1 + u * (OFUDA_W - 2)) / OFUDA_W; v = (1 + v * (OFUDA_H - 2)) / OFUDA_H; }
+      const u = w0 * ti[0]! + w1 * tj[0]! + w2 * tk[0]!;
+      const v = w0 * ti[1]! + w1 * tj[1]! + w2 * tk[1]!;
       let tx = Math.min(OFUDA_W - 1, Math.max(0, Math.floor(u * OFUDA_W)));
       const ty = Math.min(OFUDA_H - 1, Math.max(0, Math.floor(v * OFUDA_H)));
       if (!front) tx = OFUDA_W - 1 - tx;
       const c = tex[ty * OFUDA_W + tx]!;
-      // (small, its paper reads lighter: the sprite's bright gold, not its shaded browns)
-      if (c) put(x, y, shiftPaper(c, small ? Math.max(-1, shift) + 2 : shift));
+      if (c) put(x, y, shiftPaper(c, shift));
     }
   }
 }

@@ -90,9 +90,9 @@ html.op-cine .world__cue { visibility: hidden; }
 }
 .jetty__her canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
 .jetty:not([data-her]) .jetty__her { opacity: 0; }
-/* the ofuda once she has caught it (way 4): a few px on her hat (its own drawing, public/site/loader/ofuda.png) */
-.jetty__hat { position: absolute; left: calc(50% - 6px); top: -2px; width: 12px; height: 30px; background: url("/site/loader/ofuda.png") 0 0 / 100% 100% no-repeat; image-rendering: pixelated; opacity: 0; }
-.jetty[data-caught] .jetty__hat { opacity: 1; }
+/* the ofuda's place on her hat (motion/sky.ts, from the drawing that holds it): where the page's paper lands in way 4;
+   nothing drawn here (her own drawing carries the ofuda once she holds it, the same pixels) */
+.jetty__hat { position: absolute; left: calc(50% - 6px); top: -2px; width: 12px; height: 30px; pointer-events: none; }
 .jetty__paper {
   position: relative;
   justify-self: end;
