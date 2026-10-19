@@ -29,16 +29,17 @@ test("cast: cast.json is valid and names the world's characters on the play plan
 test("cast: every NPC box stands at her drawn height (H x charScale) in its resting frame", () => {
   const cast = validateCast(CAST);
   const body = drawnH(FEEL, H);
-  assert.ok(Math.abs(body - 105.6) < 1e-9);
+  assert.ok(Math.abs(body - 96 * FEEL.charScale) < 1e-9);
   for (const [id, e] of Object.entries(cast.npcs)) {
     const b = npcBox(e, body, 0);
     assert.equal(b.h, body, `${id} at frame 0`);
     assert.ok(b.w > 0);
     assert.equal(npcSlot(e, 0), null, `${id}: no art yet, the box`);
   }
-  // people are as wide as her own box; the Lion keeps the length of its bout body (345 px)
+  // people are as wide as her own box; the Lion keeps the length of its bout body in her heights (345 px at the 10-18
+  // size 1.1; 20% less with her at 0.88, Dex 10-19 "NPCs 20% smaller the same way")
   assert.ok(Math.abs(npcBox(cast.npcs.seo, body, 0).w - FEEL.body.boxW * body) < 1e-9);
-  assert.ok(Math.abs(npcBox(cast.npcs.champion, body, 0).w - 345) < 1);
+  assert.ok(Math.abs(npcBox(cast.npcs.champion, body, 0).w - 345 * FEEL.charScale / 1.1) < 1);
   // a pose squashes the box for a frame (the Lion's wind-up), then it is back at her height
   assert.ok(npcBox(cast.npcs.champion, body, 3).h < body);
   assert.equal(npcBox(cast.npcs.champion, body, 1).h, body);

@@ -21,8 +21,8 @@
 import { compile, uniforms } from "../../lab/engine/gl.ts";
 import { FULL_VS } from "../../lab/engine/shaders.ts";
 import { makeTarget, type Target, type WorldRenderer } from "../../world/render/renderer.ts";
-import type { CamState } from "./view.ts";
-import { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE, REDUCE_OPAQUE_EDGE } from "./grid.ts";
+import { planeXf, type CamState } from "./view.ts";
+import { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE, REDUCE_OPAQUE_EDGE, actorLayerPlan, actorMap } from "./grid.ts";
 
 export { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE, REDUCE_OPAQUE_EDGE };
 
@@ -162,9 +162,9 @@ export const REDUCE_INDEX_GLSL = reduceGlsl({ name: "reduceIdx", key: "int", arg
 const COMPOSITE_FS = /* glsl */ `#version 300 es
 precision highp float;
 uniform sampler2D uTex;
-uniform ivec2 uSize;     // the layer's size (its px = world px)
+uniform ivec2 uSize;     // the layer's size (its px = D per world px: her art px)
 uniform vec2 uRes;       // the frame
-uniform vec4 uMap;       // frame px -> layer px: layer = (frame px - uMap.xy) * uMap.z (+ the anchor phase uMap.w in x)
+uniform vec4 uMap;       // frame px -> layer px: layer = (frame px - uMap.xy) * uMap.z + uMap.w in x (grid.ts actorMap)
 uniform float uPhaseY;   // the anchor phase in y
 uniform float uMirror;   // frame row to mirror about, or -1
 uniform vec4 uRect;      // the frame rect the layer covers (x0, y0, x1, y1), y down
@@ -187,9 +187,11 @@ void main() {
 }`;
 
 /**
- * Her, her effects and the talisman at zoom < 1: drawn at play density into this layer (1 layer px = 1 world px, the
- * grid worker 6's charScale lands on), then reduced onto the frame (composite). The reduction grid is anchored to her
- * feet (`anchor`), so her drawing keeps its pixels while she or the camera moves: she moves by whole frame px.
+ * Her, her effects and the talisman where her art px would land under one px of their grid (zoom < 1; at play zoom
+ * on a 1080p screen since her 0.88 size, lane C 10-19): drawn into this layer at her art density (D layer px per world
+ * px, 1 layer px = 1 of her art px, so nothing of her is dropped), then reduced onto the frame with the feature-keeping
+ * rule (composite), never nearest-neighbour. The reduction grid is anchored to her feet (`anchor`), so her drawing
+ * keeps its pixels while she or the camera moves: she moves by whole frame px.
  */
 export class ActorLayer {
   private target: Target | null = null;
@@ -200,6 +202,9 @@ export class ActorLayer {
   y0 = 0;
   w = 0;
   h = 0;
+  /** Layer px per world px, and the play plane's transform on the layer (whole-px offsets). */
+  d = 1;
+  xf = { s: 1, offX: 0, offY: 0 };
   private saved: [number, number] = [0, 0];
 
   private gl: WebGL2RenderingContext;
@@ -218,30 +223,35 @@ export class ActorLayer {
   }
 
   /**
-   * Binds the layer for drawing (cleared clear) and returns the camera that draws the play plane into it at play
-   * density: its play-plane transform has scale 1 and offsets -x0, -y0. The layer covers twice the frame a side
-   * (capped by the GPU), centred on the view when the view fits in it (zoom >= 1/2), else on her.
+   * Binds the layer for drawing (cleared clear) and returns the camera that draws the play plane into it at density d
+   * (layer px per world px): its play-plane transform (this.xf) has scale d and offsets about -x0 d, -y0 d. Size,
+   * density and centre from grid.ts actorLayerPlan: her art density `artD` covering the view when it fits, else the
+   * density that covers the view, else (very wide) her art density centred on her.
    */
-  begin(r: WorldRenderer, cam: CamState, view: { cx: number; cy: number }, her: [number, number]): CamState {
+  begin(r: WorldRenderer, cam: CamState, view: { cx: number; cy: number }, her: [number, number], artD = 1): CamState {
     const gl = this.gl;
     const max = Math.min(4096, gl.getParameter(gl.MAX_TEXTURE_SIZE) as number);
-    const w = Math.min(max, 2 * cam.W), h = Math.min(max, 2 * cam.H);
+    const plan = actorLayerPlan(cam.W, cam.H, cam.zoom, artD, max);
+    const { w, h, d } = plan;
     if (!this.target || this.target.color.w !== w || this.target.color.h !== h) {
       if (this.target) { gl.deleteFramebuffer(this.target.fbo); gl.deleteTexture(this.target.color.tex); }
       this.target = makeTarget(gl, w, h, false);
     }
     this.w = w;
     this.h = h;
-    const fits = cam.W / cam.zoom <= w && cam.H / cam.zoom <= h;
-    const [cx, cy] = fits ? [view.cx, view.cy] : her;
-    this.x0 = Math.floor(cx - w / 2);
-    this.y0 = Math.floor(cy - h / 2);
+    this.d = d;
+    const [cx, cy] = plan.onView ? [view.cx, view.cy] : her;
+    this.x0 = Math.floor(cx - w / (2 * d));
+    this.y0 = Math.floor(cy - h / (2 * d));
     this.saved = [r.iw, r.ih];
     r.bindTarget(this.target, true, [0, 0, 0, 0]);
     r.iw = w;
     r.ih = h;
     const anchor = 0.5;
-    return { cx: w / 2 + this.x0, cy: anchor * h + this.y0, zoom: 1, anchor, horizon: anchor, W: w, H: h };
+    const c: CamState = { cx: w / (2 * d) + this.x0, cy: (anchor * h) / d + this.y0, zoom: d, anchor, horizon: anchor, W: w, H: h };
+    const xf = planeXf(c, 1);
+    this.xf = { s: xf.s, offX: xf.offX, offY: xf.offY };
+    return c;
   }
 
   /** Ends drawing into the layer; the renderer is back on its frame size (the caller rebinds its target). */
@@ -258,15 +268,10 @@ export class ActorLayer {
    */
   composite(frameW: number, frameH: number, xf: { s: number; offX: number; offY: number }, anchor: [number, number], mirror: number | null = null): void {
     if (!this.target) return;
-    const gl = this.gl, u = this.u, s = xf.s, inv = 1 / s;
-    // frame px n covers world [(n - off) / s, (n + 1 - off) / s); shifted by a phase in [0, 1/s) so that her anchor
-    // falls on a footprint boundary: n* = ceil(ax * s + off), phase = ax - (n* - off) / s
-    const ax = Math.round(anchor[0]), ay = Math.round(anchor[1]);
-    const nx = Math.ceil(ax * s + xf.offX - 1e-6), ny = Math.ceil(ay * s + xf.offY - 1e-6);
-    const phX = ax - (nx - xf.offX) * inv, phY = ay - (ny - xf.offY) * inv;
-    // the frame rect the layer covers
-    const fx0 = Math.floor((this.x0 - phX) * s + xf.offX), fy0 = Math.floor((this.y0 - phY) * s + xf.offY);
-    const fx1 = Math.ceil((this.x0 + this.w - phX) * s + xf.offX), fy1 = Math.ceil((this.y0 + this.h - phY) * s + xf.offY);
+    const gl = this.gl, u = this.u;
+    // frame px n reads the layer's footprint [(n - off) inv + c, ...), inv = d / s, phased so that her anchor starts one
+    const m = actorMap(this.xf, xf, this.w, this.h, anchor);
+    const [fx0, fy0, fx1, fy1] = m.rect;
     gl.useProgram(this.prog);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -275,9 +280,8 @@ export class ActorLayer {
     gl.uniform1i(u.uTex!, 0);
     gl.uniform2i(u.uSize!, this.w, this.h);
     gl.uniform2f(u.uRes!, frameW, frameH);
-    // layer px = (frame px - off) / s - x0 + phase  ->  (px - off) * inv + (phase - x0)
-    gl.uniform4f(u.uMap!, xf.offX, xf.offY, inv, phX - this.x0);
-    gl.uniform1f(u.uPhaseY!, phY - this.y0);
+    gl.uniform4f(u.uMap!, xf.offX, xf.offY, m.inv, m.cx);
+    gl.uniform1f(u.uPhaseY!, m.cy);
     gl.uniform1f(u.uMirror!, mirror ?? -1);
     gl.uniform4f(u.uRect!, fx0, fy0, fx1, fy1);
     gl.bindVertexArray(this.vao);

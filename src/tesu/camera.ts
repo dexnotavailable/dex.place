@@ -1,7 +1,7 @@
 // The camera: follows her with a look-ahead, takes its framing (zoom, feet row, horizon)
-// from tracks keyed to where she is (never to a clock), eases between them, snaps to an
-// authored zoom level when it comes to rest, shakes and punches for hits, and cuts to the
-// close band (2x, the 192 px render) on demand.
+// from tracks keyed to where she is (never to a clock), eases between them and rests where the
+// framing puts it (lane C 10-19: no snapping to authored levels; Dex "remove zoom levels
+// entirely"), shakes and punches for hits, and cuts to the close band (2x) on demand.
 
 import { FRAME_H, INTERIOR_Y, ZOOMS, H } from "./config.ts";
 import type { CamState } from "./render/view.ts";
@@ -93,7 +93,7 @@ export class Camera {
   private shakeT = 0;
   shakeX = 0;
   shakeY = 0;
-  /** Seconds the framing target has been still (for snapping to an authored level). */
+  /** Seconds the framing target has been still (a held framing eases in faster). */
   private still = 0;
   private lastTargetZoom = 1;
   private lookX = 0;
@@ -153,13 +153,13 @@ export class Camera {
     // the close band overrides the framing's zoom
     this.closeup += (this.closeTarget - this.closeup) * (this.closeTarget > this.closeup ? 0.22 : 0.12);
     if (Math.abs(this.closeTarget - this.closeup) < 0.002) this.closeup = this.closeTarget;
-    let want = f.zoom;
-    // rest snapping: when the framing's zoom has not changed for a moment, settle on a level
+    const want = f.zoom;
+    // (lane C 10-19, Dex: "remove zoom levels entirely") no rest snapping: the zoom settles where the framing puts it;
+    // the painted plate levels are only the renderer's hidden optimisation (in-between zooms are reduced crisply)
     if (Math.abs(want - this.lastTargetZoom) > 1e-4) this.still = 0;
     else this.still += dt;
     this.lastTargetZoom = want;
     this.wantZoom = want;
-    if (this.still > 0.25) want = nearestLevel(want);
     let zTarget = want * (1 - this.closeup) + 2 * this.closeup;
     if (this.reducedMotion) {
       // no zoom swings: the frame cuts between held levels (the game cross-fades the cut)
