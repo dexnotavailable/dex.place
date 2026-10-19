@@ -61,7 +61,7 @@ checkUnits(FEEL);
 export const DERIVED = (JSON.parse(derivedRaw) as { slots: Record<string, DerivedSlot> }).slots;
 
 /**
- * A sound cue from her, for the audio lane to layer on (Dex 10-19: voice and hits mixed AAA-style). `id` is the cue
+ * A sound cue from her, for the audio lane to layer on (Dex 10-19: her calls and hits mixed AAA-style). `id` is the cue
  * name feel.sound always got (swing, hit, slam, dash, jump, djump, land, hurt, charge, wave, rise, ult; new: skid);
  * the rest says what made it. Fired on the derived frames: a move's hit ticks are its drawings' live drawings.
  */
