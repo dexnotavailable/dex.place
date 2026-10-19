@@ -196,7 +196,7 @@ export class Zhusha {
   ink = 0;
   /** R's smoke cloud after the impact (draw.ts), ticks into it and how long it lasts. */
   smoke: { x: number; y: number; t: number; life: number } | null = null;
-  /** R, directed (ult.ts: the timeline, the camera's shots, the letterbox); the ult form's warps and ghost blades (ultform.ts). */
+  /** R, directed (ult.ts: the timeline, the camera's shots, the letterbox); the ult form's still idle and ghost blades (ultform.ts). */
   readonly r = new UltDirector();
   readonly uf = new UltForm();
   /** Set by the drawing side (anims.ts): has this anim's clip played out (true with no drawing)? Does a role have one? */
@@ -458,7 +458,7 @@ export class Zhusha {
     }
     if (this.form > 0 && this.state !== "ult" && this.state !== "exit" && --this.form === 0) this.startExit();
     this.r.after(this.state === "ult");
-    this.uf.tick(this.ultCtx(), world);
+    this.uf.tick(this.ultCtx());
     // the Q's pull-out lets go when its time is up, or she has gone far from the blast, or R / defeat take the frame
     const q = this.qCam;
     if (q && (--q.t <= 0 || this.state === "ult" || this.dead > 0 || Math.abs(this.body.x - q.x) > FEEL.q.camLeave * H)) this.qCam = null;
@@ -717,9 +717,8 @@ export class Zhusha {
     if (ax !== 0) this.facing = ax as 1 | -1;
     const b = this.body;
     // m1_3 locks onto a foe in reach (Dex 10-19): she turns to it and her lunge is aimed to stop at striking distance
-    // (in the ult form her chain warps instead: ultform.ts places her around the foe)
     let lock: { x0: number; travel: number; foe: boolean; fx: number } | null = null;
-    if (def.lock && !this.ultForm) {
+    if (def.lock) {
       const foes = this.host.foes?.() ?? [];
       const L = lockTarget(b.x, b.y, this.facing, foes, def.lock, BODY_H);
       const f = foes[L.foe];
@@ -734,8 +733,8 @@ export class Zhusha {
     this.lastAction = id;
     const mi = M1.indexOf(id as (typeof M1)[number]);
     if (mi >= 0) this.chainIdx = mi;
-    // the form's chain warps her around the target and summons ghost blades on its hits (ultform.ts)
-    if (mi >= 0 && this.ultForm) this.uf.begin(this.ultCtx(), mi, def.hits.map((h) => h.at), FEEL.ult.ghostDelay);
+    // the form's chain summons ghost blades on its hits (ultform.ts); it moves her as the normal chain does
+    if (mi >= 0 && this.ultForm) this.uf.begin(mi, def.hits.map((h) => h.at), FEEL.ult.ghostDelay);
     if (id === "skill_q") this.skillCd = def.cooldown ?? 0;
     if (id === "e_tap") this.eCd = def.cooldown ?? 0;
     this.anim = { role: id, t: 0, hitAt: def.hits[0]?.at ?? null, clipHitAt: def.clipHitAt, hidden: false, flame: 0, wind: def.wind };

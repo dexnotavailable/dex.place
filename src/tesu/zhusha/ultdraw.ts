@@ -4,7 +4,7 @@
 // piece by piece by the slash storm (each slash a white-hot streak; each piece it carves white-hot, cooling to vermilion
 // ink with her blue fire along it), shattering as she dives through it; her dive's vertical blur and its line; the nuke
 // (the white / orange / red first flash, her blue flames engulfing it, the column, the ground thrown up, the dust that
-// clears outward, off her: it hides the change, never her form after); the ghost blades; the warps' slits.
+// clears outward, off her: it hides the change, never her form after); the ghost blades.
 // Side-on and flat (Dex 10-19: no rings on the ground). The letter is never mirrored: it is drawn in world space as
 // written, wherever her facing put it.
 
@@ -63,12 +63,11 @@ export function drawUltBack(r: WorldRenderer, z: Zhusha): void {
   if (z.streak && !z.r.real.dive) diveLine(r, z);
 }
 
-/** In front of her: the storm's slashes, the nuke, the ghost blades, the warps' slits. */
+/** In front of her: the storm's slashes, the nuke, the ghost blades. */
 export function drawUltFront(r: WorldRenderer, z: Zhusha): void {
   slashes(r, z);
   if (z.smoke && !z.r.real.nuke) nuke(r, z.smoke);
   blades(r, z);
-  flashes(r, z);
 }
 
 /** The letter as carved so far: each carved piece white-hot, cooling to vermilion ink with her blue fire along it. */
@@ -241,18 +240,5 @@ function blades(r: WorldRenderer, z: Zhusha): void {
     quad(r, bx, by, L - 8, 2, ang, AZURE_CORE, op);
     quad(r, x - cx * L - cx * 4, y - sy * L - sy * 4, 4, 0.26 * H, ang, AZURE_DEEP, op);
     quad(r, x - cx * (L + 0.14 * H), y - sy * (L + 0.14 * H), 0.2 * H, 4, ang, AZURE, op);
-  }
-}
-
-/** The warps: a vertical slit where she left and where she arrived, opening and gone. */
-function flashes(r: WorldRenderer, z: Zhusha): void {
-  const n = ULT.form.flash;
-  for (const f of z.uf.flashes) {
-    const u = (z.uf.clock - f.at) / n;
-    if (u < 0 || u > 1) continue;
-    const h = H * (f.out ? 1.1 - 0.4 * u : 0.6 + 0.6 * u);
-    const w = f.out ? 2 + 10 * u : 12 * (1 - u) + 2;
-    quad(r, f.x, f.y - h / 2, w + 4, h, 0, AZURE, 1 - u);
-    quad(r, f.x, f.y - h / 2, Math.max(2, w * 0.4), h, 0, WHITE, 1 - u);
   }
 }

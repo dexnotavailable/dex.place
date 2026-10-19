@@ -51,11 +51,7 @@ export interface UltFile {
   punch: { press: number; boom: number; last: number; impact: number };
   cues: Record<string, string>;
   fx: { callFire: string; letter: string; dive: string; nuke: string; clear: string };
-  form: {
-    reach: number; ahead: number;
-    steps: { at: number; up: number; cross: boolean; blades: number }[];
-    free: number[]; summon: number; strike: number; fade: number; bladeLen: number; ring: number; flash: number;
-  };
+  form: { reach: number; ahead: number; blades: number[]; summon: number; strike: number; fade: number; bladeLen: number; ring: number };
 }
 
 export const ULT = JSON.parse(ultRaw) as UltFile;
@@ -63,7 +59,7 @@ export const ULT = JSON.parse(ultRaw) as UltFile;
 /** What each cue is, in the controller's cue terms (lane E's Cue.phase), by its ult.json key. */
 const PHASES: Record<string, Cue["phase"]> = {
   press: "windup", line: "windup", boom: "boom", fire: "windup", draw: "windup", vanish: "move", slash: "swing", last: "boom",
-  hush: "rise", dive: "move", impact: "boom", rumble: "land", reveal: "reveal", lineUlt: "reveal", warp: "move", blade: "windup", cut: "hit",
+  hush: "rise", dive: "move", impact: "boom", rumble: "land", reveal: "reveal", lineUlt: "reveal", blade: "windup", cut: "hit",
 };
 
 /** Fires the cue under ult.json key `k` (its id is lane D's to map). */
