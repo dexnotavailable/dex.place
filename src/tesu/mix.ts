@@ -179,9 +179,14 @@ export class VoiceBus {
 
   /** Her place on screen, -1 (left edge) .. 1 (right edge). */
   setPan(x: number): void {
-    const v = Math.max(-1, Math.min(1, x)) * VOICE_MIX.panSpread;
-    this.pan.pan.setTargetAtTime(this.dry ? 0 : v, this.ctx.currentTime, 0.08);
+    const v = this.dry ? 0 : Math.max(-1, Math.min(1, x)) * VOICE_MIX.panSpread;
+    // (once per frame: only a real move schedules anything)
+    if (Math.abs(v - this.lastPan) < 0.01) return;
+    this.lastPan = v;
+    this.pan.pan.setTargetAtTime(v, this.ctx.currentTime, 0.08);
   }
+
+  private lastPan = 0;
 
   /** A / B: dry plays the takes untouched (no EQ, compression, saturation, reverb or pan). */
   setDry(dry: boolean): void {
@@ -191,7 +196,10 @@ export class VoiceBus {
       c.wetPath.gain.value = dry ? 0 : c === this.ult ? VOICE_MIX.ult.makeup : VOICE_MIX.makeup;
     }
     this.setSpace(this.space, 0);
-    if (dry) this.pan.pan.value = 0;
+    if (dry) {
+      this.pan.pan.value = 0;
+      this.lastPan = 0;
+    }
   }
 }
 

@@ -141,6 +141,7 @@ test("her voice: Dex-approved takes, on the right moments, the ult register with
   assert.equal(voiceFor("swing", at), "kiai");
   assert.equal(voiceFor("swing", { ...at, first: true }), null, "the windup is silent");
   assert.equal(voiceFor("swing", { ...at, first: true, role: "e_tap" }), "e");
+  assert.equal(voiceFor("swing", { ...at, state: "ult" }), null, "the R's flurry: no kiai");
   assert.equal(voiceFor("charge", at), "q");
   assert.equal(voiceFor("charge", { ...at, state: "ult" }), null, "the R's charge: its call phase speaks");
   assert.equal(voiceFor("hurt", at), "hurt");
