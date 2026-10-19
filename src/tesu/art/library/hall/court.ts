@@ -289,10 +289,12 @@ export const board = definePainter<BoardP>("court.board", {
       return e < 2 ? mt(M.gold, face(0.95, SIDE) * 0.9, X, Y, 0.05, 1) : 0;
     });
     for (const [fx, fy, sx, sy] of [[-bw / 2, by0, 1, 1], [bw / 2, by0, -1, 1], [-bw / 2, by1, 1, -1], [bw / 2, by1, -1, -1]] as const) fitting(c, fx, fy, sx, sy, 9);
+    // the downloads (round 1, L14: they must read as THE downloads): a lit card per product, cream
+    // paper in a double gold frame, its pixel icon large, a red nameplate with its name in gold strokes
     plaques.forEach((id, i) => {
       const n = plaques.length;
       const cx = -bw / 2 + ((i + 0.5) / n) * bw;
-      const pw = (bw / n) * 0.78, ph = bh * 0.78;
+      const pw = (bw / n) * 0.84, ph = bh * 0.86;
       const py0 = by0 + (bh - ph) / 2;
       rect(c, cx - pw / 2, py0, cx + pw / 2, py0 + ph, (X, Y, lx, ly) => {
         const u = (lx - cx + pw / 2) / pw, v = (ly - py0) / ph;
@@ -300,11 +302,22 @@ export const board = definePainter<BoardP>("court.board", {
         const f = Math.min(v, 1 - v) * ph;
         const d = Math.min(e, f);
         if (d < 2) return mt(M.gold, face(0.95, SIDE, u < 0.5 ? -0.5 : 0.5, v < 0.5 ? -0.5 : 0.5), X, Y, 0.0, 1);
-        if (d < 5) return mt(M.gold, 0.6, X, Y, 0.15, 1);
-        if (v > 0.78 && v < 0.88 && Math.abs(u - 0.5) < 0.32) return mt(M.gold, 0.85, X, Y, 0.1, 1);
-        return mt(lacq, face(0.9, SIDE) * 0.5 + v * 0.1, X, Y, 0.0, 1);
+        if (d < 3) return mt(lacq, 0.5, X, Y, 0.1, 1);
+        if (d < 5) return mt(M.gold, 0.75, X, Y, 0.1, 1);
+        // the nameplate
+        if (v > 0.76 && v < 0.93 && Math.abs(u - 0.5) < 0.4) {
+          const pe = Math.min((0.4 - Math.abs(u - 0.5)) * pw, Math.min(v - 0.76, 0.93 - v) * ph);
+          if (pe < 1.5) return mt(M.gold, 0.85, X, Y, 0.05, 1);
+          const k = ((u - 0.12) / 0.76) * 3, ci = Math.floor(k), cu = k - ci, cv = (v - 0.79) / 0.11;
+          const stroke = cu > 0.15 && cu < 0.85 && cv > 0.1 && cv < 0.9 && (Math.abs(cv - 0.5) < 0.14 || Math.abs(cu - 0.3 - hash(ci, i, 7) * 0.4) < 0.1);
+          return stroke ? tn(M.gold, 0.1, X, Y, 0) : mt(M.verm, face(0.95, SIDE) * 0.7, X, Y, 0.2, 1);
+        }
+        // the card: cream paper, brightest round the icon (lit), a faint ray pattern
+        const r = Math.hypot((u - 0.5) * pw, (v - 0.42) * ph) / (0.5 * pw);
+        const rays = Math.floor(((Math.atan2(v - 0.42, u - 0.5) + Math.PI) / (Math.PI * 2)) * 16) % 2 === 0 && r > 0.55 ? 0.06 : 0;
+        return mt(M.paper, 1.0 - r * 0.25 - rays, X, Y, 0.0, 0.8);
       });
-      emblem(c, id, cx, py0 + ph * 0.42, 1.25);
+      emblem(c, id, cx, py0 + ph * 0.4, 1.65);
     });
     tileRoof(c, new LitField(COURT_LIGHT, undefined, 16), SIDE, -bw / 2 - 0.3 * H, bw / 2 + 0.3 * H, by0, 0.42 * H, 7);
   },

@@ -5,8 +5,9 @@
 
 import type { WorldBuilder } from "../../../world/build.ts";
 import { PLANES, type Usable, type Walk } from "../../../world/types.ts";
-import { BACK_LANTERNS, HALL, HALL_LANTERNS, HALL_LIGHT, SHAFT } from "./lights.ts";
+import { BACK_LANTERNS, GATE_O, HALL, HALL_LANTERNS, HALL_LIGHT, SERVICE_LAMPS, SHAFT } from "./lights.ts";
 import type { Bay } from "./backwall.ts";
+import type { NearFootP } from "./services.ts";
 import { yOn } from "../../../world/sections/common.ts";
 import { DIAG } from "../../../world/sections/gate-road.ts";
 
@@ -40,16 +41,25 @@ export function dressHall(b: WorldBuilder): void {
   const X = (o: number): number => RX0 + h(o);
   const r3 = PLANES.back.rate;
   const at = (x: number, y: number, rate = 1) => ({ wx: x, wy: y, rate });
+  const sv = (id: string) => usable(b, id);
+  const D = Math.round(0.62 * H); // the gallery beam's depth
+  const soffit = GY + D;
+
+  // the Prize Court gate: lights.ts places its daylight at GATE_O; the builder's usable must agree
+  const gd = sv("great-doors");
+  const gateX = (gd.x0 + gd.x1) / 2;
+  if (Math.abs(gateX - X(GATE_O)) > 2) throw new Error("env-hall dressing: the gate moved; update lights.ts GATE_O");
 
   // --- light and haze: warm incense haze instead of mist, no sky
   b.atmos({ x: RX0 - h(20), y0: FY - h(40), y1: FY + h(20), interior: true, sky: ["#120d0e", "#1b1314", "#22181a"], haze: "#6e4e3a", mist: 0, mistColour: "#6a4c3a", sun: null });
 
-  // --- the back wall (P3): long enough for every frame in the room, the entrance shot included
+  // --- the back wall (P3): long enough for every frame in the room, the entrance shot included. Its
+  // ground-floor bays are lattice, banners and archives only: the room's one moon gate is the real one
   const bx0 = X(-15), bx1 = X(49);
   const U = H * r3;
   const colsW: number[] = [];
   for (let o = -15; o <= 49; o += 4.25) colsW.push(X(o));
-  const lows: Bay["low"][] = ["banner", "lattice", "archive", "moon", "lattice", "banner", "archive", "lattice", "moon", "archive", "lattice", "banner", "moon", "lattice", "archive"];
+  const lows: Bay["low"][] = ["banner", "lattice", "archive", "lattice", "banner", "archive", "lattice", "banner", "lattice", "archive", "lattice", "banner", "archive", "lattice", "archive"];
   const highs: Bay["high"][] = ["window", "scroll", "open", "window", "scroll", "window", "open", "window", "scroll", "open", "window", "scroll", "window", "open", "window"];
   const bays: Bay[] = [];
   for (let i = 0; i + 1 < colsW.length; i++) {
@@ -65,24 +75,34 @@ export function dressHall(b: WorldBuilder): void {
   const dx0 = X(-60), dx1 = X(95);
   b.piece("mid", "hall.deep", dx0, FY, { w: (dx1 - dx0) * r2, u: H * r2, top: h(30) * r2, below: h(4) * r2 }, { z: 0, reflect: false });
 
-  // --- the walkway's edge and the stone floor nearer us
+  // --- the gallery's posts: in the clear wall between services, two of them framing the middle bay
+  const postsO = [3.55, 7.0, 11.95, 23.6];
+  const bayL = X(11.95), bayR = X(23.6);
+
+  // --- the walkway's edge and the stone floor nearer us: gold caps under the posts (never a ruled
+  // line), the gate's daylight doubled long in the polish, a warm streak under each service's lamp
+  const F0 = X(-8);
   const refl: [number, number, number][] = [
-    [SHAFT.x1 - X(-8), h(1.4), 0.55],
-    ...HALL_LANTERNS.filter((l) => l.plane === "play" && l.y < 8).map((l) => [X(l.o) - X(-8), h(0.35) * l.r, 0.32] as [number, number, number]),
-    [X(1.85) - X(-8), h(0.9), 0.18], [X(32.15) - X(-8), h(1.0), 0.22],
+    [gateX - F0, h(1.45), 0.95],
+    [SHAFT.x1 - F0, h(0.75), 0.4],
+    ...SERVICE_LAMPS.filter((l) => l.y > GY).map((l) => [l.x - F0, h(0.32) + l.r * 0.12, 0.22 * l.k] as [number, number, number]),
+    ...HALL_LANTERNS.filter((l) => l.plane === "play" && l.y < 7).map((l) => [X(l.o) - F0, h(0.3) * l.r, 0.16] as [number, number, number]),
+    [X(1.55) - F0, h(0.8), 0.18],
   ];
-  b.piece("play", "hall.floor", X(-8), FY, { w: h(50), below: h(6), caps: [4, 8.6, 14.1, 18, 23.2, 27.4, 33.6].map((o) => X(o) - X(-8)), refl, at: at(X(-8), FY) }, { z: -2 });
+  b.piece("play", "hall.floor", F0, FY, { w: h(50), below: h(6), caps: [...postsO, 28.9, 33.6].map((o) => X(o) - F0), refl, at: at(F0, FY) }, { z: -2 });
 
-  // --- the end walls with the doors built into them
-  const fd = usable(b, "hall-front-doors"), gd = usable(b, "great-doors");
+  // --- the end walls: the front doors built into the west one; the east one plain (the court's door is
+  // the gate in the middle now)
+  const fd = sv("hall-front-doors");
   b.piece("play", "hall.endwall", X(0.4), FY, { side: -1, wall: fd.x1 - X(0.4) + h(0.55), doorAt: fd.x0 - X(0.4), doorW: fd.x1 - fd.x0, doorH: FY - fd.y0, top: FY - GY + h(0.2), out: h(16), day: 0.8, at: at(X(0.4), FY) }, { z: 1 });
-  b.piece("play", "hall.endwall", X(33.6), FY, { side: 1, wall: X(33.6) - gd.x0 + h(0.5), doorAt: X(33.6) - gd.x1, doorW: gd.x1 - gd.x0, doorH: FY - gd.y0, top: h(9.6), out: h(16), day: 1, great: true, at: at(X(33.6), FY) }, { z: 1 });
+  b.piece("play", "hall.endwall", X(33.6), FY, { side: 1, wall: h(2.4), doorAt: 0, doorW: 0, doorH: 0, top: h(9.6), out: h(16), day: 0, at: at(X(33.6), FY) }, { z: 1 });
 
-  // --- the Long Gallery: its beam on posts, the central pillar through it, the balustrade
-  const pillarX = (usable(b, "map-pillar").x0 + usable(b, "map-pillar").x1) / 2;
-  const postsW = [X(4.3), X(8.5), X(14.0), X(23.1)];
-  b.piece("play", "hall.gallery", GX0, GY, { w: GX1 - GX0 + h(0.6), depth: Math.round(0.62 * H), posts: postsW.map((x) => x - GX0), drop: FY - GY, pillar: [pillarX - GX0, h(0.56)], at: at(GX0, GY) }, { z: 2 });
-  b.piece("play", "hall.pillar", pillarX, FY, { r: h(0.52), h: h(16.4), beam: [FY - GY, Math.round(0.62 * H)], at: at(pillarX, FY) }, { z: 3 });
+  // --- the middle bay: its wall with the moon gate, between the two posts that frame it
+  b.piece("play", "hall.gate", gateX, FY, { l: bayL - gateX, r: bayR - gateX, top: FY - soffit, rad: Math.round(1.6 * H), cy: Math.round(1.62 * H), at: at(gateX, FY) }, { z: 1 });
+
+  // --- the Long Gallery: its beam on posts, the balustrade (no pillar through it any more: the map
+  // stands on its own stand now)
+  b.piece("play", "hall.gallery", GX0, GY, { w: GX1 - GX0 + h(0.6), depth: D, posts: postsO.map((o) => X(o) - GX0), drop: FY - GY, pillar: [-h(50), 0], at: at(GX0, GY) }, { z: 2 });
   b.piece("front", "hall.balustrade", GX0 + h(0.2), GY, { w: GX1 - GX0 - h(0.4), h: Math.round(0.64 * H), at: at(GX0 + h(0.2), GY) }, { z: 1 });
 
   // --- the stair and its near rail
@@ -91,93 +111,116 @@ export function dressHall(b: WorldBuilder): void {
   b.piece("front", "hall.stair", sx0, sy0, { dx: sx1 - sx0, dy: sy1 - sy0 + h(0.1), depth: 44, rail: true, at: at(sx0, sy0) }, { z: 2 });
 
   // --- the services, each standing on the walk line where the builder put it
-  const sv = (id: string) => usable(b, id);
   const nw = sv("notice-wall");
   b.piece("play", "hall.notice", nw.x0, FY, { w: nw.x1 - nw.x0, h: FY - nw.y0, at: at(nw.x0, FY) }, { z: 4 });
   const pa = sv("patrons");
-  b.piece("play", "hall.scrollstand", pa.x0, FY, { w: pa.x1 - pa.x0, h: Math.min(FY - pa.y0, h(3.2)), at: at(pa.x0, FY) }, { z: 4 });
+  b.piece("play", "hall.ranking", pa.x0, FY, { w: pa.x1 - pa.x0, h: FY - pa.y0, at: at(pa.x0, FY) }, { z: 4 });
+  const ob = sv("offering-box");
+  const boxX0 = ob.x0 + h(0.15), boxW = Math.round(0.55 * H);
+  b.piece("play", "hall.donation", boxX0, FY, { w: boxW, h: Math.round(0.56 * H), main: true, at: at(boxX0, FY) }, { z: 6 });
+  const hk = sv("hanko-desk");
   const hanko = b.def.sprites.find((s) => s.id === "hanko");
-  const deskH = hanko ? FY - hanko.y + 4 : h(1.15);
-  const hk = sv("hanko-desk"), ob = sv("offering-box");
-  const deskX0 = hk.x0, deskX1 = Math.max(hk.x1, ob.x1 - h(0.2));
-  const boxX0 = ob.x0 + h(0.2), boxW = Math.min(h(0.8), ob.x1 - boxX0);
-  b.piece("play", "hall.counter", deskX0, FY, { w: deskX1 - deskX0, h: deskH, clear: [boxX0 - deskX0 - 4, boxX0 - deskX0 + boxW + 4], at: at(deskX0, FY) }, { z: 5 });
-  const boxH = h(0.75), boxTop = FY - deskH - boxH;
-  const soffit = GY + Math.round(0.62 * H);
-  b.piece("play", "hall.offerbox", boxX0, FY - deskH, { w: boxW, h: boxH, rope: boxTop - soffit - Math.round(0.32 * H) - 9, at: at(boxX0, FY - deskH) }, { z: 6 });
-  const cd = sv("crane-desk");
-  b.piece("play", "hall.cranedesk", cd.x0, FY, { w: cd.x1 - cd.x0, h: h(0.95), at: at(cd.x0, FY) }, { z: 5 });
-  const rq = sv("request-board");
-  b.piece("play", "hall.reqboard", rq.x0, FY, { w: rq.x1 - rq.x0, h: FY - rq.y0, at: at(rq.x0, FY) }, { z: 4 });
+  const deskTop = hanko ? FY - hanko.y + 4 : Math.round(0.57 * H);
+  b.piece("play", "hall.desk", hk.x0, FY, { w: hk.x1 - hk.x0, top: deskTop, who: (hanko?.x ?? (hk.x0 + hk.x1) / 2) - hk.x0, at: at(hk.x0, FY) }, { z: 5 });
+  const mp = sv("map-pillar");
+  b.piece("play", "hall.map", mp.x0, FY, { w: mp.x1 - mp.x0, at: at(mp.x0, FY) }, { z: 5 });
+  // the reading nook: the docs shelf (no taller than 2 H), the standing lamp, the bench and the table
   const ds = sv("docs-shelf");
-  b.piece("play", "hall.shelf", ds.x0, FY, { w: h(2.4), h: h(3.4), at: at(ds.x0, FY) }, { z: 3 });
-  b.piece("play", "hall.lamp", ds.x1 + h(0.45), FY, { w: Math.round(0.3 * H), h: Math.round(1.55 * H), at: at(ds.x1 + h(0.45), FY) }, { z: 5 });
-  // the art: on stands upstairs, on cords from a nail below
-  for (const s of b.def.sprites) {
-    if (!s.id.startsWith("art-") || s.kind !== "image") continue;
+  b.piece("play", "hall.shelf", ds.x0, FY, { w: h(1.75), h: h(1.9), at: at(ds.x0, FY) }, { z: 3 });
+  b.piece("play", "hall.lamp", ds.x0 + h(1.92), FY, { w: Math.round(0.26 * H), h: Math.round(1.3 * H), at: at(ds.x0 + h(1.92), FY) }, { z: 5 });
+  const nookX = ds.x0 + h(2.12);
+  b.piece("play", "hall.nook", nookX, FY, { bench: [0, h(0.8)], table: [h(0.88), h(1.33)], at: at(nookX, FY) }, { z: 4 });
+  const cd = sv("crane-desk");
+  b.piece("play", "hall.cranedesk", cd.x0, FY, { w: cd.x1 - cd.x0, h: Math.round(0.6 * H), at: at(cd.x0, FY) }, { z: 5 });
+  // the art: on the display screens upstairs, on the stair's spandrel in the nook
+  const arts = b.def.sprites.filter((s) => s.id.startsWith("art-") && s.kind === "image");
+  for (const s of arts) {
     const w = Number(s.p.w), hh = Number(s.p.h);
-    const up = s.y < FY - h(4);
-    b.piece("play", "hall.frame", s.x, s.y, { w, h: hh, mount: up ? "stand" : "wall", floor: up ? GY - s.y : 0, at: at(s.x, s.y) }, { z: 4 });
+    b.piece("play", "hall.frame", s.x, s.y, { w, h: hh, mount: "wall", floor: 0, at: at(s.x, s.y) }, { z: 4 });
+  }
+  // the screens: one per group of the upstairs hang (a group: frames less than 1 H apart)
+  const up = arts.filter((s) => s.y < FY - h(4)).map((s) => ({ x0: s.x - Number(s.p.w) / 2, x1: s.x + Number(s.p.w) / 2, top: s.y - Number(s.p.h) })).sort((a, c) => a.x0 - c.x0);
+  const groups: { x0: number; x1: number; top: number }[] = [];
+  for (const f of up) {
+    const g = groups[groups.length - 1];
+    if (g && f.x0 - g.x1 < H) { g.x1 = Math.max(g.x1, f.x1); g.top = Math.min(g.top, f.top); } else groups.push({ ...f });
+  }
+  for (const g of groups) {
+    const x0 = g.x0 - h(0.3), x1 = g.x1 + h(0.3);
+    const leaves = Math.max(2, Math.round((x1 - x0) / h(1.3)));
+    b.piece("play", "hall.screen", x0, GY, { w: x1 - x0, h: GY - g.top + h(0.32), leaves, at: at(x0, GY) }, { z: 3 });
   }
   const th = sv("teahouse");
   b.piece("play", "hall.teahouse", th.x0, GY, { w: th.x1 - th.x0, h: GY - th.y0, at: at(th.x0, GY) }, { z: 4 });
   const ob2 = sv("offering-box-small");
-  const b2x = ob2.x0 + h(0.1), b2w = h(0.6), b2h = h(0.62);
-  b.piece("play", "hall.offerbox", b2x, GY, { w: b2w, h: b2h, legs: true, rope: (GY - b2h - Math.round(0.32 * H) - 9) - (FY - h(15.5)), at: at(b2x, GY) }, { z: 5 });
+  const b2x = ob2.x0 + h(0.1);
+  b.piece("play", "hall.donation", b2x, GY, { w: Math.round(0.5 * H), h: Math.round(0.42 * H), ped: Math.round(0.62 * H), at: at(b2x, GY) }, { z: 5 });
+  const rq = sv("request-board");
+  b.piece("play", "hall.reqboard", rq.x0, GY, { w: rq.x1 - rq.x0, h: GY - rq.y0, at: at(rq.x0, GY) }, { z: 4 });
 
-  // --- the near front (P5): great near columns in the gaps between services, scale props at
-  // the frame's foot; painted only at play zoom and closer (at the entrance shot they would be
-  // huge)
+  // --- the near front (P5): great near columns only beyond the hall's ends (inside, at 1.35x parallax a
+  // near column always lands on a judged service in one of the frames); painted at play zoom and closer
   const NEAR_Y = FY + Math.round(0.45 * H);
   const rN = PLANES.near.rate;
-  // (placed where they never cover a service while she stands at it, in either facing, on
-  // either floor: the Long Gallery's frames run almost unbroken from 3 H to 23 H, so the near
-  // columns stand outside that stretch, and the middle keeps only low near props)
-  for (const o of [-2.6, 28.8, 36.8]) {
+  for (const o of [-2.6, 36.8]) {
     b.piece("near", "hall.nearcol", X(o), NEAR_Y, { r: Math.round(0.44 * H), h: 2300, at: at(X(o), NEAR_Y, rN) }, { z: 2, minLevel: 0.9, reflect: false });
   }
-  const nearProps: [number, string, number][] = [[5.6, "pine", 0.55], [13.4, "teacart", 1.0], [17.0, "broom", 0.7], [24.8, "crates", 1.0], [31.0, "jar", 1.0]];
-  for (const [o, kind, sc] of nearProps) b.piece("near", "hall.nearprop", X(o), NEAR_Y, { kind, s: sc, at: at(X(o), NEAR_Y, rN) }, { z: 3, minLevel: 0.9, reflect: false });
+
+  // --- the near foot (P5): dark silhouettes cut by the frame's bottom (benches seen from behind, planters,
+  // a jar, a length of rail) framing the floor below the walk line; spaced so the gate's long reflection in
+  // the middle of the core frame stays clear; play zoom and closer only
+  const FOOT_Y = FY + h(1.0);
+  const foot: [number, NearFootP["kind"], number, number][] = [
+    [-1.8, "jar", 0, 125], [2.6, "planter", 0, 205], [6.9, "bench", 2.2, 150], [11.9, "jar", 0, 132], [15.6, "bench", 1.8, 142],
+    [22.6, "planter", 0, 196], [25.6, "rail", 1.6, 136], [29.6, "bench", 2.0, 150], [33.0, "planter", 0, 210],
+  ];
+  foot.forEach(([o, kind, w, top], i) => {
+    b.piece("near", "hall.nearfoot", X(o), FOOT_Y, { kind, w: Math.round(h(w) * rN), top, seed: 11 + i * 7 }, { z: 3, minLevel: 0.9, reflect: false });
+  });
 
   // --- the back floor's clutter (P3), low, among which the hall's crowd stands
   const clutterAt: [number, string][] = [[-6.2, "bench"], [-1.2, "jars"], [3.1, "plant"], [7.4, "teatable"], [11.2, "umbrellas"], [14.6, "bench"], [19.2, "jars"], [22.1, "crates"], [26.0, "brazier"], [29.6, "bench"], [33.2, "plant"], [37.4, "jars"], [41.2, "teatable"]];
   for (const [o, kind] of clutterAt) b.piece("back", "hall.clutter", X(o), FY, { kind, u: U, at: at(X(o), FY, r3) }, { z: 2 });
 
-  // --- the roof over the room: the tie beam the lanterns hang from, coffers, the skylight
+  // --- the roof over the room: the tie beam the lanterns hang from, coffers falling into the dark up to
+  // the frame's top in the entrance shot, the skylight
   const BEAM = h(15.5), BEAM_D = h(0.9);
-  b.piece("play", "hall.roof", X(-8), FY, { w: h(50), beam: BEAM, depth: BEAM_D, sky: [SHAFT.x0 - h(1.3) - X(-8), SHAFT.x0 + h(1.3) - X(-8)], top: h(19), at: at(X(-8), FY) }, { z: 6 });
+  b.piece("play", "hall.roof", X(-8), FY, { w: h(50), beam: BEAM, depth: BEAM_D, sky: [SHAFT.x0 - h(1.0) - X(-8), SHAFT.x0 + h(1.0) - X(-8)], top: h(25), at: at(X(-8), FY) }, { z: 6 });
 
-  // --- the lanterns: on the play plane from the beam, on the back plane from its own roof
+  // --- the lanterns: under the gallery they hang from its soffit (no cord crosses the art upstairs);
+  // elsewhere from the beam; on the back plane from its own roof
   HALL_LANTERNS.forEach((l, i) => {
-    const hook = FY - BEAM;
+    const x = X(l.o);
+    const underGallery = l.y < 7 && x > GX0 && x < GX1 + h(0.6);
+    const hook = underGallery ? soffit : FY - BEAM;
     const lanternTop = FY - h(l.y) - Math.round(12 * l.r);
-    b.sprite({ id: `hall-lantern-${i}`, plane: l.plane, kind: "hall.lantern", x: X(l.o), y: hook, p: { kind: l.kind, s: l.r * 2.1, cord: lanternTop - hook, phase: (i * 0.37) % 1, lit: 1 }, frames: 12, fps: 3, reflect: false });
+    b.sprite({ id: `hall-lantern-${i}`, plane: l.plane, kind: "hall.lantern", x, y: hook, p: { kind: l.kind, s: l.r * 2.1, cord: lanternTop - hook, phase: (i * 0.37) % 1, lit: 1 }, frames: 12, fps: 3, reflect: false });
   });
   BACK_LANTERNS.forEach((l, i) => {
-    const hook = FY - h(16);
+    const hook = FY - h(6.4);
     const lanternTop = FY - h(l.y) - Math.round(10 * l.r);
     b.sprite({ id: `hall-lantern-back-${i}`, plane: "back", kind: "hall.lantern", x: X(l.o), y: hook, p: { kind: l.kind, s: l.r * 1.9 * r3, cord: (lanternTop - hook) * r3, phase: (i * 0.61 + 0.2) % 1, lit: 0.85 }, frames: 12, fps: 3, reflect: false });
   });
 
-  // --- life: a paper crane leaves the Crane Desk now and then and rises up the shaft to the
-  // skylight; incense smoke from the brazier by the back wall
-  const deskTop = FY - h(0.95);
+  // --- life: a paper crane leaves the Crane Desk now and then and rises out of the frame; incense smoke
+  // from the brazier by the back wall
+  const deskTopC = FY - Math.round(0.6 * H);
   const craneX = cd.x0 + Math.round((cd.x1 - cd.x0) * 0.3);
-  const rise = deskTop - (FY - BEAM);
-  b.sprite({ id: "hall-crane-flight", plane: "play", kind: "hall.craneflight", x: craneX, y: deskTop, p: { rise, drift: Math.round((SHAFT.x1 - SHAFT.x0) * (rise / h(18))) + (craneX - SHAFT.x1) }, frames: 64, fps: 8, reflect: false });
+  const rise = deskTopC - (FY - BEAM);
+  b.sprite({ id: "hall-crane-flight", plane: "play", kind: "hall.craneflight", x: craneX, y: deskTopC, p: { rise, drift: h(0.9) }, frames: 64, fps: 8, reflect: false });
   b.sprite({ id: "hall-smoke-brazier", plane: "back", kind: "hall.smoke", x: X(26.0), y: FY - Math.round(0.84 * H), p: { h: Math.round(h(3.2) * r3) }, frames: 16, fps: 4, reflect: false });
 
-  // --- the key light: the skylight's shaft, breathing, and the dust turning in it
-  const fascia: [number, number] = [GY - FY - 2, GY + Math.round(0.62 * H) - FY + 2];
+  // --- the skylight's shaft beside the gate, breathing, and the dust turning in it
+  const fascia: [number, number] = [GY - FY - 2, GY + D - FY + 2];
   const beamGap: [number, number] = [-BEAM - BEAM_D, -BEAM];
   b.sprite({ id: "hall-shaft", plane: "play", kind: "hall.shaft", x: SHAFT.x1, y: FY, p: { h: h(18), lean: SHAFT.x1 - SHAFT.x0, w: SHAFT.w, wTop: Math.round(SHAFT.w * 0.8), gaps: [fascia, beamGap] }, frames: 8, fps: 1, reflect: false });
-  b.sprite({ id: "hall-dust", plane: "front", kind: "hall.dust", x: SHAFT.x1, y: FY, p: { h: h(14), lean: Math.round((SHAFT.x1 - SHAFT.x0) * (14 / 18)), w: SHAFT.w, n: 70 }, frames: 16, fps: 4, reflect: false });
+  b.sprite({ id: "hall-dust", plane: "front", kind: "hall.dust", x: SHAFT.x1, y: FY, p: { h: h(14), lean: Math.round((SHAFT.x1 - SHAFT.x0) * (14 / 18)), w: SHAFT.w, n: 60 }, frames: 16, fps: 4, reflect: false });
 
   void HALL_LIGHT;
 }
 
 /** The Prize Court, dressed. */
-export function dressCourt(b: WorldBuilder, o: { gongX: number }): void {
+export function dressCourt(b: WorldBuilder, o: { gongX: number; ring?: [number, number] }): void {
   const main = walk(b, "prize-court"), tip = walk(b, "prize-court-tip");
   const Y = main.pts[1]!;
   const CX0 = main.pts[0]!, WELL0 = main.pts[2]!, WELL1 = tip.pts[0]!, CX1 = tip.pts[2]!;
@@ -192,7 +235,10 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number }): void {
   // (on the play plane: the court's camera is fixed, so the band's depth is exact there, and
   // it covers the stands' trestles where the floor runs in front of them)
   const band = Math.round((0.68 - 0.36) * 864 * (1 - r3));
-  b.piece("play", "court.floor", CX0, Y, { w: CX1 - CX0 - h(0.3), u: band / 1.05, below: band, seal: [MID - CX0, h(3.3)] }, { z: 0, reflect: false, minLevel: 0.9 });
+  // (round 1, L14: the seal painted on the floor in perspective is gone (a 3D top in a side-on game; its radius
+  // is 0 now); the ring is side-on instead: court.ring, a dais in the paving, kerbs, posts, the rope, banners)
+  b.piece("play", "court.floor", CX0, Y, { w: CX1 - CX0 - h(0.3), u: band / 1.05, below: band, seal: [MID - CX0, 0.001] }, { z: 0, reflect: false, minLevel: 0.9 });
+  if (o.ring) b.piece("play", "court.ring", o.ring[0], Y, { w: o.ring[1] - o.ring[0], band }, { z: 2, reflect: false });
 
   // --- the foundation under the floor's front edge, the stairwell's mouth left open
   const pil: number[] = [];
