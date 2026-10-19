@@ -240,6 +240,17 @@ function screenDoor(c: PaintCtx, p: BackWallP, x0: number, y0: number, x1: numbe
     // paper lit from behind by a lamp low in the corridor: a soft warm bloom, darker edges
     const bloom = Math.exp(-(((u - 0.5) / 0.55) ** 2 + ((v - 0.62) / 0.6) ** 2));
     const g = glowK * (0.35 + 0.65 * bloom) - (vnoise(lx * 0.05, ly * 0.05, seed) > 0.8 ? 0.1 : 0);
+    // (hall loop round 1) the hall's life behind the paper: now and then someone in the corridor
+    // between the lamp and the screen, their shadow soft on the paper (a head, shoulders, a sleeve)
+    if (hash(seed, 5, 97) > 0.62) {
+      const fx = 0.3 + 0.4 * hash(seed, 6, 97), fh = 0.55 + 0.25 * hash(seed, 7, 97);
+      const hx = (u - fx) * (x1 - x0), hy = (v - (1 - fh)) * (kick - y0);
+      const headR = 0.13 * U;
+      const head = Math.hypot(hx, hy - headR) < headR;
+      const body = hy > headR * 1.6 && Math.abs(hx) < headR * (1.2 + Math.min(1, (hy - headR * 1.6) / (0.3 * U)) * 0.9);
+      const sleeve = hash(seed, 8, 97) > 0.5 && hy > headR * 2 && hy < headR * 3.2 && hx > headR && hx < headR * 3.4;
+      if (head || body || sleeve) return tn(SCREEN, clamp(1.05 - g * 0.62, 0, 1), X, Y, 0.3);
+    }
     return tn(SCREEN, clamp(1.05 - g * 1.25, 0, 1), X, Y, 0.55);
   });
 }
@@ -455,11 +466,26 @@ function lintel(c: PaintCtx, p: BackWallP, lf: LitField): void {
       if (ring % 2 === 0 && d < 0.5 * U) return mt(M.gold, lum(l) * 0.45, X, Y, 0.4, 1);
       return tn(P.jade, clamp(0.8 + (1 - lum(l)) * 0.2, 0, 1), X, Y, 0.45);
     }
-    const cart = Math.abs(k - 0.5) < 0.17 && Math.abs(v - 0.5) < 0.32;
+    // (hall loop round 1) each bay's panel its own: a long cartouche, a pair of small ones, a
+    // painted cloud band, or a banner hung over it; the paint flaked off in places
+    const bi = Math.floor(lx / (4.25 * U));
+    const style = hash(bi, 3, 81);
+    if (style > 0.82 && Math.abs(k - 0.5) < 0.2) {
+      // a banner hung from the lintel's top over the panel, dark silk with a gold hem
+      const u = (k - 0.3) / 0.4;
+      if (v > 0.84) return Math.abs(((u * 7) % 1) - 0.5) < 0.25 ? mt(M.gold, lum(l) * 0.6, X, Y, 0.3, 1) : 0;
+      return mt(M.verm, lum(l) * (0.42 - Math.abs(Math.sin(u * 9)) * 0.08), X, Y, 0.3, 1);
+    }
+    const cw = style < 0.4 ? 0.17 : 0.07;
+    const cc = style < 0.4 ? 0.5 : Math.abs(k - 0.39) < Math.abs(k - 0.61) ? 0.39 : 0.61;
+    const cart = style < 0.62 && Math.abs(k - cc) < cw && Math.abs(v - 0.5) < 0.32;
     if (cart) {
-      const e = Math.min(0.17 - Math.abs(k - 0.5), (0.32 - Math.abs(v - 0.5)) * 0.4);
+      const e = Math.min(cw - Math.abs(k - cc), (0.32 - Math.abs(v - 0.5)) * 0.4);
       return e < 0.02 ? mt(M.gold, lum(l) * 0.85, X, Y, 0.15, 1) : mt(M.lacq, lum(l) * 0.5, X, Y, 0.2, 1);
     }
+    if (style >= 0.62 && Math.abs(v - 0.5 - Math.sin(k * 40) * 0.12) < 0.08 && Math.abs(k - 0.5) < 0.3) return mt(M.gold, lum(l) * 0.55, X, Y, 0.3, 1);
+    const flaked = fbm(lx * 0.05, ly * 0.2, 83, 2) > 0.68;
+    if (flaked) return mt(M.wood, lum(l) * 0.45, X, Y, 0.3, 1);
     return tn(P.jade, clamp(0.86 + (1 - lum(l)) * 0.14 + (Math.sin(lx * 0.18) > 0.6 ? -0.06 : 0), 0, 1), X, Y, 0.45);
   });
 }
@@ -469,10 +495,14 @@ function roof(c: PaintCtx, p: BackWallP, lf: LitField): void {
   const yL = -LINTEL * U, yB = -BRACKETS * U;
   // bracket sets on every column and between them: stacked blocks and arms in gold and teal
   const step = 4.25 * U / 2;
-  for (let bx = (p.cols[0] ?? 0) - step * 8; bx < p.w + step; bx += step) {
-    for (let tier = 0; tier < 3; tier++) {
+  for (let bx = (p.cols[0] ?? 0) - step * 8, si = 0; bx < p.w + step; bx += step, si++) {
+    // (hall loop round 1) the sets are not stamps: the ones between columns are a tier lower,
+    // some have lost an arm's end, their reach differs a little
+    const tiers = si % 2 === 0 ? 3 : 2;
+    const reach = 0.9 + 0.2 * hash(si, 1, 91);
+    for (let tier = 0; tier < tiers; tier++) {
       const ty1 = yL - tier * 0.45 * U, ty0 = ty1 - 0.45 * U;
-      const arm = (0.35 + tier * 0.28) * U;
+      const arm = (0.35 + tier * 0.28) * U * reach * (hash(si, tier + 3, 91) < 0.12 ? 0.7 : 1);
       // the arm (a long block) and the bearing block on top
       rect(c, bx - arm, ty0 + 0.18 * U, bx + arm, ty0 + 0.36 * U, (X, Y, lx, ly) => {
         const l = lf.get(lx, ly);

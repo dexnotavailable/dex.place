@@ -99,6 +99,18 @@ export interface FoundationP {
   well?: [number, number];
   /** Pilasters (local x). */
   pilasters: number[];
+  /** (hall loop round 1) Where the frieze breaks for its one carved panel (local x; default 0.36 of w). */
+  centre?: number;
+}
+
+/** A row of jittered joints: which block of a course a point lies in, and how far into it. */
+function course(lx: number, bw: number, off: number, seed: number): { j: number; inX: number; w: number } {
+  const jit = (j: number): number => (hash(j, 3, seed) - 0.5) * bw * 0.55;
+  let j = Math.floor((lx - off) / bw);
+  if (lx < off + j * bw + jit(j)) j--;
+  else if (lx >= off + (j + 1) * bw + jit(j + 1)) j++;
+  const a = off + j * bw + jit(j), b = off + (j + 1) * bw + jit(j + 1);
+  return { j, inX: lx - a, w: b - a };
 }
 
 export const foundation = definePainter<FoundationP>("court.foundation", {
@@ -106,67 +118,163 @@ export const foundation = definePainter<FoundationP>("court.foundation", {
     return [-6, -4, p.w + 6, p.depth + 0.8 * H];
   },
   paint(c, p) {
-    const COPE = 14, FRIEZE = 0.62 * H;
-    // the foot: the masonry ends in an irregular stepped line where it sits on the rock
-    const foot = (lx: number): number => p.depth - 0.4 * H * vnoise(lx / (1.3 * H), 0, 17) - (Math.floor(lx / (0.9 * H)) % 3 === 0 ? 0.22 * H : 0);
+    const COPE = 14, FRIEZE = 0.62 * H, F1 = COPE + FRIEZE;
+    const centre = p.centre ?? p.w * 0.36;
+    // the foot: the masonry follows the rock it was built on, stepping down and up in chunks
+    const foot = (lx: number): number => p.depth - 0.42 * H * vnoise(lx / (1.3 * H), 0, 17) - (Math.floor(lx / (0.9 * H)) % 3 === 0 ? 0.22 * H : 0) + 0.08 * H * (vnoise(lx / (0.3 * H), 4, 21) - 0.5);
+    // the courses below the frieze: heights vary, the base course is the big weathered one
+    const baseTop = p.depth - 0.78 * H;
+    const rows: [number, number][] = [];
+    for (let y = F1, k = 0; y < baseTop - 0.2 * H; k++) {
+      const hh = Math.round(0.26 * H + 0.16 * H * hash(k, 1, 23));
+      rows.push([y, Math.min(baseTop, y + hh)]);
+      y += hh;
+    }
+    if (rows.length && rows[rows.length - 1]![1] < baseTop) rows.push([rows[rows.length - 1]![1], baseTop]);
+    rows.push([baseTop, p.depth + 0.8 * H]);
+    // moss clumps: hanging off the coping's nose and growing on the base course's ledge
+    const clump = (lx: number, ledge: number, every: number, seed: number): number => {
+      const k = Math.floor(lx / every);
+      if (hash(k, 1, seed) < 0.45) return 0;
+      const cx = (k + 0.2 + 0.6 * hash(k, 2, seed)) * every, rw = 7 + 16 * hash(k, 3, seed);
+      const u = (lx - cx) / rw;
+      if (Math.abs(u) > 1) return 0;
+      return (1 - u * u) * (4 + 7 * hash(k, 4, seed)) * (0.7 + 0.6 * vnoise(lx * 0.3, ledge, seed));
+    };
     rect(c, 0, -2, p.w, p.depth + 0.8 * H, (X, Y, lx, ly) => {
       if (p.well && lx > p.well[0] && lx < p.well[1] && ly < COPE + 2) return 0;
       const f = foot(lx);
       if (ly > f) {
-        // mortar and rubble where it meets the rock, a dark seam and moss
-        if (ly < f + 5) return hash(X, Y, 4) > 0.4 ? tn(M.stone, 0.75, X, Y, 0) : tn(P.moss, 0.7, X, Y, 0);
-        return 0;
+        // where it meets the rock: rubble, soil and moss packed under the footing, ragged
+        const under = ly - f;
+        const pile = 5 + 14 * vnoise(lx * 0.06, 2, 19) + 6 * vnoise(lx * 0.25, 5, 29);
+        if (under > pile) return 0;
+        const stone = fbm(lx * 0.22, ly * 0.3, 41, 2);
+        if (stone > 0.56) return mt(M.stone, (stone > 0.66 ? 0.62 : 0.4) - (under / pile) * 0.25 + (hash(X, Y, 4) > 0.8 ? 0.08 : 0), X, Y, 0.15, 1);
+        if (stone < 0.4 && under < pile * 0.7) return tn(P.moss, 0.45 + (under / pile) * 0.4, X, Y, 0.25);
+        return tn(P.earth, 0.62 + (under / pile) * 0.3, X, Y, 0.3);
+      }
+      // moss hanging off the coping's nose
+      if (ly >= COPE - 2 && ly < COPE + 12) {
+        const m = clump(lx, 1, 1.9 * H, 51);
+        if (m > 0 && ly < COPE - 1 + m) {
+          const t = (ly - COPE + 2) / (m + 1);
+          if (t > 0.75 && hash(X, Y, 8) > 0.5) return 0;
+          return tn(P.moss, 0.25 + t * 0.5, X, Y, 0.3);
+        }
       }
       if (ly < COPE) {
-        // the coping: a lit top, a rounded nose, worn smooth along the front
+        // the coping: a lit top, a rounded nose, worn smooth along the front, chipped here and there
         if (ly < 2) return mt(M.stone, 1.1, X, Y, 0.0, 1);
-        return mt(M.stone, face(0.95, SIDE, 0, ly < 6 ? -0.6 : 0.5) - (vnoise(lx * 0.2, 1, 3) > 0.7 ? 0.08 : 0), X, Y, 0.0, 1);
+        const chip = fbm(lx * 0.12, 1, 61, 2) > 0.72 && ly > 9 ? -0.16 : 0;
+        return mt(M.stone, face(0.95, SIDE, 0, ly < 6 ? -0.6 : 0.5) - (vnoise(lx * 0.2, 1, 3) > 0.7 ? 0.08 : 0) + chip, X, Y, 0.0, 1);
       }
       const pil = p.pilasters.some((x) => Math.abs(lx - x) < 0.32 * H);
       const pilEdge = p.pilasters.some((x) => Math.abs(Math.abs(lx - x) - 0.32 * H) < 2);
-      if (ly < COPE + FRIEZE) {
-        // the frieze: dark lacquer panels with gold cartouches (cloud scrolls), on the pilasters
-        // a gold medallion
+      // the light along the frieze is never even
+      const along = 0.82 + 0.28 * vnoise(lx / (2.6 * H), 9, 77);
+      if (ly < F1) {
         const v = (ly - COPE) / FRIEZE;
-        if (v < 0.08 || v > 0.92) return mt(M.stone, face(0.9, SIDE, 0, v < 0.08 ? -0.6 : 0.6) * 0.85, X, Y, 0.1, 1);
-        if (pilEdge) return mt(M.stone, 0.45, X, Y, 0.2, 1);
+        // the coping overhang shades the frieze's top
+        const overhang = ly < COPE + 3 + 2 * vnoise(lx * 0.1, 2, 5) ? -0.22 : 0;
+        if (v < 0.08 || v > 0.92) return mt(M.stone, face(0.9, SIDE, 0, v < 0.08 ? -0.6 : 0.6) * 0.85 * along + overhang, X, Y, 0.1, 1);
+        // the carved panel at the court's middle: rolling clouds in gold round a sunburst seal
+        const pw = 1.55 * H;
+        if (Math.abs(lx - centre) < pw) {
+          const u = (lx - centre) / pw, vy = (v - 0.5) * FRIEZE;
+          const e = Math.min(pw - Math.abs(lx - centre), FRIEZE * 0.42 - Math.abs(vy));
+          if (e < 0) return mt(M.stone, 0.62 * along + overhang, X, Y, 0.1, 1);
+          if (e < 2.5) return mt(M.gold, face(0.95, SIDE, u < 0 ? -0.6 : 0.6, vy < 0 ? -0.6 : 0.6) * 0.95, X, Y, 0.0, 1);
+          if (e < 4) return mt(lacq, 0.25, X, Y, 0.1, 1);
+          const d = Math.hypot(lx - centre, vy);
+          if (d < 0.2 * H) {
+            const ring = d > 0.16 * H;
+            const ray = Math.sin(Math.atan2(vy, lx - centre) * 8) > 0.35;
+            if (ring || (ray && d > 0.07 * H) || d < 0.05 * H) return mt(M.gold, face(0.95, SIDE, (lx - centre) / (0.2 * H), vy / (0.2 * H)) * 0.95, X, Y, 0.0, 1);
+            return mt(lacq, 0.35, X, Y, 0.1, 1);
+          }
+          // ruyi cloud scrolls rolling out either side, carved (lit above-left, dark below): a fat
+          // stroke coiling about one and a half turns, then running out as a tail to the next
+          const side = Math.sign(lx - centre);
+          const sx = Math.abs(lx - centre) - 0.2 * H;
+          const k = Math.floor(sx / (0.46 * H));
+          const scx = 0.2 * H + (k + 0.5) * 0.46 * H, scy = (k % 2 ? -1 : 1) * 3;
+          const dx = (Math.abs(lx - centre) - scx) * side, dy = vy - scy;
+          const rr = Math.hypot(dx, dy), th = (Math.atan2(dy, dx * side) + Math.PI) / (Math.PI * 2);
+          const turn = rr / 7 - th;
+          const spiral = rr < 0.17 * H && rr > 2 && turn < 1.6 && Math.abs((((turn % 1) + 1) % 1) - 0.5) < 0.24;
+          const tail = Math.abs(vy - scy * -1 - Math.sin(sx * 0.068) * 6) < 1.6 && rr > 0.15 * H;
+          if (spiral || tail) return mt(M.gold, (dy < 0 ? 1.02 : 0.72) * along, X, Y, 0.05, 1);
+          return mt(lacq, face(0.9, SIDE) * 0.32 * along, X, Y, 0.15, 1);
+        }
+        if (pilEdge) return mt(M.stone, 0.45 + overhang, X, Y, 0.2, 1);
         if (pil) {
           const pc = p.pilasters.find((x) => Math.abs(lx - x) < 0.32 * H)!;
           const d = Math.hypot(lx - pc, (v - 0.5) * FRIEZE);
-          const ring = d < 0.15 * H && d > 0.11 * H, petal = d < 0.09 * H && Math.sin(Math.atan2((v - 0.5) * FRIEZE, lx - pc) * 6) > 0;
-          return ring || petal ? mt(M.gold, face(0.92, SIDE, (lx - pc) / (0.2 * H), (v - 0.5) * 2) * 0.75, X, Y, 0.2, 1) : mt(M.stone, 0.62, X, Y, 0.1, 1);
+          const kind = hash(Math.round(pc), 7, 3);
+          const ring = d < 0.15 * H && d > 0.11 * H, petal = d < 0.09 * H && Math.sin(Math.atan2((v - 0.5) * FRIEZE, lx - pc) * (kind > 0.5 ? 6 : 8)) > 0;
+          const worn = fbm(lx * 0.2, ly * 0.2, 13, 2) > 0.7;
+          return (ring || petal) && !worn ? mt(M.gold, face(0.92, SIDE, (lx - pc) / (0.2 * H), (v - 0.5) * 2) * 0.75 * along, X, Y, 0.2, 1) : mt(M.stone, 0.62 * along + overhang, X, Y, 0.1, 1);
         }
         const pitch = 1.3 * H;
-        const m = ((lx % pitch) + pitch) % pitch - pitch / 2;
-        // a cartouche: a gold-lined panel with rounded ends, a small cloud knot in the middle
+        const ci = Math.floor(lx / pitch);
+        const m = (((lx % pitch) + pitch) % pitch) - pitch / 2;
+        // a cartouche: a gold-lined panel with rounded ends; each one's own knot, some gilding worn
         const cw = 0.46 * H, ch = 0.26;
         const ex = Math.abs(m) / cw, ey = Math.abs(v - 0.5) / ch;
         const inCart = ex < 1 && ey < 1 && (ex < 0.8 || Math.hypot((ex - 0.8) / 0.2, ey) < 1);
         const rim = inCart && (ex > 0.93 || ey > 0.84 || (ex > 0.8 && Math.hypot((ex - 0.8) / 0.2, ey) > 0.82));
-        if (rim) return mt(M.gold, face(0.92, SIDE, 0, v < 0.5 ? -0.5 : 0.5) * 0.8, X, Y, 0.15, 1);
+        const gilt = fbm(lx * 0.08, ly * 0.2, 19 + ci, 2) < 0.66 - hash(ci, 1, 9) * 0.2;
+        if (rim) return gilt ? mt(M.gold, face(0.92, SIDE, 0, v < 0.5 ? -0.5 : 0.5) * 0.8 * along, X, Y, 0.15, 1) : mt(lacq, 0.7, X, Y, 0.1, 1);
         if (inCart) {
-          const knot = Math.hypot(m, (v - 0.5) * FRIEZE) < 0.09 * H && Math.hypot(m, (v - 0.5) * FRIEZE) > 0.05 * H;
-          const tail = Math.abs((v - 0.5) * FRIEZE - Math.sin(m * 0.12) * 3) < 1.2 && Math.abs(m) > 0.12 * H && Math.abs(m) < 0.36 * H;
-          if (knot || tail) return mt(M.gold, 0.7, X, Y, 0.25, 1);
-          return mt(lacq, face(0.9, SIDE) * 0.4, X, Y, 0.15, 1);
+          const r = Math.hypot(m, (v - 0.5) * FRIEZE);
+          const style = hash(ci, 2, 9);
+          const vy = (v - 0.5) * FRIEZE;
+          const knot = style < 0.4 ? r < 0.09 * H && r > 0.05 * H : style < 0.75 ? r < 0.08 * H && Math.sin(Math.atan2(vy, m) * 5) > 0.2 : Math.abs(m) + Math.abs(vy) < 0.08 * H;
+          const tail = Math.abs(vy - Math.sin(m * (0.1 + style * 0.06)) * 3) < 1.2 && Math.abs(m) > 0.12 * H && Math.abs(m) < 0.36 * H;
+          if ((knot || tail) && gilt) return mt(M.gold, 0.7 * along, X, Y, 0.25, 1);
+          return mt(lacq, face(0.9, SIDE) * 0.4 * along, X, Y, 0.15, 1);
         }
-        return mt(lacq, face(0.9, SIDE) * 0.55, X, Y, 0.1, 1);
+        return mt(lacq, face(0.9, SIDE) * 0.55 * along + overhang * 0.5, X, Y, 0.1, 1);
       }
-      // the wall below: ashlar courses, each block its own tone, weathering streaks under the
-      // frieze and the odd lost corner
-      const cy = ly - COPE - FRIEZE;
-      const course = Math.floor(cy / (0.34 * H));
-      const bw = 0.7 * H + (course % 3) * 0.12 * H;
-      const off = (course % 2) * bw * 0.5;
-      const bx = Math.floor((lx + off) / bw);
-      const inX = (((lx + off) % bw) + bw) % bw, inY = cy - course * 0.34 * H;
-      const joint = inX < 1.5 || inY < 1.5;
-      if (pilEdge) return mt(M.stone, 0.42, X, Y, 0.2, 1);
-      const streak = vnoise(lx * 0.25, cy * 0.015, 7) > 0.66 && cy < 1.4 * H ? -0.12 : 0;
-      const tone = (hash(bx, course, 11) - 0.5) * 0.14;
-      const topLit = inY < 3.5 ? 0.12 : 0;
-      const shade = pil ? 0.08 : 0;
-      return mt(M.stone, (joint ? 0.42 : 0.72 + tone + topLit + streak + shade) - cy / H * 0.03, X, Y, 0.05, 1);
+      // the wall below: courses of varied height, each block its own stone, the frieze's ledge
+      // throwing a ragged shadow on the top course, rain stains under it, damp and moss at the foot
+      let ri = 0;
+      while (ri + 1 < rows.length && ly >= rows[ri]![1]) ri++;
+      const [r0, r1] = rows[ri]!;
+      const base = r0 >= baseTop;
+      const bw = base ? 1.25 * H : 0.62 * H + 0.3 * H * hash(ri, 2, 23);
+      const blk = course(lx, bw, (ri % 2) * bw * 0.5, 31 + ri * 7);
+      const inY = ly - r0;
+      if (!base) {
+        const pc = p.pilasters.find((x) => Math.abs(lx - x) < 0.32 * H + 6);
+        if (pc !== undefined) {
+          const e = lx - pc;
+          if (Math.abs(Math.abs(e) - 0.32 * H) < 1.5) return mt(M.stone, e < 0 ? 0.95 : 0.4, X, Y, 0.2, 1);
+          if (e > 0.32 * H && e < 0.32 * H + 5) return mt(M.stone, 0.48 + (hash(X, Y, 9) > 0.7 ? 0.05 : 0), X, Y, 0.2, 1);
+        }
+      }
+      if (blk.inX < 1.5 || inY < 1.5 || (base && blk.inX < 2.5)) return mt(M.stone, 0.4 - (base ? 0.06 : 0), X, Y, 0.2, 1);
+      const tone = (hash(blk.j, ri, 11) - 0.5) * 0.16;
+      // bevels: lit top and left edges, a dark bottom and right edge; the base course rougher
+      const bev = Math.max(2, Math.min(4, (Math.min(r1, f) - r0) * 0.12));
+      const edge = inY < bev ? 0.12 : blk.inX < bev ? 0.06 : blk.w - blk.inX < bev ? -0.08 : r1 - ly < bev ? -0.07 : 0;
+      const rough = base ? (fbm(lx * 0.09, ly * 0.12, 47, 3) - 0.5) * 0.3 : (fbm(lx * 0.15, ly * 0.15, 43, 2) - 0.5) * 0.12;
+      const chipped = base && fbm(lx * 0.3, ly * 0.3, 53, 2) > 0.74 ? -0.14 : 0;
+      // the frieze's ledge shades the wall under it, stepping with the joints
+      const ledgeShade = ly < F1 + 4 + 3 * hash(blk.j, 5, 3) ? -0.2 : 0;
+      // rain stains run down from the frieze, long and short; damp rises from the foot
+      const sv = vnoise(lx * 0.2, 3, 7);
+      const streakLen = (0.4 + 1.1 * vnoise(lx * 0.035, 8, 9)) * H;
+      const streak = sv > 0.62 && ly - F1 < streakLen ? -0.12 * (1 - (ly - F1) / streakLen) - 0.04 : 0;
+      const damp = Math.max(0, 1 - (f - ly) / (0.6 * H)) * (0.12 + 0.12 * fbm(lx * 0.05, ly * 0.08, 59, 2));
+      // moss: on the base course's ledge, and in patches where the damp is
+      if (base && inY < 9) {
+        const mm = clump(lx, 3, 1.4 * H, 71);
+        if (mm > 0 && inY < mm * 0.7) return tn(P.moss, 0.3 + (inY / (mm * 0.7)) * 0.45, X, Y, 0.3);
+      }
+      if (damp > 0.14 && fbm(lx * 0.14, ly * 0.14, 67, 2) > 0.6) return tn(P.moss, 0.55 + damp, X, Y, 0.35);
+      return mt(M.stone, 0.72 + tone + edge + rough + chipped + ledgeShade + streak - damp - ((ly - F1) / H) * 0.025, X, Y, 0.05, 1);
     });
   },
 });
@@ -248,6 +356,50 @@ function emblem(c: PaintCtx, id: string, cx: number, cy: number, s: number): voi
   }
 }
 
+/**
+ * (hall loop round 1) The lion's mask embroidered on the release banner: a gold satin face in a
+ * ring of red and gold mane tufts, white fur brows, round eyes, a bronze mirror on the brow, a
+ * grin; every part in thread (stitch grooves along its own direction), a couched gold outline,
+ * and lit by the cloth's fold under it. (u, v) is the cloth point in the face's unit circle.
+ */
+function lionThread(u: number, v: number, lx: number, ly: number, lit: number, X: number, Y: number): number {
+  const r = Math.hypot(u, v * 1.05);
+  const ang = Math.atan2(v, u);
+  const groove = (dir: number): number => ((((lx * dir + ly) % 3) + 3) % 3 < 1 ? -0.09 : 0);
+  // the mane: flame tufts round the face, radial stitches, red and gold by turns
+  const tuft = 1.0 + 0.3 * (0.5 + 0.5 * Math.cos(ang * 9)) + 0.05 * Math.sin(ang * 23);
+  if (r > 1.0 && r < tuft && v < 0.85) {
+    const red = Math.cos(ang * 9) < 0.15;
+    const rad = (((Math.round((ang / (Math.PI * 2)) * 140) % 2) + 2) % 2) === 0 ? -0.07 : 0;
+    return red ? mt(M.verm, lit * 0.68 + rad, X, Y, 0.15, 1) : mt(M.gold, lit * 0.78 + rad, X, Y, 0.1, 1);
+  }
+  if (r > 1.0) return 0;
+  // the couched outline round the face
+  if (r > 0.92) return mt(M.gold, lit * (v < 0 ? 1.0 : 0.62), X, Y, 0.05, 1);
+  // the bronze mirror on the brow
+  const mr = Math.hypot(u, v + 0.52);
+  if (mr < 0.24) return mt(M.bronze, lit * (mr < 0.1 ? 1.1 : (u + v + 0.52 < 0 ? 0.95 : 0.6)), X, Y, 0.0, 1);
+  if (mr < 0.29) return mt(M.gold, lit * 0.5, X, Y, 0.1, 1);
+  // white fur brows, stitched across
+  if (Math.abs(v + 0.18 + Math.abs(u) * 0.12) < 0.12 && Math.abs(Math.abs(u) - 0.5) < 0.3) return mt(M.paper, lit * 0.95 + groove(1.6), X, Y, 0.0, 1);
+  // the eyes: an ink ring, a gold iris, a highlight
+  const er = Math.hypot(Math.abs(u) - 0.43, (v - 0.08) * 1.1);
+  if (er < 0.19) {
+    if (er < 0.05 && u * Math.sign(u) > 0) return mt(M.paper, 1.0, X, Y, 0.0, 1);
+    return er < 0.11 ? tn(M.ink, 0.0, X, Y, 0) : mt(M.gold, lit * 0.95, X, Y, 0.05, 1);
+  }
+  if (er < 0.23) return tn(M.ink, 0.5, X, Y, 0);
+  // the grin: a row of teeth over a dark red mouth
+  if (v > 0.42 && v < 0.74 && Math.abs(u) < 0.6 - (v - 0.42) * 0.4) {
+    if (v < 0.56) return Math.abs(((u * 9) % 1 + 1) % 1 - 0.5) < 0.08 ? mt(M.paper, 0.4, X, Y, 0.1, 1) : mt(M.paper, lit * 0.95, X, Y, 0.0, 1);
+    return mt(M.verm, lit * 0.35, X, Y, 0.2, 1);
+  }
+  // the nose: a broad gold bridge stitched downward
+  if (Math.abs(u) < 0.14 && v > -0.3 && v < 0.36) return mt(M.gold, lit * (u < 0 ? 0.98 : 0.7) + groove(-0.4), X, Y, 0.05, 1);
+  // the face: gold satin, its stitches running diagonally
+  return mt(M.gold, lit * 0.8 + groove(0.8) - r * 0.08, X, Y, 0.1, 1);
+}
+
 export const board = definePainter<BoardP>("court.board", {
   bounds() {
     return [-1.35 * H, -4.7 * H, 1.35 * H, 4];
@@ -263,23 +415,50 @@ export const board = definePainter<BoardP>("court.board", {
     }
     woodBox(c, -1.2 * H, -4.55 * H, 1.2 * H, -4.45 * H, lacq, 2, 0.05, 1, 2);
     const bx0 = -0.95 * H, bx1 = 0.95 * H, ty0 = -4.45 * H, ty1 = -2.55 * H;
-    rect(c, bx0, ty0, bx1, ty1 + 0.3 * H, (X, Y, lx, ly) => {
-      const u = (lx - bx0) / (bx1 - bx0), v = (ly - ty0) / (ty1 - ty0);
-      if (v > 1 && Math.abs(u - 0.5) < 0.5 - (v - 1) * 1.6) return 0; // the swallowtail
-      if (v > 1.15) return 0;
-      if (v > 1 && Math.abs(u - 0.5) > 0.5 - (v - 1) * 1.6 + 0.08) return 0;
-      if (u < 0.05 || u > 0.95 || v < 0.03) return mt(M.gold, face(0.95, SIDE, 0, v < 0.03 ? -0.6 : 0) * 0.95, X, Y, 0.05, 1);
-      if (u < 0.09 || u > 0.91) return mt(M.gold, 0.55, X, Y, 0.2, 1);
+    // (hall loop round 1) the release banner as cloth: heavy red silk hanging from the bar in soft
+    // folds that open toward a weighted hem, the morning wind pushing its lower half to the right,
+    // a twill weave, a gold fringe; the champion's face embroidered in gold thread on it
+    const bwid = bx1 - bx0, drop = ty1 - ty0;
+    const wind = (v: number): number => 5 * v ** 1.5 + 1.2 * Math.sin(v * 5);
+    const foldAt = (u: number, v: number): [number, number] => {
+      // the surface's height across (folds) and its slope (which way it faces)
+      const A = 2.2 + 1.6 * Math.sin(v * 2.4);
+      const ph = u * Math.PI * 2 * 3.2 + Math.sin(u * 7.1) * 0.9 + v * 0.8;
+      return [A * Math.sin(ph), A * Math.cos(ph) * (Math.PI * 2 * 3.2) / bwid];
+    };
+    rect(c, bx0 - 4, ty0, bx1 + 12, ty1 + 0.34 * H, (X, Y, lx, ly) => {
+      const v = (ly - ty0) / drop;
+      if (v < 0 || v > 1.16) return 0;
+      const ex = lx - wind(v);
+      const u0 = (ex - bx0) / bwid;
+      const [hgt, slope] = foldAt(u0, v);
+      const u = (ex + hgt * 0.35 * (Math.abs(u0 - 0.5) > 0.42 ? 1 : 0) - bx0) / bwid;
+      if (u < 0 || u > 1) return 0;
+      // the fringe under the hem: gold threads of uneven length, swinging with the wind
+      if (v > 1.0) {
+        const th = Math.floor(ex / 2.2);
+        const len = 0.07 + 0.08 * hash(th, 3, 17);
+        if (v - 1.0 > len || ((ex % 2.2) + 2.2) % 2.2 > 1.3) return 0;
+        return mt(M.gold, 0.72 - (v - 1) * 2.5 - slope * 0.6, X, Y, 0.1, 1);
+      }
+      // light: the side facing the sun (slope < 0 faces left) brighter, the far half in shade
+      const lit = face(0.95, SIDE) * (0.92 - u * 0.16) - slope * 0.75 - (v > 0.03 && v < 0.07 ? 0.12 : 0);
+      const weave = (X + Y) % 3 === 0 ? -0.035 : 0;
+      // the gold border and the weighted hem band (a heavier double hem), following the folds
+      if (u < 0.05 || u > 0.95 || v < 0.03 || (v > 0.9 && v < 0.97)) return mt(M.gold, lit * 1.02 + weave, X, Y, 0.05, 1);
+      if (v >= 0.97) return mt(M.verm, lit * 0.7, X, Y, 0.2, 1);
+      if (u < 0.08 || u > 0.92 || (v > 0.86 && v <= 0.9)) return mt(M.gold, lit * 0.62, X, Y, 0.2, 1);
+      const cx = (ex - 0) / (2.8 * 15), cy = (ly - (-3.6 * H)) / (2.8 * 13);
+      if (plaques[0] === "dexclient") {
+        const st = lionThread(cx, cy, lx, ly, lit, X, Y);
+        if (st) return st;
+      }
+      // the silk: a damask of faint rays round the emblem, woven in
       const ang = Math.atan2(v - 0.42, (u - 0.5) * 1.1);
       const ray = Math.floor(((ang + Math.PI) / (Math.PI * 2)) * 18) % 2 === 0;
-      const fold = Math.sin(u * 9) * 0.06;
-      return mt(M.verm, face(0.95, SIDE) * (ray ? 0.95 : 0.8) + fold, X, Y, 0.15, 1);
+      return mt(M.verm, lit * (ray ? 0.9 : 0.84) + weave, X, Y, 0.15, 1);
     });
-    emblem(c, plaques[0]!, 0, -3.6 * H, 2.8);
-    rect(c, bx0, -2.98 * H, bx1, -2.8 * H, (X, Y, lx) => {
-      const k = (((lx - bx0) % 10) + 10) % 10;
-      return k < 5 ? mt(M.gold, 0.95, X, Y, 0.0, 1) : mt(M.gold, 0.7, X, Y, 0.1, 1);
-    });
+    if (plaques[0] !== "dexclient") emblem(c, plaques[0]!, 0, -3.6 * H, 2.8);
     // the board's legs, its frame, the plaques
     for (const lx0 of [-1.0 * H, 0.9 * H]) woodBox(c, lx0, by0 + 0.2 * H, lx0 + 0.11 * H, 0, lacq, 3, 0.05, 1, 2);
     rect(c, -1.0 * H, -0.28 * H, 1.01 * H, -0.24 * H, (X, Y) => mt(lacq, 0.6, X, Y, 0.1, 1));
@@ -335,14 +514,29 @@ export const gongTower = definePainter<TowerP>("court.gongtower", {
     rect(c, -tw, -p.h, tw, -p.gongY - 1.32 * H - 0.26 * H, (X, Y, lx, ly) => {
       const hgt = -ly / H;
       const u = (lx + tw) / (2 * tw);
+      // (hall loop round 1) the face turns from the sun: lit on its left, in shade on its right
+      const k = 0.98 - u * 0.3;
       const storey = ((hgt - 3.2) % 3.6 + 3.6) % 3.6;
-      if (storey < 0.12) return mt(M.gold, face(0.92, SIDE, 0, -0.6) * 0.9, X, Y, 0.1, 1);
-      // vermilion lattice panels between lacquer frames, catching the morning
+      if (storey < 0.12) return mt(M.gold, face(k, SIDE, 0, storey < 0.04 ? -0.8 : 0.2) * 0.9, X, Y, 0.1, 1);
+      // the storey's balcony throws a shadow down the panels under it
+      const under = storey < 0.3 ? -0.18 : 0;
+      // vermilion lattice panels set back in lacquer frames: the frame shades each panel's top
+      // and left inside edge; the lattice's bars catch the morning only on their upper-left faces
       const pu = (u * 3) % 1, pv = ((hgt - 3.2) % 1.2 + 1.2) % 1.2 / 1.2;
       const frame = pu < 0.08 || pu > 0.92 || pv < 0.07;
-      if (frame) return mt(lacq, face(0.92, SIDE, pu < 0.08 ? -0.6 : 0, pv < 0.07 ? -0.6 : 0) * 0.85, X, Y, 0.0, 1);
-      const lat = (((lx * 0.9 + ly) % 9) + 9) % 9 < 1.4 || (((lx * 0.9 - ly) % 9) + 9) % 9 < 1.4;
-      return lat ? mt(M.verm, face(0.92, SIDE) * 0.7, X, Y, 0.2, 1) : mt(lacq, face(0.92, SIDE) * 0.35, X, Y, 0.1, 1);
+      if (frame) {
+        const nx = pu < 0.04 ? -0.7 : pu > 0.96 ? 0.7 : 0;
+        return mt(lacq, face(k, SIDE, nx, pv < 0.035 ? -0.7 : 0) * 0.9 + under * 0.5, X, Y, 0.0, 1);
+      }
+      const recess = pu < 0.16 || pv < 0.17;
+      const a = (((lx * 0.9 + ly) % 9) + 9) % 9, b = (((lx * 0.9 - ly) % 9) + 9) % 9;
+      const bar = a < 1.6 || b < 1.6;
+      if (bar) {
+        const litFace = a < 0.8 || b > 0.8;
+        const sun = recess ? 0.45 : litFace ? 1.0 : 0.55;
+        return mt(M.verm, face(k, SIDE) * sun + under, X, Y, 0.2, 1);
+      }
+      return mt(lacq, face(k, SIDE) * (recess ? 0.12 : 0.26) + under * 0.3, X, Y, 0.1, 1);
     });
     for (let s = 3.2 + 3.6; s * H < p.h - 0.5 * H; s += 3.6) {
       tileRoof(c, lf, SIDE, -tw - 0.55 * H, tw + 0.55 * H, -s * H, 0.55 * H, Math.floor(s));
@@ -426,7 +620,12 @@ export const gong = definePainter<GongP>("court.gong", {
       if (d > 1) return 0;
       const nx = dx / p.r, ny = dy / p.r;
       // the rim: a thick rolled edge; rings hammered into the face; the boss in the middle
-      if (d > 0.92) return mt(M.bronze, face(0.95, SIDE, nx * 0.9, ny * 0.9) * 0.75, X, Y, 0.0, 1);
+      if (d > 0.92) {
+        // (hall loop round 1) the rolled rim: a hot rim light where it faces the sun, its far side dark
+        const sunward = -(nx * 0.62 + ny * 0.78);
+        if (sunward > 0.55 && d > 0.95) return mt(M.bronze, 1.15, X, Y, 0.0, 1);
+        return mt(M.bronze, face(0.95, SIDE, nx * 0.9, ny * 0.9) * (sunward < -0.3 ? 0.5 : 0.75), X, Y, 0.0, 1);
+      }
       if (d > 0.86) return mt(M.bronze, face(0.95, SIDE, -nx * 0.6, -ny * 0.6) * 0.6, X, Y, 0.1, 1);
       const ring = Math.abs(d - 0.62) < 0.025 || Math.abs(d - 0.42) < 0.02;
       if (d < 0.2) return mt(M.bronze, face(0.95, SIDE, nx * 2.5, ny * 2.5) * 1.05 + flare * 0.3, X, Y, 0.0, 1);
@@ -562,38 +761,60 @@ export interface BannerP {
   w: number;
   drop: number;
   phase?: number;
+  /** (hall loop round 1) How hard the wind takes this one (1 = as before) and its pattern (0 ring, 1 stripe, 2 band). */
+  gust?: number;
+  style?: number;
   frame?: number;
 }
 
 export const banner = definePainter<BannerP>("court.banner", {
   bounds(p) {
-    return [-p.w - 12, -p.h - 14, p.w + 16, 4];
+    const g = p.gust ?? 1;
+    return [-p.w - 12, -p.h - 14, p.w + 16 + 6 * g, 4];
   },
   paint(c, p) {
     const f = ((p.frame ?? 0) + Math.round((p.phase ?? 0) * 8)) % 8;
     const ph = (f / 8) * Math.PI * 2;
+    const g = p.gust ?? 1, style = p.style ?? 0;
     // the pole and its finial
     lathe(c, 0, -p.h, 0, () => 2.5, (X, Y, u) => mt(lacq, cyl(0.95, u, SIDE, 0.25), X, Y, 0.0, 1));
     lathe(c, 0, -p.h - 12, -p.h, (ly) => 4 * Math.sin(((ly + p.h + 12) / 12) * Math.PI), (X, Y, u) => mt(M.gold, cyl(0.95, u, SIDE), X, Y, 0.0, 1));
     const bar = -p.h + 4;
-    rect(c, -p.w / 2 - 6, bar - 3, p.w / 2 + 6, bar + 1, (X, Y) => mt(lacq, 0.6, X, Y, 0.1, 1));
-    // the silk: each row shifted by the travelling wave, more toward the free end; shaded by
-    // the wave's slope (the folds facing the sun are lit)
-    rect(c, -p.w / 2 - 8, bar, p.w / 2 + 10, bar + p.drop + 10, (X, Y, lx, ly) => {
+    rect(c, -p.w / 2 - 6, bar - 3, p.w / 2 + 6, bar + 1, (X, Y, _lx, ly) => mt(lacq, ly < bar - 2 ? 0.9 : 0.6, X, Y, 0.1, 1));
+    // the silk: each row shifted by the travelling wave, more toward the free end and more in a
+    // gust; shaded by the wave's slope (the folds facing the sun lit, the others in shade), the
+    // far half of the cloth a little darker, a twill in it
+    rect(c, -p.w / 2 - 8, bar, p.w / 2 + 10 + 6 * g, bar + p.drop + 12, (X, Y, lx, ly) => {
       const t = (ly - bar) / p.drop;
-      if (t < 0 || t > 1.08) return 0;
-      const amp = 1 + t * 4;
-      const off = Math.sin(t * 5 - ph) * amp;
-      const slope = Math.cos(t * 5 - ph);
+      if (t < 0 || t > 1.1) return 0;
+      const amp = (1 + t * 4) * g;
+      const off = Math.sin(t * 5 - ph) * amp + t * t * 3 * (g - 0.8);
+      const slope = Math.cos(t * 5 - ph) * Math.min(1.4, g);
       const u = (lx - off + p.w / 2) / p.w;
       if (u < 0 || u > 1) return 0;
-      if (t > 1) return Math.abs(((u * 10) % 1) - 0.5) < 0.3 ? mt(M.gold, 0.8, X, Y, 0.2, 1) : 0;
-      if (u < 0.08 || u > 0.92) return mt(M.gold, face(0.95, SIDE, 0, 0) * 0.85 - slope * 0.08, X, Y, 0.1, 1);
+      const shade = -slope * 0.12 - u * 0.1 + ((X + Y) % 3 === 0 ? -0.03 : 0);
+      if (t > 1) {
+        // the fringe: threads of uneven length
+        const th = Math.floor(lx / 2);
+        return (((lx % 2) + 2) % 2) < 1.2 && t - 1 < 0.04 + 0.06 * hash(th, 2, style + 5) ? mt(M.gold, 0.8 + shade, X, Y, 0.2, 1) : 0;
+      }
+      if (u < 0.08 || u > 0.92) return mt(M.gold, face(0.95, SIDE) * 0.85 + shade, X, Y, 0.1, 1);
       const ex = (u - 0.5) * p.w, ey = (t - 0.32) * p.drop;
-      const d = Math.hypot(ex, ey);
-      if (d < p.w * 0.3 && d > p.w * 0.24) return mt(M.gold, 0.85 - slope * 0.1, X, Y, 0.1, 1);
-      if (d < p.w * 0.16 && Math.sin(Math.atan2(ey, ex) * 5) > -0.2) return mt(M.gold, 0.8 - slope * 0.1, X, Y, 0.15, 1);
-      return mt(M.verm, 0.82 - slope * 0.12, X, Y, 0.15, 1);
+      if (style === 0) {
+        const d = Math.hypot(ex, ey);
+        if (d < p.w * 0.3 && d > p.w * 0.24) return mt(M.gold, 0.85 + shade, X, Y, 0.1, 1);
+        if (d < p.w * 0.16 && Math.sin(Math.atan2(ey, ex) * 5) > -0.2) return mt(M.gold, 0.8 + shade, X, Y, 0.15, 1);
+      } else if (style === 1) {
+        // a dark stripe down the middle with a column of gold glyph strokes
+        if (Math.abs(u - 0.5) < 0.16) {
+          const gy = ((t * 9) % 1 + 1) % 1;
+          if (Math.abs(u - 0.5) < 0.1 && t > 0.12 && t < 0.86 && (gy < 0.22 || (gy < 0.6 && Math.abs(u - 0.5 + (gy - 0.4) * 0.2) < 0.03))) return mt(M.gold, 0.85 + shade, X, Y, 0.1, 1);
+          return mt(lacq, 0.55 + shade, X, Y, 0.1, 1);
+        }
+      } else if (t < 0.18 && t > 0.1) {
+        return mt(M.gold, 0.82 + shade, X, Y, 0.1, 1);
+      }
+      return mt(M.verm, 0.82 + shade, X, Y, 0.15, 1);
     });
   },
 });

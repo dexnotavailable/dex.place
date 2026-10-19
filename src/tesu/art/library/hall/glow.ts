@@ -9,7 +9,7 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { M, SCREEN, clamp, hash, keep, lathe, poly, rect, tn, type Ramp } from "./kit.ts";
+import { M, SCREEN, clamp, hash, keep, lathe, poly, rect, tn, vnoise, type Ramp } from "./kit.ts";
 
 // ---------------------------------------------------------------------------
 // Hanging lanterns
@@ -61,15 +61,8 @@ export const lantern = definePainter<LanternP>("hall.lantern", {
       const X = Math.round(c.X(cx * t)), Y = Math.round(c.Y(top * t));
       c.buf.set(X, Y, P.umber[4]!);
     }
-    // the halo: stepped, dithered rings of warm light (drawn first, under the lantern)
-    const hy = top + d.h * 1.1;
-    const R = d.w * 1.5;
-    rect(c, cx - R, hy - R * 0.9, cx + R, hy + R * 0.9, (X, Y, lx, ly) => {
-      const q = Math.hypot((lx - cx) / R, (ly - hy) / (R * 0.9));
-      if (q > 1) return 0;
-      const a = (q < 0.55 ? 0.25 : q < 0.8 ? 0.12 : 0.05) * lit * flick;
-      return keep(X, Y, a) ? (q < 0.55 ? P.ember[2]! : P.ember[3]!) : 0;
-    });
+    // (hall loop round 1) no dithered halo: the lantern's light is painted where it lands, on the
+    // walls, things and floor round it (hall-light.ts); the lantern itself is the hot shape
     body(c, p, cx, top, d, lit * flick);
   },
 });
@@ -165,22 +158,39 @@ export const shaft = definePainter<ShaftP>("hall.shaft", {
     return [-p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, 2];
   },
   paint(c, p) {
+    // (hall loop round 1) not a stipple: a few god rays of different widths and lengths down the
+    // shaft's slant, the lit air between them a sparse drift of glinting dust (thick in the core,
+    // thinning outward: the shaft's soft bands), and a clean edge ray each side. What the shaft
+    // passes through is lit a step by the room's light (hall-light.ts); this is only the lit air.
     const f = p.frame ?? 0;
-    const breathe = 0.86 + 0.14 * Math.sin((f / 8) * Math.PI * 2);
+    const breathe = Math.sin((f / 8) * Math.PI * 2);
+    const rays: [number, number, number][] = [];
+    for (let i = 0; i < 5; i++) rays.push([-0.7 + (1.4 * (i + hash(i, 1, c.seed))) / 5, 0.6 + 1.6 * hash(i, 2, c.seed), hash(i, 3, c.seed)]);
     rect(c, -p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, 0, (X, Y, lx, ly) => {
       if (p.gaps && p.gaps.some((g) => ly > g[0] && ly < g[1])) return 0;
       const t = -ly / p.h; // 0 at the foot .. 1 at the top
       const axis = -p.lean * t;
       const half = (p.w * (1 - t) + p.wTop * t) / 2;
-      const u = (lx - axis) / half; // -1..1 across
-      if (Math.abs(u) > 1) return 0;
-      const low = 0.55 + 0.45 * (1 - t);
-      // a soft edge, god-ray streaks along the shaft, brighter low where the air is lit
-      const edge = clamp((1 - Math.abs(u)) * 2.2, 0, 1) ** 1.5;
-      const streak = 0.62 + 0.38 * Math.sin(u * 7.3 + Math.sin(u * 2.1 + f * 0.4) * 1.5);
-      const a = 0.44 * edge * streak * low * breathe;
-      if (!keep(X, Y, a)) return 0;
-      return a > 0.3 ? P.ember[0]! : a > 0.17 ? P.paper[0]! : P.ember[1]!;
+      const s = lx - axis;
+      const u = s / half;
+      const au = Math.abs(u);
+      if (au > 1.02) return 0;
+      const low = 1 - t * 0.55;
+      // the clean edge each side
+      if (Math.abs(au - 0.98) * half < 0.55 && vnoise(u < 0 ? 3 : 7, ly * 0.03 + f * 0.2, 11) > 0.3) return P.ember[2]!;
+      // two or three god rays in the core, long dashes drifting as it breathes
+      for (const [ru, rw, rs] of rays) {
+        if (Math.abs(ru) > 0.5) continue;
+        if (Math.abs(s - ru * half) < rw / 2 / Math.max(1, c.d) + 0.25) {
+          const n = vnoise(rs * 17, ly * 0.022 + f * 0.18, 13) + breathe * 0.05;
+          if (n > 0.52) return n > 0.7 && low > 0.65 ? P.ember[1]! : P.ember[2]!;
+        }
+      }
+      // the lit air in three soft bands, each a step of coverage with a clean border between them,
+      // in amber close to the hall's own warm values (a glow, not a screen)
+      const cov = (au < 0.42 ? 0.25 : au < 0.76 ? 0.125 : 0.0625) * (low > 0.7 ? 1 : 0.5 + low * 0.7);
+      if (keep(X, Y, cov)) return au < 0.42 ? P.ember[2]! : P.ember[3]!;
+      return 0;
     });
   },
 });
