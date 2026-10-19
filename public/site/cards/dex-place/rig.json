@@ -1,0 +1,95 @@
+{
+ "v": 1,
+ "size": [
+  160,
+  240
+ ],
+ "focus": [
+  88,
+  75
+ ],
+ "parts": {
+  "sky": {
+   "depth": 0
+  },
+  "cloud-high": {
+   "depth": 0.25,
+   "motion": [
+    {
+     "kind": "bob",
+     "dx": 2,
+     "dy": 0,
+     "period": 6,
+     "phase": 0
+    }
+   ]
+  },
+  "isle": {
+   "depth": 0.45,
+   "motion": [
+    {
+     "kind": "bob",
+     "dx": 0,
+     "dy": 2,
+     "period": 4.4,
+     "phase": 0.3
+    }
+   ]
+  },
+  "cloud-low": {
+   "depth": 0.6,
+   "motion": [
+    {
+     "kind": "bob",
+     "dx": 3,
+     "dy": 0,
+     "period": 7,
+     "phase": 0.5
+    }
+   ]
+  },
+  "legs": {
+   "depth": 0.85
+  },
+  "upper": {
+   "depth": 0.85,
+   "pivot": [
+    88,
+    149
+   ],
+   "motion": [
+    {
+     "kind": "breathe",
+     "scale": 0.014,
+     "period": 4.2,
+     "phase": 0
+    }
+   ]
+  },
+  "blade": {
+   "depth": 0.9,
+   "motion": [
+    {
+     "kind": "glow",
+     "min": 0.7,
+     "max": 1,
+     "period": 1.8,
+     "phase": 0
+    }
+   ]
+  },
+  "fx-sparks": {
+   "depth": 1,
+   "motion": [
+    {
+     "kind": "drift",
+     "dx": 0,
+     "dy": -14,
+     "period": 2.6,
+     "phase": 0,
+     "fade": true
+    }
+   ]
+  }
+ }
+}

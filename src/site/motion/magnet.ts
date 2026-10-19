@@ -52,7 +52,8 @@ export function initScenes(reduced: MediaQueryList, fine: MediaQueryList): void 
     let y = 0;
     const write = (): void => {
       raf = 0;
-      items ??= tiltItems(panel);
+      // (a card's rig adds its own layers once it has loaded: look again when the count changes)
+      if (!items || items.length !== panel.querySelectorAll(".sc-it, [data-depth]").length) items = tiltItems(panel);
       for (const it of items) {
         it.el.style.translate = x === 0 && y === 0
           ? ""

@@ -1,16 +1,18 @@
 // Windows into the world (Dex 10-18: "we start with the whole background white, then punch in some windows into the
-// world, each window showing something different"). The page is plain white; beside each section a window looks into
-// Tesu, alternating left and right, each onto a different place in its own light: the Walker wading through the
+// world, each window showing something different"; 10-19: bigger, the world dominates). The page is plain white; with
+// each section a window looks into Tesu, each onto a different place in its own light: the Walker wading through the
 // clouds, the palace at dawn, the floating isles at noon, Kagami's lake and its torii islet, a pine over the karst at
 // dusk, the hall door in the morning mist. Each is composed from the world's own painters (motion/painters.ts starts
 // the worker a place needs) over a dithered sky, and lives a little: clouds drift, the isles and the boat bob, egrets
-// cross, the lake shimmers, the mist creeps. Its edge dissolves into the white, drawn into the window itself: a
-// stepped gradient and a scatter of white pixels, seeded per window and per side so no two holes look alike.
+// cross, the lake shimmers, the mist creeps. Its edge is a hole torn in the paper, drawn into the window itself, seeded
+// per window so no two holes look alike. How the windows move with the scroll and arrive is a look (motion/looks.ts).
 //
 // Light: a window paints only the first time it comes near the screen; only windows on screen animate (a few frames
-// a second, the loop stops when none is); reduced motion: each is drawn once, still. Whole pixels only (k device px
-// per art px).
+// a second, every frame only while the page scrolls under a look that follows it or a window is arriving; nothing when
+// none is on screen); reduced motion: each is drawn once, still. Whole pixels only (k device px per art px).
 
+import { LOOK, initCutEntries } from "./looks.ts";
+import type { Look } from "./look-mode.ts";
 import { painterWorker, type PainterEntry } from "./painters.ts";
 import { rampIndex } from "./sky-plan.ts";
 import type { CloudDone, CloudJob } from "./paint-core.ts";
@@ -35,6 +37,8 @@ export interface ScenePiece {
   seed?: number;
   /** How far it sinks into the sky's haze (0..1: far things paler). */
   haze?: number;
+  /** How near it is, 0 (the sky) .. 1 (the nearest): how much it moves under a look with depth (default by kind). */
+  z?: number;
 }
 
 export interface Scene {
@@ -210,35 +214,13 @@ const hash = (a: number, b: number, s = 0): number => {
  */
 export function holeMask(W: number, H: number, seed: number): Uint8ClampedArray {
   const out = new Uint8ClampedArray(W * H * 4);
-  const s = Math.min(W, H);
-  const r = (i: number): number => hash(seed * 31 + i, seed * 17 + 3, 11);
-  // the paper's margin before the tear, the swell of the outline, the fibre fringe's depth (art px)
-  const inset = Math.max(2, Math.round(s * 0.03));
-  const amp = Math.max(1.5, s * 0.034);
-  const fringe = Math.max(2, Math.round(s * 0.014));
-  // the outline's wander: a few waves around the hole (whole numbers of them, so it closes), random phases
-  const waves = [[2, 0.5], [3, 0.36], [5, 0.24], [8, 0.15], [13, 0.09], [21, 0.06]] as const;
-  const ph = waves.map((_, i) => r(i) * Math.PI * 2);
-  const norm = waves.reduce((m, [, a]) => m + a, 0);
-  // each corner its own roundness
-  const rad = [0, 1, 2, 3].map((i) => s * (0.05 + 0.1 * r(10 + i)));
-  const cx = W / 2, cy = H / 2;
-  // the jag: along the outline every couple of pixels the tear steps in or out by a pixel
-  const per = 2 * (W + H);
+  const sh = tearShape(W, H, seed);
+  const { fringe } = sh;
+  const far = sh.inset + sh.amp * 2 + fringe + 4;
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const dx = Math.min(x + 0.5, W - x - 0.5), dy = Math.min(y + 0.5, H - y - 0.5);
-      const q = (x < cx ? 0 : 1) + (y < cy ? 0 : 2);
-      const rq = rad[q]!;
-      // distance in from the paper's edge, the corners rounded
-      const d = dx < rq && dy < rq ? rq - Math.hypot(rq - dx, rq - dy) : Math.min(dx, dy);
-      if (d > inset + amp * 2 + fringe + 2) continue;
-      const th = Math.atan2((y + 0.5 - cy) / H, (x + 0.5 - cx) / W);
-      let n = 0;
-      for (let i = 0; i < waves.length; i++) n += waves[i]![1] * Math.sin(waves[i]![0] * th + ph[i]!);
-      const along = Math.floor(((th + Math.PI) / (Math.PI * 2)) * per);
-      const jag = hash(along >> 1, seed, 5) < 0.3 ? 1 : 0;
-      const edge = inset + amp * (1 + n / norm) + jag;
+      if (sh.dist(x, y) > far) continue;
+      const { d, edge, along } = sh.at(x, y);
       let white = d < edge;
       let alpha = 255;
       if (!white && d < edge + fringe + 3) {
@@ -258,6 +240,70 @@ export function holeMask(W: number, H: number, seed: number): Uint8ClampedArray 
   return out;
 }
 
+/**
+ * The torn outline of a window W x H art px, seeded: at a pixel, how far in it is from the paper's edge (d, the
+ * corners rounded each its own way) and where the tear runs there (edge: the paper's margin, a slow swell and smaller
+ * bites around the hole, a pixel's jag), with its place along the outline.
+ */
+function tearShape(W: number, H: number, seed: number) {
+  const s = Math.min(W, H);
+  const r = (i: number): number => hash(seed * 31 + i, seed * 17 + 3, 11);
+  const inset = Math.max(2, Math.round(s * 0.03));
+  const amp = Math.max(1.5, s * 0.034);
+  const fringe = Math.max(2, Math.round(s * 0.014));
+  // the outline's wander: a few waves around the hole (whole numbers of them, so it closes), random phases
+  const waves = [[2, 0.5], [3, 0.36], [5, 0.24], [8, 0.15], [13, 0.09], [21, 0.06]] as const;
+  const ph = waves.map((_, i) => r(i) * Math.PI * 2);
+  const norm = waves.reduce((m, [, a]) => m + a, 0);
+  const rad = [0, 1, 2, 3].map((i) => s * (0.05 + 0.1 * r(10 + i)));
+  const cx = W / 2, cy = H / 2;
+  const per = 2 * (W + H);
+  const dist = (x: number, y: number): number => {
+    const dx = Math.min(x + 0.5, W - x - 0.5), dy = Math.min(y + 0.5, H - y - 0.5);
+    const rq = rad[(x < cx ? 0 : 1) + (y < cy ? 0 : 2)]!;
+    return dx < rq && dy < rq ? rq - Math.hypot(rq - dx, rq - dy) : Math.min(dx, dy);
+  };
+  const edgeAtAngle = (th: number): number => {
+    let n = 0;
+    for (let i = 0; i < waves.length; i++) n += waves[i]![1] * Math.sin(waves[i]![0] * th + ph[i]!);
+    const along = Math.floor(((th + Math.PI) / (Math.PI * 2)) * per);
+    return inset + amp * (1 + n / norm) + (hash(along >> 1, seed, 5) < 0.3 ? 1 : 0);
+  };
+  return {
+    inset, amp, fringe, dist, edgeAtAngle,
+    at(x: number, y: number): { d: number; edge: number; along: number } {
+      const th = Math.atan2((y + 0.5 - cy) / H, (x + 0.5 - cx) / W);
+      const along = Math.floor(((th + Math.PI) / (Math.PI * 2)) * per);
+      return { d: dist(x, y), edge: edgeAtAngle(th), along };
+    },
+  };
+}
+
+const BAYER4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+
+/**
+ * The tear's signed distance at every pixel, in quarter art px: below 0 is paper, above it the world (the same outline
+ * as holeMask, without the fibres). A window's arrival grows its hole from a smaller tear (motion/looks.ts): paper
+ * wherever the field is below the extra margin. Pure.
+ */
+export function tearField(W: number, H: number, seed: number): Int16Array {
+  const out = new Int16Array(W * H);
+  const sh = tearShape(W, H, seed);
+  // the tear's line by angle round the hole, looked up (an atan2 a pixel, no sines): 4096 steps round
+  const N = 4096, cx = W / 2, cy = H / 2;
+  const edgeBy = new Float32Array(N);
+  for (let k = 0; k < N; k++) edgeBy[k] = sh.edgeAtAngle(((k + 0.5) / N) * Math.PI * 2 - Math.PI);
+  for (let y = 0; y < H; y++) {
+    const fy = (y + 0.5 - cy) / H;
+    for (let x = 0; x < W; x++) {
+      const th = Math.atan2(fy, (x + 0.5 - cx) / W);
+      const e = edgeBy[Math.min(N - 1, ((th + Math.PI) / (Math.PI * 2)) * N | 0)]!;
+      out[y * W + x] = Math.max(-32000, Math.min(32000, Math.round((sh.dist(x, y) - e) * 4)));
+    }
+  }
+  return out;
+}
+
 interface Art { img: HTMLCanvasElement; ax: number; ay: number }
 
 /** The place as a window of W x H art px shows it: its wide framing in a window across the page. Pure. */
@@ -267,8 +313,49 @@ export function framed(base: Scene, W: number, H: number): Scene {
   return { ...base, pieces: wide.pieces, mist: wide.mist, water: wide.water ?? base.water, walker: wide.walker };
 }
 
+/** Where a window is, for the looks that move with the scroll or play as it arrives (motion/looks.ts). */
+export interface WinState {
+  W: number;
+  H: number;
+  /** Its order on the page (seeds, alternation). */
+  index: number;
+  /** The window's box and its band's box, viewport css px; the viewport's height. */
+  top: number;
+  bottom: number;
+  bandTop: number;
+  bandBottom: number;
+  vh: number;
+  /** When it came well into view the first time (performance.now() ms), or -1. */
+  arrived: number;
+}
+
+/**
+ * How the windows move (motion/looks.ts has the looks; none = the windows as they were: a few frames a second of
+ * life, the torn edge still).
+ */
+export interface WindowMotion {
+  /** Frames a second of the windows' life while one is on screen. */
+  fps: number;
+  /** Draw on every scroll frame (a look that moves with the scroll). */
+  scrollLinked?: boolean;
+  /** A piece's extra offset, art px (whole pixels). */
+  offset?(s: WinState, pc: ScenePiece, i: number, now: number): readonly [number, number];
+  /** The sky's (and the lake's) extra offset, art px. */
+  backOffset?(s: WinState, now: number): readonly [number, number];
+  /**
+   * Paper (or anything) over the window while it arrives: write RGBA into `out` (W x H, cleared before each call);
+   * return true while it still has something to draw, false once the window is simply open. `field()` is the tear's
+   * signed distance (tearField), made on first ask.
+   */
+  cover?(s: WinState, field: () => Int16Array, out: Uint8ClampedArray, now: number): boolean;
+  /** What the cover would draw now, as a number (a frame with the same key and nothing else moved is skipped); none:
+   *  the cover is drawn every frame while it lasts. */
+  coverKey?(s: WinState, now: number): number;
+}
+
 interface Win {
   el: HTMLElement;
+  band: HTMLElement;
   index: number;
   cv: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
@@ -283,12 +370,18 @@ interface Win {
   back: HTMLCanvasElement | null;
   edge: HTMLCanvasElement | null;
   mist: HTMLCanvasElement | null;
+  field: Int16Array | null;
+  over: { img: ImageData; cv: HTMLCanvasElement } | null;
+  covering: boolean;
+  /** The last frame's plan (every position, the cover's key): an unchanged plan is not painted again. */
+  plan: number[] | null;
   art: (Art | null)[];
   walker: HTMLCanvasElement | null;
   visible: boolean;
   seen: boolean;
   gen: number;
   dirty: boolean;
+  st: WinState;
 }
 
 let walkerFrame: Promise<HTMLImageElement | null> | null = null;
@@ -300,7 +393,13 @@ const loadWalker = (): Promise<HTMLImageElement | null> =>
     img.src = "/tesu/walker/wade-280/00.webp";
   }));
 
-export function initWindows(reduced: MediaQueryList): void {
+/** The windows as they were before the looks: a frame every 160 ms of life, nothing else. */
+const STILL: WindowMotion = { fps: 6.25 };
+/** How far into view a window comes before it has arrived (share of its height). */
+const ARRIVE = 0.3;
+
+export function initWindows(reduced: MediaQueryList, motion: WindowMotion = LOOK[document.documentElement.dataset.motion as Look] ?? STILL): void {
+  if (document.documentElement.dataset.motion === "cuts") initCutEntries(reduced);
   const els = [...document.querySelectorAll<HTMLElement>("[data-window]")];
   if (!els.length) return;
   const wins: Win[] = [];
@@ -348,14 +447,16 @@ export function initWindows(reduced: MediaQueryList): void {
       win.walker = null;
     }
     if (m.W !== win.W || m.H !== win.H || m.k !== win.k) {
-      win.W = m.W;
-      win.H = m.H;
+      win.W = win.st.W = m.W;
+      win.H = win.st.H = m.H;
       win.k = m.k;
       win.cv.width = m.W;
       win.cv.height = m.H;
       win.cv.style.width = `${(m.W * m.k) / m.dpr}px`;
       win.cv.style.height = `${(m.H * m.k) / m.dpr}px`;
       win.back = win.edge = win.mist = null;
+      win.field = null;
+      win.over = null;
       win.dirty = true;
     }
     if (win.seen && (!win.paintedH || Math.abs(win.H - win.paintedH) / win.paintedH > 0.08)) paint(win);
@@ -399,22 +500,26 @@ export function initWindows(reduced: MediaQueryList): void {
     wins.forEach((win, i) => { const m = ms[i]; if (m) apply(win, m); });
   };
 
-  // --- the sky behind, the lake, the mist and the edge: drawn once per size
+  // --- the sky behind, the lake, the mist and the edge: drawn once per size. The sky has a margin above and below
+  // (BACK_M art px) so a look may slide it a little without showing its end.
+  const BACK_M = 12;
   const backdrop = (win: Win): HTMLCanvasElement => {
     if (win.back) return win.back;
     const { W, H, scene } = win;
+    const HH = H + BACK_M * 2;
     const c = document.createElement("canvas");
     c.width = W;
-    c.height = H;
+    c.height = HH;
     const g = c.getContext("2d")!;
-    const img = g.createImageData(W, H);
+    const img = g.createImageData(W, HH);
     const sky = ramp(scene.sky, 18);
     const lakeTop = scene.water ? Math.round(scene.water.y * H) : H;
     const lake = scene.water ? ramp(scene.water.tones, 8) : [];
-    for (let y = 0; y < H; y++) {
+    for (let yy = 0; yy < HH; yy++) {
+      const y = Math.max(0, Math.min(H - 1, yy - BACK_M));
       for (let x = 0; x < W; x++) {
         const col = y < lakeTop ? sky[rampIndex(x, y, lakeTop, sky.length)]! : lake[rampIndex(x, y - lakeTop, H - lakeTop, lake.length)]!;
-        const i = (y * W + x) * 4;
+        const i = (yy * W + x) * 4;
         img.data[i] = col[0]; img.data[i + 1] = col[1]; img.data[i + 2] = col[2]; img.data[i + 3] = 255;
       }
     }
@@ -432,7 +537,8 @@ export function initWindows(reduced: MediaQueryList): void {
     win.edge = c;
     return c;
   };
-  // the mist: a dithered white band a little wider than the window, slid sideways (drawn once, never per pixel)
+  // the mist: a band of white a little wider than the window, slid sideways (drawn once, never per pixel); its
+  // density rises and falls through the band on an ordered (Bayer) dither in soft clumps: pixel-art fog, not static
   const MIST_SLIDE = 64;
   const mistBand = (win: Win): HTMLCanvasElement | null => {
     const m = win.scene.mist;
@@ -449,7 +555,9 @@ export function initWindows(reduced: MediaQueryList): void {
       const dens = Math.sin(((y + 0.5) / c.height) * Math.PI) * (m.dens ?? 0.75);
       for (let x = 0; x < c.width; x++) {
         const xx = x % (W + MIST_SLIDE);
-        if (hash(xx, y + y0, 3) < dens * (0.55 + 0.45 * hash(Math.floor(xx / 9), Math.floor((y + y0) / 3), 5))) {
+        // soft clumps: a smooth wave along the band, so the fog thickens and thins in drifts
+        const clump = 0.6 + 0.4 * Math.sin(xx * 0.045 + Math.sin((y + y0) * 0.21) * 1.7);
+        if ((BAYER4[(y & 3) * 4 + (xx & 3)]! + 0.5) / 16 < dens * clump) {
           const i = (y * c.width + x) * 4;
           img.data[i] = 250; img.data[i + 1] = 250; img.data[i + 2] = 250; img.data[i + 3] = 255;
         }
@@ -460,48 +568,96 @@ export function initWindows(reduced: MediaQueryList): void {
     return c;
   };
 
-  const draw = (win: Win, t: number): void => {
-    const { ctx, W, H, scene } = win;
+  const animated = !reduced.matches;
+  // A frame is planned first (every position in whole art px) and painted only if something moved since the last
+  // one: most frames of slow drifts and of a scroll move nothing by a whole pixel, and are skipped.
+  const draw = (win: Win, t: number, now: number): void => {
+    const { ctx, W, H, scene, st } = win;
     if (!W || !H) return;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(backdrop(win), 0, 0);
-    const tt = reduced.matches ? 0 : t;
+    const tt = animated ? t : 0;
+    const bo = animated && motion.backOffset ? motion.backOffset(st, now) : null;
+    const plan: number[] = [bo ? bo[0] : 0, bo ? bo[1] : 0, scene.water ? Math.floor(tt * 3) : 0];
+    const at: ([number, number] | null)[] = [];
+    let mist: [number, number] | null = null;
+    let walker: [number, number] | null = null;
     scene.pieces.forEach((pc, i) => {
+      const off = animated && motion.offset ? motion.offset(st, pc, i, now) : null;
       if (scene.mist && i === scene.mist.before) {
-        const band = mistBand(win);
-        if (band) ctx.drawImage(band, -Math.floor(tt * 2) % MIST_SLIDE, Math.round(scene.mist.y * H));
+        mist = [-Math.floor(tt * 2) % MIST_SLIDE, Math.round(scene.mist.y * H) + (off ? off[1] : 0)];
+        plan.push(mist[0], mist[1]);
       }
       if (scene.walker && i === scene.walker.before && win.walker) {
         const wk = scene.walker;
-        ctx.drawImage(win.walker, Math.round(wk.x * W - win.walker.width / 2 + (reduced.matches ? 0 : Math.sin(tt * 0.02) * 3)), Math.round(wk.y * H - win.walker.height));
+        const wo = animated && motion.offset ? motion.offset(st, { kind: "walker", p: {}, fit: wk.fit, x: wk.x, y: wk.y, haze: wk.haze }, -1, now) : null;
+        walker = [
+          Math.round(wk.x * W - win.walker.width / 2 + (animated ? Math.sin(tt * 0.02) * 3 : 0)) + (wo ? wo[0] : 0),
+          Math.round(wk.y * H - win.walker.height) + (wo ? wo[1] : 0),
+        ];
+        plan.push(walker[0], walker[1]);
       }
       const art = win.art[i];
-      if (!art) return;
+      if (!art) { at.push(null); plan.push(-1e9); return; }
       let x = pc.x * W + (pc.sway ? Math.sin(tt * (pc.speed ?? 0.05) * 6.28 + i) * pc.sway : 0);
       const y = pc.y * H + (pc.bob ? Math.round(Math.sin(tt * (pc.speed ?? 0.5) * 6.28 + i * 1.7) * pc.bob) : 0);
       if (pc.cross) {
         const span = W + art.img.width;
         x = ((((pc.x * W + tt * pc.cross) % span) + span) % span) - art.img.width / 2;
       }
+      const p: [number, number] = [Math.round(x) - art.ax + (off ? off[0] : 0), Math.round(y) - art.ay + (off ? off[1] : 0)];
+      at.push(p);
+      plan.push(p[0], p[1]);
+    });
+    // a look's paper over the window while it arrives: a look that can say what it would draw (coverKey) is skipped
+    // when that has not changed either
+    const covering = animated && !!motion.cover && win.covering;
+    if (covering) plan.push(motion.coverKey ? motion.coverKey(st, now) : now);
+    if (!win.dirty && win.plan && win.plan.length === plan.length && win.plan.every((v, i) => v === plan[i])) return;
+    win.dirty = false;
+    win.plan = plan;
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(backdrop(win), bo ? bo[0] : 0, -BACK_M + (bo ? bo[1] : 0));
+    scene.pieces.forEach((pc, i) => {
+      if (mist && scene.mist && i === scene.mist.before) {
+        const band = mistBand(win);
+        if (band) ctx.drawImage(band, mist[0], mist[1]);
+      }
+      if (walker && scene.walker && i === scene.walker.before && win.walker) ctx.drawImage(win.walker, walker[0], walker[1]);
+      const art = win.art[i], p = at[i];
+      if (!art || !p) return;
       if (pc.haze) {
         ctx.save();
         ctx.globalAlpha = 1 - pc.haze * 0.5;
       }
-      ctx.drawImage(art.img, Math.round(x) - art.ax, Math.round(y) - art.ay);
+      ctx.drawImage(art.img, p[0], p[1]);
       if (pc.haze) ctx.restore();
     });
-    if (scene.water) ripples(win, tt);
+    if (scene.water) ripples(win, tt, bo ? bo[1] : 0);
     ctx.drawImage(edge(win), 0, 0);
+    if (covering) {
+      if (!win.over) {
+        const c = document.createElement("canvas");
+        c.width = W;
+        c.height = H;
+        win.over = { img: new ImageData(W, H), cv: c };
+      }
+      const o = win.over;
+      o.img.data.fill(0);
+      win.covering = motion.cover!(st, () => (win.field ??= tearField(W, H, win.index + 1)), o.img.data, now);
+      o.cv.getContext("2d")!.putImageData(o.img, 0, 0);
+      ctx.drawImage(o.cv, 0, 0);
+      if (!win.covering) { win.field = null; win.over = null; win.plan = null; }
+    }
   };
 
-  const ripples = (win: Win, t: number): void => {
+  const ripples = (win: Win, t: number, dy: number): void => {
     const { ctx, W, H, scene } = win;
-    const top = Math.round(scene.water!.y * H);
+    const top = Math.round(scene.water!.y * H) + dy;
     const frame = Math.floor(t * 3);
     for (let y = top + 2; y < H; y += 2) {
       const n = Math.round((W / 40) * (0.5 + (y - top) / (H - top)));
       for (let i = 0; i < n; i++) {
-        const h1 = hash(i * 7 + frame, y), h2 = hash(i * 13, y * 3 + frame);
+        const h1 = hash(i * 7 + frame, y - dy), h2 = hash(i * 13, (y - dy) * 3 + frame);
         ctx.fillStyle = h2 < 0.5 ? "#dbf2eb" : "#3f918c";
         ctx.fillRect(Math.floor(h1 * W), y, 2 + Math.floor(h2 * 5), 1);
       }
@@ -514,29 +670,75 @@ export function initWindows(reduced: MediaQueryList): void {
     el.prepend(cv);
     const ctx = cv.getContext("2d");
     if (!ctx) return;
-    wins.push({ el, index, cv, ctx, base: scene, scene, W: 0, H: 0, k: 0, paintedH: 0, back: null, edge: null, mist: null, art: [], walker: null, visible: false, seen: false, gen: 0, dirty: true });
+    const band = el.parentElement ?? el;
+    const st: WinState = { W: 0, H: 0, index, top: 0, bottom: 0, bandTop: 0, bandBottom: 0, vh: innerHeight, arrived: -1 };
+    wins.push({
+      el, band, index, cv, ctx, base: scene, scene, W: 0, H: 0, k: 0, paintedH: 0, back: null, edge: null, mist: null,
+      field: null, over: null, covering: !!motion.cover && animated, plan: null, art: [], walker: null, visible: false, seen: false,
+      gen: 0, dirty: true, st,
+    });
   });
 
-  // --- the loop: a frame every 160 ms while a window is on screen (a timer, not a frame callback every frame); none at
-  // all when none is
-  let timer = 0;
+  // --- the loop. Life: a frame every 1/fps s while a window is on screen (a timer, not a frame callback every frame);
+  // while the page scrolls (a look that moves with it) or a window is arriving: every frame; nothing when no window is
+  // on screen.
   const t0 = performance.now();
-  const tick = (): void => {
-    timer = 0;
-    const live = wins.filter((w) => w.visible);
-    if (!live.length) return;
-    const t = (performance.now() - t0) / 1000;
+  let timer = 0;
+  let raf = 0;
+  let scrollUntil = 0;
+  const readBoxes = (live: Win[]): void => {
+    const vh = window.innerHeight;
     for (const win of live) {
-      if (reduced.matches && !win.dirty) continue;
-      win.dirty = false;
-      draw(win, t);
+      const r = win.el.getBoundingClientRect(), b = win.band.getBoundingClientRect();
+      const s = win.st;
+      s.top = r.top; s.bottom = r.bottom; s.bandTop = b.top; s.bandBottom = b.bottom; s.vh = vh;
+      if (s.arrived < 0 && r.height > 0 && (Math.min(r.bottom, vh) - Math.max(r.top, 0)) / r.height >= ARRIVE) s.arrived = performance.now();
     }
-    // reduced motion: once everything has arrived there is nothing left to draw
-    if (!reduced.matches) timer = window.setTimeout(tick, 160);
+  };
+  const drawLive = (): Win[] => {
+    const live = wins.filter((w) => w.visible);
+    if (!live.length) return live;
+    const now = performance.now();
+    const t = (now - t0) / 1000;
+    readBoxes(live);
+    for (const win of live) {
+      if (!animated && !win.dirty) continue;
+      draw(win, t, now);
+    }
+    return live;
+  };
+  const busy = (live: Win[]): boolean => animated && (performance.now() < scrollUntil || live.some((w) => w.covering && w.seen));
+  const frame = (): void => {
+    raf = 0;
+    const live = drawLive();
+    if (!live.length) return;
+    if (busy(live)) raf = requestAnimationFrame(frame);
+    else life();
+  };
+  const life = (): void => {
+    if (timer || raf) return;
+    if (!animated) return;
+    timer = window.setTimeout(() => {
+      timer = 0;
+      const live = drawLive();
+      if (!live.length) return;
+      if (busy(live)) raf = requestAnimationFrame(frame);
+      else life();
+    }, 1000 / motion.fps);
   };
   const kick = (): void => {
-    if (!timer) timer = window.setTimeout(tick, 0);
+    if (raf) return;
+    clearTimeout(timer);
+    timer = 0;
+    raf = requestAnimationFrame(frame);
   };
+  if (animated && (motion.scrollLinked || motion.cover)) {
+    window.addEventListener("scroll", () => {
+      if (!motion.scrollLinked && !wins.some((w) => w.visible && w.covering)) return;
+      scrollUntil = performance.now() + 120;
+      if (!raf) kick();
+    }, { passive: true });
+  }
 
   // a window paints the first time it comes near (half a screen ahead), and animates only while on screen
   const near = typeof IntersectionObserver === "function"
@@ -562,7 +764,7 @@ export function initWindows(reduced: MediaQueryList): void {
     : null;
   for (const win of wins) {
     if (near && onScreen) { near.observe(win.el); onScreen.observe(win.el); }
-    else { win.seen = win.visible = true; }
+    else { win.seen = win.visible = true; win.covering = false; }
   }
   if (!near) { layoutAll(); kick(); }
 

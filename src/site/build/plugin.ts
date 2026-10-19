@@ -124,6 +124,15 @@ export function sitePages(): Plugin {
       });
     },
 
+    // The build never ships a dev-server path (/@fs/...): a font, image or chunk that only the dev server could serve
+    // would 403 or 404 on the real site. Checked on the bundle as written, so every plugin's output is in.
+    writeBundle(_options, bundle) {
+      const bad = Object.values(bundle)
+        .filter((f) => /\/@fs\//.test(f.type === "asset" ? (typeof f.source === "string" ? f.source : "") : f.code))
+        .map((f) => f.fileName);
+      if (bad.length) this.error(`dev-server paths (/@fs/) in the build: ${bad.join(", ")}`);
+    },
+
     generateBundle(_options, bundle) {
       const template = bundle[TEMPLATE];
       if (!template || template.type !== "asset") {

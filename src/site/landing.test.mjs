@@ -13,7 +13,7 @@ const content = { docs: [], posts: [], gallery: [] };
 test("card art (Dex 10-19): every project's layers fill its card, back to front, lazily, decorative, and the files exist", () => {
   for (const p of projects) {
     const html = cardArt(p);
-    assert.match(html, /^<div class="cart" data-tilt-scene aria-hidden="true" style="--aw:\d+;--ah:\d+">/);
+    assert.match(html, /^<div class="cart" data-tilt-scene(?: data-rig="[^"]+")? aria-hidden="true" style="--aw:\d+;--ah:\d+">/);
     const imgs = [...html.matchAll(/<img class="cart__l" data-depth="(\d)" src="([^"]+)" alt="" width="(\d+)" height="(\d+)" loading="lazy" decoding="async"/g)];
     assert.equal(imgs.length, p.art.layers, `${p.id} layers`);
     assert.ok(p.art.layers >= 2, `${p.id}: layers to pan`);
@@ -143,4 +143,45 @@ test("nav: anchors on the home page, home + anchor elsewhere; inner pages mark t
   const docs = shell({ meta: meta("docs", "/docs/"), main: "" }).body;
   for (const n of NAV) assert.ok(docs.includes(`class="nav__link" href="/${n.anchor}"`), n.id);
   assert.match(docs, /class="nav__link" href="\/#docs" aria-current="true"/);
+});
+
+test("card rigs (Dex 10-19): every rigged card's card.svg + rig.json keep the agreed format, and the motions stay small", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { pose, coverOf } = await import("./motion/cardrig.ts");
+  const rigged = projects.filter((p) => p.art.rig);
+  assert.ok(rigged.length >= 1, "at least one card plays a rig");
+  for (const p of rigged) {
+    assert.match(cardArt(p), new RegExp(`data-rig="/site/cards/${p.id}/"`));
+    const svg = readFileSync(new URL(`../../public/site/cards/${p.id}/card.svg`, import.meta.url), "utf8");
+    const rig = JSON.parse(readFileSync(new URL(`../../public/site/cards/${p.id}/rig.json`, import.meta.url), "utf8"));
+    assert.equal(rig.v, 1);
+    const vb = /^<svg [^>]*viewBox="0 0 (\d+(?:\.\d+)?) (\d+(?:\.\d+)?)"/.exec(svg);
+    assert.ok(vb, `${p.id}: an svg with a viewBox from 0 0`);
+    assert.deepEqual(rig.size.map(Number), [+vb[1], +vb[2]], `${p.id}: rig.size is the viewBox`);
+    assert.doesNotMatch(svg, /<(image|text|script|filter|mask|foreignObject|style)\b|href="http|url\(http/i, `${p.id}: plain shapes only`);
+    assert.ok(svg.length <= 400 * 1024, `${p.id}: card.svg ${Math.round(svg.length / 1024)} KB`);
+    // every rig part is a top-level group of the svg, and their order is the drawing order
+    const top = [...svg.matchAll(/<g id="([a-z0-9-]+)"/g)].map((m) => m[1]);
+    for (const id of Object.keys(rig.parts)) assert.ok(top.includes(id), `${p.id}: part ${id} is a group`);
+    for (const [id, part] of Object.entries(rig.parts)) {
+      assert.ok((part.depth ?? 0.5) >= 0 && (part.depth ?? 0.5) <= 1, `${p.id} ${id}: depth 0..1`);
+      for (const m of part.motion ?? []) assert.ok(["sway", "breathe", "bob", "glow", "drift", "flicker"].includes(m.kind) && m.period > 0, `${p.id} ${id}: ${m.kind}`);
+    }
+  }
+  // the poses: a sway swings both ways within its degrees, a breath never shrinks below 1 tall, a glow stays in range,
+  // a drift fades in and out
+  const sw = [0, 0.5, 1, 1.5, 2].map((t) => pose([{ kind: "sway", deg: 3, period: 2 }], t).rot);
+  assert.ok(Math.max(...sw) <= 3 && Math.min(...sw) >= -3 && Math.max(...sw) > 2 && Math.min(...sw) < -2);
+  for (let t = 0; t < 4; t += 0.25) {
+    const b = pose([{ kind: "breathe", scale: 0.02, period: 4 }], t);
+    assert.ok(b.sy >= 1 && b.sy <= 1.02 && b.sx <= 1);
+    const g = pose([{ kind: "glow", min: 0.6, max: 1, period: 2 }], t).alpha;
+    assert.ok(g >= 0.6 - 1e-9 && g <= 1 + 1e-9);
+  }
+  assert.ok(pose([{ kind: "drift", dy: -10, period: 1, fade: true }], 0.01).alpha < 0.2);
+  assert.equal(pose([{ kind: "drift", dy: -10, period: 1, fade: true }], 0.5).alpha, 1);
+  // the cover: the art always covers the card with room to pan
+  const c = coverOf({ v: 1, size: [1152, 2048], parts: {} }, 240, 427);
+  assert.ok(1152 * c.s >= 240 + 28 - 1e-6 && 2048 * c.s >= 427 + 28 - 1e-6);
+  assert.ok(c.left <= -14 + 1e-6 && c.top <= 0);
 });

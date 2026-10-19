@@ -7,6 +7,7 @@ import { initCopy } from "./motion/copy.ts";
 import { initDefer } from "./motion/defer.ts";
 import { initEmbed } from "./motion/embed.ts";
 import { initKeys } from "./motion/keys.ts";
+import { lookOfPage } from "./motion/look-mode.ts";
 import { initScenes } from "./motion/magnet.ts";
 import { initMenu, initNav, initStuck } from "./motion/nav.ts";
 import { initNsfw } from "./motion/nsfw.ts";
@@ -32,6 +33,9 @@ const failed = (name: string) => (error: unknown): void => {
     if (!leaving) console.error(`[site] ${name} failed`, error);
   }, 1000);
 };
+
+// the look the page moves in (motion/look-mode.ts): the CSS keys off html[data-motion]
+try { lookOfPage(); } catch { /* the page simply keeps still */ }
 
 const steps: [string, () => void][] = [
   ["embed", () => initEmbed()],
@@ -66,6 +70,11 @@ const steps: [string, () => void][] = [
   ["stuck", () => initStuck()],
   ["menu", () => initMenu()],
   ["scenes", () => initScenes(reduced, fine)],
+  // the project cards' rigged art (render/cardart.ts data-rig), own chunk, loaded when a card has a rig
+  ["cardrig", () => {
+    if (!document.querySelector("[data-rig]")) return;
+    import("./motion/cardrig.ts").then((m) => m.initCardRigs(reduced, fine), failed("cardrig"));
+  }],
   ["copy", () => initCopy()],
   // NSFW image spoilers in posts (render/nsfw.ts).
   ["nsfw", () => initNsfw()],
