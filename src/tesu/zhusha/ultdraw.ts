@@ -240,6 +240,8 @@ function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: num
     const side = i % 2 ? 1 : -1;
     ps.push([side * (1 + Math.floor(i / 2) * 0.9) * H * (0.4 + 0.6 * grow + 0.4 * hang), 0.4 * H, (0.55 + rnd(i + 40) * 0.3) * H * (1 + 0.3 * hang)]);
   }
+  // the core: dense puffs right where she stands, the last of the smoke to go (they go as she is revealed)
+  for (let i = 0; i < 4; i++) ps.push([(i - 1.5) * 0.3 * H, (0.3 + 0.3 * i) * H * grow, 0.6 * H * grow]);
   ps.forEach(([hx, hy, R0], i) => {
     const side = hx < 0 ? -1 : 1;
     // the nearer the middle, the sooner it goes: the middle is gone just as she is revealed (aftermath.revealFrom), the
@@ -249,7 +251,9 @@ function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: num
     const billow = 1 + 0.06 * Math.sin(t * 0.04 + i) + 0.15 * hang;
     // (a puff keeps its body until late in its clear, then goes: no empty middle before she is there)
     const R = R0 * billow * (1 + 0.25 * o) * (1 - o * o * o);
-    puff(r, sm.x + hx + side * o * (2 + rnd(i + 60) * 2) * H, sm.y - hy - hang * 0.4 * H - o * 1.2 * H, R, 0.08 + 0.5 * o, i, DUST_LITE, DUST, DUST_DARK);
+    // it drifts off slowly at first, then away (o squared): the middle stays covered until it goes
+    const go = o * o;
+    puff(r, sm.x + hx + side * go * (2 + rnd(i + 60) * 2) * H, sm.y - hy - hang * 0.4 * H - go * 1.2 * H, R, 0.08 + 0.5 * o, i, DUST_LITE, DUST, DUST_DARK);
   });
 }
 
