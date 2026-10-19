@@ -54,8 +54,9 @@ export interface Veil {
  * above the frame by bar 5, so the break-out is clear).
  */
 export const VEILS: readonly Veil[] = [
-  { T: 2.0, speed: 0.55, half: 0.07, density: 0.42, drift: 14, tone: "lit", masses: [[0.2, 0.17, 0.0, 0.85], [0.79, 0.1, -0.03, 0.55], [0.47, 0.05, 0.04, 0.4]] },
-  { T: 5.6, speed: 0.4, half: 0.16, density: 0.86, drift: 22, tone: "lit", masses: [[0.27, 0.3, 0.01, 1], [0.84, 0.15, -0.05, 0.8], [0.6, 0.07, 0.09, 0.55]] },
+  // (round 1b) the thin high veil at T 2 is gone: over the fall's deep sky it read as a small stepped oval; the
+  // high frames' near air is the near masses below
+  { T: 5.6, speed: 0.4, half: 0.22, density: 0.95, drift: 22, tone: "lit", masses: [[0.19, 0.31, -0.05, 1], [0.88, 0.15, 0.12, 0.8], [0.58, 0.07, -0.13, 0.55]] },
   { T: 6.5, speed: 0.42, half: 0.06, density: 0.5, drift: 30, tone: "lit", masses: [[0.68, 0.19, 0.0, 0.8], [0.12, 0.08, 0.03, 0.55]] },
   { T: 8.7, speed: 0.5, half: 0.12, density: 0.66, drift: 26, tone: "base", masses: [[0.16, 0.24, 0.0, 1], [0.74, 0.17, 0.04, 0.8], [0.47, 0.06, -0.05, 0.5]] },
   { T: 9.55, speed: 0.62, half: 0.18, density: 0.7, drift: 20, tone: "base", masses: [[0.36, 0.36, 0.0, 1], [0.9, 0.14, 0.05, 0.7]] },
@@ -67,8 +68,9 @@ export const VEILS: readonly Veil[] = [
  * `at`: when its middle is at (fx, fy) (shares); `w`, `h`: half sizes (shares); `rise`: frame heights a second.
  */
 export const NEAR_FOG: readonly { at: number; fx: number; fy: number; w: number; h: number; rise: number; drift: number; density: number }[] = [
-  { at: 2.94, fx: -0.02, fy: 0.7, w: 0.34, h: 0.26, rise: 0.26, drift: 46, density: 0.85 },
-  { at: 4.63, fx: 1.0, fy: 0.62, w: 0.32, h: 0.28, rise: 0.28, drift: 46, density: 0.85 },
+  // (round 1b) carried in from the east edge by the wind over the open sky of the upper right (over the deep sky its
+  // body reads; over a white cloud a near mass is only a blur), rising out through the top bar by the lens fog
+  { at: 3.6, fx: 0.99, fy: 0.36, w: 0.3, h: 0.24, rise: 0.3, drift: 95, density: 0.82 },
 ];
 
 /** A fog layer on the frame now (frame px): its row, half thickness, density, the two noise layers' x offsets, seed,
@@ -203,6 +205,9 @@ export interface FallAir {
 /** The air of the fall at T (null when there is nothing to draw: way 4, reduced motion). */
 export function fallAir(T: number, W: number, Hf: number, way: Way, reduced: boolean, paper: [number, number] | null, sun: readonly number[] | null): FallAir | null {
   if (way === "bottom" || reduced) return null;
+  // (round 1b) nothing of the air before bar 0, when the sky hits: lane F's rev 5 holds the camera inside the black
+  // slab above everything until then (lanes\art\fall\ASKS.txt, 10-20), and no speck may show on that black
+  if (T < BEATS.bars[0]!) return null;
   const veils = fallVeils(T, W, Hf, way, reduced);
   const g = gustAt(T);
   // the wisps live in the sky of the fall: gone once the camera is down at the lake
@@ -226,8 +231,8 @@ export function fallAir(T: number, W: number, Hf: number, way: Way, reduced: boo
  * `from` / `to`: T it fades in over 0.8 s and out over 1 s.
  */
 export const HAZE: readonly { kind: "bank" | "ribbon" | "air"; before: PlaneId; from: number; to: number; lift: number; height: number; density: number; drift: number; seed: number }[] = [
-  { kind: "bank", before: "far", from: 9.3, to: 12.2, lift: 6, height: 180, density: 0.7, drift: 7, seed: 3.7 },
-  { kind: "ribbon", before: "mid", from: 9.5, to: 14.6, lift: 24, height: 30, density: 0.62, drift: 13, seed: 9.1 },
+  { kind: "bank", before: "far", from: 9.3, to: 12.2, lift: 6, height: 260, density: 0.8, drift: 7, seed: 3.7 },
+  { kind: "ribbon", before: "mid", from: 9.5, to: 14.6, lift: 13, height: 34, density: 0.72, drift: 13, seed: 9.1 },
   { kind: "ribbon", before: "mid", from: 14.2, to: 18.4, lift: 7, height: 16, density: 0.5, drift: 9, seed: 21.4 },
   { kind: "air", before: "play", from: 11.2, to: 14.8, lift: 0, height: 0.18, density: 0.42, drift: 9, seed: 17.3 },
 ];
@@ -382,10 +387,20 @@ float fbm(vec2 p) {
   }
   return s / 0.9375;
 }
+// two octaves (the outlines' warp: cheap, it runs for every mass)
+float fbm2(vec2 p) {
+  return (0.5 * vn(p) + 0.25 * vn(p * 2.07 + vec2(17.1, 9.7))) / 0.75;
+}
 vec3 src(vec2 p) {
   vec2 q = clamp(p, vec2(0.0), uRes - 1.0);
   return texelFetch(uSrc, ivec2(int(q.x), int(uRes.y - 1.0 - q.y)), 0).rgb;
 }
+// open sky (the fall's blues: green well above red, 56-82 / 255 in the deep sky, 37-44 in rev 4's paler one), never a
+// cloud's blue-grey shade (green at most red + 32: the fall's cumulus ramp; op.cloud's lavender greys about + 10) nor
+// its lit crown
+float skyOf(vec3 c) { return smoothstep(0.13, 0.15, c.g - c.r); }
+// a lit crown: bright and not sky
+float crownOf(vec3 c) { return smoothstep(0.62, 0.76, dot(c, vec3(0.299, 0.587, 0.114))) * (1.0 - skyOf(c)); }
 
 // the layer's masses: soft ellipses of very different size; each one's downwind (west) side trails out longer and
 // thinner (longer still in the gusts). Positive inside, falling off outside (the noise tears the edge out of it).
@@ -403,13 +418,18 @@ float envOf(vec2 p, int i) {
   for (int k = 0; k < 4; k++) {
     vec4 m = uM[i * 4 + k];
     if (m.w <= 0.0) continue;
-    float dx = p.x - m.x;
+    // (round 1b) the outline billows and tears at the mass's own scale (a warp of its domain by a noise riding with it
+    // and slowly changing): a small mass is never a clean disc, a big one never a rounded slab
+    float s = max(m.y, 70.0);
+    vec2 q = vec2((p.x - m.x) / (s * 0.62), (p.y - a.x - m.z) / (s * 0.42)) + vec2(float(k) * 7.13 + float(i) * 3.31, float(i) * 1.7) + uB[i].z * 0.0016;
+    float wx = fbm2(q) - 0.5, wy = fbm2(q * 1.4 + vec2(5.2, 1.9)) - 0.5;
+    float dx = p.x - m.x + wx * s * 0.62;
     // (eased across its middle: a hard switch there would kink the mass and cut a vertical seam into its light)
     float west = smoothstep(0.35, -0.7, dx / m.y);
     float hw = m.y * mix(1.0, 1.35 + 0.9 * uWind.x, west);
     float ex = dx / hw;
     float hy = a.y * swell * (0.55 + 0.45 * m.w) * mix(1.0, 1.0 - 0.5 * clamp(-ex, 0.0, 1.0), west);
-    float ey = (p.y - (a.x + m.z)) / hy;
+    float ey = (p.y - (a.x + m.z)) / hy + wy * 1.1;
     env = max(env, (1.0 - ex * ex - ey * ey) * m.w);
   }
   return env;
@@ -433,6 +453,14 @@ float densOf(vec2 p, int i, float env) {
     + 0.12 * vn(vec2((p.x + b.y) / 31.0, (p.y - a.x) / 12.0) + b.x * 3.1);
   // (the near masses stay milky: only faint thinnings, never dark sky stains)
   d *= 1.0 - mix(0.75, 0.25, near) * smoothstep(0.34, 0.2, hn);
+  // (round 1b) where it thins it frays into wisps combed out along the wind (rising a little to the west, the way the
+  // tails lift), of uneven width and length: its edge is torn, never a smooth oval with rings round it; the cores stay
+  // milky; the near masses keep a soft edge (combed threads read as high, far cirrus)
+  float fy = p.y - a.x + 0.07 * (p.x + b.y) + 26.0 * (w2 - 0.5) + 14.0 * (n - 0.5);
+  float fib = fbm(vec2((p.x + b.y * 1.25) / (190.0 * st), fy / 15.0) + b.x * 1.9 + 7.7);
+  fib = mix(fib, vn(vec2((p.x + b.y * 1.25) / 60.0, fy / 9.0) + 3.1), 0.25);
+  float thin = 1.0 - smoothstep(0.2, 0.6, d);
+  d = mix(d, d * smoothstep(0.38, 0.68, fib) * 1.6, thin * 0.75 * (1.0 - near));
   return clamp(d, 0.0, 1.0) * a.z;
 }
 // the layer's body for its light: the masses and the first layer's broad heave only (no holes, no fine grain), so the
@@ -492,16 +520,25 @@ void main() {
     float light = lightSum / max(wsum, 1e-4);
     light = clamp(light - 0.55 * hole, 0.0, 1.0);
     float near = toneN / max(wsum, 1e-4), base = toneB / max(wsum, 1e-4);
-    float amax = mix(mix(0.9, 0.84, base), 0.8, near);
-    // fine steps of translucency (twelve), each step's edge a clustered noise anchored to the fog (it moves with it):
-    // soft, never an outline ring, never an ordered dither
-    float t = clamp(0.5 + 0.8 * (vn(ac / 4.2) - 0.5) + 0.22 * (vn(ac / 1.7 + 11.0) - 0.5) + 0.08 * (h2(floor(ac / 2.0)) - 0.5), 0.02, 0.98);
-    aq = floor(D * amax * 12.0 + t) / 12.0;
-    vec3 hi = mix(mix(vec3(1.0, 0.953, 0.878), vec3(0.914, 0.906, 0.894), base), vec3(0.86, 0.9, 0.94), near);
-    vec3 mi = mix(mix(vec3(0.867, 0.898, 0.941), vec3(0.776, 0.827, 0.89), base), vec3(0.76, 0.835, 0.91), near);
-    // (its shade: a cool blue-grey a little under its body, never darker than the sky it hangs in)
-    vec3 lo = mix(mix(vec3(0.74, 0.8, 0.88), vec3(0.66, 0.73, 0.83), base), vec3(0.68, 0.77, 0.875), near);
+    float amax = mix(mix(0.94, 0.86, base), 0.82, near);
+    // fine steps of translucency (twenty), each step's edge a clustered noise anchored to the fog (it moves with it):
+    // soft, never an outline ring, never an ordered dither (over the fall's deep sky a step is a big jump in value:
+    // twenty of them, their edges broken into clusters, so no ring shows)
+    float t = clamp(0.5 + 0.95 * (vn(ac / 3.6) - 0.5) + 0.3 * (vn(ac / 1.6 + 11.0) - 0.5), 0.02, 0.98);
+    aq = floor(D * amax * 20.0 + t) / 20.0;
+    // (round 1b) the fall's light: the lit side a warm white (cream only at its brightest, never a yellow wash over the
+    // clouds), the body a pale cool white, the shade the blue-grey of the clouds' own shade, lighter than the deep sky
+    vec3 hi = mix(mix(vec3(1.0, 0.972, 0.935), vec3(0.93, 0.94, 0.95), base), vec3(0.93, 0.955, 0.98), near);
+    vec3 mi = mix(mix(vec3(0.875, 0.91, 0.955), vec3(0.79, 0.845, 0.91), base), vec3(0.84, 0.9, 0.96), near);
+    vec3 lo = mix(mix(vec3(0.72, 0.795, 0.895), vec3(0.64, 0.72, 0.84), base), vec3(0.74, 0.83, 0.93), near);
     fog = light > 0.5 ? mix(mi, hi, smoothstep(0.5, 0.85, light)) : mix(lo, mi, smoothstep(0.12, 0.5, light));
+    // thin fog is the sky's own light scattered: what is behind it brightened in its own hue (over the deep sky a
+    // luminous cerulean, never a grey film), so a frayed edge melts into the sky instead of printing a white rim on it
+    vec3 behind = src(px);
+    vec3 glow = min(behind * vec3(1.05, 1.1, 1.08) + vec3(0.3, 0.33, 0.27), vec3(1.0));
+    // (only its frayed fringe takes the sky's hue: a body of fog in front is its own white over sky and cloud alike,
+    // so the silhouettes behind do not print through it; the near masses, near the sky's value, keep more of it)
+    fog = mix(glow, fog, smoothstep(0.06, mix(0.34, 0.62, near), D));
   }
 
   // behind the fog the frame loses its crisp edges (a small blur under the thicker fog)
@@ -517,51 +554,49 @@ void main() {
   // --- the wisps: a cloud's crown torn into soft tails streaming west (in its own colours), thick at the root,
   // thinning and fraying toward the tip; only in the gusts' strength, only in the fall's sky
   if (uWind.z > 0.003 && paperD > 30.0) {
-    vec3 c0 = src(px);
-    float here = smoothstep(0.6, 0.76, dot(c0, vec3(0.299, 0.587, 0.114))) * (1.0 - smoothstep(0.1, 0.19, c0.b - c0.r));
-    if (here < 0.5) {
+    // (round 1b) open sky is the fall's blues (green well above red); a cloud's blue-grey shade is not (green about
+    // red + 30): a tail is laid only on open sky, and only off a lit crown that meets that sky directly (a shaded
+    // face in between ends the search), so no streak is ever ruled across a cloud's own shade
+    if (skyOf(src(px)) > 0.5) {
       float reach = uWind.y;
-      // the tails' material: long soft blobs along the wind, a little wavy, moving west with it
-      float wy = px.y + 3.0 * sin(px.x / 53.0 + px.y * 0.04) + 0.03 * px.x;
-      float streak = fbm(vec2((px.x + uWind.w * 110.0) / 150.0, wy / 16.0) + 3.3);
-      if (streak > 0.46) {
-        for (int k = 1; k <= 36; k++) {
-          float dx = float(k) * 6.0;
-          if (dx > reach + 6.0) break;
-          // (the tails lift a little as they stream west: the crown that sheds here lies a little lower, east)
-          vec3 c = src(px + vec2(dx, 0.06 * dx));
-          float cl = smoothstep(0.6, 0.76, dot(c, vec3(0.299, 0.587, 0.114))) * (1.0 - smoothstep(0.1, 0.19, c.b - c.r));
-          if (cl > 0.5) {
-            // the exact edge (so the tail never repeats the outline in steps), its colour from just inside it
-            float edge = dx;
-            for (int j = 5; j >= 1; j--) {
-              vec3 e = src(px + vec2(dx - float(j), 0.06 * (dx - float(j))));
-              float ec = smoothstep(0.6, 0.76, dot(e, vec3(0.299, 0.587, 0.114))) * (1.0 - smoothstep(0.1, 0.19, e.b - e.r));
-              if (ec > 0.5) { edge = dx - float(j); break; }
-            }
-            if (edge > reach) break;
-            c = src(px + vec2(edge + 3.0, 0.06 * edge));
-            // only off a crown: open sky all the way up above where it is struck (a notch in a cloud's west face is
-            // not a crown: it would shed a ruled one-px line)
-            float c1 = 0.0;
-            for (int j = 0; j < 3; j++) {
-              vec3 u1 = src(px + vec2(edge + 4.0, 0.06 * edge - 10.0 - 9.0 * float(j)));
-              c1 += smoothstep(0.6, 0.76, dot(u1, vec3(0.299, 0.587, 0.114))) * (1.0 - smoothstep(0.1, 0.19, u1.b - u1.r)) / 3.0;
-            }
-            float tip = edge / reach;
-            float a = uWind.z * smoothstep(0.5, 0.05, c1) * smoothstep(0.48 + 0.2 * tip, 0.64 + 0.2 * tip, streak) * pow(1.0 - tip, 1.3);
-            a *= smoothstep(30.0, 52.0, paperD);
-            a *= smoothstep(110.0, 230.0, length(px - uSun.xy));
-            // a few flat steps, their edges clustered noise (thin cloud, never a gradient, never a ruled line)
-            float t = clamp(0.5 + 0.8 * (vn(px / 2.6 + 7.0) - 0.5), 0.05, 0.95);
-            float wq = floor(a * 0.85 * 4.0 + t) / 4.0;
-            if (wq > 0.0) {
-              bg = mix(bg, mix(c, vec3(0.97, 0.97, 0.98), 0.25), wq);
-              touched = true;
-            }
-            break;
-          }
+      for (int k = 1; k <= 40; k++) {
+        float dx = float(k) * 4.0;
+        if (dx > reach + 4.0) break;
+        // (the tails lift a little as they stream west: the crown that sheds here lies a little lower, east)
+        vec3 c = src(px + vec2(dx, 0.07 * dx));
+        if (skyOf(c) > 0.5) continue;
+        if (crownOf(c) < 0.5) break;
+        // the exact edge (so the tail never repeats the outline in steps), its colour from just inside it
+        float edge = dx;
+        for (int j = 3; j >= 1; j--) {
+          vec3 e = src(px + vec2(dx - float(j), 0.07 * (dx - float(j))));
+          if (skyOf(e) < 0.5) { edge = dx - float(j); break; }
         }
+        if (edge > reach) break;
+        c = src(px + vec2(edge + 3.0, 0.07 * edge));
+        // only off a crown: open sky above where it is struck (a notch in a cloud's west face is not a crown: it
+        // would shed a ruled one-px line)
+        float up = 0.0;
+        for (int j = 0; j < 3; j++) up += skyOf(src(px + vec2(edge + 4.0, 0.07 * edge - 9.0 - 8.0 * float(j)))) / 3.0;
+        // the plume: the crown's own stuff pulled out along the wind in a few soft ribbons (rows of its west shoulder,
+        // thick and soft-edged), long and unbroken from the root and thinning toward the tip, where it frays; a row's
+        // strand value decides how far it is pulled, so they never end together like a comb or bristle like spikes
+        float tip = edge / max(reach, 1.0);
+        float wy = px.y - 0.07 * px.x + 3.0 * sin(px.x / 61.0 + px.y * 0.04);
+        float strand = fbm(vec2((px.x + edge) / 420.0 + uWind.w * 0.35, wy / 17.0) + 3.3);
+        float fray = vn(vec2((px.x + uWind.w * 140.0) / 17.0, wy / 4.0) + 9.1);
+        float th = 0.36 + 0.3 * tip + 0.16 * tip * tip * fray;
+        float a = 0.8 * uWind.z * smoothstep(0.35, 0.85, up) * smoothstep(th, th + 0.24, strand) * pow(1.0 - tip, 1.2);
+        a *= smoothstep(30.0, 52.0, paperD);
+        a *= smoothstep(110.0, 230.0, length(px - uSun.xy));
+        // a few flat steps, their edges clustered noise (thin cloud, never a gradient, never a ruled line)
+        float t = clamp(0.5 + 0.8 * (vn(px / 2.6 + 7.0) - 0.5), 0.05, 0.95);
+        float wq = floor(a * 0.9 * 5.0 + t) / 5.0;
+        if (wq > 0.0) {
+          bg = mix(bg, mix(c, vec3(0.97, 0.975, 0.985), 0.2), wq);
+          touched = true;
+        }
+        break;
       }
     }
   }
