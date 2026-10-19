@@ -131,8 +131,9 @@ test("Dex 10-19 'vector is best; some web elements don't necessarily need to be 
   assert.match(landing, /html:not\(\[data-cardfinish="pixel"\]\) \.rig__p \{ animation: var\(--anim, none\); \}/);
   assert.doesNotMatch(landing, /\[data-cardfinish="vector"\]/, "nothing waits for a script to say vector");
   // the card's own web bits move smoothly; pixel steps only on the pixel finish
-  assert.match(landing, /\.cart__shine \{ --shine-t: var\(--ease-out\);/);
-  assert.match(landing, /html\[data-cardfinish="pixel"\] \.cart__shine \{ --shine-t: steps\(14, end\); \}/);
+  const shine = landing.match(/\.cart__shine \{[^}]*\}/)[0];
+  assert.match(shine, /--shine-t: cubic-bezier\(/);
+  assert.match(landing, /html\[data-cardfinish="pixel"\] \.cart__shine \{ --shine-t: steps\(\d+, end\); \}/);
   assert.doesNotMatch(landing.match(/\.pcard__link \{[^}]*\}/)[0], /steps\(/, "the name's underline grows smoothly");
   // the pixel finish's code is fetched only for that finish
   const main = readFileSync(new URL("./main.ts", import.meta.url), "utf8");
@@ -152,4 +153,48 @@ test("the seam (DESIGN-1019 7.1): the cards live in their own files, the deck ke
   assert.doesNotMatch(ts, /from "gsap\/ScrollTrigger"/, "K never uses ScrollTrigger");
   // the art is not magnet.ts's to tilt any more
   for (const p of projects) assert.doesNotMatch(cardArt(p), /data-tilt-scene/);
+});
+
+test("the card's DOM (DESIGN-1019 5.2): one owner per wrapper, the hero accents, chrome, foot and the numeral in the art", async () => {
+  const html = landing(content);
+  const heroes = { dexcode: ["Yuki", "cyan"], dexclient: ["Bao", "yellow"], "dex-place": ["Zhusha", "magenta"] };
+  for (const p of projects) {
+    assert.deepEqual([p.hero, p.tone], heroes[p.id], `${p.id}: hero and accent`);
+    const start = html.indexOf(`<li class="pcards__it" data-pcard="${p.id}"`);
+    assert.ok(start >= 0, `${p.id}: li[data-pcard]`);
+    const li = html.slice(start, html.indexOf("</li>", start) + 5);
+    // outside in: in > tilt > float > (plate, article), then the ground, last in the li
+    assert.match(li, new RegExp(`^<li[^>]*><div class="pcard__in" data-tone="${p.tone}"><div class="pcard__tilt"><div class="pcard__float"><span class="pcard__plate" aria-hidden="true"></span><article class="pcard pcard--${p.tone}" id="p-${p.id}"`));
+    assert.match(li, /<\/article><\/div><\/div><\/div><span class="pcard__ground" aria-hidden="true"><\/span><\/li>$/);
+    // the art: the back parts, the numeral, the figure; then the scrim, glare and shine
+    const no = String(projects.indexOf(p) + 1).padStart(2, "0");
+    assert.match(li, new RegExp(`<div class="cart__art"><div class="rig__box">.*</div><span class="cart__num">${no}</span><div class="rig__box">.*</div></div><span class="cart__scrim"></span><span class="cart__glare"></span><span class="cart__shine"></span></div>`));
+    // chrome: the number chip and the platform, the caption (decorative), four brackets
+    assert.match(li, new RegExp(`<span class="pcard__no" aria-hidden="true">${no}</span><p class="pcard__plat">${p.platform}</p>`));
+    assert.ok(li.includes(`<span class="pcard__cap" aria-hidden="true">${`${p.hero} // ${p.name}`.toUpperCase()}</span>`));
+    assert.match(li, /<i class="pcard__brackets" aria-hidden="true"><\/i><\/article>/);
+    // one link for keyboards: the name; the art is a pointer shortcut
+    assert.match(li, /<a class="pcard__hit" href="[^"]+" tabindex="-1" aria-hidden="true">/);
+    assert.match(li, /class="pcard__name" id="p-[\w-]+-name"><a class="pcard__link" href=/);
+  }
+});
+
+test("the numeral's place and the pop part (DESIGN-1019 5.3): rig.json's numeral field, else after the back parts; one pop part drawn again unclipped", async () => {
+  const { numeralAt } = await import("./render/cardart.ts");
+  const parts = [{ id: "sky", depth: 0 }, { id: "far", depth: 0.3 }, { id: "body", depth: 0.7 }, { id: "fx", depth: 0.9 }];
+  assert.equal(numeralAt({ v: 2, size: [9, 16], parts }), 2, "after the last part shallower than 0.34");
+  assert.equal(numeralAt({ v: 2, size: [9, 16], numeral: "sky", parts }), 1, "rig.json names the part");
+  assert.equal(numeralAt({ v: 2, size: [9, 16], numeral: "nope", parts }), 2);
+  assert.equal(numeralAt({ v: 2, size: [9, 16], parts: [{ id: "body", depth: 0.7 }] }), 0, "no back parts: first");
+  const css = readFileSync(new URL("./styles/pcard.css", import.meta.url), "utf8");
+  // the clipped copy hides, the unclipped one shows; never under the pixel finish (its canvas draws every part)
+  assert.match(css, /\.pcard \.cart \.rig__l\[data-pop\] \{ visibility: hidden; \}/);
+  assert.match(css, /html\[data-cardfinish="pixel"\] \.pcard__pop \{ display: none; \}/);
+  // pixel fonts on whole font pixels: the numeral 100 / 150 / 200 (Tesu Display, 25 px a font px), the name 32 / 48
+  // (DotGothic16, 16)
+  for (const [, px] of css.matchAll(/\.cart__num \{[^}]*?font(?:-size)?:[^;]*?(\d+)px/g)) assert.equal(+px % 25, 0, px);
+  for (const [, px] of css.matchAll(/\.pcard__name \{[^}]*?font(?:-size)?:[^;]*?(\d+)px/g)) assert.equal(+px % 16, 0, px);
+  // banned: animated shadows and filters, clip-path, rounded corners on the card
+  assert.doesNotMatch(css, /backdrop-filter|clip-path|border-radius/);
+  assert.doesNotMatch(css, /transition:[^;]*box-shadow/);
 });

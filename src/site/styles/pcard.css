@@ -2,95 +2,178 @@
    render/cardart.ts, motion: motion/pcard.ts. Lane G places the list and its items (styles/landing.css .pcards,
    .pcards__it); everything inside an item is here. */
 
-/* ================================================================= cards
-   One card per project (render/pcard.ts card()), Dex 10-19: its splash art fills the whole card (render/cardart.ts
-   .cart: layers that pan with the pointer, the scroll and, on touch screens, a slow drift; a shine sweeps across), the
-   number and the platform at its top (little over the art: faces sit high), and at its foot on a calm ink band the name,
-   the download's state, the line, the one action that matters and the docs. The card pops as a whole: it lifts 2px, grows 1% and its shadow steps out in the project's tone; the keys
-   inside pop on their own. Three across from 700px (two for "Other projects"), one per row below. */
+/* ================================================================= the card
+   Key-art cards, the most dominant thing on the page (Dex 10-19: "enlarge them, make them more dominant ... legit way
+   better"). One ratio everywhere (2:3, so the art has one crop); the card fills the width lane G gives its li and
+   everything inside scales off its own width (the .pcard__in container). Frame: square corners, a 2 px ink edge, a white
+   keyline inside it, four accent brackets; a hard offset plate in the hero's accent behind it (a transform, never an
+   animated shadow); a soft contact shadow on whatever lies under it. Pixel: the numeral, the labels, chips, plate,
+   brackets and keys. Smooth: the art (vector finish), every transform, the glare, shine, scrim and shadow. */
+.pcard__in {
+  --tone: var(--gold);
+  --tone-d: var(--yellow-d);
+  position: relative;
+  container: pcard / inline-size;
+  perspective: 1100px;
+}
+.pcard__in[data-tone="cyan"] { --tone: var(--cyan); --tone-d: var(--azure); }
+.pcard__in[data-tone="yellow"] { --tone: var(--gold); --tone-d: var(--yellow-d); }
+.pcard__in[data-tone="magenta"] { --tone: var(--magenta); --tone-d: var(--scarlet); }
+.pcard__in[data-tone="mint"] { --tone: var(--mint); --tone-d: var(--mint-d); }
+/* (the float's micro-tilt reads in depth) */
+.pcard__tilt { perspective: 1100px; }
+.pcard__float {
+  --plate: 10px;
+  --chrome: 20px;
+  --foot: 20px;
+  --key: 44px;
+  position: relative;
+  isolation: isolate;
+}
+@container pcard (min-width: 400px) {
+  .pcard__float { --chrome: 24px; --foot: 24px; --key: 48px; }
+}
+@media (max-width: 699px) {
+  .pcard__float { --plate: 6px; }
+}
+/* (a narrow card, below the sizes the home page uses: a page's own grid) the chrome steps in, the caption goes */
+@container pcard (max-width: 299px) {
+  .pcard__float { --chrome: 14px; --foot: 14px; --key: 40px; }
+  .pcard__cap { display: none; }
+  .pcard__info { gap: 6px; }
+}
+/* the hard offset block behind the card: hero accent, 2 px ink outline */
+.pcard__plate {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--tone);
+  border: 2px solid var(--ink);
+  transform: translate(var(--plate), var(--plate));
+  transition: transform 300ms var(--ease-out);
+}
+
 .pcard {
-  --tone: var(--yellow);
-  --band: 43 34 51;
   position: relative;
   isolation: isolate;
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-width: 0;
-  /* tall like a character card; it grows if its words need more */
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 2 / 3;
   color: #fff;
   background: var(--ink);
-  border: var(--bw) solid var(--ink);
-  box-shadow: var(--off-l) var(--off-l) 0 var(--shadow);
+  border: 2px solid var(--ink);
   scroll-margin-top: calc(var(--hdr-h) + var(--s-5));
   view-timeline: --pcard block;
-  transition:
-    transform var(--d-pop) var(--ease-spring),
-    box-shadow var(--d-pop) var(--ease-spring);
 }
-/* a white keyline just inside the ink edge, over the art: a card, not a crop */
-.pcard::after { content: ""; position: absolute; inset: 3px; z-index: 2; pointer-events: none; box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.85); }
-.pcard--mint { --tone: var(--mint); }
-.pcard--magenta { --tone: var(--magenta); }
-@media (hover: hover) {
-  .pcard:hover { transform: translate(-2px, -2px) scale(1.01); box-shadow: calc(var(--off-l) + 2px) calc(var(--off-l) + 2px) 0 var(--tone); }
-}
-/* Keyboard focus on the card's own links (art, name) pops it like hover. */
-.pcard:has(.pcard__hit:focus-visible, .pcard__link:focus-visible) {
-  transform: translate(-2px, -2px) scale(1.01);
-  box-shadow: calc(var(--off-l) + 2px) calc(var(--off-l) + 2px) 0 var(--tone);
-}
-/* A press on the art sinks the whole card. */
-.pcard:has(.pcard__hit:active) {
-  transform: translate(2px, 2px) scale(0.985);
-  box-shadow: 0 0 0 var(--shadow);
-  transition-duration: var(--d-press);
-  transition-timing-function: var(--ease-out);
-}
+/* a white keyline 6 px inside the ink edge, over the art: a card, not a crop */
+.pcard::after { content: ""; position: absolute; inset: 4px; z-index: 3; pointer-events: none; box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.85); }
 .pcard__hit { position: absolute; inset: 0; z-index: 0; display: block; }
 
-.pcard__top { position: relative; z-index: 1; display: flex; align-items: start; justify-content: space-between; gap: 10px; padding: 14px 14px 0; font: 400 var(--fs-12) / 1 var(--f-label); letter-spacing: 0.08em; pointer-events: none; }
-.pcard__no { flex: none; padding: 5px 7px 4px; background: var(--tone); color: var(--on-accent); box-shadow: 2px 2px 0 var(--ink); }
-/* the platform and the download's state, small, top right over the art */
-.pcard__tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; margin: 0; min-width: 0; }
-.pcard__tags .chip { min-height: 24px; padding: 3px 7px; white-space: normal; text-align: right; line-height: 1.15; background: rgb(var(--band) / 0.82); border-color: rgb(255 255 255 / 0.9); color: #fff; }
-.pcard__tags .chip--key { background: #fff; border-color: #fff; color: var(--ink); }
-
-/* the calm band at the foot: ink in a few hard steps up into the art (pixel banding, no smooth gradient), then the
-   words on it */
-.pcard__info { grid-row: 3; position: relative; z-index: 1; display: grid; justify-items: start; gap: 8px; padding: 0 14px 14px; }
-.pcard__info::before {
-  content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 0; top: -72px; pointer-events: none;
-  background: linear-gradient(180deg,
-    rgb(var(--band) / 0) 0 8px, rgb(var(--band) / 0.25) 8px 22px, rgb(var(--band) / 0.5) 22px 38px,
-    rgb(var(--band) / 0.74) 38px 56px, rgb(var(--band) / 0.88) 56px);
-}
-.pcard__name { font: 400 2rem / 1.05 var(--f-px); letter-spacing: 0.01em; margin: 0; }
-.pcard__link {
-  color: #fff;
-  text-decoration: none;
-  background-image: linear-gradient(var(--tone), var(--tone));
-  background-size: 0 4px;
-  background-position: 0 100%;
+/* four 14 px L-brackets, 3 px thick, in the accent, 10 px in from the corners (whole-pixel bars) */
+.pcard__brackets {
+  --b: linear-gradient(var(--tone), var(--tone));
+  position: absolute;
+  inset: 8px;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    var(--b) 0 0 / 14px 3px, var(--b) 0 0 / 3px 14px,
+    var(--b) 100% 0 / 14px 3px, var(--b) 100% 0 / 3px 14px,
+    var(--b) 0 100% / 14px 3px, var(--b) 0 100% / 3px 14px,
+    var(--b) 100% 100% / 14px 3px, var(--b) 100% 100% / 3px 14px;
   background-repeat: no-repeat;
-  transition: background-size var(--d-spring) var(--ease-out);
-}
-.pcard__link:hover, .pcard__link:focus-visible { background-size: 100% 4px; }
-.pcard__line { margin: 0; font-size: var(--fs-body); line-height: 1.4; color: #ece5f0; max-width: 34ch; }
-.pcard__state { margin: -4px 0 0; font: 400 var(--fs-12) / 1.2 var(--f-label); letter-spacing: 0.06em; color: #fff; }
-
-/* the one action that matters, then the docs as a small key */
-.pcard__acts { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; width: 100%; margin-top: 4px; }
-.pcard__acts .pcard__main { width: 100%; min-width: 0; min-height: 42px; padding-inline: 8px; gap: 8px; }
-.pcard__acts .btn--icon { width: 42px; min-height: 42px; }
-/* a wide card (a phone's one per row, a tablet): less tall */
-@container pcard (min-width: 340px) {
-  .pcard { aspect-ratio: 4 / 5; }
 }
 
-/* ---- the art (render/cardart.ts): every layer blown up by a whole number of pixels to cover the card with room to
-   pan (CSS round(): k art px -> k css px, never a fraction, so the pixels stay square), centred, a little high */
+/* top left: the number chip (ink on the accent, its hard ink shadow) and the platform tag (white on ink) */
+.pcard__top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: var(--chrome) var(--chrome) 0;
+  font: 400 1rem / 1 var(--f-label);
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+.pcard__no { flex: none; padding: 6px 8px 5px; background: var(--tone); color: var(--ink); box-shadow: 2px 2px 0 var(--ink); }
+.pcard__plat { margin: 0; padding: 6px 8px 5px; background: rgb(43 34 51 / 0.7); color: #fff; text-transform: uppercase; }
+/* right edge: the vertical caption, YUKI // DEXCODE */
+.pcard__cap {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--chrome) + 2px);
+  right: calc(var(--chrome) - 2px);
+  writing-mode: vertical-rl;
+  font: 400 1rem / 1 var(--f-label);
+  letter-spacing: 0.2em;
+  color: rgb(255 255 255 / 0.8);
+  text-shadow: 1px 1px 0 rgb(43 34 51 / 0.55);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* the foot, on the art's scrim: name (the link to the project's page), state, line, the one action and the docs */
+.pcard__info { grid-row: 3; position: relative; z-index: 1; display: grid; justify-items: start; gap: 8px; padding: 0 var(--foot) var(--foot); }
+.pcard .pcard__name { margin: 0; font: 400 32px / 1 var(--f-px); letter-spacing: 0.01em; text-shadow: none; }
+@container pcard (min-width: 400px) {
+  .pcard .pcard__name { font-size: 48px; }
+}
+.pcard__link { position: relative; display: inline-block; padding-bottom: 6px; color: #fff; text-decoration: none; }
+/* the 3 px accent bar under the name (hover, focus) */
+.pcard__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--tone);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 400ms cubic-bezier(.16, 1, .3, 1);
+}
+.pcard__state { margin: 0; font: 400 1rem / 1.2 var(--f-label); letter-spacing: 0.06em; color: var(--gold); }
+.pcard__line { margin: 0; font: 400 16px / 24px var(--f-body); color: rgb(255 255 255 / 0.88); max-width: 34ch; }
+.pcard__acts { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; width: 100%; margin-top: 8px; }
+.pcard__acts .pcard__main { width: 100%; min-width: 0; min-height: var(--key); padding-inline: 10px; gap: 10px; }
+.pcard__acts .pcard__docs { width: var(--key); min-height: var(--key); }
+/* the world's ink key on the ink foot: a white edge so it reads as a key */
+.pcard .btn--ink { --btn-edge: #fff; }
+
+/* the soft contact shadow under the card (a radial gradient, not a box-shadow): no height of its own in the li */
+.pcard__ground { position: relative; height: 0; pointer-events: none; }
+.pcard__ground::before {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: -4%;
+  top: calc(var(--plate, 10px) + 6px);
+  height: 40px;
+  background: radial-gradient(50% 100% at 50% 0, rgb(22 44 96 / 0.3), rgb(22 44 96 / 0.12) 55%, transparent);
+}
+
+/* hover and keyboard focus (static: the motion is motion/pcard.ts's): the plate steps out, the name's bar draws */
+@media (hover: hover) {
+  .pcard__float:hover .pcard__plate { transform: translate(calc(var(--plate) + 6px), calc(var(--plate) + 6px)); }
+  .pcard__float:hover .pcard__link::after { transform: scaleX(1); }
+}
+.pcard__float:has(.pcard__link:focus-visible, .pcard__acts :focus-visible) .pcard__plate { transform: translate(calc(var(--plate) + 6px), calc(var(--plate) + 6px)); }
+.pcard__float:has(.pcard__link:focus-visible) .pcard__link::after { transform: scaleX(1); }
+.pcard__link:focus-visible { outline: 2px solid var(--azure); outline-offset: 4px; box-shadow: 0 0 0 4px #fff; }
+/* a press on the art sinks the whole card a little and springs back */
+.pcard__float { transition: scale 350ms cubic-bezier(.34, 1.8, .64, 1); }
+.pcard__float:has(.pcard__hit:active) { scale: 0.98; transition: scale 120ms cubic-bezier(.33, 1, .68, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .pcard__plate, .pcard__link::after, .pcard__float { transition: none; }
+}
+
+/* ---- the art (render/cardart.ts), back to front inside .cart (clipped): the art box (.cart__art: the rig's back
+   parts, the giant numeral, the figure and front fx), the foot scrim, the glare, the shine. Plain layers (a card with
+   no rig yet) are blown up by a whole number of pixels to cover the card (CSS round()). */
 .cart { position: absolute; inset: 0; overflow: hidden; container-type: size; background: var(--ink); }
+.cart__art { position: absolute; inset: 0; transform-origin: 50% 40%; }
 .cart__l {
   --w: max(round(up, 100cqw + 28px, calc(var(--aw) * 1px)), calc(round(up, 100cqh + 28px, calc(var(--ah) * 1px)) * var(--aw) / var(--ah)));
   position: absolute;
@@ -101,83 +184,88 @@
   max-width: none;
   margin-left: calc(var(--w) / -2);
   image-rendering: pixelated;
-  transition: translate 700ms var(--ease-out);
 }
-/* the shine: a bright band and a thin one, swept across on hover, focus and each time the card comes into view;
-   smooth on the vector finish (the default), in pixel steps on the pixel one */
-.cart__shine { --shine-t: var(--ease-out); position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
-html[data-cardfinish="pixel"] .cart__shine { --shine-t: steps(14, end); }
-.cart__shine::before {
-  content: "";
+/* the giant numeral between the back parts and the figure: Tesu Display on whole font pixels (150 = 6 x 25, 200 =
+   8 x 25), the hero accent at 45%, bleeding off the left edge */
+.cart__num {
   position: absolute;
-  top: -20%;
-  bottom: -20%;
-  left: 0;
-  width: 70%;
-  background: linear-gradient(90deg, transparent 0 22%, rgb(255 255 255 / 0.42) 22% 44%, transparent 44% 58%, rgb(255 255 255 / 0.28) 58% 64%, transparent 64%);
+  top: 6%;
+  left: -4%;
+  font: 400 150px / 1 var(--f-title);
+  letter-spacing: 0;
+  color: var(--tone, var(--gold));
+  opacity: 0.45;
+  white-space: nowrap;
+  pointer-events: none;
+}
+@container pcard (min-width: 400px) {
+  .cart__num { font-size: 200px; }
+}
+@container pcard (max-width: 299px) {
+  .cart__num { font-size: 100px; }
+}
+/* the foot scrim: the words sit on it (>= 4.5:1) */
+.cart__scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgb(43 34 51 / 0.94) 0, rgb(43 34 51 / 0.72) 26%, transparent 48%); }
+/* the glare: a soft light at the pointer (motion/pcard.ts moves --mx / --my on this element and fades it in) */
+.cart__glare {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgb(255 255 255 / 0.22), transparent 50%);
   mix-blend-mode: soft-light;
-  transform: translateX(-120%) skewX(-16deg);
+  opacity: 0;
 }
-@media (prefers-reduced-motion: no-preference) {
-  .cart.is-vis .cart__shine::before { animation: cart-shine 1.1s var(--shine-t) 0.3s 1 both; }
-  @media (hover: hover) {
-    .pcard:hover .cart__shine::before, .pcard:focus-within .cart__shine::before { animation: cart-shine-again 0.9s var(--shine-t) 1 both; }
-  }
-  /* the layers ride the scroll (a view timeline: no script), back least, front most */
-  @supports (animation-timeline: view()) {
-    .cart__l { animation: cart-scroll linear both; animation-timeline: --pcard; }
-  }
-  /* touch screens: no pointer to follow, so the layers drift slowly side to side and the shine comes now and then */
-  @media (hover: none) {
-    .cart__l { animation: cart-drift 7s ease-in-out infinite alternate; }
-    @supports (animation-timeline: view()) {
-      .cart__l { animation: cart-scroll linear both, cart-drift 7s ease-in-out infinite alternate; animation-timeline: --pcard, auto; }
-    }
-    .cart.is-vis .cart__shine::before { animation: cart-shine-idle 8s steps(1, end) 0.4s infinite both; }
-  }
+/* the shine: a 115deg sweep, an 18% band of white, swept across on hover (here) and in turns / on arrival
+   (motion/pcard.ts); smooth on the vector finish, in pixel steps on the pixel one */
+.cart__shine {
+  --shine-t: cubic-bezier(.45, 0, .55, 1);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 41%, rgb(255 255 255 / 0.35) 50%, transparent 59%);
+  transform: translateX(-100%);
 }
-@keyframes cart-shine { from { transform: translateX(-120%) skewX(-16deg); } to { transform: translateX(220%) skewX(-16deg); } }
-@keyframes cart-shine-again { from { transform: translateX(-120%) skewX(-16deg); } to { transform: translateX(220%) skewX(-16deg); } }
-@keyframes cart-shine-idle {
-  0% { transform: translateX(-120%) skewX(-16deg); animation-timing-function: var(--shine-t); }
-  14% { transform: translateX(220%) skewX(-16deg); }
-  100% { transform: translateX(220%) skewX(-16deg); }
+html[data-cardfinish="pixel"] .cart__shine { --shine-t: steps(12, end); }
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .pcard__float:hover .cart__shine { animation: cart-shine 700ms var(--shine-t) 1 both; }
 }
-@keyframes cart-scroll { from { transform: translateY(calc(var(--pd) * 1px)); } to { transform: translateY(calc(var(--pd) * -1px)); } }
+@media (prefers-reduced-motion: reduce) {
+  .cart__shine { display: none; }
+}
+@keyframes cart-shine { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 @keyframes cart-drift { from { translate: calc(var(--pd) * -0.8px) 0; } to { translate: calc(var(--pd) * 0.8px) 0; } }
 
-/* the world's ink key on the ink band: a white edge so it reads as a key */
-.pcard .btn--ink { --btn-edge: #fff; }
-
 /* ---- the rigged art (render/cardart.ts .cart--rig: the card-art lane's parts as webp layers + rig.json). The art box
-   covers the card with room to pan, the face focus centred across and ~30% down (clamped to the frame, so a head near
-   the frame's top stays in on the 4:5 phone crop too); the parts sit in it by their boxes. Vector finish (the default,
-   also with no script): the parts move by CSS (--anim, from the rig's motions). Pixel finish (?finish=pixel):
-   motion/cardrig.ts draws them on the site's pixel grid. */
-.cart--rig .rig__box {
-  --w: max(100cqw + 28px, (100cqh + 28px) * var(--aw) / var(--ah));
+   covers the card with 6% room to pan on each side, the face focus centred across and ~30% down (clamped to the frame,
+   so a head near the frame's top stays in); the parts sit in it by their boxes. Pixel-art rigs (the stand-ins) are
+   sized to a whole number of css px per art px. Vector finish (the default, also with no script): the parts move by
+   CSS (--anim, from the rig's motions). Pixel finish (?finish=pixel): motion/cardrig.ts draws them on the site's grid. */
+.cart--rig .rig__box, .pcard__pop .rig__box {
+  --pan: 6cqw;
+  --w: max(100cqw + var(--pan) * 2, (100cqh + var(--pan) * 2) * var(--aw) / var(--ah));
   --h: calc(var(--w) * var(--ah) / var(--aw));
   position: absolute;
   width: var(--w);
   height: var(--h);
-  left: clamp(100cqw + 14px - var(--w), 50cqw - var(--fx) * var(--w), -14px);
-  top: clamp(100cqh + 14px - var(--h), 30cqh - var(--fy) * var(--h), -14px);
+  left: clamp(100cqw + var(--pan) - var(--w), 50cqw - var(--fx) * var(--w), var(--pan) * -1);
+  top: clamp(100cqh + var(--pan) - var(--h), 30cqh - var(--fy) * var(--h), var(--pan) * -1);
 }
-.rig__l { position: absolute; inset: 0; transition: translate 700ms var(--ease-out); }
+.cart--px .rig__box { --w: round(up, max(100cqw + var(--pan) * 2, (100cqh + var(--pan) * 2) * var(--aw) / var(--ah)), calc(var(--aw) * 1px)); }
+.rig__l { position: absolute; inset: 0; }
 .rig__p { position: absolute; max-width: none; }
 .cart--px .rig__p { image-rendering: pixelated; }
 .rig__px { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
-.cart[data-rigged="pixel"] > .rig__box { visibility: hidden; }
+.cart[data-rigged="pixel"] .rig__box { visibility: hidden; }
+/* the pop part: drawn again outside the clip (render/cardart.ts popArt), so the character steps out of her frame */
+.pcard__pop { position: absolute; inset: 0; z-index: 4; container-type: size; pointer-events: none; }
+.pcard__pop .cart__art { position: absolute; inset: 0; }
+.pcard .cart .rig__l[data-pop] { visibility: hidden; }
+/* (the pixel finish draws every part, the pop one too, in its canvas) */
+html[data-cardfinish="pixel"] .pcard__pop { display: none; }
 @media (prefers-reduced-motion: no-preference) {
   html:not([data-cardfinish="pixel"]) .rig__p { animation: var(--anim, none); }
-  @supports (animation-timeline: view()) {
-    .rig__l { animation: cart-scroll linear both; animation-timeline: --pcard; }
-  }
+  /* touch screens: no pointer to follow, so the layers drift slowly side to side by their depth */
   @media (hover: none) {
     .rig__l { animation: cart-drift 7s ease-in-out infinite alternate; }
-    @supports (animation-timeline: view()) {
-      .rig__l { animation: cart-scroll linear both, cart-drift 7s ease-in-out infinite alternate; animation-timeline: --pcard, auto; }
-    }
   }
 }
 @keyframes rig-sway { from { rotate: calc(var(--rig-deg) * -1); } to { rotate: var(--rig-deg); } }
