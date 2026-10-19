@@ -122,3 +122,12 @@ test("code on a doc reads on its pale well: ink and every syntax colour pass WCA
     assert.ok(contrast(hex, well) >= 4.5, `.t-${k} ${hex}: ${contrast(hex, well).toFixed(2)}:1`);
   }
 });
+
+test("a project's own page: the deep pages' kicker leads back to /projects/ and counts its place", () => {
+  for (const r of list.filter((x) => /^\/projects\/[^/]+\/$/.test(x.path))) {
+    const html = r.render().body;
+    assert.match(html, /<nav class="dh__crumbs" aria-label="Breadcrumb"><a href="\/projects\/">Projects<\/a><\/nav>/, r.path);
+    assert.match(html, /class="counter dh__aside"><b>0\d<\/b>/, r.path);
+    assert.doesNotMatch(html, /class="crumbs"/, `${r.path}: no second breadcrumb row`);
+  }
+});

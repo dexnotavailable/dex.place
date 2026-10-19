@@ -278,3 +278,18 @@
   .step__title { margin-top: 0; padding-right: 32px; }
   .step__no { top: 16px; right: 16px; }
 }
+
+/* ------------------------------------------------------------------ a project's own page */
+/* the head speaks the deep pages' kit: the kicker with the way back, the tone bar under the name as under every
+   deep title (the art and cards are lane G's) */
+.proj__head .dh__kicker .counter { font: inherit; }
+.proj__title::after { width: 40px; height: 6px; background: var(--tone-d, var(--gold)); box-shadow: var(--tone-ring, 0 0 0 2px var(--ink)); }
+.proj { --tone-d: var(--gold); --tone-ring: 0 0 0 2px var(--ink); padding-top: var(--s-7); }
+.proj--mint { --tone-d: var(--mint-d); --tone-ring: none; }
+.proj--magenta { --tone-d: var(--scarlet); --tone-ring: none; }
+.proj--cyan { --tone-d: var(--azure); --tone-ring: none; }
+@media (max-width: 900px) {
+  /* phones: the picture shorter, so the name and the one action are on the first screen with it */
+  .proj { padding-top: var(--s-5); gap: var(--s-5); }
+  .proj__art { aspect-ratio: 4 / 3; }
+}
