@@ -76,9 +76,8 @@ const CUE_TABLE = [
   ["r.impact", "r", "boom", "ult", "r.impact", null],
   ["r.rumble", "r", "land", "ult", "r.rumble", null],
   ["r.reveal", "r", "reveal", "ult", "r.reveal", null],
-  ["r.ultline", "r", "reveal", "ult", "r.ultline", "ultline"],
+  ["r.ultline", "r", "reveal", "ult", "r.ultline", null],
   ["hit", "r", "hit", "ult", "hit.heavy", null],
-  ["uf.warp", "uf", "move", "heavy", "uf.warp", null],
   ["uf.blade", "uf", "windup", "heavy", "uf.blade", null],
   ["uf.slash", "uf", "hit", "heavy", "uf.slash", null],
 ];
@@ -182,7 +181,7 @@ test("her sounds by the cue table: the windup on the press, the swing on the hit
 test("no voice on the attack chain, in either form (Dex 10-19: remove voicelines during the attack chain)", () => {
   const chain = ["m1_1", "m1_2", "m1_3", "m1_4", "uf_m1_1", "uf_m1_2", "uf_m1_3", "uf_m1_4", "m1_1_ret", "uf_m1_1_tail", "uf"];
   const cues = [["swing", "windup"], ["swing", "swing"], ["hit", "hit"], ["hit", "swing"], ["slam", "boom"], ["skid", "recoil"], ["land", "land"],
-    ["uf.slash", "hit"], ["uf.warp", "move"], ["uf.blade", "windup"]];
+    ["uf.slash", "hit"], ["uf.blade", "windup"]];
   for (const move of chain) {
     assert.ok(isChain(move), `${move} is the chain`);
     for (const [id, phase] of cues) for (const tier of ["light", "medium", "heavy", "ult"]) {
@@ -190,11 +189,12 @@ test("no voice on the attack chain, in either form (Dex 10-19: remove voicelines
     }
   }
   for (const id of Object.keys(VOICE)) assert.ok(!["kiai", "finisher"].includes(id), `no chain voice moment (${id})`);
-  // the voice that stays: the Q / E / R calls, hurt, knockdown, the R's ult line; dash and jump (not the chain)
+  // the voice that stays: the Q / E / R calls, hurt, knockdown; dash and jump (not the chain); none on the R's reveal
   assert.equal(voiceForCue({ id: "charge", move: "skill_q", phase: "windup", tier: "q" }), "q");
   assert.equal(voiceForCue({ id: "swing", move: "e_tap", phase: "windup", tier: "heavy" }), "e");
   assert.equal(voiceForCue({ id: "r.call", move: "r", phase: "windup", tier: "ult" }), "r");
-  assert.equal(voiceForCue({ id: "r.ultline", move: "r", phase: "reveal", tier: "ult" }), "ultline");
+  assert.equal(voiceForCue({ id: "r.ultline", move: "r", phase: "reveal", tier: "ult" }), null, "Dex 10-19: no need for the reveal voice line");
+  assert.equal(CUES["r.ultline"].files.length, 0);
   assert.equal(voiceForCue({ id: "hurt", move: "hurt", phase: "hurt", tier: "heavy" }), "knockdown");
   for (const move of ["skill_q", "e_tap", "r", "dash", "jump"]) assert.ok(!isChain(move), `${move} is not the chain`);
 });
@@ -231,7 +231,8 @@ test("her voice: Dex-approved takes, on the right moments, the ult register with
   assert.equal(voiceForState(st("dead"), st("free")), "respawn");
   assert.equal(voiceForState(st("free"), st("ult", "call")), null, "the R's call comes with its cue");
   assert.equal(voiceForState(st("ult", "call"), st("ult", "call")), null);
-  assert.equal(VOICE.ultline.register, "ult", "her line on the R's reveal: the ult register");
+  assert.ok(!("ultline" in VOICE), "no voice moment on the R's reveal (Dex 10-19)");
+  assert.ok(!("uf.warp" in CUES), "lane U removed the warps' cue");
 });
 
 test("the mix: a baked reverb per space (and the ult's), the space by place, nothing synthesized", () => {

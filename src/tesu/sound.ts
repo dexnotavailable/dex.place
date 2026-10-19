@@ -13,7 +13,7 @@
 // - Her sounds come as the combat lane's cues (move, phase, tier, form: soundForCue): the press's windup, the swing on
 //   each hit's first tick, the hit by the tier that connected, the booms (m1_4's slam, the Q, the E, the R).
 // - Her voice (VOICE, Dex-approved takes; voiceForCue): none on the attack chain (Dex 10-19); the jump, the dash, the
-//   hurt, the knockdown, the defeat, the respawn, the Q and E calls, the R call and her ult line on the R's reveal; through the voice bus (mix.ts: EQ, compression, saturation, the space's reverb,
+//   hurt, the knockdown, the defeat, the respawn, the Q and E calls, the R's call (none on its reveal, Dex 10-19); through the voice bus (mix.ts: EQ, compression, saturation, the space's reverb,
 //   pan), the music ducking under it.
 // - Beds: the ambience per place, cross-faded (the lake, the heights, the hall).
 // - Region themes (region-music.ts): each place's main theme, streamed, after the opening.
@@ -114,7 +114,8 @@ export const CUES: Record<string, Cue> = {
   // whoosh, her call (her voice), the BOOM of the fire line (a sub hit), the curtain's roar, the sword drawn, she
   // bursts into ash, the slash storm's roll (every 10th of ~450 slashes) and its closing sweeps, the last cut's bass
   // hit, the stop (r.hush: everything ducks to silence until the dive), the dive, the nuke (the biggest hit: the blast,
-  // a sub boom, everything else ducked), its rumble, the dust clearing, her ult line (her voice)
+  // a sub boom, everything else ducked), its rumble, the dust clearing; no line on the reveal (Dex 10-19: "no need for
+  // the reveal voice line"; r.ultline stays a silent id)
   "r.press": her(["dash-a", "dash-b"], 0.8),
   "r.call": SILENT,
   "r.boom": her(["sub-boom-a", "sub-boom-b"], 0.9, 1, { duck: -6 }),
@@ -129,8 +130,7 @@ export const CUES: Record<string, Cue> = {
   "r.rumble": her(["sub-drop-a"], 0.8, 1, { with: ["debris"] }),
   "r.reveal": opening(["gust"], 0.4),
   "r.ultline": SILENT,
-  // the ult form: each warp's blink, a ghost blade summoned, its strike
-  "uf.warp": her(["djump-a"], 0.45),
+  // the ult form: a ghost blade summoned, its strike (lane U removed the warps and their uf.warp cue)
   "uf.blade": court(["tink-a", "tink-c", "tink-d"], 0.35),
   "uf.slash": her(["swing-a", "swing-b", "swing-d", "swing-e"], 0.6, 1, { with: ["hit.tail"] }),
   // footsteps by the ground under her (step.<surface>)
@@ -183,9 +183,8 @@ export const VOICE: Readonly<Record<string, VoiceMoment>> = {
   respawn: { normal: ["n-respawn"], ult: ["n-respawn"], chance: 1, gap: 0.3, prio: true },
   q: { normal: ["n-q-call"], ult: ["n-q-call"], chance: 1, gap: 0.3, prio: true },
   e: { normal: ["n-e-call"], ult: ["n-e-call"], chance: 1, gap: 0.3, prio: true },
-  // the R's call (lane U: in her normal register; from the ult form, the ult takes), then her ult line on the reveal
+  // the R's call (lane U: in her normal register; from the ult form, the ult takes); nothing on the reveal (Dex 10-19)
   r: { normal: ["n-r-call"], ult: ["u-r-call-1", "u-r-call-2"], chance: 1, gap: 0, prio: true },
-  ultline: { normal: ["u-transform"], ult: ["u-transform"], chance: 1, gap: 0, prio: true, register: "ult", sub: "sub.drop" },
 };
 /** Ult-register takes with a baked octave-down double (voice/<take>-dbl), mixed low under them for weight. */
 export const DOUBLED = ["u-grunt", "u-hurt", "u-kiai-2", "u-kiai-3", "u-r-call-1", "u-r-call-2", "u-transform", "redo-u-kiai1-2", "redo-u-kiai1-3", "redo-u-kiai1-4"];
@@ -224,15 +223,14 @@ export function soundForCue(c: Pick<HerCue, "id" | "phase" | "tier">): string {
 }
 
 /**
- * The voice moment a cue of hers is (pure): the Q's and the E's presses call, the R's call and ult line on their
- * beats (r.call, r.ultline); the dash and the jumps now and then; the hurt (a heavy one: the knockdown). The attack
+ * The voice moment a cue of hers is (pure): the Q's and the E's presses call, the R's call on its beat (r.call; no
+ * line on its reveal, Dex 10-19); the dash and the jumps now and then; the hurt (a heavy one: the knockdown). The attack
  * chain says nothing, in either form (Dex 10-19: "remove voicelines during the attack chain"), nor do the R's flurry
- * and dive (the R has its own voice: the call, the ult line).
+ * and dive (the R has its own voice: the call).
  */
 export function voiceForCue(c: Pick<HerCue, "id" | "move" | "phase" | "tier">): string | null {
-  // the R speaks on its own beats: the call, and her ult line on the reveal
+  // the R speaks once, on its call
   if (c.id === "r.call") return "r";
-  if (c.id === "r.ultline") return "ultline";
   if (/^(r|uf)\./.test(c.id) || isChain(c.move)) return null;
   switch (c.phase) {
     case "windup": return c.move === "skill_q" ? "q" : c.move === "e_tap" ? "e" : null;
@@ -249,7 +247,7 @@ export function isChain(move: string): boolean {
 
 /**
  * The moment a change of her state is (pure), for what the cues do not carry: defeated, back up. (The knockdown, the
- * R's call and its ult line come with their cues.)
+ * R's call comes with its cue.)
  */
 export function voiceForState(prev: HerState | null, now: HerState): string | null {
   if (!prev || now.state === prev.state) return null;
