@@ -32,7 +32,8 @@ export interface BreakDef {
   force?: number;
   /** Pieces' upward share (1: as a sword hit; low: flat, along a beam). */
   lift?: number;
-  /** A box [forward, up, width, height] in drawn H from the hit's origin: everything breakable in it goes, whatever its HP. */
+  /** A box [forward, up, width, height] in world H (not x charScale: a world effect) from the hit's origin: everything
+   *  breakable in it goes, whatever its HP. */
   reach?: [number, number, number, number];
   /** How fast the destruction travels out from the origin, H per tick (0: all at once). */
   wave?: number;

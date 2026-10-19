@@ -5,11 +5,13 @@
 // set (Dex 10-18). A role whose slot is missing draws the white box (draw.ts). Data-driven: a new move is a
 // new folder, no code change.
 
-import slotsRaw from "./slots.json?raw";
 import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { artMarks, headOf, opaqueBox, timeline, validateAnim, type AnimDef, type ArtMarks } from "./contract.ts";
+import { slotFor, SLOTS, type RoleDef } from "./roles.ts";
 import { artTransform, type PlayView } from "./units.ts";
+
+export { SLOTS, type RoleDef };
 
 /** Slots present at build time, from public/assets/zhusha/<slot>/anim.json (a missing one is never fetched). */
 export const PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/zhusha/*/anim.json"))
@@ -19,20 +21,6 @@ export const PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/zh
 
 export const BASE = "/assets/zhusha/";
 const ATLAS = 2048;
-
-export interface RoleDef {
-  normal: string | null;
-  ult: string | null;
-  hold?: boolean;
-  reverse?: boolean;
-}
-
-interface SlotsFile {
-  roles: Record<string, RoleDef>;
-  jumpArc: { apex: number; contact: number };
-}
-
-export const SLOTS = JSON.parse(slotsRaw) as SlotsFile;
 
 export interface Drawing {
   /** Atlas page. */
@@ -69,13 +57,12 @@ export class AnimSet {
     this.failed = failed;
   }
 
-  /** The slot a role plays in this form (null: the white box). */
+  /** The slot a role plays in this form (roles.ts: the form's own, else its normal drawing; null: the white box). */
   forRole(role: string, ult: boolean): { slot: Slot; def: RoleDef } | null {
     const def = SLOTS.roles[role];
-    if (!def) return null;
-    const id = ult ? def.ult : def.normal;
+    const id = def ? slotFor(role, ult, (s) => this.slots.has(s)) : null;
     const slot = id ? this.slots.get(id) : undefined;
-    return slot ? { slot, def } : null;
+    return def && slot ? { slot, def } : null;
   }
 
   get size(): number {

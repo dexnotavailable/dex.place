@@ -5,7 +5,7 @@
 // destroys (props.ts).
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { register } from "node:module";
 import { join } from "node:path";
 import { DERIVE, deriveSlot, isEnergy } from "./zhusha/derive.ts";
@@ -390,4 +390,29 @@ test("combat cues: every sound keeps its old name and says move, phase, tier and
   i3.press("e");
   step(e, i3, 20);
   assert.deepEqual(ec.filter((c) => c.phase !== "windup").map((c) => [c.id, c.phase]).slice(0, 2), [["hit", "boom"], ["skid", "recoil"]]);
+});
+
+// --- every role she can reach plays a drawing, in both forms (the ult fallbacks) ------------------------------
+
+test("combat roles: every role she can reach, in either form, resolves to a drawing (the form falls back to her normal one)", async () => {
+  const { REACHABLE, slotChoices, slotFor } = await import("./zhusha/roles.ts");
+  const present = new Set(readdirSync(ROOT).filter((d) => existsSync(join(ROOT, d, "anim.json"))));
+  for (const form of ["normal", "ult"]) {
+    for (const role of REACHABLE[form]) {
+      // planned: a drawing is named for it (never the white box by design)
+      assert.ok(slotChoices(role, form === "ult").length, `${form} ${role}: no slot planned`);
+      // and wherever her normal form has its drawing now, the form plays one too (no ult white box)
+      const normal = slotFor(role, false, (s) => present.has(s));
+      if (normal) assert.ok(slotFor(role, form === "ult", (s) => present.has(s)), `${form} ${role}: the white box`);
+    }
+  }
+  // the three mapped on purpose (10-19), once the form's drawings are in
+  const all = () => true;
+  assert.equal(slotFor("e_tap", true, all), "e_tap");
+  assert.equal(slotFor("m1_4_ret", true, all), "uf_m1_3_tail");
+  assert.equal(slotFor("knockdown", true, all), "ko_trip");
+  // until uf_m1_3_tail is slotted the form's m1_4 return plays guard_to_rest
+  assert.equal(slotFor("m1_4_ret", true, (s) => s === "guard_to_rest"), "guard_to_rest");
+  // run_stop is out: no drawing, ever
+  assert.deepEqual(slotChoices("run_stop", false), []);
 });
