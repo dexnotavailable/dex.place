@@ -23,6 +23,8 @@
 // page is idle, paused, so scrolling up finds it ready. Animation frames only
 // drive the scroll visuals.
 
+import { afterMark } from "./quiet.ts";
+
 export interface WorldHandle {
   readonly ready?: Promise<void>;
   /** Resolves when the World's code is running (its first scene may still be painting). */
@@ -161,7 +163,8 @@ export function initWorld(_reduced: MediaQueryList): void {
     started = true;
     world?.setAttribute("aria-busy", "true");
     if (fallback) fallback.hidden = true;
-    load().then(async (mod) => {
+    // the world's frame boots on this page's thread: it starts once "dex" has written itself (motion/quiet.ts)
+    afterMark().then(load).then(async (mod) => {
       if (destroyed) return;
       handle = mod.mount(stage, { hold: !!world?.hasAttribute("data-world-hold"), at: world?.dataset.worldAt });
       if (covered || below) handle.pause();

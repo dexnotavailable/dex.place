@@ -18,6 +18,7 @@
 // - The address follows the scroll on "/" with no reload and no Back-button pile-up (replaceState only).
 
 import { playIntro, type IntroHandle } from "../../intro/index.ts";
+import { markDone as quietDone, markStart } from "./quiet.ts";
 import { BEATS } from "../../tesu/opening/beats.ts";
 import { pressContinues } from "../../tesu/opening/press.ts";
 import type { OpeningSet } from "../../tesu/mount.ts";
@@ -134,13 +135,16 @@ export function initColumn(reduced: MediaQueryList): void {
   // --- "dex": written once the game screen is in view, and it stays
   let intro: IntroHandle | null = null;
   let markDone = false;
+  // (the world and the website's windows wait for it: motion/quiet.ts, Dex 10-19 "when it draws 'dex' it lags")
   const startMark = (): void => {
     if (intro) return;
     try {
+      markStart();
       intro = playIntro({ parent: title, reducedMotion: reduced.matches, stay: true, y: MARK_Y });
-      void intro.written.then(() => { markDone = true; });
+      void intro.written.then(() => { markDone = true; quietDone(); });
     } catch {
       markDone = true;
+      quietDone();
     }
   };
 
@@ -302,6 +306,8 @@ export function initColumn(reduced: MediaQueryList): void {
     const cover = coverOf();
     const p = (now - t0) / 1000;
     if (cover < 0.98) startMark();
+    // opened covered (a deep link, a restored scroll): no mark now, so nothing waits for one
+    else if (!intro) quietDone();
     root.classList.toggle("gs-away", cover > 0.5);
     opening.covered(cover >= 0.999);
 

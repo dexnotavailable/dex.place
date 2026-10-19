@@ -13,6 +13,7 @@ import { initNsfw } from "./motion/nsfw.ts";
 import { initSharpen } from "./motion/piece.ts";
 import { initIdle, initReveal } from "./motion/reveal.ts";
 import { initScatter } from "./motion/scatter.ts";
+import { afterMark } from "./motion/quiet.ts";
 import { initWorld } from "./motion/world.ts";
 
 const root = document.documentElement;
@@ -51,12 +52,12 @@ const steps: [string, () => void][] = [
   }],
   // the white paper's pixel edge (styles/v2.css .band)
   ["scatter", () => initScatter()],
-  // the windows into the world beside the sections and the jetty at the bottom, painted once the page has loaded,
-  // own chunk (and a worker)
+  // the windows into the world beside the sections and the jetty at the bottom, painted once the page has loaded
+  // and "dex" has written itself (motion/quiet.ts), own chunk (and workers)
   ["sky", () => {
     if (!document.querySelector("[data-window], [data-jetty]")) return;
     const go = (): void => {
-      import("./motion/sky.ts").then((m) => m.initSky(reduced), failed("sky"));
+      afterMark().then(() => import("./motion/sky.ts")).then((m) => m.initSky(reduced), failed("sky"));
     };
     if (document.readyState === "complete") go();
     else window.addEventListener("load", go, { once: true });
