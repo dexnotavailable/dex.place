@@ -438,6 +438,13 @@ test("rev 5, the ofuda's two jobs: the hat paper's own colours with no line art 
   const pose = wp.fall(100 + BEATS.her.clip.handoff[0] * 0.66, 200 + BEATS.her.clip.handoff[1] * 0.66, { x: -18, gust: 0.5 }, 1 / 60, { nodes, u: 1 });
   pose.pts.forEach((q, i) => { near(q[0], nodes[i][0], 1e-9); near(q[1], nodes[i][1], 1e-9); near(q[2], 0, 1e-9); });
   assert.equal(pose.tex, STRIP, "the whole paper by then");
+  // the clip paper's grain over the last 0.3 s: the same colours, a few flecks; texel by texel
+  const { STRIP_CLIP } = await import("./opening/paper.ts");
+  for (const c of STRIP_CLIP.front) if (c) assert.ok(hat.has(COLORS[c].join()) || extra.has(COLORS[c].join()), `grain colour ${COLORS[c]}`);
+  const differ = [...STRIP.front].filter((c, i) => c !== STRIP_CLIP.front[i]).length;
+  assert.ok(differ > 5 && differ < 20, `subtle: ${differ} of 100 texels`);
+  const g = wp.fall(0, 0, { x: -18, gust: 0.5 }, 1 / 60, { nodes, u: 1, grain: 0.5 });
+  assert.equal(g.into?.to, STRIP_CLIP);
   assert.ok(BEATS.ofuda.stripAt > 2.6 && BEATS.ofuda.stripAt < 4.6, "it changes look in the vast frame, a speck");
 });
 

@@ -51,6 +51,34 @@ export const STRIP = paperTexture([
   "nYYYY",
 ]);
 
+/**
+ * The whole paper as the clip draws it up close: the same, with the mid-gold flecks the clip's paper has through its
+ * lighter part (f001). The fall's last 0.3 s dissolve into it, texel by texel, so the drawing's busier paper takes
+ * over from one that already has its grain (the coordinator 10-20: subtle; the drawings untouched).
+ */
+export const STRIP_CLIP = paperTexture([
+  "dXddd",
+  "ddede",
+  "deeed",
+  "eehee",
+  "ehghe",
+  "hgghg",
+  "ghjgh",
+  "gjkjg",
+  "jkkkj",
+  "khmkk",
+  "kmhmk",
+  "mjnmm",
+  "mnhnm",
+  "nkYhn",
+  "nYhYn",
+  "YYkYY",
+  "YhYYY",
+  "nYYkn",
+  "YkYYY",
+  "nYYYY",
+]);
+
 type RGB = [number, number, number];
 
 const RGB01: RGB[] = COLORS.map((c) => [c[0] / 255, c[1] / 255, c[2] / 255]);
@@ -73,6 +101,8 @@ export interface PaperPose {
   pts: [number, number, number][];
   /** Its texels (the loader's crop, or the whole paper). */
   tex: PaperTexture;
+  /** Dissolving into another look: `to`, a share of its texels (0..1), chosen by a fixed per-texel order. */
+  into?: { to: PaperTexture; share: number };
 }
 
 export class WorldPaper {
@@ -179,7 +209,7 @@ export class WorldPaper {
    * One tick of the fall: its own air (art px / s; the east wind is negative) and gustiness, then its pose with its
    * middle at (wx, wy) world px plus the quick part of its own drift.
    */
-  fall(wx: number, wy: number, air: { x: number; gust: number }, dt = 1 / 60, steer?: { nodes: readonly (readonly [number, number])[]; u: number }): PaperPose {
+  fall(wx: number, wy: number, air: { x: number; gust: number }, dt = 1 / 60, steer?: { nodes: readonly (readonly [number, number])[]; u: number; grain?: number }): PaperPose {
     if (!this.seeded || this.mode !== "fall") this.startFall();
     const s = this.sim;
     s.wind.x = air.x;
@@ -208,6 +238,7 @@ export class WorldPaper {
         q[1] += (t[1] - q[1]) * u;
         q[2] *= 1 - u;
       });
+      if (steer.grain && pose.tex === STRIP) pose.into = { to: STRIP_CLIP, share: Math.min(1, steer.grain) };
     }
     return pose;
   }
@@ -267,8 +298,8 @@ export class WorldPaper {
     for (const r of order) {
       const a = r * 2, b = a + 1, c = a + 2, d = a + 3;
       const va = r / SEG, vc = (r + 1) / SEG;
-      tri(F, a, b, d, [0, va], [1, va], [1, vc], k, T, set);
-      tri(F, a, d, c, [0, va], [1, vc], [0, vc], k, T, set);
+      tri(F, a, b, d, [0, va], [1, va], [1, vc], k, T, set, pose.into);
+      tri(F, a, d, c, [0, va], [1, vc], [0, vc], k, T, set, pose.into);
     }
     if (glint !== null) {
       // a 4-point star on the paper: 1 px core, arms growing and shrinking over five drawings
@@ -293,7 +324,7 @@ function zOf(F: [number, number, number][], r: number): number {
 }
 
 /** One facet triangle in frame px, textured from the sprite (nearest texel). */
-function tri(F: [number, number, number][], i: number, j: number, k: number, ti: number[], tj: number[], tk: number[], scale: number, T: PaperTexture, put: (x: number, y: number, c: number) => void): void {
+function tri(F: [number, number, number][], i: number, j: number, k: number, ti: number[], tj: number[], tk: number[], scale: number, T: PaperTexture, put: (x: number, y: number, c: number) => void, into?: { to: PaperTexture; share: number }): void {
   const [ax, ay, az] = F[i]!, [bx, by, bz] = F[j]!, [cx, cy, cz] = F[k]!;
   const area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
   if (Math.abs(area) < 1e-6) return;
@@ -322,10 +353,19 @@ function tri(F: [number, number, number][], i: number, j: number, k: number, ti:
       let tx = Math.min(T.w - 1, Math.max(0, Math.floor(u * T.w)));
       const ty = Math.min(T.h - 1, Math.max(0, Math.floor(v * T.h)));
       if (!front) tx = T.w - 1 - tx;
-      const c = tex[ty * T.w + tx]!;
+      let c = tex[ty * T.w + tx]!;
+      // dissolving into the other look: this texel has turned once the share passes its own fixed threshold
+      if (into && into.to.w === T.w && into.to.h === T.h && texelOrder(tx, ty) < into.share) c = (front ? into.to.front : into.to.back)[ty * T.w + tx]!;
       if (c) put(x, y, shiftPaper(c, shift));
     }
   }
+}
+
+/** A fixed order for a texel to turn in a dissolve (0..1), the same on every frame. */
+function texelOrder(x: number, y: number): number {
+  let h = Math.imul(x * 374761393 + y * 668265263 + 1442695041, 3266489917) >>> 0;
+  h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0;
+  return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
 }
 
 function line(x0: number, y0: number, x1: number, y1: number, put: (x: number, y: number) => void): void {

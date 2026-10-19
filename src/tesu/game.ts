@@ -39,7 +39,7 @@ import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
 import { SilentLink, type OpeningLink, type PaperFrom } from "./opening/conductor.ts";
 import { WorldPaper, type PaperPose } from "./opening/paper.ts";
-import { BEATS, CLIP_END, HANDOFF_T, ceilingRow, keysAt, paperAirAt, paperBlendAt, paperScreenAt, setStartZoom, smooth, startT } from "./opening/timeline.ts";
+import { BEATS, CLIP_END, HANDOFF_T, ceilingRow, clamp01, keysAt, paperAirAt, paperBlendAt, paperScreenAt, setStartZoom, smooth, startT } from "./opening/timeline.ts";
 import { Veils, fallVeils } from "./opening/sky.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
@@ -850,7 +850,9 @@ export class TesuGame {
       // (on it a tick before the drawing takes over: that tick shows exactly the drawing's paper, drawn by us)
       const u = T <= steerFrom ? 0 : Math.min(1, (T - steerFrom) / (HANDOFF_T - 1 / 60 - steerFrom)) ** 2;
       const nodes = band.map((n) => [b.x + n[0] * ART_PX * f, b.y + n[1] * ART_PX] as [number, number]);
-      this.paperPose = this.paper.fall(wxo + (hx - wxo) * k, wyo + (hy - wyo) * k, paperAirAt(T, o.way), 1 / 60, { nodes, u });
+      // and over its last 0.3 s it takes on the clip paper's grain (texel by texel), so the drawing's busier paper follows
+      const grain = clamp01((T - (HANDOFF_T - 0.3)) / (0.3 - 1 / 60));
+      this.paperPose = this.paper.fall(wxo + (hx - wxo) * k, wyo + (hy - wyo) * k, paperAirAt(T, o.way), 1 / 60, { nodes, u, grain });
       // the page draws its own paper over this one until the world has drawn it once (column.ts)
       if (!this.paperShown) {
         this.paperShown = true;
