@@ -38,7 +38,6 @@ import { SilentLink, type OpeningLink } from "./opening/conductor.ts";
 import { WorldPaper, type PaperPose } from "./opening/paper.ts";
 import { BEATS, CLIP_END, HANDOFF_T, cameraAt, herXH, keysAt, paperAirAt, paperBlendAt, paperScreenAt, startT } from "./opening/timeline.ts";
 import { Veils, fallVeils } from "./opening/sky.ts";
-import { ART_PX } from "./zhusha/controller.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
 import { eyeY, levelFor, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
