@@ -4,7 +4,7 @@
 // device px.
 
 import { painterWorker, warmPainters } from "./painters.ts";
-import { FIGURE, HER_ART, loadHer, type Her } from "./her.ts";
+import { FIGURE, HER_ART, HOLDING, WAITING, loadFirst, loadHer, ofudaOnHat, type Her } from "./her.ts";
 import { POOL, rampIndex, skyRamp } from "./sky-plan.ts";
 import type { CloudDone, CloudJob } from "./paint-core.ts";
 import { initWindows } from "./windows.ts";
@@ -12,11 +12,15 @@ import { initWindows } from "./windows.ts";
 /**
  * The bottom of the website (Dex 10-16: "the jetty scene, on the left"): Kagami's jetty painted by the world's
  * own jetty painter on a still lake of the world's jade, its reflection broken by ripples, under the website's
- * sky (the backdrop shows through). She stands on the deck in her own idle drawings (motion/her.ts, loaded with
- * the jetty's painters when it comes near; `[data-jetty-her]`, her soles placed here on the deck), the hat's tie
- * marked for the ofuda to land on (`.jetty__hat`). The scene is drawn again only when the size changes; she breathes
- * through her idle while the jetty is on screen (one still drawing with reduced motion).
+ * sky (the backdrop shows through). She stands on the deck in her own drawings (motion/her.ts, loaded with the
+ * jetty's painters when it comes near; `[data-jetty-her]`, her soles placed here on the deck): bare-hatted while she
+ * waits, her idle once the ofuda is on her hat (way 4's catch, `data-caught` on the jetty); `.jetty__hat` marks the
+ * ofuda's place on her hat in that drawing, where the page's paper lands. The scene is drawn again only when the size
+ * changes; she breathes through her loop while the jetty is on screen (one still drawing with reduced motion).
  */
+/** Her paperless loop is in the game (build time, as the game finds its drawings; a missing one is never fetched). */
+const NOPAPER = Object.keys(import.meta.glob("/public/assets/zhusha/idle_nopaper/anim.json")).length > 0;
+
 export function initJetty(reduced: MediaQueryList): void {
   const scene = document.querySelector<HTMLElement>("[data-jetty-scene]");
   const her = scene?.querySelector<HTMLElement>("[data-jetty-her]");
@@ -25,11 +29,17 @@ export function initJetty(reduced: MediaQueryList): void {
   const herCv = document.createElement("canvas");
   her.prepend(herCv);
   const herCtx = herCv.getContext("2d");
+  const jettyEl = scene.closest<HTMLElement>("[data-jetty]") ?? scene;
+  /** Bare-hatted (waiting) and holding the ofuda (after the catch); the same drawings until the paperless loop is in. */
+  let waiting: Her | null = null, holding: Her | null = null;
   let sprite: Her | null = null;
+  const pick = (): void => {
+    sprite = (jettyEl.hasAttribute("data-caught") ? holding ?? waiting : waiting ?? holding) ?? null;
+  };
   let stand: { x: number; y: number; k: number; dpr: number } | null = null;
   let fi = 0, herT = 0, onScreen = false;
   // until her drawings are in: her size from the contract (a figure 128 px tall, the tie just above her head)
-  const FALLBACK: Pick<Her, "w" | "h" | "pivot" | "tie"> = { w: Math.round(FIGURE * 0.6), h: FIGURE + 8, pivot: [Math.round(FIGURE * 0.3), FIGURE], tie: [Math.round(FIGURE * 0.3), -8] };
+  const FALLBACK: Pick<Her, "w" | "h" | "pivot"> = { w: Math.round(FIGURE * 0.6), h: FIGURE + 28, pivot: [Math.round(FIGURE * 0.3), FIGURE + 18] };
   const drawHer = (): void => {
     if (!sprite || !herCtx || !herCv.width) return;
     herCtx.imageSmoothingEnabled = false;
@@ -49,10 +59,13 @@ export function initJetty(reduced: MediaQueryList): void {
     her.style.width = `${cw / dpr}px`;
     her.style.height = `${ch / dpr}px`;
     her.style.bottom = "auto";
-    // the ofuda hangs from the tie on her hat (its top at the tie, 12 css px wide)
+    // the ofuda's place on her hat in the drawing that holds it (from her soles), where the page's paper lands
     if (hat) {
-      hat.style.left = `${(d.tie[0] * s) / dpr - 6}px`;
-      hat.style.top = `${(d.tie[1] * s) / dpr}px`;
+      const o = ofudaOnHat(holding?.pivot);
+      hat.style.left = `${((o.x + d.pivot[0]) * s) / dpr}px`;
+      hat.style.top = `${((o.y + d.pivot[1]) * s) / dpr}px`;
+      hat.style.width = `${(o.w * s) / dpr}px`;
+      hat.style.height = `${(o.h * s) / dpr}px`;
     }
     if (sprite && (herCv.width !== cw || herCv.height !== ch)) {
       herCv.width = cw;
@@ -103,13 +116,23 @@ export function initJetty(reduced: MediaQueryList): void {
   const start = (): void => {
     if (started) return;
     started = true;
-    void loadHer(reduced.matches).then((sp) => {
-      if (!sp) return;
-      sprite = sp;
+    void loadFirst(reduced.matches, NOPAPER ? WAITING : [HOLDING]).then(async (w) => {
+      if (!w) return;
+      waiting = w.her;
+      holding = w.base === HOLDING ? w.her : await loadHer(reduced.matches, HOLDING);
+      pick();
       her.setAttribute("data-drawn", "");
       placeHer();
       runHer();
     });
+    // the catch (way 4): from the next drawing on she is the one holding the ofuda
+    if (typeof MutationObserver === "function") {
+      new MutationObserver(() => {
+        const was = sprite;
+        pick();
+        if (sprite !== was) { fi = 0; placeHer(); }
+      }).observe(jettyEl, { attributes: true, attributeFilter: ["data-caught"] });
+    }
     const w = painterWorker("kagami");
     w.addEventListener("message", (e: MessageEvent<CloudDone>) => {
       const id = e.data.id;
