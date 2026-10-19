@@ -112,6 +112,11 @@ export class Court {
     return this.state !== "idle";
   }
 
+  /** Foes she can lock onto (m1_3, Dex 10-19): the champion's body while it is out and fighting (or staggered). */
+  foes(): WorldBox[] {
+    return this.state === "fight" || this.state === "stagger" ? [this.bodyBox()] : [];
+  }
+
   /** R is greyed out while the champion is staggered: the finish is one quick hit. */
   get ultLocked(): boolean {
     return this.state === "stagger" || this.state === "finish";

@@ -23,7 +23,7 @@ import type { Body } from "../collide.ts";
 import { H } from "../config.ts";
 import type { AnimDef } from "./contract.ts";
 import type { DerivedSlot, Rect } from "./derive.ts";
-import { resolveMove, windClock, type BreakDef, type HitDef, type MoveDef, type ResolvedMove, type Weight } from "./timing.ts";
+import { lockEase, lockTarget, resolveMove, windClock, type BreakDef, type HitDef, type MoveDef, type ResolvedMove, type Weight } from "./timing.ts";
 import { artPx, checkUnits, drawnH, runHps } from "./units.ts";
 
 export interface FeelFile {
@@ -112,6 +112,8 @@ export interface ZhushaHost {
   vfx: { spawn(id: string, o: SpawnOptions): void };
   feel: { freeze(n: number): void; slowmo(f: number, d: number): void; impactFrame(m: "invert" | "mono", d: number): void; sound(id: string, v?: number): void; readonly reducedMotion: boolean };
   camera: { shake(a: number, d: number): void; zoomPunch(steps: number): void };
+  /** Her foes' bodies now (world boxes: the court's champion), for m1_3's lock-on; none: she lunges straight. */
+  foes?(): WorldBox[];
 }
 
 export type State = "free" | "dash" | "move" | "hurt" | "down" | "dead" | "ult" | "exit";
@@ -205,8 +207,14 @@ export class Zhusha {
   readonly cueLog: Cue[] = [];
 
   private host: ZhushaHost;
-  /** The move playing: `carry` is her speed along it that is not her planted foot's (a lunge's or recoil's, momentum). */
-  private move: { id: string; def: ResolvedMove; startX: number; startY: number; dir: 1 | -1; fxDone: Set<number>; landed: boolean; carry: number } | null = null;
+  /**
+   * The move playing: `carry` is her speed along it that is not her planted foot's (a lunge's or recoil's, momentum);
+   * `lock` is m1_3's lunge: from x0, `travel` px along the move, homing on a foe (`foe`, last seen centred at fx).
+   */
+  private move: {
+    id: string; def: ResolvedMove; startX: number; startY: number; dir: 1 | -1; fxDone: Set<number>; landed: boolean; carry: number;
+    lock: { x0: number; travel: number; foe: boolean; fx: number } | null;
+  } | null = null;
   private moveStart = -9999;
   private chainIdx = -1;
   private chainEnd = -9999;
@@ -726,7 +734,16 @@ export class Zhusha {
     const ax = input.axis();
     if (ax !== 0) this.facing = ax as 1 | -1;
     const b = this.body;
-    this.move = { id, def, startX: b.x, startY: b.y, dir: this.facing, fxDone: new Set(), landed: false, carry: def.inPlace ? 0 : b.vx * this.facing };
+    // m1_3 locks onto a foe in reach (Dex 10-19): she turns to it and her lunge is aimed to stop at striking distance
+    let lock: { x0: number; travel: number; foe: boolean; fx: number } | null = null;
+    if (def.lock) {
+      const foes = this.host.foes?.() ?? [];
+      const L = lockTarget(b.x, b.y, this.facing, foes, def.lock, BODY_H);
+      const f = foes[L.foe];
+      if (f) this.facing = L.dir;
+      lock = { x0: b.x, travel: L.travel, foe: !!f, fx: f ? f.x + f.w / 2 : 0 };
+    }
+    this.move = { id, def, startX: b.x, startY: b.y, dir: this.facing, fxDone: new Set(), landed: false, carry: def.inPlace || lock?.foe ? 0 : b.vx * this.facing, lock };
     this.moveStart = input.tick;
     this.clip = { id: `${id}#${input.tick}`, index: 0, hitGroups: new Map(), hit: false };
     this.lastHits = 0;
@@ -796,6 +813,25 @@ export class Zhusha {
     for (const l of def.lunge ?? []) if (t >= l.at && t < l.at + l.ticks) push = (l.dist * H) / l.ticks;
     const rc = def.recoil;
     if (rc && t >= rc[0] && t < rc[0] + rc[2]) push = -pt(rc[1]) * (1 - (t - rc[0]) / rc[2]);
+    // m1_3's lunge: on its eased plan from where she started, re-aimed every tick at the locked foe
+    const lk = def.lock, ml = m.lock;
+    const homing = !!(lk && ml && ml.foe && t >= lk.at && t <= lk.at + lk.ticks);
+    if (lk && ml && t >= lk.at && t < lk.at + lk.ticks) {
+      if (ml.foe) {
+        let best: WorldBox | null = null;
+        for (const f of this.host.foes?.() ?? []) {
+          const c = f.x + f.w / 2;
+          if (Math.abs(c - ml.fx) < 2 * BODY_H && (!best || Math.abs(c - ml.fx) < Math.abs(best.x + best.w / 2 - ml.fx))) best = f;
+        }
+        if (best) {
+          ml.fx = best.x + best.w / 2;
+          const near = m.dir > 0 ? best.x - ml.x0 : ml.x0 - (best.x + best.w);
+          ml.travel = Math.min(lk.maxDist * BODY_H, Math.max(0, near - lk.strike * BODY_H));
+        }
+      }
+      const want = ml.x0 + m.dir * ml.travel * lockEase((t - lk.at + 1) / lk.ticks);
+      push = (want - b.x) * m.dir - rootV;
+    } else if (homing) push = -rootV;
     const wt = def.warpTicks ?? 3;
     if (m.id === "skill_q" && t <= wt) {
       // the Q's warp: 2.5 H in 3 ticks, then a dead stop
@@ -808,8 +844,10 @@ export class Zhusha {
     // the recoil's skid: dust under her feet while she slides back on the ground (and a cue as it starts)
     if (rc && push !== null && push < 0 && b.grounded && (t - rc[0]) % FEEL.e.skidEvery === 0) this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: -m.dir });
     if (rc && t === rc[0]) this.cue("skid", 0.8, m.id, "recoil", def.hits[0]?.weight ?? "medium");
+    // locked on, she stops dead at striking distance when the lunge is done
+    if (lk && ml?.foe && t >= lk.at + lk.ticks) m.carry = 0;
     const along = rootV + m.carry;
-    b.vx = m.dir * (connected && along > 0 ? along * 0.3 : along);
+    b.vx = m.dir * (connected && along > 0 && !homing ? along * 0.3 : along);
     if (m.id === "skill_q" && !b.grounded && t < (def.airHang ?? 0)) b.vy = 0;
     else if (m.id === "m1_4" && def.plunge && !b.grounded && t >= 6 && t < (def.hits[0]?.at ?? 13)) {
       // from the air the chop is a plunge: she drives down and it lands on touchdown

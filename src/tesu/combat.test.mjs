@@ -1,6 +1,6 @@
 // Zhusha's combat (lane E, 10-19; PLAN-10-19.md, Dex's attack notes): what her attack drawings say (derived.json: live
 // drawings, hit boxes that move with the slash, her planted foot), the chain's movement (m1_1 and m1_2 forward, m1_3
-// recoils back, m1_4 in place), the slower wind-down, the Q (BOOM in a few ticks, a hold, the camera pulled out over
+// a long lunge that locks onto a foe, m1_4 in place), the slower wind-down, the Q (BOOM in a few ticks, a hold, the camera pulled out over
 // the exploded area), the E (a beam far in front, the recoil on the tap), heavier damage reactions, and how far each hit
 // destroys (props.ts).
 import test from "node:test";
@@ -156,15 +156,16 @@ function runMove(Zhusha, id, clipOf = null, settle = 40) {
   return z;
 }
 
-test("combat chain (Dex 10-19): m1_1 and m1_2 push her forward, m1_3 recoils her back, m1_4 keeps her in place", async () => {
+test("combat chain (Dex 10-19): m1_1 and m1_2 push her forward, m1_3 lunges one to two of her heights, m1_4 keeps her in place", async () => {
   const Zhusha = await loadZ();
+  const K = H * FEEL.charScale;
   for (const clipOf of [null, liveClip]) {
     const tag = clipOf ? "with the drawings" : "white box";
-    const [a, b, c, d] = ["m1_1", "m1_2", "m1_3", "m1_4"].map((id) => runMove(Zhusha, id, clipOf).body.x / H);
-    assert.ok(a > 0.3, `${tag}: m1_1 ${a} H`);
-    assert.ok(b > 0.3, `${tag}: m1_2 ${b} H`);
-    assert.ok(c < -0.35, `${tag}: m1_3 ${c} H`);
-    assert.ok(Math.abs(d) < 0.1, `${tag}: m1_4 ${d} H`);
+    const [a, b, c, d] = ["m1_1", "m1_2", "m1_3", "m1_4"].map((id) => runMove(Zhusha, id, clipOf).body.x);
+    assert.ok(a > 0.3 * H, `${tag}: m1_1 ${a / H} H`);
+    assert.ok(b > 0.3 * H, `${tag}: m1_2 ${b / H} H`);
+    assert.ok(c > 1 * K && c < 2 * K, `${tag}: m1_3 ${c / K} of her heights`);
+    assert.ok(Math.abs(d) < 0.1 * H, `${tag}: m1_4 ${d / H} H`);
   }
   // m1_4 out of a run: her momentum stops with it
   const z = new Zhusha(host(), [0, 0]);
@@ -415,4 +416,61 @@ test("combat roles: every role she can reach, in either form, resolves to a draw
   assert.equal(slotFor("m1_4_ret", true, (s) => s === "guard_to_rest"), "guard_to_rest");
   // run_stop is out: no drawing, ever
   assert.deepEqual(slotChoices("run_stop", false), []);
+});
+
+// --- m1_3 locks onto a foe (Dex 10-19: "a forward lunge, like a body height or two forward, and lock onto the enemy") ---
+
+test("combat m1_3 lock-on: she homes onto a foe in reach and stops at striking distance (its thrusts land), never into it", async () => {
+  const Zhusha = await loadZ();
+  const { lockTarget } = await import("./zhusha/timing.ts");
+  const K = H * FEEL.charScale, L = FEEL.moves.m1_3.lock;
+  const foeAt = (near, w = 120) => ({ x: near, y: -1.6 * K, w, h: 1.6 * K });
+  /** m1_3 from rest at x 0 with foes (boxes, or a function of the tick for a moving one). */
+  const lunge = (foes, clipOf = liveClip, facing = 1) => {
+    const h = host();
+    let tick = 0;
+    h.foes = () => (typeof foes === "function" ? foes(tick) : foes);
+    const z = new Zhusha(h, [0, 0]);
+    if (clipOf) z.clipOf = clipOf;
+    z.facing = facing;
+    const inp = new FakeInput();
+    step(z, inp, 5);
+    z.chainIdx = 1; z.chainEnd = inp.tick;
+    inp.press("m1");
+    step(z, inp);
+    assert.equal(z.lastAction, "m1_3");
+    let hitFoe = false;
+    for (let i = 0; i < 60 && z.state === "move"; i++) {
+      tick++;
+      step(z, inp);
+      const fs = h.foes();
+      for (const { box } of z.hitboxes()) for (const f of fs) if (box.x < f.x + f.w && box.x + box.w > f.x && box.y < f.y + f.h && box.y + box.h > f.y) hitFoe = true;
+    }
+    return { z, hitFoe };
+  };
+  // a foe 1.8 of her heights ahead: she ends with its edge `strike` ahead, and her thrusts reach it
+  for (const clipOf of [null, liveClip]) {
+    const { z, hitFoe } = lunge([foeAt(1.8 * K)], clipOf);
+    assert.ok(Math.abs(1.8 * K - z.body.x - L.strike * K) < 3, `stopped ${(1.8 * K - z.body.x) / K} heights short (want ${L.strike})`);
+    assert.ok(hitFoe, "the thrusts land on it");
+  }
+  // already at striking distance or closer: no lunge into it
+  assert.ok(Math.abs(lunge([foeAt(0.3 * K)]).z.body.x) < 3);
+  // far out of reach: no lock, the plain lunge
+  const far = lunge([foeAt(6 * K)]).z.body.x;
+  assert.ok(far > 1 * K && far < 2 * K, `${far / K}`);
+  // a foe on the move is followed: it backs off during the lunge, she still stops at striking distance (within maxDist)
+  const moving = (t) => [foeAt(1.2 * K + Math.min(t, 6) * 6)];
+  const m = lunge(moving).z.body.x;
+  assert.ok(Math.abs(moving(99)[0].x - m - L.strike * K) < 3, `moving: ${(moving(99)[0].x - m) / K}`);
+  // never past maxDist, however far ahead (inside range) the foe stands
+  assert.ok(lunge([foeAt((L.range - 0.1) * K)]).z.body.x <= L.maxDist * K + 3);
+  // a foe right behind her: she turns to face it and lunges at it
+  const back = lunge([{ x: -0.8 * K - 120, y: -1.6 * K, w: 120, h: 1.6 * K }]).z;
+  assert.equal(back.facing, -1);
+  assert.ok(back.body.x <= 0);
+  // the pure aim: front first, the nearest, level with her only
+  assert.deepEqual(lockTarget(0, 0, 1, [], L, K), { travel: L.dist * K, dir: 1, foe: -1 });
+  assert.equal(lockTarget(0, 0, 1, [foeAt(2 * K), foeAt(1.2 * K)], L, K).foe, 1);
+  assert.equal(lockTarget(0, 0, 1, [{ x: K, y: -8 * K, w: 100, h: K }], L, K).foe, -1, "a foe far above is not level with her");
 });

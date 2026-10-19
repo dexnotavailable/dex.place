@@ -59,9 +59,57 @@ export interface MoveDef {
   cooldown?: number;
   /** No lunge and no carried momentum: only her planted foot moves her (m1_4, Dex 10-19). */
   inPlace?: boolean;
+  /** A lunge that locks onto a foe (m1_3, Dex 10-19): distances in her drawn heights; see feel.json lockAbout. */
+  lock?: LockDef;
   /** The wind-down's playback rate (default feel.json windDown.rate) and the move tick it starts (default: the last hit's end). */
   windDown?: number;
   windFrom?: number;
+}
+
+/** m1_3's lunge (feel.json lockAbout): from `at` over `ticks`; dist with no foe, else up to the foe's edge less `strike`. */
+export interface LockDef {
+  at: number;
+  ticks: number;
+  dist: number;
+  maxDist: number;
+  strike: number;
+  range: number;
+  behind: number;
+}
+
+/** The lunge's ease-out: the share of its distance covered at u in [0, 1] (fast off the mark, settling). */
+export function lockEase(u: number): number {
+  const k = Math.min(1, Math.max(0, u));
+  return 1 - (1 - k) * (1 - k);
+}
+
+/**
+ * Where a lock-on lunge from x0 facing `dir` ends, given her foes' boxes (world px) and her drawn height K: the nearest
+ * foe ahead within range (or behind within `behind`: she turns), stopped `strike` short of its near edge (never past
+ * maxDist, never backwards into it); with none, dist ahead. Returns the travel (px along `dir`), the direction and the
+ * foe it locked (index into foes, -1: none).
+ */
+export function lockTarget(
+  x0: number, y0: number, dir: 1 | -1, foes: readonly { x: number; y: number; w: number; h: number }[], L: LockDef, K: number,
+): { travel: number; dir: 1 | -1; foe: number } {
+  let best: { d: number; dir: 1 | -1; i: number } | null = null;
+  foes.forEach((f, i) => {
+    // level with her: the foe's box spans her body's band
+    if (f.y > y0 + 0.2 * K || f.y + f.h < y0 - 1.5 * K) return;
+    for (const s of [dir, -dir as 1 | -1]) {
+      const near = s > 0 ? f.x - x0 : x0 - (f.x + f.w);
+      const reach = s === dir ? L.range * K : L.behind * K;
+      // overlapping her already (near < 0) counts as right in front
+      if (near > reach || near + f.w < 0) continue;
+      const d = Math.max(0, near) + (s === dir ? 0 : 0.5 * K);
+      if (!best || d < best.d) best = { d, dir: s, i };
+    }
+  });
+  if (!best) return { travel: L.dist * K, dir, foe: -1 };
+  const b = best as { d: number; dir: 1 | -1; i: number };
+  const f = foes[b.i]!;
+  const near = b.dir > 0 ? f.x - x0 : x0 - (f.x + f.w);
+  return { travel: Math.min(L.maxDist * K, Math.max(0, near - L.strike * K)), dir: b.dir, foe: b.i };
 }
 
 /** The drawing's clock after the last hit runs slower: move tick t -> the anim's tick. */
