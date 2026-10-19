@@ -28,6 +28,7 @@ import { Rides } from "./ride.ts";
 import { blendAtmos } from "./atmos-blend.ts";
 import { Sound } from "./sound.ts";
 import { placeAt, THEME_FADE } from "./region-music.ts";
+import { spaceFor } from "./mix.ts";
 import { CHARM_PERCH, H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore, type PlatePool } from "./plates/store.ts";
 import { levelOfPlane, openingTiles, tileSpanOf } from "./plates/span.ts";
@@ -297,7 +298,12 @@ export class TesuGame {
       cue: (n) => this.cue(n),
       celebrate: (p) => this.onCelebrate(p),
     });
-    this.feel.onSound = (id, v) => this.sound.sfx(id, v);
+    // her move says "swing" on its first tick (the windup) and again on its hit tick (swingFx): the blade's swing
+    // sounds on the hit, the first tick plays the windup; her voice joins on some of them (sound.ts herSound)
+    this.feel.onSound = (id, v) => {
+      const p = this.player;
+      this.sound.herSound(id, v, { first: p.state === "move" && p.anim.t === 0, role: p.anim.role, state: p.state, ult: p.ultForm });
+    };
     this.props = new Props({
       player: this.player, vfx: this.vfx, feel: this.feel, camera: this.camera,
       ground: (x, y) => this.collision.groundBelow(x, y)?.y ?? null,
@@ -350,34 +356,33 @@ export class TesuGame {
     writeSave(this.save);
   }
 
-  /** A score cue (the opening, the court, the hall). */
+  /** A score cue (the opening, the court). */
   private cue(name: string): void {
-    this.sound.music.cue(name);
+    this.sound.cue(name);
     this.onCue(name);
   }
 
   /**
-   * The score: the opening plays Track 1 (the page's conductor owns it) and the old synthesized layers wait
-   * while it sounds; then the hall gathers the music into its quiet, outdoors the calm landscape form plays;
-   * beds follow the place.
+   * The score: the opening plays Track 1 (the page's conductor owns it), then each place's main theme; beds follow the
+   * place; her footsteps land on the drawings where a foot meets the ground (sound.ts STEP_FRAMES).
    */
   private scoreTick(): void {
     const b = this.player.body;
-    const m = this.sound.music;
     // the place's main theme (region-music.ts): none while the press waits or the opening's cinema runs; when a
     // theme starts it takes Track 1 down with it (the conductor's handOver, through the link the game kept)
     const themes = this.sound.regions;
     const was = themes.sounding;
     themes.update(placeAt(this.world.places, b.x, b.y, INTERIOR_Y), this.holding || this.opening.active);
     if (themes.sounding && !was) this.openingLink?.handOver?.(THEME_FADE);
-    // the placeholder score waits while Track 1 sounds (until a theme takes it down) and while a theme plays
-    m.held = this.opening.state === "cine" || !!this.openingLink?.music || themes.sounding;
-    if (this.tick % 30 !== 0) return;
+    const shown = this.zdraw.shown(this.player);
+    this.sound.footstep(shown?.slot.id ?? null, shown?.index ?? 0, b.grounded && !this.rides.active, this.collision.lastSurface);
+    // her voice follows her state, the space she is in (its reverb) and her place on screen (its pan)
     const inside = b.y >= INTERIOR_Y;
+    const cam = this.camera.state();
+    const p = this.player;
+    this.sound.follow({ state: p.state, phase: p.ultPhase, ult: p.ultForm }, spaceFor(themes.playing, inside), ((b.x - cam.cx) * planeXf(cam, 1).s) / Math.max(1, cam.W / 2));
+    if (this.tick % 30 !== 0) return;
     this.sound.setBed(inside ? "hall" : b.x < 109 * H ? "lake" : "heights");
-    if (m.held) return;
-    if (inside && m.mood !== "hall" && m.mood !== "intense") this.cue("music:hall");
-    else if (!inside && !this.opening.active && (m.mood === "off" || m.mood === "hall")) this.cue("music:land");
   }
 
   private notePlace(): void {
@@ -1761,7 +1766,7 @@ export class TesuGame {
       ride: this.rides.active ? { id: this.rides.active.def.id, dir: this.rides.active.dir, t: +this.rides.active.t.toFixed(2) } : null, vista: !!this.vista,
       court: this.court.state_(), hp: this.player.hp, ultCd: this.player.ultCd,
       props: this.props.state(), airborne: this.props.airborne(), broken: this.props.broken,
-      music: { mood: this.sound.music.mood, layers: this.sound.music.layers, dropped: this.sound.music.dropped, nextBar: +this.sound.music.nextBar().toFixed(2), theme: this.sound.regions.playing },
+      music: { theme: this.sound.regions.playing },
     };
   }
 
