@@ -1,5 +1,5 @@
 {
- "about": "Dex's audio verdicts (lanes/audio/VETTING.json), by source file name, verdicts only (his notes stay in the lane). best and ok are approved for the game; bad is never used; a name not listed is not vetted. Regenerate when Dex vets more.",
+ "about": "Dex's audio verdicts (lanes/audio/VETTING.json), by source file name, verdicts only (his notes stay in the lane). best and ok are approved for the game; bad is never used; a name not listed is not vetted. Regenerate when Dex vets more. voice: Dex's verdicts on her voice takes by take id (the listening page, lanes/audio/lane2/voice/VERDICTS.json), verdicts only.",
  "verdicts": {
   "5 Strings.wav": "ok",
   "alcove.m4a": "ok",
@@ -51,5 +51,36 @@
   "track1-take2-maxoff-clip-a.wav": "best",
   "wood-break-a.wav": "ok",
   "wood-break-b.wav": "ok"
+ },
+ "voice": {
+  "n-cheeky": "ok",
+  "n-dash": "ok",
+  "n-defeat": "ok",
+  "n-e-call": "ok",
+  "n-hurt-1": "ok",
+  "n-hurt-2": "ok",
+  "n-jump": "ok",
+  "n-kiai-1": "ok",
+  "n-kiai-2": "ok",
+  "n-kiai-3": "ok",
+  "n-knockdown": "ok",
+  "n-q-call": "ok",
+  "n-r-call": "ok",
+  "n-respawn": "ok",
+  "op-line1-b": "ok",
+  "op-line2-b": "ok",
+  "op-line3-a": "bad",
+  "op-line3-b": "ok",
+  "op-line4-b": "ok",
+  "op-line5-b": "ok",
+  "u-grunt": "ok",
+  "u-hurt": "ok",
+  "u-kiai-1": "bad",
+  "u-kiai-2": "ok",
+  "u-kiai-3": "ok",
+  "u-r-call-1": "ok",
+  "u-r-call-2": "ok",
+  "u-transform": "ok",
+  "u-yell": "bad"
  }
 }
