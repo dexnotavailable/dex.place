@@ -48,24 +48,25 @@
     }
   },
   "letter": {
-    "about": "The letter she carves (a stand-in for the FX v2 loop's): which character (断 or 天, Dex 10-19; strokes in ult.ts LETTERS), its box (`size` H square, its bottom `low` H above the floor, its near edge `ahead` H in front of her), the slash storm (`slashes` cuts over `ticks`, each carving a piece of a stroke; `pieces` of them carve new pieces, the rest re-cut; the last one the long closing cut), the brush's thickness (a share of the box), how far above the letter's top she hangs before the dive. Never mirrored: facing left it moves to her left, the strokes stay as written.",
-    "char": "断",
-    "size": 9,
+    "about": "The letter she carves, synced to the FX v2 loop (lanes/fx/v2/PLAN.md, decided there: 天, 960 art px tall = 6.6 H; ~450 slashes over 3.2 s carving it roughly in stroke order, density building; then a closing sweep per stroke; then the slashes stop: a 0.5 s hold). Here: which character (天 or 断, from her R line 一筆――天を断つ; strokes in ult.ts LETTERS), its box (`size` H square, its bottom `low` H above the floor, its near edge `ahead` H in front of her), the storm (`slashes` cuts over `ticks`, each carving a piece of a stroke; a share `pieces` of them carve new pieces, the rest re-cut; the last `closing` are the sweeps, one per stroke `sweepGap` ticks apart), the brush's thickness (a share of the box), how far above the letter's top she hangs before the dive. Never mirrored: facing left it moves to her left, the strokes stay as written. A stand-in until the loop's r_flurry.",
+    "char": "天",
+    "size": 6.6,
     "low": 0.8,
     "ahead": 1.0,
-    "ticks": 200,
-    "slashes": 260,
+    "ticks": 192,
+    "slashes": 450,
     "pieces": 0.6,
     "slashLife": 4,
     "slashLen": [
       1.4,
       3.2
     ],
-    "thick": 0.075,
+    "thick": 0.085,
     "zenithAbove": 1.3,
-    "wallMargin": 0.6
+    "wallMargin": 0.6,
+    "sweepGap": 4
   },
-  "hold": 36,
+  "hold": 30,
   "dive": {
     "ticks": 12,
     "cap": 60,
@@ -85,7 +86,7 @@
     "visibleFrom": 6
   },
   "camera": {
-    "about": "The shots: world x at the frame's centre, world y on the anchor row (the anchor is that row's share of the frame's height). Zooms stay within the painted levels (2 = the close band) so the world stays crisp; the letter's pull-out goes down to 0.42 and the nuke's to 0.36 (lane C 10-19: below 1 she and her effects reduce onto her own grid). The call: a cut-in close on her, pushing in to the BOOM, craning up with the fire, settling as she coils. The flurry: a hard cut wide onto the letter, pulling out as it is carved. The stop: dead still. The dive: a push down after her onto the crater. The impact: the pull-out on the nuke. The reveal: back in on her. Reduced motion: hard cuts between held levels (2 for the call, 1 for the rest), no moves.",
+    "about": "The shots: world x at the frame's centre, world y on the anchor row (the anchor is that row's share of the frame's height). Zooms stay within the painted levels (2 = the close band) so the world stays crisp; the letter's pull-out goes down to 0.55 and the nuke's to 0.4 (the FX v2 loop's framing) (lane C 10-19: below 1 she and her effects reduce onto her own grid). The call: a cut-in close on her, pushing in to the BOOM, craning up with the fire, settling as she coils. The flurry: a hard cut wide onto the letter, pulling out as it is carved. The stop: dead still. The dive: a push down after her onto the crater. The impact: the pull-out on the nuke. The reveal: back in on her. Reduced motion: hard cuts between held levels (2 for the call, 1 for the rest), no moves.",
     "bars": 0.11,
     "barsIn": 8,
     "barsOut": 14,
@@ -98,17 +99,17 @@
       "craneUp": 0.3
     },
     "flurry": {
-      "zoom": 0.55,
-      "zoomEnd": 0.42,
+      "zoom": 0.64,
+      "zoomEnd": 0.55,
       "anchor": 0.5
     },
     "dive": {
-      "zoom": 0.5,
+      "zoom": 0.62,
       "anchor": 0.66,
-      "up": 2.8
+      "up": 2.4
     },
     "impact": {
-      "zoom": 0.36,
+      "zoom": 0.4,
       "anchor": 0.7
     },
     "reveal": {
@@ -192,5 +193,13 @@
     "bladeLen": 1.05,
     "ring": 1.35,
     "flash": 8
+  },
+  "fx": {
+    "about": "The FX v2 loop's effects (lanes/fx/v2/PLAN.md ids, played through game.fx.play when the game has them; until then the stand-ins in ultdraw.ts draw): callFire (her blue fire carpet, from the BOOM until she vanishes, at her feet), letter (the flurry: the letter carved by the slashes and the hold, at the letter's foot, never mirrored), dive (her line through the letter), nuke (at the crater), clear (the smoke clearing off her ult form).",
+    "callFire": "r_call_fire",
+    "letter": "r_flurry",
+    "dive": "r_dive_line",
+    "nuke": "r_nuke",
+    "clear": "r_reveal_clear"
   }
 }

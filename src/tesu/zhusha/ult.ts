@@ -33,7 +33,7 @@ export interface UltFile {
   };
   letter: {
     char: string; size: number; low: number; ahead: number; ticks: number; slashes: number; pieces: number;
-    slashLife: number; slashLen: [number, number]; thick: number; zenithAbove: number; wallMargin: number;
+    slashLife: number; slashLen: [number, number]; thick: number; zenithAbove: number; wallMargin: number; sweepGap: number;
   };
   hold: number;
   dive: { ticks: number; cap: number; flipFrom: number; lineLife: number };
@@ -50,6 +50,7 @@ export interface UltFile {
   shake: { boom: number; slash: number; last: number; dive: number; impact: number };
   punch: { press: number; boom: number; last: number; impact: number };
   cues: Record<string, string>;
+  fx: { callFire: string; letter: string; dive: string; nuke: string; clear: string };
   form: {
     reach: number; ahead: number;
     steps: { at: number; up: number; cross: boolean; blades: number }[];
@@ -136,13 +137,17 @@ export const letterStrokes = (): Stroke[] => LETTERS[ULT.letter.char] ?? LETTERS
 export interface Slash {
   at: number;
   stroke: number;
+  /** Which piece of the letter it cuts (an index into the storm's pieces; -1 for a sweep down a whole stroke). */
+  piece: number;
   u0: number;
   u1: number;
   ang: number;
   len: number;
   /** It carves its piece (the first slash on it); the rest re-cut. */
   carves: boolean;
-  /** The closing cut. */
+  /** A closing sweep down a whole stroke (one per stroke, at the end). */
+  sweep: boolean;
+  /** The last closing sweep: then the slashes stop. */
   last: boolean;
 }
 
@@ -169,10 +174,10 @@ const rnd = (i: number): number => { const a = Math.sin(i * 12.9898 + 78.233) * 
 /**
  * The storm: `count` slashes over `ticks`, each carving a piece of a stroke into existence (a share `pieces` of them
  * carve new pieces, the rest re-cut carved ones), from every direction. Not a wave: each stroke's pieces come in a wide
- * window that overlaps its neighbours', so the letter fills in everywhere at once, roughly in stroke order. The last
- * slash is the long closing cut down the last stroke.
+ * window that overlaps its neighbours', so the letter fills in everywhere at once, roughly in stroke order, and denser as
+ * it goes. Then a closing sweep down each stroke, `gap` ticks apart, the last on the storm's last tick.
  */
-export function storm(strokes: Stroke[], count: number, ticks: number, pieceShare: number, len: [number, number]): Slash[] {
+export function storm(strokes: Stroke[], count: number, ticks: number, pieceShare: number, len: [number, number], gap = 4): Slash[] {
   const lens = strokes.map(strokeLen), total = lens.reduce((a, b) => a + b, 0);
   const nPieces = Math.max(strokes.length, Math.round(count * pieceShare));
   const out: Slash[] = [];
@@ -181,28 +186,38 @@ export function storm(strokes: Stroke[], count: number, ticks: number, pieceShar
     const n = Math.max(1, Math.round((lens[s]! / total) * nPieces));
     for (let j = 0; j < n; j++) pieces.push({ s, u0: Math.max(0, j / n - 0.02), u1: Math.min(1, (j + 1) / n + 0.02) });
   });
-  const S = strokes.length, end = ticks - 6;
+  const S = strokes.length, end = ticks - 6 - S * gap;
+  // density builds: a slash's share of the storm u lands at end * u^0.8 (more of them late)
+  const when = (u: number): number => Math.round(Math.pow(Math.max(0, Math.min(1, u)), 0.8) * end);
   pieces.forEach((p, k) => {
     const c = ((p.s + 0.5) / S) * 0.7 + 0.05;
-    const at = Math.round(Math.max(0.02, Math.min(0.92, c + (rnd(k * 3 + 1) - 0.5) * 0.6)) * end);
+    const at = when(Math.max(0.02, Math.min(0.92, c + (rnd(k * 3 + 1) - 0.5) * 0.6)));
     // half the cuts run with the stroke (carving it), half across it from anywhere
     const a = along(strokes[p.s]!, p.u0), b = along(strokes[p.s]!, p.u1);
     const withIt = Math.atan2(b[1] - a[1], b[0] - a[0]);
     const ang = rnd(k * 3 + 2) < 0.5 ? withIt + (rnd(k * 7) - 0.5) * 0.5 : rnd(k * 5 + 3) * Math.PI;
-    out.push({ at, stroke: p.s, u0: p.u0, u1: p.u1, ang, len: len[0] + (len[1] - len[0]) * rnd(k * 11 + 4), carves: true, last: false });
+    out.push({ at, stroke: p.s, piece: k, u0: p.u0, u1: p.u1, ang, len: len[0] + (len[1] - len[0]) * rnd(k * 11 + 4), carves: true, sweep: false, last: false });
   });
   // a piece is carved by its first slash: the re-cuts come after it (never into thin air)
-  const carvedAt = new Map<string, number>();
-  for (const sl of out) carvedAt.set(`${sl.stroke}:${sl.u0}`, sl.at);
-  for (let i = out.length; i < count - 1; i++) {
-    const p = pieces[Math.floor(rnd(i * 13 + 5) * pieces.length)]!;
-    const after = carvedAt.get(`${p.s}:${p.u0}`) ?? 0;
-    const at = Math.round(after + 1 + (end - after - 1) * rnd(i * 17 + 6));
-    out.push({ at, stroke: p.s, u0: p.u0, u1: p.u1, ang: rnd(i * 19 + 7) * Math.PI, len: len[0] + (len[1] - len[0]) * rnd(i * 23 + 8), carves: false, last: false });
+  const carvedAt = out.map((sl) => sl.at);
+  for (let i = out.length; i < count - S; i++) {
+    const pi = Math.floor(rnd(i * 13 + 5) * pieces.length), p = pieces[pi]!;
+    const after = carvedAt[pi] ?? 0;
+    const at = Math.max(after + 1, when(after / end + (1 - after / end) * rnd(i * 17 + 6)));
+    out.push({ at, stroke: p.s, piece: pi, u0: p.u0, u1: p.u1, ang: rnd(i * 19 + 7) * Math.PI, len: len[0] + (len[1] - len[0]) * rnd(i * 23 + 8), carves: false, sweep: false, last: false });
   }
-  const ls = strokes.length - 1, a = along(strokes[ls]!, 0), b = along(strokes[ls]!, 1);
-  out.push({ at: ticks - 1, stroke: ls, u0: 0, u1: 1, ang: Math.atan2(b[1] - a[1], b[0] - a[0]), len: len[1] * 2, carves: false, last: true });
+  // the closing sweeps, one down each stroke in stroke order, the last on the storm's last tick
+  strokes.forEach((st, k) => {
+    const a = along(st, 0), b = along(st, 1);
+    out.push({ at: ticks - 1 - (S - 1 - k) * gap, stroke: k, piece: -1, u0: 0, u1: 1, ang: Math.atan2(b[1] - a[1], b[0] - a[0]), len: len[1] * 2, carves: false, sweep: true, last: k === S - 1 });
+  });
   return out.sort((p, q) => p.at - q.at);
+}
+
+/** The game's effects (game.ts wires game.fx): whether one is in, and playing one at a world point. */
+export interface UltFx {
+  has(id: string): boolean;
+  play(id: string, o: { x?: number; y?: number; facing?: number; attach?: "world" | "her"; delay?: number }): { stop(): void };
 }
 
 /** Where R happens: where she pressed, her facing, the letter's box (world px), the floor under it, the zenith. */
@@ -290,6 +305,10 @@ export class UltDirector {
   beat = { line: 0, boom: 0, fire: 0, draw: 0, coil: 0, vanish: 0, storm: 0, pose: 0 };
   /** Whether each beat's drawing is in (else the white box stands in). */
   art = { call: false, flurry: false, reveal: false };
+  /** The game's effects (null: tests, or none wired) and which of R's are in (else ultdraw.ts's stand-ins draw). */
+  fx: UltFx | null = null;
+  real = { callFire: false, letter: false, dive: false, nuke: false, clear: false };
+  private callFire: { stop(): void } | null = null;
   private cutNext = false;
   private lastShot: Shot | null = null;
   /** Where a phase's camera move starts: the last shot of the phase before (moves never jump). */
@@ -322,7 +341,10 @@ export class UltDirector {
       impact: ULT.impact.ticks,
       reveal: clipLen(reveal) ?? C.r_reveal,
     };
-    this.slashes = storm(letterStrokes(), Lt.slashes, Lt.ticks, Lt.pieces, Lt.slashLen);
+    this.slashes = storm(letterStrokes(), Lt.slashes, Lt.ticks, Lt.pieces, Lt.slashLen, Lt.sweepGap);
+    const FX = ULT.fx, has = (id: string): boolean => !!this.fx?.has(id);
+    this.real = { callFire: has(FX.callFire), letter: has(FX.letter), dive: has(FX.dive), nuke: has(FX.nuke), clear: has(FX.clear) };
+    this.callFire = null;
     this.cut = 0;
     this.stormT = -1;
     this.peel = 0;
@@ -384,10 +406,12 @@ export class UltDirector {
         say(c, "hush", 1);
       } else if (p === "dive") {
         say(c, "dive", 1);
+        if (this.real.dive) this.fx!.play(ULT.fx.dive, { x: st.gx, y: st.floor, facing: 1 });
         c.shake(ULT.shake.dive);
       } else if (p === "reveal") {
         c.enterForm();
         say(c, "reveal", 1);
+        if (this.real.clear) this.fx!.play(ULT.fx.clear, { x: b.x, y: b.y, facing: f });
       }
     }
     const t = this.t;
@@ -401,6 +425,7 @@ export class UltDirector {
         if (t === K.line) say(c, "line", 1);
         if (t === K.boom) {
           say(c, "boom", 1);
+          if (this.real.callFire) this.callFire = this.fx!.play(ULT.fx.callFire, { attach: "her", facing: f });
           c.shake(ULT.shake.boom);
           s.camera.zoomPunch(ULT.punch.boom);
           s.vfx.spawn("burst.red", { x: b.x, y: b.y - 0.55 * H, facing: f, scale: 1.3 });
@@ -419,10 +444,16 @@ export class UltDirector {
         z.anim = { role: "r_flurry", t: Math.min(t, K.storm), hitAt: null, hidden: gone, flame: 0 };
         if (t === K.vanish) {
           say(c, "vanish", 0.9);
+          this.callFire?.stop();
+          this.callFire = null;
           s.vfx.spawn("smoke.dark", { x: b.x, y: b.y - 0.4 * H, facing: f });
           s.vfx.spawn("embers.gold", { x: b.x, y: b.y - 0.4 * H, facing: f, scale: 1.4 });
         }
-        if (t === K.storm) this.stormT = 0;
+        if (t === K.storm) {
+          this.stormT = 0;
+          // the letter at its foot, never mirrored (facing 1: the effect is drawn as written)
+          if (this.real.letter) this.fx!.play(ULT.fx.letter, { x: st.gx, y: st.top + st.size, facing: 1 });
+        }
         if (this.stormT >= 0) {
           const S = this.slashes;
           let n = 0;
@@ -432,7 +463,10 @@ export class UltDirector {
               say(c, "last", 1);
               c.shake(ULT.shake.last);
               s.camera.zoomPunch(ULT.punch.last);
-            } else if (this.cut % 6 === 0) say(c, "slash", 0.5 + 0.3 * rnd(this.cut));
+            } else if (sl.sweep) {
+              say(c, "slash", 1);
+              c.shake(ULT.shake.last * 0.6);
+            } else if (this.cut % 10 === 0) say(c, "slash", 0.5 + 0.3 * rnd(this.cut));
             n++;
             this.cut++;
           }
@@ -496,6 +530,8 @@ export class UltDirector {
 
   /** R is over (control back, or cut short): the camera goes back to the world, the bars slide out. */
   end(): void {
+    this.callFire?.stop();
+    this.callFire = null;
     this.phase = null;
     this.next = null;
     this.shot = null;
@@ -548,6 +584,7 @@ export class UltDirector {
     s.camera.zoomPunch(ULT.punch.impact);
     // side-on (Dex 10-19: no rings on the ground): rock thrown up, dust; the flash, the flames and the column are
     // ultdraw.ts's stand-ins
+    if (this.real.nuke) this.fx!.play(ULT.fx.nuke, { x: b.x, y: b.y, facing: 1 });
     s.vfx.spawn("debris.stone", { x: b.x, y: b.y - 0.2 * H, facing: 1, scale: 2.4 });
     s.vfx.spawn("debris.stone", { x: b.x - 2 * H, y: b.y - 0.1 * H, facing: -1, scale: 1.6 });
     s.vfx.spawn("debris.stone", { x: b.x + 2 * H, y: b.y - 0.1 * H, facing: 1, scale: 1.6 });

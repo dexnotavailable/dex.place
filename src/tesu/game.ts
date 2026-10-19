@@ -295,6 +295,8 @@ export class TesuGame {
       celebrate: (p) => this.onCelebrate(p),
     });
     this.feel.onSound = (id, v) => this.sound.sfx(id, v);
+    // R plays the FX loop's effects when they are in (zhusha/ult.ts; its stand-ins draw until then)
+    this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o) };
     // the ult form warps around the court's champion while a bout runs (zhusha/ultform.ts)
     this.player.uf.foe = () => {
       const st = this.court.state;

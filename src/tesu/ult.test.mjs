@@ -189,10 +189,14 @@ test("ult: the storm carves the letter piece by piece: hundreds of slashes from 
   // every piece is carved once, by its first slash; re-cuts come after it
   const carved = new Map();
   for (const s of S) {
-    const k = `${s.stroke}:${s.u0}`;
-    if (s.carves) { assert.ok(!carved.has(k)); carved.set(k, s.at); }
-    else if (!s.last) assert.ok(carved.has(k) && s.at > carved.get(k), "a re-cut follows its carve");
+    if (s.carves) { assert.ok(!carved.has(s.piece)); carved.set(s.piece, s.at); }
+    else if (!s.sweep) assert.ok(carved.has(s.piece) && s.at > carved.get(s.piece), "a re-cut follows its carve");
   }
+  // then a closing sweep down each stroke, in stroke order, the last on the storm's last tick; nothing after it
+  const sweeps = S.filter((s) => s.sweep);
+  assert.deepEqual(sweeps.map((s) => s.stroke), letterStrokes().map((_, i) => i));
+  assert.equal(sweeps[sweeps.length - 1].at, ULT.letter.ticks - 1);
+  assert.ok(S.filter((s) => !s.sweep).every((s) => s.at < sweeps[0].at), "the storm ends before the sweeps");
   // not a wave: in the storm's first third, pieces of most strokes are already being carved
   const early = new Set(S.filter((s) => s.carves && s.at < ULT.letter.ticks / 3).map((s) => s.stroke));
   assert.ok(early.size >= Math.ceil(letterStrokes().length * 0.5), `strokes started early: ${early.size}`);
@@ -236,6 +240,30 @@ test("ult: control is back after the nuke: a press during the reveal plays at on
   assert.equal(z.state, "move");
   assert.equal(z.lastAction, "m1_1");
   assert.ok(z.ultForm, "still in the form");
+});
+
+test("ult: the FX v2 loop's effects play on the beats when the game has them (the letter as written, never mirrored); the stand-ins step aside", async () => {
+  const Zhusha = await loadZ();
+  const z = new Zhusha(host(), [0, 0]);
+  const played = [], stopped = [];
+  z.r.fx = { has: () => true, play: (id, o) => { played.push({ id, ...o, T: z.r.T, phase: z.r.phase }); return { stop: () => stopped.push(id) }; } };
+  z.facing = -1;
+  const inp = new FakeInput(), w = flat();
+  step(z, inp, w, 5);
+  inp.press("ult");
+  for (let i = 0; i < 900 && (i < 3 || z.state === "ult"); i++) step(z, inp, w);
+  const F = ULT.fx;
+  assert.deepEqual(played.map((p) => p.id), [F.callFire, F.letter, F.dive, F.nuke, F.clear]);
+  assert.ok(Object.values(z.r.real).every(Boolean), "every stand-in steps aside");
+  const by = (id) => played.find((p) => p.id === id);
+  assert.equal(by(F.callFire).attach, "her");
+  assert.deepEqual(stopped, [F.callFire], "her fire carpet ends as she vanishes");
+  const st = z.r.stage;
+  assert.deepEqual([by(F.letter).x, by(F.letter).y, by(F.letter).facing], [st.gx, st.top + st.size, 1], "at the letter's foot, as written (facing left too)");
+  assert.ok(st.gx < 0, "facing left: the letter is to her left");
+  assert.equal(by(F.dive).phase, "dive");
+  assert.deepEqual([by(F.nuke).x, by(F.nuke).y], [st.gx, 0], "the nuke at the crater");
+  assert.equal(by(F.clear).phase, "reveal");
 });
 
 test("ult form: M1 warps her around a foe (ahead, across facing back, above, back off) and summons ghost blades that strike on the ghost hit", async () => {

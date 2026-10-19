@@ -60,13 +60,13 @@ const rnd = (i: number): number => { const a = Math.sin(i * 91.7 + 3.1) * 43758.
 /** Behind her: the letter and the dive's line. */
 export function drawUltBack(r: WorldRenderer, z: Zhusha): void {
   letter(r, z);
-  if (z.streak) diveLine(r, z);
+  if (z.streak && !z.r.real.dive) diveLine(r, z);
 }
 
 /** In front of her: the storm's slashes, the nuke, the ghost blades, the warps' slits. */
 export function drawUltFront(r: WorldRenderer, z: Zhusha): void {
   slashes(r, z);
-  if (z.smoke) nuke(r, z.smoke);
+  if (z.smoke && !z.r.real.nuke) nuke(r, z.smoke);
   blades(r, z);
   flashes(r, z);
 }
@@ -74,7 +74,7 @@ export function drawUltFront(r: WorldRenderer, z: Zhusha): void {
 /** The letter as carved so far: each carved piece white-hot, cooling to vermilion ink with her blue fire along it. */
 function letter(r: WorldRenderer, z: Zhusha): void {
   const d = z.r, st = d.stage;
-  if (!st || !d.active || d.cut === 0 || d.phase === "impact" || d.phase === "reveal") return;
+  if (!st || d.real.letter || !d.active || d.cut === 0 || d.phase === "impact" || d.phase === "reveal") return;
   const strokes = letterStrokes(), T = d.stormT, peel = d.peel;
   const th = Math.max(6, Math.round(st.size * ULT.letter.thick));
   // each carved piece as segments (overlapping its neighbours so a stroke reads whole), how far it has shattered
@@ -105,23 +105,24 @@ function letter(r: WorldRenderer, z: Zhusha): void {
 function slashes(r: WorldRenderer, z: Zhusha): void {
   const d = z.r, st = d.stage;
   // (into the stop: the closing cut fades out over its first ticks)
-  if (!st || (d.phase !== "flurry" && d.phase !== "hold") || d.stormT < 0) return;
+  if (!st || d.real.letter || (d.phase !== "flurry" && d.phase !== "hold") || d.stormT < 0) return;
   const strokes = letterStrokes(), T = d.stormT, life = ULT.letter.slashLife, scale = st.size / (7 * H);
   for (let i = d.cut - 1; i >= 0; i--) {
     const sl = d.slashes[i]!;
     const age = T - sl.at;
-    if (age >= life + (sl.last ? 6 : 0)) {
+    if (age >= life + (sl.sweep ? 6 : 0)) {
       if (age > life + 8) break;
       continue;
     }
     const s = strokes[sl.stroke]!;
     const [cx, cy] = letterAt(st, ...along(s, (sl.u0 + sl.u1) / 2));
-    const L = sl.last ? st.size * 1.3 : sl.len * H * scale;
-    const k = age / (life + (sl.last ? 6 : 0));
+    const big = sl.sweep;
+    const L = big ? st.size * 1.1 : sl.len * H * scale;
+    const k = age / (life + (big ? 6 : 0));
     // the streak runs on past its piece as it fades (a cut that already happened)
     const run = (0.15 + 0.5 * k) * L, ux = Math.cos(sl.ang), uy = Math.sin(sl.ang);
     const x0 = cx - ux * (L * 0.5 - run * 0.3), y0 = cy - uy * (L * 0.5 - run * 0.3), x1 = cx + ux * (L * 0.5 + run), y1 = cy + uy * (L * 0.5 + run);
-    const th = (sl.last ? 22 : 9) * (1 - k * 0.7);
+    const th = (big ? 22 : 9) * (1 - k * 0.7);
     seg(r, x0, y0, x1, y1, th + 6, AZURE, 1 - k);
     seg(r, x0, y0, x1, y1, Math.max(2, th * 0.45), WHITE, 1 - k * 0.6);
     if (age < 1) quad(r, cx, cy, th * 2.4, th * 2.4, sl.ang, WHITE, 1);
