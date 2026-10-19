@@ -299,6 +299,29 @@ test("the corner is a slot in the header (right of World, left of Menu); the mar
   assert.match(page, /<main id="main" class="main" tabindex="-1"><div class="band band--l"><div class="page">x<\/div><div class="band__win" data-window="palace"/);
 });
 
+test("Zhusha on the jetty is her own idle drawing at her play scale, the ofuda landing on her hat's tie (no white box)", async () => {
+  const { FIGURE, HER_ART, HAT_TIE } = await import("./motion/her.ts");
+  const { FIGURE_H } = await import("../tesu/zhusha/contract.ts");
+  const { H } = await import("../tesu/config.ts");
+  const { HAT_TIE: ENGINE_TIE } = await import("../tesu/opening/ofuda.ts");
+  const feel = JSON.parse(readFileSync(new URL("../tesu/zhusha/feel.json", import.meta.url), "utf8"));
+  // the same numbers the game draws her with (mirrored so the page's bundle carries none of the engine)
+  assert.equal(FIGURE, FIGURE_H);
+  assert.equal(HER_ART, (H * feel.charScale) / FIGURE_H);
+  assert.deepEqual([...HAT_TIE], [...ENGINE_TIE]);
+  // her idle is in the game's assets: a plain loop, pivot at her soles
+  const idle = JSON.parse(readFileSync(new URL("../../public/assets/zhusha/idle/anim.json", import.meta.url), "utf8"));
+  assert.equal(idle.figure_h, 128);
+  assert.ok(idle.frames.length >= 1 && idle.pivot.length === 2 && !idle.idle_variant);
+  // the stand-in is gone from the page: no white box, no drawn hat band or eye
+  const css = readFileSync(new URL("./styles/column.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /\.jetty__her \{[^}]*background: #fff/);
+  assert.doesNotMatch(css, /\.jetty__her::(before|after)/);
+  // the drift lands on the hat's tie (motion/sky.ts places .jetty__hat there)
+  const col = readFileSync(new URL("./motion/column.ts", import.meta.url), "utf8");
+  assert.match(col, /her\.querySelector\("\.jetty__hat"\)/);
+});
+
 test("the jetty's column: the question, the way in, and an honest line while the world loads", () => {
   const j = jettySection();
   assert.match(j, /<h2 class="jetty__ask" id="jetty-title">want to explore the world we made\?<\/h2>/);
