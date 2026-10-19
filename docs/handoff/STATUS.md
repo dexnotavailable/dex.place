@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T11:58:45.394Z (19/10/2026, 18:58:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T13:08:45.297Z (19/10/2026, 20:08:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_93dbdace-3fa — last activity 48 min ago
+### wf_93dbdace-3fa — last activity 118 min ago
 4 agents: 3 done, 0 running or stopped mid-way, 1 failed.
 
 - **setup** (done): 
@@ -20,7 +20,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r1** (failed)
 - **w2:r1** (done): Round 1 worker 2 is committed. The biggest problem, the tile-grid cliffs, is gone in tesu, tesu-720, ease-in and the play frames. The gates now read as torii seen from the side. The lake no longer shows as a tray from 1/4 zoom out, and the palace stands whole in the 1280 film frame. What changed: - **Cliffs (W2-1, W2-8, W2-12):** a new face model, `strata.ts`, used when an `op.rock` piece names a style. The face is b
 
-### wf_5cebc05c-deb — last activity 48 min ago
+### wf_5cebc05c-deb — last activity 118 min ago
 4 agents: 2 done, 0 running or stopped mid-way, 2 failed.
 
 - **setup** (done): 
@@ -28,7 +28,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r1** (failed)
 - **w2:r1** (failed)
 
-### wf_286da28b-ad1 — last activity 49 min ago
+### wf_286da28b-ad1 — last activity 119 min ago
 4 agents: 2 done, 0 running or stopped mid-way, 2 failed.
 
 - **setup** (done): 
@@ -36,7 +36,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r1** (failed)
 - **w2:r1** (failed)
 
-### wf_6eb91aef-0bd — last activity 50 min ago
+### wf_6eb91aef-0bd — last activity 120 min ago
 8 agents: 6 done, 0 running or stopped mid-way, 2 failed.
 
 - **setup** (done): 
