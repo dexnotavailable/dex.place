@@ -735,3 +735,33 @@ test("combat run (Dex 10-20): the normal run turns over ~15% faster, its planted
   assert.ok(drift(R.playRate) < 0.6 * drift(1.15), `drift ${drift(R.playRate)} px vs ${drift(1.15)} before`);
   assert.ok(drift(R.playRate) < 5, `${drift(R.playRate)} px per step`);
 });
+
+test("combat FX v2 (Dex 10-20: ship the effects): built effects replace the stand-ins where the game has them", async () => {
+  const Zhusha = await loadZ();
+  const run = (press, foes = []) => {
+    const h = host();
+    const spawned = [];
+    h.vfx.spawn = (id) => spawned.push(id);
+    h.foes = () => foes;
+    const z = new Zhusha(h, [0, 0]);
+    z.clipOf = liveClip;
+    const played = [];
+    z.fx = { has: () => true, play: (id, o) => played.push({ id, ...o }) };
+    const inp = new FakeInput();
+    step(z, inp, 5);
+    inp.press(press);
+    const hits = new Set();
+    for (let i = 0; i < 40; i++) { step(z, inp); for (const { hb } of z.hitboxes()) if (hb.fxHit) hits.add(hb.fxHit); }
+    return { played, spawned, hits, z };
+  };
+  const q = run("skill");
+  assert.ok(q.played.some((p) => p.id === "q_cut" && p.y > 0), "the Q's cut at her (dipped) soles");
+  assert.ok(!q.spawned.includes("burst.big"), "its stand-in bursts step aside");
+  const K = 96 * FEEL.charScale;
+  const e = run("e", [{ x: 3 * K, y: -1.6 * K, w: 120, h: 1.6 * K }]);
+  for (const id of ["e_muzzle", "e_shot", "e_hit"]) assert.ok(e.played.some((p) => p.id === id), id);
+  assert.ok(!e.spawned.includes("streak.thrust"));
+  assert.deepEqual([...run("m1").hits], ["impact_slash_a"], "m1_1 leaves the light impact slash");
+  const d = run("m2");
+  assert.ok(d.played.some((p) => p.id === "dust_roll_s"), "the dash's skid rolls dust");
+});

@@ -174,8 +174,10 @@ export class Props {
       this.host.vfx.spawn("sparks.hit", { x: ov.x + ov.w / 2, y: ov.y + ov.h / 2, facing: dir });
       return;
     }
-    // the weight: a short stop, a flash, a nudge of the frame
+    // the weight: a short stop, a flash, a nudge of the frame, FX v2's impact slash where it connects
     this.host.feel.freeze(Math.max(3, Math.min(8, hb.hitstop + 1)));
+    const fxHit = (hb as ZHit).fxHit;
+    if (fxHit) this.host.player.playFx(fxHit, { x: ov.x + ov.w / 2, y: ov.y + ov.h / 2, facing: dir });
     l.sprite.white = 1;
     l.flash = 2;
     l.hp -= 1;
@@ -214,6 +216,8 @@ export class Props {
     const base = this.bottomOf(l);
     this.host.feel.sound(`${m}.break`, quiet ? 0.6 : 1);
     if (!quiet) this.host.camera.shake(Math.min(6, 2.5 * force), 10);
+    // the Q / E's destruction (force 2+): the world ignites where it stood (FX v2: explosion, pivot = the ground under it)
+    if (force >= 1.8) this.host.player.playFx(l.bounds[2] - l.bounds[0] > 60 ? "explosion" : "ignite_flash", { x: l.x + (l.bounds[0] + l.bounds[2]) / 2, y: base, facing: dir });
     this.host.vfx.spawn("dust.kick", { x: l.x, y: base, facing: dir });
     this.host.vfx.spawn(m === "paper" ? "feathers" : m === "metal" ? "sparks.heavy" : "debris.stone", { x: l.x, y: (l.y + this.boxOf(l).y + base) / 2, facing: dir });
     if (l.d.cls === "permanent") this.host.setFlag(`broke:${l.d.id}`, true);
