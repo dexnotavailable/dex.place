@@ -1,0 +1,151 @@
+{
+ "id": "uf_skill_q",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  143,
+  163
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 10
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 12
+  },
+  {
+   "file": "f002.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 14
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 24
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 25
+  },
+  {
+   "file": "f005.png",
+   "ticks": 6,
+   "fig": 128,
+   "src": 26
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 27
+  },
+  {
+   "file": "f007.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 28
+  },
+  {
+   "file": "f008.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 29
+  },
+  {
+   "file": "f009.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 30
+  },
+  {
+   "file": "f010.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 32
+  },
+  {
+   "file": "f011.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 34
+  },
+  {
+   "file": "f012.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 38
+  },
+  {
+   "file": "f013.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 42
+  },
+  {
+   "file": "f014.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 46
+  },
+  {
+   "file": "f015.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 48
+  },
+  {
+   "file": "f016.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 50
+  },
+  {
+   "file": "f017.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 53
+  },
+  {
+   "file": "f018.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 56
+  },
+  {
+   "file": "f019.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 60
+  },
+  {
+   "file": "f020.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 64
+  },
+  {
+   "file": "f021.png",
+   "ticks": 6,
+   "fig": 128,
+   "src": 70
+  }
+ ],
+ "loop": false,
+ "hits": [
+  5,
+  9,
+  14
+ ],
+ "source": "h3-L-uf_skill_q-A-s3000-fb947d",
+ "notes": "kit v1.8 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f000: the effect cut by the frame edge continued as a soft falloff (40 px), 2 px of H3's grey-green contact shadow on the floor removed; f001: the effect cut by the frame edge continued as a soft falloff (40 px), 1 px of H3's grey-green contact shadow on the floor removed; f002: the effect cut by the frame edge continued as a soft falloff (40 px), 1 px of H3's grey-green contact shadow on the floor removed; f003: the effect cut by the frame edge continued as a soft falloff (40 px), 2 px of H3's grey-green contact shadow on the floor removed; f004: the effect cut by the frame edge continued as a soft falloff (40 px), 17 px of H3's grey-green contact shadow on the floor removed; f005: the effect cut by the frame edge continued as a soft falloff (40 px), 2 px of H3's grey-green contact shadow on the floor removed; 1 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f006: the effect cut by the frame edge continued as a soft falloff (40 px), 4 px of H3's grey-green contact shadow on the floor removed; 23 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f007: the effect cut by the frame edge continued as a soft falloff (40 px), 1 px of H3's floor shadow streak removed, 24 px of H3's grey-green contact shadow on the floor removed; 98 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f008: the effect cut by the frame edge continued as a soft falloff (40 px), 4 px of H3's floor shadow streak removed, 11 px of H3's grey-green contact shadow on the floor removed; 294 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -1 px so her shoes stand on the ground row; f009: the effect cut by the frame edge continued as a soft falloff (40 px), 629 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f010: the effect cut by the frame edge continued as a soft falloff (40 px), 1 px of H3's grey-green contact shadow on the floor removed; 519 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -1 px so her shoes stand on the ground row; f011: the effect cut by the frame edge continued as a soft falloff (40 px), 12 px of H3's floor shadow streak removed, 2 px of H3's grey-green contact shadow on the floor removed; 452 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -3 px so her shoes stand on the ground row; f012: the effect cut by the frame edge continued as a soft falloff (40 px), 50 px of H3's grey-green contact shadow on the floor removed; 17 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -1 px so her shoes stand on the ground row; f013: the effect cut by the frame edge continued as a soft falloff (40 px), 37 px of H3's grey-green contact shadow on the floor removed; 32 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -1 px so her shoes stand on the ground row; f014: the effect cut by the frame edge continued as a soft falloff (40 px), 56 px of H3's grey-green contact shadow on the floor removed; 6 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -1 px so her shoes stand on the ground row; f015: the effect cut by the frame edge continued as a soft falloff (40 px), 25 px of H3's grey-green contact shadow on the floor removed; 98 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted +1 px so her shoes stand on the ground row; f016: the effect cut by the frame edge continued as a soft falloff (40 px), 3 px of H3's floor shadow streak removed, 38 px of H3's grey-green contact shadow on the floor removed; 122 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop), shifted -1 px so her shoes stand on the ground row; f017: the effect cut by the frame edge continued as a soft falloff (40 px), 49 px of H3's floor shadow streak removed, 43 px of H3's grey-green contact shadow on the floor removed; 14 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f018: the effect cut by the frame edge continued as a soft falloff (40 px), 36 px of H3's floor shadow streak removed, 2 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f019: the effect cut by the frame edge continued as a soft falloff (40 px), 3 px of H3's grey-green contact shadow on the floor removed; 2 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f020: the effect cut by the frame edge continued as a soft falloff (40 px), 3 px of H3's grey-green contact shadow on the floor removed; 1 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f021: the effect cut by the frame edge continued as a soft falloff (40 px), 4 px of H3's grey-green contact shadow on the floor removed; 1 px of the sparks' faint glow haze dropped (source within 0.08 of the backdrop); f003: 1 px of floor specks under / at her shoes dropped; f012: 1 px of floor specks under / at her shoes dropped; f013: 2 px of floor specks under / at her shoes dropped; f014: 6 px of floor specks under / at her shoes dropped; f015: 4 px of floor specks under / at her shoes dropped; f016: 6 px of floor specks under / at her shoes dropped; f017: 7 px of floor specks under / at her shoes dropped"
+}

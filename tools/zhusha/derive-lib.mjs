@@ -1,16 +1,16 @@
 // Shared by tools/zhusha/derive.mjs and the tests: derives every slotted attack (the roles feel.json times as moves,
-// in both forms) from public/assets/zhusha/<slot>/ with src/tesu/zhusha/derive.ts, and prints derived.json's text.
+// in both forms) and the dash (its feet: Dex's ground burst) from public/assets/zhusha/<slot>/ with src/tesu/zhusha/derive.ts, and prints derived.json's text.
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { deriveSlot } from "../../src/tesu/zhusha/derive.ts";
 import { readPng } from "./slotin-lib.mjs";
 
-/** The attack slots present in the game (every slot a move role plays, normal and ult form), sorted. */
+/** The slots derived (every slot a move role or the dash plays, normal and ult form, that is slotted), sorted. */
 export function attackSlots(repo) {
   const feel = JSON.parse(readFileSync(join(repo, "src/tesu/zhusha/feel.json"), "utf8"));
   const slots = JSON.parse(readFileSync(join(repo, "src/tesu/zhusha/slots.json"), "utf8"));
   const out = new Set();
-  for (const role of Object.keys(feel.moves)) {
+  for (const role of [...Object.keys(feel.moves), "dash"]) {
     const r = slots.roles[role];
     for (const id of [r?.normal, r?.ult]) if (id && existsSync(join(repo, "public/assets/zhusha", id, "anim.json"))) out.add(id);
   }

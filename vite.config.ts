@@ -16,6 +16,10 @@ export default defineConfig({
     emptyOutDir: true,
     // Every target browser has native modulepreload; skip the polyfill.
     modulePreload: { polyfill: false },
+    // Fonts are never inlined into the stylesheet: the body face's ~120 small Japanese subsets were going in as base64
+    // (70 KB gzip of a 92 KB sheet, render-blocking, on every page, for glyphs a page rarely uses); as files, a page
+    // fetches only the subsets its text needs (unicode-range), and the Latin one is preloaded (build/plugin.ts).
+    assetsInlineLimit: (file: string) => (/\.(woff2?|ttf|otf)$/.test(file) ? false : undefined),
     rolldownOptions: {
       input: {
         main: page("./index.html"),

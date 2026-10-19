@@ -21,9 +21,11 @@ import type { SpawnOptions } from "../../lab/engine/vfx.ts";
 import type { WorldBox } from "../../lab/game/events.ts";
 import type { Body } from "../collide.ts";
 import { H } from "../config.ts";
-import type { AnimDef } from "./contract.ts";
+import { timeline, type AnimDef } from "./contract.ts";
 import type { DerivedSlot, Rect } from "./derive.ts";
-import { resolveMove, windClock, type BreakDef, type HitDef, type MoveDef, type ResolvedMove, type Weight } from "./timing.ts";
+import { lockEase, lockTarget, resolveMove, windClock, type BreakDef, type HitDef, type MoveDef, type ResolvedMove, type Weight } from "./timing.ts";
+import { UltDirector, type UltCtx, type UltPhase } from "./ult.ts";
+import { UltForm, type FormCtx } from "./ultform.ts";
 import { artPx, checkUnits, drawnH, runHps } from "./units.ts";
 
 export interface FeelFile {
@@ -33,7 +35,11 @@ export interface FeelFile {
   run: { mps: number; ultMps: number; accelTicks: number; stopTicks: number; turnTicks: number; airAccelTicks: number; airStopTicks: number; stopAnimFrom: number };
   jump: { height: number; riseTicks: number; fallGravity: number; maxFall: number; cut: number; hangSpeed: number; hangGravity: number; coyote: number; buffer: number; airJumps: number; airJumpHeight: number; fastFall: number; fastFallMax: number };
   land: { squashFrom: number; heavyFrom: number; heavyShake: number };
-  dash: { distance: number; ticks: number; rampTicks: number; curve: number; iframes: number; cooldown: number; airDashes: number; attackFrom: number; jumpCarry: number; keepRun: number };
+  dash: {
+    distance: number; ticks: number; rampTicks: number; curve: number; iframes: number; cooldown: number; airDashes: number; attackFrom: number; jumpCarry: number; keepRun: number;
+    airHold: number; airGravity: number; skidFrom: number; skidDustEvery: number;
+    clips: Record<string, { keys: Record<string, number>; skid: number }>;
+  };
   buffer: { attack: number; skill: number; dash: number; chainGrace: number };
   weights: Record<Weight, { hitstop: number; shake: number; punch: number; flash: number }>;
   shakePx: number;
@@ -112,10 +118,12 @@ export interface ZhushaHost {
   vfx: { spawn(id: string, o: SpawnOptions): void };
   feel: { freeze(n: number): void; slowmo(f: number, d: number): void; impactFrame(m: "invert" | "mono", d: number): void; sound(id: string, v?: number): void; readonly reducedMotion: boolean };
   camera: { shake(a: number, d: number): void; zoomPunch(steps: number): void };
+  /** Her foes' bodies now (world boxes: the court's champion), for m1_3's lock-on; none: she lunges straight. */
+  foes?(): WorldBox[];
 }
 
 export type State = "free" | "dash" | "move" | "hurt" | "down" | "dead" | "ult" | "exit";
-export type UltPhase = "call" | "flurry" | "rise" | "zenith" | "dive" | "smoke" | "transform" | "reveal";
+export type { UltPhase };
 
 /** The current swing, as props.ts and court.ts read it (hit groups each target once; `hit` once it connected). */
 export interface Swing {
@@ -155,7 +163,7 @@ interface Ghost { x: number; y: number; lean: number; life: number; max: number;
 const M1 = ["m1_1", "m1_2", "m1_3", "m1_4"] as const;
 /** A move's return-to-rest role (slots.json), played after its own clip ends while she stands. */
 const TAILS: Record<string, string | null> = { m1_1: "m1_1_ret", m1_2: "m1_2_ret", m1_3: "m1_3_ret", m1_4: "m1_4_ret", skill_q: null, e_tap: null };
-const RETURNS = new Set(["m1_1_ret", "m1_2_ret", "m1_3_ret", "m1_4_ret", "run_stop"]);
+const RETURNS = new Set(["m1_1_ret", "m1_2_ret", "m1_3_ret", "m1_4_ret", "run_stop", "dash"]);
 
 export class Zhusha {
   readonly body: Body;
@@ -180,8 +188,6 @@ export class Zhusha {
   /** Hurt flash ticks; invulnerable ticks. */
   flash = 0;
   invuln = 0;
-  /** R's camera pull-out (a zoom the framing should not exceed), null when none. */
-  private ultZoom: number | null = null;
   /** The Q's pull-out on the exploded area: the blast's middle, the move's start, ticks left. */
   private qCam: { x: number; x0: number; t: number } | null = null;
   /** The last action taken (debug). */
@@ -194,6 +200,9 @@ export class Zhusha {
   ink = 0;
   /** R's smoke cloud after the impact (draw.ts), ticks into it and how long it lasts. */
   smoke: { x: number; y: number; t: number; life: number } | null = null;
+  /** R, directed (ult.ts: the timeline, the camera's shots, the letterbox); the ult form's still idle and ghost blades (ultform.ts). */
+  readonly r = new UltDirector();
+  readonly uf = new UltForm();
   /** Set by the drawing side (anims.ts): has this anim's clip played out (true with no drawing)? Does a role have one? */
   clipDone: (a: AnimState, ult: boolean) => boolean = () => true;
   hasRole: (role: string, ult: boolean) => boolean = () => false;
@@ -205,8 +214,14 @@ export class Zhusha {
   readonly cueLog: Cue[] = [];
 
   private host: ZhushaHost;
-  /** The move playing: `carry` is her speed along it that is not her planted foot's (a lunge's or recoil's, momentum). */
-  private move: { id: string; def: ResolvedMove; startX: number; startY: number; dir: 1 | -1; fxDone: Set<number>; landed: boolean; carry: number } | null = null;
+  /**
+   * The move playing: `carry` is her speed along it that is not her planted foot's (a lunge's or recoil's, momentum);
+   * `lock` is m1_3's lunge: from x0, `travel` px along the move, homing on a foe (`foe`, last seen centred at fx).
+   */
+  private move: {
+    id: string; def: ResolvedMove; startX: number; startY: number; dir: 1 | -1; fxDone: Set<number>; landed: boolean; carry: number;
+    lock: { x0: number; travel: number; foe: boolean; fx: number } | null;
+  } | null = null;
   private moveStart = -9999;
   private chainIdx = -1;
   private chainEnd = -9999;
@@ -228,8 +243,8 @@ export class Zhusha {
   private wasRunning = false;
   private tick = 0;
   private lastHits = 0;
-  private ult: { x0: number; y0: number; zx: number; zy: number; cut: number; fwd: number; floor: number } = { x0: 0, y0: 0, zx: 0, zy: 0, cut: 0, fwd: 0, floor: 0 };
   private formSerial = 0;
+  private ultC: (UltCtx & FormCtx) | null = null;
   private poseX: number | null = null;
 
   constructor(host: ZhushaHost, spawn: [number, number] = [0, 0]) {
@@ -266,11 +281,9 @@ export class Zhusha {
     return this.form > 0;
   }
 
-  /** The widest zoom the framing may show now (R's climb, the Q's pull-out), null: the world's framing. */
+  /** The widest zoom the framing may show now (the Q's pull-out), null: the world's framing. R frames itself (ult.ts shots). */
   get camZoom(): number | null {
-    const q = this.qCam ? FEEL.q.camZoom : null;
-    if (q === null) return this.ultZoom;
-    return this.ultZoom === null ? q : Math.min(q, this.ultZoom);
+    return this.qCam ? FEEL.q.camZoom : null;
   }
 
   /** A world x the frame should centre on now (the Q's exploded area, kept with her), null: follow her. */
@@ -296,7 +309,7 @@ export class Zhusha {
   /** Her hits active this tick, as world boxes with the lab's hit data (props.ts and court.ts take them). */
   hitboxes(): { box: WorldBox; hb: ZHit }[] {
     const out: { box: WorldBox; hb: ZHit }[] = [];
-    if (this.state === "ult") return this.ultHitboxes();
+    if (this.state === "ult") return this.r.hitboxes(this.ultCtx());
     const m = this.move;
     if (this.state !== "move" || !m) return out;
     const t = this.t, ult = this.ultForm, U = FEEL.ult;
@@ -362,27 +375,6 @@ export class Zhusha {
       out.push(r);
     }
     return out;
-  }
-
-  private ultHitboxes(): { box: WorldBox; hb: HitBox }[] {
-    const U = FEEL.ult, b = this.body;
-    if (this.ultPhase === "flurry") {
-      // each cut a light hit in front of her
-      const per = U.flurryTicks / U.flurryCuts;
-      const cut = Math.floor(this.t / per);
-      if (cut >= U.flurryCuts || this.t - cut * per >= 2) return [];
-      const f = this.facing;
-      const K = BODY_H;
-      const x = f > 0 ? this.ult.x0 + 0.1 * K : this.ult.x0 - (0.1 + U.flurryReach) * K;
-      const box = { x, y: this.ult.y0 - 1.5 * K, w: U.flurryReach * K, h: 1.5 * K };
-      return [{ box, hb: { ...box, damage: U.flurryDmg, knockback: [pt(0.6), -pt(0.4)], hitstop: 2, group: `r-cut-${cut}`, hitVfx: "hit.light" } }];
-    }
-    if (this.ultPhase === "smoke" && this.t < 2) {
-      const R = U.impactRadius * BODY_H;
-      const box = { x: b.x - R, y: b.y - 6 * BODY_H, w: 2 * R, h: 7 * BODY_H };
-      return [{ box, hb: { ...box, damage: U.impactDmg, knockback: [pt(U.impactKb[0]), -pt(U.impactKb[1])], hitstop: FEEL.weights.ult.hitstop, group: "r", heavy: true, hitVfx: "hit.heavy" } }];
-    }
-    return [];
   }
 
   /** Her head from the soles (world px, facing right): the box's top; draw.ts swaps in a drawing's own. */
@@ -460,7 +452,7 @@ export class Zhusha {
     this.t++;
     switch (this.state) {
       case "dead": this.tickDead(world); break;
-      case "ult": this.tickUlt(input, world); break;
+      case "ult": this.r.tick(this.ultCtx(), input, world); break;
       case "exit": this.tickExit(world); break;
       case "hurt": this.tickHurt(input, world); break;
       case "down": this.tickDown(input, world); break;
@@ -469,6 +461,8 @@ export class Zhusha {
       default: this.tickFree(input, world); break;
     }
     if (this.form > 0 && this.state !== "ult" && this.state !== "exit" && --this.form === 0) this.startExit();
+    this.r.after(this.state === "ult");
+    this.uf.tick(this.ultCtx());
     // the Q's pull-out lets go when its time is up, or she has gone far from the blast, or R / defeat take the frame
     const q = this.qCam;
     if (q && (--q.t <= 0 || this.state === "ult" || this.dead > 0 || Math.abs(this.body.x - q.x) > FEEL.q.camLeave * H)) this.qCam = null;
@@ -539,7 +533,7 @@ export class Zhusha {
     const b = this.body, R = FEEL.run, J = FEEL.jump, B = FEEL.buffer;
     const ax = input.axis();
     // actions out of free movement: R, Q, E, dash, attack (the latest press wins ties)
-    if (this.tryUlt(input)) return;
+    if (this.tryUlt(input, world)) return;
     if (this.skillCd <= 0 && this.live(input, "skill", B.skill)) { input.consume("skill"); this.startMove("skill_q", input); return; }
     if (this.eCd <= 0 && this.live(input, "e", B.skill)) { input.consume("e"); this.startMove("e_tap", input); return; }
     if (this.dashReady() && this.live(input, "m2", B.dash)) { input.consume("m2"); this.startDash(input); return; }
@@ -670,19 +664,49 @@ export class Zhusha {
     this.body.vy = 0;
     this.lastAction = "dash";
     this.anim = { role: "dash", t: 0, hitAt: null, hidden: false, flame: 0 };
+    this.dashSkid = false;
     this.host.vfx.spawn("dash.speed", { x: this.body.x, y: this.body.y, facing: this.facing });
     this.cue("dash", 1, "dash", "move", "light");
     this.pose.sx.v = 1.3;
     this.pose.sy.v = 0.82;
   }
 
+  /** The dash's skid has started (its dust and cue fire once). */
+  private dashSkid = false;
+
+  /**
+   * The dash's drawing on the dash's clock (Dex 10-14: "a ground burst ... then a skid or plant to stop"): feel.json
+   * dash.clips names, per slot, the dash tick each key drawing lands on (the burst on the speed's peak, the heel skid
+   * as it bleeds off; the ult form's streak, then gone while she flies, reforming as she slows); between keys the clip
+   * is stretched or squeezed, after the last it plays 1:1 (on into the tail while she stands). In the air the skid
+   * drawings never show (she holds the glide). With no keys for the slot: 1:1.
+   */
+  dashClip(t: number, grounded: boolean): number {
+    const clip = this.clipOf("dash", this.ultForm);
+    const k = clip ? FEEL.dash.clips[clip.id] : undefined;
+    if (!clip || !k) return t;
+    const { starts } = timeline(clip.frames);
+    const pts: [number, number][] = [[0, 0]];
+    for (const [i, tick] of Object.entries(k.keys)) if (starts[+i] !== undefined) pts.push([tick, starts[+i]!]);
+    pts.sort((a, b) => a[0] - b[0]);
+    const last = pts[pts.length - 1]!;
+    let c = last[1] + (t - last[0]);
+    for (let j = 1; j < pts.length; j++) {
+      const [t0, c0] = pts[j - 1]!, [t1, c1] = pts[j]!;
+      if (t <= t1) { c = c0 + ((c1 - c0) * (t - t0)) / Math.max(1e-9, t1 - t0); break; }
+    }
+    const skidAt = starts[k.skid];
+    if (!grounded && skidAt !== undefined) c = Math.min(c, skidAt - 0.01);
+    return c;
+  }
+
   private tickDash(input: Input, world: MoveWorld): void {
     const D = FEEL.dash, B = FEEL.buffer, b = this.body;
     const i = this.t - 1;
-    this.anim.t++;
+    this.anim.t = this.dashClip(this.t, b.grounded);
     if (this.t % 3 === 0) this.ghost(10);
     // out of the dash: R any time; attack, Q, E from attackFrom; a jump keeps most of its speed
-    if (this.tryUlt(input)) return;
+    if (this.tryUlt(input, world)) return;
     if (this.t >= D.attackFrom) {
       if (this.skillCd <= 0 && this.live(input, "skill", B.skill)) { input.consume("skill"); this.startMove("skill_q", input); return; }
       if (this.eCd <= 0 && this.live(input, "e", B.skill)) { input.consume("e"); this.startMove("e_tap", input); return; }
@@ -711,8 +735,19 @@ export class Zhusha {
       return;
     }
     b.vx = this.dashDir * this.dashProfile[i]!;
-    // on the ground she stays on it (slopes); in the air she holds her height
-    b.vy = b.grounded ? 2 : 0;
+    const peak = Math.max(...this.dashProfile);
+    if (b.grounded) {
+      // the burst: dust off the driving foot; the skid: her heels bite as the speed bleeds off (Dex 10-14)
+      if (i === D.rampTicks) this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: -this.dashDir });
+      if (this.dashProfile[i]! < D.skidFrom * peak) {
+        if (!this.dashSkid) { this.dashSkid = true; this.cue("skid", 0.7, "dash", "move", "light"); }
+        if (i % D.skidDustEvery === 0) this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: this.dashDir });
+      }
+      // on the ground she stays on it (slopes)
+      b.vy = 2;
+    } else if (this.t <= D.airHold) b.vy = 0;
+    // the air dash is a burst, not flight: after the hold, gravity comes back (gently) and she arcs into the fall
+    else this.gravityStep(input, D.airGravity);
     this.moveBody(world);
   }
 
@@ -726,7 +761,16 @@ export class Zhusha {
     const ax = input.axis();
     if (ax !== 0) this.facing = ax as 1 | -1;
     const b = this.body;
-    this.move = { id, def, startX: b.x, startY: b.y, dir: this.facing, fxDone: new Set(), landed: false, carry: def.inPlace ? 0 : b.vx * this.facing };
+    // m1_3 locks onto a foe in reach (Dex 10-19): she turns to it and her lunge is aimed to stop at striking distance
+    let lock: { x0: number; travel: number; foe: boolean; fx: number } | null = null;
+    if (def.lock) {
+      const foes = this.host.foes?.() ?? [];
+      const L = lockTarget(b.x, b.y, this.facing, foes, def.lock, BODY_H);
+      const f = foes[L.foe];
+      if (f) this.facing = L.dir;
+      lock = { x0: b.x, travel: L.travel, foe: !!f, fx: f ? f.x + f.w / 2 : 0 };
+    }
+    this.move = { id, def, startX: b.x, startY: b.y, dir: this.facing, fxDone: new Set(), landed: false, carry: def.inPlace || lock?.foe ? 0 : b.vx * this.facing, lock };
     this.moveStart = input.tick;
     this.clip = { id: `${id}#${input.tick}`, index: 0, hitGroups: new Map(), hit: false };
     this.lastHits = 0;
@@ -734,6 +778,8 @@ export class Zhusha {
     this.lastAction = id;
     const mi = M1.indexOf(id as (typeof M1)[number]);
     if (mi >= 0) this.chainIdx = mi;
+    // the form's chain summons ghost blades on its hits (ultform.ts); it moves her as the normal chain does
+    if (mi >= 0 && this.ultForm) this.uf.begin(mi, def.hits.map((h) => h.at), FEEL.ult.ghostDelay);
     if (id === "skill_q") this.skillCd = def.cooldown ?? 0;
     if (id === "e_tap") this.eCd = def.cooldown ?? 0;
     this.anim = { role: id, t: 0, hitAt: def.hits[0]?.at ?? null, clipHitAt: def.clipHitAt, hidden: false, flame: 0, wind: def.wind };
@@ -762,7 +808,7 @@ export class Zhusha {
     });
     // windows
     const cancelAt = connected && def.hitCancelFrom !== undefined ? Math.min(def.cancelFrom, def.hitCancelFrom) : def.cancelFrom;
-    if (this.tryUlt(input)) return;
+    if (this.tryUlt(input, world)) return;
     const mi = M1.indexOf(m.id as (typeof M1)[number]);
     if (mi >= 0 && mi < 3 && def.chainFrom !== undefined && t >= def.chainFrom && this.live(input, "m1", B.attack)) {
       input.consume("m1");
@@ -796,6 +842,25 @@ export class Zhusha {
     for (const l of def.lunge ?? []) if (t >= l.at && t < l.at + l.ticks) push = (l.dist * H) / l.ticks;
     const rc = def.recoil;
     if (rc && t >= rc[0] && t < rc[0] + rc[2]) push = -pt(rc[1]) * (1 - (t - rc[0]) / rc[2]);
+    // m1_3's lunge: on its eased plan from where she started, re-aimed every tick at the locked foe
+    const lk = def.lock, ml = m.lock;
+    const homing = !!(lk && ml && ml.foe && t >= lk.at && t <= lk.at + lk.ticks);
+    if (lk && ml && t >= lk.at && t < lk.at + lk.ticks) {
+      if (ml.foe) {
+        let best: WorldBox | null = null;
+        for (const f of this.host.foes?.() ?? []) {
+          const c = f.x + f.w / 2;
+          if (Math.abs(c - ml.fx) < 2 * BODY_H && (!best || Math.abs(c - ml.fx) < Math.abs(best.x + best.w / 2 - ml.fx))) best = f;
+        }
+        if (best) {
+          ml.fx = best.x + best.w / 2;
+          const near = m.dir > 0 ? best.x - ml.x0 : ml.x0 - (best.x + best.w);
+          ml.travel = Math.min(lk.maxDist * BODY_H, Math.max(0, near - lk.strike * BODY_H));
+        }
+      }
+      const want = ml.x0 + m.dir * ml.travel * lockEase((t - lk.at + 1) / lk.ticks);
+      push = (want - b.x) * m.dir - rootV;
+    } else if (homing) push = -rootV;
     const wt = def.warpTicks ?? 3;
     if (m.id === "skill_q" && t <= wt) {
       // the Q's warp: 2.5 H in 3 ticks, then a dead stop
@@ -808,8 +873,10 @@ export class Zhusha {
     // the recoil's skid: dust under her feet while she slides back on the ground (and a cue as it starts)
     if (rc && push !== null && push < 0 && b.grounded && (t - rc[0]) % FEEL.e.skidEvery === 0) this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: -m.dir });
     if (rc && t === rc[0]) this.cue("skid", 0.8, m.id, "recoil", def.hits[0]?.weight ?? "medium");
+    // locked on, she stops dead at striking distance when the lunge is done
+    if (lk && ml?.foe && t >= lk.at + lk.ticks) m.carry = 0;
     const along = rootV + m.carry;
-    b.vx = m.dir * (connected && along > 0 ? along * 0.3 : along);
+    b.vx = m.dir * (connected && along > 0 && !homing ? along * 0.3 : along);
     if (m.id === "skill_q" && !b.grounded && t < (def.airHang ?? 0)) b.vy = 0;
     else if (m.id === "m1_4" && def.plunge && !b.grounded && t >= 6 && t < (def.hits[0]?.at ?? 13)) {
       // from the air the chop is a plunge: she drives down and it lands on touchdown
@@ -916,9 +983,13 @@ export class Zhusha {
     if (n <= this.lastHits) return;
     this.lastHits = n;
     const m = this.move;
+    // R's weight is its own (ult.ts: the storm flows without hitstops, the nuke freezes once): here only the hit's cue
+    if (this.state === "ult") {
+      this.cue("hit", 0.6, "r", "hit", this.r.weight());
+      return;
+    }
     let w: Weight = "light";
-    if (this.state === "ult") w = this.ultPhase === "flurry" ? "light" : "ult";
-    else if (m) {
+    if (m) {
       const act = m.def.hits.filter((h) => this.t >= h.at && this.t < h.at + h.len + FEEL.ult.ghostDelay);
       const order: Weight[] = ["light", "medium", "heavy", "q", "ult"];
       for (const h of act) if (order.indexOf(h.weight) > order.indexOf(w)) w = h.weight;
@@ -929,7 +1000,7 @@ export class Zhusha {
     if (W.punch > 0) s.camera.zoomPunch(W.punch);
     if (W.flash > 0) s.feel.impactFrame("invert", W.flash);
     const hi = m ? m.def.hits.findIndex((h) => this.t >= h.at && this.t < h.at + h.len + FEEL.ult.ghostDelay) : -1;
-    this.cue("hit", w === "light" ? 0.6 : 1, this.state === "ult" ? "r" : m?.id ?? "?", "hit", w, hi >= 0 ? hi : undefined);
+    this.cue("hit", w === "light" ? 0.6 : 1, m?.id ?? "?", "hit", w, hi >= 0 ? hi : undefined);
   }
 
   /** A sound cue: the old feel.sound(id, volume), plus the cue with what made it for the audio lane. */
@@ -949,6 +1020,9 @@ export class Zhusha {
   }
 
   private ghost(life: number): void {
+    // the afterimage is the white box's outline: with her drawing playing it reads as a blue rectangle (a primitive,
+    // Dex 10-19), so it is only left for roles still drawn as the box (a drawn afterimage is the effects lane's)
+    if (this.hasRole(this.anim.role, this.ultForm)) return;
     const b = this.body;
     this.ghosts.push({ x: b.x, y: b.y, lean: this.pose.lean.v, life, max: life, ult: this.ultForm });
   }
@@ -1031,7 +1105,7 @@ export class Zhusha {
 
   // --- R ------------------------------------------------------------------------
 
-  private tryUlt(input: Input): boolean {
+  private tryUlt(input: Input, world: MoveWorld): boolean {
     if (this.live(input, "ult", FEEL.buffer.skill)) {
       if (this.ultForm) {
         // R again ends the form early
@@ -1041,179 +1115,54 @@ export class Zhusha {
       }
       if (this.ultCd > 0) return false;
       input.consume("ult");
-      this.startUlt();
+      this.startUlt(world);
       return true;
     }
     return false;
   }
 
-  private startUlt(): void {
-    const b = this.body, s = this.host;
+  private startUlt(world: MoveWorld): void {
     this.move = null;
     this.setState("ult");
-    this.ultPhase = "call";
-    this.ult = { x0: b.x, y0: b.y, zx: b.x, zy: b.y, cut: -1, fwd: 0, floor: b.y };
     this.clip = { id: `r#${this.tick}`, index: 0, hitGroups: new Map(), hit: false };
     this.lastHits = 0;
     this.lastAction = "R";
-    b.vx = 0;
-    b.vy = 0;
-    this.anim = { role: "r_call", t: 0, hitAt: null, hidden: false, flame: 0 };
-    s.vfx.spawn("r.call", { x: b.x, y: b.y, facing: this.facing });
-    this.cue("charge", 1, "r", "windup", "ult");
-    s.camera.zoomPunch(1);
+    this.uf.clear();
+    this.r.start(this.ultCtx(), world);
   }
 
-  private nextPhase(p: UltPhase): void {
-    this.ultPhase = p;
-    this.t = 0;
-  }
-
-  private tickUlt(input: Input, world: MoveWorld): void {
-    const U = FEEL.ult, b = this.body, s = this.host, f = this.facing;
-    const t = this.t;
-    switch (this.ultPhase) {
-      case "call": {
-        this.anim = { role: "r_call", t, hitAt: null, hidden: false, flame: Math.min(1, t / U.callTicks) * 0.4 };
-        b.vx = 0;
-        b.vy = 0;
-        if (t % 6 === 0) s.vfx.spawn("embers.gold", { x: b.x, y: b.y - 0.4 * H, facing: f });
-        if (t >= U.callTicks) {
-          this.nextPhase("flurry");
-          this.ult.x0 = b.x;
-          this.ult.y0 = b.y;
-          s.vfx.spawn("burst.red", { x: b.x, y: b.y - 0.5 * H, facing: f });
-          this.cue("dash", 1, "r", "swing", "ult");
-        }
-        break;
-      }
-      case "flurry": {
-        // she is the cuts: sixteen strokes in front of her, then the glyph ignites
-        this.anim = { role: "r_flurry", t, hitAt: null, hidden: true, flame: 0 };
-        const per = U.flurryTicks / U.flurryCuts;
-        const cut = Math.floor(t / per);
-        if (cut !== this.ult.cut && cut < U.flurryCuts) {
-          this.ult.cut = cut;
-          const r1 = Math.sin(cut * 12.9898) * 43758.5453, r2 = Math.sin(cut * 78.233) * 12345.678;
-          const u = r1 - Math.floor(r1), v = r2 - Math.floor(r2);
-          const x = this.ult.x0 + f * (0.2 + u * U.flurryReach) * H, y = this.ult.y0 - (0.2 + v * 1.2) * H;
-          // the decree written in the air: vermilion strokes, gold sparks where each lands
-          s.vfx.spawn("streak.markRed", { x, y, facing: f, rotation: (u - 0.5) * 2.4, scale: [3.2, 2] });
-          if (cut % 2 === 0) s.vfx.spawn("streak.mark", { x: x + f * 0.2 * H, y: y - 0.2 * H, facing: f, rotation: (v - 0.5) * 2.8, scale: [2.2, 1.4] });
-          if (cut === U.flurryCuts - 1) s.vfx.spawn("flash.gold", { x: this.ult.x0 + f * 0.9 * H, y: this.ult.y0 - 0.8 * H, facing: f, scale: 1.6 });
-          if (cut % 4 === 0) this.cue("swing", 0.5, "r", "swing", "light", cut);
-        }
-        if (t >= U.flurryTicks) {
-          this.nextPhase("rise");
-          s.vfx.spawn("pillar", { x: b.x, y: b.y, facing: f });
-          this.cue("rise", 1, "r", "rise", "ult");
-          this.ultZoom = U.zoomOut;
-        }
-        break;
-      }
-      case "rise": {
-        // a flame, accelerating up
-        this.anim = { role: "nuke", t, hitAt: null, hidden: false, flame: 1 };
-        const k = (t + 1) / U.riseTicks;
-        const want = this.ult.y0 - U.riseHeight * H * k * k;
-        world.move(b, 0, want - b.y);
-        if (t % 2 === 0) this.ghost(12);
-        if (t >= U.riseTicks) {
-          this.nextPhase("zenith");
-          this.ult.zx = b.x;
-          this.ult.zy = b.y;
-          // where the dive lands: ahead if there is ground there (near her own height), else straight down;
-          // with no ground found it ends only on a real landing (or the void's tug-back puts her on one)
-          const near = (x: number): number | null => {
-            const g = world.groundBelow?.(x, this.ult.y0 - 2 * H);
-            return g && g.y < this.ult.y0 + 2.5 * H ? g.y : null;
-          };
-          const ahead = near(b.x + f * U.diveForward * H), here = near(b.x);
-          this.ult.fwd = ahead !== null ? U.diveForward * H : 0;
-          this.ult.floor = ahead ?? here ?? Infinity;
-        }
-        break;
-      }
-      case "zenith": {
-        // a beat of stillness at the top, upside down
-        this.anim = { role: "nuke", t, hitAt: null, hidden: false, flame: 1 };
-        b.vx = b.vy = 0;
-        if (t >= U.zenithTicks) {
-          this.nextPhase("dive");
-          this.cue("dash", 1, "r", "swing", "ult");
-        }
-        break;
-      }
-      case "dive": {
-        // she is a line from the zenith to the floor: powered, accelerating, ahead of where she rose
-        this.anim = { role: "nuke", t, hitAt: null, hidden: false, flame: 1 };
-        const k = Math.min(1, (t + 1) / U.diveTicks);
-        b.vx = t < U.diveTicks ? (f * this.ult.fwd) / U.diveTicks : 0;
-        b.vy = Math.min(pt(10) + pt(70) * k * k, Number.isFinite(this.ult.floor) ? Math.max(0, this.ult.floor - b.y) + 1 : Infinity);
-        const { landed } = world.move(b, b.vx, b.vy);
-        this.streak = { x0: this.ult.zx, y0: this.ult.zy - 0.5 * H, x1: b.x, y1: b.y - 0.5 * H, life: 36 };
-        if (landed || b.grounded || b.y >= this.ult.floor - 0.5 || t > U.diveTicks + 60) this.impact();
-        break;
-      }
-      case "smoke": {
-        // the smoke hides her (draw.ts draws the cloud from `smoke`); it thins into the transform
-        this.anim = { role: "transform", t: 0, hitAt: null, hidden: true, flame: 0 };
-        if (t === 1) this.ultZoom = null;
-        if (t >= U.smokeTicks) this.nextPhase("transform");
-        break;
-      }
-      case "transform": {
-        // the burn plays forward: normal idle into the form
-        this.anim = { role: "transform", t, hitAt: null, hidden: false, flame: 0 };
-        if (t % 8 === 0) s.vfx.spawn("embers.gold", { x: b.x, y: b.y - 0.6 * H, facing: f });
-        if (t >= U.transformTicks) {
-          this.nextPhase("reveal");
-          this.form = U.formTicks;
-          this.formSerial++;
-          this.airDashes = U.airDashes;
-          s.vfx.spawn("ring.halo", { x: b.x, y: b.y - 0.5 * H, facing: f, scale: 1.6 });
-          this.cue("ult", 0.7, "r", "reveal", "ult");
-        }
-        break;
-      }
-      case "reveal": {
-        this.anim = { role: "r_reveal", t, hitAt: null, hidden: false, flame: 0 };
-        if (t >= U.revealTicks) {
-          this.ultPhase = null;
-          this.setState("free");
-          this.anim = { role: "idle", t: 0, hitAt: null, hidden: false, flame: 0 };
-        }
-        break;
-      }
-      default:
+  /** What R (ult.ts) and the form (ultform.ts) may do to her beyond her public fields. */
+  private ultCtx(): UltCtx & FormCtx {
+    const U = FEEL.ult;
+    return (this.ultC ??= {
+      z: this,
+      host: this.host,
+      bodyH: BODY_H,
+      feel: { impactRadius: U.impactRadius, impactDmg: U.impactDmg, impactKb: U.impactKb, flurryDmg: U.flurryDmg, hitstop: FEEL.weights.ult.hitstop },
+      shake: (k) => this.shake(k),
+      ghost: (n) => this.ghost(n),
+      foes: () => this.host.foes?.() ?? [],
+      cue: (id, v, phase, move) => this.cue(id, v, move, phase, move === "r" ? "ult" : "heavy"),
+      release: (input, world) => {
+        this.ultPhase = null;
         this.setState("free");
-    }
-    void input;
-  }
-
-  /** The dive lands: everything near breaks, the frame freezes white and the smoke rolls in. */
-  private impact(): void {
-    const U = FEEL.ult, b = this.body, s = this.host;
-    this.nextPhase("smoke");
-    this.smoke = { x: b.x, y: b.y, t: 0, life: U.smokeTicks + Math.round(U.transformTicks * 0.6) };
-    b.vx = b.vy = 0;
-    s.feel.freeze(FEEL.weights.ult.hitstop);
-    s.feel.impactFrame("invert", 3);
-    s.feel.slowmo(U.slowmo, U.slowmoTicks);
-    this.shake(1);
-    s.camera.zoomPunch(3);
-    s.vfx.spawn("r.finale", { x: b.x, y: b.y, facing: this.facing });
-    s.vfx.spawn("ring.ult", { x: b.x, y: b.y - 0.2 * H, facing: 1 });
-    s.vfx.spawn("pillar.ult", { x: b.x, y: b.y, facing: 1 });
-    s.vfx.spawn("cracks.ult", { x: b.x, y: b.y, facing: 1 });
-    s.vfx.spawn("burst.ult", { x: b.x, y: b.y - 0.5 * H, facing: 1 });
-    this.cue("ult", 1, "r", "boom", "ult");
-    this.cue("slam", 1, "r", "land", "ult");
+        this.anim = { role: "idle", t: 0, hitAt: null, hidden: false, flame: 0 };
+        // an R mashed during the cinematic must not end the form it just began
+        input.consume("ult");
+        this.tickFree(input, world);
+      },
+      enterForm: () => {
+        this.form = U.formTicks;
+        this.formSerial++;
+        this.airDashes = U.airDashes;
+      },
+    });
   }
 
   private startExit(): void {
     this.form = 0;
     this.move = null;
+    this.uf.clear();
     this.setState("exit");
     this.ultCd = FEEL.ult.cooldown;
     this.anim = { role: "uf_exit", t: 0, hitAt: null, hidden: false, flame: 0 };
@@ -1304,11 +1253,7 @@ export class Zhusha {
         rot = -f * Math.PI * 0.5;
         break;
       case "ult":
-        if (this.ultPhase === "call") { sy = 1 + 0.06 * Math.sin(this.t * 0.6); }
-        if (this.ultPhase === "rise") { sx = 0.6; sy = 1.5; }
-        if (this.ultPhase === "zenith") rot = Math.PI;
-        if (this.ultPhase === "dive") { sx = 0.45; sy = 1.9; rot = Math.PI; }
-        if (this.ultPhase === "smoke") { sy = 0.8; sx = 1.2; }
+        ({ sx, sy, lean, rot } = this.r.pose());
         break;
       default:
         break;

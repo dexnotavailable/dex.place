@@ -1,0 +1,116 @@
+{
+ "id": "uf_hurt",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  136,
+  155
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 13
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 14
+  },
+  {
+   "file": "f002.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 16
+  },
+  {
+   "file": "f003.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 18
+  },
+  {
+   "file": "f004.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 21
+  },
+  {
+   "file": "f005.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 24
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 25
+  },
+  {
+   "file": "f007.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 28
+  },
+  {
+   "file": "f008.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 29
+  },
+  {
+   "file": "f009.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 30
+  },
+  {
+   "file": "f010.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 34
+  },
+  {
+   "file": "f011.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 38
+  },
+  {
+   "file": "f012.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 41
+  },
+  {
+   "file": "f013.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 43
+  },
+  {
+   "file": "f014.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 45
+  },
+  {
+   "file": "f015.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 49
+  },
+  {
+   "file": "f016.png",
+   "ticks": 6,
+   "fig": 128,
+   "src": 60
+  }
+ ],
+ "loop": false,
+ "source": "h3-L-uf_hurt-A-s3004-e2432c",
+ "notes": "kit v1.6 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f000: the effect cut by the frame edge continued as a soft falloff (40 px); f001: the effect cut by the frame edge continued as a soft falloff (40 px), shifted -1 px so her shoes stand on the ground row; f003: the blade tip re-extended past the frame edge (79 px, hw 15); f004: the blade tip re-extended past the frame edge (136 px, hw 14); f005: 2 px of H3's floor shadow streak removed; f007: the blade tip re-extended past the frame edge (21 px, hw 18); f008: 14 px of H3's floor shadow streak removed; f009: 18 px of H3's floor shadow streak removed; f010: 16 px of H3's floor shadow streak removed; f011: 2 px of H3's floor shadow streak removed; f013: 1 px of H3's floor shadow streak removed"
+}

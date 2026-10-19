@@ -1,0 +1,33 @@
+/* ------------------------------------------------------------------ the home page's choreography (motion/choreo.ts)
+   Dex 10-19, the redesign (lanes/motion/DESIGN-1019.md 3, 4): the paper slides, the content lands, everything breathes a
+   little. Nothing here hides anything: the script sets back only what is about to play (bands wholly below the
+   screen), so without it, or with reduced motion (the chunk never loads), the page is simply all there. */
+
+/* the papers turn on their own side as they whip in */
+.band--l .band__strip-paper, .band--l .band__paper { transform-origin: 0% 50%; }
+.band--r .band__strip-paper, .band--r .band__paper { transform-origin: 100% 50%; }
+
+/* the header's scroll progress: a 2 px scarlet line across its foot (scaled by the script on the home page) */
+.hdr__progress { position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: var(--scarlet); transform: scaleX(0); transform-origin: 0% 50%; pointer-events: none; }
+
+/* alive at rest (4.1): the shades lift a little on the wind (the paper itself never moves; translate only, so the
+   script's transform and opacity on them are left alone), a light runs down each spine; paused off screen */
+@media (prefers-reduced-motion: no-preference) {
+  .band__shade, .band__strip-shade { animation: band-lift 7.5s ease-in-out calc(var(--band-i, 0) * -1.3s) infinite alternate; }
+  .band__spine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 0, rgb(255 255 255 / 0.75) 60px, transparent 120px) no-repeat;
+    background-size: 100% 120px;
+    animation: spine-light 7s linear calc(var(--band-i, 0) * -1.7s) infinite;
+  }
+  .is-off .band__shade, .is-off .band__strip-shade, .is-off .band__spine::after { animation-play-state: paused; }
+}
+@keyframes band-lift { from { translate: 0 0; } to { translate: 0 4px; } }
+@keyframes spine-light { from { background-position: 0 -120px; } to { background-position: 0 2200px; } }
+
+/* the smooth wheel (Lenis, phase G3): the window keeps its own height; a frame never swallows the wheel mid-glide */
+html.lenis, html.lenis body { height: auto; }
+html.lenis.lenis-smooth iframe { pointer-events: none; }
+html.lenis [data-lenis-prevent] { overscroll-behavior: contain; }

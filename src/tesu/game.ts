@@ -28,6 +28,7 @@ import { Rides } from "./ride.ts";
 import { blendAtmos } from "./atmos-blend.ts";
 import { Sound } from "./sound.ts";
 import { placeAt, THEME_FADE } from "./region-music.ts";
+import { spaceFor } from "./mix.ts";
 import { CHARM_PERCH, H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore, type PlatePool } from "./plates/store.ts";
 import { levelOfPlane, openingTiles, tileSpanOf } from "./plates/span.ts";
@@ -36,9 +37,9 @@ import { Atmos, waterHolds, type MistBand, type SkyGlow } from "./render/atmos.t
 import { Motes } from "./render/motes.ts";
 import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
-import { SilentLink, type OpeningLink } from "./opening/conductor.ts";
+import { SilentLink, type OpeningLink, type PaperFrom } from "./opening/conductor.ts";
 import { WorldPaper, type PaperPose } from "./opening/paper.ts";
-import { BEATS, CLIP_END, HANDOFF_T, barsAt, keysAt, paperAirAt, paperBlendAt, paperScreenAt, startT } from "./opening/timeline.ts";
+import { BEATS, CLIP_END, HANDOFF_T, barsAt, ceilingRow, clamp01, keysAt, paperAirAt, paperBlendAt, paperScreenAt, setStartZoom, smooth, startT } from "./opening/timeline.ts";
 import { Veils, fallAir, fallHaze } from "./opening/sky.ts";
 import { FallSky, fallSkyOf } from "./opening/fall-sky.ts";
 import { Titles } from "./title.ts";
@@ -280,7 +281,8 @@ export class TesuGame {
         return typeof v === "function" ? v.bind(t) : v;
       },
     });
-    this.player = new Zhusha({ vfx: this.vfx, feel: this.feel, camera: this.camera }, [0, 0]);
+    // foes: what m1_3 locks onto (the court's champion while a bout is on; read when she lunges)
+    this.player = new Zhusha({ vfx: this.vfx, feel: this.feel, camera: this.camera, foes: () => this.court?.foes() ?? [] }, [0, 0]);
     this.zdraw = new ZhushaDraw(assets.anims);
     this.zdraw.bind(this.player);
     this.npcs = new NpcDraw(assets.cast, this.world.sprites);
@@ -301,7 +303,12 @@ export class TesuGame {
       cue: (n) => this.cue(n),
       celebrate: (p) => this.onCelebrate(p),
     });
-    this.feel.onSound = (id, v) => this.sound.sfx(id, v);
+    // sounds by id (props, the court, the world) wait for the tick's end; her cues (move, phase, tier) claim theirs and
+    // play her mapped sound and voice (sound.ts heard / herCue / flush)
+    this.feel.onSound = (id, v) => this.sound.heard(id, v);
+    this.player.onCue = (c) => this.sound.herCue(c);
+    // R plays the FX loop's effects when they are in (zhusha/ult.ts; its stand-ins draw until then)
+    this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o) };
     this.props = new Props({
       player: this.player, vfx: this.vfx, feel: this.feel, camera: this.camera,
       ground: (x, y) => this.collision.groundBelow(x, y)?.y ?? null,
@@ -354,34 +361,34 @@ export class TesuGame {
     writeSave(this.save);
   }
 
-  /** A score cue (the opening, the court, the hall). */
+  /** A score cue (the opening, the court). */
   private cue(name: string): void {
-    this.sound.music.cue(name);
+    this.sound.cue(name);
     this.onCue(name);
   }
 
   /**
-   * The score: the opening plays Track 1 (the page's conductor owns it) and the old synthesized layers wait
-   * while it sounds; then the hall gathers the music into its quiet, outdoors the calm landscape form plays;
-   * beds follow the place.
+   * The score: the opening plays Track 1 (the page's conductor owns it), then each place's main theme; beds follow the
+   * place; her footsteps land on the drawings where a foot meets the ground (sound.ts STEP_FRAMES).
    */
   private scoreTick(): void {
     const b = this.player.body;
-    const m = this.sound.music;
     // the place's main theme (region-music.ts): none while the press waits or the opening's cinema runs; when a
     // theme starts it takes Track 1 down with it (the conductor's handOver, through the link the game kept)
     const themes = this.sound.regions;
     const was = themes.sounding;
     themes.update(placeAt(this.world.places, b.x, b.y, INTERIOR_Y), this.holding || this.opening.active);
     if (themes.sounding && !was) this.openingLink?.handOver?.(THEME_FADE);
-    // the placeholder score waits while Track 1 sounds (until a theme takes it down) and while a theme plays
-    m.held = this.opening.state === "cine" || !!this.openingLink?.music || themes.sounding;
-    if (this.tick % 30 !== 0) return;
+    this.sound.flush();
+    const shown = this.zdraw.shown(this.player);
+    this.sound.footstep(shown?.slot.id ?? null, shown?.index ?? 0, b.grounded && !this.rides.active, this.collision.lastSurface);
+    // her voice follows her state, the space she is in (its reverb) and her place on screen (its pan)
     const inside = b.y >= INTERIOR_Y;
+    const cam = this.camera.state();
+    const p = this.player;
+    this.sound.follow({ state: p.state, phase: p.ultPhase, ult: p.ultForm }, spaceFor(themes.playing, inside), ((b.x - cam.cx) * planeXf(cam, 1).s) / Math.max(1, cam.W / 2));
+    if (this.tick % 30 !== 0) return;
     this.sound.setBed(inside ? "hall" : b.x < 109 * H ? "lake" : "heights");
-    if (m.held) return;
-    if (inside && m.mood !== "hall" && m.mood !== "intense") this.cue("music:hall");
-    else if (!inside && !this.opening.active && (m.mood === "off" || m.mood === "hall")) this.cue("music:land");
   }
 
   private notePlace(): void {
@@ -463,6 +470,11 @@ export class TesuGame {
   away = false;
   /** Waiting for PLAY in the page column (controls held, Kagami still). */
   holding = false;
+
+  /** She is in the player's hands: no press awaited, the opening handed her back (or never ran: a ?at= start). */
+  get playable(): boolean {
+    return !this.holding && !this.awaitingPress && (this.opening.state === "off" || this.opening.state === "done");
+  }
   /** The opening's link, kept after the opening lets go of it (Track 1 can still sound: the theme fades it). */
   private openingLink: OpeningLink | null = null;
 
@@ -484,6 +496,10 @@ export class TesuGame {
     this.sound.locked = false;
     if (link?.ctx) this.sound.start(link.ctx);
     this.openingLink = link ?? null;
+    // (rev 5) the website's ofuda at the press: the world takes it over where it hangs, at its size and pose
+    this.paperFrom = link?.paperFrom ?? null;
+    this.pageK = this.paperFrom?.k ?? null;
+    this.paperShown = false;
     this.spawnAt(this.world.spawns.find((s) => s.id === "catch")!);
     this.opening.start(link ?? new SilentLink(() => this.time, this.feel.reducedMotion, way));
     const shot = this.opening.camera(this.player.body.x);
@@ -590,10 +606,20 @@ export class TesuGame {
     this.camera.H = this.r.ih;
     const f = this.framing();
     const cuts = this.camera.cuts;
-    // the opening's camera is time-locked to the music; then the world's tracks have the frame again
+    // the opening's camera is time-locked to the music; then the world's tracks have the frame again. Its first
+    // keys show the paper at the page's own scale (the loader's: max(2, round(vh x dpr / 540)) device px per art px)
+    setStartZoom(this.pageArtPx() / (ART_PX * (this.r.presenter.rect.scale || 1)));
     const shot = this.opening.camera(b.x);
+    const cine = shot ? null : this.player.r.shot;
     if (shot) this.camera.set(shot, b.x, b.y);
-    else this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
+    else if (cine) {
+      // R's shots (zhusha/ult.ts): placed exactly each tick (its own cuts and moves), shake and punch still run
+      const cf = { ...f, zoom: cine.zoom, anchor: cine.anchor, lead: 0, fixX: cine.x, fixY: cine.y, pin: null };
+      this.camera.snap(cine.x, cine.y, cf, this.player.facing);
+      this.camera.update(cine.x, cine.y, this.player.facing, 0, cf);
+      // reduced motion: its cuts cross-fade like the camera's own
+      if (cine.cut && this.feel.reducedMotion) this.cutFade = 1;
+    } else this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
     this.paperTick();
     // reduced motion: a cut between held frames is a short dithered cross-fade, not a swing
     if (this.camera.cuts !== cuts && this.tick > 2) this.cutFade = 1;
@@ -607,7 +633,7 @@ export class TesuGame {
     this.syncGates();
     this.syncFall();
     this.doorTick();
-    this.near = this.cut || this.tug || this.rides.active || this.warp || this.opening.state === "cine" || this.holding ? null : this.findNear();
+    this.near = this.cut || this.tug || this.rides.active || this.warp || this.opening.state === "cine" || this.holding || this.player.r.active ? null : this.findNear();
     this.placeNames();
     this.motes.update(1 / 60);
     this.scoreTick();
@@ -801,8 +827,42 @@ export class TesuGame {
       const ho = BEATS.her.clip.handoff;
       const hx = b.x + ho[0] * ART_PX * f, hy = b.y + ho[1] * ART_PX;
       const k = paperBlendAt(T, o.way);
-      if (this.paper.mode !== "fall") this.paper.startFall();
-      this.paperPose = this.paper.fall(wx + (hx - wx) * k, wy + (hy - wy) * k, paperAirAt(T, o.way));
+      const fresh = this.paper.mode !== "fall";
+      if (fresh) {
+        this.paper.startFall(this.paperFrom?.nodes);
+        this.paperOff = [0, 0];
+      }
+      // where the page's paper hangs, against the flight's first point: an offset that fades out as it falls (measured
+      // until it drops, so the world window's own layout for the opening, a frame or two late, is the one it sits in)
+      {
+        const pf = this.paperFrom;
+        if (pf && (fresh || T < 0.3)) {
+          const dpr = window.devicePixelRatio || 1, pr = this.r.presenter.rect, s0 = this.paper.middleOf(pf.nodes);
+          // the page's viewport to this frame (the world window's place on the page, as laid out for the opening)
+          const fe = (window.frameElement as HTMLElement | null)?.getBoundingClientRect() ?? { left: 0, top: 0 };
+          const fx = ((pf.x - fe.left) * dpr - pr.x) / pr.scale + s0[0] * (pf.k / pr.scale);
+          const fy = ((pf.y - fe.top) * dpr - pr.y) / pr.scale + s0[1] * (pf.k / pr.scale);
+          const p0 = paperScreenAt(startT(o.way), o.way) ?? sp;
+          this.paperOff = [fx - p0[0] * cam.W, fy - p0[1] * cam.H];
+        }
+      }
+      const fade = 1 - smooth(T / 1.2);
+      const wxo = wx + (this.paperOff[0] * fade) / xf.s, wyo = wy + (this.paperOff[1] * fade) / xf.s;
+      // a speck in the vast frame: from there it is the whole paper (the clip's own size and colours)
+      if (T >= BEATS.ofuda.stripAt) this.paper.toWhole();
+      // the last of it: steered onto the clip's paper in the hand-off drawing, so the drawing takes it over in place
+      const band = BEATS.her.clip.band, steerFrom = HANDOFF_T - BEATS.ofuda.steer;
+      // (on it a tick before the drawing takes over: that tick shows exactly the drawing's paper, drawn by us)
+      const u = T <= steerFrom ? 0 : Math.min(1, (T - steerFrom) / (HANDOFF_T - 1 / 60 - steerFrom)) ** 2;
+      const nodes = band.map((n) => [b.x + n[0] * ART_PX * f, b.y + n[1] * ART_PX] as [number, number]);
+      // and over its last 0.3 s it takes on the clip paper's grain (texel by texel), so the drawing's busier paper follows
+      const grain = clamp01((T - (HANDOFF_T - 0.3)) / (0.3 - 1 / 60));
+      this.paperPose = this.paper.fall(wxo + (hx - wxo) * k, wyo + (hy - wyo) * k, paperAirAt(T, o.way), 1 / 60, { nodes, u, grain });
+      // the page draws its own paper over this one until the world has drawn it once (column.ts)
+      if (!this.paperShown) {
+        this.paperShown = true;
+        try { window.parent?.document.dispatchEvent(new Event("dex:paperworld")); } catch { /* no page around */ }
+      }
       return;
     }
     if (o.active && T < CLIP_END) {
@@ -820,6 +880,37 @@ export class TesuGame {
     const tie = TesuGame.HAT_TIE;
     const w = o.wind();
     this.paperPose = this.paper.hat(b.x + (head[0] + tie[0]) * f, b.y + head[1] + tie[1], f, speed - w.base * f, w.gust, reduced);
+  }
+
+  /** Device px per art px the website's loader drew the ofuda at (motion/column.ts), or as it would on this screen. */
+  pageArtPx(): number {
+    const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+    const vh = typeof window !== "undefined" ? window.innerHeight : 720;
+    return this.pageK ?? Math.max(2, Math.round((vh * dpr) / 540));
+  }
+  /** The page's own figure, when it sent one with the press. */
+  pageK: number | null = null;
+  /** The website's ofuda at the press (conductor.ts PaperFrom), and its offset from the flight's first point (frame px). */
+  private paperFrom: PaperFrom | null = null;
+  private paperOff: [number, number] = [0, 0];
+  /** The world has drawn the paper since the press (the page stops drawing its own then). */
+  private paperShown = false;
+
+  /**
+   * The black loading screen as a slab above everything (beats.ts ceiling): drawn over the world where the camera is
+   * still inside it, the falling paper over the black (it hangs there at the press and falls out of it).
+   */
+  private drawCeiling(cam: CamState): void {
+    const o = this.opening;
+    if (!(this.holding || (o.active && o.T < 4))) return;
+    const xf = planeXf(cam, 1);
+    const row = Math.ceil(ceilingRow(this.player.body.y, xf.s, xf.offY));
+    if (row <= 0) return;
+    const r = this.r;
+    r.begin(0, 0, DAY, []);
+    r.rect(0, 0, cam.W, Math.min(cam.H, row), [0, 0, 0], 1, 1, true);
+    r.flush();
+    this.drawOfuda(cam, false);
   }
 
   /** The ofuda as pixels at the camera's scale (in front of her: it hangs at the front of her hat, or falls). */
@@ -1753,6 +1844,7 @@ export class TesuGame {
       const paper: [number, number] | null = pp ? [((pp.pts[0]![0] + pp.pts[11]![0]) / 2) * pxf.s + pxf.offX, ((pp.pts[0]![1] + pp.pts[11]![1]) / 2) * pxf.s + pxf.offY] : null;
       this.veils.draw(r.main, W, Hf, fallAir(this.opening.T, W, Hf, this.opening.way, this.feel.reducedMotion, paper, sunPx));
     }
+    this.drawCeiling(cam);
     this.drawPrompt(cam);
     this.drawHint(cam);
     this.titles.draw(W, Hf);
@@ -1765,7 +1857,7 @@ export class TesuGame {
       view: 1,
       focus: [W / 2, cam.anchor * Hf],
       fade: [0.106, 0.098, 0.133, this.loading && this.tick < 2 ? 1 : Math.max(this.fade, this.cutFade * 0.85, this.fadeCut)],
-      bars: 0,
+      bars: this.player.r.bars,
       overlay: false,
       layers: this.screen.take(),
     });
@@ -1809,7 +1901,7 @@ export class TesuGame {
       ride: this.rides.active ? { id: this.rides.active.def.id, dir: this.rides.active.dir, t: +this.rides.active.t.toFixed(2) } : null, vista: !!this.vista,
       court: this.court.state_(), hp: this.player.hp, ultCd: this.player.ultCd,
       props: this.props.state(), airborne: this.props.airborne(), broken: this.props.broken,
-      music: { mood: this.sound.music.mood, layers: this.sound.music.layers, dropped: this.sound.music.dropped, nextBar: +this.sound.music.nextBar().toFixed(2), theme: this.sound.regions.playing },
+      music: { theme: this.sound.regions.playing },
     };
   }
 

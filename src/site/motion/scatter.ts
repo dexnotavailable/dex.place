@@ -52,7 +52,8 @@ const SPAN = 96;
 
 export function initScatter(): void {
   const sheet = document.getElementById("site");
-  if (!sheet || !document.querySelector(".band__win, .jetty, .sheet--column")) return;
+  // (retired on the home page by the redesign: its paper edges are straight, lanes/motion/DESIGN-1019.md 2.3)
+  if (!sheet || sheet.classList.contains("sheet--home") || !document.querySelector(".pband__win, .jetty, .sheet--column")) return;
   let key = "";
   const draw = (): void => {
     const vw = document.documentElement.clientWidth || innerWidth;

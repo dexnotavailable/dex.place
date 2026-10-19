@@ -10,8 +10,10 @@
 @import "./components.css";
 @import "./shell.css";
 @import "./motion.css";
+@import "./choreo.css";
 @import "./pages.css";
 @import "./landing.css";
+@import "./pcard.css";
 @import "./donate.css";
 @import "./downloads.css";
 @import "./docs.css";
@@ -19,4 +21,5 @@
 @import "./embed.css";
 @import "./column.css";
 @import "./v2.css";
+@import "./bands.css";
 @import "./pages-v2.css";

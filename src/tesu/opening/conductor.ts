@@ -15,8 +15,7 @@
 import { HeardClock, onGrid } from "./clock.ts";
 import { Overlay } from "./overlay.ts";
 import { Track1 } from "./track.ts";
-import { BEATS, barsAt, startT, subtitleAt, type Way } from "./timeline.ts";
-import type { OpeningVoice } from "./voice.ts";
+import { BEATS, VOICE, barsAt, startT, subtitleAt, type Way } from "./timeline.ts";
 
 /** What the world's frame reads (the conductor, or a silent stand-in for tools). */
 export interface OpeningLink {
@@ -41,6 +40,18 @@ export interface OpeningLink {
   input(): void;
   /** The page's AudioContext (the world's sound shares it), or null. */
   readonly ctx: AudioContext | null;
+  /**
+   * The website's ofuda at the press (rev 5: it drops out of the black where the loader left it): its tie in css px of
+   * the page's viewport, the page's device px per art px, and its 12 nodes (x, y, z art px) from the tie.
+   */
+  readonly paperFrom?: PaperFrom | null;
+}
+
+export interface PaperFrom {
+  x: number;
+  y: number;
+  k: number;
+  nodes: number[];
 }
 
 const SAVE = "tesu.opening";
@@ -103,15 +114,15 @@ export class Conductor implements OpeningLink {
   private readonly cleanups: (() => void)[] = [];
   readonly ctx: AudioContext | null;
   readonly track: Track1 | null;
-  /** Her voice (the page's, on the same context), booked with Track 1. */
-  readonly voice: OpeningVoice | null;
   /** Told each frame with T (the page's fall rides on it). */
   onFrame: (T: number) => void = () => {};
 
-  constructor(ctx: AudioContext | null, track: Track1 | null, opts: { doc: Document; reduced: boolean; repeat: boolean; way?: Way; voice?: OpeningVoice | null }) {
+  readonly paperFrom: PaperFrom | null;
+
+  constructor(ctx: AudioContext | null, track: Track1 | null, opts: { doc: Document; reduced: boolean; repeat: boolean; way?: Way; paperFrom?: PaperFrom | null }) {
     this.ctx = ctx;
     this.track = track;
-    this.voice = ctx ? opts.voice ?? null : null;
+    this.paperFrom = opts.paperFrom ?? null;
     this.reduced = opts.reduced;
     this.repeat = opts.repeat;
     this.way = opts.way ?? "continue";
@@ -121,6 +132,13 @@ export class Conductor implements OpeningLink {
     this.overlay = new Overlay(opts.doc, { reduced: opts.reduced, barVh: BEATS.ui.bars.vh });
     this.overlay.chip.addEventListener("click", () => this.skip());
     this.overlay.sound.addEventListener("click", () => this.allowSound());
+  }
+
+  /** Her lines are the game's sound cues (beats.ts voice, booked in sfx); Track 1 dips under each one still to speak. */
+  private duckUnderVoice(at: number, from: number): void {
+    if (this.way === "bottom") return;
+    const V = BEATS.voice;
+    this.track?.duck(at, VOICE.filter((v) => v.to > from).map((v) => [at + Math.max(0, v.from - from), at + (v.to - from)] as [number, number]), V.duckDb, V.ramp);
   }
 
   get epoch(): number {
@@ -158,7 +176,7 @@ export class Conductor implements OpeningLink {
       if (ctx.state !== "running") void ctx.resume();
       const t0 = onGrid(ctx.currentTime + 0.05, ctx.sampleRate);
       track.play(t0, this.from);
-      this.voice?.play(t0, this.from, track);
+      this.duckUnderVoice(t0, this.from);
       this.clock.anchor(t0, this.from);
       void track.loadB();
       // the context refuses to run: the page clock, and a chip to allow sound
@@ -211,7 +229,7 @@ export class Conductor implements OpeningLink {
       const at = onGrid(ctx.currentTime + 0.05, ctx.sampleRate);
       const T = this.T() + 0.05;
       track.play(at, T);
-      this.voice?.play(at, T, track);
+      this.duckUnderVoice(at, T);
       this.clock.anchor(at, T);
       this.overlay.soundShown(false);
     });
@@ -229,13 +247,12 @@ export class Conductor implements OpeningLink {
       track.level(0, dip * 0.4, now);
       const at = onGrid(now + dip * 0.5, ctx.sampleRate);
       track.play(at, to);
-      this.voice?.play(at, to, track);
+      this.duckUnderVoice(at, to);
       const g = track.out.gain;
       g.setValueAtTime(0.0001, at);
       g.linearRampToValueAtTime(0.9, at + dip * 0.4);
       this.clock.anchor(at, to);
     } else {
-      this.voice?.stop();
       this.clock.usePage(to);
     }
     this.skipped = true;
@@ -272,7 +289,8 @@ export class Conductor implements OpeningLink {
   private frame(): void {
     const T = this.T(1000 / 60);
     this.overlay.bars(barsAt(T, this.reduced, this.from));
-    this.overlay.subtitle(subtitleAt(T));
+    // (way 4, from the website's jetty: no voice lines, Dex 10-19)
+    this.overlay.subtitle(this.way === "bottom" ? null : subtitleAt(T));
     const drop = BEATS.her.drop1;
     const chip = !this.skipped && T < drop && (this.repeat ? T >= BEATS.ui.chipFrom : performance.now() < this.chipUntil);
     this.overlay.chipShown(chip);
@@ -296,7 +314,6 @@ export class Conductor implements OpeningLink {
     this.overlay.destroy();
     for (const c of this.cleanups) c();
     this.track?.stop();
-    this.voice?.stop();
   }
 }
 

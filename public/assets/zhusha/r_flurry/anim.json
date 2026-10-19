@@ -1,0 +1,212 @@
+{
+ "id": "r_flurry",
+ "stage": "pixel",
+ "figure_h": 128,
+ "pivot": [
+  143,
+  159
+ ],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 4
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 5
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 6
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 7
+  },
+  {
+   "file": "f004.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 8
+  },
+  {
+   "file": "f005.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 9
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 10
+  },
+  {
+   "file": "f007.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 12
+  },
+  {
+   "file": "f008.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 14
+  },
+  {
+   "file": "f009.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 16
+  },
+  {
+   "file": "f010.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 18
+  },
+  {
+   "file": "f011.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 20
+  },
+  {
+   "file": "f012.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 22
+  },
+  {
+   "file": "f013.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 24
+  },
+  {
+   "file": "f014.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 26
+  },
+  {
+   "file": "f015.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 28
+  },
+  {
+   "file": "f016.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 30
+  },
+  {
+   "file": "f017.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 32
+  },
+  {
+   "file": "f018.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 34
+  },
+  {
+   "file": "f019.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 36
+  },
+  {
+   "file": "f020.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 38
+  },
+  {
+   "file": "f021.png",
+   "ticks": 2,
+   "fig": 128,
+   "src": 40
+  },
+  {
+   "file": "f022.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 42
+  },
+  {
+   "file": "f023.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 45
+  },
+  {
+   "file": "f024.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 48
+  },
+  {
+   "file": "f025.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 50
+  },
+  {
+   "file": "f026.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 53
+  },
+  {
+   "file": "f027.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 56
+  },
+  {
+   "file": "f028.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 59
+  },
+  {
+   "file": "f029.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 62
+  },
+  {
+   "file": "f030.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 66
+  },
+  {
+   "file": "f031.png",
+   "ticks": 3,
+   "fig": 128,
+   "src": 70
+  },
+  {
+   "file": "f032.png",
+   "ticks": 4,
+   "fig": 128,
+   "src": 72
+  }
+ ],
+ "loop": false,
+ "source": "h3-L-r_flurry-A-s3004-600795",
+ "notes": "kit v1.8 (2b punchy, no burn @ 128, master palette 256). Cut content re-extended: f001: the effect cut by the frame edge continued as a soft falloff (40 px); f002: the effect cut by the frame edge continued as a soft falloff (40 px); f003: the effect cut by the frame edge continued as a soft falloff (40 px), 21 px of H3's floor shadow streak removed; f004: the effect cut by the frame edge continued as a soft falloff (40 px); f005: the effect cut by the frame edge continued as a soft falloff (40 px); f006: the effect cut by the frame edge continued as a soft falloff (40 px); f007: the effect cut by the frame edge continued as a soft falloff (40 px); f008: the effect cut by the frame edge continued as a soft falloff (40 px); f009: the effect cut by the frame edge continued as a soft falloff (40 px); f010: the effect cut by the frame edge continued as a soft falloff (40 px); f011: the effect cut by the frame edge continued as a soft falloff (40 px); f012: the effect cut by the frame edge continued as a soft falloff (40 px); f013: the effect cut by the frame edge continued as a soft falloff (40 px); f014: the effect cut by the frame edge continued as a soft falloff (40 px); f015: the effect cut by the frame edge continued as a soft falloff (40 px); f016: the effect cut by the frame edge continued as a soft falloff (40 px); f017: the effect cut by the frame edge continued as a soft falloff (40 px); f018: the effect cut by the frame edge continued as a soft falloff (40 px); f019: the effect cut by the frame edge continued as a soft falloff (40 px), 40 px of H3's floor shadow streak removed; f020: the effect cut by the frame edge continued as a soft falloff (40 px); f021: the effect cut by the frame edge continued as a soft falloff (40 px); f022: the effect cut by the frame edge continued as a soft falloff (40 px); f023: the effect cut by the frame edge continued as a soft falloff (40 px), 7 px of H3's floor shadow streak removed; f024: the effect cut by the frame edge continued as a soft falloff (40 px), 28 px of H3's floor shadow streak removed; f025: the effect cut by the frame edge continued as a soft falloff (40 px); f026: the effect cut by the frame edge continued as a soft falloff (40 px); f027: the effect cut by the frame edge continued as a soft falloff (40 px); f028: the effect cut by the frame edge continued as a soft falloff (40 px); f029: the effect cut by the frame edge continued as a soft falloff (40 px), 4 px of H3's floor shadow streak removed; f030: the effect cut by the frame edge continued as a soft falloff (40 px), 4 px of H3's floor shadow streak removed; f031: the effect cut by the frame edge continued as a soft falloff (40 px); f032: the effect cut by the frame edge continued as a soft falloff (40 px)"
+}

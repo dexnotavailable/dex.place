@@ -9,13 +9,14 @@
 // opening conductor). On its own and fresh, /tesu/ offers "continue" itself once the opening set is in, and
 // the press runs the same opening (opening/conductor.ts) here. ?skip: no opening.
 
-import { Input, type Action, type KeyMap } from "../lab/engine/input.ts";
+import { Input, type Action } from "../lab/engine/input.ts";
 import { ContractError } from "../lab/contracts.ts";
 import { WorldRenderer } from "../world/render/renderer.ts";
 import { H } from "./config.ts";
 import { TesuGame } from "./game.ts";
 import { loadZhusha } from "./player.ts";
 import { Touch } from "./touch.ts";
+import { ControlsHint } from "./controls.ts";
 import { planeXf } from "./render/view.ts";
 import { Panels, type PanelSpec } from "./panels/panels.ts";
 import { craneDesk, docsShelf, galleryFrame, hankoDesk, noticeWall, offeringBox, patronsScroll, saySpec } from "./panels/services.ts";
@@ -25,38 +26,13 @@ import { readSlipInto, slipFor } from "./save.ts";
 import type { Usable } from "./world/types.ts";
 import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "./opening/conductor.ts";
 import { Track1 } from "./opening/track.ts";
-import { voiceFor } from "./opening/voice.ts";
-import { VOICE_FILES } from "./opening/voice-files.ts";
 import { startPlateWorkers } from "./plates/store.ts";
 import bake from "virtual:tesu-bake";
 import { adoptWorld, currentWorld } from "./world/current.ts";
 import { SpriteRenderer } from "./render/sprites.ts";
 import { hasPainter } from "./art/painter.ts";
 import { Fx } from "./fx/fx.ts";
-
-/**
- * The fixed keys (GDK 5.4, Appendix B): WASD and the arrows both move from the start;
- * J, Z or click attack; K or X dash; Q, E, R her kit; F (or Enter) uses things. Nothing on
- * Shift, so chained dashes never raise Windows' Sticky Keys prompt.
- */
-const KEYS: KeyMap = {
-  KeyA: ["left"],
-  ArrowLeft: ["left"],
-  KeyD: ["right"],
-  ArrowRight: ["right"],
-  KeyW: ["up", "jump"],
-  ArrowUp: ["up", "jump"],
-  Space: ["jump"],
-  KeyS: ["down"],
-  ArrowDown: ["down"],
-  KeyJ: ["m1"],
-  KeyZ: ["m1"],
-  KeyK: ["m2"],
-  KeyX: ["m2"],
-  KeyQ: ["skill"],
-  KeyE: ["e"],
-  KeyR: ["ult"],
-};
+import { KEYS } from "./keys.ts";
 
 const canvas = document.getElementById("view") as HTMLCanvasElement;
 const debugEl = document.getElementById("debug") as HTMLPreElement;
@@ -138,6 +114,8 @@ async function boot(): Promise<void> {
   await yieldTask();
   const input = new Input(canvas, KEYS);
   const touch = new Touch(input, document.getElementById("touch") as HTMLElement, canvas);
+  // the controls card: the first time she is playable, then on H or the "?" (controls.ts)
+  const hint = new ControlsHint(document.getElementById("stage") as HTMLElement, KEYS, canvas);
   const embedded = q.get("embed") === "site" && window.parent !== window;
   const game = new TesuGame(r, input, assets, {
     start: q.get("at") ?? "catch", link: q.has("at") || q.has("x") || q.has("hold"), noOpening: q.has("skip"),
@@ -260,6 +238,7 @@ async function boot(): Promise<void> {
       lastFrame = performance.now();
       game.frame(now);
       if (touch.shown) touch.cooldowns(game.player.skillCd <= 0, game.player.ultCd <= 0 && !game.court.ultLocked);
+      hint.tick(now, game.playable && !game.away && !panels.open, touch.shown);
       if (game.debug) {
         if (n++ % 6 === 0) debugEl.textContent = game.debugText();
         debugEl.hidden = false;
@@ -346,7 +325,6 @@ async function boot(): Promise<void> {
 function standalonePress(game: TesuGame, parts: () => boolean): void {
   const ctx = makeAudio();
   const track = ctx ? new Track1(ctx, ctx.destination) : null;
-  const voice = ctx ? voiceFor(ctx, VOICE_FILES) : null;
   let trackIn = !track;
   void track?.aReady.then(() => { trackIn = true; });
   const btn = document.createElement("button");
@@ -360,7 +338,7 @@ function standalonePress(game: TesuGame, parts: () => boolean): void {
     if (!game.awaitingPress || performance.now() - shownAt < 300) return;
     btn.remove();
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const c = new Conductor(ctx, track, { doc: document, reduced, repeat: readOpeningNote().seen > 0, voice });
+    const c = new Conductor(ctx, track, { doc: document, reduced, repeat: readOpeningNote().seen > 0 });
     c.start();
     game.play(c);
     (document.getElementById("view") as HTMLCanvasElement | null)?.focus();

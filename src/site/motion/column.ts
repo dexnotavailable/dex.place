@@ -23,6 +23,7 @@ import { BEATS } from "../../tesu/opening/beats.ts";
 import { pressContinues } from "../../tesu/opening/press.ts";
 import type { OpeningSet } from "../../tesu/mount.ts";
 import { ENTER_EVENT, initOpening, type EnterDetail, type Way } from "./enter.ts";
+import type { PaperFrom } from "../../tesu/opening/conductor.ts";
 import { bottomView, cornerView, driftPoint, topView, trail, trailPoint, type FlowState } from "./flow.ts";
 import { BOX_H, BOX_W, OFUDA_H, PaperOfuda, TIE, createPixelLoader } from "./pixel-loader.ts";
 
@@ -152,8 +153,6 @@ export function initColumn(reduced: MediaQueryList): void {
   let state: FlowState = "loading";
   let way: Way | null = null;
   let wentDown = false;
-  /** The gust after the press: the ofuda is snatched up and out of the top (ms start). */
-  let gustAt = -1;
   /** Way 2: going up to the game screen first. */
   let climbing: { at: number } | null = null;
   /** Way 4: the drift into the jetty, then the catch. */
@@ -180,17 +179,32 @@ export function initColumn(reduced: MediaQueryList): void {
     return !!s && s.plates >= 1 && s.close && s.font && s.ofuda;
   };
 
+  // rev 5 (Dex 10-19 18:34Z): the black loading screen is a slab above everything; the press drops the ofuda out of it.
+  // No gust and no fade: the cover goes at once (the world shows the same black) and the world takes the paper over
+  // where it hangs, at the same size and pose; the page keeps drawing it until the world says it has it.
+  let handAt = -1;
+  const handPaper = (): PaperFrom | null => {
+    if (!paper || !landed) return null;
+    const dpr = window.devicePixelRatio || 1;
+    const k = Math.max(2, Math.round((innerHeight * dpr) / 540));
+    const tx = paper.tie.x, ty = paper.tie.y;
+    const nodes = Array.from(paper.p, (v, i) => (i % 3 === 0 ? v - tx : i % 3 === 1 ? v - ty : v));
+    // (css px of the page's viewport: the world measures its own frame's place once the opening has laid it out)
+    return { x: pos.x, y: pos.y, k, nodes };
+  };
   const enter = (w: Way): void => {
     if (state !== "loaded") return;
     way = w;
+    const from = w !== "bottom" ? handPaper() : null;
     setState("ingame");
     intro?.release();
-    if (w !== "bottom") gustAt = performance.now();
+    if (w !== "bottom") handAt = performance.now();
     gs.setAttribute("data-entered", "");
     cont.hidden = true;
     corner.hidden = true;
-    document.dispatchEvent(new CustomEvent<EnterDetail>(ENTER_EVENT, { detail: { way: w } }));
+    document.dispatchEvent(new CustomEvent<EnterDetail>(ENTER_EVENT, { detail: { way: w, paper: from } }));
   };
+  document.addEventListener("dex:paperworld", () => { if (handAt >= 0) handAt = -2; });
   const toTop = (): void => {
     window.scrollTo({ top: 0, behavior: reduced.matches ? "instant" : "smooth" });
   };
@@ -402,14 +416,12 @@ export function initColumn(reduced: MediaQueryList): void {
       }
     }
 
-    // after the press: the gust takes it up and out of the top
-    if (gustAt >= 0) {
-      const u = (now - gustAt) / 900;
-      if (u < 1 && !reduced.matches) {
-        target = { x: homeAt.x + vw * 0.06 * u, y: homeAt.y - (homeAt.y + 60) * u * u * 1.15 };
-        wind = 140;
-        gust = 1;
-      } else show = false;
+    // after the press: it hangs still where it is (the world draws the same paper under it) until the world has it
+    if (handAt >= 0) {
+      target = { x: pos.x, y: pos.y };
+      wind = 0;
+      gust = 0;
+      if (now - handAt > 600) handAt = -2;
     } else if (state === "ingame") show = false;
 
     // it eases toward where it is going (paper on the wind, not a cursor); after a stall it is simply there
@@ -419,7 +431,7 @@ export function initColumn(reduced: MediaQueryList): void {
       if (placed && stalled && paper) { paper.moveTie(target.x / kc, target.y / kc); paper.reset(); }
       placed = true;
     } else {
-      const ease = gustAt >= 0 || drift ? 1 - Math.pow(0.00002, dt) : 1 - Math.pow(0.004, dt);
+      const ease = drift ? 1 - Math.pow(0.00002, dt) : 1 - Math.pow(0.004, dt);
       pos.x += (target.x - pos.x) * ease;
       pos.y += (target.y - pos.y) * ease;
     }
@@ -444,12 +456,13 @@ export function initColumn(reduced: MediaQueryList): void {
         paperFresh = false;
       }
       paper.wind.x = wind;
-      paper.wind.y = gustAt >= 0 ? -60 : 0;
+      paper.wind.y = 0;
       paper.gust = Math.max(gust, 1.4 * Math.max(0, 1 - (now - pokeAt) / 600));
       paper.moveTie(pos.x / kc, pos.y / kc);
       // reduced motion: it never moves (it hangs straight from its tie)
       if (reduced.matches) paper.reset();
-      else paper.step(dt);
+      // (at the press it holds the pose the world took over, until the world draws it)
+      else if (handAt < 0) paper.step(dt);
       if (show) paper.drawTo(ctx, 0, 0, k);
     }
     ctx.globalAlpha = 1;

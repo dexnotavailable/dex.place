@@ -127,6 +127,29 @@ export const OFUDA_BACK = (() => {
   return t;
 })();
 
+/** A paper texture in the ofuda's own colours: rows of OFUDA_ROWS's keys ('.' empty), its front and its back. */
+export interface PaperTexture {
+  w: number;
+  h: number;
+  front: Uint8Array;
+  back: Uint8Array;
+}
+export function paperTexture(rows: readonly string[]): PaperTexture {
+  const h = rows.length, w = rows[0]!.length;
+  const front = new Uint8Array(w * h), back = new Uint8Array(w * h);
+  rows.forEach((r, y) => {
+    for (let x = 0; x < w; x++) {
+      const ch = r[x]!;
+      // (and two of the loader's paper ramp: X its deep gold 9d6c36, Y its cream f3c691, as the catch clip's paper has)
+      front[y * w + x] = ch === "." ? 0 : ch === "X" ? P0 + 1 : ch === "Y" ? P0 + PN - 1 : ofudaAt(KEYS.indexOf(ch), 0);
+    }
+  });
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) back[y * w + x] = paperShift(front[y * w + (w - 1 - x)]!, -2);
+  return { w, h, front, back };
+}
+/** The ofuda as the loader draws it (the exact hat crop). */
+export const OFUDA_TEXTURE: PaperTexture = { w: OFUDA_W, h: OFUDA_H, front: OFUDA_FRONT, back: OFUDA_BACK };
+
 // ------------------------------------------------------------------------------------------------ helpers
 
 const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -171,11 +194,12 @@ export interface PaperOptions {
   /** Where its tie (the top edge's middle) is, in art px. */
   tie?: { x: number; y: number };
   seed?: number;
+  /** Its size, art px (default: the ofuda's, OFUDA_W x OFUDA_H). The world's fall uses the whole paper (opening/paper.ts). */
+  size?: { w: number; h: number };
 }
 
 const SEG = 5; // facets down the paper
 const NODES = (SEG + 1) * 2;
-const SEG_LEN = OFUDA_H / SEG;
 /** Where the light comes from (upper left, in front). */
 const LIGHT = (() => {
   const v = [-0.35, -0.5, 1];
@@ -217,11 +241,18 @@ export class PaperOfuda {
   depth = 0.4;
   private t = 0;
   private phase: number;
+  /** Its width and length, and the length of a facet (art px). */
+  readonly W: number;
+  readonly H: number;
+  private readonly L: number;
 
   constructor(o: PaperOptions = {}) {
     this.tie = { ...(o.tie ?? { x: 0, y: 0 }) };
     this.phase = rng(o.seed ?? 7)() * 100;
-    const W = OFUDA_W, L = SEG_LEN;
+    this.W = o.size?.w ?? OFUDA_W;
+    this.H = o.size?.h ?? OFUDA_H;
+    this.L = this.H / SEG;
+    const W = this.W, L = this.L;
     const id = (r: number, c: number): number => r * 2 + c;
     for (let r = 0; r <= SEG; r++) {
       this.links.push([id(r, 0), id(r, 1), W, 1]);
@@ -246,8 +277,8 @@ export class PaperOfuda {
     for (let r = 0; r <= SEG; r++) {
       for (let c = 0; c < 2; c++) {
         const i = (r * 2 + c) * 3;
-        this.p[i] = this.q[i] = this.tie.x - OFUDA_W / 2 + c * OFUDA_W;
-        this.p[i + 1] = this.q[i + 1] = this.tie.y + r * SEG_LEN;
+        this.p[i] = this.q[i] = this.tie.x - this.W / 2 + c * this.W;
+        this.p[i + 1] = this.q[i + 1] = this.tie.y + r * this.L;
         this.p[i + 2] = this.q[i + 2] = 0;
       }
     }
@@ -324,7 +355,7 @@ export class PaperOfuda {
         const cx = (p[a * 3]! + p[b * 3]! + p[c * 3]! + p[d * 3]!) / 4;
         const cy = (p[a * 3 + 1]! + p[b * 3 + 1]! + p[c * 3 + 1]! + p[d * 3 + 1]!) / 4;
         const cz = (p[a * 3 + 2]! + p[b * 3 + 2]! + p[c * 3 + 2]! + p[d * 3 + 2]!) / 4;
-        const half = Math.hypot(OFUDA_W, SEG_LEN) / 2;
+        const half = Math.hypot(this.W, this.L) / 2;
         const nfx = -this.dragN * vn * ux * area, nfy = -this.dragN * vn * uy * area, nfz = -this.dragN * vn * uz * area;
         const tfx = -this.dragT * (vx - vn * ux) * area / 4, tfy = -this.dragT * (vy - vn * uy) * area / 4;
         const tfz = -this.dragT * (vz - vn * uz) * area / 4;
@@ -365,8 +396,8 @@ export class PaperOfuda {
   private holdTie(): void {
     const p = this.p;
     if (this.hold === "edge") {
-      p[0] = this.tie.x - OFUDA_W / 2; p[1] = this.tie.y; p[2] = this.tieZ;
-      p[3] = this.tie.x + OFUDA_W / 2; p[4] = this.tie.y; p[5] = this.tieZ;
+      p[0] = this.tie.x - this.W / 2; p[1] = this.tie.y; p[2] = this.tieZ;
+      p[3] = this.tie.x + this.W / 2; p[4] = this.tie.y; p[5] = this.tieZ;
       return;
     }
     // held at one point (the tie): the top edge's middle stays there, free to turn about it
