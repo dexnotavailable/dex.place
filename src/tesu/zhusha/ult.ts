@@ -38,7 +38,7 @@ export interface UltFile {
   hold: number;
   dive: { ticks: number; cap: number; flipFrom: number; lineLife: number };
   impact: { ticks: number; flash: number; slowmo: number; slowmoTicks: number; invert: number; punch: number };
-  aftermath: { hold: number; clear: number; revealFrom: number };
+  aftermath: { hold: number; clear: number; revealFrom: number; coreGone: number };
   reveal: { visibleFrom: number };
   camera: {
     bars: number; barsIn: number; barsOut: number;

@@ -172,9 +172,10 @@
     "clear": "r_reveal_clear"
   },
   "aftermath": {
-    "about": "After the nuke (Dex 10-19: stay on the destruction, the smoke takes a while to clear): `hold` ticks on the wreck with the smoke dense (debris settling, embers, her blue flames burning out across it), then the smoke clears over `clear` ticks (outward and up, the middle first); she is revealed (r_reveal starts) when `revealFrom` of the clear is done, the rest clears off her during the reveal. Any input from the start of the aftermath hands control back.",
+    "about": "After the nuke (Dex 10-19: stay on the destruction, the smoke takes a while to clear): `hold` ticks on the wreck with the smoke dense (debris settling, embers, her blue flames burning out across it), then the smoke clears over `clear` ticks (outward and up, the middle first); the middle of the smoke (where she stands) is gone when `coreGone` of the clear is done and she is revealed (r_reveal starts) a little before it, at `revealFrom`, stepping out of its last wisps; the edges clear off over the rest of it. Any input from the start of the aftermath hands control back.",
     "hold": 96,
     "clear": 210,
-    "revealFrom": 0.75
+    "revealFrom": 0.66,
+    "coreGone": 0.76
   }
 }
