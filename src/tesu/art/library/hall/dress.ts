@@ -10,6 +10,7 @@ import type { Bay } from "./backwall.ts";
 import type { NearFootP } from "./services.ts";
 import { yOn } from "../../../world/sections/common.ts";
 import { DIAG } from "../../../world/sections/gate-road.ts";
+import type { Caster } from "./court-light.ts";
 
 
 const H = 96;
@@ -27,6 +28,11 @@ function walk(b: WorldBuilder, name: string): Walk {
   const w = b.def.walks.find((o) => o.name === name);
   if (!w) throw new Error(`env-hall dressing: no walk ${name}`);
   return w;
+}
+
+/** Where the pixelized preview of gallery piece `id` hung at w x h lives (public/). */
+export function hallArtSrc(id: string, w: number, hh: number): string {
+  return `/tesu/hall-art/${id}-${Math.round(w)}x${Math.round(hh)}.png`;
 }
 
 /** The Hall of Works, dressed. */
@@ -51,7 +57,8 @@ export function dressHall(b: WorldBuilder): void {
   if (Math.abs(gateX - X(GATE_O)) > 2) throw new Error("env-hall dressing: the gate moved; update lights.ts GATE_O");
 
   // --- light and haze: warm incense haze instead of mist, no sky
-  b.atmos({ x: RX0 - h(20), y0: FY - h(40), y1: FY + h(20), interior: true, sky: ["#120d0e", "#1b1314", "#22181a"], haze: "#6e4e3a", mist: 0, mistColour: "#6a4c3a", sun: null });
+  // (hall loop round 1) the haze the far planes sink into is the shell's cool dusk, not warm brown
+  b.atmos({ x: RX0 - h(20), y0: FY - h(40), y1: FY + h(20), interior: true, sky: ["#120d0e", "#1b1314", "#22181a"], haze: "#3a3550", mist: 0, mistColour: "#3a3550", sun: null });
 
   // --- the back wall (P3): long enough for every frame in the room, the entrance shot included. Its
   // ground-floor bays are lattice, banners and archives only: the room's one moon gate is the real one
@@ -99,6 +106,8 @@ export function dressHall(b: WorldBuilder): void {
 
   // --- the middle bay: its wall with the moon gate, between the two posts that frame it
   b.piece("play", "hall.gate", gateX, FY, { l: bayL - gateX, r: bayR - gateX, top: FY - soffit, rad: Math.round(1.6 * H), cy: Math.round(1.62 * H), at: at(gateX, FY) }, { z: 1 });
+  // (hall loop round 1) the bay's wall sinks into the cool dusk round the lit opening (hall-light.ts)
+  b.piece("play", "hall.bayshade", gateX, FY, { l: bayL - gateX, r: bayR - gateX, top: FY - soffit, rad: Math.round(1.6 * H), cy: Math.round(1.62 * H), at: at(gateX, FY) }, { z: 1.5, reflect: false });
 
   // --- the Long Gallery: its beam on posts, the balustrade (no pillar through it any more: the map
   // stands on its own stand now)
@@ -136,6 +145,9 @@ export function dressHall(b: WorldBuilder): void {
   const arts = b.def.sprites.filter((s) => s.id.startsWith("art-") && s.kind === "image");
   for (const s of arts) {
     const w = Number(s.p.w), hh = Number(s.p.h);
+    // (hall loop round 1) Dex's art hangs as pixelized previews at the room's 1 px, made at exactly
+    // this size by tools/hall/pixelize_art.py (hall.test.mjs fails if a size has none)
+    s.p = { ...s.p, src: hallArtSrc(s.id.slice(4), w, hh) };
     b.piece("play", "hall.frame", s.x, s.y, { w, h: hh, mount: "wall", floor: 0, at: at(s.x, s.y) }, { z: 4 });
   }
   // the screens: one per group of the upstairs hang (a group: frames less than 1 H apart)
@@ -214,7 +226,46 @@ export function dressHall(b: WorldBuilder): void {
   const fascia: [number, number] = [GY - FY - 2, GY + D - FY + 2];
   const beamGap: [number, number] = [-BEAM - BEAM_D, -BEAM];
   b.sprite({ id: "hall-shaft", plane: "play", kind: "hall.shaft", x: SHAFT.x1, y: FY, p: { h: h(18), lean: SHAFT.x1 - SHAFT.x0, w: SHAFT.w, wTop: Math.round(SHAFT.w * 0.8), gaps: [fascia, beamGap] }, frames: 8, fps: 1, reflect: false });
-  b.sprite({ id: "hall-dust", plane: "front", kind: "hall.dust", x: SHAFT.x1, y: FY, p: { h: h(14), lean: Math.round((SHAFT.x1 - SHAFT.x0) * (14 / 18)), w: SHAFT.w, n: 60 }, frames: 16, fps: 4, reflect: false });
+  b.sprite({ id: "hall-dust", plane: "front", kind: "hall.dust", x: SHAFT.x1, y: FY, p: { h: h(14), lean: Math.round((SHAFT.x1 - SHAFT.x0) * (14 / 18)), w: SHAFT.w, n: 26 }, frames: 16, fps: 4, reflect: false });
+
+  // --- (hall loop round 1) life overhead: strings of paper cranes and silk streamers let down from
+  // the Long Gallery's underside, high over the walk line (hall.life), off the gate's bay and the
+  // lanterns' cords; steam off the tea tables on the back floor
+  {
+    const soffit = GY + Math.round(0.62 * H);
+    const maxLen = (FY - h(4.3)) - soffit;
+    const gate = b.def.usables.find((o) => o.id === "great-doors");
+    const lanternXs = HALL_LANTERNS.filter((l) => l.plane === "play").map((l) => X(l.o));
+    const hang: [number, "cranes" | "streamer", number, number][] = [];
+    for (let x = GX0 + h(0.9), i = 0; x < GX1 - h(0.6); i++) {
+      const clearGate = !gate || x < gate.x0 - h(1.4) || x > gate.x1 + h(1.4);
+      const clearLantern = lanternXs.every((lx) => Math.abs(lx - x) > h(0.45));
+      if (clearGate && clearLantern) {
+        const cranes = (i * 7 + 3) % 5 < 3;
+        const len = Math.min(maxLen, Math.round(h(cranes ? 0.9 : 1.3) + ((i * 37) % 11) / 10 * h(1.1)));
+        hang.push([x - GX0, cranes ? "cranes" : "streamer", len, 11 + i * 17]);
+      }
+      x += h(1.2) + ((i * 53) % 13) / 12 * h(1.1);
+    }
+    b.piece("play", "hall.life", GX0, soffit, { w: GX1 - GX0, hang, at: at(GX0, soffit) }, { z: 7, reflect: false });
+    for (const pc of b.def.pieces) {
+      if (pc.kind !== "hall.clutter" || pc.p.kind !== "teatable") continue;
+      const i = b.def.sprites.filter((sp) => sp.id.startsWith("hall-steam-")).length;
+      b.sprite({ id: `hall-steam-${i}`, plane: "back", kind: "hall.smoke", x: pc.x + h(0.15), y: FY - Math.round(0.62 * H), p: { h: Math.round(h(0.9) * r3) }, frames: 16, fps: 4, reflect: false });
+    }
+  }
+
+  // --- (hall loop round 1) the light lands: the shell sinks into the cool dark, every light lays
+  // its pool in clustered bands on what is behind and round it, the day spills across the floor
+  // from the doors, the shaft lands as a lattice-cast patch (hall-light.ts)
+  const daylit: [number, number, number, number][] = [];
+  for (const [id, day] of [["hall-front-doors", 0.6], ["great-doors", 1.0]] as const) {
+    const u = b.def.usables.find((o) => o.id === id);
+    if (u) daylit.push([u.x0, u.x1, FY - u.y0, day]);
+  }
+  const lightP = { floor: FY, gallery: GY, ends: [X(0.4), X(33.6)] as [number, number], doors: daylit };
+  b.piece("back", "hall.light", bx0, FY, { ...lightP, w: (bx1 - bx0) * r3, top: h(24) * r3, below: h(6) * r3, at: at(bx0, FY, r3) }, { z: 50, reflect: false });
+  b.piece("play", "hall.light", X(-8), FY, { ...lightP, w: h(50), top: h(21), below: h(6), play: true, at: at(X(-8), FY) }, { z: 50, reflect: false });
 
   void HALL_LIGHT;
 }
@@ -243,7 +294,7 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number; ring?: [number, 
   // --- the foundation under the floor's front edge, the stairwell's mouth left open
   const pil: number[] = [];
   for (let x = CX0 + h(1.3); x < CX1; x += h(2.6)) if (x < WELL0 - h(0.5) || x > WELL1 + h(0.5)) pil.push(x - (CX0 - h(0.3)));
-  b.piece("play", "court.foundation", CX0 - h(0.3), Y, { w: CX1 - CX0 + h(0.5), depth: h(2.7), well: [WELL0 - (CX0 - h(0.3)), WELL1 - (CX0 - h(0.3))], pilasters: pil }, { z: 1 });
+  b.piece("play", "court.foundation", CX0 - h(0.3), Y, { w: CX1 - CX0 + h(0.5), depth: h(2.7), well: [WELL0 - (CX0 - h(0.3)), WELL1 - (CX0 - h(0.3))], pilasters: pil, centre: MID - (CX0 - h(0.3)) }, { z: 1 });
 
   // --- the gatehouse porch against the hall's east wall
   const cd = usable(b, "court-doors");
@@ -273,14 +324,18 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number; ring?: [number, 
   // --- the spectators' tiers under the stands sprite (which then draws its spectators alone)
   const stands = b.def.sprites.find((sp) => sp.id === "stands");
   if (stands) {
+    // (hall loop round 1) the spectators are a crowd of people, every one different (court-light.ts)
+    stands.kind = "court.crowd";
     stands.p = { ...stands.p, tiers: false };
     b.piece("back", "court.tiers", stands.x, stands.y, { w: Number(stands.p.w), rows: Number(stands.p.rows ?? 3) }, { z: 0, reflect: false });
   }
 
   // --- festival banners on tall poles among the stands (P3 sprites), each in the wind
   const r3b = PLANES.back.rate;
-  [-6.2, -2.4, 1.6, 5.4].forEach((dx, i) => {
-    b.sprite({ id: `court-banner-${i}`, plane: "back", kind: "court.banner", x: HOLD + h(dx), y: Y, p: { h: Math.round(h(5.6) * r3b), w: Math.round(h(0.55) * r3b), drop: Math.round(h(1.7) * r3b), phase: (i * 0.37) % 1 }, frames: 8, fps: 5, reflect: false });
+  // (hall loop round 1) each its own height, width, length, gust and pattern: never a pair of twins
+  const flagSet: [number, number, number, number, number, number][] = [[-6.2, 5.6, 0.55, 1.7, 1.0, 0], [-2.4, 6.1, 0.48, 2.2, 1.35, 1], [1.6, 5.2, 0.6, 1.35, 0.8, 2], [5.4, 5.8, 0.44, 1.95, 1.2, 1]];
+  flagSet.forEach(([dx, ph, bw, dr, gust, style], i) => {
+    b.sprite({ id: `court-banner-${i}`, plane: "back", kind: "court.banner", x: HOLD + h(dx), y: Y, p: { h: Math.round(h(ph) * r3b), w: Math.round(h(bw) * r3b), drop: Math.round(h(dr) * r3b), phase: (i * 0.37) % 1, gust, style }, frames: 8, fps: 5, reflect: false });
   });
 
   // --- the Prow Stair's last run up through the rock and the foundation to the mouth, with
@@ -313,4 +368,94 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number; ring?: [number, 
     b.piece("play", "court.leap", lx0 - h(0.1), Y, { w: lx1 - lx0 + h(0.1) }, { z: 3 });
     b.sprite({ id: "court-flags", plane: "play", kind: "court.flags", x: lx0 + h(0.05), y: Y, p: { w: lx1 - lx0, h: Math.round(1.9 * H), n: 5 }, frames: 8, fps: 5, reflect: false });
   }
+
+  // --- (hall loop round 1) the sun lands: every standing thing throws its shadow back across the
+  // paving, up and to the right (court-light.ts projects their side-on silhouettes)
+  b.piece("play", "court.shadows", CX0, Y, { band, w: CX1 - CX0 + h(0.2), reach: h(2.9), slant: 0.6, casters: courtCasters(b, CX0, Y, { gongX: o.gongX, mid: MID, well0: WELL0, well1: WELL1, cx1: CX1, railEnd, ring: o.ring }) }, { z: 2.5, reflect: false, minLevel: 0.9 });
+}
+
+/** The court's standing things as side-on silhouettes for their shadows (x from the court's west end, z up from the walk line). */
+function courtCasters(b: WorldBuilder, CX0: number, Y: number, o: { gongX: number; mid: number; well0: number; well1: number; cx1: number; railEnd: number; ring?: [number, number] }): Caster[] {
+  const cs: Caster[] = [];
+  const box = (x0: number, x1: number, z0: number, z1: number) => cs.push({ box: [x0 - CX0, x1 - CX0, z0, z1] });
+  const rod = (x: number, w: number, z0: number, z1: number) => cs.push({ rod: [x - CX0, w, z0, z1] });
+  // the gatehouse porch against the hall's wall, its roof overhanging
+  const cd = usable(b, "court-doors");
+  const g0 = cd.x0 - h(0.25), gw = cd.x1 - cd.x0 + h(0.5), gd = Y - cd.y0;
+  box(g0, g0 + gw, 0, gd + h(0.6));
+  box(g0 - 0.45 * gw, g0 + 1.45 * gw, gd + h(0.6), gd + h(1.05));
+  // the Prize Board: legs, the board, its roof, the banner on its poles
+  const pb = usable(b, "prize-board");
+  const bx = (pb.x0 + pb.x1) / 2;
+  box(bx - h(1.0), bx - h(0.89), 0, h(1.97));
+  box(bx + h(0.9), bx + h(1.01), 0, h(1.97));
+  box(bx - h(1.0), bx + h(1.01), h(0.24), h(0.28));
+  box(bx - h(1.1), bx + h(1.1), h(0.72), h(2.17));
+  box(bx - h(1.4), bx + h(1.4), h(2.17), h(2.36));
+  box(bx - h(1.2), bx + h(1.2), h(2.36), h(2.58));
+  rod(bx - h(1.12), 8, 0, h(4.6));
+  rod(bx + h(1.06), 8, 0, h(4.6));
+  box(bx - h(0.95), bx + h(0.95), h(2.55), h(4.45));
+  // Bao's gong tower: posts on stone bases, the beam and the brace, the gong on its cords, the tower
+  const gx = o.gongX, half = h(1.05), r = Math.round(0.17 * H), gy = h(1.45);
+  for (const s of [-1, 1]) {
+    rod(gx + s * half, 2 * r, 0, gy + h(1.82));
+    box(gx + s * half - r * 1.55, gx + s * half + r * 1.55, 0, h(0.19));
+    box(gx + s * half - r * 1.4, gx + s * half + r * 1.4, h(0.19), h(0.5));
+    rod(gx + s * h(0.4), 3, gy + h(0.6), gy + h(1.32));
+  }
+  box(gx - half - h(0.3), gx + half + h(0.3), gy + h(1.32), gy + h(1.58));
+  box(gx - half - h(0.3), gx + half + h(0.3), h(0.95), h(1.09));
+  box(gx - half * 0.62, gx + half * 0.62, gy + h(1.58), h(13));
+  cs.push({ disc: [gx - CX0, gy, Math.round(0.72 * H)] });
+  // the stone lantern pillars and the newels at the stair's mouth
+  for (const x of [o.mid - h(1.7), o.well1 + h(0.9)]) {
+    box(x - h(0.2), x + h(0.2), 0, h(0.38));
+    rod(x, h(0.25), 0, h(2.2));
+    box(x - h(0.3), x + h(0.3), h(2.2), h(2.72));
+    box(x - h(0.44), x + h(0.44), h(2.72), h(2.95));
+  }
+  for (const x of [o.well0 - h(0.25), o.well1 + h(0.25)]) {
+    box(x - h(0.16), x + h(0.16), 0, h(0.95));
+    box(x - h(0.12), x + h(0.12), h(0.95), h(1.4));
+  }
+  // the props that stand on the court: the lantern post (and its lantern), the jars
+  for (const pr of b.def.props) {
+    if (pr.x < CX0 || pr.x > o.cx1 + h(0.5)) continue;
+    const ph = Number(pr.p.h ?? 0);
+    if (pr.kind === "lanternpost") {
+      rod(pr.x, 7, 0, ph);
+      box(pr.x, pr.x + Number(pr.p.arm ?? 40), ph - 8, ph);
+    } else if (pr.kind === "paperlantern") {
+      const rr = Number(pr.p.r ?? 14);
+      cs.push({ disc: [pr.x - CX0, Y - pr.y - rr * 1.6, rr] });
+    } else if (pr.kind === "jar") {
+      box(pr.x - ph * 0.36, pr.x + ph * 0.36, 0, ph * 0.8);
+      box(pr.x - ph * 0.2, pr.x + ph * 0.2, ph * 0.8, ph);
+    }
+  }
+  // the ring's posts, its rope slung between their heads, the banner poles outside them
+  if (o.ring) {
+    const [r0, r1] = o.ring;
+    for (const [px, out] of [[r0 - h(0.16), -1], [r1 + h(0.16), 1]] as const) {
+      box(px - h(0.14), px + h(0.14), 0, h(0.24));
+      rod(px, h(0.15), 0, h(1.45));
+      box(px - 5, px + 5, h(1.45), h(1.65));
+      const qx = px + out * h(0.36);
+      rod(qx, 3, 0, h(3.3));
+      box(qx - h(0.2), qx + h(0.2), h(1.65), h(3.2));
+    }
+    box(r0 - h(0.16), r1 + h(0.16), h(1.27), h(1.33));
+  }
+  // the bench and the stone rail at the tip
+  const bn = o.cx1 - h(1.75);
+  box(bn - 4, bn + 100, h(0.38), h(0.46));
+  box(bn + 4, bn + 18, 0, h(0.38));
+  box(bn + 78, bn + 92, 0, h(0.38));
+  const r0 = o.cx1 - h(1.4), rw = o.railEnd - r0, rh = Math.round(0.62 * H);
+  const n = Math.max(2, Math.round(rw / (0.9 * H)));
+  for (let i = 0; i <= n; i++) box(r0 + (i * rw) / n - 6, r0 + (i * rw) / n + 6, 0, rh + 8);
+  box(r0, r0 + rw, rh - 7, rh + 4);
+  box(r0, r0 + rw, rh * 0.5, rh * 0.62);
+  return cs;
 }

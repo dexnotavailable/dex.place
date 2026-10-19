@@ -1219,7 +1219,7 @@ export const ring = definePainter<RingP>("court.ring", {
     for (const [i, px] of posts.entries()) {
       const out = i === 0 ? -1 : 1;
       // the post's cast shadow on the paving, down and to the right (the sun is up and to the left)
-      poly(c, [px - 4, 0, px + 4, 0, px + 0.75 * H, -dh * 0.5, px + 0.68 * H, -dh * 0.5], (X, Y) => (keep(X, Y, 0.5) ? P.stone[5]! : 0));
+      // (W2 round 1: its shadow is court.shadows' now, cast like every other thing on the court)
       // a stone base, the lacquered post, a gold cap with a lotus finial
       rect(c, px - 0.14 * H, -0.24 * H, px + 0.14 * H, 0, (X, Y, lx, ly) => {
         const [nx, ny] = bevel((lx - px + 0.14 * H) / (0.28 * H), (ly + 0.24 * H) / (0.24 * H), 0.15, 0.2);

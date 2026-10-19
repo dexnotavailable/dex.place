@@ -77,6 +77,14 @@ export const P = {
    * the warm bounce from the land and lake in the lowest billows' shade.
    */
   cumulus: ramp("#fff7ea", "#fde8d6", "#efe7e2", "#dde0e4", "#c9d0d8", "#b4bdc9", "#a0aab8", "#8c97a7", "#c6c2c4", "#b3afb3"),
+  // --- appended by the hall's scene loop (W), round 1 (indices of everything above are unchanged) ---
+  /**
+   * Blue-violet night shadow: the cool mass round a warm opening (Dex's ref 06, the Liyue gate at
+   * night). The hall's shell (ceiling, upper walls, end walls) and the court's deepest shade.
+   */
+  dusk: ramp("#5e5a7e", "#4a4a6c", "#3a3b58", "#2d2e46", "#222336", "#191a28", "#121219"),
+  /** Violet-brown dusk timber: where the warm interior turns into the cool shadow (ref 06's walls). */
+  mauve: ramp("#6e5560", "#5e4952", "#473a4a", "#352b38", "#261f2a"),
 } as const;
 
 export type RampName = keyof typeof P;

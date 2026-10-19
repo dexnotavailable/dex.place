@@ -9,6 +9,7 @@ import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
 import { M, SCREEN, LitField, bevel, clamp, cord, cyl, face, fbm, grain, hash, keep, lathe, mt, poly, rect, tn, vnoise, type At, type Ramp } from "./kit.ts";
+import { lut, tint } from "./tint.ts";
 
 const H = 96;
 
@@ -369,13 +370,7 @@ export const lamp = definePainter<FurnP>("hall.lamp", {
     const W = p.w, Ht = p.h;
     const side = sideOf(lf, 0, -Ht / 2);
     contact(c, -W * 0.5, W * 0.5, 0.6);
-    // the glow on the floor and the air round the shade (stepped, dithered, warm)
-    const gy = -Ht + W * 0.75;
-    rect(c, -W * 1.7, gy - W * 1.4, W * 1.7, gy + W * 1.4, (X, Y, lx, ly) => {
-      const q = Math.hypot(lx / (W * 1.7), (ly - gy) / (W * 1.4));
-      if (q > 1) return 0;
-      return keep(X, Y, q < 0.6 ? 0.18 : 0.08) ? P.ember[2]! : 0;
-    });
+    // (hall loop round 1) its light is painted where it lands (hall-light.ts), not as a dither disc
     woodBox(c, lf, side, -W * 0.45, -6, W * 0.45, 0, M.lacq, 3, 0.1, 1, 2);
     lathe(c, 0, -Ht + W * 1.4, -6, () => 2.5, (X, Y, u, _lx, ly) => mt(M.lacq, cyl(lf.get(0, ly).k, u, side, 0.2), X, Y, 0.0, 1));
     // the shade: a lacquer frame with a lattice over glowing paper
@@ -408,8 +403,10 @@ export interface FrameP {
 export const frame = definePainter<FrameP>("hall.frame", {
   bounds(p) {
     const m = 12;
-    const below = p.mount === "stand" ? (p.floor ?? 0) + 6 : m + 4;
-    return [-p.w / 2 - m - 14, -p.h - m - 0.55 * H, p.w / 2 + m + 14, below];
+    // (hall loop round 1) a wall-hung frame's lamp pool reaches 0.7 H round it
+    const wall = p.mount === "stand" ? 0 : 0.75 * H;
+    const below = p.mount === "stand" ? (p.floor ?? 0) + 6 : m + 0.65 * H;
+    return [-p.w / 2 - m - Math.max(14, wall), -p.h - m - Math.max(0.55 * H, 0.65 * H), p.w / 2 + m + Math.max(14, wall), below];
   },
   paint(c, p) {
     const lf = new LitField(HALL_LIGHT, p.at, 8);
@@ -435,22 +432,47 @@ export const frame = definePainter<FrameP>("hall.frame", {
       // tassels hanging off the frame's bottom corners
       for (const tx of [x0 + 3, x1 - 3]) rect(c, tx - 1, y1, tx + 1, y1 + 14, (X, Y, _lx, ly) => (ly > y1 + 8 ? tn(M.verm, 0.45, X, Y, 0) : tn(M.verm, 0.3, X, Y, 0)));
     } else {
-      // a nail and a cord, and the frame's shadow on the wall behind it
+      // (hall loop round 1) the picture lamp's pool on the wall round the frame, in two bands, and
+      // the frame's cast shadow on the wall, down and away from the lamp: both re-colour the wall
+      const warm1 = lut("warm", 1), warm2 = lut("warm", 2), dark = lut("night", 2);
+      tint(c, x0 - 0.7 * H, y0 - 0.5 * H, x1 + 0.7 * H, y1 + 0.6 * H, (_X, _Y, lx, ly) => {
+        const q = Math.hypot(lx / ((x1 - x0) * 0.5 + 0.55 * H), (ly - y0 + 0.1 * H) / ((y1 - y0) * 0.75 + 0.3 * H));
+        return q < 0.55 ? warm2 : q < 1 ? warm1 : null;
+      });
+      tint(c, x0 + 3, y0 + 5, x1 + 5, y1 + 6, (_X, _Y, lx, ly) => (lx > x1 || ly > y1 ? dark : null));
+      // a nail and a cord
       cord(c, x0 + 10, y0 + 2, 0, y0 - 0.28 * H, 0, P.red[4]!);
       cord(c, x1 - 10, y0 + 2, 0, y0 - 0.28 * H, 0, P.red[4]!);
       rect(c, -2, y0 - 0.28 * H - 3, 2, y0 - 0.28 * H + 1, (X, Y) => tn(M.gold, 0.3, X, Y, 0));
-      rect(c, x0 + side * -4, y0 + 5, x1 + side * -4, y1 + 5, (X, Y) => (keep(X, Y, 0.5) ? P.umber[5]! : 0));
     }
-    // the moulding: dark lacquer, a gold bead inside and out, lit on its upper and light sides
+    // the moulding: dark lacquer, a gold bead inside and out; (hall loop round 1) with depth: the
+    // picture lamp above lights its top member and the inner lip of its bottom member, the top
+    // member's inner lip stays dark (its shadow falls across the picture's top rows, made with it)
     rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
       if (lx > -p.w / 2 && lx < p.w / 2 && ly > -p.h && ly < 0) return 0;
       const l = lf.get(lx, ly);
       const e = Math.min(lx - x0, x1 - lx, ly - y0, y1 - ly);
       const nx = lx - x0 < m ? -0.7 : x1 - lx < m ? 0.7 : 0;
       const ny = ly - y0 < m ? -0.7 : y1 - ly < m ? 0.7 : 0;
-      if (e < 1.5) return mt(M.lacq, face(l.k, side, nx, ny) * 0.5, X, Y, 0.1, 1);
-      if (e < 3.5 || e > m - 2.5) return mt(M.gold, face(l.k, side, nx, ny) * 1.0, X, Y, 0.05, 1);
-      return mt(M.lacq, face(l.k, side, nx * 0.6, ny * 0.6) * 0.75, X, Y, 0.0, 1);
+      const lamp = ly - y0 < m ? 0.16 : ly > -p.h && y1 - ly < m ? 0.06 : 0;
+      if (e < 1.5) return mt(M.lacq, face(l.k, side, nx, ny) * 0.5 + lamp * 0.5, X, Y, 0.1, 1);
+      if (e > m - 2.5) {
+        // the inner bead: dark under the top member, lit along the bottom lip
+        const lip = ly > -2.5 ? 0.32 : ly < -p.h + 2.5 ? -0.3 : 0;
+        return mt(M.gold, face(l.k, side, nx, ny) * 0.9 + lip, X, Y, 0.05, 1);
+      }
+      if (e < 3.5) return mt(M.gold, face(l.k, side, nx, ny) * 1.0 + lamp, X, Y, 0.05, 1);
+      return mt(M.lacq, face(l.k, side, nx * 0.6, ny * 0.6) * 0.75 + lamp, X, Y, 0.0, 1);
+    });
+    // the picture lamp: a small brass hood on a curved arm over the frame's top, its mouth glowing
+    const hw = Math.min(0.32 * H, p.w * 0.22), hy = y0 - 0.2 * H;
+    rect(c, -1, hy, 1, y0, (X, Y) => tn(M.bronze, 0.55, X, Y, 0));
+    rect(c, -1, hy - 2, 5, hy, (X, Y) => tn(M.bronze, 0.45, X, Y, 0));
+    rect(c, -hw, hy - 1, hw, hy + 4, (X, Y, lx, ly) => {
+      const u = lx / hw;
+      if (Math.abs(u) > 1 - (hy + 4 - ly) * 0.04) return 0;
+      if (ly > hy + 2.6) return tn(P.ember, 0.0, X, Y, 0);
+      return mt(M.bronze, face(lf.get(lx, ly).k, side, u * 0.6, -0.8) * (ly < hy + 0.6 ? 1.1 : 0.8), X, Y, 0.0, 1);
     });
   },
 });
