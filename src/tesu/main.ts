@@ -25,6 +25,8 @@ import { readSlipInto, slipFor } from "./save.ts";
 import type { Usable } from "./world/types.ts";
 import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "./opening/conductor.ts";
 import { Track1 } from "./opening/track.ts";
+import { voiceFor } from "./opening/voice.ts";
+import { VOICE_FILES } from "./opening/voice-files.ts";
 import { startPlateWorkers } from "./plates/store.ts";
 import { adoptWorld } from "./world/index.ts";
 
@@ -323,6 +325,7 @@ async function boot(): Promise<void> {
 function standalonePress(game: TesuGame, parts: () => boolean): void {
   const ctx = makeAudio();
   const track = ctx ? new Track1(ctx, ctx.destination) : null;
+  const voice = ctx ? voiceFor(ctx, VOICE_FILES) : null;
   let trackIn = !track;
   void track?.aReady.then(() => { trackIn = true; });
   const btn = document.createElement("button");
@@ -336,7 +339,7 @@ function standalonePress(game: TesuGame, parts: () => boolean): void {
     if (!game.awaitingPress || performance.now() - shownAt < 300) return;
     btn.remove();
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const c = new Conductor(ctx, track, { doc: document, reduced, repeat: readOpeningNote().seen > 0 });
+    const c = new Conductor(ctx, track, { doc: document, reduced, repeat: readOpeningNote().seen > 0, voice });
     c.start();
     game.play(c);
     (document.getElementById("view") as HTMLCanvasElement | null)?.focus();

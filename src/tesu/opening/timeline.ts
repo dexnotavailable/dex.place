@@ -125,12 +125,16 @@ export function herSpeedH(T: number): number {
 const clip = her.clip;
 /** T at which each drawing of the catch starts (f000 is held from the start until f001). */
 export const CLIP_AT: readonly number[] = (() => {
-  // whole ticks from the slap's drawing (f007), so it lands on the slap exactly
-  const slapI = 7;
+  // whole ticks from the slap's drawing (f007), so it lands on the slap exactly; the jam (f`jamDrawing`) holds until
+  // line 6's push mark, and the push-up (the next drawing on) plays from there in its own ticks
+  const slapI = 7, jamI = clip.jamDrawing;
   const tick: number[] = [0];
   for (let i = 1; i < clip.ticks.length; i++) tick.push(tick[i - 1]! + clip.ticks[i]!);
   const at: number[] = [-Infinity];
-  for (let i = 1; i <= clip.ticks.length; i++) at.push(i === slapI ? clip.slap : clip.slap + (tick[i - 1]! - tick[slapI - 1]!) / 60);
+  for (let i = 1; i <= clip.ticks.length; i++) {
+    if (i <= jamI) at.push(i === slapI ? clip.slap : clip.slap + (tick[i - 1]! - tick[slapI - 1]!) / 60);
+    else at.push(Math.max(clip.push, at[jamI]! + clip.ticks[jamI]! / 60) + (tick[i - 1]! - tick[jamI]!) / 60);
+  }
   return at;
 })();
 
@@ -344,9 +348,38 @@ export function paperAirAt(T: number, way: Way = "continue"): { x: number; gust:
 
 // --- words and bars -----------------------------------------------------------------------------------
 
-/** The caption showing at T, if any. */
+/** One line of her voice: when its file starts and its speech (T), its subtitle (Japanese, English). */
+export interface VoiceLine {
+  n: number;
+  at: number;
+  len: number;
+  from: number;
+  to: number;
+  jp: string;
+  en: string;
+}
+
+/** Her lines on T (the chart's `voice`). */
+export const VOICE: readonly VoiceLine[] = BEATS.voice.lines.map((l) => ({
+  n: l.n, at: l.at, len: l.len, from: l.at + l.speech[0], to: l.at + l.speech[1], jp: l.jp, en: l.en,
+}));
+
+/** A subtitle shows from just before its line speaks to a moment after (never over the next line). */
+export const SUB_LEAD = 0.1, SUB_TAIL = 0.45;
+
+/** The subtitle showing at T, if any: the line being spoken. */
+export function subtitleAt(T: number): VoiceLine | null {
+  for (let i = 0; i < VOICE.length; i++) {
+    const v = VOICE[i]!, next = VOICE[i + 1];
+    const end = Math.min(v.to + SUB_TAIL, next ? next.from - SUB_LEAD - 0.02 : Infinity);
+    if (T >= v.from - SUB_LEAD && T < end) return v;
+  }
+  return null;
+}
+
+/** The caption showing at T, if any (the subtitle's English; tools and older checks). */
 export function captionAt(T: number): string | null {
-  for (const c of BEATS.captions) if (T >= c.from && T < c.to) return c.text;
+  return subtitleAt(T)?.en ?? null;
   return null;
 }
 

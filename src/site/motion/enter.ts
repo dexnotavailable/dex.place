@@ -15,6 +15,8 @@ import { BEATS } from "../../tesu/opening/beats.ts";
 import { startT } from "../../tesu/opening/timeline.ts";
 import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "../../tesu/opening/conductor.ts";
 import { Track1 } from "../../tesu/opening/track.ts";
+import { voiceFor } from "../../tesu/opening/voice.ts";
+import { VOICE_FILES } from "../../tesu/opening/voice-files.ts";
 import { afterMark } from "./quiet.ts";
 
 export type Way = "continue" | "corner" | "top" | "bottom";
@@ -50,6 +52,8 @@ export function initOpening(opts: { reduced: MediaQueryList; world: () => Playab
     if (audio || trackIn) return;
     audio = makeAudio();
     track = audio ? new Track1(audio, audio.destination) : null;
+    // her lines load beside Track 1 (small files; a line not in by its time stays silent, its subtitle shows)
+    if (audio) voiceFor(audio, VOICE_FILES);
     trackIn = !track;
     void track?.aReady.then(() => { trackIn = true; }, () => { trackIn = true; });
   };
@@ -61,7 +65,7 @@ export function initOpening(opts: { reduced: MediaQueryList; world: () => Playab
     wake();
     const way = (e as CustomEvent<EnterDetail>).detail?.way ?? "continue";
     if (audio && audio.state === "suspended") void audio.resume();
-    const c = new Conductor(audio, track, { doc: document, reduced: opts.reduced.matches, repeat: readOpeningNote().seen > 0, way });
+    const c = new Conductor(audio, track, { doc: document, reduced: opts.reduced.matches, repeat: readOpeningNote().seen > 0, way, voice: audio ? voiceFor(audio, VOICE_FILES) : null });
     conductor = c;
     // (tools and checks read the running opening and the way in here)
     Object.assign(window, { __dexOpening: c, __dexWay: way });

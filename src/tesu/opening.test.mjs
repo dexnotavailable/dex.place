@@ -5,7 +5,7 @@
 // clock, the "continue" rules, the effects booked ahead and the plate store's keep (unchanged).
 import test from "node:test";
 import assert from "node:assert/strict";
-import { BEATS, CLIP_AT, CLIP_END, HANDOFF_T, barsAt, beatAt, cameraAt, captionAt, centreOf, clipAt, herPhase, herSpeedH, herXH, keysAt, mixShot, monotone, nextBarLine, paperBlendAt, paperScreenAt, startT, widestShot } from "./opening/timeline.ts";
+import { BEATS, CLIP_AT, CLIP_END, HANDOFF_T, VOICE, barsAt, beatAt, cameraAt, captionAt, centreOf, clipAt, herPhase, herSpeedH, herXH, keysAt, mixShot, monotone, nextBarLine, paperBlendAt, paperScreenAt, startT, subtitleAt, widestShot } from "./opening/timeline.ts";
 import { Opening } from "./opening.ts";
 import { TileStore } from "./plates/store.ts";
 import { HeardClock, onGrid } from "./opening/clock.ts";
@@ -22,7 +22,7 @@ const WINDOWS = [[1280, 720], [1366, 768], [1536, 864], [1920, 1080], [1920, 912
 const BARS = BEATS.ui.bars.vh / 100;
 const camAt = (T, extra = {}) => cameraAt(T, { x: herXH(T) * H, W: 1280, H: 720, world, ...extra });
 
-test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift into it; the lines in the calm before the slap", () => {
+test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift into it; her lines 1-5 in the calm, line 6 after the slap", () => {
   near(BEATS.her.clip.slap, BEATS.bars[9], 1e-9, "the slap on bar 9");
   assert.equal(Math.floor(BEATS.her.clip.slap), 18);
   near(BEATS.title.at, BEATS.bars[16], 1e-9, "TESU on bar 16");
@@ -32,20 +32,28 @@ test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift
   near(BEATS.her.drop1, BEATS.bars[14], 1e-9, "drop 1");
   near(BEATS.camera.whip.from, BEATS.bars[15], 0.001, "the whip on the crash");
   near(BEATS.camera.whip.to, BEATS.title.at, 0.001, "the whip lands on 0:32");
-  // the captions: six, one at a time, none in the first bar (the sky and the paper alone), all ended before the slap
-  const c = BEATS.captions;
-  assert.equal(c.length, 6);
-  assert.ok(c[0].from >= BEATS.bars[1] - 1e-9);
-  for (let i = 0; i < c.length; i++) {
-    assert.ok(c[i].to > c[i].from + 1.6, `line ${i + 1} shows long enough`);
-    if (i) assert.ok(c[i].from >= c[i - 1].to, `line ${i + 1} after line ${i}`);
-    assert.ok(c[i].to <= BEATS.her.clip.slap, `line ${i + 1} ends before the slap`);
+  // her voice (Dex's takes, 10-19): lines 1-5 speak in the calm and are done before the slap, one at a time; line 6
+  // (the joke) after the slap, from under the jammed hat; the hat comes up on its push mark
+  const v = VOICE;
+  assert.equal(v.length, 6);
+  assert.ok(v[0].from >= 0.2, "line 1 after the press's gust");
+  for (let i = 0; i < 5; i++) {
+    assert.ok(v[i].to <= BEATS.her.clip.slap - 0.15, `line ${i + 1} done before the slap`);
+    if (i) assert.ok(v[i].from >= v[i - 1].to + 0.1, `line ${i + 1} after line ${i}, a breath between`);
   }
-  assert.ok(!c.some((x) => /Emperor|letter|court/i.test(x.text)), "the old letter is gone");
-  assert.equal(captionAt(0.5), null);
-  assert.equal(captionAt(3), "Nobody chooses what the wind brings them.");
-  assert.equal(captionAt(17), "...I usually catch it with my face.");
-  assert.equal(captionAt(19), null);
+  assert.ok(v[5].from > BEATS.her.clip.slap + 0.2 && v[5].from < BEATS.her.clip.slap + 0.6, "line 6 right after the slap lands");
+  const l6 = BEATS.voice.lines[5];
+  near(BEATS.her.clip.push, l6.at + l6.push, 1e-6, "the push-up on line 6's mark");
+  for (const l of BEATS.voice.lines) assert.ok(l.speech[0] >= 0 && l.speech[1] <= l.len && l.jp && l.en, `line ${l.n}`);
+  assert.ok(!v.some((x) => /Emperor|letter|court/i.test(x.en)), "the old letter is gone");
+  // the subtitle: the line being spoken (Japanese + English), nothing between lines' words for long, none at the press
+  assert.equal(subtitleAt(0), null);
+  for (const x of v) {
+    assert.equal(subtitleAt((x.from + x.to) / 2)?.n, x.n, `line ${x.n}'s subtitle while it speaks`);
+    assert.equal(subtitleAt(x.from)?.n, x.n);
+  }
+  assert.equal(subtitleAt(v[5].to + 1), null);
+  assert.equal(captionAt(3), v[0].en);
 });
 
 test("her path: further back (left), the solved walk, the run at the game's own speed, she stops on the terrace", () => {
@@ -60,7 +68,8 @@ test("her path: further back (left), the solved walk, the run at the game's own 
   assert.equal(herXH(h.walkFrom - 0.01), h.catchXH);
   near(herXH(h.pickup), h.xPickupH, 1e-6, "x at the pickup");
   near(herXH(h.drop1), h.xBreakH, 1e-6, "x at the break");
-  near(herSpeedH(24), 1.1, 0.002, "the walk");
+  const walk = herSpeedH((h.walkFrom + h.pickup) / 2);
+  assert.ok(walk >= 1 && walk <= 1.45, `a walk, not a run (${walk.toFixed(2)} H/s)`);
   near(herSpeedH(30), 9 / 1.77, 0.01, "the run (feel.json: 9 m/s)");
   [115, 119, 123].forEach((g, i) => near(herXH(h.gates[i]), g, 0.1, `gate ${i + 1}`));
   near(herXH(h.stop), h.stopXH, 1e-6, "she stops at the overlook");
@@ -84,7 +93,10 @@ test("the catch: worker 1's drawings retimed so f007 (the slap) starts on bar 9;
   assert.deepEqual(clipAt(HANDOFF_T - 1e-4), { index: 0, tick: 0 });
   assert.deepEqual(clipAt(HANDOFF_T), { index: 1, tick: c.starts[1] });
   near(HANDOFF_T, c.slap - (8 + 9 + 4 * 6) / 60, 1e-9, "f001 starts 41 ticks before the slap");
-  for (let i = 1; i < 18; i++) near(CLIP_AT[i + 1] - CLIP_AT[i], c.ticks[i] / 60, 1e-9, `drawing ${i}`);
+  // as drawn, except the jam (f010) held until line 6's push mark, where the push-up (f011) starts
+  for (let i = 1; i < 18; i++) if (i !== c.jamDrawing) near(CLIP_AT[i + 1] - CLIP_AT[i], c.ticks[i] / 60, 1e-9, `drawing ${i}`);
+  near(CLIP_AT[c.jamDrawing + 1], c.push, 1e-9, "the push-up on the mark");
+  assert.ok(CLIP_AT[c.jamDrawing + 1] - CLIP_AT[c.jamDrawing] >= c.ticks[c.jamDrawing] / 60 - 1e-9, "the jam held, never cut short");
   assert.equal(clipAt(CLIP_END), null);
   assert.ok(CLIP_END < BEATS.her.walkFrom, "she settles before she walks");
   // the clip's own drawing starts (anim.json), so the game shows drawing i at its own tick

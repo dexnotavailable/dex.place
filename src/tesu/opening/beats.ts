@@ -51,8 +51,8 @@ export const BEATS = {
    { "T": 12.609, "zoom": 0.5, "anchor": 0.8, "horizon": 0.64, "alt": 0, "cx": 88, "follow": false },
    { "T": 14.6, "zoom": 0.52, "anchor": 0.8, "horizon": 0.63, "alt": 0, "cx": 87.6, "follow": false },
    { "T": 16.589, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
-   { "T": 20.557, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
-   { "T": 22.54, "zoom": 1.1, "anchor": 0.66, "horizon": 0.28, "alt": 0, "cx": 1.3, "follow": true },
+   { "T": 21.528, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
+   { "T": 23.2, "zoom": 1.1, "anchor": 0.66, "horizon": 0.28, "alt": 0, "cx": 1.3, "follow": true },
    { "T": 24.52, "zoom": 0.82, "anchor": 0.68, "horizon": 0.3, "alt": 0, "cx": 1.8, "follow": true },
    { "T": 28.472, "zoom": 0.76, "anchor": 0.68, "horizon": 0.31, "alt": 0, "cx": 2.2, "follow": true },
    { "T": 30.4464, "zoom": 0.62, "anchor": 0.68, "horizon": 0.33, "alt": 0, "cx": 3.4, "follow": true }
@@ -81,7 +81,7 @@ export const BEATS = {
    { "from": 0, "hold": "sky", "T": 0.641 },
    { "from": 8.622, "hold": "postcard", "T": 12.609 },
    { "from": 16.589, "hold": "close", "T": 16.589 },
-   { "from": 20.557, "hold": "follow", "T": 24.52 },
+   { "from": 21.528, "hold": "follow", "T": 24.52 },
    { "from": 32.4176, "hold": "widest", "T": 32.4176 },
    { "from": 36.3508, "hold": "follow", "T": 24.52 }
   ]
@@ -102,9 +102,13 @@ export const BEATS = {
    /** The paper in f001 (art px from her soles, facing right): where the world's paper hands over to the drawing. */
    "handoff": [36.9, -135],
    /** The paper's last world drawing is the tick before f001; from f001 to the slap it is the drawing's. */
-   "handoffDrawing": 1
+   "handoffDrawing": 1,
+   /** The hat stays jammed over her face (f010 held) until line 6's push mark, then she pushes it up (f011 on). */
+   "jamDrawing": 10,
+   "push": 20.495
   },
-  "walkFrom": 20.5568,
+  /** After the push-up has played out (the clip's end + a breath): she walks on her own to the pickup. */
+  "walkFrom": 21.698,
   "walkHPerS": 1.1,
   "pickup": 27.979,
   "xPickupH": 94.564,
@@ -118,16 +122,28 @@ export const BEATS = {
   "stopXH": 126.3,
   "gates": [32.6008, 33.3874, 34.1741]
  },
- /** Dex picked "A" ("A is funny, we roll with it; expand it; the start could have a better buildup"), paced to the
-  *  music inside the calm, before the slap (Dex 10-16). The first bar is the sky and the paper alone. */
- "captions": [
-  { "text": "Nobody chooses what the wind brings them.", "from": 2.636, "to": 5.95 },
-  { "text": "Good luck. Bad news. A stranger's laundry.", "from": 6.626, "to": 9.4 },
-  { "text": "Every so often, a name.", "from": 9.619, "to": 11.9 },
-  { "text": "You only get to choose whether to catch it.", "from": 12.111, "to": 14.35 },
-  { "text": "Catch it, and it's yours to carry.", "from": 14.6, "to": 16.35 },
-  { "text": "...I usually catch it with my face.", "from": 16.589, "to": 18.3 }
- ],
+ /**
+  * Her voice (Dex picked the takes by ear, 10-19: lanes/opening/VOICE-CUES.md; ElevenLabs "Mitsuki", Japanese) with a
+  * subtitle for each line while it plays (Japanese + English). Lines 1-5 in the calm: line 1's speech from 0.25 s
+  * (the press's gust), line 5 done by 18.40, equal gaps; line 6 (the joke) after the slap, from under the jammed
+  * hat, the hat pushed up on its `push` mark. `at` = T the file starts; `speech` = the voice inside the file (s);
+  * `len` = the file (never cut: it plays to its end). Laid out by lanes/opening/f19/voice_layout.py from the takes.
+  */
+ "voice": {
+  /** The music ducks this much under a line's speech (in and out over `ramp` s): her voice over the build. */
+  "duckDb": -3,
+  "ramp": 0.25,
+  "lines": [
+   { "n": 1, "take": "op-line1-b", "at": 0.13, "len": 4.32, "speech": [0.12, 4.02], "jp": "風が何を運んでくるかなんて、誰にも選べない。", "en": "No one gets to choose what the wind brings." },
+   { "n": 2, "take": "op-line2-b", "at": 4.182, "len": 5.36, "speech": [0.12, 5.0], "jp": "幸運。悪い知らせ。……知らない人の洗濯物。", "en": "Good luck. Bad news. …A stranger's laundry." },
+   { "n": 3, "take": "op-line3-b", "at": 9.235, "len": 2.32, "speech": [0.1, 2.08], "jp": "ときどき――名前。", "en": "Sometimes — a name." },
+   { "n": 4, "take": "op-line4-b", "at": 11.387, "len": 3.36, "speech": [0.08, 3.1], "jp": "選べるのは、それを掴むかどうかだけ。", "en": "All you get to choose is whether you catch it." },
+   { "n": 5, "take": "op-line5-b", "at": 14.5, "len": 4.16, "speech": [0.14, 3.9], "jp": "掴んだなら、それはもう、あなたが背負うもの。", "en": "Once you've caught it, it's yours to carry." },
+   { "n": 6, "take": "op-line6-b", "at": 18.715, "len": 5.2, "speech": [0.16, 4.9], "push": 1.78, "jp": "……まあ、私はたいてい、顔で受け止めるんだけど。", "en": "…Well, I usually catch it with my face." }
+  ],
+  /** The files (lane D encodes the approved takes): voice-<n>.opus, .m4a for Safari. */
+  "dir": "/audio/opening/"
+ },
  "title": { "text": "TESU", "at": 32.4176, "hold": 3.9332, "fade": 0.6, "maxWidth": 0.56, "after": "mid" },
  "ui": {
   "bars": { "vh": 11, "in": 0.3, "out": 0.25 },
@@ -187,7 +203,7 @@ export const BEATS = {
   { "T": 17.8917, "id": "op.catch" },
   { "T": 18.5748, "id": "op.slap" },
   { "T": 18.69, "id": "op.jam" },
-  { "T": 19.4, "id": "op.brim" },
+  { "T": 20.495, "id": "op.brim" },
   { "T": 27, "id": "op.inhale" },
   { "T": 27.979, "id": "op.hatgrip" },
   { "T": 28.4724, "id": "op.burst" },
