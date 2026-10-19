@@ -74,7 +74,7 @@ test("Departure Mono (Dex 10-19: yes): in the repo with its OFL licence beside i
   assert.match(footer("home"), /<a href="\/fonts\/departure-mono\/LICENSE\.txt">Departure Mono<\/a> by Helena Zhang/);
 });
 
-test("Dex 10-19 'vector is best; some web elements don't necessarily need to be pixel': the cards are vector by default (no script needed), the page's own blocks are never pixel-masked", async () => {
+test("Dex 10-19 'vector is best; some web elements don't necessarily need to be pixel': the cards are vector by default (no script needed)", async () => {
   const { DEFAULT_FINISH, FINISHES } = await import("./motion/finish-mode.ts");
   assert.equal(DEFAULT_FINISH, "vector");
   assert.deepEqual([...FINISHES].sort(), ["pixel", "vector"]);
@@ -89,9 +89,7 @@ test("Dex 10-19 'vector is best; some web elements don't necessarily need to be 
   // the pixel finish's code is fetched only for that finish
   const main = readFileSync(new URL("./main.ts", import.meta.url), "utf8");
   assert.match(main, /if \(cardFinish !== "pixel" \|\| !document\.querySelector\("\[data-rig\]"\)\) return;/);
-  // the dust look: the world's windows keep their pixel dust (motion/looks.ts); text and controls arrive crisp
+  // the retired looks left nothing behind (Dex 10-19, the redesign: dust abandoned)
   const all = sheets.map((s) => s.css).join("\n");
-  const dust = all.match(/@keyframes look-dust \{[\s\S]*?\n\}/)[0];
-  assert.doesNotMatch(dust, /mask/, "no dither mask over the page's blocks");
-  assert.match(dust, /opacity: 0/);
+  assert.doesNotMatch(all, /look-dust|look-cut|data-motion="(?:dust|cuts)"/);
 });

@@ -11,7 +11,7 @@
 // a second, every frame only while the page scrolls under a look that follows it or a window is arriving; nothing when
 // none is on screen); reduced motion: each is drawn once, still. Whole pixels only (k device px per art px).
 
-import { LOOK, initCutEntries } from "./looks.ts";
+import { LOOK } from "./looks.ts";
 import type { Look } from "./look-mode.ts";
 import { painterWorker, type PainterEntry } from "./painters.ts";
 import { rampIndex } from "./sky-plan.ts";
@@ -399,7 +399,6 @@ const STILL: WindowMotion = { fps: 6.25 };
 const ARRIVE = 0.3;
 
 export function initWindows(reduced: MediaQueryList, motion: WindowMotion = LOOK[document.documentElement.dataset.motion as Look] ?? STILL): void {
-  if (document.documentElement.dataset.motion === "cuts") initCutEntries(reduced);
   const els = [...document.querySelectorAll<HTMLElement>("[data-window]")];
   if (!els.length) return;
   const wins: Win[] = [];

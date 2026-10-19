@@ -80,6 +80,18 @@ const steps: [string, () => void][] = [
     if (cardFinish !== "pixel" || !document.querySelector("[data-rig]")) return;
     import("./motion/cardrig.ts").then((m) => m.initCardRigs(reduced, fine), failed("cardrig"));
   }],
+  // the page's stage (motion/stage.ts: the smooth wheel, the entrances, the lean; GSAP + ScrollTrigger + Lenis), own
+  // chunk, once the "dex" mark has written itself and the page is idle; never with reduced motion, Save-Data or in an
+  // embed (the page is all there without it)
+  ["stage", () => {
+    const saveData = (navigator as { connection?: { saveData?: boolean } }).connection?.saveData === true;
+    if (reduced.matches || saveData || root.dataset.embed) return;
+    const idle = (): Promise<void> => new Promise((done) => {
+      if ("requestIdleCallback" in window) requestIdleCallback(() => done(), { timeout: 1200 });
+      else setTimeout(done, 200);
+    });
+    afterMark().then(idle).then(() => import("./motion/stage.ts")).then((m) => m.initStage(fine), failed("stage"));
+  }],
   ["copy", () => initCopy()],
   // NSFW image spoilers in posts (render/nsfw.ts).
   ["nsfw", () => initNsfw()],
