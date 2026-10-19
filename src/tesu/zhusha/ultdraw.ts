@@ -242,9 +242,10 @@ function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: num
   }
   ps.forEach(([hx, hy, R0], i) => {
     const side = hx < 0 ? -1 : 1;
-    // the nearer the middle, the sooner it goes (she is revealed from the inside out)
+    // the nearer the middle, the sooner it goes: the middle is gone just as she is revealed (aftermath.revealFrom), the
+    // edges drift off over the rest of the clear
     const near = 1 - clamp01(Math.abs(hx) / (6 * H));
-    const o = clamp01(out * (1 + 0.8 * near));
+    const o = clamp01(out * (1 + (1 / A.revealFrom - 1) * near));
     const billow = 1 + 0.06 * Math.sin(t * 0.04 + i) + 0.15 * hang;
     const R = R0 * billow * (1 + 0.25 * o) * (1 - o);
     puff(r, sm.x + hx + side * o * (2 + rnd(i + 60) * 2) * H, sm.y - hy - hang * 0.4 * H - o * 1.2 * H, R, 0.08 + 0.5 * o, i, DUST_LITE, DUST, DUST_DARK);
