@@ -10,7 +10,7 @@ import { Opening } from "./opening.ts";
 import { TileStore } from "./plates/store.ts";
 import { HeardClock, onGrid } from "./opening/clock.ts";
 import { pressContinues } from "./opening/press.ts";
-import { FALL_CLOUDS, REF, fallPoint } from "./world/sections/opening-sky.ts";
+import { FALL_CLOUDS, REF, cloudBounds, fallPoint } from "./world/sections/opening-sky.ts";
 import { fallSkyOf, fallSkyShare } from "./opening/fall-sky.ts";
 import { PLANES } from "./world/types.ts";
 import { planeXf } from "./render/view.ts";
@@ -210,8 +210,6 @@ test("the paper: it falls back in from the top, keeps clear of the bars and the 
 });
 
 test("the fall's clouds: each where the camera sees it (on Dex's 1920 x 1080 frame), and none in any play frame", async () => {
-  await import("./art/library/opening/fall-cloud.ts");
-  const { painter } = await import("./art/painter.ts");
   for (const c of FALL_CLOUDS) {
     const [x, y] = fallPoint(c.T, c.plane, c.fx, c.fy);
     const s = keysAt(c.T, BEATS.her.catchXH * H, REF.W, REF.H);
@@ -224,7 +222,7 @@ test("the fall's clouds: each where the camera sees it (on Dex's 1920 x 1080 fra
     // the whole cloud (its painter's bounds, a deck's hanging masses too) is above their top edge. (They are hidden
     // outside the fall anyway, game.ts syncFall; the deck the camera breaks out under sits low enough to show at the
     // top of a 1080p vista at 0.5, which never shows them.)
-    const low = painter("op.fallcloud").bounds(c.p)[3];
+    const low = cloudBounds(c.cloud)[3];
     for (const [W, Hf] of [[1280, 720], [1920, 1080]]) {
       for (const [zoom, anchor, horizon] of [[1, 0.66, 0.38], [2, 0.66, 0.27], [0.5, 0.74, 0.4]]) {
         if (W > 1280 && zoom < 1) continue;

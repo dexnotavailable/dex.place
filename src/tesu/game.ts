@@ -1010,7 +1010,8 @@ export class TesuGame {
     w.defs ??= this.world.sprites.filter((s) => s.id.startsWith("fall-"));
     // (the fall loop) they are hidden outside the fall (syncFall): warmed all the same
     for (const d of w.defs) d.hidden = false;
-    const moments = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5];
+    // (the fall loop r2, rev 5: the pull-out, the vast frame, the push-in, the deck, the break-out, the postcard)
+    const moments = [0.7, 1.2, 1.9, 2.6, 3.6, 4.6, 5.6, 6.6, 7.6, 8.4, 9.2, 10, 10.6, 11.6, 12.6];
     if (w.i >= moments.length * 4 || !w.defs.length) return;
     const T = moments[Math.floor(w.i / 4)]!, frame = w.i % 4;
     w.i++;
