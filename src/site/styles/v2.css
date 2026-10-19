@@ -92,28 +92,14 @@ body { background: #000; color: var(--fg); }
   isolation: isolate;
 }
 /* the page is plain white (Dex 10-18: "we start with the whole background white, then punch in some windows into
-   the world"); its top edge dissolves into the game screen above it as it comes up, like every window's edge */
+   the world"); its top edge is clean, below the fold: the "dex" screen above it is black to its bottom edge (Dex 10-19:
+   "there's a white fade at the bottom which imo looks bad") */
 .sheet--column { background: #fff; }
 /* every page that is not the page column is plain white too (its sheet carries the white; html and body stay black
    behind the game screen) */
 .sheet--page:not(.sheet--column) { background: #fff; }
 /* (and a short one, a 404, is white to the screen's foot, not black under its footer) */
 .sheet--page:not(.sheet--column) { min-height: 100vh; min-height: 100dvh; }
-/* (a clean two-tone dissolve, white pixels straight onto the game screen's black: an ordered dither drawn once for the
-   page's width, motion/scatter.ts --sheet-edge; no grey, no repeating stamp) */
-.sheet--column::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 100%;
-  height: var(--sheet-edge-h, 0px);
-  pointer-events: none;
-  background-image: var(--sheet-edge, none);
-  background-repeat: no-repeat;
-  background-position: left bottom;
-  background-size: var(--sheet-edge-size, 100% 100%);
-}
 
 /* ------------------------------------------------------------------ the header on paper */
 .hdr { background: #fff; border-bottom: var(--bw) solid var(--ink); }

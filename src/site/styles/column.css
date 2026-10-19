@@ -149,8 +149,8 @@ html.op-cine .world__cue { visibility: hidden; }
   .jetty__deck { width: 80%; }
   .jetty__her { left: 30%; }
 }
-/* the "Site" cue sits clear of the website's dissolving top edge, which rises from the screen's bottom */
-.world__cue { color: #d9cfd6; bottom: calc(var(--sheet-edge-h, 40px) + 18px); translate: -50% 0; }
+/* the "Site" cue near the screen's foot (where it sat above the old dissolving edge: the windows' fade depth + 18 px) */
+.world__cue { color: #d9cfd6; bottom: calc(clamp(28px, 4vw, 56px) + 18px); translate: -50% 0; }
 /* short screens (a phone on its side): the scene is the screen under the header; the paper is narrower */
 @media (max-height: 520px) {
   .jetty { min-height: max(300px, calc(100svh - var(--hdr-h))); }
