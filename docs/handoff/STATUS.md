@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T15:18:45.783Z (19/10/2026, 22:18:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T16:28:46.779Z (19/10/2026, 23:28:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `a0f28f7`
+- live on dex.place: `4f90e64`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,17 +12,19 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_93dbdace-3fa — last activity 3 min ago
-6 agents: 5 done, 1 running or stopped mid-way, 0 failed.
+### wf_93dbdace-3fa — last activity 57 min ago
+8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
 - **critic:r0** (done): 
 - **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
 - **w2:r1** (done): Picked up round 1 for worker 2 after the stop and committed a second pass on claude/v2-art-vista-p2 (910b9ba9). The first worker-2 commit (6b902308) was already on the branch, and the scene branch had not moved. Running `checkout -B claude/v2-art-vista-p2 claude/v2-art-vista` would have thrown that commit away, so I skipped the reset and built on top of it. What changed: - **Bug fix in the rock painter (strata.ts).**
 - **integrate:r1** (done): 
-- **critic:r1** (running)
+- **critic:r1** (done): 
+- **w1:r2** (running)
+- **w2:r2** (running)
 
-### wf_286da28b-ad1 — last activity 64 min ago
+### wf_286da28b-ad1 — last activity 134 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -30,7 +32,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r1** (running)
 - **w2:r1** (done): Worker 2's round-1 work (fog, wind, the camera's near layers) is committed on claude/v2-art-fall-p2 as b30b4942. An earlier session had built most of it and stopped before committing, so I judged its render (round-1\w2\full-a) at real size beside refs 04 and the sky ref, fixed what was wrong, re-rendered, and committed. What the fall now has (W2-1 to W2-9): - Lens fog on top of everything, nearer than the paper. Each
 
-### wf_6eb91aef-0bd — last activity 73 min ago
+### wf_6eb91aef-0bd — last activity 143 min ago
 8 agents: 7 done, 1 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -42,7 +44,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r2** (done): Worker 1's round 2 is committed. Eight of the nine critique items are in; W1-9 (the arcade stair under the court) is written up as a request for whoever owns that walk in shiraito.ts. This run picked up after a usage stop. The earlier session had made most of the edits but not committed them. I rendered all 8 frames at real size on port 24621, fixed what still looked wrong, then committed. What each item got: - **W1-
 - **w2:r2** (running)
 
-### wf_5cebc05c-deb — last activity 93 min ago
+### wf_5cebc05c-deb — last activity 163 min ago
 4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
