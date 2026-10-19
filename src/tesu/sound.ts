@@ -22,7 +22,7 @@
 // While the world waits for the opening's press it stays silent (the plan's D10: the first sound anyone hears is
 // Track 1's first piano note).
 
-import { Ducker, SPACES, VOICE_MIX, VoiceBus, type Space } from "./mix.ts";
+import { Ducker, masterLimiter, SPACES, VOICE_MIX, VoiceBus, type Space } from "./mix.ts";
 import { RegionMusic } from "./region-music.ts";
 
 const AUDIO = "/audio/";
@@ -282,7 +282,7 @@ export class Sound {
     this.master = ctx.createGain();
     this.master.gain.setValueAtTime(0.0001, ctx.currentTime);
     this.master.gain.exponentialRampToValueAtTime(0.9, ctx.currentTime + 2);
-    this.master.connect(ctx.destination);
+    this.master.connect(masterLimiter(ctx, ctx.destination));
     // the music and the beds dip under her voice and the big hits; the effects a little
     this.musicDuck = new Ducker(ctx, this.master);
     this.sfxDuck = new Ducker(ctx, this.master);

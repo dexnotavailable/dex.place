@@ -29,14 +29,29 @@ export const VOICE_MIX = {
   deess: { f: 7200, q: 2.2, gain: -3 },
   comp: { threshold: -26, knee: 8, ratio: 4, attack: 0.004, release: 0.18 },
   drive: 1.8,
-  makeup: 1.5,
+  makeup: 1.1,
   wet: { room: 0.22, hall: 0.34, open: 0.14 } as Record<Space, number>,
-  ult: { highpass: 70, presence: { f: 2800, q: 0.8, gain: 4.5 }, drive: 3.6, makeup: 1.35, wet: 0.42, double: 0.3 },
+  ult: { highpass: 70, presence: { f: 2800, q: 0.8, gain: 4.5 }, drive: 3.6, makeup: 1.0, wet: 0.42, double: 0.3 },
   /** Her place on screen to the voice's pan (at most this far left or right). */
   panSpread: 0.35,
   /** Ducking under her voice: music / beds and effects, in dB, with the release after the line. */
   duck: { music: -7, sfx: -3, attack: 0.06, release: 0.45 },
 };
+
+/**
+ * The safety limiter at the very end (the layered hits, the subs and her voice can stack past full scale): a fast,
+ * hard-knee compressor that only acts on the overs.
+ */
+export function masterLimiter(ctx: BaseAudioContext, out: AudioNode): DynamicsCompressorNode {
+  const l = ctx.createDynamicsCompressor();
+  l.threshold.value = -2;
+  l.knee.value = 0;
+  l.ratio.value = 20;
+  l.attack.value = 0.002;
+  l.release.value = 0.12;
+  l.connect(out);
+  return l;
+}
 
 /** A soft-clip curve (tanh), `k` = drive; 1 is nearly clean. */
 export function driveCurve(k: number, n = 2048): Float32Array {
