@@ -54,7 +54,7 @@ export interface HomeBand {
   side: Side;
   /** The place behind it (motion/windows.ts SCENES). */
   scene: string;
-  /** The paper's spine (a token in styles/tokens.css). */
+  /** The band's tone: its vivid mark colour (a token in styles/v2.css; its deep text tone is --<tone>-d). */
   tone: string;
   /** The opening tag of the thing that hangs off the paper (the first one), or none (projects: its cards do). */
   stitch?: string;
@@ -62,11 +62,11 @@ export interface HomeBand {
 
 /** The sections, in order, and how each meets the world. */
 export const HOME_BANDS: readonly HomeBand[] = [
-  { id: "projects", side: "l", scene: "sky", tone: "gold" },
-  { id: "downloads", side: "r", scene: "palace", tone: "mint", stitch: '<article class="dlf"' },
-  { id: "gallery", side: "l", scene: "isles", tone: "cyan", stitch: '<div class="collage-box"' },
-  { id: "docs", side: "r", scene: "lake", tone: "azure", stitch: '<section class="dgroup ' },
-  { id: "donate", side: "l", scene: "pine", tone: "magenta", stitch: '<div class="qr"' },
+  { id: "projects", side: "l", scene: "sky", tone: "amber" },
+  { id: "downloads", side: "r", scene: "palace", tone: "jade", stitch: '<article class="dlf"' },
+  { id: "gallery", side: "l", scene: "isles", tone: "lagoon", stitch: '<div class="collage-box"' },
+  { id: "docs", side: "r", scene: "lake", tone: "indigo", stitch: '<section class="dgroup ' },
+  { id: "donate", side: "l", scene: "pine", tone: "rose", stitch: '<div class="qr"' },
 ];
 
 /** A section as its renderer gives it, split: its classes, id, label, head (for the strip) and body (for the panel). */
@@ -76,13 +76,19 @@ export function splitSection(html: string): { cls: string; id: string; label: st
   return { cls: m[1]!, id: m[2]!, label: m[3]!, head: m[4]!, body: m[5]! };
 }
 
-/** The section's head as the strip carries it: its place in the page ("01/05_") before the kicker. */
+/** The section's head as the strip carries it: its place in the page ("01/05_") before the kicker; the title's words in
+ *  a line mask (the motion raises them inside it, never over the world under the strip) and its underline a mark of
+ *  its own (drawn from the band's side). */
 function stripHead(head: string, i: number, n: number): string {
   return head
     .replace(/^<header class="sh /, '<header class="sh sh--strip ')
     .replace(
       /<p class="sh__kicker"([^>]*)>/,
       `<p class="sh__kicker"$1><span class="sh__index" aria-hidden="true">${pad2(i + 1)}/${pad2(n)}<i class="sh__caret">_</i></span>`,
+    )
+    .replace(
+      /(<h[23] class="sh__title"[^>]*>)([\s\S]*?)(<\/h[23]>)/,
+      '$1<span class="sh__line"><span class="sh__txt">$2</span></span><i class="sh__ul" aria-hidden="true"></i>$3',
     );
 }
 

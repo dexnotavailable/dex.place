@@ -4,9 +4,16 @@
    (Tesu Display for titles, DotGothic16 for text, Departure Mono for small labels, code and hashes: Dex 10-19
    "yes, anything that looks good"). Titles stay small.
 
-   Contrast on white (WCAG AA): ink #2b2233 15.6:1, --fg-2 #463c50 10.4:1, --muted #62576e 6.9:1,
+   Contrast on white (WCAG AA): ink #1f1729 17.3:1, --fg-2 #3b3048 12.0:1, --muted #574b66 7.9:1,
    scarlet #c9304f 5.5:1, azure #1e6cab 5.6:1, the deep text tones of the fills 5.6:1 or more; ink on every
-   fill (gold, sakura, jade, sky) 7.9:1 or more. */
+   fill (gold, sakura, jade, sky) 8.6:1 or more.
+
+   Site loop round 1 (Dex 10-20: "see if messing with colour schemes can accent or make things feel stronger, more
+   potent and more vibrant"): richer darks, fills a step more saturated, and the home's five sections each carry a
+   vivid tone that echoes the place under it, a day's light down the page: amber over the noon sky, jade at the palace,
+   lagoon over the isles, indigo at the lake, rose in the pine dusk. The vivid tones are for lines and small marks only
+   (hems, rules, spines, underlines, tiles), never text or big fills; each has a deep twin for text on white (AA):
+   amber-d 5.9:1, jade-d 5.9:1, lagoon-d 5.6:1, indigo-d 7.9:1, rose-d 5.9:1. */
 
 /* Departure Mono (Helena Zhang, SIL OFL 1.1: /fonts/departure-mono/LICENSE.txt), v1.500, unmodified. It is drawn on
    an 11 px grid; the site's text sits on DotGothic16's 16 px grid, so its glyphs are scaled to 11/16 (size-adjust):
@@ -22,10 +29,24 @@
 }
 
 :root {
-  --ink: #2b2233;
+  --ink: #1f1729;
   --scarlet: #c9304f;
   --azure: #1e6cab;
-  --gold: #ffc857;
+  --gold: #ffbe3d;
+
+  /* ---- the sections' tones (home bands): vivid for marks, deep for text */
+  --amber: #ffb000;
+  --amber-d: #8a5a00;
+  --jade: #10b981;
+  --jade-d: #0b7258;
+  --lagoon: #1c9bef;
+  --lagoon-d: #1e6cab;
+  --indigo: #6366f1;
+  --indigo-d: #4338ca;
+  --rose: #ff3d7f;
+  --rose-d: #c2185b;
+  /* all five in page order: the footer's hem */
+  --spectrum: linear-gradient(90deg, var(--amber) 0 20%, var(--jade) 0 40%, var(--lagoon) 0 60%, var(--indigo) 0 80%, var(--rose) 0);
 
   /* ---- surfaces: plain white paper */
   --bg: #ffffff;
@@ -39,15 +60,15 @@
 
   /* ---- text */
   --fg: var(--ink);
-  --fg-2: #463c50;
-  --muted: #62576e;
+  --fg-2: #3b3048;
+  --muted: #574b66;
   --on-accent: var(--ink);
 
   /* ---- accents: fills that ink reads on; their deep tones for text and glyphs on white */
   --yellow: var(--gold);
-  --mint: #8edcc4;
-  --magenta: #ffadc0;
-  --cyan: #a6d6f4;
+  --mint: #74dbbb;
+  --magenta: #ff9db8;
+  --cyan: #8fcdf5;
   --yellow-t: #fff4d8;
   --mint-t: #e4f7f1;
   --magenta-t: #ffeaf0;

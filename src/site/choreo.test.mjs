@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 
 const src = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
 
-test("choreo plan: strips whip in from their side and land square; panels follow; nothing goes back while you read", async () => {
+test("choreo plan: strips whip in from their side and land square; panels follow as a triggered slide; nothing goes back while you read", async () => {
   const P = await import("./motion/choreo-plan.ts");
   for (const s of [-1, 1]) {
     const a = P.stripPose(0, s), z = P.stripPose(1, s);
@@ -13,9 +13,9 @@ test("choreo plan: strips whip in from their side and land square; panels follow
     assert.ok(Math.abs(a.xPercent) >= 100, "wholly off");
     assert.equal(Math.sign(a.skewX), -s, "sheared against its travel");
     assert.deepEqual([z.xPercent, z.skewX, z.shade], [0, 0, 1], "lands square, its shade cast");
-    const pa = P.panelPose(0, s), pz = P.panelPose(1, s);
-    assert.equal(Math.sign(pa.xPercent), s);
-    assert.deepEqual([pz.xPercent, pz.shade, pz.shadeX], [0, 1, 0]);
+    // the panel (and its shade, one pose) waits wholly off its own side
+    assert.equal(Math.sign(P.panelFrom(s)), s);
+    assert.ok(Math.abs(P.panelFrom(s)) >= 100);
     // a stitch comes from the world side (the other side from its paper)
     assert.equal(Math.sign(P.stitchFrom(s, 1000).x), -s);
   }
@@ -25,14 +25,21 @@ test("choreo plan: strips whip in from their side and land square; panels follow
   assert.equal(P.latch(0.4, 0.2), 0.4);
   assert.equal(P.latch(0.4, 0.7), 0.7);
   assert.equal(P.latch(0, 1.4), 1);
-  // the content waits for the paper; the spine draws once it is in
-  assert.ok(P.CONTENT_GATE >= 0.8 && P.CONTENT_GATE < 1);
-  assert.ok(P.SPINE_AT > P.CONTENT_GATE);
+  // site loop round 1: the panel is a triggered slide (a scrub stalled half way, blank, when the reader stopped); the
+  // content waits until the paper is nearly in (expo.out: past 95% of its way); a settle on the screen plays out
+  assert.equal(P.PANEL_AT(false), "top 92%");
+  assert.equal(P.PANEL_AT(true), "top 94%");
+  assert.ok(P.PANEL_TIME >= 0.6 && P.PANEL_TIME <= 0.9);
+  assert.ok(P.expoOut(P.CONTENT_GATE) > 0.95 && P.CONTENT_GATE < 1, "the gate opens on nearly landed paper");
+  assert.ok(P.SPINE_AT < 1);
+  assert.ok(P.SETTLE_TIME >= 0.3 && P.SETTLE_TIME <= 0.6, "a settle plays out, never a pop");
+  assert.ok(P.STITCH_FADE <= 0.15, "the stitch is solid at once, never a see-through slab");
+  assert.equal(P.onScreen(-10, 20, 800), true);
+  assert.equal(P.onScreen(-300, -1, 800), false);
+  assert.equal(P.onScreen(800, 1200, 800), false);
   // the strip is fully in exactly as the change of place under it comes into view
   assert.equal(P.STRIP_START, "top bottom");
   assert.equal(P.stripEnd(116), "top bottom-=116");
-  assert.equal(P.panelEnd(false), "top 45%");
-  assert.equal(P.panelEnd(true), "top 62%");
   // arm time: only bands wholly below the screen are set back
   assert.equal(P.isBelow(900, 800), true);
   assert.equal(P.isBelow(300, 800), false);
