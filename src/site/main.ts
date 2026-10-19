@@ -69,6 +69,11 @@ const steps: [string, () => void][] = [
   ["stuck", () => initStuck()],
   ["menu", () => initMenu()],
   ["scenes", () => initScenes(reduced, fine)],
+  // the project cards' rigged art (render/cardart.ts data-rig), own chunk, loaded when a card has a rig
+  ["cardrig", () => {
+    if (!document.querySelector("[data-rig]")) return;
+    import("./motion/cardrig.ts").then((m) => m.initCardRigs(reduced, fine), failed("cardrig"));
+  }],
   ["copy", () => initCopy()],
   // NSFW image spoilers in posts (render/nsfw.ts).
   ["nsfw", () => initNsfw()],
