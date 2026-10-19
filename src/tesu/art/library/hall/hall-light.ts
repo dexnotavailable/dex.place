@@ -17,6 +17,7 @@ import { definePainter } from "../../painter.ts";
 import { BACK_LANTERNS, HALL, HALL_LIGHT, SHAFT } from "./lights.ts";
 import { clamp, hash, vnoise, type At } from "./kit.ts";
 import { lut, tint } from "./tint.ts";
+import { P } from "../../palette.ts";
 
 const H = 96;
 
@@ -124,7 +125,14 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
       if (wy < FY - 13.2 * H) shade = 2;
       // the roof over the tie beam: the coffers and rafters fall away into the dark
       // (the skylight's well stays as bright as the day in it)
-      if (wy < FY - 16.1 * H - (p.play ? 0 : 0.5 * H)) shade = p.play && Math.abs(wx - SHAFT.x0) < 1.35 * H ? 0 : 3;
+      // (integration, round 1: graded, so the coffers just over the beam still read as the roof falling
+      // away instead of a flat band; only the skylight's own well, 16.4-18.8 H up, keeps the day: the
+      // roof above the well darkens like the rest instead of standing up as a lit chimney)
+      const roofAt = FY - 16.1 * H - (p.play ? 0 : 0.5 * H);
+      if (wy < roofAt) {
+        const inWell = p.play && Math.abs(wx - SHAFT.x0) < 1.35 * H && wy > FY - 18.9 * H;
+        shade = inWell ? 0 : wy > roofAt - 1.4 * H + jit * H ? 2 : 3;
+      }
       if (wx < p.ends[0] - 0.2 * H || wx > p.ends[1] + 0.2 * H) shade = Math.max(shade, wy < FY - 2.2 * H ? 2 : 1);
       let v = 0;
       for (const q of wallPools) {
@@ -155,7 +163,7 @@ function bandsOf(v: number): number {
 
 // ---------------------------------------------------------------------------
 // The mass round the opening (ref 06: the lit gate in a cool dark frame): the bay wall the Prize
-// Court gate is cut through sinks into the cool dusk, deepest in its upper corners, never round
+// Court gate is cut through sinks into the cool dusk (two even steps over the plaster, one on the dado), never on
 // the opening's ring (the day lights its stone). Painted just after the bay, before the services
 // stand in front of it, so only the wall darkens.
 // ---------------------------------------------------------------------------
@@ -176,7 +184,10 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
   },
   paint(c, p) {
     const one = lut("night", 1), two = lut("night", 2), warm1 = lut("warm", 1), warm2 = lut("warm", 2);
-    const clear = p.rad + 0.55 * H;
+    // (integration, round 1) only the ring's stone stays clear, on a clean circle: the wall round it
+    // takes the dusk right up to the stone (a light leaving an opening never lights the wall it is cut
+    // in), so no muddy halo with a speckled edge sits round the gate
+    const clear = p.rad + 0.16 * H + 1;
     // the service lamps standing in front of this wall (the desk's, the map's): their pools land on it
     const lamps: Pool[] = [];
     if (p.at) {
@@ -188,16 +199,26 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
         lamps.push({ x: lx, y: L.y - fy, r: 1.45 * H, k: L.k });
       }
     }
+    // the gate's head (its red plaque, the beam's lacquer and gold, the canopy's tiles) holds its colour a
+    // step better than the plaster, and the plaque keeps its red outright: it names the gate from across the room
+    const accent = new Set<number>([...P.red, ...P.gold, ...P.tile]);
+    const plaqueY1 = -p.cy - p.rad - 0.16 * H - 5, plaqueY0 = plaqueY1 - 0.4 * H;
     tint(c, p.l, -p.top, p.r, -6, (X, Y, lx, ly) => {
       const d = Math.hypot(lx, ly + p.cy);
-      const j = (vnoise(lx * 0.05, ly * 0.05, 19) - 0.5) * 0.12 * H + (hash(X, Y, 23) - 0.5) * 2;
+      const j = (vnoise(lx * 0.05, ly * 0.05, 19) - 0.5) * 0.12 * H;
       let v = 0;
       for (const q of lamps) {
         const f = 1 - ((lx - q.x) ** 2 + (ly - q.y) ** 2 * 1.2) / (q.r * q.r);
         if (f > 0) v += q.k * f * f;
       }
       const lift = v + j / H * 0.4 > 0.5 ? 2 : v + j / H * 0.4 > 0.2 ? 1 : 0;
-      const shade = d + j < clear ? 0 : d + j > clear + 1.6 * H && ly < -p.cy ? 2 : 1;
+      // the wall one even dusk from the ring's stone up to the frieze (no dome-shaped zone round the
+      // gate); the stone dado a step lighter, catching the lit floor
+      let shade = d < clear ? 0 : ly > -0.52 * H ? 1 : 2;
+      if (shade && accent.has(c.buf.get(X, Y))) {
+        const plaque = Math.abs(lx) < 0.8 * H && ly > plaqueY0 - 1 && ly < plaqueY1 + 1;
+        shade = plaque ? 0 : shade - 1;
+      }
       const net = lift - shade;
       return net >= 2 ? warm2 : net === 1 ? warm1 : net === -1 ? one : net <= -2 ? two : null;
     });

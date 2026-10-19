@@ -166,7 +166,7 @@ export const shaft = definePainter<ShaftP>("hall.shaft", {
     const breathe = Math.sin((f / 8) * Math.PI * 2);
     const rays: [number, number, number][] = [];
     for (let i = 0; i < 5; i++) rays.push([-0.7 + (1.4 * (i + hash(i, 1, c.seed))) / 5, 0.6 + 1.6 * hash(i, 2, c.seed), hash(i, 3, c.seed)]);
-    rect(c, -p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, 0, (X, Y, lx, ly) => {
+    rect(c, -p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, 0, (_X, _Y, lx, ly) => {
       if (p.gaps && p.gaps.some((g) => ly > g[0] && ly < g[1])) return 0;
       const t = -ly / p.h; // 0 at the foot .. 1 at the top
       const axis = -p.lean * t;
@@ -182,14 +182,23 @@ export const shaft = definePainter<ShaftP>("hall.shaft", {
       for (const [ru, rw, rs] of rays) {
         if (Math.abs(ru) > 0.5) continue;
         if (Math.abs(s - ru * half) < rw / 2 / Math.max(1, c.d) + 0.25) {
-          const n = vnoise(rs * 17, ly * 0.022 + f * 0.18, 13) + breathe * 0.05;
+          const n = vnoise(rs * 17, ly * 0.009 + f * 0.12, 13) + breathe * 0.05; // long runs, not rain-like dashes
           if (n > 0.56) return n > 0.74 && low > 0.65 ? P.paper[1]! : P.paper[2]!;
         }
       }
-      // the lit air in three soft bands, each a step of coverage with a clean border between them,
-      // in amber close to the hall's own warm values (a glow, not a screen)
-      const cov = (au < 0.42 ? 0.1875 : au < 0.76 ? 0.094 : 0.047) * (low > 0.7 ? 1 : 0.5 + low * 0.7);
-      if (keep(X, Y, cov)) return au < 0.42 && low > 0.6 ? P.paper[2]! : P.paper[3]!;
+      // the lit air (integration, round 1: no ordered dot screen, it read as a grid at real size): fine
+      // streaks along the shaft's slant, many in the core and fewer outward (the shaft's soft bands),
+      // each a long unbroken run that fades in and out down the length, in the dim amber of the paper.
+      // What the shaft passes through on the play plane is lit a step by hall-light.ts (the air remap).
+      const sa = s * c.d; // in this level's art px, so a streak is one art px wide at every density
+      const lane = Math.floor(sa / 3);
+      const lh = hash(lane, 21, c.seed);
+      const dens = au < 0.42 ? 0.34 : au < 0.76 ? 0.16 : 0.06;
+      if (lh < dens * (low > 0.7 ? 1 : 0.6 + low * 0.5) && ((sa % 3) + 3) % 3 < 1) {
+        const run = vnoise(lane * 7.3, ly * 0.012 + f * 0.1, 17);
+        // dim: the body of the shaft is the air remap under it; these only give it grain along the light
+        if (run > 0.55) return au < 0.42 ? (run > 0.75 && low > 0.6 ? P.paper[3]! : P.paper[4]!) : P.dusk[0]!;
+      }
       return 0;
     });
   },
