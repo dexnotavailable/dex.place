@@ -938,9 +938,13 @@ export class Zhusha {
     if (n <= this.lastHits) return;
     this.lastHits = n;
     const m = this.move;
+    // R's weight is its own (ult.ts: the storm flows without hitstops, the nuke freezes once): here only the hit's cue
+    if (this.state === "ult") {
+      this.cue("hit", 0.6, "r", "hit", this.r.weight());
+      return;
+    }
     let w: Weight = "light";
-    if (this.state === "ult") w = this.r.weight();
-    else if (m) {
+    if (m) {
       const act = m.def.hits.filter((h) => this.t >= h.at && this.t < h.at + h.len + FEEL.ult.ghostDelay);
       const order: Weight[] = ["light", "medium", "heavy", "q", "ult"];
       for (const h of act) if (order.indexOf(h.weight) > order.indexOf(w)) w = h.weight;
@@ -951,7 +955,7 @@ export class Zhusha {
     if (W.punch > 0) s.camera.zoomPunch(W.punch);
     if (W.flash > 0) s.feel.impactFrame("invert", W.flash);
     const hi = m ? m.def.hits.findIndex((h) => this.t >= h.at && this.t < h.at + h.len + FEEL.ult.ghostDelay) : -1;
-    this.cue("hit", w === "light" ? 0.6 : 1, this.state === "ult" ? "r" : m?.id ?? "?", "hit", w, hi >= 0 ? hi : undefined);
+    this.cue("hit", w === "light" ? 0.6 : 1, m?.id ?? "?", "hit", w, hi >= 0 ? hi : undefined);
   }
 
   /** A sound cue: the old feel.sound(id, volume), plus the cue with what made it for the audio lane. */

@@ -266,6 +266,26 @@ test("ult: the FX v2 loop's effects play on the beats when the game has them (th
   assert.equal(by(F.clear).phase, "reveal");
 });
 
+test("ult: the storm's hits never stop the frame (R owns its weight: only the nuke freezes it, once)", async () => {
+  const Zhusha = await loadZ();
+  const freezes = [];
+  const h = host();
+  h.feel.freeze = (n) => freezes.push(n);
+  const z = new Zhusha(h, [0, 0]);
+  const inp = new FakeInput(), w = flat();
+  step(z, inp, w, 5);
+  inp.press("ult");
+  for (let i = 0; i < 900 && !(z.r.phase === "flurry" && z.r.stormT > 20); i++) step(z, inp, w);
+  // a prop in the letter takes a cut
+  z.clip.hitGroups.set("r-cut-0", new Set([{}]));
+  z.afterHits();
+  assert.deepEqual(freezes, [], "no hitstop in the storm");
+  for (let i = 0; i < 900 && z.r.phase !== "impact"; i++) step(z, inp, w);
+  z.clip.hitGroups.set("r", new Set([{}, {}]));
+  z.afterHits();
+  assert.equal(freezes.length, 1, "the nuke's one freeze");
+});
+
 test("ult form: M1 warps her around a foe (ahead, across facing back, above, back off) and summons ghost blades that strike on the ghost hit", async () => {
   const Zhusha = await loadZ();
   const log = [];
