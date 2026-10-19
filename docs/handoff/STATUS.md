@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T09:49:55.811Z (19/10/2026, 16:49:55 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-19T10:48:56.736Z (19/10/2026, 17:48:56 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `352793f`
+- live on dex.place: `1172549`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,32 +12,35 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_286da28b-ad1 — last activity 7 min ago
-4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (running)
-- **w2:r1** (running)
-
-### wf_5cebc05c-deb — last activity 9 min ago
-4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (running)
-- **w2:r1** (running)
-
-### wf_6eb91aef-0bd — last activity 23 min ago
-5 agents: 4 done, 1 running or stopped mid-way, 0 failed.
+### wf_6eb91aef-0bd — last activity 31 min ago
+8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
 - **critic:r0** (done): 
 - **w1:r1** (done): Round 1 layout pass is committed. Dex's 10-14 layout is in, and all seven layout asks in checks.json now say yes (round 0 had all seven at NO). What changed: - **The gate is in the middle.** The Prize Court door is now a moon gate at 0.525 of the hall (it was at 0.945), set in a walled middle bay. The court is painted inside it in daylight: sky, clouds, karst in haze, the paving, stepped stands with a crowd, people, 
 - **w2:r1** (done): The W2 rendering round is committed on claude/v2-art-hall-p2. I merged W1's layout commits (8325bc28 and 571362d4) into the branch, so HEAD f1903e58 is W1's layout plus my rendering. A full 8-frame render under the heavy lock (round-1\w2\final\) passes every placement check, has 0 page errors, and all 9 of Dex's layout asks come back yes. Core technique: tint.ts. Each plane paints into one buffer per tile, so a piece
-- **integrate:r1** (running)
+- **integrate:r1** (done): 
+- **critic:r1** (done): 
+- **w1:r2** (running)
+- **w2:r2** (running)
 
-### wf_93dbdace-3fa — last activity 26 min ago
+### wf_286da28b-ad1 — last activity 66 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (running)
+- **w2:r1** (running)
+
+### wf_5cebc05c-deb — last activity 68 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (running)
+- **w2:r1** (running)
+
+### wf_93dbdace-3fa — last activity 85 min ago
 4 agents: 3 done, 1 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
