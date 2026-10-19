@@ -7,6 +7,7 @@ import { initCopy } from "./motion/copy.ts";
 import { initDefer } from "./motion/defer.ts";
 import { initEmbed } from "./motion/embed.ts";
 import { initKeys } from "./motion/keys.ts";
+import { lookOfPage } from "./motion/look-mode.ts";
 import { initScenes } from "./motion/magnet.ts";
 import { initMenu, initNav, initStuck } from "./motion/nav.ts";
 import { initNsfw } from "./motion/nsfw.ts";
@@ -31,6 +32,9 @@ const failed = (name: string) => (error: unknown): void => {
     if (!leaving) console.error(`[site] ${name} failed`, error);
   }, 1000);
 };
+
+// the look the page moves in (motion/look-mode.ts): the CSS keys off html[data-motion]
+try { lookOfPage(); } catch { /* the page simply keeps still */ }
 
 const steps: [string, () => void][] = [
   ["embed", () => initEmbed()],
