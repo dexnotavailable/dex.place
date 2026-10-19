@@ -182,7 +182,8 @@ test("the camera, reduced motion: held frames, cut on their beats", () => {
     prev = k;
   }
   assert.ok(holds.length <= BEATS.camera.reduced.length, `held frames only (${holds.length} changes at ${holds.map((t) => t.toFixed(1)).join(", ")})`);
-  assert.ok(r(1).horizon > 1, "the sky");
+  // (rev 5) reduced motion opens on the vast frame: the whole world far below, still
+  near(r(1).zoom, 0.17, 1e-3, "the vast frame");
   near(r(10).zoom, 0.5, 1e-3, "the postcard");
   near(r(18).zoom, 2, 1e-3, "the close band");
   assert.equal(r(33).zoom, 0.125);

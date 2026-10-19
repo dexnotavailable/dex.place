@@ -88,7 +88,7 @@ export const BEATS = {
   "releaseXH": 130.4,
   /** Reduced motion: held frames, cut (cross-faded) on these beats. `key`: the authored key it holds. */
   "reduced": [
-   { "from": 0, "hold": "sky", "T": 0.641 },
+   { "from": 0, "hold": "sky", "T": 2.636 },
    { "from": 8.622, "hold": "postcard", "T": 12.609 },
    { "from": 16.589, "hold": "close", "T": 16.589 },
    { "from": 22.658, "hold": "follow", "T": 25.6 },
