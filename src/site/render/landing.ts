@@ -7,99 +7,17 @@
 // (motion/nav.ts); each section also has its own full page for deep links.
 // Every page is complete without JavaScript; motion only adds reveal and pops.
 
-import { downloads, formatBytes, type DownloadFile } from "../data/downloads.ts";
-import { projectHref, projects, type Project } from "../data/projects.ts";
+import { downloads, formatBytes } from "../data/downloads.ts";
+import { projects, type Project } from "../data/projects.ts";
 import { cardArt } from "./cardart.ts";
 import { docsSection } from "./docs.ts";
 import { donateSection } from "./donate.ts";
 import { downloadsSection } from "./downloads.ts";
 import { gallerySection } from "./gallery.ts";
-import { moreSection } from "./stubs.ts";
-import { button, chip, counter, icon, pageHead, sectionHead, tile, type ButtonOptions } from "./glyphs.ts";
+import { button, counter, pageHead, sectionHead, tile } from "./glyphs.ts";
+import { chipsOf, primaryAction, projectCards } from "./pcard.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import type { SiteContent } from "./types.ts";
-
-// ------------------------------------------------------------------- facts
-
-/** The published file for a project, if there is one (data/downloads.ts). */
-const fileOf = (p: Project): DownloadFile | null => downloads.find((d) => d.id === p.id)?.file ?? null;
-const hasDownloadEntry = (p: Project): boolean => downloads.some((d) => d.id === p.id);
-
-/** The download's state as chips: version and size, or "no download". */
-function stateChips(p: Project): string[] {
-  const f = fileOf(p);
-  return f
-    ? [chip(`v${f.version}`, "value"), chip(formatBytes(f.bytes), "value")]
-    : hasDownloadEntry(p) ? [chip("No public download yet", "value")] : [];
-}
-
-/** The download's state as one short line (a card's foot): "v0.4.23 · 102.9 MB", or "No public download yet". */
-function stateText(p: Project): string {
-  const f = fileOf(p);
-  return f ? `v${f.version} · ${formatBytes(f.bytes)}` : hasDownloadEntry(p) ? "No public download yet" : "";
-}
-
-/** Short state chips: platform, then version and size, or "no download". */
-function chipsOf(p: Project): string {
-  return `<p class="chips">${[chip(p.platform, "key"), ...stateChips(p)].join("")}</p>`;
-}
-
-/** The one action that matters most for each project. */
-function primaryAction(p: Project, size: "m" | "l", here: "home" | "page"): ButtonOptions {
-  const f = fileOf(p);
-  if (f) {
-    return {
-      href: f.href, label: "Download", icon: "download", tone: p.tone, size, download: true,
-      ariaLabel: `Download ${p.name} ${f.version} for ${f.platform}, ${formatBytes(f.bytes)}`,
-    };
-  }
-  const via = downloads.find((d) => d.id === p.id)?.installedBy;
-  if (via) {
-    // No standalone file: point at the download that installs it.
-    const name = downloads.find((d) => d.id === via)?.name ?? via;
-    return { href: here === "home" ? `#${via}` : `/downloads/#${via}`, label: `Get ${name}`, icon: "arrow", size };
-  }
-  if (hasDownloadEntry(p)) {
-    return { href: here === "home" ? `#${p.id}` : `/downloads/#${p.id}`, label: "Download status", icon: "arrow", size };
-  }
-  // dex.place itself: the way up into the world.
-  return { href: here === "home" ? "#world" : "/#world", label: "World", icon: "up", iconFirst: true, tone: "ink", size };
-}
-
-// -------------------------------------------------------------------- cards
-// One card per project: its splash art over the whole card (render/cardart.ts: layers that pan, a shine), the
-// number and platform at the top (little over the art: faces sit high), and at its foot on a calm band the name (the way
-// to the project's page), the download's state in one line, the line, the one action that matters and its docs. The card
-// pops as a whole
-// (DESIGN-SYSTEM.md §3); its keys pop on their own.
-
-function card(p: Project, i: number, level: 2 | 3, here: "home" | "page"): string {
-  const h = `h${level}`;
-  const href = projectHref(p);
-  // (the name and the art already lead to the project's page)
-  const small = (label: string, ic: "book", to: string): string =>
-    `<a class="btn btn--paper btn--s btn--icon" href="${esc(to)}" aria-label="${esc(`${p.name} ${label.toLowerCase()}`)}" title="${label}"><span class="btn__ic">${icon(ic, 2)}</span></a>`;
-  return (
-    `<li class="pcards__it" data-reveal style="--i:${Math.min(i, 5)}">` +
-    `<article class="${cx("pcard", `pcard--${p.tone}`)}" id="p-${p.id}" aria-labelledby="p-${p.id}-name">` +
-    // The art is a pointer shortcut to the project page; keyboard and screen
-    // readers get the same link once, on the name.
-    `<a class="pcard__hit" href="${href}" tabindex="-1" aria-hidden="true">${cardArt(p)}</a>` +
-    `<div class="pcard__top"><span class="pcard__no" aria-hidden="true">${pad2(projects.indexOf(p) + 1)}</span>` +
-    `<p class="pcard__tags">${chip(p.platform, "key")}</p></div>` +
-    `<div class="pcard__info">` +
-    `<${h} class="pcard__name" id="p-${p.id}-name"><a class="pcard__link" href="${href}">${esc(p.name)}</a></${h}>` +
-    (stateText(p) ? `<p class="pcard__state">${esc(stateText(p))}</p>` : "") +
-    `<p class="pcard__line">${esc(p.line)}</p>` +
-    `<div class="pcard__acts">` +
-    button({ ...primaryAction(p, "m", here), className: "pcard__main" }) +
-    small("Docs", "book", p.docs.href) +
-    `</div></div></article></li>`
-  );
-}
-
-const cards = (list: readonly Project[], level: 2 | 3, here: "home" | "page", className?: string): string =>
-  `<ul class="${cx("pcards", className)}">${list.map((p, i) => card(p, i, level, here)).join("")}</ul>`;
 
 // ------------------------------------------------------------------ home
 
@@ -109,34 +27,92 @@ function projectsSection(): string {
     `<section class="sec sec--projects" id="projects" aria-labelledby="projects-title">` +
     `<div class="wrap">` +
     sectionHead({ id: "projects-title", kicker: "projects", title: "Projects", tone: "yellow", icon: "grid", aside: `${pad2(projects.length)} items`, more: { href: "/projects/", label: "Projects page" } }) +
-    cards(projects, 3, "home") +
+    projectCards(projects, { level: 3, here: "home" }) +
     `</div></section>`
   );
 }
 
 /**
- * A section on the white with a window into the world (Dex 10-18: "patches of the world punched into a white page";
- * 10-19: the windows felt tiny, the world dominates): "l" the content left of a tall window that fills the rest of the
- * screen's width, "r" mirrored, "w" a wide window spanning the page above the section. Each onto a different place
- * (styles/v2.css `.band`, motion/windows.ts).
+ * A section's own page: its window into the world beside it (the band system from before the redesign, kept for the
+ * deep pages until lane P moves them onto the new paper; styles/v2.css .pband, motion/windows.ts).
  */
-export type BandKind = "l" | "r" | "w";
-export const band = (kind: BandKind, html: string, scene = "sky"): string =>
-  `<div class="band band--${kind}">${html}<div class="band__win" data-window="${scene}" aria-hidden="true"></div></div>`;
+export const pageBand = (html: string, scene = "sky"): string =>
+  `<div class="pband pband--l">${html}<div class="pband__win" data-window="${scene}" aria-hidden="true"></div></div>`;
 
-/** Which place of the world each section's window looks onto (motion/windows.ts SCENES). */
-export const SECTION_SCENES = ["sky", "palace", "isles", "lake", "pine", "door"] as const;
+// ---------------------------------------------- the home page's bands (the redesign)
+// Dex 10-19 (lanes/roadmap/SITE-SCROLL.md, last section; built to lanes/motion/DESIGN-1019.md 2.2 / 2.3, "Paper over
+// Tesu"): the world is painted edge to edge behind the website, one place per section, fixed to the screen; each
+// section is white paper over it: a full-width strip with its title, then a panel docked to one side (L R L R L) with
+// the place on the other side and a stretch of world only (the breath) after it. One thing per section hangs off the
+// paper onto the world (the stitch), and a piece of the world laps back over the paper's open corner (the fore).
+// Styles: styles/bands.css. The scenes: motion/windows.ts (data-watch="band"). The motion: motion/stage.ts (G2).
 
-/**
- * How the home page's sections meet the world, in order: a tall window beside the content, then a wide one across
- * the page, the tall ones alternating sides (projects | downloads across | gallery | docs across | donate | more
- * across: "opens later" under the hall's door).
- */
-export const SECTION_BANDS: readonly BandKind[] = ["l", "w", "r", "w", "l", "w"];
+export type Side = "l" | "r";
+export interface HomeBand {
+  id: string;
+  /** The side the paper docks to (the world shows on the other). */
+  side: Side;
+  /** The place behind it (motion/windows.ts SCENES). */
+  scene: string;
+  /** The paper's spine (a token in styles/tokens.css). */
+  tone: string;
+  /** The opening tag of the thing that hangs off the paper (the first one), or none (projects: its cards do). */
+  stitch?: string;
+}
+
+/** The sections, in order, and how each meets the world. */
+export const HOME_BANDS: readonly HomeBand[] = [
+  { id: "projects", side: "l", scene: "sky", tone: "gold" },
+  { id: "downloads", side: "r", scene: "palace", tone: "mint", stitch: '<article class="dlf"' },
+  { id: "gallery", side: "l", scene: "isles", tone: "cyan", stitch: '<div class="collage-box"' },
+  { id: "docs", side: "r", scene: "lake", tone: "azure", stitch: '<section class="dgroup ' },
+  { id: "donate", side: "l", scene: "pine", tone: "magenta", stitch: '<div class="qr"' },
+];
+
+/** A section as its renderer gives it, split: its classes, id, label, head (for the strip) and body (for the panel). */
+export function splitSection(html: string): { cls: string; id: string; label: string; head: string; body: string } {
+  const m = /^<section class="([^"]+)" id="([^"]+)" aria-labelledby="([^"]+)"><div class="wrap">(<header class="sh[\s\S]*?<\/header>)([\s\S]*)<\/div><\/section>$/.exec(html);
+  if (!m) throw new Error(`splitSection: not a section (${html.slice(0, 60)})`);
+  return { cls: m[1]!, id: m[2]!, label: m[3]!, head: m[4]!, body: m[5]! };
+}
+
+/** The section's head as the strip carries it: its place in the page ("01/05_") before the kicker. */
+function stripHead(head: string, i: number, n: number): string {
+  return head
+    .replace(/^<header class="sh /, '<header class="sh sh--strip ')
+    .replace(
+      /<p class="sh__kicker"([^>]*)>/,
+      `<p class="sh__kicker"$1><span class="sh__index" aria-hidden="true">${pad2(i + 1)}/${pad2(n)}<i class="sh__caret">_</i></span>`,
+    );
+}
+
+/** The head's "page" key, again at the panel's top (phones show it there; the strip keeps the aside). */
+function panelMore(head: string): string {
+  const m = /<a [^>]*class="[^"]*\bsh__more\b[^"]*"[^>]*>[\s\S]*?<\/a>/.exec(head);
+  return m ? `<p class="band__more">${m[0].replace(/\bsh__more\b/, "band__more-key")}</p>` : "";
+}
+
+/** One section as a band: the world behind (fixed), the strip and the panel (the paper), the fore in front. */
+export function homeBand(b: HomeBand, i: number, n: number, section: string): string {
+  const s = splitSection(section);
+  const body = b.stitch ? s.body.replace(b.stitch, `${b.stitch} data-stitch`) : s.body;
+  const open: Side = b.side === "l" ? "r" : "l";
+  return (
+    `<section class="band band--${b.side} band--${b.id} ${s.cls}" id="${s.id}" aria-labelledby="${s.label}" data-scene="${b.scene}" style="--band-i:${i};--tone:var(--${b.tone})">` +
+    `<div class="band__world" aria-hidden="true"><div class="band__scene" data-window="${b.scene}" data-side="${open}" data-edge="none" data-watch="band"></div></div>` +
+    `<div class="band__site">` +
+    `<div class="band__strip"><i class="band__strip-paper"></i><i class="band__strip-shade"></i><div class="band__in">${stripHead(s.head, i, n)}</div></div>` +
+    `<div class="band__panel"><i class="band__paper"><b class="band__spine"></b></i><i class="band__shade"></i>` +
+    `<div class="wrap">${panelMore(s.head)}${body}</div></div>` +
+    `</div>` +
+    `<div class="band__fore" data-window="${b.scene}" data-fore data-watch="band" aria-hidden="true"></div>` +
+    `</section>`
+  );
+}
 
 export function landing(content: SiteContent): string {
-  const parts = [projectsSection(), downloadsSection(), gallerySection(content), docsSection(content), donateSection(), moreSection()];
-  return parts.map((html, i) => band(SECTION_BANDS[i % SECTION_BANDS.length]!, html, SECTION_SCENES[i % SECTION_SCENES.length])).join("");
+  const sections = [projectsSection(), downloadsSection(), gallerySection(content), docsSection(content), donateSection()];
+  return sections.map((html, i) => homeBand(HOME_BANDS[i]!, i, sections.length, html)).join("");
 }
 
 // ----------------------------------------------------------- /projects/
@@ -146,7 +122,7 @@ export function projectsIndex(): string {
     `<div class="page page--projects">` +
     `<div class="wrap">` +
     pageHead({ kicker: "projects", title: "Projects", tone: "yellow", icon: "grid", aside: `${pad2(projects.length)} items` }) +
-    cards(projects, 2, "page") +
+    projectCards(projects, { level: 2, here: "page" }) +
     `</div></div>`
   );
 }
@@ -180,7 +156,7 @@ function others(p: Project): string {
   return (
     `<nav class="others" aria-labelledby="others-title">` +
     `<h2 class="proj__h2" id="others-title">${tile("grid", "paper", "s")}<span>Other projects</span></h2>` +
-    cards(projects.filter((o) => o.id !== p.id), 3, "page", "pcards--two") +
+    projectCards(projects.filter((o) => o.id !== p.id), { level: 3, here: "page", className: "pcards--two" }) +
     `</nav>`
   );
 }

@@ -2,10 +2,14 @@
 // Small on purpose: main.ts sets html[data-motion] with it before anything draws (the CSS keys off it); the looks
 // themselves load with the windows.
 
-export type Look = "diorama" | "dust" | "cuts";
-export const LOOKS: readonly Look[] = ["diorama", "dust", "cuts"];
-/** The look the site ships with (the other two stay one ?motion= away, for comparing). */
-export const DEFAULT_LOOK: Look = "dust"; // Dex 10-19: "probably dust"
+export type Look = "depth" | "diorama";
+export const LOOKS: readonly Look[] = ["depth", "diorama"];
+/**
+ * The look the site ships with. Dex 10-19 (the redesign, lanes/roadmap/SITE-SCROLL.md): "as you scroll down the world
+ * is already there" - depth (the world moves with the scroll by nearness, nothing covers it). The old tear-open stays
+ * one ?motion=diorama away; dust and cuts are retired.
+ */
+export const DEFAULT_LOOK: Look = "depth";
 
 /** The look this page shows; sets html[data-motion]. */
 export function lookOfPage(): Look {
