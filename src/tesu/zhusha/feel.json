@@ -1,7 +1,7 @@
 {
   "about": "How Zhusha moves and hits in Tesu. H = her height skull to sole at play zoom (96 world px). Distances and boxes in H, speeds in H/s unless named mps (metres per second), times in ticks (60 a second). Boxes are [forward, up, width, height] from her soles, mirrored when she faces left; they follow her drawn body (x charScale). Started from the test room's numbers (Dex liked its energy; its code is scrapped): see docs/character/PIPELINE.md, step 12.",
-  "charScale": 1.1,
-  "charScaleAbout": "Dex 10-18: \"maybe make her slightly bigger, like 10%\". Her drawn height = H x charScale (128 px art drawn nearest-neighbour at that height: 1.65 screen px per art px when 1 world px = 2 screen px). Her art, white box, hurtbox and attack boxes follow it; her speeds, jumps, dashes and lunges do not. Every NPC placeholder box stands at this drawn height too.",
+  "charScale": 0.88,
+  "charScaleAbout": "Dex 10-19: \"the pixels of the character and the world are not the same size\": her art stays 128 px, drawn 20% smaller (was 1.1, Dex 10-18 \"slightly bigger, like 10%\"). Her drawn height = H x charScale = 84.5 world px: 0.66 world px per art px, 1.32 screen px per art px when 1 world px = 2 screen px (drawn nearest at screen res); where one art px would land under one px of its grid (a 1080p screen at dpr 1, zoomed out) she is reduced with the feature-keeping rule, never nearest-neighbour (game.ts reduceActors). Her art, white box, hurtbox and attack boxes follow it; her speeds, jumps, dashes and lunges do not. Every NPC placeholder box stands at this drawn height too (20% smaller with her).",
   "units": {
     "about": "The world's metre: one H (her height) is 1.77 m (docs/character/PIPELINE.md 2.1; ZHUSHA.md). Speeds given in m/s become H/s through this, never through charScale.",
     "metresPerH": 1.77

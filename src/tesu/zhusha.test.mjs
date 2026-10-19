@@ -217,14 +217,17 @@ test("zhusha idle: the loop count before each full play-through is random in [mi
 
 // --- units: charScale, metres, speeds -----------------------------------------------------
 
-test("zhusha units: charScale 1.1 by default; 128 art at her drawn height is 1.65 screen px per art px at play zoom", () => {
+test("zhusha units: charScale 0.88 by default (Dex 10-19, 20% smaller); 128 art at her drawn height is 1.32 screen px per art px at play zoom", () => {
   checkUnits(FEEL);
-  assert.equal(FEEL.charScale, 1.1);
-  assert.ok(Math.abs(drawnH(FEEL, H) - 105.6) < 1e-9);
-  assert.ok(Math.abs(artPx(FEEL, H) - 0.825) < 1e-9);
+  assert.equal(FEEL.charScale, 0.88);
+  assert.ok(Math.abs(drawnH(FEEL, H) - 84.48) < 1e-9);
+  assert.ok(Math.abs(artPx(FEEL, H) - 0.66) < 1e-9);
   const screenPerWorld = 2; // play zoom: 1 world px = 2 screen px
-  assert.ok(Math.abs(artPx(FEEL, H) * screenPerWorld - 1.65) < 1e-9);
-  assert.ok(Math.abs(artPx({ ...FEEL, charScale: 1 }, H) * screenPerWorld - 1.5) < 1e-9, "1.5 without the 10%");
+  assert.ok(Math.abs(artPx(FEEL, H) * screenPerWorld - 1.32) < 1e-9);
+  // 20% smaller than the 10-18 size (1.1: 1.65 screen px per art px)
+  assert.ok(Math.abs(artPx({ ...FEEL, charScale: 1.1 }, H) * 0.8 - artPx(FEEL, H)) < 1e-9);
+  // on a 1080p screen (1 world px = 1 screen px) an art px is under one px: game.ts reduces her there, never nearest
+  assert.ok(artPx(FEEL, H) < 1);
 });
 
 test("zhusha units: run speeds are 9 and 11 m/s at 1.77 m per H, and charScale does not change them", () => {
@@ -297,8 +300,8 @@ test("zhusha controller: her hurtbox and attack boxes follow her drawn body (H x
   const Zhusha = await loadZ();
   const z = new Zhusha(host(), [0, 0]);
   const hb = z.hurtboxes()[0];
-  assert.ok(Math.abs(hb.h - FEEL.body.hurtH * 96 * 1.1) < 1e-9, `hurtbox h ${hb.h}`);
-  assert.ok(Math.abs(hb.w - FEEL.body.hurtW * 96 * 1.1) < 1e-9);
+  assert.ok(Math.abs(hb.h - FEEL.body.hurtH * 96 * FEEL.charScale) < 1e-9, `hurtbox h ${hb.h}`);
+  assert.ok(Math.abs(hb.w - FEEL.body.hurtW * 96 * FEEL.charScale) < 1e-9);
   const inp = new FakeInput();
   step(z, inp, 5);
   inp.press("m1");
@@ -307,7 +310,8 @@ test("zhusha controller: her hurtbox and attack boxes follow her drawn body (H x
   for (let i = 0; i < 12 && !box; i++) { step(z, inp); box = z.hitboxes()[0]?.box ?? null; }
   assert.ok(box, "m1_1 hit came out");
   const [, , w, h] = FEEL.moves.m1_1.hits[0].box;
-  assert.ok(Math.abs(box.w - w * 105.6) < 1e-6 && Math.abs(box.h - h * 105.6) < 1e-6, JSON.stringify(box));
+  const body = 96 * FEEL.charScale;
+  assert.ok(Math.abs(box.w - w * body) < 1e-6 && Math.abs(box.h - h * body) < 1e-6, JSON.stringify(box));
   assert.equal(z.t, at);
 });
 
@@ -344,7 +348,7 @@ test("zhusha controller: a drawing's marks drive the move (hit windows, the chai
   assert.deepEqual(live, [5, 6, 7, 8, 9, 10, 11, 12, 13], "active drawings: ticks 5-10 and 11-13");
   step(z, inp, 40);
   const moved = z.body.x - x0;
-  assert.ok(Math.abs(moved - 20 * 0.825) < 1e-6, `root motion moved her ${moved} px`);
+  assert.ok(Math.abs(moved - 20 * (96 * FEEL.charScale) / 128) < 1e-6, `root motion moved her ${moved} px`);
   // the chain: a press early in the move waits for the drawing's chain window (tick 7)
   const z2 = new Zhusha(host(), [0, 0]);
   z2.clipOf = z.clipOf;
