@@ -22,7 +22,10 @@
     "turnTicks": 4,
     "airAccelTicks": 10,
     "airStopTicks": 28,
-    "stopAnimFrom": 3.5
+    "stopAnimFrom": 3.5,
+    "playRate": 1.32,
+    "ultPlayRate": 1.15,
+    "playRateAbout": "How fast her run cycle turns over (its drawings and frame count unchanged; her speeds above are not touched). Lane C 10-19 set both forms to 1.15 (\"a tad faster\"); Dex 10-20: \"her run animation should be roughly 15% faster if it wants to match the running sound and the player speed\": the normal run 1.15 -> 1.32. Measured on the drawings at 9 m/s (the planted foot's world drift between its contact drawings): ~9 / 8 px per step at 1.15, ~4 / 3 at 1.32, ~1 at 1.5 (a full match). The ult form's run (11 m/s) does not read slow: its contact drawings already sweep at or past the ground, so it stays at 1.15. Footsteps play on the contact drawings (sound.ts STEP_FRAMES), so they follow the faster cycle."
   },
   "jump": {
     "height": 1.7,

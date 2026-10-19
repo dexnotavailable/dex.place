@@ -21,10 +21,11 @@ const INK = hex("#1b1922"), PAPER = hex("#fbf8f1"), HURT = hex("#ffd2c8"), VERM 
 const AZURE = hex("#6fc8ff"), AZURE_DEEP = hex("#2a6fb8");
 
 /**
- * (lane C 10-19, Dex: "the run cycle a tad faster") Her run's playback rate, both forms, when it plays by time (no
- * root-motion marks). Her speeds stay 9 / 11 m/s (feel.json run); only the drawings turn over faster.
+ * Her run's playback rate when it plays by time (no root-motion marks), per form: feel.json run.playRate (Dex 10-20:
+ * the normal run ~15% faster, 1.32) and run.ultPlayRate (1.15, lane C 10-19). Her speeds stay 9 / 11 m/s; only the
+ * drawings turn over faster.
  */
-export const RUN_RATE = 1.15;
+export const runRate = (ult: boolean): number => (ult ? FEEL.run.ultPlayRate : FEEL.run.playRate);
 
 /** Moves whose clip is retimed so its hit drawing lands on the move's hit tick. */
 const MOVES = new Set(["m1_1", "m1_2", "m1_3", "m1_4", "skill_q", "e_tap"]);
@@ -63,7 +64,7 @@ export class ZhushaDraw {
     // a walk / run cycle with root motion plays by the distance covered: her feet stay planted at any speed
     if ((a.role === "run" || a.role === "walk") && slot.marks.root) return clipAtRoot(slot.def.frames, slot.marks.root, (a.dist ?? 0) / ART_PX);
     switch (a.role) {
-      case "run": return a.t * RUN_RATE;
+      case "run": return a.t * runRate(z.ultForm);
       case "uf_exit": return fit(U.exitTicks);
       case "jump": {
         const segs = slot.def.segments;

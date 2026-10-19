@@ -32,7 +32,7 @@ export interface FeelFile {
   charScale: number;
   units: { metresPerH: number };
   body: { collider: [number, number]; boxW: number; hurtW: number; hurtH: number; hp: number };
-  run: { mps: number; ultMps: number; accelTicks: number; stopTicks: number; turnTicks: number; airAccelTicks: number; airStopTicks: number; stopAnimFrom: number };
+  run: { mps: number; ultMps: number; accelTicks: number; stopTicks: number; turnTicks: number; airAccelTicks: number; airStopTicks: number; stopAnimFrom: number; playRate: number; ultPlayRate: number };
   jump: { height: number; riseTicks: number; fallGravity: number; maxFall: number; cut: number; hangSpeed: number; hangGravity: number; coyote: number; buffer: number; airJumps: number; airJumpHeight: number; fastFall: number; fastFallMax: number };
   land: { squashFrom: number; heavyFrom: number; heavyShake: number };
   dash: {
