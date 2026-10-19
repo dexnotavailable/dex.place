@@ -112,7 +112,28 @@ export class ZhushaDraw {
   head(z: Zhusha): [number, number] {
     const s = this.shown(z);
     const h = s?.slot.drawings[s.index]?.head;
-    return h ? [h[0] * ART_PX, h[1] * ART_PX] : z.headFromBox();
+    // her drawing sits FEEL.draw.dip art px low (the hat's talisman goes with it)
+    return h ? [h[0] * ART_PX, (h[1] + this.dip) * ART_PX] : z.headFromBox();
+  }
+
+  /** Her drawing's dip into the ground, art px (feel.json draw.dip; tools set 0 to see her as before). */
+  dip = FEEL.draw.dip;
+
+  /** The ground's y at or below (x, y) (game.ts: the world's collision), for drawing her behind its front edge. */
+  groundAt: ((x: number, y: number) => number | null) | null = null;
+
+  /** Where her drawing stops (world y): the lowest ground under her feet while she stands on something, else none. */
+  private clipY(z: Zhusha, view: PlayView): number | null {
+    const b = z.body;
+    if (!b.grounded || view.mirror !== null || !this.groundAt) return null;
+    const w = FEEL.draw.foot * BODY_H;
+    let low: number | null = null;
+    for (const x of [b.x - w, b.x, b.x + w]) {
+      const g = this.groundAt(x, b.y - 0.25 * BODY_H);
+      // ground far below her (a ledge's edge, the void) is not under her feet
+      if (g !== null && g < b.y + 0.5 * BODY_H) low = Math.max(low ?? g, g);
+    }
+    return low;
   }
 
   /**
@@ -141,7 +162,8 @@ export class ZhushaDraw {
       return;
     }
     const tint: [number, number, number, number] | undefined = z.flash > 0 ? [1, 0.35, 0.4, z.flash > 5 ? 0.8 : 0.4] : undefined;
-    drawArt(r, view, s.slot, s.index, b.x, b.y, z.facing < 0, ART_PX, { tint, opacity });
+    // (Dex 10-20) a few art px low, and behind the ground's front edge: visual only (her body and hit boxes stay put)
+    drawArt(r, view, s.slot, s.index, b.x, b.y + this.dip * ART_PX, z.facing < 0, ART_PX, { tint, opacity, clipY: this.clipY(z, view) });
   }
 
   /** A solid quad centred at (x, y), w x h, rotated. */

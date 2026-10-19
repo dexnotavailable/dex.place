@@ -49,6 +49,8 @@ export interface FeelFile {
   q: { hold: number; flash: number; camZoom: number; camTicks: number; camLeave: number };
   e: { hold: number; flash: number; skidEvery: number };
   hurt: { stun: number; kb: [number, number]; iframes: number; heavyFrom: number; freeze: number; heavyFreeze: number; friction: number };
+  /** Her drawing's visual dip into the ground (art px) and the ground width looked at under her (drawn heights). */
+  draw: { dip: number; foot: number };
   knockdown: { ticks: number; kb: [number, number]; getUpFrom: number; iframes: number; bounce: number; friction: number };
   defeat: { ticks: number; fadeFrom: number };
   respawn: { ticks: number };
