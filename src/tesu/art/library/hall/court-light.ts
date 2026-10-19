@@ -71,7 +71,11 @@ export const courtShadows = definePainter<ShadowsP>("court.shadows", {
       if ("box" in k && k.box[2] <= 1) feet.push([k.box[0], k.box[1]]);
       if ("rod" in k && k.rod[2] <= 1) feet.push([k.rod[0] - k.rod[1] / 2, k.rod[0] + k.rod[1] / 2]);
     }
-    tint(c, 0, -p.band, p.w, 1, (_X, _Y, lx, ly) => {
+    // painted after the paving and the ring's dais (z 2.5): only the paving's stone takes the shadow,
+    // never the lacquer, gold and rope of what stands on it
+    const paving = new Set<number>([...P.stone, ...P.karst, ...P.earth, P.umber[4]!, ...P.range, ...P.tile]);
+    tint(c, 0, -p.band, p.w, 1, (X, Y, lx, ly) => {
+      if (!paving.has(c.buf.get(X, Y))) return null;
       const depth = -ly;
       if (depth < -0.5) return null;
       const z = Math.max(0, depth) / kd;

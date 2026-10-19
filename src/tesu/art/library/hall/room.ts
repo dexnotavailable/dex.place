@@ -2,8 +2,9 @@
 // along (its lacquered edge is the walk line) over the darker stone floor nearer us; the
 // massive end walls with the door walls built into them; the Long Gallery's floor beam on its
 // posts and brackets, with its vermilion balustrade (front plane, she walks behind it); the
-// stair down to the great doors with its rail (front plane) and the nook under it; the
-// central pillar that carries the map. Everything takes the hall's light from lights.ts.
+// stair down to the nook with its rail (front plane). Everything takes the hall's light from
+// lights.ts. (The central pillar that carried the rolled map is gone: the map of Tesu stands
+// on its own stand beside the gate now, services.ts.)
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
@@ -126,17 +127,44 @@ export const endWall = definePainter<EndWallP>("hall.endwall", {
     const s = p.side;
     // local x measured from the end wall line, positive into the room
     const inx = (lx: number): number => lx * -s;
-    // the end's mass beyond the room: a thick plastered wall in shadow, its timber frame showing
+    // the end's shell, running out to the frame's edge in the entrance shot (round 1, L10: no black void
+    // past the end walls): a timber-framed wall in the cool dark, a tall lattice window with the day
+    // behind its paper, a second one up by the gallery, a long banner hanging between them
     rect(c, s < 0 ? -p.out : 0, -20 * H, s < 0 ? 0 : p.out, 6 * H, (X, Y, lx, ly) => {
       const d = -inx(lx); // distance beyond the end, px
       const l = lf.get(s < 0 ? -10 : 10, Math.min(ly, -20));
-      const post = ((d % (2.2 * H)) + 2.2 * H) % (2.2 * H) < 0.32 * H;
-      const beam = ((((-ly) % (3.1 * H)) + 3.1 * H) % (3.1 * H)) < 0.26 * H;
-      const near = clamp(1 - d / (1.6 * H), 0, 1);
-      const plaster = fbm(lx * 0.05, ly * 0.05, 31, 3);
+      const up = -ly / H;
       if (ly > 0) return tn(M.dark, 0.88, X, Y, 0.4);
-      if (post || beam) return mt(M.lacq, lum(l) * near * 0.6, X, Y, 0.35, 1);
-      return mt(M.dark, lum(l) * near * 0.5 + (plaster - 0.5) * 0.12, X, Y, 0.45, 1);
+      const fade = clamp(1 - (d - 3.6 * H) / (3 * H), 0.25, 1);
+      // the windows: lattice over paper, a cool day behind it, brighter low in each pane
+      for (const [w0, w1, h0, h1] of [[0.95, 2.45, 1.9, 5.9], [1.1, 2.3, 8.6, 11.6]] as const) {
+        if (d > w0 * H && d < w1 * H && up > h0 && up < h1) {
+          const u = (d - w0 * H) / ((w1 - w0) * H), v = (up - h0) / (h1 - h0);
+          const frame = u < 0.07 || u > 0.93 || v < 0.05 || v > 0.95;
+          if (frame) return mt(M.lacq, lum(l) * 0.55, X, Y, 0.2, 1);
+          const g = 0.17 * H;
+          const gx = ((d % g) + g) % g, gy = ((((-ly) % g) + g) % g);
+          if (gx < 2 || gy < 2 || Math.abs(gx - gy) < 1.2) return mt(M.lacq, 0.3, X, Y, 0.3, 1);
+          return tn(P.tile, clamp(0.08 + v * 0.35 + Math.abs(u - 0.5) * 0.4, 0, 1), X, Y, 0.5);
+        }
+      }
+      // the banner: deep red silk with a gold hem and a gold emblem, hanging from a rod
+      const bd = d - 2.95 * H;
+      if (Math.abs(bd) < 0.32 * H && up > 3.4 && up < 8.0) {
+        const v = (8.0 - up) / 4.6;
+        const tail = v > 0.92 && Math.abs(bd) > 0.32 * H * (1 - (v - 0.92) * 10);
+        if (tail) return 0;
+        if (up > 7.85) return tn(M.gold, 0.35, X, Y, 0);
+        const hem = Math.abs(Math.abs(bd) - 0.27 * H) < 2 || (v > 0.86 && v < 0.89);
+        const emblem = Math.hypot(bd, (up - 6.6) * H) < 0.16 * H && Math.hypot(bd, (up - 6.6) * H) > 0.1 * H;
+        if (hem || emblem) return mt(M.gold, lum(l) * 0.75 * fade, X, Y, 0.3, 1);
+        return mt(M.verm, (lum(l) * 0.55 + Math.sin(bd * 0.12) * 0.06) * fade, X, Y, 0.3, 1);
+      }
+      const post = ((d % (2.2 * H)) + 2.2 * H) % (2.2 * H) < 0.32 * H && d > 0.4 * H;
+      const beam = ((((-ly) % (3.1 * H)) + 3.1 * H) % (3.1 * H)) < 0.26 * H;
+      const plaster = fbm(lx * 0.05, ly * 0.05, 31, 3);
+      if (post || beam) return mt(M.lacq, (lum(l) * 0.75 + 0.18) * fade, X, Y, 0.3, 1);
+      return mt(M.dark, (lum(l) * 0.6 + 0.12) * fade + (plaster - 0.5) * 0.12, X, Y, 0.35, 1);
     });
     // the corner column at the room's end: vermilion, lit by the doors' daylight
     const colR = 0.3 * H;
@@ -156,7 +184,7 @@ export const endWall = definePainter<EndWallP>("hall.endwall", {
     const surround = 0.38 * H;
     rect(c, w0, -p.top, w1, 0, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
-      const inDoor = lx > dx0 - surround && lx < dx1 + surround && ly > -p.doorH - surround * 1.4;
+      const inDoor = p.doorW > 0 && lx > dx0 - surround && lx < dx1 + surround && ly > -p.doorH - surround * 1.4;
       if (inDoor) return 0;
       const pu = ((lx % (0.95 * H)) + 0.95 * H) % (0.95 * H), pv = ((ly % (1.25 * H)) + 1.25 * H) % (1.25 * H);
       const frame = pu < 0.1 * H || pv < 0.1 * H;
@@ -165,8 +193,9 @@ export const endWall = definePainter<EndWallP>("hall.endwall", {
       if (frame) return mt(M.wood, lum(l, pu < 0.05 * H ? -0.6 : 0, pv < 0.05 * H ? -0.6 : 0) * 0.8, X, Y, 0.25, 1);
       return mt(M.lacq, lum(l) * 0.8 + grain(lx, ly, 13) * 0.1, X, Y, 0.1, 1);
     });
-    // the doorway: a stone threshold and step, carved jambs, a lintel with a plaque, the transom
-    doorway(c, p, dx0, dx1, surround, lf);
+    // the doorway: a stone threshold and step, carved jambs, a lintel with a plaque, the transom (the
+    // east end has none since the court's gate moved to the middle, round 1)
+    if (p.doorW > 0) doorway(c, p, dx0, dx1, surround, lf);
   },
 });
 
@@ -569,84 +598,6 @@ export const stair = definePainter<StairP>("hall.stair", {
   },
 });
 
-// ---------------------------------------------------------------------------
-// The central pillar with the land's map rolled on its cord
-// ---------------------------------------------------------------------------
-export interface PillarP {
-  /** Radius (px), height above the floor (px). */
-  r: number;
-  h: number;
-  /** Where the gallery's beam wraps it (px above the floor) and how deep. */
-  beam: [number, number];
-  at?: At;
-}
-
-export const pillar = definePainter<PillarP>("hall.pillar", {
-  bounds(p) {
-    return [-p.r * 1.6 - 40, -p.h, p.r * 1.6 + 40, 4];
-  },
-  paint(c, p) {
-    const lf = new LitField(HALL_LIGHT, p.at, 10);
-    const R = p.r;
-    const baseH = 1.05 * H;
-    // the carved stone base: a lotus drum, a lion's face in relief, chipped and dusty
-    const bl = colLight(lf, 0, -baseH, 0);
-    colBase(c, 0, R, baseH, bl.k, bl.side, 51);
-    const { k: pk, side } = colLight(lf, 0, -p.h, -baseH);
-    lathe(c, 0, -p.h, -baseH, () => R, (X, Y, u, lx, ly) => {
-      const hgt = -ly;
-      const n = cyl(pk, u, side, 0.12) - clamp((hgt / H - 4) / 14, 0, 1) * 0.12;
-      if (hgt > p.beam[0] - p.beam[1] - 4 && hgt < p.beam[0] + 4) return mt(M.gold, n * 0.85 + (Math.sin(lx * 0.6) > 0.3 ? 0.06 : 0), X, Y, 0.2, 1);
-      const band = (hgt > 1.15 * H && hgt < 1.32 * H) || (((hgt % (3.2 * H)) + 3.2 * H) % (3.2 * H) < 0.1 * H && hgt > 2 * H);
-      if (band) return mt(M.gold, n * 0.9, X, Y, 0.2, 1);
-      const worn = hgt < 2.2 * H ? (fbm(lx * 0.06, ly * 0.04, 29, 2) > 0.6 ? 0.06 : 0) : 0;
-      return mt(M.verm, n * 0.78 - worn, X, Y, 0.25, 1);
-    });
-    // the map: a long roll of paper lashed across the pillar's face at standing height by two
-    // bands of red cord, gold knobs at its ends, a wooden tag and a tassel hanging from the knot
-    const my = -1.5 * H;
-    const rr = 12;
-    const half = R + 26;
-    const mk = Math.max(0.62, lf.get(0, my).k);
-    rect(c, -half - 6, my - rr - 2, half + 6, my + rr + 2, (X, Y, lx, ly) => {
-      const v = (ly - my) / rr;
-      if (Math.abs(v) > 1) return 0;
-      const u = lx / half;
-      // the knobs: turned gold, round ends
-      if (Math.abs(u) > 1) {
-        const kx = Math.sign(u) * (half + 3);
-        return Math.hypot(lx - kx, (ly - my) * 1.2) < 6.5 ? mt(M.gold, cyl(mk, (lx - kx) / 6.5, -1, 0.3) * 1.05 - (v > 0.4 ? 0.2 : 0), X, Y, 0.0, 1) : 0;
-      }
-      // the roll: a paper cylinder lying across, the edge of its last turn showing
-      const turn = Math.abs(v - 0.62) < 0.08 ? -0.18 : 0;
-      const ends = Math.abs(u) > 0.94 ? -0.2 : 0;
-      return mt(M.paper, cyl(mk, v, -1, 0.25) * 1.05 + turn + ends, X, Y, 0.0, 0.85);
-    });
-    // two bands of cord round roll and pillar, knotted at the middle
-    for (const bx of [-R * 0.55, R * 0.55]) {
-      rect(c, bx - 2.5, my - rr - 3, bx + 2.5, my + rr + 3, (X, Y, lx, ly) => {
-        const twist = (((ly - lx * 0.9) % 4) + 4) % 4 < 2;
-        return mt(M.verm, cyl(mk, (ly - my) / (rr + 3), -1) * (twist ? 1 : 0.8), X, Y, 0.1, 1);
-      });
-    }
-    rect(c, -4, my - 4, 4, my + 4, (X, Y, lx, ly) => (Math.hypot(lx, ly - my) < 4.5 ? mt(M.verm, face(mk, -1, lx / 5, (ly - my) / 5), X, Y, 0.1, 1) : 0));
-    // the knot's tails, a wooden tag and a tassel
-    for (const [tx, len] of [[-2, 26], [2, 34]] as const) rect(c, tx - 1, my + 3, tx + 1, my + len, (X, Y, _lx, _ly) => mt(M.verm, face(mk, -1) * 0.85, X, Y, 0.2, 1));
-    woodBox(c, -9, my + 26, 3, my + 44, mk);
-    rect(c, 1, my + 34, 3, my + 50, (X, Y) => tn(M.verm, 0.45, X, Y, 0));
-    rect(c, 0, my + 50, 4, my + 58, (X, Y) => tn(M.verm, 0.3, X, Y, 0));
-  },
-});
-
-/** A small wooden tag (the map's label: blank). */
-function woodBox(c: PaintCtx, x0: number, y0: number, x1: number, y1: number, k: number): void {
-  rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
-    const u = (lx - x0) / (x1 - x0), v = (ly - y0) / (y1 - y0);
-    const e = Math.min(u, 1 - u, v, 1 - v);
-    return mt(M.wood, face(k, -1, u < 0.15 ? -1 : u > 0.85 ? 1 : 0, v < 0.12 ? -1 : 0) * (e < 0.1 ? 0.7 : 1), X, Y, 0.1, 1);
-  });
-}
-
 /** A column base standing on a floor `fy` px below the local origin. */
 function colBaseAt(c: PaintCtx, cx: number, fy: number, r: number, top: number, k: number, side: number, seed: number): void {
   const shifted = { ...c, Y: (v: number) => c.Y(v + fy), ly: (v: number) => c.ly(v) - fy };
@@ -704,7 +655,7 @@ export const roof = definePainter<RoofP>("hall.roof", {
       // the skylight: a deep well in the roof, its inner walls lit by the day pouring down it,
       // the lattice at its mouth in silhouette against the brightness
       const wellDepth = 0.55 * H;
-      if (lx > sx0 - wellDepth * 0.4 && lx < sx1 + wellDepth * 0.4 && ly < b0 - 0.2 * H) {
+      if (lx > sx0 - wellDepth * 0.4 && lx < sx1 + wellDepth * 0.4 && ly < b0 - 0.2 * H && ly > b0 - 2.4 * H) {
         const u = (lx - sx0) / sw;
         const up = (b0 - 0.2 * H - ly) / H; // how far up the well
         if (u < 0 || u > 1) {
@@ -716,7 +667,8 @@ export const roof = definePainter<RoofP>("hall.roof", {
         const a = (((lx - sx0) % s2) + s2) % s2, bb = ((((-ly) % s2) + s2) % s2);
         const bar = (a < 2.5 || bb < 2.5) && up < 1.4;
         if (bar) return mt(M.wood, 0.25 + 0.3 * clamp(up, 0, 1), X, Y, 0.35, 1);
-        const glow = clamp(0.15 + Math.abs(u - 0.5) * 0.9 - up * 0.12, 0, 1);
+        // (round 1: held a step below the court gate's daylight, the room's key now)
+        const glow = clamp(0.5 + Math.abs(u - 0.5) * 0.6 - up * 0.08, 0, 1);
         return tn(SKYLIGHT, glow, X, Y, 0.55);
       }
       // coffers: lacquer frames, each panel holding a faint gold rosette, warmed near the
@@ -724,7 +676,9 @@ export const roof = definePainter<RoofP>("hall.roof", {
       const cs = 0.75 * H;
       const gx = ((lx % cs) + cs) % cs, gy = ((((-ly) % (0.55 * H)) + 0.55 * H) % (0.55 * H));
       const near = clamp(1 - Math.abs(lx - (sx0 + sx1) / 2) / (3.2 * H), 0, 1) * 0.35;
-      const lit = lum(l) * 0.5 + near;
+      // the roof falls into the dark the higher it goes (round 1, L10: no flat band at the frame's top)
+      const far = clamp(((b0 - ly) / H - 1.2) / 5, 0, 1);
+      const lit = (lum(l) * 0.5 + near) * (1 - far * 0.8);
       if (gx < 4 || gy < 4) return mt(M.wood, lit * 0.75, X, Y, 0.35, 1);
       const rose = Math.hypot(gx - cs / 2, gy - 0.275 * H) < 7;
       const petal = rose && Math.sin(Math.atan2(gy - 0.275 * H, gx - cs / 2) * 8) > 0;

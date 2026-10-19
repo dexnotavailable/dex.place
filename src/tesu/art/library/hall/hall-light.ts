@@ -54,9 +54,11 @@ function sortLights(floor: number, doors: [number, number, number, number][]): {
       back.push({ x: L.x, y: L.y, r: Math.min(L.r * 0.5, 1.6 * H), k: L.k * 1.25 });
       continue;
     }
-    play.push({ x: L.x, y: L.y, r: L.r, k: L.k });
+    // a door's own daylight is the doors' fan (below), not a lamp's pool
     const atDoor = doors.some(([d0, d1]) => L.x > d0 - H && L.x < d1 + H);
-    if (floor - L.y < 3 * H && !atDoor) low.push({ x: L.x, y: L.y, r: 1.7 * H, k: L.k * 1.1 });
+    if (atDoor) continue;
+    play.push({ x: L.x, y: L.y, r: L.r, k: L.k });
+    if (floor - L.y < 3 * H) low.push({ x: L.x, y: L.y, r: 1.7 * H, k: L.k * 1.1 });
   }
   return { back, play, low };
 }
@@ -146,3 +148,34 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
 function bandsOf(v: number): number {
   return v > 0.8 ? 3 : v > 0.46 ? 2 : v > 0.2 ? 1 : 0;
 }
+
+// ---------------------------------------------------------------------------
+// The mass round the opening (ref 06: the lit gate in a cool dark frame): the bay wall the Prize
+// Court gate is cut through sinks into the cool dusk, deepest in its upper corners, never round
+// the opening's ring (the day lights its stone). Painted just after the bay, before the services
+// stand in front of it, so only the wall darkens.
+// ---------------------------------------------------------------------------
+export interface BayShadeP {
+  /** The bay wall's ends and height (local px from the gate's centre on the floor), the opening's radius and centre height. */
+  l: number;
+  r: number;
+  top: number;
+  rad: number;
+  cy: number;
+}
+
+export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
+  bounds(p) {
+    return [p.l, -p.top, p.r, 0];
+  },
+  paint(c, p) {
+    const one = lut("night", 1), two = lut("night", 2);
+    const clear = p.rad + 0.55 * H;
+    tint(c, p.l, -p.top, p.r, -6, (X, Y, lx, ly) => {
+      const d = Math.hypot(lx, ly + p.cy);
+      const j = (vnoise(lx * 0.05, ly * 0.05, 19) - 0.5) * 0.12 * H + (hash(X, Y, 23) - 0.5) * 2;
+      if (d + j < clear) return null;
+      return d + j > clear + 1.6 * H && ly < -p.cy ? two : one;
+    });
+  },
+});
