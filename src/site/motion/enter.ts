@@ -6,12 +6,14 @@
 // it plays the opening as built (src/tesu/opening/: the conductor, Track 1, the heard clock, the bars and the
 // captions) from T 0 in the game screen, the world already in view (the old PLAY path: no page fall).
 //
-// It also owns the opening's audio before the press: the AudioContext is made at once (suspended, silent) so
-// Track 1's first piece decodes while the world loads, and any gesture on the page wakes it quietly.
+// It also owns the opening's audio before the press: the AudioContext is made once "dex" has written itself
+// (motion/quiet.ts: nothing heavy while the mark draws), suspended and silent, so Track 1's first piece decodes while
+// the world loads, and any gesture on the page wakes it quietly.
 
 import { BEATS } from "../../tesu/opening/beats.ts";
 import { Conductor, makeAudio, readOpeningNote, type OpeningLink } from "../../tesu/opening/conductor.ts";
 import { Track1 } from "../../tesu/opening/track.ts";
+import { afterMark } from "./quiet.ts";
 
 export type Way = "continue" | "corner" | "top" | "bottom";
 
@@ -39,14 +41,22 @@ export interface OpeningHook {
 
 export function initOpening(opts: { reduced: MediaQueryList; world: () => PlayableWorld | null }): OpeningHook {
   const root = document.documentElement;
-  const audio = makeAudio();
-  const track = audio ? new Track1(audio, audio.destination) : null;
-  let trackIn = !track;
-  void track?.aReady.then(() => { trackIn = true; }, () => { trackIn = true; });
+  let audio: AudioContext | null = null;
+  let track: Track1 | null = null;
+  let trackIn = false;
+  const wake = (): void => {
+    if (audio || trackIn) return;
+    audio = makeAudio();
+    track = audio ? new Track1(audio, audio.destination) : null;
+    trackIn = !track;
+    void track?.aReady.then(() => { trackIn = true; }, () => { trackIn = true; });
+  };
+  void afterMark().then(wake);
   let conductor: Conductor | null = null;
 
   document.addEventListener(ENTER_EVENT, (e) => {
     if (conductor) return;
+    wake();
     const way = (e as CustomEvent<EnterDetail>).detail?.way ?? "continue";
     if (audio && audio.state === "suspended") void audio.resume();
     const c = new Conductor(audio, track, { doc: document, reduced: opts.reduced.matches, repeat: readOpeningNote().seen > 0 });
@@ -65,6 +75,7 @@ export function initOpening(opts: { reduced: MediaQueryList; world: () => Playab
 
   return {
     unlock: () => {
+      wake();
       if (audio && audio.state === "suspended") void audio.resume();
     },
     ready: () => trackIn,
