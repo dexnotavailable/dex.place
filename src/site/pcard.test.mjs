@@ -149,7 +149,7 @@ test("the seam (DESIGN-1019 7.1): the cards live in their own files, the deck ke
   assert.match(site, /@import "\.\/pcard\.css";/);
   const ts = readFileSync(new URL("./motion/pcard.ts", import.meta.url), "utf8");
   for (const k of ["prime", "entrance", "settle", "reset", "live", "destroy"]) assert.match(ts, new RegExp(`\\b${k}\\(`), k);
-  assert.match(ts, /export function initCards\(list: HTMLElement, host: CardHost\): CardDeck/);
+  assert.match(ts, /export function initCards\(list: HTMLElement, \w+: CardHost\): CardDeck/);
   assert.doesNotMatch(ts, /from "gsap\/ScrollTrigger"/, "K never uses ScrollTrigger");
   // the art is not magnet.ts's to tilt any more
   for (const p of projects) assert.doesNotMatch(cardArt(p), /data-tilt-scene/);
@@ -197,4 +197,53 @@ test("the numeral's place and the pop part (DESIGN-1019 5.3): rig.json's numeral
   // banned: animated shadows and filters, clip-path, rounded corners on the card
   assert.doesNotMatch(css, /backdrop-filter|clip-path|border-radius/);
   assert.doesNotMatch(css, /transition:[^;]*box-shadow/);
+});
+
+test("the card's motion (DESIGN-1019 5.5-5.7, 6.3): one owner per transform, idle on the compositor, still under reduced motion", () => {
+  const ts = readFileSync(new URL("./motion/pcard.ts", import.meta.url), "utf8");
+  const css = readFileSync(new URL("./styles/pcard.css", import.meta.url), "utf8");
+  // the deck: one per list (a second initCards gets the same deck), nothing under reduced motion
+  assert.match(ts, /const known = decks\.get\(list\);/);
+  assert.match(ts, /const motion = !host\.reduced;/);
+  for (const fn of ["settle", "prime", "entrance"]) {
+    const body = ts.slice(ts.indexOf(`function ${fn}(`), ts.indexOf(`function ${fn}(`) + 400);
+    assert.match(body, /if \(!motion\) return/, `${fn} does nothing under reduced motion`);
+  }
+  // the entrance as the spec times it
+  for (const bit of ["x: s * 0.24 * vw, y: 48, rotation: s * 4", "scale: one ? 1.15 : 1.2", "x: s * l.z * 48", "x: -s * 80", 'ease: "back.out(1.6)"', "stagger: 0.018", "i * 0.11"]) assert.ok(ts.includes(bit), bit);
+  // no layout reads in the ticker: the pointer reads its box on pointer events, the width on resize
+  const tick = ts.slice(ts.indexOf("const tick = "), ts.indexOf("const wake = "));
+  assert.doesNotMatch(tick, /getBoundingClientRect|offsetWidth|offsetHeight|clientWidth/);
+  // idle loops only with motion allowed, paused off screen; the press and the plate are transforms, never shadows
+  const idle = css.slice(css.indexOf("@media (prefers-reduced-motion: no-preference) {\n  /* idle: the card floats"));
+  assert.match(idle, /pcard-float 6\.4s/);
+  assert.match(css, /\.pcard__in\.is-off :is\(\.pcard__float, \.rig__p, \.rig__l, \.cart__shine, \.btn__ic\) \{ animation-play-state: paused; \}/);
+  assert.match(css, /@keyframes pcard-scroll-tilt \{ from \{ transform: rotateX\(5deg\); \} to \{ transform: rotateX\(-5deg\); \} \}/);
+  assert.doesNotMatch(css, /animation:[^;]*(?:box-shadow|filter)/);
+  // pixel icons step, the rest is smooth
+  assert.match(css, /pcard-nudge 3\.2s step-end/);
+});
+
+test("line art for the entrance (DESIGN-1019 addendum, Dex 10-19): <rig>/lines.svg in the format H delivers, <= 80 KB gzip", async () => {
+  const { gzipSync } = await import("node:zlib");
+  const { normaliseRig } = await import("./motion/rig-read.ts");
+  for (const p of projects.filter((q) => q.art.rig)) {
+    const dir = new URL(`../../public/site/cards/${p.id}/`, import.meta.url);
+    if (!existsSync(new URL("lines.svg", dir))) continue; // (optional: the entrance plays without it)
+    const svg = readFileSync(new URL("lines.svg", dir), "utf8");
+    const rig = normaliseRig(JSON.parse(readFileSync(new URL("rig.json", dir), "utf8")));
+    assert.match(svg, new RegExp(`^<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${rig.size[0]} ${rig.size[1]}">`), `${p.id}: viewBox = rig.size`);
+    assert.ok(gzipSync(svg).length <= 80 * 1024, `${p.id}: ${Math.round(gzipSync(svg).length / 1024)} KB gzip`);
+    assert.doesNotMatch(svg, /<(?:image|text|script|style|filter|mask|use)\b|fill="|stroke="|transform="/, `${p.id}: plain paths only`);
+    const ids = new Set(rig.parts.map((q) => q.id));
+    const groups = [...svg.matchAll(/<g data-part="([a-z0-9-]+)">/g)].map((m) => m[1]);
+    assert.ok(groups.length > 0 && groups.every((g) => ids.has(g)), `${p.id}: every group names a rig part`);
+    const stages = [...svg.matchAll(/<path data-stage="(\d)" d="M[^"]+"\/>/g)].map((m) => +m[1]);
+    assert.ok(stages.length > 0 && stages.every((s) => s >= 1 && s <= 3), `${p.id}: paths with stages 1-3`);
+    assert.ok(stages.includes(1), `${p.id}: a silhouette`);
+  }
+  const ts = readFileSync(new URL("./motion/pcard.ts", import.meta.url), "utf8");
+  // the three phases in the entrance G already calls; without the file, the plain entrance
+  assert.match(ts, /if \(c\.lines\.length\) drawn\(c, at\); else plain\(c, at\);/);
+  assert.match(ts, /strokeDashoffset: 1\.05/);
 });
