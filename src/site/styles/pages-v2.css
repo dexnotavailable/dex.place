@@ -405,9 +405,9 @@
 /* ------------------------------------------------------------------ the section pages' heads */
 /* in a band the window already stands above the head on a phone: no second gap above the kicker */
 @media (max-width: 1099px) {
-  .band > .page > .wrap > .phead:first-child { padding-top: 0; }
+  .pband > .page > .wrap > .phead:first-child { padding-top: 0; }
 }
-.band > .page .phead__lead { max-width: 52ch; font-size: 1rem; line-height: 1.7; margin: calc(var(--s-5) * -1) 0 var(--s-6); }
+.pband > .page .phead__lead { max-width: 52ch; font-size: 1rem; line-height: 1.7; margin: calc(var(--s-5) * -1) 0 var(--s-6); }
 
 /* ------------------------------------------------------------------ /docs/ */
 .page--docs { container: docspage / inline-size; }

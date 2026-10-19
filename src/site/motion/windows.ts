@@ -7,6 +7,12 @@
 // cross, the lake shimmers, the mist creeps. Its edge is a hole torn in the paper, drawn into the window itself, seeded
 // per window so no two holes look alike. How the windows move with the scroll and arrive is a look (motion/looks.ts).
 //
+// The home page (Dex 10-19, the redesign, lanes/motion/DESIGN-1019.md 2.3): every band has its place painted edge to
+// edge behind the website, fixed to the screen (styles/bands.css .band__scene: data-watch="band", data-side, no torn
+// edge), its landmark on the band's open side, and a few pieces of the world in front of the paper (.band__fore,
+// data-fore: a transparent canvas of the scene's `fore` pieces). Those live a little (8 frames a second, 6 on phones)
+// while their band is on screen and never move with the scroll. A section's own page keeps its window and its look.
+//
 // Light: a window paints only the first time it comes near the screen; only windows on screen animate (a few frames
 // a second, every frame only while the page scrolls under a look that follows it or a window is arriving; nothing when
 // none is on screen); reduced motion: each is drawn once, still. Whole pixels only (k device px per art px).
@@ -56,6 +62,8 @@ export interface Scene {
   walker?: { fit: number; x: number; y: number; haze: number; before: number };
   /** The same place framed for a wide window (wider than WIDE : 1, across the page): its own pieces (and mist). */
   wide?: Pick<Scene, "pieces"> & Partial<Pick<Scene, "mist" | "water" | "walker">>;
+  /** The pieces of it in front of the paper on the home page (.band__fore): shares of the fore box, no sky. */
+  fore?: ScenePiece[];
 }
 
 /** A window this much wider than tall shows its place's wide framing (the windows across the page). */
@@ -74,6 +82,7 @@ const LAKE: Rgb[] = [[219, 242, 235], [176, 226, 212], [131, 204, 191], [90, 178
 export const SCENES: Readonly<Record<SceneId, Scene>> = {
   // the Walker wading through the cloud sea, far off: Tesu's landmark in its sky
   sky: {
+    fore: [{ kind: "op.cloud", p: { kind: "cumulus", w: 460, h: 150, tower: 0.45 }, fit: 0.92, x: 0.5, y: 1.0, sway: 4, speed: 0.04, seed: 71 }],
     entry: "sky",
     sky: HIGH,
     walker: { fit: 0.5, x: 0.6, y: 0.82, haze: 0.42, before: 2 },
@@ -87,6 +96,7 @@ export const SCENES: Readonly<Record<SceneId, Scene>> = {
   },
   // the palace at dawn, a gate tower before it, the far karst
   palace: {
+    fore: [{ kind: "op.banners", p: { w: 300, drop: 120, n: 3 }, fit: 0.9, x: 0.5, y: 0.04, sway: 1, speed: 0.2 }],
     entry: "palace",
     sky: DAWN,
     pieces: [
@@ -110,6 +120,7 @@ export const SCENES: Readonly<Record<SceneId, Scene>> = {
   },
   // the floating isles at noon
   isles: {
+    fore: [{ kind: "op.cloud", p: { kind: "cumulus", w: 300, h: 150, tower: 0.6 }, fit: 0.9, x: 0.5, y: 1.0, sway: 5, speed: 0.05, seed: 73 }],
     entry: "sky",
     sky: NOON,
     pieces: [
@@ -122,6 +133,7 @@ export const SCENES: Readonly<Record<SceneId, Scene>> = {
   },
   // Kagami's lake, its torii islet and a boat, in the warm afternoon
   lake: {
+    fore: [{ kind: "op.birds", p: { n: 2, w: 90, h: 30, kind: "egret", size: 5 }, fit: 0.42, x: 0.5, y: 0.7, bob: 1, speed: 0.4, seed: 79 }],
     entry: "kagami",
     sky: AFTER,
     water: { y: 0.64, tones: LAKE },
@@ -149,6 +161,7 @@ export const SCENES: Readonly<Record<SceneId, Scene>> = {
   },
   // a pine over the karst, the mist in the valleys, at dusk
   pine: {
+    fore: [{ kind: "op.pine", p: { h: 260, dir: -1 }, fit: 1, x: 0.5, y: 1.0, seed: 83 }],
     entry: "kagami",
     sky: DUSK,
     mist: { y: 0.76, h: 0.14, before: 2 },
@@ -313,6 +326,44 @@ export function framed(base: Scene, W: number, H: number): Scene {
   return { ...base, pieces: wide.pieces, mist: wide.mist, water: wide.water ?? base.water, walker: wide.walker };
 }
 
+/** Which side of the screen the world is open on behind a home band: "r" for a band whose paper docks left. */
+export type OpenSide = "l" | "r";
+/** The stretch of the screen (shares across) a band's landmarks are placed in, by its open side. */
+export const OPEN: Readonly<Record<OpenSide, readonly [number, number]>> = { r: [0.54, 1], l: [0, 0.46] };
+/** Atmosphere (clouds, birds) runs across the whole screen, under the paper too; everything else is a landmark. */
+const atmosphere = (pc: ScenePiece): boolean => pc.kind === "op.cloud" || pc.kind === "op.birds";
+
+/**
+ * A place framed for a home band's whole screen (DESIGN-1019 2.3): on a landscape screen its wide framing (if it has
+ * one) with every landmark and the Walker moved into the open side; on a portrait one (phones) as it is, centred, so
+ * every breath crosses it. Pure.
+ */
+export function sideFramed(base: Scene, W: number, H: number, open: OpenSide): Scene {
+  if (W <= H) return base;
+  const w: Scene = base.wide
+    ? { ...base, pieces: base.wide.pieces, mist: base.wide.mist ?? base.mist, water: base.wide.water ?? base.water, walker: base.wide.walker ?? base.walker }
+    : base;
+  const [a, b] = OPEN[open];
+  const at = (x: number): number => a + x * (b - a);
+  return {
+    ...w,
+    pieces: w.pieces.map((pc) => (atmosphere(pc) ? pc : { ...pc, x: at(pc.x) })),
+    ...(w.walker ? { walker: { ...w.walker, x: at(w.walker.x) } } : {}),
+  };
+}
+
+/** The scene's pieces in front of the paper, as a scene of their own (no sky, mist, lake or Walker). Null: none. */
+export function foreOf(base: Scene): Scene | null {
+  if (!base.fore?.length) return null;
+  return { entry: base.entry, sky: base.sky, pieces: base.fore };
+}
+
+/** Two side framings of one place that put every piece in the same spot (nothing to paint again). */
+const sameFraming = (a: Scene, b: Scene): boolean =>
+  a.pieces.length === b.pieces.length &&
+  a.pieces.every((pc, i) => pc.kind === b.pieces[i]!.kind && pc.x === b.pieces[i]!.x && pc.y === b.pieces[i]!.y && pc.fit === b.pieces[i]!.fit) &&
+  a.walker?.x === b.walker?.x;
+
 /** Where a window is, for the looks that move with the scroll or play as it arrives (motion/looks.ts). */
 export interface WinState {
   W: number;
@@ -367,6 +418,12 @@ interface Win {
   k: number;
   /** The window height the art was painted for (repaint when the window has really changed size). */
   paintedH: number;
+  /** Home bands: the open side (side framing), no torn edge, a fore canvas (no sky, cleared each frame). */
+  side: OpenSide | null;
+  edgeless: boolean;
+  fore: boolean;
+  /** What says whether it is on screen (its band, for a scene fixed to the screen). */
+  watch: HTMLElement;
   back: HTMLCanvasElement | null;
   edge: HTMLCanvasElement | null;
   mist: HTMLCanvasElement | null;
@@ -401,6 +458,8 @@ const ARRIVE = 0.3;
 export function initWindows(reduced: MediaQueryList, motion: WindowMotion = LOOK[document.documentElement.dataset.motion as Look] ?? STILL): void {
   const els = [...document.querySelectorAll<HTMLElement>("[data-window]")];
   if (!els.length) return;
+  // the home page's scenes are fixed to the screen: no look, a little life, never with the scroll
+  if (els.some((el) => el.dataset.watch === "band")) motion = { fps: matchMedia("(max-width: 699px)").matches ? 6 : 8 };
   const wins: Win[] = [];
   let nextId = 1000;
   const pending = new Map<number, [Win, number, number]>();
@@ -437,8 +496,8 @@ export function initWindows(reduced: MediaQueryList, motion: WindowMotion = LOOK
     return { W: Math.ceil((r.width * dpr) / k), H: Math.ceil((r.height * dpr) / k), k, dpr };
   };
   const apply = (win: Win, m: { W: number; H: number; k: number; dpr: number }): void => {
-    const scene = framed(win.base, m.W, m.H);
-    if (scene !== win.scene) {
+    const scene = win.fore ? win.scene : win.side ? sideFramed(win.base, m.W, m.H, win.side) : framed(win.base, m.W, m.H);
+    if (scene !== win.scene && !(win.side && sameFraming(scene, win.scene))) {
       // the window changed shape enough to frame its place the other way: paint it again
       win.scene = scene;
       win.paintedH = 0;
@@ -615,7 +674,8 @@ export function initWindows(reduced: MediaQueryList, motion: WindowMotion = LOOK
     win.plan = plan;
 
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(backdrop(win), bo ? bo[0] : 0, -BACK_M + (bo ? bo[1] : 0));
+    if (win.fore) ctx.clearRect(0, 0, W, H);
+    else ctx.drawImage(backdrop(win), bo ? bo[0] : 0, -BACK_M + (bo ? bo[1] : 0));
     scene.pieces.forEach((pc, i) => {
       if (mist && scene.mist && i === scene.mist.before) {
         const band = mistBand(win);
@@ -632,7 +692,7 @@ export function initWindows(reduced: MediaQueryList, motion: WindowMotion = LOOK
       if (pc.haze) ctx.restore();
     });
     if (scene.water) ripples(win, tt, bo ? bo[1] : 0);
-    ctx.drawImage(edge(win), 0, 0);
+    if (!win.edgeless) ctx.drawImage(edge(win), 0, 0);
     if (covering) {
       if (!win.over) {
         const c = document.createElement("canvas");
@@ -664,7 +724,12 @@ export function initWindows(reduced: MediaQueryList, motion: WindowMotion = LOOK
   };
 
   els.forEach((el, index) => {
-    const scene = SCENES[el.dataset.window as SceneId] ?? SCENES.sky;
+    const place = SCENES[el.dataset.window as SceneId] ?? SCENES.sky;
+    const fore = el.hasAttribute("data-fore");
+    const scene = fore ? foreOf(place) : place;
+    if (!scene) return;
+    const side = el.dataset.side === "l" || el.dataset.side === "r" ? (el.dataset.side as OpenSide) : null;
+    const watch = el.dataset.watch === "band" ? (el.closest<HTMLElement>(".band") ?? el) : el;
     const cv = document.createElement("canvas");
     el.prepend(cv);
     const ctx = cv.getContext("2d");
@@ -672,8 +737,9 @@ export function initWindows(reduced: MediaQueryList, motion: WindowMotion = LOOK
     const band = el.parentElement ?? el;
     const st: WinState = { W: 0, H: 0, index, top: 0, bottom: 0, bandTop: 0, bandBottom: 0, vh: innerHeight, arrived: -1 };
     wins.push({
-      el, band, index, cv, ctx, base: scene, scene, W: 0, H: 0, k: 0, paintedH: 0, back: null, edge: null, mist: null,
-      field: null, over: null, covering: !!motion.cover && animated, plan: null, art: [], walker: null, visible: false, seen: false,
+      el, band, index, cv, ctx, base: scene, scene, W: 0, H: 0, k: 0, paintedH: 0, side, edgeless: fore || el.dataset.edge === "none", fore, watch,
+      back: null, edge: null, mist: null,
+      field: null, over: null, covering: !!motion.cover && animated && !fore, plan: null, art: [], walker: null, visible: false, seen: false,
       gen: 0, dirty: true, st,
     });
   });
@@ -743,26 +809,29 @@ export function initWindows(reduced: MediaQueryList, motion: WindowMotion = LOOK
   const near = typeof IntersectionObserver === "function"
     ? new IntersectionObserver((entries) => {
       for (const e of entries) {
-        const win = wins.find((x) => x.el === e.target);
-        if (!win || !e.isIntersecting || win.seen) continue;
-        win.seen = true;
-        const m = measure(win);
-        if (m) apply(win, m);
+        if (!e.isIntersecting) continue;
+        for (const win of wins) {
+          if (win.watch !== e.target || win.seen) continue;
+          win.seen = true;
+          const m = measure(win);
+          if (m) apply(win, m);
+        }
       }
     }, { rootMargin: "50% 0px" })
     : null;
   const onScreen = typeof IntersectionObserver === "function"
     ? new IntersectionObserver((entries) => {
       for (const e of entries) {
-        const win = wins.find((x) => x.el === e.target);
-        if (!win) continue;
-        win.visible = e.isIntersecting;
-        if (win.visible) { win.dirty = true; kick(); }
+        for (const win of wins) {
+          if (win.watch !== e.target) continue;
+          win.visible = e.isIntersecting;
+          if (win.visible) { win.dirty = true; kick(); }
+        }
       }
     })
     : null;
   for (const win of wins) {
-    if (near && onScreen) { near.observe(win.el); onScreen.observe(win.el); }
+    if (near && onScreen) { near.observe(win.watch); onScreen.observe(win.watch); }
     else { win.seen = win.visible = true; win.covering = false; }
   }
   if (!near) { layoutAll(); kick(); }

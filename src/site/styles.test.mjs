@@ -93,3 +93,21 @@ test("Dex 10-19 'vector is best; some web elements don't necessarily need to be 
   const all = sheets.map((s) => s.css).join("\n");
   assert.doesNotMatch(all, /look-dust|look-cut|data-motion="(?:dust|cuts)"/);
 });
+
+test("the home's places stay fixed: nothing above a fixed scene takes a transform, filter, perspective, will-change, contain, container-type or content-visibility (DESIGN-1019 2.3, 6.4)", async () => {
+  const banned = /(?:^|[;{\s])(transform|filter|perspective|will-change|contain|container-type|content-visibility|backdrop-filter)\s*:/;
+  const above = /(?:^|\s)(?:html|body|\.sheet(?:--[\w-]+)*|\.main|\.band(?:--[\w-]+)*(?:\.sec)?|\.band__world)(?:\.[\w-]+)*(?::[\w-]+(?:\([^)]*\))?)*$/;
+  const bad = [];
+  for (const { file, css } of sheets) {
+    const flat = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    for (const m of flat.matchAll(/([^{}@]+)\{([^{}]*)\}/g)) {
+      const sels = m[1].split(",").map((x) => x.trim()).filter(Boolean);
+      if (sels.some((sel) => above.test(sel)) && banned.test(m[2])) bad.push(`${file}: ${m[1].trim()} { ${m[2].trim().slice(0, 60)} }`);
+    }
+  }
+  assert.deepEqual(bad, []);
+  const bands = sheets.find((s) => s.file === "bands.css").css;
+  assert.match(bands, /\.band__scene \{\s*position: fixed;/);
+  assert.match(bands, /clip-path: inset\(var\(--strip-h\) 0 calc\(-1 \* var\(--strip-h\)\) 0\)/, "a change of place always happens under a strip");
+  assert.match(bands, /@media \(prefers-reduced-motion: reduce\) \{\s*\.band__scene \{ position: absolute;/, "reduced motion: the places scroll with the page");
+});

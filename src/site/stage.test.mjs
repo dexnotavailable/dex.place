@@ -68,7 +68,7 @@ test("stage wiring: lazy, after the mark and idle, never with reduced motion / S
   assert.match(stage, /gsap\.ticker\.add\(\(time\) => lenis\.raf\(time \* 1000\)\)/);
   assert.match(stage, /lenis\.on\("scroll", ScrollTrigger\.update\)/);
   // touch screens keep their own scroll; reduced motion switched on later puts everything back
-  assert.match(stage, /const lenis = fine\.matches \? smoothWheel\(root\) : null;/);
+  assert.match(stage, /const lenis = fine\.matches && \/\[\?&\]smooth=lenis\/\.test\(location\.search\) \? smoothWheel\(root\) : null;/, "Lenis waits for G3 (lane F's OK)");
   assert.match(stage, /mm\.add\("\(prefers-reduced-motion: no-preference\)"/);
   // nothing GSAP set is left on a thing once it has landed
   assert.match(stage, /clearProps: CLEAR/);

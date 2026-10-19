@@ -63,7 +63,20 @@ function stubCard(s: Stub, level: 2 | 3, withHanko = false): string {
   );
 }
 
-/** Home: the services still to come, as small honest cards. */
+/**
+ * The footer's row of the services still to come (the redesign folds the home page's old "more" section into the
+ * footer, lanes/motion/DESIGN-1019.md 2.2): /#more lands on it.
+ */
+export function moreChips(): string {
+  return (
+    `<section class="ftr__more" id="more" aria-labelledby="more-title">` +
+    `<h2 class="ftr__more-head" id="more-title"><span class="stub__dot" aria-hidden="true"></span>Opens later</h2>` +
+    `<ul class="ftr__chips">${STUBS.map((s) => `<li><a class="ftr__chip" href="${s.href}">${tile(s.icon, s.tone, "s")}<span>${esc(s.title)}</span></a></li>`).join("")}</ul>` +
+    `</section>`
+  );
+}
+
+/** Home (before the redesign): the services still to come, as small honest cards. */
 export function moreSection(): string {
   return (
     `<section class="sec sec--more" id="more" aria-labelledby="more-title">` +

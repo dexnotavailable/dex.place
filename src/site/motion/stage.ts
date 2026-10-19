@@ -35,7 +35,9 @@ export function initStage(fine: MediaQueryList): void {
   const root = document.documentElement;
   const mm = gsap.matchMedia();
   mm.add("(prefers-reduced-motion: no-preference)", () => {
-    const lenis = fine.matches ? smoothWheel(root) : null;
+    // (Lenis ships last, phase G3 of lanes/motion/DESIGN-1019.md, once lane F routes its jumps through scroller.ts;
+    // until then only ?smooth=lenis turns it on, for trying)
+    const lenis = fine.matches && /[?&]smooth=lenis/.test(location.search) ? smoothWheel(root) : null;
     root.setAttribute("data-stage", "");
 
     const enter = (els: Element | readonly Element[], kind: EnterKind, from?: EnterFrom): void => {

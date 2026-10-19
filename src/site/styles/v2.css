@@ -146,14 +146,16 @@ body { background: #000; color: var(--fg); }
   .hdr__menu { margin-left: 8px; }
 }
 
-/* ------------------------------------------------------------------ the windows */
+/* ------------------------------------------------------------------ the windows (a section's own page)
+   (The home page's bands are styles/bands.css since the redesign; a section's own page keeps this until lane P moves
+   it onto the new paper: render/landing.ts pageBand.) */
 /* Each section sits on the white with a window into the world (render/landing.ts band), each onto a different place
    (motion/windows.ts paints them, its edge a hole torn in the paper). Dex 10-19: the windows felt tiny, so the world
    takes the room: on a desktop a tall window beside the content fills the rest of the screen's width and stays in
    view while its section scrolls by ("l" content left, "r" mirrored); between them a wide window spans the page above
    its section ("w"). The content keeps a reading column (--col). On narrower screens every window is a tall band
    above its section. A section's own page is one such band. */
-.band {
+.pband {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, var(--col)) var(--win-w);
@@ -162,11 +164,11 @@ body { background: #000; color: var(--fg); }
   align-items: start;
   padding: var(--s-8) var(--pad);
 }
-.band--r { grid-template-columns: var(--win-w) minmax(0, var(--col)); }
-.band--r > .band__win { order: -1; }
-.band > .sec, .band > .page { position: relative; min-width: 0; padding-block: 0; background: transparent; border: 0; }
-.band > .sec > .wrap, .band > .page > .wrap { max-width: none; margin: 0; padding-inline: 0; }
-.band__win {
+.pband--r { grid-template-columns: var(--win-w) minmax(0, var(--col)); }
+.pband--r > .pband__win { order: -1; }
+.pband > .sec, .pband > .page { position: relative; min-width: 0; padding-block: 0; background: transparent; border: 0; }
+.pband > .sec > .wrap, .pband > .page > .wrap { max-width: none; margin: 0; padding-inline: 0; }
+.pband__win {
   position: sticky;
   top: calc(var(--hdr-h) + 20px);
   height: clamp(420px, calc(100vh - var(--hdr-h) - 40px), 1100px);
@@ -174,25 +176,25 @@ body { background: #000; color: var(--fg); }
   overflow: hidden;
   background: #fff;
 }
-.band__win canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+.pband__win canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
 /* across the page: the window first, as wide as the page, then the section in a wider column under it */
-.band--w {
+.pband--w {
   grid-template-columns: minmax(0, 1fr);
   justify-content: stretch;
   gap: var(--s-7);
   max-width: calc(var(--win-max-w) + var(--pad) * 2);
   margin-inline: auto;
 }
-.band--w > .band__win { order: -1; position: relative; top: 0; height: clamp(300px, 64vh, 760px); height: clamp(300px, 64svh, 760px); }
-.band--w > .sec, .band--w > .page { justify-self: center; width: min(100%, var(--wrap)); }
+.pband--w > .pband__win { order: -1; position: relative; top: 0; height: clamp(300px, 64vh, 760px); height: clamp(300px, 64svh, 760px); }
+.pband--w > .sec, .pband--w > .page { justify-self: center; width: min(100%, var(--wrap)); }
 @media (max-width: 1099px) {
-  .band, .band--r, .band--w { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); padding-block: var(--s-7); }
+  .pband, .pband--r, .pband--w { grid-template-columns: minmax(0, 1fr); gap: var(--s-6); padding-block: var(--s-7); }
   /* the window opens above its section, nearly the screen's width */
-  .band__win, .band--r > .band__win, .band--w > .band__win {
+  .pband__win, .pband--r > .pband__win, .pband--w > .pband__win {
     order: -1; position: relative; top: 0; margin-inline: calc(var(--pad) * -0.5);
     height: clamp(240px, 72vw, 560px);
   }
-  .band--w > .band__win { height: clamp(240px, 64vw, 520px); }
+  .pband--w > .pband__win { height: clamp(240px, 64vw, 520px); }
 }
 /* ink-on-ink spots of the dark theme: key cells and tags on ink get white text */
 .spec dt, .pspec dt, .pick--none[aria-pressed="true"] { color: #fff; }

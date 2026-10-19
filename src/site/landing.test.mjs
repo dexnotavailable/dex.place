@@ -125,7 +125,7 @@ test("home: every section in Dex's order, each with the anchor the nav jumps to"
 
 test("home: Dex's art appears only inside the collage", () => {
   const html = landing(real);
-  const start = html.indexOf(`<div class="collage-box">`);
+  const start = html.indexOf(`<div class="collage-box"`);
   const end = html.indexOf(`</ul></div>`, start);
   assert.ok(start > 0 && end > start);
   const outside = html.slice(0, start) + html.slice(end);
