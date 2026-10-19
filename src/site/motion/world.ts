@@ -41,6 +41,22 @@ interface WorldModule {
   mount(el: HTMLElement, opts?: { hold?: boolean; at?: string }): WorldHandle;
 }
 
+/**
+ * While "dex" writes itself, the world's page and its scripts and styles are fetched into the cache (low priority,
+ * nothing parsed or run: the build names them content-hashed and immutable under /assets/), so holding its boot until
+ * the mark is written costs as little time as it can.
+ */
+function prefetchWorld(): void {
+  if (typeof fetch !== "function") return;
+  void fetch("/tesu/", { credentials: "same-origin" })
+    .then((r) => (r.ok ? r.text() : ""))
+    .then((html) => {
+      const urls = new Set([...html.matchAll(/<(?:script|link)\s[^>]*?(?:src|href)="(\/assets\/[^"]+\.(?:js|css))"/g)].map((m) => m[1]!));
+      for (const u of urls) void fetch(u, { credentials: "same-origin", priority: "low" } as RequestInit).then((r) => r.arrayBuffer(), () => null).catch(() => null);
+    })
+    .catch(() => {});
+}
+
 export function initWorld(_reduced: MediaQueryList): void {
   if (document.documentElement.dataset.embed === "world") return;
   const world = document.querySelector<HTMLElement>("[data-world-mount]");
@@ -163,7 +179,9 @@ export function initWorld(_reduced: MediaQueryList): void {
     started = true;
     world?.setAttribute("aria-busy", "true");
     if (fallback) fallback.hidden = true;
-    // the world's frame boots on this page's thread: it starts once "dex" has written itself (motion/quiet.ts)
+    // the world's frame boots on this page's thread: it starts once "dex" has written itself (motion/quiet.ts); its
+    // files come down meanwhile (network only: nothing of it runs during the draw)
+    prefetchWorld();
     afterMark().then(load).then(async (mod) => {
       if (destroyed) return;
       handle = mod.mount(stage, { hold: !!world?.hasAttribute("data-world-hold"), at: world?.dataset.worldAt });
