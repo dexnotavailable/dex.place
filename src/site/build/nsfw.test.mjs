@@ -110,7 +110,7 @@ test("an NSFW image inside a link fails the build instead of linking the open fi
 test("the post page, the blog index and the home list show an NSFW tag", (t) => {
   const content = site(t);
   const post = adult(content);
-  assert.match(postPage(content, post), /<p class="ahead__facts"><span class="tag tag--nsfw">NSFW<\/span>/);
+  assert.match(postPage(content, post), /<p class="dh__facts"><span class="tag tag--nsfw">NSFW<\/span>/);
   assert.doesNotMatch(postPage(content, content.posts.find((p) => p.slug === "plain-post")), /tag--nsfw/);
   const index = blogIndex(content);
   assert.match(index, /An adult post<\/a>[\s\S]*?class="tag tag--nsfw">NSFW<[\s\S]*?A plain post/, "the card shows the tag, the plain card does not");

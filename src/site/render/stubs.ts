@@ -3,7 +3,7 @@
 // later and never fakes a form, a session or a count. Each has its address kept (/support/, /account/, /map/,
 // /forums/; commissions at /gallery/#commissions) and a card on the home page.
 
-import { hanko, icon, pageHead, sectionHead, tile } from "./glyphs.ts";
+import { button, hanko, icon, pageHead, sectionHead, tile } from "./glyphs.ts";
 import { esc } from "./html.ts";
 import type { IconName } from "../pixels.ts";
 import type { Tone } from "../data/projects.ts";
@@ -19,13 +19,33 @@ export interface Stub {
   line: string;
   /** Where it is in the world. */
   place: string;
+  /**
+   * What already works in its place, from the site's own docs (never a promise): a plain line and the one link that
+   * helps. Shown on the stub's own page.
+   */
+  until?: { line: string; href: string; label: string };
 }
 
 export const STUBS: readonly Stub[] = [
-  { id: "support", title: "Support", href: "/support/", icon: "page", tone: "cyan", line: "Write to Dex about a bug or a question.", place: "the Crane Desk in the Hall of Works" },
-  { id: "account", title: "dex account", href: "/account/", icon: "star", tone: "yellow", line: "One account for dex.place, dexCode and dexClient.", place: "Hanko's desk in the Hall of Works" },
-  { id: "map", title: "Map", href: "/map/", icon: "grid", tone: "mint", line: "The whole of Tesu on one banner.", place: "the hall's central pillar" },
-  { id: "forums", title: "Forums", href: "/forums/", icon: "window", tone: "cyan", line: "A place to talk with other visitors.", place: "the Teahouse, upstairs, shuttered for now" },
+  // content/docs/error-reports.md
+  {
+    id: "support", title: "Support", href: "/support/", icon: "page", tone: "cyan", line: "Write to Dex about a bug or a question.", place: "the Crane Desk in the Hall of Works",
+    until: { line: "When something breaks, dexCode and dexClient send Dex a short report, and you can send one by hand.", href: "/docs/error-reports/", label: "Error reports and privacy" },
+  },
+  // content/docs/about-dex-place.md "Accounts"
+  {
+    id: "account", title: "dex account", href: "/account/", icon: "star", tone: "yellow", line: "One account for dex.place, dexCode and dexClient.", place: "Hanko's desk in the Hall of Works",
+    until: { line: "You don't need an account for anything here.", href: "/docs/about-dex-place/#accounts", label: "About dex.place" },
+  },
+  // content/docs/world.md
+  {
+    id: "map", title: "Map", href: "/map/", icon: "grid", tone: "mint", line: "The whole of Tesu on one banner.", place: "the hall's central pillar",
+    until: { line: "The world itself is open at the top of this page; how to move around it is in its doc.", href: "/docs/world/", label: "The World: controls and saving" },
+  },
+  {
+    id: "forums", title: "Forums", href: "/forums/", icon: "window", tone: "cyan", line: "A place to talk with other visitors.", place: "the Teahouse, upstairs, shuttered for now",
+    until: { line: "Dex's own posts are on the blog, with an RSS feed.", href: "/blog/", label: "Blog" },
+  },
   { id: "commissions", title: "Commissions", href: "/gallery/#commissions", icon: "frame", tone: "magenta", line: "Ask Dex for a piece of your own.", place: "a corner of the Long Gallery" },
 ];
 
@@ -55,7 +75,8 @@ export function moreSection(): string {
   );
 }
 
-/** A stub's own page (/support/, /account/, /map/, /forums/). */
+/** A stub's own page (/support/, /account/, /map/, /forums/): what it will be, where it is in the world, what works
+ *  until then, and the other services still to come. */
 export function stubPage(id: Stub["id"]): string {
   const s = STUBS.find((x) => x.id === id)!;
   const others = STUBS.filter((x) => x.id !== id);
@@ -63,13 +84,18 @@ export function stubPage(id: Stub["id"]): string {
     `<div class="page page--stub">` +
     `<div class="wrap">` +
     pageHead({ kicker: s.id === "account" ? "account" : s.id, title: s.title, tone: s.tone, icon: s.icon }) +
-    `<div class="stubpage">` +
+    `<div class="stubpage stubpage--${s.tone}">` +
     hanko() +
     `<p class="stubpage__line">${esc(s.line)}</p>` +
     later +
     `<p class="stubpage__place">${icon("info", 2)}<span>In the world: ${esc(s.place)}.</span></p>` +
+    (s.until
+      ? `<div class="stubpage__until"><p class="stubpage__label">Until then</p><p class="stubpage__now">${esc(s.until.line)}</p>` +
+        button({ href: s.until.href, label: s.until.label, icon: "arrow", size: "s" }) +
+        `</div>`
+      : "") +
     `</div>` +
-    `<h2 class="stubpage__more">Also opening later</h2>` +
+    `<h2 class="stubpage__more"><span class="stubpage__slash" aria-hidden="true">//</span><span>Also opening later</span><span class="stubpage__rule" aria-hidden="true"></span></h2>` +
     `<ul class="stubs">${others.map((o) => stubCard(o, 3)).join("")}</ul>` +
     `</div></div>`
   );
