@@ -40,12 +40,22 @@ export const BEATS = {
    * The authored camera to the walk, as keys on T (a monotone curve through them per channel, so it never
    * overshoots and eases where keys repeat): zoom (log), anchor (her feet row), horizon (eye-level row), alt (H:
    * how far above her feet the frame's middle is lifted; the fall's height), cx (H; `follow`: added to her x).
-   * Before the press the world holds on the first key (the high sky behind "dex").
+   * Before the press the world holds on the first key: inside the black slab (`ceiling`), behind "dex".
+   * Rev 5 (Dex 10-19 18:34Z): the black loading screen is a slab above everything; the press drops the paper out of
+   * it: zoom 0 = the page's own scale for the paper (her ofuda as the loader drew it; game.ts startZoom), the camera
+   * plunges out of the slab on bar 0 and pulls straight out to the vast frame on bar 1 (the whole world far below),
+   * holds it through the first lines, then pushes in on the paper and falls with it through the clouds (rev 4 from
+   * bar 3 on). One continuous shot, no cut.
    */
   "keys": [
-   { "T": 0, "zoom": 1, "anchor": 0.5, "horizon": 1.45, "alt": 34, "cx": 97.4, "follow": false },
-   { "T": 0.641, "zoom": 1, "anchor": 0.5, "horizon": 1.45, "alt": 34, "cx": 97.4, "follow": false },
-   { "T": 4.631, "zoom": 0.94, "anchor": 0.5, "horizon": 1.36, "alt": 24.5, "cx": 95.4, "follow": false },
+   { "T": 0, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 68.2, "cx": 97.4, "follow": false },
+   { "T": 0.3, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 68.2, "cx": 97.4, "follow": false },
+   { "T": 0.641, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 63.4, "cx": 97.2, "follow": false },
+   { "T": 1.15, "zoom": 0.85, "anchor": 0.6, "horizon": 1.2, "alt": 38, "cx": 96, "follow": false },
+   { "T": 1.9, "zoom": 0.3, "anchor": 0.82, "horizon": 0.86, "alt": 6, "cx": 94.5, "follow": false },
+   { "T": 2.636, "zoom": 0.17, "anchor": 0.86, "horizon": 0.8, "alt": 0, "cx": 92, "follow": false },
+   { "T": 4.631, "zoom": 0.2, "anchor": 0.86, "horizon": 0.8, "alt": 0, "cx": 91.5, "follow": false },
+   { "T": 7.6, "zoom": 0.74, "anchor": 0.5, "horizon": 1.3, "alt": 18, "cx": 93.4, "follow": false },
    { "T": 8.622, "zoom": 0.84, "anchor": 0.5, "horizon": 1.18, "alt": 13.5, "cx": 92.9, "follow": false },
    { "T": 10.616, "zoom": 0.62, "anchor": 0.62, "horizon": 0.86, "alt": 5, "cx": 89.9, "follow": false },
    { "T": 12.609, "zoom": 0.5, "anchor": 0.8, "horizon": 0.64, "alt": 0, "cx": 88, "follow": false },
@@ -86,6 +96,11 @@ export const BEATS = {
    { "from": 36.3508, "hold": "follow", "T": 25.6 }
   ]
  },
+ /**
+  * The black loading screen as a slab above everything (Dex 10-19: "as if the black loading screen existed above
+  * everything"): pure black above `altH` H over her feet. The paper hangs in it at the press and falls out of it.
+  */
+ "ceiling": { "altH": 66 },
  "her": {
   /** Dex 10-15: "start further back (left) to fit the running distance": 13.6 H west of the old catch (100), clear
    *  of the jetty's mooring posts (88.1 and 95.7: she stands still at the catch and at the pickup). */
@@ -163,10 +178,10 @@ export const BEATS = {
   "guardMs": 300
  },
  "ofuda": {
-  /** The page's paper is snatched up out of the top by the press's gust (site, 0.9 s); it falls back in here. */
-  "enters": 0.9,
+  /** Rev 5: the paper is the world's from the press on (it hangs where the page's loader left it, in the black). */
+  "enters": 0,
   /** Sun glints on the paper as it turns (a 4-point star, five drawings). */
-  "glints": [3.95, 10.42, 15.7],
+  "glints": [1.25, 3.95, 10.42, 15.7],
   "hush": 24.52,
   "inhale": 27,
   /**
@@ -175,9 +190,11 @@ export const BEATS = {
    * it is drawn on to her hand-off point in the world.
    */
   "path": [
-   { "T": 0.9, "fx": 0.68, "fy": -0.05 },
-   { "T": 2.636, "fx": 0.6, "fy": 0.3 },
-   { "T": 4.631, "fx": 0.53, "fy": 0.38 },
+   { "T": 0, "fx": 0.5, "fy": 0.6 },
+   { "T": 0.641, "fx": 0.5, "fy": 0.66 },
+   { "T": 1.6, "fx": 0.5, "fy": 0.5 },
+   { "T": 2.636, "fx": 0.51, "fy": 0.44 },
+   { "T": 4.631, "fx": 0.5, "fy": 0.4 },
    { "T": 6.626, "fx": 0.47, "fy": 0.42 },
    { "T": 8.622, "fx": 0.45, "fy": 0.4 },
    { "T": 10.616, "fx": 0.5, "fy": 0.33 },

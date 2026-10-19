@@ -39,7 +39,7 @@ import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
 import { SilentLink, type OpeningLink } from "./opening/conductor.ts";
 import { WorldPaper, type PaperPose } from "./opening/paper.ts";
-import { BEATS, CLIP_END, HANDOFF_T, keysAt, paperAirAt, paperBlendAt, paperScreenAt, startT } from "./opening/timeline.ts";
+import { BEATS, CLIP_END, HANDOFF_T, ceilingRow, keysAt, paperAirAt, paperBlendAt, paperScreenAt, setStartZoom, startT } from "./opening/timeline.ts";
 import { Veils, fallVeils } from "./opening/sky.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
@@ -598,7 +598,9 @@ export class TesuGame {
     this.camera.H = this.r.ih;
     const f = this.framing();
     const cuts = this.camera.cuts;
-    // the opening's camera is time-locked to the music; then the world's tracks have the frame again
+    // the opening's camera is time-locked to the music; then the world's tracks have the frame again. Its first
+    // keys show the paper at the page's own scale (the loader's: max(2, round(vh x dpr / 540)) device px per art px)
+    setStartZoom(this.pageArtPx() / (ART_PX * (this.r.presenter.rect.scale || 1)));
     const shot = this.opening.camera(b.x);
     const cine = shot ? null : this.player.r.shot;
     if (shot) this.camera.set(shot, b.x, b.y);
@@ -835,6 +837,32 @@ export class TesuGame {
     const tie = TesuGame.HAT_TIE;
     const w = o.wind();
     this.paperPose = this.paper.hat(b.x + (head[0] + tie[0]) * f, b.y + head[1] + tie[1], f, speed - w.base * f, w.gust, reduced);
+  }
+
+  /** Device px per art px the website's loader drew the ofuda at (motion/column.ts), or as it would on this screen. */
+  pageArtPx(): number {
+    const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+    const vh = typeof window !== "undefined" ? window.innerHeight : 720;
+    return this.pageK ?? Math.max(2, Math.round((vh * dpr) / 540));
+  }
+  /** The page's own figure, when it sent one with the press. */
+  pageK: number | null = null;
+
+  /**
+   * The black loading screen as a slab above everything (beats.ts ceiling): drawn over the world where the camera is
+   * still inside it, the falling paper over the black (it hangs there at the press and falls out of it).
+   */
+  private drawCeiling(cam: CamState): void {
+    const o = this.opening;
+    if (!(this.holding || (o.active && o.T < 4))) return;
+    const xf = planeXf(cam, 1);
+    const row = Math.ceil(ceilingRow(this.player.body.y, xf.s, xf.offY));
+    if (row <= 0) return;
+    const r = this.r;
+    r.begin(0, 0, DAY, []);
+    r.rect(0, 0, cam.W, Math.min(cam.H, row), [0, 0, 0], 1, 1, true);
+    r.flush();
+    this.drawOfuda(cam, false);
   }
 
   /** The ofuda as pixels at the camera's scale (in front of her: it hangs at the front of her hat, or falls). */
@@ -1725,6 +1753,7 @@ export class TesuGame {
     }
     // the opening's fall: fog layers in front of the camera, sweeping up past it as it comes down (opening/sky.ts)
     if (this.opening.active && this.opening.T < BEATS.her.walkFrom) this.veils.draw(W, Hf, fallVeils(this.opening.T, W, Hf, this.opening.way, this.feel.reducedMotion));
+    this.drawCeiling(cam);
     this.drawPrompt(cam);
     this.drawHint(cam);
     this.titles.draw(W, Hf);

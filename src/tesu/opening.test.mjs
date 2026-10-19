@@ -139,7 +139,11 @@ test("the camera never jumps, for every way in and every window: a tick apart it
           const dz = Math.abs(Math.log(s.zoom / prev.zoom));
           const dy = Math.abs(s.anchor - prev.anchor) * h, dx = Math.abs(s.cx - prev.cx) * s.zoom;
           assert.ok(dz < 0.06, `${way} ${w}x${h} T ${T.toFixed(3)}: zoom jumped ${dz.toFixed(3)}`);
-          assert.ok(dy < h * 0.035 && dx < w * 0.035, `${way} ${w}x${h} T ${T.toFixed(3)}: the frame moved ${dx.toFixed(1)}, ${dy.toFixed(1)} px in one tick`);
+          // (rev 5: the plunge out of the black slab and the pull-out to the vast frame, 0.3-1.7 s, are fast on purpose:
+          // smooth, never a cut)
+          const plunge = way !== "bottom" && T > 0.3 && T < 2;
+          const lim = plunge ? 0.3 : 0.035;
+          assert.ok(dy < h * lim && dx < w * lim, `${way} ${w}x${h} T ${T.toFixed(3)}: the frame moved ${dx.toFixed(1)}, ${dy.toFixed(1)} px in one tick`);
         }
         prev = s;
       }
@@ -189,7 +193,8 @@ test("the paper: it falls back in from the top, keeps clear of the bars and the 
   for (const way of ["continue", "bottom"]) {
     const t0 = way === "bottom" ? startT("bottom") : BEATS.ofuda.enters;
     assert.equal(paperScreenAt(t0 - 0.01, way), null, `${way}: not before it enters`);
-    if (way === "continue") assert.ok(paperScreenAt(t0, way)[1] < 0, "in from above the top");
+    // rev 5: it hangs where the page's loader left it (under "dex", 0.6 down the screen) and drops from there
+    if (way === "continue") assert.deepEqual(paperScreenAt(t0, way), [0.5, 0.6], "where the loader left it");
     for (let T = t0 + 1.7; T < HANDOFF_T; T += 1 / 30) {
       const [fx, fy] = paperScreenAt(T, way);
       if (paperBlendAt(T, way) > 0) continue;
@@ -199,7 +204,7 @@ test("the paper: it falls back in from the top, keeps clear of the bars and the 
     near(paperBlendAt(HANDOFF_T, way), 1, 1e-6, `${way}: on her hand-off point when the drawing takes it`);
   }
   // the east wind: it drifts right to left over the fall
-  assert.ok(paperScreenAt(14, "continue")[0] < paperScreenAt(1.2, "continue")[0] + 0.02);
+  assert.ok(paperScreenAt(14, "continue")[0] < paperScreenAt(1.2, "continue")[0] + 0.07);
 });
 
 test("the fall's clouds: each where the camera sees it, and none in any play frame", () => {

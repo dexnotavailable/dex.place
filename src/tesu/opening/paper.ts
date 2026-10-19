@@ -32,6 +32,8 @@ const LIGHT = (() => {
   return v.map((c) => c / n) as [number, number, number];
 })();
 const SEG = 5;
+/** The least size it is drawn at, frame px per art px (see draw). */
+const KMIN = 0.42;
 
 export type PaperMode = "off" | "fall" | "hat";
 
@@ -56,22 +58,15 @@ export class WorldPaper {
     this.sim = new PaperOfuda({ tie: { x: 0, y: 0 }, seed });
   }
 
-  /** The fall begins: a fresh paper, tumbling free (as the gust left it, tilted). */
+  /**
+   * The fall begins: a fresh paper let go where it hung (rev 5: from the page's loader, in the black slab), upright
+   * and still, so it starts as the page drew it; its own air sets it rocking as it drops.
+   */
   startFall(): void {
     const s = this.sim;
     s.reset();
     s.hold = "point";
-    s.pinned = false;
     s.gravity = 150;
-    // as the gust left it: tilted, a little turned (so it rocks from the first drawing)
-    const p = s.p;
-    for (let i = 0; i < 12; i++) {
-      const x = p[i * 3]!, y = p[i * 3 + 1]!;
-      const a = 1.15, c = Math.cos(a), sn = Math.sin(a);
-      p[i * 3] = x * c - y * sn;
-      p[i * 3 + 1] = x * sn + y * c;
-      p[i * 3 + 2] = (i % 2 ? 1.2 : -1.2);
-    }
     s.pin();
     s.release();
     this.mode = "fall";
@@ -161,8 +156,15 @@ export class WorldPaper {
   static draw(pose: PaperPose, toFrame: (x: number, y: number) => [number, number], glint: number | null, reduced: boolean, put: (x: number, y: number, c: RGB) => void): void {
     const F = pose.pts.map((q) => { const f = toFrame(q[0], q[1]); return [f[0], f[1], q[2]] as [number, number, number]; });
     // how many frame px an art px is here (small: a few frame px, its shaded side darkened so it reads as paper)
-    const len = Math.hypot(F[10]![0] + F[11]![0] - F[0]![0] - F[1]![0], F[10]![1] + F[11]![1] - F[0]![1] - F[1]![1]) / 2;
-    const k = len / OFUDA_H;
+    const len0 = Math.hypot(F[10]![0] + F[11]![0] - F[0]![0] - F[1]![0], F[10]![1] + F[11]![1] - F[0]![1] - F[1]![1]) / 2;
+    // the camera's widest frames (the vast reveal) would shrink it under a pixel: it never draws smaller than a
+    // speck of KMIN frame px per art px (about 3 x 5 px), scaled about its middle, so the eye can follow it
+    if (len0 > 0 && len0 / OFUDA_H < KMIN) {
+      const m = F.reduce<[number, number]>((a, q) => [a[0] + q[0] / F.length, a[1] + q[1] / F.length], [0, 0]);
+      const g = (KMIN * OFUDA_H) / len0;
+      for (const q of F) { q[0] = m[0] + (q[0] - m[0]) * g; q[1] = m[1] + (q[1] - m[1]) * g; }
+    }
+    const k = Math.max(KMIN, len0 / OFUDA_H);
     const out = new Map<number, number>();
     const set = (x: number, y: number, c: number): void => { out.set((y + 32768) * 65536 + x + 32768, c); };
     // the spine: a 1 px line down its middle, so edge-on it is still a line of paper

@@ -190,11 +190,31 @@ const cam = BEATS.camera;
 
 interface Key { T: number; zoom: number; anchor: number; horizon: number; alt: number; cx: number; follow: boolean }
 
+/**
+ * The paper's start scale: a key with zoom 0 is "the page's own": the zoom at which her ofuda (in the world, at her
+ * drawing's pixel size) is exactly as big on screen as the page's loader drew it, so the press hands it over without a
+ * jump (game.ts sets it each tick from the screen; 1 until then).
+ */
+let startZoom = 1;
+export function setStartZoom(z: number): void {
+  if (Number.isFinite(z) && z > 0) startZoom = z;
+}
+export function getStartZoom(): number {
+  return startZoom;
+}
+
 /** The keys a way plays: ways 1-3 the fall; way 4 its own opening keys, then the shared ones after them. */
 function keysFor(way: Way): readonly Key[] {
-  if (way !== "bottom") return cam.keys;
-  const b = cam.bottom.keys, last = b[b.length - 1]!.T;
-  return [...b, ...cam.keys.filter((k) => k.T > last)];
+  const ks: readonly Key[] = way !== "bottom" ? cam.keys : (() => {
+    const b = cam.bottom.keys, last = b[b.length - 1]!.T;
+    return [...b, ...cam.keys.filter((k) => k.T > last)];
+  })();
+  return ks.some((k) => k.zoom === 0) ? ks.map((k) => (k.zoom === 0 ? { ...k, zoom: startZoom } : k)) : ks;
+}
+
+/** The black slab's bottom edge on the frame (row px from the top) for a camera, or -1 when it is above the frame. */
+export function ceilingRow(feetY: number, s: number, offY: number): number {
+  return (feetY - BEATS.ceiling.altH * HPX) * s + offY;
 }
 
 /**
