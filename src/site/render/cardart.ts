@@ -35,7 +35,6 @@ export function rigOf(p: Project): RigV2 | null {
 }
 
 const pct = (v: number): string => `${+(v * 100).toFixed(3)}%`;
-const depthBucket = (d: number): number => (d < 0.34 ? 1 : d < 0.67 ? 2 : 3);
 
 /**
  * A part's motions as CSS: the animation list (--anim) and the values its keyframes read (styles/landing.css rig-*).
@@ -58,42 +57,98 @@ export function motionCss(part: RigPartV2): string {
   return anims.length ? `${vars.join(";")};--anim:${anims.join(", ")}` : "";
 }
 
-function rigArt(p: Project, rig: RigV2, className?: string): string {
+/** Extras the project cards add to their art (render/pcard.ts); the project page's framed picture has none. */
+export interface CardArtExtras {
+  /** The giant numeral ("01") between the back parts and the figure (DESIGN-1019 5.3). */
+  numeral?: string;
+  /** The card's foot scrim and the pointer glare. */
+  card?: boolean;
+}
+
+/** One rig part as a layer: the wrapper (motion/pcard.ts moves it by depth) and the part (CSS plays its motions). */
+function rigLayer(p: Project, rig: RigV2, part: RigPartV2, pop = false): string {
   const [W, H] = rig.size;
-  const [fx, fy] = rig.focus ?? [W / 2, H * 0.3];
-  let layers = "";
-  for (const part of rig.parts) {
-    const [x, y, w, h] = part.box;
-    const pv = part.pivot ?? [x + w / 2, y + h / 2];
-    const d = part.depth ?? 0.5;
-    const style = [
-      `left:${pct(x / W)}`, `top:${pct(y / H)}`, `width:${pct(w / W)}`, `height:${pct(h / H)}`,
-      `transform-origin:${pct((pv[0] - x) / w)} ${pct((pv[1] - y) / h)}`, motionCss(part),
-    ].filter(Boolean).join(";");
-    layers +=
-      `<div class="rig__l" data-depth="${depthBucket(d)}" style="--pd:${Math.round(d * 15)}">` +
-      `<img class="rig__p" src="/site/cards/${p.id}/${esc(part.src)}" alt="" loading="lazy" decoding="async" data-part="${esc(part.id)}" style="${style}"></div>`;
-  }
+  const [x, y, w, h] = part.box;
+  const pv = part.pivot ?? [x + w / 2, y + h / 2];
+  const d = part.depth ?? 0.5;
+  const style = [
+    `left:${pct(x / W)}`, `top:${pct(y / H)}`, `width:${pct(w / W)}`, `height:${pct(h / H)}`,
+    `transform-origin:${pct((pv[0] - x) / w)} ${pct((pv[1] - y) / h)}`, motionCss(part),
+  ].filter(Boolean).join(";");
   return (
-    `<div class="cart cart--rig${rig.pixelated ? " cart--px" : ""}${className ? ` ${className}` : ""}" data-rig="/site/cards/${p.id}/" aria-hidden="true" ` +
-    `style="--aw:${W};--ah:${H};--fx:${+(fx / W).toFixed(4)};--fy:${+(fy / H).toFixed(4)}">` +
-    `<div class="rig__box">${layers}</div><span class="cart__shine"></span></div>`
+    `<div class="rig__l" data-z="${+d.toFixed(2)}"${part.pop && !pop ? " data-pop" : ""} style="--pd:${Math.round(d * 15)}">` +
+    `<img class="rig__p" src="/site/cards/${p.id}/${esc(part.src)}" alt="" loading="lazy" decoding="async" data-part="${esc(part.id)}" style="${style}"></div>`
   );
 }
 
-export function cardArt(p: Project, className?: string): string {
-  const rig = rigOf(p);
-  if (rig) return rigArt(p, rig, className);
-  const { w, h, layers } = p.art;
-  let imgs = "";
-  for (let i = 0; i < layers; i++) {
-    const d = DEPTHS[Math.min(DEPTHS.length - 1, Math.round((i / Math.max(1, layers - 1)) * (DEPTHS.length - 1)))] ?? 1;
-    imgs +=
-      `<img class="cart__l" data-depth="${d}" src="/site/cards/${p.id}/${i}.png" alt="" width="${w}" height="${h}" ` +
-      `loading="lazy" decoding="async" style="--pd:${d * 5}">`;
+/** Where the numeral goes: after the part rig.json names, else after the last part shallower than 0.34. */
+export function numeralAt(rig: RigV2): number {
+  const named = rig.numeral ? rig.parts.findIndex((q) => q.id === rig.numeral) : -1;
+  if (named >= 0) return named + 1;
+  let at = 0;
+  rig.parts.forEach((q, i) => { if ((q.depth ?? 0.5) < 0.34) at = i + 1; });
+  return at;
+}
+
+const artVars = (rig: RigV2): string => {
+  const [W, H] = rig.size;
+  const [fx, fy] = rig.focus ?? [W / 2, H * 0.3];
+  return `--aw:${W};--ah:${H};--fx:${+(fx / W).toFixed(4)};--fy:${+(fy / H).toFixed(4)}`;
+};
+
+function rigArt(p: Project, rig: RigV2, className?: string, extras: CardArtExtras = {}): string {
+  const layers = rig.parts.map((part) => rigLayer(p, rig, part));
+  let art: string;
+  if (extras.numeral !== undefined) {
+    const at = numeralAt(rig);
+    art =
+      `<div class="rig__box">${layers.slice(0, at).join("")}</div>` +
+      `<span class="cart__num">${esc(extras.numeral)}</span>` +
+      `<div class="rig__box">${layers.slice(at).join("")}</div>`;
+  } else {
+    art = `<div class="rig__box">${layers.join("")}</div>`;
   }
   return (
+    `<div class="cart cart--rig${rig.pixelated ? " cart--px" : ""}${className ? ` ${className}` : ""}" data-rig="/site/cards/${p.id}/" aria-hidden="true" ` +
+    `style="${artVars(rig)}">` +
+    `<div class="cart__art">${art}</div>` +
+    (extras.card ? `<span class="cart__scrim"></span><span class="cart__glare"></span>` : "") +
+    `<span class="cart__shine"></span></div>`
+  );
+}
+
+/**
+ * The pop part (rig.json `pop: true`) drawn again outside the card's clip, so the character steps out of her frame
+ * (DESIGN-1019 5.3): `div.pcard__pop`, placed exactly like the art box. Empty when the rig has none.
+ */
+export function popArt(p: Project): string {
+  const rig = rigOf(p);
+  const part = rig?.parts.find((q) => q.pop);
+  if (!rig || !part) return "";
+  return (
+    `<div class="pcard__pop${rig.pixelated ? " cart--px" : ""}" aria-hidden="true" style="${artVars(rig)}">` +
+    `<div class="cart__art"><div class="rig__box">${rigLayer(p, rig, part, true)}</div></div></div>`
+  );
+}
+
+export function cardArt(p: Project, className?: string, extras: CardArtExtras = {}): string {
+  const rig = rigOf(p);
+  if (rig) return rigArt(p, rig, className, extras);
+  const { w, h, layers } = p.art;
+  const imgs: string[] = [];
+  for (let i = 0; i < layers; i++) {
+    const d = DEPTHS[Math.min(DEPTHS.length - 1, Math.round((i / Math.max(1, layers - 1)) * (DEPTHS.length - 1)))] ?? 1;
+    imgs.push(
+      `<img class="cart__l" data-depth="${d}" src="/site/cards/${p.id}/${i}.png" alt="" width="${w}" height="${h}" ` +
+      `loading="lazy" decoding="async" style="--pd:${d * 5}">`,
+    );
+  }
+  // (the numeral after the back layer)
+  if (extras.numeral !== undefined) imgs.splice(1, 0, `<span class="cart__num">${esc(extras.numeral)}</span>`);
+  return (
     `<div class="cart${className ? ` ${className}` : ""}" aria-hidden="true" style="--aw:${w};--ah:${h}">` +
-    `${imgs}<span class="cart__shine"></span></div>`
+    `${imgs.join("")}` +
+    (extras.card ? `<span class="cart__scrim"></span><span class="cart__glare"></span>` : "") +
+    `<span class="cart__shine"></span></div>`
   );
 }

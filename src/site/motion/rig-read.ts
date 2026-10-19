@@ -21,6 +21,9 @@ export interface RigPartV2 {
   depth?: number;
   pivot?: [number, number];
   motion?: RigMotion[];
+  /** Drawn a second time outside the card's clip, so the character steps out of her frame (DESIGN-1019 5.3). At most
+   *  one per card, overflowing the frame's top by at most 8% of the card's height. */
+  pop?: boolean;
 }
 export interface RigV2 {
   v: 2;
@@ -30,6 +33,9 @@ export interface RigV2 {
   focus?: [number, number];
   /** Pixel art (the stand-in): never smoothed when it is scaled. */
   pixelated?: boolean;
+  /** The giant numeral sits right after this part (DESIGN-1019 5.3); without it, after the last part shallower than
+   *  0.34. */
+  numeral?: string;
   parts: RigPartV2[];
 }
 

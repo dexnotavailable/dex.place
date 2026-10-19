@@ -8,7 +8,7 @@
 
 import { downloads, formatBytes, type DownloadFile } from "../data/downloads.ts";
 import { projectHref, projects, type Project } from "../data/projects.ts";
-import { cardArt } from "./cardart.ts";
+import { cardArt, popArt } from "./cardart.ts";
 import { button, chip, icon, type ButtonOptions } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 
@@ -61,28 +61,45 @@ export function primaryAction(p: Project, size: "m" | "l", here: "home" | "page"
 
 // -------------------------------------------------------------------- cards
 
+// DOM, outside in (DESIGN-1019 5.2; each wrapper has one owner of its transform):
+//   li.pcards__it[data-pcard]  G: placement, scroll parallax
+//     div.pcard__in            K: entrance + velocity skew (GSAP); perspective for its child; the card's container
+//       div.pcard__tilt        K: pointer tilt (GSAP) or scroll tilt (CSS view timeline, touch)
+//         div.pcard__float     K: idle float + micro-tilt (CSS)
+//           span.pcard__plate  the hard offset block in the hero accent
+//           article.pcard      art (numeral, scrim, glare, shine), pop part, top chrome, caption, foot, brackets
+//     span.pcard__ground       the soft contact shadow on the world under it
 function card(p: Project, i: number, level: 2 | 3, here: "home" | "page"): string {
   const h = `h${level}`;
   const href = projectHref(p);
+  const no = pad2(projects.indexOf(p) + 1);
   // (the name and the art already lead to the project's page)
   const small = (label: string, ic: "book", to: string): string =>
-    `<a class="btn btn--paper btn--s btn--icon" href="${esc(to)}" aria-label="${esc(`${p.name} ${label.toLowerCase()}`)}" title="${label}"><span class="btn__ic">${icon(ic, 2)}</span></a>`;
+    `<a class="btn btn--paper btn--s btn--icon pcard__docs" href="${esc(to)}" aria-label="${esc(`${p.name} ${label.toLowerCase()}`)}" title="${label}"><span class="btn__ic">${icon(ic, 2)}</span></a>`;
+  const state = stateText(p);
   return (
-    `<li class="pcards__it" data-reveal style="--i:${Math.min(i, 5)}">` +
+    `<li class="pcards__it" data-pcard="${p.id}" data-reveal style="--i:${Math.min(i, 5)}">` +
+    `<div class="pcard__in" data-tone="${p.tone}"><div class="pcard__tilt"><div class="pcard__float">` +
+    `<span class="pcard__plate" aria-hidden="true"></span>` +
     `<article class="${cx("pcard", `pcard--${p.tone}`)}" id="p-${p.id}" aria-labelledby="p-${p.id}-name">` +
     // The art is a pointer shortcut to the project page; keyboard and screen
     // readers get the same link once, on the name.
-    `<a class="pcard__hit" href="${href}" tabindex="-1" aria-hidden="true">${cardArt(p)}</a>` +
-    `<div class="pcard__top"><span class="pcard__no" aria-hidden="true">${pad2(projects.indexOf(p) + 1)}</span>` +
-    `<p class="pcard__tags">${chip(p.platform, "key")}</p></div>` +
+    `<a class="pcard__hit" href="${href}" tabindex="-1" aria-hidden="true">${cardArt(p, undefined, { numeral: no, card: true })}</a>` +
+    popArt(p) +
+    `<div class="pcard__top"><span class="pcard__no" aria-hidden="true">${no}</span>` +
+    `<p class="pcard__plat">${esc(p.platform)}</p></div>` +
+    `<span class="pcard__cap" aria-hidden="true">${esc(`${p.hero} // ${p.name}`.toUpperCase())}</span>` +
     `<div class="pcard__info">` +
     `<${h} class="pcard__name" id="p-${p.id}-name"><a class="pcard__link" href="${href}">${esc(p.name)}</a></${h}>` +
-    (stateText(p) ? `<p class="pcard__state">${esc(stateText(p))}</p>` : "") +
+    (state ? `<p class="pcard__state">${esc(state)}</p>` : "") +
     `<p class="pcard__line">${esc(p.line)}</p>` +
     `<div class="pcard__acts">` +
     button({ ...primaryAction(p, "m", here), className: "pcard__main" }) +
     small("Docs", "book", p.docs.href) +
-    `</div></div></article></li>`
+    `</div></div>` +
+    `<i class="pcard__brackets" aria-hidden="true"></i>` +
+    `</article></div></div></div>` +
+    `<span class="pcard__ground" aria-hidden="true"></span></li>`
   );
 }
 
