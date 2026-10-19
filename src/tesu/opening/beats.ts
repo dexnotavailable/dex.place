@@ -1,14 +1,14 @@
 // The opening's chart, revision 4 (the opening director, 10-18; plan: the director's notebook and OPENING.md's
 // reconciled table). Authored here, numbers only: the runtime's timeline (timeline.ts) reads nothing else.
 // Revision 3 was compiled from the old plan's BEATS.json and the bones' bake (tools/opening/_v3/compile.mjs, kept
-// for history: running it would bring the Emperor's letter back).
+// for history: running it would bring the old letter back).
 //
 // T is Track 1's time as heard (seconds from the press; the WAV's own time). Dex 10-16, the track as it is in the game:
 //   0:00-0:17  calm: the lines, the sky, the ofuda falling on the wind through the clouds and the fog
 //   0:18       the slap (bar 9's downbeat, 18.575): the slap starts the build
 //   0:32       TESU (bar 16's downbeat, 32.418, where the highs open), with the volume lift into it
 // and between them: she settles, walks on her own, the hush, the pickup, drop 1 (28.472: she runs, control
-// returns), the crash (30.446: the whip-out), TESU on the widest frame. The Emperor's letter is gone.
+// returns), the crash (30.446: the whip-out), TESU on the widest frame. The old letter is gone.
 
 export const BEATS = {
  "rev": "4 (2026-10-18, the opening director: the fall through the sky, the slap on 0:18, TESU on 0:32)",

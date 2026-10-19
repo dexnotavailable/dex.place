@@ -41,7 +41,7 @@ test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift
     if (i) assert.ok(c[i].from >= c[i - 1].to, `line ${i + 1} after line ${i}`);
     assert.ok(c[i].to <= BEATS.her.clip.slap, `line ${i + 1} ends before the slap`);
   }
-  assert.ok(!c.some((x) => /Emperor|letter|court/i.test(x.text)), "the Emperor's letter is gone");
+  assert.ok(!c.some((x) => /Emperor|letter|court/i.test(x.text)), "the old letter is gone");
   assert.equal(captionAt(0.5), null);
   assert.equal(captionAt(3), "Nobody chooses what the wind brings them.");
   assert.equal(captionAt(17), "...I usually catch it with my face.");
