@@ -10,6 +10,16 @@ import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { artMarks, headOf, opaqueBox, timeline, validateAnim, type AnimDef, type ArtMarks } from "./contract.ts";
 import { artTransform, type PlayView } from "./units.ts";
+import ART from "virtual:tesu-art";
+
+/**
+ * (lane C 10-19) The query that versions a drawing folder's files ("/assets/zhusha/idle" -> "?v=<content hash>"): the
+ * server and Cloudflare keep /assets/ for a year, so a changed drawing needs a new URL. Empty on the dev server.
+ */
+export function artQuery(dir: string): string {
+  const v = ART[dir.replace(/\/+$/, "")];
+  return v ? `?v=${v}` : "";
+}
 
 /** Slots present at build time, from public/assets/zhusha/<slot>/anim.json (a missing one is never fetched). */
 export const PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/zhusha/*/anim.json"))
@@ -122,12 +132,14 @@ class Packer {
 
 /** Loads one slot from `${base}${id}/` (anim.json + its drawings), validated against the contract. */
 export async function loadSlot(r: WorldRenderer, base: string, id: string): Promise<Slot> {
-  const res = await fetch(`${base}${id}/anim.json`, { cache: "no-cache" });
+  const q = artQuery(`${base}${id}`);
+  // versioned (immutable, cacheable) in a build; fresh from the dev server
+  const res = await fetch(`${base}${id}/anim.json${q}`, q ? {} : { cache: "no-cache" });
   if (!res.ok) throw new Error(`${id}: anim.json HTTP ${res.status}`);
   // a slot-in --local drop shows on the dev server only
   const def = validateAnim(await res.json(), id, { allowLocal: import.meta.env.DEV });
   const [pvx, pvy] = [Math.round(def.pivot[0]), Math.round(def.pivot[1])];
-  const imgs = await Promise.all(def.frames.map((f) => loadImage(`${base}${id}/${f.file}`)));
+  const imgs = await Promise.all(def.frames.map((f) => loadImage(`${base}${id}/${f.file}${q}`)));
   const { starts, total } = timeline(def.frames);
   const pack = new Packer();
   const scratch = document.createElement("canvas");
