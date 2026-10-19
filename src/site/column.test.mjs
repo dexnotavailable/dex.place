@@ -292,6 +292,7 @@ test("\"dex\" writes itself on a quiet thread: the world, the windows and the op
   // "when it draws 'dex' at the start it lags": the world's frame boots on the page's own thread
   const world = readFileSync(new URL("./motion/world.ts", import.meta.url), "utf8");
   assert.match(world, /afterMark\(\)\.then\(load\)/, "the world's code loads after the mark");
+  assert.match(world, /prefetchWorld\(\);\s*afterMark\(\)\.then\(load\)/, "its files come down meanwhile (network only)");
   const main = readFileSync(new URL("./main.ts", import.meta.url), "utf8");
   assert.match(main, /afterMark\(\)\.then\(\(\) => import\("\.\/motion\/sky\.ts"\)\)/, "the windows after the mark");
   const enter = readFileSync(new URL("./motion/enter.ts", import.meta.url), "utf8");
