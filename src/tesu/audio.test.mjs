@@ -95,6 +95,7 @@ const NEW_TAKES = [
   ...SURFACES.flatMap((m) => Array.from({ length: STEP_TAKES }, (_, i) => `steps/${m}-${i + 1}`)),
   "opening/gust", "opening/flutter", "opening/catch", "opening/read", "opening/slap", "opening/jam", "opening/brim",
   "opening/hatgrip", "opening/burst", "opening/skid",
+  "opening/speech",
   "props/splash", "props/debris", "props/paper-hit", "props/panel-open", "props/lift-start", "props/lift-dock",
 ];
 
@@ -197,6 +198,20 @@ test("no voice on the attack chain, in either form (Dex 10-19: remove voicelines
   assert.equal(CUES["r.ultline"].files.length, 0);
   assert.equal(voiceForCue({ id: "hurt", move: "hurt", phase: "hurt", tier: "heavy" }), "knockdown");
   for (const move of ["skill_q", "e_tap", "r", "dash", "jump"]) assert.ok(!isChain(move), `${move} is not the chain`);
+});
+
+test("the opening's speech in one take: its alignment, its parts in order, the slap in the pause before the punch", () => {
+  const sp = JSON.parse(readFileSync(join(AUDIO, "opening", "speech.json"), "utf8"));
+  assert.equal(sp.cue, "op.speech");
+  assert.deepEqual(CUES["op.speech"].files, ["opening/speech"]);
+  assert.deepEqual(sp.parts.map((p) => p.part), ["1", "2", "3", "4", "5", "6a", "6b", "6c"]);
+  for (const p of sp.parts) assert.ok(p.jp && p.ro && p.en && p.end > p.start, `part ${p.part} has its subtitles and a span`);
+  for (let i = 1; i < sp.parts.length; i++) assert.ok(sp.parts[i].start >= sp.parts[i - 1].end, `part ${sp.parts[i].part} after ${sp.parts[i - 1].part}`);
+  const slap = sp.slap - sp.start;
+  assert.ok(slap > sp.pause[0] && slap < sp.pause[1], "the slap lands in the pause");
+  assert.ok(sp.pause[0] >= sp.parts[5].end - 0.05 && sp.pause[1] <= sp.parts[6].start + 0.05, "the pause is between the set-up and the punch");
+  assert.ok(sp.start + sp.parts[4].end < 17.5, "lines 1-5 inside the calm (0:00 - 0:17)");
+  assert.equal(sp.chars.text.length, sp.chars.start.length);
 });
 
 test("every sound she makes in a fight is decoded at the start (in one of the preload batches)", () => {

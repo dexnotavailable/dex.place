@@ -149,6 +149,9 @@ export const CUES: Record<string, Cue> = {
   // op.line1-5 the soft takes as worded, op.tight1-5 the shorter wording (both approved; F picks), op.line6 the joke
   ...Object.fromEntries([1, 2, 3, 4, 5, 6].map((i) => [`op.line${i}`, opening([`line${i}`], 1)])),
   ...Object.fromEntries([1, 2, 3, 4, 5].map((i) => [`op.tight${i}`, opening([`tight${i}`], 1)])),
+  // the whole speech as ONE continuous take (Dex 10-20: "it sounds so weird stitching sentences together"), mixed
+  // through the voice chain; its alignment and the start that lands the slap in its pause: public/audio/opening/speech.json
+  "op.speech": opening(["speech"], 1),
 };
 
 /** The hit's weight comes as its volume (the controller's afterHits: light 0.6, heavier 1): heavier hits sound heavy. */
