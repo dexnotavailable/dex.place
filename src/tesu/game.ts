@@ -1659,6 +1659,8 @@ export class TesuGame {
     if (this.opening.active && this.opening.T < BEATS.her.walkFrom) {
       const lift = ((cam.anchor - 0.5) * Hf) / cam.zoom / H;
       this.fallSky.draw(W, Hf, fallSkyOf(lift, hz, sky[0]!, sky[1]!, sky[2]!, sunPx, glow ? [glow.radius, glow.strength, 0] : [Hf * 0.26, 0.5, 0], glow?.colour ?? [1, 0.945, 0.847]));
+      // (fall loop r1, integration) the sky alone, kept for the fall's air: its wind tails lie only on open sky
+      this.veils.skyShot(r.main);
     }
     const eye = eyeY(cam);
     const waterDraw = (rows: [number, number]): void => {

@@ -355,6 +355,8 @@ const FS = /* glsl */ `#version 300 es
 precision highp float;
 uniform vec2 uRes;
 uniform sampler2D uSrc;   // the frame under the pass (the world, the clouds, the paper)
+uniform sampler2D uSky;   // (fall loop r1, integration) the frame with only the sky drawn (the fall's sky, the sun)
+uniform float uSkyOn;     // 1 when uSky holds this frame's sky
 uniform vec4 uA[8];       // row, half, density, tone (0 lit, 1 base, 2 near)
 uniform vec4 uB[8];       // seed, the first noise's x offset, the second's, 0
 uniform vec4 uM[32];      // masses: x middle, half width, y offset, density (4 a layer)
@@ -399,8 +401,42 @@ vec3 src(vec2 p) {
 // cloud's blue-grey shade (green at most red + 32: the fall's cumulus ramp; op.cloud's lavender greys about + 10) nor
 // its lit crown
 float skyOf(vec3 c) { return smoothstep(0.13, 0.15, c.g - c.r); }
+// (fall loop r1, integration) open sky at a frame point: where nothing was drawn over the sky (the frame there is still
+// the sky pass's own pixel). The colour test above cannot tell the fall's sky from worker 1's final cumulus shade
+// (round 1c moved it to the sky's own cyan-blue, green about red + 47-49 / 255, the deep sky + 36-75), so the tails
+// were ruled across the clouds' shaded bodies again; the colour test stays only as the fallback without a snapshot.
+vec3 skySrc(vec2 p) {
+  vec2 q = clamp(p, vec2(0.0), uRes - 1.0);
+  return texelFetch(uSky, ivec2(int(q.x), int(uRes.y - 1.0 - q.y)), 0).rgb;
+}
+float skyAt(vec2 p) {
+  vec3 c = src(p);
+  if (uSkyOn < 0.5) return skyOf(c);
+  vec3 d = abs(c - skySrc(p));
+  return step(max(d.r, max(d.g, d.b)), 1.5 / 255.0);
+}
+// (fall loop r1, integration) the deck's shadow on the air under it: a shaft shows only over open air (never over the
+// deck's body or a karst) and only where the way back up toward the sun leaves the frame through open air (a gap in
+// the deck); a long run of something drawn over the sky on that way (the deck's body, a karst, an isle) shades it. Round 1's two branches drew the shafts over the deck's own underside,
+// lit through a cloud 500 px thick. Thin haze changes the sky by less than the threshold; short crossings are forgiven.
+float shaftLit(vec2 p, vec2 dir) {
+  if (uSkyOn < 0.5) return 1.0;
+  vec3 d0 = abs(src(p) - skySrc(p));
+  if (max(d0.r, max(d0.g, d0.b)) > 0.1) return 0.0;
+  float runB = 0.0, best = 0.0;
+  for (int k = 1; k < 48; k++) {
+    vec2 q = p - dir * (float(k) * 14.0);
+    if (q.y < 0.0) break;
+    vec3 d = abs(src(q) - skySrc(q));
+    runB = max(d.r, max(d.g, d.b)) > 0.1 ? runB + 1.0 : 0.0;
+    best = max(best, runB);
+    if (best >= 5.0) break;
+  }
+  return 1.0 - smoothstep(2.0, 5.0, best);
+}
 // a lit crown: bright and not sky
 float crownOf(vec3 c) { return smoothstep(0.62, 0.76, dot(c, vec3(0.299, 0.587, 0.114))) * (1.0 - skyOf(c)); }
+float crownAt(vec2 p) { return smoothstep(0.62, 0.76, dot(src(p), vec3(0.299, 0.587, 0.114))) * (1.0 - skyAt(p)); }
 
 // the layer's masses: soft ellipses of very different size; each one's downwind (west) side trails out longer and
 // thinner (longer still in the gusts). Positive inside, falling off outside (the noise tears the edge out of it).
@@ -557,27 +593,26 @@ void main() {
     // (round 1b) open sky is the fall's blues (green well above red); a cloud's blue-grey shade is not (green about
     // red + 30): a tail is laid only on open sky, and only off a lit crown that meets that sky directly (a shaded
     // face in between ends the search), so no streak is ever ruled across a cloud's own shade
-    if (skyOf(src(px)) > 0.5) {
+    if (skyAt(px) > 0.5) {
       float reach = uWind.y;
       for (int k = 1; k <= 40; k++) {
         float dx = float(k) * 4.0;
         if (dx > reach + 4.0) break;
         // (the tails lift a little as they stream west: the crown that sheds here lies a little lower, east)
-        vec3 c = src(px + vec2(dx, 0.07 * dx));
-        if (skyOf(c) > 0.5) continue;
-        if (crownOf(c) < 0.5) break;
+        vec2 q = px + vec2(dx, 0.07 * dx);
+        if (skyAt(q) > 0.5) continue;
+        if (crownAt(q) < 0.5) break;
         // the exact edge (so the tail never repeats the outline in steps), its colour from just inside it
         float edge = dx;
         for (int j = 3; j >= 1; j--) {
-          vec3 e = src(px + vec2(dx - float(j), 0.07 * (dx - float(j))));
-          if (skyOf(e) < 0.5) { edge = dx - float(j); break; }
+          if (skyAt(px + vec2(dx - float(j), 0.07 * (dx - float(j)))) < 0.5) { edge = dx - float(j); break; }
         }
         if (edge > reach) break;
-        c = src(px + vec2(edge + 3.0, 0.07 * edge));
+        vec3 c = src(px + vec2(edge + 3.0, 0.07 * edge));
         // only off a crown: open sky above where it is struck (a notch in a cloud's west face is not a crown: it
         // would shed a ruled one-px line)
         float up = 0.0;
-        for (int j = 0; j < 3; j++) up += skyOf(src(px + vec2(edge + 4.0, 0.07 * edge - 9.0 - 8.0 * float(j)))) / 3.0;
+        for (int j = 0; j < 3; j++) up += skyAt(px + vec2(edge + 4.0, 0.07 * edge - 9.0 - 8.0 * float(j))) / 3.0;
         // the plume: the crown's own stuff pulled out along the wind in a few soft ribbons (rows of its west shoulder,
         // thick and soft-edged), long and unbroken from the root and thinning toward the tip, where it frays; a row's
         // strand value decides how far it is pulled, so they never end together like a comb or bristle like spikes
@@ -617,6 +652,16 @@ void main() {
       // strongest near the deck, gone into the haze below; a fan of a few, never across the whole sky
       float fade = exp(-along / (uRes.y * 0.7)) * smoothstep(0.0, 140.0, along) * (1.0 - smoothstep(0.2, 0.55, abs(across) / uRes.x));
       float a = uShaft.x * 0.16 * sh * fade * smoothstep(40.0, 90.0, paperD);
+      // (fall loop r1, integration) with the sky's snapshot the deck itself decides where the light gets through
+      // (shaftLit: through its gaps, never over its own body): a beam wherever the way up to the sun is open, streaked
+      // inside, strongest just under the deck (by the frame's row, not by the distance from the sun's line, so a gap
+      // far from it, the break-out's over the pagoda isle, lights as well), fading into the haze below
+      if (uSkyOn > 0.5) {
+        float beam = (0.5 + 0.5 * smoothstep(0.35, 0.75, vn(vec2(across / 52.0, 3.0)))) * (0.6 + 0.4 * vn(vec2(across / 14.0, 7.0)));
+        float drop = exp(-max(0.0, px.y - uRes.y * 0.1) / (uRes.y * 0.6)) * smoothstep(0.0, 140.0, along);
+        a = uShaft.x * 0.22 * beam * drop * smoothstep(40.0, 90.0, paperD);
+        if (a > 0.004) a *= shaftLit(px, dir);
+      }
       float t = clamp(0.5 + 0.8 * (vn(px / 2.6 + 19.0) - 0.5), 0.05, 0.95);
       float aq = floor(a * 30.0 + t) / 30.0;
       if (aq > 0.0) {
@@ -656,6 +701,9 @@ export class Veils {
   private gl: WebGL2RenderingContext;
   private vao: WebGLVertexArrayObject;
   private copy: { fbo: WebGLFramebuffer; tex: WebGLTexture; w: number; h: number } | null = null;
+  /** (fall loop r1, integration) the frame with only the sky drawn, taken by skyShot before the planes. */
+  private skyCopy: { fbo: WebGLFramebuffer; tex: WebGLTexture; w: number; h: number } | null = null;
+  private skyFresh = false;
   private hazeProg: WebGLProgram | null = null;
   private hu: Record<string, WebGLUniformLocation> = {};
 
@@ -698,14 +746,33 @@ export class Veils {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
-  /** The copy of the frame the pass reads (made once, remade when the frame's size changes). */
-  private copyOf(w: number, h: number): { fbo: WebGLFramebuffer; tex: WebGLTexture; w: number; h: number } | null {
+  /**
+   * (fall loop r1, integration) Keeps the frame as it is right after the sky pass (the fall's sky and the sun, before
+   * any plane): the wisps lie only where the finished frame still shows that sky, whatever colours the clouds take.
+   */
+  skyShot(target: Target): void {
+    if (!this.prog) return;
     const gl = this.gl;
-    if (this.copy && this.copy.w === w && this.copy.h === h) return this.copy;
-    if (this.copy) {
-      gl.deleteFramebuffer(this.copy.fbo);
-      gl.deleteTexture(this.copy.tex);
-      this.copy = null;
+    const w = target.color.w, h = target.color.h;
+    const shot = this.copyOf(w, h, "skyCopy");
+    if (!shot) return;
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, target.fbo);
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, shot.fbo);
+    gl.blitFramebuffer(0, 0, w, h, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+    gl.viewport(0, 0, w, h);
+    this.skyFresh = true;
+  }
+
+  /** The copy of the frame the pass reads (made once, remade when the frame's size changes). */
+  private copyOf(w: number, h: number, key: "copy" | "skyCopy" = "copy"): { fbo: WebGLFramebuffer; tex: WebGLTexture; w: number; h: number } | null {
+    const gl = this.gl;
+    const have = this[key];
+    if (have && have.w === w && have.h === h) return have;
+    if (have) {
+      gl.deleteFramebuffer(have.fbo);
+      gl.deleteTexture(have.tex);
+      this[key] = null;
     }
     const tex = gl.createTexture();
     const fbo = gl.createFramebuffer();
@@ -718,12 +785,14 @@ export class Veils {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-    this.copy = { fbo, tex, w, h };
-    return this.copy;
+    this[key] = { fbo, tex, w, h };
+    return this[key];
   }
 
   /** Draws `air` over `target` (the frame, bound as it was before: the pass rebinds it). */
   draw(target: Target, W: number, Hf: number, air: FallAir | null): void {
+    const skyFresh = this.skyFresh;
+    this.skyFresh = false;
     if (!air || !this.prog) return;
     if (!air.veils.length && !air.shreds.length && air.wisp[1] <= 0.003 && air.shafts <= 0.003) return;
     const gl = this.gl, u = this.u;
@@ -740,6 +809,12 @@ export class Veils {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, copy.tex);
     gl.uniform1i(u.uSrc!, 0);
+    const sky = skyFresh && this.skyCopy && this.skyCopy.w === w && this.skyCopy.h === h ? this.skyCopy : null;
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, sky ? sky.tex : copy.tex);
+    if (u.uSky) gl.uniform1i(u.uSky, 1);
+    if (u.uSkyOn) gl.uniform1f(u.uSkyOn, sky ? 1 : 0);
+    gl.activeTexture(gl.TEXTURE0);
     gl.uniform2f(u.uRes!, W, Hf);
     const A = new Float32Array(32), B = new Float32Array(32), M = new Float32Array(128);
     const vs = air.veils.slice(0, 8);
