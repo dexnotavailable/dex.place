@@ -567,8 +567,8 @@ export const roof = definePainter<RoofP>("hall.roof", {
         const bar = (a < 2.5 || bb < 2.5) && up < 1.4;
         if (bar) return mt(M.wood, 0.25 + 0.3 * clamp(up, 0, 1), X, Y, 0.35, 1);
         // (round 1: held a step below the court gate's daylight, the room's key now)
-        const glow = clamp(0.5 + Math.abs(u - 0.5) * 0.6 - up * 0.08, 0, 1);
-        return tn(SKYLIGHT, glow, X, Y, 0.55);
+        const glow = clamp(0.25 + Math.abs(u - 0.5) * 0.6 - up * 0.06, 0, 1);
+        return tn(SKYLIGHT_DIM, glow, X, Y, 0.55);
       }
       // coffers: lacquer frames, each panel holding a faint gold rosette, warmed near the
       // skylight and the lanterns, darkest far up
@@ -586,5 +586,5 @@ export const roof = definePainter<RoofP>("hall.roof", {
   },
 });
 
-/** Daylight through the skylight's paper: white-gold. */
-const SKYLIGHT = [P.ember[0]!, P.paper[0]!, P.paper[1]!, P.ember[1]!, P.paper[3]!] as const;
+/** The skylight's paper held below the court gate's daylight (round 1: the gate is the room's key). */
+const SKYLIGHT_DIM = [P.paper[2]!, P.paper[3]!, P.ember[4]!, P.paper[4]!, P.umber[0]!] as const;

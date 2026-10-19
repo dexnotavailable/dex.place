@@ -372,10 +372,12 @@ export const gate = definePainter<GateP>("hall.gate", {
         const l = lf.get(lx, ly);
         const u = (lx - wx0) / (wx1 - wx0), v = (ly - wy1) / (wy0 - wy1);
         if (u < 0.05 || u > 0.95 || v < 0.07 || v > 0.93) return mt(M.lacq, face(l.k, 0, 0, v > 0.93 ? -0.7 : 0) * 0.55, X, Y, 0.2, 1);
-        // a cracked-ice fret: irregular cells (never a stamped grid)
-        const bar = iceEdge(lx - wx0, ly - wy1, 15, 31 + (sx < 0 ? 0 : 7)) < 0.75;
-        if (bar) return mt(M.lacq, face(l.k, 0) * 0.35, X, Y, 0.3, 1);
-        return tn(P.tile, clamp(0.62 + v * 0.22 + Math.abs(u - 0.5) * 0.2 - (1 - v) * 0.08, 0, 1), X, Y, 0.5);
+        // close vertical mullions with two rails and a cracked-ice band at the head, cool paper behind
+        const mull = (((lx - wx0) % 8) + 8) % 8 < 1.6;
+        const rail = Math.abs(v - 0.3) < 0.03 || Math.abs(v - 0.72) < 0.03;
+        const ice = v < 0.27 && iceEdge(lx - wx0, ly - wy1, 9, 31 + (sx < 0 ? 0 : 7)) < 0.7;
+        if (mull || rail || ice) return mt(M.lacq, face(l.k, 0) * 0.35, X, Y, 0.3, 1);
+        return tn(P.tile, clamp(0.55 + v * 0.25 + Math.abs(u - 0.5) * 0.25, 0, 1), X, Y, 0.5);
       });
     }
   },
