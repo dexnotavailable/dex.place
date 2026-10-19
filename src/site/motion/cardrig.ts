@@ -76,7 +76,7 @@ export function initCardRigs(reduced: MediaQueryList, fine: MediaQueryList): voi
     const K = 2; // css px an art px
     const r = art.getBoundingClientRect();
     const cw = r.width, ch = r.height;
-    const cov = coverOf(rig, cw, ch);
+    const cov = coverOf(rig, cw, ch, cw * 0.06); // (6% pan room, as styles/pcard.css .rig__box)
     const s = cov.s / K; // art px per frame unit
     const parts: Part[] = [];
     for (const part of rig.parts) {

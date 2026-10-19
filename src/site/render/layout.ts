@@ -1,7 +1,8 @@
 // The shell every page shares: <head> extras, header with nav, footer, and on
 // the root page the world mount with its cinematic bars (DESIGN-SYSTEM.md §4).
 
-import { band } from "./landing.ts";
+import { pageBand } from "./landing.ts";
+import { moreChips } from "./stubs.ts";
 import { KOFI_URL, NAV, navHref, type NavItem } from "../data/nav.ts";
 import { button, icon, pixelMark, tile } from "./glyphs.ts";
 import { cx, esc } from "./html.ts";
@@ -137,6 +138,7 @@ export function header(current: PageId): string {
   const worldHref = onHome ? "#world" : "/#world";
   return (
     `<header class="hdr" data-hdr>` +
+    `<i class="hdr__progress" aria-hidden="true"></i>` +
     `<div class="hdr__in">` +
     `<a class="hdr__mark pop" href="${onHome ? "#site" : "/"}">${pixelMark(1)}<span class="sr">dex, home</span></a>` +
     `<nav class="nav" aria-label="Sections"><ul class="nav__list" data-nav>` +
@@ -170,6 +172,7 @@ export function footer(current: PageId): string {
   ).join("");
   return (
     `<footer class="ftr">` +
+    `<div class="wrap">${moreChips()}</div>` +
     `<div class="ftr__in wrap">` +
     `<a class="ftr__mark" href="${onHome ? "#site" : "/"}">${pixelMark(2)}<span class="sr">dex, home</span></a>` +
     `<nav class="ftr__nav" aria-label="Footer"><ul>${links}` +
@@ -279,7 +282,7 @@ export function shell({ meta, main }: ShellOptions): Rendered {
     `<div class="${cx("sheet", home ? "sheet--home" : "sheet--page", column && "sheet--column")}" id="site" data-page="${meta.page}">` +
     header(meta.page) +
     // a section's own page is one paper band, on the left (render/landing.ts band)
-    `<main id="main" class="main" tabindex="-1">${column && !home ? band("l", main, PAGE_SCENES[meta.path] ?? "sky") : main}</main>` +
+    `<main id="main" class="main" tabindex="-1">${column && !home ? pageBand(main, PAGE_SCENES[meta.path] ?? "sky") : main}</main>` +
     footer(meta.page) +
     // the bottom of the page is the world again: the jetty, where she starts
     (column ? jettySection() : "") +

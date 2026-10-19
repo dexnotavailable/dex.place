@@ -13,7 +13,8 @@
 //   facing right, y negative up. The game's hitbox on an active drawing is these boxes at her drawn size.
 // - hits: how many and which beat each is come from the move's marked hit drawings (anim.json "hits": Dex's retime
 //   BOOMs, m1_3's three thrusts, e_tap's burst and pillar); when each hit's damage is live comes from the active drawings
-//   around its mark.
+//   around its mark, starting at most DERIVE.lead clip ticks before it (the ult form's aura glows from the first
+//   drawing: read as live, it stretched the form's wind-ups instead of squeezing them; Dex 10-19).
 // - root: how far her planted foot says she moved since the drawing before (art px, + = the way she faces). The
 //   drawings are drawn in place (her soles' centre on the pivot), so a foot that stays on the ground but shifts in the
 //   frame means the body moved the other way; of the foot contacts the pair with the smallest move is the planted one
@@ -71,6 +72,10 @@ export const DERIVE = {
   footMax: 20,
   /** A planted foot moves at most this much between drawings (art px); more is a different foot. */
   maxStep: 12,
+  /** A hit's live window starts at most this many clip ticks before its marked BOOM drawing (the normal chain's swing
+   *  smears lead by 0-3); a run reaching back further is the ult form's aura or a held glow, not the swing: it starts on
+   *  the mark (Dex 10-19: the ult chain's wind-up was stretched instead of squeezed). */
+  lead: 3,
 } as const;
 
 /** The blade and its effects, by colour: the cyan to deep blue band with some saturation, or a bluish near-white core. */
@@ -293,6 +298,8 @@ export function deriveSlot(slot: string, def: { frames: { file: string; ticks: n
       }
     }
   }
+  // a window reaching back more than `lead` before its mark starts on the mark (the form's aura is not the swing)
+  if (marks.length) groups.forEach((g, i) => { if (starts[marks[i]!]! - starts[g[0]]! > DERIVE.lead) g[0] = marks[i]!; });
   const hits = groups.map(([first, last]) => ({ first, last, at: starts[first]!, len: starts[last]! + def.frames[last]!.ticks - starts[first]! }));
   return { slot, hash, ticks: def.frames.map((f) => f.ticks), frames, hits };
 }

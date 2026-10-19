@@ -74,11 +74,49 @@ const steps: [string, () => void][] = [
   ["stuck", () => initStuck()],
   ["menu", () => initMenu()],
   ["scenes", () => initScenes(reduced, fine)],
+  // the project cards' own motion (motion/pcard.ts, lane K) on the pages without the home's choreography (/projects/,
+  // a project's page: "Other projects"), own chunk; on the home page the choreography drives the deck
+  ["cards", () => {
+    // (?cards-debug: the home deck too, for lane K's captures before the choreography lands; window.__deck)
+    const debug = new URLSearchParams(location.search).has("cards-debug");
+    const lists = document.querySelectorAll<HTMLElement>(debug ? "[data-pcards]" : '[data-pcards="page"]');
+    if (!lists.length) return;
+    import("./motion/pcard.ts").then((m) => {
+      for (const ul of lists) m.initCards(ul, { reduced: reduced.matches, fine: fine.matches }).settle();
+    }, failed("cards"));
+  }],
   // the project cards' rigged art in the pixel finish (render/cardart.ts data-rig), own chunk, loaded only for that
   // finish and when a card has a rig (the default vector finish is CSS)
   ["cardrig", () => {
     if (cardFinish !== "pixel" || !document.querySelector("[data-rig]")) return;
     import("./motion/cardrig.ts").then((m) => m.initCardRigs(reduced, fine), failed("cardrig"));
+  }],
+  // the home page's choreography (motion/choreo.ts: the bands' paper, the content, the cards' deck, the speed; GSAP +
+  // ScrollTrigger), own chunk, on the home page only and never with reduced motion (the page is all there without it).
+  // It comes with the first of: the page loaded, "dex" written and the page idle; the first sign of a scroll; at once
+  // when the page opens with the website already in view (lanes/motion/DESIGN-1019.md 6.1).
+  ["choreo", () => {
+    if (reduced.matches || root.dataset.embed || !document.querySelector(".band__strip")) return;
+    let started = false;
+    const start = (): void => {
+      if (started) return;
+      started = true;
+      intents.forEach((t) => window.removeEventListener(t, start));
+      import("./motion/choreo.ts").then((m) => m.initChoreo(fine), failed("choreo"));
+    };
+    const intents = ["wheel", "touchstart", "keydown"] as const;
+    intents.forEach((t) => window.addEventListener(t, start, { once: true, passive: true }));
+    const sheet = document.getElementById("site");
+    if (sheet && sheet.getBoundingClientRect().top < innerHeight) start();
+    const idle = (): Promise<void> => new Promise((done) => {
+      if ("requestIdleCallback" in window) requestIdleCallback(() => done(), { timeout: 1500 });
+      else setTimeout(done, 200);
+    });
+    const loaded = new Promise<void>((done) => {
+      if (document.readyState === "complete") done();
+      else window.addEventListener("load", () => done(), { once: true });
+    });
+    void loaded.then(afterMark).then(idle).then(start);
   }],
   ["copy", () => initCopy()],
   // NSFW image spoilers in posts (render/nsfw.ts).

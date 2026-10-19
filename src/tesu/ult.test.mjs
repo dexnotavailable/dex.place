@@ -143,12 +143,12 @@ test("ult: the letter is huge and ahead of her; she stops above it, dives straig
   assert.ok(W.z.r.stage.left + W.z.r.stage.size < 3 * H, `the letter inside the wall: ${W.z.r.stage.left + W.z.r.stage.size}`);
 });
 
-test("ult: the camera has a shot every tick of R; hard cuts only at the press and the flurry; the stop is dead still; moves are continuous", async () => {
+test("ult: the camera has a shot every tick of R; one hard cut only, the cut-in on the press (Dex 10-19: no cut to the flurry); the stop is dead still; moves are continuous", async () => {
   const { ticks } = await playR();
   const r = ticks.filter((t) => t.state === "ult");
   assert.ok(r.every((t) => t.shot), "a shot every tick");
   const cuts = r.filter((t) => t.shot.cut).map((t) => t.phase);
-  assert.deepEqual(cuts, ["call", "flurry"], "the cut-in on the press, the cut wide onto the letter");
+  assert.deepEqual(cuts, ["call"], "the cut-in on the press, then one continuous camera");
   for (let i = 1; i < r.length; i++) {
     const a = r[i - 1].shot, b = r[i].shot;
     if (b.cut) continue;
@@ -160,6 +160,21 @@ test("ult: the camera has a shot every tick of R; hard cuts only at the press an
   assert.ok(r[0].shot.zoom >= ULT.camera.call.zoomIn - 1e-9, "the cut-in is close on her");
   const fl = r.filter((t) => t.phase === "flurry");
   assert.ok(fl[fl.length - 1].shot.zoom <= ULT.camera.flurry.zoomEnd + 1e-6, "pulled out on the whole letter");
+  // the flurry's camera (Dex 10-19: "from her call the camera tries to follow her - she moves too fast, it sorta gives
+  // up, then zooms out as the R is filled"): it chases her up into the letter, whips past and swings back, gives up and
+  // settles, then pulls out wide; the letter's centre and the frame are in H from where she pressed
+  const F = ULT.camera.flurry, storm = ULT.beats.flurry.storm[1];
+  const x0 = r[0].x, gx = (ULT.letter.ahead + ULT.letter.size / 2) * H;
+  const at = (k) => fl[k].shot;
+  const chase = fl.slice(0, storm + F.chase.giveUp);
+  const far = Math.max(...chase.map((t) => t.shot.x - x0));
+  assert.ok(far > gx, `it chases her into the letter and whips past its middle (${(far / H).toFixed(2)} H vs ${(gx / H).toFixed(2)})`);
+  assert.ok(at(storm + F.chase.giveUp).x < far - 0.5 * H, "and swings back");
+  assert.ok(chase[0].shot.zoom > 1.9 && chase[chase.length - 1].shot.zoom < chase[0].shot.zoom, "out of the close band as it chases");
+  const settled = fl.slice(storm + F.chase.giveUp + 16, storm + F.pullFrom);
+  for (let i = 1; i < settled.length; i++) assert.ok(Math.hypot(settled[i].shot.x - settled[i - 1].shot.x, settled[i].shot.y - settled[i - 1].shot.y) < 0.03 * H, "it gave up: settled");
+  const peak = Math.round(storm + (fl.length - storm) * F.peak);
+  assert.ok(Math.abs(at(peak).x - gx) < 1e-6 && at(peak).zoom <= F.zoomEnd + 1e-6, "the whole letter in frame at its peak");
   const hold = r.filter((t) => t.phase === "hold");
   assert.ok(hold.every((t) => t.shot.x === hold[0].shot.x && t.shot.y === hold[0].shot.y && t.shot.zoom === hold[0].shot.zoom), "the stop: dead still");
   const imp = r.filter((t) => t.phase === "impact");

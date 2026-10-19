@@ -43,7 +43,10 @@ export interface UltFile {
   camera: {
     bars: number; barsIn: number; barsOut: number;
     call: { zoomIn: number; zoom: number; zoomFire: number; anchor: number; ahead: number; craneUp: number };
-    flurry: { zoom: number; zoomEnd: number; anchor: number };
+    flurry: {
+      chase: { zoom: number; k: number; damp: number; vmax: number; follow: number; giveUp: number; settle: number; zoomEase: number; anchorEase: number };
+      pullFrom: number; peak: number; zoomEnd: number; anchor: number;
+    };
     dive: { zoom: number; anchor: number; up: number };
     impact: { zoom: number; anchor: number };
     aftermath: { zoom: number; zoomClear: number; anchor: number };
@@ -312,6 +315,8 @@ export class UltDirector {
   private lastShot: Shot | null = null;
   /** Where a phase's camera move starts: the last shot of the phase before (moves never jump). */
   private from: Shot | null = null;
+  /** The flurry's camera: a lagging spring after her (position, velocity), its zoom and anchor row. */
+  private chase: { x: number; y: number; vx: number; vy: number; tx: number; ty: number; zoom: number; anchor: number } | null = null;
   /** The phase that starts on the next tick. */
   private next: UltPhase | null = null;
 
@@ -386,8 +391,10 @@ export class UltDirector {
   private enter(p: UltPhase): void {
     this.phase = p;
     this.t = 0;
-    this.cutNext = p === "call" || p === "flurry";
+    // one cut only: the cut-in on the press; from there one continuous camera (Dex 10-19: no cut to the flurry)
+    this.cutNext = p === "call";
     this.from = this.lastShot;
+    if (p === "flurry") this.chase = null;
   }
 
   /** One tick of R. Returns false once control is back (the controller is free again). */
@@ -694,9 +701,34 @@ export class UltDirector {
         break;
       }
       case "flurry": {
-        // a hard cut wide onto where the letter will be, pulling out as it is carved, all of it in frame for the last cuts
-        const A = C.flurry, u = smooth(Math.max(0, t - K.storm) / Math.max(1, (L.flurry - K.storm) * 0.8));
-        shot = { x: st.gx, y: mid, zoom: zlerp(A.zoom, A.zoomEnd, u), anchor: A.anchor, cut };
+        // no cut (Dex 10-19): from the call the camera tries to follow her; she is too fast, it gives up; then it pulls out
+        // wide as the letter fills in, the whole of it in frame at its peak
+        const A = C.flurry, S = A.chase, ts = t - K.storm;
+        const a = this.from ?? { x: st.x0, y: st.y0, zoom: C.call.zoom, anchor: C.call.anchor };
+        const ch = (this.chase ??= { x: a.x, y: a.y, vx: 0, vy: 0, tx: a.x, ty: a.y, zoom: a.zoom, anchor: a.anchor });
+        if (ts < S.giveUp) {
+          // the chase: she darts from slash to slash (`follow` smooths her path a little, she is still far too fast); a
+          // loose spring goes after her: it accelerates, lags, whips past and swings back, easing out of the close band
+          const g = this.her(st, t);
+          ch.tx += (g[0] - ch.tx) * S.follow;
+          ch.ty += (g[1] - ch.ty) * S.follow;
+          ch.vx = (ch.vx + (ch.tx - ch.x) * S.k) * S.damp;
+          ch.vy = (ch.vy + (ch.ty - ch.y) * S.k) * S.damp;
+          const v = Math.hypot(ch.vx, ch.vy), cap = S.vmax * H;
+          if (v > cap) { ch.vx *= cap / v; ch.vy *= cap / v; }
+          ch.zoom = zlerp(ch.zoom, S.zoom, S.zoomEase);
+        } else {
+          // it has lost her: it coasts to a stop where it is
+          ch.vx *= S.settle;
+          ch.vy *= S.settle;
+        }
+        ch.x += ch.vx;
+        ch.y += ch.vy;
+        ch.anchor += (A.anchor - ch.anchor) * S.anchorEase;
+        // the pull-out: from where it gave up to the whole letter, there at the storm's peak
+        const peak = Math.max(A.pullFrom + 1, (L.flurry - K.storm) * A.peak);
+        const u = smooth((ts - A.pullFrom) / (peak - A.pullFrom));
+        shot = { x: lerp(ch.x, st.gx, u), y: lerp(ch.y, mid, u), zoom: zlerp(ch.zoom, A.zoomEnd, u), anchor: lerp(ch.anchor, A.anchor, u), cut: false };
         break;
       }
       case "hold":
@@ -729,6 +761,17 @@ export class UltDirector {
         shot = this.move({ x: b.x, y: st.floor, zoom: C.reveal.zoom, anchor: C.reveal.anchor }, smooth(t / Math.max(1, C.reveal.ticks)));
     }
     return this.keep(shot);
+  }
+
+  /** Where she is in the flurry, for the chase: her body until she bursts into ash, then the newest slash (she IS the slashes). */
+  private her(st: Stage, t: number): [number, number] {
+    const b = this.stage && this.cut > 0 ? this.slashes[this.cut - 1] : null;
+    if (t < this.beat.vanish || !b) {
+      // launching: from where she stood toward the letter
+      const u = clamp01((t - this.beat.vanish) / 6);
+      return [lerp(st.x0, st.left + (st.f > 0 ? 0 : st.size), u), lerp(st.y0 - 0.5 * H, st.top + st.size * 0.6, u)];
+    }
+    return letterAt(st, ...along(letterStrokes()[b.stroke]!, (b.u0 + b.u1) / 2));
   }
 
   /** A camera move from where the phase began (the last shot before it) to `to`, u of the way (zoom even in log). */

@@ -1,0 +1,225 @@
+/* ------------------------------------------------------------------ the home page's bands (render/landing.ts homeBand)
+   Dex 10-19, the redesign (lanes/motion/DESIGN-1019.md 2, "Paper over Tesu"): the world is painted edge to edge
+   behind the website, one place per section, fixed to the screen; each section is white paper over it. A full-width
+   strip carries the title; a panel docked to one side (L R L R L) carries the content, its place showing on the other
+   side; a stretch of world only (the breath) follows. One thing per section hangs off the paper onto the world (the
+   stitch); a piece of the world laps back over the paper's open corner (the fore). Paper edges are straight, square,
+   with soft shadows cast onto the world. The motion (G2) moves strips, panels and content; the bands and the sheet
+   never move: nothing above a fixed scene may take a transform, filter, perspective, will-change, contain,
+   container-type or content-visibility (a test in styles.test.mjs keeps it so). */
+
+:root {
+  --edge-out: 16px;
+  --edge-in: 16px;
+  --lead: 44svh;
+  --breath: 36svh;
+  --strip-h: 96px;
+  --title-px: 2;
+  --overhang: 12px;
+  --pad-top: 24px;
+  --pad-bot: 48px;
+  --card-w: 360px;
+  --card-gap: 28px;
+  --fore-w: 132px;
+}
+@media (min-width: 700px) {
+  :root { --edge-out: 32px; --edge-in: 32px; --lead: 36svh; --breath: 30svh; --strip-h: 104px; --overhang: 24px; --pad-top: 32px; --pad-bot: 64px; --card-w: min(420px, 100%); --card-gap: 32px; --fore-w: 220px; }
+}
+@media (min-width: 1100px) {
+  :root {
+    --edge-out: max(64px, (100vw - 1680px) / 2);
+    --edge-in: 56px;
+    --lead: 40vh;
+    --breath: clamp(200px, 32vh, 380px);
+    --strip-h: 116px;
+    --overhang: 40px;
+    --pad-top: 40px;
+    --pad-bot: 104px;
+    --card-w: clamp(280px, min(20vw + 80px, (100svh - 200px) / 1.5), 460px);
+    --card-gap: clamp(28px, 2.5vw, 48px);
+    --fore-w: clamp(220px, 24vw, 440px);
+  }
+}
+@media (min-width: 1600px) {
+  :root { --edge-in: 72px; --strip-h: 152px; --title-px: 3; --overhang: 64px; --pad-top: 48px; --pad-bot: 120px; }
+}
+
+/* the sheet is clear on the home page: the bands carry the white (and the world between it); the footer is white */
+.sheet--home.sheet--column { background: transparent; }
+
+/* ---- a band: the world (z0), the paper and its shades (z1-2), the content (z3), what hangs off it (z4), the fore (z5) */
+.sheet .band.sec {
+  position: relative;
+  isolation: isolate;
+  padding: 0 0 var(--breath);
+  background: none;
+  border: 0;
+  /* a jump lands on the strip, just under the header (html's scroll-padding gives the header and 16 px) */
+  scroll-margin-top: -16px;
+}
+/* the panel's width: the default, then each section's (same weight, later wins) */
+.band { --panel-w: calc(100vw - 20px); }
+.sheet .band.sec:first-child { padding-top: var(--lead); scroll-margin-top: calc(-16px - var(--lead)); }
+@media (min-width: 700px) {
+  .band { --panel-w: calc(100vw - 48px); }
+}
+@media (min-width: 1100px) {
+  .band--projects { --panel-w: 52vw; }
+  .band--downloads, .band--docs { --panel-w: 60vw; }
+  .band--gallery { --panel-w: 66vw; }
+  .band--donate { --panel-w: 56vw; }
+}
+@media (min-width: 1600px) {
+  .band--projects { --panel-w: 50vw; }
+  .band--downloads, .band--docs { --panel-w: 56vw; }
+  .band--gallery { --panel-w: 64vw; }
+  .band--donate { --panel-w: 50vw; }
+}
+
+/* the world: its place, fixed to the screen, shown from the strip's bottom edge to the next strip's bottom edge, so a
+   change of place always happens under white (the first band shows its place from its top: the lead) */
+.band__world {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  clip-path: inset(var(--strip-h) 0 calc(-1 * var(--strip-h)) 0);
+}
+.sheet .band.sec:first-child > .band__world { clip-path: inset(0 0 calc(-1 * var(--strip-h)) 0); }
+.sheet .band.sec:last-child > .band__world { clip-path: inset(var(--strip-h) 0 0 0); }
+.band__scene {
+  position: fixed;
+  left: -48px;
+  right: -48px;
+  top: -48px;
+  height: calc(100lvh + 96px);
+  overflow: hidden;
+  background: linear-gradient(var(--sky));
+}
+.band__scene canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+/* the place's sky before it is painted (the scene's own ramp, motion/windows.ts) */
+[data-scene="sky"] { --sky: rgb(22 66 132), rgb(64 128 196) 45%, rgb(196 226 248); }
+[data-scene="palace"] { --sky: rgb(70 128 196), rgb(190 218 240) 50%, rgb(252 236 214); }
+[data-scene="isles"] { --sky: rgb(30 84 156), rgb(104 166 222) 50%, rgb(214 234 249); }
+[data-scene="lake"] { --sky: rgb(40 92 164), rgb(138 188 228) 50%, rgb(244 230 204); }
+[data-scene="pine"] { --sky: rgb(52 62 120), rgb(212 132 148) 55%, rgb(254 214 160); }
+/* phones: the place is sticky in its band instead of fixed (DESIGN-1019 2.3's fallback: measured on a Pixel 7 profile,
+   fixed layers cost a long frame on every touch scroll; sticky ones cost what the old page did). Its band's world
+   reaches under the next strip itself (a sticky place cannot leave its box), so a change of place still happens under
+   white. */
+@media (max-width: 699px) {
+  .band__world { bottom: calc(-1 * var(--strip-h)); clip-path: inset(var(--strip-h) 0 0 0); }
+  .sheet .band.sec:first-child > .band__world { clip-path: inset(0); }
+  .sheet .band.sec:last-child > .band__world { bottom: 0; clip-path: inset(var(--strip-h) 0 0 0); }
+  .band__scene { position: sticky; left: auto; right: auto; top: 0; width: 100%; height: 100lvh; }
+}
+/* reduced motion: the place scrolls with its band (a fixed backdrop is itself a parallax) */
+@media (prefers-reduced-motion: reduce) {
+  .band__scene { position: absolute; inset: 0; height: auto; }
+}
+
+/* the website over it (never an ancestor of the world) */
+.band__site { position: relative; z-index: 1; }
+
+/* ---- the strip: full width, the title on it, its shade cast down onto the world */
+.band__strip { position: relative; display: flex; align-items: center; min-height: var(--strip-h); }
+.band__strip-paper { position: absolute; inset: 0; z-index: 2; background: #fff; }
+.band__strip-shade { position: absolute; inset: 0; z-index: 1; box-shadow: 0 24px 56px -20px rgb(22 44 96 / 0.3); }
+.band__in { position: relative; z-index: 3; width: 100%; padding: 12px var(--edge-out); }
+.sh--strip { margin: 0; }
+.sh--strip .sh__title { font-size: calc(var(--title-px) * 25px); line-height: 1; }
+.sh__index { font: 400 var(--fs-12) / 1 var(--f-label); letter-spacing: 0.08em; color: var(--muted); margin-right: 10px; white-space: nowrap; }
+.sh__caret { font-style: normal; }
+@media (prefers-reduced-motion: no-preference) {
+  .sh__caret { animation: sh-caret 1.06s steps(1, end) infinite; }
+}
+@keyframes sh-caret { 50% { opacity: 0; } }
+/* phones: the "page" key moves to the panel's top; the strip keeps its aside */
+.band__more { display: none; margin: 0 0 var(--s-5); }
+@media (max-width: 699px) {
+  .sh--strip .sh__more { display: none; }
+  .band__more { display: block; }
+  .sh--strip .sh__title { overflow-wrap: break-word; }
+}
+
+/* ---- the panel: docked flush to its side, the paper behind the content, a spine on its open edge */
+.band__panel { position: relative; width: var(--panel-w); padding: var(--pad-top) 0 var(--pad-bot); }
+.band--r .band__panel { margin-left: auto; }
+.band__paper { position: absolute; inset: 0; z-index: 2; background: #fff; }
+.band__shade { position: absolute; inset: 0; z-index: 1; box-shadow: 32px 0 72px -32px rgb(22 44 96 / 0.28); }
+.band--r .band__shade { box-shadow: -32px 0 72px -32px rgb(22 44 96 / 0.28); }
+.band__spine { position: absolute; top: 0; bottom: 0; right: 0; width: 4px; background: var(--tone, var(--gold)); }
+.band--r .band__spine { left: 0; right: auto; }
+.sheet .band__panel > .wrap { position: relative; z-index: 3; max-width: none; margin: 0; padding: 0 var(--edge-in) 0 var(--edge-out); }
+.sheet .band--r .band__panel > .wrap { padding: 0 var(--edge-out) 0 var(--edge-in); }
+
+/* ---- what hangs off the paper onto the world (z4) */
+.band--l [data-stitch] { position: relative; z-index: 4; margin-right: calc(-1 * (var(--edge-in) + var(--overhang))); }
+.band--r [data-stitch] { position: relative; z-index: 4; margin-left: calc(-1 * (var(--edge-in) + var(--overhang))); }
+
+/* ---- the projects: three cards in a stepped row, the second over the paper's edge, the third on the world.
+   G places the cards' outer boxes only (the contract with lane K, lanes/motion/NOTEBOOK.md): width, step, shift. */
+.band--projects .pcards {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--card-gap);
+  width: max-content;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.band--projects .pcards > * { flex: none; width: var(--card-w); }
+.band--projects .pcards > :nth-child(2) { margin-top: calc(var(--card-w) * 0.13); }
+.band--projects .pcards > :nth-child(3) { margin-top: calc(var(--card-w) * 0.26); }
+@media (max-width: 1099px) {
+  .band--projects .pcards { flex-direction: column; width: 100%; }
+  .band--projects .pcards > :nth-child(n) { margin-top: 0; }
+  .band--projects .pcards > :nth-child(2) { align-self: flex-end; }
+}
+@media (max-width: 699px) {
+  .band--projects .pcards > :nth-child(2) { align-self: flex-start; margin-left: 28px; }
+}
+
+/* ---- the fore: a piece of the world in front of the paper's open corner (z5), never over text: it laps the paper's
+   bottom padding (a foot corner) or its open-side margin (a top corner) */
+.band__fore { position: absolute; z-index: 5; pointer-events: none; width: var(--fore-w); aspect-ratio: 2 / 1; }
+.band__fore canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+/* a foot corner (projects, gallery: L; docs: R) */
+.band--l.band--projects > .band__fore, .band--l.band--gallery > .band__fore {
+  left: calc(var(--panel-w) - var(--fore-w) * 0.5);
+  bottom: calc(var(--breath) - var(--fore-w) * 0.22);
+}
+.band--r.band--docs > .band__fore {
+  right: calc(var(--panel-w) - var(--fore-w) * 0.5);
+  bottom: calc(var(--breath) - var(--fore-w) * 0.22);
+}
+/* a top corner (downloads: R, the banners hang; donate: L, the pine) */
+.band--r.band--downloads > .band__fore {
+  right: calc(var(--panel-w) - var(--edge-in) * 0.8);
+  top: calc(var(--strip-h) - 6px);
+}
+.band--l.band--donate > .band__fore {
+  left: calc(var(--panel-w) - var(--edge-in) * 0.8);
+  top: calc(var(--strip-h) - var(--fore-w) * 0.3);
+}
+/* phones: one small piece per band at its foot corner (the open side is only 20 px) */
+@media (max-width: 699px) {
+  .band.sec > .band__fore { top: auto; bottom: calc(var(--breath) - var(--fore-w) * 0.2); }
+  .band--l.sec > .band__fore { left: calc(var(--panel-w) - var(--fore-w) * 0.62); right: auto; }
+  .band--r.sec > .band__fore { right: calc(var(--panel-w) - var(--fore-w) * 0.62); left: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .band__fore { display: none; }
+}
+
+/* ---- the footer: white, full width; the services that open later as a row of chips (id="more") */
+.ftr__more { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-block: var(--s-6) var(--s-4); scroll-margin-top: 0; }
+.ftr__more-head { display: inline-flex; align-items: center; gap: 8px; margin: 0; font: 400 var(--fs-12) / 1 var(--f-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.ftr__chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ftr__chip { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 12px 4px 6px; border: var(--bw) solid var(--ink); background: #fff; color: var(--ink); text-decoration: none; font: 400 var(--fs-16) / 1 var(--f-px); }
+@media (hover: hover) {
+  .ftr__chip:hover { background: var(--gold); }
+}

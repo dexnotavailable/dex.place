@@ -28,7 +28,7 @@ export function initReveal(): void {
 // pixel stickers) rest while off screen: `.is-off` pauses them (motion.css).
 export function initIdle(): void {
   if (!("IntersectionObserver" in window)) return;
-  const items = document.querySelectorAll<Element>(".band, .px--anim");
+  const items = document.querySelectorAll<Element>(".band, .pband, .px--anim");
   if (!items.length) return;
   const io = new IntersectionObserver((entries) => {
     for (const entry of entries) entry.target.classList.toggle("is-off", !entry.isIntersecting);
