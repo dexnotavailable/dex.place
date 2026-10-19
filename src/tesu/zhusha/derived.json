@@ -2,7 +2,7 @@
   "about": "Derived from the drawings by tools/zhusha/derive.mjs (src/tesu/zhusha/derive.ts); never edit by hand, re-run the tool after a slot-in. Per attack slot and drawing: the energy in front of her (area, how much is new: sweep), whether it is an active drawing, the hit boxes over it ([x0, y0, x1, y1] art px from the pivot, facing right, y negative up), how far her planted foot says she moved (root, art px), her ground contacts (feet).",
   "slots": {
     "e_tap": {
-      "slot": "e_tap", "hash": "c3176789", "ticks": [2,2,3,6,3,4,5,4,2,6,4,4,4,4,4,5,6,8],
+      "slot": "e_tap", "hash": "2baedcce", "ticks": [2,2,3,6,3,4,5,4,2,6,4,4,4,4,4,5,6,8],
       "hits": [{"first":3,"last":5,"at":7,"len":13},{"first":8,"last":11,"at":29,"len":16}],
       "frames": [
         {"area":25,"sweep":25,"active":false,"rects":[],"root":0,"feet":[[-15,-6],[14,18]]},
