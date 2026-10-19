@@ -2,7 +2,7 @@
 // rule) and the screen-res actor layer's camera (render/actors.ts).
 import test from "node:test";
 import assert from "node:assert/strict";
-import { actorMap, reduceFootprint, REDUCE_OPAQUE, screenCam } from "./render/grid.ts";
+import { actorLayerPlan, actorMap, reduceFootprint, REDUCE_OPAQUE, screenCam } from "./render/grid.ts";
 import { planeXf } from "./render/view.ts";
 
 // keys: 0 clear, 1 light ground, 2 dark line, 3 rope, 4..9 a texture's colours
@@ -157,6 +157,32 @@ test("actor layer: at her art density her anchor starts a footprint, footprints 
       }
     }
   }
+});
+
+test("actor layer plan: her art density where the view fits, else the view covered at 1 or more, else on her", () => {
+  const artD = 1 / 0.66;
+  for (const [W, H] of [[1280, 720], [1920, 1080]]) {
+    for (let zoom = 1.5; zoom >= 0.1; zoom *= 0.93) {
+      const p = actorLayerPlan(W, H, zoom, artD, 4096);
+      assert.ok(p.w <= 4096 && p.h <= 4096);
+      // fixed per frame size: a moving zoom never reallocates the layer
+      assert.deepEqual([p.w, p.h], [actorLayerPlan(W, H, 1, artD, 4096).w, actorLayerPlan(W, H, 1, artD, 4096).h]);
+      assert.ok(p.d <= artD + 1e-12);
+      if (p.onView) {
+        assert.ok(p.d >= 1 - 1e-12, `${W} at ${zoom.toFixed(3)}: density ${p.d}`);
+        assert.ok((W / zoom) * p.d <= p.w + 1e-6 && (H / zoom) * p.d <= p.h + 1e-6, "the whole view is in the layer");
+      } else {
+        assert.equal(p.d, artD);
+        assert.ok((W / zoom) * 1 > p.w, "only when not even density 1 would cover the view");
+      }
+    }
+  }
+  // at play zoom on a 1080p screen and down to 1/2 on 1280 x 720 (the court's vista): art density, the whole view
+  assert.deepEqual([actorLayerPlan(1920, 1080, 1, artD, 4096).onView, actorLayerPlan(1920, 1080, 1, artD, 4096).d], [true, artD]);
+  assert.deepEqual([actorLayerPlan(1280, 720, 0.5, artD, 4096).onView, actorLayerPlan(1280, 720, 0.5, artD, 4096).d], [true, artD]);
+  // a 1080p screen at 1/2: the view covered at a lower density
+  const p = actorLayerPlan(1920, 1080, 0.5, artD, 4096);
+  assert.ok(p.onView && p.d < artD && p.d >= 1);
 });
 
 test("loading: the world is plain data, so a plate worker can hand it to the page (structured clone, no class, no function)", async () => {

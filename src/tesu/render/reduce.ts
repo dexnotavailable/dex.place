@@ -22,7 +22,7 @@ import { compile, uniforms } from "../../lab/engine/gl.ts";
 import { FULL_VS } from "../../lab/engine/shaders.ts";
 import { makeTarget, type Target, type WorldRenderer } from "../../world/render/renderer.ts";
 import { planeXf, type CamState } from "./view.ts";
-import { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE, REDUCE_OPAQUE_EDGE, actorMap } from "./grid.ts";
+import { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE, REDUCE_OPAQUE_EDGE, actorLayerPlan, actorMap } from "./grid.ts";
 
 export { REDUCE_BOOST, REDUCE_FEATURE, REDUCE_OPAQUE, REDUCE_OPAQUE_EDGE };
 
@@ -224,14 +224,15 @@ export class ActorLayer {
 
   /**
    * Binds the layer for drawing (cleared clear) and returns the camera that draws the play plane into it at density d
-   * (layer px per world px; her art density): its play-plane transform (this.xf) has scale d and offsets about
-   * -x0 d, -y0 d. The layer is twice the frame a side (capped by the GPU), so it covers 2 / d frames of world a side,
-   * centred on the view when the view fits in it, else on her.
+   * (layer px per world px): its play-plane transform (this.xf) has scale d and offsets about -x0 d, -y0 d. Size,
+   * density and centre from grid.ts actorLayerPlan: her art density `artD` covering the view when it fits, else the
+   * density that covers the view, else (very wide) her art density centred on her.
    */
-  begin(r: WorldRenderer, cam: CamState, view: { cx: number; cy: number }, her: [number, number], d = 1): CamState {
+  begin(r: WorldRenderer, cam: CamState, view: { cx: number; cy: number }, her: [number, number], artD = 1): CamState {
     const gl = this.gl;
     const max = Math.min(4096, gl.getParameter(gl.MAX_TEXTURE_SIZE) as number);
-    const w = Math.min(max, 2 * cam.W), h = Math.min(max, 2 * cam.H);
+    const plan = actorLayerPlan(cam.W, cam.H, cam.zoom, artD, max);
+    const { w, h, d } = plan;
     if (!this.target || this.target.color.w !== w || this.target.color.h !== h) {
       if (this.target) { gl.deleteFramebuffer(this.target.fbo); gl.deleteTexture(this.target.color.tex); }
       this.target = makeTarget(gl, w, h, false);
@@ -239,8 +240,7 @@ export class ActorLayer {
     this.w = w;
     this.h = h;
     this.d = d;
-    const fits = cam.W / cam.zoom <= w / d && cam.H / cam.zoom <= h / d;
-    const [cx, cy] = fits ? [view.cx, view.cy] : her;
+    const [cx, cy] = plan.onView ? [view.cx, view.cy] : her;
     this.x0 = Math.floor(cx - w / (2 * d));
     this.y0 = Math.floor(cy - h / (2 * d));
     this.saved = [r.iw, r.ih];
