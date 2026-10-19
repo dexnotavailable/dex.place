@@ -3,12 +3,13 @@
 // the slashes stop a moment before she dives and destroys all" (hundreds of slashes, each carving a piece of the
 // letter, ~3 s or more; the letter ABSOLUTELY HUGE, a nuke, 断 or 天 from her R line 一筆――天を断つ); straight down
 // from above, a vertical blur; the nuke (a white / orange / red first flash engulfed by her blue flames, a huge
-// eruption); the dust clears on the ult form; control comes back after the nuke.
+// eruption); the camera stays on the destruction while the smoke takes its time to clear, then she is revealed in the
+// ult form, no spoken line (Dex 10-19); control comes back after the nuke.
 //
 // This file owns R's timeline (the beats inside r_call / r_flurry / r_reveal, played 1:1 when their drawings are in,
 // the white box on the same clock until then), the slash storm (which slash carves which piece of which stroke, when),
 // the camera's shots (the cut-in close on her, the hard cut wide onto the letter pulling out as it is carved, the dead
-// stop, the push down after the dive, the pull-out on the nuke, back in on the reveal), the letterbox, the sound cues
+// stop, the push down after the dive, the pull-out on the nuke, held on the wreck, back in on the reveal), the letterbox, the sound cues
 // on the beats, what each beat hits, and the white box's pose. controller.ts hands R to it (startUlt / tickUlt /
 // hitboxes / pose); game.ts frames the camera on `shot` and draws `bars`; ultdraw.ts draws the stand-ins from this
 // state. Numbers: ult.json.
@@ -29,7 +30,6 @@ export interface UltFile {
   beats: {
     call: { line: Beat; boom: Beat; fire: Beat; draw: Beat; coil: Beat };
     flurry: { vanish: Beat; storm: Beat };
-    reveal: { pose: Beat };
   };
   letter: {
     char: string; size: number; low: number; ahead: number; ticks: number; slashes: number; pieces: number;
@@ -38,13 +38,15 @@ export interface UltFile {
   hold: number;
   dive: { ticks: number; cap: number; flipFrom: number; lineLife: number };
   impact: { ticks: number; flash: number; slowmo: number; slowmoTicks: number; invert: number; punch: number };
-  reveal: { clear: number; visibleFrom: number };
+  aftermath: { hold: number; clear: number; revealFrom: number };
+  reveal: { visibleFrom: number };
   camera: {
     bars: number; barsIn: number; barsOut: number;
     call: { zoomIn: number; zoom: number; zoomFire: number; anchor: number; ahead: number; craneUp: number };
     flurry: { zoom: number; zoomEnd: number; anchor: number };
     dive: { zoom: number; anchor: number; up: number };
     impact: { zoom: number; anchor: number };
+    aftermath: { zoom: number; zoomClear: number; anchor: number };
     reveal: { zoom: number; anchor: number; ticks: number };
   };
   shake: { boom: number; slash: number; last: number; dive: number; impact: number };
@@ -59,7 +61,7 @@ export const ULT = JSON.parse(ultRaw) as UltFile;
 /** What each cue is, in the controller's cue terms (lane E's Cue.phase), by its ult.json key. */
 const PHASES: Record<string, Cue["phase"]> = {
   press: "windup", line: "windup", boom: "boom", fire: "windup", draw: "windup", vanish: "move", slash: "swing", last: "boom",
-  hush: "rise", dive: "move", impact: "boom", rumble: "land", reveal: "reveal", lineUlt: "reveal", blade: "windup", cut: "hit",
+  hush: "rise", dive: "move", impact: "boom", rumble: "land", reveal: "reveal", blade: "windup", cut: "hit",
 };
 
 /** Fires the cue under ult.json key `k` (its id is lane D's to map). */
@@ -67,8 +69,9 @@ export function say(c: { cue: UltCtx["cue"] }, k: string, volume: number, move: 
   c.cue(ULT.cues[k]!, volume, PHASES[k] ?? "boom", move);
 }
 
-/** call, flurry (she vanishes into the slash storm), hold (the stop), dive, impact (the nuke), reveal. */
-export type UltPhase = "call" | "flurry" | "hold" | "dive" | "impact" | "reveal";
+/** call, flurry (she vanishes into the slash storm), hold (the stop), dive, impact (the nuke), aftermath (held on the
+ * wreck while the smoke clears), reveal. */
+export type UltPhase = "call" | "flurry" | "hold" | "dive" | "impact" | "aftermath" | "reveal";
 
 /** A camera shot: world x at the frame's centre, world y on the anchor row, the zoom, the anchor row's share. */
 export interface Shot {
@@ -297,8 +300,8 @@ export class UltDirector {
   /** The dive's progress (the letter shatters on it). */
   peel = 0;
   /** The beats' lengths and inner ticks, resolved at the press from the drawings in the game. */
-  len = { call: 0, flurry: 0, hold: 0, dive: 0, impact: 0, reveal: 0 };
-  beat = { line: 0, boom: 0, fire: 0, draw: 0, coil: 0, vanish: 0, storm: 0, pose: 0 };
+  len = { call: 0, flurry: 0, hold: 0, dive: 0, impact: 0, aftermath: 0, reveal: 0 };
+  beat = { line: 0, boom: 0, fire: 0, draw: 0, coil: 0, vanish: 0, storm: 0 };
   /** Whether each beat's drawing is in (else the white box stands in). */
   art = { call: false, flurry: false, reveal: false };
   /** The game's effects (null: tests, or none wired) and which of R's are in (else ultdraw.ts's stand-ins draw). */
@@ -327,7 +330,6 @@ export class UltDirector {
       line: beatTick(call, B.call.line, C.r_call), boom: beatTick(call, B.call.boom, C.r_call), fire: beatTick(call, B.call.fire, C.r_call),
       draw: beatTick(call, B.call.draw, C.r_call), coil: beatTick(call, B.call.coil, C.r_call),
       vanish: beatTick(flurry, B.flurry.vanish, C.r_flurry), storm: beatTick(flurry, B.flurry.storm, C.r_flurry),
-      pose: beatTick(reveal, B.reveal.pose, C.r_reveal),
     };
     this.len = {
       call: clipLen(call) ?? C.r_call,
@@ -335,6 +337,7 @@ export class UltDirector {
       hold: ULT.hold,
       dive: ULT.dive.ticks,
       impact: ULT.impact.ticks,
+      aftermath: ULT.aftermath.hold + Math.round(ULT.aftermath.clear * ULT.aftermath.revealFrom),
       reveal: clipLen(reveal) ?? C.r_reveal,
     };
     this.slashes = storm(letterStrokes(), Lt.slashes, Lt.ticks, Lt.pieces, Lt.slashLen, Lt.sweepGap);
@@ -404,10 +407,9 @@ export class UltDirector {
         say(c, "dive", 1);
         if (this.real.dive) this.fx!.play(ULT.fx.dive, { x: st.gx, y: st.floor, facing: 1 });
         c.shake(ULT.shake.dive);
-      } else if (p === "reveal") {
+      } else if (p === "aftermath") {
+        // the change happens unseen in the smoke: the form begins now (control can come back from here)
         c.enterForm();
-        say(c, "reveal", 1);
-        if (this.real.clear) this.fx!.play(ULT.fx.clear, { x: b.x, y: b.y, facing: f });
       }
     }
     const t = this.t;
@@ -498,14 +500,30 @@ export class UltDirector {
         b.vx = b.vy = 0;
         z.anim = { role: "r_smoke", t, hitAt: null, hidden: true, flame: 0 };
         if (t === 3) say(c, "rumble", 1);
-        if (t + 1 >= L.impact) this.go("reveal");
+        if (t + 1 >= L.impact) this.go("aftermath");
+        break;
+      }
+      case "aftermath": {
+        // the frame stays on the destruction: the wreck burns out, the smoke hangs, then clears slowly (Dex 10-19);
+        // she is in the form now, unseen; any input plays on at once
+        b.vx = b.vy = 0;
+        z.anim = { role: "r_smoke", t, hitAt: null, hidden: true, flame: 0 };
+        if (t === ULT.aftermath.hold) {
+          say(c, "reveal", 1);
+          if (this.real.clear) this.fx!.play(ULT.fx.clear, { x: b.x, y: b.y, facing: f });
+        }
+        if (this.wants(input)) {
+          this.end();
+          c.release(input, world);
+          return false;
+        }
+        if (t + 1 >= L.aftermath) this.go("reveal");
         break;
       }
       case "reveal": {
-        // the dust clears on her ult form (r_reveal 1:1 into uf_idle); control is back: any input plays on at once
+        // the last of the smoke clears off her ult form (r_reveal 1:1 into uf_idle), no spoken line; any input plays on at once
         b.vx = b.vy = 0;
         z.anim = { role: "r_reveal", t, hitAt: null, hidden: t < ULT.reveal.visibleFrom, flame: 0 };
-        if (t === K.pose) say(c, "lineUlt", 1);
         if (this.wants(input) || t + 1 >= L.reveal) {
           this.end();
           c.release(input, world);
@@ -572,7 +590,7 @@ export class UltDirector {
     this.stormT = -1;
     b.vx = b.vy = 0;
     z.anim = { role: "r_smoke", t: 0, hitAt: null, hidden: true, flame: 0 };
-    z.smoke = { x: b.x, y: b.y, t: 0, life: I.ticks + ULT.reveal.clear + 12 };
+    z.smoke = { x: b.x, y: b.y, t: 0, life: I.ticks + ULT.aftermath.hold + ULT.aftermath.clear + 12 };
     s.feel.freeze(c.feel.hitstop);
     s.feel.impactFrame("invert", I.invert);
     s.feel.slowmo(I.slowmo, I.slowmoTicks);
@@ -639,6 +657,7 @@ export class UltDirector {
         return { sx: 0.5, sy: 1.8, lean: 0, rot: flip ? 0 : Math.PI };
       }
       case "impact":
+      case "aftermath":
         return { sx: 1.2, sy: 0.8, lean: 0, rot: 0 };
       default:
         return { sx: 1, sy: 1, lean: 0, rot: 0 };
@@ -694,6 +713,17 @@ export class UltDirector {
         // the pull-out on the nuke: the flash, the flames and the eruption all in frame
         shot = this.move({ x: st.gx, y: st.floor, zoom: C.impact.zoom, anchor: C.impact.anchor }, easeOut(t / Math.max(1, L.impact * 0.6)));
         break;
+      case "aftermath": {
+        // held on the wreck (the frame barely drifts), then, as the smoke clears, a slow push toward where she stands
+        const A = C.aftermath, Hd = ULT.aftermath.hold;
+        const held = { x: st.gx, y: st.floor, zoom: A.zoom, anchor: A.anchor };
+        if (t < Hd) shot = this.move(held, smooth(t / Math.max(1, Hd)));
+        else {
+          const u = smooth((t - Hd) / Math.max(1, L.aftermath - Hd));
+          shot = { x: lerp(held.x, b.x, u), y: st.floor, zoom: zlerp(A.zoom, A.zoomClear, u), anchor: A.anchor, cut: false };
+        }
+        break;
+      }
       default:
         // the reveal: the dust clears and the frame pushes back in on her
         shot = this.move({ x: b.x, y: st.floor, zoom: C.reveal.zoom, anchor: C.reveal.anchor }, smooth(t / Math.max(1, C.reveal.ticks)));

@@ -1,5 +1,5 @@
 {
-  "about": "R as a cut-in cinematic and the ult form's ghost blades (lane U, 10-19). Dex 10-16 / 10-19: the call at its original speed; then during the flurry she disappears: she BECOMES the slashes that slash the letter into existence (hundreds of them, each carving a piece, ~3 s or more; the letter ABSOLUTELY HUGE, a nuke; it matches her R line 一筆――天を断つ: 断 or 天); the slashes stop a moment (a beat of stillness); then she dives straight down from above, a vertical blur, and destroys everything: a nuke (a white / orange / red first flash engulfed by her blue flames, a huge eruption); the dust clears on the ult form; control back after the nuke. The form stands still-ish on one frame and summons ghost blades; its chain moves her as the normal chain does (Dex: no teleports in the chain). Ticks at 60 a second, distances in H (96 world px; she is 0.88 H). feel.json's ult block keeps the gameplay numbers (impact radius / damage / knockback, the form's length, cooldown, damage multiplier, the ghost hit); its R timings (callTicks .. revealTicks, riseTicks, zoomOut) are superseded by this file. ult.ts reads it; ultdraw.ts draws the stand-ins (clearly temporary until the FX v2 loop's effects, lanes/fx/v2/built/, and lane A's r_* drawings land).",
+  "about": "R as a cut-in cinematic and the ult form's ghost blades (lane U, 10-19). Dex 10-16 / 10-19: the call at its original speed; then during the flurry she disappears: she BECOMES the slashes that slash the letter into existence (hundreds of them, each carving a piece, ~3 s or more; the letter ABSOLUTELY HUGE, a nuke; it matches her R line 一筆――天を断つ: 断 or 天); the slashes stop a moment (a beat of stillness); then she dives straight down from above, a vertical blur, and destroys everything: a nuke (a white / orange / red first flash engulfed by her blue flames, a huge eruption); Dex 10-19 after playing it: \"it should stay on the destruction, and it should take a while for the smoke to clear and reveal her; no need for the reveal's spoken line\": the camera holds on the wreck (debris settling, embers, her blue flames burning out across it), the smoke clears slowly over seconds, then she is revealed in the ult form, no spoken line; control back on any input from the end of the nuke. The form stands still-ish on one frame and summons ghost blades; its chain moves her as the normal chain does (Dex: no teleports in the chain). Ticks at 60 a second, distances in H (96 world px; she is 0.88 H). feel.json's ult block keeps the gameplay numbers (impact radius / damage / knockback, the form's length, cooldown, damage multiplier, the ghost hit); its R timings (callTicks .. revealTicks, riseTicks, zoomOut) are superseded by this file. ult.ts reads it; ultdraw.ts draws the stand-ins (clearly temporary until the FX v2 loop's effects, lanes/fx/v2/built/, and lane A's r_* drawings land).",
   "clips": {
     "about": "Length of the call and the reveal when their drawing is not in yet (the white box plays the same timeline); with a drawing they last exactly their clip, played 1:1 (the call at its original speed). From lane A's picks (lanes/anim/moves/<slot>/make.py). r_flurry plays only up to the storm beat (she crouches, bursts into ash, gone); the rest of the flurry is the slashes.",
     "r_call": 114,
@@ -39,12 +39,6 @@
         8,
         8
       ]
-    },
-    "reveal": {
-      "pose": [
-        19,
-        24
-      ]
     }
   },
   "letter": {
@@ -82,11 +76,10 @@
     "punch": 3
   },
   "reveal": {
-    "clear": 26,
-    "visibleFrom": 6
+    "visibleFrom": 0
   },
   "camera": {
-    "about": "The shots: world x at the frame's centre, world y on the anchor row (the anchor is that row's share of the frame's height). Zooms stay within the painted levels (2 = the close band) so the world stays crisp; the letter's pull-out goes down to 0.55 and the nuke's to 0.4 (the FX v2 loop's framing) (lane C 10-19: below 1 she and her effects reduce onto her own grid). The call: a cut-in close on her, pushing in to the BOOM, craning up with the fire, settling as she coils. The flurry: a hard cut wide onto the letter, pulling out as it is carved. The stop: dead still. The dive: a push down after her onto the crater. The impact: the pull-out on the nuke. The reveal: back in on her. Reduced motion: hard cuts between held levels (2 for the call, 1 for the rest), no moves.",
+    "about": "The shots: world x at the frame's centre, world y on the anchor row (the anchor is that row's share of the frame's height). Zooms stay within the painted levels (2 = the close band) so the world stays crisp; the letter's pull-out goes down to 0.55 and the nuke's to 0.4 (the FX v2 loop's framing) (lane C 10-19: below 1 she and her effects reduce onto her own grid). The call: a cut-in close on her, pushing in to the BOOM, craning up with the fire, settling as she coils. The flurry: a hard cut wide onto the letter, pulling out as it is carved. The stop: dead still. The dive: a push down after her onto the crater. The impact: the pull-out on the nuke. The aftermath: held wide on the wreck (a barely moving frame), then a slow push toward her as the smoke clears. The reveal: back in on her. Reduced motion: hard cuts between held levels (2 for the call, 1 for the rest), no moves.",
     "bars": 0.11,
     "barsIn": 8,
     "barsOut": 14,
@@ -116,6 +109,11 @@
       "zoom": 1.15,
       "anchor": 0.72,
       "ticks": 60
+    },
+    "aftermath": {
+      "zoom": 0.43,
+      "zoomClear": 0.72,
+      "anchor": 0.7
     }
   },
   "shake": {
@@ -132,7 +130,7 @@
     "impact": 3
   },
   "cues": {
-    "about": "Sound cue ids for lane D (sound.ts maps an id to its files; an id with no file is silent), fired on these beats: press (the cut-in), line (her R call, normal register: 一筆――天を断つ), boom (the bass hit as the fire line ignites), fire (the curtain's roar), draw (the sword), vanish (she bursts into ash), slash (every 6th slash of the storm: a dense roll, not hundreds of files), last (the closing cut: a bass hit), hush (the stop: dead silence, everything ducks out until dive), dive (the dive's whoosh), impact (the nuke: the biggest bass hit), rumble (the eruption's long tail), reveal (the dust clears), lineUlt (her ult-register line on the reveal pose); the form: blade (a ghost blade summoned), cut (it strikes).",
+    "about": "Sound cue ids for lane D (sound.ts maps an id to its files; an id with no file is silent), fired on these beats: press (the cut-in), line (her R call, normal register: 一筆――天を断つ), boom (the bass hit as the fire line ignites), fire (the curtain's roar), draw (the sword), vanish (she bursts into ash), slash (every 6th slash of the storm: a dense roll, not hundreds of files), last (the closing cut: a bass hit), hush (the stop: dead silence, everything ducks out until dive), dive (the dive's whoosh), impact (the nuke: the biggest bass hit), rumble (the eruption's long tail, under the frame held on the wreck), reveal (the smoke starts to clear: a long wind); no line spoken on the reveal (Dex 10-19); the form: blade (a ghost blade summoned), cut (it strikes).",
     "press": "r.press",
     "line": "r.call",
     "boom": "r.boom",
@@ -146,7 +144,6 @@
     "impact": "r.impact",
     "rumble": "r.rumble",
     "reveal": "r.reveal",
-    "lineUlt": "r.ultline",
     "blade": "uf.blade",
     "cut": "uf.slash"
   },
@@ -167,11 +164,17 @@
     "ring": 1.0
   },
   "fx": {
-    "about": "The FX v2 loop's effects (lanes/fx/v2/PLAN.md ids, played through game.fx.play when the game has them; until then the stand-ins in ultdraw.ts draw): callFire (her blue fire carpet, from the BOOM until she vanishes, at her feet), letter (the flurry: the letter carved by the slashes and the hold, at the letter's foot, never mirrored), dive (her line through the letter), nuke (at the crater), clear (the smoke clearing off her ult form).",
+    "about": "The FX v2 loop's effects (lanes/fx/v2/PLAN.md ids, played through game.fx.play when the game has them; until then the stand-ins in ultdraw.ts draw): callFire (her blue fire carpet, from the BOOM until she vanishes, at her feet), letter (the flurry: the letter carved by the slashes and the hold, at the letter's foot, never mirrored), dive (her line through the letter), nuke (at the crater), clear (the smoke clearing off her ult form, from the start of the clear).",
     "callFire": "r_call_fire",
     "letter": "r_flurry",
     "dive": "r_dive_line",
     "nuke": "r_nuke",
     "clear": "r_reveal_clear"
+  },
+  "aftermath": {
+    "about": "After the nuke (Dex 10-19: stay on the destruction, the smoke takes a while to clear): `hold` ticks on the wreck with the smoke dense (debris settling, embers, her blue flames burning out across it), then the smoke clears over `clear` ticks (outward and up, the middle first); she is revealed (r_reveal starts) when `revealFrom` of the clear is done, the rest clears off her during the reveal. Any input from the start of the aftermath hands control back.",
+    "hold": 96,
+    "clear": 210,
+    "revealFrom": 0.75
   }
 }

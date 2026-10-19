@@ -75,7 +75,7 @@ const runs = (ticks) => {
 test("ult: R on the white box runs call > flurry (the slash storm) > the stop > dive > the nuke > reveal, then idle in the form", async () => {
   const { z, ticks } = await playR();
   const r = runs(ticks).filter((x) => x.phase !== null);
-  assert.deepEqual(r.map((x) => x.phase), ["call", "flurry", "hold", "dive", "impact", "reveal"]);
+  assert.deepEqual(r.map((x) => x.phase), ["call", "flurry", "hold", "dive", "impact", "aftermath", "reveal"]);
   // the press tick shows the call's first drawing
   assert.equal(r[0].n, ULT.clips.r_call, "the call");
   assert.equal(r[1].n, ULT.beats.flurry.storm[1] + ULT.letter.ticks, "she bursts into ash, then the storm");
@@ -83,7 +83,11 @@ test("ult: R on the white box runs call > flurry (the slash storm) > the stop > 
   assert.equal(r[2].n, ULT.hold, "the stop");
   assert.ok(r[3].n <= ULT.dive.ticks, `the dive ${r[3].n}`);
   assert.equal(r[4].n, ULT.impact.ticks, "the nuke");
-  assert.equal(r[5].n, ULT.clips.r_reveal - 1, "the reveal (its last tick hands over)");
+  const A = ULT.aftermath;
+  assert.equal(r[5].n, A.hold + Math.round(A.clear * A.revealFrom), "held on the wreck while the smoke clears");
+  assert.ok(A.hold >= 60 && A.clear >= 150, "it stays on the destruction; the smoke takes seconds to clear (Dex 10-19)");
+  assert.equal(r[6].n, ULT.clips.r_reveal - 1, "the reveal (its last tick hands over)");
+  assert.ok(ticks.filter((t) => t.phase === "aftermath").every((t) => t.hidden), "unseen in the smoke until the reveal");
   assert.equal(z.state, "free");
   assert.ok(z.ultForm, "in the form");
   assert.equal(z.anim.role, "idle");
@@ -103,7 +107,7 @@ test("ult: with the drawings in, the call and the reveal last their own clips (t
   const { ticks, z } = await playR({ clipOf, log });
   const r = runs(ticks).filter((x) => x.phase !== null);
   assert.equal(r[0].n, 120);
-  assert.equal(r[5].n, 69);
+  assert.equal(r[6].n, 69);
   // her line on the first drawing at or past src 7 (src 8 = drawing 4 = tick 16); the boom past src 10 (drawing 5, 20)
   assert.equal(z.r.beat.line, 16);
   assert.equal(z.r.beat.boom, 20);
@@ -112,8 +116,6 @@ test("ult: with the drawings in, the call and the reveal last their own clips (t
   assert.equal(r[1].n, 5 + ULT.letter.ticks);
   const fl = ticks.filter((t) => t.phase === "flurry");
   assert.ok(fl.slice(0, 5).every((t) => !t.hidden && t.role === "r_flurry") && fl.slice(5).every((t) => t.hidden));
-  // r_reveal has no src: its pose beat scales with its length
-  assert.equal(z.r.beat.pose, Math.round((ULT.beats.reveal.pose[1] * 70) / ULT.clips.r_reveal));
 });
 
 test("ult: the letter is huge and ahead of her; she stops above it, dives straight down through it onto the floor; the nuke (group r) lands once", async () => {
@@ -162,6 +164,12 @@ test("ult: the camera has a shot every tick of R; hard cuts only at the press an
   assert.ok(hold.every((t) => t.shot.x === hold[0].shot.x && t.shot.y === hold[0].shot.y && t.shot.zoom === hold[0].shot.zoom), "the stop: dead still");
   const imp = r.filter((t) => t.phase === "impact");
   assert.ok(imp[imp.length - 1].shot.zoom < 0.42, "the pull-out on the nuke");
+  // it stays on the destruction: held wide over the crater through the hold, then a slow push in as the smoke clears
+  const am = r.filter((t) => t.phase === "aftermath");
+  const held = am.slice(0, ULT.aftermath.hold);
+  assert.ok(held.every((t) => t.shot.zoom <= ULT.camera.aftermath.zoom + 1e-6), "held wide on the wreck");
+  for (let i = 1; i < held.length; i++) assert.ok(Math.abs(held[i].shot.zoom - held[i - 1].shot.zoom) < 0.002, "a barely moving frame");
+  assert.ok(am[am.length - 1].shot.zoom > ULT.camera.aftermath.zoom + 0.1, "pushed in toward her as it clears");
   // after control is back the world's framing has the camera again
   assert.equal(ticks[ticks.length - 1].shot, null);
 });
@@ -216,7 +224,8 @@ test("ult: the sound cues land on the beats (lane D's ids)", async () => {
   const { z } = await playR({ log });
   const C = ULT.cues;
   const at = (id) => log.indexOf(id);
-  for (const k of ["press", "line", "boom", "fire", "draw", "vanish", "slash", "last", "hush", "dive", "impact", "rumble", "reveal", "lineUlt"]) assert.ok(at(C[k]) >= 0, `${k} (${C[k]})`);
+  for (const k of ["press", "line", "boom", "fire", "draw", "vanish", "slash", "last", "hush", "dive", "impact", "rumble", "reveal"]) assert.ok(at(C[k]) >= 0, `${k} (${C[k]})`);
+  assert.equal(C.lineUlt, undefined, "no line spoken on the reveal (Dex 10-19)");
   const n = log.filter((id) => id === C.slash).length;
   assert.ok(n >= 30 && n <= 50, `a dense roll of slash sounds, not hundreds of files: ${n}`);
   const order = ["press", "line", "boom", "vanish", "slash", "last", "hush", "dive", "impact", "rumble", "reveal"].map((k) => at(C[k]));
@@ -233,7 +242,12 @@ test("ult: the letterbox slides in with R and out after", async () => {
   assert.equal(z.r.bars, 0);
 });
 
-test("ult: control is back after the nuke: a press during the reveal plays at once in the form; an R mashed in it does not end the form", async () => {
+test("ult: control is back after the nuke: a press while the smoke clears plays at once in the form; an R mashed in it does not end the form", async () => {
+  // in the aftermath (held on the wreck): out at once, in the form, attacking
+  const A = await playR({ input: { phase: "aftermath", at: 20, act: (inp) => inp.press("m1") } });
+  assert.ok(A.ticks.filter((t) => t.phase === "aftermath").length <= 22 && !A.ticks.some((t) => t.phase === "reveal"), "out of the hold on the press");
+  assert.equal(A.z.lastAction, "m1_1");
+  assert.ok(A.z.ultForm);
   const { z, ticks } = await playR({ input: { phase: "reveal", at: 10, act: (inp) => { inp.press("m1"); inp.press("ult"); } } });
   const rev = ticks.filter((t) => t.phase === "reveal").length;
   assert.ok(rev <= 12, `out of the reveal on the press (${rev} ticks)`);
@@ -263,7 +277,7 @@ test("ult: the FX v2 loop's effects play on the beats when the game has them (th
   assert.ok(st.gx < 0, "facing left: the letter is to her left");
   assert.equal(by(F.dive).phase, "dive");
   assert.deepEqual([by(F.nuke).x, by(F.nuke).y], [st.gx, 0], "the nuke at the crater");
-  assert.equal(by(F.clear).phase, "reveal");
+  assert.equal(by(F.clear).phase, "aftermath", "the smoke clearing, from the start of the clear");
 });
 
 test("ult: the storm's hits never stop the frame (R owns its weight: only the nuke freezes it, once)", async () => {
