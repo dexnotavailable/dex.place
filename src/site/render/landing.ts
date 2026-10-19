@@ -9,13 +9,13 @@
 
 import { downloads, formatBytes, type DownloadFile } from "../data/downloads.ts";
 import { projectHref, projects, type Project } from "../data/projects.ts";
-import { artTag, projectArt } from "./art.ts";
+import { cardArt } from "./cardart.ts";
 import { docsSection } from "./docs.ts";
 import { donateSection } from "./donate.ts";
 import { downloadsSection } from "./downloads.ts";
 import { gallerySection } from "./gallery.ts";
 import { moreSection } from "./stubs.ts";
-import { button, chip, counter, pageHead, sectionHead, tile, type ButtonOptions } from "./glyphs.ts";
+import { button, chip, counter, icon, pageHead, sectionHead, tile, type ButtonOptions } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import type { SiteContent } from "./types.ts";
 
@@ -25,13 +25,17 @@ import type { SiteContent } from "./types.ts";
 const fileOf = (p: Project): DownloadFile | null => downloads.find((d) => d.id === p.id)?.file ?? null;
 const hasDownloadEntry = (p: Project): boolean => downloads.some((d) => d.id === p.id);
 
-/** Short state chips: platform, then version and size, or "no download". */
-function chipsOf(p: Project): string {
+/** The download's state as chips: version and size, or "no download". */
+function stateChips(p: Project): string[] {
   const f = fileOf(p);
-  const state = f
+  return f
     ? [chip(`v${f.version}`, "value"), chip(formatBytes(f.bytes), "value")]
     : hasDownloadEntry(p) ? [chip("No public download yet", "value")] : [];
-  return `<p class="chips">${[chip(p.platform, "key"), ...state].join("")}</p>`;
+}
+
+/** Short state chips: platform, then version and size, or "no download". */
+function chipsOf(p: Project): string {
+  return `<p class="chips">${[chip(p.platform, "key"), ...stateChips(p)].join("")}</p>`;
 }
 
 /** The one action that matters most for each project. */
@@ -57,30 +61,32 @@ function primaryAction(p: Project, size: "m" | "l", here: "home" | "page"): Butt
 }
 
 // -------------------------------------------------------------------- cards
-// One card per project: the scene, the facts, and three ways on (the one
-// action that matters, the project page, its docs). The card pops as a whole
+// One card per project: its splash art over the whole card (render/cardart.ts: layers that pan, a shine), the
+// platform and the download's state at the top, and at its foot on a calm band the name (the way to the project's page),
+// the line, the one action that matters and its docs. The card pops as a whole
 // (DESIGN-SYSTEM.md §3); its keys pop on their own.
 
 function card(p: Project, i: number, level: 2 | 3, here: "home" | "page"): string {
   const h = `h${level}`;
   const href = projectHref(p);
+  // (the name and the art already lead to the project's page)
+  const small = (label: string, ic: "book", to: string): string =>
+    `<a class="btn btn--paper btn--s btn--icon" href="${esc(to)}" aria-label="${esc(`${p.name} ${label.toLowerCase()}`)}" title="${label}"><span class="btn__ic">${icon(ic, 2)}</span></a>`;
   return (
     `<li class="pcards__it" data-reveal style="--i:${Math.min(i, 5)}">` +
     `<article class="${cx("pcard", `pcard--${p.tone}`)}" id="p-${p.id}" aria-labelledby="p-${p.id}-name">` +
     // The art is a pointer shortcut to the project page; keyboard and screen
     // readers get the same link once, on the name.
-    `<div class="pcard__art"><a class="pcard__hit" href="${href}" tabindex="-1" aria-hidden="true">${projectArt(p)}</a>${artTag(p)}</div>` +
-    `<div class="pcard__body">` +
-    `<p class="pcard__top"><span class="pcard__no" aria-hidden="true">${pad2(projects.indexOf(p) + 1)}</span><span class="pcard__rule" aria-hidden="true"></span></p>` +
+    `<a class="pcard__hit" href="${href}" tabindex="-1" aria-hidden="true">${cardArt(p)}</a>` +
+    `<div class="pcard__top"><span class="pcard__no" aria-hidden="true">${pad2(projects.indexOf(p) + 1)}</span>` +
+    `<p class="pcard__tags">${[chip(p.platform, "key"), ...stateChips(p)].join("")}</p></div>` +
+    `<div class="pcard__info">` +
     `<${h} class="pcard__name" id="p-${p.id}-name"><a class="pcard__link" href="${href}">${esc(p.name)}</a></${h}>` +
     `<p class="pcard__line">${esc(p.line)}</p>` +
-    chipsOf(p) +
-    `</div>` +
     `<div class="pcard__acts">` +
     button({ ...primaryAction(p, "m", here), className: "pcard__main" }) +
-    button({ href, label: "Details", icon: "arrow", size: "s", ariaLabel: `${p.name} details` }) +
-    button({ href: p.docs.href, label: "Docs", icon: "book", size: "s", ariaLabel: `${p.name} docs` }) +
-    `</div></article></li>`
+    small("Docs", "book", p.docs.href) +
+    `</div></div></article></li>`
   );
 }
 
@@ -178,7 +184,7 @@ export function projectPage(p: Project): string {
     `<div class="wrap">` +
     `<nav class="crumbs" aria-label="Breadcrumb"><a href="/projects/">Projects</a><span aria-hidden="true">/</span><span aria-current="page">${esc(p.name)}</span></nav>` +
     `<header class="proj proj--${p.tone}">` +
-    `<div class="proj__art" data-reveal="pop-block">${projectArt(p, "hero")}${artTag(p)}</div>` +
+    `<div class="proj__art" data-reveal="pop-block">${cardArt(p)}</div>` +
     `<div class="proj__head">` +
     `<p class="sh__kicker" data-reveal><span class="sh__slash" aria-hidden="true">//</span><span>project</span>` +
     `<span class="sh__rule" aria-hidden="true"></span>${counter(at + 1, projects.length, "sh__aside")}</p>` +

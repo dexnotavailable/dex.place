@@ -1,7 +1,8 @@
 // node --test: the landing, /projects/ and project pages.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { Canvas, SCENE_FILL, SCENE_H, SCENE_W, SPRITES, projectArt, validateSprite } from "./render/art.ts";
+import { existsSync } from "node:fs";
+import { cardArt } from "./render/cardart.ts";
 import { landing, projectPage, projectsIndex } from "./render/landing.ts";
 import { routes } from "./render/routes.ts";
 import { projects, projectHref } from "./data/projects.ts";
@@ -9,33 +10,24 @@ import { downloads } from "./data/downloads.ts";
 
 const content = { docs: [], posts: [], gallery: [] };
 
-test("scene sprites are well-formed grids in the scene palette", () => {
-  for (const [name, grid] of Object.entries(SPRITES)) validateSprite(name, grid);
-  assert.throws(() => validateSprite("bad", ["ab", "a"]));
-  assert.throws(() => validateSprite("bad", ["Z"]));
-});
-
-test("the canvas draws whole cells: one rectangle per run, one path per colour", () => {
-  const c = new Canvas(4, 2).rect(0, 0, 3, 1, "t").set(3, 1, "K");
-  assert.equal(c.paths(), '<path fill="var(--shadow)" d="M3 1h1v1h-1z"/><path fill="var(--tone)" d="M0 0h3v1h-3z"/>');
-  // Out of bounds is ignored, never wraps.
-  assert.equal(new Canvas(2, 2).set(2, 0, "f").set(-1, 1, "f").paths(), "");
-});
-
-test("project scenes: decorative pixel SVG on the 80 x 50 grid, three depth layers, palette only", () => {
+test("card art (Dex 10-19): every project's layers fill its card, back to front, lazily, decorative, and the files exist", () => {
   for (const p of projects) {
-    const html = projectArt(p);
-    assert.match(html, /^<div class="scene [^"]*" data-tilt-scene aria-hidden="true">/);
-    assert.equal(html.match(/class="sc-it[ "]/g)?.length, 3, `${p.id} layers`);
-    assert.equal(html.match(new RegExp(`viewBox="0 0 ${SCENE_W} ${SCENE_H}"`, "g"))?.length, 3);
-    assert.match(html, /shape-rendering="crispEdges"/);
-    assert.doesNotMatch(html, /rotate|skew|gradient|<img|<image/);
-    const fills = new Set(Object.values(SCENE_FILL));
-    for (const [, f] of html.matchAll(/<path fill="([^"]+)"/g)) assert.ok(fills.has(f), `${p.id} fill ${f}`);
-    // Every rectangle starts on a whole cell inside the frame.
-    for (const [, x, y] of html.matchAll(/M(-?\d+) (-?\d+)h/g)) {
-      assert.ok(+x >= 0 && +x < SCENE_W && +y >= 0 && +y < SCENE_H, `${p.id} cell ${x},${y}`);
-    }
+    const html = cardArt(p);
+    assert.match(html, /^<div class="cart" data-tilt-scene aria-hidden="true" style="--aw:\d+;--ah:\d+">/);
+    const imgs = [...html.matchAll(/<img class="cart__l" data-depth="(\d)" src="([^"]+)" alt="" width="(\d+)" height="(\d+)" loading="lazy" decoding="async"/g)];
+    assert.equal(imgs.length, p.art.layers, `${p.id} layers`);
+    assert.ok(p.art.layers >= 2, `${p.id}: layers to pan`);
+    // back to front: the far layer moves least
+    const depths = imgs.map((m) => +m[1]);
+    assert.deepEqual(depths, [...depths].sort((a, b) => a - b), `${p.id} depths rise to the front`);
+    assert.ok(depths[0] < depths[depths.length - 1]);
+    imgs.forEach((m, i) => {
+      assert.equal(m[2], `/site/cards/${p.id}/${i}.png`);
+      assert.ok(existsSync(new URL(`../../public${m[2]}`, import.meta.url)), `${m[2]} exists`);
+      assert.equal(+m[3], p.art.w);
+      assert.equal(+m[4], p.art.h);
+    });
+    assert.match(html, /<span class="cart__shine"><\/span><\/div>$/);
   }
 });
 
@@ -59,8 +51,9 @@ test("landing lists the projects in Dex's order and links each page", () => {
     at = i;
     assert.ok(html.includes(`href="${projectHref(p)}"`));
   }
-  // Every code-drawn scene is labelled as placeholder art.
-  assert.equal(html.match(/Placeholder art/g)?.length, projects.length);
+  // the cards carry their art (no code-drawn placeholder scenes, no "placeholder art" plates)
+  assert.equal(html.match(/<div class="cart" data-tilt-scene/g)?.length, projects.length);
+  assert.doesNotMatch(html, /Placeholder art/i);
 });
 
 test("home cards: every project leads to its page, its docs and the one action that matters", () => {
@@ -94,7 +87,8 @@ test("download state comes from data/downloads.ts, never invented", () => {
 test("no Dex art outside the gallery, and #world only on the root page", () => {
   for (const html of [landing(content), projectsIndex(), ...projects.map(projectPage)]) {
     assert.ok(!/src="\/gallery\//.test(html));
-    assert.ok(!/<img /.test(html));
+    // the only pictures are the projects' own card art
+    for (const [, src] of html.matchAll(/<img [^>]*src="([^"]+)"/g)) assert.match(src, /^\/site\/cards\//);
   }
   for (const html of [projectsIndex(), ...projects.map(projectPage)]) {
     assert.ok(!/href="#world"/.test(html));
@@ -136,7 +130,8 @@ test("home: Dex's art appears only inside the collage", () => {
   assert.ok(start > 0 && end > start);
   const outside = html.slice(0, start) + html.slice(end);
   // (The viewer dialog has two empty <img> slots it fills from the collage.)
-  assert.doesNotMatch(outside.replace(/<img class="viewer__(lo|hi)" alt="" data-viewer-(lo|hi) \/>/g, ""), /<img /);
+  // (and the projects' card art is our own pixel art from /site/cards/, never Dex's)
+  assert.doesNotMatch(outside.replace(/<img class="viewer__(lo|hi)" alt="" data-viewer-(lo|hi) \/>/g, "").replace(/<img class="cart__l" [^>]*src="\/site\/cards\/[^>]*>/g, ""), /<img /);
   assert.doesNotMatch(outside, /(src|srcset)="\/gallery\//);
 });
 

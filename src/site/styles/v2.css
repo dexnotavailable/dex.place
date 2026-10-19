@@ -182,8 +182,6 @@ body { background: #000; color: var(--fg); }
   }
   .band--w > .band__win { height: clamp(240px, 64vw, 520px); }
 }
-/* the project scenes (placeholder art) on a pale sky instead of the dark site's void */
-.scene { --sunk: #e3eff7; --line: #c3d5e3; background: var(--sunk); }
 /* ink-on-ink spots of the dark theme: key cells and tags on ink get white text */
 .spec dt, .pspec dt, .pick--none[aria-pressed="true"] { color: #fff; }
 .qr__tag { background: var(--ink); color: #fff; }
