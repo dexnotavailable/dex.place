@@ -13,6 +13,7 @@ import type { Lighting, Renderer as LabRenderer } from "../lab/engine/renderer.t
 import { Vfx } from "../lab/engine/vfx.ts";
 import { Feel } from "../lab/game/feel.ts";
 import { ART_PX, Zhusha, type MoveWorld } from "./zhusha/controller.ts";
+import { Fx } from "./fx/fx.ts";
 import { ZhushaDraw } from "./zhusha/draw.ts";
 import { NpcDraw } from "./cast/npcs.ts";
 import { makeTarget, type PointLight, type Target, type WorldRenderer } from "../world/render/renderer.ts";
@@ -139,6 +140,9 @@ export class TesuGame {
   /** The cast: white boxes at her drawn height until their 128 px art lands (cast/npcs.ts draws them, not the sprite renderer). */
   readonly npcs: NpcDraw;
   readonly vfx: Vfx;
+  /** (lane C 10-19) World effects as pixel sprite animations (fx/fx.ts, lanes/engine/EFFECTS-CONTRACT.md): main.ts
+   * loads them at start; play one with `game.fx.play(id, { x, y, facing })`. */
+  fx: Fx = Fx.none();
   readonly feel: Feel;
   readonly flags = new Set<string>();
   /** The Prize Court's bouts (the board picks, the champion, the killing blow's download). */
@@ -611,6 +615,7 @@ export class TesuGame {
       this.feel.hitstop--;
       return;
     }
+    this.fx.tick();
     if (this.frozen > 0) this.frozen--;
     const b = this.player.body;
     if (this.opening.drive()) {
@@ -1284,37 +1289,55 @@ export class TesuGame {
    * `c` and `focus` are the camera of the grid it lands on (the frame, the screen-res layer or the zoomed-out actor
    * buffer, see drawActors): planeXf(c, 1) is the play plane's transform there. The renderer's begin() is done.
    */
-  private actorsPass(step: "back" | "art" | "front", c: CamState, focus: [number, number]): void {
+  private actorsPass(step: "back" | "art" | "front", c: CamState, focus: [number, number], split = false): void {
     const r = this.r, s = planeXf(c, 1).s;
+    // (lane C 10-19) `split`: the screen-res layer's passes, where the sprite effects go with her drawing (her art px
+    // at screen res, EFFECTS-CONTRACT.md) instead of with the world-grid back / front steps
     if (step === "back") {
       if (s !== 1) r.setTransform(s, focus);
+      if (!split) this.drawFx(c, focus, "back");
       this.vfx.draw(r as unknown as LabRenderer, "back");
       this.vfx.drawAfterimages(r as unknown as LabRenderer);
       this.drawOfuda(c, true);
     } else if (step === "art") {
       // the cast's boxes (or art), then her: the characters stand in front of the play plane's props (engine 10-18:
       // with her on whichever grid she is drawn, so every character's pixels match hers)
+      if (split) this.drawFx(c, focus, "back");
       r.setTransform(s, focus);
       this.npcs.draw(r, { s, focus, mirror: null }, this.time, false);
       if (s !== 1) r.setTransform(s, focus);
       else r.setTransform();
       this.drawPlayer(c, focus, null);
+      if (split) this.drawFx(c, focus, "front");
     } else {
       this.drawOfuda(c, false);
       if (s !== 1) r.setTransform(s, focus);
+      if (!split) this.drawFx(c, focus, "front");
       this.vfx.draw(r as unknown as LabRenderer, "front");
     }
     r.flush();
     r.setTransform();
   }
 
+  /** (lane C 10-19) The sprite effects of a layer on the play plane's transform of `c` (her art px, her pivot snap). */
+  private drawFx(c: CamState, focus: [number, number], layer: "back" | "front", mirror: number | null = null): void {
+    if (!this.fx.clock.live.length) return;
+    const b = this.player.body, s = planeXf(c, 1).s;
+    this.r.setTransform(s, focus, mirror);
+    this.fx.draw(this.r, { s, focus, mirror }, layer, ART_PX, { x: b.x, y: b.y, facing: this.player.facing }, mirror !== null);
+    this.r.flush();
+  }
+
   /** (engine 10-18) The actors in the lake's reflection target (world res): her drawing (worker 6: the NPCs). */
   private reflActors(c: CamState, focus: [number, number], mirror: number | null, reflection = true): void {
     const s = planeXf(c, 1).s;
+    this.drawFx(c, focus, "back", mirror);
     this.r.setTransform(s, focus, mirror);
     this.npcs.draw(this.r, { s, focus, mirror }, this.time, reflection);
     this.r.setTransform(s, focus, mirror);
     this.drawPlayer(c, focus, mirror);
+    this.drawFx(c, focus, "front", mirror);
+    this.r.setTransform(s, focus, mirror);
   }
 
   /**
@@ -1327,11 +1350,13 @@ export class TesuGame {
   }
 
   /**
-   * (engine 10-18) The actors in the frame pass. Zoomed out (zoom < 1), or where her art px would be under one frame
-   * px (a 1080p screen, lane C 10-19): reduced onto the frame's grid (reducedActors). At play zoom and closer, on a
-   * screen shown at a whole scale k >= 2: her drawing at screen res on its own layer, her effects and the talisman on
-   * the world grid (render/actors.ts); everything drawn after this then goes to the front target, composited over the
-   * actors by the presenter. Else straight onto the frame.
+   * (engine 10-18) The actors in the frame pass. On a screen shown at a whole scale k >= 2 they get their own
+   * screen-res layer (render/actors.ts; everything drawn after them goes to the front target, composited over them by
+   * the presenter): at play zoom and closer her drawing at screen res, her effects and the talisman on the world grid;
+   * zoomed out (lane C 10-19, Dex: "below zoom 1 she and her effects reduce onto HER pixel size, never the world's
+   * 2 px grid") all of them reduced from her art density onto that screen-res layer. At k = 1 (1080p) the screen is
+   * the frame: reduced onto it zoomed out or where her art px would be under one px (reducedActors), else drawn
+   * straight onto it.
    */
   private drawActors(cam: CamState, focus: [number, number], lights: PointLight[]): void {
     const r = this.r, xf = planeXf(cam, 1);
@@ -1340,8 +1365,17 @@ export class TesuGame {
     const camOf = (s: number, offX: number, offY: number, f: [number, number]): [number, number] => [(f[0] * (1 - s) - offX) / s, (f[1] * (1 - s) - offY) / s];
     const [camX, camY] = camOf(xf.s, xf.offX, xf.offY, focus);
     const k = r.presenter.rect.scale;
-    if (ActorLayer.wants(cam.zoom) || (!ScreenActors.wants(k) && this.reduceActors(xf.s, cam.zoom))) {
-      this.reducedActors(cam, r.main, lights, null, (c) => { for (const st of steps) this.actorsPass(st, c, [c.W / 2, c.anchor * c.H]); });
+    const all = (c: CamState): void => { for (const st of steps) this.actorsPass(st, c, [c.W / 2, c.anchor * c.H]); };
+    if (ScreenActors.wants(k) && ActorLayer.wants(cam.zoom)) {
+      // zoomed out on a 2x+ screen: reduced onto her own (screen-res) grid
+      this.screen.begin(r, cam.W, cam.H, k);
+      this.reducedActors(cam, null, lights, null, all);
+      this.screen.end(r);
+      r.begin(camX, camY, DAY, lights);
+      return;
+    }
+    if (!ScreenActors.wants(k) && this.reduceActors(xf.s, cam.zoom)) {
+      this.reducedActors(cam, r.main, lights, null, all);
       r.begin(camX, camY, DAY, lights);
       return;
     }
@@ -1353,9 +1387,9 @@ export class TesuGame {
     const sc = screenCam(cam, xf, k), fs: [number, number] = [focus[0] * k, focus[1] * k];
     const [sx, sy] = camOf(xf.s * k, xf.offX * k, xf.offY * k, fs);
     this.screen.begin(r, cam.W, cam.H, k);
-    this.screen.world(r, () => { r.begin(camX, camY, DAY, lights); this.actorsPass("back", cam, focus); });
-    this.screen.art(r, () => { r.begin(sx, sy, DAY, lights); this.actorsPass("art", sc, fs); });
-    this.screen.world(r, () => { r.begin(camX, camY, DAY, lights); this.actorsPass("front", cam, focus); });
+    this.screen.world(r, () => { r.begin(camX, camY, DAY, lights); this.actorsPass("back", cam, focus, true); });
+    this.screen.art(r, () => { r.begin(sx, sy, DAY, lights); this.actorsPass("art", sc, fs, true); });
+    this.screen.world(r, () => { r.begin(camX, camY, DAY, lights); this.actorsPass("front", cam, focus, true); });
     this.screen.end(r);
     r.begin(camX, camY, DAY, lights);
   }
@@ -1363,10 +1397,11 @@ export class TesuGame {
   /**
    * (engine 10-18) Wider than play zoom (or where her art px would be under one frame px), what moves on the play plane
    * (her, her effects, the talisman) is drawn at her art density into the actor layer (lane C 10-19: one layer px per
-   * art px; `draw` gets the layer's camera), then reduced onto `target` on the frame's grid, the reduction anchored to
-   * her feet (render/reduce.ts). `mirror`: the reflection's waterline row.
+   * art px; `draw` gets the layer's camera), then reduced onto `target` on the frame's grid, or (target null) onto the
+   * screen-res actor layer begun for this frame (her own grid, k x the frame's), the reduction anchored to her feet
+   * (render/reduce.ts). `mirror`: the reflection's waterline row.
    */
-  private reducedActors(cam: CamState, target: Target, lights: PointLight[], mirror: number | null, draw: (c: CamState) => void): void {
+  private reducedActors(cam: CamState, target: Target | null, lights: PointLight[], mirror: number | null, draw: (c: CamState) => void): void {
     const r = this.r, xf = planeXf(cam, 1), b = this.player.body;
     const view = { cx: (cam.W / 2 - xf.offX) / xf.s, cy: (cam.H / 2 - xf.offY) / xf.s };
     const c = this.actors.begin(r, cam, view, [b.x, b.y - H], Math.max(1, 1 / ART_PX));
@@ -1375,8 +1410,13 @@ export class TesuGame {
     r.begin((f[0] * (1 - lx.s) - lx.offX) / lx.s, (f[1] * (1 - lx.s) - lx.offY) / lx.s, DAY, lights);
     draw(c);
     this.actors.end(r);
-    r.bindTarget(target, false);
-    this.actors.composite(cam.W, cam.H, xf, [b.x, b.y], mirror);
+    if (target) {
+      r.bindTarget(target, false);
+      this.actors.composite(cam.W, cam.H, xf, [b.x, b.y], mirror);
+      return;
+    }
+    const k = r.presenter.rect.scale;
+    this.screen.reduced(r, () => this.actors.composite(cam.W * k, cam.H * k, { s: xf.s * k, offX: xf.offX * k, offY: xf.offY * k }, [b.x, b.y], null));
   }
 
   /** The light at a point: neighbouring atmos entries blend across their `blend` widths (atmos-blend.ts). */

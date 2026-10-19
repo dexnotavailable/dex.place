@@ -124,6 +124,16 @@ export class ScreenActors {
     }
   }
 
+  /**
+   * (lane C 10-19) Zoomed out: the actor layer (render/reduce.ts, her art density) is reduced onto this screen-res
+   * layer, her own pixel grid, instead of the world's (`land` binds the layer and composites into it).
+   */
+  reduced(r: WorldRenderer, land: (layer: Target) => void): void {
+    if (!this.layer) return;
+    r.bindTarget(this.layer, false);
+    land(this.layer);
+  }
+
   /** Ends the actors: the front target is bound (cleared clear) for the rest of the frame pass. */
   end(r: WorldRenderer): void {
     if (this.front) r.bindTarget(this.front, true, [0, 0, 0, 0]);

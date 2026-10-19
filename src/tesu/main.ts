@@ -32,6 +32,7 @@ import bake from "virtual:tesu-bake";
 import { adoptWorld, currentWorld } from "./world/current.ts";
 import { SpriteRenderer } from "./render/sprites.ts";
 import { hasPainter } from "./art/painter.ts";
+import { Fx } from "./fx/fx.ts";
 
 /**
  * The fixed keys (GDK 5.4, Appendix B): WASD and the arrows both move from the start;
@@ -150,6 +151,8 @@ async function boot(): Promise<void> {
       return [w, h];
     } : undefined,
   });
+  // (lane C 10-19) the world's sprite effects (public/assets/fx, EFFECTS-CONTRACT.md): loaded beside the game's start
+  void Fx.load(r).then((fx) => { game.fx = fx; });
   // the opening's inputs: in the cinematic Esc skips (the chip's key) and any other input shows the chip;
   // the page's conductor owns both, the world only tells it
   const link = (): OpeningLink | null => (game.opening.state === "cine" ? game.opening.link : null);

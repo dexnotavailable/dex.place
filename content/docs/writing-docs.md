@@ -36,7 +36,7 @@ order: 1
 - `summary` shows under the title on index pages.
 - `date` (posts, `YYYY-MM-DD`) sets the order on the blog. Undated posts are listed as drafts. Never make a date up.
 - `group` (docs) is one of `dexcode`, `dexclient` or `dex-place`.
-- `placeholder: true` marks a page that is still a stand-in: it shows the Placeholder tag, hides the page from search engines and keeps it out of the feed. Leave it out, or set `placeholder: false`, on a finished page.
+- `placeholder: true` marks a page that is still a stand-in. A doc shows the Placeholder tag and is hidden from search engines. A post is not published at all: no page, no place on the blog or in the feed, until the line goes. Leave it out, or set `placeholder: false`, on a finished page.
 
 ### Groups and order
 

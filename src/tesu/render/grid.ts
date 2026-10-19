@@ -104,6 +104,21 @@ export function reduceFootprint(get: (x: number, y: number) => number, luma: (ke
 }
 
 /**
+ * (lane C 10-19) The actor layer's size and density for a frame of W x H at a zoom (render/reduce.ts ActorLayer):
+ * allocated at twice the frame a side at her art density `artD` (capped by the GPU's `max`; fixed per frame size, so a
+ * moving zoom never reallocates it). Density d: her art density when the view fits in the layer at it (nothing of her
+ * dropped); else the density that just covers the view if that is still 1 or more (everything on screen drawn: the
+ * cast, the talisman, effects at the edges); else (very wide) her art density centred on her (`onView` false: what is
+ * further than about a frame from her is left out, as before 10-19).
+ */
+export function actorLayerPlan(W: number, H: number, zoom: number, artD: number, max: number): { w: number; h: number; d: number; onView: boolean } {
+  const w = Math.min(max, Math.ceil(2 * W * artD)), h = Math.min(max, Math.ceil(2 * H * artD));
+  const cover = Math.min(artD, w / (W / zoom), h / (H / zoom));
+  if (cover >= Math.min(1, artD)) return { w, h, d: cover, onView: true };
+  return { w, h, d: artD, onView: false };
+}
+
+/**
  * (lane C 10-19) How the actor layer (render/reduce.ts ActorLayer) lands on a destination grid. The layer holds the
  * play plane at `lay` (scale D layer px per world px: her art density, 1 layer px = 1 of her art px, so nothing of her
  * is dropped drawing into it; whole-px offsets); the destination grid (the frame, or a screen-res layer) shows the play
