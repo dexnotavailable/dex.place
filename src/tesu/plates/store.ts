@@ -6,8 +6,9 @@
 import { TILE } from "../config.ts";
 import type { PlaneRenderer } from "../render/planes.ts";
 import type { PlaneId, WorldDef } from "../world/types.ts";
+import { worldFromJson, type BakeInfo } from "./bake.ts";
 import { PlateIndex, paintTile } from "./paint.ts";
-import { buildWorld } from "../world/index.ts";
+import { currentWorld } from "../world/current.ts";
 
 interface Entry {
   /** Texture layer, or -1 while painting, or -2 when the tile is empty. */
@@ -57,15 +58,46 @@ export interface SpriteDone {
 export interface PlatePool {
   workers: Worker[];
   world: Promise<WorldDef | null>;
+  /** (engine, perf) A worker has said it is up (it may say so before the store listens). */
+  up: { alive: boolean };
+  /** (engine, perf) The world's painted sprites' bounds by sprite id (worker 0 has the painters; the page has not). */
+  bounds: Promise<Record<string, [number, number, number, number]> | null>;
 }
 
-export function startPlateWorkers(n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1))): PlatePool {
+export function startPlateWorkers(n = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1)), bake: BakeInfo | null = null): PlatePool {
   const workers: Worker[] = [];
   try {
     if (typeof Worker === "undefined") throw new Error("no workers");
-    for (let i = 0; i < n; i++) workers.push(new Worker(new URL("./worker.ts", import.meta.url), { type: "module" }));
+    for (let i = 0; i < n; i++) {
+      const w = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+      // (engine, perf) where the build's baked tiles and world are (plates/bake.ts)
+      if (bake?.index || bake?.world) w.postMessage({ bake });
+      workers.push(w);
+    }
   } catch {
-    return { workers: [], world: Promise.resolve(null) };
+    return { workers: [], world: Promise.resolve(null), up: { alive: false }, bounds: Promise.resolve(null) };
+  }
+  const up = { alive: false };
+  for (const w of workers) w.addEventListener("message", (e: MessageEvent<{ alive?: boolean }>) => { if (e.data?.alive) up.alive = true; });
+  const wb = workers[0]!;
+  const bounds = new Promise<Record<string, [number, number, number, number]> | null>((resolve) => {
+    const on = (e: MessageEvent<{ spriteBounds?: Record<string, [number, number, number, number]> }>): void => {
+      if (!e.data?.spriteBounds) return;
+      wb.removeEventListener("message", on);
+      resolve(e.data.spriteBounds);
+    };
+    wb.addEventListener("message", on);
+    wb.addEventListener("error", () => resolve(null), { once: true });
+    wb.postMessage({ bounds: true });
+  });
+  // (engine, perf) the baked world: fetched and parsed here (a few ms), no worker build to wait for
+  if (bake?.world) {
+    const url = bake.world;
+    const world = fetch(url).then((r) => (r.ok ? r.text() : Promise.reject(new Error(`${r.status}`)))).then((t) => {
+      performance.mark("tesu:world-built");
+      return worldFromJson(t);
+    }).catch(() => null);
+    return { workers, world, up, bounds };
   }
   const w0 = workers[0]!;
   const world = new Promise<WorldDef | null>((resolve) => {
@@ -84,7 +116,7 @@ export function startPlateWorkers(n = Math.max(1, Math.min(4, (navigator.hardwar
     w0.addEventListener("error", onErr);
     w0.postMessage({ world: true });
   });
-  return { workers, world };
+  return { workers, world, up, bounds };
 }
 
 export class TileStore {
@@ -97,6 +129,14 @@ export class TileStore {
   private sprQueue: { job: SpriteJob; done: (r: SpriteDone | null) => void }[] = [];
   private sprWait = new Map<string, (r: SpriteDone | null) => void>();
   sprInFlight = 0;
+  /** (engine, perf) The world's painters are loaded on this page (sync painting); set at once in sync mode. */
+  private paintersHere = false;
+  private loadingPainters: Promise<void> | null = null;
+  /** (engine, perf) A worker has said it is up. */
+  private up: { alive: boolean } = { alive: false };
+  /** (engine, perf) The bake check (?bakecheck): baked tiles equal to the painted ones, and different. */
+  bakeSame = 0;
+  bakeDiff = 0;
   sprPainted = 0;
   sprMs = 0;
   private index: PlateIndex | null = null;
@@ -130,13 +170,15 @@ export class TileStore {
     if (!this.sync) {
       try {
         const spawned = opts.pool?.workers.length ? opts.pool.workers : null;
+        if (opts.pool) this.up = opts.pool.up;
         for (let i = 0; i < (spawned ? spawned.length : n); i++) {
           const w = spawned ? spawned[i]! : new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
           const slot = { w, busy: 0 };
-          w.onmessage = (e: MessageEvent<{ key: string; px?: ArrayBuffer | null; ms: number; sprite?: true; rgba?: ArrayBuffer | null; w?: number; h?: number; ax?: number; ay?: number }>) => {
+          w.onmessage = (e: MessageEvent<{ key: string; px?: ArrayBuffer | null; ms: number; chk?: number; sprite?: true; rgba?: ArrayBuffer | null; w?: number; h?: number; ax?: number; ay?: number }>) => {
             const d = e.data;
-            // (the world handed over at boot: startPlateWorkers' own message)
+            // (the world handed over at boot: startPlateWorkers' own message; a worker saying it is up)
             if (d && "world" in d) return;
+            if (d && ("alive" in d || "spriteBounds" in d)) return;
             slot.busy--;
             if (d.sprite) {
               this.sprInFlight--;
@@ -148,7 +190,11 @@ export class TileStore {
               return;
             }
             this.inFlight--;
+            if (d.chk) { if (d.chk > 0) this.bakeSame++; else this.bakeDiff++; }
             this.finish(d.key, d.px ? new Uint8Array(d.px) : null, d.ms);
+            // (engine, perf) the worker that answered gets the next job now, not at the next frame: a slow or
+            // throttled frame (a weak GPU, a frame out of view) no longer leaves the workers idle between frames
+            this.feed(slot);
           };
           w.onerror = (e) => console.error("plate worker", e.message);
           this.workers.push(slot);
@@ -158,10 +204,12 @@ export class TileStore {
       }
     }
     if (!this.workers.length) this.sync = true;
+    // (sync from the start: main.ts built the world here, with its painters)
+    this.paintersHere = this.sync;
   }
 
   private idx(): PlateIndex {
-    if (!this.index) this.index = new PlateIndex(buildWorld());
+    if (!this.index) this.index = new PlateIndex(currentWorld());
     return this.index;
   }
 
@@ -337,7 +385,9 @@ export class TileStore {
 
   /** Workers that never answer (a blocked module worker) hand over to the main thread. */
   private watchdog(): void {
-    if (this.sync || !this.firstSend || this.painted > 0 || performance.now() - this.firstSend < 4000) return;
+    // (engine, perf) a worker that is up but still fetching or painting is not a dead one: with the bake the first
+    // tile can wait on its pack over a slow line, so only workers that never started count
+    if (this.sync || !this.firstSend || this.painted > 0 || this.up.alive || performance.now() - this.firstSend < 4000) return;
     console.warn("plate workers did not answer; painting on the main thread");
     for (const s of this.workers) s.w.terminate();
     this.workers = [];
@@ -350,6 +400,20 @@ export class TileStore {
     this.sprInFlight = 0;
     for (const done of waiting) done(null);
     for (const [k, e] of this.entries) if (e.layer === -1 && !this.queue.has(k)) this.entries.delete(k);
+  }
+
+  /** (engine, perf) One worker's next job: the queued tile with the best priority (a scan, no sort). */
+  private feed(slot: { w: Worker; busy: number }): void {
+    if (this.sync || slot.busy >= 2 || !this.queue.size || this.sprQueue.length) return;
+    let best: Job | null = null;
+    for (const j of this.queue.values()) if (!best || j.pri < best.pri) best = j;
+    if (!best) return;
+    const e = this.entries.get(best.key);
+    if (!e) { this.queue.delete(best.key); return; }
+    this.queue.delete(best.key);
+    slot.busy++;
+    this.inFlight++;
+    slot.w.postMessage({ key: best.key, plane: best.plane, level: best.level, tx: best.tx, ty: best.ty });
   }
 
   /** Sends queued jobs to idle workers (or paints within a budget on the main thread). */
@@ -390,6 +454,11 @@ export class TileStore {
     if (!this.queue.size) return;
     const jobs = [...this.queue.values()].sort((a, b) => a.pri - b.pri);
     if (this.sync) {
+      // (engine, perf) the page loads the world's painters only when it paints itself (the workers stopped)
+      if (!this.paintersHere) {
+        this.loadingPainters ??= import("../world/index.ts").then(() => { this.paintersHere = true; });
+        return;
+      }
       const t0 = performance.now();
       for (const j of jobs) {
         if (performance.now() - t0 > budgetMs) break;
@@ -428,7 +497,7 @@ export class TileStore {
       if (e.layer >= 0) used++;
       else if (e.layer === -2) empty++;
     }
-    return `tiles ${used}/${this.byLayer.length} empty ${empty} queue ${this.queue.size} busy ${this.inFlight} painted ${this.painted} (${(this.paintMs / Math.max(1, this.painted)).toFixed(1)} ms) evicted ${this.evicted}${this.keepSpan.size ? ` kept ${this.keptLayers()}/${this.keepSpan.size}` : ""} sprites ${this.sprPainted} (${(this.sprMs / Math.max(1, this.sprPainted)).toFixed(1)} ms)`;
+    return `tiles ${used}/${this.byLayer.length} empty ${empty} queue ${this.queue.size} busy ${this.inFlight} painted ${this.painted} (${(this.paintMs / Math.max(1, this.painted)).toFixed(1)} ms) evicted ${this.evicted}${this.keepSpan.size ? ` kept ${this.keptLayers()}/${this.keepSpan.size}` : ""} sprites ${this.sprPainted} (${(this.sprMs / Math.max(1, this.sprPainted)).toFixed(1)} ms)${this.bakeSame + this.bakeDiff ? ` baked-check ${this.bakeSame} same ${this.bakeDiff} different` : ""}`;
   }
 }
 

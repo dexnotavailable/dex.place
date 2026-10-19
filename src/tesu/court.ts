@@ -15,8 +15,8 @@ import { overlap, type WorldBox } from "../lab/game/events.ts";
 import type { Zhusha as Player } from "./zhusha/controller.ts";
 import { downloads, type DownloadEntry, type DownloadFile } from "../site/data/downloads.ts";
 import { H } from "./config.ts";
-import { gongFrame } from "./art/library/hall/index.ts";
-import { BAO_X, GONG_X, LION_X, RING_X0, RING_X1 } from "./world/sections/court.ts";
+import { gongFrame } from "./art/library/hall/gong.ts";
+import { BAO_X, GONG_X, LION_X, RING_X0, RING_X1 } from "./world/sections/court-marks.ts";
 import type { SpriteDef } from "./world/types.ts";
 
 /** What a bout wins: the product picked on the board and the file its download is. */

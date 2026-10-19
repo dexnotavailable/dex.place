@@ -29,6 +29,7 @@ import { Sound } from "./sound.ts";
 import { placeAt, THEME_FADE } from "./region-music.ts";
 import { CHARM_PERCH, H, INTERIOR_Y, PHYSICS, TILE } from "./config.ts";
 import { TileStore, type PlatePool } from "./plates/store.ts";
+import { levelOfPlane, openingTiles, tileSpanOf } from "./plates/span.ts";
 import type { ZhushaAssets } from "./player.ts";
 import { Atmos, waterHolds, type MistBand, type SkyGlow } from "./render/atmos.ts";
 import { Motes } from "./render/motes.ts";
@@ -36,11 +37,11 @@ import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
 import { SilentLink, type OpeningLink } from "./opening/conductor.ts";
 import { HAT_TIE, Ofuda, type OfudaPose } from "./opening/ofuda.ts";
-import { BEATS, cameraAt, herXH } from "./opening/timeline.ts";
+import { BEATS } from "./opening/timeline.ts";
 import { Titles } from "./title.ts";
 import { PlaneRenderer, type PlaneLook, type TileQuad } from "./render/planes.ts";
-import { eyeY, levelFor, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
-import { buildWorld } from "./world/index.ts";
+import { eyeY, planeLevels, planeXf, rowOf, type CamState } from "./render/view.ts";
+import { currentWorld } from "./world/current.ts";
 import { isReload, loadSave, resumePlace, writeSave, type TesuSave } from "./save.ts";
 import { PLANES, PLANE_IDS, type CharmDef, type Atmos as AtmosDef, type PlaneId, type SpriteDef, type Spawn, type Usable, type Water, type WorldDef } from "./world/types.ts";
 
@@ -185,7 +186,8 @@ export class TesuGame {
   private shown = false;
 
   constructor(readonly r: WorldRenderer, input: Input, assets: ZhushaAssets, opts: TesuOpts) {
-    this.world = buildWorld();
+    // (engine, perf) adopted at boot (main.ts): the bake's, a worker's, or built there when neither
+    this.world = currentWorld();
     this.collision = new Collision(this.world.walks, this.world.walls);
     this.collision.minX = 0;
     this.collision.maxX = this.world.w;
@@ -837,47 +839,9 @@ export class TesuGame {
     const [W, Hf] = this.openingFrame();
     const reduced = this.feel.reducedMotion;
     const cam = BEATS.camera, ui = BEATS.ui;
-    // per tile, the runs of T it is on screen (a far plane's tile in the drift may come back in the ease-in)
-    const span = new Map<string, { id: PlaneId; lv: number; tx: number; ty: number; runs: [number, number][] }>();
-    let most = 0;
-    // every quarter second (and the beats' own moments: the widest frame's first tick, the skip's landing)
-    const times: number[] = [];
-    for (let T = 0; T <= ui.handBack + 1e-6; T += 0.25) times.push(T);
-    times.push(cam.widest.from + 0.02, ui.skipTo);
-    times.sort((a, b) => a - b);
-    // the ground along her hands-free path, walked from the catch spot (the ground under x near where she is
-    // then: the terrace is above the shore she starts from, so "the ground below her now" would be the wrong one)
-    const x0 = BEATS.her.catchXH * H, step = H / 4;
-    const spawn = this.world.spawns.find((sp) => sp.id === "catch")!;
-    const prof: number[] = [];
-    let gy = this.collision.groundBelow(x0, spawn.y - 2 * H)?.y ?? spawn.y;
-    for (let x = x0; x <= (BEATS.her.stopXH + 6) * H; x += step) {
-      gy = this.collision.groundBelow(x, gy - 2 * H)?.y ?? gy;
-      prof.push(gy);
-    }
-    const groundAt = (x: number): number => prof[Math.max(0, Math.min(prof.length - 1, Math.round((x - x0) / step)))]!;
-    for (const T of times) {
-      const x = herXH(T) * H;
-      const shot = cameraAt(T, { x, W, H: Hf, reveal: (v) => this.trackFraming(v, true, groundAt(v)), world: (v) => this.trackFraming(v, false, groundAt(v)), reduced });
-      if (!shot) continue;
-      const c: CamState = { cx: shot.cx, cy: groundAt(x), zoom: shot.zoom, anchor: shot.anchor, horizon: shot.horizon, W, H: Hf };
-      let n = 0;
-      for (const id of PLANE_IDS) {
-        if (id === "near" && c.zoom > 1.6) continue;
-        const sp = this.tileSpan(c, id, this.levelOf(c, id), 0, Hf);
-        for (let ty = sp.ty0; ty <= sp.ty1; ty++) {
-          for (let tx = sp.tx0; tx <= sp.tx1; tx++, n++) {
-            const k = `${id}|${sp.level}|${tx}|${ty}`;
-            const t = span.get(k);
-            const run = t?.runs[t.runs.length - 1];
-            if (run && T - run[1] <= 0.25 + 1e-6) run[1] = T;
-            else if (t) t.runs.push([T, T]);
-            else span.set(k, { id, lv: sp.level, tx, ty, runs: [[T, T]] });
-          }
-        }
-      }
-      most = Math.max(most, n);
-    }
+    // per tile, the runs of T it is on screen (a far plane's tile in the drift may come back in the ease-in);
+    // (engine, perf) shared with the build's bake (plates/span.ts), so both name the same tiles
+    const { span, most } = openingTiles(this.world, this.collision, W, Hf, reduced, this.levels, (f) => this.flags.has(f));
     // what "continue" waits for, in this order: the widest frame, the drift, the skip's landing; then (streamed
     // while it runs, as the store has room) the whip-out (from the walk on: two seconds are too few to paint it),
     // the walk and the ease back in (each four seconds ahead: the walk is slow, the ease follows a four-second
@@ -1362,17 +1326,12 @@ export class TesuGame {
    */
   /** The plate level a plane is drawn at for this camera. */
   private levelOf(cam: CamState, id: PlaneId): number {
-    const xf = planeXf(cam, PLANES[id].rate);
-    return levelFor(this.levels.get(id)!, xf.g) / (cam.zoom >= 1.9 && (id === "sky" || id === "far" || id === "mid" || id === "back") ? 2 : 1);
+    return levelOfPlane(cam, id, this.levels.get(id)!);
   }
 
   /** The tiles of a plane at level lv covering frame rows [ya, yb). */
   private tileSpan(cam: CamState, id: PlaneId, lv: number, ya: number, yb: number): { level: number; tx0: number; tx1: number; ty0: number; ty1: number } {
-    const xf = planeXf(cam, PLANES[id].rate);
-    const k = xf.g / lv;
-    const ax0 = (0 - xf.offX) / k, ax1 = (cam.W - xf.offX) / k;
-    const ay0 = (ya - xf.offY) / k, ay1 = (yb - xf.offY) / k;
-    return { level: lv, tx0: Math.floor(ax0 / TILE), tx1: Math.floor((ax1 - 1e-6) / TILE), ty0: Math.floor(ay0 / TILE), ty1: Math.floor((ay1 - 1e-6) / TILE) };
+    return tileSpanOf(cam, id, lv, ya, yb);
   }
 
   private planeQuads(cam: CamState, id: PlaneId, ya: number, yb: number, a: AtmosDef, prefetch: boolean): PlaneDraw {
