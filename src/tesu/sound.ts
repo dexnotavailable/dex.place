@@ -42,6 +42,8 @@ interface Cue {
   with?: string[];
   /** Dips the music (dB) and the other effects (half that) while it hits: the big hits. */
   duck?: number;
+  /** A take played as recorded: no rate jitter (its timing is a chart's: the opening's speech), and a skip stops it. */
+  exact?: boolean;
 }
 
 /** A legacy library file (world/sfx, not vetted yet). */
@@ -151,7 +153,7 @@ export const CUES: Record<string, Cue> = {
   ...Object.fromEntries([1, 2, 3, 4, 5].map((i) => [`op.tight${i}`, opening([`tight${i}`], 1)])),
   // the whole speech as ONE continuous take (Dex 10-20: "it sounds so weird stitching sentences together"), mixed
   // through the voice chain; its alignment and the start that lands the slap in its pause: public/audio/opening/speech.json
-  "op.speech": opening(["speech"], 1),
+  "op.speech": opening(["speech"], 1, 1, { exact: true }),
 };
 
 /** The hit's weight comes as its volume (the controller's afterHits: light 0.6, heavier 1): heavier hits sound heavy. */
@@ -435,7 +437,7 @@ export class Sound {
       if (!buf || !this.sfxBus || ctx.currentTime - asked > (at === null ? 0.25 : 0.06)) return;
       const s = ctx.createBufferSource();
       s.buffer = buf;
-      s.playbackRate.value = cue.rate * (0.96 + Math.random() * 0.08);
+      s.playbackRate.value = cue.exact ? cue.rate : cue.rate * (0.96 + Math.random() * 0.08);
       const g = ctx.createGain();
       g.gain.value = cue.vol * volume;
       s.connect(g);
@@ -447,11 +449,14 @@ export class Sound {
         this.musicDuck?.duck(cue.duck, t, t + len, 0.02, 1.2);
         this.sfxDuck?.duck(cue.duck / 2, t + 0.05, t + len * 0.5, 0.02, 0.6);
       }
-      // (the opening) scheduled ahead on the music's clock: a skip can still drop it before it starts
-      if (t > ctx.currentTime + 0.005) {
-        this.ahead.push({ s, t });
-        s.onended = () => { this.ahead = this.ahead.filter((a) => a.s !== s); };
-      }
+      // (the opening) scheduled ahead on the music's clock: a skip can still drop it before it starts (and a take, once
+      // it speaks, stops on a skip)
+      if (t > ctx.currentTime + 0.005) this.ahead.push({ s, t });
+      if (cue.exact) this.takes.push({ s, g });
+      s.onended = () => {
+        this.ahead = this.ahead.filter((a) => a.s !== s);
+        this.takes = this.takes.filter((a) => a.s !== s);
+      };
     });
   }
 
@@ -564,8 +569,9 @@ export class Sound {
   }
 
   private ahead: { s: AudioBufferSourceNode; t: number }[] = [];
+  private takes: { s: AudioBufferSourceNode; g: GainNode }[] = [];
 
-  /** Drops the effects scheduled ahead that have not started yet (the opening's skip). */
+  /** Drops the effects scheduled ahead that have not started yet, and fades out a take still speaking (the opening's skip). */
   cancelAhead(): void {
     const ctx = this.ctx;
     const now = ctx?.currentTime ?? Infinity;
@@ -575,6 +581,13 @@ export class Sound {
       }
     }
     this.ahead = [];
+    if (ctx) {
+      for (const k of this.takes) {
+        k.g.gain.setTargetAtTime(0, now, 0.04);
+        try { k.s.stop(now + 0.2); } catch { /* already stopped */ }
+      }
+    }
+    this.takes = [];
   }
 
   /** The ambience beds' level (1 = as set), reached over `secs` (the opening's hush ducks them). */

@@ -396,11 +396,11 @@ export interface VoiceLine {
   parts: { from: number; to: number; jp: string; en: string }[];
 }
 
-/** Her lines on T (the chart's `voice`). */
-export const VOICE: readonly VoiceLine[] = BEATS.voice.lines.map((l) => ({
-  n: l.n, cue: l.cue, at: l.at, len: l.len, from: l.at + l.speech[0], to: l.at + l.speech[1],
-  parts: l.parts.map((p) => ({ from: l.at + p.from, to: l.at + p.to, jp: p.jp, en: p.en })),
-}));
+/** Her lines on T (the chart's `voice`: one take, its lines' parts in file seconds from `take.at`). */
+export const VOICE: readonly VoiceLine[] = BEATS.voice.lines.map((l) => {
+  const k = BEATS.voice.take, parts = l.parts.map((p) => ({ from: k.at + p.from, to: k.at + p.to, jp: p.jp, en: p.en }));
+  return { n: l.n, cue: k.cue, at: k.at, len: k.len, from: parts[0]!.from, to: parts[parts.length - 1]!.to, parts };
+});
 
 /** A subtitle shows from just before its words to a moment after them (never over the next one). */
 export const SUB_LEAD = 0.1, SUB_TAIL = 0.45;

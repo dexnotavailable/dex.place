@@ -5,6 +5,7 @@
 // clock, the "continue" rules, the effects booked ahead and the plate store's keep (unchanged).
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { BEATS, CLIP_AT, CLIP_END, HANDOFF_T, VOICE, barsAt, beatAt, cameraAt, captionAt, centreOf, clipAt, herPhase, herSpeedH, herXH, keysAt, mixShot, monotone, nextBarLine, paperBlendAt, paperLensAt, paperScreenAt, setStartZoom, startT, subtitleAt, widestShot } from "./opening/timeline.ts";
 import { Opening } from "./opening.ts";
 import { TileStore } from "./plates/store.ts";
@@ -22,7 +23,7 @@ const WINDOWS = [[1280, 720], [1366, 768], [1536, 864], [1920, 1080], [1920, 912
 const BARS = BEATS.ui.bars.vh / 100;
 const camAt = (T, extra = {}) => cameraAt(T, { x: herXH(T) * H, W: 1280, H: 720, world, ...extra });
 
-test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift into it; her lines 1-5 in the calm, line 6 after the slap", () => {
+test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift into it; her lines 1-5 in the calm, line 6 after the slap", async () => {
   near(BEATS.her.clip.slap, BEATS.bars[9], 1e-9, "the slap on bar 9");
   assert.equal(Math.floor(BEATS.her.clip.slap), 18);
   near(BEATS.title.at, BEATS.bars[16], 1e-9, "TESU on bar 16");
@@ -32,8 +33,9 @@ test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift
   near(BEATS.her.drop1, BEATS.bars[14], 1e-9, "drop 1");
   near(BEATS.camera.whip.from, BEATS.bars[15], 0.001, "the whip on the crash");
   near(BEATS.camera.whip.to, BEATS.title.at, 0.001, "the whip lands on 0:32");
-  // her voice (Dex's takes, 10-19; the shorter wording): lines 1-5 speak in the calm, one at a time with a breath
-  // between; line 6 (the joke) is set up before the slap and the slap lands in its pause; the hat comes up on its えへへ
+  // her voice, ONE take (Dex 10-20: "stitching sentences together sounds weird"): lines 1-5 speak in the calm, one at a
+  // time with a breath between; line 6 (the joke) is set up before the slap and the slap lands in its pause; the hat
+  // comes up on its えへへ
   const v = VOICE, slap = BEATS.her.clip.slap;
   assert.equal(v.length, 6);
   assert.ok(v[0].from >= 0.2, "line 1 after the press's gust");
@@ -42,14 +44,32 @@ test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift
   const six = v[5], setup = six.parts[0], punch = six.parts[1];
   assert.ok(setup.to < slap && punch.from > slap + 0.5, "the slap lands in line 6's pause, the punch after it");
   assert.ok(setup.to <= slap - 0.2, "a beat between the set-up and the slap");
-  const l6 = BEATS.voice.lines[5];
-  near(BEATS.her.clip.push, l6.at + l6.push, 1e-6, "the push-up on the えへへ");
-  assert.ok(BEATS.her.clip.push > punch.from, "the hat still jammed through the punch");
-  // every line is the game's own cue, booked on the music's clock at its start; the files play whole
-  for (const l of BEATS.voice.lines) {
-    assert.ok(BEATS.sfx.some((c) => c.id === l.cue && Math.abs(c.T - l.at) < 1e-9), `line ${l.n} booked (${l.cue})`);
-    assert.ok(l.speech[0] >= 0 && l.speech[1] <= l.len && l.parts.every((p) => p.jp && p.en && p.from >= 0 && p.to <= l.len), `line ${l.n}`);
-  }
+  const ehehe = six.parts[2];
+  assert.equal(ehehe.jp, "えへへ。");
+  near(BEATS.her.clip.push, ehehe.from, 1e-3, "the push-up on the えへへ");
+  assert.ok(BEATS.her.clip.push > punch.to, "the hat still jammed through the punch");
+  assert.ok(BEATS.camera.keys.some((k) => Math.abs(k.T - CLIP_END) < 1e-3 && k.zoom === 2 && !k.follow), "the close band ends as the push-up does");
+  assert.ok(BEATS.camera.reduced.some((r) => Math.abs(r.from - CLIP_END) < 1e-3 && r.hold === "follow"), "(reduced motion: cut to the follow then)");
+  near(BEATS.sfx.find((c) => c.id === "op.brim").T, BEATS.her.clip.push, 1e-9, "the brim's sound on the push-up");
+  // the take is the game's own cue, booked once on the music's clock at its start, played whole; its lines are lane
+  // D's alignment (speech.json parts) as they are
+  const k = BEATS.voice.take;
+  assert.deepEqual(BEATS.sfx.filter((c) => c.id === k.cue).map((c) => c.T), [k.at], "booked once");
+  assert.ok(!BEATS.sfx.some((c) => /^op\.(tight|line)\d/.test(c.id)), "the stitched lines are gone");
+  const sp = JSON.parse(readFileSync(new URL("../../public/audio/opening/speech.json", import.meta.url), "utf8"));
+  near(k.at, sp.start, 1e-9, "D's start");
+  assert.equal(k.cue, sp.cue);
+  const ours = BEATS.voice.lines.flatMap((l) => l.parts);
+  assert.equal(ours.length, sp.parts.length);
+  sp.parts.forEach((p, i) => {
+    assert.deepEqual([ours[i].from, ours[i].to, ours[i].jp, ours[i].en], [p.start, p.end, p.jp, p.en], `part ${p.part}`);
+    assert.ok(p.end <= k.len, `part ${p.part} inside the file`);
+  });
+  near(slap - k.at, (sp.pause[0] + sp.pause[1]) / 2, (sp.pause[1] - sp.pause[0]) / 2, "the slap inside the take's pause");
+  // played as recorded (no rate jitter: the subtitles and the slap ride its timing), stopped by a skip
+  const { CUES } = await import("./sound.ts");
+  assert.equal(CUES[k.cue].exact, true);
+  assert.equal(CUES[k.cue].rate, 1);
   assert.ok(!v.some((x) => x.parts.some((p) => /Emperor|letter|court/i.test(p.en))), "the old letter is gone");
   // the subtitles: the words being spoken (Japanese + English), none at the press, the punch hidden until it is said
   assert.equal(subtitleAt(0), null);
