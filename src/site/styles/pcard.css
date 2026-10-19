@@ -169,6 +169,63 @@
   .pcard__plate, .pcard__link::after, .pcard__float { transition: none; }
 }
 
+/* ---- motion (motion/pcard.ts drives the entrance, the pointer and the scroll-speed skew; the idle loops are here, on
+   the compositor; .is-off = off screen or paused by the page: they hold still) */
+.pcard__tilt { will-change: transform; }
+/* the name's characters for the entrance, each in the name's mask; the link keeps its words for screen readers */
+.pcard__nm { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.15em; margin-bottom: -0.15em; }
+.pcard__ch { display: inline-block; white-space: pre; }
+.pcard__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* the others dim while one card is pointed at */
+.pcard::before { content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none; background: var(--ink); opacity: 0; transition: opacity 300ms cubic-bezier(.33, 1, .68, 1); }
+@media (hover: hover) and (pointer: fine) {
+  [data-pcards]:has(.pcard__float:hover) .pcard__float:not(:hover) .pcard::before { opacity: 0.22; }
+}
+.pcard__main--arrow { --nx: 2px; --ny: 0; }
+.pcard__main--download { --nx: 0; --ny: 2px; }
+.pcard__main--up { --nx: 0; --ny: -2px; }
+@media (prefers-reduced-motion: no-preference) {
+  /* idle: the card floats (+-5 px, phones +-3, 6.4 s) and wobbles a little in depth (a slow precession, +-0.8 / 1.2deg
+     with a +-0.25deg roll), each card out of phase */
+  .pcard__float {
+    --fl: 5px;
+    animation:
+      pcard-float 6.4s ease-in-out calc(var(--i, 0) * -2.1s) infinite,
+      pcard-wobble 10.5s linear calc(var(--i, 0) * -3.4s) infinite;
+  }
+  @media (max-width: 699px) {
+    .pcard__float { --fl: 3px; }
+  }
+  /* the CTA's pixel icon nudges a whole art pixel now and then, card to card 1.1 s apart */
+  .pcard__main .btn__ic { animation: pcard-nudge 3.2s step-end calc(var(--i, 0) * 1.1s) infinite; }
+  /* touch screens: the card tilts with the scroll as it crosses the screen (no script) */
+  @media (hover: none) {
+    @supports (animation-timeline: view()) {
+      .pcard__tilt { animation: pcard-scroll-tilt linear both; animation-timeline: view(); }
+    }
+  }
+  .pcard__in.is-off :is(.pcard__float, .rig__p, .rig__l, .cart__shine, .btn__ic) { animation-play-state: paused; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pcard::before { transition: none; }
+}
+@keyframes pcard-float {
+  0%, 100% { translate: 0 calc(var(--fl) * -1); }
+  50% { translate: 0 var(--fl); }
+}
+@keyframes pcard-wobble {
+  0%, 100% { rotate: 0 1 0.21 1.22deg; }
+  25% { rotate: 1 0 0 0.8deg; }
+  50% { rotate: 0 -1 -0.21 1.22deg; }
+  75% { rotate: -1 0 0 0.8deg; }
+}
+@keyframes pcard-nudge {
+  0%, 86% { translate: 0 0; }
+  87%, 93% { translate: var(--nx) var(--ny); }
+  94%, 100% { translate: 0 0; }
+}
+@keyframes pcard-scroll-tilt { from { transform: rotateX(5deg); } to { transform: rotateX(-5deg); } }
+
 /* ---- the art (render/cardart.ts), back to front inside .cart (clipped): the art box (.cart__art: the rig's back
    parts, the giant numeral, the figure and front fx), the foot scrim, the glare, the shine. Plain layers (a card with
    no rig yet) are blown up by a whole number of pixels to cover the card (CSS round()). */
@@ -206,13 +263,15 @@
 }
 /* the foot scrim: the words sit on it (>= 4.5:1) */
 .cart__scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgb(43 34 51 / 0.94) 0, rgb(43 34 51 / 0.72) 26%, transparent 48%); }
-/* the glare: a soft light at the pointer (motion/pcard.ts moves --mx / --my on this element and fades it in) */
+/* the glare: a soft light at the pointer (motion/pcard.ts moves this twice-the-card layer under the pointer and fades
+   it in: a transform, never a repaint) */
 .cart__glare {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgb(255 255 255 / 0.22), transparent 50%);
+  inset: -50%;
+  background: radial-gradient(circle at 50% 50%, rgb(255 255 255 / 0.22), transparent 25%);
   mix-blend-mode: soft-light;
   opacity: 0;
+  pointer-events: none;
 }
 /* the shine: a 115deg sweep, an 18% band of white, swept across on hover (here) and in turns / on arrival
    (motion/pcard.ts); smooth on the vector finish, in pixel steps on the pixel one */
@@ -225,6 +284,10 @@
   transform: translateX(-100%);
 }
 html[data-cardfinish="pixel"] .cart__shine { --shine-t: steps(12, end); }
+@media (prefers-reduced-motion: no-preference) {
+  /* idle: one sweep, taking turns card to card (1.1 s every 8 s, 2.7 s apart) */
+  .cart__shine { animation: cart-shine-turn 8s var(--shine-t) calc(var(--i, 0) * 2.7s + 1.5s) infinite; }
+}
 @media (prefers-reduced-motion: no-preference) and (hover: hover) {
   .pcard__float:hover .cart__shine { animation: cart-shine 700ms var(--shine-t) 1 both; }
 }
@@ -232,6 +295,7 @@ html[data-cardfinish="pixel"] .cart__shine { --shine-t: steps(12, end); }
   .cart__shine { display: none; }
 }
 @keyframes cart-shine { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@keyframes cart-shine-turn { 0% { transform: translateX(-100%); } 13.75%, 100% { transform: translateX(100%); } }
 @keyframes cart-drift { from { translate: calc(var(--pd) * -0.8px) 0; } to { translate: calc(var(--pd) * 0.8px) 0; } }
 
 /* ---- the rigged art (render/cardart.ts .cart--rig: the card-art lane's parts as webp layers + rig.json). The art box
@@ -255,6 +319,12 @@ html[data-cardfinish="pixel"] .cart__shine { --shine-t: steps(12, end); }
 .cart--px .rig__p { image-rendering: pixelated; }
 .rig__px { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
 .cart[data-rigged="pixel"] .rig__box { visibility: hidden; }
+/* the line art for the entrance (motion/pcard.ts loads <rig>/lines.svg into a box over the colour, one svg per part):
+   ink lines on paper, hidden at rest and never there without the script */
+.cart__paper { position: absolute; inset: 0; background: #f7f3ec; opacity: 0; visibility: hidden; }
+.rig__lines { pointer-events: none; }
+.rig__ln { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; opacity: 0; visibility: hidden; }
+.rig__ln path { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 2; }
 /* the pop part: drawn again outside the clip (render/cardart.ts popArt), so the character steps out of her frame */
 .pcard__pop { position: absolute; inset: 0; z-index: 4; container-type: size; pointer-events: none; }
 .pcard__pop .cart__art { position: absolute; inset: 0; }

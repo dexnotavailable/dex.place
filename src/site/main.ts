@@ -77,7 +77,9 @@ const steps: [string, () => void][] = [
   // the project cards' own motion (motion/pcard.ts, lane K) on the pages without the home's choreography (/projects/,
   // a project's page: "Other projects"), own chunk; on the home page the choreography drives the deck
   ["cards", () => {
-    const lists = document.querySelectorAll<HTMLElement>('[data-pcards="page"]');
+    // (?cards-debug: the home deck too, for lane K's captures before the choreography lands; window.__deck)
+    const debug = new URLSearchParams(location.search).has("cards-debug");
+    const lists = document.querySelectorAll<HTMLElement>(debug ? "[data-pcards]" : '[data-pcards="page"]');
     if (!lists.length) return;
     import("./motion/pcard.ts").then((m) => {
       for (const ul of lists) m.initCards(ul, { reduced: reduced.matches, fine: fine.matches }).settle();

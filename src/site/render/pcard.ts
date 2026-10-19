@@ -77,6 +77,7 @@ function card(p: Project, i: number, level: 2 | 3, here: "home" | "page"): strin
   const small = (label: string, ic: "book", to: string): string =>
     `<a class="btn btn--paper btn--s btn--icon pcard__docs" href="${esc(to)}" aria-label="${esc(`${p.name} ${label.toLowerCase()}`)}" title="${label}"><span class="btn__ic">${icon(ic, 2)}</span></a>`;
   const state = stateText(p);
+  const act = primaryAction(p, "m", here);
   return (
     `<li class="pcards__it" data-pcard="${p.id}" data-reveal style="--i:${Math.min(i, 5)}">` +
     `<div class="pcard__in" data-tone="${p.tone}"><div class="pcard__tilt"><div class="pcard__float">` +
@@ -94,7 +95,7 @@ function card(p: Project, i: number, level: 2 | 3, here: "home" | "page"): strin
     (state ? `<p class="pcard__state">${esc(state)}</p>` : "") +
     `<p class="pcard__line">${esc(p.line)}</p>` +
     `<div class="pcard__acts">` +
-    button({ ...primaryAction(p, "m", here), className: "pcard__main" }) +
+    button({ ...act, className: `pcard__main pcard__main--${act.icon ?? "arrow"}` }) +
     small("Docs", "book", p.docs.href) +
     `</div></div>` +
     `<i class="pcard__brackets" aria-hidden="true"></i>` +
