@@ -53,6 +53,8 @@ export interface FeelFile {
   defeat: { ticks: number; fadeFrom: number };
   respawn: { ticks: number };
   ult: {
+    /** The form's E (Dex 10-20: removed for now; true brings it back). */
+    e?: boolean;
     callTicks: number; flurryTicks: number; flurryCuts: number; flurryReach: number; flurryDmg: number;
     riseTicks: number; riseHeight: number; zenithTicks: number; diveTicks: number; diveForward: number;
     impactRadius: number; impactDmg: number; impactKb: [number, number]; smokeTicks: number; transformTicks: number;
@@ -535,7 +537,7 @@ export class Zhusha {
     // actions out of free movement: R, Q, E, dash, attack (the latest press wins ties)
     if (this.tryUlt(input, world)) return;
     if (this.skillCd <= 0 && this.live(input, "skill", B.skill)) { input.consume("skill"); this.startMove("skill_q", input); return; }
-    if (this.eCd <= 0 && this.live(input, "e", B.skill)) { input.consume("e"); this.startMove("e_tap", input); return; }
+    if (this.eReady(input) && this.live(input, "e", B.skill)) { input.consume("e"); this.startMove("e_tap", input); return; }
     if (this.dashReady() && this.live(input, "m2", B.dash)) { input.consume("m2"); this.startDash(input); return; }
     if (this.live(input, "m1", B.attack)) {
       input.consume("m1");
@@ -648,6 +650,20 @@ export class Zhusha {
     return { phase: b.vy < 0 ? "rise" : "fall", t: this.jumpT };
   }
 
+  /** The E is ready: off cooldown, and not in the ult form while its E is off (Dex 10-20: there a press is dropped). */
+  private eReady(input: Input): boolean {
+    if (this.ultForm && !FEEL.ult.e) {
+      if (input.pressTick("e") !== undefined) input.consume("e");
+      return false;
+    }
+    return this.eCd <= 0;
+  }
+
+  /** Does E do anything now (the finish blow asks too: in the form with its E off, E is nothing). */
+  get eLive(): boolean {
+    return !(this.ultForm && !FEEL.ult.e);
+  }
+
   private dashReady(): boolean {
     return this.dashCd <= 0 && (this.body.grounded || this.airDashes > 0);
   }
@@ -709,7 +725,7 @@ export class Zhusha {
     if (this.tryUlt(input, world)) return;
     if (this.t >= D.attackFrom) {
       if (this.skillCd <= 0 && this.live(input, "skill", B.skill)) { input.consume("skill"); this.startMove("skill_q", input); return; }
-      if (this.eCd <= 0 && this.live(input, "e", B.skill)) { input.consume("e"); this.startMove("e_tap", input); return; }
+      if (this.eReady(input) && this.live(input, "e", B.skill)) { input.consume("e"); this.startMove("e_tap", input); return; }
       if (this.live(input, "m1", B.attack)) { input.consume("m1"); this.startMove("m1_1", input); return; }
     }
     if (this.t >= 3 && this.live(input, "jump", FEEL.jump.buffer) && (b.grounded || this.coyote > 0 || this.airJumps > 0)) {
@@ -817,7 +833,7 @@ export class Zhusha {
     }
     if (t >= cancelAt) {
       if (this.skillCd <= 0 && m.id !== "skill_q" && this.live(input, "skill", B.skill)) { input.consume("skill"); this.startMove("skill_q", input); return; }
-      if (this.eCd <= 0 && m.id !== "e_tap" && this.live(input, "e", B.skill)) { input.consume("e"); this.startMove("e_tap", input); return; }
+      if (this.eReady(input) && m.id !== "e_tap" && this.live(input, "e", B.skill)) { input.consume("e"); this.startMove("e_tap", input); return; }
       if (this.dashReady() && this.live(input, "m2", B.dash)) { input.consume("m2"); this.startDash(input); return; }
       if (this.live(input, "jump", FEEL.jump.buffer) && (b.grounded || this.coyote > 0)) {
         this.endMove(input);

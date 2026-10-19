@@ -15,6 +15,7 @@ import { initNsfw } from "./motion/nsfw.ts";
 import { initSharpen } from "./motion/piece.ts";
 import { initIdle, initReveal } from "./motion/reveal.ts";
 import { initScatter } from "./motion/scatter.ts";
+import { initSlideoff } from "./motion/slideoff.ts";
 import { afterMark } from "./motion/quiet.ts";
 import { initWorld } from "./motion/world.ts";
 
@@ -118,6 +119,8 @@ const steps: [string, () => void][] = [
     });
     void loaded.then(afterMark).then(idle).then(start);
   }],
+  // way 4's slide-off (lane F's events dex:slideoff / dex:slideback; the home page only, where the jetty is)
+  ["slideoff", () => { if (document.querySelector("[data-jetty-scene]")) initSlideoff(reduced); }],
   ["copy", () => initCopy()],
   // NSFW image spoilers in posts (render/nsfw.ts).
   ["nsfw", () => initNsfw()],

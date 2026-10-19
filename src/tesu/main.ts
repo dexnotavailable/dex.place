@@ -203,7 +203,8 @@ async function boot(): Promise<void> {
   const FINISH_KEYS = new Set(["KeyJ", "KeyZ", "KeyQ", "KeyE"]);
   window.addEventListener("keydown", (e) => {
     if (panels.open || e.repeat) return;
-    if (FINISH_KEYS.has(e.code)) finish();
+    // in the ult form E does nothing while its E is off (Dex 10-20), the finish blow included
+    if (FINISH_KEYS.has(e.code) && (e.code !== "KeyE" || game.player.eLive)) finish();
     if (e.code === "KeyF" || e.code === "Enter" || e.code === "NumpadEnter") {
       e.preventDefault();
       game.use();

@@ -56,6 +56,10 @@
   border: 0;
   /* a jump lands on the strip, just under the header (html's scroll-padding gives the header and 16 px) */
   scroll-margin-top: -16px;
+  /* nothing in a band widens the page, whatever slides in from the side (a phone's cards come from 60% of the screen's
+     width; the papers from off the screen): clip, not hidden, so the band is no scroll container (its place stays
+     sticky / fixed) and its world still reaches down under the next strip */
+  overflow-x: clip;
 }
 /* the panel's width: the default, then each section's (same weight, later wins) */
 .band { --panel-w: calc(100vw - 20px); }

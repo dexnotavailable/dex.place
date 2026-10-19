@@ -57,6 +57,8 @@ export interface MoveDef {
   airHang?: number;
   recoil?: [number, number, number];
   cooldown?: number;
+  /** Which of the drawing's derived hits the move uses, in order (default: all); e_tap fires on its second (Dex 10-20). */
+  artHits?: number[];
   /** No lunge and no carried momentum: only her planted foot moves her (m1_4, Dex 10-19). */
   inPlace?: boolean;
   /** A lunge that locks onto a foe (m1_3, Dex 10-19): distances in her drawn heights; see feel.json lockAbout. */
@@ -160,10 +162,11 @@ export function resolveMove(
   if (m?.active && m.active.length && feel.hits.length) {
     out.hits = m.active.map((w, i) => ({ ...feelHit(i), at: Math.max(1, Math.round(w.at)), len: Math.max(1, Math.round(w.len)) }));
     out.fromArt.hits = true;
-  } else if (der && der.hits.length && feel.hits.length) {
+  } else if (der && (feel.artHits ? feel.artHits.some((i) => der.hits[i]) : der.hits.length) && feel.hits.length) {
     // derived: feel.json's first hit tick is kept (the windup squeezed to it), the drawing times the rest 1:1
-    const mh = feel.hits[0]!.at, ch = der.hits[0]!.at;
-    out.hits = der.hits.map((w, i) => ({ ...feelHit(i), at: i === 0 ? mh : Math.max(1, Math.round(clipToMove(w.at, mh, ch))), len: Math.max(1, w.len) }));
+    const dh = feel.artHits ? feel.artHits.map((i) => der.hits[i]).filter((h): h is DerivedSlot["hits"][number] => !!h) : der.hits;
+    const mh = feel.hits[0]!.at, ch = dh[0]!.at;
+    out.hits = dh.map((w, i) => ({ ...feelHit(i), at: i === 0 ? mh : Math.max(1, Math.round(clipToMove(w.at, mh, ch))), len: Math.max(1, w.len) }));
     out.clipHitAt = ch;
     out.fromArt.derived = true;
   }
