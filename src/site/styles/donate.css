@@ -324,3 +324,27 @@ html:not(.js) .amt { display: none; }
 @keyframes qr-flip { from { translate: 4px 4px; scale: 0.97; } }
 @keyframes tag-pop { from { scale: 0.7; } }
 @keyframes pick-pop { 40% { scale: 1.1; } }
+
+/* home (site loop v3 round 1: the donate band stood still at rest): every few seconds the code's three corner markers
+   flush the section's pink, once (multiplied: the modules stay black, only the white between them takes the tint, so the
+   code still scans mid-flush) */
+@media (prefers-reduced-motion: no-preference) {
+  .band--donate .qr__code { position: relative; }
+  .band--donate .qr__code::after {
+    content: "";
+    position: absolute;
+    left: calc(var(--qm) * 4px);
+    top: calc(var(--qm) * 4px);
+    width: calc(var(--qm) * 7px);
+    height: calc(var(--qm) * 7px);
+    background: var(--magenta);
+    box-shadow: calc(var(--qm) * 30px) 0 0 var(--magenta), 0 calc(var(--qm) * 30px) 0 var(--magenta);
+    mix-blend-mode: multiply;
+    opacity: 0;
+    animation: qr-flush 4.6s ease-out 1.5s infinite;
+    pointer-events: none;
+  }
+  .is-off .qr__code::after { animation-play-state: paused; }
+  [data-moving] .band--donate .qr__code::after { animation: none; }
+}
+@keyframes qr-flush { 0%, 72% { opacity: 0; } 78% { opacity: 0.9; } 100% { opacity: 0; } }

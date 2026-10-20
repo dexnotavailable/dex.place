@@ -15,11 +15,12 @@ export const stripEnd = (stripH: number): string => `top bottom-=${Math.round(st
  *  crosses this line, and never goes back (until the band is set back). */
 export const PANEL_AT = (phone: boolean): string => (phone ? "top 94%" : "top 92%");
 /** The panel's slide (s): its paper and its shade together, expo.out. */
-export const PANEL_TIME = 0.75;
-/** The content's gate opens this far through the panel's slide (a share of its time). Site loop v2 round 1: the content
- *  rides in on the moving paper (its column slides with the paper, one pose, so it is never on bare world), so the
- *  first batch lands while the paper is still coming (expo.out: ~57% of its way), never on long-empty paper. */
-export const CONTENT_GATE = 0.12;
+export const PANEL_TIME = 0.6;
+/** The content's gate opens this far through the panel's slide (a share of its time). Site loop v3 round 1 (Dex 10-20:
+ *  "have the white background go in first, then the UI elements like cards and stuff come in from under the top one"):
+ *  the paper lands first (expo.out: ~88% of its way by then), then the content slides out from under the strip above
+ *  it, staggered; never on bare world, never on long-empty paper (~0.18 s). */
+export const CONTENT_GATE = 0.3;
 /** A band entered at this scroll speed (|n|) or faster gets its content with its paper at once (one landing). */
 export const FAST_N = 0.5;
 /** The spine (the panel's open edge) draws this far through the slide. */
@@ -27,7 +28,7 @@ export const SPINE_AT = 0.55;
 /** A band on screen that a jump, a focus or the watchdog settles plays the rest of its entrance in this long (s); only
  *  bands off the screen are simply set. */
 export const SETTLE_TIME = 0.45;
-/** The stitch is opaque this soon (s): it flies in solid, never a see-through slab over the world. */
+/** (v2) The stitch was opaque this soon (s); since v3 round 1 it is never see-through at all (it unrolls, solid). */
 export const STITCH_FADE = 0.14;
 /** Phones run every duration at this share. */
 export const PHONE_TIME = 0.8;
@@ -49,17 +50,21 @@ export function stripPose(p: number, s: Side, phone = false): { xPercent: number
 /** The panel's paper (and its shade, the same pose) off its own side, before its slide. */
 export const panelFrom = (s: Side): number => s * 101;
 
-/** How content lands (from-vars): rise (up and in), side (in from the band's side), pop (pixel keys). */
-export type Variant = "rise" | "side" | "pop";
+/** How content lands (from-vars): drop (out from under the layer above it: down and in), rise (up and in), side (in
+ *  from the band's side), pop (pixel keys). */
+export type Variant = "drop" | "rise" | "side" | "pop";
 export function contentFrom(v: Variant, s: Side, phone = false): Record<string, number> {
+  if (v === "drop") return { y: phone ? -32 : -48, autoAlpha: 0 };
   if (v === "side") return { x: s * (phone ? 32 : 48), autoAlpha: 0 };
   if (v === "pop") return { scale: 0.8, autoAlpha: 0 };
   return { y: phone ? 28 : 40, autoAlpha: 0 };
 }
 
-/** The stitch comes from the world side (the other side from its paper), turning as it lands. */
-export function stitchFrom(s: Side, vw: number, phone = false): { x: number; rotation: number; autoAlpha: number } {
-  return { x: -s * vw * (phone ? 0.4 : 0.18), rotation: -s * 3, autoAlpha: 0 };
+/** The stitch (what hangs off the paper onto the world) slides out from under the strip with the content, square and
+ *  solid once its paper is behind it (site loop v3 round 1: flown in from the world side it crossed bare world half
+ *  see-through, tilted like a glitch). */
+export function stitchFrom(phone = false): { y: number; autoAlpha: number; clipPath: string } {
+  return { y: phone ? -32 : -48, autoAlpha: 1, clipPath: "inset(-24px -24px 100% -24px)" };
 }
 
 /** The scroll's speed as -1..1 from the scroll's change in one ticker frame (css px), 0 at rest. A finger moves the

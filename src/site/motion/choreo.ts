@@ -20,7 +20,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import {
-  CONTENT_GATE, FAST_N, PANEL_AT, PANEL_TIME, PHONE_TIME, SETTLE_TIME, SPINE_AT, STITCH_FADE, STRIP_START, contentFrom,
+  CONTENT_GATE, FAST_N, PANEL_AT, PANEL_TIME, PHONE_TIME, SETTLE_TIME, SPINE_AT, STRIP_START, contentFrom,
   foreY, isBelow, latch, onScreen, panelFrom, speedOf, stitchFrom, stripEnd, stripPose, worldShift, type Side,
   type Variant,
 } from "./choreo-plan.ts";
@@ -305,34 +305,30 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
   const strip = q(".band__strip")!, stripPaper = q(".band__strip-paper")!, stripShade = q(".band__strip-shade")!;
   const panel = q(".band__panel")!, paper = q(".band__paper")!, shade = q(".band__shade")!, spine = q(".band__spine");
   const site = q(".band__site")!, fore = q(".band__fore");
-  // the panel's content column rides in with its paper (one pose: the content is never on bare world, so it can land
-  // while the paper is still coming); its own transform is taken off once in (fixed and sticky things inside work).
-  // Not the projects': its cards have their own entrance from the side (lane K's), and a moving column under them
-  // only cost frames
-  const wrap = el.id === "projects" ? null : q(".band__panel > .wrap");
   const head = q(".band__in");
   const stitch = q("[data-stitch]");
   const items = Array.from(el.querySelectorAll<HTMLElement>(".band__panel > .wrap > *")).filter((x) => !x.matches("[data-pcards]") && x !== stitch);
-  const variant: Variant = el.id === "downloads" ? "side" : "rise";
+  // (site loop v3 round 1: everything slides out from under the layer above it, the strip over its panel)
+  const variant: Variant = "drop";
   const from = contentFrom(variant, s, phone);
-  const vw = document.documentElement.clientWidth;
   const sheet = [paper, shade];
 
-  // the strip's head: the kicker slides in, the title rises in its line mask (never over the world under the strip) and
-  // squashes a pixel row as its letters land, its underline and the rule draw from the band's side, the key follows.
+  // the strip's head, out from under the paper above it (the strip clips its top edge): the kicker drops in, the title's
+  // letters drop in their line mask and it squashes a pixel row as they land, its underline and the rule draw from the
+  // band's side, the key drops and lands like a hanko pressed (a squash, a hop), the icon blinks.
   // Every part lands on its own place (explicit ends) and gives its transform back once
   // the head has played (the key's pixel pop and the rule's travelling dot are CSS on the same elements)
   const headTl = gsap.timeline({ paused: true });
   if (head) {
     const kicker = head.querySelector(".sh__kicker"), line = head.querySelector<HTMLElement>(".sh__txt"), ul = head.querySelector(".sh__ul");
-    const rule = head.querySelector(".sh__rule"), more = head.querySelector(".sh__more");
+    const rule = head.querySelector(".sh__rule"), more = head.querySelector(".sh__more"), tile = head.querySelector(".sh__kicker .tile");
     const origin = s < 0 ? "0% 50%" : "100% 50%";
     const chars = line ? splitChars(line) : [];
-    const away = { x: -s * 24, autoAlpha: 0 }, home = { x: 0, autoAlpha: 1, duration: 0.6 * T, ease: "power3.out" };
-    if (kicker) headTl.fromTo(kicker, away, home, 0);
-    // the title's letters rise in its line mask, rippling from the band's side (3.1: 22 ms apart)
-    if (chars.length) headTl.fromTo(chars, { yPercent: 110 }, { yPercent: 0, duration: 0.8 * T, ease: "expo.out", stagger: { each: 0.022, from: s < 0 ? "start" : "end" } }, 0.06 * T);
-    else if (line) headTl.fromTo(line, { yPercent: 110 }, { yPercent: 0, duration: 0.8 * T, ease: "expo.out" }, 0.06 * T);
+    if (kicker) headTl.fromTo(kicker, { y: -36, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 * T, ease: "expo.out" }, 0);
+    if (tile) headTl.fromTo(tile, { scale: 1 }, { keyframes: { scale: [1, 1.3, 0.92, 1] }, duration: 0.42, ease: "power2.out" }, 0.38 * T);
+    // the title's letters drop in its line mask, rippling from the band's side (3.1: 22 ms apart)
+    if (chars.length) headTl.fromTo(chars, { yPercent: -110 }, { yPercent: 0, duration: 0.8 * T, ease: "expo.out", stagger: { each: 0.022, from: s < 0 ? "start" : "end" } }, 0.06 * T);
+    else if (line) headTl.fromTo(line, { yPercent: -110 }, { yPercent: 0, duration: 0.8 * T, ease: "expo.out" }, 0.06 * T);
     // ...and it lands with a squash of one pixel row (the last letter is nearly in by then)
     if (line) {
       headTl.to(line, { scaleY: 0.95, transformOrigin: "50% 100%", duration: 0.07, ease: "power2.in" }, (0.06 + 0.22) * T + chars.length * 0.022)
@@ -340,8 +336,12 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     }
     if (ul) headTl.fromTo(ul, { scaleX: 0 }, { scaleX: 1, transformOrigin: origin, duration: 0.6 * T, ease: "expo.out" }, 0.3 * T);
     if (rule) headTl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, transformOrigin: origin, duration: 0.9 * T, ease: "expo.inOut" }, 0.15 * T);
-    if (more) headTl.fromTo(more, away, home, 0.3 * T);
-    const parts = [kicker, line, ul, rule, more, ...chars].filter((x): x is Element => x !== null);
+    if (more) {
+      headTl.fromTo(more, { y: -40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.32 * T, ease: "power3.in" }, 0.3 * T)
+        .fromTo(more, { scaleX: 1.14, scaleY: 0.8 }, { scaleX: 1, scaleY: 1, transformOrigin: "50% 100%", duration: 0.5, ease: "elastic.out(1, 0.45)", immediateRender: false })
+        .to(more, { keyframes: { y: [0, -5, 0] }, duration: 0.3, ease: "sine.inOut" }, "<0.05");
+    }
+    const parts = [kicker, line, ul, rule, more, tile, ...chars].filter((x): x is Element => x !== null);
     headTl.eventCallback("onComplete", () => { gsap.set(parts, { clearProps: CLEAR }); });
   }
 
@@ -388,10 +388,10 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
   const landStitch = (): void => {
     if (!stitch || stitch.dataset.landed !== undefined) return;
     stitch.dataset.landed = "";
-    gsap.to(stitch, { autoAlpha: 1, duration: STITCH_FADE, ease: "none", delay: 0.15 });
+    // solid all the way (never see-through over the world it hangs onto): it unrolls down out from under the strip
     gsap.to(stitch, {
-      x: 0, rotation: 0, duration: 1.1 * T, ease: "expo.out", delay: 0.15,
-      onComplete: () => { gsap.set(stitch, { clearProps: CLEAR }); },
+      y: 0, clipPath: "inset(-24px -24px -24px -24px)", duration: 0.9 * T, ease: "expo.out", delay: 0.1,
+      onComplete: () => { gsap.set(stitch, { clearProps: `${CLEAR},clipPath` }); },
     });
   };
   const land = (batch: HTMLElement[], quick = false): void => {
@@ -400,8 +400,8 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     if (!list.length) return;
     for (const x of list) landedItems.add(x);
     gsap.to(list, {
-      x: 0, y: 0, scale: 1, autoAlpha: 1, duration: quick ? SETTLE_TIME + 0.15 : (variant === "side" ? 0.7 : 0.8) * T, ease: "expo.out",
-      stagger: quick ? 0.03 : 0.07, overwrite: "auto",
+      x: 0, y: 0, scale: 1, autoAlpha: 1, duration: quick ? SETTLE_TIME + 0.15 : 0.8 * T, ease: "expo.out",
+      stagger: quick ? 0.03 : 0.06, overwrite: "auto",
       onComplete: () => { gsap.set(list, { clearProps: CLEAR }); },
     });
   };
@@ -415,13 +415,12 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     done();
   };
 
-  // the panel: a triggered slide from its side, its shade and its content column riding with it (one pose), the spine
-  // drawn as it lands; the content lands on the moving paper part way through (at once when the band came in fast)
+  // the panel: a triggered slide from its side, its shade riding with it (one pose), the spine drawn as it lands; the
+  // content slides out from under the strip once the paper is (nearly) in (at once when the band came in fast)
   const playPanel = (dur: number): void => {
     if (b.panelIn) return;
     b.panelIn = true;
     gsap.to(sheet, { xPercent: 0, duration: dur, ease: "expo.out", onComplete: () => { b.panelDone = true; done(); } });
-    if (wrap) gsap.to(wrap, { xPercent: 0, duration: dur, ease: "expo.out", onComplete: () => { gsap.set(wrap, { clearProps: CLEAR }); } });
     gsap.to(shade, { opacity: 1, duration: dur * 0.5, ease: "power1.out" });
     if (spine) gsap.to(spine, { scaleY: 1, duration: 0.7 * T, ease: "expo.out", delay: dur * SPINE_AT });
     if (Math.abs(speed.n) >= FAST_N) openGate();
@@ -432,7 +431,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     gateCall?.kill();
     stripRun?.kill();
     gateCall = stripRun = null;
-    gsap.killTweensOf([...surfaces, ...items, ...(spine ? [spine] : []), ...(stitch ? [stitch] : []), ...(wrap ? [wrap] : [])]);
+    gsap.killTweensOf([...surfaces, ...items, ...(spine ? [spine] : []), ...(stitch ? [stitch] : [])]);
   };
   const prime = (): void => {
     lift(true);
@@ -441,13 +440,12 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     b.landed = b.headPlayed = b.panelIn = b.panelDone = b.gateOpen = b.all = false;
     setStrip(0);
     gsap.set(sheet, { xPercent: panelFrom(s), force3D: true });
-    if (wrap) gsap.set(wrap, { xPercent: panelFrom(s) });
     gsap.set(shade, { opacity: 0 });
     headTl.pause(0);
     if (spine) gsap.set(spine, { scaleY: 0, transformOrigin: "50% 0%" });
     gsap.set(items, from);
     for (const x of items) landedItems.delete(x);
-    if (stitch) { delete stitch.dataset.landed; gsap.set(stitch, stitchFrom(s, vw, phone)); }
+    if (stitch) { delete stitch.dataset.landed; gsap.set(stitch, stitchFrom(phone)); }
     b.queue = [];
   };
   // off the screen: simply set (nobody sees it); nothing waits on the gate any more (the deck settles with it)
@@ -458,11 +456,10 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     b.landed = b.headPlayed = b.panelIn = b.panelDone = b.gateOpen = b.all = true;
     setStrip(1);
     gsap.set(sheet, { xPercent: 0 });
-    if (wrap) gsap.set(wrap, { clearProps: CLEAR });
     gsap.set(shade, { opacity: 1 });
     headTl.progress(1).pause();
     if (spine) gsap.set(spine, { scaleY: 1 });
-    gsap.set([...items, ...(stitch ? [stitch] : [])], { clearProps: CLEAR });
+    gsap.set([...items, ...(stitch ? [stitch] : [])], { clearProps: `${CLEAR},clipPath` });
     for (const x of items) landedItems.add(x);
     if (stitch) stitch.dataset.landed = "";
     b.queue = [];
@@ -596,7 +593,8 @@ function footerRise(ftr: HTMLElement, last: HTMLElement | null, phone: boolean, 
     played = landed = false;
     gsap.set(sheet, { yPercent: 100, force3D: true });
     if (shade) gsap.set(shade, { opacity: 0 });
-    gsap.set(parts, { y: 24, autoAlpha: 0 });
+    // (its rows drop in from under its top hem, as every band's do: site loop v3 round 1)
+    gsap.set(parts, { y: -24, autoAlpha: 0 });
   };
   const setDone = (): void => {
     gsap.killTweensOf([...sheet, ...parts]);

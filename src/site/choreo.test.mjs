@@ -16,9 +16,11 @@ test("choreo plan: strips whip in from their side and land square; panels follow
     // the panel (and its shade, one pose) waits wholly off its own side
     assert.equal(Math.sign(P.panelFrom(s)), s);
     assert.ok(Math.abs(P.panelFrom(s)) >= 100);
-    // a stitch comes from the world side (the other side from its paper)
-    assert.equal(Math.sign(P.stitchFrom(s, 1000).x), -s);
   }
+  // v3 round 1: the stitch slides out from under the strip with the content (down, square, solid once its paper is in)
+  assert.ok(P.stitchFrom().y < 0 && P.stitchFrom(true).y < 0);
+  assert.equal(P.stitchFrom().autoAlpha, 1, "solid: never a see-through slab over the world");
+  assert.match(P.stitchFrom().clipPath, /^inset\([^)]*100%/, "hidden by a wipe it unrolls out of");
   // fast off the mark, long soft landing: half way through the strip's range it is nearly in
   assert.ok(Math.abs(P.stripPose(0.5, -1).xPercent) < 5);
   // latched: follows on the way in, never back
@@ -26,12 +28,14 @@ test("choreo plan: strips whip in from their side and land square; panels follow
   assert.equal(P.latch(0.4, 0.7), 0.7);
   assert.equal(P.latch(0, 1.4), 1);
   // site loop round 1: the panel is a triggered slide (a scrub stalled half way, blank, when the reader stopped); a
-  // settle on the screen plays out. v2 round 1: the content rides in on the moving paper (its column slides with it),
-  // so it lands part way (the paper about 60% in), never on long-empty paper; a band entered fast, at once
+  // settle on the screen plays out. v3 round 1 (Dex 10-20: "have the white background go in first, then the UI elements
+  // ... come in from under the top one"): the paper is nearly in when the content starts out from under the strip; a band
+  // entered fast, at once
   assert.equal(P.PANEL_AT(false), "top 92%");
   assert.equal(P.PANEL_AT(true), "top 94%");
   assert.ok(P.PANEL_TIME >= 0.6 && P.PANEL_TIME <= 0.9);
-  assert.ok(P.expoOut(P.CONTENT_GATE) > 0.5 && P.expoOut(P.CONTENT_GATE) < 0.7, "the gate opens on the paper ~60% in");
+  assert.ok(P.expoOut(P.CONTENT_GATE) > 0.8 && P.expoOut(P.CONTENT_GATE) < 0.95, "the paper first: the gate opens with it ~90% in");
+  assert.ok(P.PANEL_TIME * P.CONTENT_GATE <= 0.25, "...and soon: never long-empty paper");
   assert.ok(P.FAST_N > 0 && P.FAST_N < 1);
   assert.ok(P.SPINE_AT < 1);
   assert.ok(P.SETTLE_TIME >= 0.3 && P.SETTLE_TIME <= 0.6, "a settle plays out, never a pop");
@@ -47,6 +51,7 @@ test("choreo plan: strips whip in from their side and land square; panels follow
   assert.equal(P.isBelow(300, 800), false);
   // content variants
   assert.deepEqual(P.contentFrom("rise", -1), { y: 40, autoAlpha: 0 });
+  assert.deepEqual(P.contentFrom("drop", 1), { y: -48, autoAlpha: 0 }, "out from under the layer above: down and in");
   assert.deepEqual(P.contentFrom("side", 1), { x: 48, autoAlpha: 0 });
   // the scroll's speed: -1..1, 0 at rest; the fore rides faster than the paper
   assert.equal(P.speedOf(0), 0);
