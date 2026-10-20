@@ -257,7 +257,9 @@ export const BEATS = {
   { "T": 28.4724, "id": "op.burst" },
   { "T": 35.142, "id": "op.skid" },
   // her speech, one take (the voice above: at its `take.at`)
-  { "T": 0.3, "id": "op.speech" }
+  // (a long take: `len` s, never dropped for being late, opening.ts cueAction; `file`, its encoded pair, decoded with
+  // Track 1's piece A before "continue", track.ts)
+  { "T": 0.3, "id": "op.speech", "len": 24.7465, "file": "/audio/opening/speech" }
  ]
 } as const;
 

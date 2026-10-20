@@ -7,7 +7,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { BEATS, CLIP_AT, CLIP_END, HANDOFF_T, VOICE, barsAt, beatAt, cameraAt, captionAt, centreOf, clipAt, herPhase, herSpeedH, herXH, keysAt, mixShot, monotone, nextBarLine, paperBlendAt, paperLensAt, paperScreenAt, setStartZoom, startT, subtitleAt, widestShot } from "./opening/timeline.ts";
-import { Opening } from "./opening.ts";
+import { Opening, cueAction } from "./opening.ts";
 import { TileStore } from "./plates/store.ts";
 import { HeardClock, onGrid } from "./opening/clock.ts";
 import { pressContinues } from "./opening/press.ts";
@@ -55,6 +55,7 @@ test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift
   // D's alignment (speech.json parts) as they are
   const k = BEATS.voice.take;
   assert.deepEqual(BEATS.sfx.filter((c) => c.id === k.cue).map((c) => c.T), [k.at], "booked once");
+  assert.equal(BEATS.sfx.find((c) => c.id === k.cue).len, k.len, "the cue's length is the take's");
   assert.ok(!BEATS.sfx.some((c) => /^op\.(tight|line)\d/.test(c.id)), "the stitched lines are gone");
   const sp = JSON.parse(readFileSync(new URL("../../public/audio/opening/speech.json", import.meta.url), "utf8"));
   near(k.at, sp.start, 1e-9, "D's start");
@@ -429,6 +430,87 @@ test("the effects are scheduled ahead on the context's clock, through any output
       assert.ok(call.at - call.now >= 0.2, `latency ${latency}: ${c.id} asked for ${(call.at - call.now).toFixed(3)} s ahead`);
     }
   }
+});
+
+test("a late take still plays, that far into it; a late drum hit is still dropped (the speech, Dex 10-20)", async () => {
+  const { startOf, CUES } = await import("./sound.ts");
+  const k = BEATS.sfx.find((c) => c.id === "op.speech");
+  assert.ok(CUES[k.id].exact && CUES[k.id].files[0] === k.file.replace(/^\/audio\//, ""), "the chart's take is the exact cue's file");
+  // the rule in the opening: the take is booked on its (past) moment; an effect 0.3 s late is dropped
+  for (const late of [0.5, 3]) assert.equal(cueAction(100 + late, 100, k.T, 0.27, k.len), "book", `take late ${late} s`);
+  assert.equal(cueAction(100 + k.len + 0.01, 100, k.T, 0.27, k.len), "drop", "the take over");
+  assert.equal(cueAction(100.3, 100, 4.631, 0.27), "drop", "a drum hit 0.3 s late");
+  assert.equal(cueAction(100.1, 100, 0, 0.27), "now", "the press's gust a little late");
+  assert.equal(cueAction(99.5, 100, 4.631, 0.27), "wait");
+  // the rule in the sound engine: a take starts that far into the file; a booked hit late 0.3 s does not play
+  for (const late of [0.5, 3]) assert.deepEqual(startOf(100, 100 + late, true, { len: k.len, rate: 1 }), { t: 100 + late, offset: late }, `take late ${late} s`);
+  assert.deepEqual(startOf(100, 99.8, true, { len: k.len, rate: 1 }), { t: 100, offset: 0 }, "on time");
+  assert.equal(startOf(100, 100 + k.len + 0.01, true, { len: k.len, rate: 1 }), null, "past its end");
+  assert.equal(startOf(100, 100.3, true, null), null, "a drum hit late 0.3 s");
+  assert.deepEqual(startOf(100, 100.03, true, null), { t: 100.03, offset: 0 }, "a hit a moment late");
+
+  // through the opening: the first ticks after the press stall past the take's moment (the plates streaming)
+  const run = (stall, opts = {}) => {
+    const ctx = { state: "running", currentTime: 10 };
+    const t0 = 10.05, calls = [];
+    const host = {
+      herX: () => 86.4 * H, moveTo() {}, pose() {}, touchedSince: () => false, inputTick: () => 0, release() {}, title() {}, titleAt() {},
+      sfx: (id, at) => calls.push({ id, at, now: ctx.currentTime }), sfxCancel() {}, bed() {},
+      framing: () => world(), frameW: () => 1280, frameH: () => 720, cut() {}, cine() {},
+    };
+    const from = opts.from ?? 0;
+    const link = {
+      T: () => from + ctx.currentTime - t0, epoch: 0, reduced: false, repeat: false, music: true, way: opts.way,
+      ctxTimeOf: (T) => t0 + T - from, skip: () => false, input() {}, ctx,
+    };
+    const o = new Opening(host);
+    if (opts.from) ctx.currentTime = t0;
+    o.start(link);
+    ctx.currentTime = t0 - from + k.T + stall;
+    o.tick();
+    return { calls, t0: t0 - from, ctx, o };
+  };
+  for (const stall of [0.5, 3]) {
+    const { calls, t0 } = run(stall);
+    const sp = calls.filter((c) => c.id === k.id);
+    assert.equal(sp.length, 1, `stall ${stall}: the speech asked for`);
+    near(sp[0].at, t0 + k.T, 1e-9, `stall ${stall}: booked on its moment (${stall} s ago: the engine starts it ${stall} s in)`);
+  }
+  {
+    // a drum hit whose first tick comes 0.3 s late is still dropped
+    const { calls, t0, ctx, o } = run(0);
+    const f = BEATS.sfx.find((c) => c.id === "op.paper-flutter");
+    ctx.currentTime = t0 + f.T + 0.3;
+    o.tick();
+    assert.ok(!calls.some((c) => c.id === f.id), "the flutter 0.3 s late: dropped");
+  }
+  {
+    // started past the take's moment (a resumed or later start): the take, that far in; the earlier hits stay past
+    const { calls, t0 } = run(0, { from: 10 });
+    assert.deepEqual(calls.map((c) => c.id), [k.id], "only the take");
+    near(calls[0].at, t0 + k.T, 1e-9, "on its moment (10 s in)");
+    assert.equal(run(0, { from: 26 }).calls.length, 0, "past its end: nothing");
+  }
+  {
+    // the page clock with a running context (Track 1 failed, or the context woke without the sound chip): placed on T
+    const ctx = { state: "running", currentTime: 50 }, calls = [];
+    let T = -0.05;
+    const host = {
+      herX: () => 86.4 * H, moveTo() {}, pose() {}, touchedSince: () => false, inputTick: () => 0, release() {}, title() {}, titleAt() {},
+      sfx: (id, at) => calls.push({ id, at, now: ctx.currentTime }), sfxCancel() {}, bed() {},
+      framing: () => world(), frameW: () => 1280, frameH: () => 720, cut() {}, cine() {},
+    };
+    const o = new Opening(host);
+    o.start({ T: () => T, epoch: 0, reduced: false, repeat: false, music: false, ctxTimeOf: () => null, skip: () => false, input() {}, ctx });
+    T = k.T + 2;
+    ctx.currentTime += 2.35;
+    o.tick();
+    const sp = calls.filter((c) => c.id === k.id);
+    assert.equal(sp.length, 1, "page clock: the speech asked for");
+    near(sp[0].at, ctx.currentTime - 2, 1e-9, "page clock: on its moment by T (2 s in)");
+  }
+  // way 4 (the jetty, bar 6): no speech (Dex 10-19)
+  assert.equal(run(0, { from: startT("bottom"), way: "bottom" }).calls.filter((c) => c.id === k.id).length, 0, "way 4: no speech");
 });
 
 test("the plate store keeps the opening's tiles until the camera is past them (must-fix 1)", () => {

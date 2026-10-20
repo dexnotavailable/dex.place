@@ -2,7 +2,8 @@
 // it IS the WAV again (the plan, section 6; CHECK-1 item 10):
 //
 // - piece A, 0 to the seam + 0.1 s, fetched and decoded before "continue" (Opus in Ogg, AAC in M4A for
-//   Safari); piece B, from the seam - 0.1 s to the end, fetched after the press, decoded under the cinematic;
+//   Safari), and her speech with it (the chart's long takes, beats.ts sfx `file`: the world's sound plays it from
+//   here, so it starts on its beat, not after a download under the press's heavy frames); piece B, from the seam - 0.1 s to the end, fetched after the press, decoded under the cinematic;
 // - the join is a 10 ms equal-GAIN (linear) cross-fade centred on the seam (a zero crossing 1.7 ms before
 //   the bar-20 line): A 1 -> 0 while B 0 -> 1, so the gains always sum to 1 and, the pieces being the same
 //   recording, the level never moves (an equal-power fade would bump it +3 dB); neither piece's own edge is
@@ -34,8 +35,10 @@ export class Track1 {
   a: AudioBuffer | null = null;
   b: AudioBuffer | null = null;
   readonly ext: "opus" | "m4a";
-  /** Piece A is in (fetched and decoded), or failed. */
+  /** Piece A and the speech are in (fetched and decoded), or failed (true: piece A is in). */
   readonly aReady: Promise<boolean>;
+  /** The opening's long takes by URL (the speech), decoded on this context; null if one failed (link.decoded). */
+  readonly takes = new Map<string, Promise<AudioBuffer | null>>();
   private bLoad: Promise<boolean> | null = null;
   private voices: Voice[] = [];
   private aVoice: Voice | null = null;
@@ -57,7 +60,7 @@ export class Track1 {
     this.lift.connect(this.ducker);
     const probe = typeof document !== "undefined" ? document.createElement("audio") : null;
     this.ext = probe?.canPlayType('audio/ogg; codecs="opus"') ? "opus" : "m4a";
-    this.aReady = this.fetch(0).then((buf) => {
+    const a = this.fetch(0).then((buf) => {
       this.a = buf;
       return true;
     }, (e: unknown) => {
@@ -65,6 +68,15 @@ export class Track1 {
       this.failed = true;
       return false;
     });
+    for (const c of BEATS.sfx) {
+      if (!("file" in c)) continue;
+      const url = `${c.file}.${this.ext}`;
+      this.takes.set(url, this.decode(url).catch((e: unknown) => {
+        console.warn("[opening] the take", url, e);
+        return null;
+      }));
+    }
+    this.aReady = Promise.all([a, ...this.takes.values()]).then(([ok]) => ok);
   }
 
   private url(piece: 0 | 1): string {
@@ -72,9 +84,13 @@ export class Track1 {
     return files[this.ext === "opus" ? 0 : 1]!;
   }
 
-  private async fetch(piece: 0 | 1): Promise<AudioBuffer> {
-    const res = await fetch(this.url(piece));
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${this.url(piece)}`);
+  private fetch(piece: 0 | 1): Promise<AudioBuffer> {
+    return this.decode(this.url(piece));
+  }
+
+  private async decode(url: string): Promise<AudioBuffer> {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
     return await this.ctx.decodeAudioData(await res.arrayBuffer());
   }
 
