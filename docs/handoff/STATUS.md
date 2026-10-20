@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-20T05:18:45.195Z (20/10/2026, 12:18:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-20T06:18:45.527Z (20/10/2026, 13:18:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,15 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_6eb91aef-0bd — last activity 17 min ago
+### wf_5cebc05c-deb — last activity 21 min ago
+4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (running)
+- **w2:r1** (running)
+
+### wf_6eb91aef-0bd — last activity 77 min ago
 9 agents: 8 done, 1 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -25,7 +33,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w2:r2** (done): W2's round-2 work is done and committed on claude/v2-art-hall-p2. The head is 16498858. It is not pushed. This was a resumed run, so I did not reset the branch. The branch already had round-2 part 1 (9f0e1374: roof, bay wall, moon gate, shaft, floor smear, and the whole court, W2-10 to W2-14). It also had an unfinished merge of W1's 8f79e577. Running `checkout -B claude/v2-art-hall-p2 claude/v2-art-hall` would have t
 - **integrate:r2** (running)
 
-### wf_93dbdace-3fa — last activity 349 min ago
+### wf_93dbdace-3fa — last activity 409 min ago
 16 agents: 15 done, 0 running or stopped mid-way, 1 failed.
 
 - **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
@@ -43,7 +51,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r4** (failed)
 - **w2:r4** (done): Worker 2 finished round 4. Both commits are on claude/v2-art-vista-p2: 5e50d20b and 6948d1a0, on top of 3f94e1ba. Nothing is pushed. Changes, by critique item: - **W2-1, the cliff under the lake.** It no longer uses the road ridge's block painter. A new painter, plateau.ts, draws it at 1/2 and wider zooms (whip, postcard, tesu, tesu-720, ease-in). It has: - buttresses of very different widths, split into rounded colu
 
-### wf_286da28b-ad1 — last activity 350 min ago
+### wf_286da28b-ad1 — last activity 410 min ago
 10 agents: 9 done, 0 running or stopped mid-way, 1 failed.
 
 - **setup** (done): 
@@ -57,7 +65,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r2** (done): 
 - **critic:r2** (failed)
 
-### wf_23467958-71d — last activity 384 min ago
+### wf_23467958-71d — last activity 444 min ago
 14 agents: 8 done, 6 running or stopped mid-way, 0 failed.
 
 - **toolkit** (done): # Card-art toolkit (lanes\cardart\tools\pipe)
@@ -83,14 +91,6 @@ Shared by the three card pipelines (PIPELINE-1020.md). Python: `D:\Dex\AI\Tools\
 An earlier run of this job had stopped at 03:21 with nothing authored. I kept its trace chain and re
 - **Lines:bao** (running)
 - **critic:Lines:zhusha:1** (running)
-
-### wf_5cebc05c-deb — last activity 933 min ago
-4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (running)
-- **w2:r1** (running)
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
