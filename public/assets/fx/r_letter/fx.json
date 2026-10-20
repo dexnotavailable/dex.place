@@ -392,11 +392,11 @@
   },
   {
    "file": "f095.png",
-   "ticks": 1
+   "ticks": 2
   },
   {
    "file": "f096.png",
-   "ticks": 1
+   "ticks": 2
   },
   {
    "file": "f097.png",
@@ -404,26 +404,66 @@
   },
   {
    "file": "f098.png",
-   "ticks": 3
+   "ticks": 2
   },
   {
    "file": "f099.png",
-   "ticks": 6
+   "ticks": 2
   },
   {
    "file": "f100.png",
-   "ticks": 6
+   "ticks": 2
   },
   {
    "file": "f101.png",
-   "ticks": 6
+   "ticks": 2
   },
   {
    "file": "f102.png",
-   "ticks": 6
+   "ticks": 2
   },
   {
    "file": "f103.png",
+   "ticks": 2
+  },
+  {
+   "file": "f104.png",
+   "ticks": 2
+  },
+  {
+   "file": "f105.png",
+   "ticks": 1
+  },
+  {
+   "file": "f106.png",
+   "ticks": 1
+  },
+  {
+   "file": "f107.png",
+   "ticks": 2
+  },
+  {
+   "file": "f108.png",
+   "ticks": 3
+  },
+  {
+   "file": "f109.png",
+   "ticks": 6
+  },
+  {
+   "file": "f110.png",
+   "ticks": 6
+  },
+  {
+   "file": "f111.png",
+   "ticks": 6
+  },
+  {
+   "file": "f112.png",
+   "ticks": 6
+  },
+  {
+   "file": "f113.png",
    "ticks": 150
   }
  ],

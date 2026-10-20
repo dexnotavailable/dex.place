@@ -172,7 +172,9 @@ test("ult: the camera has a shot every tick of R; one hard cut only, the cut-in 
   const chase = fl.slice(0, storm + F.chase.giveUp);
   const far = Math.max(...chase.map((t) => t.shot.x - x0));
   assert.ok(far > gx, `it chases her into the letter and whips past its middle (${(far / H).toFixed(2)} H vs ${(gx / H).toFixed(2)})`);
-  const first = fl.slice(0, storm + 40);
+  // (10-21: on the painted letter's spines, with the storm's tail held for after the snap, the early carve is a little
+  // slower, so the whip past and back lands ~20 ticks later than on the stand-in's strokes: looked for in the first 70)
+  const first = fl.slice(0, storm + 70);
   const far1 = Math.max(...first.map((t) => t.shot.x - x0));
   assert.ok(first[first.length - 1].shot.x - x0 < far1 - 0.5 * H, "and swings back");
   assert.ok(F.chase.giveUp >= 0.7 * ULT.letter.ticks, "it keeps hunting her through most of the storm");
@@ -329,7 +331,14 @@ test("ult: the real letter is carved on the storm's clock, breaks at the dive, i
   assert.equal(letter.stormT, 0, "the letter starts with the storm (its drawings are on the storm's ticks)");
   assert.deepEqual(letter.stop, { phase: "dive", t: 0 }, "stopped as the dive starts");
   assert.deepEqual([brk.phase, brk.t, brk.x, brk.y, brk.facing], ["dive", 0, letter.x, letter.y, 1], "its pieces take over in place, as written");
-  assert.equal(brk.stop.phase, "impact", "gone in the nuke's flash");
+  assert.deepEqual(brk.stop, { phase: "impact", t: ULT.impact.breakAfter }, "the pieces fall on a few ticks into the nuke's flash, then go");
+  // Dex: the camera "gives up, then zooms out as the R is filled": the storm's last carving and its closing sweeps land
+  // after the snap out to the whole letter, so the wide shot sees it filled
+  const snap = ULT.camera.flurry.snap.at, carves = all.z.r.slashes.filter((s) => s.carves);
+  const late = carves.filter((s) => s.at > snap).length / carves.length;
+  assert.ok(late >= 0.15 && late <= 0.25, `the last ${(late * 100).toFixed(0)} % of the carving in the wide shot`);
+  const lastAt = all.z.r.slashes[all.z.r.slashes.length - 1].at;
+  assert.ok(lastAt - snap >= 20 && lastAt - snap <= 40, `the closing sweeps finish ${lastAt - snap} ticks after the snap`);
   // the cuts: on the carving slashes' ticks, at their piece, never more than `cap` alive (the letter is never pushed out)
   const cutLog = all.log.filter((e) => cutIds(F.cuts).includes(e.id));
   const S = all.z.r.slashes, plan = cutPlan(S, F.cuts);
@@ -363,7 +372,7 @@ test("ult: the shipped letter fits R's clock and box: its storm drawings on the 
   assert.equal(B.with.length, 5);
   for (const id of [F.letterBreak, ...B.with]) {
     const p = fx(id);
-    assert.deepEqual(p.pivot, L.pivot, `${id} on the letter's pivot`);
+    assert.deepEqual(p.pivot, B.pivot, `${id} on the pieces' one pivot (their canvas padded for the fall)`);
     assert.ok(p.frames.reduce((n, f) => n + f.ticks, 0) >= ULT.dive.ticks + ULT.dive.cap - 12, `${id} lasts the dive`);
   }
 });
