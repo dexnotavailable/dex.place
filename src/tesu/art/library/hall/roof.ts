@@ -44,7 +44,7 @@ const PURLINS: [number, number, number][] = [
 /** The ridge (H above the floor). */
 const RIDGE = 22.3;
 /** The bay of the transverse frames (H), lined up with the tie beam's joints. */
-const BAY = 4.6;
+export const BAY = 4.6;
 
 /** Timber in the haze: near (dark, warm, full contrast) to far (the cool air's mid violet). */
 const NEAR: Ramp = [P.umber[1]!, P.umber[2]!, P.umber[3]!, P.umber[4]!, P.umber[5]!];

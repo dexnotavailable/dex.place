@@ -18,6 +18,7 @@ import { BACK_LANTERNS, HALL, HALL_LIGHT, SHAFT } from "./lights.ts";
 import { clamp, hash, vnoise, type At } from "./kit.ts";
 import { bayer4 } from "../../raster.ts";
 import { lut, lutChain, poolLut, tint } from "./tint.ts";
+import { BAY as ROOF_BAY } from "./roof.ts";
 import { UP, UPPER_KINDS, loftLampFrac, loftOpening } from "./upper.ts";
 import { clerestoryBoxes, gateGeo, scrollBoxes, stiles } from "./gate.ts";
 import { P } from "../../palette.ts";
@@ -139,8 +140,9 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
         const fx = (wx - SHAFT.x1) / SHAFT.pool, fy = (dep - 0.18) / 0.5;
         const land = Math.max(0, 1 - fx * fx - fy * fy);
         if (land > 0) {
-          const lean = (SHAFT.x1 - SHAFT.x0) / (FY - SHAFT.y0);
-          const gx = wx + (wy - FY) * lean * 3;
+          // (integration, round 2) the lattice's bars fall straight down the floor's face: slanted with the depth they
+          // read as boards receding into the picture, a floor seen from above in a side-on room
+          const gx = wx;
           const bar = ((gx % 26) + 26) % 26 < 3.2 || (((wy - FY) % 9) + 9) % 9 < 1.4;
           sv += SHAFT.k * land * (bar ? 0.25 : 1.15);
         }
@@ -171,7 +173,33 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
       // three steps crushed it to a flat field with a few dots; the roof's boards over the lofts take two, the
       // purlins high up three
       if (!p.play && wy < FY - 13.2 * H) shade = wy > FY - 17.6 * H ? 1 : wy > FY - 19.2 * H + jit * H ? 2 : 3;
-      if (wx < p.ends[0] - 0.2 * H || wx > p.ends[1] + 0.2 * H) shade = Math.max(shade, wy < FY - 2.2 * H ? 2 : 1);
+      // (integration, round 2: beyond the end walls the shell sank two steps on a ruled vertical line, which cut the
+      // roof and the upper storey in hall-wide and the back wall in docs-nook where nothing stands at that line) the
+      // dark comes on at the line only where the play plane's end walls and the dark rooms beyond them stand (up to the
+      // tie beam's underside, 15.5 H: dress.ts BEAM); above them, and on
+      // the back plane (whose line never meets a wall with the parallax), it steps down a bay at a time, each step
+      // behind a member that stands there: the roof's transverse frames (roof.ts, every BAY from the piece's west
+      // end) on the play plane, the back wall's columns on the back plane
+      const past = Math.max(p.ends[0] - 0.2 * H - wx, wx - p.ends[1] - 0.2 * H);
+      if (past > 0) {
+        const full = wy < FY - 2.2 * H ? 2 : 1;
+        if (p.play && wy > FY - 15.5 * H) shade = Math.max(shade, full);
+        else {
+          const unit = p.play ? ROOF_BAY * H : 4.25 * H;
+          const o = p.play ? at.wx : HALL.x0 - 15 * H;
+          const half = p.play ? 0.3 * H : COL_R;
+          const west = wx < p.ends[0];
+          const end = west ? p.ends[0] - 0.2 * H : p.ends[1] + 0.2 * H;
+          // the members standing between the end line and this point (their far faces passed)
+          let n = 0;
+          const k0 = Math.floor((Math.min(wx, end) - o) / unit) - 1, k1 = Math.ceil((Math.max(wx, end) - o) / unit) + 1;
+          for (let k = k0; k <= k1; k++) {
+            const m = o + k * unit;
+            if (west ? m < end && wx < m - half : m > end && wx > m + half) n++;
+          }
+          shade = Math.max(shade, Math.min(full, n));
+        }
+      }
       // (hall loop round 2, W2-6/W2-8) a loft's box keeps the light its own lamp paints in it (no dusk, no disc);
       // under it the lamp's light spills a step onto the cornice's face and the tops of the sets, across the
       // lamp's reach and stopped at the loft's posts
