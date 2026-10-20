@@ -418,15 +418,17 @@ export class Sound {
   }
 
   private load(url: string): Promise<AudioBuffer | null> {
-    let p = this.buffers.get(url) ?? this.given?.(url) ?? undefined;
-    if (p) this.buffers.set(url, p);
-    else {
+    let p = this.buffers.get(url);
+    if (!p) {
       const ctx = this.ctx;
-      p = !ctx ? Promise.resolve(null) : fetch(url)
+      const get = (): Promise<AudioBuffer | null> => !ctx ? Promise.resolve(null) : fetch(url)
         .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status}`))))
         .then((b) => ctx.decodeAudioData(b))
         .catch(() => null);
-      if (ctx) this.buffers.set(url, p);
+      // (the page's own decode, if it has one; failed, this fetches it again)
+      const given = this.given?.(url);
+      p = given ? given.then((b) => b ?? get()) : get();
+      if (ctx || given) this.buffers.set(url, p);
     }
     return p;
   }

@@ -226,7 +226,8 @@ export class Opening {
    * exactly then. The heard T runs behind the render clock by the output's delay (Bluetooth 0.1 to 0.3 s), so a cue
    * triggered on T itself would be late, or dropped, on such outputs. Late, an effect is dropped and a take starts
    * that far in (cueAction). Without a running context (the page clock) a cue goes on T, and a take waits for the
-   * context (the "tap for sound" chip) while it would still speak.
+   * context (the "tap for sound" chip) while it would still speak; on the page clock with a running context a take
+   * is placed on T.
    */
   private cues(link: OpeningLink, T: number): void {
     const h = this.host;
@@ -241,8 +242,11 @@ export class Opening {
       if (this.fired.has(i)) return;
       // way 4 (the website's jetty): no voice lines (Dex 10-19)
       if (this.way === "bottom" && VOICE_CUES.has(c.id)) { this.fired.add(i); return; }
-      const at = now === null ? null : link.ctxTimeOf(c.T);
       const len = TAKES.get(c.id);
+      let at = now === null ? null : link.ctxTimeOf(c.T);
+      // (the page clock with a running context: Track 1 failed, or the context woke without the sound chip) a take is
+      // placed on T, so it still speaks, that far in
+      if (at === null && now !== null && len !== undefined) at = now + (c.T - T);
       if (at !== null && now !== null) {
         const go = cueAction(now, at, c.T, CUE_LEAD + this.gap, len);
         if (go === "wait") return;

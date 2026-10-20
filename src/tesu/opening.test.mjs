@@ -491,6 +491,24 @@ test("a late take still plays, that far into it; a late drum hit is still droppe
     near(calls[0].at, t0 + k.T, 1e-9, "on its moment (10 s in)");
     assert.equal(run(0, { from: 26 }).calls.length, 0, "past its end: nothing");
   }
+  {
+    // the page clock with a running context (Track 1 failed, or the context woke without the sound chip): placed on T
+    const ctx = { state: "running", currentTime: 50 }, calls = [];
+    let T = -0.05;
+    const host = {
+      herX: () => 86.4 * H, moveTo() {}, pose() {}, touchedSince: () => false, inputTick: () => 0, release() {}, title() {}, titleAt() {},
+      sfx: (id, at) => calls.push({ id, at, now: ctx.currentTime }), sfxCancel() {}, bed() {},
+      framing: () => world(), frameW: () => 1280, frameH: () => 720, cut() {}, cine() {},
+    };
+    const o = new Opening(host);
+    o.start({ T: () => T, epoch: 0, reduced: false, repeat: false, music: false, ctxTimeOf: () => null, skip: () => false, input() {}, ctx });
+    T = k.T + 2;
+    ctx.currentTime += 2.35;
+    o.tick();
+    const sp = calls.filter((c) => c.id === k.id);
+    assert.equal(sp.length, 1, "page clock: the speech asked for");
+    near(sp[0].at, ctx.currentTime - 2, 1e-9, "page clock: on its moment by T (2 s in)");
+  }
   // way 4 (the jetty, bar 6): no speech (Dex 10-19)
   assert.equal(run(0, { from: startT("bottom"), way: "bottom" }).calls.filter((c) => c.id === k.id).length, 0, "way 4: no speech");
 });
