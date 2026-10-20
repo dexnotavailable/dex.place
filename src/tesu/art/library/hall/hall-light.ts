@@ -18,11 +18,13 @@ import { BACK_LANTERNS, HALL, HALL_LIGHT, SHAFT } from "./lights.ts";
 import { clamp, hash, vnoise, type At } from "./kit.ts";
 import { bayer4 } from "../../raster.ts";
 import { lut, lutChain, poolLut, tint } from "./tint.ts";
-import { UPPER_KINDS, loftLampFrac } from "./backwall.ts";
+import { UP, UPPER_KINDS, loftLampFrac, loftOpening } from "./upper.ts";
 import { clerestoryBoxes, gateGeo, scrollBoxes, stiles } from "./gate.ts";
 import { P } from "../../palette.ts";
 
 const H = 96;
+/** The back wall's columns' radius (world px): backwall.ts 0.36 u. */
+const COL_R = 0.36 * H;
 
 export interface HallLightP {
   /** Size of the piece in its plane's px: the anchor is its west end on the walk line. */
@@ -55,7 +57,7 @@ function sortLights(floor: number, doors: [number, number, number, number][]): {
   for (const L of HALL_LIGHT.lights) {
     if (L.kind !== "point") continue;
     if (backKeys.has(`${L.x}|${L.y}`)) {
-      back.push({ x: L.x, y: L.y, r: Math.min(L.r * 0.5, 1.6 * H), k: L.k * 1.25 });
+      back.push({ x: L.x, y: L.y, r: Math.min(L.r * 0.38, 1.15 * H), k: L.k * 1.8 });
       continue;
     }
     // a door's own daylight is the doors' fan (below), not a lamp's pool
@@ -64,14 +66,21 @@ function sortLights(floor: number, doors: [number, number, number, number][]): {
     play.push({ x: L.x, y: L.y, r: L.r, k: L.k });
     if (floor - L.y < 3 * H) low.push({ x: L.x, y: L.y, r: 1.7 * H, k: L.k * 1.1 });
   }
-  // (hall loop round 2) the lamps in the back wall's lofts (backwall.ts: the bays are the dressing's, from
-  // 15 H west of the hall's west wall every 4.25 H, seeds 101 + 37 i)
+  return { back, play, low };
+}
+
+/** The back wall's lit lofts (world px): the opening's ends and the lamp's x (upper.ts; the bays are the dressing's, from
+ *  15 H west of the hall's west wall every 4.25 H, seeds 101 + 37 i). */
+function lofts(): { x0: number; x1: number; lamp: number }[] {
+  const out: { x0: number; x1: number; lamp: number }[] = [];
+  const [o0, o1] = loftOpening();
   for (let i = 0; i < 15; i++) {
     if (UPPER_KINDS[i % UPPER_KINDS.length] !== "loft") continue;
     const bx = HALL.x0 + (-15 + 4.25 * i) * H;
-    back.push({ x: bx + 0.45 * H + 3.35 * H * loftLampFrac(101 + i * 37), y: floor - 16.75 * H, r: 1.35 * H, k: 1.35 });
+    const x0 = bx + o0 * H, x1 = bx + o1 * H;
+    out.push({ x0, x1, lamp: x0 + (x1 - x0) * loftLampFrac(101 + i * 37) });
   }
-  return { back, play, low };
+  return out;
 }
 
 export const hallLight = definePainter<HallLightP>("hall.light", {
@@ -81,7 +90,11 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
   paint(c, p) {
     const at = p.at;
     const L = sortLights(p.floor, p.doors);
-    const wallPools = p.play ? [] : [...L.back, ...L.low];
+    const LOFTS = p.play ? [] : lofts();
+    // (round 2, W2-6) the service lamps' pools are no longer laid on the back wall: two planes back, they slid off
+    // their lamps with the camera and read as round discs behind the services
+    const wallPools = p.play ? [] : L.back;
+    const umber = new Set<number>([...P.umber, ...P.dusk, ...P.mauve]);
     const warm = [null, lut("warm", 1), lut("warm", 2), lut("warm", 3)] as const;
     const night = [null, lut("night", 1), lut("night", 2), lut("night", 3)] as const;
     const sun = [null, lut("sun", 1), lut("sun", 2), lut("sun", 3)] as const;
@@ -91,7 +104,17 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
       // the wandering edge of every band: a slow noise, so no pool is a drawn circle
       const jit = (vnoise(wx * 0.07, wy * 0.07, 7) - 0.5) * 0.05 + (hash(X, Y, 3) - 0.5) * 0.015;
       if (wy > FY + 1) {
-        if (!p.play) return null;
+        if (!p.play) {
+          // (round 2, W2-6) the back floor's polish under each back-wall lantern: a wide, shallow pool
+          let fv = 0;
+          for (const q of wallPools) {
+            const dx = (wx - q.x) / (q.r * 1.35), dd = (wy - FY) / (0.75 * H);
+            const f = 1 - dx * dx - dd * dd;
+            if (f > 0) fv += q.k * f * 0.85;
+          }
+          const n = bandsOf(fv + jit);
+          return n ? lut("warm", n) : null;
+        }
         // --- the floor: pools under the low lights, reflections down the polish, the doors' day
         const dep = (wy - FY) / H;
         let wv = 0, sv = 0;
@@ -143,14 +166,46 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
       // (hall loop round 2, W2-1) the play plane's roof over the tie beam is painted in the air's own
       // values, stepping into the haze as it goes up (roof.ts): no shade laid over it
       if (p.play && wy < FY - 16.42 * H) shade = 0;
+      // (hall loop round 2, W2-8) the back wall's upper storey (the lintel, its bracket sets, the plate and the
+      // lofts over it) sinks one step only: backwall.ts paints its structure in its own low values, so two or
+      // three steps crushed it to a flat field with a few dots; the roof's boards over the lofts take two, the
+      // purlins high up three
+      if (!p.play && wy < FY - 13.2 * H) shade = wy > FY - 17.6 * H ? 1 : wy > FY - 19.2 * H + jit * H ? 2 : 3;
       if (wx < p.ends[0] - 0.2 * H || wx > p.ends[1] + 0.2 * H) shade = Math.max(shade, wy < FY - 2.2 * H ? 2 : 1);
+      // (hall loop round 2, W2-6/W2-8) a loft's box keeps the light its own lamp paints in it (no dusk, no disc);
+      // under it the lamp's light spills a step onto the cornice's face and the tops of the sets, across the
+      // lamp's reach and stopped at the loft's posts
+      if (LOFTS.length && wy < FY - (UP.sets - 0.35) * H && wy > FY - UP.ceil * H) {
+        const lo = LOFTS.find((q) => wx > q.x0 && wx < q.x1);
+        if (lo) {
+          if (wy < FY - UP.cornice * H) return null;
+          const dx = (wx - lo.lamp) / (1.5 * H);
+          const sp = (1 - dx * dx) * (1 - (wy - (FY - UP.cornice * H)) / (0.75 * H)) + jit * 2;
+          if (sp > 0.35) return lut("warm", sp > 0.75 ? 2 : 1);
+        }
+      }
       let v = 0;
-      for (const q of wallPools) {
-        const dx = wx - q.x, dy = wy - q.y;
-        if (Math.abs(dx) > q.r || Math.abs(dy) > q.r) continue;
-        // light falls off a little faster upward (the lantern's cap shades the ceiling over it)
-        const f = 1 - (dx * dx + dy * dy * (dy < 0 ? 1.5 : 0.85)) / (q.r * q.r);
-        if (f > 0) v += q.k * f * f;
+      // (round 2, W2-6: every pool was a round disc) the lantern's cap shades the wall over it, so its pool reaches
+      // further down than up and wider than tall; the nearest column's face turned to it catches it hardest and
+      // further along its length, the face turned away takes little; the painted structure (gold, red, the screens'
+      // timber) takes it a little more than the dark boarding behind
+      if (wallPools.length) {
+        const ci = Math.round(((wx - HALL.x0) / H + 15) / 4.25);
+        const col = HALL.x0 + (-15 + 4.25 * ci) * H;
+        const onCol = Math.abs(wx - col) < COL_R;
+        const mat = umber.has(c.buf.get(X, Y)) ? 0.85 : 1.1;
+        for (const q of wallPools) {
+          const dx = wx - q.x, dy = wy - q.y;
+          const rx = q.r * 1.2, ry = dy < 0 ? q.r * 0.55 : q.r * 1.3;
+          if (Math.abs(dx) > rx * 1.1 || dy > ry * 1.6 || dy < -ry) continue;
+          let f = 1 - (dx / rx) ** 2 - (dy / ry) ** 2;
+          if (onCol) {
+            const facing = Math.abs(q.x - col) < COL_R * 0.5 || Math.sign(q.x - col) === Math.sign(wx - col);
+            const fc = 1 - (dx / (rx * 1.1)) ** 2 - (dy / (ry * 1.6)) ** 2;
+            f = facing ? Math.max(f, fc) * 1.3 : f * 0.35;
+          }
+          if (f > 0) v += q.k * f ** 1.5 * mat;
+        }
       }
       const lift0 = bandsOf(v + jit);
       let lift = lift0 - shade;
@@ -163,6 +218,8 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
         if (n > 0) return lutChain(lift > 0 ? ["warm", Math.min(3, lift)] : ["night", Math.min(3, -lift)], ["air", n]);
       }
       void warm; void night;
+      // (round 2, W2-6) the same on the back wall: the lantern's warmth laid over the dusk, never the wall's own brown
+      if (lift0 > 0 && shade > 0) return lutChain(["night", Math.min(3, shade)], ["warm", Math.min(4, lift0 + 1)]);
       return poolLut(Math.min(3, shade), Math.min(3, lift0));
     });
   },
@@ -230,6 +287,8 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
     const cl = clerestoryBoxes(g), sc = scrollBoxes(g);
     const st = stiles(g);
     const SW = Math.round(0.085 * H);
+    // the bay wall's rails (gate.ts bayWall): the mid rail, the low rail over the dado, the dado's top
+    const RAIL_MID = -2.55 * H, DADO_H = Math.round(0.42 * H), RAIL_LOW = -DADO_H - 0.08 * H;
     const lamps: Pool[] = [];
     if (p.at) {
       const gx = p.at.wx, fy = p.at.wy;
@@ -270,29 +329,47 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
       // --- the lamps in front of the wall light the panel behind them: strongest just above the lamp,
       // falling off up the plaster, stopped at the stiles either side (each throws the panel beyond into
       // its shade); the stiles' faces turned to the lamp and the rails' top edges catch it hardest
+      // (round 2, W2-6: the pools read as a dome and a rounded block, a panel filled edge to edge) a lamp's light is
+      // drawn by the relief it rakes across: the stile faces turned to it and the rails' top edges over it catch it
+      // in bright strips, the flat plaster takes only a faint warmth that fades out inside its own panel; the
+      // stiles either side of the lamp's panel throw the near part of the panels beyond into their shadow
       let lamp = 0;
+      const railTop = Math.abs(ly - (RAIL_MID - 0.045 * H)) < 2.5 || Math.abs(ly - RAIL_LOW) < 2.5 || Math.abs(ly + DADO_H) < 2.5;
       for (const q of lamps) {
         const dy = ly - q.y;
         // a lamp standing on a service lights up the wall (the service hides what is under it); a
         // lantern hanging free lights it above and below
         const hanging = q.y < -2 * H;
-        const below = hanging ? 1.1 * H : 0.15 * H;
-        if (dy > below || dy < -1.9 * H) continue;
+        const below = hanging ? 1.0 * H : 0.15 * H;
+        if (dy > below || dy < -2.0 * H) continue;
         const i0 = st.findIndex((sx) => sx > q.x);
         const left = i0 > 0 ? st[i0 - 1]! : p.l, right = i0 >= 0 ? st[i0]! : p.r;
-        const fall = dy < 0 ? clamp(1 + dy / ((hanging ? 1.1 : 1.9) * H), 0, 1) : clamp(1 - dy / below, 0, 1);
+        const ddx = (lx - q.x) / ((hanging ? 1.25 : 1.05) * H);
+        const ddy = dy < 0 ? dy / ((hanging ? 1.0 : 1.8) * H) : dy / below;
+        // the bands run nearly level across the panel (light climbing the plaster and fading up it), not in rings
+        const f = clamp(1 - Math.abs(ddy), 0, 1) ** 1.25 * clamp(1 - ddx * ddx * 0.8, 0, 1);
+        if (f <= 0) continue;
         let v = 0;
-        if (lx > left + SW / 2 && lx < right - SW / 2) {
-          const across = 1 - Math.abs(lx - q.x) / Math.max(1, right - left);
-          v = q.k * fall * fall * (0.55 + 0.45 * across) * 1.25;
-        } else if (Math.abs(lx - left) <= SW / 2 && lx > left + SW / 2 - 2.5) v = q.k * fall * 1.3;
-        else if (Math.abs(lx - right) <= SW / 2 && lx < right - SW / 2 + 2.5) v = q.k * fall * 1.3;
+        const inPanel = lx > left + SW / 2 && lx < right - SW / 2;
+        if (Math.abs(lx - left) <= SW / 2) v = lx > left + SW / 2 - 2.5 ? q.k * f * 1.5 : q.k * f * 0.35;
+        else if (Math.abs(lx - right) <= SW / 2) v = lx < right - SW / 2 + 2.5 ? q.k * f * 1.5 : q.k * f * 0.35;
+        else if (railTop && dy < 0) v = q.k * f * (inPanel ? 1.4 : 0.8);
+        else if (inPanel) v = q.k * f * f * 0.95;
+        else {
+          // a panel beyond the stile: the stile's shadow across its near part, then a little of the light
+          const nearEdge = lx < left ? left - SW / 2 - lx : lx - right - SW / 2;
+          v = nearEdge < 0.25 * H ? 0 : q.k * f * f * 0.45;
+        }
         lamp = Math.max(lamp, v);
       }
-      const lv = lamp + (bayer4(X, Y) - 0.5) * 0.05;
-      const warmN = lv > 0.62 ? 3 : lv > 0.4 ? 2 : lv > 0.2 ? 1 : 0;
+      const lv = lamp + j * 0.6 + (bayer4(X, Y) - 0.5) * 0.04;
+      const warmN = lv > 0.8 ? 4 : lv > 0.56 ? 3 : lv > 0.33 ? 2 : lv > 0.15 ? 1 : 0;
       // net of the light and the dusk, both on the wall's own colour (a pool brings the warm plaster back
       // and lifts it; the dusk sinks it): never a warm step laid over the dusk, which reads as a stain
+      // (round 2, W2-6) a lamp's pool is laid over the dusk (the dusk first, the lamplight on it): it climbs from the
+      // navy through the violet-brown into amber at its core, instead of netting back to the plaster's own grey-brown
+      // (which read as a brown stain the shape of the pool)
+      if (warmN > 0 && warmN >= sunN) return lutChain(["night", shade], ["warm", warmN]);
       const net = Math.max(warmN, sunN) - shade;
       if (net > 0) return lut(warmN >= sunN ? "warm" : "sun", net);
       if (net < 0) return lut("night", -net);

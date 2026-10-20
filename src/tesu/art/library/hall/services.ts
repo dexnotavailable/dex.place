@@ -334,6 +334,11 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
   const PL = Math.round(0.11 * H); // the plinth's height
   const px0 = -0.1 * H, px1 = W + 0.1 * H; // the frame's posts
   const postTop = -1.56 * H;
+  // (hall loop round 2, W2-7) its own lantern's light, by what it lands on: the west post's face toward it, the
+  // beam's underside, the sign's edge, the chest's rim and lid, a glint along the slit plate's top edge, the coins
+  // on the plinth; falling off across the chest away from the lantern (0 .. 1)
+  const LX = px0 - 0.26 * H, LY = -0.84 * H;
+  const g = (lx: number, ly: number): number => clamp(1 - Math.hypot((lx - LX) / (1.65 * H), (ly - LY) / (1.35 * H)), 0, 1);
   contact(c, px0 - 8, px1 + 8, 0.9);
 
   // --- the frame: two slim lacquer posts on stone feet, a crossbeam with a little tiled cap
@@ -342,7 +347,7 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
     rect(c, fx - 3, postTop, fx + 3, -PL - 4, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
       const u = (lx - fx) / 3;
-      return mt(M.verm, v(l, 0.5, u * 0.8, 0) + (u * side > 0.5 ? 0.12 : u * side < -0.5 ? -0.1 : 0), X, Y, 0.2, 1);
+      return mt(M.verm, v(l, 0.5, u * 0.8, 0) + (u * side > 0.5 ? 0.12 : u * side < -0.5 ? -0.1 : 0) + (lx < fx ? g(lx, ly) * 0.75 : g(lx, ly) * 0.15), X, Y, 0.2, 1);
     });
   }
   const bm0 = postTop - 6, bm1 = postTop + 4;
@@ -351,8 +356,8 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
     const e = ly - bm0;
     const end = lx < px0 - 8 || lx > px1 + 8;
     if (e < 1.5) return mt(M.wood, v(l, 0.85, 0, -1), X, Y, 0.0, 1);
-    if (end) return mt(M.gold, v(l, 0.6, lx < 0 ? -0.6 : 0.6, 0), X, Y, 0.1, 1);
-    return mt(M.lacq, v(l, 0.55) + grain(lx, ly, 97, false) * 0.05, X, Y, 0.0, 1);
+    if (end) return mt(M.gold, v(l, 0.6, lx < 0 ? -0.6 : 0.6, 0) + g(lx, ly) * 0.5, X, Y, 0.1, 1);
+    return mt(M.lacq, v(l, 0.55) + grain(lx, ly, 97, false) * 0.05 + (bm1 - ly < 2.5 ? g(lx, ly) * 0.9 : 0), X, Y, 0.0, 1);
   });
   poly(c, [px0 - 20, bm0 + 1, px0 - 14, bm0 - 6, (px0 + px1) / 2, bm0 - 0.17 * H, px1 + 14, bm0 - 6, px1 + 20, bm0 + 1, px1 + 12, bm0 + 2, px0 - 12, bm0 + 2], (X, Y, lx, ly) => {
     const l = lf.get(lx, ly);
@@ -367,7 +372,7 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
     rect(c, sx0, sy0, sx0 + sw, sy1, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
       const e = Math.min(lx - sx0, sx0 + sw - lx, ly - sy0, sy1 - ly);
-      if (e < 2) return mt(M.gold, v(l, 0.62, 0, ly - sy0 < 2 ? -0.8 : 0.3), X, Y, 0.05, 1);
+      if (e < 2) return mt(M.gold, v(l, 0.62, 0, ly - sy0 < 2 ? -0.8 : 0.3) + (lx - sx0 < 2 ? g(lx, ly) * 0.8 : g(lx, ly) * 0.3), X, Y, 0.05, 1);
       return mt(M.lacq, v(l, 0.42) + grain(lx, ly, 99, false) * 0.05, X, Y, 0.0, 1);
     });
     cashCoin(c, W / 2, (sy0 + sy1) / 2, sh * 0.34, (X, Y) => tn(M.gold, 0.18, X, Y, 0), (X, Y) => tn(M.gold, 0.55, X, Y, 0), (X, Y) => tn(M.gold, 0.0, X, Y, 0));
@@ -375,10 +380,12 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
 
   // --- its own lamp: an iron bracket off the west post, a small paper lantern hanging from it, lit
   {
-    const ax = px0 - 0.26 * H, ay = -1.22 * H;
-    rect(c, ax, ay - 2, px0 - 3, ay + 1, (X, Y) => tn(M.lacq, 0.55, X, Y, 0));
-    poly(c, [px0 - 3, ay + 1, px0 - 3, ay + 12, px0 - 14, ay + 1], (X, Y, lx, ly) => (Math.abs((lx - px0 + 3) + (ly - ay - 1)) < 1.6 || lx > px0 - 4.5 ? tn(M.lacq, 0.55, X, Y, 0) : 0));
-    const lx0 = ax - 7, lx1 = ax + 7, l0 = ay + 6, l1 = ay + 0.24 * H;
+    const ax = px0 - 0.26 * H, ay = -1.0 * H;
+    // the iron arm: its top edge catching the lantern's light, a scroll at its end, a brace up from the post
+    rect(c, ax - 3, ay - 2, px0 - 3, ay + 1.5, (X, Y, _lx, ly) => (ly < ay - 0.8 ? tn(M.bronze, 0.35, X, Y, 0) : tn(M.lacq, 0.5, X, Y, 0)));
+    rect(c, ax - 5, ay - 5, ax - 2, ay - 1, (X, Y, lx, ly) => (Math.hypot(lx - ax + 3.5, ly - ay + 3) < 2.2 && Math.hypot(lx - ax + 3.5, ly - ay + 3) > 0.9 ? tn(M.bronze, 0.45, X, Y, 0) : 0));
+    poly(c, [px0 - 3, ay + 1, px0 - 3, ay + 12, px0 - 14, ay + 1], (X, Y, lx, ly) => (Math.abs((lx - px0 + 3) + (ly - ay - 1)) < 1.6 || lx > px0 - 4.5 ? tn(M.lacq, 0.5, X, Y, 0) : 0));
+    const lx0 = ax - 10, lx1 = ax + 10, l0 = ay + 6, l1 = ay + 0.3 * H;
     cord(c, ax, ay + 1, ax, l0, 0, (X, Y) => tn(M.lacq, 0.6, X, Y, 0));
     rect(c, lx0, l0, lx1, l1, (X, Y, lx, ly) => {
       const u = (lx - lx0) / (lx1 - lx0), vv = (ly - l0) / (l1 - l0);
@@ -398,7 +405,7 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
     const nx = lx < -0.08 * H + 3 ? -0.8 : lx > W + 0.08 * H - 3 ? 0.8 : 0;
     const chip = fbm(lx * 0.35, ly * 0.35, 101, 2) > 0.72 ? 0.12 : 0;
     const joint = Math.abs(lx - W * 0.38) < 0.7 && vv > 0.25;
-    return mt(M.stone, v(l, vv < 0.2 ? 0.72 : 0.5, nx, vv < 0.2 ? -0.9 : 0) - chip - (joint ? 0.15 : 0) - (vv > 0.85 ? 0.08 : 0), X, Y, 0.15, 1);
+    return mt(M.stone, v(l, vv < 0.2 ? 0.72 : 0.5, nx, vv < 0.2 ? -0.9 : 0) - chip - (joint ? 0.15 : 0) - (vv > 0.85 ? 0.08 : 0) + g(lx, ly) * (vv < 0.2 ? 1.0 : 0.5), X, Y, 0.15, 1);
   });
 
   // --- the chest: body, corners, crest, the slit plate, the slatted band, the heavy rim
@@ -411,7 +418,7 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
     // the front's two boards with a seam, the grain running across
     const seam = Math.abs(vv - 0.55) < 0.03;
     // dark weathered timber, so the brass slit plate and the coin crest stand out on it
-    return mt(M.wood, v(l, seam ? 0.22 : 0.42, nx, ny) + grain(lx, ly, 103, false) * 0.08 - vv * 0.06, X, Y, 0.2, 1);
+    return mt(M.wood, v(l, seam ? 0.22 : 0.46, nx, ny) + grain(lx, ly, 103, false) * 0.08 - vv * 0.06 + g(lx, ly) * 1.2, X, Y, 0.2, 1);
   });
   // iron-dark corner brackets and studs
   for (const [fx, fy, sx, sy] of [[0, s1, 1, 1], [W, s1, -1, 1], [0, b1, 1, -1], [W, b1, -1, -1]] as const) {
@@ -433,9 +440,11 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
       const u = (lx - ex0) / (ex1 - ex0), vv = (ly - ey0) / (ey1 - ey0);
       const rivet = Math.abs(vv - 0.5) < 0.16 && (Math.abs(u - 0.05) < 0.025 || Math.abs(u - 0.95) < 0.025);
       if (rivet) return tn(M.gold, 0.6, X, Y, 0);
-      if (ly < ey0 + 1) return mt(M.gold, v(l, 0.95, 0, -0.9), X, Y, 0.0, 1);
+      // the glint: the plate's top edge catching the lantern, hottest at its lantern end, running out across it
+      if (ly < ey0 + 1) return g(lx, ly) > 0.12 + hash(Math.floor(lx), 3, 107) * 0.06 ? P.paper[0]! : mt(M.gold, v(l, 0.95, 0, -0.9) + g(lx, ly), X, Y, 0.0, 1);
+      if (ly < ey0 + 2.2 && g(lx, ly) > 0.2) return tn(M.gold, 0.0, X, Y, 0);
       if (ly > ey1 - 1.2) return mt(M.gold, v(l, 0.35, 0, 0.8), X, Y, 0.0, 1);
-      return mt(M.gold, v(l, 0.72, (u - 0.5) * 0.6, 0), X, Y, 0.0, 1);
+      return mt(M.gold, v(l, 0.72, (u - 0.5) * 0.6, 0) + g(lx, ly) * 0.8, X, Y, 0.0, 1);
     });
     rect(c, W / 2 - slW / 2, slY - 1, W / 2 + slW / 2, slY, (X, Y) => tn(M.gold, 0.0, X, Y, 0));
     rect(c, W / 2 - slW / 2, slY, W / 2 + slW / 2, slY + 3, () => P.ink[0]!);
@@ -454,23 +463,24 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
     const gap = k > 4.5;
     if (ly > s1 - 1.2) return mt(M.lacq, v(l, 0.2), X, Y, 0.0, 1);
     if (gap) return mt(M.lacq, v(l, 0.12), X, Y, 0.0, 1);
-    return mt(M.wood, v(l, k < 1 ? 0.78 : 0.6, k < 1 ? -0.5 : 0.3, 0), X, Y, 0.1, 1);
+    return mt(M.wood, v(l, k < 1 ? 0.78 : 0.6, k < 1 ? -0.5 : 0.3, 0) + g(lx, ly) * (k < 1.5 ? 1.1 : 0.7), X, Y, 0.1, 1);
   });
   // the heavy rim: overhanging, a bright top lip, gold end caps, a dark underside line
   rect(c, -4, r0, W + 4, r1, (X, Y, lx, ly) => {
     const l = lf.get(lx, ly);
     const vv = ly - r0;
     const cap = lx < 1 || lx > W - 1;
-    if (vv < 1.5) return mt(M.wood, v(l, 1.0, 0, -1), X, Y, 0.0, 1);
+    if (vv < 1.5) return g(lx, ly) > 0.12 ? P.paper[g(lx, ly) > 0.28 ? 0 : 1]! : mt(M.wood, v(l, 1.0, 0, -1), X, Y, 0.0, 1);
     if (r1 - ly < 1.5) return mt(M.lacq, v(l, 0.18, 0, 0.8), X, Y, 0.0, 1);
     if (cap) return mt(M.gold, v(l, 0.62, lx < 0 ? -0.6 : 0.6, 0), X, Y, 0.05, 1);
-    return mt(M.verm, v(l, 0.5) + grain(lx, ly, 105, false) * 0.05, X, Y, 0.15, 1);
+    return mt(M.verm, v(l, 0.5) + grain(lx, ly, 105, false) * 0.05 + g(lx, ly) * (vv < 3.5 ? 1.2 : 0.8), X, Y, 0.15, 1);
   });
 
   // --- offerings on the plinth: coins scattered and a short stack, a mandarin on a dish
   const py = -PL;
   for (const [ox, oy] of [[-5, 0], [-2, 0], [W + 2, 0], [W + 5, -1]] as const) {
-    rect(c, ox - 2, py + oy - 1.5, ox + 2, py + oy, (X, Y, lx) => (lx < ox ? tn(M.gold, 0.12, X, Y, 0) : tn(M.gold, 0.42, X, Y, 0)));
+    const gc = g(ox, py + oy);
+    rect(c, ox - 2, py + oy - 1.5, ox + 2, py + oy, (X, Y, lx, ly) => (ly < py + oy - 0.6 && lx < ox + 1 ? (gc > 0.2 ? P.paper[0]! : tn(M.gold, 0.0, X, Y, 0)) : lx < ox ? tn(M.gold, 0.12 - gc * 0.12, X, Y, 0) : tn(M.gold, 0.42 - gc * 0.3, X, Y, 0)));
   }
   coinStack(c, W + 0.02 * H, py, 5, 3, (X, Y) => tn(M.gold, 0.25, X, Y, 0), (X, Y) => tn(M.gold, 0.6, X, Y, 0), (X, Y) => tn(M.gold, 0.0, X, Y, 0));
   rect(c, -0.075 * H, py - 2, -0.075 * H + 11, py, (X, Y) => tn(P.paper, 0.45, X, Y, 0));

@@ -172,27 +172,36 @@ export const shaft = definePainter<ShaftP>("hall.shaft", {
     const f = p.frame ?? 0;
     const breathe = Math.sin((f / 8) * Math.PI * 2);
     const from = p.from ?? 0;
-    const rays: [number, number, number, number][] = [[-0.5, 9, 0.42, 1], [0.02, 15, 0.5, 0], [0.5, 7, 0.36, 1]];
-    rect(c, -p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, Math.min(0, from), (_X, _Y, lx, ly) => {
+    // (round 2, second pass: three hard rays read as ropes from across the hall; an ordered dot screen reads as
+    // a grid) a soft body of lit air: the dust in the light, one dim colour a step above the far wall's dusk,
+    // scattered (no grid, no rows) at a density highest in the core near the well and falling off across the
+    // shaft and down it, so the wall behind shows through it; three long wide rays a little denser; motes a
+    // second step lighter here and there in the core. The scatter drifts a px over the loop (the air moving).
+    const RAYS: [number, number, number][] = [[-0.45, 0.24, 0.42], [0.05, 0.32, 0.55], [0.48, 0.2, 0.3]];
+    const drift = Math.floor(f / 2);
+    rect(c, -p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, Math.min(0, from), (X, Y, lx, ly) => {
       if (p.gaps && p.gaps.some((g) => ly > g[0] && ly < g[1])) return 0;
       if (p.skip && p.skip.some((b) => lx > b[0] && lx < b[2] && ly > b[1] && ly < b[3])) return 0;
       const t = -ly / p.h; // 0 at the foot .. 1 at the top
       const axis = -p.lean * t;
       const half = (p.w * (1 - t) + p.wTop * t) / 2;
-      const s = lx - axis;
-      for (const [ru, rw, end, warm] of rays) {
-        if (t < end) continue;
-        const wob = (vnoise(ly * 0.012, ru * 13, 41) - 0.5) * 1.5;
-        const w = (rw + breathe * 0.8) * (0.4 + 0.6 * clamp((t - end) / 0.25, 0, 1));
-        const e = Math.abs(s - ru * half - wob) - w / 2;
-        if (e < 0) {
-          // each ray brighter in its middle, its sides a step dimmer
-          const inner = e < -2.2;
-          if (t < end + 0.08) return P.dusk[2]!;
-          return inner ? (warm ? P.mauve[0]! : P.dusk[0]!) : P.dusk[1]!;
-        }
+      const off = (lx - axis) / half;
+      const edge = 1.15 + (vnoise(ly * 0.01, 3, 41) - 0.5) * 0.3;
+      if (Math.abs(off) > edge) return 0;
+      // soft both sides: the density eases out over the outer third (no ruled edge)
+      const across = clamp((edge - Math.abs(off)) / (edge * 0.55), 0, 1) ** 1.6;
+      const down = clamp((t - 0.12) / 0.88, 0, 1);
+      let k = across * (0.05 + 0.22 * down * down);
+      for (const [ru, rw, end] of RAYS) {
+        if (t <= end) continue;
+        const e = Math.abs(off - ru - (vnoise(ly * 0.008, ru * 7, 43) - 0.5) * 0.14) / rw;
+        if (e < 1) k += 0.12 * (1 - e * e) * clamp((t - end) / 0.3, 0, 1) * across;
       }
-      return 0;
+      k = clamp(k + breathe * 0.012, 0, 0.5);
+      // a scatter, not a screen: each px its own chance, the motes clumped a little by a fine noise
+      const r = hash(X + drift, Y - drift * 3, 47) * 0.7 + vnoise(X * 0.35, Y * 0.35, 49) * 0.3;
+      if (r > k) return 0;
+      return r < k * 0.2 && k > 0.2 ? P.mauve[0]! : P.dusk[0]!;
     });
   },
 });

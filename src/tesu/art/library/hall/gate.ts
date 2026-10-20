@@ -716,23 +716,27 @@ export function clerestories(c: PaintCtx, g: GateGeo, lf: LitField): void {
       if (iy > ih - REV) return iy > ih - REV + 1 ? P.stone[3]! : P.stone[2]!;
       if (iy < REV + 1 || ix < REV - 1) return iy < REV + 1 && ix > REV - 1 ? P.dusk[3]! : P.dusk[2]!;
       if (iw - ix < 2) return P.dusk[1]!;
-      // the lattice: cracked ice in 2 px bars, each lit along its top by the day outside, dark under it
+      // (round 2: they read as grey grilles) the lattice: cracked ice in open cells, its bars dark against the
+      // court's bright day, each with a warm lit lip along its top
       const gx = ix - REV + 1, gy = iy - REV - 1;
       const seed = 4601 + (x0 < 0 ? 0 : 7);
-      if (ice(gx, gy, seed)) return ice(gx, gy - 1.5, seed) ? P.umber[4]! : P.mauve[1]!;
-      // beyond it: the cool day, a far roof's ridge low across it
+      if (ice(gx, gy, seed)) return ice(gx, gy - 1.5, seed) ? P.umber[4]! : P.umber[1]!;
       const sw = iw - REV + 1, sh = ih - 2 * REV - 1;
       const fu = gx / sw, fv = gy / sh;
-      const roof = fv > 0.74 + Math.pow(Math.abs(fu - 0.45) * 1.6, 3) * 0.18 - (fu > 0.86 ? (fu - 0.86) * 1.4 : 0);
-      if (roof) return fv > 0.86 ? P.dusk[4]! : P.tile[5]!;
-      return fv < 0.4 ? P.tile[4]! : fv < 0.62 ? P.tile[3]! : P.tile[2]!;
+      // beyond it: the court's day, a step under the gate's (the gate is the key): a pale sky warming toward
+      // the horizon, a far karst in haze low across it, a cloud's lit top on one side
+      const kars = fv > 0.66 + 0.16 * Math.abs(Math.sin(fu * 5.2 + seed)) + 0.06 * Math.sin(fu * 17 + seed);
+      if (kars) return fv > 0.9 ? P.range[6]! : P.range[5]!;
+      const cl = Math.hypot((fu - (x0 < 0 ? 0.3 : 0.7)) * 1.6, (fv - 0.42) * 2.4);
+      if (cl < 0.42) return cl < 0.3 && fv < 0.44 ? P.range[2]! : P.range[3]!;
+      return fv < 0.3 ? P.range[5]! : fv < 0.55 ? P.range[4]! : P.range[3]!;
     });
   }
 }
 
 /** A cracked-ice lattice (bingliewen): true on a bar (2 px wide), the cells irregular polygons. */
 function ice(x: number, y: number, seed: number): boolean {
-  const gs = 15;
+  const gs = 21;
   if (x < 1.5 || y < 1.5) return true;
   const ci = Math.floor(x / gs), cj = Math.floor(y / gs);
   let d1 = Infinity, d2 = Infinity;

@@ -79,7 +79,8 @@ export const SERVICE_LAMPS: PointLight[] = [
   // the sponsors' board: the lantern hanging over its head
   { kind: "point", x: X(8.4), y: FY - h(2.6), r: h(1.9), k: 0.75 },
   // the offering box: its own lantern on a bracket off the west post of its frame (round 2)
-  { kind: "point", x: X(10.15), y: FY - h(1.05), r: h(1.5), k: 0.9 },
+  // (round 2, W2-7) hung a little lower on its bracket, so it lights the chest's lid and front and the plinth
+  { kind: "point", x: X(10.15), y: FY - h(0.85), r: h(1.5), k: 0.95 },
   // the register desk: its desk lamp at the visitor's end
   { kind: "point", x: X(12.9), y: FY - h(0.8), r: h(1.7), k: 0.95 },
   // the map's lamp

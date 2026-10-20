@@ -12,6 +12,7 @@
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
+import { upperWall } from "./upper.ts";
 import { M, SCREEN, LitField, clamp, colBase, colLight, cyl, fbm, grain, hash, keep, lathe, lum, mt, rect, tn, vnoise, type At } from "./kit.ts";
 
 /** A bay of the back wall between two columns, in local plane px. */
@@ -50,7 +51,6 @@ const BAL_FLOOR = 8.6;
 const BAL_RAIL = 9.3;
 const HIGH_TOP = 13.2;
 const LINTEL = 14.2;
-const BRACKETS = 15.6;
 
 export const backwall = definePainter<BackWallP>("hall.backwall", {
   bounds(p) {
@@ -87,8 +87,8 @@ export const backwall = definePainter<BackWallP>("hall.backwall", {
     for (const b of p.bays) highBay(c, p, b, lf);
     // 6. the lintel, painted teal and gold, and the gold bracket sets on it
     lintel(c, p, lf);
-    // 7. the roof structure, going up into the dark
-    roof(c, p, lf);
+    // 7. the upper storey over the lintel: bracket sets, the cornice, the lofts, the roof going up into the dark
+    upperWall(c, p, lf);
     // 8. columns over everything
     for (const cx of p.cols) column(c, p, cx, lf);
     // 9. the polished floor receding toward us, the wall doubled in it
@@ -488,199 +488,6 @@ function lintel(c: PaintCtx, p: BackWallP, lf: LitField): void {
     if (flaked) return mt(M.wood, lum(l) * 0.45, X, Y, 0.3, 1);
     return tn(P.jade, clamp(0.86 + (1 - lum(l)) * 0.14 + (Math.sin(lx * 0.18) > 0.6 ? -0.06 : 0), 0, 1), X, Y, 0.45);
   });
-}
-
-/** Where a loft's lamp hangs across its bay (share of the bay's inner width), from the bay's seed. */
-export function loftLampFrac(seed: number): number {
-  return 0.3 + 0.4 * hash(seed, 31);
-}
-
-/** What fills each bay above the bracket sets (the hall loop, round 2, W2-8), by the bay's index. */
-export const UPPER_KINDS: ("loft" | "beams" | "lattice" | "banner")[] = ["beams", "loft", "lattice", "banner", "beams", "loft", "banner", "lattice", "loft", "beams", "lattice", "loft", "banner", "beams", "loft"];
-
-// heights in H over the floor for the upper zone
-const PLATE = BRACKETS, PLATE_T = 15.92, LOFT_CEIL = 17.5, PURLIN0 = 18.1;
-
-function roof(c: PaintCtx, p: BackWallP, lf: LitField): void {
-  // (hall loop round 2, W2-8: the round-1 upper wall was stamped slot rows and one repeated bracket)
-  // every bay its own above the lintel: bracket sets that differ by bay, a wall plate, and over it a
-  // storage loft (a rail, crates, rolled scrolls, a lamp, now and then a figure), a lattice clerestory, the
-  // roof's beams coming in through the wall, or a long banner hung down over the brackets; each thing
-  // casts its shadow on the wall behind it; the roof's purlins go up into the dark above
-  const U = p.u;
-  const yL = -LINTEL * U;
-  // --- the back of it all: the wall's boards between the plate and the purlins, dark
-  rect(c, 0, -p.top, p.w, yL, (X, Y, lx, ly) => {
-    const l = lf.get(lx, ly);
-    const hgt = -ly / U;
-    if (hgt > PURLIN0) {
-      // the roof going up: purlins ever closer, rafters between, all in the dark
-      const ph = hgt - PURLIN0;
-      const k = Math.floor(Math.sqrt(ph * 5)), kh = (k * k) / 5;
-      const pur = ph - kh < 0.16 + 0.03 * Math.max(0, 3 - k);
-      const raft = ((((lx + k * 7) % (0.36 * U)) + 0.36 * U) % (0.36 * U)) < 0.12 * U;
-      if (pur) return mt(M.lacq, lum(l, 0, ph - kh < 0.05 ? 0.6 : -0.4) * 0.6, X, Y, 0.3, 1, 0.2);
-      return raft ? mt(M.lacq, lum(l) * 0.35, X, Y, 0.4, 1, 0.2) : tn(M.dark, 0.9, X, Y, 0.3);
-    }
-    const board = Math.abs((((lx + 7) % 22) + 22) % 22 - 11) > 10.2;
-    return mt(M.lacq, lum(l) * 0.5 - (board ? 0.12 : 0) + grain(lx, ly, 2011) * 0.08, X, Y, 0.2, 1, 0.2);
-  });
-  // --- each bay's upper part
-  p.bays.forEach((b, i) => upperBay(c, p, b, UPPER_KINDS[i % UPPER_KINDS.length]!, lf));
-  // --- the wall plate along the top of the brackets: a beam with a lit underside, joints at the columns
-  rect(c, 0, -PLATE_T * U, p.w, -PLATE * U, (X, Y, lx, ly) => {
-    const l = lf.get(lx, ly);
-    const v = (ly + PLATE_T * U) / ((PLATE_T - PLATE) * U);
-    const joint = p.cols.some((cx) => Math.abs(lx - cx - 0.5 * U) < 1.2);
-    if (joint) return mt(M.lacq, lum(l) * 0.2, X, Y, 0.4, 1, 0);
-    if (v > 0.78) return mt(M.wood, lum(l, 0, 0.8) * 0.75, X, Y, 0.2, 1, 0);
-    return mt(M.lacq, lum(l, 0, v < 0.2 ? -0.7 : 0) * 0.62, X, Y, 0.2, 1, 0.2);
-  });
-  // --- bracket sets: big ones on the columns (three tiers), smaller between them; they differ by bay
-  // (reach, a lost arm, a set painted red); each throws its shadow down and right onto the boards
-  const step = 4.25 * U / 2;
-  for (let bx = (p.cols[0] ?? 0) - step * 8, si = 0; bx < p.w + step; bx += step, si++) {
-    const onCol = si % 2 === 0;
-    const tiers = onCol ? 3 : 1 + (hash(si, 2, 91) < 0.5 ? 1 : 0);
-    const reach = 0.85 + 0.3 * hash(si, 1, 91);
-    const red = hash(si, 4, 91) < 0.18;
-    for (let tier = 0; tier < tiers; tier++) {
-      const ty1 = yL - tier * 0.45 * U, ty0 = ty1 - 0.45 * U;
-      const arm = (0.32 + tier * 0.26) * U * reach * (hash(si, tier + 3, 91) < 0.12 ? 0.6 : 1);
-      // shadow first, then the arm and the block
-      rect(c, bx - arm + 3, ty0 + 0.36 * U, bx + arm + 4, ty0 + 0.36 * U + 3, (X, Y, lx, ly) => mt(M.lacq, lum(lf.get(lx, ly)) * 0.15, X, Y, 0.4, 1, 0));
-      rect(c, bx - arm, ty0 + 0.18 * U, bx + arm, ty0 + 0.36 * U, (X, Y, lx, ly) => {
-        const l = lf.get(lx, ly);
-        const end = Math.abs(lx - bx) > arm - 0.12 * U;
-        const under = ly > ty0 + 0.32 * U;
-        if (under) return mt(M.lacq, lum(l) * 0.3, X, Y, 0.3, 1, 0);
-        if (end) return mt(M.gold, lum(l, Math.sign(lx - bx) * 0.6, 0) * 0.55, X, Y, 0.35, 1, 0);
-        return red ? mt(M.verm, lum(l) * 0.5, X, Y, 0.3, 1, 0) : tn(P.jade, clamp(0.8 + (1 - lum(l)) * 0.2, 0, 1), X, Y, 0.2);
-      });
-      rect(c, bx - 0.16 * U, ty0, bx + 0.16 * U, ty0 + 0.2 * U, (X, Y, lx, ly) => mt(M.gold, lum(lf.get(lx, ly), (lx - bx) / (0.2 * U), -0.4) * 0.75, X, Y, 0.2, 1, 0));
-    }
-  }
-}
-
-/** One bay's upper part, over the bracket sets: a loft, the roof's beams, a clerestory or a banner. */
-function upperBay(c: PaintCtx, p: BackWallP, b: Bay, kind: (typeof UPPER_KINDS)[number], lf: LitField): void {
-  const U = p.u;
-  const x0 = b.x0 + 0.45 * U, x1 = b.x1 - 0.45 * U, w = x1 - x0;
-  const fy = -PLATE_T * U, cy = -LOFT_CEIL * U;
-  if (kind === "loft") {
-    // the loft's dark depth, its ceiling beam casting a shadow on the stacks, a warm lamp hung inside
-    const lampX = x0 + w * loftLampFrac(b.seed);
-    rect(c, x0, cy, x1, fy, (X, Y, lx, ly) => {
-      const l = lf.get(lx, ly);
-      const v = (ly - cy) / (fy - cy);
-      if (v < 0.12) return mt(M.wood, lum(l, 0, v > 0.08 ? 0.8 : 0) * 0.6, X, Y, 0.3, 1, 0); // the ceiling beam
-      // inside: the stacks along the back, lit by the lamp
-      const u = (lx - x0) / w;
-      const slot = Math.floor(u * 9);
-      const what = hash(slot, b.seed, 37);
-      const stackTop = 0.45 + what * 0.3;
-      const glow = clamp(1 - Math.abs(lx - lampX) / (0.9 * U), 0, 1) * clamp(1 - Math.abs(v - 0.55) * 1.2, 0, 1);
-      if (v > stackTop) {
-        if (what < 0.4) {
-          // crates: boards with a dark seam, a lit top edge
-          const seam = (((lx - x0) % (w / 9)) + w / 9) % (w / 9) < 1.2;
-          const top = v < stackTop + 0.05;
-          return mt(M.wood, lum(l, 0, top ? -0.8 : 0) * 0.55 + glow * 0.45 - (seam ? 0.2 : 0), X, Y, 0.2, 1, 0.2);
-        }
-        if (what < 0.75) {
-          // rolled scrolls: ends in rows, cream and red
-          const sr = 0.07 * U;
-          const gx = ((((lx - x0) % (sr * 2.1)) + sr * 2.1) % (sr * 2.1)) - sr * 1.05;
-          const gyy = ((((fy - ly) % (sr * 2)) + sr * 2) % (sr * 2)) - sr;
-          const d = Math.hypot(gx, gyy) / sr;
-          if (d < 1) return mt(hash(Math.floor((lx - x0) / (sr * 2.1)), Math.floor((fy - ly) / (sr * 2)), b.seed) < 0.25 ? M.verm : M.paper, lum(l, gx / sr * 0.5, gyy / sr * 0.5) * 0.3 + glow * 0.5, X, Y, 0.3, 1, 0.2);
-          return mt(M.lacq, lum(l) * 0.2, X, Y, 0.4, 1, 0);
-        }
-        // a lacquer chest with a gold clasp
-        const cl = Math.abs(u * 9 - slot - 0.5) < 0.08 && Math.abs(v - (stackTop + 0.12)) < 0.04;
-        return cl ? mt(M.gold, lum(l) * 0.6 + glow * 0.4, X, Y, 0.2, 1, 0) : mt(M.verm, lum(l) * 0.35 + glow * 0.35, X, Y, 0.3, 1, 0.2);
-      }
-      // the loft's back wall, warm by the lamp, dark at its ends; the beam's shadow along the top
-      const shadow = v < 0.24 ? 0.18 : 0;
-      return mt(M.lacq, lum(l) * 0.4 + glow * 0.55 - shadow, X, Y, 0.1, 1, 0.3);
-    });
-    // a figure in some lofts: an archivist's head and shoulders over the rail, lit from the lamp
-    if (hash(b.seed, 41) < 0.5) {
-      const fx = x0 + w * (0.25 + 0.5 * hash(b.seed, 43));
-      const hr = 0.11 * U;
-      const head = fy - 0.62 * U;
-      rect(c, fx - 0.3 * U, head - hr, fx + 0.3 * U, fy, (X, Y, lx, ly) => {
-        const dx = lx - fx;
-        const inHead = Math.hypot(dx, ly - head) < hr;
-        const body = ly > head + hr * 0.6 && Math.abs(dx) < hr * (1.2 + (ly - head) / (0.3 * U));
-        if (!inHead && !body) return 0;
-        const side = dx < 0 === lampX < fx ? 0.35 : 0.1;
-        return mt(inHead ? M.lacq : M.verm, side, X, Y, 0.3, 1, 0);
-      });
-    }
-    // the lamp: a small paper lantern on a short cord
-    rect(c, lampX - 0.5, cy + 0.12 * (fy - cy), lampX + 0.5, cy + 0.3 * (fy - cy), (X, Y) => tn(M.dark, 0.6, X, Y, 0));
-    rect(c, lampX - 0.1 * U, cy + 0.3 * (fy - cy), lampX + 0.1 * U, cy + 0.3 * (fy - cy) + 0.24 * U, (X, Y, lx, ly) => {
-      const u = (lx - lampX) / (0.1 * U), v = (ly - cy - 0.3 * (fy - cy)) / (0.24 * U);
-      if (u * u + (v - 0.5) * (v - 0.5) * 3.5 > 1.05) return 0;
-      return tn(SCREEN, clamp(0.15 + Math.abs(u) * 0.5 + Math.abs(v - 0.5) * 0.6, 0, 1), X, Y, 0.3);
-    });
-    // the loft's rail along its front: posts and a lattice band, its shadow on the stacks
-    rect(c, x0 - 0.1 * U, fy - 0.42 * U, x1 + 0.1 * U, fy, (X, Y, lx, ly) => {
-      const l = lf.get(lx, ly);
-      const v = (ly - fy + 0.42 * U) / (0.42 * U);
-      const post = ((((lx - x0) % (0.7 * U)) + 0.7 * U) % (0.7 * U)) < 0.08 * U;
-      if (post || v < 0.14) return mt(M.verm, lum(l, 0, v < 0.06 ? -0.8 : 0) * 0.62, X, Y, 0.3, 1, 0);
-      const a = ((((lx + ly) % (0.16 * U)) + 0.16 * U) % (0.16 * U)) < 0.035 * U;
-      return a && v > 0.3 ? mt(M.verm, lum(l) * 0.45, X, Y, 0.35, 1, 0) : 0;
-    });
-  } else if (kind === "beams") {
-    // the roof's transverse beams come in through the wall: square ends with a painted face standing out
-    // of the boards, a strut between them, each with its shadow down and right
-    for (let k = 0; k < 2; k++) {
-      const bx = x0 + w * (0.28 + 0.44 * k), by = fy - (0.35 + 0.65 * k + 0.2 * hash(b.seed, k)) * U;
-      const bw = (0.42 - 0.08 * k) * U, bh = (0.36 - 0.06 * k) * U;
-      rect(c, bx - bw / 2 + 4, by - bh / 2 + 4, bx + bw / 2 + 5, by + bh / 2 + 5, (X, Y, lx, ly) => mt(M.lacq, lum(lf.get(lx, ly)) * 0.12, X, Y, 0.5, 1, 0));
-      rect(c, bx - bw / 2, by - bh / 2, bx + bw / 2, by + bh / 2, (X, Y, lx, ly) => {
-        const l = lf.get(lx, ly);
-        const u = (lx - bx) / (bw / 2), v = (ly - by) / (bh / 2);
-        const e = Math.min(1 - Math.abs(u), 1 - Math.abs(v));
-        if (e < 0.12) return mt(M.wood, lum(l, u < -0.8 ? -0.8 : u > 0.8 ? 0.8 : 0, v < -0.8 ? -0.8 : v > 0.8 ? 0.8 : 0) * 0.7, X, Y, 0.2, 1, 0);
-        const ring = Math.abs(Math.hypot(u, v) - 0.55) < 0.14;
-        return ring ? mt(M.gold, lum(l) * 0.55, X, Y, 0.3, 1, 0) : tn(P.jade, clamp(0.78 + (1 - lum(l)) * 0.2, 0, 1), X, Y, 0.2);
-      });
-      // the strut up from it to the next purlin
-      rect(c, bx - 0.07 * U, -PURLIN0 * U, bx + 0.07 * U, by - bh / 2, (X, Y, lx, ly) => mt(M.wood, lum(lf.get(lx, ly), lx < bx ? -0.6 : 0.6, 0) * 0.5, X, Y, 0.3, 1, 0));
-    }
-  } else if (kind === "lattice") {
-    // a wide clerestory: a frame, cracked-ice lattice, the faint day behind the paper
-    const wy0 = -LOFT_CEIL * U + 0.1 * U, wy1 = fy - 0.15 * U;
-    const ax0 = x0 + 0.15 * w, ax1 = x1 - 0.15 * w;
-    rect(c, ax0, wy0, ax1, wy1, (X, Y, lx, ly) => {
-      const l = lf.get(lx, ly);
-      const e = Math.min(lx - ax0, ax1 - lx, ly - wy0, wy1 - ly);
-      if (e < 0.08 * U) return mt(M.wood, lum(l, 0, ly < wy0 + 0.04 * U ? -0.7 : 0) * 0.6, X, Y, 0.3, 1, 0);
-      if (lattice(1, lx - ax0, ly - wy0, U, b.seed)) return mt(M.wood, lum(l) * 0.35, X, Y, 0.4, 1, 0);
-      const v = (ly - wy0) / (wy1 - wy0);
-      return tn(SCREEN, clamp(0.75 + v * 0.15, 0, 1), X, Y, 0.4);
-    });
-  } else {
-    // a long banner hung from the plate down over the brackets and the lintel, dark silk, a gold hem
-    const cx = x0 + w * (0.35 + 0.3 * hash(b.seed, 51)), bw = 0.55 * U;
-    const len = (2.4 + 1.2 * hash(b.seed, 53)) * U;
-    rect(c, cx - bw / 2 + 3, fy + 3, cx + bw / 2 + 4, fy + len + 3, (X, Y, lx, ly) => mt(M.lacq, lum(lf.get(lx, ly)) * 0.12, X, Y, 0.5, 1, 0));
-    rect(c, cx - bw / 2 - 2, fy - 2, cx + bw / 2 + 2, fy + 2, (X, Y, lx, ly) => mt(M.wood, lum(lf.get(lx, ly), 0, -0.6) * 0.7, X, Y, 0.2, 1, 0));
-    rect(c, cx - bw / 2, fy + 2, cx + bw / 2, fy + len, (X, Y, lx, ly) => {
-      const l = lf.get(lx, ly);
-      const u = (lx - cx) / (bw / 2), v = (ly - fy) / len;
-      if (v > 0.95) return Math.floor(lx) % 2 ? mt(M.gold, lum(l) * 0.6, X, Y, 0.3, 1, 0) : 0;
-      if (Math.abs(u) > 0.84) return mt(M.gold, lum(l) * 0.5, X, Y, 0.3, 1, 0);
-      const fold = Math.sin(u * 3 + 0.4) * 0.5 + 0.5;
-      const er = Math.hypot(u * 0.9, (v - 0.3) * 4);
-      if (er < 0.45 && er > 0.3) return mt(M.gold, lum(l) * 0.55, X, Y, 0.3, 1, 0);
-      return mt(hash(b.seed, 57) < 0.5 ? M.verm : M.lacq, lum(l) * (0.35 + fold * 0.25), X, Y, 0.3, 1, 0.2);
-    });
-  }
 }
 
 function column(c: PaintCtx, p: BackWallP, cx: number, lf: LitField): void {

@@ -435,9 +435,18 @@ export const frame = definePainter<FrameP>("hall.frame", {
       // (hall loop round 1) the picture lamp's pool on the wall round the frame, in two bands, and
       // the frame's cast shadow on the wall, down and away from the lamp: both re-colour the wall
       const warm1 = lut("warm", 1), warm2 = lut("warm", 2), dark = lut("night", 2);
-      tint(c, x0 - 0.7 * H, y0 - 0.5 * H, x1 + 0.7 * H, y1 + 0.6 * H, (_X, _Y, lx, ly) => {
-        const q = Math.hypot(lx / ((x1 - x0) * 0.5 + 0.55 * H), (ly - y0 + 0.1 * H) / ((y1 - y0) * 0.75 + 0.3 * H));
-        return q < 0.55 ? warm2 : q < 1 ? warm1 : null;
+      // (hall loop round 2, W2-6: the pool was a round disc) the hood points down at the picture: its light is a
+      // cone from the hood's mouth, brightest just under it, widening and fading down over the frame and the wall
+      // under it, its sides soft; nothing over the hood (it shades the wall above)
+      const hy0 = y0 - 0.2 * H + 4, hw0 = Math.min(0.32 * H, p.w * 0.22);
+      const reach = y1 - hy0 + 0.45 * H;
+      tint(c, x0 - 0.7 * H, hy0, x1 + 0.7 * H, y1 + 0.6 * H, (_X, _Y, lx, ly) => {
+        const down = (ly - hy0) / reach;
+        if (down < 0 || down > 1) return null;
+        const half = hw0 + (ly - hy0) * 0.62;
+        const u = Math.abs(lx) / half;
+        const q = (1 - u * u) * (1 - down) ** 1.3 + (vnoise(lx * 0.06, ly * 0.06, 17) - 0.5) * 0.08;
+        return q > 0.42 ? warm2 : q > 0.12 ? warm1 : null;
       });
       tint(c, x0 + 3, y0 + 5, x1 + 5, y1 + 6, (_X, _Y, lx, ly) => (lx > x1 || ly > y1 ? dark : null));
       // a nail and a cord

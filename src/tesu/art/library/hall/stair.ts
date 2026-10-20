@@ -14,7 +14,7 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { HALL_LIGHT } from "./lights.ts";
+import { HALL_LIGHT, SERVICE_LAMPS } from "./lights.ts";
 import { M, SCREEN, LitField, clamp, cyl, fbm, grain, hash, lathe, lum, mt, poly, rect, tn, vnoise, type At, type Lit, type Ramp } from "./kit.ts";
 
 const H = 96;
@@ -272,6 +272,25 @@ export const stair = definePainter<StairP>("hall.stair", {
     // --- the wall closing the space under the stair: boards and rails, its value stepping down in bands as it
     // rises away from the nook's lamp (warm low, darkest high up); a soft dark band hugs the stair's underside
     const wx0 = p.wall0, wx1 = fx;
+    // (hall loop round 2, W2-6: the nook lamp's pool on this wall was a round disc) the posts standing between the
+    // lamp and the wall throw their shadows onto it: a dark band just beyond each post (away from the lamp), the
+    // light past it a part only; the lamp's own panel between the landing's posts keeps all of it
+    const lampL = p.at ? SERVICE_LAMPS.find((L) => L.x - p.at!.wx > wx0 && L.x - p.at!.wx < wx1 && (L.y - p.at!.wy) > F - 2.5 * H) : undefined;
+    const lampX = lampL ? lampL.x - p.at!.wx : null;
+    const blockers = [...landingPosts, ...p.posts].filter((x) => x > wx0 && x < wx1);
+    const shadeAt = (lx: number, ly: number): number => {
+      if (lampX === null) return 1;
+      let m = 1;
+      for (const bx of blockers) {
+        const toPost = bx - lampX, toPx = lx - lampX;
+        if (Math.sign(toPost) !== Math.sign(toPx) || Math.abs(toPx) < Math.abs(toPost) + POST) continue;
+        // the shadow widens a little with the distance from the lamp; its edges soft over a few px
+        const beyond = Math.abs(toPx) - Math.abs(toPost) - POST;
+        const w = POST * 2.4 + Math.abs(toPost) * 0.12 + (vnoise(ly * 0.05, bx, 31) - 0.5) * 3;
+        m = Math.min(m, beyond < w ? 0.15 : beyond < w + 6 ? 0.15 + (beyond - w) / 6 * 0.45 : 0.6);
+      }
+      return m;
+    };
     const BANDS = [0.92, 2.4, 3.9];
     const bandBase = [0.6, 0.46, 0.31, 0.17];
     // the lamp's reach thins out going up: the high bands take less of its light, so the steps read
@@ -287,7 +306,7 @@ export const stair = definePainter<StairP>("hall.stair", {
       // the rails between the bands: a lit top, a dark underside
       for (const rh of BANDS) {
         const d = (F - rh * H) - ly;
-        if (d > -5 && d <= 0) return mt(M.wood, V(l, d > -1.3 ? base + 0.3 : base + 0.08, 0, d > -1.3 ? -0.9 : 0.4) - ao, X, Y, 0.15, 1);
+        if (d > -5 && d <= 0) return mt(M.wood, V(l, d > -1.3 ? base + 0.3 : base + 0.08, 0, d > -1.3 ? -0.9 : 0.4, 0.75 * shadeAt(lx, ly)) - ao, X, Y, 0.15, 1);
         if (d > 0 && d < 2.5) return mt(M.lacq, V(l, base * 0.5) - ao, X, Y, 0.1, 1);
       }
       if (fromFloor < 0.16) return mt(M.lacq, V(l, fromFloor < 0.14 && fromFloor > 0.12 ? 0.55 : 0.4), X, Y, 0.0, 1);
@@ -296,7 +315,7 @@ export const stair = definePainter<StairP>("hall.stair", {
       const joint = k < 1.2;
       const lit = k > bw - 1.5 ? 0.05 : 0;
       const knot = vnoise(lx * 0.25, ly * 0.08, 29) > 0.83 ? 0.06 : 0;
-      return mt(M.wood, V(l, joint ? base - 0.16 : base + lit, 0, 0, bandGain[band]) + grain(lx, ly, 27) * 0.06 - knot - ao, X, Y, 0.3, 1);
+      return mt(M.wood, V(l, joint ? base - 0.16 : base + lit, 0, 0, bandGain[band]! * shadeAt(lx, ly)) + grain(lx, ly, 27) * 0.06 - knot - ao, X, Y, 0.3, 1);
     });
 
     // --- the posts and braces carrying the upper flight (the bay's own post stands just west of wall0)
