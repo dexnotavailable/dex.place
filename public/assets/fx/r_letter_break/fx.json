@@ -1,0 +1,111 @@
+{
+ "id": "r_letter_break",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  646,
+  952
+ ],
+ "layer": "back",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -3,
+    2
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -10,
+    4
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -19,
+    8
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -30,
+    14
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -45,
+    20
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -62,
+    28
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -83,
+    36
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -106,
+    46
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 60,
+   "off": [
+    -106,
+    46
+   ]
+  }
+ ],
+ "loop": false,
+ "with": [
+  "r_letter_break_tr",
+  "r_letter_break_ml",
+  "r_letter_break_mr",
+  "r_letter_break_bl",
+  "r_letter_break_br"
+ ],
+ "notes": "R's letter breaking at the dive (lanes/zhusha-lead/rletter/tools/build.py): piece tl of six, one clock (r_letter_break names the others), stopped on the impact"
+}

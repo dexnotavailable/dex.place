@@ -1,0 +1,93 @@
+{
+ "id": "r_letter_break_mr",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  646,
+  952
+ ],
+ "layer": "back",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    3,
+    1
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    10,
+    3
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    19,
+    7
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    30,
+    12
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    45,
+    18
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 60,
+   "off": [
+    45,
+    18
+   ]
+  }
+ ],
+ "loop": false,
+ "with": [],
+ "notes": "R's letter breaking at the dive (lanes/zhusha-lead/rletter/tools/build.py): piece mr of six, one clock (r_letter_break names the others), stopped on the impact"
+}

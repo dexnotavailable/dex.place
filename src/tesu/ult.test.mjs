@@ -293,17 +293,79 @@ test("ult: the FX v2 loop's effects play on the beats when the game has them (th
   inp.press("ult");
   for (let i = 0; i < 900 && (i < 3 || z.state === "ult"); i++) step(z, inp, w);
   const F = ULT.fx;
-  assert.deepEqual(played.map((p) => p.id), [F.callFire, F.letter, F.dive, F.nuke, F.clear]);
+  const cuts = new Set(Object.values(F.cuts).flat());
+  assert.deepEqual(played.filter((p) => !cuts.has(p.id)).map((p) => p.id), [F.callFire, F.letter, F.letterBreak, F.dive, F.nuke, F.clear]);
   assert.ok(Object.values(z.r.real).every(Boolean), "every stand-in steps aside");
   const by = (id) => played.find((p) => p.id === id);
   assert.equal(by(F.callFire).attach, "her");
-  assert.deepEqual(stopped, [F.callFire], "her fire carpet ends as she vanishes");
+  assert.deepEqual(stopped.filter((id) => !cuts.has(id)), [F.callFire, F.letter, F.letterBreak], "her fire carpet ends as she vanishes; the letter as the dive starts, its pieces on the impact");
   const st = z.r.stage;
   assert.deepEqual([by(F.letter).x, by(F.letter).y, by(F.letter).facing], [st.gx, st.top + st.size, 1], "at the letter's foot, as written (facing left too)");
   assert.ok(st.gx < 0, "facing left: the letter is to her left");
   assert.equal(by(F.dive).phase, "dive");
   assert.deepEqual([by(F.nuke).x, by(F.nuke).y], [st.gx, 0], "the nuke at the crater");
   assert.equal(by(F.clear).phase, "aftermath", "the smoke clearing, from the start of the clear");
+});
+
+test("ult: the real letter is carved on the storm's clock, breaks at the dive, is gone on the impact; the cuts fly over it; each stand-in steps aside only for what is in", async () => {
+  const { cutPlan, cutIds } = await import("./zhusha/ult.ts");
+  const F = ULT.fx;
+  const run = async (has) => {
+    const Zhusha = await loadZ();
+    const z = new Zhusha(host(), [0, 0]);
+    const log = [];
+    z.r.fx = {
+      has,
+      play: (id, o) => { const e = { id, ...o, T: z.r.T, phase: z.r.phase, stormT: z.r.stormT, t: z.r.t, stop: null }; log.push(e); return { stop: () => { e.stop = { phase: z.r.phase, t: z.r.t }; } }; },
+    };
+    const inp = new FakeInput(), w = flat();
+    step(z, inp, w, 5);
+    inp.press("ult");
+    for (let i = 0; i < 900 && (i < 3 || z.state === "ult"); i++) step(z, inp, w);
+    return { z, log };
+  };
+  const all = await run(() => true);
+  const letter = all.log.find((e) => e.id === F.letter), brk = all.log.find((e) => e.id === F.letterBreak);
+  assert.equal(letter.stormT, 0, "the letter starts with the storm (its drawings are on the storm's ticks)");
+  assert.deepEqual(letter.stop, { phase: "dive", t: 0 }, "stopped as the dive starts");
+  assert.deepEqual([brk.phase, brk.t, brk.x, brk.y, brk.facing], ["dive", 0, letter.x, letter.y, 1], "its pieces take over in place, as written");
+  assert.equal(brk.stop.phase, "impact", "gone in the nuke's flash");
+  // the cuts: on the carving slashes' ticks, at their piece, never more than `cap` alive (the letter is never pushed out)
+  const cutLog = all.log.filter((e) => cutIds(F.cuts).includes(e.id));
+  const S = all.z.r.slashes, plan = cutPlan(S, F.cuts);
+  assert.equal(cutLog.length, plan.length);
+  assert.ok(plan.length >= 100, `a storm of cuts: ${plan.length}`);
+  assert.ok(cutLog.every((e) => e.phase === "flurry" && e.stormT === S[plan[cutLog.indexOf(e)].slash].at), "each on its slash's tick");
+  assert.ok(plan.every((c) => S[c.slash].carves || S[c.slash].sweep), "the carving slashes and the closing sweeps");
+  for (let t = 0; t < ULT.letter.ticks + 30; t++) {
+    const live = plan.filter((c) => S[c.slash].at + c.delay <= t && S[c.slash].at + c.delay + F.cuts.life > t).length;
+    assert.ok(live <= F.cuts.cap + F.cuts.sweepCuts, `at most cap alive (${live} at ${t})`);
+  }
+  assert.ok(new Set(plan.map((c) => c.id)).size >= 6 && plan.some((c) => c.facing < 0) && plan.some((c) => c.facing > 0), "every angle, both ways");
+  // only what is in steps aside: no cuts without the letter; with the letter alone the stand-in's streaks stay
+  const noLetter = await run((id) => id !== F.letter);
+  assert.deepEqual([noLetter.z.r.real.letter, noLetter.z.r.real.letterBreak, noLetter.z.r.real.cuts], [false, false, false]);
+  assert.ok(!noLetter.log.some((e) => cutIds(F.cuts).includes(e.id) || e.id === F.letterBreak));
+  const letterOnly = await run((id) => id === F.letter);
+  assert.deepEqual([letterOnly.z.r.real.letter, letterOnly.z.r.real.letterBreak, letterOnly.z.r.real.cuts], [true, false, false]);
+  const lo = letterOnly.log.find((e) => e.id === F.letter);
+  assert.equal(lo.stop.phase, "impact", "with no pieces, the letter stays to the impact");
+});
+
+test("ult: the shipped letter fits R's clock and box: its storm drawings on the storm's ticks, held past the dive; its six pieces one clock", () => {
+  const fx = (id) => JSON.parse(readFileSync(join(import.meta.dirname, `../../public/assets/fx/${id}/fx.json`), "utf8"));
+  const F = ULT.fx, L = fx(F.letter), B = fx(F.letterBreak);
+  const total = L.frames.reduce((n, f) => n + f.ticks, 0);
+  assert.ok(total >= ULT.letter.ticks + ULT.hold + ULT.dive.ticks + ULT.dive.cap, `held until the director stops it: ${total}`);
+  let at = 0;
+  for (const f of L.frames) { if (at < ULT.letter.ticks - 2) assert.ok(f.ticks <= 2, "a drawing every 2 ticks through the storm"); at += f.ticks; }
+  assert.equal(L.layer, "back", "behind her (she dives through it)");
+  assert.equal(B.with.length, 5);
+  for (const id of [F.letterBreak, ...B.with]) {
+    const p = fx(id);
+    assert.deepEqual(p.pivot, L.pivot, `${id} on the letter's pivot`);
+    assert.ok(p.frames.reduce((n, f) => n + f.ticks, 0) >= ULT.dive.ticks + ULT.dive.cap - 12, `${id} lasts the dive`);
+  }
 });
 
 test("ult: the storm's hits never stop the frame (R owns its weight: only the nuke freezes it, once)", async () => {
