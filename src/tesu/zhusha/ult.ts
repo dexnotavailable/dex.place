@@ -34,10 +34,11 @@ export interface UltFile {
   letter: {
     char: string; size: number; low: number; ahead: number; ticks: number; slashes: number; pieces: number;
     slashLife: number; slashLen: [number, number]; thick: number; zenithAbove: number; wallMargin: number; sweepGap: number;
+    tail: { at: number; share: number };
   };
   hold: number;
   dive: { ticks: number; cap: number; flipFrom: number; lineLife: number };
-  impact: { ticks: number; flash: number; slowmo: number; slowmoTicks: number; invert: number; punch: number };
+  impact: { ticks: number; flash: number; slowmo: number; slowmoTicks: number; invert: number; punch: number; breakAfter: number };
   aftermath: { hold: number; clear: number; revealFrom: number; coreGone: number };
   reveal: { visibleFrom: number };
   camera: {
@@ -195,7 +196,7 @@ const rnd = (i: number): number => { const a = Math.sin(i * 12.9898 + 78.233) * 
  * window that overlaps its neighbours', so the letter fills in everywhere at once, roughly in stroke order, and denser as
  * it goes. Then a closing sweep down each stroke, `gap` ticks apart, the last on the storm's last tick.
  */
-export function storm(strokes: Stroke[], count: number, ticks: number, pieceShare: number, len: [number, number], gap = 4): Slash[] {
+export function storm(strokes: Stroke[], count: number, ticks: number, pieceShare: number, len: [number, number], gap = 4, tail?: { at: number; share: number }): Slash[] {
   const lens = strokes.map(strokeLen), total = lens.reduce((a, b) => a + b, 0);
   const nPieces = Math.max(strokes.length, Math.round(count * pieceShare));
   const out: Slash[] = [];
@@ -216,6 +217,15 @@ export function storm(strokes: Stroke[], count: number, ticks: number, pieceShar
     const ang = rnd(k * 3 + 2) < 0.5 ? withIt + (rnd(k * 7) - 0.5) * 0.5 : rnd(k * 5 + 3) * Math.PI;
     out.push({ at, stroke: p.s, piece: k, u0: p.u0, u1: p.u1, ang, len: len[0] + (len[1] - len[0]) * rnd(k * 11 + 4), carves: true, sweep: false, last: false });
   });
+  // the tail (ult.json letter.tail): the last `share` of the carving lands from storm tick `at` on (just after the
+  // camera's snap out: the wide shot sees the letter being filled), the rest before it, the order kept
+  if (tail && out.length > 1 && tail.at < end) {
+    const ts = out.map((sl) => sl.at).sort((a, b) => a - b);
+    const q = ts[Math.min(ts.length - 1, Math.floor(ts.length * (1 - tail.share)))]!, top = ts[ts.length - 1]!;
+    for (const sl of out) {
+      sl.at = sl.at < q ? Math.round((sl.at * (tail.at - 1)) / Math.max(1, q)) : Math.round(tail.at + ((sl.at - q) * (end - tail.at)) / Math.max(1, top - q));
+    }
+  }
   // a piece is carved by its first slash: the re-cuts come after it (never into thin air)
   const carvedAt = out.map((sl) => sl.at);
   for (let i = out.length; i < count - S; i++) {
@@ -421,7 +431,7 @@ export class UltDirector {
       aftermath: ULT.aftermath.hold + Math.round(ULT.aftermath.clear * ULT.aftermath.revealFrom),
       reveal: clipLen(reveal) ?? C.r_reveal,
     };
-    this.slashes = storm(letterStrokes(), Lt.slashes, Lt.ticks, Lt.pieces, Lt.slashLen, Lt.sweepGap);
+    this.slashes = storm(letterStrokes(), Lt.slashes, Lt.ticks, Lt.pieces, Lt.slashLen, Lt.sweepGap, Lt.tail);
     const FX = ULT.fx, has = (id: string): boolean => !!this.fx?.has(id);
     const letter = has(FX.letter);
     this.real = {
@@ -606,6 +616,10 @@ export class UltDirector {
         b.vx = b.vy = 0;
         z.anim = { role: "r_smoke", t, hitAt: null, hidden: true, flame: 0 };
         if (t === 3) say(c, "rumble", 1);
+        if (t >= ULT.impact.breakAfter && this.breakFx) {
+          this.breakFx.stop();
+          this.breakFx = null;
+        }
         if (t + 1 >= L.impact) this.go("aftermath");
         break;
       }
@@ -696,10 +710,9 @@ export class UltDirector {
     const z = c.z, b = z.body, s = c.host, I = ULT.impact;
     this.go("impact", true);
     this.peel = 1;
-    // the letter is gone in the flash
+    // the whole letter is gone in the flash; its falling pieces go on a few ticks into it (impact.breakAfter)
     this.letterFx?.stop();
-    this.breakFx?.stop();
-    this.letterFx = this.breakFx = null;
+    this.letterFx = null;
     this.stormT = -1;
     b.vx = b.vy = 0;
     z.anim = { role: "r_smoke", t: 0, hitAt: null, hidden: true, flame: 0 };

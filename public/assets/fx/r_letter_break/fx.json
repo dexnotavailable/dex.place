@@ -3,8 +3,8 @@
  "stage": "pixel",
  "px": 1,
  "pivot": [
-  646,
-  952
+  906,
+  1212
  ],
  "layer": "back",
  "attach": "world",
@@ -19,83 +19,183 @@
    "ticks": 1
   },
   {
-   "file": "f000.png",
-   "ticks": 1
-  },
-  {
    "file": "f001.png",
    "ticks": 1
   },
   {
-   "file": "f001.png",
+   "file": "f002.png",
    "ticks": 1,
    "off": [
-    -3,
-    2
-   ]
-  },
-  {
-   "file": "f001.png",
-   "ticks": 1,
-   "off": [
-    -10,
+    -7,
     4
    ]
   },
   {
-   "file": "f001.png",
+   "file": "f003.png",
    "ticks": 1,
    "off": [
-    -19,
-    8
+    -14,
+    10
    ]
   },
   {
-   "file": "f001.png",
+   "file": "f004.png",
+   "ticks": 1,
+   "off": [
+    -22,
+    17
+   ]
+  },
+  {
+   "file": "f005.png",
    "ticks": 1,
    "off": [
     -30,
-    14
+    25
    ]
   },
   {
-   "file": "f001.png",
+   "file": "f006.png",
    "ticks": 1,
    "off": [
-    -45,
-    20
+    -39,
+    35
    ]
   },
   {
-   "file": "f001.png",
+   "file": "f007.png",
    "ticks": 1,
    "off": [
-    -62,
-    28
-   ]
-  },
-  {
-   "file": "f001.png",
-   "ticks": 1,
-   "off": [
-    -83,
-    36
-   ]
-  },
-  {
-   "file": "f001.png",
-   "ticks": 1,
-   "off": [
-    -106,
+    -48,
     46
    ]
   },
   {
-   "file": "f001.png",
-   "ticks": 60,
+   "file": "f008.png",
+   "ticks": 1,
    "off": [
-    -106,
-    46
+    -58,
+    59
+   ]
+  },
+  {
+   "file": "f009.png",
+   "ticks": 1,
+   "off": [
+    -68,
+    73
+   ]
+  },
+  {
+   "file": "f010.png",
+   "ticks": 1,
+   "off": [
+    -79,
+    88
+   ]
+  },
+  {
+   "file": "f011.png",
+   "ticks": 1,
+   "off": [
+    -90,
+    105
+   ]
+  },
+  {
+   "file": "f012.png",
+   "ticks": 1,
+   "off": [
+    -102,
+    123
+   ]
+  },
+  {
+   "file": "f013.png",
+   "ticks": 1,
+   "off": [
+    -114,
+    143
+   ]
+  },
+  {
+   "file": "f014.png",
+   "ticks": 1,
+   "off": [
+    -127,
+    164
+   ]
+  },
+  {
+   "file": "f015.png",
+   "ticks": 1,
+   "off": [
+    -140,
+    186
+   ]
+  },
+  {
+   "file": "f016.png",
+   "ticks": 1,
+   "off": [
+    -154,
+    210
+   ]
+  },
+  {
+   "file": "f017.png",
+   "ticks": 1,
+   "off": [
+    -168,
+    235
+   ]
+  },
+  {
+   "file": "f018.png",
+   "ticks": 1,
+   "off": [
+    -183,
+    262
+   ]
+  },
+  {
+   "file": "f019.png",
+   "ticks": 1,
+   "off": [
+    -198,
+    290
+   ]
+  },
+  {
+   "file": "f020.png",
+   "ticks": 1,
+   "off": [
+    -214,
+    319
+   ]
+  },
+  {
+   "file": "f021.png",
+   "ticks": 1,
+   "off": [
+    -230,
+    350
+   ]
+  },
+  {
+   "file": "f022.png",
+   "ticks": 1,
+   "off": [
+    -247,
+    382
+   ]
+  },
+  {
+   "file": "f022.png",
+   "ticks": 40,
+   "off": [
+    -247,
+    382
    ]
   }
  ],
@@ -107,5 +207,5 @@
   "r_letter_break_bl",
   "r_letter_break_br"
  ],
- "notes": "R's letter breaking at the dive (lanes/zhusha-lead/rletter/tools/build.py): piece tl of six, one clock (r_letter_break names the others), stopped on the impact"
+ "notes": "R's letter breaking at the dive (lanes/zhusha-lead/rletter/tools/build.py): piece tl of six, one clock (r_letter_break names the others): shears apart along her line, turns, falls, ink gobs from the cut; stopped a few ticks into the impact"
 }
