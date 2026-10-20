@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-20T04:08:45.698Z (20/10/2026, 11:08:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-20T05:18:45.195Z (20/10/2026, 12:18:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `9d80ddb`
+- live on dex.place: `6c0304f`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,7 +12,20 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_93dbdace-3fa — last activity 279 min ago
+### wf_6eb91aef-0bd — last activity 17 min ago
+9 agents: 8 done, 1 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (done): Round 1 layout pass is committed. Dex's 10-14 layout is in, and all seven layout asks in checks.json now say yes (round 0 had all seven at NO). What changed: - **The gate is in the middle.** The Prize Court door is now a moon gate at 0.525 of the hall (it was at 0.945), set in a walled middle bay. The court is painted inside it in daylight: sky, clouds, karst in haze, the paving, stepped stands with a crowd, people, 
+- **w2:r1** (done): The W2 rendering round is committed on claude/v2-art-hall-p2. I merged W1's layout commits (8325bc28 and 571362d4) into the branch, so HEAD f1903e58 is W1's layout plus my rendering. A full 8-frame render under the heavy lock (round-1\w2\final\) passes every placement check, has 0 page errors, and all 9 of Dex's layout asks come back yes. Core technique: tint.ts. Each plane paints into one buffer per tile, so a piece
+- **integrate:r1** (done): 
+- **critic:r1** (done): 
+- **w1:r2** (done): Worker 1's round 2 is committed. Eight of the nine critique items are in; W1-9 (the arcade stair under the court) is written up as a request for whoever owns that walk in shiraito.ts. This run picked up after a usage stop. The earlier session had made most of the edits but not committed them. I rendered all 8 frames at real size on port 24621, fixed what still looked wrong, then committed. What each item got: - **W1-
+- **w2:r2** (done): W2's round-2 work is done and committed on claude/v2-art-hall-p2. The head is 16498858. It is not pushed. This was a resumed run, so I did not reset the branch. The branch already had round-2 part 1 (9f0e1374: roof, bay wall, moon gate, shaft, floor smear, and the whole court, W2-10 to W2-14). It also had an unfinished merge of W1's 8f79e577. Running `checkout -B claude/v2-art-hall-p2 claude/v2-art-hall` would have t
+- **integrate:r2** (running)
+
+### wf_93dbdace-3fa — last activity 349 min ago
 16 agents: 15 done, 0 running or stopped mid-way, 1 failed.
 
 - **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
@@ -30,7 +43,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r4** (failed)
 - **w2:r4** (done): Worker 2 finished round 4. Both commits are on claude/v2-art-vista-p2: 5e50d20b and 6948d1a0, on top of 3f94e1ba. Nothing is pushed. Changes, by critique item: - **W2-1, the cliff under the lake.** It no longer uses the road ridge's block painter. A new painter, plateau.ts, draws it at 1/2 and wider zooms (whip, postcard, tesu, tesu-720, ease-in). It has: - buttresses of very different widths, split into rounded colu
 
-### wf_286da28b-ad1 — last activity 280 min ago
+### wf_286da28b-ad1 — last activity 350 min ago
 10 agents: 9 done, 0 running or stopped mid-way, 1 failed.
 
 - **setup** (done): 
@@ -44,7 +57,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r2** (done): 
 - **critic:r2** (failed)
 
-### wf_23467958-71d — last activity 314 min ago
+### wf_23467958-71d — last activity 384 min ago
 14 agents: 8 done, 6 running or stopped mid-way, 0 failed.
 
 - **toolkit** (done): # Card-art toolkit (lanes\cardart\tools\pipe)
@@ -71,19 +84,7 @@ An earlier run of this job had stopped at 03:21 with nothing authored. I kept it
 - **Lines:bao** (running)
 - **critic:Lines:zhusha:1** (running)
 
-### wf_6eb91aef-0bd — last activity 843 min ago
-8 agents: 7 done, 1 running or stopped mid-way, 0 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (done): Round 1 layout pass is committed. Dex's 10-14 layout is in, and all seven layout asks in checks.json now say yes (round 0 had all seven at NO). What changed: - **The gate is in the middle.** The Prize Court door is now a moon gate at 0.525 of the hall (it was at 0.945), set in a walled middle bay. The court is painted inside it in daylight: sky, clouds, karst in haze, the paving, stepped stands with a crowd, people, 
-- **w2:r1** (done): The W2 rendering round is committed on claude/v2-art-hall-p2. I merged W1's layout commits (8325bc28 and 571362d4) into the branch, so HEAD f1903e58 is W1's layout plus my rendering. A full 8-frame render under the heavy lock (round-1\w2\final\) passes every placement check, has 0 page errors, and all 9 of Dex's layout asks come back yes. Core technique: tint.ts. Each plane paints into one buffer per tile, so a piece
-- **integrate:r1** (done): 
-- **critic:r1** (done): 
-- **w1:r2** (done): Worker 1's round 2 is committed. Eight of the nine critique items are in; W1-9 (the arcade stair under the court) is written up as a request for whoever owns that walk in shiraito.ts. This run picked up after a usage stop. The earlier session had made most of the edits but not committed them. I rendered all 8 frames at real size on port 24621, fixed what still looked wrong, then committed. What each item got: - **W1-
-- **w2:r2** (running)
-
-### wf_5cebc05c-deb — last activity 863 min ago
+### wf_5cebc05c-deb — last activity 933 min ago
 4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
