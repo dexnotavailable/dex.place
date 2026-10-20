@@ -2288,9 +2288,12 @@ function shallowsOf(p: ShallowsP, seed: number): Body[] {
         const g = vnoise(lx / 23, ly / 6, sd + 1) * 0.6 + vnoise(lx / 7.5, ly / 2.6, sd + 2) * 0.4;
         const th = 0.72 - env * 0.52 + v * 0.42;
         if (g < th) return 0;
-        if (g > th + 0.2 && v < 0.6) return P.jade[6]!;
-        if (g < th + 0.07 || env < 0.3) return P.jade[4]!;
-        return vnoise(lx / 11, ly / 4, sd + 3) > 0.72 ? P.pine[1]! : P.jade[5]!;
+        // (kagami9 round 1, director: with worker 1's near water a step darker toward the camera, the
+        // edge's jade[4] read brighter than the water over it, a cyan camouflage stain beside the mat;
+        // what lies under water stays a step under the water's own value, darkest at its core)
+        if (g > th + 0.2 && v < 0.6) return P.jade[7]!;
+        if (g < th + 0.07 || env < 0.3) return P.jade[5]!;
+        return vnoise(lx / 11, ly / 4, sd + 3) > 0.72 ? P.pine[2]! : P.jade[6]!;
       };
       const body = bodyFrom([{ box: [sx0, p.wl, sx1, p.wl + reach * 1.3 + 4], wl: Infinity, noRefl: true, under: true, fill }], seed + 78, p.wl, p.deep, { kind: "mud", x: sx0, w: sx1 - sx0, h: 1 });
       out.unshift(body);

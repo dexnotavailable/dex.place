@@ -540,16 +540,20 @@ void main() {
     if (fR < 0.5) {
       float laneC = floor(zz / max(0.6, 1.4 * r));
       float X = x3 + (hash2(vec2(laneC, 4.2)) - 0.5) * 10.0 * smoothstep(1.05, 1.8, r);
-      float trees = smoothstep(0.3, 0.62, vnoise(vec2(X / 520.0, 3.9)) * 0.7 + vnoise(vec2(X / 170.0, 6.1)) * 0.3);
+      // (director, round 1: the stand of trees was a smooth envelope multiplying every crown's reach,
+      // so at the catch's 2x the edge of a stand drew one smooth stepped dome; now the stand only
+      // decides which crowns are there and how tall, each crown keeping its own lobed edge)
       float cw = 72.0, j0 = floor(X / cw), top = 0.0;
       for (int kk = -2; kk <= 2; kk++) {
         float j = j0 + float(kk);
         if (hash2(vec2(j, 0.7)) < 0.18) continue;
         float cx = (j + hash2(vec2(j, 1.7))) * cw;
+        float tj = smoothstep(0.3, 0.62, vnoise(vec2(cx / 520.0, 3.9)) * 0.7 + vnoise(vec2(cx / 170.0, 6.1)) * 0.3);
+        if (tj < 0.05 + 0.5 * hash2(vec2(j, 8.1))) continue;
         float hw = cw * (0.45 + 0.9 * hash2(vec2(j, 2.9)));
-        float hh = 0.25 + 0.75 * hash2(vec2(j, 5.3)) * hash2(vec2(j, 6.6));
+        float hh = (0.25 + 0.75 * hash2(vec2(j, 5.3)) * hash2(vec2(j, 6.6))) * mix(0.55, 1.0, tj);
         float uu = (X - cx) / hw;
-        if (abs(uu) < 1.0) top = max(top, hh * pow(1.0 - uu * uu, 0.32));
+        if (abs(uu) < 1.0) top = max(top, hh * pow(1.0 - uu * uu, 0.8));
       }
       // (the leaf clusters along a crown's edge: smaller crowns of their own on it, scalloped, never
       // a smooth arc; a few sprigs hanging further)
@@ -561,9 +565,19 @@ void main() {
         float uu = (X - cx) / hw;
         if (abs(uu) < 1.0) bump = max(bump, (0.3 + 0.7 * hash2(vec2(j, 13.3))) * sqrt(1.0 - uu * uu));
       }
-      top = top > 0.02 ? top + 0.16 * bump - 0.08 + 0.04 * (hash2(vec2(floor(X / 3.0), 9.9)) - 0.5) : top;
+      // (director, round 1: at the catch's 2x one crown filled the bottom centre as a smooth stepped
+      // dome; deeper clusters plus a finer scale of leaf tufts break every crown's edge into lobes)
+      float cw3 = 6.0, i3 = floor(X / cw3), tuft = 0.0;
+      for (int kk = -1; kk <= 1; kk++) {
+        float j = i3 + float(kk);
+        float cx = (j + hash2(vec2(j, 21.7))) * cw3;
+        float hw = cw3 * (0.5 + 0.8 * hash2(vec2(j, 22.9)));
+        float uu = (X - cx) / hw;
+        if (abs(uu) < 1.0) tuft = max(tuft, hash2(vec2(j, 23.3)) * sqrt(1.0 - uu * uu));
+      }
+      top = top > 0.02 ? top + 0.3 * bump + 0.1 * tuft - 0.2 + 0.04 * (hash2(vec2(floor(X / 3.0), 9.9)) - 0.5) : top;
       float sprig = step(0.93, hash2(vec2(floor(X / 4.0), 14.1))) * 0.12 * step(0.1, top);
-      float reachC = max(top, top + sprig) * trees * 0.36;
+      float reachC = max(top, top + sprig) * 0.36;
       if (fR < reachC) {
         float into = 1.0 - fR / max(0.01, reachC);
         // its body: darkest deep inside, the leaf clusters in two values drawn down in streaks
