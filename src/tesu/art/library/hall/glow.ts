@@ -9,7 +9,7 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { M, SCREEN, clamp, hash, keep, lathe, poly, rect, tn, type Ramp } from "./kit.ts";
+import { M, SCREEN, clamp, hash, keep, lathe, poly, rect, tn, vnoise, type Ramp } from "./kit.ts";
 
 // ---------------------------------------------------------------------------
 // Hanging lanterns
@@ -61,15 +61,8 @@ export const lantern = definePainter<LanternP>("hall.lantern", {
       const X = Math.round(c.X(cx * t)), Y = Math.round(c.Y(top * t));
       c.buf.set(X, Y, P.umber[4]!);
     }
-    // the halo: stepped, dithered rings of warm light (drawn first, under the lantern)
-    const hy = top + d.h * 1.1;
-    const R = d.w * 1.5;
-    rect(c, cx - R, hy - R * 0.9, cx + R, hy + R * 0.9, (X, Y, lx, ly) => {
-      const q = Math.hypot((lx - cx) / R, (ly - hy) / (R * 0.9));
-      if (q > 1) return 0;
-      const a = (q < 0.55 ? 0.25 : q < 0.8 ? 0.12 : 0.05) * lit * flick;
-      return keep(X, Y, a) ? (q < 0.55 ? P.ember[2]! : P.ember[3]!) : 0;
-    });
+    // (hall loop round 1) no dithered halo: the lantern's light is painted where it lands, on the
+    // walls, things and floor round it (hall-light.ts); the lantern itself is the hot shape
     body(c, p, cx, top, d, lit * flick);
   },
 });
@@ -157,6 +150,12 @@ export interface ShaftP {
   wTop: number;
   /** Bands it passes behind (local y from the foot, negative: [top, bottom]) where nothing is drawn. */
   gaps?: [number, number][];
+  /** (round 2) Drawn only above this local y: below it the play plane fills the shaft's path (the gate's
+   *  bay) and the room's light lifts it in the shaft's body (hall-light.ts). */
+  from?: number;
+  /** (round 2) Boxes on the play plane in the shaft's path [x0, y0, x1, y1] (local): lifted there too, so
+   *  nothing is drawn over them (the art's display screens upstairs). */
+  skip?: [number, number, number, number][];
   frame?: number;
 }
 
@@ -165,22 +164,49 @@ export const shaft = definePainter<ShaftP>("hall.shaft", {
     return [-p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, 2];
   },
   paint(c, p) {
+    // (hall loop round 2, W2-4: the 1 px streaks read as rain) where the shaft crosses open air in front
+    // of the far wall (upstairs, between the art's screens) its light is a few long, wide, faint rays
+    // slanting down from the well, each fading out at its own length, their edges wandering slowly; they
+    // breathe a px wider and narrower over the loop. Everywhere the play plane lies behind it, the room's
+    // light lifts what is there in the shaft's whole body instead (hall-light.ts), so nothing is drawn.
     const f = p.frame ?? 0;
-    const breathe = 0.86 + 0.14 * Math.sin((f / 8) * Math.PI * 2);
-    rect(c, -p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, 0, (X, Y, lx, ly) => {
+    const breathe = Math.sin((f / 8) * Math.PI * 2);
+    const from = p.from ?? 0;
+    // (round 2, second pass: three hard rays read as ropes from across the hall; an ordered dot screen reads as
+    // a grid) a soft body of lit air: the dust in the light, one dim colour a step above the far wall's dusk,
+    // scattered (no grid, no rows) at a density highest in the core near the well and falling off across the
+    // shaft and down it, so the wall behind shows through it; three long wide rays a little denser; motes a
+    // second step lighter here and there in the core. The scatter drifts a px over the loop (the air moving).
+    const RAYS: [number, number, number][] = [[-0.45, 0.24, 0.42], [0.05, 0.32, 0.55], [0.48, 0.2, 0.3]];
+    const drift = Math.floor(f / 2);
+    rect(c, -p.lean - p.wTop * 1.9, -p.h, p.w * 1.9, Math.min(0, from), (X, Y, lx, ly) => {
       if (p.gaps && p.gaps.some((g) => ly > g[0] && ly < g[1])) return 0;
+      if (p.skip && p.skip.some((b) => lx > b[0] && lx < b[2] && ly > b[1] && ly < b[3])) return 0;
       const t = -ly / p.h; // 0 at the foot .. 1 at the top
       const axis = -p.lean * t;
       const half = (p.w * (1 - t) + p.wTop * t) / 2;
-      const u = (lx - axis) / half; // -1..1 across
-      if (Math.abs(u) > 1) return 0;
-      const low = 0.55 + 0.45 * (1 - t);
-      // a soft edge, god-ray streaks along the shaft, brighter low where the air is lit
-      const edge = clamp((1 - Math.abs(u)) * 2.2, 0, 1) ** 1.5;
-      const streak = 0.62 + 0.38 * Math.sin(u * 7.3 + Math.sin(u * 2.1 + f * 0.4) * 1.5);
-      const a = 0.44 * edge * streak * low * breathe;
-      if (!keep(X, Y, a)) return 0;
-      return a > 0.3 ? P.ember[0]! : a > 0.17 ? P.paper[0]! : P.ember[1]!;
+      const off = (lx - axis) / half;
+      const edge = 1.15 + (vnoise(ly * 0.01, 3, 41) - 0.5) * 0.3;
+      if (Math.abs(off) > edge) return 0;
+      // soft both sides: the density eases out over the outer third (no ruled edge)
+      const across = clamp((edge - Math.abs(off)) / (edge * 0.55), 0, 1) ** 1.6;
+      const down = clamp((t - 0.12) / 0.88, 0, 1);
+      // (integration, round 2: light motes scattered over the dark upper wall read as glitter, a column of static or a
+      // starry strip, never as light, at any density) over the far wall the shaft is only a thin haze of dust in the
+      // light: a few motes one step over the wall (dusk 2), the next step (dusk 1) in the core, thickest just under the
+      // well and thinning to almost nothing as it falls; the beam itself is carried by what it lights on the play plane
+      // (the tie beam, the rail, the posts, the bay wall below, the landing on the floor: hall-light.ts)
+      let k = across * (0.02 + 0.13 * down * down);
+      for (const [ru, rw, end] of RAYS) {
+        if (t <= end) continue;
+        const e = Math.abs(off - ru - (vnoise(ly * 0.008, ru * 7, 43) - 0.5) * 0.14) / rw;
+        if (e < 1) k += 0.04 * (1 - e * e) * clamp((t - end) / 0.3, 0, 1) * across;
+      }
+      k = clamp(k + breathe * 0.006, 0, 0.2);
+      // a scatter, not a screen: each px its own chance, the motes clumped a little by a fine noise
+      const r = hash(X + drift, Y - drift * 3, 47) * 0.7 + vnoise(X * 0.35, Y * 0.35, 49) * 0.3;
+      if (r > k) return 0;
+      return r < k * 0.35 && k > 0.1 ? P.dusk[1]! : P.dusk[2]!;
     });
   },
 });

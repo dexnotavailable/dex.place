@@ -16,8 +16,8 @@ import { FLOOR_Y } from "./palace.ts";
 import { dressCourt } from "../../art/library/hall/dress.ts";
 
 // (the numbers live in court-marks.ts, so the court's game code reads them without this section and the hall's art)
-import { BAO_X, BOARD_X, COURT_MID, COURT_X0, COURT_X1, GONG_X, LION_X, RING_X0, RING_X1, STAIRWELL_X0, STAIRWELL_X1 } from "./court-marks.ts";
-export { BAO_X, BOARD_X, COURT_MID, COURT_X0, COURT_X1, GONG_X, LION_X, RING_X0, RING_X1, STAIRWELL_X0, STAIRWELL_X1 };
+import { BAO_X, BOARD_X, COURT_MID, COURT_X0, COURT_X1, GONG_X, LION_X, RING_SHOW_X0, RING_X0, RING_X1, STAIRWELL_X0, STAIRWELL_X1 } from "./court-marks.ts";
+export { BAO_X, BOARD_X, COURT_MID, COURT_X0, COURT_X1, GONG_X, LION_X, RING_SHOW_X0, RING_X0, RING_X1, STAIRWELL_X0, STAIRWELL_X1 };
 
 export function court(b: WorldBuilder): void {
   const Y = FLOOR_Y;
@@ -37,7 +37,8 @@ export function court(b: WorldBuilder): void {
 
   // the gate back into the hall, the board, Bao's gong tower
   b.usable({ id: "court-doors", x0: COURT_X0 + h(0.1), y0: Y - h(3.1), x1: COURT_X0 + h(1.4), y1: Y, label: "the hall", action: { kind: "door", to: "hall-court-side" } });
-  b.usable({ id: "prize-board", x0: BOARD_X - h(1.2), y0: Y - h(2.4), x1: BOARD_X + h(1.2), y1: Y, label: "the Prize Board", action: { kind: "panel", panel: "board" } });
+  // (round 2) its prompt shows between the two prize cards, under the board's lit header (not over the cup)
+  b.usable({ id: "prize-board", x0: BOARD_X - h(1.2), y0: Y - h(2.0), x1: BOARD_X + h(1.2), y1: Y, label: "the Prize Board", action: { kind: "panel", panel: "board" } });
   b.sprite({ id: "bao", plane: "play", kind: "bao", x: BAO_X, y: Y, p: {}, frames: 5, frame: 0, flip: true });
 
   // things that break by the tip: two jars, and a lantern post with its paper lantern hanging
@@ -74,5 +75,5 @@ export function court(b: WorldBuilder): void {
 
   // --- env-hall's dressing: the court's floor, gatehouse, board, gong tower, pillars, rail and
   // bench, read from the layout above (art/library/hall)
-  dressCourt(b, { gongX: GONG_X });
+  dressCourt(b, { gongX: GONG_X, ring: [RING_SHOW_X0, RING_X1] });
 }

@@ -2,11 +2,13 @@
 // painter (static plates) and by the dressing that places the moving lights, so a lantern
 // that hangs somewhere also lights the wall, the floor and the furniture around it.
 //
-// The hall (GDK A.3): one key light, the skylight's shaft over the Crane Desk, slanting down
-// from the upper left; warm lantern fill; cool daylight round both doors; a lamp in the nook.
+// The hall (GDK A.3; round 1, Dex 10-14): the key is the Prize Court gate's daylight in the middle of
+// the room; the skylight's shaft falls beside it; one pool per service (the desk, the box, the sponsors'
+// board, the map, the nook); a little cool daylight at the front doors; the shell (ceiling, upper walls,
+// end walls) carries no lamp at all.
 // The court: a clear morning, the sun up and to the left (art bible: light = (-0.62, -0.78)).
 
-import type { LightEnv, PointLight } from "./kit.ts";
+import type { Light, LightEnv, PointLight } from "./kit.ts";
 
 const H = 96;
 const h = (n: number): number => Math.round(n * H);
@@ -19,67 +21,103 @@ export const HALL = {
 };
 const X = (o: number): number => HALL.x0 + h(o);
 const FY = HALL.floor;
+const GY = HALL.gallery;
 
-/** The skylight's shaft: from the roof (cropped) down to the floor beside the Crane Desk. */
-export const SHAFT = { x0: X(12.0), y0: FY - h(18), x1: X(15.3), y1: FY, w: h(2.6), k: 1.3, pool: h(3.0) };
+/** The Prize Court gate's centre (H from the west end; mirrors hall.ts GATE_O). */
+export const GATE_O = 17.85;
 
-/** Hanging lanterns of the hall: [x in H from the hall's west wall, height of the lantern's middle above the floor in H, size, plane]. */
-export interface HallLantern { o: number; y: number; kind: "round" | "tall" | "palace" | "drum"; plane: "back" | "play" | "front" | "near"; r: number; k: number }
+/** The skylight's shaft: from the roof (cropped) down to the floor in the clear wall between the desk and
+ *  the gate, so the room's light gathers at its middle (round 1: it was in the left third; round 2: narrower and
+ *  a little right, so it lands in the clear floor between the desk and the gate and never on the desk). */
+export const SHAFT = { x0: X(14.4), y0: FY - h(18), x1: X(15.45), y1: FY, w: h(1.2), k: 0.95, pool: h(1.25) };
+
+/** Hanging lanterns of the hall: [x in H from the hall's west wall, height of the lantern's middle above the
+ *  floor in H, size, plane, strength, reach in H]. Ground-floor ones hang from the gallery's soffit, one over
+ *  each service (its pool); upstairs ones hang between the art's groups. Nothing lights the shell. */
+export interface HallLantern { o: number; y: number; kind: "round" | "tall" | "palace" | "drum"; plane: "back" | "play" | "front" | "near"; r: number; k: number; reach?: number }
 
 export const HALL_LANTERNS: HallLantern[] = [
-  // the ground floor's run of lanterns under the gallery, at head height and above
-  { o: 3.6, y: 5.0, kind: "palace", plane: "play", r: 1, k: 0.55 },
-  { o: 9.6, y: 5.3, kind: "round", plane: "play", r: 1, k: 0.5 },
-  { o: 19.0, y: 5.6, kind: "palace", plane: "play", r: 1, k: 0.55 },
-  { o: 6.4, y: 5.9, kind: "tall", plane: "play", r: 0.9, k: 0.4 },
-  { o: 16.4, y: 6.0, kind: "round", plane: "play", r: 0.85, k: 0.4 },
-  { o: 21.3, y: 5.2, kind: "round", plane: "play", r: 0.9, k: 0.45 },
-  // the double-height end by the stair and the great doors
-  { o: 26.2, y: 9.4, kind: "drum", plane: "play", r: 1.25, k: 0.6 },
-  { o: 31.8, y: 6.4, kind: "palace", plane: "play", r: 1.1, k: 0.6 },
-  { o: 28.6, y: 12.0, kind: "round", plane: "play", r: 1.2, k: 0.45 },
-  { o: 24.0, y: 13.4, kind: "tall", plane: "play", r: 1.1, k: 0.4 },
-  // upstairs, over the Long Gallery
-  { o: 5.5, y: 12.4, kind: "tall", plane: "play", r: 1, k: 0.45 },
-  { o: 10.4, y: 12.0, kind: "round", plane: "play", r: 1.1, k: 0.45 },
-  { o: 17.6, y: 12.6, kind: "tall", plane: "play", r: 1, k: 0.45 },
-  { o: 21.6, y: 12.2, kind: "round", plane: "play", r: 1, k: 0.45 },
+  // the ground floor: one lantern over each service, low enough to make its pool
+  { o: 5.2, y: 3.55, kind: "round", plane: "play", r: 0.85, k: 0.42, reach: 2.4 },
+  { o: 8.4, y: 3.4, kind: "palace", plane: "play", r: 0.85, k: 0.45, reach: 2.2 },
+  // (round 2, W1-5) the desk's lantern hangs low, so its pool lands on the counter and the floor in front
+  { o: 12.55, y: 2.35, kind: "palace", plane: "play", r: 0.9, k: 0.6, reach: 2.2 },
+  { o: 22.0, y: 3.1, kind: "round", plane: "play", r: 0.85, k: 0.48, reach: 2.2 },
+  // upstairs, between the art's groups on the Long Gallery
+  { o: 4.95, y: 9.9, kind: "tall", plane: "play", r: 0.9, k: 0.4, reach: 2.6 },
+  { o: 10.1, y: 9.7, kind: "round", plane: "play", r: 0.95, k: 0.45, reach: 2.6 },
+  { o: 20.68, y: 9.9, kind: "tall", plane: "play", r: 0.9, k: 0.4, reach: 2.4 },
 ];
 
-/** Lanterns on the back plane (P3): smaller, many, at many heights (x in H, world). */
+/** Lanterns on the back plane (P3): small, low, under its gallery (x in H, world); none on the upper wall. */
 export const BACK_LANTERNS: HallLantern[] = [
-  { o: -2.5, y: 4.6, kind: "round", plane: "back", r: 0.9, k: 0.35 },
-  { o: 1.6, y: 9.8, kind: "tall", plane: "back", r: 0.9, k: 0.3 },
-  { o: 5.9, y: 4.2, kind: "round", plane: "back", r: 0.9, k: 0.35 },
-  { o: 8.2, y: 10.6, kind: "palace", plane: "back", r: 0.9, k: 0.3 },
-  { o: 12.9, y: 4.8, kind: "tall", plane: "back", r: 0.9, k: 0.35 },
-  { o: 15.7, y: 9.6, kind: "round", plane: "back", r: 0.9, k: 0.3 },
-  { o: 20.4, y: 4.4, kind: "round", plane: "back", r: 0.9, k: 0.35 },
-  { o: 23.6, y: 10.4, kind: "tall", plane: "back", r: 0.9, k: 0.3 },
-  { o: 27.8, y: 4.6, kind: "palace", plane: "back", r: 0.9, k: 0.35 },
-  { o: 30.9, y: 9.9, kind: "round", plane: "back", r: 0.9, k: 0.3 },
-  { o: 35.2, y: 4.3, kind: "round", plane: "back", r: 0.9, k: 0.35 },
+  { o: -2.5, y: 4.6, kind: "round", plane: "back", r: 0.9, k: 0.3 },
+  { o: 5.9, y: 4.2, kind: "round", plane: "back", r: 0.9, k: 0.3 },
+  { o: 12.9, y: 4.8, kind: "tall", plane: "back", r: 0.9, k: 0.28 },
+  { o: 20.4, y: 4.4, kind: "round", plane: "back", r: 0.9, k: 0.3 },
+  { o: 27.8, y: 4.6, kind: "palace", plane: "back", r: 0.9, k: 0.3 },
+  { o: 35.2, y: 4.3, kind: "round", plane: "back", r: 0.9, k: 0.3 },
 ];
 
 function lanternLights(list: HallLantern[], reach: number): PointLight[] {
-  return list.map((l) => ({ kind: "point", x: X(l.o), y: FY - h(l.y), r: h(reach) * l.r, k: l.k * 1.35 }));
+  return list.map((l) => ({ kind: "point", x: X(l.o), y: FY - h(l.y), r: h(l.reach ?? reach) * l.r, k: l.k * 1.35 }));
 }
 
-/** The hall's light: dark and warm, the shaft the one strong key. */
+/** The Prize Court gate's daylight: the room's key. A pool on the floor in front of the moon gate and the
+ *  light pouring out of it (lights.ts is placement; the painters render it). */
+export const GATE_LIGHTS: Light[] = [
+  // (a "shaft" with no beam to speak of: only its pool on the floor, which lights the walkway's lip, the floor
+  // and whatever stands in front of the gate; its beam is a hair-thin line far off along the floor)
+  { kind: "shaft", x0: X(GATE_O) - h(60), y0: FY - 1, x1: X(GATE_O), y1: FY, w: 2, k: 1.35, pool: h(2.7) },
+  { kind: "point", x: X(GATE_O), y: FY - h(1.0), r: h(3.2), k: 0.8 },
+];
+
+/** One lamp per service: the pools that make each one read on its own (desk, box, board, map, nook...). */
+export const SERVICE_LAMPS: PointLight[] = [
+  // the notice wall's own lamp
+  { kind: "point", x: X(5.2), y: FY - h(1.9), r: h(1.9), k: 0.45 },
+  // the sponsors' board: the lantern hanging over its head
+  { kind: "point", x: X(8.4), y: FY - h(2.6), r: h(1.9), k: 0.75 },
+  // the offering box: its own lantern on a bracket off the west post of its frame (round 2)
+  // (round 2, W2-7) hung a little lower on its bracket, so it lights the chest's lid and front and the plinth
+  { kind: "point", x: X(10.15), y: FY - h(0.85), r: h(1.5), k: 0.95 },
+  // the register desk: its desk lamp at the visitor's end
+  { kind: "point", x: X(12.9), y: FY - h(0.8), r: h(1.7), k: 0.95 },
+  // the map's lamp
+  { kind: "point", x: X(22.0), y: FY - h(1.55), r: h(1.7), k: 0.7 },
+  // the nook: the standing lamp between the shelf and the bench
+  { kind: "point", x: X(26.4), y: FY - h(1.2), r: h(2.1), k: 1.0 },
+  // the Crane Desk's candle
+  { kind: "point", x: X(32.2), y: FY - h(0.8), r: h(1.4), k: 0.6 },
+  // upstairs: a picture lamp over each group of the art, and one at the Request Board
+  { kind: "point", x: X(7.1), y: GY - h(2.35), r: h(2.1), k: 0.6 },
+  { kind: "point", x: X(12.4), y: GY - h(2.7), r: h(2.4), k: 0.75 },
+  { kind: "point", x: X(17.8), y: GY - h(2.9), r: h(2.9), k: 0.62 },
+  { kind: "point", x: X(21.35), y: GY - h(2.1), r: h(1.6), k: 0.5 },
+];
+
+/** The stone lantern on the stair landing's east newel (round 2): it lights the landing and both flights. */
+export const STAIR_LANTERN: PointLight = { kind: "point", x: X(27.27), y: FY - h(4.72), r: h(2.0), k: 0.55 };
+
+/** The hall's light: dark shell, the gate's daylight the key, the shaft beside it, a pool per service. */
 export const HALL_LIGHT: LightEnv = {
   ambient: 0.2,
   dir: [-0.5, -0.86],
   lights: [
     { kind: "shaft", ...SHAFT },
+    ...GATE_LIGHTS,
     ...lanternLights(HALL_LANTERNS, 4.2),
-    ...lanternLights(BACK_LANTERNS, 3.2),
-    // daylight round the front doors and the great doors (cool, low, spilling onto the floor)
-    { kind: "point", x: X(1.85), y: FY - h(1.6), r: h(3.2), k: 0.42 },
-    { kind: "point", x: X(32.15), y: FY - h(1.8), r: h(3.6), k: 0.5 },
-    // the nook's lamp under the stair
-    { kind: "point", x: X(26.65), y: FY - h(1.45), r: h(3.0), k: 0.75 },
+    ...lanternLights(BACK_LANTERNS, 3.0),
+    ...SERVICE_LAMPS,
+    STAIR_LANTERN,
+    // cool daylight round the front doors, low
+    { kind: "point", x: X(1.55), y: FY - h(1.2), r: h(2.6), k: 0.38 },
   ],
 };
+
+/** The hall's light without the gate's: for the wall the gate is cut in (light coming out of an opening
+ *  lights what stands in front of it, never the wall face round it). */
+export const HALL_LIGHT_NO_GATE: LightEnv = { ...HALL_LIGHT, lights: HALL_LIGHT.lights.filter((l) => !GATE_LIGHTS.includes(l)) };
 
 /** The court: a clear morning, lit from the upper left. */
 export const COURT_LIGHT: LightEnv = {
