@@ -31,7 +31,7 @@ test("choreo plan: strips whip in from their side and land square; panels follow
   // settle on the screen plays out. v3 round 1 (Dex 10-20: "have the white background go in first, then the UI elements
   // ... come in from under the top one"): the paper is nearly in when the content starts out from under the strip; a band
   // entered fast, at once
-  assert.equal(P.PANEL_AT(false), "top 92%");
+  assert.equal(P.PANEL_AT(false), "top bottom");
   assert.equal(P.PANEL_AT(true), "top 94%");
   assert.ok(P.PANEL_TIME >= 0.6 && P.PANEL_TIME <= 0.9);
   assert.ok(P.expoOut(P.CONTENT_GATE) > 0.8 && P.expoOut(P.CONTENT_GATE) < 0.95, "the paper first: the gate opens with it ~90% in");

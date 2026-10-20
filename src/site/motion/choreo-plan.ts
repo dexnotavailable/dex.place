@@ -13,7 +13,9 @@ export const stripEnd = (stripH: number): string => `top bottom-=${Math.round(st
 /** A panel (the section's paper) is a triggered slide, not a scrub (site loop round 1: a scrubbed panel stalled short of
  *  its place, blank, whenever the reader stopped scrolling with a band half way up the screen): it plays once its top
  *  crosses this line, and never goes back (until the band is set back). */
-export const PANEL_AT = (phone: boolean): string => (phone ? "top 94%" : "top 92%");
+// (site loop v3 round 3: the paper leads, it starts the moment its top shows, so stopping mid-entry never leaves bare
+// world between a strip and its own paper)
+export const PANEL_AT = (phone: boolean): string => (phone ? "top 94%" : "top bottom");
 /** The panel's slide (s): its paper and its shade together, expo.out. */
 export const PANEL_TIME = 0.6;
 /** The content's gate opens this far through the panel's slide (a share of its time). Site loop v3 round 1 (Dex 10-20:

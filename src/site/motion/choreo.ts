@@ -434,7 +434,14 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     // solid all the way (never see-through over the world it hangs onto): it unrolls down out from under the strip.
     // The wipe moves in whole 8 px steps (site loop v3 round 2): a pixel-art unroll, and a clip that changes only on a
     // step, so the card is painted again only then (a clip change repaints it; its slow tail was a repaint every frame)
+    // (site loop v3 round 3: the clip was opened 100vw to each side, so each step repainted a viewport-wide layer and
+    // a long frame landed as the band came in): it opens only as far as the stitch reaches past the block, plus its
+    // shadow, and on a fling it lands in one go
     const u = unroll!, h = u.offsetHeight + 24;
+    const ur = u.getBoundingClientRect(), sr = stitch.getBoundingClientRect();
+    const sl = Math.ceil(Math.max(0, ur.left - sr.left)) + 16, sR = Math.ceil(Math.max(0, sr.right - ur.right)) + 16;
+    if (Math.abs(speed.n) >= FAST_N) { gsap.set(u, { y: 0, clearProps: `${CLEAR},clipPath` }); return; }
+    u.style.willChange = "clip-path";
     let last = NaN;
     gsap.to(u, { y: 0, duration: 0.9 * T, ease: "expo.out", delay: 0.1 });
     wipe.p = 0;
@@ -442,9 +449,9 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
       p: 1, duration: 0.9 * T, ease: "expo.out", delay: 0.1,
       onUpdate: () => {
         const b = Math.round(((1 - wipe.p) * h) / 8) * 8 - 24;
-        if (b !== last) { last = b; u.style.clipPath = `inset(-24px -100vw ${b}px -100vw)`; }
+        if (b !== last) { last = b; u.style.clipPath = `inset(-24px -${sR}px ${b}px -${sl}px)`; }
       },
-      onComplete: () => { gsap.set(u, { clearProps: `${CLEAR},clipPath` }); },
+      onComplete: () => { u.style.willChange = ""; gsap.set(u, { clearProps: `${CLEAR},clipPath` }); },
     });
   };
   const land = (batch: HTMLElement[], quick = false): void => {

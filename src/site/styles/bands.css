@@ -284,6 +284,20 @@
   /* the key sits beside the section's giant number (site loop v2 round 1: no lone key in a far corner); on the
      left-docked bands the head ends before the number */
   .band--r .sh--strip .sh__more { position: absolute; left: calc(var(--num-vis) + 28px); bottom: 12px; }
+  /* (site loop v3 round 3: ~540 px of bare strip still lay between the key and the title at 1920): the key docks
+     right beside the title, and the giant numeral comes out of its bleed to stand beside the key, so the number, the
+     key and the title read as one group along the strip */
+  .band--r { --key-w: 168px; --num-w: calc(var(--num-px) * 38px); }
+  .band--docs { --key-w: 128px; }
+  .band--r .sh--strip .sh__more { left: auto; right: calc(var(--panel-w) - var(--edge-in) + 28px); }
+  .band--r .band__strip-paper::before {
+    margin-left: max(0px, calc(100% - var(--panel-w) + var(--edge-in) - 56px - var(--key-w) - var(--num-w)));
+    /* (standing on the strip's foot, sunk a little into it, it clears the kicker's rule above: the numerals bleed off
+       an edge here too, the bottom one) */
+    align-items: flex-end;
+    padding-bottom: 0;
+    margin-bottom: -0.16em;
+  }
   /* ...and its kicker row (the index, the rule, the aside) starts right over the key (site loop v3 round 1: on a wide
      screen ~590 px of bare strip lay between the key and the title): the rule runs the strip's width, as on the
      left-docked bands; the title stays where its panel's content starts. (100vw, not the strip's width: off by a
@@ -299,6 +313,15 @@
 /* (site loop v3 round 2: the panels were pure #fff under washed strips; a breath of the tone ties each chapter together,
    and the cards' white stands off it) */
 .band { --paper: color-mix(in srgb, var(--tone) 3%, #fff); }
+/* (site loop v3 round 3: at desktop widths the white panels still ruled the screen) a 5% breath of the tone, and the
+   cards' edges and dividers in the section's own tones instead of grey */
+@media (min-width: 1100px) {
+  .band {
+    --paper: color-mix(in srgb, var(--tone) 5%, #fff);
+    --line: color-mix(in srgb, var(--tone) 30%, #fff);
+    --line-2: var(--tone-d, #8a8094);
+  }
+}
 /* the shade falls past the open edge and down past the foot (the paper lies on the world, never looks clipped) */
 .band__shade { position: absolute; inset: 0; z-index: 1; box-shadow: 24px 24px 64px -28px var(--shade-c); }
 .band--r .band__shade { box-shadow: -24px 24px 64px -28px var(--shade-c); }
@@ -484,7 +507,10 @@
    dead paper): the Ko-fi card rides along beside the bank card as you read down it; the QR takes the bank card's width
    in whole pixels per module (the stitch's overhang there only pushed it off centre) */
 @media (min-width: 1100px) {
-  .band--donate .kofi { position: sticky; top: calc(var(--hdr-h) + 24px); }
+  /* (site loop v3 round 3: under the sticky card's key lay ~330 px of bare paper beside the bank card) the Ko-fi card
+     stands as tall as the bank card, its key at the foot, its cup's well growing into the room: a tall, cosy window */
+  .band--donate .donate { align-items: stretch; }
+  .band--donate .kofi__cta { margin-top: auto; }
   .band--donate .qr[data-stitch] { margin-right: 0; }
 }
 @container (min-width: 323px) and (max-width: 599px) { .band--donate .qr { --qm: 7; } }
