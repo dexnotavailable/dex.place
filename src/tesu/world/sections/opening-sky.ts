@@ -120,10 +120,11 @@ export const FALL_CLOUDS: readonly FallCloud[] = [
   // underside's top
   { id: "fall-bank-deck-e", plane: "back", T: 10.617, fx: 0.87, fy: 1.49, cloud: "cu-heap-e", low: true },
   { id: "fall-bank-deck-m", plane: "back", T: 10.617, fx: 0.5, fy: 1.09, cloud: "cu-puff-a", low: true },
-  // --- coming out under the clouds (12.6-14.6 s): the deck's underside overhead on the back plane (big, near and
-  // dark; it slides up and away as the paper sinks to the lake: at the deck it is still far under the frame, so no top
-  // of it ever shows), rolls and pouches at different sizes with torn gaps (W1-7), its base clear above the islets
-  { id: "fall-deck-band", plane: "back", T: 14.6, fx: 0.48, fy: 0.06, cloud: "deck-under", low: true },
+  // --- coming out under the clouds (12.6-14.6 s): NO ceiling this round (art director, round 3 integration). The
+  // deck-under piece (back plane, T 14.6 fx 0.48 fy 0.06) drew as a row of five round blobs with a golf-ball cell
+  // texture: separate balls overhead at the come-out, and a bubbly cluster over the Walker in the glimpse (zoom 0.16
+  // sees every placement). The come-out reads as open, serene haze until the underside is re-made as long flat rolls
+  // (round 4); the library keeps the piece.
 ];
 
 export function openingSky(b: WorldBuilder): void {
