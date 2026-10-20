@@ -40,6 +40,8 @@ export interface OpeningLink {
   input(): void;
   /** The page's AudioContext (the world's sound shares it), or null. */
   readonly ctx: AudioContext | null;
+  /** A long take the page decoded before "continue" (the speech: track.ts takes), by its URL; null if not one of them. */
+  decoded?(url: string): Promise<AudioBuffer | null> | null;
   /**
    * The website's ofuda at the press (rev 5: it drops out of the black where the loader left it): its tie in css px of
    * the page's viewport, the page's device px per art px, and its 12 nodes (x, y, z art px) from the tie.
@@ -162,6 +164,10 @@ export class Conductor implements OpeningLink {
 
   ctxTimeOf(T: number): number | null {
     return this.clock.mode === "audio" && this.ctx ? this.clock.ctxTimeOf(T) : null;
+  }
+
+  decoded(url: string): Promise<AudioBuffer | null> | null {
+    return this.track?.takes.get(url) ?? null;
   }
 
   /** The press, inside its gesture: Track 1 starts at +0.05 s on the sample grid, and that moment is T 0 (way 4: bar 6). */
