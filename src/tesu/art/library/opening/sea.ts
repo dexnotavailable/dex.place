@@ -123,11 +123,14 @@ function paintFloor(c: PaintCtx, p: SeaP): void {
         const tw = ly / (wf * 1.1) + (vnoise(lx / (sw * 5), ly / (sw * 1.5), seed + 42) - 0.5) * 0.3 + (vnoise(lx / (sw * 1.6), ly / (sw * 0.6), seed + 44) - 0.5) * 0.3;
         // (the lake's own tones in ripple runs along each row, as the lake beside it breaks
         // into horizontal ripples: never a checker)
-        const pair = tw < 0.25 ? [P.jade[2]!, P.range[1]!] : tw < 0.55 ? [P.jade[2]!, P.range[2]!] : [P.jade[3]!, P.range[3]!];
+        // (kagami9 r1, the critic's W1-14: the saturated jade against the range's pink-grey read as a
+        // pasted pink-cyan band beside the lake's pale glass) the lake's own glassy mint: two tones of
+        // one value, the second only in sparse long runs, so it meets the mirror beside it
+        const pair = tw < 0.25 ? [P.cloud[3]!, P.jade[0]!] : tw < 0.55 ? [P.cloud[4]!, P.jade[1]!] : [P.range[2]!, P.jade[1]!];
         const row = Math.floor(ly * 1.2);
-        const rl = 5 + 12 * hash1(row, seed + 45);
+        const rl = 14 + 30 * hash1(row, seed + 45);
         const run = Math.floor((lx + 37 * hash1(row, seed + 46)) / rl);
-        b.set(x, y, pair[hash1(run, seed + 47 + row) < 0.5 ? 0 : 1]!);
+        b.set(x, y, pair[hash1(run, seed + 47 + row) < 0.7 ? 0 : 1]!);
         continue;
       }
       b.set(x, y, col);

@@ -101,7 +101,8 @@ void main() {
       col = mix(col, uLow, bandd(lo, 4.0, c));
     }
     if (uSun.z > 0.0) col = sunOver(col, q, c);
-    o = vec4(col, 1.0);
+    // (kagami9 r1) mirrored, the sky is drawn with alpha 0, so the water can tell land from sky in its mirror
+    o = vec4(col, uMirror > 0.5 ? 0.0 : 1.0);
     return;
   }
   p = floor(p);
@@ -118,7 +119,7 @@ void main() {
     c = mix(c, vec3(1.0, 0.98, 0.9), stepd(glow * glow * 0.55, 5.0, p));
     if (d < uSun.z) c = vec3(1.0, 0.99, 0.94);
   }
-  o = vec4(c, 1.0);
+  o = vec4(c, uMirror > 0.5 ? 0.0 : 1.0);
 }`;
 
 const MIST_FS = /* glsl */ `#version 300 es
@@ -311,7 +312,41 @@ uniform vec4 uHold[3];
 uniform vec4 uShore;
 // (round 7) the back and mid planes' waterline rows (0: none), for the contact under their land
 uniform vec2 uFeet;
+// (kagami9 round 1, worker 1) the lake's look, each 0 = as before:
+// uLip   its near edge: [depth where it comes closest, where it reaches furthest, how far along the
+//        shore one cove or point runs (3D px), the overhanging near foliage's broken reflections
+//        (0..1)]: the water runs on toward the camera past the near plane to a shore that wanders
+//        in depth (never a ruled row across the frame), from about 0.3x in
+// uSunW  the one sun on the water: [its frame x, its frame y, glitter path strength, haze lift]
+// uLook  [fine steps (1: the mirror, the haze and the near dark in fine flat steps with a seam of
+//        dither, never a screen door), vertical waver of the mirror (cells), fill (1: the gaps a
+//        land's painted underside leaves in its mirror image are filled from the land's own
+//        reflection), sparse ripple dashes (1)]
+uniform vec4 uLip;
+uniform vec4 uSunW;
+uniform vec4 uLook;
+// uEdge  where the water meets land and haze, each 0 = as before: [how far (frame px at the play
+//        plane's scale) the hand-over between two holds wanders up and down along the shore, with
+//        the land's dark submerged foot under it; the rate of the plane whose waterline the far
+//        haze melts down from (the far shore: the haze lies on the water and thins toward the
+//        viewer over a reach that wanders, never a ruled horizon); the near water's extra darkening
+//        toward the viewer (0..1); the shade at the feet of the land holding the water (0..1)]
+uniform vec4 uEdge;
 out vec4 o;
+// v (0..1) in n flat steps; only the last stretch of each step dithers into the next (a seam, never
+// a screen door across a flat area)
+float seamq(float v, float n, vec2 c) {
+  float x = clamp(v, 0.0, 1.0) * n;
+  float fl = floor(x), fr = fract(x);
+  return (fl + step(bayer4(c), (fr - 0.74) / 0.26)) / n;
+}
+float quant(float v, float n, vec2 c) {
+  return uLook.x > 0.5 ? seamq(v, n * 3.0, c) : stepd(v, n, c);
+}
+// is a texel of the mirror land (or fog), not the sky? (the mirrored sky is drawn with alpha 0)
+float landAt(vec2 rp) {
+  return texelFetch(uRefl, ivec2(rp.x, uRes.y - 1.0 - clamp(rp.y, 0.0, uRes.y - 1.0)), 0).a;
+}
 void main() {
   vec2 f = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
   if (f.y < uRows.x || f.y >= uRows.y) discard;
@@ -325,11 +360,21 @@ void main() {
   float s = (q.y - uHz) / denom;
   if (s <= 0.0) discard;
   float r = 1.0 / (1.0 / s - 1.0 / uZ + 1.0);
-  if (r <= 0.0 || r > uDepth.x || r < uDepth.y) discard;
+  if (r <= 0.0 || r < uDepth.y) discard;
   float u = clamp((1.0 / r - 1.0 / uDepth.x) / (1.0 / uDepth.y - 1.0 / uDepth.x), 0.0, 1.0);
   // (engine 10-18) each row is a depth with its own scale s: its offset is whole px, as a plane's, so a pan moves
   // it by whole px instead of re-sampling its ripples at a new sub-px phase
   float x3 = (q.x - floor(uRes.x * 0.5 - uCx * s + 0.5)) / s;
+  // (kagami9 r1) the near shore wanders in depth along the lake: coves running in toward the camera,
+  // points reaching out (in 1/depth, so it bends as a shore seen in perspective does)
+  float nearR = uDepth.x;
+  if (uLip.y > 0.0) {
+    float wv = vnoise(vec2(x3 / max(1.0, uLip.z), 2.9)) * 0.7 + vnoise(vec2(x3 / max(1.0, uLip.z * 0.31), 5.3)) * 0.3;
+    // (only from about 0.3x in: further out the plateau's own lip, drawn in front of the water,
+    // ends the lake, and the water must not run on over the cliff below it)
+    nearR = 1.0 / mix(1.0 / uDepth.x, mix(1.0 / uLip.x, 1.0 / uLip.y, smoothstep(0.2, 0.8, wv)), smoothstep(0.26, 0.38, uZ));
+  }
+  if (r > nearR) discard;
   float x0 = mix(uExt.x, uExt.z, u), x1 = mix(uExt.y, uExt.w, u);
   // an irregular shore: coves and points, more of them the further away
   float span = x1 - x0;
@@ -340,8 +385,24 @@ void main() {
   // behind (the near water's depths slide past each other, so a 3D end there drew a ruled diagonal)
   float shelfW = 0.0, dEnd = 1e6;
   bool held = false;
+  // (kagami9 r1, the critic's W1-2) where one hold hands over to the next (the scree's foot to the
+  // near limestone's top) the row wanders along the shore, so the water past the nearer land's
+  // column never starts on a ruled row: some way up under the rock here, lower there
+  float wob = 0.0, hand = -1.0;
+  if (uEdge.x > 0.0) {
+    // (only where the next hold's own column lies past the frame's right edge: where it stands in
+    // the frame, the water raised past the hand-over ran up between the two lands as a column with
+    // a vertical side (the pull-back); there the hand-over stays put and only its dark foot shows)
+    if (uHold[1].x > uRes.x) wob = uCell * floor(uEdge.x * s * (0.15 + 0.85 * vnoise(vec2(x3 / 31.0, 6.2)) * (0.55 + 0.45 * vnoise(vec2(x3 / 7.0, 2.4)))) / uCell + 0.5);
+    if (uHold[0].y < uHold[0].z && uHold[0].z < uRes.y) hand = uHold[0].z - wob;
+  }
   for (int i = 0; i < 3; i++) {
     vec4 hd = uHold[i];
+    // (a hold that hands over to the next ends higher by the wander, the next starts there)
+    if (hd.y < hd.z) {
+      if (i > 0) hd.y -= wob;
+      if (hd.z < uRes.y) hd.z -= wob;
+    }
     if (hd.y < hd.z && p.y >= hd.y && p.y < hd.z) {
       held = true;
       // (how far short of the end, 3D px at this row's own depth)
@@ -356,6 +417,7 @@ void main() {
   // world-anchored wave coordinates (px on the water's own surface)
   float wx = x3 / 9.0;
   float t = uTime;
+  float zz = 600.0 / r;
   // (round 6) a few long slow ripple bands on the near water, wind lines fixed on the water: thin
   // and long, thicker nearer, broken along their length, only some of the rows where they could lie
   float band = 0.0;
@@ -374,6 +436,13 @@ void main() {
   float ph = wx * 0.9 + pc.y * uCell * 0.55 + t * 1.6;
   float dx = floor(sin(ph) * amp * (0.6 + 0.4 * vnoise(vec2(wx * 0.2, pc.y * uCell * 0.3))) / uCell + 0.5) * uCell;
   float dy = floor(sin(ph * 0.5 + 1.7) * amp * 0.25 / uCell + 0.5) * uCell;
+  // (kagami9 r1) the mirror wavers up and down too, in long soft swells fixed on the water, so a
+  // level edge in the mirror (a deck, a ledge) bends and breaks into the ripples instead of ruling a
+  // line across the lake; none in the far mirror zone, more toward the viewer
+  if (uLook.y > 0.0) {
+    float sw = vnoise(vec2(x3 / 46.0 + t * 0.02, zz / 9.0)) * 0.65 + vnoise(vec2(x3 / 13.0 - t * 0.03, zz / 4.0)) * 0.35;
+    dy += floor((sw - 0.5) * 2.0 * uLook.y * smoothstep(0.35, 1.2, r) * (1.0 + band) + 0.5) * uCell;
+  }
   // (round 7) the contact: just under a background plane's waterline what stands on it holds its
   // reflection crisp (the ripples are smallest at the shore), to its own depth along the shore, so
   // where rock meets the water no ruled line of pale water runs under every block
@@ -393,6 +462,22 @@ void main() {
   vec2 rp = vec2(p.x + dx, p.y + dy);
   rp = clamp(rp, vec2(0.0), uRes - 1.0);
   vec3 refl = texelFetch(uRefl, ivec2(rp.x, uRes.y - 1.0 - rp.y), 0).rgb;
+  // (kagami9 r1) a land's mirror image is one continuous thing: where a painted land stops short of
+  // the water behind something nearer (a rock's foot hidden behind the deck), its mirror image
+  // showed a band of sky between the two, a seam across the reflection. Sky with land mirrored both
+  // nearer the waterline (above) and further (below) within a short reach takes the land's own
+  // mirror from below (its foot carried on up under the nearer thing).
+  if (uLook.z > 0.0 && r > 0.4 && landAt(rp) < 0.5) {
+    float G = uCell * floor(26.0 * clamp(s / max(0.2, uZ), 0.5, 2.5) / uCell + 0.5);
+    float upL = 0.0;
+    for (int j = 1; j <= 6; j++) upL = max(upL, landAt(rp - vec2(0.0, G * float(j) / 6.0)));
+    if (upL > 0.5) {
+      for (int j = 1; j <= 8; j++) {
+        vec2 bp = rp + vec2(0.0, G * float(j) / 8.0);
+        if (landAt(bp) > 0.5) { refl = texelFetch(uRefl, ivec2(bp.x, uRes.y - 1.0 - clamp(bp.y, 0.0, uRes.y - 1.0)), 0).rgb; break; }
+      }
+    }
+  }
   // (round 6) the mirror drawn down in soft streaks: what stands over the water stretches its
   // reflection toward the viewer, darker under the masses, as on the lake in reference 4
   if (uNear.y > 0.0) {
@@ -413,23 +498,121 @@ void main() {
   body = mix(body, uDeep, smoothstep(0.45, 1.1, k));
   // how much it mirrors: nearly all far away, still most of it near (a still lake)
   float rs = mix(0.96, mix(0.55, 0.82, uStill), pow(k, 0.8)) * (1.0 - 0.25 * ruff);
-  // short gaps where a ripple faces the sky (round 6: on the near water only in the ripple bands,
-  // never a sprinkle of dashes over the whole lake)
-  float gap = step(0.86 - 0.08 * k, vnoise(vec2(wx * 1.3 + t * 0.4, pc.y * uCell * 0.9)));
-  if (uNear.z > 0.0) gap *= mix(1.0, band, smoothstep(0.4, 0.8, k));
+  float gap;
+  if (uLook.w > 0.0) {
+    // (kagami9 r1) ripple marks: sparse broken dashes of varied length lying along the water, none
+    // in the far mirror, a few more toward the viewer (in the bands, most)
+    float lane = floor(zz / max(0.6, 1.2 * r));
+    float len = 10.0 + 34.0 * hash2(vec2(lane, 3.3));
+    float seg = floor((x3 + 97.0 * hash2(vec2(lane, 7.9)) + t * (1.0 + 2.0 * hash2(vec2(lane, 1.1)))) / len);
+    float dens = mix(0.0, 0.06, smoothstep(0.5, 1.5, r)) * (1.0 + 4.0 * band);
+    gap = step(1.0 - dens, hash2(vec2(seg, lane))) * smoothstep(0.42, 0.7, r);
+  } else {
+    // short gaps where a ripple faces the sky (round 6: on the near water only in the ripple bands,
+    // never a sprinkle of dashes over the whole lake)
+    gap = step(0.86 - 0.08 * k, vnoise(vec2(wx * 1.3 + t * 0.4, pc.y * uCell * 0.9)));
+    if (uNear.z > 0.0) gap *= mix(1.0, band, smoothstep(0.4, 0.8, k));
+  }
   rs *= 1.0 - gap * 0.35;
   // (round 7) the shallows before the land holding the water: the lake bed rising to it, stone seen
   // through the water, in two steps whose edges wander along the shore (world-anchored: a stretch of
   // depth, so they hold still on the water while the camera moves), the mirror weaker over them
-  float ledge = 0.0, zz = 600.0 / r, w2 = 0.0;
+  float ledge = 0.0, w2 = 0.0;
   if (shelfW > 0.0) {
     float w1 = shelfW * (0.22 + 0.3 * vnoise(vec2(zz / 9.0, 3.3)) + 0.08 * vnoise(vec2(zz / 2.5, 5.7)));
     w2 = shelfW * (0.6 + 0.45 * vnoise(vec2(zz / 14.0, 4.4)) + 0.1 * vnoise(vec2(zz / 3.0, 6.1)));
     ledge = dEnd < w1 ? 2.0 : dEnd < w2 ? 1.0 : 0.0;
     rs *= 1.0 - 0.12 * ledge * uShore.x;
   }
-  float rl = foot > 0.0 ? 1.0 : stepd(rs, 5.0, pc);
+  float rl = foot > 0.0 ? 1.0 : quant(rs, 5.0, pc);
   vec3 c = mix(body, refl, rl);
+  // (kagami9 r1, the critic's W1-8; reference 4's foreground water) the broken reflections of the
+  // near foliage overhanging the water beyond the frame's top: dark jade masses rising from the
+  // frame's bottom edge in the nearest water, their tops the canopies' undersides upside down
+  // (crowns of their own widths and reach, open water between the trees), lighter specks where the
+  // sky shows through the leaves, each ripple lane shearing it a little and the ripple marks
+  // cutting it into broken rows. Fixed on the water along the shore; its reach is a share of the
+  // water between the play plane's line and the frame's bottom (in depth), so it reads at every zoom
+  if (uLip.w > 0.0 && r > 1.0) {
+    float qBy = uFocus.y + (uRes.y - uFocus.y) / uLens;
+    float irB = max(0.0, denom / max(1.0, qBy - uHz) - 1.0 / uZ + 1.0);
+    float fR = (1.0 / r - irB) / max(0.05, 1.0 - irB);
+    if (fR < 0.5) {
+      float laneC = floor(zz / max(0.6, 1.4 * r));
+      float X = x3 + (hash2(vec2(laneC, 4.2)) - 0.5) * 10.0 * smoothstep(1.05, 1.8, r);
+      float trees = smoothstep(0.3, 0.62, vnoise(vec2(X / 520.0, 3.9)) * 0.7 + vnoise(vec2(X / 170.0, 6.1)) * 0.3);
+      float cw = 72.0, j0 = floor(X / cw), top = 0.0;
+      for (int kk = -2; kk <= 2; kk++) {
+        float j = j0 + float(kk);
+        if (hash2(vec2(j, 0.7)) < 0.18) continue;
+        float cx = (j + hash2(vec2(j, 1.7))) * cw;
+        float hw = cw * (0.45 + 0.9 * hash2(vec2(j, 2.9)));
+        float hh = 0.25 + 0.75 * hash2(vec2(j, 5.3)) * hash2(vec2(j, 6.6));
+        float uu = (X - cx) / hw;
+        if (abs(uu) < 1.0) top = max(top, hh * pow(1.0 - uu * uu, 0.32));
+      }
+      // (the leaf clusters along a crown's edge: smaller crowns of their own on it, scalloped, never
+      // a smooth arc; a few sprigs hanging further)
+      float cw2 = 17.0, i0 = floor(X / cw2), bump = 0.0;
+      for (int kk = -1; kk <= 1; kk++) {
+        float j = i0 + float(kk);
+        float cx = (j + hash2(vec2(j, 11.7))) * cw2;
+        float hw = cw2 * (0.5 + 0.7 * hash2(vec2(j, 12.9)));
+        float uu = (X - cx) / hw;
+        if (abs(uu) < 1.0) bump = max(bump, (0.3 + 0.7 * hash2(vec2(j, 13.3))) * sqrt(1.0 - uu * uu));
+      }
+      top = top > 0.02 ? top + 0.16 * bump - 0.08 + 0.04 * (hash2(vec2(floor(X / 3.0), 9.9)) - 0.5) : top;
+      float sprig = step(0.93, hash2(vec2(floor(X / 4.0), 14.1))) * 0.12 * step(0.1, top);
+      float reachC = max(top, top + sprig) * trees * 0.36;
+      if (fR < reachC) {
+        float into = 1.0 - fR / max(0.01, reachC);
+        // its body: darkest deep inside, the leaf clusters in two values drawn down in streaks
+        vec3 leaf = mix(uDeep * vec3(0.42, 0.56, 0.5), vec3(0.13, 0.24, 0.21), 0.35);
+        float cl = vnoise(vec2(X / 6.0, fR * 40.0)) * 0.6 + vnoise(vec2(X / 2.5, fR * 14.0)) * 0.4;
+        leaf *= mix(1.12, 0.84, smoothstep(0.25, 0.75, into)) * (0.9 + 0.2 * step(0.55, cl));
+        // sky through the leaves: a few specks, most near the canopy's edge
+        float hole = step(mix(0.86, 0.975, smoothstep(0.0, 0.5, into)), hash2(vec2(floor(X / 3.0), floor(fR * 120.0))));
+        float a = uLip.w * mix(0.5, 0.9, smoothstep(0.0, 0.3, into)) * (1.0 - 0.8 * hole);
+        // the ripple marks and bands cut it into rows
+        a *= 1.0 - 0.75 * max(gap, band);
+        c = mix(c, leaf, quant(a, 4.0, pc));
+      }
+    }
+  }
+  // (kagami9 r1, W1-2) the land's foot under the water past the hand-over: the water runs in under
+  // the rock and lies dark there (its submerged foot in its own shade, the mirror lost in it),
+  // deepest right under the rock, thinning out over a reach that wanders along the shore
+  if (hand > 0.0 && q.y >= hand) {
+    float under = (q.x - uHold[0].x) / max(0.3, s);
+    float reachF = 16.0 + 48.0 * vnoise(vec2(x3 / 19.0, 3.7)) + 8.0 * hash2(vec2(floor(x3 / 4.0), 5.5));
+    float sub = (1.0 - smoothstep(0.0, reachF, (q.y - hand) / max(0.3, s))) * smoothstep(-36.0, 6.0, under);
+    c = mix(c, uDeep * vec3(0.5, 0.58, 0.62), quant(sub * 0.85, 4.0, pc));
+  }
+  // (W1-3) under the back plane's waterline the land standing in the lake goes on down under the
+  // surface: its foot seen through the water (its own colour just above the line, darker, cooler,
+  // melting into the deep water), each block reaching its own depth (stepped, block by block, a
+  // few hardly at all), so a heap of chunks never shares one waterline (not under mist or foam)
+  if (uEdge.x > 0.0 && uFeet.x > 0.0) {
+    float dd = q.y - uFeet.x;
+    float bw = 7.0 + 9.0 * vnoise(vec2(x3 / 37.0, 2.2));
+    float blk = floor(x3 / bw + 0.6 * vnoise(vec2(x3 / 11.0, 3.1)));
+    float kS = uCell * floor((1.0 + 13.0 * hash2(vec2(blk, 4.9)) * hash2(vec2(blk, 5.7)) + 3.0 * vnoise(vec2(x3 / 3.0, 1.7))) * clamp(uZ, 0.5, 2.0) / uCell + 0.5);
+    if (dd >= 0.0 && dd < kS) {
+      vec4 mb = texelFetch(uRefl, ivec2(p.x, uRes.y - 1.0 - clamp(uFeet.x + 1.0, 0.0, uRes.y - 1.0)), 0);
+      if (mb.a > 0.5 && dot(mb.rgb, vec3(0.3, 0.55, 0.15)) < 0.8) {
+        float sub = 1.0 - dd / kS;
+        vec3 under = mix(mb.rgb * vec3(0.5, 0.62, 0.68), uDeep * 0.7, 0.25 + 0.45 * (1.0 - sub));
+        c = mix(c, under, quant(0.9 * pow(sub, 0.7), 3.0, pc));
+      }
+    }
+  }
+  // (W1-7) the land holding the water shades the water at its feet: a dark margin whose width
+  // wanders from row to row (each block's own), so no block stands in a bright pool of its own
+  if (uEdge.w > 0.0 && held && dEnd >= 0.0) {
+    float wS = 6.0 + 46.0 * vnoise(vec2(zz / 3.0, 1.1)) * vnoise(vec2(zz / 11.0, 7.4));
+    float sh = (1.0 - smoothstep(0.0, wS, dEnd)) * uEdge.w;
+    c = mix(c, c * vec3(0.56, 0.64, 0.7), quant(sh, 3.0, pc));
+  }
   if (ledge > 0.0) {
     // pale, warm stone seen through the shallows, the inner step paler
     vec3 stone = mix(uShallow, vec3(0.74, 0.71, 0.58), uShore.z);
@@ -439,21 +622,68 @@ void main() {
   if (shelfW > 0.0 && uShore.y > 0.0 && dEnd < w2 * 1.3) {
     float lr = floor(zz / 1.5);
     float on = step(0.72, hash2(vec2(lr, 6.7))) * step(fract(zz / 1.5), 0.45);
-    float seg = hash2(vec2(lr * 1.9, floor((dEnd + t * 2.5 + 40.0 * hash2(vec2(lr, 8.1))) / (9.0 + 9.0 * hash2(vec2(lr, 3.9))))));
-    float lap = on * step(0.62, seg) * (1.0 - smoothstep(w2 * 0.5, w2 * 1.3, dEnd));
+    // (kagami9 r1, W1-7: with the feet's shade on, only short glints, a few, never one line per block)
+    float rare = uEdge.w > 0.0 ? 0.86 : 0.62, sl = uEdge.w > 0.0 ? 0.45 : 1.0;
+    float seg = hash2(vec2(lr * 1.9, floor((dEnd + t * 2.5 + 40.0 * hash2(vec2(lr, 8.1))) / ((9.0 + 9.0 * hash2(vec2(lr, 3.9))) * sl))));
+    float lap = on * step(rare, seg) * (1.0 - smoothstep(w2 * 0.5, w2 * 1.3, dEnd));
     c = mix(c, mix(uShallow, uGlint, 0.4), 0.5 * lap * uShore.y);
   }
   // sun glints on the ripples nearer the viewer
   float cell = floor(pc.x * uCell / max(2.0, floor(mix(2.0, 7.0, k))));
   float gl = hash2(vec2(cell, floor(pc.y * uCell / max(1.0, floor(k * 2.0 + 1.0))) + floor(t * 0.7 + hash2(vec2(cell, pc.y)) * 9.0)));
   float lum = dot(refl, vec3(0.3, 0.55, 0.15));
-  if (gl > 0.993 - 0.01 * k * lum && k > 0.15 && (uNear.z <= 0.0 || band > 0.0 || k < 0.6)) c = mix(c, uGlint, 0.8);
+  // (kagami9 r1, W1-12) the one sun's path on the water: under the sun a soft, ragged column of
+  // brighter water widening toward the viewer, and in it a little of the sun's glitter: ripple
+  // crests one row thick lying in lanes of depth fixed on the water (each lane starts where the
+  // depth crosses its line), broken into dashes of their own lengths along it, twinkling; sparse,
+  // none in the far mirror, most down the middle of the path and in the ripple bands
+  float sunPath = 0.0;
+  if (uSunW.z > 0.0) {
+    float hw = mix(40.0, 240.0, smoothstep(0.05, 1.6, r)) * (0.8 + 0.4 * vnoise(vec2(zz / 6.0, 8.8)));
+    float dxs = (q.x - uSunW.x + 0.3 * hw * (vnoise(vec2(zz / 3.0, 4.1)) - 0.5)) / hw;
+    sunPath = exp(-dxs * dxs * 2.0) * uSunW.z;
+  }
+  float glOn = 0.993 - 0.01 * k * lum;
+  if (gl > glOn && k > 0.15 && (uNear.z <= 0.0 || band > 0.0 || k < 0.6)) c = mix(c, uGlint, 0.8);
+  if (sunPath > 0.01) {
+    c = mix(c, vec3(0.96, 0.95, 0.89), quant(0.13 * sunPath * (1.0 - 0.4 * k), 3.0, pc));
+    float sA = (q.y - uCell / uLens - uHz) / denom;
+    if (r > 0.42 && sA > 0.0) {
+      float zA = 600.0 * (1.0 / sA - 1.0 / uZ + 1.0);
+      // (a lane is never thinner than about three rows: far off they merge)
+      float LW = max(7.0, (zA - zz) * 3.0);
+      float lane = floor(zz / LW);
+      if (floor(zA / LW) != lane) {
+        float lenD = 3.0 + 13.0 * hash2(vec2(lane, 5.1)) * hash2(vec2(lane, 6.3)) + 6.0 * smoothstep(1.0, 2.0, r);
+        float segD = floor((x3 + 53.0 * hash2(vec2(lane, 2.3)) + t * 2.0 * (hash2(vec2(lane, 7.7)) - 0.5)) / lenD);
+        float tw = floor(t * (0.5 + 0.9 * hash2(vec2(segD, lane))) + 7.0 * hash2(vec2(lane, segD + 0.5)));
+        float hG = hash2(vec2(segD * 1.31 + tw * 0.173, lane * 0.71 + tw * 3.1));
+        // (in patches where the ripples happen to face the sun, drifting slowly)
+        float patchG = smoothstep(0.38, 0.72, vnoise(vec2(x3 / 46.0 + t * 0.04, zz / 14.0)));
+        float dens = 0.3 * sunPath * smoothstep(0.42, 0.8, r) * (1.0 - 0.45 * smoothstep(1.2, 2.2, r)) * (1.0 + 1.5 * band) * (0.15 + 1.25 * patchG) * step(0.38, hash2(vec2(lane, 9.9)));
+        if (hG > 1.0 - dens) c = mix(c, vec3(1.0, 0.975, 0.9), mix(0.55, 0.85, hash2(vec2(segD, lane + 0.3))));
+      }
+    }
+  }
   // (round 6) the ripple bands: a lighter, cooler line where the wind roughens the mirror
   c = mix(c, mix(uShallow, uHaze, 0.5), 0.13 * band * step(0.45, vnoise(vec2(x3 / 30.0 + t * 0.3, pc.y * 0.7))));
   // (round 6) the near water darker and cooler toward the camera, in a few flat steps
   if (uNear.x > 0.0) {
-    float nk = smoothstep(1.0, 1.8, r) * uNear.x;
-    c = mix(c, c * vec3(0.66, 0.77, 0.87), stepd(nk, 4.0, pc));
+    float nk = (uLook.x > 0.5 ? smoothstep(0.85, 2.6, r) : smoothstep(1.0, 1.8, r)) * uNear.x;
+    c = mix(c, c * vec3(0.66, 0.77, 0.87), quant(nk, 4.0, pc));
+  }
+  // (kagami9 r1, W1-8) the foreground water darkens further toward the viewer, as reference 4's
+  // (and over the frame's bottom sixth at any zoom: at the catch's 2x the frame's bottom is hardly
+  // nearer than the jetty, and its foreground water stayed as pale as the far lake)
+  if (uEdge.z > 0.0) {
+    float nk2 = smoothstep(1.02, 1.85, r);
+    if (r > 1.0) {
+      float qBy2 = uFocus.y + (uRes.y - uFocus.y) / uLens;
+      float irB2 = max(0.0, denom / max(1.0, qBy2 - uHz) - 1.0 / uZ + 1.0);
+      float fR2 = (1.0 / r - irB2) / max(0.05, 1.0 - irB2);
+      nk2 = max(nk2, 0.8 * (1.0 - smoothstep(0.0, 0.55, fR2)));
+    }
+    c = mix(c, c * vec3(0.6, 0.7, 0.78), quant(nk2 * uEdge.z, 4.0, pc));
   }
   // haze with distance, stepped (round 6: the farthest rows melt into the haze, the edge wandering,
   // so the lake's far edge never rules a line across the frame)
@@ -465,7 +695,23 @@ void main() {
     float reach = 26.0 + 30.0 * vnoise(vec2(x3 / 2400.0, 1.7)) + 12.0 * vnoise(vec2(x3 / 600.0, 4.2));
     fog = max(fog, uNear.w * (1.0 - smoothstep(0.0, reach, q.y - rowFar)));
   }
-  c = mix(c, uHaze, stepd(fog * (1.0 - 0.6 * foot), 6.0, pc));
+  // (kagami9 r1, W1-9) the haze lying on the water at the far shore (the far plane's waterline)
+  // and thinning toward the viewer over a reach that wanders along the shore, so the far karst's
+  // feet and the water meet in mist, never on a ruled horizon line
+  if (uEdge.y > 0.0) {
+    float rowF = uHz + denom / (1.0 / uEdge.y + 1.0 / uZ - 1.0);
+    float reachH = (16.0 + 64.0 * vnoise(vec2(x3 / 1500.0, 5.1)) + 18.0 * vnoise(vec2(x3 / 330.0, 8.3))) * clamp(uZ, 0.4, 2.0);
+    fog = max(fog, 0.92 * (1.0 - smoothstep(-2.0, reachH, q.y - rowF)));
+  }
+  vec3 haze = uHaze;
+  if (uSunW.w > 0.0) {
+    // (kagami9 r1) the haze brightens and warms toward the light: under the sun the far water lifts
+    float dsx = (q.x - uSunW.x) / (uRes.x * 0.2);
+    float under = exp(-dsx * dsx) * uSunW.w;
+    haze = mix(haze, vec3(1.0, 0.975, 0.92), under * 0.7);
+    fog = min(1.0, fog + 0.22 * under * (1.0 - smoothstep(0.05, 0.6, r)));
+  }
+  c = mix(c, haze, quant(fog * (1.0 - 0.6 * foot), 6.0, pc));
   o = vec4(c, 1.0);
 }`;
 
@@ -509,6 +755,14 @@ export interface WaterDraw {
   shore?: [number, number, number, number];
   /** (round 7) The back and mid planes' waterline rows, for the contact under their land (default none). */
   feet?: [number, number];
+  /** (kagami9 r1) The near shore wandering in depth: [closest, furthest depth, cove length (3D px), near foliage reflections 0..1] (default none: `depth[0]`). */
+  lip?: [number, number, number, number];
+  /** (kagami9 r1) The one sun on the water: [frame x, frame y, glitter path, haze lift] (default none). */
+  sun?: [number, number, number, number];
+  /** (kagami9 r1) [fine steps, vertical waver (cells), fill the mirror's gaps, sparse ripple dashes] (default none). */
+  look?: [number, number, number, number];
+  /** (kagami9 r1) [hold hand-over wander (px), far shore's plane rate for the haze, near water's extra dark, the land's feet shade] (default none). */
+  edge?: [number, number, number, number];
 }
 
 /**
@@ -691,6 +945,10 @@ export class Atmos {
     }
     if (u.uShore) gl.uniform4fv(u.uShore, d.shore ?? [0, 0, 0, 0]);
     if (u.uFeet) gl.uniform2fv(u.uFeet, d.feet ?? [0, 0]);
+    if (u.uLip) gl.uniform4fv(u.uLip, d.lip ?? [0, 0, 0, 0]);
+    if (u.uSunW) gl.uniform4fv(u.uSunW, d.sun ?? [0, 0, 0, 0]);
+    if (u.uLook) gl.uniform4fv(u.uLook, d.look ?? [0, 0, 0, 0]);
+    if (u.uEdge) gl.uniform4fv(u.uEdge, d.edge ?? [0, 0, 0, 0]);
     gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.enable(gl.BLEND);

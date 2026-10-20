@@ -214,6 +214,28 @@ export interface Atmos {
      * bands (the ripples' gaps and glints only in them), the far edge melting into the haze].
      */
     near?: [number, number, number, number];
+    /**
+     * (kagami9 r1) The near shore wandering in depth instead of one ruled row at the water's `near`:
+     * [the depth where it comes closest, where it reaches furthest (plane rates), how far one cove or
+     * point runs along it (3D px), the broken reflections of overhanging near foliage rising from the
+     * frame's bottom edge in the nearest water (0..1)] (default none). Only from about 0.3x in: further
+     * out the water ends at `near` as before.
+     */
+    lip?: [number, number, number, number];
+    /** (kagami9 r1) The one sun on the water: [glitter path under it, the far haze lifting under it], each 0..1. */
+    sun?: [number, number];
+    /**
+     * (kagami9 r1) [fine flat steps with dithered seams instead of a coarse ordered dither (0/1), the
+     * mirror's vertical waver (cells), filling the gaps a land's painted underside leaves in its mirror
+     * image (0/1), sparse broken ripple dashes instead of the sprinkle (0/1)] (default none).
+     */
+    look?: [number, number, number, number];
+    /**
+     * (kagami9 r1) Where the water meets land and haze: [how far the hand-over between two holds
+     * wanders (frame px at the play plane), the plane rate whose waterline the far haze melts down
+     * from, the near water's extra darkening (0..1), the shade at the holding land's feet (0..1)].
+     */
+    edge?: [number, number, number, number];
   };
   /** A colour grade on every plane: multiply by rgb (0..1+), by this amount (0..1). */
   grade?: [number, number, number, number];
