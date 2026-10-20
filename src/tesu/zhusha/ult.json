@@ -42,7 +42,7 @@
     }
   },
   "letter": {
-    "about": "The letter she carves, synced to the FX v2 loop (lanes/fx/v2/PLAN.md, decided there: 天, 960 art px tall = 6.6 H; ~450 slashes over 3.2 s carving it roughly in stroke order, density building; then a closing sweep per stroke; then the slashes stop: a 0.5 s hold). Here: which character (天 or 断, from her R line 一筆――天を断つ; strokes in ult.ts LETTERS), its box (`size` H square, its bottom `low` H above the floor, its near edge `ahead` H in front of her), the storm (`slashes` cuts over `ticks`, each carving a piece of a stroke; a share `pieces` of them carve new pieces, the rest re-cut; the last `closing` are the sweeps, one per stroke `sweepGap` ticks apart), the brush's thickness (a share of the box), how far above the letter's top she hangs before the dive. Never mirrored: facing left it moves to her left, the strokes stay as written. A stand-in until the loop's r_flurry.",
+    "about": "The letter she carves, synced to the FX v2 loop (lanes/fx/v2/PLAN.md, decided there: 天, 960 art px tall = 6.6 H; ~450 slashes over 3.2 s carving it roughly in stroke order, density building; then a closing sweep per stroke; then the slashes stop: a 0.5 s hold). Here: which character (天 or 断, from her R line 一筆――天を断つ; strokes in ult.ts LETTERS), its box (`size` H square, its bottom `low` H above the floor, its near edge `ahead` H in front of her), the storm (`slashes` cuts over `ticks`, each carving a piece of a stroke; a share `pieces` of them carve new pieces, the rest re-cut; the last `closing` are the sweeps, one per stroke `sweepGap` ticks apart), the brush's thickness (a share of the box), how far above the letter's top she hangs before the dive, how far inside a wall the box stays (`wallMargin` H: the painted letter (fx.letter) is wider than its box, u -0.17 .. 1.17, so 0.6 + 1.15). Never mirrored: facing left it moves to her left, the strokes stay as written. A stand-in until the loop's r_flurry.",
     "char": "天",
     "size": 6.6,
     "low": 0.8,
@@ -57,7 +57,7 @@
     ],
     "thick": 0.085,
     "zenithAbove": 1.3,
-    "wallMargin": 0.6,
+    "wallMargin": 1.75,
     "sweepGap": 4
   },
   "hold": 30,
@@ -94,7 +94,7 @@
     "flurry": {
       "chase": {
         "zoom": 1.6,
-        "k": 0.02,
+        "k": 0.024,
         "damp": 0.93,
         "vmax": 0.5,
         "follow": 0.3,
@@ -180,9 +180,22 @@
     "ring": 1.0
   },
   "fx": {
-    "about": "The FX v2 loop's effects (lanes/fx/v2/PLAN.md ids, played through game.fx.play when the game has them; until then the stand-ins in ultdraw.ts draw): callFire (her blue fire carpet, from the BOOM until she vanishes, at her feet), letter (the flurry: the letter carved by the slashes and the hold, at the letter's foot, never mirrored), dive (her line through the letter), nuke (at the crater), clear (the smoke clearing off her ult form, from the start of the clear).",
+    "about": "The FX v2 loop's effects (lanes/fx/v2/PLAN.md ids, played through game.fx.play when the game has them; until then the stand-ins in ultdraw.ts draw): callFire (her blue fire carpet, from the BOOM until she vanishes, at her feet), letter (the FX v2 brushed 天 carved by the storm: each piece on its carving slash's tick, white-hot, cooling through her blue to the ink, the closing sweeps, the flash, the stop with its drips running; at the letter's foot, never mirrored; lanes/zhusha-lead/rletter packs it; stopped when the dive starts), letterBreak (the finished letter in six pieces, cut down the middle by her dive, each row parting as she passes it; from the dive's start to the impact), cuts (the storm's slashes over the letter while it is carved: shipped impact slashes spawned on the carving slashes and the closing sweeps, at their piece, picked by the cut's angle (flat / rising / falling / steep, a falling one is a rising one mirrored; every `crossEvery`th an X), at most `cap` alive at once (each lives `life` ticks; the game holds 64 effects), each sweep `sweepCuts` down its stroke; with the real letter only, else the stand-in's streaks), dive (her line through the letter), nuke (at the crater), clear (the smoke clearing off her ult form, from the start of the clear).",
     "callFire": "r_call_fire",
-    "letter": "r_flurry",
+    "letter": "r_letter",
+    "letterBreak": "r_letter_break",
+    "cuts": {
+      "flat": ["impact_slash_f", "impact_slash_c"],
+      "rise": ["impact_slash_a", "impact_slash_h"],
+      "fall": ["impact_slash_g"],
+      "steepRise": ["impact_slash_d"],
+      "steepFall": ["impact_slash_e"],
+      "cross": ["impact_slash_b"],
+      "crossEvery": 9,
+      "cap": 16,
+      "life": 19,
+      "sweepCuts": 3
+    },
     "dive": "r_dive_line",
     "nuke": "r_nuke",
     "clear": "r_reveal_clear"

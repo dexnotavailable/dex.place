@@ -1,0 +1,85 @@
+{
+ "id": "r_letter_break_bl",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  646,
+  952
+ ],
+ "layer": "back",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -3,
+    1
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -10,
+    2
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1,
+   "off": [
+    -19,
+    5
+   ]
+  },
+  {
+   "file": "f001.png",
+   "ticks": 60,
+   "off": [
+    -19,
+    5
+   ]
+  }
+ ],
+ "loop": false,
+ "with": [],
+ "notes": "R's letter breaking at the dive (lanes/zhusha-lead/rletter/tools/build.py): piece bl of six, one clock (r_letter_break names the others), stopped on the impact"
+}
