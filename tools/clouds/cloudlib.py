@@ -892,7 +892,7 @@ def render(form, *, level=1.0, seed=1, look=None, pad=8):
 SHARE = [0.12, 0.2, 0.07, 0.06, 0.06, 0.11, 0.12, 0.1, 0.08, 0.05, 0.03]
 
 
-def to_pixels(val, ramp, *, share=SHARE, th=None, clean=2, seed=1, fringe=True, brush=0.02, bscale=1.0):
+def to_pixels(val, ramp, *, share=SHARE, th=None, clean=2, seed=1, fringe=True, brush=0.02, bscale=1.0, despeck=True, level=1.0):
     H, W = val.shape
     m = val >= 0
     q = np.full((H, W), -1, np.int16)
@@ -912,6 +912,8 @@ def to_pixels(val, ramp, *, share=SHARE, th=None, clean=2, seed=1, fringe=True, 
     q[m] = k[m]
     for _ in range(clean):
         q = majority(q)
+    if despeck:
+        q = despeckle(q, level)
     # specks of sky inside the cloud (a missed surface) take their neighbours' step
     holes = ndimage.binary_fill_holes(q >= 0) & (q < 0)
     if holes.any():
@@ -935,6 +937,33 @@ def to_pixels(val, ramp, *, share=SHARE, th=None, clean=2, seed=1, fringe=True, 
         drop = nz(xx / 2.3, yy / 2.3) > 0.52
         rgba[yy[drop], xx[drop], 3] = 0
     return rgba, th
+
+
+def despeckle(q, L=1.0, lit=4, deep=6):
+    """(round 3, W1-2) No 1-2 px slivers of the lit steps inside the shade: thin rim-light slivers of the volume survive
+    the snap as vertical "drips" and icicle rows on a tower's shaded underside. A run of lit px narrower than ~2 px of
+    level 1 (across x or across y) whose surroundings are shade takes its neighbours' step. Rims along the sky stay."""
+    n = max(3, int(round(2 * L)) * 2 + 1)
+    cloud = q >= 0
+    litm = cloud & (q < lit)
+    thin = np.zeros_like(litm)
+    for st in (np.ones((1, n), bool), np.ones((n, 1), bool)):
+        thin |= litm & ~ndimage.binary_opening(litm, structure=st)
+    # never a rim toward the sun (sky above it or to its left, within ~2 px of level 1); slivers hanging into the sky
+    # below or east of a shaded shelf (the "icicles") are cleaned too
+    m = max(2, int(2 * L))
+    sky = np.zeros_like(cloud)
+    P = np.pad(~cloud, ((m, 0), (m, 0)), constant_values=True)
+    for k in range(1, m + 1):
+        sky |= P[m - k:m - k + cloud.shape[0], m:] | P[m:, m - k:m - k + cloud.shape[1]]
+    shade = ndimage.uniform_filter((cloud & (q >= deep)).astype(np.float32), size=3 * n)
+    thin &= ~sky & (shade > 0.25)
+    if not thin.any():
+        return q
+    idx = ndimage.distance_transform_edt(thin | ~cloud, return_distances=False, return_indices=True)
+    out = q.copy()
+    out[thin] = q[idx[0][thin], idx[1][thin]]
+    return out
 
 
 def rags(rgba, form, ox, oy, L, seed, depth=None, ramp=None, steps=(7, 8, 9), dens=0.5):

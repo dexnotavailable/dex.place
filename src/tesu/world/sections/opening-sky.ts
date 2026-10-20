@@ -71,30 +71,59 @@ export function cloudBounds(id: string): [number, number, number, number] {
  * draws in front.
  */
 export const FALL_CLOUDS: readonly FallCloud[] = [
-  // --- the drop out of the black (0.64-1.3 s): high wisps rushing by the frame as the sky hits; they stay far all
-  // the way down (the far plane barely moves: the depth the rest is measured against)
-  { id: "fall-wisp-hi-a", plane: "far", T: 1.0, fx: 0.14, fy: 0.5, cloud: "ci-a" },
+  // (round 3: W1-4 one tower per stretch, never the same heap filling the right third all the way down; W1-5 six to
+  // ten pieces per frame on three planes, the low stratus layer under the cumulus, a field of far heaps under the
+  // drop; W1-8 the drop's wisp curved and fibrous; W1-9 faint far cirrus in the blue between the clouds)
+  // --- the drop out of the black (0.64-1.3 s): the great tower east, a curved wisp west of the paper, faint cirrus in
+  // the blue, and the sky's lower third a field of far heaps and stratus under the paper (the far plane barely moves:
+  // the depth the rest is measured against; these stay far all the way down)
+  { id: "fall-cirrus-drop-a", plane: "far", T: 0.8, fx: 0.66, fy: 0.2, cloud: "ci-d" },
+  { id: "fall-cirrus-drop-b", plane: "far", T: 0.8, fx: 0.2, fy: 0.4, cloud: "ci-e" },
+  { id: "fall-wisp-hi-a", plane: "far", T: 1.0, fx: 0.14, fy: 0.5, cloud: "ci-f" },
   { id: "fall-wisp-hi-b", plane: "far", T: 1.0, fx: 0.78, fy: 0.72, cloud: "ci-c" },
   { id: "fall-cirrus-b", plane: "far", T: 2.94, fx: 0.92, fy: 0.2, cloud: "ci-b" },
-  // --- the ride (2.5-7 s, zoom 4): far heaps low in the frame, the great tower's crown and body sliding up on the
-  // right, a broad heap rising on the left, and puffs on the back plane rushing up past the frame's edges
+  { id: "fall-st-drop-a", plane: "far", T: 0.8, fx: 0.3, fy: 0.85, cloud: "st-c" },
+  { id: "fall-st-drop-b", plane: "far", T: 0.8, fx: 0.74, fy: 0.9, cloud: "st-d" },
+  { id: "fall-far-field-a", plane: "far", T: 0.8, fx: 0.36, fy: 0.9, cloud: "cu-far-c" },
+  { id: "fall-far-field-b", plane: "far", T: 0.8, fx: 0.63, fy: 1.06, cloud: "cu-far-b" },
+  { id: "fall-heap-drop-w", plane: "mid", T: 0.8, fx: 0.07, fy: 1.0, cloud: "cu-heap-c" },
+  { id: "fall-tower", plane: "mid", T: 0.8, fx: 1.05, fy: 1.32, cloud: "cu-tower-a" },
+  // --- the ride (2.5-7 s, zoom 4): far heaps and low stratus in the lower frame, the great tower's body on the right,
+  // a second tower (cu-tower-b) rising on the LEFT whose crown passes the paper at the fog and stands west of it at
+  // the gust (W1-4: the towers change sides and sizes down the fall), puffs on the back plane rushing past the edges
   { id: "fall-far-heap-a", plane: "far", T: 3.0, fx: 0.06, fy: 1.02, cloud: "cu-far-a" },
   { id: "fall-far-heap-b", plane: "far", T: 3.0, fx: 0.72, fy: 1.08, cloud: "cu-far-b" },
   { id: "fall-far-heap-c", plane: "far", T: 6.6, fx: 0.98, fy: 1.04, cloud: "cu-far-c" },
-  { id: "fall-tower", plane: "mid", T: 2.5, fx: 0.9, fy: 1.55, cloud: "cu-tower-a" },
-  { id: "fall-heap-w", plane: "mid", T: 4.631, fx: -0.17, fy: 1.06, cloud: "cu-heap-a" },
+  { id: "fall-st-ride-a", plane: "far", T: 4.633, fx: 0.26, fy: 0.8, cloud: "st-d" },
+  { id: "fall-st-ride-b", plane: "far", T: 4.633, fx: 0.86, fy: 0.76, cloud: "st-e" },
+  { id: "fall-cirrus-ride", plane: "far", T: 4.633, fx: 0.2, fy: 0.2, cloud: "ci-d" },
+  { id: "fall-tower-b", plane: "mid", T: 8.2, fx: -0.06, fy: 0.9, cloud: "cu-tower-b" },
   { id: "fall-puff-e", plane: "back", T: 3.6, fx: 0.97, fy: 0.62, cloud: "cu-puff-a" },
-  { id: "fall-puff-w", plane: "back", T: 5.6, fx: 0.08, fy: 0.74, cloud: "cu-puff-b" },
+  { id: "fall-puff-w", plane: "back", T: 5.6, fx: 0.08, fy: 0.6, cloud: "cu-puff-b" },
+  { id: "fall-puff-ride-n", plane: "back", T: 4.633, fx: 0.17, fy: 0.3, cloud: "cu-puff-c" },
+  // --- the fog and the gust (6-9 s): puffs on the back plane passing low in the frame, stratus under the west tower
+  { id: "fall-puff-fog-w", plane: "back", T: 6.95, fx: -0.06, fy: 0.8, cloud: "cu-puff-a" },
+  { id: "fall-puff-fog-e", plane: "back", T: 6.95, fx: 0.86, fy: 0.9, cloud: "cu-puff-c" },
+  { id: "fall-st-gust", plane: "far", T: 8.2, fx: 0.18, fy: 0.78, cloud: "st-c" },
   // --- the deck (round 2b, re-solved on rev 6): a CEILING on the BACK plane the camera falls through over 7.5-11.6 s:
   // its crowns rise under the paper at the gust (7.3-9.1), then its rolls and undersides pass up past it. The chunks
   // part round the paper's column: the paper falls down a canyon of sky between deck-m (west) and deck-e1 (east)
   // (W1-9: sky behind it, never a lit crown). Later = in front: the lowest last.
+  { id: "fall-cirrus-deck", plane: "far", T: 10.617, fx: 0.86, fy: 0.15, cloud: "ci-e" },
+  { id: "fall-st-deck", plane: "far", T: 10.617, fx: 0.7, fy: 0.62, cloud: "st-d" },
   { id: "fall-deck-e2", plane: "back", T: 10.617, fx: 1.47, fy: 318 / 1080, cloud: "deck-e2", low: true },
   { id: "fall-deck-e", plane: "back", T: 10.617, fx: 1.37, fy: 343 / 1080, cloud: "deck-e1", low: true },
   { id: "fall-deck-w", plane: "back", T: 10.617, fx: -0.32, fy: 361 / 1080, cloud: "deck-w", low: true },
   { id: "fall-deck-m", plane: "back", T: 10.617, fx: -0.056, fy: 400 / 1080, cloud: "deck-m", low: true },
-  // --- coming out under the clouds (12.6-14.6 s): the deck's middle-distance band overhead (mid plane: it lingers)
-  { id: "fall-deck-band", plane: "mid", T: 14.6, fx: 0.42, fy: 0.16, cloud: "deck-mid-a", low: true },
+  // --- under the deck (10-12 s): one bank of heaps at different heights rushing up past the frame's foot on the
+  // back plane (W1-6: never a row of same-size domes; the column under the paper the lowest), in front of the
+  // underside's top
+  { id: "fall-bank-deck-e", plane: "back", T: 10.617, fx: 0.87, fy: 1.49, cloud: "cu-heap-e", low: true },
+  { id: "fall-bank-deck-m", plane: "back", T: 10.617, fx: 0.5, fy: 1.09, cloud: "cu-puff-a", low: true },
+  // --- coming out under the clouds (12.6-14.6 s): the deck's underside overhead on the back plane (big, near and
+  // dark; it slides up and away as the paper sinks to the lake: at the deck it is still far under the frame, so no top
+  // of it ever shows), rolls and pouches at different sizes with torn gaps (W1-7), its base clear above the islets
+  { id: "fall-deck-band", plane: "back", T: 14.6, fx: 0.48, fy: 0.06, cloud: "deck-under", low: true },
 ];
 
 export function openingSky(b: WorldBuilder): void {
