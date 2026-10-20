@@ -34,6 +34,8 @@ import { cached } from "./kit.ts";
 
 export type MassKind =
   | "shelf" | "outcrop" | "rise" | "knoll" | "reeds" | "mud" | "snag" | "pads" | "stone"
+  // (kagami9 round 1) the lake's nearest shore, seen only from far out (see shoreBody)
+  | "shore"
   // (the round-2 names, still painted: a hummock is a rise, a boulder an outcrop, a crag a shelf,
   // a tuft a small knoll, a lantern a stone lantern on a knoll)
   | "boulder" | "hummock" | "lantern" | "crag" | "tuft";
@@ -56,7 +58,8 @@ export interface MassSpec {
   lean?: number;
   /** Where its crown sits across its width, 0..1 (default from its seed). */
   peak?: number;
-  /** Its foot stands this far nearer the camera than the shore's waterline, px (default 0). */
+  /** Its foot stands this far nearer the camera than the shore's waterline, px (default 0). (A
+   *  "shore": the lowest its skyline may sag.) */
   foot?: number;
   /** A second crown along a long rise: [its place across the width 0..1, its height share 0..1]. */
   crown?: [number, number];
@@ -85,6 +88,19 @@ export interface MassSpec {
   closed?: boolean;
   /** (round 6) A rise nearer the camera than the rest, in its own shade: lit only along its rim, 0..1. */
   shade?: number;
+  /** (kagami9 round 1) How far below the waterline it paints, px (default the shore's `h`). */
+  deep?: number;
+  /** (kagami9 round 1) A rise: clusters of broad leaves breaking its crown's silhouette (ref 04). */
+  leaves?: number;
+  /** (kagami9 round 1) A "shore": the highest any of it reaches, as [x, y] points (local y, below the
+   *  waterline positive); between them it follows the line, never above it. A third number on a point
+   *  is how far its skyline may sag there (default `amp`). */
+  line?: ([number, number] | [number, number, number])[];
+  /** (kagami9 round 1) A "shore": how far below its line its skyline may sag, px (default 100). */
+  amp?: number;
+  /** (kagami9 round 1) A "shore": the seed its features are hashed from (default its own), so two shores
+   *  painted at different levels show the same things where their lines agree. */
+  key?: number;
 }
 
 export interface BankP {
@@ -407,6 +423,8 @@ interface Part {
   pads?: PadSpec;
   /** A stone lantern standing on it. */
   lantern?: { x: number; y: number; H: number; lean: number; seed: number };
+  /** (kagami9 round 1) Seen through the water under everything (a submerged shelf): painted first. */
+  under?: boolean;
 }
 
 interface Body {
@@ -439,6 +457,8 @@ interface Chunk {
   lean: number;
   /** 0 standing forward (lit, lighter) .. 1 recessed (darker, cooler). */
   dep: number;
+  /** (kagami9 round 1) A face sunk into the near layer's shade (its lit lip kept): added to its tone. */
+  dark?: number;
   /** Its green cap on the top ledge, 0 none .. 1 thick. */
   cap: number;
   /** Weathered corners, px. */
@@ -458,6 +478,15 @@ interface Chunk {
   /** Quick reject box. */
   bx0: number;
   bx1: number;
+  /** (kagami9 round 1, worker 2: the critic's W2-4, "cut boxes" with flat tops) Its top broken along a
+   *  joint: past local x `bkx` toward side `bks` (-1 left, 1 right) the top sits `bkd` px lower. */
+  bkd?: number;
+  bkx?: number;
+  bks?: number;
+  /** (the same) Its upper corners weathered back: the sides draw in by `tp` px at the top, the draw-in
+   *  dying out `th` px down, so a block is never a box with square shoulders. */
+  tp?: number;
+  th?: number;
 }
 
 function chunkTop(k: Chunk, lx: number): number {
@@ -467,6 +496,11 @@ function chunkTop(k: Chunk, lx: number): number {
   const w = lx + 6 * vnoise1(lx / 11, s + 4);
   const ci = Math.floor(w / (7 + 5 * hash1(2, s)));
   if (hash1(ci, s + 5) < 0.2) t += 1 + 3.5 * hash1(ci, s + 6);
+  // (kagami9 round 1, worker 2) broken along a joint: the far facet a step lower, its riser chipped
+  if (k.bkd) {
+    const e = (lx - k.bkx!) * k.bks! + (vnoise1(lx / 2.3, s + 11) - 0.5) * 1.4;
+    if (e > 0) t += k.bkd * clamp(e / 1.8, 0, 1);
+  }
   return t;
 }
 
@@ -477,7 +511,10 @@ function chunkSide(k: Chunk, ly: number, side: number): number {
   const jh = 14 + 16 * hash1(1, s);
   const j = Math.floor((ly + 4 * vnoise1(ly / 9, s + 7)) / jh);
   const jog = (hash1(j, s + 8) - 0.5) * 3.4;
-  return (side < 0 ? k.x0 : k.x1) - k.lean * (ly - k.top) + side * ((vnoise1(ly / 14, s + 9) - 0.5) * 6 + (vnoise1(ly / 4.3, s + 10) - 0.5) * 1.8 + jog);
+  let x = (side < 0 ? k.x0 : k.x1) - k.lean * (ly - k.top) + side * ((vnoise1(ly / 14, s + 9) - 0.5) * 6 + (vnoise1(ly / 4.3, s + 10) - 0.5) * 1.8 + jog);
+  // (kagami9 round 1, worker 2) its shoulders weathered back (each side its own share)
+  if (k.tp && ly - k.top < k.th!) x -= side * k.tp * (side < 0 ? 1 : 0.6 + 0.8 * hash1(3, s)) * Math.pow(1 - Math.max(0, ly - k.top) / k.th!, 1.6);
+  return x;
 }
 
 function inChunk(k: Chunk, lx: number, ly: number): boolean {
@@ -512,6 +549,13 @@ function chunkCol(c: PaintCtx, ks: Chunk[], i: number, lx: number, ly: number, x
   const H = k.bot === Infinity ? 160 : Math.max(5, k.bot - k.top);
   if (k.wet) {
     const wd = k.bot - ly, wh = Math.min(H * 0.45, 2 + 3.6 * vnoise1(lx / 7, sd + 20));
+    // (kagami9 round 1, the critic's W2-4: "a foot that breaks into overhangs and wet gaps") in runs of
+    // their own lengths its foot is undercut by the water: a dark wet gap under the stone
+    // standing over it (its underside in shade, moss dripping off its edge), never one ruled foot
+    if (H > 18 && vnoise1(lx / 21, sd + 120) > 0.56) {
+      const uh = Math.min(H * 0.3, 3 + 6 * vnoise1(lx / 9, sd + 121));
+      if (wd < uh) return wd > uh - 1.1 && vnoise1(lx / 3, sd + 122) > 0.7 ? P.moss[6]! : P.pine[5]!;
+    }
     if (wd < wh) return wd > wh * 0.5 && vnoise1(lx / 3.2, sd + 21) > 0.58 ? P.moss[6]! : P.pine[5]!;
   }
   if (k.wside && ly > k.wfrom) {
@@ -522,20 +566,29 @@ function chunkCol(c: PaintCtx, ks: Chunk[], i: number, lx: number, ly: number, x
   const capT = k.cap * (1.2 + 3.8 * vnoise1(lx / 13, sd + 23)) + (drip > 0.72 ? (drip - 0.72) * 34 * k.cap : 0);
   if (s < capT) {
     if (s < 1) return u < 0.45 ? P.moss[2]! : u < 0.85 ? P.moss[3]! : P.moss[4]!;
-    return step(c, CAP, 0.12 + (s / Math.max(1, capT)) * 0.5 + u * 0.25 + k.dep * 0.2, x, y);
+    return step(c, CAP, 0.12 + (s / Math.max(1, capT)) * 0.5 + u * 0.25 + k.dep * 0.2 + (s >= 1.6 ? (k.dark ?? 0) * 0.7 : 0), x, y);
   }
-  if (s < 1.05 && k.dep < 0.75) return u < 0.55 ? P.karst[2]! : P.karst[4]!;
-  if (lx - xL < 1.05 && s < H * 0.8 && k.dep < 0.6 && vnoise1(ly / 6, sd + 24) > 0.35) return P.karst[3]!;
-  let t = 0.27 + k.dep * 0.3 + u * 0.3 + clamp(s / 150, 0, 0.14) + (vnoise(lx / 8, ly / 46, sd + 25) - 0.5) * 0.08;
+  // (kagami9 round 1: at the vista's level a 1 px lip fell between samples: one screen px at least)
+  const lip = Math.max(1.05, 1.1 / c.d);
+  // (round 1, second pass: a block sunk in the near shade keeps a lip, a quieter one: a pale lip and a
+  // pale left edge on a dark face read as a stitched outline)
+  const sh = k.dark ?? 0;
+  if (s < lip && k.dep < 0.75) return sh > 0.3 ? (u < 0.55 ? P.karst[5]! : P.karst[6]!) : sh > 0.1 ? (u < 0.55 ? P.karst[4]! : P.karst[5]!) : u < 0.55 ? P.karst[2]! : P.karst[4]!;
+  if (sh < 0.1 && lx - xL < 1.05 && s < H * 0.8 && k.dep < 0.6 && vnoise1(ly / 6, sd + 24) > 0.35) return P.karst[3]!;
+  // (kagami9 round 1, the critic's W2-4: "cut boxes" side by side at one depth) the recessed chunks a
+  // clear step darker and cooler than the ones standing forward
+  let t = 0.25 + k.dep * 0.48 + u * 0.3 + clamp(s / 150, 0, 0.14) + (vnoise(lx / 8, ly / 46, sd + 25) - 0.5) * 0.08;
   // (round 5, the critic: "cinder-block faces: a rectangular crack grid on flat dithered grey")
   // limestone is bedded: beds of very different thicknesses (a thin one weathered back into a
   // shadowed band, a thick one standing proud), their planes wavy, running most of the way across
   // or dying out part way; the few vertical joints run straight down through several beds and stop
   // at one (never shifting at every bed, so no brick bond); long stains run down the face
   let bi = 0;
+  // (kagami9 round 1, the critic's W2-4: "striped 3-6 px bands") fewer thin beds, fewer of them
+  // weathered back into a dark band, and most beds dying out part way across
   const bedOf = (i: number): { thin: boolean; rec: boolean } => {
-    const thin = hash1(i, sd + 82) < 0.36;
-    return { thin, rec: hash1(i, sd + 87) < (thin ? 0.72 : 0.14) };
+    const thin = hash1(i, sd + 82) < 0.2;
+    return { thin, rec: hash1(i, sd + 87) < (thin ? 0.5 : 0.12) };
   };
   if (H > 22) {
     const sw = s + (vnoise1(lx / 19, sd + 80) - 0.5) * 4 + (vnoise1(lx / 5, sd + 81) - 0.5) * 1.1 + k.tilt * 0.5 * (lx - k.x0);
@@ -547,7 +600,7 @@ function chunkCol(c: PaintCtx, ks: Chunk[], i: number, lx: number, ly: number, x
     }
     if (bi > 0) {
       const me = bedOf(bi), up = bedOf(bi - 1);
-      const full = hash1(bi, sd + 85) < 0.35;
+      const full = hash1(bi, sd + 85) < 0.14;
       const ua = full ? -1 : 0.04 + 0.4 * hash1(bi, sd + 86), ub = full ? 2 : 0.5 + 0.48 * hash1(bi, sd + 88);
       const ds = sw - b0;
       if (u > ua && u < ub) {
@@ -611,7 +664,7 @@ function chunkCol(c: PaintCtx, ks: Chunk[], i: number, lx: number, ly: number, x
     if (dd >= -0.6 && dd < 0.6) t += 0.34;
     else if (dd >= 0.6 && dd < 2.2) t -= 0.1;
   }
-  return step(c, ROCK, t, x, y, 0.12);
+  return step(c, ROCK, t + (k.dark ?? 0), x, y, 0.12);
 }
 
 /** A chunk, with its grooves and seam from its seed. */
@@ -632,7 +685,22 @@ function chunk(x0: number, x1: number, top: number, bot: number, dep: number, ca
   for (let i = 0; i < nj; i++) turn.push(turn[i]! + 0.07 + 0.12 * r());
   const reach = Math.abs(lean) * (bot === Infinity ? 300 : H) + 10;
   const wet = mw === undefined && bot !== Infinity;
-  return { x0, x1, top, bot, wet, mw: mw ?? bot, tilt, lean, dep, cap, r: 3 + Math.min(7, w * 0.09) * r(), seed, grooves, seam, joints, turn, wside: 0, wfrom: 0, bx0: x0 - reach, bx1: x1 + reach };
+  const k: Chunk = { x0, x1, top, bot, wet, mw: mw ?? bot, tilt, lean, dep, cap, r: 3 + Math.min(7, w * 0.09) * r(), seed, grooves, seam, joints, turn, wside: 0, wfrom: 0, bx0: x0 - reach, bx1: x1 + reach };
+  // (kagami9 round 1, worker 2: the critic's W2-4, "cut boxes", "broken tops") most blocks broken
+  // along one of their joints (the far facet a step lower: a block split off and settled), their
+  // shoulders weathered back; drawn from a stream of their own, so no block above moves
+  const q = rng(seed + 977);
+  if (w > 24 && H > 12 && q() < 0.72) {
+    const at = joints.length ? joints[Math.floor(q() * joints.length)]! : 0.25 + 0.5 * q();
+    k.bkx = x0 + w * at;
+    k.bks = q() < 0.55 ? 1 : -1;
+    k.bkd = Math.min(H * 0.34, 3 + w * (0.07 + 0.1 * q()));
+  }
+  if (w > 12 && q() < 0.75) {
+    k.tp = Math.min(6, 1.2 + w * 0.06 * q());
+    k.th = Math.min(H * 0.55, 7 + 16 * q());
+  }
+  return k;
 }
 
 /** Limestone: what is in a chunk list at a point (the last one in the list stands in front). */
@@ -650,8 +718,9 @@ function rockFill(c: PaintCtx, ks: Chunk[], lx: number, ly: number, x: number, y
   }
   for (const k of ks) {
     if (!k.wet || ly < k.bot || ly >= k.bot + e1) continue;
-    if (!inChunk(k, lx, k.bot - 0.7) || vnoise1(lx / 4.2, k.seed + 40) < 0.45) continue;
-    return lineCol(lx - chunkSide(k, k.bot - 1, -1) < (k.x1 - k.x0) * 0.6);
+    // (kagami9 round 1, the critic's W2-4: "a dashed white waterline") rare short glints, the shaded tone
+    if (!inChunk(k, lx, k.bot - 0.7) || vnoise1(lx / 4.2, k.seed + 40) < 0.86) continue;
+    return lineCol(false);
   }
   return 0;
 }
@@ -774,7 +843,8 @@ function tuftBlades(pen: Pen, d: number, t: Tuft, warm: boolean): void {
   }
   bl.sort((a, b) => a.L - b.L);
   bl.forEach((b, i) => {
-    const tipI = b.L > 0.84 ? 1 : b.L > 0.64 ? 2 : b.L > 0.44 ? 3 : b.L > 0.26 ? 4 : b.L > 0.1 ? 5 : 6;
+    // (kagami9 round 1: a tussock deep in a near mass's shade goes dark to its tips)
+    const tipI = b.L > 0.84 ? 1 : b.L > 0.64 ? 2 : b.L > 0.44 ? 3 : b.L > 0.26 ? 4 : b.L > 0.1 ? 5 : b.L > -0.3 ? 6 : 7;
     const sunRim = warm && b.L > 0.86 && hash1(i, t.seed + 7) < 0.35;
     strokeP(pen, d, b.pts, (u) => (b.w > 1 && u < 0.3 ? 2 : 1), (u) => {
       if (u > 0.74) return sunRim && u > 0.88 ? (hash1(i, t.seed + 8) < 0.25 ? P.ember[1]! : P.moss[0]!) : BLADE[tipI]!;
@@ -880,6 +950,40 @@ function earthPart(e: Earth): Part {
 }
 
 // --- a dead twig, a driftwood snag
+
+/**
+ * (kagami9 round 1, the critic's W2-2: ref 04's near mound is broken by broad-leaved plants) A cluster
+ * of broad leaves rising from (x, y): lance-shaped blades of different lengths fanning up and out,
+ * each lit along its upper (sun-side) edge, its underside and the cluster's heart in shade; `lit` how
+ * much sun it takes (a rim-lit mass: its top leaves only).
+ */
+function leafClusterP(pen: Pen, d: number, x: number, y: number, size: number, lit: number, seed: number): void {
+  if (d < 0.2) return;
+  const r = rng(seed);
+  const n = 5 + Math.floor(r() * 5);
+  const leaves: { a: number; len: number; w: number; bend: number }[] = [];
+  for (let i = 0; i < n; i++) {
+    const a = -1.25 + 2.5 * ((i + r() * 0.8) / n) + (r() - 0.5) * 0.3;
+    leaves.push({ a, len: size * (0.55 + 0.6 * r()) * (1 - 0.25 * Math.abs(a)), w: size * (0.16 + 0.1 * r()), bend: (a >= 0 ? 1 : -1) * (0.5 + 0.9 * r()) * (0.5 + Math.abs(a)) });
+  }
+  // the outer (lower) leaves first, the upright ones over them
+  leaves.sort((p, q) => Math.abs(q.a) - Math.abs(p.a));
+  for (const L of leaves) {
+    const pts = bladePath(x, y, L.len, L.a, L.bend);
+    const up = Math.abs(L.a) < 0.9;
+    strokeP(pen, d, pts, (u) => Math.max(1, L.w * Math.sin(Math.PI * clamp(0.08 + u * 0.92, 0, 1)) * (u < 0.15 ? 0.5 : 1)), (u, side) => {
+      // side < 0 is the leaf's upper edge where it arches over (the sun is up and to the left)
+      const sun = (L.a < 0 ? -side : side) < -0.25 ? 1 : 0;
+      if (u < 0.2) return P.pine[4]!;
+      if (sun && lit > 0.5 && up && u > 0.35) return u > 0.7 ? P.moss[2]! : P.moss[3]!;
+      if (sun && lit > 0.2) return P.moss[4]!;
+      if (side > 0.45) return P.pine[4]!;
+      return u > 0.6 ? P.moss[5]! : P.moss[6]!;
+    });
+    // the midrib, a darker line along the lit leaves
+    if (L.w > 2.5) strokeP(pen, d, pts.slice(1, -1), () => 1, () => P.moss[6]!);
+  }
+}
 
 /** A dead twig: a kinked, tapering stem with two or three forks, every end a point. */
 function twigStrokes(pen: Pen, d: number, x: number, y: number, H: number, lean: number, seed: number): void {
@@ -1018,39 +1122,51 @@ function shelfBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] 
   const dir = s.drop ?? 1;
   const at = (u: number): number => (dir > 0 ? s.x + s.w * u : s.x + s.w * (1 - u));
   const bank = s.bank ?? 0;
-  // the steps: [from, to (share along it from the tall end), height share, depth, foot nearer by, cap]
-  const steps: [number, number, number, number, number, number][] = [
-    // (round 5, the critic: "still a tall-left, low-right staircase") its crown stands inward of
-    // its tall end: a block at the end, the tallest standing forward of it a third of the way in,
-    // a lower one recessed behind that one's far side, a low slab and a small block in the water
-    // nearer still; the skyline rises to the crown and falls away both ways
-    // (round 6, the critic: "still steps down left to right with evenly striped bedding: give it a
-    // different silhouette, a low front ledge with a taller chunk set back and overlapping") two
-    // depths, not a staircase: the tall chunk set back (recessed, darker, cooler), a second lower
-    // one beside it further back still, a long low ledge standing forward across their feet (its
-    // top lit, green on it), a block and a stone nearer still in the water
-    [0.1 + 0.03 * r(), 0.5 + 0.04 * r(), 1, 0.62, 0, 0.9],
-    [0.47 + 0.03 * r(), 0.74 + 0.04 * r(), 0.56 + 0.08 * r(), 0.72, 2 + 2 * r(), 0.8],
-    [-0.04, 0.8 + 0.04 * r(), 0.34 + 0.05 * r(), 0.1, 12 + 3 * r(), 0.9],
-    [0.66 + 0.03 * r(), 0.9 + 0.03 * r(), 0.17 + 0.04 * r(), 0.05, 20 + 4 * r(), 0.6],
-    [0.9 + 0.02 * r(), 1.0, 0.08 + 0.03 * r(), 0.03, 27 + 5 * r(), 0.5],
+  // the steps: [from, to (share along it from the tall end), height share, depth, foot nearer by, cap,
+  // top's slope]
+  // (round 5, the critic: "still a tall-left, low-right staircase"; round 6: "a low front ledge with a
+  // taller chunk set back") (kagami9 round 1, the critic's W2-4, "even slabs": its long front ledge
+  // read as one slab with a ruled top and foot) chunk stacks at two depths, every block its own width
+  // and height: a back row recessed in shade (the tallest at the tall end, one broken off along a joint
+  // with a slanted top, a lower one), a front row of lower blocks standing forward of their feet at
+  // their own depths in the water, overlapping them (one a slab broken and tipped), and the nearest
+  // small blocks and a stone out in the shallows
+  const steps: [number, number, number, number, number, number, number][] = [
+    [0.0, 0.33 + 0.03 * r(), 1, 0.66, 0, 0.9, (r() - 0.5) * 0.06],
+    [0.3 + 0.02 * r(), 0.55 + 0.03 * r(), 0.66 + 0.08 * r(), 0.72, 2 + 2 * r(), 0.8, 0.16 + 0.06 * r()],
+    // (kagami9 round 1, worker 2: this one stood in the water as a box) settled aslant toward the low end
+    [0.57 + 0.03 * r(), 0.78 + 0.03 * r(), 0.42 + 0.06 * r(), 0.7, 4 + 2 * r(), 0.7, 0.12 + (r() - 0.5) * 0.08],
+    [-0.04, 0.2 + 0.03 * r(), 0.44 + 0.05 * r(), 0.12, 12 + 3 * r(), 0.9, -0.03],
+    [0.21 + 0.02 * r(), 0.45 + 0.03 * r(), 0.27 + 0.04 * r(), 0.08, 9 + 3 * r(), 0.8, -0.2 - 0.06 * r()],
+    [0.46 + 0.02 * r(), 0.6 + 0.02 * r(), 0.2 + 0.04 * r(), 0.14, 16 + 3 * r(), 0.7, (r() - 0.5) * 0.1],
+    [0.68 + 0.03 * r(), 0.86 + 0.03 * r(), 0.13 + 0.03 * r(), 0.05, 22 + 4 * r(), 0.6, (r() - 0.5) * 0.12],
+    [0.9 + 0.02 * r(), 1.0, 0.07 + 0.02 * r(), 0.03, 29 + 5 * r(), 0.5, (r() - 0.5) * 0.2],
   ];
   const ks: Chunk[] = [];
-  steps.slice(0, Math.min(steps.length, s.n ?? steps.length)).forEach(([a, b, hk, dep, nearer, cap], i) => {
+  steps.slice(0, Math.min(steps.length, s.n ?? steps.length)).forEach(([a, b, hk, dep, nearer, cap, tilt], i) => {
     const xa = Math.min(at(a), at(b)), xb = Math.max(at(a), at(b));
     const runs = (a + b) / 2 < bank;
     const foot = runs ? Infinity : wl + nearer * (bank > 0 ? 1 : 0.5);
     const H = s.h * hk;
-    const k = chunk(xa, xb, (runs ? wl + nearer * 0.5 : foot) - H, foot, dep, cap, seed + 10 + i * 17, (r() - 0.5) * 0.08 - dir * 0.03, (r() - 0.5) * 0.05);
+    const k = chunk(xa, xb, (runs ? wl + nearer * 0.5 : foot) - H, foot, dep, cap, seed + 10 + i * 17, tilt * dir, (r() - 0.5) * 0.05);
     if (runs) { k.wside = dir; k.wfrom = wl + nearer * 0.5; }
+    // (kagami9 round 1, worker 2) the back row in the near layer's shade, a step darker than its depth
+    if (dep > 0.5) k.dark = 0.07;
     ks.push(k);
   });
+  // a block perched on the broken one's ledge, proud of it
+  {
+    const k = ks[1]!, pa = k.x0 + (k.x1 - k.x0) * (0.1 + 0.15 * r()), pb = pa + (k.x1 - k.x0) * (0.22 + 0.1 * r());
+    const pt = Math.max(chunkTop(k, pa), chunkTop(k, pb)) + 2;
+    ks.push(chunk(pa, pb, pt - s.h * (0.12 + 0.05 * r()), pt + 3, 0.4, 1, seed + 10 + 9 * 17, (r() - 0.5) * 0.14, 0, k.mw));
+  }
   const parts = rockParts(ks, 1, seed + 3, deep);
   parts.push(...rubble(at, [Math.max(0.55, bank), 1.02], 3 + Math.floor(r() * 3), wl, seed + 200, deep));
   // grass and a fern at the foot of the low steps
   for (let i = 0; i < 2; i++) {
     const x = at(0.45 + 0.4 * r()), y = wl + 6 + r() * 10;
-    parts.push(tuftPart({ x, y, rx: 6 + r() * 8, ry: 9 + r() * 9, lit: 0.55, dark: 0.2, seed: seed + 300 + i * 11 }, y, false));
+    // (kagami9 round 1, the critic's "dashed white waterline": the grass at the foot is in shade, no line)
+    parts.push({ ...tuftPart({ x, y, rx: 6 + r() * 8, ry: 9 + r() * 9, lit: 0.55, dark: 0.2, seed: seed + 300 + i * 11 }, y, false), noLine: true });
   }
   return parts;
 }
@@ -1086,7 +1202,7 @@ function stackBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] 
     add(0.5 + 0.05 * r(), 1.0, wl - H * (0.55 + 0.1 * r()), Infinity, 0.1, 0.8, 1, false);
     const low = ks[1]!;
     const [fa, fb] = span(0.78 + 0.04 * r(), 0.92);
-    const lt = Math.min(chunkTop(low, fa), chunkTop(low, fb));
+    const lt = Math.max(chunkTop(low, fa), chunkTop(low, fb));
     ks.push(chunk(fa, fb, lt - 2 - (fb - fa) * 0.6, lt + 2, 0.02, 0.4, seed + 10 + 6 * 17, dir * -0.25, 0, Infinity));
     // (round 7, the water lane: its water side dropped into the lake as one ruled cliff edge from its
     // top to the frame's bottom) its foot steps out into the lake toward the camera, block by block
@@ -1144,36 +1260,61 @@ function outcropBody(s: MassSpec, seed: number, wl: number, deep: number): Part[
   const at = (u: number): number => s.x + s.w * u;
   const H = s.h;
   const f = wl + (s.foot ?? 0);
-  // [from, to, top share, depth, foot nearer by, cap]
-  const plan: [number, number, number, number, number, number][] = [
-    // (round 5, the critic: "tall-left, low-right staircase, like play-west's") an islet with a
-    // spire: a broad low block, a middling one, a narrow tall pillar right of middle leaning out
-    // over the water, a lower block recessed behind its far side, a small one nearest
-    [0.0, 0.36 + 0.04 * r(), 0.46 + 0.06 * r(), 0.45, 0, 0.9],
-    [0.6 + 0.03 * r(), 0.88 + 0.03 * r(), 0.34 + 0.06 * r(), 0.55, 1, 0.8],
-    [0.3 + 0.03 * r(), 0.54 + 0.03 * r(), 0.66 + 0.06 * r(), 0.24, 3, 0.9],
-    [0.82 + 0.03 * r(), 0.98, 0.18 + 0.05 * r(), 0.05, 10, 0.6],
+  // (round 5, the critic: "tall-left, low-right staircase, like play-west's"; kagami9 round 1, the
+  // critic's W2-4: "cut boxes" side by side, flat tops on one waterline)
+  // (kagami9 round 1, worker 2, second pass) Dex's sketch as a near mass: one tall broken mass left of
+  // centre with a narrow split-off pillar standing proud of its skyline, a lower block behind its right
+  // stepping down into the water, and in front of them lower blocks fallen forward, each nearer the
+  // camera than the last (their feet lower in the frame, never one waterline), their tops slanted where
+  // they settled. The near layer's rock sits in its own shade (the darkest stone in the frame), lit only
+  // along its lips and the sun-side edges; recessed blocks a step darker and cooler again.
+  // [from, to, top share, depth, foot nearer by, cap, top's slope, lean, shade]
+  const plan: [number, number, number, number, number, number, number, number, number][] = [
+    [0.02, 0.44 + 0.03 * r(), 0.8 + 0.06 * r(), 0.62, 0, 0.9, 0.05 + 0.04 * r(), -0.02, 0.06],
+    [0.42 + 0.03 * r(), 0.8 + 0.04 * r(), 0.46 + 0.06 * r(), 0.68, 3, 0.8, 0.12 + 0.06 * r(), 0.03, 0.1],
+    [-0.05, 0.31 + 0.03 * r(), 0.34 + 0.05 * r(), 0.12, 13 + 3 * r(), 0.8, -0.05 - 0.04 * r(), 0.02, 0.04],
+    [0.36 + 0.03 * r(), 0.62 + 0.03 * r(), 0.25 + 0.05 * r(), 0.08, 19 + 4 * r(), 0.7, 0.14 + 0.06 * r(), -0.03, 0.02],
+    [0.7 + 0.03 * r(), 0.93 + 0.02 * r(), 0.17 + 0.04 * r(), 0.05, 9 + 3 * r(), 0.6, -0.1 - 0.06 * r(), 0.04, 0.02],
   ];
   const ks: Chunk[] = [];
-  plan.slice(0, s.n ?? plan.length).forEach(([a, b, hk, dep, nearer, cap], i) => {
+  plan.slice(0, s.n ?? plan.length).forEach(([a, b, hk, dep, nearer, cap, tilt, lean, dk], i) => {
     const foot = f + nearer;
-    ks.push(chunk(at(a), at(b), foot - H * hk, foot, dep, cap, seed + 30 + i * 19, (r() - 0.5) * 0.1, (r() - 0.5) * 0.06));
+    const x0 = at(a), x1 = at(b);
+    // (a top's slope measured from its left end: its highest corner stays at its share)
+    const top = foot - H * hk + Math.max(0, -tilt) * (x1 - x0);
+    const k = chunk(x0, x1, top, foot, dep, cap, seed + 30 + i * 19, tilt, lean);
+    k.dark = dk;
+    ks.push(k);
   });
-  // the spire: narrow, tall, leaning out over the water to the right, standing forward
+  // the split-off pillar: narrow, standing proud of the tall mass's skyline at its right shoulder,
+  // leaning out over the water, its top a slanted break
   {
-    const a = 0.5 + 0.03 * r(), b2 = a + 0.13 + 0.03 * r();
-    ks.push(chunk(at(a), at(b2), f + 2 - H, f + 2, 0.16, 1, seed + 140, -0.1 - 0.06 * r(), 0.07 + 0.03 * r()));
+    const a = 0.33 + 0.04 * r(), b2 = a + 0.1 + 0.03 * r();
+    const k = chunk(at(a), at(b2), f + 5 - H * (1.02 + 0.06 * r()), f + 5, 0.3, 1, seed + 140, -0.18 - 0.08 * r(), 0.05 + 0.03 * r());
+    k.dark = 0.02;
+    ks.push(k);
   }
-  // a block perched on the broad one's top, proud of it, stepping the skyline up at the left
+  // a block perched on the tall mass's top, proud of it, stepping the skyline up at the left
   const back = ks[0]!;
-  const pa = 0.06 + 0.05 * r(), pb = pa + 0.14 + 0.05 * r();
-  const pTop = Math.min(chunkTop(back, at(pa)), chunkTop(back, at(pb))) + 2;
-  ks.push(chunk(at(pa), at(pb), pTop - H * (0.16 + 0.05 * r()), pTop + 3, 0.36, 1, seed + 141, (r() - 0.5) * 0.12, 0, f));
+  const pa = 0.08 + 0.05 * r(), pb = pa + 0.11 + 0.05 * r();
+  const pTop = Math.max(chunkTop(back, at(pa)), chunkTop(back, at(pb))) + 2;
+  {
+    const k = chunk(at(pa), at(pb), pTop - H * (0.13 + 0.05 * r()), pTop + 3, 0.4, 1, seed + 141, (r() - 0.5) * 0.2, 0, f);
+    k.dark = 0.08;
+    ks.push(k);
+  }
   const parts = rockParts(ks, 1, seed + 3, deep);
-  parts.push(...rubble(at, [0.0, 0.25], 2, f, seed + 300, deep), ...rubble(at, [0.6, 1.0], 3, f, seed + 310, deep));
+  parts.push(...rubble(at, [0.0, 0.25], 2, f + 12, seed + 300, deep), ...rubble(at, [0.62, 1.05], 3, f + 6, seed + 310, deep));
+  // growth: a fern and grass at the feet in shade, a shrub on the tall mass's shoulder catching the sun
   for (let i = 0; i < 3; i++) {
-    const x = at(i === 0 ? 0.04 + 0.15 * r() : 0.62 + 0.3 * r()), y = f + 2 + r() * 8;
-    parts.push(tuftPart({ x, y, rx: 7 + r() * 9, ry: 9 + r() * 10, lit: 0.55 + 0.3 * r(), dark: 0.15, seed: seed + 400 + i * 11 }, y, false));
+    const x = at(i === 0 ? 0.04 + 0.15 * r() : 0.62 + 0.3 * r()), y = f + 10 + r() * 10;
+    parts.push({ ...tuftPart({ x, y, rx: 7 + r() * 9, ry: 9 + r() * 10, lit: 0.35 + 0.3 * r(), dark: 0.3, seed: seed + 400 + i * 11 }, y, false), noLine: true });
+  }
+  {
+    const x = at(0.12 + 0.12 * r()), y = chunkTop(back, x) + 3;
+    parts.push({ ...tuftPart({ x, y, rx: 9 + r() * 5, ry: 10 + r() * 5, lit: 0.85, dark: 0.15, seed: seed + 450 }, Infinity, true), noRefl: true });
+    const lx2 = at(0.2 + 0.1 * r()), ly2 = chunkTop(back, lx2) + 2, size = 12 + 6 * r();
+    parts.push({ box: [lx2 - size * 1.6, ly2 - size * 1.4, lx2 + size * 1.6, ly2 + 2], wl: Infinity, noRefl: true, dress: (pen, d) => leafClusterP(pen, d, lx2, ly2, size, 0.9, seed + 460) });
   }
   return parts;
 }
@@ -1283,7 +1424,9 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
           // crown band catches the sun on its tips, everything under it sinks into shade fast
           const sh = s.shade ?? 0;
           const lit = clamp(0.84 - q * 1.6 - Math.max(0, io) * 0.5 + (r() - 0.5) * 0.15 - (band > 0 ? sh : sh * 0.4), 0, 1);
-          parts.push(tuftPart({ x, y, rx, ry, lit, dark: clamp(q * 0.95 + Math.max(0, io) * 0.25 + sh * 0.7, 0, 1), seed: seed + 1000 + band * 300 + Math.round(x) }, f, band === 0 && !small));
+          // (kagami9 round 1: a mass in deep shade goes darker below its crown than the plain clamp let it)
+          const dk = q * 0.95 + Math.max(0, io) * 0.25 + sh * 0.7 + (band > 0 && sh > 0.5 ? (sh - 0.5) * 1.4 : 0);
+          parts.push(tuftPart({ x, y, rx, ry, lit, dark: clamp(dk, 0, sh > 0.5 ? 1.5 : 1), seed: seed + 1000 + band * 300 + Math.round(x) }, f, band === 0 && !small));
         }
       }
       x += rx * (0.72 + 0.45 * r());
@@ -1299,7 +1442,8 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
     let x = s.x + 1;
     while (x < s.x + s.w - 1) {
       const rx = base * (0.5 + 0.45 * r2()), ry = rx * (1 + 0.45 * r2()), lit = 0.1 + 0.18 * r2();
-      const gap = vnoise1(x / 43, seed + 43) > 0.7 || vnoise1(x / 11, seed + 44) > 0.86;
+      // (kagami9 round 1, the critic's W2-10 "red mud strip": a mass grown over to the water shows no mud)
+      const gap = !s.closed && (vnoise1(x / 43, seed + 43) > 0.7 || vnoise1(x / 11, seed + 44) > 0.86);
       if (!gap && E(x) > 3) {
         const fx = foot(x);
         // (the water's bright line only under the odd one: under the grass the contact is in shade)
@@ -1318,6 +1462,19 @@ function riseBody(s: MassSpec, seed: number, wl: number, deep: number, small = f
     parts.push({ box: [tx - th, ty - th - 6, tx + th, ty], wl: f, noLine: true, dress: (pen, d) => twigStrokes(pen, d, tx, ty, th, tl, seed + 77) });
     // (and a tussock in front of the twig's foot so it grows out of the grass)
     parts.push(tuftPart({ x: tx + inner * 3, y: ty + 9, rx: 9 + r() * 5, ry: 11 + r() * 4, lit: 0.85, dark: 0, seed: seed + 88 }, f, !small));
+  }
+  // (kagami9 round 1) broad-leaved plants breaking its crown, the tallest on the sun side of it (own
+  // rng: nothing above is reseeded)
+  if (s.leaves) {
+    const r3 = rng(seed + 61);
+    for (let i = 0; i < s.leaves; i++) {
+      const u = clamp(peak + (r3() - 0.55) * 0.7, 0.03, 0.97);
+      const lx = s.x + s.w * u, e = E(lx);
+      if (e < 6) continue;
+      const size = clamp(s.h * (0.22 + 0.2 * r3()), 10, 46);
+      const ly = f - e + size * 0.25;
+      parts.push({ box: [lx - size * 1.6, ly - size * 1.4, lx + size * 1.6, ly + 2], wl: f, noLine: true, dress: (pen, d) => leafClusterP(pen, d, lx, ly, size, 0.85 - Math.abs(u - peak), seed + 700 + i * 13) });
+    }
   }
   const su: [number, number] = inner > 0 ? [0.6, 1.02] : [-0.02, 0.4];
   parts.push(...rubble((u) => s.x + s.w * u, su, 2 + Math.floor(r() * 3), f + 4, seed + 500, deep));
@@ -1351,13 +1508,18 @@ function mudBody(s: MassSpec, seed: number, wl: number, deep: number, dark: numb
   // (round 4: the critic's "mud raft": a lens with a flat bottom floating on the water) its ends
   // break up and sink: lower lumps with water between them, so it rises out of the shallows
   const E0 = bar(s.x, s.w, s.h, seed + 2);
+  // (kagami9 round 1, second pass: a lump cut off on a noise threshold stood as a wall at each end, so
+  // play-walker's bed read as a slab with two vertical ends) the ends taper to nothing and their lumps
+  // sink one by one toward the tip, each gap coming down to the water on a slope
   const E = (lx: number): number => {
     const u = (lx - s.x) / s.w;
     const e = E0(lx);
-    if (u > 0.2 && u < 0.8) return e;
-    const k = u <= 0.2 ? u / 0.2 : (1 - u) / 0.2;
-    const g = clamp((vnoise1(lx / 6.5, seed + 8) - 0.4 - 0.3 * (1 - k)) / 0.1, 0, 1);
-    return g > 0 ? e * (0.45 + 0.5 * k) * Math.sqrt(g) : -Infinity;
+    if (u > 0.24 && u < 0.76) return e;
+    const k = clamp(u <= 0.24 ? u / 0.24 : (1 - u) / 0.24, 0, 1);
+    const n = vnoise1(lx / 9, seed + 8) * 0.75 + vnoise1(lx / 3.5, seed + 9) * 0.25;
+    const lumps = clamp(0.25 + 1.6 * (n - 0.5 * (1 - k)), 0, 1);
+    const v = e * Math.pow(k, 0.6) * lumps;
+    return v < 0.8 ? -Infinity : v;
   };
   const foot = wanderFoot(f, Math.min(10, 3 + s.h * 0.2), seed + 3);
   const parts: Part[] = [];
@@ -1441,6 +1603,324 @@ function snagBody(s: MassSpec, seed: number, wl: number, deep: number): Part[] {
   return parts;
 }
 
+/**
+ * (kagami9 round 1, the critic's W2-1 "postcard tray") The lake's nearest shore, which only the far
+ * frames see: the postcard (the vista at 0.5x), the descent's widest moments and the TESU frame look
+ * past the near masses to where the lake's surface ends, and there it stopped on one ruled line over
+ * the plateau's cliff. This shore stands across that edge, nearer than every other mass, and is the
+ * near rim of the lake's basin: a grown-over lip on a limestone base that steps down into the cliff.
+ * (round 1, second pass: the first one read as a flat dark carpet on a near-ruled skyline with dark
+ * boxes tiled in it.)
+ * - Its skyline: mounds of very different widths and heights overlapping along it, each between its
+ *   `line` (the highest it may reach, so no play or opening frame sees it) and its `foot` (the lowest
+ *   it may sag, so the lake's own near edge never shows under it); big crowns of grass heaped on them,
+ *   lit along their tips where the slope faces the sun (up and to the left), the slopes turned away
+ *   in shade; broad-leaved plants and sedge breaking the crown.
+ * - Limestone breaking through the grass here and there, each block its own size, a lit ledge with
+ *   green on top only, its face in the near layer's shade, a smaller block beside or in front.
+ * - Under the grass, its base: bedded blocks in two rows (the front row lower, standing forward),
+ *   grass hanging over their lips, their feet stepping down chunk by chunk (the TESU frame sees them
+ *   whole over the cliff), never one ruled bottom.
+ * - Both ends turn to rock: piles of blocks stepping up to the cliffs it meets.
+ * - The nearest things, low in the frame: a few dark masses of broad leaves and grass coming up from
+ *   the bottom edge, rim-lit (the darkest darks of the frame).
+ * Every feature is placed by its own x (hashed from `key`), so two shores sharing a key paint the same
+ * things where their lines agree. Nothing in it mirrors: there is no water in front of it.
+ */
+function shoreBody(s: MassSpec, seed: number, deep: number): Part[] {
+  const key = s.key ?? seed;
+  const line = s.line ?? [[s.x, s.foot ?? 130], [s.x + s.w, s.foot ?? 130]];
+  const along = (x: number, k: 1 | 2, d: number): number => {
+    const v = (q: number[]): number => q[k] ?? d;
+    if (x <= line[0]![0]) return v(line[0]!);
+    for (let i = 1; i < line.length; i++) {
+      const q1 = line[i]!, q0 = line[i - 1]!;
+      if (x <= q1[0]) return v(q0) + ((x - q0[0]) / Math.max(1, q1[0] - q0[0])) * (v(q1) - v(q0));
+    }
+    return v(line[line.length - 1]!);
+  };
+  const lineAt = (x: number): number => along(x, 1, 0);
+  const x0 = s.x, x1 = s.x + s.w;
+  const foot = s.foot ?? 160;
+  // its crown's scale: a crown tussock's half-width, px (s.h, default 22)
+  const S = s.h || 22;
+  // how rocky it is at x: 1 at its ends (piles of blocks meeting the cliffs), 0 along its middle
+  const END = 520;
+  const rocky = (lx: number): number => clamp(1 - Math.min(lx - x0, x1 - lx) / END, 0, 1);
+  // --- the skyline: overlapping mounds, each its own width, height and lean
+  const MW = 230;
+  const mound = (lx: number): number => {
+    const ci = Math.floor(lx / MW);
+    let best = 0;
+    for (let i = ci - 3; i <= ci + 3; i++) {
+      const hw = MW * (0.45 + 1.1 * hash1(i, key + 2) * hash1(i, key + 7));
+      const c = (i + 0.5 + (hash1(i, key + 1) - 0.5) * 0.8) * MW;
+      let u = (lx - c) / hw;
+      if (u <= -1 || u >= 1) continue;
+      // one shoulder steeper than the other
+      u = clamp(u + (hash1(i, key + 4) - 0.5) * 0.7 * (1 - u * u), -1, 1);
+      const a = 0.25 + 0.75 * Math.pow(hash1(i, key + 3), 0.7);
+      best = Math.max(best, a * Math.pow(Math.max(0, 1 - Math.pow(Math.abs(u), 2.4)), 0.65));
+    }
+    return best;
+  };
+  // (the mounds sag from the line by up to `amp`, never below the foot)
+  const AMP = s.amp ?? 100;
+  const sky = (lx: number): number => {
+    const L = lineAt(lx), span = Math.max(0, Math.min(along(lx, 2, AMP), foot - L));
+    const m = mound(lx);
+    const n = (vnoise1(lx / 41, key + 5) - 0.5) * 0.18 + (vnoise1(lx / 11, key + 6) - 0.5) * 0.07;
+    return L + (1 - clamp(m + n * (0.35 + m), 0, 1)) * span;
+  };
+  // the slope at x: < 0 where the ground rises to the right (that face looks up and left, at the sun)
+  const slope = (lx: number): number => (sky(lx + 9) - sky(lx - 9)) / 18;
+  // --- the base: where the grass gives way to bedded limestone (absolute local y, wandering)
+  const baseAt = (lx: number): number => Math.max(sky(lx) + 90, 305 + 60 * vnoise1(lx / 173, key + 40) + 18 * (vnoise1(lx / 37, key + 41) - 0.5)) - 170 * rocky(lx) * rocky(lx);
+  const parts: Part[] = [];
+  // the grown-over body behind everything: deep green going near black with depth, big soft shapes
+  // of growth in it, the odd lighter stem catching light just under the crown
+  parts.push({
+    box: [x0 - 4, Math.min(...line.map((q) => q[1])) - 4, x1 + 4, deep], wl: Infinity, noRefl: true,
+    fill: (c, lx, ly, x, y) => {
+      if (lx < x0 || lx > x1) return 0;
+      const T = sky(lx) + 3;
+      if (ly < T) return 0;
+      // (under the base it runs on dark to the bottom: the crevices between its blocks)
+      // (kagami9 round 1, worker 2: a noise of x alone hung vertical stripes down the postcard's bottom)
+      if (ly > baseAt(lx) + 12) return vnoise(lx / 6, ly / 9, key + 33) > 0.64 ? P.pine[4]! : P.pine[5]!;
+      const v = ly - T;
+      const g = vnoise(lx / 27, ly / 13, key + 31), g2 = vnoise(lx / 7, ly / 5, key + 32);
+      if (v < 16 && g2 > 0.74 && slope(lx) < 0) return P.moss[5]!;
+      const t = 0.42 + clamp(v / 150, 0, 0.45) + (g - 0.5) * 0.42 + (g2 - 0.5) * 0.14;
+      return step(c, [P.moss[5]!, P.moss[6]!, P.moss[7]!, P.pine[4]!, P.pine[5]!], t, x, y, 0.18);
+    },
+  });
+  // --- the base: two rows of bedded blocks, each its own width, the front row lower and nearer
+  const base: Chunk[] = [];
+  for (const [row, BW, dep, dk, drop] of [[0, 210, 0.6, 0.5, 0], [1, 150, 0.35, 0.42, 26]] as const) {
+    const i0 = Math.floor((x0 - 200) / BW), i1 = Math.ceil((x1 + 200) / BW);
+    for (let i = i0; i <= i1; i++) {
+      const h1 = hash1(i, key + 50 + row * 10), h2 = hash1(i, key + 51 + row * 10), h3 = hash1(i, key + 52 + row * 10);
+      if (row === 1 && h3 < 0.35) continue;
+      const a = (i + (h1 - 0.5) * 0.5) * BW, w = BW * (0.55 + 0.9 * h2);
+      // (kagami9 round 1, worker 2: every block that reached past the end was cut at one x, so the bank
+      // ended on one dark vertical against the cliff, postcard x ~1635) the base stays inside the ends,
+      // each block stopping at its own place; the end piles and their feet (below) make the silhouette
+      const b = Math.min(x1 - 8 - 50 * hash1(i, key + 55 + row * 10), a + w);
+      const a1 = Math.max(a, x0 + 8 + 50 * hash1(i, key + 56 + row * 10));
+      if (b - a1 < 30) continue;
+      const mid = (a + b) / 2;
+      const top = baseAt(mid) + drop + (h3 - 0.5) * 34;
+      // its foot stepping down: each block ends at its own depth
+      const bot = deep - 4 - 90 * hash1(i, key + 53 + row * 10) * hash1(i, key + 54 + row * 10) - (row === 1 ? 30 : 0);
+      if (bot - top < 22) continue;
+      const k = chunk(a1, b, top, bot, dep, 0.5 + 0.5 * h1, key + 600 + row * 7919 + i * 31, (h2 - 0.5) * 0.1, (h3 - 0.5) * 0.06, Infinity);
+      k.dark = dk + 0.1 * h3;
+      base.push(k);
+    }
+  }
+  // --- limestone breaking through the grass, and the piles at its ends
+  const crag: Chunk[] = [];
+  {
+    const CW = 640;
+    const i0 = Math.floor(x0 / CW), i1 = Math.ceil(x1 / CW);
+    for (let i = i0; i <= i1; i++) {
+      const h1 = hash1(i, key + 70), h2 = hash1(i, key + 71), h3 = hash1(i, key + 72);
+      const xc = (i + 0.15 + 0.7 * h1) * CW;
+      if (xc < x0 + 60 || xc > x1 - 60 || rocky(xc) > 0.3 || h2 < 0.5 || lineAt(xc) < 70) continue;
+      const w = 110 + 190 * h3 * h3;
+      const lim = Math.max(lineAt(xc - w / 2), lineAt(xc + w / 2)) + 2;
+      const top = Math.max(lim, Math.min(sky(xc - w / 2), sky(xc + w / 2)) - 6 - 28 * h2);
+      const k = chunk(xc - w / 2, xc + w / 2, top, top + 44 + 30 * h1, 0.3, 0.75, key + 900 + i * 37, (h1 - 0.5) * 0.14, (h3 - 0.5) * 0.08, Infinity);
+      k.dark = 0.2;
+      crag.push(k);
+      // a smaller block beside it, lower and standing forward (overlapping its foot)
+      const side = hash1(i, key + 73) < 0.5 ? -1 : 1, w2 = w * (0.35 + 0.35 * hash1(i, key + 74));
+      const bx = xc + side * (w / 2 - w2 * 0.3);
+      const t2 = Math.max(lineAt(bx) + 2, top + 14 + 18 * hash1(i, key + 75));
+      const k2 = chunk(Math.min(bx, bx + side * w2), Math.max(bx, bx + side * w2), t2, t2 + 30 + 20 * h3, 0.08, 0.7, key + 950 + i * 37, -side * 0.12, 0, Infinity);
+      k2.dark = 0.12;
+      crag.push(k2);
+    }
+    // the ends: blocks of very different sizes stepping up toward the cliff they meet, the biggest at
+    // the very end, each nearer one lower, green on their ledges, running down into the base
+    for (const end of [-1, 1] as const) {
+      const ex = end < 0 ? x0 : x1;
+      const r = rng(key + (end < 0 ? 1100 : 1200));
+      let at = ex + end * (40 + 60 * r());
+      for (let j = 0; j < 6; j++) {
+        const w = (j === 0 ? 150 : 60 + 110 * r()) * (1 - j * 0.06);
+        const xa = end < 0 ? at : at - w, xb = end < 0 ? at + w : at;
+        const mid = (xa + xb) / 2;
+        const lim = Math.max(lineAt(xa), lineAt(xb), lineAt(ex)) + 2;
+        const top = Math.max(lim, lineAt(ex) + 2 + j * (14 + 16 * r()) + (sky(mid) - lineAt(mid)) * 0.25 * j / 5);
+        const k = chunk(xa, xb, top, baseAt(mid) + 40 + 60 * r(), 0.15 + 0.08 * j, 0.6 + 0.4 * r(), key + 1300 + (end + 1) * 50 + j * 13, end * (0.06 + 0.08 * r()), (r() - 0.5) * 0.06, Infinity);
+        k.dark = 0.3 + 0.03 * j;
+        crag.push(k);
+        at -= end * w * (0.45 + 0.35 * r());
+      }
+      // (kagami9 round 1, worker 2) the end pile's foot: blocks stacking down to the bottom of the frame,
+      // each lower one standing further out toward the cliff (Dex's sketch: chunks stacking down into the
+      // base), so the bank's end is a stepped silhouette of chunks, never the body's vertical edge; their
+      // own stream, so nothing above moves
+      {
+        const r2 = rng(key + (end < 0 ? 1150 : 1250));
+        const k0 = crag[crag.length - 6]!;
+        let out = end < 0 ? k0.x0 : k0.x1;
+        let top = k0.bot - 10 - 12 * r2();
+        for (let m = 0; m < 4; m++) {
+          out += end * (34 + 60 * r2());
+          const w = 90 + 110 * r2();
+          // (its inner side always well inside the end, over the body's edge)
+          const inner = end < 0 ? Math.max(out + w, ex + 24 + 30 * r2()) : Math.min(out - w, ex - 24 - 30 * r2());
+          const xa = end < 0 ? out : inner, xb = end < 0 ? inner : out;
+          const k = chunk(xa, xb, top, Infinity, 0.1 + 0.06 * m, 0.45 + 0.45 * r2(), key + 1400 + (end + 1) * 50 + m * 13, end * (0.03 + 0.07 * r2()), -end * (0.01 + 0.04 * r2()), Infinity);
+          k.dark = 0.24 + 0.05 * m;
+          crag.push(k);
+          top += 46 + 50 * r2();
+        }
+      }
+    }
+  }
+  // grass hanging down over the base's lips: dark, the odd blade catching a little light
+  const fringe = (k: Chunk): Part[] => {
+    const out: Part[] = [];
+    for (let tx = k.x0 + 2 + 8 * hash1(1, k.seed); tx < k.x1 - 2;) {
+      const h = hash1(Math.round(tx), k.seed + 3);
+      const ry = 5 + 9 * h, ty = chunkTop(k, tx) + 3 + 3 * h;
+      if (h < 0.75) out.push({ ...tuftPart({ x: tx, y: ty, rx: ry * (0.9 + 0.6 * h), ry, lit: 0.12 + 0.25 * h, dark: 0.55 + 0.3 * h, seed: k.seed + Math.round(tx) }, Infinity, false), noRefl: true });
+      tx += ry * (1.1 + 1.6 * hash1(Math.round(tx), k.seed + 4));
+    }
+    return out;
+  };
+  // the blocks in the grass (their feet buried by the base and the growth painted after them)
+  parts.push(...rockParts(crag, 1, key + 4, deep));
+  for (const k of crag) {
+    if (k.bot === Infinity || k.bot > baseAt((k.x0 + k.x1) / 2)) continue;
+    for (let tx = k.x0 - 6; tx < k.x1 + 6;) {
+      const h = hash1(Math.round(tx), k.seed + 9);
+      const ry = 7 + 8 * h;
+      parts.push({ ...tuftPart({ x: tx, y: k.bot + 2 + 3 * h, rx: ry * (1 + 0.5 * h), ry: ry * 1.3, lit: 0.18 + 0.3 * h, dark: 0.55 + 0.25 * h, seed: k.seed + 40 + Math.round(tx) }, Infinity, false), noRefl: true });
+      tx += ry * (0.8 + 0.5 * hash1(Math.round(tx), k.seed + 10));
+    }
+  }
+  parts.push(...rockParts(base, 0, key + 3, deep));
+  for (const k of base) parts.push(...fringe(k));
+  // --- growth on the body under the crown: rows of tussocks, darker and sparser with depth
+  const tussock = (x: number, y: number, rx: number, ry: number, lit: number, dark: number, warm: boolean, sd: number): Part => ({ ...tuftPart({ x, y, rx, ry, lit, dark, seed: sd }, Infinity, warm), noRefl: true });
+  for (let band = 1; band <= 9; band++) {
+    const TW = S * (1.3 + 0.12 * band);
+    const i0 = Math.floor(x0 / TW), i1 = Math.ceil(x1 / TW);
+    for (let i = i0; i <= i1; i++) {
+      const h1 = hash1(i, key + 100 + band * 7), h2 = hash1(i, key + 101 + band * 7), h3 = hash1(i, key + 102 + band * 7);
+      if (h3 < 0.22 + band * 0.045) continue;
+      const x = (i + h1) * TW;
+      if (x < x0 || x > x1) continue;
+      const y = sky(x) + band * S * 1.15 + (h2 - 0.5) * S * 0.9;
+      const ry = S * (0.45 + 0.5 * h2);
+      if (y > baseAt(x) + 4 || y - ry * 2.1 < lineAt(x) - 1) continue;
+      const lit = clamp(0.5 - band * 0.06 - slope(x) * 0.6 + (h1 - 0.5) * 0.2, 0, 1);
+      parts.push(tussock(x, y, ry * (0.9 + 0.5 * h1), ry, lit, clamp(0.45 + band * 0.09, 0, 1.25), false, key + 2000 + band * 5000 + i));
+    }
+  }
+  // --- the crown: big tussocks heaped along the skyline, lit on their tips on the slopes facing the
+  // sun, a warm rim on the brightest; none where a block breaks through
+  {
+    const TW = S * 0.95;
+    const i0 = Math.floor(x0 / TW), i1 = Math.ceil(x1 / TW);
+    for (let i = i0; i <= i1; i++) {
+      const h1 = hash1(i, key + 200), h2 = hash1(i, key + 201), h3 = hash1(i, key + 202);
+      const x = (i + h1) * TW;
+      if (x < x0 + 4 || x > x1 - 4 || h3 < rocky(x) * 1.1) continue;
+      const big = 0.6 + 1.1 * h2 * h2;
+      const ry = Math.min(S * 1.6, S * 0.62 * big), rx = ry * (0.85 + 0.5 * h3);
+      const y = sky(x) + ry * 0.9 + 2;
+      // (never above its line)
+      if (y - ry * 2.1 < lineAt(x) - 1) continue;
+      if (crag.some((k) => x > k.x0 + 6 && x < k.x1 - 6 && chunkTop(k, x) < y - ry * 0.6)) continue;
+      const sl = slope(x);
+      const lit = clamp(0.62 - sl * 1.4 + (h1 - 0.5) * 0.3, 0.15, 1);
+      parts.push(tussock(x, y, rx, ry, lit, clamp(0.28 + sl * 0.8 + (h3 - 0.5) * 0.2, 0.05, 0.8), lit > 0.7, key + 9000 + i));
+    }
+  }
+  // broad-leaved plants and sedge breaking the crown
+  {
+    const LW = 420;
+    const i0 = Math.floor(x0 / LW), i1 = Math.ceil(x1 / LW);
+    for (let i = i0; i <= i1; i++) {
+      const h1 = hash1(i, key + 300), h2 = hash1(i, key + 301);
+      const x = (i + 0.1 + 0.8 * h1) * LW;
+      if (x < x0 + 40 || x > x1 - 40 || rocky(x) > 0.4) continue;
+      const size = S * (1.4 + 1.6 * h2);
+      const y = sky(x) + size * 0.3;
+      if (y - size * 1.05 < lineAt(x)) continue;
+      if (h2 < 0.55) {
+        const lit = clamp(0.75 - slope(x) * 1.5, 0.2, 1);
+        parts.push({ box: [x - size * 1.6, y - size * 1.4, x + size * 1.6, y + 2], wl: Infinity, noRefl: true, dress: (pen, d) => leafClusterP(pen, d, x, y, size, lit, key + 3000 + i) });
+      } else {
+        // a stand of sedge, its tallest blades on the sun side
+        const n = 7 + Math.floor(h1 * 9);
+        const bl: [number, number, number, number, number, number][] = [];
+        for (let j = 0; j < n; j++) {
+          const q = hash1(j, key + 3100 + i), q2 = hash1(j, key + 3200 + i);
+          const bx = x + (q - 0.5) * size * 0.9, by = sky(bx) + 4 + 4 * q2;
+          const len = Math.max(6, Math.min(size * (0.8 + 0.6 * q2), by - lineAt(bx) - 1));
+          bl.push([bx, by, len, (q - 0.5) * 0.7, (q2 - 0.5) * 0.8, q < 0.5 ? 0.85 : 0.35]);
+        }
+        parts.push({ box: [x - size * 2, y - size * 2.2, x + size * 2, y + 6], wl: Infinity, noRefl: true, dress: (pen, d) => { for (const [bx, by, len, a0, bend, lit] of bl) grassP(pen, d, bx, by, len, a0, bend, lit); } });
+      }
+    }
+  }
+  // --- the nearest things: a few masses of grass and broad leaves coming up from the bottom of the
+  // frame in front of the base, the darkest darks in the frame under a crown lit by the sun (ref 04's
+  // near ground is lit on top); not at the TESU frame's 1/10, where they would be specks on the base
+  {
+    const FW = 820;
+    const i0 = Math.floor(x0 / FW), i1 = Math.ceil(x1 / FW);
+    for (let i = i0; i <= i1; i++) {
+      const h1 = hash1(i, key + 400), h2 = hash1(i, key + 401), h3 = hash1(i, key + 402);
+      if (h2 < 0.4) continue;
+      const xc = (i + 0.15 + 0.7 * h1) * FW, w = 160 + 260 * h3;
+      if (xc - w / 2 < x0 + 80 || xc + w / 2 > x1 - 80) continue;
+      const topY = Math.max(baseAt(xc) - 50 - 70 * h2, sky(xc) + 80);
+      // its top: a hummock leaning toward one side, lumpy
+      const lean = (hash1(i, key + 403) - 0.5) * 0.8;
+      const fy = (lx: number): number => {
+        let u = (lx - xc) / (w / 2);
+        if (u <= -1 || u >= 1) return Infinity;
+        u = clamp(u + lean * (1 - u * u), -1, 1);
+        return topY + (1 - Math.pow(1 - Math.pow(Math.abs(u), 2), 0.6)) * 70 + (vnoise1(lx / 13, key + 404 + i) - 0.5) * 8;
+      };
+      const fl = (lx: number): number => (fy(lx + 6) - fy(lx - 6)) / 12;
+      parts.push({
+        box: [xc - w / 2, topY - 6, xc + w / 2, deep], wl: Infinity, noRefl: true,
+        fill: (c, lx, ly, x, y) => {
+          if (c.d < 0.2) return 0;
+          const T = fy(lx) + 4;
+          if (ly < T) return 0;
+          const g = vnoise(lx / 19, ly / 10, key + 405 + i);
+          return step(c, [P.moss[7]!, P.pine[4]!, P.pine[5]!], 0.35 + clamp((ly - T) / 70, 0, 0.5) + (g - 0.5) * 0.35, x, y);
+        },
+      });
+      const TW = S * 0.9;
+      for (let tx = xc - w / 2 + TW * 0.5; tx < xc + w / 2 - TW * 0.3; tx += TW * (0.7 + 0.5 * hash1(Math.round(tx), key + 406))) {
+        if (fy(tx) === Infinity) continue;
+        const q = hash1(Math.round(tx), key + 407);
+        const ry = S * (0.6 + 0.6 * q), sl = fl(tx);
+        const lit = clamp(0.72 - sl * 1.6 + (q - 0.5) * 0.25, 0.1, 1);
+        const t = tussock(tx, fy(tx) + ry * 0.9 + 2, ry * (0.9 + 0.4 * q), ry, lit, clamp(0.35 + sl * 0.9, 0.1, 0.9), lit > 0.75, key + 5000 + i * 197 + Math.round(tx));
+        parts.push({ ...t, fill: (c, lx, ly, x, y) => (c.d < 0.2 ? 0 : t.fill!(c, lx, ly, x, y)) });
+      }
+      const ls = S * (1.8 + 1.2 * h1), lxp = xc + (h3 - 0.5) * w * 0.5;
+      if (fy(lxp) !== Infinity) {
+        const ly0 = fy(lxp) + ls * 0.3;
+        parts.push({ box: [lxp - ls * 1.8, ly0 - ls * 1.4, lxp + ls * 1.8, ly0 + 2], wl: Infinity, noRefl: true, dress: (pen, d) => leafClusterP(pen, d, lxp, ly0, ls, 0.85, key + 5900 + i) });
+      }
+    }
+  }
+  return parts;
+}
+
 /** The parts of a mass, from its spec. */
 function bodyOf(s: MassSpec, seed: number, wl: number, ink: number, deep: number): Part[] {
   switch (s.kind) {
@@ -1452,6 +1932,7 @@ function bodyOf(s: MassSpec, seed: number, wl: number, ink: number, deep: number
     case "mud": return mudBody(s, seed, wl, deep, 0.9);
     case "snag": return snagBody(s, seed, wl, deep);
     case "stone": return stoneBody(s, seed, wl, deep);
+    case "shore": return shoreBody(s, seed, deep);
     case "pads": {
       const pd = wl + Math.max(10, s.h * 2.5);
       // (round 6, the critic: "stray reed threads in open water", "pads that read as letters") no
@@ -1567,13 +2048,14 @@ function paintBodies(c: PaintCtx, bodies: Body[], ink: number): void {
   const b = c.buf;
   lineInk = ink;
   const vis = bodies.filter((B) => (!B.spec.levels || (c.d >= B.spec.levels[0] - 1e-6 && c.d <= B.spec.levels[1] + 1e-6)) && b.touches(Math.floor(c.X(B.box[0] - 8)), Math.floor(c.Y(B.box[1] - 8)), Math.ceil(c.X(B.box[2] + 8)), Math.ceil(c.Y(B.box[3]))));
+  for (const B of vis) for (const q of B.parts) if (q.under) paintPart(c, q);
   for (const B of vis) {
     for (const q of B.parts) {
       if (q.noRefl || q.wl === Infinity) continue;
       paintPartRefl(c, q, { wl: q.wl, len: B.len, seed: B.seed + Math.round(q.wl) * 13, ink });
     }
   }
-  for (const B of vis) for (const q of B.parts) if (!q.noPaint) paintPart(c, q);
+  for (const B of vis) for (const q of B.parts) if (!q.noPaint && !q.under) paintPart(c, q);
 }
 
 /** An old stone lantern (toro), its foot in the grass, leaning a little. Local (x, y) is its foot. */
@@ -1651,7 +2133,7 @@ function generate(p: BankP, seed: number): MassSpec[] {
 function layoutOf(p: BankP, seed: number): Body[] {
   return cached(`bank4|${seed}|${p.w}|${p.h}|${p.reeds}|${p.startR}|${p.endR}|${p.masses ? JSON.stringify(p.masses) : ""}`, () => {
     const specs = p.masses ?? generate(p, seed);
-    return specs.map((s, i) => massOf(s, seed + 1000 + i * 37, 0, NEAR_INK, p.h));
+    return specs.map((s, i) => massOf(s, seed + 1000 + i * 37, 0, NEAR_INK, s.deep ?? p.h));
   });
 }
 
@@ -1666,7 +2148,8 @@ export const bank = definePainter<BankP>("op.bank", {
       y0 = Math.min(y0, -tall - 20);
     }
     if (!p.masses) { x0 = Math.min(x0, -400); x1 = Math.max(x1, p.w + 400); y0 = Math.min(y0, -330); }
-    return [x0, y0, x1, p.h + 4];
+    const y1 = Math.max(p.h, ...specs.map((m) => m.deep ?? 0));
+    return [x0, y0, x1, y1 + 4];
   },
   paint(c, p) {
     paintBodies(c, layoutOf(p, c.seed), NEAR_INK);
@@ -1727,11 +2210,18 @@ export interface ShallowsP {
   kind?: "rise" | "spit" | "pads" | "ledge";
   /** (round 6) Painted only at plate densities in [min, max] (see MassSpec.levels). */
   levels?: [number, number];
+  /** (kagami9 round 1) A rise: its own shade (lit only along its rim), grown over to the water, and
+   *  broad-leaved plants breaking its crown (MassSpec.shade, closed, leaves). */
+  shade?: number;
+  closed?: boolean;
+  leaves?: number;
+  /** (kagami9 round 1) A rise: its crown's place across it (default 0.38 on the left, 0.62 on the right). */
+  peak?: number;
 }
 
 /** The shallows' bodies: the corner's mass and what stands by it, or the lily bed. */
 function shallowsOf(p: ShallowsP, seed: number): Body[] {
-  return cached(`shallows4|${seed}|${p.w}|${p.wl}|${p.deep}|${p.side}|${p.h}|${p.wood}|${p.kind}`, () => {
+  return cached(`shallows4|${seed}|${p.w}|${p.wl}|${p.deep}|${p.side}|${p.h}|${p.wood}|${p.kind}|${p.shade}|${p.closed}|${p.leaves}|${p.peak}`, () => {
     const H = p.h ?? 30;
     const kind = p.kind ?? (p.side < 0 ? "rise" : "spit");
     const r = rng(seed + 41);
@@ -1769,7 +2259,7 @@ function shallowsOf(p: ShallowsP, seed: number): Body[] {
       // (round-3 integration: its bank wider and less tapered, run deep enough to leave every
       // frame by its bottom edge, so the catch's bottom-left corner is the rise's dark bank coming
       // at the camera, not open water under a strip; at play zoom P5's rise stands over most of it)
-      out.push(massOf({ kind: "rise", x: L ? -p.w * 0.15 : p.w * 0.15, w: p.w, h: H, peak: L ? 0.38 : 0.62, bank: 0.7, taper: 0.45 }, seed + 2, p.wl, 0, p.deep));
+      out.push(massOf({ kind: "rise", x: L ? -p.w * 0.15 : p.w * 0.15, w: p.w, h: H, peak: p.peak ?? (L ? 0.38 : 0.62), bank: 0.7, taper: 0.45, shade: p.shade, closed: p.closed, leaves: p.leaves }, seed + 2, p.wl, 0, p.deep));
       if ((p.wood ?? "log") === "log") {
         // a kinked snag lying out from its inner end into the water
         const sx = L ? p.w * (0.7 + 0.08 * r()) : p.w * (0.22 + 0.08 * r());
@@ -1779,6 +2269,32 @@ function shallowsOf(p: ShallowsP, seed: number): Body[] {
     }
     // the spit: a low mud bank off the corner, its inner end a point in the water, one stone
     out.push(massOf({ kind: "mud", x: L ? -p.w * 0.1 : p.w * 0.1, w: p.w, h: H * 0.6, foot: 2 }, seed + 2, p.wl, 0, p.deep));
+    // (kagami9 round 1, the critic's W2-2: "a floating reed mat") rooted on a submerged shelf: the mud
+    // going on under the water toward its corner, seen dim through it, its edge breaking up into the
+    // lake in a ragged ordered fade, never a ruled line
+    {
+      const sx0 = L ? -p.w * 0.3 : p.w * 0.05, sx1 = L ? p.w * 0.95 : p.w * 1.3, sd = seed + 77;
+      const reach = Math.min(p.deep - p.wl, 70);
+      // (round 1, second pass: a lens of one grey read as a flat slab with ruled slanted ends on the teal
+      // water) mud and weed lying under the water, seen through it: flattened patches in two darker teals
+      // of the lake's own, a weed green here and there, solid clusters (no dither), densest under the mat
+      // and shrinking with depth and toward both ends, so it breaks up into the water
+      const fill = (_c: PaintCtx, lx: number, ly: number): number => {
+        if (lx < sx0 || lx > sx1 || ly < p.wl + 1.5 || ly > p.deep) return 0;
+        const u = clamp((lx - sx0) / (sx1 - sx0), 0, 1), k = L ? 1 - u : u;
+        const env = Math.pow(Math.sin(Math.PI * u), 0.6) * (0.45 + 0.55 * k);
+        const v = (ly - p.wl) / reach;
+        if (v > 1.25) return 0;
+        const g = vnoise(lx / 23, ly / 6, sd + 1) * 0.6 + vnoise(lx / 7.5, ly / 2.6, sd + 2) * 0.4;
+        const th = 0.72 - env * 0.52 + v * 0.42;
+        if (g < th) return 0;
+        if (g > th + 0.2 && v < 0.6) return P.jade[6]!;
+        if (g < th + 0.07 || env < 0.3) return P.jade[4]!;
+        return vnoise(lx / 11, ly / 4, sd + 3) > 0.72 ? P.pine[1]! : P.jade[5]!;
+      };
+      const body = bodyFrom([{ box: [sx0, p.wl, sx1, p.wl + reach * 1.3 + 4], wl: Infinity, noRefl: true, under: true, fill }], seed + 78, p.wl, p.deep, { kind: "mud", x: sx0, w: sx1 - sx0, h: 1 });
+      out.unshift(body);
+    }
     const su = L ? 0.6 + 0.1 * r() : 0.26 + 0.08 * r();
     out.push(massOf({ kind: "stone", x: p.w * su, w: 14 + r() * 6, h: 9 + r() * 4, foot: 9 }, seed + 6, p.wl, 0, p.deep));
     if (p.wood === "stubs") {
