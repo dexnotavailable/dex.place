@@ -528,13 +528,13 @@ function clerestory(c: PaintCtx, b: Bay, x0: number, x1: number, fy: number, cy:
       const v = (ly - wy0) / (wy1 - wy0);
       const rail = Math.abs(v - 0.3) < 0.035 || Math.abs(v - 0.72) < 0.035;
       if (bx < 0.045 * U || rail) return bx < px * 1.2 && !rail ? st(NIGHT, 0.85, X, Y) : st(WOOD, 0.88, X, Y);
-      // the night: a deep blue, lighter low down toward the horizon's glow and on the moon's side
+      // (integration, round 2: a starry night here while the gate and its clerestories show the court's day: two
+      // times of day in one room) the same day as the gate's clerestories, a step dimmer again (high in the back
+      // wall's shade): a pale sky in the haze ramp, lighter low toward the horizon and on the sun's side
       const u = (lx - a0) / (a1 - a0);
       const glowSide = moonL ? 1 - u : u;
-      const n = 0.62 - v * 0.25 - glowSide * 0.18 + (vnoise(lx * 0.05, ly * 0.05, b.seed) - 0.5) * 0.15;
-      // a star or two
-      if (hash(Math.floor(lx / 2), Math.floor(ly / 2), b.seed + 2053) < 0.004 && v < 0.6) return P.dusk[0]!;
-      return st(NIGHT, n, X, Y);
+      const n = 5.7 - v * 0.9 - glowSide * 0.8 + (vnoise(lx * 0.05, ly * 0.05, b.seed) - 0.5) * 0.6 + (bayer4(X, Y) - 0.5) * 0.5;
+      return P.range[clamp(Math.round(n), 4, 6)]!;
     });
   }
   void bayer4;

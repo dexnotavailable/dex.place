@@ -113,7 +113,7 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
             const f = 1 - dx * dx - dd * dd;
             if (f > 0) fv += q.k * f * 0.85;
           }
-          const n = bandsOf(fv + jit);
+          const n = bandsOf(fv + jit + (fv > 0.04 ? (bayer4(X, Y) - 0.5) * 0.14 : 0));
           return n ? lut("warm", n) : null;
         }
         // --- the floor: pools under the low lights, reflections down the polish, the doors' day
@@ -153,8 +153,11 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
       }
       // --- the room: the shell sinks into the cool dark, the lights' pools lift it
       let shade = 0;
-      if (wy < FY - 10.6 * H) shade = 1;
-      if (wy < FY - 13.2 * H) shade = 2;
+      // (integration, round 2: each step came on at one height across everything, a level line across the end columns)
+      // each step comes on over a short dithered run
+      const sd = (bayer4(X, Y) - 0.5) * 0.4 * H;
+      if (wy < FY - 10.6 * H + sd) shade = 1;
+      if (wy < FY - 13.2 * H + sd) shade = 2;
       // the roof over the tie beam: the coffers and rafters fall away into the dark
       // (the skylight's well stays as bright as the day in it)
       // (integration, round 1: graded, so the coffers just over the beam still read as the roof falling
@@ -235,7 +238,9 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
           if (f > 0) v += q.k * f ** 1.5 * mat;
         }
       }
-      const lift0 = bandsOf(v + jit);
+      // (integration, round 2: the back-wall lanterns' pools stood on the wall as hard-edged blobs) each band's edge is
+      // dithered over a short run of the falloff, so the pool fades into the wall instead of ending on a line
+      const lift0 = bandsOf(v + jit + (v > 0.04 ? (bayer4(X, Y) - 0.5) * 0.14 : 0));
       let lift = lift0 - shade;
       // (hall loop round 2, W2-4) the shaft: a body of lit air a step or two above the room's air,
       // brightest where it leaves the well and fading as it falls, its edges wandering slowly (no ruled
@@ -368,29 +373,39 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
         // a lamp standing on a service lights up the wall (the service hides what is under it); a
         // lantern hanging free lights it above and below
         const hanging = q.y < -2 * H;
-        const below = hanging ? 1.0 * H : 0.15 * H;
-        if (dy > below || dy < -2.0 * H) continue;
-        const i0 = st.findIndex((sx) => sx > q.x);
-        const left = i0 > 0 ? st[i0 - 1]! : p.l, right = i0 >= 0 ? st[i0]! : p.r;
-        const ddx = (lx - q.x) / ((hanging ? 1.25 : 1.05) * H);
-        const ddy = dy < 0 ? dy / ((hanging ? 1.0 : 1.8) * H) : dy / below;
-        // the bands run nearly level across the panel (light climbing the plaster and fading up it), not in rings
-        const f = clamp(1 - Math.abs(ddy), 0, 1) ** 1.25 * clamp(1 - ddx * ddx * 0.8, 0, 1);
-        if (f <= 0) continue;
-        let v = 0;
-        const inPanel = lx > left + SW / 2 && lx < right - SW / 2;
-        if (Math.abs(lx - left) <= SW / 2) v = lx > left + SW / 2 - 2.5 ? q.k * f * 1.5 : q.k * f * 0.35;
-        else if (Math.abs(lx - right) <= SW / 2) v = lx < right - SW / 2 + 2.5 ? q.k * f * 1.5 : q.k * f * 0.35;
-        else if (railTop && dy < 0) v = q.k * f * (inPanel ? 1.4 : 0.8);
-        else if (inPanel) v = q.k * f * f * 0.95;
-        else {
-          // a panel beyond the stile: the stile's shadow across its near part, then a little of the light
-          const nearEdge = lx < left ? left - SW / 2 - lx : lx - right - SW / 2;
-          v = nearEdge < 0.25 * H ? 0 : q.k * f * f * 0.45;
+        // (integration, round 2: a falloff linear in height pinched the pool's contours into points at its ends, a lens
+        // with arrowhead tips either side of the lamp) one smooth bell, wider than tall, reaching less far over a
+        // lantern (its cap shades the wall above it) than under it; a lamp on a service lights only up the wall
+        const rx = (hanging ? 1.35 : 1.15) * H;
+        const ry = dy < 0 ? (hanging ? 0.95 : 1.7) * H : (hanging ? 1.15 : 0.3) * H;
+        const d2 = ((lx - q.x) / rx) ** 2 + (dy / ry) ** 2;
+        if (d2 >= 1) continue;
+        const f = (1 - d2) ** 1.5;
+        // (integration, round 2: the pool stopped dead at the stiles either side of its lamp, a lit rectangle with ruled
+        // sides, and the light let through beyond them came out as small arrowhead wedges) the plaster takes one
+        // falloff right across the stiles; each stile stands a few px proud of the plaster, so it throws a narrow shadow
+        // on the side away from the lamp, wider the further it stands from the lamp, its edge dithered over a few px;
+        // the stile's edge turned to the lamp catches it in a bright strip, its face a little
+        let v = q.k * f * 0.85, lit = 1;
+        for (const sx of st) {
+          const toS = sx - q.x, toP = lx - q.x;
+          if (Math.abs(lx - sx) <= SW / 2) {
+            const lampSide = toS > 0 ? lx < sx - SW / 2 + 2.5 : lx > sx + SW / 2 - 2.5;
+            v = q.k * f * (lampSide && Math.abs(toS) > SW ? 1.5 : 0.5);
+            continue;
+          }
+          if (Math.sign(toS) !== Math.sign(toP) || Math.abs(toP) < Math.abs(toS)) continue;
+          const beyond = Math.abs(toP) - Math.abs(toS) - SW / 2;
+          const sw = SW * 0.45 + Math.abs(toS) * 0.09;
+          const soft = clamp((beyond - sw) / 5, 0, 1);
+          if (soft < 1 && soft <= bayer4(X, Y)) lit = 0.3;
         }
+        v *= lit;
+        // a rail's top edge catches a lamp hung over it (a hanging lantern lights the rails below it)
+        if (railTop && dy > 0) v = Math.max(v, q.k * f * 1.4);
         lamp = Math.max(lamp, v);
       }
-      const lv = lamp + j * 0.6 + (bayer4(X, Y) - 0.5) * 0.04;
+      const lv = lamp + j * 0.6 + (bayer4(X, Y) - 0.5) * (lamp > 0.08 ? 0.12 : 0.04);
       const warmN = lv > 0.8 ? 4 : lv > 0.56 ? 3 : lv > 0.33 ? 2 : lv > 0.15 ? 1 : 0;
       // net of the light and the dusk, both on the wall's own colour (a pool brings the warm plaster back
       // and lifts it; the dusk sinks it): never a warm step laid over the dusk, which reads as a stain

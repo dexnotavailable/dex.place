@@ -191,17 +191,22 @@ export const shaft = definePainter<ShaftP>("hall.shaft", {
       // soft both sides: the density eases out over the outer third (no ruled edge)
       const across = clamp((edge - Math.abs(off)) / (edge * 0.55), 0, 1) ** 1.6;
       const down = clamp((t - 0.12) / 0.88, 0, 1);
-      let k = across * (0.05 + 0.22 * down * down);
+      // (integration, round 2: light motes scattered over the dark upper wall read as glitter, a column of static or a
+      // starry strip, never as light, at any density) over the far wall the shaft is only a thin haze of dust in the
+      // light: a few motes one step over the wall (dusk 2), the next step (dusk 1) in the core, thickest just under the
+      // well and thinning to almost nothing as it falls; the beam itself is carried by what it lights on the play plane
+      // (the tie beam, the rail, the posts, the bay wall below, the landing on the floor: hall-light.ts)
+      let k = across * (0.02 + 0.13 * down * down);
       for (const [ru, rw, end] of RAYS) {
         if (t <= end) continue;
         const e = Math.abs(off - ru - (vnoise(ly * 0.008, ru * 7, 43) - 0.5) * 0.14) / rw;
-        if (e < 1) k += 0.12 * (1 - e * e) * clamp((t - end) / 0.3, 0, 1) * across;
+        if (e < 1) k += 0.04 * (1 - e * e) * clamp((t - end) / 0.3, 0, 1) * across;
       }
-      k = clamp(k + breathe * 0.012, 0, 0.5);
+      k = clamp(k + breathe * 0.006, 0, 0.2);
       // a scatter, not a screen: each px its own chance, the motes clumped a little by a fine noise
       const r = hash(X + drift, Y - drift * 3, 47) * 0.7 + vnoise(X * 0.35, Y * 0.35, 49) * 0.3;
       if (r > k) return 0;
-      return r < k * 0.2 && k > 0.2 ? P.mauve[0]! : P.dusk[0]!;
+      return r < k * 0.35 && k > 0.1 ? P.dusk[1]! : P.dusk[2]!;
     });
   },
 });

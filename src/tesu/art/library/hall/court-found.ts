@@ -200,9 +200,16 @@ export function paintFoundation(c: PaintCtx, p: FoundationArgs): void {
       if (pn.kind === "relief") {
         // carved stone waves, the lacquer long gone: lit crests, shaded troughs
         if (inner < 2) return mt(M.stone, 0.48 * along, X, Y, 0.1, 1);
-        const wv = Math.sin(u * 0.09 + Math.sin(vy * 0.18 + pn.seed) * 1.6 + vy * 0.25);
-        const crest = wv > 0.55 ? 0.18 : wv < -0.6 ? -0.16 : 0;
-        return mt(M.stone, (0.66 + crest) * along + overhang + drip - (fbm(lx * 0.3, ly * 0.3, 331, 2) > 0.75 ? 0.08 : 0), X, Y, 0.05, 1);
+        // (integration, round 2: soft value stripes read as marble or wood grain, not carving) the field is cut in three
+        // levels (the proud crests, the body, the sunk troughs); each step's edge catches the sun on the side it comes
+        // from (up and to the left) and throws a dark undercut on the other, so the waves stand as relief in the light
+        const wave = (uu: number, yy: number): number => {
+          const w = Math.sin(uu * 0.09 + Math.sin(yy * 0.18 + pn.seed) * 1.6 + yy * 0.25);
+          return w > 0.45 ? 2 : w > -0.35 ? 1 : 0;
+        };
+        const lv0 = wave(u, vy), lvUp = wave(u - 1.2, vy - 1.6), lvUp2 = wave(u - 2.4, vy - 3.2);
+        const relief = lv0 > lvUp ? 0.22 : lv0 < lvUp ? -0.24 : lv0 < lvUp2 ? -0.1 : (lv0 - 1) * 0.06;
+        return mt(M.stone, (0.64 + relief) * along + overhang + drip - (fbm(lx * 0.3, ly * 0.3, 331, 2) > 0.75 ? 0.08 : 0), X, Y, 0.05, 1);
       }
       // the lacquered panels: a gold rim, then their motif; the lacquer faded and flaking where weather got in
       const fade = fbm(lx * 0.03, ly * 0.05, 333 + pn.seed, 3) + (pn.kind === "lost" ? 0.22 : 0);

@@ -181,8 +181,13 @@ export const endWall = definePainter<EndWallP>("hall.endwall", {
     colBase(c, ccx, colR, 0.9 * H, ck, cside, 13);
     lathe(c, ccx, -20 * H, 0, () => colR, (X, Y, u, _lx, ly) => {
       const hgt = -ly / H;
-      const n = cyl(ck, u, cside, 0.1) - clamp((hgt - 6) / 14, 0, 1) * 0.15;
+      let n = cyl(ck, u, cside, 0.1) - clamp((hgt - 6) / 14, 0, 1) * 0.15;
       if (hgt < 0.9) return 0;
+      // (integration, round 2: high up the column sank into the end's dark with the shell, so in hall-wide the back
+      // wall met the dark on a ruled line from the tie beam down) its edge turned to the room keeps the room's
+      // lamplight all the way up, so the room ends on a column's lit edge, not a cut
+      const toRoom = u * -s;
+      if (toRoom > 0.1) n = Math.max(n, (0.3 + ((toRoom - 0.1) / 0.9) ** 1.5 * 0.42) * (0.85 + clamp((hgt - 7) / 6, 0, 1) * 0.3));
       const band = (hgt > 1.0 && hgt < 1.2) || (hgt > 6.6 && hgt < 6.8);
       return band ? mt(M.gold, n * 0.9, X, Y, 0.2, 1) : mt(M.verm, n * 0.75, X, Y, 0.25, 1);
     });
