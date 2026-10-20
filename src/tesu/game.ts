@@ -525,7 +525,7 @@ export class TesuGame {
     this.awaitingPress = false;
     this.frozen = 0;
     this.sound.locked = false;
-    if (link?.ctx) this.sound.start(link.ctx);
+    if (link?.ctx) this.sound.start(link.ctx, (url) => link.decoded?.(url) ?? null);
     this.openingLink = link ?? null;
     // (way 4) from the jetty's window: the camera eases from that held frame into way 4's own keys
     const st = this.camera.state(), fromWindow = this.holdView.way === "bottom";

@@ -159,6 +159,18 @@ export const CUES: Record<string, Cue> = {
 /** The hit's weight comes as its volume (the controller's afterHits: light 0.6, heavier 1): heavier hits sound heavy. */
 const HEAVY_FROM = 0.9;
 
+/**
+ * When a cue's sound starts once its buffer is in (`now` on the context's clock), asked for `asked` (`booked`: on a
+ * beat of the music): on time, or late at once. A late effect is dropped past a moment (booked 0.06 s, else 0.25 s:
+ * a hit out of time is worse than none); a take (`exact`: the opening's speech, `len` s of file at `rate`) is never
+ * dropped while it still speaks: it starts `now - asked` into the file, so it stays on the music and its subtitles.
+ */
+export function startOf(asked: number, now: number, booked: boolean, take: { len: number; rate: number } | null): { t: number; offset: number } | null {
+  const late = now - asked;
+  if (take) return late * take.rate < take.len ? { t: Math.max(asked, now), offset: Math.max(0, late) * take.rate } : null;
+  return late > (booked ? 0.06 : 0.25) ? null : { t: Math.max(asked, now), offset: 0 };
+}
+
 // --- her voice --------------------------------------------------------------------------------------------------
 
 /**
@@ -322,6 +334,8 @@ export class Sound {
   readonly played = new Map<string, number>();
   /** Held silent (the world waits for the opening's press): start() does nothing until it is let go. */
   locked = false;
+  /** Buffers the page decoded before the press (the opening's speech: link.decoded), by URL. */
+  private given: ((url: string) => Promise<AudioBuffer | null> | null) | null = null;
 
   constructor() {
     const go = (): void => this.start();
@@ -331,10 +345,11 @@ export class Sound {
   /**
    * The first click, key or tap: the context starts and everything swells in. In the page
    * column the press happens in the page around the world window (PLAY, "continue"), so the
-   * page hands its own running context over (`ctx`).
+   * page hands its own running context over (`ctx`), and the buffers it already decoded on it (`decoded`).
    */
-  start(given?: AudioContext): void {
+  start(given?: AudioContext, decoded?: (url: string) => Promise<AudioBuffer | null> | null): void {
     if (this.locked) return;
+    if (decoded) this.given = decoded;
     if (this.ctx) {
       if (this.ctx.state === "suspended") void this.ctx.resume();
       return;
@@ -403,8 +418,9 @@ export class Sound {
   }
 
   private load(url: string): Promise<AudioBuffer | null> {
-    let p = this.buffers.get(url);
-    if (!p) {
+    let p = this.buffers.get(url) ?? this.given?.(url) ?? undefined;
+    if (p) this.buffers.set(url, p);
+    else {
       const ctx = this.ctx;
       p = !ctx ? Promise.resolve(null) : fetch(url)
         .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status}`))))
@@ -433,8 +449,9 @@ export class Sound {
     // the layers (dry A / B: the main sound alone)
     if (this.mix === "full") for (const w of cue.with ?? []) this.sfx(w, volume, at);
     void this.load(this.urlOf(file)).then((buf) => {
-      // late by more than a moment: skip it rather than play it out of time
-      if (!buf || !this.sfxBus || ctx.currentTime - asked > (at === null ? 0.25 : 0.06)) return;
+      // late by more than a moment: skip it rather than play it out of time (a take: that far into it, startOf)
+      const go = buf && startOf(asked, ctx.currentTime, at !== null, cue.exact ? { len: buf.duration, rate: cue.rate } : null);
+      if (!buf || !go || !this.sfxBus) return;
       const s = ctx.createBufferSource();
       s.buffer = buf;
       s.playbackRate.value = cue.exact ? cue.rate : cue.rate * (0.96 + Math.random() * 0.08);
@@ -442,8 +459,8 @@ export class Sound {
       g.gain.value = cue.vol * volume;
       s.connect(g);
       g.connect(this.sfxBus);
-      const t = Math.max(asked, ctx.currentTime);
-      s.start(t);
+      const t = go.t;
+      s.start(t, go.offset);
       if (cue.duck && this.mix === "full") {
         const len = Math.min(1.2, buf.duration * 0.5);
         this.musicDuck?.duck(cue.duck, t, t + len, 0.02, 1.2);
