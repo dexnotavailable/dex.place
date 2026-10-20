@@ -116,7 +116,9 @@ test("op.bank (round 3): a mass standing in the water meets it with a bright lin
     }
     // (round 7, the water lane: the critic's "white dashed waterline under every grass rise": a rise's
     // mud carries none now and the grass hanging to the water is in shade, a glint under the odd tuft)
-    assert.ok(bright >= m.w * (m.kind === "rise" ? 0.02 : 0.15), `${m.kind}: no bright waterline (${bright} px)`);
+    // (kagami9 round 1, the critic's W2-4: "a dashed white waterline" under the limestone: its contact is
+    // in shade too, a rare glint only)
+    assert.ok(bright >= m.w * (m.kind === "rise" || m.kind === "outcrop" ? 0.02 : 0.15), `${m.kind}: no bright waterline (${bright} px)`);
     assert.ok(under >= m.w * 2, `${m.kind}: no reflection under its waterline (${under} px)`);
     assert.ok(above > 0, `${m.kind}: nothing above the water`);
     // the reflection breaks up and fades: well under its own height, most of it is open water
