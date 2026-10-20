@@ -1,8 +1,8 @@
 // The Hall of Works' play-plane structure: the raised timber walkway the whole floor runs
 // along (its lacquered edge is the walk line) over the darker stone floor nearer us; the
 // massive end walls with the door walls built into them; the Long Gallery's floor beam on its
-// posts and brackets, with its vermilion balustrade (front plane, she walks behind it); the
-// stair down to the nook with its rail (front plane). Everything takes the hall's light from
+// posts and brackets, with its vermilion balustrade (front plane, she walks behind it). (The
+// stair down to the nook is stair.ts.) Everything takes the hall's light from
 // lights.ts. (The central pillar that carried the rolled map is gone: the map of Tesu stands
 // on its own stand beside the gate now, services.ts.)
 
@@ -10,6 +10,7 @@ import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
 import { M, SCREEN, LitField, clamp, colBase, colLight, cyl, face, fbm, grain, hash, keep, lathe, lum, mt, poly, rect, tn, vnoise, type At } from "./kit.ts";
+import { cloudScroll, plumCrest } from "./signs.ts";
 
 const H = 96;
 
@@ -232,15 +233,21 @@ function doorway(c: PaintCtx, p: EndWallP, dx0: number, dx1: number, sr: number,
     if (inPlaque) {
       const e = Math.min(pw / 2 - Math.abs(lx - cx), (Math.min(v - 0.26, 0.86 - v)) * (ly1 - ly0));
       if (e < 3) return mt(M.gold, lum(l) * 0.95, X, Y, 0.1, 1);
-      // three gold characters as strokes (no readable text)
-      const k = (lx - (cx - pw / 2)) / pw * 3;
-      const ci = Math.floor(k), cu = k - ci, cv = (v - 0.26) / 0.6;
-      const st = Math.abs(cv - 0.5) < 0.08 || Math.abs(cu - 0.5) < 0.07 || (hash(ci, 2, 5) > 0.5 && Math.abs(cu + cv - 1) < 0.08);
-      if (st && cu > 0.15 && cu < 0.85 && cv > 0.15 && cv < 0.85) return mt(M.gold, lum(l) * 1.1, X, Y, 0.05, 1);
+      // (round 2, W1-2: no pseudo-script) the ground of the plaque; its mark is painted over it below
       return mt(M.lacq, lum(l) * 0.4, X, Y, 0.3, 1);
     }
     return mt(M.verm, lum(l) * 0.7 + (Math.sin(lx * 0.4) > 0.7 ? 0.1 : 0), X, Y, 0.3, 1);
   });
+  // the plaque's mark, wordless: the hall's plum-blossom crest in a ring between two gold cloud scrolls
+  {
+    const pw = (dx1 - dx0) * 0.42, ph = (ly1 - ly0) * 0.6, pcy = Math.round(ly0 + (ly1 - ly0) * 0.56);
+    const gold = (k: number) => (X: number, Y: number, lx: number, ly: number) => mt(M.gold, lum(lf.get(lx, ly)) * k, X, Y, 0.05, 1);
+    const r = Math.max(5, Math.round(ph / 2 - 3));
+    plumCrest(c, Math.round(cx), pcy, r, gold(1.1), (X, Y) => mt(M.lacq, 0.25, X, Y, 0.1, 1), gold(1.3));
+    const sr = Math.max(2.5, Math.min(4, ph * 0.18)), tail = Math.max(4, pw / 2 - r - sr * 2 - 6);
+    cloudScroll(c, Math.round(cx - pw / 2 + 5 + sr), pcy - 1, sr, 1, tail, gold(0.95));
+    cloudScroll(c, Math.round(cx + pw / 2 - 5 - sr), pcy - 1, sr, -1, tail, gold(0.95));
+  }
   // the doors themselves: studded leaves (vermilion), gold lion-head rings, daylight in the seam
   const g = p.great ? 1 : 0.85;
   // one light for the doors (their mean), a little brighter low where the daylight leaks in:
@@ -361,7 +368,7 @@ export const gallery = definePainter<GalleryP>("hall.gallery", {
     const lf = new LitField(HALL_LIGHT, p.at, 12);
     const D = p.depth;
     // posts first (they stand behind the beam's brackets)
-    for (const px of p.posts) post(c, px, p.drop, D, lf);
+    for (const px of p.posts) post(c, px, p.drop, D, lf, p.w);
     // the beam: a lit nosing, the carved fascia, a dark soffit edge under it
     rect(c, 0, 0, p.w, D, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
@@ -399,7 +406,7 @@ export const gallery = definePainter<GalleryP>("hall.gallery", {
   },
 });
 
-function post(c: PaintCtx, px: number, drop: number, D: number, lf: LitField): void {
+function post(c: PaintCtx, px: number, drop: number, D: number, lf: LitField, beamEnd?: number): void {
   const r = 0.2 * H;
   const { k: pk, side } = colLight(lf, px, D, drop);
   colBaseAt(c, px, drop, r, 0.55 * H, pk, side, 7);
@@ -421,6 +428,9 @@ function post(c: PaintCtx, px: number, drop: number, D: number, lf: LitField): v
     return mt(M.gold, cyl(l.k, u, side) * (flute ? 0.65 : 0.9) + (v < 0.15 ? 0.1 : 0), X, Y, 0.2, 1);
   });
   for (const s2 of [-1, 1]) {
+    // (hall loop round 2, W1-1) no corbel reaching out from a post past the beam's end (the dark flap at the
+    // stair's head): it carries nothing there
+    if (beamEnd !== undefined && s2 > 0 && px + capW + 0.46 * H > beamEnd) continue;
     const len = 0.46 * H, dep = 0.3 * H;
     const pts: number[] = [];
     for (let i = 0; i <= 14; i++) {
@@ -493,114 +503,7 @@ export const balustrade = definePainter<RailP>("hall.balustrade", {
   },
 });
 
-// ---------------------------------------------------------------------------
-// The stair: stringer, treads and underside (play plane); the rail (front plane)
-// ---------------------------------------------------------------------------
-export interface StairP {
-  dx: number;
-  dy: number;
-  /** Depth of the stringer below the treads (px). */
-  depth: number;
-  rail?: boolean;
-  at?: At;
-}
-
-export const stair = definePainter<StairP>("hall.stair", {
-  bounds(p) {
-    return [-12, -(p.rail ? 80 : 14), p.dx + 12, p.dy + p.depth + 4];
-  },
-  paint(c, p) {
-    const lf = new LitField(HALL_LIGHT, p.at, 12);
-    const n = Math.max(4, Math.round(p.dy / 21));
-    const run = p.dx / n, rise = p.dy / n;
-    const slope = p.dy / p.dx;
-    if (p.rail) {
-      // the near rail: a vermilion handrail on posts, open balusters, gold knobs at the ends
-      const top = 66;
-      rect(c, -8, -top - 12, p.dx + 8, p.dy, (X, Y, lx, ly) => {
-        const base = lx * slope; // the treads' line here
-        const above = base - ly;
-        if (above < 0 || above > top + 6) return 0;
-        const l = lf.get(lx, ly);
-        const k = ((lx % (run * 2)) + run * 2) % (run * 2);
-        if (above > top - 7) return mt(M.verm, lum(l, 0, above > top - 2 ? -0.8 : 0.2) * 0.95, X, Y, 0.15, 1);
-        if (above > top - 24 && above < top - 20) return mt(M.verm, lum(l) * 0.7, X, Y, 0.3, 1);
-        if (k < 3.5) return mt(M.verm, lum(l, -0.4, 0) * 0.75, X, Y, 0.25, 1);
-        return 0;
-      });
-      for (const [ex, ey] of [[0, 0], [p.dx, p.dy]] as const) {
-        lathe(c, ex, ey - top - 14, ey, (ly) => (ly < ey - top - 4 ? 4.5 : 3.2), (X, Y, u, lx, ly) => (ly < ey - top - 4 ? mt(M.gold, lum(lf.get(lx, ly), u, -0.3) * 1.05, X, Y, 0.05, 1) : mt(M.verm, lum(lf.get(lx, ly), u, 0) * 0.85, X, Y, 0.15, 1)));
-      }
-      return;
-    }
-    // treads: each a lit nosing over a darker riser
-    for (let i = 0; i < n; i++) {
-      const x0 = run * i, y0 = rise * (i + 1);
-      rect(c, x0 - 1, y0 - rise, x0 + run + 1, y0 + 2, (X, Y, lx, ly) => {
-        const l = lf.get(lx, ly);
-        if (ly > y0 - 3 && ly < y0 + 2) return mt(M.wood, lum(l, 0, -0.9) * 1.1, X, Y, 0.05, 1);
-        if (lx < x0 + 4 && ly > y0 - rise) return mt(M.wood, lum(l, -0.5, 0) * 0.6, X, Y, 0.25, 1);
-        return 0;
-      });
-    }
-    // (hall loop round 1) the stair as a built flight, not a hatched wedge. Under the stringer the
-    // flight's carriage shows its stepped underside (a sawtooth: each step's underside a dark
-    // plank, its riser's underside lit from the nook below); behind and under it the nook's
-    // panelled wall takes the flight's cast shadow, sawtooth-edged, deepening toward the top
-    // where the stair closes over; low down the nook's lamp lights the wall warm
-    const D = p.depth;
-    const STR = Math.round(D * 0.55); // the stringer's depth below the treads' line
-    const SAW = rise * 0.95; // how far the stepped underside hangs below the stringer
-    const sawAt = (lx: number): number => {
-      const k = ((lx % run) + run) % run / run;
-      return STR + 4 + SAW * (1 - k);
-    };
-    rect(c, 0, STR, p.dx, p.dy, (X, Y, lx, ly) => {
-      const base = lx * slope;
-      const t = ly - base;
-      const fromFloor = p.dy - ly;
-      const l = lf.get(lx, ly);
-      const saw = sawAt(lx);
-      if (t < STR + 2) return 0;
-      // the carriage's stepped underside: dark tread undersides, lit riser undersides
-      if (t < saw) {
-        const k = ((lx % run) + run) % run;
-        const riserFace = k < 3;
-        const edge = saw - t < 2;
-        if (riserFace) return mt(M.wood, lum(l, -0.6, 0.8) * 0.85, X, Y, 0.2, 1);
-        return mt(M.lacq, lum(l) * (edge ? 0.55 : 0.32) + grain(lx, ly, 27, false) * 0.05, X, Y, 0.2, 1);
-      }
-      if (ly > p.dy) return 0;
-      // the nook's wall: boards in frames, a rail, a skirt
-      const board = ((lx % 22) + 22) % 22 < 1.3;
-      const rail = Math.abs(fromFloor - 0.92 * H) < 3;
-      const skirt = fromFloor < 0.32 * H;
-      // the flight's shadow on it: below the sawtooth, offset down and to the right, darkest high up
-      const sh = t < sawAt(lx - 0.22 * H) + 0.45 * H ? 1 : 0;
-      const high = clamp(1 - fromFloor / Math.max(1, p.dy), 0, 1);
-      const shadow = sh * (0.16 + high * 0.14) + high * 0.12;
-      let v: number;
-      if (rail) v = lum(l, 0, fromFloor > 0.92 * H ? 0.6 : -0.8) * 0.9;
-      else if (skirt) v = lum(l) * (fromFloor > 0.29 * H ? 1.1 : 0.6);
-      else v = lum(l) * (board ? 0.45 : 0.7) + grain(lx, ly, 27) * 0.06;
-      return mt(rail ? M.wood : skirt ? M.lacq : M.wood, v - shadow, X, Y, rail ? 0.2 : skirt ? 0.1 : 0.35, 1);
-    });
-    // the treads' line and the stringer: a lit top lip, the lacquered face with a gold bead, its
-    // thickness showing as a darker bottom face
-    rect(c, -2, 0, p.dx + 2, p.dy + D, (X, Y, lx, ly) => {
-      const base = lx * slope; // the treads' line
-      const t = ly - base;
-      const stepTop = rise * (Math.floor(lx / run) + 1);
-      if (ly < stepTop + 2 && t < 6) return 0; // leave the treads
-      if (t < 2 || t > STR + 2) return 0;
-      const l = lf.get(lx, ly);
-      if (t < 6) return mt(M.verm, lum(l, 0, -0.7) * 1.0, X, Y, 0.2, 1);
-      if (Math.abs(t - 9) < 1) return mt(M.gold, lum(l) * 0.85, X, Y, 0.2, 1);
-      if (t > STR - 2) return mt(M.verm, lum(l, 0, 0.8) * 0.4, X, Y, 0.35, 1);
-      return mt(M.verm, lum(l) * 0.62 + grain(lx - ly / slope, ly, 21, false) * 0.05, X, Y, 0.25, 1);
-    });
-  },
-});
+// (hall loop round 2: the stair is its own module now, stair.ts: two flights and a landing on posts)
 
 /** A column base standing on a floor `fy` px below the local origin. */
 function colBaseAt(c: PaintCtx, cx: number, fy: number, r: number, top: number, k: number, side: number, seed: number): void {

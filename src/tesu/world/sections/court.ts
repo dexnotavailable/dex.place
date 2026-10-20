@@ -54,7 +54,8 @@ export function court(b: WorldBuilder): void {
 
   // the gate back into the hall, the board, Bao's gong tower
   b.usable({ id: "court-doors", x0: COURT_X0 + h(0.1), y0: Y - h(3.1), x1: COURT_X0 + h(1.4), y1: Y, label: "the hall", action: { kind: "door", to: "hall-court-side" } });
-  b.usable({ id: "prize-board", x0: BOARD_X - h(1.2), y0: Y - h(2.4), x1: BOARD_X + h(1.2), y1: Y, label: "the Prize Board", action: { kind: "panel", panel: "board" } });
+  // (round 2) its prompt shows between the two prize cards, under the board's lit header (not over the cup)
+  b.usable({ id: "prize-board", x0: BOARD_X - h(1.2), y0: Y - h(2.0), x1: BOARD_X + h(1.2), y1: Y, label: "the Prize Board", action: { kind: "panel", panel: "board" } });
   b.sprite({ id: "bao", plane: "play", kind: "bao", x: BAO_X, y: Y, p: {}, frames: 5, frame: 0, flip: true });
 
   // things that break by the tip: two jars, and a lantern post with its paper lantern hanging
