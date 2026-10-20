@@ -425,7 +425,7 @@ export class UltDirector {
     const FX = ULT.fx, has = (id: string): boolean => !!this.fx?.has(id);
     const letter = has(FX.letter);
     this.real = {
-      callFire: has(FX.callFire), letter, letterBreak: letter && has(FX.letterBreak), cuts: letter && cutIds(FX.cuts).every(has),
+      callFire: has(FX.callFire), letter, letterBreak: letter && ["", "_tr", "_ml", "_mr", "_bl", "_br"].every((k) => has(FX.letterBreak + k)), cuts: letter && cutIds(FX.cuts).every(has),
       dive: has(FX.dive), nuke: has(FX.nuke), clear: has(FX.clear),
     };
     this.cutsBy = new Map();
