@@ -39,7 +39,8 @@ export const HALL_LANTERNS: HallLantern[] = [
   // the ground floor: one lantern over each service, low enough to make its pool
   { o: 5.2, y: 3.55, kind: "round", plane: "play", r: 0.85, k: 0.42, reach: 2.4 },
   { o: 8.4, y: 3.4, kind: "palace", plane: "play", r: 0.85, k: 0.45, reach: 2.2 },
-  { o: 13.2, y: 3.15, kind: "palace", plane: "play", r: 0.9, k: 0.5, reach: 2.3 },
+  // (round 2, W1-5) the desk's lantern hangs low, so its pool lands on the counter and the floor in front
+  { o: 12.55, y: 2.35, kind: "palace", plane: "play", r: 0.9, k: 0.6, reach: 2.2 },
   { o: 22.0, y: 3.1, kind: "round", plane: "play", r: 0.85, k: 0.48, reach: 2.2 },
   // upstairs, between the art's groups on the Long Gallery
   { o: 4.95, y: 9.9, kind: "tall", plane: "play", r: 0.9, k: 0.4, reach: 2.6 },
@@ -76,22 +77,25 @@ export const SERVICE_LAMPS: PointLight[] = [
   { kind: "point", x: X(5.2), y: FY - h(1.9), r: h(1.9), k: 0.45 },
   // the sponsors' board: the lantern hanging over its head
   { kind: "point", x: X(8.4), y: FY - h(2.6), r: h(1.9), k: 0.75 },
-  // the offering box: the candle lantern on its lid
-  { kind: "point", x: X(11.1), y: FY - h(0.7), r: h(1.35), k: 0.85 },
+  // the offering box: its own lantern on a bracket off the west post of its frame (round 2)
+  { kind: "point", x: X(10.15), y: FY - h(1.05), r: h(1.5), k: 0.9 },
   // the register desk: its desk lamp at the visitor's end
   { kind: "point", x: X(12.9), y: FY - h(0.8), r: h(1.7), k: 0.95 },
   // the map's lamp
   { kind: "point", x: X(22.0), y: FY - h(1.55), r: h(1.7), k: 0.7 },
   // the nook: the standing lamp between the shelf and the bench
-  { kind: "point", x: X(26.25), y: FY - h(1.2), r: h(2.1), k: 1.0 },
+  { kind: "point", x: X(26.4), y: FY - h(1.2), r: h(2.1), k: 1.0 },
   // the Crane Desk's candle
-  { kind: "point", x: X(31.5), y: FY - h(0.8), r: h(1.4), k: 0.6 },
+  { kind: "point", x: X(32.2), y: FY - h(0.8), r: h(1.4), k: 0.6 },
   // upstairs: a picture lamp over each group of the art, and one at the Request Board
   { kind: "point", x: X(7.1), y: GY - h(2.35), r: h(2.1), k: 0.6 },
   { kind: "point", x: X(12.4), y: GY - h(2.7), r: h(2.4), k: 0.75 },
   { kind: "point", x: X(17.8), y: GY - h(2.9), r: h(2.9), k: 0.62 },
   { kind: "point", x: X(21.35), y: GY - h(2.1), r: h(1.6), k: 0.5 },
 ];
+
+/** The stone lantern on the stair landing's east newel (round 2): it lights the landing and both flights. */
+export const STAIR_LANTERN: PointLight = { kind: "point", x: X(27.27), y: FY - h(4.72), r: h(2.0), k: 0.55 };
 
 /** The hall's light: dark shell, the gate's daylight the key, the shaft beside it, a pool per service. */
 export const HALL_LIGHT: LightEnv = {
@@ -103,6 +107,7 @@ export const HALL_LIGHT: LightEnv = {
     ...lanternLights(HALL_LANTERNS, 4.2),
     ...lanternLights(BACK_LANTERNS, 3.0),
     ...SERVICE_LAMPS,
+    STAIR_LANTERN,
     // cool daylight round the front doors, low
     { kind: "point", x: X(1.55), y: FY - h(1.2), r: h(2.6), k: 0.38 },
   ],

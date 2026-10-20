@@ -11,6 +11,7 @@ import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { COURT_LIGHT } from "./lights.ts";
 import { tileRoof } from "./furniture.ts";
+import { cloudScroll, plumCrest, rosette, text, textWidth, trophy } from "./signs.ts";
 import { M, LitField, bevel, clamp, colBase, cyl, face, fbm, grain, hash, keep, lathe, mt, poly, rect, tn, vnoise, type Ramp } from "./kit.ts";
 
 const H = 96;
@@ -322,9 +323,16 @@ export const gatehouse = definePainter<GateP>("court.gatehouse", {
     rect(c, 0.3 * W, -D - 0.56 * H, 0.7 * W, -D - 0.29 * H, (X, Y, lx, ly) => {
       const u = (lx - 0.3 * W) / (0.4 * W), v = (ly + D + 0.56 * H) / (0.27 * H);
       if (u < 0.05 || u > 0.95 || v < 0.1 || v > 0.9) return mt(M.gold, face(0.9, SIDE) * 0.95, X, Y, 0.05, 1);
-      const st = Math.abs(((u * 3) % 1) - 0.5) < 0.09 && v > 0.25 && v < 0.75;
-      return st ? mt(M.gold, 0.9, X, Y, 0.05, 1) : mt(lacq, 0.4, X, Y, 0.1, 1);
+      return mt(lacq, 0.4, X, Y, 0.1, 1);
     });
+    // (round 2, W1-2: no pseudo-script) the plaque's mark: the hall's plum-blossom crest between two cloud scrolls
+    {
+      const pcx = Math.round(0.5 * W), pcy = Math.round(-D - 0.425 * H), r = Math.max(6, Math.round(0.27 * H * 0.8 / 2 - 1));
+      plumCrest(c, pcx, pcy, r, (X, Y) => mt(M.gold, 0.92, X, Y, 0.05, 1), (X, Y) => mt(lacq, 0.25, X, Y, 0.1, 1), (X, Y) => mt(M.gold, 1.1, X, Y, 0.05, 1));
+      const tail = Math.max(4, 0.2 * W - r - 12);
+      cloudScroll(c, Math.round(0.3 * W + 7), pcy - 1, 3, 1, tail, (X, Y) => mt(M.gold, 0.85, X, Y, 0.05, 1));
+      cloudScroll(c, Math.round(0.7 * W - 7), pcy - 1, 3, -1, tail, (X, Y) => mt(M.gold, 0.85, X, Y, 0.05, 1));
+    }
     tileRoof(c, new LitField(COURT_LIGHT, undefined, 16), SIDE, -0.45 * W, 1.45 * W, -D - 0.6 * H, 0.75 * H, 3);
   },
 });
@@ -402,31 +410,36 @@ function lionThread(u: number, v: number, lx: number, ly: number, lit: number, X
 
 export const board = definePainter<BoardP>("court.board", {
   bounds() {
-    return [-1.35 * H, -4.7 * H, 1.35 * H, 4];
+    return [-1.5 * H, -4.4 * H, 1.5 * H, 4];
   },
   paint(c, p) {
     const plaques = p.plaques.length ? p.plaques : ["dexclient", "dexcode"];
-    const bw = 2.2 * H, bh = 1.45 * H, by1 = -0.72 * H, by0 = by1 - bh;
+    // (round 2, W1-8: the board is the court's first read) a bigger board under a lit header with a gold prize
+    // cup, two large framed prize cards each pinned with an award rosette and named in pixel letters; the
+    // release banner over it a step smaller and darker, so it reads second
+    const bw = 2.4 * H, bh = 1.62 * H, by1 = -0.62 * H, by0 = by1 - bh;
+    const hh = 0.36 * H, hx0 = -bw / 2 - 0.12 * H, hx1 = bw / 2 + 0.12 * H, hy0 = by0 - hh, hy1 = by0 + 3;
     // the banner's poles (behind) and the banner: red silk, gold border, the champion's face
-    // in a ray burst, a swallowtail hem, a "new" ribbon across its corner
-    for (const px of [-1.12 * H, 1.06 * H]) {
-      lathe(c, px, -4.6 * H, 0, () => 4, (X, Y, u) => mt(lacq, cyl(0.95, u, SIDE, 0.2), X, Y, 0.0, 1));
-      lathe(c, px, -4.75 * H, -4.55 * H, () => 6, (X, Y, u) => mt(M.gold, cyl(0.95, u, SIDE), X, Y, 0.0, 1));
+    const poleTop = -4.12 * H;
+    for (const px of [-0.98 * H, 0.92 * H]) {
+      lathe(c, px, poleTop, 0, () => 4, (X, Y, u) => mt(lacq, cyl(0.95, u, SIDE, 0.2), X, Y, 0.0, 1));
+      lathe(c, px, poleTop - 0.15 * H, poleTop + 0.05 * H, () => 6, (X, Y, u) => mt(M.gold, cyl(0.95, u, SIDE), X, Y, 0.0, 1));
     }
-    woodBox(c, -1.2 * H, -4.55 * H, 1.2 * H, -4.45 * H, lacq, 2, 0.05, 1, 2);
-    const bx0 = -0.95 * H, bx1 = 0.95 * H, ty0 = -4.45 * H, ty1 = -2.55 * H;
+    woodBox(c, -1.05 * H, poleTop + 0.05 * H, 1.05 * H, poleTop + 0.15 * H, lacq, 2, 0.05, 1, 2);
+    const bx0 = -0.76 * H, bx1 = 0.76 * H, ty0 = poleTop + 0.15 * H, ty1 = hy0 - 0.5 * H;
     // (hall loop round 1) the release banner as cloth: heavy red silk hanging from the bar in soft
     // folds that open toward a weighted hem, the morning wind pushing its lower half to the right,
     // a twill weave, a gold fringe; the champion's face embroidered in gold thread on it
     const bwid = bx1 - bx0, drop = ty1 - ty0;
-    const wind = (v: number): number => 5 * v ** 1.5 + 1.2 * Math.sin(v * 5);
+    const LION_S = 2.8 * (drop / (1.9 * H)), LION_CY = ty0 + drop * 0.45;
+    const wind = (v: number): number => 4 * v ** 1.5 + 1.0 * Math.sin(v * 5);
     const foldAt = (u: number, v: number): [number, number] => {
       // the surface's height across (folds) and its slope (which way it faces)
-      const A = 2.2 + 1.6 * Math.sin(v * 2.4);
-      const ph = u * Math.PI * 2 * 3.2 + Math.sin(u * 7.1) * 0.9 + v * 0.8;
-      return [A * Math.sin(ph), A * Math.cos(ph) * (Math.PI * 2 * 3.2) / bwid];
+      const A = 2.0 + 1.4 * Math.sin(v * 2.4);
+      const ph = u * Math.PI * 2 * 2.6 + Math.sin(u * 7.1) * 0.9 + v * 0.8;
+      return [A * Math.sin(ph), A * Math.cos(ph) * (Math.PI * 2 * 2.6) / bwid];
     };
-    rect(c, bx0 - 4, ty0, bx1 + 12, ty1 + 0.34 * H, (X, Y, lx, ly) => {
+    rect(c, bx0 - 4, ty0, bx1 + 12, ty1 + 0.3 * H, (X, Y, lx, ly) => {
       const v = (ly - ty0) / drop;
       if (v < 0 || v > 1.16) return 0;
       const ex = lx - wind(v);
@@ -439,16 +452,17 @@ export const board = definePainter<BoardP>("court.board", {
         const th = Math.floor(ex / 2.2);
         const len = 0.07 + 0.08 * hash(th, 3, 17);
         if (v - 1.0 > len || ((ex % 2.2) + 2.2) % 2.2 > 1.3) return 0;
-        return mt(M.gold, 0.72 - (v - 1) * 2.5 - slope * 0.6, X, Y, 0.1, 1);
+        return mt(M.gold, 0.62 - (v - 1) * 2.5 - slope * 0.6, X, Y, 0.15, 1);
       }
-      // light: the side facing the sun (slope < 0 faces left) brighter, the far half in shade
-      const lit = face(0.95, SIDE) * (0.92 - u * 0.16) - slope * 0.75 - (v > 0.03 && v < 0.07 ? 0.12 : 0);
+      // light: the side facing the sun (slope < 0 faces left) brighter, the far half in shade; (round 2) the
+      // whole banner a step darker than before, so the board under it is the brightest thing here
+      const lit = face(0.95, SIDE) * (0.82 - u * 0.16) - slope * 0.7 - (v > 0.03 && v < 0.07 ? 0.12 : 0);
       const weave = (X + Y) % 3 === 0 ? -0.035 : 0;
       // the gold border and the weighted hem band (a heavier double hem), following the folds
-      if (u < 0.05 || u > 0.95 || v < 0.03 || (v > 0.9 && v < 0.97)) return mt(M.gold, lit * 1.02 + weave, X, Y, 0.05, 1);
-      if (v >= 0.97) return mt(M.verm, lit * 0.7, X, Y, 0.2, 1);
-      if (u < 0.08 || u > 0.92 || (v > 0.86 && v <= 0.9)) return mt(M.gold, lit * 0.62, X, Y, 0.2, 1);
-      const cx = (ex - 0) / (2.8 * 15), cy = (ly - (-3.6 * H)) / (2.8 * 13);
+      if (u < 0.05 || u > 0.95 || v < 0.03 || (v > 0.9 && v < 0.97)) return mt(M.gold, lit * 0.9 + weave, X, Y, 0.15, 1);
+      if (v >= 0.97) return mt(M.verm, lit * 0.6, X, Y, 0.35, 1);
+      if (u < 0.08 || u > 0.92 || (v > 0.86 && v <= 0.9)) return mt(M.gold, lit * 0.55, X, Y, 0.25, 1);
+      const cx = (ex - 0) / (LION_S * 15), cy = (ly - LION_CY) / (LION_S * 13);
       if (plaques[0] === "dexclient") {
         const st = lionThread(cx, cy, lx, ly, lit, X, Y);
         if (st) return st;
@@ -456,25 +470,26 @@ export const board = definePainter<BoardP>("court.board", {
       // the silk: a damask of faint rays round the emblem, woven in
       const ang = Math.atan2(v - 0.42, (u - 0.5) * 1.1);
       const ray = Math.floor(((ang + Math.PI) / (Math.PI * 2)) * 18) % 2 === 0;
-      return mt(M.verm, lit * (ray ? 0.9 : 0.84) + weave, X, Y, 0.15, 1);
+      return mt(M.verm, lit * (ray ? 0.88 : 0.82) + weave, X, Y, 0.35, 1);
     });
-    if (plaques[0] !== "dexclient") emblem(c, plaques[0]!, 0, -3.6 * H, 2.8);
-    // the board's legs, its frame, the plaques
-    for (const lx0 of [-1.0 * H, 0.9 * H]) woodBox(c, lx0, by0 + 0.2 * H, lx0 + 0.11 * H, 0, lacq, 3, 0.05, 1, 2);
-    rect(c, -1.0 * H, -0.28 * H, 1.01 * H, -0.24 * H, (X, Y) => mt(lacq, 0.6, X, Y, 0.1, 1));
+    if (plaques[0] !== "dexclient") emblem(c, plaques[0]!, 0, LION_CY, LION_S);
+    // the board's legs, its frame
+    for (const lx0 of [-1.1 * H, 1.0 * H]) woodBox(c, lx0, by0 + 0.2 * H, lx0 + 0.11 * H, 0, lacq, 3, 0.05, 1, 2);
+    rect(c, -1.1 * H, -0.28 * H, 1.11 * H, -0.24 * H, (X, Y) => mt(lacq, 0.6, X, Y, 0.1, 1));
     woodBox(c, -bw / 2, by0, bw / 2, by1, lacq, 5, 0.0, 1, 4);
     rect(c, -bw / 2 + 5, by0 + 5, bw / 2 - 5, by1 - 5, (X, Y, lx, ly) => {
       const e = Math.min(lx + bw / 2 - 5, bw / 2 - 5 - lx, ly - by0 - 5, by1 - 5 - ly);
       return e < 2 ? mt(M.gold, face(0.95, SIDE) * 0.9, X, Y, 0.05, 1) : 0;
     });
-    for (const [fx, fy, sx, sy] of [[-bw / 2, by0, 1, 1], [bw / 2, by0, -1, 1], [-bw / 2, by1, 1, -1], [bw / 2, by1, -1, -1]] as const) fitting(c, fx, fy, sx, sy, 9);
-    // the downloads (round 1, L14: they must read as THE downloads): a lit card per product, cream
-    // paper in a double gold frame, its pixel icon large, a red nameplate with its name in gold strokes
+    for (const [fx, fy, sx, sy] of [[-bw / 2, by1, 1, -1], [bw / 2, by1, -1, -1]] as const) fitting(c, fx, fy, sx, sy, 9);
+    // the downloads (they must read as THE downloads, as prizes): a large lit card per product, cream paper in a
+    // double gold frame, its icon large, an award rosette pinned at its head, its name in pixel letters on a red
+    // nameplate
     plaques.forEach((id, i) => {
       const n = plaques.length;
       const cx = -bw / 2 + ((i + 0.5) / n) * bw;
-      const pw = (bw / n) * 0.84, ph = bh * 0.86;
-      const py0 = by0 + (bh - ph) / 2;
+      const pw = (bw / n) * 0.86, ph = bh * 0.84;
+      const py0 = by0 + (bh - ph) / 2 + 3;
       rect(c, cx - pw / 2, py0, cx + pw / 2, py0 + ph, (X, Y, lx, ly) => {
         const u = (lx - cx + pw / 2) / pw, v = (ly - py0) / ph;
         const e = Math.min(u, 1 - u) * pw;
@@ -482,23 +497,53 @@ export const board = definePainter<BoardP>("court.board", {
         const d = Math.min(e, f);
         if (d < 2) return mt(M.gold, face(0.95, SIDE, u < 0.5 ? -0.5 : 0.5, v < 0.5 ? -0.5 : 0.5), X, Y, 0.0, 1);
         if (d < 3) return mt(lacq, 0.5, X, Y, 0.1, 1);
-        if (d < 5) return mt(M.gold, 0.75, X, Y, 0.1, 1);
+        if (d < 5) return mt(M.gold, 0.72, X, Y, 0.1, 1);
         // the nameplate
-        if (v > 0.76 && v < 0.93 && Math.abs(u - 0.5) < 0.4) {
-          const pe = Math.min((0.4 - Math.abs(u - 0.5)) * pw, Math.min(v - 0.76, 0.93 - v) * ph);
+        if (v > 0.78 && v < 0.94 && Math.abs(u - 0.5) < 0.42) {
+          const pe = Math.min((0.42 - Math.abs(u - 0.5)) * pw, Math.min(v - 0.78, 0.94 - v) * ph);
           if (pe < 1.5) return mt(M.gold, 0.85, X, Y, 0.05, 1);
-          const k = ((u - 0.12) / 0.76) * 3, ci = Math.floor(k), cu = k - ci, cv = (v - 0.79) / 0.11;
-          const stroke = cu > 0.15 && cu < 0.85 && cv > 0.1 && cv < 0.9 && (Math.abs(cv - 0.5) < 0.14 || Math.abs(cu - 0.3 - hash(ci, i, 7) * 0.4) < 0.1);
-          return stroke ? tn(M.gold, 0.1, X, Y, 0) : mt(M.verm, face(0.95, SIDE) * 0.7, X, Y, 0.2, 1);
+          return mt(M.verm, face(0.95, SIDE) * 0.62, X, Y, 0.2, 1);
         }
         // the card: cream paper, brightest round the icon (lit), a faint ray pattern
-        const r = Math.hypot((u - 0.5) * pw, (v - 0.42) * ph) / (0.5 * pw);
-        const rays = Math.floor(((Math.atan2(v - 0.42, u - 0.5) + Math.PI) / (Math.PI * 2)) * 16) % 2 === 0 && r > 0.55 ? 0.06 : 0;
-        return mt(M.paper, 1.0 - r * 0.25 - rays, X, Y, 0.0, 0.8);
+        const r = Math.hypot((u - 0.5) * pw, (v - 0.44) * ph) / (0.5 * pw);
+        const rays = Math.floor(((Math.atan2(v - 0.44, u - 0.5) + Math.PI) / (Math.PI * 2)) * 16) % 2 === 0 && r > 0.55 ? 0.06 : 0;
+        return mt(M.paper, 1.0 - r * 0.22 - rays, X, Y, 0.0, 0.8);
       });
-      emblem(c, id, cx, py0 + ph * 0.4, 1.65);
+      emblem(c, id, cx, py0 + ph * 0.45, 1.75);
+      // the name, in gold pixel letters on the nameplate
+      const name = id === "dexclient" ? "DEXCLIENT" : id === "dexcode" ? "DEXCODE" : id.toUpperCase();
+      const tw = textWidth(name);
+      text(c, cx - tw / 2, py0 + ph * 0.86 - 3.5, name, (X, Y) => tn(M.gold, 0.08, X, Y, 0), { shadow: (X, Y) => tn(M.verm, 0.85, X, Y, 0) });
+      // the award rosette pinned over the card's head
+      rosette(c, cx, py0 + 4, 8, (X, Y) => tn(M.verm, 0.3, X, Y, 0), (X, Y) => tn(M.gold, 0.1, X, Y, 0), (X, Y) => tn(M.verm, 0.6, X, Y, 0));
     });
-    tileRoof(c, new LitField(COURT_LIGHT, undefined, 16), SIDE, -bw / 2 - 0.3 * H, bw / 2 + 0.3 * H, by0, 0.42 * H, 7);
+    // the header across the board's head: red lacquer in a gold frame, a gold prize cup between two cloud
+    // scrolls; a paper lantern at each end, lit, so the header is the lit line the eye finds first
+    rect(c, hx0, hy0, hx1, hy1, (X, Y, lx, ly) => {
+      const e = Math.min(lx - hx0, hx1 - lx, ly - hy0, hy1 - ly);
+      if (e < 2) return mt(M.gold, face(0.95, SIDE, 0, ly - hy0 < 2 ? -0.9 : 0.5), X, Y, 0.0, 1);
+      if (e < 3.5) return mt(lacq, 0.45, X, Y, 0.1, 1);
+      return mt(M.verm, face(0.95, SIDE) * 0.8 + grain(lx, ly, 59, false) * 0.05, X, Y, 0.1, 1);
+    });
+    {
+      const ccy = (hy0 + hy1) / 2;
+      trophy(c, 0, ccy + 10, 10, (X, Y) => tn(M.gold, 0.2, X, Y, 0), (X, Y) => tn(M.gold, 0.55, X, Y, 0), (X, Y) => tn(M.gold, 0.0, X, Y, 0));
+      const goldC = (X: number, Y: number): number => tn(M.gold, 0.12, X, Y, 0);
+      cloudScroll(c, hx0 + 18, ccy, 6, 1, -16 - (hx0 + 18) - 4, goldC);
+      cloudScroll(c, hx1 - 18, ccy, 6, -1, hx1 - 18 - 16 - 4, goldC);
+      for (const lx0 of [hx0 + 2, hx1 - 2]) {
+        const l0 = hy1 + 2, l1 = l0 + 0.26 * H;
+        rect(c, lx0 - 0.5, hy1 - 2, lx0 + 0.5, l0, (X, Y) => tn(lacq, 0.5, X, Y, 0));
+        rect(c, lx0 - 7, l0, lx0 + 7, l1, (X, Y, lx, ly) => {
+          const u = (lx - lx0 + 7) / 14, v = (ly - l0) / (l1 - l0);
+          if (Math.abs(u - 0.5) > 0.5 - Math.abs(v - 0.5) * 0.3) return 0;
+          if (v < 0.1 || v > 0.9) return mt(lacq, 0.45, X, Y, 0.1, 1);
+          if (Math.abs(v - 0.5) < 0.05) return tn(M.verm, 0.35, X, Y, 0);
+          return tn(M.glow, clamp(0.02 + Math.abs(u - 0.5) * 0.8 + Math.abs(v - 0.5) * 0.4, 0, 1), X, Y, 0.45);
+        });
+      }
+    }
+    tileRoof(c, new LitField(COURT_LIGHT, undefined, 16), SIDE, hx0 - 0.25 * H, hx1 + 0.25 * H, hy0, 0.42 * H, 7);
   },
 });
 
@@ -508,7 +553,11 @@ export const board = definePainter<BoardP>("court.board", {
 // posts (its own sprite)
 // ---------------------------------------------------------------------------
 export interface TowerP {
+  /** The tower's body height (px); with `crown` a roof and a finial stand on it (about 0.9 H more). */
   h: number;
+  crown?: boolean;
+  /** Storey height (H): a gold band and a balcony roof every storey above the gong's frame (3.6 by default). */
+  storey?: number;
   /** Half the span between the posts (px) and the gong's centre above the floor. */
   half: number;
   gongY: number;
@@ -516,11 +565,12 @@ export interface TowerP {
 
 export const gongTower = definePainter<TowerP>("court.gongtower", {
   bounds(p) {
-    return [-p.half - 0.9 * H, -p.h, p.half + 0.9 * H, 4];
+    return [-p.half - 0.9 * H, -p.h - (p.crown ? 1.0 * H : 0), p.half + 0.9 * H, 4];
   },
   paint(c, p) {
     const lf = new LitField(COURT_LIGHT, undefined, 16);
     const r = 0.17 * H;
+    const S = p.storey ?? 3.6;
     // the upper storeys: dark lacquer panels between the posts, a ladder up the middle,
     // a balcony and a little roof every 3.6 H
     const tw = p.half * 0.62;
@@ -529,7 +579,7 @@ export const gongTower = definePainter<TowerP>("court.gongtower", {
       const u = (lx + tw) / (2 * tw);
       // (hall loop round 1) the face turns from the sun: lit on its left, in shade on its right
       const k = 0.98 - u * 0.3;
-      const storey = ((hgt - 3.2) % 3.6 + 3.6) % 3.6;
+      const storey = ((hgt - 3.2) % S + S) % S;
       if (storey < 0.12) return mt(M.gold, face(k, SIDE, 0, storey < 0.04 ? -0.8 : 0.2) * 0.9, X, Y, 0.1, 1);
       // the storey's balcony throws a shadow down the panels under it
       const under = storey < 0.3 ? -0.18 : 0;
@@ -551,15 +601,25 @@ export const gongTower = definePainter<TowerP>("court.gongtower", {
       }
       return mt(lacq, face(k, SIDE) * (recess ? 0.12 : 0.26) + under * 0.3, X, Y, 0.1, 1);
     });
-    for (let s = 3.2 + 3.6; s * H < p.h - 0.5 * H; s += 3.6) {
+    for (let s = 3.2 + S; s * H < p.h - 0.5 * H; s += S) {
       tileRoof(c, lf, SIDE, -tw - 0.55 * H, tw + 0.55 * H, -s * H, 0.55 * H, Math.floor(s));
+    }
+    // (round 2, W1-7) its crown: a hipped roof on the top storey and a gold finial, so the tower stands whole
+    // in both court frames instead of running off the top edge
+    if (p.crown) {
+      tileRoof(c, lf, SIDE, -tw - 0.6 * H, tw + 0.6 * H, -p.h + 0.06 * H, 0.52 * H, 11);
+      const fy0 = -p.h + 0.06 * H - 0.52 * H - 0.5 * H, fy1 = -p.h + 0.06 * H - 0.52 * H - 0.08 * H;
+      lathe(c, 0, fy0, fy1, (ly) => {
+        const t = (ly - fy0) / (fy1 - fy0);
+        return t < 0.25 ? 1.6 + t * 6 : t < 0.55 ? 3.2 + Math.sin((t - 0.25) / 0.3 * Math.PI) * 2.6 : t < 0.8 ? 2.4 : 2.4 + (t - 0.8) * 14;
+      }, (X, Y, u) => mt(M.gold, cyl(0.95, u, SIDE, 0.25), X, Y, 0.0, 1));
     }
     // the tower's own corner posts above the gong's frame
     const frameTop = -p.gongY - 1.32 * H - 0.5 * H;
     for (const px of [-tw, tw]) {
       lathe(c, px, -p.h, frameTop + 4, () => r * 0.7, (X, Y, u, _lx, ly) => {
         const hgt = -ly / H;
-        const band = ((hgt - 3.2) % 3.6 + 3.6) % 3.6 < 0.16;
+        const band = ((hgt - 3.2) % S + S) % S < 0.16;
         return band ? mt(M.gold, cyl(0.95, u, SIDE), X, Y, 0.0, 1) : mt(lacq, cyl(0.95, u, SIDE, 0.3) * 0.95, X, Y, 0.0, 1);
       });
     }
@@ -569,7 +629,7 @@ export const gongTower = definePainter<TowerP>("court.gongtower", {
       colBase(c, px, r, 0.5 * H, 0.95, SIDE, 3);
       lathe(c, px, frameTop, -0.5 * H, () => r, (X, Y, u, _lx, ly) => {
         const hgt = -ly / H;
-        const band = (hgt > 1.0 && hgt < 1.18) || (((hgt - 3.2) % 3.6 + 3.6) % 3.6 < 0.16 && hgt > 3);
+        const band = (hgt > 1.0 && hgt < 1.18) || (((hgt - 3.2) % S + S) % S < 0.16 && hgt > 3);
         return band ? mt(M.gold, cyl(0.95, u, SIDE), X, Y, 0.0, 1) : mt(lacq, cyl(0.95, u, SIDE, 0.3) * 0.95, X, Y, 0.0, 1);
       });
     }
@@ -818,10 +878,15 @@ export const banner = definePainter<BannerP>("court.banner", {
         if (d < p.w * 0.3 && d > p.w * 0.24) return mt(M.gold, 0.85 + shade, X, Y, 0.1, 1);
         if (d < p.w * 0.16 && Math.sin(Math.atan2(ey, ex) * 5) > -0.2) return mt(M.gold, 0.8 + shade, X, Y, 0.15, 1);
       } else if (style === 1) {
-        // a dark stripe down the middle with a column of gold glyph strokes
+        // a dark stripe down the middle with a chain of gold lozenges on a thread (round 2, W1-2: a pattern,
+        // no pseudo-script)
         if (Math.abs(u - 0.5) < 0.16) {
-          const gy = ((t * 9) % 1 + 1) % 1;
-          if (Math.abs(u - 0.5) < 0.1 && t > 0.12 && t < 0.86 && (gy < 0.22 || (gy < 0.6 && Math.abs(u - 0.5 + (gy - 0.4) * 0.2) < 0.03))) return mt(M.gold, 0.85 + shade, X, Y, 0.1, 1);
+          const gy = ((t * 7) % 1 + 1) % 1, du = Math.abs(u - 0.5) * p.w, dv = Math.abs(gy - 0.5) * p.drop / 7;
+          if (t > 0.12 && t < 0.86) {
+            const loz = du / (0.1 * p.w) + dv / (0.36 * p.drop / 7);
+            if (loz < 1) return mt(M.gold, (loz > 0.62 ? 0.7 : 0.9) + shade, X, Y, 0.1, 1);
+            if (du < 0.6) return mt(M.gold, 0.7 + shade, X, Y, 0.1, 1);
+          }
           return mt(lacq, 0.55 + shade, X, Y, 0.1, 1);
         }
       } else if (t < 0.18 && t > 0.1) {

@@ -5,6 +5,7 @@
 
 import "./backwall.ts";
 import "./room.ts";
+import "./stair.ts";
 import "./deep.ts";
 import "./glow.ts";
 import "./furniture.ts";

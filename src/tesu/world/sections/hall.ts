@@ -26,16 +26,21 @@ export const GALLERY_Y = HALL_FLOOR - h(7.2);
 const X = (o: number): number => HALL_X0 + h(o);
 /** The Prize Court gate's centre (H from the west end: 0.525 of the hall). */
 export const GATE_O = 17.85;
+/** The stair's landing: [x0, x1, height above the floor] (H). Its two posts frame the reading nook under it. */
+export const STAIR_LANDING: [number, number, number] = [26.1, 27.35, 3.6];
 /** The register desk's counter top above the floor (px): at her waist (she is ~0.98 H at charScale 0.88). */
 export const DESK_TOP = h(0.57);
 /**
  * The Long Gallery's hang (Dex's art upstairs), in three groups: [piece, centre H, max width H, max height H,
  * the frame's lower edge above the gallery floor H]. A pair of landscapes; the hero; a salon of five.
+ * (Round 2, W1-6: hung high on the screens, every lower edge at 1.95 H or more over the gallery floor, so from
+ * the ground floor at play zoom the frame's top edge cuts only the balustrade and the screens, never a picture;
+ * upstairs they hang at the frame's middle. The lower edges step, so the hang has a rhythm in y too.)
  */
 export const GALLERY_HANG: [number, number, number, number, number][] = [
-  [0, 6.3, 1.45, 1.0, 1.05], [1, 7.95, 1.45, 1.0, 1.05],
-  [2, 12.4, 2.5, 1.6, 0.8],
-  [5, 16.0, 1.3, 1.6, 0.8], [3, 17.4, 1.15, 0.7, 1.68], [4, 17.4, 1.15, 0.7, 0.75], [7, 18.75, 1.0, 1.45, 0.85], [8, 19.85, 1.0, 1.3, 0.95],
+  [0, 6.3, 1.45, 1.0, 2.0], [1, 7.95, 1.45, 1.0, 2.15],
+  [2, 12.4, 2.5, 1.6, 1.95],
+  [5, 16.0, 1.3, 1.6, 2.05], [3, 17.4, 1.15, 0.7, 2.85], [4, 17.4, 1.15, 0.7, 1.95], [7, 18.75, 1.0, 1.45, 2.15], [8, 19.85, 1.0, 1.3, 1.98],
 ];
 /** The display screens the groups hang on upstairs: [x0, x1, height above the gallery floor] (H). */
 export const GALLERY_SCREENS: [number, number, number][] = [[5.3, 8.95, 2.15], [10.85, 13.95, 2.5], [15.05, 20.55, 2.75]];
@@ -73,7 +78,9 @@ export function hall(b: WorldBuilder): void {
   // --- collision: the floor, the gallery, the stair, the end walls
   b.walk([X(0), FY, X(34), FY], { surface: "wood", depth: h(3), name: "hall-floor" });
   b.walk([X(2.6), GY, X(22.8), GY], { surface: "wood", oneWay: true, depth: h(0.3), name: "long-gallery" });
-  b.walk([X(22.4), GY, X(30), FY - h(0.1)], { surface: "wood", stair: true, depth: h(0.2), name: "hall-stair" });
+  // the stair from the gallery's east end: two flights and a landing on posts (round 2, Dex 10-19: no one long
+  // triangle); each flight no steeper than she walks (PHYSICS.maxSlope 1.05), the nook under the landing
+  b.walk([X(22.4), GY, X(STAIR_LANDING[0]), FY - h(STAIR_LANDING[2]), X(STAIR_LANDING[1]), FY - h(STAIR_LANDING[2]), X(30.85), FY - h(0.1)], { surface: "wood", stair: true, depth: h(0.2), name: "hall-stair" });
   b.wall({ x: X(0.4), y0: FY - h(20), y1: FY + h(0.1), reason: "wall" });
   b.wall({ x: X(33.6), y0: FY - h(20), y1: FY + h(0.1), reason: "wall" });
   b.wall({ x: X(2.6), y0: GY - h(4), y1: GY + h(0.1), reason: "wall", from: "right" });
@@ -84,7 +91,8 @@ export function hall(b: WorldBuilder): void {
   b.usable({ id: "hall-front-doors", x0: X(0.75), y0: FY - h(2.1), x1: X(2.35), y1: FY, label: "go out", action: { kind: "door", to: "hall-door" } });
   b.usable({ id: "notice-wall", x0: X(4.25), y0: FY - h(2.3), x1: X(6.2), y1: FY, label: "read the notices", action: { kind: "panel", panel: "notice" } });
   b.usable({ id: "patrons", x0: X(7.7), y0: FY - h(2.3), x1: X(9.1), y1: FY, label: "the sponsors' board", action: { kind: "panel", panel: "patrons" } });
-  b.usable({ id: "offering-box", x0: X(10.5), y0: FY - h(1.1), x1: X(11.3), y1: FY, label: "the offering box", action: { kind: "panel", panel: "donate" } });
+  // (round 2) its prompt shows between the chest's top (0.53 H) and the hanging sign over it
+  b.usable({ id: "offering-box", x0: X(10.5), y0: FY - h(0.8), x1: X(11.3), y1: FY, label: "the offering box", action: { kind: "panel", panel: "donate" } });
   // Hanko behind her desk (anchored at the counter top: she stands behind it, the counter at her waist)
   b.sprite({ id: "hanko", plane: "play", kind: "hanko", x: X(13.85), y: FY - DESK_TOP + 4, p: {}, frames: 4, fps: 1.2 });
   b.usable({ id: "hanko-desk", x0: X(12.75), y0: FY - h(1.6), x1: X(14.55), y1: FY, label: "talk to Hanko", action: { kind: "panel", panel: "hanko" } });
@@ -95,7 +103,7 @@ export function hall(b: WorldBuilder): void {
   b.usable({ id: "docs-shelf", x0: X(24.35), y0: FY - h(2.0), x1: X(27.85), y1: FY, label: "the docs shelf", action: { kind: "panel", panel: "docs" } });
   b.sprite({ id: "seo", plane: "play", kind: "seo", x: X(26.87), y: FY, p: {}, frames: 3, fps: 0.7 });
   // past the stair's foot, the Crane Desk
-  b.usable({ id: "crane-desk", x0: X(30.6), y0: FY - h(1.0), x1: X(32.0), y1: FY, label: "the Crane Desk", action: { kind: "panel", panel: "crane" } });
+  b.usable({ id: "crane-desk", x0: X(31.35), y0: FY - h(1.0), x1: X(32.75), y1: FY, label: "the Crane Desk", action: { kind: "panel", panel: "crane" } });
   // one of the emperor's pieces downstairs: art-07 over the nook's bench, on the stair's spandrel
   hang(b, 6, X(26.87), FY - h(1.3), h(0.6), h(0.8));
   b.sprite({ id: "hall-cat", plane: "play", kind: "cat", x: X(28.05), y: FY - h(0.05), p: {}, frames: 2, fps: 0.6 });
