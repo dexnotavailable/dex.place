@@ -132,7 +132,11 @@ export function initChoreo(fine: MediaQueryList): void {
         b.lastFore = fy;
         // the whole site leans on a fling, not only the cards: the strip titles drift (desktop) and tip with the scroll
         if (b.stripTitle && b.headPlayed) gsap.set(b.stripTitle, desktop ? { x: n * 16, skewY: n * 1.5 } : { skewY: n * 1.5 });
-        if (desktop && b.sp >= 1) gsap.set(b.stripSurfaces, { scaleX: 1 + Math.abs(n) * 0.015 });
+        if (desktop && b.sp >= 1) {
+          gsap.set(b.stripSurfaces, { scaleX: 1 + Math.abs(n) * 0.015 });
+          // ...and its giant number shears with the scroll (styles/choreo.css: a transform on its own layer)
+          b.stripSurfaces[0]!.style.setProperty("--n", String(n));
+        }
         if (b.fore) gsap.set(b.fore, { y: fy });
       }
     };

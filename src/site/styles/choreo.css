@@ -180,3 +180,47 @@ html.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .nav__link:hover .px { animation: tile-hop 0.42s steps(4, end) 1; }
 }
+
+/* more at rest where the downloads band was still: the file card's grid drifts a pixel at a time under the file, the
+   file floats; the footer's Ko-fi key gets the download key's light. A fling shears the giant numbers (--n: the scroll's
+   speed, -1..1, set on the strip by motion/choreo.ts) */
+@media (prefers-reduced-motion: no-preference) {
+  .band .dlf__art { background-image: none; }
+  .band .dlf__art::before {
+    content: "";
+    position: absolute;
+    inset: -16px 0 0 -16px;
+    background-image:
+      linear-gradient(rgb(15 16 21 / 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(15 16 21 / 0.1) 1px, transparent 1px);
+    background-size: 16px 16px;
+    background-position: -1px -1px;
+    animation: grid-drift 8s steps(16, end) infinite;
+    pointer-events: none;
+  }
+  .band .dlf__art.is-vis .dlf-file { animation: file-float 5.6s steps(1, end) infinite; }
+  .sheet--home .ftr__kofi { position: relative; overflow: clip; }
+  .sheet--home .ftr__kofi::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.7) 50%, transparent 70%);
+    translate: -110% 0;
+    animation: key-shine 5.6s ease-in-out 2.4s infinite;
+    pointer-events: none;
+  }
+  .band__strip-paper::before { transform: skewX(calc(var(--n, 0) * -10deg)); }
+  .is-off .dlf__art::before, .is-off .dlf-file { animation-play-state: paused; }
+  [data-moving] .band .dlf__art::before, [data-moving] .band .dlf-file, [data-moving] .ftr__kofi::after { animation: none !important; }
+}
+@keyframes grid-drift { from { translate: 0 0; } to { translate: 16px 16px; } }
+@keyframes file-float { 0%, 100% { translate: 0 0; } 25% { translate: 0 -2px; } 50% { translate: 0 -4px; } 75% { translate: 0 -2px; } }
+/* the footer's mark nods now and then (two hops of a pixel), and hops when the pointer comes */
+@media (prefers-reduced-motion: no-preference) {
+  .sheet--home .ftr__mark > svg { animation: mark-nod 6.4s steps(1, end) 1.8s infinite; }
+  [data-moving] .sheet--home .ftr__mark > svg { animation: none; }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .sheet--home .ftr__mark:hover > svg { animation: tile-hop 0.42s steps(4, end) 1; }
+}
+@keyframes mark-nod { 0%, 90% { translate: 0 0; } 92% { translate: 0 -3px; } 94% { translate: 0 0; } 96% { translate: 0 -2px; } 98%, 100% { translate: 0 0; } }

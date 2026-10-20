@@ -442,3 +442,7 @@
 @media (min-width: 1100px) and (max-width: 1599px) {
   .band--donate .kofi .dhead { flex-direction: column; align-items: flex-start; gap: 14px; }
 }
+
+/* the header takes a wash of the section you are in (site loop v3 round 1: the page's colour follows you up to the top
+   edge; --sec-tone is set on the header by motion/choreo.ts on the home page only, so every other page keeps it white) */
+.hdr { background-color: color-mix(in srgb, var(--sec-tone, #fff) 8%, #fff); transition: background-color 0.45s var(--ease-std); }
