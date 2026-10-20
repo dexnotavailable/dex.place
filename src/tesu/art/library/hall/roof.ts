@@ -80,6 +80,27 @@ export const roof = definePainter<RoofP>("hall.roof", {
       return clamp(1 - Math.max(0, dx) / (2.6 * H), 0, 1) ** 2 * (0.45 + 0.55 * up);
     };
     const purlinAt = (hgt: number): [number, number, number] | undefined => PURLINS.find(([ph, th]) => hgt >= ph - th / 2 && hgt < ph + th / 2);
+    // (round 2, second pass) the lanterns hung in the roof light the timber round them: the purlins' undersides
+    // and the rafters near each warm a step or two, falling off across the roof (so the dark up here is lit
+    // structure in places, not a field)
+    const lants: [number, number, number, number][] = []; // [x, hook y, cord, k]
+    for (const [o, k] of [[0.14, 2], [0.22, 1], [0.4, 3], [0.55, 2], [0.63, 1], [0.81, 3], [0.9, 2]] as const) {
+      const lx = o * p.w + (hash(k, Math.round(o * 100), 5107) - 0.5) * H;
+      if (lx > sx0 - 1.5 * H && lx < sx1 + 1.5 * H) continue;
+      const hook = -PURLINS[k]![0] * H + PURLINS[k]![1] * H / 2;
+      // never down in front of the tie beam (the nearest thing up here): the lantern stays in the roof over it
+      const room = (b0 - 0.75 * H) - hook - 2 * (13 - 2 * Math.min(2, k)) - 6;
+      lants.push([lx, hook, Math.max(8, Math.min((0.9 + hash(k, Math.round(o * 100) + 5, 5109) * 1.1) * H, room - hash(k, Math.round(o * 100), 5111) * 0.5 * H)), Math.min(2, k)]);
+    }
+    const glowAt = (lx: number, ly: number): number => {
+      let g = 0;
+      for (const [x, hook, cordL] of lants) {
+        const cy = hook + cordL;
+        const d = Math.hypot((lx - x) / (1.7 * H), (ly - cy) / (ly < cy ? 1.5 : 0.9) / H);
+        if (d < 1) g = Math.max(g, (1 - d) ** 1.3);
+      }
+      return g;
+    };
     rect(c, 0, -p.top, p.w, b1, (X, Y, lx, ly) => {
       const hgt = -ly / H;
       // --- the tie beam
@@ -103,7 +124,8 @@ export const roof = definePainter<RoofP>("hall.roof", {
         const t = (ph + th / 2 - hgt) / th; // 0 at its underside .. 1 at its top
         const day = dayAt(lx, ly);
         const lip = t < 0.22;
-        const v = lip ? 0.15 - day * 0.15 : t > 0.8 ? 0.95 : 0.55 - day * 0.3 + grain(lx, ly, 5101, false) * 0.15;
+        const gl = glowAt(lx, ly);
+        const v = (lip ? 0.15 - day * 0.15 - gl * 0.2 : t > 0.8 ? 0.95 : 0.55 - day * 0.3 - gl * 0.4 + grain(lx, ly, 5101, false) * 0.15);
         // a joint and an iron strap here and there along it
         const jx = ((lx + ph * 177) % (3.3 * H) + 3.3 * H) % (3.3 * H);
         if (jx < 2 && hz < 0.6) return wood(hz, 1, X, Y);
@@ -126,18 +148,14 @@ export const roof = definePainter<RoofP>("hall.roof", {
       if (hgt > RIDGE) return wood(1, 0.55 + vnoise(lx * 0.01, 3, 5103) * 0.15, X, Y);
       if (rafter) {
         // the rafter's underside: lit along its lower end where it leaves the purlin's shadow
-        const v = 0.42 - day * 0.25 + (u < 0.25 ? 0.25 : 0) + (rx < 1.2 ? -0.1 : rx > pitch * 0.42 - 1.2 ? 0.15 : 0);
-        return wood(Math.min(1, hz + 0.05), v, X, Y);
+        const v = 0.42 - day * 0.25 - glowAt(lx, ly) * 0.45 + (u < 0.25 ? 0.25 : 0) + (rx < 1.2 ? -0.1 : rx > pitch * 0.42 - 1.2 ? 0.15 : 0);
+        return wood(Math.min(1, hz + 0.05 - glowAt(lx, ly) * 0.25), v, X, Y);
       }
       // the boards: darkest, a step into the haze beyond the rafters
-      return wood(Math.min(1, hz + 0.1), 0.92 - day * 0.25 - hz * 0.3 - (u > 0.8 ? 0 : 0.05), X, Y);
+      return wood(Math.min(1, hz + 0.1 - glowAt(lx, ly) * 0.25), 0.92 - day * 0.25 - glowAt(lx, ly) * 0.35 - hz * 0.3 - (u > 0.8 ? 0 : 0.05), X, Y);
     });
     // --- lanterns on long cords from the lower purlins and two silk banners, each in its own haze
-    for (const [o, k] of [[0.22, 0], [0.4, 1], [0.63, 2], [0.81, 1]] as const) {
-      const lx = o * p.w + (hash(k, 3, 5107) - 0.5) * H;
-      if (lx > sx0 - 1.5 * H && lx < sx1 + 1.5 * H) continue;
-      roofLantern(c, lx, -PURLINS[k]![0] * H + PURLINS[k]![1] * H / 2, (1.1 + hash(k, 5, 5109) * 0.9) * H, k);
-    }
+    for (const [lx, hook, cordL, k] of lants) roofLantern(c, lx, hook, cordL, k);
     for (const [o, k] of [[0.31, 0], [0.72, 1]] as const) roofBanner(c, o * p.w, -PURLINS[k]![0] * H + PURLINS[k]![1] * H / 2, (1.9 - k * 0.3) * H, k);
   },
 });
@@ -266,7 +284,7 @@ const SKYLIGHT: Ramp = [P.paper[2]!, P.paper[3]!, P.paper[4]!, P.umber[0]!, P.um
 
 /** A lantern hung up in the roof's haze on a long cord, its glow on the cord's foot; k sets its haze. */
 function roofLantern(c: Parameters<typeof roof.paint>[0], x: number, hook: number, cord: number, k: number): void {
-  const r = 7 - k, cy = hook + cord + r;
+  const r = 13 - 2 * k, cy = hook + cord + r;
   rect(c, x - 0.5, hook, x + 0.5, cy - r, (_X, _Y) => (k < 2 ? P.umber[5]! : P.dusk[5]!));
   rect(c, x - r - 1, cy - r - 2, x + r + 1, cy + r + 4, (X, Y, lx, ly) => {
     const dx = (lx - x) / r, dy = (ly - cy) / r;

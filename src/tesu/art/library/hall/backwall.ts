@@ -299,28 +299,45 @@ function carvedBand(c: PaintCtx, x0: number, y0: number, x1: number, y1: number,
   });
 }
 
-/** A long hanging brush banner: a rod, the paper with big abstract strokes, a seal, tassels. */
+/** A long hanging scroll: a rod, a silk mount, an ink painting of bamboo (no lettering), a red seal, tassels. */
 function banner(c: PaintCtx, x0: number, y0: number, x1: number, y1: number, lf: LitField, seed: number): void {
   const w = x1 - x0;
   // the rod and its knobs
   rect(c, x0 - w * 0.12, y0 - w * 0.08, x1 + w * 0.12, y0, (X, Y, lx, ly) => mt(M.wood, lum(lf.get(lx, ly), 0, -0.6), X, Y, 0.15, 1));
-  // the mount (silk border) and the paper
+  // (hall loop round 2: the "big characters" were T-and-cross strokes, fake writing) the painting: two or three
+  // bamboo stalks rising from the foot, ink darkest on the near one, each jointed at its nodes, with sprays of
+  // narrow leaves hanging off them; a red seal low in a corner
+  const stalks: [number, number, number][] = [];
+  const n = 2 + (hash(seed, 31) < 0.5 ? 1 : 0);
+  for (let k = 0; k < n; k++) stalks.push([0.28 + 0.44 * (k / Math.max(1, n - 1)) + (hash(seed, 33 + k) - 0.5) * 0.08, 0.15 + 0.35 * hash(seed, 37 + k), k === 0 ? 0.08 : 0.32 + 0.2 * k]);
   rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
     const l = lf.get(lx, ly);
     const u = (lx - x0) / w, v = (ly - y0) / (y1 - y0);
     if (u < 0.1 || u > 0.9 || v < 0.06 || v > 0.94) return mt(M.verm, lum(l) * 0.7, X, Y, 0.35, 1);
-    // brush strokes: a few big characters stacked, made of fat noisy strokes (no real text)
-    const ch = Math.floor((v - 0.08) / 0.2);
-    const cv = ((v - 0.08) / 0.2) - ch;
-    const sx = (u - 0.5) * 3.2, sy = (cv - 0.5) * 2.2;
-    const h1 = hash(ch, 3, seed), h2 = hash(ch, 5, seed);
-    const stroke =
-      (Math.abs(sy - (h1 - 0.5) * 0.8) < 0.13 && Math.abs(sx) < 0.85) ||
-      (Math.abs(sx - (h2 - 0.5) * 0.9 - sy * 0.3) < 0.12 && Math.abs(sy) < 0.8) ||
-      (h1 > 0.5 && Math.abs(sx + sy * 0.7 - 0.2) < 0.1 && sy > -0.2);
-    const wob = vnoise(lx * 0.4, ly * 0.4, seed) > 0.75;
-    if (ch >= 0 && ch < 4 && stroke && !wob) return tn(M.ink, 0.2, X, Y, 0);
-    if (ch === 3 && Math.abs(sx - 0.55) < 0.25 && Math.abs(sy - 0.55) < 0.25) return mt(M.verm, lum(l) * 0.9, X, Y, 0.3, 1);
+    const pu = (u - 0.1) / 0.8, pv = (v - 0.06) / 0.88; // on the paper, 0..1
+    for (const [sx, top, ink] of stalks) {
+      if (pv < top) continue;
+      const lean = (pv - 1) * (sx - 0.5) * 0.18;
+      const x = sx + lean;
+      const sw = 0.045 + (1 - pv) * 0.012;
+      const node = Math.abs(((pv - top) * 9) % 1 - 0.5) > 0.46;
+      if (Math.abs(pu - x) < sw && !(node && Math.abs(pu - x) < sw * 0.6 && keep(X, Y, 0.5))) return tn(M.ink, clamp(ink + (node ? -0.1 : 0) + (pu < x ? 0.1 : 0), 0, 1), X, Y, 0.3);
+      // leaves: narrow blades drooping off the upper nodes, two or three to a spray
+      for (let j = 0; j < 3; j++) {
+        const ny = top + 0.08 + j * 0.13 + hash(seed, 41 + j) * 0.04;
+        if (pv < ny - 0.02 || pv > ny + 0.2) continue;
+        const dir = (j + Math.round(sx * 7)) % 2 === 0 ? 1 : -1;
+        for (let b = 0; b < 3; b++) {
+          const ang = 0.35 + b * 0.32;
+          const t = (pv - ny) / Math.sin(ang) / 0.2;
+          if (t < 0 || t > 1) continue;
+          const bx = x + dir * t * 0.2 * Math.cos(ang) * 2.2;
+          const bw = 0.03 * Math.sin(t * Math.PI);
+          if (Math.abs(pu - bx) < bw) return tn(M.ink, clamp(ink + 0.12 + t * 0.2, 0, 1), X, Y, 0.3);
+        }
+      }
+    }
+    if (pv > 0.86 && pv < 0.93 && Math.abs(pu - 0.8) < 0.07) return mt(M.verm, lum(l) * 0.9, X, Y, 0.3, 1);
     return mt(M.paper, lum(l) * 0.95 - v * 0.08, X, Y, 0.15, 1);
   });
   // tassels from the bottom corners
