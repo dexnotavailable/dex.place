@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-20T06:18:45.527Z (20/10/2026, 13:18:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-20T07:28:45.221Z (20/10/2026, 14:28:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,16 +12,8 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_5cebc05c-deb — last activity 21 min ago
-4 agents: 2 done, 2 running or stopped mid-way, 0 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (running)
-- **w2:r1** (running)
-
-### wf_6eb91aef-0bd — last activity 77 min ago
-9 agents: 8 done, 1 running or stopped mid-way, 0 failed.
+### wf_6eb91aef-0bd — last activity 16 min ago
+12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
 - **critic:r0** (done): 
@@ -31,9 +23,24 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **critic:r1** (done): 
 - **w1:r2** (done): Worker 1's round 2 is committed. Eight of the nine critique items are in; W1-9 (the arcade stair under the court) is written up as a request for whoever owns that walk in shiraito.ts. This run picked up after a usage stop. The earlier session had made most of the edits but not committed them. I rendered all 8 frames at real size on port 24621, fixed what still looked wrong, then committed. What each item got: - **W1-
 - **w2:r2** (done): W2's round-2 work is done and committed on claude/v2-art-hall-p2. The head is 16498858. It is not pushed. This was a resumed run, so I did not reset the branch. The branch already had round-2 part 1 (9f0e1374: roof, bay wall, moon gate, shaft, floor smear, and the whole court, W2-10 to W2-14). It also had an unfinished merge of W1's 8f79e577. Running `checkout -B claude/v2-art-hall-p2 claude/v2-art-hall` would have t
-- **integrate:r2** (running)
+- **integrate:r2** (done): 
+- **critic:r2** (done): 
+- **w1:r3** (running)
+- **w2:r3** (running)
 
-### wf_93dbdace-3fa — last activity 409 min ago
+### wf_5cebc05c-deb — last activity 19 min ago
+8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (done): Worker 1 committed the round-1 pass on the lake's water, sun and mist. It builds on an earlier run's uncommitted work in p1, which I kept and finished. **Changed in this pass** - **W1-1, the postcard tray:** from about 0.3x zoom in, the water now runs to the frame's bottom edge. The postcard and descent no longer show a ruled y 994 edge, the falls stub is gone, and the woods' and mound's reflections lie on water. At 
+- **w2:r1** (done): Worker 2's round-1 work is committed on claude/v2-art-kagami9-p2 at 4649d798. The commit has two parts: an earlier W2 session's work that was left uncommitted on 10-19, and this session's passes on top of it. Done, by critique item: - **W2-1, postcard bank:** a dark shore of grass and bedded limestone now runs across the postcard's bottom and the descent's bottom, so the "tray" is gone at anchor 0.8, 0.54x and 0.73x.
+- **integrate:r1** (done): 
+- **critic:r1** (done): 
+- **w1:r2** (running)
+- **w2:r2** (running)
+
+### wf_93dbdace-3fa — last activity 479 min ago
 16 agents: 15 done, 0 running or stopped mid-way, 1 failed.
 
 - **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
@@ -51,7 +58,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r4** (failed)
 - **w2:r4** (done): Worker 2 finished round 4. Both commits are on claude/v2-art-vista-p2: 5e50d20b and 6948d1a0, on top of 3f94e1ba. Nothing is pushed. Changes, by critique item: - **W2-1, the cliff under the lake.** It no longer uses the road ridge's block painter. A new painter, plateau.ts, draws it at 1/2 and wider zooms (whip, postcard, tesu, tesu-720, ease-in). It has: - buttresses of very different widths, split into rounded colu
 
-### wf_286da28b-ad1 — last activity 410 min ago
+### wf_286da28b-ad1 — last activity 480 min ago
 10 agents: 9 done, 0 running or stopped mid-way, 1 failed.
 
 - **setup** (done): 
@@ -65,7 +72,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r2** (done): 
 - **critic:r2** (failed)
 
-### wf_23467958-71d — last activity 444 min ago
+### wf_23467958-71d — last activity 514 min ago
 14 agents: 8 done, 6 running or stopped mid-way, 0 failed.
 
 - **toolkit** (done): # Card-art toolkit (lanes\cardart\tools\pipe)
