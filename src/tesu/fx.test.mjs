@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { checkFxDrawing, fxCells, FX_CELL, FX_MAX_LIVE, FxClock, fxFrameAt, validateFx } from "./fx/contract.ts";
+import { checkFxDrawing, fxCells, FX_CELL, FX_MAX_LIVE, FxClock, fxClipRows, fxFrameAt, fxGroundClip, validateFx } from "./fx/contract.ts";
 
 const good = (o = {}) => ({
   id: "spark", stage: "pixel", px: 1, pivot: [12, 20], layer: "front", attach: "world",
@@ -129,4 +129,23 @@ test("public/assets/fx holds only effects that pass the contract", () => {
     const def = validateFx(JSON.parse(readFileSync(f, "utf8")), id);
     for (const fr of def.frames) assert.ok(existsSync(join(dir, id, fr.file)), `${id}/${fr.file} is missing`);
   }
+});
+
+test("ground effects dip into the ground and stop at its line; hits in the air and impact frames are left whole", () => {
+  const ids = ["dust_roll_", "ghost_blade_"];
+  const floor = () => 500;
+  // on the ground: cut at the floor; a hit in the air or an effect not on the list: not cut
+  assert.equal(fxGroundClip("dust_roll_s", 10, 500, ids, floor), 500);
+  assert.equal(fxGroundClip("ghost_blade_y0_t0", 10, 501.5, ids, floor), 500);
+  assert.equal(fxGroundClip("dust_roll_s", 10, 440, ids, floor), null);
+  assert.equal(fxGroundClip("q_cut", 10, 500, ids, floor), null);
+  assert.equal(fxGroundClip("dust_roll_s", 10, 500, ids, null), null);
+  assert.equal(fxGroundClip("dust_roll_s", 10, 500, ids, () => null), null);
+  // spawned at her soleY (already dipped 2.64 world px): still on the ground
+  assert.equal(fxGroundClip("dust_roll_s", 10, 502.64, ids, floor, 2.64), 500);
+  assert.equal(fxGroundClip("dust_roll_s", 10, 502.64, ids, floor), null);
+  // rows: a 30-row cell whose top is 26 art px above a pivot drawn 4 art px low (a = 0.5 world px per art px) keeps 22 rows
+  assert.equal(fxClipRows(30, -26, 502, 500, 0.5), 22);
+  assert.equal(fxClipRows(30, -40, 502, 500, 0.5), 30);
+  assert.equal(fxClipRows(30, 0, 502, 500, 0.5), 0);
 });

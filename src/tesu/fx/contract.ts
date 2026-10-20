@@ -246,3 +246,23 @@ export class FxClock {
     this.live.length = 0;
   }
 }
+
+/**
+ * (zhusha lead 10-20, Dex: "layer her just 1 layer behind the ground along with whatever effects") A ground effect
+ * (its pivot on the ground) is drawn `dip` art px low and nothing of it shows below the ground line, like her drawing.
+ * Returns the ground's world y to cut at, or null when the effect is not on the ground (in the air, a hit point, the
+ * lake's pass). `prefixes`: the effects that sit on the ground (feel.json draw.groundFx); `dipY`: the dip in world px
+ * (a pivot already dipped, like her soleY, still counts as on the ground).
+ */
+export function fxGroundClip(
+  id: string, x: number, y: number, prefixes: readonly string[], groundAt: ((x: number, y: number) => number | null) | null, dipY = 0,
+): number | null {
+  if (!groundAt || !prefixes.some((p) => id.startsWith(p))) return null;
+  const g = groundAt(x, y - dipY - 2);
+  return g !== null && y >= g - 2 && y <= g + dipY + 2 ? g : null;
+}
+
+/** How many rows of a cell show above `clipY` (world y): row k of a cell sits at world y = pivotY + (offY + k) x a. */
+export function fxClipRows(rows: number, offY: number, pivotY: number, clipY: number, a: number): number {
+  return Math.max(0, Math.min(rows, Math.ceil((clipY - pivotY) / a - offY)));
+}

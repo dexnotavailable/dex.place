@@ -12,7 +12,7 @@ import type { Camera as LabCamera } from "../lab/engine/camera.ts";
 import type { Lighting, Renderer as LabRenderer } from "../lab/engine/renderer.ts";
 import { Vfx } from "../lab/engine/vfx.ts";
 import { Feel } from "../lab/game/feel.ts";
-import { ART_PX, Zhusha, type MoveWorld } from "./zhusha/controller.ts";
+import { ART_PX, FEEL, Zhusha, type MoveWorld } from "./zhusha/controller.ts";
 import { Fx } from "./fx/fx.ts";
 import { ZhushaDraw } from "./zhusha/draw.ts";
 import { NpcDraw } from "./cast/npcs.ts";
@@ -1503,7 +1503,9 @@ export class TesuGame {
     if (!this.fx.clock.live.length) return;
     const b = this.player.body, s = planeXf(c, 1).s;
     this.r.setTransform(s, focus, mirror);
-    this.fx.draw(this.r, { s, focus, mirror }, layer, ART_PX, { x: b.x, y: b.y, facing: this.player.facing }, mirror !== null);
+    // (zhusha lead 10-20) ground effects dip into the ground with her and stop at its front edge (feel.json draw.groundFx)
+    const ground = { dip: this.zdraw.dip, ids: FEEL.draw.groundFx, at: (x: number, y: number) => this.collision.groundBelow(x, y)?.y ?? null };
+    this.fx.draw(this.r, { s, focus, mirror }, layer, ART_PX, { x: b.x, y: b.y, facing: this.player.facing }, mirror !== null, ground);
     this.r.flush();
   }
 
