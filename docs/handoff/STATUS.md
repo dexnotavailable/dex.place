@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-20T11:38:46.620Z (20/10/2026, 18:38:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-20T12:48:46.527Z (20/10/2026, 19:48:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_6eb91aef-0bd — last activity 266 min ago
+### wf_6eb91aef-0bd — last activity 336 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -28,7 +28,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r3** (running)
 - **w2:r3** (running)
 
-### wf_5cebc05c-deb — last activity 269 min ago
+### wf_5cebc05c-deb — last activity 339 min ago
 8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -40,7 +40,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r2** (running)
 - **w2:r2** (running)
 
-### wf_93dbdace-3fa — last activity 729 min ago
+### wf_93dbdace-3fa — last activity 799 min ago
 16 agents: 15 done, 0 running or stopped mid-way, 1 failed.
 
 - **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
@@ -58,7 +58,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r4** (failed)
 - **w2:r4** (done): Worker 2 finished round 4. Both commits are on claude/v2-art-vista-p2: 5e50d20b and 6948d1a0, on top of 3f94e1ba. Nothing is pushed. Changes, by critique item: - **W2-1, the cliff under the lake.** It no longer uses the road ridge's block painter. A new painter, plateau.ts, draws it at 1/2 and wider zooms (whip, postcard, tesu, tesu-720, ease-in). It has: - buttresses of very different widths, split into rounded colu
 
-### wf_286da28b-ad1 — last activity 730 min ago
+### wf_286da28b-ad1 — last activity 800 min ago
 10 agents: 9 done, 0 running or stopped mid-way, 1 failed.
 
 - **setup** (done): 
@@ -72,7 +72,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r2** (done): 
 - **critic:r2** (failed)
 
-### wf_23467958-71d — last activity 764 min ago
+### wf_23467958-71d — last activity 834 min ago
 14 agents: 8 done, 6 running or stopped mid-way, 0 failed.
 
 - **toolkit** (done): # Card-art toolkit (lanes\cardart\tools\pipe)
