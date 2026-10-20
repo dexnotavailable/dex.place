@@ -92,12 +92,46 @@ const WALKER_BEHIND: Veil[] = [
 ];
 const MID_POOLS: [number, number, number][] = [
   // the karst standing in the lake (P2 below): pools at their feet, their size by the karst's
-  [700, 120, 0.95], [1230, 70, 0.8], [1820, 190, 1.1], [2930, 100, 0.85], [3230, 260, 1.2], [4020, 150, 1], [4520, 160, 1], [5250, 130, 0.9],
+  // (kagami9 r1, the critic's W1-9: "every far karst sits on a foam pillow on the same waterline")
+  // no longer one pillow each: some feet deep in a bank, some nearly clear, wet and mirrored
+  [700, 120, 1.2], [1230, 70, 0.35], [1820, 190, 1.05], [2930, 100, 0.3], [3230, 260, 1.25], [4020, 150, 0.5], [4520, 160, 1.1], [5250, 130, 0.45],
+];
+/**
+ * (kagami9 r1, W1-9; reference 4's three depths of fog) Mist drifting over the open water between
+ * the karst standing in the lake and the jetty: long, low, torn streamers at different heights on
+ * the mid plane (between the karst) and the back plane (between the islets, nearer), each its own
+ * length and slope, so the lake reads in depths of air, never one ruled band. [x, half width,
+ * height, thickness, strength, tear, lit top, slope] (plane art px).
+ */
+const MID_VEILS: Veil[] = [
+  [980, 230, 24, 22, 0.5, 0.55, 0.14, 0.02],
+  [1560, 170, 44, 16, 0.38, 0.6, 0.1, -0.03],
+  [2420, 300, 16, 26, 0.52, 0.5, 0.14, 0.01],
+  [3050, 160, 36, 15, 0.36, 0.65, 0.1, 0.03],
+  [3700, 260, 20, 24, 0.5, 0.55, 0.14, -0.01],
+  [4720, 220, 28, 20, 0.44, 0.6, 0.12, 0.02],
+];
+const BACK_VEILS: Veil[] = [
+  [2350, 260, 10, 16, 0.42, 0.55, 0.1, 0.01],
+  [3350, 330, 7, 17, 0.38, 0.5, 0.1, 0],
+  [4300, 240, 14, 14, 0.42, 0.6, 0.1, -0.02],
+  [5150, 300, 8, 17, 0.38, 0.5, 0.1, 0.01],
 ];
 const BACK_POOLS: [number, number, number][] = [
   // low, at a few islets' feet only (the crag, the reed bed, the stubs by the torii)
   [3560, 70, 0.7], [5330, 70, 0.9], [5560, 40, 0.6],
 ];
+/**
+ * (kagami9 r1, the critic's W1-3; reference 3's falls) Where Shiraito's first veil reaches the lake
+ * at the wall's foot (back px about 6595 to 6645) the falls dissolves into churned white water and
+ * spray rising at the fog's value: a tall pool of fog there, solid at its foot on the water and
+ * rolling up the falls, and a ragged plume drifting off it.
+ */
+const FALLS_FOOT: FogLayer = {
+  plane: "back", density: 0.8, height: 58, apron: 26, roll: 0.95, size: 64, drift: 1.4, colour: "#eef4f1",
+  pools: [[6622, 44, 1.2], [6585, 22, 0.6]], cover: 0, foot: 0.42,
+  veils: [[6652, 58, 46, 9, 0.5, 0.75, 0.6, 0.18], [6600, 40, 70, 7, 0.32, 0.85, 0.5, 0.1]],
+};
 const KAGAMI_FOG: FogLayer[] = [
   // (round 6: the sky's own low haze thinned to torn patches: the horizon's body lies behind the
   // far karst now, in pools)
@@ -106,8 +140,11 @@ const KAGAMI_FOG: FogLayer[] = [
   { plane: "far", density: 0.82, height: 80, apron: 22, roll: 0.75, size: 260, drift: 1, colour: "#e6eeea", pools: FAR_POOLS, cover: 0.4, foot: 0.3, veils: WALKER_VEILS },
   // (round 6, S7: its foot lies solid on the water at the karst's feet and out over the line in
   // front, so the fog swallows where rock meets water)
-  { plane: "mid", density: 0.72, height: 60, apron: 34, roll: 0.8, size: 190, drift: 1.8, colour: "#ecf2ee", pools: MID_POOLS, cover: 0.22, foot: 0.32 },
-  { plane: "back", density: 0.42, height: 18, apron: 16, roll: 0.85, size: 120, drift: 2.4, colour: "#f0f5f1", pools: BACK_POOLS, cover: 0, foot: 0.4 },
+  // (kagami9 r1, W1-9: its foot thinner and reaching further out over the water, each pool its own
+  // strength, and veils drifting between the karst)
+  { plane: "mid", density: 0.72, height: 60, apron: 52, roll: 0.8, size: 190, drift: 1.8, colour: "#ecf2ee", pools: MID_POOLS, cover: 0.22, foot: 0.2, veils: MID_VEILS },
+  { plane: "back", density: 0.42, height: 18, apron: 16, roll: 0.85, size: 120, drift: 2.4, colour: "#f0f5f1", pools: BACK_POOLS, cover: 0, foot: 0.4, veils: BACK_VEILS },
+  FALLS_FOOT,
 ];
 
 /**
@@ -125,6 +162,36 @@ const KAGAMI_FADES = { mid: 0.16 };
  * far edge melting into the haze. At the catch's 2x it all sits on 2 px cells.
  */
 const KAGAMI_NEAR_WATER: [number, number, number, number] = [0.9, 0.7, 1, 1];
+
+/**
+ * (kagami9 round 1, worker 1) The lake's own look (atmos.ts WATER_FS):
+ * - lip: the water runs on toward the camera past the near plane to a near shore wandering in depth
+ *   (24 to 80, coves about 700 px long), so at the postcard's 0.5x and the descent it reaches the
+ *   frame's bottom edge under the near bank instead of stopping on a ruled row over the cliff (the
+ *   critic's W1-1 "tray"); at play zoom nothing changes (the shore lies far below the frame); from
+ *   0.3x out the lake ends where it did (the plateau's own lip, lane V's op.rim, ends it there);
+ *   its fourth number: the broken reflections of overhanging near foliage beyond the frame's top,
+ *   dark crowns rising from the frame's bottom edge in the nearest water (W1-8, reference 4);
+ * - sun: the one sun on the water, a glitter path under it and the far haze lifting toward it (W1-12);
+ * - look: fine flat steps with dithered seams (no screen door over the far lake, W1-4), the mirror
+ *   wavering up and down by up to 2 cells nearer the viewer (level edges in the mirror bend and
+ *   break, W1-5), the gaps a land's painted underside leaves in its mirror filled from the land's
+ *   own reflection (the seams in the station's and the talus's reflections, W1-5), and sparse broken
+ *   ripple dashes of varied length, none in the far mirror (W1-4);
+ * - edge: where the water meets land and haze: the hand-over from the scree's hold to the near
+ *   limestone's wandering up to 64 px along the shore where the limestone stands past the frame's
+ *   right edge, the water running in under the rock dark (W1-2: no ruled row at the lake's east
+ *   end), and the back plane's land going on down under the surface block by block (W1-3); the haze lying on the water at the far plane's
+ *   waterline and thinning toward the viewer over a wandering reach (W1-9: no ruled horizon); the
+ *   foreground water darker toward the viewer and over the frame's bottom sixth (W1-8); the shade at the feet of the land holding
+ *   the water (W1-7: no bright pool stamped under every block).
+ */
+const KAGAMI_LAKE = {
+  lip: [24, 80, 700, 1] as [number, number, number, number],
+  sun: [0.7, 0.55] as [number, number],
+  look: [1, 1, 1, 1] as [number, number, number, number],
+  edge: [64, PLANES.far.rate, 0.75, 0.8] as [number, number, number, number],
+};
 
 /** The light, the sky and P1 to P2 (seed block 4). */
 export function kagamiBackdrop(b: WorldBuilder): void {
@@ -145,7 +212,7 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   // - (round 4, the sky lane) the sky deepens to a clear zenith over a pale, warm horizon in
   //   flat bands, the sun blooms in stepped warm rings, and fog lies on the water at every
   //   background plane's waterline, thicker with distance (depth by rendering)
-  b.atmos({ x: 0, y1: h(90), blend: h(4), ...MORNING, sky: KAGAMI_SKY, mist: 0, water: { deep: "#528995", body: "#76a6a6", shallow: "#c6e4dc", glint: "#6a9fa4", mirror: [0.58, 0.76, 0.75], near: KAGAMI_NEAR_WATER }, glow: KAGAMI_GLOW, fog: KAGAMI_FOG, fades: KAGAMI_FADES });
+  b.atmos({ x: 0, y1: h(90), blend: h(4), ...MORNING, sky: KAGAMI_SKY, mist: 0, water: { deep: "#528995", body: "#76a6a6", shallow: "#c6e4dc", glint: "#6a9fa4", mirror: [0.58, 0.76, 0.75], near: KAGAMI_NEAR_WATER, ...KAGAMI_LAKE }, glow: KAGAMI_GLOW, fog: KAGAMI_FOG, fades: KAGAMI_FADES });
   // (past the lake's east end the world's morning again: Gate Road and on; round 5: the same sun
   // as the lake's, its small bright core and bloom, over the morning's own sky gradient)
   b.atmos({ x: h(111), blend: h(4), ...MORNING, mist: 0.8, water: { deep: "#235f60", body: "#4a9a90", shallow: "#c3e2d9", glint: "#fffbe8" }, glow: { ...KAGAMI_GLOW, plain: true } });
@@ -251,7 +318,10 @@ export function kagamiBackdrop(b: WorldBuilder): void {
   // (with the wet foot of the wall's west end, which stands in the lake at this depth: fallen
   // chunks heaped there, foam lapping between them, and below the waterline a talus of them
   // where the lake ends against the foot, so the lake ends on rock and white water)
-  bg(b, "back", 6560, "op.spray", { w: 120, h: 84, at: [[30, 15], [62, 26], [98, 17]], foot: [-3, 66], chunks: [6, 78] }, LAKE_Y, 3, seed1(2));
+  // (vista round 1, W1-8: its plumes hung at the road's level in the whip-out, a flat-bottomed puff in
+  // mid-air with the veil running on below it; the wet foot and the chunks stay, the plumes are gone: the
+  // veils' spray is the valley mist's, where they reach it)
+  bg(b, "back", 6560, "op.spray", { w: 120, h: 84, at: [], foot: [-3, 66], chunks: [6, 78] }, LAKE_Y, 3, seed1(2));
 
   // P1: far karst rising out of the haze (round 6, the sky and atmosphere lane, the critic's S3:
   // the old far look read as skyscrapers in fog, and its cluster at far x 330 to 760 stood right
@@ -271,7 +341,7 @@ export function kagamiBackdrop(b: WorldBuilder): void {
 
   // P2 (falls on the great faces are veils with a spray bloom where they reach the mist)
   const FALLS: Record<number, number[]> = { 1880: [0], 3230: [0, 1] };
-  P2.forEach(([x, forms], i) => bg(b, "mid", x, "op.karst", { w: 0, h: 380, rows: 1, look: "near", forms, mist: 20, green: 0.85, falls: 0.6, veil: 4, wet: local(MID_WET, x), ...(FALLS[x] ? { fallOn: FALLS[x] } : {}) }, LAKE_Y, i));
+  P2.forEach(([x, forms], i) => bg(b, "mid", x, "op.karst", { w: 0, h: 380, rows: 1, look: "near", forms, mist: 12, green: 0.85, falls: 0.6, veil: 4, wet: local(MID_WET, x), ...(FALLS[x] ? { fallOn: FALLS[x] } : {}) }, LAKE_Y, i));
   bg(b, "mid", 3500, "op.karst", { w: 2200, h: 300, rows: 2, look: "mid", mist: 40, green: 0.8, wet: local(MID_WET, 3500) }, LAKE_Y, -1);
   const midWrap: [number, number] = [-400, 5400];
   // egrets crossing in front of the great massif's crown, and far specks of birds over the far

@@ -700,8 +700,11 @@ export const headland = definePainter<HeadlandP>("op.headland", {
         } else {
           // the undergrowth on the slope: leaf clusters of two sizes, dark pockets between
           const s = ly + T;
-          const L = leafCell(lx, ly, seed + 15, 16);
-          const k = 4 - (L.lit > 0.35 ? 1 : 0) + (L.q > 0.85 && L.lit < 0.1 ? 1 : 0) + (s > 50 ? 1 : 0);
+          // (kagami9 round 1, the critic's W2-5: big cells read as a regular diagonal hatch over the
+          // woods) small leaf clusters, the canopy's underside going dark and cool toward the water
+          // (the cells' one-way lighting was the hatch itself: blotches of leaves with no direction)
+          const n1 = vnoise(lx / 6, ly / 4.5, seed + 15), n2 = vnoise(lx / 2.6, ly / 2.2, seed + 16);
+          const k = 3 - (n1 > 0.6 && n2 > 0.42 ? 1 : 0) + (n1 < 0.28 && n2 < 0.6 ? 1 : 0) + (s > 18 ? 1 : 0) + (s > 46 || -ly < 14 ? 1 : 0);
           col = s < 1.5 ? P.moss[4]! : [P.moss[4]!, P.moss[5]!, P.pine[1]!, P.pine[2]!, P.pine[3]!, P.pine[4]!][clamp(k, 1, 5)]!;
         }
         b.set(x, y, col);
@@ -712,7 +715,17 @@ export const headland = definePainter<HeadlandP>("op.headland", {
     // clusters of two sizes catching the light or turning into shade; where a crown meets the one
     // behind it, a dark pocket. Cool greens only (P3).
     const COL = [P.moss[3]!, P.moss[4]!, P.pine[0]!, P.pine[1]!, P.pine[2]!, P.pine[3]!, P.pine[4]!];
-    for (const [cx, cy, R, cs] of crowns) crown(c, cx, cy, R, cs, COL, 2.6 + clamp(cx / p.w - 0.5, 0, 1) * 0.6, -1.5);
+    // (kagami9 round 1, the critic's W2-5: "identical round clumps") one massed canopy as ref 04's left
+    // woods: each crown lit or shaded by where it stands in the mass (the top toward the sun lit, going
+    // dark and cool toward the water), its own ball-shading quiet
+    // (the crowns break the canopy's top; under it only a few stand out of the mass of leaves, so the
+    // slope reads as one body in shade, not a field of balls)
+    for (const [cx, cy, R, cs] of crowns) {
+      const T = Math.max(1, headTop(p, Math.max(0, cx), seed));
+      const v = clamp((cy + T) / Math.max(30, T * 0.8), -0.6, 1.2);
+      if (v > 0.12 && hash1(cs, seed + 160) > 0.22) continue;
+      crown(c, cx, cy, R, cs, COL, 2.1 + v * 2.2 + clamp(cx / p.w - 0.5, 0, 1) * 0.6, -1.5, 0.9);
+    }
     const r = rng(seed + 20);
     // a pine or two standing out of the woods
     for (let x = 40; x < p.w * 0.7; x += 140 + r() * 260) {
@@ -725,6 +738,24 @@ export const headland = definePainter<HeadlandP>("op.headland", {
       const R = 4 + r() * 8;
       if (d >= 0.3) clump(c, x, -R * 0.55 - 1, R, P.moss.slice(3, 7), P.pine.slice(2), 0.55, seed + Math.round(x * 5), 0.7);
     }
+    // (kagami9 round 1, the critic's W2-5: "a dead-straight foot with evenly spaced pebbles") the woods'
+    // foot dipping into the water: dark low crowns hanging over it in runs of their own lengths (its
+    // own rng: nothing above is reseeded), roots going down into the water under them
+    {
+      const r2 = rng(seed + 300);
+      for (let x = -10 + r2() * 20; x < p.w * 0.8;) {
+        const run = vnoise1(x / 70, seed + 301);
+        if (run > 0.42) {
+          const R = 5 + r2() * 9;
+          crown(c, x, -R * (0.15 + 0.4 * r2()), R, seed + 3000 + Math.round(x), COL, 4.2 + r2() * 0.8, 2, 0.6);
+          if (d >= 0.5 && r2() < 0.55) {
+            const rx = x + (r2() - 0.5) * R;
+            stroke(c, [[rx, -1.5], [rx + (r2() - 0.5) * 3, 1.5], [rx + (r2() - 0.5) * 4, 3.5]], (u) => (u < 0.4 ? 1.6 : 1), () => P.umber[3]!);
+          }
+          x += R * (0.8 + 0.6 * r2());
+        } else x += 10 + r2() * 30;
+      }
+    }
     // the water's edge: reeds and grass in clumps, wet stones standing out in the lake
     for (let x = -20; x < p.w; x += 24 + r() * r() * 110) {
       const n = 3 + Math.floor(r() * 10), tall = 5 + r() * 15;
@@ -732,7 +763,7 @@ export const headland = definePainter<HeadlandP>("op.headland", {
         const bx = x + (r() - 0.5) * 16, a = (r() - 0.45) * 0.5, bd = (r() - 0.45) * 0.8, l = r() * 0.7, ln = tall * (0.4 + 0.6 * r());
         if (d >= 0.3) grass(c, bx, 0.5, ln, a, bd, l);
       }
-      if (r() < 0.45) {
+      if (r() < 0.45 && vnoise1(x / 90, seed + 302) > 0.55) {
         const sx = x + r() * 24, R = 1.5 + r() * r() * 5;
         for (let oy = -R; oy <= 0.5; oy += 0.5) for (let ox = -R * 1.3; ox <= R * 1.3; ox += 0.5) {
           if ((ox / (R * 1.3)) * (ox / (R * 1.3)) + (oy / R) * (oy / R) > 1) continue;
@@ -763,7 +794,7 @@ export const headland = definePainter<HeadlandP>("op.headland", {
  * where they meet; its lower part in its own shade. Never a shaded ball. `cols` lit to dark,
  * `t0` its middle step.
  */
-function crown(c: PaintCtx, cx: number, cy: number, R: number, cs: number, cols: readonly number[], t0: number, maxY = Infinity): void {
+function crown(c: PaintCtx, cx: number, cy: number, R: number, cs: number, cols: readonly number[], t0: number, maxY = Infinity, soft = 0): void {
   const b = c.buf, d = c.d;
   if (lxOut(c, cx, R)) return;
   const Xa = Math.max(b.ox, Math.floor(c.X(cx - R * 1.3))), Xb = Math.min(b.x1, Math.ceil(c.X(cx + R * 1.3)));
@@ -782,13 +813,23 @@ function crown(c: PaintCtx, cx: number, cy: number, R: number, cs: number, cols:
       if (q > 1) continue;
       const lit = -(0.62 * dx + 0.78 * dy) / rim;
       const L = leafCell(lx, ly, cs + 2, Math.max(5, R * 0.55)), L2 = leafCell(lx, ly, cs + 3, Math.max(3, R * 0.22));
-      let t = t0 + (dy > R * 0.2 ? 1.2 : 0);
+      // (kagami9 round 1, the critic's W2-5: every cell lit on the same diagonal half made a regular
+      // hatch across the woods) in a massed canopy the leaf clusters catch the light in blotches
+      if (soft > 0) {
+        const n1 = vnoise(lx / Math.max(3, R * 0.4), ly / Math.max(2.5, R * 0.32), cs + 9);
+        L.lit = (n1 - 0.5) * 2.4 + clamp(lit, -1, 1) * 0.4;
+        L2.lit = (vnoise(lx / 2.4, ly / 2.1, cs + 10) - 0.5) * 2.2;
+      }
+      // (kagami9 round 1) `soft`: a crown inside a massed canopy, shaded by where it is in the mass
+      // (its t0) more than as a ball of its own: its own under-shade and rim quieter
+      const k1 = 1 - soft * 0.6;
+      let t = t0 + (dy > R * 0.2 ? 1.2 * k1 : 0);
       if (L.lit > 0.3) t -= 1;
       else if (L.lit < -0.3) t += 1;
       if (L2.lit > 0.45) t -= 0.6;
       if (L.q > 0.88 && L.lit < 0.1) t += 1.4;
-      if (q > 0.8 && lit > 0.3) t -= 1.2;
-      if (q > 0.84 && lit < -0.1) t += 1.2;
+      if (q > 0.8 && lit > 0.3) t -= 1.2 * k1;
+      if (q > 0.84 && lit < -0.1) t += 1.2 * k1;
       b.set(x, y, cols[clamp(Math.round(t), 0, n)]!);
     }
   }
@@ -1138,7 +1179,11 @@ function paintTalus(c: PaintCtx, T: Talus): void {
   const b = c.buf, s = T.seed;
   const X0 = Math.max(b.ox, Math.floor(c.X(T.W * 0.2 - 16))), X1 = Math.min(b.x1, Math.ceil(c.X(T.W * 1.3)));
   const Y0 = Math.max(b.oy, Math.floor(c.Y(-22))), Y1 = Math.min(b.y1, Math.ceil(c.Y(T.D * 1.12 + 1)));
-  const SX = 18, SY = 9;
+  // (kagami9 round 1, the critic's W2-3: "round cobbles", a dry-stone wall of jittered cells) the talus
+  // is a stack of fallen blocks, Dex's sketch: rows of them coming toward the camera, each block its
+  // own size, its top a ledge (green on the odd one), each nearer row lower in the frame and standing
+  // in front of the one behind, casting its shadow back up and to the right onto it; the deep shade
+  // between them shows only in the gaps
   for (let y = Y0; y < Y1; y++) {
     const ly = LY(c, y);
     const xl = talusLeft(T, ly);
@@ -1149,47 +1194,53 @@ function paintTalus(c: PaintCtx, T: Talus): void {
         if (ly > 1 && lx < xl && xl - lx <= 1.05 && vnoise1(ly / 2.3, s + 30) > 0.52) b.set(x, y, ly < T.D * 0.5 ? P.jade[1]! : P.jade[2]!);
         continue;
       }
-      // the block this px is on: the nearest of the jittered blocks round it, and how near the next
-      const gx = Math.floor(lx / SX), gy = Math.floor(ly / SY);
-      let d1 = 9, d2 = 9, sid = 0, cx = 0, cy = 0;
-      for (let j = -1; j <= 1; j++) {
-        for (let i = -1; i <= 1; i++) {
-          const qx = gx + i, qy = gy + j;
-          const px = (qx + 0.1 + 0.8 * hash(qx, qy, s + 11)) * SX, py = (qy + 0.1 + 0.8 * hash(qx, qy, s + 12)) * SY;
-          // (blocks of their own sizes: a big one swallows its neighbours' share; boxy, not round)
-          const big = 0.5 + 1.2 * hash(qx, qy, s + 13) * hash(qx, qy, s + 17) + 0.3 * hash(qx, qy, s + 18);
-          const ax = Math.abs(lx - px) / SX, ay = Math.abs(ly - py) / SY;
-          const dd = Math.max(ax, ay * 1.15) * 0.75 + Math.hypot(ax, ay) * 0.25;
-          const dn = dd / big;
-          if (dn < d1) { d2 = d1; d1 = dn; sid = qx * 131 + qy; cx = px; cy = py; }
-          else if (dn < d2) d2 = dn;
-        }
-      }
-      const wet = clamp(1 - (lx - xl) / 8, 0, 1) * (ly > 0 ? 1 : 0.3);
-      const shade = clamp((lx - T.W * 0.9) / (T.W * 0.25), 0, 1);
-      const dx = (lx - cx) / SX, dy = (ly - cy) / SY;
-      // the crevices: dark under and right of each block; on its lit upper left the joint is only its
-      // rim catching the light (so the blocks don't read as a wall of outlined cobbles)
-      if (d2 - d1 < 0.07 + 0.05 * hash1(sid, s + 14)) {
-        if (dy > -0.2 || dx > 0.2) { b.set(x, y, P.karst[8]!); continue; }
-        if (wet < 0.5 && hash1(sid, s + 16) < 0.6) { b.set(x, y, P.karst[5]!); continue; }
-      }
-      const h0 = hash1(sid, s + 15);
-      // moss on the odd top, algae on the wet ones by the water
-      if (dy < -0.3 && h0 < 0.1 + 0.25 * wet) { b.set(x, y, wet > 0.5 ? (dx < 0 ? P.moss[5]! : P.moss[6]!) : dy < -0.42 && dx < 0.1 ? P.moss[4]! : P.moss[5]!); continue; }
-      // (in the slabs' and the lip's shade: dim, a recess behind the lit blocks in front)
-      let t = 0.72 + 0.14 * h0 + 0.12 * (dx * 0.5 + dy * 0.85) + 0.14 * wet + 0.08 * shade;
-      // its upper-left rim catching what light reaches in
-      if (dy < -0.45 && dx < 0.25 && wet < 0.5) t -= 0.24;
-      else if (dx < -0.42 && dy < 0.2 && wet < 0.5) t -= 0.1;
-      b.set(x, y, tone(P.karst, clamp(0.14 + t * 0.8, 0, 1), x, y, 0));
+      // the shade between and behind the blocks: dark, wet toward the water side
+      const wet = clamp(1 - (lx - xl) / 8, 0, 1);
+      b.set(x, y, wet > 0.5 || vnoise(lx / 5, ly / 4, s + 40) > 0.55 ? P.karst[8]! : P.karst[7]!);
     }
   }
+  const rows = cached(`talus-rows|${s}|${T.W}|${T.D}`, () => {
+    const r = rng(s + 50);
+    const out: LimeChunk[][] = [];
+    // (kagami9 round 1, second pass: rows of many small blocks of one size still read as a busy wall)
+    // fewer rows, fewer and bigger blocks of very different widths, some standing taller than their row
+    for (let y = -4; y < T.D * 1.08;) {
+      // (kagami9 round 1, worker 2, third pass: the rows of slabs, each with its bedding lines, still read
+      // as a dry-stone wall at play zoom) deeper rows of bigger blocks, most of them unbedded lumps
+      const step = 26 + r() * 18;
+      const row: LimeChunk[] = [];
+      // (its extent over the whole row: with deep rows, the talus side sampled at mid-row left the shade
+      // behind the blocks showing past the row's last block)
+      const a = talusLeft(T, y + step * 0.5) - 3;
+      const z = Math.max(talusRight(T, y), talusRight(T, y + step * 0.5), talusRight(T, y + step)) + 4;
+      for (let x = a + (r() - 0.5) * 6; x < z - 4;) {
+        const w = 44 + r() * 46 + r() * r() * 80;
+        const top = y - 4 - r() * 8 - (r() < 0.3 ? 8 + r() * 10 : 0) - (w > 60 ? 4 : 0);
+        const v = clamp(y / T.D, 0, 1);
+        // (the nearest rows stand in the lake: wet feet, each on its own waterline, never one ruled row)
+        const inLake = y + step > T.D * 0.9;
+        const wl = y + step + 1 + 5 * hash1(row.length, s + out.length * 7 + 60);
+        row.push({ x0: x, x1: Math.min(z + 8, x + w), top, foot: inLake ? wl + 3 : y + step + 6, tilt: (r() - 0.5) * 0.16, z: 0.35 + 0.4 * v + 0.15 * r(), cap: r() < 0.3 ? 1 + r() * 2 : 0, shade: 0.22 - 0.1 * v + 0.08 * r(), round: 0.35 + 0.4 * r(), flat: r() < 0.2, water: inLake ? wl : undefined, seed: s + 500 + out.length * 97 + row.length * 13 });
+        x += w * (0.82 + 0.3 * r()) + (r() < 0.25 ? 3 + r() * 5 : 0);
+      }
+      out.push(row);
+      y += step;
+    }
+    return out;
+  });
+  rows.forEach((row, i) => {
+    const nearer = rows[i + 1] ?? [];
+    for (const k of row) {
+      // (inside the talus only: its water side stays the stepped shore the water's hold expects)
+      if (k.x1 < talusLeft(T, k.foot) - 4) continue;
+      limeChunk(c, k, nearer);
+    }
+  });
 }
 
 export const scree = definePainter<ScreeP>("op.scree", {
   bounds(p) {
-    return [-64, -(p.h ?? 26) * 1.5 - 50, p.w + 34, p.deep * 1.2 + 40];
+    return [-64, -(p.h ?? 26) * 1.5 - 50, p.w + 46, p.deep * 1.2 + 40];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
@@ -1212,16 +1263,21 @@ export const scree = definePainter<ScreeP>("op.scree", {
       // waterline") slabs broken off the bedded lip: wider than they are tall, flat tops, sharp
       // corners, a bedding plane or two across each, stacked and offset; one fallen aslant; the
       // nearest the darkest, low and wide
-      [0.0, 0.7, 0.03, 1.6, -0.03, 0.42, 0.02],
-      [0.44, 1.06, 0.1, 1.15, 0.03, 0.55, 0.06],
-      [-0.16, 0.46, 0.34, 1.5, 0.12, 0.7, 0.1],
-      [0.26, 1.0, 0.5, 1.25, -0.04, 0.82, 0.14],
-      [-0.22, 0.4, 0.8, 1.55, 0.03, 0.9, 0.2],
-      [0.16, 0.7, 0.95, 0.95, -0.06, 0.94, 0.26],
+      // (kagami9 round 1, the critic's W2-3: "stacked rectangular slabs with dark joints", every one
+      // the same width and the same flat slab) chunks each a different size and shape, overlapping at
+      // different depths (Dex's sketch): a tall block fallen upright against the lip, a broad slab
+      // fallen aslant behind a small one, a squat cube, the nearest a long low ledge and a narrow
+      // stone; green only on the top ledges, each casting its shadow down and to the right
+      [0.44, 0.86, 0.02, 2.5, -0.02, 0.4, 0.04],
+      [-0.06, 0.62, 0.12, 0.85, 0.17, 0.52, 0.06],
+      [0.66, 1.08, 0.24, 1.3, -0.1, 0.62, 0.1],
+      [-0.08, 0.38, 0.46, 1.7, 0.05, 0.78, 0.12],
+      [-0.2, 0.6, 0.8, 1.05, 0.02, 0.9, 0.2],
+      [0.5, 0.68, 0.94, 1.15, -0.14, 0.95, 0.24],
     ];
     const ks: LimeChunk[] = plan.map(([a, q, bs, hs, tl, z, sh], i) => {
       const base = D * bs, x0 = W * a + (r() - 0.5) * 6, x1 = W * q + (r() - 0.5) * 6;
-      return { x0, x1, top: base - H * hs * (0.9 + 0.2 * r()) - Math.max(0, -tl) * (q - a) * W, foot: base + 3, tilt: tl, z, shade: sh, cap: i % 3 === 1 ? 0 : 1.2 + r() * 2, water: base, round: 0.22, flat: true, seed: seed + 100 + i * 17 };
+      return { x0, x1, top: base - H * hs * (0.9 + 0.2 * r()) - Math.max(0, -tl) * (q - a) * W, foot: base + 3, tilt: tl, z, shade: sh, cap: i % 3 === 1 ? 0 : 1.2 + r() * 2, water: base, round: i % 2 ? 0.5 : 0.22, flat: i === 4, seed: seed + 100 + i * 17 };
     });
     // stones half sunk off the west sides, in the open water
     for (const [a, bs, sw, sh] of [[-0.3, 0.08, 13, 5], [-0.27, 0.36, 9, 4], [-0.36, 0.84, 16, 6]] as const) {

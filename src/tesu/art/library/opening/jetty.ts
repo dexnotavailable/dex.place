@@ -57,6 +57,12 @@ export interface JettyP {
    * bents.
    */
   sag?: [number, number][];
+  /**
+   * (kagami9 round 1, the critic's W2-12: "nothing in our range casts a shadow") where things standing
+   * on the deck shade it: [x0, x1] spans (local), the boards' top rows a step darker there (the
+   * contact and the short cast shadow of a prop under a high sun up to the left), fading out to the right.
+   */
+  shade?: [number, number][];
 }
 
 /** Plank-end height and the stringer's top. */
@@ -207,7 +213,9 @@ export function jettyPlan(p: JettyP, seed: number): JPlan {
       if (n === 0) continue;
       // irregular bays: weights from short to long, a long bay now and then
       const ws: number[] = [];
-      for (let k = 0; k <= n; k++) ws.push(r() < 0.18 ? 1.9 + r() * 0.6 : 0.45 + r() * 1.1);
+      // (kagami9 round 1, the critic's W2-8: "near-even posts ~200 px apart at the catch") wider spread:
+      // short bays crowding, long ones a third of the time (the same draws, so nothing else moves)
+      for (let k = 0; k <= n; k++) ws.push(r() < 0.3 ? 2.1 + r() * 0.9 : 0.3 + r() * 1.05);
       const sum = ws.reduce((s, v) => s + v, 0);
       let acc = 0;
       for (let k = 0; k < n; k++) {
@@ -768,6 +776,14 @@ function paintDeck(c: PaintCtx, p: JettyP, plan: JPlan, seed: number, x0: number
           }
           // the bevel on its left edge at the close band
           if (d >= 2 && x === PX0 && y > Yt) t -= 0.06;
+        }
+        if (p.shade) {
+          for (const [sa, sb] of p.shade) {
+            if (lx < sa || lx > sb) continue;
+            const f = 1 - (lx - sa) / Math.max(1, sb - sa);
+            if (ly - top < 1.2 + 2.4 * f) t = Math.max(t + 0.34 * (0.5 + 0.5 * f), 0.62);
+            break;
+          }
         }
         b.set(x, y, plankCol(x, y, clamp(t, 0, 1), bleach));
         continue;
@@ -1391,8 +1407,9 @@ function paintLantern(c: PaintCtx, lx0: number, ly0: number, flicker: number): v
 // --- the landings -----------------------------------------------------------------------------
 
 export interface LandingP {
-  /** "west": a step down to the shore's grass; "east": the deck's end on a stone crib against the rock. */
-  end: "west" | "east";
+  /** "west": a step down to the shore's grass; "east": the deck's end on a stone crib against the rock;
+   *  (kagami9 round 1) "join": on the front plane, the rock the deck's end runs into (see below). */
+  end: "west" | "east" | "join";
   /** The ground under the jetty's end: local polyline [x, y, ...] (y below the deck top). */
   ground: number[];
   /** Waterline below the deck top, px. */
@@ -1405,11 +1422,13 @@ export interface LandingP {
 
 export const landing = definePainter<LandingP>("op.landing", {
   bounds(p) {
+    if (p.end === "join") return [-150, -44, 4, p.water + 40];
     return p.end === "west" ? [-60, -6, 130, p.water + 14] : [-232, -6, 44, p.water + 26];
   },
   paint(c, p) {
     const b = c.buf, d = c.d, seed = c.seed;
     const water = p.water;
+    if (p.end === "join") { paintJoin(c, p); return; }
     const g = (x: number): number => yAt(p.ground, x);
     // (round 3) every pile that stands in the ground is driven into it: a collar of wet mud
     // heaped against it (higher on one side), a wet dark band on the log above the mud, a stone
@@ -1628,6 +1647,58 @@ export const landing = definePainter<LandingP>("op.landing", {
     }
   },
 });
+
+/**
+ * (kagami9 round 1, the critic's W2-7; Dex 10-14: "stone chunks overlapping the path") The jetty's end
+ * runs into the rock instead of stopping at it: on the front plane (in front of the deck's lit face and
+ * of her), a big block standing in the shallows before the last span with its top a little above the
+ * deck, so the deck's end disappears behind it; a slab broken off it lying on the last planks; a low
+ * block and a stone at their feet in the water; moss and soil heaped where the planks go in, grass on
+ * the tops, reeds at the water, the cast shadow of each block down and to the right on the one behind.
+ * It stays west of the jetty's end (local x <= 0: the road beyond is the vista's). Anchor: the deck's
+ * east end at its top; `water` the waterline below it.
+ */
+function paintJoin(c: PaintCtx, p: LandingP): void {
+  const d = c.d, seed = c.seed, water = p.water;
+  // [x0, x1, top, foot, tilt, z, cap, in the water]
+  const J1: LimeChunk = { x0: -44, x1: -2, top: -9, foot: water + 3, tilt: 0.06, z: 0.55, cap: 2.6, water, round: 0.5, seed: seed + 1 };
+  const J0: LimeChunk = { x0: -64, x1: -38, top: 7, foot: water + 3, tilt: 0.1, z: 0.4, cap: 1.8, water, shade: 0.12, round: 0.6, seed: seed + 2 };
+  // the slab broken off, lying on the last planks aslant, its foot on the deck
+  const S1: LimeChunk = { x0: -60, x1: -45, top: -6, foot: 1.5, tilt: 0.18, z: 0.75, cap: 1.2, round: 0.4, flat: true, seed: seed + 3 };
+  // a low block and a stone nearer still, in the water at their feet
+  const J2: LimeChunk = { x0: -30, x1: 0, top: water - 13, foot: water + 6, tilt: -0.05, z: 0.85, cap: 1.4, water: water + 3, round: 0.5, seed: seed + 4 };
+  const J3: LimeChunk = { x0: -78, x1: -66, top: water - 5, foot: water + 4, tilt: 0.12, z: 0.8, cap: 0, water: water + 1, seed: seed + 5 };
+  limeChunk(c, J0, [J1, S1]);
+  limeChunk(c, J1, [J2]);
+  limeChunk(c, S1);
+  limeChunk(c, J3);
+  limeChunk(c, J2);
+  if (d < 0.3) return;
+  // soil and moss heaped where the planks go in behind the block, and over the slab's foot
+  const heap = (x0: number, x1: number, yb: number, hh: number, s0: number): void => {
+    for (let x = Math.round(c.X(x0)); x < Math.round(c.X(x1)); x++) {
+      const lx = LX(c, x), q = ((lx - x0) / (x1 - x0)) * 2 - 1;
+      const hgt = hh * Math.pow(Math.max(0, 1 - q * q), 1.2) * (0.6 + 0.6 * vnoise1(lx / 3, s0));
+      for (let y = Math.round(c.Y(yb - hgt)); y < Math.round(c.Y(yb + 0.6)); y++) {
+        const ly = LY(c, y);
+        c.buf.set(x, y, ly < yb - hgt + 1 ? (q < 0.2 ? P.moss[3]! : P.moss[4]!) : vnoise(lx / 2.6, ly / 2, s0 + 1) > 0.5 ? P.moss[5]! : P.earth[5]!);
+      }
+    }
+  };
+  heap(-68, -56, 0.5, 3.5, seed + 20);
+  heap(-46, -38, 0.5, 2.5, seed + 21);
+  // grass on the tops (lit tips on the sun side), reeds out of the water at their feet
+  const r = rng(seed + 30);
+  for (const k of [J1, J0, J2]) {
+    for (let i = 0; i < 6; i++) {
+      const gx = k.x0 + 3 + r() * (k.x1 - k.x0 - 6);
+      grass(c, gx, chunkTop(k, gx) + 1, 3 + r() * 7, (r() - 0.45) * 0.9, (r() - 0.4) * 0.6, r());
+    }
+  }
+  for (const [rx, rw, rh, n] of [[-84, 10, 20, 9], [-36, 8, 14, 6], [-6, 6, 12, 5]] as const) {
+    for (let k = 0; k < n; k++) grass(c, rx + (r() - 0.5) * rw, water + 2, rh * (0.45 + 0.55 * r()), (r() - 0.5) * 0.45, (r() - 0.45) * 0.9, r() * 0.7);
+  }
+}
 
 // --- Pilgrims' Leap ---------------------------------------------------------------------------
 

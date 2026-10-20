@@ -136,7 +136,39 @@ function lantern(c: PaintCtx, x: number, y: number, H: number): void {
  * bright line where they meet the water.
  */
 function torii(c: PaintCtx, x: number, y: number, H: number, seed: number): void {
-  gateTorii(c, x, y - 1, { span: H * 0.62, h: H, pw: Math.max(2, H * 0.095), s: -0.075, seed, wet: true, small: true, legs: true });
+  const pw = Math.max(2, H * 0.095);
+  gateTorii(c, x, y - 1, { span: H * 0.62, h: H, pw, s: -0.075, seed, wet: true, small: true, legs: true });
+  kasagiEnd(c, x, y - 1 - H, pw);
+  // the legs' caps in the same language, smaller (gates.ts: legD = h * 0.27, legH = h * 0.46)
+  for (const lx of [-H * 0.27, H * 0.27]) kasagiEnd(c, x + lx, y - 1 - H * 0.46 - Math.max(1.5, pw * 0.2), pw * 0.62);
+}
+
+/**
+ * (kagami9 round 1, the critic's W2-13: at this size the gate painter's end-on kasagi came out a
+ * 2-row slab, "a red stand, not a torii") The kasagi seen end-on, drawn bold enough to read at the
+ * islet's size: a black cap wider than the shimaki under it, its top a low roof lit on the sun side,
+ * its underside in shade, both tips swept up into horns (the sweep of the beam seen along its length).
+ * (x, y): the cap's middle top, local px; pw the pillar's width.
+ */
+function kasagiEnd(c: PaintCtx, x: number, y: number, pw: number): void {
+  const Wk = Math.max(4.5, pw * 1.35), body = Math.max(2, pw * 0.42), horn = Math.max(2.5, pw * 0.7);
+  for (let oy = -horn - 1; oy <= body + 1; oy += 0.5) {
+    for (let ox = -Wk - 1; ox <= Wk + 1; ox += 0.5) {
+      const a = Math.abs(ox) / Wk;
+      if (a > 1) continue;
+      // the top: level over the pillar, lifting into a horn at each tip (a bow seen from its end);
+      // the underside lifting with it, so the tips are thin and upswept
+      const tip = Math.pow(Math.max(0, a - 0.45) / 0.55, 1.8);
+      const top = -horn * tip;
+      const bot = body - (horn + body * 0.45) * tip;
+      if (oy < top || oy > bot) continue;
+      let col: number;
+      if (oy < top + 1) col = ox < 0 ? P.lacquer[0]! : P.lacquer[1]!;
+      else if (oy > bot - 1) col = P.lacquer[4]!;
+      else col = ox < -Wk * 0.2 ? P.lacquer[2]! : P.lacquer[3]!;
+      dot(c, x + ox, y + oy, col);
+    }
+  }
 }
 
 export const islet = definePainter<IsletP>("op.islet", {
