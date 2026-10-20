@@ -172,6 +172,8 @@ export function footer(current: PageId): string {
   ).join("");
   return (
     `<footer class="ftr">` +
+    // the home page's footer is its last strip: paper that rises over the pine, its shade cast up (styles/bands.css)
+    (onHome ? `<i class="ftr__shade" aria-hidden="true"></i><i class="ftr__paper" aria-hidden="true"></i>` : "") +
     `<div class="wrap">${moreChips()}</div>` +
     `<div class="ftr__in wrap">` +
     `<a class="ftr__mark" href="${onHome ? "#site" : "/"}">${pixelMark(2)}<span class="sr">dex, home</span></a>` +

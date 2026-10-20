@@ -6,9 +6,10 @@
 //   dex.place CANON.md ("What it is for", "Shape")
 // Download state is not repeated here: it is read from data/downloads.ts, so a
 // new build only needs updating in one place.
-// Imagery: each project's card art (Dex 10-19: splash art filling the whole card, in layers that pan; Yuki for
-// dexCode, Bao for dexClient, Zhusha for dex.place, made by the card-art lane) in public/site/cards/<id>/ (0.png the back,
-// n-1 the front). Until it lands, stand-ins painted by the world's own painters (`standin: true`). Never Dex's art here.
+// Imagery: each project's card art (Dex 10-19: splash art filling the whole card): Yuki for dexCode, Bao for dexClient,
+// Zhusha for dex.place. Since 10-20 the pictures Dex picked (GPT Image 2.5, AI-generated), each as a one-layer rig in
+// public/site/cards/<id>/ (art.webp + rig.json, lanes\cards\tools\picks_rig.py). The old stand-ins' plain layers
+// (0..2.png) stay as the fallback the build uses only if a rig cannot be read. Never Dex's own art here.
 
 import type { IconName } from "../pixels.ts";
 
@@ -44,12 +45,18 @@ export interface CardArt {
   readonly layers: number;
   /** Still the stand-in, until the card-art lane's splash art replaces it. */
   readonly standin: boolean;
+  /** What the picture shows, for the pages that present it as a picture (the project page); on the card it is
+   *  decorative (the card's name says what it is). */
+  readonly alt?: string;
+  /** Where the picture comes from. */
+  readonly credit?: string;
   /** A rig is in (rig.json + one webp per part, lanes\motion\NOTEBOOK.md ASKS 00): the card plays it. Until lane H's
    *  art lands, the stand-ins are rigs too (lanes\cards\tools\standin_rig.py cuts the plain layers into parts). */
   readonly rig?: boolean;
 }
 
 const STANDIN: CardArt = { w: 160, h: 240, layers: 3, standin: true };
+const PICKED = "AI-generated illustration (GPT Image 2.5), picked by Dex";
 
 export const projectHref = (p: Project): string => `/projects/${p.id}/`;
 
@@ -67,7 +74,10 @@ export const projects: readonly Project[] = [
     docs: { href: "/docs/dexcode/", label: "dexCode docs" },
     tone: "cyan",
     hero: "Yuki",
-    art: { ...STANDIN, rig: true },
+    art: {
+      ...STANDIN, standin: false, rig: true, credit: PICKED,
+      alt: "Yuki, dexCode's companion: a white-haired woman in a fur-trimmed white hooded cloak, holding a book of ice, ice shards around her.",
+    },
   },
   {
     id: "dexclient",
@@ -82,7 +92,10 @@ export const projects: readonly Project[] = [
     docs: { href: "/docs/installing-dexclient/", label: "Installing dexClient" },
     tone: "yellow",
     hero: "Bao",
-    art: { ...STANDIN, rig: true },
+    art: {
+      ...STANDIN, standin: false, rig: true, credit: PICKED,
+      alt: "Bao, dexClient's character: a masked figure in a wide black hat and a high-collared black coat, a red-tasselled sword and a bell, golden light behind.",
+    },
   },
   {
     id: "dex-place",
@@ -96,6 +109,9 @@ export const projects: readonly Project[] = [
     docs: { href: "/docs/about-dex-place/", label: "About dex.place" },
     tone: "magenta",
     hero: "Zhusha",
-    art: { ...STANDIN, rig: true },
+    art: {
+      ...STANDIN, standin: false, rig: true, credit: PICKED,
+      alt: "Zhusha, dex.place's character: a black-haired woman in red and black with a talisman hat, swinging a glowing sword over a karst river at sunset.",
+    },
   },
 ];

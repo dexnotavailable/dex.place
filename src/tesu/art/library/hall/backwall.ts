@@ -12,6 +12,7 @@
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
+import { upperWall } from "./upper.ts";
 import { M, SCREEN, LitField, clamp, colBase, colLight, cyl, fbm, grain, hash, keep, lathe, lum, mt, rect, tn, vnoise, type At } from "./kit.ts";
 
 /** A bay of the back wall between two columns, in local plane px. */
@@ -50,7 +51,6 @@ const BAL_FLOOR = 8.6;
 const BAL_RAIL = 9.3;
 const HIGH_TOP = 13.2;
 const LINTEL = 14.2;
-const BRACKETS = 15.6;
 
 export const backwall = definePainter<BackWallP>("hall.backwall", {
   bounds(p) {
@@ -87,8 +87,8 @@ export const backwall = definePainter<BackWallP>("hall.backwall", {
     for (const b of p.bays) highBay(c, p, b, lf);
     // 6. the lintel, painted teal and gold, and the gold bracket sets on it
     lintel(c, p, lf);
-    // 7. the roof structure, going up into the dark
-    roof(c, p, lf);
+    // 7. the upper storey over the lintel: bracket sets, the cornice, the lofts, the roof going up into the dark
+    upperWall(c, p, lf);
     // 8. columns over everything
     for (const cx of p.cols) column(c, p, cx, lf);
     // 9. the polished floor receding toward us, the wall doubled in it
@@ -240,6 +240,17 @@ function screenDoor(c: PaintCtx, p: BackWallP, x0: number, y0: number, x1: numbe
     // paper lit from behind by a lamp low in the corridor: a soft warm bloom, darker edges
     const bloom = Math.exp(-(((u - 0.5) / 0.55) ** 2 + ((v - 0.62) / 0.6) ** 2));
     const g = glowK * (0.35 + 0.65 * bloom) - (vnoise(lx * 0.05, ly * 0.05, seed) > 0.8 ? 0.1 : 0);
+    // (hall loop round 1) the hall's life behind the paper: now and then someone in the corridor
+    // between the lamp and the screen, their shadow soft on the paper (a head, shoulders, a sleeve)
+    if (hash(seed, 5, 97) > 0.62) {
+      const fx = 0.3 + 0.4 * hash(seed, 6, 97), fh = 0.55 + 0.25 * hash(seed, 7, 97);
+      const hx = (u - fx) * (x1 - x0), hy = (v - (1 - fh)) * (kick - y0);
+      const headR = 0.13 * U;
+      const head = Math.hypot(hx, hy - headR) < headR;
+      const body = hy > headR * 1.6 && Math.abs(hx) < headR * (1.2 + Math.min(1, (hy - headR * 1.6) / (0.3 * U)) * 0.9);
+      const sleeve = hash(seed, 8, 97) > 0.5 && hy > headR * 2 && hy < headR * 3.2 && hx > headR && hx < headR * 3.4;
+      if (head || body || sleeve) return tn(SCREEN, clamp(1.05 - g * 0.62, 0, 1), X, Y, 0.3);
+    }
     return tn(SCREEN, clamp(1.05 - g * 1.25, 0, 1), X, Y, 0.55);
   });
 }
@@ -288,28 +299,45 @@ function carvedBand(c: PaintCtx, x0: number, y0: number, x1: number, y1: number,
   });
 }
 
-/** A long hanging brush banner: a rod, the paper with big abstract strokes, a seal, tassels. */
+/** A long hanging scroll: a rod, a silk mount, an ink painting of bamboo (no lettering), a red seal, tassels. */
 function banner(c: PaintCtx, x0: number, y0: number, x1: number, y1: number, lf: LitField, seed: number): void {
   const w = x1 - x0;
   // the rod and its knobs
   rect(c, x0 - w * 0.12, y0 - w * 0.08, x1 + w * 0.12, y0, (X, Y, lx, ly) => mt(M.wood, lum(lf.get(lx, ly), 0, -0.6), X, Y, 0.15, 1));
-  // the mount (silk border) and the paper
+  // (hall loop round 2: the "big characters" were T-and-cross strokes, fake writing) the painting: two or three
+  // bamboo stalks rising from the foot, ink darkest on the near one, each jointed at its nodes, with sprays of
+  // narrow leaves hanging off them; a red seal low in a corner
+  const stalks: [number, number, number][] = [];
+  const n = 2 + (hash(seed, 31) < 0.5 ? 1 : 0);
+  for (let k = 0; k < n; k++) stalks.push([0.28 + 0.44 * (k / Math.max(1, n - 1)) + (hash(seed, 33 + k) - 0.5) * 0.08, 0.15 + 0.35 * hash(seed, 37 + k), k === 0 ? 0.08 : 0.32 + 0.2 * k]);
   rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
     const l = lf.get(lx, ly);
     const u = (lx - x0) / w, v = (ly - y0) / (y1 - y0);
     if (u < 0.1 || u > 0.9 || v < 0.06 || v > 0.94) return mt(M.verm, lum(l) * 0.7, X, Y, 0.35, 1);
-    // brush strokes: a few big characters stacked, made of fat noisy strokes (no real text)
-    const ch = Math.floor((v - 0.08) / 0.2);
-    const cv = ((v - 0.08) / 0.2) - ch;
-    const sx = (u - 0.5) * 3.2, sy = (cv - 0.5) * 2.2;
-    const h1 = hash(ch, 3, seed), h2 = hash(ch, 5, seed);
-    const stroke =
-      (Math.abs(sy - (h1 - 0.5) * 0.8) < 0.13 && Math.abs(sx) < 0.85) ||
-      (Math.abs(sx - (h2 - 0.5) * 0.9 - sy * 0.3) < 0.12 && Math.abs(sy) < 0.8) ||
-      (h1 > 0.5 && Math.abs(sx + sy * 0.7 - 0.2) < 0.1 && sy > -0.2);
-    const wob = vnoise(lx * 0.4, ly * 0.4, seed) > 0.75;
-    if (ch >= 0 && ch < 4 && stroke && !wob) return tn(M.ink, 0.2, X, Y, 0);
-    if (ch === 3 && Math.abs(sx - 0.55) < 0.25 && Math.abs(sy - 0.55) < 0.25) return mt(M.verm, lum(l) * 0.9, X, Y, 0.3, 1);
+    const pu = (u - 0.1) / 0.8, pv = (v - 0.06) / 0.88; // on the paper, 0..1
+    for (const [sx, top, ink] of stalks) {
+      if (pv < top) continue;
+      const lean = (pv - 1) * (sx - 0.5) * 0.18;
+      const x = sx + lean;
+      const sw = 0.045 + (1 - pv) * 0.012;
+      const node = Math.abs(((pv - top) * 9) % 1 - 0.5) > 0.46;
+      if (Math.abs(pu - x) < sw && !(node && Math.abs(pu - x) < sw * 0.6 && keep(X, Y, 0.5))) return tn(M.ink, clamp(ink + (node ? -0.1 : 0) + (pu < x ? 0.1 : 0), 0, 1), X, Y, 0.3);
+      // leaves: narrow blades drooping off the upper nodes, two or three to a spray
+      for (let j = 0; j < 3; j++) {
+        const ny = top + 0.08 + j * 0.13 + hash(seed, 41 + j) * 0.04;
+        if (pv < ny - 0.02 || pv > ny + 0.2) continue;
+        const dir = (j + Math.round(sx * 7)) % 2 === 0 ? 1 : -1;
+        for (let b = 0; b < 3; b++) {
+          const ang = 0.35 + b * 0.32;
+          const t = (pv - ny) / Math.sin(ang) / 0.2;
+          if (t < 0 || t > 1) continue;
+          const bx = x + dir * t * 0.2 * Math.cos(ang) * 2.2;
+          const bw = 0.03 * Math.sin(t * Math.PI);
+          if (Math.abs(pu - bx) < bw) return tn(M.ink, clamp(ink + 0.12 + t * 0.2, 0, 1), X, Y, 0.3);
+        }
+      }
+    }
+    if (pv > 0.86 && pv < 0.93 && Math.abs(pu - 0.8) < 0.07) return mt(M.verm, lum(l) * 0.9, X, Y, 0.3, 1);
     return mt(M.paper, lum(l) * 0.95 - v * 0.08, X, Y, 0.15, 1);
   });
   // tassels from the bottom corners
@@ -455,43 +483,27 @@ function lintel(c: PaintCtx, p: BackWallP, lf: LitField): void {
       if (ring % 2 === 0 && d < 0.5 * U) return mt(M.gold, lum(l) * 0.45, X, Y, 0.4, 1);
       return tn(P.jade, clamp(0.8 + (1 - lum(l)) * 0.2, 0, 1), X, Y, 0.45);
     }
-    const cart = Math.abs(k - 0.5) < 0.17 && Math.abs(v - 0.5) < 0.32;
+    // (hall loop round 1) each bay's panel its own: a long cartouche, a pair of small ones, a
+    // painted cloud band, or a banner hung over it; the paint flaked off in places
+    const bi = Math.floor(lx / (4.25 * U));
+    const style = hash(bi, 3, 81);
+    if (style > 0.82 && Math.abs(k - 0.5) < 0.2) {
+      // a banner hung from the lintel's top over the panel, dark silk with a gold hem
+      const u = (k - 0.3) / 0.4;
+      if (v > 0.84) return Math.abs(((u * 7) % 1) - 0.5) < 0.25 ? mt(M.gold, lum(l) * 0.6, X, Y, 0.3, 1) : 0;
+      return mt(M.verm, lum(l) * (0.42 - Math.abs(Math.sin(u * 9)) * 0.08), X, Y, 0.3, 1);
+    }
+    const cw = style < 0.4 ? 0.17 : 0.07;
+    const cc = style < 0.4 ? 0.5 : Math.abs(k - 0.39) < Math.abs(k - 0.61) ? 0.39 : 0.61;
+    const cart = style < 0.62 && Math.abs(k - cc) < cw && Math.abs(v - 0.5) < 0.32;
     if (cart) {
-      const e = Math.min(0.17 - Math.abs(k - 0.5), (0.32 - Math.abs(v - 0.5)) * 0.4);
+      const e = Math.min(cw - Math.abs(k - cc), (0.32 - Math.abs(v - 0.5)) * 0.4);
       return e < 0.02 ? mt(M.gold, lum(l) * 0.85, X, Y, 0.15, 1) : mt(M.lacq, lum(l) * 0.5, X, Y, 0.2, 1);
     }
+    if (style >= 0.62 && Math.abs(v - 0.5 - Math.sin(k * 40) * 0.12) < 0.08 && Math.abs(k - 0.5) < 0.3) return mt(M.gold, lum(l) * 0.55, X, Y, 0.3, 1);
+    const flaked = fbm(lx * 0.05, ly * 0.2, 83, 2) > 0.68;
+    if (flaked) return mt(M.wood, lum(l) * 0.45, X, Y, 0.3, 1);
     return tn(P.jade, clamp(0.86 + (1 - lum(l)) * 0.14 + (Math.sin(lx * 0.18) > 0.6 ? -0.06 : 0), 0, 1), X, Y, 0.45);
-  });
-}
-
-function roof(c: PaintCtx, p: BackWallP, lf: LitField): void {
-  const U = p.u;
-  const yL = -LINTEL * U, yB = -BRACKETS * U;
-  // bracket sets on every column and between them: stacked blocks and arms in gold and teal
-  const step = 4.25 * U / 2;
-  for (let bx = (p.cols[0] ?? 0) - step * 8; bx < p.w + step; bx += step) {
-    for (let tier = 0; tier < 3; tier++) {
-      const ty1 = yL - tier * 0.45 * U, ty0 = ty1 - 0.45 * U;
-      const arm = (0.35 + tier * 0.28) * U;
-      // the arm (a long block) and the bearing block on top
-      rect(c, bx - arm, ty0 + 0.18 * U, bx + arm, ty0 + 0.36 * U, (X, Y, lx, ly) => {
-        const l = lf.get(lx, ly);
-        const end = Math.abs(lx - bx) > arm - 0.12 * U;
-        return end ? mt(M.gold, lum(l, Math.sign(lx - bx) * 0.6, 0) * 0.55, X, Y, 0.35, 1) : tn(P.jade, clamp(0.82 + (1 - lum(l)) * 0.18, 0, 1), X, Y, 0.4);
-      });
-      rect(c, bx - 0.16 * U, ty0, bx + 0.16 * U, ty0 + 0.2 * U, (X, Y, lx, ly) => mt(M.gold, lum(lf.get(lx, ly), (lx - bx) / (0.2 * U), -0.4) * 0.75, X, Y, 0.2, 1));
-    }
-  }
-  // above the brackets: purlins and rafters fading into the dark
-  rect(c, 0, -p.top, p.w, yB, (X, Y, lx, ly) => {
-    const l = lf.get(lx, ly);
-    const up = clamp((yB - ly) / (p.top + yB), 0, 1);
-    const fade = 0.55 + up * 0.45;
-    const purlin = ((((-ly) % (0.9 * U)) + 0.9 * U) % (0.9 * U)) < 0.28 * U;
-    const rafter = (((lx % (0.36 * U)) + 0.36 * U) % (0.36 * U)) < 0.14 * U;
-    if (purlin) return mt(M.lacq, lum(l, 0, -0.5) * (1 - fade) * 1.3, X, Y, 0.2, 1);
-    if (rafter) return mt(M.lacq, lum(l) * (1 - fade) * 0.9, X, Y, 0.3, 1);
-    return tn(M.dark, 0.85 + up * 0.15, X, Y, 0.4);
   });
 }
 

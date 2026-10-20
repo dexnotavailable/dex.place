@@ -291,6 +291,8 @@ function reducedAt(T: number, k: CameraInputs): Shot | null {
   const h = cam.reduced[reducedHold(T)]!;
   if (h.hold === "widest") return widestShot(k.W);
   if (h.hold === "follow") return keysAt(h.T, k.x, k.W, k.H, "continue");
+  // a frame of its own (the postcard: Kagami whole, her at the catch spot; the full-motion camera is in the sky then)
+  if ("key" in h && h.key) return { zoom: h.key.zoom, anchor: h.key.anchor, horizon: h.key.horizon, cx: h.key.cx * HPX };
   // a held key: her at the catch spot (she has not moved yet in these)
   return keysAt(h.T, her.catchXH * HPX, k.W, k.H, k.way ?? "continue");
 }
@@ -342,6 +344,21 @@ export function paperScreenAt(T: number, way: Way = "continue"): [number, number
   return [fx, fy];
 }
 
+/**
+ * How near the lens the falling paper is drawn (0: its own size in the world; 1: `ofuda.lens.h` of the frame's height
+ * whatever the zoom). Ways 1-3 only (way 4 is close on her already; reduced motion keeps it its own size).
+ */
+export function paperLensAt(T: number, way: Way = "continue"): number {
+  if (way === "bottom") return 0;
+  const k = of.lens.keys;
+  if (T <= k[0]![0]) return k[0]![1];
+  for (let i = 1; i < k.length; i++) {
+    const [t1, w1] = k[i]!, [t0, w0] = k[i - 1]!;
+    if (T <= t1) return w0 + (w1 - w0) * smooth((T - t0) / (t1 - t0));
+  }
+  return k[k.length - 1]![1];
+}
+
 /** How far (0..1) the paper is drawn on from its frame place to her hand-off point. */
 export function paperBlendAt(T: number, way: Way = "continue"): number {
   const [a, b] = way === "bottom" ? of.blendBottom : of.blend;
@@ -379,11 +396,11 @@ export interface VoiceLine {
   parts: { from: number; to: number; jp: string; en: string }[];
 }
 
-/** Her lines on T (the chart's `voice`). */
-export const VOICE: readonly VoiceLine[] = BEATS.voice.lines.map((l) => ({
-  n: l.n, cue: l.cue, at: l.at, len: l.len, from: l.at + l.speech[0], to: l.at + l.speech[1],
-  parts: l.parts.map((p) => ({ from: l.at + p.from, to: l.at + p.to, jp: p.jp, en: p.en })),
-}));
+/** Her lines on T (the chart's `voice`: one take, its lines' parts in file seconds from `take.at`). */
+export const VOICE: readonly VoiceLine[] = BEATS.voice.lines.map((l) => {
+  const k = BEATS.voice.take, parts = l.parts.map((p) => ({ from: k.at + p.from, to: k.at + p.to, jp: p.jp, en: p.en }));
+  return { n: l.n, cue: k.cue, at: k.at, len: k.len, from: parts[0]!.from, to: parts[parts.length - 1]!.to, parts };
+});
 
 /** A subtitle shows from just before its words to a moment after them (never over the next one). */
 export const SUB_LEAD = 0.1, SUB_TAIL = 0.45;

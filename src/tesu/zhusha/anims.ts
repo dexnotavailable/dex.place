@@ -183,13 +183,17 @@ export async function loadAnims(r: WorldRenderer): Promise<AnimSet> {
  */
 export function drawArt(
   r: WorldRenderer, view: PlayView, slot: Slot, index: number, x: number, y: number, flip: boolean, a: number,
-  o: { tint?: [number, number, number, number]; opacity?: number } = {},
+  o: { tint?: [number, number, number, number]; opacity?: number; clipY?: number | null } = {},
 ): void {
   const d = slot.drawings[index];
   const sheet = d ? slot.sheets[d.sheet] : undefined;
   if (!d || !sheet) return;
   const xf = artTransform(view, r.camX, r.camY, x, y, a);
-  const [sx, sy, sw, sh] = d.r;
+  const [sx, sy, sw, sh0] = d.r;
+  // (lane E 10-20) clipY: nothing of the drawing below this world y (the ground in front of her feet); its row k sits
+  // at world y = pivot + (off + k) x a
+  const sh = o.clipY === undefined || o.clipY === null ? sh0 : Math.max(0, Math.min(sh0, Math.ceil((o.clipY - Math.round(y)) / a - d.off[1])));
+  if (sh <= 0) { r.setTransform(view.s, view.focus, view.mirror); return; }
   r.setTransform(xf.z, xf.focus, view.mirror);
   const dx = flip ? xf.q[0] - (d.off[0] + sw) : xf.q[0] + d.off[0];
   r.sprite({ sheet, sx, sy, sw, sh, x: dx, y: xf.q[1] + d.off[1], flip, lit: 0, tint: o.tint, opacity: o.opacity });

@@ -259,6 +259,8 @@ function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: num
 
 /** The ghost blades (stand-ins: a broad jian's silhouette in azure light), summoned, striking, fading. */
 function blades(r: WorldRenderer, z: Zhusha): void {
+  // FX v2's ghost blades play instead (ultform.ts)
+  if (z.uf.real) return;
   const F = ULT.form, clock = z.uf.clock, L = F.bladeLen * H;
   for (const bl of z.uf.blades) {
     if (clock < bl.born) continue;

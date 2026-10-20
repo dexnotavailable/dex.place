@@ -5,7 +5,8 @@
 // clock, the "continue" rules, the effects booked ahead and the plate store's keep (unchanged).
 import test from "node:test";
 import assert from "node:assert/strict";
-import { BEATS, CLIP_AT, CLIP_END, HANDOFF_T, VOICE, barsAt, beatAt, cameraAt, captionAt, centreOf, clipAt, herPhase, herSpeedH, herXH, keysAt, mixShot, monotone, nextBarLine, paperBlendAt, paperScreenAt, startT, subtitleAt, widestShot } from "./opening/timeline.ts";
+import { readFileSync } from "node:fs";
+import { BEATS, CLIP_AT, CLIP_END, HANDOFF_T, VOICE, barsAt, beatAt, cameraAt, captionAt, centreOf, clipAt, herPhase, herSpeedH, herXH, keysAt, mixShot, monotone, nextBarLine, paperBlendAt, paperLensAt, paperScreenAt, setStartZoom, startT, subtitleAt, widestShot } from "./opening/timeline.ts";
 import { Opening } from "./opening.ts";
 import { TileStore } from "./plates/store.ts";
 import { HeardClock, onGrid } from "./opening/clock.ts";
@@ -23,7 +24,7 @@ const WINDOWS = [[1280, 720], [1366, 768], [1536, 864], [1920, 1080], [1920, 912
 const BARS = BEATS.ui.bars.vh / 100;
 const camAt = (T, extra = {}) => cameraAt(T, { x: herXH(T) * H, W: 1280, H: 720, world, ...extra });
 
-test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift into it; her lines 1-5 in the calm, line 6 after the slap", () => {
+test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift into it; her lines 1-5 in the calm, line 6 after the slap", async () => {
   near(BEATS.her.clip.slap, BEATS.bars[9], 1e-9, "the slap on bar 9");
   assert.equal(Math.floor(BEATS.her.clip.slap), 18);
   near(BEATS.title.at, BEATS.bars[16], 1e-9, "TESU on bar 16");
@@ -33,8 +34,9 @@ test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift
   near(BEATS.her.drop1, BEATS.bars[14], 1e-9, "drop 1");
   near(BEATS.camera.whip.from, BEATS.bars[15], 0.001, "the whip on the crash");
   near(BEATS.camera.whip.to, BEATS.title.at, 0.001, "the whip lands on 0:32");
-  // her voice (Dex's takes, 10-19; the shorter wording): lines 1-5 speak in the calm, one at a time with a breath
-  // between; line 6 (the joke) is set up before the slap and the slap lands in its pause; the hat comes up on its えへへ
+  // her voice, ONE take (Dex 10-20: "stitching sentences together sounds weird"): lines 1-5 speak in the calm, one at a
+  // time with a breath between; line 6 (the joke) is set up before the slap and the slap lands in its pause; the hat
+  // comes up on its えへへ
   const v = VOICE, slap = BEATS.her.clip.slap;
   assert.equal(v.length, 6);
   assert.ok(v[0].from >= 0.2, "line 1 after the press's gust");
@@ -43,14 +45,32 @@ test("Dex's track: the slap on 0:18 (bar 9), TESU on 0:32 (bar 16) with the lift
   const six = v[5], setup = six.parts[0], punch = six.parts[1];
   assert.ok(setup.to < slap && punch.from > slap + 0.5, "the slap lands in line 6's pause, the punch after it");
   assert.ok(setup.to <= slap - 0.2, "a beat between the set-up and the slap");
-  const l6 = BEATS.voice.lines[5];
-  near(BEATS.her.clip.push, l6.at + l6.push, 1e-6, "the push-up on the えへへ");
-  assert.ok(BEATS.her.clip.push > punch.from, "the hat still jammed through the punch");
-  // every line is the game's own cue, booked on the music's clock at its start; the files play whole
-  for (const l of BEATS.voice.lines) {
-    assert.ok(BEATS.sfx.some((c) => c.id === l.cue && Math.abs(c.T - l.at) < 1e-9), `line ${l.n} booked (${l.cue})`);
-    assert.ok(l.speech[0] >= 0 && l.speech[1] <= l.len && l.parts.every((p) => p.jp && p.en && p.from >= 0 && p.to <= l.len), `line ${l.n}`);
-  }
+  const ehehe = six.parts[2];
+  assert.equal(ehehe.jp, "えへへ。");
+  near(BEATS.her.clip.push, ehehe.from, 1e-3, "the push-up on the えへへ");
+  assert.ok(BEATS.her.clip.push > punch.to, "the hat still jammed through the punch");
+  assert.ok(BEATS.camera.keys.some((k) => Math.abs(k.T - CLIP_END) < 1e-3 && k.zoom === 2 && !k.follow), "the close band ends as the push-up does");
+  assert.ok(BEATS.camera.reduced.some((r) => Math.abs(r.from - CLIP_END) < 1e-3 && r.hold === "follow"), "(reduced motion: cut to the follow then)");
+  near(BEATS.sfx.find((c) => c.id === "op.brim").T, BEATS.her.clip.push, 1e-9, "the brim's sound on the push-up");
+  // the take is the game's own cue, booked once on the music's clock at its start, played whole; its lines are lane
+  // D's alignment (speech.json parts) as they are
+  const k = BEATS.voice.take;
+  assert.deepEqual(BEATS.sfx.filter((c) => c.id === k.cue).map((c) => c.T), [k.at], "booked once");
+  assert.ok(!BEATS.sfx.some((c) => /^op\.(tight|line)\d/.test(c.id)), "the stitched lines are gone");
+  const sp = JSON.parse(readFileSync(new URL("../../public/audio/opening/speech.json", import.meta.url), "utf8"));
+  near(k.at, sp.start, 1e-9, "D's start");
+  assert.equal(k.cue, sp.cue);
+  const ours = BEATS.voice.lines.flatMap((l) => l.parts);
+  assert.equal(ours.length, sp.parts.length);
+  sp.parts.forEach((p, i) => {
+    assert.deepEqual([ours[i].from, ours[i].to, ours[i].jp, ours[i].en], [p.start, p.end, p.jp, p.en], `part ${p.part}`);
+    assert.ok(p.end <= k.len, `part ${p.part} inside the file`);
+  });
+  near(slap - k.at, (sp.pause[0] + sp.pause[1]) / 2, (sp.pause[1] - sp.pause[0]) / 2, "the slap inside the take's pause");
+  // played as recorded (no rate jitter: the subtitles and the slap ride its timing), stopped by a skip
+  const { CUES } = await import("./sound.ts");
+  assert.equal(CUES[k.cue].exact, true);
+  assert.equal(CUES[k.cue].rate, 1);
   assert.ok(!v.some((x) => x.parts.some((p) => /Emperor|letter|court/i.test(p.en))), "the old letter is gone");
   // the subtitles: the words being spoken (Japanese + English), none at the press, the punch hidden until it is said
   assert.equal(subtitleAt(0), null);
@@ -109,20 +129,38 @@ test("the catch: worker 1's drawings retimed so f007 (the slap) starts on bar 9;
   [8, 4, 5, 6, 6, 6, 6, 6, 8, 10, 10, 8, 8, 8, 9, 9, 14, 6].forEach((n, i) => { assert.equal(c.starts[i], t); t += n; });
 });
 
-test("the camera: high in the sky at the press, down through the fall, the postcard on bar 6, the close band through the slap, the widest frame on 0:32, the hand-back", () => {
+test("the camera: high in the sky at the press, a glimpse of the world below, close on the paper down through the fall, close on her through the slap, the widest frame on 0:32, the hand-back", () => {
   const s0 = camAt(0);
   assert.ok(s0.horizon > 1.2, "the eye-level row below the frame: only sky");
   assert.ok(s0.anchor > 2, "her feet far below the frame");
-  assert.ok(camAt(8.622).anchor < s0.anchor, "lower by bar 4");
-  const pc = camAt(BEATS.bars[6]);
-  near(pc.zoom, 0.5, 1e-3, "the postcard's zoom");
-  near(pc.anchor, 0.8, 1e-3, "the postcard's feet row");
-  for (const T of [BEATS.bars[8], BEATS.her.clip.slap, BEATS.bars[10] - 0.01]) {
+  // the frame's middle, H above her feet
+  const alt = (s) => ((s.anchor - 0.5) * 720) / s.zoom / H;
+  // (Dex 10-20: "following the ofuda closely") one brief glimpse of the world below as it drops out of the black, and
+  // it does not linger: the only wide frames are within it
+  const gk = BEATS.camera.keys.find((k) => k.zoom > 0 && k.zoom < 0.2);
+  assert.ok(gk.T - BEATS.bars[0] < 1, "the glimpse: as it drops out of the black");
+  const g = camAt(gk.T);
+  assert.ok(g.zoom < 0.2 && g.anchor < 1, "the glimpse: the world below in the frame");
+  for (let T = 0; T < BEATS.bars[8]; T += 0.05) {
+    if (camAt(T).zoom < 0.5) assert.ok(T > BEATS.bars[0] && T < BEATS.bars[0] + 1.2, `wide at ${T.toFixed(2)}: only the glimpse`);
+  }
+  // then close, all the way down: the world rushes past (lower and lower) around the paper
+  let prev = Infinity;
+  for (let T = BEATS.bars[1]; T <= BEATS.bars[7]; T += 0.25) {
     const s = camAt(T);
-    near(s.zoom, 2, 1e-3, `the close band at ${T}`);
+    assert.ok(s.zoom >= 3, `close on the paper at ${T.toFixed(2)} (zoom ${s.zoom.toFixed(2)})`);
+    assert.ok(alt(s) < prev, `still coming down at ${T.toFixed(2)}`);
+    prev = alt(s);
+  }
+  assert.ok(alt(camAt(BEATS.bars[7])) < 0.2 * alt(camAt(BEATS.bars[1])), "most of the way down by bar 7");
+  for (const T of [BEATS.bars[8], HANDOFF_T, BEATS.her.clip.slap]) {
+    const s = camAt(T);
+    assert.ok(s.zoom >= 3, `close on her through the catch and the slap at ${T} (zoom ${s.zoom.toFixed(2)})`);
     const col = 0.5 + ((herXH(T) * H - s.cx) * s.zoom) / 1280;
     assert.ok(col > 0.25 && col < 0.45, `she sits left of the middle, the paper's side open (${col.toFixed(3)})`);
   }
+  // it eases back to the close band way 4 has, by its end
+  near(camAt(BEATS.bars[10] + 2.1).zoom, 2, 1e-3, "the close band's end");
   const wide = camAt(BEATS.title.at + 0.001);
   assert.deepEqual(wide, widestShot(1280));
   near((143 * H - wide.cx) * wide.zoom + 640, 0.8 * 1280, 1e-6, "the palace's west gate pinned at 0.8");
@@ -131,38 +169,50 @@ test("the camera: high in the sky at the press, down through the fall, the postc
 });
 
 test("the camera never jumps, for every way in and every window: a tick apart it moves only by its own motion", () => {
-  for (const way of ["continue", "bottom"]) {
+  // (at the press the frame has the page's own scale: about 3 on a 1080 px screen, 1 on a small one)
+  for (const z0 of [1, 3]) for (const way of ["continue", "bottom"]) {
+    setStartZoom(z0);
     for (const [w, h] of WINDOWS) {
-      let prev = null;
+      let prev = null, pm = null;
       for (let T = startT(way); T < BEATS.ui.handBack - 1 / 60; T += 1 / 60) {
         const s = cameraAt(T, { x: herXH(T) * H, W: w, H: h, world, way });
         if (prev) {
           const dz = Math.abs(Math.log(s.zoom / prev.zoom));
-          const dy = Math.abs(s.anchor - prev.anchor) * h, dx = Math.abs(s.cx - prev.cx) * s.zoom;
-          assert.ok(dz < 0.06, `${way} ${w}x${h} T ${T.toFixed(3)}: zoom jumped ${dz.toFixed(3)}`);
-          // (rev 5: the plunge out of the black slab and the pull-out to the vast frame, 0.3-1.7 s, are fast on purpose:
-          // smooth, never a cut)
-          const plunge = way !== "bottom" && T > 0.3 && T < 2;
-          const lim = plunge ? 0.3 : 0.035;
-          assert.ok(dy < h * lim && dx < w * lim, `${way} ${w}x${h} T ${T.toFixed(3)}: the frame moved ${dx.toFixed(1)}, ${dy.toFixed(1)} px in one tick`);
+          const stunt = way !== "bottom" && T > 0.3 && T < 2.6;
+          assert.ok(dz < (stunt ? 0.12 : 0.06), `${way} ${w}x${h} T ${T.toFixed(3)}: zoom jumped ${dz.toFixed(3)}`);
+          // how far the world under the frame's middle moves on the frame in a tick (shares of the frame; her feet
+          // row is no measure when they are frames below it, as in the fall)
+          const my = (s.anchor * h - ((prev.anchor * h - h / 2) * s.zoom) / prev.zoom - h / 2) / h;
+          const mx = ((s.cx - prev.cx) * s.zoom) / w;
+          // (the plunge out of the black slab, the glimpse and the dive back in, 0.3-2.6 s, are fast on purpose; the
+          // close follow rushes the world past: smooth, never a cut)
+          const lim = stunt ? 0.5 : 0.1;
+          assert.ok(Math.abs(my) < lim && Math.abs(mx) < lim, `${way} ${w}x${h} T ${T.toFixed(3)}: the frame moved ${mx.toFixed(3)}, ${my.toFixed(3)} in one tick`);
+          // and its motion changes smoothly: a cut would change it at once (the dive out of the black accelerates hard)
+          const acc = stunt ? 0.15 : 0.06;
+          if (pm) assert.ok(Math.abs(my - pm[1]) < acc && Math.abs(mx - pm[0]) < acc, `${way} ${w}x${h} T ${T.toFixed(3)}: the frame's motion jumped`);
+          pm = [mx, my];
         }
         prev = s;
       }
     }
   }
+  setStartZoom(1);
   const z = (T) => Math.log(camAt(T).zoom);
   const w = BEATS.camera.whip;
   assert.ok(Math.abs(z(w.from + 0.1) - z(w.from)) < Math.abs(z(w.to) - z(w.to - 0.1)), "accelerating into the crash");
 });
 
-test("way 4 (the jetty): from bar 6 on her, the paper in from the right; joins the fall's keys at the close band", () => {
+test("way 4 (the jetty): from bar 6 on her, the paper in from the right; its own close band, joining the fall's keys at its end", () => {
   near(startT("bottom"), BEATS.bars[6], 0.001, "bar 6");
   assert.equal(startT("continue"), 0);
   assert.equal(startT("corner"), 0);
   assert.equal(startT("top"), 0);
   const b0 = cameraAt(startT("bottom"), { x: herXH(12.7) * H, W: 1280, H: 720, world, way: "bottom" });
   assert.ok(b0.anchor < 1 && b0.horizon < 1, "on the ground, not in the sky");
-  for (const T of [16.589, 18, 22, 30]) {
+  // (as live: the close band at zoom 2 through the catch; ways 1-3 come in closer and ease out to it by its end)
+  for (const T of [16.589, 18, 22]) near(cameraAt(T, { x: herXH(T) * H, W: 1280, H: 720, world, way: "bottom" }).zoom, 2, 1e-9, `way 4's close band at ${T}`);
+  for (const T of [22.658, 24, 30]) {
     const a = cameraAt(T, { x: herXH(T) * H, W: 1280, H: 720, world, way: "bottom" }), c = camAt(T);
     near(a.zoom, c.zoom, 1e-9, `the same camera at ${T}`);
     near(a.cx, c.cx, 1e-6, `the same centre at ${T}`);
@@ -183,10 +233,12 @@ test("the camera, reduced motion: held frames, cut on their beats", () => {
     prev = k;
   }
   assert.ok(holds.length <= BEATS.camera.reduced.length, `held frames only (${holds.length} changes at ${holds.map((t) => t.toFixed(1)).join(", ")})`);
-  // (rev 5) reduced motion opens on the vast frame: the whole world far below, still
-  near(r(1).zoom, 0.17, 1e-3, "the vast frame");
+  // reduced motion opens on the glimpse's frame: the whole world far below, still; then the postcard (its own key:
+  // the full-motion camera is in the sky then), the catch as the full-motion camera frames it
+  near(r(1).zoom, 0.16, 1e-3, "the glimpse's frame");
   near(r(10).zoom, 0.5, 1e-3, "the postcard");
-  near(r(18).zoom, 2, 1e-3, "the close band");
+  near(r(10).anchor, 0.8, 1e-3, "the postcard's feet row");
+  near(r(18).zoom, camAt(BEATS.bars[8]).zoom, 1e-3, "the catch's frame");
   assert.equal(r(33).zoom, 0.125);
   assert.equal(r(BEATS.ui.handBack), null);
 });
@@ -218,13 +270,14 @@ test("the fall's clouds: each where the camera sees it (on Dex's 1920 x 1080 fra
     // (planeXf rounds its offsets to whole px)
     near((x * r * xf.g + xf.offX) / REF.W, c.fx, 0.002, `${c.id} across`);
     near((y * r * xf.g + xf.offY) / REF.H, c.fy, 0.002, `${c.id} down`);
-    // the play frames at Kagami (zoom 1, the close band 2x, a vista 0.5 at 1280 x 720; at 1920 x 1080 zoom 1 and 2):
+    // the play frames at Kagami (zoom 1, the close band 2x and the catch's 4x (rev 6), a vista 0.5 at 1280 x 720; at
+    // 1920 x 1080 zoom 1, 2 and 4):
     // the whole cloud (its painter's bounds, a deck's hanging masses too) is above their top edge. (They are hidden
     // outside the fall anyway, game.ts syncFall; the deck the camera breaks out under sits low enough to show at the
     // top of a 1080p vista at 0.5, which never shows them.)
     const low = cloudBounds(c.cloud)[3];
     for (const [W, Hf] of [[1280, 720], [1920, 1080]]) {
-      for (const [zoom, anchor, horizon] of [[1, 0.66, 0.38], [2, 0.66, 0.27], [0.5, 0.74, 0.4]]) {
+      for (const [zoom, anchor, horizon] of [[1, 0.66, 0.38], [2, 0.66, 0.27], [4, 0.74, 0.27], [0.5, 0.74, 0.4]]) {
         if (W > 1280 && zoom < 1) continue;
         // (the fall loop, round 1c) the deck and its receding layers, composed for the break-out and the postcard
         // (the camera down at the hold's own height; W1-8 / W1-9: the deck overhead, its underside receding into
@@ -240,11 +293,11 @@ test("the fall's clouds: each where the camera sees it (on Dex's 1920 x 1080 fra
     }
   }
   // the fog layers on the lens: only in the fall (the camera inside the thick one at 6.95 s), never on way 4 or with
-  // reduced motion, and none in the vast frame (1.6-4.6 s: the world below stays clean)
+  // reduced motion, and none in the glimpse (rev 6: 1.2-1.5 s, the one wide frame; the world below stays clean)
   assert.ok(fallVeils(6.95, 1280, 720, "continue", false).length > 0);
   assert.equal(fallVeils(6.95, 1280, 720, "bottom", false).length, 0);
   assert.equal(fallVeils(6.95, 1280, 720, "continue", true).length, 0);
-  for (const T of [1.6, 2.94, 4.6]) assert.equal(fallVeils(T, 1920, 1080, "continue", false).length, 0, `a fog layer in the vast frame at ${T}`);
+  for (const T of [1.2, 1.35, 1.5]) assert.equal(fallVeils(T, 1920, 1080, "continue", false).length, 0, `a fog layer in the glimpse at ${T}`);
 });
 
 test("the fall's sky: deep while high, eased into the place's own sky under the deck, gone by the break-out", () => {
@@ -478,7 +531,79 @@ test("rev 5, the ofuda's two jobs: the hat paper's own colours with no line art 
   assert.ok(differ > 5 && differ < 20, `subtle: ${differ} of 100 texels`);
   const g = wp.fall(0, 0, { x: -18, gust: 0.5 }, 1 / 60, { nodes, u: 1, grain: 0.5 });
   assert.equal(g.into?.to, STRIP_CLIP);
-  assert.ok(BEATS.ofuda.stripAt > 2.6 && BEATS.ofuda.stripAt < 4.6, "it changes look in the vast frame, a speck");
+  // it turns into the whole paper as it drops out of the black, before the lens has it big
+  const of = BEATS.ofuda;
+  assert.ok(of.stripAt >= 0.3 && of.stripAt + of.stripFor <= of.lens.keys[1][0], "the turn: in the drop, before the lens");
+});
+
+test("the lens (Dex 10-20: following the ofuda closely): the page's size at the press, near the lens the whole way down, her drawing's size at the hand-off", async () => {
+  const { WorldPaper, STRIP } = await import("./opening/paper.ts");
+  const { OFUDA_TEXTURE } = await import("../site/motion/pixel-loader.ts");
+  assert.equal(paperLensAt(0), 0, "the press: the page's own size");
+  assert.equal(paperLensAt(0.3), 0);
+  for (let T = 1.2; T < 15; T += 0.1) assert.equal(paperLensAt(T), 1, `near the lens at ${T.toFixed(1)}`);
+  // off the lens before the grain and the last of the steer: the drawing takes over a paper at its own size
+  assert.equal(paperLensAt(HANDOFF_T - 0.3), 0);
+  for (let T = 12; T < 18; T += 0.5) assert.equal(paperLensAt(T, "bottom"), 0, "way 4: never");
+  // drawn near the lens: lens.h frame px long, as square blocks of frame px on its own grid
+  const wp = new WorldPaper(0.66);
+  wp.startFall();
+  wp.toWhole();
+  wp.turn(1);
+  for (let i = 0; i < 30; i++) wp.fall(0, 0, { x: 0, gust: 0 });
+  const pose = wp.fall(0, 0, { x: 0, gust: 0 });
+  // flat and upright for the measure
+  pose.pts.forEach((q, i) => { q[0] = (i % 2 ? 1 : -1) * 2.5 * 0.66; q[1] = (Math.floor(i / 2) * 4 - 10) * 0.66; q[2] = 0; });
+  const sizes = new Set();
+  let y0 = Infinity, y1 = -Infinity;
+  WorldPaper.draw(pose, (x, y) => [x * 2 + 640, y * 2 + 360], null, false, (x, y, c, s) => { sizes.add(s); y0 = Math.min(y0, y); y1 = Math.max(y1, y + s); }, { h: 200, w: 1 });
+  assert.equal(sizes.size, 1);
+  const B = [...sizes][0];
+  near(B, Math.floor(200 / STRIP.h), 0, "an art px is a block of whole frame px");
+  near(y1 - y0, 200, B + 1, "lens.h long");
+  // and at w = 0, its own size (a frame px at a time)
+  sizes.clear();
+  WorldPaper.draw(pose, (x, y) => [x * 2 + 640, y * 2 + 360], null, false, (x, y, c, s) => sizes.add(s), { h: 200, w: 0 });
+  assert.deepEqual([...sizes], [1]);
+  // the turn from the loader's paper: at its start exactly the loader's look, at its end the whole paper's
+  const t = new WorldPaper(0.66);
+  t.startFall();
+  for (let i = 0; i < 20; i++) t.fall(0, 0, { x: -18, gust: 0.5 });
+  t.toWhole();
+  t.turn(0);
+  const a = t.fall(0, 0, { x: -18, gust: 0.5 });
+  assert.equal(a.into?.to, OFUDA_TEXTURE);
+  near(a.into.share, 1, 1e-9, "all the loader's texels");
+  t.turn(1);
+  const b = t.fall(0, 0, { x: -18, gust: 0.5 });
+  assert.equal(b.tex, STRIP);
+  assert.equal(b.into, undefined, "the whole paper");
+});
+
+test("the hand-off: the paper turns the clip paper's way before the steer, so it never folds one end through the other", async () => {
+  const { WorldPaper } = await import("./opening/paper.ts");
+  const band = BEATS.her.clip.band.map((n) => [100 + n[0] * 0.66, 200 + n[1] * 0.66]);
+  const len = (P) => Math.hypot(P[10][0] + P[11][0] - P[0][0] - P[1][0], P[10][1] + P[11][1] - P[0][1] - P[1][1]) / 2;
+  const L = len(band);
+  // a paper lying the other way round from the clip's (its tie where the clip's tip is)
+  const d = [band[10][0] + band[11][0] - band[0][0] - band[1][0], band[10][1] + band[11][1] - band[0][1] - band[1][1]];
+  const dl = Math.hypot(d[0], d[1]), sn = d[0] / dl, cs = -d[1] / dl;
+  const nodes = [];
+  for (let r = 0; r <= 5; r++) for (let c = 0; c < 2; c++) {
+    const x = c ? 3.5 : -3.5, y = (r * 13) / 5;
+    nodes.push(x * cs - y * sn, x * sn + y * cs, 0);
+  }
+  const mx = band.reduce((s, n) => s + n[0] / 12, 0), my = band.reduce((s, n) => s + n[1] / 12, 0);
+  const steered = (turn) => {
+    const wp = new WorldPaper(0.66);
+    wp.startFall(nodes);
+    wp.toWhole();
+    wp.turn(1);
+    return wp.fall(mx, my, { x: 0, gust: 0 }, 1 / 60, { nodes: band, u: 0.5, turn });
+  };
+  assert.ok(len(steered(0).pts) < 0.3 * L, "(without the turn it would fold through its middle)");
+  assert.ok(len(steered(1).pts) > 0.8 * L, `turned first, no fold: ${len(steered(1).pts).toFixed(1)} of ${L.toFixed(1)}`);
+  assert.ok(BEATS.ofuda.turn > BEATS.ofuda.steer, "it turns before (and through) the steer");
 });
 
 test("rev 5, the black: the slab above everything, the paper hanging where the loader left it, the camera out of it on bar 0", () => {

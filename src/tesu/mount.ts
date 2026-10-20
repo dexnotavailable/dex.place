@@ -31,6 +31,7 @@ interface Runtime {
   play(link?: OpeningLink): void;
   audio(ctx: AudioContext): void;
   openingSet?(): OpeningSet;
+  holdFor?(way: "top" | "bottom", fx?: number, fy?: number, artCss?: number): void;
 }
 type TesuWindow = Window & { __tesu?: Runtime };
 
@@ -50,6 +51,11 @@ export interface TesuHandle extends WorldHandle {
   title(text: string): void;
   /** Still waiting for PLAY. */
   holding(): boolean;
+  /**
+   * (lane F, way 4) What the held world shows: the black slab over the sky (top), or the website's jetty window
+   * (bottom): way 4's first frame with her at frame point (fx, fy), shares of this frame, `artCss` css px per art px.
+   */
+  hold(way: "top" | "bottom", fx?: number, fy?: number, artCss?: number): void;
   /**
    * (engine 10-18) How far the world has loaded, 0..1, never going back: ~0.05 once its frame starts loading, ~0.15
    * when its code runs, ~0.4 when its first scene is drawn, then the opening set's share; 1 when it is playable AND the
@@ -248,6 +254,7 @@ export function mount(stage: HTMLElement, opts: TesuMountOptions = {}): TesuHand
     openingSet: () => runtime()?.openingSet?.() ?? null,
     title: (text) => runtime()?.game.titles.show(text, true),
     holding: () => runtime()?.game.holding ?? true,
+    hold: (w, fx, fy, artCss) => runtime()?.holdFor?.(w, fx, fy, artCss),
     pause: () => { paused = true; waitingFocus = false; sync(); },
     resume: () => { paused = false; last = performance.now(); sync(); if (waitingFocus) focus(); },
     destroy: () => {

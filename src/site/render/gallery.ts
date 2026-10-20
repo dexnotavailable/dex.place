@@ -680,7 +680,6 @@ export function gallerySection(content: SiteContent): string {
     `<div class="wrap">` +
     sectionHead({ id: "gallery-title", kicker: "gallery", title: "Gallery", tone: "yellow", icon: "frame", aside: `${pad2(n)} pieces`, more: { href: "/gallery/", label: "Gallery page" } }) +
     collageBlock(content, false) +
-    commissionsBlock(3) +
     `</div></section>`
   );
 }

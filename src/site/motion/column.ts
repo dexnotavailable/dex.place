@@ -34,6 +34,7 @@ interface ColumnWorld {
   holding?(): boolean;
   openingSet?(): OpeningSet | null;
   progress?(): number;
+  hold?(way: "top" | "bottom", fx?: number, fy?: number, artCss?: number): void;
 }
 
 /** Section ids on "/" and their addresses, in page order. */
@@ -52,6 +53,8 @@ const MARK_Y = 0.4;
 const STAGE_Y = 0.6;
 /** Way 4: the ofuda's drift into the jetty, then the beat before the game (s). */
 const DRIFT_S = 2.4;
+/** Way 4, live (Dex 10-19 18:34Z): the jetty's window opens to the full screen over this long (s). */
+const GROW_S = 0.9;
 
 /** After the catch: the white fade clears (1.2 s), then the whole scene holds this long before the game. */
 const CAUGHT_S = 1.2 + 1.6;
@@ -192,19 +195,20 @@ export function initColumn(reduced: MediaQueryList): void {
     // (css px of the page's viewport: the world measures its own frame's place once the opening has laid it out)
     return { x: pos.x, y: pos.y, k, nodes };
   };
-  const enter = (w: Way): void => {
+  const enter = (w: Way, liveBottom = false): void => {
     if (state !== "loaded") return;
     way = w;
-    const from = w !== "bottom" ? handPaper() : null;
+    const from = w !== "bottom" || liveBottom ? handPaper() : null;
     setState("ingame");
     intro?.release();
-    if (w !== "bottom") handAt = performance.now();
+    if (w !== "bottom" || liveBottom) handAt = performance.now();
     gs.setAttribute("data-entered", "");
     cont.hidden = true;
     corner.hidden = true;
     document.dispatchEvent(new CustomEvent<EnterDetail>(ENTER_EVENT, { detail: { way: w, paper: from } }));
   };
-  document.addEventListener("dex:paperworld", () => { if (handAt >= 0) handAt = -2; });
+  // (way 4 live: not before the window has opened over the paper's place)
+  document.addEventListener("dex:paperworld", () => { if (handAt >= 0 && !grow) handAt = -2; });
   const toTop = (): void => {
     window.scrollTo({ top: 0, behavior: reduced.matches ? "instant" : "smooth" });
   };
@@ -247,11 +251,89 @@ export function initColumn(reduced: MediaQueryList): void {
 
   // way 4: "experience the world we made"
   jettyGo?.addEventListener("click", () => {
-    if (state !== "loaded" || climbing || drift) return;
+    if (state !== "loaded" || climbing || drift || grow) return;
     opening.unlock();
     jettyGo.hidden = true;
+    // live: the world in the window takes the corner's ofuda where it is and the window opens to the full screen
+    // while the website slides off around it; the page holds its paper still until the window has opened
+    if (live) {
+      const r = live;
+      grow = { at: performance.now(), rect: { left: r.left, top: r.top, width: r.width, height: r.height }, top: liveTop };
+      document.dispatchEvent(new CustomEvent("dex:slideoff", { detail: { rect: grow.rect, duration: reduced.matches ? 0 : GROW_S * 1000, ease: "expo.inOut" } }));
+      enter("bottom", true);
+      return;
+    }
     drift = { at: performance.now(), from: { x: pos.x, y: pos.y } };
   });
+
+  // --- way 4, live (Dex 10-19 18:34Z: "the ofuda in the top-right corner drifts into position the same seamless way,
+  // as the website around the world window slides off screen"): while the jetty is on screen and the world waits
+  // for the press, the live world is laid over the jetty's window (the game screen above the website, clipped to the
+  // window's rect; the iframe never moves), holding way 4's first frame with her where the jetty shows her, at that
+  // size. The press opens the clip to the full screen while the website slides off (lane G, dex:slideoff); then the
+  // page goes to the top behind the full-screen world (its normal place there is the same full screen), all at once.
+  let live: DOMRect | null = null;
+  let grow: { at: number; rect: { left: number; top: number; width: number; height: number }; top: number } | null = null;
+  let liveTop = 0;
+  let held = "";
+  const ease = (u: number): number => (u < 0.5 ? 16 * u ** 5 : 1 - (-2 * u + 2) ** 5 / 2);
+  const setLive = (on: boolean): void => {
+    if (root.classList.contains("world-window") === on) return;
+    root.classList.toggle("world-window", on);
+    document.dispatchEvent(new CustomEvent("dex:worldwindow"));
+    if (!on) {
+      held = "";
+      (world as ColumnWorld & { hold?: ColumnWorld["hold"] } | null)?.hold?.("top");
+    }
+  };
+  const liveTick = (now: number): void => {
+    const scene = jetty?.querySelector<HTMLElement>("[data-jetty-scene]") ?? null;
+    const w = world as ColumnWorld | null;
+    const canLive = !!scene && !!w?.hold && worldReady && !failed && !root.hasAttribute("data-world-ask");
+    if (grow) {
+      const u = reduced.matches ? 1 : Math.min(1, (now - grow.at) / (GROW_S * 1000));
+      const e = ease(u), r = grow.rect;
+      ws.setProperty("--win-t", `${(grow.top * (1 - e)).toFixed(2)}px`);
+      ws.setProperty("--win-l", `${(r.left * (1 - e)).toFixed(2)}px`);
+      ws.setProperty("--win-r", `${((innerWidth - r.left - r.width) * (1 - e)).toFixed(2)}px`);
+      ws.setProperty("--win-b", `${((innerHeight - r.top - r.height) * (1 - e)).toFixed(2)}px`);
+      if (u >= 1) {
+        // open: the page goes to the top behind it (the world's own place there is this same full screen)
+        grow = null;
+        live = null;
+        window.scrollTo({ top: 0, behavior: "instant" });
+        setLive(false);
+        document.dispatchEvent(new CustomEvent("dex:slideback"));
+      }
+      return;
+    }
+    live = null;
+    if (!canLive || state !== "loaded" || drift || climbing) { setLive(false); return; }
+    const r = scene.getBoundingClientRect();
+    const hb = hdr?.getBoundingClientRect().bottom ?? 0;
+    if (r.bottom <= Math.max(r.top, hb) + 8 || r.top >= innerHeight || r.width < 8) { setLive(false); return; }
+    // the window reaches up under the header when the scene starts at its foot (the header covers it; as the header
+    // slides off at the press the world is already there, never the page's black)
+    const top = r.top <= hb + 1 ? 0 : r.top;
+    live = r;
+    liveTop = top;
+    ws.setProperty("--win-t", `${top.toFixed(2)}px`);
+    ws.setProperty("--win-l", `${r.left.toFixed(2)}px`);
+    ws.setProperty("--win-r", `${(innerWidth - r.right).toFixed(2)}px`);
+    ws.setProperty("--win-b", `${(innerHeight - r.bottom).toFixed(2)}px`);
+    // her soles and size as the jetty draws her (motion/sky.ts), in shares of the world's (full-screen) frame
+    const sol = scene.dataset.soles?.split(",").map(Number), art = Number(scene.dataset.art ?? 0);
+    if (sol && sol.length === 2) {
+      const fx = (r.left + sol[0]!) / innerWidth, fy = (r.top + sol[1]!) / innerHeight;
+      const key = `${fx.toFixed(4)},${fy.toFixed(4)},${art.toFixed(3)}`;
+      if (key !== held) {
+        held = key;
+        w!.hold!("bottom", fx, fy, art);
+      }
+    }
+    setLive(true);
+  };
+  const ws = (document.querySelector<HTMLElement>("[data-world-mount]") ?? gs).style;
 
   // --- the status line under the loader
   let statusKey = "";
@@ -373,6 +455,9 @@ export function initColumn(reduced: MediaQueryList): void {
     if (f > 0.02 && f < 0.98) { wind = -40; gust = 1; }
     else if (f >= 0.98) { wind = 4; gust = 0.3; }
 
+    // way 4, live: the world laid over the jetty's window (and, after the press, opening to the full screen)
+    liveTick(now);
+
     // way 2: up to the game screen, then the same cutscene
     if (climbing) {
       if (window.scrollY <= 2 || now - climbing.at > 1800) {
@@ -421,7 +506,7 @@ export function initColumn(reduced: MediaQueryList): void {
       target = { x: pos.x, y: pos.y };
       wind = 0;
       gust = 0;
-      if (now - handAt > 600) handAt = -2;
+      if (now - handAt > (grow ? GROW_S * 1000 + 600 : 600)) handAt = -2;
     } else if (state === "ingame") show = false;
 
     // it eases toward where it is going (paper on the wind, not a cursor); after a stall it is simply there

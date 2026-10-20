@@ -59,6 +59,10 @@ export function initJetty(reduced: MediaQueryList): void {
     her.style.width = `${cw / dpr}px`;
     her.style.height = `${ch / dpr}px`;
     her.style.bottom = "auto";
+    // (way 4) where her soles stand in the scene (css px from its box) and her size (css px per art px): the live
+    // world, laid over this window, puts her there at that size (motion/column.ts)
+    scene.dataset.soles = `${(x * k) / dpr},${(y * k) / dpr}`;
+    scene.dataset.art = String(s / dpr);
     // the ofuda's place on her hat in the drawing that holds it (from her soles), where the page's paper lands
     if (hat) {
       const o = ofudaOnHat(holding?.pivot);

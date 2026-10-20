@@ -43,6 +43,22 @@
 
 /* the opening's own overlay stays on the game screen: scrolled down to the website, it waits out of sight */
 html.gs-away .op { visibility: hidden; }
+/* way 4, live (motion/column.ts): the game screen above the website, clipped to the jetty's window (--win-* insets; it
+   opens to the full screen at the press); only the world's own frame shows in it, at full size and full light */
+html.world-window .world { z-index: 30; visibility: visible; clip-path: inset(var(--win-t, 0) var(--win-r, 0) var(--win-b, 0) var(--win-l, 0)); }
+html.world-window .world__stage { scale: 1; }
+html.world-window .world::after { opacity: 0; }
+html.world-window .world__frame { top: 0; height: 100%; opacity: 1; }
+html.world-window .world__bars, html.world-window .gs-cover, html.world-window .gs-title, html.world-window .world__cue { visibility: hidden; }
+/* (the page's own drawing of her steps aside while the live world shows her in the window) */
+html.world-window .jetty__her { visibility: hidden; }
+/* the question, its button and its dissolving edge stay over the live world, as over the painted scene (and take the
+   clicks: the world under them never does). The sheet stops being a layer of its own meanwhile, so the paper can stand
+   above the world while the rest of the sheet (the painted scene) stays below it */
+html.world-window .sheet { z-index: auto; isolation: auto; }
+html.world-window .jetty__paper { z-index: 31; }
+/* (the header now stands in the page's own layer: the ofuda's layer stays over it, as over the whole sheet before) */
+html.world-window .ofuda-layer { z-index: 42; }
 html.op-run .world__bars { display: none; }
 html.op-run .world__frame { top: 0; height: 100%; }
 html.op-cine .world__cue { visibility: hidden; }

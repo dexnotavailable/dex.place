@@ -39,7 +39,7 @@ import { SpriteRenderer } from "./render/sprites.ts";
 import { Opening } from "./opening.ts";
 import { SilentLink, type OpeningLink, type PaperFrom } from "./opening/conductor.ts";
 import { WorldPaper, type PaperPose } from "./opening/paper.ts";
-import { BEATS, CLIP_END, HANDOFF_T, barsAt, ceilingRow, clamp01, keysAt, paperAirAt, paperBlendAt, paperScreenAt, setStartZoom, smooth, startT } from "./opening/timeline.ts";
+import { BEATS, CLIP_END, HANDOFF_T, barsAt, ceilingRow, clamp01, keysAt, mixShot, paperAirAt, paperBlendAt, paperLensAt, paperScreenAt, setStartZoom, smooth, startT, type Shot } from "./opening/timeline.ts";
 import { Veils, fallAir, fallHaze } from "./opening/sky.ts";
 import { FallSky, fallSkyOf } from "./opening/fall-sky.ts";
 import { Titles } from "./title.ts";
@@ -285,6 +285,8 @@ export class TesuGame {
     this.player = new Zhusha({ vfx: this.vfx, feel: this.feel, camera: this.camera, foes: () => this.court?.foes() ?? [] }, [0, 0]);
     this.zdraw = new ZhushaDraw(assets.anims);
     this.zdraw.bind(this.player);
+    // (lane E 10-20) her drawing goes behind the ground's front edge: it asks the world where the ground is under her
+    this.zdraw.groundAt = (x, y) => this.collision.groundBelow(x, y)?.y ?? null;
     this.npcs = new NpcDraw(assets.cast, this.world.sprites);
     this.vfx.groundAt = (x, y) => this.collision.groundAt(x, y);
     this.save = loadSave();
@@ -309,6 +311,8 @@ export class TesuGame {
     this.player.onCue = (c) => this.sound.herCue(c);
     // R plays the FX loop's effects when they are in (zhusha/ult.ts; its stand-ins draw until then)
     this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o) };
+    // (lane E 10-20) her moves play FX v2's built effects through the same door
+    this.player.fx = this.player.r.fx;
     this.props = new Props({
       player: this.player, vfx: this.vfx, feel: this.feel, camera: this.camera,
       ground: (x, y) => this.collision.groundBelow(x, y)?.y ?? null,
@@ -453,7 +457,16 @@ export class TesuGame {
     if (!f.bounds && this.player.body.y < INTERIOR_Y) f = { ...f, bounds: [0, this.world.w] };
     // the world window waiting for the press: the opening's first frame, high in the sky over Kagami (behind
     // the website's "dex"), where the fall starts
-    if (this.holding) {
+    if (this.holding && this.holdView.way === "bottom") {
+      // (way 4) the website's jetty window shows the live world: way 4's first frame, her standing at the frame
+      // point the window puts her (shares of this frame: the page lays the frame over the whole screen, clipped)
+      const W = this.r.iw, Hf = this.r.ih, v = this.holdView;
+      const s0 = keysAt(BEATS.camera.bottom.from, this.player.body.x, W, Hf, "bottom");
+      // her size as the page's jetty drew her (css px per art px), else way 4's own first zoom
+      const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+      const zoom = v.artCss > 0 ? (v.artCss * dpr) / ((this.r.presenter.rect.scale || 1) * ART_PX) : s0.zoom;
+      f = { ...f, zoom, anchor: v.fy, horizon: s0.horizon + (v.fy - s0.anchor), lead: 0, fixX: this.player.body.x - ((v.fx - 0.5) * W) / zoom, fixY: null, pin: null, bounds: null };
+    } else if (this.holding) {
       const s0 = keysAt(0, this.player.body.x, this.r.iw, this.r.ih);
       f = { ...f, zoom: s0.zoom, anchor: s0.anchor, horizon: s0.horizon, lead: 0, fixX: s0.cx, fixY: null, pin: null, bounds: null };
     }
@@ -470,6 +483,28 @@ export class TesuGame {
   away = false;
   /** Waiting for PLAY in the page column (controls held, Kagami still). */
   holding = false;
+  /**
+   * What the held world shows: the black slab over the sky (the top of the page, ways 1-3), or (way 4) the jetty's
+   * window: way 4's first frame, her bare-hatted at the catch, at frame point (fx, fy) (shares).
+   */
+  holdView: { way: "top" | "bottom"; fx: number; fy: number; artCss: number } = { way: "top", fx: 0.5, fy: 0.8, artCss: 0 };
+  setHold(way: "top" | "bottom", fx = 0.5, fy = 0.8, artCss = 0): void {
+    const v = this.holdView;
+    if (way === v.way && fx === v.fx && fy === v.fy && artCss === v.artCss) return;
+    const snap = way !== v.way;
+    this.holdView = { way, fx, fy, artCss };
+    if (!this.holding) return;
+    // (the jetty's window shows the world as a picture: no touch controls over it)
+    if (typeof document !== "undefined") document.documentElement.classList.toggle("cine", way === "bottom");
+    if (way === "bottom") {
+      // she waits where way 4's catch happens (the opening's catch spot), so the press never moves her out of the
+      // window's frame
+      if (snap) this.place(BEATS.her.catchXH * H);
+      this.posePlayer("clip", 0);
+    } else this.player.posed("still");
+    // a change of place is a cut (no one sees it: the window it shows in is changing too); a move of the window, a follow
+    if (snap) this.camera.snap(this.player.body.x, this.player.body.y, this.framing(), 1);
+  }
 
   /** She is in the player's hands: no press awaited, the opening handed her back (or never ran: a ?at= start). */
   get playable(): boolean {
@@ -496,13 +531,20 @@ export class TesuGame {
     this.sound.locked = false;
     if (link?.ctx) this.sound.start(link.ctx);
     this.openingLink = link ?? null;
+    // (way 4) from the jetty's window: the camera eases from that held frame into way 4's own keys
+    const st = this.camera.state(), fromWindow = this.holdView.way === "bottom";
+    // (reduced motion: no ease, its held frames cut)
+    this.heldShot = this.holdView.way === "bottom" && (link?.way ?? way) === "bottom" && !this.feel.reducedMotion ? { zoom: st.zoom, anchor: st.anchor, horizon: st.horizon, cx: st.cx } : null;
+    this.holdView = { ...this.holdView, way: "top" };
     // (rev 5) the website's ofuda at the press: the world takes it over where it hangs, at its size and pose
     this.paperFrom = link?.paperFrom ?? null;
     this.pageK = this.paperFrom?.k ?? null;
     this.paperShown = false;
-    this.spawnAt(this.world.spawns.find((s) => s.id === "catch")!);
+    // (from the jetty's window she already stands at the catch, in its frame: moving her would cut the camera)
+    if (!fromWindow) this.spawnAt(this.world.spawns.find((s) => s.id === "catch")!);
     this.opening.start(link ?? new SilentLink(() => this.time, this.feel.reducedMotion, way));
-    const shot = this.opening.camera(this.player.body.x);
+    // (from the jetty's window: its own frame, held; the camera eases from it in realTick)
+    const shot = this.heldShot ?? this.opening.camera(this.player.body.x);
     if (shot) this.camera.set(shot, this.player.body.x, this.player.body.y);
   }
 
@@ -609,7 +651,15 @@ export class TesuGame {
     // the opening's camera is time-locked to the music; then the world's tracks have the frame again. Its first
     // keys show the paper at the page's own scale (the loader's: max(2, round(vh x dpr / 540)) device px per art px)
     setStartZoom(this.pageArtPx() / (ART_PX * (this.r.presenter.rect.scale || 1)));
-    const shot = this.opening.camera(b.x);
+    let shot = this.opening.camera(b.x);
+    if (shot && this.heldShot && this.opening.way === "bottom") {
+      // (way 4 from the jetty's window) the window's own frame held while it opens to the full screen (0.9 s), then
+      // eased onto way 4's close band (bar 8), so the camera never pulls out and back in on the way
+      const from = startT("bottom") + 0.9, to = BEATS.camera.bottom.keys[BEATS.camera.bottom.keys.length - 1]!.T;
+      const u = (this.opening.T - from) / (to - from);
+      if (u >= 1) this.heldShot = null;
+      else shot = mixShot(this.heldShot, keysAt(to, b.x, this.r.iw, this.r.ih, "bottom"), smooth(u));
+    }
     const cine = shot ? null : this.player.r.shot;
     if (shot) this.camera.set(shot, b.x, b.y);
     else if (cine) {
@@ -649,6 +699,12 @@ export class TesuGame {
     this.fx.tick();
     if (this.frozen > 0) this.frozen--;
     const b = this.player.body;
+    // (way 4) held for the jetty: bare-hatted at the catch, the clip's first drawing (nothing else moves her)
+    if (this.holding && this.holdView.way === "bottom") {
+      this.posePlayer("clip", 0);
+      this.input.tick++;
+      return;
+    }
     if (this.opening.drive()) {
       // the cinematic (and the hands-free run after the drop) moves her; her own controls wait
       this.vfx.update();
@@ -836,7 +892,8 @@ export class TesuGame {
       // until it drops, so the world window's own layout for the opening, a frame or two late, is the one it sits in)
       {
         const pf = this.paperFrom;
-        if (pf && (fresh || T < 0.3)) {
+        // (held still in place: until it drops (ways 1-3), or while the jetty's window opens over it (way 4))
+        if (pf && (fresh || T < startT(o.way) + (o.way === "bottom" ? 0.9 : 0.3))) {
           const dpr = window.devicePixelRatio || 1, pr = this.r.presenter.rect, s0 = this.paper.middleOf(pf.nodes);
           // the page's viewport to this frame (the world window's place on the page, as laid out for the opening)
           const fe = (window.frameElement as HTMLElement | null)?.getBoundingClientRect() ?? { left: 0, top: 0 };
@@ -846,10 +903,15 @@ export class TesuGame {
           this.paperOff = [fx - p0[0] * cam.W, fy - p0[1] * cam.H];
         }
       }
-      const fade = 1 - smooth(T / 1.2);
+      const fade = o.way === "bottom" ? 1 - smooth((T - startT(o.way) - 0.9) / 1.4) : 1 - smooth((T - startT(o.way)) / 1.2);
       const wxo = wx + (this.paperOff[0] * fade) / xf.s, wyo = wy + (this.paperOff[1] * fade) / xf.s;
-      // a speck in the vast frame: from there it is the whole paper (the clip's own size and colours)
-      if (T >= BEATS.ofuda.stripAt) this.paper.toWhole();
+      // dropping out of the black it turns into the whole paper (the clip's own size and colours); way 4 (from the
+      // jetty's corner) once the window has opened round it
+      const turnAt = o.way === "bottom" ? startT(o.way) + 0.9 : BEATS.ofuda.stripAt;
+      if (T >= turnAt) {
+        this.paper.toWhole();
+        this.paper.turn((T - turnAt) / BEATS.ofuda.stripFor);
+      }
       // the last of it: steered onto the clip's paper in the hand-off drawing, so the drawing takes it over in place
       const band = BEATS.her.clip.band, steerFrom = HANDOFF_T - BEATS.ofuda.steer;
       // (on it a tick before the drawing takes over: that tick shows exactly the drawing's paper, drawn by us)
@@ -857,7 +919,9 @@ export class TesuGame {
       const nodes = band.map((n) => [b.x + n[0] * ART_PX * f, b.y + n[1] * ART_PX] as [number, number]);
       // and over its last 0.3 s it takes on the clip paper's grain (texel by texel), so the drawing's busier paper follows
       const grain = clamp01((T - (HANDOFF_T - 0.3)) / (0.3 - 1 / 60));
-      this.paperPose = this.paper.fall(wxo + (hx - wxo) * k, wyo + (hy - wyo) * k, paperAirAt(T, o.way), 1 / 60, { nodes, u, grain });
+      // and before the steer it turns to lie the clip paper's way
+      const turn = smooth((T - (HANDOFF_T - BEATS.ofuda.turn)) / (BEATS.ofuda.turn - BEATS.ofuda.steer / 2));
+      this.paperPose = this.paper.fall(wxo + (hx - wxo) * k, wyo + (hy - wyo) * k, paperAirAt(T, o.way), 1 / 60, { nodes, u, grain, turn });
       // the page draws its own paper over this one until the world has drawn it once (column.ts)
       if (!this.paperShown) {
         this.paperShown = true;
@@ -890,6 +954,8 @@ export class TesuGame {
   }
   /** The page's own figure, when it sent one with the press. */
   pageK: number | null = null;
+  /** (way 4) The frame the jetty's window held at the press (the camera eases from it into way 4's keys). */
+  private heldShot: Shot | null = null;
   /** The website's ofuda at the press (conductor.ts PaperFrom), and its offset from the flight's first point (frame px). */
   private paperFrom: PaperFrom | null = null;
   private paperOff: [number, number] = [0, 0];
@@ -910,23 +976,45 @@ export class TesuGame {
     r.begin(0, 0, DAY, []);
     r.rect(0, 0, cam.W, Math.min(cam.H, row), [0, 0, 0], 1, 1, true);
     r.flush();
-    this.drawOfuda(cam, false);
+    this.drawOfuda(cam, false, true);
   }
 
-  /** The ofuda as pixels at the camera's scale (in front of her: it hangs at the front of her hat, or falls). */
-  private drawOfuda(cam: CamState, behind: boolean): void {
+  /** How near the lens the falling paper is now (opening/timeline.ts paperLensAt; reduced motion: never). */
+  private paperLens(): number {
+    const o = this.opening;
+    return o.active && o.T < HANDOFF_T && !this.feel.reducedMotion ? paperLensAt(o.T, o.way) : 0;
+  }
+
+  /** (the lens) Near the camera the falling paper is in front of every plane (the fog in front of the camera passes over it). */
+  private drawLensOfuda(cam: CamState): void {
+    if (this.paperLens() <= 0) return;
+    this.r.begin(0, 0, DAY, []);
+    this.drawOfuda(cam, false, true);
+    this.r.flush();
+  }
+
+  /**
+   * The ofuda as pixels at the camera's scale (in front of her: it hangs at the front of her hat, or falls). `top`:
+   * the call over every plane (near the lens, and over the black slab); the play plane's own call skips it then.
+   */
+  private drawOfuda(cam: CamState, behind: boolean, top = false): void {
     const p = this.paperPose;
     if (!p || behind || this.fade >= 1) return;
+    if (!top && this.paperLens() > 0) return;
     const r = this.r, xf = planeXf(cam, 1), o = this.opening;
     let glint: number | null = null;
+    let lens: { h: number; w: number } | undefined;
     if (o.active && o.T < HANDOFF_T) {
       for (const g of BEATS.ofuda.glints) {
         const u = (o.T - g) / (5 / 12);
         if (u >= 0 && u < 1) glint = u;
       }
+      // the camera rides with it: near the lens through the fall (reduced motion: its own size, no zoom on it)
+      const w = this.paperLens();
+      if (w > 0) lens = { h: BEATS.ofuda.lens.h * cam.H, w };
     }
     r.setTransform();
-    WorldPaper.draw(p, (x, y) => [x * xf.s + xf.offX, y * xf.s + xf.offY], glint, this.feel.reducedMotion, (x, y, c) => r.rect(x, y, 1, 1, c, 1, 1, true));
+    WorldPaper.draw(p, (x, y) => [x * xf.s + xf.offX, y * xf.s + xf.offY], glint, this.feel.reducedMotion, (x, y, c, s) => r.rect(x, y, s, s, c, 1, 1, true), lens);
   }
 
   /** After the hand-back, no input for a while: a small paper tag "->" beside her (gone on the first input). */
@@ -1764,6 +1852,8 @@ export class TesuGame {
         deep: hexRgb(a.water?.deep ?? "#1f5a60"), body: hexRgb(a.water?.body ?? "#3f8f8a"), shallow: hexRgb(a.water?.shallow ?? "#bfe0dc"),
         haze: hexRgb(a.haze), glint: hexRgb(a.water?.glint ?? "#fffbe8"), still: water.kind === "lake" ? 1 : 0.4, mirror: a.water?.mirror ?? [1, 1, 1],
         cell: a.water?.near && cam.zoom >= 1.9 ? 2 : 1, near: a.water?.near, hold: waterHolds(cam, water), shore: water.shore, feet: water.shore ? [wl("back"), 0] : undefined,
+        // (kagami9 r1) the lake's near shore, the sun on the water, its look
+        lip: a.water?.lip, sun: a.water?.sun && a.sun ? [sunPx[0], sunPx[1], a.water.sun[0], a.water.sun[1]] : undefined, look: a.water?.look, edge: a.water?.edge,
       });
     };
     const mist = (rate: number, strength: number, drift: number): void => {
@@ -1838,6 +1928,8 @@ export class TesuGame {
       }
     }
     // the opening's fall: fog layers in front of the camera, sweeping up past it as it comes down (opening/sky.ts)
+    // the paper near the lens first: the fog in front of the camera passes over it (lane F, rev 6)
+    this.drawLensOfuda(cam);
     // (fall loop r1) the pass reads the frame under it (the paper's point keeps a hole of sky round it; the sun lights it)
     if (this.opening.active && this.opening.T < BEATS.her.walkFrom) {
       r.flush();
@@ -1895,7 +1987,7 @@ export class TesuGame {
       cam: [Math.round(cam.cx), Math.round(cam.cy)], loading: this.loading, fade: +this.fade.toFixed(2), cloudDrop: this.cloudDrop,
       tiles: this.store.stats(), fps: Math.round(this.fps), frame: [this.r.iw, this.r.ih], present: this.r.presenter.rect,
       clip: this.player.anim.role, zhusha: this.player.debug(), slots: this.zdraw.anims.size,
-      opening: this.opening.state, T: +this.opening.T.toFixed(3), autoRun: this.opening.autoRun, holding: this.holding, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
+      opening: this.opening.state, T: +this.opening.T.toFixed(3), autoRun: this.opening.autoRun, holding: this.holding, holdView: this.holdView, startedBy: this.startedBy, near: this.near?.id ?? null, cut: !!this.cut,
       warm: this.warm ? `${this.warm.done}/${this.warm.gate} of ${this.warm.gateMax}, ${this.warm.plan.length} planned` : null,
       ofuda: this.paperPose ? [Math.round((this.paperPose.pts[0]![0] + this.paperPose.pts[11]![0]) / 2), Math.round((this.paperPose.pts[0]![1] + this.paperPose.pts[11]![1]) / 2)] : null, paper: this.paper.mode,
       charm: this.warp ? `warp:${this.warp.c.id}` : this.perch ? `perch:${this.perch.c.id}` : null,

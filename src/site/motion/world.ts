@@ -106,6 +106,7 @@ export function initWorld(_reduced: MediaQueryList): void {
   const anchor = document.querySelector<HTMLElement>(".world-top");
   // Out of view below (nothing comes before the game screen today; kept for a column that adds a top): held.
   let below = false;
+  let wasWindowed = false;
   const update = (): void => {
     raf = 0;
     const height = world.offsetHeight || window.innerHeight;
@@ -117,12 +118,16 @@ export function initWorld(_reduced: MediaQueryList): void {
       if (below) handle?.pause();
       else if (!covered) handle?.resume();
     }
-    const nowCovered = p >= 0.999;
+    // (lane F, way 4) laid over the website's jetty window: the world shows there, so it is not covered
+    const win = document.documentElement.classList.contains("world-window");
+    const winChanged = win !== wasWindowed;
+    wasWindowed = win;
+    const nowCovered = p >= 0.999 && !win;
     // Uncovered (at load, or scrolled back up before the idle start): start now.
     if (!nowCovered && !waiting) start();
     // Covered and staying covered: nothing visible changes, skip the write.
-    if (nowCovered && covered) return;
-    if (Math.abs(p - last) < 0.0005) return;
+    if (!winChanged && nowCovered && covered) return;
+    if (!winChanged && Math.abs(p - last) < 0.0005) return;
     last = p;
     world.style.setProperty("--world-progress", nowCovered ? "1" : p.toFixed(4));
     if (nowCovered !== covered) {
@@ -142,6 +147,8 @@ export function initWorld(_reduced: MediaQueryList): void {
     if (!raf) raf = requestAnimationFrame(update);
   };
   window.addEventListener("scroll", kick, { passive: true });
+  // (lane F) the world laid over / taken off the jetty's window (motion/column.ts)
+  document.addEventListener("dex:worldwindow", kick);
   window.addEventListener("resize", kick);
 
   document.addEventListener("click", (e) => {

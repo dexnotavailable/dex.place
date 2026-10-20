@@ -1,0 +1,96 @@
+{
+ "id": "explosion",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  431,
+  494
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f002.png",
+   "ticks": 1
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2
+  },
+  {
+   "file": "f005.png",
+   "ticks": 2
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2
+  },
+  {
+   "file": "f007.png",
+   "ticks": 2
+  },
+  {
+   "file": "f008.png",
+   "ticks": 3
+  },
+  {
+   "file": "f009.png",
+   "ticks": 3
+  },
+  {
+   "file": "f010.png",
+   "ticks": 3
+  },
+  {
+   "file": "f011.png",
+   "ticks": 3
+  },
+  {
+   "file": "f012.png",
+   "ticks": 3
+  },
+  {
+   "file": "f013.png",
+   "ticks": 3
+  },
+  {
+   "file": "f014.png",
+   "ticks": 4
+  },
+  {
+   "file": "f015.png",
+   "ticks": 4
+  },
+  {
+   "file": "f016.png",
+   "ticks": 4
+  },
+  {
+   "file": "f017.png",
+   "ticks": 4
+  },
+  {
+   "file": "f018.png",
+   "ticks": 4
+  },
+  {
+   "file": "f019.png",
+   "ticks": 5
+  }
+ ],
+ "loop": false,
+ "notes": "the world igniting (round 2): a simulated burst (Mantaflow, take f: a lopsided fireball + jets as cones of ejecta bunched to one side; Blender 5.1 CPU) -> cel2 / celsim; a torn white-hot flash drawn from drawing 1's own silhouette (the burst never shrinks below it), the snap to ~80 % of its size by the third drawing, jets tapering to points, the top licking into tongues as it rises, env fire cooling into pockets inside lobed ember-lit soot that dithers away from its edges inward, debris, spark arcs, embers. Pivot = the ground point under the burst."
+}

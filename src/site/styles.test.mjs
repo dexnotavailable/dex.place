@@ -96,3 +96,23 @@ test("the home's places stay fixed: nothing above a fixed scene takes a transfor
   assert.match(bands, /clip-path: inset\(var\(--strip-h\) 0 calc\(-1 \* var\(--strip-h\)\) 0\)/, "a change of place always happens under a strip");
   assert.match(bands, /@media \(prefers-reduced-motion: reduce\) \{\s*\.band__scene \{ position: absolute;/, "reduced motion: the places scroll with the page");
 });
+
+test("the bands never widen the page (K's ask, 10-20: a phone's cards slide in from 60% of the screen's width): overflow-x clip on every band, never hidden / auto / scroll (that would make the band a scroll container and unstick its place)", () => {
+  const bands = sheets.find((s) => s.file === "bands.css").css;
+  assert.match(bands, /\.sheet \.band\.sec \{[^}]*overflow-x: clip;/);
+  const all = sheets.map((s) => s.css.replace(/\/\*[\s\S]*?\*\//g, "")).join("\n");
+  for (const m of all.matchAll(/([^{}]*\.band(?![\w-])[^{}]*)\{([^{}]*)\}/g)) {
+    assert.doesNotMatch(m[2], /overflow(?:-[xy])?\s*:\s*(?:hidden|auto|scroll)/, `${m[1].trim()}: a band must not scroll`);
+  }
+});
+
+test("way 4, live (lane F): the world in the jetty's window under the question, its button and the corner ofuda; the clicks go to the page", () => {
+  const css = readFileSync(new URL("./styles/column.css", import.meta.url), "utf8");
+  const z = (sel) => Number(css.match(new RegExp(String.raw`html\.world-window ${sel.replace(/[.]/g, "\\.")} \{[^}]*z-index: (\d+)`))?.[1] ?? NaN);
+  const world = z(".world"), paper = z(".jetty__paper"), layer = z(".ofuda-layer");
+  assert.ok(world > 0 && paper > world, `the question and its button over the world (${paper} > ${world})`);
+  assert.ok(layer > 40, "the corner ofuda over the header (z 40), as over the whole sheet before");
+  // the sheet is no layer of its own meanwhile, or nothing in it could stand over the world
+  assert.match(css, /html\.world-window \.sheet \{[^}]*z-index: auto;[^}]*isolation: auto;/);
+  assert.match(css, /html\.world-window \.world \{[^}]*clip-path: inset\(var\(--win-t/);
+});

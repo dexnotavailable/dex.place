@@ -5,6 +5,9 @@ import { buildWorld } from "../../../world/index.ts";
 import { painter, ctxFor } from "../../painter.ts";
 import { IdxBuf } from "../../raster.ts";
 import { HALL_MANIFEST, gongFrame } from "./index.ts";
+import { existsSync } from "node:fs";
+import { PHYSICS } from "../../../config.ts";
+import { fileURLToPath } from "node:url";
 
 test("every manifest asset is a registered painter and is placed in the world", () => {
   const w = buildWorld();
@@ -59,4 +62,69 @@ test("pieces paint deterministically at every level they are used", () => {
     }
   }
   assert.ok(kinds.size >= 20, `${kinds.size} kinds checked`);
+});
+
+test("every art piece hangs as a pixelized preview made at its exact size (python -I tools/hall/pixelize_art.py)", () => {
+  const w = buildWorld();
+  const pub = fileURLToPath(new URL("../../../../../public", import.meta.url));
+  const art = w.sprites.filter((s) => s.id.startsWith("art-"));
+  assert.ok(art.length >= 9, `${art.length} pieces`);
+  for (const s of art) {
+    const src = String(s.p.src);
+    assert.match(src, /^\/tesu\/hall-art\/\w+-\d+x\d+\.png$/, s.id);
+    assert.ok(src.endsWith(`-${s.p.w}x${s.p.h}.png`), `${s.id}: ${src} vs ${s.p.w}x${s.p.h}`);
+    assert.ok(existsSync(pub + src), `${src} missing: run python -I tools/hall/pixelize_art.py`);
+  }
+});
+
+test("Dex's 10-14 layout: the court's gate in the middle, the desk right on its left, the map right on its right, every service with room", () => {
+  const w = buildWorld();
+  const H = 96;
+  const hall = w.places.find((p) => p.id === "hall-of-works");
+  const floor = w.walks.find((k) => k.name === "hall-floor");
+  const FY = floor.pts[1];
+  const U = (id) => w.usables.find((u) => u.id === id);
+  const door = U("great-doors"), desk = U("hanko-desk"), map = U("map-pillar"), box = U("offering-box");
+  const at = ((door.x0 + door.x1) / 2 - hall.x0) / (hall.x1 - hall.x0);
+  assert.ok(at > 0.45 && at < 0.55, `the gate at ${at.toFixed(3)} of the hall`);
+  const ground = w.usables.filter((u) => u.y1 === FY && !u.id.startsWith("art-frame")).sort((a, b) => a.x0 - b.x0);
+  const i = ground.indexOf(door);
+  assert.equal(ground[i - 1], desk, "the desk is the service right left of the gate");
+  assert.equal(ground[i + 1], map, "the map is the service right right of the gate");
+  for (let k = 1; k < ground.length; k++) assert.ok(ground[k].x0 - ground[k - 1].x1 >= 1.39 * H, `${ground[k - 1].id} | ${ground[k].id}: ${((ground[k].x0 - ground[k - 1].x1) / H).toFixed(2)} H`);
+  assert.ok(box.x1 < desk.x0, "the offering box stands on its own, off the desk");
+  // her size at charScale 0.88 is about 0.98 H: the counter at her waist
+  const hanko = w.sprites.find((s) => s.id === "hanko");
+  const top = (FY - hanko.y + 4) / H;
+  assert.ok(top > 0.5 && top < 0.62, `the counter top at ${top.toFixed(2)} H`);
+});
+
+test("the court's ring is drawn side-on (no seal on the floor) and the bout frames it", () => {
+  const w = buildWorld();
+  const floor = w.pieces.find((p) => p.kind === "court.floor");
+  assert.ok(floor.p.seal[1] < 1, "the perspective seal is gone");
+  const ring = w.pieces.find((p) => p.kind === "court.ring");
+  assert.ok(ring, "the side-on ring is placed");
+  const bout = w.tracks.find((t) => t.id === "bout");
+  const mid = ring.x + ring.p.w / 2;
+  assert.ok(Math.abs(bout.keys[0].fixX - mid) < 2, `the bout holds on the ring's middle (${bout.keys[0].fixX} vs ${mid})`);
+});
+
+test("the hall's stair (round 2): two flights and a level landing, each flight walkable; the dressed stair follows the walk", () => {
+  const w = buildWorld();
+  const st = w.walks.find((x) => x.name === "hall-stair");
+  assert.ok(st && st.pts.length === 8, "head, landing's two ends, foot");
+  const p = st.pts;
+  assert.equal(p[3], p[5], "the landing is level");
+  for (let i = 0; i + 3 < p.length; i += 2) {
+    const slope = Math.abs(p[i + 3] - p[i + 1]) / (p[i + 2] - p[i]);
+    assert.ok(slope <= PHYSICS.maxSlope, `segment ${i / 2}: slope ${slope.toFixed(3)} > ${PHYSICS.maxSlope}`);
+  }
+  const piece = w.pieces.find((x) => x.kind === "hall.stair" && !x.p.rail);
+  assert.ok(piece, "the stair is dressed");
+  assert.deepEqual(piece.p.pts.map((v, i) => v + (i % 2 === 0 ? piece.x : piece.y)), p, "the dressed stair is the walk");
+  // the reading nook's bench stands under the landing, clear of its two posts
+  const nook = w.pieces.find((x) => x.kind === "hall.nook");
+  const b0 = nook.x + nook.p.bench[0], b1 = nook.x + nook.p.bench[1];
+  assert.ok(b0 > p[2] + 14 && b1 < p[4] - 14, `bench ${b0}-${b1} under the landing ${p[2]}-${p[4]}`);
 });

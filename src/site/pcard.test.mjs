@@ -84,7 +84,10 @@ test("card rigs v2 (Dex 10-19): webp parts + rig.json in the agreed format (lane
     }
     // on the page: every part a plain lazy layer, back to front, in an art box the CSS places from the focus
     const html = cardArt(p);
-    assert.match(html, new RegExp(`^<div class="cart cart--rig[^"]*" data-rig="/site/cards/${p.id}/" aria-hidden="true" style="--aw:${W};--ah:${H};--fx:[\\d.]+;--fy:[\\d.]+">`));
+    assert.match(html, new RegExp(`^<div class="cart cart--rig[^"]*" data-rig="/site/cards/${p.id}/"(?: data-lines)? role="img" aria-label="[^"]+" style="--aw:${W};--ah:${H};--fx:[\\d.]+;--fy:[\\d.]+">`), `${p.id}: a picture on the project page`);
+    // on the card the art is decorative: the card's name says what it is
+    assert.match(cardArt(p, undefined, { card: true, numeral: "01" }), /^<div class="cart cart--rig[^"]*" data-rig="[^"]+"(?: data-lines)? aria-hidden="true" /);
+    assert.ok(p.art.alt && p.art.credit, `${p.id}: alt text and credit`);
     const layers = [...html.matchAll(/<img class="rig__p" src="([^"]+)" alt="" loading="lazy" decoding="async" data-part="([a-z0-9-]+)"/g)];
     assert.deepEqual(layers.map((m) => m[2]), rig.parts.map((q) => q.id), `${p.id}: every part, in order`);
     layers.forEach((m, i) => assert.equal(m[1], `/site/cards/${p.id}/${rig.parts[i].src}`));

@@ -7,25 +7,110 @@
 .band--l .band__strip-paper, .band--l .band__paper { transform-origin: 0% 50%; }
 .band--r .band__strip-paper, .band--r .band__paper { transform-origin: 100% 50%; }
 
-/* the header's scroll progress: a 2 px scarlet line across its foot (scaled by the script on the home page) */
-.hdr__progress { position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: var(--scarlet); transform: scaleX(0); transform-origin: 0% 50%; pointer-events: none; }
+/* the header's scroll progress: a 2 px line across its foot (scaled by the script on the home page), scarlet, then in
+   the tone of the section you are in (--sec-tone, set on the header by the script; the nav's indicator casts it too) */
+.hdr__progress { position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: var(--sec-tone, var(--scarlet)); transform: scaleX(0); transform-origin: 0% 50%; pointer-events: none; transition: background-color 0.45s var(--ease-std); }
+.nav__ind { box-shadow: var(--off-s) var(--off-s) 0 var(--sec-tone, var(--shadow)); transition: translate 320ms var(--ease-spring), width 320ms var(--ease-spring), opacity 120ms linear, box-shadow 0.45s var(--ease-std); }
 
-/* alive at rest (4.1): the shades lift a little on the wind (the paper itself never moves; translate only, so the
-   script's transform and opacity on them are left alone), a light runs down each spine; paused off screen */
+/* alive at rest (4.1; site loop v2 round 1: the breath was there but never showed): the shades lift on the wind, twice
+   as far as before (translate only: the script's transform and opacity on them are left alone; the paper itself never
+   moves); a light runs down each spine; a dot travels each strip's rule; a glint runs along each strip's hem and the
+   footer's. One property each, all on the compositor (the spine's light used to repaint its background every frame),
+   paused off screen */
+.band--l { --lean: 2px; }
+.band--r { --lean: -2px; }
 @media (prefers-reduced-motion: no-preference) {
   .band__shade, .band__strip-shade { animation: band-lift 7.5s ease-in-out calc(var(--band-i, 0) * -1.3s) infinite alternate; }
+  .band__spine { overflow: hidden; }
   .band__spine::after {
     content: "";
     position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, transparent 0, rgb(255 255 255 / 0.75) 60px, transparent 120px) no-repeat;
-    background-size: 100% 120px;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 120px;
+    background: linear-gradient(to bottom, transparent 0, rgb(255 255 255 / 0.75) 60px, transparent 120px);
+    translate: 0 -120px;
     animation: spine-light 7s linear calc(var(--band-i, 0) * -1.7s) infinite;
   }
-  .is-off .band__shade, .is-off .band__strip-shade, .is-off .band__spine::after { animation-play-state: paused; }
+  /* the dot: drawn at the right end of a box as wide as the rule, the box slid from just before the rule's start to
+     just past its end; the rule clips it (so it comes and goes with no second property) */
+  .band .sh--strip .sh__rule { clip-path: inset(-3px 0); }
+  .band .sh--strip .sh__rule::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -3px;
+    width: 100%;
+    height: 8px;
+    background: linear-gradient(var(--rule-dot, var(--gold)), var(--rule-dot, var(--gold))) 100% 0 / 8px 8px no-repeat;
+    translate: -100% 0;
+    animation: rule-dot 7s calc(var(--band-i, 0) * -2.3s + 1.2s) infinite;
+  }
+  .band__strip-paper::after, .ftr__paper::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 240px;
+    height: 4px;
+    background: linear-gradient(90deg, rgb(255 255 255 / 0), rgb(255 255 255 / 0.8) 50%, rgb(255 255 255 / 0));
+    translate: -240px 0;
+    animation: hem-glint 11s linear calc(var(--band-i, 5) * -2.1s) infinite;
+    pointer-events: none;
+  }
+  .band__strip-paper::after { bottom: -4px; }
+  .ftr__paper::after { top: -4px; }
+  .is-off .band__shade, .is-off .band__strip-shade, .is-off .band__spine::after, .is-off .sh__rule::after, .is-off .band__strip-paper::after { animation-play-state: paused; }
+  /* ...and while the page moves (motion/choreo.ts sets data-moving from the scroll's speed): the idle loops are for when
+     you stop; scrolling, the frames go to the scroll. The shades' breath rests where it is; the small loops stop
+     altogether (so they are no layers of their own meanwhile) and pick up again when the page does */
+  [data-moving] .band__shade, [data-moving] .band__strip-shade { animation-play-state: paused !important; }
+  [data-moving] .band__spine::after, [data-moving] .sh__rule::after, [data-moving] .band__strip-paper::after, [data-moving] .ftr__paper::after,
+  [data-moving] .ftr__chip .tile, [data-moving] .dlf-bar::after, [data-moving] .dlf-file__ic { animation: none !important; }
 }
-@keyframes band-lift { from { translate: 0 0; } to { translate: 0 4px; } }
-@keyframes spine-light { from { background-position: 0 -120px; } to { background-position: 0 2200px; } }
+.band--projects { --rule-dot: var(--scarlet); }
+@keyframes band-lift { from { translate: 0 0; } to { translate: var(--lean) 8px; } }
+@keyframes spine-light { from { translate: 0 -120px; } to { translate: 0 2200px; } }
+@keyframes rule-dot {
+  0% { translate: -100% 0; animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+  24%, 100% { translate: 8px 0; }
+}
+@keyframes hem-glint { 0% { translate: -240px 0; } 30%, 100% { translate: 100vw 0; } }
+
+/* keys: their pixel icon steps at 8 frames a second while hovered (4.2), not once */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .sheet--home .btn:hover .btn__ic .px { animation: px-nudge 250ms steps(2, end) infinite; }
+  /* the footer's chips wobble in their tone */
+  .ftr__chip:hover .tile { animation: chip-wobble 0.5s var(--ease-spring) 1; }
+}
+/* the footer's chips: their icons nudge a pixel in turn at rest (2 frames) */
+@media (prefers-reduced-motion: no-preference) {
+  .ftr__chip .tile { animation: chip-nudge 3.2s steps(1, end) calc(var(--chip-i, 0) * -0.64s) infinite; }
+  .ftr__chips > li:nth-child(2) { --chip-i: 1; }
+  .ftr__chips > li:nth-child(3) { --chip-i: 2; }
+  .ftr__chips > li:nth-child(4) { --chip-i: 3; }
+  .ftr__chips > li:nth-child(5) { --chip-i: 4; }
+  /* the sleepy blobs wake when the pointer comes near (motion/pointer.ts .is-awake): a hop, a "!" */
+  .is-awake { animation: blob-hop 0.36s steps(3, end) 1; }
+  /* (its frames stop on the first: the zz loop rests while it is awake) */
+  .is-awake .px-f0, .is-awake .px-f1 { animation: none; }
+}
+.ftr__sleepy, .dlp__zz { position: relative; }
+.ftr__sleepy::after, .dlp__zz::after {
+  content: "!";
+  position: absolute;
+  right: -10px;
+  top: -18px;
+  font: 400 1rem / 1 var(--f-label);
+  color: var(--scarlet);
+  scale: 0;
+  transform-origin: 50% 100%;
+  transition: scale 0.25s var(--ease-pop);
+}
+.is-awake::after { scale: 1; }
+@keyframes chip-nudge { 0%, 87% { translate: 0 0; } 88%, 100% { translate: 0 -2px; } }
+@keyframes chip-wobble { 30% { rotate: -6deg; } 60% { rotate: 4deg; } 85% { rotate: -1deg; } }
+@keyframes blob-hop { 50% { translate: 0 -4px; } }
 
 /* the smooth wheel (Lenis, phase G3): the window keeps its own height; a frame never swallows the wheel mid-glide */
 html.lenis, html.lenis body { height: auto; }

@@ -14,7 +14,7 @@
 // The pointer's tilt and depth are the card's own (motion/pcard.ts, lane K), not motion/magnet.ts's.
 // Reduced motion: all of it still.
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import type { Project } from "../data/projects.ts";
 import { normaliseRig, type RigPartV2, type RigV2 } from "../motion/rig-read.ts";
 import { esc } from "./html.ts";
@@ -96,6 +96,15 @@ const artVars = (rig: RigV2): string => {
   return `--aw:${W};--ah:${H};--fx:${+(fx / W).toFixed(4)};--fy:${+(fy / H).toFixed(4)}`;
 };
 
+/** The card has line art for its entrance (public/site/cards/<id>/lines.svg): the deck fetches it only then. */
+const hasLines = (p: Project): boolean => existsSync(new URL(`../../../public/site/cards/${p.id}/lines.svg`, import.meta.url));
+
+/** On a card the art is decorative (the card's name says what it is); elsewhere (the project page) it is a picture. */
+const a11y = (p: Project, extras: CardArtExtras): string =>
+  !extras.card && p.art.alt
+    ? `role="img" aria-label="${esc(`${p.art.alt}${p.art.credit ? ` ${p.art.credit}.` : ""}`)}"`
+    : `aria-hidden="true"`;
+
 function rigArt(p: Project, rig: RigV2, className?: string, extras: CardArtExtras = {}): string {
   const layers = rig.parts.map((part) => rigLayer(p, rig, part));
   let art: string;
@@ -109,7 +118,7 @@ function rigArt(p: Project, rig: RigV2, className?: string, extras: CardArtExtra
     art = `<div class="rig__box">${layers.join("")}</div>`;
   }
   return (
-    `<div class="cart cart--rig${rig.pixelated ? " cart--px" : ""}${className ? ` ${className}` : ""}" data-rig="/site/cards/${p.id}/" aria-hidden="true" ` +
+    `<div class="cart cart--rig${rig.pixelated ? " cart--px" : ""}${className ? ` ${className}` : ""}" data-rig="/site/cards/${p.id}/"${hasLines(p) ? " data-lines" : ""} ${a11y(p, extras)} ` +
     `style="${artVars(rig)}">` +
     `<div class="cart__art">${art}</div>` +
     (extras.card ? `<span class="cart__scrim"></span><span class="cart__glare"></span>` : "") +

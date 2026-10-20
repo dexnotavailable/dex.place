@@ -1,0 +1,33 @@
+{
+ "id": "e_shot",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  -430,
+  129
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2
+  }
+ ],
+ "loop": false,
+ "with": [],
+ "notes": "E: the slug (2 ticks across 2200 px; nothing under it). Pivot = her soles at the cast (the shot's line is the muzzle height, +57 / -82). It pierces: every target on the line gets an e_hit at the same tick."
+}

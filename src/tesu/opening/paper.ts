@@ -6,9 +6,13 @@
 // push, gusts) at her drawing's own pixel size (ART_PX world px per art px).
 //
 // - Its looks: at the press it IS the loader's ofuda (the exact hat crop, 7 x 13: the page hands it over in the black
-//   without a change); from `stripAt` (a gold speck in the vast frame, where no look can be told) it is the whole
-//   paper (5 x 20 art px in the hat paper's own colours: its gold top that hides under the brim, its pale tip), the
-//   size and colours of the clip's own drifting paper.
+//   without a change); from `stripAt`, as it drops out of the black and comes at the lens, it turns (`stripFor` s: its
+//   shape and its texels both, one into the other) into the whole paper (5 x 20 art px in the hat paper's own colours:
+//   its gold top that hides under the brim, its pale tip), the size and colours of the clip's own drifting paper.
+// - The lens (Dex 10-20: "following the ofuda closely"): through the fall it is drawn as if near the camera, a set
+//   share of the frame's height whatever the world's zoom (the camera rides with it, the world rushes past), as
+//   pixels of its own (each art px a square block of frame px, like the website's loader draws it); it leaves the
+//   lens for her plane before the hand-off, so the drawing takes over a paper at her drawing's own size.
 // - The fall: it falls free in its own simulation, in the east wind and its gusts, carried along the opening's flight
 //   (timeline.ts paperScreenAt). Its own drift is kept only as the quick part (the rocking side-slip of falling paper).
 //   From the blend it is drawn on to her hand-off point, and in the last of it steered onto the clip's paper in the
@@ -92,6 +96,12 @@ const LIGHT = (() => {
 const SEG = 5;
 /** The least size it is drawn at, frame px per art px (see draw). */
 const KMIN = 0.42;
+/** Near the lens, an art px of at least this many frame px is drawn as a block of its own (see draw). */
+const BLOCK_MIN = 4;
+/** The whole paper's stiffness against bending and twisting (the loader's paper: 1). */
+const WHOLE_STIFF = 2.5;
+/** Falling, the whole paper turns back to face the viewer by this share a tick (it shows its face, turning now and then). */
+const WHOLE_FACE = 0.06;
 
 export type PaperMode = "off" | "fall" | "hat";
 
@@ -115,13 +125,20 @@ export class WorldPaper {
   private slow = [0, 0];
   private trend = [0, 0];
   private seeded = false;
+  /** (the turn) The loader's paper it is turning from, still falling beside it, and how far it has turned (0..1). */
+  private from: PaperOfuda | null = null;
+  private turned = 1;
+  private fromSlow = [0, 0];
+  /** (the turn into the band) Last tick's angle to turn by, so it is followed without a jump of a whole turn. */
+  private turnPrev: number | null = null;
   /** World px per art px (her drawing's). */
   readonly artPx: number;
 
   constructor(artPx: number, seed = 11) {
     this.artPx = artPx;
     this.crop = new PaperOfuda({ tie: { x: 0, y: 0 }, seed });
-    this.whole = new PaperOfuda({ tie: { x: 0, y: 0 }, seed: seed + 1, size: { w: STRIP.w, h: STRIP.h } });
+    // (the lens) seen up close the whole paper is card-stiff: it rocks, curls and turns, it does not crumple
+    this.whole = new PaperOfuda({ tie: { x: 0, y: 0 }, seed: seed + 1, size: { w: STRIP.w, h: STRIP.h }, stiff: WHOLE_STIFF });
     this.sim = this.crop;
   }
 
@@ -130,9 +147,15 @@ export class WorldPaper {
     return this.sim === this.whole ? STRIP : OFUDA_TEXTURE;
   }
 
-  /** Falling, it becomes the whole paper (a speck then: the look changes where it cannot be told), turning as it was. */
+  /**
+   * Falling, it becomes the whole paper, turning as it was: the whole paper starts in the loader's paper's place and
+   * direction, and `turn(u)` draws the one into the other (shape and texels) as u goes 0 to 1 (at once: `turn(1)`).
+   */
   toWhole(): void {
     if (this.sim === this.whole || this.mode !== "fall") return;
+    this.from = this.crop;
+    this.turned = 0;
+    this.fromSlow = this.centroid();
     const a = this.crop.p, b = this.whole;
     // the old paper's direction (tie to foot) and its middle carry over
     const tx = (a[0]! + a[3]!) / 2, ty = (a[1]! + a[4]!) / 2, fx = (a[30]! + a[33]!) / 2, fy = (a[31]! + a[34]!) / 2;
@@ -153,12 +176,22 @@ export class WorldPaper {
     this.slow = this.centroid();
   }
 
+  /** How far it has turned from the loader's paper into the whole paper (0..1; 1 ends the turn). */
+  turn(u: number): void {
+    if (!this.from) return;
+    this.turned = Math.max(0, Math.min(1, u));
+    if (this.turned >= 1) this.from = null;
+  }
+
   /**
    * The fall begins: a fresh paper let go where it hung (rev 5: from the page's loader, in the black slab), upright
    * and still, so it starts as the page drew it; its own air sets it rocking as it drops.
    */
   startFall(nodes?: readonly number[]): void {
     this.sim = this.crop;
+    this.from = null;
+    this.turned = 1;
+    this.turnPrev = null;
     const s = this.sim;
     s.reset();
     s.hold = "point";
@@ -177,6 +210,7 @@ export class WorldPaper {
   toHat(): void {
     if (this.mode === "hat") return;
     this.sim = this.crop;
+    this.from = null;
     const s = this.sim;
     s.moveTie(0, 0);
     s.reset();
@@ -198,8 +232,8 @@ export class WorldPaper {
     return [x / n, y / n];
   }
 
-  private centroid(): [number, number] {
-    const p = this.sim.p;
+  private centroid(sim: PaperOfuda = this.sim): [number, number] {
+    const p = sim.p;
     let x = 0, y = 0;
     for (let i = 0; i < 12; i++) { x += p[i * 3]!; y += p[i * 3 + 1]!; }
     return [x / 12, y / 12];
@@ -209,7 +243,7 @@ export class WorldPaper {
    * One tick of the fall: its own air (art px / s; the east wind is negative) and gustiness, then its pose with its
    * middle at (wx, wy) world px plus the quick part of its own drift.
    */
-  fall(wx: number, wy: number, air: { x: number; gust: number }, dt = 1 / 60, steer?: { nodes: readonly (readonly [number, number])[]; u: number; grain?: number }): PaperPose {
+  fall(wx: number, wy: number, air: { x: number; gust: number }, dt = 1 / 60, steer?: { nodes: readonly (readonly [number, number])[]; u: number; grain?: number; turn?: number }): PaperPose {
     if (!this.seeded || this.mode !== "fall") this.startFall();
     const s = this.sim;
     s.wind.x = air.x;
@@ -217,6 +251,7 @@ export class WorldPaper {
     s.wind.z = 0;
     s.gust = air.gust;
     s.step(dt);
+    if (s === this.whole) s.faceViewer(WHOLE_FACE);
     const c = this.centroid();
     // the slow part of its drift (a level and its trend, about half a second: no lag on its steady fall) belongs to
     // the flight; the quick part (the rocking side-slip) stays
@@ -229,6 +264,45 @@ export class WorldPaper {
     }
     const qx = Math.max(-6, Math.min(6, c[0] - this.slow[0]!)), qy = Math.max(-4, Math.min(4, c[1] - this.slow[1]!));
     const pose = this.pose(wx, wy, c[0] - qx, c[1] - qy, 1);
+    // turning: the loader's paper falls on beside it (in its own place on the flight), the one drawn into the other
+    const old = this.from;
+    if (old) {
+      old.wind.x = air.x;
+      old.wind.y = 0;
+      old.wind.z = 0;
+      old.gust = air.gust;
+      old.step(dt);
+      const oc = this.centroid(old);
+      for (let i = 0; i < 2; i++) this.fromSlow[i] = a * oc[i]! + (1 - a) * this.fromSlow[i]!;
+      const ox = Math.max(-6, Math.min(6, oc[0] - this.fromSlow[0]!)), oy = Math.max(-4, Math.min(4, oc[1] - this.fromSlow[1]!));
+      const o = this.pose(wx, wy, oc[0] - ox, oc[1] - oy, 1, old);
+      const m = this.turned * this.turned * (3 - 2 * this.turned);
+      pose.pts.forEach((q, i) => {
+        const p = o.pts[i]!;
+        q[0] = p[0] + (q[0] - p[0]) * m;
+        q[1] = p[1] + (q[1] - p[1]) * m;
+        q[2] = p[2] + (q[2] - p[2]) * m;
+      });
+      pose.into = { to: OFUDA_TEXTURE, share: 1 - m };
+    }
+    // before that it turns (in the screen's plane, about its middle) to lie the way the clip's paper lies, so the
+    // steer moves a paper already pointing its way (never folding one end through the other)
+    if (steer && (steer.turn ?? 0) > 0) {
+      const P = pose.pts, N = steer.nodes;
+      const ap = Math.atan2(P[10]![1] + P[11]![1] - P[0]![1] - P[1]![1], P[10]![0] + P[11]![0] - P[0]![0] - P[1]![0]);
+      const ab = Math.atan2(N[10]![1] + N[11]![1] - N[0]![1] - N[1]![1], N[10]![0] + N[11]![0] - N[0]![0] - N[1]![0]);
+      let d = ab - ap;
+      d -= 2 * Math.PI * Math.round(d / (2 * Math.PI));
+      if (this.turnPrev !== null) d += 2 * Math.PI * Math.round((this.turnPrev - d) / (2 * Math.PI));
+      this.turnPrev = d;
+      const th = d * Math.min(1, steer.turn!), cs = Math.cos(th), sn = Math.sin(th);
+      const mx = P.reduce((s, q) => s + q[0] / P.length, 0), my = P.reduce((s, q) => s + q[1] / P.length, 0);
+      for (const q of P) {
+        const x = q[0] - mx, y = q[1] - my;
+        q[0] = mx + x * cs - y * sn;
+        q[1] = my + x * sn + y * cs;
+      }
+    }
     // the last of the fall: steered onto the clip's paper in the hand-off drawing (world px nodes), flat to the eye
     if (steer && steer.u > 0) {
       const u = Math.min(1, steer.u);
@@ -261,32 +335,42 @@ export class WorldPaper {
   }
 
   /** Its nodes in world px: art px (ox, oy) of the sim lands on (wx, wy); mirrored when facing left. */
-  private pose(wx: number, wy: number, ox: number, oy: number, facing: number): PaperPose {
-    const p = this.sim.p, a = this.artPx;
+  private pose(wx: number, wy: number, ox: number, oy: number, facing: number, sim: PaperOfuda = this.sim): PaperPose {
+    const p = sim.p, a = this.artPx;
     const pts: [number, number, number][] = [];
     for (let i = 0; i < 12; i++) pts.push([wx + (p[i * 3]! - ox) * a * facing, wy + (p[i * 3 + 1]! - oy) * a, p[i * 3 + 2]! * facing]);
     return { pts, tex: this.tex };
   }
 
   /**
-   * Draws a pose as pixels: toFrame maps world px to frame px; put(x, y, colour) fills one frame pixel. glint: 0..1
-   * through a glint (null: none).
+   * Draws a pose as pixels: toFrame maps world px to frame px; put(x, y, colour, size) fills a size x size block of
+   * frame pixels from (x, y). glint: 0..1 through a glint (null: none). lens: near the camera, drawn `h` frame px long
+   * (its length tie to tip) at w = 1, from its own size at w = 0 (between, the geometric mean's way: an even zoom).
    */
-  static draw(pose: PaperPose, toFrame: (x: number, y: number) => [number, number], glint: number | null, reduced: boolean, put: (x: number, y: number, c: RGB) => void): void {
+  static draw(pose: PaperPose, toFrame: (x: number, y: number) => [number, number], glint: number | null, reduced: boolean, put: (x: number, y: number, c: RGB, size: number) => void, lens?: { h: number; w: number }): void {
     const F = pose.pts.map((q) => { const f = toFrame(q[0], q[1]); return [f[0], f[1], q[2]] as [number, number, number]; });
     // how many frame px an art px is here (small: a few frame px, its shaded side darkened so it reads as paper)
     const len0 = Math.hypot(F[10]![0] + F[11]![0] - F[0]![0] - F[1]![0], F[10]![1] + F[11]![1] - F[0]![1] - F[1]![1]) / 2;
-    // the camera's widest frames (the vast reveal) would shrink it under a pixel: it never draws smaller than a
-    // speck of KMIN frame px per art px (about 3 x 5 px), scaled about its middle, so the eye can follow it
     const T = pose.tex;
-    if (len0 > 0 && len0 / T.h < KMIN) {
-      const m = F.reduce<[number, number]>((a, q) => [a[0] + q[0] / F.length, a[1] + q[1] / F.length], [0, 0]);
-      const g = (KMIN * T.h) / len0;
-      for (const q of F) { q[0] = m[0] + (q[0] - m[0]) * g; q[1] = m[1] + (q[1] - m[1]) * g; }
+    // the lens: scaled about its middle; never under a speck of KMIN frame px per art px (the camera's widest frames
+    // would shrink it under a pixel: about 3 x 5 px, so the eye can follow it)
+    let g = 1;
+    if (len0 > 0 && lens && lens.w > 0 && lens.h > 0) g = Math.exp(Math.log(lens.h / len0) * Math.min(1, lens.w));
+    if (len0 > 0 && (len0 * g) / T.h < KMIN) g = (KMIN * T.h) / len0;
+    // its own pixel: near the lens each art px is a square block of B frame px (drawn on a grid B times coarser,
+    // fixed to its middle's frame pixel, so it moves a frame px at a time and its pixels stay square and upright);
+    // off the lens, or once an art px is under BLOCK_MIN frame px, frame px by frame px like her drawing beside it
+    const K = (len0 * g) / T.h, B = lens && lens.w > 0 && K >= BLOCK_MIN ? Math.floor(K + 1e-6) : 1;
+    const m = F.reduce<[number, number]>((a, q) => [a[0] + q[0] / F.length, a[1] + q[1] / F.length], [0, 0]);
+    const o: [number, number] = B > 1 ? [Math.floor(m[0]), Math.floor(m[1])] : [0, 0];
+    for (const q of F) {
+      q[0] = (m[0] + (q[0] - m[0]) * g - o[0]) / B;
+      q[1] = (m[1] + (q[1] - m[1]) * g - o[1]) / B;
     }
-    const k = Math.max(KMIN, len0 / T.h);
+    const k = Math.max(KMIN, K) / B;
     const out = new Map<number, number>();
     const set = (x: number, y: number, c: number): void => { out.set((y + 32768) * 65536 + x + 32768, c); };
+    const at = (x: number, y: number, c: RGB): void => put(o[0] + x * B, o[1] + y * B, c, B);
     // the spine: a 1 px line of its own gold down its middle, so edge-on it is still a line of paper (no dark line art)
     let px = NaN, py = NaN;
     for (let r = 0; r <= SEG; r++) {
@@ -306,14 +390,14 @@ export class WorldPaper {
       const arms = reduced ? [3] : [1, 3, 5, 3, 1];
       const n = arms[Math.min(arms.length - 1, Math.floor(glint * arms.length))]!;
       const m = F[4]!, gx = Math.floor((m[0] + F[5]![0]) / 2), gy = Math.floor((m[1] + F[5]![1]) / 2);
-      for (const [key, c] of out) put((key % 65536) - 32768, Math.floor(key / 65536) - 32768, RGB01[c]!);
+      for (const [key, c] of out) at((key % 65536) - 32768, Math.floor(key / 65536) - 32768, RGB01[c]!);
       for (let dd = 1; dd <= Math.ceil(n / 2); dd++) {
-        put(gx + dd, gy, GLINT_ARM); put(gx - dd, gy, GLINT_ARM); put(gx, gy + dd, GLINT_ARM); put(gx, gy - dd, GLINT_ARM);
+        at(gx + dd, gy, GLINT_ARM); at(gx - dd, gy, GLINT_ARM); at(gx, gy + dd, GLINT_ARM); at(gx, gy - dd, GLINT_ARM);
       }
-      put(gx, gy, GLINT_CORE);
+      at(gx, gy, GLINT_CORE);
       return;
     }
-    for (const [key, c] of out) put((key % 65536) - 32768, Math.floor(key / 65536) - 32768, RGB01[c]!);
+    for (const [key, c] of out) at((key % 65536) - 32768, Math.floor(key / 65536) - 32768, RGB01[c]!);
   }
 }
 
@@ -354,8 +438,15 @@ function tri(F: [number, number, number][], i: number, j: number, k: number, ti:
       const ty = Math.min(T.h - 1, Math.max(0, Math.floor(v * T.h)));
       if (!front) tx = T.w - 1 - tx;
       let c = tex[ty * T.w + tx]!;
-      // dissolving into the other look: this texel has turned once the share passes its own fixed threshold
-      if (into && into.to.w === T.w && into.to.h === T.h && texelOrder(tx, ty) < into.share) c = (front ? into.to.front : into.to.back)[ty * T.w + tx]!;
+      // dissolving into the other look (sampled at its own size): its texel has turned once the share passes the
+      // texel's own fixed threshold
+      if (into) {
+        const D = into.to;
+        let dx = Math.min(D.w - 1, Math.max(0, Math.floor(u * D.w)));
+        const dy = Math.min(D.h - 1, Math.max(0, Math.floor(v * D.h)));
+        if (!front) dx = D.w - 1 - dx;
+        if (texelOrder(dx, dy) < into.share) c = (front ? D.front : D.back)[dy * D.w + dx]!;
+      }
       if (c) put(x, y, shiftPaper(c, shift));
     }
   }

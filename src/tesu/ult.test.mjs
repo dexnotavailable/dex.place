@@ -149,9 +149,11 @@ test("ult: the camera has a shot every tick of R; one hard cut only, the cut-in 
   assert.ok(r.every((t) => t.shot), "a shot every tick");
   const cuts = r.filter((t) => t.shot.cut).map((t) => t.phase);
   assert.deepEqual(cuts, ["call"], "the cut-in on the press, then one continuous camera");
+  // (the flurry's snap out to the whole letter is a whip by design: its few ticks are checked below)
+  const Sn = ULT.camera.flurry.snap, snap0 = r.findIndex((t) => t.phase === "flurry") + ULT.beats.flurry.storm[1] + Sn.at;
   for (let i = 1; i < r.length; i++) {
     const a = r[i - 1].shot, b = r[i].shot;
-    if (b.cut) continue;
+    if (b.cut || (i >= snap0 && i < snap0 + Sn.ticks)) continue;
     const zr = Math.max(a.zoom / b.zoom, b.zoom / a.zoom);
     assert.ok(zr < 1.13, `zoom step ${a.zoom} -> ${b.zoom} at ${r[i].phase}`);
     assert.ok(Math.abs(b.x - a.x) < 0.8 * H && Math.abs(b.y - a.y) < 1.2 * H, `frame step at ${r[i].phase}: ${a.x},${a.y} -> ${b.x},${b.y}`);
@@ -161,20 +163,29 @@ test("ult: the camera has a shot every tick of R; one hard cut only, the cut-in 
   const fl = r.filter((t) => t.phase === "flurry");
   assert.ok(fl[fl.length - 1].shot.zoom <= ULT.camera.flurry.zoomEnd + 1e-6, "pulled out on the whole letter");
   // the flurry's camera (Dex 10-19: "from her call the camera tries to follow her - she moves too fast, it sorta gives
-  // up, then zooms out as the R is filled"): it chases her up into the letter, whips past and swings back, gives up and
-  // settles, then pulls out wide; the letter's centre and the frame are in H from where she pressed
+  // up, then zooms out as the R is filled"; 10-20: "follow her a little longer", "the zoom out to the whole letter should
+  // be sudden"): it chases her up into the letter, whips past and swings back, keeps hunting through most of the storm,
+  // gives up and settles, then snaps out wide; the letter's centre and the frame are in H from where she pressed
   const F = ULT.camera.flurry, storm = ULT.beats.flurry.storm[1];
   const x0 = r[0].x, gx = (ULT.letter.ahead + ULT.letter.size / 2) * H;
   const at = (k) => fl[k].shot;
   const chase = fl.slice(0, storm + F.chase.giveUp);
   const far = Math.max(...chase.map((t) => t.shot.x - x0));
   assert.ok(far > gx, `it chases her into the letter and whips past its middle (${(far / H).toFixed(2)} H vs ${(gx / H).toFixed(2)})`);
-  assert.ok(at(storm + F.chase.giveUp).x < far - 0.5 * H, "and swings back");
+  const first = fl.slice(0, storm + 40);
+  const far1 = Math.max(...first.map((t) => t.shot.x - x0));
+  assert.ok(first[first.length - 1].shot.x - x0 < far1 - 0.5 * H, "and swings back");
+  assert.ok(F.chase.giveUp >= 0.7 * ULT.letter.ticks, "it keeps hunting her through most of the storm");
+  const late = fl.slice(storm + 100, storm + F.chase.giveUp);
+  assert.ok(late.some((t, i) => i > 0 && Math.hypot(t.shot.x - late[i - 1].shot.x, t.shot.y - late[i - 1].shot.y) > 0.05 * H), "still chasing late in the storm");
   assert.ok(chase[0].shot.zoom > 1.9 && chase[chase.length - 1].shot.zoom < chase[0].shot.zoom, "out of the close band as it chases");
-  const settled = fl.slice(storm + F.chase.giveUp + 16, storm + F.pullFrom);
+  const settled = fl.slice(storm + F.chase.giveUp + 16, storm + F.snap.at);
   for (let i = 1; i < settled.length; i++) assert.ok(Math.hypot(settled[i].shot.x - settled[i - 1].shot.x, settled[i].shot.y - settled[i - 1].shot.y) < 0.03 * H, "it gave up: settled");
-  const peak = Math.round(storm + (fl.length - storm) * F.peak);
-  assert.ok(Math.abs(at(peak).x - gx) < 1e-6 && at(peak).zoom <= F.zoomEnd + 1e-6, "the whole letter in frame at its peak");
+  // the snap: from the chase's close framing to wider than the whole letter in a few ticks, then settled on it
+  const before = at(storm + F.snap.at - 1), whip = at(storm + F.snap.at + F.snap.ticks - 1), done = at(storm + F.snap.at + F.snap.ticks + F.snap.settle - 1);
+  assert.ok(before.zoom > 1.4 && whip.zoom < F.zoomEnd, `sudden: ${before.zoom.toFixed(2)} -> ${whip.zoom.toFixed(2)} in ${F.snap.ticks} ticks, a touch past`);
+  assert.ok(Math.abs(done.x - gx) < 1e-6 && Math.abs(done.zoom - F.zoomEnd) < 1e-6, "settled on the whole letter");
+  assert.ok(storm + F.snap.at + F.snap.ticks + F.snap.settle <= fl.length, "landed before the stop");
   const hold = r.filter((t) => t.phase === "hold");
   assert.ok(hold.every((t) => t.shot.x === hold[0].shot.x && t.shot.y === hold[0].shot.y && t.shot.zoom === hold[0].shot.zoom), "the stop: dead still");
   const imp = r.filter((t) => t.phase === "impact");

@@ -1,8 +1,8 @@
 // The sky the opening falls through (the opening director, 10-18; the fall loop, rounds 1-2. Dex 10-16: "author every
 // part of the scenery the camera passes: clouds, front fog layers on the camera, wind affecting the ofuda's path").
-// Rev 5's camera (opening/beats.ts): the paper drops out of the black, the camera pulls straight out to the VAST FRAME
-// (the whole world far below, the sky above it, 1.6-4.6 s), pushes in on the paper into the cloud deck (7.6 s), falls
-// with it past the deck's crowns (the gust), breaks out under the deck over Kagami and settles on the postcard. (The
+// Rev 6's camera (opening/beats.ts, lane F's close follow, Dex 10-20): the paper drops out of the black, the world
+// below shows for one glimpse (1.35 s, zoom 0.16), then the camera rides down WITH the paper at zoom 4 (2.5-14.6 s)
+// past the clouds, through the deck, out under it over the lake, and onto the catch. (The
 // fog layers on the lens itself are opening/sky.ts; the sky's deep gradient, opening/fall-sky.ts.)
 //
 // The clouds are the fall's CLOUD LIBRARY (Dex 10-19 20:00Z: "simulate clouds in a way where it has volume and good
@@ -63,30 +63,40 @@ export function cloudBounds(id: string): [number, number, number, number] {
 }
 
 /**
- * The fall's clouds, by the moment they are composed for (lanes\art\fall\KEYFRAMES.md; rev 5). Within a plane the
- * later-placed draws in front.
+ * The fall's clouds, by the moment they are composed for (lanesrtall\KEYFRAMES.md; rev 6, lane F's close follow:
+ * the camera rides down WITH the paper at zoom 4 from 2.5 s, so the clouds pass the paper, rising past it, nearer
+ * planes faster: the far heaps barely move (~30 px/s), the mid plane's ~125 px/s, the back plane's ~410 px/s). Every
+ * cloud is behind the paper (it is drawn near the lens, over every plane), and the paper's column (x 0.40-0.62 of the
+ * frame) is kept to open sky or a shaded body, never a lit crown parked behind it. Within a plane the later-placed
+ * draws in front.
  */
 export const FALL_CLOUDS: readonly FallCloud[] = [
-  // --- the VAST FRAME (2.94 s, zoom 0.17): the sky over the whole world. The sun upper left over open sky and high
-  // cirrus combed west; a great tower rising on the right past the palace, its sun side lit; the deck (on the back
-  // plane, below) lying low over the world toward the horizon, so the paper's column is open sky (F's ASK 1) and the
-  // tower's foot is lost behind the deck.
-  // --- the drop out of the black and the pull-out (0.64-1.6 s): high wisps rushing by the frame as the sky hits
+  // --- the drop out of the black (0.64-1.3 s): high wisps rushing by the frame as the sky hits; they stay far all
+  // the way down (the far plane barely moves: the depth the rest is measured against)
   { id: "fall-wisp-hi-a", plane: "far", T: 1.0, fx: 0.3, fy: 0.5, cloud: "ci-a" },
   { id: "fall-wisp-hi-b", plane: "far", T: 1.0, fx: 0.78, fy: 0.72, cloud: "ci-c" },
   { id: "fall-cirrus-b", plane: "far", T: 2.94, fx: 0.92, fy: 0.2, cloud: "ci-b" },
-  { id: "fall-tower", plane: "mid", T: 2.94, fx: 0.8, fy: 0.6, cloud: "cu-tower-a" },
-  // --- the deck (round 2b): a CEILING on the BACK plane (it rises past the paper faster than the mid plane, so at
-  // the gust its crowns lie under the paper while at the break-out and the postcard its crowns are above the top bar
-  // and only its underside shows). Composed for the break-out (10.617 s, art 0.72): four chunks overlapping, their
-  // bases undulating (the rolls' feet y ~400-480), torn gaps between them: G1 round the sun (x ~170-340: the sun in it
-  // or at its west edge from the break-out to the postcard) and G2 the paper falls through (x ~950-1040: at the gust
-  // 7.0-9.6 s the paper drops into the valley between two crowns, sky behind it, never a lit crown: W1-9). Later = in
-  // front: the lowest last.
-  { id: "fall-deck-e2", plane: "back", T: 10.617, fx: 2420 / 1920, fy: 318 / 1080, cloud: "deck-e2", low: true },
-  { id: "fall-deck-e", plane: "back", T: 10.617, fx: 1468 / 1920, fy: 343 / 1080, cloud: "deck-e1", low: true },
-  { id: "fall-deck-w", plane: "back", T: 10.617, fx: -420 / 1920, fy: 361 / 1080, cloud: "deck-w", low: true },
-  { id: "fall-deck-m", plane: "back", T: 10.617, fx: 592 / 1920, fy: 400 / 1080, cloud: "deck-m", low: true },
+  // --- the ride (2.5-7 s, zoom 4): far heaps low in the frame, the great tower's crown and body sliding up on the
+  // right, a broad heap rising on the left, and puffs on the back plane rushing up past the frame's edges
+  { id: "fall-far-heap-a", plane: "far", T: 3.0, fx: 0.06, fy: 1.02, cloud: "cu-far-a" },
+  { id: "fall-far-heap-b", plane: "far", T: 3.0, fx: 0.72, fy: 1.08, cloud: "cu-far-b" },
+  { id: "fall-far-heap-c", plane: "far", T: 6.6, fx: 0.98, fy: 1.04, cloud: "cu-far-c" },
+  { id: "fall-tower", plane: "mid", T: 2.5, fx: 0.9, fy: 1.55, cloud: "cu-tower-a" },
+  { id: "fall-heap-w", plane: "mid", T: 4.631, fx: 0.03, fy: 1.06, cloud: "cu-heap-a" },
+  { id: "fall-puff-e", plane: "back", T: 3.6, fx: 0.97, fy: 0.62, cloud: "cu-puff-a" },
+  { id: "fall-puff-w", plane: "back", T: 5.6, fx: 0.08, fy: 0.74, cloud: "cu-puff-b" },
+  // --- the deck (round 2b, re-solved on rev 6): a CEILING on the BACK plane the camera falls through over 7.5-11.6 s:
+  // its crowns rise under the paper at the gust (7.3-9.1), then its rolls and undersides pass up past it. The chunks
+  // part round the paper's column: the paper falls down a canyon of sky between deck-m (west) and deck-e1 (east)
+  // (W1-9: sky behind it, never a lit crown). Later = in front: the lowest last.
+  { id: "fall-deck-e2", plane: "back", T: 10.617, fx: 1.47, fy: 318 / 1080, cloud: "deck-e2", low: true },
+  { id: "fall-deck-e", plane: "back", T: 10.617, fx: 1.37, fy: 343 / 1080, cloud: "deck-e1", low: true },
+  { id: "fall-deck-w", plane: "back", T: 10.617, fx: -0.32, fy: 361 / 1080, cloud: "deck-w", low: true },
+  { id: "fall-deck-m", plane: "back", T: 10.617, fx: -0.056, fy: 400 / 1080, cloud: "deck-m", low: true },
+  // --- coming out under the clouds (12.6-14.6 s): the deck's middle-distance band overhead (mid plane: it lingers),
+  // low stratus beyond it toward the lake
+  { id: "fall-deck-band", plane: "mid", T: 14.6, fx: 0.42, fy: 0.16, cloud: "deck-mid-a", low: true },
+  { id: "fall-stratus-a", plane: "far", T: 14.6, fx: 0.2, fy: 0.3, cloud: "st-c", low: true },
 ];
 
 export function openingSky(b: WorldBuilder): void {
