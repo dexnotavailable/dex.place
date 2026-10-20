@@ -202,6 +202,16 @@
   .js .dlf.is-in .dlf-bar i { animation: dl-seg 1ms steps(1, end) calc(360ms + var(--i) * 80ms) backwards; }
 }
 @keyframes dl-seg { from { background: var(--line); } }
+/* idle (DESIGN-1019 4.1; site loop v2 round 1: the downloads panel stood still): while the art is on screen its arrow
+   drops a whole art pixel every 2.4 s and a light runs along its bar like a pixel loader; the hover bob takes over */
+@media (prefers-reduced-motion: no-preference) {
+  .dlf:not(:hover) .dlf__art.is-vis .dlf-file__ic { animation: dl-drop 2.4s steps(1, end) infinite; }
+  .dlf__art.is-vis .dlf-bar::after { content: ""; position: absolute; left: 0; top: 0; width: calc((100% - 21px) / 8); height: 100%; background: var(--mint-d); translate: calc(800% + 24px) 0; animation: dl-scan 3.2s steps(1, end) infinite; }
+}
+.dlf-bar { position: relative; overflow: hidden; }
+@keyframes dl-drop { 0%, 82% { translate: 0 0; } 83%, 91% { translate: 0 6px; } 92%, 100% { translate: 0 0; } }
+/* a lit segment steps along the bar (one box, slid a segment at a time) */
+@keyframes dl-scan { 0% { translate: 0 0; } 4% { translate: calc(100% + 3px) 0; } 8% { translate: calc(200% + 6px) 0; } 12% { translate: calc(300% + 9px) 0; } 16% { translate: calc(400% + 12px) 0; } 20% { translate: calc(500% + 15px) 0; } 24% { translate: calc(600% + 18px) 0; } 28% { translate: calc(700% + 21px) 0; } 32%, 100% { translate: calc(800% + 24px) 0; } }
 
 /* Arriving on a download (#dexclient): its edge flashes yellow once. */
 .dlf:target, .dlp:target { animation: dl-ring 1200ms steps(6, end) 300ms both; }

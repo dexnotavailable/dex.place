@@ -53,8 +53,12 @@
   .band--downloads, .band--donate { --pad-bot: 48px; }
 }
 @media (min-width: 1100px) {
-  .band--projects, .band--docs { --pad-bot: max(56px, calc(var(--fore-w) * 0.2)); }
-  .band--gallery { --pad-bot: max(56px, calc(var(--fore-w) * 0.36)); }
+  /* (site loop v2 round 1: the gallery as tight as the others; its fore cloud laps the collage's outer corner) */
+  .band--projects, .band--docs, .band--gallery { --pad-bot: max(56px, calc(var(--fore-w) * 0.2)); }
+}
+/* phones: the palace banner hangs at the downloads panel's foot corner; the last file link stays clear of it */
+@media (max-width: 699px) {
+  .band--downloads { --pad-bot: 96px; }
 }
 
 /* the sheet is clear on the home page: the bands carry the white (and the world between it); the footer is white */
@@ -141,7 +145,44 @@
 /* ---- the strip: full width, the title on it, its shade cast down onto the world */
 .band__strip { position: relative; display: flex; align-items: center; min-height: var(--strip-h); }
 .band__strip-paper { position: absolute; inset: 0; z-index: 2; background: #fff; border-bottom: 4px solid var(--tone); }
-.band__strip-shade { position: absolute; inset: 0; z-index: 1; box-shadow: 0 24px 56px -20px rgb(22 44 96 / 0.3); }
+/* the shades: the papers' soft shadows on the world, in their band's deep tone (site loop v2 round 1: each paper glows
+   its colour onto its place, not a grey). Three hands move them and never collide: the slide (xPercent) and the
+   pointer (x / y: the light follows it, motion/choreo.ts) on the transform, the breath (choreo.css) on translate */
+.band { --shade-c: color-mix(in srgb, var(--tone-d, #162c60) 38%, transparent); }
+.band__strip-shade { position: absolute; inset: 0; z-index: 1; box-shadow: 0 24px 56px -20px var(--shade-c); }
+/* the section's place in the page, giant and outlined in its tone on the strip's world side, bleeding off the screen's
+   edge (site loop v2 round 1: the zig-zag gets an anchor where the right-docked strips had dead paper); part of the
+   paper: it whips in with it, clipped to it */
+.sheet--home .main { counter-reset: band; }
+.band.sec { counter-increment: band; }
+.band__strip-paper::before {
+  content: counter(band, decimal-leading-zero) / "";
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  /* (the digits stand on the baseline, low in their line box: lifted to the strip's middle) */
+  padding-bottom: 0.28em;
+  margin-right: -0.36em;
+  font: 400 calc(var(--num-px) * 25px) / 1 var(--f-title);
+  letter-spacing: calc(var(--num-px) * 1px);
+  color: transparent;
+  -webkit-text-stroke: 2px var(--tone);
+  font-synthesis: none;
+  -webkit-font-smoothing: none;
+  pointer-events: none;
+}
+.band--r .band__strip-paper::before { justify-content: flex-start; margin-right: 0; margin-left: -0.36em; }
+/* (whole font pixels: 4 css px each on a laptop, 6 on a wide screen; what shows of it, past the bleed) */
+.band { --num-px: 4; --num-vis: calc(var(--num-px) * 29px); }
+@media (min-width: 1600px) {
+  .band { --num-px: 6; }
+}
+@media (max-width: 1099px) {
+  .band__strip-paper::before { display: none; }
+}
 .band__in { position: relative; z-index: 3; width: 100%; padding: 12px var(--edge-out); }
 .sh--strip { margin: 0; }
 .sh--strip .sh__title { font-size: calc(var(--title-px) * 25px); line-height: 1; }
@@ -172,9 +213,16 @@
 .band .sh--strip .sh__kicker { color: var(--ink); }
 .band .sh--strip .sh__index, .band .sh--strip .sh__slash { color: var(--tone-d); }
 .band .sh--strip .sh__aside { color: var(--fg-2); }
-.band .sh--strip .sh__rule { height: 2px; background: var(--tone); }
+.band .sh--strip .sh__rule { position: relative; height: 2px; background: var(--tone); }
 .band .sh--strip .tile { --tile-bg: var(--tone); }
 .band .sh--strip .sh__more .px { color: var(--tone-d); }
+/* the band's keys pop in its tone (site loop v2 round 1): the hover shadow, and a paper key's fill a wash of it (ink
+   stays on near-white: AA holds); the cards' keys are lane K's */
+.band { --tone-t: color-mix(in srgb, var(--tone) 16%, #fff); }
+.band :is(.btn, .pop):not(.pcard *) { --pop-hi: var(--band-tone); }
+@media (hover: hover) {
+  .band .btn--paper:not(.pcard *):hover { --btn-bg: var(--tone-t); }
+}
 /* the title's words in a line mask (the motion raises them inside it); its underline a mark of its own */
 .sh__line { display: block; overflow-y: clip; }
 .sh__txt { display: block; }
@@ -187,7 +235,10 @@
 @media (min-width: 1100px) {
   .band--r .band__in { padding-left: calc(100% - var(--panel-w) + var(--edge-in)); }
   .band--r .sh--strip { position: static; }
-  .band--r .sh--strip .sh__more { position: absolute; left: var(--edge-out); bottom: 12px; }
+  /* the key sits beside the section's giant number (site loop v2 round 1: no lone key in a far corner); on the
+     left-docked bands the head ends before the number */
+  .band--r .sh--strip .sh__more { position: absolute; left: calc(var(--num-vis) + 28px); bottom: 12px; }
+  .band--l .band__in { padding-right: calc(var(--num-vis) + 28px); }
 }
 
 /* ---- the panel: docked flush to its side, the paper behind the content, a spine on its open edge */
@@ -195,8 +246,8 @@
 .band--r .band__panel { margin-left: auto; }
 .band__paper { position: absolute; inset: 0; z-index: 2; background: #fff; }
 /* the shade falls past the open edge and down past the foot (the paper lies on the world, never looks clipped) */
-.band__shade { position: absolute; inset: 0; z-index: 1; box-shadow: 24px 24px 64px -28px rgb(22 44 96 / 0.3); }
-.band--r .band__shade { box-shadow: -24px 24px 64px -28px rgb(22 44 96 / 0.3); }
+.band__shade { position: absolute; inset: 0; z-index: 1; box-shadow: 24px 24px 64px -28px var(--shade-c); }
+.band--r .band__shade { box-shadow: -24px 24px 64px -28px var(--shade-c); }
 .band__spine { position: absolute; top: 0; bottom: 0; right: 0; width: 6px; background: var(--tone, var(--gold)); }
 .band--r .band__spine { left: 0; right: auto; }
 .sheet .band__panel > .wrap { position: relative; z-index: 3; max-width: none; margin: 0; padding: 0 var(--edge-in) 0 var(--edge-out); }
@@ -277,9 +328,39 @@
 .ftr__more { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-block: var(--s-6) var(--s-4); scroll-margin-top: 0; }
 .ftr__more-head { display: inline-flex; align-items: center; gap: 8px; margin: 0; font: 400 var(--fs-12) / 1 var(--f-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .ftr__chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.ftr__chip { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 12px 4px 6px; border: var(--bw) solid var(--ink); background: #fff; color: var(--ink); text-decoration: none; font: 400 var(--fs-16) / 1 var(--f-px); }
+/* each chip in a wash of its own tone, a hard ink offset like every key; hovered, it fills with its tone, pops and
+   wobbles (site loop v2 round 1: the footer was a clean template; now it has some life of its own) */
+.ftr__chip {
+  --chip: var(--gold);
+  --chip-t: var(--yellow-t);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 12px 4px 6px;
+  border: var(--bw) solid var(--ink);
+  background: var(--chip-t);
+  box-shadow: 3px 3px 0 var(--ink);
+  color: var(--ink);
+  text-decoration: none;
+  font: 400 var(--fs-16) / 1 var(--f-px);
+  transition: transform var(--d-pop) var(--ease-spring), box-shadow var(--d-pop) var(--ease-spring), background-color var(--d-hover) var(--ease-std);
+}
+.ftr__chip:has(.tile--cyan) { --chip: var(--cyan); --chip-t: var(--cyan-t); }
+.ftr__chip:has(.tile--mint) { --chip: var(--mint); --chip-t: var(--mint-t); }
+.ftr__chip:has(.tile--magenta) { --chip: var(--magenta); --chip-t: var(--magenta-t); }
 @media (hover: hover) {
-  .ftr__chip:hover { background: var(--gold); }
+  .ftr__chip:hover { background: var(--chip); transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
+}
+.ftr__chip:focus-visible { background: var(--chip); }
+.ftr__chip:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); transition-duration: var(--d-press); }
+/* wide screens: the chips share the row, the nav links run across the middle (site loop v2 round 1: at 1920 the footer
+   left a big empty middle) */
+@media (min-width: 1100px) {
+  .sheet--home .ftr__chips { flex: 1 1 0; }
+  .sheet--home .ftr__chips > li { flex: 1 1 0; }
+  .sheet--home .ftr__chip { width: 100%; padding-right: 16px; }
+  .sheet--home .ftr__nav ul { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); column-gap: 16px; }
 }
 
 /* the donate band between 1100 and 1599 px: the Ko-fi column is narrow, so its head stands its tile over its words

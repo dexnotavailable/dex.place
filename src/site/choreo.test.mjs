@@ -25,12 +25,14 @@ test("choreo plan: strips whip in from their side and land square; panels follow
   assert.equal(P.latch(0.4, 0.2), 0.4);
   assert.equal(P.latch(0.4, 0.7), 0.7);
   assert.equal(P.latch(0, 1.4), 1);
-  // site loop round 1: the panel is a triggered slide (a scrub stalled half way, blank, when the reader stopped); the
-  // content waits until the paper is nearly in (expo.out: past 95% of its way); a settle on the screen plays out
+  // site loop round 1: the panel is a triggered slide (a scrub stalled half way, blank, when the reader stopped); a
+  // settle on the screen plays out. v2 round 1: the content rides in on the moving paper (its column slides with it),
+  // so it lands part way (the paper about 60% in), never on long-empty paper; a band entered fast, at once
   assert.equal(P.PANEL_AT(false), "top 92%");
   assert.equal(P.PANEL_AT(true), "top 94%");
   assert.ok(P.PANEL_TIME >= 0.6 && P.PANEL_TIME <= 0.9);
-  assert.ok(P.expoOut(P.CONTENT_GATE) > 0.95 && P.CONTENT_GATE < 1, "the gate opens on nearly landed paper");
+  assert.ok(P.expoOut(P.CONTENT_GATE) > 0.5 && P.expoOut(P.CONTENT_GATE) < 0.7, "the gate opens on the paper ~60% in");
+  assert.ok(P.FAST_N > 0 && P.FAST_N < 1);
   assert.ok(P.SPINE_AT < 1);
   assert.ok(P.SETTLE_TIME >= 0.3 && P.SETTLE_TIME <= 0.6, "a settle plays out, never a pop");
   assert.ok(P.STITCH_FADE <= 0.15, "the stitch is solid at once, never a see-through slab");
@@ -51,6 +53,16 @@ test("choreo plan: strips whip in from their side and land square; panels follow
   assert.equal(P.speedOf(400), 1);
   assert.equal(P.speedOf(-20), -0.5);
   assert.equal(P.speedOf(Number.NaN), 0);
+  assert.equal(P.speedOf(7, true), 0.5, "a finger reads at a higher gain");
+  // the world under the pointer: against it, in whole art pixels, at most its amount
+  assert.equal(P.worldShift(1, 8, 2), -8);
+  assert.equal(P.worldShift(-0.4, 8, 2), 4);
+  assert.equal(P.worldShift(0, 8, 2), 0);
+  assert.equal(Math.abs(P.worldShift(0.3, 10, 2)) % 2, 0);
+  // a key's magnet: toward the pointer, never past 6 px
+  assert.deepEqual(P.pull(0, 0), [0, 0]);
+  assert.ok(P.pull(10, 0)[0] > 0);
+  assert.ok(Math.hypot(...P.pull(200, -150)) <= 6.0001);
   assert.equal(P.foreY(0), 60);
   assert.equal(P.foreY(1), -120);
   assert.equal(P.foreY(1, true), -60);
@@ -95,13 +107,17 @@ test("scroller: plain window.scrollTo until a smooth wheel registers, then every
   delete globalThis.window;
 });
 
-test("choreo CSS: breathing adds to the transform (never replaces it, never touches the shades' opacity), rests off screen, stops with reduced motion; nothing hidden by CSS", () => {
+test("choreo CSS: breathing adds to the transform (never replaces it, never touches what the script slides and fades), rests off screen, stops with reduced motion; nothing hidden by CSS", () => {
   const css = src("./styles/choreo.css");
-  const frames = [...css.matchAll(/@keyframes [\w-]+ \{([^}]*\}[^}]*)\}/g)].map((m) => m[1]).join(" ");
-  assert.doesNotMatch(frames, /transform:|opacity:/, "translate / background only");
-  assert.match(css, /@media \(prefers-reduced-motion: no-preference\) \{\n  \.band__shade/);
+  const frames = [...css.matchAll(/@keyframes [\w-]+ \{([\s\S]*?\})\s*\}/g)].map((m) => m[1]).join(" ");
+  assert.doesNotMatch(frames, /transform:/, "translate / scale / rotate / background only");
+  // the shades' breath is translate only (the script slides them on the transform and fades them on opacity)
+  assert.match(css, /@media \(prefers-reduced-motion: no-preference\) \{\n  \.band__shade, \.band__strip-shade \{ animation: band-lift/);
+  assert.match(css, /@keyframes band-lift \{ from \{ translate: [^;]+; \} to \{ translate: [^;]+; \} \}/);
+  // v2 round 1: the idle loops rest while the page moves
+  assert.match(css, /\[data-moving\] \.band__shade, \[data-moving\] \.band__strip-shade \{ animation-play-state: paused !important; \}/);
   assert.match(css, /\.is-off \.band__shade/);
-  assert.doesNotMatch(css, /(opacity: 0|visibility: hidden|display: none)/, "the CSS never hides anything");
+  assert.doesNotMatch(css, /(opacity: 0[;\s}]|visibility: hidden|display: none)/, "the CSS never hides anything");
   assert.match(src("./styles/site.css"), /@import "\.\/choreo\.css";/);
   assert.match(src("./render/layout.ts"), /<i class="hdr__progress" aria-hidden="true"><\/i>/);
 });

@@ -16,9 +16,12 @@ export const stripEnd = (stripH: number): string => `top bottom-=${Math.round(st
 export const PANEL_AT = (phone: boolean): string => (phone ? "top 94%" : "top 92%");
 /** The panel's slide (s): its paper and its shade together, expo.out. */
 export const PANEL_TIME = 0.75;
-/** The content's gate opens this far through the panel's slide (a share of its time: expo.out has the paper ~96% in,
- *  so the content lands as the paper does, never on bare world and never on long-empty paper). */
-export const CONTENT_GATE = 0.45;
+/** The content's gate opens this far through the panel's slide (a share of its time). Site loop v2 round 1: the content
+ *  rides in on the moving paper (its column slides with the paper, one pose, so it is never on bare world), so the
+ *  first batch lands while the paper is still coming (expo.out: ~57% of its way), never on long-empty paper. */
+export const CONTENT_GATE = 0.12;
+/** A band entered at this scroll speed (|n|) or faster gets its content with its paper at once (one landing). */
+export const FAST_N = 0.5;
 /** The spine (the panel's open edge) draws this far through the slide. */
 export const SPINE_AT = 0.55;
 /** A band on screen that a jump, a focus or the watchdog settles plays the rest of its entrance in this long (s); only
@@ -59,8 +62,25 @@ export function stitchFrom(s: Side, vw: number, phone = false): { x: number; rot
   return { x: -s * vw * (phone ? 0.4 : 0.18), rotation: -s * 3, autoAlpha: 0 };
 }
 
-/** The scroll's speed as -1..1 from the scroll's change in one ticker frame (css px), 0 at rest. */
-export const speedOf = (dy: number): number => (Number.isFinite(dy) ? Math.max(-1, Math.min(1, dy / 40)) : 0);
+/** The scroll's speed as -1..1 from the scroll's change in one ticker frame (css px), 0 at rest. A finger moves the
+ *  page fewer px a frame than a wheel flick does: phones read it at a higher gain (site loop v2 round 1: a fling peaked
+ *  at a third of the cards' lean). */
+export const speedOf = (dy: number, phone = false): number => (Number.isFinite(dy) ? Math.max(-1, Math.min(1, dy / (phone ? 14 : 40))) : 0);
+
+/** The world under the pointer (DESIGN-1019 4.2): its shift against the pointer at -1..1 across the screen, in whole art
+ *  pixels (an art px is `px` css px), at most ax / ay css px each way. */
+export function worldShift(p: number, a: number, px: number): number {
+  const v = -Math.max(-1, Math.min(1, p)) * a;
+  return Math.round(v / px) * px || 0;
+}
+
+/** A key's magnetic pull toward the pointer (4.2): from the key's centre to the pointer (css px), capped at `max`. */
+export function pull(dx: number, dy: number, max = 6, gain = 0.2): [number, number] {
+  let x = dx * gain, y = dy * gain;
+  const l = Math.hypot(x, y);
+  if (l > max) { x = (x / l) * max; y = (y / l) * max; }
+  return [x, y];
+}
 
 /** The fore piece rides the scroll a little faster than the paper (it is nearer): y over the band's passage. */
 export function foreY(p: number, phone = false): number {
