@@ -159,8 +159,11 @@ export function fallVeils(T: number, W: number, Hf: number, way: Way, reduced: b
       // the near face is met at T - through / 2, the far face left at T + through / 2 (the push-in only: 1 / zoom falls)
       const pn = camAt(v.T - v.through / 2, Hf, W).iz, pf = camAt(v.T + v.through / 2, Hf, W).iz;
       const D = now.iz - pn;
-      const inside = pn > pf ? Math.min(1, Math.max(0, (pn - now.iz) / (pn - pf))) : 0;
-      if (now.iz < pf || T > v.T + v.through) return;
+      // (rev 6 holds zoom 4 through every veil, so pn, pf and now.iz are equal up to float noise: compare with a
+      // margin, or the noise drops the whole layer on single ticks; the game's T is a running sum, never exact)
+      const EPS = 1e-6;
+      const inside = pn > pf + EPS ? Math.min(1, Math.max(0, (pn - now.iz) / (pn - pf))) : 0;
+      if (now.iz < pf - EPS || T > v.T + v.through) return;
       // approaching it swells from far away; inside, a slow swell; it tears open over the last part of the way out
       s = (1 / (v.depth + Math.max(D, 0))) * (1 + 0.7 * inside);
       sk = (1 / v.depth) * 1.35;
