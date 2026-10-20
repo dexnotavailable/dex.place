@@ -215,7 +215,7 @@ export function dressHall(b: WorldBuilder): void {
   // --- the roof over the room: the tie beam the lanterns hang from, coffers falling into the dark up to
   // the frame's top in the entrance shot, the skylight
   const BEAM = h(15.5), BEAM_D = h(0.9);
-  b.piece("play", "hall.roof", X(-8), FY, { w: h(50), beam: BEAM, depth: BEAM_D, sky: [SHAFT.x0 - h(1.0) - X(-8), SHAFT.x0 + h(1.0) - X(-8)], top: h(25), at: at(X(-8), FY) }, { z: 6 });
+  b.piece("play", "hall.roof", X(-8), FY, { w: h(50), beam: BEAM, depth: BEAM_D, sky: [SHAFT.x0 - h(0.7) - X(-8), SHAFT.x0 + h(0.7) - X(-8)], top: h(25), at: at(X(-8), FY) }, { z: 6 });
 
   // --- the lanterns: under the gallery they hang from its soffit (no cord crosses the art upstairs);
   // elsewhere from the beam; on the back plane from its own roof
@@ -242,9 +242,13 @@ export function dressHall(b: WorldBuilder): void {
 
   // --- the skylight's shaft beside the gate, breathing, and the dust turning in it
   const fascia: [number, number] = [GY - FY - 2, GY + D - FY + 2];
-  const beamGap: [number, number] = [-BEAM - BEAM_D, -BEAM];
-  b.sprite({ id: "hall-shaft", plane: "play", kind: "hall.shaft", x: SHAFT.x1, y: FY, p: { h: h(18), lean: SHAFT.x1 - SHAFT.x0, w: SHAFT.w, wTop: Math.round(SHAFT.w * 0.8), gaps: [fascia, beamGap] }, frames: 8, fps: 1, reflect: false });
-  b.sprite({ id: "hall-dust", plane: "front", kind: "hall.dust", x: SHAFT.x1, y: FY, p: { h: h(14), lean: Math.round((SHAFT.x1 - SHAFT.x0) * (14 / 18)), w: SHAFT.w, n: 26 }, frames: 16, fps: 4, reflect: false });
+  const beamGap: [number, number] = [-h(30), -BEAM];
+  // (hall loop round 2) the rays are drawn only upstairs where the shaft crosses open air (the play plane
+  // below the gallery and the art's screens are lifted in its body by hall.light); the dust turns only in
+  // the light just over its landing on the floor
+  const skip: [number, number, number, number][] = groups.map((g) => [g.x0 - h(0.3) - SHAFT.x1, g.top - h(0.35) - FY, g.x1 + h(0.3) - SHAFT.x1, GY - FY + 2]);
+  b.sprite({ id: "hall-shaft", plane: "play", kind: "hall.shaft", x: SHAFT.x1, y: FY, p: { h: h(18), lean: SHAFT.x1 - SHAFT.x0, w: SHAFT.w, wTop: Math.round(SHAFT.w * 0.85), gaps: [fascia, beamGap], from: GY - FY, skip }, frames: 8, fps: 1, reflect: false });
+  b.sprite({ id: "hall-dust", plane: "front", kind: "hall.dust", x: SHAFT.x1, y: FY, p: { h: h(2.6), lean: Math.round((SHAFT.x1 - SHAFT.x0) * (2.6 / 18)), w: SHAFT.w, n: 18 }, frames: 16, fps: 4, reflect: false });
 
   // --- (hall loop round 1) life overhead: strings of paper cranes and silk streamers let down from
   // the Long Gallery's underside, high over the walk line (hall.life), off the gate's bay and the

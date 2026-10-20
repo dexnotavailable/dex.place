@@ -27,8 +27,9 @@ const GY = HALL.gallery;
 export const GATE_O = 17.85;
 
 /** The skylight's shaft: from the roof (cropped) down to the floor in the clear wall between the desk and
- *  the gate, so the room's light gathers at its middle (round 1: it was in the left third). */
-export const SHAFT = { x0: X(14.0), y0: FY - h(18), x1: X(15.35), y1: FY, w: h(1.7), k: 0.95, pool: h(1.7) };
+ *  the gate, so the room's light gathers at its middle (round 1: it was in the left third; round 2: narrower and
+ *  a little right, so it lands in the clear floor between the desk and the gate and never on the desk). */
+export const SHAFT = { x0: X(14.4), y0: FY - h(18), x1: X(15.45), y1: FY, w: h(1.2), k: 0.95, pool: h(1.25) };
 
 /** Hanging lanterns of the hall: [x in H from the hall's west wall, height of the lantern's middle above the
  *  floor in H, size, plane, strength, reach in H]. Ground-floor ones hang from the gallery's soffit, one over
@@ -78,7 +79,8 @@ export const SERVICE_LAMPS: PointLight[] = [
   // the sponsors' board: the lantern hanging over its head
   { kind: "point", x: X(8.4), y: FY - h(2.6), r: h(1.9), k: 0.75 },
   // the offering box: its own lantern on a bracket off the west post of its frame (round 2)
-  { kind: "point", x: X(10.15), y: FY - h(1.05), r: h(1.5), k: 0.9 },
+  // (round 2, W2-7) hung a little lower on its bracket, so it lights the chest's lid and front and the plinth
+  { kind: "point", x: X(10.15), y: FY - h(0.85), r: h(1.5), k: 0.95 },
   // the register desk: its desk lamp at the visitor's end
   { kind: "point", x: X(12.9), y: FY - h(0.8), r: h(1.7), k: 0.95 },
   // the map's lamp
