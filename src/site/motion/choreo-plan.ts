@@ -64,7 +64,7 @@ export function contentFrom(v: Variant, s: Side, phone = false): Record<string, 
  *  solid once its paper is behind it (site loop v3 round 1: flown in from the world side it crossed bare world half
  *  see-through, tilted like a glitch). */
 export function stitchFrom(phone = false): { y: number; autoAlpha: number; clipPath: string } {
-  return { y: phone ? -32 : -48, autoAlpha: 1, clipPath: "inset(-24px -24px 100% -24px)" };
+  return { y: phone ? -32 : -48, autoAlpha: 1, clipPath: "inset(-24px -100vw 100% -100vw)" };
 }
 
 /** The scroll's speed as -1..1 from the scroll's change in one ticker frame (css px), 0 at rest. A finger moves the

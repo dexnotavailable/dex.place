@@ -88,7 +88,7 @@ test("choreo wiring: home only, never with reduced motion, lazy (load + mark + i
   assert.match(choreo, /prevent: \(node\) => node\.matches\("dialog, \[popover\], iframe, \.world, \[data-lenis-prevent\]"\)/);
   // the cards: K's deck through its contract only (G never reaches inside the li)
   assert.match(choreo, /m\.initCards\(list, \{ reduced: false, fine: fine\.matches, velocity: \(\) => speed\.n \}\)/);
-  for (const call of ["d.settle()", "d.prime()", "d.entrance({ side: \"l\" }).play()", "d.reset()", "d.live(st.isActive)"]) assert.ok(choreo.includes(call), call);
+  for (const call of ["d.settle()", "d.prime()", "d.entrance({ side: \"l\", solid: true }).play()", "d.reset()", "d.live(st.isActive)"]) assert.ok(choreo.includes(call), call);
   assert.doesNotMatch(choreo, /\.pcard__|\.cart\b/, "nothing inside a card");
   // nothing GSAP set is left on a thing once it has landed; no layout read in the ticker
   assert.match(choreo, /clearProps: CLEAR/);

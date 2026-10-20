@@ -22,6 +22,10 @@
 @media (prefers-reduced-motion: no-preference) {
   .band__shade, .band__strip-shade { animation: band-lift 7.5s ease-in-out calc(var(--band-i, 0) * -1.3s) infinite alternate; }
   .band__spine { overflow: hidden; }
+  /* (phones: the spine runs on down the tab and carries its numeral, clipped by its own clip-path, bands.css) */
+  @media (max-width: 699px) {
+    .band__spine { overflow: visible; }
+  }
   .band__spine::after {
     content: "";
     position: absolute;
@@ -62,11 +66,12 @@
   .ftr__paper::after { top: -4px; }
   .is-off .band__shade, .is-off .band__strip-shade, .is-off .band__spine::after, .is-off .sh__rule::after, .is-off .band__strip-paper::after { animation-play-state: paused; }
   /* ...and while the page moves (motion/choreo.ts sets data-moving from the scroll's speed): the idle loops are for when
-     you stop; scrolling, the frames go to the scroll. The shades' breath rests where it is; the small loops stop
-     altogether (so they are no layers of their own meanwhile) and pick up again when the page does */
+     you stop; scrolling, the frames go to the scroll. Every loop freezes where it is and picks up again when the page
+     does (site loop v3 round 2: they used to stop altogether, so a gleam mid-sweep vanished and pieces snapped back a
+     few pixels the moment you scrolled) */
   [data-moving] .band__shade, [data-moving] .band__strip-shade { animation-play-state: paused !important; }
   [data-moving] .band__spine::after, [data-moving] .sh__rule::after, [data-moving] .band__strip-paper::after, [data-moving] .ftr__paper::after,
-  [data-moving] .ftr__chip .tile, [data-moving] .dlf-bar::after, [data-moving] .dlf-file__ic { animation: none !important; }
+  [data-moving] .ftr__chip .tile, [data-moving] .dlf-bar::after, [data-moving] .dlf-file__ic { animation-play-state: paused !important; }
 }
 .band--projects { --rule-dot: var(--scarlet); }
 @keyframes band-lift { from { translate: 0 0; } to { translate: var(--lean) 8px; } }
@@ -142,9 +147,15 @@ html.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
   .band .dgroup li:nth-child(5) .dlink__go > * { animation-delay: 1.4s; }
   .is-off .band__strip-paper::before, .is-off .btn--dl::after, .is-off .dlink__go > * { animation-play-state: paused; }
   [data-moving] .band__strip-paper::before { animation-play-state: paused !important; }
-  [data-moving] .band .btn--dl::after, [data-moving] .band .dlink__go > * { animation: none !important; }
+  [data-moving] .band .btn--dl::after, [data-moving] .band .dlink__go > * { animation-play-state: paused !important; }
+  /* phones: the tab's numeral breathes too (site loop v3 round 2: phones had little life of their own at rest) */
+  @media (max-width: 699px) {
+    .band__spine::before { animation: num-breathe 6.4s ease-in-out calc(var(--band-i, 0) * -1.1s) infinite alternate; }
+    .is-off .band__spine::before, [data-moving] .band__spine::before { animation-play-state: paused; }
+  }
 }
-@keyframes num-breathe { from { translate: 0 0; opacity: 1; } to { translate: calc(var(--lean) * -3) 0; opacity: 0.7; } }
+/* (the fill is 40% of the tone; it breathes between about 30 and 40) */
+@keyframes num-breathe { from { translate: 0 0; opacity: 1; } to { translate: calc(var(--lean) * -3) 0; opacity: 0.74; } }
 @keyframes key-shine { 0% { translate: -110% 0; } 30%, 100% { translate: 110% 0; } }
 @keyframes row-nudge { 0%, 88% { translate: 0 0; } 89%, 94% { translate: 2px 0; } 95%, 100% { translate: 0 0; } }
 
@@ -173,7 +184,7 @@ html.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
   .band--gallery .art:nth-child(3n) .art__link { animation-delay: -4.8s; }
   .band--gallery .art:nth-child(2n) .art__link { animation-duration: 8.4s; }
   .is-off .art__link { animation-play-state: paused; }
-  [data-moving] .band--gallery .art__link { animation: none; }
+  [data-moving] .band--gallery .art__link { animation-play-state: paused; }
 }
 @keyframes art-drift { 0% { translate: 0 0; } 25% { translate: 0 -1px; } 50% { translate: 0 -2px; } 75% { translate: 0 -1px; } }
 /* the header's nav: a hovered link's icon hops */
@@ -211,16 +222,77 @@ html.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
   }
   .band__strip-paper::before { transform: skewX(calc(var(--n, 0) * -10deg)); }
   .is-off .dlf__art::before, .is-off .dlf-file { animation-play-state: paused; }
-  [data-moving] .band .dlf__art::before, [data-moving] .band .dlf-file, [data-moving] .ftr__kofi::after { animation: none !important; }
+  [data-moving] .band .dlf__art::before, [data-moving] .band .dlf-file, [data-moving] .ftr__kofi::after { animation-play-state: paused !important; }
 }
 @keyframes grid-drift { from { translate: 0 0; } to { translate: 16px 16px; } }
 @keyframes file-float { 0%, 100% { translate: 0 0; } 25% { translate: 0 -2px; } 50% { translate: 0 -4px; } 75% { translate: 0 -2px; } }
 /* the footer's mark nods now and then (two hops of a pixel), and hops when the pointer comes */
 @media (prefers-reduced-motion: no-preference) {
   .sheet--home .ftr__mark > svg { animation: mark-nod 6.4s steps(1, end) 1.8s infinite; }
-  [data-moving] .sheet--home .ftr__mark > svg { animation: none; }
+  [data-moving] .sheet--home .ftr__mark > svg { animation-play-state: paused; }
 }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .sheet--home .ftr__mark:hover > svg { animation: tile-hop 0.42s steps(4, end) 1; }
 }
 @keyframes mark-nod { 0%, 90% { translate: 0 0; } 92% { translate: 0 -3px; } 94% { translate: 0 0; } 96% { translate: 0 -2px; } 98%, 100% { translate: 0 0; } }
+
+/* ---- site loop v3 round 2: cuter, at rest and to the touch */
+@media (prefers-reduced-motion: no-preference) {
+  /* the sleepy blobs doze: a pixel's breath in and out (they wake with a hop when the pointer comes near) */
+  .ftr__sleepy:not(.is-awake), .dlp__zz:not(.is-awake) { animation: blob-doze 3.2s steps(1, end) infinite; }
+  .is-off .ftr__sleepy, .is-off .dlp__zz, [data-moving] .ftr__sleepy, [data-moving] .dlp__zz { animation-play-state: paused; }
+}
+@keyframes blob-doze { 0%, 45% { translate: 0 0; } 50%, 95% { translate: 0 1px; } }
+/* the hanko: a press on any key stamps a seal of the section's tone under the pointer, which fades (motion/choreo.ts
+   moves one element there and replays it; none with reduced motion: the script never loads) */
+.press-seal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border: 4px solid var(--hk, var(--scarlet));
+  outline: 2px solid var(--hk, var(--scarlet));
+  outline-offset: -10px;
+  /* (at rest it is no size at all: the press's keyframes carry its scale and fade) */
+  scale: 0;
+  pointer-events: none;
+}
+/* more at rest where the page was still (site loop v3 round 2: the footer moved 1% of its pixels at rest, donate 6%,
+   donate on a phone 1.3%): the footer's links nudge their icons in turn, down the list; the Ko-fi key gets the key light
+   (phones too); the Ko-fi well's dot grid drifts a pixel at a time and the cup gives a little hop now and then */
+@media (prefers-reduced-motion: no-preference) {
+  .sheet--home .ftr__nav li .px { animation: row-nudge 4.8s steps(1, end) calc(var(--li-i, 0) * 0.3s) infinite; }
+  .sheet--home .ftr__nav li:nth-child(2) { --li-i: 1; }
+  .sheet--home .ftr__nav li:nth-child(3) { --li-i: 2; }
+  .sheet--home .ftr__nav li:nth-child(4) { --li-i: 3; }
+  .sheet--home .ftr__nav li:nth-child(5) { --li-i: 4; }
+  .sheet--home .ftr__nav li:nth-child(6) { --li-i: 5; }
+  .sheet--home .ftr__nav li:nth-child(7) { --li-i: 6; }
+  .band .kofi__cta { position: relative; overflow: clip; }
+  .band .kofi__cta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.7) 50%, transparent 70%);
+    translate: -110% 0;
+    animation: key-shine 5.2s ease-in-out 0.6s infinite;
+    pointer-events: none;
+  }
+  .band .kofi__stage { background: var(--magenta-t); }
+  .band .kofi__stage::before {
+    content: "";
+    position: absolute;
+    inset: -16px 0 0 -16px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect x='7' y='7' width='2' height='2' fill='%23ff1aac' fill-opacity='.4'/%3E%3C/svg%3E") 0 0 / 16px 16px;
+    animation: grid-drift 9s steps(16, end) infinite reverse;
+    pointer-events: none;
+  }
+  .band .kofi__cup { animation: file-float 6.4s steps(1, end) 0.8s infinite; }
+  .band .kofi:hover .kofi__cup { animation: none; }
+  .is-off .kofi__cta::after, .is-off .kofi__stage::before, .is-off .kofi__cup,
+  [data-moving] .sheet--home .ftr__nav li .px, [data-moving] .band .kofi__cta::after, [data-moving] .band .kofi__stage::before,
+  [data-moving] .band .kofi__cup { animation-play-state: paused; }
+}

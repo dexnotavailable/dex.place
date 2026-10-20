@@ -64,6 +64,10 @@ interface Band {
   foreBase: number;
   lastN: number;
   lastFore: number;
+  /** the strip itself on the screen (the band can be on while its strip is long gone above), and the shear last written
+   *  (in 1/20 steps: site loop v3 round 2, a style write on every strip each tick cost frames at 1366) */
+  stripOn: boolean;
+  lastNq: number;
   onGate: (() => void) | null;
   /** the band's world and shades under the pointer (DESIGN-1019 4.2): its place's canvas (painted late: looked up until
    *  found), the shades, and what was last written */
@@ -132,10 +136,12 @@ export function initChoreo(fine: MediaQueryList): void {
         b.lastFore = fy;
         // the whole site leans on a fling, not only the cards: the strip titles drift (desktop) and tip with the scroll
         if (b.stripTitle && b.headPlayed) gsap.set(b.stripTitle, desktop ? { x: n * 16, skewY: n * 1.5 } : { skewY: n * 1.5 });
-        if (desktop && b.sp >= 1) {
-          gsap.set(b.stripSurfaces, { scaleX: 1 + Math.abs(n) * 0.015 });
+        const nq = Math.round(n * 20) / 20;
+        if (desktop && b.sp >= 1 && b.stripOn && nq !== b.lastNq) {
+          b.lastNq = nq;
+          gsap.set(b.stripSurfaces, { scaleX: 1 + Math.abs(nq) * 0.015 });
           // ...and its giant number shears with the scroll (styles/choreo.css: a transform on its own layer)
-          b.stripSurfaces[0]!.style.setProperty("--n", String(n));
+          b.stripSurfaces[0]!.style.setProperty("--n", String(nq));
         }
         if (b.fore) gsap.set(b.fore, { y: fy });
       }
@@ -162,9 +168,9 @@ export function initChoreo(fine: MediaQueryList): void {
           if (phone) {
             lis.forEach((li, i) => ScrollTrigger.create({
               trigger: li, start: "clamp(top 88%)", once: true,
-              onEnter: () => d.entrance({ side: i % 2 ? "r" : "l", index: i }).play(),
+              onEnter: () => d.entrance({ side: i % 2 ? "r" : "l", index: i, solid: true }).play(),
             }));
-          } else d.entrance({ side: "l" }).play();
+          } else d.entrance({ side: "l", solid: true }).play();
         };
         // a band already landed (arm time, or set while the deck was on its way) has its cards simply there; else they
         // wait out of sight and enter as its gate opens, the paper ~60% in (a settle on the screen opens the gate: they
@@ -212,6 +218,31 @@ export function initChoreo(fine: MediaQueryList): void {
         });
       });
     }
+
+    // --- the hanko (site loop v3 round 2): a press on any key stamps a seal of its section's tone under the pointer
+    // (styles/choreo.css .press-seal): one element, moved and replayed, compositor only
+    const seal = document.createElement("i");
+    seal.className = "press-seal";
+    seal.setAttribute("aria-hidden", "true");
+    document.body.append(seal);
+    let stamp: Animation | null = null;
+    const onPress = (e: PointerEvent): void => {
+      const key = (e.target as Element | null)?.closest?.(".sheet--home :is(a, button, .dlf)");
+      if (!key || e.button > 0) return;
+      // (the deep twin of the section's tone: it reads on the section's own coloured keys too)
+      const cs = getComputedStyle(key.closest(".band") ?? key);
+      const tone = (cs.getPropertyValue("--tone-d") || cs.getPropertyValue("--tone")).trim();
+      if (tone) seal.style.setProperty("--hk", tone); else seal.style.removeProperty("--hk");
+      const r = Math.round((Math.random() - 0.5) * 16);
+      seal.style.translate = `${Math.round(e.clientX)}px ${Math.round(e.clientY)}px`;
+      stamp?.cancel();
+      stamp = seal.animate([
+        { opacity: 0.95, scale: "1.5", rotate: `${r}deg` },
+        { opacity: 0.9, scale: "1", rotate: `${r}deg`, offset: 0.18 },
+        { opacity: 0, scale: "1.12", rotate: `${r}deg` },
+      ], { duration: 600, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+    };
+    document.addEventListener("pointerdown", onPress, { passive: true });
 
     // --- the footer: the last strip
     const ftrEl = document.querySelector<HTMLElement>(".sheet--home .ftr");
@@ -290,6 +321,9 @@ export function initChoreo(fine: MediaQueryList): void {
       document.removeEventListener(WAY_IN_EVENT, refresh);
       document.removeEventListener(SLIDEOFF_EVENT, onSlideOff);
       document.removeEventListener(SLIDEBACK_EVENT, onSlideBack);
+      document.removeEventListener("pointerdown", onPress);
+      stamp?.cancel();
+      seal.remove();
       for (const b of bands) b.settle(true);
       foot?.destroy();
       hdr?.style.removeProperty("--sec-tone");
@@ -311,7 +345,11 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
   const site = q(".band__site")!, fore = q(".band__fore");
   const head = q(".band__in");
   const stitch = q("[data-stitch]");
-  const items = Array.from(el.querySelectorAll<HTMLElement>(".band__panel > .wrap > *")).filter((x) => !x.matches("[data-pcards]") && x !== stitch);
+  const blocks = Array.from(el.querySelectorAll<HTMLElement>(".band__panel > .wrap > *"));
+  // what unrolls solid: the stitch, or the block that holds it (site loop v3 round 2: the downloads file card sat in a
+  // list that faded in as one, so the card faded with it and the palace showed through its overhang)
+  const unroll = stitch ? (blocks.find((x) => x.contains(stitch)) ?? stitch) : null;
+  const items = blocks.filter((x) => !x.matches("[data-pcards]") && x !== unroll);
   // (site loop v3 round 1: everything slides out from under the layer above it, the strip over its panel)
   const variant: Variant = "drop";
   const from = contentFrom(variant, s, phone);
@@ -368,7 +406,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
 
   const b: Band = {
     el, s, sp: 0, landed: false, headPlayed: false, panelIn: false, panelDone: false, gateOpen: false, all: false, queue: [], seenAt: 0, on: false,
-    stripTitle: b0title, stripSurfaces: [stripPaper, stripShade], fore, foreBase: 0, lastN: NaN, lastFore: NaN, onGate: null,
+    stripTitle: b0title, stripSurfaces: [stripPaper, stripShade], fore, foreBase: 0, lastN: NaN, lastFore: NaN, stripOn: false, lastNq: 0, onGate: null,
     scene: null, shades: [stripShade, shade], lastWx: NaN, lastWy: NaN, lastSx: NaN, lastSy: NaN,
     settle: () => false,
     reset: () => {},
@@ -389,13 +427,24 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
   };
 
   // content lands in batches as it comes up, but only once the panel is (nearly) in; the stitch flies in solid
+  const wipe = { p: 0 };
   const landStitch = (): void => {
     if (!stitch || stitch.dataset.landed !== undefined) return;
     stitch.dataset.landed = "";
-    // solid all the way (never see-through over the world it hangs onto): it unrolls down out from under the strip
-    gsap.to(stitch, {
-      y: 0, clipPath: "inset(-24px -24px -24px -24px)", duration: 0.9 * T, ease: "expo.out", delay: 0.1,
-      onComplete: () => { gsap.set(stitch, { clearProps: `${CLEAR},clipPath` }); },
+    // solid all the way (never see-through over the world it hangs onto): it unrolls down out from under the strip.
+    // The wipe moves in whole 8 px steps (site loop v3 round 2): a pixel-art unroll, and a clip that changes only on a
+    // step, so the card is painted again only then (a clip change repaints it; its slow tail was a repaint every frame)
+    const u = unroll!, h = u.offsetHeight + 24;
+    let last = NaN;
+    gsap.to(u, { y: 0, duration: 0.9 * T, ease: "expo.out", delay: 0.1 });
+    wipe.p = 0;
+    gsap.to(wipe, {
+      p: 1, duration: 0.9 * T, ease: "expo.out", delay: 0.1,
+      onUpdate: () => {
+        const b = Math.round(((1 - wipe.p) * h) / 8) * 8 - 24;
+        if (b !== last) { last = b; u.style.clipPath = `inset(-24px -100vw ${b}px -100vw)`; }
+      },
+      onComplete: () => { gsap.set(u, { clearProps: `${CLEAR},clipPath` }); },
     });
   };
   const land = (batch: HTMLElement[], quick = false): void => {
@@ -435,7 +484,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     gateCall?.kill();
     stripRun?.kill();
     gateCall = stripRun = null;
-    gsap.killTweensOf([...surfaces, ...items, ...(spine ? [spine] : []), ...(stitch ? [stitch] : [])]);
+    gsap.killTweensOf([...surfaces, ...items, ...(spine ? [spine] : []), ...(unroll ? [unroll] : []), wipe]);
   };
   const prime = (): void => {
     lift(true);
@@ -449,7 +498,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     if (spine) gsap.set(spine, { scaleY: 0, transformOrigin: "50% 0%" });
     gsap.set(items, from);
     for (const x of items) landedItems.delete(x);
-    if (stitch) { delete stitch.dataset.landed; gsap.set(stitch, stitchFrom(phone)); }
+    if (stitch && unroll) { delete stitch.dataset.landed; gsap.set(unroll, stitchFrom(phone)); }
     b.queue = [];
   };
   // off the screen: simply set (nobody sees it); nothing waits on the gate any more (the deck settles with it)
@@ -463,7 +512,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     gsap.set(shade, { opacity: 1 });
     headTl.progress(1).pause();
     if (spine) gsap.set(spine, { scaleY: 1 });
-    gsap.set([...items, ...(stitch ? [stitch] : [])], { clearProps: `${CLEAR},clipPath` });
+    gsap.set([...items, ...(unroll ? [unroll] : [])], { clearProps: `${CLEAR},clipPath` });
     for (const x of items) landedItems.add(x);
     if (stitch) stitch.dataset.landed = "";
     b.queue = [];
@@ -546,6 +595,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     },
     onLeaveBack: () => b.reset(),
   });
+  ScrollTrigger.create({ trigger: strip, start: "top bottom", end: "bottom top", onToggle: (st) => { b.stripOn = st.isActive; } });
   // focus inside settles it (playing out what is left)
   el.addEventListener("focusin", () => { b.settle(); });
   return b;

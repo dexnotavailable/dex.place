@@ -18,7 +18,8 @@
      Phones (their open side is a 20 px slit) keep a short window at each join: the panel's paper narrows to a tab on its
      docked side (--tab-w) and the world opens on the other (bands.css .band__paper::after) */
   --lead: 0px;
-  --breath: 18svh;
+  /* (site loop v3 round 2: 18svh read as leftover paper on a phone; the tab now carries its section's numeral) */
+  --breath: 10svh;
   --tab-w: 38%;
   --strip-h: 96px;
   --title-px: 2;
@@ -61,6 +62,9 @@
   /* (site loop v3 round 1: the gallery's fore cloud stands beside its collage now, not over its last piece, so the
      collage ends close to the next strip; the projects' cascade steps less, so less bare paper under the first card) */
   .band--gallery, .band--projects { --pad-bot: 40px; }
+  /* (site loop v3 round 2: the docs foot was 88 px of bare paper at 1920; the lake's fore laps its open corner, clear of
+     the rows' text) */
+  .band--docs { --pad-bot: 56px; }
 }
 /* phones: the palace banner hangs at the downloads panel's foot corner; the last file link stays clear of it */
 @media (max-width: 699px) {
@@ -160,10 +164,26 @@
   /* a wash of its tone (Dex 10-20: "more potent, more vibrant"; ink and the deep tones stay AA on it), and on its top
      edge the hand-off: the tone of the section above runs into its own across the seam (from the side the paper above
      was docked to) */
-  background: var(--hand, none) 0 0 / 100% 4px no-repeat, var(--wash);
+  background:
+    var(--dither) 0 4px / 8px 8px repeat-x,
+    var(--hand, none) 0 0 / 100% 8px no-repeat,
+    var(--wash);
   border-bottom: 4px solid var(--tone);
+  /* (site loop v3 round 2) its cast shadow on the panel starts as a stepped band of the section's deep tone, two pixel
+     rows: the strip lies on the paper with weight, and where it cuts the world (the lead's clouds) the cut lands in
+     shadow, not in white slivers */
+  box-shadow: 0 4px 0 var(--hem-s1), 0 8px 0 var(--hem-s2);
 }
-.band { --tone-up: var(--tone); --wash: color-mix(in srgb, var(--tone) 9%, #fff); }
+/* the hand-off hem (site loop v3 round 2: 4 px was all but invisible at 1920): 8 px, its lower half dithered into this
+   section's wash in a 4 px checker, the world's pixel language */
+.band {
+  --tone-up: var(--tone);
+  --wash: color-mix(in srgb, var(--tone) 14%, #fff);
+  --dither: conic-gradient(var(--wash) 25%, transparent 0 50%, var(--wash) 0 75%, transparent 0);
+  --hem-s1: color-mix(in srgb, var(--tone-d, #162c60) 30%, transparent);
+  --hem-s2: color-mix(in srgb, var(--tone-d, #162c60) 12%, transparent);
+}
+.sheet .band.sec:first-child { --dither: none; }
 .band--downloads { --tone-up: var(--amber); }
 .band--gallery { --tone-up: var(--jade); }
 .band--docs { --tone-up: var(--lagoon); }
@@ -194,7 +214,7 @@
   margin-right: -0.36em;
   font: 400 calc(var(--num-px) * 25px) / 1 var(--f-title);
   letter-spacing: calc(var(--num-px) * 1px);
-  color: color-mix(in srgb, var(--tone) 22%, transparent);
+  color: color-mix(in srgb, var(--tone) 40%, transparent);
   -webkit-text-stroke: 2px var(--tone);
   font-synthesis: none;
   -webkit-font-smoothing: none;
@@ -275,13 +295,29 @@
 /* ---- the panel: docked flush to its side, the paper behind the content, a spine on its open edge */
 .band__panel { position: relative; z-index: 1; width: var(--panel-w); padding: var(--pad-top) 0 var(--pad-bot); }
 .band--r .band__panel { margin-left: auto; }
-.band__paper { position: absolute; inset: 0; z-index: 2; background: #fff; }
+.band__paper { position: absolute; inset: 0; z-index: 2; background: var(--paper); }
+/* (site loop v3 round 2: the panels were pure #fff under washed strips; a breath of the tone ties each chapter together,
+   and the cards' white stands off it) */
+.band { --paper: color-mix(in srgb, var(--tone) 3%, #fff); }
 /* the shade falls past the open edge and down past the foot (the paper lies on the world, never looks clipped) */
 .band__shade { position: absolute; inset: 0; z-index: 1; box-shadow: 24px 24px 64px -28px var(--shade-c); }
 .band--r .band__shade { box-shadow: -24px 24px 64px -28px var(--shade-c); }
 /* the spine glows its tone onto the world (a still shadow: it rides the paper's own layer) */
-.band__spine { position: absolute; top: 0; bottom: 0; right: 0; width: 6px; background: var(--tone, var(--gold)); box-shadow: 0 0 24px 2px color-mix(in srgb, var(--tone, var(--gold)) 55%, transparent); }
+.band__spine { position: absolute; top: 0; bottom: 0; right: 0; width: 6px; background: var(--tone, var(--gold)); }
 .band--r .band__spine { left: 0; right: auto; }
+/* (site loop v3 round 2: the glow was a 24 px box-shadow on a full-height element riding the sliding paper; now a
+   gradient beside it, painted once with the paper) */
+.band__paper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 28px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--tone, var(--gold)) 50%, transparent), transparent);
+  pointer-events: none;
+}
+.band--r .band__paper::before { left: auto; right: 100%; background: linear-gradient(270deg, color-mix(in srgb, var(--tone, var(--gold)) 50%, transparent), transparent); }
 /* the phones' window at each join: the paper runs on as a tab on its docked side (its spine with it), the world opens
    beside it; at 700 px and up there is no breath, so no tab */
 .band__paper::after {
@@ -291,13 +327,40 @@
   left: 0;
   width: var(--tab-w);
   height: var(--breath);
-  background: #fff;
+  background: var(--paper);
   border-right: 6px solid var(--tone);
   box-shadow: 16px 16px 40px -20px var(--shade-c);
 }
 .band--r .band__paper::after { left: auto; right: 0; border-right: 0; border-left: 6px solid var(--tone); box-shadow: -16px 16px 40px -20px var(--shade-c); }
 @media (min-width: 700px) {
   .band__paper::after { display: none; }
+}
+/* ...and the tab has a resident (site loop v3 round 2: a bare white tab read as leftover paper): the section's giant
+   numeral, as on a desktop strip, standing in the tab and bleeding off the screen's edge (drawn by the spine, which runs
+   on down the tab's edge: its light with it) */
+@media (max-width: 699px) {
+  .band__spine { z-index: 1; clip-path: inset(0 -100vw calc(-1 * var(--breath)) -100vw); }
+  .band__spine::before {
+    content: counter(band, decimal-leading-zero) / "";
+    position: absolute;
+    top: 100%;
+    right: calc(var(--panel-w) * 0.62);
+    width: calc(var(--panel-w) * 0.38 - 6px);
+    height: var(--breath);
+    clip-path: inset(0);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    margin-left: -0.3em;
+    font: 400 100px / 0.78 var(--f-title);
+    letter-spacing: 4px;
+    color: color-mix(in srgb, var(--tone) 40%, transparent);
+    -webkit-text-stroke: 2px var(--tone);
+    font-synthesis: none;
+    -webkit-font-smoothing: none;
+    pointer-events: none;
+  }
+  .band--r .band__spine::before { right: auto; left: calc(var(--panel-w) * 0.62); justify-content: flex-end; margin-left: 0; margin-right: -0.3em; }
 }
 .sheet .band__panel > .wrap { position: relative; z-index: 3; max-width: none; margin: 0; padding: 0 var(--edge-in) 0 var(--edge-out); }
 .sheet .band--r .band__panel > .wrap { padding: 0 var(--edge-out) 0 var(--edge-in); }
@@ -445,4 +508,4 @@
 
 /* the header takes a wash of the section you are in (site loop v3 round 1: the page's colour follows you up to the top
    edge; --sec-tone is set on the header by motion/choreo.ts on the home page only, so every other page keeps it white) */
-.hdr { background-color: color-mix(in srgb, var(--sec-tone, #fff) 8%, #fff); transition: background-color 0.45s var(--ease-std); }
+.hdr { background-color: color-mix(in srgb, var(--sec-tone, #fff) 12%, #fff); transition: background-color 0.45s var(--ease-std); }

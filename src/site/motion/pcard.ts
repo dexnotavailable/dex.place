@@ -29,8 +29,10 @@ export interface CardDeck {
    *  the deck is wholly below the fold. No-op under reduced motion. */
   prime(): void;
   /** A paused timeline of the entrance (5.5). side: where the cards come from. index: one card only (phones);
-   *  without it, all three with K's stagger. Empty timeline under reduced motion. */
-  entrance(o: { side: "l" | "r"; index?: number }): gsap.core.Timeline;
+   *  without it, all three with K's stagger. Empty timeline under reduced motion. solid (G's hook, site loop v3 round 2):
+   *  each card stays opaque and unrolls down out from under the strip above it (a clip wipe and a drop), as every other
+   *  block on the home page lands, instead of flying in and cross-fading over the world; its parts still play K's. */
+  entrance(o: { side: "l" | "r"; index?: number; solid?: boolean }): gsap.core.Timeline;
   /** The landed pose now, no motion (deep links, bands already passed, focus inside, the watchdog). */
   settle(): void;
   /** Back to the primed pose (the band dropped wholly below the viewport again). */
@@ -337,6 +339,7 @@ export function initCards(list: HTMLElement, given: CardHost): CardDeck {
     if (!motion) return;
     for (const c of cards) {
       gsap.set(c.inn, LANDED);
+      gsap.set(c.inn, { clearProps: "clipPath" });
       gsap.set(inner(c), { clearProps: "transform,opacity,visibility" });
     }
   }
@@ -351,7 +354,7 @@ export function initCards(list: HTMLElement, given: CardHost): CardDeck {
     }
   }
 
-  function entrance(o: { side: "l" | "r"; index?: number }): gsap.core.Timeline {
+  function entrance(o: { side: "l" | "r"; index?: number; solid?: boolean }): gsap.core.Timeline {
     const tl = gsap.timeline({ paused: true, onComplete: () => { running.delete(tl); } });
     if (!motion) return tl;
     running.add(tl);
@@ -369,6 +372,15 @@ export function initCards(list: HTMLElement, given: CardHost): CardDeck {
     };
     these.forEach((c, i) => {
       const at = one ? 0 : i * 0.11;
+      if (o.solid) {
+        const CLIP_IN = "inset(-32px -32px -32px -32px)";
+        tl.set(c.inn, { autoAlpha: 1, immediateRender: false }, at);
+        ft(c.inn, { x: 0, y: phone.matches ? -32 : -48, rotation: 0, clipPath: "inset(-32px -32px 100% -32px)" },
+          { y: 0, clipPath: CLIP_IN, duration: 0.9 * D, ease: "expo.out", onComplete: () => { gsap.set(c.inn, { clearProps: "clipPath" }); } }, at);
+        if (c.ground) ft(c.ground, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.7 * D, ease: "power2.out" }, at + 0.35 * D);
+        if (c.lines.length) drawn(c, at); else plain(c, at);
+        return;
+      }
       ft(c.inn, one ? { x: s * 0.6 * vw, y: 0, rotation: s * 4 } : { x: s * 0.24 * vw, y: 48, rotation: s * 4 },
         { x: 0, y: 0, rotation: 0, duration: one ? 0.9 : 1.1 * D, ease: "expo.out" }, at);
       tl.to(c.inn, { autoAlpha: 1, duration: 0.3, ease: "none" }, at);
