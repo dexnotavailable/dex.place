@@ -1,0 +1,76 @@
+{
+ "id": "smoke_puff_l",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  77,
+  113
+ ],
+ "layer": "back",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2
+  },
+  {
+   "file": "f005.png",
+   "ticks": 2
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3
+  },
+  {
+   "file": "f008.png",
+   "ticks": 3
+  },
+  {
+   "file": "f009.png",
+   "ticks": 3
+  },
+  {
+   "file": "f010.png",
+   "ticks": 3
+  },
+  {
+   "file": "f011.png",
+   "ticks": 3
+  },
+  {
+   "file": "f012.png",
+   "ticks": 3
+  },
+  {
+   "file": "f013.png",
+   "ticks": 4
+  },
+  {
+   "file": "f014.png",
+   "ticks": 4
+  }
+ ],
+ "loop": false,
+ "notes": "smoke_puff_l: a soot puff, simulated (Mantaflow, Blender 5.1 CPU) -> celsim: sculpted cel smoke lit from the upper left, the shadow side dark, a lit rim on the light side, a hard dither break-up as it goes. Pivot = the ground under the puff."
+}

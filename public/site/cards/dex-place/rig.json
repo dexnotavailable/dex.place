@@ -1,138 +1,31 @@
 {
  "v": 2,
  "size": [
-  160,
-  240
+  941,
+  1400
  ],
  "focus": [
-  88,
-  75
+  516,
+  285
  ],
- "pixelated": true,
  "parts": [
   {
-   "id": "sky",
-   "src": "sky.webp",
+   "id": "art",
+   "src": "art.webp",
    "box": [
     0,
     0,
-    160,
-    240
+    941,
+    1400
    ],
-   "depth": 0
-  },
-  {
-   "id": "isle",
-   "src": "isle.webp",
-   "box": [
-    101,
-    66,
-    28,
-    62
-   ],
-   "depth": 0.45,
+   "depth": 0.5,
    "motion": [
     {
      "kind": "bob",
      "dx": 0,
-     "dy": 2,
-     "period": 4.4,
-     "phase": 0.3
-    }
-   ]
-  },
-  {
-   "id": "cloud-low",
-   "src": "cloud-low.webp",
-   "box": [
-    30,
-    154,
-    94,
-    34
-   ],
-   "depth": 0.6,
-   "motion": [
-    {
-     "kind": "bob",
-     "dx": 3,
-     "dy": 0,
-     "period": 7,
-     "phase": 0.5
-    }
-   ]
-  },
-  {
-   "id": "legs",
-   "src": "legs.webp",
-   "box": [
-    73,
-    149,
-    35,
-    48
-   ],
-   "depth": 0.85
-  },
-  {
-   "id": "upper",
-   "src": "upper.webp",
-   "box": [
-    58,
-    53,
-    54,
-    96
-   ],
-   "depth": 0.85,
-   "pivot": [
-    88,
-    149
-   ],
-   "motion": [
-    {
-     "kind": "breathe",
-     "scale": 0.014,
-     "period": 4.2,
+     "dy": 4,
+     "period": 8,
      "phase": 0
-    }
-   ]
-  },
-  {
-   "id": "blade",
-   "src": "blade.webp",
-   "box": [
-    85,
-    102,
-    22,
-    89
-   ],
-   "depth": 0.9,
-   "motion": [
-    {
-     "kind": "glow",
-     "min": 0.7,
-     "max": 1,
-     "period": 1.8,
-     "phase": 0
-    }
-   ]
-  },
-  {
-   "id": "fx-sparks",
-   "src": "fx-sparks.webp",
-   "box": [
-    68,
-    109,
-    35,
-    75
-   ],
-   "depth": 1,
-   "motion": [
-    {
-     "kind": "drift",
-     "dx": 0,
-     "dy": -14,
-     "period": 2.6,
-     "phase": 0,
-     "fade": true
     }
    ]
   }

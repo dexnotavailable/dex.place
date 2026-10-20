@@ -129,8 +129,16 @@ async function boot(): Promise<void> {
       return [w, h];
     } : undefined,
   });
-  // (lane C 10-19) the world's sprite effects (public/assets/fx, EFFECTS-CONTRACT.md): loaded beside the game's start
-  void Fx.load(r).then((fx) => { game.fx = fx; });
+  // (lane C 10-19) the world's sprite effects (public/assets/fx, EFFECTS-CONTRACT.md): loaded beside the game's start.
+  // (coordinator 10-20) in the homepage's world window they wait for the press: FX v2 is ~7.7 MB, and a visitor who
+  // only reads the site never needs it (the opening runs ~30 s before her first move, so they land in time)
+  let fxAsked = false;
+  const loadFx = (): void => {
+    if (fxAsked) return;
+    fxAsked = true;
+    void Fx.load(r).then((fx) => { game.fx = fx; });
+  };
+  if (!embedded) loadFx();
   // the opening's inputs: in the cinematic Esc skips (the chip's key) and any other input shows the chip;
   // the page's conductor owns both, the world only tells it
   const link = (): OpeningLink | null => (game.opening.state === "cine" ? game.opening.link : null);
@@ -292,7 +300,7 @@ async function boot(): Promise<void> {
       flag: (f: string, on = true) => (on ? game.flags.add(f) : game.flags.delete(f)),
       use: () => game.use(),
       /** The press (PLAY or "continue"): the opening starts on the link's clock (the page's conductor); no link: silent, on the world's own time (tools). */
-      play: (l?: OpeningLink, way?: "continue" | "corner" | "top" | "bottom") => game.play(l, l?.way ?? way),
+      play: (l?: OpeningLink, way?: "continue" | "corner" | "top" | "bottom") => { loadFx(); game.play(l, l?.way ?? way); },
       audio: (ctx: AudioContext) => game.sound.start(ctx),
       /** The opening set (what the opening needs), for the page's loader: plates along the camera's path, her drawings, the title face, the ofuda. */
       openingSet: () => ({ plates: game.warmProgress(), close: game.closeReady, font: titleIn, ofuda: ofudaIn, warming: game.warming }),

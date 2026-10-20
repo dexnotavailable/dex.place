@@ -138,7 +138,7 @@ const STROKE = [0.0045, 0.003, 0.002];
  * box above the colour (so it can ride its part's depth), every path drawn by a normalised dash (pathLength 1).
  */
 async function loadLines(c: Card): Promise<void> {
-  const cart = c.li.querySelector<HTMLElement>(".cart[data-rig]");
+  const cart = c.li.querySelector<HTMLElement>(".cart[data-rig][data-lines]");
   const art = c.li.querySelector<HTMLElement>(".cart .cart__art");
   // (the pixel finish draws its parts in a canvas: its cards keep the entrance without line art)
   if (!cart || !art || c.lines.length || document.documentElement.dataset.cardfinish === "pixel") return;

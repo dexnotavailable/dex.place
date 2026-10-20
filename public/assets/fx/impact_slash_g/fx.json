@@ -1,0 +1,49 @@
+{
+ "id": "impact_slash_g",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  144,
+  93
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3
+  },
+  {
+   "file": "f006.png",
+   "ticks": 3
+  },
+  {
+   "file": "f007.png",
+   "ticks": 4
+  }
+ ],
+ "loop": false,
+ "with": [],
+ "notes": "impact slash g (finisher): hit effect, pivot = the impact point, facing right"
+}

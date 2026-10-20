@@ -281,6 +281,8 @@ export class TesuGame {
     this.player = new Zhusha({ vfx: this.vfx, feel: this.feel, camera: this.camera, foes: () => this.court?.foes() ?? [] }, [0, 0]);
     this.zdraw = new ZhushaDraw(assets.anims);
     this.zdraw.bind(this.player);
+    // (lane E 10-20) her drawing goes behind the ground's front edge: it asks the world where the ground is under her
+    this.zdraw.groundAt = (x, y) => this.collision.groundBelow(x, y)?.y ?? null;
     this.npcs = new NpcDraw(assets.cast, this.world.sprites);
     this.vfx.groundAt = (x, y) => this.collision.groundAt(x, y);
     this.save = loadSave();
@@ -305,6 +307,8 @@ export class TesuGame {
     this.player.onCue = (c) => this.sound.herCue(c);
     // R plays the FX loop's effects when they are in (zhusha/ult.ts; its stand-ins draw until then)
     this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o) };
+    // (lane E 10-20) her moves play FX v2's built effects through the same door
+    this.player.fx = this.player.r.fx;
     this.props = new Props({
       player: this.player, vfx: this.vfx, feel: this.feel, camera: this.camera,
       ground: (x, y) => this.collision.groundBelow(x, y)?.y ?? null,

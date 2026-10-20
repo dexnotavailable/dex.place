@@ -21,10 +21,11 @@ const INK = hex("#1b1922"), PAPER = hex("#fbf8f1"), HURT = hex("#ffd2c8"), VERM 
 const AZURE = hex("#6fc8ff"), AZURE_DEEP = hex("#2a6fb8");
 
 /**
- * (lane C 10-19, Dex: "the run cycle a tad faster") Her run's playback rate, both forms, when it plays by time (no
- * root-motion marks). Her speeds stay 9 / 11 m/s (feel.json run); only the drawings turn over faster.
+ * Her run's playback rate when it plays by time (no root-motion marks), per form: feel.json run.playRate (Dex 10-20:
+ * the normal run ~15% faster, 1.32) and run.ultPlayRate (1.15, lane C 10-19). Her speeds stay 9 / 11 m/s; only the
+ * drawings turn over faster.
  */
-export const RUN_RATE = 1.15;
+export const runRate = (ult: boolean): number => (ult ? FEEL.run.ultPlayRate : FEEL.run.playRate);
 
 /** Moves whose clip is retimed so its hit drawing lands on the move's hit tick. */
 const MOVES = new Set(["m1_1", "m1_2", "m1_3", "m1_4", "skill_q", "e_tap"]);
@@ -63,7 +64,7 @@ export class ZhushaDraw {
     // a walk / run cycle with root motion plays by the distance covered: her feet stay planted at any speed
     if ((a.role === "run" || a.role === "walk") && slot.marks.root) return clipAtRoot(slot.def.frames, slot.marks.root, (a.dist ?? 0) / ART_PX);
     switch (a.role) {
-      case "run": return a.t * RUN_RATE;
+      case "run": return a.t * runRate(z.ultForm);
       case "uf_exit": return fit(U.exitTicks);
       case "jump": {
         const segs = slot.def.segments;
@@ -111,7 +112,28 @@ export class ZhushaDraw {
   head(z: Zhusha): [number, number] {
     const s = this.shown(z);
     const h = s?.slot.drawings[s.index]?.head;
-    return h ? [h[0] * ART_PX, h[1] * ART_PX] : z.headFromBox();
+    // her drawing sits FEEL.draw.dip art px low (the hat's talisman goes with it)
+    return h ? [h[0] * ART_PX, (h[1] + this.dip) * ART_PX] : z.headFromBox();
+  }
+
+  /** Her drawing's dip into the ground, art px (feel.json draw.dip; tools set 0 to see her as before). */
+  dip = FEEL.draw.dip;
+
+  /** The ground's y at or below (x, y) (game.ts: the world's collision), for drawing her behind its front edge. */
+  groundAt: ((x: number, y: number) => number | null) | null = null;
+
+  /** Where her drawing stops (world y): the lowest ground under her feet while she stands on something, else none. */
+  private clipY(z: Zhusha, view: PlayView): number | null {
+    const b = z.body;
+    if (!b.grounded || view.mirror !== null || !this.groundAt) return null;
+    const w = FEEL.draw.foot * BODY_H;
+    let low: number | null = null;
+    for (const x of [b.x - w, b.x, b.x + w]) {
+      const g = this.groundAt(x, b.y - 0.25 * BODY_H);
+      // ground far below her (a ledge's edge, the void) is not under her feet
+      if (g !== null && g < b.y + 0.5 * BODY_H) low = Math.max(low ?? g, g);
+    }
+    return low;
   }
 
   /**
@@ -140,7 +162,8 @@ export class ZhushaDraw {
       return;
     }
     const tint: [number, number, number, number] | undefined = z.flash > 0 ? [1, 0.35, 0.4, z.flash > 5 ? 0.8 : 0.4] : undefined;
-    drawArt(r, view, s.slot, s.index, b.x, b.y, z.facing < 0, ART_PX, { tint, opacity });
+    // (Dex 10-20) a few art px low, and behind the ground's front edge: visual only (her body and hit boxes stay put)
+    drawArt(r, view, s.slot, s.index, b.x, b.y + this.dip * ART_PX, z.facing < 0, ART_PX, { tint, opacity, clipY: this.clipY(z, view) });
   }
 
   /** A solid quad centred at (x, y), w x h, rotated. */

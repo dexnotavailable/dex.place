@@ -32,7 +32,7 @@ export interface FeelFile {
   charScale: number;
   units: { metresPerH: number };
   body: { collider: [number, number]; boxW: number; hurtW: number; hurtH: number; hp: number };
-  run: { mps: number; ultMps: number; accelTicks: number; stopTicks: number; turnTicks: number; airAccelTicks: number; airStopTicks: number; stopAnimFrom: number };
+  run: { mps: number; ultMps: number; accelTicks: number; stopTicks: number; turnTicks: number; airAccelTicks: number; airStopTicks: number; stopAnimFrom: number; playRate: number; ultPlayRate: number };
   jump: { height: number; riseTicks: number; fallGravity: number; maxFall: number; cut: number; hangSpeed: number; hangGravity: number; coyote: number; buffer: number; airJumps: number; airJumpHeight: number; fastFall: number; fastFallMax: number };
   land: { squashFrom: number; heavyFrom: number; heavyShake: number };
   dash: {
@@ -49,6 +49,8 @@ export interface FeelFile {
   q: { hold: number; flash: number; camZoom: number; camTicks: number; camLeave: number };
   e: { hold: number; flash: number; skidEvery: number };
   hurt: { stun: number; kb: [number, number]; iframes: number; heavyFrom: number; freeze: number; heavyFreeze: number; friction: number };
+  /** Her drawing's visual dip into the ground (art px) and the ground width looked at under her (drawn heights). */
+  draw: { dip: number; foot: number };
   knockdown: { ticks: number; kb: [number, number]; getUpFrom: number; iframes: number; bounce: number; friction: number };
   defeat: { ticks: number; fadeFrom: number };
   respawn: { ticks: number };
@@ -99,6 +101,23 @@ const INTENSITY: Record<Weight, number> = { light: 0.3, medium: 0.5, heavy: 0.7,
 export interface ZHit extends HitBox {
   /** ox, dir: where the hit came from and which way (a wave travels out from ox); area: this box is the hit's reach. */
   brk?: BreakDef & { ox: number; dir: 1 | -1; area?: boolean };
+  /** The FX v2 impact slash where it connects (court.ts, props.ts play it when the game has it). */
+  fxHit?: string;
+}
+
+/** The game's sprite effects (fx/fx.ts, game.ts hands them over): FX v2's built effects. */
+export interface ZFx {
+  has(id: string): boolean;
+  play(id: string, o: { x?: number; y?: number; facing?: number; attach?: "her" | "world"; delay?: number }): unknown;
+}
+
+/** Which impact slash each of her hits leaves (FX v2 PLAN: a light, b medium, c heavy, f pierce, g finisher, h ult form). */
+export function impactSlash(move: string, weight: Weight, ult: boolean): string | undefined {
+  if (move === "e_tap") return undefined;
+  if (ult) return "impact_slash_h";
+  if (move === "m1_3") return "impact_slash_f";
+  if (move === "m1_4") return "impact_slash_g";
+  return weight === "light" ? "impact_slash_a" : weight === "medium" ? "impact_slash_b" : "impact_slash_c";
 }
 
 /** H per second to world px per tick. */
@@ -210,6 +229,15 @@ export class Zhusha {
   hasRole: (role: string, ult: boolean) => boolean = () => false;
   /** The drawing's anim.json for a role (its marks time the move), null for the white box. */
   clipOf: (role: string, ult: boolean) => AnimDef | null = () => null;
+  /** The game's sprite effects (FX v2), when it has them: where one is built, it replaces the stand-in. */
+  fx: ZFx | null = null;
+  /** Plays a built effect if the game has it (true), else nothing (false: the caller draws its stand-in). */
+  playFx(id: string, o: Parameters<ZFx["play"]>[1]): boolean {
+    if (!this.fx?.has(id)) return false;
+    this.fx.play(id, o);
+    return true;
+  }
+
   /** Every sound cue with what made it (the audio lane listens here; feel.sound still gets id + volume). */
   onCue: ((c: Cue) => void) | null = null;
   /** The last cues (debug, tests, captures). */
@@ -283,6 +311,11 @@ export class Zhusha {
     return this.form > 0;
   }
 
+  /** Her soles as drawn (her drawing sits feel.json draw.dip art px into the ground): effects anchored on her go there. */
+  get soleY(): number {
+    return this.body.y + FEEL.draw.dip * ART_PX;
+  }
+
   /** The widest zoom the framing may show now (the Q's pull-out), null: the world's framing. R frames itself (ult.ts shots). */
   get camZoom(): number | null {
     return this.qCam ? FEEL.q.camZoom : null;
@@ -347,6 +380,7 @@ export class Zhusha {
         heavy: h.weight === "heavy" || h.weight === "q" || h.weight === "ult",
         hitVfx: h.weight === "light" ? "hit.light" : "hit.heavy",
         brk: h.break ? { ...h.break, ox, dir: f } : undefined,
+        fxHit: this.move ? impactSlash(this.move.id, h.weight, this.ultForm) : undefined,
       },
     });
     const out: { box: WorldBox; hb: ZHit }[] = [];
@@ -522,6 +556,7 @@ export class Zhusha {
       this.shake(L.heavyShake + 0.1);
       s.vfx.spawn("dust.land", { x: this.body.x, y: this.body.y, facing: 1 });
       this.cue("land", 1, "land", "land", "medium");
+      this.playFx("dust_roll_s", { x: this.body.x, y: this.soleY, facing: this.facing });
     } else if (hs >= L.squashFrom) {
       s.vfx.spawn("dust.land", { x: this.body.x, y: this.body.y, facing: 1, scale: 0.6 });
       this.cue("land", 0.5, "land", "land", "light");
@@ -756,7 +791,11 @@ export class Zhusha {
       // the burst: dust off the driving foot; the skid: her heels bite as the speed bleeds off (Dex 10-14)
       if (i === D.rampTicks) this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: -this.dashDir });
       if (this.dashProfile[i]! < D.skidFrom * peak) {
-        if (!this.dashSkid) { this.dashSkid = true; this.cue("skid", 0.7, "dash", "move", "light"); }
+        if (!this.dashSkid) {
+          this.dashSkid = true;
+          this.cue("skid", 0.7, "dash", "move", "light");
+          this.playFx("dust_roll_s", { x: b.x, y: this.soleY, facing: this.dashDir });
+        }
         if (i % D.skidDustEvery === 0) this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: this.dashDir });
       }
       // on the ground she stays on it (slopes)
@@ -888,7 +927,10 @@ export class Zhusha {
     else m.carry *= m.id === "skill_q" ? (b.grounded ? 0.6 : 0.85) : b.grounded ? 0.7 : 0.92;
     // the recoil's skid: dust under her feet while she slides back on the ground (and a cue as it starts)
     if (rc && push !== null && push < 0 && b.grounded && (t - rc[0]) % FEEL.e.skidEvery === 0) this.host.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: -m.dir });
-    if (rc && t === rc[0]) this.cue("skid", 0.8, m.id, "recoil", def.hits[0]?.weight ?? "medium");
+    if (rc && t === rc[0]) {
+      this.cue("skid", 0.8, m.id, "recoil", def.hits[0]?.weight ?? "medium");
+      if (b.grounded) this.playFx("dust_roll_s", { x: b.x, y: this.soleY, facing: -m.dir });
+    }
     // locked on, she stops dead at striking distance when the lunge is done
     if (lk && ml?.foe && t >= lk.at + lk.ticks) m.carry = 0;
     const along = rootV + m.carry;
@@ -948,11 +990,14 @@ export class Zhusha {
         // the ground) until lane B2's blast lands.
         const Q = FEEL.q;
         const cx = m.startX + m.dir * 1.9 * H;
-        s.vfx.spawn("burst.big", { x: cx, y: m.startY - 0.6 * H, facing: m.dir, scale: 1.6 });
-        s.vfx.spawn("burst.red", { x: cx + m.dir * 1.2 * H, y: m.startY - 0.8 * H, facing: m.dir, scale: 1.5 });
-        s.vfx.spawn("streak.markRed", { x: cx, y: m.startY - 0.55 * H, facing: m.dir, scale: [3, 1.4] });
-        s.vfx.spawn("debris.stone", { x: cx, y: m.startY - 0.2 * H, facing: m.dir, scale: 1.4 });
-        s.vfx.spawn("smoke.dark", { x: cx + m.dir * 0.8 * H, y: m.startY - 0.4 * H, facing: m.dir, scale: 1.6 });
+        // FX v2's cut (its parts with it: the shock, the gash, the ignition, her fire), pivot = her soles at the cast
+        if (!this.playFx("q_cut", { x: b.x, y: this.soleY, facing: m.dir })) {
+          s.vfx.spawn("burst.big", { x: cx, y: m.startY - 0.6 * H, facing: m.dir, scale: 1.6 });
+          s.vfx.spawn("burst.red", { x: cx + m.dir * 1.2 * H, y: m.startY - 0.8 * H, facing: m.dir, scale: 1.5 });
+          s.vfx.spawn("streak.markRed", { x: cx, y: m.startY - 0.55 * H, facing: m.dir, scale: [3, 1.4] });
+          s.vfx.spawn("debris.stone", { x: cx, y: m.startY - 0.2 * H, facing: m.dir, scale: 1.4 });
+          s.vfx.spawn("smoke.dark", { x: cx + m.dir * 0.8 * H, y: m.startY - 0.4 * H, facing: m.dir, scale: 1.6 });
+        }
         this.cue("wave", 1, m.id, "boom", h.weight, i);
         s.feel.freeze(Q.hold);
         if (Q.flash > 0) s.feel.impactFrame("invert", Q.flash);
@@ -971,10 +1016,23 @@ export class Zhusha {
         const E = FEEL.e;
         const r = h.break?.reach;
         const len = r ? r[2] * H : 8 * H;
-        s.vfx.spawn("streak.thrust", { x: b.x + f * ((r?.[0] ?? 0.3) * H + len / 2), y: b.y - 0.6 * BODY_H, facing: f, scale: [len / 168, 1.6], colour: "#8fdcff", edge: "#2a6fb8" });
-        s.vfx.spawn("burst.hit", at(0.7, 0.6));
-        s.vfx.spawn("sparks.hit", at(0.8, 0.6));
-        s.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: -f });
+        // FX v2: the muzzle blast and the slug (pivot = her soles at the cast), an exit blast on every foe on its line
+        // (pivot = the hit point, on the line at her palm: 82 art px up)
+        const real = this.playFx("e_muzzle", { x: b.x, y: this.soleY, facing: f });
+        if (real) {
+          this.playFx("e_shot", { x: b.x, y: this.soleY, facing: f });
+          const lineY = this.soleY - 82 * ART_PX;
+          for (const fb of this.host.foes?.() ?? []) {
+            const near = f > 0 ? fb.x - b.x : b.x - (fb.x + fb.w);
+            if (near < -fb.w || near > len || lineY < fb.y || lineY > fb.y + fb.h) continue;
+            this.playFx("e_hit", { x: f > 0 ? fb.x : fb.x + fb.w, y: lineY, facing: f });
+          }
+        } else {
+          s.vfx.spawn("streak.thrust", { x: b.x + f * ((r?.[0] ?? 0.3) * H + len / 2), y: b.y - 0.6 * BODY_H, facing: f, scale: [len / 168, 1.6], colour: "#8fdcff", edge: "#2a6fb8" });
+          s.vfx.spawn("burst.hit", at(0.7, 0.6));
+          s.vfx.spawn("sparks.hit", at(0.8, 0.6));
+          s.vfx.spawn("dust.kick", { x: b.x, y: b.y, facing: -f });
+        }
         s.feel.freeze(E.hold);
         if (E.flash > 0) s.feel.impactFrame("invert", E.flash);
         this.shake(0.45);
@@ -1077,6 +1135,7 @@ export class Zhusha {
       this.shake(0.4);
       this.host.vfx.spawn("dust.land", { x: b.x, y: b.y, facing: 1 });
       this.cue("land", 1, "knockdown", "land", "heavy");
+      this.playFx("dust_roll_l", { x: b.x, y: this.soleY, facing: Math.sign(b.vx) || 1 });
     }
     const any = input.axis() !== 0 || input.pressTick("jump") !== undefined || input.pressTick("m1") !== undefined;
     if (this.t >= K.ticks || (this.t >= K.getUpFrom && any && b.grounded)) {

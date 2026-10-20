@@ -706,3 +706,62 @@ test("combat ult-form E (Dex 10-20): removed for now: E does nothing in the form
   assert.equal(z.lastAction, "e_tap");
   assert.equal(FEEL.ult.e, false);
 });
+
+test("combat run (Dex 10-20): the normal run turns over ~15% faster, its planted foot now near the ground's 9 m/s; steps stay on the contact drawings", async () => {
+  const { deriveSlot } = await import("./zhusha/derive.ts");
+  const { readPng } = await import("../../tools/zhusha/slotin-lib.mjs");
+  const { timeline } = await import("./zhusha/contract.ts");
+  const { STEP_FRAMES } = await import("./sound.ts");
+  const R = FEEL.run;
+  assert.ok(Math.abs(R.playRate / 1.15 - 1.15) < 0.01, `normal ${R.playRate}: ~15% over 1.15`);
+  assert.equal(R.ultPlayRate, 1.15, "the form's run unchanged");
+  const def = liveAnim("run");
+  const imgs = def.frames.map((f) => { const p = readPng(readFileSync(join(ROOT, "run", f.file))); return { w: p.w, h: p.h, data: p.rgba }; });
+  const d = deriveSlot("run", def, imgs);
+  const { starts } = timeline(def.frames);
+  const A = (96 * FEEL.charScale) / 128, v = (R.mps / FEEL.units.metresPerH) * 96 / 60;
+  // each step: the contact drawings after a landing; the planted foot's world x at each drawing's first tick
+  const centre = (i) => { const f = d.frames[i].feet; return f.length ? (f[0][0] + f[f.length - 1][1]) / 2 : null; };
+  const drift = (rate) => {
+    const out = [];
+    for (const land of STEP_FRAMES.run) {
+      const xs = [];
+      for (let i = land; i < def.frames.length && centre(i) !== null; i++) xs.push(v * (starts[i] / rate) + centre(i) * A);
+      out.push(Math.max(...xs) - Math.min(...xs));
+    }
+    return Math.max(...out);
+  };
+  for (const s of STEP_FRAMES.run) assert.ok(d.frames[s].feet.length, `the step drawing f${s} has a foot on the ground`);
+  assert.ok(drift(R.playRate) < 0.6 * drift(1.15), `drift ${drift(R.playRate)} px vs ${drift(1.15)} before`);
+  assert.ok(drift(R.playRate) < 5, `${drift(R.playRate)} px per step`);
+});
+
+test("combat FX v2 (Dex 10-20: ship the effects): built effects replace the stand-ins where the game has them", async () => {
+  const Zhusha = await loadZ();
+  const run = (press, foes = []) => {
+    const h = host();
+    const spawned = [];
+    h.vfx.spawn = (id) => spawned.push(id);
+    h.foes = () => foes;
+    const z = new Zhusha(h, [0, 0]);
+    z.clipOf = liveClip;
+    const played = [];
+    z.fx = { has: () => true, play: (id, o) => played.push({ id, ...o }) };
+    const inp = new FakeInput();
+    step(z, inp, 5);
+    inp.press(press);
+    const hits = new Set();
+    for (let i = 0; i < 40; i++) { step(z, inp); for (const { hb } of z.hitboxes()) if (hb.fxHit) hits.add(hb.fxHit); }
+    return { played, spawned, hits, z };
+  };
+  const q = run("skill");
+  assert.ok(q.played.some((p) => p.id === "q_cut" && p.y > 0), "the Q's cut at her (dipped) soles");
+  assert.ok(!q.spawned.includes("burst.big"), "its stand-in bursts step aside");
+  const K = 96 * FEEL.charScale;
+  const e = run("e", [{ x: 3 * K, y: -1.6 * K, w: 120, h: 1.6 * K }]);
+  for (const id of ["e_muzzle", "e_shot", "e_hit"]) assert.ok(e.played.some((p) => p.id === id), id);
+  assert.ok(!e.spawned.includes("streak.thrust"));
+  assert.deepEqual([...run("m1").hits], ["impact_slash_a"], "m1_1 leaves the light impact slash");
+  const d = run("m2");
+  assert.ok(d.played.some((p) => p.id === "dust_roll_s"), "the dash's skid rolls dust");
+});

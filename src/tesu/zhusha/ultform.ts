@@ -34,6 +34,9 @@ export interface FormCtx {
   foes(): WorldBox[];
 }
 
+/** FX v2's ghost blade variants (yaw x tilt). */
+const GHOSTS = ["ghost_blade_y0_t0", "ghost_blade_y50_t25", "ghost_blade_y90_t0", "ghost_blade_y0_t25", "ghost_blade_y50_t0", "ghost_blade_y90_t25"];
+
 export class UltForm {
   /** Ticks since the game started (the form's own clock, advanced every tick). */
   clock = 0;
@@ -43,6 +46,10 @@ export class UltForm {
   /** Volleys waiting to be summoned: when, how many blades, when they strike. */
   private volleys: { summon: number; strike: number; n: number }[] = [];
   private cues: { at: number; key: string; v: number }[] = [];
+
+  /** FX v2's ghost blades are playing (ultdraw.ts leaves its stand-ins out), and which variant is next. */
+  real = false;
+  private ghostN = 0;
 
   /** The drawing uf_idle holds (Dex 10-19: still-ish on one frame; r_reveal hands off to its first). */
   idleIndex(): number {
@@ -89,6 +96,14 @@ export class UltForm {
         const r = F.ring * H * (0.85 + 0.15 * ((k * 7) % 3) / 2);
         const px = ox + f * Math.cos(a) * r, py = oy + Math.sin(a) * r;
         this.blades.push({ x0: px, y0: py, x1: T.x + (T.x - px) * 0.35, y1: T.y + (T.y - py) * 0.35, born: this.clock, at: v.strike + k, end: v.strike + k + F.strike + F.fade });
+        // (lane E 10-20) FX v2's ghost blade: it drops from above and stabs where the volley strikes (pivot = the ground
+        // contact), its stab drawing on the strike; three yaws x two tilts in turn
+        const id = GHOSTS[(this.ghostN++) % GHOSTS.length]!;
+        const fx = c.z.fx;
+        if (fx?.has(id)) {
+          this.real = true;
+          fx.play(id, { x: T.x + f * (k - (v.n - 1) / 2) * 0.35 * H, y: c.z.soleY, facing: f, delay: Math.max(0, v.strike + k - this.clock - 1) });
+        }
       }
     }
     for (const q of this.cues) if (q.at === this.clock) say(c, q.key, q.v, "uf");
