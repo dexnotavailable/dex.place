@@ -73,7 +73,7 @@ export function cloudBounds(id: string): [number, number, number, number] {
 export const FALL_CLOUDS: readonly FallCloud[] = [
   // --- the drop out of the black (0.64-1.3 s): high wisps rushing by the frame as the sky hits; they stay far all
   // the way down (the far plane barely moves: the depth the rest is measured against)
-  { id: "fall-wisp-hi-a", plane: "far", T: 1.0, fx: 0.3, fy: 0.5, cloud: "ci-a" },
+  { id: "fall-wisp-hi-a", plane: "far", T: 1.0, fx: 0.14, fy: 0.5, cloud: "ci-a" },
   { id: "fall-wisp-hi-b", plane: "far", T: 1.0, fx: 0.78, fy: 0.72, cloud: "ci-c" },
   { id: "fall-cirrus-b", plane: "far", T: 2.94, fx: 0.92, fy: 0.2, cloud: "ci-b" },
   // --- the ride (2.5-7 s, zoom 4): far heaps low in the frame, the great tower's crown and body sliding up on the
@@ -82,7 +82,7 @@ export const FALL_CLOUDS: readonly FallCloud[] = [
   { id: "fall-far-heap-b", plane: "far", T: 3.0, fx: 0.72, fy: 1.08, cloud: "cu-far-b" },
   { id: "fall-far-heap-c", plane: "far", T: 6.6, fx: 0.98, fy: 1.04, cloud: "cu-far-c" },
   { id: "fall-tower", plane: "mid", T: 2.5, fx: 0.9, fy: 1.55, cloud: "cu-tower-a" },
-  { id: "fall-heap-w", plane: "mid", T: 4.631, fx: 0.03, fy: 1.06, cloud: "cu-heap-a" },
+  { id: "fall-heap-w", plane: "mid", T: 4.631, fx: -0.17, fy: 1.06, cloud: "cu-heap-a" },
   { id: "fall-puff-e", plane: "back", T: 3.6, fx: 0.97, fy: 0.62, cloud: "cu-puff-a" },
   { id: "fall-puff-w", plane: "back", T: 5.6, fx: 0.08, fy: 0.74, cloud: "cu-puff-b" },
   // --- the deck (round 2b, re-solved on rev 6): a CEILING on the BACK plane the camera falls through over 7.5-11.6 s:
@@ -93,10 +93,8 @@ export const FALL_CLOUDS: readonly FallCloud[] = [
   { id: "fall-deck-e", plane: "back", T: 10.617, fx: 1.37, fy: 343 / 1080, cloud: "deck-e1", low: true },
   { id: "fall-deck-w", plane: "back", T: 10.617, fx: -0.32, fy: 361 / 1080, cloud: "deck-w", low: true },
   { id: "fall-deck-m", plane: "back", T: 10.617, fx: -0.056, fy: 400 / 1080, cloud: "deck-m", low: true },
-  // --- coming out under the clouds (12.6-14.6 s): the deck's middle-distance band overhead (mid plane: it lingers),
-  // low stratus beyond it toward the lake
+  // --- coming out under the clouds (12.6-14.6 s): the deck's middle-distance band overhead (mid plane: it lingers)
   { id: "fall-deck-band", plane: "mid", T: 14.6, fx: 0.42, fy: 0.16, cloud: "deck-mid-a", low: true },
-  { id: "fall-stratus-a", plane: "far", T: 14.6, fx: 0.2, fy: 0.3, cloud: "st-c", low: true },
 ];
 
 export function openingSky(b: WorldBuilder): void {
