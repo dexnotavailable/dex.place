@@ -1,0 +1,181 @@
+{
+ "id": "q_boom_2",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  -1122,
+  494
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 23
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2
+  },
+  {
+   "file": "f005.png",
+   "ticks": 2
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2
+  },
+  {
+   "file": "f007.png",
+   "ticks": 2
+  },
+  {
+   "file": "f008.png",
+   "ticks": 2
+  },
+  {
+   "file": "f009.png",
+   "ticks": 4
+  },
+  {
+   "file": "f010.png",
+   "ticks": 2
+  },
+  {
+   "file": "f011.png",
+   "ticks": 4
+  },
+  {
+   "file": "f012.png",
+   "ticks": 2
+  },
+  {
+   "file": "f013.png",
+   "ticks": 2
+  },
+  {
+   "file": "f014.png",
+   "ticks": 2
+  },
+  {
+   "file": "f015.png",
+   "ticks": 2
+  },
+  {
+   "file": "f016.png",
+   "ticks": 2
+  },
+  {
+   "file": "f017.png",
+   "ticks": 2
+  },
+  {
+   "file": "f018.png",
+   "ticks": 2
+  },
+  {
+   "file": "f019.png",
+   "ticks": 2
+  },
+  {
+   "file": "f020.png",
+   "ticks": 2
+  },
+  {
+   "file": "f021.png",
+   "ticks": 2
+  },
+  {
+   "file": "f022.png",
+   "ticks": 2
+  },
+  {
+   "file": "f023.png",
+   "ticks": 2
+  },
+  {
+   "file": "f024.png",
+   "ticks": 2
+  },
+  {
+   "file": "f025.png",
+   "ticks": 2
+  },
+  {
+   "file": "f026.png",
+   "ticks": 2
+  },
+  {
+   "file": "f027.png",
+   "ticks": 2
+  },
+  {
+   "file": "f028.png",
+   "ticks": 2
+  },
+  {
+   "file": "f029.png",
+   "ticks": 2
+  },
+  {
+   "file": "f030.png",
+   "ticks": 2
+  },
+  {
+   "file": "f031.png",
+   "ticks": 2
+  },
+  {
+   "file": "f032.png",
+   "ticks": 2
+  },
+  {
+   "file": "f033.png",
+   "ticks": 2
+  },
+  {
+   "file": "f034.png",
+   "ticks": 2
+  },
+  {
+   "file": "f035.png",
+   "ticks": 2
+  },
+  {
+   "file": "f036.png",
+   "ticks": 2
+  },
+  {
+   "file": "f037.png",
+   "ticks": 2
+  },
+  {
+   "file": "f038.png",
+   "ticks": 2
+  },
+  {
+   "file": "f039.png",
+   "ticks": 2
+  },
+  {
+   "file": "f040.png",
+   "ticks": 2
+  }
+ ],
+ "loop": false,
+ "with": [],
+ "notes": "Q part: the line's destruction reaching x +1553 at tick 23: the sim worker's explosion, then the world's fire (fire_env_l) burning on, blown forward"
+}
