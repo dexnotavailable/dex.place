@@ -101,11 +101,12 @@ function letter(r: WorldRenderer, z: Zhusha): void {
   each((x0, y0, x1, y1, p) => { if (!p.hot) seg(r, x0, y0, x1, y1, Math.max(2, th * 0.2), AZURE_CORE, 0.5 * p.op); });
 }
 
-/** The storm's live slashes: white-hot streaks crossing the piece they carve, from every direction, gone in a few ticks. */
+/** The storm's live slashes: white-hot streaks crossing the piece they carve, from every direction, gone in a few ticks
+ * (until the real letter's cuts are in: ult.json fx.cuts). */
 function slashes(r: WorldRenderer, z: Zhusha): void {
   const d = z.r, st = d.stage;
   // (into the stop: the closing cut fades out over its first ticks)
-  if (!st || d.real.letter || (d.phase !== "flurry" && d.phase !== "hold") || d.stormT < 0) return;
+  if (!st || d.real.cuts || (d.phase !== "flurry" && d.phase !== "hold") || d.stormT < 0) return;
   const strokes = letterStrokes(), T = d.stormT, life = ULT.letter.slashLife, scale = st.size / (7 * H);
   for (let i = d.cut - 1; i >= 0; i--) {
     const sl = d.slashes[i]!;
