@@ -144,6 +144,10 @@ test("ground effects dip into the ground and stop at its line; hits in the air a
   // spawned at her soleY (already dipped 2.64 world px): still on the ground
   assert.equal(fxGroundClip("dust_roll_s", 10, 502.64, ids, floor, 2.64), 500);
   assert.equal(fxGroundClip("dust_roll_s", 10, 502.64, ids, floor), null);
+  // a ledge: the ground under the pivot is a floor far below (the effect played in the air past the edge): not cut
+  const ledge = (x) => (x < 0 ? 500 : 900);
+  assert.equal(fxGroundClip("dust_roll_s", -5, 500, ids, ledge), 500);
+  assert.equal(fxGroundClip("dust_roll_s", 5, 500, ids, ledge), null);
   // rows: a 30-row cell whose top is 26 art px above a pivot drawn 4 art px low (a = 0.5 world px per art px) keeps 22 rows
   assert.equal(fxClipRows(30, -26, 502, 500, 0.5), 22);
   assert.equal(fxClipRows(30, -40, 502, 500, 0.5), 30);
