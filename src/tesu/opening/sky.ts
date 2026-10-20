@@ -183,7 +183,7 @@ function focusAt(T: number, W: number, Hf: number): [number, number] {
 /**
  * The close ride's span: fog layers only inside it (never in the drop, the glimpse or at the catch). It starts on the
  * camera's first close key (Dex 10-21: the glimpse eases back in to it; a fog layer placed by the camera's fall would
- * whip across the frame in a frame or two while it zooms in), and they fade in over its first 0.4 s.
+ * whip across the frame in a frame or two while it zooms in); they fade in over its first 0.4 s and out over its last.
  */
 const RIDE: readonly [number, number] = [BEATS.camera.keys.find((k) => k.zoom >= 4)?.T ?? 2.5, 16.2];
 
@@ -204,7 +204,7 @@ export function fallVeils(T: number, W: number, Hf: number, way: Way, reduced: b
     const west = hw * (1 + 2 * v.tail) * 1.5, east = hw * 1.5, rh = hh * 1.5;
     if (cy - rh > Hf || cy + rh < 0 || cx - west > W || cx + east < 0) return;
     out.push({
-      cx, cy, g: 1, alpha: v.density * smooth(RIDE[0], RIDE[0] + 0.4, T),
+      cx, cy, g: 1, alpha: v.density * smooth(RIDE[0], RIDE[0] + 0.4, T) * (1 - smooth(RIDE[1] - 0.4, RIDE[1], T)),
       hw, hh, seed: i * 17.3 + 3.1, tone: v.tone === "base" ? 1 : 0,
       churn: T - v.T, gust: gustAt(T), soft: v.soft, tear: v.tear, tail: v.tail, edge: v.edge,
     });
