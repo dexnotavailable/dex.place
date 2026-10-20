@@ -1560,6 +1560,8 @@ export class TesuGame {
         deep: hexRgb(a.water?.deep ?? "#1f5a60"), body: hexRgb(a.water?.body ?? "#3f8f8a"), shallow: hexRgb(a.water?.shallow ?? "#bfe0dc"),
         haze: hexRgb(a.haze), glint: hexRgb(a.water?.glint ?? "#fffbe8"), still: water.kind === "lake" ? 1 : 0.4, mirror: a.water?.mirror ?? [1, 1, 1],
         cell: a.water?.near && cam.zoom >= 1.9 ? 2 : 1, near: a.water?.near, hold: waterHolds(cam, water), shore: water.shore, feet: water.shore ? [wl("back"), 0] : undefined,
+        // (kagami9 r1) the lake's near shore, the sun on the water, its look
+        lip: a.water?.lip, sun: a.water?.sun && a.sun ? [sunPx[0], sunPx[1], a.water.sun[0], a.water.sun[1]] : undefined, look: a.water?.look, edge: a.water?.edge,
       });
     };
     const mist = (rate: number, strength: number, drift: number): void => {

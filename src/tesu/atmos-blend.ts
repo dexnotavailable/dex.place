@@ -74,12 +74,22 @@ export function mixAtmos(a: Atmos, b: Atmos, t: number): Atmos {
       deep: mixHex(wa.deep, wb.deep, t), body: mixHex(wa.body, wb.body, t), shallow: mixHex(wa.shallow, wb.shallow, t), glint: mixHex(wa.glint, wb.glint, t),
       mirror: mix3(wa.mirror ?? [1, 1, 1], wb.mirror ?? [1, 1, 1], t),
       ...(wa.near || wb.near ? { near: mix4(wa.near ?? [0, 0, 0, 0], wb.near ?? [0, 0, 0, 0], t) } : {}),
+      // (kagami9 r1) the lake's own look carries across a change of place
+      ...(wa.lip || wb.lip ? { lip: mix4(wa.lip ?? wb.lip!, wb.lip ?? wa.lip!, t) } : {}),
+      ...(wa.sun || wb.sun ? { sun: mix2(wa.sun ?? [0, 0], wb.sun ?? [0, 0], t) } : {}),
+      ...(wa.look || wb.look ? { look: mix4(wa.look ?? [0, 0, 0, 0], wb.look ?? [0, 0, 0, 0], t) } : {}),
+      ...(wa.edge || wb.edge ? { edge: mix4(wa.edge ?? [0, 0, 0, 0], wb.edge ?? [0, 0, 0, 0], t) } : {}),
     },
     grade: [ga[0] + (gb[0] - ga[0]) * t, ga[1] + (gb[1] - ga[1]) * t, ga[2] + (gb[2] - ga[2]) * t, ga[3] + (gb[3] - ga[3]) * t],
     glow: mixGlow(a.glow, b.glow, t),
     fog: mixFog(a.fog, b.fog, t),
     fades: mixFades(a.fades, b.fades, t),
   };
+}
+
+/** Two numbers across a change of place. */
+function mix2(a: readonly number[], b: readonly number[], t: number): [number, number] {
+  return [(a[0] ?? 0) + ((b[0] ?? 0) - (a[0] ?? 0)) * t, (a[1] ?? 0) + ((b[1] ?? 0) - (a[1] ?? 0)) * t];
 }
 
 /** Four numbers across a change of place. */
