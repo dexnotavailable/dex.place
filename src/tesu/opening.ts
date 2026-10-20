@@ -25,6 +25,23 @@ import { BEATS, VOICE, cameraAt, clipAt, herPhase, herSpeedH, herXH, reducedHold
 
 /** Her lines' cues (beats.ts voice): way 4 plays none of them. */
 const VOICE_CUES = new Set(VOICE.map((v) => v.cue));
+/** The long takes (a chart cue with its length: the speech) and how long each speaks (s). */
+const TAKES = new Map<string, number>(BEATS.sfx.flatMap((c) => ("len" in c ? [[c.id, c.len] as const] : [])));
+
+/**
+ * A cue whose moment on the context's clock is `at`, at `now` (chart time `T`, `lead` s of booking ahead): wait, book
+ * it on `at`, play it at once, or drop it. An effect a quarter second late is dropped (a drum hit out of time is worse
+ * than none; the press's own gust is no drum hit and plays at once). A long take (`len`: the speech, 24.7 s) is never
+ * dropped while it still speaks: it is booked on its moment even when that has passed, and the sound engine starts
+ * it that far into the file (sound.ts startOf), so it stays on the music and its subtitles.
+ */
+export function cueAction(now: number, at: number, T: number, lead: number, len?: number): "wait" | "book" | "now" | "drop" {
+  if (at - now > lead) return "wait";
+  const late = now - at;
+  if (len !== undefined) return late < len ? "book" : "drop";
+  if (late > 0.05 && late < 0.25 && T < 0.5) return "now";
+  return late < 0.25 ? "book" : "drop";
+}
 
 export type OpeningState = "off" | "cine" | "free" | "done";
 
@@ -107,8 +124,10 @@ export class Opening {
     this.hold = -1;
     this.reducedMotion = this.reducedMotion || link.reduced;
     this.T = Math.max(startT(this.way), link.T());
-    // the cues before where it starts are past
-    BEATS.sfx.forEach((c, i) => { if (c.T < this.T - 0.01) this.fired.add(i); });
+    // the cues before where it starts are past (a take still speaking there starts that far in: cueAction)
+    BEATS.sfx.forEach((c, i) => {
+      if (c.T < this.T - 0.01 && !(this.T < c.T + (TAKES.get(c.id) ?? 0))) this.fired.add(i);
+    });
     this.host.cine(true);
     this.host.moveTo(herXH(this.T) * 96, true);
   }
@@ -205,8 +224,10 @@ export class Opening {
    * The effects on their beats, scheduled on the music's own clock: a cue is asked for when its moment on the
    * context's render clock is a quarter second away (plus the longest recent wait between frames), and starts
    * exactly then. The heard T runs behind the render clock by the output's delay (Bluetooth 0.1 to 0.3 s), so a cue
-   * triggered on T itself would be late, or dropped, on such outputs. Without a running context (the page clock) a
-   * cue goes on T.
+   * triggered on T itself would be late, or dropped, on such outputs. Late, an effect is dropped and a take starts
+   * that far in (cueAction). Without a running context (the page clock) a cue goes on T, and a take waits for the
+   * context (the "tap for sound" chip) while it would still speak; on the page clock with a running context a take
+   * is placed on T.
    */
   private cues(link: OpeningLink, T: number): void {
     const h = this.host;
@@ -221,13 +242,20 @@ export class Opening {
       if (this.fired.has(i)) return;
       // way 4 (the website's jetty): no voice lines (Dex 10-19)
       if (this.way === "bottom" && VOICE_CUES.has(c.id)) { this.fired.add(i); return; }
-      const at = now === null ? null : link.ctxTimeOf(c.T);
+      const len = TAKES.get(c.id);
+      let at = now === null ? null : link.ctxTimeOf(c.T);
+      // (the page clock with a running context: Track 1 failed, or the context woke without the sound chip) a take is
+      // placed on T, so it still speaks, that far in
+      if (at === null && now !== null && len !== undefined) at = now + (c.T - T);
       if (at !== null && now !== null) {
-        if (at - now > CUE_LEAD + this.gap) return;
+        const go = cueAction(now, at, c.T, CUE_LEAD + this.gap, len);
+        if (go === "wait") return;
         this.fired.add(i);
-        // the press's own gust is no drum hit: if the first tick comes a little late it plays at once
-        if (now - at > 0.05 && now - at < 0.25 && c.T < 0.5) h.sfx(c.id, null);
-        else if (now - at < 0.25) h.sfx(c.id, at);
+        if (go !== "drop") h.sfx(c.id, go === "now" ? null : at);
+        return;
+      }
+      if (len !== undefined) {
+        if (T >= c.T + len) this.fired.add(i);
         return;
       }
       if (T + 0.15 < c.T) return;

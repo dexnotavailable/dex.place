@@ -7,7 +7,7 @@ import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { artQuery } from "../zhusha/anims.ts";
 import { artTransform, type PlayView } from "../zhusha/units.ts";
-import { FxClock, fxCells, fxFrameAt, FX_MAX_H, FX_MAX_STORED, FX_MAX_W, validateFx, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
+import { FxClock, fxCells, fxClipRows, fxFrameAt, fxGroundClip, FX_MAX_H, FX_MAX_STORED, FX_MAX_W, validateFx, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
 
 /** Effects present at build time (a missing one is never fetched). */
 export const FX_PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/fx/*/fx.json"))
@@ -146,9 +146,13 @@ export class Fx {
   /**
    * Draws the live effects of a layer on the play plane's transform for this pass (`view`), at `a` world px per art px
    * (her ART_PX), each pivot snapped like her drawings'. `her`: her soles and facing (for attach "her"); `reflection`:
-   * the lake's pass (effects with reflect false are left out). Leaves the transform at the view's.
+   * the lake's pass (effects with reflect false are left out). `ground`: the ground effects' dip into the ground and the
+   * world's ground (fx/contract.ts fxGroundClip), left out in the lake's pass. Leaves the transform at the view's.
    */
-  draw(r: WorldRenderer, view: PlayView, layer: FxLayer, a: number, her: { x: number; y: number; facing: number }, reflection = false): void {
+  draw(
+    r: WorldRenderer, view: PlayView, layer: FxLayer, a: number, her: { x: number; y: number; facing: number }, reflection = false,
+    ground: { dip: number; ids: readonly string[]; at: (x: number, y: number) => number | null } | null = null,
+  ): void {
     for (const e of this.clock.live) {
       if (e.layer !== layer || e.t < 0 || (reflection && !e.def.reflect)) continue;
       const i = fxFrameAt(e.def, e.t);
@@ -157,14 +161,20 @@ export class Fx {
       if (!pieces || !l || i === null) continue;
       const onHer = e.attach === "her";
       const facing = onHer ? her.facing : e.facing;
-      const xf = artTransform(view, r.camX, r.camY, onHer ? her.x : e.x, onHer ? her.y : e.y, a);
+      const px = onHer ? her.x : e.x, py0 = onHer ? her.y : e.y;
+      const clipY = ground && !reflection && view.mirror === null ? fxGroundClip(e.def.id, px, py0, ground.ids, ground.at, ground.dip * a) : null;
+      // dipped like her drawing (an effect spawned at her soleY is dipped already)
+      const py = clipY === null ? py0 : Math.max(py0, clipY + ground!.dip * a);
+      const xf = artTransform(view, r.camX, r.camY, px, py, a);
       const flip = facing < 0, opacity = e.def.frames[i]!.opacity;
       r.setTransform(xf.z, xf.focus, view.mirror);
       // every cell on the same pivot transform: the drawing's art px land on one grid, seamless
       for (const d of pieces) {
         const sheet = l.sheets[d.sheet];
         if (!sheet) continue;
-        const [sx, sy, sw, sh] = d.r;
+        const [sx, sy, sw, sh0] = d.r;
+        const sh = clipY === null ? sh0 : fxClipRows(sh0, d.off[1], Math.round(py), clipY, a);
+        if (sh <= 0) continue;
         const dx = flip ? xf.q[0] - (d.off[0] + sw) : xf.q[0] + d.off[0];
         r.sprite({ sheet, sx, sy, sw, sh, x: dx, y: xf.q[1] + d.off[1], flip, lit: 0, opacity });
       }

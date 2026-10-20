@@ -34,10 +34,11 @@ export interface UltFile {
   letter: {
     char: string; size: number; low: number; ahead: number; ticks: number; slashes: number; pieces: number;
     slashLife: number; slashLen: [number, number]; thick: number; zenithAbove: number; wallMargin: number; sweepGap: number;
+    tail: { at: number; share: number };
   };
   hold: number;
   dive: { ticks: number; cap: number; flipFrom: number; lineLife: number };
-  impact: { ticks: number; flash: number; slowmo: number; slowmoTicks: number; invert: number; punch: number };
+  impact: { ticks: number; flash: number; slowmo: number; slowmoTicks: number; invert: number; punch: number; breakAfter: number };
   aftermath: { hold: number; clear: number; revealFrom: number; coreGone: number };
   reveal: { visibleFrom: number };
   camera: {
@@ -55,8 +56,22 @@ export interface UltFile {
   shake: { boom: number; slash: number; last: number; dive: number; impact: number };
   punch: { press: number; boom: number; last: number; impact: number };
   cues: Record<string, string>;
-  fx: { callFire: string; letter: string; dive: string; nuke: string; clear: string };
+  fx: { callFire: string; letter: string; letterBreak: string; cuts: CutKinds; dive: string; nuke: string; clear: string };
   form: { reach: number; ahead: number; blades: number[]; summon: number; strike: number; fade: number; bladeLen: number; ring: number };
+}
+
+/** The storm's cuts over the real letter (ult.json fx.cuts): the shipped impact slashes by the cut's angle, drawn facing right. */
+export interface CutKinds {
+  flat: string[];
+  rise: string[];
+  fall: string[];
+  steepRise: string[];
+  steepFall: string[];
+  cross: string[];
+  crossEvery: number;
+  cap: number;
+  life: number;
+  sweepCuts: number;
 }
 
 export const ULT = JSON.parse(ultRaw) as UltFile;
@@ -123,12 +138,14 @@ export const LETTERS: Record<string, Stroke[]> = {
     [[0.62, 0.48], [0.98, 0.48]],
     [[0.82, 0.48], [0.82, 1]],
   ],
-  // 天: two horizontals, the left-falling stroke from the top through the middle, the right-falling one
+  // 天: two horizontals, the left-falling stroke from under the top one through the middle, the right-falling one.
+  // The spines of the FX v2 loop's brushed 天 (lanes/fx/v2/letter/tian3.py, r_letter), so the storm's slashes, its hits
+  // and the camera's chase follow the painted strokes (it is wider than the box: u runs -0.02 .. 1.11)
   天: [
-    [[0.18, 0.22], [0.82, 0.22]],
-    [[0.05, 0.48], [0.95, 0.48]],
-    [[0.5, 0.03], [0.5, 0.48], [0.06, 0.98]],
-    [[0.53, 0.52], [0.96, 0.98]],
+    [[0.219, 0.105], [0.368, 0.139], [0.53, 0.125], [0.685, 0.136]],
+    [[-0.021, 0.38], [0.204, 0.42], [0.443, 0.404], [0.682, 0.382], [0.911, 0.386]],
+    [[0.435, 0.137], [0.466, 0.268], [0.455, 0.404], [0.42, 0.535], [0.355, 0.654], [0.262, 0.754], [0.147, 0.828], [0.021, 0.879]],
+    [[0.476, 0.474], [0.574, 0.605], [0.68, 0.727], [0.802, 0.836], [0.951, 0.894], [1.114, 0.9]],
   ],
 };
 
@@ -179,7 +196,7 @@ const rnd = (i: number): number => { const a = Math.sin(i * 12.9898 + 78.233) * 
  * window that overlaps its neighbours', so the letter fills in everywhere at once, roughly in stroke order, and denser as
  * it goes. Then a closing sweep down each stroke, `gap` ticks apart, the last on the storm's last tick.
  */
-export function storm(strokes: Stroke[], count: number, ticks: number, pieceShare: number, len: [number, number], gap = 4): Slash[] {
+export function storm(strokes: Stroke[], count: number, ticks: number, pieceShare: number, len: [number, number], gap = 4, tail?: { at: number; share: number }): Slash[] {
   const lens = strokes.map(strokeLen), total = lens.reduce((a, b) => a + b, 0);
   const nPieces = Math.max(strokes.length, Math.round(count * pieceShare));
   const out: Slash[] = [];
@@ -200,6 +217,15 @@ export function storm(strokes: Stroke[], count: number, ticks: number, pieceShar
     const ang = rnd(k * 3 + 2) < 0.5 ? withIt + (rnd(k * 7) - 0.5) * 0.5 : rnd(k * 5 + 3) * Math.PI;
     out.push({ at, stroke: p.s, piece: k, u0: p.u0, u1: p.u1, ang, len: len[0] + (len[1] - len[0]) * rnd(k * 11 + 4), carves: true, sweep: false, last: false });
   });
+  // the tail (ult.json letter.tail): the last `share` of the carving lands from storm tick `at` on (just after the
+  // camera's snap out: the wide shot sees the letter being filled), the rest before it, the order kept
+  if (tail && out.length > 1 && tail.at < end) {
+    const ts = out.map((sl) => sl.at).sort((a, b) => a - b);
+    const q = ts[Math.min(ts.length - 1, Math.floor(ts.length * (1 - tail.share)))]!, top = ts[ts.length - 1]!;
+    for (const sl of out) {
+      sl.at = sl.at < q ? Math.round((sl.at * (tail.at - 1)) / Math.max(1, q)) : Math.round(tail.at + ((sl.at - q) * (end - tail.at)) / Math.max(1, top - q));
+    }
+  }
   // a piece is carved by its first slash: the re-cuts come after it (never into thin air)
   const carvedAt = out.map((sl) => sl.at);
   for (let i = out.length; i < count - S; i++) {
@@ -214,6 +240,59 @@ export function storm(strokes: Stroke[], count: number, ticks: number, pieceShar
     out.push({ at: ticks - 1 - (S - 1 - k) * gap, stroke: k, piece: -1, u0: 0, u1: 1, ang: Math.atan2(b[1] - a[1], b[0] - a[0]), len: len[1] * 2, carves: false, sweep: true, last: k === S - 1 });
   });
   return out.sort((p, q) => p.at - q.at);
+}
+
+/** One cut effect over the real letter: on slash `slash`'s tick (+ `delay`), at `u` along its stroke. */
+export interface CutSpawn {
+  slash: number;
+  id: string;
+  facing: 1 | -1;
+  u: number;
+  delay: number;
+}
+
+/** Every effect id a cut can use. */
+export const cutIds = (C: CutKinds): string[] => [...new Set([...C.flat, ...C.rise, ...C.fall, ...C.steepRise, ...C.steepFall, ...C.cross])];
+
+/**
+ * Which of the storm's slashes fly over the real letter as shipped impact slashes: the carving ones (and each closing
+ * sweep as `sweepCuts` cuts down its stroke, a tick apart), at most `cap` alive at once (each lives `life` ticks: the
+ * game holds 64 effects, and the letter must never be the one pushed out), each picked by its angle: flat, rising or
+ * falling, steep (a falling cut is a rising one mirrored, and the other way round), every `crossEvery`th an X.
+ */
+export function cutPlan(S: Slash[], C: CutKinds): CutSpawn[] {
+  const out: CutSpawn[] = [];
+  const ends: number[] = [];
+  let n = 0;
+  const pick = (l: string[], k: number): string => l[Math.floor(rnd(k * 31 + 9) * l.length) % l.length]!;
+  const kind = (ang: number, k: number): { id: string; facing: 1 | -1 } => {
+    const flip: 1 | -1 = rnd(k * 17 + 3) < 0.5 ? 1 : -1;
+    if (C.crossEvery > 0 && n % C.crossEvery === C.crossEvery - 1) return { id: pick(C.cross, k), facing: flip };
+    // the cut's line, -90 .. 90 degrees (y down: below 0 it rises to the right)
+    let a = ((ang % Math.PI) + Math.PI) % Math.PI;
+    if (a > Math.PI / 2) a -= Math.PI;
+    const rising = a < 0, m = Math.abs(a);
+    if (m < 0.26) return { id: pick(C.flat, k), facing: flip };
+    // drawn rising, or a falling one mirrored (and the other way round)
+    if (m < 0.9) return flip > 0 ? { id: pick(rising ? C.rise : C.fall, k), facing: 1 } : { id: pick(rising ? C.fall : C.rise, k), facing: -1 };
+    return flip > 0 ? { id: pick(rising ? C.steepRise : C.steepFall, k), facing: 1 } : { id: pick(rising ? C.steepFall : C.steepRise, k), facing: -1 };
+  };
+  S.forEach((sl, i) => {
+    if (!sl.carves && !sl.sweep) return;
+    if (sl.sweep) {
+      for (let k = 0; k < C.sweepCuts; k++) {
+        out.push({ slash: i, ...kind(sl.ang, i * 7 + k), u: (k + 0.5) / C.sweepCuts, delay: k });
+        ends.push(sl.at + k + C.life);
+        n++;
+      }
+      return;
+    }
+    if (ends.filter((e) => e > sl.at).length >= C.cap) return;
+    out.push({ slash: i, ...kind(sl.ang, i), u: (sl.u0 + sl.u1) / 2, delay: 0 });
+    ends.push(sl.at + C.life);
+    n++;
+  });
+  return out;
 }
 
 /** The game's effects (game.ts wires game.fx): whether one is in, and playing one at a world point. */
@@ -309,8 +388,13 @@ export class UltDirector {
   art = { call: false, flurry: false, reveal: false };
   /** The game's effects (null: tests, or none wired) and which of R's are in (else ultdraw.ts's stand-ins draw). */
   fx: UltFx | null = null;
-  real = { callFire: false, letter: false, dive: false, nuke: false, clear: false };
+  real = { callFire: false, letter: false, letterBreak: false, cuts: false, dive: false, nuke: false, clear: false };
+  /** The cuts over the real letter, by slash (cutPlan). */
+  cutsBy = new Map<number, CutSpawn[]>();
   private callFire: { stop(): void } | null = null;
+  /** The real letter while it is carved and held, then its pieces breaking at the dive (stopped on the impact). */
+  private letterFx: { stop(): void } | null = null;
+  private breakFx: { stop(): void } | null = null;
   private cutNext = false;
   private lastShot: Shot | null = null;
   /** Where a phase's camera move starts: the last shot of the phase before (moves never jump). */
@@ -347,9 +431,18 @@ export class UltDirector {
       aftermath: ULT.aftermath.hold + Math.round(ULT.aftermath.clear * ULT.aftermath.revealFrom),
       reveal: clipLen(reveal) ?? C.r_reveal,
     };
-    this.slashes = storm(letterStrokes(), Lt.slashes, Lt.ticks, Lt.pieces, Lt.slashLen, Lt.sweepGap);
+    this.slashes = storm(letterStrokes(), Lt.slashes, Lt.ticks, Lt.pieces, Lt.slashLen, Lt.sweepGap, Lt.tail);
     const FX = ULT.fx, has = (id: string): boolean => !!this.fx?.has(id);
-    this.real = { callFire: has(FX.callFire), letter: has(FX.letter), dive: has(FX.dive), nuke: has(FX.nuke), clear: has(FX.clear) };
+    const letter = has(FX.letter);
+    this.real = {
+      callFire: has(FX.callFire), letter, letterBreak: letter && ["", "_tr", "_ml", "_mr", "_bl", "_br"].every((k) => has(FX.letterBreak + k)), cuts: letter && cutIds(FX.cuts).every(has),
+      dive: has(FX.dive), nuke: has(FX.nuke), clear: has(FX.clear),
+    };
+    this.cutsBy = new Map();
+    if (this.real.cuts) for (const k of cutPlan(this.slashes, FX.cuts)) this.cutsBy.set(k.slash, [...(this.cutsBy.get(k.slash) ?? []), k]);
+    this.letterFx?.stop();
+    this.breakFx?.stop();
+    this.letterFx = this.breakFx = null;
     this.callFire = null;
     this.cut = 0;
     this.stormT = -1;
@@ -417,6 +510,12 @@ export class UltDirector {
         say(c, "hush", 1);
       } else if (p === "dive") {
         say(c, "dive", 1);
+        // the real letter breaks: its pieces take over from it, cut down the middle where she dives
+        if (this.real.letterBreak) {
+          this.letterFx?.stop();
+          this.letterFx = null;
+          this.breakFx = this.fx!.play(ULT.fx.letterBreak, { x: st.gx, y: st.top + st.size, facing: 1 });
+        }
         if (this.real.dive) this.fx!.play(ULT.fx.dive, { x: st.gx, y: st.floor, facing: 1 });
         c.shake(ULT.shake.dive);
       } else if (p === "aftermath") {
@@ -462,7 +561,7 @@ export class UltDirector {
         if (t === K.storm) {
           this.stormT = 0;
           // the letter at its foot, never mirrored (facing 1: the effect is drawn as written)
-          if (this.real.letter) this.fx!.play(ULT.fx.letter, { x: st.gx, y: st.top + st.size, facing: 1 });
+          if (this.real.letter) this.letterFx = this.fx!.play(ULT.fx.letter, { x: st.gx, y: st.top + st.size, facing: 1 });
         }
         if (this.stormT >= 0) {
           const S = this.slashes;
@@ -477,6 +576,11 @@ export class UltDirector {
               say(c, "slash", 1);
               c.shake(ULT.shake.last * 0.6);
             } else if (this.cut % 10 === 0) say(c, "slash", 0.5 + 0.3 * rnd(this.cut));
+            // the cuts flying over the real letter, at the piece they carve
+            for (const k of this.cutsBy.get(this.cut) ?? []) {
+              const [x, y] = letterAt(st, ...along(letterStrokes()[sl.stroke]!, k.u));
+              this.fx!.play(k.id, { x, y, facing: k.facing, delay: k.delay });
+            }
             n++;
             this.cut++;
           }
@@ -512,6 +616,10 @@ export class UltDirector {
         b.vx = b.vy = 0;
         z.anim = { role: "r_smoke", t, hitAt: null, hidden: true, flame: 0 };
         if (t === 3) say(c, "rumble", 1);
+        if (t >= ULT.impact.breakAfter && this.breakFx) {
+          this.breakFx.stop();
+          this.breakFx = null;
+        }
         if (t + 1 >= L.impact) this.go("aftermath");
         break;
       }
@@ -558,6 +666,9 @@ export class UltDirector {
   end(): void {
     this.callFire?.stop();
     this.callFire = null;
+    this.letterFx?.stop();
+    this.breakFx?.stop();
+    this.letterFx = this.breakFx = null;
     this.phase = null;
     this.next = null;
     this.shot = null;
@@ -599,6 +710,9 @@ export class UltDirector {
     const z = c.z, b = z.body, s = c.host, I = ULT.impact;
     this.go("impact", true);
     this.peel = 1;
+    // the whole letter is gone in the flash; its falling pieces go on a few ticks into it (impact.breakAfter)
+    this.letterFx?.stop();
+    this.letterFx = null;
     this.stormT = -1;
     b.vx = b.vy = 0;
     z.anim = { role: "r_smoke", t: 0, hitAt: null, hidden: true, flame: 0 };
