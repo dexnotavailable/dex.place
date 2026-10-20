@@ -298,6 +298,11 @@ test("the fall's clouds: each where the camera sees it (on Dex's 1920 x 1080 fra
   assert.equal(fallVeils(6.95, 1280, 720, "bottom", false).length, 0);
   assert.equal(fallVeils(6.95, 1280, 720, "continue", true).length, 0);
   for (const T of [1.2, 1.35, 1.5]) assert.equal(fallVeils(T, 1920, 1080, "continue", false).length, 0, `a fog layer in the glimpse at ${T}`);
+  // (fall r3, W2-2) the thick passage rises past on the camera's fall (300-600 px per 0.4 s), leaving by the frame's top
+  const thick = (T) => fallVeils(T, 1920, 1080, "continue", false).find((v) => v.alpha === 1);
+  const a0 = thick(6.95), a1 = thick(7.35);
+  assert.ok(a0 && a1 && a0.cy - a1.cy >= 300 && a0.cy - a1.cy <= 600, `thick fog travel ${a0 && a1 ? a0.cy - a1.cy : "none"}`);
+  assert.equal(thick(8.6), undefined, "the thick fog has left the frame by 8.6");
 });
 
 test("the fall's sky: deep while high, eased into the place's own sky under the deck, gone by the break-out", () => {
