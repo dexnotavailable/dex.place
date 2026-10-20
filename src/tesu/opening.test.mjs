@@ -137,17 +137,20 @@ test("the camera: high in the sky at the press, a glimpse of the world below, cl
   // the frame's middle, H above her feet
   const alt = (s) => ((s.anchor - 0.5) * 720) / s.zoom / H;
   // (Dex 10-20: "following the ofuda closely") one brief glimpse of the world below as it drops out of the black, and
-  // it does not linger: the only wide frames are within it
+  // it does not linger: the only wide frames are within it (Dex 10-21: it "flashes the whole background": eased out,
+  // held a moment, eased back in, about 2 s, never the pulse it was)
   const gk = BEATS.camera.keys.find((k) => k.zoom > 0 && k.zoom < 0.2);
   assert.ok(gk.T - BEATS.bars[0] < 1, "the glimpse: as it drops out of the black");
   const g = camAt(gk.T);
   assert.ok(g.zoom < 0.2 && g.anchor < 1, "the glimpse: the world below in the frame");
   for (let T = 0; T < BEATS.bars[8]; T += 0.05) {
-    if (camAt(T).zoom < 0.5) assert.ok(T > BEATS.bars[0] && T < BEATS.bars[0] + 1.2, `wide at ${T.toFixed(2)}: only the glimpse`);
+    if (camAt(T).zoom < 0.5) assert.ok(T > BEATS.bars[0] && T < BEATS.bars[0] + 2, `wide at ${T.toFixed(2)}: only the glimpse`);
   }
   // then close, all the way down: the world rushes past (lower and lower) around the paper
   let prev = Infinity;
-  for (let T = BEATS.bars[1]; T <= BEATS.bars[7]; T += 0.25) {
+  const close = BEATS.camera.keys.find((k) => k.zoom >= 4).T;
+  assert.ok(close < BEATS.bars[1] + 0.5, "close on the paper soon after bar 1");
+  for (let T = close; T <= BEATS.bars[7]; T += 0.25) {
     const s = camAt(T);
     assert.ok(s.zoom >= 3, `close on the paper at ${T.toFixed(2)} (zoom ${s.zoom.toFixed(2)})`);
     assert.ok(alt(s) < prev, `still coming down at ${T.toFixed(2)}`);
@@ -179,13 +182,13 @@ test("the camera never jumps, for every way in and every window: a tick apart it
         const s = cameraAt(T, { x: herXH(T) * H, W: w, H: h, world, way });
         if (prev) {
           const dz = Math.abs(Math.log(s.zoom / prev.zoom));
-          const stunt = way !== "bottom" && T > 0.3 && T < 2.6;
+          const stunt = way !== "bottom" && T > 0.3 && T < 3.15;
           assert.ok(dz < (stunt ? 0.12 : 0.06), `${way} ${w}x${h} T ${T.toFixed(3)}: zoom jumped ${dz.toFixed(3)}`);
           // how far the world under the frame's middle moves on the frame in a tick (shares of the frame; her feet
           // row is no measure when they are frames below it, as in the fall)
           const my = (s.anchor * h - ((prev.anchor * h - h / 2) * s.zoom) / prev.zoom - h / 2) / h;
           const mx = ((s.cx - prev.cx) * s.zoom) / w;
-          // (the plunge out of the black slab, the glimpse and the dive back in, 0.3-2.6 s, are fast on purpose; the
+          // (the plunge out of the black slab, the glimpse and the dive back in, 0.3-3.1 s, are fast on purpose; the
           // close follow rushes the world past: smooth, never a cut)
           const lim = stunt ? 0.5 : 0.1;
           assert.ok(Math.abs(my) < lim && Math.abs(mx) < lim, `${way} ${w}x${h} T ${T.toFixed(3)}: the frame moved ${mx.toFixed(3)}, ${my.toFixed(3)} in one tick`);

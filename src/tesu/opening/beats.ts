@@ -46,23 +46,29 @@ export const BEATS = {
    * plunges out of the slab on bar 0. Rev 6 (Dex 10-20: "I want it following the ofuda closely"): one brief glimpse
    * of the world far below (1.35 s), then close on the paper (it is drawn near the lens: ofuda.lens) all the way down
    * through the clouds, the world rushing past; close on her at the catch, easing out to way 4's close band by its
-   * end. One continuous shot, no cut.
+   * end. One continuous shot, no cut. Dex 10-21 ("it flashes the whole background"): the glimpse was a 1.1 s pulse
+   * (zoom 1 to 0.16 to 4) and its way back in lifted the frame's top into the slab's black; now it eases out (1.3 s
+   * keeps the frame's middle coming down, never back up), holds the world below for a moment (1.55-1.9) and eases back
+   * in to the close ride by 3.1; the frame's top stays under the slab once it is out. The catch frames her a little
+   * higher (feet at 0.69) so the paper's hand-off point sits where it rode.
    */
   "keys": [
    { "T": 0, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 68.2, "cx": 97.4, "follow": false },
    { "T": 0.3, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 68.2, "cx": 97.4, "follow": false },
    { "T": 0.641, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 63.4, "cx": 97.2, "follow": false },
-   { "T": 0.95, "zoom": 1, "anchor": 0.5, "horizon": 1.3, "alt": 57, "cx": 100, "follow": false },
-   { "T": 1.35, "zoom": 0.16, "anchor": 0.9, "horizon": 0.84, "alt": 0, "cx": 104, "follow": false },
-   { "T": 1.8, "zoom": 0.5, "anchor": 0.5, "horizon": 1.45, "alt": 58, "cx": 108, "follow": false },
-   { "T": 2.5, "zoom": 4, "anchor": 0.5, "horizon": 1.45, "alt": 52, "cx": 110, "follow": false },
+   { "T": 1, "zoom": 1.1, "anchor": 0.5, "horizon": 1.3, "alt": 57, "cx": 100, "follow": false },
+   { "T": 1.3, "zoom": 0.26, "anchor": 0.8, "horizon": 1.0, "alt": 29, "cx": 102.5, "follow": false },
+   { "T": 1.55, "zoom": 0.16, "anchor": 0.9, "horizon": 0.84, "alt": 0, "cx": 104, "follow": false },
+   { "T": 1.9, "zoom": 0.17, "anchor": 0.88, "horizon": 0.86, "alt": 0, "cx": 105, "follow": false },
+   { "T": 2.55, "zoom": 0.55, "anchor": 0.5, "horizon": 1.45, "alt": 52, "cx": 108, "follow": false },
+   { "T": 3.1, "zoom": 4, "anchor": 0.5, "horizon": 1.45, "alt": 50.5, "cx": 110, "follow": false },
    { "T": 4.631, "zoom": 4, "anchor": 0.5, "horizon": 1.4, "alt": 44.5, "cx": 106.5, "follow": false },
    { "T": 6.626, "zoom": 4, "anchor": 0.5, "horizon": 1.35, "alt": 37, "cx": 103, "follow": false },
    { "T": 8.622, "zoom": 4, "anchor": 0.5, "horizon": 1.25, "alt": 29.5, "cx": 99.5, "follow": false },
    { "T": 10.616, "zoom": 4, "anchor": 0.5, "horizon": 1.1, "alt": 22, "cx": 96, "follow": false },
    { "T": 12.609, "zoom": 4, "anchor": 0.5, "horizon": 0.85, "alt": 14.5, "cx": 92.5, "follow": false },
    { "T": 14.6, "zoom": 3.5, "anchor": 0.55, "horizon": 0.55, "alt": 7.2, "cx": 89.5, "follow": false },
-   { "T": 16.589, "zoom": 4, "anchor": 0.74, "horizon": 0.27, "alt": 0, "cx": 87.2, "follow": false },
+   { "T": 16.589, "zoom": 4, "anchor": 0.69, "horizon": 0.27, "alt": 0, "cx": 87.2, "follow": false },
    { "T": 22, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
    { "T": 23.066, "zoom": 2, "anchor": 0.66, "horizon": 0.27, "alt": 0, "cx": 87.4, "follow": false },
    { "T": 24.6, "zoom": 1.1, "anchor": 0.66, "horizon": 0.28, "alt": 0, "cx": 1.3, "follow": true },
@@ -91,7 +97,7 @@ export const BEATS = {
   "releaseXH": 130.4,
   /** Reduced motion: held frames, cut (cross-faded) on these beats. `key`: the authored key it holds. */
   "reduced": [
-   { "from": 0, "hold": "sky", "T": 1.35 },
+   { "from": 0, "hold": "sky", "T": 1.55 },
    { "from": 8.622, "hold": "postcard", "T": 12.609, "key": { "zoom": 0.5, "anchor": 0.8, "horizon": 0.64, "cx": 88 } },
    { "from": 16.589, "hold": "close", "T": 16.589 },
    { "from": 23.066, "hold": "follow", "T": 25.6 },
@@ -215,27 +221,29 @@ export const BEATS = {
   /**
    * Its flight, way 1-3: where it is on the frame (shares of the width and height) on T, through the camera's
    * descent; a gentle pendulum sway and the east wind's gusts (dx, dy shares, over `dur` s) on top; from `blend`
-   * it is drawn on to her hand-off point in the world.
+   * it is drawn on to her hand-off point in the world. Dex 10-21 ("a little further up ... more consistent"): it rides
+   * in the upper third (0.37 of the height) from the glimpse to the catch, the gusts lift it only a little, and the
+   * blend starts once the catch's frame has her hand near that height (16), so it never dips on the way to her.
    */
   "path": [
    { "T": 0, "fx": 0.5, "fy": 0.6 },
-   { "T": 0.641, "fx": 0.5, "fy": 0.66 },
-   { "T": 1.35, "fx": 0.5, "fy": 0.36 },
-   { "T": 2.5, "fx": 0.5, "fy": 0.45 },
-   { "T": 4.631, "fx": 0.49, "fy": 0.44 },
-   { "T": 6.626, "fx": 0.51, "fy": 0.46 },
-   { "T": 8.622, "fx": 0.48, "fy": 0.44 },
-   { "T": 10.616, "fx": 0.5, "fy": 0.45 },
-   { "T": 12.609, "fx": 0.52, "fy": 0.44 },
-   { "T": 14.6, "fx": 0.55, "fy": 0.46 }
+   { "T": 0.641, "fx": 0.5, "fy": 0.64 },
+   { "T": 1.55, "fx": 0.5, "fy": 0.37 },
+   { "T": 3.1, "fx": 0.5, "fy": 0.37 },
+   { "T": 4.631, "fx": 0.49, "fy": 0.37 },
+   { "T": 6.626, "fx": 0.51, "fy": 0.37 },
+   { "T": 8.622, "fx": 0.48, "fy": 0.37 },
+   { "T": 10.616, "fx": 0.5, "fy": 0.37 },
+   { "T": 12.609, "fx": 0.52, "fy": 0.37 },
+   { "T": 14.6, "fx": 0.54, "fy": 0.37 }
   ],
   "sway": { "amp": 0.022, "period": 2.6, "until": 15.4 },
   "gusts": [
-   { "T": 3.2, "dur": 1.5, "dx": -0.06, "dy": -0.035 },
-   { "T": 7.3, "dur": 1.8, "dx": -0.08, "dy": -0.05 },
-   { "T": 13.2, "dur": 1.4, "dx": -0.04, "dy": -0.03 }
+   { "T": 3.2, "dur": 1.5, "dx": -0.06, "dy": -0.02 },
+   { "T": 7.3, "dur": 1.8, "dx": -0.08, "dy": -0.03 },
+   { "T": 13.2, "dur": 1.4, "dx": -0.04, "dy": -0.018 }
   ],
-  "blend": [15.2, 17.8917],
+  "blend": [16, 17.8917],
   /** Way 4: it comes in from the right edge (the H3 catch) and drifts down to her. */
   "pathBottom": [
    { "T": 12.609, "fx": 1.04, "fy": 0.16 },
