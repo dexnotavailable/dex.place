@@ -191,6 +191,15 @@ export function resolveMove(
     if (move !== undefined) out.moveFrom = move;
     out.fromArt.cancel = true;
   }
+  // (Dex 10-21, the ult form's chain: its drawings are "cut off") the next M1, or walking off, never skips the move's
+  // own hits: where the drawing times a hit at or past feel.json's window (the uf_m1 drawings spread theirs over their
+  // swirls; the normal chain's hits all land before its windows, so it is unchanged) and no mark sets the window, the
+  // chain and the walk-out wait for the last hit's window to close. Dash / jump / skill cancels stay as they are.
+  if ((out.fromArt.hits || out.fromArt.derived) && lastHit) {
+    const done = lastHit.at + lastHit.len, skips = (w: number): boolean => out.hits.some((h) => h.at >= w);
+    if (out.chainFrom !== undefined && m?.cancel?.chain === undefined && skips(out.chainFrom)) out.chainFrom = Math.max(out.chainFrom, done);
+    if (m?.cancel?.move === undefined && skips(out.moveFrom)) out.moveFrom = Math.max(out.moveFrom, done);
+  }
   // root motion: the marks' (authored), else her planted foot's (derived)
   let cum: number[] | null = m?.root ?? null;
   if (!cum && der) {

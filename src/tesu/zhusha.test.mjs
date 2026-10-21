@@ -147,6 +147,26 @@ test("zhusha marks: root motion spreads over a drawing's ticks, and a cycle maps
   assert.equal(clipAtRoot(run, rc, 32 + 12), 6, "the cycle repeats every stride");
 });
 
+test("zhusha timing (Dex 10-21): the chain never skips a move's own hits; the normal chain's windows are unchanged", () => {
+  const DER = JSON.parse(readFileSync(join(import.meta.dirname, "zhusha/derived.json"), "utf8"));
+  const der = DER.slots ?? DER;
+  const art = (slot) => JSON.parse(readFileSync(join(import.meta.dirname, `../../public/assets/zhusha/${slot}/anim.json`), "utf8"));
+  const a = 0.66;
+  for (const k of ["m1_1", "m1_2", "m1_3"]) {
+    const feel = FEEL.moves[k];
+    // the normal drawings land every hit before feel.json's windows: those stay feel.json's
+    const n = resolveMove(feel, art(k), a, { derived: der[k] ?? null, windRate: FEEL.windDown.rate });
+    assert.equal(n.chainFrom, feel.chainFrom, `${k}: the normal chain window`);
+    assert.equal(n.moveFrom, feel.moveFrom, `${k}: the normal walk-out`);
+    // the ult form's drawings spread their hits over their swirls: the chain waits for the last one's window to close
+    const u = resolveMove(feel, art(`uf_${k}`), a, { derived: der[`uf_${k}`] ?? null, windRate: FEEL.windDown.rate });
+    const last = u.hits[u.hits.length - 1];
+    assert.ok(u.hits.length > 1 && u.hits.some((h) => h.at >= feel.chainFrom), `uf_${k}: hits past feel's window`);
+    assert.equal(u.chainFrom, last.at + last.len, `uf_${k}: the chain after its last hit`);
+    assert.ok(u.hits.every((h) => h.at < u.chainFrom), `uf_${k}: no hit skipped by the chain`);
+  }
+});
+
 test("zhusha timing: with no drawing a move is exactly feel.json's; with marks the drawing times it", () => {
   const feel = FEEL.moves.m1_1;
   const plain = resolveMove(feel, null, 0.825);
