@@ -13,11 +13,15 @@
 
 import type { PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { M, face, fbm, hash, mt, rect, tn, vnoise } from "./kit.ts";
+import { M, clamp, face, fbm, hash, mt, rect, tn, vnoise } from "./kit.ts";
+import { bayer4 } from "../../raster.ts";
+import { crossedBlades } from "./signs.ts";
 import { blockAt } from "./court-stone.ts";
 
 const H = 96;
 const SIDE = -1;
+/** Stone darkened and greened by the damp out of the rock (round 3). */
+const GREEN_STONE = [P.karst[2]!, P.karst[3]!, P.karst[4]!, P.karst[5]!, P.karst[6]!, P.karst[7]!, P.pine[4]!];
 
 export interface FoundationArgs {
   w: number;
@@ -35,7 +39,8 @@ function friezePanels(p: FoundationArgs, centre: number): { panels: Panel[]; pil
   const pils = p.pilasters.filter((x, i) => {
     if (p.well && (Math.abs(x - p.well[0]) < 1.6 * H || Math.abs(x - p.well[1]) < 1.6 * H)) return true;
     if (Math.abs(x - centre) < 2.2 * H) return false;
-    return hash(i, 1, 301) > 0.34;
+    // (round 3, W2-10: fewer, longer panels) most pilasters dropped
+    return hash(i, 1, 301) > 0.66;
   });
   const cuts = [0, ...pils, ...(p.well ? [p.well[0], p.well[1]] : []), p.w].sort((a, b) => a - b);
   const panels: Panel[] = [];
@@ -67,20 +72,26 @@ function drains(p: FoundationArgs): number[] {
   return out;
 }
 
-/** A ruyi cloud band in gold on the lacquer: fat coils, each running out as a tail to the next. */
-function cloudScroll(dxFrom: number, vy: number, skip: number, along: number, X: number, Y: number): number | null {
-  const side = Math.sign(dxFrom) || 1;
-  const sx = Math.abs(dxFrom) - skip;
-  if (sx < 0) return null;
-  const k = Math.floor(sx / (0.46 * H));
-  const scx = skip + (k + 0.5) * 0.46 * H, scy = (k % 2 ? -1 : 1) * 3;
-  const dx = (Math.abs(dxFrom) - scx) * side, dy = vy - scy;
-  const rr = Math.hypot(dx, dy), th = (Math.atan2(dy, dx * side) + Math.PI) / (Math.PI * 2);
-  const turn = rr / 7 - th;
-  const spiral = rr < 0.17 * H && rr > 2 && turn < 1.6 && Math.abs((((turn % 1) + 1) % 1) - 0.5) < 0.24;
-  const tail = Math.abs(vy - scy * -1 - Math.sin(sx * 0.068) * 6) < 1.6 && rr > 0.15 * H;
-  if (spiral || tail) return mt(M.gold, (dy < 0 ? 1.02 : 0.72) * along, X, Y, 0.05, 1);
-  return null;
+/**
+ * (round 3, W2-10: gold spirals on black read as a generic motif) a run of ruyi clouds carved in the stone: 0 the
+ * sunk field, 1 the cloud's face, 2 its lit upper edge, 3 its undercut (the sun is up and to the left).
+ */
+function carvedCloud(x: number, y: number, r: number, seed: number): number {
+  const at = (xx: number, yy: number): boolean => {
+    const per = r * 3.3;
+    const i = Math.floor(xx / per + 0.5);
+    const cx = i * per + (hash(i, 1, seed) - 0.5) * r * 0.5, flip = hash(i, 2, seed) < 0.5 ? -1 : 1;
+    const dx = (xx - cx) * flip, dy = yy - (hash(i, 3, seed) - 0.5) * r * 0.35;
+    const R = r * (0.5 + 0.1 * hash(i, 4, seed));
+    if (Math.hypot(dx, dy + 0.15 * R) < R || Math.hypot(dx + 0.95 * R, dy - 0.4 * R) < 0.62 * R || Math.hypot(dx - 0.95 * R, dy - 0.4 * R) < 0.62 * R) {
+      const cr = Math.hypot(dx, dy + 0.15 * R);
+      return !(Math.abs(cr - 0.5 * R) < 0.9 && Math.atan2(dy + 0.15 * R, dx) > -1.2);
+    }
+    const tx = dx - 1.45 * R, ty = dy - 0.2 * R;
+    return tx > 0 && tx < 1.7 * R && Math.abs(ty + Math.sin(tx / R * 2.2) * 0.3 * R) < 0.17 * R;
+  };
+  if (!at(x, y)) return at(x - 1.2, y - 1.6) ? 3 : 0;
+  return at(x + 1.2, y + 1.6) ? 1 : 2;
 }
 
 export function paintFoundation(c: PaintCtx, p: FoundationArgs): void {
@@ -170,7 +181,8 @@ export function paintFoundation(c: PaintCtx, p: FoundationArgs): void {
     // --- the frieze
     if (ly < F1) {
       const v = (ly - COPE) / FRIEZE;
-      const overhang = ly < COPE + 3 + 2 * vnoise(lx * 0.1, 2, 5) ? -0.22 : 0;
+      // (round 3, W2-10) the coping's overhang throws a hard shadow along the frieze's top
+      const overhang = ly < COPE + 5 ? -0.36 : ly < COPE + 7 && bayer4(X, Y) < 0.5 ? -0.36 : 0;
       // the coping's drips run down over the frieze too, here and there
       const drip = vnoise(lx * 0.15, 11, 325) > 0.72 && v < 0.2 + 0.7 * vnoise(lx * 0.04, 12, 327) ? -0.08 : 0;
       if (v < 0.08 || v > 0.92) return mt(M.stone, face(0.9, SIDE, 0, v < 0.08 ? -0.6 : 0.6) * 0.85 * along + overhang, X, Y, 0.1, 1);
@@ -198,18 +210,15 @@ export function paintFoundation(c: PaintCtx, p: FoundationArgs): void {
         return mt(M.stone, 0.9 + (fbm(lx * 0.1, ly * 0.1, 329, 2) - 0.5) * 0.06 + overhang, X, Y, 0.0, 1);
       }
       if (pn.kind === "relief") {
-        // carved stone waves, the lacquer long gone: lit crests, shaded troughs
+        // (round 3, W2-10: the carved waves read as wood grain) clouds carved in the bare stone, lit on their upper
+        // edges, undercut below, worn
         if (inner < 2) return mt(M.stone, 0.48 * along, X, Y, 0.1, 1);
-        // (integration, round 2: soft value stripes read as marble or wood grain, not carving) the field is cut in three
-        // levels (the proud crests, the body, the sunk troughs); each step's edge catches the sun on the side it comes
-        // from (up and to the left) and throws a dark undercut on the other, so the waves stand as relief in the light
-        const wave = (uu: number, yy: number): number => {
-          const w = Math.sin(uu * 0.09 + Math.sin(yy * 0.18 + pn.seed) * 1.6 + yy * 0.25);
-          return w > 0.45 ? 2 : w > -0.35 ? 1 : 0;
-        };
-        const lv0 = wave(u, vy), lvUp = wave(u - 1.2, vy - 1.6), lvUp2 = wave(u - 2.4, vy - 3.2);
-        const relief = lv0 > lvUp ? 0.22 : lv0 < lvUp ? -0.24 : lv0 < lvUp2 ? -0.1 : (lv0 - 1) * 0.06;
-        return mt(M.stone, (0.64 + relief) * along + overhang + drip - (fbm(lx * 0.3, ly * 0.3, 331, 2) > 0.75 ? 0.08 : 0), X, Y, 0.05, 1);
+        const k = carvedCloud(lx - pn.x0 + hash(pn.seed, 6, 335) * 0.6 * H, vy, FRIEZE * 0.34, 361 + pn.seed);
+        const worn = fbm(lx * 0.3, ly * 0.3, 331, 2) > 0.75 ? -0.08 : 0;
+        if (k === 2) return mt(M.stone, 0.98 * along + overhang + drip + worn, X, Y, 0.05, 1);
+        if (k === 1) return mt(M.stone, 0.74 * along + overhang + drip + worn, X, Y, 0.05, 1);
+        if (k === 3) return mt(M.stone, 0.34 * along + overhang, X, Y, 0.05, 1);
+        return mt(M.stone, 0.56 * along + overhang + drip + worn, X, Y, 0.05, 1);
       }
       // the lacquered panels: a gold rim, then their motif; the lacquer faded and flaking where weather got in
       const fade = fbm(lx * 0.03, ly * 0.05, 333 + pn.seed, 3) + (pn.kind === "lost" ? 0.22 : 0);
@@ -220,20 +229,23 @@ export function paintFoundation(c: PaintCtx, p: FoundationArgs): void {
       if (flake) return mt(M.stone, 0.58 * along + drip, X, Y, 0.1, 1);
       const ground = mt(lacq, (face(0.9, SIDE) * 0.38 + (fade > 0.6 ? 0.12 : 0)) * along + drip, X, Y, 0.15, 1);
       if (pn.kind === "sun") {
-        // the court's middle: a sunburst seal in a ring, ruyi clouds rolling out either side
-        const d = Math.hypot(lx - centre, vy);
-        if (d < 0.2 * H) {
-          const ring = d > 0.16 * H;
-          const ray = Math.sin(Math.atan2(vy, lx - centre) * 8) > 0.35;
-          if (ring || (ray && d > 0.07 * H) || d < 0.05 * H) return mt(M.gold, face(0.95, SIDE, (lx - centre) / (0.2 * H), vy / (0.2 * H)) * 0.95, X, Y, 0.0, 1);
-          return ground;
-        }
-        return gilt ? cloudScroll(lx - centre, vy, 0.2 * H, along, X, Y) ?? ground : ground;
+        // (round 3, W2-10) the court's middle: its crest (crossed blades in a ring, painted after this pass), carved
+        // clouds rolling out either side of it in the old lacquer, the gilt worn off their faces
+        if (Math.hypot(lx - centre, vy) < 0.27 * H) return ground;
+        const k = carvedCloud(Math.abs(lx - centre) - 0.3 * H, vy, FRIEZE * 0.36, 351);
+        if (k === 2) return gilt ? mt(M.gold, 0.82 * along, X, Y, 0.1, 1) : mt(M.stone, 0.95 * along, X, Y, 0.05, 1);
+        if (k === 1) return mt(lacq, face(0.9, SIDE) * 0.62 * along, X, Y, 0.1, 1);
+        if (k === 3) return mt(lacq, 0.08, X, Y, 0.3, 1);
+        return ground;
       }
       if (pn.kind === "scroll" || pn.kind === "lost") {
-        // a long ruyi cloud band running the panel's length from its own start
-        const g = cloudScroll(lx - pn.x0 - 0.15 * H + hash(pn.seed, 5, 335) * 0.3 * H, vy, 0, along, X, Y);
-        return g !== null && gilt ? g : ground;
+        // (round 3, W2-10: a gold spiral band) a long run of clouds carved in the panel, the lacquer gone from their
+        // faces so the stone shows, the gilt left only in the hollows here and there
+        const k = carvedCloud(lx - pn.x0 + hash(pn.seed, 5, 335) * 0.6 * H, vy, FRIEZE * 0.34, 353 + pn.seed);
+        if (k === 2) return mt(M.stone, (0.98 + (gilt ? 0 : -0.1)) * along + drip, X, Y, 0.05, 1);
+        if (k === 1) return mt(M.stone, 0.72 * along + drip - (fbm(lx * 0.25, ly * 0.25, 355, 2) > 0.7 ? 0.08 : 0), X, Y, 0.05, 1);
+        if (k === 3) return mt(lacq, 0.12, X, Y, 0.3, 1);
+        return ground;
       }
       // cartouches: one or two along the panel, each its own knot
       const n = pw > 3.2 * H ? 2 : 1;
@@ -301,7 +313,8 @@ export function paintFoundation(c: PaintCtx, p: FoundationArgs): void {
       if (w > 0.3) return tn(P.moss, 0.6, X, Y, 0.3);
       return mt(M.stone, 0.4 - (base ? 0.06 : 0) - w * 0.1, X, Y, 0.2, 1);
     }
-    const tone = (hash(blk.j, ri, 11) - 0.5) * 0.18 + (patch ? 0.08 : 0) + (quoin ? 0.1 : 0);
+    // (round 3, W2-10: L 141, sd 41: too even) each block its own value over a wider range
+    const tone = (hash(blk.j, ri, 11) - 0.5) * 0.34 + (patch ? 0.08 : 0) + (quoin ? 0.1 : 0);
     const bev = quoin ? 4 : Math.max(2, Math.min(4, (Math.min(r1, f) - r0) * 0.12));
     const edge = subY < bev ? 0.12 : blk.inX < bev ? 0.07 : blk.w - blk.inX < bev ? -0.08 : r1 - ly < bev ? -0.07 : 0;
     const rough = base ? (fbm(lx * 0.09, ly * 0.12, 47, 3) - 0.5) * 0.3 : (fbm(lx * 0.15, ly * 0.15, 43, 2) - 0.5) * 0.1;
@@ -316,6 +329,24 @@ export function paintFoundation(c: PaintCtx, p: FoundationArgs): void {
     }
     if (w > 0.55 && fbm(lx * 0.2, ly * 0.2, 347, 2) > 0.45) return tn(P.moss, 0.5 + (1 - w) * 0.4, X, Y, 0.3);
     if (damp > 0.14 && fbm(lx * 0.14, ly * 0.14, 67, 2) > 0.6) return tn(P.moss, 0.55 + damp, X, Y, 0.35);
-    return mt(M.stone, 0.72 + tone + edge + rough + chipped + ledgeShade - w * 0.3 - damp - ((ly - F1) / H) * 0.025, X, Y, 0.05, 1);
+    // (round 3, W2-10) a wet band right under the frieze where the coping's water runs, streaked; the lowest courses
+    // darker and greener with the damp coming up out of the rock
+    const wetBand = ly - F1 < 0.2 * H + 0.08 * H * vnoise(lx * 0.05, 3, 357) && vnoise(lx * 0.12, ly * 0.02, 359) > 0.32 ? 0.16 : 0;
+    const low = clamp((ly - (baseTop - 0.9 * H)) / (0.9 * H), 0, 1);
+    const v0 = 0.72 + tone + edge + rough + chipped + ledgeShade - w * 0.3 - damp - wetBand - ((ly - F1) / H) * 0.025;
+    if (low > 0.15 && bayer4(X, Y) < low * 0.85) return mt(GREEN_STONE, v0 - low * 0.12, X, Y, 0.05, 1);
+    return mt(M.stone, v0, X, Y, 0.05, 1);
   });
+  // (round 3, W2-10) the court's crest at the frieze's middle: crossed blades in a gold ring on the old lacquer
+  {
+    const cy = COPE + FRIEZE / 2, r = Math.round(0.23 * H);
+    rect(c, centre - r - 2, cy - r - 2, centre + r + 2, cy + r + 2, (X, Y, lx, ly) => {
+      const d = Math.hypot(lx - centre, ly - cy);
+      if (d > r + 1) return 0;
+      if (d > r - 2.5) return mt(M.gold, face(0.95, SIDE, (lx - centre) / r, (ly - cy) / r) * 0.95, X, Y, 0.0, 1);
+      if (d > r - 4) return mt(lacq, 0.2, X, Y, 0.2, 1);
+      return mt(lacq, face(0.9, SIDE) * 0.4, X, Y, 0.15, 1);
+    });
+    crossedBlades(c, centre, cy, r - 6, (X, Y, _lx, ly) => tn(M.gold, ly < cy ? 0.05 : 0.35, X, Y, 0), (X, Y) => tn(lacq, 0.6, X, Y, 0), (X, Y) => tn(lacq, 0.55, X, Y, 0));
+  }
 }

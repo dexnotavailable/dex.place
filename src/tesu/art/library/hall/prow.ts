@@ -3,6 +3,7 @@
 // its prayer flags in the wind. Daylight from the upper left.
 
 import { definePainter } from "../../painter.ts";
+import { lut, tint } from "./tint.ts";
 import { P } from "../../palette.ts";
 import { M, clamp, cyl, face, fbm, grain, lathe, mt, rect, tn } from "./kit.ts";
 
@@ -232,5 +233,8 @@ export const tiers = definePainter<TiersP>("court.tiers", {
         });
       }
     }
+    // (round 3, W2-10: the stands took no haze step from the near court) the whole stands sit a step back in the air
+    tint(c, -hw - 10, -p.rows * 34 - 80, hw + 10, 120, () => HAZE1);
   },
 });
+const HAZE1 = lut("haze", 1);

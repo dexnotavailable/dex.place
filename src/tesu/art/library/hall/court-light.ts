@@ -302,7 +302,8 @@ export const crowd = definePainter<CrowdP>("court.crowd", {
       figs.forEach((g, j) => { if (j % 2 === 1) person(c, g, null); });
       figs.forEach((g, j) => { if (j % 2 === 0) person(c, g, null); });
       // the rows further back sit in more air: lighter, cooler, flatter
-      if (r > 0) tint(c, -hw, top - 60, hw, top, (_X, _Y, _lx, ly) => (ly < top - 1 ? (r > 1 ? haze2 : haze) : null));
+      // (round 3, W2-10) every row a step back in the air from the near court, the back rows further
+      tint(c, -hw, top - 60, hw, top, (_X, _Y, _lx, ly) => (ly < top - 1 ? (r > 0 ? haze2 : haze) : null));
     }
   },
 });

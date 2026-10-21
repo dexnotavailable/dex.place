@@ -10,7 +10,8 @@
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT, HALL_LIGHT_NO_GATE } from "./lights.ts";
-import { bayWall, clerestories, gateGeo, gateHead, gateRim, gateView, scrolls } from "./gate.ts";
+import { bayWall, clerestories, clerestoryBoxes, gateGeo, gateHead, gateRim, gateView, headBox, scrolls } from "./gate.ts";
+import { couplets } from "./bay.ts";
 import { M, SCREEN, LitField, bevel, clamp, cord, cyl, face, fbm, grain, hash, keep, lathe, mt, poly, rect, tn, vnoise, type At, type Ramp } from "./kit.ts";
 import { cashCoin, cloudScroll, coinStack, crossedBlades, openBook, plumCrest, sealStamp, text, textWidth } from "./signs.ts";
 
@@ -51,18 +52,6 @@ function fitting(c: PaintCtx, lf: LitField, side: number, x: number, y: number, 
   });
 }
 
-/** Distance to the nearest edge of a cracked-ice pattern (jittered cells of size `g`), px. */
-function iceEdge(x: number, y: number, g: number, seed: number): number {
-  const ci = Math.floor(x / g), cj = Math.floor(y / g);
-  let d1 = Infinity, d2 = Infinity;
-  for (let i = ci - 1; i <= ci + 1; i++) for (let j = cj - 1; j <= cj + 1; j++) {
-    const px = (i + 0.15 + hash(i, j, seed) * 0.7) * g, py = (j + 0.15 + hash(i, j, seed + 1) * 0.7) * g;
-    const d = Math.hypot(x - px, y - py);
-    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
-  }
-  return (d2 - d1) / 2;
-}
-
 // (round 2, W1-2: the pseudo-script glyphs are gone; every sign is real pixel characters or a wordless mark,
 // signs.ts)
 
@@ -97,6 +86,8 @@ export const gate = definePainter<GateP>("hall.gate", {
     gateView(c, g);
     gateRim(c, g, lfg);
     scrolls(c, g, lf);
+    // (round 3, W2-5) a pair of couplet boards high on the wall, flanking the clerestories
+    couplets(c, headBox(g).cw, clerestoryBoxes(g)[0]![1], lf);
 
     // --- over the ring: the plaque ("the Prize Court", gold strokes on red lacquer in a gold frame) under
     // a small tiled canopy on two carved corbels, so the gate reads as the hall's gate from across the room
@@ -156,19 +147,50 @@ export const desk = definePainter<DeskP>("hall.desk", {
       rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
         const l = lf.get(lx, ly);
         const v = (ly - y0) / (y1 - y0), u = (lx - x0) / (x1 - x0);
-        // what is in the cell: rolled scrolls (round ends), folded slips standing up, or nothing
-        if (r < 0.42) {
-          const rr = Math.min((x1 - x0) * 0.22, (y1 - y0) * 0.3);
-          for (let k = 0; k < 3; k++) {
-            const sx = x0 + rr + 1 + k * rr * 1.9, sy = y1 - rr - 1 - (k === 1 ? rr * 0.9 : 0);
+        // (round 3, W2-12: every cell held the same pair of scroll ends, goggles at 1:1) what is in each cell, its own:
+        // a pyramid of rolled scrolls tied in red or blue, one fat scroll with a hanging tag, ledgers lying flat with
+        // coloured spines, slips standing up, a red seal box with a gold clasp, a little jar, or nothing
+        const cw2 = x1 - x0, ch2 = y1 - y0;
+        if (r < 0.2) {
+          const rr = Math.min(cw2 * 0.17, ch2 * 0.24);
+          const tie = hash(i, j, 43) < 0.5 ? P.red : P.blue;
+          for (const [ku, kv] of [[0.25, 0], [0.62, 0], [0.43, 1]] as const) {
+            const sx = x0 + cw2 * ku + rr * 0.3, sy = y1 - rr - 0.5 - kv * rr * 1.75;
             const d = Math.hypot(lx - sx, ly - sy) / rr;
-            if (d < 1) return d < 0.35 ? mt(M.wood, 0.4, X, Y, 0.2, 1) : mt(M.paper, face(l.k, side, (lx - sx) / rr, (ly - sy) / rr) * 0.9, X, Y, 0.0, 0.9);
+            if (d < 1) return d < 0.3 ? mt(M.wood, 0.45, X, Y, 0.2, 1) : Math.abs(lx - sx) < 0.8 ? tn(tie, 0.4, X, Y, 0) : mt(M.paper, face(l.k, side, (lx - sx) / rr, (ly - sy) / rr) * (0.85 + kv * 0.08), X, Y, 0.0, 0.9);
           }
-        } else if (r < 0.72) {
+        } else if (r < 0.32) {
+          const rr = Math.min(cw2 * 0.3, ch2 * 0.38), sx = x0 + cw2 * 0.45, sy = y1 - rr - 0.5;
+          const d = Math.hypot(lx - sx, ly - sy) / rr;
+          if (d < 1) return d < 0.28 ? mt(M.wood, 0.35, X, Y, 0.2, 1) : mt(M.paper, face(l.k, side, (lx - sx) / rr, (ly - sy) / rr) * 0.88 - (d > 0.55 && d < 0.65 ? 0.12 : 0), X, Y, 0.0, 0.9);
+          if (lx > sx + rr * 0.5 && lx < sx + rr * 0.5 + 2.5 && ly > sy && ly < sy + rr * 1.1) return tn(M.verm, 0.4, X, Y, 0);
+        } else if (r < 0.48) {
+          // ledgers lying flat, spine out: two or three of different thicknesses and colours
+          const n = r < 0.4 ? 3 : 2;
+          let yb = y1 - 0.5;
+          for (let k = 0; k < n; k++) {
+            const th = 2.5 + 2 * hash(i * 3 + k, j, 47), inset = 1 + 2 * hash(i, j * 3 + k, 49);
+            const ramp = [M.verm, P.blue, P.moss, M.wood, P.jade][Math.floor(hash(i + k, j, 51) * 5)]!;
+            if (ly > yb - th && ly <= yb && lx > x0 + inset && lx < x1 - inset * 0.5) return ly < yb - th + 1 ? mt(M.paper, 0.6, X, Y, 0.1, 0.9) : mt(ramp, face(l.k, side) * 0.7 + (Math.abs(lx - (x0 + x1) / 2) < 1 ? -0.15 : 0), X, Y, 0.2, 1);
+            yb -= th;
+          }
+        } else if (r < 0.64) {
           if (v > 0.3 && u > 0.15 && u < 0.85 && (Math.floor(u * 6) % 2 === 0 || v > 0.55)) {
-            const tag = r > 0.62 && v < 0.45 && u < 0.4;
+            const tag = r > 0.58 && v < 0.45 && u < 0.4;
             return tag ? tn(M.verm, 0.35, X, Y, 0) : mt(M.paper, face(l.k, side) * (0.75 + v * 0.1), X, Y, 0.05, 0.9);
           }
+        } else if (r < 0.73) {
+          // a seal box: red lacquer, a gold clasp, its lid line
+          if (u > 0.14 && u < 0.86 && v > 0.42) {
+            if (Math.abs(u - 0.5) < 0.08 && Math.abs(v - 0.62) < 0.08) return mt(M.gold, 0.9, X, Y, 0.0, 1);
+            if (Math.abs(v - 0.55) < 0.04) return mt(M.lacq, 0.3, X, Y, 0.2, 1);
+            return mt(M.verm, face(l.k, side, u < 0.2 ? -0.6 : u > 0.8 ? 0.6 : 0, v < 0.48 ? -0.6 : 0) * 0.62, X, Y, 0.2, 1);
+          }
+        } else if (r < 0.8) {
+          // a little jar
+          const ju = (u - 0.5) * cw2, jv = (1 - v) * ch2;
+          const jw = jv < 1.5 ? 2 : jv < ch2 * 0.55 ? 3.6 + Math.sin((jv / (ch2 * 0.55)) * Math.PI) * 1.2 : jv < ch2 * 0.65 ? 1.6 : 0;
+          if (Math.abs(ju) < jw) return mt(hash(i, j, 53) < 0.5 ? M.bronze : P.jade, face(l.k, side, ju / jw, 0) * 0.85, X, Y, 0.1, 1);
         }
         // the cell's back, in shadow; its top lip catches the lamp
         return v < 0.12 ? mt(M.wood, face(l.k, side, 0, 0.6) * 0.5, X, Y, 0.3, 1) : mt(M.lacq, face(l.k, side) * 0.22, X, Y, 0.2, 1);
@@ -197,10 +219,11 @@ export const desk = definePainter<DeskP>("hall.desk", {
     // --- the counter: plinth, a front lighter than the wall, the top board with a lit lip and a dark edge band
     contact(c, 0, W, 0.85);
     const TOPD = 9;
-    box(c, lf, side, 4, -0.09 * H, W - 4, 0, M.lacq, 7, 0.0, 1, 2, 0.04);
-    rect(c, 2, -T + TOPD, W - 2, -0.09 * H, (X, Y, lx, ly) => {
+    // (round 3, W2-12) a dark kick at the foot, set back under the front: near black, its top edge catching the lamp
+    rect(c, 6, -0.12 * H, W - 6, 0, (X, Y, lx, ly) => (ly < -0.12 * H + 1.5 ? mt(M.wood, face(lf.get(lx, ly).k, side, 0, -0.8) * 0.5, X, Y, 0.2, 1) : mt(M.lacq, 0.04 + grain(lx, ly, 71, false) * 0.04, X, Y, 0.55, 1)));
+    rect(c, 2, -T + TOPD, W - 2, -0.12 * H, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
-      const u = (lx - 2) / (W - 4), v = (ly + T - TOPD) / (T - TOPD - 0.09 * H);
+      const u = (lx - 2) / (W - 4), v = (ly + T - TOPD) / (T - TOPD - 0.12 * H);
       // three framed panels of warm timber, gold-line insets, the shadow of the top board along their head
       const pn = 3, pu = (u * pn) % 1;
       const stile = pu < 0.05 || pu > 0.95 || u < 0.02 || u > 0.98;
@@ -208,11 +231,17 @@ export const desk = definePainter<DeskP>("hall.desk", {
       const inset = !stile && !rail && (Math.abs(pu - 0.12) < 0.012 || Math.abs(pu - 0.88) < 0.012 || Math.abs(v - 0.22) < 0.03 || Math.abs(v - 0.8) < 0.03);
       // (round 2, W1-5) the front a light honey timber, a clear step lighter than the wall and the notice board, so
       // the desk reads as the desk in its own frame; the lamp's light still moves it
+      // (round 3, W2-12: it read as a UI panel) real timber: its grain running down each panel, the stiles' edges and
+      // the panels' corners worn pale by hands and hips, grime darkening the lower rail where feet scuff it; the gold
+      // line a thin inlay, broken where it wore
       const shade = v < 0.16 ? 0.22 : 0;
       const lk = (face(l.k, side) - 0.35) * 0.55;
-      if (inset) return mt(M.gold, 0.7 + lk - shade, X, Y, 0.1, 1);
-      if (stile || rail) return mt(M.wood, 0.58 + lk + (stile ? (pu < 0.5 ? -0.06 : 0.06) : 0) - shade, X, Y, 0.1, 1);
-      return mt(M.wood, 0.76 + lk - shade + grain(lx, ly, 47) * 0.07 - (v > 0.82 ? 0.05 : 0), X, Y, 0.1, 1);
+      const corner = Math.min(Math.abs(pu - 0.05), Math.abs(pu - 0.95)) < 0.04 && (v < 0.2 || v > 0.8);
+      const wornEdge = (stile && fbm(lx * 0.3, ly * 0.12, 61, 2) > 0.58) || (corner && fbm(lx * 0.25, ly * 0.25, 63, 2) > 0.45);
+      const grime = v > 0.84 ? (v - 0.84) * 0.9 : 0;
+      if (inset) return fbm(lx * 0.2, ly * 0.2, 65, 2) > 0.66 ? mt(M.wood, 0.7 + lk - shade, X, Y, 0.1, 1) : mt(M.gold, 0.78 + lk - shade, X, Y, 0.1, 1);
+      if (stile || rail) return mt(M.wood, 0.6 + lk + (stile ? (pu < 0.5 ? -0.06 : 0.06) : 0) - shade - (wornEdge ? 0.14 : 0) + grime + grain(lx, ly, 67, stile) * 0.12, X, Y, 0.1, 1);
+      return mt(M.wood, 0.76 + lk - shade + grain(lx, ly, 47) * 0.16 + (vnoise(lx * 0.08, ly * 0.01, 69) - 0.5) * 0.1 - (v > 0.82 ? 0.05 : 0) + grime * 0.6 - (corner && wornEdge ? 0.1 : 0), X, Y, 0.1, 1);
     });
     // the hall's crest on the middle panel, gold, raised (round 2: the plum blossom of the door's plaque)
     const scx = W / 2, scy = (-T + TOPD - 0.09 * H) / 2, sr = Math.min(W * 0.07, (T - TOPD) * 0.3);
@@ -895,7 +924,7 @@ export interface NookP {
 
 export const nook = definePainter<NookP>("hall.nook", {
   bounds(p) {
-    return [p.bench[0] - 0.4 * H, -0.85 * H, p.table[1] + 0.2 * H, 6];
+    return [p.bench[0] - 0.4 * H, -0.95 * H, p.table[1] + 0.2 * H, 6];
   },
   paint(c, p) {
     const lf = new LitField(HALL_LIGHT, p.at, 8);
@@ -923,6 +952,25 @@ export const nook = definePainter<NookP>("hall.nook", {
     // the bench: two legs, an apron, the seat board, a red cushion, a bolster at its right end
     const seat = 0.42 * H;
     contact(c, b0, b1, 0.75);
+    // (round 3, W2-12: no seat read as a seat) a reading bench with a low back and arms: two back posts with knobs, a
+    // carved top rail, a few slats between (open, so the wall shows through), an arm at each end
+    {
+      const bt = -seat - 0.42 * H;
+      for (const px of [b0 + 1, b1 - 5]) {
+        rect(c, px, bt, px + 4, -seat, (X, Y, lx, ly) => mt(M.wood, face(lf.get(lx, ly).k, side, lx < px + 1.5 ? -0.6 : lx > px + 2.5 ? 0.6 : 0, 0) * 0.8 + grain(lx, ly, 95) * 0.06, X, Y, 0.2, 1));
+        rect(c, px - 0.5, bt - 4, px + 4.5, bt, (X, Y, lx, ly) => (Math.hypot(lx - px - 2, ly - bt + 2) < 2.6 ? mt(M.gold, face(lf.get(lx, ly).k, side, (lx - px - 2) / 2.5, -0.5) * 0.9, X, Y, 0.1, 1) : 0));
+      }
+      rect(c, b0 + 1, bt + 1, b1 - 1, bt + 6, (X, Y, lx, ly) => {
+        const l = lf.get(lx, ly);
+        const carve = Math.sin((lx - b0) * 0.35) * Math.cos((ly - bt) * 0.9) > 0.5;
+        return mt(M.wood, face(l.k, side, 0, ly < bt + 2 ? -0.8 : 0.3) * (carve ? 0.62 : 0.85), X, Y, 0.2, 1);
+      });
+      for (let sx = b0 + 10; sx < b1 - 8; sx += 9) rect(c, sx, bt + 6, sx + 2, -seat - 6, (X, Y, lx, ly) => mt(M.wood, face(lf.get(lx, ly).k, side) * 0.62, X, Y, 0.3, 1));
+      for (const [ax, dir] of [[b0 - 2, 1], [b1 + 2, -1]] as const) {
+        rect(c, Math.min(ax, ax + dir * 8), -seat - 0.2 * H, Math.max(ax, ax + dir * 8), -seat - 0.2 * H + 3, (X, Y, lx, ly) => mt(M.wood, face(lf.get(lx, ly).k, side, 0, -0.8) * 0.9, X, Y, 0.2, 1));
+        rect(c, ax - 1, -seat - 0.2 * H + 3, ax + 2, -seat, (X, Y, lx, ly) => mt(M.wood, face(lf.get(lx, ly).k, side) * 0.7, X, Y, 0.2, 1));
+      }
+    }
     for (const lx0 of [b0 + 3, b1 - 9]) box(c, lf, side, lx0, -seat + 6, lx0 + 6, -3, M.wood, 87, 0.3, 1, 1);
     box(c, lf, side, b0 + 2, -seat + 6, b1 - 2, -seat + 12, M.wood, 89, 0.25, 1, 1);
     rect(c, b0 - 3, -seat, b1 + 3, -seat + 6, (X, Y, lx, ly) => mt(M.wood, face(lf.get(lx, ly).k, side, 0, ly < -seat + 1.5 ? -1 : 0.3) * (ly < -seat + 1.5 ? 1.15 : 0.8), X, Y, 0.1, 1));
@@ -990,13 +1038,27 @@ export const artScreen = definePainter<{ w: number; h: number; leaves: number; a
       const l = lf.get(lx, ly);
       const k = ((lx % lw) + lw) % lw;
       if (k < 1.5 || k > lw - 1.5) return mt(M.lacq, face(l.k, side) * 0.45, X, Y, 0.2, 1);
-      // (round 2) the art hangs high now: each leaf's lower part is a cracked-ice lattice panel under a gold rail
+      // (round 2) the art hangs high now: each leaf's lower part is a wainscot under a gold rail
+      // (round 3, W2-3b: it was a cracked-ice panel that read as rubble behind the timber rail) a raised and fielded
+      // timber panel in each leaf: a frame of rails and stiles, the field's bevels lit on the top and the lamp's side
+      // and dark on the others, the field itself dark lacquered timber with its grain
       const dado = -skirt - Math.min(0.85 * H, Ht * 0.32);
       if (ly > dado) {
         if (ly < dado + 2) return mt(M.gold, face(l.k, side, 0, ly < dado + 1 ? -0.8 : 0.4) * 0.75, X, Y, 0.2, 1);
-        const ice = iceEdge(lx, ly, 13, 107);
-        if (ice < 1.1) return mt(M.wood, face(l.k, side) * 0.55, X, Y, 0.3, 1);
-        return mt(M.lacq, face(l.k, side) * 0.22, X, Y, 0.3, 1);
+        const fr = 4, bev = 2.5;
+        const ex = Math.min(k - 1.5 - fr, lw - 1.5 - fr - k), ey = Math.min(ly - dado - 2 - fr, -skirt - fr - ly);
+        const g = grain(lx, ly, 109 + Math.floor(lx / lw), false) * 0.1;
+        if (ex < 0 || ey < 0) {
+          // the frame round the panel, a dark arris where it meets the field
+          if (ex > -1.2 && ey > -1.2) return mt(M.lacq, face(l.k, side) * 0.2, X, Y, 0.3, 1);
+          return mt(M.wood, face(l.k, side) * 0.5 + g, X, Y, 0.4, 1);
+        }
+        if (ex < bev || ey < bev) {
+          const top = ey < bev && ey <= ex, lft = ex < bev && ex < ey && k - 1.5 - fr < lw / 2;
+          const litSide = top || (lft ? side < 0 : side > 0);
+          return mt(M.wood, face(l.k, side, 0, top ? -0.8 : 0.6) * (litSide ? 0.82 : 0.36) + g, X, Y, 0.3, 1);
+        }
+        return mt(M.wood, face(l.k, side) * 0.42 + g * 1.4, X, Y, 0.45, 1);
       }
       const e = Math.min(k - 1.5, lw - 1.5 - k, ly + Ht - 7, dado - ly);
       if (Math.abs(e - 4) < 0.6) return mt(M.gold, face(l.k, side) * 0.55, X, Y, 0.3, 1);
@@ -1038,10 +1100,14 @@ export interface NearFootP {
   w: number;
   top: number;
   seed: number;
+  /** (round 3) The light on its rim: the room's lamps (warm, the default) or the gate's day (cool). */
+  rim?: "warm" | "cool";
 }
 
 /** The near foot's dark: warm near-black, a rim of lamplight on top edges. */
 const NEAR_DARK: Ramp = [P.timber[3]!, P.umber[1]!, P.umber[2]!, P.umber[3]!, P.umber[4]!, P.umber[5]!, P.ink[0]!];
+/** The same with the gate's cool day on its rim (round 3). */
+const NEAR_COOL: Ramp = [P.tile[1]!, P.tile[3]!, P.dusk[2]!, P.umber[3]!, P.umber[4]!, P.umber[5]!, P.ink[0]!];
 
 export const nearFoot = definePainter<NearFootP>("hall.nearfoot", {
   bounds(p) {
@@ -1052,7 +1118,10 @@ export const nearFoot = definePainter<NearFootP>("hall.nearfoot", {
     const T = -p.top;
     // the body sinks below the frame: everything runs on down to 0.9 H under the anchor
     const B = 0.9 * H;
-    const dark = (X: number, Y: number, t: number): number => tn(NEAR_DARK, clamp(t, 0, 1), X, Y, 0.5);
+    // (round 3, W2-6: they read as faint outlines) the near plane holds the darkest darks: the bodies pushed down into
+    // the near-black, the rim along their tops kept bright, in the gate's cool day where it faces the gate (p.rim)
+    const RAMP = p.rim === "cool" ? NEAR_COOL : NEAR_DARK;
+    const dark = (X: number, Y: number, t: number): number => tn(RAMP, clamp(t < 0.35 ? t : 0.35 + (t - 0.35) * 1.35, 0, 1), X, Y, 0.5);
     if (p.kind === "bench") {
       const W = p.w / 2;
       // a long bench seen from behind: its yoke rail sweeping up at both ends (rim-lit), a carved splat at
