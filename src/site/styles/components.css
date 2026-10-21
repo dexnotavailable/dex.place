@@ -279,35 +279,3 @@ html:not(.js) [data-copy] { display: none; }
 .kv__mono { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
 
 .fine { color: var(--muted); font-size: var(--fs-14); }
-
-/* the press seal (site loop v3 round 5, motion/seal.ts; here, not in choreo.css, whose rules never hide anything): where a key, card or link is pressed on the home page, a little
-   pixel hanko in the section's tone thumps down and fades out over 1.5 s (opacity and scale only, on its own layer; it
-   exists only between a press and its fade, so scrolling and resting never pay for it) */
-.seal {
-  position: fixed;
-  z-index: 90;
-  width: 34px;
-  height: 34px;
-  margin: -17px 0 0 -17px;
-  border: 3px solid var(--seal, var(--scarlet));
-  box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 6px var(--seal, var(--scarlet));
-  background:
-    linear-gradient(var(--seal, var(--scarlet)) 0 0) 7px 7px / 6px 6px no-repeat,
-    linear-gradient(var(--seal, var(--scarlet)) 0 0) 15px 7px / 6px 6px no-repeat,
-    linear-gradient(var(--seal, var(--scarlet)) 0 0) 7px 15px / 6px 6px no-repeat,
-    linear-gradient(var(--seal, var(--scarlet)) 0 0) 15px 15px / 6px 6px no-repeat,
-    color-mix(in srgb, var(--seal, var(--scarlet)) 14%, #fff);
-  rotate: var(--seal-r, -6deg);
-  pointer-events: none;
-  animation: seal-press 1.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
-}
-@keyframes seal-press {
-  0% { opacity: 0; scale: 1.8; }
-  9% { opacity: 1; scale: 0.9; }
-  16% { opacity: 1; scale: 1; }
-  55% { opacity: 0.9; scale: 1; }
-  100% { opacity: 0; scale: 1.04; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .seal { display: none; }
-}
