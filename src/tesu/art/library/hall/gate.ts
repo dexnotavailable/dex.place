@@ -25,7 +25,7 @@ import { P } from "../../palette.ts";
 import { IdxBuf, bayer4 } from "../../raster.ts";
 import { M, LitField, clamp, face, fbm, grain, hash, mt, poly, rect, tn, vnoise, type Ramp } from "./kit.ts";
 import { lut } from "./tint.ts";
-import { iceDist, iceRay, sillRail } from "./bay.ts";
+import { iceBar, iceRay, sillRail } from "./bay.ts";
 
 const H = 96;
 
@@ -185,7 +185,8 @@ export function bayWall(c: PaintCtx, g: GateGeo): void {
     // a pale tide line where each stopped
     const si = st.findIndex((sx) => sx > lx);
     const band = ly < SR1 ? 0 : ly < RAIL_MID ? 1 : 2;
-    const ptone = (hash(si, band, 281) - 0.5) * 0.26;
+    // (round 4, W2-d: the panels take the gate's day from below: each band a step lighter than the one over it)
+    const ptone = (hash(si, band, 281) - 0.5) * 0.2 + (band === 2 ? 0.1 : band === 1 ? 0.05 : 0);
     let damp = 0;
     for (const [x0, , x1, y1] of cls) {
       if (lx < x0 + 3 || lx > x1 - 3 || ly < SR1) continue;
@@ -694,30 +695,56 @@ export function gateHead(c: PaintCtx, g: GateGeo, lf: LitField, lfg: LitField): 
     const l = lf.get(lx, ly);
     // the eave: round end tiles with a boss, drip tiles hanging between them
     if (y > eave - 3.5 && y < eave + 3.5) {
-      const q = ((((lx + 604) % 8) + 8) % 8) - 4;
+      const q = ((((lx + 605) % 11) + 11) % 11) - 6.75;
       const dc = Math.hypot(q, y - eave);
-      if (dc < 3.2) {
+      if (dc < 3.4) {
         if (dc < 1.1) return P.tile[0]!;
         const lit = -(q * 0.6 + (y - eave) * 0.8);
-        return dc > 2.4 && lit < 0 ? P.tile[4]! : lit > 0.8 ? P.tile[1]! : P.tile[2]!;
+        return dc > 2.5 && lit < 0 ? P.tile[4]! : lit > 0.8 ? P.tile[1]! : P.tile[2]!;
       }
-      if (Math.abs(q) > 3 && y > eave && y < eave + 3.5 - Math.abs(Math.abs(q) - 4) * 1.5) return P.tile[3]!;
+      if (Math.abs(q) > 4 && y > eave && y < eave + 3.5 - Math.abs(Math.abs(q) - 5.5) * 1.4) return P.tile[3]!;
       if (y > eave) return 0;
       return P.tile[5]!;
     }
     if (y >= eave + 3.5) return 0;
-    // the ridge: a dark beam along the top with a lit top edge, its ends curling up
-    if (y < ridge && y > ridge - 6 && t < 0.97) return y < ridge - 4.8 ? mt(M.tile, face(l.k, -0.5, 0, -1) * 0.95, X, Y, 0, 1, 0) : mt(M.tile, face(l.k, 0) * 0.42, X, Y, 0.3, 1, 0);
+    // (round 4, W2-h: uniform vertical tile lines with a thin dark ridge read as a corrugated sheet) the ridge: a built
+    // ridge ten px high, a lit roll along its top, a band of lotus-petal relief, a dark course under it throwing its
+    // shade on the top tiles; its ends curl up (below)
+    if (y < ridge && y > ridge - 10 && t < 0.97) {
+      const rv = ridge - y; // 0 at its foot .. 10 at its top
+      if (rv > 8) return mt(M.tile, face(l.k, -0.5, 0, -1) * 1.0, X, Y, 0, 1, 0);
+      if (rv > 7) return mt(M.tile, face(l.k, 0) * 0.4, X, Y, 0.3, 1, 0);
+      if (rv < 1.5) return pick(P.tile, 5);
+      const pq = ((((lx + 602) % 6) + 6) % 6) - 3;
+      const petal = Math.hypot(pq * 0.9, rv - 3) < 2.4;
+      return petal ? mt(M.tile, face(l.k, -0.5, pq / 4, -0.3) * 0.8, X, Y, 0.1, 1, 0) : pick(P.tile, 4);
+    }
     if (y < ridge) return 0;
-    // the barrel tiles: columns lit on their upper left, the channels between them dark
-    const q = ((((lx + 604) % 8) + 8) % 8);
+    // the barrel tiles: each column of round tiles laid in short lengths, every length's lower lip catching the light
+    // and the joint under it dark, the lengths staggered column to column; the pan tiles in the channels between
+    // darker; a few tiles darker with age or lichen, one broken; the courses under the ridge in its shade
+    // (wider tiles, 11 px, in the slate's dark middle values: only a tile's lit left shoulder and the lower lip of
+    // each length catch the room's light, so the slope reads as a dark tiled mass, not a pale fence of stripes)
+    const TP = 11;
+    const col = Math.floor((lx + 605) / TP);
+    const q = ((((lx + 605) % TP) + TP) % TP);
     const v = (y - ridge) / Math.max(1, eave - ridge);
-    const course = (((y - ridge + 1) % 5) + 5) % 5 < 0.9;
-    const under = v < 0.22 ? 1 : 0; // the ridge's shade over the top courses
-    if (q < 1 || q >= 7) return pick(P.tile, 4 + under);
-    const step = q < 3 ? 1 : q < 5.5 ? 2 : 3;
-    void l;
-    return pick(P.tile, step + under + (course ? 1 : 0));
+    const seg = 7 + Math.floor(hash(col, 1, 4721) * 3);
+    const sy = (((y - ridge + hash(col, 2, 4721) * seg) % seg) + seg) % seg;
+    const lip = sy > seg - 1.4, joint = sy < 1;
+    const under = v < 0.2 ? 1 : 0; // the ridge's shade over the top courses
+    const age = hash(col, Math.floor((y - ridge + hash(col, 2, 4721) * seg) / seg), 4723);
+    const old = age > 0.86 ? 1 : 0;
+    if (q < 2.5) return pick(P.tile, 5); // the pan tiles in the channel
+    if (age > 0.985) return pick(P.tile, 5); // a broken one
+    if (joint) return pick(P.tile, 4 + under);
+    // (round 4, director: every column lit the same at full size, still a regular comb of stripes) the slope falls off
+    // from the eave, which the room's light reaches, into the ridge's dark: over its upper half the tiles a step down
+    // and no shoulder lit; below it only some columns' shoulders catch, so the light breaks along the eave in runs
+    const upper = v < 0.45 ? 1 : 0;
+    const catchL = !upper && hash(col, 7, 4725) < 0.62;
+    const shoulder = q < 4 ? (catchL ? 2 : 3) : q < 8.5 ? 3 + upper : 4;
+    return pick(P.tile, shoulder + under + old - (lip && q < 9 && !upper ? 1 : 0));
   });
   // the ridge's curled ends and the pearl
   for (const sx of [-1, 1]) {
@@ -731,7 +758,7 @@ export function gateHead(c: PaintCtx, g: GateGeo, lf: LitField, lfg: LitField): 
       return mt(M.tile, face(l.k, -0.5, 0, v > 7 ? -1 : 0) * (v > 7 ? 0.9 : 0.5), X, Y, 0, 1, 0);
     });
   }
-  const pr = ridgeAt(0) - 6;
+  const pr = ridgeAt(0) - 10;
   rect(c, -7, pr - 12, 7, pr + 1, (X, Y, lx, ly) => {
     const d = Math.hypot(lx, ly - (pr - 5));
     const flame = Math.abs(lx) < 2.5 - (pr - 5 - ly) * 0.25 && ly < pr - 8 && ly > pr - 12;
@@ -777,9 +804,10 @@ export function clerestories(c: PaintCtx, g: GateGeo, lf: LitField): void {
     const FR = 4, REV = 3;
     const ix0 = x0 + FR + REV, ix1 = x1 - FR - REV, iy0 = y0 + FR + REV + 1, iy1 = y1 - FR - REV;
     const seed = 4601 + (x0 < 0 ? 0 : 7);
-    // (each window in four panes: a mullion and a transom, each pane its own lattice, so no bar runs the whole window)
-    const pw = (ix1 - ix0) / 2, ph = (iy1 - iy0) / 2;
-    const panes = [0, 1, 2, 3].map((k) => iceRay(pw - 2, ph - 2, seed + k * 13, 190));
+    // (round 4, W2-a: one lattice per window inside a plain border; the round-3 four panes crossed at an X and their
+    // thin dark bars on a bright sky read as shattered glass) bars of one even width, T joints only (bay.ts)
+    const BD = 3;
+    const segs = iceRay(ix1 - ix0 - 2 * BD, iy1 - iy0 - 2 * BD, seed, 300);
     rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
       const ex = Math.min(lx - x0, x1 - lx), ey = Math.min(ly - y0, y1 - ly);
@@ -791,28 +819,30 @@ export function clerestories(c: PaintCtx, g: GateGeo, lf: LitField): void {
         return mt(M.wood, face(l.k, -0.6, bev ? nx : 0, bev ? ny : 0) * (bev ? 0.85 : 0.55), X, Y, 0.35, 1, 0);
       }
       // the reveal: its soffit darkest, its sides a step lighter, the sill's top lit by the day coming through
-      if (ly >= iy1) return ly < iy1 + 1 ? P.stone[1]! : ly < iy1 + 2 ? P.stone[3]! : P.dusk[2]!;
+      if (ly >= iy1) return ly < iy1 + 1 ? P.stone[3]! : ly < iy1 + 2 ? P.stone[4]! : P.dusk[2]!;
       if (ly < iy0) return ly < iy0 - 2 ? P.dusk[4]! : P.dusk[3]!;
       if (lx < ix0 || lx >= ix1) return lx < ix0 ? (lx < ix0 - 1.5 ? P.dusk[3]! : P.dusk[2]!) : P.dusk[3]!;
       const gx = lx - ix0, gy = ly - iy0;
-      // the mullion and the transom: heavier bars, their tops and left faces lit warm by the room
-      const mx = Math.abs(gx - pw), my = Math.abs(gy - ph);
-      if (mx < 1.6 || my < 1.6) return (my < 1.6 && gy < ph - 0.5) || (mx < 1.6 && gx < pw - 0.6) ? P.umber[1]! : P.umber[3]!;
-      const pk = (gx > pw ? 1 : 0) + (gy > ph ? 2 : 0);
-      const px = gx - (gx > pw ? pw + 1 : 1), py = gy - (gy > ph ? ph + 1 : 1);
-      const [dd, flat] = iceDist(panes[pk]!, px, py);
-      const edge = Math.min(gx, gy, ix1 - ix0 - gx, iy1 - iy0 - gy);
-      // the bars (and the lattice's own border), dark timber against the light; the top of a level bar lit warm
-      if (dd < 0.9 || edge < 1.6) return P.umber[4]!;
-      if (flat && dd < 1.9 && iceDist(panes[pk]!, px, py + 1.4)[0] < 0.9) return P.umber[1]!;
-      // beyond: the court's sky a step under the gate's, deeper at the top, a far range in the haze low across it
+      // the lattice's plain border: a flat timber band, its inner top edge and left edge catching the room's lamps
+      const eb = Math.min(gx, gy, ix1 - ix0 - gx, iy1 - iy0 - gy);
+      if (eb < BD) {
+        const inner = eb > BD - 1;
+        const lit = inner && (gy > iy1 - iy0 - BD || gx > ix1 - ix0 - BD);
+        const dark = inner && !lit;
+        return lit ? P.umber[1]! : dark ? P.umber[5]! : P.umber[3]!;
+      }
+      // the bars: dark timber against the light, the top edge of each warm from the room, the lower edge darkest
+      const bar = iceBar(segs, gx - BD, gy - BD, 1.5);
+      if (bar) return bar === 1 ? P.umber[1]! : bar === 2 ? P.umber[3]! : P.umber[5]!;
       const fu = gx / (ix1 - ix0), fv = gy / (iy1 - iy0);
+      // beyond: the court's sky two steps under the gate's (round 4, W2-a: at L 98 the clerestories were the brightest
+      // shapes over the gate; the gate is the bay's one bright opening), deeper at the top, a far range in the haze low
       const kars = fv > 0.7 + 0.13 * Math.abs(Math.sin(fu * 4.6 + seed)) + 0.05 * Math.sin(fu * 15 + seed);
-      if (kars) return fv > 0.92 ? P.range[5]! : P.range[4]!;
+      if (kars) return fv > 0.92 ? P.tile[3]! : P.tile[2]!;
       const t = fv + (bayer4(X, Y) - 0.5) * 0.08;
       const cl = Math.hypot((fu - (x0 < 0 ? 0.32 : 0.68)) * 1.5, (fv - 0.5) * 2.6);
-      if (cl < 0.36) return cl < 0.24 && fv < 0.52 ? P.range[1]! : P.range[2]!;
-      return t < 0.22 ? P.blue[2]! : t < 0.44 ? P.range[5]! : t < 0.66 ? P.range[4]! : P.range[3]!;
+      if (cl < 0.36) return cl < 0.24 && fv < 0.52 ? P.range[5]! : P.range[6]!;
+      return t < 0.3 ? P.blue[3]! : t < 0.55 ? P.tile[2]! : P.range[6]!;
     });
     // the sill board on the sill rail: its top lit by the day from the window, its front in the room's dusk, a
     // short shadow under it

@@ -120,7 +120,8 @@ export interface CrowdP {
 // their forearms, an arm up, a kerchief or a fan waved, a pennant, a parasol, a wide straw hat, a child
 // on a parent's shoulders, a vendor with a tray on a strap; packed in knots that overlap, with a gap or
 // two along each row; the far rows stepped back into the air (two haze steps for the top row).
-type Kind = "robe" | "straw" | "bun" | "cap" | "parasol" | "kid" | "seated" | "fist" | "pennant" | "fan" | "elder" | "lean" | "vendor" | "wave";
+// (round 4, W1-h) "banner": a long swallowtail banner held up on a pole over the heads
+type Kind = "robe" | "straw" | "bun" | "cap" | "parasol" | "kid" | "seated" | "fist" | "pennant" | "fan" | "elder" | "lean" | "vendor" | "wave" | "banner";
 const KINDS: Kind[] = ["robe", "straw", "bun", "lean", "cap", "seated", "fist", "robe", "kid", "bun", "fan", "lean", "straw", "parasol", "robe", "wave", "elder", "seated", "pennant", "cap", "lean", "bun"];
 const ROBE_SET: Ramp[] = [P.blue, P.earth, P.jade, M.verm, P.mauve, P.timber, P.blue, P.earth, P.tile, P.moss, P.violet, P.red, P.timber, P.paper];
 const HAIR: Ramp = [P.ink[1]!, P.ink[0]!, P.umber[5]!];
@@ -257,6 +258,22 @@ function person(c: PaintCtx, g: Fig, shadow: number | null): void {
     blob(c, kx, ky - 7.6, 2.0, 2.2, (X, Y, u, v) => (S !== null ? S : v < -0.3 ? tn(HAIR, 0.3, X, Y, 0) : tn(P.skin, u < 0 ? 0.15 : 0.45, X, Y, 0)));
     for (const s of [-1, 1]) rect(c, kx + s * 2.6 - 0.5, ky, kx + s * 2.6 + 1, ky + 4, (X, Y) => (S !== null ? S : tn(seed > 0.5 ? P.gold : M.verm, 0.5, X, Y, 0)));
     if (cheer) arm(kx - 2, ky - 4, kx - 4, ky - 11);
+  } else if (kind === "banner") {
+    // (round 4, W1-h) a long swallowtail banner on a pole held up over the heads, its cloth lifting in the wind
+    const px = x + 2, top = sh - 27 - (cheer ? 3 : 0);
+    rect(c, px - 0.5, top - 1, px + 0.5, sh + 4, () => (S !== null ? S : P.umber[3]!));
+    rect(c, px - 1, top - 1, px + 10, top, () => (S !== null ? S : P.gold[2]!));
+    const flap = f % 2 === 0 ? 1 : -1;
+    rect(c, px - 2, top, px + 12, top + 17, (X, Y, lx, ly) => {
+      const t = (ly - top) / 16;
+      const u = (lx - px - Math.sin(t * 3 + f) * 1.3 * t * flap) / 9;
+      if (u < 0.05 || u > 1 || t > 1) return 0;
+      if (t > 0.84 && Math.abs(u - 0.52) < (t - 0.84) * 3.2) return 0;
+      if (S !== null) return S;
+      if (u < 0.17 || u > 0.88) return tn(P.gold, 0.3, X, Y, 0);
+      return tn(seed > 0.5 ? M.verm : P.blue, u < 0.5 ? 0.22 : 0.42, X, Y, 0.2);
+    });
+    arm(x - shw + 1, sh + 1, px - 1, sh - 7);
   } else if (vendor) {
     // a tray on a strap: a plank at the chest with buns and cups on it
     const ty = sh + 5;
@@ -275,24 +292,35 @@ export const crowd = definePainter<CrowdP>("court.crowd", {
     const rows = p.rows ?? 3;
     const f = p.frame ?? 0;
     const hw = p.w / 2;
-    const haze = lut("haze", 1), haze2 = lut("haze", 2);
+    const haze = lut("haze", 1), haze2 = lut("haze", 2), shade = lut("day", 1);
     for (let r = rows - 1; r >= 0; r--) {
       const top = -r * 34 - 20, inset = r * 26;
       const x0 = -hw + inset + 12, x1 = hw - inset - 12;
       // knots of 2-7 people, overlapping, with a gap or two along the row; vendors work the row's ends
+      // (round 4, W1-h: "three strict, evenly spaced rows") a dense knot behind the ring's middle (the stands' centre
+      // is the ring's), thinning toward the ends into small groups with wide gaps; some stand up out of the row (the
+      // wavers, the fists, the banners), the rest sit a pixel or two higher or lower, so no row of heads is a ruled
+      // line; a held banner or two over each row's middle knot
       const figs: Fig[] = [];
       let x = x0 + hash(r, 1, c.seed) * 8;
-      let i = 0;
+      let i = 0, banners = 0;
       while (x < x1) {
-        const k = 2 + Math.floor(hash(i, r + 7, c.seed) * 6);
+        const d = Math.min(1, Math.abs(x) / (hw * 0.82));
+        const k = Math.max(1, Math.round((2 + hash(i, r + 7, c.seed) * 6) * (1.15 - d * 0.75)));
         for (let j = 0; j < k && x < x1; j++, i++) {
           const s = hash(i, r * 13 + 3, c.seed);
           let kind = KINDS[Math.floor(hash(i, r * 13 + 5, c.seed) * KINDS.length)]!;
           if ((x < x0 + 30 || x > x1 - 30) && hash(i, r, 41) < 0.4) kind = "vendor";
-          figs.push({ x, foot: top - 1, kind, robe: ROBE_SET[Math.floor(hash(i, r * 13 + 9, c.seed) * ROBE_SET.length)]!, seed: s, f, rail: top - 8 });
-          x += 6 + hash(i, r * 13 + 11, c.seed) * 4 + (kind === "parasol" ? 6 : kind === "straw" || kind === "vendor" ? 3 : 0);
+          const dx = Math.min(1, Math.abs(x) / (hw * 0.82));
+          if (dx < 0.45 && banners < (r === 0 ? 2 : 1) && hash(i, r * 13 + 23, c.seed) < 0.16 && kind !== "vendor") { kind = "banner"; banners++; }
+          else if (dx < 0.4 && kind === "robe" && hash(i, r * 13 + 25, c.seed) < 0.5) kind = "wave";
+          const stand = kind === "wave" || kind === "fist" || kind === "banner" || kind === "pennant" ? -3 : 0;
+          const jit = Math.round((hash(i, r * 13 + 27, c.seed) - 0.5) * 3);
+          figs.push({ x, foot: top - 1 + stand + jit, kind, robe: ROBE_SET[Math.floor(hash(i, r * 13 + 9, c.seed) * ROBE_SET.length)]!, seed: s, f, rail: top - 8 });
+          x += (5 + hash(i, r * 13 + 11, c.seed) * 3) * (1 + dx * 0.5) + (kind === "parasol" ? 6 : kind === "straw" || kind === "vendor" ? 3 : 0);
         }
-        x += hash(i, r + 17, c.seed) < 0.3 ? 26 + hash(i, r + 19, c.seed) * 30 : 4 + hash(i, r + 21, c.seed) * 8;
+        const gapP = 0.12 + d * 0.6;
+        x += hash(i, r + 17, c.seed) < gapP ? (22 + hash(i, r + 19, c.seed) * 34) * (0.6 + d) : 3 + hash(i, r + 21, c.seed) * 6;
       }
       // the shadows first, on the riser of the row behind (above this row's rail), then the people:
       // every other one first, so the knots overlap front and back instead of in a stack
@@ -303,7 +331,9 @@ export const crowd = definePainter<CrowdP>("court.crowd", {
       figs.forEach((g, j) => { if (j % 2 === 0) person(c, g, null); });
       // the rows further back sit in more air: lighter, cooler, flatter
       // (round 3, W2-10) every row a step back in the air from the near court, the back rows further
-      tint(c, -hw, top - 60, hw, top, (_X, _Y, _lx, ly) => (ly < top - 1 ? (r > 0 ? haze2 : haze) : null));
+      // (round 4, W2-i) the front row, nearest the ring, a step into the day's shade instead (its people behind the
+      // ring's rope read against the ring, not as the brightest band)
+      tint(c, -hw, top - 60, hw, top, (_X, _Y, _lx, ly) => (ly < top - 1 ? (r > 1 ? haze2 : r > 0 ? haze : shade) : null));
     }
   },
 });

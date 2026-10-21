@@ -492,7 +492,9 @@ export const stair = definePainter<StairP>("hall.stair", {
         if (t >= 0 && t < STR) {
           // the stringer: the red lip under the steps, a gold bead, the lacquered face, a darker chamfer
           if (t < 1.2) return mt(M.lacq, V(l, 0.15), X, Y, 0.1, 1);
-          if (t < 4.5) return mt(M.verm, V(l, t < 2.4 ? 0.62 : 0.5, 0, t < 2.4 ? -0.6 : 0), X, Y, 0.15, 1);
+          // (round 4, W2-k: with the rail, a second bright red line corner to corner) the flights' lip a deep oxblood
+          // lacquer, its top arris the only lit line; the landing keeps its bright red lip
+          if (t < 4.5) return mt(M.verm, V(l, t < 2.4 ? 0.5 : 0.32, 0, t < 2.4 ? -0.6 : 0), X, Y, 0.45, 1);
           if (Math.abs(t - 7) < 0.7) {
             const worn = fbm(lx * 0.05, fi * 3.1, 77, 2) > 0.66;
             return worn ? mt(M.lacq, V(l, 0.5), X, Y, 0.0, 1) : mt(M.gold, V(l, 0.66, 0, -0.3), X, Y, 0.15, 1);
@@ -606,6 +608,11 @@ function paintRail(c: PaintCtx, lf: LitField, g: StairGeo, newels: number[]): vo
     return (land ? land[2] : g.walk(x)) - RAIL;
   };
   const onNewel = (x: number): boolean => newels.some((n) => Math.abs(x - n) < POST + 0.5);
+  // (round 4, W2-k: one red line ~1000 px long, corner to corner, the strongest line in two frames) the rail and its
+  // balusters down the flights are dark oiled timber, a lit top on the rail; only the newels and the landing's rail
+  // and balusters keep the red lacquer
+  const onLanding = (x: number): boolean => g.landings.some(([a, b]) => x >= a && x <= b);
+  const railRamp = (x: number): Ramp => (onLanding(x) ? M.verm : M.wood);
   // balusters: one on every tread, one every 16 px along a landing
   const posts: number[] = [];
   for (const f of g.flights) for (let k = 1; k < f.n; k++) posts.push(f.x0 + f.run * k);
@@ -616,7 +623,7 @@ function paintRail(c: PaintCtx, lf: LitField, g: StairGeo, newels: number[]): vo
     lathe(c, bx, yTop, yBot, (ly) => {
       const t = (ly - yTop) / Math.max(1, yBot - yTop);
       return 1.5 + (Math.abs(t - 0.62) < 0.08 ? 1.2 : 0) + (t > 0.9 ? 0.8 : 0);
-    }, (X, Y, u, lx, ly) => mt(M.verm, cyl(0.35 + lf.get(lx, ly).k * 0.8, u, clamp(lf.get(lx, ly).dx * 1.6, -1, 1)) * 0.8, X, Y, 0.2, 1));
+    }, (X, Y, u, lx, ly) => mt(railRamp(bx), cyl(0.35 + lf.get(lx, ly).k * 0.8, u, clamp(lf.get(lx, ly).dx * 1.6, -1, 1)) * (onLanding(bx) ? 0.8 : 0.62), X, Y, onLanding(bx) ? 0.2 : 0.4, 1));
   }
   // the rail itself: a rounded red lacquer bar, a lit top, its underside dark
   rect(c, x0, Math.min(railY(x0), railY(x1)) - 2, x1, Math.max(railY(x0), railY(x1)) + 8, (X, Y, lx, ly) => {
@@ -624,8 +631,13 @@ function paintRail(c: PaintCtx, lf: LitField, g: StairGeo, newels: number[]): vo
     const v = ly - ry;
     if (v < 0 || v >= 6.5 || onNewel(lx)) return 0;
     const l: Lit = lf.get(lx, ly);
-    if (v < 1.3) return mt(M.verm, V(l, 0.85, 0, -0.9), X, Y, 0.0, 1);
-    if (v > 5) return mt(M.verm, V(l, 0.3, 0, 0.9), X, Y, 0.2, 1);
-    return mt(M.verm, V(l, 0.6), X, Y, 0.1, 1);
+    if (onLanding(lx)) {
+      if (v < 1.3) return mt(M.verm, V(l, 0.85, 0, -0.9), X, Y, 0.0, 1);
+      if (v > 5) return mt(M.verm, V(l, 0.3, 0, 0.9), X, Y, 0.2, 1);
+      return mt(M.verm, V(l, 0.6), X, Y, 0.1, 1);
+    }
+    if (v < 1.3) return mt(M.wood, V(l, 0.7, 0, -0.9), X, Y, 0.3, 1);
+    if (v > 5) return mt(M.wood, V(l, 0.25, 0, 0.9), X, Y, 0.5, 1);
+    return mt(M.wood, V(l, 0.42) + grain(lx, ly, 641, false) * 0.06, X, Y, 0.45, 1);
   });
 }

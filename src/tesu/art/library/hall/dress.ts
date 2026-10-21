@@ -84,7 +84,8 @@ export function dressHall(b: WorldBuilder): void {
   b.piece("mid", "hall.deep", dx0, FY, { w: (dx1 - dx0) * r2, u: H * r2, top: h(30) * r2, below: h(4) * r2 }, { z: 0, reflect: false });
 
   // --- the gallery's posts: in the clear wall between services, two of them framing the middle bay
-  const postsO = [3.55, 7.0, 11.95, 23.6];
+  // (round 4, W1-b) the post between the notice wall and the sponsors' board 0.2 H west (was 7.0), with them
+  const postsO = [3.55, 6.8, 11.95, 23.6];
   const bayL = X(11.95), bayR = X(23.6);
 
   // --- the walkway's edge and the stone floor nearer us: gold caps under the posts (never a ruled
@@ -152,12 +153,21 @@ export function dressHall(b: WorldBuilder): void {
   // (round 3, W1-3) the chest stands 0.18 H east of the usable's west end (10.68-11.52 H; its prompt shows over its
   // west half), so she uses it from the west with a clear gap between her and the pavilion's west post (from the east
   // she merged with the chest's end, the pavilion's post and the bay's column base)
-  const boxX0 = ob.x0 + h(0.18), boxW = Math.round(0.84 * H);
-  b.piece("play", "hall.donation", boxX0, FY, { w: boxW, h: Math.round(0.53 * H), main: true, at: at(boxX0, FY) }, { z: 6 });
+  // (round 4, W1-b: 95 x 45 px, the one under-scaled service, and its pavilion's east post tangent to the bay column's
+  // base) a chest 1.15 H wide and 0.64 H to its lid (her waist), its plinth 10.15-11.44 H: west of it a clear gap to
+  // where she stands (9.8 H), east of it ~0.2 H of floor before the column's base (11.64 H); the pavilion's posts stand
+  // behind the chest now, inside its ends, so its widest line is the chest itself
+  const boxW = Math.round(1.15 * H), boxX0 = ob.x0 - h(0.03);
+  b.piece("play", "hall.donation", boxX0, FY, { w: boxW, h: Math.round(0.64 * H), main: true, at: at(boxX0, FY) }, { z: 6 });
   const hk = sv("hanko-desk");
   const hanko = b.def.sprites.find((s) => s.id === "hanko");
   const deskTop = hanko ? FY - hanko.y + 4 : Math.round(0.57 * H);
-  b.piece("play", "hall.desk", hk.x0, FY, { w: hk.x1 - hk.x0, top: deskTop, who: (hanko?.x ?? (hk.x0 + hk.x1) / 2) - hk.x0, at: at(hk.x0, FY) }, { z: 5 });
+  b.piece("play", "hall.desk", hk.x0, FY, { w: hk.x1 - hk.x0, top: deskTop, who: (hanko?.x ?? (hk.x0 + hk.x1) / 2) - hk.x0, board: true, at: at(hk.x0, FY) }, { z: 5 });
+  // (round 4, W1-a) the register's signboard over the counter, on cords from the gallery's soffit, centred on her spot
+  {
+    const sw = Math.round(1.75 * H), sx = Math.round((hanko?.x ?? (hk.x0 + hk.x1) / 2) - sw / 2);
+    b.piece("play", "hall.signboard", sx, FY, { w: sw, h: Math.round(0.68 * H), bottom: Math.round(2.45 * H), hang: FY - soffit, text: "登記", at: at(sx, FY) }, { z: 5 });
+  }
   const mp = sv("map-pillar");
   b.piece("play", "hall.map", mp.x0, FY, { w: mp.x1 - mp.x0, at: at(mp.x0, FY) }, { z: 5 });
   // the reading nook: the docs shelf (no taller than 2 H), the standing lamp, the bench and the table
@@ -205,14 +215,28 @@ export function dressHall(b: WorldBuilder): void {
   // never on a stair's foot or a spawn; nothing here is usable or collides. (The loft's archivist is upper.ts's.)
   {
     const land = st.pts[2]!, landY = st.pts[3]!;
-    const extras: [number, number, ExtraP["pose"], 1 | -1, number, number][] = [
-      // x, y (world), pose, facing, seed, z
+    // (round 4, W1-c: "four extras in a 34 H guildhall") six more in small groups, each off every F zone (a usable's
+    // prompt shows within 0.45 H of it), the walk line between them clear: a queue of two at the register's east end
+    // (one leaning on the counter, one waiting with a parcel; west of the counter is her own spot), a second patron at
+    // the gallery's rail by the hero, a child pointing up at the map from the gate's side, a porter bringing a crate to
+    // the store under the stair's foot (between the map and the docs shelf he stood at her elbow in the docs frame: she
+    // stands there to use the shelf), a clerk asleep on a stool at the Crane Desk's east end, his head on his arms
+    // (robes: 0 jade, 1 blue, 2 vermilion, 3 earth, 4 mauve, 5 timber; the queue stands in the skylight's foot, so it
+    // takes the light at 0.6 and stays two figures against the gate's day, not two more lamps beside it)
+    const extras: [number, number, ExtraP["pose"], 1 | -1, number, number, { k?: number; robe?: number; dim?: number }?][] = [
+      // x, y (world), pose, facing, seed, z, size / dye / light
       [X(14.3), GY, "look", -1, 3, 3.5],
+      [X(14.62), GY, "lean", -1, 40, 3.5, { robe: 2 }],
       [X(9.2), GY, "read", -1, 8, 3.5],
       [land + h(1.25), landY, "scrolls", -1, 5, 2.5],
-      [X(6.47), FY, "read", -1, 13, 4.5],
+      [X(6.25), FY, "read", -1, 13, 4.5],
+      [X(15.33), FY, "lean", -1, 21, 5.5, { robe: 1, dim: 0.6 }],
+      [X(15.76), FY, "bundle", -1, 34, 5.5, { robe: 4, dim: 0.6 }],
+      [X(20.45), FY, "point", 1, 61, 4.5, { k: 0.68, robe: 2 }],
+      [X(32.72), FY, "crate", -1, 52, 4.5, { robe: 5 }],
+      [X(31.3), FY, "doze", -1, 77, 5.5, { robe: 1 }],
     ];
-    for (const [x, y, pose, facing, seed, z] of extras) b.piece("play", "hall.extra", x, y, { pose, facing, s: H, seed, at: at(x, y) }, { z });
+    for (const [x, y, pose, facing, seed, z, o] of extras) b.piece("play", "hall.extra", x, y, { pose, facing, s: H, seed, ...o, at: at(x, y) }, { z });
   }
 
   // --- the near front (P5): great near columns only beyond the hall's ends (inside, at 1.35x parallax a
@@ -246,7 +270,9 @@ export function dressHall(b: WorldBuilder): void {
   });
 
   // --- the back floor's clutter (P3), low, among which the hall's crowd stands
-  const clutterAt: [number, string][] = [[-6.2, "bench"], [-1.2, "jars"], [3.1, "plant"], [7.4, "teatable"], [11.2, "umbrellas"], [14.6, "bench"], [19.2, "jars"], [22.1, "crates"], [26.0, "brazier"], [29.6, "bench"], [33.2, "plant"], [37.4, "jars"], [41.2, "teatable"]];
+  // (round 4, W1-b) the umbrella stand at 11.2 H is gone: at the back plane's parallax it stood on the offering
+  // pavilion's ridge in the donation frame and on the chest in the reception frame
+  const clutterAt: [number, string][] = [[-6.2, "bench"], [-1.2, "jars"], [3.1, "plant"], [7.4, "teatable"], [14.6, "bench"], [19.2, "jars"], [22.1, "crates"], [26.0, "brazier"], [29.6, "bench"], [33.2, "plant"], [37.4, "jars"], [41.2, "teatable"]];
   for (const [o, kind] of clutterAt) b.piece("back", "hall.clutter", X(o), FY, { kind, u: U, at: at(X(o), FY, r3) }, { z: 2 });
 
   // --- the roof over the room: the tie beam the lanterns hang from, coffers falling into the dark up to
@@ -421,9 +447,11 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number; ring?: [number, 
     // walk is shiraito.ts's: a landing or a turn there is still the better fix; the ASK stands)
     const lineY = (x: number): number => ay + ((by - ay) * (x - ax)) / (bx - ax);
     const px = h(187.35);
-    b.piece("front", "court.buttress", px, Y + h(0.14), { kind: "pier", w: h(0.62), h: Math.round(lineY(px) - Y + h(0.75)), seed: 5 }, { z: 1, reflect: false });
+    // (round 4, W1-g) the pier is a buttress of the foundation's masonry, the full height of the wall: from under the
+    // frieze down to the foundation's foot (2.7 H), where the cliff's rock chunks take it; it crosses the run whole
+    b.piece("front", "court.buttress", px, Y + h(0.14), { kind: "pier", w: h(0.62), h: h(2.86), dy: h(0.14), seed: 5 }, { z: 1, reflect: false });
     const ox = h(184.55);
-    b.piece("front", "court.buttress", ox, Math.round(lineY(ox) - h(0.42)), { kind: "outcrop", w: h(1.35), h: h(4), seed: 9 }, { z: 1, reflect: false });
+    b.piece("front", "court.buttress", ox, Math.round(lineY(ox) - h(0.42)), { kind: "outcrop", w: h(1.9), h: h(4), seed: 9 }, { z: 1, reflect: false });
   }
 
   // --- beyond the tip the land falls away into a sea of mist: a dense bank low on the back

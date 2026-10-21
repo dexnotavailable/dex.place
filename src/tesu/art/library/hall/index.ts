@@ -12,6 +12,7 @@ import "./glow.ts";
 import "./furniture.ts";
 import "./near.ts";
 import "./services.ts";
+import "./signboard.ts";
 import "./court.ts";
 import "./prow.ts";
 import "./court-light.ts";

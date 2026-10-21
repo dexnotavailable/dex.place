@@ -14,14 +14,15 @@
 // - arm time: a band already reached is simply there; a nav jump or focus settles what it passes; a watchdog lands
 //   anything left waiting on screen. On the screen a settle plays the rest of the entrance out (SETTLE_TIME); only
 //   what is off the screen is simply set.
-// Lenis (the smooth wheel) ships last (phase G3, after lane F's OK): until then only ?smooth=lenis turns it on.
+// Lenis (the smooth wheel) ships last (phase G3, after lane F's OK): until then only ?smooth=lenis turns it on, and it
+// comes in its own chunk then (site loop v4 round 1: bundled here it cost ~4 KB gzip of the motion budget on every visit).
 
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
+import type Lenis from "lenis";
 import {
-  CONTENT_GATE, FAST_N, FAST_V, PANEL_AT, PANEL_TIME, PHONE_TIME, SETTLE_TIME, SPINE_AT, STRIP_START, contentFrom,
-  foreY, isBelow, latch, onScreen, panelFrom, speedOf, stitchFrom, stripEnd, stripPose, worldShift, type Side,
+  CONTENT_GATE, FAST_N, FAST_V, HEAD_LEAD, PANEL_AT, PANEL_TIME, PHONE_TIME, SETTLE_TIME, SPINE_AT, STRIP_START, contentFrom,
+  foreY, isBelow, latch, liftY, onScreen, panelFrom, speedOf, stitchFrom, stripEnd, stripPose, worldShift, type Side,
   type Variant,
 } from "./choreo-plan.ts";
 import { initPointer, type Pointer } from "./pointer.ts";
@@ -68,7 +69,11 @@ interface Band {
    *  (in 1/20 steps: site loop v3 round 2, a style write on every strip each tick cost frames at 1366) */
   stripOn: boolean;
   lastNq: number;
-  onGate: (() => void) | null;
+  /** what waits on the gate (the cards' deck); fast: the band came in fast, so it plays compressed */
+  onGate: ((fast: boolean) => void) | null;
+  /** the strip's light under the pointer (fine pointers), and its x last written */
+  glare: HTMLElement | null;
+  lastGx: number;
   /** the band's world and shades under the pointer (DESIGN-1019 4.2): its place's canvas (painted late: looked up until
    *  found), the shades, and what was last written */
   scene: HTMLCanvasElement | null;
@@ -91,7 +96,10 @@ export function initChoreo(fine: MediaQueryList): void {
     const desktop = matchMedia("(min-width: 1100px)").matches;
     const T = phone ? PHONE_TIME : 1;
     root.setAttribute("data-choreo", "");
-    const lenis = fine.matches && /[?&]smooth=lenis/.test(location.search) ? smoothWheel(root) : null;
+    let lenis: Lenis | null = null, gone = false;
+    if (fine.matches && /[?&]smooth=lenis/.test(location.search)) {
+      void smoothWheel(root).then((l) => { if (gone) { l.destroy(); useSmooth(null); } else lenis = l; }, (error: unknown) => console.error("[site] lenis failed", error));
+    }
 
     // --- the scroll's speed, n: our own measure each ticker frame (works with Lenis and with native touch scrolling)
     const speed = { n: 0 };
@@ -117,8 +125,11 @@ export function initChoreo(fine: MediaQueryList): void {
       if (going !== moving) { moving = going; root.toggleAttribute("data-moving", going); }
       const wx =ptr && !lowEnd ? worldShift(ptr.x, ax, artPx) : 0, wy = ptr && !lowEnd ? worldShift(ptr.y, ay, artPx) : 0;
       const sx = ptr ? Math.round(-ptr.x * 16) / 2 : 0, sy = ptr ? Math.round(-ptr.y * 16) / 2 : 0;
+      const gx = ptr ? Math.round((ptr.x + 1) * 0.5 * innerWidth) : 0;
       for (const b of bands) {
         if (!b.on) continue;
+        // the strip's light follows the pointer along it (shown while the strip is hovered: styles/choreo.css)
+        if (b.glare && b.stripOn && gx !== b.lastGx) { b.glare.style.translate = `${gx}px 0`; b.lastGx = gx; }
         if (ptr) {
           if (wx !== b.lastWx || wy !== b.lastWy) {
             b.scene ??= b.el.querySelector<HTMLCanvasElement>(".band__scene > canvas");
@@ -135,7 +146,8 @@ export function initChoreo(fine: MediaQueryList): void {
         b.lastN = n;
         b.lastFore = fy;
         // the whole site leans on a fling, not only the cards: the strip titles drift (desktop) and tip with the scroll
-        if (b.stripTitle && b.headPlayed) gsap.set(b.stripTitle, desktop ? { x: n * 16, skewY: n * 1.5 } : { skewY: n * 1.5 });
+        // (site loop v4 round 1: 1.5 degrees read as nothing in a fling's frames; now 3.5 at full speed, eased back with n)
+        if (b.stripTitle && b.headPlayed) gsap.set(b.stripTitle, desktop ? { x: n * 24, skewY: n * 3.5 } : { skewY: n * 2.5 });
         const nq = Math.round(n * 20) / 20;
         if (desktop && b.sp >= 1 && b.stripOn && nq !== b.lastNq) {
           b.lastNq = nq;
@@ -152,6 +164,17 @@ export function initChoreo(fine: MediaQueryList): void {
       if (!el.querySelector(".band__strip")) continue;
       bands.push(band(el, phone, desktop, T, speed, () => ptr?.dirty()));
     }
+    // (site loop v4 round 1, the critic: "the cursor does nothing outside cards and keys") a soft light on each strip's
+    // paper under a fine pointer, on its own layer (a translate per pointer frame, no repaint of the strip)
+    if (ptr) {
+      for (const b of bands) {
+        const g = document.createElement("i");
+        g.className = "band__glare";
+        g.setAttribute("aria-hidden", "true");
+        b.el.querySelector(".band__strip-paper")?.append(g);
+        b.glare = g;
+      }
+    }
 
     // --- the cards (lane K): their deck, primed or settled with their band, played when the projects panel is in
     const list = document.querySelector<HTMLElement>("#projects [data-pcards]");
@@ -164,13 +187,15 @@ export function initChoreo(fine: MediaQueryList): void {
         const d = m.initCards(list, { reduced: false, fine: fine.matches, velocity: () => speed.n });
         deck = d;
         const lis = Array.from(list.children) as HTMLElement[];
-        const play = (): void => {
+        // (site loop v4 round 1, the critic's fling frame: ~0.26 s into a fling the projects paper stood near empty, two
+        // cards still slivers): a band that came in fast plays the deck's entrance at four times its pace
+        const play = (fast = false): void => {
           if (phone) {
             lis.forEach((li, i) => ScrollTrigger.create({
               trigger: li, start: "clamp(top 88%)", once: true,
-              onEnter: () => d.entrance({ side: i % 2 ? "r" : "l", index: i, solid: true }).play(),
+              onEnter: (st) => d.entrance({ side: i % 2 ? "r" : "l", index: i, solid: true }).timeScale(fast || Math.abs(st.getVelocity()) >= FAST_V ? 4 : 1).play(),
             }));
-          } else d.entrance({ side: "l", solid: true }).play();
+          } else d.entrance({ side: "l", solid: true }).timeScale(fast ? 4 : 1).play();
         };
         // a band already landed (arm time, or set while the deck was on its way) has its cards simply there; else they
         // wait out of sight and enter as its gate opens, the paper ~60% in (a settle on the screen opens the gate: they
@@ -178,7 +203,7 @@ export function initChoreo(fine: MediaQueryList): void {
         if (projects.landed) d.settle();
         else {
           d.prime();
-          if (projects.gateOpen) play();
+          if (projects.gateOpen) play(projects.all);
           else projects.onGate = play;
         }
         const oldReset = projects.reset, oldSettle = projects.settle;
@@ -204,6 +229,22 @@ export function initChoreo(fine: MediaQueryList): void {
     const sheet = document.querySelector<HTMLElement>(".sheet--home");
     if (bar && hdr && sheet) {
       gsap.fromTo(bar, { scaleX: 0 }, { scaleX: 1, ease: "none", scrollTrigger: { trigger: sheet, start: "top top", end: "bottom bottom", scrub: true } });
+      // (site loop v4 round 1, the critic's idea) a little ofuda rides the line's tip, in the section's tone, swaying at
+      // rest (styles/choreo.css .hdr__pip): a translate on its own layer
+      const pip = document.createElement("i");
+      pip.className = "hdr__pip";
+      pip.setAttribute("aria-hidden", "true");
+      bar.after(pip);
+      // (its own translate, never GSAP's transform: GSAP would fold the CSS sway's rotate into it)
+      let pipW = bar.offsetWidth, pipX = -1;
+      ScrollTrigger.create({
+        trigger: sheet, start: "top top", end: "bottom bottom",
+        onRefresh: () => { pipW = bar.offsetWidth; },
+        onUpdate: (st) => {
+          const x = Math.round(st.progress * pipW);
+          if (x !== pipX) { pipX = x; pip.style.translate = `${x}px 0`; }
+        },
+      });
       // ...and the header takes the tone of the section you are in (its strip past 40% of the screen): the line, the
       // nav indicator's shadow (styles/bands.css --sec-tone); read once, set on a change only
       const toneOf = (b: Band | undefined): string => (b ? getComputedStyle(b.el).getPropertyValue("--tone").trim() : "");
@@ -230,23 +271,60 @@ export function initChoreo(fine: MediaQueryList): void {
       const key = (e.target as Element | null)?.closest?.(".sheet--home :is(a, button, .dlf)");
       if (!key || e.button > 0) return;
       // (the deep twin of the section's tone: it reads on the section's own coloured keys too)
-      const cs = getComputedStyle(key.closest(".band") ?? key);
+      const home = key.closest<HTMLElement>(".band");
+      const cs = getComputedStyle(home ?? key);
       const tone = (cs.getPropertyValue("--tone-d") || cs.getPropertyValue("--tone")).trim();
       if (tone) seal.style.setProperty("--hk", tone); else seal.style.removeProperty("--hk");
-      const r = Math.round((Math.random() - 0.5) * 16);
+      // (site loop v4 round 1: a plain square read as a focus ring) a real seal: the section's own glyph cut in it (its
+      // strip's pixel icon; the footer's, the dex mark's heart), pressed at a 4-8 degree tilt, the ink bleeding out as it
+      // fades
+      const glyph = (home ?? document).querySelector(home ? ".sh__kicker .tile svg" : ".ftr__kofi svg, .sh__kicker .tile svg");
+      if (glyph && seal.dataset.from !== (home?.id ?? "ftr")) {
+        seal.dataset.from = home?.id ?? "ftr";
+        seal.replaceChildren(glyph.cloneNode(true));
+      }
+      const r = (Math.random() < 0.5 ? -1 : 1) * (4 + Math.round(Math.random() * 4));
       seal.style.translate = `${Math.round(e.clientX)}px ${Math.round(e.clientY)}px`;
       stamp?.cancel();
       stamp = seal.animate([
-        { opacity: 0.95, scale: "1.5", rotate: `${r}deg` },
-        { opacity: 0.9, scale: "1", rotate: `${r}deg`, offset: 0.18 },
-        { opacity: 0, scale: "1.12", rotate: `${r}deg` },
-      ], { duration: 600, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+        { opacity: 0.95, scale: "1.6", rotate: `${r}deg`, outlineOffset: "-10px" },
+        { opacity: 0.92, scale: "1", rotate: `${r}deg`, outlineOffset: "-10px", offset: 0.14 },
+        { opacity: 0.85, scale: "1", rotate: `${r}deg`, outlineOffset: "-10px", offset: 0.5 },
+        { opacity: 0, scale: "1.08", rotate: `${r}deg`, outlineOffset: "-7px" },
+      ], { duration: 1100, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
     };
     document.addEventListener("pointerdown", onPress, { passive: true });
 
     // --- the footer: the last strip
     const ftrEl = document.querySelector<HTMLElement>(".sheet--home .ftr");
     const foot = ftrEl?.querySelector(".ftr__paper") ? footerRise(ftrEl, bands.at(-1)?.el ?? null, phone, T) : null;
+
+    // --- the joins (site loop v4 round 1, the critic's dead band at donate -> docs: the pine and its cliffs stand at the
+    // screen's foot, so the whole time the docs strip climbed, the window above it held only a bare dusk gradient): as
+    // the next paper comes up over a place, the place rises with it at LIFT of its pace, so what it shows stays in the
+    // window above the paper until the paper has it all; the next place waits, still, under the strip. Only the scene's
+    // canvas moves (a transform on its own layer, inside the fixed scene). Not on phones: their places are sticky in
+    // their bands and leave with them.
+    const lifts: HTMLCanvasElement[] = [];
+    if (!phone && !OFF.has("lift")) {
+      bands.forEach((b, i) => {
+        const next = bands[i + 1]?.el.querySelector<HTMLElement>(".band__strip") ?? ftrEl;
+        if (!next) return;
+        let last = 0;
+        ScrollTrigger.create({
+          trigger: next, start: "top bottom", end: "top top",
+          onUpdate: (st) => {
+            b.scene ??= b.el.querySelector<HTMLCanvasElement>(".band__scene > canvas");
+            if (!b.scene) return;
+            const y = liftY(st.progress, innerHeight);
+            if (y === last) return;
+            last = y;
+            if (!lifts.includes(b.scene)) lifts.push(b.scene);
+            b.scene.style.transform = y ? `translate3d(0, ${y}px, 0)` : "";
+          },
+        });
+      });
+    }
 
     // --- a nav jump settles the bands it passes; focus inside a band settles it; a watchdog lands what waits on screen
     // (on the screen a settle plays the rest out; off it, simply set)
@@ -327,8 +405,12 @@ export function initChoreo(fine: MediaQueryList): void {
       for (const b of bands) b.settle(true);
       foot?.destroy();
       hdr?.style.removeProperty("--sec-tone");
+      document.querySelector(".hdr__pip")?.remove();
+      for (const c of lifts) c.style.transform = "";
+      for (const b of bands) b.glare?.remove();
       ptr?.destroy();
-      if (lenis) { lenis.destroy(); useSmooth(null); }
+      gone = true;
+      if (lenis) { (lenis as Lenis).destroy(); useSmooth(null); }
       root.removeAttribute("data-choreo");
       root.removeAttribute("data-moving");
     };
@@ -360,28 +442,33 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
   // band's side, the key drops and lands like a hanko pressed (a squash, a hop), the icon blinks.
   // Every part lands on its own place (explicit ends) and gives its transform back once
   // the head has played (the key's pixel pop and the rule's travelling dot are CSS on the same elements)
+  // Site loop v4 round 1 (Dex 10-20 16:30Z: "the UI elements ... come in from under the top one"): the whole head comes
+  // out from under the paper above as one beat, solid (no fade: the strip's top edge hides each part until it is out):
+  // the kicker row with its rule drawing as it comes, the title's letters, and the key riding with them (it used to fade
+  // in ~0.3 s late, a ghost; the rule drew ~0.4 s after the title)
   const headTl = gsap.timeline({ paused: true });
   if (head) {
-    const kicker = head.querySelector(".sh__kicker"), line = head.querySelector<HTMLElement>(".sh__txt"), ul = head.querySelector(".sh__ul");
-    const rule = head.querySelector(".sh__rule"), more = head.querySelector(".sh__more"), tile = head.querySelector(".sh__kicker .tile");
+    const kicker = head.querySelector<HTMLElement>(".sh__kicker"), line = head.querySelector<HTMLElement>(".sh__txt"), ul = head.querySelector(".sh__ul");
+    const rule = head.querySelector(".sh__rule"), more = head.querySelector<HTMLElement>(".sh__more"), tile = head.querySelector(".sh__kicker .tile");
     const origin = s < 0 ? "0% 50%" : "100% 50%";
     const chars = line ? splitChars(line) : [];
-    if (kicker) headTl.fromTo(kicker, { y: -36, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 * T, ease: "expo.out" }, 0);
-    if (tile) headTl.fromTo(tile, { scale: 1 }, { keyframes: { scale: [1, 1.3, 0.92, 1] }, duration: 0.42, ease: "power2.out" }, 0.38 * T);
+    // how far up a part sits wholly above the strip's top edge (layout boxes, never the moved ones)
+    const under = (x: HTMLElement) => (): number => -(topIn(x, strip) + x.offsetHeight + 6);
+    if (kicker) headTl.fromTo(kicker, { y: under(kicker) }, { y: 0, duration: 0.7 * T, ease: "expo.out" }, 0);
+    if (rule) headTl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, transformOrigin: origin, duration: 0.8 * T, ease: "expo.out" }, 0.04 * T);
+    if (tile) headTl.fromTo(tile, { scale: 1 }, { keyframes: { scale: [1, 1.3, 0.92, 1] }, duration: 0.42, ease: "power2.out" }, 0.3 * T);
     // the title's letters drop in its line mask, rippling from the band's side (3.1: 22 ms apart)
-    if (chars.length) headTl.fromTo(chars, { yPercent: -110 }, { yPercent: 0, duration: 0.8 * T, ease: "expo.out", stagger: { each: 0.022, from: s < 0 ? "start" : "end" } }, 0.06 * T);
-    else if (line) headTl.fromTo(line, { yPercent: -110 }, { yPercent: 0, duration: 0.8 * T, ease: "expo.out" }, 0.06 * T);
+    if (chars.length) headTl.fromTo(chars, { yPercent: -110 }, { yPercent: 0, duration: 0.8 * T, ease: "expo.out", stagger: { each: 0.022, from: s < 0 ? "start" : "end" } }, 0.05 * T);
+    else if (line) headTl.fromTo(line, { yPercent: -110 }, { yPercent: 0, duration: 0.8 * T, ease: "expo.out" }, 0.05 * T);
     // ...and it lands with a squash of one pixel row (the last letter is nearly in by then)
     if (line) {
-      headTl.to(line, { scaleY: 0.95, transformOrigin: "50% 100%", duration: 0.07, ease: "power2.in" }, (0.06 + 0.22) * T + chars.length * 0.022)
+      headTl.to(line, { scaleY: 0.95, transformOrigin: "50% 100%", duration: 0.07, ease: "power2.in" }, (0.05 + 0.22) * T + chars.length * 0.022)
         .to(line, { scaleY: 1, duration: 0.42, ease: "back.out(4)" });
     }
-    if (ul) headTl.fromTo(ul, { scaleX: 0 }, { scaleX: 1, transformOrigin: origin, duration: 0.6 * T, ease: "expo.out" }, 0.3 * T);
-    if (rule) headTl.fromTo(rule, { scaleX: 0 }, { scaleX: 1, transformOrigin: origin, duration: 0.9 * T, ease: "expo.inOut" }, 0.15 * T);
+    if (ul) headTl.fromTo(ul, { scaleX: 0 }, { scaleX: 1, transformOrigin: origin, duration: 0.6 * T, ease: "expo.out" }, 0.18 * T);
     if (more) {
-      headTl.fromTo(more, { y: -40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.32 * T, ease: "power3.in" }, 0.3 * T)
-        .fromTo(more, { scaleX: 1.14, scaleY: 0.8 }, { scaleX: 1, scaleY: 1, transformOrigin: "50% 100%", duration: 0.5, ease: "elastic.out(1, 0.45)", immediateRender: false })
-        .to(more, { keyframes: { y: [0, -5, 0] }, duration: 0.3, ease: "sine.inOut" }, "<0.05");
+      headTl.fromTo(more, { y: under(more) }, { y: 0, duration: 0.6 * T, ease: "expo.out" }, 0.1 * T)
+        .fromTo(more, { scaleX: 1.12, scaleY: 0.84 }, { scaleX: 1, scaleY: 1, transformOrigin: "50% 100%", duration: 0.5, ease: "elastic.out(1, 0.45)", immediateRender: false }, 0.34 * T);
     }
     const parts = [kicker, line, ul, rule, more, tile, ...chars].filter((x): x is Element => x !== null);
     headTl.eventCallback("onComplete", () => { gsap.set(parts, { clearProps: CLEAR }); });
@@ -406,7 +493,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
 
   const b: Band = {
     el, s, sp: 0, landed: false, headPlayed: false, panelIn: false, panelDone: false, gateOpen: false, all: false, queue: [], seenAt: 0, on: false,
-    stripTitle: b0title, stripSurfaces: [stripPaper, stripShade], fore, foreBase: 0, lastN: NaN, lastFore: NaN, stripOn: false, lastNq: 0, onGate: null,
+    stripTitle: b0title, stripSurfaces: [stripPaper, stripShade], fore, foreBase: 0, lastN: NaN, lastFore: NaN, stripOn: false, lastNq: 0, onGate: null, glare: null, lastGx: NaN,
     scene: null, shades: [stripShade, shade], lastWx: NaN, lastWy: NaN, lastSx: NaN, lastSy: NaN,
     settle: () => false,
     reset: () => {},
@@ -415,15 +502,22 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
   let gateCall: gsap.core.Tween | null = null;
   let stripRun: gsap.core.Tween | null = null;
   const landedItems = new WeakSet<HTMLElement>();
+  // the band's sleepy blob (downloads) peeks up as its band lands: a hop and a "!" (styles/choreo.css .is-awake)
+  const zz = el.querySelector<HTMLElement>(".dlp__zz");
   const done = (): void => {
     if (b.landed || b.sp < 1 || !b.panelDone || !b.gateOpen) return;
     b.landed = true;
+    if (zz && !zz.classList.contains("is-awake")) {
+      zz.classList.add("is-awake");
+      gsap.delayedCall(1.4, () => zz.classList.remove("is-awake"));
+    }
     gsap.delayedCall(0.6, () => { if (b.landed) { lift(false); moved(); } });
   };
-  const playHead = (): void => {
+  // (site loop v4 round 1: on a fling the head plays at triple speed, never a strip left without its title mid-fling)
+  const playHead = (fast = false): void => {
     if (b.headPlayed) return;
     b.headPlayed = true;
-    headTl.play();
+    headTl.timeScale(fast ? 3 : 1).play();
   };
 
   // content lands in batches as it comes up, but only once the panel is (nearly) in; the stitch flies in solid
@@ -459,9 +553,12 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     const list = batch.filter((x) => !landedItems.has(x));
     if (!list.length) return;
     for (const x of list) landedItems.add(x);
+    // (site loop v4 round 1: solid within 0.14 s, the slide carries the rest: no ghost of a row easing in)
+    const each = quick ? 0.03 : 0.06;
+    gsap.to(list, { autoAlpha: 1, duration: 0.14, ease: "none", stagger: each });
     gsap.to(list, {
-      x: 0, y: 0, scale: 1, autoAlpha: 1, duration: quick ? SETTLE_TIME + 0.15 : 0.8 * T, ease: "expo.out",
-      stagger: quick ? 0.03 : 0.06, overwrite: "auto",
+      x: 0, y: 0, scale: 1, duration: quick ? SETTLE_TIME + 0.15 : 0.8 * T, ease: "expo.out",
+      stagger: each, overwrite: "auto",
       onComplete: () => { gsap.set(list, { clearProps: CLEAR }); },
     });
   };
@@ -470,7 +567,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     b.gateOpen = true;
     land(b.all ? items : b.queue.splice(0), b.all);
     b.queue = [];
-    b.onGate?.();
+    b.onGate?.(false);
     b.onGate = null;
     done();
   };
@@ -493,7 +590,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
         onComplete: () => { gsap.set(list, { clearProps: `${CLEAR},clipPath` }); },
       });
     }
-    b.onGate?.();
+    b.onGate?.(true);
     b.onGate = null;
     done();
   };
@@ -506,7 +603,9 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     gsap.to(shade, { opacity: 1, duration: dur * 0.5, ease: "power1.out" });
     if (spine) gsap.to(spine, { scaleY: 1, duration: 0.7 * T, ease: "expo.out", delay: dur * SPINE_AT });
     if (fast || Math.abs(speed.n) >= FAST_N) ride(dur);
-    else gateCall = gsap.delayedCall(dur * CONTENT_GATE, openGate);
+    // (site loop v4 round 1, the critic on a phone: the content was in before its title had risen) the title leads: the
+    // gate waits until the head has played HEAD_LEAD of its time
+    else gateCall = gsap.delayedCall(Math.max(dur * CONTENT_GATE, (HEAD_LEAD * T - (b.headPlayed ? headTl.time() : 0)) / headTl.timeScale()), openGate);
   };
 
   const killAll = (): void => {
@@ -523,7 +622,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     setStrip(0);
     gsap.set(sheet, { xPercent: panelFrom(s), force3D: true });
     gsap.set(shade, { opacity: 0 });
-    headTl.pause(0);
+    headTl.invalidate().timeScale(1).pause(0);
     if (spine) gsap.set(spine, { scaleY: 0, transformOrigin: "50% 0%" });
     gsap.set(items, from);
     for (const x of items) landedItems.delete(x);
@@ -584,7 +683,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
       if (p === b.sp) return;
       b.sp = p;
       setStrip(p);
-      if (p >= 1) { playHead(); done(); }
+      if (p >= 1) { playHead(Math.abs(st.getVelocity()) >= FAST_V || Math.abs(speed.n) >= FAST_N); done(); }
     },
   });
   // the panel: plays once its top crosses PANEL_AT (or the scroll jumps past it)
@@ -628,6 +727,13 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
   // focus inside settles it (playing out what is left)
   el.addEventListener("focusin", () => { b.settle(); });
   return b;
+}
+
+/** An element's layout top inside `box` (its offset parents summed: transforms are not counted). */
+function topIn(el: HTMLElement, box: HTMLElement): number {
+  let y = 0;
+  for (let e: HTMLElement | null = el; e && e !== box; e = e.offsetParent as HTMLElement | null) y += e.offsetTop;
+  return y;
 }
 
 /** A strip title's words as letters (each its own box, so each can rise in the line mask), the words kept whole for
@@ -723,8 +829,9 @@ function footerRise(ftr: HTMLElement, last: HTMLElement | null, phone: boolean, 
   };
 }
 
-/** Lenis on the window, on GSAP's ticker (phase G3; only ?smooth=lenis until lane F's OK). */
-function smoothWheel(root: HTMLElement): Lenis {
+/** Lenis on the window, on GSAP's ticker (phase G3; only ?smooth=lenis until lane F's OK), its own chunk. */
+async function smoothWheel(root: HTMLElement): Promise<Lenis> {
+  const { default: Lenis } = await import("lenis");
   const lenis = new Lenis({
     autoRaf: false,
     lerp: 0.09,

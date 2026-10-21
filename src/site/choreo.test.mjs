@@ -37,6 +37,7 @@ test("choreo plan: strips whip in from their side and land square; panels follow
   assert.ok(P.expoOut(P.CONTENT_GATE) > 0.8 && P.expoOut(P.CONTENT_GATE) < 0.95, "the paper first: the gate opens with it ~90% in");
   assert.ok(P.PANEL_TIME * P.CONTENT_GATE <= 0.25, "...and soon: never long-empty paper");
   assert.ok(P.FAST_N > 0 && P.FAST_N < 1);
+  assert.ok(P.HEAD_LEAD >= 0.2 && P.HEAD_LEAD <= 0.4, "v4 round 1: the title leads, its content soon after");
   assert.ok(P.FAST_V >= 1200, "a normal wheel scroll never rides its content in with the paper");
   assert.ok(P.SPINE_AT < 1);
   assert.ok(P.SETTLE_TIME >= 0.3 && P.SETTLE_TIME <= 0.6, "a settle plays out, never a pop");
@@ -72,6 +73,12 @@ test("choreo plan: strips whip in from their side and land square; panels follow
   assert.equal(P.foreY(0), 60);
   assert.equal(P.foreY(1), -120);
   assert.equal(P.foreY(1, true), -60);
+  // v4 round 1: the join, the place rises with the paper coming up over it, slower than it (its foot stays under it)
+  assert.ok(P.LIFT > 0.5 && P.LIFT < 1);
+  assert.equal(P.liftY(0, 1080), 0);
+  assert.equal(P.liftY(1, 1000), -Math.round(1000 * P.LIFT));
+  assert.equal(P.liftY(2, 1000), P.liftY(1, 1000), "clamped");
+  for (const p of [0.25, 0.5, 0.9]) assert.ok(-P.liftY(p, 1000) < p * 1000, "never past the paper's own climb");
 });
 
 test("choreo wiring: home only, never with reduced motion, lazy (load + mark + idle, a scroll intent, or the website already in view); one event name with lane F; Lenis waits for G3", () => {
@@ -85,11 +92,14 @@ test("choreo wiring: home only, never with reduced motion, lazy (load + mark + i
   assert.equal(choreo.match(/WAY_IN_EVENT = "([^"]+)"/)[1], src("./motion/enter.ts").match(/ENTER_EVENT = "([^"]+)"/)[1]);
   assert.doesNotMatch(choreo, /from "\.\/enter\.ts"/, "the opening's audio never rides in the choreo chunk");
   assert.match(choreo, /mm\.add\("\(prefers-reduced-motion: no-preference\)"/);
-  assert.match(choreo, /const lenis = fine\.matches && \/\[\?&\]smooth=lenis\/\.test\(location\.search\) \? smoothWheel\(root\) : null;/, "Lenis waits for lane F's OK (G3)");
+  assert.match(choreo, /if \(fine\.matches && \/\[\?&\]smooth=lenis\/\.test\(location\.search\)\) \{\n\s+void smoothWheel\(root\)/, "Lenis waits for lane F's OK (G3)");
+  // site loop v4 round 1: off by default, so it never rides in the choreo chunk (its own chunk, only when asked for)
+  assert.match(choreo, /await import\("lenis"\)/);
+  assert.doesNotMatch(choreo, /^import Lenis from "lenis"/m);
   assert.match(choreo, /prevent: \(node\) => node\.matches\("dialog, \[popover\], iframe, \.world, \[data-lenis-prevent\]"\)/);
   // the cards: K's deck through its contract only (G never reaches inside the li)
   assert.match(choreo, /m\.initCards\(list, \{ reduced: false, fine: fine\.matches, velocity: \(\) => speed\.n \}\)/);
-  for (const call of ["d.settle()", "d.prime()", "d.entrance({ side: \"l\", solid: true }).play()", "d.reset()", "d.live(st.isActive)"]) assert.ok(choreo.includes(call), call);
+  for (const call of ["d.settle()", "d.prime()", "d.entrance({ side: \"l\", solid: true }).timeScale(fast ? 4 : 1).play()", "d.reset()", "d.live(st.isActive)"]) assert.ok(choreo.includes(call), call);
   assert.doesNotMatch(choreo, /\.pcard__|\.cart\b/, "nothing inside a card");
   // nothing GSAP set is left on a thing once it has landed; no layout read in the ticker
   assert.match(choreo, /clearProps: CLEAR/);

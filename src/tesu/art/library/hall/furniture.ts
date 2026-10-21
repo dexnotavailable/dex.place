@@ -10,6 +10,7 @@ import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
 import { M, SCREEN, LitField, bevel, clamp, cord, cyl, face, fbm, grain, hash, keep, lathe, mt, poly, rect, tn, vnoise, type At, type Ramp } from "./kit.ts";
 import { lut, tint } from "./tint.ts";
+import { hanzi, hanziSize, scrawl } from "./signs.ts";
 
 const H = 96;
 
@@ -123,9 +124,88 @@ export const notice = definePainter<FurnP>("hall.notice", {
     for (const fx of [0.08 * W, 0.92 * W]) {
       poly(c, [fx - 0.35 * H, ry, fx + 0.35 * H, ry, fx + 0.1 * H, ry + 0.2 * H, fx - 0.1 * H, ry + 0.2 * H], (X, Y, lx, ly) => mt(M.wood, face(lf.get(lx, ly).k, side, 0, 0.6) * 0.75, X, Y, 0.3, 1));
     }
-    tileRoof(c, lf, side, -0.3 * H, W + 0.3 * H, ry, 0.46 * H, 77);
+    // (round 4, W2-h: the notice board, the sponsors' board, the offering pavilion and the gate shared one blue-tile
+    // roof, a kit stamp) the notice board's is a plain timber hood
+    timberHood(c, lf, side, -0.3 * H, W + 0.3 * H, ry, 0.36 * H, 77);
+    // (round 4, W1-c: clutter at the edges) at its foot: a bundle of fresh notices tied with red string against the
+    // west foot, a paste pot with its brush, two old sheets fallen and curled on the floor under the board
+    {
+      const fx = 0.08 * W + foot / 2 + 6;
+      // the bundle: a stack of folded sheets, a red tie round it
+      rect(c, fx, -11, fx + 17, 0, (X, Y, lx, ly) => {
+        const l = lf.get(lx, ly);
+        const k = Math.floor((ly + 11) / 2.2);
+        if (Math.abs(lx - fx - 9) < 0.8) return tn(P.red, 0.35, X, Y, 0);
+        if (((ly + 11) % 2.2) < 0.7) return mt(M.paper, face(l.k, side) * 0.55, X, Y, 0.2, 1);
+        return mt(M.paper, face(l.k, side, 0, k === 0 ? -0.8 : 0) * (0.95 - k * 0.03) + (lx - fx > 15 ? -0.1 : 0), X, Y, 0.0, 0.85);
+      });
+      // the paste pot (a squat glazed jar) with a brush handle standing out of it
+      const px = fx + 26;
+      lathe(c, px, -9, 0, (ly) => 4.6 + Math.sin(((ly + 9) / 9) * Math.PI) * 1.2, (X, Y, u, _lx, ly) => mt(P.blue, cyl(lf.get(px, ly).k, u, side) * 0.7, X, Y, 0.3, 1));
+      rect(c, px + 1, -17, px + 2, -8, (X, Y, lx, ly) => mt(M.wood, face(lf.get(lx, ly).k, side), X, Y, 0.1, 1));
+      // two fallen sheets, curled, one half under the other
+      for (const [ox, w2, curl] of [[0.46, 16, 1], [0.58, 13, -1]] as const) {
+        const x0 = W * ox;
+        rect(c, x0, -4, x0 + w2, 0, (X, Y, lx, ly) => {
+          const u = (lx - x0) / w2;
+          const top = -1.5 - (curl > 0 ? Math.max(0, u - 0.7) * 9 : Math.max(0, 0.3 - u) * 9);
+          if (ly < top) return 0;
+          const l = lf.get(lx, ly);
+          const ink = ly > top + 0.8 && ((Math.floor(lx) % 3) === 0) && u > 0.15 && u < 0.85;
+          return ink ? tn(M.ink, 0.35, X, Y, 0.3) : mt(M.paper, face(l.k, side, 0, ly < top + 1 ? -0.7 : 0) * 0.9, X, Y, 0.05, 0.9);
+        });
+      }
+    }
   },
 });
+
+/**
+ * A plain timber hood over a board (round 4): a shallow gable of overlapping cedar boards in courses, each board's
+ * lower edge a lit lip over a dark shadow line, a few boards newer or split; a fascia board along the eave with a lit
+ * top arris and a darker underside; a ridge board with a plain carved end; its shadow on the board under it.
+ */
+export function timberHood(c: PaintCtx, lf: LitField, side: number, x0: number, x1: number, eave: number, rh: number, seed: number): void {
+  const cx = (x0 + x1) / 2, span = (x1 - x0) / 2;
+  const FAS = 0.1 * H;
+  rect(c, x0 - 3, eave - rh - 5, x1 + 3, eave + FAS + 5, (X, Y, lx, ly) => {
+    const l = lf.get(lx, ly);
+    const d = Math.abs(lx - cx);
+    // the shadow it throws on what is under it
+    if (ly >= eave + FAS) return d < span - 4 && ly < eave + FAS + 4 ? mt(M.dark, 0.72, X, Y, 0.4, 1) : 0;
+    // the fascia board
+    if (ly >= eave) {
+      if (d > span) return 0;
+      const e = ly - eave;
+      const endGrain = span - d < 3;
+      if (e < 1.2) return mt(M.wood, face(l.k, side, 0, -1) * 1.05, X, Y, 0.05, 1);
+      if (e > FAS - 1.5) return mt(M.wood, face(l.k, side) * 0.35, X, Y, 0.4, 1);
+      return mt(M.wood, face(l.k, side, endGrain ? Math.sign(lx - cx) : 0, 0) * (endGrain ? 0.55 : 0.72) + grain(lx, ly, seed, false) * 0.12, X, Y, 0.2, 1);
+    }
+    const t = (eave - ly) / rh; // 0 at the eave .. 1 at the ridge
+    const hw = span * (1 - 0.18 * t) + (t < 0.12 ? (0.12 - t) * 0.2 * rh : 0);
+    if (t > 1.0) {
+      // the ridge board, its ends cut in a plain ogee
+      const rv = (eave - rh - ly);
+      const rw = span * 0.82 - (rv > 2.5 ? (rv - 2.5) * 2 : 0);
+      if (rv > 4.5 || d > rw) return 0;
+      return mt(M.wood, face(l.k, side, 0, rv > 3.5 ? -1 : 0) * (rv > 3.5 ? 1.0 : 0.62), X, Y, 0.1, 1);
+    }
+    if (d > hw) return 0;
+    // the boards in courses: each course a lit lip at its lower edge, its body, the shadow of the course over it
+    const CH = 0.11 * H;
+    const k = Math.floor((eave - ly) / CH), cv = ((eave - ly) % CH) / CH; // 0 at a course's lower edge
+    const bw = 0.32 * H;
+    const bi = Math.floor((lx - x0 + (k % 2) * bw * 0.5) / bw);
+    const bu = ((lx - x0 + (k % 2) * bw * 0.5) % bw) / bw;
+    const newer = hash(bi, k, seed) > 0.88 ? 0.12 : hash(bi, k, seed) < 0.08 ? -0.1 : 0;
+    const split = hash(bi, k + 9, seed) > 0.93 && Math.abs(bu - 0.6) < 0.03;
+    if (bu < 0.03) return mt(M.wood, face(l.k, side) * 0.3, X, Y, 0.45, 1);
+    if (split) return mt(M.wood, face(l.k, side) * 0.25, X, Y, 0.45, 1);
+    if (cv < 0.16) return mt(M.wood, face(l.k, side, 0, -0.8) * 0.95 + newer, X, Y, 0.1, 1);
+    if (cv > 0.84) return mt(M.wood, face(l.k, side) * 0.32, X, Y, 0.4, 1);
+    return mt(M.wood, face(l.k, side, (lx - cx) / span * 0.3, -0.3) * 0.62 + newer + grain(lx, ly, seed + bi, false) * 0.1 - t * 0.06, X, Y, 0.2, 1);
+  });
+}
 
 /** A small tiled roof seen side-on: rows of round tiles, a gold ridge, ends turned up. */
 export function tileRoof(c: PaintCtx, lf: LitField, side: number, x0: number, x1: number, eave: number, rh: number, seed: number): void {
@@ -266,15 +346,17 @@ export const reqBoard = definePainter<FurnP>("hall.reqboard", {
       rect(c, hx - 1, hy + 5, hx + 3, hy + 7, (X, Y) => tn(M.gold, 0.4, X, Y, 0));
     }
     // the one slip ("requests open later"), hung on the middle hook, gently curled
+    // (round 4, W1-i: its single ink bar read as a pause icon) written: three short columns of small script, right to
+    // left, and a red seal low on the left
     const sx = W / 2, sy0 = by0 + 22, sw = 0.34 * H, sh = 0.62 * H;
     rect(c, sx - sw / 2, sy0, sx + sw / 2 + 2, sy0 + sh + 2, (X, Y, lx, ly) => {
       const u = (lx - sx + sw / 2) / sw, v = (ly - sy0) / sh;
       if (u > 1 || v > 1) return keep(X, Y, 0.5) && u < 1.08 && v < 1.04 ? P.umber[3]! : 0;
       const l = lf.get(lx, ly);
-      const line = v > 0.25 && v < 0.85 && Math.abs(((u * 3) % 1) - 0.5) < 0.1 && u > 0.3 && u < 0.75;
-      if (line) return tn(M.ink, 0.3, X, Y, 0.2);
       return mt(M.paper, face(l.k, side, (u - 0.5) * 0.6, 0) * 1.0, X, Y, 0, 0.8);
     });
+    scrawl(c, sx - sw / 2 + 5, sy0 + 6, sx + sw / 2 - 4, sy0 + sh - 8, 41, (X, Y) => tn(M.ink, 0.3, X, Y, 0));
+    rect(c, sx - sw / 2 + 4, sy0 + sh - 9, sx - sw / 2 + 9, sy0 + sh - 4, (X, Y) => tn(P.red, 0.35, X, Y, 0));
   },
 });
 
@@ -516,9 +598,16 @@ export const teahouse = definePainter<FurnP>("hall.teahouse", {
     rect(c, nx0, ny0, nx1, ny1, (X, Y, lx, ly) => {
       const u = (lx - nx0) / (nx1 - nx0), v = (ly - ny0) / (ny1 - ny0);
       if (u > 0.85 && v > 0.8 && u + v > 1.7) return 0;
-      const line = v > 0.2 && v < 0.8 && Math.abs(((u * 2.6) % 1) - 0.5) < 0.12 && u > 0.2 && u < 0.8;
-      return line ? tn(M.ink, 0.3, X, Y, 0.2) : mt(M.paper, face(lf.get(lx, ly).k, side) * 1.0, X, Y, 0, 0.8);
+      return mt(M.paper, face(lf.get(lx, ly).k, side) * 1.0, X, Y, 0, 0.8);
     });
+    // (round 4, W1-i: two ink bars read as a pause icon) the notice says it: 休 ("closed") brushed big on the right,
+    // a column of small script beside it on the left
+    {
+      const [gw, gh] = hanziSize(2);
+      const gx = Math.round(nx1 - gw - 4), gy = Math.round(ny0 + ((ny1 - ny0) - gh) / 2);
+      hanzi(c, gx, gy, "休", 2, (X, Y) => tn(M.ink, 0.15, X, Y, 0));
+      scrawl(c, nx0 + 3, ny0 + 5, gx - 3, ny1 - 6, 23, (X, Y) => tn(M.ink, 0.35, X, Y, 0));
+    }
     // the noren, rolled up under the lintel and tied, its blue cloth showing
     rect(c, 0, -Ht + 2, W, -Ht + 0.2 * H, (X, Y, lx, ly) => {
       const v = (ly + Ht - 2) / (0.2 * H - 2);

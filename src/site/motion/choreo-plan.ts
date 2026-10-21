@@ -23,6 +23,9 @@ export const PANEL_TIME = 0.6;
  *  the paper lands first (expo.out: ~88% of its way by then), then the content slides out from under the strip above
  *  it, staggered; never on bare world, never on long-empty paper (~0.18 s). */
 export const CONTENT_GATE = 0.3;
+/** The title leads its content (site loop v4 round 1): the gate never opens before the head has played this long (s),
+ *  its letters mostly down. */
+export const HEAD_LEAD = 0.3;
 /** A band entered at this scroll speed (|n|) or faster gets its content with its paper at once (one landing). */
 export const FAST_N = 0.5;
 /** ...or whose panel is crossed at this scroll velocity (px/s, ScrollTrigger's own measure). n is eased (0.4 s), so on a
@@ -98,6 +101,12 @@ export function foreY(p: number, phone = false): number {
   const [a, b] = phone ? [30, -60] : [60, -120];
   return Math.round(a + (b - a) * clamp01(p));
 }
+
+/** The join (site loop v4 round 1): while the next paper climbs from the screen's foot (p 0) to its top (p 1), the
+ *  place under it rises at this share of its pace, so the place's subject (often at the screen's foot) stays in the
+ *  window above the paper instead of a bare sky. Under 1: the canvas's foot always stays under the climbing paper. */
+export const LIFT = 0.7;
+export const liftY = (p: number, vh: number): number => -Math.round(clamp01(p) * vh * LIFT) || 0;
 
 /** At arm time a band whose top is already above the screen's foot is simply there (deep links, a reload mid-page,
  *  a scroll before the chunk arrived); only bands wholly below are set back to play. */

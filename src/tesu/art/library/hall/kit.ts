@@ -354,34 +354,49 @@ export function keep(X: number, Y: number, a: number): boolean {
 export { clamp, hash, vnoise, fbm };
 
 /**
- * A column's stone base, the classic two parts seen side-on: a square plinth with a chamfered
- * top edge, and on it an upturned basin carved with a ring of lotus petals that swells out
- * from the shaft. `top` is the base's height (it stands on y = 0, centred on cx).
+ * A column's stone base, the classic two parts seen side-on: a square plinth with a chamfered top edge, and on it a
+ * carved drum (round 4, W2-n: the lotus basin's chips and grooves read as a grey noise lump at play zoom) that swells
+ * out from the shaft: its top edge lit where the shaft stands on it, a raised fillet under that, a ring of drum studs,
+ * a second fillet near its foot; turned smooth, shaded as a cylinder in a few clean steps. `top` is the base's height
+ * (it stands on y = 0, centred on cx).
  */
 export function colBase(c: PaintCtx, cx: number, r: number, top: number, k: number, side: number, seed: number): void {
-  const plinthH = top * 0.38, plinthW = r * 1.55;
+  const plinthH = top * 0.34, plinthW = r * 1.55;
   // the plinth
   rect(c, cx - plinthW, -plinthH, cx + plinthW, 0, (X, Y, lx, ly) => {
     const u = (lx - cx) / plinthW, v = (ly + plinthH) / plinthH;
-    const chamfer = v < 0.18;
+    const chamfer = v < 0.2;
     const ny = chamfer ? -0.85 : v > 0.9 ? 0.6 : 0;
     const nx = Math.abs(u) > 0.94 ? Math.sign(u) : 0;
-    const chip = fbm(lx * 0.35, ly * 0.35, seed, 2) > 0.74 ? -0.12 : 0;
+    const chip = fbm(lx * 0.3, ly * 0.3, seed, 2) > 0.8 ? 0.08 : 0;
     const dust = v > 0.8 ? -0.06 : 0;
-    return mt(M.stone, face(k, side, nx, ny) * 0.92 + chip + dust, X, Y, 0.2, 1);
+    return mt(M.stone, face(k, side, nx, ny) * 0.92 + chip + dust, X, Y, 0.2, 1, 0.2);
   });
-  // the basin with its lotus petals
+  // the drum
+  const dh = top - plinthH;
   lathe(c, cx, -top, -plinthH, (ly) => {
-    const t = (ly + top) / (top - plinthH); // 0 at the shaft .. 1 at the plinth
-    return r * (1.02 + 0.42 * Math.sin(Math.min(1, t * 1.15) * Math.PI * 0.5));
+    const t = (ly + top) / dh; // 0 at the shaft .. 1 at the plinth
+    return r * (1.06 + 0.3 * Math.sin(clamp(t, 0, 1) * Math.PI) + (t > 0.9 ? 0.04 : 0));
   }, (X, Y, u, lx, ly) => {
-    const t = (ly + top) / (top - plinthH);
-    // petals: rounded lobes round the basin, their tips toward the shaft
-    const lobe = Math.cos(Math.asin(clamp(u, -1, 1)) * 7);
-    const groove = lobe < -0.75 && t > 0.15;
-    const tipLine = Math.abs(t - (0.25 + 0.2 * Math.abs(lobe))) < 0.05;
-    const n = cyl(k, u, side) * (groove ? 0.7 : 1) + (t < 0.12 ? 0.12 : 0) - (tipLine ? 0.1 : 0);
-    const chip = fbm(lx * 0.4, ly * 0.4, seed + 3, 2) > 0.76 ? -0.1 : 0;
-    return mt(M.stone, n * 0.95 + chip, X, Y, 0.2, 1);
+    const t = (ly + top) / dh;
+    const px = 1 / Math.max(1, dh);
+    let n = cyl(k, u, side);
+    // the lit top edge where the drum turns in under the shaft
+    if (t < px * 2) n = cyl(k, u, side) * 1.1 + 0.12;
+    // a raised fillet: its top catches the light, its underside a dark line
+    else if (Math.abs(t - 0.17) < px * 1.6) n += 0.1;
+    else if (Math.abs(t - 0.17 - px * 2) < px * 0.9) n -= 0.12;
+    // the ring of drum studs
+    else if (Math.abs(t - 0.3) < px * 1.6) {
+      const a = Math.asin(clamp(u, -1, 1));
+      if (Math.cos(a * 9) > 0.7) n = n * 1.05 + 0.1;
+    }
+    // the fillet near the foot
+    else if (Math.abs(t - 0.86) < px * 1.4) n += 0.08;
+    else if (Math.abs(t - 0.86 - px * 1.8) < px * 0.9) n -= 0.1;
+    // the drum's belly a touch darker under its swell (it turns away from the light above)
+    if (t > 0.55) n -= (t - 0.55) * 0.12;
+    const wear = fbm(lx * 0.2, ly * 0.2, seed + 3, 2) > 0.82 ? -0.05 : 0;
+    return mt(M.stone, n * 0.95 + wear, X, Y, 0.2, 1, 0.15);
   });
 }

@@ -363,7 +363,7 @@ function openPanel(e: WorldEvent): void {
   } else if (e["panel"] === "donate") {
     dTitle.textContent = "Donate";
     const p = document.createElement("p");
-    p.innerHTML = 'In the world this opens the real donate panel. <a href="https://ko-fi.com/dexdonation" target="_blank" rel="noopener">Ko-fi</a> · <a href="/donate/">MB Bank QR</a>';
+    p.innerHTML = 'In the world this opens the real donate panel. <a href="https://ko-fi.com/dexdonation" target="_blank" rel="noopener">Ko-fi</a> · <a href="/donate/">Personal bank QR</a>';
     dBody.append(p);
   } else if (e["panel"] === "donors") {
     dTitle.textContent = "Donors";
