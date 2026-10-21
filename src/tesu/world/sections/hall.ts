@@ -49,8 +49,11 @@ export const DESK_TOP = h(0.57);
 export const GALLERY_HANG: [number, number, number, number, number][] = [
   [0, 6.3, 1.45, 1.0, 2.45], [1, 7.95, 1.45, 1.0, 2.62],
   [2, 12.4, 2.5, 1.6, 1.95],
-  [5, 16.0, 1.3, 1.6, 2.05], [3, 17.4, 1.15, 0.7, 2.85], [4, 17.4, 1.15, 0.7, 1.95], [7, 18.75, 1.0, 1.45, 2.15], [8, 19.85, 1.0, 1.3, 1.98],
+  [5, 16.0, 1.3, 1.6, 2.35], [3, 17.4, 1.15, 0.7, 2.85], [4, 17.4, 1.15, 0.7, 1.95], [7, 18.75, 1.0, 1.45, 2.12], [8, 19.85, 1.0, 1.3, 2.4],
 ];
+// (Round 4, W1-j: the hero's and the salon's lower edges still sat on one line, y 665-685) the salon's tall portrait
+// 0.3 H higher and its last piece 0.42 H higher, so the salon steps 2.35 / 1.95 / 2.12 / 2.4 against the hero's 1.95
+// (nothing lower than 1.95 H: from the ground floor the frame's top still cuts no picture). Sizes unchanged.
 /** The display screens the groups hang on upstairs: [x0, x1, height above the gallery floor] (H). */
 export const GALLERY_SCREENS: [number, number, number][] = [[5.3, 8.95, 2.15], [10.85, 13.95, 2.5], [15.05, 20.55, 2.75]];
 
@@ -98,16 +101,21 @@ export function hall(b: WorldBuilder): void {
   // beside it on the left, the world map on its right; the other services spaced so each one reads on
   // its own: 1.5 H or more of clear wall between any two silhouettes; sized to her at charScale 0.88)
   b.usable({ id: "hall-front-doors", x0: X(0.75), y0: FY - h(2.1), x1: X(2.35), y1: FY, label: "go out", action: { kind: "door", to: "hall-door" } });
-  b.usable({ id: "notice-wall", x0: X(4.25), y0: FY - h(2.3), x1: X(6.2), y1: FY, label: "read the notices", action: { kind: "panel", panel: "notice" } });
-  b.usable({ id: "patrons", x0: X(7.7), y0: FY - h(2.3), x1: X(9.1), y1: FY, label: "the sponsors' board", action: { kind: "panel", panel: "patrons" } });
+  b.usable({ id: "notice-wall", x0: X(4.05), y0: FY - h(2.3), x1: X(6.0), y1: FY, label: "read the notices", action: { kind: "panel", panel: "notice" } });
+  b.usable({ id: "patrons", x0: X(7.45), y0: FY - h(2.3), x1: X(8.85), y1: FY, label: "the sponsors' board", action: { kind: "panel", panel: "patrons" } });
   // (round 2) its prompt shows between the chest's top (0.53 H) and the hanging sign over it
   // (round 3, W1-3) the chest's art stands 0.18 H in from the usable's west end (dress.ts), so she uses it from the west
   // with a clear gap between her and the pavilion's post (from the east she merged with the chest's end, the post and
   // the bay column's base)
-  b.usable({ id: "offering-box", x0: X(10.5), y0: FY - h(0.8), x1: X(11.3), y1: FY, label: "the offering box", action: { kind: "panel", panel: "donate" } });
+  // (round 4, W1-b) the notice wall, the sponsors' board and the box each 0.2-0.25 H west (the gallery post between the
+  // notice wall and the board with them, dress.ts), so the bay between that post and the bay's west column (11.95 H)
+  // holds a chest about 1.2 H wide whose plinth still clears the column's base by a visible gap
+  b.usable({ id: "offering-box", x0: X(10.25), y0: FY - h(0.8), x1: X(11.05), y1: FY, label: "the offering box", action: { kind: "panel", panel: "donate" } });
   // Hanko behind her desk (anchored at the counter top: she stands behind it, the counter at her waist)
-  b.sprite({ id: "hanko", plane: "play", kind: "hanko", x: X(13.85), y: FY - DESK_TOP + 4, p: {}, frames: 4, fps: 1.2 });
-  b.usable({ id: "hanko-desk", x0: X(12.75), y0: FY - h(1.6), x1: X(14.55), y1: FY, label: "talk to Hanko", action: { kind: "panel", panel: "hanko" } });
+  // (round 4, W1-a) the counter 2.4 H long (was 1.8: it lost to the gate in its own frame); Hanko behind its middle,
+  // the visitor's end on the west, a queue of two ambient patrons at its east end (dress.ts)
+  b.sprite({ id: "hanko", plane: "play", kind: "hanko", x: X(13.8), y: FY - DESK_TOP + 4, p: {}, frames: 4, fps: 1.2 });
+  b.usable({ id: "hanko-desk", x0: X(12.7), y0: FY - h(1.6), x1: X(15.1), y1: FY, label: "talk to Hanko", action: { kind: "panel", panel: "hanko" } });
   // the Prize Court: a moon gate in the back wall's middle bay, daylight and the court beyond it
   b.usable({ id: "great-doors", x0: X(GATE_O - 1.1), y0: FY - h(3.1), x1: X(GATE_O + 1.1), y1: FY, label: "the Prize Court", action: { kind: "door", to: "court-gate" } });
   b.usable({ id: "map-pillar", x0: X(21.15), y0: FY - h(1.3), x1: X(22.85), y1: FY, label: "the map", action: { kind: "say", text: "The map of Tesu: the coast and the lake, the gate road climbing to the palace, the court lit at its end." } });

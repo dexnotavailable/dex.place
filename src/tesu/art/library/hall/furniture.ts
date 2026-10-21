@@ -10,6 +10,7 @@ import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
 import { M, SCREEN, LitField, bevel, clamp, cord, cyl, face, fbm, grain, hash, keep, lathe, mt, poly, rect, tn, vnoise, type At, type Ramp } from "./kit.ts";
 import { lut, tint } from "./tint.ts";
+import { hanzi, hanziSize, scrawl } from "./signs.ts";
 
 const H = 96;
 
@@ -126,6 +127,35 @@ export const notice = definePainter<FurnP>("hall.notice", {
     // (round 4, W2-h: the notice board, the sponsors' board, the offering pavilion and the gate shared one blue-tile
     // roof, a kit stamp) the notice board's is a plain timber hood
     timberHood(c, lf, side, -0.3 * H, W + 0.3 * H, ry, 0.36 * H, 77);
+    // (round 4, W1-c: clutter at the edges) at its foot: a bundle of fresh notices tied with red string against the
+    // west foot, a paste pot with its brush, two old sheets fallen and curled on the floor under the board
+    {
+      const fx = 0.08 * W + foot / 2 + 6;
+      // the bundle: a stack of folded sheets, a red tie round it
+      rect(c, fx, -11, fx + 17, 0, (X, Y, lx, ly) => {
+        const l = lf.get(lx, ly);
+        const k = Math.floor((ly + 11) / 2.2);
+        if (Math.abs(lx - fx - 9) < 0.8) return tn(P.red, 0.35, X, Y, 0);
+        if (((ly + 11) % 2.2) < 0.7) return mt(M.paper, face(l.k, side) * 0.55, X, Y, 0.2, 1);
+        return mt(M.paper, face(l.k, side, 0, k === 0 ? -0.8 : 0) * (0.95 - k * 0.03) + (lx - fx > 15 ? -0.1 : 0), X, Y, 0.0, 0.85);
+      });
+      // the paste pot (a squat glazed jar) with a brush handle standing out of it
+      const px = fx + 26;
+      lathe(c, px, -9, 0, (ly) => 4.6 + Math.sin(((ly + 9) / 9) * Math.PI) * 1.2, (X, Y, u, _lx, ly) => mt(P.blue, cyl(lf.get(px, ly).k, u, side) * 0.7, X, Y, 0.3, 1));
+      rect(c, px + 1, -17, px + 2, -8, (X, Y, lx, ly) => mt(M.wood, face(lf.get(lx, ly).k, side), X, Y, 0.1, 1));
+      // two fallen sheets, curled, one half under the other
+      for (const [ox, w2, curl] of [[0.46, 16, 1], [0.58, 13, -1]] as const) {
+        const x0 = W * ox;
+        rect(c, x0, -4, x0 + w2, 0, (X, Y, lx, ly) => {
+          const u = (lx - x0) / w2;
+          const top = -1.5 - (curl > 0 ? Math.max(0, u - 0.7) * 9 : Math.max(0, 0.3 - u) * 9);
+          if (ly < top) return 0;
+          const l = lf.get(lx, ly);
+          const ink = ly > top + 0.8 && ((Math.floor(lx) % 3) === 0) && u > 0.15 && u < 0.85;
+          return ink ? tn(M.ink, 0.35, X, Y, 0.3) : mt(M.paper, face(l.k, side, 0, ly < top + 1 ? -0.7 : 0) * 0.9, X, Y, 0.05, 0.9);
+        });
+      }
+    }
   },
 });
 
@@ -316,15 +346,17 @@ export const reqBoard = definePainter<FurnP>("hall.reqboard", {
       rect(c, hx - 1, hy + 5, hx + 3, hy + 7, (X, Y) => tn(M.gold, 0.4, X, Y, 0));
     }
     // the one slip ("requests open later"), hung on the middle hook, gently curled
+    // (round 4, W1-i: its single ink bar read as a pause icon) written: three short columns of small script, right to
+    // left, and a red seal low on the left
     const sx = W / 2, sy0 = by0 + 22, sw = 0.34 * H, sh = 0.62 * H;
     rect(c, sx - sw / 2, sy0, sx + sw / 2 + 2, sy0 + sh + 2, (X, Y, lx, ly) => {
       const u = (lx - sx + sw / 2) / sw, v = (ly - sy0) / sh;
       if (u > 1 || v > 1) return keep(X, Y, 0.5) && u < 1.08 && v < 1.04 ? P.umber[3]! : 0;
       const l = lf.get(lx, ly);
-      const line = v > 0.25 && v < 0.85 && Math.abs(((u * 3) % 1) - 0.5) < 0.1 && u > 0.3 && u < 0.75;
-      if (line) return tn(M.ink, 0.3, X, Y, 0.2);
       return mt(M.paper, face(l.k, side, (u - 0.5) * 0.6, 0) * 1.0, X, Y, 0, 0.8);
     });
+    scrawl(c, sx - sw / 2 + 5, sy0 + 6, sx + sw / 2 - 4, sy0 + sh - 8, 41, (X, Y) => tn(M.ink, 0.3, X, Y, 0));
+    rect(c, sx - sw / 2 + 4, sy0 + sh - 9, sx - sw / 2 + 9, sy0 + sh - 4, (X, Y) => tn(P.red, 0.35, X, Y, 0));
   },
 });
 
@@ -566,9 +598,16 @@ export const teahouse = definePainter<FurnP>("hall.teahouse", {
     rect(c, nx0, ny0, nx1, ny1, (X, Y, lx, ly) => {
       const u = (lx - nx0) / (nx1 - nx0), v = (ly - ny0) / (ny1 - ny0);
       if (u > 0.85 && v > 0.8 && u + v > 1.7) return 0;
-      const line = v > 0.2 && v < 0.8 && Math.abs(((u * 2.6) % 1) - 0.5) < 0.12 && u > 0.2 && u < 0.8;
-      return line ? tn(M.ink, 0.3, X, Y, 0.2) : mt(M.paper, face(lf.get(lx, ly).k, side) * 1.0, X, Y, 0, 0.8);
+      return mt(M.paper, face(lf.get(lx, ly).k, side) * 1.0, X, Y, 0, 0.8);
     });
+    // (round 4, W1-i: two ink bars read as a pause icon) the notice says it: 休 ("closed") brushed big on the right,
+    // a column of small script beside it on the left
+    {
+      const [gw, gh] = hanziSize(2);
+      const gx = Math.round(nx1 - gw - 4), gy = Math.round(ny0 + ((ny1 - ny0) - gh) / 2);
+      hanzi(c, gx, gy, "休", 2, (X, Y) => tn(M.ink, 0.15, X, Y, 0));
+      scrawl(c, nx0 + 3, ny0 + 5, gx - 3, ny1 - 6, 23, (X, Y) => tn(M.ink, 0.35, X, Y, 0));
+    }
     // the noren, rolled up under the lintel and tied, its blue cloth showing
     rect(c, 0, -Ht + 2, W, -Ht + 0.2 * H, (X, Y, lx, ly) => {
       const v = (ly + Ht - 2) / (0.2 * H - 2);

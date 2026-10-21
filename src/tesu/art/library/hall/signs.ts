@@ -253,3 +253,115 @@ export function rosette(c: PaintCtx, cx: number, cy: number, r: number, red: Col
     return pleat ? dark(X, Y, lx, ly) : red(X, Y, lx, ly);
   });
 }
+
+// ---------------------------------------------------------------------------
+// (round 4, W1-a / W1-i) A few real characters, 11 x 13 with 1 px strokes, for the signs that must say a word: the
+// register's signboard (登記, "register"), the shuttered teahouse's notice (休, "closed"). Drawn at any whole scale
+// (2 on a hanging signboard: 2 px strokes), so they never fall back to bars that read as a pause icon.
+// ---------------------------------------------------------------------------
+const HANZI: Record<string, string[]> = {
+  登: [
+    "..####.#.#.",
+    ".....#..#..",
+    "....#.#..#.",
+    "..##...#..#",
+    ".#.........",
+    "..#######..",
+    "...........",
+    "..#######..",
+    "..#.....#..",
+    "..#######..",
+    "...#...#...",
+    "....#.#....",
+    "###########",
+  ],
+  記: [
+    "..#........",
+    "......#####",
+    "#####.....#",
+    "..........#",
+    ".###......#",
+    "......#####",
+    ".###..#....",
+    "......#....",
+    ".###..#....",
+    ".#.#..#...#",
+    ".#.#..#...#",
+    ".###...###.",
+    "...........",
+  ],
+  休: [
+    "..#....#...",
+    "..#....#...",
+    ".#.....#...",
+    ".#.#######.",
+    "##.....#...",
+    "#.#...###..",
+    "..#..#.#.#.",
+    "..#.#..#..#",
+    "..#....#...",
+    "..#....#...",
+    "..#....#...",
+    "..#....#...",
+    "...........",
+  ],
+};
+
+/** A character's size at a scale: [w, h] px. */
+export function hanziSize(scale = 1): [number, number] {
+  return [11 * scale, 13 * scale];
+}
+
+/**
+ * Draws one character with its top-left at (x, y), each glyph pixel a `scale` px square. `cut` (optional) paints the
+ * carved lip: the px just below and right of a stroke where no stroke is (cut into lacquer, or ink soaking in).
+ */
+export function hanzi(c: PaintCtx, x: number, y: number, ch: string, scale: number, col: Col, cut?: Col): void {
+  const g = HANZI[ch];
+  if (!g) return;
+  const on = (q: number, r: number): boolean => g[r]?.[q] === "#";
+  const x0 = Math.round(x), y0 = Math.round(y);
+  if (cut) {
+    for (let r = 0; r < 13; r++) for (let q = 0; q < 11; q++) {
+      if (!on(q, r)) continue;
+      if (!on(q, r + 1)) rect(c, x0 + q * scale + 1, y0 + (r + 1) * scale, x0 + (q + 1) * scale + 1, y0 + (r + 1) * scale + 1, cut);
+      if (!on(q + 1, r)) rect(c, x0 + (q + 1) * scale, y0 + r * scale + 1, x0 + (q + 1) * scale + 1, y0 + (r + 1) * scale + 1, cut);
+    }
+  }
+  for (let r = 0; r < 13; r++) for (let q = 0; q < 11; q++) {
+    if (on(q, r)) rect(c, x0 + q * scale, y0 + r * scale, x0 + (q + 1) * scale, y0 + (r + 1) * scale, col);
+  }
+}
+
+/**
+ * Small handwriting: columns of tiny characters, right to left, in the box (x0, y0)-(x1, y1). Each character is a
+ * 4 x 4 px cell of two to four short brush strokes (a bar, a post, a hook, a dot), never one ruled line, so a slip or
+ * a notice reads as written at 1:1 and never as a pause icon or a barcode.
+ */
+export function scrawl(c: PaintCtx, x0: number, y0: number, x1: number, y1: number, seed: number, col: Col, colGap = 2): void {
+  const cw = 4, chh = 4, rowGap = 1;
+  const cols = Math.max(1, Math.floor((x1 - x0 + colGap) / (cw + colGap)));
+  const rows = Math.max(1, Math.floor((y1 - y0 + rowGap) / (chh + rowGap)));
+  const h = (a: number, b: number, s: number): number => {
+    let v = Math.imul(a * 374761393 + b * 668265263 + s * 2147483647, 1274126177) >>> 0;
+    v = Math.imul(v ^ (v >>> 13), 1103515245) >>> 0;
+    return ((v ^ (v >>> 16)) >>> 0) / 4294967296;
+  };
+  for (let k = 0; k < cols; k++) {
+    const gx = Math.round(x1 - (k + 1) * cw - k * colGap);
+    // each column ends at its own length, like a line of writing
+    const n = Math.max(2, Math.round(rows * (0.55 + 0.45 * h(k, 0, seed))));
+    for (let j = 0; j < n; j++) {
+      const gy = Math.round(y0 + j * (chh + rowGap));
+      const strokes = 2 + Math.floor(h(k, j, seed + 1) * 3);
+      for (let s = 0; s < strokes; s++) {
+        const kind = Math.floor(h(k * 7 + s, j, seed + 2) * 4);
+        const o = Math.floor(h(k, j * 5 + s, seed + 3) * 3);
+        if (kind === 0) rect(c, gx, gy + o, gx + 3 + (o & 1), gy + o + 1, col); // a bar
+        else if (kind === 1) rect(c, gx + o, gy, gx + o + 1, gy + 3 + (o & 1), col); // a post
+        else if (kind === 2) { rect(c, gx + o, gy + 1, gx + o + 1, gy + 4, col); rect(c, gx + o + 1, gy + 3, gx + o + 2, gy + 4, col); } // a hook
+        else rect(c, gx + o + 1, gy + o, gx + o + 2, gy + o + 1, col); // a dot
+      }
+    }
+  }
+}
