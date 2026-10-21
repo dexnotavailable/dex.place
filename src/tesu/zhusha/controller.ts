@@ -114,7 +114,9 @@ export interface ZFx {
 /** Which impact slash each of her hits leaves (FX v2 PLAN: a light, b medium, c heavy, f pierce, g finisher, h ult form). */
 export function impactSlash(move: string, weight: Weight, ult: boolean): string | undefined {
   if (move === "e_tap") return undefined;
-  if (ult) return "impact_slash_h";
+  // (Dex 10-21: the form's drawings already carry its swirls) not h: its black first drawing, held through every hit's
+  // freeze, blotted out her drawing; the light cuts read over it
+  if (ult) return move === "m1_4" ? "impact_slash_g" : weight === "heavy" ? "impact_slash_c" : "impact_slash_a";
   if (move === "m1_3") return "impact_slash_f";
   if (move === "m1_4") return "impact_slash_g";
   return weight === "light" ? "impact_slash_a" : weight === "medium" ? "impact_slash_b" : "impact_slash_c";

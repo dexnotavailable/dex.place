@@ -57,7 +57,7 @@ export interface UltFile {
   punch: { press: number; boom: number; last: number; impact: number };
   cues: Record<string, string>;
   fx: { callFire: string; letter: string; letterBreak: string; cuts: CutKinds; dive: string; nuke: string; clear: string };
-  form: { reach: number; ahead: number; blades: number[]; summon: number; strike: number; fade: number; bladeLen: number; ring: number };
+  form: { reach: number; ahead: number; blades: number[]; bladeHit: number[]; summon: number; strike: number; fade: number; bladeLen: number; ring: number };
 }
 
 /** The storm's cuts over the real letter (ult.json fx.cuts): the shipped impact slashes by the cut's angle, drawn facing right. */
