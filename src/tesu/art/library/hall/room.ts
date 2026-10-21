@@ -675,10 +675,14 @@ function screenWall(c: PaintCtx, w0: number, w1: number, top: number, s: number,
       if (e < 4) return mt(M.wood, lum(l, 0, wv > 0.9 ? -0.6 : 0) * 0.55 - dim, X, Y, 0.3, 1);
       // a deep reveal under its head
       if (wv > 0.88) return mt(M.lacq, 0.12, X, Y, 0.2, 1);
-      const g = 0.16 * H;
-      const gx = (((lx - f0) % g) + g) % g, gy = (((-ly) % g) + g) % g;
-      if (gx < 1.8 || gy < 1.8 || (Math.abs(gx - gy) < 1.1 && hash(Math.floor((lx - f0) / g), Math.floor(-ly / g), 29) < 0.5)) return mt(M.lacq, 0.25, X, Y, 0.3, 1);
-      return tn(P.tile, clamp(0.12 + (1 - wv) * 0.3 + Math.abs(wu - 0.5) * 0.35, 0, 1), X, Y, 0.5);
+      // (round 4, W2-l: a flat bright blue grid in docs-nook's top right corner, an eye magnet) the hall's ice-ray
+      // inside a plain border, the night's sky behind it two steps down
+      if (e < 6) return mt(M.lacq, 0.3 - dim, X, Y, 0.3, 1);
+      const ww = 0.76 * FW, wh = (WIN1 - WIN0) * H;
+      const segs = iceRay(ww - 12, wh * 0.88 - 12, 6431, 0.05 * H * H);
+      const bar = iceBar(segs, wu * ww - 6, (1 - wv) * wh - 6, 1.5);
+      if (bar) return bar === 1 ? mt(M.wood, 0.5 + lum(l) * 0.3 - dim, X, Y, 0.55, 1, 0) : bar === 2 ? P.umber[3]! : P.umber[5]!;
+      return tn(P.tile, clamp(0.5 + (1 - wv) * 0.22 + Math.abs(wu - 0.5) * 0.25, 0, 1), X, Y, 0.5);
     }
     // --- the boarding, a long ink scroll on it
     const sw = 0.62 * H;

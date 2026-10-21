@@ -292,7 +292,7 @@ export const crowd = definePainter<CrowdP>("court.crowd", {
     const rows = p.rows ?? 3;
     const f = p.frame ?? 0;
     const hw = p.w / 2;
-    const haze = lut("haze", 1), haze2 = lut("haze", 2);
+    const haze = lut("haze", 1), haze2 = lut("haze", 2), shade = lut("day", 1);
     for (let r = rows - 1; r >= 0; r--) {
       const top = -r * 34 - 20, inset = r * 26;
       const x0 = -hw + inset + 12, x1 = hw - inset - 12;
@@ -331,7 +331,9 @@ export const crowd = definePainter<CrowdP>("court.crowd", {
       figs.forEach((g, j) => { if (j % 2 === 0) person(c, g, null); });
       // the rows further back sit in more air: lighter, cooler, flatter
       // (round 3, W2-10) every row a step back in the air from the near court, the back rows further
-      tint(c, -hw, top - 60, hw, top, (_X, _Y, _lx, ly) => (ly < top - 1 ? (r > 0 ? haze2 : haze) : null));
+      // (round 4, W2-i) the front row, nearest the ring, a step into the day's shade instead (its people behind the
+      // ring's rope read against the ring, not as the brightest band)
+      tint(c, -hw, top - 60, hw, top, (_X, _Y, _lx, ly) => (ly < top - 1 ? (r > 1 ? haze2 : r > 0 ? haze : shade) : null));
     }
   },
 });

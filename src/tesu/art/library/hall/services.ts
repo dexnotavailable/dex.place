@@ -479,16 +479,30 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
     const [nx, ny] = bevel(u, vv, 3 / W, 3 / (b1 - s1));
     // the front's two boards with a seam, the grain running across
     const seam = Math.abs(vv - 0.55) < 0.03;
-    // dark weathered timber, so the brass slit plate and the coin crest stand out on it
-    return mt(M.wood, v(l, seam ? 0.22 : 0.46, nx, ny) + grain(lx, ly, 103, false) * 0.08 - vv * 0.06 + g(lx, ly) * 1.2, X, Y, 0.2, 1);
+    // (round 4, W2-j: weathered timber lit by the lantern went beige, an ordered-dither field like pegboard, under a
+    // salmon lip) dark lacquered timber: the lantern lays a sheen along the upper board and a step on the bevels turned
+    // to it, never a wash, so the brass slit plate is the chest's brightest thing; the lacquer crazed and rubbed back to
+    // the wood low on the corners
+    const gl = g(lx, ly);
+    const sheen = Math.abs(vv - 0.18) < 0.06 && gl > 0.25 ? 0.14 : 0;
+    const rub = (u < 0.06 || u > 0.94) && vv > 0.7 && fbm(lx * 0.3, ly * 0.3, 109, 2) > 0.55;
+    if (rub) return mt(M.wood, v(l, 0.4, nx, ny) + gl * 0.3, X, Y, 0.35, 1, 0.2);
+    return mt(M.lacq, v(l, seam ? 0.08 : 0.28, nx, ny) + grain(lx, ly, 103, false) * 0.06 - vv * 0.05 + gl * 0.42 + sheen, X, Y, 0.0, 1, 0.2);
   });
-  // iron-dark corner brackets and studs
+  // bronze corner straps: an L of bronze over each corner, its studs, its lit edges toward the lantern
+  const ST = Math.max(9, Math.round(0.13 * H)), SW = 3.2;
   for (const [fx, fy, sx, sy] of [[0, s1, 1, 1], [W, s1, -1, 1], [0, b1, 1, -1], [W, b1, -1, -1]] as const) {
-    rect(c, Math.min(fx, fx + sx * 9), Math.min(fy, fy + sy * 9), Math.max(fx, fx + sx * 9), Math.max(fy, fy + sy * 9), (X, Y, lx, ly) => {
+    rect(c, Math.min(fx, fx + sx * ST), Math.min(fy, fy + sy * ST), Math.max(fx, fx + sx * ST), Math.max(fy, fy + sy * ST), (X, Y, lx, ly) => {
       const dx = Math.abs(lx - fx), dy = Math.abs(ly - fy);
-      if (dx > 2.6 && dy > 2.6) return 0;
-      const stud = (Math.abs(dx - 6) < 1 && dy < 2) || (Math.abs(dy - 6) < 1 && dx < 2);
-      return stud ? tn(M.gold, 0.2, X, Y, 0) : mt(M.lacq, v(lf.get(lx, ly), 0.3, sx * -0.3, sy * 0.3), X, Y, 0.0, 1);
+      if (dx > SW && dy > SW) return 0;
+      // the strap's tip cut in a small trefoil
+      const along = Math.max(dx, dy);
+      if (along > ST - 2 && Math.min(dx, dy) > SW - 1) return 0;
+      const stud = (Math.abs(dx - ST * 0.62) < 1 && dy < SW - 1) || (Math.abs(dy - ST * 0.62) < 1 && dx < SW - 1);
+      const l = lf.get(lx, ly);
+      if (stud) return mt(M.bronze, v(l, 0.85, -0.5, -0.5) + g(lx, ly) * 0.6, X, Y, 0.0, 1, 0);
+      const edge = (dx > SW - 1 && dy <= SW) || (dy > SW - 1 && dx <= SW);
+      return mt(M.bronze, v(l, edge ? 0.5 : 0.36, sx * -0.3, sy * 0.3) + g(lx, ly) * 0.55, X, Y, 0.15, 1, 0.2);
     });
   }
   // the crest on the lower board: a gold cash coin
@@ -532,10 +546,12 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
     const l = lf.get(lx, ly);
     const vv = ly - r0;
     const cap = lx < 1 || lx > W - 1;
-    if (vv < 1.5) return g(lx, ly) > 0.12 ? P.paper[g(lx, ly) > 0.28 ? 0 : 1]! : mt(M.wood, v(l, 1.0, 0, -1), X, Y, 0.0, 1);
+    // (its top lip a gold-lit line where the lantern is nearest, a step under the slit plate's glint)
+    if (vv < 1.5) return g(lx, ly) > 0.3 ? tn(M.gold, 0.15, X, Y, 0) : mt(M.lacq, v(l, 0.62, 0, -1) + g(lx, ly) * 0.7, X, Y, 0.0, 1, 0);
     if (r1 - ly < 1.5) return mt(M.lacq, v(l, 0.18, 0, 0.8), X, Y, 0.0, 1);
-    if (cap) return mt(M.gold, v(l, 0.62, lx < 0 ? -0.6 : 0.6, 0), X, Y, 0.05, 1);
-    return mt(M.verm, v(l, 0.5) + grain(lx, ly, 105, false) * 0.05 + g(lx, ly) * (vv < 3.5 ? 1.2 : 0.8), X, Y, 0.15, 1);
+    if (cap) return mt(M.bronze, v(l, 0.6, lx < 0 ? -0.6 : 0.6, 0) + g(lx, ly) * 0.4, X, Y, 0.1, 1, 0);
+    // (round 4: lit red lacquer went salmon) an oxblood lacquer rim, the lantern's light a sheen along it, not a wash
+    return mt(M.verm, v(l, 0.32) + grain(lx, ly, 105, false) * 0.05 + g(lx, ly) * (vv < 3.5 ? 0.55 : 0.35), X, Y, 0.4, 1, 0.2);
   });
 
   // --- offerings on the plinth: coins scattered and a short stack, a mandarin on a dish
@@ -1495,7 +1511,9 @@ export const ring = definePainter<RingP>("court.ring", {
       const k = Math.floor((lx + 40) / (0.9 * H)), sw = 0.9 * H;
       const jx = ((lx + 40) % sw + sw) % sw + (hash(k, 1, 113) - 0.5) * 12;
       const joint = Math.abs(jx) < 1 || Math.abs(jx - sw) < 1;
-      if (Math.abs(v - 0.45) < 0.05 && fbm(lx * 0.06, 2, 115, 2) < 0.68) return mt(M.gold, 0.8, X, Y, 0.1, 1);
+      // (round 4, W2-i: a dashed gold line along the middle read as a road marking) a worn gold inlay only along the
+      // kerb's top edge, the slabs' seams the only marks on its face
+      if (v < 0.22 && fbm(lx * 0.04, 2, 115, 2) < 0.72) return mt(M.gold, 0.7, X, Y, 0.15, 1);
       const n = fbm(lx * 0.05, ly * 0.2, 101, 3) - 0.5;
       const chip = fbm(lx * 0.3, ly * 0.3, 117, 2) > 0.78 ? -0.12 : 0;
       return mt(P.earth, 0.74 + n * 0.12 - (joint ? 0.25 : 0) + chip - v * 0.08, X, Y, 0.0, 1, 0.4);
@@ -1560,15 +1578,32 @@ export const ring = definePainter<RingP>("court.ring", {
     const [ax, bx] = posts as [number, number];
     const ry = -postH + 0.06 * H, sag = 0.2 * H;
     const ropeY = (x: number): number => ry + sag * 4 * ((x - ax) / (bx - ax)) * (1 - (x - ax) / (bx - ax));
-    rect(c, ax, ry - 7, bx, ry + sag + 7, (X, Y, lx, ly) => {
+    // (round 4, W2-i: a red and white twist read as a barber pole, the most graphic line behind the fighters) a thick
+    // red silk rope: its two strands twisted, each strand's lit shoulder and its turn into the next in light and dark of
+    // the one red, a sheen along its top, a dark underside; gold tassels at both posts
+    rect(c, ax, ry - 8, bx, ry + sag + 8, (X, Y, lx, ly) => {
       const cy = ropeY(lx);
       const d = ly - cy;
-      const thick = 5.2;
+      const thick = 5.8;
       if (Math.abs(d) > thick) return 0;
-      const twist = (((lx * 0.7 + d * 1.4) % 9) + 9) % 9 < 4.5;
-      const shade = d > thick - 1.5 ? -0.35 : d < -thick + 1.2 ? 0.15 : 0;
-      return twist ? mt(M.paper, face(SUN, SIDE, 0, d / thick) * 0.95 + shade, X, Y, 0.0, 0.9) : mt(M.verm, face(SUN, SIDE, 0, d / thick) * 0.85 + shade, X, Y, 0.1, 1);
+      const ph = (((lx * 0.62 + d * 1.25) % 10) + 10) % 10; // 0..10 across one strand
+      const shoulder = ph < 2.2 ? 0.16 : ph > 7.6 ? -0.2 : 0;
+      const shade = d > thick - 1.6 ? -0.32 : d < -thick + 1.4 ? 0.12 : 0;
+      return mt(M.verm, face(SUN, SIDE, 0, d / thick) * 0.72 + shoulder + shade, X, Y, 0.12, 1, 0.25);
     });
+    for (const [tx, dir] of [[ax + 0.12 * H, 1], [bx - 0.12 * H, -1]] as const) {
+      const ty = ropeY(tx) + 4;
+      // the knot, then the tassel's skirt falling, a little flared, its threads catching the sun
+      rect(c, tx - 5, ty, tx + 5, ty + 0.42 * H, (X, Y, lx, ly) => {
+        const t = (ly - ty) / (0.42 * H);
+        const w = t < 0.16 ? 3.2 : t < 0.24 ? 2.2 : 2.4 + (t - 0.24) * 3.2;
+        if (Math.abs(lx - tx) > w) return 0;
+        if (t < 0.16) return mt(M.gold, face(SUN, SIDE, (lx - tx) / 4, -0.4) * 1.0, X, Y, 0.0, 1);
+        if (t < 0.24) return mt(M.verm, 0.55, X, Y, 0.2, 1);
+        const thread = ((Math.floor(lx * 1.3) % 2) + 2) % 2 === 0;
+        return mt(M.gold, face(SUN, SIDE, (lx - tx) / 4 * dir, 0) * (thread ? 0.85 : 0.65) - t * 0.15, X, Y, 0.05, 1);
+      });
+    }
     const n = Math.max(3, Math.round((bx - ax) / (1.05 * H)));
     for (let k = 1; k < n; k++) {
       const sx = ax + ((bx - ax) * k) / n, sy = ropeY(sx) + 3;

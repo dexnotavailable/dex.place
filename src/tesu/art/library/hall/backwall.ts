@@ -522,12 +522,12 @@ function lintel(c: PaintCtx, p: BackWallP, lf: LitField): void {
       const bx = (k - cc) * 4.25 * U, by = (v - 0.5) * (y1 - y0);
       if (style < 0.4) {
         const cl = cloudRun(bx + 997, by, 0.2 * (y1 - y0), bi + 37);
-        if (cl === 2) return mt(M.gold, lum(l) * 0.6, X, Y, 0.3, 1);
-        if (cl === 1) return mt(M.lacq, lum(l) * 0.75, X, Y, 0.15, 1);
+        if (cl === 2) return mt(M.gold, lum(l) * 0.85 + 0.15, X, Y, 0.15, 1);
+        if (cl === 1) return tn(P.jade, clamp(0.7 + (1 - lum(l)) * 0.14, 0, 1), X, Y, 0.45);
       } else {
         const d = Math.hypot(bx, by), a = Math.atan2(by, bx);
         const R = 0.22 * (y1 - y0);
-        if (Math.abs(d - R) < 0.8 || (d < R * 0.75 && Math.cos(a * 5) > 0.35 && d > R * 0.2) || d < R * 0.15) return mt(M.gold, lum(l) * 0.65, X, Y, 0.25, 1);
+        if (Math.abs(d - R) < 0.8 || (d < R * 0.75 && Math.cos(a * 5) > 0.35 && d > R * 0.2) || d < R * 0.15) return mt(M.gold, lum(l) * 0.85 + 0.15, X, Y, 0.15, 1);
       }
       return mt(M.lacq, lum(l) * 0.5, X, Y, 0.2, 1);
     }

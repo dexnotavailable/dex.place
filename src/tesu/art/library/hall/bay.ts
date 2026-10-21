@@ -15,7 +15,6 @@ import type { PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
 import { M, LitField, clamp, face, fbm, grain, hash, mt, rect, vnoise } from "./kit.ts";
 import { plumCrest } from "./signs.ts";
-import { ruyi } from "./roof.ts";
 
 const H = 96;
 
@@ -421,15 +420,14 @@ export function couplets(c: PaintCtx, cw: number, clY0: number, lf: LitField): v
  *   roundel near the top, a column of cloud scrolls embroidered a step darker below it, a swallowtail hem with a
  *   tassel at each tip; a short shadow on the plaster down and right. It hangs clear of the map lantern's cord (+4.15
  *   H) and ends 3.6 H above the floor.
- * - west: a long carved board high in the clerestories' band (the register's signboard hangs low over the counter
- *   under it, so nothing hangs down there): black lacquer, a gold bead, a run of ruyi clouds carved in relief with only
- *   their outlines gilt, the plum crest in the middle; its shadow on the plaster under it.
+ * - west: the register's signboard over the counter (W1, round 4) is that stretch's big shape; nothing hangs there
+ *   from the tie beam, or the signboard's cords would cross it.
  */
 export function bayBanners(c: PaintCtx, cw: number, clY0: number, lf: LitField): void {
   const top = clY0 - 0.3 * H + 3, bot = -3.6 * H;
   const w = 0.4 * H;
-  carvedBoard(c, -cw - 2.92 * H, -cw - 0.9 * H, clY0 + 0.36 * H, clY0 + 0.78 * H, lf);
-  [4.85 * H].forEach((cx, i) => {
+  // (2.47 H east of the head's beam end: clear of the couplet and of the map lantern's cord)
+  [cw + 2.47 * H].forEach((cx, i) => {
     const x0 = cx - w / 2, x1 = cx + w / 2;
     const tail = 0.24 * H;
     // the shadow on the plaster
@@ -484,35 +482,6 @@ export function bayBanners(c: PaintCtx, cw: number, clY0: number, lf: LitField):
       });
     }
   });
-}
-
-/** A long carved board on the bay wall (x0..x1, y0..y1 local): see bayBanners. */
-function carvedBoard(c: PaintCtx, x0: number, x1: number, y0: number, y1: number, lf: LitField): void {
-  // (the crest a third of the way along, clear of the paper cranes let down from the gallery in front of the board)
-  const hgt = y1 - y0, cx = x0 + (x1 - x0) * 0.36, cy = (y0 + y1) / 2;
-  // its shadow on the plaster, down and right
-  rect(c, x0 + 3, y0 + 4, x1 + 4, y1 + 5, (X, Y, lx, ly) => (lx > x1 || ly > y1 ? mt(PLASTER_DARK, 0.3 + 0.2 * hash(X, Y, 9), X, Y, 0, 1) : 0));
-  rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
-    const l = lf.get(lx, ly);
-    const e = Math.min(lx - x0, x1 - lx, ly - y0, y1 - ly);
-    // the frame: a lit top arris, a gold bead worn back to wood at a few points, a black fillet
-    if (e < 1) return mt(M.lacq, face(l.k, -0.5, 0, ly - y0 < 1 ? -1 : 0.6) * 0.55, X, Y, 0.2, 1, 0);
-    if (e < 2.5) {
-      const worn = fbm(lx * 0.12, ly * 0.3, 631, 2) > 0.7;
-      return worn ? mt(M.wood, face(l.k, -0.5) * 0.6, X, Y, 0.3, 1, 0) : mt(M.gold, face(l.k, -0.5, 0, ly - y0 < 2.5 ? -1 : 0) * 0.82, X, Y, 0.1, 1, 0);
-    }
-    if (e < 4) return mt(M.lacq, face(l.k, -0.5) * 0.28, X, Y, 0.3, 1, 0);
-    // the crest's roundel in the middle, a plain field round it
-    const dc = Math.hypot(lx - cx, (ly - cy) * 1.1);
-    if (dc < hgt * 0.62) return mt(M.lacq, face(l.k, -0.5) * 0.38 + grain(lx, ly, 633, false) * 0.05, X, Y, 0.2, 1, 0.2);
-    // the clouds in relief: their faces lit from the top left, only the outline gilt
-    const rv = ruyi(lx - x0, ly - cy, (hgt - 8) * 0.5, 637);
-    if (rv === 2) return fbm(lx * 0.2, ly * 0.2, 639, 2) > 0.72 ? mt(M.lacq, face(l.k, -0.5) * 0.7, X, Y, 0.1, 1, 0) : mt(M.gold, face(l.k, -0.5, 0, ly < cy ? -0.5 : 0.3) * 0.62, X, Y, 0.2, 1, 0);
-    if (rv === 1) return mt(M.lacq, face(l.k, -0.5, 0, ly < cy ? -0.5 : 0.3) * 0.72, X, Y, 0.1, 1, 0);
-    return mt(M.lacq, face(l.k, -0.5) * 0.3 + grain(lx, ly, 641, false) * 0.05, X, Y, 0.3, 1, 0.2);
-  });
-  const g = (kk: number) => (X: number, Y: number, lx: number, ly: number) => mt(M.gold, face(lf.get(lx, ly).k, -0.5) * kk, X, Y, 0.1, 1, 0);
-  plumCrest(c, Math.round(cx), Math.round(cy), Math.round(hgt * 0.42), g(0.85), (X, Y) => mt(M.lacq, 0.3, X, Y, 0.2, 1, 0), g(1.05));
 }
 
 /** A column of small cloud scrolls (0 off, 1 on, 2 its outline): one every ~0.5 H, alternating their curl. */

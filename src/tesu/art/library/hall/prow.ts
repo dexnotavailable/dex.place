@@ -366,16 +366,19 @@ export const tiers = definePainter<TiersP>("court.tiers", {
     rect(c, -hw, -20, hw, 120, (X, Y, lx, ly) => {
       const course = Math.floor((ly + 20) / 14);
       const joint = (((ly + 20) % 14) + 14) % 14 < 1 || ((((lx + (course % 2) * 20) % 40) + 40) % 40) < 1;
-      return mt(M.stone, face(0.9, SIDE) * (joint ? 0.55 : 0.75) - (ly > 0 ? 0.1 : 0), X, Y, 0.1, 1);
+      // (round 4, W2-i: the stands' pale slabs, L 173-179, were the brightest big mass in both court frames) two steps
+      // down: their risers in the stands' own shade, only the tread noses lit, so the ring is the lightest band at the
+      // fighters' height
+      return mt(M.stone, face(0.9, SIDE) * (joint ? 0.36 : 0.5) - (ly > 0 ? 0.1 : 0), X, Y, 0.25, 1);
     });
     for (let r = p.rows - 1; r >= 0; r--) {
       const top = -r * 34 - 20, inset = r * 26;
       const x0 = -hw + inset, x1 = hw - inset;
       // the step's riser and its lit tread nose
       rect(c, x0, top, x1, top + 34, (X, Y, lx, ly) => {
-        if (ly < top + 3) return mt(M.stone, 1.05, X, Y, 0.0, 1);
+        if (ly < top + 3) return mt(M.stone, 0.82, X, Y, 0.1, 1);
         const k = (((lx - x0) % 46) + 46) % 46;
-        return mt(M.stone, face(0.9, SIDE) * (k < 1 ? 0.55 : 0.78) - (ly - top) / 34 * 0.12, X, Y, 0.1, 1);
+        return mt(M.stone, face(0.9, SIDE) * (k < 1 ? 0.36 : 0.52) - (ly - top) / 34 * 0.12, X, Y, 0.25, 1);
       });
       // the rail: vermilion, posts every 46 px
       rect(c, x0, top - 9, x1, top - 1, (X, Y, lx, ly) => {
@@ -384,7 +387,7 @@ export const tiers = definePainter<TiersP>("court.tiers", {
         return ly < top - 7 ? mt(M.verm, face(0.9, SIDE, 0, -0.8) * 0.95, X, Y, 0.2, 1) : 0;
       });
       // the steps' end walls: a carved stone cheek at each end of the row
-      for (const sx of [x0, x1 - 10]) rect(c, sx, top - 4, sx + 10, top + 34, (X, Y, lx) => mt(M.stone, face(0.9, SIDE, lx - sx < 5 ? -0.6 : 0.6, 0) * 0.85, X, Y, 0.1, 1));
+      for (const sx of [x0, x1 - 10]) rect(c, sx, top - 4, sx + 10, top + 34, (X, Y, lx) => mt(M.stone, face(0.9, SIDE, lx - sx < 5 ? -0.6 : 0.6, 0) * 0.6, X, Y, 0.2, 1));
     }
     // lacquer posts carrying the lantern strings, and the strings themselves sagging between
     const ptop = -p.rows * 34 - 60;

@@ -209,61 +209,20 @@ export function paintFoundation(c: PaintCtx, p: FoundationArgs): void {
         if (inner < 1.5) return mt(M.stone, 0.5, X, Y, 0.1, 1);
         return mt(M.stone, 0.9 + (fbm(lx * 0.1, ly * 0.1, 329, 2) - 0.5) * 0.06 + overhang, X, Y, 0.0, 1);
       }
-      if (pn.kind === "relief") {
-        // (round 3, W2-10: the carved waves read as wood grain) clouds carved in the bare stone, lit on their upper
-        // edges, undercut below, worn
-        if (inner < 2) return mt(M.stone, 0.48 * along, X, Y, 0.1, 1);
-        const k = carvedCloud(lx - pn.x0 + hash(pn.seed, 6, 335) * 0.6 * H, vy, FRIEZE * 0.34, 361 + pn.seed);
-        const worn = fbm(lx * 0.3, ly * 0.3, 331, 2) > 0.75 ? -0.08 : 0;
-        if (k === 2) return mt(M.stone, 0.98 * along + overhang + drip + worn, X, Y, 0.05, 1);
-        if (k === 1) return mt(M.stone, 0.74 * along + overhang + drip + worn, X, Y, 0.05, 1);
-        if (k === 3) return mt(M.stone, 0.34 * along + overhang, X, Y, 0.05, 1);
-        return mt(M.stone, 0.56 * along + overhang + drip + worn, X, Y, 0.05, 1);
-      }
-      // the lacquered panels: a gold rim, then their motif; the lacquer faded and flaking where weather got in
-      const fade = fbm(lx * 0.03, ly * 0.05, 333 + pn.seed, 3) + (pn.kind === "lost" ? 0.22 : 0);
-      const flake = fade > 0.72;
-      const gilt = fbm(lx * 0.08, ly * 0.2, 19 + pn.seed, 2) < (pn.kind === "lost" ? 0.35 : 0.62);
-      if (inner < 2.5) return gilt && !flake ? mt(M.gold, face(0.95, SIDE, 0, vy < 0 ? -0.6 : 0.6) * 0.9 * along, X, Y, 0.05, 1) : mt(M.stone, 0.55, X, Y, 0.1, 1);
-      if (inner < 4) return mt(lacq, 0.25, X, Y, 0.1, 1);
-      if (flake) return mt(M.stone, 0.58 * along + drip, X, Y, 0.1, 1);
-      const ground = mt(lacq, (face(0.9, SIDE) * 0.38 + (fade > 0.6 ? 0.12 : 0)) * along + drip, X, Y, 0.15, 1);
-      if (pn.kind === "sun") {
-        // (round 3, W2-10) the court's middle: its crest (crossed blades in a ring, painted after this pass), carved
-        // clouds rolling out either side of it in the old lacquer, the gilt worn off their faces
-        if (Math.hypot(lx - centre, vy) < 0.27 * H) return ground;
-        const k = carvedCloud(Math.abs(lx - centre) - 0.3 * H, vy, FRIEZE * 0.36, 351);
-        if (k === 2) return gilt ? mt(M.gold, 0.82 * along, X, Y, 0.1, 1) : mt(M.stone, 0.95 * along, X, Y, 0.05, 1);
-        if (k === 1) return mt(lacq, face(0.9, SIDE) * 0.62 * along, X, Y, 0.1, 1);
-        if (k === 3) return mt(lacq, 0.08, X, Y, 0.3, 1);
-        return ground;
-      }
-      if (pn.kind === "scroll" || pn.kind === "lost") {
-        // (round 3, W2-10: a gold spiral band) a long run of clouds carved in the panel, the lacquer gone from their
-        // faces so the stone shows, the gilt left only in the hollows here and there
-        const k = carvedCloud(lx - pn.x0 + hash(pn.seed, 5, 335) * 0.6 * H, vy, FRIEZE * 0.34, 353 + pn.seed);
-        if (k === 2) return mt(M.stone, (0.98 + (gilt ? 0 : -0.1)) * along + drip, X, Y, 0.05, 1);
-        if (k === 1) return mt(M.stone, 0.72 * along + drip - (fbm(lx * 0.25, ly * 0.25, 355, 2) > 0.7 ? 0.08 : 0), X, Y, 0.05, 1);
-        if (k === 3) return mt(lacq, 0.12, X, Y, 0.3, 1);
-        return ground;
-      }
-      // cartouches: one or two along the panel, each its own knot
-      const n = pw > 3.2 * H ? 2 : 1;
-      for (let k = 0; k < n; k++) {
-        const cx = pn.x0 + (pw * (k + 0.5)) / n + (hash(pn.seed, k, 337) - 0.5) * 0.4 * H;
-        const cw = (0.4 + 0.18 * hash(pn.seed, k + 3, 337)) * H;
-        const ex = Math.abs(lx - cx) / cw, ey = Math.abs(vy) / (FRIEZE * 0.26);
-        if (ex < 1 && ey < 1) {
-          if (ex > 0.93 || ey > 0.84) return gilt ? mt(M.gold, 0.8 * along, X, Y, 0.1, 1) : mt(M.stone, 0.6, X, Y, 0.1, 1);
-          const r = Math.hypot(lx - cx, vy);
-          const style = hash(pn.seed, k + 9, 9);
-          const knot = style < 0.4 ? r < 0.09 * H && r > 0.05 * H : style < 0.75 ? r < 0.08 * H && Math.sin(Math.atan2(vy, lx - cx) * 5) > 0.2 : Math.abs(lx - cx) + Math.abs(vy) < 0.08 * H;
-          const tail = Math.abs(vy - Math.sin((lx - cx) * (0.1 + style * 0.06)) * 3) < 1.2 && Math.abs(lx - cx) > 0.12 * H && Math.abs(lx - cx) < cw * 0.8;
-          if ((knot || tail) && gilt) return mt(M.gold, 0.72 * along, X, Y, 0.2, 1);
-          return mt(lacq, face(0.9, SIDE) * 0.32 * along, X, Y, 0.15, 1);
-        }
-      }
-      return ground;
+      // (round 4, W2-i: the navy-and-gold lacquered plaques, L 60 on stone at 139, read as stuck on and pulled the eye
+      // below the fight) every panel is carved in the frieze's own stone, clouds lit on their upper edges and undercut
+      // below (round 3, W2-10), worn; the gilt is kept only on the court's crest at the middle (painted after)
+      if (inner < 2) return mt(M.stone, 0.48 * along, X, Y, 0.1, 1);
+      const sun = pn.kind === "sun";
+      if (sun && Math.hypot(lx - centre, vy) < 0.27 * H) return mt(M.stone, 0.5 * along + overhang, X, Y, 0.05, 1);
+      const k = sun
+        ? carvedCloud(Math.abs(lx - centre) - 0.3 * H, vy, FRIEZE * 0.36, 351)
+        : carvedCloud(lx - pn.x0 + hash(pn.seed, 6, 335) * 0.6 * H, vy, FRIEZE * 0.34, 361 + pn.seed);
+      const worn = fbm(lx * 0.3, ly * 0.3, 331, 2) > 0.75 ? -0.08 : 0;
+      if (k === 2) return mt(M.stone, 0.98 * along + overhang + drip + worn, X, Y, 0.05, 1);
+      if (k === 1) return mt(M.stone, 0.74 * along + overhang + drip + worn, X, Y, 0.05, 1);
+      if (k === 3) return mt(M.stone, 0.34 * along + overhang, X, Y, 0.05, 1);
+      return mt(M.stone, 0.56 * along + overhang + drip + worn, X, Y, 0.05, 1);
     }
     // --- the spouts: a stone dragon's head under the frieze, its mouth dark, lit on top
     for (const sx of spouts) {
@@ -334,8 +293,10 @@ export function paintFoundation(c: PaintCtx, p: FoundationArgs): void {
     const wetBand = ly - F1 < 0.2 * H + 0.08 * H * vnoise(lx * 0.05, 3, 357) && vnoise(lx * 0.12, ly * 0.02, 359) > 0.32 ? 0.16 : 0;
     const low = clamp((ly - (baseTop - 0.9 * H)) / (0.9 * H), 0, 1);
     const v0 = 0.72 + tone + edge + rough + chipped + ledgeShade - w * 0.3 - damp - wetBand - ((ly - F1) / H) * 0.025;
-    if (low > 0.15 && bayer4(X, Y) < low * 0.85) return mt(GREEN_STONE, v0 - low * 0.12, X, Y, 0.05, 1);
-    return mt(M.stone, v0, X, Y, 0.05, 1);
+    // (round 4, W2-n: an ordered dither drew a fine checker over every block face and the green foot) each block a flat
+    // face in a narrow dither band; the damp's green comes up the foot in patches that follow the stone's own grain
+    if (low > 0.15 && fbm(lx * 0.06, ly * 0.09, 361, 3) < low * 0.82) return mt(GREEN_STONE, v0 - low * 0.12, X, Y, 0.05, 1, 0.15);
+    return mt(M.stone, v0, X, Y, 0.05, 1, 0.15);
   });
   // (round 3, W2-10) the court's crest at the frieze's middle: crossed blades in a gold ring on the old lacquer
   {
