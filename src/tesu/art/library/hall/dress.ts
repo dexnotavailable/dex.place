@@ -8,6 +8,7 @@ import { PLANES, type Usable, type Walk } from "../../../world/types.ts";
 import { BACK_LANTERNS, GATE_O, HALL, HALL_LANTERNS, HALL_LIGHT, SERVICE_LAMPS, SHAFT } from "./lights.ts";
 import type { Bay } from "./backwall.ts";
 import type { NearFootP } from "./services.ts";
+import type { ExtraP } from "./extras.ts";
 import { yOn } from "../../../world/sections/common.ts";
 import { DIAG } from "../../../world/sections/gate-road.ts";
 import type { Caster } from "./court-light.ts";
@@ -120,15 +121,21 @@ export function dressHall(b: WorldBuilder): void {
   // --- the stair (round 2, W1-1): two flights and a landing on posts read from the walk; under it the bay's post
   // and a stair post with knee braces, stepped shelves over the docs shelf, the nook under the landing, a
   // cupboard and crates in the low end; the handrail and balusters on the front plane
+  // (round 3, W1-1) a steep upper flight, a deep landing, a gentle OPEN lower flight: the spandrel wall stops at the
+  // landing's east post; under the lower flight the back wall shows, one carriage post, the Crane Desk in its lee
   const ds0 = sv("docs-shelf");
+  const stP = st.pts;
+  const landE = stP[4]! - sx0, footL = stP[6]! - sx0;
   const stairP = {
-    pts: st.pts.map((v, i) => (i % 2 === 0 ? v - sx0 : v - sy0)),
+    pts: stP.map((v, i) => (i % 2 === 0 ? v - sx0 : v - sy0)),
     floor: FY - sy0,
     wall0: X(23.6) + h(0.19) - sx0,
     posts: [X(24.22) - sx0],
     shelf: [ds0.x0 - sx0, ds0.x0 + h(1.75) - sx0, h(1.9)] as [number, number, number],
-    cupboard: [X(28.3) - sx0, X(29.55) - sx0] as [number, number],
-    crates: [X(29.65) - sx0, X(30.6) - sx0] as [number, number],
+    open: [landE - 8, footL + 2] as [number, number],
+    openPosts: [X(31.35) - sx0],
+    crates: [X(31.6) - sx0, X(32.3) - sx0] as [number, number],
+    noren: h(1.15),
     at: at(sx0, sy0),
   };
   b.piece("play", "hall.stair", sx0, sy0, stairP, { z: 2 });
@@ -142,7 +149,10 @@ export function dressHall(b: WorldBuilder): void {
   const ob = sv("offering-box");
   // (round 2, W1-4) an offering chest wider than tall on a stone plinth, its top at 0.53 H (0.6 of her height),
   // under a small frame with a hanging sign and its own lamp on a bracket (services.ts offeringStage)
-  const boxX0 = ob.x0 - h(0.02), boxW = Math.round(0.84 * H);
+  // (round 3, W1-3) the chest stands 0.18 H east of the usable's west end (10.68-11.52 H; its prompt shows over its
+  // west half), so she uses it from the west with a clear gap between her and the pavilion's west post (from the east
+  // she merged with the chest's end, the pavilion's post and the bay's column base)
+  const boxX0 = ob.x0 + h(0.18), boxW = Math.round(0.84 * H);
   b.piece("play", "hall.donation", boxX0, FY, { w: boxW, h: Math.round(0.53 * H), main: true, at: at(boxX0, FY) }, { z: 6 });
   const hk = sv("hanko-desk");
   const hanko = b.def.sprites.find((s) => s.id === "hanko");
@@ -153,9 +163,10 @@ export function dressHall(b: WorldBuilder): void {
   // the reading nook: the docs shelf (no taller than 2 H), the standing lamp, the bench and the table
   const ds = sv("docs-shelf");
   b.piece("play", "hall.shelf", ds.x0, FY, { w: h(1.75), h: h(1.9), at: at(ds.x0, FY) }, { z: 3 });
-  // (round 2) the lamp, the bench and the table between the landing's two posts (26.18 and 27.31 H)
-  b.piece("play", "hall.lamp", ds.x0 + h(2.05), FY, { w: Math.round(0.26 * H), h: Math.round(1.3 * H), at: at(ds.x0 + h(2.05), FY) }, { z: 5 });
-  const nookX = ds.x0 + h(2.21);
+  // (round 3) the lamp between the shelf and the landing's west post (26.58 H); the bench and the table under the
+  // deep landing (its posts at 26.58 and 28.92 H)
+  b.piece("play", "hall.lamp", X(26.17), FY, { w: Math.round(0.26 * H), h: Math.round(1.3 * H), at: at(X(26.17), FY) }, { z: 5 });
+  const nookX = X(26.85);
   b.piece("play", "hall.nook", nookX, FY, { bench: [0, h(0.64)], table: [h(0.89), h(1.34)], at: at(nookX, FY) }, { z: 4 });
   const cd = sv("crane-desk");
   b.piece("play", "hall.cranedesk", cd.x0, FY, { w: cd.x1 - cd.x0, h: Math.round(0.6 * H), at: at(cd.x0, FY) }, { z: 5 });
@@ -188,6 +199,22 @@ export function dressHall(b: WorldBuilder): void {
   const rq = sv("request-board");
   b.piece("play", "hall.reqboard", rq.x0, GY, { w: rq.x1 - rq.x0, h: GY - rq.y0, at: at(rq.x0, GY) }, { z: 4 });
 
+  // --- (round 3, W1-5) the hall's ambient people, not cast (extras.ts): two patrons at the Long Gallery's rail at the
+  // art (one pointing up at the high-hung pair), a clerk with an armful of scrolls on the stair's landing, someone
+  // pinning a notice at the Notice Wall. Each stands off every F zone (between the art's frames, east of the board),
+  // never on a stair's foot or a spawn; nothing here is usable or collides. (The loft's archivist is upper.ts's.)
+  {
+    const land = st.pts[2]!, landY = st.pts[3]!;
+    const extras: [number, number, ExtraP["pose"], 1 | -1, number, number][] = [
+      // x, y (world), pose, facing, seed, z
+      [X(14.3), GY, "look", -1, 3, 3.5],
+      [X(9.2), GY, "read", -1, 8, 3.5],
+      [land + h(1.25), landY, "scrolls", -1, 5, 2.5],
+      [X(6.47), FY, "read", -1, 13, 4.5],
+    ];
+    for (const [x, y, pose, facing, seed, z] of extras) b.piece("play", "hall.extra", x, y, { pose, facing, s: H, seed, at: at(x, y) }, { z });
+  }
+
   // --- the near front (P5): great near columns only beyond the hall's ends (inside, at 1.35x parallax a
   // near column always lands on a judged service in one of the frames); painted at play zoom and closer
   const NEAR_Y = FY + Math.round(0.45 * H);
@@ -200,9 +227,17 @@ export function dressHall(b: WorldBuilder): void {
   // a jar, a length of rail) framing the floor below the walk line; spaced so the gate's long reflection in
   // the middle of the core frame stays clear; play zoom and closer only
   const FOOT_Y = FY + h(1.0);
+  // (round 3, W1-7: they were single faint outlines spread evenly) four clusters of two nameable things each, each
+  // pair overlapping, with wide gaps between the clusters, placed (at the near plane's 1.35x) off each judged frame's
+  // subject: A frames the donation and reception frames' left; B the reception's right and the core's left (clear of
+  // the gate's reflection); C the core's right and the docs nook's left; D the docs nook's right
   const foot: [number, NearFootP["kind"], number, number][] = [
-    [-1.8, "jar", 0, 125], [2.6, "planter", 0, 205], [6.9, "bench", 2.2, 150], [11.9, "jar", 0, 132], [15.6, "bench", 1.8, 142],
-    [22.6, "planter", 0, 196], [25.6, "rail", 1.6, 136], [29.6, "bench", 2.0, 150], [33.0, "planter", 0, 210],
+    [-1.8, "jar", 0, 125], [3.6, "planter", 0, 205],
+    [7.4, "bench", 1.9, 150], [8.85, "pine", 0, 196],
+    [14.9, "brazier", 0, 172], [15.95, "stanchion", 1.1, 156],
+    [20.3, "jar", 0, 140], [21.4, "planter", 0, 200],
+    [27.0, "stanchion", 1.2, 156], [28.4, "pine", 0, 196],
+    [33.0, "planter", 0, 210],
   ];
   foot.forEach(([o, kind, w, top], i) => {
     b.piece("near", "hall.nearfoot", X(o), FOOT_Y, { kind, w: Math.round(h(w) * rN), top, seed: 11 + i * 7 }, { z: 3, minLevel: 0.9, reflect: false });
@@ -311,7 +346,11 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number; ring?: [number, 
   // (round 1, L14: the seal painted on the floor in perspective is gone (a 3D top in a side-on game; its radius
   // is 0 now); the ring is side-on instead: court.ring, a dais in the paving, kerbs, posts, the rope, banners)
   b.piece("play", "court.floor", CX0, Y, { w: CX1 - CX0 - h(0.3), u: band / 1.05, below: band, seal: [MID - CX0, 0.001] }, { z: 0, reflect: false, minLevel: 0.9 });
-  if (o.ring) b.piece("play", "court.ring", o.ring[0], Y, { w: o.ring[1] - o.ring[0], band }, { z: 2, reflect: false });
+  // (round 3, W1-2) the ring starts just past the gong tower's east post: its west banner pole would stand in the
+  // tower's foot, so the tower is the ring's west marker (poles: [west, east])
+  const ringPoles: [boolean, boolean] = [!(o.ring && o.ring[0] - h(0.52) < o.gongX + h(1.6)), true];
+  // (z 2.4: over the Prow Stair's grate, which the ring now crosses, so its front curb runs unbroken)
+  if (o.ring) b.piece("play", "court.ring", o.ring[0], Y, { w: o.ring[1] - o.ring[0], band, poles: ringPoles }, { z: 2.4, reflect: false });
 
   // --- the foundation under the floor's front edge, the stairwell's mouth left open
   const pil: number[] = [];
@@ -335,8 +374,14 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number; ring?: [number, 
 
   // --- lantern pillars behind the ring, newels at the stair's mouth, two near pillars that
   // stand at the frame's edges in a bout (P5, play zoom only)
-  for (const x of [MID - h(1.7), WELL1 + h(0.9)]) b.piece("play", "court.lanternpillar", x, Y, { h: h(2.2) }, { z: 2 });
-  for (const x of [WELL0 - h(0.25), WELL1 + h(0.25)]) b.piece("play", "court.newel", x, Y, { h: h(0.95) }, { z: 3 });
+  // (round 3, W1-2) the ring runs over the stair's mouth now: no newel stands in it (its posts mark its ends), and the
+  // east lantern pillar gave way to the breakable lantern post at the ring's east end (sections/court.ts)
+  const inRing = (x: number): boolean => !!o.ring && x > o.ring[0] - h(0.6) && x < o.ring[1] + h(1.2);
+  for (const x of [MID - h(1.7), WELL1 + h(0.9)]) if (!inRing(x)) b.piece("play", "court.lanternpillar", x, Y, { h: h(2.2) }, { z: 2 });
+  for (const x of [WELL0 - h(0.25), WELL1 + h(0.25)]) if (!inRing(x)) b.piece("play", "court.newel", x, Y, { h: h(0.95) }, { z: 3 });
+  // (round 3, W1-2) the ring's front corners: a short stone newel with its paper lantern on the ring's front curb at
+  // each end, nearer and lower than the rope's posts (the critic: the ring had no front edge, only the rope behind)
+  if (o.ring) for (const x of [o.ring[0] - h(0.16), o.ring[1] + h(0.16)]) b.piece("play", "court.newel", x, Y + h(0.13), { h: h(0.6) }, { z: 3 });
   // the near plane frames the bottom corners with cliff pines growing out of the rock under
   // the prow; their crowns top out just below the floor line, so they never cover her or a
   // service (GDK A.1: P5 never hides what matters). The bout's sides are framed by the hall's
@@ -369,6 +414,14 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number; ring?: [number, 
     const ax = PROW_STAIR_FOOT_X, ay = yOn(DIAG, ax), bx = WELL1, by = Y;
     const sx0 = h(176), sy0 = ay + ((by - ay) * (sx0 - ax)) / (bx - ax);
     b.piece("play", "court.stairrun", sx0, sy0, { x1: bx - sx0, y1: by - sy0, head: 112, masonry: Y - sy0, found: h(2.7), grate: [WELL0 - sx0 - h(0.1), WELL1 - sx0 + h(0.1)] }, { z: 2 });
+    // (round 3, W1-9) in front of the run (front plane), so its diagonal never runs ~3 H unbroken: a masonry
+    // buttress where it climbs through the foundation, a rock outcrop where it is cut through the cliff (the run's
+    // walk is shiraito.ts's: a landing or a turn there is still the better fix; the ASK stands)
+    const lineY = (x: number): number => ay + ((by - ay) * (x - ax)) / (bx - ax);
+    const px = h(187.35);
+    b.piece("front", "court.buttress", px, Y + h(0.14), { kind: "pier", w: h(0.62), h: Math.round(lineY(px) - Y + h(0.75)), seed: 5 }, { z: 1, reflect: false });
+    const ox = h(184.55);
+    b.piece("front", "court.buttress", ox, Math.round(lineY(ox) - h(0.42)), { kind: "outcrop", w: h(1.35), h: h(4), seed: 9 }, { z: 1, reflect: false });
   }
 
   // --- beyond the tip the land falls away into a sea of mist: a dense bank low on the back
@@ -394,11 +447,11 @@ export function dressCourt(b: WorldBuilder, o: { gongX: number; ring?: [number, 
 
   // --- (hall loop round 1) the sun lands: every standing thing throws its shadow back across the
   // paving, up and to the right (court-light.ts projects their side-on silhouettes)
-  b.piece("play", "court.shadows", CX0, Y, { band, w: CX1 - CX0 + h(0.2), reach: h(2.9), slant: 0.6, casters: courtCasters(b, CX0, Y, { gongX: o.gongX, mid: MID, well0: WELL0, well1: WELL1, cx1: CX1, railEnd, ring: o.ring }) }, { z: 2.5, reflect: false, minLevel: 0.9 });
+  b.piece("play", "court.shadows", CX0, Y, { band, w: CX1 - CX0 + h(0.2), reach: h(2.9), slant: 0.6, casters: courtCasters(b, CX0, Y, { gongX: o.gongX, mid: MID, well0: WELL0, well1: WELL1, cx1: CX1, railEnd, ring: o.ring, poles: ringPoles, inRing }) }, { z: 2.5, reflect: false, minLevel: 0.9 });
 }
 
 /** The court's standing things as side-on silhouettes for their shadows (x from the court's west end, z up from the walk line). */
-function courtCasters(b: WorldBuilder, CX0: number, Y: number, o: { gongX: number; mid: number; well0: number; well1: number; cx1: number; railEnd: number; ring?: [number, number] }): Caster[] {
+function courtCasters(b: WorldBuilder, CX0: number, Y: number, o: { gongX: number; mid: number; well0: number; well1: number; cx1: number; railEnd: number; ring?: [number, number]; poles: [boolean, boolean]; inRing: (x: number) => boolean }): Caster[] {
   const cs: Caster[] = [];
   const box = (x0: number, x1: number, z0: number, z1: number) => cs.push({ box: [x0 - CX0, x1 - CX0, z0, z1] });
   const rod = (x: number, w: number, z0: number, z1: number) => cs.push({ rod: [x - CX0, w, z0, z1] });
@@ -436,14 +489,20 @@ function courtCasters(b: WorldBuilder, CX0: number, Y: number, o: { gongX: numbe
   cs.push({ disc: [gx - CX0, gy, Math.round(0.72 * H)] });
   // the stone lantern pillars and the newels at the stair's mouth
   for (const x of [o.mid - h(1.7), o.well1 + h(0.9)]) {
+    if (o.inRing(x)) continue;
     box(x - h(0.2), x + h(0.2), 0, h(0.38));
     rod(x, h(0.25), 0, h(2.2));
     box(x - h(0.3), x + h(0.3), h(2.2), h(2.72));
     box(x - h(0.44), x + h(0.44), h(2.72), h(2.95));
   }
   for (const x of [o.well0 - h(0.25), o.well1 + h(0.25)]) {
+    if (o.inRing(x)) continue;
     box(x - h(0.16), x + h(0.16), 0, h(0.95));
     box(x - h(0.12), x + h(0.12), h(0.95), h(1.4));
+  }
+  if (o.ring) for (const x of [o.ring[0] - h(0.16), o.ring[1] + h(0.16)]) {
+    box(x - h(0.16), x + h(0.16), 0, h(0.47));
+    box(x - h(0.12), x + h(0.12), h(0.47), h(0.92));
   }
   // the props that stand on the court: the lantern post (and its lantern), the jars
   for (const pr of b.def.props) {
@@ -463,10 +522,11 @@ function courtCasters(b: WorldBuilder, CX0: number, Y: number, o: { gongX: numbe
   // the ring's posts, its rope slung between their heads, the banner poles outside them
   if (o.ring) {
     const [r0, r1] = o.ring;
-    for (const [px, out] of [[r0 - h(0.16), -1], [r1 + h(0.16), 1]] as const) {
+    for (const [i, [px, out]] of ([[r0 - h(0.16), -1], [r1 + h(0.16), 1]] as const).entries()) {
       box(px - h(0.14), px + h(0.14), 0, h(0.24));
       rod(px, h(0.15), 0, h(1.45));
       box(px - 5, px + 5, h(1.45), h(1.65));
+      if (!o.poles[i]) continue;
       const qx = px + out * h(0.36);
       rod(qx, 3, 0, h(3.3));
       box(qx - h(0.2), qx + h(0.2), h(1.65), h(3.2));
