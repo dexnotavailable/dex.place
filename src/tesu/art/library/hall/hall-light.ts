@@ -210,12 +210,15 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
       // (hall loop round 2, W2-6/W2-8) a loft's box keeps the light its own lamp paints in it (no dusk, no disc);
       // under it the lamp's light spills a step onto the cornice's face and the tops of the sets, across the
       // lamp's reach and stopped at the loft's posts
-      if (LOFTS.length && wy < FY - (UP.sets - 0.35) * H && wy > FY - UP.ceil * H) {
+      // (round 3: it reached down over the red panels between the sets as dithered red patches: now only the cornice and
+      // the sets' top caps)
+      if (LOFTS.length && wy < FY - (UP.sets - 0.12) * H && wy > FY - UP.ceil * H) {
         const lo = LOFTS.find((q) => wx > q.x0 && wx < q.x1);
         if (lo) {
           if (wy < FY - UP.cornice * H) return null;
           const dx = (wx - lo.lamp) / (1.5 * H);
-          const sp = (1 - dx * dx) * (1 - (wy - (FY - UP.cornice * H)) / (0.75 * H)) + jit * 2;
+          // (round 3: a slow noise on its edge drew red blotches on the panels; an ordered dither at its edge instead)
+          const sp = (1 - dx * dx) * (1 - (wy - (FY - UP.cornice * H)) / (0.55 * H)) + (bayer4(X, Y) - 0.5) * 0.18;
           if (sp > 0.35) return lut("warm", sp > 0.75 ? 2 : 1);
         }
       }

@@ -250,7 +250,7 @@ function tieBeam(X: number, Y: number, lx: number, v: number, k: number, depth: 
  * height. Each cloud a big lobe with two smaller ones under it and a curling tail, every one a little different;
  * 0 off a cloud, 1 on it, 2 its outline.
  */
-function ruyi(x: number, y: number, r: number, seed: number): number {
+export function ruyi(x: number, y: number, r: number, seed: number): number {
   const per = r * 3.4;
   const i = Math.floor(x / per + 0.5);
   const cx = i * per + (hash(i, 1, seed) - 0.5) * r * 0.5, flip = hash(i, 2, seed) < 0.5 ? -1 : 1;

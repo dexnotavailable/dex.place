@@ -11,6 +11,7 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { iceDist, iceRay } from "./bay.ts";
+import { ruyi } from "./roof.ts";
 import { bayer4 } from "../../raster.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
@@ -511,10 +512,16 @@ function lintel(c: PaintCtx, p: BackWallP, lf: LitField): void {
       const e = Math.min(cw - Math.abs(k - cc), (0.32 - Math.abs(v - 0.5)) * 0.4);
       return e < 0.02 ? mt(M.gold, lum(l) * 0.85, X, Y, 0.15, 1) : mt(M.lacq, lum(l) * 0.5, X, Y, 0.2, 1);
     }
-    if (style >= 0.62 && Math.abs(v - 0.5 - Math.sin(k * 40) * 0.12) < 0.08 && Math.abs(k - 0.5) < 0.3) return mt(M.gold, lum(l) * 0.55, X, Y, 0.3, 1);
-    const flaked = fbm(lx * 0.05, ly * 0.2, 83, 2) > 0.68;
-    if (flaked) return mt(M.wood, lum(l) * 0.45, X, Y, 0.3, 1);
-    return tn(P.jade, clamp(0.86 + (1 - lum(l)) * 0.14 + (Math.sin(lx * 0.18) > 0.6 ? -0.06 : 0), 0, 1), X, Y, 0.45);
+    // (round 3, W2-7: a sine line, and flaked patches that read as camouflage blotches once the dusk lay over them) a
+    // run of ruyi clouds painted along the panel in gold line and a lighter teal; the paint worn only along the beam's
+    // lower edge, where hands and brooms never reach but the damp does
+    if (style >= 0.62 && Math.abs(k - 0.5) < 0.31) {
+      const cl = ruyi((k - 0.5) * 4.25 * U, (v - 0.5) * (y1 - y0), 0.3 * (y1 - y0), bi + 31);
+      if (cl === 2) return mt(M.gold, lum(l) * 0.55, X, Y, 0.3, 1);
+      if (cl === 1) return tn(P.jade, clamp(0.66 + (1 - lum(l)) * 0.14, 0, 1), X, Y, 0.45);
+    }
+    const worn = v > 0.78 && fbm(lx * 0.08, ly * 0.3, 83, 2) > 0.62;
+    return tn(P.jade, clamp(0.86 + (1 - lum(l)) * 0.14 + (worn ? 0.08 : 0), 0, 1), X, Y, 0.45);
   });
 }
 
