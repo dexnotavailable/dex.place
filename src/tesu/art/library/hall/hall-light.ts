@@ -21,6 +21,7 @@ import { amberLut, chain2, dayLut, lut, lutChain, poolLut, tint } from "./tint.t
 import { BAY as ROOF_BAY } from "./roof.ts";
 import { UP, UPPER_KINDS, loftLampFrac, loftOpening } from "./upper.ts";
 import { clerestoryBoxes, gateGeo, headBox, scrollBoxes, stiles } from "./gate.ts";
+import { sillRail } from "./bay.ts";
 import { P } from "../../palette.ts";
 
 const H = 96;
@@ -168,7 +169,9 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
       // roof above the well darkens like the rest instead of standing up as a lit chimney)
       const roofAt = FY - 16.1 * H - (p.play ? 0 : 0.5 * H);
       if (wy < roofAt) {
-        const inWell = p.play && Math.abs(wx - SHAFT.x0) < 1.35 * H && wy > FY - 18.9 * H;
+        // (round 4, W2-e: the well's exemption reached down over the tie beam's top third, a ragged lighter patch on the
+        // beam under the well: the beam takes the room's shade the same all along)
+        const inWell = p.play && Math.abs(wx - SHAFT.x0) < 1.35 * H && wy > FY - 18.9 * H && wy < FY - 16.42 * H;
         shade = inWell ? 0 : wy > roofAt - 1.4 * H + jit * H ? 2 : 3;
       }
       // (hall loop round 2, W2-1) the play plane's roof over the tie beam is painted in the air's own
@@ -262,6 +265,11 @@ export const hallLight = definePainter<HallLightP>("hall.light", {
         const fas0 = p.gallery - 2, fas1 = p.gallery + 0.62 * H + 2;
         if (wy > beamTop - 1 && wy < beamBot + 1) n = wy < beamTop + 4 && n > 0 ? Math.min(3, n + 1) : 0;
         else if (wy > fas0 && wy < fas1) n = wy < fas0 + 5 && n > 0 ? Math.min(3, n + 1) : 0;
+        // (round 4, W2-f: across the gallery storey the shaft lit only the play plane's art screens, so its west side
+        // ran down the screen group's own west edge as a lit glass column, the back wall beside it unlit) the gallery
+        // storey takes no shaft body: the light shows there only where it lands, on the gallery floor's top and (the
+        // balustrade's own painter) the rail tops; the screens keep the soft beam their own light field gives them
+        else if (wy > beamBot && wy < fas0 - 4) n = 0;
         if (n > 0) return lutChain(lift > 0 ? ["warm", Math.min(3, lift)] : ["night", Math.min(3, -lift)], ["air", n]);
       }
       void warm; void night;
@@ -369,6 +377,43 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
         lamps.push({ x: lx, y: L.y - fy, k: Math.min(0.9, L.k), hanging: L.hanging });
       }
     }
+    // (round 4, W2-b: the pools were airbrush eggs in ordered-dither rings) ref 05 carves lamplight as SHAPES: every
+    // plaster panel between the stiles and rails takes the lamps as one flat step, the panel a lamp hangs in two steps
+    // up, the panels round it one, no gradient inside a panel; the stiles' and rails' edges turned to a lamp catch it a
+    // step harder (the far edge a step less); a short hot streak on the plaster right behind each hanging lantern
+    const SR1 = sillRail(cl[0]![3])[1];
+    const FR_Y = -p.top + Math.round(0.42 * H) + 0.08 * H;
+    // the bands (local y): the clerestories' band, the middle band, the low band over the dado, the dado
+    const bands: [number, number][] = [[FR_Y, SR1], [SR1, RAIL_MID - 0.045 * H], [RAIL_MID + 0.045 * H, RAIL_LOW], [-DADO_H, 0]];
+    const cols: [number, number][] = [];
+    for (let i = 0; i <= st.length; i++) cols.push([i === 0 ? p.l : st[i - 1]! + SW / 2, i === st.length ? p.r : st[i]! - SW / 2]);
+    // each lamp's own column: the panels between the two stiles either side of it
+    const colOfLamp = new Map<Lamp, number>();
+    const bandAt = (ly: number): number => bands.findIndex(([y0, y1]) => ly >= y0 && ly < y1);
+    const colAt = (lx: number): number => { let i = 0; while (i < st.length && lx >= st[i]!) i++; return i; };
+    for (const q of lamps) colOfLamp.set(q, colAt(q.x));
+    /** A lamp's step on the panel of band bp, column ci (round 4, W2-b): one flat step per panel, never a gradient or
+     *  a dither inside one. The panel a lamp hangs in front of takes two steps (one for a weak lamp); the panel over or
+     *  under it in its column one step when the lamp hangs within 0.7 H of their rail, the panels beside it one step
+     *  when it hangs within 0.5 H of their stile. */
+    const lampStep = (q: Lamp, ci: number, bp: number): number => {
+      const cq = colOfLamp.get(q)!, bq = bandAt(q.y);
+      if (bp < 0 || bq < 0) return 0;
+      let n = 0;
+      if (ci === cq && bp === bq) n = q.k > 0.32 ? 2 : 1;
+      // (the dado's ashlar under a lamp takes it as the low band does, a step at most)
+      if (bp === 3 && n > 1) n = 1;
+      else if (ci === cq && bp === bq + 1 && bp < 3) n = bands[bq]![1] - q.y < 0.7 * H ? 1 : 0;
+      else if (ci === cq && bp === bq - 1) n = q.y - bands[bq]![0] < 0.7 * H ? 1 : 0;
+      else if (bp === bq && Math.abs(ci - cq) === 1) {
+        const sx = st[Math.min(ci, cq)]!;
+        n = Math.abs(q.x - sx) < 0.5 * H ? 1 : 0;
+      }
+      return n;
+    };
+    // the rails: the mid rail and the low rail over the dado (their top edge 1.5 px)
+    const railish = (ly: number): boolean => Math.abs(ly - RAIL_MID) < 0.045 * H || (ly >= RAIL_LOW && ly < -DADO_H);
+    const railTopEdge = (ly: number): boolean => (Math.abs(ly - RAIL_MID) < 0.045 * H && ly < RAIL_MID - 0.045 * H + 1.5) || (ly >= RAIL_LOW && ly < RAIL_LOW + 1.5);
     // the gate's head (the plaque's red, the beam, the canopy's tiles, the teal paint) holds a step better
     const accent = new Set<number>([...P.red, ...P.gold, ...P.tile, ...P.jade]);
     const plaqueY1 = g.CY - g.R - g.RING - 5, plaqueY0 = plaqueY1 - 0.4 * H;
@@ -417,6 +462,14 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
         else if (ly > hb.beam0 - 9 && ly < hb.beam0) day = Math.max(day, 0.4 - Math.abs(lx) / (hb.cw * 3));
       }
       if (plaque) day = Math.max(day, 0.5);
+      // (round 4, W2-h) the canopy's cast shadow: across the plaque's top and on the plaster either side of the beam,
+      // under the eave, a step down and none of the day's lift
+      const eaveY = hb.beam0 - 10;
+      const castY = (plaque ? plaqueY0 + 0.12 * H : eaveY + 0.3 * H) + (vnoise(lx * 0.08, 3, 29) - 0.5) * 4;
+      if (Math.abs(lx) < hb.ew - 6 && ly > eaveY && ly < castY && !(Math.abs(lx) < hb.cw + 2 && ly < hb.beam1 + 1)) {
+        shade += 1;
+        day *= 0.25;
+      }
       // (round 3, W2-3a) a faint light on the plaster under each clerestory, through its lattice
       for (const b of cl) {
         const below = ly - (b[3] + 11);
@@ -431,46 +484,54 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
       const dv = day + (even ? 0 : j * 0.8 + bay * (day > 0.1 ? 0.14 : 0.03));
       const dayN = dv > 1.0 ? 3 : dv > 0.62 ? 2 : dv > 0.3 ? 1 : 0;
 
-      // --- the lamps: an amber pool round each, the hot core within 0.3 H, wider than tall
-      let lamp = 0;
-      const railTop = Math.abs(ly - (RAIL_MID - 0.045 * H)) < 2.5 || Math.abs(ly - RAIL_LOW) < 2.5 || Math.abs(ly + DADO_H) < 2.5;
+      // --- the lamps (round 4, W2-b): one flat step per panel; the stiles and rails take the brighter panel beside
+      // them, their edge turned to its lamp a step more, the far edge a step less; the hot streak behind a lantern
+      let ambN = 0;
+      const b = bandAt(ly);
+      const ci = colAt(lx);
+      const sti = st.findIndex((sx) => Math.abs(lx - sx) < SW / 2);
+      let lit: Lamp | undefined;
+      // (a member takes the brighter of the panels it stands between: a stile those either side in its band, a rail
+      // those over and under it in its column)
+      const nb = b >= 0 ? b : bands.findIndex(([y0]) => ly < y0);
       for (const q of lamps) {
-        const dx = lx - q.x, dy = ly - q.y;
-        // a hanging lantern: its cap shades the wall over it, its light falls longest down the wall (an egg, wider
-        // than tall, its narrow end up); a lamp standing on a service lights a smaller dome up the wall over it
-        const rx = (q.hanging ? 1.75 : 0.85) * H;
-        const ry = dy < 0 ? (q.hanging ? 0.95 : 1.1) * H : (q.hanging ? 2.1 : 0.2) * H;
-        const d2 = (dx / rx) ** 2 + (dy / ry) ** 2;
-        if (d2 >= 1) continue;
-        const kk = q.hanging ? q.k : q.k * 0.75;
-        let v = kk * (1 - d2) * (1 - d2);
-        // the hot core round the lamp
-        const cr = Math.hypot(dx, dy * 1.15) / (0.3 * H);
-        if (cr < 1) v += kk * Math.pow(1 - cr * cr, 1.5) * 0.6;
-        // a stile stands proud of the plaster: its edge turned to the lamp catches the light, the far edge a thin shade
-        for (const sx of st) {
-          const o = lx - sx;
-          if (Math.abs(o) > SW / 2 + 1) continue;
-          const toward = Math.sign(q.x - sx) || 1;
-          const e = o * toward; // + toward the lamp
-          if (e > SW / 2 - 2) v *= 1.45;
-          else if (e < -SW / 2 + 1.5) v *= 0.6;
-        }
-        // a hanging lantern lights the rail tops and the dado's cap under it hardest
-        if (railTop && dy > 0 && q.hanging) v = Math.max(v, kk * (1 - d2) * 1.25);
-        lamp = Math.max(lamp, v);
+        const v = sti >= 0 && b >= 0 ? Math.max(lampStep(q, sti, b), lampStep(q, sti + 1, b))
+          : b < 0 ? Math.max(lampStep(q, ci, nb), lampStep(q, ci, nb - 1))
+          : lampStep(q, ci, b);
+        if (v > ambN) { ambN = v; lit = q; }
       }
-      const lv = lamp + j * 0.5 + bay * (lamp > 0.06 ? 0.12 : 0.03);
-      // (on the navy the amber steps land on umber, a deep orange-brown, orange and the hot light orange: 3 and 4 are
-      // the same orange there, so the core skips to 5)
-      const ambN = lv > 0.9 ? 5 : lv > 0.58 ? 3 : lv > 0.35 ? 2 : lv > 0.2 ? 1 : 0;
-      const fringe = ambN === 0 && lv > 0.1;
-
+      if (lit && b >= 3) ambN = Math.min(ambN, 1);
+      if (lit && sti >= 0) {
+        // a stile's edge turned to the lamp catches it a step harder, its far edge a step less
+        const e = (lx - st[sti]!) * (Math.sign(lit.x - st[sti]!) || 1);
+        if (e > SW / 2 - 2) ambN += 1;
+        else if (e < -SW / 2 + 1.5) ambN -= 1;
+      } else if (lit && b < 0 && railish(ly)) {
+        // a rail's top edge catches a lamp over it; its underside one under it
+        ambN += lit.y < ly ? (railTopEdge(ly) ? 1 : 0) : railTopEdge(ly) ? -1 : 1;
+      } else if (lit && b >= 0 && b < 3) {
+        // the plaster's recess along a panel's edge turned to its lamp is the arris that catches it
+        const [x0, x1] = cols[ci]!, [y0, y1] = bands[b]!;
+        const edgeX = lit.x < x0 ? lx - x0 : lit.x > x1 ? x1 - lx : Infinity;
+        const edgeY = lit.y < y0 ? ly - y0 : lit.y > y1 ? y1 - ly : Infinity;
+        if (Math.min(edgeX, edgeY) < 1.2) ambN += 1;
+      }
+      // the hot streak: a narrow upright oval of light on the plaster right behind a hanging lantern (its ends show
+      // over and under the lantern)
+      for (const q of lamps) {
+        if (!q.hanging) continue;
+        const u = (lx - q.x) / (0.17 * H), v = (ly - q.y) / (0.36 * H);
+        const r2 = u * u + v * v;
+        if (r2 < 1) ambN = Math.max(ambN, r2 < 0.4 ? 5 : 4);
+      }
+      ambN = clamp(ambN, 0, 5);
+      const lamp = ambN > 0 ? 0.3 + 0.2 * ambN : 0;
       const base = night[Math.min(3, shade)] ?? null;
-      if (ambN > 0 && lamp >= day) return chain2(base, amberLut(ambN));
+      // (the steps: 1 a warm lift for the panels round a lamp, 2 the lamp's own panel in amber, 3 the edges turned to
+      // it, 4 and 5 the hot ring and core right behind a lantern)
+      if (ambN > 0 && lamp >= day) return chain2(base, ambN === 1 ? lut("warm", 1) : amberLut(ambN === 2 ? 1 : ambN === 3 ? 2 : ambN === 4 ? 3 : 5));
       // (the plaque's red and the gold keep their colour in the day: a plain lift)
       if (dayN > 0) return chain2(base, accent.has(col) ? lut("sun", dayN) : dayLut(dayN));
-      if (fringe) return chain2(base, lut("warm", 1));
       return base;
     });
   },

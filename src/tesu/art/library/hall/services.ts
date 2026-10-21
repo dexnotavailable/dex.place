@@ -702,15 +702,35 @@ export const ranking = definePainter<{ w: number; h: number; at?: At }>("hall.ra
       cloudScroll(c, hx0 + 14, ccy, 5, 1, ccx - cr - 6 - (hx0 + 14), goldC);
       cloudScroll(c, hx1 - 14, ccy, 5, -1, hx1 - 14 - (ccx + cr + 6), goldC);
     }
-    // its small tiled cap with turned-up eaves
+    // (round 4, W2-h: its little tiled cap was the kit roof the notice board, the offering pavilion and the gate's
+    // canopy also wore) a lacquer cresting board carved along its top: a ruyi-headed peak over the coin, low scrolls
+    // falling to either end, a gilt bead following the profile, a cloud cut in the peak
     {
-      const ry1 = hy0, ry0 = hy0 - 0.14 * H;
-      poly(c, [hx0 - 10, ry1 - 1, hx0 - 5, ry1 - 5, W / 2, ry0, hx1 + 5, ry1 - 5, hx1 + 10, ry1 - 1, hx1 + 3, ry1, hx0 - 3, ry1], (X, Y, lx, ly) => {
+      const ry1 = hy0, cxm = W / 2, half = (hx1 - hx0) / 2 + 2;
+      const prof = (lx: number): number => {
+        const u = (lx - cxm) / half; // -1..1
+        const au = Math.abs(u);
+        // the peak: a ruyi head (a round lobe on a neck) over the middle, then a long low scroll out to each end
+        const peak = au < 0.3 ? 0.2 * H * Math.sqrt(Math.max(0, 1 - (au / 0.3) ** 2)) + 0.05 * H : 0;
+        const neck = au < 0.38 ? 0.05 * H * (1 - au / 0.38) : 0;
+        const scroll = au > 0.3 ? (0.07 * H + 0.03 * H * Math.sin((au - 0.3) / 0.7 * Math.PI * 1.5)) * (1 - Math.max(0, au - 0.85) / 0.15) : 0;
+        return Math.max(peak, neck, scroll);
+      };
+      rect(c, hx0 - 2, ry1 - 0.3 * H, hx1 + 2, ry1, (X, Y, lx, ly) => {
+        const top = ry1 - prof(lx);
+        if (ly < top) return 0;
         const l = lf.get(lx, ly);
-        const k = ((((lx - hx0) % 7) + 7) % 7) / 7;
-        return mt(M.tile, face(l.k, side, (k - 0.5) * 1.2, -0.4) * (0.45 + 0.35 * Math.sin(k * Math.PI)) + (ly > ry1 - 2 ? -0.1 : 0), X, Y, 0.1, 1);
+        const e = ly - top;
+        if (e < 1.5) return mt(M.gold, face(l.k, side, 0, -0.8) * 0.95, X, Y, 0.05, 1);
+        if (e < 2.5) return mt(M.lacq, face(l.k, side) * 0.3, X, Y, 0.3, 1);
+        const u = (lx - cxm) / half;
+        if (Math.abs(u) < 0.26 && ly < ry1 - 0.06 * H) {
+          const cl = ruyiMark(lx - cxm, ly - (ry1 - 0.15 * H), 0.075 * H);
+          if (cl === 2) return mt(M.gold, face(l.k, side) * 0.7, X, Y, 0.2, 1);
+          if (cl === 1) return mt(M.verm, face(l.k, side) * 0.7, X, Y, 0.2, 1);
+        }
+        return mt(M.lacq, face(l.k, side, 0, -0.2) * 0.55 + grain(lx, ly, 61, false) * 0.05, X, Y, 0.1, 1);
       });
-      rect(c, W / 2 - 3, ry0 - 6, W / 2 + 3, ry0 + 1, (X, Y, lx, ly) => (Math.hypot(lx - W / 2, ly - ry0 + 2.5) < 3.4 ? mt(M.gold, face(lf.get(lx, ly).k, side), X, Y, 0.0, 1) : 0));
     }
     // the tablets, in rank order
     // (round 3, W1-4) ranks 4-6 in red lacquer with gold figures, a step down from the metals but lit, not dark plates
@@ -1282,29 +1302,42 @@ export const nearFoot = definePainter<NearFootP>("hall.nearfoot", {
         rect(c, sx, sy, sx + 1, sy + 1, (X, Y) => tn(COALS, i < 2 ? 0.0 : 0.3, X, Y, 0));
       }
     } else if (p.kind === "stanchion") {
-      // (round 3, W1-7) a rope line at the frame's foot: two turned posts with brass knobs, a heavy red rope
-      // slung between them, its tassel; the posts' feet run out of the frame
-      const W = p.w / 2;
-      for (const sx of [-W, W]) {
-        lathe(c, sx, T, B, (ly) => {
-          const v = ly - T;
-          return v < 9 ? 5.5 - Math.abs(v - 4.5) * 0.4 : v < 14 ? 3.4 : 4 + (v > 40 ? 1.5 : 0);
-        }, (X, Y, u, _lx, ly) => {
-          const v = ly - T;
-          if (v < 9) return u < -0.3 && v < 5 ? tn(M.gold, 0.35, X, Y, 0) : dark(X, Y, v < 2 ? 0.1 : 0.45);
-          return dark(X, Y, u < -0.6 ? 0.4 : 0.8);
-        });
-      }
-      const ry = T + 16, sag = 0.28 * H;
-      rect(c, -W, ry - 6, W, ry + sag + 6, (X, Y, lx, ly) => {
-        const t = (lx + W) / (2 * W);
-        const cy = ry + sag * 4 * t * (1 - t);
-        const d = ly - cy;
-        if (Math.abs(d) > 4) return 0;
-        const twist = (((lx * 0.8 + d * 1.6) % 8) + 8) % 8 < 4;
-        return d < -2.5 ? tn(M.verm, 0.45, X, Y, 0) : dark(X, Y, twist ? 0.5 : 0.7);
+      // (round 4, W2-m: two turned posts and a velvet rope read as a modern bank's queue line) a stone lantern seen
+      // from behind in the near dark: a jewel finial, a wide cap with its corners turned up, the light box with a
+      // candle's dim glow in its window, the platform, the shaft running out of the frame; a rim of the room's light
+      // (or the gate's, p.rim) along every top edge and its left side. Same footprint as the rope line was.
+      const R = Math.min(p.w / 2, 0.46 * H);
+      const parts: [number, number, (v: number) => number][] = [
+        // [v0, v1, half width at v (0..1 down the part)]
+        [0, 8, (v) => 4.2 * Math.sin(Math.max(0.15, v) * Math.PI) * (v < 0.3 ? 0.75 : 1)],
+        [8, 21, (v) => R * (0.28 + 0.72 * Math.pow(v, 0.6)) + (v > 0.75 ? (v - 0.75) * 10 : 0)],
+        [21, 46, () => 0.21 * H],
+        [46, 54, (v) => 0.3 * H - v * 3],
+        [54, 1e4, () => 0.11 * H],
+      ];
+      rect(c, -R - 6, T, R + 6, B, (X, Y, lx, ly) => {
+        const v = ly - T;
+        const part = parts.findIndex(([a, b]) => v >= a && v < b);
+        if (part < 0) return 0;
+        const [a, b, hwf] = parts[part]!;
+        const pv = (v - a) / Math.min(40, b - a);
+        const hw = hwf(clamp(pv, 0, 1));
+        const ax = Math.abs(lx);
+        if (ax > hw) return 0;
+        // the cap's upturned corners: its lower edge curls up at the tips
+        if (part === 1 && ax > R * 0.8 && v > b - 2 - (ax - R * 0.8) * 0.5) return 0;
+        const topEdge = v - a < 1.5 && (part !== 4);
+        const leftRim = lx < -hw + 1.5;
+        // the light box's window: a candle's glow seen through the paper on its far side
+        if (part === 2 && ax < 0.12 * H && v > a + 5 && v < b - 6) {
+          const g = 1 - ax / (0.12 * H);
+          return tn(COALS, clamp(0.72 - g * 0.25 + (v - a - 5) / 40, 0.45, 1), X, Y, 0.4);
+        }
+        if (topEdge) return dark(X, Y, 0.05 + vnoise(lx * 0.1, 3, p.seed) * 0.15);
+        if (leftRim) return dark(X, Y, 0.38);
+        // stone: a little mottled, darker down the shaft into the frame's foot
+        return dark(X, Y, 0.66 + fbm(lx * 0.12, ly * 0.12, p.seed, 2) * 0.12 + (part === 4 ? clamp((v - 54) / 120, 0, 0.15) : 0));
       });
-      rect(c, -2, ry + sag + 3, 2, ry + sag + 18, (X, Y, _lx, ly) => (ly < ry + sag + 6 ? tn(M.gold, 0.4, X, Y, 0) : dark(X, Y, 0.55)));
     } else if (p.kind === "pine") {
       // (round 3, W1-7) a potted pine seen from behind: a round glazed pot cut by the frame, a twisting trunk, three
       // cloud-shaped needle pads, their upper edges rimmed
@@ -1550,3 +1583,11 @@ export const ring = definePainter<RingP>("court.ring", {
     });
   },
 });
+
+/** A single ruyi cloud mark (0 off, 1 on, 2 its outline) centred on (0, 0), r its lobe's radius (round 4). */
+function ruyiMark(x: number, y: number, r: number): number {
+  const d = Math.min(Math.hypot(x, y + r * 0.1) - r, Math.hypot(x + r * 0.95, y - r * 0.45) - r * 0.6, Math.hypot(x - r * 0.95, y - r * 0.45) - r * 0.6);
+  if (d < -1.2) return Math.abs(Math.hypot(x, y + r * 0.1) - r * 0.45) < 0.7 ? 2 : 1;
+  if (d < 0) return 2;
+  return 0;
+}

@@ -23,7 +23,6 @@ import { M, LitField, SCREEN, clamp, face, grain, hash, mt, rect, tn, vnoise, ty
 import { HALL_LIGHT } from "./lights.ts";
 
 const H = 96;
-const pick = (r: Ramp, i: number): number => r[clamp(Math.round(i), 0, r.length - 1)]!;
 
 export interface RoofP {
   w: number;
@@ -152,9 +151,13 @@ export const roof = definePainter<RoofP>("hall.roof", {
       const span = Math.max(0.01, above - below);
       const u = (hgt - below) / span; // 0 just over the purlin below .. 1 under the one above
       const gi = PURLINS.findIndex(([ph]) => ph > hgt);
-      const pitch = Math.round(0.34 * H * (1 - (gi < 0 ? PURLINS.length : gi) * 0.03));
-      const rx = ((lx % pitch) + pitch) % pitch;
-      const rafter = rx < pitch * 0.42;
+      // (round 4, W2-g: one slat rhythm across the whole roof) each bay between two frames laid by its own hand: its own
+      // rafter pitch and phase, a board tone of its own; the rows darker the higher they go
+      const rb = Math.floor(lx / (BAY * H));
+      const pitch = Math.round(0.34 * H * (1 - (gi < 0 ? PURLINS.length : gi) * 0.03) * (0.88 + 0.24 * hash(rb, 1, 5151)));
+      const rx = (((lx + hash(rb, gi, 5153) * pitch) % pitch) + pitch) % pitch;
+      const rafter = rx < pitch * (0.36 + 0.12 * hash(rb, 2, 5151));
+      dk += (hash(rb, 3, 5151) - 0.5) * 0.08 + clamp((hgt - 17.2) / 4.8, 0, 1) * 0.1;
       const day = dayAt(lx, ly);
       if (hgt > RIDGE) return wood(1, 0.55 + vnoise(lx * 0.01, 3, 5103) * 0.15, X, Y);
       if (rafter) {
@@ -189,7 +192,10 @@ function tieBeam(X: number, Y: number, lx: number, v: number, k: number, depth: 
     if (Math.abs(ek - 0.3 * H) < 0.025 * H) return mt(M.gold, face(k, 0) * 0.45, X, Y, 0.4, 1, 0);
     return mt(M.verm, face(k, 0) * 0.32, X, Y, 0.4, 1, 0);
   }
-  const style = [0, 4, 1, 3, 2, 0, 1, 3, 4, 1, 2, 0][((bay % 12) + 12) % 12]!;
+  // (round 4, W2-g: plain and medallion panels read as empty boxes at 0.5x; only one bay carried the clouds) the cloud
+  // band runs the beam's length, broken only at the joints: painted teal clouds and carved gilt-edged ones by turns,
+  // a pair of medallions or the hung tablet in a few bays
+  const style = [0, 3, 0, 1, 3, 0, 3, 2, 0, 3, 1, 3][((bay % 12) + 12) % 12]!;
   const w = 0.5 - Math.abs(kk - 0.5); // 0 at the ends .. 0.5 in the middle
   const bu = (kk - 0.5) * BAY * H, bv = (v - 0.5) * depth; // px from the panel's middle
   if (style === 0) {
@@ -232,7 +238,10 @@ function tieBeam(X: number, Y: number, lx: number, v: number, k: number, depth: 
     if (w > 0.1 && Math.abs(bv) < 0.32 * depth) {
       const cl = ruyi(bu, bv, 0.32 * depth, bay + 7);
       const up = ruyi(bu, bv + 1.5, 0.32 * depth, bay + 7);
-      if (cl) return up ? mt(M.lacq, face(k, 0, 0, -0.2) * 0.62, X, Y, 0.1, 1, 0) : mt(M.lacq, face(k, 0, 0, 0.9) * 0.2, X, Y, 0.3, 1, 0);
+      // (round 4: the relief in lacquer alone read as black blobs at 0.5x) the raised clouds in old timber, their
+      // outlines gilt, the undercut under each dark
+      if (cl === 2) return up ? mt(M.gold, face(k, 0, 0, -0.4) * 0.72, X, Y, 0.25, 1, 0) : mt(M.lacq, face(k, 0, 0, 0.9) * 0.15, X, Y, 0.3, 1, 0);
+      if (cl) return up ? mt(M.wood, face(k, 0, 0, -0.2) * 0.62, X, Y, 0.35, 1, 0) : mt(M.lacq, face(k, 0, 0, 0.9) * 0.2, X, Y, 0.3, 1, 0);
       if (up) return mt(M.wood, face(k, 0, 0, -0.9) * 0.62, X, Y, 0.3, 1, 0);
     }
   } else {
@@ -271,6 +280,29 @@ export function ruyi(x: number, y: number, r: number, seed: number): number {
 }
 
 /**
+ * A continuous run of ruyi clouds (round 4, W2-g: a cloud stamped every ~125 px read as a stamp): clouds of different
+ * sizes at uneven spacing, one in four left out, a tendril wandering along the band between them; 0 off, 1 on a cloud
+ * or the tendril, 2 an outline.
+ */
+export function cloudRun(x: number, y: number, r: number, seed: number): number {
+  const per = r * 3.4;
+  const i0 = Math.floor(x / per);
+  let best = 0;
+  for (let i = i0 - 1; i <= i0 + 1; i++) {
+    if (hash(i, 9, seed) < 0.25) continue;
+    const sc = 0.72 + 0.6 * hash(i, 11, seed);
+    const cx = (i + 0.5) * per + (hash(i, 13, seed) - 0.5) * r * 1.2;
+    const v = ruyi(cx + (x - cx) / sc, y / sc, r, seed + i * 3);
+    if (v === 1) return 1;
+    if (v === 2) best = 2;
+  }
+  if (best) return best;
+  // the tendril: a thin line wandering along the band's middle
+  const ty = Math.sin(x / (r * 1.7) + hash(Math.floor(x / (per * 2)), 15, seed) * 6) * r * 0.35;
+  return Math.abs(y - ty) < 0.75 ? 2 : 0;
+}
+
+/**
  * A transverse frame seen from the front: on the tie beam a bracket set (gold and teal blocks and arms),
  * then square beam ends with short struts between them stepping up to the ridge. fx is from the frame's
  * centre; returns 0 off the frame.
@@ -294,10 +326,29 @@ function frame(X: number, Y: number, fx: number, hgt: number, haze: number, day:
     if (!block) return 0;
     if (tv > 0.86) return wood(haze, 0.95, X, Y); // its shadowed underside
     const end = a > hw - 0.07;
-    if (end) return mt(M.gold, 0.32 + day * 0.3, X, Y, 0.35, 1, 0);
-    return tn(P.jade, clamp(0.8 - day * 0.2 + (tv < 0.7 ? -0.05 : 0.05), 0, 1), X, Y, 0);
+    // (round 4, W2-g: every set the same teal and gold, a stamp every half bay) each bay's sets painted their own way:
+    // teal blocks with gold ends, red blocks with teal ends, or plain dark timber with only gold ends; a mid set
+    // takes its own bay's paint a step darker
+    const paint = Math.floor(hash(bay, mid ? 7 : 5, 5141) * 3);
+    if (paint === 2) return tv < 0.66 && !end ? mt(M.gold, 0.3 + day * 0.3, X, Y, 0.4, 1, 0) : wood(haze, (end ? 0.38 : 0.55) - day * 0.25, X, Y);
+    if (end) return paint === 1 ? tn(P.jade, clamp(0.75 - day * 0.2, 0, 1), X, Y, 0) : mt(M.gold, 0.32 + day * 0.3 + (mid ? 0.1 : 0), X, Y, 0.35, 1, 0);
+    if (paint === 1) return mt(M.verm, 0.3 + day * 0.25 - (mid ? 0.08 : 0) + (tv < 0.7 ? 0.04 : -0.04), X, Y, 0.45, 1, 0);
+    return tn(P.jade, clamp(0.8 - day * 0.2 + (mid ? 0.06 : 0) + (tv < 0.7 ? -0.05 : 0.05), 0, 1), X, Y, 0);
   }
   if (mid) return 0;
+  // (round 4, W2-g) every third frame carries a pair of carved pendants (hanging-flower posts) let down from its first
+  // beam's ends either side of the bracket set: a short square post, a gilt collar, a lotus bud turned in red lacquer
+  if (((bay % 3) + 3) % 3 === 0 && hgt > 16.5 && hgt < 17.32) {
+    const px = Math.abs(a - 0.95);
+    const t = (17.32 - hgt) / 0.82; // 0 at the beam .. 1 at the bud's tip
+    const hw2 = t < 0.62 ? 0.055 : t < 0.7 ? 0.075 : 0.085 * Math.sin(Math.min(1, (1 - t) / 0.3) * Math.PI * 0.5) + 0.01;
+    if (px < hw2) {
+      const lit = fx < 0 ? -(a - 0.95) : a - 0.95; // toward the well's side
+      if (t >= 0.62 && t < 0.7) return mt(M.gold, 0.3 + day * 0.35 + (lit < 0 ? 0.15 : 0), X, Y, 0.3, 1, 0);
+      if (t >= 0.7) return mt(M.verm, 0.25 + day * 0.3 + (px < hw2 * 0.4 ? 0.12 : 0), X, Y, 0.45, 1, 0);
+      return wood(haze, (px > hw2 - 0.02 ? 0.75 : 0.45) - day * 0.25, X, Y);
+    }
+  }
   // (round 3, W2-7) a pair of raking braces on some frames, from over the bracket set up to the ridge's struts: they
   // cross the purlins' rows and break the roof's level rhythm
   if (hash(bay, 3, 5131) < 0.55 && hgt > 17.05 && hgt < RIDGE - 0.4) {
@@ -324,41 +375,42 @@ function frame(X: number, Y: number, fx: number, hgt: number, haze: number, day:
 
 /** The skylight's well: lattice against the sky at its top, side walls lit from above, a lit soffit at its mouth. */
 function well(X: number, Y: number, lx: number, ly: number, sx0: number, sx1: number, WALL: number, top: number, mouth: number): number {
+  // (round 4, W2-e: a lit framed box, L 101 against the roof's 31: it read as a hanging lantern or a lift shaft) the
+  // well is a hole in the dark: its trimmers and side walls fall into the roof's own dark with no frame line, only the
+  // skylight's small grid at the top is bright, and the light is the shaft of day falling down its middle
   const fr = 0.12 * H;
-  // the trimmers framing the opening in the roof: dark, sharp
+  // (the walls in the very values of the roof's boards round them at that height, so the well has no outline)
+  const hz = clamp((-ly / H - 16.4) / (RIDGE - 16.4), 0, 1) * 0.95 + 0.13;
   if ((lx < sx0 - WALL && lx > sx0 - WALL - fr) || (lx > sx1 + WALL && lx < sx1 + WALL + fr) || ly < top) {
     if (ly < top - 0.15 * H || lx < sx0 - WALL - fr || lx > sx1 + WALL + fr) return 0;
-    return mt(M.lacq, 0.28, X, Y, 0.2, 1, 0);
+    return wood(hz, 0.88, X, Y);
   }
-  if (ly > mouth - 0.1 * H) {
-    // the mouth's soffit: (round 3, W2-4: a bright bar under a lit box) the frame's underside in the dark, only its
-    // inner arris catching the day spilling down the well
-    return ly > mouth - 0.035 * H ? P.umber[4]! : lx > sx0 - 2 && lx < sx1 + 2 && ly < mouth - 0.085 * H ? P.umber[0]! : P.umber[3]!;
-  }
+  if (ly > mouth - 0.1 * H) return wood(0.1, 0.95, X, Y);
   const up = clamp((ly - top) / (mouth - top), 0, 1); // 0 at the top .. 1 at the mouth
   if (lx < sx0 || lx > sx1) {
-    // the side walls: lit from the opening above, falling into the dark down the well (bands, each wall
-    // the same way: no V); (round 3) the lower walls sink into the dark, so the well reads deep, not a lit box
-    const v = 0.15 + Math.pow(up, 0.7) * 0.95;
-    return pick(SKYWELL, v * (SKYWELL.length - 1) + (lx < sx0 ? 0 : 0.6) + (bayer4(X, Y) - 0.5) * 0.7);
+    // the side walls: a little of the day on them just under the skylight, then the roof's dark all the way down
+    const v = up < 0.12 ? 0.5 + up * 3.2 + (lx < sx0 ? 0 : 0.12) : 0.9;
+    return wood(hz, v + (bayer4(X, Y) - 0.5) * 0.1, X, Y);
   }
-  // the opening: the lattice in silhouette against the paper's glow at the top, then the well's air
-  // falling darker down to its mouth (held a step under the gate's day)
+  // the skylight: its lattice in silhouette against the paper's glow, a small grid at the top of the well
   const s2 = 0.28 * H;
   const a = (((lx - sx0) % s2) + s2) % s2, b = ((((-ly) % s2) + s2) % s2);
-  if (up < 0.3) {
+  if (up < 0.2) {
     if (a < 2.5 || b < 2.5) return P.umber[3]!;
-    return up < 0.15 ? P.paper[2]! : P.paper[3]!;
+    return up < 0.1 ? P.paper[2]! : P.paper[3]!;
   }
-  // (round 3) the day's beam down the well's middle, its air darker toward the walls and down to the mouth
-  const across = Math.abs((lx - (sx0 + sx1) / 2) / ((sx1 - sx0) / 2));
-  return pick(SKYLIGHT, 1 + (up - 0.3) / 0.7 * (SKYLIGHT.length - 2) * 0.9 + across * across * 1.6 + (bayer4(X, Y) - 0.5) * 0.7);
+  // the well's air: dark, but for the day falling down its middle as the shaft (its core and two fainter rays), dimming
+  // as it falls; the walls' side of the air darkest
+  const across = (lx - (sx0 + sx1) / 2) / ((sx1 - sx0) / 2);
+  const t = (up - 0.2) / 0.8;
+  // (the beam spreads as it falls, from the grid's width to the well's, palest just under the skylight and dimming
+  // down the well; its sides soft over a long dithered run, two fainter rays beside it)
+  const half = 0.5 + 0.45 * t;
+  let beam = clamp(1.3 - Math.abs(across + 0.05) / half, 0, 1);
+  for (const [ru, rw] of [[-0.7, 0.1], [0.62, 0.08]] as const) beam = Math.max(beam, 0.45 * Math.max(0, 1 - Math.abs(across - ru * (0.6 + 0.4 * t)) / rw) * (1 - t));
+  const v = beam * (1.0 - t * 0.6) + (bayer4(X, Y) - 0.5) * 0.34;
+  return v > 0.84 ? P.paper[4]! : v > 0.64 ? P.umber[0]! : v > 0.44 ? P.umber[1]! : v > 0.24 ? P.umber[2]! : wood(hz, 0.9, X, Y);
 }
-
-/** The well's walls in the day falling down it: warm paper-white at the top to the warm dark. */
-const SKYWELL: Ramp = [P.paper[3]!, P.paper[4]!, P.umber[0]!, P.umber[1]!, P.umber[2]!, P.umber[3]!];
-/** The skylight's day, held below the court gate's (the room's key). */
-const SKYLIGHT: Ramp = [P.paper[2]!, P.paper[3]!, P.paper[4]!, P.umber[0]!, P.umber[1]!, P.umber[2]!];
 
 /** A lantern hung up in the roof's haze on a long cord, its glow on the cord's foot; k sets its haze. */
 function roofLantern(c: Parameters<typeof roof.paint>[0], x: number, hook: number, cord: number, k: number): void {

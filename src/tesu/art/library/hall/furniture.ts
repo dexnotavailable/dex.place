@@ -123,9 +123,59 @@ export const notice = definePainter<FurnP>("hall.notice", {
     for (const fx of [0.08 * W, 0.92 * W]) {
       poly(c, [fx - 0.35 * H, ry, fx + 0.35 * H, ry, fx + 0.1 * H, ry + 0.2 * H, fx - 0.1 * H, ry + 0.2 * H], (X, Y, lx, ly) => mt(M.wood, face(lf.get(lx, ly).k, side, 0, 0.6) * 0.75, X, Y, 0.3, 1));
     }
-    tileRoof(c, lf, side, -0.3 * H, W + 0.3 * H, ry, 0.46 * H, 77);
+    // (round 4, W2-h: the notice board, the sponsors' board, the offering pavilion and the gate shared one blue-tile
+    // roof, a kit stamp) the notice board's is a plain timber hood
+    timberHood(c, lf, side, -0.3 * H, W + 0.3 * H, ry, 0.36 * H, 77);
   },
 });
+
+/**
+ * A plain timber hood over a board (round 4): a shallow gable of overlapping cedar boards in courses, each board's
+ * lower edge a lit lip over a dark shadow line, a few boards newer or split; a fascia board along the eave with a lit
+ * top arris and a darker underside; a ridge board with a plain carved end; its shadow on the board under it.
+ */
+export function timberHood(c: PaintCtx, lf: LitField, side: number, x0: number, x1: number, eave: number, rh: number, seed: number): void {
+  const cx = (x0 + x1) / 2, span = (x1 - x0) / 2;
+  const FAS = 0.1 * H;
+  rect(c, x0 - 3, eave - rh - 5, x1 + 3, eave + FAS + 5, (X, Y, lx, ly) => {
+    const l = lf.get(lx, ly);
+    const d = Math.abs(lx - cx);
+    // the shadow it throws on what is under it
+    if (ly >= eave + FAS) return d < span - 4 && ly < eave + FAS + 4 ? mt(M.dark, 0.72, X, Y, 0.4, 1) : 0;
+    // the fascia board
+    if (ly >= eave) {
+      if (d > span) return 0;
+      const e = ly - eave;
+      const endGrain = span - d < 3;
+      if (e < 1.2) return mt(M.wood, face(l.k, side, 0, -1) * 1.05, X, Y, 0.05, 1);
+      if (e > FAS - 1.5) return mt(M.wood, face(l.k, side) * 0.35, X, Y, 0.4, 1);
+      return mt(M.wood, face(l.k, side, endGrain ? Math.sign(lx - cx) : 0, 0) * (endGrain ? 0.55 : 0.72) + grain(lx, ly, seed, false) * 0.12, X, Y, 0.2, 1);
+    }
+    const t = (eave - ly) / rh; // 0 at the eave .. 1 at the ridge
+    const hw = span * (1 - 0.18 * t) + (t < 0.12 ? (0.12 - t) * 0.2 * rh : 0);
+    if (t > 1.0) {
+      // the ridge board, its ends cut in a plain ogee
+      const rv = (eave - rh - ly);
+      const rw = span * 0.82 - (rv > 2.5 ? (rv - 2.5) * 2 : 0);
+      if (rv > 4.5 || d > rw) return 0;
+      return mt(M.wood, face(l.k, side, 0, rv > 3.5 ? -1 : 0) * (rv > 3.5 ? 1.0 : 0.62), X, Y, 0.1, 1);
+    }
+    if (d > hw) return 0;
+    // the boards in courses: each course a lit lip at its lower edge, its body, the shadow of the course over it
+    const CH = 0.11 * H;
+    const k = Math.floor((eave - ly) / CH), cv = ((eave - ly) % CH) / CH; // 0 at a course's lower edge
+    const bw = 0.32 * H;
+    const bi = Math.floor((lx - x0 + (k % 2) * bw * 0.5) / bw);
+    const bu = ((lx - x0 + (k % 2) * bw * 0.5) % bw) / bw;
+    const newer = hash(bi, k, seed) > 0.88 ? 0.12 : hash(bi, k, seed) < 0.08 ? -0.1 : 0;
+    const split = hash(bi, k + 9, seed) > 0.93 && Math.abs(bu - 0.6) < 0.03;
+    if (bu < 0.03) return mt(M.wood, face(l.k, side) * 0.3, X, Y, 0.45, 1);
+    if (split) return mt(M.wood, face(l.k, side) * 0.25, X, Y, 0.45, 1);
+    if (cv < 0.16) return mt(M.wood, face(l.k, side, 0, -0.8) * 0.95 + newer, X, Y, 0.1, 1);
+    if (cv > 0.84) return mt(M.wood, face(l.k, side) * 0.32, X, Y, 0.4, 1);
+    return mt(M.wood, face(l.k, side, (lx - cx) / span * 0.3, -0.3) * 0.62 + newer + grain(lx, ly, seed + bi, false) * 0.1 - t * 0.06, X, Y, 0.2, 1);
+  });
+}
 
 /** A small tiled roof seen side-on: rows of round tiles, a gold ridge, ends turned up. */
 export function tileRoof(c: PaintCtx, lf: LitField, side: number, x0: number, x1: number, eave: number, rh: number, seed: number): void {
