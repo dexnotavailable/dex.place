@@ -7,7 +7,7 @@ import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { artQuery } from "../zhusha/anims.ts";
 import { artTransform, type PlayView } from "../zhusha/units.ts";
-import { FxClock, fxCells, fxClipRows, fxFrameAt, fxGroundClip, FX_MAX_H, FX_MAX_STORED, FX_MAX_W, validateFx, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
+import { FxClock, fxCells, fxClipRows, type FxCell, fxFrameAt, fxGroundClip, FX_MAX_H, FX_MAX_STORED, FX_MAX_W, validateFx, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
 
 /** Effects present at build time (a missing one is never fetched). */
 export const FX_PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/fx/*/fx.json"))
@@ -44,6 +44,55 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
+/**
+ * The effects' main-thread work (a drawing cut into cells and put on its atlas page, a page uploaded), one piece at a
+ * time with a breath between, so loading them never takes more than a sliver of a frame (Dex 10-21: the opening "lags
+ * like hell": ~10 MB of drawings were cut all at once, effects in parallel, through the fall).
+ */
+let queue: Promise<unknown> = Promise.resolve();
+
+/** A drawing cut into its cells (fx/contract.ts fxCells), with its size. */
+interface Cut { w: number; h: number; cells: FxCell[] }
+
+/**
+ * The cutting worker (fx/cut-worker.ts: fetch, decode and cut off the main thread), started on first use; null where
+ * there is none (no workers or no OffscreenCanvas: cut in the page), or after it fails (what it was cutting fails too,
+ * and those effects are left out as any broken one is).
+ */
+interface Cutter { w: Worker; n: number; waiting: Map<number, [(c: Cut) => void, (e: Error) => void]> }
+let cutter: Cutter | null | undefined;
+function cutOff(url: string): Promise<Cut> | null {
+  if (cutter === undefined) {
+    try {
+      if (typeof Worker === "undefined" || typeof OffscreenCanvas === "undefined") throw new Error("no worker");
+      const w = new Worker(new URL("./cut-worker.ts", import.meta.url), { type: "module" });
+      const c: Cutter = { w, n: 0, waiting: new Map() };
+      w.onmessage = (e: MessageEvent<{ n: number; error?: string } & Cut>) => {
+        const f = c.waiting.get(e.data.n);
+        c.waiting.delete(e.data.n);
+        if (e.data.error !== undefined) f?.[1](new Error(e.data.error));
+        else f?.[0]({ w: e.data.w, h: e.data.h, cells: e.data.cells });
+      };
+      w.onerror = () => {
+        cutter = null;
+        for (const [, no] of c.waiting.values()) no(new Error("the cutting worker failed"));
+        c.waiting.clear();
+      };
+      cutter = c;
+    } catch {
+      cutter = null;
+    }
+  }
+  if (!cutter) return null;
+  const c = cutter, n = ++c.n;
+  return new Promise((ok, no) => { c.waiting.set(n, [ok, no]); c.w.postMessage({ n, url }); });
+}
+function inTurn<T>(work: () => T): Promise<T> {
+  const run = queue.then(work);
+  queue = run.catch(() => {}).then(() => new Promise((r) => setTimeout(r, 0)));
+  return run;
+}
+
 async function loadFx(r: WorldRenderer, id: string): Promise<FxLoaded> {
   // versioned by content in a build (the server keeps /assets/ for a year), fresh from the dev server
   const q = artQuery(`${FX_BASE}${id}`);
@@ -70,19 +119,41 @@ async function loadFx(r: WorldRenderer, id: string): Promise<FxLoaded> {
   const [pvx, pvy] = def.pivot;
   const shared = new Map<string, { at: [number, number, number]; px: Uint8Array }>();
   const drawings: FxPiece[][] = [];
-  // one drawing at a time (a long effect never holds all its decoded drawings at once)
+  // one drawing at a time (a long effect never holds all its decoded drawings at once; the next one is fetched while
+  // this one is cut into cells, in its turn)
+  const url = (i: number): string => `${FX_BASE}${id}/${def.frames[i]!.file}${q}`;
+  const ask = (i: number): Promise<Cut> => {
+    const p = cutOff(new URL(url(i), location.href).href) ?? loadImage(url(i)).then((img) => inTurn(() => cutHere(img)));
+    p.catch(() => {});
+    return p;
+  };
+  let next = ask(0);
   for (let i = 0; i < def.frames.length; i++) {
     const f = def.frames[i]!;
-    const img = await loadImage(`${FX_BASE}${id}/${f.file}${q}`);
+    const got = await next;
+    if (i + 1 < def.frames.length) next = ask(i + 1);
+    await inTurn(() => paste(got, f));
+  }
+  const sheets: SpriteSheet[] = [];
+  for (const p of pages) sheets.push(await inTurn(() => ({ albedo: r.texture(p.canvas), normal: r.flatNormal, keyInfluence: 0 })));
+  return { def, drawings, sheets, stored };
+
+  // (no worker here) fetched and cut in the page, in its turn
+  function cutHere(img: HTMLImageElement): Cut {
     const w = img.naturalWidth, h = img.naturalHeight;
-    if (w > FX_MAX_W || h > FX_MAX_H) throw new Error(`${id}/${f.file}: ${w} x ${h} is over ${FX_MAX_W} x ${FX_MAX_H}`);
+    if (w > FX_MAX_W || h > FX_MAX_H) return { w, h, cells: [] };
     scratch.width = w;
     scratch.height = h;
     sg.clearRect(0, 0, w, h);
     sg.drawImage(img, 0, 0);
+    return { w, h, cells: fxCells(sg.getImageData(0, 0, w, h).data, w, h) };
+  }
+
+  function paste({ w, h, cells }: Cut, f: (typeof def.frames)[number]): void {
+    if (w > FX_MAX_W || h > FX_MAX_H) throw new Error(`${id}/${f.file}: ${w} x ${h} is over ${FX_MAX_W} x ${FX_MAX_H}`);
     const off = f.off ?? [0, 0];
     const pieces: FxPiece[] = [];
-    for (const c of fxCells(sg.getImageData(0, 0, w, h).data, w, h)) {
+    for (const c of cells) {
       let s = shared.get(c.key);
       if (!s || s.px.length !== c.px.length || !s.px.every((v, j) => v === c.px[j])) {
         const at = place(c.w, c.h);
@@ -96,7 +167,6 @@ async function loadFx(r: WorldRenderer, id: string): Promise<FxLoaded> {
     }
     drawings.push(pieces);
   }
-  return { def, drawings, sheets: pages.map((p) => ({ albedo: r.texture(p.canvas), normal: r.flatNormal, keyInfluence: 0 })), stored };
 }
 
 /** The game's effects: loaded at start, played by id, drawn in the actors' pass with her. */

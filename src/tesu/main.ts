@@ -32,6 +32,7 @@ import { adoptWorld, currentWorld } from "./world/current.ts";
 import { SpriteRenderer } from "./render/sprites.ts";
 import { hasPainter } from "./art/painter.ts";
 import { Fx } from "./fx/fx.ts";
+import { BEATS } from "./opening/beats.ts";
 import { KEYS } from "./keys.ts";
 
 const canvas = document.getElementById("view") as HTMLCanvasElement;
@@ -132,11 +133,20 @@ async function boot(): Promise<void> {
   // (lane C 10-19) the world's sprite effects (public/assets/fx, EFFECTS-CONTRACT.md): loaded beside the game's start.
   // (coordinator 10-20) in the homepage's world window they wait for the press: FX v2 is ~7.7 MB, and a visitor who
   // only reads the site never needs it (the opening runs ~30 s before her first move, so they land in time)
-  let fxAsked = false;
+  // (Dex 10-21: the opening "lags like hell") and not through the fall either: cutting ~10 MB of drawings ran under the
+  // paper's ride. They start once the fall is over (the catch's slap; her first move is ~20 s later), or at once when
+  // there is no opening to keep smooth (skipped, ended, a ?at= start)
+  let fxAsked = false, fxArmed = false;
   const loadFx = (): void => {
-    if (fxAsked) return;
-    fxAsked = true;
-    void Fx.load(r).then((fx) => { game.fx = fx; });
+    if (fxAsked || fxArmed) return;
+    fxArmed = true;
+    const wait = window.setInterval(() => {
+      const o = game.opening;
+      if (game.awaitingPress || (o.state === "cine" && o.T < BEATS.her.clip.slap)) return;
+      clearInterval(wait);
+      fxAsked = true;
+      void Fx.load(r).then((fx) => { game.fx = fx; });
+    }, 250);
   };
   if (!embedded) loadFx();
   // the opening's inputs: in the cinematic Esc skips (the chip's key) and any other input shows the chip;

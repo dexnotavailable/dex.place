@@ -46,22 +46,18 @@ export const BEATS = {
    * plunges out of the slab on bar 0. Rev 6 (Dex 10-20: "I want it following the ofuda closely"): one brief glimpse
    * of the world far below (1.35 s), then close on the paper (it is drawn near the lens: ofuda.lens) all the way down
    * through the clouds, the world rushing past; close on her at the catch, easing out to way 4's close band by its
-   * end. One continuous shot, no cut. Dex 10-21 ("it flashes the whole background"): the glimpse was a 1.1 s pulse
-   * (zoom 1 to 0.16 to 4) and its way back in lifted the frame's top into the slab's black; now it eases out (1.3 s
-   * keeps the frame's middle coming down, never back up), holds the world below for a moment (1.55-1.9) and eases back
-   * in to the close ride by 3.1; the frame's top stays under the slab once it is out. The catch frames her a little
+   * end. One continuous shot, no cut. Dex 10-21 ("still briefly shows the whole world right after following the
+   * ofuda"): no glimpse at all now: from the drop out of the slab the camera only closes in (the page's own scale to
+   * zoom 4 by 1.7, never back out), the plunge slowing into the close ride's own fall. The catch frames her a little
    * higher (feet at 0.69) so the paper's hand-off point sits where it rode.
    */
   "keys": [
    { "T": 0, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 68.2, "cx": 97.4, "follow": false },
    { "T": 0.3, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 68.2, "cx": 97.4, "follow": false },
    { "T": 0.641, "zoom": 0, "anchor": 0.5, "horizon": 1.45, "alt": 63.4, "cx": 97.2, "follow": false },
-   { "T": 1, "zoom": 1.1, "anchor": 0.5, "horizon": 1.3, "alt": 57, "cx": 100, "follow": false },
-   { "T": 1.3, "zoom": 0.26, "anchor": 0.8, "horizon": 1.0, "alt": 29, "cx": 102.5, "follow": false },
-   { "T": 1.55, "zoom": 0.16, "anchor": 0.9, "horizon": 0.84, "alt": 0, "cx": 104, "follow": false },
-   { "T": 1.9, "zoom": 0.17, "anchor": 0.88, "horizon": 0.86, "alt": 0, "cx": 105, "follow": false },
-   { "T": 2.55, "zoom": 0.55, "anchor": 0.5, "horizon": 1.45, "alt": 52, "cx": 108, "follow": false },
-   { "T": 3.1, "zoom": 4, "anchor": 0.5, "horizon": 1.45, "alt": 50.5, "cx": 110, "follow": false },
+   { "T": 1.1, "zoom": 3.4, "anchor": 0.5, "horizon": 1.45, "alt": 59, "cx": 98.6, "follow": false },
+   { "T": 1.7, "zoom": 4, "anchor": 0.5, "horizon": 1.45, "alt": 55.5, "cx": 101, "follow": false },
+   { "T": 3.1, "zoom": 4, "anchor": 0.5, "horizon": 1.45, "alt": 50.5, "cx": 105, "follow": false },
    { "T": 4.631, "zoom": 4, "anchor": 0.5, "horizon": 1.4, "alt": 44.5, "cx": 106.5, "follow": false },
    { "T": 6.626, "zoom": 4, "anchor": 0.5, "horizon": 1.35, "alt": 37, "cx": 103, "follow": false },
    { "T": 8.622, "zoom": 4, "anchor": 0.5, "horizon": 1.25, "alt": 29.5, "cx": 99.5, "follow": false },
@@ -97,7 +93,7 @@ export const BEATS = {
   "releaseXH": 130.4,
   /** Reduced motion: held frames, cut (cross-faded) on these beats. `key`: the authored key it holds. */
   "reduced": [
-   { "from": 0, "hold": "sky", "T": 1.55 },
+   { "from": 0, "hold": "sky", "T": 3.1 },
    { "from": 8.622, "hold": "postcard", "T": 12.609, "key": { "zoom": 0.5, "anchor": 0.8, "horizon": 0.64, "cx": 88 } },
    { "from": 16.589, "hold": "close", "T": 16.589 },
    { "from": 23.066, "hold": "follow", "T": 25.6 },

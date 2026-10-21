@@ -130,22 +130,23 @@ test("the catch: worker 1's drawings retimed so f007 (the slap) starts on bar 9;
   [8, 4, 5, 6, 6, 6, 6, 6, 8, 10, 10, 8, 8, 8, 9, 9, 14, 6].forEach((n, i) => { assert.equal(c.starts[i], t); t += n; });
 });
 
-test("the camera: high in the sky at the press, a glimpse of the world below, close on the paper down through the fall, close on her through the slap, the widest frame on 0:32, the hand-back", () => {
+test("the camera: high in the sky at the press, closing in on the paper as it drops (no glimpse of the world below), close on the paper down through the fall, close on her through the slap, the widest frame on 0:32, the hand-back", () => {
   const s0 = camAt(0);
   assert.ok(s0.horizon > 1.2, "the eye-level row below the frame: only sky");
   assert.ok(s0.anchor > 2, "her feet far below the frame");
   // the frame's middle, H above her feet
   const alt = (s) => ((s.anchor - 0.5) * 720) / s.zoom / H;
-  // (Dex 10-20: "following the ofuda closely") one brief glimpse of the world below as it drops out of the black, and
-  // it does not linger: the only wide frames are within it (Dex 10-21: it "flashes the whole background": eased out,
-  // held a moment, eased back in, about 2 s, never the pulse it was)
-  const gk = BEATS.camera.keys.find((k) => k.zoom > 0 && k.zoom < 0.2);
-  assert.ok(gk.T - BEATS.bars[0] < 1, "the glimpse: as it drops out of the black");
-  const g = camAt(gk.T);
-  assert.ok(g.zoom < 0.2 && g.anchor < 1, "the glimpse: the world below in the frame");
-  for (let T = 0; T < BEATS.bars[8]; T += 0.05) {
-    if (camAt(T).zoom < 0.5) assert.ok(T > BEATS.bars[0] && T < BEATS.bars[0] + 2, `wide at ${T.toFixed(2)}: only the glimpse`);
+  // (Dex 10-20: "following the ofuda closely"; 10-21: it "still briefly shows the whole world right after following the
+  // ofuda") no glimpse: from the press to the close ride the camera only closes in, never back out, and the world
+  // below never enters the frame (its eye-level row stays under the frame) before the catch's descent
+  let zPrev = 0;
+  for (let T = 0; T <= BEATS.camera.keys.find((k) => k.zoom >= 4).T; T += 0.02) {
+    const s = camAt(T);
+    assert.ok(s.zoom >= zPrev - 1e-9, `zoomed back out at ${T.toFixed(2)}`);
+    assert.ok(s.horizon > 1.2, `the world below in the frame at ${T.toFixed(2)}`);
+    zPrev = s.zoom;
   }
+  for (let T = 0; T < BEATS.bars[8]; T += 0.05) assert.ok(camAt(T).zoom >= 0.99, `wide at ${T.toFixed(2)}`);
   // then close, all the way down: the world rushes past (lower and lower) around the paper
   let prev = Infinity;
   const close = BEATS.camera.keys.find((k) => k.zoom >= 4).T;
@@ -188,7 +189,7 @@ test("the camera never jumps, for every way in and every window: a tick apart it
           // row is no measure when they are frames below it, as in the fall)
           const my = (s.anchor * h - ((prev.anchor * h - h / 2) * s.zoom) / prev.zoom - h / 2) / h;
           const mx = ((s.cx - prev.cx) * s.zoom) / w;
-          // (the plunge out of the black slab, the glimpse and the dive back in, 0.3-3.1 s, are fast on purpose; the
+          // (the plunge out of the black slab and the close-in onto the paper, 0.3-3.1 s, are fast on purpose; the
           // close follow rushes the world past: smooth, never a cut)
           const lim = stunt ? 0.5 : 0.1;
           assert.ok(Math.abs(my) < lim && Math.abs(mx) < lim, `${way} ${w}x${h} T ${T.toFixed(3)}: the frame moved ${mx.toFixed(3)}, ${my.toFixed(3)} in one tick`);
@@ -237,9 +238,9 @@ test("the camera, reduced motion: held frames, cut on their beats", () => {
     prev = k;
   }
   assert.ok(holds.length <= BEATS.camera.reduced.length, `held frames only (${holds.length} changes at ${holds.map((t) => t.toFixed(1)).join(", ")})`);
-  // reduced motion opens on the glimpse's frame: the whole world far below, still; then the postcard (its own key:
+  // reduced motion opens close on the paper in the sky, still (no glimpse); then the postcard (its own key:
   // the full-motion camera is in the sky then), the catch as the full-motion camera frames it
-  near(r(1).zoom, 0.16, 1e-3, "the glimpse's frame");
+  near(r(1).zoom, 4, 1e-3, "close on the paper");
   near(r(10).zoom, 0.5, 1e-3, "the postcard");
   near(r(10).anchor, 0.8, 1e-3, "the postcard's feet row");
   near(r(18).zoom, camAt(BEATS.bars[8]).zoom, 1e-3, "the catch's frame");
@@ -297,11 +298,11 @@ test("the fall's clouds: each where the camera sees it (on Dex's 1920 x 1080 fra
     }
   }
   // the fog layers on the lens: only in the fall (the camera inside the thick one at 6.95 s), never on way 4 or with
-  // reduced motion, and none in the glimpse (rev 6: 1.2-1.5 s, the one wide frame; the world below stays clean)
+  // reduced motion, and none while the camera closes in on the paper (they start on its first close key)
   assert.ok(fallVeils(6.95, 1280, 720, "continue", false).length > 0);
   assert.equal(fallVeils(6.95, 1280, 720, "bottom", false).length, 0);
   assert.equal(fallVeils(6.95, 1280, 720, "continue", true).length, 0);
-  for (const T of [1.2, 1.35, 1.5]) assert.equal(fallVeils(T, 1920, 1080, "continue", false).length, 0, `a fog layer in the glimpse at ${T}`);
+  for (const T of [1.2, 1.35, 1.5]) assert.equal(fallVeils(T, 1920, 1080, "continue", false).length, 0, `a fog layer while it closes in at ${T}`);
   // (fall r3, W2-2) the thick passage rises past on the camera's fall (300-600 px per 0.4 s), leaving by the frame's top
   const thick = (T) => fallVeils(T, 1920, 1080, "continue", false).find((v) => v.alpha === 1);
   const a0 = thick(6.95), a1 = thick(7.35);
