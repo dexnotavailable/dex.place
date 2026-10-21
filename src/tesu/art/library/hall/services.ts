@@ -1189,6 +1189,8 @@ export interface NearFootP {
 const NEAR_DARK: Ramp = [P.timber[3]!, P.umber[1]!, P.umber[2]!, P.umber[3]!, P.umber[4]!, P.umber[5]!, P.ink[0]!];
 /** The same with the gate's cool day on its rim (round 3). */
 const NEAR_COOL: Ramp = [P.tile[1]!, P.tile[3]!, P.dusk[2]!, P.umber[3]!, P.umber[4]!, P.umber[5]!, P.ink[0]!];
+/** The brazier's coals: a hot gold core down through orange to a deep red (round 3). */
+const COALS: Ramp = [P.ember[1]!, P.ember[3]!, P.red[1]!, P.red[2]!, P.red[3]!, P.red[4]!, P.red[5]!];
 
 export const nearFoot = definePainter<NearFootP>("hall.nearfoot", {
   bounds(p) {
@@ -1269,13 +1271,15 @@ export const nearFoot = definePainter<NearFootP>("hall.nearfoot", {
         if (ly < crown) return 0;
         const n = fbm(lx * 0.25, ly * 0.4, p.seed + 3, 2);
         // glowing coals: deep orange-red, a few hot cores, dark clinkers; dimmer down into the bowl
+        // (round 3, director: on the lantern ramp the near plane's ink turned them to beige gravel) the coals glow on
+        // the red ramp, hot cores of lantern gold among them, so they still read as fire under the plane's ink
         if (n > 0.66) return tn(NEAR_DARK, 0.6, X, Y, 0);
         const hot = n < 0.36 && ly - crown < 5;
-        return tn(P.ember, clamp(hot ? 0.18 : 0.38 + (ly - crown) / 14 + (n - 0.5) * 0.3, 0, 1), X, Y, 0.4);
+        return tn(COALS, clamp(hot ? 0.08 : 0.3 + (ly - crown) / 16 + (n - 0.5) * 0.3, 0, 1), X, Y, 0.4);
       });
       for (let i = 0; i < 6; i++) {
         const sx = (hash(i, 1, p.seed) - 0.5) * R * 1.2, sy = T - 16 - hash(i, 2, p.seed) * 0.5 * H;
-        rect(c, sx, sy, sx + 1, sy + 1, (X, Y) => tn(P.ember, 0.0, X, Y, 0));
+        rect(c, sx, sy, sx + 1, sy + 1, (X, Y) => tn(COALS, i < 2 ? 0.0 : 0.3, X, Y, 0));
       }
     } else if (p.kind === "stanchion") {
       // (round 3, W1-7) a rope line at the frame's foot: two turned posts with brass knobs, a heavy red rope
@@ -1304,20 +1308,51 @@ export const nearFoot = definePainter<NearFootP>("hall.nearfoot", {
     } else if (p.kind === "pine") {
       // (round 3, W1-7) a potted pine seen from behind: a round glazed pot cut by the frame, a twisting trunk, three
       // cloud-shaped needle pads, their upper edges rimmed
+      // (round 3, director: its pads floated as pale-topped bowls with no trunk reaching them, the same value as the
+      // floor) a gnarled trunk climbs to the crown and carries each pad on its own branch; the pads are flat needle
+      // clouds with tufted tops, darker than the floor, the room's light only on the tufts' tips
       const R = 0.5 * H, potT = T + 0.62 * H;
       lathe(c, 0, potT, B, (ly) => R * Math.min(1, 0.82 + Math.sqrt(Math.max(0, ly - potT) / (0.6 * H)) * 0.25), (X, Y, u, _lx, ly) => dark(X, Y, ly < potT + 2 ? 0.15 : 0.66 + Math.abs(u) * 0.15));
-      for (let k = 0; k <= 40; k++) {
-        const t = k / 40;
-        const x = Math.sin(t * 4.2 + p.seed) * 0.16 * H, y = potT - t * 0.62 * H;
-        rect(c, x - 3.5 + t * 1.5, y - 1, x + 3.5 - t * 1.5, y + 1, (X, Y) => dark(X, Y, 0.62));
+      const fl = hash(p.seed, 5, 1301) < 0.5 ? -1 : 1;
+      const TOPH = 0.92 * H;
+      const trunk = (t: number): [number, number] => [fl * Math.sin(t * 3.4 + 0.5) * 0.13 * H, potT - t * TOPH];
+      const blob = (x: number, y: number, r: number, v: number, rimV: number): void => {
+        rect(c, x - r - 1, y - r - 1, x + r + 1, y + r + 1, (X, Y, lx, ly) => {
+          const d = Math.hypot(lx - x, ly - y);
+          if (d > r) return 0;
+          return dark(X, Y, lx - x < -r * 0.45 && d > r - 1.6 ? rimV : v);
+        });
+      };
+      // the trunk: thick at the soil, thinning as it twists up, its lamp side (west) catching a thread of light
+      for (let k = 0; k <= 60; k++) {
+        const t = k / 60;
+        const [x, y] = trunk(t);
+        blob(x, y, 6 - t * 3.2, 0.86, 0.4);
       }
-      for (const [px, py, pr] of [[-0.32, 0.5, 0.36], [0.28, 0.72, 0.4], [-0.02, 0.98, 0.3]] as const) {
-        const cx = px * H, cy = potT - py * H, rr = pr * H;
-        rect(c, cx - rr, cy - rr * 0.6, cx + rr, cy + rr * 0.5, (X, Y, lx, ly) => {
-          const q = Math.hypot((lx - cx) / rr, (ly - cy) / (rr * 0.55)) + (fbm(lx * 0.15, ly * 0.15, p.seed, 3) - 0.5) * 0.5;
-          if (q > 1) return 0;
-          const top = (ly - cy) / (rr * 0.55);
-          return dark(X, Y, top < -0.55 && q > 0.7 ? 0.12 : 0.55 + top * 0.15);
+      const pads: [number, number, number][] = [[-0.36, 0.4, 0.4], [0.32, 0.64, 0.44], [-0.04, 0.92, 0.34]];
+      for (const [px, py, pr] of pads) {
+        const cx = fl * px * H, cy = potT - py * H, rw = pr * H;
+        // its branch, sagging a little from the trunk out to the pad's heart
+        const [bx, by] = trunk(Math.min(1, (py - 0.08) / (TOPH / H)));
+        for (let k = 0; k <= 24; k++) {
+          const t = k / 24;
+          blob(bx + (cx - bx) * t, by + (cy + 3 - by) * t + Math.sin(t * Math.PI) * 4, 3.2 - t * 1.4, 0.86, 0.45);
+        }
+        // the pad: a low dome of needle tufts over a flatter, darker underside
+        rect(c, cx - rw - 2, cy - rw * 0.5 - 8, cx + rw + 2, cy + rw * 0.2 + 2, (X, Y, lx, ly) => {
+          const du = (lx - cx) / rw;
+          if (Math.abs(du) > 1) return 0;
+          const dome = Math.sqrt(1 - du * du);
+          const tuft = Math.pow(0.5 + 0.5 * Math.cos((lx - cx) * 0.62 + vnoise(lx * 0.07, 5, p.seed) * 3.4 + p.seed), 3);
+          const topY = cy - dome * rw * 0.34 - tuft * 5 * dome + (vnoise(lx * 0.4, 3, p.seed) - 0.5) * 3;
+          const botY = cy + dome * rw * 0.13 + 2 - tuft * 2;
+          if (ly < topY || ly > botY) return 0;
+          const d = ly - topY;
+          // the tufts' tips catch the room's light; needle strokes hang down from them; the underside in the dark
+          if (d < 1.4 && tuft > 0.45) return dark(X, Y, 0.14);
+          const stroke = d < 7 && (((lx * 2 + ly * 0.6) % 5) + 5) % 5 < 1.2 && tuft > 0.15;
+          if (stroke) return dark(X, Y, 0.55);
+          return dark(X, Y, 0.84 + (ly - cy) / Math.max(1, botY - cy) * 0.1);
         });
       }
     } else if (p.kind === "jar") {

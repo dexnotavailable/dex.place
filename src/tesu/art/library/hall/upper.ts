@@ -130,11 +130,14 @@ export function upperWall(c: PaintCtx, p: BackWallP, lf: LitField): void {
     const shadowTop = v < 0.17 + (vnoise(lx * 0.08, 1, 2017) - 0.5) * 0.04;
     // (round 3: the room's lamps laid round red discs on these panels, blotches at a glance) they take the light only
     // as a soft, even lift
-    let val = 0.26 + hash(pseed, 7, 2019) * 0.1 + (shadowTop ? 0.3 : 0) - Math.min(0.5, lit(lx, ly)) * 0.12 + (fbm(lx * 0.03, ly * 0.03, 2019, 2) - 0.5) * 0.08 + v * 0.08;
+    // (round 3, director: the panels' value sat right on RED's step from the lacquer red to the umber, so the lift and
+    // the noise laid red dithered blotches on brown panels, under no lamp that could explain them) the ground sits
+    // wholly on the faded umber step, the lift is a fraction of a step; the motif's fills carry the panels' old red
+    let val = 0.37 + hash(pseed, 7, 2019) * 0.07 + (shadowTop ? 0.3 : 0) - Math.min(0.5, lit(lx, ly)) * 0.06 + (fbm(lx * 0.03, ly * 0.03, 2019, 2) - 0.5) * 0.04 + v * 0.04;
     // the motif, faded: gold lines on the red
     const m = motif(Math.floor(hash(pseed, 2, 2021) * 4), mu * half / U, (v - 0.55) * (yLint - ySets) / U, pseed);
     if (m === 1 && !shadowTop) return st(GOLD, 0.45 - lit(lx, ly) * 0.3 + (hash(X, Y, 2023) < 0.3 ? 0.25 : 0), X, Y);
-    if (m === 2) val -= 0.08;
+    if (m === 2 && !shadowTop) return st(RED, 0.18, X, Y);
     // a darker wear band low on each panel, the paint rubbed thin
     if (v > 0.8 && fbm(lx * 0.09, ly * 0.2, 2025, 2) > 0.62) val += 0.1;
     return st(RED, val, X, Y);
