@@ -1531,7 +1531,7 @@ export class TesuGame {
     const b = this.player.body, s = planeXf(c, 1).s;
     this.r.setTransform(s, focus, mirror);
     // (zhusha lead 10-20) ground effects dip into the ground with her and stop at its front edge (feel.json draw.groundFx)
-    const ground = { dip: this.zdraw.dip, ids: FEEL.draw.groundFx, at: (x: number, y: number) => this.collision.groundBelow(x, y)?.y ?? null };
+    const ground = { dip: this.zdraw.dip, ids: FEEL.draw.groundFx, follow: FEEL.draw.groundFollow, drape: FEEL.draw.groundDrape, at: (x: number, y: number) => this.collision.groundBelow(x, y)?.y ?? null };
     this.fx.draw(this.r, { s, focus, mirror }, layer, ART_PX, { x: b.x, y: b.y, facing: this.player.facing }, mirror !== null, ground);
     this.r.flush();
   }
@@ -1612,7 +1612,9 @@ export class TesuGame {
   private reducedActors(cam: CamState, target: Target | null, lights: PointLight[], mirror: number | null, draw: (c: CamState) => void): void {
     const r = this.r, xf = planeXf(cam, 1), b = this.player.body;
     const view = { cx: (cam.W / 2 - xf.offX) / xf.s, cy: (cam.H / 2 - xf.offY) / xf.s };
-    const c = this.actors.begin(r, cam, view, [b.x, b.y - H], Math.max(1, 1 / ART_PX));
+    // (rfinish 10-21) R's nuke and its pall fill the frame while she is hidden in them: the layer covers the whole view
+    const ph = this.player.r.phase, fit = ph === "impact" || ph === "aftermath";
+    const c = this.actors.begin(r, cam, view, [b.x, b.y - H], Math.max(1, 1 / ART_PX), fit);
     // the renderer maps x to ((x - camX) - f) * s + f: match the layer's play-plane transform about the pass's focus
     const lx = this.actors.xf, f: [number, number] = [c.W / 2, c.anchor * c.H];
     r.begin((f[0] * (1 - lx.s) - lx.offX) / lx.s, (f[1] * (1 - lx.s) - lx.offY) / lx.s, DAY, lights);

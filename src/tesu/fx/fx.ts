@@ -7,7 +7,8 @@ import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { artQuery } from "../zhusha/anims.ts";
 import { artTransform, type PlayView } from "../zhusha/units.ts";
-import { FxClock, fxCells, fxClipRows, type FxCell, fxFrameAt, fxGroundClip, FX_MAX_H, FX_MAX_STORED, FX_MAX_W, validateFx, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
+import { H } from "../config.ts";
+import { FxClock, fxCells, fxClipRows, type FxCell, fxFade, fxFrameAt, fxGroundClip, fxGroundStrips, FX_MAX_H, FX_MAX_STORED, FX_MAX_W, validateFx, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
 
 /** Effects present at build time (a missing one is never fetched). */
 export const FX_PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/fx/*/fx.json"))
@@ -217,14 +218,33 @@ export class Fx {
    * Draws the live effects of a layer on the play plane's transform for this pass (`view`), at `a` world px per art px
    * (her ART_PX), each pivot snapped like her drawings'. `her`: her soles and facing (for attach "her"); `reflection`:
    * the lake's pass (effects with reflect false are left out). `ground`: the ground effects' dip into the ground and the
-   * world's ground (fx/contract.ts fxGroundClip), left out in the lake's pass. Leaves the transform at the view's.
+   * world's ground (fx/contract.ts fxGroundClip), left out in the lake's pass; `follow`: the ground effects that are cut
+   * at the ground under each part of them (fxGroundStrips: wide ones on uneven ground), not only under the pivot;
+   * `drape`: low ground effects (dust rolling along the floor, rubble) whose every strip also sits on the ground under it
+   * (down a stair, up a slope; none where there is no ground near: never floating over a drop). An
+   * effect at px 2-4 is drawn at that many art px a drawing px. Leaves the transform at the view's.
    */
   draw(
     r: WorldRenderer, view: PlayView, layer: FxLayer, a: number, her: { x: number; y: number; facing: number }, reflection = false,
-    ground: { dip: number; ids: readonly string[]; at: (x: number, y: number) => number | null } | null = null,
+    ground: { dip: number; ids: readonly string[]; at: (x: number, y: number) => number | null; follow?: readonly string[]; drape?: readonly string[] } | null = null,
   ): void {
+    // the ground under a column (world x), near the effect's own ground line: a step up or down, not a ledge far below;
+    // `high`: also a slope or a cliff top rising well above the line (a tall effect is hidden behind its front edge)
+    const cols = new Map<number, number | null>();
+    const colGround = (x: number, line: number, high: boolean): number | null => {
+      const k = (Math.round(x / 2) * 4096 + Math.round(line)) * 2 + (high ? 1 : 0);
+      let g = cols.get(k);
+      if (g === undefined) {
+        let y = ground!.at(x, line - 2.5 * H);
+        if (high && (y === null || y > line + 3 * H)) y = ground!.at(x, line - 5 * H);
+        g = y !== null && y <= line + 3 * H ? y : null;
+        cols.set(k, g);
+      }
+      return g;
+    };
     for (const e of this.clock.live) {
-      if (e.layer !== layer || e.t < 0 || (reflection && !e.def.reflect)) continue;
+      // (a stopped effect is gone from the frame at once, even while the clock is frozen: R's letter on the impact)
+      if (e.layer !== layer || e.t < 0 || e.stopped || (reflection && !e.def.reflect)) continue;
       const i = fxFrameAt(e.def, e.t);
       const l = this.loaded.get(e.def.id);
       const pieces = i === null ? undefined : l?.drawings[i];
@@ -235,15 +255,34 @@ export class Fx {
       const clipY = ground && !reflection && view.mirror === null ? fxGroundClip(e.def.id, px, py0, ground.ids, ground.at, ground.dip * a) : null;
       // dipped like her drawing (an effect spawned at her soleY is dipped already)
       const py = clipY === null ? py0 : Math.max(py0, clipY + ground!.dip * a);
-      const xf = artTransform(view, r.camX, r.camY, px, py, a);
-      const flip = facing < 0, opacity = e.def.frames[i]!.opacity;
+      // world px per drawing px (px 2-4: a big world effect seen pulled out)
+      const A = a * e.def.px;
+      const xf = artTransform(view, r.camX, r.camY, px, py, A);
+      const flip = facing < 0, fade = fxFade(e);
+      const opacity = fade < 1 ? (e.def.frames[i]!.opacity ?? 1) * fade : e.def.frames[i]!.opacity;
+      const drape = clipY !== null && !!ground!.drape?.some((p) => e.def.id.startsWith(p));
+      const follow = drape || (clipY !== null && !!ground!.follow?.some((p) => e.def.id.startsWith(p)));
       r.setTransform(xf.z, xf.focus, view.mirror);
       // every cell on the same pivot transform: the drawing's art px land on one grid, seamless
       for (const d of pieces) {
         const sheet = l.sheets[d.sheet];
         if (!sheet) continue;
         const [sx, sy, sw, sh0] = d.r;
-        const sh = clipY === null ? sh0 : fxClipRows(sh0, d.off[1], Math.round(py), clipY, a);
+        if (follow) {
+          // cut strip by strip at the ground under it (a step up hides what is behind it, a step down shows it)
+          const runs = fxGroundStrips(flip ? px - d.off[0] * A : px + d.off[0] * A, sw, A, flip ? -1 : 1, (x) => colGround(x, clipY!, !drape));
+          for (const [c0, c1, g] of runs) {
+            // draped: the strip moves with the ground under it (whole drawing px) and is cut at its own floor line
+            if (drape && g === null) continue;
+            const lift = drape ? Math.round((g! - clipY!) / A) : 0;
+            const sh = g === null ? sh0 : fxClipRows(sh0, d.off[1], Math.round(py), drape ? clipY! : g, A);
+            if (sh <= 0) continue;
+            const dx = flip ? xf.q[0] - (d.off[0] + c1) : xf.q[0] + d.off[0] + c0;
+            r.sprite({ sheet, sx: sx + c0, sy, sw: c1 - c0, sh, x: dx, y: xf.q[1] + d.off[1] + lift, flip, lit: 0, opacity });
+          }
+          continue;
+        }
+        const sh = clipY === null ? sh0 : fxClipRows(sh0, d.off[1], Math.round(py), clipY, A);
         if (sh <= 0) continue;
         const dx = flip ? xf.q[0] - (d.off[0] + sw) : xf.q[0] + d.off[0];
         r.sprite({ sheet, sx, sy, sw, sh, x: dx, y: xf.q[1] + d.off[1], flip, lit: 0, opacity });

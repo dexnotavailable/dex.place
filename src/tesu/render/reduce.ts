@@ -226,12 +226,13 @@ export class ActorLayer {
    * Binds the layer for drawing (cleared clear) and returns the camera that draws the play plane into it at density d
    * (layer px per world px): its play-plane transform (this.xf) has scale d and offsets about -x0 d, -y0 d. Size,
    * density and centre from grid.ts actorLayerPlan: her art density `artD` covering the view when it fits, else the
-   * density that covers the view, else (very wide) her art density centred on her.
+   * density that covers the view, else (very wide) her art density centred on her; `fit`: the view covered always
+   * (grid.ts actorLayerPlan).
    */
-  begin(r: WorldRenderer, cam: CamState, view: { cx: number; cy: number }, her: [number, number], artD = 1): CamState {
+  begin(r: WorldRenderer, cam: CamState, view: { cx: number; cy: number }, her: [number, number], artD = 1, fit = false): CamState {
     const gl = this.gl;
     const max = Math.min(4096, gl.getParameter(gl.MAX_TEXTURE_SIZE) as number);
-    const plan = actorLayerPlan(cam.W, cam.H, cam.zoom, artD, max);
+    const plan = actorLayerPlan(cam.W, cam.H, cam.zoom, artD, max, fit);
     const { w, h, d } = plan;
     if (!this.target || this.target.color.w !== w || this.target.color.h !== h) {
       if (this.target) { gl.deleteFramebuffer(this.target.fbo); gl.deleteTexture(this.target.color.tex); }

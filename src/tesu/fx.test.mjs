@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { checkFxDrawing, fxCells, FX_CELL, FX_MAX_LIVE, FxClock, fxClipRows, fxFrameAt, fxGroundClip, validateFx } from "./fx/contract.ts";
+import { checkFxDrawing, fxCells, FX_CELL, FX_MAX_LIVE, FxClock, fxClipRows, fxFade, fxFrameAt, fxGroundClip, fxGroundStrips, validateFx } from "./fx/contract.ts";
 
 const good = (o = {}) => ({
   id: "spark", stage: "pixel", px: 1, pivot: [12, 20], layer: "front", attach: "world",
@@ -27,7 +27,9 @@ test("fx contract: wrong id, stage, px, pivot, layer, attach, frames are refused
   const bad = [
     [good({ id: "other" }), /folder/],
     [good({ stage: "h3" }), /stage/],
-    [good({ px: 2 }), /her art px/],
+    [good({ px: 5 }), /her art px/],
+    [good({ px: 1.5 }), /her art px/],
+    [good({ px: 0 }), /her art px/],
     [good({ pivot: [1.5, 2] }), /pivot/],
     [good({ layer: "over" }), /layer/],
     [good({ attach: "blade" }), /attach/],
@@ -38,6 +40,52 @@ test("fx contract: wrong id, stage, px, pivot, layer, attach, frames are refused
   ];
   for (const [j, re] of bad) assert.throws(() => validateFx(j, "spark"), re);
   assert.throws(() => validateFx(good({ id: "Bad-Id" }), "Bad-Id"), /valid id/);
+});
+
+test("fx contract: a big world effect seen pulled out may be drawn at 2-4 art px a drawing px (rfinish 10-21)", () => {
+  assert.equal(validateFx(good({ px: 2 }), "spark").px, 2);
+  assert.equal(validateFx(good({ px: 4 }), "spark").px, 4);
+  assert.equal(validateFx(good(), "spark").px, 1);
+});
+
+test("fx clock: a live effect can be moved, sped on and broken up (dithered out), its parts with it", () => {
+  const core = validateFx(good({ id: "pall", with: ["pall_p1"], frames: [{ file: "f000.png", ticks: 100 }] }), "pall");
+  const part = validateFx(good({ id: "pall_p1", frames: [{ file: "f000.png", ticks: 100 }] }), "pall_p1");
+  const c = new FxClock(new Map([["pall", core], ["pall_p1", part]]));
+  const h = c.play("pall", { x: 1, y: 2 });
+  h.move(30, 40);
+  assert.deepEqual(c.live.map((e) => [e.x, e.y]), [[30, 40], [30, 40]], "moved, its part too");
+  h.speed(4);
+  for (let i = 0; i < 5; i++) c.tick();
+  assert.deepEqual(c.live.map((e) => e.t), [20, 20], "4 ticks a tick, one clock");
+  h.speed(2.5);
+  c.tick();
+  c.tick();
+  assert.deepEqual(c.live.map((e) => e.t), [25, 25], "a fractional rate keeps its remainder");
+  h.fadeOut(4);
+  assert.equal(fxFade(c.live[0]), 1);
+  c.tick();
+  assert.equal(fxFade(c.live[0]), 0.75, "dithering out");
+  for (let i = 0; i < 3; i++) c.tick();
+  assert.equal(c.live.length, 0, "gone when it has broken up, its part with it");
+  assert.equal(h.alive, false);
+  // a delay still counts down a tick a tick at any rate
+  const d = c.play("pall_p1", { delay: 3 });
+  d.speed(4);
+  c.tick();
+  assert.equal(c.live[0].t, -2);
+});
+
+test("ground effects wider than a step are cut at the ground under each part of them (rfinish 10-21)", () => {
+  // level ground: one run, cut at the ground
+  assert.deepEqual(fxGroundStrips(100, 64, 1, 1, () => 500), [[0, 64, 500]]);
+  // a step up at x 132: the strips past it are cut 40 px higher (what is behind the step is hidden)
+  const step = (x) => (x < 132 ? 500 : 460);
+  assert.deepEqual(fxGroundStrips(100, 64, 1, 1, step), [[0, 32, 500], [32, 64, 460]]);
+  // facing left the columns run the other way: column 0 is the cell's right edge
+  assert.deepEqual(fxGroundStrips(163, 64, 1, -1, step), [[0, 32, 460], [32, 64, 500]]);
+  // no ground near (a ledge): that strip is not cut
+  assert.deepEqual(fxGroundStrips(100, 16, 2, 1, (x) => (x < 116 ? 500 : null)), [[0, 8, 500], [8, 16, null]]);
 });
 
 test("fx contract: drawings are hard pixels within the size limit", () => {

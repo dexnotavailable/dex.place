@@ -109,12 +109,15 @@ export function reduceFootprint(get: (x: number, y: number) => number, luma: (ke
  * moving zoom never reallocates it). Density d: her art density when the view fits in the layer at it (nothing of her
  * dropped); else the density that just covers the view if that is still 1 or more (everything on screen drawn: the
  * cast, the talisman, effects at the edges); else (very wide) her art density centred on her (`onView` false: what is
- * further than about a frame from her is left out, as before 10-19).
+ * further than about a frame from her is left out, as before 10-19). `fit` (rfinish 10-21: R's nuke and its pall
+ * fill the frame at the 0.4 pull-out while she is hidden in them): the view covered at whatever density that takes
+ * (down to `FIT_MIN`), never a layer centred on her that cuts the big effects flat at its edges.
  */
-export function actorLayerPlan(W: number, H: number, zoom: number, artD: number, max: number): { w: number; h: number; d: number; onView: boolean } {
+export const FIT_MIN = 0.25;
+export function actorLayerPlan(W: number, H: number, zoom: number, artD: number, max: number, fit = false): { w: number; h: number; d: number; onView: boolean } {
   const w = Math.min(max, Math.ceil(2 * W * artD)), h = Math.min(max, Math.ceil(2 * H * artD));
   const cover = Math.min(artD, w / (W / zoom), h / (H / zoom));
-  if (cover >= Math.min(1, artD)) return { w, h, d: cover, onView: true };
+  if (cover >= Math.min(1, artD) || (fit && cover >= FIT_MIN)) return { w, h, d: cover, onView: true };
   return { w, h, d: artD, onView: false };
 }
 

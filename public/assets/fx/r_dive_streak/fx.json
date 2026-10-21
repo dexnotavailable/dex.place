@@ -1,0 +1,64 @@
+{
+ "id": "r_dive_streak",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  85,
+  1416
+ ],
+ "layer": "back",
+ "attach": "her",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f002.png",
+   "ticks": 1
+  },
+  {
+   "file": "f003.png",
+   "ticks": 1
+  },
+  {
+   "file": "f004.png",
+   "ticks": 1
+  },
+  {
+   "file": "f005.png",
+   "ticks": 1
+  },
+  {
+   "file": "f006.png",
+   "ticks": 1
+  },
+  {
+   "file": "f007.png",
+   "ticks": 1
+  },
+  {
+   "file": "f008.png",
+   "ticks": 1
+  },
+  {
+   "file": "f009.png",
+   "ticks": 1
+  },
+  {
+   "file": "f010.png",
+   "ticks": 1
+  },
+  {
+   "file": "f011.png",
+   "ticks": 61
+  }
+ ],
+ "loop": false,
+ "notes": "rfinish 10-21: her comet through the dive (attach her, behind her drawing): a sheath of her fire round her, a white-hot point under her feet, the tail up her line as long as she has fallen, speed hairs, ink claws, a red flash on the first tick; one drawing a dive tick (ult.json dive.ticks), the last held"
+}

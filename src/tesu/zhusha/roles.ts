@@ -9,6 +9,8 @@ export interface RoleDef {
   ult: string | null;
   hold?: boolean;
   reverse?: boolean;
+  /** One drawing of the slot held for the whole role (its index): R's stop and dive borrow her jump's (rfinish 10-21). */
+  frame?: number;
 }
 
 export interface SlotsFile {
@@ -39,7 +41,7 @@ export function slotFor(role: string, ult: boolean, has: (id: string) => boolean
 export const REACHABLE: { normal: string[]; ult: string[] } = {
   normal: [
     "idle", "walk", "run", "jump", "dash", "m1_1", "m1_2", "m1_3", "m1_4", "m1_1_ret", "m1_2_ret", "m1_3_ret", "m1_4_ret",
-    "skill_q", "e_tap", "hurt", "knockdown", "defeat", "respawn", "r_call", "r_flurry", "transform", "r_reveal",
+    "skill_q", "e_tap", "hurt", "knockdown", "defeat", "respawn", "r_call", "r_flurry", "r_hold", "r_dive", "transform", "r_reveal",
   ],
   ult: [
     "idle", "run", "jump", "dash", "m1_1", "m1_2", "m1_3", "m1_4", "m1_1_ret", "m1_2_ret", "m1_3_ret", "m1_4_ret",

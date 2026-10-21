@@ -5,6 +5,13 @@
 /** Drawn at her art px: one effect px = one of her 128 px art px. */
 export const FX_PX = 1;
 /**
+ * (rfinish 10-21) A big world effect seen only pulled out (the R's nuke and its smoke, at zoom 0.4-0.72: one frame px is
+ * 1.4-2.5 world px there, 2-4 of her art px) may be drawn at a coarser grid: `px` 2-4 = each drawing px is that many of
+ * her art px a side (1.3-2.6 world px, the world's own pixel size), so it stores a quarter (or less) of the px for the
+ * same picture. Nothing finer than the frame is lost at those zooms. Her own effects stay at px 1.
+ */
+export const FX_PX_MAX = 4;
+/**
  * A drawing at most this size (art px; 10-19 v2: raised for the huge R letter, the dive's nuke). The loader cuts every
  * drawing into FX_CELL cells, drops the empty ones, trims each to what is painted and stores a cell repeated anywhere
  * in the effect once, so one drawing bigger than an atlas page plays as one (same clock, aligned to the art px) and a
@@ -34,7 +41,8 @@ export interface FxFrame {
 export interface FxDef {
   id: string;
   stage: "pixel";
-  px: 1;
+  /** Her art px per drawing px (1, or 2-4 for big world effects seen pulled out). */
+  px: number;
   /** The drawing px placed on the spawn point. */
   pivot: [number, number];
   layer: FxLayer;
@@ -61,7 +69,7 @@ export function validateFx(json: unknown, id: string): FxDef {
   if (!ID.test(id)) bad.push(`the folder "${id}" is not a valid id (lowercase, digits, _)`);
   if (o.id !== id) bad.push(`id "${String(o.id)}" is not the folder's "${id}"`);
   if (o.stage !== "pixel") bad.push(`stage "${String(o.stage)}": only finished pixel art ("pixel") ships`);
-  if (o.px !== FX_PX) bad.push(`px ${String(o.px)}: effects are drawn at her art px (px 1)`);
+  if (!num(o.px) || !Number.isInteger(o.px) || o.px < FX_PX || o.px > FX_PX_MAX) bad.push(`px ${String(o.px)}: effects are drawn at her art px (px 1; 2-${FX_PX_MAX} for big world effects seen pulled out)`);
   const pv = o.pivot as unknown[];
   if (!Array.isArray(pv) || pv.length !== 2 || !pv.every((v) => num(v) && Number.isInteger(v))) bad.push("pivot must be [x, y] in whole drawing px");
   const layer = o.layer ?? "front";
@@ -89,7 +97,7 @@ export function validateFx(json: unknown, id: string): FxDef {
   }
   if (bad.length) throw new FxError(`${id}: ${bad.join("; ")}`);
   return {
-    id, stage: "pixel", px: 1, pivot: [pv[0] as number, pv[1] as number], layer: layer as FxLayer, attach: attach as FxAttach,
+    id, stage: "pixel", px: o.px as number, pivot: [pv[0] as number, pv[1] as number], layer: layer as FxLayer, attach: attach as FxAttach,
     reflect: o.reflect !== false, frames: (frames as FxFrame[]).map((f) => ({ ...f })), loop: o.loop === true, with: [...(wth as string[])],
     ...(typeof o.notes === "string" ? { notes: o.notes } : {}),
   };
@@ -170,14 +178,29 @@ export interface FxLive {
   t: number;
   serial: number;
   stopped: boolean;
+  /** Its clock's rate (1: the game's; a skipped cinematic speeds its smoke on) and the fraction of a tick it owes. */
+  rate: number;
+  acc: number;
+  /** A fade-out (a dither break-up, the renderer's opacity): ticks left of `fadeN`, then it stops. */
+  fadeLeft: number;
+  fadeN: number;
 }
 
 export interface FxHandle {
   stop(): void;
   readonly alive: boolean;
+  /** Moves it (and its parts) to a world point (a live effect the game drifts). */
+  move(x: number, y: number): void;
+  /** Its clock runs `k` ticks a tick from now (and its parts'). */
+  speed(k: number): void;
+  /** Breaks up (dithers out) over `ticks`, then stops (and its parts). */
+  fadeOut(ticks: number): void;
 }
 
-const DEAD: FxHandle = { stop: () => {}, alive: false };
+const DEAD: FxHandle = { stop: () => {}, alive: false, move: () => {}, speed: () => {}, fadeOut: () => {} };
+
+/** A live effect's whole-drawing opacity from its fade-out (1 when none). */
+export const fxFade = (e: FxLive): number => (e.fadeN > 0 ? Math.max(0, e.fadeLeft / e.fadeN) : 1);
 
 /** The drawing an effect shows t ticks in (null when a one-shot is done). Loops wrap. */
 export function fxFrameAt(def: FxDef, t: number): number | null {
@@ -222,7 +245,7 @@ export class FxClock {
     }
     const e: FxLive = {
       def, x: o.x ?? 0, y: o.y ?? 0, facing: (o.facing ?? 1) < 0 ? -1 : 1, attach: o.attach ?? def.attach, layer: o.layer ?? def.layer,
-      t: -Math.max(0, Math.round(o.delay ?? 0)), serial: this.serial++, stopped: false,
+      t: -Math.max(0, Math.round(o.delay ?? 0)), serial: this.serial++, stopped: false, rate: 1, acc: 0, fadeLeft: 0, fadeN: 0,
     };
     this.live.push(e);
     // its parts start with it: the same point, facing, delay (so the same clock); stopping it stops them
@@ -230,12 +253,27 @@ export class FxClock {
     return {
       stop: () => { e.stopped = true; for (const p of parts) p.stop(); },
       get alive() { return !e.stopped && fxFrameAt(e.def, Math.max(0, e.t)) !== null; },
+      move: (x, y) => { e.x = x; e.y = y; for (const p of parts) p.move(x, y); },
+      speed: (k) => { e.rate = Math.max(0, k); for (const p of parts) p.speed(k); },
+      fadeOut: (n) => {
+        const k = Math.max(1, Math.round(n));
+        if (e.fadeN === 0 || e.fadeLeft > k) { e.fadeN = k; e.fadeLeft = k; }
+        for (const p of parts) p.fadeOut(n);
+      },
     };
   }
 
-  /** One tick: every effect ages; finished one-shots and stopped ones go. */
+  /** One tick: every effect ages (at its rate; a delay always counts down a tick a tick); finished one-shots, stopped
+   * and faded-out ones go. */
   tick(): void {
-    for (const e of this.live) e.t++;
+    for (const e of this.live) {
+      if (e.t < 0 || e.rate === 1) e.t++;
+      else {
+        e.acc += e.rate;
+        while (e.acc >= 1) { e.t++; e.acc--; }
+      }
+      if (e.fadeN > 0 && --e.fadeLeft <= 0) e.stopped = true;
+    }
     for (let i = this.live.length - 1; i >= 0; i--) {
       const e = this.live[i]!;
       if (e.stopped || (e.t >= 0 && fxFrameAt(e.def, e.t) === null)) this.live.splice(i, 1);
@@ -265,4 +303,29 @@ export function fxGroundClip(
 /** How many rows of a cell show above `clipY` (world y): row k of a cell sits at world y = pivotY + (offY + k) x a. */
 export function fxClipRows(rows: number, offY: number, pivotY: number, clipY: number, a: number): number {
   return Math.max(0, Math.min(rows, Math.ceil((clipY - pivotY) / a - offY)));
+}
+
+/**
+ * (rfinish 10-21, Dex: effects must "know where the ground and stuff is") A wide ground effect (the R's nuke, its dust
+ * skirt, its wreck) follows the ground under each part of it, not only under its pivot: a cell `sw` drawing px wide
+ * whose drawing column c sits at world x = x0 + dir x c x A (A: world px per drawing px; facing left the columns run
+ * the other way) is cut strip by strip at the ground under that strip (`groundCol`: the ground's y there, or null when
+ * there is none near: nothing cut). One run when the ground is level under the whole cell. Returns [c0, c1, clipY].
+ */
+export function fxGroundStrips(
+  x0: number, sw: number, A: number, dir: 1 | -1, groundCol: (x: number) => number | null, strip = 8,
+): [number, number, number | null][] {
+  const at = (c: number): number | null => groundCol(x0 + dir * c * A);
+  const same = (p: number | null, q: number | null): boolean => (p === null ? q === null : q !== null && Math.abs(p - q) < 0.5);
+  const a = at(0.5), m = at(sw / 2), b = at(sw - 0.5);
+  if (same(a, m) && same(m, b)) return [[0, sw, m]];
+  const out: [number, number, number | null][] = [];
+  for (let c = 0; c < sw; c += strip) {
+    const c1 = Math.min(sw, c + strip);
+    const g = at((c + c1) / 2);
+    const last = out[out.length - 1];
+    if (last && same(last[2], g)) last[1] = c1;
+    else out.push([c, c1, g]);
+  }
+  return out;
 }

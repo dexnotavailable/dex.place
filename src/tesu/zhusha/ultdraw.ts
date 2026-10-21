@@ -58,16 +58,26 @@ const clamp01 = (u: number): number => Math.max(0, Math.min(1, u));
 const easeOut = (u: number): number => { const k = clamp01(u); return 1 - (1 - k) * (1 - k); };
 const rnd = (i: number): number => { const a = Math.sin(i * 91.7 + 3.1) * 43758.5453; return a - Math.floor(a); };
 
-/** Behind her: the letter and the dive's line. */
+/** Behind her: the letter and the dive's line (until its real cut, r_dive_cut, is in). */
 export function drawUltBack(r: WorldRenderer, z: Zhusha): void {
   letter(r, z);
-  if (z.streak && !z.r.real.dive) diveLine(r, z);
+  if (z.streak && !z.r.real.cut) diveLine(r, z);
 }
 
-/** In front of her: the storm's slashes, the nuke, the ghost blades. */
+/**
+ * In front of her: the storm's slashes, the nuke, the ghost blades. Each part of the nuke's stand-in steps aside only
+ * for its own real piece (FX v2 ASKS 5, rfinish 10-21: the eruption for r_nuke, the long smoke for r_pall, the wreck,
+ * her flames; with r_nuke in and no r_pall the stand-in's smoke still carries the aftermath).
+ */
 export function drawUltFront(r: WorldRenderer, z: Zhusha): void {
   slashes(r, z);
-  if (z.smoke && !z.r.real.nuke) nuke(r, z.smoke);
+  const sm = z.smoke, real = z.r.real;
+  if (sm) {
+    if (!real.nuke) nukeBurst(r, sm);
+    if (!real.wreck) nukeWreck(r, sm);
+    if (!real.flames) nukeFlames(r, sm);
+    if (!real.pall && (!real.nuke || sm.t >= ULT.impact.ticks)) nukePall(r, sm);
+  }
   blades(r, z);
 }
 
@@ -155,20 +165,47 @@ export function drawDiveBlur(r: WorldRenderer, z: Zhusha, bodyH: number): void {
   }
 }
 
+type Smoke = { x: number; y: number; t: number; life: number };
+
 /**
- * The nuke and its aftermath (Dex 10-19: stay on the destruction; the smoke takes a while to clear): the first flash
- * (white / orange / red), her blue flames engulfing it, the column of light where the point went in, the ground thrown
- * up; then the wreck (rubble settled across the crater, embers rising, her flames burning out across it) under a dense
- * pall of smoke and dust, which clears slowly (outward and up, the middle first) so she is revealed as it thins.
+ * The nuke's stand-in, in parts (Dex 10-19: stay on the destruction; the smoke takes a while to clear): the burst (the
+ * first flash, white / orange / red, the column of light where the point went in, the ground thrown up); the wreck
+ * (rubble settled across the crater); her blue flames engulfing the flash, then burning out across the wreck, embers
+ * rising; the pall of smoke and dust, which clears slowly (outward and up, the middle first) so she is revealed as it
+ * thins.
  */
-function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: number }): void {
-  const I = ULT.impact, A = ULT.aftermath;
-  const t = sm.t, Th = I.ticks + A.hold, Tc = Th + A.clear;
+function nukeBurst(r: WorldRenderer, sm: Smoke): void {
+  const I = ULT.impact;
+  const t = sm.t;
   // the first flash: white at the heart, orange, a red rim, swelling and gone as her flames take it
   if (t < I.flash + 6) {
     const u = t / (I.flash + 6), R = (1.5 + 4.5 * easeOut(t / I.flash)) * H * (1 - 0.5 * clamp01((t - I.flash) / 6));
     puffLight(r, sm.x, sm.y - 1.6 * H, R, 0.05 + 0.6 * u, WHITE, ORANGE, VERM);
   }
+  // the column of light where the point went in (narrowing, gone as the dust peaks)
+  if (t < 26) {
+    const k = 1 - t / 26, hh = 10 * H * (0.4 + 0.6 * Math.min(1, t / 4));
+    quad(r, sm.x, sm.y - hh / 2, 1.4 * H * k + 4, hh, 0, AZURE, k);
+    quad(r, sm.x, sm.y - hh / 2, 0.5 * H * k + 2, hh, 0, AZURE_CORE, k);
+  }
+  // the ground thrown up: slabs out of the crater, up and falling back
+  if (t < 40) {
+    for (let i = 0; i < 14; i++) {
+      const side = i % 2 ? 1 : -1;
+      const vx = side * (1 + rnd(i) * 4), vy = -(7 + rnd(i + 3) * 9);
+      const x = sm.x + vx * t + side * rnd(i + 7) * 0.6 * H;
+      const y = sm.y + vy * t + 0.3 * t * t;
+      if (y > sm.y + 4) continue;
+      const s = (0.2 + rnd(i + 11) * 0.4) * H;
+      quad(r, x, y, s, s * 0.7, t * 0.2 * side + i, ROCK, 1);
+      quad(r, x - 1, y - 1, s * 0.6, s * 0.3, t * 0.2 * side + i, ROCK_LITE, 1);
+    }
+  }
+}
+
+function nukeWreck(r: WorldRenderer, sm: Smoke): void {
+  const I = ULT.impact, A = ULT.aftermath;
+  const t = sm.t, Tc = I.ticks + A.hold + A.clear;
   // the wreck: rubble settled across the crater (from when the thrown slabs come down), fading as the smoke clears
   const wreck = t < 30 ? 0 : t < 40 ? (t - 30) / 10 : 1 - clamp01((t - (Tc - 40)) / 40);
   if (wreck > 0) {
@@ -179,6 +216,11 @@ function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: num
       quad(r, x - 1, sm.y - s * 0.45, s * 0.5, s * 0.25, (rnd(i + 83) - 0.5) * 1.2, ROCK_LITE, wreck);
     }
   }
+}
+
+function nukeFlames(r: WorldRenderer, sm: Smoke): void {
+  const I = ULT.impact, A = ULT.aftermath;
+  const t = sm.t, Th = I.ticks + A.hold, Tc = Th + A.clear;
   // her blue flames: tongues rise around the crater, engulf the flash, then spread across the wreck and burn out
   const fl = t < 4 ? 0 : t < 14 ? (t - 4) / 10 : Math.max(0, 1 - (t - 14) / (Th + A.clear * 0.35 - 14));
   if (fl > 0) {
@@ -209,25 +251,11 @@ function nuke(r: WorldRenderer, sm: { x: number; y: number; t: number; life: num
       quad(r, x, y, 3, 3, 0, i % 3 ? AZURE : ORANGE, 1 - ph);
     }
   }
-  // the column of light where the point went in (narrowing, gone as the dust peaks)
-  if (t < 26) {
-    const k = 1 - t / 26, hh = 10 * H * (0.4 + 0.6 * Math.min(1, t / 4));
-    quad(r, sm.x, sm.y - hh / 2, 1.4 * H * k + 4, hh, 0, AZURE, k);
-    quad(r, sm.x, sm.y - hh / 2, 0.5 * H * k + 2, hh, 0, AZURE_CORE, k);
-  }
-  // the ground thrown up: slabs out of the crater, up and falling back
-  if (t < 40) {
-    for (let i = 0; i < 14; i++) {
-      const side = i % 2 ? 1 : -1;
-      const vx = side * (1 + rnd(i) * 4), vy = -(7 + rnd(i + 3) * 9);
-      const x = sm.x + vx * t + side * rnd(i + 7) * 0.6 * H;
-      const y = sm.y + vy * t + 0.3 * t * t;
-      if (y > sm.y + 4) continue;
-      const s = (0.2 + rnd(i + 11) * 0.4) * H;
-      quad(r, x, y, s, s * 0.7, t * 0.2 * side + i, ROCK, 1);
-      quad(r, x - 1, y - 1, s * 0.6, s * 0.3, t * 0.2 * side + i, ROCK_LITE, 1);
-    }
-  }
+}
+
+function nukePall(r: WorldRenderer, sm: Smoke): void {
+  const I = ULT.impact, A = ULT.aftermath;
+  const t = sm.t, Th = I.ticks + A.hold;
   // the smoke and dust: a column rolls up into a cap, a skirt rolls out along the ground; it hangs over the wreck (a
   // slow billow), then clears over `clear` ticks: drifting outward and up, the middle first, gone before the reveal
   // ends (it hides the change, never her form after)

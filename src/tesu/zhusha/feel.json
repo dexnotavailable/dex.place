@@ -5,7 +5,10 @@
   "draw": {
     "dip": 4,
     "foot": 0.3,
-    "groundFx": ["dust_roll_", "ghost_blade_", "fire_env_", "fire_spirit_", "explosion", "ignite_flash", "smoke_puff_", "spirit_puff_", "q_fire", "q_wave", "q_ignite", "q_boom_", "land_dust", "r_call_fire"],
+    "groundFx": ["dust_roll_", "ghost_blade_", "fire_env_", "fire_spirit_", "explosion", "ignite_flash", "smoke_puff_", "spirit_puff_", "q_fire", "q_wave", "q_ignite", "q_boom_", "land_dust", "r_call_fire", "r_nuke", "r_pall", "r_skirt", "r_wreck", "r_dive_cut"],
+    "groundFollow": ["r_nuke", "r_pall"],
+    "groundDrape": ["r_skirt", "r_wreck"],
+    "aboutGroundFollow": "rfinish 10-21 (Dex: effects must know where the ground is): ground effects (id prefixes) cut at the ground under each part of them, strip by strip (fx/contract.ts fxGroundStrips), not only at the ground under their pivot: the R's nuke and its pall are wider than a stair. groundDrape: low ground effects (the nuke's dust skirt, its rubble) whose every strip also moves onto the ground under it, down a stair or up a slope, and is left out where there is no ground near (never floating over a drop).",
     "aboutGroundFx": "Zhusha lead 10-20 (Dex: \"layer her just 1 layer behind the ground along with whatever effects\"): effects (id prefixes) that stand on the ground; played with their pivot on the ground they are drawn dip art px low and cut at the ground line like her (fx/contract.ts fxGroundClip). Left out: hits in the air (e_*, impact_slash_*).",
     "about": "Dex 10-20: \"layer her just 1 layer behind the ground along with whatever effects, and make her dip down like 4 px or enough to hide frames where her feet and heels don't float\". Visual only (her body, hit boxes and physics stay put): her drawing is drawn dip art px lower (measured over her grounded drawings: of the feet within 8 rows of the ground row 346 touch it, 51 float 1 px, 156 2 px, 87 3 px, 60 4 px, 99 5-7 px (mostly a foot stepping); 4 hides 88%), and while she stands on something nothing of it shows below the ground: the lowest ground under her within foot x her drawn height either side (so a slope's downhill foot is not cut), as if the floor's front edge stood in front of her. The lake's reflection is not cut.",
     "aboutFoot": "foot: half the width (in her drawn heights) of the ground looked at under her."
