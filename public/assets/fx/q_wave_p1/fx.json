@@ -3,8 +3,8 @@
  "stage": "pixel",
  "px": 1,
  "pivot": [
-  19,
-  805
+  -1568,
+  1300
  ],
  "layer": "front",
  "attach": "world",
@@ -148,5 +148,5 @@
   }
  ],
  "loop": false,
- "notes": "Part of q_wave (B1 10-21, the Q shockwave sim) | part 2 / 3: region [0, 0, 1792, 1328], drawings 17-33"
+ "notes": "Q (B1, 10-21): a huge forward shockwave: a 2D gas sim of her blue fire wall and the torn floor's dust driven along the ground from her blade (front at x +750 tick 11, +1553 tick 23, +2565 tick 39, stops at +2717 tick 43), growing 190 -> 375 art px tall, then breaking; floor slabs flung up behind the front, her sparks off the crest. Pivot = her soles at the cast; facing right | part 2 / 2: region [1792, 0, 3584, 1328], drawings 0-33"
 }

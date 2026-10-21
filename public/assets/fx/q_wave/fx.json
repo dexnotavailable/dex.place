@@ -148,10 +148,9 @@
   }
  ],
  "loop": false,
- "notes": "Q (B1, 10-21): a huge forward shockwave: a 2D gas sim of her blue fire wall and the torn floor's dust driven along the ground from her blade (front at x +750 tick 11, +1553 tick 23, +2565 tick 39, stops at +2717 tick 43), growing 190 -> 375 art px tall, then breaking; floor slabs flung up behind the front, her sparks off the crest. Pivot = her soles at the cast; facing right. Parts: q_wave_p1, q_wave_p2, q_ignite, q_boom_1, q_boom_2, q_boom_3, q_fire (p1 / p2: the sim split for the stored-px budget; the booms fire as the front passes them; q_fire: her fire left burning on the floor)",
+ "notes": "Q (B1, 10-21): a huge forward shockwave: a 2D gas sim of her blue fire wall and the torn floor's dust driven along the ground from her blade (front at x +750 tick 11, +1553 tick 23, +2565 tick 39, stops at +2717 tick 43), growing 190 -> 375 art px tall, then breaking; floor slabs flung up behind the front, her sparks off the crest. Pivot = her soles at the cast; facing right. Parts: q_wave_p1, q_ignite, q_boom_1, q_boom_2, q_boom_3, q_fire (p1: the sim split for the stored-px budget; the booms fire as the front passes them; q_fire: her fire left burning on the floor). Q2 smoke pass (10-21): the dust / her smoke re-converted from the sim with wide dithered translucent fringes, lighter as it thins, dissolving over its life, her smoke rising",
  "with": [
   "q_wave_p1",
-  "q_wave_p2",
   "q_ignite",
   "q_boom_1",
   "q_boom_2",
