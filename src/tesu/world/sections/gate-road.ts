@@ -1,6 +1,7 @@
 // Gate Road (GDK A.3): a short ridge road from Kagami's shore to the hall's forecourt.
-// Three framed gates 4 H apart, the viewing terrace, Pilgrims' Leap, then a tunnel of six
-// close-set gates. Terrain grammar: a band, a thin natural ridge with open air beneath,
+// Two framed gates 4 H apart (a ryōbu torii, a paifang), the viewing terrace, Pilgrims' Leap,
+// then three gates tied by lantern ropes (torii-1021: thinned from three and six, Dex: "make the
+// tori gates more sparse"). Terrain grammar: a band, a thin natural ridge with open air beneath,
 // carried on three karst pillars that stand on Shiraito's terraces far below.
 //
 // This section lays the road, its rock and its pillars; the gates, rails and the terrace
@@ -10,7 +11,8 @@ import { h } from "../../config.ts";
 import type { WorldBuilder } from "../build.ts";
 import { threadGroups, type WallP } from "../../art/library/opening/wall.ts";
 import { gateFeet, type GateP } from "../../art/library/opening/gates.ts";
-import { DIAGONAL, GATE_XS, HALL_DOOR_X, JETTY_X1, LEAP_X, TERRACE_X0, TERRACE_X1, TUNNEL_XS, sampleCurve, yOn } from "./common.ts";
+import { DIAGONAL, GATE_XS, HALL_DOOR_X, JETTY_X1, LEAP_X, TERRACE_X0, TERRACE_X1, TUNNEL_GATE_XS, TUNNEL_XS, sampleCurve, yOn } from "./common.ts";
+import { seedAt, seedNow } from "./kagami-place.ts";
 
 /** The road surface, world px, from the jetty's end to the hall door. */
 export const ROAD = [
@@ -128,30 +130,38 @@ export function gateRoad(b: WorldBuilder): void {
   b.mist({ x0: h(96), x1: h(200), y: h(73), half: h(6), rate: 0.66, after: "back", density: 0.9 });
   b.mist({ x0: h(40), x1: h(200), y: h(80), half: h(7), rate: 1, after: "play", density: 0.85 });
 
-  // --- the gates: three framed gates, then the tunnel of six. Seen side-on (they stand across the
-  // road): the near pillar on the front plane, in front of her (round 7; `key` keeps the two
-  // pieces' weathering the same); the first and third ryōbu torii braced fore and aft by legs,
-  // the paifang between them braced by raking struts; the tunnel's six plain and a little lower
+  // --- the gates (torii-1021, Dex 10-21: "make the tori gates more sparse"; common.ts ROAD_GATE_XS):
+  // two framed gates, then three tied by lantern ropes. Seen side-on (they stand across the road):
+  // the near pillar on the front plane, in front of her (round 7; `key` keeps the two pieces'
+  // weathering the same); the ryōbu torii at the road's threshold braced fore and aft by legs, the
+  // paifang after it braced by raking struts; the tunnel's three plain and a little lower
   // (the fence leaves room for every foot the gates stand on: their pillars, legs and struts)
   const feet: [number, number][] = [];
+  // (torii-1021) every gate keeps the seeds it had among the nine that stood here before, and the
+  // counter goes on from where the nine left it, so the thinning reseeds nothing built after them
+  // (the palace's lit bays, the court, the rocks)
+  const NINE = [...GATE_XS, ...TUNNEL_XS], seed0 = seedNow(b);
   const gateAt = (x: number, p0: GateP): void => {
+    seedAt(b, seed0 + 2 * NINE.indexOf(x));
     const y = yOn(ROAD, x);
     // (round 7, the integration) the road's slope under its outer feet (a ryōbu's legs, a paifang's
-    // struts), so they stand on the climbing road instead of on the level of the gate's middle
-    const reach = Math.max(1, ...gateFeet(p0).map(([dx]) => Math.abs(dx)));
-    const p: GateP = reach > 1 ? { ...p0, ground: [(y - yOn(ROAD, x - reach)) / reach, (yOn(ROAD, x + reach) - y) / reach] } : p0;
+    // struts), so they stand on the climbing road instead of on the level of the gate's middle;
+    // (torii-1021) and under the pillars' own stones (a plain torii's plinths), which floated over the
+    // road on the downhill side and hung over its edge on the uphill side
+    const reach = Math.max(1, ...gateFeet(p0).map(([dx, hw]) => (dx ? Math.abs(dx) : hw)));
+    const p: GateP = { ...p0, ground: [(y - yOn(ROAD, x - reach)) / reach, (yOn(ROAD, x + reach) - y) / reach] };
     b.piece("play", "op.gate", x, y + 2, { ...p, key: x }, { z: 6 });
     b.piece("front", "op.gate", x, y + 2, { ...p, key: x, part: "front" }, { z: 1 });
     for (const [dx, hw] of gateFeet(p)) feet.push([x + dx, hw]);
   };
   gateAt(GATE_XS[0]!, { kind: "torii", span: h(3.2), h: h(4.7), legs: true });
   gateAt(GATE_XS[1]!, { kind: "paifang", span: h(3.4), h: h(5.6) });
-  gateAt(GATE_XS[2]!, { kind: "torii", span: h(3.4), h: h(5.0), legs: true });
   // (the tunnel's gates tied into one way through by a rope of paper lanterns along the road's middle)
-  TUNNEL_XS.forEach((x, i) => {
-    const next = TUNNEL_XS[i + 1];
+  TUNNEL_GATE_XS.forEach((x, i) => {
+    const next = TUNNEL_GATE_XS[i + 1];
     gateAt(x, { kind: "torii", span: h(2.1), h: h(3.4), pw: 33, ...(next !== undefined ? { garland: [next - x, yOn(ROAD, next) - yOn(ROAD, x)] as [number, number] } : {}) });
   });
+  seedAt(b, seed0 + 2 * NINE.length);
 
   // the road's fence in front of her (round 7: rough stone posts and a straw rope), everywhere
   // except at Pilgrims' Leap

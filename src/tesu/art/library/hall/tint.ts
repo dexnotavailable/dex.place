@@ -163,6 +163,96 @@ export function lutChain(...steps: [Tint, number][]): Uint8Array | null {
 }
 
 /**
+ * (hall loop round 3, W2-1: the "warm" steps on the navy plaster landed on grey-browns, umber and mauve,
+ * S 0.36: the pools read as brown stains) Lamplight glowing on a dark wall, as in ref 05: each step lifts
+ * the colour and pulls its hue hard toward a lantern's amber, so a pool climbs from the navy through a
+ * violet-brown and a deep orange-brown into amber, and its core into the hot ember of the lantern's paper.
+ * The landing set is the warm ramps only (plus the colour's own), so no step lands back on a cool grey.
+ */
+const AMBER_LAND: readonly (readonly number[])[] = [P.umber, P.mauve, P.bronze, P.gold, P.ember, P.timber, P.earth];
+
+export function amberLut(steps: number): Uint8Array {
+  const key = `amber|${steps}`;
+  let t = LUTS.get(key);
+  if (t) return t;
+  const L = labs();
+  const land = [...new Set(AMBER_LAND.flat())];
+  t = new Uint8Array(256);
+  for (let i = 1; i < PALETTE_SIZE; i++) {
+    const [l, a, b] = L[i]!;
+    const tl = Math.max(2, Math.min(97, l + 10 * steps));
+    // the amber at that value: a deep orange-brown low down, a hot yellow-orange high up
+    const C = Math.min(62, 16 + tl * 0.8);
+    const hue = (40 + Math.max(0, tl - 18) * 0.62) * (Math.PI / 180);
+    const w = 1 - Math.pow(0.35, steps);
+    const ta = a * (1 - w) + C * Math.cos(hue) * w, tb = b * (1 - w) + C * Math.sin(hue) * w;
+    let best = i, bd = Infinity;
+    for (const j of [i, ...land]) {
+      const c = L[j]!;
+      const d = (c[0] - tl) ** 2 + 0.55 * ((c[1] - ta) ** 2 + (c[2] - tb) ** 2);
+      if (d < bd) { bd = d; best = j; }
+    }
+    t[i] = best;
+  }
+  LUTS.set(key, t);
+  return t;
+}
+
+/** A cool daylight landing (round 3, W2-2): the court's day spilling off the gate onto the room's navy: lighter,
+ *  toward the sky's blue-grey, chroma kept low (never a teal or a violet). */
+export function dayLut(steps: number): Uint8Array {
+  const key = `dayspill|${steps}`;
+  let t = LUTS.get(key);
+  if (t) return t;
+  const L = labs();
+  const land = [...new Set([P.dusk, P.tile, P.range, P.lacquer, P.stone, P.karst, P.cloud, P.blue].flat())];
+  t = new Uint8Array(256);
+  for (let i = 1; i < PALETTE_SIZE; i++) {
+    const [l, a, b] = L[i]!;
+    const tl = Math.max(2, Math.min(97, l + 9 * steps));
+    const w = 1 - Math.pow(0.55, steps);
+    const ta = a * (1 - w) + -2 * w, tb = b * (1 - w) + -9 * w;
+    let best = i, bd = Infinity;
+    for (const j of [i, ...land]) {
+      const c = L[j]!;
+      const d = (c[0] - tl) ** 2 + 0.7 * ((c[1] - ta) ** 2 + (c[2] - tb) ** 2);
+      if (d < bd) { bd = d; best = j; }
+    }
+    if (best === i && steps > 0) {
+      for (const j of land) {
+        const c = L[j]!;
+        if (c[0] <= l + 3) continue;
+        const d = (c[0] - tl) ** 2 + 0.7 * ((c[1] - ta) ** 2 + (c[2] - tb) ** 2);
+        if (d < bd || best === i) { bd = d; best = j; }
+      }
+    }
+    t[i] = best;
+  }
+  LUTS.set(key, t);
+  return t;
+}
+
+/** Two remaps one after the other, cached (any of them null = skipped). */
+export function chain2(a: Uint8Array | null, b: Uint8Array | null): Uint8Array | null {
+  if (!a) return b;
+  if (!b) return a;
+  const key = `c2|${LUTKEY.get(a) ?? keyOf(a)}|${LUTKEY.get(b) ?? keyOf(b)}`;
+  let t = LUTS.get(key);
+  if (t) return t;
+  t = new Uint8Array(256);
+  for (let i = 0; i < 256; i++) t[i] = i ? b[a[i]!]! : 0;
+  LUTS.set(key, t);
+  return t;
+}
+const LUTKEY = new WeakMap<Uint8Array, string>();
+let LUTN = 0;
+function keyOf(t: Uint8Array): string {
+  const k = `t${LUTN++}`;
+  LUTKEY.set(t, k);
+  return k;
+}
+
+/**
  * Re-colours what is painted in a local rectangle: fn says, per pixel, which remap to apply (or
  * null to leave it). Nothing new is painted where the buffer is empty.
  */

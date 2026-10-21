@@ -101,20 +101,69 @@ export const seo = definePainter<FolkP>("seo", {
   },
 });
 
-/** The hall cat, asleep (anchor: the bench or floor under it). Frames: breathing in, out. */
+/** The hall cat, asleep (anchor: the bench or floor under it). Frames: breathing in, out.
+ *  (hall loop round 3, W2-12: a beige loaf with no ears or tail) a ginger tabby curled up side-on: its back lit
+ *  from the room's lamps, stripes across it, its head down on its paws with both ears up, an eye shut, its tail
+ *  wrapped round the front with a darker tip, its belly and the floor under it in shadow. */
 export const cat = definePainter<FolkP>("cat", {
   bounds() {
-    return [-24, -22, 26, 2];
+    return [-24, -26, 28, 2];
   },
   paint(c, p) {
     const f = p.frame ?? 0;
     const rise = f === 1 ? 1 : 0;
-    ell(c, 0, -8 - rise, 18, 9 + rise, (u, v, x, y) => tone(P.earth, clamp(0.1 + 0.4 * (u + 1) / 2 + (v > 0.4 ? 0.2 : 0), 0, 1), x, y, 0.3));
-    ell(c, 14, -10, 8, 7, (u, _v, x, y) => tone(P.earth, u < 0 ? 0.15 : 0.4, x, y, 0.3));
-    c.buf.set(Math.round(c.X(10)), Math.round(c.Y(-17)), P.earth[3]!);
-    c.buf.set(Math.round(c.X(19)), Math.round(c.Y(-17)), P.earth[3]!);
-    rectf(c, 13, -10, 17, -9, () => P.ink[0]!, false);
-    // the tail curled round
-    for (let a = 0; a < Math.PI; a += 0.2) c.buf.set(Math.round(c.X(-14 + Math.cos(a) * 8)), Math.round(c.Y(-2 - Math.sin(a) * 4)), P.earth[2]!);
+    const set = (x: number, y: number, v: number): void => c.buf.set(Math.round(c.X(x)), Math.round(c.Y(y)), v);
+    const FUR = P.timber;
+    // the shadow under it
+    for (let x = -17; x <= 19; x++) set(x, 0, P.umber[4]!);
+    // the body: a curl, lit along the top and the left, stripes over the back
+    const by = -8 - rise * 0.5, brx = 16, bry = 8 + rise * 0.5;
+    const X0 = Math.floor(c.X(-brx - 1)), X1 = Math.ceil(c.X(brx + 1)), Y0 = Math.floor(c.Y(by - bry - 1)), Y1 = Math.ceil(c.Y(0));
+    for (let y = Y0; y < Y1; y++) for (let x = X0; x < X1; x++) {
+      const lx = c.lx(x + 0.5), ly = c.ly(y + 0.5);
+      const u = lx / brx, v = (ly - by) / bry;
+      const d = u * u + v * v;
+      if (d > 1 || ly > -0.5) continue;
+      const edge = d > 0.8;
+      const stripe = v < 0.25 && Math.sin(lx * 0.75 + v * 1.5) > 0.55;
+      let t = 0.22 + (v + 1) * 0.28 - (u < -0.3 && v < 0 ? 0.08 : 0) + (stripe ? 0.28 : 0);
+      if (v < -0.7) t -= 0.12;
+      if (edge && v > 0.1) t = 0.95;
+      c.buf.set(x, y, edge && v > -0.2 ? P.umber[3]! : tone(FUR, clamp(t, 0, 1), x, y, 0.3));
+    }
+    // the head down on its front paws: a round head, both ears up, an eye shut, a pink nose
+    const hx = 13, hy = -9 - rise * 0.5, hr = 6.5;
+    const HX0 = Math.floor(c.X(hx - hr - 1)), HX1 = Math.ceil(c.X(hx + hr + 1)), HY0 = Math.floor(c.Y(hy - hr - 6)), HY1 = Math.ceil(c.Y(hy + hr));
+    for (let y = HY0; y < HY1; y++) for (let x = HX0; x < HX1; x++) {
+      const lx = c.lx(x + 0.5) - hx, ly = c.ly(y + 0.5) - hy;
+      const head = Math.hypot(lx, ly * 1.1) < hr;
+      // the ears: two triangles on the crown, the near one a little larger
+      let ear = 0;
+      for (const [ex, eh, ew] of [[-3, 5.5, 2.6], [3.2, 6.2, 2.8]] as const) {
+        const t = (-hr * 0.55 - ly) / eh; // 0 at the ear's foot .. 1 at its tip
+        if (t > 0 && t < 1 && Math.abs(lx - ex - t * 0.6) < ew * (1 - t)) ear = Math.abs(lx - ex - t * 0.6) < ew * (1 - t) * 0.45 && t < 0.6 ? 2 : 1;
+      }
+      if (!head && !ear) continue;
+      if (ear === 2) { c.buf.set(x, y, P.skin[3]!); continue; }
+      if (ear === 1) { c.buf.set(x, y, tone(FUR, lx < 0 ? 0.25 : 0.45, x, y, 0.3)); continue; }
+      const rim = Math.hypot(lx, ly * 1.1) > hr - 1;
+      const stripe = ly < -2 && Math.abs(lx + Math.sin(ly) * 0.5) < 0.6 && ly > -hr + 1;
+      const t = 0.2 + (ly + hr) / (2 * hr) * 0.35 + (lx > 2 ? 0.08 : 0) + (stripe ? 0.3 : 0);
+      c.buf.set(x, y, rim && ly > 0 ? P.umber[3]! : tone(FUR, clamp(t, 0, 1), x, y, 0.3));
+    }
+    // the shut eye (a short dark curve), the muzzle's pale fur, the nose
+    set(hx + 1.5, hy - 0.5, P.umber[4]!); set(hx + 2.5, hy, P.umber[4]!); set(hx + 3.5, hy - 0.5, P.umber[4]!);
+    set(hx + 4.5, hy + 2, P.paper[2]!); set(hx + 5.5, hy + 2, P.paper[2]!); set(hx + 5.5, hy + 1, P.skin[2]!);
+    // the front paws, pale, tucked under the chin
+    for (let x = 6; x <= 12; x++) set(x, -1, x > 10 ? P.paper[2]! : tone(FUR, 0.3, Math.round(c.X(x)), Math.round(c.Y(-1)), 0.3));
+    // the tail: from the rump round the bottom of the curl to the front, two px thick, ringed, its tip darker
+    for (let t = 0; t <= 1; t += 0.02) {
+      const tx = -16.5 + t * 25, ty = -3.2 + Math.sin(t * Math.PI * 0.85) * 2.3 - (t > 0.85 ? (t - 0.85) * 8 : 0);
+      const tip = t > 0.82;
+      const ring = Math.floor(t * 9) % 2 === 1;
+      set(tx, ty - 1, tip ? FUR[3]! : FUR[1]!);
+      set(tx, ty, tip ? FUR[4]! : ring ? FUR[3]! : FUR[2]!);
+      set(tx, ty + 1, P.umber[3]!);
+    }
   },
 });

@@ -10,6 +10,9 @@
 // daylight and the skylight shaft reach in from the play plane's side.
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
+import { iceDist, iceRay } from "./bay.ts";
+import { ruyi } from "./roof.ts";
+import { bayer4 } from "../../raster.ts";
 import { P } from "../../palette.ts";
 import { HALL_LIGHT } from "./lights.ts";
 import { upperWall } from "./upper.ts";
@@ -216,6 +219,10 @@ function lowBay(c: PaintCtx, p: BackWallP, b: Bay, lf: LitField): void {
   }
 }
 
+/** Paper lit from behind for the ice-ray screens (round 3): cream to a warm tan, no orange (orange in the cells read
+ *  as lava behind cracked glass), into the warm dark. */
+const PAPER_LIT = [P.ember[0]!, P.ember[1]!, P.paper[2]!, P.paper[3]!, P.timber[2]!, P.umber[0]!, P.umber[1]!, P.umber[2]!];
+
 /** One screen door: a frame, a lattice over glowing paper, a kick panel below. */
 function screenDoor(c: PaintCtx, p: BackWallP, x0: number, y0: number, x1: number, y1: number, pat: number, seed: number, lf: LitField, glowK: number): void {
   const U = p.u;
@@ -239,7 +246,18 @@ function screenDoor(c: PaintCtx, p: BackWallP, x0: number, y0: number, x1: numbe
     }
     // paper lit from behind by a lamp low in the corridor: a soft warm bloom, darker edges
     const bloom = Math.exp(-(((u - 0.5) / 0.55) ** 2 + ((v - 0.62) / 0.6) ** 2));
-    const g = glowK * (0.35 + 0.65 * bloom) - (vnoise(lx * 0.05, ly * 0.05, seed) > 0.8 ? 0.1 : 0);
+    let g = glowK * (0.35 + 0.65 * bloom) - (vnoise(lx * 0.05, ly * 0.05, seed) > 0.8 ? 0.1 : 0);
+    // (round 3, W2-3c) the room behind the paper as soft shapes: a tall cupboard's dark mass on one side, a low table's
+    // line, the lamp's own hot spot; their edges dithered soft (paper diffuses them)
+    if (pat === 1) {
+      const cu = hash(seed, 11, 97) < 0.5 ? 0.18 : 0.8, cwid = 0.16 + 0.1 * hash(seed, 12, 97);
+      const cab = clamp((cwid - Math.abs(u - cu)) / 0.06, 0, 1) * clamp((v - 0.22) / 0.08, 0, 1);
+      const tab = clamp((0.05 - Math.abs(v - 0.8)) / 0.04, 0, 1) * clamp((0.3 - Math.abs(u - 0.5)) / 0.06, 0, 1);
+      g -= 0.28 * Math.max(cab, tab) * (0.6 + 0.4 * bayer4(X, Y));
+      const lamp = Math.hypot((u - 0.55) / 0.12, (v - 0.55) / 0.08);
+      if (lamp < 1) g += 0.18 * (1 - lamp);
+      return tn(PAPER_LIT, clamp(1.05 - g * 1.25, 0, 1), X, Y, 0.55);
+    }
     // (hall loop round 1) the hall's life behind the paper: now and then someone in the corridor
     // between the lamp and the screen, their shadow soft on the paper (a head, shoulders, a sleeve)
     if (hash(seed, 5, 97) > 0.62) {
@@ -271,17 +289,11 @@ function lattice(pat: number, x: number, y: number, U: number, seed: number): bo
     return false;
   }
   if (pat === 1) {
-    // ice-crack: the edges of jittered cells
-    const s = 0.42 * U;
-    const fx = x / s, fy = y / s;
-    const ix = Math.floor(fx), iy = Math.floor(fy);
-    let d1 = 9, d2 = 9;
-    for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
-      const px = ix + i + 0.15 + 0.7 * hash(ix + i, iy + j, seed), py = iy + j + 0.15 + 0.7 * hash(ix + i, iy + j, seed + 1);
-      const d = Math.hypot(fx - px, fy - py);
-      if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
-    }
-    return (d2 - d1) * s < bw * 1.1 || x < bw || y < bw;
+    // (round 3, W2-3c: round cells of jittered points read as cracked glass with lava behind) the ice-ray lattice the
+    // whole hall uses (bay.ts): straight bars meeting at odd angles, compact cells
+    if (x < bw || y < bw) return true;
+    const segs = iceRay(4 * U, 7 * U, seed, 0.1 * U * U);
+    return iceDist(segs, x, y)[0] < bw * 0.5;
   }
   const s = 0.3 * U;
   const a = ((x + y) % s + s) % s, b2 = ((x - y) % s + s) % s;
@@ -500,10 +512,16 @@ function lintel(c: PaintCtx, p: BackWallP, lf: LitField): void {
       const e = Math.min(cw - Math.abs(k - cc), (0.32 - Math.abs(v - 0.5)) * 0.4);
       return e < 0.02 ? mt(M.gold, lum(l) * 0.85, X, Y, 0.15, 1) : mt(M.lacq, lum(l) * 0.5, X, Y, 0.2, 1);
     }
-    if (style >= 0.62 && Math.abs(v - 0.5 - Math.sin(k * 40) * 0.12) < 0.08 && Math.abs(k - 0.5) < 0.3) return mt(M.gold, lum(l) * 0.55, X, Y, 0.3, 1);
-    const flaked = fbm(lx * 0.05, ly * 0.2, 83, 2) > 0.68;
-    if (flaked) return mt(M.wood, lum(l) * 0.45, X, Y, 0.3, 1);
-    return tn(P.jade, clamp(0.86 + (1 - lum(l)) * 0.14 + (Math.sin(lx * 0.18) > 0.6 ? -0.06 : 0), 0, 1), X, Y, 0.45);
+    // (round 3, W2-7: a sine line, and flaked patches that read as camouflage blotches once the dusk lay over them) a
+    // run of ruyi clouds painted along the panel in gold line and a lighter teal; the paint worn only along the beam's
+    // lower edge, where hands and brooms never reach but the damp does
+    if (style >= 0.62 && Math.abs(k - 0.5) < 0.31) {
+      const cl = ruyi((k - 0.5) * 4.25 * U, (v - 0.5) * (y1 - y0), 0.3 * (y1 - y0), bi + 31);
+      if (cl === 2) return mt(M.gold, lum(l) * 0.55, X, Y, 0.3, 1);
+      if (cl === 1) return tn(P.jade, clamp(0.66 + (1 - lum(l)) * 0.14, 0, 1), X, Y, 0.45);
+    }
+    const worn = v > 0.78 && fbm(lx * 0.08, ly * 0.3, 83, 2) > 0.62;
+    return tn(P.jade, clamp(0.86 + (1 - lum(l)) * 0.14 + (worn ? 0.08 : 0), 0, 1), X, Y, 0.45);
   });
 }
 
