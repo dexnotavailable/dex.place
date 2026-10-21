@@ -229,6 +229,22 @@ export function initChoreo(fine: MediaQueryList): void {
     const sheet = document.querySelector<HTMLElement>(".sheet--home");
     if (bar && hdr && sheet) {
       gsap.fromTo(bar, { scaleX: 0 }, { scaleX: 1, ease: "none", scrollTrigger: { trigger: sheet, start: "top top", end: "bottom bottom", scrub: true } });
+      // (site loop v4 round 1, the critic's idea) a little ofuda rides the line's tip, in the section's tone, swaying at
+      // rest (styles/choreo.css .hdr__pip): a translate on its own layer
+      const pip = document.createElement("i");
+      pip.className = "hdr__pip";
+      pip.setAttribute("aria-hidden", "true");
+      bar.after(pip);
+      // (its own translate, never GSAP's transform: GSAP would fold the CSS sway's rotate into it)
+      let pipW = bar.offsetWidth, pipX = -1;
+      ScrollTrigger.create({
+        trigger: sheet, start: "top top", end: "bottom bottom",
+        onRefresh: () => { pipW = bar.offsetWidth; },
+        onUpdate: (st) => {
+          const x = Math.round(st.progress * pipW);
+          if (x !== pipX) { pipX = x; pip.style.translate = `${x}px 0`; }
+        },
+      });
       // ...and the header takes the tone of the section you are in (its strip past 40% of the screen): the line, the
       // nav indicator's shadow (styles/bands.css --sec-tone); read once, set on a change only
       const toneOf = (b: Band | undefined): string => (b ? getComputedStyle(b.el).getPropertyValue("--tone").trim() : "");
@@ -304,7 +320,6 @@ export function initChoreo(fine: MediaQueryList): void {
             if (y === last) return;
             last = y;
             if (!lifts.includes(b.scene)) lifts.push(b.scene);
-            b.scene.style.willChange = y ? "transform" : "";
             b.scene.style.transform = y ? `translate3d(0, ${y}px, 0)` : "";
           },
         });
@@ -390,7 +405,8 @@ export function initChoreo(fine: MediaQueryList): void {
       for (const b of bands) b.settle(true);
       foot?.destroy();
       hdr?.style.removeProperty("--sec-tone");
-      for (const c of lifts) { c.style.transform = ""; c.style.willChange = ""; }
+      document.querySelector(".hdr__pip")?.remove();
+      for (const c of lifts) c.style.transform = "";
       for (const b of bands) b.glare?.remove();
       ptr?.destroy();
       gone = true;
