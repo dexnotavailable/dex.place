@@ -268,6 +268,10 @@
 .band :is(.btn, .pop):not(.pcard *) { --pop-hi: var(--band-tone); }
 @media (hover: hover) {
   .band .btn--paper:not(.pcard *):hover { --btn-bg: var(--tone-t); }
+  /* (site loop v3 round 5: the Ko-fi card went from its deep rose edge to a paler pink on hover, and a post's arrow to
+     the site's azure in every band) a hover deepens into the band's own tone, never away from it */
+  .band .kofi:hover { border-color: var(--tone-d); box-shadow: 7px 7px 0 var(--tone-d); }
+  .band .bpost:hover .bpost__go { color: var(--tone-d); }
 }
 /* the title's words in a line mask (the motion raises them inside it); its underline a mark of its own */
 .sh__line { display: block; overflow-y: clip; }
@@ -430,7 +434,9 @@
 /* the gallery's: past its collage's outer column (which hangs over the paper's edge onto the world), never over a piece
    (site loop v3 round 1: it hid the last tile's lettering) */
 @media (min-width: 700px) {
-  .band--l.band--gallery > .band__fore { left: calc(var(--panel-w) + var(--edge-in) + var(--overhang) - var(--fore-w) * 0.25); }
+  /* (site loop v3 round 5: its left quarter still lapped the outer column's last tile by ~40 px, over the lettering)
+     it starts just past the column's outer edge */
+  .band--l.band--gallery > .band__fore { left: calc(var(--panel-w) + var(--edge-in) + var(--overhang) + 16px); }
 }
 .band--r.band--docs > .band__fore {
   right: calc(var(--panel-w) - var(--fore-w) * 0.5);
@@ -512,6 +518,19 @@
   .band--donate .donate { align-items: stretch; }
   .band--donate .kofi__cta { margin-top: auto; }
   .band--donate .qr[data-stitch] { margin-right: 0; }
+  /* (site loop v3 round 5: the well stood ~1080 px tall at 1920 with the cup at its middle, so the column read as an
+     empty dotted slab whichever way you looked) the cup and its table edge ride down the well as you read the bank
+     card, held at the screen's middle, and settle on the well's floor at its foot. Sticky inside the well: its clip
+     never makes it a scroll container (overflow: clip, not hidden) */
+  .band--donate .kofi__stage { overflow: clip; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: start center; }
+  .band--donate .kofi__cup { grid-area: 1 / 1; position: sticky; top: calc(50vh - 40px); margin: 48px 0 40px; }
+  .band--donate .kofi__stage::after {
+    grid-area: 1 / 1;
+    position: sticky;
+    top: calc(50vh + 88px);
+    justify-self: stretch;
+    margin: 176px 0 38px;
+  }
 }
 @container (min-width: 323px) and (max-width: 599px) { .band--donate .qr { --qm: 7; } }
 @container (min-width: 368px) and (max-width: 599px) { .band--donate .qr { --qm: 8; } }

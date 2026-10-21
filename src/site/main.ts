@@ -15,6 +15,7 @@ import { initNsfw } from "./motion/nsfw.ts";
 import { initSharpen } from "./motion/piece.ts";
 import { initIdle, initReveal } from "./motion/reveal.ts";
 import { initScatter } from "./motion/scatter.ts";
+import { initSeal } from "./motion/seal.ts";
 import { initSlideoff } from "./motion/slideoff.ts";
 import { afterMark } from "./motion/quiet.ts";
 import { initWorld } from "./motion/world.ts";
@@ -74,6 +75,8 @@ const steps: [string, () => void][] = [
   ["nav", () => initNav()],
   ["stuck", () => initStuck()],
   ["menu", () => initMenu()],
+  // the press seal: a pressed key leaves a hanko that fades (motion/seal.ts)
+  ["seal", () => initSeal(reduced)],
   ["scenes", () => initScenes(reduced, fine)],
   // the project cards' own motion (motion/pcard.ts, lane K) on the pages without the home's choreography (/projects/,
   // a project's page: "Other projects"), own chunk; on the home page the choreography drives the deck
