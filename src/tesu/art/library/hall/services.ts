@@ -124,6 +124,8 @@ export interface DeskP {
   top: number;
   /** Where the receptionist stands behind it (local x). */
   who: number;
+  /** (round 4, W1-a) A signboard hangs over the desk (signboard.ts): the small sign on the cabinet is dropped. */
+  board?: boolean;
   at?: At;
 }
 
@@ -137,9 +139,10 @@ export const desk = definePainter<DeskP>("hall.desk", {
     const W = p.w, T = p.top;
 
     // --- the pigeonholes on the wall behind her spot: a lacquer cabinet of cells, scrolls and slips in them
-    const cx0 = 0.22 * H, cx1 = W - 0.12 * H, cy0 = -T - 1.12 * H, cy1 = -T - 0.06 * H;
+    // (round 4, W1-a) the cabinet stands behind her, no wider than 1.75 H however long the counter grows
+    const cx0 = Math.max(0.22 * H, p.who - 0.85 * H), cx1 = Math.min(W - 0.12 * H, p.who + 0.9 * H), cy0 = -T - 1.12 * H, cy1 = -T - 0.06 * H;
     box(c, lf, side, cx0, cy0, cx1, cy1, M.lacq, 3, 0.0, 1, 3, 0.05);
-    const cols = 7, rows = 4;
+    const cols = Math.max(7, Math.round((cx1 - cx0) / (0.21 * H))), rows = 4;
     const cw = (cx1 - cx0 - 8) / cols, ch = (cy1 - cy0 - 8) / rows;
     for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
       const x0 = cx0 + 4 + i * cw + 1.5, x1 = x0 + cw - 3, y0 = cy0 + 4 + j * ch + 1.5, y1 = y0 + ch - 3;
@@ -200,6 +203,7 @@ export const desk = definePainter<DeskP>("hall.desk", {
     box(c, lf, side, cx0 - 5, cy0 - 6, cx1 + 5, cy0, M.wood, 5, 0.15, 1, 2);
     for (const fx of [cx0 - 5, cx1 + 5]) fitting(c, lf, side, fx, cy0 - 6, fx < W / 2 ? 1 : -1, 1, 5);
     // --- the sign over the desk: a carved board on two brackets, "register" in gold glyphs
+    if (!p.board) {
     const sy1 = cy0 - 0.18 * H, sy0 = sy1 - 0.3 * H, sx0 = cx0 + 0.05 * H, sx1 = cx1 - 0.05 * H;
     for (const bx of [sx0 + 8, sx1 - 8]) rect(c, bx - 2, sy1, bx + 2, cy0 - 6, (X, Y, lx, ly) => mt(M.wood, face(lf.get(lx, ly).k, side, (lx - bx) / 2, 0) * 0.7, X, Y, 0.2, 1));
     rect(c, sx0, sy0, sx1, sy1, (X, Y, lx, ly) => {
@@ -214,11 +218,13 @@ export const desk = definePainter<DeskP>("hall.desk", {
       openBook(c, mid - 36, scy - 9, 32, (X, Y) => tn(M.paper, 0.12, X, Y, 0), (X, Y) => tn(M.gold, 0.5, X, Y, 0), (X, Y) => tn(M.ink, 0.1, X, Y, 0));
       sealStamp(c, mid + 10, scy - 8, 16, (X, Y) => tn(P.red, 0.32, X, Y, 0), (X, Y) => tn(M.paper, 0.1, X, Y, 0));
     }
+    }
 
     // (round 3, W1-3) a small paper lantern on the cabinet's east shoulder (lights.ts SERVICE_LAMPS: the desk's
     // second key light, so the counter and the cells read lit in their own frame): a lacquer foot, a lit paper box
     // under a little dark cap, a red tassel
-    {
+    // (round 4) not under the signboard: its own two lanterns hang right there and light the cabinet from above
+    if (!p.board) {
       const lx = cx1 + 3, lb = cy0 - 6, lt = lb - 0.3 * H;
       box(c, lf, side, lx - 7, lb - 3, lx + 7, lb, M.lacq, 3, 0.1, 1, 1, 0);
       rect(c, lx - 6, lt, lx + 6, lb - 3, (X, Y, px, py) => {
@@ -379,16 +385,21 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
   const side = sideOf(lf, W / 2, -TOP / 2);
   const v = (l: { k: number }, base: number, nx = 0, ny = 0): number => base + (face(l.k, side, nx, ny) - 0.35) * 0.6;
   const PL = Math.round(0.11 * H); // the plinth's height
-  const px0 = -0.1 * H, px1 = W + 0.1 * H; // the frame's posts
-  const postTop = -1.56 * H;
+  // (round 4, W1-b) the frame's posts stand behind the chest, inside its ends (they stood outside them, and the east one
+  // was tangent to the bay column's base): the chest is the stage's widest line, the frame a slim gate behind it
+  const px0 = 0.1 * W, px1 = 0.9 * W; // the frame's posts
+  // (round 4, W1-b) taller (was 1.56 H): the bigger chest's lid needs the room under the sign and the lantern, and the
+  // frame's beam and sign now stand clearly in front of the back colonnade's column base behind the chest instead of
+  // touching it with the roof's ridge
+  const postTop = -2.0 * H;
   // (hall loop round 2, W2-7) its own lantern's light, by what it lands on: the west post's face toward it, the
   // beam's underside, the sign's edge, the chest's rim and lid, a glint along the slit plate's top edge, the coins
   // on the plinth; falling off across the chest away from the lantern (0 .. 1)
   // (round 3, W1-3) the bracket swings inward off the west post, so the lantern hangs over the chest's west end and its
   // pool lands on the lid, the slit plate and the plinth (it hung outside the frame, lighting the post and the wall)
-  const LX = px0 + 0.27 * H, LY = -0.84 * H;
+  const LX = px0 + 0.27 * H, LY = -0.95 * H;
   const g = (lx: number, ly: number): number => clamp(1 - Math.hypot((lx - LX) / (1.65 * H), (ly - LY) / (1.35 * H)), 0, 1);
-  contact(c, px0 - 8, px1 + 8, 0.9);
+  contact(c, -0.08 * H - 4, W + 0.08 * H + 4, 0.9);
 
   // --- the frame: two slim lacquer posts on stone feet, a crossbeam with a little tiled cap
   for (const fx of [px0, px1]) {
@@ -416,7 +427,8 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
 
   // --- the hanging sign under the beam: dark lacquer in a gold frame, a big gold cash coin on it
   {
-    const sw = 0.5 * H, sh = 0.32 * H, sx0 = W / 2 - sw / 2, sy0 = bm1 + 0.16 * H, sy1 = sy0 + sh;
+    // (round 4, W1-b) a bigger sign for the bigger stage (was 0.5 x 0.32 H)
+    const sw = 0.62 * H, sh = 0.4 * H, sx0 = W / 2 - sw / 2, sy0 = bm1 + 0.12 * H, sy1 = sy0 + sh;
     for (const kx of [sx0 + 6, sx0 + sw - 6]) cord(c, kx, bm1, kx, sy0, 0, (X, Y) => tn(M.verm, 0.45, X, Y, 0));
     rect(c, sx0, sy0, sx0 + sw, sy1, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
@@ -430,12 +442,12 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
   // --- its own lamp: an iron bracket off the west post reaching in over the chest (round 3, W1-3), a small paper
   // lantern hanging from it, lit; its light lands on the chest's lid and slit plate and on the plinth
   {
-    const ax = px0 + 0.27 * H, ay = -1.0 * H;
+    const ax = px0 + 0.27 * H, ay = -1.12 * H;
     // the iron arm: its top edge catching the lantern's light, a scroll at its end, a brace up from the post
     rect(c, px0 + 3, ay - 2, ax + 3, ay + 1.5, (X, Y, _lx, ly) => (ly < ay - 0.8 ? tn(M.bronze, 0.35, X, Y, 0) : tn(M.lacq, 0.5, X, Y, 0)));
     rect(c, ax + 2, ay - 5, ax + 5, ay - 1, (X, Y, lx, ly) => (Math.hypot(lx - ax - 3.5, ly - ay + 3) < 2.2 && Math.hypot(lx - ax - 3.5, ly - ay + 3) > 0.9 ? tn(M.bronze, 0.45, X, Y, 0) : 0));
     poly(c, [px0 + 3, ay + 1, px0 + 3, ay + 12, px0 + 14, ay + 1], (X, Y, lx, ly) => (Math.abs((lx - px0 - 3) - (ly - ay - 1)) < 1.6 || lx < px0 + 4.5 ? tn(M.lacq, 0.5, X, Y, 0) : 0));
-    const lx0 = ax - 10, lx1 = ax + 10, l0 = ay + 6, l1 = ay + 0.3 * H;
+    const lx0 = ax - 10, lx1 = ax + 10, l0 = ay + 6, l1 = ay + 0.28 * H;
     cord(c, ax, ay + 1, ax, l0, 0, (X, Y) => tn(M.lacq, 0.6, X, Y, 0));
     rect(c, lx0, l0, lx1, l1, (X, Y, lx, ly) => {
       const u = (lx - lx0) / (lx1 - lx0), vv = (ly - l0) / (l1 - l0);
@@ -547,7 +559,7 @@ function offeringStage(c: PaintCtx, lf: LitField, p: DonationP): void {
 
 export const donation = definePainter<DonationP>("hall.donation", {
   bounds(p) {
-    if (p.main && !p.ped) return [-0.5 * H, -1.85 * H, p.w + 0.35 * H, 6];
+    if (p.main && !p.ped) return [-0.5 * H, -2.35 * H, p.w + 0.35 * H, 6];
     return [-0.3 * H, -(p.ped ?? 0) - p.h - 0.55 * H, p.w + 0.3 * H, 6];
   },
   paint(c, p) {
@@ -845,10 +857,12 @@ export const map = definePainter<{ w: number; at?: At }>("hall.map", {
       const vig = Math.max(0, Math.max(Math.abs(u - 0.5) - 0.38, Math.abs(v - 0.5) - 0.34)) * 2.2;
       const cu = coast(v, lx);
       // the water: a jade wash, wave ticks, deeper off the shore
+      // (round 4, W1-d: the pale board, L 167, was as bright as the gate, a second focal point) the whole map two value
+      // steps down, aged silk under old ink: the lake, the falls and the pin are its only light marks
       if (u < cu) {
-        if (cu - u < 0.012) return tn(P.jade, 0.62, X, Y, 0);
+        if (cu - u < 0.012) return tn(P.jade, 0.8, X, Y, 0);
         const tick = Math.abs(Math.sin(lx * 0.9 + Math.floor(ly / 4) * 1.7)) > 0.93 && (Math.floor(ly) % 4 === 0);
-        return tn(P.jade, clamp(0.12 + (cu - u) * 0.9 + (tick ? 0.18 : 0) + vig - (lit - 0.55) * 0.3, 0, 1), X, Y, 0.4);
+        return tn(P.jade, clamp(0.56 + (cu - u) * 0.6 + (tick ? -0.1 : 0) + vig - (lit - 0.55) * 0.3, 0, 1), X, Y, 0.4);
       }
       // Hoai Pho's lake under the palace's prow
       const ld = Math.hypot((u - 0.66) / 0.09, (v - 0.8) / 0.12);
@@ -879,7 +893,7 @@ export const map = definePainter<{ w: number; at?: At }>("hall.map", {
         if (dy < 0) continue;
         if (dy < 0.022) {
           const tip = ridgeY(r, u - 0.012) > ry + 0.01 && ridgeY(r, u + 0.012) > ry + 0.01;
-          return tip && r < 2 ? tn(P.snow, 0.1, X, Y, 0) : tn(M.ink, 0.12 + r * 0.22, X, Y, 0);
+          return tip && r < 2 ? tn(P.range, 0.3, X, Y, 0) : tn(M.ink, 0.12 + r * 0.22, X, Y, 0);
         }
         const depth = 0.17 - r * 0.02, fall = dy / depth;
         if (fall < 1) {
@@ -887,13 +901,13 @@ export const map = definePainter<{ w: number; at?: At }>("hall.map", {
           // texture strokes down the shade side (the brush's dry hairs), the wash thinning into dither below
           const hair = shadeSide && Math.abs(Math.sin(lx * 1.7 + ly * 0.35)) > 0.8 && fall < 0.75;
           if (fall > 0.55 && !keep(X, Y, (1 - fall) / 0.45)) break;
-          return tn(P.range, clamp(0.08 + r * 0.12 + (shadeSide ? 0.22 : 0) + (hair ? 0.14 : 0) - fall * 0.1, 0, 1), X, Y, 0.35);
+          return tn(P.range, clamp(0.68 + r * 0.06 + (shadeSide ? 0.16 : 0) + (hair ? 0.12 : 0) - fall * 0.1, 0, 1), X, Y, 0.35);
         }
         break; // the body below the wash: paper, and it hides the ranges behind
       }
       // the land: aged paper, a hint of green low
       const green = vnoise(u * 5, v * 5, 79) > 0.62 && v > 0.62;
-      return green ? tn(P.moss, clamp(0.25 + vig, 0, 1), X, Y, 0.4) : mt(M.paper, lit * (1.0 - vig) + age * 0.18, X, Y, 0.0, 0.85);
+      return green ? tn(P.moss, clamp(0.5 + vig, 0, 1), X, Y, 0.4) : mt(M.paper, lit * (1.0 - vig) + age * 0.22, X, Y, 0.52, 0.98);
     });
     // the Peak: a tall thin needle in the near range
     {
@@ -977,7 +991,7 @@ export const map = definePainter<{ w: number; at?: At }>("hall.map", {
       const tx0 = U(0.03), ty0 = V(0.07), tx1 = tx0 + tw + 6, ty1 = ty0 + 11;
       rect(c, tx0, ty0, tx1, ty1, (X, Y, lx, ly) => {
         const e = Math.min(lx - tx0, tx1 - lx, ly - ty0, ty1 - ly);
-        return e < 1 ? tn(P.red, 0.35, X, Y, 0) : mt(M.paper, 0.95, X, Y, 0.0, 0.8);
+        return e < 1 ? tn(P.red, 0.35, X, Y, 0) : mt(M.paper, 0.95, X, Y, 0.38, 0.8);
       });
       text(c, tx0 + 3, ty0 + 2, "TESU", (X, Y) => tn(M.ink, 0.05, X, Y, 0));
       const cx = U(0.93), cyy = V(0.86), cr = 6;

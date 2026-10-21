@@ -38,13 +38,16 @@ export interface HallLantern { o: number; y: number; kind: "round" | "tall" | "p
 
 export const HALL_LANTERNS: HallLantern[] = [
   // the ground floor: one lantern over each service, low enough to make its pool
-  { o: 5.2, y: 3.55, kind: "round", plane: "play", r: 0.85, k: 0.42, reach: 2.4 },
-  { o: 8.4, y: 3.4, kind: "palace", plane: "play", r: 0.85, k: 0.45, reach: 2.2 },
+  // (round 4, W1-b) the notice wall's and the sponsors' board's lanterns moved west with them (were 5.2, 8.4)
+  { o: 5.0, y: 3.55, kind: "round", plane: "play", r: 0.85, k: 0.42, reach: 2.4 },
+  { o: 8.15, y: 3.4, kind: "palace", plane: "play", r: 0.85, k: 0.45, reach: 2.2 },
   // (round 2, W1-5) the desk's lantern hangs low, so its pool lands on the counter and the floor in front
   // (round 3, W1-3) lower still, just off the counter's west end over the visitor's side: its pool on the counter's
   // top and front and the floor before it (was o 12.55, y 2.35)
   { o: 12.6, y: 1.6, kind: "palace", plane: "play", r: 0.85, k: 0.7, reach: 2.0 },
-  { o: 22.0, y: 3.1, kind: "round", plane: "play", r: 0.85, k: 0.48, reach: 2.2 },
+  // (round 4, W1-e: its pool ended ~0.5 H above the map, lighting empty wall) 0.95 H lower, so the pool lands on the
+  // map's crest rail and the top of its face
+  { o: 22.0, y: 2.15, kind: "round", plane: "play", r: 0.85, k: 0.48, reach: 2.2 },
   // upstairs, between the art's groups on the Long Gallery
   { o: 4.95, y: 9.9, kind: "tall", plane: "play", r: 0.9, k: 0.4, reach: 2.6 },
   { o: 10.1, y: 9.7, kind: "round", plane: "play", r: 0.95, k: 0.45, reach: 2.6 },
@@ -77,17 +80,23 @@ export const GATE_LIGHTS: Light[] = [
 /** One lamp per service: the pools that make each one read on its own (desk, box, board, map, nook...). */
 export const SERVICE_LAMPS: PointLight[] = [
   // the notice wall's own lamp
-  { kind: "point", x: X(5.2), y: FY - h(1.9), r: h(1.9), k: 0.45 },
+  { kind: "point", x: X(5.0), y: FY - h(1.9), r: h(1.9), k: 0.45 },
   // the sponsors' board: the lantern hanging over its head
-  { kind: "point", x: X(8.4), y: FY - h(2.6), r: h(1.9), k: 0.75 },
+  { kind: "point", x: X(8.15), y: FY - h(2.6), r: h(1.9), k: 0.75 },
   // the offering box: its own lantern on a bracket off the west post of its frame (round 2)
   // (round 2, W2-7) hung a little lower on its bracket, so it lights the chest's lid and front and the plinth
   // (round 3, W1-3) the bracket reaches in over the chest's west end now: the pool lands on the chest, not the post
-  { kind: "point", x: X(10.85), y: FY - h(0.84), r: h(1.45), k: 1.0 },
+  // (round 4, W1-b) the chest 1.15 H wide from 10.22 H, the lantern under its frame's sign at 10.6 H / 0.95 H
+  { kind: "point", x: X(10.6), y: FY - h(0.95), r: h(1.5), k: 1.0 },
   // the register desk: its desk lamp at the visitor's end
-  { kind: "point", x: X(12.9), y: FY - h(0.8), r: h(1.7), k: 0.95 },
+  // (round 4, W1-a) the counter is 12.7-15.1 H now; the desk lamp at its west end
+  { kind: "point", x: X(12.85), y: FY - h(0.8), r: h(1.7), k: 0.95 },
   // (round 3, W1-3) and the paper lantern on the pigeonhole cabinet's east shoulder (services.ts desk)
-  { kind: "point", x: X(14.46), y: FY - h(1.92), r: h(1.35), k: 0.75 },
+  // (round 4, W1-a) the cabinet's shoulder lantern is gone (it hung right under the signboard's east lantern); the two
+  // paper lanterns under the register's signboard's ends light the board's rail and gold, the cabinet and the counter's
+  // east half where the queue stands (signboard.ts; the board is 1.75 H wide over Hanko at 13.8 H, its lower edge 2.45 H up)
+  { kind: "point", x: X(13.02), y: FY - h(2.29), r: h(1.45), k: 0.65 },
+  { kind: "point", x: X(14.58), y: FY - h(2.29), r: h(1.45), k: 0.7 },
   // the map's lamp
   { kind: "point", x: X(22.0), y: FY - h(1.55), r: h(1.7), k: 0.7 },
   // the nook: the standing lamp between the shelf and the bench (round 3: at 26.3 H, by the landing's west post)
