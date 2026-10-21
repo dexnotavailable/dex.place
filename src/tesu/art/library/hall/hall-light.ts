@@ -356,7 +356,10 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
     if (p.at) {
       const gx = p.at.wx, fy = p.at.wy;
       const hung = HALL_LANTERNS.filter((l) => l.plane === "play" && l.y < 4).map((l) => ({ x: HALL.x0 + Math.round(l.o * H), y: fy - Math.round(l.y * H), k: l.k * 1.35, hanging: true }));
-      const standing = SERVICE_LAMPS.filter((l) => fy - l.y < 1.2 * H).map((l) => ({ x: l.x, y: l.y, k: l.k, hanging: false }));
+      // (the lamps standing on the services in front of the bay: the desk lamp on the counter, the paper lantern on the
+      // pigeonhole cabinet's shoulder)
+      // (a service's light at the same x as a hanging lantern is that lantern's light on the service: not a second lamp)
+      const standing = SERVICE_LAMPS.filter((l) => fy - l.y < 2.2 * H && hung.every((q) => Math.abs(q.x - l.x) > 0.3 * H)).map((l) => ({ x: l.x, y: l.y, k: l.k, hanging: false }));
       for (const L of [...hung, ...standing]) {
         const lx = L.x - gx;
         if (lx < p.l - H || lx > p.r + H || Math.abs(lx) < p.rad + 0.5 * H) continue;

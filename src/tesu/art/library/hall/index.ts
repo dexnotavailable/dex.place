@@ -17,6 +17,7 @@ import "./prow.ts";
 import "./court-light.ts";
 import "./hall-light.ts";
 import "./life.ts";
+import "./extras.ts";
 
 export { gongFrame } from "./court.ts";
 export { HALL_MANIFEST, type HallAsset } from "./manifest.ts";

@@ -43,10 +43,12 @@ export function court(b: WorldBuilder): void {
 
   // things that break by the tip: two jars, and a lantern post with its paper lantern hanging
   // from the arm (break the post and the lantern falls: the support rule)
-  b.prop({ id: "court-jar-1", kind: "jar", p: { h: 30, glaze: "ink" }, x: h(189.8), y: Y, cls: "cosmetic", material: "clay" });
-  b.prop({ id: "court-jar-2", kind: "jar", p: { h: 24, glaze: "celadon" }, x: h(190.15), y: Y, cls: "cosmetic", material: "clay", pieces: 3 });
-  b.prop({ id: "court-post", kind: "lanternpost", p: { h: 190, arm: 44 }, x: h(185.9) - 22, y: Y, cls: "cosmetic", material: "wood", hp: 2, pieces: 5 });
-  b.prop({ id: "court-lantern", kind: "paperlantern", p: { r: 15 }, x: h(185.9) + 22, y: Y - 190, cls: "cosmetic", material: "paper", on: "court-post", hangs: true, pieces: 3 });
+  // (hall loop round 3, W1-2: the ring runs on to 189.2 H now, so they stand past its east end, the post where the
+  // stone lantern pillar stood, the jars by the bench; they stood in the ring's east end, 185.7-190.2 H)
+  b.prop({ id: "court-jar-1", kind: "jar", p: { h: 30, glaze: "ink" }, x: h(190.72), y: Y, cls: "cosmetic", material: "clay" });
+  b.prop({ id: "court-jar-2", kind: "jar", p: { h: 24, glaze: "celadon" }, x: h(191.02), y: Y, cls: "cosmetic", material: "clay", pieces: 3 });
+  b.prop({ id: "court-post", kind: "lanternpost", p: { h: 190, arm: 44 }, x: h(190.3) - 22, y: Y, cls: "cosmetic", material: "wood", hp: 2, pieces: 5 });
+  b.prop({ id: "court-lantern", kind: "paperlantern", p: { r: 15 }, x: h(190.3) + 22, y: Y - 190, cls: "cosmetic", material: "paper", on: "court-post", hangs: true, pieces: 3 });
 
   // beyond the tip the land falls away into mist
   b.mist({ x0: COURT_X1 - h(6), x1: COURT_X1 + h(30), y: Y + h(16), half: h(13), rate: 0.62, after: "back", density: 0.95 });

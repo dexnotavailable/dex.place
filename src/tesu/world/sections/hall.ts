@@ -4,7 +4,7 @@
 // daylight in it, stands at the middle; Hanko's register desk right beside it on the left, the
 // map of Tesu on its right. Out from there, left: the main offering box, the sponsors' board,
 // the Notice Wall, the front doors; right: the reading nook under the stair with the docs shelf
-// and Seo, then the Crane Desk past the stair's foot. Upstairs, the Long Gallery: the shuttered
+// and Seo, then the Crane Desk under the stair's lower flight. Upstairs, the Long Gallery: the shuttered
 // Teahouse, the emperor's art in three groups on display screens, a small offering box, the
 // Request Board by the stair's head. Readability rules beat depth: every usable thing stands
 // on the walk line with 1.5 H or more of clear wall between, sized to her (charScale 0.88).
@@ -26,8 +26,14 @@ export const GALLERY_Y = HALL_FLOOR - h(7.2);
 const X = (o: number): number => HALL_X0 + h(o);
 /** The Prize Court gate's centre (H from the west end: 0.525 of the hall). */
 export const GATE_O = 17.85;
-/** The stair's landing: [x0, x1, height above the floor] (H). Its two posts frame the reading nook under it. */
-export const STAIR_LANDING: [number, number, number] = [26.1, 27.35, 3.6];
+/**
+ * The stair's landing: [x0, x1, height above the floor] (H). Its two posts frame the reading nook under it.
+ * (Round 3, W1-1, Dex 10-19 "fix the obvious triangle shape": a deep landing, 2.5 H, between a steep upper flight
+ * (1.05) and a gentle lower one (0.7), so the stair turns at an elbow instead of drawing one hypotenuse.)
+ */
+export const STAIR_LANDING: [number, number, number] = [26.5, 29.0, 2.9];
+/** The stair's foot (H): the gentle lower flight comes down to it near the east wall. */
+export const STAIR_FOOT = 33.0;
 /** The register desk's counter top above the floor (px): at her waist (she is ~0.98 H at charScale 0.88). */
 export const DESK_TOP = h(0.57);
 /**
@@ -37,8 +43,11 @@ export const DESK_TOP = h(0.57);
  * the ground floor at play zoom the frame's top edge cuts only the balustrade and the screens, never a picture;
  * upstairs they hang at the frame's middle. The lower edges step, so the hang has a rhythm in y too.)
  */
+// (Round 3, W1-6: the eight lower edges still sat on one line, y 665-690 in the gallery frame: the pair now hangs
+// 0.45 H higher than the hero, so the three groups step in y as well as x: the pair high, the hero low, the salon
+// stacked. Sizes unchanged, so pixelize_art.py needs no re-run.)
 export const GALLERY_HANG: [number, number, number, number, number][] = [
-  [0, 6.3, 1.45, 1.0, 2.0], [1, 7.95, 1.45, 1.0, 2.15],
+  [0, 6.3, 1.45, 1.0, 2.45], [1, 7.95, 1.45, 1.0, 2.62],
   [2, 12.4, 2.5, 1.6, 1.95],
   [5, 16.0, 1.3, 1.6, 2.05], [3, 17.4, 1.15, 0.7, 2.85], [4, 17.4, 1.15, 0.7, 1.95], [7, 18.75, 1.0, 1.45, 2.15], [8, 19.85, 1.0, 1.3, 1.98],
 ];
@@ -80,7 +89,7 @@ export function hall(b: WorldBuilder): void {
   b.walk([X(2.6), GY, X(22.8), GY], { surface: "wood", oneWay: true, depth: h(0.3), name: "long-gallery" });
   // the stair from the gallery's east end: two flights and a landing on posts (round 2, Dex 10-19: no one long
   // triangle); each flight no steeper than she walks (PHYSICS.maxSlope 1.05), the nook under the landing
-  b.walk([X(22.4), GY, X(STAIR_LANDING[0]), FY - h(STAIR_LANDING[2]), X(STAIR_LANDING[1]), FY - h(STAIR_LANDING[2]), X(30.85), FY - h(0.1)], { surface: "wood", stair: true, depth: h(0.2), name: "hall-stair" });
+  b.walk([X(22.4), GY, X(STAIR_LANDING[0]), FY - h(STAIR_LANDING[2]), X(STAIR_LANDING[1]), FY - h(STAIR_LANDING[2]), X(STAIR_FOOT), FY - h(0.1)], { surface: "wood", stair: true, depth: h(0.2), name: "hall-stair" });
   b.wall({ x: X(0.4), y0: FY - h(20), y1: FY + h(0.1), reason: "wall" });
   b.wall({ x: X(33.6), y0: FY - h(20), y1: FY + h(0.1), reason: "wall" });
   b.wall({ x: X(2.6), y0: GY - h(4), y1: GY + h(0.1), reason: "wall", from: "right" });
@@ -92,6 +101,9 @@ export function hall(b: WorldBuilder): void {
   b.usable({ id: "notice-wall", x0: X(4.25), y0: FY - h(2.3), x1: X(6.2), y1: FY, label: "read the notices", action: { kind: "panel", panel: "notice" } });
   b.usable({ id: "patrons", x0: X(7.7), y0: FY - h(2.3), x1: X(9.1), y1: FY, label: "the sponsors' board", action: { kind: "panel", panel: "patrons" } });
   // (round 2) its prompt shows between the chest's top (0.53 H) and the hanging sign over it
+  // (round 3, W1-3) the chest's art stands 0.18 H in from the usable's west end (dress.ts), so she uses it from the west
+  // with a clear gap between her and the pavilion's post (from the east she merged with the chest's end, the post and
+  // the bay column's base)
   b.usable({ id: "offering-box", x0: X(10.5), y0: FY - h(0.8), x1: X(11.3), y1: FY, label: "the offering box", action: { kind: "panel", panel: "donate" } });
   // Hanko behind her desk (anchored at the counter top: she stands behind it, the counter at her waist)
   b.sprite({ id: "hanko", plane: "play", kind: "hanko", x: X(13.85), y: FY - DESK_TOP + 4, p: {}, frames: 4, fps: 1.2 });
@@ -101,12 +113,13 @@ export function hall(b: WorldBuilder): void {
   b.usable({ id: "map-pillar", x0: X(21.15), y0: FY - h(1.3), x1: X(22.85), y1: FY, label: "the map", action: { kind: "say", text: "The map of Tesu: the coast and the lake, the gate road climbing to the palace, the court lit at its end." } });
   // the reading nook under the stair: the docs shelf, a bench and a side table, Seo's spot on the bench
   b.usable({ id: "docs-shelf", x0: X(24.35), y0: FY - h(2.0), x1: X(27.85), y1: FY, label: "the docs shelf", action: { kind: "panel", panel: "docs" } });
-  b.sprite({ id: "seo", plane: "play", kind: "seo", x: X(26.87), y: FY, p: {}, frames: 3, fps: 0.7 });
-  // past the stair's foot, the Crane Desk
-  b.usable({ id: "crane-desk", x0: X(31.35), y0: FY - h(1.0), x1: X(32.75), y1: FY, label: "the Crane Desk", action: { kind: "panel", panel: "crane" } });
+  // (round 3) Seo's bench, the side table and the cat under the deep landing (its posts at 26.58 and 28.92 H)
+  b.sprite({ id: "seo", plane: "play", kind: "seo", x: X(27.17), y: FY, p: {}, frames: 3, fps: 0.7 });
+  // the Crane Desk: (round 3) tucked under the stair's open lower flight, a clerk's desk in the stair's lee
+  b.usable({ id: "crane-desk", x0: X(29.6), y0: FY - h(1.0), x1: X(31.0), y1: FY, label: "the Crane Desk", action: { kind: "panel", panel: "crane" } });
   // one of the emperor's pieces downstairs: art-07 over the nook's bench, on the stair's spandrel
-  hang(b, 6, X(26.87), FY - h(1.3), h(0.6), h(0.8));
-  b.sprite({ id: "hall-cat", plane: "play", kind: "cat", x: X(28.05), y: FY - h(0.05), p: {}, frames: 2, fps: 0.6 });
+  hang(b, 6, X(27.17), FY - h(1.15), h(0.6), h(0.8));
+  b.sprite({ id: "hall-cat", plane: "play", kind: "cat", x: X(28.55), y: FY - h(0.05), p: {}, frames: 2, fps: 0.6 });
 
   // --- the Long Gallery upstairs: the Teahouse, the art in three groups on display screens (a pair, the
   // hero piece, a salon of five), a small offering box between the first two, the Request Board by the

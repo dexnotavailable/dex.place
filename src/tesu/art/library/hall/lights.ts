@@ -41,7 +41,9 @@ export const HALL_LANTERNS: HallLantern[] = [
   { o: 5.2, y: 3.55, kind: "round", plane: "play", r: 0.85, k: 0.42, reach: 2.4 },
   { o: 8.4, y: 3.4, kind: "palace", plane: "play", r: 0.85, k: 0.45, reach: 2.2 },
   // (round 2, W1-5) the desk's lantern hangs low, so its pool lands on the counter and the floor in front
-  { o: 12.55, y: 2.35, kind: "palace", plane: "play", r: 0.9, k: 0.6, reach: 2.2 },
+  // (round 3, W1-3) lower still, just off the counter's west end over the visitor's side: its pool on the counter's
+  // top and front and the floor before it (was o 12.55, y 2.35)
+  { o: 12.6, y: 1.6, kind: "palace", plane: "play", r: 0.85, k: 0.7, reach: 2.0 },
   { o: 22.0, y: 3.1, kind: "round", plane: "play", r: 0.85, k: 0.48, reach: 2.2 },
   // upstairs, between the art's groups on the Long Gallery
   { o: 4.95, y: 9.9, kind: "tall", plane: "play", r: 0.9, k: 0.4, reach: 2.6 },
@@ -80,24 +82,29 @@ export const SERVICE_LAMPS: PointLight[] = [
   { kind: "point", x: X(8.4), y: FY - h(2.6), r: h(1.9), k: 0.75 },
   // the offering box: its own lantern on a bracket off the west post of its frame (round 2)
   // (round 2, W2-7) hung a little lower on its bracket, so it lights the chest's lid and front and the plinth
-  { kind: "point", x: X(10.15), y: FY - h(0.85), r: h(1.5), k: 0.95 },
+  // (round 3, W1-3) the bracket reaches in over the chest's west end now: the pool lands on the chest, not the post
+  { kind: "point", x: X(10.85), y: FY - h(0.84), r: h(1.45), k: 1.0 },
   // the register desk: its desk lamp at the visitor's end
   { kind: "point", x: X(12.9), y: FY - h(0.8), r: h(1.7), k: 0.95 },
+  // (round 3, W1-3) and the paper lantern on the pigeonhole cabinet's east shoulder (services.ts desk)
+  { kind: "point", x: X(14.46), y: FY - h(1.92), r: h(1.35), k: 0.75 },
   // the map's lamp
   { kind: "point", x: X(22.0), y: FY - h(1.55), r: h(1.7), k: 0.7 },
-  // the nook: the standing lamp between the shelf and the bench
-  { kind: "point", x: X(26.4), y: FY - h(1.2), r: h(2.1), k: 1.0 },
-  // the Crane Desk's candle
-  { kind: "point", x: X(32.2), y: FY - h(0.8), r: h(1.4), k: 0.6 },
+  // the nook: the standing lamp between the shelf and the bench (round 3: at 26.3 H, by the landing's west post)
+  { kind: "point", x: X(26.3), y: FY - h(1.2), r: h(2.1), k: 1.0 },
+  // the Crane Desk's candle (round 3: the desk is under the stair's open lower flight, 29.6-31.0 H)
+  { kind: "point", x: X(30.4), y: FY - h(0.8), r: h(1.4), k: 0.6 },
   // upstairs: a picture lamp over each group of the art, and one at the Request Board
-  { kind: "point", x: X(7.1), y: GY - h(2.35), r: h(2.1), k: 0.6 },
+  // (round 3, W1-6: the pair hangs 0.45 H higher; its picture lamp with it)
+  { kind: "point", x: X(7.1), y: GY - h(2.8), r: h(2.1), k: 0.6 },
   { kind: "point", x: X(12.4), y: GY - h(2.7), r: h(2.4), k: 0.75 },
   { kind: "point", x: X(17.8), y: GY - h(2.9), r: h(2.9), k: 0.62 },
   { kind: "point", x: X(21.35), y: GY - h(2.1), r: h(1.6), k: 0.5 },
 ];
 
-/** The stone lantern on the stair landing's east newel (round 2): it lights the landing and both flights. */
-export const STAIR_LANTERN: PointLight = { kind: "point", x: X(27.27), y: FY - h(4.72), r: h(2.0), k: 0.55 };
+/** The stone lantern on the stair landing's east newel (round 2): it lights the landing and both flights.
+ *  (Round 3: the landing is deep and lower, 26.5-29.0 H at 2.9 H; its east newel at 28.92 H.) */
+export const STAIR_LANTERN: PointLight = { kind: "point", x: X(28.92), y: FY - h(4.02), r: h(2.0), k: 0.55 };
 
 /** The hall's light: dark shell, the gate's daylight the key, the shaft beside it, a pool per service. */
 export const HALL_LIGHT: LightEnv = {
