@@ -21,7 +21,7 @@ import { amberLut, chain2, dayLut, lut, lutChain, poolLut, tint } from "./tint.t
 import { BAY as ROOF_BAY } from "./roof.ts";
 import { UP, UPPER_KINDS, loftLampFrac, loftOpening } from "./upper.ts";
 import { clerestoryBoxes, gateGeo, headBox, scrollBoxes, stiles } from "./gate.ts";
-import { sillRail } from "./bay.ts";
+import { bannerBoxes, sillRail } from "./bay.ts";
 import { P } from "../../palette.ts";
 
 const H = 96;
@@ -382,6 +382,7 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
     // up, the panels round it one, no gradient inside a panel; the stiles' and rails' edges turned to a lamp catch it a
     // step harder (the far edge a step less); a short hot streak on the plaster right behind each hanging lantern
     const SR1 = sillRail(cl[0]![3])[1];
+    const banners = bannerBoxes(hb.cw, cl[0]![1]);
     const FR_Y = -p.top + Math.round(0.42 * H) + 0.08 * H;
     // the bands (local y): the clerestories' band, the middle band, the low band over the dado, the dado
     const bands: [number, number][] = [[FR_Y, SR1], [SR1, RAIL_MID - 0.045 * H], [RAIL_MID + 0.045 * H, RAIL_LOW], [-DADO_H, 0]];
@@ -525,6 +526,11 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
         if (r2 < 1) ambN = Math.max(ambN, r2 < 0.4 ? 5 : 4);
       }
       ambN = clamp(ambN, 0, 5);
+      // a banner hangs in front of the panels: a lamp near lights it as cloth, one even step, never a panel's edge
+      // across it
+      if (banners.some(([x0, y0, x1, y1]) => lx >= x0 - 1 && lx <= x1 + 1 && ly >= y0 - 4 && ly <= y1 + 0.3 * H)) {
+        ambN = lamps.some((q) => Math.hypot(q.x - lx, q.y - ly) < 1.1 * H) ? 1 : 0;
+      }
       const lamp = ambN > 0 ? 0.3 + 0.2 * ambN : 0;
       const base = night[Math.min(3, shade)] ?? null;
       // (the steps: 1 a warm lift for the panels round a lamp, 2 the lamp's own panel in amber, 3 the edges turned to

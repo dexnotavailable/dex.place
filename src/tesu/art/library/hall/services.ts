@@ -1239,6 +1239,8 @@ export interface NearFootP {
 const NEAR_DARK: Ramp = [P.timber[3]!, P.umber[1]!, P.umber[2]!, P.umber[3]!, P.umber[4]!, P.umber[5]!, P.ink[0]!];
 /** The same with the gate's cool day on its rim (round 3). */
 const NEAR_COOL: Ramp = [P.tile[1]!, P.tile[3]!, P.dusk[2]!, P.umber[3]!, P.umber[4]!, P.umber[5]!, P.ink[0]!];
+/** A candle seen through a stone lantern's paper (round 4): a dim amber going into the near dark. */
+const CANDLE: Ramp = [P.ember[3]!, P.ember[4]!, P.umber[0]!, P.umber[1]!, P.umber[2]!];
 /** The brazier's coals: a hot gold core down through orange to a deep red (round 3). */
 const COALS: Ramp = [P.ember[1]!, P.ember[3]!, P.red[1]!, P.red[2]!, P.red[3]!, P.red[4]!, P.red[5]!];
 
@@ -1359,9 +1361,10 @@ export const nearFoot = definePainter<NearFootP>("hall.nearfoot", {
         const topEdge = v - a < 1.5 && (part !== 4);
         const leftRim = lx < -hw + 1.5;
         // the light box's window: a candle's glow seen through the paper on its far side
-        if (part === 2 && ax < 0.12 * H && v > a + 5 && v < b - 6) {
-          const g = 1 - ax / (0.12 * H);
-          return tn(COALS, clamp(0.72 - g * 0.25 + (v - a - 5) / 40, 0.45, 1), X, Y, 0.4);
+        if (part === 2 && ax < 0.1 * H && v > a + 6 && v < b - 7) {
+          // (a candle's dim amber through the far side's paper, warmest low where the flame sits)
+          const g = 1 - ax / (0.1 * H);
+          return tn(CANDLE, clamp(0.85 - g * 0.45 - (v - a - 6) / 60, 0, 1), X, Y, 0.4);
         }
         if (topEdge) return dark(X, Y, 0.05 + vnoise(lx * 0.1, 3, p.seed) * 0.15);
         if (leftRim) return dark(X, Y, 0.38);

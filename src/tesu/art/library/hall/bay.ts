@@ -423,12 +423,17 @@ export function couplets(c: PaintCtx, cw: number, clY0: number, lf: LitField): v
  * - west: the register's signboard over the counter (W1, round 4) is that stretch's big shape; nothing hangs there
  *   from the tie beam, or the signboard's cords would cross it.
  */
-export function bayBanners(c: PaintCtx, cw: number, clY0: number, lf: LitField): void {
-  const top = clY0 - 0.3 * H + 3, bot = -3.6 * H;
-  const w = 0.4 * H;
+/** The bay's banners: [x0, top, x1, hem] local (the hem's tips hang 0.24 H lower), for the bay's shade to light them
+ *  as cloth, not as the panels behind them. */
+export function bannerBoxes(cw: number, clY0: number): [number, number, number, number][] {
+  const top = clY0 - 0.3 * H + 3, bot = -3.6 * H, w = 0.4 * H;
   // (2.47 H east of the head's beam end: clear of the couplet and of the map lantern's cord)
-  [cw + 2.47 * H].forEach((cx, i) => {
-    const x0 = cx - w / 2, x1 = cx + w / 2;
+  return [cw + 2.47 * H].map((cx) => [cx - w / 2, top, cx + w / 2, bot] as [number, number, number, number]);
+}
+
+export function bayBanners(c: PaintCtx, cw: number, clY0: number, lf: LitField): void {
+  bannerBoxes(cw, clY0).forEach(([x0, top, x1, bot], i) => {
+    const w = x1 - x0, cx = (x0 + x1) / 2;
     const tail = 0.24 * H;
     // the shadow on the plaster
     rect(c, x0 + 2, top + 6, x1 + 4, bot + 4, (X, Y, lx, ly) => {
@@ -455,19 +460,21 @@ export function bayBanners(c: PaintCtx, cw: number, clY0: number, lf: LitField):
       const k = face(l.k, -0.5, fold * -0.55, 0);
       const e = Math.min(lx - x0, x1 - lx);
       // the gold-thread border, worn in places
-      if (e < 1.2) return mt(M.verm, 0.05 + k * 0.5, X, Y, 0.5, 1, 0);
+      if (e < 1.2) return mt(M.verm, 0.12 + k * 0.5, X, Y, 0.4, 1, 0);
       if (e > 2 && e < 3.2 && fbm(lx * 0.3, ly * 0.05, 821 + i, 2) < 0.7) return mt(M.gold, 0.25 + k * 0.6, X, Y, 0.3, 1, 0);
       if (hemY - ly < 3 && hemY - ly > 1.5) return mt(M.gold, 0.22 + k * 0.6, X, Y, 0.3, 1, 0);
       // a column of cloud scrolls embroidered a step darker down its middle, under the crest
       const cy0 = top + 0.75 * H;
       if (ly > cy0 && ly < hemY - 8) {
         const rv = ruyiCol(lx - cx, ly - cy0, w * 0.3, 827 + i);
-        if (rv === 2) return mt(M.gold, 0.12 + k * 0.5, X, Y, 0.45, 1, 0);
-        if (rv === 1) return mt(M.verm, 0.08 + k * 0.6, X, Y, 0.45, 1, 0);
+        // (gold thread: the cloud's body couched in gold, its outline a darker red stitch)
+        if (rv === 2) return mt(M.verm, 0.16 + k * 0.5, X, Y, 0.4, 1, 0);
+        if (rv === 1) return mt(M.gold, 0.22 + k * 0.55 - fold * 0.05, X, Y, 0.3, 1, 0);
       }
       // the silk: old red going brown, a sheen line down the lit face of the middle fold, a little fading low
       const sheen = fold < -0.85 && Math.abs(u - 0.5) < 0.3 ? 0.08 : 0;
-      return mt(M.verm, 0.2 + k * 0.62 + sheen - (ly - top) / (bot - top) * 0.06, X, Y, 0.45, 1, 0.25);
+      // (round 4: under the bay's dusk the first silk read as a black ribbon) old red silk a value step over the plaster
+      return mt(M.verm, 0.34 + k * 0.6 - fold * 0.07 + sheen - (ly - top) / (bot - top) * 0.06, X, Y, 0.3, 1, 0.25);
     });
     // the crest in a roundel near the top
     const g = (kk: number) => (X: number, Y: number, lx: number, ly: number) => mt(M.gold, face(lf.get(lx, ly).k, -0.5) * kk, X, Y, 0.1, 1, 0);
@@ -491,8 +498,9 @@ function ruyiCol(x: number, y: number, r: number, seed: number): number {
   const cy = (i + 0.5) * per, flip = i % 2 === 0 ? 1 : -1;
   const dx = x * flip, dy = y - cy;
   const R = r * (0.62 + 0.12 * hash(i, 1, seed));
-  const d = Math.min(Math.hypot(dx, dy) - R, Math.hypot(dx + R * 0.9, dy + R * 0.55) - R * 0.55, Math.hypot(dx - R * 0.95, dy + R * 0.45) - R * 0.5);
-  if (d < -1.4) return Math.abs(Math.hypot(dx, dy) - R * 0.45) < 0.8 ? 2 : 1;
+  // (a big lobe over two smaller ones, the ruyi's head; the curl cut in the big lobe)
+  const d = Math.min(Math.hypot(dx, dy + R * 0.2) - R, Math.hypot(dx + R * 0.95, dy - R * 0.5) - R * 0.55, Math.hypot(dx - R * 0.95, dy - R * 0.5) - R * 0.55);
+  if (d < -1.4) return Math.abs(Math.hypot(dx, dy + R * 0.2) - R * 0.45) < 0.8 && dy + R * 0.2 > -R * 0.2 ? 2 : 1;
   if (d < 0) return 2;
   return 0;
 }

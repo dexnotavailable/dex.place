@@ -492,7 +492,9 @@ export const stair = definePainter<StairP>("hall.stair", {
         if (t >= 0 && t < STR) {
           // the stringer: the red lip under the steps, a gold bead, the lacquered face, a darker chamfer
           if (t < 1.2) return mt(M.lacq, V(l, 0.15), X, Y, 0.1, 1);
-          if (t < 4.5) return mt(M.verm, V(l, t < 2.4 ? 0.62 : 0.5, 0, t < 2.4 ? -0.6 : 0), X, Y, 0.15, 1);
+          // (round 4, W2-k: with the rail, a second bright red line corner to corner) the flights' lip a deep oxblood
+          // lacquer, its top arris the only lit line; the landing keeps its bright red lip
+          if (t < 4.5) return mt(M.verm, V(l, t < 2.4 ? 0.5 : 0.32, 0, t < 2.4 ? -0.6 : 0), X, Y, 0.45, 1);
           if (Math.abs(t - 7) < 0.7) {
             const worn = fbm(lx * 0.05, fi * 3.1, 77, 2) > 0.66;
             return worn ? mt(M.lacq, V(l, 0.5), X, Y, 0.0, 1) : mt(M.gold, V(l, 0.66, 0, -0.3), X, Y, 0.15, 1);
