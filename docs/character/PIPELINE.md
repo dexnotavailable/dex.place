@@ -1359,6 +1359,14 @@ charScale (1.1 x 96 = 105.6 world px, `zhusha/feel.json`), i.e. 0.825 world px p
   (`lanes\zhusha-1021b\cutoffs\r2\tools\boundfray.py`, checked by `hitkeep.py --dry`). [proven: 0 differences vs 3e994938]
 - (cutoffs r2) m1_4 ends on its own last drawing (blade upright before her) and goes to rest; its return role
   guard_to_rest (a full spin with big arcs) is behind feel.json `windDown.finisherReturn` (false): Dex's call.
+- (cutoffs r3 2026-10-22) No heal ends in a regular checkerboard dither (it reads as screen-door speckle the moment an
+  art px is bigger than a screen px). A cut end is AUTHORED by its kind (`lanes\zhusha-1021b\cutoffs\r3\tools\reheal.py`,
+  from live's px, never on top of an old heal): a streaked mass (the Q's red slash) gets a brush stroke's pointed, frayed
+  end along its streaks wrapped in its own rim colours; a beam / pillar / light field gets its lines shortened by pointed
+  tongues (V notches between, rounded shoulders where a field's corner was square); smoke, mist and floor glow end in
+  rounded lumps, with the shape's outline put back where it had one; tiny islands go. Her skin, outfit, hat, blade and
+  the ghost swords are protected (warm and near-black px are never removed, and an effect's edge is measured from the
+  effect, not from her sleeve beside it). Then `derive.mjs` + `hitkeep.py --dry` (0 differences vs live). [proven]
 
 ---
 
