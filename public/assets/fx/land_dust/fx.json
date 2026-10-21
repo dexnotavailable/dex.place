@@ -1,0 +1,84 @@
+{
+ "id": "land_dust",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  57,
+  39
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f002.png",
+   "ticks": 1
+  },
+  {
+   "file": "f003.png",
+   "ticks": 1
+  },
+  {
+   "file": "f004.png",
+   "ticks": 1
+  },
+  {
+   "file": "f005.png",
+   "ticks": 1
+  },
+  {
+   "file": "f006.png",
+   "ticks": 1
+  },
+  {
+   "file": "f007.png",
+   "ticks": 1
+  },
+  {
+   "file": "f008.png",
+   "ticks": 2
+  },
+  {
+   "file": "f009.png",
+   "ticks": 2
+  },
+  {
+   "file": "f010.png",
+   "ticks": 2
+  },
+  {
+   "file": "f011.png",
+   "ticks": 2
+  },
+  {
+   "file": "f012.png",
+   "ticks": 3
+  },
+  {
+   "file": "f013.png",
+   "ticks": 3
+  },
+  {
+   "file": "f014.png",
+   "ticks": 3
+  },
+  {
+   "file": "f015.png",
+   "ticks": 3
+  },
+  {
+   "file": "f016.png",
+   "ticks": 2
+  }
+ ],
+ "loop": false,
+ "notes": "B3 (10-21): her landing dust: a 2D gas sim of the floor dust her soles blast out on touchdown, two low curls spreading sideways along the floor from the contact point (forward = her travel, drawn facing right, harder and farther than back), grit kicked out, thinning by dither. Pivot = her soles on the floor at the landing tick"
+}
