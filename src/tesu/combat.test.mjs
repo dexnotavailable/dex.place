@@ -738,7 +738,7 @@ test("combat run (Dex 10-20): the normal run turns over ~15% faster, its planted
 
 test("combat FX v2 (Dex 10-20: ship the effects): built effects replace the stand-ins where the game has them", async () => {
   const Zhusha = await loadZ();
-  const run = (press, foes = []) => {
+  const run = (press, foes = [], n = 40) => {
     const h = host();
     const spawned = [];
     h.vfx.spawn = (id) => spawned.push(id);
@@ -751,17 +751,31 @@ test("combat FX v2 (Dex 10-20: ship the effects): built effects replace the stan
     step(z, inp, 5);
     inp.press(press);
     const hits = new Set();
-    for (let i = 0; i < 40; i++) { step(z, inp); for (const { hb } of z.hitboxes()) if (hb.fxHit) hits.add(hb.fxHit); }
+    for (let i = 0; i < n; i++) { step(z, inp); for (const { hb } of z.hitboxes()) if (hb.fxHit) hits.add(hb.fxHit); }
     return { played, spawned, hits, z };
   };
   const q = run("skill");
-  assert.ok(q.played.some((p) => p.id === "q_cut" && p.y > 0), "the Q's cut at her (dipped) soles");
+  assert.ok(q.played.some((p) => p.id === "q_wave" && p.y > 0), "the Q's shockwave at her (dipped) soles");
   assert.ok(!q.spawned.includes("burst.big"), "its stand-in bursts step aside");
   const K = 96 * FEEL.charScale;
   const e = run("e", [{ x: 3 * K, y: -1.6 * K, w: 120, h: 1.6 * K }]);
-  for (const id of ["e_muzzle", "e_shot", "e_hit"]) assert.ok(e.played.some((p) => p.id === id), id);
+  for (const id of ["e_muzzle", "e_bolt", "e_hit"]) assert.ok(e.played.some((p) => p.id === id), id);
+  // the bolt flies, then bursts where it strikes: on the foe's near side, a few ticks after the shot (not at once)
+  const hitAt = e.played.findIndex((p) => p.id === "e_hit"), boltAt = e.played.findIndex((p) => p.id === "e_bolt");
+  assert.ok(hitAt > boltAt, "the burst comes after the bolt leaves");
+  assert.ok(Math.abs(e.played[hitAt].x - 3 * K) < 1, "it bursts on the foe's near side");
+  // at nothing it bursts at the end of its reach, every time
+  const miss = run("e", [], 70);
+  const far = miss.played.find((p) => p.id === "e_hit");
+  assert.ok(far, "a shot at nothing still bursts");
+  const reach = FEEL.moves.e_tap.hits[0].break.reach;
+  const from = miss.played.find((p) => p.id === "e_bolt").x;
+  assert.ok(Math.abs(far.x - from - (reach[0] + reach[2]) * 96) < 1, "at the end of its reach");
   assert.ok(!e.spawned.includes("streak.thrust"));
   assert.deepEqual([...run("m1").hits], ["impact_slash_a"], "m1_1 leaves the light impact slash");
+  const jl = run("jump", [], 90);
+  assert.ok(jl.played.some((p) => p.id.startsWith("land_dust") && p.y > 0), "her landing blasts dust out at her (dipped) soles");
+  assert.ok(!jl.played.some((p) => p.id === "dust_roll_s"), "not the one-way rolling wedge");
   const d = run("m2");
   assert.ok(d.played.some((p) => p.id === "dust_roll_s"), "the dash's skid rolls dust");
 });

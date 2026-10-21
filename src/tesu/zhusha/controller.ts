@@ -47,7 +47,7 @@ export interface FeelFile {
   moves: Record<string, MoveDef>;
   windDown: { rate: number };
   q: { hold: number; flash: number; camZoom: number; camTicks: number; camLeave: number };
-  e: { hold: number; flash: number; skidEvery: number };
+  e: { hold: number; flash: number; skidEvery: number; boltFrom: number; boltSpeed: number };
   hurt: { stun: number; kb: [number, number]; iframes: number; heavyFrom: number; freeze: number; heavyFreeze: number; friction: number };
   /** Her drawing's visual dip into the ground (art px) and the ground width looked at under her (drawn heights). */
   draw: { dip: number; foot: number; groundFx: string[] };
@@ -108,7 +108,7 @@ export interface ZHit extends HitBox {
 /** The game's sprite effects (fx/fx.ts, game.ts hands them over): FX v2's built effects. */
 export interface ZFx {
   has(id: string): boolean;
-  play(id: string, o: { x?: number; y?: number; facing?: number; attach?: "her" | "world"; delay?: number }): unknown;
+  play(id: string, o: { x?: number; y?: number; facing?: number; attach?: "her" | "world"; delay?: number }): { stop(): void } | unknown;
 }
 
 /** Which impact slash each of her hits leaves (FX v2 PLAN: a light, b medium, c heavy, f pierce, g finisher, h ult form). */
@@ -213,6 +213,12 @@ export class Zhusha {
   invuln = 0;
   /** The Q's pull-out on the exploded area: the blast's middle, the move's start, ticks left. */
   private qCam: { x: number; x0: number; t: number } | null = null;
+  /**
+   * The E's bolt in flight (Worker B 10-21: Dex "you can tell she shot something but there's no collision or
+   * explosion"): from her soles' x along `dir` on her palm's line `y`, its nose `FEEL.e.boltFrom + boltSpeed * t` art px
+   * out (as e_bolt draws it); it bursts (e_hit) on the first foe it reaches, else at the end of its reach `len`.
+   */
+  private bolt: { x0: number; y: number; dir: 1 | -1; t: number; len: number; fx: { stop(): void } | null } | null = null;
   /** The last action taken (debug). */
   lastAction = "";
   /** R's phase (debug, drawing). */
@@ -238,6 +244,40 @@ export class Zhusha {
     if (!this.fx?.has(id)) return false;
     this.fx.play(id, o);
     return true;
+  }
+
+  /** Plays a built effect and hands back its stop (null when the game does not have it). */
+  private playFxHandle(id: string, o: Parameters<ZFx["play"]>[1]): { stop(): void } | null {
+    if (!this.fx?.has(id)) return null;
+    const h = this.fx.play(id, o) as { stop?: () => void } | undefined;
+    return h && typeof h.stop === "function" ? { stop: () => h.stop!() } : { stop: () => {} };
+  }
+
+  /** The E's bolt, one tick: where its nose passes a foe it strikes there; at the end of its reach it bursts anyway. */
+  private tickBolt(): void {
+    const k = this.bolt;
+    if (!k) return;
+    const E = FEEL.e;
+    const at = (t: number): number => Math.min(k.len, (E.boltFrom + E.boltSpeed * t) * ART_PX);
+    // the stretch its nose covers on this tick's drawing (from the last drawing's nose to this one's)
+    const a = k.t > 0 ? at(k.t - 1) : 0, z = at(k.t);
+    k.t++;
+    let hit: number | null = null;
+    for (const fb of this.host.foes?.() ?? []) {
+      if (k.y < fb.y || k.y > fb.y + fb.h) continue;
+      const near = k.dir > 0 ? fb.x - k.x0 : k.x0 - (fb.x + fb.w);
+      if (near + fb.w < a || near > z) continue;
+      // a foe already over her muzzle is struck at the muzzle (never behind her)
+      const d = Math.max(near, E.boltFrom * ART_PX);
+      if (hit === null || d < hit) hit = d;
+    }
+    if (hit === null && z < k.len) return;
+    const d = hit ?? k.len;
+    k.fx?.stop();
+    this.bolt = null;
+    // the collision: the burst where it struck (a foe, else the end of its reach), every time
+    this.playFx("e_hit", { x: k.x0 + k.dir * d, y: k.y, facing: k.dir });
+    this.shake(hit === null ? 0.25 : 0.4);
   }
 
   /** Every sound cue with what made it (the audio lane listens here; feel.sound still gets id + volume). */
@@ -498,6 +538,7 @@ export class Zhusha {
       case "move": this.tickMove(input, world); break;
       default: this.tickFree(input, world); break;
     }
+    this.tickBolt();
     if (this.form > 0 && this.state !== "ult" && this.state !== "exit" && --this.form === 0) this.startExit();
     this.r.after(this.state === "ult");
     this.uf.tick(this.ultCtx());
@@ -554,13 +595,15 @@ export class Zhusha {
     this.lastLand = hs;
     this.landT = 0;
     const L = FEEL.land, s = this.host;
+    // the dust her soles blast out (Worker B 10-21, Dex: "Landing makes no sense with the effect"): on this tick, at
+    // her soles on the floor, both ways along it, the bigger curl the way she travels (drawn facing right)
+    const way = Math.abs(this.body.vx) > 0.5 ? (Math.sign(this.body.vx) as 1 | -1) : this.facing;
     if (hs >= L.heavyFrom) {
       this.shake(L.heavyShake + 0.1);
-      s.vfx.spawn("dust.land", { x: this.body.x, y: this.body.y, facing: 1 });
+      if (!this.playFx("land_dust", { x: this.body.x, y: this.soleY, facing: way })) s.vfx.spawn("dust.land", { x: this.body.x, y: this.body.y, facing: 1 });
       this.cue("land", 1, "land", "land", "medium");
-      this.playFx("dust_roll_s", { x: this.body.x, y: this.soleY, facing: this.facing });
     } else if (hs >= L.squashFrom) {
-      s.vfx.spawn("dust.land", { x: this.body.x, y: this.body.y, facing: 1, scale: 0.6 });
+      if (!this.playFx("land_dust_s", { x: this.body.x, y: this.soleY, facing: way })) s.vfx.spawn("dust.land", { x: this.body.x, y: this.body.y, facing: 1, scale: 0.6 });
       this.cue("land", 0.5, "land", "land", "light");
     }
     this.fallSpeed = 0;
@@ -992,8 +1035,10 @@ export class Zhusha {
         // the ground) until lane B2's blast lands.
         const Q = FEEL.q;
         const cx = m.startX + m.dir * 1.9 * H;
-        // FX v2's cut (its parts with it: the shock, the gash, the ignition, her fire), pivot = her soles at the cast
-        if (!this.playFx("q_cut", { x: b.x, y: this.soleY, facing: m.dir })) {
+        // the shockwave (Worker B 10-21, Dex: "a whole beam makes no sense, it's supposed to be a huge shockwave
+        // forward"): q_wave runs along the floor from her blade, the booms / ignitions / her fire with it as parts;
+        // pivot = her soles at the cast
+        if (!this.playFx("q_wave", { x: b.x, y: this.soleY, facing: m.dir })) {
           s.vfx.spawn("burst.big", { x: cx, y: m.startY - 0.6 * H, facing: m.dir, scale: 1.6 });
           s.vfx.spawn("burst.red", { x: cx + m.dir * 1.2 * H, y: m.startY - 0.8 * H, facing: m.dir, scale: 1.5 });
           s.vfx.spawn("streak.markRed", { x: cx, y: m.startY - 0.55 * H, facing: m.dir, scale: [3, 1.4] });
@@ -1018,17 +1063,13 @@ export class Zhusha {
         const E = FEEL.e;
         const r = h.break?.reach;
         const len = r ? r[2] * H : 8 * H;
-        // FX v2: the muzzle blast and the slug (pivot = her soles at the cast), an exit blast on every foe on its line
-        // (pivot = the hit point, on the line at her palm: 82 art px up)
+        // FX v2: the muzzle blast (pivot = her soles at the cast), then the bolt flies (Worker B 10-21): e_bolt draws
+        // it along her palm's line (82 art px up); tickBolt bursts e_hit where it strikes a foe or ends its reach
         const real = this.playFx("e_muzzle", { x: b.x, y: this.soleY, facing: f });
         if (real) {
-          this.playFx("e_shot", { x: b.x, y: this.soleY, facing: f });
-          const lineY = this.soleY - 82 * ART_PX;
-          for (const fb of this.host.foes?.() ?? []) {
-            const near = f > 0 ? fb.x - b.x : b.x - (fb.x + fb.w);
-            if (near < -fb.w || near > len || lineY < fb.y || lineY > fb.y + fb.h) continue;
-            this.playFx("e_hit", { x: f > 0 ? fb.x : fb.x + fb.w, y: lineY, facing: f });
-          }
+          this.bolt?.fx?.stop();
+          const reach = r ? (r[0] + r[2]) * H : len;
+          this.bolt = { x0: b.x, y: this.soleY - 82 * ART_PX, dir: f, t: 0, len: reach, fx: this.playFxHandle("e_bolt", { x: b.x, y: this.soleY, facing: f }) };
         } else {
           s.vfx.spawn("streak.thrust", { x: b.x + f * ((r?.[0] ?? 0.3) * H + len / 2), y: b.y - 0.6 * BODY_H, facing: f, scale: [len / 168, 1.6], colour: "#8fdcff", edge: "#2a6fb8" });
           s.vfx.spawn("burst.hit", at(0.7, 0.6));

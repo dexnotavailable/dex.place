@@ -4,7 +4,7 @@
  "px": 1,
  "pivot": [
   -96,
-  343
+  259
  ],
  "layer": "front",
  "attach": "world",
@@ -197,5 +197,5 @@
  ],
  "loop": false,
  "with": [],
- "notes": "Q part: her blue fire licking up out of the wound after the world's fire, blown forward, roots on the wound's top edge (fire_spirit loops)"
+ "notes": "Q part: her blue fire licking up out of the wound after the world's fire, blown forward, roots on the wound's top edge (fire_spirit loops) (B1 10-21: pivot lowered so the roots stand on the floor, not on the old floating wound)"
 }
