@@ -36,6 +36,10 @@ const CASES = [
   ["op.gate", { kind: "torii", span: 307, h: 451, legs: true, key: 11040, part: "front" }],
   ["op.gate", { kind: "torii", span: 202, h: 326, pw: 33, key: 12518, garland: [230, -29] }],
   ["op.gate", { kind: "paifang", span: 326, h: 538, key: 11424, part: "front" }],
+  // torii-1021: the gates on the climbing road (their stones bedded to it), the thinned tunnel's longer lantern rope
+  ["op.gate", { kind: "torii", span: 307, h: 451, legs: true, key: 11040, ground: [-0.229, -0.2] }],
+  ["op.gate", { kind: "paifang", span: 326, h: 538, key: 11424, ground: [-0.175, -0.156] }],
+  ["op.gate", { kind: "torii", span: 202, h: 326, pw: 33, key: 12518, garland: [461, -58], ground: [-0.125, -0.125] }],
   ["op.rail", { pts: [0, 0, 300, -20, 600, -30], h: 50, every: 56, breaks: [[200, 45], [80, 20]] }],
   ["op.doors", { w: 230, h: 355, frames: 12, frame: 6 }],
   ["op.doors", { w: 230, h: 355, frames: 12, frame: 0 }],
@@ -101,3 +105,31 @@ for (const [kind, p] of [["op.falls", { w: 600, h: 400, falls: 1.7, fadeY: 240, 
     assert.ok(diff > 20, `${kind} frames 0 and 1 differ in only ${diff} px`);
   });
 }
+
+// torii-1021 (Dex: "make sure their legs and base are planted properly"): on a climbing road a torii's
+// plinths reach down to the road on the downhill side and stop at it on the uphill side
+test("op.gate torii: its plinths stand on the road where it is", () => {
+  const p = { kind: "torii", span: 202, h: 326, pw: 33, key: 7, ground: [-0.2, -0.2] };
+  const buf = paintBox("op.gate", p, 1, -120, -60, 240, 80);
+  const lowest = (x) => { for (let y = 19; y >= -60; y--) if (buf.get(x, y)) return y; return -Infinity; };
+  // downhill (west): the road 6 px below the foot at x -30; the plinth reaches it
+  assert.ok(lowest(-30) >= 6, `the west plinth stops at y ${lowest(-30)} over the road at 6`);
+  // uphill (east): the road 6 px above the foot at x 30; nothing hangs below it
+  assert.ok(lowest(30) <= -3, `the east plinth reaches y ${lowest(30)} past the road at -6`);
+});
+
+test("Gate Road: its standing gates are the ones the kerb keeps clear, thinned (torii-1021)", async () => {
+  const { buildWorld } = await import("../../../world/index.ts");
+  const { ROAD_GATES } = await import("./kerb.ts");
+  const { ROAD_GATE_XS } = await import("../../../world/sections/common.ts");
+  const gates = buildWorld().pieces.filter((q) => q.kind === "op.gate" && q.plane === "play").sort((a, b) => a.x - b.x);
+  assert.equal(gates.length, ROAD_GATES.length);
+  assert.equal(gates.length, ROAD_GATE_XS.length);
+  gates.forEach((g, i) => {
+    assert.equal(g.x, ROAD_GATE_XS[i], `gate ${i} at ${g.x}, common.ts has ${ROAD_GATE_XS[i]}`);
+    assert.ok(Math.abs(g.x - ROAD_GATES[i]) <= 1, `gate ${i} at ${g.x}, the kerb keeps ${ROAD_GATES[i]} clear`);
+    assert.ok(Array.isArray(g.p.ground), `gate ${i} at ${g.x} stands on the road's slope`);
+  });
+  // never more than two gates 4 H or closer (one view at play zoom is 16 H wide)
+  for (let i = 2; i < gates.length; i++) assert.ok(gates[i].x - gates[i - 2].x > 8 * 96, `three gates within 8 H at ${gates[i - 2].x}`);
+});

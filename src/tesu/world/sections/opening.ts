@@ -1,6 +1,6 @@
 // The camera of the opening corridor (GDK 3.9, Appendix C): framing keyed to her x.
 // While the opening runs, the reveal: the close band on her face at the catch, the
-// pull-back along the jetty, the three framed gates passed at about 1/2, 1/3 and 1/4, the
+// pull-back along the jetty, the framed gates (two since torii-1021) and the terrace's approach passed at about 1/2, 1/3 and 1/4, the
 // widest frame (1/8) on the viewing terrace, then easing back in over the tunnel's first
 // gates. Afterwards the corridor keeps a gentler vista (1/2) on the terrace.
 

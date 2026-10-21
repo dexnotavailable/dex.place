@@ -8,7 +8,7 @@
 //   way through it the content lands in batches as it comes up, and the stitch flies in from the world side; the spine
 //   draws; the fore piece rides the scroll a little faster than the paper; leaving, the paper backs off toward its edge
 //   (desktop). A band that drops wholly below the screen again is set back, so scrolling down replays it.
-// - the footer is the last strip: its paper rises over the pine, then its rows land.
+// - the footer is the last strip: its paper rises over the lake, then its rows land.
 // - the cards (lane K's deck, motion/pcard.ts): primed, then their entrance when the projects panel is in.
 // - alive: the scroll's speed n (-1..1) leans the strip titles and the fore, and K's cards read it (velocity()).
 // - arm time: a band already reached is simply there; a nav jump or focus settles what it passes; a watchdog lands
@@ -659,13 +659,13 @@ function splitChars(line: HTMLElement): HTMLElement[] {
   return chars;
 }
 
-/** The footer, the last strip (3.2): its paper rises over the pine (the last band's place reaches under it while the
+/** The footer, the last strip (3.2): its paper rises over the lake (the last band's place reaches under it while the
  *  choreography runs), its shade casting up with it, then its rows land. Triggered like the panels, latched. */
 function footerRise(ftr: HTMLElement, last: HTMLElement | null, phone: boolean, T: number): { settle(now?: boolean): void; reset(): void; destroy(): void } {
   const paper = ftr.querySelector<HTMLElement>(".ftr__paper"), shade = ftr.querySelector<HTMLElement>(".ftr__shade");
   const parts = Array.from(ftr.querySelectorAll<HTMLElement>(".ftr__more-head, .ftr__chips > li, .ftr__mark, .ftr__nav li, .ftr__side > *, .ftr__base"));
   const sheet = [paper, shade].filter((x): x is HTMLElement => x !== null);
-  // the pine under the footer: the last band's world reaches down by the footer's height (measured, never per frame)
+  // the lake under the footer: the last band's world reaches down by the footer's height (measured, never per frame)
   const measure = (): void => { last?.style.setProperty("--ftr-h", `${Math.ceil(ftr.offsetHeight)}px`); };
   measure();
   const ro = new ResizeObserver(measure);

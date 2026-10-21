@@ -186,8 +186,8 @@
 .sheet .band.sec:first-child { --dither: none; }
 .band--downloads { --tone-up: var(--amber); }
 .band--gallery { --tone-up: var(--jade); }
-.band--docs { --tone-up: var(--lagoon); }
-.band--donate { --tone-up: var(--indigo); }
+.band--donate { --tone-up: var(--lagoon); }
+.band--docs { --tone-up: var(--rose); }
 .band--r { --hand: linear-gradient(90deg, var(--tone-up) 25%, var(--tone) 75%); }
 .band--l { --hand: linear-gradient(270deg, var(--tone-up) 25%, var(--tone) 75%); }
 .sheet .band.sec:first-child { --hand: none; }
@@ -280,7 +280,7 @@
 .sh__w { white-space: nowrap; }
 .sh--strip .sh__title::after { display: none; }
 .sh__ul { display: block; width: 48px; height: 8px; margin-top: 10px; background: var(--tone); box-shadow: 4px 4px 0 var(--tone-d, var(--ink)); }
-/* desktop, the right-docked bands (downloads, docs): the head starts where its panel's content does (the zig-zag runs
+/* desktop, the right-docked bands (downloads, donate): the head starts where its panel's content does (the zig-zag runs
    through the titles too); the "page" key goes to the world side, as on the left-docked bands */
 @media (min-width: 1100px) {
   .band--r .band__in { padding-left: calc(100% - var(--panel-w) + var(--edge-in)); }
@@ -292,7 +292,7 @@
      right beside the title, and the giant numeral comes out of its bleed to stand beside the key, so the number, the
      key and the title read as one group along the strip */
   .band--r { --key-w: 168px; --num-w: calc(var(--num-px) * 38px); }
-  .band--docs { --key-w: 128px; }
+  .band--donate { --key-w: 148px; }
   .band--r .sh--strip .sh__more { left: auto; right: calc(var(--panel-w) - var(--edge-in) + 28px); }
   .band--r .band__strip-paper::before {
     margin-left: max(0px, calc(100% - var(--panel-w) + var(--edge-in) - 56px - var(--key-w) - var(--num-w)));
@@ -426,8 +426,8 @@
    bottom padding (a foot corner) or its open-side margin (a top corner) */
 .band__fore { position: absolute; z-index: 5; pointer-events: none; width: var(--fore-w); aspect-ratio: 2 / 1; }
 .band__fore canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
-/* a foot corner (projects, gallery: L; docs: R) */
-.band--l.band--projects > .band__fore, .band--l.band--gallery > .band__fore {
+/* a foot corner (projects, gallery, docs: L) */
+.band--l.band--projects > .band__fore, .band--l.band--gallery > .band__fore, .band--l.band--docs > .band__fore {
   left: calc(var(--panel-w) - var(--fore-w) * 0.5);
   bottom: calc(var(--breath) - var(--fore-w) * 0.22);
 }
@@ -438,18 +438,16 @@
      it starts just past the column's outer edge */
   .band--l.band--gallery > .band__fore { left: calc(var(--panel-w) + var(--edge-in) + var(--overhang) + 16px); }
 }
-.band--r.band--docs > .band__fore {
-  right: calc(var(--panel-w) - var(--fore-w) * 0.5);
-  bottom: calc(var(--breath) - var(--fore-w) * 0.22);
-}
-/* a top corner (downloads: R, the banners hang; donate: L, the pine) */
+/* a top corner (downloads: R, the banners hang; donate: R, the pine) */
 .band--r.band--downloads > .band__fore {
   right: calc(var(--panel-w) - var(--edge-in) * 0.8);
   top: calc(var(--strip-h) - 6px);
 }
-.band--l.band--donate > .band__fore {
-  left: calc(var(--panel-w) - var(--edge-in) * 0.8);
-  top: calc(var(--strip-h) - var(--fore-w) * 0.3);
+/* (Dex 10-21, donate docks right now: the strip's "page" key sits by the paper's edge, so the pine stands from the
+   strip's foot, clear of the key, not over it) */
+.band--r.band--donate > .band__fore {
+  right: calc(var(--panel-w) - var(--edge-in) * 0.8);
+  top: calc(var(--strip-h) - 6px);
 }
 /* phones: one small piece per band at its foot corner (the open side is only 20 px) */
 @media (max-width: 699px) {
@@ -462,7 +460,7 @@
 }
 
 /* ---- the footer: white, full width; the services that open later as a row of chips (id="more") */
-/* on the home page it is the last strip (site loop round 1): paper over the pine with a hem of every section's tone
+/* on the home page it is the last strip (site loop round 1): paper over the lake with a hem of every section's tone
    where it meets the world and its shade cast up onto it (no ink rule); the motion raises the paper and its shade
    together (motion/choreo.ts footerRise), clipped at the footer's own foot; its content on the bands' edge */
 .sheet--home .ftr { background: transparent; border-top: 0; clip-path: inset(-96px 0 0 0); }
@@ -509,28 +507,11 @@
   .sheet--home .ftr__nav ul { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); column-gap: 16px; }
 }
 
-/* the donate band on a laptop and up (site loop v3 round 1: the Ko-fi card ended ~330 px above the bank card, over
-   dead paper): the Ko-fi card rides along beside the bank card as you read down it; the QR takes the bank card's width
-   in whole pixels per module (the stitch's overhang there only pushed it off centre) */
+/* the donate band on a laptop and up: the QR takes the bank card's width in whole pixels per module (the stitch's
+   overhang there only pushed it off centre, or into the Ko-fi card now the band docks right). (Dex 10-21: "shorten the
+   kofi thing") the Ko-fi card is its own height, a compact card beside the bank card's top, never a tall well */
 @media (min-width: 1100px) {
-  /* (site loop v3 round 3: under the sticky card's key lay ~330 px of bare paper beside the bank card) the Ko-fi card
-     stands as tall as the bank card, its key at the foot, its cup's well growing into the room: a tall, cosy window */
-  .band--donate .donate { align-items: stretch; }
-  .band--donate .kofi__cta { margin-top: auto; }
-  .band--donate .qr[data-stitch] { margin-right: 0; }
-  /* (site loop v3 round 5: the well stood ~1080 px tall at 1920 with the cup at its middle, so the column read as an
-     empty dotted slab whichever way you looked) the cup and its table edge ride down the well as you read the bank
-     card, held at the screen's middle, and settle on the well's floor at its foot. Sticky inside the well: its clip
-     never makes it a scroll container (overflow: clip, not hidden) */
-  .band--donate .kofi__stage { overflow: clip; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: start center; }
-  .band--donate .kofi__cup { grid-area: 1 / 1; position: sticky; top: calc(50vh - 40px); margin: 48px 0 40px; }
-  .band--donate .kofi__stage::after {
-    grid-area: 1 / 1;
-    position: sticky;
-    top: calc(50vh + 88px);
-    justify-self: stretch;
-    margin: 176px 0 38px;
-  }
+  .band--donate .qr[data-stitch] { margin-inline: 0; }
 }
 @container (min-width: 323px) and (max-width: 599px) { .band--donate .qr { --qm: 7; } }
 @container (min-width: 368px) and (max-width: 599px) { .band--donate .qr { --qm: 8; } }

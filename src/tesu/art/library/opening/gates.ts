@@ -240,19 +240,26 @@ function pillarPx(c: PaintCtx, u: number, a: number, k: number, X: number, Y: nu
 /**
  * A stone kamebara on a sunk plinth round a pillar's foot: the plinth a squared, chipped block
  * bedded in the path, the drum a rounded tortoise-back on it, lichen on its shoulder, moss up from
- * the ground, grass at its foot.
+ * the ground, grass at its foot. (torii-1021, Dex: "make sure their legs and base are planted
+ * properly") On a sloping road the plinth's top stays level and its foot follows the road (`ground`,
+ * GateP.ground): deeper on the downhill side instead of floating over the road there, cut at the
+ * road on the uphill side instead of hanging over its edge.
  */
-function drum(v: View, x: number, z: number, gy: number, r: number, hh: number, seed: number): void {
+function drum(v: View, x: number, z: number, gy: number, r: number, hh: number, seed: number, ground?: [number, number]): void {
   const { c, D, s } = v;
   const xc = x + s * z;
   const d = c.d;
   // the plinth: a low squared block, its top edge lit, chipped corners, half in the path
   const pr = r * 1.22, ph = hh * 0.42;
   {
-    const Ya = Math.max(D.Y0, Math.floor(c.Y(gy - ph))), Yb = Math.min(D.Y0 + D.h, Math.ceil(c.Y(gy + 3)));
+    const sink = Math.max(0, groundAt(ground, xc - pr - x), groundAt(ground, xc + pr - x));
+    const Ya = Math.max(D.Y0, Math.floor(c.Y(gy - ph))), Yb = Math.min(D.Y0 + D.h, Math.ceil(c.Y(gy + 3 + sink)));
     const Xa = Math.max(D.X0, Math.floor(c.X(xc - pr))), Xb = Math.min(D.X0 + D.w, Math.ceil(c.X(xc + pr)));
     for (let Y = Ya; Y < Yb; Y++) for (let X = Xa; X < Xb; X++) {
       const lx = c.lx(X + 0.5) - xc, ly = c.ly(Y + 0.5) - gy;
+      // the road's line under this column, px below the gate's foot
+      const g = groundAt(ground, c.lx(X + 0.5) - x);
+      if (ly >= 3 + g) continue;
       const ex = pr - Math.abs(lx);
       // chipped corners
       if (ly < -ph + 2.5 && ex < 2.5 - (ly + ph) * 0.6 + 2 * hash1(Math.sign(lx) + 3, seed)) continue;
@@ -261,8 +268,8 @@ function drum(v: View, x: number, z: number, gy: number, r: number, hh: number, 
       if (ly < -ph + 1.4 / d) t = u < 0.6 ? 0.08 : 0.3;
       if (d >= 0.5 && vnoise(lx / 2.5, ly / 1.5, seed + 3) > 0.7) t += 0.13;
       let col = tone(P.stone, clamp(t, 0, 1), X, Y, 0.3);
-      if (ly > -ph * (0.3 + 0.6 * vnoise1(lx / 4, seed + 4)) && vnoise1(lx / 5 + 9, seed + 5) > 0.45) col = tone(P.moss, clamp(0.5 + u * 0.25 + (ly > 0 ? 0.15 : 0), 0, 1), X, Y, 0.35);
-      if (ly > 0) col = tone(P.karst, 0.82 + (u > 0.5 ? 0.1 : 0), X, Y, 0.3);
+      if (ly > -ph * (0.3 + 0.6 * vnoise1(lx / 4, seed + 4)) && vnoise1(lx / 5 + 9, seed + 5) > 0.45) col = tone(P.moss, clamp(0.5 + u * 0.25 + (ly > g ? 0.15 : 0), 0, 1), X, Y, 0.35);
+      if (ly > g) col = tone(P.karst, 0.82 + (u > 0.5 ? 0.1 : 0), X, Y, 0.3);
       D.put(X, Y, z - pr * 0.8, col);
     }
   }
@@ -296,18 +303,22 @@ function drum(v: View, x: number, z: number, gy: number, r: number, hh: number, 
       const gx = xc + (hash1(i, seed + 7) - 0.5) * pr * 2.6;
       const gh = 2 + 7 * hash1(i, seed + 8);
       const lean = (hash1(i, seed + 9) - 0.5) * 0.8;
-      for (let a = 0; a < gh; a += 1 / d) D.put(Math.round(c.X(gx + lean * a)), Math.round(c.Y(gy + 1 - a)), z - pr - 1, P.moss[a < gh * 0.4 ? 5 : a < gh * 0.75 ? 3 : 2]!);
+      const gg = gy + 1 + groundAt(ground, gx - x);
+      for (let a = 0; a < gh; a += 1 / d) D.put(Math.round(c.X(gx + lean * a)), Math.round(c.Y(gg - a)), z - pr - 1, P.moss[a < gh * 0.4 ? 5 : a < gh * 0.75 ? 3 : 2]!);
     }
   }
 }
 
-/** Contact shadow on the road east of a foot (the sun is west and high): two hard steps. */
-function contactShadow(v: View, x: number, z: number, gy: number, w: number): void {
+/** Contact shadow on the road east of a foot (the sun is west and high): two hard steps, on the road where it is (`ground`). */
+function contactShadow(v: View, x: number, z: number, gy: number, w: number, ground?: [number, number]): void {
   const { c, D, s } = v;
   const xc = x + s * z;
-  const Ya = Math.max(D.Y0, Math.floor(c.Y(gy - 1))), Yb = Math.min(D.Y0 + D.h, Math.ceil(c.Y(gy + 3)));
+  const ga = groundAt(ground, xc - w * 0.3 - x), gb = groundAt(ground, xc + w * 1.15 - x);
+  const Ya = Math.max(D.Y0, Math.floor(c.Y(gy - 1 + Math.min(0, ga, gb)))), Yb = Math.min(D.Y0 + D.h, Math.ceil(c.Y(gy + 3 + Math.max(0, ga, gb))));
   const Xa = Math.max(D.X0, Math.floor(c.X(xc - w * 0.3))), Xb = Math.min(D.X0 + D.w, Math.ceil(c.X(xc + w * 1.15)));
   for (let Y = Ya; Y < Yb; Y++) for (let X = Xa; X < Xb; X++) {
+    const ly = c.ly(Y + 0.5) - gy - groundAt(ground, c.lx(X + 0.5) - x);
+    if (ly < -1 || ly >= 3) continue;
     const out = (c.lx(X + 0.5) - xc) / w;
     D.put(X, Y, z + 4, out < 0.75 ? P.karst[7]! : P.karst[6]!);
   }
@@ -356,13 +367,15 @@ function toriiDims(o: Pick<ToriiO, "span" | "h" | "pw" | "small">) {
 }
 
 /** The box a torii paints, level-1 px around its foot. */
-export function toriiBounds(o: Pick<ToriiO, "span" | "h" | "pw" | "s" | "legs" | "small" | "garland" | "ground">): [number, number, number, number] {
+export function toriiBounds(o: Pick<ToriiO, "span" | "h" | "pw" | "s" | "legs" | "small" | "wet" | "garland" | "ground">): [number, number, number, number] {
   const D = toriiDims(o);
   const spread = Math.abs(o.s) * D.LK + D.kW / 2 + 4;
   const legs = o.legs ? D.legD + D.legR * 3.5 + Math.abs(o.s) * D.half + 4 : 0;
   const foot = o.pw * 1.4;
   const w = Math.max(spread, legs, foot + Math.abs(o.s) * D.half + 6);
-  const sink = o.legs ? Math.max(0, groundAt(o.ground, -D.legD), groundAt(o.ground, D.legD)) : 0;
+  // (torii-1021) the plinths' and the contact shadows' feet follow the road too (drum, contactShadow)
+  const foot0 = o.wet || o.small ? 0 : o.pw * 1.4 + Math.abs(o.s) * D.half + 2;
+  const sink = Math.max(0, groundAt(o.ground, -foot0), groundAt(o.ground, foot0), ...(o.legs ? [groundAt(o.ground, -D.legD), groundAt(o.ground, D.legD)] : []));
   const b: [number, number, number, number] = [-w - 4, -o.h - D.sweepK - D.capH * 0.3 - 6, w + o.pw * 1.4 + 4, 8 + Math.ceil(sink)];
   if (o.garland) {
     const [gx, gy] = o.garland;
@@ -400,8 +413,8 @@ export function torii(c: PaintCtx, x: number, y: number, o: ToriiO): void {
       return tone(P.lacquer, 0.3, X, Y, 0.3);
     });
     if (!o.wet && !o.small) {
-      drum(v, x, zs * half, y, pw * 0.86, Math.max(6, pw * 0.5), sd + 10);
-      contactShadow(v, x, zs * half, y, pw * 1.05);
+      drum(v, x, zs * half, y, pw * 0.86, Math.max(6, pw * 0.5), sd + 10, o.ground);
+      contactShadow(v, x, zs * half, y, pw * 1.05, o.ground);
     }
     // ryōbu: a leg fore and aft of the pillar along the road, tied to it at two heights, capped
     if (o.legs) {
@@ -703,11 +716,13 @@ function paifang(c: PaintCtx, p: GateP, s: number, pw: number, seed: number): vo
     // the outer posts carry the struts (the ones that take the wind)
     if (!tall) for (const dir of [-1, 1]) strut(v, 0, zp + (far ? 2 : -2), braceTop, dir * braceD, pw * 0.2, far, seed + i * 13 + dir, groundAt(p.ground, dir * braceD));
     // the clamp stones: tall blocks either side of the post along the road, their tops rounded
+    // (torii-1021) their feet bedded in the road where it is (GateP.ground), not level over its slope
     const ch = Math.max(14, h * 0.1), cw = pw * 1.1;
-    sweep(v, 0, zp - pw * 0.64, zp + pw * 0.64, () => 0, [-cw, cw, -ch - 4, 2], (sx, sy, end, X, Y) => {
+    const sinkC = Math.max(0, groundAt(p.ground, -cw - Math.abs(s) * half - 2), groundAt(p.ground, cw + Math.abs(s) * half + 2));
+    sweep(v, 0, zp - pw * 0.64, zp + pw * 0.64, () => 0, [-cw, cw, -ch - 4, 2 + sinkC], (sx, sy, end, X, Y) => {
       const ax = Math.abs(sx) / cw;
       const top = -ch * (0.62 + 0.38 * Math.sqrt(Math.max(0, 1 - Math.pow(ax, 2.5)))) - (ax < 0.3 ? 3 : 0);
-      if (sy < top) return 0;
+      if (sy < top || sy >= 2 + groundAt(p.ground, c.lx(X + 0.5))) return 0;
       if (!end) return tone(P.stone, sy < top + 1.5 ? 0.1 : 0.32, X, Y, 0.3);
       let t = sx < -cw * 0.5 ? 0.18 : sx < cw * 0.25 ? 0.38 : 0.6;
       if (sy < top + 1.4) t -= 0.14;
@@ -718,7 +733,7 @@ function paifang(c: PaintCtx, p: GateP, s: number, pw: number, seed: number): vo
       if (c.d >= 0.5 && vnoise(sx / 3, sy / 2, seed + i * 7) > 0.74) t += 0.12;
       return tone(P.stone, clamp(t, 0, 1), X, Y, 0.3);
     });
-    contactShadow(v, 0, zp, 0, cw * 1.1);
+    contactShadow(v, 0, zp, 0, cw * 1.1, p.ground);
   });
   // the lintels end-on: the great lower one across all four posts, a second under the middle bay
   const lin = (z0: number, z1: number, y: number, th: number, w: number): void => {

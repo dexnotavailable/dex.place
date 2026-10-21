@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import jsQR from "jsqr";
 import {
-  QUICK_PICKS, SLIDER_MAX_VND, SLIDER_MIN_VND, STOPS, TICKS, amountAt, donateQr, fineText, formatVnd, indexOf, shortVnd, trackPos,
+  QUICK_PICKS, SLIDER_MAX_VND, SLIDER_MIN_VND, STOPS, TICKS, amountAt, donateQr, formatVnd, indexOf, shortVnd, trackPos,
 } from "./donate.ts";
 import { qrGrid } from "./qr.ts";
 import { MB_BANK, vietQrPayload } from "./vietqr.ts";
@@ -51,8 +51,6 @@ describe("donation amounts", () => {
     assert.equal(formatVnd(1_250_000), "1,250,000 VND");
     assert.deepEqual(TICKS.map(shortVnd), ["100k", "500k", "1M", "5M", "10M"]);
     assert.equal(shortVnd(2_500_000), "2.5M");
-    assert.match(fineText(0), /no amount/);
-    assert.match(fineText(500_000), /500,000 VND/);
   });
 });
 
@@ -85,9 +83,9 @@ describe("donate QR", () => {
     }
   });
 
-  test("the SVG names the account and the amount", () => {
+  test("the SVG names the amount, never the account (Dex 10-21)", () => {
     assert.match(donateQr(0), /no amount set/);
-    assert.match(donateQr(0), new RegExp(MB_BANK.account));
+    assert.doesNotMatch(donateQr(0), new RegExp(MB_BANK.account));
     assert.match(donateQr(2_000_000), /2,000,000 VND prefilled/);
     assert.match(donateQr(0), /viewBox="0 0 45 45"/);
   });
