@@ -5,7 +5,7 @@
 // State: 0 = no amount (the default, and what "Any amount" returns to), or a
 // stop from 100,000 to 10,000,000 VND (src/site/donate.ts).
 
-import { QR_TAG_NONE, STOPS, amountAt, donateQr, fineText, formatVnd, groupVnd, indexOf } from "../donate.ts";
+import { QR_TAG_NONE, STOPS, amountAt, donateQr, formatVnd, groupVnd, indexOf } from "../donate.ts";
 
 const LAST = STOPS.length - 1;
 const NAV_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"]);
@@ -28,7 +28,6 @@ export function initDonate(reduced: MediaQueryList): void {
   const code = card.querySelector<HTMLElement>("[data-qr-code]");
   const tag = card.querySelector<HTMLElement>("[data-qr-tag]");
   const num = card.querySelector<HTMLElement>("[data-amt-num]");
-  const fine = card.querySelector<HTMLElement>("[data-amt-fine]");
   const live = card.querySelector<HTMLElement>("[data-amt-live]");
   const picks = [...card.querySelectorAll<HTMLButtonElement>("[data-pick]")];
 
@@ -80,7 +79,6 @@ export function initDonate(reduced: MediaQueryList): void {
     range!.setAttribute("aria-valuetext", next > 0 ? formatVnd(next) : "No amount set");
     for (const b of picks) b.setAttribute("aria-pressed", String(Number(b.dataset.pick) === next));
     if (tag) tag.textContent = next > 0 ? formatVnd(next) : QR_TAG_NONE;
-    if (fine) fine.textContent = fineText(next);
     showNumber(prev, next, from === "pick");
 
     // Redraw on the next frame, so a fast drag draws once per frame.

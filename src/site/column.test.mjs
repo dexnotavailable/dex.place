@@ -161,9 +161,9 @@ test("home (Dex 10-19, the redesign, DESIGN-1019 2.2 / 2.3): five bands L R L R 
   const { HOME_BANDS, splitSection } = await import("./render/landing.ts");
   const html = landing(content);
   const bands = [...html.matchAll(/<section class="band band--([lr]) band--([a-z]+) sec sec--\2" id="\2" aria-labelledby="\2-title" data-scene="([a-z]+)" style="--band-i:(\d);--tone:var\(--[a-z]+\)">/g)];
-  assert.deepEqual(bands.map((m) => m[2]), ["projects", "downloads", "gallery", "docs", "donate"]);
+  assert.deepEqual(bands.map((m) => m[2]), ["projects", "downloads", "gallery", "donate", "docs"]);
   assert.deepEqual(bands.map((m) => m[1]), ["l", "r", "l", "r", "l"], "the paper alternates sides");
-  assert.deepEqual(bands.map((m) => m[3]), ["sky", "palace", "isles", "lake", "pine"]);
+  assert.deepEqual(bands.map((m) => m[3]), ["sky", "palace", "isles", "pine", "lake"]);
   assert.equal(HOME_BANDS.length, bands.length);
   for (const [i, m] of bands.entries()) {
     const at = m.index;

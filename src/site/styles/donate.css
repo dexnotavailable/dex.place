@@ -1,5 +1,5 @@
 /* Donate (render/donate.ts): the home section and /donate/. Ko-fi card and
-   the MB Bank card with its live VietQR. Behaviour: motion/donate.ts.
+   the personal bank card with its live VietQR. Behaviour: motion/donate.ts.
    Magenta is this section's tone. The QR itself stays black on white: that
    is what banking apps scan best. */
 
@@ -44,8 +44,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  flex: 1;
-  min-height: 220px;
+  /* (Dex 10-21: "shorten the kofi thing") the well is as tall as the cup and its table, no more */
+  height: 200px;
   border: var(--bw) solid var(--line);
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Crect x='7' y='7' width='2' height='2' fill='%23ff1aac' fill-opacity='.4'/%3E%3C/svg%3E") 0 0 / 16px 16px,
@@ -96,36 +96,23 @@
   .kofi__cta { width: 100%; }
 }
 
-/* --------------------------------------------------------------- MB Bank */
+/* ---------------------------------------------------------- personal bank */
+/* The QR and the amount panel only: the account is never printed (Dex 10-21). */
 .bank { padding: clamp(18px, 3vw, 32px); container-type: inline-size; }
 
 .bank__grid {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas: "qr amt" "kv kv";
+  grid-template-areas: "qr amt";
   gap: 28px 36px;
   margin-top: 24px;
   align-items: start;
 }
-.bank__kv { grid-area: kv; }
-@container (min-width: 640px) {
-  .bank__kv { grid-template-columns: 1fr 1fr; column-gap: 36px; }
-}
 @container (max-width: 599px) {
-  .bank__grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "qr" "amt" "kv"; }
+  .bank__grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "qr" "amt"; }
 }
-.bank__kv > div { grid-template-columns: minmax(92px, 34%) minmax(0, 1fr); }
-/* Narrow cards: label above value, so the recipient name stays on one line. */
-@container (max-width: 440px) {
-  .bank__kv > div { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 10px 0; }
-}
-.bank__kv dd > span:first-child { user-select: all; -webkit-user-select: all; }
-.bank__fine { margin-top: 18px; max-width: 70ch; }
-/* No JS: no amount panel, so the details sit beside the QR instead. */
-@container (min-width: 600px) {
-  html:not(.js) .bank__grid { grid-template-areas: "qr kv"; align-items: center; }
-  html:not(.js) .bank__kv { grid-template-columns: minmax(0, 1fr); }
-}
+/* No JS: no amount panel, the QR alone. */
+html:not(.js) .bank__grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "qr"; }
 
 /* ------------------------------------------------------------------- QR */
 /* A square window: 2px magenta frame, a magenta title bar (VietQR and the

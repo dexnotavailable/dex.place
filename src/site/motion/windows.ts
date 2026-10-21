@@ -161,7 +161,7 @@ export const SCENES: Readonly<Record<SceneId, Scene>> = {
   },
   // a pine over the karst, the mist in the valleys, at dusk
   pine: {
-    fore: [{ kind: "op.pine", p: { h: 260, dir: -1 }, fit: 1, x: 0.5, y: 1.0, seed: 83 }],
+    fore: [{ kind: "op.pine", p: { h: 260, dir: 1 }, fit: 1, x: 0.5, y: 1.0, seed: 83 }],
     entry: "kagami",
     sky: DUSK,
     mist: { y: 0.76, h: 0.14, before: 2 },

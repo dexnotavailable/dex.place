@@ -46,7 +46,7 @@
   --rose: #ff3d7f;
   --rose-d: #c2185b;
   /* all five in page order: the footer's hem */
-  --spectrum: linear-gradient(90deg, var(--amber) 0 20%, var(--jade) 0 40%, var(--lagoon) 0 60%, var(--indigo) 0 80%, var(--rose) 0);
+  --spectrum: linear-gradient(90deg, var(--amber) 0 20%, var(--jade) 0 40%, var(--lagoon) 0 60%, var(--rose) 0 80%, var(--indigo) 0);
 
   /* ---- surfaces: plain white paper */
   --bg: #ffffff;

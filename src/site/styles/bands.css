@@ -18,9 +18,12 @@
      Phones (their open side is a 20 px slit) keep a short window at each join: the panel's paper narrows to a tab on its
      docked side (--tab-w) and the world opens on the other (bands.css .band__paper::after) */
   --lead: 0px;
-  /* (site loop v3 round 2: 18svh read as leftover paper on a phone; the tab now carries its section's numeral) */
-  --breath: 10svh;
-  --tab-w: 38%;
+  /* (site loop v3 round 2: 18svh read as leftover paper on a phone; the tab now carries its section's numeral)
+     (site loop v4 round 1, the critic: on a phone the world all but vanished behind a 20 px gutter; the numeral tab was
+     its only window): one deliberate window per band, 120-160 px tall, its numeral standing a size up in the tab */
+  --breath: clamp(120px, 16svh, 160px);
+  --tab: 0.46;
+  --tab-w: calc(var(--tab) * 100%);
   --strip-h: 96px;
   --title-px: 2;
   --overhang: 12px;
@@ -168,7 +171,8 @@
     var(--dither) 0 4px / 8px 8px repeat-x,
     var(--hand, none) 0 0 / 100% 8px no-repeat,
     var(--wash);
-  border-bottom: 4px solid var(--tone);
+  /* (site loop v4 round 1: 6 px, full strength: the strips' one potent line, as the footer's five-tone hem is) */
+  border-bottom: 6px solid var(--tone);
   /* (site loop v3 round 2) its cast shadow on the panel starts as a stepped band of the section's deep tone, two pixel
      rows: the strip lies on the paper with weight, and where it cuts the world (the lead's clouds) the cut lands in
      shadow, not in white slivers */
@@ -178,7 +182,9 @@
    section's wash in a 4 px checker, the world's pixel language */
 .band {
   --tone-up: var(--tone);
-  --wash: color-mix(in srgb, var(--tone) 14%, #fff);
+  /* (site loop v4 round 1, the critic: "washed pastels"): a step deeper; the strip's small tone text takes a deeper
+     twin to stay AA on it (--tone-dd, below) */
+  --wash: color-mix(in srgb, var(--tone) 22%, #fff);
   --dither: conic-gradient(var(--wash) 25%, transparent 0 50%, var(--wash) 0 75%, transparent 0);
   --hem-s1: color-mix(in srgb, var(--tone-d, #162c60) 30%, transparent);
   --hem-s2: color-mix(in srgb, var(--tone-d, #162c60) 12%, transparent);
@@ -186,8 +192,8 @@
 .sheet .band.sec:first-child { --dither: none; }
 .band--downloads { --tone-up: var(--amber); }
 .band--gallery { --tone-up: var(--jade); }
-.band--docs { --tone-up: var(--lagoon); }
-.band--donate { --tone-up: var(--indigo); }
+.band--donate { --tone-up: var(--lagoon); }
+.band--docs { --tone-up: var(--rose); }
 .band--r { --hand: linear-gradient(90deg, var(--tone-up) 25%, var(--tone) 75%); }
 .band--l { --hand: linear-gradient(270deg, var(--tone-up) 25%, var(--tone) 75%); }
 .sheet .band.sec:first-child { --hand: none; }
@@ -214,8 +220,10 @@
   margin-right: -0.36em;
   font: 400 calc(var(--num-px) * 25px) / 1 var(--f-title);
   letter-spacing: calc(var(--num-px) * 1px);
-  color: color-mix(in srgb, var(--tone) 40%, transparent);
-  -webkit-text-stroke: 2px var(--tone);
+  /* (site loop v4 round 1, the critic: "pale outlines that fade into" the paper): solid in the band's tone, standing
+     off the strip on a hard offset shadow of its deep twin, one font pixel down and right */
+  color: var(--tone);
+  text-shadow: calc(var(--num-px) * 1px) calc(var(--num-px) * 1px) 0 var(--tone-d, var(--ink));
   font-synthesis: none;
   -webkit-font-smoothing: none;
   pointer-events: none;
@@ -257,11 +265,13 @@
 .band--donate { --tone-d: var(--rose-d); }
 .band .sh--strip { --tone: var(--band-tone); }
 .band .sh--strip .sh__kicker { color: var(--ink); }
-.band .sh--strip .sh__index, .band .sh--strip .sh__slash { color: var(--tone-d); }
+.band { --tone-dd: color-mix(in srgb, var(--tone-d) 78%, var(--ink)); }
+.band .sh--strip .sh__index, .band .sh--strip .sh__slash { color: var(--tone-dd); }
 .band .sh--strip .sh__aside { color: var(--fg-2); }
-.band .sh--strip .sh__rule { position: relative; height: 3px; background: linear-gradient(90deg, var(--tone), var(--tone-d)); }
+/* (site loop v4 round 1) the rule a full-strength 4 px line, its foot pixel row in the deep twin */
+.band .sh--strip .sh__rule { position: relative; height: 4px; background: linear-gradient(var(--tone) 0 2px, var(--tone-d) 0); }
 .band .sh--strip .tile { --tile-bg: var(--tone); }
-.band .sh--strip .sh__more .px { color: var(--tone-d); }
+.band .sh--strip .sh__more .px { color: var(--tone-dd); }
 /* the band's keys pop in its tone (site loop v2 round 1): the hover shadow, and a paper key's fill a wash of it (ink
    stays on near-white: AA holds); the cards' keys are lane K's */
 .band { --tone-t: color-mix(in srgb, var(--tone) 16%, #fff); }
@@ -280,7 +290,7 @@
 .sh__w { white-space: nowrap; }
 .sh--strip .sh__title::after { display: none; }
 .sh__ul { display: block; width: 48px; height: 8px; margin-top: 10px; background: var(--tone); box-shadow: 4px 4px 0 var(--tone-d, var(--ink)); }
-/* desktop, the right-docked bands (downloads, docs): the head starts where its panel's content does (the zig-zag runs
+/* desktop, the right-docked bands (downloads, donate): the head starts where its panel's content does (the zig-zag runs
    through the titles too); the "page" key goes to the world side, as on the left-docked bands */
 @media (min-width: 1100px) {
   .band--r .band__in { padding-left: calc(100% - var(--panel-w) + var(--edge-in)); }
@@ -292,7 +302,7 @@
      right beside the title, and the giant numeral comes out of its bleed to stand beside the key, so the number, the
      key and the title read as one group along the strip */
   .band--r { --key-w: 168px; --num-w: calc(var(--num-px) * 38px); }
-  .band--docs { --key-w: 128px; }
+  .band--donate { --key-w: 148px; }
   .band--r .sh--strip .sh__more { left: auto; right: calc(var(--panel-w) - var(--edge-in) + 28px); }
   .band--r .band__strip-paper::before {
     margin-left: max(0px, calc(100% - var(--panel-w) + var(--edge-in) - 56px - var(--key-w) - var(--num-w)));
@@ -301,6 +311,9 @@
     align-items: flex-end;
     padding-bottom: 0;
     margin-bottom: -0.16em;
+    /* (site loop v4 round 1: solid now, the digits' foot lapping ~20 px over the place below read as a glitch) they are
+       cut at the strip's hem: sunk into it, never on the world */
+    clip-path: inset(0 0 0.16em 0);
   }
   /* ...and its kicker row (the index, the rule, the aside) starts right over the key (site loop v3 round 1: on a wide
      screen ~590 px of bare strip lay between the key and the title): the rule runs the strip's width, as on the
@@ -321,7 +334,7 @@
    cards' edges and dividers in the section's own tones instead of grey */
 @media (min-width: 1100px) {
   .band {
-    --paper: color-mix(in srgb, var(--tone) 5%, #fff);
+    --paper: color-mix(in srgb, var(--tone) 7%, #fff);
     --line: color-mix(in srgb, var(--tone) 30%, #fff);
     --line-2: var(--tone-d, #8a8094);
   }
@@ -371,23 +384,23 @@
     content: counter(band, decimal-leading-zero) / "";
     position: absolute;
     top: 100%;
-    right: calc(var(--panel-w) * 0.62);
-    width: calc(var(--panel-w) * 0.38 - 6px);
+    right: calc(var(--panel-w) * (1 - var(--tab)));
+    width: calc(var(--panel-w) * var(--tab) - 6px);
     height: var(--breath);
     clip-path: inset(0);
     display: flex;
     align-items: flex-end;
     justify-content: flex-start;
     margin-left: -0.3em;
-    font: 400 100px / 0.78 var(--f-title);
-    letter-spacing: 4px;
-    color: color-mix(in srgb, var(--tone) 40%, transparent);
-    -webkit-text-stroke: 2px var(--tone);
+    font: 400 125px / 0.78 var(--f-title);
+    letter-spacing: 5px;
+    color: var(--tone);
+    text-shadow: 5px 5px 0 var(--tone-d, var(--ink));
     font-synthesis: none;
     -webkit-font-smoothing: none;
     pointer-events: none;
   }
-  .band--r .band__spine::before { right: auto; left: calc(var(--panel-w) * 0.62); justify-content: flex-end; margin-left: 0; margin-right: -0.3em; }
+  .band--r .band__spine::before { right: auto; left: calc(var(--panel-w) * (1 - var(--tab))); justify-content: flex-end; margin-left: 0; margin-right: -0.3em; }
 }
 .sheet .band__panel > .wrap { position: relative; z-index: 3; max-width: none; margin: 0; padding: 0 var(--edge-in) 0 var(--edge-out); }
 .sheet .band--r .band__panel > .wrap { padding: 0 var(--edge-out) 0 var(--edge-in); }
@@ -426,8 +439,8 @@
    bottom padding (a foot corner) or its open-side margin (a top corner) */
 .band__fore { position: absolute; z-index: 5; pointer-events: none; width: var(--fore-w); aspect-ratio: 2 / 1; }
 .band__fore canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
-/* a foot corner (projects, gallery: L; docs: R) */
-.band--l.band--projects > .band__fore, .band--l.band--gallery > .band__fore {
+/* a foot corner (projects, gallery, docs: L) */
+.band--l.band--projects > .band__fore, .band--l.band--gallery > .band__fore, .band--l.band--docs > .band__fore {
   left: calc(var(--panel-w) - var(--fore-w) * 0.5);
   bottom: calc(var(--breath) - var(--fore-w) * 0.22);
 }
@@ -438,18 +451,16 @@
      it starts just past the column's outer edge */
   .band--l.band--gallery > .band__fore { left: calc(var(--panel-w) + var(--edge-in) + var(--overhang) + 16px); }
 }
-.band--r.band--docs > .band__fore {
-  right: calc(var(--panel-w) - var(--fore-w) * 0.5);
-  bottom: calc(var(--breath) - var(--fore-w) * 0.22);
-}
-/* a top corner (downloads: R, the banners hang; donate: L, the pine) */
+/* a top corner (downloads: R, the banners hang; donate: R, the pine) */
 .band--r.band--downloads > .band__fore {
   right: calc(var(--panel-w) - var(--edge-in) * 0.8);
   top: calc(var(--strip-h) - 6px);
 }
-.band--l.band--donate > .band__fore {
-  left: calc(var(--panel-w) - var(--edge-in) * 0.8);
-  top: calc(var(--strip-h) - var(--fore-w) * 0.3);
+/* (Dex 10-21, donate docks right now: the strip's "page" key sits by the paper's edge, so the pine stands from the
+   strip's foot, clear of the key, not over it) */
+.band--r.band--donate > .band__fore {
+  right: calc(var(--panel-w) - var(--edge-in) * 0.8);
+  top: calc(var(--strip-h) - 6px);
 }
 /* phones: one small piece per band at its foot corner (the open side is only 20 px) */
 @media (max-width: 699px) {
@@ -462,7 +473,7 @@
 }
 
 /* ---- the footer: white, full width; the services that open later as a row of chips (id="more") */
-/* on the home page it is the last strip (site loop round 1): paper over the pine with a hem of every section's tone
+/* on the home page it is the last strip (site loop round 1): paper over the lake with a hem of every section's tone
    where it meets the world and its shade cast up onto it (no ink rule); the motion raises the paper and its shade
    together (motion/choreo.ts footerRise), clipped at the footer's own foot; its content on the bands' edge */
 .sheet--home .ftr { background: transparent; border-top: 0; clip-path: inset(-96px 0 0 0); }
@@ -509,32 +520,21 @@
   .sheet--home .ftr__nav ul { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); column-gap: 16px; }
 }
 
-/* the donate band on a laptop and up (site loop v3 round 1: the Ko-fi card ended ~330 px above the bank card, over
-   dead paper): the Ko-fi card rides along beside the bank card as you read down it; the QR takes the bank card's width
-   in whole pixels per module (the stitch's overhang there only pushed it off centre) */
+/* the donate band on a laptop and up: the QR takes the bank card's width in whole pixels per module (the stitch's
+   overhang there only pushed it off centre, or into the Ko-fi card now the band docks right). (Dex 10-21: "shorten the
+   kofi thing") the Ko-fi card is its own height, a compact card beside the bank card's top, never a tall well */
 @media (min-width: 1100px) {
-  /* (site loop v3 round 3: under the sticky card's key lay ~330 px of bare paper beside the bank card) the Ko-fi card
-     stands as tall as the bank card, its key at the foot, its cup's well growing into the room: a tall, cosy window */
-  .band--donate .donate { align-items: stretch; }
-  .band--donate .kofi__cta { margin-top: auto; }
-  .band--donate .qr[data-stitch] { margin-right: 0; }
-  /* (site loop v3 round 5: the well stood ~1080 px tall at 1920 with the cup at its middle, so the column read as an
-     empty dotted slab whichever way you looked) the cup and its table edge ride down the well as you read the bank
-     card, held at the screen's middle, and settle on the well's floor at its foot. Sticky inside the well: its clip
-     never makes it a scroll container (overflow: clip, not hidden) */
-  .band--donate .kofi__stage { overflow: clip; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: start center; }
-  .band--donate .kofi__cup { grid-area: 1 / 1; position: sticky; top: calc(50vh - 40px); margin: 48px 0 40px; }
-  .band--donate .kofi__stage::after {
-    grid-area: 1 / 1;
-    position: sticky;
-    top: calc(50vh + 88px);
-    justify-self: stretch;
-    margin: 176px 0 38px;
-  }
+  .band--donate .qr[data-stitch] { margin-inline: 0; }
 }
 @container (min-width: 323px) and (max-width: 599px) { .band--donate .qr { --qm: 7; } }
 @container (min-width: 368px) and (max-width: 599px) { .band--donate .qr { --qm: 8; } }
 @container (min-width: 413px) and (max-width: 599px) { .band--donate .qr { --qm: 9; } }
+/* (site loop v4 round 1) a laptop, the Ko-fi row over the bank card: the QR (5 px a module: still a 225 px code) stands
+   beside its amounts, as at 1920, so the band ends close under them instead of a tall stack */
+@media (min-width: 1100px) and (max-width: 1599px) {
+  .band--donate .bank__grid { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "qr amt"; gap: 24px 28px; }
+  .band--donate .qr { --qm: 5; }
+}
 
 /* the footer on a laptop and up (site loop v3 round 1: ~90 px of bare paper under the nav beside the mark): the Ko-fi
    key and the sleepy blob share one row, the rows sit close */
@@ -545,12 +545,45 @@
   .sheet--home .ftr__side > :last-child { order: -1; }
 }
 
-/* the donate band between 1100 and 1599 px: the Ko-fi column is narrow, so its head stands its tile over its words
-   (the address never breaks inside a word, styles/v2.css .dhead__line, and must never be cut by the card's edge) */
-@media (min-width: 1100px) and (max-width: 1599px) {
-  .band--donate .kofi .dhead { flex-direction: column; align-items: flex-start; gap: 14px; }
+/* the donate band on a laptop and up (site loop v4 round 1, the critic: the compact Ko-fi card ended ~435 px above the
+   bank card's foot, a dead column of paper beside it): Ko-fi is one wide row over the bank card (its name, its cup, its
+   key), as on /donate/ beside the window; the bank card takes the panel's width (its QR beside its amounts at 1920) */
+@media (min-width: 1100px) {
+  .band--donate .donate { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .band--donate .kofi { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 18px 28px; }
+  .band--donate .kofi__stage { width: 132px; height: 104px; }
+  .band--donate .kofi__stage::after { top: calc(50% + 34px); }
+  .band--donate .kofi__cup { width: 80px; height: 64px; margin-top: 16px; }
+  .band--donate .kofi__cta { width: auto; }
 }
+
+/* the gallery's collage where it hangs over the paper's edge (site loop v4 round 1, the critic: the overhang read as a
+   stray seam, the panel's spine showing as a sliver between the rows): the collage is one mounted print, its seams the
+   deep tone, laid on the paper with the site's hard offset shadow, so the overhang reads as placed */
+@media (min-width: 700px) {
+  .band--gallery .collage { background: var(--tone-d); box-shadow: 8px 8px 0 var(--tone-d), 8px 8px 0 2px var(--ink); }
+}
+
+/* the strip's light under a fine pointer (motion/choreo.ts moves it along with the pointer, on its own layer): a soft
+   glare on the paper, shown while the strip is hovered */
+.band__glare {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -280px;
+  width: 560px;
+  background: radial-gradient(closest-side, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0.35) 55%, rgb(255 255 255 / 0));
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-std);
+  will-change: translate;
+  pointer-events: none;
+}
+.band__strip:hover .band__glare { opacity: 1; }
+
+/* while the choreography runs, it owns every entrance in a band (site loop v4 round 1, the critic: the docs rows came
+   in as faint ghosts): the page's own scroll reveal (styles/motion.css) stands down there, so nothing fades twice */
+[data-choreo] .band [data-reveal] { opacity: 1; animation: none; }
 
 /* the header takes a wash of the section you are in (site loop v3 round 1: the page's colour follows you up to the top
    edge; --sec-tone is set on the header by motion/choreo.ts on the home page only, so every other page keeps it white) */
-.hdr { background-color: color-mix(in srgb, var(--sec-tone, #fff) 12%, #fff); transition: background-color 0.45s var(--ease-std); }
+.hdr { background-color: color-mix(in srgb, var(--sec-tone, #fff) 16%, #fff); transition: background-color 0.45s var(--ease-std); }

@@ -31,7 +31,7 @@ The illustrations in the gallery are Dex's art and are shown only there. They ar
 ## Donating
 
 - **Ko-fi** takes you to [ko-fi.com/dexdonation](https://ko-fi.com/dexdonation).
-- **MB Bank** shows a VietQR code for Dex's account. By default it has no amount in it. Move the slider, from 100,000 to 10,000,000 VND, and the QR code gets that amount filled in. The code is made in your browser. Your banking app shows the account's real recipient name before you confirm.
+- **Personal bank** (Vietnamese banking) shows a VietQR code. By default it has no amount in it. Move the slider, from 100,000 to 10,000,000 VND, and the QR code gets that amount filled in. The code is made in your browser. Your banking app shows the account's real recipient name before you confirm.
 
 Donating never unlocks anything. Every file and every part of the world is the same whether you donate or not. Lists of donors aren't connected yet, and the site never shows made-up ones.
 

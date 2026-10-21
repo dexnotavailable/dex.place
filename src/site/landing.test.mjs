@@ -70,7 +70,7 @@ const real = loadContent(path.resolve(path.dirname(fileURLToPath(import.meta.url
 
 test("home: every section in Dex's order, each with the anchor the nav jumps to", () => {
   const html = landing(real);
-  const order = ["projects", "downloads", "gallery", "docs", "blog", "donate"];
+  const order = ["projects", "downloads", "gallery", "donate", "docs", "blog"];
   let at = -1;
   for (const id of order) {
     const i = html.indexOf(`id="${id}"`);

@@ -1,4 +1,4 @@
-// Donation amounts and QR text for the MB Bank card on /donate/. DOM-free, so
+// Donation amounts and QR text for the personal bank card on /donate/. DOM-free, so
 // the page prerenders the slider, chips and default QR at build time and the
 // browser module (motion/donate.ts) redraws with the same code.
 //
@@ -12,7 +12,7 @@
 //   then to 10,000,000 in 500,000s.
 
 import { qrSvg } from "./qr.ts";
-import { MAX_VND, MB_BANK, vietQrPayload } from "./vietqr.ts";
+import { MAX_VND, vietQrPayload } from "./vietqr.ts";
 
 export const SLIDER_MIN_VND = 100_000;
 export const SLIDER_MAX_VND = MAX_VND; // 10,000,000
@@ -80,16 +80,10 @@ export const QR_TAG_NONE = "No amount";
 /** Accessible name of the QR. */
 export function qrLabel(amount: number): string {
   const what = amount > 0 ? `${formatVnd(amount)} prefilled` : "no amount set";
-  return `VietQR code: ${MB_BANK.bank}, account ${MB_BANK.account}, ${MB_BANK.holder}, ${what}`;
+  return `VietQR code, ${what}`;
 }
 
 /** The QR as crisp SVG; 0 = the account-only code. Literal colours so it scans the same everywhere. */
 export function donateQr(amount: number): string {
   return qrSvg(vietQrPayload(amount), { dark: "#191919", light: "#ffffff", label: qrLabel(amount) });
-}
-
-/** Sentence under the bank card. */
-export function fineText(amount: number): string {
-  const filled = amount > 0 ? `with ${formatVnd(amount)} filled in` : "with no amount filled in";
-  return `Scan it in any Vietnamese banking app. It opens ${filled}; check the recipient name there before you confirm.`;
 }
