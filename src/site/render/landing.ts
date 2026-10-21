@@ -9,25 +9,26 @@
 
 import { downloads, formatBytes } from "../data/downloads.ts";
 import { projects, type Project } from "../data/projects.ts";
-import { cardArt } from "./cardart.ts";
 import { docsSection } from "./docs.ts";
 import { donateSection } from "./donate.ts";
 import { downloadsSection } from "./downloads.ts";
 import { gallerySection } from "./gallery.ts";
 import { button, counter, pageHead, sectionHead, tile } from "./glyphs.ts";
-import { chipsOf, primaryAction, projectCards } from "./pcard.ts";
+import { bannerHeader, projectBanners } from "./pbanner.ts";
+import { primaryAction, projectCards } from "./pcard.ts";
 import { cx, esc, pad2 } from "./html.ts";
 import type { SiteContent } from "./types.ts";
 
 // ------------------------------------------------------------------ home
 
-/** The first section of the website: the head, one card per project. (The page's h1, "dex", is on the game screen.) */
+/** The first section of the website: the head, one banner strip per project (Dex 10-22: "make the projects more like
+ *  banners, have them going in strips all the way down"). (The page's h1, "dex", is on the game screen.) */
 function projectsSection(): string {
   return (
     `<section class="sec sec--projects" id="projects" aria-labelledby="projects-title">` +
     `<div class="wrap">` +
     sectionHead({ id: "projects-title", kicker: "projects", title: "Projects", tone: "yellow", icon: "grid", aside: `${pad2(projects.length)} items`, more: { href: "/projects/", label: "Projects page" } }) +
-    projectCards(projects, { level: 3, here: "home" }) +
+    projectBanners(projects, { level: 3, here: "home" }) +
     `</div></section>`
   );
 }
@@ -56,15 +57,19 @@ export interface HomeBand {
   scene: string;
   /** The band's tone: its vivid mark colour (a token in styles/v2.css; its deep text tone is --<tone>-d). */
   tone: string;
-  /** The opening tag of the thing that hangs off the paper (the first one), or none (projects: its cards do). */
+  /** The opening tag of the thing that hangs off the paper (the first one), or none (projects: its banners do). */
   stitch?: string;
+  /** The opening tag of a block that plays its own entrance once the choreography says its panel is in (Dex 10-22, the
+   *  gallery's wall: the dex:panel-in event, lanes/site-art-1022/PLAN.md 8.1): marked data-self, the choreography leaves
+   *  it alone. */
+  self?: string;
 }
 
 /** The sections, in order, and how each meets the world. */
 export const HOME_BANDS: readonly HomeBand[] = [
   { id: "projects", side: "l", scene: "sky", tone: "amber" },
   { id: "downloads", side: "r", scene: "palace", tone: "jade", stitch: '<article class="dlf"' },
-  { id: "gallery", side: "l", scene: "isles", tone: "lagoon", stitch: '<div class="collage-box"' },
+  { id: "gallery", side: "l", scene: "isles", tone: "lagoon", stitch: '<div class="collage-box"', self: '<div class="collage-box"' },
   { id: "donate", side: "r", scene: "pine", tone: "rose", stitch: '<div class="qr"' },
   { id: "docs", side: "l", scene: "lake", tone: "indigo", stitch: '<section class="dgroup ' },
 ];
@@ -101,7 +106,8 @@ function panelMore(head: string): string {
 /** One section as a band: the world behind (fixed), the strip and the panel (the paper), the fore in front. */
 export function homeBand(b: HomeBand, i: number, n: number, section: string): string {
   const s = splitSection(section);
-  const body = b.stitch ? s.body.replace(b.stitch, `${b.stitch} data-stitch`) : s.body;
+  let body = b.stitch ? s.body.replace(b.stitch, `${b.stitch} data-stitch`) : s.body;
+  if (b.self) body = body.replace(b.self, `${b.self} data-self`);
   const open: Side = b.side === "l" ? "r" : "l";
   return (
     `<section class="band band--${b.side} band--${b.id} ${s.cls}" id="${s.id}" aria-labelledby="${s.label}" data-scene="${b.scene}" style="--band-i:${i};--tone:var(--${b.tone})">` +
@@ -128,7 +134,7 @@ export function projectsIndex(): string {
     `<div class="page page--projects">` +
     `<div class="wrap">` +
     pageHead({ kicker: "projects", title: "Projects", tone: "yellow", icon: "grid", aside: `${pad2(projects.length)} items` }) +
-    projectCards(projects, { level: 2, here: "page" }) +
+    projectBanners(projects, { level: 2, here: "page" }) +
     `</div></div>`
   );
 }
@@ -169,22 +175,16 @@ function others(p: Project): string {
 
 export function projectPage(p: Project): string {
   const at = projects.indexOf(p);
+  // the deep pages' kicker (render/deep.ts): the way back as breadcrumbs, the project's place among the three
+  const crumbs =
+    `<div class="dh__kicker">${tile("grid", p.tone, "s")}<span class="dh__slash" aria-hidden="true">//</span>` +
+    `<nav class="dh__crumbs" aria-label="Breadcrumb"><a href="/projects/">Projects</a></nav>` +
+    `<span class="dh__rule" aria-hidden="true"></span>${counter(at + 1, projects.length, "dh__aside")}</div>`;
   return (
     `<div class="page page--project">` +
     `<div class="wrap">` +
-    `<header class="proj proj--${p.tone}">` +
-    `<div class="proj__art" data-reveal="pop-block">${cardArt(p)}</div>` +
-    `<div class="proj__head">` +
-    // the deep pages' kicker (render/deep.ts): the way back as breadcrumbs, the project's place among the three
-    `<div class="dh__kicker">${tile("grid", p.tone, "s")}<span class="dh__slash" aria-hidden="true">//</span>` +
-    `<nav class="dh__crumbs" aria-label="Breadcrumb"><a href="/projects/">Projects</a></nav>` +
-    `<span class="dh__rule" aria-hidden="true"></span>${counter(at + 1, projects.length, "dh__aside")}</div>` +
-    `<h1 class="proj__title" data-reveal="pop-block">${esc(p.name)}</h1>` +
-    `<p class="proj__line" data-reveal style="--i:1">${esc(p.line)}</p>` +
-    `<div data-reveal style="--i:2">${chipsOf(p)}</div>` +
-    `<div class="proj__actions" data-reveal style="--i:3">${button(primaryAction(p, "m", "page"))}` +
-    `${button({ href: p.docs.href, label: p.docs.label, icon: "book", size: "m" })}</div>` +
-    `</div></header>` +
+    // (Dex 10-22, PLAN 5.4 "Pages") its banner is the page's header, in place of the lone card on white
+    bannerHeader(p, crumbs) +
     `<div class="proj__grid">` +
     `<section class="facts-wrap" aria-labelledby="facts-title">` +
     `<h2 class="proj__h2" id="facts-title">${tile("star", p.tone, "s")}<span>What it does</span></h2>` +

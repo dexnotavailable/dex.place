@@ -9,7 +9,11 @@
 // Imagery: each project's card art (Dex 10-19: splash art filling the whole card): Yuki for dexCode, Bao for dexClient,
 // Zhusha for dex.place. Since 10-20 the pictures Dex picked (GPT Image 2.5, AI-generated), each as a one-layer rig in
 // public/site/cards/<id>/ (art.webp + rig.json, lanes\cards\tools\picks_rig.py). The old stand-ins' plain layers
-// (0..2.png) stay as the fallback the build uses only if a rig cannot be read. Never Dex's own art here.
+// (0..2.png) stay as the fallback the build uses only if a rig cannot be read. (Until 10-22: "Never Dex's own art
+// here".) Dex 10-22: "The art can be used for both gallery and on background layers": since then each project's banner
+// strip (render/pbanner.ts) layers Dex's own drawings around this card art: his painted plate behind, his ink slashes
+// across, his fx in front (web cuts of his PSDs in public/site/banners/<id>/, never the sources). The card art itself
+// stays these picks, pixels unchanged.
 
 import type { IconName } from "../pixels.ts";
 

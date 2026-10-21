@@ -21,7 +21,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type Lenis from "lenis";
 import {
-  CONTENT_GATE, FAST_N, FAST_V, HEAD_LEAD, PANEL_AT, PANEL_TIME, PHONE_TIME, SETTLE_TIME, SPINE_AT, STRIP_START, contentFrom,
+  BANNER_AT, CONTENT_GATE, FAST_N, FAST_V, HEAD_LEAD, PANEL_AT, PANEL_IN_AT, PANEL_IN_EVENT, PANEL_TIME, PHONE_TIME, SETTLE_TIME,
+  SPINE_AT, STRIP_START, contentFrom,
   foreY, isBelow, latch, liftY, onScreen, panelFrom, speedOf, stitchFrom, stripEnd, stripPose, worldShift, type Side,
   type Variant,
 } from "./choreo-plan.ts";
@@ -176,7 +177,9 @@ export function initChoreo(fine: MediaQueryList): void {
       }
     }
 
-    // --- the cards (lane K): their deck, primed or settled with their band, played when the projects panel is in
+    // --- the projects (Dex 10-22: banner strips running down the panel; lane K's deck contract, motion/pbanner.ts):
+    // primed or settled with their band; once its gate opens, each banner enters on its own as it reaches 85% of the
+    // screen, on every width (a band that came in fast plays them at four times the pace)
     const list = document.querySelector<HTMLElement>("#projects [data-pcards]");
     const projects = bands.find((b) => b.el.id === "projects");
     let deckGone = false;
@@ -187,18 +190,28 @@ export function initChoreo(fine: MediaQueryList): void {
         const d = m.initCards(list, { reduced: false, fine: fine.matches, velocity: () => speed.n });
         deck = d;
         const lis = Array.from(list.children) as HTMLElement[];
-        // (site loop v4 round 1, the critic's fling frame: ~0.26 s into a fling the projects paper stood near empty, two
-        // cards still slivers): a band that came in fast plays the deck's entrance at four times its pace
+        let waiting: { kill(): void }[] = [];
+        const drop = (): void => { for (const st of waiting) st.kill(); waiting = []; };
         const play = (fast = false): void => {
-          if (phone) {
-            lis.forEach((li, i) => ScrollTrigger.create({
-              trigger: li, start: "clamp(top 88%)", once: true,
-              onEnter: (st) => d.entrance({ side: i % 2 ? "r" : "l", index: i, solid: true }).timeScale(fast || Math.abs(st.getVelocity()) >= FAST_V ? 4 : 1).play(),
+          drop();
+          let up = 0;
+          lis.forEach((li, i) => {
+            const go = (quick: boolean): void => { d.entrance({ side: "l", index: i }).timeScale(quick ? 4 : 1).play(); };
+            // (already up the screen as the gate opens: now, one after another)
+            if (li.getBoundingClientRect().top < innerHeight * BANNER_AT) {
+              const k = up++;
+              if (k === 0) go(fast);
+              else waiting.push(gsap.delayedCall(k * (fast ? 0.04 : 0.16), () => go(fast)));
+              return;
+            }
+            waiting.push(ScrollTrigger.create({
+              trigger: li, start: `top ${Math.round(BANNER_AT * 100)}%`, once: true,
+              onEnter: (st) => go(fast || Math.abs(st.getVelocity()) >= FAST_V),
             }));
-          } else d.entrance({ side: "l", solid: true }).timeScale(fast ? 4 : 1).play();
+          });
         };
-        // a band already landed (arm time, or set while the deck was on its way) has its cards simply there; else they
-        // wait out of sight and enter as its gate opens, the paper ~60% in (a settle on the screen opens the gate: they
+        // a band already landed (arm time, or set while the deck was on its way) has its banners simply there; else
+        // they wait out of sight and enter one by one once its gate opens (a settle on the screen opens the gate: they
         // still enter)
         if (projects.landed) d.settle();
         else {
@@ -207,20 +220,19 @@ export function initChoreo(fine: MediaQueryList): void {
           else projects.onGate = play;
         }
         const oldReset = projects.reset, oldSettle = projects.settle;
-        projects.reset = () => { oldReset(); d.reset(); projects.onGate = play; };
+        projects.reset = () => { oldReset(); drop(); d.reset(); projects.onGate = play; };
         projects.settle = (now) => {
           const set = oldSettle(now);
-          if (set) d.settle();
+          if (set) { drop(); d.settle(); }
           return set;
         };
         ScrollTrigger.create({ trigger: projects.el, start: "top bottom", end: "bottom top", onToggle: (st) => d.live(st.isActive) });
-        // the cascade breathes with the scroll (desktop): the second and third cards ride a little
-        if (desktop && lis.length >= 3) {
-          gsap.fromTo(lis[1]!, { y: 24 }, { y: -24, ease: "none", scrollTrigger: { trigger: projects.el, start: "top bottom", end: "bottom top", scrub: 0.6 } });
-          gsap.fromTo(lis[2]!, { y: 48 }, { y: -48, ease: "none", scrollTrigger: { trigger: projects.el, start: "top bottom", end: "bottom top", scrub: 0.6 } });
+        // the strips breathe with the scroll (desktop): the stepped middle one rides a little against the others
+        if (desktop && lis.length >= 2) {
+          gsap.fromTo(lis[1]!, { y: 14 }, { y: -14, ease: "none", scrollTrigger: { trigger: projects.el, start: "top bottom", end: "bottom top", scrub: 0.6 } });
         }
         ScrollTrigger.refresh();
-      }, (error: unknown) => console.error("[site] cards failed", error));
+      }, (error: unknown) => console.error("[site] banners failed", error));
     }
 
     // --- the header: a scroll progress line across its foot
@@ -426,12 +438,16 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
   const panel = q(".band__panel")!, paper = q(".band__paper")!, shade = q(".band__shade")!, spine = q(".band__spine");
   const site = q(".band__site")!, fore = q(".band__fore");
   const head = q(".band__in");
-  const stitch = q("[data-stitch]");
+  // (Dex 10-22: what plays its own entrance on dex:panel-in, the gallery's wall and the donate decor, PLAN 8.1, is left
+  // alone: a block that is or holds [data-self])
+  const own = (x: HTMLElement): boolean => x.matches("[data-pcards], [data-self]") || !!x.querySelector("[data-self]");
   const blocks = Array.from(el.querySelectorAll<HTMLElement>(".band__panel > .wrap > *"));
+  const stitch0 = q("[data-stitch]");
+  const stitch = stitch0 && !blocks.some((x) => x.contains(stitch0) && own(x)) ? stitch0 : null;
   // what unrolls solid: the stitch, or the block that holds it (site loop v3 round 2: the downloads file card sat in a
   // list that faded in as one, so the card faded with it and the palace showed through its overhang)
   const unroll = stitch ? (blocks.find((x) => x.contains(stitch)) ?? stitch) : null;
-  const items = blocks.filter((x) => !x.matches("[data-pcards]") && x !== unroll);
+  const items = blocks.filter((x) => !own(x) && x !== unroll);
   // (site loop v3 round 1: everything slides out from under the layer above it, the strip over its panel)
   const variant: Variant = "drop";
   const from = contentFrom(variant, s, phone);
@@ -497,6 +513,15 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     scene: null, shades: [stripShade, shade], lastWx: NaN, lastWy: NaN, lastSx: NaN, lastSy: NaN,
     settle: () => false,
     reset: () => {},
+  };
+
+  // the panel is in (its paper PANEL_IN_AT through its slide, or set): the page hears it once per entrance
+  let panelSaid = false;
+  const sayPanelIn = (): void => {
+    if (panelSaid) return;
+    panelSaid = true;
+    el.setAttribute("data-panel-in", "");
+    document.dispatchEvent(new CustomEvent(PANEL_IN_EVENT, { detail: { id: el.id } }));
   };
 
   let gateCall: gsap.core.Tween | null = null;
@@ -599,7 +624,11 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
   const playPanel = (dur: number, fast = false): void => {
     if (b.panelIn) return;
     b.panelIn = true;
-    gsap.to(sheet, { xPercent: 0, duration: dur, ease: "expo.out", onComplete: () => { b.panelDone = true; done(); } });
+    gsap.to(sheet, {
+      xPercent: 0, duration: dur, ease: "expo.out",
+      onUpdate() { if (this.ratio >= PANEL_IN_AT) sayPanelIn(); },
+      onComplete: () => { b.panelDone = true; sayPanelIn(); done(); },
+    });
     gsap.to(shade, { opacity: 1, duration: dur * 0.5, ease: "power1.out" });
     if (spine) gsap.to(spine, { scaleY: 1, duration: 0.7 * T, ease: "expo.out", delay: dur * SPINE_AT });
     if (fast || Math.abs(speed.n) >= FAST_N) ride(dur);
@@ -628,6 +657,8 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     for (const x of items) landedItems.delete(x);
     if (stitch && unroll) { delete stitch.dataset.landed; gsap.set(unroll, stitchFrom(phone)); }
     b.queue = [];
+    panelSaid = false;
+    el.removeAttribute("data-panel-in");
   };
   // off the screen: simply set (nobody sees it); nothing waits on the gate any more (the deck settles with it)
   const setDone = (): void => {
@@ -645,6 +676,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     if (stitch) stitch.dataset.landed = "";
     b.queue = [];
     b.onGate = null;
+    sayPanelIn();
   };
   // on the screen: the rest of the entrance plays out (never a pop): the strip the rest of its way, its head, the
   // panel, then everything still waiting lands together

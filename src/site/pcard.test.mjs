@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { cardArt } from "./render/cardart.ts";
-import { landing } from "./render/landing.ts";
+import { landing, projectPage } from "./render/landing.ts";
 import { projects, projectHref } from "./data/projects.ts";
 import { downloads } from "./data/downloads.ts";
 
@@ -144,8 +144,11 @@ test("Dex 10-19 'vector is best; some web elements don't necessarily need to be 
 });
 
 test("the seam (DESIGN-1019 7.1): the cards live in their own files, the deck keeps the contract G drives", async () => {
-  const html = landing(content);
-  assert.match(html, /<ul class="pcards" data-pcards="home">/);
+  // (Dex 10-22: home and /projects/ show the projects as banner strips, render/pbanner.ts; the cards stay as a project
+  // page's "other projects". Both lists are data-pcards, so G and main.ts find either; a banner list is data-pban)
+  assert.match(landing(content), /<ul class="pbans" data-pcards="home" data-pban>/);
+  const page = projectPage(projects[0]);
+  assert.match(page, /<ul class="pcards pcards--two" data-pcards="page">/);
   const landingCss = readFileSync(new URL("./styles/landing.css", import.meta.url), "utf8");
   assert.doesNotMatch(landingCss, /\.pcard(?:__|--|[\s{:,.])|\.cart(?:__|--)|\.rig__|@keyframes (?:cart|rig)-/, "no card rules left in landing.css (only the .pcards placement)");
   const site = readFileSync(new URL("./styles/site.css", import.meta.url), "utf8");
@@ -154,15 +157,22 @@ test("the seam (DESIGN-1019 7.1): the cards live in their own files, the deck ke
   for (const k of ["prime", "entrance", "settle", "reset", "live", "destroy"]) assert.match(ts, new RegExp(`\\b${k}\\(`), k);
   assert.match(ts, /export function initCards\(list: HTMLElement, \w+: CardHost\): CardDeck/);
   assert.doesNotMatch(ts, /from "gsap\/ScrollTrigger"/, "K never uses ScrollTrigger");
+  // a banner list goes to the banner deck, under the same contract
+  assert.match(ts, /if \(list\.hasAttribute\("data-pban"\)\) return initBanners\(list, given\);/);
+  const ban = readFileSync(new URL("./motion/pbanner.ts", import.meta.url), "utf8");
+  for (const k of ["prime", "entrance", "settle", "reset", "live", "destroy"]) assert.match(ban, new RegExp(`\\b${k}\\b`), `banner ${k}`);
+  assert.match(ban, /export function initBanners\(list: HTMLElement, given: CardHost\): CardDeck/);
+  assert.doesNotMatch(ban, /from "gsap\/ScrollTrigger"/, "the banners never use ScrollTrigger (G triggers them)");
   // the art is not magnet.ts's to tilt any more
   for (const p of projects) assert.doesNotMatch(cardArt(p), /data-tilt-scene/);
 });
 
 test("the card's DOM (DESIGN-1019 5.2): one owner per wrapper, the hero accents, chrome, foot and the numeral in the art", async () => {
-  const html = landing(content);
   const heroes = { dexcode: ["Yuki", "cyan"], dexclient: ["Bao", "yellow"], "dex-place": ["Zhusha", "magenta"] };
   for (const p of projects) {
     assert.deepEqual([p.hero, p.tone], heroes[p.id], `${p.id}: hero and accent`);
+    // (the cards since Dex 10-22: a project page's "other projects")
+    const html = projectPage(projects.find((o) => o.id !== p.id));
     const start = html.indexOf(`<li class="pcards__it" data-pcard="${p.id}"`);
     assert.ok(start >= 0, `${p.id}: li[data-pcard]`);
     const li = html.slice(start, html.indexOf("</li>", start) + 5);

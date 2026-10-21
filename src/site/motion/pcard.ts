@@ -14,6 +14,7 @@
 // The idle loops are CSS (compositor); this file only pauses them off screen (.is-off) and while G says so (live).
 
 import { gsap } from "gsap";
+import { initBanners } from "./pbanner.ts";
 
 export interface CardHost {
   /** prefers-reduced-motion: reduce */
@@ -180,8 +181,10 @@ async function loadLines(c: Card): Promise<void> {
   c.paper = paper;
 }
 
-/** list = the ul[data-pcards]. Without a host.velocity (deep pages), there is no skew. */
+/** list = the ul[data-pcards]. Without a host.velocity (deep pages), there is no skew. A banner list (Dex 10-22: the
+ *  projects as banner strips, ul[data-pban]) gets the banner deck (motion/pbanner.ts), under the same contract. */
 export function initCards(list: HTMLElement, given: CardHost): CardDeck {
+  if (list.hasAttribute("data-pban")) return initBanners(list, given);
   const known = decks.get(list);
   const host: CardHost = { ...given };
   if (known) {

@@ -39,6 +39,14 @@ export const SPINE_AT = 0.55;
 export const SETTLE_TIME = 0.45;
 /** (v2) The stitch was opaque this soon (s); since v3 round 1 it is never see-through at all (it unrolls, solid). */
 export const STITCH_FADE = 0.14;
+/** Each project banner (Dex 10-22: strips running down the projects panel) enters on its own once its top is this far
+ *  down the screen (a share of its height), on every width. */
+export const BANNER_AT = 0.85;
+/** A band's panel is "in" (its paper this far through its slide, eased) when the choreography tells the page so: a
+ *  document event per band, again after a reset replays it (lanes\site-art-1022\PLAN.md 8.1: the gallery wall and the
+ *  donate decor play their own entrances on it), and data-panel-in on the band meanwhile. */
+export const PANEL_IN_AT = 0.85;
+export const PANEL_IN_EVENT = "dex:panel-in";
 /** Phones run every duration at this share. */
 export const PHONE_TIME = 0.8;
 

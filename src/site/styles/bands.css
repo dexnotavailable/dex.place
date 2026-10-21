@@ -97,17 +97,19 @@
 @media (min-width: 700px) {
   .band { --panel-w: calc(100vw - 48px); }
 }
+/* (Dex 10-22: "extend the website plate to the right a little over the world layer, make it a little more dominant";
+   PLAN 5.3) 6-10% of the screen wider on a desktop: the paper leads, the world frames it */
 @media (min-width: 1100px) {
-  .band--projects { --panel-w: 52vw; }
-  .band--downloads, .band--docs { --panel-w: 60vw; }
-  .band--gallery { --panel-w: 66vw; }
-  .band--donate { --panel-w: 56vw; }
+  .band--projects { --panel-w: 62vw; }
+  .band--downloads, .band--docs { --panel-w: 64vw; }
+  .band--gallery { --panel-w: 70vw; }
+  .band--donate { --panel-w: 62vw; }
 }
 @media (min-width: 1600px) {
-  .band--projects { --panel-w: 50vw; }
-  .band--downloads, .band--docs { --panel-w: 56vw; }
-  .band--gallery { --panel-w: 64vw; }
-  .band--donate { --panel-w: 50vw; }
+  .band--projects { --panel-w: 60vw; }
+  .band--downloads, .band--docs { --panel-w: 62vw; }
+  .band--gallery { --panel-w: 68vw; }
+  .band--donate { --panel-w: 58vw; }
 }
 
 /* the world: its place, fixed to the screen, shown from the strip's bottom edge to the next strip's bottom edge, so a
@@ -215,9 +217,10 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  /* (the digits stand on the baseline, low in their line box: lifted to the strip's middle) */
+  /* (the digits stand on the baseline, low in their line box: lifted to the strip's middle) (Dex 10-22, PLAN 5.3: they
+     read as cut off) whole, right-aligned inside the outer margin */
   padding-bottom: 0.28em;
-  margin-right: -0.36em;
+  margin-right: var(--edge-out);
   font: 400 calc(var(--num-px) * 25px) / 1 var(--f-title);
   letter-spacing: calc(var(--num-px) * 1px);
   /* (site loop v4 round 1, the critic: "pale outlines that fade into" the paper): solid in the band's tone, standing
@@ -228,9 +231,10 @@
   -webkit-font-smoothing: none;
   pointer-events: none;
 }
-.band--r .band__strip-paper::before { justify-content: flex-start; margin-right: 0; margin-left: -0.36em; }
-/* (whole font pixels: 4 css px each on a laptop, 6 on a wide screen; what shows of it, past the bleed) */
-.band { --num-px: 4; --num-vis: calc(var(--num-px) * 29px); }
+.band--r .band__strip-paper::before { justify-content: flex-start; margin-right: 0; margin-left: var(--edge-out); }
+/* (whole font pixels: 4 css px each on a laptop, 6 on a wide screen; --num-vis: where the right-docked strips' kicker
+   row starts; --num-end: what the left-docked strips' head keeps clear of, the whole numeral and its margin) */
+.band { --num-px: 4; --num-vis: calc(var(--num-px) * 29px); --num-end: calc(var(--num-px) * 38px + var(--edge-out)); }
 @media (min-width: 1600px) {
   .band { --num-px: 6; }
 }
@@ -275,9 +279,9 @@
 /* the band's keys pop in its tone (site loop v2 round 1): the hover shadow, and a paper key's fill a wash of it (ink
    stays on near-white: AA holds); the cards' keys are lane K's */
 .band { --tone-t: color-mix(in srgb, var(--tone) 16%, #fff); }
-.band :is(.btn, .pop):not(.pcard *) { --pop-hi: var(--band-tone); }
+.band :is(.btn, .pop):not(.pcard *, .pban *) { --pop-hi: var(--band-tone); }
 @media (hover: hover) {
-  .band .btn--paper:not(.pcard *):hover { --btn-bg: var(--tone-t); }
+  .band .btn--paper:not(.pcard *, .pban *):hover { --btn-bg: var(--tone-t); }
   /* (site loop v3 round 5: the Ko-fi card went from its deep rose edge to a paler pink on hover, and a post's arrow to
      the site's azure in every band) a hover deepens into the band's own tone, never away from it */
   .band .kofi:hover { border-color: var(--tone-d); box-shadow: 7px 7px 0 var(--tone-d); }
@@ -306,21 +310,18 @@
   .band--r .sh--strip .sh__more { left: auto; right: calc(var(--panel-w) - var(--edge-in) + 28px); }
   .band--r .band__strip-paper::before {
     margin-left: max(0px, calc(100% - var(--panel-w) + var(--edge-in) - 56px - var(--key-w) - var(--num-w)));
-    /* (standing on the strip's foot, sunk a little into it, it clears the kicker's rule above: the numerals bleed off
-       an edge here too, the bottom one) */
+    /* (standing on the strip's foot it clears the kicker's rule above) (Dex 10-22, PLAN 5.3: sunk into the hem they read
+       as cut off) whole, their foot just above the hem */
     align-items: flex-end;
     padding-bottom: 0;
-    margin-bottom: -0.16em;
-    /* (site loop v4 round 1: solid now, the digits' foot lapping ~20 px over the place below read as a glitch) they are
-       cut at the strip's hem: sunk into it, never on the world */
-    clip-path: inset(0 0 0.16em 0);
+    margin-bottom: 0.06em;
   }
   /* ...and its kicker row (the index, the rule, the aside) starts right over the key (site loop v3 round 1: on a wide
      screen ~590 px of bare strip lay between the key and the title): the rule runs the strip's width, as on the
      left-docked bands; the title stays where its panel's content starts. (100vw, not the strip's width: off by a
      scrollbar at most, in where the row starts) */
   .band--r .sh--strip .sh__kicker { margin-left: calc(var(--num-vis) + 28px + var(--panel-w) - var(--edge-in) - 100vw); }
-  .band--l .band__in { padding-right: calc(var(--num-vis) + 28px); }
+  .band--l .band__in { padding-right: calc(var(--num-end) + 28px); }
 }
 
 /* ---- the panel: docked flush to its side, the paper behind the content, a spine on its open edge */
@@ -339,9 +340,11 @@
     --line-2: var(--tone-d, #8a8094);
   }
 }
-/* the shade falls past the open edge and down past the foot (the paper lies on the world, never looks clipped) */
-.band__shade { position: absolute; inset: 0; z-index: 1; box-shadow: 24px 24px 64px -28px var(--shade-c); }
-.band--r .band__shade { box-shadow: -24px 24px 64px -28px var(--shade-c); }
+/* the shade falls past the open edge and down past the foot (the paper lies on the world, never looks clipped); (Dex
+   10-22, "a little more dominant") a step deeper and longer, so the wider paper reads as lying over the world */
+.band { --panel-shade-c: color-mix(in srgb, var(--tone-d, #162c60) 50%, transparent); }
+.band__shade { position: absolute; inset: 0; z-index: 1; box-shadow: 32px 24px 72px -26px var(--panel-shade-c); }
+.band--r .band__shade { box-shadow: -32px 24px 72px -26px var(--panel-shade-c); }
 /* the spine glows its tone onto the world (a still shadow: it rides the paper's own layer) */
 .band__spine { position: absolute; top: 0; bottom: 0; right: 0; width: 6px; background: var(--tone, var(--gold)); }
 .band--r .band__spine { left: 0; right: auto; }
@@ -409,31 +412,37 @@
 .band--l [data-stitch] { position: relative; z-index: 4; margin-right: calc(-1 * (var(--edge-in) + var(--overhang))); }
 .band--r [data-stitch] { position: relative; z-index: 4; margin-left: calc(-1 * (var(--edge-in) + var(--overhang))); }
 
-/* ---- the projects: three cards in a stepped row, the second over the paper's edge, the third on the world.
-   G places the cards' outer boxes only (the contract with lane K, lanes/motion/NOTEBOOK.md): width, step, shift. */
-.band--projects .pcards {
+/* ---- the projects (Dex 10-22: "make the projects more like banners, have them going in strips all the way down";
+   PLAN 5.4): three banner strips stacked down the panel, each from the outer margin to past the paper's edge onto the
+   world (96 px at 1920, 64 at 1366, none on a tablet, 12 on a phone), the middle one stepped toward the world so the
+   strips zig-zag. G places the list and its items only (the contract with the banners, render/pbanner.ts): width, gap,
+   overhang, step. */
+.band--projects {
+  --ban-over: 12px;
+  --ban-gap: 24px;
+  --ban-step: 8px;
+}
+@media (min-width: 700px) {
+  .band--projects { --ban-over: 0px; --ban-gap: 28px; --ban-step: 4vw; }
+}
+@media (min-width: 1100px) {
+  .band--projects { --ban-over: 64px; --ban-gap: 28px; }
+}
+@media (min-width: 1600px) {
+  .band--projects { --ban-over: 96px; --ban-gap: 36px; }
+}
+.band--projects .pbans {
   position: relative;
   z-index: 4;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--card-gap);
-  width: max-content;
-  max-width: none;
-  margin: 0;
+  display: grid;
+  gap: var(--ban-gap);
+  margin: 0 calc(-1 * (var(--edge-in) + var(--ban-over))) 0 0;
   padding: 0;
   list-style: none;
 }
-.band--projects .pcards > * { flex: none; width: var(--card-w); }
-.band--projects .pcards > :nth-child(2) { margin-top: calc(var(--card-w) * 0.08); }
-.band--projects .pcards > :nth-child(3) { margin-top: calc(var(--card-w) * 0.16); }
-@media (max-width: 1099px) {
-  .band--projects .pcards { flex-direction: column; width: 100%; }
-  .band--projects .pcards > :nth-child(n) { margin-top: 0; }
-  .band--projects .pcards > :nth-child(2) { align-self: flex-end; }
-}
-@media (max-width: 699px) {
-  .band--projects .pcards > :nth-child(2) { align-self: flex-start; margin-left: 28px; }
-}
+.band--projects .pbans > * { min-width: 0; }
+.band--projects .pbans > :nth-child(2) { margin-inline: var(--ban-step) calc(-1 * var(--ban-step)); }
+/* (a tablet's strip has no overhang: the stepped one lands on the world strip beside the paper, the others stay on it) */
 
 /* ---- the fore: a piece of the world in front of the paper's open corner (z5), never over text: it laps the paper's
    bottom padding (a foot corner) or its open-side margin (a top corner) */
@@ -450,6 +459,12 @@
   /* (site loop v3 round 5: its left quarter still lapped the outer column's last tile by ~40 px, over the lettering)
      it starts just past the column's outer edge */
   .band--l.band--gallery > .band__fore { left: calc(var(--panel-w) + var(--edge-in) + var(--overhang) + 16px); }
+}
+/* the projects' (Dex 10-22, the banner strips): the strips run to past the paper's edge, so on a laptop and up it stands
+   on the world just beyond their overhang, never over the last strip's hero (lapping the paper's foot corner it hid
+   ~100 px of it, 1100 to 2560) */
+@media (min-width: 1100px) {
+  .band--l.band--projects > .band__fore { left: calc(var(--panel-w) + var(--ban-over) + 32px); }
 }
 /* a top corner (downloads: R, the banners hang; donate: R, the pine) */
 .band--r.band--downloads > .band__fore {

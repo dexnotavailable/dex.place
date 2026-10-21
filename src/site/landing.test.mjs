@@ -47,11 +47,13 @@ test("download state comes from data/downloads.ts, never invented", () => {
   }
 });
 
-test("no Dex art outside the gallery, and #world only on the root page", () => {
+test("no gallery pieces outside the gallery, and #world only on the root page", () => {
   for (const html of [landing(content), projectsIndex(), ...projects.map(projectPage)]) {
     assert.ok(!/src="\/gallery\//.test(html));
-    // the only pictures are the projects' own card art
-    for (const [, src] of html.matchAll(/<img [^>]*src="([^"]+)"/g)) assert.match(src, /^\/site\/cards\//);
+    // the only pictures are the projects' own card art and, since Dex 10-22 ("The art can be used for both gallery and
+    // on background layers"), his own layers around it on the project banners (web cuts, decorative)
+    for (const [, src] of html.matchAll(/<img [^>]*src="([^"]+)"/g)) assert.match(src, /^\/site\/(cards|banners)\//);
+    for (const [img] of html.matchAll(/<img [^>]*src="\/site\/banners\/[^>]*>/g)) assert.match(img, /alt="" width="2400" height="720" loading="lazy" decoding="async"/);
   }
   for (const html of [projectsIndex(), ...projects.map(projectPage)]) {
     assert.ok(!/href="#world"/.test(html));
@@ -86,15 +88,23 @@ test("home: every section in Dex's order, each with the anchor the nav jumps to"
   for (const p of real.posts) assert.ok(html.includes(`href="${p.url}"`), p.url);
 });
 
-test("home: Dex's art appears only inside the collage", () => {
+test("home: the gallery's pieces appear only inside the collage; Dex's layers elsewhere only as decor", () => {
   const html = landing(real);
   const start = html.indexOf(`<div class="collage-box"`);
   const end = html.indexOf(`</ul></div>`, start);
   assert.ok(start > 0 && end > start);
   const outside = html.slice(0, start) + html.slice(end);
   // (The viewer dialog has two empty <img> slots it fills from the collage.)
-  // (and the projects' card art is our own pixel art from /site/cards/, never Dex's)
-  assert.doesNotMatch(outside.replace(/<img class="viewer__(lo|hi)" alt="" data-viewer-(lo|hi) \/>/g, "").replace(/<img class="(?:cart__l|rig__p)" [^>]*src="\/site\/cards\/[^>]*>/g, ""), /<img /);
+  // (and the projects' card art is the picks from /site/cards/)
+  // (Dex 10-22: "The art can be used for both gallery and on background layers": the project banners' layers, his plate,
+  // ink slash and fx, from /site/banners/, decorative)
+  assert.doesNotMatch(
+    outside
+      .replace(/<img class="viewer__(lo|hi)" alt="" data-viewer-(lo|hi) \/>/g, "")
+      .replace(/<img class="(?:cart__l|rig__p)" [^>]*src="\/site\/cards\/[^>]*>/g, "")
+      .replace(/<img class="pban__(?:back|slash|fx)" src="\/site\/banners\/[^>]*alt=""[^>]*>/g, ""),
+    /<img /,
+  );
   assert.doesNotMatch(outside, /(src|srcset)="\/gallery\//);
 });
 

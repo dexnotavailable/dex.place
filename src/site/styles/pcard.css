@@ -1,3 +1,6 @@
+/* the project banners (Dex 10-22), lane G's home and /projects/ strips: their own sheet */
+@import "./pbanner.css";
+
 /* The project cards (lane K, lanes\motion\DESIGN-1019.md section 5). Markup: render/pcard.ts, the art:
    render/cardart.ts, motion: motion/pcard.ts. Lane G places the list and its items (styles/landing.css .pcards,
    .pcards__it); everything inside an item is here. */

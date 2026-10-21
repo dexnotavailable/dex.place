@@ -63,6 +63,8 @@ export interface CardArtExtras {
   numeral?: string;
   /** The card's foot scrim and the pointer glare. */
   card?: boolean;
+  /** A banner's hero window (render/pbanner.ts): decorative (the banner's name says what it is), no chrome of its own. */
+  decor?: boolean;
 }
 
 /** One rig part as a layer: the wrapper (motion/pcard.ts moves it by depth) and the part (CSS plays its motions). */
@@ -101,7 +103,7 @@ const hasLines = (p: Project): boolean => existsSync(new URL(`../../../public/si
 
 /** On a card the art is decorative (the card's name says what it is); elsewhere (the project page) it is a picture. */
 const a11y = (p: Project, extras: CardArtExtras): string =>
-  !extras.card && p.art.alt
+  !extras.card && !extras.decor && p.art.alt
     ? `role="img" aria-label="${esc(`${p.art.alt}${p.art.credit ? ` ${p.art.credit}.` : ""}`)}"`
     : `aria-hidden="true"`;
 
@@ -122,7 +124,7 @@ function rigArt(p: Project, rig: RigV2, className?: string, extras: CardArtExtra
     `style="${artVars(rig)}">` +
     `<div class="cart__art">${art}</div>` +
     (extras.card ? `<span class="cart__scrim"></span><span class="cart__glare"></span>` : "") +
-    `<span class="cart__shine"></span></div>`
+    (extras.decor ? "" : `<span class="cart__shine"></span>`) + `</div>`
   );
 }
 

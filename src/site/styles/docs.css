@@ -81,8 +81,42 @@
   .dlink__go { margin-left: auto; }
 }
 
+/* ---- Dex's ink (Dex 10-22: "The art can be used for both gallery and on background layers"; lanes\site-art-1022\PLAN.md
+   5.4 P4): his brush strokes (shot 15's ink, public/site/docs/ink-*.webp) ruled over the rows between the doc groups,
+   alternating ends, a heavier one between the docs and the blog; decor only, under nothing you read */
+.dgroup + .dgroup { position: relative; }
+.dgroup + .dgroup::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: -9px;
+  left: -4px;
+  width: min(62%, 560px);
+  height: 16px;
+  background: url("/site/docs/ink-1.webp") 0 50% / 100% 100% no-repeat;
+  pointer-events: none;
+}
+.dgroup + .dgroup:nth-child(odd)::before { left: auto; right: -4px; background-image: url("/site/docs/ink-3.webp"); }
 /* ---------------------------------------------------- part bars (home) */
-.blogpart { margin-top: var(--s-8); }
+.blogpart { position: relative; margin-top: var(--s-8); }
+.blogpart::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--s-8) + 6px);
+  left: -6px;
+  width: min(48%, 236px);
+  height: calc(var(--s-8) - 12px);
+  background: url("/site/docs/ink-2.webp") 0 50% / contain no-repeat;
+  pointer-events: none;
+}
+/* ...and along the docs band's paper foot, his a16 grass lines (first png.kra) at 30% ink: on the paper itself, so they
+   ride in with it (a paper wash over the strip keeps them faint) */
+.band--docs .band__paper {
+  background:
+    linear-gradient(color-mix(in srgb, var(--paper) 70%, transparent), color-mix(in srgb, var(--paper) 70%, transparent)) 0 100% / 100% 72px no-repeat,
+    url("/site/docs/grass.webp") 0 100% / auto 72px repeat-x,
+    var(--paper);
+}
 .btools {
   display: flex;
   flex-wrap: wrap;

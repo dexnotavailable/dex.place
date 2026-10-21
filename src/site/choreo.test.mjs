@@ -97,10 +97,26 @@ test("choreo wiring: home only, never with reduced motion, lazy (load + mark + i
   assert.match(choreo, /await import\("lenis"\)/);
   assert.doesNotMatch(choreo, /^import Lenis from "lenis"/m);
   assert.match(choreo, /prevent: \(node\) => node\.matches\("dialog, \[popover\], iframe, \.world, \[data-lenis-prevent\]"\)/);
-  // the cards: K's deck through its contract only (G never reaches inside the li)
+  // the projects: K's deck contract only (G never reaches inside the li); Dex 10-22, the banner strips: each enters on its
+  // own as its top reaches 85% of the screen, on every width (lanes/site-art-1022/PLAN.md 5.4)
   assert.match(choreo, /m\.initCards\(list, \{ reduced: false, fine: fine\.matches, velocity: \(\) => speed\.n \}\)/);
-  for (const call of ["d.settle()", "d.prime()", "d.entrance({ side: \"l\", solid: true }).timeScale(fast ? 4 : 1).play()", "d.reset()", "d.live(st.isActive)"]) assert.ok(choreo.includes(call), call);
-  assert.doesNotMatch(choreo, /\.pcard__|\.cart\b/, "nothing inside a card");
+  for (const call of ["d.settle()", "d.prime()", "d.entrance({ side: \"l\", index: i }).timeScale(quick ? 4 : 1).play()", "d.reset()", "d.live(st.isActive)"]) assert.ok(choreo.includes(call), call);
+  assert.ok(choreo.includes("trigger: li, start: `top ${Math.round(BANNER_AT * 100)}%`, once: true"), "one trigger per banner");
+  assert.doesNotMatch(choreo, /if \(phone\) \{\n\s+lis\.forEach/, "the same on every width");
+  assert.doesNotMatch(choreo, /\.pcard__|\.pban__|\.cart\b/, "nothing inside a card or a banner");
+  // the panel-in event (PLAN 8.1): once per entrance at PANEL_IN_AT of the paper's slide, on every settle, again after a
+  // reset; a block that plays its own entrance on it (data-self: the gallery's wall) is left alone
+  const plan = src("./motion/choreo-plan.ts");
+  assert.match(plan, /export const BANNER_AT = 0\.85;/);
+  assert.match(plan, /export const PANEL_IN_AT = 0\.85;/);
+  assert.match(plan, /export const PANEL_IN_EVENT = "dex:panel-in";/);
+  assert.match(choreo, /document\.dispatchEvent\(new CustomEvent\(PANEL_IN_EVENT, \{ detail: \{ id: el\.id \} \}\)\)/);
+  assert.match(choreo, /onUpdate\(\) \{ if \(this\.ratio >= PANEL_IN_AT\) sayPanelIn\(\); \}/);
+  const setDone = choreo.slice(choreo.indexOf("const setDone = ()"), choreo.indexOf("const playOut = ()"));
+  assert.match(setDone, /sayPanelIn\(\);/, "a settled band says so (arm, jump, focus, watchdog)");
+  const primed = choreo.slice(choreo.indexOf("const prime = ()"), choreo.indexOf("const setDone = ()"));
+  assert.match(primed, /panelSaid = false;/, "and again after a reset");
+  assert.match(choreo, /x\.matches\("\[data-pcards\], \[data-self\]"\)/);
   // nothing GSAP set is left on a thing once it has landed; no layout read in the ticker
   assert.match(choreo, /clearProps: CLEAR/);
   const tick = choreo.slice(choreo.indexOf("const tick = ()"), choreo.indexOf("gsap.ticker.add(tick)"));
