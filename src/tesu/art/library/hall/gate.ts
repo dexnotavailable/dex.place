@@ -25,6 +25,7 @@ import { P } from "../../palette.ts";
 import { IdxBuf, bayer4 } from "../../raster.ts";
 import { M, LitField, clamp, face, fbm, grain, hash, mt, poly, rect, tn, vnoise, type Ramp } from "./kit.ts";
 import { lut } from "./tint.ts";
+import { iceDist, iceRay, sillRail } from "./bay.ts";
 
 const H = 96;
 
@@ -114,6 +115,9 @@ export function bayWall(c: PaintCtx, g: GateGeo): void {
     panels.push([x, Math.min(g.r, x + len), Math.floor(hash(i, 2, 223) * 4)]);
     x += len;
   }
+  // (round 3, W2-5) the clerestories' sill rail, and each window's water stain down the plaster under it
+  const cls = clerestoryBoxes(g);
+  const [SR0, SR1] = sillRail(cls[0]![3]);
   rect(c, g.l, -g.top, g.r, 0, (X, Y, lx, ly) => {
     const d = Math.hypot(lx, ly - CY);
     if (d < ringOut && ly < 0) return 0;
@@ -136,6 +140,20 @@ export function bayWall(c: PaintCtx, g: GateGeo): void {
     }
     // the timber frame: stiles, a top rail under the frieze, a mid rail, a low rail over the dado
     const sti = st.find((sx) => Math.abs(lx - sx) < SW / 2);
+    // (round 3, W2-5) the sill rail under the clerestories: a carved timber rail, a lozenge boss every 26 px between
+    // two bead lines, its top lit, its underside throwing a short shadow on the plaster
+    if (ly >= SR0 && ly < SR1) {
+      const v = (ly - SR0) / (SR1 - SR0);
+      const q = ((((lx + 1300) % 26) + 26) % 26) - 13;
+      const loz = Math.abs(q) / 6 + Math.abs(v - 0.5) / 0.32;
+      let n = 0, ny = 0;
+      if (v < 0.2) ny = -1;
+      else if (v > 0.82) ny = 1;
+      else if (loz < 1) { n = q < 0 === v < 0.5 ? 0.12 : -0.1; ny = v < 0.5 ? -0.6 : 0.6; }
+      else if (Math.abs(v - 0.5) < 0.07) n = -0.12;
+      return mt(M.wood, face(k, -0.6, 0, ny) * 0.72 + n - shade + grain(lx, ly, 291, false) * 0.08, X, Y, 0.45, 1, 0.3);
+    }
+    if (ly >= SR1 && ly < SR1 + 2.5) shade += 0.12;
     const rail = (fromTop < FRIEZE + 0.08 * H) || (Math.abs(ly - RAIL_MID) < 0.045 * H && d > ringOut + 0.1 * H) || (ly > RAIL_LOW && ly < -DADO);
     if (sti !== undefined || rail) {
       // a lit left / top edge, a dark right / bottom one: a member standing proud of the plaster
@@ -146,7 +164,11 @@ export function bayWall(c: PaintCtx, g: GateGeo): void {
         const r1 = fromTop < FRIEZE + 0.08 * H ? -g.top + FRIEZE + 0.08 * H : Math.abs(ly - RAIL_MID) < 0.045 * H ? RAIL_MID + 0.045 * H : -DADO;
         ny = ly < r0 + 1.5 ? -1 : ly > r1 - 1.5 ? 1 : 0;
       }
-      const v = face(k, -0.6, nx, ny) * 0.7 - shade + grain(lx, ly, 227, sti !== undefined) * 0.12;
+      // (round 3, W2-5) edge wear: the lit arris chipped back to pale wood, the foot of each stile darkened by hands
+      // and brooms
+      const chip = sti !== undefined && nx !== 0 && fbm(lx * 0.25, ly * 0.07, 293, 2) > 0.66 ? (nx < 0 ? 0.16 : 0.08) : 0;
+      const foot = sti !== undefined ? clamp((ly + 1.3 * H) / (0.9 * H), 0, 1) * 0.08 : 0;
+      const v = face(k, -0.6, nx, ny) * 0.7 - shade + grain(lx, ly, 227, sti !== undefined) * 0.14 + chip - foot;
       return mt(M.wood, v, X, Y, 0.45, 1, 0.3);
     }
     // the plaster: lime over lath, mottled in broad soft patches, a hairline crack here and there,
@@ -154,10 +176,27 @@ export function bayWall(c: PaintCtx, g: GateGeo): void {
     const mot = fbm(lx * 0.011, ly * 0.014, 229, 2) - 0.5;
     const low = clamp((ly + 1.1 * H) / (0.6 * H), 0, 1);
     const stain = low * (0.06 + 0.08 * fbm(lx * 0.03, ly * 0.015, 233, 2));
-    const crack = Math.abs(vnoise(lx * 0.035, ly * 0.009, 239) - 0.5) < 0.01 && fbm(lx * 0.02, ly * 0.02, 241, 2) > 0.66;
+    const crack = Math.abs(vnoise(lx * 0.035, ly * 0.009, 239) - 0.5) < 0.01 && fbm(lx * 0.02, ly * 0.02, 241, 2) > 0.74;
     // a recess line round each panel (the plaster set back from the frame)
     const near = st.some((sx) => Math.abs(lx - sx) < SW / 2 + 2) || Math.abs(ly - RAIL_MID) < 0.045 * H + 2 || (ly > RAIL_LOW - 2 && ly < RAIL_LOW);
-    const v = face(k, -0.6) * 0.8 + mot * 0.07 - stain - shade - (crack ? 0.1 : 0) - (near ? 0.07 : 0);
+    // (round 3, W2-5: the bay read as one flat navy field, sd 1.1, 4 colours) each panel between the stiles and
+    // rails was skimmed on its own day, a step lighter or darker than its neighbours; the broad mottling a little
+    // stronger; under each clerestory the rain has run down the plaster from the sill in streaks, dark, fading,
+    // a pale tide line where each stopped
+    const si = st.findIndex((sx) => sx > lx);
+    const band = ly < SR1 ? 0 : ly < RAIL_MID ? 1 : 2;
+    const ptone = (hash(si, band, 281) - 0.5) * 0.26;
+    let damp = 0;
+    for (const [x0, , x1, y1] of cls) {
+      if (lx < x0 + 3 || lx > x1 - 3 || ly < SR1) continue;
+      const len = (0.3 + 0.75 * vnoise(lx * 0.07, 1, 283) * vnoise(lx * 0.21, 2, 283)) * H;
+      const t = (ly - SR1) / len;
+      const streak = vnoise(lx * 0.16, 3, 287) > 0.42 || (lx - x0 < 10 || x1 - lx < 10);
+      if (t < 1 && streak) damp = Math.max(damp, Math.pow(1 - t, 0.7) * (0.24 + 0.1 * vnoise(lx * 0.4, ly * 0.05, 289)));
+      else if (t >= 1 && t < 1 + 2 / len && streak) damp = -0.06;
+      void y1;
+    }
+    const v = face(k, -0.6) * 0.8 + 0.07 + mot * 0.16 + ptone - stain - damp - shade - (crack ? 0.1 : 0) - (near ? 0.07 : 0);
     return mt(PLASTER, v, X, Y, 0.0, 1, 0.2);
   });
 }
@@ -255,11 +294,18 @@ function clipPaint(c: PaintCtx, kind: string, ax: number, ay: number, p: Record<
   }
 }
 
-/** The sky's bands (light at the horizon), narrow dithered seams between them. */
-const SKY: Ramp = [P.blue[0]!, P.cloud[4]!, P.cloud[3]!, P.cloud[2]!, P.cloud[1]!, P.paper[1]!];
-/** The crowd in the stands: dark, cool, few colours; the far tiers in the air's paler set. */
-const CROWD_NEAR: Ramp = [P.tile[3]!, P.lacquer[1]!, P.tile[4]!, P.lacquer[2]!, P.umber[1]!, P.range[6]!];
-const CROWD_FAR: Ramp = [P.tile[2]!, P.range[5]!, P.lacquer[0]!, P.range[6]!, P.tile[2]!, P.range[5]!];
+/** The sky's bands (light at the horizon), narrow dithered seams between them. (round 3, W2-9: it was near white,
+ *  S 0.15; now a deep blue at the top, so the view holds four value steps: the deep sky, the pale horizon and
+ *  mist, the court's mid stone, the dark kerb at the sill) */
+const SKY: Ramp = [P.blue[1]!, P.fallsky[3]!, P.blue[0]!, P.fallsky[1]!, P.cloud[3]!, P.cloud[1]!];
+/** The crowd in the stands (round 3, W2-9: a wedge of identical dark pegs): people in festival robes, each its own
+ *  colour and build, [lit, body] pairs; the far tiers take the air's haze over theirs. */
+const ROBES: [number, number][] = [
+  [P.red[2]!, P.red[3]!], [P.red[3]!, P.red[4]!], [P.gold[2]!, P.gold[3]!], [P.blue[1]!, P.blue[2]!], [P.blue[2]!, P.blue[3]!],
+  [P.jade[3]!, P.jade[4]!], [P.paper[2]!, P.paper[3]!], [P.tile[2]!, P.tile[3]!], [P.timber[2]!, P.timber[3]!], [P.mauve[0]!, P.mauve[1]!],
+  [P.lacquer[0]!, P.lacquer[1]!], [P.tile[1]!, P.tile[2]!], [P.umber[0]!, P.umber[1]!], [P.paper[1]!, P.paper[2]!],
+];
+const HAIR: number[] = [P.ink[0]!, P.ink[1]!, P.umber[3]!, P.lacquer[3]!, P.timber[4]!, P.ink[1]!];
 const ACCENT: Ramp = [P.red[3]!, P.gold[3]!, P.blue[2]!, P.red[2]!, P.jade[4]!, P.paper[2]!];
 
 export function gateView(c: PaintCtx, g: GateGeo): void {
@@ -351,7 +397,6 @@ export function gateView(c: PaintCtx, g: GateGeo): void {
     const f = ly - (G - 8);
     if (f < 1) return P.stone[0]!;
     if (f < 3.5) return ((((lx + 600) % 17) + 17) % 17) < 1 ? P.stone[3]! : P.stone[1]!;
-    // the wall's shade: cool, its edge a soft step
     if (f < 4.5) return bayer4(X, Y) < 0.5 ? P.stone[3]! : P.tile[2]!;
     return f > 7 ? P.tile[4]! : P.tile[3]!;
   });
@@ -395,24 +440,37 @@ export function gateView(c: PaintCtx, g: GateGeo): void {
     if (d < 0.27) return P.bronze[4]!;
     return lit > 0.3 ? P.bronze[1]! : lit > -0.25 ? P.bronze[2]! : P.bronze[3]!;
   });
+  // --- 6. (round 3, W2-9) nearest of all: the court's kerb right outside the gate, in the hall's own shade: the
+  // darkest, sharpest plane in the view, hiding the near feet beyond it; its top arris catching the day, its
+  // blocks' joints darker still
+  rect(c, -R, G - 11, R, G + 1, (X, Y, lx, ly) => {
+    if (!inView(lx, ly)) return 0;
+    const f = ly - (G - 11);
+    const joint = ((((lx + 611) % 23) + 23) % 23) < 1;
+    if (f < 1) return joint ? P.stone[3]! : P.stone[1]!;
+    if (f < 2) return joint ? P.lacquer[3]! : P.stone[4]!;
+    if (joint) return P.lacquer[4]!;
+    const chip = fbm(lx * 0.3, ly * 0.5, 4319, 2) > 0.72;
+    return chip ? P.lacquer[1]! : f < 3 ? P.lacquer[2]! : bayer4(X, Y) < 0.25 ? P.lacquer[2]! : P.lacquer[3]!;
+  });
 }
 
 /** One row of the crowd on a tier: knots of 1-5 people, gaps between, each with its own shape. */
 function crowdRow(c: PaintCtx, g: GateGeo, x0: number, x1: number, foot: number, tier: number, inView: (lx: number, ly: number) => boolean): void {
   const far = tier >= 3;
-  const body = far ? CROWD_FAR : CROWD_NEAR;
-  const lit = far ? P.range[3]! : P.tile[1]!;
+  const haze = far ? lut("haze", tier >= 5 ? 2 : 1) : null;
   let x = x0 + hash(tier, 1, 4201) * 4;
   let n = 0;
   while (x < x1 - 2) {
     const knot = 1 + Math.floor(hash(tier, n, 4203) * 5);
     for (let j = 0; j < knot && x < x1 - 2; j++, n++) {
       const r = hash(n, tier, 4207);
-      const hgt = (far ? 8 : 9) + (hash(n, tier, 4209) < 0.3 ? -2 : hash(n, tier, 4209) > 0.85 ? 1 : 0);
-      const col = body[Math.floor(hash(n, tier, 4211) * body.length)]!;
-      const kind = r < 0.1 ? 3 : r < 0.18 ? 4 : r < 0.26 ? 5 : r < 0.33 ? 6 : r < 0.42 ? 1 : 0;
-      person(c, x + 1.5, foot, hgt, kind, col, lit, ACCENT[Math.floor(hash(n, tier, 4213) * ACCENT.length)]!, far, inView);
-      x += 4 + (hash(n, tier, 4215) < 0.3 ? 1 : 0) - (hash(n, tier, 4219) < 0.2 ? 1 : 0);
+      const hgt = (far ? 8 : 9) + (hash(n, tier, 4209) < 0.3 ? -1 : hash(n, tier, 4209) > 0.8 ? 1 : 0);
+      const robe = ROBES[Math.floor(hash(n, tier, 4211) * ROBES.length)]!;
+      const kind = r < 0.1 ? 3 : r < 0.17 ? 4 : r < 0.24 ? 5 : r < 0.3 ? 6 : r < 0.42 ? 1 : r < 0.5 ? 7 : 0;
+      const wide = hash(n, tier, 4223) < 0.3 ? 1 : 0;
+      person(c, x + 1.5, foot, hgt, kind, robe, HAIR[Math.floor(hash(n, tier, 4227) * HAIR.length)]!, ACCENT[Math.floor(hash(n, tier, 4213) * ACCENT.length)]!, wide, haze, inView);
+      x += 4 + wide + (hash(n, tier, 4215) < 0.3 ? 1 : 0) - (hash(n, tier, 4219) < 0.25 ? 1 : 0);
     }
     // a gap between knots
     x += hash(tier, n, 4217) < 0.55 ? 1 : 3 + Math.floor(hash(tier, n, 4221) * 6);
@@ -422,33 +480,45 @@ function crowdRow(c: PaintCtx, g: GateGeo, x0: number, x1: number, foot: number,
 
 /**
  * A spectator a few px tall, its feet at `foot`: 0 standing, 1 sitting (shorter), 3 an arm up, 4 a flag,
- * 5 a parasol, 6 a child on the shoulders. Lit along its left edge.
+ * 5 a parasol, 6 a child on the shoulders, 7 a straw hat. Hair over a face lit on the sun's side (left), a robe
+ * of its own colour lit down its left edge, dark legs.
  */
-function person(c: PaintCtx, x: number, foot: number, h: number, kind: number, col: number, lit: number, acc: number, far: boolean, inView: (lx: number, ly: number) => boolean): void {
+function person(c: PaintCtx, x: number, foot: number, h: number, kind: number, robe: [number, number], hair: number, acc: number, wide: number, haze: Uint8Array | null, inView: (lx: number, ly: number) => boolean): void {
   const hh = kind === 1 ? h - 2 : h;
   const set = (lx: number, ly: number, v: number): void => {
     if (!inView(lx + 0.5, ly + 0.5)) return;
     const X = Math.round(c.X(lx)), Y = Math.round(c.Y(ly));
-    c.buf.set(X, Y, v);
+    c.buf.set(X, Y, haze ? haze[v]! : v);
   };
+  const [lit, body] = robe;
+  const skin = P.skin[2]!, skinLit = P.skin[1]!;
   const bx = Math.round(x) - 1, top = Math.round(foot - hh);
-  // the head (3 px, its top corners round), the shoulders 5 px, the body 4 px down to the feet; the
-  // sun on their left
-  set(bx + 1, top, lit); set(bx + 2, top, col);
-  for (let i = 0; i < 3; i++) set(bx + i, top + 1, i === 0 ? lit : col);
-  for (let i = -1; i < 4; i++) set(bx + i, top + 2, i === -1 ? lit : col);
-  for (let y = top + 3; y < foot; y++) for (let i = -1; i < 3; i++) set(bx + i, y, i === -1 && y < top + 5 ? lit : col);
-  if (kind === 3) { set(bx - 1, top + 1, col); set(bx - 1, top, col); set(bx - 1, top - 1, lit); }
+  // the head: hair on top, the face under it (the sun on its left)
+  set(bx, top, hair); set(bx + 1, top, hair);
+  set(bx, top + 1, skinLit); set(bx + 1, top + 1, kind === 1 ? skin : hair);
+  if (kind === 7) for (let i = -1; i <= 2; i++) set(bx + i, top, i < 0 ? P.timber[1]! : P.timber[2]!);
+  // the shoulders and the robe, a px wider for some
+  const w0 = -1, w1 = 2 + wide;
+  for (let y = top + 2; y < foot - 2; y++) for (let i = w0; i <= w1; i++) {
+    if (y === top + 2 && (i === w0 || i === w1) && wide === 0) continue;
+    set(bx + i, y, i === w0 ? lit : body);
+  }
+  // the legs (a robe's hem for the sitting)
+  for (let y = Math.max(top + 3, foot - 2); y < foot; y++) {
+    if (kind === 1) { for (let i = w0; i <= w1; i++) set(bx + i, y, body); continue; }
+    set(bx, y, P.lacquer[2]!); set(bx + 1 + wide, y, P.lacquer[3]!);
+  }
+  if (kind === 3) { set(bx - 1, top + 1, lit); set(bx - 1, top, lit); set(bx - 2, top - 1, skinLit); }
   if (kind === 4) {
-    for (let y = top - 4; y < top + 2; y++) set(bx + 3, y, P.timber[4]!);
-    set(bx + 4, top - 4, acc); set(bx + 5, top - 4, acc); set(bx + 4, top - 3, acc); set(bx + 5, top - 3, acc); set(bx + 6, top - 4, acc);
+    for (let y = top - 4; y < top + 2; y++) set(bx + 3 + wide, y, P.timber[4]!);
+    set(bx + 4 + wide, top - 4, acc); set(bx + 5 + wide, top - 4, acc); set(bx + 4 + wide, top - 3, acc); set(bx + 5 + wide, top - 3, acc); set(bx + 6 + wide, top - 4, acc);
   }
   if (kind === 5) {
     for (let y = top - 2; y < top + 2; y++) set(bx + 3, y, P.timber[4]!);
     for (let i = -1; i <= 5; i++) set(bx + i, top - 3, acc);
-    for (let i = 0; i <= 4; i++) set(bx + i, top - 4, i === 0 ? lit : acc);
+    for (let i = 0; i <= 4; i++) set(bx + i, top - 4, i === 0 ? P.paper[1]! : acc);
   }
-  if (kind === 6 && !far) { set(bx + 1, top - 1, col); set(bx + 2, top - 1, col); set(bx + 1, top - 2, col); set(bx + 2, top - 2, lit); set(bx + 1, top - 3, col); }
+  if (kind === 6 && !haze) { set(bx, top - 1, ROBES[0]![1]); set(bx + 1, top - 1, ROBES[0]![1]); set(bx, top - 2, skinLit); set(bx + 1, top - 2, hair); set(bx, top - 3, hair); }
 }
 
 /** A person on the court: a taller silhouette, 0 walking, 1 carrying a tray on the shoulder, 2 a stick. */
@@ -699,8 +769,17 @@ function bracketSet(c: PaintCtx, bx: number, y0: number, lf: LitField): void {
 // The clerestories and the scrolls
 // ===========================================================================
 export function clerestories(c: PaintCtx, g: GateGeo, lf: LitField): void {
+  // (round 3, W2-3a: pale cobble cells, the brightest shapes over the gate) windows: a lacquered frame, the wall's
+  // thickness as a dark reveal (its soffit darkest, the sill's top lit by the day), an ice-ray lattice of thin
+  // straight bars dark against the court's sky, each bar with a faint warm lip on top from the room's lamps; the sky
+  // graded a step under the gate's, a far range low across it; a sill board under each, on the sill rail
   for (const [x0, y0, x1, y1] of clerestoryBoxes(g)) {
-    const FR = 4, REV = 4;
+    const FR = 4, REV = 3;
+    const ix0 = x0 + FR + REV, ix1 = x1 - FR - REV, iy0 = y0 + FR + REV + 1, iy1 = y1 - FR - REV;
+    const seed = 4601 + (x0 < 0 ? 0 : 7);
+    // (each window in four panes: a mullion and a transom, each pane its own lattice, so no bar runs the whole window)
+    const pw = (ix1 - ix0) / 2, ph = (iy1 - iy0) / 2;
+    const panes = [0, 1, 2, 3].map((k) => iceRay(pw - 2, ph - 2, seed + k * 13, 190));
     rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
       const ex = Math.min(lx - x0, x1 - lx), ey = Math.min(ly - y0, y1 - ly);
@@ -711,41 +790,41 @@ export function clerestories(c: PaintCtx, g: GateGeo, lf: LitField): void {
         const bev = e < 1.2;
         return mt(M.wood, face(l.k, -0.6, bev ? nx : 0, bev ? ny : 0) * (bev ? 0.85 : 0.55), X, Y, 0.35, 1, 0);
       }
-      // the reveal: the wall's thickness, its top and left in shade, the sill lit by the day
-      const ix = lx - x0 - FR, iy = ly - y0 - FR, iw = x1 - x0 - 2 * FR, ih = y1 - y0 - 2 * FR;
-      if (iy > ih - REV) return iy > ih - REV + 1 ? P.stone[3]! : P.stone[2]!;
-      if (iy < REV + 1 || ix < REV - 1) return iy < REV + 1 && ix > REV - 1 ? P.dusk[3]! : P.dusk[2]!;
-      if (iw - ix < 2) return P.dusk[1]!;
-      // (round 2: they read as grey grilles) the lattice: cracked ice in open cells, its bars dark against the
-      // court's bright day, each with a warm lit lip along its top
-      const gx = ix - REV + 1, gy = iy - REV - 1;
-      const seed = 4601 + (x0 < 0 ? 0 : 7);
-      if (ice(gx, gy, seed)) return ice(gx, gy - 1.5, seed) ? P.umber[4]! : P.umber[1]!;
-      const sw = iw - REV + 1, sh = ih - 2 * REV - 1;
-      const fu = gx / sw, fv = gy / sh;
-      // beyond it: the court's day, a step under the gate's (the gate is the key): a pale sky warming toward
-      // the horizon, a far karst in haze low across it, a cloud's lit top on one side
-      const kars = fv > 0.66 + 0.16 * Math.abs(Math.sin(fu * 5.2 + seed)) + 0.06 * Math.sin(fu * 17 + seed);
-      if (kars) return fv > 0.9 ? P.range[6]! : P.range[5]!;
-      const cl = Math.hypot((fu - (x0 < 0 ? 0.3 : 0.7)) * 1.6, (fv - 0.42) * 2.4);
-      if (cl < 0.42) return cl < 0.3 && fv < 0.44 ? P.range[2]! : P.range[3]!;
-      return fv < 0.3 ? P.range[5]! : fv < 0.55 ? P.range[4]! : P.range[3]!;
+      // the reveal: its soffit darkest, its sides a step lighter, the sill's top lit by the day coming through
+      if (ly >= iy1) return ly < iy1 + 1 ? P.stone[1]! : ly < iy1 + 2 ? P.stone[3]! : P.dusk[2]!;
+      if (ly < iy0) return ly < iy0 - 2 ? P.dusk[4]! : P.dusk[3]!;
+      if (lx < ix0 || lx >= ix1) return lx < ix0 ? (lx < ix0 - 1.5 ? P.dusk[3]! : P.dusk[2]!) : P.dusk[3]!;
+      const gx = lx - ix0, gy = ly - iy0;
+      // the mullion and the transom: heavier bars, their tops and left faces lit warm by the room
+      const mx = Math.abs(gx - pw), my = Math.abs(gy - ph);
+      if (mx < 1.6 || my < 1.6) return (my < 1.6 && gy < ph - 0.5) || (mx < 1.6 && gx < pw - 0.6) ? P.umber[1]! : P.umber[3]!;
+      const pk = (gx > pw ? 1 : 0) + (gy > ph ? 2 : 0);
+      const px = gx - (gx > pw ? pw + 1 : 1), py = gy - (gy > ph ? ph + 1 : 1);
+      const [dd, flat] = iceDist(panes[pk]!, px, py);
+      const edge = Math.min(gx, gy, ix1 - ix0 - gx, iy1 - iy0 - gy);
+      // the bars (and the lattice's own border), dark timber against the light; the top of a level bar lit warm
+      if (dd < 0.9 || edge < 1.6) return P.umber[4]!;
+      if (flat && dd < 1.9 && iceDist(panes[pk]!, px, py + 1.4)[0] < 0.9) return P.umber[1]!;
+      // beyond: the court's sky a step under the gate's, deeper at the top, a far range in the haze low across it
+      const fu = gx / (ix1 - ix0), fv = gy / (iy1 - iy0);
+      const kars = fv > 0.7 + 0.13 * Math.abs(Math.sin(fu * 4.6 + seed)) + 0.05 * Math.sin(fu * 15 + seed);
+      if (kars) return fv > 0.92 ? P.range[5]! : P.range[4]!;
+      const t = fv + (bayer4(X, Y) - 0.5) * 0.08;
+      const cl = Math.hypot((fu - (x0 < 0 ? 0.32 : 0.68)) * 1.5, (fv - 0.5) * 2.6);
+      if (cl < 0.36) return cl < 0.24 && fv < 0.52 ? P.range[1]! : P.range[2]!;
+      return t < 0.22 ? P.blue[2]! : t < 0.44 ? P.range[5]! : t < 0.66 ? P.range[4]! : P.range[3]!;
+    });
+    // the sill board on the sill rail: its top lit by the day from the window, its front in the room's dusk, a
+    // short shadow under it
+    const sx0 = x0 - 6, sx1 = x1 + 6, sy0 = y1, sy1 = y1 + 5;
+    rect(c, sx0, sy0, sx1, sy1 + 3, (X, Y, lx, ly) => {
+      if (ly >= sy1) return lx > sx0 + 2 && lx < sx1 - 1 ? mt(M.lacq, 0.25, X, Y, 0.4, 1, 0) : 0;
+      const l = lf.get(lx, ly);
+      const e = Math.min(lx - sx0, sx1 - lx);
+      if (ly < sy0 + 1.2) return e < 1 ? mt(M.wood, face(l.k, -0.6) * 0.7, X, Y, 0.3, 1, 0) : P.stone[2]!;
+      return mt(M.wood, face(l.k, -0.6, e < 1.2 ? (lx < sx0 + 1.2 ? -1 : 1) : 0, ly > sy1 - 1.2 ? 1 : 0) * 0.62 + grain(lx, ly, 4611, false) * 0.08, X, Y, 0.35, 1, 0.3);
     });
   }
-}
-
-/** A cracked-ice lattice (bingliewen): true on a bar (2 px wide), the cells irregular polygons. */
-function ice(x: number, y: number, seed: number): boolean {
-  const gs = 21;
-  if (x < 1.5 || y < 1.5) return true;
-  const ci = Math.floor(x / gs), cj = Math.floor(y / gs);
-  let d1 = Infinity, d2 = Infinity;
-  for (let i = ci - 1; i <= ci + 1; i++) for (let j = cj - 1; j <= cj + 1; j++) {
-    const px = (i + 0.2 + hash(i, j, seed) * 0.6) * gs, py = (j + 0.2 + hash(i, j, seed + 1) * 0.6) * gs;
-    const d = Math.hypot(x - px, y - py);
-    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
-  }
-  return (d2 - d1) / 2 < 1.0;
 }
 
 export function scrolls(c: PaintCtx, g: GateGeo, lf: LitField): void {

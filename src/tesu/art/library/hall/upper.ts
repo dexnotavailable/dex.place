@@ -24,6 +24,7 @@ import { P } from "../../palette.ts";
 import { bayer4 } from "../../raster.ts";
 import { SCREEN, LitField, clamp, fbm, grain, hash, rect, tn, vnoise, type Ramp } from "./kit.ts";
 import type { BackWallP, Bay } from "./backwall.ts";
+import { ruyi } from "./roof.ts";
 
 /** Heights over the floor in H (times the plane's u). */
 export const UP = { lintel: 14.2, sets: 15.5, cornice: 15.9, ceil: 17.5, ceilT: 17.8 } as const;
@@ -79,12 +80,14 @@ function bracketSets(p: BackWallP): SetAt[] {
     const sd = b.seed;
     // the column set at the bay's west column (the last bay also closes with its east one)
     const cols = i === p.bays.length - 1 ? [b.x0, b.x1] : [b.x0];
-    for (const cx of cols) out.push({ x: cx, s: 1, tiers: 3, scheme: scheme(sd, 1), seed: sd + 1 });
+    for (const cx of cols) out.push({ x: cx, s: 1.08, tiers: 3, scheme: scheme(sd, 1), seed: sd + 1 });
     // one set between, or two lighter ones
     const two = hash(sd, 63) < 0.35;
     const w = b.x1 - b.x0;
-    if (two) for (const f of [1 / 3, 2 / 3]) out.push({ x: b.x0 + w * f + (hash(sd, 65 + f * 9) - 0.5) * 0.04 * U, s: 0.66, tiers: 3, scheme: scheme(sd, 2 + f), seed: sd + 7 + Math.round(f * 9) });
-    else out.push({ x: b.x0 + w / 2, s: 0.86, tiers: 3, scheme: scheme(sd, 4), seed: sd + 5 });
+    // (round 3, W2-7: one set stamped every ~125 px) the column sets heavy with three tiers; the ones between lighter,
+    // two tiers when there are two of them, so the band rises and falls along its length
+    if (two) for (const f of [1 / 3, 2 / 3]) out.push({ x: b.x0 + w * f + (hash(sd, 65 + f * 9) - 0.5) * 0.04 * U, s: 0.62, tiers: 2, scheme: scheme(sd, 2 + f), seed: sd + 7 + Math.round(f * 9) });
+    else out.push({ x: b.x0 + w / 2, s: 0.8, tiers: hash(sd, 69) < 0.5 ? 2 : 3, scheme: scheme(sd, 4), seed: sd + 5 });
   });
   return out;
 }
@@ -125,11 +128,16 @@ export function upperWall(c: PaintCtx, p: BackWallP, lf: LitField): void {
     const pseed = Math.round(mid);
     const mu = (lx - mid) / Math.max(1, half);
     const shadowTop = v < 0.17 + (vnoise(lx * 0.08, 1, 2017) - 0.5) * 0.04;
-    let val = 0.26 + hash(pseed, 7, 2019) * 0.1 + (shadowTop ? 0.3 : 0) - lit(lx, ly) * 0.3 + (fbm(lx * 0.03, ly * 0.03, 2019, 2) - 0.5) * 0.08 + v * 0.08;
+    // (round 3: the room's lamps laid round red discs on these panels, blotches at a glance) they take the light only
+    // as a soft, even lift
+    // (round 3, director: the panels' value sat right on RED's step from the lacquer red to the umber, so the lift and
+    // the noise laid red dithered blotches on brown panels, under no lamp that could explain them) the ground sits
+    // wholly on the faded umber step, the lift is a fraction of a step; the motif's fills carry the panels' old red
+    let val = 0.37 + hash(pseed, 7, 2019) * 0.07 + (shadowTop ? 0.3 : 0) - Math.min(0.5, lit(lx, ly)) * 0.06 + (fbm(lx * 0.03, ly * 0.03, 2019, 2) - 0.5) * 0.04 + v * 0.04;
     // the motif, faded: gold lines on the red
     const m = motif(Math.floor(hash(pseed, 2, 2021) * 4), mu * half / U, (v - 0.55) * (yLint - ySets) / U, pseed);
     if (m === 1 && !shadowTop) return st(GOLD, 0.45 - lit(lx, ly) * 0.3 + (hash(X, Y, 2023) < 0.3 ? 0.25 : 0), X, Y);
-    if (m === 2) val -= 0.08;
+    if (m === 2 && !shadowTop) return st(RED, 0.18, X, Y);
     // a darker wear band low on each panel, the paint rubbed thin
     if (v > 0.8 && fbm(lx * 0.09, ly * 0.2, 2025, 2) > 0.62) val += 0.1;
     return st(RED, val, X, Y);
@@ -156,16 +164,20 @@ export function upperWall(c: PaintCtx, p: BackWallP, lf: LitField): void {
       return st(TEAL, 0.5 - lit(lx, ly) * 0.3, X, Y);
     }
     const style = hash(bay, 5, 2029);
-    const k = (lx - cx) / (4.25 * U);
     if (style < 0.4 && Math.abs(v - 0.5) < 0.24 && dc > 0.75 * U) {
       // a long cartouche, a gold edge round blue
       const e = Math.min(dc - 0.75 * U, (0.24 - Math.abs(v - 0.5)) * (ySets - yCorn));
       return e < px * 1.5 ? st(GOLD, 0.5 - lit(lx, ly) * 0.2, X, Y) : st(BLUE, 0.62 - lit(lx, ly) * 0.3, X, Y);
     }
-    if (style > 0.75 && Math.abs(v - 0.5 - Math.sin(k * 30 + bay) * 0.16) < 0.09) return st(GOLD, 0.55 - lit(lx, ly) * 0.2, X, Y);
-    // the paint flaked off in places
-    if (fbm(lx * 0.04, ly * 0.2, 2031 + bay, 2) > 0.66) return st(WOOD, 0.7, X, Y);
-    return st(TEAL, 0.55 - lit(lx, ly) * 0.3 + (v > 0.7 ? 0.12 : 0), X, Y);
+    // (round 3, W2-7: a sine line, and flaked patches that read as camouflage blotches) a run of ruyi clouds in gold
+    // line; the paint rubbed thin only along the beam's lower edge
+    if (style > 0.75 && Math.abs(v - 0.5) < 0.4) {
+      const cl = ruyi(lx - cx, (v - 0.5) * (ySets - yCorn), 0.32 * (ySets - yCorn), bay + 41);
+      if (cl === 2) return st(GOLD, 0.55 - lit(lx, ly) * 0.2, X, Y);
+      if (cl === 1) return st(TEAL, 0.38 - lit(lx, ly) * 0.3, X, Y);
+    }
+    const thin = v > 0.72 && fbm(lx * 0.06, ly * 0.3, 2031 + bay, 2) > 0.62;
+    return st(TEAL, 0.55 - lit(lx, ly) * 0.3 + (v > 0.7 ? 0.12 : 0) + (thin ? 0.08 : 0), X, Y);
   });
 
   // --- 5. every bay over the cornice its own

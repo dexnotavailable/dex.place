@@ -3,6 +3,7 @@
 // its prayer flags in the wind. Daylight from the upper left.
 
 import { definePainter } from "../../painter.ts";
+import { lut, tint } from "./tint.ts";
 import { P } from "../../palette.ts";
 import { M, clamp, cyl, face, fbm, grain, lathe, mt, rect, tn } from "./kit.ts";
 
@@ -34,6 +35,10 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
   paint(c, p) {
     const slope = p.y1 / p.x1;
     const yAt = (lx: number): number => lx * slope;
+    // (round 3, W1-9: the run's lit nose line and the band under it were two ruled diagonals across the foundation)
+    // the treads as steps: each a level tread with a lit nose and a riser, so its edge is a stair, never a line
+    const RUN = 15;
+    const stepTop = (lx: number): number => yAt((Math.floor(lx / RUN) + 0.5) * RUN);
     // the foundation's masonry runs from the floor line (local y = masonry) down `found` px
     const m0 = p.masonry, m1 = p.masonry + p.found;
     const PIER = 0.24 * H;
@@ -50,11 +55,13 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
     const bayAt = (lx: number): [number, number, boolean] => bays.find((b) => lx >= b[0] && lx < b[1]) ?? bays[bays.length - 1]!;
     rect(c, 0, p.y1 - p.head - 4, p.x1, 14, (X, Y, lx, ly) => {
       if (ly < m0 + 1) return 0; // nothing above the floor line: the mouth opens there
-      const ty = yAt(lx);
+      const ty = stepTop(lx), line = yAt(lx);
       // in the rock the cut's head is rough-hewn, never a ruled line
       const rough = ty - p.head > m1 ? (fbm(lx * 0.03, 3.1, 17, 3) - 0.5) * 0.5 * H + Math.abs(Math.sin(lx * 0.045)) * 0.12 * H : 0;
-      const top = ty - p.head + rough;
-      if (ly < top - 3 || ly > ty + 12 + (rough > 0 ? rough * 0.4 : 0)) return 0;
+      const top = line - p.head + rough;
+      // the steps' stone runs on down into the rock or the masonry in a broken edge (no second ruled line)
+      const foot = ty + 10 + (fbm(lx * 0.08, 7.3, 19, 2) - 0.3) * 10;
+      if (ly < top - 3 || ly > foot + (rough > 0 ? rough * 0.4 : 0)) return 0;
       const inMasonry = ly < m1;
       // in the masonry the gallery's outer face is an arcade stepping down with the stair:
       // piers between arched openings, so the cut reads as built, not hacked through
@@ -80,9 +87,12 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
       }
       if (ly < top) return mt(M.stone, face(0.95, SIDE, 0, -0.8) * 0.85, X, Y, 0.1, 1);
       if (ly > ty) {
-        const k = ((lx % 15) + 15) % 15;
-        const nose = ly - ty < 2.5;
-        return mt(M.stone, nose ? 0.95 : 0.55 - (k < 2 ? 0.1 : 0) - (ly - ty) * 0.02, X, Y, 0.1, 1);
+        const k = ((lx % RUN) + RUN) % RUN;
+        // the tread's lit nose along its top, the riser at its east end a step darker, wear on the tread's middle
+        const nose = ly - ty < 2.2;
+        const riser = k > RUN - 2.2;
+        const worn = nose && k > 4 && k < 10 && fbm(lx * 0.4, 1.7, 23, 1) > 0.6 ? -0.12 : 0;
+        return mt(M.stone, nose ? 0.95 + worn : riser ? 0.42 : 0.55 - (ly - ty) * 0.025 + (fbm(lx * 0.2, ly * 0.2, 29, 2) - 0.5) * 0.12, X, Y, 0.1, 1);
       }
       // inside: the back wall lit warm by the lanterns, darker toward the top
       const v = (ly - top) / p.head;
@@ -112,6 +122,96 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
       if (k < 2) return ly > p.y1 + 1 ? tn(M.glow, 0.45, X, Y, 0) : 0;
       return mt(M.wood, face(0.92, SIDE, 0, ly < p.y1 ? -0.8 : 0.3) * 0.9 + grain(lx, ly, 3, false) * 0.08, X, Y, 0.1, 1);
     });
+  },
+});
+
+// ---------------------------------------------------------------------------
+// (round 3, W1-9) What stands in front of the Prow Stair's run (front plane: she passes behind them), so its long
+// diagonal never runs more than ~3 H unbroken: a masonry buttress where the run climbs through the foundation (coursed
+// blocks, a weathering cap, a plinth stepping out at its foot, moss in the low joints) and a rock outcrop where it is cut
+// through the cliff (lumpy facets lit from the upper left, moss on its top, a small wind-bent pine). The anchor is the
+// thing's top centre; it runs down `h` px (out of the frame for the outcrop).
+// ---------------------------------------------------------------------------
+export interface ButtressP {
+  kind: "pier" | "outcrop";
+  w: number;
+  h: number;
+  seed: number;
+}
+
+export const buttress = definePainter<ButtressP>("court.buttress", {
+  bounds(p) {
+    return [-p.w / 2 - 0.4 * H, -0.9 * H, p.w / 2 + 0.4 * H, p.h + 8];
+  },
+  paint(c, p) {
+    const W = p.w / 2;
+    if (p.kind === "pier") {
+      const cap = 0.3 * H, plinth = p.h - 0.35 * H;
+      rect(c, -W - 0.16 * H, -6, W + 0.16 * H, p.h, (X, Y, lx, ly) => {
+        // the weathering cap: a wedge sloping down to the front edge, lit on top
+        const capY = (Math.abs(lx) / (W + 6)) * 7 - 6;
+        const halfAt = ly > plinth ? W + Math.min(0.16 * H, (ly - plinth) * 0.5) : ly < cap ? W + 5 : W;
+        if (Math.abs(lx) > halfAt) return 0;
+        if (ly < cap) {
+          if (ly < capY) return 0;
+          return mt(M.stone, face(0.95, SIDE, lx < 0 ? -0.4 : 0.3, ly < capY + 2.5 ? -0.9 : 0.4) * (ly > cap - 2 ? 0.7 : 0.98), X, Y, 0.05, 1);
+        }
+        // coursed blocks, the courses staggered; its left face catches the sun, its right edge in shadow
+        const course = Math.floor((ly - cap) / 17);
+        const jx = ((lx + W + (course % 2) * 13) % 26 + 26) % 26;
+        const joint = ((ly - cap) % 17) < 1.3 || jx < 1.2;
+        const nx = lx < -W + 3 ? -0.8 : lx > W - 4 ? 0.9 : 0;
+        const n = (fbm(lx * 0.09, ly * 0.09, p.seed, 3) - 0.5) * 0.14;
+        const mossy = joint && ly > p.h * 0.55 && fbm(lx * 0.2, ly * 0.2, p.seed + 3, 2) > 0.55;
+        if (mossy) return tn(P.moss, 0.55, X, Y, 0.3);
+        return mt(M.stone, face(0.95, SIDE, nx, ly > plinth && Math.abs(lx) > W ? -0.6 : 0) * (joint ? 0.7 : 0.92) + n, X, Y, 0.1, 1);
+      });
+      return;
+    }
+    // the outcrop, in the cliff's own idiom (karst blue-grey, columnar): three prisms of different heights side by
+    // side, each a flat top under moss and a band of soil, its west face lit, its east edge in shadow, split by
+    // vertical cracks and a bedding joint or two
+    const cols: [number, number, number][] = [[-W, -W * 0.3, 0.32 * H], [-W * 0.3, W * 0.35, 0], [W * 0.35, W, 0.5 * H]];
+    const topAt = (lx: number): number => {
+      const col = cols.find(([a0, a1]) => lx >= a0 && lx < a1) ?? cols[cols.length - 1]!;
+      return col[2] + (lx - col[0]) * 0.06 + (fbm(lx * 0.08, 1.3, p.seed, 2) - 0.5) * 5;
+    };
+    rect(c, -W - 2, -6, W + 2, p.h, (X, Y, lx, ly) => {
+      const col = cols.find(([a0, a1]) => lx >= a0 && lx < a1);
+      if (!col) return 0;
+      const [a0, a1] = col;
+      const t = topAt(lx);
+      if (ly < t) return 0;
+      const u = (lx - a0) / (a1 - a0);
+      const d = ly - t;
+      // the top: moss over a dark band of soil and roots
+      if (d < 3 && fbm(lx * 0.35, 2.2, p.seed + 9, 2) > 0.3) return tn(P.moss, d < 1.2 ? 0.3 : 0.55, X, Y, 0.3);
+      if (d < 6) return tn(P.earth, 0.75, X, Y, 0.3);
+      // the faces: lit west, a mid body, the east edge dark (the cliff's own values: it is as near as the cliff); two
+      // near-straight vertical cracks per prism, a bedding joint now and then
+      const jit = (fbm(ly * 0.07, a0 * 0.01, p.seed + 3, 2) - 0.5) * 3;
+      const crack = (Math.abs(lx - (a0 + (a1 - a0) * 0.36) - jit) < 0.7 || Math.abs(lx - (a0 + (a1 - a0) * 0.71) + jit) < 0.7) && d > 8;
+      const bed = Math.abs(((ly + a0 * 0.7) % 53) - 26) < 0.6 && fbm(lx * 0.1, ly * 0.1, p.seed + 5, 2) > 0.45;
+      let v = u < 0.2 ? 0.48 : u > 0.86 ? 0.82 : 0.62 + (fbm(lx * 0.06, ly * 0.04, p.seed + 7, 3) - 0.5) * 0.12;
+      if (crack || bed) v += 0.2;
+      // moss streaks down the lit faces from the top
+      if (u < 0.5 && d < 0.6 * H && fbm(lx * 0.3, ly * 0.06, p.seed + 11, 2) > 0.74) return tn(P.moss, 0.66, X, Y, 0.3);
+      return tn(P.karst, clamp(v + d / p.h * 0.12, 0, 1), X, Y, 0.35);
+    });
+    // a small wind-bent pine out of a crack near its top: a dark trunk, two needle pads
+    const tx = -W * 0.05, ty = topAt(-W * 0.05) + 3;
+    for (let k = 0; k <= 30; k++) {
+      const t = k / 30, x = tx + t * 0.35 * H + Math.sin(t * 3) * 4, y = ty - t * 0.55 * H;
+      rect(c, x - 1.5, y - 1, x + 1.5, y + 1, (X, Y) => tn(M.wood, 0.75, X, Y, 0));
+    }
+    for (const [px, py, pr] of [[0.3, 0.55, 0.26], [0.12, 0.4, 0.2]] as const) {
+      const cx = tx + px * H, cy = ty - py * H, rr = pr * H;
+      rect(c, cx - rr, cy - rr * 0.6, cx + rr, cy + rr * 0.45, (X, Y, lx, ly) => {
+        const q = Math.hypot((lx - cx) / rr, (ly - cy) / (rr * 0.5)) + (fbm(lx * 0.2, ly * 0.2, p.seed + 11, 2) - 0.5) * 0.5;
+        if (q > 1) return 0;
+        return tn(P.pine, clamp(0.25 + (ly - cy) / rr * 0.6 + (lx - cx) / rr * 0.15, 0, 1), X, Y, 0.3);
+      });
+    }
   },
 });
 
@@ -232,5 +332,8 @@ export const tiers = definePainter<TiersP>("court.tiers", {
         });
       }
     }
+    // (round 3, W2-10: the stands took no haze step from the near court) the whole stands sit a step back in the air
+    tint(c, -hw - 10, -p.rows * 34 - 80, hw + 10, 120, () => HAZE1);
   },
 });
+const HAZE1 = lut("haze", 1);
