@@ -25,6 +25,10 @@ export const PANEL_TIME = 0.6;
 export const CONTENT_GATE = 0.3;
 /** A band entered at this scroll speed (|n|) or faster gets its content with its paper at once (one landing). */
 export const FAST_N = 0.5;
+/** ...or whose panel is crossed at this scroll velocity (px/s, ScrollTrigger's own measure). n is eased (0.4 s), so on a
+ *  jump or a wheel fling it was still low when the panel played, and the paper stood bare for ~0.2 s before its content
+ *  (site fix 10-21); the trigger's velocity is there on the very frame. */
+export const FAST_V = 2000;
 /** The spine (the panel's open edge) draws this far through the slide. */
 export const SPINE_AT = 0.55;
 /** A band on screen that a jump, a focus or the watchdog settles plays the rest of its entrance in this long (s); only

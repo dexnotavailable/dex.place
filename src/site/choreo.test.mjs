@@ -37,6 +37,7 @@ test("choreo plan: strips whip in from their side and land square; panels follow
   assert.ok(P.expoOut(P.CONTENT_GATE) > 0.8 && P.expoOut(P.CONTENT_GATE) < 0.95, "the paper first: the gate opens with it ~90% in");
   assert.ok(P.PANEL_TIME * P.CONTENT_GATE <= 0.25, "...and soon: never long-empty paper");
   assert.ok(P.FAST_N > 0 && P.FAST_N < 1);
+  assert.ok(P.FAST_V >= 1200, "a normal wheel scroll never rides its content in with the paper");
   assert.ok(P.SPINE_AT < 1);
   assert.ok(P.SETTLE_TIME >= 0.3 && P.SETTLE_TIME <= 0.6, "a settle plays out, never a pop");
   assert.ok(P.STITCH_FADE <= 0.15, "the stitch is solid at once, never a see-through slab");

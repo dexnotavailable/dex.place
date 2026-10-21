@@ -20,7 +20,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import {
-  CONTENT_GATE, FAST_N, PANEL_AT, PANEL_TIME, PHONE_TIME, SETTLE_TIME, SPINE_AT, STRIP_START, contentFrom,
+  CONTENT_GATE, FAST_N, FAST_V, PANEL_AT, PANEL_TIME, PHONE_TIME, SETTLE_TIME, SPINE_AT, STRIP_START, contentFrom,
   foreY, isBelow, latch, onScreen, panelFrom, speedOf, stitchFrom, stripEnd, stripPose, worldShift, type Side,
   type Variant,
 } from "./choreo-plan.ts";
@@ -475,15 +475,37 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
     done();
   };
 
+  // a band came in fast (a fling, a jump, a settle): all its content rides in on its paper, solid, the same slide (site
+  // fix 10-21: it waited on the gate, a bare panel for ~0.2 s; faded in on its own, it crossed bare world ahead of it)
+  const ride = (dur: number): void => {
+    b.all = b.gateOpen = true;
+    b.queue = [];
+    const list = items.filter((x) => !landedItems.has(x));
+    if (stitch && unroll && stitch.dataset.landed === undefined) {
+      stitch.dataset.landed = "";
+      gsap.set(unroll, { clearProps: "clipPath" });
+      list.push(unroll);
+    }
+    for (const x of list) landedItems.add(x);
+    if (list.length) {
+      gsap.fromTo(list, { x: s * 1.01 * paper.offsetWidth, y: 0, scale: 1, autoAlpha: 1 }, {
+        x: 0, duration: dur, ease: "expo.out", overwrite: "auto",
+        onComplete: () => { gsap.set(list, { clearProps: `${CLEAR},clipPath` }); },
+      });
+    }
+    b.onGate?.();
+    b.onGate = null;
+    done();
+  };
   // the panel: a triggered slide from its side, its shade riding with it (one pose), the spine drawn as it lands; the
-  // content slides out from under the strip once the paper is (nearly) in (at once when the band came in fast)
-  const playPanel = (dur: number): void => {
+  // content slides out from under the strip once the paper is (nearly) in (with it when the band came in fast)
+  const playPanel = (dur: number, fast = false): void => {
     if (b.panelIn) return;
     b.panelIn = true;
     gsap.to(sheet, { xPercent: 0, duration: dur, ease: "expo.out", onComplete: () => { b.panelDone = true; done(); } });
     gsap.to(shade, { opacity: 1, duration: dur * 0.5, ease: "power1.out" });
     if (spine) gsap.to(spine, { scaleY: 1, duration: 0.7 * T, ease: "expo.out", delay: dur * SPINE_AT });
-    if (Math.abs(speed.n) >= FAST_N) openGate();
+    if (fast || Math.abs(speed.n) >= FAST_N) ride(dur);
     else gateCall = gsap.delayedCall(dur * CONTENT_GATE, openGate);
   };
 
@@ -537,7 +559,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
         onComplete: () => { b.sp = 1; setStrip(1); playHead(); done(); },
       });
     } else playHead();
-    playPanel(SETTLE_TIME);
+    playPanel(SETTLE_TIME, true);
     if (b.gateOpen) land(items, true);
   };
   b.settle = (now = false) => {
@@ -568,7 +590,7 @@ function band(el: HTMLElement, phone: boolean, desktop: boolean, T: number, spee
   // the panel: plays once its top crosses PANEL_AT (or the scroll jumps past it)
   ScrollTrigger.create({
     trigger: panel, start: PANEL_AT(phone), end: "bottom top",
-    onUpdate: (st) => { if (!b.panelIn && st.progress > 0) playPanel(PANEL_TIME * T); },
+    onUpdate: (st) => { if (!b.panelIn && st.progress > 0) playPanel(PANEL_TIME * T, Math.abs(st.getVelocity()) >= FAST_V); },
   });
   // content: batches as they come up the screen, queued behind the gate
   if (items.length && !OFF.has("content")) {
