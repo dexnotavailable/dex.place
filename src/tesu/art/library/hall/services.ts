@@ -826,14 +826,14 @@ export const map = definePainter<{ w: number; at?: At }>("hall.map", {
       // so the falls are never outlined in black
       if (v > 0.36 && v < 0.76) {
         const t = (v - 0.36) / 0.4;
-        const w0 = cliffU0 - 0.01 + 0.012 * Math.sin(v * 41 + 0.7) + (vnoise(v * 26, 3, 91) - 0.5) * 0.026 + t * 0.012;
+        const w0 = cliffU0 - 0.03 + 0.012 * Math.sin(v * 41 + 0.7) + (vnoise(v * 26, 3, 91) - 0.5) * 0.026 + t * 0.03;
         const w1 = cliffU1 + 0.006 + 0.007 * Math.sin(v * 29 + 2.1) - t * 0.016;
         if (u > w0 && u < w1) {
           const stroke = Math.abs(Math.sin(lx * 1.3 + v * 9)) > 0.88;
           const spray = Math.max(0, 1 - Math.abs(lx - U(FALL_U)) / 3.2);
           if (t > 0.7 && !keep(X, Y, (1 - t) / 0.3)) {
             // the foot dissolves into the lake's mist: paper (or the lake) shows through
-          } else return tn(P.range, clamp(0.1 + t * 0.42 + (stroke ? 0.1 : 0) + ((u - w0) / (w1 - w0)) * 0.08 + spray * 0.35, 0, 1), X, Y, 0.35);
+          } else return tn(P.range, clamp(0.78 - t * 0.38 + (stroke ? 0.08 : 0) + ((u - w0) / (w1 - w0)) * 0.1 - spray * 0.5, 0, 1), X, Y, 0.35);
         }
       }
       // the ridges, ink-painting style: the nearest range first, so its body hides the ranges behind it; each an
