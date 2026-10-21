@@ -3,8 +3,8 @@
  "stage": "pixel",
  "px": 1,
  "pivot": [
-  14,
-  144
+  40,
+  180
  ],
  "layer": "front",
  "attach": "world",

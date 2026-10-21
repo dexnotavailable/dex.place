@@ -265,7 +265,8 @@ export class Zhusha {
       if (k.y < fb.y || k.y > fb.y + fb.h) continue;
       const near = k.dir > 0 ? fb.x - k.x0 : k.x0 - (fb.x + fb.w);
       if (near + fb.w < a || near > z) continue;
-      const d = Math.max(near, 0);
+      // a foe already over her muzzle is struck at the muzzle (never behind her)
+      const d = Math.max(near, E.boltFrom * ART_PX);
       if (hit === null || d < hit) hit = d;
     }
     if (hit === null && z < k.len) return;
