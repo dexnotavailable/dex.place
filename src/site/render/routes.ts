@@ -73,7 +73,7 @@ export function routes(content: SiteContent): Route[] {
     },
     ...entryRoutes(content, content.posts),
     {
-      meta: { path: "/donate/", title: "Donate", page: "donate", description: "Support Dex through Ko-fi or an MB Bank transfer (VietQR)." },
+      meta: { path: "/donate/", title: "Donate", page: "donate", description: "Support Dex through Ko-fi or a personal bank transfer (VietQR)." },
       main: donatePage,
     },
     // the services that open later: honest stubs at their own addresses (render/stubs.ts)

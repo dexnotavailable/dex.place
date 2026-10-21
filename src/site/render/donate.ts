@@ -1,16 +1,15 @@
-// Donate: a home-page section and /donate/. Ko-fi, and an MB Bank VietQR whose
-// amount can be prefilled.
+// Donate: a home-page section and /donate/. Ko-fi, and a personal bank (MB Bank)
+// VietQR whose amount can be prefilled.
 //
-// Everything is prerendered. Without JS the page shows the Ko-fi link, the
-// account-only QR (no amount) and the bank details as selectable text. With
+// Everything is prerendered. Without JS the page shows the Ko-fi link and the
+// account-only QR (no amount); the account is never printed (Dex 10-21). With
 // JS, motion/donate.ts wakes the amount slider and quick picks, which redraw
 // the QR live. Styles: styles/donate.css.
 
 import { KOFI_URL } from "../data/nav.ts";
-import { QR_TAG_NONE, QUICK_PICKS, STOPS, TICKS, donateQr, fineText, formatVnd, shortVnd, trackPos } from "../donate.ts";
+import { QR_TAG_NONE, QUICK_PICKS, STOPS, TICKS, donateQr, formatVnd, shortVnd, trackPos } from "../donate.ts";
 import { pathsMarkup, type PixelGrid } from "../pixels.ts";
-import { MB_BANK, TRANSFER_NOTE } from "../vietqr.ts";
-import { copyButton, hanko, icon, pageHead, sectionHead, tile } from "./glyphs.ts";
+import { hanko, icon, pageHead, sectionHead, tile } from "./glyphs.ts";
 import { esc } from "./html.ts";
 
 type Level = 2 | 3;
@@ -110,18 +109,11 @@ function bankCard(level: Level): string {
     `<section class="card bank" aria-labelledby="bank-title" data-donate data-state="none" data-reveal style="--i:1">` +
     // the donation box sits on Hanko's desk (GDK 3.7)
     hanko() +
-    head("bank", "MB Bank", "Bank transfer by QR", `h${level}`, "bank-title") +
+    head("bank", "Personal bank", "Vietnamese banking", `h${level}`, "bank-title") +
     `<div class="bank__grid">` +
     qrWindow() +
     amountPanel() +
-    `<dl class="kv bank__kv">` +
-    `<div><dt>Bank</dt><dd><span>${esc(MB_BANK.bank)}</span></dd></div>` +
-    `<div><dt>Account</dt><dd><span class="kv__mono">${esc(MB_BANK.account)}</span>${copyButton(MB_BANK.account, "account number")}</dd></div>` +
-    `<div><dt>Recipient</dt><dd><span>${esc(MB_BANK.holder)}</span>${copyButton(MB_BANK.holder, "recipient name")}</dd></div>` +
-    `<div><dt>Note</dt><dd><span>${esc(TRANSFER_NOTE)}</span>${copyButton(TRANSFER_NOTE, "transfer note")}</dd></div>` +
-    `</dl>` +
     `</div>` +
-    `<p class="fine bank__fine" data-amt-fine>${esc(fineText(0))}</p>` +
     `<p class="sr" aria-live="polite" data-amt-live></p>` +
     `</section>`
   );
@@ -136,7 +128,7 @@ export function donateSection(): string {
   return (
     `<section class="sec sec--donate" id="donate" aria-labelledby="donate-title">` +
     `<div class="wrap">` +
-    sectionHead({ id: "donate-title", kicker: "donate", title: "Donate", tone: "magenta", icon: "heart", aside: "Ko-fi · MB Bank", more: { href: "/donate/", label: "Donate page" } }) +
+    sectionHead({ id: "donate-title", kicker: "donate", title: "Donate", tone: "magenta", icon: "heart", aside: "Ko-fi · Personal bank", more: { href: "/donate/", label: "Donate page" } }) +
     donateBody(3) +
     `</div></section>`
   );
@@ -147,7 +139,7 @@ export function donatePage(): string {
     `<div class="page page--donate">` +
     `<div class="wrap">` +
     // the one fact a donor needs before giving (content/docs/about-dex-place.md, "Donating")
-    pageHead({ kicker: "donate", title: "Donate", tone: "magenta", icon: "heart", aside: "Ko-fi · MB Bank", lead: "Donating never unlocks anything: every file and every part of the world is the same whether you donate or not." }) +
+    pageHead({ kicker: "donate", title: "Donate", tone: "magenta", icon: "heart", aside: "Ko-fi · Personal bank", lead: "Donating never unlocks anything: every file and every part of the world is the same whether you donate or not." }) +
     donateBody(2) +
     `</div></div>`
   );

@@ -41,9 +41,9 @@ interface ColumnWorld {
 const SECTIONS: [string, string][] = [
   ["downloads", "/downloads/"],
   ["gallery", "/gallery/"],
+  ["donate", "/donate/"],
   ["docs", "/docs/"],
   ["blog", "/blog/"],
-  ["donate", "/donate/"],
 ];
 
 /** About how much the world downloads before it can play (the Save-Data note). */

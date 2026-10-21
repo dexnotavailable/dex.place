@@ -34,12 +34,13 @@ export interface VietQrAccount {
   readonly account: string;
 }
 
-/** Dex's MB Bank account. The bank shows the holder's name itself. */
-export const MB_BANK: VietQrAccount & { readonly bank: string; readonly holder: string } = {
+/** Dex's MB Bank account. The bank shows the holder's name itself. The site
+    never prints the number (Dex 10-21): it lives only inside the QR, so it is
+    kept out of the shipped bundle as readable text too. */
+export const MB_BANK: VietQrAccount & { readonly bank: string } = {
   bank: "MB Bank",
   bin: "970422",
-  account: "0585739325",
-  holder: "THIEU GIA MINH",
+  account: [0, 5, 8, 5, 7, 3, 9, 3, 2, 5].join(""),
 };
 
 /** Transfer note carried in tag 62/08. */

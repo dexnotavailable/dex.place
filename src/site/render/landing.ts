@@ -3,7 +3,7 @@
 //
 // The home page is one continuous scroll (Dex, 2026-09-29): the world on top,
 // then every section in order, each fully usable in place: projects ->
-// downloads -> gallery -> docs & blog -> donate. The nav jumps between them
+// downloads -> gallery -> donate -> docs & blog (Dex 10-21: docs & blog last). The nav jumps between them
 // (motion/nav.ts); each section also has its own full page for deep links.
 // Every page is complete without JavaScript; motion only adds reveal and pops.
 
@@ -65,8 +65,8 @@ export const HOME_BANDS: readonly HomeBand[] = [
   { id: "projects", side: "l", scene: "sky", tone: "amber" },
   { id: "downloads", side: "r", scene: "palace", tone: "jade", stitch: '<article class="dlf"' },
   { id: "gallery", side: "l", scene: "isles", tone: "lagoon", stitch: '<div class="collage-box"' },
-  { id: "docs", side: "r", scene: "lake", tone: "indigo", stitch: '<section class="dgroup ' },
-  { id: "donate", side: "l", scene: "pine", tone: "rose", stitch: '<div class="qr"' },
+  { id: "donate", side: "r", scene: "pine", tone: "rose", stitch: '<div class="qr"' },
+  { id: "docs", side: "l", scene: "lake", tone: "indigo", stitch: '<section class="dgroup ' },
 ];
 
 /** A section as its renderer gives it, split: its classes, id, label, head (for the strip) and body (for the panel). */
@@ -117,7 +117,7 @@ export function homeBand(b: HomeBand, i: number, n: number, section: string): st
 }
 
 export function landing(content: SiteContent): string {
-  const sections = [projectsSection(), downloadsSection(), gallerySection(content), docsSection(content), donateSection()];
+  const sections = [projectsSection(), downloadsSection(), gallerySection(content), donateSection(), docsSection(content)];
   return sections.map((html, i) => homeBand(HOME_BANDS[i]!, i, sections.length, html)).join("");
 }
 

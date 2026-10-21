@@ -1,6 +1,6 @@
 // Site navigation. The home page is one continuous scroll with every section
-// in this order (Dex, 2026-09-29: projects -> downloads -> gallery -> docs &
-// blog -> donate); the nav jumps to each section and highlights the one being
+// in this order (Dex, 2026-09-29; 10-21: donate above docs & blog, which goes
+// to the bottom: projects -> downloads -> gallery -> donate -> docs & blog); the nav jumps to each section and highlights the one being
 // read (motion/nav.ts), but scrolling is the main path. Each section also
 // keeps its own full page at `page` for deep links and no-JS readers.
 // CANON's wayfinding priority (downloads, donate, illustrations,
@@ -27,9 +27,9 @@ export const NAV: readonly NavItem[] = [
   { id: "projects", label: "Projects", anchor: "#projects", page: "/projects/", icon: "grid", tone: "yellow" },
   { id: "downloads", label: "Downloads", anchor: "#downloads", page: "/downloads/", icon: "download", tone: "mint" },
   { id: "gallery", label: "Gallery", anchor: "#gallery", page: "/gallery/", icon: "frame", tone: "yellow" },
+  { id: "donate", label: "Donate", anchor: "#donate", page: "/donate/", icon: "heart", tone: "magenta" },
   { id: "docs", label: "Docs", anchor: "#docs", page: "/docs/", icon: "book", tone: "cyan" },
   { id: "blog", label: "Blog", anchor: "#blog", page: "/blog/", icon: "page", tone: "cyan" },
-  { id: "donate", label: "Donate", anchor: "#donate", page: "/donate/", icon: "heart", tone: "magenta" },
 ];
 
 /** Where a nav item points: the anchor on the home page, or home + anchor elsewhere. */
