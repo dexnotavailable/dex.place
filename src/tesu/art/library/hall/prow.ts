@@ -71,8 +71,18 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
         const pw = PIER * (1 + (ly - m0) / Math.max(1, p.found) * 0.5);
         if (solid) {
           // the landing's solid stretch: coursed stone, a small barred window lit from inside
-          const wx = (b0 + b1) / 2, wy = top + p.head * 0.45;
-          if (Math.abs(lx - wx) < 0.16 * H && Math.abs(ly - wy) < 0.2 * H) return Math.abs(((lx - wx + 100) % 6) - 3) < 1 ? mt(M.stone, 0.3, X, Y, 0.4, 1) : tn(M.glow, 0.45, X, Y, 0.4);
+          // (round 4, director: its box followed the slope's head line per column, so with the pier's head lowered
+          // (W1-g) it showed as a sheared orange-and-black striped parallelogram) an upright window, its centre on the
+          // slope at the bay's middle: a dark stone reveal round it, a lit sill under it, the bars dark against a lamp
+          // inside that is brighter low down
+          const wx = (b0 + b1) / 2, wy = yAt(wx) - p.head * 0.55;
+          const ex = Math.abs(lx - wx), ey = ly - wy, WW = 0.15 * H, WH = 0.19 * H;
+          if (ex < WW + 3 && Math.abs(ey) < WH + 3) {
+            if (ey >= WH && ey < WH + 3) return mt(M.stone, face(0.95, SIDE, 0, ey < WH + 1.5 ? -0.9 : 0.4) * 0.95, X, Y, 0.1, 1);
+            if (ex >= WW || Math.abs(ey) >= WH) return mt(M.stone, ey < -WH ? 0.5 : 0.36, X, Y, 0.2, 1);
+            if (Math.abs(((lx - wx + 100) % 6) - 3) < 1) return mt(M.stone, 0.22, X, Y, 0.3, 1);
+            return tn(M.glow, clamp(0.62 - (ey + WH) / (2 * WH) * 0.3, 0, 1), X, Y, 0.4);
+          }
           const course = Math.floor((ly - m0) / 16);
           const joint = ((((ly - m0) % 16) + 16) % 16) < 1.2 || ((((lx + (course % 2) * 22) % 44) + 44) % 44) < 1.2;
           return mt(M.stone, face(0.95, SIDE, k < 2 ? -0.7 : BAY - k < 2 ? 0.7 : 0, 0) * (joint ? 0.7 : 0.92), X, Y, 0.1, 1);
