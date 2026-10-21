@@ -49,6 +49,10 @@ export class ZhushaDraw {
   bind(z: Zhusha): void {
     z.hasRole = (role, ult) => !!this.anims.forRole(role, ult);
     z.clipOf = (role, ult) => this.anims.forRole(role, ult)?.slot.def ?? null;
+    z.clipAt = (a, ult) => {
+      const r = this.anims.forRole(a.role, ult);
+      return r ? { slot: r.slot.id, t: this.clipTime(a, r.slot, z), total: r.slot.total } : null;
+    };
     z.clipDone = (a, ult) => {
       const r = this.anims.forRole(a.role, ult);
       if (!r) return true;

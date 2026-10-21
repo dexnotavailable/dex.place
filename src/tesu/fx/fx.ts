@@ -201,6 +201,11 @@ export class Fx {
     return this.clock.play(id, o);
   }
 
+  /** Plays one already `from` ticks in (fx/contract.ts FxClock.playFrom: her slash trail carried on). */
+  playFrom(id: string, o: FxSpawn, from: number): FxHandle {
+    return this.clock.playFrom(id, o, from);
+  }
+
   tick(): void {
     this.clock.tick();
   }
@@ -246,7 +251,9 @@ export class Fx {
         const sh = clipY === null ? sh0 : fxClipRows(sh0, d.off[1], Math.round(py), clipY, a);
         if (sh <= 0) continue;
         const dx = flip ? xf.q[0] - (d.off[0] + sw) : xf.q[0] + d.off[0];
-        r.sprite({ sheet, sx, sy, sw, sh, x: dx, y: xf.q[1] + d.off[1], flip, lit: 0, opacity });
+        // (cutoffs 10-21) tile: the cell's far edges where the transform puts them, so cells meet with no see-through
+        // hairline where an art px is more than a frame px (the close band, the R's cut-in, 1440p / 4K)
+        r.sprite({ sheet, sx, sy, sw, sh, x: dx, y: xf.q[1] + d.off[1], flip, lit: 0, opacity, tile: true });
       }
     }
     r.setTransform(view.s, view.focus, view.mirror);

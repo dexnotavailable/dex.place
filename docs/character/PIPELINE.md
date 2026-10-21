@@ -1335,6 +1335,18 @@ charScale (1.1 x 96 = 105.6 world px, `zhusha/feel.json`), i.e. 0.825 world px p
   (`planeXf(c, 1)`), or it lands on the wrong grid in two of the three cases above.
 - Pitfall: at zoom 1 -> 0.99 her pixels step from screen-res to the world grid (the 10-17 default; a FOR DEX item in
   the engine notebook proposes holding screen-res down to ~0.6).
+- (cutoffs 2026-10-21) A trail baked into a move's drawing dies with the drawing when the next move cuts it short
+  (mashing the chain dropped m1_1's whole crescent). Each normal-chain move also ships its trail alone as an effect,
+  `public/assets/fx/<slot>_trail` (her trail px, one drawing per drawing, same pivot and ticks, cut at the ground
+  line); `zhusha/controller.ts` `trailOn` plays it from the clip tick her drawing was cut at, so it fades out
+  whatever the next move does. It never plays while her own drawing does. Rebuild it after any change to an m1
+  drawing: `lanes\zhusha-1021b\cutoffs\work\tools\trail_fx.py` (outside the repo). [proven in code and captures]
+- (cutoffs 2026-10-21) A shape that ends on its canvas or source frame bound (a ruler-straight edge) is a reject:
+  heal it before slotting (`...\cutoffs\work\tools\cutheal.py`: streaks and crescents taper to a tip or round to a
+  cap, a crescent's back lying along the bound gets a varied edge, smoke / glow / light fields break up into the
+  dither; her figure, blade and colours are never touched), then re-run `tools/zhusha/derive.mjs`. [proven]
+- (cutoffs 2026-10-21) A move's landing (m1_4's hop, a knock-up) ages with the move, and hurt / knockdown play their
+  recovery out after the stun, so a state's end never pops to the landing crouch or idle. [proven, `cutoffs.test.mjs`]
 
 ---
 

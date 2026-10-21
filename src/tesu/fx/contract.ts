@@ -210,6 +210,17 @@ export class FxClock {
     return this.defs.has(id);
   }
 
+  /**
+   * (cutoffs 10-21) Plays one (and its parts) already `from` ticks in: her slash trail carried on from the clip tick
+   * her drawing was cut at (zhusha/controller.ts trailOn), so it fades out whatever the next move does.
+   */
+  playFrom(id: string, o: FxSpawn, from: number): FxHandle {
+    const s = this.serial;
+    const h = this.play(id, o);
+    for (const e of this.live) if (e.serial >= s) e.t = Math.max(e.t, Math.round(from));
+    return h;
+  }
+
   play(id: string, o: FxSpawn = {}, depth = 0): FxHandle {
     const def = this.defs.get(id);
     if (!def) {
