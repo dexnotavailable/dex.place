@@ -156,12 +156,14 @@ export const cat = definePainter<FolkP>("cat", {
     set(hx + 4.5, hy + 2, P.paper[2]!); set(hx + 5.5, hy + 2, P.paper[2]!); set(hx + 5.5, hy + 1, P.skin[2]!);
     // the front paws, pale, tucked under the chin
     for (let x = 6; x <= 12; x++) set(x, -1, x > 10 ? P.paper[2]! : tone(FUR, 0.3, Math.round(c.X(x)), Math.round(c.Y(-1)), 0.3));
-    // the tail: wrapped round the front from the rump, its tip darker
-    for (let a = 0; a <= Math.PI * 1.05; a += 0.08) {
-      const tx = -12 + Math.cos(Math.PI + a) * -1 * 14 * (a / Math.PI) - 2, ty = -2.2 + Math.sin(a) * 1.2;
-      const tip = a > Math.PI * 0.85;
-      const col = tip ? FUR[4]! : Math.sin(a * 9) > 0.5 ? FUR[3]! : FUR[2]!;
-      set(tx, ty, col); set(tx, ty - 1, tip ? FUR[3]! : FUR[1]!); set(tx, ty + 1, P.umber[3]!);
+    // the tail: from the rump round the bottom of the curl to the front, two px thick, ringed, its tip darker
+    for (let t = 0; t <= 1; t += 0.02) {
+      const tx = -16.5 + t * 25, ty = -3.2 + Math.sin(t * Math.PI * 0.85) * 2.3 - (t > 0.85 ? (t - 0.85) * 8 : 0);
+      const tip = t > 0.82;
+      const ring = Math.floor(t * 9) % 2 === 1;
+      set(tx, ty - 1, tip ? FUR[3]! : FUR[1]!);
+      set(tx, ty, tip ? FUR[4]! : ring ? FUR[3]! : FUR[2]!);
+      set(tx, ty + 1, P.umber[3]!);
     }
   },
 });

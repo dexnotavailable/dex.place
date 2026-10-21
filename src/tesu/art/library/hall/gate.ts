@@ -176,7 +176,7 @@ export function bayWall(c: PaintCtx, g: GateGeo): void {
     const mot = fbm(lx * 0.011, ly * 0.014, 229, 2) - 0.5;
     const low = clamp((ly + 1.1 * H) / (0.6 * H), 0, 1);
     const stain = low * (0.06 + 0.08 * fbm(lx * 0.03, ly * 0.015, 233, 2));
-    const crack = Math.abs(vnoise(lx * 0.035, ly * 0.009, 239) - 0.5) < 0.01 && fbm(lx * 0.02, ly * 0.02, 241, 2) > 0.66;
+    const crack = Math.abs(vnoise(lx * 0.035, ly * 0.009, 239) - 0.5) < 0.01 && fbm(lx * 0.02, ly * 0.02, 241, 2) > 0.74;
     // a recess line round each panel (the plaster set back from the frame)
     const near = st.some((sx) => Math.abs(lx - sx) < SW / 2 + 2) || Math.abs(ly - RAIL_MID) < 0.045 * H + 2 || (ly > RAIL_LOW - 2 && ly < RAIL_LOW);
     // (round 3, W2-5: the bay read as one flat navy field, sd 1.1, 4 colours) each panel between the stiles and
@@ -777,7 +777,9 @@ export function clerestories(c: PaintCtx, g: GateGeo, lf: LitField): void {
     const FR = 4, REV = 3;
     const ix0 = x0 + FR + REV, ix1 = x1 - FR - REV, iy0 = y0 + FR + REV + 1, iy1 = y1 - FR - REV;
     const seed = 4601 + (x0 < 0 ? 0 : 7);
-    const segs = iceRay(ix1 - ix0, iy1 - iy0, seed, 240);
+    // (each window in four panes: a mullion and a transom, each pane its own lattice, so no bar runs the whole window)
+    const pw = (ix1 - ix0) / 2, ph = (iy1 - iy0) / 2;
+    const panes = [0, 1, 2, 3].map((k) => iceRay(pw - 2, ph - 2, seed + k * 13, 190));
     rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
       const ex = Math.min(lx - x0, x1 - lx), ey = Math.min(ly - y0, y1 - ly);
@@ -793,11 +795,16 @@ export function clerestories(c: PaintCtx, g: GateGeo, lf: LitField): void {
       if (ly < iy0) return ly < iy0 - 2 ? P.dusk[4]! : P.dusk[3]!;
       if (lx < ix0 || lx >= ix1) return lx < ix0 ? (lx < ix0 - 1.5 ? P.dusk[3]! : P.dusk[2]!) : P.dusk[3]!;
       const gx = lx - ix0, gy = ly - iy0;
-      const [dd, flat] = iceDist(segs, gx, gy);
+      // the mullion and the transom: heavier bars, their tops and left faces lit warm by the room
+      const mx = Math.abs(gx - pw), my = Math.abs(gy - ph);
+      if (mx < 1.6 || my < 1.6) return (my < 1.6 && gy < ph - 0.5) || (mx < 1.6 && gx < pw - 0.6) ? P.umber[1]! : P.umber[3]!;
+      const pk = (gx > pw ? 1 : 0) + (gy > ph ? 2 : 0);
+      const px = gx - (gx > pw ? pw + 1 : 1), py = gy - (gy > ph ? ph + 1 : 1);
+      const [dd, flat] = iceDist(panes[pk]!, px, py);
       const edge = Math.min(gx, gy, ix1 - ix0 - gx, iy1 - iy0 - gy);
       // the bars (and the lattice's own border), dark timber against the light; the top of a level bar lit warm
-      if (dd < 1.0 || edge < 1.6) return P.umber[4]!;
-      if (flat && dd < 1.9 && iceDist(segs, gx, gy + 1.4)[0] < 1.0) return P.umber[1]!;
+      if (dd < 0.9 || edge < 1.6) return P.umber[4]!;
+      if (flat && dd < 1.9 && iceDist(panes[pk]!, px, py + 1.4)[0] < 0.9) return P.umber[1]!;
       // beyond: the court's sky a step under the gate's, deeper at the top, a far range in the haze low across it
       const fu = gx / (ix1 - ix0), fv = gy / (iy1 - iy0);
       const kars = fv > 0.7 + 0.13 * Math.abs(Math.sin(fu * 4.6 + seed)) + 0.05 * Math.sin(fu * 15 + seed);

@@ -420,7 +420,9 @@ export const bayShade = definePainter<BayShadeP>("hall.bayshade", {
       }
       const capTop = Math.abs(ly + DADO_H) < 2.2 || Math.abs(ly - RAIL_LOW) < 1.6;
       if (capTop) day *= 1.45;
-      const dv = day + j * 0.8 + bay * (day > 0.1 ? 0.14 : 0.03);
+      // (the gate's head, the plaque and the scrolls take it as one even step each: no dither speckle on them)
+      const even = plaque || onScroll >= 0 || (Math.abs(lx) < hb.cw + 2 && ly > hb.beam0 - 9 && ly < hb.beam1 + 1);
+      const dv = day + (even ? 0 : j * 0.8 + bay * (day > 0.1 ? 0.14 : 0.03));
       const dayN = dv > 1.0 ? 3 : dv > 0.62 ? 2 : dv > 0.3 ? 1 : 0;
 
       // --- the lamps: an amber pool round each, the hot core within 0.3 H, wider than tall

@@ -239,9 +239,11 @@ export const desk = definePainter<DeskP>("hall.desk", {
       const corner = Math.min(Math.abs(pu - 0.05), Math.abs(pu - 0.95)) < 0.04 && (v < 0.2 || v > 0.8);
       const wornEdge = (stile && fbm(lx * 0.3, ly * 0.12, 61, 2) > 0.58) || (corner && fbm(lx * 0.25, ly * 0.25, 63, 2) > 0.45);
       const grime = v > 0.84 ? (v - 0.84) * 0.9 : 0;
-      if (inset) return fbm(lx * 0.2, ly * 0.2, 65, 2) > 0.66 ? mt(M.wood, 0.7 + lk - shade, X, Y, 0.1, 1) : mt(M.gold, 0.78 + lk - shade, X, Y, 0.1, 1);
-      if (stile || rail) return mt(M.wood, 0.6 + lk + (stile ? (pu < 0.5 ? -0.06 : 0.06) : 0) - shade - (wornEdge ? 0.14 : 0) + grime + grain(lx, ly, 67, stile) * 0.12, X, Y, 0.1, 1);
-      return mt(M.wood, 0.76 + lk - shade + grain(lx, ly, 47) * 0.16 + (vnoise(lx * 0.08, ly * 0.01, 69) - 0.5) * 0.1 - (v > 0.82 ? 0.05 : 0) + grime * 0.6 - (corner && wornEdge ? 0.1 : 0), X, Y, 0.1, 1);
+      if (inset) return fbm(lx * 0.2, ly * 0.2, 65, 2) > 0.58 ? mt(M.wood, 0.68 + lk - shade, X, Y, 0.1, 1) : mt(M.gold, 0.5 + lk - shade, X, Y, 0.1, 1);
+      if (stile || rail) return mt(M.wood, 0.6 + lk + (stile ? (pu < 0.5 ? -0.06 : 0.06) : 0) - shade - (wornEdge ? 0.14 : 0) + grime + grain(lx, ly, 67, stile) * 0.14, X, Y, 0.1, 1);
+      // the field: the timber's figure in long streaks down the panel, darker toward its foot
+      const figure = grain(lx, ly, 47) * 0.26 + (vnoise(lx * 0.09, ly * 0.012, 69) - 0.5) * 0.16;
+      return mt(M.wood, 0.74 + lk - shade + figure + v * 0.1 + grime * 0.6 - (corner && wornEdge ? 0.1 : 0), X, Y, 0.1, 1);
     });
     // the hall's crest on the middle panel, gold, raised (round 2: the plum blossom of the door's plaque)
     const scx = W / 2, scy = (-T + TOPD - 0.09 * H) / 2, sr = Math.min(W * 0.07, (T - TOPD) * 0.3);
@@ -758,6 +760,8 @@ export const map = definePainter<{ w: number; at?: At }>("hall.map", {
     }
     box(c, lf, side, 14, -0.17 * H, W - 14, -0.17 * H + 4, M.wood, 71, 0.25, 1, 1);
     box(c, lf, side, -5, by0 - 7, W + 5, by0, M.wood, 73, 0.15, 1, 2);
+    // (round 3, W2-1) the crest rail's top catches the lantern hung over the map: a warm line, hottest under it
+    rect(c, -5, by0 - 7, W + 5, by0 - 5, (X, Y, lx) => tn(P.ember, clamp(0.55 + Math.abs(lx - W / 2) / (W * 0.9), 0, 1), X, Y, 0.4));
     for (const kx of [-7, W + 7]) lathe(c, kx, by0 - 9, by0 + 2, () => 3.6, (X, Y, u, _lx, ly) => mt(M.gold, cyl(lf.get(kx, ly).k, u, side), X, Y, 0.0, 1));
     // the frame and the mount (a dark teal silk border)
     rect(c, 0, by0, W, by1, (X, Y, lx, ly) => {
