@@ -45,7 +45,10 @@ export interface FeelFile {
   shakePx: number;
   hitstopCap: number;
   moves: Record<string, MoveDef>;
-  windDown: { rate: number };
+  /** finisherReturn (cutoffs r2): m1_4's return role (guard_to_rest) after its drawing; false: its drawing ends at rest. */
+  windDown: { rate: number; finisherReturn?: boolean };
+  /** (cutoffs r2) A carried-on slash trail plays its rest in at most `ticks`. */
+  trailCarry: { ticks: number };
   q: { hold: number; flash: number; camZoom: number; camTicks: number; camLeave: number };
   e: { hold: number; flash: number; skidEvery: number; boltFrom: number; boltSpeed: number };
   hurt: { stun: number; kb: [number, number]; iframes: number; heavyFrom: number; freeze: number; heavyFreeze: number; friction: number };
@@ -109,12 +112,15 @@ export interface ZHit extends HitBox {
 export interface ZFx {
   has(id: string): boolean;
   play(id: string, o: { x?: number; y?: number; facing?: number; attach?: "her" | "world"; delay?: number }): { stop(): void } | unknown;
-  /** Plays one already `from` ticks in (fx/contract.ts FxClock.playFrom). */
-  playFrom?(id: string, o: { x?: number; y?: number; facing?: number }, from: number): unknown;
+  /** Plays one already `from` ticks in, its clock at `rate` (fx/contract.ts FxClock.playFrom); moveTo keeps it with her. */
+  playFrom?(id: string, o: { x?: number; y?: number; facing?: number }, from: number, rate?: number): { stop(): void; moveTo?(x: number, y: number): void; readonly alive?: boolean } | unknown;
 }
 
 /** Where her drawing was and at which clip tick (controller.ts trailShown). */
-interface TrailAt { slot: string; t: number; total: number; x: number; y: number; facing: 1 | -1 }
+interface TrailAt { slot: string; t: number; total: number; x: number; y: number; facing: 1 | -1; grounded: boolean }
+
+/** The trail carried on (controller.ts trailOn): its handle, the way she faced, and whether it still goes with her. */
+interface Carried { h: { stop(): void; moveTo?(x: number, y: number): void; readonly alive?: boolean }; facing: 1 | -1; withHer: boolean }
 
 /** Which impact slash each of her hits leaves (FX v2 PLAN: a light, b medium, c heavy, f pierce, g finisher, h ult form). */
 export function impactSlash(move: string, weight: Weight, ult: boolean): string | undefined {
@@ -190,7 +196,13 @@ interface Ghost { x: number; y: number; lean: number; life: number; max: number;
 
 const M1 = ["m1_1", "m1_2", "m1_3", "m1_4"] as const;
 /** A move's return-to-rest role (slots.json), played after its own clip ends while she stands. */
-const TAILS: Record<string, string | null> = { m1_1: "m1_1_ret", m1_2: "m1_2_ret", m1_3: "m1_3_ret", m1_4: "m1_4_ret", skill_q: null, e_tap: null };
+const TAILS: Record<string, string | null> = {
+  m1_1: "m1_1_ret", m1_2: "m1_2_ret", m1_3: "m1_3_ret",
+  // (cutoffs r2) the finisher's own drawing ends at rest (m1_4 f014: blade upright before her); guard_to_rest after it is
+  // a full sword spin with big arcs (~2 s, reads as a fifth hit) that live never showed: feel.json windDown.finisherReturn
+  m1_4: FEEL.windDown.finisherReturn ? "m1_4_ret" : null,
+  skill_q: null, e_tap: null,
+};
 /**
  * Roles whose clip plays out while she stands (any input still takes her out). (cutoffs 10-21, Dex: "I'm still seeing
  * some cut off parts of animations") hurt and knockdown too: their state ends before their drawing does (hurt: stun 22 of
@@ -322,6 +334,8 @@ export class Zhusha {
   private lastLand = 0;
   /** Did locomotionAnim count this tick into landT (else update() does, so a landing inside a move ages too). */
   private landCounted = false;
+  /** The slash trail carried on from a drawing the next move cut short (one at a time; trailOn). */
+  private carried: Carried | null = null;
   private stopT = 99;
   private jumpT = 0;
   /** Ticks since she started falling (jump_arc's fall drawings). */
@@ -566,6 +580,7 @@ export class Zhusha {
     const q = this.qCam;
     if (q && (--q.t <= 0 || this.state === "ult" || this.dead > 0 || Math.abs(this.body.x - q.x) > FEEL.q.camLeave * H)) this.qCam = null;
     this.tickPose();
+    this.keepTrail();
     this.trailOn(trail);
   }
 
@@ -578,7 +593,7 @@ export class Zhusha {
     if (!this.fx?.playFrom || this.anim.hidden) return null;
     const c = this.clipAt(this.anim, this.ultForm);
     if (!c || !this.fx.has(`${c.slot}_trail`)) return null;
-    return { slot: c.slot, t: c.t, total: c.total, x: this.body.x, y: this.soleY, facing: this.facing };
+    return { slot: c.slot, t: c.t, total: c.total, x: this.body.x, y: this.soleY, facing: this.facing, grounded: this.body.grounded };
   }
 
   /**
@@ -592,7 +607,38 @@ export class Zhusha {
     if (now && now.slot === was.slot && now.t >= was.t) return;
     const from = Math.floor(was.t) + 1;
     if (from >= was.total) return;
-    this.fx?.playFrom?.(`${was.slot}_trail`, { x: was.x, y: was.y, facing: was.facing }, from);
+    // (cutoffs r2, critic: after a jump attack the carried m1_2 sweep hung 100-150 px over the floor) only from the
+    // ground: her trail drawings sit on her soles' floor line (m1_2's sweep, m1_4's crescents hug it), so one carried
+    // from the air would stay where she was in the air; in the air her drawing's trail goes with her drawing, as live
+    if (!was.grounded) return;
+    // one at a time (mashing left two beside the current move), and quick: the rest of the trail plays out in at most
+    // feel.json trailCarry.ticks (the normal chain reads as Dex has it: one slash on screen, its predecessor dissolving)
+    this.carried?.h.stop();
+    this.carried = null;
+    const rate = Math.max(1, (was.total - from) / FEEL.trailCarry.ticks);
+    const h = this.fx?.playFrom?.(`${was.slot}_trail`, { x: was.x, y: was.y, facing: was.facing }, from, rate);
+    if (h && typeof h === "object") this.carried = { h: h as Carried["h"], facing: was.facing, withHer: true };
+  }
+
+  /**
+   * (cutoffs r2, critic: lunging or running on, the carried trails were left 150-250 screen px behind her) The carried
+   * trail goes with her while she attacks on or runs on, on the ground, facing the way she cut it (her drawing's trail
+   * moved with her the same way); once she leaves the ground, turns, dashes off or is hit, it stays where it is (on the
+   * floor) and fades there.
+   */
+  private keepTrail(): void {
+    const c = this.carried;
+    if (!c) return;
+    if (c.h.alive === false) {
+      this.carried = null;
+      return;
+    }
+    if (!c.withHer) return;
+    if (!this.body.grounded || this.facing !== c.facing || this.anim.hidden || (this.state !== "move" && this.state !== "free")) {
+      c.withHer = false;
+      return;
+    }
+    c.h.moveTo?.(this.body.x, this.soleY);
   }
 
   private setState(s: State): void {

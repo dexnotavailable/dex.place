@@ -170,11 +170,19 @@ export interface FxLive {
   t: number;
   serial: number;
   stopped: boolean;
+  /** Ticks of its clock per game tick (1; a carried-on trail plays its rest faster: FxClock.playFrom). */
+  rate?: number;
 }
 
 export interface FxHandle {
   stop(): void;
   readonly alive: boolean;
+}
+
+/** (cutoffs r2) A carried-on effect: its handle, and a way to keep it where she is (FxClock.playFrom). */
+export interface FxCarry extends FxHandle {
+  /** Puts it (and its parts) at world (x, y) from now on. */
+  moveTo(x: number, y: number): void;
 }
 
 const DEAD: FxHandle = { stop: () => {}, alive: false };
@@ -212,13 +220,23 @@ export class FxClock {
 
   /**
    * (cutoffs 10-21) Plays one (and its parts) already `from` ticks in: her slash trail carried on from the clip tick
-   * her drawing was cut at (zhusha/controller.ts trailOn), so it fades out whatever the next move does.
+   * her drawing was cut at (zhusha/controller.ts trailOn), so it fades out whatever the next move does. (r2) `rate`:
+   * its clock runs that many ticks a game tick (the rest of a trail played out quickly, not a second slash on screen);
+   * the handle's moveTo keeps it with her.
    */
-  playFrom(id: string, o: FxSpawn, from: number): FxHandle {
+  playFrom(id: string, o: FxSpawn, from: number, rate = 1): FxCarry {
     const s = this.serial;
     const h = this.play(id, o);
-    for (const e of this.live) if (e.serial >= s) e.t = Math.max(e.t, Math.round(from));
-    return h;
+    const mine = this.live.filter((e) => e.serial >= s);
+    for (const e of mine) {
+      e.t = Math.max(e.t, Math.round(from));
+      e.rate = Math.max(1, rate);
+    }
+    return {
+      stop: () => h.stop(),
+      get alive() { return h.alive; },
+      moveTo: (x: number, y: number) => { for (const e of mine) { e.x = x; e.y = y; } },
+    };
   }
 
   play(id: string, o: FxSpawn = {}, depth = 0): FxHandle {
@@ -246,7 +264,7 @@ export class FxClock {
 
   /** One tick: every effect ages; finished one-shots and stopped ones go. */
   tick(): void {
-    for (const e of this.live) e.t++;
+    for (const e of this.live) e.t += e.rate ?? 1;
     for (let i = this.live.length - 1; i >= 0; i--) {
       const e = this.live[i]!;
       if (e.stopped || (e.t >= 0 && fxFrameAt(e.def, e.t) === null)) this.live.splice(i, 1);

@@ -104,3 +104,92 @@ test("cutoffs: an effect played from a tick shows that tick's drawing at once", 
   clock.tick(); clock.tick(); clock.tick();
   assert.equal(clock.live.length, 0, "and ends where the drawing would have");
 });
+
+// --- round 2 (the critic's round-1 notes) -------------------------------------------------------------------------------
+
+/** her chain with a fake fx that records carried trails and their moves */
+async function chainRig() {
+  const Zhusha = await loadZ();
+  const z = new Zhusha(host(), [0, 0]);
+  const calls = [];
+  z.fx = {
+    has: (id) => id.endsWith("_trail"),
+    play: () => ({ stop() {} }),
+    playFrom: (id, o, from, rate) => {
+      const c = { id, ...o, from, rate, moves: [], stopped: false };
+      calls.push(c);
+      return { stop() { c.stopped = true; }, moveTo(x, y) { c.moves.push([x, y]); }, get alive() { return !c.stopped; } };
+    },
+  };
+  z.clipAt = (a) => (/^m1_[1-4]$/.test(a.role) ? { slot: a.role, t: a.t, total: 40 } : null);
+  z.clipDone = (a) => a.t >= 39;
+  return { z, calls, inp: new FakeInput() };
+}
+
+test("cutoffs r2: a trail is never carried from the air (it would hang where she was after she lands)", async () => {
+  const { z, calls, inp } = await chainRig();
+  step(z, inp, 30);
+  inp.press("jump"); inp.down.add("jump");
+  step(z, inp, 4);
+  assert.equal(z.body.grounded, false, "she is in the air");
+  inp.press("m1");
+  step(z, inp, FEEL.moves.m1_1.chainFrom);
+  inp.press("m1");
+  step(z, inp, 3);
+  assert.equal(z.anim.role, "m1_2", "m1_2 cut m1_1 in the air");
+  assert.equal(calls.length, 0, `nothing carried from the air: ${JSON.stringify(calls)}`);
+});
+
+test("cutoffs r2: a carried trail is quick (its rest in at most trailCarry.ticks), one at a time, and goes with her on the ground", async () => {
+  const { z, calls, inp } = await chainRig();
+  step(z, inp, 30);
+  inp.press("m1");
+  step(z, inp, FEEL.moves.m1_1.chainFrom);
+  inp.press("m1");
+  step(z, inp, 2);
+  assert.equal(calls.length, 1);
+  const c = calls[0];
+  assert.ok(Math.abs((40 - c.from) / c.rate - FEEL.trailCarry.ticks) < 1e-6 || c.rate === 1, `rest ${40 - c.from} ticks at rate ${c.rate}`);
+  step(z, inp, 4);
+  assert.ok(c.moves.length >= 3, "it is kept with her while she attacks on");
+  const [mx] = c.moves[c.moves.length - 1];
+  assert.ok(Math.abs(mx - z.body.x) < 1e-6, "at her x");
+  // the next cut stops the one before
+  step(z, inp, FEEL.moves.m1_2.chainFrom - 6);
+  inp.press("m1");
+  step(z, inp, 2);
+  assert.equal(z.anim.role, "m1_3");
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].stopped, true, "one carried trail at a time");
+});
+
+test("cutoffs r2: after the finisher she goes to rest, not into guard_to_rest's spin (feel.json windDown.finisherReturn false)", async () => {
+  const Zhusha = await loadZ();
+  const z = new Zhusha(host(), [0, 0]);
+  z.hasRole = () => true;
+  z.clipDone = (a) => a.t >= 70;
+  const inp = new FakeInput();
+  step(z, inp, 30);
+  z.startMove("m1_4", inp);
+  const roles = new Set();
+  for (let i = 0; i < 260; i++) { step(z, inp); roles.add(z.anim.role); }
+  assert.equal(FEEL.windDown.finisherReturn, false);
+  assert.ok(!roles.has("m1_4_ret"), `no return spin: ${[...roles].join(", ")}`);
+  assert.equal(z.anim.role, "idle");
+});
+
+test("cutoffs r2: an effect played at a rate ages that fast, and moveTo moves it", async () => {
+  const { FxClock, fxFrameAt, validateFx } = await import("./fx/contract.ts");
+  const def = validateFx({ id: "t_trail", stage: "pixel", px: 1, pivot: [0, 0], frames: [{ file: "f000.png", ticks: 4 }, { file: "f001.png", ticks: 4 }, { file: "f002.png", ticks: 4 }] }, "t_trail");
+  const clock = new FxClock(new Map([["t_trail", def]]));
+  const h = clock.playFrom("t_trail", { x: 5, y: 7 }, 4, 2);
+  const e = clock.live[0];
+  assert.equal(fxFrameAt(def, e.t), 1);
+  clock.tick(); clock.tick();
+  assert.equal(fxFrameAt(def, e.t), 2, "two ticks at rate 2 = four of its own");
+  h.moveTo(50, -3);
+  assert.deepEqual([e.x, e.y], [50, -3]);
+  clock.tick(); clock.tick();
+  assert.equal(clock.live.length, 0, "done in half the time");
+  assert.equal(h.alive, false);
+});

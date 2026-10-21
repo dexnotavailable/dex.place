@@ -1347,6 +1347,18 @@ charScale (1.1 x 96 = 105.6 world px, `zhusha/feel.json`), i.e. 0.825 world px p
   dither; her figure, blade and colours are never touched), then re-run `tools/zhusha/derive.mjs`. [proven]
 - (cutoffs 2026-10-21) A move's landing (m1_4's hop, a knock-up) ages with the move, and hurt / knockdown play their
   recovery out after the stun, so a state's end never pops to the landing crouch or idle. [proven, `cutoffs.test.mjs`]
+- (cutoffs r2 2026-10-22) A carried trail is only carried from the ground (her trail drawings sit on her soles' floor
+  line: one carried from the air hung over the floor after she landed), one at a time, its rest played in at most
+  feel.json `trailCarry.ticks` (8), and it goes with her while she attacks or runs on, on the ground, facing the same
+  way (else it stays on the floor where it was). The trail effects' holes, stubs and humps where her body / blade / legs
+  covered the band are repaired by `lanes\zhusha-1021b\cutoffs\r2\tools\trail_fix.py` (fill along the streaks, fray the ends
+  that met her blade); re-run it after `trail_fx.py`. [proven, `cutoffs.test.mjs`, captures cutoffs\ba2\]
+- (cutoffs r2) A heal must not shrink a hit: `derived.json`'s rects / active / root / feet stay what the unhealed
+  drawings gave (the r1 dither heals emptied 8 x 8 hit cells). Hit drawings are healed by fraying the straight cut
+  along its streaks (tongues for a top, fibres for a side) while every hit cell keeps >= 6 energy px joined to the slash
+  (`lanes\zhusha-1021b\cutoffs\r2\tools\boundfray.py`, checked by `hitkeep.py --dry`). [proven: 0 differences vs 3e994938]
+- (cutoffs r2) m1_4 ends on its own last drawing (blade upright before her) and goes to rest; its return role
+  guard_to_rest (a full spin with big arcs) is behind feel.json `windDown.finisherReturn` (false): Dex's call.
 
 ---
 

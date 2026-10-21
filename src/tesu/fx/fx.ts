@@ -7,7 +7,7 @@ import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { artQuery } from "../zhusha/anims.ts";
 import { artTransform, type PlayView } from "../zhusha/units.ts";
-import { FxClock, fxCells, fxClipRows, type FxCell, fxFrameAt, fxGroundClip, FX_MAX_H, FX_MAX_STORED, FX_MAX_W, validateFx, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
+import { FxClock, fxCells, fxClipRows, type FxCell, fxFrameAt, fxGroundClip, FX_MAX_H, FX_MAX_STORED, FX_MAX_W, validateFx, type FxCarry, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
 
 /** Effects present at build time (a missing one is never fetched). */
 export const FX_PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/fx/*/fx.json"))
@@ -201,9 +201,9 @@ export class Fx {
     return this.clock.play(id, o);
   }
 
-  /** Plays one already `from` ticks in (fx/contract.ts FxClock.playFrom: her slash trail carried on). */
-  playFrom(id: string, o: FxSpawn, from: number): FxHandle {
-    return this.clock.playFrom(id, o, from);
+  /** Plays one already `from` ticks in, at `rate` (fx/contract.ts FxClock.playFrom: her slash trail carried on). */
+  playFrom(id: string, o: FxSpawn, from: number, rate = 1): FxCarry {
+    return this.clock.playFrom(id, o, from, rate);
   }
 
   tick(): void {
