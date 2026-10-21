@@ -4,7 +4,8 @@
 // does (controller.ts: the uf drawings' own planted-foot motion from combat's derive tool, the chain's lunges, m1_3's
 // lock-on lunge toward a foe in reach); and each hit of the chain summons ghost blades: they appear around her (behind
 // and above her shoulders) a moment before the hit and strike forward through her target when the form's ghost hit
-// lands (controller.ts hitboxes: the hit again `ghostDelay` later, longer, at 60%). The target is the nearest foe in
+// lands (controller.ts hitboxes: the hit again `ghostDelay` later, longer, at 60%); Dex 10-21: only 1-2 a move, where
+// the move's drawing does not already summon its own (ult.json form.blades / bladeHit). The target is the nearest foe in
 // reach in front of her, else the point the swing lands on. This file times and places them (from where she is when
 // they are summoned), ultdraw.ts draws the stand-ins, the damage stays the controller's. Numbers: ult.json `form`.
 
@@ -57,13 +58,15 @@ export class UltForm {
   }
 
   /**
-   * An M1 of the form's chain starts (step 0-3): the ghost blades its hits summon. `hits`: the move's hit ticks;
+   * An M1 of the form's chain starts (step 0-3): the ghost blades it summons (form.blades, on its hit form.bladeHit). `hits`: the move's hit ticks;
    * `ghostDelay`: how long after each the ghost hit lands (feel.json). Nothing moves her here: the chain does.
    */
   begin(step: number, hits: readonly number[], ghostDelay: number): void {
-    const F = ULT.form;
-    const n = F.blades[Math.max(0, Math.min(F.blades.length - 1, step))] ?? 1;
-    for (const h of hits) {
+    const F = ULT.form, k = Math.max(0, Math.min(F.blades.length - 1, step));
+    // (Dex 10-21) one or two a MOVE, not a volley a hit: the uf_m1 drawings carry their own swirls and swords
+    const n = F.blades[k] ?? 0, at = F.bladeHit[k] ?? -1;
+    const h = hits[at < 0 ? hits.length + at : Math.min(at, hits.length - 1)];
+    if (n > 0 && h !== undefined) {
       const strike = this.clock + h + ghostDelay;
       this.volleys.push({ summon: strike - ghostDelay - F.summon, strike, n });
       this.cues.push({ at: strike - ghostDelay - F.summon, key: "blade", v: 0.7 }, { at: strike, key: "cut", v: 1 });

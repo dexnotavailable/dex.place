@@ -169,15 +169,11 @@
     "cut": "uf.slash"
   },
   "form": {
-    "about": "The ult form (Dex 10-19): a killing machine standing still-ish on one frame (uf_idle holds one drawing), summoning ghost blades; Dex after playing it: \"the ult form doesn't need to TP her during the attack chain, just make the movement make sense\": the chain moves her as the normal chain does (controller.ts: the uf drawings' planted foot, the lunges, m1_3's lock-on). Ghost blades per chain step (`blades`), summoned around her (behind and above her shoulders, `ring` H out) `summon` ticks before each hit and striking `ghostDelay` (feel.json) after it, through the nearest foe in `reach` H in front of her (its middle), else through the point `ahead` H in front of her where the swing lands; each takes `strike` ticks and fades over `fade`.",
+    "about": "The ult form (Dex 10-19): a killing machine standing still-ish on one frame (uf_idle holds one drawing), summoning ghost blades; Dex after playing it: \"the ult form doesn't need to TP her during the attack chain, just make the movement make sense\": the chain moves her as the normal chain does (controller.ts: the uf drawings' planted foot, the lunges, m1_3's lock-on). Ghost blades per chain MOVE (`blades`; Dex 10-21: \"way too many swords raining down, it's only supposed to be 1-2, plus the animations themselves already cover it\": uf_m1_3 and uf_m1_4 draw their own summoned swords, so they add none; uf_m1_1 (its swirl, no sword) adds one on its last hit, uf_m1_2 (its dark sword comes later in the drawing) one on its first), all on the hit `bladeHit` (its index in the move's hits, negative from the last), summoned around her (behind and above her shoulders, `ring` H out) `summon` ticks before each hit and striking `ghostDelay` (feel.json) after it, through the nearest foe in `reach` H in front of her (its middle), else through the point `ahead` H in front of her where the swing lands; each takes `strike` ticks and fades over `fade`.",
     "reach": 4,
     "ahead": 1.2,
-    "blades": [
-      1,
-      2,
-      3,
-      5
-    ],
+    "blades": [1, 1, 0, 0],
+    "bladeHit": [-1, 0, 0, 0],
     "summon": 5,
     "strike": 4,
     "fade": 8,
