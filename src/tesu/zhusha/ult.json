@@ -221,10 +221,10 @@
     "skipFade": 24
   },
   "aftermath": {
-    "about": "After the nuke (Dex 10-19: stay on the destruction, the smoke takes a while to clear): `hold` ticks on the wreck with the smoke dense (debris settling, embers, her blue flames burning out across it), then the smoke clears over `clear` ticks (outward and up, the middle first); the middle of the smoke (where she stands) is gone when `coreGone` of the clear is done and she is revealed (r_reveal starts) a little before it, at `revealFrom`, stepping out of its last wisps; the edges clear off over the rest of it. Any input from the start of the aftermath hands control back.",
+    "about": "After the nuke (Dex 10-19: stay on the destruction, the smoke takes a while to clear): `hold` ticks on the wreck with the smoke dense (debris settling, embers, her blue flames burning out across it), then the smoke clears over `clear` ticks (outward and up, the middle first); the middle of the smoke (where she stands) is gone when `coreGone` of the clear is done and she is revealed (r_reveal starts) a little before it, at `revealFrom`, stepping out of its last wisps; the edges clear off over the rest of it. Any input from the start of the aftermath hands control back. The real pall (r_pall, rfinish 10-22) is built from these numbers on the same clock (from the landing: impact.ticks + aftermath): the mound over her hides her until the reveal and is gone `coreGone` into the clear (4 ticks into r_reveal), everything else by the end of `clear`, before the camera is back in on her (critic 10-22: the stem hid 25 ticks of the reveal when the pall ran its own clock; loose specks hung in the sky through the push in).",
     "hold": 96,
-    "clear": 210,
-    "revealFrom": 0.66,
-    "coreGone": 0.76
+    "clear": 160,
+    "revealFrom": 0.87,
+    "coreGone": 0.895
   }
 }

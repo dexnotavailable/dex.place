@@ -578,3 +578,57 @@ test("ult (rfinish 10-21): control back in the smoke clears it on (it never hide
   assert.ok(sped.some(([id]) => F.skirt.includes(id)), "the dust skirt too");
   assert.ok(faded.some(([id]) => F.flames.includes(id)) && faded.some(([id]) => F.wreck.includes(id)), "her flames and the rubble break up");
 });
+
+test("ult (rfinish 10-22): the pall is built on R's clock: it hides her through the aftermath, she steps out of its last wisps, the rest is gone by the end of the clear", async () => {
+  const { readPng } = await import("../../tools/zhusha/slotin-lib.mjs");
+  const dir = join(import.meta.dirname, "../../public/assets/fx", ULT.fx.pall);
+  const def = JSON.parse(readFileSync(join(dir, "fx.json"), "utf8"));
+  // the pall plays from the landing, on the same ticks as R's impact + aftermath (fx clock = the game's)
+  const I = ULT.impact.ticks, A = ULT.aftermath;
+  const reveal = I + A.hold + Math.round(A.clear * A.revealFrom);
+  const core = I + A.hold + Math.round(A.clear * A.coreGone);
+  assert.ok(core > reveal && core - reveal <= 10, "the middle goes a few ticks into r_reveal");
+  const frameAt = (t) => {
+    let at = 0;
+    for (const f of def.frames) if (t < (at += f.ticks)) return f;
+    return null;
+  };
+  // how much of the box her drawing fills (her 128 art px up from her soles, 48 each side) is smoke
+  const over = (t) => {
+    const f = frameAt(t);
+    if (!f) return 0;
+    const { w, h, rgba } = readPng(readFileSync(join(dir, f.file)));
+    const k = def.px, [cx, cy] = def.pivot;
+    let n = 0, on = 0;
+    for (let y = Math.round(cy - 128 / k); y < cy; y++) {
+      for (let x = Math.round(cx - 48 / k); x <= Math.round(cx + 48 / k); x++) {
+        n++;
+        if (x >= 0 && y >= 0 && x < w && y < h && rgba[(y * w + x) * 4 + 3] > 0) on++;
+      }
+    }
+    return on / n;
+  };
+  // (r_pall takes over from r_nuke_b at tick 64)
+  for (const t of [I + 30, I + A.hold, reveal - 30, reveal - 8]) assert.ok(over(t) > 0.9, `she is under the smoke before the reveal (tick ${t}: ${over(t).toFixed(2)})`);
+  assert.ok(over(reveal + 1) < 0.6, `she shows as r_reveal starts (${over(reveal + 1).toFixed(2)})`);
+  assert.equal(over(core), 0, "nothing over her once the middle is gone (critic 10-22: the stem hid 25 ticks of the reveal)");
+  const total = def.frames.reduce((a, f) => a + f.ticks, 0);
+  assert.ok(total <= I + A.hold + A.clear + 1, `all of it gone by the end of the clear (${total})`);
+});
+
+test("ult (rfinish 10-22): the finish's pieces are never cut by their own drawing's edge (only the floor cuts them)", async () => {
+  const { readPng } = await import("../../tools/zhusha/slotin-lib.mjs");
+  const F = ULT.fx;
+  const root = join(import.meta.dirname, "../../public/assets/fx");
+  for (const id of [F.dive, F.cut, F.nuke, `${F.nuke}_b`, F.pall, ...F.skirt, ...F.wreck]) {
+    const def = JSON.parse(readFileSync(join(root, id, "fx.json"), "utf8"));
+    for (const f of def.frames) {
+      const { w, h, rgba } = readPng(readFileSync(join(root, id, f.file)));
+      const a = (x, y) => rgba[(y * w + x) * 4 + 3] > 0;
+      let edge = 0;
+      for (let x = 0; x < w; x++) if (a(x, 0)) edge++;
+      for (let y = 0; y < h; y++) if (a(0, y) || a(w - 1, y)) edge++;
+      assert.equal(edge, 0, `${id}/${f.file}: ${edge} painted px on its top / side edge (a piece clipped by its frame)`);
+    }
+  }
+});

@@ -3,8 +3,8 @@
  "stage": "pixel",
  "px": 2,
  "pivot": [
-  605,
-  913
+  580,
+  899
  ],
  "layer": "front",
  "attach": "world",
@@ -76,7 +76,7 @@
   }
  ],
  "loop": false,
- "notes": "rfinish 10-21: the R's nuke from the dive's contact (px 2, ticks 0-22): the impact frame, the world's fire balling up, her blue fire taking it; its px-3 half in with",
+ "notes": "rfinish 10-22: the R's nuke from the dive's contact (px 2, ticks 0-22): the impact frame, the world's fire balling up, her blue fire taking it; its px-3 half in with",
  "with": [
   "r_nuke_b"
  ]

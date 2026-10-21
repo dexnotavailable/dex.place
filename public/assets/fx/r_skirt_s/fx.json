@@ -168,21 +168,9 @@
   },
   {
    "file": "f039.png",
-   "ticks": 9
-  },
-  {
-   "file": "f040.png",
-   "ticks": 9
-  },
-  {
-   "file": "f041.png",
-   "ticks": 9
-  },
-  {
-   "file": "f042.png",
-   "ticks": 9
+   "ticks": 6
   }
  ],
  "loop": false,
- "notes": "rfinish 10-21: the nuke's dust skirt, one piece (ult.json ground.skirt lays them along the ground, facing out): a curl of dust rolling out, hanging low, thinning and settling on the floor through the clear (px 2)"
+ "notes": "rfinish 10-21: the nuke's dust skirt, one piece (ult.json ground.skirt lays them along the ground, facing out): a curl of dust rolling out, hanging low, then settling to the floor through the clear (its top first), gone before the reveal (px 2; repair 10-22)"
 }

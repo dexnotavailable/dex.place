@@ -100,17 +100,22 @@ async function loadFx(r: WorldRenderer, id: string): Promise<FxLoaded> {
   const res = await fetch(`${FX_BASE}${id}/fx.json${q}`, q ? {} : { cache: "no-cache" });
   if (!res.ok) throw new Error(`${id}: fx.json HTTP ${res.status}`);
   const def = validateFx(await res.json(), id);
-  const pages: { canvas: HTMLCanvasElement; g: CanvasRenderingContext2D }[] = [];
+  // (each page remembers how much of it is used: a page is uploaded at that size, not the whole 2048 x 2048, so a small
+  // effect or the final page of a big one does not hold a mostly empty 16 MB texture: critic 10-22, effect memory)
+  const pages: { canvas: HTMLCanvasElement; g: CanvasRenderingContext2D; w: number; h: number }[] = [];
   let x = 0, y = 0, row = 0, stored = 0;
   const place = (w: number, h: number): [number, number, number] => {
     if (!pages.length || x + w > ATLAS) { x = 0; y += row; row = 0; }
     if (!pages.length || y + h > ATLAS) {
       const canvas = document.createElement("canvas");
       canvas.width = canvas.height = ATLAS;
-      pages.push({ canvas, g: canvas.getContext("2d", { willReadFrequently: true })! });
+      pages.push({ canvas, g: canvas.getContext("2d", { willReadFrequently: true })!, w: 0, h: 0 });
       x = y = row = 0;
     }
     const at: [number, number, number] = [pages.length - 1, x, y];
+    const pg = pages[pages.length - 1]!;
+    pg.w = Math.max(pg.w, x + w);
+    pg.h = Math.max(pg.h, y + h);
     x += w + 1;
     row = Math.max(row, h + 1);
     return at;
@@ -136,8 +141,20 @@ async function loadFx(r: WorldRenderer, id: string): Promise<FxLoaded> {
     await inTurn(() => paste(got, f));
   }
   const sheets: SpriteSheet[] = [];
-  for (const p of pages) sheets.push(await inTurn(() => ({ albedo: r.texture(p.canvas), normal: r.flatNormal, keyInfluence: 0 })));
+  for (const p of pages) sheets.push(await inTurn(() => ({ albedo: r.texture(usedPart(p)), normal: r.flatNormal, keyInfluence: 0 })));
   return { def, drawings, sheets, stored };
+
+  // a page's used part (its cells are placed from its top left; sprites read texels by position, so a cropped page
+  // draws the same)
+  function usedPart(p: (typeof pages)[number]): HTMLCanvasElement {
+    const w = Math.max(1, p.w), h = Math.max(1, p.h);
+    if (w >= ATLAS && h >= ATLAS) return p.canvas;
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    c.getContext("2d")!.drawImage(p.canvas, 0, 0);
+    return c;
+  }
 
   // (no worker here) fetched and cut in the page, in its turn
   function cutHere(img: HTMLImageElement): Cut {

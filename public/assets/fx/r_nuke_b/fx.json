@@ -3,8 +3,8 @@
  "stage": "pixel",
  "px": 3,
  "pivot": [
-  505,
-  730
+  500,
+  724
  ],
  "layer": "front",
  "attach": "world",
@@ -72,5 +72,5 @@
   }
  ],
  "loop": false,
- "notes": "rfinish 10-21: the R's nuke from the dive's contact (px 3, ticks 24-63: the cap rolling up, her fire dying into it) | part 1 / 1: drawings 0-14"
+ "notes": "rfinish 10-22: the R's nuke from the dive's contact (px 3, ticks 24-63: her fire burning out of the cap, the cap rolling up; her fire after it only on the floor) | part 1 / 1: drawings 0-14"
 }
