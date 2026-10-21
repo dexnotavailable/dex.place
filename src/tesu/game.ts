@@ -1122,17 +1122,7 @@ export class TesuGame {
   private syncFall(): void {
     this.fallDefs ??= this.world.sprites.filter((s) => s.id.startsWith("fall-"));
     const on = this.opening.active && this.opening.T < BEATS.her.walkFrom;
-    for (const d of this.fallDefs) {
-      d.hidden = !on;
-      // (the fall loop, round 5) a far piece composed for the drop (`haze`: [from T, to T, strength]) recedes into the
-      // air as the fog layers come in (aerial perspective: its own shading kept, its contrast and value lifted toward
-      // the plane's haze), so the far tower west of the paper stays behind the near clouds of the ride and the gust
-      const hz = d.p.haze;
-      if (Array.isArray(hz) && hz.length === 3) {
-        const [a, b, k] = hz as [number, number, number];
-        d.fade = k * smooth((this.opening.T - a) / (b - a));
-      }
-    }
+    for (const d of this.fallDefs) d.hidden = !on;
     // (the fall loop, round 1c: PENDING the Kagami loop's agreement, lanes\art\fall\ASKS.txt; one block to revert)
     // Kagami's sky-plane cumulus (kagami-backdrop.ts) would hang under the fall's deck in the old side-on style, a
     // second cloud family in the break-out and the postcard: hidden while the opening falls (the deck is the sky
