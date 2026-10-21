@@ -392,7 +392,10 @@ export const STREAKS = 10;
 export function fallStreaks(T: number, W: number, Hf: number, paper: readonly [number, number] | null): number[][] {
   const out: number[][] = [];
   const from = KEYS[1]?.T ?? 0.3;
-  if (T < from) return out;
+  // (round 5, fall critic r3/r4: the plunge's lines read as vertical rain scratches drawn over the clouds, its puffs as
+  // raindrop lozenges) gone: since 10-21 the camera only closes in from the drop (no plunge to sell), so the air
+  // rushing past is the clouds' own parallax and the fog layers
+  if (T >= 0 || T < from) return out;
   // (the camera's fastest stretch is the hit and the pull-out; by the glimpse's frame they are gone)
   const k = 1 - smooth(1.0, 1.28, T);
   if (k <= 0) return out;
@@ -782,6 +785,7 @@ void main() {
   vec2 tw = toP + 90.0 * (vec2(fbm3(px / 260.0 + 4.1), fbm3(px / 260.0 + 9.6)) - 0.5);
   float pd = uPaper.z > 0.5 ? length(vec2(tw.x * (tw.x < 0.0 ? 0.5 : 0.8), tw.y / 1.45)) : 1e4;
   float nearP = 1.0 - smoothstep(70.0, 260.0, pd);
+  float inLayer = 0.0;
   for (int i = 0; i < 8; i++) {
     if (i >= uN) break;
     vec4 l0 = uL0[i], b = uL1[i], c = uL2[i], e = uL3[i];
@@ -810,6 +814,7 @@ void main() {
       env = mix(env, max(env * strands, strands * smoothstep(-0.5, 0.2, shape)), smoothstep(0.08, 0.5, along) * min(1.0, e.x));
     }
     if (env <= 0.002) continue;
+    inLayer = max(inLayer, env * l0.w);
     // thick and thin inside
     float body = fbm3(qe / (sc * vec2(0.5, 0.32)) + b.z * 2.1 + vec2(c.x * 0.04, 0.0));
     // (the lens's own fog is thicker toward the frame's edges and corners, thinner in the middle)
@@ -823,6 +828,9 @@ void main() {
     // (over a cloud it ghosts the cloud, never bleaches it to one flat white)
     // (the lens's own near mist is in front of everything: it veils a cloud as much as the sky)
     a *= mix(0.6 + 0.35 * smoothstep(0.8, 1.0, soft), 1.0, overSky);
+    // (round 5, from round 4's lens fog) the paper's opening: each layer thins round it, so the paper sits in a clear
+    // rift inside thick fog (soft: round 3's smooth fog keeps its wind streaks; no flat steps)
+    if (uPaper.z > 0.5) a *= mix(0.25, 1.0, smoothstep(70.0, 300.0, pd));
     if (a <= 0.002) continue;
     // its light: its form seen from the sun's side (where the form thins toward the sun, its face is lit; where it
     // thickens toward the sun, it is in its own shade), warm toward the sun and high, the clouds' cool blue away
@@ -840,17 +848,20 @@ void main() {
     keep *= 1.0 - a;
   }
   float Dt = 1.0 - keep;
+  // (round 5, from round 4) a rift inside a layer is clearer air lit by the fog round it: a thin film of the sky's own
+  // light, lighter than the open sky (never a dark stain where the fog parts)
+  float filmA = 0.16 * inLayer * smoothstep(0.08, 0.2, inLayer);
   // the paper keeps a soft pocket: 22% at most within ~110 px of it, easing out by ~230 px (never an edge across it)
   if (uPaper.z > 0.5 && Dt > 0.004) {
     float cap = mix(0.22, 1.0, smoothstep(80.0, 330.0, pd));
     if (Dt > cap) { acc *= cap / Dt; Dt = cap; }
   }
-  if (Dt > 0.004) {
-    vec3 fog = acc / max(Dt, 1e-4);
+  if (Dt > 0.004 || filmA > 0.004) {
     // a film this thin over the deep sky is the sky's own light scattered (a cerulean, never grey)
     vec3 glow = min(bg * vec3(1.02, 1.04, 1.03) + vec3(0.07, 0.08, 0.07), vec3(1.0));
+    vec3 fog = Dt > 0.004 ? acc / Dt : glow;
     fog = mix(glow, fog, smoothstep(0.05, 0.22, Dt));
-    bg = mix(bg, fog, Dt);
+    bg = mix(bg, fog, max(Dt, filmA));
     touched = true;
   }
 

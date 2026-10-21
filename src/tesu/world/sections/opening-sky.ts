@@ -53,6 +53,11 @@ export interface FallCloud {
    * walk) must never see it.
    */
   low?: boolean;
+  /**
+   * (round 5) Aerial haze over the fall: [from T, to T, strength]: the piece recedes into its plane's haze between the
+   * two (game.ts syncFall; its shading kept). For a far piece composed for the drop that stays in the frame after it.
+   */
+  haze?: readonly [number, number, number];
 }
 
 /** A library cloud's bounds round its anchor (level-1 px of its plane): [x0, y0, x1, y1]. */
@@ -78,14 +83,20 @@ export const FALL_CLOUDS: readonly FallCloud[] = [
   // the blue, and the sky's lower third a field of far heaps and stratus under the paper (the far plane barely moves:
   // the depth the rest is measured against; these stay far all the way down)
   { id: "fall-cirrus-drop-a", plane: "far", T: 0.8, fx: 0.66, fy: 0.2, cloud: "ci-d" },
-  { id: "fall-cirrus-drop-b", plane: "far", T: 0.8, fx: 0.2, fy: 0.4, cloud: "ci-e" },
-  { id: "fall-wisp-hi-a", plane: "far", T: 1.0, fx: 0.14, fy: 0.5, cloud: "ci-f" },
+  { id: "fall-cirrus-drop-b", plane: "far", T: 0.8, fx: 0.12, fy: 0.3, cloud: "ci-e" },
+  { id: "fall-wisp-hi-a", plane: "far", T: 1.0, fx: 0.14, fy: 0.38, cloud: "ci-f" },
   { id: "fall-wisp-hi-b", plane: "far", T: 1.0, fx: 0.78, fy: 0.72, cloud: "ci-c" },
   { id: "fall-cirrus-b", plane: "far", T: 2.94, fx: 0.92, fy: 0.2, cloud: "ci-b" },
   { id: "fall-st-drop-a", plane: "far", T: 0.8, fx: 0.3, fy: 0.85, cloud: "st-c" },
   { id: "fall-st-drop-b", plane: "far", T: 0.8, fx: 0.74, fy: 0.9, cloud: "st-d" },
   { id: "fall-far-field-a", plane: "far", T: 0.8, fx: 0.36, fy: 0.9, cloud: "cu-far-c" },
   { id: "fall-far-field-b", plane: "far", T: 0.8, fx: 0.63, fy: 1.06, cloud: "cu-far-b" },
+  // (round 5, from round 4: the drop was ~70% empty gradient) a towering cumulus on the far plane low in the west, its
+  // column whole in the frame (never cut by its edge), its stepped shoulder running east under the paper and its foot
+  // behind the near heap and the bottom bar: the first sudden view has a mass to measure the world below by. Narrow
+  // (a column with one low shoulder): the far plane barely moves, so it stays west of the paper all the way down and
+  // recedes into the haze as the fog comes in (haze), a pale far shape behind the ride's and the gust's near clouds
+  { id: "fall-tower-far", plane: "far", T: 0.8, fx: 0.215, fy: 1.06, cloud: "cu-tower-c", haze: [2.5, 6.6, 0.35] },
   { id: "fall-heap-drop-w", plane: "mid", T: 0.8, fx: 0.07, fy: 1.0, cloud: "cu-heap-c" },
   { id: "fall-tower", plane: "mid", T: 0.8, fx: 1.05, fy: 1.32, cloud: "cu-tower-a" },
   // --- the ride (2.5-7 s, zoom 4): far heaps and low stratus in the lower frame, the great tower's body on the right,
@@ -134,7 +145,7 @@ export function openingSky(b: WorldBuilder): void {
     const reach = Math.ceil(Math.max(e.ax, e.w - e.ax) + 40);
     b.sprite({
       id: c.id, plane: c.plane, kind: "frames", x, y,
-      p: { sets: e.sets.map((s) => ({ ...s })), reach },
+      p: { sets: e.sets.map((s) => ({ ...s })), reach, ...(c.haze ? { haze: [...c.haze] } : {}) },
       frames: 1, fps: 1, reflect: false, fade: 0, seed: 7919 * (9100 + i),
     });
   });

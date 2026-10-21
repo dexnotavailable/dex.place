@@ -1040,3 +1040,133 @@ def over(bg, rgba, x, y):
     a = rgba[:sub.shape[0], :sub.shape[1], 3:4].astype(np.float32) / 255.0
     sub[:] = (rgba[:sub.shape[0], :sub.shape[1], :3] * a + sub * (1 - a) + 0.5).astype(np.uint8)
     return bg
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# (round 4) relief and clean strands
+
+
+def relief(val, L=1.0, s1=4.0, g1=2.2, s2=22.5, g2=1.4, shade=0.3, belly=0.0):
+    """(round 4, critic item 1) The lobes' own light pushed before the snap: a near cloud's shading is mostly smooth
+    gradients across its big billows, so the steps landed as flat plates and topo bands. Keep the mass's light (the
+    lit top, the shaded belly: everything wider than s2) and boost what is smaller (each lobe's lit face and its
+    crevice, s2..s1, and the florets under s1), the lit side of that boost damped in the shade (a belly keeps dark,
+    its lobes show as crevices, never as lit bubbles). s1, s2 in level-1 px."""
+    m = val >= 0
+    mf = m.astype(np.float32)
+    v = np.where(m, val, 0).astype(np.float32)
+
+    def nb(s):
+        s = max(0.6, s * L)
+        return ndimage.gaussian_filter(v, s) / np.maximum(ndimage.gaussian_filter(mf, s), 1e-3)
+
+    B2 = nb(s2)
+    vv = np.sort(v[m])
+    lo, hi = vv[int(len(vv) * 0.25)], vv[int(len(vv) * 0.75)]
+    w = np.clip((B2 - lo) / max(float(hi - lo), 1e-4), 0, 1)
+    if belly > 0:
+        # the deep shade under a mass flattened along the wind (the ref's flat, streaky bases): its cells smeared
+        # sideways into long soft runs, so a belly reads as a base and never as a tray of bubbles
+        sx, sy = 16.0 * L, 1.2 * L
+        bv = ndimage.gaussian_filter(v, (sy, sx)) / np.maximum(ndimage.gaussian_filter(mf, (sy, sx)), 1e-3)
+        k = belly * np.clip(1 - w * 2.2, 0, 1) ** 1.5
+        v = np.where(m, v * (1 - k) + bv * k, 0).astype(np.float32)
+        B2 = nb(s2)
+    B1 = nb(s1)
+    det = (B1 - B2) * g2 + (v - B1) * g1
+    det = np.where(det > 0, det * (shade + (1 - shade) * w), det)
+    return np.where(m, np.maximum(B2 + det, 0), -1.0).astype(np.float32)
+
+
+def strands(rng, w, h, *, pieces=3, seed=1, ramp=None, kind="stratus", level=1.0, thick=(0.5, 1.0), heads=1.0, curl=0.0, wave=0.06):
+    """(round 4, critic item 2) Low stratus and high cirrus drawn as pixel art: every stroke's top and base are smooth
+    curves rounded to whole rows (long clean runs, single-column blips removed: never a stair of ragged scanlines),
+    its head dense to the east and its tail breaking into deliberate dashes to the west (the east wind), small domed
+    heads along a stratus' lit top. 3-4 values: a lit top row (the sun's side of each head the brightest), a lilac
+    body, a cool base. Drawn at `level` (density): the same shapes at every level, 1 px lines stay 1 px."""
+    L = float(level)
+    # the strokes' parameters first (level-steady: the same rng draws at every level)
+    S = []
+    for i in range(pieces):
+        main = i == 0
+        Ls = w * ((0.55 + 0.35 * rng.random()) if main else (0.2 + 0.32 * rng.random()))
+        x1 = w - 2 - rng.random() * w * (0.04 if main else 0.5)
+        x0 = max(2.0, x1 - Ls)
+        y1 = h * (0.4 + 0.35 * rng.random()) if kind != "curl" else h * (0.25 + 0.15 * i)
+        t0 = h * 0.5 * (thick[0] + (thick[1] - thick[0]) * rng.random()) * (1.0 if main else 0.75)
+        P = (x1 - x0) * (0.7 + 0.9 * rng.random())
+        ph = rng.random() * 6.283
+        nb = int((x1 - x0) / 40 * heads) if kind == "stratus" else 0
+        bumps = [(x0 + (x1 - x0) * (0.47 + 0.51 * rng.random()), 5 + 20 * rng.random() ** 1.5) for _ in range(nb)]
+        # the tail's dashes: cut points (level-1 x) with gaps, denser toward the tail
+        cuts = []
+        x = x0
+        while x < x0 + (x1 - x0) * 0.42:
+            seg = (6 + 26 * ((x - x0) / max(x1 - x0, 1)) / 0.42 + 6 * rng.random()) * (1.0 if kind == "stratus" else 2.6)
+            gap = 3 + 4 * rng.random()
+            cuts.append((x + seg, x + seg + gap))
+            x += seg + gap
+        hook = curl * h * (0.6 + 0.4 * rng.random()) * (1 if main or rng.random() < 0.7 else -0.6)
+        S.append((x0, x1, y1, t0, P, ph, bumps, cuts, hook))
+    W, H = int(math.ceil(w * L)) + 2, int(math.ceil(h * L)) + 4
+    q = np.full((H, W), -1, np.int16)
+    order = list(range(1, pieces)) + [0]
+    for i in order:
+        x0, x1, y1, t0, P, ph, bumps, cuts, hook = S[i]
+        cols = np.arange(int(x0 * L), min(W, int(math.ceil(x1 * L)) + 1))
+        if not len(cols):
+            continue
+        xs = (cols + 0.5) / L
+        u = np.clip((xs - x0) / max(x1 - x0, 1), 0, 1)
+        yc = y1 + wave * h * np.sin(6.283 * (xs - x0) / P + ph) + hook * (1 - u) ** 2.2
+        prof = np.clip(u / 0.62, 0, 1) ** 0.75 * np.clip((1 - u) / 0.09, 0, 1) ** 0.5
+        bump = np.zeros_like(xs)
+        slope = np.zeros_like(xs)
+        for bx, br in bumps:
+            d = (xs - bx) / br
+            dome = np.sqrt(np.clip(1 - d * d, 0, 1)) * br * 0.42
+            more = dome > bump
+            bump = np.where(more, dome, bump)
+            slope = np.where(more & (dome > 0), np.sign(d), slope)
+        top = (yc - t0 * prof * 0.55 - bump * np.clip(prof * 1.4, 0, 1)) * L
+        bot = (yc + t0 * prof * 0.45) * L
+        yt = np.round(top).astype(int)
+        yb = np.round(bot).astype(int)
+        for arr in (yt, yb):
+            # no one-column blips: a lone step back is a stair's ragged tooth
+            for _ in range(2):
+                blip = (arr[1:-1] != arr[:-2]) & (arr[:-2] == arr[2:])
+                arr[1:-1][blip] = arr[:-2][blip]
+        thin = (yb - yt) < 1
+        yb = np.where(thin & (prof > (0.25 if kind != "stratus" else 0.4)), yt + 1, yb)
+        alive = np.ones(len(cols), bool)
+        for c0, c1 in cuts:
+            alive &= ~((xs >= c0) & (xs < c1))
+        for j, cx in enumerate(cols):
+            if not alive[j] or yb[j] <= yt[j]:
+                continue
+            n = yb[j] - yt[j]
+            for k in range(n):
+                y = yt[j] + k
+                if y < 0 or y >= H:
+                    continue
+                if kind == "stratus":
+                    if k == 0:
+                        v = 0 if (slope[j] < 0 or (bump[j] <= 0 and u[j] > 0.7)) else 1
+                    elif k == 1 and n >= 4:
+                        v = 2 if slope[j] <= 0 else 3
+                    elif k >= n - 1 and n >= 3:
+                        v = 6 if n >= 6 else 5
+                    elif k >= n - 2 and n >= 6:
+                        v = 5
+                    else:
+                        v = 3 if k < n * 0.5 else 4
+                else:
+                    v = 1 if k == 0 else (3 if k < n - 1 else 5)
+                q[y, cx] = v
+    cols_ = np.array(ramp, np.uint8)
+    rgba = np.zeros((H, W, 4), np.uint8)
+    mm = q >= 0
+    rgba[mm, :3] = cols_[q[mm]]
+    rgba[mm, 3] = 255
+    return rgba

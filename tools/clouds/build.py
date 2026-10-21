@@ -47,6 +47,11 @@ LIB = {
     # (round 2 integration: the great tower takes no rags. Its torn fringe drew as horizontal stripes ending on a
     # vertical cut under the deck's chunks (the vast frame, the break-out); its wavy, torn floor alone reads as a base)
     "cu-tower-a": ("heap", 31, dict(w=780, h=1150, turrets=3, lead=-0.3, belly=0.24, lean=-0.04), dict(LOOK, rags=False), LIT, 0.0, "great tower"),
+    # (round 5, from round 4's drop) the drop's far tower: a towering mass low in the west of the first sudden view,
+    # whole in the frame. Round 4's (seed 58) stacked three bulbous tiers like a snowman, lit from the front: here the
+    # tiers overlap off-axis (a narrow column leaning into the east wind, one low shoulder), a flat darker base smeared along the
+    # wind (relief belly), the lobes' light pushed before the snap (relief) and crisper warm rims on the sun's side
+    "cu-tower-c": ("heap", 67, dict(w=430, h=660, turrets=3, lead=-0.35, belly=0.3, lean=-0.07, florets=0.6), dict(LOOK, kr=0.85, rim_px=3.0, rags=False, relief={"s1": 4.0, "g1": 2.2, "s2": 22.5, "g2": 1.4, "shade": 0.3, "belly": 0.85}), LIT, 0.14, "far tower"),
     "cu-tower-b": ("heap", 44, dict(w=640, h=860, turrets=3, lead=0.1, belly=0.28, lean=-0.03), LOOK, LIT, 0.0, "tower"),
     # heaps: the middle sizes
     "cu-heap-a": ("heap", 8, dict(w=900, h=420, front_cells=0.6, cell_space=0.75), LOOK, LIT, 0.0, "heap"),
@@ -147,6 +152,8 @@ def build_one(cid):
         levels = []
         for L in LEVELS:
             val, ox, oy = cl.render(form, level=L, seed=seed, look=look, pad=24)
+            if look.get("relief"):
+                val = cl.relief(val, L, **look["relief"])
             rgba, _ = cl.to_pixels(val, ramp, seed=seed, share=share, level=L, bscale=max(1.0, L))
             pad = int(max(4, 0.08 * form["h"] * L)) + 4
             rgba = np.concatenate([rgba, np.zeros((pad, rgba.shape[1], 4), np.uint8)], 0)
