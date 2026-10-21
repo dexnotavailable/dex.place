@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-21T18:58:47.236Z (22/10/2026, 01:58:47 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-21T20:08:45.864Z (22/10/2026, 03:08:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `5a5c586`
+- live on dex.place: `4d48bcd`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,8 +12,15 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_0428f202-0d9 — last activity 6 min ago
-8 agents: 7 done, 1 running or stopped mid-way, 0 failed.
+### wf_9552f444-732 — last activity 1 min ago
+3 agents: 1 done, 2 running or stopped mid-way, 0 failed.
+
+- **scout:pc** (running)
+- **scout:site** (running)
+- **scout:discord** (done): 
+
+### wf_0428f202-0d9 — last activity 7 min ago
+12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
 - **critic:r2b** (done): 
@@ -22,27 +29,31 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r3** (done): 
 - **critic:r3** (done): 
 - **w1:r4** (done): W1 round 4 (layout and readability) is committed as cd31c217 on claude/v2-art-hall-p1. It touches all ten critique items, but none of the eight frames is at the 9 bar yet, and the gate still out-values the desk in its own frame. Frames at the commit: D:\Dex\Temp\dexplace-v2\lanes\art\hall\round-4\w1\r11 (all 8 frames, contact sheet, pairs, zoom crops; rendered under heavy.lock.2, then released). Notes for W2 and the 
-- **w2:r4** (running)
+- **w2:r4** (done): Round 4 worker 2 (rendering) is committed on claude/v2-art-hall-p2 at 126d3c38. All 14 critique items (W2-a to W2-n) have a change in. Gaps that remain: part of the bay wall is still flat (W2-d), the gate canopy still reads as a regular stripe, and the shaft is not drawn across the gallery floor. The branch also merges W1's round-4 commit cd31c217 (dbb3cba9). There was one conflict, at the notice board, and I kept bo
+- **integrate:r4** (done): 
+- **critic:r4** (done): 
+- **w1:r5** (running)
+- **w2:r5** (running)
 
-### wf_95d28d67-28d — last activity 9 min ago
-15 agents: 11 done, 4 running or stopped mid-way, 0 failed.
+### wf_95d28d67-28d — last activity 11 min ago
+21 agents: 18 done, 3 running or stopped mid-way, 0 failed.
 
-- **audit:rfinish** (done): 
-- **audit:qdust** (done): 
-- **audit:cutoffs** (done): 
-- **audit:dive** (done): 
-- **fix:rfinish** (running)
-- **fix:qdust** (done): The Q, dust, fire and debris effects now sit on the floor and react to it. Nothing I checked floats, sinks into rock or runs out over a drop any more. Engine (src/tesu/fx/contract.ts FxGround, src/tesu/fx/fx.ts): - A ground effect stands on the floor under it in 4-art-px strips. In fx.json, "follow" puts every strip on the floor under it: the Q wave, its blue fire, q_ignite and the dust climb and descend slopes and s
 - **fix:cutoffs** (done): Fixed. When the chain cuts a move short, its slash trail now keeps going and fades out on its own. Moves, hurt and knockdown no longer pop to the landing crouch or idle at their end. The straight edges the audit found in her drawings and in the effects outside the qdust lane are healed. The 1-px see-through lines between effect tiles are gone. One commit on my branch, not pushed. **What changed** 1. **Trails cut shor
 - **fix:ultchain** (done): The ult chain now plays at close to the normal chain's speed and reads as clean slashes instead of H3's smoke. Every uf_m1 drawing is redrawn with the trails recipe. The commit is 71db75e0 on claude/zh1021-ultchain. It is not pushed and no critic has scored it; the before/after boards are what I looked at. **Speed.** Measured with the auditor's deterministic capture (same inputs, same tool): | run | first press to la
 - **fix:dive** (done): Stage 4 now only hits when Zhusha is standing on the floor, in both forms. Her dive keeps falling until she touches down, then the chop comes out the next tick. From the ground the press-to-hit timing is still 7 ticks, which is the normal-chain timing Dex approved. One commit, 9de9962b, on claude/zh1021-dive (base 3e994938, which is live). Not pushed. What changed (feel.json m1_4 "dive", controller.ts, timing.ts, cou
 - **critic:dive:r1** (done): 
 - **critic:cutoffs:r1** (done): 
-- **critic:qdust:r1** (running)
-- **repair:cutoffs** (running)
-- **critic:ultchain:r1** (running)
+- **critic:qdust:r1** (done): 
+- **repair:cutoffs** (done): All six of the critic's round-1 points are handled. The jump-attack floating trail is gone. The repaired m1_2 trail frames are clean. The chain carries at most one quick trail that stays with her. The finisher no longer ends in a spin. Hit boxes match live exactly. The champion "AI shift" turned out not to be a regression. Commit 1481cda7 holds the fixes; b72e790c merges origin/main 5a5c586d (Hall round 3, torii) on 
+- **critic:ultchain:r1** (done): 
+- **repair:ultchain** (done): All four critic findings are fixed in commit e430b37b, on top of 71db75e0. **1. Her hat is back in every redrawn ult drawing.** - **Cause:** black hair sat between the hat and her face, so the segmenter treated the hat as part of H3's effect. That segmenter is r2/tools/ufseg.py, the tool that decides which pixels are her and which are effect. - **Fix:** I added a hat mask. It always counts as her any warm-red, gold o
+- **repair:qdust** (running)
+- **critic:cutoffs:r2** (done): 
+- **critic:rfinish:r1** (done): 
+- **repair:rfinish** (running)
+- **critic:ultchain:r2** (running)
 
-### wf_1bfe66f0-d8d — last activity 60 min ago
+### wf_1bfe66f0-d8d — last activity 130 min ago
 66 agents: 50 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:brain-cost#3:impact** (running)
@@ -60,7 +71,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify:drift-tests#3:reproduce** (running)
 - **verify:drift-tests#3:impact** (running)
 
-### wf_cd368d9e-095 — last activity 84 min ago
+### wf_cd368d9e-095 — last activity 154 min ago
 16 agents: 0 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:claim2:reproduce** (running)
@@ -78,14 +89,14 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **sweep:discord-live** (running)
 - **sweep:drift-tests** (running)
 
-### wf_4e50eac1-3e1 — last activity 99 min ago
+### wf_4e50eac1-3e1 — last activity 169 min ago
 3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
 
 - **torii:work** (done): Gate Road had 9 gates (8 of them torii), and the terrace's wide view showed all 9 at once. It now has 5 gates, and the gates that stay sit properly on the sloping road. Every gate in the world is on Gate Road, apart from one small torii on an islet in Kagami lake and the copies of that islet in the website windows. That islet torii is a single gate that frames the lake view, so I kept it as it is. Its view and the op
 - **torii:critic:r1** (done): 
 - **torii:ready** (done): ok
 
-### wf_3be49863-029 — last activity 1502 min ago
+### wf_3be49863-029 — last activity 1572 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -95,7 +106,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r3** (done): 
 - **critic:r3** (done): 
 
-### wf_6eb91aef-0bd — last activity 2146 min ago
+### wf_6eb91aef-0bd — last activity 2216 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -111,7 +122,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r3** (running)
 - **w2:r3** (running)
 
-### wf_5cebc05c-deb — last activity 2149 min ago
+### wf_5cebc05c-deb — last activity 2219 min ago
 8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -123,7 +134,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r2** (running)
 - **w2:r2** (running)
 
-### wf_93dbdace-3fa — last activity 2609 min ago
+### wf_93dbdace-3fa — last activity 2679 min ago
 16 agents: 15 done, 0 running or stopped mid-way, 1 failed.
 
 - **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
@@ -141,7 +152,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r4** (failed)
 - **w2:r4** (done): Worker 2 finished round 4. Both commits are on claude/v2-art-vista-p2: 5e50d20b and 6948d1a0, on top of 3f94e1ba. Nothing is pushed. Changes, by critique item: - **W2-1, the cliff under the lake.** It no longer uses the road ridge's block painter. A new painter, plateau.ts, draws it at 1/2 and wider zooms (whip, postcard, tesu, tesu-720, ease-in). It has: - buttresses of very different widths, split into rounded colu
 
-### wf_286da28b-ad1 — last activity 2610 min ago
+### wf_286da28b-ad1 — last activity 2680 min ago
 10 agents: 9 done, 0 running or stopped mid-way, 1 failed.
 
 - **setup** (done): 
@@ -155,7 +166,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r2** (done): 
 - **critic:r2** (failed)
 
-### wf_23467958-71d — last activity 2644 min ago
+### wf_23467958-71d — last activity 2714 min ago
 14 agents: 8 done, 6 running or stopped mid-way, 0 failed.
 
 - **toolkit** (done): # Card-art toolkit (lanes\cardart\tools\pipe)
