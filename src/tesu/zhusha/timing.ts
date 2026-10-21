@@ -52,6 +52,8 @@ export interface MoveDef {
   airGravity?: number;
   hop?: number;
   plunge?: number;
+  /** m1_4's dive (feel.json m1_4 dive.about): it only hits on the ground; when she leaves it, plunges, and what shows. */
+  dive?: DiveDef;
   warp?: number;
   warpTicks?: number;
   airHang?: number;
@@ -66,6 +68,59 @@ export interface MoveDef {
   /** The wind-down's playback rate (default feel.json windDown.rate) and the move tick it starts (default: the last hit's end). */
   windDown?: number;
   windFrom?: number;
+}
+
+/** The dive's drawings for one slot (feel.json m1_4 dive.slots): drawing indices, the blade's floor contact (art px). */
+export interface DiveSlot {
+  /** [first, last] drawings shown on the floor before she leaves it (spread over those ticks by their own lengths). */
+  ground: [number, number];
+  /** Started in the air: this drawing first (two ticks), then `air`. */
+  airFrom: number;
+  /** Held while she is in the air (the hop, the plunge). */
+  air: number;
+  /** Shown on the tick she touches down (the chop comes out the next). */
+  land: number;
+  /** Art px ahead of her pivot where the blade meets the floor in the hit drawing. */
+  contact: number;
+  /** Leaves the floor (false: the slot's drawings all stand on it: no hop, the same timing). */
+  hop: boolean;
+}
+
+export interface DiveDef {
+  hopAt: number;
+  plungeAt: number;
+  /** Ticks of diving without touching down before the move gives up (she falls on as herself). */
+  hold: number;
+  /** Art px from the impact slash's pivot down to its arc's lowest reach: a dive's impact plays that high over the floor. */
+  impactDrop: number;
+  slots: Record<string, DiveSlot>;
+}
+
+/**
+ * The hop's take-off speed (px a tick, up), so she is `top` px up after `n` ticks of `g` (px / tick^2) gravity, the
+ * controller's order (speed += g, then she moves).
+ */
+export function hopSpeed(top: number, n: number, g: number): number {
+  const k = Math.max(1, n);
+  return (top + (g * k * (k + 1)) / 2) / k;
+}
+
+/**
+ * The dive's drawing before the chop (a clip tick, the drawing's middle): on the floor the `ground` drawings spread
+ * over `groundTicks` (by their own lengths), in the air `airFrom` for two ticks when the move started there then `air`,
+ * the touchdown tick `land`. `starts` / `ticks`: the clip's drawings (contract.ts timeline).
+ */
+export function diveClip(
+  s: DiveSlot, starts: readonly number[], ticks: readonly number[],
+  st: { phase: "ground" | "air" | "land"; t: number; groundTicks: number; air: number; fromAir: boolean },
+): number {
+  const mid = (i: number): number => (starts[i] ?? 0) + (ticks[i] ?? 1) / 2;
+  if (st.phase === "land") return mid(s.land);
+  if (st.phase === "air") return mid(st.fromAir && st.air < 2 ? s.airFrom : s.air);
+  const c0 = starts[s.ground[0]] ?? 0, c1 = (starts[s.ground[1]] ?? 0) + (ticks[s.ground[1]] ?? 1);
+  const u = Math.min(1, Math.max(0, st.t / Math.max(1, st.groundTicks)));
+  // never past the last ground drawing (u < 1 inside its ticks)
+  return Math.min(c1 - 0.01, c0 + u * (c1 - c0));
 }
 
 /** m1_3's lunge (feel.json lockAbout): from `at` over `ticks`; dist with no foe, else up to the foe's edge less `strike`. */
