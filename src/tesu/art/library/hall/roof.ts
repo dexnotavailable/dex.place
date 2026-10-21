@@ -218,16 +218,20 @@ function tieBeam(X: number, Y: number, lx: number, v: number, k: number, depth: 
     }
   } else if (style === 1) {
     // two short cartouches, each with a gilt medallion (a flower in a ring)
+    // (round 4, director: the beam is unlit there (k ~ 0), so the gold and red ran to the ramps' last umber and the
+    // pair rendered as two flat black boxes; now the field is the teal cartouches' own dark teal and the gilt holds a
+    // floor of light, as the red end bands do)
     const cc = Math.abs(kk - 0.35) < Math.abs(kk - 0.65) ? 0.35 : 0.65;
     const e = Math.min((0.09 - Math.abs(kk - cc)) * BAY * H, (0.28 - Math.abs(v - 0.5)) * depth);
     if (e > 0) {
-      if (e < 1.5) return mt(M.gold, face(k, 0) * 0.55, X, Y, 0.3, 1, 0);
+      if (e < 1.5) return mt(M.gold, 0.3 + face(k, 0) * 0.4, X, Y, 0.3, 1, 0);
       const mr = Math.hypot((kk - cc) * BAY * H, bv);
       const ang = Math.atan2(bv, (kk - cc) * BAY * H);
       const petal = mr < 0.13 * depth * (0.75 + 0.25 * Math.cos(ang * 6));
-      if (Math.abs(mr - 0.19 * depth) < 1.2 || (petal && mr > 0.05 * depth)) return mt(M.gold, face(k, -0.5, Math.cos(ang) * 0.4, Math.sin(ang) * 0.4) * 0.6, X, Y, 0.25, 1, 0);
-      if (mr <= 0.05 * depth) return mt(M.verm, face(k, 0) * 0.7, X, Y, 0.2, 1, 0);
-      return mt(M.verm, face(k, 0) * 0.4, X, Y, 0.3, 1, 0);
+      if (Math.abs(mr - 0.19 * depth) < 1.2) return mt(M.gold, 0.34 + face(k, -0.5, Math.cos(ang) * 0.4, Math.sin(ang) * 0.4) * 0.45 - (bv > 0 ? 0.1 : 0), X, Y, 0.25, 1, 0);
+      if (petal && mr > 0.05 * depth) return mt(M.gold, 0.26 + face(k, -0.5, Math.cos(ang) * 0.4, Math.sin(ang) * 0.4) * 0.4 - (bv > 0 ? 0.08 : 0), X, Y, 0.3, 1, 0);
+      if (mr <= 0.05 * depth) return mt(M.verm, 0.45 + face(k, 0) * 0.3, X, Y, 0.2, 1, 0);
+      return tn(P.jade, clamp(0.84 + (1 - k) * 0.12 + (bv > 0 ? 0.04 : 0), 0, 1), X, Y, 0);
     }
   } else if (style === 3) {
     // (round 3, W2-7: the flaked-paint patch read as navy camouflage blotches, the look Codex's patch was rejected for)
@@ -425,7 +429,9 @@ function roofBanner(c: Parameters<typeof roof.paint>[0], x: number, hook: number
     if (v > 0.93) return (Math.floor(lx) & 1) ? P.gold[4]! : 0;
     const fold = Math.sin(u * 3.1 + 0.6) * 0.5 + 0.5;
     const border = Math.abs(u) > 0.82;
-    const ramp = k ? [P.blue[3]!, P.blue[4]!, P.dusk[3]!, P.dusk[4]!] : [P.red[4]!, P.red[5]!, P.umber[3]!, P.umber[4]!];
+    // (round 4, director: the red one sat on red 4 / 5 and the umbers, a black slab with a gold edge hanging in front
+    // of the tie beam; a step up so it reads as old red silk in the roof's dark, as the bay's banner does)
+    const ramp = k ? [P.blue[3]!, P.blue[4]!, P.dusk[3]!, P.dusk[4]!] : [P.red[3]!, P.red[4]!, P.red[5]!, P.umber[3]!];
     if (border) return k ? P.dusk[2]! : P.gold[4]!;
     const t = clamp(0.2 + (1 - fold) * 0.5 + v * 0.25, 0, 1);
     return ramp[clamp(Math.round(t * (ramp.length - 1) + (bayer4(X, Y) - 0.5) * 0.4), 0, ramp.length - 1)]!;

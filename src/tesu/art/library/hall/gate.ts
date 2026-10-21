@@ -738,8 +738,13 @@ export function gateHead(c: PaintCtx, g: GateGeo, lf: LitField, lfg: LitField): 
     if (q < 2.5) return pick(P.tile, 5); // the pan tiles in the channel
     if (age > 0.985) return pick(P.tile, 5); // a broken one
     if (joint) return pick(P.tile, 4 + under);
-    const shoulder = q < 4 ? 2 : q < 8.5 ? 3 : 4;
-    return pick(P.tile, shoulder + under + old - (lip && q < 9 ? 1 : 0));
+    // (round 4, director: every column lit the same at full size, still a regular comb of stripes) the slope falls off
+    // from the eave, which the room's light reaches, into the ridge's dark: over its upper half the tiles a step down
+    // and no shoulder lit; below it only some columns' shoulders catch, so the light breaks along the eave in runs
+    const upper = v < 0.45 ? 1 : 0;
+    const catchL = !upper && hash(col, 7, 4725) < 0.62;
+    const shoulder = q < 4 ? (catchL ? 2 : 3) : q < 8.5 ? 3 + upper : 4;
+    return pick(P.tile, shoulder + under + old - (lip && q < 9 && !upper ? 1 : 0));
   });
   // the ridge's curled ends and the pearl
   for (const sx of [-1, 1]) {

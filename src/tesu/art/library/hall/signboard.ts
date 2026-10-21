@@ -41,8 +41,10 @@ export const signboard = definePainter<SignboardP>("hall.signboard", {
     const lit = (lx: number, ly: number, ny = 0): number => face(lf.get(lx, ly).k, side, 0, ny);
 
     // --- the cords: red silk from the soffit to gold rings on the board's top, a little slack
+    // (round 4, director: one bright red the whole 3 H drop read as two stray red lines down the bay) dark up in the
+    // soffit's shade, oxblood down the drop, red only near the board where its lanterns reach
     for (const kx of [W * 0.16, W * 0.84]) {
-      cord(c, kx, -p.hang, kx + (kx < W / 2 ? 2 : -2), y0 - 7, 0, (X, Y, _t) => tn(P.red, 0.62, X, Y, 0));
+      cord(c, kx, -p.hang, kx + (kx < W / 2 ? 2 : -2), y0 - 7, 0, (X, Y, t) => mt(M.verm, 0.12 + t * t * 0.55, X, Y, 0.25, 1, 0));
       rect(c, kx - 3, y0 - 8, kx + 4, y0 - 1, (X, Y, lx, ly) => (Math.abs(Math.hypot(lx - kx - 0.5, ly - y0 + 4.5) - 2.5) < 0.9 ? tn(M.gold, 0.3, X, Y, 0) : 0));
     }
 
