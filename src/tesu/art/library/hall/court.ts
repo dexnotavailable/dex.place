@@ -8,6 +8,7 @@
 // Daylight from the upper left (COURT_LIGHT): lit faces up and left, shadows down and right.
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
+import { bayer4 } from "../../raster.ts";
 import { P } from "../../palette.ts";
 import { paintPodium } from "./court-stone.ts";
 import { paintFoundation } from "./court-found.ts";
@@ -255,17 +256,20 @@ function lionThread(u: number, v: number, lx: number, ly: number, lit: number, X
       if (dv > -0.07 && dv < 0.06) return gold(dv < -0.03 ? 1.08 : 0.82 + groove(1.4) * 0.5);
       if (dv >= 0.06 && dv < 0.1) return red(0.42);
     }
-    // the eyes: almond, fierce (outer corners up), an ink rim, a gold iris, a pupil, a glint
+    // (round 3, W2-11: dot eyes) the eyes: big almonds, fierce (outer corners up), a heavy ink upper lid that
+    // sweeps out past the corner, a gold iris filling most of the eye, a slit pupil, a glint; the white only at
+    // the inner corner
     for (const sgn of [-1, 1]) {
-      const du = u - sgn * 0.35, dv = v + 0.1 + du * 0.4 * sgn;
-      const e = (du / 0.2) ** 2 + (dv / 0.085) ** 2;
+      const du = u - sgn * 0.34, dv = v + 0.1 + du * 0.45 * sgn;
+      const e = (du / 0.24) ** 2 + (dv / 0.11) ** 2;
+      const lid = dv < -0.04 && dv > -0.16 && Math.abs(du + sgn * 0.03) < 0.27 && e < 2.1 && e > 0.55;
+      if (lid) return tn(M.ink, 0.0, X, Y, 0);
       if (e < 1) {
-        const ir = Math.hypot(du + sgn * 0.02, dv);
-        if (e > 0.62) return tn(M.ink, 0.2, X, Y, 0);
-        if (ir < 0.035) return tn(M.ink, 0.0, X, Y, 0);
-        if (Math.hypot(du + 0.03, dv + 0.03) < 0.02) return mt(M.paper, 1.1, X, Y, 0.0, 1);
-        if (ir < 0.075) return mt(M.gold, 1.05, X, Y, 0.0, 1);
-        return mt(M.paper, lit * 0.8, X, Y, 0.1, 1);
+        if (e > 0.7 && dv > 0) return tn(M.ink, 0.3, X, Y, 0);
+        if (Math.abs(du) < 0.022 && Math.abs(dv) < 0.075) return tn(M.ink, 0.0, X, Y, 0);
+        if (Math.hypot(du + 0.05 * sgn, dv + 0.035) < 0.025) return mt(M.paper, 1.1, X, Y, 0.0, 1);
+        if (Math.abs(du) < 0.16) return mt(M.gold, 1.0 - Math.abs(du) * 1.5 - (dv < -0.02 ? 0.2 : 0), X, Y, 0.0, 1);
+        return du * sgn < 0 ? mt(M.paper, lit * 0.85, X, Y, 0.1, 1) : mt(M.gold, 0.6, X, Y, 0.1, 1);
       }
     }
     // the cheeks: a curl on each side
@@ -282,8 +286,8 @@ function lionThread(u: number, v: number, lx: number, ly: number, lit: number, X
         // the fangs: two long ones from the top, two short from the bottom
         if (Math.abs(au - 0.27) < 0.055 * (1 - (t - 0.06) / 0.45) && t < 0.5) return mt(M.paper, lit * (u < 0 ? 1.05 : 0.85), X, Y, 0.0, 1);
         if (Math.abs(au - 0.17) < 0.045 * (1 - (0.95 - t) / 0.32) && t > 0.62) return mt(M.paper, lit * 0.9, X, Y, 0.0, 1);
-        // the teeth along the top
-        if (t < 0.2) return ((((u * 11) % 1) + 1) % 1) < 0.18 ? mt(M.paper, 0.5, X, Y, 0.1, 1) : mt(M.paper, lit * 0.95, X, Y, 0.0, 1);
+        // (round 3, W2-11: a grid of teeth) the upper gum dark under the lip, two small incisors between the fangs
+        if (t < 0.16) return au < 0.11 && t > 0.06 ? mt(M.paper, lit * 0.8, X, Y, 0.1, 1) : red(0.12);
         // the tongue and the dark of the mouth
         if (Math.hypot(u / 0.24, (t - 0.78) / 0.16) < 1) return mt(P.red, lit * 0.8, X, Y, 0.0, 1);
         return red(0.18);
@@ -322,6 +326,12 @@ function lionThread(u: number, v: number, lx: number, ly: number, lit: number, X
   return 0;
 }
 
+/** The prize cards' paper where it turns from the sun (round 3): a cool grey cream. */
+const CARD_COOL: Ramp = [P.cloud[2]!, P.stone[1]!, P.stone[2]!, P.stone[3]!];
+
+/** The release banner's silk: an old red, faded a step, its folds going into the warm dark. */
+const SILK: Ramp = [P.red[2]!, P.red[3]!, P.red[4]!, P.red[5]!, P.umber[1]!, P.umber[2]!, P.umber[3]!];
+
 export const board = definePainter<BoardP>("court.board", {
   bounds() {
     return [-1.5 * H, -4.4 * H, 1.5 * H, 4];
@@ -345,7 +355,7 @@ export const board = definePainter<BoardP>("court.board", {
     // folds that open toward a weighted hem, the morning wind pushing its lower half to the right,
     // a twill weave, a gold fringe; the champion's face embroidered in gold thread on it
     const bwid = bx1 - bx0, drop = ty1 - ty0;
-    const LION_S = 2.8 * (drop / (1.9 * H)), LION_CY = ty0 + drop * 0.45;
+    const LION_S = 3.15 * (drop / (1.9 * H)), LION_CY = ty0 + drop * 0.46;
     const wind = (v: number): number => 4 * v ** 1.5 + 1.0 * Math.sin(v * 5);
     const foldAt = (u: number, v: number): [number, number] => {
       // the surface's height across (folds) and its slope (which way it faces)
@@ -384,7 +394,9 @@ export const board = definePainter<BoardP>("court.board", {
       // the silk: a damask of faint rays round the emblem, woven in
       const ang = Math.atan2(v - 0.42, (u - 0.5) * 1.1);
       const ray = Math.floor(((ang + Math.PI) / (Math.PI * 2)) * 18) % 2 === 0;
-      return mt(M.verm, lit * (ray ? 0.88 : 0.82) + weave, X, Y, 0.35, 1);
+      // (round 3, W2-11: the banner was the most saturated thing in the frame, S 0.72) old silk, its red faded a step
+      // and going into the warm dark in the folds
+      return mt(SILK, lit * (ray ? 0.84 : 0.78) + weave, X, Y, 0.0, 1);
     });
     if (plaques[0] !== "dexclient") emblem(c, plaques[0]!, 0, LION_CY, LION_S);
     // the board's legs, its frame
@@ -418,10 +430,17 @@ export const board = definePainter<BoardP>("court.board", {
           if (pe < 1.5) return mt(M.gold, 0.85, X, Y, 0.05, 1);
           return mt(M.verm, face(0.95, SIDE) * 0.62, X, Y, 0.2, 1);
         }
-        // the card: cream paper, brightest round the icon (lit), a faint ray pattern
+        // the card: (round 3, W2-10: flat cream) silk-backed paper set back in its frame: the frame's shadow along its
+        // top and left inner edges (the sun is up and to the left: the frame's lit lip throws it down and right), the
+        // sun warm on its upper left, cooler toward the lower right, a fine weave, brightest round the icon
         const r = Math.hypot((u - 0.5) * pw, (v - 0.44) * ph) / (0.5 * pw);
-        const rays = Math.floor(((Math.atan2(v - 0.44, u - 0.5) + Math.PI) / (Math.PI * 2)) * 16) % 2 === 0 && r > 0.55 ? 0.06 : 0;
-        return mt(M.paper, 1.0 - r * 0.22 - rays, X, Y, 0.0, 0.8);
+        const rays = Math.floor(((Math.atan2(v - 0.44, u - 0.5) + Math.PI) / (Math.PI * 2)) * 16) % 2 === 0 && r > 0.55 ? 0.05 : 0;
+        const shadowT = f < 5 + 4 + (u < 0.2 ? 2 : 0), shadowL = e < 5 + 3;
+        const shade = shadowT || shadowL ? 0.22 : 0;
+        const weave = (X % 2 === 0) && (Y % 3 === 0) ? 0.03 : 0;
+        const cool = clamp((u + v - 1) * 0.6, 0, 0.5);
+        if (cool > 0.12 && !shade && bayer4(X, Y) < cool * 0.7) return mt(CARD_COOL, 1.0 - r * 0.25 - rays - shade, X, Y, 0.0, 1);
+        return mt(M.paper, 1.0 - r * 0.22 - rays - shade - weave, X, Y, 0.0, 0.8);
       });
       emblem(c, id, cx, py0 + ph * 0.45, 1.75);
       // the name, in gold pixel letters on the nameplate
@@ -477,6 +496,11 @@ export interface TowerP {
   gongY: number;
 }
 
+/** Lacquered timber by day (round 3): the sky caught on its lit side, into the warm dark on its shade side. */
+const POST: Ramp = [P.tile[1]!, P.tile[2]!, P.lacquer[0]!, P.lacquer[1]!, P.lacquer[2]!, P.lacquer[3]!, P.umber[3]!, P.lacquer[4]!];
+/** The sky seen through the tower's far lattice (round 3). */
+const FAR_SKY: Ramp = [P.cloud[2]!, P.range[2]!, P.range[3]!, P.range[4]!, P.range[5]!, P.tile[3]!];
+
 export const gongTower = definePainter<TowerP>("court.gongtower", {
   bounds(p) {
     return [-p.half - 0.9 * H, -p.h - (p.crown ? 1.0 * H : 0), p.half + 0.9 * H, 4];
@@ -495,8 +519,8 @@ export const gongTower = definePainter<TowerP>("court.gongtower", {
       const k = 0.98 - u * 0.3;
       const storey = ((hgt - 3.2) % S + S) % S;
       if (storey < 0.12) return mt(M.gold, face(k, SIDE, 0, storey < 0.04 ? -0.8 : 0.2) * 0.9, X, Y, 0.1, 1);
-      // the storey's balcony throws a shadow down the panels under it
-      const under = storey < 0.3 ? -0.18 : 0;
+      // the storey's balcony throws a shadow down the panels under it (round 3, W2-10: deeper, its edge dithered)
+      const under = storey < 0.22 ? -0.3 : storey < 0.42 && bayer4(X, Y) < (0.42 - storey) / 0.2 ? -0.3 : 0;
       // vermilion lattice panels set back in lacquer frames: the frame shades each panel's top
       // and left inside edge; the lattice's bars catch the morning only on their upper-left faces
       const pu = (u * 3) % 1, pv = ((hgt - 3.2) % 1.2 + 1.2) % 1.2 / 1.2;
@@ -513,7 +537,13 @@ export const gongTower = definePainter<TowerP>("court.gongtower", {
         const sun = recess ? 0.45 : litFace ? 1.0 : 0.55;
         return mt(M.verm, face(k, SIDE) * sun + under, X, Y, 0.2, 1);
       }
-      return mt(lacq, face(k, SIDE) * (recess ? 0.12 : 0.26) + under * 0.3, X, Y, 0.1, 1);
+      // (round 3, W2-10: depth behind the net) through the gaps, the tower's dark inside, and here and there the sky
+      // through the lattice on its far side, paler higher up
+      // the far side's lattice lets the sky through as a soft band across the storey, under its floor's shadow, the
+      // inside dark below it
+      const band = 1 - Math.abs(pv - 0.42) / 0.26;
+      if (!recess && under === 0 && band > 0.15 + bayer4(X, Y) * 0.5) return tn(FAR_SKY, clamp(0.3 + (1 - band) * 0.35 + u * 0.25, 0, 1), X, Y, 0.4);
+      return mt(lacq, face(k, SIDE) * (recess ? 0.08 : 0.18) + under * 0.3, X, Y, 0.1, 1);
     });
     for (let s = 3.2 + S; s * H < p.h - 0.5 * H; s += S) {
       tileRoof(c, lf, SIDE, -tw - 0.55 * H, tw + 0.55 * H, -s * H, 0.55 * H, Math.floor(s));
@@ -530,21 +560,39 @@ export const gongTower = definePainter<TowerP>("court.gongtower", {
     }
     // the tower's own corner posts above the gong's frame
     const frameTop = -p.gongY - 1.32 * H - 0.5 * H;
+    // (round 3, W2-10: the posts were L 74 in ten colours over 290 px, no lit or shade side) lacquer in the morning:
+    // the sky's blue caught along the lit side, a core shadow, the shade side warm-dark with a little bounce; each
+    // storey's eave and each beam throws a shadow down the post under it, darkest at the joint; rain streaks
+    // down it, grime at the foot
+    const beams = [-p.gongY - 1.32 * H, -0.95 * H];
+    const postLit = (X: number, Y: number, u: number, lx: number, ly: number, rr: number): number => {
+      const hgt = -ly / H;
+      let n = cyl(1.0, u, SIDE, 0.35) * 1.02;
+      const storey = ((hgt - 3.2) % S + S) % S;
+      if (hgt > 3.2 + S - 0.2 && storey < 0.36) n -= storey < 0.2 ? 0.28 : bayer4(X, Y) < (0.36 - storey) / 0.16 ? 0.28 : 0;
+      for (const by of beams) {
+        const dy = ly - by; // below the beam's underside: positive
+        if (dy > 0 && dy < 0.3 * H) n -= dy < 0.08 * H ? 0.32 : bayer4(X, Y) < (0.3 * H - dy) / (0.22 * H) ? 0.22 : 0;
+      }
+      const streak = vnoise(lx * 0.45 + rr, ly * 0.015, 87) > 0.68 ? -0.07 : 0;
+      const grime = hgt < 1.6 ? -(1.6 - hgt) * 0.08 : 0;
+      return mt(POST, n * 0.95 + streak + grime, X, Y, 0.0, 1);
+    };
     for (const px of [-tw, tw]) {
-      lathe(c, px, -p.h, frameTop + 4, () => r * 0.7, (X, Y, u, _lx, ly) => {
+      lathe(c, px, -p.h, frameTop + 4, () => r * 0.7, (X, Y, u, lx, ly) => {
         const hgt = -ly / H;
         const band = ((hgt - 3.2) % S + S) % S < 0.16;
-        return band ? mt(M.gold, cyl(0.95, u, SIDE), X, Y, 0.0, 1) : mt(lacq, cyl(0.95, u, SIDE, 0.3) * 0.95, X, Y, 0.0, 1);
+        return band ? mt(M.gold, cyl(0.95, u, SIDE), X, Y, 0.0, 1) : postLit(X, Y, u, lx, ly, px);
       });
     }
     // the great posts of the gong's frame, a finial on each
     for (const px of [-p.half, p.half]) {
       lathe(c, px, frameTop - 0.32 * H, frameTop, (ly) => r * (0.4 + 0.6 * Math.sin(((ly - frameTop + 0.32 * H) / (0.32 * H)) * Math.PI)), (X, Y, u) => mt(M.gold, cyl(0.95, u, SIDE), X, Y, 0.0, 1));
       colBase(c, px, r, 0.5 * H, 0.95, SIDE, 3);
-      lathe(c, px, frameTop, -0.5 * H, () => r, (X, Y, u, _lx, ly) => {
+      lathe(c, px, frameTop, -0.5 * H, () => r, (X, Y, u, lx, ly) => {
         const hgt = -ly / H;
         const band = (hgt > 1.0 && hgt < 1.18) || (((hgt - 3.2) % S + S) % S < 0.16 && hgt > 3);
-        return band ? mt(M.gold, cyl(0.95, u, SIDE), X, Y, 0.0, 1) : mt(lacq, cyl(0.95, u, SIDE, 0.3) * 0.95, X, Y, 0.0, 1);
+        return band ? mt(M.gold, cyl(0.95, u, SIDE), X, Y, 0.0, 1) : postLit(X, Y, u, lx, ly, px);
       });
     }
     // the gong's beam (it hangs from this) and a lower brace, gold medallions at their middles

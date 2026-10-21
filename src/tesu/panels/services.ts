@@ -1,5 +1,5 @@
 // The Hall of Works' services, on the website's own data (GDK 3.7): the Notice Wall (the
-// blog), the docs shelf, the offering box (Ko-fi and the MB Bank QR, the ticket wheel drawn
+// blog), the docs shelf, the offering box (Ko-fi and the personal bank QR, the ticket wheel drawn
 // idle), Hanko's desk (accounts open later; the ledger slip carries progress between
 // devices), the Crane Desk, the patrons' scroll and the gallery's frames. Only real data:
 // posts and docs come from content/, the art from the gallery manifest, the Ko-fi and bank
@@ -9,7 +9,7 @@ import { DOC_GROUPS } from "../../site/data/docs.ts";
 import { KOFI_URL } from "../../site/data/nav.ts";
 import { QUICK_PICKS, formatVnd } from "../../site/donate.ts";
 import { qrGrid } from "../../site/qr.ts";
-import { MB_BANK, vietQrPayload } from "../../site/vietqr.ts";
+import { vietQrPayload } from "../../site/vietqr.ts";
 import gallery from "../../../content/gallery/manifest.json";
 import { el, type PanelSpec } from "./panels.ts";
 
@@ -118,7 +118,7 @@ export const docsShelf: PanelSpec = {
   },
 };
 
-// --- the offering box: Ko-fi, the MB Bank QR, the ticket wheel (idle) -------------------
+// --- the offering box: Ko-fi, the personal bank QR, the ticket wheel (idle) -------------
 
 function qrCanvas(text: string, px: number): HTMLCanvasElement {
   const grid = qrGrid(text);
@@ -149,7 +149,7 @@ export const offeringBox: PanelSpec = {
     const draw = (amount: number): void => {
       qrBox.replaceChildren(qrCanvas(vietQrPayload(amount), 4));
       qrBox.setAttribute("role", "img");
-      qrBox.setAttribute("aria-label", amount ? `MB Bank QR for ${formatVnd(amount)}` : "MB Bank QR, any amount");
+      qrBox.setAttribute("aria-label", amount ? `Personal bank QR for ${formatVnd(amount)}` : "Personal bank QR, any amount");
       tag.textContent = amount ? formatVnd(amount) : "Any amount (your bank app asks)";
     };
     const picks = el("div", "picks");
@@ -164,7 +164,7 @@ export const offeringBox: PanelSpec = {
       picks.append(bt);
     }
     draw(0);
-    b.append(el("section", "give", el("h3", "", `${MB_BANK.bank} (VietQR)`), el("p", "", "Scan with any Vietnamese banking app."), qrBox, tag, picks));
+    b.append(el("section", "give", el("h3", "", "Personal bank"), el("p", "", "Vietnamese banking. Scan with any banking app."), qrBox, tag, picks));
     // the ticket wheel under the box, drawn idle until dex accounts exist
     b.append(el("section", "wheel", el("h3", "", "The ticket wheel"), el("p", "", "No tickets yet. Donation tickets start when dex accounts open.")));
     b.append(el("p", "foot", link("/donate/", "The same, on the website", "plain")));

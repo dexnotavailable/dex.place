@@ -9,6 +9,12 @@
 // wall at the back steps down in value in bands, warm low where the nook's lamp reaches, darkest high up.
 // The head lands on a header at the gallery's edge; the foot ends in a stone step and a newel on a stone base.
 //
+// Round 3 (W1-1, Dex 10-19 by name, third round open: "fix the obvious triangle shape"): the walk now turns at an
+// elbow. A steep upper flight (1.05) comes down onto a deep landing (2.5 H, its own rail, newels and lantern, the
+// beam's ends showing past its posts), and a gentle lower flight (0.7) with fewer, deeper treads runs on to the foot.
+// The lower flight is open (`open`): treads on brackets over a bare carriage, no spandrel under it, the hall's back
+// wall seen through and under it, one carriage post with knee braces; the Crane Desk sits in its lee.
+//
 // Coordinates: level-1 local px of the play plane, the anchor at the stair's head on the gallery floor;
 // x right, y down (the floor is `floor` px below the head).
 
@@ -52,6 +58,13 @@ export interface StairP {
   /** The cupboard and the crates under the lower flight: local x ranges. */
   cupboard?: [number, number];
   crates?: [number, number];
+  /** (round 3) The flight(s) between these local x are open: no spandrel wall under them, the treads on brackets
+   *  over a bare carriage with gaps between them (open risers), so the wall behind shows through and under. */
+  open?: [number, number];
+  /** (round 3) Posts under the open flight carrying its carriage (local x), knee-braced. */
+  openPosts?: number[];
+  /** (round 3) How far the curtain across the nook's head reaches east from the landing's west post (px). */
+  noren?: number;
   /** The rail (front plane) instead of the stair. */
   rail?: boolean;
   at?: At;
@@ -271,7 +284,8 @@ export const stair = definePainter<StairP>("hall.stair", {
 
     // --- the wall closing the space under the stair: boards and rails, its value stepping down in bands as it
     // rises away from the nook's lamp (warm low, darkest high up); a soft dark band hugs the stair's underside
-    const wx0 = p.wall0, wx1 = fx;
+    // (round 3) it stops at the landing's east post when the lower flight is open
+    const wx0 = p.wall0, wx1 = p.open ? p.open[0] : fx;
     // (hall loop round 2, W2-6: the nook lamp's pool on this wall was a round disc) the posts standing between the
     // lamp and the wall throw their shadows onto it: a dark band just beyond each post (away from the lamp), the
     // light past it a part only; the lamp's own panel between the landing's posts keeps all of it
@@ -325,6 +339,14 @@ export const stair = definePainter<StairP>("hall.stair", {
       brace(c, lf, px - POST, top + kb, px - POST - kb * 0.9, g.under(px - POST - kb * 0.9) - 1, 7);
       brace(c, lf, px + POST, top + kb, px + POST + kb * 0.9, g.under(px + POST + kb * 0.9) - 1, 7);
       post(c, lf, px, top - 2, F, "block", true, 41 + i);
+    }
+    // (round 3) the open flight's carriage post: it stands clear in front of the back wall, braced both ways
+    for (const [i, px] of (p.openPosts ?? []).entries()) {
+      const top = g.under(px);
+      const kb = Math.min(0.36 * H, (F - top) * 0.45);
+      brace(c, lf, px - POST, top + kb, px - POST - kb * 0.9, g.under(px - POST - kb * 0.9) - 1, 6);
+      brace(c, lf, px + POST, top + kb, px + POST + kb * 0.9, g.under(px + POST + kb * 0.9) - 1, 6);
+      post(c, lf, px, top - 2, F, "block", true, 47 + i);
     }
 
     // --- stepped shelves over the docs shelf: boards on brackets that step up under the flight, each loaded
@@ -410,7 +432,7 @@ export const stair = definePainter<StairP>("hall.stair", {
     // --- the curtain across the nook's head, hung from the landing beam between its posts: indigo with a cream
     // crest (an open book: the docs) split by the slit
     for (const [a, b, ly0] of g.landings) {
-      const x0 = a + 2 * POST + 2, x1 = b - 2 * POST - 2;
+      const x0 = a + 2 * POST + 2, x1 = Math.min(b - 2 * POST - 2, x0 + (p.noren ?? Infinity));
       const y0 = ly0 + g.hr + STR, y1 = y0 + 0.4 * H;
       const mid = (x0 + x1) / 2;
       rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
@@ -461,6 +483,7 @@ export const stair = definePainter<StairP>("hall.stair", {
     // --- the flights: a deep lacquered stringer under a red lip, and on it the cut steps (tread ends lit along
     // their nosings, the risers' ends a shade darker, a nosing lip overhanging each riser)
     for (const [fi, f] of g.flights.entries()) {
+      const open = !!p.open && f.x0 >= p.open[0] - 1 && f.x1 <= p.open[1] + 1;
       rect(c, f.x0, f.y0 - 2, f.x1, f.y1 + g.hr + STR + 2, (X, Y, lx, ly) => {
         if (ly >= F) return 0;
         const inn = g.inner(lx), tp = g.top(lx);
@@ -469,7 +492,9 @@ export const stair = definePainter<StairP>("hall.stair", {
         if (t >= 0 && t < STR) {
           // the stringer: the red lip under the steps, a gold bead, the lacquered face, a darker chamfer
           if (t < 1.2) return mt(M.lacq, V(l, 0.15), X, Y, 0.1, 1);
-          if (t < 4.5) return mt(M.verm, V(l, t < 2.4 ? 0.62 : 0.5, 0, t < 2.4 ? -0.6 : 0), X, Y, 0.15, 1);
+          // (round 4, W2-k: with the rail, a second bright red line corner to corner) the flights' lip a deep oxblood
+          // lacquer, its top arris the only lit line; the landing keeps its bright red lip
+          if (t < 4.5) return mt(M.verm, V(l, t < 2.4 ? 0.5 : 0.32, 0, t < 2.4 ? -0.6 : 0), X, Y, 0.45, 1);
           if (Math.abs(t - 7) < 0.7) {
             const worn = fbm(lx * 0.05, fi * 3.1, 77, 2) > 0.66;
             return worn ? mt(M.lacq, V(l, 0.5), X, Y, 0.0, 1) : mt(M.gold, V(l, 0.66, 0, -0.3), X, Y, 0.15, 1);
@@ -493,6 +518,17 @@ export const stair = definePainter<StairP>("hall.stair", {
         const k = Math.round((lx - f.x0) / f.run);
         const east = f.x0 + f.run * (k + 0.5);
         const v = ly - tp;
+        if (open) {
+          // (round 3) open risers: only the tread board and a slim bracket under its middle; the rest of the tooth is
+          // air, the wall behind seen through it. The board is thicker at the nosing, lit along its top.
+          if (v < 1.2) return mt(M.wood, V(l, 1.0, 0, -1), X, Y, 0.0, 1);
+          if (v < 3.5) return mt(M.wood, V(l, 0.7), X, Y, 0.1, 1);
+          if (v < 4.8) return mt(M.wood, V(l, 0.3, 0, 0.8), X, Y, 0.15, 1);
+          const mid = east - f.run * 0.45;
+          if (Math.abs(lx - mid) < 1.6) return mt(M.wood, V(l, lx < mid ? 0.5 : 0.32, lx < mid ? -0.6 : 0.6, 0), X, Y, 0.15, 1);
+          // the tread's shadow on the bracket's foot and the carriage just under it
+          return 0;
+        }
         if (v < 1.2) return mt(M.wood, V(l, 1.0, 0, -1), X, Y, 0.0, 1);
         if (v < 3.5) return mt(M.wood, V(l, 0.72), X, Y, 0.1, 1);
         if (v < 4.6) return mt(M.wood, V(l, 0.34), X, Y, 0.15, 1);
@@ -572,6 +608,11 @@ function paintRail(c: PaintCtx, lf: LitField, g: StairGeo, newels: number[]): vo
     return (land ? land[2] : g.walk(x)) - RAIL;
   };
   const onNewel = (x: number): boolean => newels.some((n) => Math.abs(x - n) < POST + 0.5);
+  // (round 4, W2-k: one red line ~1000 px long, corner to corner, the strongest line in two frames) the rail and its
+  // balusters down the flights are dark oiled timber, a lit top on the rail; only the newels and the landing's rail
+  // and balusters keep the red lacquer
+  const onLanding = (x: number): boolean => g.landings.some(([a, b]) => x >= a && x <= b);
+  const railRamp = (x: number): Ramp => (onLanding(x) ? M.verm : M.wood);
   // balusters: one on every tread, one every 16 px along a landing
   const posts: number[] = [];
   for (const f of g.flights) for (let k = 1; k < f.n; k++) posts.push(f.x0 + f.run * k);
@@ -582,7 +623,7 @@ function paintRail(c: PaintCtx, lf: LitField, g: StairGeo, newels: number[]): vo
     lathe(c, bx, yTop, yBot, (ly) => {
       const t = (ly - yTop) / Math.max(1, yBot - yTop);
       return 1.5 + (Math.abs(t - 0.62) < 0.08 ? 1.2 : 0) + (t > 0.9 ? 0.8 : 0);
-    }, (X, Y, u, lx, ly) => mt(M.verm, cyl(0.35 + lf.get(lx, ly).k * 0.8, u, clamp(lf.get(lx, ly).dx * 1.6, -1, 1)) * 0.8, X, Y, 0.2, 1));
+    }, (X, Y, u, lx, ly) => mt(railRamp(bx), cyl(0.35 + lf.get(lx, ly).k * 0.8, u, clamp(lf.get(lx, ly).dx * 1.6, -1, 1)) * (onLanding(bx) ? 0.8 : 0.62), X, Y, onLanding(bx) ? 0.2 : 0.4, 1));
   }
   // the rail itself: a rounded red lacquer bar, a lit top, its underside dark
   rect(c, x0, Math.min(railY(x0), railY(x1)) - 2, x1, Math.max(railY(x0), railY(x1)) + 8, (X, Y, lx, ly) => {
@@ -590,8 +631,13 @@ function paintRail(c: PaintCtx, lf: LitField, g: StairGeo, newels: number[]): vo
     const v = ly - ry;
     if (v < 0 || v >= 6.5 || onNewel(lx)) return 0;
     const l: Lit = lf.get(lx, ly);
-    if (v < 1.3) return mt(M.verm, V(l, 0.85, 0, -0.9), X, Y, 0.0, 1);
-    if (v > 5) return mt(M.verm, V(l, 0.3, 0, 0.9), X, Y, 0.2, 1);
-    return mt(M.verm, V(l, 0.6), X, Y, 0.1, 1);
+    if (onLanding(lx)) {
+      if (v < 1.3) return mt(M.verm, V(l, 0.85, 0, -0.9), X, Y, 0.0, 1);
+      if (v > 5) return mt(M.verm, V(l, 0.3, 0, 0.9), X, Y, 0.2, 1);
+      return mt(M.verm, V(l, 0.6), X, Y, 0.1, 1);
+    }
+    if (v < 1.3) return mt(M.wood, V(l, 0.7, 0, -0.9), X, Y, 0.3, 1);
+    if (v > 5) return mt(M.wood, V(l, 0.25, 0, 0.9), X, Y, 0.5, 1);
+    return mt(M.wood, V(l, 0.42) + grain(lx, ly, 641, false) * 0.06, X, Y, 0.45, 1);
   });
 }
