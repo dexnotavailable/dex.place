@@ -23,7 +23,7 @@ import type { Body } from "../collide.ts";
 import { H } from "../config.ts";
 import { timeline, type AnimDef } from "./contract.ts";
 import type { DerivedSlot, Rect } from "./derive.ts";
-import { clipToMove, diveClip, hopSpeed, lockEase, lockTarget, resolveMove, windClock, type BreakDef, type DiveSlot, type HitDef, type MoveDef, type ResolvedMove, type Weight } from "./timing.ts";
+import { clipToMove, diveClip, diveSlot, hopSpeed, lockEase, lockTarget, resolveMove, windClock, type BreakDef, type DiveSlot, type DiveSplash, type HitDef, type MoveDef, type ResolvedMove, type Weight } from "./timing.ts";
 import { UltDirector, type UltCtx, type UltPhase } from "./ult.ts";
 import { UltForm, type FormCtx } from "./ultform.ts";
 import { artPx, checkUnits, drawnH, runHps } from "./units.ts";
@@ -106,6 +106,8 @@ export interface ZHit extends HitBox {
   /** Where the impact slash plays (world y), else the middle of the overlap: the dive's lands its arc on the floor its
    *  blade struck (feel.json m1_4 dive.impactDrop), not in the middle of the foe. */
   fxY?: number;
+  /** Where along the overlap it plays (world x, kept inside it), else its middle: the dive's where its blade comes down. */
+  fxX?: number;
 }
 
 /** The game's sprite effects (fx/fx.ts, game.ts hands them over): FX v2's built effects. */
@@ -312,8 +314,6 @@ export class Zhusha {
     lock: { x0: number; travel: number; foe: boolean; fx: number } | null;
     dive: Dive | null;
   } | null = null;
-  /** The world her last move moved in: where the dive's floor is (its impact comes down onto it). */
-  private diveWorld: MoveWorld | null = null;
   private moveStart = -9999;
   private chainIdx = -1;
   private chainEnd = -9999;
@@ -337,6 +337,17 @@ export class Zhusha {
   private lastHits = 0;
   private formSerial = 0;
   private ultC: (UltCtx & FormCtx) | null = null;
+  /** The world her move last moved in (its ground: where the dive's impact comes down). */
+  private world: MoveWorld | null = null;
+
+  /**
+   * The floor under x near her feet (from `up` H above `y` down to `down` H below it), null: none there (a ledge, a gap,
+   * her in the air) or no ground to ask (a ride). Effects that come off the floor start on it.
+   */
+  private floorAt(x: number, y = this.body.y, up = 0.4, down = 0.6): number | null {
+    const g = this.world?.groundBelow?.(x, y - up * H)?.y;
+    return g === undefined || g > y + down * H ? null : g;
+  }
   private poseX: number | null = null;
 
   constructor(host: ZhushaHost, spawn: [number, number] = [0, 0]) {
@@ -376,6 +387,15 @@ export class Zhusha {
   /** Her soles as drawn (her drawing sits feel.json draw.dip art px into the ground): effects anchored on her go there. */
   get soleY(): number {
     return this.body.y + FEEL.draw.dip * ART_PX;
+  }
+
+  /**
+   * The dive's floor splash in the drawings showing now (feel.json m1_4 dive.slots splash), while she stands after its
+   * touchdown: draw.ts cuts it where the floor under it ends (lip.ts). Null: no splash to place.
+   */
+  get diveSplash(): DiveSplash | null {
+    const d = this.move?.dive;
+    return this.state === "move" && d?.down && this.body.grounded ? d.slot.splash ?? null : null;
   }
 
   /** The widest zoom the framing may show now (the Q's pull-out), null: the world's framing. R frames itself (ult.ts shots). */
@@ -445,7 +465,7 @@ export class Zhusha {
         hitVfx: h.weight === "light" ? "hit.light" : "hit.heavy",
         brk: h.break ? { ...h.break, ox, dir: f } : undefined,
         fxHit: this.move ? impactSlash(this.move.id, h.weight, this.ultForm) : undefined,
-        ...(this.move?.dive ? { fxY: this.diveImpactY() } : {}),
+        ...(this.move?.dive ? { fxY: this.diveImpactY(), fxX: this.diveContactX() } : {}),
       },
     });
     const out: { box: WorldBox; hb: ZHit }[] = [];
@@ -655,12 +675,6 @@ export class Zhusha {
     this.cue("land", 1, "land", "land", "medium");
   }
 
-  /** The floor under x near `y` (from `up` H above it to `down` H below), null: none (a ledge's drop, past a wall, no ground to ask). */
-  private floorNear(x: number, y: number, up = 0.4, down = 0.4): number | null {
-    const g = this.diveWorld?.groundBelow?.(x, y - up * H)?.y;
-    return g === undefined || g > y + down * H ? null : g;
-  }
-
   /** Where the dive's blade meets the floor (world x), from its hit drawing (feel.json m1_4 dive.slots contact). */
   private diveContactX(): number {
     const c = this.move?.dive?.slot.contact ?? 54;
@@ -670,7 +684,7 @@ export class Zhusha {
   /** A dive's impact on a foe: its arc comes down onto the floor the blade struck (else her floor). */
   private diveImpactY(): number {
     const b = this.body;
-    const g = this.floorNear(this.diveContactX(), b.y) ?? b.y;
+    const g = this.floorAt(this.diveContactX(), b.y, 0.4, 0.4) ?? b.y;
     return g - (FEEL.moves.m1_4?.dive?.impactDrop ?? 165) * ART_PX;
   }
 
@@ -938,7 +952,9 @@ export class Zhusha {
     // m1_4 is a dive (feel.json m1_4 dive): which drawings show while she is on the floor / in the air / touching down
     let dive: Dive | null = null;
     if (def.dive && def.plunge) {
-      const slot = def.dive.slots[clip?.id ?? ""] ?? def.dive.slots[id] ?? Object.values(def.dive.slots)[0]!;
+      // (its entry while the clip has the ticks it was authored for; a redrawn clip is read from its first hit drawing)
+      const hitDrawing = clip ? ([...(clip.hits ?? [])].sort((x, y) => x - y)[0] ?? DERIVED[clip.id]?.hits[0]?.first ?? null) : null;
+      const slot = diveSlot(def.dive, id, clip ? { id: clip.id, ticks: clip.frames.map((f) => f.ticks) } : null, hitDrawing);
       const tl = clip ? timeline(clip.frames) : null;
       dive = { slot, clip: tl && clip ? { starts: tl.starts, ticks: clip.frames.map((f) => f.ticks) } : null, fromGround: b.grounded, down: false, air: 0, held: 0, top: b.y };
     }
@@ -967,7 +983,7 @@ export class Zhusha {
 
   private tickMove(input: Input, world: MoveWorld): void {
     const m = this.move!, def = m.def, b = this.body, B = FEEL.buffer;
-    this.diveWorld = world;
+    this.world = world;
     // the dive waits for the floor (feel.json m1_4 dive): in the air its clock never reaches the chop; diving too long
     // (off a ledge into the void) it gives up and she falls on as herself
     const dv = m.dive, hitAt = def.hits[0]?.at ?? 13;

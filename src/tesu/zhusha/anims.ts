@@ -8,6 +8,7 @@
 import type { SpriteSheet } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { artMarks, headOf, opaqueBox, timeline, validateAnim, type AnimDef, type ArtMarks } from "./contract.ts";
+import { lipStrips, type Lip } from "./lip.ts";
 import { slotFor, SLOTS, type RoleDef } from "./roles.ts";
 import { artTransform, type PlayView } from "./units.ts";
 import ART from "virtual:tesu-art";
@@ -183,7 +184,7 @@ export async function loadAnims(r: WorldRenderer): Promise<AnimSet> {
  */
 export function drawArt(
   r: WorldRenderer, view: PlayView, slot: Slot, index: number, x: number, y: number, flip: boolean, a: number,
-  o: { tint?: [number, number, number, number]; opacity?: number; clipY?: number | null } = {},
+  o: { tint?: [number, number, number, number]; opacity?: number; clipY?: number | null; lip?: { lip: Lip; band: number } | null } = {},
 ): void {
   const d = slot.drawings[index];
   const sheet = d ? slot.sheets[d.sheet] : undefined;
@@ -195,7 +196,17 @@ export function drawArt(
   const sh = o.clipY === undefined || o.clipY === null ? sh0 : Math.max(0, Math.min(sh0, Math.ceil((o.clipY - Math.round(y)) / a - d.off[1])));
   if (sh <= 0) { r.setTransform(view.s, view.focus, view.mirror); return; }
   r.setTransform(xf.z, xf.focus, view.mirror);
-  const dx = flip ? xf.q[0] - (d.off[0] + sw) : xf.q[0] + d.off[0];
-  r.sprite({ sheet, sx, sy, sw, sh, x: dx, y: xf.q[1] + d.off[1], flip, lit: 0, tint: o.tint, opacity: o.opacity });
+  if (o.lip && (o.lip.lip.ahead !== null || o.lip.lip.behind !== null)) {
+    // (dive 10-21) the chop's floor splash stops where the floor under it ends (lip.ts): column strips, the ones past
+    // the floor's end without their bottom band (the drawing's own columns, facing right; flipped strips mirror back)
+    for (const st of lipStrips(sw, sh, d.off, o.lip.lip, o.lip.band)) {
+      if (st.rows <= 0) continue;
+      const x0 = flip ? xf.q[0] - (d.off[0] + st.c1) : xf.q[0] + d.off[0] + st.c0;
+      r.sprite({ sheet, sx: sx + st.c0, sy, sw: st.c1 - st.c0, sh: st.rows, x: x0, y: xf.q[1] + d.off[1], flip, lit: 0, tint: o.tint, opacity: o.opacity });
+    }
+  } else {
+    const dx = flip ? xf.q[0] - (d.off[0] + sw) : xf.q[0] + d.off[0];
+    r.sprite({ sheet, sx, sy, sw, sh, x: dx, y: xf.q[1] + d.off[1], flip, lit: 0, tint: o.tint, opacity: o.opacity });
+  }
   r.setTransform(view.s, view.focus, view.mirror);
 }

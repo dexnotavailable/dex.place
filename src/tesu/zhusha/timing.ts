@@ -84,6 +84,24 @@ export interface DiveSlot {
   contact: number;
   /** Leaves the floor (false: the slot's drawings all stand on it: no hop, the same timing). */
   hop: boolean;
+  /** The drawings' ticks this was authored for (anim.json): a redrawn clip (other ticks) gets diveSlot's reading of it. */
+  ticks?: number[];
+  /** The chop's floor splash, drawn into her drawings: cut where the floor under it ends (lip.ts). */
+  splash?: DiveSplash;
+}
+
+/**
+ * The chop's floor splash in her drawings (feel.json m1_4 dive.slots splash): drawings `from`..`to` carry it in their
+ * bottom `band` art px rows; `keep`: her own extent in that band (boots, the blade's tip; art px from her pivot, facing
+ * right), never cut; `tol`: art px the floor may step from one probe to the next and still carry the splash (else it
+ * ends there: a drop, a wall, a step; a slope carries it).
+ */
+export interface DiveSplash {
+  from: number;
+  to: number;
+  keep: [number, number];
+  band: number;
+  tol: number;
 }
 
 export interface DiveDef {
@@ -94,6 +112,24 @@ export interface DiveDef {
   /** Art px from the impact slash's pivot down to its arc's lowest reach: a dive's impact plays that high over the floor. */
   impactDrop: number;
   slots: Record<string, DiveSlot>;
+}
+
+/**
+ * The dive's drawings for a clip: its own entry in feel.json (dive.slots by the clip's id) while the clip still has the
+ * ticks it was authored for; a clip redrawn since (other ticks: its drawings are not where the entry says) is read from
+ * its first hit drawing instead: the drawings before the one before it stand on the floor, the one before it is the
+ * dive (the air and the touchdown), and it hops; no splash cut (its band is unknown). `hitDrawing`: the clip's first hit
+ * drawing (anim.json hits, else derived.json), null: none known.
+ */
+export function diveSlot(D: DiveDef, id: string, clip: { id: string; ticks: readonly number[] } | null, hitDrawing: number | null): DiveSlot {
+  const own = D.slots[clip?.id ?? id];
+  const same = (a: readonly number[], b: readonly number[]): boolean => a.length === b.length && a.every((k, i) => k === b[i]);
+  if (own && (!clip || !own.ticks || same(own.ticks, clip.ticks))) return own;
+  if (!clip) return D.slots[id] ?? Object.values(D.slots)[0]!;
+  const n = clip.ticks.length;
+  const hit = Math.min(n - 1, Math.max(1, hitDrawing ?? Math.min(n - 1, 1)));
+  const pre = hit - 1;
+  return { ground: [0, Math.max(0, pre - 1)], airFrom: pre, air: pre, land: pre, contact: own?.contact ?? D.slots[id]?.contact ?? 54, hop: true };
 }
 
 /**

@@ -176,9 +176,10 @@ export class Props {
     }
     // the weight: a short stop, a flash, a nudge of the frame, FX v2's impact slash where it connects
     this.host.feel.freeze(Math.max(3, Math.min(8, hb.hitstop + 1)));
-    // (a dive's comes down onto the floor its blade struck: ZHit fxY)
-    const fxHit = (hb as ZHit).fxHit;
-    if (fxHit) this.host.player.playFx(fxHit, { x: ov.x + ov.w / 2, y: (hb as ZHit).fxY ?? ov.y + ov.h / 2, facing: dir });
+    // (a dive's comes down onto the floor its blade struck, at the blade: ZHit fxX / fxY)
+    const fxHit = (hb as ZHit).fxHit, bx = (hb as ZHit).fxX;
+    const fx = bx === undefined ? ov.x + ov.w / 2 : Math.max(ov.x, Math.min(ov.x + ov.w, bx));
+    if (fxHit) this.host.player.playFx(fxHit, { x: fx, y: (hb as ZHit).fxY ?? ov.y + ov.h / 2, facing: dir });
     l.sprite.white = 1;
     l.flash = 2;
     l.hp -= 1;
