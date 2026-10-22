@@ -336,8 +336,10 @@ export class Court {
       p.clip.hit = true;
       this.damage(h, p.facing);
       // FX v2's impact slash where it connects (else the stand-in burst)
-      const fxHit = (h as ZHit).fxHit;
-      if (!fxHit || !p.playFx(fxHit, { x: ov.x + ov.w / 2, y: ov.y + ov.h / 2, facing: p.facing })) this.host.vfx.spawn(h.hitVfx ?? "hit.light", { x: ov.x + ov.w / 2, y: ov.y + ov.h / 2, facing: p.facing });
+      // (a dive's comes down onto the floor its blade struck, at the blade: ZHit fxX / fxY)
+      const fxHit = (h as ZHit).fxHit, fy = (h as ZHit).fxY ?? ov.y + ov.h / 2, bx = (h as ZHit).fxX;
+      const fx = bx === undefined ? ov.x + ov.w / 2 : Math.max(ov.x, Math.min(ov.x + ov.w, bx));
+      if (!fxHit || !p.playFx(fxHit, { x: fx, y: fy, facing: p.facing })) this.host.vfx.spawn(h.hitVfx ?? "hit.light", { x: ov.x + ov.w / 2, y: ov.y + ov.h / 2, facing: p.facing });
       if (h.shake) this.host.camera.shake(h.shake.amplitude, h.shake.duration);
       if (this.state !== "fight") return;
     }

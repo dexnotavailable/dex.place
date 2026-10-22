@@ -34,6 +34,8 @@ test("cutoffs: a landing inside a move ages with it, so the move's end plays ins
   const inp = new FakeInput();
   step(z, inp, 30);
   z.startMove("m1_4", inp);
+  // (integration 10-22, the dive lane) she stays planted for feel.json m1_4 dive.hopAt ticks, then hops
+  for (let i = 0; i <= FEEL.moves.m1_4.dive.hopAt + 1 && z.body.grounded; i++) step(z, inp);
   assert.equal(z.body.grounded, false, "m1_4 hops");
   let landedAt = -1;
   const roles = [];

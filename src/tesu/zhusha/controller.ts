@@ -23,7 +23,7 @@ import type { Body } from "../collide.ts";
 import { H } from "../config.ts";
 import { timeline, type AnimDef } from "./contract.ts";
 import type { DerivedSlot, Rect } from "./derive.ts";
-import { lockEase, lockTarget, resolveMove, windClock, type BreakDef, type HitDef, type MoveDef, type ResolvedMove, type Weight } from "./timing.ts";
+import { clipToMove, diveClip, diveSlot, hopSpeed, lockEase, lockTarget, resolveMove, windClock, type BreakDef, type DiveSlot, type DiveSplash, type HitDef, type MoveDef, type ResolvedMove, type Weight } from "./timing.ts";
 import { UltDirector, type UltCtx, type UltPhase } from "./ult.ts";
 import { UltForm, type FormCtx } from "./ultform.ts";
 import { artPx, checkUnits, drawnH, runHps } from "./units.ts";
@@ -106,12 +106,17 @@ export interface ZHit extends HitBox {
   brk?: BreakDef & { ox: number; dir: 1 | -1; area?: boolean };
   /** The FX v2 impact slash where it connects (court.ts, props.ts play it when the game has it). */
   fxHit?: string;
+  /** Where the impact slash plays (world y), else the middle of the overlap: the dive's lands its arc on the floor its
+   *  blade struck (feel.json m1_4 dive.impactDrop), not in the middle of the foe. */
+  fxY?: number;
+  /** Where along the overlap it plays (world x, kept inside it), else its middle: the dive's where its blade comes down. */
+  fxX?: number;
 }
 
 /** The game's sprite effects (fx/fx.ts, game.ts hands them over): FX v2's built effects. */
 export interface ZFx {
   has(id: string): boolean;
-  play(id: string, o: { x?: number; y?: number; facing?: number; attach?: "her" | "world"; delay?: number }): { stop(): void } | unknown;
+  play(id: string, o: { x?: number; y?: number; facing?: number; attach?: "her" | "world"; layer?: "back" | "front"; delay?: number }): { stop(): void } | unknown;
   /** Plays one already `from` ticks in, its clock at `rate` (fx/contract.ts FxClock.playFrom); moveTo keeps it with her. */
   playFrom?(id: string, o: { x?: number; y?: number; facing?: number }, from: number, rate?: number): { stop(): void; moveTo?(x: number, y: number): void; readonly alive?: boolean } | unknown;
 }
@@ -194,6 +199,20 @@ function stepSpring(s: Spring, target: number, k: number, damp: number): void {
 }
 
 interface Ghost { x: number; y: number; lean: number; life: number; max: number; ult: boolean }
+
+/** m1_4's dive under way (feel.json m1_4 dive): its slot's drawings, the clip's timeline, and where it is. */
+interface Dive {
+  slot: DiveSlot;
+  /** The clip's drawings (null: the white box). */
+  clip: { starts: number[]; ticks: number[] } | null;
+  /** Started on the floor; touched down (the chop comes next); ticks in the air; ticks held waiting for the floor. */
+  fromGround: boolean;
+  down: boolean;
+  air: number;
+  held: number;
+  /** Her highest point (world y) since the move started: a real dive lands bigger than the hop. */
+  top: number;
+}
 
 const M1 = ["m1_1", "m1_2", "m1_3", "m1_4"] as const;
 /** A move's return-to-rest role (slots.json), played after its own clip ends while she stands. */
@@ -318,6 +337,7 @@ export class Zhusha {
   private move: {
     id: string; def: ResolvedMove; startX: number; startY: number; dir: 1 | -1; fxDone: Set<number>; landed: boolean; carry: number;
     lock: { x0: number; travel: number; foe: boolean; fx: number } | null;
+    dive: Dive | null;
   } | null = null;
   private moveStart = -9999;
   private chainIdx = -1;
@@ -346,6 +366,17 @@ export class Zhusha {
   private lastHits = 0;
   private formSerial = 0;
   private ultC: (UltCtx & FormCtx) | null = null;
+  /** The world her move last moved in (its ground: where the dive's impact comes down). */
+  private world: MoveWorld | null = null;
+
+  /**
+   * The floor under x near her feet (from `up` H above `y` down to `down` H below it), null: none there (a ledge, a gap,
+   * her in the air) or no ground to ask (a ride). Effects that come off the floor start on it.
+   */
+  private floorAt(x: number, y = this.body.y, up = 0.4, down = 0.6): number | null {
+    const g = this.world?.groundBelow?.(x, y - up * H)?.y;
+    return g === undefined || g > y + down * H ? null : g;
+  }
   private poseX: number | null = null;
 
   constructor(host: ZhushaHost, spawn: [number, number] = [0, 0]) {
@@ -387,6 +418,15 @@ export class Zhusha {
     return this.body.y + FEEL.draw.dip * ART_PX;
   }
 
+  /**
+   * The dive's floor splash in the drawings showing now (feel.json m1_4 dive.slots splash), while she stands after its
+   * touchdown: draw.ts cuts it where the floor under it ends (lip.ts). Null: no splash to place.
+   */
+  get diveSplash(): DiveSplash | null {
+    const d = this.move?.dive;
+    return this.state === "move" && d?.down && this.body.grounded ? d.slot.splash ?? null : null;
+  }
+
   /** The widest zoom the framing may show now (the Q's pull-out), null: the world's framing. R frames itself (ult.ts shots). */
   get camZoom(): number | null {
     return this.qCam ? FEEL.q.camZoom : null;
@@ -418,6 +458,8 @@ export class Zhusha {
     if (this.state === "ult") return this.r.hitboxes(this.ultCtx());
     const m = this.move;
     if (this.state !== "move" || !m) return out;
+    // (Dex 10-21) stage 4 is a dive: it only hits when she is fully grounded (its ghost and second hit too)
+    if (m.dive && (!m.dive.down || !this.body.grounded)) return out;
     const t = this.t, ult = this.ultForm, U = FEEL.ult;
     m.def.hits.forEach((h, i) => {
       if (t >= h.at && t < h.at + h.len) out.push(...this.hitOf(h, `${this.clip.id}:${i}`, m, 1, ult ? U.dmgMul : 1, m.def.rects?.[t] ?? null, t === h.at));
@@ -452,6 +494,7 @@ export class Zhusha {
         hitVfx: h.weight === "light" ? "hit.light" : "hit.heavy",
         brk: h.break ? { ...h.break, ox, dir: f } : undefined,
         fxHit: this.move ? impactSlash(this.move.id, h.weight, this.ultForm) : undefined,
+        ...(this.move?.dive ? { fxY: this.diveImpactY(), fxX: this.diveContactX() } : {}),
       },
     });
     const out: { box: WorldBox; hb: ZHit }[] = [];
@@ -686,6 +729,12 @@ export class Zhusha {
 
   private onLand(): void {
     const hs = (this.fallSpeed * 60) / H; // H/s
+    // the dive touching down is the move's own landing (its drawing, then the chop)
+    if (this.state === "move" && this.move?.dive && !this.move.dive.down) {
+      this.diveLand(this.move.dive);
+      this.fallSpeed = 0;
+      return;
+    }
     this.lastLand = hs;
     this.landT = 0;
     const L = FEEL.land, s = this.host;
@@ -701,6 +750,36 @@ export class Zhusha {
       this.cue("land", 0.5, "land", "land", "light");
     }
     this.fallSpeed = 0;
+  }
+
+  /**
+   * The dive touches down (feel.json m1_4 dive): the dust her soles blast out goes BEHIND her on the floor (Dex: her
+   * outfit is never covered; the front-layer curls hid her boots), the small one off the hop, the big one off a real
+   * dive; the same shake and cue the landing always had. Her landing pose never replays after the move (Dex 10-21: the
+   * stale jump_arc crouch, and the ult form's floor glow disc, cut the move's own ending and return).
+   */
+  private diveLand(d: Dive): void {
+    const L = FEEL.land, b = this.body;
+    this.lastLand = 0;
+    this.landT = 99;
+    d.down = true;
+    const big = b.y - d.top > 1.2 * H;
+    if (!this.playFx(big ? "land_dust" : "land_dust_s", { x: b.x, y: this.soleY, facing: this.facing, layer: "back" })) this.host.vfx.spawn("dust.land", { x: b.x, y: b.y, facing: 1, scale: big ? 1 : 0.6 });
+    this.shake(L.heavyShake + 0.1);
+    this.cue("land", 1, "land", "land", "medium");
+  }
+
+  /** Where the dive's blade meets the floor (world x), from its hit drawing (feel.json m1_4 dive.slots contact). */
+  private diveContactX(): number {
+    const c = this.move?.dive?.slot.contact ?? 54;
+    return this.body.x + this.facing * c * ART_PX;
+  }
+
+  /** A dive's impact on a foe: its arc comes down onto the floor the blade struck (else her floor). */
+  private diveImpactY(): number {
+    const b = this.body;
+    const g = this.floorAt(this.diveContactX(), b.y, 0.4, 0.4) ?? b.y;
+    return g - (FEEL.moves.m1_4?.dive?.impactDrop ?? 165) * ART_PX;
   }
 
   // --- moving -----------------------------------------------------------------
@@ -965,7 +1044,16 @@ export class Zhusha {
       if (f) this.facing = L.dir;
       lock = { x0: b.x, travel: L.travel, foe: !!f, fx: f ? f.x + f.w / 2 : 0 };
     }
-    this.move = { id, def, startX: b.x, startY: b.y, dir: this.facing, fxDone: new Set(), landed: false, carry: def.inPlace || lock?.foe ? 0 : b.vx * this.facing, lock };
+    // m1_4 is a dive (feel.json m1_4 dive): which drawings show while she is on the floor / in the air / touching down
+    let dive: Dive | null = null;
+    if (def.dive && def.plunge) {
+      // (its entry while the clip has the ticks it was authored for; a redrawn clip is read from its first hit drawing)
+      const hitDrawing = clip ? ([...(clip.hits ?? [])].sort((x, y) => x - y)[0] ?? DERIVED[clip.id]?.hits[0]?.first ?? null) : null;
+      const slot = diveSlot(def.dive, id, clip ? { id: clip.id, ticks: clip.frames.map((f) => f.ticks) } : null, hitDrawing);
+      const tl = clip ? timeline(clip.frames) : null;
+      dive = { slot, clip: tl && clip ? { starts: tl.starts, ticks: clip.frames.map((f) => f.ticks) } : null, fromGround: b.grounded, down: false, air: 0, held: 0, top: b.y };
+    }
+    this.move = { id, def, startX: b.x, startY: b.y, dir: this.facing, fxDone: new Set(), landed: false, carry: def.inPlace || lock?.foe ? 0 : b.vx * this.facing, lock, dive };
     this.moveStart = input.tick;
     this.clip = { id: `${id}#${input.tick}`, index: 0, hitGroups: new Map(), hit: false };
     this.lastHits = 0;
@@ -978,18 +1066,31 @@ export class Zhusha {
     if (id === "skill_q") this.skillCd = def.cooldown ?? 0;
     if (id === "e_tap") this.eCd = def.cooldown ?? 0;
     this.anim = { role: id, t: 0, hitAt: def.hits[0]?.at ?? null, clipHitAt: def.clipHitAt, hidden: false, flame: 0, wind: def.wind };
-    // the finisher hops into its flip on the ground; from the air it plunges
-    if (def.hop && b.grounded) {
-      const g = ((2 * FEEL.jump.height * H) / (FEEL.jump.riseTicks * FEEL.jump.riseTicks)) * (def.airGravity ?? 1);
-      b.vy = -Math.sqrt(2 * g * def.hop * H);
-      b.grounded = false;
+    // a dive started in the air shows its air drawings from the first frame (never the planted lunge, in mid-air)
+    if (dive?.clip && !b.grounded) {
+      const c = diveClip(dive.slot, dive.clip.starts, dive.clip.ticks, { phase: "air", t: 0, groundTicks: 1, air: 0, fromAir: true });
+      this.anim.t = clipToMove(c, def.hits[0]?.at ?? null, def.clipHitAt);
     }
-    if (!b.grounded && !def.hop && b.vy > 0) b.vy *= 0.3;
+    // (the finisher's hop and plunge: tickMove, feel.json m1_4 dive)
+    if (!b.grounded && !dive && b.vy > 0) b.vy *= 0.3;
     this.cue(id === "skill_q" ? "charge" : "swing", 0.7, id, "windup", def.hits[0]?.weight ?? "light");
   }
 
   private tickMove(input: Input, world: MoveWorld): void {
-    const m = this.move!, def = m.def, t = this.t, b = this.body, B = FEEL.buffer;
+    const m = this.move!, def = m.def, b = this.body, B = FEEL.buffer;
+    this.world = world;
+    // the dive waits for the floor (feel.json m1_4 dive): in the air its clock never reaches the chop; diving too long
+    // (off a ledge into the void) it gives up and she falls on as herself
+    const dv = m.dive, hitAt = def.hits[0]?.at ?? 13;
+    if (dv && !dv.down && !b.grounded && this.t > hitAt - 2) {
+      this.t = hitAt - 2;
+      if (++dv.held > (def.dive?.hold ?? 60)) {
+        this.endMove(input);
+        this.tickFree(input, world);
+        return;
+      }
+    }
+    const t = this.t;
     // the drawing's clock: 1:1 to the last hit, then the slower wind-down
     this.anim.t = windClock(t, def.wind);
     const connected = this.clip.hit || [...this.clip.hitGroups.values()].some((g) => g.size > 0);
@@ -1075,17 +1176,48 @@ export class Zhusha {
     if (lk && ml?.foe && t >= lk.at + lk.ticks) m.carry = 0;
     const along = rootV + m.carry;
     b.vx = m.dir * (connected && along > 0 && !homing ? along * 0.3 : along);
+    const diving = !!dv && !dv.down;
     if (m.id === "skill_q" && !b.grounded && t < (def.airHang ?? 0)) b.vy = 0;
-    else if (m.id === "m1_4" && def.plunge && !b.grounded && t >= 6 && t < (def.hits[0]?.at ?? 13)) {
-      // from the air the chop is a plunge: she drives down and it lands on touchdown
-      b.vy = Math.max(b.vy, pt(def.plunge));
-    } else this.gravityStep(input, def.airGravity ?? 1);
-    const landed = this.moveBody(world);
-    if (landed && m.id === "m1_4" && t < (def.hits[0]?.at ?? 13) && def.plunge) {
-      // the plunge lands: the chop comes out now
-      this.t = (def.hits[0]?.at ?? 13) - 1;
-      this.anim.t = this.t;
+    else if (dv && diving) this.diveStep(input, dv, t);
+    else this.gravityStep(input, def.airGravity ?? 1);
+    this.moveBody(world);
+    if (dv && diving) this.diveAfter(dv, t);
+  }
+
+  /**
+   * The dive before the chop (feel.json m1_4 dive), its motion: planted until hopAt, then (a slot that hops) up to `hop`
+   * H by plungeAt; from plungeAt in the air she plunges at `plunge` H/s until she touches down.
+   */
+  private diveStep(input: Input, dv: Dive, t: number): void {
+    const def = this.move!.def, D = def.dive!, b = this.body;
+    if (b.grounded && dv.fromGround && dv.slot.hop && t === D.hopAt) {
+      const g = ((2 * FEEL.jump.height * H) / (FEEL.jump.riseTicks * FEEL.jump.riseTicks)) * (def.airGravity ?? 1);
+      b.vy = -hopSpeed((def.hop ?? 0) * H, D.plungeAt - D.hopAt, g);
+      b.grounded = false;
     }
+    if (!b.grounded && t >= D.plungeAt) b.vy = Math.max(b.vy, pt(def.plunge ?? 0));
+    else this.gravityStep(input, def.airGravity ?? 1);
+  }
+
+  /**
+   * After she moved: touching down (onLand: diveLand) or still planted at plungeAt (a slot that stays on the floor) is
+   * the dive's landing: the clock goes to the tick before the chop (it comes out next tick). Then the drawing: the
+   * slot's `ground` drawings on the floor, `air` in the air, `land` on the touchdown tick (no drawing is skipped or
+   * stands in the air: Dex 10-21, "cut off parts of animations", "floating").
+   */
+  private diveAfter(dv: Dive, t: number): void {
+    const m = this.move!, def = m.def, D = def.dive!, b = this.body, hitAt = def.hits[0]?.at ?? 13;
+    if (!dv.down && b.grounded && t >= D.plungeAt) dv.down = true;
+    if (dv.down) this.t = hitAt - 1;
+    else if (!b.grounded) {
+      dv.air++;
+      dv.top = Math.min(dv.top, b.y);
+    }
+    if (dv.clip) {
+      const phase = dv.down ? "land" : b.grounded ? "ground" : "air";
+      const c = diveClip(dv.slot, dv.clip.starts, dv.clip.ticks, { phase, t, groundTicks: dv.slot.hop ? D.hopAt : D.plungeAt, air: dv.air, fromAir: !dv.fromGround });
+      this.anim.t = clipToMove(c, hitAt, def.clipHitAt);
+    } else if (dv.down) this.anim.t = this.t;
   }
 
   private endMove(input: Input): void {
@@ -1112,17 +1244,17 @@ export class Zhusha {
       case "thrust_big": trail("streak.thrust", { ...at(0.7, 0.62), scale: [1.6, 1.3], ...col }); break;
       case "chop":
         trail("smear.slam", { ...at(0.35, 0.6), ...col });
-        // side-on (Dex 10-19: no destructive rings on the ground): the ground bursts up where the blade bites
-        if (this.body.grounded) {
-          s.vfx.spawn("debris.stone", at(0.9, 0));
-          s.vfx.spawn("dust.land", at(0.9, 0));
-        }
+        // side-on (Dex 10-19: no destructive rings on the ground): the ground bursts up where the blade bites: her
+        // drawing's own splash, on the floor where the blade meets it, and only ever on the floor now (the dive hits
+        // only grounded). (Dex 10-21: "make sure these effects actually react and know where the ground is") the lab's
+        // procedural chips and specks are gone: they littered the floor at a fixed reach ahead, over drops, into walls,
+        // buried in or floating off slopes; a sim'd dust roll from the blade read as a dark boulder rolling off
         this.cue("slam", 0.9, m.id, "boom", h.weight, i);
         break;
       case "shock":
-        s.vfx.spawn("dust.land", at(1.2, 0));
-        s.vfx.spawn("cracks", at(1.0, 0));
-        this.shake(0.3);
+        // the ult form's second hit (its drawing's own floor glow is the shock; the procedural dust and white / gold
+        // crack lines are gone, Dex 10-21): the frame shakes, on the ground only
+        if (this.body.grounded) this.shake(0.3);
         break;
       case "q_boom": {
         // the jumpscare (Dex 10-15): input to BOOM in a few ticks; the boom reads with or without a target: the frame

@@ -13,6 +13,8 @@ import { drawArt, SLOTS, type AnimSet, type Slot } from "./anims.ts";
 import { clipAtRoot, drawingIndex, windupClip } from "./contract.ts";
 import { ART_PX, BODY_H, FEEL, type AnimState, type Zhusha } from "./controller.ts";
 import { IdlePlayer, seeded } from "./idle.ts";
+import { lipAt, type Lip } from "./lip.ts";
+import type { DiveSplash } from "./timing.ts";
 import { drawDiveBlur, drawUltBack, drawUltFront } from "./ultdraw.ts";
 import type { PlayView } from "./units.ts";
 
@@ -144,6 +146,21 @@ export class ZhushaDraw {
   }
 
   /**
+   * Where the floor under the dive's splash ends (lip.ts), art px from her pivot facing her way: probed across the
+   * drawing's width from her soles; it ends where the floor jumps more than the splash's `tol` from one probe to the
+   * next (a ledge's drop, a wall, a step) or there is none. Null: no ground to ask.
+   */
+  private lip(z: Zhusha, s: Shown, sp: DiveSplash): Lip | null {
+    const d = s.slot.drawings[s.index];
+    if (!d || !this.groundAt) return null;
+    const b = z.body, f = z.facing, at = this.groundAt;
+    // asked from over the band above the floor found a probe before (a step up or a slope rising into it is found, not
+    // the floor under it)
+    const floorY = (k: number, near: number | null): number | null => at(b.x + f * k * ART_PX, (near ?? b.y) - (sp.band + 2 * sp.tol) * ART_PX);
+    return lipAt(floorY, d.off[0], d.off[0] + d.r[2], sp.keep, sp.tol * ART_PX);
+  }
+
+  /**
    * Draws her in world space on the play plane's transform for this pass (`view`: its scale, focus and
    * mirror, as game.ts set it). A drawing is drawn at H x charScale at every zoom (anims.ts drawArt).
    */
@@ -169,8 +186,10 @@ export class ZhushaDraw {
       return;
     }
     const tint: [number, number, number, number] | undefined = z.flash > 0 ? [1, 0.35, 0.4, z.flash > 5 ? 0.8 : 0.4] : undefined;
+    // (dive 10-21) the chop's floor splash stops where the floor under it ends
+    const sp = z.diveSplash, lip = sp && s.index >= sp.from && s.index <= sp.to ? this.lip(z, s, sp) : null;
     // (Dex 10-20) a few art px low, and behind the ground's front edge: visual only (her body and hit boxes stay put)
-    drawArt(r, view, s.slot, s.index, b.x, b.y + this.dip * ART_PX, z.facing < 0, ART_PX, { tint, opacity, clipY: this.clipY(z, view) });
+    drawArt(r, view, s.slot, s.index, b.x, b.y + this.dip * ART_PX, z.facing < 0, ART_PX, { tint, opacity, clipY: this.clipY(z, view), lip: lip && sp ? { lip, band: sp.band } : null });
   }
 
   /** A solid quad centred at (x, y), w x h, rotated. */

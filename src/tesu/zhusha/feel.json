@@ -171,9 +171,29 @@
         { "at": 15, "len": 2, "box": [0, 0, 2.8, 0.35], "dmg": 6, "weight": "medium", "kb": [4, 3], "fx": "shock" }
       ],
       "inPlace": true,
-      "inPlaceAbout": "Dex 10-19: m1_4 keeps her in place: no lunge, her run-in momentum stopped; the hop stays (lane A's jump method lets the move carry her up).",
-      "hop": 0.55,
+      "inPlaceAbout": "Dex 10-19: m1_4 keeps her in place: no lunge, her run-in momentum stopped; the hop stays (lane A's jump method lets the move carry her up); see dive.",
+      "hop": 0.37,
       "plunge": 26,
+      "dive": {
+        "hopAt": 3,
+        "plungeAt": 6,
+        "hold": 60,
+        "impactDrop": 165,
+        "slots": {
+          "m1_4": {
+            "ground": [0, 2], "airFrom": 2, "air": 3, "land": 4, "contact": 54, "hop": true,
+            "ticks": [2, 2, 3, 4, 2, 6, 4, 3, 4, 6, 6, 6, 6, 6, 8],
+            "splash": { "from": 5, "to": 7, "keep": [-58, 62], "band": 20, "tol": 14 }
+          },
+          "uf_m1_4": {
+            "ground": [0, 3], "airFrom": 3, "air": 3, "land": 4, "contact": 58, "hop": false,
+            "ticks": [2, 2, 2, 4, 2, 6, 3, 3, 4, 5, 4, 3, 2, 4, 3, 4, 4, 5, 5, 5, 6],
+            "splash": { "from": 5, "to": 11, "keep": [-60, 40], "band": 20, "tol": 14 }
+          }
+        },
+        "slotsAbout": "dive 10-21 r2: an entry holds for the drawings it was authored for (`ticks`, anim.json); a slot redrawn since is read from its first hit drawing (timing.ts diveSlot: the drawings before the one before it on the floor, that one the dive and the touchdown, a hop, no splash cut). `splash`: the chop's floor splash drawn into drawings `from`..`to`, in their bottom `band` art px rows: past the end of the floor under it (none there, or the floor jumping more than `tol` art px from one probe to the next: a ledge's drop, a wall, a step; a slope carries it on, as under her feet) that band is not drawn (lip.ts), so it never hangs over a drop or runs into a wall; `keep` (art px from her pivot, facing right) is her own extent in that band (boots, the blade's tip), never cut; above the band the chop's crescent stays, a slash in the air.",
+        "about": "Dex 10-21: stage 4 \"is a dive so it only hits when you're fully grounded\". The chop (and every hit of the move, the ult form's ghost and second hit too) is live only while she stands on something. From the ground: she stays planted for hopAt ticks (the drawings `ground` [first, last] play there, on the floor), leaves it on hopAt and rises to `hop` H (her top when the plunge starts; was a 0.55 H arc cut short at ~0.37 H), plunges at `plunge` H/s from plungeAt, and the chop comes out the tick after she touches down: press to hit stays 7 ticks (the normal chain's timing Dex approved). From the air she plunges from plungeAt until she touches down (the drawing `airFrom` first, then `air` held), however far that is; the move waits for the floor (no hit in the air), and gives up after `hold` ticks of diving (a drop into the void: she falls on as herself). On the touchdown tick the drawing `land` shows; then the chop. A slot with hop false stays on the floor (the ult form's drawings kneel, rise and raise the sword on the floor: they never float): its `ground` drawings fill the ticks to plungeAt, then `land`, then the chop on the same 7th tick. `contact`: art px ahead of her pivot where the chop's blade meets the floor in its hit drawing (m1_4 f005's blade tip, uf_m1_4 f005's pillar foot: the floor a dive's impact comes down onto). `impactDrop`: art px from impact_slash_g's pivot down to the lowest reach of its arc (f001-f003: 160-171): a dive's impact on a foe plays that high over the floor, so the arc comes down onto the floor instead of floating mid-body or poking through it."
+      },
       "chainFrom": 99,
       "cancelFrom": 24,
       "hitCancelFrom": 20,
