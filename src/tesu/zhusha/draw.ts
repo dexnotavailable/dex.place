@@ -10,7 +10,7 @@
 import type { RGB } from "../../lab/engine/renderer.ts";
 import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { drawArt, SLOTS, type AnimSet, type Slot } from "./anims.ts";
-import { clipAtRoot, drawingIndex, moveToClip } from "./contract.ts";
+import { clipAtRoot, drawingIndex, windupClip } from "./contract.ts";
 import { ART_PX, BODY_H, FEEL, type AnimState, type Zhusha } from "./controller.ts";
 import { IdlePlayer, seeded } from "./idle.ts";
 import { drawDiveBlur, drawUltBack, drawUltFront } from "./ultdraw.ts";
@@ -64,7 +64,8 @@ export class ZhushaDraw {
   private clipTime(a: AnimState, slot: Slot, z: Zhusha): number {
     const U = FEEL.ult;
     const fit = (len: number): number => (a.t / Math.max(1, len)) * slot.total;
-    if (MOVES.has(a.role)) return moveToClip(a.t, a.hitAt, a.clipHitAt !== undefined ? a.clipHitAt : (slot.hitTicks[0] ?? null));
+    // (cutoffs r5) a squeezed windup shows every drawing it can, the smear into the hit last (contract.ts windupClip)
+    if (MOVES.has(a.role)) return windupClip(a.t, a.hitAt, a.clipHitAt !== undefined ? a.clipHitAt : (slot.hitTicks[0] ?? null), slot.starts);
     // a walk / run cycle with root motion plays by the distance covered: her feet stay planted at any speed
     if ((a.role === "run" || a.role === "walk") && slot.marks.root) return clipAtRoot(slot.def.frames, slot.marks.root, (a.dist ?? 0) / ART_PX);
     switch (a.role) {

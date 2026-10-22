@@ -1367,6 +1367,14 @@ charScale (1.1 x 96 = 105.6 world px, `zhusha/feel.json`), i.e. 0.825 world px p
   rounded lumps, with the shape's outline put back where it had one; tiny islands go. Her skin, outfit, hat, blade and
   the ghost swords are protected (warm and near-black px are never removed, and an effect's edge is measured from the
   effect, not from her sleeve beside it). Then `derive.mjs` + `hitkeep.py --dry` (0 differences vs live). [proven]
+- (cutoffs r5 2026-10-22) A windup squeezed onto its hit (feel.json's hit tick earlier than the drawing's) never drops
+  a drawing it has the ticks for, and never the smear into the hit: `zhusha/contract.ts` `windupClip` (draw.ts only;
+  the hit tick, windows, root and hit boxes are moveToClip's as before). Fewer ticks than drawings (the Q: 3 for 5):
+  each tick shows where the windup has got to by its end. The normal chain shows the same drawings as before; the
+  Q, the ult Q and the ult chain's first two moves get their smears back. [proven, `cutoffs.test.mjs`, cutoffs\ba\r5\]
+- (cutoffs r5) A carried trail needs `public/assets/fx/<slot>_trail` for the slot (the normal chain has them). The ult
+  chain has none: its drawings are being redrawn (lanes\zhusha-1021b\ultchain); once they settle, export each move's
+  trail layer as `uf_m1_N_trail` (same canvas, pivot and ticks) and `trailOn` carries it when a mash cuts the drawing.
 
 ---
 

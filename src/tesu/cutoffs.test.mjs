@@ -193,3 +193,26 @@ test("cutoffs r2: an effect played at a rate ages that fast, and moveTo moves it
   assert.equal(clock.live.length, 0, "done in half the time");
   assert.equal(h.alive, false);
 });
+
+test("cutoffs r5: a squeezed windup shows every drawing it can and always the smear into the hit (windupClip)", async () => {
+  const { windupClip, moveToClip, timeline, drawingIndex } = await import("./zhusha/contract.ts");
+  const art = (name) => JSON.parse(readFileSync(join(import.meta.dirname, `../../public/assets/zhusha/${name}/anim.json`), "utf8"));
+  const seq = (frames, mh, ch, f) => {
+    const { starts, total } = timeline(frames);
+    const out = [];
+    for (let t = 0; t <= mh; t++) out.push(drawingIndex(starts, total, f(t, starts), false));
+    return out;
+  };
+  // the audit's skipped drawings: uf_m1_1 f004 (5 ticks for 5 drawings), skill_q f004 (3 ticks for 5: the beam smear)
+  const uf = art("uf_m1_1").frames, q = art("skill_q").frames;
+  const ufNew = seq(uf, 5, 11, (t, s) => windupClip(t, 5, 11, s));
+  assert.deepEqual(ufNew, [0, 1, 2, 3, 4, 5], "every windup drawing, then the hit drawing on the hit tick");
+  assert.ok(!seq(uf, 5, 11, (t) => moveToClip(t, 5, 11)).includes(4), "(live dropped f004)");
+  const qNew = seq(q, 3, 9, (t, s) => windupClip(t, 3, 9, s));
+  assert.equal(qNew[2], 4, "the last windup tick shows the smear into the hit");
+  assert.equal(qNew[3], 5, "the hit drawing on the hit tick");
+  // nothing changes where the windup is not squeezed, or after the hit
+  const m14 = art("m1_4").frames, { starts } = timeline(m14);
+  for (let t = 0; t <= 40; t++) assert.equal(windupClip(t, 13, 13, starts), moveToClip(t, 13, 13));
+  for (let t = 3; t <= 40; t++) assert.equal(windupClip(t, 3, 9, timeline(q).starts), moveToClip(t, 3, 9));
+});
