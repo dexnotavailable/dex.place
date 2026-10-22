@@ -140,7 +140,8 @@ export interface MoveWorld {
 export interface ZhushaHost {
   vfx: { spawn(id: string, o: SpawnOptions): void };
   feel: { freeze(n: number): void; slowmo(f: number, d: number): void; impactFrame(m: "invert" | "mono", d: number): void; sound(id: string, v?: number): void; readonly reducedMotion: boolean };
-  camera: { shake(a: number, d: number): void; zoomPunch(steps: number): void };
+  /** (W, H: the frame's size in frame px, for R's shots that keep its nuke in frame; tests may leave them out) */
+  camera: { shake(a: number, d: number): void; zoomPunch(steps: number): void; readonly W?: number; readonly H?: number };
   /** Her foes' bodies now (world boxes: the court's champion), for m1_3's lock-on; none: she lunges straight. */
   foes?(): WorldBox[];
 }

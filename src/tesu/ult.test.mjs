@@ -297,7 +297,7 @@ test("ult: the FX v2 loop's effects play on the beats when the game has them (th
   for (let i = 0; i < 900 && (i < 3 || z.state === "ult"); i++) step(z, inp, w);
   const F = ULT.fx;
   const cuts = new Set(Object.values(F.cuts).flat());
-  const ground = new Set([...F.skirt, ...F.wreck, ...F.flames]);
+  const ground = new Set([...F.skirt, ...F.wreck, ...F.flames, ...F.smolder]);
   assert.deepEqual(played.filter((p) => !cuts.has(p.id) && !ground.has(p.id)).map((p) => p.id), [F.callFire, F.letter, F.letterBreak, F.dive, F.cut, F.nuke, F.pall]);
   assert.ok(Object.values(z.r.real).every(Boolean), "every stand-in steps aside");
   const by = (id) => played.find((p) => p.id === id);
@@ -317,6 +317,70 @@ test("ult: the FX v2 loop's effects play on the beats when the game has them (th
   const near = skirt.reduce((a, p) => (Math.abs(p.x - st.gx) < Math.abs(a.x - st.gx) ? p : a));
   const far = skirt.reduce((a, p) => (Math.abs(p.x - st.gx) > Math.abs(a.x - st.gx) ? p : a));
   assert.ok(far.delay > near.delay, "the surge reaches the far pieces later");
+  // (round 3) the rubble: big heaps near the crater, chips far out; the wreck smoulders from the clear on, one wind
+  const G = ULT.ground;
+  const wreck = played.filter((p) => F.wreck.includes(p.id));
+  for (const p of wreck) {
+    // (each heap up to half a H off its spot, from its distance's pool)
+    const out = Math.abs(p.x - st.gx) / 96, k = F.wreck.indexOf(p.id);
+    const cls = (o) => (o <= G.wreck.near ? 0 : o <= G.wreck.mid ? 1 : 2);
+    assert.ok([cls(out - 0.5), cls(out + 0.5)].some((c) => G.wreck.pools[c].includes(k)), `the heap by distance out (${p.id} at ${out.toFixed(2)} H)`);
+  }
+  assert.ok(new Set(wreck.map((p) => p.facing)).size === 2, "either way round");
+  assert.ok(new Set(wreck.map((p) => Math.round(Math.abs(p.x - st.gx)) % 192)).size > 2, "no even rhythm of heaps");
+  const smo = played.filter((p) => F.smolder.includes(p.id));
+  assert.ok(smo.length >= 3 && smo.length <= 12, `a few wisps off the rubble, not a row of them (${smo.length})`);
+  assert.ok(smo.every((p) => p.facing === 1), "never mirrored: one wind");
+  assert.ok(smo.every((p) => p.delay >= G.smolder.delay0 && Math.abs(p.x - st.gx) <= (G.smolder.reach + 1) * 96), "from the clear on, near the crater");
+  assert.ok(Math.max(...smo.map((p) => p.delay)) > ULT.impact.ticks + ULT.aftermath.hold + ULT.aftermath.clear, "still smoking into the reveal");
+  const order = played.map((p) => p.id);
+  assert.ok(order.indexOf(F.smolder[0]) < order.indexOf(F.pall) && order.indexOf(F.pall) < order.indexOf(F.wreck[0]), "the wisps behind the pall and the rubble");
+});
+
+test("ult (rfinish 10-22): the nuke and its pall stay whole in the frame (Dex: the ult was outside the frame); after an early control back too", async () => {
+  const { fitZoom, fitX } = await import("./zhusha/ult.ts");
+  const box = { x0: -900, y0: -1400, x1: 1100, y1: 20 };
+  const W = 1920, Hc = 1080, bars = 0.11, pad = 48;
+  const z = fitZoom(box, 0, 0.7, W, Hc, bars, pad);
+  const x = fitX(box, 0, z, W, pad);
+  // the box (grown by pad) inside the frame and above the bottom bar, the top below the top bar
+  assert.ok(x - W / 2 / z <= box.x0 - pad + 1e-6 && x + W / 2 / z >= box.x1 + pad - 1e-6, "inside left and right");
+  assert.ok(0 - (0.7 - bars) * Hc / z <= box.y0 - pad + 1e-6, "its top under the top bar");
+  assert.ok(Math.abs(0 - (0.7 - bars) * Hc / z - (box.y0 - pad)) < 1e-6, "no further out than it needs");
+  // in the game: a big pall the shots must hold (the fx's extent), then none
+  const Zhusha = await loadZ();
+  const h = host();
+  h.camera.W = W;
+  h.camera.H = Hc;
+  const zz = new Zhusha(h, [0, 0]);
+  let ext = null;
+  zz.r.fx = { has: () => true, play: () => ({ stop() {}, speed() {}, fadeOut() {} }), extent: () => ext };
+  const inp = new FakeInput(), w = flat();
+  step(zz, inp, w, 5);
+  inp.press("ult");
+  const shots = [];
+  for (let i = 0; i < 900 && (i < 3 || zz.state === "ult"); i++) {
+    const ph = zz.r.phase;
+    // a pall 26 H wide and 15 H tall over the crater from the landing to aftermath t200
+    ext = (ph === "impact" || (ph === "aftermath" && zz.r.t < 200)) ? { x0: zz.r.stage.gx - 13 * 96, y0: -15 * 96, x1: zz.r.stage.gx + 13 * 96, y1: 0 } : null;
+    step(zz, inp, w);
+    if (zz.r.shot && (zz.r.phase === "aftermath" || zz.r.phase === "reveal")) shots.push({ ph: zz.r.phase, t: zz.r.t, s: zz.r.shot, ext });
+  }
+  const held = shots.filter((q) => q.ext);
+  assert.ok(held.length > 100, "shots while the pall is up");
+  for (const q of held) {
+    const s = q.s, top = s.y - (s.anchor - bars) * Hc / s.zoom;
+    assert.ok(top <= q.ext.y0 + 1 && s.x - W / 2 / s.zoom <= q.ext.x0 + 1 && s.x + W / 2 / s.zoom >= q.ext.x1 - 1, `the pall whole in the shot (aftermath t${q.t})`);
+  }
+  const after = shots.filter((q) => !q.ext);
+  for (let i = 1; i < after.length; i++) assert.ok(after[i].s.zoom <= after[i - 1].s.zoom * Math.exp(ULT.camera.fit.ease) + 1e-9 || after[i].s.zoom <= ULT.camera.reveal.zoom, "back in slowly once it is gone");
+  // after R: keepIn holds the world's camera out while something of it is left
+  ext = { x0: -1000, y0: -1300, x1: 1000, y1: 0 };
+  assert.equal(zz.r.phase, null);
+  const k = zz.r.keepIn(W, Hc, 0, 0.66);
+  assert.ok(k !== null && k < 0.6, `the world's camera held out (${k})`);
+  ext = null;
+  assert.equal(zz.r.keepIn(W, Hc, 0, 0.66), null, "none left: the world's framing");
 });
 
 test("ult: the real letter is carved on the storm's clock, breaks at the dive, is gone on the impact; the cuts fly over it; each stand-in steps aside only for what is in", async () => {
@@ -574,7 +638,8 @@ test("ult (rfinish 10-21): control back in the smoke clears it on (it never hide
   assert.notEqual(z.state, "ult");
   const F = ULT.fx;
   assert.ok(sped.some(([id, k]) => id === F.pall && k === ULT.ground.skip), "the pall clears on, faster");
-  assert.ok(faded.some(([id, n]) => id === F.pall && n === ULT.ground.skipSmoke), "and breaks up soon");
+  assert.ok(!faded.some(([id]) => id === F.pall), "by its own clear, never a dither of the whole (round 3)");
+  assert.ok(ULT.ground.skip * 30 >= 285 - 60, "gone within half a second of the press");
   assert.ok(sped.some(([id]) => F.skirt.includes(id)), "the dust skirt too");
   assert.ok(faded.some(([id]) => F.flames.includes(id)) && faded.some(([id]) => F.wreck.includes(id)), "her flames and the rubble break up");
 });
@@ -620,7 +685,7 @@ test("ult (rfinish 10-22): the finish's pieces are never cut by their own drawin
   const { readPng } = await import("../../tools/zhusha/slotin-lib.mjs");
   const F = ULT.fx;
   const root = join(import.meta.dirname, "../../public/assets/fx");
-  for (const id of [F.dive, F.cut, F.nuke, `${F.nuke}_b`, F.pall, ...F.skirt, ...F.wreck]) {
+  for (const id of [F.dive, F.cut, F.nuke, `${F.nuke}_b`, F.pall, ...F.skirt, ...F.wreck, ...F.smolder]) {
     const def = JSON.parse(readFileSync(join(root, id, "fx.json"), "utf8"));
     for (const f of def.frames) {
       const { w, h, rgba } = readPng(readFileSync(join(root, id, f.file)));

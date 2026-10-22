@@ -231,6 +231,45 @@ export class Fx {
     return this.loaded.size;
   }
 
+  /** Per effect and drawing, its painted box about the pivot in drawing px ([x0, y0, x1, y1]; null: empty). */
+  private boxes = new Map<string, ([number, number, number, number] | null)[]>();
+
+  /**
+   * (rfinish 10-22, Dex: "the ult is outside of frame") The world box (px) the live effects whose id starts with one
+   * of `prefixes` cover right now (their drawings' painted cells, at `a` world px per art px, her ART_PX), for a
+   * camera that keeps them in frame; null when none is drawn. Attach "her" effects are left out (they ride her).
+   */
+  extent(prefixes: readonly string[], a: number): { x0: number; y0: number; x1: number; y1: number } | null {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const e of this.clock.live) {
+      if (e.t < 0 || e.stopped || e.attach === "her" || !prefixes.some((p) => e.def.id.startsWith(p))) continue;
+      const i = fxFrameAt(e.def, e.t);
+      const l = this.loaded.get(e.def.id);
+      if (i === null || !l) continue;
+      let bs = this.boxes.get(e.def.id);
+      if (!bs) this.boxes.set(e.def.id, (bs = []));
+      let b = bs[i];
+      if (b === undefined) {
+        let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
+        for (const d of l.drawings[i] ?? []) {
+          bx0 = Math.min(bx0, d.off[0]);
+          by0 = Math.min(by0, d.off[1]);
+          bx1 = Math.max(bx1, d.off[0] + d.r[2]);
+          by1 = Math.max(by1, d.off[1] + d.r[3]);
+        }
+        b = bs[i] = bx1 > bx0 ? [bx0, by0, bx1, by1] : null;
+      }
+      if (!b) continue;
+      const A = a * e.def.px;
+      const ex0 = e.facing < 0 ? e.x - b[2] * A : e.x + b[0] * A, ex1 = e.facing < 0 ? e.x - b[0] * A : e.x + b[2] * A;
+      x0 = Math.min(x0, ex0);
+      x1 = Math.max(x1, ex1);
+      y0 = Math.min(y0, e.y + b[1] * A);
+      y1 = Math.max(y1, e.y + b[3] * A);
+    }
+    return x1 > x0 ? { x0, y0, x1, y1 } : null;
+  }
+
   /**
    * Draws the live effects of a layer on the play plane's transform for this pass (`view`), at `a` world px per art px
    * (her ART_PX), each pivot snapped like her drawings'. `her`: her soles and facing (for attach "her"); `reflection`:

@@ -5,7 +5,7 @@
   "draw": {
     "dip": 4,
     "foot": 0.3,
-    "groundFx": ["dust_roll_", "ghost_blade_", "fire_env_", "fire_spirit_", "explosion", "ignite_flash", "smoke_puff_", "spirit_puff_", "q_fire", "q_wave", "q_ignite", "q_boom_", "land_dust", "r_call_fire", "r_nuke", "r_pall", "r_skirt", "r_wreck", "r_dive_cut"],
+    "groundFx": ["dust_roll_", "ghost_blade_", "fire_env_", "fire_spirit_", "explosion", "ignite_flash", "smoke_puff_", "spirit_puff_", "q_fire", "q_wave", "q_ignite", "q_boom_", "land_dust", "r_call_fire", "r_nuke", "r_pall", "r_skirt", "r_wreck", "r_dive_cut", "r_smolder"],
     "groundFollow": ["r_nuke", "r_pall"],
     "groundDrape": ["r_skirt", "r_wreck"],
     "aboutGroundFollow": "rfinish 10-21 (Dex: effects must know where the ground is): ground effects (id prefixes) cut at the ground under each part of them, strip by strip (fx/contract.ts fxGroundStrips), not only at the ground under their pivot: the R's nuke and its pall are wider than a stair. groundDrape: low ground effects (the nuke's dust skirt, its rubble) whose every strip also moves onto the ground under it, down a stair or up a slope, and is left out where there is no ground near (never floating over a drop).",

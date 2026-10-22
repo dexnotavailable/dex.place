@@ -52,13 +52,14 @@ export interface UltFile {
     impact: { zoom: number; anchor: number };
     aftermath: { zoom: number; zoomClear: number; anchor: number };
     reveal: { zoom: number; anchor: number; ticks: number };
+    fit: { ids: string[]; pad: number; ease: number };
   };
   shake: { boom: number; slash: number; last: number; dive: number; impact: number };
   punch: { press: number; boom: number; last: number; impact: number };
   cues: Record<string, string>;
   fx: {
     callFire: string; letter: string; letterBreak: string; cuts: CutKinds; dive: string; cut: string; nuke: string; pall: string;
-    skirt: string[]; wreck: string[]; flames: string[];
+    skirt: string[]; wreck: string[]; flames: string[]; smolder: string[];
   };
   /** The finish's pieces laid along the ground around the crater (rfinish 10-21): ult.json ground. */
   ground: GroundPlan;
@@ -76,8 +77,15 @@ export interface GroundPlan {
   /** Her blue flames burning across the wreck: every `every` H out to `reach` H (the near ones `near` H in are the big
    * loop), lit `delay0` + `perH` a H out, burning out (a `fade`-tick break-up) from `outAt` (the outermost) to `inAt`. */
   flames: { every: number; reach: number; near: number; delay0: number; perH: number; outAt: number; inAt: number; fade: number };
-  /** The wreck: rubble where the slabs come down, `from` H out every `every` H, landing `delay0` + `perH` a H out. */
-  wreck: { from: number; every: number; delay0: number; perH: number };
+  /** The wreck: rubble where the slabs come down, `from` H out every `every` H, landing `delay0` + `perH` a H out; the
+   * heaps by distance out (up to `near` H, up to `mid` H, beyond: `pools`, indices into fx.wreck, one picked by where it
+   * lies), either way round. */
+  wreck: { from: number; every: number; delay0: number; perH: number; near: number; mid: number; pools: number[][] };
+  /** The wreck smouldering: on the heaps up to `reach` H out (the nearest each side always, the others a `share` of
+   * them, picked by where they lie: never an even row), a wisp (fx.smolder: the big one within `near` H, else one of the
+   * others) from `delay0` + `perH` a H out + up to `jitter` ticks after the landing; on an `again` share of them a second,
+   * `gap` ticks (+ up to `jitter`) after the first. */
+  smolder: { reach: number; near: number; share: number; again: number; delay0: number; perH: number; jitter: number; gap: number };
   /** Control back early (a press in the smoke): the smoke runs on `skip` times as fast and breaks up over `skipSmoke`, the
    * flames over `skipFade`. */
   skip: number;
@@ -324,6 +332,36 @@ export function cutPlan(S: Slash[], C: CutKinds): CutSpawn[] {
 export interface UltFx {
   has(id: string): boolean;
   play(id: string, o: { x?: number; y?: number; facing?: number; attach?: "world" | "her"; delay?: number }): UltFxHandle;
+  /** The world box the live effects whose id starts with one of `prefixes` cover now (fx.ts Fx.extent); none: null. */
+  extent?(prefixes: readonly string[]): WorldRect | null;
+}
+
+/** A world box, px (y down). */
+export interface WorldRect {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+/**
+ * (rfinish 10-22, Dex: "the ult is outside of frame") How far out a shot must be to keep a world box in frame: the
+ * largest zoom at which the box (grown by `pad` world px) fits a W x Hc frame whose row `anchor` is at world y (bars:
+ * the share of the frame's height each black bar covers), and the frame-centre x range that keeps it inside then.
+ */
+export function fitZoom(box: WorldRect, y: number, anchor: number, W: number, Hc: number, bars: number, pad: number): number {
+  const up = y - (box.y0 - pad), down = box.y1 + pad - y;
+  let z = W / Math.max(1, box.x1 - box.x0 + 2 * pad);
+  if (up > 0) z = Math.min(z, (Math.max(0.05, anchor - bars) * Hc) / up);
+  if (down > 0) z = Math.min(z, (Math.max(0.05, 1 - anchor - bars) * Hc) / down);
+  return z;
+}
+
+/** The frame-centre x nearest `x` that keeps the box (grown by `pad`) inside a frame W / zoom wide (centred on the box
+ * when it is wider). */
+export function fitX(box: WorldRect, x: number, zoom: number, W: number, pad: number): number {
+  const hw = W / (2 * zoom), lo = box.x1 + pad - hw, hi = box.x0 - pad + hw;
+  return lo > hi ? (box.x0 + box.x1) / 2 : Math.min(Math.max(x, lo), hi);
 }
 
 /** A playing effect (fx/contract.ts FxHandle; tests may hand back only stop). */
@@ -455,7 +493,7 @@ export class UltDirector {
   fx: UltFx | null = null;
   real = {
     callFire: false, letter: false, letterBreak: false, cuts: false, dive: false, cut: false, nuke: false, pall: false,
-    skirt: false, wreck: false, flames: false,
+    skirt: false, wreck: false, flames: false, smolder: false,
   };
   /** The cuts over the real letter, by slash (cutPlan). */
   cutsBy = new Map<number, CutSpawn[]>();
@@ -469,8 +507,12 @@ export class UltDirector {
   private smokeFx: UltFxHandle[] = [];
   private flameFx: { h: UltFxHandle; at: number }[] = [];
   private wreckFx: UltFxHandle[] = [];
+  /** The wisps smouldering off the rubble (sped off with the smoke when control comes back early). */
+  private smolderFx: UltFxHandle[] = [];
   /** The tick (R's own clock, T) the dive landed. */
   private impactT = 0;
+  /** The zoom the finish's big effects allow (ult.json camera.fit; 0: none drawn): out at once, back in slowly. */
+  private fitZ = 0;
   private cutNext = false;
   private lastShot: Shot | null = null;
   /** Where a phase's camera move starts: the last shot of the phase before (moves never jump). */
@@ -513,7 +555,7 @@ export class UltDirector {
     this.real = {
       callFire: has(FX.callFire), letter, letterBreak: letter && ["", "_tr", "_ml", "_mr", "_bl", "_br"].every((k) => has(FX.letterBreak + k)), cuts: letter && cutIds(FX.cuts).every(has),
       dive: has(FX.dive), cut: has(FX.cut), nuke: has(FX.nuke), pall: has(FX.pall),
-      skirt: FX.skirt.every(has), wreck: FX.wreck.every(has), flames: FX.flames.every(has),
+      skirt: FX.skirt.every(has), wreck: FX.wreck.every(has), flames: FX.flames.every(has), smolder: FX.smolder.every(has),
     };
     this.cutsBy = new Map();
     if (this.real.cuts) for (const k of cutPlan(this.slashes, FX.cuts)) this.cutsBy.set(k.slash, [...(this.cutsBy.get(k.slash) ?? []), k]);
@@ -524,7 +566,9 @@ export class UltDirector {
     this.smokeFx = [];
     this.flameFx = [];
     this.wreckFx = [];
+    this.smolderFx = [];
     this.callFire = null;
+    this.fitZ = 0;
     this.cut = 0;
     this.stormT = -1;
     this.peel = 0;
@@ -766,10 +810,12 @@ export class UltDirector {
    */
   private hurry(): void {
     const G = ULT.ground;
+    // (round 3) the pall and the skirt run their own clear on, fast (they erode from their edges): no dither fade of
+    // the whole, which showed as a screen of dots over the court
     for (const h of this.smokeFx) {
       if (h.speed) h.speed(G.skip);
-      if (h.fadeOut) h.fadeOut(G.skipSmoke);
-      if (!h.speed && !h.fadeOut) h.stop();
+      else if (h.fadeOut) h.fadeOut(G.skipSmoke);
+      else h.stop();
     }
     for (const fl of this.flameFx) {
       if (fl.at < 0) continue;
@@ -778,6 +824,10 @@ export class UltDirector {
     }
     for (const h of this.wreckFx) {
       if (h.fadeOut) h.fadeOut(G.skipFade * 2);
+      else h.stop();
+    }
+    for (const h of this.smolderFx) {
+      if (h.fadeOut) h.fadeOut(G.skipSmoke);
       else h.stop();
     }
   }
@@ -800,6 +850,7 @@ export class UltDirector {
     this.smokeFx = [];
     this.flameFx = [];
     this.wreckFx = [];
+    this.smolderFx = [];
     this.phase = null;
     this.next = null;
     this.shot = null;
@@ -872,8 +923,26 @@ export class UltDirector {
     const at = (id: string, x: number, y: number, facing: number, delay = 0): UltFxHandle => fx!.play(id, { x, y, facing, delay });
     if (this.real.cut) at(F.cut, b.x, b.y, 1);
     if (this.real.nuke) at(F.nuke, b.x, b.y, 1);
-    if (this.real.pall) this.smokeFx.push(at(F.pall, b.x, b.y, 1));
     const spots = groundAround(b.x, b.y, G, world.groundBelow?.bind(world));
+    // the rubble smoulders (round 3, Dex 10-19: linger on the destruction): wisps off the heaps near the crater from the
+    // clear on, two in turn a spot, into the first seconds of play; behind the pall (they show as it thins) and behind
+    // the rubble (they rise from it); never mirrored (one wind)
+    if (this.real.smolder) {
+      const Sm = G.smolder, Wr = G.wreck, n = F.smolder.length;
+      for (const p of spots) {
+        if (p.out > Sm.reach + 1e-6 || !onGrid(p.out, Wr.from, Wr.every)) continue;
+        // the nearest heap each side always smokes; the others only some (by where they lie: no even row of wisps)
+        if (Math.abs(p.out - Wr.from) > 1e-6 && rnd(p.x * 0.77 + 1) > Sm.share) continue;
+        const pick = (u: number): string => F.smolder[Math.min(n - 1, 1 + Math.floor(u * (n - 1)))]!;
+        const id = p.out <= Sm.near ? F.smolder[0]! : pick(rnd(p.x * 0.13 + 5));
+        const d = Math.round(Sm.delay0 + Sm.perH * p.out + rnd(p.x * 0.29 + 3) * Sm.jitter);
+        // off the heap's middle (the big heap lies a little inward of its spot), never two at one point
+        const x = p.x - p.side * 0.25 * H + (rnd(p.x * 0.41) - 0.5) * 0.5 * H;
+        this.smolderFx.push(at(id, x, p.y, 1, d));
+        if (rnd(p.x * 0.31 + 2) < Sm.again) this.smolderFx.push(at(pick(rnd(p.x * 0.17 + 9)), x + (rnd(p.x * 0.23) - 0.3) * 0.6 * H, p.y, 1, d + Sm.gap + Math.round(rnd(p.x * 0.61) * Sm.jitter)));
+      }
+    }
+    if (this.real.pall) this.smokeFx.push(at(F.pall, b.x, b.y, 1));
     // the dust skirt rolls out along the ground, each piece on the ground under it, facing out
     if (this.real.skirt) {
       const S = G.skirt;
@@ -897,10 +966,17 @@ export class UltDirector {
     // the rubble where the slabs come down
     if (this.real.wreck) {
       const W = G.wreck;
-      let k = 0;
+      // (each side starts somewhere in its pools and steps on a heap at a time, turning it round each time: no two
+      // alike side by side)
+      const seq = { [-1]: Math.floor(rnd(b.x * 0.19 + 4) * 6), [1]: Math.floor(rnd(b.x * 0.23 + 5) * 6) } as Record<number, number>;
       for (const p of spots) {
         if (!onGrid(p.out, W.from, W.every)) continue;
-        this.wreckFx.push(at(F.wreck[k++ % F.wreck.length]!, p.x, p.y, p.side, Math.round(W.delay0 + W.perH * p.out)));
+        // the big heaps near the crater, smaller further out, a few chips far out, off its spot by up to half a H
+        const pool = W.pools[Math.min(W.pools.length - 1, p.out <= W.near ? 0 : p.out <= W.mid ? 1 : 2)]!;
+        const n = seq[p.side]!++;
+        const id = F.wreck[Math.min(F.wreck.length - 1, pool[n % pool.length]!)]!;
+        const x = p.x + (rnd(p.x * 0.43 + 6) - 0.5) * H;
+        this.wreckFx.push(at(id, x, p.y, n % 2 ? -1 : 1, Math.round(W.delay0 + W.perH * p.out)));
       }
     }
     // side-on (Dex 10-19: no rings on the ground): rock thrown up, dust: the stand-in's (the real nuke throws its own)
@@ -1067,7 +1143,43 @@ export class UltDirector {
         // the reveal: the dust clears and the frame pushes back in on her
         shot = this.move({ x: b.x, y: st.floor, zoom: C.reveal.zoom, anchor: C.reveal.anchor }, smooth(t / Math.max(1, C.reveal.ticks)));
     }
+    // from the landing: the nuke and its pall stay whole in the frame (the push in waits for the smoke to go)
+    if (this.phase === "impact" || this.phase === "aftermath" || this.phase === "reveal") shot = this.fitIn(shot, c);
     return this.keep(shot);
+  }
+
+  /**
+   * Keeps the finish's big effects (ult.json camera.fit.ids: the nuke, its pall) whole in the shot (Dex 10-22: the ult
+   * was outside the frame): the shot pulls out at once as far as they need (her feet stay on its anchor row), and comes
+   * back in only `ease` a tick (log zoom) as they shrink, so the frame never cuts the smoke and never jumps.
+   */
+  private fitIn(s: Shot, c: UltCtx): Shot {
+    const F = ULT.camera.fit, cam = c.host.camera;
+    const box = this.fx?.extent?.(F.ids) ?? null;
+    if (!box || !cam.W || !cam.H) {
+      this.fitZ = 0;
+      return s;
+    }
+    const pad = F.pad * H;
+    const z = fitZoom(box, s.y, s.anchor, cam.W, cam.H, ULT.camera.bars, pad);
+    this.fitZ = this.fitZ > 0 && z > this.fitZ ? Math.min(z, this.fitZ * Math.exp(F.ease)) : z;
+    const zoom = Math.min(s.zoom, this.fitZ);
+    return { ...s, zoom, x: fitX(box, s.x, zoom, cam.W, pad) };
+  }
+
+  /**
+   * After R (control back while its smoke is still up): the zoom the world's camera may use at most so what is left of
+   * the nuke and its pall stays in frame with her feet on the frame's row `anchor` (no bars by then); null: none left.
+   */
+  /** Whether the nuke or its pall is drawn now (the actors' layer then covers the whole view: game.ts). */
+  bigFx(): boolean {
+    return this.phase === "impact" || this.phase === "aftermath" || !!this.fx?.extent?.(ULT.camera.fit.ids);
+  }
+
+  keepIn(W: number, Hc: number, y: number, anchor: number): number | null {
+    if (this.phase !== null || !W || !Hc) return null;
+    const box = this.fx?.extent?.(ULT.camera.fit.ids) ?? null;
+    return box ? fitZoom(box, y, anchor, W, Hc, 0, ULT.camera.fit.pad * H) : null;
   }
 
   /** Where she is in the flurry, for the chase: her body until she bursts into ash, then the newest slash (she IS the slashes). */

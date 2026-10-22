@@ -3,8 +3,8 @@
  "stage": "pixel",
  "px": 1,
  "pivot": [
-  143,
-  138
+  122,
+  217
  ],
  "layer": "front",
  "attach": "world",
@@ -72,15 +72,15 @@
   },
   {
    "file": "f015.png",
-   "ticks": 6
+   "ticks": 2
   },
   {
    "file": "f016.png",
-   "ticks": 6
+   "ticks": 2
   },
   {
    "file": "f017.png",
-   "ticks": 6
+   "ticks": 2
   },
   {
    "file": "f018.png",
@@ -168,29 +168,57 @@
   },
   {
    "file": "f039.png",
-   "ticks": 90
+   "ticks": 6
   },
   {
    "file": "f040.png",
-   "ticks": 8
+   "ticks": 6
   },
   {
    "file": "f041.png",
-   "ticks": 8
+   "ticks": 6
   },
   {
    "file": "f042.png",
-   "ticks": 8
+   "ticks": 6
   },
   {
    "file": "f043.png",
-   "ticks": 8
+   "ticks": 6
   },
   {
    "file": "f044.png",
+   "ticks": 12
+  },
+  {
+   "file": "f045.png",
+   "ticks": 248
+  },
+  {
+   "file": "f046.png",
+   "ticks": 8
+  },
+  {
+   "file": "f047.png",
+   "ticks": 8
+  },
+  {
+   "file": "f048.png",
+   "ticks": 8
+  },
+  {
+   "file": "f049.png",
+   "ticks": 8
+  },
+  {
+   "file": "f050.png",
+   "ticks": 8
+  },
+  {
+   "file": "f051.png",
    "ticks": 8
   }
  ],
  "loop": false,
- "notes": "rfinish 10-21: the wreck, one piece (ult.json ground.wreck lays them along the ground): slabs and chips falling in, settling ON the floor, hot edges cooling, embers flickering, breaking up as the last smoke goes (px 1)"
+ "notes": "rfinish 10-22 (round 3): the wreck, one piece (ult.json ground.wreck lays them along the ground by distance out: a near, b further, c far): broken slabs and chips of the court's stone, beveled and lit from above, cracked, a few charred, red-lacquer splinters; thrown in, landing and stacking ON the floor and on each other (a heap, never a row), the hot ones glowing along their cracks and cooling; lying there through the clear, the reveal and ~3 s after it, then crumbling (a 1 px dither, chips first). px 1. tools: lanes/zhusha-1021b/rfinish/r3/tools/wreck4.py"
 }

@@ -138,6 +138,12 @@
       "zoom": 0.43,
       "zoomClear": 0.72,
       "anchor": 0.7
+    },
+    "fit": {
+      "about": "rfinish 10-22 (Dex: \"the ult is outside of frame\"): from the landing the shots keep the nuke and its pall (effect ids starting with `ids`) whole in the frame, `pad` H clear of its edges and the bars (ult.ts fitIn: the frame pulls out at once as far as they need, her feet kept on the shot's anchor row, and comes back in at most `ease` a tick in log zoom as they shrink: the aftermath's push toward her and the reveal's push in wait for the smoke to go); after an early control back the world's camera holds out the same way until what is left of the smoke is gone (game.ts, ult.ts keepIn).",
+      "ids": ["r_nuke", "r_pall"],
+      "pad": 0.5,
+      "ease": 0.012
     }
   },
   "shake": {
@@ -184,7 +190,7 @@
     "ring": 1.0
   },
   "fx": {
-    "about": "The FX v2 loop's effects (lanes/fx/v2/PLAN.md ids, played through game.fx.play when the game has them; until then the stand-ins in ultdraw.ts draw): callFire (her blue fire carpet, from the BOOM until she vanishes, at her feet), letter (the FX v2 brushed 天 carved by the storm: each piece on its carving slash's tick, white-hot, cooling through her blue to the ink, the closing sweeps, the flash, the stop with its drips running; at the letter's foot, never mirrored; lanes/zhusha-lead/rletter packs it; stopped when the dive starts), letterBreak (the finished letter in six pieces, cut down the middle by her dive, each row shearing apart along her line as she passes it, turning and falling, ink gobs thrown from the cut; from the dive's start to `impact.breakAfter` ticks into the impact, falling on into its flash), cuts (the storm's slashes over the letter while it is carved: shipped impact slashes spawned on the carving slashes and the closing sweeps, at their piece, picked by the cut's angle (flat / rising / falling / steep, a falling one is a rising one mirrored; every `crossEvery`th an X, 0: none; 10-21: no impact_slash_h / _b, their one-tick black field read as a flat blob over the letter in the chase), at most `cap` alive at once (each lives `life` ticks; the game holds 64 effects), each sweep `sweepCuts` down its stroke; with the real letter only, else the stand-in's streaks), dive (rfinish 10-21: her comet on her through the dive, its tail back up her line), cut (her line from the zenith into the floor, from the landing: a white-out snap, then thinning hairs), nuke (the eruption at the crater, from the ground contact), pall (its smoke on the same clock from the landing: it hangs over the wreck through aftermath.hold, then clears outward and up, the middle first), skirt / wreck / flames (ground: the dust skirt, the rubble and her flames laid along the ground under each); each stand-in in ultdraw.ts steps aside only for its own piece (FX v2 ASKS 5: the stand-in's aftermath stays until the pall carries it).",
+    "about": "The FX v2 loop's effects (lanes/fx/v2/PLAN.md ids, played through game.fx.play when the game has them; until then the stand-ins in ultdraw.ts draw): callFire (her blue fire carpet, from the BOOM until she vanishes, at her feet), letter (the FX v2 brushed 天 carved by the storm: each piece on its carving slash's tick, white-hot, cooling through her blue to the ink, the closing sweeps, the flash, the stop with its drips running; at the letter's foot, never mirrored; lanes/zhusha-lead/rletter packs it; stopped when the dive starts), letterBreak (the finished letter in six pieces, cut down the middle by her dive, each row shearing apart along her line as she passes it, turning and falling, ink gobs thrown from the cut; from the dive's start to `impact.breakAfter` ticks into the impact, falling on into its flash), cuts (the storm's slashes over the letter while it is carved: shipped impact slashes spawned on the carving slashes and the closing sweeps, at their piece, picked by the cut's angle (flat / rising / falling / steep, a falling one is a rising one mirrored; every `crossEvery`th an X, 0: none; 10-21: no impact_slash_h / _b, their one-tick black field read as a flat blob over the letter in the chase), at most `cap` alive at once (each lives `life` ticks; the game holds 64 effects), each sweep `sweepCuts` down its stroke; with the real letter only, else the stand-in's streaks), dive (rfinish 10-21: her comet on her through the dive, its tail back up her line), cut (her line from the zenith into the floor, from the landing: a white-out snap, then thinning hairs), nuke (the eruption at the crater, from the ground contact), pall (its smoke on the same clock from the landing: it hangs over the wreck through aftermath.hold, then clears outward and up, the middle first), skirt / wreck / flames / smolder (ground: the dust skirt, the rubble heaps, her flames and the wisps off the rubble laid along the ground under each); each stand-in in ultdraw.ts steps aside only for its own piece (FX v2 ASKS 5: the stand-in's aftermath stays until the pall carries it).",
     "callFire": "r_call_fire",
     "letter": "r_letter",
     "letterBreak": "r_letter_break",
@@ -205,18 +211,20 @@
     "nuke": "r_nuke",
     "pall": "r_pall",
     "skirt": ["r_skirt_l", "r_skirt_s"],
-    "wreck": ["r_wreck_a", "r_wreck_b"],
-    "flames": ["fire_spirit_l", "fire_spirit_m"]
+    "wreck": ["r_wreck_a", "r_wreck_b", "r_wreck_c", "r_wreck_d"],
+    "flames": ["fire_spirit_l", "fire_spirit_m"],
+    "smolder": ["r_smolder_a", "r_smolder_b", "r_smolder_c"]
   },
   "ground": {
-    "about": "The finish's pieces on the ground around the crater (rfinish 10-21; Dex: effects must know where the ground is, dust and flames sit ON it, never float): ult.ts groundAround looks at the ground every `step` H out to `reach` H each side of where she landed (a step up or down of more than `rise` H between two looks ends that side: a ledge, a wall). The dust skirt (fx.skirt, alternating) rolls out from `skirt.from` H every `skirt.every` H, facing out, the surge reaching each `delay0` + `perH` ticks a H out; her blue flames (fx.flames: the big loop within `flames.near` H, the small one beyond) every `flames.every` H out to `flames.reach` H, lit `delay0` + `perH` a H out, burning out (a `fade`-tick break-up) from the outermost at `outAt` ticks after the landing to the middle at `inAt` (the stand-in's 'the far ones die first'); the rubble (fx.wreck) where the slabs come down. Control back early: the smoke runs on `skip` times as fast and breaks up over `skipSmoke` ticks, the flames over `skipFade`.",
+    "about": "The finish's pieces on the ground around the crater (rfinish 10-21; Dex: effects must know where the ground is, dust and flames sit ON it, never float): ult.ts groundAround looks at the ground every `step` H out to `reach` H each side of where she landed (a step up or down of more than `rise` H between two looks ends that side: a ledge, a wall). The dust skirt (fx.skirt, alternating) rolls out from `skirt.from` H every `skirt.every` H, facing out, the surge reaching each `delay0` + `perH` ticks a H out; her blue flames (fx.flames: the big loop within `flames.near` H, the small one beyond) every `flames.every` H out to `flames.reach` H, lit `delay0` + `perH` a H out, burning out (a `fade`-tick break-up) from the outermost at `outAt` ticks after the landing to the middle at `inAt` (the stand-in's 'the far ones die first'); the rubble (fx.wreck) where the slabs come down, the heaps by distance out (`wreck.pools`: indices into fx.wreck for up to `near` H, up to `mid` H and beyond, one picked by where it lies, either way round; round 3: broken slabs of the court's stone stacked into heaps, lying there into the first seconds of play); the wreck smouldering (fx.smolder, round 3, Dex 10-19 \"linger on the destruction\"): on the heaps up to `smolder.reach` H out (the nearest each side always, a `share` of the others, picked by where they lie so the wisps never stand in an even row) a wisp of smoke from `delay0` + `perH` ticks a H out (+ up to `jitter`) after the landing, the big one within `smolder.near` H, one of the others beyond, and on an `again` share of them a second `gap` ticks later, so the wreck smokes through the clear and the reveal into the first seconds of play. Control back early: the pall and the skirt run their own clear on at `skip` times the pace (round 3: they erode from their edges, no dither of the whole: it showed as a screen of dots), the wisps break up over `skipSmoke` ticks, the flames over `skipFade`, the rubble over twice that.",
     "step": 0.5,
     "reach": 11,
     "rise": 1.2,
     "skirt": { "from": 2, "every": 1.5, "delay0": 3, "perH": 1.4 },
     "flames": { "every": 1.5, "reach": 7.5, "near": 3, "delay0": 8, "perH": 2, "outAt": 100, "inAt": 190, "fade": 40 },
-    "wreck": { "from": 1.5, "every": 2, "delay0": 26, "perH": 1.2 },
-    "skip": 4,
+    "wreck": { "from": 1.5, "every": 2, "delay0": 26, "perH": 1.2, "near": 4, "mid": 7.5, "pools": [[0, 3], [1, 3, 2], [2]] },
+    "smolder": { "reach": 5.5, "near": 2, "share": 0.5, "again": 0.5, "delay0": 118, "perH": 4, "jitter": 40, "gap": 140 },
+    "skip": 8,
     "skipSmoke": 30,
     "skipFade": 24
   },
