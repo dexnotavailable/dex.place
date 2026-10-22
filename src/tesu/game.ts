@@ -310,7 +310,7 @@ export class TesuGame {
     this.feel.onSound = (id, v) => this.sound.heard(id, v);
     this.player.onCue = (c) => this.sound.herCue(c);
     // R plays the FX loop's effects when they are in (zhusha/ult.ts; its stand-ins draw until then)
-    this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o) };
+    this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o), extent: (p, ahead) => this.fx.extent(p, ART_PX, ahead) };
     // (lane E 10-20) her moves play FX v2's built effects through the same door
     this.player.fx = this.player.r.fx;
     this.props = new Props({
@@ -664,12 +664,16 @@ export class TesuGame {
     if (shot) this.camera.set(shot, b.x, b.y);
     else if (cine) {
       // R's shots (zhusha/ult.ts): placed exactly each tick (its own cuts and moves), shake and punch still run
-      const cf = { ...f, zoom: cine.zoom, anchor: cine.anchor, lead: 0, fixX: cine.x, fixY: cine.y, pin: null };
+      const cf = { ...f, zoom: cine.zoom, anchor: cine.anchor, lead: 0, fixX: cine.x, fixY: cine.y, pin: null, exact: true };
       this.camera.snap(cine.x, cine.y, cf, this.player.facing);
       this.camera.update(cine.x, cine.y, this.player.facing, 0, cf);
       // reduced motion: its cuts cross-fade like the camera's own
       if (cine.cut && this.feel.reducedMotion) this.cutFade = 1;
-    } else this.camera.update(b.x, b.y, this.player.facing, b.vx, f);
+    } else {
+      // (rfinish 10-22) control back while R's smoke is still up: the frame stays out far enough to hold it whole
+      const keep = this.player.r.keepIn(this.camera.W, this.camera.H, b.y, f.anchor);
+      this.camera.update(b.x, b.y, this.player.facing, b.vx, keep !== null && keep < f.zoom ? { ...f, zoom: keep } : f);
+    }
     this.paperTick();
     // reduced motion: a cut between held frames is a short dithered cross-fade, not a swing
     if (this.camera.cuts !== cuts && this.tick > 2) this.cutFade = 1;
@@ -1531,7 +1535,7 @@ export class TesuGame {
     const b = this.player.body, s = planeXf(c, 1).s;
     this.r.setTransform(s, focus, mirror);
     // (zhusha lead 10-20) ground effects dip into the ground with her and stop at its front edge (feel.json draw.groundFx)
-    const ground = { dip: this.zdraw.dip, ids: FEEL.draw.groundFx, at: (x: number, y: number) => this.collision.groundBelow(x, y)?.y ?? null };
+    const ground = { dip: this.zdraw.dip, ids: FEEL.draw.groundFx, follow: FEEL.draw.groundFollow, drape: FEEL.draw.groundDrape, erode: FEEL.draw.groundErode, erodeSpan: FEEL.draw.groundErodeSpan * H, erodeH: FEEL.draw.groundErodeH * H, fine: FEEL.draw.groundDrapeFine, at: (x: number, y: number) => this.collision.groundBelow(x, y)?.y ?? null };
     this.fx.draw(this.r, { s, focus, mirror }, layer, ART_PX, { x: b.x, y: b.y, facing: this.player.facing }, mirror !== null, ground);
     this.r.flush();
   }
@@ -1612,7 +1616,10 @@ export class TesuGame {
   private reducedActors(cam: CamState, target: Target | null, lights: PointLight[], mirror: number | null, draw: (c: CamState) => void): void {
     const r = this.r, xf = planeXf(cam, 1), b = this.player.body;
     const view = { cx: (cam.W / 2 - xf.offX) / xf.s, cy: (cam.H / 2 - xf.offY) / xf.s };
-    const c = this.actors.begin(r, cam, view, [b.x, b.y - H], Math.max(1, 1 / ART_PX));
+    // (rfinish 10-21) R's nuke and its pall fill the frame while she is hidden in them: the layer covers the whole view
+    // (and for as long as the nuke or its pall is drawn: the reveal, a control back in the smoke)
+    const fit = this.player.r.bigFx();
+    const c = this.actors.begin(r, cam, view, [b.x, b.y - H], Math.max(1, 1 / ART_PX), fit);
     // the renderer maps x to ((x - camX) - f) * s + f: match the layer's play-plane transform about the pass's focus
     const lx = this.actors.xf, f: [number, number] = [c.W / 2, c.anchor * c.H];
     r.begin((f[0] * (1 - lx.s) - lx.offX) / lx.s, (f[1] * (1 - lx.s) - lx.offY) / lx.s, DAY, lights);

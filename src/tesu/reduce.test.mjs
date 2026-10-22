@@ -183,6 +183,14 @@ test("actor layer plan: her art density where the view fits, else the view cover
   // a 1080p screen at 1/2: the view covered at a lower density
   const p = actorLayerPlan(1920, 1080, 0.5, artD, 4096);
   assert.ok(p.onView && p.d < artD && p.d >= 1);
+  // (rfinish 10-21) R's 0.4 pull-out on a 1080p screen: centred on her as before, unless asked to fit (the nuke and
+  // its pall fill the frame while she is hidden): then the whole view, under density 1
+  const q = actorLayerPlan(1920, 1080, 0.4, artD, 4096);
+  assert.equal(q.onView, false);
+  const f = actorLayerPlan(1920, 1080, 0.4, artD, 4096, true);
+  assert.ok(f.onView && f.d < 1 && f.d >= 0.25);
+  assert.ok((1920 / 0.4) * f.d <= f.w + 1e-6 && (1080 / 0.4) * f.d <= f.h + 1e-6, "the whole view is in the layer");
+  assert.deepEqual(actorLayerPlan(1920, 1080, 1, artD, 4096, true), actorLayerPlan(1920, 1080, 1, artD, 4096), "fit changes nothing where the view fits");
 });
 
 test("loading: the world is plain data, so a plate worker can hand it to the page (structured clone, no class, no function)", async () => {

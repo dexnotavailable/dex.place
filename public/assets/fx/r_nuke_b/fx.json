@@ -1,0 +1,76 @@
+{
+ "id": "r_nuke_b",
+ "stage": "pixel",
+ "px": 3,
+ "pivot": [
+  500,
+  724
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 24
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3
+  },
+  {
+   "file": "f002.png",
+   "ticks": 3
+  },
+  {
+   "file": "f003.png",
+   "ticks": 3
+  },
+  {
+   "file": "f004.png",
+   "ticks": 3
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3
+  },
+  {
+   "file": "f006.png",
+   "ticks": 3
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3
+  },
+  {
+   "file": "f008.png",
+   "ticks": 3
+  },
+  {
+   "file": "f009.png",
+   "ticks": 3
+  },
+  {
+   "file": "f010.png",
+   "ticks": 3
+  },
+  {
+   "file": "f011.png",
+   "ticks": 3
+  },
+  {
+   "file": "f012.png",
+   "ticks": 3
+  },
+  {
+   "file": "f013.png",
+   "ticks": 3
+  },
+  {
+   "file": "f014.png",
+   "ticks": 1
+  }
+ ],
+ "loop": false,
+ "notes": "rfinish 10-22: the R's nuke from the dive's contact (px 3, ticks 24-63: her fire burning out of the cap, the cap rolling up; her fire after it only on the floor) | part 1 / 1: drawings 0-14"
+}

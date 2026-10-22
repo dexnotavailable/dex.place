@@ -1,0 +1,64 @@
+{
+ "id": "r_dive_cut",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  71,
+  1386
+ ],
+ "layer": "back",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2
+  },
+  {
+   "file": "f002.png",
+   "ticks": 2
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2
+  },
+  {
+   "file": "f004.png",
+   "ticks": 2
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3
+  },
+  {
+   "file": "f006.png",
+   "ticks": 3
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3
+  },
+  {
+   "file": "f008.png",
+   "ticks": 3
+  },
+  {
+   "file": "f009.png",
+   "ticks": 3
+  },
+  {
+   "file": "f010.png",
+   "ticks": 3
+  },
+  {
+   "file": "f011.png",
+   "ticks": 3
+  }
+ ],
+ "loop": false,
+ "notes": "rfinish 10-21: her line from the zenith into the floor where she landed (world, behind, cut at the floor like her): a white-out snap, then three hairs drifting apart and breaking from the top down, darkening, ink hairs beside them; ~30 ticks (ult.json dive.lineLife)"
+}

@@ -1,0 +1,83 @@
+{
+ "id": "r_nuke",
+ "stage": "pixel",
+ "px": 2,
+ "pivot": [
+  580,
+  899
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 1
+  },
+  {
+   "file": "f001.png",
+   "ticks": 1
+  },
+  {
+   "file": "f002.png",
+   "ticks": 1
+  },
+  {
+   "file": "f003.png",
+   "ticks": 1
+  },
+  {
+   "file": "f004.png",
+   "ticks": 1
+  },
+  {
+   "file": "f005.png",
+   "ticks": 1
+  },
+  {
+   "file": "f006.png",
+   "ticks": 1
+  },
+  {
+   "file": "f007.png",
+   "ticks": 1
+  },
+  {
+   "file": "f008.png",
+   "ticks": 2
+  },
+  {
+   "file": "f009.png",
+   "ticks": 2
+  },
+  {
+   "file": "f010.png",
+   "ticks": 2
+  },
+  {
+   "file": "f011.png",
+   "ticks": 2
+  },
+  {
+   "file": "f012.png",
+   "ticks": 2
+  },
+  {
+   "file": "f013.png",
+   "ticks": 2
+  },
+  {
+   "file": "f014.png",
+   "ticks": 2
+  },
+  {
+   "file": "f015.png",
+   "ticks": 2
+  }
+ ],
+ "loop": false,
+ "notes": "rfinish 10-22: the R's nuke from the dive's contact (px 2, ticks 0-22): the impact frame, the world's fire balling up, her blue fire taking it; its px-3 half in with",
+ "with": [
+  "r_nuke_b"
+ ]
+}

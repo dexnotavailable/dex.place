@@ -27,6 +27,9 @@ export interface Framing {
   pin: { x: number; at: number } | null;
   /** World x the frame's edges stay within (a room's walls, the world's ends). */
   bounds: [number, number] | null;
+  /** (rfinish round 4) A cinematic's own shot (R's): its zoom as given, reduced motion too (its held framings and
+   * cuts are its own, not snapped to the play levels). */
+  exact?: boolean;
 }
 
 /** Framing from the active tracks at x (tracks blend in over their first and last keys). */
@@ -162,8 +165,8 @@ export class Camera {
     this.wantZoom = want;
     let zTarget = want * (1 - this.closeup) + 2 * this.closeup;
     if (this.reducedMotion) {
-      // no zoom swings: the frame cuts between held levels (the game cross-fades the cut)
-      zTarget = zTarget >= 1.5 ? 2 : zTarget > 0.3 ? 1 : 0.125;
+      // no zoom swings: the frame cuts between held levels (the game cross-fades the cut); a cinematic's shot as given
+      if (!f.exact) zTarget = zTarget >= 1.5 ? 2 : zTarget > 0.3 ? 1 : 0.125;
       if (zTarget !== this.zoom) {
         this.zoom = zTarget;
         this.cuts++;

@@ -89,6 +89,8 @@ export class ZhushaDraw {
     const slot = r.slot;
     let t = this.clipTime(a, slot, z);
     if (r.def.reverse) t = slot.total - 1 - t;
+    // a role that holds one drawing of its slot (R's stop and dive: her jump's)
+    if (r.def.frame !== undefined) return { slot, index: Math.max(0, Math.min(slot.def.frames.length - 1, r.def.frame)) };
     // the ult form stands still-ish on one drawing (Dex 10-19; ultform.ts)
     if (a.role === "idle" && z.ultForm) return { slot, index: z.uf.idleIndex() };
     if (a.role === "idle" && slot.def.idle_variant) return { slot, index: this.idleIndex(slot, t) };

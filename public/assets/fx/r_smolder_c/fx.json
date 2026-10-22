@@ -1,0 +1,352 @@
+{
+ "id": "r_smolder_c",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  19,
+  293
+ ],
+ "layer": "front",
+ "attach": "world",
+ "reflect": true,
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 6
+  },
+  {
+   "file": "f001.png",
+   "ticks": 3
+  },
+  {
+   "file": "f002.png",
+   "ticks": 3
+  },
+  {
+   "file": "f003.png",
+   "ticks": 3
+  },
+  {
+   "file": "f004.png",
+   "ticks": 3
+  },
+  {
+   "file": "f005.png",
+   "ticks": 3
+  },
+  {
+   "file": "f006.png",
+   "ticks": 3
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3
+  },
+  {
+   "file": "f008.png",
+   "ticks": 3
+  },
+  {
+   "file": "f009.png",
+   "ticks": 3
+  },
+  {
+   "file": "f010.png",
+   "ticks": 3
+  },
+  {
+   "file": "f011.png",
+   "ticks": 3
+  },
+  {
+   "file": "f012.png",
+   "ticks": 3
+  },
+  {
+   "file": "f013.png",
+   "ticks": 3
+  },
+  {
+   "file": "f014.png",
+   "ticks": 3
+  },
+  {
+   "file": "f015.png",
+   "ticks": 3
+  },
+  {
+   "file": "f016.png",
+   "ticks": 3
+  },
+  {
+   "file": "f017.png",
+   "ticks": 3
+  },
+  {
+   "file": "f018.png",
+   "ticks": 3
+  },
+  {
+   "file": "f019.png",
+   "ticks": 3
+  },
+  {
+   "file": "f020.png",
+   "ticks": 3
+  },
+  {
+   "file": "f021.png",
+   "ticks": 3
+  },
+  {
+   "file": "f022.png",
+   "ticks": 3
+  },
+  {
+   "file": "f023.png",
+   "ticks": 3
+  },
+  {
+   "file": "f024.png",
+   "ticks": 3
+  },
+  {
+   "file": "f025.png",
+   "ticks": 3
+  },
+  {
+   "file": "f026.png",
+   "ticks": 3
+  },
+  {
+   "file": "f027.png",
+   "ticks": 3
+  },
+  {
+   "file": "f028.png",
+   "ticks": 3
+  },
+  {
+   "file": "f029.png",
+   "ticks": 3
+  },
+  {
+   "file": "f030.png",
+   "ticks": 3
+  },
+  {
+   "file": "f031.png",
+   "ticks": 3
+  },
+  {
+   "file": "f032.png",
+   "ticks": 3
+  },
+  {
+   "file": "f033.png",
+   "ticks": 3
+  },
+  {
+   "file": "f034.png",
+   "ticks": 3
+  },
+  {
+   "file": "f035.png",
+   "ticks": 3
+  },
+  {
+   "file": "f036.png",
+   "ticks": 3
+  },
+  {
+   "file": "f037.png",
+   "ticks": 3
+  },
+  {
+   "file": "f038.png",
+   "ticks": 3
+  },
+  {
+   "file": "f039.png",
+   "ticks": 3
+  },
+  {
+   "file": "f040.png",
+   "ticks": 3
+  },
+  {
+   "file": "f041.png",
+   "ticks": 3
+  },
+  {
+   "file": "f042.png",
+   "ticks": 3
+  },
+  {
+   "file": "f043.png",
+   "ticks": 3
+  },
+  {
+   "file": "f044.png",
+   "ticks": 3
+  },
+  {
+   "file": "f045.png",
+   "ticks": 3
+  },
+  {
+   "file": "f046.png",
+   "ticks": 3
+  },
+  {
+   "file": "f047.png",
+   "ticks": 3
+  },
+  {
+   "file": "f048.png",
+   "ticks": 3
+  },
+  {
+   "file": "f049.png",
+   "ticks": 3
+  },
+  {
+   "file": "f050.png",
+   "ticks": 3
+  },
+  {
+   "file": "f051.png",
+   "ticks": 3
+  },
+  {
+   "file": "f052.png",
+   "ticks": 3
+  },
+  {
+   "file": "f053.png",
+   "ticks": 3
+  },
+  {
+   "file": "f054.png",
+   "ticks": 3
+  },
+  {
+   "file": "f055.png",
+   "ticks": 3
+  },
+  {
+   "file": "f056.png",
+   "ticks": 3
+  },
+  {
+   "file": "f057.png",
+   "ticks": 3
+  },
+  {
+   "file": "f058.png",
+   "ticks": 3
+  },
+  {
+   "file": "f059.png",
+   "ticks": 3
+  },
+  {
+   "file": "f060.png",
+   "ticks": 3
+  },
+  {
+   "file": "f061.png",
+   "ticks": 3
+  },
+  {
+   "file": "f062.png",
+   "ticks": 3
+  },
+  {
+   "file": "f063.png",
+   "ticks": 3
+  },
+  {
+   "file": "f064.png",
+   "ticks": 3
+  },
+  {
+   "file": "f065.png",
+   "ticks": 3
+  },
+  {
+   "file": "f066.png",
+   "ticks": 3
+  },
+  {
+   "file": "f067.png",
+   "ticks": 3
+  },
+  {
+   "file": "f068.png",
+   "ticks": 3
+  },
+  {
+   "file": "f069.png",
+   "ticks": 3
+  },
+  {
+   "file": "f070.png",
+   "ticks": 3
+  },
+  {
+   "file": "f071.png",
+   "ticks": 3
+  },
+  {
+   "file": "f072.png",
+   "ticks": 3
+  },
+  {
+   "file": "f073.png",
+   "ticks": 3
+  },
+  {
+   "file": "f074.png",
+   "ticks": 3
+  },
+  {
+   "file": "f075.png",
+   "ticks": 3
+  },
+  {
+   "file": "f076.png",
+   "ticks": 3
+  },
+  {
+   "file": "f077.png",
+   "ticks": 3
+  },
+  {
+   "file": "f078.png",
+   "ticks": 3
+  },
+  {
+   "file": "f079.png",
+   "ticks": 3
+  },
+  {
+   "file": "f080.png",
+   "ticks": 3
+  },
+  {
+   "file": "f081.png",
+   "ticks": 3
+  },
+  {
+   "file": "f082.png",
+   "ticks": 3
+  },
+  {
+   "file": "f083.png",
+   "ticks": 6
+  }
+ ],
+ "loop": false,
+ "notes": "rfinish 10-22 (round 4): the wreck smouldering, one wisp at px 1 (ult.json ground.smolder lays them on the rubble heaps around the crater, on the ground under each, two in turn a spot, never mirrored: one wind): thin smoke rising off the embers at its foot, slowing, swelling and thinning, a dithered fringe going lighter as it rises; a trickle, a standing column, then the embers fade and the plume gets shorter, its top thinning down toward the foot, which keeps trickling to the end (never a column hanging over the floor). tools: lanes/zhusha-1021b/rfinish/r4/tools/smolder5.py"
+}

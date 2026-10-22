@@ -50,7 +50,7 @@ export interface FeelFile {
   e: { hold: number; flash: number; skidEvery: number; boltFrom: number; boltSpeed: number };
   hurt: { stun: number; kb: [number, number]; iframes: number; heavyFrom: number; freeze: number; heavyFreeze: number; friction: number };
   /** Her drawing's visual dip into the ground (art px) and the ground width looked at under her (drawn heights). */
-  draw: { dip: number; foot: number; groundFx: string[] };
+  draw: { dip: number; foot: number; groundFx: string[]; groundFollow: string[]; groundDrape: string[]; groundErode: string[]; groundErodeSpan: number; groundErodeH: number; groundDrapeFine: string[] };
   knockdown: { ticks: number; kb: [number, number]; getUpFrom: number; iframes: number; bounce: number; friction: number };
   defeat: { ticks: number; fadeFrom: number };
   respawn: { ticks: number };
@@ -140,7 +140,8 @@ export interface MoveWorld {
 export interface ZhushaHost {
   vfx: { spawn(id: string, o: SpawnOptions): void };
   feel: { freeze(n: number): void; slowmo(f: number, d: number): void; impactFrame(m: "invert" | "mono", d: number): void; sound(id: string, v?: number): void; readonly reducedMotion: boolean };
-  camera: { shake(a: number, d: number): void; zoomPunch(steps: number): void };
+  /** (W, H: the frame's size in frame px, for R's shots that keep its nuke in frame; tests may leave them out) */
+  camera: { shake(a: number, d: number): void; zoomPunch(steps: number): void; readonly W?: number; readonly H?: number };
   /** Her foes' bodies now (world boxes: the court's champion), for m1_3's lock-on; none: she lunges straight. */
   foes?(): WorldBox[];
 }
