@@ -312,7 +312,7 @@ export class TesuGame {
     // R plays the FX loop's effects when they are in (zhusha/ult.ts; its stand-ins draw until then)
     this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o), extent: (p, ahead) => this.fx.extent(p, ART_PX, ahead) };
     // (lane E 10-20) her moves play FX v2's built effects through the same door
-    this.player.fx = this.player.r.fx;
+    this.player.fx = { ...this.player.r.fx, playFrom: (id, o, from, rate) => this.fx.playFrom(id, o, from, rate) };
     this.props = new Props({
       player: this.player, vfx: this.vfx, feel: this.feel, camera: this.camera,
       ground: (x, y) => this.collision.groundBelow(x, y)?.y ?? null,

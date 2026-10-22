@@ -145,6 +145,43 @@ export function moveToClip(t: number, moveHitAt: number | null, clipHitAt: numbe
   return clipHitAt + (t - moveHitAt);
 }
 
+/**
+ * (cutoffs r5, the audit's "skipped drawings": the squeeze never showed a 1-tick windup drawing, so skill_q's beam
+ * smear f004, the ult chain's smears uf_m1_1 f004 / uf_m1_2 f004 and uf_skill_q f001 / f004 were lost) The clip tick to
+ * draw on move tick t while the windup is squeezed onto the hit (moveHitAt < clipHitAt): every windup drawing gets a
+ * move tick of its own, the spare ticks shared by the drawings' own lengths; with fewer ticks than drawings each tick
+ * shows where the windup has got to by the tick's end (the smear into the hit is never the one dropped). The hit
+ * drawing still shows on moveHitAt, after it the clip runs 1:1 (moveToClip); a stretched windup is moveToClip's.
+ */
+export function windupClip(t: number, moveHitAt: number | null, clipHitAt: number | null, starts: readonly number[]): number {
+  const c = moveToClip(t, moveHitAt, clipHitAt);
+  if (moveHitAt === null || clipHitAt === null || moveHitAt <= 0 || t >= moveHitAt || moveHitAt >= clipHitAt) return c;
+  // the windup's drawings: those that start before the hit drawing
+  let n = 0;
+  while (n < starts.length && starts[n]! < clipHitAt) n++;
+  if (n <= 1) return c;
+  const m = moveHitAt, k = Math.max(0, Math.min(m - 1, Math.floor(t)));
+  const len = (i: number): number => (i + 1 < n ? starts[i + 1]! : clipHitAt) - starts[i]!;
+  let pick: number;
+  if (m >= n) {
+    // a tick each, the spare ones by length (largest remainder, earlier drawing on a tie)
+    const share = Array.from({ length: n }, (_, i) => ((m - n) * len(i)) / clipHitAt);
+    const got = share.map((s) => 1 + Math.floor(s));
+    let left = m - got.reduce((a, b) => a + b, 0);
+    const order = share.map((s, i) => [s - Math.floor(s), i] as const).sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+    for (let j = 0; left > 0; j = (j + 1) % n, left--) got[order[j]![1]]!++;
+    pick = 0;
+    for (let acc = got[0]!; acc <= k; acc += got[++pick]!);
+  } else {
+    // fewer ticks than drawings: each tick shows where the windup has got to by its end (the last tick the smear into
+    // the hit, the first one already in from the rest pose she stood in), by the drawings' own lengths
+    const u = ((k + 1) * clipHitAt) / m - 1e-6;
+    pick = 0;
+    while (pick + 1 < n && starts[pick + 1]! <= u) pick++;
+  }
+  return starts[pick]!;
+}
+
 /** A drawing's marks as clip ticks (null where the clip carries none: the controller keeps feel.json's numbers). */
 export interface ArtMarks {
   total: number;

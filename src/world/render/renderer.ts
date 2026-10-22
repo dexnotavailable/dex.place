@@ -387,8 +387,9 @@ export class WorldRenderer {
     const z = d.screen ? 1 : this.xf.z;
     let x0 = d.screen ? bx : this.sx(bx);
     let y0 = d.screen ? by : this.sy(by);
-    let x1 = x0 + d.sw * z;
-    let y1 = d.screen || this.xf.mirror === null ? y0 + d.sh * z : y0 - d.sh * z;
+    const tile = !!d.tile && !d.screen;
+    let x1 = tile ? this.sx(bx + d.sw) : x0 + d.sw * z;
+    let y1 = tile ? this.sy(by + d.sh) : d.screen || this.xf.mirror === null ? y0 + d.sh * z : y0 - d.sh * z;
     if (y1 < y0) [y0, y1] = [y1, y0];
     if (x0 > this.iw || y0 > this.ih || x1 < 0 || y1 < 0) return;
     let u0 = d.sx;

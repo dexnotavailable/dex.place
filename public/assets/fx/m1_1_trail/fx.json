@@ -1,0 +1,61 @@
+{
+ "id": "m1_1_trail",
+ "stage": "pixel",
+ "px": 1,
+ "pivot": [
+  104,
+  209
+ ],
+ "layer": "back",
+ "attach": "world",
+ "reflect": true,
+ "loop": false,
+ "with": [],
+ "frames": [
+  {
+   "file": "f000.png",
+   "ticks": 2
+  },
+  {
+   "file": "f001.png",
+   "ticks": 2
+  },
+  {
+   "file": "f002.png",
+   "ticks": 3
+  },
+  {
+   "file": "f003.png",
+   "ticks": 2
+  },
+  {
+   "file": "f004.png",
+   "ticks": 1
+  },
+  {
+   "file": "f005.png",
+   "ticks": 6
+  },
+  {
+   "file": "f006.png",
+   "ticks": 2
+  },
+  {
+   "file": "f007.png",
+   "ticks": 3
+  },
+  {
+   "file": "f008.png",
+   "ticks": 4
+  },
+  {
+   "file": "f009.png",
+   "ticks": 5
+  },
+  {
+   "file": "f010.png",
+   "ticks": 6
+  }
+ ],
+ "notes": "cutoffs 10-21: m1_1's slash trail alone (her drawing's trail px, live public/assets/zhusha/m1_1, minus hers; the holes her body left filled from the band; nothing at or below the ground line), one drawing per drawing of hers, same pivot and ticks. The game starts it at the clip time her drawing was cut at (controller.ts trailOn) so the trail carries on and fades when the next move takes over; it never plays while her own drawing does. Rebuild after any change to her drawings: lanes/zhusha-1021b/cutoffs/work/tools/trail_fx.py"
+}

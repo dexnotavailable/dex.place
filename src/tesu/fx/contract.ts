@@ -178,7 +178,8 @@ export interface FxLive {
   t: number;
   serial: number;
   stopped: boolean;
-  /** Its clock's rate (1: the game's; a skipped cinematic speeds its smoke on) and the fraction of a tick it owes. */
+  /** Its clock's rate (1: the game's; a skipped cinematic speeds its smoke on; a carried-on trail plays its rest faster:
+   * FxClock.playFrom) and the fraction of a tick it owes. */
   rate: number;
   acc: number;
   /** A fade-out (a dither break-up, the renderer's opacity): ticks left of `fadeN`, then it stops. */
@@ -195,6 +196,12 @@ export interface FxHandle {
   speed(k: number): void;
   /** Breaks up (dithers out) over `ticks`, then stops (and its parts). */
   fadeOut(ticks: number): void;
+}
+
+/** (cutoffs r2) A carried-on effect: its handle, and a way to keep it where she is (FxClock.playFrom). */
+export interface FxCarry extends FxHandle {
+  /** Puts it (and its parts) at world (x, y) from now on. */
+  moveTo(x: number, y: number): void;
 }
 
 const DEAD: FxHandle = { stop: () => {}, alive: false, move: () => {}, speed: () => {}, fadeOut: () => {} };
@@ -231,6 +238,30 @@ export class FxClock {
 
   has(id: string): boolean {
     return this.defs.has(id);
+  }
+
+  /**
+   * (cutoffs 10-21) Plays one (and its parts) already `from` ticks in: her slash trail carried on from the clip tick
+   * her drawing was cut at (zhusha/controller.ts trailOn), so it fades out whatever the next move does. (r2) `rate`:
+   * its clock runs that many ticks a game tick (the rest of a trail played out quickly, not a second slash on screen);
+   * the handle's moveTo keeps it with her.
+   */
+  playFrom(id: string, o: FxSpawn, from: number, rate = 1): FxCarry {
+    const s = this.serial;
+    const h = this.play(id, o);
+    const mine = this.live.filter((e) => e.serial >= s);
+    for (const e of mine) {
+      e.t = Math.max(e.t, Math.round(from));
+      e.rate = Math.max(1, rate);
+    }
+    return {
+      stop: () => h.stop(),
+      get alive() { return h.alive; },
+      move: (x, y) => h.move(x, y),
+      speed: (k) => h.speed(k),
+      fadeOut: (n) => h.fadeOut(n),
+      moveTo: (x: number, y: number) => { for (const e of mine) { e.x = x; e.y = y; } },
+    };
   }
 
   play(id: string, o: FxSpawn = {}, depth = 0): FxHandle {

@@ -67,6 +67,12 @@ export interface SpriteDraw {
   opacity?: number;
   /** Draw in screen space (UI) instead of world space. */
   screen?: boolean;
+  /**
+   * (qdust 10-21) One tile of a bigger drawing (an effect's cells): its far edges land where the transform puts them, not
+   * at its near edge + its size, so tiles side by side meet with no gap or overlap under any zoom (else, scaled under
+   * 1, a rounding left 1 px seams through an effect between its cells).
+   */
+  tile?: boolean;
 }
 
 export const VFX_TYPE = { rect: 0, arc: 1, ring: 2, pillar: 3, burst: 4, streak: 5, disc: 6, diamond: 7 } as const;

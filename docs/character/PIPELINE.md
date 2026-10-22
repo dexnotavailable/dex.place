@@ -1335,6 +1335,46 @@ charScale (1.1 x 96 = 105.6 world px, `zhusha/feel.json`), i.e. 0.825 world px p
   (`planeXf(c, 1)`), or it lands on the wrong grid in two of the three cases above.
 - Pitfall: at zoom 1 -> 0.99 her pixels step from screen-res to the world grid (the 10-17 default; a FOR DEX item in
   the engine notebook proposes holding screen-res down to ~0.6).
+- (cutoffs 2026-10-21) A trail baked into a move's drawing dies with the drawing when the next move cuts it short
+  (mashing the chain dropped m1_1's whole crescent). Each normal-chain move also ships its trail alone as an effect,
+  `public/assets/fx/<slot>_trail` (her trail px, one drawing per drawing, same pivot and ticks, cut at the ground
+  line); `zhusha/controller.ts` `trailOn` plays it from the clip tick her drawing was cut at, so it fades out
+  whatever the next move does. It never plays while her own drawing does. Rebuild it after any change to an m1
+  drawing: `lanes\zhusha-1021b\cutoffs\work\tools\trail_fx.py` (outside the repo). [proven in code and captures]
+- (cutoffs 2026-10-21) A shape that ends on its canvas or source frame bound (a ruler-straight edge) is a reject:
+  heal it before slotting (`...\cutoffs\work\tools\cutheal.py`: streaks and crescents taper to a tip or round to a
+  cap, a crescent's back lying along the bound gets a varied edge, smoke / glow / light fields break up into the
+  dither; her figure, blade and colours are never touched), then re-run `tools/zhusha/derive.mjs`. [proven]
+- (cutoffs 2026-10-21) A move's landing (m1_4's hop, a knock-up) ages with the move, and hurt / knockdown play their
+  recovery out after the stun, so a state's end never pops to the landing crouch or idle. [proven, `cutoffs.test.mjs`]
+- (cutoffs r2 2026-10-22) A carried trail is only carried from the ground (her trail drawings sit on her soles' floor
+  line: one carried from the air hung over the floor after she landed), one at a time, its rest played in at most
+  feel.json `trailCarry.ticks` (8), and it goes with her while she attacks or runs on, on the ground, facing the same
+  way (else it stays on the floor where it was). The trail effects' holes, stubs and humps where her body / blade / legs
+  covered the band are repaired by `lanes\zhusha-1021b\cutoffs\r2\tools\trail_fix.py` (fill along the streaks, fray the ends
+  that met her blade); re-run it after `trail_fx.py`. [proven, `cutoffs.test.mjs`, captures cutoffs\ba2\]
+- (cutoffs r2) A heal must not shrink a hit: `derived.json`'s rects / active / root / feet stay what the unhealed
+  drawings gave (the r1 dither heals emptied 8 x 8 hit cells). Hit drawings are healed by fraying the straight cut
+  along its streaks (tongues for a top, fibres for a side) while every hit cell keeps >= 6 energy px joined to the slash
+  (`lanes\zhusha-1021b\cutoffs\r2\tools\boundfray.py`, checked by `hitkeep.py --dry`). [proven: 0 differences vs 3e994938]
+- (cutoffs r2) m1_4 ends on its own last drawing (blade upright before her) and goes to rest; its return role
+  guard_to_rest (a full spin with big arcs) is behind feel.json `windDown.finisherReturn` (false): Dex's call.
+- (cutoffs r3 2026-10-22) No heal ends in a regular checkerboard dither (it reads as screen-door speckle the moment an
+  art px is bigger than a screen px). A cut end is AUTHORED by its kind (`lanes\zhusha-1021b\cutoffs\r3\tools\reheal.py`,
+  from live's px, never on top of an old heal): a streaked mass (the Q's red slash) gets a brush stroke's pointed, frayed
+  end along its streaks wrapped in its own rim colours; a beam / pillar / light field gets its lines shortened by pointed
+  tongues (V notches between, rounded shoulders where a field's corner was square); smoke, mist and floor glow end in
+  rounded lumps, with the shape's outline put back where it had one; tiny islands go. Her skin, outfit, hat, blade and
+  the ghost swords are protected (warm and near-black px are never removed, and an effect's edge is measured from the
+  effect, not from her sleeve beside it). Then `derive.mjs` + `hitkeep.py --dry` (0 differences vs live). [proven]
+- (cutoffs r5 2026-10-22) A windup squeezed onto its hit (feel.json's hit tick earlier than the drawing's) never drops
+  a drawing it has the ticks for, and never the smear into the hit: `zhusha/contract.ts` `windupClip` (draw.ts only;
+  the hit tick, windows, root and hit boxes are moveToClip's as before). Fewer ticks than drawings (the Q: 3 for 5):
+  each tick shows where the windup has got to by its end. The normal chain shows the same drawings as before; the
+  Q, the ult Q and the ult chain's first two moves get their smears back. [proven, `cutoffs.test.mjs`, cutoffs\ba\r5\]
+- (cutoffs r5) A carried trail needs `public/assets/fx/<slot>_trail` for the slot (the normal chain has them). The ult
+  chain has none: its drawings are being redrawn (lanes\zhusha-1021b\ultchain); once they settle, export each move's
+  trail layer as `uf_m1_N_trail` (same canvas, pivot and ticks) and `trailOn` carries it when a mash cuts the drawing.
 
 ---
 

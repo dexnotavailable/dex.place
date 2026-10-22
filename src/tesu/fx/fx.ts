@@ -8,7 +8,7 @@ import type { WorldRenderer } from "../../world/render/renderer.ts";
 import { artQuery } from "../zhusha/anims.ts";
 import { artTransform, type PlayView } from "../zhusha/units.ts";
 import { H } from "../config.ts";
-import { FxClock, fxCells, fxClipRows, type FxCell, fxErodeKeep, fxFade, fxFrameAt, fxGroundClip, fxGroundEnds, fxGroundStrips, fxMergeLifts, FX_MAX_H, FX_MAX_STORED, FX_MAX_W, validateFx, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
+import { FxClock, fxCells, fxClipRows, type FxCell, fxErodeKeep, fxFade, fxFrameAt, fxGroundClip, fxGroundEnds, fxGroundStrips, fxMergeLifts, FX_MAX_H, FX_MAX_STORED, FX_MAX_W, validateFx, type FxCarry, type FxDef, type FxHandle, type FxLayer, type FxSpawn } from "./contract.ts";
 
 /** Effects present at build time (a missing one is never fetched). */
 export const FX_PRESENT: string[] = Object.keys(import.meta.glob("/public/assets/fx/*/fx.json"))
@@ -219,6 +219,11 @@ export class Fx {
     return this.clock.play(id, o);
   }
 
+  /** Plays one already `from` ticks in, at `rate` (fx/contract.ts FxClock.playFrom: her slash trail carried on). */
+  playFrom(id: string, o: FxSpawn, from: number, rate = 1): FxCarry {
+    return this.clock.playFrom(id, o, from, rate);
+  }
+
   tick(): void {
     this.clock.tick();
   }
@@ -425,7 +430,9 @@ export class Fx {
         const sh = clipY === null ? sh0 : fxClipRows(sh0, d.off[1], Math.round(py), clipY, A);
         if (sh <= 0) continue;
         const dx = flip ? xf.q[0] - (d.off[0] + sw) : xf.q[0] + d.off[0];
-        r.sprite({ sheet, sx, sy, sw, sh, x: dx, y: xf.q[1] + d.off[1], flip, lit: 0, opacity });
+        // (cutoffs 10-21) tile: the cell's far edges where the transform puts them, so cells meet with no see-through
+        // hairline where an art px is more than a frame px (the close band, the R's cut-in, 1440p / 4K)
+        r.sprite({ sheet, sx, sy, sw, sh, x: dx, y: xf.q[1] + d.off[1], flip, lit: 0, opacity, tile: true });
       }
     }
     r.setTransform(view.s, view.focus, view.mirror);

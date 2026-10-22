@@ -102,7 +102,13 @@
   "hitstopCap": 14,
   "windDown": {
     "about": "Dex 10-16: \"the wind-down = after the attack is finished has to go back to idle slower\". After a move's last hit its drawing (the follow-through, then its return to rest) plays at this rate (0.72: each drawing holds ~1.4x as long), while the windup stays squeezed onto the hit tick. Only the drawing slows: the move's windows (chain, cancel, move) are unchanged and any input takes her out of it. A move may set its own windDown / windFrom.",
-    "rate": 0.72
+    "rate": 0.72,
+    "finisherReturn": false,
+    "aboutFinisherReturn": "cutoffs r2 (critic r1): m1_4's own drawing ends at rest (f014, the blade upright before her); true plays its return role after it (slots.json m1_4_ret: guard_to_rest, a full sword spin with big cyan arcs, ~2 s, reads as a fifth hit; live never showed it, the landing crouch popped in first). Dex's call."
+  },
+  "trailCarry": {
+    "about": "cutoffs r2 (critic r1: the carried trails made the normal chain busier and longer): a slash trail carried on after the next move cut her drawing (controller.ts trailOn) plays its rest in at most this many ticks (its clock sped up to fit), one at a time, only from the ground, going with her while she attacks or runs on.",
+    "ticks": 8
   },
   "q": {
     "about": "The Q as a jumpscare (Dex 10-15): input to BOOM in 3 ticks (skill_q's hit), then the frame holds on the boom (hold ticks, with or without a target) with a flash, and the camera pulls out to camZoom over the exploded area (centred on the blast's reach, drifting with her) for camTicks, letting go early if she goes camLeave H from it.",
