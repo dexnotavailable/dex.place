@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-22T22:48:46.110Z (23/10/2026, 05:48:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-22T23:51:02.874Z (23/10/2026, 06:51:02 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_95d28d67-28d — last activity 937 min ago
+### wf_95d28d67-28d — last activity 999 min ago
 49 agents: 43 done, 2 running or stopped mid-way, 4 failed.
 
 - **critic:cutoffs:r1** (done): 
@@ -34,7 +34,7 @@ The three approved branches are merged in order on one branch, every approved fi
 
 - **Branch:** claude/zh1021-int in `D:\Dex\Temp\dexplace-v2\art-wt\zh1021-int`, on top of origin/
 
-### wf_9552f444-732 — last activity 1028 min ago
+### wf_9552f444-732 — last activity 1090 min ago
 18 agents: 15 done, 3 running or stopped mid-way, 0 failed.
 
 - **build:w1** (running)
@@ -52,7 +52,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **critic:w1:r2** (done): 
 - **integrate** (done): **SHA: `ec129216`** on `claude/siteart-int` (worktree `D:\Dex\Temp\dexplace-v2\art-wt\siteart-int`, 3 commits ahead of origin/main 4d48bcd0, nothing pushed). **Critic verdict: "no".** I fixed both findings once and checked them in a real browser. The critic's re-check never ran, so it never said "sh
 
-### wf_0428f202-0d9 — last activity 1607 min ago
+### wf_0428f202-0d9 — last activity 1670 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -68,7 +68,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **w1:r5** (running)
 - **w2:r5** (running)
 
-### wf_1bfe66f0-d8d — last activity 1730 min ago
+### wf_1bfe66f0-d8d — last activity 1792 min ago
 66 agents: 50 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:brain-cost#3:impact** (running)
@@ -86,7 +86,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **verify:drift-tests#3:reproduce** (running)
 - **verify:drift-tests#3:impact** (running)
 
-### wf_cd368d9e-095 — last activity 1754 min ago
+### wf_cd368d9e-095 — last activity 1817 min ago
 16 agents: 0 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:claim2:reproduce** (running)
@@ -104,14 +104,14 @@ The three approved branches are merged in order on one branch, every approved fi
 - **sweep:discord-live** (running)
 - **sweep:drift-tests** (running)
 
-### wf_4e50eac1-3e1 — last activity 1769 min ago
+### wf_4e50eac1-3e1 — last activity 1832 min ago
 3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
 
 - **torii:work** (done): Gate Road had 9 gates (8 of them torii), and the terrace's wide view showed all 9 at once. It now has 5 gates, and the gates that stay sit properly on the sloping road. Every gate in the world is on Gate Road, apart from one small torii on an islet in Kagami lake and the copies of that islet in the website windows. That islet torii is a single gate that frames the lake view, so I kept it as it is. Its view and the op
 - **torii:critic:r1** (done): 
 - **torii:ready** (done): ok
 
-### wf_3be49863-029 — last activity 3172 min ago
+### wf_3be49863-029 — last activity 3234 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -121,7 +121,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **integrate:r3** (done): 
 - **critic:r3** (done): 
 
-### wf_6eb91aef-0bd — last activity 3816 min ago
+### wf_6eb91aef-0bd — last activity 3878 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -137,7 +137,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **w1:r3** (running)
 - **w2:r3** (running)
 
-### wf_5cebc05c-deb — last activity 3819 min ago
+### wf_5cebc05c-deb — last activity 3881 min ago
 8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -148,65 +148,6 @@ The three approved branches are merged in order on one branch, every approved fi
 - **critic:r1** (done): 
 - **w1:r2** (running)
 - **w2:r2** (running)
-
-### wf_93dbdace-3fa — last activity 4279 min ago
-16 agents: 15 done, 0 running or stopped mid-way, 1 failed.
-
-- **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
-- **w2:r1** (done): Picked up round 1 for worker 2 after the stop and committed a second pass on claude/v2-art-vista-p2 (910b9ba9). The first worker-2 commit (6b902308) was already on the branch, and the scene branch had not moved. Running `checkout -B claude/v2-art-vista-p2 claude/v2-art-vista` would have thrown that commit away, so I skipped the reset and built on top of it. What changed: - **Bug fix in the rock painter (strata.ts).**
-- **integrate:r1** (done): 
-- **critic:r1** (done): 
-- **w1:r2** (done): Worker 1's round-2 sky, clouds and atmosphere work is committed as c20a903e on claude/v2-art-vista-p1. All 17 frames render without errors. The cliffs are still round 1's, because W2's chunk rock isn't on this branch. This run picked up the previous W1 session's uncommitted work-in-progress (the usage stop had interrupted it) and finished it. The `checkout -B` was a no-op because the branch was already on 09e1fe5c, s
-- **w2:r2** (done): Worker 2, round 2 is committed as e046ba15 on claude/v2-art-vista-p2. Most of the critique is answered. The main open items are the terrace's bottom-left seam (W2-11, which isn't a W2 piece) and the lake's ruled near edge (lane C's water shader). **Changes:** - **Near cliffs (W2-6).** A new face model (chunks.ts) builds Dex's chunk sketch literally: blocks of different sizes overlapping at different depths, so no led
-- **integrate:r2** (done): 
-- **critic:r2** (done): 
-- **w1:r3** (done): Worker 1, round 3 is committed on claude/v2-art-vista-p1: three commits on ea2af6ed (719d40c0, cf6bb417, 269f6b9f; head 269f6b9f). Most of the critique is answered. Two items are only partly fixed because of camera geometry: the films' 1280 frame gets a whole heap but a modest one (W1-2), and play-forecourt still has no cumulus (W1-6). The fall check exposed two problems that belong to other lanes. What changed, by c
-- **w2:r3** (done): Worker 2, round 3 is done and committed on claude/v2-art-vista-p2 in two commits, 59186ae5 then 313d90e2, both on top of ea2af6ed. Depth now reads the right way round: the near rock is darker and holds the strongest contrast, and the far wall is paler and cooler. I worked through all 13 critique points; most are fixed, and the rest belong to other lanes or are blocked (listed below). Measured brightness (median) move
-- **integrate:r3** (done): 
-- **critic:r3** (done): 
-- **w1:r4** (failed)
-- **w2:r4** (done): Worker 2 finished round 4. Both commits are on claude/v2-art-vista-p2: 5e50d20b and 6948d1a0, on top of 3f94e1ba. Nothing is pushed. Changes, by critique item: - **W2-1, the cliff under the lake.** It no longer uses the road ridge's block painter. A new painter, plateau.ts, draws it at 1/2 and wider zooms (whip, postcard, tesu, tesu-720, ease-in). It has: - buttresses of very different widths, split into rounded colu
-
-### wf_286da28b-ad1 — last activity 4280 min ago
-10 agents: 9 done, 0 running or stopped mid-way, 1 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (done): Round 1, worker 1 is done and committed. The sky now looks like Dex's sky reference: a deep cobalt sky with a towering cumulus that is lit cream on its upper-left crowns and falls away into a big cyan-blue shaded body. The fall also has one real cloud deck. The paper falls onto it at the gust, passes through it around 9–10 s, and at the break-out and postcard its cool underside hangs overhead. **Branch handling.** I 
-- **w2:r1** (done): Worker 2, round 1, second pass. I did not reset the branch. claude/v2-art-fall-p2 already held yesterday's finished round 1 (b30b4942, on F's c0781d7a). The scene branch is still 337e8e6e, so the requested `git checkout -B claude/v2-art-fall-p2 claude/v2-art-fall` would have thrown that work away and dropped rev 4. Instead I added one commit on top: c0c8e4a7, which changes opening/sky.ts only. How I judged it: I buil
-- **integrate:r1** (done): 
-- **critic:r1** (done): 
-- **w1:r2** (done): Round 2, worker 1 (clouds and sky). The work is committed on claude/v2-art-fall-p1 as 08a6cc5e, on top of 43942bbb (the library) and 10421583 (the rev 5 merge). I resumed on top of those and did not run `checkout -B`. The scene branch had not moved, the reset would have thrown away the rev 5 merge and the library, and worker 2 had already merged the library into p2 as 8f137539. What changed, by critique item: - **The
-- **w2:r2** (done): Worker 2, round 2. Branch claude/v2-art-fall-p2, at 48865933, not pushed. The fog, wind and haze in the fall are rebuilt to sit over worker 1's new cloud library. In the lens-fog frame the camera is now inside a milky cloud with torn holes stretched along the wind, where before the fog looked like camouflage blotches. **I did not run the requested `git checkout -B`.** An earlier worker 2 session had already committed
-- **integrate:r2** (done): 
-- **critic:r2** (failed)
-
-### wf_23467958-71d — last activity 4314 min ago
-14 agents: 8 done, 6 running or stopped mid-way, 0 failed.
-
-- **toolkit** (done): # Card-art toolkit (lanes\cardart\tools\pipe)
-
-Shared by the three card pipelines (PIPELINE-1020.md). Python: `D:\Dex\AI\Tools\SpritePost\.venv\Scripts\python.exe -I`
-(shown as `py` below). Coordinates are source pixels; assemble scales to the card frame. Every tool prints `-h` help.
-
-## One line pe
-- **plan:yuki** (done): I wrote the Yuki (dexCode) card plan to D:\Dex\Temp\dexplace-v2\lanes\cardart\build\yuki\PLAN.md. I read the pick at 2-4x zoom (crops in build\yuki\_look\). No GPU was used, nothing outside build\yuki was written, and Dex's private refs were not touched. **Units.** Every coordinate is in pick pixels (frame 941 x 1672, about ±10 px). The face focus is at (430, 265). A 460 px desktop card shows y 0-1411 of the frame at
-- **plan:zhusha** (done): The Zhusha card plan is done: she is cut into 16 parts, with legs under a two-layer skirt and two breast parts that carry the talisman strips. It's written to D:\Dex\Temp\dexplace-v2\lanes\cardart\build\zhusha\PLAN.md, with a draft rig at build\zhusha\rig.plan.json and the inspection crops in build\zhusha\_look\. No GPU or ComfyUI was used, and nothing outside build\zhusha\ was touched. **Units.** Pivots are in frame
-- **plan:bao** (done): Bao (dexClient) card plan, written to D:\Dex\Temp\dexplace-v2\lanes\cardart\build\bao\PLAN.md. Pivot overlay and zoom crops are in build\bao\_look\. No GPU was used. **What gets cut.** 18 parts come out of picks\bao.png (941x1672). Kept: him, the sword (pommel, tassel, grip, bandaged and chained sheath) and the brass bell. Removed: the arena, all flying talismans (3 blurred foreground papers over the coat, 1 over the
-- **extract:yuki** (done): I extracted Yuki into all 12 of the plan's parts. Recompositing the parts matches the source exactly inside her: 0 of 893,587 opaque pixels differ. I used no GPU and took no heavy slot. The SAM 3.1 masks were already there from the toolkit's selftest run (10-20 01:48, same image). I copied them into
-- **extract:zhusha** (done): Zhusha is cut out and split into the plan's 16 parts, with masks and RGBA crops at the source resolution (941 x 1672). The sword, the blue trail and the background are gone. When the 16 parts are stacked back together, every fully opaque pixel matches the source exactly: 571,095 pixels, 0 different.
-- **extract:bao** (done): Bao is cut out: him and his sword, with no background and no flying talismans, split into the plan's 18 parts. All 18 recomposited match `picks\bao.png` exactly everywhere inside him: 0 of 1,230,809 opaque pixels differ, and the recomposited alpha also differs by 0.
-
-**What's in `D:\Dex\Temp\dexplac
-- **Lines:zhusha** (running)
-- **Lines:bao** (running)
-- **Lines:yuki** (running)
-- **Lines:yuki** (running)
-- **Lines:zhusha** (done): I finished Zhusha's line art. Her lines are now editable variable-width strokes, the cut-off bits are authored, and `lines.svg` matches lane K's format. It is **38.3 KB gzip against the 80 KB cap**.
-
-An earlier run of this job had stopped at 03:21 with nothing authored. I kept its trace chain and re
-- **Lines:bao** (running)
-- **critic:Lines:zhusha:1** (running)
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
