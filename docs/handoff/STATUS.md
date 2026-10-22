@@ -1,10 +1,10 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-22T06:48:46.344Z (22/10/2026, 13:48:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-22T07:48:47.001Z (22/10/2026, 14:48:47 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
-- live on dex.place: `ec12921`
+- live on dex.place: `180810e`
 - uncommitted on the PC (all included in this pc-sync snapshot): 226 paths
 
 ## Workflow lanes in the last 72 hours (newest first)
@@ -12,10 +12,9 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_95d28d67-28d — last activity 15 min ago
-48 agents: 41 done, 3 running or stopped mid-way, 4 failed.
+### wf_95d28d67-28d — last activity 37 min ago
+49 agents: 43 done, 2 running or stopped mid-way, 4 failed.
 
-- **fix:qdust** (done): The Q, the dust and the fire now stand on the real floor, and the critic's three round-1 problems are fixed. Those were the slowdown on slopes, the Q turning into a dud at a wall, and the curtain left hanging at a ledge. Main 4d48bcd0 is merged in with no conflicts. The branch has 3 commits on top of 3e994938: a534a68c (round 1), 2cf56b47 (round 2, saved after the earlier run died in the network outage), and 2608ac74
 - **critic:cutoffs:r1** (done): 
 - **critic:dive:r1** (done): 
 - **critic:qdust:r1** (done): 
@@ -28,9 +27,14 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **critic:qdust:r2** (done): 
 - **critic:rfinish:r2** (done): 
 - **repair3:ultchain** (done): All three things critic 4 found are fixed and committed as e737d797 on claude/zh1021-ultchain. Nothing is pushed. 1. Knees in the first hit (uf_m1_1 f006-f008): each leg is redrawn from under her own thigh down to the ankle along the leg line H3 drew for that drawing. It is now one smooth thigh-to-shin line. The flat cut, the black bar and the offset shin are gone, and the shoes stay planted. Where the old shin used 
-- **critic3:ultchain** (running)
+- **critic3:ultchain** (done): 
+- **integrate** (done): READY claude/zh1021-int 180810e3037f68d2552d321614efebdd1da0b22a
 
-### wf_9552f444-732 — last activity 68 min ago
+The three approved branches are merged in order on one branch, every approved fix is kept, and the full gate passes. Nothing is pushed.
+
+- **Branch:** claude/zh1021-int in `D:\Dex\Temp\dexplace-v2\art-wt\zh1021-int`, on top of origin/
+
+### wf_9552f444-732 — last activity 128 min ago
 18 agents: 15 done, 3 running or stopped mid-way, 0 failed.
 
 - **build:w1** (running)
@@ -48,7 +52,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **critic:w1:r2** (done): 
 - **integrate** (done): **SHA: `ec129216`** on `claude/siteart-int` (worktree `D:\Dex\Temp\dexplace-v2\art-wt\siteart-int`, 3 commits ahead of origin/main 4d48bcd0, nothing pushed). **Critic verdict: "no".** I fixed both findings once and checked them in a real browser. The critic's re-check never ran, so it never said "sh
 
-### wf_0428f202-0d9 — last activity 647 min ago
+### wf_0428f202-0d9 — last activity 707 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -64,7 +68,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r5** (running)
 - **w2:r5** (running)
 
-### wf_1bfe66f0-d8d — last activity 770 min ago
+### wf_1bfe66f0-d8d — last activity 830 min ago
 66 agents: 50 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:brain-cost#3:impact** (running)
@@ -82,7 +86,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify:drift-tests#3:reproduce** (running)
 - **verify:drift-tests#3:impact** (running)
 
-### wf_cd368d9e-095 — last activity 794 min ago
+### wf_cd368d9e-095 — last activity 854 min ago
 16 agents: 0 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:claim2:reproduce** (running)
@@ -100,14 +104,14 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **sweep:discord-live** (running)
 - **sweep:drift-tests** (running)
 
-### wf_4e50eac1-3e1 — last activity 809 min ago
+### wf_4e50eac1-3e1 — last activity 869 min ago
 3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
 
 - **torii:work** (done): Gate Road had 9 gates (8 of them torii), and the terrace's wide view showed all 9 at once. It now has 5 gates, and the gates that stay sit properly on the sloping road. Every gate in the world is on Gate Road, apart from one small torii on an islet in Kagami lake and the copies of that islet in the website windows. That islet torii is a single gate that frames the lake view, so I kept it as it is. Its view and the op
 - **torii:critic:r1** (done): 
 - **torii:ready** (done): ok
 
-### wf_3be49863-029 — last activity 2212 min ago
+### wf_3be49863-029 — last activity 2272 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -117,7 +121,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r3** (done): 
 - **critic:r3** (done): 
 
-### wf_6eb91aef-0bd — last activity 2856 min ago
+### wf_6eb91aef-0bd — last activity 2916 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -133,7 +137,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r3** (running)
 - **w2:r3** (running)
 
-### wf_5cebc05c-deb — last activity 2859 min ago
+### wf_5cebc05c-deb — last activity 2919 min ago
 8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -145,7 +149,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r2** (running)
 - **w2:r2** (running)
 
-### wf_93dbdace-3fa — last activity 3319 min ago
+### wf_93dbdace-3fa — last activity 3379 min ago
 16 agents: 15 done, 0 running or stopped mid-way, 1 failed.
 
 - **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
@@ -163,7 +167,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r4** (failed)
 - **w2:r4** (done): Worker 2 finished round 4. Both commits are on claude/v2-art-vista-p2: 5e50d20b and 6948d1a0, on top of 3f94e1ba. Nothing is pushed. Changes, by critique item: - **W2-1, the cliff under the lake.** It no longer uses the road ridge's block painter. A new painter, plateau.ts, draws it at 1/2 and wider zooms (whip, postcard, tesu, tesu-720, ease-in). It has: - buttresses of very different widths, split into rounded colu
 
-### wf_286da28b-ad1 — last activity 3320 min ago
+### wf_286da28b-ad1 — last activity 3380 min ago
 10 agents: 9 done, 0 running or stopped mid-way, 1 failed.
 
 - **setup** (done): 
@@ -177,7 +181,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r2** (done): 
 - **critic:r2** (failed)
 
-### wf_23467958-71d — last activity 3354 min ago
+### wf_23467958-71d — last activity 3414 min ago
 14 agents: 8 done, 6 running or stopped mid-way, 0 failed.
 
 - **toolkit** (done): # Card-art toolkit (lanes\cardart\tools\pipe)
