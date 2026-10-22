@@ -69,8 +69,10 @@ test("a banner's layers, back to front (PLAN 5.4): ink base, Dex's plate, the nu
       if (i) assert.ok(where[i] > where[i - 1] || where[i - 1] < 0, `${p.id}: ${order[i]} after ${order[i - 1]}`);
     }
     assert.match(li, new RegExp(`<span class="pban__num">${no}</span>`));
-    // the hero is the card's own art (its rig, pixels unchanged), decorative here
-    assert.match(li, new RegExp(`<div class="pban__hero" aria-hidden="true">.*<div class="cart cart--rig[^"]* pban__cart" data-rig="/site/cards/${p.id}/"[^>]* aria-hidden="true"`));
+    // the hero is the card's own art (its rig, pixels unchanged), decorative here, and like the rest of the art a pointer
+    // shortcut to the project's page (it sits above .pban__hit; a click on it went nowhere)
+    assert.match(li, new RegExp(`<a class="pban__hero" href="${projectHref(p)}" tabindex="-1" aria-hidden="true">.*<div class="cart cart--rig[^"]* pban__cart" data-rig="/site/cards/${p.id}/"[^>]* aria-hidden="true"`));
+    assert.ok(!/<(?:a|button)\b/.test(li.slice(li.indexOf('class="pban__hero"'), li.indexOf('class="pban__front"'))), `${p.id}: nothing interactive inside the hero link`);
     // every Dex layer is lazy and decorative, with its phone cut
     for (const [img] of li.matchAll(/<img class="pban__(?:back|slash|fx)"[^>]*>/g)) {
       assert.match(img, /alt="" width="2400" height="720" loading="lazy" decoding="async"/);

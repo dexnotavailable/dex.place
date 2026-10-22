@@ -48,11 +48,16 @@ function artLayers(p: Project, no: string): string {
 }
 
 /** The hero window: the picked card art (its rig, pixels unchanged) in a slanted 4:5 window at the world end; on a
- *  project's page it is the page's picture (its alt text and credit), elsewhere decorative. */
+ *  project's page it is the page's picture (its alt text and credit), elsewhere decorative. In a list it is a pointer
+ *  shortcut to the project's page like the rest of the art (the card's art was its link; the window sits above
+ *  .pban__hit and its top lifts over the banner's edge, so it carries the link itself); keyboards and screen readers
+ *  keep the one link on the name. */
 function heroWindow(p: Project, picture = false): string {
+  const tag = picture ? "div" : "a";
+  const attrs = picture ? "" : ` href="${projectHref(p)}" tabindex="-1" aria-hidden="true"`;
   return (
-    `<div class="pban__hero"${picture ? "" : ' aria-hidden="true"'}><span class="pban__hplate" aria-hidden="true"></span>` +
-    `<div class="pban__win"><div class="pban__hfloat">${cardArt(p, "pban__cart", picture ? {} : { decor: true })}</div></div></div>`
+    `<${tag} class="pban__hero"${attrs}><span class="pban__hplate" aria-hidden="true"></span>` +
+    `<div class="pban__win"><div class="pban__hfloat">${cardArt(p, "pban__cart", picture ? {} : { decor: true })}</div></div></${tag}>`
   );
 }
 

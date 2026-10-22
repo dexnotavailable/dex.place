@@ -110,11 +110,16 @@
   pointer-events: none;
 }
 /* ...and along the docs band's paper foot, his a16 grass lines (first png.kra) at 30% ink: on the paper itself, so they
-   ride in with it (a paper wash over the strip keeps them faint) */
+   ride in with it (a paper wash over the strip keeps them faint). (integration critic 10-22: at 72 px they rose behind
+   "Older posts" like pencil scratches) a low hem inside the paper's bottom padding (48-56 px), clear of the content */
+.band--docs { --grass-h: 36px; }
+@media (max-width: 699px) {
+  .band--docs { --grass-h: 28px; }
+}
 .band--docs .band__paper {
   background:
-    linear-gradient(color-mix(in srgb, var(--paper) 70%, transparent), color-mix(in srgb, var(--paper) 70%, transparent)) 0 100% / 100% 72px no-repeat,
-    url("/site/docs/grass.webp") 0 100% / auto 72px repeat-x,
+    linear-gradient(color-mix(in srgb, var(--paper) 70%, transparent), color-mix(in srgb, var(--paper) 70%, transparent)) 0 100% / 100% var(--grass-h) no-repeat,
+    url("/site/docs/grass.webp") 0 100% / auto var(--grass-h) repeat-x,
     var(--paper);
 }
 .btools {
