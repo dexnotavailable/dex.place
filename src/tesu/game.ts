@@ -310,7 +310,7 @@ export class TesuGame {
     this.feel.onSound = (id, v) => this.sound.heard(id, v);
     this.player.onCue = (c) => this.sound.herCue(c);
     // R plays the FX loop's effects when they are in (zhusha/ult.ts; its stand-ins draw until then)
-    this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o), extent: (p) => this.fx.extent(p, ART_PX) };
+    this.player.r.fx = { has: (id) => this.fx.clock.has(id), play: (id, o) => this.fx.play(id, o), extent: (p, ahead) => this.fx.extent(p, ART_PX, ahead) };
     // (lane E 10-20) her moves play FX v2's built effects through the same door
     this.player.fx = this.player.r.fx;
     this.props = new Props({
@@ -664,7 +664,7 @@ export class TesuGame {
     if (shot) this.camera.set(shot, b.x, b.y);
     else if (cine) {
       // R's shots (zhusha/ult.ts): placed exactly each tick (its own cuts and moves), shake and punch still run
-      const cf = { ...f, zoom: cine.zoom, anchor: cine.anchor, lead: 0, fixX: cine.x, fixY: cine.y, pin: null };
+      const cf = { ...f, zoom: cine.zoom, anchor: cine.anchor, lead: 0, fixX: cine.x, fixY: cine.y, pin: null, exact: true };
       this.camera.snap(cine.x, cine.y, cf, this.player.facing);
       this.camera.update(cine.x, cine.y, this.player.facing, 0, cf);
       // reduced motion: its cuts cross-fade like the camera's own
@@ -1535,7 +1535,7 @@ export class TesuGame {
     const b = this.player.body, s = planeXf(c, 1).s;
     this.r.setTransform(s, focus, mirror);
     // (zhusha lead 10-20) ground effects dip into the ground with her and stop at its front edge (feel.json draw.groundFx)
-    const ground = { dip: this.zdraw.dip, ids: FEEL.draw.groundFx, follow: FEEL.draw.groundFollow, drape: FEEL.draw.groundDrape, at: (x: number, y: number) => this.collision.groundBelow(x, y)?.y ?? null };
+    const ground = { dip: this.zdraw.dip, ids: FEEL.draw.groundFx, follow: FEEL.draw.groundFollow, drape: FEEL.draw.groundDrape, erode: FEEL.draw.groundErode, erodeSpan: FEEL.draw.groundErodeSpan * H, erodeH: FEEL.draw.groundErodeH * H, fine: FEEL.draw.groundDrapeFine, at: (x: number, y: number) => this.collision.groundBelow(x, y)?.y ?? null };
     this.fx.draw(this.r, { s, focus, mirror }, layer, ART_PX, { x: b.x, y: b.y, facing: this.player.facing }, mirror !== null, ground);
     this.r.flush();
   }

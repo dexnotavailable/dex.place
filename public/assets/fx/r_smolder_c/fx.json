@@ -1,10 +1,10 @@
 {
  "id": "r_smolder_c",
  "stage": "pixel",
- "px": 2,
+ "px": 1,
  "pivot": [
-  10,
-  304
+  19,
+  293
  ],
  "layer": "front",
  "attach": "world",
@@ -344,45 +344,9 @@
   },
   {
    "file": "f083.png",
-   "ticks": 3
-  },
-  {
-   "file": "f084.png",
-   "ticks": 3
-  },
-  {
-   "file": "f085.png",
-   "ticks": 3
-  },
-  {
-   "file": "f086.png",
-   "ticks": 3
-  },
-  {
-   "file": "f087.png",
-   "ticks": 3
-  },
-  {
-   "file": "f088.png",
-   "ticks": 3
-  },
-  {
-   "file": "f089.png",
-   "ticks": 3
-  },
-  {
-   "file": "f090.png",
-   "ticks": 3
-  },
-  {
-   "file": "f091.png",
-   "ticks": 3
-  },
-  {
-   "file": "f092.png",
-   "ticks": 3
+   "ticks": 6
   }
  ],
  "loop": false,
- "notes": "rfinish 10-22 (round 3): the wreck smouldering, one wisp (ult.json ground.smolder lays them on the rubble around the crater, two in turn a spot, never mirrored: one wind): thin smoke rising off the embers at its foot, slowing, swelling and thinning, a dithered fringe going lighter as it rises; a trickle, a standing column, then the foot goes out and the last of it rises off to nothing. px 2. tools: lanes/zhusha-1021b/rfinish/r3/tools/smolder.py"
+ "notes": "rfinish 10-22 (round 4): the wreck smouldering, one wisp at px 1 (ult.json ground.smolder lays them on the rubble heaps around the crater, on the ground under each, two in turn a spot, never mirrored: one wind): thin smoke rising off the embers at its foot, slowing, swelling and thinning, a dithered fringe going lighter as it rises; a trickle, a standing column, then the embers fade and the plume gets shorter, its top thinning down toward the foot, which keeps trickling to the end (never a column hanging over the floor). tools: lanes/zhusha-1021b/rfinish/r4/tools/smolder5.py"
 }

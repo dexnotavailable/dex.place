@@ -332,8 +332,9 @@ export function cutPlan(S: Slash[], C: CutKinds): CutSpawn[] {
 export interface UltFx {
   has(id: string): boolean;
   play(id: string, o: { x?: number; y?: number; facing?: number; attach?: "world" | "her"; delay?: number }): UltFxHandle;
-  /** The world box the live effects whose id starts with one of `prefixes` cover now (fx.ts Fx.extent); none: null. */
-  extent?(prefixes: readonly string[]): WorldRect | null;
+  /** The world box the live effects whose id starts with one of `prefixes` cover now (fx.ts Fx.extent; `ahead`: now and
+   * every drawing they have still to show); none: null. */
+  extent?(prefixes: readonly string[], ahead?: boolean): WorldRect | null;
 }
 
 /** A world box, px (y down). */
@@ -399,6 +400,18 @@ export function groundAround(x: number, y: number, P: Pick<GroundPlan, "step" | 
     }
   }
   return out;
+}
+
+/**
+ * (rfinish round 4, critic 10-22: a rubble heap or a wisp moved sideways off its ground spot kept the spot's y, so on
+ * the court-gate stair two heaps hung 20-35 px over the steps into play, never cut at the ground) Where a piece moved
+ * off `p` (a point on the ground) to world x sits: on the ground under x, a step up or down of at most the move plus a
+ * quarter H from p (a slope, a stair; not a ledge far below or a roof above); no ground like that there: back on p.
+ */
+export function onGround(x: number, p: { x: number; y: number }, groundBelow: ((x: number, y: number) => { y: number } | null) | undefined): { x: number; y: number } {
+  const up = Math.abs(x - p.x) + 0.25 * H;
+  const g = groundBelow?.(x, p.y - up);
+  return g && g.y - p.y <= up ? { x, y: g.y } : { x: p.x, y: p.y };
 }
 
 /** Whether `out` H lands on a piece's grid (from `from` every `every`). */
@@ -513,6 +526,8 @@ export class UltDirector {
   private impactT = 0;
   /** The zoom the finish's big effects allow (ult.json camera.fit; 0: none drawn): out at once, back in slowly. */
   private fitZ = 0;
+  /** Reduced motion: the held wide framing from the landing that holds all of the nuke and its pall still to come. */
+  private held: Shot | null = null;
   private cutNext = false;
   private lastShot: Shot | null = null;
   /** Where a phase's camera move starts: the last shot of the phase before (moves never jump). */
@@ -569,6 +584,7 @@ export class UltDirector {
     this.smolderFx = [];
     this.callFire = null;
     this.fitZ = 0;
+    this.held = null;
     this.cut = 0;
     this.stormT = -1;
     this.peel = 0;
@@ -923,23 +939,43 @@ export class UltDirector {
     const at = (id: string, x: number, y: number, facing: number, delay = 0): UltFxHandle => fx!.play(id, { x, y, facing, delay });
     if (this.real.cut) at(F.cut, b.x, b.y, 1);
     if (this.real.nuke) at(F.nuke, b.x, b.y, 1);
-    const spots = groundAround(b.x, b.y, G, world.groundBelow?.bind(world));
+    const below = world.groundBelow?.bind(world);
+    const spots = groundAround(b.x, b.y, G, below);
+    // the rubble where the slabs come down: the big heaps near the crater, smaller further out, a few chips far out, each
+    // off its spot by up to half a H and on the ground under it there (onGround: round 4, critic 10-22: on the stair a
+    // heap moved sideways kept its spot's y and hung over the steps); each side starts somewhere in its pools and steps
+    // on a heap at a time, turning it round each time (no two alike side by side)
+    const W = G.wreck;
+    const seq = { [-1]: Math.floor(rnd(b.x * 0.19 + 4) * 6), [1]: Math.floor(rnd(b.x * 0.23 + 5) * 6) } as Record<number, number>;
+    const heaps = new Map<GroundSpot, { id: string; x: number; y: number; facing: number }>();
+    for (const p of spots) {
+      if (!onGrid(p.out, W.from, W.every)) continue;
+      const pool = W.pools[Math.min(W.pools.length - 1, p.out <= W.near ? 0 : p.out <= W.mid ? 1 : 2)]!;
+      const n = seq[p.side]!++;
+      const id = F.wreck[Math.min(F.wreck.length - 1, pool[n % pool.length]!)]!;
+      heaps.set(p, { id, ...onGround(p.x + (rnd(p.x * 0.43 + 6) - 0.5) * H, p, below), facing: n % 2 ? -1 : 1 });
+    }
     // the rubble smoulders (round 3, Dex 10-19: linger on the destruction): wisps off the heaps near the crater from the
     // clear on, two in turn a spot, into the first seconds of play; behind the pall (they show as it thins) and behind
     // the rubble (they rise from it); never mirrored (one wind)
     if (this.real.smolder) {
-      const Sm = G.smolder, Wr = G.wreck, n = F.smolder.length;
+      const Sm = G.smolder, n = F.smolder.length;
       for (const p of spots) {
-        if (p.out > Sm.reach + 1e-6 || !onGrid(p.out, Wr.from, Wr.every)) continue;
+        const heap = heaps.get(p);
+        if (p.out > Sm.reach + 1e-6 || !heap) continue;
         // the nearest heap each side always smokes; the others only some (by where they lie: no even row of wisps)
-        if (Math.abs(p.out - Wr.from) > 1e-6 && rnd(p.x * 0.77 + 1) > Sm.share) continue;
+        if (Math.abs(p.out - W.from) > 1e-6 && rnd(p.x * 0.77 + 1) > Sm.share) continue;
         const pick = (u: number): string => F.smolder[Math.min(n - 1, 1 + Math.floor(u * (n - 1)))]!;
         const id = p.out <= Sm.near ? F.smolder[0]! : pick(rnd(p.x * 0.13 + 5));
         const d = Math.round(Sm.delay0 + Sm.perH * p.out + rnd(p.x * 0.29 + 3) * Sm.jitter);
-        // off the heap's middle (the big heap lies a little inward of its spot), never two at one point
-        const x = p.x - p.side * 0.25 * H + (rnd(p.x * 0.41) - 0.5) * 0.5 * H;
-        this.smolderFx.push(at(id, x, p.y, 1, d));
-        if (rnd(p.x * 0.31 + 2) < Sm.again) this.smolderFx.push(at(pick(rnd(p.x * 0.17 + 9)), x + (rnd(p.x * 0.23) - 0.3) * 0.6 * H, p.y, 1, d + Sm.gap + Math.round(rnd(p.x * 0.61) * Sm.jitter)));
+        // off the heap's middle, on the ground there (round 4: on the heap it rises from, never in the air beside it),
+        // never two at one point
+        const w1 = onGround(heap.x + (rnd(p.x * 0.41) - 0.5) * 0.5 * H, heap, below);
+        this.smolderFx.push(at(id, w1.x, w1.y, 1, d));
+        if (rnd(p.x * 0.31 + 2) < Sm.again) {
+          const w2 = onGround(w1.x + (rnd(p.x * 0.23) - 0.3) * 0.6 * H, heap, below);
+          this.smolderFx.push(at(pick(rnd(p.x * 0.17 + 9)), w2.x, w2.y, 1, d + Sm.gap + Math.round(rnd(p.x * 0.61) * Sm.jitter)));
+        }
       }
     }
     if (this.real.pall) this.smokeFx.push(at(F.pall, b.x, b.y, 1));
@@ -952,33 +988,19 @@ export class UltDirector {
         this.smokeFx.push(at(F.skirt[k++ % F.skirt.length]!, p.x, p.y, p.side, Math.round(S.delay0 + S.perH * p.out)));
       }
     }
-    // her flames lit across the wreck, burning out from the edges in
+    // her flames lit across the wreck, burning out from the edges in (each on the ground under it: round 4)
     if (this.real.flames) {
       const Fl = G.flames;
       for (const p of [{ x: b.x, y: b.y, side: 1 as const, out: 0 }, ...spots]) {
         if (p.out > Fl.reach + 1e-6 || !onGrid(p.out, 0, Fl.every)) continue;
         const id = p.out <= Fl.near ? F.flames[0]! : F.flames[F.flames.length - 1]!;
         const out = Fl.outAt + (Fl.inAt - Fl.outAt) * (1 - p.out / Math.max(1e-6, Fl.reach));
-        const h = at(id, p.x + (rnd(p.x * 0.37) - 0.5) * 0.4 * H, p.y, rnd(p.x * 0.53 + 7) < 0.5 ? -1 : 1, Math.round(Fl.delay0 + Fl.perH * p.out));
+        const q = onGround(p.x + (rnd(p.x * 0.37) - 0.5) * 0.4 * H, p, below);
+        const h = at(id, q.x, q.y, rnd(p.x * 0.53 + 7) < 0.5 ? -1 : 1, Math.round(Fl.delay0 + Fl.perH * p.out));
         this.flameFx.push({ h, at: Math.round(out) });
       }
     }
-    // the rubble where the slabs come down
-    if (this.real.wreck) {
-      const W = G.wreck;
-      // (each side starts somewhere in its pools and steps on a heap at a time, turning it round each time: no two
-      // alike side by side)
-      const seq = { [-1]: Math.floor(rnd(b.x * 0.19 + 4) * 6), [1]: Math.floor(rnd(b.x * 0.23 + 5) * 6) } as Record<number, number>;
-      for (const p of spots) {
-        if (!onGrid(p.out, W.from, W.every)) continue;
-        // the big heaps near the crater, smaller further out, a few chips far out, off its spot by up to half a H
-        const pool = W.pools[Math.min(W.pools.length - 1, p.out <= W.near ? 0 : p.out <= W.mid ? 1 : 2)]!;
-        const n = seq[p.side]!++;
-        const id = F.wreck[Math.min(F.wreck.length - 1, pool[n % pool.length]!)]!;
-        const x = p.x + (rnd(p.x * 0.43 + 6) - 0.5) * H;
-        this.wreckFx.push(at(id, x, p.y, n % 2 ? -1 : 1, Math.round(W.delay0 + W.perH * p.out)));
-      }
-    }
+    if (this.real.wreck) for (const [p, w] of heaps) this.wreckFx.push(at(w.id, w.x, w.y, w.facing, Math.round(W.delay0 + W.perH * p.out)));
     // side-on (Dex 10-19: no rings on the ground): rock thrown up, dust: the stand-in's (the real nuke throws its own)
     if (!this.real.nuke) {
       s.vfx.spawn("debris.stone", { x: b.x, y: b.y - 0.2 * H, facing: 1, scale: 2.4 });
@@ -1053,11 +1075,13 @@ export class UltDirector {
     const mid = st.top + st.size / 2;
     let shot: Shot;
     if (c.host.feel.reducedMotion) {
-      // no swings: the call in the close band, the rest held at play zoom (the game cross-fades the cuts)
+      // no swings: the call in the close band, the rest held at play zoom (the game cross-fades the cuts); from the
+      // landing held wide enough for the nuke and its pall (heldFit)
       const p = this.phase;
       if (p === "call") shot = { x: st.x0 + f * C.call.ahead * H, y: st.y0, zoom: 2, anchor: C.call.anchor, cut };
       else if (p === "flurry" || p === "hold") shot = { x: st.gx, y: mid, zoom: 1, anchor: 0.5, cut };
       else shot = { x: st.gx, y: st.floor, zoom: 1, anchor: C.impact.anchor, cut };
+      if (p === "impact" || p === "aftermath" || p === "reveal") shot = this.heldFit(shot, c);
       return this.keep(shot);
     }
     switch (this.phase) {
@@ -1165,6 +1189,30 @@ export class UltDirector {
     this.fitZ = this.fitZ > 0 && z > this.fitZ ? Math.min(z, this.fitZ * Math.exp(F.ease)) : z;
     const zoom = Math.min(s.zoom, this.fitZ);
     return { ...s, zoom, x: fitX(box, s.x, zoom, cam.W, pad) };
+  }
+
+  /**
+   * (round 4, critic 10-22: in reduced motion the nuke and its pall went ~830 px over the frame's top and ~250 px past
+   * its sides for the whole aftermath, the fit's pull-out snapped back to play zoom) Reduced motion's fit: no zoom
+   * moves, held framings and cuts. From the landing the frame cuts out to one that holds every drawing the nuke and
+   * its pall have still to show (fx extent ahead: the most they will ever cover), holds it while they play and clear,
+   * and cuts back to the shot `s` once all that is left fits it. At most two cuts (the game cross-fades them).
+   */
+  private heldFit(s: Shot, c: UltCtx): Shot {
+    const F = ULT.camera.fit, cam = c.host.camera;
+    const box = this.fx?.extent?.(F.ids, true) ?? null;
+    const pad = F.pad * H;
+    const z = box && cam.W && cam.H ? Math.min(s.zoom, fitZoom(box, s.y, s.anchor, cam.W, cam.H, ULT.camera.bars, pad)) : s.zoom;
+    const h = this.held;
+    // all that is left fits the shot itself: back to it (a cut when coming in from the held frame), kept whole in it
+    if (z >= s.zoom - 1e-6) {
+      this.held = null;
+      return { ...s, x: box && cam.W ? fitX(box, s.x, s.zoom, cam.W, pad) : s.x, cut: s.cut || !!h };
+    }
+    // the held frame still holds it: stay (what is left only shrinks)
+    if (h && z >= h.zoom - 1e-6) return { ...h, cut: false };
+    this.held = { ...s, zoom: z, x: fitX(box!, s.x, z, cam.W!, pad), cut: false };
+    return { ...this.held, cut: true };
   }
 
   /**

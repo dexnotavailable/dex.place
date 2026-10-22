@@ -50,7 +50,7 @@ export interface FeelFile {
   e: { hold: number; flash: number; skidEvery: number; boltFrom: number; boltSpeed: number };
   hurt: { stun: number; kb: [number, number]; iframes: number; heavyFrom: number; freeze: number; heavyFreeze: number; friction: number };
   /** Her drawing's visual dip into the ground (art px) and the ground width looked at under her (drawn heights). */
-  draw: { dip: number; foot: number; groundFx: string[]; groundFollow: string[]; groundDrape: string[] };
+  draw: { dip: number; foot: number; groundFx: string[]; groundFollow: string[]; groundDrape: string[]; groundErode: string[]; groundErodeSpan: number; groundErodeH: number; groundDrapeFine: string[] };
   knockdown: { ticks: number; kb: [number, number]; getUpFrom: number; iframes: number; bounce: number; friction: number };
   defeat: { ticks: number; fadeFrom: number };
   respawn: { ticks: number };

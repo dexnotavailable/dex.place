@@ -621,6 +621,99 @@ test("ult (rfinish 10-21): the finish's ground pieces follow the ground and stop
   assert.ok(right.every((s) => s.y === 0));
 });
 
+test("ult (rfinish round 4, critic 10-22): on a stair every piece moved off its spot sits on the ground under it (no rubble or wisp hanging over the steps)", async () => {
+  const { onGround } = await import("./zhusha/ult.ts");
+  // a stair rising to the right (0.75 H a H, steps 0.25 H), a floor under her, a roof 1.5 H over the floor left of -4 H,
+  // a drop right of 9 H
+  const stair = (x) => (x > 9 * H ? 12 * H : x <= 0 ? 0 : -0.25 * H * Math.floor((x / H) * 3));
+  const roof = (x) => (x < -4 * H ? -1.5 * H : null);
+  const below = (x, y) => {
+    const c = [stair(x), roof(x)].filter((g) => g !== null && g >= y - 1e-6);
+    return c.length ? { y: Math.min(...c) } : null;
+  };
+  // onGround: up or down a step, back on the spot over a drop, never up onto the roof
+  assert.deepEqual(onGround(2.5 * H, { x: 2 * H, y: stair(2 * H) }, below), { x: 2.5 * H, y: stair(2.5 * H) });
+  assert.deepEqual(onGround(9.4 * H, { x: 8.9 * H, y: stair(8.9 * H) }, below), { x: 8.9 * H, y: stair(8.9 * H) }, "over the drop: back on its spot");
+  assert.deepEqual(onGround(-4.5 * H, { x: -4 * H, y: 0 }, below), { x: -4.5 * H, y: 0 }, "the floor, not the roof over it");
+  // in the game: R landing at the stair's foot; every ground piece on the ground under its own x
+  const Zhusha = await loadZ();
+  const z = new Zhusha(host(), [0, 0]);
+  const played = [];
+  z.r.fx = { has: () => true, play: (id, o) => { played.push({ id, ...o }); return { stop() {}, speed() {}, fadeOut() {} }; } };
+  const world = {
+    move(b, dx, dy) {
+      b.x += dx;
+      b.y += dy;
+      let landed = false;
+      const g = below(b.x, b.y - 0.3 * H)?.y ?? Infinity;
+      if (b.y >= g) { landed = !b.grounded; b.y = g; b.vy = 0; b.grounded = true; } else b.grounded = false;
+      return { landed };
+    },
+    groundBelow: below,
+  };
+  const inp = new FakeInput();
+  step(z, inp, world, 5);
+  inp.press("ult");
+  for (let i = 0; i < 900 && (i < 3 || z.state === "ult"); i++) step(z, inp, world);
+  const F = ULT.fx, G = ULT.ground;
+  const ground = played.filter((p) => [...F.skirt, ...F.wreck, ...F.flames, ...F.smolder].includes(p.id));
+  const wreck = played.filter((p) => F.wreck.includes(p.id)), smo = played.filter((p) => F.smolder.includes(p.id));
+  assert.ok(wreck.length >= 6 && smo.length >= 2, `heaps and wisps laid (${wreck.length}, ${smo.length})`);
+  const gap = (p) => p.y - (below(p.x, p.y - 1)?.y ?? Infinity);
+  const off = ground.filter((p) => Math.abs(gap(p)) > 1e-6);
+  assert.deepEqual(off.map((p) => `${p.id} ${(p.x / H).toFixed(2)} H: ${gap(p).toFixed(1)} px`), [], "each on the ground under it");
+  assert.ok(wreck.some((p) => p.y < -0.5 * H), "up the stair too");
+  assert.ok(wreck.every((p) => p.x <= 9 * H), "none over the drop");
+  // the wisps rise off a heap (within its middle), not off the bare floor beside it
+  for (const p of smo) assert.ok(wreck.some((w) => Math.abs(w.x - p.x) <= 0.6 * H), `${p.id} at ${(p.x / H).toFixed(2)} H on a heap`);
+  assert.ok(G.smolder.reach > 0);
+});
+
+test("ult (rfinish round 4, critic 10-22): reduced motion holds the nuke and its pall whole too: one held wide frame from the landing, a cut back once it fits", async () => {
+  const W = 1920, Hc = 1080, bars = ULT.camera.bars;
+  const Zhusha = await loadZ();
+  const h = host([], true);
+  h.camera.W = W;
+  h.camera.H = Hc;
+  const z = new Zhusha(h, [0, 0]);
+  // what is left of the pall: its whole footprint ahead until aftermath t180, then a small one, then none
+  const left = () => {
+    const ph = z.r.phase, gx = z.r.stage?.gx ?? 0;
+    if (ph === "impact" || (ph === "aftermath" && z.r.t < 180)) return { x0: gx - 14 * 96, y0: -16 * 96, x1: gx + 14 * 96, y1: 0 };
+    return ph === "aftermath" ? { x0: gx - 3 * 96, y0: -4 * 96, x1: gx + 3 * 96, y1: 0 } : null;
+  };
+  z.r.fx = { has: () => true, play: () => ({ stop() {}, speed() {}, fadeOut() {} }), extent: () => left() };
+  const inp = new FakeInput(), w = flat();
+  step(z, inp, w, 5);
+  inp.press("ult");
+  const shots = [];
+  for (let i = 0; i < 900 && (i < 3 || z.state === "ult"); i++) {
+    step(z, inp, w);
+    if (z.r.shot && ["impact", "aftermath", "reveal"].includes(z.r.phase)) shots.push({ ph: z.r.phase, t: z.r.t, s: z.r.shot, box: left() });
+  }
+  const zooms = [...new Set(shots.map((q) => q.s.zoom.toFixed(4)))];
+  assert.equal(zooms.length, 2, `two held framings only (${zooms})`);
+  assert.equal(shots.filter((q) => q.s.cut).length, 2, "a cut out on the landing, a cut back in");
+  assert.ok(shots[0].s.cut && shots[0].s.zoom < 0.5, "out at once on the landing");
+  for (const q of shots.filter((x) => x.box)) {
+    const s = q.s, top = s.y - (s.anchor - bars) * Hc / s.zoom;
+    assert.ok(top <= q.box.y0 + 1 && s.x - W / 2 / s.zoom <= q.box.x0 + 1 && s.x + W / 2 / s.zoom >= q.box.x1 - 1, `whole in the frame (${q.ph} t${q.t})`);
+  }
+  assert.equal(shots[shots.length - 1].s.zoom, 1, "back to play zoom");
+  // the camera takes a cinematic's zoom as given in reduced motion (no snapping to the play levels, no cut every tick)
+  const { Camera } = await import("./camera.ts");
+  const cam = new Camera();
+  cam.W = W;
+  cam.H = Hc;
+  cam.reducedMotion = true;
+  const f = { zoom: 0.41, anchor: 0.7, horizon: 0.5, lead: 0, fixX: 0, fixY: 0, pin: null, bounds: null, exact: true };
+  cam.snap(0, 0, f, 1);
+  const cuts = cam.cuts;
+  for (let i = 0; i < 5; i++) cam.update(0, 0, 1, 0, f);
+  assert.equal(cam.zoom, 0.41);
+  assert.equal(cam.cuts, cuts);
+});
+
 test("ult (rfinish 10-21): control back in the smoke clears it on (it never hides her once she moves)", async () => {
   const Zhusha = await loadZ();
   const z = new Zhusha(host(), [0, 0]);

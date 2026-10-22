@@ -329,3 +329,68 @@ export function fxGroundStrips(
   }
   return out;
 }
+
+/**
+ * (rfinish round 4) A draped piece's strips (fxGroundStrips) that its drawing lifts the same whole drawing px (the
+ * ground under them over `clipY`, `A` world px a drawing px) are drawn as one: the same picture with fewer quads.
+ * Strips over no ground stay apart.
+ */
+export function fxMergeLifts(runs: readonly [number, number, number | null][], clipY: number, A: number): [number, number, number | null][] {
+  const out: [number, number, number | null][] = [];
+  const lift = (g: number | null): number | null => (g === null ? null : Math.round((g - clipY) / A));
+  for (const r of runs) {
+    const last = out[out.length - 1];
+    if (last && last[2] !== null && r[2] !== null && lift(last[2]) === lift(r[2])) last[1] = r[1];
+    else out.push([r[0], r[1], r[2]]);
+  }
+  return out;
+}
+
+/**
+ * (rfinish round 4, critic 10-22: the nuke's dust skirt ended in a hard vertical edge at the court's ledge and at the
+ * building's front, where its strips over no ground were dropped) Where the ground stops under a draped piece
+ * (fxGroundStrips' runs; `col`: the ground under drawing column c, null where none), the drawing columns it stops at:
+ * [at, side], the ground on the columns below `at` (side 1) or from `at` on (side -1).
+ */
+export function fxGroundEnds(runs: readonly [number, number, number | null][], col: (c: number) => number | null, strip = 8): [number, number][] {
+  const out: [number, number][] = [];
+  for (let k = 0; k + 1 < runs.length; k++) {
+    const a = runs[k]!, b = runs[k + 1]!;
+    if ((a[2] === null) === (b[2] === null)) continue;
+    // the runs were read at their strips' middles: find the column itself, a strip either side of the seam
+    const lo = Math.max(a[0], a[1] - strip), hi = Math.min(b[1], b[0] + strip);
+    if (b[2] === null) {
+      let c = lo;
+      while (c < hi && col(c + 0.5) !== null) c++;
+      out.push([c, 1]);
+    } else {
+      let c = hi;
+      while (c > lo && col(c - 0.5) !== null) c--;
+      out.push([c, -1]);
+    }
+  }
+  return out;
+}
+
+/**
+ * How high the ground's piece may stand at x near the ends where the ground stops (`ends`: [at, side] in the same
+ * units as x, the ground below `at` for side 1, from `at` on for side -1), a share of its full height: a tapered end
+ * `span` long (a sine shoulder: whole away from the end, sloping down to nothing at it, never a vertical edge; a slow
+ * unevenness so it reads as the dust thinning out, not a ruled curve); 1 away from the ends; 0 just past one (within
+ * `past`: further out the strips over no ground are not drawn at all). In world px, so pieces lying over each other
+ * are cut to one line (their own columns cut apart showed thin slivers of the one behind, kept as streaks zoomed out).
+ */
+export function fxErodeKeep(x: number, ends: readonly [number, number][], span: number, past: number): number {
+  let keep = 1;
+  for (const [at, side] of ends) {
+    const d = side > 0 ? at - x : x - at;
+    if (d <= 0) {
+      if (d > -past) return 0;
+      continue;
+    }
+    if (d >= span) continue;
+    const u = d / span, lump = u > 0.85 ? 1 : 1 - 0.08 * (0.5 + 0.5 * Math.sin((x / span) * 9.7 + at * 0.013));
+    keep = Math.min(keep, Math.sin((u * Math.PI) / 2) * lump);
+  }
+  return keep;
+}
