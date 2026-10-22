@@ -19,6 +19,10 @@
 .pban__in[data-tone="yellow"] { --tone: var(--gold); --tone-d: var(--yellow-d); }
 .pban__in[data-tone="magenta"] { --tone: var(--magenta); --tone-d: var(--scarlet); }
 .pban__in[data-tone="mint"] { --tone: var(--mint); --tone-d: var(--mint-d); }
+/* the banner rides its own layer, as a card's .pcard__tilt does: the scroll-speed skew on .pban__in (GSAP, every
+   frame while scrolling) then moves that layer instead of repainting the plate, art and numeral (integration 10-22:
+   without it 1366 scrolled at 8.2 ms a frame against live's 7.3; with it 7.1, p95 11.2, nothing over 50 ms) */
+.pban__tilt { will-change: transform; }
 .pban__lift {
   /* the banner's height: 30% of its width, 240 to 340 px (the words may make it taller) */
   --ban-h: clamp(240px, 30cqw, 340px);
