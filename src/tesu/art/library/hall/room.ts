@@ -8,9 +8,13 @@
 
 import { definePainter, type PaintCtx } from "../../painter.ts";
 import { P } from "../../palette.ts";
-import { HALL_LIGHT } from "./lights.ts";
+import { HALL, HALL_LIGHT, SHAFT } from "./lights.ts";
+import { shaftCore } from "./hall-light.ts";
+import { iceBar, iceRay } from "./bay.ts";
+import { bayer4 } from "../../raster.ts";
 import { M, SCREEN, LitField, clamp, colBase, colLight, cyl, face, fbm, grain, hash, keep, lathe, lum, mt, poly, rect, tn, vnoise, type At } from "./kit.ts";
 import { cloudScroll, plumCrest } from "./signs.ts";
+import { ruyi } from "./roof.ts";
 
 const H = 96;
 
@@ -49,15 +53,45 @@ export const hallFloor = definePainter<FloorP>("hall.floor", {
       if (ly < FACE) {
         // the walkway's face: panels with a gold-line inset, in the shadow of the lip; (hall loop
         // round 1) the inlay worn away in places and broken where feet and furniture stand on it
-        const pw = 2 * H;
-        const u = ((lx % pw) + pw) % pw;
+        // (round 3, W2-6: one gold dash-and-bracket repeated across the whole width) panels of three lengths in an
+        // uneven run, each its own: a gold-line inset, a carved cloud boss between two plain fields, a brass plate
+        // with its rivets, a plain lacquer field with only a gold bead
+        const pi = panelAt(lx);
+        const u = lx - pi.x0, pw = pi.w;
         const inPanel = u > 8 && u < pw - 8 && ly > NOSE + 6 && ly < FACE - 6;
-        const worn = fbm(lx * 0.035, 3.7, 41, 2) > 0.6 || hash(Math.floor(lx / 7), 2, 43) > 0.93;
-        const line = inPanel && !worn && (Math.abs(u - 12) < 1 || Math.abs(u - (pw - 12)) < 1 || Math.abs(ly - NOSE - 10) < 0.7 || Math.abs(ly - FACE + 10) < 0.7);
+        // (round 4, W2-c: the inlay's wear was a 7 px hash that cut every gold line into even dashes) the inlay is lost
+        // in broad runs where feet and furniture have worn it, chipped at a few points; each board a tone of its own,
+        // a dark seam where two boards butt (one of them standing a hair proud: a lit arris on its end)
+        const worn = fbm(lx * 0.018, 3.7, 41, 2) > 0.6;
+        const chip = hash(Math.floor(lx / 3), Math.floor(ly / 3), 43) > 0.985;
+        const tone = (hash(Math.floor(pi.x0), 9, 47) - 0.5) * 0.1;
+        const scuff = ly > FACE - 6 && fbm(lx * 0.08, ly * 0.3, 45, 2) > 0.62 ? 0.08 : 0;
         const shadow = ly < NOSE + 5 ? 0.25 : 0;
-        if (line) return mt(M.gold, lum(l) * 0.5 - shadow, X, Y, 0.3, 1);
-        if (!inPanel) return mt(M.wood, lum(l) * 0.45 - shadow, X, Y, 0.35, 1);
-        return mt(M.lacq, lum(l) * 0.55 - shadow + grain(lx, ly, 3, false) * 0.08, X, Y, 0.1, 1);
+        if (!inPanel) {
+          const seam = u < 1.2 ? -0.18 : u < 2.2 && hash(Math.floor(pi.x0), 3, 47) < 0.5 ? 0.1 : pw - u < 1.6 ? -0.08 : 0;
+          return mt(M.wood, lum(l) * 0.45 - shadow + seam + tone + scuff, X, Y, 0.35, 1);
+        }
+        const pv = (ly - NOSE - 6) / (FACE - NOSE - 12), mu = u - pw / 2;
+        if (pi.style === 0) {
+          const line = !worn && !chip && (Math.abs(u - 12) < 1 || Math.abs(u - (pw - 12)) < 1 || Math.abs(ly - NOSE - 10) < 0.7 || Math.abs(ly - FACE + 10) < 0.7);
+          if (line) return mt(M.gold, lum(l) * 0.5 - shadow, X, Y, 0.3, 1);
+        } else if (pi.style === 1) {
+          // a carved plate: a run of ruyi clouds cut in relief in the lacquer, only their outlines once gilt (the gilt
+          // mostly worn off)
+          const rv = ruyi(u + pi.x0 * 0.37, (pv - 0.5) * (FACE - NOSE - 12), (FACE - NOSE - 12) * 0.5, 4711 + Math.floor(pi.x0));
+          if (rv === 2) return !worn && !chip ? mt(M.gold, lum(l, 0, -0.4) * 0.48 - shadow, X, Y, 0.3, 1) : mt(M.lacq, lum(l) * 0.85 - shadow, X, Y, 0.1, 1);
+          if (rv === 1) return mt(M.lacq, lum(l, 0, pv < 0.5 ? -0.5 : 0.3) * 0.78 - shadow + tone, X, Y, 0.1, 1);
+          return mt(M.lacq, lum(l) * 0.4 - shadow + tone, X, Y, 0.15, 1);
+        } else if (pi.style === 2) {
+          const e = Math.min(0.34 * pw - Math.abs(mu), (0.36 - Math.abs(pv - 0.5)) * 24);
+          if (e > 0) {
+            const rivet = e > 1.5 && e < 3.5 && (Math.abs(Math.abs(mu) - (0.34 * pw - 2.5)) < 1 ) && Math.abs(Math.abs(pv - 0.5) - 0.2) < 0.06;
+            if (rivet) return mt(M.gold, lum(l) * 0.95, X, Y, 0.0, 1);
+            const verd = fbm(lx * 0.09, ly * 0.2, 49, 2) > 0.66 ? -0.12 : 0;
+            return mt(M.bronze, lum(l, 0, e < 1.2 ? -0.6 : 0) * 0.5 - shadow + verd + grain(lx, ly, 7, false) * 0.06, X, Y, 0.2, 1);
+          }
+        } else if (Math.abs(pv - 0.5) < 0.05 && !worn && !chip) return mt(M.gold, lum(l) * 0.38 - shadow, X, Y, 0.35, 1);
+        return mt(M.lacq, lum(l) * 0.55 - shadow + tone + scuff + grain(lx, ly, 3, false) * 0.08, X, Y, 0.1, 1);
       }
       // the stone floor nearer us: big flags in courses, their joints opening out toward the
       // camera, the whole floor darkening toward us (the lights are behind)
@@ -68,40 +102,89 @@ export const hallFloor = definePainter<FloorP>("hall.floor", {
       const off = (row % 2) * fw * 0.5 + hash(row, 1, 17) * fw * 0.3;
       const joint = depth - rowTop < 0.025 + row * 0.006 || (((lx + off) % fw) + fw) % fw < 1.2 + row * 0.4;
       const lf2 = lf.get(lx, -20);
-      // (hall loop round 2, W2-5: the round-1 dashes read as ripples on water) the lacquered stone doubles
-      // every light above as a soft vertical smear straight down that fades fast, a little streaked down
-      // its length (the polish), cut by the joints between the flags: warm under the lanterns and lamps;
-      // under the gate, the court's warm paving first and its pale sky below it
+      // (round 4, W2-c: the gate's smear read as a lit glass cup, brighter than the desk, and the lamps' as a row of
+      // evenly spaced orange pegs) the lacquered stone doubles what is over it as ref 06's water does: dim vertical
+      // streaks that break up and fade. The gate's day is a broken, mostly cool smear two or three steps under the
+      // gate, narrowing and gone within ~0.6 H; half the lamps leave a streak (the nearer of two close together, then
+      // every other one), each its own length, a few px wide, tapering and broken by the polish
       let best = 0, day = false;
-      for (const rx of p.refl ?? []) {
-        const isDay = rx[2] >= 0.5;
-        const w = rx[1] * (isDay ? 0.4 : 0.26) * (1 + depth * 0.15);
-        const d = Math.abs(lx - rx[0]) / w;
+      for (const r of reflOf(p.refl ?? [])) {
+        if (depth > r.len) continue;
+        const t = depth / r.len; // 0 at the walkway .. 1 where it is gone
+        const cx = r.x + (vnoise(depth * 9, r.seed, 61) - 0.5) * (r.day ? 3 : 1.4);
+        // (the day's smear narrows to nothing, its edges ragged row by row; a lamp's streak tapers to a hair)
+        const w = r.day ? r.w * (1 - t) * (0.75 + 0.5 * vnoise(depth * 40, r.seed, 63)) : r.w * (1 - t * 0.6);
+        const d = Math.abs(lx - cx) / Math.max(0.8, w);
         if (d >= 1) continue;
-        // (second pass: a 2-D noise thresholded into bands drew jagged peaks, a mirrored landscape) the polish's
-        // streaks run straight down: the noise changes across the smear, hardly at all down it; the smear thins and
-        // fades fast, its foot breaking up into the streaks instead of ending on a line
-        const fade = Math.max(0, 1 - depth / (isDay ? 1.25 : 0.9));
-        const streak = 0.72 + 0.4 * vnoise(lx * 0.23, 3.1 + depth * 0.06, 5) + 0.12 * vnoise(lx * 0.9, depth * 0.03, 6);
-        const v = (1 - d * d) * rx[2] * fade * fade * streak - (1 - fade) * 0.12 * vnoise(lx * 0.5, 1, 7);
-        if (v > best) { best = v; day = isDay; }
+        // broken by the polish: gaps across it, more of them further down
+        const brk = vnoise(depth * (r.day ? 16 : 22), r.seed, 67);
+        if (brk < (r.day ? 0.2 + 0.4 * t : 0.1 + 0.3 * t)) continue;
+        const v = (1 - d * d) * r.k * (1 - t) * (1 - t * 0.4);
+        if (v > best) { best = v; day = r.day; }
       }
       if (best > 0.08 && !joint) {
-        const ramp = day ? (depth < 0.24 + (hash(X, Y, 11) - 0.5) * 0.14 ? REFL_DAY : REFL_SKY) : REFL_WARM;
-        const i = best > 0.5 ? 0 : best > 0.3 ? 1 : best > 0.17 ? 2 : 3;
+        // the day's smear: the court's paving at its very top, then its sky, dim and cool; the lamps' warm streaks
+        const ramp = day ? (depth < 0.06 ? REFL_DAY : REFL_SKY) : REFL_WARM;
+        const i = best > 0.62 ? 0 : best > 0.4 ? 1 : best > 0.22 ? 2 : 3;
         return ramp[i]!;
       }
       const gleam = vnoise(lx * 0.02, depth * 3, 9) * 0.08;
-      const lit = lum(lf2) * (0.3 - depth * 0.07) + gleam - (joint ? 0.14 : 0) - (ly < FACE + 4 ? 0.2 : 0) - depth * 0.05;
-      return mt(M.stone, lit, X, Y, 0.62, 1, 0.5);
+      // (round 3, W2-6) the near floor takes the room's light only dimly (the lights stand behind the walkway): no
+      // pale halo round the gate's or the lamps' feet; their light lies on it as the reflections above
+      // (round 4: the lamps' light on it in a narrow dither band, not a wide one: the wide band laid halftone patches)
+      const lit = lum({ ...lf2, k: Math.min(lf2.k, 0.36) }) * (0.3 - depth * 0.07) + gleam - (joint ? 0.14 : 0) - (ly < FACE + 4 ? 0.2 : 0) - depth * 0.05;
+      return mt(M.stone, lit, X, Y, 0.62, 1, 0.15);
     });
   },
 });
 
-/** The polish's reflections: of the lanterns and lamps (warm), of the daylight (pale). */
+/** The walkway face's panels (round 3): lengths of 1.3, 2 and 2.6 H in an uneven run, each with its own style. */
+function panelAt(lx: number): { x0: number; w: number; style: number } {
+  const L = [1.3 * H, 2 * H, 2.6 * H, 2 * H, 1.3 * H, 2.6 * H, 2 * H];
+  const run = L.reduce((a, b) => a + b, 0);
+  const k = Math.floor(lx / run), r = lx - k * run;
+  let x = 0;
+  for (let i = 0; i < L.length; i++) {
+    // (round 4: a carved plate in about one panel in four, a brass plate in one in five, the rest inlaid or plain)
+    if (r < x + L[i]!) { const q = hash(k * 7 + i, 5, 47); return { x0: k * run + x, w: L[i]!, style: q < 0.26 ? 1 : q < 0.46 ? 2 : q < 0.75 ? 0 : 3 }; }
+    x += L[i]!;
+  }
+  return { x0: k * run, w: L[0]!, style: 0 };
+}
+
+/** The polish's reflections: of the lanterns and lamps (warm), of the daylight (round 4: two or three steps under the
+ *  gate, mostly cool: the court's paving only at the very top). */
 const REFL_WARM = [P.ember[3]!, P.ember[4]!, P.umber[0]!, P.umber[1]!] as const;
-const REFL_DAY = [P.paper[2]!, P.stone[3]!, P.stone[4]!, P.stone[5]!] as const;
-const REFL_SKY = [P.cloud[3]!, P.range[3]!, P.range[5]!, P.tile[3]!] as const;
+const REFL_DAY = [P.stone[4]!, P.stone[5]!, P.umber[1]!, P.umber[2]!] as const;
+const REFL_SKY = [P.range[6]!, P.tile[2]!, P.tile[3]!, P.dusk[1]!] as const;
+
+interface Refl { x: number; w: number; k: number; len: number; day: boolean; seed: number }
+const REFLS = new WeakMap<readonly [number, number, number][], Refl[]>();
+/** The reflections to draw (round 4, W2-c): the gate's day (strength >= 0.5) as one broken smear; the lamps thinned to
+ *  half (of two within 0.7 H the stronger, then every other one along the floor), each a narrow streak of its own
+ *  length (0.3 to 0.85 H down the polish). */
+function reflOf(list: readonly [number, number, number][]): Refl[] {
+  const hit = REFLS.get(list);
+  if (hit) return hit;
+  const out: Refl[] = [];
+  const lamps = list.filter((r) => r[2] < 0.5).slice().sort((a, b) => a[0] - b[0]);
+  const merged: [number, number, number][] = [];
+  for (const r of lamps) {
+    const q = merged[merged.length - 1];
+    if (q && r[0] - q[0] < 0.7 * H) { if (r[2] > q[2]) merged[merged.length - 1] = r; }
+    else merged.push(r);
+  }
+  merged.forEach((r, i) => {
+    if (i % 2 === 1) return;
+    const sd = Math.round(r[0]);
+    out.push({ x: r[0], w: Math.max(1.6, Math.min(3.2, r[1] * 0.05)), k: Math.min(0.75, 0.32 + r[2] * 2.2), len: 0.3 + 0.55 * hash(sd, 1, 71), day: false, seed: sd % 997 });
+  });
+  for (const r of list.filter((q) => q[2] >= 0.5)) {
+    out.push({ x: r[0], w: r[1] * 0.11, k: 0.62, len: 0.64, day: true, seed: Math.round(r[0]) % 997 });
+  }
+  REFLS.set(list, out);
+  return out;
+}
 
 // ---------------------------------------------------------------------------
 // The end walls: a door wall right behind the walk line, built into the room's thick end
@@ -124,6 +207,15 @@ export interface EndWallP {
   at?: At;
 }
 
+/** The transom's paper in the day outside, a step under the window over it (round 3: no orange). */
+const TRANSOM = [P.paper[2]!, P.paper[3]!, P.paper[4]!, P.stone[4]!, P.stone[5]!, P.umber[2]!];
+
+/** Lime plaster on the end wall in the room's light (round 3). */
+const PLASTER_W = [P.stone[3]!, P.stone[4]!, P.stone[5]!, P.umber[1]!, P.umber[2]!, P.umber[3]!, P.umber[4]!];
+
+/** The end's outer wall's windows: [panel beyond the end, first beam bay, last beam bay] (round 3). */
+const WINDOWS: [number, number, number][] = [[0, 1, 1], [1, 3, 3], [2, 1, 1]];
+
 export const endWall = definePainter<EndWallP>("hall.endwall", {
   bounds(p) {
     const a = p.side < 0 ? -p.out : -p.wall - 40;
@@ -144,35 +236,56 @@ export const endWall = definePainter<EndWallP>("hall.endwall", {
       const up = -ly / H;
       if (ly > 0) return tn(M.dark, 0.88, X, Y, 0.4);
       const fade = clamp(1 - (d - 3.6 * H) / (3 * H), 0.25, 1);
-      // the windows: lattice over paper, a cool day behind it, brighter low in each pane
-      for (const [w0, w1, h0, h1] of [[0.95, 2.45, 1.9, 5.9], [1.1, 2.3, 8.6, 11.6]] as const) {
-        if (d > w0 * H && d < w1 * H && up > h0 && up < h1) {
-          const u = (d - w0 * H) / ((w1 - w0) * H), v = (up - h0) / (h1 - h0);
-          const frame = u < 0.07 || u > 0.93 || v < 0.05 || v > 0.95;
-          if (frame) return mt(M.lacq, lum(l) * 0.55, X, Y, 0.2, 1);
-          const g = 0.17 * H;
-          const gx = ((d % g) + g) % g, gy = ((((-ly) % g) + g) % g);
-          if (gx < 2 || gy < 2 || Math.abs(gx - gy) < 1.2) return mt(M.lacq, 0.3, X, Y, 0.3, 1);
-          return tn(P.tile, clamp(0.08 + v * 0.35 + Math.abs(u - 0.5) * 0.4, 0, 1), X, Y, 0.5);
+      // (round 3, W2-8: a navy void with tall windows floating in it, the frames past both ends) the hall's own
+      // outer wall at a dim value: timber posts every 2.4 H, each with a bracket block under every beam, beams every
+      // 3.1 H, plaster panels between them each a little different, a stone plinth; lattice windows set in the
+      // panels (an ice-ray lattice, a sill board under each, the cool day behind), the room's lamplight catching the
+      // posts' faces turned to it
+      const PP = 2.4 * H, PW = 0.3 * H, BH = 3.1 * H, BW = 0.24 * H;
+      const pd = ((d % PP) + PP) % PP, bi = Math.floor(-ly / BH), bv = ((-ly % BH) + BH) % BH;
+      const panel = Math.floor(d / PP);
+      if (up < 0.55) return mt(M.stone, (lum(l) * 0.5 + (up > 0.5 ? 0.1 : 0)) * fade, X, Y, 0.35, 1);
+      for (const [pn, b0, b1] of WINDOWS) {
+        if (panel !== pn || bi < b0 || bi > b1) continue;
+        const wx0 = pn * PP + PW + 0.3 * H, wx1 = (pn + 1) * PP - 0.3 * H;
+        const wy0 = b0 * BH + BW + 0.35 * H, wy1 = (b1 + 1) * BH - 0.3 * H;
+        const hy = -ly;
+        if (d > wx0 - 4 && d < wx1 + 4 && hy > wy0 - 7 && hy < wy0) {
+          // the sill board, its top lit by the window's day
+          return hy > wy0 - 1.5 ? tn(P.tile, 0.55, X, Y, 0) : mt(M.wood, lum(l) * 0.55 * fade, X, Y, 0.3, 1);
+        }
+        if (d > wx0 && d < wx1 && hy > wy0 && hy < wy1) {
+          const e = Math.min(d - wx0, wx1 - d, hy - wy0, wy1 - hy);
+          if (e < 4) return mt(M.lacq, (lum(l) * 0.5 + (e < 1.2 ? 0.12 : 0)) * fade, X, Y, 0.2, 1);
+          // (round 4, W2-a) the hall's ice-ray: even bars at T joints, a plain border, each bar's top edge lit
+          if (e < 6) return mt(M.lacq, 0.42 * fade, X, Y, 0.3, 1);
+          const segs = iceRay(wx1 - wx0 - 12, wy1 - wy0 - 12, 6301 + pn * 7 + b0, 0.05 * H * H);
+          const bar = iceBar(segs, d - wx0 - 6, wy1 - hy - 6, 1.5);
+          if (bar) return bar === 1 ? mt(M.wood, (0.5 + lum(l) * 0.3) * fade, X, Y, 0.55, 1, 0) : bar === 2 ? P.umber[4]! : P.umber[5]!;
+          const v = (wy1 - hy) / (wy1 - wy0);
+          return tn(P.tile, clamp(0.32 + v * 0.3 + Math.abs((d - wx0) / (wx1 - wx0) - 0.5) * 0.35, 0, 1), X, Y, 0.5);
         }
       }
-      // the banner: deep red silk with a gold hem and a gold emblem, hanging from a rod
-      const bd = d - 2.95 * H;
-      if (Math.abs(bd) < 0.32 * H && up > 3.4 && up < 8.0) {
-        const v = (8.0 - up) / 4.6;
-        const tail = v > 0.92 && Math.abs(bd) > 0.32 * H * (1 - (v - 0.92) * 10);
-        if (tail) return 0;
-        if (up > 7.85) return tn(M.gold, 0.35, X, Y, 0);
-        const hem = Math.abs(Math.abs(bd) - 0.27 * H) < 2 || (v > 0.86 && v < 0.89);
-        const emblem = Math.hypot(bd, (up - 6.6) * H) < 0.16 * H && Math.hypot(bd, (up - 6.6) * H) > 0.1 * H;
-        if (hem || emblem) return mt(M.gold, lum(l) * 0.75 * fade, X, Y, 0.3, 1);
-        return mt(M.verm, (lum(l) * 0.55 + Math.sin(bd * 0.12) * 0.06) * fade, X, Y, 0.3, 1);
+      const post = pd < PW && d > 0.4 * H;
+      const beam = bv < BW;
+      if (post) {
+        // the post's face turned to the room catches the lamplight leaking past the end; a bracket block where
+        // each beam meets it
+        const toRoom = (PW - pd) / PW;
+        const block = bv > BW && bv < BW + 0.28 * H && pd > -0.06 * H;
+        return mt(M.wood, (lum(l) * (0.48 + toRoom * 0.3) + 0.1 + (block ? 0.1 : 0) + (pd < 2 ? 0.14 : 0) + grain(lx, ly, 41) * 0.1) * fade, X, Y, 0.35, 1);
       }
-      const post = ((d % (2.2 * H)) + 2.2 * H) % (2.2 * H) < 0.32 * H && d > 0.4 * H;
-      const beam = ((((-ly) % (3.1 * H)) + 3.1 * H) % (3.1 * H)) < 0.26 * H;
+      if (beam) {
+        const blk = pd > PW && pd < PW + 0.22 * H || pd > PP - 0.22 * H;
+        return mt(M.wood, (lum(l) * 0.5 + 0.08 + (bv < 2 ? 0.16 : 0) + (blk ? 0.08 : 0)) * fade, X, Y, 0.35, 1);
+      }
+      // the bracket blocks under the beam either side of each post
+      if (bv < BW + 0.2 * H && (pd > PW && pd < PW + 0.18 * H || pd > PP - 0.18 * H)) return mt(M.wood, (lum(l) * 0.4) * fade, X, Y, 0.35, 1);
+      // the plaster: each panel its own tone, a recess shadow under the beam over it, damp low down
+      const pt = (hash(panel, bi, 43) - 0.5) * 0.1;
+      const recess = bv < BW + 4 ? -0.08 : 0;
       const plaster = fbm(lx * 0.05, ly * 0.05, 31, 3);
-      if (post || beam) return mt(M.lacq, (lum(l) * 0.75 + 0.18) * fade, X, Y, 0.3, 1);
-      return mt(M.dark, (lum(l) * 0.6 + 0.12) * fade + (plaster - 0.5) * 0.12, X, Y, 0.35, 1);
+      return mt(M.dark, (lum(l) * 0.6 + 0.16 + pt + recess) * fade + (plaster - 0.5) * 0.1, X, Y, 0.35, 1);
     });
     // the corner column at the room's end: vermilion, lit by the doors' daylight
     const colR = 0.3 * H;
@@ -191,6 +304,35 @@ export const endWall = definePainter<EndWallP>("hall.endwall", {
       const band = (hgt > 1.0 && hgt < 1.2) || (hgt > 6.6 && hgt < 6.8);
       return band ? mt(M.gold, n * 0.9, X, Y, 0.2, 1) : mt(M.verm, n * 0.75, X, Y, 0.25, 1);
     });
+    // (round 3, W2-8: a ruled vertical edge where the room ends) the column's mouldings stand proud of its line: a
+    // banded collar at the gallery's floor, another at the wall plate, and a bracket capital (a bearing block and
+    // two tiers of arms, the inner one reaching into the room) under the tie beam
+    for (const [hg, hh, wide] of [[7.15, 0.2, 0.32], [10.55, 0.16, 0.26], [3.4, 0.12, 0.2]] as const) {
+      rect(c, ccx - colR - wide * H * 0.5, -(hg + hh) * H, ccx + colR + wide * H * 0.5, -hg * H, (X, Y, lx, ly) => {
+        const v = (-ly - hg * H) / (hh * H); // 0 at its foot .. 1 at its top
+        const u = (lx - ccx) / (colR + wide * H * 0.5);
+        const l = lf.get(lx, ly);
+        if (v > 0.8 || v < 0.15) return mt(M.gold, lum(l, u * 0.6, v > 0.8 ? -0.7 : 0.5) * 0.85 + 0.1, X, Y, 0.1, 1);
+        return mt(M.lacq, lum(l, u * 0.6, 0) * 0.5 + 0.12 + (Math.abs(u) > 0.92 ? -0.1 : 0), X, Y, 0.2, 1);
+      });
+    }
+    {
+      const cap0 = 15.5 * H, tiers: [number, number][] = [[0.22, 0.42], [0.2, 0.78], [0.18, 1.12]];
+      let y = cap0;
+      for (const [th, hw] of tiers) {
+        const yy = y;
+        rect(c, ccx - hw * H, -yy - th * H, ccx + hw * H, -yy, (X, Y, lx, ly) => {
+          const u = (lx - ccx) / (hw * H), v = (-ly - yy) / (th * H);
+          const l = lf.get(lx, ly);
+          // the arms' ends cut in a curve, gold-tipped; the blocks teal over the lacquer; the room side lit
+          if (Math.abs(u) > 0.86) return v > 0.35 ? mt(M.gold, lum(l, u, -0.4) * 0.8 + (u * -s > 0 ? 0.12 : 0), X, Y, 0.1, 1) : 0;
+          if (v < 0.18) return mt(M.lacq, 0.12, X, Y, 0.3, 1);
+          const block = Math.abs(u) < 0.22 || Math.abs(Math.abs(u) - 0.62) < 0.12;
+          return block ? tn(P.jade, clamp(0.72 - (u * -s > 0 ? 0.12 : 0), 0, 1), X, Y, 0) : mt(M.wood, lum(l, u * 0.5, 0) * 0.55 + (u * -s > 0 ? 0.1 : 0), X, Y, 0.3, 1);
+        });
+        y += th * H;
+      }
+    }
     // the door wall: lacquer panels framed in timber, the doors set deep in it
     const dx0 = Math.min(inx(p.doorAt), inx(p.doorAt + p.doorW)) * 1, dx1 = Math.max(inx(p.doorAt), inx(p.doorAt + p.doorW));
     const w0 = Math.min(0, -s * p.wall), w1 = Math.max(0, -s * p.wall);
@@ -201,17 +343,99 @@ export const endWall = definePainter<EndWallP>("hall.endwall", {
       screenWall(c, w0, w1, p.top, s, lf);
       return;
     }
+    // (round 3, W2-8: above the doors the wall was a dark grid of boards, L 25) the wall over the doors composed like
+    // the rest of the room: lacquer panels beside the doors, then plaster between timber posts and a beam, a carved
+    // board over the transom, a high lattice window with the day behind it, a pair of silk banners either side of it
+    const dcx = (dx0 + dx1) / 2;
+    const BOARD0 = p.doorH + surround * 1.4 + 0.62 * H + 0.08 * H, BOARD1 = BOARD0 + 0.55 * H;
+    const WIN0 = BOARD1 + 0.45 * H, WIN1 = Math.min(p.top - 0.7 * H, WIN0 + 1.75 * H), WINW = 0.42 * H;
+    const BEAM0 = p.top - 0.42 * H;
     rect(c, w0, -p.top, w1, 0, (X, Y, lx, ly) => {
       const l = lf.get(lx, ly);
       const inDoor = p.doorW > 0 && lx > dx0 - surround && lx < dx1 + surround && ly > -p.doorH - surround * 1.4;
       if (inDoor) return 0;
-      const pu = ((lx % (0.95 * H)) + 0.95 * H) % (0.95 * H), pv = ((ly % (1.25 * H)) + 1.25 * H) % (1.25 * H);
-      const frame = pu < 0.1 * H || pv < 0.1 * H;
+      const up = -ly;
       const skirt = ly > -0.45 * H;
       if (skirt) return mt(M.stone, lum(l) * (ly < -0.42 * H ? 1.2 : 0.75), X, Y, 0.25, 1);
-      if (frame) return mt(M.wood, lum(l, pu < 0.05 * H ? -0.6 : 0, pv < 0.05 * H ? -0.6 : 0) * 0.8, X, Y, 0.25, 1);
-      return mt(M.lacq, lum(l) * 0.8 + grain(lx, ly, 13) * 0.1, X, Y, 0.1, 1);
+      const edge = Math.min(lx - w0, w1 - lx);
+      // the posts at the wall's two edges and the beam under its top
+      if (edge < 0.2 * H) return mt(M.wood, lum(l, edge < 0.06 * H ? (lx - w0 < w1 - lx ? -0.6 : 0.6) : 0, 0) * 0.78 + grain(lx, ly, 51) * 0.1, X, Y, 0.25, 1);
+      if (up > BEAM0) return mt(M.wood, lum(l, 0, up < BEAM0 + 2 ? 0.8 : up > p.top - 2 ? -0.8 : 0) * 0.72 + grain(lx, ly, 53, false) * 0.08, X, Y, 0.25, 1);
+      if (up < BOARD0 - 0.04 * H) {
+        // lacquer panels beside the doors, as before
+        const pu = ((lx % (0.95 * H)) + 0.95 * H) % (0.95 * H), pv = ((ly % (1.25 * H)) + 1.25 * H) % (1.25 * H);
+        const frame = pu < 0.1 * H || pv < 0.1 * H;
+        if (frame) return mt(M.wood, lum(l, pu < 0.05 * H ? -0.6 : 0, pv < 0.05 * H ? -0.6 : 0) * 0.8, X, Y, 0.25, 1);
+        return mt(M.lacq, lum(l) * 0.8 + grain(lx, ly, 13) * 0.1, X, Y, 0.1, 1);
+      }
+      // a rail at the boards' foot, then plaster
+      if (up < BOARD0) return mt(M.wood, lum(l, 0, -0.7) * 0.8, X, Y, 0.25, 1);
+      const pt = fbm(lx * 0.03, ly * 0.03, 55, 2) - 0.5;
+      const recess = up > BEAM0 - 4 ? -0.1 : 0;
+      return mt(PLASTER_W, lum(l) * 0.62 + 0.1 + pt * 0.1 + recess, X, Y, 0.0, 1, 0.25);
     });
+    // the carved board over the transom: black lacquer, a gold bead, clouds carved and gilded along it, a plum crest
+    // in its middle
+    {
+      const bx0 = dx0 - surround * 0.9, bx1 = dx1 + surround * 0.9;
+      rect(c, bx0, -BOARD1, bx1, -BOARD0, (X, Y, lx, ly) => {
+        const l = lf.get(lx, ly);
+        const e = Math.min(lx - bx0, bx1 - lx, ly + BOARD1, -BOARD0 - ly);
+        if (e < 1) return mt(M.lacq, lum(l) * 0.3, X, Y, 0.3, 1);
+        if (e < 3) return mt(M.gold, lum(l, 0, ly < -BOARD1 + 3 ? -0.8 : 0.4) * 0.9, X, Y, 0.1, 1);
+        const u = lx - dcx, v = (ly + (BOARD0 + BOARD1) / 2);
+        const cl = Math.sin(u * 0.16 + Math.sin(v * 0.2) * 1.4) * Math.cos(v * 0.16) > 0.42 && Math.abs(u) > 0.22 * H;
+        if (cl) return mt(M.gold, lum(l, 0, v < 0 ? -0.5 : 0.3) * 0.72, X, Y, 0.2, 1);
+        return mt(M.lacq, lum(l) * 0.38 + grain(lx, ly, 57, false) * 0.06, X, Y, 0.3, 1);
+      });
+      const g = (k: number) => (X: number, Y: number, lx: number, ly: number) => mt(M.gold, lum(lf.get(lx, ly)) * k, X, Y, 0.05, 1);
+      plumCrest(c, Math.round(dcx), Math.round(-(BOARD0 + BOARD1) / 2), Math.round(0.2 * H), g(1.0), (X, Y) => mt(M.lacq, 0.25, X, Y, 0.1, 1), g(1.2));
+    }
+    // the high window: a lacquer frame, a sill board, an ice-ray lattice with the day behind, brighter low
+    {
+      const x0 = dcx - WINW, x1 = dcx + WINW;
+      const segs = iceRay(x1 - x0 - 12, WIN1 - WIN0 - 12, 6411, 0.05 * H * H);
+      rect(c, x0 - 5, -WIN1, x1 + 5, -WIN0 + 7, (X, Y, lx, ly) => {
+        const l = lf.get(lx, ly);
+        const up = -ly;
+        if (up < WIN0) return up > WIN0 - 2 ? tn(P.tile, 0.5, X, Y, 0) : lx > x0 - 5 && lx < x1 + 5 ? mt(M.wood, lum(l) * 0.6, X, Y, 0.3, 1) : 0;
+        if (lx < x0 || lx > x1) return 0;
+        const e = Math.min(lx - x0, x1 - lx, up - WIN0, WIN1 - up);
+        if (e < 4) return mt(M.lacq, lum(l, 0, 0) * 0.5 + (e < 1.2 ? 0.12 : 0), X, Y, 0.2, 1);
+        // (round 4, W2-a) the hall's ice-ray inside a plain border, the day behind it two steps down (the gate is the
+        // one bright opening)
+        if (e < 6) return mt(M.lacq, 0.42, X, Y, 0.3, 1);
+        const bar = iceBar(segs, lx - x0 - 6, WIN1 - 6 - up, 1.5);
+        if (bar) return bar === 1 ? mt(M.wood, 0.5 + lum(l) * 0.3, X, Y, 0.55, 1, 0) : bar === 2 ? P.umber[3]! : P.umber[5]!;
+        const v = (WIN1 - up) / (WIN1 - WIN0);
+        return tn(P.tile, clamp(0.5 + (1 - v) * 0.12 + Math.abs((lx - dcx) / WINW) * 0.2 + v * 0.12, 0, 1), X, Y, 0.5);
+      });
+      // its light on the plaster under the sill
+      rect(c, x0 - 0.2 * H, -WIN0 + 7, x1 + 0.2 * H, -WIN0 + 0.4 * H, (X, Y, lx, ly) => {
+        const u = Math.abs(lx - dcx) / (WINW + 0.2 * H), t = (ly + WIN0 - 7) / (0.4 * H - 7);
+        const v = (1 - u * u) * (1 - t);
+        return v > 0.2 + bayer4(X, Y) * 0.5 ? mt(PLASTER_W, lum(lf.get(lx, ly)) * 0.62 + 0.22, X, Y, 0.0, 1, 0.25) : 0;
+      });
+    }
+    // the banner pair either side of the window: deep red silk, a gold hem and a gold crest, on a rod
+    for (const sx of [-1, 1]) {
+      const bcx = dcx + sx * (WINW + 0.3 * H), bw = 0.14 * H;
+      if (bcx - bw < w0 + 0.22 * H || bcx + bw > w1 - 0.22 * H) continue;
+      const top = WIN1 + 0.25 * H, bot = WIN0 - 0.2 * H;
+      rect(c, bcx - bw - 3, -top - 3, bcx + bw + 3, -top, (X, Y, lx, ly) => mt(M.gold, lum(lf.get(lx, ly), 0, -0.6) * 0.8, X, Y, 0.1, 1));
+      rect(c, bcx - bw, -top, bcx + bw + 2, -bot, (X, Y, lx, ly) => {
+        const l = lf.get(lx, ly);
+        const v = (-ly - bot) / (top - bot); // 1 at the rod .. 0 at the hem
+        const sway = Math.sin((1 - v) * 2.4) * 1.5 * (1 - v);
+        const u = (lx - bcx - sway) / bw;
+        if (Math.abs(u) > 1) return 0;
+        if (v < 0.06 && Math.abs(u) > 1 - v * 10) return 0;
+        const hem = Math.abs(u) > 0.8 || (v > 0.12 && v < 0.15);
+        const crest = Math.hypot(u * bw, (v - 0.7) * (top - bot)) < 0.1 * H && Math.hypot(u * bw, (v - 0.7) * (top - bot)) > 0.055 * H;
+        if (hem || crest) return mt(M.gold, lum(l) * 0.8 + 0.12, X, Y, 0.3, 1);
+        return mt(M.verm, lum(l) * 0.7 + 0.14 + Math.sin(u * 3.1 + 0.6) * 0.07 - (1 - v) * 0.06, X, Y, 0.3, 1);
+      });
+    }
     // the doorway: a stone threshold and step, carved jambs, a lintel with a plaque, the transom (the
     // east end has none since the court's gate moved to the middle, round 1)
     if (p.doorW > 0) doorway(c, p, dx0, dx1, surround, lf);
@@ -283,7 +507,8 @@ function doorway(c: PaintCtx, p: EndWallP, dx0: number, dx1: number, sr: number,
     const li = Math.abs(lx - cx), lu = leafW - li;
     // the seam: a dark gap, the day a thin line through its middle, brightest low
     if (li < 1.3) {
-      if (li < 0.55 && p.day > 0 && v > 0.04) return tn(M.paper, clamp(0.35 - v * 0.3 - p.day * 0.1, 0, 1), X, Y, 0);
+      // (round 3, W2-8: a 1 px white line down the seam) the day shows only low in the gap, dim, here and there
+      if (li < 0.55 && p.day > 0 && v > 0.55 && hash(Math.floor(y / 3), 1, 61) > 0.35) return tn(P.tile, clamp(0.85 - (v - 0.55) * 1.2, 0, 1), X, Y, 0);
       return tn(M.ink, 0.0, X, Y, 0);
     }
     // under the leaves: the day in a bright line along the threshold
@@ -345,17 +570,18 @@ function doorway(c: PaintCtx, p: EndWallP, dx0: number, dx1: number, sr: number,
   });
   // the transom over the lintel: a lattice glowing with the day outside
   const ty0 = ly0 - 0.62 * H, ty1 = ly0;
+  const tseg = iceRay((dx1 - dx0 + 2 * sr) * 0.94 - 2, (ty1 - ty0) * 0.84 - 2, 6421, 0.045 * H * H);
   rect(c, dx0 - sr, ty0, dx1 + sr, ty1, (X, Y, lx, ly) => {
     const l = lf.get(lx, ly);
     const u = (lx - dx0 + sr) / (dx1 - dx0 + 2 * sr), v = (ly - ty0) / (ty1 - ty0);
     if (u < 0.03 || u > 0.97 || v < 0.08 || v > 0.92) return mt(M.wood, lum(l) * 0.8, X, Y, 0.2, 1);
-    // a fine fret of dark timber (stepped squares) over paper lit by the day outside
-    const s = 0.2 * H;
-    const gx = (((lx - dx0) % s) + s) % s, gy = (((ly - ty0) % s) + s) % s;
-    const bar = gx < 2 || gy < 2 || (Math.abs(Math.max(Math.abs(gx - s / 2), Math.abs(gy - s / 2)) - s * 0.22) < 1.1);
-    if (bar) return mt(M.wood, lum(l) * 0.35, X, Y, 0.5, 1);
-    const glow = 0.35 * p.day + 0.35 * Math.sin(u * Math.PI);
-    return tn(SCREEN, clamp(0.85 - glow, 0, 1), X, Y, 0.55);
+    // (round 3, W2-8: a cream square fret, the brightest thing on the left half) the room's ice-ray lattice over
+    // paper lit by the day outside, a step under the window above it
+    // (round 4, W2-a: even bars at T joints, each with a lit top edge, inside the frame as a plain border)
+    const bar = iceBar(tseg, lx - (dx0 - sr) - (dx1 - dx0 + 2 * sr) * 0.03 - 1, ly - ty0 - (ty1 - ty0) * 0.08 - 1, 1.5);
+    if (bar) return bar === 1 ? mt(M.wood, 0.5 + lum(l) * 0.3, X, Y, 0.55, 1, 0) : bar === 2 ? P.umber[3]! : P.umber[5]!;
+    const glow = 0.18 * p.day + 0.28 * Math.sin(u * Math.PI);
+    return tn(TRANSOM, clamp(1.12 - glow, 0, 1), X, Y, 0.55);
   });
 }
 
@@ -449,10 +675,14 @@ function screenWall(c: PaintCtx, w0: number, w1: number, top: number, s: number,
       if (e < 4) return mt(M.wood, lum(l, 0, wv > 0.9 ? -0.6 : 0) * 0.55 - dim, X, Y, 0.3, 1);
       // a deep reveal under its head
       if (wv > 0.88) return mt(M.lacq, 0.12, X, Y, 0.2, 1);
-      const g = 0.16 * H;
-      const gx = (((lx - f0) % g) + g) % g, gy = (((-ly) % g) + g) % g;
-      if (gx < 1.8 || gy < 1.8 || (Math.abs(gx - gy) < 1.1 && hash(Math.floor((lx - f0) / g), Math.floor(-ly / g), 29) < 0.5)) return mt(M.lacq, 0.25, X, Y, 0.3, 1);
-      return tn(P.tile, clamp(0.12 + (1 - wv) * 0.3 + Math.abs(wu - 0.5) * 0.35, 0, 1), X, Y, 0.5);
+      // (round 4, W2-l: a flat bright blue grid in docs-nook's top right corner, an eye magnet) the hall's ice-ray
+      // inside a plain border, the night's sky behind it two steps down
+      if (e < 6) return mt(M.lacq, 0.3 - dim, X, Y, 0.3, 1);
+      const ww = 0.76 * FW, wh = (WIN1 - WIN0) * H;
+      const segs = iceRay(ww - 12, wh * 0.88 - 12, 6431, 0.05 * H * H);
+      const bar = iceBar(segs, wu * ww - 6, (1 - wv) * wh - 6, 1.5);
+      if (bar) return bar === 1 ? mt(M.wood, 0.5 + lum(l) * 0.3 - dim, X, Y, 0.55, 1, 0) : bar === 2 ? P.umber[3]! : P.umber[5]!;
+      return tn(P.tile, clamp(0.5 + (1 - wv) * 0.22 + Math.abs(wu - 0.5) * 0.25, 0, 1), X, Y, 0.5);
     }
     // --- the boarding, a long ink scroll on it
     const sw = 0.62 * H;
@@ -592,16 +822,26 @@ export const gallery = definePainter<GalleryP>("hall.gallery", {
       if (kind === 2) {
         // a Suzhou-painted length: teal and red bands toward each end, a half-round panel in its middle with a
         // little ink landscape on cream, a gold rim round it
-        // the panel hangs from the beam's top like a cloth over it: its flat side up, its curve down
-        const hw = Math.min(0.62 * H, sl * 0.3);
-        const ar = Math.hypot(sm / hw, (ly - 9) / ((D - 15) * 0.92));
-        if (ar < 1) {
-          if (ar > 0.88) return mt(M.gold, lum(l) * 0.7, X, Y, 0.2, 1);
-          const pu = sm / hw, pv = (ly - 9) / (D - 15);
-          // a dark ground with a pale far ridge across it in mist
-          const ridge = 0.45 + 0.16 * Math.abs(Math.sin(pu * 4 + sseed)) + 0.06 * Math.sin(pu * 13);
-          if (pv > ridge && pv < ridge + 0.14) return mt(M.paper, 0.1 + lum(l) * 0.4, X, Y, 0.3, 1);
-          return tn(P.jade, clamp(0.86 + (1 - lum(l)) * 0.12 - (pv > ridge ? 0 : 0.04), 0, 1), X, Y, 0.3);
+        // (round 4, W2-g: the half-round teal panel hung from the beam's top read as a primitive semicircle stuck on)
+        // a cartouche carved flush in the beam: a long panel with cusped corners, a gold bead round it, its field a
+        // step lighter than the beam, a far ridge and a cloud carved in low relief (lit on their tops, undercut dark)
+        const hw = Math.min(0.66 * H, sl * 0.3), hh = (D - 15) * 0.4, cr = hh * 0.42;
+        const ax = Math.abs(sm), ay = Math.abs(ly - cy);
+        if (ax < hw && ay < hh) {
+          const cut = Math.hypot(hw - ax, hh - ay) < cr;
+          if (!cut) {
+            const e = Math.min(hw - ax, hh - ay, Math.hypot(hw - ax, hh - ay) - cr);
+            if (e < 1.5) return mt(M.gold, lum(l, 0, ly < cy ? -0.6 : 0.5) * 0.8, X, Y, 0.15, 1);
+            if (e < 2.5) return mt(M.lacq, lum(l) * 0.35, X, Y, 0.2, 1);
+            const pu = sm / hw, pv = (ly - cy + hh) / (2 * hh);
+            const ridge = 0.5 + 0.2 * Math.abs(Math.sin(pu * 3.4 + sseed)) + 0.07 * Math.sin(pu * 11 + sseed);
+            const rTop = pv > ridge && pv < ridge + 0.09;
+            if (pv > ridge) return mt(M.wood, lum(l, 0, rTop ? -0.8 : 0) * (rTop ? 0.85 : 0.6) + grain(lx, ly, sseed, false) * 0.06, X, Y, 0.3, 1);
+            const cl = ruyi(sm + hw * 2.2, (pv - 0.28) * 2 * hh, hh * 0.32, sseed);
+            if (cl === 2) return mt(M.gold, lum(l, 0, -0.4) * 0.6, X, Y, 0.3, 1);
+            if (cl === 1) return mt(M.wood, lum(l, 0, -0.3) * 0.7, X, Y, 0.3, 1);
+            return mt(M.lacq, lum(l) * 0.85 + grain(lx, ly, 19, false) * 0.06, X, Y, 0.05, 1);
+          }
         }
         // the end bands (a gold line, a teal band, a red one) only near each end; between them and the panel the
         // beam's own dark lacquer with a thin gold line along it
@@ -723,12 +963,18 @@ export interface RailP {
 }
 
 /** The gallery's balustrade (front plane: she walks behind it): posts with gold caps, a lattice band she shows through. */
+/** The room's light without the skylight's shaft (the rail lights its top in the shaft itself). */
+const NO_SHAFT = { ...HALL_LIGHT, lights: HALL_LIGHT.lights.filter((l) => !(l.kind === "shaft" && l.x0 === SHAFT.x0 && l.y0 === SHAFT.y0)) };
+
 export const balustrade = definePainter<RailP>("hall.balustrade", {
   bounds(p) {
     return [-8, -p.h - 14, p.w + 8, 2];
   },
   paint(c, p) {
-    const lf = new LitField(HALL_LIGHT, p.at, 12);
+    // (round 3, W2-4: the skylight's shaft lit one length of the rail hot red, a lit box) the rail takes the room's
+    // light without the shaft; the shaft lands only on the rail's top and the posts' caps, falling off across it
+    const lf = new LitField(NO_SHAFT, p.at, 12);
+    const sh = (lx: number, ly: number): number => (p.at ? shaftCore(p.at.wx + lx, p.at.wy + ly, HALL.floor) : 0);
     const pitch = 1.08 * H;
     const n = Math.max(1, Math.round(p.w / pitch));
     const step = p.w / n;
@@ -738,6 +984,10 @@ export const balustrade = definePainter<RailP>("hall.balustrade", {
       const k = ((lx % step) + step) % step;
       const postW = 9;
       if (k < postW || lx > p.w - postW) return mt(M.verm, lum(l, k < postW / 2 ? -0.6 : 0.5, 0) * 0.9, X, Y, 0.15, 1);
+      if (v < 0.05) {
+        const s2 = sh(lx, ly) * 1.6 + (bayer4(X, Y) - 0.5) * 0.3;
+        if (s2 > 0.15) return mt(M.verm, lum(l, 0, -0.9) * 1.0 + Math.min(0.22, s2 * 0.3), X, Y, 0.1, 1);
+      }
       if (v < 0.12) return mt(M.verm, lum(l, 0, v < 0.05 ? -0.9 : 0.2) * 1.0, X, Y, 0.15, 1);
       if (v > 0.38 && v < 0.46) return mt(M.verm, lum(l) * 0.8, X, Y, 0.25, 1);
       if (v > 0.9) return mt(M.verm, lum(l) * 0.7, X, Y, 0.3, 1);
@@ -759,7 +1009,7 @@ export const balustrade = definePainter<RailP>("hall.balustrade", {
       lathe(c, cx, -p.h - 13, -p.h + 1, (ly) => {
         const t = (ly + p.h + 13) / 14;
         return t < 0.15 ? 1.5 : t < 0.7 ? 3 + 2 * Math.sin(t * Math.PI) : 4.6;
-      }, (X, Y, u, lx, ly) => mt(M.gold, lum(lf.get(lx, ly), u * 0.9, -0.3) * 1.05, X, Y, 0.05, 1));
+      }, (X, Y, u, lx, ly) => mt(M.gold, lum(lf.get(lx, ly), u * 0.9, -0.3) * 1.05 + (u < 0.2 ? Math.min(0.35, sh(lx, ly) * 0.6) : 0), X, Y, 0.05, 1));
     }
   },
 });

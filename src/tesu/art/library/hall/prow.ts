@@ -2,9 +2,10 @@
 // foundation to its mouth (with the grate across the mouth), and at the tip the Prow Leap with
 // its prayer flags in the wind. Daylight from the upper left.
 
-import { definePainter } from "../../painter.ts";
+import { definePainter, type PaintCtx } from "../../painter.ts";
+import { lut, tint } from "./tint.ts";
 import { P } from "../../palette.ts";
-import { M, clamp, cyl, face, fbm, grain, lathe, mt, rect, tn } from "./kit.ts";
+import { M, clamp, cyl, face, fbm, grain, hash, lathe, mt, rect, tn, vnoise, type Ramp } from "./kit.ts";
 
 const H = 96;
 const SIDE = -1;
@@ -34,6 +35,10 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
   paint(c, p) {
     const slope = p.y1 / p.x1;
     const yAt = (lx: number): number => lx * slope;
+    // (round 3, W1-9: the run's lit nose line and the band under it were two ruled diagonals across the foundation)
+    // the treads as steps: each a level tread with a lit nose and a riser, so its edge is a stair, never a line
+    const RUN = 15;
+    const stepTop = (lx: number): number => yAt((Math.floor(lx / RUN) + 0.5) * RUN);
     // the foundation's masonry runs from the floor line (local y = masonry) down `found` px
     const m0 = p.masonry, m1 = p.masonry + p.found;
     const PIER = 0.24 * H;
@@ -50,11 +55,13 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
     const bayAt = (lx: number): [number, number, boolean] => bays.find((b) => lx >= b[0] && lx < b[1]) ?? bays[bays.length - 1]!;
     rect(c, 0, p.y1 - p.head - 4, p.x1, 14, (X, Y, lx, ly) => {
       if (ly < m0 + 1) return 0; // nothing above the floor line: the mouth opens there
-      const ty = yAt(lx);
+      const ty = stepTop(lx), line = yAt(lx);
       // in the rock the cut's head is rough-hewn, never a ruled line
       const rough = ty - p.head > m1 ? (fbm(lx * 0.03, 3.1, 17, 3) - 0.5) * 0.5 * H + Math.abs(Math.sin(lx * 0.045)) * 0.12 * H : 0;
-      const top = ty - p.head + rough;
-      if (ly < top - 3 || ly > ty + 12 + (rough > 0 ? rough * 0.4 : 0)) return 0;
+      const top = line - p.head + rough;
+      // the steps' stone runs on down into the rock or the masonry in a broken edge (no second ruled line)
+      const foot = ty + 10 + (fbm(lx * 0.08, 7.3, 19, 2) - 0.3) * 10;
+      if (ly < top - 3 || ly > foot + (rough > 0 ? rough * 0.4 : 0)) return 0;
       const inMasonry = ly < m1;
       // in the masonry the gallery's outer face is an arcade stepping down with the stair:
       // piers between arched openings, so the cut reads as built, not hacked through
@@ -64,8 +71,18 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
         const pw = PIER * (1 + (ly - m0) / Math.max(1, p.found) * 0.5);
         if (solid) {
           // the landing's solid stretch: coursed stone, a small barred window lit from inside
-          const wx = (b0 + b1) / 2, wy = top + p.head * 0.45;
-          if (Math.abs(lx - wx) < 0.16 * H && Math.abs(ly - wy) < 0.2 * H) return Math.abs(((lx - wx + 100) % 6) - 3) < 1 ? mt(M.stone, 0.3, X, Y, 0.4, 1) : tn(M.glow, 0.45, X, Y, 0.4);
+          // (round 4, director: its box followed the slope's head line per column, so with the pier's head lowered
+          // (W1-g) it showed as a sheared orange-and-black striped parallelogram) an upright window, its centre on the
+          // slope at the bay's middle: a dark stone reveal round it, a lit sill under it, the bars dark against a lamp
+          // inside that is brighter low down
+          const wx = (b0 + b1) / 2, wy = yAt(wx) - p.head * 0.55;
+          const ex = Math.abs(lx - wx), ey = ly - wy, WW = 0.15 * H, WH = 0.19 * H;
+          if (ex < WW + 3 && Math.abs(ey) < WH + 3) {
+            if (ey >= WH && ey < WH + 3) return mt(M.stone, face(0.95, SIDE, 0, ey < WH + 1.5 ? -0.9 : 0.4) * 0.95, X, Y, 0.1, 1);
+            if (ex >= WW || Math.abs(ey) >= WH) return mt(M.stone, ey < -WH ? 0.5 : 0.36, X, Y, 0.2, 1);
+            if (Math.abs(((lx - wx + 100) % 6) - 3) < 1) return mt(M.stone, 0.22, X, Y, 0.3, 1);
+            return tn(M.glow, clamp(0.62 - (ey + WH) / (2 * WH) * 0.3, 0, 1), X, Y, 0.4);
+          }
           const course = Math.floor((ly - m0) / 16);
           const joint = ((((ly - m0) % 16) + 16) % 16) < 1.2 || ((((lx + (course % 2) * 22) % 44) + 44) % 44) < 1.2;
           return mt(M.stone, face(0.95, SIDE, k < 2 ? -0.7 : BAY - k < 2 ? 0.7 : 0, 0) * (joint ? 0.7 : 0.92), X, Y, 0.1, 1);
@@ -80,9 +97,12 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
       }
       if (ly < top) return mt(M.stone, face(0.95, SIDE, 0, -0.8) * 0.85, X, Y, 0.1, 1);
       if (ly > ty) {
-        const k = ((lx % 15) + 15) % 15;
-        const nose = ly - ty < 2.5;
-        return mt(M.stone, nose ? 0.95 : 0.55 - (k < 2 ? 0.1 : 0) - (ly - ty) * 0.02, X, Y, 0.1, 1);
+        const k = ((lx % RUN) + RUN) % RUN;
+        // the tread's lit nose along its top, the riser at its east end a step darker, wear on the tread's middle
+        const nose = ly - ty < 2.2;
+        const riser = k > RUN - 2.2;
+        const worn = nose && k > 4 && k < 10 && fbm(lx * 0.4, 1.7, 23, 1) > 0.6 ? -0.12 : 0;
+        return mt(M.stone, nose ? 0.95 + worn : riser ? 0.42 : 0.55 - (ly - ty) * 0.025 + (fbm(lx * 0.2, ly * 0.2, 29, 2) - 0.5) * 0.12, X, Y, 0.1, 1);
       }
       // inside: the back wall lit warm by the lanterns, darker toward the top
       const v = (ly - top) / p.head;
@@ -112,6 +132,171 @@ export const stairRun = definePainter<StairRunP>("court.stairrun", {
       if (k < 2) return ly > p.y1 + 1 ? tn(M.glow, 0.45, X, Y, 0) : 0;
       return mt(M.wood, face(0.92, SIDE, 0, ly < p.y1 ? -0.8 : 0.3) * 0.9 + grain(lx, ly, 3, false) * 0.08, X, Y, 0.1, 1);
     });
+  },
+});
+
+// ---------------------------------------------------------------------------
+// (round 3, W1-9) What stands in front of the Prow Stair's run (front plane: she passes behind them), so its long
+// diagonal never runs more than ~3 H unbroken: a masonry buttress where the run climbs through the foundation and a
+// rock outcrop where it is cut through the cliff. The anchor is the thing's top centre; it runs down `h` px (out of the
+// frame for the outcrop).
+// (round 4, W1-g: "a brick pillar on a pale sloped plinth" and "a straight-sided column with a pine on top", both
+// primitives) The pier is now a buttress of the foundation's own masonry: the same stone, the same course heights on
+// the same lines as the wall behind it (court-found.ts), long and short blocks by turns, rising from under the frieze
+// with a weathering at its head and two set-offs stepping it out as it goes down, its foot swallowed by the rock's
+// chunks (no plinth). The outcrop is a stack of Dex's terrain chunks (his sketch in the Kagami loop's dex-feedback):
+// blocky, hand-wobbly blocks of the cliff's karst, overlapping, each a flat top with moss on that ledge only, a lit
+// west edge, a face darkening downward, a dark east edge; the ones in front shade the ones behind; an irregular
+// skyline; the lowest run out of the frame into the rock below.
+// ---------------------------------------------------------------------------
+export interface ButtressP {
+  kind: "pier" | "outcrop";
+  w: number;
+  h: number;
+  seed: number;
+  /** (pier) its anchor's depth below the court's floor (px), so its courses lie on the foundation's lines. */
+  dy?: number;
+}
+
+/** A chunk: x0, x1 (px from the centre), top, bottom (px down from the anchor). */
+type Chunk = [number, number, number, number];
+
+/**
+ * Paints a stack of terrain chunks, Dex's construction: flat moss-capped tops, wobbly sides. Listed back to front: the
+ * upper tiers first, the lower ones after (they stand out in front and overlap the feet of the ones above). `dark`
+ * lifts the whole stack toward the ramp's dark end (a near layer carries the darkest darks).
+ */
+function chunkStack(c: PaintCtx, chunks: Chunk[], seed: number, ramp: Ramp, dark = 0): void {
+  // each chunk's wobbly edges: its sides lean and wander a pixel or two, its top tilts a little
+  const L = (k: number, y: number): number => chunks[k]![0] + (vnoise(y * 0.08, k, seed) - 0.5) * 4 + (hash(k, 1, seed) - 0.5) * 3;
+  const R = (k: number, y: number): number => chunks[k]![1] + (vnoise(y * 0.08, k + 40, seed) - 0.5) * 4;
+  const T = (k: number, x: number): number => chunks[k]![2] + (x - chunks[k]![0]) * (hash(k, 2, seed) - 0.5) * 0.06 + (vnoise(x * 0.1, k + 80, seed) - 0.5) * 2;
+  const B = (k: number, x: number): number => chunks[k]![3] + (vnoise(x * 0.12, k + 120, seed) - 0.5) * 4;
+  const inside = (k: number, x: number, y: number): boolean => y >= T(k, x) && y <= B(k, x) && x >= L(k, y) && x <= R(k, y);
+  const x0 = Math.min(...chunks.map((k) => k[0])) - 4, x1 = Math.max(...chunks.map((k) => k[1])) + 4;
+  const y0 = Math.min(...chunks.map((k) => k[2])) - 4, y1 = Math.max(...chunks.map((k) => k[3])) + 4;
+  rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
+    let k = -1;
+    for (let i = chunks.length - 1; i >= 0; i--) if (inside(i, lx, ly)) { k = i; break; }
+    if (k < 0) return 0;
+    const l = L(k, ly), r = R(k, ly), t = T(k, lx), b = B(k, lx);
+    const u = (lx - l) / Math.max(1, r - l), d = ly - t, depth = (ly - t) / Math.max(1, b - t);
+    // the outline: where this chunk meets air or a chunk behind it
+    if (lx - l < 1 || r - lx < 1 || b - ly < 1) return tn(ramp, 1, X, Y, 0);
+    // the moss: on the top ledge only, a few px thick, a drip or two down the face
+    const drip = hash(Math.floor(lx / 3), k, seed + 3) > 0.84 ? 2 + 4 * hash(Math.floor(lx / 3), k, seed + 4) : 0;
+    if (d < 2.5 + drip && fbm(lx * 0.4, k, seed + 5, 2) > 0.22) return tn(P.moss, d < 1.2 ? 0.25 : 0.5 + (drip ? 0.15 : 0), X, Y, 0.3);
+    // the crevice: where a chunk in front stands against this one, the face just above its top ledge is in shade
+    let shade = 0;
+    for (let j = k + 1; j < chunks.length; j++) {
+      const tj = T(j, lx);
+      if (lx > L(j, ly) - 2 && lx < R(j, ly) + 4 && tj - ly > 0 && tj - ly < 7) { shade = 0.24 * (1 - (tj - ly) / 7) + 0.08; break; }
+    }
+    // the face: lit west strip, a mid body darkening downward, the east strip in shadow; a crack or two, a bedding line
+    const crack = Math.abs(lx - (l + (r - l) * (0.3 + 0.4 * hash(k, 5, seed))) - (fbm(ly * 0.1, k, seed + 7, 2) - 0.5) * 6) < 0.7 && d > 6;
+    const bed = Math.abs(d - (b - t) * (0.45 + 0.2 * hash(k, 6, seed))) < 0.6 && fbm(lx * 0.12, k, seed + 9, 2) > 0.45;
+    let v = d < 4 ? 0.18 : u < 0.12 ? 0.3 : u > 0.86 ? 0.7 : 0.45 + depth * 0.18 + (fbm(lx * 0.07, ly * 0.07, seed + 11, 2) - 0.5) * 0.12;
+    if (crack || bed) v += 0.18;
+    return tn(ramp, clamp(v + shade + dark, 0, 0.94), X, Y, 0.35);
+  });
+}
+
+export const buttress = definePainter<ButtressP>("court.buttress", {
+  bounds(p) {
+    return [-p.w / 2 - 0.4 * H, -0.9 * H, p.w / 2 + 0.4 * H, p.h + 8];
+  },
+  paint(c, p) {
+    const W = p.w / 2;
+    if (p.kind === "pier") {
+      const dy = p.dy ?? Math.round(0.14 * H);
+      // the foundation's courses (court-found.ts paintFoundation: under the coping and the frieze, rows of these
+      // heights), so each of the buttress's courses lies on a line of the wall behind it
+      const F1 = 14 + 0.62 * H;
+      const HEIGHTS = [0.2, 0.42, 0.24, 0.17, 0.36, 0.28, 0.46, 0.2];
+      const rows: [number, number][] = [];
+      for (let y = F1, k = 0; y < p.h + dy + H; k++) {
+        const hh = Math.round((HEIGHTS[k % HEIGHTS.length]! + 0.06 * hash(k, 1, 23)) * H);
+        rows.push([y - dy, y + hh - dy]);
+        y += hh;
+      }
+      const t0 = F1 - dy, len = p.h - t0;
+      const steps = [t0, t0 + Math.round(len * 0.36), t0 + Math.round(len * 0.64)];
+      const halfAt = (ly: number): number => (ly < steps[1]! ? W : ly < steps[2]! ? W + 0.09 * H : W + 0.17 * H);
+      // its shadow on the wall east of it (the sun is up and to the left): the wall's own courses a step darker, the
+      // shadow's head slanting down away from the buttress's weathering
+      const SH = 0.2 * H;
+      rect(c, W, t0 + 4, W + 0.17 * H + SH, p.h, (X, Y, lx, ly) => {
+        const half = halfAt(ly);
+        const e = lx - half;
+        if (e < 0 || e > SH || ly < t0 + 6 + e * 0.8) return 0;
+        let ri = 0;
+        while (ri + 1 < rows.length && ly >= rows[ri]![1]) ri++;
+        const joint = ly - rows[ri]![0] < 1.5;
+        return mt(M.stone, (joint ? 0.3 : 0.55 + (hash(ri, 9, p.seed) - 0.5) * 0.1) - (e > SH - 3 ? -0.08 : 0), X, Y, 0.2, 1);
+      });
+      rect(c, -W - 0.2 * H, t0 - 1, W + 0.2 * H, p.h + 6, (X, Y, lx, ly) => {
+        const half = halfAt(ly);
+        if (Math.abs(lx) > half || ly > p.h || ly < t0) return 0;
+        // the weathering at its head and on each set-off: a sloped top seen from the front, lit, its foot a drip line
+        for (const sy of steps) {
+          const e = ly - sy;
+          if (e >= 0 && e < 7) {
+            if (e > 5.5) return mt(M.stone, 0.35, X, Y, 0.2, 1);
+            if (e < 1.5 && sy > t0 && fbm(lx * 0.3, sy, p.seed + 13, 2) > 0.5) return tn(P.moss, 0.35, X, Y, 0.3);
+            return mt(M.stone, face(0.95, SIDE, lx < -half + 3 ? -0.6 : lx > half - 3 ? 0.6 : 0, -0.9) * (1.0 - e * 0.03), X, Y, 0.05, 1);
+          }
+        }
+        // the courses: the foundation's rows; in each, a long and a short block by turns (the joint off the middle)
+        let ri = 0;
+        while (ri + 1 < rows.length && ly >= rows[ri]![1]) ri++;
+        const [r0, r1] = rows[ri]!;
+        const jx = (ri % 2 ? -0.3 : 0.38) * half;
+        const inY = ly - r0;
+        if (inY < 1.5 || Math.abs(lx - jx) < 0.8) return ly > p.h * 0.6 && fbm(lx * 0.2, ly * 0.2, p.seed + 3, 2) > 0.6 ? tn(P.moss, 0.6, X, Y, 0.3) : mt(M.stone, 0.4, X, Y, 0.2, 1);
+        // its west arris catches the sun, its east arris turns away (it stands proud of the wall)
+        if (lx < -half + 2) return mt(M.stone, 1.0, X, Y, 0.0, 1);
+        if (lx > half - 2) return mt(M.stone, 0.42, X, Y, 0.2, 1);
+        const nx = lx < -half + 4 ? -0.8 : lx > half - 5 ? 0.9 : 0;
+        const tone = (hash(ri, lx < jx ? 0 : 1, p.seed + 15) - 0.5) * 0.3;
+        const rough = (fbm(lx * 0.15, ly * 0.15, 43, 2) - 0.5) * 0.1;
+        const chipped = fbm(lx * 0.3, ly * 0.3, p.seed + 17, 2) > 0.8 ? -0.14 : 0;
+        const edge = inY < 3 ? 0.1 : r1 - ly < 3 ? -0.07 : 0;
+        return mt(M.stone, face(0.95, SIDE, nx, 0) * 0.9 + tone + edge + rough + chipped, X, Y, 0.1, 1);
+      });
+      // its foot in the rock: three wide, low chunks of the cliff's karst, the one in front lowest
+      const RW = W + 0.4 * H, q = (n: number): number => Math.round(n * H);
+      chunkStack(c, [
+        [-RW, q(0.05), p.h - q(0.62), p.h + 8],
+        [q(-0.2), RW, p.h - q(0.5), p.h + 8],
+        [-RW + q(0.25), RW - q(0.3), p.h - q(0.3), p.h + 8],
+      ], p.seed + 21, P.karst, 0.1);
+      return;
+    }
+    // the outcrop: Dex's chunks in tiers, wider than tall; the top tier first, each lower tier standing out in front of
+    // the one above; the skyline steps 0 / 0.32 / 0.5 H; the base runs out of the frame
+    const q = (n: number): number => Math.round(n * H * (p.w / (1.9 * H)));
+    const chunks: Chunk[] = [
+      [q(-0.35), q(0.3), q(0.0), q(0.58)],
+      [q(-0.82), q(-0.24), q(0.32), q(0.84)],
+      [q(0.2), q(0.78), q(0.5), q(0.98)],
+      [q(-0.95), q(-0.06), q(0.74), q(1.32)],
+      [q(-0.18), q(0.56), q(0.86), q(1.42)],
+      [q(0.44), q(0.95), q(0.92), q(1.52)],
+      [q(-0.9), q(0.12), q(1.26), q(1.98)],
+      [q(0.0), q(0.9), q(1.36), q(2.06)],
+      [q(-0.95), q(0.95), q(1.92), p.h + 8],
+    ];
+    chunkStack(c, chunks, p.seed, P.karst, 0.1);
+    // a tuft of grass on two of the ledges (no tree: the chunks are the shape)
+    for (const [k, fx] of [[0, 0.6], [4, 0.3]] as const) {
+      const [a0, a1, top] = chunks[k]!;
+      const cx = a0 + (a1 - a0) * fx;
+      rect(c, cx - 6, top - 7, cx + 6, top + 1, (X, Y, lx, ly) => {
+        const dx = lx - cx, h2 = 6 - Math.abs(dx) * 0.8 + (fbm(lx * 0.6, 3, p.seed + k, 2) - 0.5) * 4;
+        if (top - ly > h2 || Math.abs(dx) > 6) return 0;
+        return tn(P.moss, clamp(0.3 + ((ly - (top - h2)) / 8) * 0.4 + (dx > 0 ? 0.15 : 0), 0, 1), X, Y, 0.3);
+      });
+    }
   },
 });
 
@@ -191,16 +376,19 @@ export const tiers = definePainter<TiersP>("court.tiers", {
     rect(c, -hw, -20, hw, 120, (X, Y, lx, ly) => {
       const course = Math.floor((ly + 20) / 14);
       const joint = (((ly + 20) % 14) + 14) % 14 < 1 || ((((lx + (course % 2) * 20) % 40) + 40) % 40) < 1;
-      return mt(M.stone, face(0.9, SIDE) * (joint ? 0.55 : 0.75) - (ly > 0 ? 0.1 : 0), X, Y, 0.1, 1);
+      // (round 4, W2-i: the stands' pale slabs, L 173-179, were the brightest big mass in both court frames) two steps
+      // down: their risers in the stands' own shade, only the tread noses lit, so the ring is the lightest band at the
+      // fighters' height
+      return mt(M.stone, face(0.9, SIDE) * (joint ? 0.36 : 0.5) - (ly > 0 ? 0.1 : 0), X, Y, 0.25, 1);
     });
     for (let r = p.rows - 1; r >= 0; r--) {
       const top = -r * 34 - 20, inset = r * 26;
       const x0 = -hw + inset, x1 = hw - inset;
       // the step's riser and its lit tread nose
       rect(c, x0, top, x1, top + 34, (X, Y, lx, ly) => {
-        if (ly < top + 3) return mt(M.stone, 1.05, X, Y, 0.0, 1);
+        if (ly < top + 3) return mt(M.stone, 0.82, X, Y, 0.1, 1);
         const k = (((lx - x0) % 46) + 46) % 46;
-        return mt(M.stone, face(0.9, SIDE) * (k < 1 ? 0.55 : 0.78) - (ly - top) / 34 * 0.12, X, Y, 0.1, 1);
+        return mt(M.stone, face(0.9, SIDE) * (k < 1 ? 0.36 : 0.52) - (ly - top) / 34 * 0.12, X, Y, 0.25, 1);
       });
       // the rail: vermilion, posts every 46 px
       rect(c, x0, top - 9, x1, top - 1, (X, Y, lx, ly) => {
@@ -209,7 +397,7 @@ export const tiers = definePainter<TiersP>("court.tiers", {
         return ly < top - 7 ? mt(M.verm, face(0.9, SIDE, 0, -0.8) * 0.95, X, Y, 0.2, 1) : 0;
       });
       // the steps' end walls: a carved stone cheek at each end of the row
-      for (const sx of [x0, x1 - 10]) rect(c, sx, top - 4, sx + 10, top + 34, (X, Y, lx) => mt(M.stone, face(0.9, SIDE, lx - sx < 5 ? -0.6 : 0.6, 0) * 0.85, X, Y, 0.1, 1));
+      for (const sx of [x0, x1 - 10]) rect(c, sx, top - 4, sx + 10, top + 34, (X, Y, lx) => mt(M.stone, face(0.9, SIDE, lx - sx < 5 ? -0.6 : 0.6, 0) * 0.6, X, Y, 0.2, 1));
     }
     // lacquer posts carrying the lantern strings, and the strings themselves sagging between
     const ptop = -p.rows * 34 - 60;
@@ -232,5 +420,8 @@ export const tiers = definePainter<TiersP>("court.tiers", {
         });
       }
     }
+    // (round 3, W2-10: the stands took no haze step from the near court) the whole stands sit a step back in the air
+    tint(c, -hw - 10, -p.rows * 34 - 80, hw + 10, 120, () => HAZE1);
   },
 });
+const HAZE1 = lut("haze", 1);

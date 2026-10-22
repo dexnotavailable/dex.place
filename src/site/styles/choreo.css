@@ -139,12 +139,6 @@ html.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
     animation: key-shine 4.8s ease-in-out 1.2s infinite;
     pointer-events: none;
   }
-  /* the docs rows' arrows nudge in turn, down each group */
-  .band .dlink__go > * { animation: row-nudge 4.2s steps(1, end) infinite; }
-  .band .dgroup li:nth-child(2) .dlink__go > * { animation-delay: 0.35s; }
-  .band .dgroup li:nth-child(3) .dlink__go > * { animation-delay: 0.7s; }
-  .band .dgroup li:nth-child(4) .dlink__go > * { animation-delay: 1.05s; }
-  .band .dgroup li:nth-child(5) .dlink__go > * { animation-delay: 1.4s; }
   .is-off .band__strip-paper::before, .is-off .btn--dl::after, .is-off .dlink__go > * { animation-play-state: paused; }
   [data-moving] .band__strip-paper::before { animation-play-state: paused !important; }
   [data-moving] .band .btn--dl::after, [data-moving] .band .dlink__go > * { animation-play-state: paused !important; }
@@ -154,7 +148,7 @@ html.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
     .is-off .band__spine::before, [data-moving] .band__spine::before { animation-play-state: paused; }
   }
 }
-/* (the fill is 40% of the tone; it breathes between about 30 and 40) */
+/* (the numeral is solid in its tone since site loop v4 round 1; it breathes between full and about three quarters) */
 @keyframes num-breathe { from { translate: 0 0; opacity: 1; } to { translate: calc(var(--lean) * -3) 0; opacity: 0.74; } }
 @keyframes key-shine { 0% { translate: -110% 0; } 30%, 100% { translate: 110% 0; } }
 @keyframes row-nudge { 0%, 88% { translate: 0 0; } 89%, 94% { translate: 2px 0; } 95%, 100% { translate: 0 0; } }
@@ -296,3 +290,56 @@ html.lenis [data-lenis-prevent] { overscroll-behavior: contain; }
   [data-moving] .sheet--home .ftr__nav li .px, [data-moving] .band .kofi__cta::after, [data-moving] .band .kofi__stage::before,
   [data-moving] .band .kofi__cup { animation-play-state: paused; }
 }
+
+/* ---- site loop v4 round 1 (Dex 10-20: CUTE, VIBRANT, CREATIVE, INTERACTIVE, ALIVE) */
+/* the hanko is a real seal now: the section's own pixel glyph cut in its square, in the section's deep tone */
+.press-seal { display: grid; place-items: center; color: var(--hk, var(--scarlet)); --px-a: var(--hk, var(--scarlet)); }
+.press-seal > svg { display: block; width: 22px; height: auto; }
+/* the download key is the page's strongest key (the critic: "barely changes on hover"): it lifts further, flashes to
+   the section's full tone on a deep hard shadow, and its arrow drops into its tray and bounces, again and again */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .band .btn--dl { transition: transform var(--d-pop) var(--ease-spring), box-shadow var(--d-pop) var(--ease-spring), background-color 90ms linear, border-color var(--d-hover) var(--ease-std); }
+  .band .btn--dl:hover { --btn-bg: var(--band-tone); --btn-edge: var(--ink); transform: translate(-4px, -4px); box-shadow: 8px 8px 0 var(--tone-d, var(--ink)), 8px 8px 0 2px var(--ink); }
+  .band .btn--dl:hover .btn__ic .px { animation: key-drop 0.8s var(--ease-out) infinite; }
+  .band .btn--dl:hover::after { animation: key-shine 0.7s ease-out 1; }
+  .band .btn--dl:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--ink); transition-duration: var(--d-press); }
+}
+@keyframes key-drop { 0% { translate: 0 -6px; } 30% { translate: 0 2px; } 42% { translate: 0 -2px; } 54%, 100% { translate: 0 0; } }
+/* the docs paper breathes (the critic: 0 pixels changed at rest on its half): a wave runs down the rows' arrows every
+   six seconds, group after group, each arrow stepping out and back in whole pixels */
+@media (prefers-reduced-motion: no-preference) {
+  .band .dlink__go > * { animation: row-wave 6s steps(1, end) calc(var(--dg, 0) * 0.6s + var(--dr, 0) * 0.12s) infinite; }
+  .band .dgroup:nth-child(2) { --dg: 1; }
+  .band .dgroup:nth-child(3) { --dg: 2; }
+  .band .dgroup:nth-child(4) { --dg: 3; }
+  .band .dgroup li:nth-child(2) { --dr: 1; }
+  .band .dgroup li:nth-child(3) { --dr: 2; }
+  .band .dgroup li:nth-child(4) { --dr: 3; }
+  .band .dgroup li:nth-child(5) { --dr: 4; }
+  /* ...and each group's tile floats, and hops as the wave leaves it */
+  .band .dgroup__head .tile { animation: tile-wave 6s steps(1, end) calc(var(--dg, 0) * 0.6s) infinite; }
+  .is-off .dgroup__head .tile, [data-moving] .band .dgroup__head .tile { animation-play-state: paused !important; }
+}
+@keyframes row-wave { 0%, 80% { translate: 0 0; } 81% { translate: 2px 0; } 82% { translate: 4px 0; } 84% { translate: 6px 0; } 87% { translate: 2px 0; } 89%, 100% { translate: 0 0; } }
+/* (the tile also floats a pixel at a time between waves: the group's mark is never quite still) */
+@keyframes tile-wave { 0% { translate: 0 0; } 20% { translate: 0 -1px; } 40% { translate: 0 -2px; } 60% { translate: 0 -1px; } 79% { translate: 0 0; } 80% { translate: 0 -4px; } 82% { translate: 0 -6px; } 84% { translate: 0 -2px; } 86%, 100% { translate: 0 0; } }
+/* the header's progress line carries a little ofuda at its tip (motion/choreo.ts moves it with the line): white paper,
+   a band of the section's tone, an ink edge; it stands on the line, inside the header (never over the page's text), and
+   sways a few degrees at rest */
+.hdr__pip {
+  position: absolute;
+  left: -5px;
+  bottom: 0;
+  width: 10px;
+  height: 14px;
+  border: 1px solid var(--ink);
+  background: linear-gradient(var(--sec-tone, var(--scarlet)) 0 4px, #fff 4px);
+  transform-origin: 50% 100%;
+  will-change: translate;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hdr__pip { animation: pip-sway 3.2s steps(4, end) infinite alternate; }
+  [data-moving] .hdr__pip { animation-play-state: paused; }
+}
+@keyframes pip-sway { from { rotate: -6deg; } to { rotate: 6deg; } }

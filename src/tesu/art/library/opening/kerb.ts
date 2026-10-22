@@ -65,12 +65,12 @@ export const PINE_GAP = 15;
 const SALT = 0x6b3d1;
 
 /**
- * (round 7) World x of Gate Road's gates (gate-road.ts: the three framed gates at 115, 119 and 123 H,
- * the tunnel's six from 130.4 to 142.4 H): no crag stands at a gate's foot. The gates are seen
- * side-on (the architecture lane, round 7), their pillars standing at the gate's x, the near one in
- * front of the road.
+ * (round 7) World x of Gate Road's gates (world/sections/common.ts ROAD_GATE_XS; torii-1021, thinned:
+ * the two framed gates at 115 and 119 H, the tunnel's three at 130.4, 135.2 and 140 H): no crag
+ * stands at a gate's foot. The gates are seen side-on (the architecture lane, round 7), their pillars
+ * standing at the gate's x, the near one in front of the road.
  */
-export const ROAD_GATES: readonly number[] = [115, 119, 123, 130.4, 132.8, 135.2, 137.6, 140, 142.4].map((x) => x * 96);
+export const ROAD_GATES: readonly number[] = [115, 119, 130.4, 135.2, 140].map((x) => x * 96);
 /** The viewing terrace's cut-stone platform (gate-road.ts, 124 to 128.6 H): no crag rises in front of it. */
 const TERRACE: readonly [number, number] = [124 * 96 - 30, 128.6 * 96 + 30];
 
@@ -95,11 +95,11 @@ const PLACED: readonly (readonly number[])[] = [
   // gate 1's east leg (116.3 H) and the paifang's west strut (117.9 H), which now stand on the road
   // where it is: at 116.75 H, 128 px wide with a step on its right, it stood under the strut's footing.
   [116.67, 92, 28, 104, 0.72, 0, 0, 0],
-  // between gates 2 and 3: small
+  // past the paifang (before torii-1021: between gates 2 and 3): small
   [120.3, 62, 12, 52, 0.5, 0, 0, 0],
-  // in the tunnel, between its second and third gates: big, no step (the gates close round it)
+  // in the tunnel, between its first and second gates (torii-1021; before, its second and third): big, no step
   [133.33, 120, 26, 96, 0.74, 0, 0, 0],
-  // between the tunnel's fourth and fifth gates: small
+  // between the tunnel's second and third gates (torii-1021; before, its fourth and fifth): small
   [138.55, 58, 10, 44, 0.5, 0, 0, 0],
   // the last stretch before the hall door: small, a step down on its left
   [143.0, 70, 14, 58, 0.54, -1, 30, 5],

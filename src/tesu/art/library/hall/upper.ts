@@ -24,6 +24,7 @@ import { P } from "../../palette.ts";
 import { bayer4 } from "../../raster.ts";
 import { SCREEN, LitField, clamp, fbm, grain, hash, rect, tn, vnoise, type Ramp } from "./kit.ts";
 import type { BackWallP, Bay } from "./backwall.ts";
+import { cloudRun, ruyi } from "./roof.ts";
 
 /** Heights over the floor in H (times the plane's u). */
 export const UP = { lintel: 14.2, sets: 15.5, cornice: 15.9, ceil: 17.5, ceilT: 17.8 } as const;
@@ -70,29 +71,50 @@ function st(r: Ramp, v: number, X: number, Y: number): number {
 }
 
 /** The bay a local x falls in and the set positions of each bay (local px). */
-interface SetAt { x: number; s: number; tiers: number; scheme: number; seed: number }
+interface SetAt { x: number; s: number; tiers: number; scheme: number; seed: number; lantern?: boolean }
+
+/** Bays (by index) that carry a carved board between their column sets instead of a lighter set (round 4, W2-g). */
+function boardBay(i: number, seed: number): boolean {
+  return i % 4 === 2 && hash(seed, 71) < 0.85;
+}
 
 function bracketSets(p: BackWallP): SetAt[] {
   const U = p.u;
   const out: SetAt[] = [];
+  // (round 4, W2-g: two stamps alternating every ~250 px) each bay painted its own way, never the same as the bay
+  // before it: the column set and the ones between share their bay's paint
+  const paints: number[] = [];
+  p.bays.forEach((b, i) => {
+    let sc = scheme(b.seed, 1);
+    if (i > 0 && sc === paints[i - 1]) sc = (sc + 1 + Math.floor(hash(b.seed, 73) * 2)) % 3;
+    paints.push(sc);
+  });
+  let col = 0;
   p.bays.forEach((b, i) => {
     const sd = b.seed;
-    // the column set at the bay's west column (the last bay also closes with its east one)
+    const sc = paints[i]!;
+    // the column set at the bay's west column (the last bay also closes with its east one); every third column set
+    // has a lantern let down from its lowest arm
     const cols = i === p.bays.length - 1 ? [b.x0, b.x1] : [b.x0];
-    for (const cx of cols) out.push({ x: cx, s: 1, tiers: 3, scheme: scheme(sd, 1), seed: sd + 1 });
+    for (const cx of cols) out.push({ x: cx, s: 1.08, tiers: 3, scheme: sc, seed: sd + 1, lantern: col++ % 3 === 1 });
+    // one in four bays carries a carved board between its column sets instead (upperWall paints it)
+    if (boardBay(i, sd)) return;
     // one set between, or two lighter ones
     const two = hash(sd, 63) < 0.35;
     const w = b.x1 - b.x0;
-    if (two) for (const f of [1 / 3, 2 / 3]) out.push({ x: b.x0 + w * f + (hash(sd, 65 + f * 9) - 0.5) * 0.04 * U, s: 0.66, tiers: 3, scheme: scheme(sd, 2 + f), seed: sd + 7 + Math.round(f * 9) });
-    else out.push({ x: b.x0 + w / 2, s: 0.86, tiers: 3, scheme: scheme(sd, 4), seed: sd + 5 });
+    // (round 3, W2-7: one set stamped every ~125 px) the column sets heavy with three tiers; the ones between lighter,
+    // two tiers when there are two of them, so the band rises and falls along its length
+    if (two) for (const f of [1 / 3, 2 / 3]) out.push({ x: b.x0 + w * f + (hash(sd, 65 + f * 9) - 0.5) * 0.04 * U, s: 0.62, tiers: 2, scheme: sc, seed: sd + 7 + Math.round(f * 9) });
+    else out.push({ x: b.x0 + w / 2, s: 0.8, tiers: hash(sd, 69) < 0.5 ? 2 : 3, scheme: hash(sd, 75) < 0.15 ? 3 : sc, seed: sd + 5 });
   });
   return out;
 }
 
-/** A set's paint: 0 teal arms on blue blocks, 1 blue arms on teal blocks, 2 red (a repaired set), 3 worn to the timber. */
+/** A bay's paint: 0 teal arms on blue blocks, 1 blue arms on teal blocks, 2 red and teal arms on teal blocks (a
+ *  repainted bay); 3 worn to the timber (only ever one set between, never a whole bay). */
 function scheme(seed: number, k: number): number {
   const h = hash(seed, 67 + k * 3);
-  return h < 0.08 ? 3 : h < 0.16 ? 2 : h < 0.58 ? 0 : 1;
+  return h < 0.3 ? 2 : h < 0.65 ? 0 : 1;
 }
 
 /** Half length of a set's arm at tier t (H), before the set's scale. */
@@ -125,11 +147,17 @@ export function upperWall(c: PaintCtx, p: BackWallP, lf: LitField): void {
     const pseed = Math.round(mid);
     const mu = (lx - mid) / Math.max(1, half);
     const shadowTop = v < 0.17 + (vnoise(lx * 0.08, 1, 2017) - 0.5) * 0.04;
-    let val = 0.26 + hash(pseed, 7, 2019) * 0.1 + (shadowTop ? 0.3 : 0) - lit(lx, ly) * 0.3 + (fbm(lx * 0.03, ly * 0.03, 2019, 2) - 0.5) * 0.08 + v * 0.08;
+    // (round 3: the room's lamps laid round red discs on these panels, blotches at a glance) they take the light only
+    // as a soft, even lift
+    // (round 3, director: the panels' value sat right on RED's step from the lacquer red to the umber, so the lift and
+    // the noise laid red dithered blotches on brown panels, under no lamp that could explain them) the ground sits
+    // wholly on the faded umber step, the lift is a fraction of a step; the motif's fills carry the panels' old red
+    let val = 0.37 + hash(pseed, 7, 2019) * 0.07 + (shadowTop ? 0.3 : 0) - Math.min(0.5, lit(lx, ly)) * 0.06 + (fbm(lx * 0.03, ly * 0.03, 2019, 2) - 0.5) * 0.04 + v * 0.04;
     // the motif, faded: gold lines on the red
     const m = motif(Math.floor(hash(pseed, 2, 2021) * 4), mu * half / U, (v - 0.55) * (yLint - ySets) / U, pseed);
     if (m === 1 && !shadowTop) return st(GOLD, 0.45 - lit(lx, ly) * 0.3 + (hash(X, Y, 2023) < 0.3 ? 0.25 : 0), X, Y);
-    if (m === 2) val -= 0.08;
+    // (round 4: the fills at full lacquer red floated off the faded panels as red flames) a step over the ground only
+    if (m === 2 && !shadowTop) return st(RED, 0.27, X, Y);
     // a darker wear band low on each panel, the paint rubbed thin
     if (v > 0.8 && fbm(lx * 0.09, ly * 0.2, 2025, 2) > 0.62) val += 0.1;
     return st(RED, val, X, Y);
@@ -138,6 +166,52 @@ export function upperWall(c: PaintCtx, p: BackWallP, lf: LitField): void {
   // --- 3. the bracket sets: shadows first, then the sets
   for (const s of sets) setShadow(c, s, yLint, U, px);
   for (const s of sets) bracketSet(c, s, yLint, U, px, lit);
+  // (round 4, W2-g) one bay in four: a carved board between its column sets, black lacquer, a gilt bead, a run of
+  // clouds carved along it with only their outlines gilt, a crest roundel off its middle; its shadow under it
+  p.bays.forEach((b, i) => {
+    if (!boardBay(i, b.seed)) return;
+    const x0 = b.x0 + ARM[2]! * 1.08 * U + 0.12 * U, x1 = b.x1 - ARM[2]! * 1.08 * U - 0.12 * U;
+    const y0 = ySets + 0.2 * U, y1 = yLint - 0.16 * U;
+    const cy = (y0 + y1) / 2, cx = (x0 + x1) / 2 + (hash(b.seed, 77) - 0.5) * 0.4 * U;
+    rect(c, x0 + 0.06 * U, y0 + 0.08 * U, x1 + 0.08 * U, y1 + 0.1 * U, (X, Y, lx, ly) => (lx > x1 || ly > y1 ? st(RED, 0.95, X, Y) : 0));
+    rect(c, x0, y0, x1, y1, (X, Y, lx, ly) => {
+      const e = Math.min(lx - x0, x1 - lx, ly - y0, y1 - ly) / U;
+      const l = lit(lx, ly);
+      if (e < 0.025) return st(WOOD, ly - y0 < 0.03 * U ? 0.45 - l * 0.3 : 0.85, X, Y);
+      if (e < 0.06) return st(GOLD, 0.45 - l * 0.3 + (hash(X, Y, b.seed) < 0.15 ? 0.3 : 0), X, Y);
+      const dc = Math.hypot(lx - cx, (ly - cy) * 1.15);
+      const R = (y1 - y0) * 0.36;
+      if (dc < R) {
+        const ring = Math.abs(dc - R * 0.8) < px * 1.2;
+        const petal = Math.cos(Math.atan2(ly - cy, lx - cx) * 5) > 0.2 && dc < R * 0.6 && dc > R * 0.18;
+        return ring || petal ? st(GOLD, 0.4 - l * 0.3, X, Y) : st(WALL, 0.75, X, Y);
+      }
+      const cl = cloudRun(lx - x0, ly - cy, (y1 - y0) * 0.3, b.seed + 79);
+      if (cl === 2) return st(GOLD, 0.52 - l * 0.25, X, Y);
+      if (cl === 1) return st(WOOD, 0.5 - l * 0.3 + grain(lx, ly, b.seed, false) * 0.1, X, Y);
+      return st(WALL, 0.82 - l * 0.15 + grain(lx, ly, b.seed + 1, false) * 0.08, X, Y);
+    });
+  });
+  // a lantern let down from every third column set's arm, in front of the lintel
+  for (const s of sets) {
+    if (!s.lantern) continue;
+    // (from the middle tier's arm end, clear of the column drawn over the sets)
+    const lxh = s.x + (hash(s.seed, 81) < 0.5 ? -1 : 1) * (ARM[1]! * s.s - 0.1) * U;
+    const top = yLint, r = 0.12 * U, cy = top + 0.42 * U + r;
+    rect(c, lxh - px * 0.5, top, lxh + px * 0.5, cy - r, (X, Y) => tn(WALL, 0.9, X, Y, 0));
+    rect(c, lxh - r - px, cy - r - 0.05 * U, lxh + r + px, cy + r + 0.22 * U, (X, Y, lx, ly) => {
+      const dx = (lx - lxh) / r, dy = (ly - cy) / r;
+      if (ly < cy - r * 0.92) return Math.abs(dx) < 0.55 ? st(RED, 0.7, X, Y) : 0;
+      if (ly > cy + r * 0.92) {
+        if (ly < cy + r * 0.92 + 0.04 * U) return Math.abs(dx) < 0.45 ? st(GOLD, 0.45, X, Y) : 0;
+        return Math.abs(lx - lxh) < px * 0.8 ? st(RED, 0.35, X, Y) : 0;
+      }
+      const d = dx * dx + dy * dy * 1.15;
+      if (d > 1) return 0;
+      const rib = Math.abs(Math.sin(Math.asin(clamp(dx, -1, 1)) * 2)) < 0.12;
+      return tn(SCREEN, clamp(0.08 + d * 0.62 + (rib ? 0.18 : 0) + dx * 0.08, 0, 1), X, Y, 0.3);
+    });
+  }
 
   // --- 4. the cornice beam on the sets
   rect(c, 0, yCorn, p.w, ySets, (X, Y, lx, ly) => {
@@ -156,16 +230,20 @@ export function upperWall(c: PaintCtx, p: BackWallP, lf: LitField): void {
       return st(TEAL, 0.5 - lit(lx, ly) * 0.3, X, Y);
     }
     const style = hash(bay, 5, 2029);
-    const k = (lx - cx) / (4.25 * U);
     if (style < 0.4 && Math.abs(v - 0.5) < 0.24 && dc > 0.75 * U) {
       // a long cartouche, a gold edge round blue
       const e = Math.min(dc - 0.75 * U, (0.24 - Math.abs(v - 0.5)) * (ySets - yCorn));
       return e < px * 1.5 ? st(GOLD, 0.5 - lit(lx, ly) * 0.2, X, Y) : st(BLUE, 0.62 - lit(lx, ly) * 0.3, X, Y);
     }
-    if (style > 0.75 && Math.abs(v - 0.5 - Math.sin(k * 30 + bay) * 0.16) < 0.09) return st(GOLD, 0.55 - lit(lx, ly) * 0.2, X, Y);
-    // the paint flaked off in places
-    if (fbm(lx * 0.04, ly * 0.2, 2031 + bay, 2) > 0.66) return st(WOOD, 0.7, X, Y);
-    return st(TEAL, 0.55 - lit(lx, ly) * 0.3 + (v > 0.7 ? 0.12 : 0), X, Y);
+    // (round 3, W2-7: a sine line, and flaked patches that read as camouflage blotches) a run of ruyi clouds in gold
+    // line; the paint rubbed thin only along the beam's lower edge
+    if (style > 0.75 && Math.abs(v - 0.5) < 0.4) {
+      const cl = ruyi(lx - cx, (v - 0.5) * (ySets - yCorn), 0.32 * (ySets - yCorn), bay + 41);
+      if (cl === 2) return st(GOLD, 0.55 - lit(lx, ly) * 0.2, X, Y);
+      if (cl === 1) return st(TEAL, 0.38 - lit(lx, ly) * 0.3, X, Y);
+    }
+    const thin = v > 0.72 && fbm(lx * 0.06, ly * 0.3, 2031 + bay, 2) > 0.62;
+    return st(TEAL, 0.55 - lit(lx, ly) * 0.3 + (v > 0.7 ? 0.12 : 0) + (thin ? 0.08 : 0), X, Y);
   });
 
   // --- 5. every bay over the cornice its own
@@ -305,8 +383,8 @@ function bracketSet(c: PaintCtx, s: SetAt, base: number, U: number, px: number, 
     const edgeTop = pt.v < 0.14, under = pt.v > 0.82;
     const rim = pt.e * U < px * 1.4;
     // the paint: arms and blocks alternate teal and blue by tier; the red set; the worn one bare timber
-    const armR = s.scheme === 2 ? RED : s.scheme === 3 ? WOOD : (pt.tier % 2 === 0) === (s.scheme === 0) ? TEAL : BLUE;
-    const blockR = s.scheme === 2 ? RED : s.scheme === 3 ? WOOD : armR === TEAL ? BLUE : TEAL;
+    const armR = s.scheme === 2 ? (pt.tier % 2 === 0 ? RED : TEAL) : s.scheme === 3 ? WOOD : (pt.tier % 2 === 0) === (s.scheme === 0) ? TEAL : BLUE;
+    const blockR = s.scheme === 2 ? TEAL : s.scheme === 3 ? WOOD : armR === TEAL ? BLUE : TEAL;
     const worn = s.scheme === 3 || fbm(lx * 0.06, ly * 0.06, s.seed, 2) > 0.7;
     if (pt.kind === "face") {
       // the end face of an arm coming toward us: a gold ring on blue, lit a step more (it stands out of the set)
