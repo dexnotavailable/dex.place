@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-22T00:28:48.111Z (22/10/2026, 07:28:48 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-22T01:28:52.596Z (22/10/2026, 08:28:52 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,10 +12,27 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_9552f444-732 — last activity 16 min ago
-14 agents: 9 done, 5 running or stopped mid-way, 0 failed.
+### wf_95d28d67-28d — last activity 11 min ago
+36 agents: 25 done, 7 running or stopped mid-way, 4 failed.
 
-- **scout:pc** (done): 
+- **fix:ultchain** (failed)
+- **fix:rfinish** (failed)
+- **fix:qdust** (failed)
+- **fix:cutoffs** (done): The cut-offs branch is resumed and finished. Branch head 826552d6 is three commits on top of origin/main 4d48bcd0: round 1 (7ae84636), round 2 (1481cda7) and this round, round 3 (826552d6). Nothing was pushed. Main had moved on hall work only, so I merged it first (f9b17953, no conflicts). What round 3 fixed: the earlier rounds had patched several cut edges with a regular 50% checkerboard of on/off pixels, which look
+- **fix:dive** (failed)
+- **critic:cutoffs:r1** (done): 
+- **repair:cutoffs** (done): I fixed every regression the critic found, the gate passes, and the work is committed as c1b02182 on claude/zh1021-cutoffs. It sits directly on 826552d6, and origin/main is unchanged at 4d48bcd0. Nothing was pushed. **The five critic items** - **Her blade:** uf_jump_arc f003 and f004 are back to live exactly, so the sword tip is whole again. - **Ult finisher screen-door:** uf_m1_4 f014 is back to live exactly. The gh
+- **critic:cutoffs:r2** (done): 
+- **fix:ultchain** (running)
+- **fix:rfinish** (running)
+- **fix:dive** (running)
+- **fix:cutoffs** (done): Round 5 is committed on claude/zh1021-cutoffs (8371680a, not pushed). The preview now keeps her in frame for the ult chain, and I made two more cut-off fixes, both touching the ult. THE PREVIEW (what Dex flagged). Round 4's ult-chain clip was shot right after the R, while the camera was still on the R's letter, so she sat at screen x -485, off the left edge. The ult form now gets its own fresh page, and she stays at 
+- **fix:qdust** (running)
+- **critic:cutoffs:r1** (running)
+
+### wf_9552f444-732 — last activity 35 min ago
+15 agents: 10 done, 5 running or stopped mid-way, 0 failed.
+
 - **scout:site** (done): 
 - **scout:discord** (done): 
 - **director** (done): 
@@ -28,27 +45,10 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **critic:w2:r1** (done): 
 - **critic:w3:r1** (done): 
 - **repair:w3** (running)
-- **critic:w1:r1** (running)
+- **critic:w1:r1** (done): 
+- **repair:w1** (running)
 
-### wf_95d28d67-28d — last activity 39 min ago
-30 agents: 24 done, 2 running or stopped mid-way, 4 failed.
-
-- **repair:qdust** (running)
-- **critic:cutoffs:r2** (done): 
-- **critic:rfinish:r1** (done): 
-- **repair:rfinish** (done): I fixed all six of the critic's points. The new commit is a82a6871, on top of 95f73880. Nothing was pushed, and it merges cleanly with origin/main 4d48bcd0. (a) The reveal now starts out of the smoke. r_pall is built from ult.json's own ticks (impact, plus aftermath hold, clear, revealFrom and coreGone) on the same clock from the landing. The mound of smoke over her hides her through the hang and the clear, thins as 
-- **critic:ultchain:r2** (done): 
-- **critic:rfinish:r2** (running)
-- **fix:ultchain** (failed)
-- **fix:rfinish** (failed)
-- **fix:qdust** (failed)
-- **fix:cutoffs** (done): The cut-offs branch is resumed and finished. Branch head 826552d6 is three commits on top of origin/main 4d48bcd0: round 1 (7ae84636), round 2 (1481cda7) and this round, round 3 (826552d6). Nothing was pushed. Main had moved on hall work only, so I merged it first (f9b17953, no conflicts). What round 3 fixed: the earlier rounds had patched several cut edges with a regular 50% checkerboard of on/off pixels, which look
-- **fix:dive** (failed)
-- **critic:cutoffs:r1** (done): 
-- **repair:cutoffs** (done): I fixed every regression the critic found, the gate passes, and the work is committed as c1b02182 on claude/zh1021-cutoffs. It sits directly on 826552d6, and origin/main is unchanged at 4d48bcd0. Nothing was pushed. **The five critic items** - **Her blade:** uf_jump_arc f003 and f004 are back to live exactly, so the sword tip is whole again. - **Ult finisher screen-door:** uf_m1_4 f014 is back to live exactly. The gh
-- **critic:cutoffs:r2** (done): 
-
-### wf_0428f202-0d9 — last activity 267 min ago
+### wf_0428f202-0d9 — last activity 327 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -64,7 +64,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r5** (running)
 - **w2:r5** (running)
 
-### wf_1bfe66f0-d8d — last activity 390 min ago
+### wf_1bfe66f0-d8d — last activity 450 min ago
 66 agents: 50 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:brain-cost#3:impact** (running)
@@ -82,7 +82,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **verify:drift-tests#3:reproduce** (running)
 - **verify:drift-tests#3:impact** (running)
 
-### wf_cd368d9e-095 — last activity 414 min ago
+### wf_cd368d9e-095 — last activity 474 min ago
 16 agents: 0 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:claim2:reproduce** (running)
@@ -100,14 +100,14 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **sweep:discord-live** (running)
 - **sweep:drift-tests** (running)
 
-### wf_4e50eac1-3e1 — last activity 429 min ago
+### wf_4e50eac1-3e1 — last activity 489 min ago
 3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
 
 - **torii:work** (done): Gate Road had 9 gates (8 of them torii), and the terrace's wide view showed all 9 at once. It now has 5 gates, and the gates that stay sit properly on the sloping road. Every gate in the world is on Gate Road, apart from one small torii on an islet in Kagami lake and the copies of that islet in the website windows. That islet torii is a single gate that frames the lake view, so I kept it as it is. Its view and the op
 - **torii:critic:r1** (done): 
 - **torii:ready** (done): ok
 
-### wf_3be49863-029 — last activity 1832 min ago
+### wf_3be49863-029 — last activity 1892 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -117,7 +117,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r3** (done): 
 - **critic:r3** (done): 
 
-### wf_6eb91aef-0bd — last activity 2476 min ago
+### wf_6eb91aef-0bd — last activity 2536 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -133,7 +133,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r3** (running)
 - **w2:r3** (running)
 
-### wf_5cebc05c-deb — last activity 2479 min ago
+### wf_5cebc05c-deb — last activity 2539 min ago
 8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -145,7 +145,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r2** (running)
 - **w2:r2** (running)
 
-### wf_93dbdace-3fa — last activity 2939 min ago
+### wf_93dbdace-3fa — last activity 2999 min ago
 16 agents: 15 done, 0 running or stopped mid-way, 1 failed.
 
 - **w1:r1** (done): Worker 1 resumed on claude/v2-art-vista-p1 (clean at e9c6d91f) and committed a second pass, a7bf98b8. The hero frame's worst fault in my lane is fixed. Below the plateau, the critic's flat white floor with a ruled top (tesu y ~1005) is gone. The valley mist now goes solid under its own rolling top, so nothing under the land shows through. In front of it, nearer rows of big lit domes cool into shade, so the valley rea
@@ -163,7 +163,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **w1:r4** (failed)
 - **w2:r4** (done): Worker 2 finished round 4. Both commits are on claude/v2-art-vista-p2: 5e50d20b and 6948d1a0, on top of 3f94e1ba. Nothing is pushed. Changes, by critique item: - **W2-1, the cliff under the lake.** It no longer uses the road ridge's block painter. A new painter, plateau.ts, draws it at 1/2 and wider zooms (whip, postcard, tesu, tesu-720, ease-in). It has: - buttresses of very different widths, split into rounded colu
 
-### wf_286da28b-ad1 — last activity 2940 min ago
+### wf_286da28b-ad1 — last activity 3000 min ago
 10 agents: 9 done, 0 running or stopped mid-way, 1 failed.
 
 - **setup** (done): 
@@ -177,7 +177,7 @@ Each entry is one orchestration run; agents are listed with their latest result.
 - **integrate:r2** (done): 
 - **critic:r2** (failed)
 
-### wf_23467958-71d — last activity 2974 min ago
+### wf_23467958-71d — last activity 3034 min ago
 14 agents: 8 done, 6 running or stopped mid-way, 0 failed.
 
 - **toolkit** (done): # Card-art toolkit (lanes\cardart\tools\pipe)
