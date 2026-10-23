@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-23T06:28:46.694Z (23/10/2026, 13:28:46 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-23T07:38:46.139Z (23/10/2026, 14:38:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_95d28d67-28d — last activity 1397 min ago
+### wf_95d28d67-28d — last activity 1467 min ago
 49 agents: 43 done, 2 running or stopped mid-way, 4 failed.
 
 - **critic:cutoffs:r1** (done): 
@@ -34,7 +34,7 @@ The three approved branches are merged in order on one branch, every approved fi
 
 - **Branch:** claude/zh1021-int in `D:\Dex\Temp\dexplace-v2\art-wt\zh1021-int`, on top of origin/
 
-### wf_9552f444-732 — last activity 1488 min ago
+### wf_9552f444-732 — last activity 1558 min ago
 18 agents: 15 done, 3 running or stopped mid-way, 0 failed.
 
 - **build:w1** (running)
@@ -52,7 +52,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **critic:w1:r2** (done): 
 - **integrate** (done): **SHA: `ec129216`** on `claude/siteart-int` (worktree `D:\Dex\Temp\dexplace-v2\art-wt\siteart-int`, 3 commits ahead of origin/main 4d48bcd0, nothing pushed). **Critic verdict: "no".** I fixed both findings once and checked them in a real browser. The critic's re-check never ran, so it never said "sh
 
-### wf_0428f202-0d9 — last activity 2067 min ago
+### wf_0428f202-0d9 — last activity 2137 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -68,7 +68,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **w1:r5** (running)
 - **w2:r5** (running)
 
-### wf_1bfe66f0-d8d — last activity 2190 min ago
+### wf_1bfe66f0-d8d — last activity 2260 min ago
 66 agents: 50 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:brain-cost#3:impact** (running)
@@ -86,7 +86,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **verify:drift-tests#3:reproduce** (running)
 - **verify:drift-tests#3:impact** (running)
 
-### wf_cd368d9e-095 — last activity 2214 min ago
+### wf_cd368d9e-095 — last activity 2284 min ago
 16 agents: 0 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:claim2:reproduce** (running)
@@ -104,14 +104,14 @@ The three approved branches are merged in order on one branch, every approved fi
 - **sweep:discord-live** (running)
 - **sweep:drift-tests** (running)
 
-### wf_4e50eac1-3e1 — last activity 2229 min ago
+### wf_4e50eac1-3e1 — last activity 2299 min ago
 3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
 
 - **torii:work** (done): Gate Road had 9 gates (8 of them torii), and the terrace's wide view showed all 9 at once. It now has 5 gates, and the gates that stay sit properly on the sloping road. Every gate in the world is on Gate Road, apart from one small torii on an islet in Kagami lake and the copies of that islet in the website windows. That islet torii is a single gate that frames the lake view, so I kept it as it is. Its view and the op
 - **torii:critic:r1** (done): 
 - **torii:ready** (done): ok
 
-### wf_3be49863-029 — last activity 3632 min ago
+### wf_3be49863-029 — last activity 3702 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -120,34 +120,6 @@ The three approved branches are merged in order on one branch, every approved fi
 - **w2:r3** (done): Worker 2, round 3: the fog, wind and near layers are reworked for rev 6's close ride. Everything is in src/tesu/opening/sky.ts. The commit is on claude/v2-art-fall-p2 and is not pushed. I did not touch worker 1's clouds (FALL_CLOUDS, the cloud library), game.ts, beats.ts or the paper, so the two branches change different files and should merge without conflicts. How each critique item was handled: - W2-1 (fog on the 
 - **integrate:r3** (done): 
 - **critic:r3** (done): 
-
-### wf_6eb91aef-0bd — last activity 4276 min ago
-12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (done): Round 1 layout pass is committed. Dex's 10-14 layout is in, and all seven layout asks in checks.json now say yes (round 0 had all seven at NO). What changed: - **The gate is in the middle.** The Prize Court door is now a moon gate at 0.525 of the hall (it was at 0.945), set in a walled middle bay. The court is painted inside it in daylight: sky, clouds, karst in haze, the paving, stepped stands with a crowd, people, 
-- **w2:r1** (done): The W2 rendering round is committed on claude/v2-art-hall-p2. I merged W1's layout commits (8325bc28 and 571362d4) into the branch, so HEAD f1903e58 is W1's layout plus my rendering. A full 8-frame render under the heavy lock (round-1\w2\final\) passes every placement check, has 0 page errors, and all 9 of Dex's layout asks come back yes. Core technique: tint.ts. Each plane paints into one buffer per tile, so a piece
-- **integrate:r1** (done): 
-- **critic:r1** (done): 
-- **w1:r2** (done): Worker 1's round 2 is committed. Eight of the nine critique items are in; W1-9 (the arcade stair under the court) is written up as a request for whoever owns that walk in shiraito.ts. This run picked up after a usage stop. The earlier session had made most of the edits but not committed them. I rendered all 8 frames at real size on port 24621, fixed what still looked wrong, then committed. What each item got: - **W1-
-- **w2:r2** (done): W2's round-2 work is done and committed on claude/v2-art-hall-p2. The head is 16498858. It is not pushed. This was a resumed run, so I did not reset the branch. The branch already had round-2 part 1 (9f0e1374: roof, bay wall, moon gate, shaft, floor smear, and the whole court, W2-10 to W2-14). It also had an unfinished merge of W1's 8f79e577. Running `checkout -B claude/v2-art-hall-p2 claude/v2-art-hall` would have t
-- **integrate:r2** (done): 
-- **critic:r2** (done): 
-- **w1:r3** (running)
-- **w2:r3** (running)
-
-### wf_5cebc05c-deb — last activity 4279 min ago
-8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
-
-- **setup** (done): 
-- **critic:r0** (done): 
-- **w1:r1** (done): Worker 1 committed the round-1 pass on the lake's water, sun and mist. It builds on an earlier run's uncommitted work in p1, which I kept and finished. **Changed in this pass** - **W1-1, the postcard tray:** from about 0.3x zoom in, the water now runs to the frame's bottom edge. The postcard and descent no longer show a ruled y 994 edge, the falls stub is gone, and the woods' and mound's reflections lie on water. At 
-- **w2:r1** (done): Worker 2's round-1 work is committed on claude/v2-art-kagami9-p2 at 4649d798. The commit has two parts: an earlier W2 session's work that was left uncommitted on 10-19, and this session's passes on top of it. Done, by critique item: - **W2-1, postcard bank:** a dark shore of grass and bedded limestone now runs across the postcard's bottom and the descent's bottom, so the "tray" is gone at anchor 0.8, 0.54x and 0.73x.
-- **integrate:r1** (done): 
-- **critic:r1** (done): 
-- **w1:r2** (running)
-- **w2:r2** (running)
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
