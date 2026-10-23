@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-22T23:51:02.874Z (23/10/2026, 06:51:02 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-23T00:58:47.669Z (23/10/2026, 07:58:47 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_95d28d67-28d — last activity 999 min ago
+### wf_95d28d67-28d — last activity 1067 min ago
 49 agents: 43 done, 2 running or stopped mid-way, 4 failed.
 
 - **critic:cutoffs:r1** (done): 
@@ -34,7 +34,7 @@ The three approved branches are merged in order on one branch, every approved fi
 
 - **Branch:** claude/zh1021-int in `D:\Dex\Temp\dexplace-v2\art-wt\zh1021-int`, on top of origin/
 
-### wf_9552f444-732 — last activity 1090 min ago
+### wf_9552f444-732 — last activity 1158 min ago
 18 agents: 15 done, 3 running or stopped mid-way, 0 failed.
 
 - **build:w1** (running)
@@ -52,7 +52,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **critic:w1:r2** (done): 
 - **integrate** (done): **SHA: `ec129216`** on `claude/siteart-int` (worktree `D:\Dex\Temp\dexplace-v2\art-wt\siteart-int`, 3 commits ahead of origin/main 4d48bcd0, nothing pushed). **Critic verdict: "no".** I fixed both findings once and checked them in a real browser. The critic's re-check never ran, so it never said "sh
 
-### wf_0428f202-0d9 — last activity 1670 min ago
+### wf_0428f202-0d9 — last activity 1737 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -68,7 +68,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **w1:r5** (running)
 - **w2:r5** (running)
 
-### wf_1bfe66f0-d8d — last activity 1792 min ago
+### wf_1bfe66f0-d8d — last activity 1860 min ago
 66 agents: 50 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:brain-cost#3:impact** (running)
@@ -86,7 +86,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **verify:drift-tests#3:reproduce** (running)
 - **verify:drift-tests#3:impact** (running)
 
-### wf_cd368d9e-095 — last activity 1817 min ago
+### wf_cd368d9e-095 — last activity 1884 min ago
 16 agents: 0 done, 16 running or stopped mid-way, 0 failed.
 
 - **verify:claim2:reproduce** (running)
@@ -104,14 +104,14 @@ The three approved branches are merged in order on one branch, every approved fi
 - **sweep:discord-live** (running)
 - **sweep:drift-tests** (running)
 
-### wf_4e50eac1-3e1 — last activity 1832 min ago
+### wf_4e50eac1-3e1 — last activity 1899 min ago
 3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
 
 - **torii:work** (done): Gate Road had 9 gates (8 of them torii), and the terrace's wide view showed all 9 at once. It now has 5 gates, and the gates that stay sit properly on the sloping road. Every gate in the world is on Gate Road, apart from one small torii on an islet in Kagami lake and the copies of that islet in the website windows. That islet torii is a single gate that frames the lake view, so I kept it as it is. Its view and the op
 - **torii:critic:r1** (done): 
 - **torii:ready** (done): ok
 
-### wf_3be49863-029 — last activity 3234 min ago
+### wf_3be49863-029 — last activity 3302 min ago
 6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -121,7 +121,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **integrate:r3** (done): 
 - **critic:r3** (done): 
 
-### wf_6eb91aef-0bd — last activity 3878 min ago
+### wf_6eb91aef-0bd — last activity 3946 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
@@ -137,7 +137,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **w1:r3** (running)
 - **w2:r3** (running)
 
-### wf_5cebc05c-deb — last activity 3881 min ago
+### wf_5cebc05c-deb — last activity 3949 min ago
 8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
 
 - **setup** (done): 
