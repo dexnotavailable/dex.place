@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-23T06:18:50.804Z (23/10/2026, 13:18:50 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-23T06:28:46.694Z (23/10/2026, 13:28:46 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,143 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-_No workflow activity in the last 72 hours._
+### wf_95d28d67-28d — last activity 1397 min ago
+49 agents: 43 done, 2 running or stopped mid-way, 4 failed.
+
+- **critic:cutoffs:r1** (done): 
+- **critic:dive:r1** (done): 
+- **critic:qdust:r1** (done): 
+- **critic:rfinish:r1** (done): 
+- **critic:ultchain:r1** (done): 
+- **repair:ultchain** (done): All four of critic 3's ult-chain defects are fixed by hand on the b7e45bd2 drawings, and the commit is on my branch (not pushed). Timing and code are unchanged. Of the files the commit touches, the only non-drawing one is derived.json: I re-derived it and every slot has the same hits as before. Fixes (the script is lanes/zhusha-1021b/ultchain/r4/tools/repair.py; the b7e45bd2 drawings are kept in r4/work/orig): - **uf
+- **repair:rfinish** (done): The critic's regressions are fixed. On the stair, the rubble and smoke wisps now sit on the steps instead of floating, the dust skirt slopes down to the ground at ledges instead of ending in a flat vertical edge, and in reduced-motion mode the nuke and its smoke now stay fully in frame. Committed on my branch only, not pushed. What changed: - **Floating rubble and smoke (the regression).** Round 3 shifted each rubble
+- **repair:qdust** (done): The air dud is fixed. A Q cast with no floor within 4 H under her now reads as a move again, and nothing floats on nothing. What changed (commit a3cb13ef, on top of 2608ac74): 1. Air Q, the critic's regression. Each effect's fx.json now carries an air rule (contract.ts FxGround, fx.ts): - q_wave and q_wave_p1 use "spill": the wave leaves her blade both ways as if off a lip into a void. It droops, its top thins first,
+- **critic:ultchain:r2** (done): 
+- **critic:qdust:r2** (done): 
+- **critic:rfinish:r2** (done): 
+- **repair3:ultchain** (done): All three things critic 4 found are fixed and committed as e737d797 on claude/zh1021-ultchain. Nothing is pushed. 1. Knees in the first hit (uf_m1_1 f006-f008): each leg is redrawn from under her own thigh down to the ankle along the leg line H3 drew for that drawing. It is now one smooth thigh-to-shin line. The flat cut, the black bar and the offset shin are gone, and the shoes stay planted. Where the old shin used 
+- **critic3:ultchain** (done): 
+- **integrate** (done): READY claude/zh1021-int 180810e3037f68d2552d321614efebdd1da0b22a
+
+The three approved branches are merged in order on one branch, every approved fix is kept, and the full gate passes. Nothing is pushed.
+
+- **Branch:** claude/zh1021-int in `D:\Dex\Temp\dexplace-v2\art-wt\zh1021-int`, on top of origin/
+
+### wf_9552f444-732 — last activity 1488 min ago
+18 agents: 15 done, 3 running or stopped mid-way, 0 failed.
+
+- **build:w1** (running)
+- **build:w2** (running)
+- **build:w3** (running)
+- **build:w1** (done): The gallery is now a big moving collage of 28 of Dex's pieces, and the donate band carries his cast and his suited Director. Everything is committed on w1's own branch, the gate passes, and nothing is pushed. Gallery wall: 19 new pieces (ids 10-28) were exported from Dex's own .psd and .kra files at web sizes, with no metadata and never the sources. content/gallery/wall.json lays them out in units of the wall's width
+- **build:w2** (done): The projects section is now three banner strips running down the page, each built in layers from Dex's own drawings. The website plate is wider and more dominant, every strip numeral shows whole, and the choreography fires dex:panel-in for all five bands. Committed on my own branch only; nothing pushed. The banners (render/pbanner.ts, styles/pbanner.css, motion/pbanner.ts): - Each banner overhangs the paper onto the 
+- **build:w3** (done): W3 is done and committed on my own branch. Nothing was pushed. The header "dex" is now bare ink that writes itself like the intro. Every section's background is now a real Tesu still instead of the site-painted stand-ins. The floating trees, loose ropes and black sparkle are replaced with pieces that hold on to something. What changed: - **Header (P1):** the gold box is gone. The mark is MARK_ROWS in ink at 1 art px 
+- **critic:w2:r1** (done): 
+- **critic:w3:r1** (done): 
+- **repair:w3** (done): All four of the critic's regressions are fixed on my branch, in two commits: 73f1f643 (the fixes) and c9c00b61 (a small framing tweak). Nothing was pushed, and the worktree is clean. One thing to watch: at 1366 the home scroll looks a few percent heavier than round 1. The machine was too loaded to say whether that is real. How it works now: each Tesu still has a subject, meaning a box that should show whole plus a po
+- **critic:w1:r1** (done): 
+- **repair:w1** (done): All five regressions are fixed and the Ko-fi overlap is gone. Scroll smoothness is now at or better than live by missed frames at both widths. One soft spot remains: main-thread work per frame at 1366 is still about 4% above live. The machine was heavily shared the whole time (CPU 50-100%, GPU 70-99%, an Unreal editor and other lanes' Edge captures), so every perf number is noisy. 1. **Blank wall on arrival.** Entran
+- **critic:w3:r2** (done): 
+- **critic:w1:r2** (done): 
+- **integrate** (done): **SHA: `ec129216`** on `claude/siteart-int` (worktree `D:\Dex\Temp\dexplace-v2\art-wt\siteart-int`, 3 commits ahead of origin/main 4d48bcd0, nothing pushed). **Critic verdict: "no".** I fixed both findings once and checked them in a real browser. The critic's re-check never ran, so it never said "sh
+
+### wf_0428f202-0d9 — last activity 2067 min ago
+12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
+
+- **catch-up** (done): 
+- **critic:r2b** (done): 
+- **w1:r3** (done): All nine W1 critique items for round 3 are done and committed on claude/v2-art-hall-p1. All 8 frames render ok, with 0 page errors and all 7 of Dex's layout asks still passing. Frames are in lanes/art/hall/round-3/w1/r9, and r10 has hall-core after the map fix. - **W1-1, the stair (Dex 10-19, by name):** it no longer draws one long diagonal. The steep upper flight (slope 1.048) comes down onto a deep 2.5 H landing at
+- **w2:r3** (done): Round 3, worker 2 (rendering and dressing) is committed on claude/v2-art-hall-p2 at cf1cb1ea (base 2acd1d0d). The branch also merges worker 1's p1 branch at 72866ad7 cleanly (merge a240b32e), so it holds both workers' round 3. Notes for the director and W1 are in D:\Dex\Temp\dexplace-v2\lanes\art\hall\round-3\w2\NOTES.txt. The final 8 frames (with pairs, zoom crops and checks.json) are in round-3\w2\frames, rendered 
+- **integrate:r3** (done): 
+- **critic:r3** (done): 
+- **w1:r4** (done): W1 round 4 (layout and readability) is committed as cd31c217 on claude/v2-art-hall-p1. It touches all ten critique items, but none of the eight frames is at the 9 bar yet, and the gate still out-values the desk in its own frame. Frames at the commit: D:\Dex\Temp\dexplace-v2\lanes\art\hall\round-4\w1\r11 (all 8 frames, contact sheet, pairs, zoom crops; rendered under heavy.lock.2, then released). Notes for W2 and the 
+- **w2:r4** (done): Round 4 worker 2 (rendering) is committed on claude/v2-art-hall-p2 at 126d3c38. All 14 critique items (W2-a to W2-n) have a change in. Gaps that remain: part of the bay wall is still flat (W2-d), the gate canopy still reads as a regular stripe, and the shaft is not drawn across the gallery floor. The branch also merges W1's round-4 commit cd31c217 (dbb3cba9). There was one conflict, at the notice board, and I kept bo
+- **integrate:r4** (done): 
+- **critic:r4** (done): 
+- **w1:r5** (running)
+- **w2:r5** (running)
+
+### wf_1bfe66f0-d8d — last activity 2190 min ago
+66 agents: 50 done, 16 running or stopped mid-way, 0 failed.
+
+- **verify:brain-cost#3:impact** (running)
+- **verify:brain-cost#4:reproduce** (running)
+- **verify:brain-cost#4:impact** (running)
+- **verify:brain-cost#5:reproduce** (running)
+- **verify:brain-cost#5:impact** (running)
+- **verify:brain-cost#6:reproduce** (running)
+- **verify:brain-cost#7:reproduce** (running)
+- **verify:brain-cost#8:reproduce** (running)
+- **verify:drift-tests#1:reproduce** (running)
+- **verify:drift-tests#1:impact** (running)
+- **verify:drift-tests#2:reproduce** (running)
+- **verify:drift-tests#2:impact** (running)
+- **verify:drift-tests#3:reproduce** (running)
+- **verify:drift-tests#3:impact** (running)
+
+### wf_cd368d9e-095 — last activity 2214 min ago
+16 agents: 0 done, 16 running or stopped mid-way, 0 failed.
+
+- **verify:claim2:reproduce** (running)
+- **verify:claim3:reproduce** (running)
+- **verify:claim3:alternative** (running)
+- **verify:claim4:reproduce** (running)
+- **verify:claim4:alternative** (running)
+- **verify:claim5:reproduce** (running)
+- **verify:claim5:alternative** (running)
+- **verify:claim6:reproduce** (running)
+- **verify:claim6:alternative** (running)
+- **sweep:commands-access** (running)
+- **sweep:brain-cost** (running)
+- **sweep:ops-reliability** (running)
+- **sweep:discord-live** (running)
+- **sweep:drift-tests** (running)
+
+### wf_4e50eac1-3e1 — last activity 2229 min ago
+3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
+
+- **torii:work** (done): Gate Road had 9 gates (8 of them torii), and the terrace's wide view showed all 9 at once. It now has 5 gates, and the gates that stay sit properly on the sloping road. Every gate in the world is on Gate Road, apart from one small torii on an islet in Kagami lake and the copies of that islet in the website windows. That islet torii is a single gate that frames the lake view, so I kept it as it is. Its view and the op
+- **torii:critic:r1** (done): 
+- **torii:ready** (done): ok
+
+### wf_3be49863-029 — last activity 3632 min ago
+6 agents: 6 done, 0 running or stopped mid-way, 0 failed.
+
+- **catch-up** (done): 
+- **critic:r2b** (done): 
+- **w1:r3** (done): Round 3, worker 1 (clouds and sky) is committed on claude/v2-art-fall-p1 as d49d6562. The close ride now draws its clouds at the size it sees them, so they come out crisp and lobed instead of mushy. Every frame has more pieces on more depth planes. Some critique items are only partly fixed, listed below. What changed, by critique item: - W1-1 (resolution): every heap, tower and deck piece now has a level-2 render (l2
+- **w2:r3** (done): Worker 2, round 3: the fog, wind and near layers are reworked for rev 6's close ride. Everything is in src/tesu/opening/sky.ts. The commit is on claude/v2-art-fall-p2 and is not pushed. I did not touch worker 1's clouds (FALL_CLOUDS, the cloud library), game.ts, beats.ts or the paper, so the two branches change different files and should merge without conflicts. How each critique item was handled: - W2-1 (fog on the 
+- **integrate:r3** (done): 
+- **critic:r3** (done): 
+
+### wf_6eb91aef-0bd — last activity 4276 min ago
+12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (done): Round 1 layout pass is committed. Dex's 10-14 layout is in, and all seven layout asks in checks.json now say yes (round 0 had all seven at NO). What changed: - **The gate is in the middle.** The Prize Court door is now a moon gate at 0.525 of the hall (it was at 0.945), set in a walled middle bay. The court is painted inside it in daylight: sky, clouds, karst in haze, the paving, stepped stands with a crowd, people, 
+- **w2:r1** (done): The W2 rendering round is committed on claude/v2-art-hall-p2. I merged W1's layout commits (8325bc28 and 571362d4) into the branch, so HEAD f1903e58 is W1's layout plus my rendering. A full 8-frame render under the heavy lock (round-1\w2\final\) passes every placement check, has 0 page errors, and all 9 of Dex's layout asks come back yes. Core technique: tint.ts. Each plane paints into one buffer per tile, so a piece
+- **integrate:r1** (done): 
+- **critic:r1** (done): 
+- **w1:r2** (done): Worker 1's round 2 is committed. Eight of the nine critique items are in; W1-9 (the arcade stair under the court) is written up as a request for whoever owns that walk in shiraito.ts. This run picked up after a usage stop. The earlier session had made most of the edits but not committed them. I rendered all 8 frames at real size on port 24621, fixed what still looked wrong, then committed. What each item got: - **W1-
+- **w2:r2** (done): W2's round-2 work is done and committed on claude/v2-art-hall-p2. The head is 16498858. It is not pushed. This was a resumed run, so I did not reset the branch. The branch already had round-2 part 1 (9f0e1374: roof, bay wall, moon gate, shaft, floor smear, and the whole court, W2-10 to W2-14). It also had an unfinished merge of W1's 8f79e577. Running `checkout -B claude/v2-art-hall-p2 claude/v2-art-hall` would have t
+- **integrate:r2** (done): 
+- **critic:r2** (done): 
+- **w1:r3** (running)
+- **w2:r3** (running)
+
+### wf_5cebc05c-deb — last activity 4279 min ago
+8 agents: 6 done, 2 running or stopped mid-way, 0 failed.
+
+- **setup** (done): 
+- **critic:r0** (done): 
+- **w1:r1** (done): Worker 1 committed the round-1 pass on the lake's water, sun and mist. It builds on an earlier run's uncommitted work in p1, which I kept and finished. **Changed in this pass** - **W1-1, the postcard tray:** from about 0.3x zoom in, the water now runs to the frame's bottom edge. The postcard and descent no longer show a ruled y 994 edge, the falls stub is gone, and the woods' and mound's reflections lie on water. At 
+- **w2:r1** (done): Worker 2's round-1 work is committed on claude/v2-art-kagami9-p2 at 4649d798. The commit has two parts: an earlier W2 session's work that was left uncommitted on 10-19, and this session's passes on top of it. Done, by critique item: - **W2-1, postcard bank:** a dark shore of grass and bedded limestone now runs across the postcard's bottom and the descent's bottom, so the "tray" is gone at anchor 0.8, 0.54x and 0.73x.
+- **integrate:r1** (done): 
+- **critic:r1** (done): 
+- **w1:r2** (running)
+- **w2:r2** (running)
+
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
 
