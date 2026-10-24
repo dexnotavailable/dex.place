@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-24T17:08:45.264Z (25/10/2026, 00:08:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-24T18:08:48.060Z (25/10/2026, 01:08:48 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_95d28d67-28d — last activity 3477 min ago
+### wf_95d28d67-28d — last activity 3537 min ago
 49 agents: 43 done, 2 running or stopped mid-way, 4 failed.
 
 - **critic:cutoffs:r1** (done): 
@@ -34,7 +34,7 @@ The three approved branches are merged in order on one branch, every approved fi
 
 - **Branch:** claude/zh1021-int in `D:\Dex\Temp\dexplace-v2\art-wt\zh1021-int`, on top of origin/
 
-### wf_9552f444-732 — last activity 3568 min ago
+### wf_9552f444-732 — last activity 3628 min ago
 18 agents: 15 done, 3 running or stopped mid-way, 0 failed.
 
 - **build:w1** (running)
@@ -52,7 +52,7 @@ The three approved branches are merged in order on one branch, every approved fi
 - **critic:w1:r2** (done): 
 - **integrate** (done): **SHA: `ec129216`** on `claude/siteart-int` (worktree `D:\Dex\Temp\dexplace-v2\art-wt\siteart-int`, 3 commits ahead of origin/main 4d48bcd0, nothing pushed). **Critic verdict: "no".** I fixed both findings once and checked them in a real browser. The critic's re-check never ran, so it never said "sh
 
-### wf_0428f202-0d9 — last activity 4147 min ago
+### wf_0428f202-0d9 — last activity 4207 min ago
 12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
 
 - **catch-up** (done): 
@@ -67,49 +67,6 @@ The three approved branches are merged in order on one branch, every approved fi
 - **critic:r4** (done): 
 - **w1:r5** (running)
 - **w2:r5** (running)
-
-### wf_1bfe66f0-d8d — last activity 4270 min ago
-66 agents: 50 done, 16 running or stopped mid-way, 0 failed.
-
-- **verify:brain-cost#3:impact** (running)
-- **verify:brain-cost#4:reproduce** (running)
-- **verify:brain-cost#4:impact** (running)
-- **verify:brain-cost#5:reproduce** (running)
-- **verify:brain-cost#5:impact** (running)
-- **verify:brain-cost#6:reproduce** (running)
-- **verify:brain-cost#7:reproduce** (running)
-- **verify:brain-cost#8:reproduce** (running)
-- **verify:drift-tests#1:reproduce** (running)
-- **verify:drift-tests#1:impact** (running)
-- **verify:drift-tests#2:reproduce** (running)
-- **verify:drift-tests#2:impact** (running)
-- **verify:drift-tests#3:reproduce** (running)
-- **verify:drift-tests#3:impact** (running)
-
-### wf_cd368d9e-095 — last activity 4294 min ago
-16 agents: 0 done, 16 running or stopped mid-way, 0 failed.
-
-- **verify:claim2:reproduce** (running)
-- **verify:claim3:reproduce** (running)
-- **verify:claim3:alternative** (running)
-- **verify:claim4:reproduce** (running)
-- **verify:claim4:alternative** (running)
-- **verify:claim5:reproduce** (running)
-- **verify:claim5:alternative** (running)
-- **verify:claim6:reproduce** (running)
-- **verify:claim6:alternative** (running)
-- **sweep:commands-access** (running)
-- **sweep:brain-cost** (running)
-- **sweep:ops-reliability** (running)
-- **sweep:discord-live** (running)
-- **sweep:drift-tests** (running)
-
-### wf_4e50eac1-3e1 — last activity 4309 min ago
-3 agents: 3 done, 0 running or stopped mid-way, 0 failed.
-
-- **torii:work** (done): Gate Road had 9 gates (8 of them torii), and the terrace's wide view showed all 9 at once. It now has 5 gates, and the gates that stay sit properly on the sloping road. Every gate in the world is on Gate Road, apart from one small torii on an islet in Kagami lake and the copies of that islet in the website windows. That islet torii is a single gate that frames the lake view, so I kept it as it is. Its view and the op
-- **torii:critic:r1** (done): 
-- **torii:ready** (done): ok
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
