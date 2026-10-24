@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-24T19:08:52.073Z (25/10/2026, 02:08:52 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-24T20:18:45.332Z (25/10/2026, 03:18:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_95d28d67-28d — last activity 3597 min ago
+### wf_95d28d67-28d — last activity 3667 min ago
 49 agents: 43 done, 2 running or stopped mid-way, 4 failed.
 
 - **critic:cutoffs:r1** (done): 
@@ -34,7 +34,7 @@ The three approved branches are merged in order on one branch, every approved fi
 
 - **Branch:** claude/zh1021-int in `D:\Dex\Temp\dexplace-v2\art-wt\zh1021-int`, on top of origin/
 
-### wf_9552f444-732 — last activity 3688 min ago
+### wf_9552f444-732 — last activity 3758 min ago
 18 agents: 15 done, 3 running or stopped mid-way, 0 failed.
 
 - **build:w1** (running)
@@ -51,22 +51,6 @@ The three approved branches are merged in order on one branch, every approved fi
 - **critic:w3:r2** (done): 
 - **critic:w1:r2** (done): 
 - **integrate** (done): **SHA: `ec129216`** on `claude/siteart-int` (worktree `D:\Dex\Temp\dexplace-v2\art-wt\siteart-int`, 3 commits ahead of origin/main 4d48bcd0, nothing pushed). **Critic verdict: "no".** I fixed both findings once and checked them in a real browser. The critic's re-check never ran, so it never said "sh
-
-### wf_0428f202-0d9 — last activity 4267 min ago
-12 agents: 10 done, 2 running or stopped mid-way, 0 failed.
-
-- **catch-up** (done): 
-- **critic:r2b** (done): 
-- **w1:r3** (done): All nine W1 critique items for round 3 are done and committed on claude/v2-art-hall-p1. All 8 frames render ok, with 0 page errors and all 7 of Dex's layout asks still passing. Frames are in lanes/art/hall/round-3/w1/r9, and r10 has hall-core after the map fix. - **W1-1, the stair (Dex 10-19, by name):** it no longer draws one long diagonal. The steep upper flight (slope 1.048) comes down onto a deep 2.5 H landing at
-- **w2:r3** (done): Round 3, worker 2 (rendering and dressing) is committed on claude/v2-art-hall-p2 at cf1cb1ea (base 2acd1d0d). The branch also merges worker 1's p1 branch at 72866ad7 cleanly (merge a240b32e), so it holds both workers' round 3. Notes for the director and W1 are in D:\Dex\Temp\dexplace-v2\lanes\art\hall\round-3\w2\NOTES.txt. The final 8 frames (with pairs, zoom crops and checks.json) are in round-3\w2\frames, rendered 
-- **integrate:r3** (done): 
-- **critic:r3** (done): 
-- **w1:r4** (done): W1 round 4 (layout and readability) is committed as cd31c217 on claude/v2-art-hall-p1. It touches all ten critique items, but none of the eight frames is at the 9 bar yet, and the gate still out-values the desk in its own frame. Frames at the commit: D:\Dex\Temp\dexplace-v2\lanes\art\hall\round-4\w1\r11 (all 8 frames, contact sheet, pairs, zoom crops; rendered under heavy.lock.2, then released). Notes for W2 and the 
-- **w2:r4** (done): Round 4 worker 2 (rendering) is committed on claude/v2-art-hall-p2 at 126d3c38. All 14 critique items (W2-a to W2-n) have a change in. Gaps that remain: part of the bay wall is still flat (W2-d), the gate canopy still reads as a regular stripe, and the shaft is not drawn across the gallery floor. The branch also merges W1's round-4 commit cd31c217 (dbb3cba9). There was one conflict, at the notice board, and I kept bo
-- **integrate:r4** (done): 
-- **critic:r4** (done): 
-- **w1:r5** (running)
-- **w2:r5** (running)
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
