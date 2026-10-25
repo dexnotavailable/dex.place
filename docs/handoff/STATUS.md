@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-25T06:58:45.285Z (25/10/2026, 13:58:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-25T07:58:45.337Z (25/10/2026, 14:58:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,28 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_95d28d67-28d — last activity 4307 min ago
-49 agents: 43 done, 2 running or stopped mid-way, 4 failed.
-
-- **critic:cutoffs:r1** (done): 
-- **critic:dive:r1** (done): 
-- **critic:qdust:r1** (done): 
-- **critic:rfinish:r1** (done): 
-- **critic:ultchain:r1** (done): 
-- **repair:ultchain** (done): All four of critic 3's ult-chain defects are fixed by hand on the b7e45bd2 drawings, and the commit is on my branch (not pushed). Timing and code are unchanged. Of the files the commit touches, the only non-drawing one is derived.json: I re-derived it and every slot has the same hits as before. Fixes (the script is lanes/zhusha-1021b/ultchain/r4/tools/repair.py; the b7e45bd2 drawings are kept in r4/work/orig): - **uf
-- **repair:rfinish** (done): The critic's regressions are fixed. On the stair, the rubble and smoke wisps now sit on the steps instead of floating, the dust skirt slopes down to the ground at ledges instead of ending in a flat vertical edge, and in reduced-motion mode the nuke and its smoke now stay fully in frame. Committed on my branch only, not pushed. What changed: - **Floating rubble and smoke (the regression).** Round 3 shifted each rubble
-- **repair:qdust** (done): The air dud is fixed. A Q cast with no floor within 4 H under her now reads as a move again, and nothing floats on nothing. What changed (commit a3cb13ef, on top of 2608ac74): 1. Air Q, the critic's regression. Each effect's fx.json now carries an air rule (contract.ts FxGround, fx.ts): - q_wave and q_wave_p1 use "spill": the wave leaves her blade both ways as if off a lip into a void. It droops, its top thins first,
-- **critic:ultchain:r2** (done): 
-- **critic:qdust:r2** (done): 
-- **critic:rfinish:r2** (done): 
-- **repair3:ultchain** (done): All three things critic 4 found are fixed and committed as e737d797 on claude/zh1021-ultchain. Nothing is pushed. 1. Knees in the first hit (uf_m1_1 f006-f008): each leg is redrawn from under her own thigh down to the ankle along the leg line H3 drew for that drawing. It is now one smooth thigh-to-shin line. The flat cut, the black bar and the offset shin are gone, and the shoes stay planted. Where the old shin used 
-- **critic3:ultchain** (done): 
-- **integrate** (done): READY claude/zh1021-int 180810e3037f68d2552d321614efebdd1da0b22a
-
-The three approved branches are merged in order on one branch, every approved fix is kept, and the full gate passes. Nothing is pushed.
-
-- **Branch:** claude/zh1021-int in `D:\Dex\Temp\dexplace-v2\art-wt\zh1021-int`, on top of origin/
-
+_No workflow activity in the last 72 hours._
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
 
