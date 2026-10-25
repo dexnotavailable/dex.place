@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-25T04:48:45.981Z (25/10/2026, 11:48:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-25T05:48:45.522Z (25/10/2026, 12:48:45 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_95d28d67-28d — last activity 4177 min ago
+### wf_95d28d67-28d — last activity 4237 min ago
 49 agents: 43 done, 2 running or stopped mid-way, 4 failed.
 
 - **critic:cutoffs:r1** (done): 
@@ -33,24 +33,6 @@ Each entry is one orchestration run; agents are listed with their latest result.
 The three approved branches are merged in order on one branch, every approved fix is kept, and the full gate passes. Nothing is pushed.
 
 - **Branch:** claude/zh1021-int in `D:\Dex\Temp\dexplace-v2\art-wt\zh1021-int`, on top of origin/
-
-### wf_9552f444-732 — last activity 4268 min ago
-18 agents: 15 done, 3 running or stopped mid-way, 0 failed.
-
-- **build:w1** (running)
-- **build:w2** (running)
-- **build:w3** (running)
-- **build:w1** (done): The gallery is now a big moving collage of 28 of Dex's pieces, and the donate band carries his cast and his suited Director. Everything is committed on w1's own branch, the gate passes, and nothing is pushed. Gallery wall: 19 new pieces (ids 10-28) were exported from Dex's own .psd and .kra files at web sizes, with no metadata and never the sources. content/gallery/wall.json lays them out in units of the wall's width
-- **build:w2** (done): The projects section is now three banner strips running down the page, each built in layers from Dex's own drawings. The website plate is wider and more dominant, every strip numeral shows whole, and the choreography fires dex:panel-in for all five bands. Committed on my own branch only; nothing pushed. The banners (render/pbanner.ts, styles/pbanner.css, motion/pbanner.ts): - Each banner overhangs the paper onto the 
-- **build:w3** (done): W3 is done and committed on my own branch. Nothing was pushed. The header "dex" is now bare ink that writes itself like the intro. Every section's background is now a real Tesu still instead of the site-painted stand-ins. The floating trees, loose ropes and black sparkle are replaced with pieces that hold on to something. What changed: - **Header (P1):** the gold box is gone. The mark is MARK_ROWS in ink at 1 art px 
-- **critic:w2:r1** (done): 
-- **critic:w3:r1** (done): 
-- **repair:w3** (done): All four of the critic's regressions are fixed on my branch, in two commits: 73f1f643 (the fixes) and c9c00b61 (a small framing tweak). Nothing was pushed, and the worktree is clean. One thing to watch: at 1366 the home scroll looks a few percent heavier than round 1. The machine was too loaded to say whether that is real. How it works now: each Tesu still has a subject, meaning a box that should show whole plus a po
-- **critic:w1:r1** (done): 
-- **repair:w1** (done): All five regressions are fixed and the Ko-fi overlap is gone. Scroll smoothness is now at or better than live by missed frames at both widths. One soft spot remains: main-thread work per frame at 1366 is still about 4% above live. The machine was heavily shared the whole time (CPU 50-100%, GPU 70-99%, an Unreal editor and other lanes' Edge captures), so every perf number is noisy. 1. **Blank wall on arrival.** Entran
-- **critic:w3:r2** (done): 
-- **critic:w1:r2** (done): 
-- **integrate** (done): **SHA: `ec129216`** on `claude/siteart-int` (worktree `D:\Dex\Temp\dexplace-v2\art-wt\siteart-int`, 3 commits ahead of origin/main 4d48bcd0, nothing pushed). **Critic verdict: "no".** I fixed both findings once and checked them in a real browser. The critic's re-check never ran, so it never said "sh
 
 
 ## Driver's resume notes (copied from the git-ignored review/RESUME-AFTER-RESET.md)
