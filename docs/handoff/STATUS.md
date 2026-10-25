@@ -1,6 +1,6 @@
 # Live status (generated)
 
-Written by `ops/pc-sync.mjs` on the PC at 2026-10-25T02:38:45.306Z (25/10/2026, 09:38:45 Bangkok).
+Written by `ops/pc-sync.mjs` on the PC at 2026-10-25T03:38:49.277Z (25/10/2026, 10:38:49 Bangkok).
 Read `HANDOFF.md` first; this file is the moving part.
 
 - main: `d5d21c83` "Handoff: HANDOFF.md and an automatic pc-sync branch"
@@ -12,7 +12,7 @@ Read `HANDOFF.md` first; this file is the moving part.
 Each entry is one orchestration run; agents are listed with their latest result.
 "running or stopped mid-way" means the agent had no result when this was written.
 
-### wf_95d28d67-28d — last activity 4047 min ago
+### wf_95d28d67-28d — last activity 4107 min ago
 49 agents: 43 done, 2 running or stopped mid-way, 4 failed.
 
 - **critic:cutoffs:r1** (done): 
@@ -34,7 +34,7 @@ The three approved branches are merged in order on one branch, every approved fi
 
 - **Branch:** claude/zh1021-int in `D:\Dex\Temp\dexplace-v2\art-wt\zh1021-int`, on top of origin/
 
-### wf_9552f444-732 — last activity 4138 min ago
+### wf_9552f444-732 — last activity 4198 min ago
 18 agents: 15 done, 3 running or stopped mid-way, 0 failed.
 
 - **build:w1** (running)
