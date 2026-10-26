@@ -4,9 +4,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { YUKI_AHOGE, YUKI_BASE, YUKI_EYES, YUKI_MOUTHS, YUKI_PALETTE, validateLayer, yukiSprite } from "./yuki-sprite.ts";
+import { blinkVars, YUKI_AHOGE, YUKI_BASE, YUKI_EYES, YUKI_MOUTHS, YUKI_PALETTE, validateLayer, yukiSprite } from "./yuki-sprite.ts";
 import { ringCells, yukiArt, yukiStage } from "./render/yukiart.ts";
-import { YUKI_SAYS, yukiPage } from "./render/yuki.ts";
+import { smartScreen, YUKI_SAYS, yukiPage } from "./render/yuki.ts";
 import { latestAsset, yukiEntry } from "./data/downloads.ts";
 import { readLinkStatus, YUKI_FACTS, YUKI_LINK, YUKI_TIERS } from "./data/yuki.ts";
 import { routes } from "./render/routes.ts";
@@ -54,6 +54,37 @@ test("pixel Yuki as SVG: every face in the markup, the attributes pick one; cris
   assert.ok(svg.includes('class="yk__ahoge yk__ahoge--0"') && svg.includes('class="yk__ahoge yk__ahoge--1"'));
   assert.match(yukiSprite({ label: "Yuki" }), /role="img" aria-label="Yuki"/);
   assert.doesNotMatch(svg, /<image|<img|href=/, "drawn, never a picture file");
+});
+
+test("pixel Yuki's blink: a seeded clock per stage and per Yuki (4.1 to 6.3 s), so two on one screen blink out of step", () => {
+  const clock = (html) => {
+    const m = html.match(/--blink:([\d.]+)s;--blink-at:(-?[\d.]+)s/);
+    return m ? [+m[1], +m[2]] : null;
+  };
+  // the stages where she shows (render/cardart.ts, downloads.ts and yuki.ts seed them by place)
+  const seeds = ["yuki-page", "yuki-dl", "yuki-card", "yuki-pban__cart"];
+  const clocks = seeds.map((seed) => clock(yukiStage({ cols: 72, rows: 50, seed })));
+  for (const [i, c] of clocks.entries()) {
+    assert.ok(c, `${seeds[i]}: a clock`);
+    assert.ok(c[0] >= 4.1 && c[0] <= 6.3, `${seeds[i]}: ${c[0]} s`);
+    assert.ok(c[1] <= 0 && -c[1] <= c[0], `${seeds[i]}: starts inside its period`);
+  }
+  assert.equal(new Set(clocks.map((c) => c[0])).size, seeds.length, "each place its own period");
+  assert.deepEqual(clock(yukiStage({ cols: 72, rows: 50, seed: "yuki-page" })), clocks[0], "the same on every build");
+  // a night with no Yuki has no clock; a Yuki on her own takes hers from her seed, else her stage's
+  assert.equal(clock(yukiStage({ cols: 72, rows: 50, seed: "x", layer: "back" })), null);
+  assert.ok(clock(yukiSprite({ seed: "tile" })));
+  assert.equal(clock(yukiSprite()), null);
+  assert.equal(blinkVars("a"), blinkVars("a"));
+  // the CSS reads both (period and start) on the open eyes and the shut ones alike
+  const css = read("./styles/yuki.css");
+  for (const k of ["open", "blink"]) {
+    assert.match(css, new RegExp(`\\.yk__e--${k} \\{[^}]*animation: yk-\\w+ var\\(--blink, 4\\.7s\\) steps\\(1, end\\) var\\(--blink-at, 0s\\) infinite;`), k);
+  }
+  // the page's tiles and the prompt's peek each have their own
+  const page = yukiPage(yukiEntry(null));
+  const all = [...page.matchAll(/<svg class="yk[" ][^>]*>/g)].map((m) => clock(m[0])).filter(Boolean);
+  assert.ok(all.length >= 3, `${all.length} Yukis with a clock`);
 });
 
 // ------------------------------------------------------------------ the stage
@@ -123,6 +154,76 @@ test("/yuki/, released: one key straight to the release asset, then the guide wi
   assert.ok(html.replace(/<\/?span>/g, "").includes(SAMPLE.sha256));
   // made with code: no picture files anywhere on her page
   assert.doesNotMatch(html, /<img /);
+});
+
+test("the Windows prompt: each cursor sits inside what it taps, placed in percent of it, so its tip stays on it at any width", () => {
+  const ss = smartScreen("YUKI-Setup-0.2.0.exe");
+  // (Don't run sits beside Run anyway and the row wraps on phones: a cursor placed from the window landed on Don't run)
+  assert.match(ss, /<span class="ss__target">More info<span class="ss__cursor ss__cursor--a" aria-hidden="true">/);
+  assert.match(ss, /<span class="ss__btn ss__btn--go ss__target">Run anyway<span class="ss__cursor ss__cursor--b" aria-hidden="true">/);
+  assert.equal(ss.match(/class="ss__cursor /g).length, 2);
+  assert.doesNotMatch(ss, /<span class="ss__btn">Don't run<span class="ss__cursor/);
+  const css = read("./styles/yuki.css");
+  assert.match(css, /\n\.ss__target \{ position: relative; display: inline-block; \}/, "the target is the cursor's frame");
+  for (const k of ["a", "b"]) {
+    const m = css.match(new RegExp(`\\n\\.ss__cursor--${k} \\{ left: (\\d+)%; top: (\\d+)%; \\}`));
+    assert.ok(m, `cursor ${k}: placed in percent of its target`);
+    // its tip (the icon's top-left pixel) well inside the target, not on an edge
+    for (const v of [+m[1], +m[2]]) assert.ok(v >= 25 && v <= 75, `cursor ${k}: ${v}%`);
+  }
+  assert.doesNotMatch(css, /\.ss__cursor--[ab] \{[^}]*(right|bottom):/, "never from the window's edges");
+  // both moves end on the target: the resting keyframes are translate 0
+  assert.match(css, /@keyframes ss-a \{[^\n]*30%, 50% \{ translate: 0 0; opacity: 1; \}/);
+  assert.match(css, /@keyframes ss-b \{[^\n]*80%, 96% \{ translate: 0 0; opacity: 1; \}/);
+});
+
+test("motion after the hatch: her hop and a new line's pop win over the hatch's own rules, and both replay", () => {
+  const css = read("./styles/yuki.css");
+  // specificity of a plain selector (ids, classes / attributes / pseudo-classes, types)
+  const spec = (sel) => [
+    (sel.match(/#[\w-]+/g) ?? []).length,
+    (sel.match(/\.[\w-]+|\[[^\]]+\]|:(?!:)[\w-]+/g) ?? []).length,
+    (sel.replace(/\[[^\]]+\]|[.#:][\w-]+/g, " ").match(/(^|\s)[a-z][\w-]*/g) ?? []).length,
+  ];
+  const beats = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+  const anim = (sel) => {
+    const m = css.match(new RegExp(`\\n  ${sel.replace(/[.[\]]/g, "\\$&")} \\{ animation: ([^;]+); \\}`));
+    assert.ok(m, sel);
+    return m[1].split(/,(?![^(]*\))/).map((a) => a.trim());
+  };
+  const name = (a) => a.split(/\s+/)[0];
+  const hatchHer = "html.js [data-hatch] .ykstage__her", hop = "html.js [data-hatch] .ykstage__her.is-hop";
+  const hatchSay = "html.js .ykh__say", line = "html.js .ykh__say.is-new";
+  assert.ok(beats(spec(hop), spec(hatchHer)) > 0, "the hop wins over the pop");
+  assert.ok(beats(spec(line), spec(hatchSay)) > 0, "a new line wins over the first");
+  // the hop keeps the pop as it was (matched by name, it never replays) and plays after it, so it owns translate
+  assert.deepEqual(anim(hop).map(name), ["yk-pop", "yk-hop"]);
+  assert.equal(anim(hop)[0], anim(hatchHer)[0]);
+  // a new line pops under its own keyframes' name (the same name as the hatch's would never replay)
+  assert.notEqual(name(anim(line)[0]), name(anim(hatchSay)[0]));
+  assert.match(css, new RegExp(`@keyframes ${name(anim(line)[0])} \\{`));
+  assert.match(css, /@keyframes yk-hop \{[\s\S]*?translate: 0 -\d+px;/);
+  // nothing else in the sheet animates her or the bubble, so nothing later takes them back
+  assert.equal(css.match(/\.ykstage__her[^{,]*\{[^}]*animation:/g).length, 2);
+  assert.equal(css.match(/\.ykh__say[^{,]*\{[^}]*animation:/g).length, 2);
+  // the script restarts each: off, a reflow, on
+  const ts = read("./motion/yuki.ts");
+  assert.match(ts, /g\.classList\.remove\("is-hop"\);\n\s*void g\.getBoundingClientRect\(\);\n\s*g\.classList\.add\("is-hop"\);/);
+  assert.match(ts, /bubble\.classList\.remove\("is-new"\);\n\s*void bubble\.offsetWidth;\n\s*bubble\.classList\.add\("is-new"\);/);
+});
+
+test("/yuki/ on a tablet: the stacked stage is tall enough for her ring and her line (a cell is set by its width there)", () => {
+  const css = read("./styles/yuki.css");
+  // her line's foot sits 35 cells up, just over the ring, and never above the stage's top
+  const clamp = css.match(/bottom: min\(calc\(35 \* var\(--u\)\), calc\(100% - (\d+)px\)\);/);
+  assert.ok(clamp, "the bubble stays in the stage");
+  // stacked, the stage is at least those 35 cells plus the bubble
+  const m = css.match(/@media \(max-width: 899px\) \{\n    \.ykh__box \{ container-type: inline-size; \}\n    \.ykh__stage \{ height: max\(clamp\(240px, 62vw, 380px\), calc\(35 \* round\(up, 100cqw \/ var\(--cols\), 1px\) \+ (\d+)px\)\); \}/);
+  assert.ok(m, "the stacked stage's height follows its cells");
+  const room = +m[1], at = +clamp[1];
+  // (the bubble: 43 px tall with its border, 4 more of shadow; the stage's 2 px foot border)
+  assert.ok(room - 2 >= at && at >= 47 + 8, `room ${room}, clamp ${at}`);
+  assert.match(css, /\.ykh__stage \{\n  --cols: 72;\n  --rows: 50;/);
 });
 
 test("what it is and the tiers come from YUKI's docs (data/yuki.ts): four facts, four tiers S to C", () => {

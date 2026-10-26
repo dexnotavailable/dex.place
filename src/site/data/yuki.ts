@@ -1,7 +1,8 @@
 // YUKI's page (/yuki/): what it is, which PC gets which setup, and the optional live link. Every line comes from
 // YUKI's own docs (the private repo dexnotavailable/yuki; wording shortened, never extended):
 //   what it is   README.md (first paragraph, "Principles"), docs/DECISIONS.md 2026-10-22 "Tiers and the swarm"
-//   tiers        docs/DECISIONS.md 2026-10-22 "Strata's reach", "Engines per machine", "Tiers and the swarm"
+//   tiers        docs/DECISIONS.md 2026-10-22 "Strata's reach", "Engines per machine", "Tiers and the swarm" (in plain
+//                words for visitors: the engines' names, Strata, llama.cpp and Vulkan, stay in the docs)
 //   first run    docs/build/PHASE2-SCOPE.md W7 (reads the PC, picks the setup; models from Hugging Face, licence first)
 // The release itself (version, file, size, SHA-256) is data/downloads.ts YUKI_RELEASE: one place to fill.
 
@@ -37,22 +38,22 @@ export const YUKI_TIERS: readonly YukiTier[] = [
   {
     rank: "S", name: "Big rig", tone: "magenta",
     pc: "A 24 GB NVIDIA or AMD card and 64 GB of RAM or more.",
-    gets: "The biggest brain on Strata and the longest memory the machine can hold. Images and video take turns on the card.",
+    gets: "The biggest brain YUKI runs, and the longest memory the machine can hold. Images and video take turns on the card.",
   },
   {
     rank: "A", name: "Gaming PC", tone: "cyan",
     pc: "An NVIDIA or AMD card with 12 GB or more, and 32 GB of RAM.",
-    gets: "A full local brain on Strata, the engine YUKI runs fastest on. One model plays every role.",
+    gets: "A full local brain on YUKI's fastest engine. One model plays every role.",
   },
   {
     rank: "B", name: "16 GB of RAM", tone: "mint",
     pc: "Say an RTX 3060 12 GB with 16 GB of RAM: many people's PC.",
-    gets: "A smaller brain through llama.cpp. A real, supported tier: designed for, not tolerated.",
+    gets: "A smaller brain that still runs well. A setup YUKI is built for, not a cut-down mode.",
   },
   {
     rank: "C", name: "Laptops and small machines", tone: "yellow",
     pc: "Intel or AMD integrated graphics, smaller cards, or no graphics card.",
-    gets: "A small local model on Vulkan or the CPU. Heavy image and video work isn't for this machine.",
+    gets: "A small brain that runs on the graphics chip or the processor. Heavy image and video work isn't for this machine.",
   },
 ];
 

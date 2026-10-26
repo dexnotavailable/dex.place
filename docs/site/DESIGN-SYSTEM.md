@@ -47,19 +47,31 @@ made with code (no image generation).
   ping to YUKI's engine on the visitor's PC, **off** (no markup, no request) until the engine answers dex.place.
 - **Pixel Yuki** (`yuki-sprite.ts`): a 32 x 32 chibi bust as grids, drawn to Dex's pixel-face rules in the orb's
   colours. Layers: base, eyes (open, blink, happy, sleepy), mouth (calm, smile, talk), ahoge (two frames); a data
-  attribute picks the face; a glance moves the eye layer one pixel. Idle: random-looking blinks, ahoge sway, a
-  one-pixel bob, all `steps()`.
+  attribute picks the face; a glance moves the eye layer one pixel. Idle: a blink on each Yuki's own seeded clock
+  (4.1-6.3 s, `blinkVars`: a stage sets it for the Yuki in it, a lone sprite takes it from its `seed`, so two in view
+  blink out of step), ahoge sway, a one-pixel bob, all `steps()`.
 - **Her stage** (`render/yukiart.ts`): night in hard bands, stars, her orb's pixel ring, ice shards, big flakes, then
   her; a cell is a whole number of screen pixels (`round()` in `styles/yuki.css`), so it stays crisp at any size. It
   stands in for the rig art on YUKI's banner (hero window, and her night in place of Dex's plate), its card, its
   Downloads block and the `/yuki/` hero.
-- **Banners:** `pban--lead` (taller, bigger name) and `pban--minor` (shorter, 82% wide toward the world: bands.css and
-  landing.css place it, pbanner.css sizes it).
+- **Banners:** `pban--lead` (taller, a bigger name at every width: 44 px on a phone, 56 on a tablet, 64 wide) and
+  `pban--minor` (shorter, its name 32 px, 82% wide toward the world: bands.css and landing.css place it, pbanner.css
+  sizes it). A card's or banner's caption is "HERO // NAME", just the name when they're the same word (YUKI); the small
+  docs key is named from the project's `docs.label` (YUKI's: its install guide).
 - **`/yuki/`** (`render/yuki.ts`, `motion/yuki.ts`): the hero (her orb hatches once on load, she pops, says one line;
   click her and she hops), what she does, the tiers as a stat sheet, the install guide with the Windows SmartScreen
   prompt drawn out (a pixel cursor taps More info, then Run anyway), the checksum. The Download click keeps its default
   (the file), then the page becomes the guide (`data-stage="guide"`). Everything rests off screen and holds still under
   reduced motion; without JS the key downloads and the guide is just there.
+  - The hop (`.is-hop`) and a new line's pop (`.is-new`) sit on the hatch's selectors plus their class, so they beat
+    its one-time rules; the hop keeps the pop in its animation list (matched by name, it never replays), and a new line
+    pops under its own keyframes' name (the hatch's name again would never replay).
+  - Each SmartScreen cursor sits inside what it taps (`.ss__target`), placed in percent of it, so its tip lands on More
+    info and Run anyway at any width (the buttons move as the window narrows).
+  - Stacked (under 900 px) a cell is set by the stage's width, so the stage is at least 35 cells (her line's foot, over
+    her ring) plus the bubble tall; the bubble never sits above the stage's top.
+  - `tools/site-checks/yuki-geometry.mjs` checks those on real layout (Edge, a served build): cursor tips inside their
+    targets at 320-1440, ring and bubble inside the stage at 320-1920, the hop and the pop really playing.
 
 This is how the website under the world looks and moves, and where each piece lives in the
 code. Since 2026-09-29 the site is a **dark pixel site**: a near-black page, square blocks

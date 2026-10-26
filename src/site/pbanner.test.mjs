@@ -48,6 +48,11 @@ test("home and /projects/ show the banner strips, in Dex's order (YUKI leads, de
       const li = list.slice(list.indexOf(`data-pcard="${p.id}"`), list.indexOf("</li>", list.indexOf(`data-pcard="${p.id}"`)));
       assert.match(li, new RegExp(`<${h} class="pban__name" id="p-${p.id}-name"><a class="pban__link" href="${projectHref(p)}">`));
       assert.ok(li.includes(`href="${p.docs.href}"`), `${p.id} docs`);
+      // the small key says where it goes, from the project's own label (YUKI's goes to its install guide, not "docs")
+      const key = li.match(/<a class="btn btn--paper btn--s btn--icon pban__docs" href="[^"]+" aria-label="([^"]+)" title="([^"]+)">/);
+      assert.ok(key, `${p.id}: a docs key`);
+      assert.equal(key[2], p.docs.label);
+      assert.ok(key[1].toLowerCase().includes(p.docs.label.toLowerCase()) && key[1].includes(p.name), `${p.id}: "${key[1]}"`);
       assert.match(li, /class="btn [^"]*pban__main /);
       // one link for keyboards: the name; the art is a pointer shortcut
       assert.match(li, /<a class="pban__hit" href="[^"]+" tabindex="-1" aria-hidden="true">/);

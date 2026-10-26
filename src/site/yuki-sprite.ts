@@ -13,6 +13,8 @@
 // the eyes (one layer per expression, eye pixels only, so a glance is the layer moved one pixel sideways over plain
 // skin), the mouth (one per shape) and the ahoge (two frames, it sways). styles/yuki.css shows one of each.
 
+import { rng } from "./render/html.ts";
+
 /** Her palette. The keys are this sprite's own (pixels.ts has the icons' keys). */
 export const YUKI_PALETTE = {
   o: "#4a4366", // hair outline
@@ -178,6 +180,17 @@ export function layerPaths(rows: readonly string[]): string {
   return out;
 }
 
+/**
+ * Her blink's clock, seeded (styles/yuki.css reads --blink, the period, and --blink-at, where in it she starts): 4.1 to
+ * 6.3 s, so two Yukis on one screen (a banner and a block, the hero and a tile) blink out of step. A stage sets it for
+ * the Yuki inside it (render/yukiart.ts); a Yuki on her own takes it from her `seed`.
+ */
+export function blinkVars(seed: string): string {
+  const r = rng(`${seed}-blink`);
+  const period = 4.1 + r() * 2.2;
+  return `--blink:${period.toFixed(2)}s;--blink-at:${(-r() * period).toFixed(2)}s`;
+}
+
 export interface YukiSpriteOptions {
   /** Screen pixels per sprite pixel (whole numbers keep it crisp); omit to size it in CSS. */
   scale?: number;
@@ -187,6 +200,8 @@ export interface YukiSpriteOptions {
   className?: string;
   /** Accessible name; without it she is decorative. */
   label?: string;
+  /** Seeds her blink's clock (blinkVars); without it she follows her stage's, or the default 4.7 s. */
+  seed?: string;
 }
 
 /**
@@ -202,7 +217,8 @@ export function yukiSprite(o: YukiSpriteOptions = {}): string {
   const group = (cls: string, rows: readonly string[], attr = ""): string => `<g class="${cls}"${attr}>${layerPaths(rows)}</g>`;
   return (
     `<svg class="yk${o.className ? ` ${o.className}` : ""}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SIZE} ${SIZE}"${size} ` +
-    `shape-rendering="crispEdges" data-eyes="${o.eyes ?? "open"}" data-mouth="${o.mouth ?? "calm"}" ${a11y}>` +
+    `shape-rendering="crispEdges" data-eyes="${o.eyes ?? "open"}" data-mouth="${o.mouth ?? "calm"}" ${a11y}` +
+    `${o.seed ? ` style="${blinkVars(o.seed)}"` : ""}>` +
     `<g class="yk__body">` +
     YUKI_AHOGE.map((rows, i) => group(`yk__ahoge yk__ahoge--${i}`, [...rows, ...Array.from({ length: SIZE - 3 }, () => ".".repeat(SIZE))])).join("") +
     group("yk__base", YUKI_BASE) +

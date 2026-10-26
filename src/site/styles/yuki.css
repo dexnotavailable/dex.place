@@ -5,8 +5,9 @@
 
 /* ================================================================== pixel Yuki
    One layer of each kind shows: the eyes and mouth her data attributes name, ahoge frame 0. Idle (motion welcome): a
-   blink every few seconds (--blink, seeded per stage), the ahoge sways, she bobs one pixel. A glance is the eye layer
-   moved one pixel sideways (--gx, motion/yuki.ts). Units inside the SVG are her pixels. */
+   blink every few seconds (--blink and --blink-at, seeded per stage or per Yuki by yuki-sprite.ts blinkVars, so two on
+   one screen blink out of step), the ahoge sways, she bobs one pixel. A glance is the eye layer moved one pixel
+   sideways (--gx, motion/yuki.ts). Units inside the SVG are her pixels. */
 .yk { display: block; overflow: visible; image-rendering: pixelated; }
 .yk .yk__e, .yk .yk__m, .yk .yk__ahoge--1 { display: none; }
 .yk[data-eyes="open"] .yk__e--open, .yk[data-eyes="blink"] .yk__e--blink, .yk[data-eyes="happy"] .yk__e--happy,
@@ -14,8 +15,8 @@
 .yk[data-mouth="calm"] .yk__m--calm, .yk[data-mouth="smile"] .yk__m--smile, .yk[data-mouth="talk"] .yk__m--talk { display: inline; }
 .yk__eyes { translate: calc(var(--gx, 0) * 1px) 0; transition: translate 90ms steps(1, end); }
 @media (prefers-reduced-motion: no-preference) {
-  .yk[data-eyes="open"] .yk__e--open { animation: yk-open var(--blink, 4.7s) steps(1, end) infinite; }
-  .yk[data-eyes="open"] .yk__e--blink { display: inline; visibility: hidden; animation: yk-shut var(--blink, 4.7s) steps(1, end) infinite; }
+  .yk[data-eyes="open"] .yk__e--open { animation: yk-open var(--blink, 4.7s) steps(1, end) var(--blink-at, 0s) infinite; }
+  .yk[data-eyes="open"] .yk__e--blink { display: inline; visibility: hidden; animation: yk-shut var(--blink, 4.7s) steps(1, end) var(--blink-at, 0s) infinite; }
   .yk .yk__ahoge--0 { animation: yk-ah0 2.6s steps(1, end) infinite; }
   .yk .yk__ahoge--1 { display: inline; visibility: hidden; animation: yk-ah1 2.6s steps(1, end) infinite; }
   .yk .yk__body { animation: yk-bob 2.6s steps(1, end) infinite; }
@@ -227,7 +228,8 @@
   position: absolute;
   z-index: 4;
   left: 50%;
-  bottom: calc(35 * var(--u));
+  /* just over her ring; never higher than the stage's top (it clips) */
+  bottom: min(calc(35 * var(--u)), calc(100% - 62px));
   margin: 0;
   padding: 10px 14px 9px;
   background: #fff;
@@ -264,15 +266,18 @@
 }
 
 /* the hatch (once, when motion is welcome and scripts run): her orb's ring grows in steps, a flash, she pops up, the
-   pixels fly, then she says hi */
+   pixels fly, then she says hi. After it (motion/yuki.ts): a hop (.is-hop) and a new line's pop (.is-new). Both sit
+   on the hatch's selectors plus their class, so they win over it. The hop keeps the pop in its list (matched by name,
+   the pop never replays) and comes after it, so while it plays the hop owns `translate` and `scale`. A new line pops
+   under its own keyframes' name: the same name as the hatch's would count as the same animation and never replay. */
 @media (prefers-reduced-motion: no-preference) {
   html.js [data-hatch] .ykstage__ring { animation: yk-ring-in 520ms steps(6, end) 80ms both, yk-ring 3.6s steps(1, end) 900ms infinite; }
   html.js [data-hatch] .ykstage__her { animation: yk-pop 720ms cubic-bezier(.3, 1.6, .5, 1) 420ms both; }
   html.js [data-hatch] .ykh__burst i { animation: yk-burst 760ms steps(8, end) calc(540ms + var(--i) * 18ms) both; }
   html.js [data-hatch] .ykh__burst::before { animation: yk-flash 420ms steps(4, end) 470ms both; }
   html.js .ykh__say { animation: yk-say 360ms cubic-bezier(.3, 1.5, .5, 1) 1250ms both; }
-  .ykh__say.is-new { animation: yk-say 300ms cubic-bezier(.3, 1.5, .5, 1) both; }
-  .ykstage__her.is-hop { animation: yk-hop 420ms steps(6, end); }
+  html.js .ykh__say.is-new { animation: yk-say-new 300ms cubic-bezier(.3, 1.5, .5, 1) both; }
+  html.js [data-hatch] .ykstage__her.is-hop { animation: yk-pop 720ms cubic-bezier(.3, 1.6, .5, 1) 420ms both, yk-hop 460ms steps(3, end); }
 }
 @keyframes yk-ring-in { from { scale: 0.1; opacity: 0; } 40% { opacity: 1; } to { scale: 1; opacity: 1; } }
 @keyframes yk-pop {
@@ -287,7 +292,15 @@
 }
 @keyframes yk-flash { 0% { opacity: 0; scale: 0.3; } 25% { opacity: 0.9; scale: 0.8; } 100% { opacity: 0; scale: 1.4; } }
 @keyframes yk-say { from { scale: 0.4; opacity: 0; } to { scale: 1; opacity: 1; } }
-@keyframes yk-hop { 0%, 100% { translate: 0 0; } 33% { translate: 0 -3px; } 66% { translate: 0 -1px; } }
+@keyframes yk-say-new { from { scale: 0.4; opacity: 0; } to { scale: 1; opacity: 1; } }
+/* the hop, from her feet: a squat, up four of her pixels stretched tall, down, a squash on landing */
+@keyframes yk-hop {
+  0%, 100% { translate: 0 0; scale: 1; }
+  16% { translate: 0 0; scale: 1.08 0.92; }
+  42% { translate: 0 -4px; scale: 0.95 1.05; }
+  70% { translate: 0 -1px; scale: 1; }
+  84% { translate: 0 0; scale: 1.06 0.94; }
+}
 
 /* the page after the Download click (motion/yuki.ts): the guide is where the page is */
 .page--yuki[data-stage="guide"] .ykstep[data-step="1"] .ykstep__tick { display: grid; }
@@ -381,7 +394,7 @@
   overflow: hidden;
 }
 .ss__no { position: absolute; right: 10px; top: 8px; margin: 0; font: 400 25px / 1 var(--f-title); color: rgb(255 255 255 / 0.35); }
-.ss__title { margin: 0; font: 400 1.25rem / 1.2 var(--f-px); }
+.ss__title { margin: 0; padding-right: 22px; font: 400 1.25rem / 1.2 var(--f-px); }
 .ss__lines { display: grid; gap: 6px; }
 .ss__lines i { display: block; height: 6px; background: rgb(255 255 255 / 0.45); }
 .ss__lines i:nth-child(2) { width: 86%; }
@@ -393,10 +406,14 @@
 .ss__btns { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin: auto 0 0; }
 .ss__btn { padding: 6px 12px 5px; background: rgb(255 255 255 / 0.12); border: 2px solid rgb(255 255 255 / 0.85); font-size: 0.95rem; white-space: nowrap; }
 .ss__btn--go { background: #fff; color: #1563b0; }
-.ss__target { position: relative; }
+/* each cursor lives inside what it taps (render/yuki.ts), placed in percent of it: its tip (the icon's top-left pixel)
+   lands on the word or the button at any width, wherever the wrap and the flex row put them; low and right in it, so
+   the word it taps stays readable above its body */
+.ss__target { position: relative; display: inline-block; }
 .ss__cursor { position: absolute; z-index: 2; line-height: 0; color: #fff; filter: drop-shadow(2px 2px 0 var(--ink)); pointer-events: none; }
-.ss__cursor--a { left: 64px; top: 128px; }
-.ss__cursor--b { right: 74px; bottom: 6px; }
+.ss__cursor--a { left: 66%; top: 66%; }
+.ss__cursor--b { left: 62%; top: 64%; }
+.ss__cursor .px { display: block; }
 .ss__tap { position: absolute; left: -6px; top: -6px; width: 14px; height: 14px; border: 2px solid var(--gold); opacity: 0; }
 .ss__cap { display: flex; align-items: flex-end; gap: 12px; margin-top: 14px; color: var(--fg-2); }
 .ss__cap b { color: var(--fg); font-weight: 400; }
@@ -405,7 +422,8 @@
   .ss__pair { grid-template-columns: 1fr; }
   .ss__arrow { justify-self: center; rotate: 90deg; }
 }
-/* the taps: cursor 1 slides to "More info" and taps, then cursor 2 to "Run anyway" (7.2 s, while in view) */
+/* the taps: cursor 1 comes in from beside "Don't run" and taps "More info"; then cursor 2 comes down from the app's
+   name and taps "Run anyway" (7.2 s, while in view; both moves end on the target, at translate 0) */
 @media (prefers-reduced-motion: no-preference) {
   .ss__cursor--a { animation: ss-a 7.2s steps(14, end) infinite; }
   .ss__cursor--b { animation: ss-b 7.2s steps(14, end) infinite; }
@@ -415,7 +433,7 @@
   .ss__win--b { animation: ss-dim-b 7.2s steps(1, end) infinite; }
 }
 @keyframes ss-a { 0% { translate: 90px 40px; opacity: 0; } 8% { opacity: 1; } 30%, 50% { translate: 0 0; opacity: 1; } 56%, 100% { translate: 0 0; opacity: 0; } }
-@keyframes ss-b { 0%, 50% { translate: 80px 50px; opacity: 0; } 58% { opacity: 1; } 80%, 96% { translate: 0 0; opacity: 1; } 100% { translate: 0 0; opacity: 0; } }
+@keyframes ss-b { 0%, 50% { translate: -72px -54px; opacity: 0; } 58% { opacity: 1; } 80%, 96% { translate: 0 0; opacity: 1; } 100% { translate: 0 0; opacity: 0; } }
 @keyframes ss-tap-a { 0%, 33% { opacity: 0; scale: 0.4; } 34%, 40% { opacity: 1; scale: 1.4; } 41%, 100% { opacity: 0; } }
 @keyframes ss-tap-b { 0%, 83% { opacity: 0; } 84%, 90% { opacity: 1; scale: 1.4; } 91%, 100% { opacity: 0; } }
 @keyframes ss-dim-a { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.55; } }
@@ -439,4 +457,13 @@
   .ykh__title { font-size: 50px; letter-spacing: 3px; text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink), 4px 4px 0 var(--azure); }
   .ykh__plate { translate: 8px 8px; }
   .ykh__snow { -webkit-mask-image: linear-gradient(#000 0 40%, transparent 50%); mask-image: linear-gradient(#000 0 40%, transparent 50%); }
+}
+/* stacked, a cell is set by the stage's width (her night covers it), so a fixed height cropped her ring and lifted her
+   line out of the top on tablets (700-899 px). The stage is at least as tall as her line needs: 35 cells (the
+   bubble's foot, just over her ring) plus the bubble and a gap. The box is the container that width is read from. */
+@supports (width: round(up, 1.5px, 1px)) {
+  @media (max-width: 899px) {
+    .ykh__box { container-type: inline-size; }
+    .ykh__stage { height: max(clamp(240px, 62vw, 380px), calc(35 * round(up, 100cqw / var(--cols), 1px) + 66px)); }
+  }
 }

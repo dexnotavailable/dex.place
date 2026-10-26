@@ -191,7 +191,11 @@ test("the card's DOM (DESIGN-1019 5.2): one owner per wrapper, the hero accents,
     }
     // chrome: the number chip and the platform, the caption (decorative), four brackets
     assert.match(li, new RegExp(`<span class="pcard__no" aria-hidden="true">${no}</span><p class="pcard__plat">${p.platform}</p>`));
-    assert.ok(li.includes(`<span class="pcard__cap" aria-hidden="true">${`${p.hero} // ${p.name}`.toUpperCase()}</span>`));
+    // (a hero who is the project's name, YUKI's Yuki, is said once: "YUKI", not "YUKI // YUKI")
+    const cap = (p.hero.toLowerCase() === p.name.toLowerCase() ? p.name : `${p.hero} // ${p.name}`).toUpperCase();
+    assert.ok(li.includes(`<span class="pcard__cap" aria-hidden="true">${cap}</span>`), `${p.id}: ${cap}`);
+    assert.doesNotMatch(li, /pcard__cap[^>]*>([^<]+) \/\/ \1</, `${p.id}: no name twice`);
+    assert.match(li, new RegExp(`<a class="btn btn--paper btn--s btn--icon pcard__docs" href="${p.docs.href}" aria-label="[^"]*${p.name}[^"]*" title="${p.docs.label}">`), `${p.id}: the docs key says where it goes`);
     assert.match(li, /<i class="pcard__brackets" aria-hidden="true"><\/i><\/article>/);
     // one link for keyboards: the name; the art is a pointer shortcut
     assert.match(li, /<a class="pcard__hit" href="[^"]+" tabindex="-1" aria-hidden="true">/);

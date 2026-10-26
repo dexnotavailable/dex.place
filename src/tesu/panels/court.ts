@@ -114,7 +114,8 @@ export function celebrationNote(prize: Prize): PanelSpec {
       b.append(el("p", "meta", "SHA-256: ", sum));
       const again = link(f.href, "Download it here");
       again.download = f.href.split("/").pop() ?? "";
-      const docs = prize.owner.id === "dexclient" ? [" · ", link("/docs/installing-dexclient/", "Install guide"), " · ", link("/docs/updates-and-repair/", "Updates and repair")] : [" · ", link("/docs/", "Docs")];
+      // a product with its own page carries its install guide there (YUKI: /yuki/#install), else the site's docs
+      const docs = prize.owner.guide ? [" · ", link(`${prize.owner.guide}#install`, "Install guide")] : [" · ", link("/docs/", "Docs")];
       b.append(el("p", "foot", "Didn't start? ", again, ...docs));
     },
   };

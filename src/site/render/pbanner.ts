@@ -21,7 +21,7 @@ import { projectHref, projects, type Project } from "../data/projects.ts";
 import { cardArt } from "./cardart.ts";
 import { button, chip, icon } from "./glyphs.ts";
 import { cx, esc, pad2 } from "./html.ts";
-import { fileOf, primaryAction, stateText } from "./pcard.ts";
+import { captionOf, docsKey, fileOf, primaryAction, stateText } from "./pcard.ts";
 import { snowFx, yukiBack } from "./yukiart.ts";
 
 const BANNERS = "/site/banners/";
@@ -84,8 +84,9 @@ function banner(p: Project, i: number, level: 2 | 3, here: "home" | "page"): str
   const no = pad2(projects.indexOf(p) + 1);
   const state = stateText(p);
   const act = primaryAction(p, "m", here);
+  const key = docsKey(p);
   const docs =
-    `<a class="btn btn--paper btn--s btn--icon pban__docs" href="${esc(p.docs.href)}" aria-label="${esc(`${p.name} docs`)}" title="Docs">` +
+    `<a class="btn btn--paper btn--s btn--icon pban__docs" href="${esc(p.docs.href)}" aria-label="${esc(key.aria)}" title="${esc(key.title)}">` +
     `<span class="btn__ic">${icon("book", 2)}</span></a>`;
   return (
     `<li class="${cx("pban", p.size && `pban--${p.size}`)}" data-pcard="${p.id}" style="--i:${Math.min(i, 5)}">` +
@@ -98,7 +99,7 @@ function banner(p: Project, i: number, level: 2 | 3, here: "home" | "page"): str
     front(p) +
     `<div class="pban__info">` +
     `<div class="pban__top"><span class="pban__no" aria-hidden="true">${no}</span><p class="pban__plat">${esc(p.platform)}</p>` +
-    `<span class="pban__cap" aria-hidden="true">${esc(`${p.hero} // ${p.name}`.toUpperCase())}</span></div>` +
+    `<span class="pban__cap" aria-hidden="true">${esc(captionOf(p))}</span></div>` +
     `<${h} class="pban__name" id="p-${p.id}-name"><a class="pban__link" href="${href}">${esc(p.name)}</a></${h}>` +
     (state ? `<p class="pban__state">${esc(state)}</p>` : "") +
     `<p class="pban__line">${esc(p.line)}</p>` +

@@ -37,6 +37,17 @@ export function chipsOf(p: Project): string {
   return `<p class="chips">${[chip(p.platform, "key"), ...stateChips(p)].join("")}</p>`;
 }
 
+/** The vertical caption, "HERO // NAME"; just the name when the hero is the name (YUKI's Yuki: not "YUKI // YUKI"). */
+export const captionOf = (p: Project): string =>
+  (p.hero.toLowerCase() === p.name.toLowerCase() ? p.name : `${p.hero} // ${p.name}`).toUpperCase();
+
+/** The small docs key's words, from where it goes (`docs.label`: YUKI's is its install guide): the tooltip, and the
+ *  screen reader's name with the project's in it. */
+export function docsKey(p: Project): { title: string; aria: string } {
+  const l = p.docs.label;
+  return { title: l, aria: l.toLowerCase().includes(p.name.toLowerCase()) ? l : `${p.name} ${l.toLowerCase()}` };
+}
+
 /** The one action that matters most for each project. */
 export function primaryAction(p: Project, size: "m" | "l", here: "home" | "page"): ButtonOptions {
   const f = fileOf(p);
@@ -79,8 +90,10 @@ function card(p: Project, i: number, level: 2 | 3, here: "home" | "page"): strin
   const href = projectHref(p);
   const no = pad2(projects.indexOf(p) + 1);
   // (the name and the art already lead to the project's page)
-  const small = (label: string, ic: "book", to: string): string =>
-    `<a class="btn btn--paper btn--s btn--icon pcard__docs" href="${esc(to)}" aria-label="${esc(`${p.name} ${label.toLowerCase()}`)}" title="${label}"><span class="btn__ic">${icon(ic, 2)}</span></a>`;
+  const key = docsKey(p);
+  const docs =
+    `<a class="btn btn--paper btn--s btn--icon pcard__docs" href="${esc(p.docs.href)}" aria-label="${esc(key.aria)}" title="${esc(key.title)}">` +
+    `<span class="btn__ic">${icon("book", 2)}</span></a>`;
   const state = stateText(p);
   const act = primaryAction(p, "m", here);
   return (
@@ -94,14 +107,14 @@ function card(p: Project, i: number, level: 2 | 3, here: "home" | "page"): strin
     popArt(p) +
     `<div class="pcard__top"><span class="pcard__no" aria-hidden="true">${no}</span>` +
     `<p class="pcard__plat">${esc(p.platform)}</p></div>` +
-    `<span class="pcard__cap" aria-hidden="true">${esc(`${p.hero} // ${p.name}`.toUpperCase())}</span>` +
+    `<span class="pcard__cap" aria-hidden="true">${esc(captionOf(p))}</span>` +
     `<div class="pcard__info">` +
     `<${h} class="pcard__name" id="p-${p.id}-name"><a class="pcard__link" href="${href}">${esc(p.name)}</a></${h}>` +
     (state ? `<p class="pcard__state">${esc(state)}</p>` : "") +
     `<p class="pcard__line">${esc(p.line)}</p>` +
     `<div class="pcard__acts">` +
     button({ ...act, className: `pcard__main pcard__main--${act.icon ?? "arrow"}` }) +
-    small("Docs", "book", p.docs.href) +
+    docs +
     `</div></div>` +
     `<i class="pcard__brackets" aria-hidden="true"></i>` +
     `</article></div></div></div>` +

@@ -180,11 +180,14 @@
 .pban__b::before { content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none; background: var(--ink); opacity: 0; transition: opacity 300ms cubic-bezier(.33, 1, .68, 1); }
 
 /* ---- Dex 10-26: YUKI leads (a taller strip, a bigger name), the dex.place world sits smaller below it. The list's
-   place for each (its width) is G's, styles/bands.css and landing.css. */
+   place for each (its width) is G's, styles/bands.css and landing.css. The lead's name is bigger at every width
+   (44 px on a phone, 56 on a tablet, 64 wide; the minor's stays 32), and its art strip is taller on a phone, so "the
+   big one" reads where most people will see it. */
 .pban--lead .pban__lift { --ban-h: clamp(260px, 38cqw, 440px); }
 .pban--minor .pban__lift { --ban-h: clamp(200px, 24cqw, 260px); --pad: clamp(16px, 2cqw, 24px); }
 .pban--minor .pban__num { --np: 4px; font-size: 100px; }
-@container pban (min-width: 700px) {
+.pban--lead .pban__b .pban__name { font-size: 44px; }
+@container pban (min-width: 640px) {
   .pban--lead .pban__b .pban__name { font-size: 56px; }
 }
 @container pban (min-width: 900px) {
@@ -196,7 +199,7 @@
   .pban--minor .pban__num { --np: 6px; font-size: 150px; }
 }
 @container pban (max-width: 559px) {
-  .pban--lead .pban__lift { --ban-h: 220px; }
+  .pban--lead .pban__lift { --ban-h: 240px; }
   .pban--minor .pban__lift { --ban-h: 150px; }
 }
 /* YUKI's code-drawn layers: her night fills the plate's box, the snow falls in front of the hero too */

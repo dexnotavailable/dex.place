@@ -31,11 +31,12 @@ export const YUKI_SAYS = {
 
 // ------------------------------------------------------------------ the stage
 
-/** A tile with her face in it, where the steps and facts would show the site's generic mascot ("blob"). */
-function yukiTile(size: "s" | "m"): string {
-  return `<span class="tile tile--cyan tile--${size} yktile" aria-hidden="true">${yukiSprite({ scale: 1, mouth: "smile" })}</span>`;
+/** A tile with her face in it, where the steps and facts would show the site's generic mascot ("blob"). `seed`: her
+ *  blink's clock, so she blinks out of step with the hero above. */
+function yukiTile(size: "s" | "m", seed: string): string {
+  return `<span class="tile tile--cyan tile--${size} yktile" aria-hidden="true">${yukiSprite({ scale: 1, mouth: "smile", seed })}</span>`;
 }
-const tileOr = (ic: IconName, tone: Tone, size: "s" | "m"): string => (ic === "blob" ? yukiTile(size) : tile(ic, tone, size));
+const tileOr = (ic: IconName, tone: Tone, size: "s" | "m", seed: string): string => (ic === "blob" ? yukiTile(size, seed) : tile(ic, tone, size));
 
 function hero(f: DownloadFile | null): string {
   const crumbs =
@@ -86,7 +87,7 @@ function what(): string {
     `<h2 class="yks__h" id="yk-what">${tile("star", "cyan", "s")}<span>What she does</span></h2>` +
     `<ul class="ykfacts">` +
     YUKI_FACTS.map((x, i) =>
-      `<li class="ykfact" data-reveal="pop" style="--i:${i}">${tileOr(x.icon, i === 0 ? "cyan" : "paper", "m")}` +
+      `<li class="ykfact" data-reveal="pop" style="--i:${i}">${tileOr(x.icon, i === 0 ? "cyan" : "paper", "m", `fact-${i}`)}` +
       `<h3 class="ykfact__t">${esc(x.title)}</h3><p class="ykfact__p">${esc(x.text)}</p></li>`,
     ).join("") +
     `</ul></section>`
@@ -119,7 +120,8 @@ function tiers(): string {
 /**
  * The Windows prompt an unsigned installer gets (SmartScreen), drawn in code, both of its faces: the first ("More
  * info") and the opened one ("Run anyway"). A pixel cursor taps each in turn (styles/yuki.css, while in view), and a
- * small Yuki says why. Only the words a visitor has to find are written out; the rest are lines.
+ * small Yuki says why. Only the words a visitor has to find are written out; the rest are lines. Each cursor sits
+ * inside the word or button it taps, so its tip stays on it at any width (the buttons move as the window narrows).
  */
 export function smartScreen(file: string | null): string {
   const lines = (n: number): string => `<span class="ss__lines" aria-hidden="true">${Array.from({ length: n }, () => "<i></i>").join("")}</span>`;
@@ -130,20 +132,18 @@ export function smartScreen(file: string | null): string {
     `<div class="ss__win ss__win--a">` +
     `<p class="ss__no" aria-hidden="true">1</p>` +
     `<p class="ss__title">Windows protected your PC</p>` + lines(3) +
-    `<p class="ss__more"><span class="ss__target">More info</span></p>` +
+    `<p class="ss__more"><span class="ss__target">More info${cursor("ss__cursor--a")}</span></p>` +
     `<p class="ss__btns"><span class="ss__btn">Don't run</span></p>` +
-    cursor("ss__cursor--a") +
     `</div>` +
     `<span class="ss__arrow" aria-hidden="true">${icon("arrow", 3)}</span>` +
     `<div class="ss__win ss__win--b">` +
     `<p class="ss__no" aria-hidden="true">2</p>` +
     `<p class="ss__title">Windows protected your PC</p>` + lines(2) +
     `<p class="ss__app">App: <span>${esc(file ?? "YUKI-Setup.exe")}</span><br>Publisher: <span>Unknown publisher</span></p>` +
-    `<p class="ss__btns"><span class="ss__btn ss__btn--go ss__target">Run anyway</span><span class="ss__btn">Don't run</span></p>` +
-    cursor("ss__cursor--b") +
+    `<p class="ss__btns"><span class="ss__btn ss__btn--go ss__target">Run anyway${cursor("ss__cursor--b")}</span><span class="ss__btn">Don't run</span></p>` +
     `</div>` +
     `</div>` +
-    `<figcaption class="ss__cap" id="ss-cap"><span class="ss__peek" aria-hidden="true">${yukiSprite({ scale: 2, eyes: "open", mouth: "smile", className: "ss__yuki" })}</span>` +
+    `<figcaption class="ss__cap" id="ss-cap"><span class="ss__peek" aria-hidden="true">${yukiSprite({ scale: 2, eyes: "open", mouth: "smile", className: "ss__yuki", seed: "ss-peek" })}</span>` +
     `<span><b>Click More info, then Run anyway.</b> Windows doesn't know YUKI yet because the installer isn't signed; it asks once, the first time.</span></figcaption>` +
     `</figure>`
   );
@@ -161,7 +161,7 @@ function install(d: DownloadEntry, f: DownloadFile | null): string {
     steps.map((s, i) =>
       `<li class="ykstep" data-step="${i + 1}">` +
       `<span class="ykstep__no" aria-hidden="true">${pad2(i + 1)}<i class="ykstep__tick">${icon("check", 2)}</i></span>` +
-      `<div class="ykstep__body"><h3 class="ykstep__t">${tileOr(s.icon, i % 2 ? "yellow" : "mint", "s")}<span>${esc(s.title)}</span></h3>` +
+      `<div class="ykstep__body"><h3 class="ykstep__t">${tileOr(s.icon, i % 2 ? "yellow" : "mint", "s", `step-${i}`)}<span>${esc(s.title)}</span></h3>` +
       `<p class="ykstep__p">${esc(s.text)}</p>` +
       (i === 1 ? smartScreen(f ? fileName(f) : null) : "") +
       `</div></li>`,

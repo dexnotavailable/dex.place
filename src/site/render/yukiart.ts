@@ -7,7 +7,7 @@
 // "Other projects" (render/cardart.ts), its block on Downloads and the big stage on /yuki/ (render/yuki.ts).
 // Decorative everywhere except where a caller gives it a label. Reduced motion: all still (styles/yuki.css).
 
-import { YUKI_PALETTE, yukiSprite, type YukiEyes, type YukiMouth } from "../yuki-sprite.ts";
+import { blinkVars, YUKI_PALETTE, yukiSprite, type YukiEyes, type YukiMouth } from "../yuki-sprite.ts";
 import { cx, esc, rng } from "./html.ts";
 
 /** Night, top to bottom: hard bands (a pixel sky has steps, not a gradient). */
@@ -78,7 +78,7 @@ export interface StageOptions {
 /**
  * The stage as an inline SVG (`svg.ykstage`, one unit a cell): night bands, stars, her orb's ring and glow, shards,
  * flakes, then Yuki. Shards are `g.ykstage__shard` (they bob in CSS); her ring is `g.ykstage__ring` (it pulses); she
- * is `svg.yk` nested at a whole cell, so her pixels land on the stage's.
+ * is `svg.yk` nested at a whole cell, so her pixels land on the stage's. Her blink's clock is the stage's seed's.
  */
 export function yukiStage(o: StageOptions): string {
   const r = rng(o.seed);
@@ -132,7 +132,8 @@ export function yukiStage(o: StageOptions): string {
     `</svg></g>`;
   return (
     `<svg class="ykstage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cols} ${rows}" shape-rendering="crispEdges" ` +
-    `preserveAspectRatio="xMid${o.align === "middle" ? "YMid" : "YMax"} slice" aria-hidden="true" focusable="false" style="--cols:${cols};--rows:${rows}">${layer === "her" ? "" : s}${her}</svg>`
+    `preserveAspectRatio="xMid${o.align === "middle" ? "YMid" : "YMax"} slice" aria-hidden="true" focusable="false" ` +
+    `style="--cols:${cols};--rows:${rows}${her ? `;${blinkVars(o.seed)}` : ""}">${layer === "her" ? "" : s}${her}</svg>`
   );
 }
 
